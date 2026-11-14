@@ -1173,8 +1173,8 @@ test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 
   const gpt = async a => { 받은.push(a); return 답하기([지적하나('src/app.js:1'), 지적하나('src/app.js:1', 'P2')])(a); };
   // 둘을 함께 띄워도 지적표에 두 검수자 지적이 다 남는다
   await Promise.all([아르곤보내기(폴더, 목록, { call: 답하기([지적하나('src/app.js:1')]), 몫 }), GPT보내기(폴더, 목록, { call: gpt, 몫 })]);
-  assert.equal(받은[0].thinking, 'max', '수준을 안 주면 GPT검수의 추론(max) — 앱 설정을 따르지 않는다');
-  assert.equal(받은[0].model, 'gpt-6.1-sol');
+  assert.equal(받은[0].thinking, 'high', '수준을 안 주면 GPT검수의 추론(high) — 앱 설정을 따르지 않는다');
+  assert.equal(받은[0].model, 'gpt-6-astra');
   assert.equal(받은[0].prompt, fs.readFileSync(path.join(폴더, 목록.묶음[0].파일), 'utf8'), 'GPT도 아르곤과 같은 바이트');
   assert.ok(fs.existsSync(path.join(폴더, `GPT-${목록.묶음[0].이름}.json`)));
   const 표 = 지적표읽기(폴더);
@@ -1188,7 +1188,7 @@ test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 
   const s = 집계하기(목록, [결과], 지적표읽기(폴더), [G결과]);
   assert.equal(s.한줄, '아르곤 1건(반영 1) · GPT 2건(반영 1)');
   assert.equal(s.배포조건충족, true);
-  await assert.rejects(GPT보내기(폴더, 목록, { call: gpt, 몫, 수준: 'huge', 다시: true }), /--수준은[^]*빼면 max/);
+  await assert.rejects(GPT보내기(폴더, 목록, { call: gpt, 몫, 수준: 'huge', 다시: true }), /--수준은[^]*빼면 high/);
   // fable.md 2단계는 두 검수자의 지적표를 다 가리킨다
   const { 페이블하기 } = await tool();
   const 페 = fs.readFileSync(await 페이블하기(폴더, { 시험: false, 캡처: false }), 'utf8');
@@ -1271,51 +1271,51 @@ if (a[0] === 'app-server') {
 
 test('GPT 부르기: codex exec를 본 계정·읽기 전용·빈 폴더·답 꼴로 한 번 부르고, 한도·로그인 오류는 막힘으로 읽힌다', async t => {
   const { GPT부르기, GPT검수, 답꼴 } = await tool();
-  // 11-11 유호님 「응, sol max로」: 모델·추론은 검수 도구에 고정 — 앱 기본값이 바뀌어도 검수 강도가 따라 바뀌지 않는다
-  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' });
+  // 11-11 유호님 「응, sol max로」, 11-15 「바로 바꿔줘」로 astra high: 모델·추론은 검수 도구에 고정 — 앱 기본값이 바뀌어도 검수 강도가 따라 바뀌지 않는다
+  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6-astra', 추론: 'high' });
   assert.ok(Object.isFrozen(GPT검수));
   const 가짜 = 가짜코덱스(t);
   const 굽기계정 = { 이름: 'bake3', home: path.join(가짜.뿌리, 'bake3') };
-  const r = await GPT부르기({ prompt: '묶음 글\n자료 끝 표식: END_X\n', schema: 답꼴, thinking: 'high', timeoutMs: 60_000, 계정: 굽기계정 });
+  const r = await GPT부르기({ prompt: '묶음 글\n자료 끝 표식: END_X\n', schema: 답꼴, thinking: 'xhigh', timeoutMs: 60_000, 계정: 굽기계정 });
   assert.equal(JSON.parse(r.text).endMarker, 'END_X');
   assert.deepEqual(r.usage, { input_tokens: 12, output_tokens: 3 });
-  assert.equal(r.selectedModel, 'gpt-6.1-sol-high · 굽기 장부 bake3');
+  assert.equal(r.selectedModel, 'gpt-6-astra-xhigh · 굽기 장부 bake3');
   const 본 = 가짜.읽기();
   assert.equal(본.home, 굽기계정.home, '고른 계정의 CODEX_HOME으로');
   assert.equal(본.입력, '묶음 글\n자료 끝 표식: END_X\n', '묶음은 표준입력으로');
   assert.deepEqual(본.꼴.required, 답꼴.required);
-  for (const 칸 of ['exec', '--ephemeral', '--skip-git-repo-check', 'read-only', '--json', 'model_reasoning_effort="high"']) assert.ok(본.a.includes(칸), 칸);
-  assert.equal(본.a[본.a.indexOf('-m') + 1], 'gpt-6.1-sol', '모델은 늘 -m으로 — 계정 폴더 config.toml의 옛 값을 타지 않게');
+  for (const 칸 of ['exec', '--ephemeral', '--skip-git-repo-check', 'read-only', '--json', 'model_reasoning_effort="xhigh"']) assert.ok(본.a.includes(칸), 칸);
+  assert.equal(본.a[본.a.indexOf('-m') + 1], 'gpt-6-astra', '모델은 늘 -m으로 — 계정 폴더 config.toml의 옛 값을 타지 않게');
   const 빈 = 본.a[본.a.indexOf('-C') + 1];
   assert.match(빈, /synk-gpt-review-[^\\/]+[\\/]empty$/, '-C는 저장소가 아니라 빈 임시 폴더(읽기 전용 실행은 파일 읽기도 거절한다)');
   assert.ok(!fs.existsSync(빈), '끝나면 임시 폴더를 지운다');
   await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: 답꼴, timeoutMs: 60_000 });
   const 기본 = 가짜.읽기();
   assert.equal(기본.home, null, '계정을 안 주면 본 계정(~/.codex) — 밖의 CODEX_HOME을 따르지 않는다');
-  assert.ok(기본.a.includes('model_reasoning_effort="max"'), '수준을 안 주면 GPT검수의 추론(max)');
-  assert.equal(기본.a[기본.a.indexOf('-m') + 1], 'gpt-6.1-sol');
+  assert.ok(기본.a.includes('model_reasoning_effort="high"'), '수준을 안 주면 GPT검수의 추론(high)');
+  assert.equal(기본.a[기본.a.indexOf('-m') + 1], 'gpt-6-astra');
   // 환경변수 SYNK_GPT_REVIEW_MODEL이 있는 동안(한 회차 뒤 저절로 풀리지 않는다) — 부른 모델이 -m과 결과의 모델 칸에 그대로 남고, 기본값은 바뀌지 않는다
-  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna';
   const 바꿈 = await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: 답꼴, timeoutMs: 60_000 });
-  assert.equal(바꿈.selectedModel, 'gpt-6-astra-max · 본 계정(~/.codex)');
-  assert.equal(가짜.부른것().모델, 'gpt-6-astra');
-  // 부른 뒤 실패해도 오류에 실제로 부른 모델·추론·계정이 붙는다 — 검수보내기가 기본 모델(gpt-6.1-sol-null)을 적지 않게
+  assert.equal(바꿈.selectedModel, 'gpt-6-luna-high · 본 계정(~/.codex)');
+  assert.equal(가짜.부른것().모델, 'gpt-6-luna');
+  // 부른 뒤 실패해도 오류에 실제로 부른 모델·추론·계정이 붙는다 — 검수보내기가 기본 모델(gpt-6-astra-null)을 적지 않게
   process.env.FAKE_CODEX = 'limit';
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /quota/.test(e.message) && e.selectedModel === 'gpt-6-astra-max · 본 계정(~/.codex)');
-  assert.equal(가짜.부른것().모델, 'gpt-6-astra', '한도로 끝난 그 부름도 astra였다');
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /quota/.test(e.message) && e.selectedModel === 'gpt-6-luna-high · 본 계정(~/.codex)');
+  assert.equal(가짜.부른것().모델, 'gpt-6-luna', '한도로 끝난 그 부름도 luna였다');
   delete process.env.FAKE_CODEX;
   // 이름 꼴이 아니면 codex를 띄우지 않고 멈춘다 — 부르지 않았으니 오류에 모델이 붙지 않는다
-  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra; rm -rf x';
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna; rm -rf x';
   let 부름앞 = 가짜.부름수();
   await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /모델 이름 꼴이 아니다/.test(e.message) && !('selectedModel' in e));
   assert.equal(가짜.부름수(), 부름앞, '이름 꼴이 아니면 codex를 띄우지 않는다');
   delete process.env.SYNK_GPT_REVIEW_MODEL;
-  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' }, '기본값은 그대로다');
+  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6-astra', 추론: 'high' }, '기본값은 그대로다');
   process.env.FAKE_CODEX = 'limit';
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /quota/.test(e.message) && e.selectedModel === 'gpt-6.1-sol-max · 본 계정(~/.codex)');
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /quota/.test(e.message) && e.selectedModel === 'gpt-6-astra-high · 본 계정(~/.codex)');
   process.env.FAKE_CODEX = 'login';
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6.1-sol-max · 본 계정(~/.codex)');
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, thinking: 'high', timeoutMs: 60_000, 계정: 굽기계정 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6.1-sol-high · 굽기 장부 bake3');
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6-astra-high · 본 계정(~/.codex)');
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, thinking: 'xhigh', timeoutMs: 60_000, 계정: 굽기계정 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6-astra-xhigh · 굽기 장부 bake3');
   부름앞 = 가짜.부름수();
   await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000, 계정: null }), e => /quota — 주간 90% 아래인 Pro 계정이 없다/.test(e.message) && !('selectedModel' in e));
   assert.equal(가짜.부름수(), 부름앞, '계정이 없으면 부르지 않는다');
@@ -1335,60 +1335,60 @@ test('GPT 모델·추론 한 곳(11-14 후속): 공식 GPT보내기 → GPT부�
   };
   const 본계정 = '본 계정(~/.codex)';
 
-  // ① 기본값: sol · max — 수준을 안 줘도 결과의 수준은 실제로 넘긴 max, 보내기 안내에는 「기본 모델」
+  // ① 기본값: astra · high — 수준을 안 줘도 결과의 수준은 실제로 넘긴 high, 보내기 안내에는 「기본 모델」
   const 기본 = await 준비('기본');
   const d = await 보내기(기본);
-  assert.deepEqual(가짜.부른것(), { 모델: 'gpt-6.1-sol', 추론: 'model_reasoning_effort="max"' });
+  assert.deepEqual(가짜.부른것(), { 모델: 'gpt-6-astra', 추론: 'model_reasoning_effort="high"' });
   assert.equal(d.결과.상태, '읽음');
-  assert.equal(d.결과.모델, `gpt-6.1-sol-max · ${본계정}`);
-  assert.equal(d.결과.수준, 'max');
-  assert.deepEqual(d.결과.모델설정, { 모델: 'gpt-6.1-sol', 추론: 'max', 환경바꿈: false });
+  assert.equal(d.결과.모델, `gpt-6-astra-high · ${본계정}`);
+  assert.equal(d.결과.수준, 'high');
+  assert.deepEqual(d.결과.모델설정, { 모델: 'gpt-6-astra', 추론: 'high', 환경바꿈: false });
   assert.equal(d.보냄.length, 1);
-  assert.match(d.보냄[0], /gpt-6\.1-sol-max · 기본 모델/);
+  assert.match(d.보냄[0], /gpt-6-astra-high · 기본 모델/);
   assert.doesNotMatch(d.보냄[0], /적용/);
   // ② 명시한 --수준은 그대로 -c와 결과에
-  const h = await 보내기(await 준비('높음'), { 수준: 'high' });
-  assert.equal(가짜.부른것().추론, 'model_reasoning_effort="high"');
-  assert.equal(h.결과.모델, `gpt-6.1-sol-high · ${본계정}`);
-  assert.equal(h.결과.수준, 'high');
+  const h = await 보내기(await 준비('높음'), { 수준: 'xhigh' });
+  assert.equal(가짜.부른것().추론, 'model_reasoning_effort="xhigh"');
+  assert.equal(h.결과.모델, `gpt-6-astra-xhigh · ${본계정}`);
+  assert.equal(h.결과.수준, 'xhigh');
   // ③ 환경 모델: 이름이 다른 두 검수를 이어 보내도 둘 다 바꾼 모델로 가고, 보내기 안내·결과에 바꿈이 보이며, 도구는 환경을 지우지 않는다
-  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna';
   for (const 이름 of ['바꿈-1', '바꿈-2']) {
     const s = await 보내기(await 준비(이름));
-    assert.equal(가짜.부른것().모델, 'gpt-6-astra', 이름);
+    assert.equal(가짜.부른것().모델, 'gpt-6-luna', 이름);
     assert.equal(s.결과.상태, '읽음', 이름);
-    assert.equal(s.결과.모델, `gpt-6-astra-max · ${본계정}`, 이름);
-    assert.deepEqual(s.결과.모델설정, { 모델: 'gpt-6-astra', 추론: 'max', 환경바꿈: true }, 이름);
-    assert.match(s.보냄[0], /gpt-6-astra-max · 환경변수 SYNK_GPT_REVIEW_MODEL 적용\(기본 gpt-6\.1-sol 아님/, 이름);
-    assert.equal(process.env.SYNK_GPT_REVIEW_MODEL, 'gpt-6-astra', `${이름}: 한 회차 뒤에도 환경은 그대로다`);
+    assert.equal(s.결과.모델, `gpt-6-luna-high · ${본계정}`, 이름);
+    assert.deepEqual(s.결과.모델설정, { 모델: 'gpt-6-luna', 추론: 'high', 환경바꿈: true }, 이름);
+    assert.match(s.보냄[0], /gpt-6-luna-high · 환경변수 SYNK_GPT_REVIEW_MODEL 적용\(기본 gpt-6-astra 아님/, 이름);
+    assert.equal(process.env.SYNK_GPT_REVIEW_MODEL, 'gpt-6-luna', `${이름}: 한 회차 뒤에도 환경은 그대로다`);
   }
-  // ④ 바꾼 모델로 부른 뒤 한도(11-14 재현: 수준 null · quota 종료) — 결과는 기본 gpt-6.1-sol-null이 아니라 실제로 부른 astra · max · 계정
+  // ④ 바꾼 모델로 부른 뒤 한도(11-14 재현: 수준 null · quota 종료) — 결과는 기본 gpt-6-astra-null이 아니라 실제로 부른 luna · high · 계정
   process.env.FAKE_CODEX = 'limit';
   const q = await 보내기(await 준비('바꿈-한도'));
-  assert.equal(가짜.부른것().모델, 'gpt-6-astra');
+  assert.equal(가짜.부른것().모델, 'gpt-6-luna');
   assert.equal(q.결과.상태, '막힘');
   assert.equal(q.결과.차단증거?.종류, '한도');
-  assert.equal(q.결과.모델, `gpt-6-astra-max · ${본계정}`);
-  assert.equal(q.결과.수준, 'max');
+  assert.equal(q.결과.모델, `gpt-6-luna-high · ${본계정}`);
+  assert.equal(q.결과.수준, 'high');
   assert.equal(q.결과.모델설정.환경바꿈, true);
-  // 읽은 답이 있는 묶음을 다시 보내다 막히면 앞 답(sol)과 그 모델은 그대로 두고, 실패들에는 이번에 부른 모델(astra)을 적는다
+  // 읽은 답이 있는 묶음을 다시 보내다 막히면 앞 답(astra)과 그 모델은 그대로 두고, 실패들에는 이번에 부른 모델(luna)을 적는다
   const 다시 = await 보내기(기본, { 다시: true });
   assert.equal(다시.결과.상태, '읽음');
-  assert.equal(다시.결과.모델, `gpt-6.1-sol-max · ${본계정}`);
+  assert.equal(다시.결과.모델, `gpt-6-astra-high · ${본계정}`);
   assert.deepEqual(다시.결과.답, d.결과.답);
   assert.equal(다시.결과.모델설정.환경바꿈, false, '남긴 답의 설정은 그 답을 낸 기본 모델 그대로');
   const 실패 = 다시.결과.실패들.at(-1);
   assert.deepEqual({ 상태: 실패.상태, 모델: 실패.모델, 수준: 실패.수준, 모델설정: 실패.모델설정 },
-    { 상태: '막힘', 모델: `gpt-6-astra-max · ${본계정}`, 수준: 'max', 모델설정: { 모델: 'gpt-6-astra', 추론: 'max', 환경바꿈: true } });
+    { 상태: '막힘', 모델: `gpt-6-luna-high · ${본계정}`, 수준: 'high', 모델설정: { 모델: 'gpt-6-luna', 추론: 'high', 환경바꿈: true } });
   // ⑤ 로그인
   process.env.FAKE_CODEX = 'login';
   const l = await 보내기(await 준비('바꿈-로그인'));
   assert.equal(l.결과.상태, '막힘');
   assert.equal(l.결과.차단증거?.종류, '로그인');
-  assert.equal(l.결과.모델, `gpt-6-astra-max · ${본계정}`);
+  assert.equal(l.결과.모델, `gpt-6-luna-high · ${본계정}`);
   delete process.env.FAKE_CODEX;
   // ⑥ 이름 꼴이 아닌 환경 모델: codex를 띄우지 않고, 결과·보내는 중 표시를 하나도 쓰지 않은 채 멈춘다(앞 결과가 있으면 그대로)
-  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra; rm -rf x';
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna; rm -rf x';
   const 틀림 = await 준비('틀린모델');
   const 부름앞 = 가짜.부름수(), 기본앞 = fs.readFileSync(path.join(기본.폴더, 'GPT-A.json'));
   await assert.rejects(보내기(틀림), /SYNK_GPT_REVIEW_MODEL이 모델 이름 꼴이 아니다/);
@@ -1396,16 +1396,19 @@ test('GPT 모델·추론 한 곳(11-14 후속): 공식 GPT보내기 → GPT부�
   assert.equal(가짜.부름수(), 부름앞, '부르기 전에 멈춘다');
   assert.deepEqual(fs.readdirSync(틀림.폴더).filter(f => f.startsWith('GPT-')), [], '부르지 않은 모델을 결과에 남기지 않는다');
   assert.deepEqual(fs.readFileSync(path.join(기본.폴더, 'GPT-A.json')), 기본앞, '앞 결과도 건드리지 않는다');
-  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' });
+  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6-astra', 추론: 'high' });
 });
 
-test('GPT 시간 초과 자동 대체(11-15 유호님 「응, 바꿔줘」): 기본 모델이 같은 묶음에서 시간 초과로 두 번 끝나면 다음 보내기는 묻지 않고 gpt-6-astra · 같은 추론, 다른 실패 · 환경 모델 회차는 세지 않는다', async t => {
+test('GPT 시간 초과 자동 대체(11-15 유호님 「응, 바꿔줘」): 기본 모델이 같은 묶음에서 시간 초과로 두 번 끝나면 다음 보내기는 묻지 않고 대체 모델 · 같은 추론, 다른 실패 · 환경 모델 회차는 세지 않는다 — 기본이 astra(11-15 「바로 바꿔줘」)라 시험은 대체 모델을 잠시 terra로 둔다', async t => {
   const { 준비하기, GPT보내기, GPT부르기, GPT시간초과대체, 이번자동대체 } = await tool();
   const 가짜 = 가짜코덱스(t);
   const r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
   r.쓰기('a.js', 'export const a = 2;\n');
   const 준비 = 이름 => 준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
   assert.deepEqual({ ...GPT시간초과대체 }, { 횟수: 2, 모델: 'gpt-6-astra' });
+  // 기본이 이미 대체 모델이면 바꿀 것이 없다 — 대체 길 자체를 보려고 시험 동안만 대체 모델을 다른 이름으로 둔다
+  GPT시간초과대체.모델 = 'gpt-6-terra';
+  t.after(() => { GPT시간초과대체.모델 = 'gpt-6-astra'; });
   // 가짜 call: 받은 설정을 적고, 정한 대로 GPT부르기와 같은 꼴의 오류를 던지거나 끝까지 읽은 답을 낸다
   const 부름들 = [];
   const call = 할일 => async a => {
@@ -1424,91 +1427,101 @@ test('GPT 시간 초과 자동 대체(11-15 유호님 「응, 바꿔줘」): 기
     return { 알림, 결과: JSON.parse(fs.readFileSync(path.join(x.폴더, 'GPT-A.json'), 'utf8')) };
   };
 
-  // ① 한 번째 시간 초과: 기본 sol · max로 불렀고 1로 쌓인다, 아직 대체 안내 없음
+  // ① 한 번째 시간 초과: 기본 astra · high로 불렀고 1로 쌓인다, 아직 대체 안내 없음
   const 묶 = await 준비('초과');
   const 첫 = await 보내기(묶, 시간초과);
-  assert.equal(부름들.at(-1).model, 'gpt-6.1-sol');
-  assert.deepEqual(부름들.at(-1).설정, { 모델: 'gpt-6.1-sol', 추론: 'max', 환경바꿈: false });
+  assert.equal(부름들.at(-1).model, 'gpt-6-astra');
+  assert.deepEqual(부름들.at(-1).설정, { 모델: 'gpt-6-astra', 추론: 'high', 환경바꿈: false });
   assert.equal(첫.결과.상태, '실패');
   assert.equal(첫.결과.기본시간초과, 1);
-  assert.equal(첫.알림.some(m => /묻지 않고 gpt-6-astra/.test(m)), false);
+  assert.equal(첫.알림.some(m => /묻지 않고 gpt-6-terra/.test(m)), false);
   // 실패 결과는 사람이 고를 때만 다시 보낸다 — 고르지 않으면 부르지 않는다(그대로)
   const 앞수 = 부름들.length;
   await 보내기(묶, 시간초과);
   assert.equal(부름들.length, 앞수, '실패한 묶음을 저절로 다시 부르지 않는다');
-  // ② 두 번째 시간 초과(--묶음 A): 아직 sol, 2로 쌓이고 다음 보내기가 astra라는 안내
+  // ② 두 번째 시간 초과(--묶음 A): 아직 기본 astra, 2로 쌓이고 다음 보내기가 대체 모델이라는 안내
   const 둘 = await 보내기(묶, 시간초과, { 고른: ['A'] });
-  assert.equal(부름들.at(-1).model, 'gpt-6.1-sol');
-  assert.equal(둘.결과.기본시간초과, 2);
-  assert.ok(둘.알림.some(m => /시간 초과로 2번 끝났다 — 다시 보내면\(--묶음 A\) 묻지 않고 gpt-6-astra-max로 부른다/.test(m)), 둘.알림.join('\n'));
-  // ③ 세 번째: 묻지 않고 astra · 같은 추론, 결과의 모델 · 모델설정에 자동 대체가 남고 횟수는 0으로
-  const 셋 = await 보내기(묶, () => null, { 고른: ['A'] });
   assert.equal(부름들.at(-1).model, 'gpt-6-astra');
-  assert.equal(부름들.at(-1).설정.모델, 'gpt-6-astra');
-  assert.equal(부름들.at(-1).설정.추론, 'max');
-  assert.match(부름들.at(-1).설정.자동대체, /기본 gpt-6\.1-sol이 이 묶음에서 시간 초과 2번/);
+  assert.equal(둘.결과.기본시간초과, 2);
+  assert.ok(둘.알림.some(m => /시간 초과로 2번 끝났다 — 다시 보내면\(--묶음 A\) 묻지 않고 gpt-6-terra-high로 부른다/.test(m)), 둘.알림.join('\n'));
+  // ③ 세 번째: 묻지 않고 대체 모델 · 같은 추론, 결과의 모델 · 모델설정에 자동 대체가 남고 횟수는 0으로
+  const 셋 = await 보내기(묶, () => null, { 고른: ['A'] });
+  assert.equal(부름들.at(-1).model, 'gpt-6-terra');
+  assert.equal(부름들.at(-1).설정.모델, 'gpt-6-terra');
+  assert.equal(부름들.at(-1).설정.추론, 'high');
+  assert.match(부름들.at(-1).설정.자동대체, /기본 gpt-6-astra이 이 묶음에서 시간 초과 2번/);
   assert.equal(셋.결과.상태, '읽음');
-  assert.equal(셋.결과.모델, 'gpt-6-astra-max · 가짜');
-  assert.equal(셋.결과.모델설정.모델, 'gpt-6-astra');
+  assert.equal(셋.결과.모델, 'gpt-6-terra-high · 가짜');
+  assert.equal(셋.결과.모델설정.모델, 'gpt-6-terra');
   assert.equal(셋.결과.기본시간초과, 0);
-  assert.ok(셋.알림.some(m => / 보냄 · gpt-6-astra-max · 자동 대체\(기본 gpt-6\.1-sol이 이 묶음에서 시간 초과 2번 — 11-15 규칙, 묻지 않음\)/.test(m)), 셋.알림.join('\n'));
+  assert.ok(셋.알림.some(m => / 보냄 · gpt-6-terra-high · 자동 대체\(기본 gpt-6-astra이 이 묶음에서 시간 초과 2번 — 11-15 규칙, 묻지 않음\)/.test(m)), 셋.알림.join('\n'));
   // ④ 대체 모델도 시간 초과면 횟수를 더하지 않고 다음에도 대체 모델(기본으로 돌아가 또 45분을 쓰지 않게)
   const 묶2 = await 준비('초과-대체도');
   await 보내기(묶2, 시간초과);
   await 보내기(묶2, 시간초과, { 고른: ['A'] });
   const 대체초과 = await 보내기(묶2, 시간초과, { 고른: ['A'] });
-  assert.equal(부름들.at(-1).model, 'gpt-6-astra');
+  assert.equal(부름들.at(-1).model, 'gpt-6-terra');
   assert.equal(대체초과.결과.기본시간초과, 2);
   await 보내기(묶2, 시간초과, { 고른: ['A'] });
-  assert.equal(부름들.at(-1).model, 'gpt-6-astra', '대체 뒤 실패해도 대체 모델로 이어 간다');
+  assert.equal(부름들.at(-1).model, 'gpt-6-terra', '대체 뒤 실패해도 대체 모델로 이어 간다');
   // ⑤ 시간 초과가 아닌 실패는 세지 않는다
   const 묶3 = await 준비('다른실패');
   await 보내기(묶3, () => 'codex exec 실패(종료 1) — boom');
   const 다른 = await 보내기(묶3, () => 'codex exec 실패(종료 1) — boom', { 고른: ['A'] });
   assert.equal(다른.결과.기본시간초과, 0);
   await 보내기(묶3, () => null, { 고른: ['A'] });
-  assert.equal(부름들.at(-1).model, 'gpt-6.1-sol');
+  assert.equal(부름들.at(-1).model, 'gpt-6-astra');
   // ⑥ 환경변수로 모델을 정한 회차는 세지도 바꾸지도 않는다
-  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-terra';
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna';
   const 묶4 = await 준비('환경');
   await 보내기(묶4, 시간초과);
   const 환경둘 = await 보내기(묶4, 시간초과, { 고른: ['A'] });
   assert.equal(환경둘.결과.기본시간초과, 0);
   await 보내기(묶4, () => null, { 고른: ['A'] });
-  assert.equal(부름들.at(-1).model, 'gpt-6-terra');
+  assert.equal(부름들.at(-1).model, 'gpt-6-luna');
   assert.equal(부름들.at(-1).설정.자동대체, undefined);
   delete process.env.SYNK_GPT_REVIEW_MODEL;
   // ⑦ 읽은 답이 있는 묶음을 --다시로 보내다 시간 초과면 앞 답은 그대로, 실패들에 이번 설정이 남고 횟수가 쌓인다.
-  //    두 번째 뒤 안내는 --묶음이 아니라 --다시다(--묶음만이면 「읽음」이라 건너뛴다 — GPT 검수 GA1), 그 --다시는 astra로 간다
+  //    두 번째 뒤 안내는 --묶음이 아니라 --다시다(--묶음만이면 「읽음」이라 건너뛴다 — GPT 검수 GA1), 그 --다시는 대체 모델로 간다
   const 묶5 = await 준비('읽은뒤');
   await 보내기(묶5, () => null);
   const 다시1 = await 보내기(묶5, 시간초과, { 다시: true });
   assert.equal(다시1.결과.상태, '읽음');
   assert.equal(다시1.결과.기본시간초과, 1);
-  assert.equal(다시1.결과.실패들.at(-1).모델설정.모델, 'gpt-6.1-sol');
+  assert.equal(다시1.결과.실패들.at(-1).모델설정.모델, 'gpt-6-astra');
   const 다시2 = await 보내기(묶5, 시간초과, { 다시: true });
   assert.equal(다시2.결과.기본시간초과, 2);
-  assert.ok(다시2.알림.some(m => /다시 보내면\(--다시\) 묻지 않고 gpt-6-astra-max로/.test(m)), 다시2.알림.join('\n'));
+  assert.ok(다시2.알림.some(m => /다시 보내면\(--다시\) 묻지 않고 gpt-6-terra-high로/.test(m)), 다시2.알림.join('\n'));
   const 묶음만수 = 부름들.length;
   await 보내기(묶5, () => null, { 고른: ['A'] });
   assert.equal(부름들.length, 묶음만수, '읽음인 묶음은 --묶음만으로는 다시 부르지 않는다(그래서 안내가 --다시)');
   const 시작때 = new Date().toISOString();
   const 다시3 = await 보내기(묶5, 시간초과, { 다시: true });
-  assert.equal(부름들.at(-1).model, 'gpt-6-astra', '안내대로 --다시면 astra');
-  // ⑦′ 대체 시도가 실패해 앞 sol 답이 남아도 완료 줄의 목록에는 이번 대체 시도가 잡힌다(GPT 검수 GA2) — 지난 실행 기록은 넣지 않는다
-  assert.equal(다시3.결과.모델설정.자동대체, undefined, '남은 답은 앞 sol 답');
-  assert.equal(다시3.결과.실패들.at(-1).모델설정.모델, 'gpt-6-astra');
-  assert.deepEqual(이번자동대체([다시3.결과], 시작때), ['A gpt-6-astra-max · 가짜']);
+  assert.equal(부름들.at(-1).model, 'gpt-6-terra', '안내대로 --다시면 대체 모델');
+  // ⑦′ 대체 시도가 실패해 앞 기본 모델 답이 남아도 완료 줄의 목록에는 이번 대체 시도가 잡힌다(GPT 검수 GA2) — 지난 실행 기록은 넣지 않는다
+  assert.equal(다시3.결과.모델설정.자동대체, undefined, '남은 답은 앞 기본 모델 답');
+  assert.equal(다시3.결과.실패들.at(-1).모델설정.모델, 'gpt-6-terra');
+  assert.deepEqual(이번자동대체([다시3.결과], 시작때), ['A gpt-6-terra-high · 가짜']);
   assert.deepEqual(이번자동대체([다시3.결과], new Date(Date.now() + 60_000).toISOString()), [], '시작 뒤 시도만');
   assert.deepEqual(이번자동대체([다시3.결과], 시작때, ['B']), [], '고른 묶음만');
-  assert.deepEqual(이번자동대체([셋.결과], '1970-01-01T00:00:00.000Z'), ['A gpt-6-astra-max · 가짜'], '대체로 읽은 답도 센다');
-  // ⑧ GPT부르기는 받은 설정으로 -m · 추론을 넘기고, 꼴이 틀린 설정은 codex를 띄우지 않고 멈춘다
-  const 바꿈 = await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: { type: 'object' }, timeoutMs: 60_000, 설정: { 모델: 'gpt-6-astra', 추론: 'max', 환경바꿈: false, 자동대체: '시험' } });
-  assert.deepEqual(가짜.부른것(), { 모델: 'gpt-6-astra', 추론: 'model_reasoning_effort="max"' });
-  assert.equal(바꿈.selectedModel, 'gpt-6-astra-max · 본 계정(~/.codex)');
+  assert.deepEqual(이번자동대체([셋.결과], '1970-01-01T00:00:00.000Z'), ['A gpt-6-terra-high · 가짜'], '대체로 읽은 답도 센다');
+  // ⑦″ 실제 설정(대체 모델 = 기본 astra)에서는 두 번 시간 초과돼도 바꿀 모델이 없다 — 안내도 자동 대체도 없이 기본 모델로 부른다
+  GPT시간초과대체.모델 = 'gpt-6-astra';
+  const 묶6 = await 준비('실제설정');
+  await 보내기(묶6, 시간초과);
+  const 실제둘 = await 보내기(묶6, 시간초과, { 고른: ['A'] });
+  assert.equal(실제둘.결과.기본시간초과, 2);
+  assert.equal(실제둘.알림.some(m => /묻지 않고/.test(m)), false, '바꿀 모델이 없으면 안내하지 않는다');
+  await 보내기(묶6, () => null, { 고른: ['A'] });
+  assert.equal(부름들.at(-1).model, 'gpt-6-astra');
+  assert.equal(부름들.at(-1).설정.자동대체, undefined);
+  // ⑧ GPT부르기는 받은 설정으로 -m · 추론을 넘기고(모델 · 추론 모두 기본 astra · high와 다른 값으로 — 카본 A1), 꼴이 틀린 설정은 codex를 띄우지 않고 멈춘다
+  const 바꿈 = await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: { type: 'object' }, timeoutMs: 60_000, 설정: { 모델: 'gpt-6-luna', 추론: 'max', 환경바꿈: false, 자동대체: '시험' } });
+  assert.deepEqual(가짜.부른것(), { 모델: 'gpt-6-luna', 추론: 'model_reasoning_effort="max"' });
+  assert.equal(바꿈.selectedModel, 'gpt-6-luna-max · 본 계정(~/.codex)');
   const 부름앞 = 가짜.부름수();
   await assert.rejects(GPT부르기({ prompt: 'x', schema: { type: 'object' }, timeoutMs: 60_000, 설정: { 모델: 'gpt-6-astra; rm -rf x', 추론: 'max' } }), /모델·추론 꼴이 아니다/);
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: { type: 'object' }, timeoutMs: 60_000, 설정: { 모델: 'gpt-6-astra', 추론: 'huge' } }), /모델·추론 꼴이 아니다/);
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: { type: 'object' }, timeoutMs: 60_000, 설정: { 모델: 'gpt-6-luna', 추론: 'huge' } }), /모델·추론 꼴이 아니다/);
   assert.equal(가짜.부름수(), 부름앞, '꼴이 틀리면 부르지 않는다');
 });
 
@@ -1530,20 +1543,20 @@ test('GPT 명령(11-14 후속): 계정·보내기·완료 안내에 이번 모�
   const 기본 = GPT명령(await 준비('명령-기본'));
   assert.equal(기본.종료, 0, 기본.알림);
   assert.match(줄(기본.알림, /GPT 계정: /), /→ 본 계정\(~\/\.codex\)/);
-  for (const l of 세안내(기본)) { assert.match(l, /gpt-6\.1-sol-max · 기본 모델/, l); assert.doesNotMatch(l, /적용/, l); }
-  assert.equal(기본.결과.모델, 'gpt-6.1-sol-max · 본 계정(~/.codex)');
+  for (const l of 세안내(기본)) { assert.match(l, /gpt-6-astra-high · 기본 모델/, l); assert.doesNotMatch(l, /적용/, l); }
+  assert.equal(기본.결과.모델, 'gpt-6-astra-high · 본 계정(~/.codex)');
   // 환경 모델: 이름이 다른 두 검수를 이어 돌려도 둘 다 계정·보내기·완료 안내에 바꾼 모델과 환경변수가 보인다
-  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna';
   for (const 이름 of ['명령-바꿈-1', '명령-바꿈-2']) {
     const s = GPT명령(await 준비(이름));
     assert.equal(s.종료, 0, s.알림);
-    for (const l of 세안내(s)) assert.match(l, /gpt-6-astra-max · 환경변수 SYNK_GPT_REVIEW_MODEL 적용/, `${이름}: ${l}`);
-    assert.equal(가짜.부른것().모델, 'gpt-6-astra', 이름);
-    assert.equal(s.결과.모델, 'gpt-6-astra-max · 본 계정(~/.codex)', 이름);
-    assert.deepEqual(s.결과.모델설정, { 모델: 'gpt-6-astra', 추론: 'max', 환경바꿈: true }, 이름);
+    for (const l of 세안내(s)) assert.match(l, /gpt-6-luna-high · 환경변수 SYNK_GPT_REVIEW_MODEL 적용/, `${이름}: ${l}`);
+    assert.equal(가짜.부른것().모델, 'gpt-6-luna', 이름);
+    assert.equal(s.결과.모델, 'gpt-6-luna-high · 본 계정(~/.codex)', 이름);
+    assert.deepEqual(s.결과.모델설정, { 모델: 'gpt-6-luna', 추론: 'high', 환경바꿈: true }, 이름);
   }
   // 이름 꼴이 아니면 계정 읽기(app-server)도 codex exec도 띄우지 않고 종료 2 — 결과를 쓰지 않는다
-  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra; rm -rf x';
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna; rm -rf x';
   const 틀림 = await 준비('명령-틀림'), 부름앞 = 가짜.부름수();
   const e = GPT명령(틀림);
   assert.equal(e.종료, 2, e.알림);
