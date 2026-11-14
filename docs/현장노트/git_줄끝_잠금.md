@@ -219,6 +219,9 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 바이트로 읽어(`open(p,'rb')`) CRLF였는지 기억하고, LF로 맞춰 바꾼 뒤 원래 줄끝으로 되돌려 쓴다(보기 `.tmp/pulse-client-fix-20261019/eolpatch.py`). 이미 바뀐 파일은 기준 파일의 줄끝을 따라 다시 맞춘다(`eol-follow-base.py`).
 - 다시 확인: 바꾼 파일마다 CR 수가 LF 수와 같거나(CRLF 파일) 0이고(LF 파일), 기준과의 diff에 바꾼 줄만 나온다.
 
+- 덧붙임(11-14, 반대 방향 · Claude): 파이썬 `Path.write_text(s)`는 Windows에서 LF를 CRLF로 바꾼다(기본값 `newline=None`). 바이트로 읽어 고친 글을 `write_text`로 되쓰면 파일 전체가 CRLF가 된다. 공용 작업본의 트랙 690줄과 결정 801줄이 한 번에 그렇게 바뀌었다. `core.autocrlf=true`라 git diff에는 안 나오지만 「LF will be replaced by CRLF」 경고가 뜨고, 그 파일을 LF 기준으로 치환하는 다음 작업이 어긋난다. 거꾸로 CRLF 파일을 LF로 나누면 각 줄 끝에 CR이 남아, 새로 넣은 줄만 LF가 되어 한 파일에 줄끝이 섞인다. 고침: 읽기와 쓰기를 모두 `read_bytes` · `write_bytes`로 하고 원래 줄끝을 유지한다. 다시 확인: 파일의 CRLF 수와 LF 수가 같거나(CRLF 파일) CRLF가 0이다(LF 파일).
+- 덧붙임(11-14, 이 노트를 쓸 때 · Claude): Bash 도구의 heredoc에 파이썬을 넣으면 글 안의 두 겹 백슬래시가 한 겹으로 줄어 「백슬래시 n」이 실제 개행이 된다(이 절을 쓰다 한 줄이 네 줄로 쪼개졌다). 줄끝을 설명하는 글에는 백슬래시를 쓰지 않고 「LF」 · 「CRLF」로 적는다.
+
 ### 운영 후보 사본에 커밋 차이를 `git merge-file`로 얹으면 CRLF로 든 파일이 통째로 충돌한다 (2026-10-21 Claude)
 - 증상: 10-21 다음 PULSE 릴리스 흉내(`.tmp/pulse-pc-demo-copy-20261021/candidate-check.cjs`)에서 이력 18 후보(manifest `413c8dfb…`)와 17판 후보(`df9ec75f…`) 사본에 PULSE 글 다시 쓰기 커밋 둘을 경로마다 `git merge-file -p <후보> <바탕> <내 판>`으로 얹자 8파일(회사 `client-changes.mjs`·`pulse-devices.mjs`·`pulse-studio.mjs`·`public/pulse-app/strategy-view.mjs`·`deliverables-view.mjs`와 시험 셋)이 파일마다 한 덩어리로 충돌했다.
 - 원인: 그 8파일은 후보(운영) 바이트가 모든 줄 CRLF이고 git 판(바탕·내 판)은 LF다. `git diff --no-index --ignore-cr-at-eol`로 보면 내용 차이가 없다.
@@ -1121,6 +1124,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 함정: Git Bash는 sparse 패턴의 맨 앞 `/`를 `C:/Program Files/Git/…`로 바꾼다. 별표가 든 `/docs/_ops/*.md`는 그대로 들어간다. 다른 꼴이면 `git -C <사본> sparse-checkout list`로 들어간 값을 먼저 본다.
 - 다시 확인: `sparse-checkout list`가 `/docs/_ops/*.md`이고, 올린 뒤 `git show origin/master:docs/_ops/트랙.md`에 내 줄이 있다.
 - 덧붙임(11-10, 이미 올린 내 줄을 «고칠» 때): 트랙이 「남김」(바탕 11-04 `aee41b1a9`)인 채로, 그 뒤에 내가 `--조각`으로 올려 둔 §1 한 줄을 고쳐 다시 `--조각`으로 미리 보기를 돌리니 조각이 「−0 +1」, 요약이 「트랙.md +1 −0 · 자리 맞춤」이었다. 남김 바탕 판에는 그 줄이 없어서 도구가 고침을 «더하기»로만 본다 — 그대로 `--실행`하면 origin에 옛 줄과 새 줄이 둘 다 남는다(미리 보기가 찍는 「올릴 커밋」을 `git show <커밋> -- docs/_ops/트랙.md`로 열어 확인했다). 고침: 위 작은 사본 길이나, origin 판 blob에서 그 줄만 바꾼 커밋을 손 절차로 만들어 올린다(「공용 문서 항목 바로 아래에 하위 줄을 더하면…」의 절차에 `node tools/공개검사.js --바탕 origin/master --머리 <커밋>`을 더한다. 기록 전용 경로라 `관련시험.js`는 고를 시험이 없다). 작업본의 내 줄도 origin과 같은 자리 · 같은 글로 맞춰 둔다(`5802f5883`). 더하기만 하는 조각은 남김 상태에서도 그대로 올라간다(`2f04e0907`). 다시 확인: `git show origin/master:docs/_ops/트랙.md | grep -c "BM 11-10 전체 검수"`가 1.
+
+- 덧붙임(11-14, origin에서 여러 번 고쳐진 줄 · Claude): 트랙이 「남김」이 아니어도 막힌다. 공용 작업본의 트랙이 HEAD보다 47줄 뒤처진 사이 origin에서 서울로 줄이 두 번 고쳐져 있었다. 그 뒤처진 줄을 고쳐 `--조각`으로 올리니 「내가 고친 줄이 원격 판에 그대로 없다」로 멈췄다. 작업본의 그 줄을 origin 최신 내용으로 맞추고 다시 고쳐도 같은 자리에서 멈췄다. 3방향이 내 새 줄을 더 옛 판의 고침으로 짝지었기 때문이다. 고침: `git worktree add --no-checkout --detach <사본> origin/master` → `git -C <사본> sparse-checkout init --cone` → `set docs/_ops tools tests` → `checkout`으로 origin 판을 받아 그 사본에서 고치고, 사본 안에서 `node ../../../tools/바로올리기.js docs/_ops/트랙.md docs/_ops/결정.md -F <메시지 파일> --실행`을 돌린다. `--저장소` 옵션은 지금 도구에 없다. 사본을 통째로 올리므로 내 변경만 있어야 한다. 다시 확인: 사본의 `git diff --stat`이 내가 고친 줄만 보이고, 올린 뒤 `git show origin/master:docs/_ops/트랙.md`에 내 줄이 있다.
 
 ### 판본 글 원천을 LF로 써서 렌더하면 올리기 · 따라가기 뒤 CRLF로 내려와 렌더 지문이 어긋난다 — 사슬 확인은 줄끝만 다른 글을 같은 글로 본다 (2026-11-10 Claude)
 
