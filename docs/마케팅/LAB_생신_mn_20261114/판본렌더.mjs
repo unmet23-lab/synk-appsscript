@@ -146,11 +146,17 @@ let 실패 = 0;
 try {
   console.log(`[판본] ${path.basename(여기)} — 번들 만드는 중…`);
   const 자산앞 = 자산재기();
+  // 판본 글(<판본폴더>/<키>.json)은 자산 지문 밖이라 따로 찍는다 — 번들은 이때의 글을 담으므로, 렌더가 도는 사이 글을 고치면 영상은 옛 글인데
+  // 렌더 기록의 글 지문은 디스크의 새 글로 적혀 렌더 관문이 「지금 글로 구웠다」고 믿었다(11-14 잠깐만 VN · UZ 다리 글)
+  const 글지문들 = () => new Map(키들.map((k) => { const f = path.join(판본폴더, `${k}.json`); return [k, fs.existsSync(f) ? sha(f) : null]; }));
+  const 글앞 = 글지문들();
   const b = await 리모션실행(['bundle', 'src/index.ts', '--out-dir', 번들]);
   if (b.code !== 0) throw Error(`번들 실패(종료 ${b.code})\n${b.out.slice(-2000)}`);
   // 번들은 이때의 public · src를 담는다 — 번들을 만드는 사이 자산이 바뀌었으면 어느 그림으로 굽는지 알 수 없으니 멈춘다
   const 자산 = 자산재기();
   if (자산.지문 !== 자산앞.지문) throw Error('번들을 만드는 사이 원본 자산(remotion public · src)이 바뀌었다 — 다시 돌린다');
+  const 글번들 = 글지문들();
+  for (const k of 키들) if (글앞.get(k) !== 글번들.get(k)) throw Error(`번들을 만드는 사이 판본 글(${k}.json)이 바뀌었다 — 다시 돌린다`);
   const c = await 리모션실행(['compositions', 번들, '--quiet']);
   if (c.code !== 0) throw Error(`컴포지션 목록 실패(종료 ${c.code})\n${c.out.slice(-2000)}`);
   const 등록 = new Set(c.out.split(/\s+/).filter((x) => x.startsWith(`${편.접두}-`)));
@@ -183,7 +189,7 @@ try {
     const 로그 = path.join(리모션, 'out', `판본_${k}.log`);
     fs.mkdirSync(path.dirname(로그), { recursive: true });
     fs.writeFileSync(로그, `${new Date().toISOString()} ${컴}\n`);
-    const 기록 = { 판본: k, 컴포지션: 컴, 언어: pack.lang, 글: rel(글), 글sha256: sha(글), 시각: null, 영상: rel(영상), 표지: rel(표지), 표지초: pack.coverAt,
+    const 기록 = { 판본: k, 컴포지션: 컴, 언어: pack.lang, 글: rel(글), 글sha256: 글번들.get(k), 시각: null, 영상: rel(영상), 표지: rel(표지), 표지초: pack.coverAt,
       // 준비.json 「돌림」.판본[KEY]에 옮길 꼴(편 폴더 기준 경로 — tools/돌림표.js 머리말). 「글」은 판본 글 원천이 아니라 지도가 뽑는 글.json이다 —
       // 원천(<판본폴더>/<키>.json)을 적어 주면 그 꼴을 준비.json에 옮긴 판본이 글 · 렌더 관문과 안 이어진다(11-11 밤 Fable 5.2 다시 검수 P1-렌1).
       // 지도가 있으면 tools/판본글잇기.js 「돌림」이 넣는 것과 같은 셈(판본잇기 돌림판본)으로 적는다. 뜻 검수 지문 = 글.json, 글자 검수 지문 = 영상sha256
@@ -195,6 +201,7 @@ try {
     const 인사 = 인사켜짐 ? 잇기.인사지문(여기, 인사지도, k) : null;
     if (인사켜짐 && !인사) { console.log(`  ${k}: 인사가 켜진 판본인데 인사 그림 · 목소리가 없다(${잇기.인사폴더(인사지도)}/${k}.*)`); 실패++; continue; }
 
+    if (!표지만 && sha(글) !== 글번들.get(k)) { console.log(`  ${k}: 번들을 만든 뒤 판본 글이 바뀌었다 — 이 번들로 구우면 영상이 옛 글이다. 다시 돌린다`); 실패++; continue; }
     if (!표지만) {
       const 날것 = path.join(리모션, 'out', `판본_${k}.mp4`);
       console.log(`  ${k}: 렌더 중(${컴}) — 로그 ${rel(로그)}`);
