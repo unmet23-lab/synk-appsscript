@@ -36,7 +36,7 @@ if (!갱신) {
   for (const f of ['package.json', 'remotion.config.ts', 'tsconfig.json']) fs.copyFileSync(path.join(틀, f), path.join(사본, f));
   // 편의 public(곡 · 그림 · 글꼴 · song.json)은 git에 넣는다 — 판본 렌더 기록의 자산 지문(tools/lib/판본잇기.js 자산지문)이 public · src를 세어,
   // 게시 회차 사본(HEAD)에 public이 없으면 모든 판본이 「렌더 뒤 자산이 바뀌었다」로 돌림에서 빠진다. 틀의 .gitignore(public/)는 틀 자리에만 맞다.
-  fs.writeFileSync(path.join(사본, '.gitignore'), 'out/\n');
+  fs.writeFileSync(path.join(사본, '.gitignore'), 'out/\npublic/move.mp4\n'); // move.mp4 = 몽글이 움직이는 영상(움직임잇기.py — mp4는 저장소에 넣지 않는다)
   const 모듈 = path.join(사본, 'node_modules');
   if (!fs.existsSync(모듈)) {
     const 틀모듈 = fs.realpathSync(path.join(틀, 'node_modules'));
@@ -44,7 +44,10 @@ if (!갱신) {
   }
   const 글꼴 = path.join(사본, 'public', 'fonts');
   fs.mkdirSync(글꼴, { recursive: true });
-  for (const f of fs.readdirSync(path.join(틀, 'public', 'fonts'))) fs.copyFileSync(path.join(틀, 'public', 'fonts', f), path.join(글꼴, f));
+  // 틀의 public은 git 밖이라 워크트리에는 없다 — 이미 글꼴이 든 편(다시 세우기)은 그대로 둔다(11-14)
+  const 틀글꼴 = path.join(틀, 'public', 'fonts');
+  if (fs.existsSync(틀글꼴)) for (const f of fs.readdirSync(틀글꼴)) fs.copyFileSync(path.join(틀글꼴, f), path.join(글꼴, f));
+  else if (!fs.readdirSync(글꼴).length) { console.error(`글꼴 없음: ${틀글꼴} — 공용 작업본 틀의 public/fonts를 쓴다`); process.exit(2); }
 }
 const 곡 = 값('--곡'), 정본 = 값('--정본'), 그림 = 값('--그림');
 if (곡) fs.copyFileSync(path.resolve(곡), path.join(사본, 'public', 'song.wav'));
@@ -79,20 +82,22 @@ if (doc) {
       상자: { 폭: 824, 글자크기: 56, 굵기: 800, 줄높이: 1.12, 최대줄: 4 } },
     ...doc.syl.map((s, i) => ({ id: `ko.${i + 1}`, 칸: '한국어', 글: s, 초: 초(doc.parts.find((p) => p.kind === 'chop').t, end.t),
       장면: `(노래 내내) 그림 카드 아래 큰 한글 「${doc.word}」을 상자 없이 한 음절씩 — 노래가 그 음절을 부를 때 그 글자가 코랄로 쾅 켜진다` })),
+    // 노래만 판(11-14 유호님 「노래만으로」 — 네 차례 두 마디 없음)은 손뼉 · 말하기 줄이 없어, 따라 하고 싶은 자리가 노래가 되풀이하는 음절 읽기다
     ...doc.syl.map((s, i) => ({ id: `read.${i + 1}`, 칸: '읽기', 값: `read.${i}`, 초: 초(doc.parts.find((p) => p.kind === 'chop').t, end.t),
+      ...(restClap || restSay ? {} : { 대조: '웃음' }),
       상자: { 폭: G + 사이 - 8, 글자크기: 26, 굵기: 600, 줄높이: 1.15, 최대줄: 1, 줄바꿈: 'nowrap', 가운데: true } })),
     { id: 'mean', 칸: '뜻', 값: 'mean', 원문: doc._원문?.mean, 초: 초(wholes[0].at[0] + 0.25, end.t),
-      장면: '노래가 낱말을 이어 부르면 음절 글자 아래 한 줄로 「= 뜻」이 흐림에서 또렷하게 들어온다',
-      상자: { 폭: 790, 글자크기: 44, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } }, // 화면은 앞에 「= 」(약 44px)를 붙여 834 안
-    { id: 'clap', 칸: '진행', 값: 'clap', 대조: '웃음', 원문: doc._원문?.clap, 초: 초(restClap.t, restClap.end),
+      장면: '노래가 낱말을 이어 부르면 음절 글자 아래 한 줄로 이 뜻 글이 흐림에서 또렷하게 들어온다(글 앞뒤에 다른 표시 없음)',
+      상자: { 폭: 790, 글자크기: 44, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } }, // 화면은 뜻 글만 그린다(「=」 표시는 v10에서 뺐다 — 11-14 지도 장면에 「= 뜻」이 남아 시험관이 「뜻」 글자를 화면 글로 읽었다). 폭은 「—— 」를 붙여 잰다(Song.tsx fitBox)
+    ...(restClap ? [{ id: 'clap', 칸: '진행', 값: 'clap', 대조: '웃음', 원문: doc._원문?.clap, 초: 초(restClap.t, restClap.end),
       장면: '(반주만 흐르는 한 마디 — 시청자 차례) 음절 글자가 흐려지고, 위에 코랄 글로 이 글(손뼉 치기), 맨 아래 박 막대가 굵어져 박마다 켜진다',
-      상자: { 폭: 760, 글자크기: 36, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } },
+      상자: { 폭: 760, 글자크기: 36, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } }] : []),
     { id: 'real', 칸: '진행', 값: 'real', 원문: doc._원문?.real, 초: 초(real.t - REAL_LEAD, real.end), // Song.tsx REAL_LEAD — 딱지가 구간보다 먼저 뜬다
       장면: '노래가 같은 낱말을 실제 말 빠르기로 한 번 부르고(그 0.5초 앞부터), 음절 글자 위에 검정 글(앞에 코랄 점)로 이 글',
       상자: { 폭: 760, 글자크기: 36, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } },
-    { id: 'say', 칸: '진행', 값: 'say', 대조: '웃음', 원문: doc._원문?.say, 초: 초(restSay.t, restSay.end),
+    ...(restSay ? [{ id: 'say', 칸: '진행', 값: 'say', 대조: '웃음', 원문: doc._원문?.say, 초: 초(restSay.t, restSay.end),
       장면: '(반주만 흐르는 한 마디 — 시청자 차례) 다시 음절 글자가 흐려지고 위에 코랄 글로 이 글(소리 내어 말하기), 박 막대가 박마다 켜진다',
-      상자: { 폭: 760, 글자크기: 36, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } },
+      상자: { 폭: 760, 글자크기: 36, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } }] : []),
     { id: 'end', 칸: '끝질문', 값: 'end', 원문: doc._원문?.end, 초: 초(end.t, end.end),
       장면: '노래가 끝나고 반주만 남는 마지막 자리 — 낱말과 뜻이 작은 한 줄로 접히고 그 아래 이 물음이 크게(댓글을 부르는 말)',
       상자: { 폭: 824, 글자크기: 34, 굵기: 800, 줄높이: 1.12, 최대줄: 4 } }, // Song.tsx 끝 물음 — 아래 안전선 안에 드는 가장 큰 크기(가장 작으면 34)
@@ -113,7 +118,7 @@ if (doc) {
 const 원본렌더 = path.join(뿌리, 'docs', '마케팅', 'LAB_화날때_mn_20261031', '판본렌더.mjs');
 let 렌더 = fs.readFileSync(원본렌더, 'utf8');
 렌더 = 렌더.replace(/const 편 = \{[^}]*\};/, "const 편 = { 접두: 'song', 판본폴더: 'remotion/src/판본' };")
-  .replace(/^\/\/ 이 파일은 다섯 편.*$/m, '// 이 파일은 docs/마케팅/LAB_노래틀/틀/새편.mjs가 이야기 편 판본렌더.mjs에서 편 한 줄 · 뿌리 찾기만 바꿔 만든 사본이다(LAB 21:00 노래).')
+  .replace(/^\/\/ 이 파일은 \S+ 편\(.*$/m,'// 이 파일은 docs/마케팅/LAB_노래틀/틀/새편.mjs가 이야기 편 판본렌더.mjs에서 편 한 줄 · 뿌리 찾기만 바꿔 만든 사본이다(LAB 21:00 노래).')
   // 뿌리: 편 폴더가 docs/마케팅/<편>이 아닐 수도 있어(시험 편 · 공용 작업본) 위로 올라가며 tools/음량마감.mjs가 있는 곳을 찾는다
   .replace("const 뿌리 = path.resolve(여기, '..', '..', '..');",
     "const 뿌리 = (() => { for (let d = 여기; ; d = path.dirname(d)) { if (fs.existsSync(path.join(d, 'tools', '음량마감.mjs'))) return d; if (path.dirname(d) === d) return path.resolve(여기, '..', '..', '..'); } })();");

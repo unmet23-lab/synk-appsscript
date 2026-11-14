@@ -1,6 +1,6 @@
 {
  "lang": "en",
- "bridge": "Bus pulling away? Koreans yell…",
+ "bridge": "Bus pulling away? Yell this in Korean…",
  "mean": "Hold on!",
  "read": [
   "jam",
@@ -12,7 +12,7 @@
  "real": "Talking speed!",
  "end": "How do you say “hold on” in your language?",
  "_원문": {
-  "bridge": "버스가 떠나? 한국 사람은 이렇게 외쳐…",
+  "bridge": "버스가 떠나? 한국어로 이렇게 외쳐…",
   "mean": "잠깐만!",
   "clap": "박자에 맞춰 손뼉!",
   "say": "네 차례 — 말해 봐!",

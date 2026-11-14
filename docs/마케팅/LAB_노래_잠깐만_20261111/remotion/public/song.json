@@ -1,6 +1,6 @@
 {
  "fps": 30,
- "duration": 18.843,
+ "duration": 14.132,
  "audio": "song.wav",
  "bpm": 101.895,
  "first": 0,
@@ -29,60 +29,48 @@
   {
    "kind": "whole",
    "t": 5.444,
-   "end": 8.462,
+   "end": 8.427,
    "at": [
     5.494,
     7.664
    ]
   },
   {
-   "kind": "rest",
-   "t": 8.462,
-   "end": 10.817,
-   "mode": "clap"
-  },
-  {
    "kind": "chop",
-   "t": 10.817,
-   "end": 11.905,
+   "t": 8.427,
+   "end": 9.55,
    "at": [
-    10.832,
-    11.196,
-    11.8
+    8.477,
+    8.841,
+    9.445
    ]
   },
   {
    "kind": "whole",
-   "t": 11.905,
-   "end": 12.887,
+   "t": 9.55,
+   "end": 10.532,
    "at": [
-    11.955,
-    12.553
+    9.6,
+    10.198
    ]
   },
   {
    "kind": "real",
-   "t": 12.887,
-   "end": 13.727,
+   "t": 10.532,
+   "end": 11.371,
    "at": [
-    12.937
+    10.582
    ]
   },
   {
-   "kind": "rest",
-   "t": 13.727,
-   "end": 16.082,
-   "mode": "say"
-  },
-  {
    "kind": "end",
-   "t": 16.082,
-   "end": 18.843
+   "t": 11.371,
+   "end": 14.132
   }
  ],
  "stage": {
   "mode": "mongle",
-  "img": "scene.jpg",
+  "img": "move_first.jpg",
   "focus": "66% 50%",
   "cam": {
    "wide": [
@@ -99,15 +87,18 @@
    ],
    "from": [
     0.42,
-    0.45,
+    0.4407,
     1.18
    ],
    "to": [
     0.6,
     0.5,
-    1
+    1.0
    ]
-  }
+  },
+  "video": "move.mp4",
+  "videoAt": 0,
+  "aspect": 1.777778
  },
  "loc": {
   "lang": "en",
@@ -127,8 +118,21 @@
  "_출처": {
   "검수": "D:/synk-vendor/lab-song-20261111/메들리A/재기/A_0dd4832a.검수.json",
   "곡": "D:/synk-vendor/lab-song-20261111/메들리A/0dd4832a.mp3",
-  "손질": "D:\\synk-vendor\\lab-song-20261111\\메들리A\\하루판\\A_0dd4832a_잠깐만.손질.json",
+  "손질": "C:\\Users\\q1212\\Documents\\synk-vendor\\lab-song-20261111\\메들리A\\하루판_1114\\A_0dd4832a_잠깐만_노래만.손질.json",
   "확인할것": [],
-  "그림": "D:/synk-vendor/lab-song-20261111/시안/판/잠깐만2_몽글_235449_1.png(JPEG q2 4:4:4로 옮김)"
+  "그림": "D:/synk-vendor/lab-song-20261111/시안/판/잠깐만2_몽글_235449_1.png(JPEG q2 4:4:4로 옮김)",
+  "쉼": "없음",
+  "끝자리": 25.8553,
+  "움직임": [
+   {
+    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/jkm-s1d/Felt_character_chasing_bus_c8801da5.mp4"
+   },
+   {
+    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/jkm-s2/Felt_character_bouncing_on_street_877bb964.mp4"
+   },
+   {
+    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/jkm-s3/Felt_character_waiting_for_bus_c23cabe3.mp4"
+   }
+  ]
  }
 }

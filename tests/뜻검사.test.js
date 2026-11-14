@@ -388,6 +388,29 @@ test('재료 — 글에 줄 바꿈이 있으면 「 / 」가 줄 바꿈 자리�
   assert.ok(!fs.readFileSync(path.join(방, '밖2', '질문.md'), 'utf8').includes('줄이 바뀌는 자리'));
 });
 
+test('재료 — 노래 틀: 「…」로 끝나는 다리 글은 일부러 끊은 말이라고 알리고, 손뼉 · 말하기 줄이 없는 노래만 판은 웃음 물음에 손뼉을 넣지 않는다(11-14)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const 노래줄 = (차례) => [
+    { id: 'bridge', 칸: '머리', 글: 'Tummy rumbling? Koreans just say…', 원문: '배에서 꼬르륵 소리? 한국 사람은 그냥 이렇게 말해…', 초: [0, 4] },
+    { id: 'ko.1', 칸: '한국어', 글: '배', 초: [4, 11] },
+    { id: 'mean', 칸: '뜻', 글: 'I’m hungry!', 원문: '배고파!', 초: [5, 11], 대조: '웃음' },
+    ...(차례 ? [{ id: 'clap', 칸: '진행', 글: 'Clap on the beat!', 원문: '박자에 맞춰 손뼉!', 대조: '웃음', 초: [11, 13] }] : []),
+  ];
+  const 만들기 = (차례, 이름) => {
+    const { 편, 글파일 } = 판본글만들기(fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-')), { 판본: 'AU', 언어: 'en', 나라: ['AU'], 틀: '노래', 줄: 노래줄(차례), 퀴즈: [] });
+    M.재료만들기(글파일, { 편, 밖: path.join(방, 이름), 기록: [] });
+    return fs.readFileSync(path.join(방, 이름, '질문.md'), 'utf8');
+  };
+  const 노래만 = 만들기(false, '노래만');
+  assert.match(노래만, /「…」로 끝나는 줄은 다음에 나오는 노래 낱말\(한국어 줄\)로 이어지게 일부러 끊은 말이다/);
+  assert.match(노래만, /소리 내어 따라 부르거나 따라 말하고 싶은/);
+  assert.ok(!노래만.includes('손뼉'));
+  assert.match(만들기(true, '손뼉'), /손뼉을 치거나 소리 내어 따라 말하고 싶은/);
+  const 이야기 = 판본글만들기(fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-')), { 판본: 'AU', 언어: 'en', 나라: ['AU'], 틀: '이야기', 줄: 노래줄(false), 퀴즈: [] });
+  M.재료만들기(이야기.글파일, { 편: 이야기.편, 밖: path.join(방, '이야기'), 기록: [] });
+  assert.ok(!fs.readFileSync(path.join(방, '이야기', '질문.md'), 'utf8').includes('일부러 끊은 말'));
+});
+
 test('시험관 수 관문은 기록에 얼린 「시험관셈」(받은 때의 셈)만 읽는다 — 앞 편 기록이 다시 적히는 사이 뒤 편의 정당한 시험관 둘 통과가 뒤집히지 않는다(P1-시1)', () => {
   const 둘 = ['sonnet', 'haiku'];
   const 통과줄 = (편, 시각, 결과 = '통과') => ({ 편, 판본: 'MX', 언어: 'es', 틀: '이야기', 결과, 시각 });

@@ -35,7 +35,8 @@ export type SongDoc = {
   // wide = 둘을 함께 담는 자리(시작 · 네 차례), hero = 몽글 얼굴(끊어 부르기 · 진짜 속도 · 끝), obj = 그 낱말의 사물(이어 부르기 — 빈 그릇 · 떠나는 버스 · 큰 딸기).
   // 없으면 셋 다 focus. v10은 from → to([가로, 세로, 줌]) 한 길로 편 전체를 옮겨 간다(없으면 wide → hero). aspect = 그림 가로/세로(기본 1.5 — 가로 3:2로 굽는다).
   stage: { mode: 'mongle' | 'plain'; img?: string; pic?: string; bg?: string; focus?: string;
-    cam?: { wide?: [number, number]; hero?: [number, number]; obj?: [number, number]; from?: [number, number, number]; to?: [number, number, number] }; aspect?: number };
+    cam?: { wide?: [number, number]; hero?: [number, number]; obj?: [number, number]; from?: [number, number, number]; to?: [number, number, number] }; aspect?: number;
+    video?: string; videoAt?: number }; // video = 몽글이 움직이는 영상(public 안 이름, 16:9면 aspect 16/9 · img는 그 첫 장) · videoAt = 몇 초부터(11-14)
   loc: Loc;
   _원문?: Record<string, string>; // 판본 글의 한국어 뜻(역번역 대조 기준)
 };

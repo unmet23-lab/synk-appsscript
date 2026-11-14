@@ -1,6 +1,6 @@
 {
  "lang": "es",
- "bridge": "¿Se te va el camión? En coreano se grita…",
+ "bridge": "¿Se te va el camión? Grítale en coreano…",
  "mean": "¡Espérame tantito!",
  "read": [
   "jam",
@@ -12,7 +12,7 @@
  "real": "¡Así suena al hablar!",
  "end": "¿Y tú qué gritas cuando se te va el camión?",
  "_원문": {
-  "bridge": "버스가 떠나 버려? 한국어로는 이렇게 외쳐…",
+  "bridge": "버스가 떠나 버려? 한국어로 외쳐…",
   "mean": "잠깐만!",
   "clap": "박자에 맞춰 손뼉!",
   "say": "네 차례 — 말해 봐!",

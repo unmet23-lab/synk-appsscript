@@ -1,6 +1,6 @@
 {
  "lang": "vi",
- "bridge": "Xe buýt sắp chạy mất! Người Hàn sẽ hét lên…",
+ "bridge": "Xe buýt sắp chạy mất rồi! Mau hô to bằng tiếng Hàn nào…",
  "mean": "Đợi chút!",
  "read": [
   "jam",
@@ -12,7 +12,7 @@
  "real": "Tốc độ tự nhiên!",
  "end": "Khi xe buýt sắp chạy, bạn hét gì?",
  "_원문": {
-  "bridge": "버스가 떠나려 할 때 한국 사람은 이렇게 외쳐…",
+  "bridge": "버스가 떠나려 할 때 한국어로 이렇게 외쳐…",
   "mean": "잠깐만!",
   "clap": "박자에 맞춰 손뼉!",
   "say": "네 차례 — 크게 말해 봐!",

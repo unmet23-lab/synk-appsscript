@@ -13,7 +13,7 @@
 // 언어판 장치는 퀴즈 은행 틀(언어 프로필 · fitBox · LOC 글꼴)을 그대로 쓴다. 0프레임에 그림과 다리 글 첫 줄이 이미 보인다(되풀이 재생 · 첫 화면).
 import { Audio } from '@remotion/media';
 import React from 'react';
-import { AbsoluteFill, Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Easing, Img, interpolate, OffthreadVideo, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { KO, LOC } from './fonts';
 import { fitBox, profileFor, textEm } from './lang';
 import { SONG, type Part, type SongDoc } from './songDoc';
@@ -231,6 +231,14 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
           WebkitMaskImage: `linear-gradient(to bottom, #000 ${CARD.h - CARD.fade}px, transparent ${CARD.h}px)` }}>
           <Img src={staticFile(img)} style={{ position: 'absolute', left: 0, top: 0, width: baseW, height: baseH, transformOrigin: '0 0',
             transform: `translate(${camLeft}px, ${camTop}px) scale(${z})` }} />
+          {/* 몽글이 움직이는 판(11-14 유호님 「나로 가자」): 같은 첫 장면에서 시작하는 영상을 videoAt부터 그림 위에 같은 자리 · 같은 카메라로 얹는다.
+              img는 그 영상의 첫 장이라 영상이 늦게 떠도 장면이 튀지 않는다. 영상 소리는 쓰지 않는다(노래만). */}
+          {doc.stage.video ? (
+            <Sequence from={Math.round((doc.stage.videoAt ?? 0) * fps)} layout="none">
+              <OffthreadVideo src={staticFile(doc.stage.video)} muted style={{ position: 'absolute', left: 0, top: 0, width: baseW, height: baseH, transformOrigin: '0 0',
+                transform: `translate(${camLeft}px, ${camTop}px) scale(${z})`, objectFit: 'cover' }} />
+            </Sequence>
+          ) : null}
         </div>
       ) : null}
 
