@@ -15,7 +15,7 @@ from scipy import ndimage
 밖 = os.path.join(여기, '..', 'remotion', 'public', 'img')
 os.makedirs(밖, exist_ok=True)
 
-이름들 = ['door', 'counter', 'enter', 'comic', 'sleep', 'clock', 'peek', 'wake']
+이름들 = ['door', 'counter', 'enter', 'comic', 'sleep', 'clock', 'peek', 'wake', 'peekwake', 'shut']
 for 이름 in 이름들:
     파일 = sorted(glob.glob(os.path.join(판, f'{이름}_*.png')))[-1]
     Image.open(파일).convert('RGB').resize((1080, 1920), Image.LANCZOS).save(os.path.join(밖, f'{이름}.jpg'), quality=93)
@@ -53,7 +53,7 @@ for 이름, (cx, mk, y0, y1, x0, x1) in zip(['minute', 'hour'], 조각):
 
 # 방 그림의 시계 — 크림색 둥근 판(밝고 채도 낮음)에서 가장 둥근 덩어리
 시계 = {}
-for 이름 in ['enter', 'comic', 'sleep', 'clock', 'peek', 'wake']:
+for 이름 in ['enter', 'comic', 'sleep', 'clock', 'peek', 'wake', 'peekwake', 'shut']:
     a = np.asarray(Image.open(os.path.join(밖, f'{이름}.jpg')).convert('RGB'), dtype=np.float32)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
     크림 = (r > 200) & (g > 140) & (b > 90)  # 따뜻한 빛 아래 크림 판은 살구빛(235 · 178 · 126 안팎)이다

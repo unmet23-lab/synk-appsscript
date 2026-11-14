@@ -11,5 +11,7 @@ export const RemotionRoot: React.FC = () => (
   <>
     <Composition id="e38-en" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} defaultProps={{}} />
     <Composition id="e38-scene" component={Scene} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
+    <Composition id="e38-zhs" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} defaultProps={{ loc: 'zhs' as const }} />
+    <Composition id="e38-my" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} defaultProps={{ loc: 'my' as const }} />
   </>
 );

@@ -675,6 +675,12 @@
 - 고침: 막다른 길 — 타입 검사는 건너뛰고 렌더(번들러가 문법 오류에서 멈춘다)와 정지컷 묶음으로 확인했다. typescript를 받아 돌리는 길은 해 보지 않았다.
 - 다시 확인: `Test-Path node_modules\typescript`가 False면 `npx tsc`를 치지 않는다.
 
+### Remotion 화면 글 정본(`data.ts`)에 같은 이름의 키가 둘이면 뒤의 것이 소리 없이 이긴다 — 타입 검사가 없어 렌더가 그대로 된다 (2026-11-14 Claude)
+- 증상: LAB E38 영어 판에 새 줄 `back: '…and right back to sleep'`을 넣었는데, 렌더한 화면에는 예전에 써 두고 안 쓰던 `back: 'Said no. Didn’t move.'`가 떴다.
+- 원인: `TEXT` 객체에 같은 키가 두 번 있었다. 렌더 번들러(esbuild)는 타입 검사를 하지 않고, 자바스크립트는 객체의 뒤쪽 키로 덮어쓴다. 위 절대로 편 폴더에서 `tsc`도 못 돌린다.
+- 고침: 새 키를 넣기 전에 `rg -n "^\s*<키>:" remotion/src/<편>/data.ts`로 같은 이름이 있는지 본다. 이번에는 안 쓰던 옛 줄을 지웠다.
+- 다시 확인: 그 글이 뜨는 초의 프레임을 `npx remotion still … --frame=<초×30>`으로 찍어 글을 눈으로 본다.
+
 ### 올리기 전 검사의 「오른쪽 단추 자리」가 글자 뒤 그림(인형 얼굴 · 카드 단말기 자판)까지 글자로 이어 읽어 920px을 넘긴다 — 장면표의 빨간 상자로 실제 글자 끝을 잰다 (2026-10-25 Claude)
 - 증상: 10-25 LAB E3(펠트 카페 콩트)에서 `node tools/올리기전검사.js`가 「9.5초 「하나 주세요 ~」 오른쪽 끝 943px · 16.0초 979px(안전선 920)」와 표지 「「om뛉닢2」 오른쪽 끝 1074px」를 「확인할 것」으로 냈다. 글자 크기를 96 → 86px로 줄여도 같은 자리가 남았다.
 - 원인: 글자 읽기가 글자 줄 오른쪽의 흑백 바리스타 눈 · 코, 표지 오른쪽 끝의 펠트 카드 단말기 자판을 글자로 읽어 한 줄 상자에 이어 붙였다. 장면표(`.tmp/올리기전검사/<편>/글자표_*.jpg`)의 빨간 상자가 칩 끝을 지나 인형 얼굴까지 뻗어 있었고, 실제 칩 오른쪽 끝은 약 884px였다.
@@ -827,7 +833,8 @@
 - 11-13 덧(Claude · synkbrief B47): 컷마다 동영상(제미나이 앱)의 소리를 그대로 까는 편(`<Audio src="img/V1.mp4">`)은 음악층의 「음악만」 렌더에 영상 파일 소리가 남았다 — 무음으로 바꾸는 대상이 소리 파일(wav · mp3 …)뿐이라서. 대사가 곡 안 빈 박을 덮어 꺼짐을 놓치고(곡만 재면 11.25초 11dB), 대사가 끝나는 자리를 꺼짐으로 잡았다(19.75초 「음악」 −25 → −46dB인데 곡 자체는 −25 → −29). 고침: `tools/음악층.js`가 사본의 영상 파일(mp4 · m4v · mov · webm)도 그림은 그대로 두고 소리 줄만 같은 길이 무음으로 바꾼다. 다시 확인: `--남김`으로 사본의 `음악.wav` 칸 dB를 곡(`bgm.*`) 칸 dB에 볼륨 곡선을 곱한 값과 견줘 대사 자리에서 튀지 않는지 본다(B47: 꺼짐은 일부러 끊은 29초 한 곳만). 곡 안 빈 박은 곡에 얕은 메아리(180 · 360 · 620ms) + 부드러운 압축(−24dB · 2.5:1)으로 이었다(B47 `bgm_원곡.mp3` → `bgm.mp3`).
 - 11-14 덧(Claude · synkbrief B39 · B44): 앞 회차 사본(`%TEMP%\synk-음악층\<편>`)이 남아 있으면 EPERM으로 끝난다 — B44는 `게시/음악층.json`을 쓴 뒤 정리에서, B39 v17은 쓰기 전에 멈춰 옛 결과가 그대로 남았다(셸 체인에서는 끝 코드가 0으로 보인다). 고침: EPERM이 나면 json의 「만든때」부터 보고, 사본의 `node_modules` junction을 먼저 `cmd /c rmdir`로 걷은 뒤 `Remove-Item -Recurse -Force`로 사본을 지우고 다시 돌린다(걷기 전에 원본 `node_modules`가 멀쩡한지 확인 — remotion · @remotion/cli 그대로). 다시 확인: 「만든때」가 방금 시각.
 - 11-14 덧(Claude · synkbrief B47): 음악층이 결과(`게시/음악층.json`)를 쓴 뒤 끝정리에서 `EPERM, Permission denied: …/Temp/synk-음악층/<편>`으로 멈추고 사본이 남았다(두 번). 남은 사본은 다음 실행 첫머리의 같은 지우기에서 또 막힌다. 원인: 사본의 `node_modules`는 공용 부품 폴더(`%LOCALAPPDATA%/synk/remotion-parts/…/node_modules`)로 이은 junction인데, Node 26의 통째 `fs.rmSync(사본, {recursive})`가 그 junction에서 EPERM을 낸다(같은 사본에서 `fs.rmdirSync(node_modules)`로 junction만 먼저 끊으면 나머지 rmSync가 지나감 — 부품 폴더는 그대로). 고침: `tools/음악층.js` 「사본지우기」가 junction을 rmdir로 먼저 끊고 지운다(처음 · 끝 두 자리). 다시 확인: 음악층을 돌린 뒤 `%TEMP%/synk-음악층/<편>`이 없고, 부품 폴더의 `.bin/remotion.cmd`가 남아 있다(11-14 고친 뒤 B47로 확인). 같은 날 저녁 junction을 끊은 뒤에도 끝정리가 한 번 더 EPERM — 렌더 직후 파일 손잡이가 잠깐 남은 것이라 몇 초 뒤엔 그냥 지워졌다 → `fs.rmSync`에 `maxRetries: 10, retryDelay: 500`을 더했다.
-ode_modules`)로 이은 junction인데, Node 26의 통째 `fs.rmSync(사본, {recursive})`가 그 junction에서 EPERM을 낸다(같은 사본에서 `fs.rmdirSync(node_modules)`로 junction만 먼저 끊으면 나머지 rmSync가 지나감 — 부품 폴더는 그대로). 고침: `tools/음악층.js` 「사본지우기」가 junction을 rmdir로 먼저 끊고 지운다(처음 · 끝 두 자리). 다시 확인: 음악층을 돌린 뒤 `%TEMP%synk-음악층<편>`이 없고, 부품 폴더의 `.binemotion.cmd`가 남아 있다.
+ode_modules`)로 이은 junction인데, Node 26의 통째 `fs.rmSync(사본, {recursive})`가 그 junction에서 EPERM을 낸다(같은 사본에서 `fs.rmdirSync(node_modules)`로 junction만 먼저 끊으면 나머지 rmSync가 지나감 — 부품 폴더는 그대로). 고침: `tools/음악층.js` 「사본지우기」가 junction을 rmdir로 먼저 끊고 지운다(처음 · 끝 두 자리). 다시 확인: 음악층을 돌린 뒤 `%TEMP%synk-음악층<편>`이 없고, 부품 폴더의 `.bin
+emotion.cmd`가 남아 있다.
 
 ### 최종본 검사(⑳)의 「굳음」은 사람 자리를 화면에서 큰 얼굴로 잡는다 — 작은 사람이 크게 움직여도 0.1 아래로 나온다 (2026-11-14 Claude)
 - 증상: synkbrief B39 v18 끝 한 판(두 사람 투샷 VE4a 0.9~8.15초) — 의뢰인이 몸을 들어 의자째 옮겨 앉고 팔짱을 끼는데 `사람움직임.py` 0.093(같은 판 0.9~4.2초만 자르면 0.048 「멈춘 화면」)이라 올리기 전 검사 고칠 것이 됐다.
