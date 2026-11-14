@@ -5,7 +5,7 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { CELLS, END_AT, FPS, SFX, TOTAL } from './data';
+import { CAM, CELLS, END_AT, FPS, SFX, TOTAL } from './data';
 import { LocPack } from './판본';
 
 const fr = (sec: number) => Math.round(sec * FPS);
@@ -36,13 +36,13 @@ const Plate: React.FC<{ src: string; push: number }> = ({ src, push }) => (
 );
 
 // 단계 알약 글 — 판본 level의 {n} 자리에 단계 수
-const levelText = (L: LocPack, n: number) => L.level.split('{n}').join(String(n));
+const levelText = (L: LocPack, n: number | string) => L.level.split('{n}').join(String(n));
 
 const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
   const frame = useCurrentFrame();
   const c = CELLS[i];
   // 판본 글(판본/<KEY>.json): 뜻 · 꼬리는 말풍선 차례 c.b로, 읽는 법은 배울 세 낱말(단계 1~3)만
-  const read = c.level && c.level <= L.reads.length ? L.reads[c.level - 1] : undefined;
+  const read = typeof c.level === 'number' && c.level <= L.reads.length ? L.reads[c.level - 1] : undefined;
   const mean = L.means[c.b];
   const meanSize = L.meanSizes[c.b];
   const tag = L.tags[c.b] || undefined;
@@ -57,14 +57,24 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
         const at = fr(c.voAt + t);
         const q = interpolate(frame, [at, at + 3], [0, 1], clamp);
         return (
-          <span key={k} style={{ display: 'inline-block', opacity: 0.32 + 0.68 * q, transform: `scale(${1 + 0.06 * q * (1 - q) * 4})`, color: hot && q > 0.5 ? CORAL : INK, marginRight: 18 }}>
+          <span key={k} style={{ display: 'inline-block', opacity: 0.55 + 0.45 * q, // v6: 아직 말 안 한 낱말을 0.32 → 0.55로(이해 시험 v6 「흐린 글씨 연출의 의도를 모름」)
+            transform: `scale(${1 + 0.06 * q * (1 - q) * 4})`, color: hot && q > 0.5 ? CORAL : INK, marginRight: 18 }}>
             {w}
           </span>
         );
       })}
     </div>
   ) : (
-    <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: INK, lineHeight: 1.16, whiteSpace: 'pre-line' }}>{c.ko}</div>
+    <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: INK, lineHeight: 1.16, whiteSpace: 'pre-line' }}>
+      {c.hot && c.ko.includes(c.hot)
+        ? c.ko.split(c.hot).map((part, k, all) => (
+            <React.Fragment key={k}>
+              {part}
+              {k < all.length - 1 ? <span style={{ color: CORAL }}>{c.hot}</span> : null}
+            </React.Fragment>
+          ))
+        : c.ko}
+    </div>
   );
   return (
     <>
@@ -103,8 +113,9 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
             {mean}
           </div>
           {koLine}
-          {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 44, color: '#4F3F33', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
-          {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 700, fontSize: 40, color: '#4F3F33', lineHeight: Math.max(1.15, L.lineH) }}>→ {tag}</div> : null}
+          {/* v5: 읽기 44 → 50px · 꼬리 40 → 44px(이해 시험 v4 셋이 「작은 줄을 못 읽음」) */}
+          {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 50, color: '#4F3F33', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
+          {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 800, fontSize: 44, color: '#4F3F33', lineHeight: Math.max(1.15, L.lineH) }}>→ {tag}</div> : null}
         </div>
       </div>
       {/* 꼬리 — 말풍선 위 끝에서 상 위 몽글로 */}
@@ -124,10 +135,10 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
 
 const Sound: React.FC = () => (
   <>
-    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.1 * MASTER * interpolate(i, [fr(TOTAL) - 20, fr(TOTAL)], [1, 0], clamp)} />
+    <Audio src={staticFile('bgm.wav')} volume={(i) => 0.19 * MASTER * interpolate(i, [fr(TOTAL) - 20, fr(TOTAL)], [1, 0], clamp)} />
     {CELLS.filter((c) => c.vo).map((c) => (
       <Sequence key={c.vo} from={fr(c.voAt)} layout="none">
-        <Audio src={staticFile(`vo/${c.vo}.wav`)} volume={MASTER} />
+        <Audio src={staticFile(`vo/${c.vo}.wav`)} volume={MASTER} startFrom={c.voFrom ? fr(c.voFrom) : undefined} endAt={c.voTo ? fr(c.voTo) : undefined} />
       </Sequence>
     ))}
     {SFX.map(([t, f, v]) => (
@@ -161,15 +172,24 @@ export const Film: React.FC<{ L: LocPack; bare?: boolean }> = ({ L, bare }) => {
   const i = cellAt(frame / FPS);
   return (
     <AbsoluteFill style={{ backgroundColor: '#2a1d16' }}>
-      <Plate src={CELLS[i].img} push={interpolate(frame, [fr(CELLS[i].at), fr(i + 1 < CELLS.length ? CELLS[i + 1].at : TOTAL)], [1, 1.035], clamp)} />
+      {/* 칸 안의 아주 느린 다가감 + 핵심 장면 카메라(CAM — 「근데…」부터 끝까지 다가가고, 「후우~!」에 바람으로 살짝 흔들림) */}
+      <AbsoluteFill
+        style={{
+          transformOrigin: '45% 30%',
+          transform: `translateX(${frame >= fr(CAM.shakeFrom) && frame < fr(CAM.shakeTo) ? Math.sin(frame * 2.1) * 5 : 0}px) scale(${1 + CAM.zoom * interpolate(frame, [fr(CAM.from), fr(CAM.to)], [0, 1], { ...clamp, easing: Easing.inOut(Easing.quad) })})`,
+        }}
+      >
+        <Plate src={CELLS[i].img} push={interpolate(frame, [fr(CELLS[i].at), fr(i + 1 < CELLS.length ? CELLS[i + 1].at : TOTAL)], [1, 1.035], clamp)} />
+      </AbsoluteFill>
       {/* 할머니 옆 상황 한 줄 — 무슨 날인지(0~4.4초) · 판본의 첫 2초 카드 */}
       {!bare && frame < fr(CELLS[3].at) ? (
-        <div style={{ position: 'absolute', left: 360, top: 290, maxWidth: 540, textAlign: 'left' }}>
-          <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `4px solid ${INK}`, boxShadow: '0 6px 16px rgba(0,0,0,0.3)', fontFamily: L.font, fontWeight: 800, fontSize: L.sceneSize, lineHeight: Math.max(1.2, L.lineH), padding: '10px 22px 12px', borderRadius: 22 }}>{L.scene}</span>
+        <div style={{ position: 'absolute', left: 340, top: 290, maxWidth: 600, textAlign: 'left' }}>
+          <span style={{ display: 'inline-block', whiteSpace: 'nowrap', background: '#FFFDF7', color: INK, border: `4px solid ${INK}`, boxShadow: '0 6px 16px rgba(0,0,0,0.3)', fontFamily: L.font, fontWeight: 800, fontSize: L.sceneSize, lineHeight: Math.max(1.2, L.lineH), padding: '10px 22px 12px', borderRadius: 22 }}>{L.scene}</span>
         </div>
       ) : null}
       {/* 할머니 이름표(0~2.3초) — 할머니 가디건 위, 「👆」가 얼굴을 가리킨다 */}
-      {!bare && frame < fr(CELLS[2].at) ? (
+      {/* v8: 할머니 이름표는 그리지 않는다 — 카본 맹검 「이름표가 할머니 팔 · 국그릇을 덮고 템플릿 티」, 상황 줄과 그림만으로 할머니가 읽힌다(판본 boss 칸은 틀 호환으로 남김) */}
+      {false && !bare && frame < fr(CELLS[2].at) ? (
         <div style={{ position: 'absolute', left: 50, top: 730, opacity: interpolate(frame, [0, 4], [0, 1], clamp) }}>
           <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `5px solid ${INK}`, fontFamily: L.font, fontWeight: 800, fontSize: 52, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999, boxShadow: '0 6px 16px rgba(0,0,0,0.3)' }}>👆 {L.boss}</span>
         </div>

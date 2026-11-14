@@ -6,7 +6,7 @@ from PIL import Image, ImageOps
 import numpy as np
 편 = sys.argv[1]
 S, X0, Y0 = 1.18, 40, 280
-판들 = ['g1b', 'g2', 'g3', 'g4', 'g5', 'g5b', 'g6', 'g7', 'g8a', 'g8b', 'g9']
+판들 = ['g1b', 'g2', 'g3', 'g4', 'g5', 'g5b', 'g6', 'g7', 'g7b', 'g8a', 'g8b', 'g8c', 'g9', 'g9b', 'g10', 'g11']
 낼곳 = os.path.join(편, 'remotion', 'public', 'img')
 os.makedirs(낼곳, exist_ok=True)
 자리 = {}

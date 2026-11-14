@@ -20,7 +20,7 @@
 //      나라 인사가 켜진 판본(판본 지도 「인사」 — tools/lib/판본잇기.js 머리말)은 그 판본의 인사 그림 · 목소리 지문(인사sha256)과 인사 길이(인사초)도 적는다.
 //      --표지만은 영상을 다시 굽지 않으니 글 · 영상 · 자산 지문은 옛 기록 그대로 둔다(옛 기록이 없으면 지문 없는 기록 — 돌림에 못 든다).
 // 그림 · 목소리 · 소리 · 박자는 정본 하나라 판본마다 바뀌지 않는다(원본 동결). 판본은 글 자리와 글꼴만 바꾼다.
-// 이 파일은 다섯 편(화날때 · 미안죄송합니다 · 사층F · 물고기 · 지마)이 같은 몸통을 쓴다 — 편마다 다른 것은 아래 「편」 한 줄뿐.
+// 이 파일은 다섯 편(화날때 · 미안죄송합니다 · 사층F · 물고기 · 지마)과 M50 「생신」이 같은 몸통을 쓴다 — 편마다 다른 것은 아래 「편」 한 줄뿐.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,7 +29,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 
-const 편 = { 접두: 'sorry', 판본폴더: 'remotion/src/film/판본' };
+const 편 = { 접두: 'saengsin', 판본폴더: 'remotion/src/film/판본' };
 
 const 여기 = path.dirname(fileURLToPath(import.meta.url));
 const 뿌리 = path.resolve(여기, '..', '..', '..');

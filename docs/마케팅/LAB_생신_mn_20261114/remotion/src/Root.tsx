@@ -18,7 +18,7 @@ export const RemotionRoot: React.FC = () => (
         <Composition key={key} id={`saengsin-${key}`} component={Film} defaultProps={{ L: pack }} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
       ),
     )}
-    {/* 장면 심사용 — 핵심 장면(9.3~14.8초)을 글 없이(제작 절차 「한 장면 먼저」) */}
+    {/* 장면 심사용 — 핵심 장면을 글 없이(제작 절차 「한 장면 먼저」) — 렌더할 때 --frames로 자른다 */}
     {판본들.filter(({ key }) => key === 'MN').map(({ pack }) => (
       <Composition key="scene" id="saengsin-scene" component={Film} defaultProps={{ L: pack, bare: true }} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
     ))}

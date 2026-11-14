@@ -3,54 +3,69 @@
 // 무대는 할머니 댁 생신상(사장님 자리에 할머니 인형). 반전은 할머니 생신 촛불을 몽글이 제가 불어 끄고 케이크까지 차지하는 것 — 11.3~12.5초가 이 편의 핵심 장면이다.
 // 판본 틀(11-10): 나라마다 다른 글(뜻 · 읽는 법 · 꼬리 · 단계 · 상황 · 할머니 이름표 · 끝 카드 · 끝 질문)은 판본/<KEY>.json(판본.ts) — 여기에는 그림 · 한국어 · 목소리 · 박자만 둔다.
 export const FPS = 30;
-export const TOTAL = 14.8;
+export const TOTAL = 13.9; // 원본 14.8초의 94% — 끝 두 박(뛰어듦 · 크림 얼굴)을 더하고 큰절 단계를 줄였다(v5, 오마주.json 「다르게」)
 
 export type Cell = {
   at: number;
   img: string;
-  b: number; // 말풍선 차례(0~7) — 판본 means · meanSizes · tags의 자리. 큰절 세 칸(4.4 · 6.1 · 7.7초)은 같은 3, 「후우~!」 두 칸(11.3 · 11.9초)은 같은 6
+  b: number; // 말풍선 차례(0~7) — 판본 means · meanSizes · tags의 자리. 큰절 세 칸은 같은 3, 「후우~!」 두 칸은 같은 6, 케이크 세 칸은 같은 7
   vo: string;
   voAt: number;
+  voFrom?: number; // 목소리 파일의 이 초부터(없으면 처음부터)
+  voTo?: number; // 목소리 파일의 이 초까지(없으면 끝까지)
   ko: string;
   koSize: number;
-  level?: number; // 단계 알약(배울 세 낱말은 1~3 — 판본 reads[level − 1]이 그 읽는 법)
+  hot?: string; // 한국어 줄에서 산호색으로 짚을 낱말(v5: 시험관 넷 가운데 둘이 「생일과 생신이 어떻게 다른지 모름」 — 바뀌는 낱말을 짚는다)
+  level?: number | string; // 단계 알약(배울 세 낱말은 1~3 — 판본 reads[level − 1]이 그 읽는 법). v6: 큰절은 99 → 'MAX'(이해 시험 v5 셋이 「99가 무슨 뜻인지 모름」)
   cont?: boolean; // 앞 칸 말풍선을 그대로 잇는 칸(그림만 바뀜)
   zero?: boolean; // 할머니께 반말 — 「Түвшин 0 ❌」 알약
   words?: [string, number, boolean?][]; // 목소리에 맞춰 낱말씩 나오는 한국어 줄 — [낱말, 목소리 안 초(음성/m4.json 낱말 시각), 강조] · '\n'은 줄바꿈
 };
 
-// 큰절(4.4~9.3초): 배운 말 「생신 축하드려요!」를 세 번 — 원본 v8 「죄송합니다!」 세 번과 같은 자리
+// 큰절: 배운 말 「생신 축하드려요!」를 두 번 — 원본 v8 「죄송합니다!」 세 번 자리.
+// v5: 세 번 → 두 번(m4의 0~2.2초만), 「정말」을 뺐다 — 이해 시험 v4에서 셋(sonnet · haiku · GPT)과 볼 이유 심사가 이 구간이 늘어지고 「정말」 · 99단계가 왜인지 모른다고 짚었다.
 const BOW: Omit<Cell, 'at' | 'img'> = {
-  b: 3, vo: 'm4', voAt: 4.45, ko: '생신 축하드려요!\n생신 축하드려요!\n정말 생신 축하드려요!', koSize: 56, level: 99,
-  words: [['생신', 0.02], ['축하드려요!', 0.38], ['\n', 0], ['생신', 1.19], ['축하드려요!', 1.55], ['\n', 0], ['정말', 2.59], ['생신', 3.01, true], ['축하드려요!', 3.35, true]],
+  b: 3, vo: 'm4', voAt: 4.65, voTo: 2.2, ko: '생신 축하드려요!\n생신 축하드려요!', koSize: 60, level: 'MAX',
+  words: [['생신', 0.02, true], ['축하드려요!', 0.38], ['\n', 0], ['생신', 1.19, true], ['축하드려요!', 1.55]],
 };
+// v5 박자: 배울 세 칸을 조금 길게(1.0 · 1.3 · 2.1초 → 1.3 · 1.4 · 1.9초 — 시험관 셋이 「작은 읽기 · 꼬리 줄을 읽기 전에 넘어감」), 큰절 2.8초, 반전 7.4초
 export const CELLS: Cell[] = [
-  { at: 0.0, img: 'g1.jpg', b: 0, vo: 's1', voAt: 0.1, ko: '생일 축하해!', koSize: 92, level: 1 },
-  { at: 1.0, img: 'g2.jpg', b: 1, vo: 's2', voAt: 1.02, ko: '생일 축하해요!', koSize: 86, level: 2 },
-  { at: 2.3, img: 'g3.jpg', b: 2, vo: 's3', voAt: 2.35, ko: '생신 축하드려요!', koSize: 80, level: 3 },
-  { at: 4.4, img: 'g4.jpg', ...BOW },
-  // 할머니가 두 손을 모으고 감동 — 같은 자세 4.9초를 끊는다(원본 6.1초 사장님 「괜찮아」 자리)
-  { at: 6.1, img: 'g5.jpg', ...BOW, vo: '', cont: true },
-  // 엎드린 채 한쪽 눈으로 케이크를 슬쩍 — 반전을 미리 깐다(원본 7.7초)
-  { at: 7.7, img: 'g5b.jpg', ...BOW, vo: '', cont: true },
-  { at: 9.3, img: 'g6.jpg', b: 4, vo: 's6', voAt: 9.3, ko: '근데…', koSize: 72 },
-  { at: 10.1, img: 'g7.jpg', b: 5, vo: 'm8', voAt: 10.12, ko: '촛불은\n내가 끌게!', koSize: 62, zero: true },
-  // 핵심 장면: 「후우~!」 촛불 불꽃이 옆으로 눕고(11.3) → 다 꺼져 연기가 오른다(11.9)
-  { at: 11.3, img: 'g8a.jpg', b: 6, vo: 's9', voAt: 11.3, ko: '후우~!', koSize: 84 },
-  { at: 11.9, img: 'g8b.jpg', b: 6, vo: '', voAt: 11.9, ko: '후우~!', koSize: 84, cont: true },
-  { at: 12.5, img: 'g9.jpg', b: 7, vo: 'm10', voAt: 12.55, ko: '케이크도\n내 거!', koSize: 62, zero: true },
+  { at: 0.0, img: 'g1.jpg', b: 0, vo: 's1', voAt: 0.12, ko: '생일 축하해!', koSize: 92, level: 1 },
+  { at: 1.3, img: 'g2.jpg', b: 1, vo: 's2', voAt: 1.32, ko: '생일 축하해요!', koSize: 86, level: 2 },
+  { at: 2.7, img: 'g3.jpg', b: 2, vo: 's3', voAt: 2.75, ko: '생신 축하드려요!', koSize: 80, level: 3, hot: '생신' },
+  { at: 4.6, img: 'g4.jpg', ...BOW },
+  // 할머니가 두 손을 모으고 감동(원본 사장님 「괜찮아」 자리)
+  { at: 5.75, img: 'g5.jpg', ...BOW, vo: '', cont: true },
+  // 엎드린 채 한쪽 눈으로 케이크를 슬쩍 — 반전을 미리 깐다
+  { at: 6.6, img: 'g5b.jpg', ...BOW, vo: '', cont: true },
+  { at: 7.4, img: 'g6.jpg', b: 4, vo: 's6', voAt: 7.4, ko: '근데…', koSize: 72 },
+  // 할머니가 막 촛불을 불려는 순간 몽글이 볼을 빵빵하게 하고 끼어든다(장면 심사 v3 「가로챘다는 게 바로 보이게」)
+  { at: 8.2, img: 'g7b.jpg', b: 5, vo: 'm8', voAt: 8.22, ko: '촛불은\n내가 끌게!', koSize: 62, zero: true },
+  // 핵심 장면: 「후우~!」 불꽃이 옆으로 눕고 → 다 꺼져 연기가 오르고 할머니가 두 손을 볼에 대고 놀란다(장면 심사 v1 「할머니 반응을 크게」)
+  { at: 9.4, img: 'g8a.jpg', b: 6, vo: 's9', voAt: 9.4, ko: '후우~!', koSize: 84 },
+  { at: 10.0, img: 'g8c.jpg', b: 6, vo: '', voAt: 10.0, ko: '후우~!', koSize: 84, cont: true },
+  // 크림이 묻지 않은 얼굴로 케이크를 노린다(장면 심사 v2 「뛰어들기 전에 이미 크림이 묻어 순서가 튐」)
+  { at: 10.6, img: 'g9b.jpg', b: 7, vo: 'm10', voAt: 10.65, ko: '케이크도\n내 거!', koSize: 62, zero: true },
+  // 끝 두 박: 케이크에 얼굴부터 풍덩 → 크림 범벅 얼굴에 딸기 모자로 나오고 할머니는 터져 웃는다 — 가장 센 그림이 끝(제작 절차 「한 장면 먼저」 ③)
+  { at: 11.45, img: 'g10.jpg', b: 7, vo: '', voAt: 11.45, ko: '케이크도\n내 거!', koSize: 62, zero: true, cont: true },
+  { at: 12.2, img: 'g11.jpg', b: 7, vo: '', voAt: 12.2, ko: '케이크도\n내 거!', koSize: 62, zero: true, cont: true },
 ];
 // 끝 카드 · 끝 질문(판본 endCard · ask, 선택)이 떠오르는 초 — 마지막 칸(12.5초) 말이 시작된 뒤
-export const END_AT = 13.2;
+export const END_AT = 11.7;
+// 핵심 장면 카메라(v2: 장면 심사 v1 「두 인형을 크게」) — 「근데…」부터 끝까지 천천히 다가가고(1 → 1.14), 「후우~!」 동안 바람에 살짝 흔들린다
+export const CAM = { from: 7.4, to: 13.9, zoom: 0.14, shakeFrom: 9.4, shakeTo: 10.0 };
 // 효과음(초 · 파일 · 크기) — 바람 · 촛불 꺼짐 · 큰절 · 단계 오름
 export const SFX: [number, string, number][] = [
-  [1.0, 'pop.wav', 0.18],
-  [2.3, 'pop.wav', 0.2],
-  [4.4, 'thud.wav', 0.28],
-  [6.1, 'sparkle.wav', 0.16],
-  [9.3, 'freeze.wav', 0.18],
-  [10.1, 'boing.wav', 0.14],
-  [11.25, 'wind.wav', 0.5],
-  [11.9, 'puff.wav', 0.42],
-  [12.5, 'tok.wav', 0.2],
+  [1.3, 'pop.wav', 0.18],
+  [2.7, 'pop.wav', 0.2],
+  [4.6, 'thud.wav', 0.28],
+  [5.75, 'sparkle.wav', 0.16],
+  [7.4, 'freeze.wav', 0.18],
+  [8.2, 'boing.wav', 0.14],
+  [9.35, 'wind.wav', 0.5],
+  [10.0, 'puff.wav', 0.42],
+  [10.6, 'tok.wav', 0.2],
+  [11.45, 'squish.wav', 0.34],
+  [12.2, 'pop.wav', 0.2],
+  [12.35, 'gulp.wav', 0.3],
 ];

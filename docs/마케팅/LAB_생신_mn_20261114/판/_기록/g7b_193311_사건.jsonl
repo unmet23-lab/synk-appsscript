@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d99e-5bbf-7bc1-96cb-4f5fd006d902"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the scene fixed and change only their poses and expressions, with Mongle leaning in first to steal the candle-blowing.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle leans in with hugely puffed cheeks to steal Grandma’s candle-blowing moment, all four flames still lit."}}
+{"type":"turn.completed","usage":{"input_tokens":84822,"cached_input_tokens":65536,"cache_write_input_tokens":0,"output_tokens":1001,"reasoning_output_tokens":127}}
