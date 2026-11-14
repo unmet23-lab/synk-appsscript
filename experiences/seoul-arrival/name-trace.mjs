@@ -277,7 +277,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    const landed=()=>{if(finished||phase!=='compare')return;sc.classList.add('land');const tr=tier(total);
     if(tr==='full'){SND.felt('done');SND.sfx('pix_sparkle',.5);}else if(tr==='top')SND.felt('done');else if(tr==='hi')SND.felt('reward');else SND.felt('ok');
     if(newBest){rec.innerHTML=`<b class="nt-best">${L('최고 기록')}</b>`;if(tr!=='full')SND.sfx('pix_sparkle',.35);}
-    const info={score:total,attempt,prev},r=coach.final(info);say(finalLine(info),r?.dur||0);showKeep();};
+    const info={score:total,attempt,prev,knows},r=coach.final(info);say(finalLine(info),r?.dur||0);showKeep();};
    hint.textContent='';
    (function f(t){const u=dur?Math.min(1,(t-t0)/dur):1;let left=u*total2;
     for(const o of mine){o.g.clearRect(0,0,sz,sz);drawGuide(o.g,m=>{for(const st of o.ghost){const sh=shapeOf(st.k,st.p.map(([a,b])=>[a*sz,b*sz]));nib(m,sh.p,sh.K,{h:lwc*LOOK.gh,a:LOOK.a,m:LOOK.gm});}},{fill:'rgba(194,74,55,.13)'});

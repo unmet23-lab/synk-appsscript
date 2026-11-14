@@ -15,9 +15,10 @@ export const SETS=Object.freeze({praise:['g1','g2','g3','g4'],order:['o1','o2'],
 // 우선: 끝 점수 > 바로잡기 > 칭찬 · 기다림. 낮은 줄은 높은 줄이 도는 동안 끼어들지 않는다
 const PRIO={praise:1,idle:1,stray:2,order:2,dir:2,final:3};
 
-// 끝 점수 줄: 첫 판은 점수 층으로(80점대는 「한 번 더 하면 백 점」으로 승부욕), 다시 쓴 판은 지난 최고와 견준다
-export function finalLine({score,attempt=1,prev=null}){
- if(attempt<=1||prev==null){if(score>=100)return 'f100';if(score>=92)return 'ftop';if(score>=80)return 'fhi';if(score>=65)return 'fmid';return 'flow';}
+// 끝 점수 줄: 첫 판은 점수 층으로(80점대는 「한 번 더 하면 백 점」으로 승부욕), 다시 쓴 판은 지난 최고와 견준다.
+// 한글을 이미 쓸 줄 아는 학생(knows)에게는 「처음 쓴 거 맞아요?」처럼 처음을 전제한 줄을 쓰지 않는다(공개 2단계 카본 A1 — 앞 공개본도 피했다)
+export function finalLine({score,attempt=1,prev=null,knows=false}){
+ if(attempt<=1||prev==null){if(knows){if(score>=100)return 'r100';if(score>=80)return 'fhi';return 'fmid';}if(score>=100)return 'f100';if(score>=92)return 'ftop';if(score>=80)return 'fhi';if(score>=65)return 'fmid';return 'flow';}
  if(score>=100)return 'r100';
  if(score===prev)return score>=80?'fhi':'fmid';
  if(prev-score>10)return 'fmid';

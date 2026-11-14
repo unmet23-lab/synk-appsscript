@@ -181,6 +181,10 @@ test('서하 응원: 점수 층 · 다시 쓴 판 · 꼬리표 · 줄 파일과 
  assert.equal(finalLine({score:94,attempt:1}),'ftop');
  assert.equal(finalLine({score:84,attempt:1}),'fhi');   // 80점대는 「한 번 더 하면 백 점」(승부욕)
  assert.equal(finalLine({score:70,attempt:1}),'fmid');
+ // 한글을 이미 쓰는 학생에게는 「처음」을 전제한 줄(f100 · ftop · flow)을 쓰지 않는다
+ assert.equal(finalLine({score:100,attempt:1,knows:true}),'r100');
+ assert.equal(finalLine({score:95,attempt:1,knows:true}),'fhi');
+ assert.equal(finalLine({score:50,attempt:1,knows:true}),'fmid');
  assert.equal(finalLine({score:40,attempt:1}),'flow');
  assert.equal(finalLine({score:90,attempt:2,prev:82}),'rup');
  assert.equal(finalLine({score:80,attempt:2,prev:82}),'rdown');
