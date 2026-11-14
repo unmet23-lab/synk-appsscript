@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d94b-358a-7350-818a-d698bc68a332"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create the new angle while preserving the owner’s face, wardrobe, and studio details."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":147440,"cached_input_tokens":124288,"cache_write_input_tokens":0,"output_tokens":1547,"reasoning_output_tokens":308}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d949-02f1-7e52-aa0c-bc403de1e62f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 인물과 소품의 연속성을 유지하고, 휴대폰 화면과 손을 중심으로 한 세로 클로즈업을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":214064,"cached_input_tokens":190336,"cache_write_input_tokens":0,"output_tokens":1707,"reasoning_output_tokens":405}}

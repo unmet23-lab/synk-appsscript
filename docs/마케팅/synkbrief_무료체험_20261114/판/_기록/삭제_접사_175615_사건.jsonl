@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d945-99c1-7dc3-9cd1-53e4b9d2e2f0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 인물과 소품의 연속성을 유지하면서 요청하신 어깨 너머 휴대폰 클로즈업을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":190730,"cached_input_tokens":163456,"cache_write_input_tokens":0,"output_tokens":1980,"reasoning_output_tokens":381}}
