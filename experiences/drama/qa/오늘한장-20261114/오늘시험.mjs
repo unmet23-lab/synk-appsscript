@@ -4,7 +4,7 @@
 //   http://127.0.0.1:8798/?s=A   기록 A(어제 1화 6번 줄 끝 '요' 노트 · 새 상황 안 함 · 입장 검사 세부 내용 두 번 놓침)
 //   http://127.0.0.1:8798/?s=B   기록 B(8일 전 1화와 새 상황을 혼자 해냄 → 「지난번 그 말, 다른 곳에서」)
 //   http://127.0.0.1:8798/?s=F   첫날(오늘 기록뿐 → 지금 첫 화면 그대로) · ?s=none 기록 없음 · &keep=1 지난 기록을 지우지 않고 이어서
-//   &look=a|b 화면 안(기본은 고른 안) · &miss=1 「오늘」 줄을 처음 테이크에서 놓치게(끝 화면에 「해냄」이 안 뜨는지 보기)
+//   &miss=1 「오늘」 줄을 처음 테이크에서 놓치게(끝 화면에 「해냄」이 안 뜨는지 보기)
 // 틀시험(../WORLD올리기-20261102/틀시험.mjs)과 같은 꼴의 부모: 합성 계정 학습 호스트(SYNKLearningHost — 이 창 localStorage, 서버로 안 보냄) · 드라마 통로
 // (SYNKDramaHost — talk와 같은 판정기 · 대사 은행, 받아 적은 글만 아래 차례로 정해 둔다)에 더해:
 //  · 기록 심기: 실제 기록기 호출로 지난날 기록을 남긴다(심기.mjs) — 드라마는 DramaLearning, 입장 검사는 그 게임 묶음 SynkLearning.
@@ -81,8 +81,7 @@ if (!keep && scenario !== 'none') {
  await seed({ host: learnHost, drama: DramaLearning, entry: SynkLearning, entryLearning, VENUES, playStorage: localStorage, scenario, now: Date.now(), settle: () => new Promise((r) => setTimeout(r, 120)) });
 }
 const frame = document.createElement('iframe'); frame.className = 'game-frame'; frame.allow = 'autoplay; fullscreen; microphone';
-const look = q.get('look') ? '&look=' + q.get('look') : '';
-const drama = () => { frame.title = '드라마 말하기 · 1화'; frame.src = '/drama/?today=1' + look; document.getElementById('back').classList.remove('on'); };
+const drama = () => { frame.title = '드라마 말하기 · 1화'; frame.src = '/drama/?today=1'; document.getElementById('back').classList.remove('on'); };
 // 「오늘」 통로: 드라마 틀이 다른 게임을 열어 달라고 한다(app-shell launchGame 자리). 돌아오면 드라마 「오늘」이 끝 화면을 잇는다.
 window.SYNKTodayHost = Object.freeze({
  open({ game } = {}) {

@@ -72,7 +72,7 @@ test('기록 B(8일 전 장면 · B 혼자 해냄) → 새 대사 + C, 기록 F(
  contract(b.today);
  assert.equal(b.delayedDue, true);
  assert.deepEqual(b.today.items.map((x) => x.why.code), ['new.pool.like', 'check.delayed']);
- // 「새로 할 것」은 한국어 상황 글만으로 서는 줄(t7 · t3)이 앞이다.
+ // 「오늘 공부」는 한국어 상황 글만으로 서는 줄(t7 · t3)이 앞이다.
  assert.deepEqual(NEW_ORDER.slice(0, 2), ['s1e01-t7', 's1e01-t3']);
  assert.equal(b.today.items[0].open.lineId, NEW_ORDER[0]);
  assert.equal(b.today.line.code, 'new.situation');
@@ -96,7 +96,7 @@ test('근거가 없으면 줄을 내지 않는다 — 기록 없음 · 다른 �
  ];
  const t1 = buildToday({ events: base, lesson, now, tzOffsetMin: 540 });
  assert.equal(t1.items[0].why.code, 'again.ending.yo');
- // 그 시도를 「제가 한 말과 달라요」로 뺐으면 노트가 없다 → 다시 만날 말이 없다.
+ // 그 시도를 「제가 한 말과 달라요」로 뺐으면 노트가 없다 → 복습 줄이 없다.
  const t2 = buildToday({ events: [...base, ev('record.excluded', 'x1', { targetId: 'a1' })], lesson, now, tzOffsetMin: 540 });
  assert.ok(!t2.items.some((x) => x.kind === 'again'));
  // 다른 게임(입장 검사)의 기록만으로는 드라마 줄을 짓지 않는다.
@@ -157,7 +157,7 @@ test('「했어요」는 말한 기록으로만 센다 — 카드만 열고 나�
  assert.equal(b.line.code, 'new.situation');
 });
 
-test('같은 날 같은 말하기가 둘 서지 않는다 — 7번(묻기)이 다시 만날 말이면 새로 할 것은 묻기가 아닌 줄', () => {
+test('같은 날 같은 말하기가 둘 서지 않는다 — 7번(묻기)이 복습이면 오늘 공부는 묻기가 아닌 줄', () => {
  const now = Date.parse(kst('2026-11-15T09:00:00'));
  const t = buildToday({ events: events([
   { phase: 'scene', line: 's1e01-6', at: kst('2026-11-14T21:00:00'), tries: ['pass'] },

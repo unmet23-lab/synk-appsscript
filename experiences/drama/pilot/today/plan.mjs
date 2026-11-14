@@ -80,7 +80,7 @@ function noteSaid(kind, lineId) {
  return '라고 할 때 꼭 들어가야 할 말이 하나 빠졌어요.';
 }
 
-/** 다시 만날 말: 장면 줄 가운데 마지막 판정이 노트인 줄(오늘 전 날). 코치 노트를 받은 줄 → 끝맺음 · 길이 · 빠진 말 → 늦은 노트 → 줄 차례. */
+/** 복습: 장면 줄 가운데 마지막 판정이 노트인 줄(오늘 전 날). 코치 노트를 받은 줄 → 끝맺음 · 길이 · 빠진 말 → 늦은 노트 → 줄 차례. */
 function againItem({ turns, scene, nowMs, tz, today }) {
  const cands = [];
  scene.forEach((line, order) => {
@@ -128,8 +128,8 @@ function againItem({ turns, scene, nowMs, tz, today }) {
 }
 
 /**
- * 새로 할 것: 장면 학생 줄을 다 말하지 않았으면 장면, 다 했으면 B, B도 했으면 아직 안 해 본 처음 보는 대사.
- * 같은 날 같은 말하기가 둘 서지 않게 — 「다시 만날 말」과 같은 능력(avoid)은 건너뛰고 다른 말하기를 고른다. 다른 것이 없으면 줄을 내지 않는다.
+ * 오늘 공부: 장면 학생 줄을 다 말하지 않았으면 장면, 다 했으면 B, B도 했으면 아직 안 해 본 처음 보는 대사.
+ * 같은 날 같은 말하기가 둘 서지 않게 — 「복습」과 같은 능력(avoid)은 건너뛰고 다른 말하기를 고른다. 다른 것이 없으면 줄을 내지 않는다.
  */
 function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
  const spokenScene = scene.filter((x) => spokeLine(turns, x.id, 'scene'));
@@ -164,7 +164,7 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
  return null;
 }
 
-/** 확인할 곳: C 차례(기록기 delayedDue — 지금 첫 화면 카드와 같은 조건) → 입장 검사 재방문 맞춤(문장 그대로). */
+/** 점검: C 차례(기록기 delayedDue — 지금 첫 화면 카드와 같은 조건) → 입장 검사 재방문 맞춤(문장 그대로). */
 function checkItem({ turns, lesson, delayedDue, entry, nowMs, tz, today, entryToday, strings }) {
  const C = lesson.delayed;
  if (C && delayedDue === true && !seenLine(turns, C.id)) {
@@ -181,8 +181,8 @@ function checkItem({ turns, lesson, delayedDue, entry, nowMs, tz, today, entryTo
  return null;
 }
 
-// 태오 한 줄 — 드라마 장면의 사실만(입장 검사는 말하지 않는다). 사람이 나를 기억하고 말 거는 맛이 나게, 다시 만날 말은 그 장면의 일을
-// 되부른다(그 줄을 말한 기록이 있을 때만 — 다시 만날 말은 늘 판정된 시도가 있다). 틀은 정해 두고 빈칸이 없다(목소리 · 입 맞는 영상을 틀마다 미리 굽게).
+// 태오 한 줄 — 드라마 장면의 사실만(입장 검사는 말하지 않는다). 사람이 나를 기억하고 말 거는 맛이 나게, 복습 줄은 그 장면의 일을
+// 되부른다(그 줄을 말한 기록이 있을 때만 — 복습 줄은 늘 판정된 시도가 있다). 틀은 정해 두고 빈칸이 없다(목소리 · 입 맞는 영상을 틀마다 미리 굽게).
 export const TAEO_LINES = Object.freeze({
  ...Object.fromEntries(Object.entries(TAEO_CALL).flatMap(([id, call]) => [[`again.call.${id}`, call.text], [`again.call.${id}.yo`, `${call.text} 이번엔 끝에 '요'까지 붙여서요.`]])),
  'again.other': '그때 했던 말, 오늘은 다른 곳에서 한 번 더 해 봐요.',

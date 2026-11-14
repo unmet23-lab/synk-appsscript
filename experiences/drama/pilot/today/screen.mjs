@@ -24,12 +24,11 @@ export async function start(ctx) {
  if (!host || !D || !ctx.inWorld()) return ctx.intro();
  if (S.trail === undefined || S.trail === null) S.trail = ctx.setupTrail();
  await css();
- const look = (() => { try { const v = new URLSearchParams(location.search).get('look'); return v === 'b' ? 'b' : 'a'; } catch { return 'a'; } })();
  const lesson = S.boot.lesson;
  const strings = { delayedTitle: STR.ko.delayedTitle, delayedLead: STR.ko.delayedLead };
  const lineAttempts = new Map();
  const T = {
-  look, lesson, strings, text: TEXT, run: store.get(), root: null, item: null, retake: false,
+  lesson, strings, text: TEXT, run: store.get(), root: null, item: null, retake: false,
   attempts(lineId) { if (!lineAttempts.has(lineId)) lineAttempts.set(lineId, ctx.newAttemptState()); return lineAttempts.get(lineId); },
   // 차례 하나를 마쳤다(새 상황 마치기 · 테이크 2 뒤 다음) → 다음 차례.
   finish() { markDone(); return next(); },
@@ -131,7 +130,7 @@ export async function start(ctx) {
  function paint(html, bind) {
   hide();
   const root = document.createElement('div');
-  root.className = `td td-${look}`;
+  root.className = 'td td-a';
   root.innerHTML = html;
   document.body.append(root);
   T.root = root;
@@ -143,12 +142,7 @@ export async function start(ctx) {
    say.addEventListener('ended', loop, { once: true });
    say.play().catch(loop);
   }
-  const caps = [...root.querySelectorAll('[data-pick]')], panes = [...root.querySelectorAll('[data-pane]')];
-  const pick = (k) => { caps.forEach((c, j) => c.classList.toggle('on', j === k)); panes.forEach((p, j) => { p.hidden = j !== k; }); };
-  caps.forEach((c) => c.addEventListener('click', () => pick(Number(c.dataset.pick))));
-  root.addEventListener('keydown', (e) => { const n = Number(e.key); if (n >= 1 && n <= caps.length) pick(n - 1); });
   bind?.();
-  root.querySelector('[data-go]')?.focus({ preventScroll: true });
  }
  const assets = () => ({ ...{ listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp' }, ...(lesson.assets || {}) });
  function stage(video, media = null) {
@@ -163,12 +157,6 @@ export async function start(ctx) {
   if (empty) return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag">${tag}</span></header><div class="td-right"><div class="td-top-d"><span class="td-tag">${tag}</span></div>${line}
    <p class="td-why td-empty">${esc(t.empty?.text || '')}</p><button type="button" class="td-go" data-episode>1화 처음부터</button></div>`;
   const go = `<button type="button" class="td-go rise" data-go style="animation-delay:${420 + t.items.length * 60}ms"><span class="td-play"></span>${resume ? '이어서' : '오늘 시작'} <span class="td-min">· ${t.minutes}분</span></button>`;
-  if (look === 'b') {
-   return `${stage(true, t.line?.media)}<header class="td-top"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta">${t.items.length}가지 · ${t.minutes}분</span></header>
-   <div class="td-right"><div class="td-top-d"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta">${tag} · ${t.minutes}분</span></div>
-   ${line}<article class="td-card td-focus rise" style="animation-delay:420ms">${t.items.map((it, i) => `<div data-pane ${i ? 'hidden' : ''}>${head(it, i)}<h3>${esc(it.title)}</h3><p class="td-why">${yo(it.why.text)}</p><p class="td-proof on">${esc(proof(it))}</p></div>`).join('')}</article>
-   <div class="td-next rise" style="animation-delay:480ms">${t.items.map((it, i) => `<button type="button" class="td-cap${i ? '' : ' on'}" data-pick="${i}"><span class="mono">0${i + 1}</span>${esc(it.title)}</button>`).join('')}</div>${go}</div>`;
-  }
   return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag">${tag}</span></header>
   <div class="td-right"><div class="td-top-d"><span class="td-tag">${tag}</span></div>${line}
   <section class="td-deck">${t.items.map((it, i) => `<button type="button" class="td-card td-item rise" data-card style="animation-delay:${420 + i * 60}ms">${head(it, null)}<h3>${esc(it.title)}</h3><p class="td-why">${yo(it.why.text)}</p><p class="td-proof">${esc(proof(it))}</p></button>`).join('')}${go}</section></div>`;
@@ -178,12 +166,6 @@ export async function start(ctx) {
   const close = `<button type="button" class="td-go rise" data-close style="animation-delay:440ms">오늘은 여기까지</button>`;
   const head = `<header class="td-top"><span class="td-tag">오늘 공부 끝</span></header>`;
   if (!a.changed.length) return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag">오늘 공부 끝</span></div><section class="td-sheet"><h2 class="rise">오늘 기록</h2><p class="td-why rise">오늘 한 것이 기록에 남았어요.</p>${tm}${close}</section></div>`;
-  if (look === 'b') {
-   const [first, ...rest] = a.changed;
-   return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag">오늘 공부 끝</span></div><section class="td-sheet">
-    <div class="td-hero rise"><p class="td-eyebrow">${yo(first.what)}</p><p class="td-before">${esc(first.before)}</p><p class="td-now">${esc(first.after)}</p></div>
-    ${rest.length ? `<div class="td-mini rise" style="animation-delay:160ms">${rest.map((c) => `<span><i>✓</i>${esc(c.what)} · ${esc(c.after.replace(/^오늘 /, ''))}</span>`).join('')}</div>` : ''}${tm}${close}</section></div>`;
-  }
   return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag">오늘 공부 끝</span></div><section class="td-sheet"><h2 class="rise">오늘 달라진 것</h2>
    ${a.changed.map((c, i) => `<div class="td-card td-chg rise" style="animation-delay:${120 + i * 60}ms"><p class="td-eyebrow">${yo(c.what)}</p><p class="td-before">${esc(c.before)}</p><p class="td-now">${esc(c.after)}</p></div>`).join('')}${tm}${close}</section></div>`;
  }
@@ -193,7 +175,8 @@ export async function start(ctx) {
 /* ── 글 도우미 ── */
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // '요' 강조는 뜻이 있는 자리 하나(따옴표 속 '요')만.
-const yo = (s) => esc(s).replace(/&#39;요&#39;/g, '<em class="td-yo">\'요\'</em>');
+// 화면에서는 따옴표를 빼고 「요」 한 글자에 옅은 바탕을 깐다(11-14 카본 그림 검수 — 따옴표의 좌우 간격이 벌어져 보였다).
+const yo = (s) => esc(s).replace(/&#39;요&#39;/g, '<em class="td-yo">요</em>');
 const words = (s) => String(s).split(' ').map((w, i) => `<span class="w" style="animation-delay:${120 + i * 70}ms">${yo(w)}</span>`).join(' ');
 const head = (it, i) => `<div class="td-eyebrow">${i != null ? `<span class="mono">0${i + 1}</span>` : ''}<span>${KIND[it.kind]}</span><span class="td-end">${it.minutes}분</span></div>`;
 function dateTag(ms) { const d = new Date(ms); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${'일월화수목금토'[d.getDay()]}요일`; }

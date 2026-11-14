@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// 「오늘」 한 장 흐름 시험(11-14) — 대역 판(오늘시험.mjs)을 가짜 마이크 크롬으로 끝까지 따라간다: 오늘 화면 → 버튼 하나 → 다시 만날 말(사감 선생님)
+// 「오늘」 한 장 흐름 시험(11-14) — 대역 판(오늘시험.mjs)을 가짜 마이크 크롬으로 끝까지 따라간다: 오늘 화면 → 버튼 하나 → 복습(사감 선생님)
 // → 새 상황(B) → 입장 검사 열림 → 「오늘로 돌아가기」 → 끝 화면(달라진 것 · 내일). 각 단계를 찍고 틀 · 콘솔 오류를 센다.
-//   node experiences/drama/qa/오늘한장-20261114/흐름시험.cjs [주소=http://127.0.0.1:8798] [--look b] [--out .tmp/today-20261114/흐름] [--entry]
+//   node experiences/drama/qa/오늘한장-20261114/흐름시험.cjs [주소=http://127.0.0.1:8798] [--out .tmp/today-20261114/흐름] [--entry]
 // playwright는 공용 작업본 node_modules, 크롬은 설치된 헤드리스 껍데기(현장 노트 시험 · 화면)를 쓴다.
 const path = require('path');
 const fs = require('fs');
@@ -10,7 +10,6 @@ const MAIN = process.env.SYNK_MAIN || path.join(os.homedir(), 'Documents/SYNK-ap
 const { chromium } = require(path.join(MAIN, 'node_modules/playwright'));
 const args = process.argv.slice(2);
 const base = args.find((a) => a.startsWith('http')) || 'http://127.0.0.1:8798';
-const look = args.includes('--look') ? args[args.indexOf('--look') + 1] : 'a';
 const out = path.resolve(args.includes('--out') ? args[args.indexOf('--out') + 1] : '.tmp/today-20261114/흐름');
 const shell = () => { const root = path.join(os.homedir(), 'AppData/Local/ms-playwright'); const d = fs.readdirSync(root).filter((x) => x.startsWith('chromium_headless_shell-')).sort().pop(); return path.join(root, d, 'chrome-headless-shell-win64/chrome-headless-shell.exe'); };
 fs.mkdirSync(out, { recursive: true });
@@ -25,7 +24,7 @@ fs.mkdirSync(out, { recursive: true });
  const shot = async (name) => { await page.waitForTimeout(700); await page.screenshot({ path: path.join(out, `${String(++n).padStart(2, '0')}_${name}.png`) }); };
  const F = () => page.frame({ url: /\/(drama|entry-check)\// });
  const until = async (fn, ms = 15000) => { const t0 = Date.now(); for (;;) { try { const v = await fn(); if (v) return v; } catch { /* 틀이 바뀌는 중 */ } if (Date.now() - t0 > ms) throw new Error('기다림 넘김'); await page.waitForTimeout(200); } };
- await page.goto(`${base}/?s=A&look=${look}`);
+ await page.goto(`${base}/?s=A`);
  await until(async () => (await F()?.$('.td [data-go]')));
  const rows = await F().$$eval('.td h3', (x) => x.map((e) => e.textContent));
  await shot('오늘');
@@ -53,7 +52,7 @@ fs.mkdirSync(out, { recursive: true });
  const lobby = await page.frame({ url: /\/entry-check\// }).$eval('#rec-reason', (e) => e.textContent).catch(() => null);
  await page.click('#back');
  await until(async () => (await F()?.$('.td [data-close]')));
- const changed = await F().$$eval('.td .td-now, .td .td-mini span', (x) => x.map((e) => e.textContent));
+ const changed = await F().$$eval('.td .td-now', (x) => x.map((e) => e.textContent));
  const tomorrow = await F().$$eval('.td .td-tm span', (x) => x.map((e) => e.textContent));
  await shot('끝');
  await browser.close();
