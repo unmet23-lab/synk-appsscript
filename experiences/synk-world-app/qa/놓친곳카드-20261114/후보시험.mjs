@@ -27,6 +27,9 @@ function seed(){
   at+=4000;const pid=game.present(caseMetadata(c));if(how==='도움')game.help(pid,'replay');at+=3000;
   game.answer(pid,{correct:ok==='true',assessable:true,choice:{selectedId:option(picked),correctId:option(c.answer)}});}});
  game.dispose?.();
+ // SYNK_EXTRA_SEED=<json 파일>: 기기 기록 열쇠를 더 심는다 — 예: 시험 목표를 넣은 손님의 학습 프로필(synk.life-korean.progress.v1:guest)이면
+ // 판에 「이번 주 숙제」 줄이 선다(다음 판 11-14, 몽골어 390 줄바꿈 확인).
+ if(process.env.SYNK_EXTRA_SEED)for(const [k,v] of Object.entries(JSON.parse(fs.readFileSync(process.env.SYNK_EXTRA_SEED,'utf8'))))values.set(k,v);
  return Object.fromEntries(values);
 }
 
@@ -70,6 +73,9 @@ async function run(view,seeded){
    const card=page.locator('#panel-content [data-position-missed]');await card.scrollIntoViewIfNeeded();
    out[lang]=await card.evaluate(c=>({text:c.innerText.replace(/\s+/g,' ').trim(),overflow:document.documentElement.scrollWidth>innerWidth+1}));
    await card.screenshot({path:path.join(OUT,`카드-${view.width}-${lang}.png`)});
+   // 카드가 화면보다 길면(몽골어 390) 요소 캡처의 아래가 패널 스크롤 칸에 잘린다 — 카드 끝(단추)을 화면에 올려 한 장 더(다음 판 11-14).
+   const end=card.locator('[data-position-practice], .wmis-legend').last();
+   if(await end.count()){await end.scrollIntoViewIfNeeded();await sleep(400);await page.screenshot({path:path.join(OUT,`카드끝-${view.width}-${lang}.png`)});}
   }
  }catch(error){out.failure=String(error).slice(0,400);await page.screenshot({path:path.join(OUT,`실패-${view.width}.png`)}).catch(()=>{});}
  out.fromCandidate=[...fromCandidate];out.errors=errors.slice(0,12);out.failed=failed.slice(0,12);

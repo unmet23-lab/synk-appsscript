@@ -14,7 +14,8 @@ import {VENUES} from '../entry-check/content.mjs';
 import {caseMetadata,GAME_ID as ENTRY_GAME} from '../entry-check/learning.mjs';
 import {activeRules,minutes} from '../entry-check/core.mjs';
 
-export const MISSED_SPOT_POLICY=Object.freeze({version:'world-missed-spot-1',
+// 판 2(11-14 다음 판): 그 자리 · 나중에 다시가 뺀 답을 거르고 도움을 practice.helped로 읽음 · 접힌 기록의 분모 · 짧은 연습은 마지막 놓침 뒤만.
+export const MISSED_SPOT_POLICY=Object.freeze({version:'world-missed-spot-2',
  // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
  sittingGapMs:30*60000,
  // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
@@ -42,22 +43,31 @@ export function missDirection(choice){
  return 'wrong-rule';
 }
 
-// Trail 사건 묶음: 제시 · 시도 · 첫 시도 · 결정의 경험 · 기록 순서 · 처음 본 제시.
+// Trail 사건 묶음: 제시 · 시도 · 첫 시도 · 결정의 경험 · 기록 순서 · 처음 본 제시 · 뺀 기록 · 도움.
 function msIndex(events){
- const list=Array.isArray(events)?events:[],shown=new Map(),first=new Map(),attempt=new Map(),experience=new Map(),order=new Map(),excluded=new Set();
+ const list=Array.isArray(events)?events:[],shown=new Map(),first=new Map(),attempt=new Map(),experience=new Map(),order=new Map(),excluded=new Set(),help=new Map();
  list.forEach((event,at)=>{
   if(!msRecord(event))return;
   order.set(event.id,at);
   if(event.type==='decision.made')experience.set(event.id,event.experienceId);
   else if(event.type==='practice.presented')shown.set(event.id,event);
   else if(event.type==='record.excluded'&&event.targetId)excluded.add(event.targetId);
+  // 도움(글 · 힌트 · 정답 · 다시 듣기 — practice.helped): 그 제시에 처음 남은 도움의 기록 순서와 시각. 뺀 도움도 도움이다
+  // (Trail summarize의 독립 판정과 같다 — 보여 준 사실은 빼기로 지우지 않는다).
+  else if(event.type==='practice.helped'&&event.presentationId){const earlier=help.get(event.presentationId),time=Date.parse(event.at);
+   help.set(event.presentationId,{index:Math.min(earlier?.index??Infinity,at),at:Math.min(earlier?.at??Infinity,Number.isFinite(time)?time:Infinity)});}
   else if(event.type==='practice.attempted'){attempt.set(event.id,event);if(event.attemptNo===1&&!first.has(event.presentationId))first.set(event.presentationId,event);}
  });
  const ordered=[...shown.values()].sort((a,b)=>order.get(a.id)-order.get(b.id)),firstSight=new Map();
  for(const presentation of ordered)for(const key of [presentation.itemKey,presentation.measure?.familyKey].filter(Boolean))if(!firstSight.has(key))firstSight.set(key,presentation.id);
  return {shown,first,attempt,excluded,order,ordered,expOf:presentation=>experience.get(presentation?.decisionId)??null,
   // 그 문항(또는 계열)을 이 제시보다 먼저 본 적이 없나 — 처음 보는 손님이었는지.
-  fresh:presentation=>[presentation.itemKey,presentation.measure?.familyKey].filter(Boolean).every(key=>firstSight.get(key)===presentation.id)};
+  fresh:presentation=>[presentation.itemKey,presentation.measure?.familyKey].filter(Boolean).every(key=>firstSight.get(key)===presentation.id),
+  // 뺀 답(「제가 한 말과 달라요」 · record.excluded): 그 시도 · 그 제시 · 그 결정을 뺐으면 기록이 받쳐 주지 않는 답이다(Trail summarize의 omitted와 같은 가름).
+  omitted:row=>{if(!msRecord(row))return true;const presentation=shown.get(row.presentationId);return excluded.has(row.id)||excluded.has(row.presentationId)||!!presentation&&excluded.has(presentation.decisionId);},
+  // 그 제시에 이 답보다 먼저 도움이 남았나(기록 순서나 시각 가운데 하나라도 앞서면 — Trail과 같다).
+  helped:row=>{const hit=help.get(row?.presentationId);if(!hit)return false;const index=order.get(row.id),time=Date.parse(row.at);
+   return hit.index<(index??Infinity)||Number.isFinite(time)&&hit.at<time;}};
 }
 
 // 입장 검사 게임(경험 entry-check)의 제시를 기록 순서로. sitting: 근무지가 같고 · 손님 도착 시각(원고 at)이 늘고 · 30분 안에 이어진 묶음 번호.
@@ -95,14 +105,16 @@ function msMajority(rows,keyOf,{of,min}){
 // ── 다시 만나기 ──
 // 그 자리: 입장 검사에서 놓친 손님 바로 다음 손님이 같은 자리(근무지 · 시각 순서 · 30분) · 같은 항목이면 그 사실을 센다 — 바로잡기(immediateCheck)는
 // 확인 손님을 놓친 손님 바로 뒤에 넣는다([...prefix, candidate, ...rest]). 이어서 또 놓치면 그 뒤 손님도 같은 길로 잇는다.
-function msSpotStep({missed,rows,skillId,independent}){
+// 바로 다음 손님의 답을 뺐으면(record.excluded) 세지 않고 거기서 멈춘다 — 그 뒤 손님은 「바로 다음」이 아니다(검수 F1).
+// 「혼자 맞힘」은 그 제시에 도움(practice.helped)이 없고 Core가 독립 근거로 센 답만이다.
+function msSpotStep({missed,rows,skillId,independent,ix}){
  const at=new Map(rows.map((row,position)=>[row.presentation.id,position])),guests=new Map();
  for(const presentationId of missed){
   let position=at.get(presentationId);if(position==null)continue;
   let source=rows[position];
   while(position+1<rows.length){
    const next=rows[position+1];
-   if(next.sitting!==source.sitting||next.entry.meta.skillId!==skillId||!next.attempt)break;
+   if(next.sitting!==source.sitting||next.entry.meta.skillId!==skillId||!next.attempt||ix.omitted(next.attempt))break;
    if(!guests.has(next.presentation.id))guests.set(next.presentation.id,{row:next,sameRule:[...next.entry.item.evidence].sort().join('|')===[...source.entry.item.evidence].sort().join('|')});
    if(next.attempt.verdict!=='incorrect')break;
    position+=1;source=next;
@@ -110,19 +122,21 @@ function msSpotStep({missed,rows,skillId,independent}){
  }
  if(!guests.size)return null;
  const list=[...guests.values()];
- return {step:'spot',state:'done',guests:list.length,right:list.filter(({row})=>row.attempt.verdict==='correct'&&independent.has(row.attempt.id)).length,
+ return {step:'spot',state:'done',guests:list.length,right:list.filter(({row})=>row.attempt.verdict==='correct'&&!ix.helped(row.attempt)&&independent.has(row.attempt.id)).length,
   sameRule:list.every(row=>row.sameRule),at:list.at(-1).row.attempt.at,eventIds:list.map(({row})=>row.attempt.id)};
 }
 
 // 나중에 다시: 놓친 마지막 자리 뒤의 다른 자리에서 처음 만난 같은 항목의 정규 손님(바로잡기 전용 손님 아님)의 첫 답 — 기록에 있는 일만.
 // 아직 없으면 원고에 아직 안 본 같은 항목 정규 손님 수(「올 것이다」가 아니라 남아 있다는 사실).
+// 답을 뺀 손님(record.excluded)은 건너뛴다. 맞힌 답은 그 제시에 도움(practice.helped)이 있었으면 「도움 받아 맞힘」, 도움 없이 Core가 독립 근거로
+// 셌으면 「혼자 맞힘」, 둘 다 아니면 「만남」이다 — 독립 근거에 없다는 것만으로 도움을 짐작하지 않는다(검수 F1).
 function msLaterStep({rows,missedSittings,skillId,independent,ix}){
  if(!rows.length||!missedSittings.length)return null;
  const last=Math.max(...missedSittings);
- const guest=rows.find(row=>row.sitting>last&&row.entry.meta.skillId===skillId&&!row.entry.item.followupOnly&&row.attempt&&ix.fresh(row.presentation));
+ const guest=rows.find(row=>row.sitting>last&&row.entry.meta.skillId===skillId&&!row.entry.item.followupOnly&&row.attempt&&!ix.omitted(row.attempt)&&ix.fresh(row.presentation));
  if(guest){
-  const verdict=guest.attempt.verdict,alone=independent.has(guest.attempt.id);
-  return {step:'again',state:'done',result:verdict==='correct'?alone?'correct':'assisted':verdict==='incorrect'?'incorrect':'other',
+  const verdict=guest.attempt.verdict,helped=ix.helped(guest.attempt),alone=!helped&&independent.has(guest.attempt.id);
+  return {step:'again',state:'done',result:verdict==='correct'?helped?'assisted':alone?'correct':'other':verdict==='incorrect'?'incorrect':'other',
    answer:guest.entry.item.answer==='pass'?'pass':'reject',at:guest.attempt.at,eventIds:[guest.attempt.id]};
  }
  const seen=new Set();for(const presentation of ix.shown.values()){seen.add(presentation.itemKey);if(presentation.measure?.familyKey)seen.add(presentation.measure.familyKey);}
@@ -130,14 +144,18 @@ function msLaterStep({rows,missedSittings,skillId,independent,ix}){
  return left?{step:'again',state:'planned',left}:null;
 }
 
-// 짧은 연습 · 이번 주 숙제: 놓친 뒤 짧은 연습(world-practice)에서 그 항목 새 문항에 혼자 낸 첫 답(한 일 — 숙제였는지는 가르지 않는다).
+// 짧은 연습 · 이번 주 숙제: 마지막으로 놓친 뒤 짧은 연습(world-practice)에서 그 항목 새 문항에 혼자 낸 첫 답(한 일 — 숙제였는지는 가르지 않는다).
+// 기준은 놓친 근거 가운데 가장 늦은 답이다 — 짧은 연습 안에서 놓쳤으면 머리 줄에 센 둘째 놓침과 그 앞 답이 「다시 만난 일」로
+// 한 번 더 들어가지 않는다(검수 F3). 「뒤」는 기록 순서와 시각 둘 다로 잰다: 다른 기기 · 손님 기록을 받아 붙이면(importEvents) 놓치기 전에 한
+// 연습이 로그 끝에 붙어 기록 순서만으로는 뒤로 보인다(다음 판 검수 P2). 뺀 답(시도 · 제시 · 결정)은 세지 않는다.
 // 없으면 이번 주 계획 숙제에 그 항목이 있을 때만(시험 목표를 넣은 학생 — homework가 null이면 줄 없음).
-function msPracticeStep({skillId,since,ix,independent,homework,policy}){
+function msPracticeStep({skillId,after,afterAt,ix,independent,homework,policy}){
  const done=[];
  for(const [presentationId,attempt]of ix.first){
   const presentation=ix.shown.get(presentationId);
-  if(ix.expOf(presentation)!==policy.practiceGame||presentation?.measure?.skillId!==skillId||!independent.has(attempt.id)||ix.excluded.has(attempt.id))continue;
-  if(Date.parse(attempt.at)>since&&['correct','incorrect'].includes(attempt.verdict))done.push(attempt);
+  if(ix.expOf(presentation)!==policy.practiceGame||presentation?.measure?.skillId!==skillId||!independent.has(attempt.id)||ix.omitted(attempt))continue;
+  const at=Date.parse(attempt.at);
+  if((ix.order.get(attempt.id)??-Infinity)>after&&Number.isFinite(at)&&at>=afterAt&&['correct','incorrect'].includes(attempt.verdict))done.push(attempt);
  }
  if(done.length)return {step:'practice',state:'done',n:done.length,right:done.filter(row=>row.verdict==='correct').length,at:done.map(row=>row.at).sort().at(-1),eventIds:done.map(row=>row.id)};
  const row=(Array.isArray(homework)?homework:[]).find(value=>value?.skillId===skillId);
@@ -188,19 +206,23 @@ export function buildMissedSpot({map,summary=null,events=[],homework=null,projec
  const guests=!skill.folded&&skill.evidence.length>0&&skill.evidence.every(row=>missedEntryOf(row.itemKey));
  const narrow=[{layer:'skill',skillId:skill.id,label:skill.label,domain:skill.domain,exam:map.exam,status:skill.status,count:skill.incorrect,of:skill.n,unit:guests?'guest':'try'}];
  // 좁혀 짚기: 놓친 근거 수(of)를 그대로 분모로 — 입장 검사 밖 근거 · 고른 답이 없는 근거는 그 값에 들지 않을 뿐 분모에서 빠지지 않는다(설계 검토 P2 ⑥).
- const of=missed.length,detail=missed.map(row=>({...row,entry:missedEntryOf(row.itemKey),choice:ix.attempt.get(row.eventId)?.choice}));
+ // 분모는 머리 줄과 같은 Core 놓친 수(skill.incorrect)보다 작아지지 않는다: 근거 일부가 접혀(skill.folded>0) 로그에 없으면 그 놓침은 어느 줄 · 방향인지
+ // 모를 뿐 분모에는 남는다 — 머리가 「3번 놓침」인데 아래가 「놓친 2번 모두」가 되지 않게(검수 F2).
+ const of=Math.max(missed.length,Number.isInteger(skill.incorrect)?skill.incorrect:0),detail=missed.map(row=>({...row,entry:missedEntryOf(row.itemKey),choice:ix.attempt.get(row.eventId)?.choice}));
  const line=msMajority(detail,row=>row.entry?missedEntryRule(row.entry.venue,row.entry.item)?.text??null:null,{of,min:policy.narrowMin});
  if(line){const top=line.rows[0],rule=missedEntryRule(top.entry.venue,top.entry.item);narrow.push({layer:'line',venueId:top.entry.venue.id,venue:top.entry.venue.name,ruleId:rule.ruleId,text:rule.text,count:line.rows.length,of});}
  const way=msMajority(detail,row=>row.entry?missDirection(row.choice):null,{of,min:policy.narrowMin});
  if(way)narrow.push({layer:'direction',direction:way.key,count:way.rows.length,of});
  const rows=msSittings(ix,policy),inGame=detail.filter(row=>row.experienceId===ENTRY_GAME).map(row=>ix.attempt.get(row.eventId)?.presentationId).filter(Boolean);
  const missedSittings=rows.filter(row=>inGame.includes(row.presentation.id)).map(row=>row.sitting);
- const firstMiss=Math.min(...missed.map(row=>Date.parse(row.at)).filter(Number.isFinite));
+ // 마지막 놓침의 기록 순서와 시각 — 놓친 근거는 판이 로그에서 찾은 답이라 모두 기록 순서가 있다(짧은 연습 줄은 둘 다 뒤인 답만 센다).
+ const lastMiss=Math.max(-Infinity,...missed.map(row=>ix.order.get(row.eventId)).filter(Number.isInteger));
+ const lastMissAt=Math.max(-Infinity,...missed.map(row=>Date.parse(row.at)).filter(Number.isFinite));
  let open=false;try{open=practiceOpen(skill.id)===true;}catch{open=false;}
  const again=[
-  msSpotStep({missed:inGame,rows,skillId:skill.id,independent}),
+  msSpotStep({missed:inGame,rows,skillId:skill.id,independent,ix}),
   msLaterStep({rows,missedSittings,skillId:skill.id,independent,ix}),
-  msPracticeStep({skillId:skill.id,since:Number.isFinite(firstMiss)?firstMiss:-Infinity,ix,independent,homework,policy}),
+  msPracticeStep({skillId:skill.id,after:lastMiss,afterAt:lastMissAt,ix,independent,homework,policy}),
   msDelayedStep({skillId:skill.id,projection,practiceOpen:open,followupOpen,now}),
  ].filter(Boolean);
  return {policy:policy.version,kind:'topik',target:{skillId:skill.id,label:skill.label,domain:skill.domain,exam:map.exam,status:skill.status},narrow,again,

@@ -97,7 +97,7 @@ test('이번 주 숙제 이유(world-learning-plan.mjs)는 항목 이름을 낫�
  assert.equal(tMessage(ko,'ko'),ko);assert.equal(tMessage(old,'ko'),old);
  assert.equal(tMessage(ko,'en'),'This is this week’s homework. You missed an answer in ‘Listening for details’, so we’ll check it again with new questions.');
  assert.equal(tMessage(old,'en'),'This is this week’s homework. It’s been a while since ‘Listening for details’, so we’ll check it again with new questions.');
- assert.equal(tMessage(ko,'mn'),'Энэ долоо хоногийн гэрийн даалгавар. «Сонсоод нарийн мэдээллийг олох» чадварт буруу хариулт байгаа тул шинэ асуултаар дахин шалгана.');
+ assert.equal(tMessage(ko,'mn'),'Энэ долоо хоногийн гэрийн даалгавар. «Сонсоод нарийн мэдээллийг олох» чадварт хамаарах асуултад буруу хариулсан тул шинэ асуултаар дахин шалгана.');
  // 이름이 표에 없으면 바꾸지 않는다(그 언어 이름을 모른다).
  const unknown='이번 주 숙제예요. 「표에 없는 이름」에서 놓친 답이 있어 새 문항으로 다시 확인해요.';
  assert.equal(tMessage(unknown,'en'),unknown);assert.equal(tMessage(unknown,'ko'),unknown);

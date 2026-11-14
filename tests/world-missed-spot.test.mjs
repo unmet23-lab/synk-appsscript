@@ -26,10 +26,13 @@ const option=value=>value==='pass'?'pass':`reject-${value}`;
 const NEG='ko.reading.negation';
 
 // parts: [[응답 줄…], …] — 부마다 6분을 띄운다(녹화와 같다). choice:false면 고른 답을 남기지 않는다(옛 · 접힌 기록 흉내).
-function play(parts,{choice=true,start='2026-11-14T03:18:00+09:00',gap=6*60000}={}){
+// practice: 입장 검사 뒤 짧은 연습(world-practice — 같은 기기 기록)에서 같은 항목 새 문항에 낸 답 ['<번호> <true|false> [도움]', …].
+const practiceItem=n=>({id:`neg-${n}`,itemKey:`world-practice.neg.${n}`,familyKey:`world-practice.neg.${n}`,skillId:NEG,modality:'reading',difficulty:1,responseFormat:'single-choice'});
+function play(parts,{choice=true,start='2026-11-14T03:18:00+09:00',gap=6*60000,practice=[]}={}){
  let at=Date.parse(start);const memory=new Map();
  const storage={getItem:key=>memory.has(key)?memory.get(key):null,setItem:(key,value)=>memory.set(key,String(value)),removeItem:key=>memory.delete(key)};
- const game=createGame({gameId:'entry-check',map:createMap(worldMapData()),storage,clock:()=>new Date(at).toISOString()});
+ const map=createMap(worldMapData()),clock=()=>new Date(at).toISOString();
+ const game=createGame({gameId:'entry-check',map,storage,clock});
  parts.forEach((lines,part)=>{
   if(part)at+=gap;
   for(const line of lines){
@@ -40,8 +43,18 @@ function play(parts,{choice=true,start='2026-11-14T03:18:00+09:00',gap=6*60000}=
    game.answer(pid,{correct:ok==='true',assessable:true,...(choice?{choice:{selectedId:option(picked),correctId:option(item.answer)}}:{})});
   }
  });
- return {game,summary:game.summary(),events:game.events(),now:at};
+ let coach=null;
+ if(practice.length){
+  at+=gap;coach=createGame({gameId:'world-practice',map,storage,clock});
+  for(const line of practice){const [n,ok,how]=line.split(' ');at+=4000;const pid=coach.present(practiceItem(n));if(how==='도움')coach.help(pid,'hint');at+=3000;coach.answer(pid,{correct:ok==='true',assessable:true});}
+ }
+ const last=coach||game;
+ return {game:last,summary:last.summary(),events:last.events(),now:at};
 }
+// 그 손님(원고 id)의 첫 답 사건.
+const attemptOf=(events,caseId)=>{const key=caseMetadata(CASES.get(caseId)).itemKey,p=events.find(e=>e.type==='practice.presented'&&e.itemKey===key);return events.find(e=>e.type==='practice.attempted'&&e.presentationId===p?.id&&e.attemptNo===1);};
+// 같은 기기 기록에서 한 일을 뺀 뒤 다시 읽는다(record.excluded).
+const without=(run,...ids)=>{for(const id of ids)run.game.exclude(id);return {...run,summary:run.game.summary(),events:run.game.events()};};
 const cardOf=(run,extra={})=>{
  const map=buildPositionMap({summary:run.summary,events:run.events,exam:'topik1'});
  return {map,card:buildMissedSpot({map,summary:run.summary,events:run.events,now:run.now,...extra})};
@@ -236,18 +249,107 @@ test('끼우기: 카드가 짚은 항목만 「먼저 볼 항목」에서 빼고
  assert.equal(placeMissedSpot(board,'','a'),board);
 });
 
-test('뺀 답(「제가 한 말과 달라요」 · record.excluded)은 카드 어느 칸에도 세지 않는다',()=>{
- const run=play([RECORDED.first,RECORDED.second]);
- // 짧은 연습 답이 아닌 입장 검사 오답 하나를 빼면 그 오답은 Core 근거에서 빠진다 — 카드는 Core를 그대로 따른다.
- const miss=run.events.find(e=>e.type==='practice.attempted'&&e.verdict==='incorrect');
- run.game.exclude(miss.id);
- const summary=run.game.summary(),events=run.game.events();
- const map=buildPositionMap({summary,events});
- const card=buildMissedSpot({map,summary,events,now:run.now});
- if(card){
-  assert.ok(!card.evidence.includes(miss.id));
-  assert.equal(layer(card,'line'),null,'한 번만 남은 오답으로 안내문 줄을 좁히지 않는다');
- }
+test('뺀 답(「제가 한 말과 달라요」 · record.excluded)은 카드 어느 칸에도 세지 않는다 — 짧은 연습 답을 빼면 「짧은 연습」 줄에서 빠진다(Fable FA1)',()=>{
+ // 시연 근무 둘 뒤 짧은 연습에서 같은 항목 새 문항 둘을 혼자 맞혔다.
+ const run=play([RECORDED.first,RECORDED.second],{practice:['1 true','2 true']});
+ const card=cardOf(run).card;
+ assert.ok(card,'카드가 선다');
+ assert.equal(card.target.skillId,NEG);
+ assert.deepEqual([step(card,'practice').n,step(card,'practice').right],[2,2]);
+ // 짧은 연습 답 하나를 빼면 n · right에서 빠진다(record.excluded를 읽는 길 — world-missed-spot.mjs msIndex).
+ const second=run.events.filter(e=>e.type==='practice.attempted'&&run.events.find(p=>p.id===e.presentationId)?.itemKey==='world-practice.neg.2')[0];
+ const before=run.summary,cut=without(run,second.id),after=cardOf(cut).card;
+ assert.ok(after,'뺀 뒤에도 카드가 선다');
+ assert.deepEqual([step(after,'practice').n,step(after,'practice').right],[1,1]);
+ assert.deepEqual(step(after,'practice').eventIds.includes(second.id),false);
+ // Core 요약이 그 답을 아직 셌더라도(빼기 전에 읽은 요약) 카드는 Trail의 뺀 기록을 직접 읽어 세지 않는다.
+ const stale=cardOf({...cut,summary:before}).card;
+ assert.deepEqual([step(stale,'practice').n,step(stale,'practice').right],[1,1]);
+ // 입장 검사 오답 하나를 빼면 그 오답은 Core 근거에서 빠진다 — 카드는 남은 한 번만 짚고 안내문 줄로 좁히지 않는다.
+ const fresh=play([RECORDED.first,RECORDED.second]),miss=attemptOf(fresh.events,'pool-02'),one=cardOf(without(fresh,miss.id)).card;
+ assert.ok(one,'남은 오답 하나로 카드가 선다');
+ assert.ok(!one.evidence.includes(miss.id));
+ assert.deepEqual(one.narrow.map(row=>row.layer),['skill']);
+});
+
+test('뺀 답은 「그 자리」 · 「나중에 다시」에도 세지 않는다 — 그 자리는 거기서 멈추고, 나중 손님은 건너뛴다(Fable F1)',()=>{
+ // 그 자리 손님(pool-13 · 혼자 맞힘)의 답을 빼면 바로 다음 손님은 pool-10 하나뿐이다.
+ const base=play([RECORDED.first,RECORDED.second]);
+ const spot=step(cardOf(without(base,attemptOf(base.events,'pool-13').id)).card,'spot');
+ assert.deepEqual([spot.guests,spot.right],[1,0]);
+ // 나중 손님(library-06)의 답을 빼면 「도움 받아 맞힘」이 아니라 아직 안 본 같은 종류 손님 수다.
+ const later=play([RECORDED.first,RECORDED.second]);
+ const again=step(cardOf(without(later,attemptOf(later.events,'library-06').id)).card,'again');
+ assert.equal(again.state,'planned');assert.ok(again.left>0);
+});
+
+test('「도움 받아 맞힘」은 도움 사건(practice.helped)이 있을 때만 — 도움도 독립 근거도 없으면 「만남」(Fable F1)',()=>{
+ // 나중 손님을 다시 듣기 도움을 받고 맞혔다.
+ const helped=play([RECORDED.first,RECORDED.second.map(line=>line.startsWith('library-06 ')?'library-06 food true 도움':line)]);
+ assert.equal(step(cardOf(helped).card,'again').result,'assisted');
+ // 그 자리 손님이 도움을 받고 맞혔으면 「혼자 맞힘」에 세지 않는다.
+ const spotHelped=play([RECORDED.first.map(line=>line.startsWith('pool-13 ')?'pool-13 pass true 도움':line),RECORDED.second]);
+ assert.deepEqual([step(cardOf(spotHelped).card,'spot').guests,step(cardOf(spotHelped).card,'spot').right],[2,0]);
+ // 도움 없이 맞혔는데 Core 근거에 그 답이 없으면(창 · 칸 한도 밖) 도움으로 짐작하지 않는다.
+ const run=play([RECORDED.first,RECORDED.second]),id=attemptOf(run.events,'library-06').id;
+ const strip=value=>Array.isArray(value)?value.filter(row=>row!==id).map(strip):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([key,row])=>[key,strip(row)])):value;
+ const summary=strip(run.summary),map=buildPositionMap({summary,events:run.events,exam:'topik1'});
+ const again=step(buildMissedSpot({map,summary,events:run.events,now:run.now}),'again');
+ assert.equal(again.result,'other');
+ assert.equal(renderMissedSpot(buildMissedSpot({map,summary,events:run.events,now:run.now}),helpers('ko')).includes('같은 종류 새 손님을 만남'),true);
+});
+
+test('접힌 기록이 있으면 좁혀 짚기 분모가 머리 줄의 놓친 수와 같다 — 「모두」라고 하지 않는다(Fable F2)',()=>{
+ // 수영장 근무에서 음식 줄 손님 셋을 놓쳤다(pool-02 · pool-10 · pool-07).
+ const run=play([['pool-01 pass true 혼자','pool-02 pass false 혼자','pool-10 pass false 혼자','pool-13 pass true 혼자','pool-07 pass false 혼자']]);
+ const whole=cardOf(run).card;
+ assert.deepEqual([layer(whole,'skill').count,layer(whole,'line').count,layer(whole,'line').of],[3,3,3]);
+ // pool-02가 접혀 로그에 없다(기기 기록이 접은 옛 항목 흉내 — 제시 · 도움 · 답이 함께 빠진다). Core 요약은 그 답을 그대로 센다.
+ const gone=attemptOf(run.events,'pool-02'),presentation=gone.presentationId;
+ const decision=run.events.find(e=>e.id===presentation).decisionId;
+ const events=run.events.filter(e=>![presentation,gone.id,decision].includes(e.id)&&e.presentationId!==presentation&&e.decisionId!==decision);
+ const map=buildPositionMap({summary:run.summary,events,exam:'topik1'});
+ assert.equal(map.skills.find(row=>row.id===NEG).folded,1);
+ const card=buildMissedSpot({map,summary:run.summary,events,now:run.now});
+ assert.deepEqual(layer(card,'skill'),{...layer(card,'skill'),count:3,unit:'try'});
+ assert.deepEqual([layer(card,'line').count,layer(card,'line').of],[2,3]);
+ const html=renderMissedSpot(card,helpers('ko'));
+ assert.ok(html.includes('놓친 3번 중 2번'));assert.doesNotMatch(html,/모두/);
+});
+
+test('짧은 연습 안에서 놓쳤으면 마지막 놓침 뒤의 답만 「● 짧은 연습」에 센다(Fable F3)',()=>{
+ // 짧은 연습에서 같은 항목 새 문항 넷: 틀림 · 맞음 · 틀림 · 맞음 → 머리 「4번 중 2번 놓침」, 다시 만나기는 넷째 하나뿐.
+ const run=play([],{practice:['1 false','2 true','3 false','4 true']});
+ const card=cardOf(run).card;
+ assert.equal(card.target.skillId,NEG);
+ assert.deepEqual([layer(card,'skill').count,layer(card,'skill').of,layer(card,'skill').unit],[2,4,'try']);
+ const practice=step(card,'practice');
+ assert.deepEqual([practice.n,practice.right],[1,1]);
+ for(const id of card.evidence)assert.ok(!practice.eventIds.includes(id),'머리에 센 놓침을 다시 만난 일로 세지 않는다');
+ // 마지막이 놓침이면 짧은 연습 줄이 없다(숙제도 없으면 그 칸째).
+ assert.equal(step(cardOf(play([],{practice:['1 false','2 true','3 false']})).card,'practice'),null);
+});
+
+test('다른 기기에서 놓치기 전에 한 짧은 연습이 뒤늦게 받아 붙어도(importEvents) 「● 짧은 연습」에 세지 않는다(다음 판 검수 P2)',()=>{
+ const memory=()=>{const m=new Map();return {getItem:key=>m.has(key)?m.get(key):null,setItem:(key,value)=>m.set(key,String(value)),removeItem:key=>m.delete(key)};};
+ const map=createMap(worldMapData());
+ // 기기 A: 09:00 짧은 연습에서 같은 항목 새 문항 둘을 혼자 맞힘.
+ let a=Date.parse('2026-11-14T09:00:00+09:00');
+ const phone=createGame({gameId:'world-practice',map,storage:memory(),clock:()=>new Date(a).toISOString()});
+ for(const n of [1,2]){a+=4000;const pid=phone.present(practiceItem(n));a+=3000;phone.answer(pid,{correct:true,assessable:true});}
+ // 기기 B: 10:00 입장 검사에서 음식 줄 손님 둘을 놓침 → 그 뒤 A의 기록을 받는다(받은 사건은 로그 끝에 붙는다).
+ let b=Date.parse('2026-11-14T10:00:00+09:00');
+ const laptop=createGame({gameId:'entry-check',map,storage:memory(),clock:()=>new Date(b).toISOString()});
+ for(const line of RECORDED.first){const [id,picked,ok,how]=line.split(' '),item=CASES.get(id);b+=4000;const pid=laptop.present(caseMetadata(item));if(how==='도움')laptop.help(pid,'replay');b+=3000;
+  laptop.answer(pid,{correct:ok==='true',assessable:true,choice:{selectedId:option(picked),correctId:option(item.answer)}});}
+ const added=laptop.syncPort.importEvents(phone.events());
+ assert.ok(added.added>0,'A의 기록을 받았다');
+ const events=laptop.events(),card=cardOf({summary:laptop.summary(),events,now:b}).card;
+ assert.equal(card.target.skillId,NEG);
+ const practiceIds=new Set(events.filter(e=>e.type==='practice.attempted'&&events.find(p=>p.id===e.presentationId)?.itemKey?.startsWith('world-practice.')).map(e=>e.id));
+ assert.equal(practiceIds.size,2);
+ for(const id of practiceIds)assert.ok(events.findIndex(e=>e.id===id)>events.findIndex(e=>e.id===card.evidence.at(-1)),'받은 연습은 로그에서 놓침보다 뒤에 있다');
+ assert.equal(step(card,'practice'),null,'놓치기 전에 한 연습은 다시 만난 일이 아니다');
 });
 
 test('최근 창(30일)을 넘긴 옛 오답만 남으면 카드가 없다',()=>{

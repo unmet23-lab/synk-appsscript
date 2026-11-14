@@ -24769,7 +24769,7 @@ var choicesFor = (venue, at) => ["pass", ...activeRules(venue, at).map((r) => r.
 
 // experiences/synk-world-app/world-missed-spot.mjs
 var MISSED_SPOT_POLICY = Object.freeze({
-  version: "world-missed-spot-1",
+  version: "world-missed-spot-2",
   // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
   sittingGapMs: 30 * 6e4,
   // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
@@ -24797,14 +24797,17 @@ function missDirection(choice) {
   return "wrong-rule";
 }
 function msIndex(events) {
-  const list = Array.isArray(events) ? events : [], shown = /* @__PURE__ */ new Map(), first = /* @__PURE__ */ new Map(), attempt = /* @__PURE__ */ new Map(), experience = /* @__PURE__ */ new Map(), order2 = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
+  const list = Array.isArray(events) ? events : [], shown = /* @__PURE__ */ new Map(), first = /* @__PURE__ */ new Map(), attempt = /* @__PURE__ */ new Map(), experience = /* @__PURE__ */ new Map(), order2 = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set(), help = /* @__PURE__ */ new Map();
   list.forEach((event, at) => {
     if (!msRecord(event)) return;
     order2.set(event.id, at);
     if (event.type === "decision.made") experience.set(event.id, event.experienceId);
     else if (event.type === "practice.presented") shown.set(event.id, event);
     else if (event.type === "record.excluded" && event.targetId) excluded.add(event.targetId);
-    else if (event.type === "practice.attempted") {
+    else if (event.type === "practice.helped" && event.presentationId) {
+      const earlier = help.get(event.presentationId), time4 = Date.parse(event.at);
+      help.set(event.presentationId, { index: Math.min(earlier?.index ?? Infinity, at), at: Math.min(earlier?.at ?? Infinity, Number.isFinite(time4) ? time4 : Infinity) });
+    } else if (event.type === "practice.attempted") {
       attempt.set(event.id, event);
       if (event.attemptNo === 1 && !first.has(event.presentationId)) first.set(event.presentationId, event);
     }
@@ -24820,7 +24823,20 @@ function msIndex(events) {
     ordered,
     expOf: (presentation) => experience.get(presentation?.decisionId) ?? null,
     // 그 문항(또는 계열)을 이 제시보다 먼저 본 적이 없나 — 처음 보는 손님이었는지.
-    fresh: (presentation) => [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean).every((key) => firstSight.get(key) === presentation.id)
+    fresh: (presentation) => [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean).every((key) => firstSight.get(key) === presentation.id),
+    // 뺀 답(「제가 한 말과 달라요」 · record.excluded): 그 시도 · 그 제시 · 그 결정을 뺐으면 기록이 받쳐 주지 않는 답이다(Trail summarize의 omitted와 같은 가름).
+    omitted: (row) => {
+      if (!msRecord(row)) return true;
+      const presentation = shown.get(row.presentationId);
+      return excluded.has(row.id) || excluded.has(row.presentationId) || !!presentation && excluded.has(presentation.decisionId);
+    },
+    // 그 제시에 이 답보다 먼저 도움이 남았나(기록 순서나 시각 가운데 하나라도 앞서면 — Trail과 같다).
+    helped: (row) => {
+      const hit = help.get(row?.presentationId);
+      if (!hit) return false;
+      const index = order2.get(row.id), time4 = Date.parse(row.at);
+      return hit.index < (index ?? Infinity) || Number.isFinite(time4) && hit.at < time4;
+    }
   };
 }
 function msSittings(ix, policy) {
@@ -24858,7 +24874,7 @@ function msMajority(rows2, keyOf, { of, min }) {
   const top = [...groups.values()].sort((a, b) => b.rows.length - a.rows.length || a.rank - b.rank)[0];
   return top && top.items.size >= min && top.rows.length * 2 > of ? top : null;
 }
-function msSpotStep({ missed, rows: rows2, skillId, independent }) {
+function msSpotStep({ missed, rows: rows2, skillId, independent, ix }) {
   const at = new Map(rows2.map((row, position) => [row.presentation.id, position])), guests = /* @__PURE__ */ new Map();
   for (const presentationId of missed) {
     let position = at.get(presentationId);
@@ -24866,7 +24882,7 @@ function msSpotStep({ missed, rows: rows2, skillId, independent }) {
     let source = rows2[position];
     while (position + 1 < rows2.length) {
       const next = rows2[position + 1];
-      if (next.sitting !== source.sitting || next.entry.meta.skillId !== skillId || !next.attempt) break;
+      if (next.sitting !== source.sitting || next.entry.meta.skillId !== skillId || !next.attempt || ix.omitted(next.attempt)) break;
       if (!guests.has(next.presentation.id)) guests.set(next.presentation.id, { row: next, sameRule: [...next.entry.item.evidence].sort().join("|") === [...source.entry.item.evidence].sort().join("|") });
       if (next.attempt.verdict !== "incorrect") break;
       position += 1;
@@ -24879,7 +24895,7 @@ function msSpotStep({ missed, rows: rows2, skillId, independent }) {
     step: "spot",
     state: "done",
     guests: list.length,
-    right: list.filter(({ row }) => row.attempt.verdict === "correct" && independent.has(row.attempt.id)).length,
+    right: list.filter(({ row }) => row.attempt.verdict === "correct" && !ix.helped(row.attempt) && independent.has(row.attempt.id)).length,
     sameRule: list.every((row) => row.sameRule),
     at: list.at(-1).row.attempt.at,
     eventIds: list.map(({ row }) => row.attempt.id)
@@ -24888,13 +24904,13 @@ function msSpotStep({ missed, rows: rows2, skillId, independent }) {
 function msLaterStep({ rows: rows2, missedSittings, skillId, independent, ix }) {
   if (!rows2.length || !missedSittings.length) return null;
   const last = Math.max(...missedSittings);
-  const guest = rows2.find((row) => row.sitting > last && row.entry.meta.skillId === skillId && !row.entry.item.followupOnly && row.attempt && ix.fresh(row.presentation));
+  const guest = rows2.find((row) => row.sitting > last && row.entry.meta.skillId === skillId && !row.entry.item.followupOnly && row.attempt && !ix.omitted(row.attempt) && ix.fresh(row.presentation));
   if (guest) {
-    const verdict2 = guest.attempt.verdict, alone = independent.has(guest.attempt.id);
+    const verdict2 = guest.attempt.verdict, helped = ix.helped(guest.attempt), alone = !helped && independent.has(guest.attempt.id);
     return {
       step: "again",
       state: "done",
-      result: verdict2 === "correct" ? alone ? "correct" : "assisted" : verdict2 === "incorrect" ? "incorrect" : "other",
+      result: verdict2 === "correct" ? helped ? "assisted" : alone ? "correct" : "other" : verdict2 === "incorrect" ? "incorrect" : "other",
       answer: guest.entry.item.answer === "pass" ? "pass" : "reject",
       at: guest.attempt.at,
       eventIds: [guest.attempt.id]
@@ -24911,12 +24927,13 @@ function msLaterStep({ rows: rows2, missedSittings, skillId, independent, ix }) 
   }).length, 0);
   return left ? { step: "again", state: "planned", left } : null;
 }
-function msPracticeStep({ skillId, since, ix, independent, homework, policy }) {
+function msPracticeStep({ skillId, after, afterAt, ix, independent, homework, policy }) {
   const done = [];
   for (const [presentationId, attempt] of ix.first) {
     const presentation = ix.shown.get(presentationId);
-    if (ix.expOf(presentation) !== policy.practiceGame || presentation?.measure?.skillId !== skillId || !independent.has(attempt.id) || ix.excluded.has(attempt.id)) continue;
-    if (Date.parse(attempt.at) > since && ["correct", "incorrect"].includes(attempt.verdict)) done.push(attempt);
+    if (ix.expOf(presentation) !== policy.practiceGame || presentation?.measure?.skillId !== skillId || !independent.has(attempt.id) || ix.omitted(attempt)) continue;
+    const at = Date.parse(attempt.at);
+    if ((ix.order.get(attempt.id) ?? -Infinity) > after && Number.isFinite(at) && at >= afterAt && ["correct", "incorrect"].includes(attempt.verdict)) done.push(attempt);
   }
   if (done.length) return { step: "practice", state: "done", n: done.length, right: done.filter((row2) => row2.verdict === "correct").length, at: done.map((row2) => row2.at).sort().at(-1), eventIds: done.map((row2) => row2.id) };
   const row = (Array.isArray(homework) ? homework : []).find((value) => value?.skillId === skillId);
@@ -24959,7 +24976,7 @@ function buildMissedSpot({ map, summary = null, events = [], homework = null, pr
   for (const row of skill2.evidence) if (row.independent) independent.add(row.eventId);
   const guests = !skill2.folded && skill2.evidence.length > 0 && skill2.evidence.every((row) => missedEntryOf(row.itemKey));
   const narrow = [{ layer: "skill", skillId: skill2.id, label: skill2.label, domain: skill2.domain, exam: map.exam, status: skill2.status, count: skill2.incorrect, of: skill2.n, unit: guests ? "guest" : "try" }];
-  const of = missed.length, detail = missed.map((row) => ({ ...row, entry: missedEntryOf(row.itemKey), choice: ix.attempt.get(row.eventId)?.choice }));
+  const of = Math.max(missed.length, Number.isInteger(skill2.incorrect) ? skill2.incorrect : 0), detail = missed.map((row) => ({ ...row, entry: missedEntryOf(row.itemKey), choice: ix.attempt.get(row.eventId)?.choice }));
   const line = msMajority(detail, (row) => row.entry ? missedEntryRule(row.entry.venue, row.entry.item)?.text ?? null : null, { of, min: policy.narrowMin });
   if (line) {
     const top = line.rows[0], rule = missedEntryRule(top.entry.venue, top.entry.item);
@@ -24969,7 +24986,8 @@ function buildMissedSpot({ map, summary = null, events = [], homework = null, pr
   if (way) narrow.push({ layer: "direction", direction: way.key, count: way.rows.length, of });
   const rows2 = msSittings(ix, policy), inGame = detail.filter((row) => row.experienceId === GAME_ID2).map((row) => ix.attempt.get(row.eventId)?.presentationId).filter(Boolean);
   const missedSittings = rows2.filter((row) => inGame.includes(row.presentation.id)).map((row) => row.sitting);
-  const firstMiss = Math.min(...missed.map((row) => Date.parse(row.at)).filter(Number.isFinite));
+  const lastMiss = Math.max(-Infinity, ...missed.map((row) => ix.order.get(row.eventId)).filter(Number.isInteger));
+  const lastMissAt = Math.max(-Infinity, ...missed.map((row) => Date.parse(row.at)).filter(Number.isFinite));
   let open = false;
   try {
     open = practiceOpen(skill2.id) === true;
@@ -24977,9 +24995,9 @@ function buildMissedSpot({ map, summary = null, events = [], homework = null, pr
     open = false;
   }
   const again = [
-    msSpotStep({ missed: inGame, rows: rows2, skillId: skill2.id, independent }),
+    msSpotStep({ missed: inGame, rows: rows2, skillId: skill2.id, independent, ix }),
     msLaterStep({ rows: rows2, missedSittings, skillId: skill2.id, independent, ix }),
-    msPracticeStep({ skillId: skill2.id, since: Number.isFinite(firstMiss) ? firstMiss : -Infinity, ix, independent, homework, policy }),
+    msPracticeStep({ skillId: skill2.id, after: lastMiss, afterAt: lastMissAt, ix, independent, homework, policy }),
     msDelayedStep({ skillId: skill2.id, projection, practiceOpen: open, followupOpen, now })
   ].filter(Boolean);
   return {
