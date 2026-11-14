@@ -11,9 +11,11 @@ import {createWorkspaceAccessService} from './workspace-access-service.mjs';
 import {hash} from './store.mjs';
 
 const profile=(...companies)=>({memberships:companies.map(company=>({company,role:{LAB:'teacher',PATH:'counselor',SHIFT:'instructor',PULSE:'producer'}[company]})),duties:[]});
-async function fixture(t,{clock}={}){
+async function fixture(t,{clock,isolated=false}={}){
   const dir=await mkdtemp(join(tmpdir(),'synk-workspace-access-'));
-  const app=createCompanyApp({dataDir:dir,port:0,allowTestHost:true,schedule:false,...(clock?{clock}:{})});
+  // isolated: 공통 초대 조회 시험은 바깥 의존을 모두 적는다 — 임시 자료 · 임시 메신저 자료 · 루프백 주소 · 꺼진 SYNK 신원 확인(직원 · 고객) · 기기 알림 · 업무 알림. 실제 외부 서비스를 부르지 않는다.
+  const isolation=isolated?{messengerDataDir:join(dir,'messenger'),host:'127.0.0.1',origin:'http://127.0.0.1:0',synkIdentityConfig:null,synkCustomerIdentityConfig:null,webPushEnabled:false,workNotificationsEnabled:false}:{};
+  const app=createCompanyApp({dataDir:dir,port:0,allowTestHost:true,schedule:false,...(clock?{clock}:{}),...isolation});
   const address=await app.start(),base='http://127.0.0.1:'+address.port;
   t.after(async()=>{await app.stop();await rm(dir,{recursive:true,force:true});});
   const add=(name,role='member',workspaceProfile)=>{const u=app.store.createUser({name,email:name+'@example.test',role});if(workspaceProfile)app.store.put('users',u.id,{...u,workspaceProfile:{...workspaceProfile,revision:1}});return app.store.get('users',u.id);};
@@ -342,4 +344,151 @@ test('client assignments require current capabilities and public requests fall b
     assert.equal(incoming.project.ownerId,admin.id);assert.ok(clients.project(admin,incoming.project.id));
   }
   assert.equal(clients.createFromRequest({...input,ownerId:delegated.id}).project.ownerId,delegated.id);
+});
+
+// 공통 초대 조회(POST /api/invite/inspect) 시험 도구: 회사 DB의 모든 표와 total_changes, HTTP 결과, 생기면 안 되는 부수 호출을 본다.
+function databaseState(app){
+  const db=app.store.db,tables=db.prepare(`SELECT name FROM sqlite_master WHERE type='table' ORDER BY name`).all().map(row=>row.name);
+  return {changes:db.prepare('SELECT total_changes() AS count').get().count,tables:Object.fromEntries(tables.map(name=>[name,db.prepare(`SELECT * FROM [${name}]`).all().map(row=>JSON.stringify(row)).sort()]))};
+}
+function inviteLookup(app){
+  const base='http://127.0.0.1:'+app.server.address().port;
+  return async(input,{origin=app.origin,type='application/json',cookie='',query='',raw}={})=>{
+    const response=await fetch(base+'/api/invite/inspect'+query,{method:'POST',headers:{...(origin===null?{}:{Origin:origin}),...(type?{'Content-Type':type}:{}),...(cookie?{Cookie:cookie}:{})},body:raw??JSON.stringify(input)});
+    const text=await response.text();
+    return {status:response.status,text,data:JSON.parse(text),cookie:response.headers.get('set-cookie'),cache:response.headers.get('cache-control')};
+  };
+}
+function watchCalls(targets){
+  const calls=[],undo=[];
+  for(const [label,target,name]of targets){
+    const original=target[name];assert.equal(typeof original,'function',label);
+    target[name]=function(...args){calls.push(label);return original.apply(this,args);};
+    undo.push(()=>{target[name]=original;});
+  }
+  return {calls,restore(){for(const step of undo.reverse())step();}};
+}
+test('common invite lookup classifies employee, legacy and customer invitations without writing, consuming or renewing anything',async t=>{
+  const {app,a,admin,client}=await fixture(t,{isolated:true}),clients=createClientProjectsService({store:app.store}),lookup=inviteLookup(app),base='http://127.0.0.1:'+app.server.address().port;
+  const employeeKind={version:1,kind:'employee',destination:'/'},customerKind={version:1,kind:'customer',destination:'/pulse-app/'};
+  const issued=await a('/api/members/invite',{name:'Lookup employee',email:'lookup-employee@example.test',workspaceProfile:profile('PULSE')});assert.equal(issued.status,201);
+  const legacy=app.store.mint('invite',null,{name:'Lookup legacy',email:'lookup-legacy@example.test',role:'member',teamId:null,invitedBy:admin.id},3*24*60);
+  const created=clients.save(admin,{title:'합성 조회 프로젝트',customerName:'합성 조회 고객'}).project,invited=clients.invite(admin,created.id,{revision:created.revision});
+  // A live customer session with a remembered device and a staff session ride along: nothing may be recovered, renewed or set.
+  const opened=clients.open(invited.invite);
+  const remembered=await fetch(base+'/pulse/api/remember-device',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json',Cookie:'synk_pulse_session='+opened.session,'X-Pulse-CSRF':opened.csrf},body:'{}'});
+  await remembered.text();assert.equal(remembered.status,201);
+  const device=/synk_pulse_device=([A-Za-z0-9_-]+)/.exec(remembered.headers.get('set-cookie')||'')?.[1];assert.ok(device);
+  const cookie=['synk_company_session='+app.store.mint('session',admin.id,{csrfToken:'lookup-csrf'},10),'synk_pulse_session='+'A'.repeat(43),'synk_pulse_device='+device].join('; ');
+  const before=databaseState(app);
+  const watched=watchCalls([['messenger.disconnectRevoked',app.messenger,'disconnectRevoked'],['messenger.notifyCompanyUsers',app.messenger,'notifyCompanyUsers'],['deviceNotifications.revokeSession',app.deviceNotifications,'revokeSession'],['clientProjects.open',app.clientProjects,'open'],['clientProjects.openVerified',app.clientProjects,'openVerified'],['clientProjects.session',app.clientProjects,'session'],...['resume','touch','bind','remember','forget'].map(name=>['devices.'+name,app.clientProjects.devices,name])]);
+  try{
+    for(let round=0;round<3;round++)for(const [token,kind]of [[issued.data.code,employeeKind],[legacy,employeeKind],[invited.invite,customerKind]]){
+      const result=await lookup({token},{cookie});
+      assert.equal(result.status,200);assert.deepEqual(result.data,kind);assert.equal(result.cookie,null);assert.equal(result.cache,'no-store');
+      for(const secret of [token,hash(token),'lookup-employee@example.test','Lookup employee','Lookup legacy','합성 조회 고객','합성 조회 프로젝트',created.id])assert.ok(!result.text.includes(secret));
+    }
+    assert.deepEqual(databaseState(app),before,'rows, tokens, sessions, devices and total_changes stay the same');
+    assert.deepEqual(watched.calls,[],'no acceptance, session recovery, device, messenger or notification call');
+    const health=await fetch(base+'/api/health');await health.text();
+    assert.ok(watched.calls.includes('messenger.disconnectRevoked'),'the watcher does see an ordinary send() response');
+  }finally{watched.restore();}
+  // Revoked or reissued after a lookup: the existing acceptance paths check again and refuse the old codes.
+  assert.equal((await a('/api/workspace-invites/'+issued.data.id+'/revoke',{})).status,200);
+  const legacyEntry=(await a('/api/workspace-invites')).data.invites.find(row=>row.email==='lookup-legacy@example.test');
+  assert.equal((await a('/api/workspace-invites/'+legacyEntry.id+'/revoke',{})).status,200);
+  const reissued=await a('/api/members/invite',{name:'Lookup employee',email:'lookup-employee@example.test',workspaceProfile:profile('PULSE')});assert.equal(reissued.status,201);
+  const replacement=clients.invite(admin,created.id,{revision:app.store.get('clientProjects',created.id).revision});
+  const refused=[];
+  for(const token of [issued.data.code,legacy,invited.invite]){const result=await lookup({token});assert.equal(result.status,403);assert.equal(result.cookie,null);assert.ok(!result.text.includes(token));refused.push(result.data);}
+  assert.deepEqual(refused[1],refused[0]);assert.deepEqual(refused[2],refused[0]);
+  const anonymous=client();
+  for(const token of [issued.data.code,legacy])assert.equal((await anonymous('/api/join',{token,password:'synthetic-password-123'})).status,403);
+  const reopened=await fetch(base+'/pulse/api/open',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json'},body:JSON.stringify({invite:invited.invite})});
+  await reopened.text();assert.equal(reopened.status,401);assert.equal(reopened.headers.get('set-cookie'),null);
+  assert.ok(!app.store.all('users').some(user=>['lookup-employee@example.test','lookup-legacy@example.test'].includes(user.email)));
+  // A lookup is not acceptance: the replacements classify, join still consumes the new code once, and a consumed code stops classifying.
+  assert.deepEqual((await lookup({token:replacement.invite})).data,customerKind);
+  assert.deepEqual((await lookup({token:reissued.data.code})).data,employeeKind);
+  assert.equal((await anonymous('/api/join',{token:reissued.data.code,password:'synthetic-password-123'})).status,201);
+  assert.equal((await lookup({token:reissued.data.code})).status,403);
+});
+test('common invite lookup refuses expired, revoked, archived, stopped-issuer and doubly valid invitations alike and keeps storage failures distinct',async t=>{
+  const {app,a,add,client,admin}=await fixture(t,{isolated:true}),lookup=inviteLookup(app);
+  const clients=createClientProjectsService({store:app.store}),employees=createWorkspaceAccessService({store:app.store});
+  const employeeKind={version:1,kind:'employee',destination:'/'},customerKind={version:1,kind:'customer',destination:'/pulse-app/'},kindOf=async token=>(await lookup({token})).data;
+  const issue=async(name,via=a)=>{const result=await via('/api/members/invite',{name,email:name+'@example.test',workspaceProfile:profile('LAB')});assert.equal(result.status,201);return result.data;};
+  const legacy=(name,extra={})=>app.store.mint('invite',null,{name,email:name+'@example.test',role:'member',teamId:null,invitedBy:admin.id,...extra},3*24*60);
+  const customer=title=>{const created=clients.save(admin,{title,customerName:'합성 조회 고객'}).project;return clients.invite(admin,created.id,{revision:created.revision});};
+  const stored=invited=>app.store.get('clientProjects',invited.project.id);
+  const expire=code=>app.store.db.prepare('UPDATE tokens SET expiresAt=? WHERE hash=?').run('2000-01-01T00:00:00.000Z',hash(code));
+  const cases=[];
+  const expired=await issue('lookup-expired');assert.deepEqual(await kindOf(expired.code),employeeKind);expire(expired.code);cases.push(['employee expired',expired.code]);
+  const revoked=await issue('lookup-revoked');assert.equal((await a('/api/workspace-invites/'+revoked.id+'/revoke',{})).status,200);cases.push(['employee revoked',revoked.code]);
+  const issuer=add('lookup-issuer','admin'),stopped=await issue('lookup-stopped-issuer',client(issuer)),legacyOfStopped=legacy('lookup-legacy-of-stopped',{invitedBy:issuer.id});
+  assert.deepEqual(await kindOf(stopped.code),employeeKind);app.store.put('users',issuer.id,{...app.store.get('users',issuer.id),active:false});cases.push(['employee issuer stopped',stopped.code]);
+  const legacyExpired=legacy('lookup-legacy-expired');assert.deepEqual(await kindOf(legacyExpired),employeeKind);expire(legacyExpired);cases.push(['legacy expired',legacyExpired]);
+  app.store.put('teams','lookup-team',{id:'lookup-team',name:'합성 조회 팀',active:true});const legacyTeam=legacy('lookup-legacy-team',{teamId:'lookup-team'});
+  assert.deepEqual(await kindOf(legacyTeam),employeeKind);app.store.put('teams','lookup-team',{id:'lookup-team',name:'합성 조회 팀',active:false});cases.push(['team stopped',legacyTeam]);
+  const expiredCustomer=customer('조회 만료 프로젝트');assert.deepEqual(await kindOf(expiredCustomer.invite),customerKind);
+  app.store.put('clientProjects',expiredCustomer.project.id,{...stored(expiredCustomer),inviteExpiresAt:'2000-01-01T00:00:00.000Z'});cases.push(['customer expired',expiredCustomer.invite]);
+  const revokedCustomer=customer('조회 취소 프로젝트');clients.revoke(admin,revokedCustomer.project.id,{revision:stored(revokedCustomer).revision});cases.push(['customer revoked',revokedCustomer.invite]);
+  const archivedCustomer=customer('조회 보관 프로젝트');app.store.put('clientProjects',archivedCustomer.project.id,{...stored(archivedCustomer),stage:'archived'});cases.push(['customer archived',archivedCustomer.invite]);
+  const rotatedCustomer=customer('조회 재발급 프로젝트');clients.invite(admin,rotatedCustomer.project.id,{revision:stored(rotatedCustomer).revision});cases.push(['customer reissued',rotatedCustomer.invite]);
+  const doubly=customer('조회 중복 프로젝트');assert.deepEqual(await kindOf(doubly.invite),customerKind);
+  app.store.db.prepare('INSERT INTO tokens VALUES (?,?,?,?,?)').run(hash(doubly.invite),'invite',null,JSON.stringify({name:'Lookup ambiguous',email:'lookup-ambiguous@example.test',role:'member',teamId:null,invitedBy:admin.id}),new Date(Date.now()+3600000).toISOString());
+  assert.ok(employees.check(doubly.invite).invitation);assert.equal(clients.checkInvite(doubly.invite),true);
+  cases.push(['valid for both kinds',doubly.invite],['unknown','A'.repeat(43)]);
+  for(const [label,token]of cases.filter(([label])=>label!=='valid for both kinds')){assert.equal(employees.check(token).invitation,null,label);assert.equal(clients.checkInvite(token),false,label);}
+  // The split check keeps inspect's existing errors, and the legacy contract is not tightened: its issuer is not rechecked.
+  assert.throws(()=>employees.inspect(revoked.code),{status:403,message:'초대가 만료됐거나 이미 사용·취소됐어요.'});
+  assert.throws(()=>employees.inspect(stopped.code),{status:403,message:'이 초대는 더 이상 사용할 수 없어요.'});
+  assert.throws(()=>employees.inspect(legacyTeam),{status:403,message:'초대의 소속 팀이 운영을 멈췄어요. 새 초대를 받아 주세요.'});
+  assert.deepEqual(await kindOf(legacyOfStopped),employeeKind);
+  const before=databaseState(app),refused=[];
+  for(const [label,token]of cases){const result=await lookup({token});assert.equal(result.status,403,label);assert.equal(result.cookie,null,label);assert.ok(!result.text.includes(token),label);refused.push(result.data);}
+  for(const data of refused)assert.deepEqual(data,refused[0]);
+  assert.deepEqual(Object.keys(refused[0]),['error']);
+  assert.deepEqual(databaseState(app),before);
+  app.store.db.prepare(`DELETE FROM tokens WHERE hash=? AND purpose='invite'`).run(hash(doubly.invite));
+  assert.deepEqual(await kindOf(doubly.invite),customerKind,'only the ambiguity was refused');
+  // Damaged storage is a failure, never the other kind: each side's damage blocks a lookup that the other side would have answered.
+  const employeeCode=(await issue('lookup-storage')).code,customerCode=customer('조회 저장소 프로젝트').invite,logged=[],printError=console.error;
+  console.error=(...args)=>{logged.push(args.map(String).join(' '));printError(...args);};
+  try{
+    app.store.db.prepare('INSERT INTO tokens VALUES (?,?,?,?,?)').run(hash(customerCode),'invite',null,'{damaged',new Date(Date.now()+3600000).toISOString());
+    assert.throws(()=>employees.check(customerCode),SyntaxError);assert.throws(()=>employees.inspect(customerCode),SyntaxError);
+    const damagedToken=await lookup({token:customerCode});
+    app.store.db.prepare(`DELETE FROM tokens WHERE hash=? AND purpose='invite'`).run(hash(customerCode));
+    app.store.db.prepare(`INSERT INTO documents(kind,id,body) VALUES ('clientProjects','lookup-damaged','{damaged')`).run();
+    assert.throws(()=>clients.checkInvite(employeeCode),SyntaxError);assert.throws(()=>clients.open(employeeCode),SyntaxError);
+    const damagedProject=await lookup({token:employeeCode});
+    for(const [result,token]of [[damagedToken,customerCode],[damagedProject,employeeCode]]){
+      assert.equal(result.status,500);assert.equal(result.cookie,null);assert.ok(!result.text.includes(token));
+      assert.ok(!Object.hasOwn(result.data,'kind'));assert.notEqual(result.data.error,refused[0].error,'a storage failure is not reported as an invalid invitation');
+    }
+  }finally{console.error=printError;app.store.db.prepare(`DELETE FROM documents WHERE kind='clientProjects' AND id='lookup-damaged'`).run();}
+  assert.ok(logged.some(line=>line.includes('REQUEST_FAILED')),'the failure is still reported');
+  assert.ok(!logged.some(line=>line.includes(employeeCode)||line.includes(customerCode)),'the raw code never reaches the log');
+  assert.deepEqual(await kindOf(employeeCode),employeeKind);assert.deepEqual(await kindOf(customerCode),customerKind);
+});
+test('common invite lookup takes only a small same-origin JSON token, no query or claimed kind, and limits failed attempts',async t=>{
+  const {app,a}=await fixture(t,{isolated:true}),lookup=inviteLookup(app),base='http://127.0.0.1:'+app.server.address().port;
+  const issued=await a('/api/members/invite',{name:'Lookup bounds',email:'lookup-bounds@example.test',workspaceProfile:profile('LAB')});assert.equal(issued.status,201);
+  const code=issued.data.code,employeeKind={version:1,kind:'employee',destination:'/'},before=databaseState(app);
+  const refusal=async(status,pending,label)=>{const result=await pending;assert.equal(result.status,status,label);assert.equal(result.cookie,null,label);assert.ok(!result.text.includes(code),label);assert.ok(!Object.hasOwn(result.data,'kind'),label);return result;};
+  for(const query of ['','?token='+code]){const response=await fetch(base+'/api/invite/inspect'+query);const text=await response.text();assert.equal(response.status,405);assert.ok(!text.includes(code));}
+  await refusal(400,lookup({token:code},{query:'?token='+code}),'query string');
+  for(const origin of ['https://attacker.example','null',null])await refusal(403,lookup({token:code},{origin}),'origin '+origin);
+  await refusal(400,lookup({token:code},{type:'text/plain'}),'content type');
+  await refusal(400,lookup(null,{raw:'{token'}),'broken JSON');
+  for(const input of [null,[],[code],{},{token:''},{token:42},{token:[code]},{token:'x'.repeat(201)},{token:code,kind:'customer'},{token:code,destination:'https://attacker.example/'},{token:code,returnTo:'/pulse-app/'}])await refusal(400,lookup(input),JSON.stringify(input).slice(0,60));
+  for(const input of [{token:code,padding:'x'.repeat(4096)},{token:'x'.repeat(2048)}])await refusal(413,lookup(input),'large body');
+  assert.deepEqual(databaseState(app),before);
+  // Confirmed lookups give their reservation back and malformed requests never reserve; only failed lookups count, 30 per address in 15 minutes.
+  for(let i=0;i<35;i++)assert.deepEqual((await lookup({token:code})).data,employeeKind);
+  for(let i=0;i<30;i++){const token='unknown'+String(i).padStart(2,'0')+'x'.repeat(34),result=await lookup({token});assert.equal(result.status,403);assert.ok(!result.text.includes(token));}
+  const limited=await refusal(429,lookup({token:code}),'rate limited');
+  assert.equal(limited.data.code,'SYNK_RATE_LIMITED');
+  assert.deepEqual(databaseState(app),before,'the limiter counts in memory only');
 });

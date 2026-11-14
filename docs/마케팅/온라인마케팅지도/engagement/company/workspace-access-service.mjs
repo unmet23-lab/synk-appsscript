@@ -56,16 +56,24 @@ export function createWorkspaceAccessService({store,clock=()=>new Date().toISOSt
       return {id,code,expiresAt:stored.expiresAt,expiresInDays:3,delivery:'copy-link'};
     });
   }
-  function inspect(code){
-    const invitation=store.readToken(code,'invite');if(!invitation)throw fail('초대가 만료됐거나 이미 사용·취소됐어요.',403);
+  // Read-only check shared by inspect, join and the common invite lookup (/api/invite/inspect).
+  // Expected invalid invitations are a result ({invitation:null,reason}) and nothing is written.
+  // Storage, JSON and stored-profile errors still throw; they never mean 'not an employee invite'.
+  function check(code){
+    const invitation=store.readToken(code,'invite');if(!invitation)return {invitation:null,reason:'초대가 만료됐거나 이미 사용·취소됐어요.'};
     const body=invitation.body;
     // Previously issued invitations retain the old contract until their 3-day expiry.
     if(body.workspaceProfile){
       const issuer=store.get('users',body.invitedBy),record=store.get('workspaceInvites',body.id);
-      if(!issuer?.active||issuer.role!=='admin'||!record||record.status!=='pending'||record.tokenHash!==invitation.hash)throw fail('이 초대는 더 이상 사용할 수 없어요.',403);
+      if(!issuer?.active||issuer.role!=='admin'||!record||record.status!=='pending'||record.tokenHash!==invitation.hash)return {invitation:null,reason:'이 초대는 더 이상 사용할 수 없어요.'};
       normalizeWorkspaceProfile(body.workspaceProfile);
     }
-    if(body.teamId&&!store.get('teams',body.teamId)?.active)throw fail('초대의 소속 팀이 운영을 멈췄어요. 새 초대를 받아 주세요.',403);
+    if(body.teamId&&!store.get('teams',body.teamId)?.active)return {invitation:null,reason:'초대의 소속 팀이 운영을 멈췄어요. 새 초대를 받아 주세요.'};
+    return {invitation,reason:null};
+  }
+  function inspect(code){
+    const {invitation,reason}=check(code);if(!invitation)throw fail(reason,403);
+    const body=invitation.body;
     return {invitation,name:body.name,role:body.role,memberships:body.workspaceProfile?.memberships||[],duties:body.workspaceProfile?.duties||[],expiresAt:invitation.expiresAt};
   }
   function accepted(invitation,userId){
@@ -86,5 +94,5 @@ export function createWorkspaceAccessService({store,clock=()=>new Date().toISOSt
       store.put('workspaceInvites',id,{...row,status:'revoked',revokedAt:clock()});audit(by,'workspace-invite-revoked',id,{});return {ok:true};
     });
   }
-  return {catalog,save,issue,inspect,accepted,list,revoke};
+  return {catalog,save,issue,check,inspect,accepted,list,revoke};
 }

@@ -122,3 +122,35 @@ test('줄을 더하지 않는 손님 동작(의견 · 승인)과 다른 직원 �
   throwsStatus(()=>service.invite(users.owner,row.id,{revision:old}),409);
   throwsStatus(()=>service.message(users.owner,row.id,undefined),400);
 });
+
+// 2026-11-14 공통 초대 조회: 고객 초대의 읽기 확인은 open과 같은 규칙을 쓰고, 확인만으로는 아무것도 쓰지 않으며, 저장소 고장을 무효 초대로 바꾸지 않는다.
+test('the read-only customer invite check shares open rules, writes nothing and lets storage failures through',async t=>{
+  const {users,service,create,store,setClock}=await fixture(t);let row=create();
+  const state=()=>({changes:store.db.prepare('SELECT total_changes() AS count').get().count,documents:store.db.prepare('SELECT kind,id,body FROM documents ORDER BY kind,id').all(),tokens:store.db.prepare('SELECT * FROM tokens ORDER BY hash').all()});
+  const first=service.invite(users.owner,row.id,{revision:row.revision});row=first.project;
+  const before=state();
+  for(let i=0;i<3;i++)assert.equal(service.checkInvite(first.invite),true);
+  for(const raw of [undefined,null,42,'','A'.repeat(43),' '+first.invite,first.invite+'A',first.invite.slice(0,42)+'*'])assert.equal(service.checkInvite(raw),false);
+  assert.deepEqual(state(),before,'checking never mints a session or rewrites the project');
+  const opened=service.open(first.invite);assert.equal(service.read(opened.session).csrf,opened.csrf);
+  assert.notDeepEqual(state().tokens,before.tokens,'open is the step that creates a customer session');
+  assert.equal(service.checkInvite(first.invite),true,'neither the check nor open spends the invite');
+  const next=service.invite(users.owner,row.id,{revision:row.revision});
+  assert.equal(service.checkInvite(first.invite),false);assert.throws(()=>service.open(first.invite),{status:401,message:'초대 링크가 없거나 끝났어요.'});assert.equal(service.checkInvite(next.invite),true);
+  setClock('2026-11-07T02:59:59.000Z');assert.equal(service.checkInvite(next.invite),true);
+  setClock('2026-11-07T03:00:00.000Z');assert.equal(service.checkInvite(next.invite),false);throwsStatus(()=>service.open(next.invite),401);
+  setClock('2026-10-08T03:00:00.000Z');
+  row=service.revoke(users.owner,row.id,{revision:next.project.revision}).project;
+  assert.equal(service.checkInvite(next.invite),false);throwsStatus(()=>service.open(next.invite),401);
+  const kept=service.invite(users.owner,row.id,{revision:row.revision});
+  store.put('clientProjects',row.id,{...store.get('clientProjects',row.id),stage:'archived'});
+  assert.equal(service.checkInvite(kept.invite),false,'an archived project stays closed even with a stored invite hash');throwsStatus(()=>service.open(kept.invite),401);
+  const other=create('other'),live=service.invite(users.other,other.id,{revision:other.revision});
+  store.db.prepare(`INSERT INTO documents(kind,id,body) VALUES ('clientProjects','damaged-invite-check','{damaged')`).run();
+  try{assert.throws(()=>service.checkInvite(live.invite),SyntaxError);assert.throws(()=>service.open(live.invite),SyntaxError);}
+  finally{store.db.prepare(`DELETE FROM documents WHERE kind='clientProjects' AND id='damaged-invite-check'`).run();}
+  const all=store.all;store.all=()=>{throw Object.assign(new Error('synthetic storage failure'),{code:'SQLITE_SYNTHETIC_FAILURE'});};
+  try{assert.throws(()=>service.checkInvite(live.invite),{code:'SQLITE_SYNTHETIC_FAILURE'});assert.throws(()=>service.open(live.invite),{code:'SQLITE_SYNTHETIC_FAILURE'});}
+  finally{store.all=all;}
+  assert.equal(service.checkInvite(live.invite),true);
+});

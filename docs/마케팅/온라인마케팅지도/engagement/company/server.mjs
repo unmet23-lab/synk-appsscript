@@ -250,6 +250,9 @@ export function createCompanyApp(options={}) {
   // 메일 코드로 다시 열기(판 4): 주소(IP)마다 한 시간에 코드 요청 10번 · 틀린 확인 20번.
   const waitlistIp=createAttemptLimiter({limit:10,windowMs:60*60000,now:loginNow});
   const mailOpenIp=createAttemptLimiter({limit:10,windowMs:60*60000,now:loginNow}),mailVerifyIp=createAttemptLimiter({limit:20,windowMs:60*60000,now:loginNow});
+  // 공통 초대 조회(/api/invite/inspect): 주소(IP)마다 15분에 30번까지 틀릴 수 있다. 한 종류로 확인된 조회와 저장소 오류는 몫을 돌려받고, 틀렸거나 둘 다 맞은 조회만 남는다(메모리 카운터일 뿐 저장소에는 쓰지 않는다).
+  const inviteLookupIp=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
+  const INVITE_LOOKUP_REFUSED='초대를 확인하지 못했어요. 받은 링크나 코드가 맞는지, 아직 유효한지 확인해 주세요.';
   const clock=()=>options.clock?.()||now();
   const content=createContentService({store,clock,fetchImpl:options.contentFetch,isConnected:hasConnection});
   const dailyTrends=createDailyTrendsService({store,clock,collector:options.dailyTrendsCollector,fetchImpl:options.dailyTrendsFetch});
@@ -887,6 +890,22 @@ export function createCompanyApp(options={}) {
   const server=createServer(async(req,res)=>{try{
     if(req.headers.host!==originUrl.host&&!(options.allowTestHost&&req.headers.host?.startsWith('127.0.0.1:')))throw httpError('등록된 회사 주소로 접속해 주세요.',403);
     const url=new URL(req.url,origin),path=url.pathname,method=req.method;
+    // 공통 초대 조회(2026-11-14 계약 · 회사67 이후 별도 검수): 같은 출처의 작은 JSON {token} 하나만 받는다. 쿼리 · 임의 목적지 · 클라이언트가 주장한 종류는 받지 않는다.
+    // 직원 · 고객 초대의 기존 읽기 확인을 서버가 둘 다 돌려 정확히 한쪽만 맞을 때 종류와 고정 상대 목적지만 준다. 둘 다 맞거나 둘 다 틀리면 같은 오류다.
+    // 세션 · 기기 복구 · 쿠키 · send(메신저 정리)보다 먼저 끝내고 writeResponse로만 답한다(오류도 마지막 catch의 writeResponse). 아무것도 쓰지 않으며 인증 · 수락이 아니다.
+    // 저장소 · JSON 오류는 시도 몫만 돌려주고 그대로 던진다 — 다른 종류의 초대로 바꾸지 않는다. 원문 토큰은 응답 · 오류 · 기록에 싣지 않는다.
+    if(path==='/api/invite/inspect'){
+      if(method!=='POST')throw httpError('초대 확인 요청을 확인해 주세요.',405);
+      if(req.headers.origin!==origin)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+      if(url.search)throw httpError('초대 확인 주소를 확인해 주세요.');
+      const input=await body(req,{maxBytes:1024,maxChars:512});
+      if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==1||typeof input.token!=='string'||!input.token||input.token.length>200)throw httpError('초대 코드를 확인해 주세요.');
+      const release=inviteLookupIp.reserve(clientAddress(req));let employee,customer;
+      try{employee=Boolean(workspaceProfiles.check(input.token).invitation);customer=clientProjects.checkInvite(input.token)===true;}catch(error){release();throw error;}
+      if(employee===customer)throw httpError(INVITE_LOOKUP_REFUSED,403);
+      release();
+      return writeResponse(res,200,employee?{version:1,kind:'employee',destination:'/'}:{version:1,kind:'customer',destination:'/pulse-app/'});
+    }
     const workspaceFeature=workspaceRouteFeature(path);
     if(workspaceFeature){const current=session(req);if(current)requireWorkspaceFeature(current.user,workspaceFeature);}
     if(method==='GET'&&path==='/api/creative-research/time'){if(url.search)throw httpError('현재 시각 주소를 확인해 주세요.');return writeResponse(res,200,creativeResearchTime(clock()));}
