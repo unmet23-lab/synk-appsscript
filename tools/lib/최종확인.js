@@ -137,8 +137,20 @@ function fingerprint(bundle) {
   return crypto.createHash('sha256').update(rows.join('\n')).digest('hex');
 }
 
+// 통과 · 작은 흠인데 그 판정보다 먼저 걸린 「자동 등록 중지」 표식(미흡으로 작업실 예약을 거둘 때 생김) 때문에 예약큐가 등록하지 않는 편.
+// 판정 뒤에 걸린 표식(통과한 편을 사람이 일부러 내린 것)은 건드리지 않는다. 이미 승인 대기 · 예약됨 · 게시됨인 판이 있으면 등록된 것이다.
+// 11-15: 최종 확인 세션이 새벽에 작은 흠으로 판정한 오늘 칸 두 편이 이 표식에 걸려 등록되지 않을 뻔했다(Fable 검수 P1-2의 다른 얼굴).
+const REGISTERED = new Set(['승인 대기', '예약됨', '게시됨']);
+function registrationBlocked(bundle, r) {
+  let m;
+  try { m = 묶음.readJson(path.join(bundle.dir, '게시', '작업실_자동등록중지.json')); } catch { return false; }
+  if (!m || !m.중지 || !(Date.parse(m.시각) < Date.parse(r.시각))) return false;
+  const rows = resultRows(bundle) || [];
+  return !rows.some((p) => REGISTERED.has(p.상태));
+}
+
 // 한 편의 차례: 관문 밖 · 이미 나감(모든 판 게시됨) · 이미 걸림(기록 없이 모든 판이 걸린 편 — 관문 앞에 나간 편) · 제작 중 ·
-// 다시 볼 차례 · 고칠 차례(미흡 뒤 새 판 없음) · 열림
+// 다시 볼 차례 · 고칠 차례(미흡 뒤 새 판 없음) · 등록 기다림(통과했는데 옛 중지 표식에 막힘) · 열림
 function stage(bundle) {
   if (!required(bundle.prep)) return { 차례: '관문 밖' };
   if (allBooked(bundle, new Set(['게시됨']))) return { 차례: '이미 나감' };
@@ -146,7 +158,11 @@ function stage(bundle) {
   if (!r && allBooked(bundle)) return { 차례: '이미 걸림' };
   if (r) {
     const why = changed(bundle, r);
-    if (!why) return { 차례: OPEN.has(r.결과) ? '열림' : '고칠 차례', 기록: r };
+    if (!why) {
+      if (!OPEN.has(r.결과)) return { 차례: '고칠 차례', 기록: r };
+      if (registrationBlocked(bundle, r)) return { 차례: '등록 기다림', 까닭: '통과 · 작은 흠인데 앞서 미흡으로 거둘 때 걸린 자동 등록 중지 표식 때문에 예약큐가 등록하지 않는다 — 명시 등록', 기록: r };
+      return { 차례: '열림', 기록: r };
+    }
     return ready(bundle.prep) ? { 차례: '다시 볼 차례', 까닭: why, 기록: r } : { 차례: '제작 중', 기록: r };
   }
   return ready(bundle.prep) ? { 차례: '다시 볼 차례', 까닭: '최종 확인 기록이 없다' } : { 차례: '제작 중' };
@@ -264,4 +280,4 @@ function finish(bundle, 누가 = '', { onOrigin = originHas } = {}) {
 function release(bundle) { try { fs.rmSync(lockFile(bundle), { force: true }); } catch { /* 없으면 그만 */ } }
 
 module.exports = { required, problem, changed, write, read, videos, recordFile, FINAL_FROM, BRANDS, FILE, OPEN, KINDS, HISTORY, historyFile,
-  ready, allBooked, fingerprint, stage, mainVideo, scan, needsFix, lockDir, readLock, lockOf, take, originHas, finish, release, LOCK_HOURS, FIX_LOOKBACK_DAYS };
+  ready, allBooked, registrationBlocked, fingerprint, stage, mainVideo, scan, needsFix, lockDir, readLock, lockOf, take, originHas, finish, release, LOCK_HOURS, FIX_LOOKBACK_DAYS };

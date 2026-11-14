@@ -152,6 +152,24 @@ test('놓기: 판정을 origin에 못 올렸으면 「판정 끝」을 남기지
   assert.equal(확인.take(묶음.load(옛사본), '회차 B').ok, true, '기록이 없는 작업본의 다음 회차가 다시 맡는다');
 });
 
+test('통과했는데 판정보다 먼저 걸린 자동 등록 중지 표식에 막힌 편은 「등록 기다림」 — 판정 뒤 표식(사람이 내림) · 이미 등록된 편은 「열림」', (t) => {
+  const root = repo(t);
+  const mark = (dir, 시각) => fs.writeFileSync(path.join(dir, '게시', '작업실_자동등록중지.json'), JSON.stringify({ 중지: true, 시각 }));
+  const 앞표식 = piece(root, 'synkbrief_앞표식_20261114', { 슬롯: '2026-11-16' });
+  mark(앞표식, '2026-11-13T11:06:44.843Z');
+  확인.write(묶음.load(앞표식), '작은 흠', '넥타이 매듭이 컷마다 조금 다름', { 갈래: '소품튐', 독립검수: '시험 — 그대로 내도 된다' });
+  const 뒤표식 = piece(root, 'synkbrief_뒤표식_20261114', { 슬롯: '2026-11-16' });
+  확인.write(묶음.load(뒤표식), '통과', '컷 전수', { 독립검수: '시험 — 그대로 내도 된다' });
+  mark(뒤표식, new Date(Date.now() + 60e3).toISOString());
+  const 등록됨 = piece(root, 'synkbrief_등록됨_20261114', { 슬롯: '2026-11-16', 게시결과: [{ 계정: 'synkbrief-instagram', 상태: '승인 대기' }] });
+  mark(등록됨, '2026-11-13T11:06:44.843Z');
+  확인.write(묶음.load(등록됨), '통과', '컷 전수', { 독립검수: '시험 — 그대로 내도 된다' });
+  assert.deepEqual(차례(root), { 'synkbrief_앞표식_20261114': '등록 기다림', 'synkbrief_뒤표식_20261114': '열림', 'synkbrief_등록됨_20261114': '열림' });
+  const out = spawnSync(process.execPath, [CLI, '대기', '--폴더', root마케팅(root), '--json'], { encoding: 'utf8', env: { ...process.env, SYNK_FINAL_LOCK_DIR: lockDir } });
+  assert.deepEqual(JSON.parse(out.stdout).등록할편.map((x) => x.편), ['synkbrief_앞표식_20261114']);
+  assert.equal(확인.problem(묶음.load(앞표식)), null, '등록 관문은 그대로 연다(표식은 예약큐만 막는다)');
+});
+
 test('놓기: 판정 없이 손을 떼면 맡음을 지운다', (t) => {
   const root = repo(t);
   const bundle = 묶음.load(piece(root, 'synkbrief_놓기_20261115'));

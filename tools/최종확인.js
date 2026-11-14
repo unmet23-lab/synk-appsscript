@@ -15,7 +15,8 @@
  * 최종 확인 예약 작업(synk-sns-final-check, 3시간마다 — 11-15 유호님 「예약으로 바꿔」)과 제작 회차가 쓰는 것:
  *   node tools/최종확인.js 대기 [--json] [--폴더 docs/마케팅] [--오늘 YYYY-MM-DD]   다시 볼 편(제작이 「완성」이라 적었는데 기록이 없거나
  *        기록 뒤 영상이 바뀐 편). 오늘과 뒤 슬롯을 먼저, 지난 슬롯을 뒤에 둔다. 다른 회차가 맡은 편은 「맡음」으로 보인다.
- *        없으면 「다시 볼 편 없음」 한 줄. 읽지 못한 편은 「못 읽은 편(보고만)」으로 따로 적고 셈에 넣지 않는다. 끝 코드는 늘 0이다
+ *        없으면 「다시 볼 편 없음」 한 줄. 통과 · 작은 흠인데 그 판정보다 먼저 걸린 자동 등록 중지 표식에 막힌 편은 「등록할 편」으로,
+ *        읽지 못한 편은 「못 읽은 편(보고만)」으로 따로 적고 셈에 넣지 않는다. 끝 코드는 늘 0이다
  *   node tools/최종확인.js 고칠편 [<브랜드>] [--json] [--오늘 YYYY-MM-DD]   최종 확인 「미흡」 뒤 새 판이 없는 편(슬롯이 3일 넘게 지난 편은 뺌).
  *        제작 회차가 목표 칸보다 먼저 고친다(제작절차.md 0단계). 고칠 것은 그 편 기획.md 끝 「최종 확인 미흡」 절과 기록 메모에 있다.
  *        「슬롯 지남」 편은 고친 뒤 목표 칸으로 슬롯과 판 시각을 옮긴다
@@ -57,9 +58,14 @@ function main(argv) {
     // 오늘과 뒤 슬롯이 먼저 — 지난 슬롯 편이 회차 시간을 먼저 쓰지 않게(11-15 Fable 검수 P2)
     const list = all.filter((x) => x.차례 === '다시 볼 차례').sort((a, b) => Number(a.슬롯 < day) - Number(b.슬롯 < day) || a.슬롯.localeCompare(b.슬롯) || a.편.localeCompare(b.편));
     const broken = all.filter((x) => x.차례 === '못 읽음');
-    if (argv.includes('--json')) { console.log(JSON.stringify({ 다시볼편: list, 못읽은편: broken }, null, 2)); return 0; }
+    const toRegister = all.filter((x) => x.차례 === '등록 기다림').sort((a, b) => Number(a.슬롯 < day) - Number(b.슬롯 < day) || a.슬롯.localeCompare(b.슬롯));
+    if (argv.includes('--json')) { console.log(JSON.stringify({ 다시볼편: list, 등록할편: toRegister, 못읽은편: broken }, null, 2)); return 0; }
     console.log(list.length ? `다시 볼 편 ${list.length}개(오늘과 뒤 슬롯 먼저):` : '다시 볼 편 없음');
     for (const x of list) console.log(listLine(x));
+    if (toRegister.length) {
+      console.log(`등록할 편(통과 · 작은 흠인데 옛 자동 등록 중지 표식에 막힘 — 명시 등록) ${toRegister.length}개:`);
+      for (const x of toRegister) console.log(`${x.슬롯} | ${x.편} | ${x.기록?.결과} ${String(x.기록?.시각 || '').slice(0, 16)}`);
+    }
     if (broken.length) {
       console.log(`못 읽은 편(보고만 — 회차를 열 까닭이 아니다) ${broken.length}개:`);
       for (const x of broken) console.log(listLine(x));
