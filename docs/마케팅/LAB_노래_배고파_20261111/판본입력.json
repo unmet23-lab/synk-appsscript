@@ -38,7 +38,7 @@
    "qm": "I’m hungry"
   },
   "PH": {
-   "bridge": "Kapag kumakalam ang sikmura, ang sabi ng mga Koreano…",
+   "bridge": "Kapag kumakalam ang sikmura, sabi ng mga Koreano…",
    "mean": "Gutom na ako!",
    "qm": "gutom na ako",
    "end": "Kapag gutom ka, ano’ng sinasabi mo?",
@@ -80,7 +80,7 @@
    "endK": "배고플 때 너는 뭐라고 해?"
   },
   "JP": {
-   "bridge": "お腹がグーッと鳴ったら、\n韓国語では…",
+   "bridge": "お腹が鳴ったら、\n韓国語では…",
    "bridgeK": "배가 꼬르륵 울리면 한국어로는…",
    "mean": "お腹すいた！",
    "qm": "お腹すいた",
@@ -156,7 +156,7 @@
    "endK": "배고플 때 너는 뭐라고 해?"
   },
   "MN": {
-   "bridge": "Өлсөөд гэдэс хоржигнохоор солонгосчууд ингэж хэлдэг…",
+   "bridge": "Гэдэс хоржигнохоор солонгосчууд ингэж хэлдэг…",
    "mean": "Өлсөж байна!",
    "qm": "Өлсөж байна",
    "end": "Өлсөхөөрөө чи юу гэж хэлдэг вэ?",

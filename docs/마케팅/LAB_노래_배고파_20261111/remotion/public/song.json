@@ -1,6 +1,6 @@
 {
  "fps": 30,
- "duration": 14.396,
+ "duration": 16.795,
  "audio": "song.wav",
  "bpm": 100.03,
  "first": 0.332,
@@ -65,7 +65,7 @@
   {
    "kind": "end",
    "t": 11.672,
-   "end": 14.396
+   "end": 16.795
   }
  ],
  "stage": {
@@ -88,7 +88,7 @@
    "from": [
     0.36,
     0.5,
-    1.0
+    1
    ],
    "to": [
     0.46,
@@ -123,25 +123,35 @@
   "end": "너희 말로는 「배고파」를 뭐라고 해?"
  },
  "_출처": {
-  "검수": "D:/synk-vendor/lab-song-20261111/메들리A/재기/A_ef4abaea.검수.json",
-  "곡": "D:/synk-vendor/lab-song-20261111/메들리A/ef4abaea.mp3",
-  "손질": "C:\\Users\\q1212\\Documents\\synk-vendor\\lab-song-20261111\\메들리A\\하루판_1114\\A_ef4abaea_배고파_노래만.손질.json",
+  "검수": "synk-vendor/lab-song-20261111/메들리A/재기/A_ef4abaea.검수.json",
+  "곡": "synk-vendor/lab-song-20261111/메들리A/ef4abaea.mp3",
+  "손질": "synk-vendor/lab-song-20261111/메들리A/하루판_1115/A_ef4abaea_배고파_노래만.손질.json",
   "확인할것": [],
-  "그림": "D:/synk-vendor/lab-song-20261111/시안/판/시안A3_몽글_182856.png(JPEG q2 4:4:4로 옮김)",
+  "그림": "synk-vendor/lab-song-20261111/시안/판/시안A3_몽글_182856.png(JPEG q2 4:4:4로 옮김)",
   "쉼": "없음",
   "끝자리": 11.7,
   "움직임": [
    {
-    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/S1/Felt_character_peeking_at_noodle_79f43e43.mp4"
+    "f": "~/ego/lab-song-flow-20261113/받음/나/S1/Felt_character_peeking_at_noodle_79f43e43.mp4"
    },
    {
-    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/S2/Felt_character_shivers_in_kitchen_6fa5da85.mp4",
-    "ss": 2.0,
-    "to": 5.0
+    "f": "~/ego/lab-song-flow-20261113/받음/나/S2/Felt_character_shivers_in_kitchen_6fa5da85.mp4",
+    "ss": 2,
+    "to": 5
    },
    {
-    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/bgp-s3c/Felt_character_looking_at_pot_315c716a.mp4"
+    "f": "~/ego/lab-song-flow-20261113/받음/나/bgp-s3c/Felt_character_looking_at_pot_315c716a.mp4"
    }
-  ]
+  ],
+  "읽기": {
+   "필요": {
+    "다리": 3.847,
+    "딱지": 1.693,
+    "끝": 3.334
+   },
+   "앞마디": 0,
+   "딱지머묾": 0,
+   "끝마디": 3
+  }
  }
 }

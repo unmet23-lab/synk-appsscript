@@ -1,6 +1,6 @@
 {
  "fps": 30,
- "duration": 14.132,
+ "duration": 16.487,
  "audio": "song.wav",
  "bpm": 101.895,
  "first": 0,
@@ -57,15 +57,15 @@
   {
    "kind": "real",
    "t": 10.532,
-   "end": 11.371,
+   "end": 11.96,
    "at": [
     10.582
    ]
   },
   {
    "kind": "end",
-   "t": 11.371,
-   "end": 14.132
+   "t": 11.96,
+   "end": 16.487
   }
  ],
  "stage": {
@@ -93,7 +93,7 @@
    "to": [
     0.6,
     0.5,
-    1.0
+    1
    ]
   },
   "video": "move.mp4",
@@ -116,23 +116,33 @@
  },
  "_원문": {},
  "_출처": {
-  "검수": "D:/synk-vendor/lab-song-20261111/메들리A/재기/A_0dd4832a.검수.json",
-  "곡": "D:/synk-vendor/lab-song-20261111/메들리A/0dd4832a.mp3",
-  "손질": "C:\\Users\\q1212\\Documents\\synk-vendor\\lab-song-20261111\\메들리A\\하루판_1114\\A_0dd4832a_잠깐만_노래만.손질.json",
+  "검수": "synk-vendor/lab-song-20261111/메들리A/재기/A_0dd4832a.검수.json",
+  "곡": "synk-vendor/lab-song-20261111/메들리A/0dd4832a.mp3",
+  "손질": "synk-vendor/lab-song-20261111/메들리A/하루판_1115/A_0dd4832a_잠깐만_노래만.손질.json",
   "확인할것": [],
-  "그림": "D:/synk-vendor/lab-song-20261111/시안/판/잠깐만2_몽글_235449_1.png(JPEG q2 4:4:4로 옮김)",
+  "그림": "synk-vendor/lab-song-20261111/시안/판/잠깐만2_몽글_235449_1.png(JPEG q2 4:4:4로 옮김)",
   "쉼": "없음",
   "끝자리": 25.8553,
   "움직임": [
    {
-    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/jkm-s1d/Felt_character_chasing_bus_c8801da5.mp4"
+    "f": "~/ego/lab-song-flow-20261113/받음/나/jkm-s1d/Felt_character_chasing_bus_c8801da5.mp4"
    },
    {
-    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/jkm-s2/Felt_character_bouncing_on_street_877bb964.mp4"
+    "f": "~/ego/lab-song-flow-20261113/받음/나/jkm-s2/Felt_character_bouncing_on_street_877bb964.mp4"
    },
    {
-    "f": "C:/Users/q1212/ego/lab-song-flow-20261113/받음/나/jkm-s3/Felt_character_waiting_for_bus_c23cabe3.mp4"
+    "f": "~/ego/lab-song-flow-20261113/받음/나/jkm-s3/Felt_character_waiting_for_bus_c23cabe3.mp4"
    }
-  ]
+  ],
+  "읽기": {
+   "필요": {
+    "다리": 4.539,
+    "딱지": 1.693,
+    "끝": 4.125
+   },
+   "앞마디": 0,
+   "딱지머묾": 0.589,
+   "끝마디": 3
+  }
  }
 }

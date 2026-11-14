@@ -22,6 +22,8 @@
         #   끼운 반주 뒤 「곳」으로 돌아가는 이음은 원천 끝 뒤 소리에서 들어온다(뒤겹침). 둘 다 없으면 예전처럼 「곳」 바로 앞 그 길이.
    "자르기": [시작초, 끝초, (끝빼기초)] | {"시작마디": n, "마디수": m},   # 원곡 시각. 마디 수로 주면 마디 첫 박에 맞춰 자른다.
         # 끝빼기 = 끼운 뒤 시각에서 끝을 당기는 길이(시작을 못갖춘마디만큼 당겼을 때 끝도 같이 — 셋째 값을 주면 마디에 맞춘 것으로 본다)
+   "앞마디": {"마디": 1, "원천마디": n, "원천끝마디": k, "겹침": 0.03},  # (선택, 11-15) 자른 노래 앞에 바탕 갈래 n마디(시작 바로 앞 그 길이 —
+        # 원천은 끼우기와 같다). 카운트인 다리 글을 읽을 시간이 모자랄 때 — 길이가 마디의 정수배라 박 자리 · 되풀이 이음은 그대로
    "잇기": {"겹침": 0.04},             # 끝 뒤 꼬리를 처음에 겹쳐 더해 되풀이 재생이 이어지게(끝 · 시작은 마디 첫 박이어야 한다)
    "목표길이": [15, 18]}
 끼우기는 원곡 시각에서 하고, 자르기는 끼운 뒤의 시각으로 옮겨 적용한다(손질.json 「대응」 — 영상 틀이 음절 시각을 이걸로 옮긴다).
@@ -183,6 +185,45 @@ def main():
     si, ei = idx(s_new), min(idx(e_new), len(body))
     out = body[si:ei].copy()
     joins = [j - s_new for j in joins if s_new < j < e_new]
+    # ②-1 앞마디(11-15 유호님 「읽기 빠듯하면 읽기 좋게 만들어야지」) — 자른 노래 앞에 바탕 갈래 n마디를 붙인다. 카운트인 다리 글을
+    # 읽을 시간이 모자란 편(메들리 A 「진짜」 카운트인 3.09초 — 다리 글이 21개 말에서 넘쳤다)에 쓴다. 길이가 마디의 정수배라 박 자리 ·
+    # 되풀이 이음은 그대로다. 반주는 시작 바로 앞 그 길이가 기본이고, 「원천마디 · 원천끝마디」는 끼우기와 같다(스톱 타임 편곡이면 고른 마디를 떠 되풀이).
+    intro = P.get('앞마디')
+    lead, intro_info, pre_si = 0.0, None, None
+    if intro:
+        if acc is None:
+            raise SystemExit('앞마디에는 바탕 갈래가 든다')
+        nb = int(intro.get('마디', 1))
+        Li = idx(nb * BAR)
+        if isinstance(cut, dict):
+            s_orig = first + int(cut['시작마디']) * BAR
+        elif isinstance(cut, list) and cut:
+            s_orig = float(cut[0])
+        else:
+            s_orig = 0.0
+        k_ = int(intro.get('원천끝마디') or 0)
+        Ei = idx(s_orig) - idx(k_ * BAR)
+        Si = idx(float(intro['원천마디']) * BAR) if intro.get('원천마디') else Li
+        if Ei - Si < 0:
+            raise SystemExit(f'앞마디 원천이 곡 앞으로 나간다(시작 {s_orig:.3f}초 · {k_}마디 앞에서 끝나는 {Si / SR:.3f}초)')
+        seg = acc[Ei - Si:Ei].copy()
+        if Si < Li:
+            Fi = max(1, idx(0.01))
+            loop_ = seg.copy()
+            fade = np.linspace(1, 0, Fi)[:, None]
+            loop_[-Fi:] = loop_[-Fi:] * fade + acc[Ei - Si - Fi:Ei - Si] * (1 - fade)
+            block = np.concatenate([loop_] * (Li // Si + 1) + [seg])[-Li:]
+        else:
+            block = seg[-Li:]
+        Yi = max(1, idx(float(intro.get('겹침', 0.03))))
+        up = np.linspace(0, 1, Yi)[:, None]
+        out[:Yi] = out[:Yi] * up + acc[Ei:Ei + Yi] * (1 - up)  # 붙인 반주가 끝난 자리(원천 끝) 뒤 반주에서 노래 첫머리로
+        out = np.concatenate([block, out])
+        lead = Li / SR
+        joins = [lead] + [j + lead for j in joins]
+        pre_si = Ei - min(Si, Li)  # 되풀이 이음 검사 — 붙인 반주 첫머리 바로 앞에 원래 오던 소리
+        intro_info = {'마디': nb, '길이': round(lead, 5), **({'원천마디': intro['원천마디']} if intro.get('원천마디') else {}),
+                      **({'원천끝마디': k_} if k_ else {})}
     # ③ 잇기 — 끝 뒤 꼬리를 처음에 겹쳐 더한다(되풀이 재생 때 울림이 끊기지 않게), 끝은 짧게 줄인다
     loop = P.get('잇기')
     if loop:
@@ -213,9 +254,10 @@ def main():
     loop_diff = None
     if loop:
         # 되풀이 재생에서 끝 다음에 처음이 온다 — 끝 50ms가 원곡에서 시작 바로 앞 50ms(원래 그 처음 앞에 오던 소리)와 세기가 닮았나
-        before = body[max(0, si - idx(0.08)):si]
+        before = body[max(0, si - idx(0.08)):si] if pre_si is None else acc[max(0, pre_si - idx(0.08)):pre_si]
+        at0 = si if pre_si is None else pre_si
         # 곡 맨 앞에서 시작하면 앞 소리가 없다(비교할 것 없음 — 곡 첫머리라 끊김이 아니다)
-        loop_diff = float(rms_db(out[-idx(0.08):]) - rms_db(before)) if len(before) >= idx(0.08) and si >= idx(0.1) else 0.0
+        loop_diff = float(rms_db(out[-idx(0.08):]) - rms_db(before)) if len(before) >= idx(0.08) and at0 >= idx(0.1) else 0.0
         if abs(loop_diff) > 8:
             checks.append(f'되풀이 이음 세기 차 {loop_diff:+.1f}dB(끝 80ms − 원곡에서 시작 앞 80ms)')
         if not bar_aligned:
@@ -224,7 +266,8 @@ def main():
             '마디첫박': round(first, 3), '끼움': [{'원곡곳': round(c, 3), '부탁한곳': asked, '길이': round(L, 5)} for c, L, _, _, asked, _ in ins],
             '자름': [round(s_new, 3), round(e_new, 3)], '길이': round(dur, 3), '최고': round(min(peak, 0.99), 3), '이음매': seam,
             '되풀이세기차_dB': loop_diff and round(loop_diff, 1), '확인할것': checks,
-            '대응': '손질본 시각 = 원곡 시각 + (원곡곳 ≤ 원곡 시각인 끼움 길이 합) − 자름[0]'}
+            **({'앞마디': intro_info} if intro_info else {}),
+            '대응': '손질본 시각 = 원곡 시각 + (원곡곳 ≤ 원곡 시각인 끼움 길이 합) − 자름[0]' + (' + 앞마디 길이' if intro_info else '')}
     print(json.dumps(info, ensure_ascii=False, indent=1))
     if a.미리:
         return 1 if checks else 0

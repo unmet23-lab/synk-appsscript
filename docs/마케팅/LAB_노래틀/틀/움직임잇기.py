@@ -6,12 +6,16 @@
 #     속도는 바꾸지 않는다(색 · 얼굴 · 떨림 · 속도는 손보지 않고 길이가 안 맞으면 그 길이로 다시 굽는다 — 노래 틀 README 「몽글 움직임」).
 #     --캠: 16:9 영상용 카메라 시작 · 끝(가로 · 세로 = 화면에 둘 영상 속 자리 0~1, 줌). 없으면 song.json 것을 그대로 둔다.
 #   → <편>/remotion/public/move.mp4(git 밖 — mp4는 저장소에 넣지 않는다, remotion/.gitignore에 더함) · move_first.jpg(그 첫 장, git 안)
-#     song.json stage: video · videoAt 0 · aspect 16/9 · img move_first.jpg · _출처.움직임(클립 목록 — 다시 만들 때 쓴다)
+#     song.json stage: video · videoAt 0 · aspect 16/9 · img move_first.jpg · _출처.움직임(클립 목록 — 다시 만들 때 쓴다. 경로는 「~/…」 꼴 — 이식경로.py)
 #   게시 · 돌림은 공용 작업본에서 판본 자산 지문을 다시 세니, 워크트리에서 만들었으면 move.mp4를 공용 작업본 같은 자리에도 둔다(판본 영상과 함께).
 import argparse
 import json
 import subprocess
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import 이식경로 as ep  # noqa: E402 — 클립 경로는 「~/…」 · 「synk-vendor/…」 꼴로 적고 읽는다(11-15, 공개 저장소)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("편")
@@ -23,6 +27,7 @@ pub = Path(a.편) / "remotion" / "public"
 songf = pub / "song.json"
 doc = json.loads(songf.read_text(encoding="utf-8"))
 segs = json.loads(Path(a.클립).read_text(encoding="utf-8"))
+segs = [{**s, "f": ep.풀기(s["f"])} for s in segs]  # song.json _출처.움직임을 그대로 넘겨도 된다
 dur = float(doc["duration"])
 
 ins, fc = [], []
@@ -55,7 +60,7 @@ if a.캠:
     cam["from"], cam["to"] = [[float(v) for v in c.split(",")] for c in a.캠]
     st["cam"] = cam
 doc["stage"] = st
-doc.setdefault("_출처", {})["움직임"] = [{k: v for k, v in s.items()} for s in segs]
+doc.setdefault("_출처", {})["움직임"] = [{**s, "f": ep.줄이기(s["f"])} for s in segs]
 songf.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
 
 gi = Path(a.편) / "remotion" / ".gitignore"

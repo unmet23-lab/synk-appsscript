@@ -327,3 +327,15 @@ for (const 키 of 키들) {
   기록.push(`${키} ${n.lang} 읽기 ${read.join('·')}(${rd.문자}${rd.금칙 ? ' · 금칙 → 로마자' : ''}) · 원고 ${플.join(' · ')}`);
 }
 console.log(기록.join('\n'));
+
+// 읽기 관문(11-15 유호님 「읽기 빠듯하면 읽기 좋게 만들어야지 왜 빠듯하게 만든거야」) — 판본 글 모두를 song.json 화면 구간과 대어,
+// 다리 글 · 뜻 · 딱지 · 끝 물음 가운데 읽을 시간이 모자란 줄이 하나라도 있으면 끝 코드 1. 글자 검사는 같은 때 끝나는 줄을 묶어 재고
+// 「확인할 것」으로만 짚어 눈확인 메모로 넘어갔다(11-14 노래만 판 끝 물음 49판 · 다리 글 21판 · 진짜 속도 딱지 32판).
+const 읽기관문 = require('./읽기재기.cjs');
+if (fs.existsSync(path.join(편폴더, 'remotion', 'public', 'song.json'))) {
+  const r = 읽기관문.재기(편폴더);
+  if (r.넘침.length) {
+    console.error(`\n읽기 시간이 모자라는 줄 ${r.넘침.length}개 — 곡을 다시 자르거나(편만들기.py … --읽기 ${path.relative(뿌리, 편폴더)}) 글을 줄인다\n${읽기관문.알림(r)}`);
+    process.exitCode = 1;
+  } else console.log(`읽기 시간 — 판본 ${new Set(r.줄.map((z) => z.키)).size}개 모두 넉넉하다`);
+}

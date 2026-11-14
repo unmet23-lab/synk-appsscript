@@ -17,6 +17,10 @@
   목소리만 천천히 내린다(곡손질 앞겹침 = 곡 → 바탕 갈래 교차 — 바탕은 그대로 흐른다).
 - `--쉼 있음|손뼉|없음`(11-14): 있음 = 예전 그대로(반주만 흐르는 네 차례 두 마디), 손뼉 = 손뼉 마디 박마다 손뼉 소리를 얹는다
   (`--손뼉 <소리…>` 번갈아), 없음 = 네 차례 두 마디를 빼고 노래만(끝 물음 자리만 끼운다).
+- `--읽기 <편 폴더>`(11-15 유호님 「읽기 빠듯하면 읽기 좋게 만들어야지」): 판본 글 26개를 읽는 시간(틀/읽기재기.cjs --필요)으로
+  ① 카운트인 화면이 가장 긴 다리 글보다 짧으면 노래 앞에 반주 마디를 붙이고(곡손질 「앞마디」 — song.json count에 intro 초),
+  ② 노래만 판에서 진짜 속도 딱지가 모자라면 끝 화면을 박 단위로 늦추고(딱지 머묾), ③ 끝 물음 화면이 가장 긴 끝 물음을 읽을 만큼 되게
+  끝 끼움 마디 수를 고른다. 판본 글이 아직 없는 첫 자르기는 --읽기 없이 하고, 판본글짓기.cjs 끝의 읽기 관문이 걸리면 --읽기로 다시 자른다.
 """
 import argparse
 import importlib.util
@@ -30,12 +34,46 @@ import numpy as np
 sys.stdout.reconfigure(encoding='utf-8')
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]
+sys.path.insert(0, str(HERE))
+import 이식경로 as ep  # noqa: E402 — song.json 「_출처」에 사용자 폴더 경로를 적지 않는다(11-15, 공개 저장소)
 _spec = importlib.util.spec_from_file_location('곡손질', REPO / 'tools' / '곡손질.py')
 gs = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gs)
 
 
-END_MIN = 2.5  # 끝 물음 화면의 가장 짧은 길이(초)
+END_MIN = 2.5  # 끝 물음 화면의 가장 짧은 길이(초) — --읽기를 주지 않을 때만(판본 글이 아직 없는 첫 자르기)
+# 11-15 유호님 「읽기 빠듯하면 읽기 좋게 만들어야지 왜 빠듯하게 만든거야」 — 노래만 판의 끝 화면이 2.7~2.8초라 끝 물음이 49개 판에서,
+# 카운트인 3.09초인 「진짜」는 다리 글이 21개 판에서, 진짜 속도 딱지가 32개 판에서 넘쳤다. --읽기 <편 폴더>를 주면 판본 글 26개의 읽는
+# 시간(틀/읽기재기.cjs --필요 — 글자 검사와 같은 셈)으로 앞마디 · 딱지 머묾 · 끝 물음 마디 수를 정한다. 아래 값은 Song.tsx · 읽기재기.cjs와 같다.
+END_IN = 0.4      # 끝 물음 첫 낱말이 끝 화면 12프레임 뒤에 들어온다
+BRIDGE_OUT = 0.2  # 다리 글이 카운트인 끝 0.3초 앞부터 빠진다
+LABEL_IN = 0.2    # 딱지가 흐림에서 또렷해지는 동안
+REAL_LEAD = 0.5   # 진짜 속도 딱지는 그 구간보다 0.5초 먼저 뜬다
+
+
+def 읽기맞춤(count_len, real_win, bar, beat, y, rest_on, need, 앞마디=None):
+    """읽는 시간에 맞춘 곡 짜임 → (앞마디 수, 진짜 속도 딱지 머묾 초, 끝 끼움 마디 수).
+    ① 앞마디: 카운트인 화면이 가장 긴 다리 글(need 다리)을 읽을 만큼 되도록 노래 앞에 붙일 반주 마디 수(앞마디를 주면 그 값).
+    ② 딱지 머묾: 노래만 판(rest_on 거짓)은 진짜 속도 줄 바로 뒤가 끝 화면이라 딱지가 1초 안팎만 뜬다 — 모자라면 박 단위로 끝 화면을 늦춘다.
+    ③ 끝 끼움: 둘째 끼움(쉼 한 마디 + 끝 물음 자리) 안에서 시작과 같은 박 자리. 끝 물음 화면(딱지 머묾 뒤)이 가장 긴 끝 물음을 읽을 만큼
+       남도록 마디 수를 고른다(need 끝이 없으면 예전대로 END_MIN초 — 11-12: 1.0초였을 때 메들리 A 「진짜」의 끝 물음이 1.59초뿐이었다)."""
+    if 앞마디 is not None:
+        n0 = 앞마디
+    else:
+        n0 = 0
+        while count_len + n0 * bar - BRIDGE_OUT < need.get('다리', 0) - 1e-9:
+            n0 += 1
+    hold = 0.0
+    if not rest_on:
+        short = need.get('딱지', 0) - real_win
+        if short > 1e-9:
+            hold = int(np.ceil(short / beat - 1e-9)) * beat
+    end_need = (need['끝'] + END_IN) if need.get('끝') is not None else END_MIN
+    B1 = bar if rest_on else 0.0
+    k2 = 2 if rest_on else 1
+    while k2 * bar - B1 - y - hold < end_need - 1e-9:
+        k2 += 1
+    return n0, hold, k2
 
 
 def quiet_between(voc, a, b):
@@ -112,6 +150,8 @@ def main():
     ap.add_argument('--쉼', choices=['있음', '손뼉', '없음'], default='있음')
     ap.add_argument('--손뼉', nargs='*', default=[], help='손뼉 소리 파일(번갈아 놓음) — --쉼 손뼉일 때')
     ap.add_argument('--손뼉세기', type=float, default=5.0, help='손뼉 첫 50ms 세기를 그 마디 반주 세기보다 몇 dB 위로')
+    ap.add_argument('--읽기', help='편 폴더 — 판본 글 26개를 읽는 시간으로 앞마디 · 진짜 속도 딱지 머묾 · 끝 물음 마디 수를 정한다(11-15)')
+    ap.add_argument('--앞마디', type=int, help='노래 앞에 붙일 반주 마디 수(주면 --읽기 셈보다 앞선다)')
     ap.add_argument('--줄짜임', default='1,1,1,1,1',
                     help='카운트인 다음 끊어 · 이어 · 끊어 · 이어 · 진짜 속도가 각각 몇 줄인가(메들리 B처럼 끊어 줄을 한 줄에 한 음절로 적었으면 4,1,4,1,1)')
     a = ap.parse_args()
@@ -149,13 +189,21 @@ def main():
     nxt = after[0]['시작'] if after else end_line(real) + 0.6
     c2 = a.끝자리 if a.끝자리 is not None else quiet_between(voc, end_line(real) - 0.02, min(nxt - 0.01, end_line(real) + 0.6))
     rest_on = a.쉼 != '없음'
-    # 끝 — 둘째 끼움(쉼 한 마디 + 끝 물음 자리) 안에서 시작과 같은 박 자리. 끝 물음이 END_MIN초 넘게 남도록 끼움을 두 마디 또는 세 마디로.
-    # (11-12: 1.0초였을 때 메들리 A 「진짜」의 끝 물음이 1.59초뿐이라 40~50자 물음을 못 읽었다 — 글자 검사 읽기 시간)
+    B1 = bar if rest_on else 0.0
+    # 읽는 시간(11-15) — 판본 글 26개 가운데 가장 긴 것. 없으면 예전 값(끝 화면 END_MIN초 · 앞마디 없음 · 딱지 머묾 없음)
+    need = {'다리': 0.0, '딱지': 0.0, '끝': None}
+    if a.읽기:
+        r = subprocess.run(['node', str(HERE / '읽기재기.cjs'), a.읽기, '--필요'], capture_output=True, text=True, encoding='utf-8')
+        if r.returncode != 0:
+            raise SystemExit('읽기재기 실패: ' + (r.stderr or r.stdout)[-800:])
+        need.update(json.loads(r.stdout))
+    count_len = (chop1[0]['시작'] - start) + (B1 if c1 <= chop1[0]['시작'] else 0) - 0.05  # 카운트인 화면(다리 글) 길이
+    real_t = (real[0]['시작'] - start) + B1 - 0.05
+    real_win = (c2 - start) + B1 - (real_t - REAL_LEAD + LABEL_IN)  # 진짜 속도 딱지가 읽히는 동안(머묾 없이)
     y = (c2 - start) % bar  # 끼운 반주의 끝(=c2 박 자리)에서 이만큼 당기면 시작과 같은 박 자리
-    if rest_on:
-        L2 = 2 * bar if (bar - y) >= END_MIN else 3 * bar
-    else:  # 말하기 마디 없이 끝 물음 자리만
-        L2 = bar if (bar - y) >= END_MIN else 2 * bar
+    n0, hold, k2 = 읽기맞춤(count_len, real_win, bar, beat, y, rest_on, need, a.앞마디)
+    B0 = n0 * bar
+    L2 = k2 * bar
     acc = gs.load(a.acc)
 
     def source(c, n, L):
@@ -184,6 +232,7 @@ def main():
     plan = {'이름': name, '곡': a.song, '바탕': a.acc, '목소리': a.voc, '박': {'bpm': s['bpm'], '첫박': first},
             '끼우기': ([{'곳': round(c1, 4), '길이': bar, '찾기': None, '앞겹침': 0.03, '뒤겹침': 0.008, **source(c1, 1, bar)}] if rest_on else [])
                      + [{'곳': round(c2, 4), '길이': L2, '찾기': None, '앞겹침': a.끝겹침, '뒤겹침': 0.008, **source(c2, 2, L2)}],
+            **({'앞마디': {'마디': n0, '겹침': 0.03, **source(start, n0, B0)}} if n0 else {}),
             '자르기': [round(start, 4), round(c2, 4), round(y, 4)], '잇기': {'겹침': 0.03}, '목표길이': [14, 20]}
     pp = out / f'{name}.손질계획.json'
     pp.write_text(json.dumps(plan, ensure_ascii=False, indent=1), encoding='utf-8')
@@ -194,10 +243,8 @@ def main():
     dur = info['길이']
     s0 = start
 
-    B1 = bar if rest_on else 0.0
-
     def to_clip(t):
-        return round(t + (B1 if c1 <= t + 1e-6 else 0) + (L2 if c2 <= t + 1e-6 else 0) - s0, 3)
+        return round(t + (B1 if c1 <= t + 1e-6 else 0) + (L2 if c2 <= t + 1e-6 else 0) - s0 + B0, 3)
 
     loc = json.loads(Path(a.판본).read_text(encoding='utf-8'))
     syl = [ch for ch in a.낱말 if '가' <= ch <= '힣']
@@ -214,7 +261,7 @@ def main():
     rest1 = to_clip(c1) - B1
     rest2 = to_clip(c2) - L2
     parts = [
-        {'kind': 'count', 't': 0.0, 'end': round(to_clip(chop1[0]['시작']) - 0.05, 3)},
+        {'kind': 'count', 't': 0.0, 'end': round(to_clip(chop1[0]['시작']) - 0.05, 3), **({'intro': round(B0, 3)} if B0 else {})},
         {'kind': 'chop', 't': round(to_clip(chop1[0]['시작']) - 0.05, 3), 'end': round(to_clip(whole1[0]['시작']) - 0.05, 3), 'at': pick(chop1)},
         {'kind': 'whole', 't': round(to_clip(whole1[0]['시작']) - 0.05, 3), 'end': round(rest1, 3), 'at': reps(whole1)},
         {'kind': 'rest', 't': round(rest1, 3), 'end': to_clip(c1), 'mode': 'clap'},
@@ -224,10 +271,10 @@ def main():
         {'kind': 'rest', 't': round(rest2, 3), 'end': round(rest2 + bar, 3), 'mode': 'say'},
         {'kind': 'end', 't': round(rest2 + bar, 3), 'end': dur},
     ]
-    if not rest_on:  # 네 차례 두 마디 없음 — 이어(뜻)는 다음 끊어 바로 앞까지, 진짜 속도 다음이 바로 끝 물음
+    if not rest_on:  # 네 차례 두 마디 없음 — 이어(뜻)는 다음 끊어 바로 앞까지, 진짜 속도 다음이 끝 물음(딱지 머묾만큼 뒤 — 11-15)
         parts[2]['end'] = parts[4]['t']
         parts = [p for p in parts if p['kind'] != 'rest']
-        parts[-1]['t'] = parts[-2]['end'] = round(rest2, 3)
+        parts[-1]['t'] = parts[-2]['end'] = round(rest2 + hold, 3)
     # 저절로 고른 끝 자리 뒤 0.12초 안에서 목소리가 다시 커지는데 다음 가사 줄은 0.3초 넘게 뒤면(줄 끝 음절을 일찍 잡은 재기 ·
     # 가사에 없는 소리) 귀로 확인하게 적는다. --끝자리로 준 자리는 들은 것이라 보지 않는다.
     tt, e = gs.band_env(voc, c2 - 0.3, c2 + 0.12)
@@ -241,9 +288,10 @@ def main():
            'word': a.낱말, 'syl': syl, 'parts': parts,
            'stage': {'mode': a.무대, **({'img': a.그림} if a.무대 == 'mongle' and a.그림 else {}), **({'pic': a.그림} if a.무대 == 'plain' and a.그림 else {})},
            'loc': {k: v for k, v in loc.items() if not k.startswith('_')}, '_원문': loc.get('_원문', {}),
-           '_출처': {'검수': a.result, '곡': a.song, '손질': str(out / f'{name}.손질.json'), '확인할것': info['확인할것'],
+           '_출처': {'검수': ep.줄이기(a.result), '곡': ep.줄이기(a.song), '손질': ep.줄이기(out / f'{name}.손질.json'), '확인할것': info['확인할것'],
                      '쉼': a.쉼, **({'손뼉': claps} if claps else {}), **({'끝자리': a.끝자리} if a.끝자리 is not None else {}),
-                     **({'끝겹침': a.끝겹침} if a.끝겹침 != 0.03 else {})}}
+                     **({'끝겹침': a.끝겹침} if a.끝겹침 != 0.03 else {}),
+                     **({'읽기': {'필요': need, '앞마디': n0, '딱지머묾': round(hold, 3), '끝마디': k2 - (1 if rest_on else 0)}} if a.읽기 or a.앞마디 is not None else {})}}
     (out / f'{name}.song.json').write_text(json.dumps(doc, ensure_ascii=False, indent=1), encoding='utf-8')
     print(json.dumps({'길이': dur, '끼움': info['끼움'], '자름': info['자름'], '이음매': info['이음매'], '되풀이세기차_dB': info['되풀이세기차_dB'],
                       '확인할것': info['확인할것']}, ensure_ascii=False))
