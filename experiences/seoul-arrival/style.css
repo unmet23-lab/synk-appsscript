@@ -186,7 +186,7 @@ p{text-wrap:pretty}
 .nto-s.shown .nto-n{opacity:.4}.nto-s.shown.cur .nto-n{opacity:1}.nto-s.done .nto-n{opacity:0}
 .nto-nib{fill:#C24A37;opacity:0}
 .nt .trace-hint{display:flex;gap:10px;align-items:baseline;width:auto;max-width:none;min-height:56px;margin:0;padding:12px 2px 6px;transform:none;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;font-size:13.5px;font-weight:560;line-height:1.38;color:#1B1E25;text-align:left}
-.nt-cnt{flex:none;font:500 11px var(--mono);letter-spacing:.02em;color:#9A9FA8}.nt-cnt b{font-weight:500;color:#C24A37}
+.nt-cnt{flex:none;font:500 11px var(--mono);letter-spacing:.02em;color:#6A6F78}.nt-cnt b{font-weight:500;color:#C24A37}
 .nt .trace-btns{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px;width:auto;max-width:none;margin:2px 0 0;padding:10px 0 11px;transform:none;border-top:1px solid #ECEAE6}
 .nt .trace-skip{display:inline-flex;align-items:center;gap:5px;margin:0;min-height:40px;padding:0 10px 0 8px;border-radius:999px;background:none;box-shadow:inset 0 0 0 1px rgba(21,23,28,.18);-webkit-backdrop-filter:none;backdrop-filter:none;font-size:12px;font-weight:600;color:#262A32;white-space:nowrap}
 .nt .trace-skip svg{width:15px;height:15px;flex:none}
@@ -208,10 +208,10 @@ p{text-wrap:pretty}
 @keyframes nt-cmp-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .nt-cmp-l{font-size:11.5px;font-weight:600;color:#6A6F78;letter-spacing:.02em}
 .nt-cmp-model,.nt-cmp-mine{display:flex;gap:6px}
-.nt-cmp-mine{margin-bottom:14px}
+.nt-cmp-mine{margin-bottom:17px}
 .nt-cg{position:relative;display:block;flex:1 1 0;min-width:0;max-width:78px;aspect-ratio:1;box-shadow:inset 0 0 0 1px rgba(194,74,55,.32)}
 .nt-cg canvas{position:absolute;inset:0;width:100%;height:100%}
-.nt-cs{position:absolute;left:0;right:0;bottom:-16px;text-align:center;font:500 10.5px var(--mono);letter-spacing:.02em;color:#8A909A}
+.nt-cs{position:absolute;left:50%;top:calc(100% + 3px);transform:translateX(-50%);white-space:nowrap;text-align:center;font:500 10.5px var(--mono);letter-spacing:.02em;color:#5E636C}
 .nt-cmp-s{display:flex;align-items:center;gap:10px;padding-top:6px;border-top:1px solid #ECEAE6}
 .nt-cmp-s span{font-size:12px;font-weight:600;color:#6A6F78}
 #ntScore{font:500 32px/1 var(--mono);letter-spacing:-.02em;color:#15171C;font-variant-numeric:tabular-nums}
@@ -220,11 +220,11 @@ p{text-wrap:pretty}
 .nt-cs.good{color:#2F6B4F}.nt-cs.low{color:#C24A37}
 .nt-cs em{margin-left:4px;padding:0 4px;border-radius:2px;font:600 9.5px/14px var(--sans);font-style:normal;letter-spacing:0;color:#C24A37;background:rgba(194,74,55,.09);vertical-align:1px}
 .nt-cmp-lr{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.nt-try{font:500 10.5px var(--mono);letter-spacing:.02em;color:#9A9FA8;white-space:nowrap}
+.nt-try{font:500 10.5px var(--mono);letter-spacing:.02em;color:#6A6F78;white-space:nowrap}
 .nt-sl{display:grid;gap:3px;min-width:0}
 .nt-sd{display:flex;align-items:center;gap:7px;min-height:17px}
 .nt-sd:has(#ntDelta:empty):has(#ntRec:empty){display:none}
-.nt-cmp-s .nt-rec{font:500 10.5px var(--mono);letter-spacing:.02em;color:#9A9FA8;white-space:nowrap}
+.nt-cmp-s .nt-rec{font:500 10.5px var(--mono);letter-spacing:.02em;color:#6A6F78;white-space:nowrap}
 .nt-best{display:inline-block;padding:2px 6px 1px;border:1.5px solid #C24A37;border-radius:2px;font:800 10.5px/1.2 var(--sans);letter-spacing:.04em;color:#C24A37;transform:rotate(-4deg);animation:nt-best .42s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes nt-best{0%{opacity:0;transform:rotate(-4deg) scale(1.8)}70%{opacity:1;transform:rotate(-4deg) scale(.94)}100%{transform:rotate(-4deg) scale(1)}}
 #ntScore.land{animation:nt-land .38s cubic-bezier(.2,1.4,.4,1)}
@@ -240,7 +240,7 @@ p{text-wrap:pretty}
 .nt-line{display:grid;gap:2px;min-width:0}
 .nt-line span{font-size:14px;font-weight:650;line-height:1.38;color:#15171C;word-break:keep-all}
 .nt-line small{font-size:12px;font-weight:500;line-height:1.35;color:#6A6F78}
-@media (prefers-reduced-motion:reduce){.nt-say,.nt-best,#ntScore.land{animation:none}.nt-who.talk i{animation:none}}
+@media (prefers-reduced-motion:reduce){.nt-say,.nt-best,#ntScore.land,.nt-cmp,.trace.nt.done .nt-card{animation:none}.nt-who.talk i{animation:none}.trace.nt.done .nt-seal{animation:none;opacity:.94;transform:rotate(-5deg)}}
 .nt:not(.cmp) #ntRetry,.nt:not(.cmp) #ntKeep{display:none}
 .nt.cmp #ntOrderBtn,.nt.cmp #ntClear{display:none}
 .nt.cmp .nt-skip{visibility:hidden}

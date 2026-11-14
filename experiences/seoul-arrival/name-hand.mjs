@@ -49,13 +49,16 @@ export function likeness(model,ink,lw=.05,{fit=false}={}){
  const a=mp.reduce((s,p)=>s+Math.max(0,near(p,ip)-lw*.35),0)/mp.length,b=ip.reduce((s,p)=>s+Math.max(0,near(p,mp)-lw*.35),0)/ip.length;
  return Math.max(0,Math.min(1,1-(a+b)/2/(lw*1.4)));
 }
+// 동그라미가 돈 방향: 점들의 무게중심을 기준으로 잰 부호 있는 넓이(양수 = 화면에서 시계 방향). 열린 획을 그대로 신발끈 공식에 넣으면
+// 칸 안 자리(좌표 크기)에 따라 끝점 항이 섞인다 — 무게중심을 빼면 자리와 상관없다(카본 A2)
+const spin=st=>{let cx=0,cy=0;for(const [x,y] of st){cx+=x;cy+=y;}cx/=st.length;cy/=st.length;let s=0;for(let i=1;i<st.length;i++)s+=(st[i-1][0]-cx)*(st[i][1]-cy)-(st[i][0]-cx)*(st[i-1][1]-cy);return s;};
 // 방금 그은 획이 어느 모형 획을 따라갔고 거꾸로였는지(ㅇ은 돈 방향)
 export function which(model,stroke,lw=.05){
  if(stroke.length<4)return {k:-1};
  const fr=model.map(s=>stroke.filter(p=>segDist(p,s.p)<lw*1.6).length/stroke.length);
  const k=fr.indexOf(Math.max(...fr));if(fr[k]<.6)return {k:-1};
  const P=model[k].p,a=stroke[0],z=stroke[stroke.length-1],D=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]);
- if(model[k].k==='o'){let s=0;for(let i=1;i<stroke.length;i++)s+=(stroke[i][0]-stroke[i-1][0])*(stroke[i][1]+stroke[i-1][1]);return {k,rev:s<0};}
+ if(model[k].k==='o')return {k,rev:spin(stroke)>0};
  return {k,rev:D(a,P[P.length-1])+D(z,P[0])<D(a,P[0])+D(z,P[P.length-1])};
 }
 
@@ -64,10 +67,22 @@ export function which(model,stroke,lw=.05){
 export function fitsStroke(ms,stroke,lw=.05){
  if(!ms||stroke.length<4)return null;const P=ms.p;
  if(stroke.filter(p=>segDist(p,P)<lw*2.2).length/stroke.length<.6)return null;
- if(ms.k==='o'){let s=0;for(let i=1;i<stroke.length;i++)s+=(stroke[i][0]-stroke[i-1][0])*(stroke[i][1]+stroke[i-1][1]);return {rev:s<0};}
+ if(ms.k==='o')return {rev:spin(stroke)>0};
  const a=stroke[0],z=stroke[stroke.length-1],A=P[0],Z=P[P.length-1],vx=z[0]-a[0],vy=z[1]-a[1],Vx=Z[0]-A[0],Vy=Z[1]-A[1],l=Math.hypot(vx,vy),L=Math.hypot(Vx,Vy);
  if(!l||!L||l/L<.5||l/L>1.7)return null;
  const cos=(vx*Vx+vy*Vy)/(l*L);return Math.abs(cos)<.8?null:{rev:cos<0};
+}
+
+// 다 쓴 음절의 획 순서 · 방향을 다시 센다(카본 A3): 잉크 상자를 모형 상자에 맞춘 뒤(0.3~3배 — 크기는 닮음 점수가 따로 보므로 여기서는 획을 짚는 데만 맞춘다) 쓴 차례대로 다시 짚는다.
+// 흐린 글씨 없이 빈 칸 한쪽에 작게 쓴 학생이 이웃 획으로 잘못 짚혀 「순서」 · 「방향」이 깎이지 않게. 돌려준 n은 모형 획을 따라간 획 수
+export function strokeStats(model,ink,lw=.05,{fit=true}={}){
+ let list=ink.filter(s=>s.length);if(!list.length)return {n:0,ord:0,dir:0};
+ if(fit){const mb=bbox(model.flatMap(s=>s.p)),ib=bbox(list.flat());if(ib.w+ib.h>=(mb.w+mb.h)*.35){const k=Math.max(.3,Math.min(3,(mb.w+mb.h)/((ib.w+ib.h)||1)));list=list.map(s=>s.map(([x,y])=>[mb.cx+(x-ib.cx)*k,mb.cy+(y-ib.cy)*k]));}}
+ const tried=new Set();let n=0,ord=0,dir=0;
+ for(const st of list){const expect=model.findIndex((_,k)=>!tried.has(k));let w=which(model,st,lw);
+  if(expect>=0&&w.k!==expect){const m=fitsStroke(model[expect],st,lw);if(m)w={k:expect,rev:m.rev};}
+  if(w.k>=0&&!tried.has(w.k)){tried.add(w.k);n++;if(w.k===expect)ord++;if(!w.rev)dir++;}}
+ return {n,ord,dir};
 }
 
 // ── 서명 줄글: 음절 | 획 , 점 두 글자(0~63) ──

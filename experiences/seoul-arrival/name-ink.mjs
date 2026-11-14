@@ -52,7 +52,8 @@ export function nibQuads(p,K,{h,a=.42}){
  for(let i=1;i<p.length;i++){const [ax,ay]=p[i-1],[bx,by]=p[i],ka=K[i-1],kb=K[i];
   const v=[[ax-cx*ka,ay-cy*ka],[ax+cx*ka,ay+cy*ka],[bx+cx*kb,by+cy*kb],[bx-cx*kb,by-cy*kb]];
   let s=0;for(let j=0;j<4;j++){const [x1,y1]=v[j],[x2,y2]=v[(j+1)%4];s+=x1*y2-x2*y1;}if(s<0)v.reverse();out.push(v);}
- if(p.length===1){const [x,y]=p[0],k=K[0];out.push([[x-cx*k,y-cy*k],[x+cx*k,y+cy*k],[x+cx*k+.6,y+cy*k+.6],[x-cx*k+.6,y-cy*k+.6]]);}
+ // 점 하나짜리 획(톡 찍은 점 · 줄글을 되읽어 한 점이 된 짧은 획): 촉 크기에 비례한 작은 평행사변형 — 픽셀 칸과 [0,1] 학생증 SVG에서 같은 크기로 보이게(카본 A1 · B1)
+ if(p.length===1){const [x,y]=p[0],k=K[0],ex=-cy*k*.6,ey=cx*k*.6;out.push([[x-cx*k-ex/2,y-cy*k-ey/2],[x+cx*k-ex/2,y+cy*k-ey/2],[x+cx*k+ex/2,y+cy*k+ey/2],[x-cx*k+ex/2,y-cy*k+ey/2]]);}
  return out;
 }
 // 넓적 촉: 반폭 h인 촉(각 a)을 길 따라 쓸고, 가장 얇은 데도 h*m은 남긴다

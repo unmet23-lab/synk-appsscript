@@ -5,7 +5,7 @@
 // 순서를 어겨도 막지 않는다(쓴 획은 쓴 것으로 치고 안내는 아직 안 쓴 가장 앞 획으로). 못 넘겨도 「이대로 쓸게요」로 지나간다(엄격한 관문은 스트레스).
 // 펜으로 쓰는 동안(마지막 펜 닿음에서 2.5초 안)은 손바닥 · 손가락 닿음을 잉크로 치지 않는다 — 13판과 같다.
 import {syllableStrokes,isSyllable} from './hangul-strokes.mjs';
-import {score,which,fitsStroke,likeness,encodeSign,decodeSign} from './name-hand.mjs';
+import {score,which,fitsStroke,strokeStats,likeness,encodeSign,decodeSign} from './name-hand.mjs';
 import {inkScale,nib,nibQuads,smooth,resample,shapeOf,drawGuide} from './name-ink.mjs';
 import {createCoach,finalLine,VO,weakTag,tier} from './name-coach.mjs';
 
@@ -231,8 +231,10 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
 
   // ── 다 쓴 뒤 비교: 바른 글씨(모형) · 내 글씨(쓴 자리 · 크기 그대로) · 닮은 정도. 막지 않는다 — 「다시 써 보기」 또는 「학생증에 넣을게요」 ──
   // 음절 점수: 닮은 정도(모형 가운데 선과의 거리) · 획 덮음 · 획 순서 · 방향(엉뚱한 획은 깎는다). 흐린 글씨 위를 바르게 따라 쓰면 90점대, 비뚤면 70점대
-  function sylParts(k){const s=stats[k];return {ord:s?.n?s.ord/s.n:1,dir:s?.n?s.dir/s.n:1,like:inks[k]?.length?likeness(syllableStrokes(syl[k].ch),inks[k],lw/W,{fit:knows}):0};}
-  function sylScore(k){const s=stats[k],r=s?.r;if(!r||!inks[k]?.length)return 0;const ord=s.n?s.ord/s.n:1,dir=s.n?s.dir/s.n:1,like=likeness(syllableStrokes(syl[k].ch),inks[k],lw/W,{fit:knows});
+  // 비교판의 순서 · 방향은 쓰는 동안 센 값과 상자를 맞춰 다시 센 값(strokeStats) 가운데 나은 쪽 — 빈 칸에 치우쳐 쓴 학생이 잘못 깎이지 않게(카본 A3)
+  function sylParts(k){const s=stats[k],m=syllableStrokes(syl[k].ch),r=strokeStats(m,inks[k]||[],lw/W),f=(a,n)=>n?a/n:1;
+   return {ord:Math.max(f(s?.ord,s?.n),f(r.ord,r.n)),dir:Math.max(f(s?.dir,s?.n),f(r.dir,r.n)),like:inks[k]?.length?likeness(m,inks[k],lw/W,{fit:knows}):0};}
+  function sylScore(k){const s=stats[k],r=s?.r;if(!r||!inks[k]?.length)return 0;const {ord,dir,like}=sylParts(k);
    return Math.max(0,Math.min(100,Math.round(100*(.55*like+.2*r.all+.15*ord+.1*dir)-6*(r.stray||0))));}
   function compare(){
    if(finished)return;
@@ -245,7 +247,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    const cells=syl.map(s=>({s,m:addCell('.nt-cmp-model'),y:addCell('.nt-cmp-mine')}));
    // 음절 점수: 90점 넘으면 초록, 가장 낮은 음절이 90점 아래면 붉게 + 가장 많이 잃은 곳(순서 · 방향 · 모양) 꼬리표 — 다시 쓸 때 볼 곳
    const low=per.indexOf(Math.min(...per));
-   cells.forEach(({y},k)=>{const tag=k===low&&per[k]<90?weakTag(sylParts(k)):null;y.insertAdjacentHTML('beforeend',`<b class="nt-cs${per[k]>=90?' good':k===low&&per[k]<90?' low':''}">${per[k]}${tag?`<em>${L(tag)}</em>`:''}</b>`);});
+   cells.forEach(({y},k)=>{const tag=k===low&&per[k]<90&&syl.length<5?weakTag(sylParts(k)):null;y.insertAdjacentHTML('beforeend',`<b class="nt-cs${per[k]>=90?' good':k===low&&per[k]<90?' low':''}">${per[k]}${tag?`<em>${L(tag)}</em>`:''}</b>`);});
    const rec=$('#ntRec'),newBest=prev!=null&&total>prev;rec.textContent=prev!=null&&!newBest?L('지난 최고',{p:prev}):'';$('#ntTry').textContent=attempt>1?L('도전 횟수',{n:attempt}):'';
    const sc=$('#ntScore');sc.classList.remove('land');
    const sz=cells[0].m.offsetWidth||60,c=sz*d,lwc=sz*.05;
@@ -275,7 +277,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   // 다시 써 보기: 이름 처음 음절부터(시범은 저절로 보이지 않는다 — 「획순 보기」로), 점수는 이번 판과 견준다
   const retry=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;
    phase='write';attempt++;coach.hush();cancelAnimationFrame(cmpRaf);cmp.hidden=true;box.classList.remove('cmp');inks.length=0;stats.length=0;i=0;
-   row.querySelectorAll('.nt-cell').forEach(c=>{c.innerHTML='';});SND.felt('page');openSyllable(false);hint.textContent=HINT;};
+   row.querySelectorAll('.nt-cell').forEach(c=>{c.innerHTML='';});SND.felt('page');openSyllable(false);};
   const keep=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;finish(true);};
   function cleanup(){cancelAnimationFrame(soRaf);cancelAnimationFrame(cmpRaf);demoRun++;clearTimeout(idleT);coach.hush();clearTimeout(timer);clearTimeout(acceptT);clearTimeout(swT);clearTimeout(swT2);
    cv.removeEventListener('pointerdown',down);cv.removeEventListener('pointermove',move);removeEventListener('pointerup',up);cv.removeEventListener('pointercancel',cancelPt);removeEventListener('resize',onResize);
@@ -301,7 +303,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
     for(let k=0;k<list.length&&left>0;k++){const m=Math.min(list[k].length,Math.ceil(left));paintInk(xd,list[k].slice(0,m),w,m===list[k].length);left-=list[k].length;}
     if(c<total)requestAnimationFrame(f);})(t0);
   }
-  const onResize=()=>{if(!finished&&!last){fit();}};
+  const onResize=()=>{if(!finished&&!last&&phase==='write'&&!switching){fit();}};
   cv.addEventListener('pointerdown',down);cv.addEventListener('pointermove',move);addEventListener('pointerup',up);cv.addEventListener('pointercancel',cancelPt);addEventListener('resize',onResize);
   btnOrder.addEventListener('click',order);btnClear.addEventListener('click',clear);btnAccept.addEventListener('click',accept);btnSkip.addEventListener('click',skip);btnRetry.addEventListener('click',retry);btnKeep.addEventListener('click',keep);
   const self={

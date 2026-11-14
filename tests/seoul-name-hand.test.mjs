@@ -184,7 +184,8 @@ test('서하 응원: 점수 층 · 다시 쓴 판 · 꼬리표 · 줄 파일과 
  assert.equal(finalLine({score:40,attempt:1}),'flow');
  assert.equal(finalLine({score:90,attempt:2,prev:82}),'rup');
  assert.equal(finalLine({score:80,attempt:2,prev:82}),'rdown');
- assert.equal(finalLine({score:82,attempt:3,prev:82}),'rdown');   // 같으면 「조금만 더」
+ assert.equal(finalLine({score:82,attempt:3,prev:82}),'fhi');    // 지난 최고와 같으면 점수 층 말(「최고 기록까지 조금만 더」는 뜻이 어긋남, 카본 A6)
+ assert.equal(finalLine({score:70,attempt:2,prev:70}),'fmid');
  assert.equal(finalLine({score:100,attempt:2,prev:100}),'r100');
  assert.deepEqual([100,95,85,60].map(tier),['full','top','hi','mid']);
  assert.equal(weakTag({ord:.5,dir:1,like:.98}),'순서');
@@ -198,6 +199,8 @@ test('서하 응원: 점수 층 · 다시 쓴 판 · 꼬리표 · 줄 파일과 
   for(const lang of ['en','mn'])assert.ok(text in TEXT_TABLES.UI[lang],`${lang}: ${text}`);
  }
  for(const ids of Object.values(SETS))for(const id of ids)assert.ok(VO[id],id);
+ // 꼬리표 열쇠는 L(tag)로 불러 화면 글 검사가 못 본다 — 여기서 번역을 확인(카본 B5)
+ for(const k of ['순서','방향','모양','최고 기록','도전 횟수','지난 최고'])for(const lang of ['en','mn'])assert.ok(k in TEXT_TABLES.UI[lang],lang+': '+k);
 });
 test('서하 응원: 바로잡기는 음절마다 두 번 · 1.8초 안에 다시 하지 않고, 칭찬은 돌아가며, 끝 줄은 끼어든다', () => {
  let t=0;const played=[];const SND={speak:u=>{played.push(u.match(/vo_nt_(\w+)\.mp3/)[1]);return 1.2;},hush(){},voWarm(){}};
@@ -212,4 +215,25 @@ test('서하 응원: 바로잡기는 음절마다 두 번 · 1.8초 안에 다�
  assert.equal(c.final({score:84,attempt:1}).id,'fhi');   // 칭찬이 도는 중이어도 끝 줄은 낸다
  assert.equal(c.said,'fhi');
  const quiet=createCoach({SND:{speak:()=>null}});assert.equal(quiet.praise(),null);   // 아직 안 풀린 줄 · 소리 없음은 건너뛴다
+});
+
+// 카본 지적 고침(seoul-name-v3-20261114): 한 점 획 · 동그라미 방향 · 상자 맞춘 순서 · 방향
+import {nibQuads} from '../experiences/seoul-arrival/name-ink.mjs';
+import {fitsStroke,strokeStats} from '../experiences/seoul-arrival/name-hand.mjs';
+test('카본 A1 · A2 · A3: 한 점 획은 촉 크기만큼만, 동그라미 방향은 자리와 상관없이, 비켜 쓴 음절의 순서 · 방향은 상자를 맞춰 다시 센다', () => {
+ // A1: [0,1] 학생증 좌표에서 점 하나 — 모든 꼭짓점이 촉 반폭 안
+ const q=nibQuads([[.5,.5]],[1],{h:.03,a:.42});assert.equal(q.length,1);
+ for(const [x,y] of q[0])assert.ok(Math.hypot(x-.5,y-.5)<.04,String([x,y]));
+ // A2: 칸 아래쪽의 받침 ㅇ을 안내대로(12시 → 9시 → 6시 → 3시) 돌고 10~11시까지 여며도, 반대로 돌아도 자리와 상관없이 맞게
+ const loop=(cx,cy,r,from,turn,dirSign)=>Array.from({length:40},(_,i)=>{const a=from+dirSign*turn*i/39;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];});
+ const model=[{k:'o',p:loop(.5,.78,.1,-Math.PI/2,2*Math.PI,-1)}];
+ for(const [cx,cy] of [[.5,.78],[.3,.85],[.7,.2]]){
+  assert.equal(which(model.map(m=>({...m,p:loop(cx,cy,.1,-Math.PI/2,2*Math.PI,-1)})),loop(cx,cy,.1,-Math.PI/2,2*Math.PI+.6,-1)).rev,false,'바른 방향 '+cx+','+cy);
+  assert.equal(which(model.map(m=>({...m,p:loop(cx,cy,.1,-Math.PI/2,2*Math.PI,-1)})),loop(cx,cy,.1,-Math.PI/2,2*Math.PI+.6,1)).rev,true,'반대 '+cx+','+cy);
+ }
+ assert.equal(fitsStroke(model[0],loop(.5,.78,.1,-Math.PI/2,2*Math.PI-.4,-1)).rev,false);
+ // A3: 「가」를 바른 차례 · 방향으로 칸 왼쪽 위에 절반 크기로 쓰면, 그대로는 이웃 획으로 짚혀도 상자를 맞추면 순서 · 방향이 다 맞다
+ const ga=syllableStrokes('가'),small=ga.map(s=>samples(s.p).map(([x,y])=>[.12+x*.5,.1+y*.5]));   // 실제 잉크처럼 점을 촘촘히
+ const r=strokeStats(ga,small,.05);assert.equal(r.n,ga.length);assert.equal(r.ord,ga.length);assert.equal(r.dir,ga.length);
+ const back=strokeStats(ga,[small[1],small[0],...small.slice(2)],.05);assert.ok(back.ord<back.n,'순서를 바꾸면 여전히 깎인다');
 });

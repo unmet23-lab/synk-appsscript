@@ -4,7 +4,7 @@
 // 줄 파일은 assets/snd/vo_nt_<id>.mp3 — 글이 바뀌면 다시 굽는다(qa/소리출처.json 「글」과 같아야 한다)
 export const VO=Object.freeze({
  g1:'좋아요!',g2:'오, 반듯해요.',g3:'잘 쓰고 있어요!',g4:'그렇지, 바로 그거예요.',
- o1:'아, 순서! 번호부터 써 봐요.',o2:'잠깐요, 번호 순서대로요.',
+ o1:'아, 순서! 번호 차례대로 써 봐요.',o2:'잠깐요, 번호 순서대로요.',
  d1:'어, 반대로 갔어요. 화살표 따라가요.',d2:'방향이 반대예요! 화살표 쪽으로요.',
  w1:'흐린 글씨 위로, 천천히요.',i1:'괜찮아요. 천천히 해도 돼요.',
  f100:'백 점! 처음 쓴 거 맞아요?',ftop:'와, 거의 똑같아요! 진짜 처음이에요?',fhi:'오, 잘 썼다! 한 번 더 하면 백 점 나오겠는데요?',
@@ -19,6 +19,7 @@ const PRIO={praise:1,idle:1,stray:2,order:2,dir:2,final:3};
 export function finalLine({score,attempt=1,prev=null}){
  if(attempt<=1||prev==null){if(score>=100)return 'f100';if(score>=92)return 'ftop';if(score>=80)return 'fhi';if(score>=65)return 'fmid';return 'flow';}
  if(score>=100)return 'r100';
+ if(score===prev)return score>=80?'fhi':'fmid';
  return score>prev?'rup':'rdown';
 }
 // 점수 층(소리 · 색): 100 · 92 · 80 · 그 아래

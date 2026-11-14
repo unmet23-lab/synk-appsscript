@@ -92,10 +92,10 @@ const SND=(()=>{
   const vo={};let voNow=null;
   function voWarm(url){const c=ensure();if(!c||vo[url])return;vo[url]=fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(a=>c.decodeAudioData(a)).then(b=>{vo[url]=b;return b;}).catch(()=>{delete vo[url];return null;});}
   function hush(){if(!voNow||!ctx)return;const {s,g}=voNow;voNow=null;try{g.gain.setTargetAtTime(0,ctx.currentTime,.03);s.stop(ctx.currentTime+.15);}catch{}ramp(musicBus.gain,.78,.5);}
-  function speak(url,{vol=1}={}){const c=ensure();if(!c||c.state!=='running')return null;const b=vo[url];if(!(b instanceof AudioBuffer)){voWarm(url);return null;}
+  function speak(url,{vol=1}={}){const c=ensure();if(!on||!c||c.state!=='running')return null;const b=vo[url];if(!(b instanceof AudioBuffer)){voWarm(url);return null;}
     hush();const s=c.createBufferSource(),g=c.createGain();s.buffer=b;g.gain.value=vol;s.connect(g);g.connect(voBus);s.start();ramp(musicBus.gain,.4,.18);
     const me={s,g};voNow=me;s.onended=()=>{if(voNow===me){voNow=null;ramp(musicBus.gain,.78,.6);}};return b.duration;}
-  function toggle(){on=!on;try{localStorage.setItem('synk.world.seoul.sound',on?'on':'off');}catch{}if(ctx)ramp(master.gain,on?1:0,.25);return on;}
+  function toggle(){on=!on;try{localStorage.setItem('synk.world.seoul.sound',on?'on':'off');}catch{}if(!on)hush();if(ctx)ramp(master.gain,on?1:0,.25);return on;}
   /* ── 펠트 합성(world-sound.mjs FELT · storyVoice와 같은 식) ── */
   let nb=null;function noise(){if(!nb){const n=Math.floor(ctx.sampleRate*.6);nb=ctx.createBuffer(1,n,ctx.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}const s=ctx.createBufferSource();s.buffer=nb;return s;}
   const vary=a=>1+(Math.random()*2-1)*a;
