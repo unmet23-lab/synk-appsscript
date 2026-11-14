@@ -3,7 +3,10 @@
 // 남자 · 해설은 흰, AI의 사과는 회색 · 버터는 한 곳(LINES의 butter) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
 // 그린 앱 화면 칸은 없다 — 폰 · 모니터 속은 시작 그림에 함께 구운 흐린 줄뿐이다.
 import React from 'react';
-import { AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
+// v15(11-15 03:33): 스마트 앱 컨트롤이 서명 없는 Remotion 프레임 추출기(compositor의 remotion.exe)를 막아 OffthreadVideo가 「spawn UNKNOWN」으로 렌더되지 않는다 —
+// 브라우저 안에서 프레임을 읽는 @remotion/media의 Video로 바꾸고, 막힌 추출기로 돌아가지 않게 disallowFallbackToOffthreadVideo를 켠다(보안 설정은 건드리지 않는다)
+import { Video } from '@remotion/media';
 import { KO } from './lib/fonts';
 import { S, CUTS, LINES, VO, SOUNDS, TOTAL_S, FPS, type Crop } from './timeline';
 
@@ -30,7 +33,7 @@ const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; dr
     <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
       {/\.(png|jpg)$/.test(src)
         ? <Img src={staticFile(src)} style={style} />
-        : <OffthreadVideo muted src={staticFile(src)} startFrom={sec(start)} playbackRate={rate} style={style} />}
+        : <Video muted src={staticFile(src)} trimBefore={sec(start)} playbackRate={rate} style={style} objectFit="fill" disallowFallbackToOffthreadVideo />}
     </AbsoluteFill>
   );
 };
@@ -74,7 +77,8 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
   const lift = interpolate(f, [b - fade, b], [0, fade > 3 ? -12 : 0], { ...clamp, easing: Easing.in(Easing.quad) });
   const up = (k: number, lineIdx?: number) => {
     const s0 = at && lineIdx != null && at[lineIdx] != null ? sec(at[lineIdx]) : a + k * 3;
-    const p = instant && (!at || lineIdx === 0 || lineIdx == null) ? (f >= s0 ? 1 : 0) : interpolate(f, [s0 - 2, s0 + 3], [0, 1], { ...clamp, easing: EASE_OUT });
+    // v15c: instant + at이면 at의 모든 줄이 그 초에 한 번에 뜬다(전에는 첫 줄만 — instant + at을 여러 줄에 쓰는 것은 답장 두 줄뿐)
+    const p = instant ? (f >= s0 ? 1 : 0) : interpolate(f, [s0 - 2, s0 + 3], [0, 1], { ...clamp, easing: EASE_OUT });
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28 + lift}px)` };
   };
   return (
@@ -126,9 +130,11 @@ export const Film: React.FC = () => {
 
       {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
       {/* 배경음(일레븐랩스 연주곡 — 피치카토 긴장 → 9초부터 추격). 복도 질주(S.dash)에서 올라오고, 전원선을 뽑는 S.plug에 뚝 끊긴다 — 끝 칸은 방 소리 · 해설만(음악층 ⑲ · 준비.json 「음악꺼짐판단」) */}
-      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.dash - 0.3), sec(S.dash + 0.4), sec(S.plug - 0.05), sec(S.plug + 0.04)], [0.07, 0.12, 0.12, 0.27, 0.27, 0], clamp)} />
+      {/* v15d: 무릎 꿇는 컷(S.kneel)에서 0.35초에 걸쳐 0.27 → 0.12로 낮춘다 — 플러그를 뽑기 전 숨을 고르고, 딸깍이 바탕보다 튄다 */}
+      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.dash - 0.3), sec(S.dash + 0.4), sec(S.kneel), sec(S.kneel + 0.35), sec(S.plug - 0.05), sec(S.plug + 0.04)], [0.07, 0.12, 0.12, 0.27, 0.27, 0.12, 0.12, 0], clamp)} />
       {/* 아침 집 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
-      <Audio src={staticFile('sfx/room.wav')} volume={(fr) => interpolate(fr, [sec(S.plug), sec(S.plug + 0.3), sec(S.room + 0.8)], [0.05, 0.1, 0.3], clamp)} />
+      {/* v15b(맥락 없는 Fable 5.2 「3.7~4.2초 · 6.8~7.0초가 −41~−45dB로 푹 꺼짐」 — 곡이 쉬는 마디와 말 사이가 겹친 자리): 플러그 전 방 소리를 0.05 → 0.2(약 −38dB 바닥) */}
+      <Audio src={staticFile('sfx/room.wav')} volume={(fr) => interpolate(fr, [sec(S.plug), sec(S.plug + 0.3), sec(S.room + 0.8)], [0.2, 0.2, 0.3], clamp)} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
       {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
       </>}

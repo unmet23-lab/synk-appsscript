@@ -40,6 +40,7 @@
 - 일레븐 v4 새 배역은 공식 API가 힉스필드 경유보다 약 5배 싸다 → 공유 목소리를 더해 굽고 값은 머리글로 읽는다 (아래 「목소리·받아쓰기」 끝)
 - Remotion에서 CSS `mask-image: url()`을 쓰면 렌더마다 몇 프레임씩 가면이 빠진다(11-09 M32 여섯 장) → 기다리는 `<Img>`에 `crossOrigin="anonymous"`, 낼 판은 번지는 구간을 낱프레임으로 잰다 (아래 「렌더(Remotion·Playwright)」 끝)
 - 새 편의 Remotion 틀과 부품 폴더는 `node tools/새편.js <편 폴더> --실행`으로 세운다(synkbrief 11-12 · LAB 11-13부터, LAB 노래 · 퀴즈 편은 제 틀) — 앞 편의 `remotion/`을 복사하거나 `node_modules`를 편끼리 잇지 않는다. 옛 편 · 연결이 끊긴 편도 같은 명령이고 그때는 부품만 잇는다 ([자세히](#remotion-parts))
+- 11-15부터 스마트 앱 컨트롤이 서명 없는 Remotion 프레임 추출기(`remotion.exe`)를 막아, `OffthreadVideo`를 쓰는 편은 렌더가 「spawn UNKNOWN」으로 멈춘다 → 보안 설정은 건드리지 않고 `@remotion/media`의 `Video`(`disallowFallbackToOffthreadVideo`)로 바꾼다 ([자세히](#remotion-sac))
 
 ## 목차
 
@@ -916,6 +917,13 @@ emotion.cmd`가 남아 있다.
 - 원인: `판본렌더.mjs`는 시작할 때 `remotion bundle`을 한 번 만들어 모든 판을 그 번들로 굽는다. 번들은 그때의 `src/판본/<키>.json`을 담는다. 그런데 렌더 기록의 `글sha256`은 판마다 구울 때 디스크의 글에서 다시 쟀다. 판본 글은 자산 지문(`자산재기`) 밖이라 바뀐 것을 아무도 못 잡았다. 글자 검사는 글 모양을 글.json으로 재고 화면 글자는 글자 인식으로만 보므로 글이 다른 것은 못 본다.
 - 고침: 판본렌더.mjs 아홉 사본(노래 세 편 · 이야기 여섯 편 — 노래 틀 `새편.mjs`는 화날때 사본을 복사한다)이 번들 앞뒤로 판마다 글 지문을 찍는다. 번들을 만드는 사이 글이 바뀌면 멈춘다. 구울 때 디스크의 글이 번들의 글과 다르면 그 판을 굽지 않고 실패로 센다. 렌더 기록에는 번들의 글 지문을 적는다.
 - 다시 확인: 고친 도구로 `node 판본렌더.mjs VN UZ`를 돌려 두 판을 다시 구웠고, 3초 장면에 고친 글(「… mất rồi! Hãy hét lên …」 · 「koreys tilida」)이 나온다. 렌더가 도는 동안 글을 고쳐야 하면 그 판은 렌더가 끝난 뒤 따로 다시 돌린다.
+
+<a id="remotion-sac"></a>
+### 스마트 앱 컨트롤이 Remotion 프레임 추출기(`remotion.exe`)를 막아 `OffthreadVideo` 렌더가 「spawn UNKNOWN」으로 멈춘다 — `@remotion/media`의 `Video`로 바꾼다 (2026-11-15 Claude)
+- 증상: 11-15 03:33 synkbrief B44 v15를 렌더하자 `npx remotion render`가 「Could not extract frame from compositor Error: spawn UNKNOWN」을 되풀이하다 끝났다. 마감 스크립트는 렌더 줄을 `tail -1`로만 보여 줘서, 음량을 재는 python이 「unsupported operand … tuple」로 먼저 터졌다. 같은 편이 11-14 저녁에는 잘 렌더됐고, Bash와 PowerShell 도구 둘 다 같았다.
+- 원인: 부품 폴더(`%LOCALAPPDATA%/synk/remotion-parts/remotion-4.0.535-…/node_modules/@remotion/compositor-win32-x64-msvc/remotion.exe`)의 서명 없는 추출기를 스마트 앱 컨트롤이 막았다. PowerShell에서 직접 띄우면 「애플리케이션 제어 정책에서 이 파일을 차단했습니다」가 나오고, CodeIntegrity 로그에 3077이 남는다. 같은 폴더의 `ffmpeg.exe`와 `ffprobe.exe`는 막히지 않았다. `OffthreadVideo`는 프레임마다 이 추출기를 부르므로 영상 컷이 있는 편은 모두 걸린다. 스마트 앱 컨트롤 자체는 [윈도우 노트](윈도우_셸.md#smart-app-control)를 본다.
+- 고침: 보안 설정을 끄거나 추출기를 다른 이름으로 옮기지 않는다. 편의 `Film.tsx`에서 `OffthreadVideo`를 `import { Video } from '@remotion/media'`로 바꾸고, `startFrom`을 `trimBefore`로 바꾸고, `objectFit="fill"`과 `disallowFallbackToOffthreadVideo`를 준다(막힌 추출기로 돌아가지 않게). `@remotion/media`는 편 틀 부품에 이미 들어 있고, 브라우저 안에서 프레임을 읽어 추출기가 필요 없다. `Audio`는 그대로 둔다(소리는 ffmpeg이 섞는다).
+- 다시 확인: B44 첫 여섯 장을 바꾼 부품으로 렌더해 11-14 판(`OffthreadVideo`)의 같은 장과 견주니 SSIM 0.9935였다(같은 길을 두 번 렌더한 차이와 같은 크기). 25.3초 전체 렌더와 마감(−14.6 LUFS)도 끝났다.
 
 ## 목소리·받아쓰기
 
