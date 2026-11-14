@@ -6,6 +6,7 @@ plaintext excludes only the immutable final newline required by Google Docs.
 Writes never retry; an ambiguous result must be investigated with a fresh read.
 """
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -38,6 +39,10 @@ WEEKLY_SOURCE_KINDS = frozenset(('공식', '보도', '업계', '내부'))
 WEEKLY_MAX_ITEMS = 150
 MAX_CONTENT = 1024 * 1024
 MAX_JSON_ARGUMENT = 120 * 1024  # Linux has a 128 KiB single-argument ceiling.
+
+_evidence_spec = importlib.util.spec_from_file_location('source_evidence', Path(__file__).with_name('source-evidence.py'))
+evidence = importlib.util.module_from_spec(_evidence_spec)
+_evidence_spec.loader.exec_module(evidence)
 
 
 class Refused(Exception):
@@ -274,6 +279,14 @@ def validate_creative(role, text):
     if not isinstance(report, str) or not re.fullmatch(pattern, report):
         raise Refused('REPORT_ID_ROLE_OR_FORMAT_MISMATCH')
     validate_workspace_contract(role, value)
+    return validate_source_evidence(role, value)
+
+
+def validate_source_evidence(role, value):
+    try:
+        return evidence.validate(role, value)
+    except (evidence.Refused, OSError, ValueError, KeyError) as exc:
+        raise Refused(str(exc) if isinstance(exc, evidence.Refused) else 'SOURCE_EVIDENCE_UNAVAILABLE') from exc
 
 
 def validate_workspace_contract(role, value):
@@ -365,7 +378,8 @@ def snapshot_document(role, target):
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
-    return {'status': 'snapshot-saved', **compact(state), 'contentPath': str(destination)}
+    return {'status': 'snapshot-saved', **compact(state), 'contentPath': str(destination),
+            **({'sourceHistoryPath': str(WORK / (role + '-sources.json'))} if role in FIXED_DOCS else {})}
 
 
 def write_document(role, target, filename, expected_revision):
@@ -398,18 +412,26 @@ def write_document(role, target, filename, expected_revision):
 
 
 def main(argv):
-    if len(argv) not in (3, 4, 5) or argv[1] not in ('read', 'snapshot', 'validate', 'write'):
-        raise Refused('USAGE: read ROLE | snapshot ROLE | validate ROLE CONTENT_FILE | write ROLE CONTENT_FILE EXPECTED_REVISION')
+    if len(argv) not in (3, 4, 5) or argv[1] not in ('read', 'snapshot', 'validate', 'write', 'source', 'inventory', 'audit'):
+        raise Refused('USAGE: read/snapshot/inventory/audit ROLE | source ROLE URL | validate ROLE CONTENT_FILE | write ROLE CONTENT_FILE EXPECTED_REVISION')
     action, role = argv[1:3]
-    if (action in ('read', 'snapshot') and len(argv) != 3) or (action == 'validate' and len(argv) != 4) or (action == 'write' and len(argv) != 5):
+    if (action in ('read', 'snapshot', 'inventory', 'audit') and len(argv) != 3) or (action in ('source', 'validate') and len(argv) != 4) or (action == 'write' and len(argv) != 5):
         raise Refused('INVALID_ARGUMENT_COUNT')
     target = document_id(role)
-    if action == 'validate':
+    if action == 'source':
+        value = evidence.source_read(role, argv[3])
+    elif action == 'inventory':
+        if role not in FIXED_DOCS:
+            raise Refused('CREATIVE_ROLE_REQUIRED')
+        value = evidence.inventory(role, [read_document(document_id(other))[0]['plaintext'] for other in FIXED_DOCS])
+    elif action == 'audit':
+        value = validate_creative(role, read_document(target)[0]['plaintext'])
+    elif action == 'validate':
         text = content_file(argv[3])
-        validate_creative(role, text)
+        counts = validate_creative(role, text) or {}
         value = {'status': 'content-validated', 'documentId': target,
                  'sha256': sha(text), 'utf8Bytes': len(text.encode('utf-8')),
-                 'networkRequests': 0, 'writes': 0}
+                 'networkRequests': 0, 'writes': 0, **counts}
     elif action == 'read':
         value = public(read_document(target)[0])
     elif action == 'snapshot':
@@ -422,7 +444,7 @@ def main(argv):
 if __name__ == '__main__':
     try:
         main(sys.argv)
-    except (Refused, OSError, UnicodeError) as exc:
-        message = str(exc) if isinstance(exc, Refused) else type(exc).__name__
+    except (Refused, evidence.Refused, OSError, UnicodeError, ValueError) as exc:
+        message = str(exc) if isinstance(exc, (Refused, evidence.Refused)) else type(exc).__name__
         print(pack({'error': message}), file=sys.stderr)
         sys.exit(1)

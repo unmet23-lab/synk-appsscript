@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline tests only: fake gws subprocess, synthetic documents and temp files."""
 import importlib.util
+from datetime import datetime, timezone
 from contextlib import redirect_stdout
 from io import StringIO
 import json
@@ -234,11 +235,67 @@ class DocsIoTest(unittest.TestCase):
                  'reportId': 'synk-creative-yt-tt-2026-10-18-140730'}
         text = json.dumps(value) + '\n' + io.MARKER
         self.path.write_text(text, encoding='utf-8', newline='')
-        with patch.object(io, 'validate_workspace_contract'), patch.object(io, 'document_id', return_value=TARGET), \
+        with patch.object(io, 'validate_workspace_contract'), patch.object(io, 'validate_source_evidence', return_value={}), patch.object(io, 'document_id', return_value=TARGET), \
                 patch.object(io, 'run_gws') as gws, redirect_stdout(StringIO()) as output:
             io.main(['docs-io.py', 'validate', 'yt-tt', str(self.path)])
         gws.assert_not_called()
         self.assertEqual(json.loads(output.getvalue())['sha256'], io.sha(text))
+
+    def test_source_to_actual_workspace_contract_and_audit(self):
+        # Use the real application validator, including its accepted +00:00
+        # timestamp spelling. Only the remote HTTP/Docs transports are mocked.
+        base = Path(__file__).resolve().parents[2]
+        contract = base / 'docs/마케팅/온라인마케팅지도/engagement/company/creative-research.mjs'
+        wrapper = Path(__file__).with_name('validate-report.mjs')
+        node = 'node'
+        if not contract.exists():
+            contract = Path('/opt/synk-argon-77yuhbs/report-contract/creative-research.mjs')
+            wrapper = contract.with_name('validate-report.mjs')
+            node = '/opt/synk-argon-77yuhbs/bin/node'
+        self.assertTrue(contract.is_file(), 'real Workspace contract must be present')
+        runner = self.root / 'real-validator.mjs'
+        runner.write_text('import {validateResearchReport} from ' + json.dumps(contract.as_uri()) + ';\n'
+                          'import {validateReportContract} from ' + json.dumps(wrapper.as_uri()) + ';\n'
+                          'let text="";for await(const chunk of process.stdin)text+=chunk;'
+                          'console.log(JSON.stringify(validateReportContract(JSON.parse(text),{validateResearchReport,role:process.argv[2],at:"2026-11-14T00:03:00Z"})));', encoding='utf-8')
+        url = 'https://www.youtube.com/watch?v=abcdefghijk'
+        data = {'videoPrimaryInfoRenderer': {'title': {'simpleText': 'Actual source title'}, 'dateText': {'simpleText': 'Nov 13, 2026'},
+                                           'viewCount': {'videoViewCountRenderer': {'originalViewCount': '123'}}},
+                'videoSecondaryInfoRenderer': {'description': {'simpleText': 'Actual public source description'}}}
+        data['currentVideoEndpoint'] = {'watchEndpoint': {'videoId': 'abcdefghijk'}}
+        body = ('var ytInitialData = ' + json.dumps(data)).encode()
+        with patch.object(io.evidence, 'HOME', self.root), patch.object(io, 'REPORT_NODE', node), patch.object(io, 'REPORT_VALIDATOR', runner), \
+                patch.object(io, 'document_id', return_value=TARGET), patch.object(io.evidence, 'fetch', return_value=body), \
+                patch.object(io.evidence, 'datetime') as clock:
+            clock.now.return_value = datetime(2026, 11, 14, 0, 1, tzinfo=timezone.utc)
+            clock.fromisoformat.side_effect = datetime.fromisoformat
+            io.evidence.write_json(self.root / 'run-status/full.json', {'status': 'running', 'invocationId': 'a' * 32})
+            with patch.object(io, 'read_document', return_value=({'plaintext': '{"entries":[]}'}, {})), redirect_stdout(StringIO()):
+                io.main(['docs-io.py', 'inventory', 'full'])
+            with redirect_stdout(StringIO()) as out:
+                io.main(['docs-io.py', 'source', 'full', url])
+            proof = json.loads(out.getvalue())
+            entry = {'source': 'youtube-trends', 'kind': 'recent-video', 'title': proof['title'], 'sourceUrl': proof['sourceUrl'],
+                     'checkedAt': proof['checkedAt'], 'metrics': proof['metrics'], 'research': {
+                         'summary': 'Source text read', 'whyNow': 'New source', 'brands': ['LAB'], 'priority': 'watch',
+                         'observedFacts': [{'text': proof['description'], 'sourceUrl': url}], 'evidenceLevel': 'page-read',
+                         'limitations': 'Video not played', 'publishedAt': None,
+                         'applications': [{key: 'Synthetic proposal' for key in ('brand','idea','zeroSecondHook','action','reward','personalizationTool','validation72h')}],
+                         'productionGuide': {'formatName': 'Synthetic format', 'requiredAssets': ['Our own materials'],
+                             'productionSteps': [{'order': i, 'title': 'Step', 'instruction': 'Use own material'} for i in range(1,4)],
+                             'brandAdaptation': 'Our own material', 'appeal': 'Explain a choice', 'estimatedMinutes': 20}}}
+            report = {'schemaVersion': 1, 'provider': 'gemini-spark', 'reportId': 'synk-creative-full-2026-11-14-090200',
+                      'date': '2026-11-14', 'researchStartedAt': '2026-11-14T00:00:00Z', 'asOfAt': '2026-11-14T00:00:00Z',
+                      'researchCompletedAt': '2026-11-14T00:02:00Z', 'entries': [entry]}
+            text = json.dumps(report) + '\n' + io.MARKER
+            self.path.write_text(text, encoding='utf-8', newline='')
+            with patch.object(io, 'run_gws') as gws, redirect_stdout(StringIO()) as out:
+                io.main(['docs-io.py', 'validate', 'full', str(self.path)])
+            gws.assert_not_called()
+            self.assertEqual(json.loads(out.getvalue())['newCandidateCount'], 1)
+            with patch.object(io, 'read_document', return_value=({'plaintext': text}, {})), redirect_stdout(StringIO()) as out:
+                io.main(['docs-io.py', 'audit', 'full'])
+            self.assertEqual(json.loads(out.getvalue()), {'freshSourceCount': 1, 'newCandidateCount': 1})
 
     def test_linux_argument_ceiling_refuses_before_write(self):
         self.path.write_text('가' * 42000, encoding='utf-8')

@@ -7,7 +7,7 @@ if role not in ('full','yt-tt','meta-brand','synkbrief','scan-lab','scan-ai','sc
 state=H/'run-status';state.mkdir(exist_ok=True,mode=0o700)
 log=H/'logs'/(role+'.stream.jsonl');err=H/'logs'/(role+'.stderr.log');record=state/(role+'.json')
 now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
-SAFE_ERRORS={'DOC_READ_FAILED','BEGIN_DOC_READ_FAILED','BEGIN_INVOCATION_ID_INVALID','SERVICE_FAILED','MISSING_OR_MULTIPLE_RUNS','MODEL_MISMATCH','CONVERSATION_MISMATCH','CLI_FAILED_OR_DENIED','MISSING_DELIVERY_MARKER','DOC_SHA_MISMATCH','NO_CHANGE_DOC_CHANGED_OR_NO_BASELINE','RUN_CHECK_FAILED'}
+SAFE_ERRORS={'DOC_READ_FAILED','BEGIN_DOC_READ_FAILED','BEGIN_INVOCATION_ID_INVALID','BEGIN_SOURCE_INVENTORY_FAILED','SOURCE_EVIDENCE_AUDIT_FAILED','NO_NEW_SOURCE_CANDIDATES','SERVICE_FAILED','MISSING_OR_MULTIPLE_RUNS','MODEL_MISMATCH','CONVERSATION_MISMATCH','CLI_FAILED_OR_DENIED','MISSING_DELIVERY_MARKER','DOC_SHA_MISMATCH','NO_CHANGE_DOC_CHANGED_OR_NO_BASELINE','RUN_CHECK_FAILED'}
 def terminal_receipt(d):
  """Keep only bounded evidence fields, never report text or revision strings."""
  receipt={'receiptVersion':1,'role':role,'status':d['status']}
@@ -21,6 +21,9 @@ def terminal_receipt(d):
  for key in ('offset','stderrOffset'):
   value=d.get(key)
   if type(value) is int and value>=0:receipt[key]=value
+ for key in ('knownSourceCount','freshSourceCount','newCandidateCount','recoveredDocumentCount','unsupportedHistoryUrlCount'):
+  value=d.get(key)
+  if type(value) is int and 0<=value<=100000:receipt[key]=value
  for key in ('baselineSha256','sha256'):
   value=d.get(key)
   if isinstance(value,str) and re.fullmatch(r'[a-f0-9]{64}',value):receipt[key]=value
@@ -69,12 +72,18 @@ def read_doc():
  r=subprocess.run(['/usr/bin/python3','/opt/synk-argon-77yuhbs/docs-io.py','read',role],capture_output=True,text=True,timeout=100)
  assert r.returncode==0,'DOC_READ_FAILED'
  return json.loads(r.stdout)
+
+def source_check(action,error):
+ r=subprocess.run(['/usr/bin/python3','/opt/synk-argon-77yuhbs/docs-io.py',action,role],capture_output=True,text=True,timeout=320 if action=='inventory' else 100)
+ assert r.returncode==0,error
+ return json.loads(r.stdout)
 if sys.argv[1]=='begin':
  d={'role':role,'status':'running','startedAt':now(),'offset':log.stat().st_size if log.exists() else 0,'stderrOffset':err.stat().st_size if err.exists() else 0}
  try:
   invocation=os.environ.get('INVOCATION_ID','');assert not invocation or re.fullmatch(r'[a-f0-9]{32}',invocation),'INVOCATION_ID_INVALID'
   if invocation:d['invocationId']=invocation
   baseline=read_doc();d.update({'baselineSha256':baseline['sha256'],'baselineRevisionId':baseline['revisionId']});save(d)
+  if role in ('full','yt-tt','meta-brand'):d.update(source_check('inventory','SOURCE_INVENTORY_FAILED'));save(d)
  except Exception as ex:
   d.update({'status':'failed','completedAt':now(),'error':'BEGIN_'+str(ex)[:180]});save(d);raise SystemExit(1)
  raise SystemExit(0)
@@ -103,6 +112,8 @@ try:
  doc=read_doc()
  if match:assert doc['sha256']==match.group(1),'DOC_SHA_MISMATCH'
  if nochange:assert doc['sha256']==d.get('baselineSha256'),'NO_CHANGE_DOC_CHANGED_OR_NO_BASELINE'
+ if role=='full' and nochange:raise AssertionError('NO_NEW_SOURCE_CANDIDATES')
+ if match and role in ('full','yt-tt','meta-brand'):d.update(source_check('audit','SOURCE_EVIDENCE_AUDIT_FAILED'))
  d.update({'status':'no-change' if nochange else 'complete','completedAt':now(),'model':init[0]['init']['model'],'conversationId':result['conversation_id'],'documentId':doc['documentId'],'sha256':doc['sha256'],'revisionId':doc['revisionId'],'response':text})
  save(d);print(json.dumps({'role':role,'status':d['status'],'model':d['model'],'documentId':d['documentId'],**({'cliStatus':d['cliStatus']} if 'cliStatus' in d else {})},ensure_ascii=False))
 except Exception as ex:

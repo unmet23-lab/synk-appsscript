@@ -48,10 +48,13 @@ class RunCheckTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def run_checker(self, action, doc_sha=BASE, service='success', doc_failure=False, invocation='', doc_exception=None):
+    def run_checker(self, action, doc_sha=BASE, service='success', doc_failure=False, invocation='', doc_exception=None, source_failure=False):
         calls = []
         def fake_run(args, **kwargs):
             calls.append((args, kwargs))
+            if args[2] in ('inventory', 'audit'):
+                value = {'knownSourceCount': 89} if args[2] == 'inventory' else {'freshSourceCount': 8, 'newCandidateCount': 8}
+                return subprocess.CompletedProcess(args, 1 if source_failure else 0, json.dumps(value), '')
             self.assertEqual(args, ['/usr/bin/python3', '/opt/synk-argon-77yuhbs/docs-io.py', 'read', ROLE])
             self.assertEqual(kwargs['timeout'], 100)
             if doc_exception:
@@ -70,6 +73,29 @@ class RunCheckTest(unittest.TestCase):
             except SystemExit as exc:
                 code = exc.code
         return code, json.loads(self.record.read_text()), calls
+
+    def creative_run(self, response, source_failure=False):
+        with patch(__name__ + '.ROLE', 'full'):
+            self.log = self.home / 'logs/full.stream.jsonl'
+            self.record = self.home / 'run-status/full.json'
+            code, state, calls = self.run_checker('begin', invocation='a' * 32)
+            self.assertEqual((code, state['knownSourceCount'], len(calls)), (0, 89, 2))
+            self.log.write_text('\n'.join(json.dumps(x) for x in events(response)) + '\n')
+            return self.run_checker('end', BASE if 'NO_CHANGE' in response else NEW, invocation='a' * 32, source_failure=source_failure)
+
+    def test_daily_full_no_new_is_failure_not_green_success(self):
+        code, state, _ = self.creative_run('SYNK_RUN_NO_CHANGE: full')
+        self.assertEqual((code, state['status'], state['error']), (1, 'failed', 'NO_NEW_SOURCE_CANDIDATES'))
+
+    def test_complete_creative_requires_audit_and_records_counts(self):
+        code, state, _ = self.creative_run('SYNK_RUN_COMPLETE: full : ' + NEW)
+        self.assertEqual((code, state['freshSourceCount'], state['newCandidateCount']), (0, 8, 8))
+        receipt = json.loads(next((self.home / 'run-status/history').glob('*.json')).read_text())
+        self.assertEqual(receipt['newCandidateCount'], 8)
+
+    def test_saved_doc_without_current_evidence_is_failure(self):
+        code, state, _ = self.creative_run('SYNK_RUN_COMPLETE: full : ' + NEW, source_failure=True)
+        self.assertEqual((code, state['error']), (1, 'SOURCE_EVIDENCE_AUDIT_FAILED'))
 
     def begin_and_append(self, output):
         code, state, calls = self.run_checker('begin')
