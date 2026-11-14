@@ -213,7 +213,7 @@ Gemini는 2026-10-17 사용자 결정으로, 무료 API 문이 몫 상한(429)�
 
 2026-11-11 조사(유호님 「구글 코랩을 우리 사업에 어떻게 연결시키면 좋을까」). **지금은 붙일 수 없다 — 한국 계정에는 유료 코랩이 없다.** Google AI 요금제 표(한국어 쪽)는 코랩 컴퓨팅 단위를 Ultra 20배 월 2,000 · 5배 1,000 · Pro 200으로 적지만, [코랩 FAQ](https://research.google.com/colaboratory/faq.html)는 이 혜택을 코랩이 유료 제품을 파는 나라에서만 준다고 하고, 77yuhbs 코랩의 설정 → 「구독」이 보여 주는 그 나라 목록 67곳(일본 · 타이완 · 홍콩 · 싱가포르 포함)에 대한민국이 없다. 같은 날 77yuhbs 실측: 잔액 0, 쓸 수 있는 GPU는 T4뿐(H100 · A100 · L4 · G4 잠김), Google One 혜택 카드에 코랩 없음, 코랩이 내려 주는 Google One 적용 나라 목록(`google_one_eligible_countries`)에도 KR 없음. ego에 로그인된 다른 계정 넷도 잔액 0이다. 켜는 단추나 동의 절차가 빠진 것이 아니라 나라가 막힌 것이므로, 계정 나라 바꾸기 · 우회 접속 · 다른 계정으로 받으려 하지 않는다(코랩 약관은 여러 계정으로 제한을 피하는 것을 금지한다).
 
-**다시 확인(한국이 열렸는지):** ego에서 `colab.research.google.com/?authuser=<77yuhbs 번호>`(11-11엔 2)를 열어 톱니 → 「구독」의 나라 목록에 대한민국이 생겼는지 보고, 그 탭에서 `page.fetch("/tun/m/ccu-info?authuser=<번호>", { headers: { "X-Colab-Tunnel": "Google" } })`의 `currentBalance` · `eligibleGpus`를 읽는다. 잔액이 0보다 크거나 A100이 eligible이면 열린 것이다. 요금제 화면(`/signup`)의 「현재 컴퓨팅 단위가 N개」 줄도 같은 값이다.
+**다시 확인(한국이 열렸는지):** ego에서 `colab.research.google.com/?authuser=<77yuhbs 번호>`(11-11엔 2)를 열어 톱니 → 「구독」의 나라 목록에 대한민국이 생겼는지 보고, 그 탭에서 `page.fetch("/tun/m/ccu-info?authuser=<번호>", { headers: { "X-Colab-Tunnel": "Google" } })`의 `currentBalance` · `eligibleGpus`를 읽는다. 잔액이 0보다 크거나 A100이 eligible이면 열린 것이다. 요금제 화면(`/signup`)의 「현재 컴퓨팅 단위가 N개」 줄도 같은 값이다. 응답은 `)]}'` 뒤의 배열로 오고, 첫 칸이 잔액, 넷째 칸이 쓸 수 있는 GPU, 다섯째 칸이 막힌 GPU다. 11월 14일에 다시 확인했을 때도 닫혀 있었다. 77yuhbs(번호 2)와 unmet23(번호 0) 모두 잔액이 0이었고, 쓸 수 있는 GPU는 T4뿐이었으며, H100 · A100 · L4는 막혀 있었다. 그래서 서울로 애니 업스케일 시험은 노트북 GPU로 돌렸다.
 
 **열리면 이렇게 쓴다(11-11 유호님 확정, [결정](_ops/결정.md)):**
 - 순서는 **코랩 먼저 → 안 되면 로컬**이다. 허깅페이스 먼저와 같은 꼴이고, GPU가 안 잡히거나 실패하면 오래 기다리지 않고 로컬로 돌아온다(코랩은 배정을 보장하지 않는다).
