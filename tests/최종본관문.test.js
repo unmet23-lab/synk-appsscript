@@ -77,6 +77,16 @@ test('조용구간(가운데 10초 넘게 조용함, 흠 장부 3단계)은 어�
   assert.doesNotMatch(f[0].message, /「최종본판단」 \{/, '확인할 것 항목에는 「최종본판단」 안내를 붙이지 않는다');
 });
 
+test('화면멈춤(화면 전체가 2초 넘게 그대로, 11-16 흠 장부 「멈춘 화면」)도 어느 브랜드 · 「사람편」에서나 확인할 것이다', (t) => {
+  const 멈춤 = { 항목: '화면멈춤', 초: 5.29, 끝초: 7.42, 값: { 길이초: 2.13, 문턱: 0.08 }, 글: '5.29~7.42초 2.13초 동안 화면 전체가 그대로다' };
+  for (const prep of [{}, { 브랜드: 'yuhobuilds' }, { 브랜드: 'shift', 사람편: true }]) {
+    const { bundle, video } = fixture(t, prep);
+    const f = finalCutFindings(bundle, [video], { run: () => ({ 걸림: [...걸림, 멈춤] }), save: false });
+    assert.deepEqual(f.slice(-1).map((x) => [x.code, x.level]), [['final-cut-화면멈춤', LOOK]], JSON.stringify(prep));
+    assert.match(f[f.length - 1].message, /박마다 바뀌는 것/);
+  }
+});
+
 test('「최종본」 영상과, 판이 쓰는 다른 렌더를 잰다 — 올리기판(같은 그림을 다시 누른 것) · 그림 파일은 재지 않는다', (t) => {
   const { bundle, video } = fixture(t, {});
   const upload = path.join(bundle.dir, '게시', 'a_upload.mp4');

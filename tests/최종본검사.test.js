@@ -110,6 +110,67 @@ test('조용구간과 다른 걸림이 함께면 끝 코드는 그대로 1 · �
   assert.ok(!sj.알림.some((n) => n.항목 === '조용구간'), '짧은 영상은 조용구간 알림도 없다');
 });
 
+// ── 화면멈춤(11-16 흠 장부 「멈춘 화면」) — 화면 전체가 2초 넘게 그대로인 자리. 끝 코드를 바꾸지 않는 「확인」이다 ──
+// 실측 고정 자료(tests/fixtures/화면멈춤_실측.json): 공용 작업본 최종본에서 잰 이웃 장 차이. 한도인수인계(최종 확인 「멈춘화면」)는 걸리고,
+// 최종 확인을 통과했거나 멈춘 화면으로 안 걸린 편과 만족 사례는 지나간다. 문턱을 0.05 · 0.12로 바꿔도 판정이 같다.
+test('화면멈춤 실측 — 한도인수인계 5.29~7.42초만 걸리고, 통과한 편 · 만족 사례는 지나간다(문턱 0.05~0.12에서 같음)', { skip: 그림라이브러리 ? false : 'numpy · cv2 없음' }, () => {
+  const fixture = path.join(__dirname, 'fixtures', '화면멈춤_실측.json');
+  const code = [
+    'import importlib.util, json, sys',
+    'spec = importlib.util.spec_from_file_location("최종본검사", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+    'd = json.load(open(sys.argv[2], encoding="utf-8"))["영상"]',
+    'print(json.dumps({th: {k: [r for r in m.frozen_runs(v["dd"], 24.0, float(th)) if not r[2]][:1] for k, v in d.items()} for th in ("0.05", "0.08", "0.12")}, ensure_ascii=False))',
+  ].join('\n');
+  const r = spawnSync(py, ['-I', '-X', 'utf8', '-c', code, tool, fixture], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(r.status, 0, r.stderr);
+  const got = JSON.parse(r.stdout.trim().split(/\r?\n/).pop());
+  const 판정 = JSON.parse(fs.readFileSync(fixture, 'utf8')).영상;
+  for (const [th, rows] of Object.entries(got)) {
+    for (const [name, [first]] of Object.entries(rows)) {
+      const longest = first ? first[1] - first[0] : 0;
+      if (판정[name].판정 === '걸림') {
+        assert.ok(longest > 2.0 && Math.abs(first[0] - 5.29) < 0.1 && Math.abs(first[1] - 7.42) < 0.1, `${th} ${name}: ${JSON.stringify(first)}`);
+      } else {
+        assert.ok(longest <= 1.5, `${th} ${name}: 가장 긴 멈춤 ${longest.toFixed(2)}초 — 지나가야 한다`);
+      }
+    }
+  }
+});
+
+function frozenClip(t) {
+  // 24fps 12초: 움직임 3초 → 같은 장 2.5초(걸림) → 움직임 2.5초 → 같은 장 1.5초(지나감) → 움직임 1초 → 끝 화면 같은 장 1.5초(끝이라 뺌)
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '최종본검사-멈춤-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const video = path.join(dir, 'frozen.mp4');
+  const seg = (k, a, b) => `[s${k}]trim=${a}:${b},setpts=PTS-STARTPTS[m${k}]`;
+  const hold = (k, at, n) => `[h${k}]trim=start_frame=${at}:end_frame=${at + 1},setpts=PTS-STARTPTS,loop=loop=${n - 1}:size=1:start=0,setpts=N/24/TB[f${k}]`;
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=s=320x568:r=24:d=12',
+    '-filter_complex', ['[0:v]split=6[s1][h1][s2][h2][s3][h3]',
+      seg(1, 0, 3), hold(1, 72, 60), seg(2, 3, 5.5), hold(2, 132, 36), seg(3, 5.5, 6.5), hold(3, 156, 36),
+      '[m1][f1][m2][f2][m3][f3]concat=n=6:v=1:a=0,format=yuv420p[v]'].join(';'),
+    '-map', '[v]', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24', video]);
+  return { dir, video };
+}
+
+test('화면멈춤 — 가운데 2.5초 같은 장은 걸리고(끝 코드 0 · 이력 등급 확인), 1.5초 · 끝 화면은 지나간다', { skip: 없음 }, (t) => {
+  const { dir, video } = frozenClip(t);
+  fs.mkdirSync(path.join(dir, '게시'));
+  fs.writeFileSync(path.join(dir, '게시', '준비.json'), '{"브랜드":"yuhobuilds"}');
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '멈춤', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사편: dir, SYNK_검사이력: '' } });
+  assert.equal(r.status, 0, `화면멈춤만 걸리면 끝 코드 0 — ${r.stderr}`);
+  const j = lastJson(r.stdout);
+  assert.deepEqual(j.걸림.map((h) => h.항목), ['화면멈춤'], JSON.stringify(j.걸림));
+  const h = j.걸림[0];
+  assert.ok(Math.abs(h.초 - 3) <= 0.1 && Math.abs(h.끝초 - 5.5) <= 0.1 && h.값.길이초 > 2, `자리 ${h.초}~${h.끝초}`);
+  assert.ok(j.알림.some((n) => n.항목 === '화면멈춤' && n.최장초 === h.값.길이초));
+  const 줄 = fs.readFileSync(path.join(dir, '게시', '검사이력.jsonl'), 'utf8').trim().split(/\r?\n/).map((l) => JSON.parse(l)).pop();
+  assert.deepEqual([줄.결과, 줄.끝코드, 줄.걸림.map((g) => [g.규칙, g.등급])], ['확인', 0, [['화면멈춤', '확인']]]);
+  // 기본 항목에 들고, 「멈춤」을 빼면 재지 않는다
+  assert.match(fs.readFileSync(tool, 'utf8'), /DEFAULT_ITEMS = "[^"]*멈춤/);
+  const off = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '끝', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });
+  assert.ok(!lastJson(off.stdout).걸림.some((x) => x.항목 === '화면멈춤'));
+});
+
 // ── 흐름(11-16 — 컷 안 탈것 · 배경 움직임, 영상 마감 관문이 「--항목 흐름」으로 부른다) ──
 // 합성 영상(tests/_흐름합성.js): 고정된 무늬 바탕(640×360, 24fps) 위에 무늬 네모(차) · 무늬 원판(바퀴)을 움직인다. 셋 다 끝 코드를 바꾸지 않는 「확인」이다.
 // 실제 편 대조(서울로 「다리가 기억하는 것」, 화면 너비 1000 기준 px/s):
@@ -168,7 +229,8 @@ test('흐름은 기본 항목이 아니다 — 올리기 전 검사 ⑳이 부�
   const src = fs.readFileSync(tool, 'utf8');
   const m = src.match(/^DEFAULT_ITEMS = "([^"]+)"/m);
   assert.ok(m, 'DEFAULT_ITEMS 줄');
-  assert.deepEqual(m[1].split(','), ['굳음', '같은판', '되풀이', '끝', '화소', '조용']);
+  assert.deepEqual(m[1].split(','), ['굳음', '같은판', '되풀이', '끝', '화소', '조용', '멈춤'], '11-16 화면멈춤(「멈춤」)은 기본 항목이다');
+  assert.ok(!m[1].split(',').includes('흐름'));
   for (const k of 흐름이름) assert.ok(new RegExp(`SOFT = \\{[^}]*"${k}"`).test(src), `${k}는 끝 코드를 바꾸지 않는다(SOFT)`);
   const gate = fs.readFileSync(path.join(__dirname, '..', 'tools', '영상관문판.py'), 'utf8');
   assert.ok(/최종본항목 = "[^"]*흐름/.test(gate), '마감 관문 판이 흐름을 붙여 부른다');

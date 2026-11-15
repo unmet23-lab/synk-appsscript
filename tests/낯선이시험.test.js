@@ -67,8 +67,17 @@ test('사람이 나오는 브랜드만 10번 — 같은 사람이 장면마다 �
   }
   for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^10\. /m, brand);
   // 지난 편 묶음이 있으면 10번도 이 영상만 보고 답한다
-  assert.match(buildPrompt({ brand: 'synkbrief', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /1~8번과 10번은 이 영상만 보고/);
+  assert.match(buildPrompt({ brand: 'synkbrief', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /1~8번과 10 · 11번은 이 영상만 보고/);
   assert.match(buildPrompt({ brand: 'lab-en', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /1~8번은 이 영상만 보고/);
+});
+
+test('같은 셋에 11번 — 끝 3초를 보고 힘 있게 끝났나 흐지부지 끝났나(11-16 흠 장부 끝약함), LAB은 묻지 않는다', () => {
+  for (const brand of ['synkbrief', 'yuhobuilds', 'pulse']) {
+    const p = buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' });
+    assert.match(p, /^11\. 끝 3초\(마지막 칸과 마지막 말\)를 보고 영상이 힘 있게 끝났나, 앞보다 맥이 빠져 흐지부지 끝났나 — 「힘 있게」 또는 「흐지부지」/m, brand);
+    assert.ok(p.indexOf('\n10. ') < p.indexOf('\n11. '), '11번은 10번 뒤');
+  }
+  for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^11\. /m, brand);
 });
 
 test('--틀 퀴즈: 9번은 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 견주고 퀴즈 칸의 늘 있는 짜임은 세지 않는다(제작절차 LAB 하루 두 편 7)', () => {
