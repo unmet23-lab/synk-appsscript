@@ -156,9 +156,13 @@ test('이 곳 밖의 새 결정 — 새 말에는 공통 규칙만, 판단을 �
   const 보통 = z.한번(기본(r, { 판, 사건: 'UserPromptSubmit', 지금: Date.parse('2026-11-15T09:30:00Z'), 상태, 말: '이어서 해' }));
   assert.match(밖(보통.글), /\(공통 규칙만\).*GPT 검수/, JSON.stringify([보통.까닭, 보통.글]));
   assert.doesNotMatch(밖(보통.글), /흠 장부/, '보통 말에는 다른 일의 결정을 넣지 않는다');
+  // GPT 다시 검수 r3 GA2 — 보통 말에서 공통만 넣고 지나간 다른 일의 결정도 다음 판단 물음에서 보인다
+  const 뒤판단 = z.한번(기본(r, { 판, 사건: 'UserPromptSubmit', 지금: Date.parse('2026-11-15T10:05:00Z'), 상태: 보통.상태, 말: '이 작업이 도움이 되는지 판단해줘' }));
+  assert.match(밖(뒤판단.글), /흠 장부/, JSON.stringify([뒤판단.까닭, 뒤판단.글]));
+  assert.equal(뒤판단.상태.밖넣은때, '2026-11-15T10:05:00.000Z');
   const 이른 = z.한번(기본(r, { 판, 사건: 'UserPromptSubmit', 지금: Date.parse('2026-11-15T09:44:00Z'), 상태: { ...상태, 본때: '2026-11-15T09:40:00Z' }, 말: '이 작업이 품질과 생산성에 도움이 되는지 판단해줘' }));
   assert.ok(이른.글, '판단을 묻는 말은 10분 간격을 기다리지 않는다');
-  assert.match(밖(이른.글), /\(공통 규칙 1개\)\. 공통 규칙: 11-15 GPT 검수\. 그 밖의 일\(11-15의 1개\)을 이름으로 묶으면: 흠 장부\./, 밖(이른.글));
+  assert.match(밖(이른.글), /\(공통 규칙 1개\)\. 공통 규칙: 11-15 GPT 검수\. 그 밖의 일\(11-15의 2개\)을 이름으로 묶으면: 흠 장부 · Workspace\./, '모두를 넣은 적이 없으면 세션 시작 뒤 것 — 11-15 Workspace 행도');
   assert.match(밖(이른.글), /node tools\/기록찾기\.js <낱말>로 본다/);
   const 곧또 = z.한번(기본(r, { 판, 사건: 'UserPromptSubmit', 지금: Date.parse('2026-11-15T09:50:00Z'), 상태: 이른.상태, 말: '그럼 판단해줘' }));
   assert.equal(곧또.까닭, '간격', '30분 안에 넣었으면 판단 물음도 간격을 지킨다');
@@ -343,4 +347,10 @@ test('여러 일이 함께 쓰는 큰 폴더는 세션이 만진 아래 폴더�
   ];
   const [y] = z.곳찾기(섞음);
   assert.equal(z.곳좁히기(y.곳, y.길점수, 트랙, y.길고침), 'docs/마케팅/온라인마케팅지도/engagement/company');
+  // 업무 백업 세션 재현(11-15) — 한 제품 폴더의 줄이 7개를 넘어도, 아래 폴더(engine)를 품은 줄이 없으면 그대로 둔다
+  const 제품줄 = z.트랙들(`# 트랙\n\n${Array.from({ length: 8 }, (_, i) => `- **업무 백업 일 ${i}(11-15, Claude):** [로드맵](../../experiences/solo-backup-rust/ROADMAP.md). 남은 일: ${i}.`).join('\n')}\n`);
+  const 엔진 = Array.from({ length: 3 }, () => ({ 이름: 'Edit', 입력: { file_path: `${뿌리}/experiences/solo-backup-rust/engine/src/lib.rs` }, cwd: 뿌리 }));
+  const [w] = z.곳찾기(엔진);
+  assert.equal(w.곳, 'experiences/solo-backup-rust');
+  assert.equal(z.곳좁히기(w.곳, w.길점수, 제품줄, w.길고침), 'experiences/solo-backup-rust', '좁히면 트랙 줄을 모두 잃는다');
 });
