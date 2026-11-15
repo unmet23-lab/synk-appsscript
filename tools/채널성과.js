@@ -7,8 +7,11 @@
  * 계정 목록 = docs/마케팅/sns-계정.json
  *
  * 자동: YouTube(기존 LAB YouTube 인증으로 공개 통계 조회) · Telegram 공개 채널(t.me 공개 페이지)
+ *       · 회사 서버(작업실)가 공식 API로 날마다 모으는 Instagram·TikTok·Facebook 값(11-16 — 요약이 몽골 주력 세 계정을
+ *         「아직 안 잼」으로 보여, 서버에만 있던 숫자를 「잰 적 없다」로 오해할 뻔했다). 서버는 tools/계정성과점검.js의 읽기로
+ *         자기 세션에 로그인해 GET만 하고 그 세션을 닫는다.
  * 손: 그 밖의 계정. 과거 상담 구분은 별도로 확인된 수치가 있을 때만 수동으로 보존한다.
- * 게시·수정·메시지 발송을 하지 않는다. 자격 값은 출력하지 않는다.
+ * 게시·수정·메시지 발송·서버 설정 변경을 하지 않는다. 자격 값은 출력하지 않는다.
  * 공용 작업본에서 돌면 장부·요약을 쓴 뒤 그 두 파일만 곧바로 origin에 올린다(lib/장부올리기.js · 10-21 — 예약 판정 작업이 쓰고
  * 커밋하지 않은 23줄이 공용 작업본에 남아 따라가기를 막았다). 워크트리에서는 그 세션 커밋에 같이 올린다.
  */
@@ -33,7 +36,11 @@ const PLATFORM_LABEL = {
   'naver-clip': '네이버 클립',
 };
 const AUTO_PLATFORMS = new Set(['youtube', 'telegram']);
+const SERVER_SOURCE = 'company-server';
+const SERVER_HOW = '자동(회사 서버 · 공식 API)';
 const DAY = 86_400_000;
+const finite = n => typeof n === 'number' && Number.isFinite(n);
+const isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
 function localDate(at = new Date()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(at);
@@ -174,23 +181,96 @@ async function measureAll(accounts, { fetchImpl = fetch, credential, at = new Da
   return { results, entries };
 }
 
+// 회사 서버의 계정 대조 결과(tools/계정성과점검.js의 audit 모양) → 장부 줄.
+// - 서버에 연결됐고(connected) 계정 목록에 있는 계정만 옮긴다. 이 도구가 따로 재는 YouTube·Telegram은 옮기지 않는다
+//   (같은 칸에 뜻이 다른 출처 둘이 번갈아 들어오지 않게).
+// - 팔로워는 계정 단위 공식 값이다. 7일 변화는 서버가 기준일 관측과 비교해 complete로 낸 값만 붙인다(역산하지 않는다).
+// - 서버의 조회는 관측한 게시물 누적 조회의 합이다(플랫폼이 계정 전체 조회를 주지 않는다). 그래서 views가 아니라 postViews에 둔다.
+// - 잰 날(date)은 서버 집계의 마지막 날(보고 end)이다.
+function serverEntries(result, { accounts }) {
+  if (!result || !Array.isArray(result.accounts)) throw new Error('회사 서버 결과에 accounts가 없습니다(계정성과점검.json 모양이 아닙니다).');
+  const keys = new Set(accounts.map(a => a.key));
+  const at = Number.isFinite(Date.parse(result.checkedAt)) ? new Date(result.checkedAt).toISOString() : new Date().toISOString();
+  const entries = [];
+  for (const a of result.accounts) {
+    if (!a || !keys.has(a.id) || AUTO_PLATFORMS.has(a.platform) || a.connected !== true) continue;
+    const period = a.periods?.[7];
+    const metrics = period?.metrics || {};
+    const followers = finite(metrics.followers?.latest) ? metrics.followers.latest : undefined;
+    const postViews = finite(metrics.views?.latest) ? metrics.views.latest : undefined;
+    if (followers === undefined && postViews === undefined) continue;
+    const entry = { at, date: isDate(period?.end) ? period.end : localDate(new Date(at)), kind: 'account', account: a.id };
+    if (followers !== undefined) {
+      entry.followers = followers;
+      const c = metrics.followers.comparison;
+      if (c?.complete === true && finite(metrics.followers.increase) && isDate(c.baseDate)) {
+        entry.followersChange = { delta: metrics.followers.increase, since: c.baseDate,
+          ...(finite(c.previous) && isDate(c.previousBaseDate) ? { previous: c.previous, previousSince: c.previousBaseDate } : {}) };
+      }
+    }
+    if (postViews !== undefined) entry.postViews = postViews;
+    entry.source = SERVER_SOURCE;
+    entries.push(entry);
+  }
+  return entries;
+}
+
+// 같은 계정·같은 잰 날의 서버 값이 이미 장부에 있으면 다시 쌓지 않는다(같은 날 여러 번 돌려도 한 줄).
+function unseenServerEntries(entries, ledger) {
+  const seen = new Set(ledger.filter(e => e.kind === 'account' && e.source === SERVER_SOURCE).map(e => `${e.account}|${e.date}`));
+  return entries.filter(e => !seen.has(`${e.account}|${e.date}`));
+}
+
+// 기본 읽기: 계정성과점검의 읽기(자기 세션 로그인 · GET만 · 그 세션 로그아웃)로 7일 보고 하나만 받는다.
+const readServer = () => require('./계정성과점검.js').읽기({ days: [7] });
+
+async function measureServer(accounts, { read = readServer } = {}) {
+  try {
+    const result = await read();
+    return { entries: serverEntries(result, { accounts }), checkedAt: result.checkedAt };
+  } catch (error) {
+    return { error: error.message, entries: [] };
+  }
+}
+
 const number = value => (value === null || value === undefined ? '—' : Number(value).toLocaleString('ko-KR'));
 const cell = text => String(text).replace(/\|/g, '\\|');
+
+const signed = n => `${n > 0 ? '+' : ''}${n.toLocaleString('ko-KR')}`;
 
 function followerChange(entries) {
   const withFollowers = entries.filter(e => Number.isFinite(e.followers));
   const latest = withFollowers[withFollowers.length - 1];
   if (!latest) return '—';
+  // 서버가 기준일 관측과 비교해 낸 7일 변화가 있으면 그것을 쓴다(그 전 7일 변화도 함께).
+  const given = latest.followersChange;
+  if (given && finite(given.delta) && isDate(given.since)) {
+    return `${signed(given.delta)} (${given.since.slice(5)} 대비)${finite(given.previous) ? ` · 그 전 7일 ${signed(given.previous)}` : ''}`;
+  }
   const limit = Date.parse(latest.date) - 7 * DAY;
   const base = [...withFollowers].reverse().find(e => Date.parse(e.date) <= limit);
   if (!base) return '—';
-  const diff = latest.followers - base.followers;
-  return `${diff > 0 ? '+' : ''}${diff.toLocaleString('ko-KR')} (${base.date.slice(5)} 대비)`;
+  return `${signed(latest.followers - base.followers)} (${base.date.slice(5)} 대비)`;
 }
 
 function latestValue(entries, field) {
   for (let i = entries.length - 1; i >= 0; i -= 1) if (entries[i][field] !== undefined) return entries[i][field];
   return undefined;
+}
+
+// 조회 칸: 가장 늦게 잰 조회 값을 쓴다. 회사 서버의 게시물 누적 조회 합(postViews)이면 그렇다고 붙인다.
+function viewsCell(entries) {
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
+    if (entries[i].views !== undefined) return number(entries[i].views);
+    if (entries[i].postViews !== undefined) return `${number(entries[i].postViews)} (게시물 합)`;
+  }
+  return '—';
+}
+
+function howMeasured(account, last) {
+  if (last?.source === SERVER_SOURCE) return SERVER_HOW;
+  if (account.platform === 'telegram') return '자동(공개 채널만)';
+  return AUTO_PLATFORMS.has(account.platform) ? '자동' : '손';
 }
 
 // 측정 날짜가 먼저다. 지난 날짜의 값을 나중에 적어도 최신값을 덮지 않는다. 같은 날 안에서만 적은 순서를 본다.
@@ -207,10 +287,10 @@ function summarize({ accounts, ledger, today = localDate() }) {
   const rows = accounts.map(account => {
     const entries = byAccount.get(account.key) || [];
     const last = entries[entries.length - 1];
-    const how = account.platform === 'telegram' ? '자동(공개 채널만)' : AUTO_PLATFORMS.has(account.platform) ? '자동' : '손';
+    const how = howMeasured(account, last);
     const name = `${PLATFORM_LABEL[account.platform] || account.platform} ${account.handle}`.trim();
     if (!last) return `| ${cell(account.brand)} | ${cell(name)} | 아직 안 잼 | — | — | — | — | ${how} · \`${account.key}\` |`;
-    return `| ${cell(account.brand)} | ${cell(name)} | ${number(latestValue(entries, 'followers'))} | ${followerChange(entries)} | ${number(latestValue(entries, 'posts'))} | ${number(latestValue(entries, 'views'))} | ${last.date} | ${how} · \`${account.key}\` |`;
+    return `| ${cell(account.brand)} | ${cell(name)} | ${number(latestValue(entries, 'followers'))} | ${followerChange(entries)} | ${number(latestValue(entries, 'posts'))} | ${viewsCell(entries)} | ${last.date} | ${how} · \`${account.key}\` |`;
   });
 
   // 같은 기간을 다시 적으면 나중에 적은 값이 고친 값이다. 표는 기간 순서로 최근 여섯.
@@ -237,6 +317,8 @@ function summarize({ accounts, ledger, today = localDate() }) {
     '|---|---|---|---|---|---|---|---|',
     ...rows,
     '',
+    `재는 법이 「${SERVER_HOW}」인 줄은 회사 서버가 플랫폼 공식 API로 날마다 모은 값을 옮겨 적은 것이다. 잰 날은 서버 집계의 마지막 날이다. 팔로워 변화는 서버가 7일 전 관측과 비교한 값이고, 「그 전 7일」은 그보다 앞선 7일 동안의 변화다. 조회 칸의 「게시물 합」은 서버가 관측한 게시물의 누적 조회를 더한 값이다. 플랫폼이 계정 전체 조회를 주지 않아서 계정 전체 조회와 다를 수 있다.`,
+    '',
     '## 상담 신청 — 어디서 알게 됐나',
     '',
     '이 표는 별도 근거로 확인해 수동 기록한 과거 상담 수만 보여 준다. 2026-10-02에 옛 상담시트/KPI가 폐기됐고 현재 홈페이지 Google Form에는 연결 시트·인지채널 필드·게시물 식별자가 없어 신청 완료를 자동으로 셀 수 없다. 빈 표는 유입이나 신청이 0건이라는 뜻이 아니다. 「—」는 미확인이고, 그런 칸이 있으면 합에 「이상」이 붙는다. 유튜브·텔레그램 칸은 2026-09-18에 더한 역사적 분류다.',
@@ -247,14 +329,15 @@ function summarize({ accounts, ledger, today = localDate() }) {
     '',
     '## 재는 법',
     '',
-    '- 자동으로 잴 수 있는 것(YouTube 셋 · Telegram 공개 채널): `node tools/채널성과.js --재기`',
+    '- 자동으로 잴 수 있는 것(YouTube · Telegram 공개 채널 · 회사 서버에 연결된 계정): `node tools/채널성과.js --재기`',
+    '- 회사 서버 값만 다시 옮기기: `node tools/채널성과.js --서버`. 작업실에 자기 세션으로 로그인해 읽기만 하고 그 세션을 닫는다. 이미 받은 점검 결과가 있으면 `node tools/채널성과.js --서버 <계정성과점검.json>`으로 네트워크 없이 옮긴다. 같은 계정의 같은 잰 날 값은 한 번만 쌓인다.',
     '- 그 밖의 계정: 앱이나 웹에서 숫자를 보고 `node tools/채널성과.js --적기 <키> 팔로워=N 게시물=N`',
     '- 상담 신청: 확인 가능한 원본과 기간별 분류를 별도로 확보한 경우에만 `node tools/채널성과.js --상담 2026-09-01~2026-09-30 페이스북=N 인스타=N`으로 과거 수치를 수동 기록한다. 모든 칸을 실제 확인한 경우에만 `--전부`를 붙인다.',
     '- 장부만으로 이 요약을 다시 만들기: `node tools/채널성과.js --요약`',
     '',
     '## 아직 못 재는 것',
     '',
-    '- Instagram·TikTok·Facebook·LinkedIn 등은 API 연결 전이라 손으로 적는다(연결 상태는 `sns-계정.json`).',
+    '- 회사 서버에 연결되지 않은 Instagram · TikTok · Facebook 계정과 LinkedIn · Threads 등은 손으로 적는다. 서버 연결 상태는 `node tools/계정성과점검.js`로 본다.',
     '',
   ].join('\n');
 }
@@ -272,12 +355,26 @@ async function 올리기(설명) {
   if (줄) console.log(줄);
 }
 
+function printServer(entries, added) {
+  const fresh = new Set(added);
+  for (const e of entries) {
+    const parts = [];
+    if (e.followers !== undefined) parts.push(`팔로워 ${number(e.followers)}${e.followersChange ? `, 7일 변화 ${followerChange([e])}` : ''}`);
+    if (e.postViews !== undefined) parts.push(`게시물 조회 합 ${number(e.postViews)}`);
+    console.log(`${fresh.has(e) ? '✓' : '·'} ${e.account}: ${parts.join(' · ')} — 회사 서버 ${e.date}${fresh.has(e) ? '' : ' (이미 장부에 있음)'}`);
+  }
+  if (!entries.length) console.log('· 회사 서버: 옮길 계정이 없습니다(연결된 Instagram·TikTok·Facebook 값 없음)');
+}
+
 function usage() {
   console.log(`
 채널 성과 장부
 
   node tools/채널성과.js --재기
-      YouTube·Telegram 공개 숫자를 재서 장부에 쌓고 요약을 다시 만든다
+      YouTube·Telegram 공개 숫자와 회사 서버 값을 재서 장부에 쌓고 요약을 다시 만든다
+  node tools/채널성과.js --서버 [계정성과점검.json]
+      회사 서버에 연결된 Instagram·TikTok·Facebook의 팔로워·게시물 조회 합만 옮긴다
+      (파일을 주면 네트워크 없이 그 결과를, 안 주면 작업실에 자기 세션으로 들어가 GET만 하고 닫는다)
   node tools/채널성과.js --적기 <계정키> 팔로워=N [게시물=N] [조회=N] [--날짜 YYYY-MM-DD]
       API가 없는 계정의 숫자를 손으로 적는다
   node tools/채널성과.js --상담 <기간> 페이스북=N 인스타=N ... [--전부]
@@ -339,17 +436,34 @@ async function main(argv) {
     await 올리기('요약 다시 만듦');
     return;
   }
+  if (args[0] === '--서버') {
+    const file = args[1];
+    const server = file
+      ? { entries: serverEntries(JSON.parse(fs.readFileSync(path.resolve(file), 'utf8')), { accounts }) }
+      : await measureServer(accounts);
+    if (server.error) throw new Error(`회사 서버를 읽지 못했습니다: ${server.error}`);
+    const added = unseenServerEntries(server.entries, readLedger());
+    appendLedger(added);
+    writeSummary(summarize({ accounts, ledger: readLedger() }));
+    printServer(server.entries, added);
+    await 올리기(`회사 서버 값 ${added.length}줄`);
+    return;
+  }
   if (args[0] === '--재기') {
     const { results, entries } = await measureAll(accounts);
-    appendLedger(entries);
+    const server = await measureServer(accounts);
+    const added = unseenServerEntries(server.entries, readLedger());
+    appendLedger([...entries, ...added]);
     writeSummary(summarize({ accounts, ledger: readLedger() }));
     for (const r of results) {
       if (r.error) console.log(`✗ ${r.account}: ${r.error}`);
       else if (r.skipped) console.log(`· ${r.account}: ${r.skipped}`);
       else console.log(`✓ ${r.account}: 팔로워 ${number(r.followers)}${r.posts !== undefined ? ` · 게시물 ${number(r.posts)} · 조회 ${number(r.views)}` : ''}`);
     }
-    console.log(`장부에 ${entries.length}줄을 더했습니다. 요약: docs/마케팅/채널성과.md`);
-    await 올리기(`공개 숫자 ${entries.length}줄`);
+    if (server.error) console.log(`✗ 회사 서버: ${server.error}`);
+    else printServer(server.entries, added);
+    console.log(`장부에 ${entries.length + added.length}줄을 더했습니다. 요약: docs/마케팅/채널성과.md`);
+    await 올리기(`공개 숫자 ${entries.length}줄 · 회사 서버 값 ${added.length}줄`);
     return;
   }
   usage();
@@ -365,4 +479,5 @@ if (require.main === module) {
 module.exports = {
   CONSULT_BUCKETS, CONSULT_COLUMNS, loadAccounts, readLedger, appendLedger, parseTelegramPage, toCount, handEntry,
   consultEntry, measureYoutube, measureTelegram, measureAll, summarize, followerChange, localDate,
+  SERVER_SOURCE, serverEntries, unseenServerEntries, measureServer,
 };

@@ -54,17 +54,21 @@ function markdown(result){
 }
 // session:null — 환경의 빌린 세션 대신 늘 자격으로 새로 로그인한다. 자격이 없으면 빌린 세션으로 대신하지 않고 멈춘다.
 // 시험은 connect·log만 바꿔 끼운다(실제 네트워크·자격 없음).
-async function main(argv=process.argv.slice(2),{connect:open=connect,log=line=>console.log(line)}={}){
- const at=argv.indexOf('--출력'),output=path.resolve(at>=0?argv[at+1]:path.join(공용작업본(repo),'.tmp','계정성과점검',new Date().toISOString().replace(/[:.]/g,'-')));
+// 읽기 — 자기 세션으로 들어가 GET만 하고 그 세션을 닫은 뒤 대조 결과를 돌려준다. 채널 성과 장부(tools/채널성과.js --서버)도 이 길로 읽는다.
+async function 읽기({connect:open=connect,days=[7,30,60,90]}={}){
  const {shiftDate}=await import(pathToFileURL(path.join(repo,base,'analytics.mjs')));
  const end=shiftDate(new Date(Date.now()+9*3600000).toISOString().slice(0,10),-1),ws=await open({origin:'https://workspace.synk.im',session:null});
  try{
   const state=await ws.get('/api/state'),reports=[];
-  for(const days of [7,30,60,90])reports.push({days,report:await ws.get('/api/analytics?'+new URLSearchParams({start:shiftDate(end,1-days),end}))});
-  const result=await audit({state,reports});fs.mkdirSync(output,{recursive:true});
-  fs.writeFileSync(path.join(output,'계정성과점검.json'),JSON.stringify(result,null,2)+'\n');fs.writeFileSync(path.join(output,'계정성과점검.md'),markdown(result));
-  log(JSON.stringify({checkedAt:result.checkedAt,...result.summary,unmatched:result.unmatchedServerChannels.length,output}));
+  for(const n of days)reports.push({days:n,report:await ws.get('/api/analytics?'+new URLSearchParams({start:shiftDate(end,1-n),end}))});
+  return await audit({state,reports});
  }finally{await ws.post('/api/logout',{}).catch(()=>{});}
 }
-module.exports={audit,markdown,main};
+async function main(argv=process.argv.slice(2),{connect:open=connect,log=line=>console.log(line)}={}){
+ const at=argv.indexOf('--출력'),output=path.resolve(at>=0?argv[at+1]:path.join(공용작업본(repo),'.tmp','계정성과점검',new Date().toISOString().replace(/[:.]/g,'-')));
+ const result=await 읽기({connect:open});fs.mkdirSync(output,{recursive:true});
+ fs.writeFileSync(path.join(output,'계정성과점검.json'),JSON.stringify(result,null,2)+'\n');fs.writeFileSync(path.join(output,'계정성과점검.md'),markdown(result));
+ log(JSON.stringify({checkedAt:result.checkedAt,...result.summary,unmatched:result.unmatchedServerChannels.length,output}));
+}
+module.exports={audit,markdown,main,읽기};
 if(require.main===module)main().catch(e=>{console.error(e.message);process.exitCode=1;});

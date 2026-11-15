@@ -8,6 +8,7 @@ const path = require('node:path');
 const {
   CONSULT_BUCKETS, CONSULT_COLUMNS, loadAccounts, readLedger, appendLedger, parseTelegramPage, toCount, handEntry, consultEntry,
   measureYoutube, measureTelegram, summarize, followerChange,
+  SERVER_SOURCE, serverEntries, unseenServerEntries, measureServer,
 } = require('../tools/채널성과.js');
 
 // 계정·장부는 모두 임시 폴더의 합성 자료다. 실제 계정 설정과 장부를 건드리지 않는다.
@@ -163,4 +164,78 @@ test('Telegram은 공개 페이지만 읽고, 구독자 수가 없으면 건너�
   assert.deepEqual(channel, { account: 'lab-telegram', followers: 42, source: 'telegram-public-page' });
   const profile = await measureTelegram({ key: 'me', handle: 't.me/someone' }, { fetchImpl: async () => fakeResponse(200, '<div class="tgme_page_extra">@someone</div>') });
   assert.ok(profile.skipped);
+});
+
+// 회사 서버 값 — 계정성과점검의 audit 결과 모양을 합성으로 만든다(실제 서버·자격 없음).
+function serverAccount(id, platform, { connected = true, followers, increase, complete = true, previous, views } = {}) {
+  const metric = (latest, inc, extra = {}) => ({ latest: latest ?? null, known: latest === undefined ? 0 : 1, eligible: 1, increase: inc ?? null,
+    comparison: { current: inc ?? null, previous: previous ?? null, complete, reason: complete ? null : 'missing-baseline', previousBaseDate: '2026-11-01', baseDate: '2026-11-08', endDate: '2026-11-15', ...extra } });
+  return { id, platform, connected, periods: { 7: { start: '2026-11-09', end: '2026-11-15', metrics: { followers: metric(followers, increase), views: metric(views, null, { complete: false }) } } } };
+}
+const SERVER_RESULT = {
+  checkedAt: '2026-11-15T20:40:29.351Z',
+  accounts: [
+    serverAccount('lab-instagram', 'instagram', { followers: 602, increase: 180, previous: 291, views: 115459 }),
+    serverAccount('lab-youtube', 'youtube', { followers: 15, increase: 1, previous: 2, views: 15652 }),
+    serverAccount('lab-telegram', 'telegram', { connected: false, views: 24 }),
+    serverAccount('lab-tiktok', 'tiktok', { followers: 83, increase: 34, complete: false, views: 39471 }),
+    serverAccount('lab-facebook', 'facebook', { connected: false, followers: 1 }),
+    serverAccount('not-in-list', 'instagram', { followers: 9 }),
+  ],
+};
+const SERVER_ACCOUNTS = [...ACCOUNTS,
+  { key: 'lab-tiktok', brand: 'LAB', platform: 'tiktok', handle: '@lab.tt' },
+  { key: 'lab-facebook', brand: 'LAB', platform: 'facebook', handle: 'labfb' },
+];
+
+test('회사 서버 값은 연결된 Instagram·TikTok·Facebook만 옮기고, 조회는 게시물 합(postViews)으로, 변화는 서버가 확정한 것만 붙인다', () => {
+  const entries = serverEntries(SERVER_RESULT, { accounts: SERVER_ACCOUNTS });
+  assert.deepEqual(entries.map(e => e.account), ['lab-instagram', 'lab-tiktok'], 'YouTube·Telegram·미연결·목록 밖 계정은 옮기지 않는다');
+  const [ig, tt] = entries;
+  assert.deepEqual(ig, {
+    at: '2026-11-15T20:40:29.351Z', date: '2026-11-15', kind: 'account', account: 'lab-instagram', followers: 602,
+    followersChange: { delta: 180, since: '2026-11-08', previous: 291, previousSince: '2026-11-01' }, postViews: 115459, source: SERVER_SOURCE,
+  });
+  assert.equal(ig.views, undefined, '서버의 게시물 조회 합을 계정 조회(views) 칸에 넣지 않는다');
+  assert.equal(tt.followersChange, undefined, '기준일 관측이 모자라 complete가 아니면 변화를 붙이지 않는다');
+  assert.throws(() => serverEntries({ checkedAt: 'x' }, { accounts: SERVER_ACCOUNTS }), /accounts가 없습니다/);
+});
+
+test('요약은 서버 값을 날짜와 「자동(회사 서버 · 공식 API)」로 보이고, 같은 날 값은 한 번만 쌓인다', () => {
+  const entries = serverEntries(SERVER_RESULT, { accounts: SERVER_ACCOUNTS });
+  const ledger = [
+    { at: '2026-10-21T01:00:00Z', date: '2026-10-21', kind: 'account', account: 'lab-instagram', followers: 15, source: 'hand' },
+    ...entries,
+  ];
+  const text = summarize({ accounts: SERVER_ACCOUNTS, ledger, today: '2026-11-16' });
+  assert.match(text, /\| LAB \| Instagram @lab\.ig \| 602 \| \+180 \(11-08 대비\) · 그 전 7일 \+291 \| — \| 115,459 \(게시물 합\) \| 2026-11-15 \| 자동\(회사 서버 · 공식 API\) · `lab-instagram` \|/);
+  // 서버가 변화를 확정하지 않은 계정은 장부 안에서 7일 이상 앞선 값이 없으면 «—»
+  assert.match(text, /\| LAB \| TikTok @lab\.tt \| 83 \| — \| — \| 39,471 \(게시물 합\) \| 2026-11-15 \| 자동\(회사 서버 · 공식 API\) · `lab-tiktok` \|/);
+  // 서버에 연결되지 않은 계정은 그대로 «아직 안 잼 · 손»
+  assert.match(text, /\| LAB \| Facebook labfb \| 아직 안 잼 \| — \| — \| — \| — \| 손 · `lab-facebook` \|/);
+  assert.match(text, /게시물 합」은 서버가 관측한 게시물의 누적 조회를 더한 값이다/);
+
+  assert.equal(unseenServerEntries(entries, ledger).length, 0, '같은 계정·같은 잰 날의 서버 값은 다시 쌓지 않는다');
+  const nextDay = entries.map(e => ({ ...e, date: '2026-11-16' }));
+  assert.equal(unseenServerEntries(nextDay, ledger).length, 2);
+  // 서버 값 뒤에 손으로 적으면 재는 법도 그 줄을 따른다
+  const later = summarize({ accounts: SERVER_ACCOUNTS, ledger: [...ledger, { at: '2026-11-17T00:00:00Z', date: '2026-11-17', kind: 'account', account: 'lab-tiktok', followers: 90, source: 'hand' }], today: '2026-11-17' });
+  assert.match(later, /\| LAB \| TikTok @lab\.tt \| 90 \| — \| — \| 39,471 \(게시물 합\) \| 2026-11-17 \| 손 · `lab-tiktok` \|/);
+});
+
+test('회사 서버 읽기는 자기 세션으로 GET만 하고 그 세션을 닫으며, 실패해도 다른 재기를 막지 않는다', async () => {
+  const { 읽기 } = require('../tools/계정성과점검.js');
+  const calls = [], connects = [];
+  const connect = async options => { connects.push(options); return {
+    get: async route => { calls.push(`GET ${route.split('?')[0]}`); return route === '/api/state' ? { channels: [], capabilities: [] } : { start: '2026-11-09', end: '2026-11-15', groups: [] }; },
+    post: async route => { calls.push(`POST ${route}`); return {}; },
+  }; };
+  const server = await measureServer(SERVER_ACCOUNTS, { read: () => 읽기({ connect, days: [7] }) });
+  assert.deepEqual(connects, [{ origin: 'https://workspace.synk.im', session: null }]);
+  assert.deepEqual(calls, ['GET /api/state', 'GET /api/analytics', 'POST /api/logout']);
+  assert.equal(server.error, undefined);
+  assert.ok(Array.isArray(server.entries));
+
+  const failed = await measureServer(SERVER_ACCOUNTS, { read: async () => { throw new Error('작업실 자동화 자격이 없습니다(시험)'); } });
+  assert.deepEqual(failed, { error: '작업실 자동화 자격이 없습니다(시험)', entries: [] });
 });
