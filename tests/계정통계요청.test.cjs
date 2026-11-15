@@ -57,8 +57,8 @@ test('공식 표는 올바른 기간·소유자·숫자만 통과시키며 원�
   assert.equal(metaRows({text:text.replace('\n9\n','\n99\n')},'Facebook').length,0);
   const tbl={at:'2026-11-15T10:00:00Z',tables:[[['날짜','방문자수','조회수'],['2026.11.14','2','9'],['2026.11.15','1','3']]]};
   assert.equal(kakaoRows(tbl).length,1);assert.equal(kakaoRows(tbl)[0].metrics.views,9);
-  assert.deepEqual(rutubeRows({lines:['8 − 14 нояб. 2026','Просмотры','0']})[0].metrics,{views:0});
-  assert.deepEqual(rutubeRows({lines:['8 − 14 нояб. 2026','Просмотры','몇 회']}),[]);
+  assert.deepEqual(rutubeRows({periodText:'8 − 14 нояб. 2026',metric:{label:'Просмотры',value:'0'}})[0].metrics,{views:0});
+  assert.deepEqual(rutubeRows({periodText:'8 − 14 нояб. 2026',metric:{label:'Просмотры',value:'몇 회'}}),[]);
   assert.deepEqual(marker([{text:'출력\nSYNK_METRICS {"ok":true}\n'}]),{ok:true});
 });
 test('독립 프로필은 동시에 진행하고 같은 프로필은 순서대로 한 번씩 처리한다',async()=>{
@@ -117,7 +117,7 @@ test('RUTUBE 공개 API를 먼저 읽으며 빈 목록이나 API 장애에서도
    const ctx={dir,account:{id:'lab-ru-rutube',externalId:'81398864',platform:'rutube'},profile:{profileId:'test',expectedName:'Fixture'},setStage:async s=>order.push(s)};
    const helpers={
     collectPublic:async(id,{directory})=>{assert.equal(id,ctx.account.id);assert.equal(directory,path.join(dir,'official-api'));order.push('api');if(failApi)throw Error('503');return {listedVideos:0};},
-    pageJob:async(c,n,fn,args)=>{order.push('studio');assert.equal(args.channelId,'81398864');return {source:'https://studio.rutube.ru/analytics',at:'2026-11-15T12:00:00Z',lines:['8 − 14 нояб. 2026','Просмотры','7']};},
+    pageJob:async(c,n,fn,args)=>{order.push('studio');assert.equal(args.channelId,'81398864');return {source:'https://studio.rutube.ru/analytics',at:'2026-11-15T12:00:00Z',periodText:'8 − 14 нояб. 2026',metric:{label:'Просмотры',value:'7'}};},
     storeBatch:async(c,n,raw,envelope)=>saved.push(envelope)
    };
    assert.equal(await otherOwner(ctx,helpers),'limited');

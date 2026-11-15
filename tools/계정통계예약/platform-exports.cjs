@@ -79,28 +79,51 @@ async function vkPage(p,args){
 }
 
 async function rutubePage(p,args){
-  await p.waitForFunction(()=>document.body.innerText.includes('Просмотры'),undefined,{timeout:13000}).catch(()=>{});
-  const state=await p.evaluate(()=>({at:new Date().toISOString(),source:location.origin+location.pathname,
-    lines:document.body.innerText.split('\n').map(x=>x.trim()).filter(Boolean),links:[...document.querySelectorAll('a[href*="/channel/"]')].filter(a=>a.getClientRects().length).map(a=>a.pathname)
-  }));
+  const read=()=>p.evaluate(()=>{
+    const visible=e=>e.getClientRects().length>0;
+    const card=[...document.querySelectorAll('article')].find(a=>visible(a)&&
+      a.querySelector('[class*="headerTitleText__analytics-chart-header"]')?.textContent.trim()==='Просмотры');
+    const dates=[...document.querySelectorAll('h3')].filter(visible).map(h=>h.textContent.trim()).filter(t=>/^\d{1,2}\s.*\d{4}$/.test(t));
+    return {at:new Date().toISOString(),source:location.origin+location.pathname,
+      periodText:dates.length===1?dates[0]:null,
+      metric:card?{label:'Просмотры',value:card.querySelector('h2')?.innerText.trim()}:null,
+      links:[...document.querySelectorAll('a[href*="/channel/"]')].filter(visible).map(a=>a.pathname)};
+  });
+  // Studio renders chart widgets individually. The popular-videos and lifetime panels also contain a views label.
+  await p.waitForFunction(()=>[...document.querySelectorAll('article')].some(a=>a.getClientRects().length&&
+    a.querySelector('[class*="headerTitleText__analytics-chart-header"]')?.textContent.trim()==='Просмотры'&&
+    a.querySelector('h2')?.innerText.trim()),undefined,{timeout:18000}).catch(()=>{});
+  let state=await read();
   if(state.source!==args.entry)return {reason:'need_owner'};
-  if(!state.links.includes('/channel/'+args.channelId+'/')){
+  const owner='/channel/'+args.channelId+'/';
+  if(!state.links.includes(owner)){
     const snap=await p.snapshot({scope:'full_page'}),ls=snap.split('\n');
     const ix=ls.findIndex(l=>l.includes('image "'+args.name+'"'));const button=ix>0?ls[ix-1].match(/button.*ref=(\d+)/)?.[1]:null;
     if(!button)return {reason:'need_owner'};
-    await p.click('@'+button,{label:'현재 통계 채널 번호 확인'});await p.snapshot();
-    state.links=await p.evaluate(()=>[...document.querySelectorAll('a[href*="/channel/"]')].filter(a=>a.getClientRects().length).map(a=>a.pathname));
+    await p.click('@'+button,{label:'현재 통계 채널 번호 확인'});
+    await p.waitForFunction(path=>[...document.querySelectorAll('a[href*="/channel/"]')].some(a=>a.getClientRects().length&&a.pathname===path),owner,{timeout:3500}).catch(()=>{});
+    state=await read();
   }
-  return state.links.includes('/channel/'+args.channelId+'/')?state:{reason:'need_owner'};
+  return state.source===args.entry&&state.links.includes(owner)?state:{reason:'need_owner'};
 }
 function rutubeRows(data){
-  const months=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
-  const span=data.lines.find(s=>/\d+\s*[−–-]\s*\d+\s+[а-яё]+\.?\s+\d{4}/i.test(s));
-  const m=span?.match(/^(\d{1,2})\s*[−–-]\s*(\d{1,2})\s+([а-яё]+)\.?\s+(\d{4})$/i),index=data.lines.indexOf('Просмотры');
-  if(!m||index<0||!/^\d+$/.test(data.lines[index+1]))return [];
-  const month=months.findIndex(q=>m[3].startsWith(q)),iso=day=>[m[4],String(month+1).padStart(2,'0'),day.padStart(2,'0')].join('-');
-  if(month<0||+m[1]<1||+m[2]>31||+m[2]<+m[1]||!Number.isSafeInteger(Number(data.lines[index+1])))return [];
-  return [{kind:'account-period',period:{start:iso(m[1]),end:iso(m[2])},metrics:{views:Number(data.lines[index+1])},labels:{screenTitle:'Студия RUTUBE',metricLabels:{views:'Просмотры'}}}];
+  const months=[/^янв/,/^фев/,/^мар/,/^апр/,/^ма[йя]$/, /^июн/,/^июл/,/^авг/,/^сен/,/^окт/,/^ноя/,/^дек/];
+  const span=/^(\d{1,2})(?:\s+([а-яё]+)\.?(?:\s+(\d{4}))?)?\s*[−–—-]\s*(\d{1,2})\s+([а-яё]+)\.?\s+(\d{4})$/i.exec(data.periodText||'');
+  const value=data.metric?.value;
+  if(!span||data.metric?.label!=='Просмотры'||typeof value!=='string'||!/^(?:\d+|\d{1,3}(?:[ \u00a0\u202f]\d{3})+)$/.test(value))return [];
+  const views=Number(value.replace(/\s/g,''));
+  const monthOf=name=>months.findIndex(m=>m.test(name.toLowerCase()))+1;
+  const monthEnd=monthOf(span[5]),monthStart=span[2]?monthOf(span[2]):monthEnd;
+  const yearEnd=Number(span[6]),yearStart=span[3]?Number(span[3]):yearEnd-Number(monthStart>monthEnd);
+  const iso=(year,month,day)=>{
+    const date=new Date(Date.UTC(year,month-1,Number(day)));
+    if(date.getUTCMonth()!==month-1||date.getUTCDate()!==Number(day))return null;
+    return date.toISOString().slice(0,10);
+  };
+  if(!monthStart||!monthEnd||!Number.isSafeInteger(views))return [];
+  const start=iso(yearStart,monthStart,span[1]),end=iso(yearEnd,monthEnd,span[4]);
+  if(!start||!end||start>end)return [];
+  return [{kind:'account-period',period:{start,end},metrics:{views},labels:{screenTitle:'Студия RUTUBE',metricLabels:{views:'Просмотры'},periodLabel:data.periodText,timeZone:'Europe/Moscow'}}];
 }
 
 async function otherOwner(ctx,helpers){
