@@ -126,7 +126,7 @@
   "작업실등록": true,
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-11-14T01:19:38+09:00",
+    "시각": "2026-11-15T10:42:45+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
@@ -145,7 +145,8 @@
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
           "yuhobuilds-x",
-          "yuho-linkedin-primary"
+          "yuho-linkedin-primary",
+          "yuhobuilds-threads"
         ],
         "바이트": 38811311,
         "수정": "2026-11-13T16:15:36.424Z",
@@ -170,7 +171,7 @@
           "최장": 0,
           "자리": 0
         },
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_결제40만원_20261113/영상사전검사_최종/inspection-61231d1b-c1c0-416b-82d5-84b79177b7e0/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_결제40만원_20261113/영상사전검사_최종/inspection-72c8e3ce-f85d-400a-9114-dbf08e495c5b/검사.json"
       }
     ],
     "목소리": {
@@ -181,44 +182,30 @@
     },
     "지난편": [
       {
-        "편": "yuhobuilds_윈도우깨짐_20261112",
-        "판": [
-          "yuhobuilds-instagram",
-          "yuhobuilds-youtube"
-        ],
-        "첫장면": 0.83,
-        "끝장면": 0.629,
-        "끝줄": 0.17
-      },
-      {
-        "편": "yuhobuilds_조회1위광고_20261102",
-        "판": [
-          "yuhobuilds-instagram",
-          "yuhobuilds-youtube"
-        ],
-        "첫장면": 0.754,
-        "끝장면": 0.78,
-        "끝줄": 0.1
-      },
-      {
         "편": "yuhobuilds_한도인수인계_20261113",
         "판": [
+          "yuhobuilds-instagram",
+          "yuhobuilds-youtube",
           "yuhobuilds-x",
-          "yuho-linkedin-primary"
+          "yuho-linkedin-primary",
+          "yuhobuilds-threads"
         ],
-        "첫장면": 0.75,
-        "끝장면": 0.651,
-        "끝줄": 0.06
+        "첫장면": 0.749,
+        "끝장면": 0.59,
+        "끝줄": 0.1
       },
       {
         "편": "yuhobuilds_떨어뜨린영상_20261111",
         "판": [
+          "yuhobuilds-instagram",
+          "yuhobuilds-youtube",
           "yuhobuilds-x",
-          "yuho-linkedin-primary"
+          "yuho-linkedin-primary",
+          "yuhobuilds-threads"
         ],
-        "첫장면": 0.405,
-        "끝장면": 0.45,
-        "끝줄": 0.2
+        "첫장면": 0.554,
+        "끝장면": 0.696,
+        "끝줄": 0.17
       }
     ],
     "기록": ".tmp/올리기전검사/yuhobuilds_결제40만원_20261113"
