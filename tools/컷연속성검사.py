@@ -54,6 +54,8 @@
 #   .tmp/contests-20261019/siryc/쪽지지도.py가 만든 꼴 그대로다(색은 둘까지 — 밤 · 햇빛 컷은 검출이 흔들려 「확인」으로 남기고 시트를 본다).
 #
 # 끝 코드: 0 걸림 · 확인 없음 / 1 걸림 있음 / 2 걸림은 없고 눈으로 볼 것(확인)이 있음 — 통과로 치지 않는다. 결과는 <출력>/결과.json과 시트 그림.
+# 흠 장부(11-15 설계 2단계): docs/마케팅 아래 편의 컷표를 글 출력으로 돌리면 맨 끝에 「[흠 장부] …」 — 그 길에서 검사가 아직 못 잡는 흠 셋 이하
+#   (tools/흠장부.js 시작)를 알림으로 붙인다. 항목 목록 · 결과.json · --json · 끝 코드에는 들어가지 않는다. 끄기 SYNK_FLAW_LEDGER=off.
 # 한계(11-08 실측): 공중의 점은 픽셀만으로 장면 사이를 가르지 못한다(알갱이 · 벽 질감이 장면마다 달라 옛 A5 419 · 고친 A5 50인데 다른 컷도 200~440) —
 #   그래서 점은 수와 확대 시트(「확인」)로 내고 판정은 눈 · 아르곤 맹검(점검표 37)이 한다. 같은 컷의 전 · 후 비교에는 수가 그대로 쓸모 있다.
 # 시험: node --test tests/컷연속성검사.test.js
@@ -2414,8 +2416,36 @@ def main(argv):
         print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); 코드 = r.코드()
     else:
         코드 = r.보고(); print(f"결과 {출력 / '결과.json'}")
+        _흠시작(seq_path)
     _검사이력(r, 코드, 시작=str(seq_path), 단계=단계, 판경로=판경로)
     return 코드
+
+
+def _흠시작(seq_path):
+    """흠 장부의 시작 줄(tools/흠장부.js 시작 — 그 길에서 검사가 아직 못 잡는 흠 셋 이하)을 글 출력 끝에 알림으로 붙인다(흠 장부 설계 ④ · 2단계, 2026-11-15).
+    항목 목록 · 결과.json · --json 출력에는 넣지 않고 끝 코드도 이미 정해진 뒤다 — 이 검사를 부르는 도구(꾸러미만들기 · 받은뒤검사 · 영상관문판)는 --json으로
+    부르니 장부를 돌리지도 않는다. 편 폴더가 docs/마케팅 아래가 아니면(시험의 임시 폴더 · .tmp의 공모 폴더) 부르지 않는다. 무엇이 실패해도 조용히 지나간다.
+    끄기: 환경 변수 SYNK_FLAW_LEDGER=off."""
+    try:
+        import os
+        if os.environ.get("SYNK_FLAW_LEDGER", "").strip().lower() == "off":
+            return
+        조각 = [x for x in re.split(r"[\\/]+", str(Path(seq_path).resolve())) if x]
+        if not any(x.lower() == "docs" and i + 2 < len(조각) and 조각[i + 1] == "마케팅" for i, x in enumerate(조각)):
+            return
+        장부 = Path(__file__).resolve().parent / "흠장부.js"
+        # 창 없이(CREATE_NO_WINDOW) — 콘솔 없는 부모에서 불려도 node 창이 화면에 뜨지 않게. 시간 제한 기본 30초(SYNK_FLAW_LEDGER_TIMEOUT_MS)
+        try:
+            제한 = max(float(os.environ.get("SYNK_FLAW_LEDGER_TIMEOUT_MS") or 30000), 1.0) / 1000
+        except ValueError:
+            제한 = 30.0
+        p = subprocess.run(["node", str(장부), "시작", str(Path(seq_path).resolve())], capture_output=True, text=True, encoding="utf-8", timeout=제한,
+                           stdin=subprocess.DEVNULL, creationflags=0x08000000 if os.name == "nt" else 0)
+        글 = (p.stdout or "").strip() if p.returncode == 0 else ""
+        if 글.startswith("[흠 장부]"):
+            print(글)
+    except BaseException:   # noqa: BLE001 — 장부는 검사 결과를 바꾸지 않는다
+        pass
 
 
 def _검사이력(r, 코드, 시작=None, 단계="", 판경로=None):

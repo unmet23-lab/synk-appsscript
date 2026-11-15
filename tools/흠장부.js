@@ -8,6 +8,7 @@
  * 세는 이름은 점검표 번호 하나로 묶고 줄은 만드는 길로 나누기로 고쳤다 — docs/마케팅/제작양식/흠장부_설계_20261115.md 「② 세기」 「⑤ 재기」.
  *
  *   node tools/흠장부.js [길(컷표영상 · 그래픽 · LAB) 또는 브랜드] [--일수 N] [--최근 20] [--json] [--폴더 <docs/마케팅>]
+ *   node tools/흠장부.js 시작 <편 폴더 | 컷표 파일 | 길> [--최근 20] [--json] [--폴더 <docs/마케팅>]   새 편을 시작할 때 읽을 줄(아래 「시작」)
  *
  * 읽는 것(편 폴더마다, docs/마케팅 아래 네 층까지):
  *   게시/최종확인_이력.jsonl  최종 확인 판정(tools/lib/최종확인.js). 이력이 없는 옛 편은 게시/최종확인.json의 마지막 판정 하나(「옛 기록」).
@@ -21,6 +22,18 @@
  *   세 편 이상이고 15% 넘게 난 열쇠(기계 규칙은 점검표 번호에 이은 것만). 미학 맹검 기각은 권고라(결정 11-12) 세기만 하고 셈에 넣지 않는다.
  *   올릴 차례는 트랙에 한 줄로 남기고 작업 세션이 검수와 함께 올린다 — 편을 닫는 세션과 최종 확인 세션은 올리지 않는다(설계 ③).
  * 숫자(길마다): 최종 확인 첫 판 통과율 · 편당 판정 수 · 맨 끝 관문에서 처음 잡힌 흠의 비율. 기록이 없으면 「자료 없음」이다.
+ *
+ * 시작(설계 ④ · 2단계, 2026-11-15): 그 길의 최근 스무 편에서 최종 확인이나 기계 검사(등급 걸림)에 걸렸는데 검사가 아직 못 잡는 흠만
+ *   셋 이하로 낸다 — ① 흠갈래.json의 그 번호에 올린 검사가 없는 것(점검표 줄이 없는 갈래 이름도. 「기타」 · 묶음 없는 이름은 뺀다),
+ *   ② 올린 검사가 있는데 그 뒤(날짜가 없으면 언제든) 최종 확인에서 앞선 기계 검사 없이 다시 잡힌 것(장부의 「검사가 못 잡음」).
+ *   맹검에만 나온 번호, 미분류, 번호에 안 이은 기계 규칙은 내지 않는다. 낼 것이 없으면 글 출력은 아무것도 없다(--json은 빈 「줄」).
+ *   줄마다 번호와 이름 · 몇 편 · 가장 최근에 걸린 편에서 보인 것 한 줄(기계 검사면 그 걸림의 글, 최종 확인이면 메모에서 그 흠의 낱말이 가장 많은
+ *   조각 — 보이기만 하고 세는 데는 쓰지 않는다. 낱말이 하나도 안 맞으면 「메모 첫 흠」이라고 밝히고 메모의 첫 흠 조각).
+ *   길: 길 이름을 주면 그 길. 편 폴더 · 컷표 파일을 주면 그 편의 길이다 — 브랜드 LAB은 LAB, 컷표.json · 컷순서.json이 있거나 컷표 파일을 주면
+ *   컷표영상, 아직 컷표가 없는 새 편은 같은 브랜드의 가장 최근 편의 길(없으면 그래픽). 편 폴더가 docs/마케팅 아래가 아니면(시험의 임시 폴더 ·
+ *   .tmp의 공모 폴더) 아무것도 내지 않는다. 부르는 곳: tools/새편.js(새 편을 세울 때) · tools/컷연속성검사.py(컷표를 직접 돌릴 때, 글 출력만).
+ *   두 곳 모두 장부가 실패해도 제 출력과 끝 코드를 바꾸지 않는다. 끄기: 환경 변수 SYNK_FLAW_LEDGER=off. 장부 자료 자리: --폴더 ·
+ *   SYNK_FLAW_LEDGER_DIR(시험) · 그 밖에는 공용 작업본의 docs/마케팅. 머리 줄의 「[흠 장부]」는 tools/영상세션재기.js가 「세션에 나왔나」를 세는 표지다.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -103,25 +116,28 @@ function 편읽기(dir, 기준) {
       if (!x.결과) continue;
       const 갈래 = Array.isArray(x.갈래) ? x.갈래 : [];
       사건.push({ 때: String(x.시각 || ''), 출처: '최종 확인', 단계: '최종 확인', 눈: '최종확인', 판: x.판 || '', 결과: x.결과,
-        열쇠들: x.결과 === '통과' ? [] : 갈래.map((g) => 갈래열쇠(g, 기준)), 미분류: x.결과 !== '통과' && !갈래.length });
+        열쇠들: x.결과 === '통과' ? [] : 갈래.map((g) => 갈래열쇠(g, 기준)), 미분류: x.결과 !== '통과' && !갈래.length, 메모: String(x.메모 || '') });
     }
   } else {
     const r = json읽기(path.join(게시, '최종확인.json'));
     if (r && r.결과) {
       const 갈래 = Array.isArray(r.갈래) ? r.갈래 : [];
       사건.push({ 때: String(r.시각 || ''), 출처: '최종 확인', 단계: '최종 확인', 눈: '최종확인', 판: '', 결과: r.결과, 옛기록: true,
-        열쇠들: r.결과 === '통과' ? [] : 갈래.map((g) => 갈래열쇠(g, 기준)), 미분류: r.결과 !== '통과' && !갈래.length });
+        열쇠들: r.결과 === '통과' ? [] : 갈래.map((g) => 갈래열쇠(g, 기준)), 미분류: r.결과 !== '통과' && !갈래.length, 메모: String(r.메모 || '') });
     }
   }
   for (const x of 줄들(path.join(게시, 이력.HISTORY)) || []) {
     const 열쇠들 = [];
+    const 글들 = {};   // 열쇠 → 그 열쇠로 처음 걸린 줄의 글(시작 줄이 「무엇이 보였나」로 쓴다)
     for (const g of [].concat(x.걸림 || [])) {
       if (!g || g.등급 !== '걸림') continue;
       const fc = /^final-cut-(.+)$/.exec(String(g.규칙 || ''));
       const 번호 = Number.isInteger(g.번호) ? g.번호 : 기준.규칙번호.get(`${x.눈}:${g.규칙}`) ?? (fc ? 기준.규칙번호.get(`최종본검사:${fc[1]}`) : undefined);
-      열쇠들.push(Number.isInteger(번호) ? `#${번호}` : `규칙:${x.눈}:${g.규칙}`);
+      const k = Number.isInteger(번호) ? `#${번호}` : `규칙:${x.눈}:${g.규칙}`;
+      열쇠들.push(k);
+      if (!(k in 글들)) 글들[k] = String(g.글 || '');
     }
-    사건.push({ 때: String(x.때 || ''), 출처: '기계 검사', 단계: x.단계 || '', 눈: x.눈 || '', 판: x.판 || '', 결과: x.결과 || '', 열쇠들: [...new Set(열쇠들)] });
+    사건.push({ 때: String(x.때 || ''), 출처: '기계 검사', 단계: x.단계 || '', 눈: x.눈 || '', 판: x.판 || '', 결과: x.결과 || '', 열쇠들: [...new Set(열쇠들)], 글들 });
   }
   for (const f of ['미학맹검.json', '미학맹검_대체.json']) {
     const j = json읽기(path.join(게시, f));
@@ -181,9 +197,13 @@ function 올림상태(열쇠, 기준, 최종놓침) {
   return 뒤.length ? `검사가 못 잡음 — ${검사}(${첫날}~) 뒤에도 최종 확인에서 ${뒤.length}번` : `검사로 올림(${검사} ${첫날}~)`;
 }
 
+// 그 길에서 이력이 있는 편을 최근 순으로 최근 개 — 길세기와 시작줄들이 같은 스무 편을 본다
+function 최근편들(편들, 최근 = 20) {
+  return [...편들].sort((a, b) => String(b.마지막).localeCompare(String(a.마지막)) || a.편.localeCompare(b.편)).slice(0, 최근);
+}
+
 function 길세기(편들, 기준, { 최근 = 20 } = {}) {
-  const 순 = [...편들].sort((a, b) => String(b.마지막).localeCompare(String(a.마지막)) || a.편.localeCompare(b.편));
-  const 고른 = 순.slice(0, 최근);
+  const 고른 = 최근편들(편들, 최근);
   const N = 고른.length;
   const 표 = new Map();
   const 칸 = (k) => { if (!표.has(k)) 표.set(k, { 열쇠: k, 최종: new Set(), 기계: new Set(), 맹검: new Set(), 판정: 0, 단계: {}, 최종놓침: [] }); return 표.get(k); };
@@ -257,7 +277,217 @@ function 말씀세기(기준) {
   return [...셈.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { numeric: true }));
 }
 
+// ── 시작할 때 읽힘(설계 ④ · 2단계) ──
+const 시작상한 = 3;
+const 시작표지 = '[흠 장부]';
+// 최종 확인 메모에서 그 흠을 적은 조각을 고르는 낱말 — 보이기만 한다. 셈은 갈래 · 번호로만 한다(메모로 갈래를 어림하지 않는다).
+const 메모낱말 = {
+  멈춘화면: ['멈춘', '멈춤', '멈춰', '그대로', '정지', '머묾', '머문'],
+  끝약함: ['끝', '꼬리', '마지막', '센 그림'],
+  사람굳음: ['굳', '멈춤', '멈춰', '거의 그대로', '머묾', '머문', '정지', '입이'],
+  인물튐: ['얼굴', '다른 사람', '머리', '체격', '갸름', '둥글', '화장', '안경알'],
+  소품튐: ['넥타이', '안경', '소매', '옷', '소품', '바지', '구두'],
+  점프컷: ['점프', '같은 판', '튐', '튄', '잘라'],
+  같은구도반복: ['같은 구도', '같은 앵글', '같은 판', '되풀이', '반복', '당겨 잡은'],
+  글자표: ['글', '표', '자막', '읽', '줄', 'px'],
+  숫자불일치: ['숫자', 'GB', '원', '건', '%', '맞지', '다르'],
+  사실: ['사실', '출처', '틀', '아니'],
+  이해안됨: ['못 읽', '안 읽', '이해', '모르', '읽힌', '보일 수', '뜻'],
+  소리: ['음량', '무음', '소리', '음악', '말 없', '조용', 'dB', '배경음', '받아쓰기', '말이'],
+  화면작음어두움: ['작', '어두', '안 읽'],
+};
+
+function 끔() { return String(process.env.SYNK_FLAW_LEDGER || '').trim().toLowerCase() === 'off'; }
+function 자료자리(폴더) {
+  if (폴더) return path.resolve(폴더);
+  if (process.env.SYNK_FLAW_LEDGER_DIR) return path.resolve(process.env.SYNK_FLAW_LEDGER_DIR);
+  return path.join(공용작업본(REPO), 'docs', '마케팅');
+}
+// docs/마케팅/<무엇> 아래인가 — 장부는 docs/마케팅의 편만 센다. 시험의 임시 폴더나 .tmp의 공모 폴더에는 아무것도 내지 않는다
+function 마케팅아래(p) {
+  const 조각 = path.resolve(String(p)).split(/[\\/]+/).filter(Boolean);
+  return 조각.some((x, i) => x.toLowerCase() === 'docs' && 조각[i + 1] === '마케팅' && i + 2 < 조각.length);
+}
+
+// 시작 줄을 낼 열쇠인가 — 번호(올린 검사 목록과 함께) · 묶음이 있는 갈래 이름만. 「기타」 · 모르는 이름 · 기계 규칙 · 맹검 모음 번호는 null
+function 시작종류(열쇠, 기준) {
+  const m = /^#(\d+)$/.exec(열쇠);
+  if (m) return { 번호: Number(m[1]), 올린: [].concat(기준.줄.get(Number(m[1]))?.올린검사 || []) };
+  const h = /^항목:(.+)$/.exec(열쇠);
+  if (h && 기준.항목[h[1]]?.묶음) return { 번호: null, 올린: [] };
+  return null;
+}
+
+// 메모 → 흠 조각들. 「큰 흠:」 · 「작은 흠:」 · 「흠은 이렇다」 뒤만 보고(앞은 무엇을 봤는지의 목록), 괄호 · 낫표 밖의 「 · 」 · 「. 」 · 「 — 」 · 「; 」에서 자른다
+function 흠조각(메모) {
+  let s = String(메모 || '');
+  const m = /(?:큰|작은)\s*흠\s*(?:\([^)]*\))?\s*[:：]|흠은\s*이렇다[.:：]?/.exec(s);
+  if (m) s = s.slice(m.index + m[0].length);
+  const out = [];
+  let 깊이 = 0, 시작 = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    const ch = s[i];
+    if ('(「“『'.includes(ch)) { 깊이 += 1; continue; }
+    if (')」”』'.includes(ch)) { 깊이 = Math.max(0, 깊이 - 1); continue; }
+    if (깊이) continue;
+    const 끊 = [' · ', ' — ', '. ', '; '].find((t) => s.startsWith(t, i));
+    if (끊) { out.push(s.slice(시작, i)); 시작 = i + 끊.length; i += 끊.length - 1; }
+  }
+  out.push(s.slice(시작));
+  return out.map((t) => t.replace(/^\s*(?:남은\s*)?(?:큰|작은)\s*흠\s*[:：]\s*/, '').replace(/[.\s]+$/, '').trim())
+    .filter((t) => t.length >= 4 && !/^(?:남은\s*)?(?:큰|작은)?\s*흠은?\s*없다$/.test(t));
+}
+
+// 그 열쇠의 메모 낱말 — 번호면 그 번호에 이은 갈래 이름들의 낱말, 없으면 점검표 줄 이름의 두 글자 넘는 낱말
+function 열쇠낱말(열쇠, 기준) {
+  const h = /^항목:(.+)$/.exec(열쇠);
+  if (h) return 메모낱말[h[1]] || [];
+  const m = /^#(\d+)$/.exec(열쇠);
+  if (!m) return [];
+  const n = Number(m[1]);
+  const 이름들 = Object.entries(기준.항목).filter(([, x]) => x && x.번호 === n).map(([k]) => k);
+  const 낱말 = [...new Set(이름들.flatMap((k) => 메모낱말[k] || []))];
+  if (낱말.length) return 낱말;
+  return [...new Set(String(기준.자리.get(n) || '').split(/[^가-힣A-Za-z0-9]+/).filter((w) => w.length >= 2))];
+}
+
+const 줄임 = (t, n = 90) => { const s = 이력.글다듬기(t); return s.length > n ? `${s.slice(0, n - 1)}…` : s; };
+
+// 가장 최근에 걸린 사건에서 보인 것 한 줄 → { 글, 출처: '검사 글' · '메모' · '메모 첫 흠' · '' }
+function 보인글(x, 열쇠, 기준) {
+  if (x.출처 === '기계 검사') { const g = (x.글들 || {})[열쇠] || ''; return g ? { 글: 줄임(g), 출처: '검사 글' } : { 글: '', 출처: '' }; }
+  const 조각들 = 흠조각(x.메모);
+  const 낱말 = 열쇠낱말(열쇠, 기준);
+  let 고른 = null, 점수 = 0;
+  for (const t of 조각들) {
+    const n = 낱말.filter((w) => t.includes(w)).length;
+    if (n > 점수) { 점수 = n; 고른 = t; }
+  }
+  if (고른) return { 글: 줄임(고른), 출처: '메모' };
+  return 조각들.length ? { 글: 줄임(조각들[0]), 출처: '메모 첫 흠' } : { 글: '', 출처: '' };
+}
+
+const 한국날 = (t) => { const d = new Date(t); return Number.isNaN(d.getTime()) ? '' : new Date(d.getTime() + 9 * 36e5).toISOString().slice(5, 10); };
+
+// 그 길(편들은 이미 그 길의 편)에서 아직 검사가 받지 못하는 흠 — 셋 이하
+function 시작줄들(편들, 기준, { 최근 = 20, 상한 = 시작상한, 뿌리 = '' } = {}) {
+  const s = 길세기(편들, 기준, { 최근 });
+  const 고른 = 최근편들(편들, 최근);
+  const 후보 = [];
+  for (const c of s.줄) {
+    if (!c.편수) continue;   // 맹검에만 나온 열쇠
+    const 종류 = 시작종류(c.열쇠, 기준);
+    if (!종류) continue;
+    const 사건들 = [];
+    for (const p of 고른) {
+      for (const x of p.사건) {
+        if (x.출처 === '맹검' || !x.열쇠들.includes(c.열쇠)) continue;
+        사건들.push({ p, x, 놓침: x.출처 === '최종 확인' && !앞서잡음(p, c.열쇠, x.때) });
+      }
+    }
+    let 까닭 = '올린 검사 없음', 볼 = 사건들;
+    const 검사들 = [...new Set(종류.올린.map((o) => o.검사).filter(Boolean))];
+    if (종류.올린.length) {
+      // 올린 검사가 있으면 그 뒤 최종 확인에서 앞선 기계 검사 없이 다시 잡힌 것만(올림상태와 같은 셈 — 날짜를 모르면 언제든)
+      const 첫날 = 종류.올린.map((o) => o.날짜).filter(Boolean).sort()[0] || '';
+      볼 = 사건들.filter((e) => e.놓침 && (!첫날 || e.x.때.slice(0, 10) > 첫날));
+      if (!볼.length) continue;
+      까닭 = '검사가 못 잡음';
+    }
+    const 최근사건 = 볼.reduce((m, e) => (!m || e.x.때 > m.x.때 ? e : m), null);
+    const 보임 = 보인글(최근사건.x, c.열쇠, 기준);
+    후보.push({
+      열쇠: c.열쇠, 번호: 종류.번호, 이름: c.이름, 편수: c.편수, 판정: c.판정, 까닭, 올린검사: 검사들,
+      ...(까닭 === '검사가 못 잡음' ? { 놓침: 볼.length } : {}),
+      최근: { 편: 뿌리 ? path.relative(뿌리, 최근사건.p.폴더).split(path.sep).join('/') : 최근사건.p.편, 때: 최근사건.x.때, 출처: 최근사건.x.출처,
+        ...(최근사건.x.출처 === '최종 확인' ? { 결과: 최근사건.x.결과 } : { 눈: 최근사건.x.눈, 단계: 최근사건.x.단계 }), 글: 보임.글, 글출처: 보임.출처 },
+    });
+  }
+  후보.sort((a, b) => b.편수 - a.편수 || b.판정 - a.판정 || String(b.최근.때).localeCompare(String(a.최근.때)) || a.열쇠.localeCompare(b.열쇠));
+  return { 편수: s.편수, 줄: 후보.slice(0, 상한).map(({ 판정, ...x }) => x) };
+}
+
+// 편 폴더 · 컷표 파일 → 그 편의 길. 파일이면 위로 여섯 층까지 편 폴더(게시/준비.json · 컷표.json · 컷순서.json)를 찾는다
+function 시작길(입력, 편들) {
+  const abs = path.resolve(String(입력));
+  let 파일 = false;
+  try { 파일 = fs.statSync(abs).isFile(); } catch { /* 아직 없는 새 편 폴더 */ }
+  let 편 = null;
+  for (let d = 파일 ? path.dirname(abs) : abs, i = 0; i < 6; i += 1) {
+    if (이력.편인가(d)) { 편 = d; break; }
+    if (path.basename(d) === '마케팅' || path.dirname(d) === d) break;
+    d = path.dirname(d);
+  }
+  if (!편) {
+    if (파일) return { 까닭: '컷표 파일 곁에 편 폴더(게시/준비.json · 컷표.json · 컷순서.json)가 없다' };
+    편 = abs;
+  }
+  const 준비 = json읽기(path.join(편, '게시', '준비.json'));
+  const 길 = 이력.길of(편, 준비);
+  const 이름 = path.basename(편);
+  if (길 !== '그래픽') return { 길, 근거: 길 === 'LAB' ? 'LAB 브랜드' : '컷표', 편: 이름 };
+  if (파일 && /^(컷표|컷순서).*\.json$/i.test(path.basename(abs))) return { 길: '컷표영상', 근거: '컷표', 편: 이름 };
+  // 컷표가 아직 없는 새 편 — 같은 브랜드의 가장 최근 편이 간 길(그래픽으로 끝날 편인지 컷표를 쓸 편인지 아직 모른다)
+  const 브랜드 = String(준비?.브랜드 || 이름.split('_')[0] || '').trim();
+  const 앞 = 편들.filter((p) => 브랜드 && p.브랜드 === 브랜드 && path.resolve(p.폴더) !== path.resolve(편))
+    .sort((a, b) => String(b.마지막).localeCompare(String(a.마지막)))[0];
+  if (앞 && 앞.길 !== '그래픽') return { 길: 앞.길, 근거: '같은 브랜드 최근 편', 편: 이름 };
+  return { 길: '그래픽', 근거: 앞 ? '같은 브랜드 최근 편' : '컷표 없음', 편: 이름 };
+}
+
+// 시작 — { 길, 근거, 편?, 편수, 줄: [...] } 또는 { 줄: [], 까닭 }. 던지지 않는다(못 읽은 것은 「까닭」에)
+function 시작(입력, { 폴더 = '', 최근 = 20, 상한 = 시작상한 } = {}) {
+  try {
+    if (끔()) return { 줄: [], 까닭: 'SYNK_FLAW_LEDGER=off' };
+    const s = String(입력 || '').trim();
+    if (!s) return { 줄: [], 까닭: '편 폴더 · 컷표 파일 · 길 가운데 하나를 준다' };
+    const 길이름 = 길들.includes(s) ? s : null;
+    if (!길이름 && !마케팅아래(s)) return { 줄: [], 까닭: '편 폴더가 docs/마케팅 아래가 아니다' };
+    const 뿌리 = 자료자리(폴더);
+    const 기준 = 기준읽기();
+    const 편들 = 모으기(뿌리, 기준);
+    const g = 길이름 ? { 길: 길이름, 근거: '길 이름' } : 시작길(s, 편들);
+    if (!g.길) return { 줄: [], 까닭: g.까닭 };
+    const r = 시작줄들(편들.filter((p) => p.길 === g.길), 기준, { 최근, 상한, 뿌리 });
+    return { 길: g.길, 근거: g.근거, ...(g.편 ? { 편: g.편 } : {}), 편수: r.편수, 줄: r.줄 };
+  } catch (e) {
+    return { 줄: [], 까닭: `장부를 못 읽음 — ${String(e && e.message || e).slice(0, 200)}` };
+  }
+}
+
+// 시작 결과 → 사람이 읽는 글. 낼 것이 없으면 빈 글
+function 시작글(r) {
+  if (!r || !Array.isArray(r.줄) || !r.줄.length) return '';
+  const 길글 = r.근거 === '같은 브랜드 최근 편' ? `${r.길}(컷표가 아직 없어 같은 브랜드 최근 편의 길)` : r.길;
+  const 줄 = [`${시작표지} ${길글} · 최근 ${r.편수}편에서 검사가 아직 못 잡는 흠 ${r.줄.length}개 — 이 편을 만들 때 직접 본다`];
+  for (const c of r.줄) {
+    const 까닭 = c.까닭 === '검사가 못 잡음' ? `검사(${c.올린검사.join(' · ')})를 지나 최종 확인에서 ${c.놓침}번 잡힘` : '재는 검사 없음';
+    const 어디 = c.최근.출처 === '최종 확인' ? `최종 확인 「${c.최근.결과}」` : `${c.최근.눈}${c.최근.단계 ? ` · ${c.최근.단계}` : ''}`;
+    const 글 = c.최근.글 ? `: ${c.최근.글출처 === '메모 첫 흠' ? '메모 첫 흠 ' : ''}「${c.최근.글}」` : '';
+    줄.push(`  · ${c.이름} — ${c.편수}편 · ${까닭} · 가장 최근 ${c.최근.편}(${한국날(c.최근.때)} ${어디})${글}`);
+  }
+  return 줄.join('\n');
+}
+
+function 시작main(argv) {
+  const 값자리 = new Set(['--폴더', '--최근'].map((n) => argv.indexOf(n)).filter((i) => i >= 0).map((i) => i + 1));
+  const opt = (n) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : undefined; };
+  const 자리값 = argv.filter((a, i) => !값자리.has(i) && !a.startsWith('--'));
+  const 모르는 = argv.filter((a, i) => !값자리.has(i) && a.startsWith('--') && !['--json', '--폴더', '--최근'].includes(a));
+  if (자리값.length !== 1 || 모르는.length) {
+    console.error('사용: node tools/흠장부.js 시작 <편 폴더 | 컷표 파일 | 길(컷표영상 · 그래픽 · LAB)> [--최근 20] [--json] [--폴더 <docs/마케팅>]');
+    return 2;
+  }
+  const 최근 = Number(opt('--최근')) > 0 ? Math.floor(Number(opt('--최근'))) : 20;
+  const r = 시작(자리값[0], { 폴더: opt('--폴더') || '', 최근 });
+  if (argv.includes('--json')) { console.log(JSON.stringify(r, null, 1)); return 0; }
+  const 글 = 시작글(r);
+  if (글) console.log(글);
+  return 0;
+}
+
 function main(argv) {
+  if (argv[0] === '시작') return 시작main(argv.slice(1));
   const 값자리 = new Set(['--일수', '--폴더', '--최근'].map((n) => argv.indexOf(n)).filter((i) => i >= 0).map((i) => i + 1));
   const opt = (n) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : undefined; };
   const 거르기 = argv.find((a, i) => !값자리.has(i) && !a.startsWith('--')) || '';
@@ -306,4 +536,5 @@ function main(argv) {
 }
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
-module.exports = { 기준읽기, 갈래열쇠, 맹검열쇠들, 편폴더들, 편읽기, 모으기, 길세기, 숫자내기, 말씀세기, main, 올릴편수, 올릴비율 };
+module.exports = { 기준읽기, 갈래열쇠, 맹검열쇠들, 편폴더들, 편읽기, 모으기, 길세기, 숫자내기, 말씀세기, main, 올릴편수, 올릴비율,
+  최근편들, 시작, 시작글, 시작줄들, 시작길, 흠조각, 보인글, 마케팅아래, 시작상한, 시작표지 };
