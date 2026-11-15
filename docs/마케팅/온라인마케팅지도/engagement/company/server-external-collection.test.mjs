@@ -9,7 +9,7 @@ import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
 import {accountCatalog,matchAccount,facebookLegacyPublicId,MANAGED_ACCOUNT_STATUSES} from './account-catalog.mjs';
-import {EXTERNAL_OBSERVATION_KIND,createExternalObservations} from './external-observations.mjs';
+import {EXTERNAL_OBSERVATION_KIND,EXTERNAL_LIMITS,createExternalObservations} from './external-observations.mjs';
 import {planCatalogRegistration} from './catalog-registration.mjs';
 
 const MANAGED=accountCatalog.accounts.filter(account=>MANAGED_ACCOUNT_STATUSES.includes(account.accountStatus)).map(account=>account.id);
@@ -81,6 +81,99 @@ test('analytics shows external values by their real dates: a 30-day period endin
   assert.equal((await f.request('admin',path)).body.total,6,'the detail read keeps every source');
   const earlier=await f.request('admin',`/api/analytics?channel=${tistory}&start=${shift(start,-40)}&end=${shift(start,-31)}`);
   assert.deepEqual(earlier.body.externalObservations.channels[0].observations.map(row=>row.kind),['account-lifetime'],'without overlap only the latest account total is shown');
+});
+
+// 11-15 보완 관측 유실 고침: 같은 30일을 따로 받은 조회수 내보내기, 프로필 방문 내보내기, 댓글과 공유 화면은 서로 가리지 않는다.
+// 같은 정의로 다시 본 조회수는 가장 최근 관측 하나만 남는다. 앞 관측에만 있던 null 칸은 그 관측을 다시 보이게 하지 않는다.
+// 더 최근 관측이 같은 정의의 조회수를 null로 보였으면, 앞 관측이 다른 수치 때문에 남아도 응답에서 그 조회수는 빠진다. 더 최근 값이 숫자일 때도 같다. 저장된 관측과 상세 조회는 그대로다.
+// 시간대, 수치 이름표, 출처 종류가 다른 조회수는 정의가 다른 값이라 서로 가리지 않는다. 어느 줄도 다른 관측의 값과 합치거나 더하지 않는다.
+test('analytics keeps separately recorded same-period exports and screens, keeps only the newest repeat of one definition, and never hides another time zone, metric label or source type',async t=>{
+  const f=await fixture(t),ids=await f.register(['pulse-facebook']),fb=ids['pulse-facebook'],path=`/api/channels/${fb}/external-observations`;
+  const now=Date.now(),at=minutes=>new Date(now-minutes*60000).toISOString(),yesterday=shift(kstDay(now-50*60000),-1),start=shift(yesterday,-29);
+  const seoul={timeZone:'Asia/Seoul',metricLabels:{views:'조회'}},counted={timeZone:'Asia/Seoul',unit:'회'};
+  const inputs={
+    views:['official-export',at(40),{views:1200},seoul],
+    olderRepeat:['official-export',at(50),{views:1000,reach:null},seoul],
+    profileVisits:['official-export',at(30),{profileVisits:40},{timeZone:'Asia/Seoul'}],
+    commentsShares:['creator-screen',at(30),{comments:7,shares:3},{timeZone:'Asia/Seoul'}],
+    pacificViews:['official-export',at(20),{views:1300},{...seoul,timeZone:'America/Los_Angeles'}],
+    videoViews:['official-export',at(20),{views:500},{...seoul,metricLabels:{views:'3초 이상 동영상 조회'}}],
+    screenViews:['creator-screen',at(20),{views:1250},seoul],
+    newerNullViews:['official-export',at(25),{views:null,shares:3},counted],
+    olderCountedViews:['official-export',at(45),{views:120,likes:7},counted,{likes:7}],
+  };
+  const recorded={};
+  for(const [name,[sourceType,observedAt,metrics,labels]] of Object.entries(inputs)){
+    const exported=sourceType==='official-export';
+    const result=await f.request('admin',path,{sourceType,...(exported?{exportFormat:'csv'}:{}),sourceUrl:`https://business.facebook.com/latest/insights/${exported?'results':'content'}?asset_id=1376159468922910`,observedAt,evidenceSha256:sha('synthetic facebook '+name),
+      identity:{accountId:'pulse-facebook',handle:'@synkpulse'},observations:[{kind:'account-period',period:{start,end:yesterday},metrics,labels:{periodLabel:'지난 30일',...labels}}]});
+    assert.equal(result.status,201,`${name} ${JSON.stringify(result.body)}`);
+    recorded[name]=result.body.records[0].id;
+  }
+  const report=await f.request('admin',`/api/analytics?channel=${fb}&start=${start}&end=${yesterday}`);
+  assert.equal(report.status,200,JSON.stringify(report.body).slice(0,300));
+  const external=report.body.externalObservations,rows=external.channels[0].observations,byId=Object.fromEntries(rows.map(row=>[row.id,row]));
+  const shown=Object.keys(inputs).filter(name=>name!=='olderRepeat');
+  assert.deepEqual(rows.map(row=>row.id).sort(),shown.map(name=>recorded[name]).sort(),'only the older repeat of the same definition is left out');
+  for(const name of shown){
+    const [sourceType,observedAt,metrics,,expected=metrics]=inputs[name],row=byId[recorded[name]];
+    assert.deepEqual([row.sourceType,row.observedAt,row.metrics],[sourceType,observedAt,expected],`${name} keeps its own source and time, and only values no newer row of the same definition replaced`);
+  }
+  assert.equal(external.omittedOlder,1);
+  assert.equal(rows.some(row=>row.metrics.views===120),false,'a newer null of the same definition keeps the older 120 from coming back');
+  const stored=f.app.store.all(EXTERNAL_OBSERVATION_KIND),again=list=>createExternalObservations({store:{all:kind=>kind===EXTERNAL_OBSERVATION_KIND?list:[]}}).forAnalytics([f.app.store.get('channels',fb)],{start,end:yesterday}).channels[0].observations;
+  assert.deepEqual(again([...stored].reverse()),rows,'the order the store returns rows in does not change the result');
+  const numbered=again(stored.map(row=>row.id===recorded.newerNullViews?{...row,metrics:{views:150,shares:3}}:row)),valuesOf=name=>numbered.find(row=>row.id===recorded[name]).metrics;
+  assert.deepEqual([valuesOf('olderCountedViews'),valuesOf('newerNullViews')],[{likes:7},{views:150,shares:3}],'a newer number replaces the older one too, while the older row stays for its own field');
+  const detail=(await f.request('admin',path)).body,original=Object.fromEntries(detail.observations.map(row=>[row.id,row.metrics]));
+  assert.equal(detail.total,9,'the detail read keeps every source');
+  assert.deepEqual([original[recorded.olderCountedViews],original[recorded.newerNullViews]],[{views:120,likes:7},{views:null,shares:3}],'stored rows keep every value they were recorded with');
+});
+
+// 11-15 분석 응답 상한 고침: 계정마다 90일 동안의 하루 값과 7일, 30일, 60일, 90일 합계를 남기면 계정 여섯 개만으로도 예전 상한 500을 넘는다.
+// 상한(EXTERNAL_LIMITS.analyticsMax) 안에서는 모든 계정의 모든 줄이 그대로 나온다. 상한을 넘을 때만 가장 오래된 줄부터 빠지고 truncated가 true가 된다.
+// 상한 경계는 실제로 기록한 줄을 메모리 저장소에 복제해서 확인한다. 그래서 저장소에 수천 번 쓰지 않는다.
+test('analytics keeps every daily and period row of every account up to the bounded cap, and only rows beyond the cap are cut and flagged',async t=>{
+  assert.deepEqual([EXTERNAL_LIMITS.rows,EXTERNAL_LIMITS.listMax,EXTERNAL_LIMITS.analyticsMax],[200,500,10000],'the write batch and detail list limits stay; only the analytics bound moved');
+  const accounts=[
+    ['shift-tistory','https://yuhobuilds.tistory.com/manage/statistics',{handle:'yuhobuilds.tistory.com'}],
+    ['shift-pinterest','https://www.pinterest.com/business/hub/',{handle:'@synkshift'}],
+    ['pulse-facebook','https://business.facebook.com/latest/insights/results?asset_id=1376159468922910',{handle:'@synkpulse'}],
+    ['synk-linkedin-company','https://www.linkedin.com/company/synk-im/admin/analytics/updates',{handle:'synk-im'}],
+    ['shift-kakao','https://business.kakao.com/space/10671395/channel/_kvlrX/statistics/post',{handle:'synkshift'}],
+    ['lab-cn-douyin','https://creator.douyin.com/creator-micro/data/overview',{handle:'39504393074'}],
+  ];
+  const f=await fixture(t),ids=await f.register(accounts.map(([accountId])=>accountId)),service=createExternalObservations({store:f.app.store});
+  const now=Date.now(),observedAtFor=index=>new Date(now-(20+index)*60000).toISOString(),yesterday=shift(kstDay(now-(20+accounts.length)*60000),-1),start=shift(yesterday,-89);
+  const daily=Array.from({length:90},(_,i)=>({kind:'account-period',period:{start:shift(yesterday,-i),end:shift(yesterday,-i)},metrics:{views:i}}));
+  const totals=[7,30,60,90].map(days=>({kind:'account-period',period:{start:shift(yesterday,1-days),end:yesterday},metrics:days===90?{views:days*100}:{views:days*100,visitors:days*10},labels:{periodLabel:`지난 ${days}일`}}));
+  for(const [index,[accountId,sourceUrl,identity]] of accounts.entries()){
+    const base={sourceUrl,observedAt:observedAtFor(index),identity:{accountId,...identity}};
+    assert.equal(service.record(f.users.admin,{id:ids[accountId]},{...base,sourceType:'official-export',exportFormat:'csv',evidenceSha256:sha('cap daily export '+accountId),observations:daily}).created.length,90,accountId);
+    assert.equal(service.record(f.users.admin,{id:ids[accountId]},{...base,sourceType:'creator-screen',evidenceSha256:sha('cap period screen '+accountId),observations:totals}).created.length,4,accountId);
+  }
+  const perAccount=daily.length+totals.length,count=report=>report.channels.reduce((sum,group)=>sum+group.observations.length,0),channels=f.app.store.all('channels');
+  const full=service.forAnalytics(channels,{start,end:yesterday});
+  assert.deepEqual([count(full),full.truncated,full.omittedOlder],[accounts.length*perAccount,false,0],'more than the old 500 rows all come back');
+  assert.deepEqual(full.channels.map(group=>[group.accountId,group.observations.length]).sort(),accounts.map(([accountId])=>[accountId,perAccount]).sort(),'no account is cut off');
+  const first=full.channels.find(group=>group.accountId===accounts[0][0]).observations;
+  assert.ok(first.every(row=>row.sourceType===(row.period.days===1?'official-export':'creator-screen')),'each row keeps its own source');
+  assert.deepEqual(first.find(row=>row.period.days===1&&row.period.start===yesterday).metrics,{views:0},'a zero stays a zero');
+  assert.deepEqual(first.find(row=>row.period.days===90).metrics,{views:9000},'a metric the screen did not show stays absent');
+  const handed=service.forAnalytics(channels.filter(channel=>channel.id!==ids[accounts[0][0]]),{start,end:yesterday});
+  assert.deepEqual([handed.channels.length,count(handed),handed.truncated],[accounts.length-1,(accounts.length-1)*perAccount,false],'only the channels handed in are read');
+  const served=await f.request('admin',`/api/analytics?start=${start}&end=${yesterday}`);
+  assert.equal(served.status,200,JSON.stringify(served.body).slice(0,300));
+  assert.deepEqual([count(served.body.externalObservations),served.body.externalObservations.truncated],[accounts.length*perAccount,false],'the 90-day analytics response carries every row');
+  const cap=EXTERNAL_LIMITS.analyticsMax,legit=f.app.store.all(EXTERNAL_OBSERVATION_KIND),memory=rows=>({all:kind=>kind===EXTERNAL_OBSERVATION_KIND?rows:[]});
+  const analyze=rows=>createExternalObservations({store:memory(rows)}).forAnalytics([...new Set(rows.map(row=>row.channelId))].map(id=>({id,platform:'synthetic',displayName:id})),{start,end:yesterday});
+  const clones=Array.from({length:Math.ceil(cap/legit.length)},(_,copy)=>legit.map(row=>({...row,id:`${row.id}~${copy}`,channelId:`${row.channelId}~${copy}`}))).flat().slice(0,cap);
+  const atCap=analyze(clones);
+  assert.deepEqual([count(atCap),atCap.truncated],[cap,false],'exactly the cap is still complete');
+  const olderAt=new Date(Date.parse(legit[0].observedAt)-DAY_MS).toISOString(),oldest={...legit[0],id:'xmo_oldest_beyond_cap',channelId:`${legit[0].channelId}~oldest`,observedAt:olderAt,observedDate:kstDay(Date.parse(olderAt))};
+  const beyond=analyze([...clones,oldest]);
+  assert.deepEqual([count(beyond),beyond.truncated,beyond.omittedOlder],[cap,true,0],'one row over the cap is cut and flagged, not hidden as a repeat');
+  assert.equal(beyond.channels.some(group=>group.channelId===oldest.channelId),false,'the row cut is the oldest one');
 });
 
 test('creator.rednote.com is an accepted creator host; Telegram t.me public pages are recorded as public-page and never as a connection',async t=>{

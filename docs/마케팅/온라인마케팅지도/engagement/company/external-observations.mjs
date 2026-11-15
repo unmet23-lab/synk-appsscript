@@ -23,7 +23,10 @@ export const EXTERNAL_SOURCE_BASIS=Object.freeze({
   'public-page':'로그인 없이 누구나 보는 플랫폼 공식 공개 화면에서 사람이 확인한 값이에요. 소유자 통계 화면의 값이 아니에요.',
 });
 export const EXTERNAL_KINDS=Object.freeze(['post-lifetime','account-period','account-lifetime']);
-export const EXTERNAL_LIMITS=Object.freeze({bytes:200000,rows:200,label:120,title:300,url:600,segment:160,metricLabels:20,maxAgeDays:400,futureSkewMs:5*60000,periodDays:366,listDefault:100,listMax:500,analyticsMax:500});
+// analyticsMax는 /api/analytics가 외부 관측을 한 번에 돌려주는 줄 수의 상한이다. 11-15에 500에서 10000으로 올렸다.
+// 등록 계정 71개가 90일 동안 하루 한 줄씩 남기고 7일, 30일, 60일, 90일 합계를 더해도 이 안에 들어간다. 상한이 500이었을 때는 90일 응답에서 계정이 통째로 빠지고 truncated가 켜져서 화면이 합계를 내지 못했다.
+// 상한을 넘으면 가장 오래된 관측부터 빠지고 truncated가 true가 된다. 응답이 끝없이 커지지 않도록 상한은 남겨 둔다. 한 번에 기록하는 줄 수(rows)와 상세 조회 상한(listMax)은 이것과 따로 정한다.
+export const EXTERNAL_LIMITS=Object.freeze({bytes:200000,rows:200,label:120,title:300,url:600,segment:160,metricLabels:20,maxAgeDays:400,futureSkewMs:5*60000,periodDays:366,listDefault:100,listMax:500,analyticsMax:10000});
 // 종류(grain)마다 받는 수치. post-lifetime은 게시물 기록(snapshots)의 여섯 칸과 같다.
 export const EXTERNAL_METRICS=Object.freeze({
   'post-lifetime':Object.freeze(['views','likes','comments','shares','saves','reach']),
@@ -495,7 +498,12 @@ export function createExternalObservations({store,clock=()=>new Date().toISOStri
   // /api/analytics의 별도 키. 넘겨받은 채널(이미 읽기 권한·필터를 거친 후보)의 관측만, 채널별로, 합계 없이 낸다.
   // 선택 기간과의 관계(11-14 실화면 대조): 화면 기본 끝일이 어제라 관측한 날로 거르면 오늘 기록한 어제까지의 값이 모두 빠진다.
   // account-period는 실제 기간이 선택 기간과 겹칠 때, post-lifetime은 게시한 날(한국 날짜)이 선택 기간 안일 때,
-  // account-lifetime은 선택 기간과 상관없이 가장 최근 관측으로 낸다. 같은 종류·기간·게시물의 반복 관측은 가장 최근 원본 하나만 낸다(상세 조회는 전부 남긴다).
+  // account-lifetime은 선택 기간과 상관없이 가장 최근 관측으로 낸다. 상세 조회는 모든 관측을 그대로 남긴다.
+  // 반복 관측은 수치마다 따로 가린다(11-15 보완 관측 유실 고침). 종류, 기간, 게시물이 같은 관측에서 같은 수치를 같은 정의로 다시 보았으면 가장 최근 관측의 값만 남긴다.
+  // 정의는 출처 종류(sourceType), 시간대(timeZone), 단위(unit), 그 수치의 이름표(metricLabels)로 가른다. 시간대와 단위가 그 줄에 없으면 요청 전체의 이름표(sourceLabels)를 쓴다.
+  // 이 가운데 하나라도 다르거나 한쪽에만 적혀 있으면 서로 가리지 않는다. 정의가 다른 값이 함께 나가야 화면이 그 값들을 알아보고 한데 묶지 않을 수 있다.
+  // 관측은 자기 수치가 모두 더 최근 관측에 다시 나왔을 때만 빠진다. 조회수 내보내기, 프로필 방문 내보내기, 댓글과 공유 화면처럼 따로 본 수치는 각자의 원본으로 남는다.
+  // 관측끼리 합치거나 더한 줄은 만들지 않는다. 기간 합계, 누적값, 순 이용자 수는 더하면 뜻이 달라진다.
   function forAnalytics(channels,{start,end}={}){
     const byId=new Map((channels||[]).map(channel=>[channel.id,channel]));
     const selected=row=>{
@@ -503,21 +511,32 @@ export function createExternalObservations({store,clock=()=>new Date().toISOStri
       if(row.kind==='post-lifetime'){const day=publishedDay(row);return day!==null&&day>=start&&day<=end;}
       return row.kind==='account-lifetime';
     };
-    const latest=new Map();let omittedOlder=0;
+    const candidates=[],latest=new Map();
     if(byId.size)for(const row of store.all(EXTERNAL_OBSERVATION_KIND)){
       if(!byId.has(row.channelId)||!selected(row))continue;
-      const key=[row.channelId,row.kind,row.period?`${row.period.start}..${row.period.end}`:'',row.post?.externalId||''].join('|'),current=latest.get(key);
-      if(current)omittedOlder++;
-      if(!current||newerObservation(row,current))latest.set(key,row);
+      candidates.push(row);
+      const labels=row.labels||{},source=row.sourceLabels||{},names=labels.metricLabels||{},metrics=Object.keys(row.metrics||{});
+      const definition=[row.channelId,row.kind,row.period?`${row.period.start}..${row.period.end}`:'',row.post?.externalId||'',row.sourceType,labels.timeZone??source.timeZone??null,labels.unit??source.unit??null];
+      for(const metric of metrics.length?metrics:['']){const key=JSON.stringify([...definition,metric,names[metric]??null]),current=latest.get(key);if(!current||newerObservation(row,current.row))latest.set(key,{row,metric});}
     }
-    const rows=[...latest.values()].sort(newestFirst);
+    // 관측마다 그 관측이 가장 최근인 수치만 골라 응답의 metrics에 싣는다(11-15 null 재등장 고침). 줄의 id, 출처, 시각, 기간, 이름표는 그 관측 그대로다.
+    // 더 최근 관측이 같은 정의의 같은 수치를 null(화면에 칸은 있었지만 숫자가 없던 칸)로 보였으면 앞 관측의 그 숫자는 응답에서 빠진다. 앞 관측이 다른 수치 때문에 남아도 마찬가지이고, 더 최근 값이 숫자일 때도 같다.
+    // 이긴 칸이 모두 null인 관측은 내지 않는다. 수치 칸이 하나도 없는 관측(열쇠 '')은 예전처럼 낸다. 그래서 같은 정의로 같은 수치를 다시 본 관측끼리는 가장 최근 관측 하나만 남는다. 저장된 관측과 상세 조회는 바꾸지 않는다.
+    const wins=new Map(),projected=new Map();
+    for(const {row,metric} of latest.values()){const mine=wins.get(row.id)||new Set();mine.add(metric);wins.set(row.id,mine);}
+    for(const row of candidates){
+      const mine=wins.get(row.id);if(!mine)continue;
+      const metrics=Object.fromEntries(Object.entries(row.metrics||{}).filter(([metric])=>mine.has(metric)));
+      if(mine.has('')||Object.values(metrics).some(value=>value!==null))projected.set(row.id,metrics);
+    }
+    const rows=candidates.filter(row=>projected.has(row.id)).sort(newestFirst),omittedOlder=candidates.length-rows.length;
     const kept=rows.slice(0,EXTERNAL_LIMITS.analyticsMax),groups=new Map();
     for(const row of kept){
       const channel=byId.get(row.channelId);
       if(!groups.has(channel.id))groups.set(channel.id,{channelId:channel.id,accountId:row.accountId,platform:channel.platform,displayName:channel.displayName||channel.handle||channel.id,observations:[]});
       groups.get(channel.id).observations.push({id:row.id,kind:row.kind,sourceType:row.sourceType,sourceBasis:EXTERNAL_SOURCE_BASIS[row.sourceType]||null,sourceHost:row.sourceHost,observedAt:row.observedAt,observedDate:row.observedDate,period:row.period||null,
         periodMatchesSelection:row.kind==='account-period'&&row.period?row.period.start===start&&row.period.end===end:null,
-        post:row.post?{externalId:row.post.externalId,url:row.post.url,publishedAt:row.post.publishedAt}:null,metrics:row.metrics,labels:row.labels||{},sourceLabels:row.sourceLabels||{},basis:EXTERNAL_BASIS[row.kind],projection:row.projection?.state||null});
+        post:row.post?{externalId:row.post.externalId,url:row.post.url,publishedAt:row.post.publishedAt}:null,metrics:projected.get(row.id),labels:row.labels||{},sourceLabels:row.sourceLabels||{},basis:EXTERNAL_BASIS[row.kind],projection:row.projection?.state||null});
     }
     // includedInTotals:false는 이 관측 목록 자체를 기존 합계에 더하지 않는다는 뜻이고, 호환을 위해 값을 그대로 둔다.
     // 조건에 맞는 게시물 누적값은 기록할 때 project()가 posts·snapshots에 한 번 넣었으므로 기존 합계에 이미 들어 있다.

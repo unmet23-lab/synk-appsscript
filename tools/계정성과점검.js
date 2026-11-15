@@ -23,7 +23,8 @@ async function audit({state,reports,checkedAt=new Date().toISOString()}){
   const measured=keys.filter(key=>known(periods[7]?.metrics[key]?.latest));
   const externalCollection=c?.externalCollection||null;
   const externalPeriods=Object.fromEntries(reports.map(r=>[r.days,{truncated:r.report.externalObservations?.truncated===true,observations:(r.report.externalObservations?.channels||[]).find(g=>g.channelId===c?.id)?.observations||[]}]));
-  const externallyMeasured=[...new Set(Object.values(externalCollection?.byKind||{}).flatMap(r=>Object.entries(r.metrics||{}).filter(([,n])=>known(n)).map(([key])=>key)))];
+  const externalRows=reports.some(r=>r.report.externalObservations)?Object.values(externalPeriods).flatMap(p=>p.observations):Object.values(externalCollection?.byKind||{});
+  const externallyMeasured=[...new Set(externalRows.flatMap(r=>Object.entries(r.metrics||{}).filter(([,n])=>known(n)).map(([key])=>key)))];
   const route=c?.connected?(externalCollection?'공식 API와 플랫폼 통계 기록':'공식 API'):externalCollection?'플랫폼 화면·공식 내보내기·공개 화면 기록':cap&&cap.mode!=='manual'?'공식 API 연결 필요':'관리자 통계 화면·공식 내보내기 확인';
   return {id:a.id,business:a.business,contentTrack:a.contentTrack,platform:a.platform,handle:a.handle,url:a.publicUrl,
    registered:!!c,connected:c?.connected===true,lastCollectedAt:c?.lastCollectedAt||null,status:c?.status||'not-registered',

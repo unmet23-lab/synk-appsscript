@@ -17,6 +17,19 @@ test('공식 내보내기 기록은 API 연결 실패로 표시하지 않고 별
  assert.deepEqual(a.externallyMeasured,['views']);assert.equal(a.periods[7].metrics.views.latest,null);assert.equal(a.externalPeriods[90].truncated,true);
  const md=markdown(r);assert.match(md,/shiftclass.*플랫폼 통계 확인됨/);assert.match(md,/계정 기간 통계 \| 2026-11-13 ~ 2026-11-13 \| 0 \| — \| —/);assert.doesNotMatch(md,/shiftclass.*연결 필요/);
 });
+test('따로 받은 조회수·방문 내보내기를 최신 공유 관측이 가리지 않고 다른 계정과 미측정 값은 세지 않는다',async()=>{
+ const state={channels:[{id:'fb',catalogAccountId:'yuhokorean-facebook',platform:'facebook',connected:false,
+  externalCollection:{byKind:{'account-period':{metrics:{shares:0,likes:5}}}}}],capabilities:[]};
+ const reports=[7,30,60,90].map(days=>({days,report:{groups:[],externalObservations:{channels:[
+  {channelId:'other',observations:[{metrics:{reach:100}}]},
+  {channelId:'fb',observations:[{metrics:{views:0,likes:null}},{metrics:{profileVisits:15}},{metrics:{shares:0}}]},
+ ]}}}));
+ const result=await audit({state,reports}),account=result.accounts.find(a=>a.id==='yuhokorean-facebook');
+ assert.deepEqual(account.externallyMeasured,['views','profileVisits','shares']);
+ assert.deepEqual(account.measured,[]);
+ assert.equal(result.summary.connected,0);
+});
+
 // 수명 시험: 실제 네트워크·자격 없이 connect만 바꿔 끼운다. 환경에 빌린 세션 표시가 있어도 점검은 자기 세션(session:null)으로만 연결하고,
 // 끝의 로그아웃은 그렇게 받은 세션 대역에만 간다.
 function lifecycle(t,{failState=false}={}){
