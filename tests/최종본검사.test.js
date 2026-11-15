@@ -111,7 +111,7 @@ test('조용구간과 다른 걸림이 함께면 끝 코드는 그대로 1 · �
 });
 
 // ── 흐름(11-16 — 컷 안 탈것 · 배경 움직임, 영상 마감 관문이 「--항목 흐름」으로 부른다) ──
-// 합성 영상: 고정된 무늬 바탕(640×360, 24fps) 위에 무늬 네모(차) · 무늬 원판(바퀴)을 움직인다. 셋 다 끝 코드를 바꾸지 않는 「확인」이다.
+// 합성 영상(tests/_흐름합성.js): 고정된 무늬 바탕(640×360, 24fps) 위에 무늬 네모(차) · 무늬 원판(바퀴)을 움직인다. 셋 다 끝 코드를 바꾸지 않는 「확인」이다.
 // 실제 편 대조(서울로 「다리가 기억하는 것」, 화면 너비 1000 기준 px/s):
 //   ① 흐름갈림  11-14 판 C08 55.3~57.7초 가운데 띠 왼쪽 −8.0 · 오른쪽 +3.2 → 걸림. 고친 지금 판(11-15 라n 뒤)은 지나간다.
 //   ② 멈췄다감  11-14 판 E03k 147.8~151.7초 위 띠 오른쪽 금빛 버스 — 가다가 약 1초 섰다가 다시 감 → 걸림.
@@ -125,55 +125,8 @@ test('조용구간과 다른 걸림이 함께면 끝 코드는 그대로 1 · �
 //   카메라 위로 지나가는 버스(라f Q04, 세로 / 가로 1.4~1.8)는 「옆으로 감」 조건으로 ①에서 뺐다. ②의 멈춤을 「속도 15% 아래」로 두면 몸을 앞뒤로
 //   흔드는 S04y와 느려진 실(지금 판 E04m)이 걸려 「크기 1.5px/s 아래」로 바꿨다. 퍼짐 조건을 ②에서 빼면 다가오는 버스(지금 판 Q04)가 걸리고,
 //   바닥 없이 쓰면 퍼짐이 0.3%뿐인 라f E03k가 빠져, 두 퍼짐이 모두 1% 넘을 때만 ②를 뺀다.
-const 합성 = String.raw`
-import sys, subprocess, numpy as np, cv2
-kind, out = sys.argv[1], sys.argv[2]
-W, H, FPS, DUR = 640, 360, 24, 4.5
-def tex(h, w, seed):
-    r = np.random.default_rng(seed).integers(0, 256, (h, w)).astype(np.float32)
-    r = cv2.GaussianBlur(r, (0, 0), 1.2)
-    return np.clip((r - r.mean()) / (r.std() + 1e-6) * 50 + 128, 0, 255).astype(np.uint8)
-bg, car, wheel = tex(H, W * 3, 1), tex(80, 160, 2), tex(220, 220, 3)
-yy, xx = np.mgrid[0:220, 0:220]
-disc = (xx - 110) ** 2 + (yy - 110) ** 2 <= 105 ** 2
-def paste(f, img, x, y):
-    x = int(round(x)); x0, x1 = max(0, x), min(W, x + img.shape[1])
-    if x1 > x0: f[y:y + img.shape[0], x0:x1] = img[:, x0 - x:x1 - x]
-def stopgo(t, stop):
-    a, b = stop
-    return 40 + 48 * (min(t, a) + max(0.0, t - b))
-p = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'gray', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
-                      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', out], stdin=subprocess.PIPE)
-for n in range(int(DUR * FPS)):
-    t = n / FPS
-    off = int(round(90 * t)) if kind == '바퀴흐름' else 0
-    f = bg[:, off:off + W].copy()
-    if kind == '갈림':
-        paste(f, car, 120 - 25 * t, 150); paste(f, car, 360 + 25 * t, 150)
-    elif kind == '같은방향':
-        paste(f, car, 60 + 25 * t, 150); paste(f, car, 360 + 25 * t, 150)
-    elif kind == '멈춤':
-        paste(f, car, stopgo(t, (1.3, 2.5)), 20)
-    elif kind == '고른':
-        paste(f, car, 40 + 48 * t, 20)
-    elif kind == '출발':
-        paste(f, car, 40 + 48 * max(0.0, t - 1.5), 20)
-    elif kind in ('바퀴', '바퀴흐름'):
-        w = cv2.warpAffine(wheel, cv2.getRotationMatrix2D((110, 110), float(np.degrees(2.0 * t)), 1.0), (220, 220), borderMode=cv2.BORDER_REFLECT)
-        sub = f[70:290, 210:430]; sub[disc] = w[disc]
-    p.stdin.write(f.tobytes())
-p.stdin.close(); p.wait()
-`;
-
-function flowClip(t, kind) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '최종본검사-흐름-'));
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  const gen = path.join(dir, 'gen.py');
-  fs.writeFileSync(gen, 합성);
-  const video = path.join(dir, `${kind}.mp4`);
-  execFileSync(py, ['-I', '-X', 'utf8', gen, kind, video], { stdio: 'pipe' });
-  return video;
-}
+const { 흐름영상 } = require('./_흐름합성.js');   // 받은 뒤 검사 시험과 함께 쓴다
+const flowClip = (t, kind) => 흐름영상(t, kind, { py });
 function flow(video) {
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '흐름', '--json'],
     { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });

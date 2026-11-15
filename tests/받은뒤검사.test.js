@@ -3,6 +3,7 @@
 // 왜: 받은 뒤 검사는 사람이 기억해서 불렀고, 사람 굳음은 편마다 마지막 컷 전수 검수에서야 잡혔다. 이 시험은 작은 가짜 영상(ffmpeg 시험 그림)으로
 //   ① 길이 · 비율 · 소리 줄기 ② 사람 굳음(걸림) · 얼굴 극접사(확인) · 못 잼(확인) ③ 다시 낸 판(__2)과 대안 판 잇기 ④ 내기 도구가 받은 직후 부르는 길 을 묶는다.
 //   사람 움직임 값 자체(얼굴 모델 · rembg)는 무거워 여기서 재지 않는다 — 파일 이름으로 값을 내는 가짜 모듈(SYNK_MOTION_PY)을 끼워 차례와 판정만 본다.
+//   흐름(11-16, 컷 안 탈것 · 배경 움직임)은 맨 아래 시험에서 실제로 잰다 — 합성 영상(tests/_흐름합성.js)을 받음 폴더에 넣는다.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -59,8 +60,9 @@ function 편만들기(t, 판들, { 순서 = null, 고침 = null } = {}) {
   fs.writeFileSync(path.join(편, '가짜_사람움직임.py'), 가짜모듈, 'utf8');
   return 편;
 }
-function 돌리기(편, 더 = [], env = {}) {
-  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', ...더, '--json'], { encoding: 'utf8', maxBuffer: 1 << 24, timeout: 300000,
+// 흐름(컷 안 탈것 · 배경 움직임)은 판 하나에 몇 초 드는 실제 측정이라 흐름 시험(맨 아래)에서만 켠다 — 나머지는 --흐름안함으로 차례와 판정만 본다
+function 돌리기(편, 더 = [], env = {}, { 흐름 = false } = {}) {
+  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', ...(흐름 ? [] : ['--흐름안함']), ...더, '--json'], { encoding: 'utf8', maxBuffer: 1 << 24, timeout: 300000,
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl'), ...env } });
   let 결과 = null;
   try { 결과 = JSON.parse(r.stdout); } catch (e) { /* 멈춤 글은 stderr */ }
@@ -173,7 +175,7 @@ sys.path.insert(0, sys.argv[1])
 import 크레딧내기, 드리미나내기
 assert 드리미나내기.받은뒤 is 크레딧내기.받은뒤
 편 = sys.argv[2]
-r = 크레딧내기.받은뒤(os.path.join(편, "꾸러미"), os.path.join(편, "받음"), None, ["C1"], 더=["--연속성안함"])
+r = 크레딧내기.받은뒤(os.path.join(편, "꾸러미"), os.path.join(편, "받음"), None, ["C1"], 더=["--연속성안함", "--흐름안함"])
 print("끝코드", r)
 print("없는컷표", 크레딧내기.받은뒤(os.path.join(편, "받음", "없는", "꾸러미"), os.path.join(편, "받음"), None, ["C1"]))
 `;
@@ -251,7 +253,7 @@ test('일부만 잰 회차(--판)도 끝 코드 · 다시 낼 판 · 걸림 수�
   const 일부 = 돌리기(편, ['--판', 'C2']);
   assert.equal(일부.코드, 1, '앞 회차의 다시 낼 판이 남았는데 통과로 끝났다');
   assert.deepEqual([일부.결과.다시낼판, 일부.결과.걸림수, 일부.결과.끝코드, 일부.결과.이번에잰판], [['굳음'], 1, 1, ['C2']]);
-  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--판', 'C2'], { encoding: 'utf8',
+  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함', '--판', 'C2'], { encoding: 'utf8',
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
   assert.equal(글.status, 1);
   assert.match(글.stdout, /앞 회차 기록 그대로 1개/);
@@ -327,7 +329,7 @@ test('잰 판이 하나도 없는 회차도 앞 기록을 고쳐 쓴다 — 무�
   const 기록 = () => JSON.parse(fs.readFileSync(path.join(편, '받음', '_받은뒤검사.json'), 'utf8'));
   assert.deepEqual([기록().쓸판, 기록().끝코드], [{ C1: 'C1.mp4' }, 0]);
   영상(path.join(편, '받음', 'C1.mp4'), { 초: 6 });   // 다시 받아 파일이 바뀌었다
-  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--판', 'C2'], { encoding: 'utf8',
+  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함', '--판', 'C2'], { encoding: 'utf8',
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
   assert.equal(r.status, 2, r.stdout + r.stderr);
   assert.match(r.stdout, /받은 파일은 있는데 잰 값이 없는 판 1: C1/);
@@ -342,7 +344,7 @@ test('꾸러미 _순서.json의 id 없는 줄 · 겹친 id · 꾸러미에 없�
   assert.equal(r.코드, 2, r.stdout + r.stderr);
   assert.match(r.결과.꾸러미탈.join('\n'), /_순서\.json 1번째 줄에 판 id가 없다/);
   assert.deepEqual([r.결과.남는파일, r.결과.쓸판], [['C1.mp4'], {}]);
-  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함'], { encoding: 'utf8',
+  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함'], { encoding: 'utf8',
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
   assert.equal(글.status, 2);
   assert.match(글.stdout, /어느 판에도 안 맞는 영상 1개는 재지 않았다: C1\.mp4/);
@@ -364,4 +366,86 @@ test('꾸러미 _순서.json의 id 없는 줄 · 겹친 id · 꾸러미에 없�
   const 깨진 = 편만들기(t, { C4: { 초: 6 } }, { 고침: (seq) => { seq.detail.find(d => d.cut === 'C4').인물 = '수아'; } });
   돌리기(깨진, ['--판', 'C4']);
   assert.deepEqual(부른것(깨진), [['C4.mp4', 12, 120]], 'C4 0.5~5.5초를 쟀다');
+});
+// ── 11-16 흐름 — 컷 안 탈것 · 배경 움직임을 받자마자 잰다(최종본검사.py의 measure_flow를 빌림) ──────────────────────────────
+// 11-15 서울로에서 뒤로 가는 차(C08) · 섰다 가는 버스(E03k) · 바퀴만 도는 차(Q06)를 카본도 Fable 관문도 못 봤고, 최종본 검사의 흐름은 편집이 끝난 뒤에 돈다.
+// 합성 영상은 16:9(640×360)라 편 비율을 16:9로 바꾼다. 문턱 · 맞춘 자료는 tests/최종본검사.test.js 「흐름」 머리에 있다.
+const { 흐름영상 } = require('./_흐름합성.js');
+const 흐름준비 = 준비 && 있음('python', ['-I', '-X', 'utf8', '-c', 'import numpy, cv2']);
+const 흐름건너뜀 = { skip: !흐름준비 && '파이썬 · numpy · cv2 · ffmpeg 없음' };
+const 가로편 = (더고침) => (seq) => { seq.편.비율 = '16:9'; if (더고침) 더고침(seq); };
+const 흐름넣기 = (편, 이름, 종류, 길이 = null) => 흐름영상(null, 종류, { 자리: path.join(편, '받음', `${이름}.mp4`), 길이 });
+const 이력줄 = 편 => fs.readFileSync(path.join(편, '게시', '검사이력.jsonl'), 'utf8').trim().split(/\r?\n/).map(l => JSON.parse(l)).pop();
+
+test('흐름 — 같은 띠의 두 차가 반대로 가는 판은 「흐름갈림」 확인(끝 코드 2, 걸림 아님) · 같은 쪽으로 가는 판은 통과', 흐름건너뜀, (t) => {
+  const 편 = 편만들기(t, {}, { 고침: 가로편() });
+  흐름넣기(편, 'C1', '갈림');
+  const r = 돌리기(편, ['--판', 'C1'], { SYNK_검사이력: '' }, { 흐름: true });
+  assert.equal(r.코드, 2, r.stdout + r.stderr);
+  const f = r.결과.판.C1.파일[0];
+  assert.deepEqual([f.걸림, f.흐름.덩이, f.흐름.잰덩이, f.흐름.걸림.map(h => h.항목)], [[], [[0.5, 4]], 1, ['흐름갈림']]);
+  assert.ok(f.흐름.걸림[0].값.왼 < -2.5 && f.흐름.걸림[0].값.오른 > 2.5, JSON.stringify(f.흐름.걸림[0].값));
+  assert.equal(f.확인.length, 1, JSON.stringify(f.확인));
+  assert.match(f.확인[0], /^흐름갈림: 0\.5~4\.0초 컷의 가운데 띠에서 왼쪽은 -\d[\s\S]*모든 탈것이 가는 쪽과 컷이 끝날 때까지 갈 거리/);
+  assert.deepEqual([r.결과.다시낼판, r.결과.쓸판, r.결과.확인수], [[], { C1: 'C1.mp4' }, 1], '확인은 다시 낼 판이 아니다 — 눈으로 본다');
+  const 줄1 = 이력줄(편);
+  assert.deepEqual([줄1.눈, 줄1.결과, 줄1.걸림.map(g => [g.규칙, g.등급])], ['받은뒤검사', '확인', [['흐름갈림', '확인']]]);
+  // 같은 쪽으로 가는 두 차 — 잰 덩이는 하나, 걸림 없음
+  const 맞는 = 편만들기(t, {}, { 고침: 가로편() });
+  흐름넣기(맞는, 'C1', '같은방향');
+  const r2 = 돌리기(맞는, ['--판', 'C1'], {}, { 흐름: true });
+  assert.equal(r2.코드, 0, r2.stdout + r2.stderr);
+  const f2 = r2.결과.판.C1.파일[0];
+  assert.deepEqual([f2.흐름.잰덩이, f2.흐름.걸림, f2.확인], [1, [], []]);
+  assert.ok(f2.흐름.칸[0].칸.가운데왼 > 0 && f2.흐름.칸[0].칸.가운데오 > 0, JSON.stringify(f2.흐름.칸));
+});
+
+test('흐름은 쓰는 구간만 잰다 — 앞쪽 버리는 구간에만 흠이 있는 판은 지나가고, 그 구간까지 쓰면 걸린다(사람 없는 컷도 잰다)', 흐름건너뜀, (t) => {
+  // 7초 판: 2.5초까지 두 차가 반대로 가다가 선다. C4는 인물 []인 컷이다
+  const 뒤만 = 편만들기(t, {}, { 고침: 가로편((seq) => Object.assign(seq.detail.find(d => d.cut === 'C4'), { in: 3, out: 6.5 })) });
+  흐름넣기(뒤만, 'C4', '앞갈림', 7);
+  const a = 돌리기(뒤만, ['--판', 'C4'], {}, { 흐름: true });
+  assert.equal(a.코드, 0, a.stdout + a.stderr);
+  const fa = a.결과.판.C4.파일[0];
+  assert.deepEqual([fa.흐름.덩이, fa.흐름.잰덩이, fa.흐름.걸림, fa.사람], [[[3, 6.5]], 1, [], undefined]);
+  assert.deepEqual(부른것(뒤만), [], '사람 없는 컷이라 사람 움직임은 재지 않았다');
+  const 앞도 = 편만들기(t, {}, { 고침: 가로편((seq) => Object.assign(seq.detail.find(d => d.cut === 'C4'), { in: 0.3, out: 6.5 })) });
+  흐름넣기(앞도, 'C4', '앞갈림', 7);
+  const b = 돌리기(앞도, ['--판', 'C4'], {}, { 흐름: true });
+  assert.equal(b.코드, 2, b.stdout + b.stderr);
+  assert.deepEqual(b.결과.판.C4.파일[0].흐름.걸림.map(h => [h.항목, h.초]), [['흐름갈림', 0.29]]);
+});
+
+test('흐름이 걸린 첫 판보다 흐름이 깨끗한 다시 낸 판(__2)을 쓸 판으로 고른다 · 흐름을 재기 전의 앞 기록은 --판 회차에서 그대로 쓰지 않는다', 흐름건너뜀, (t) => {
+  const 편 = 편만들기(t, {}, { 고침: 가로편() });
+  흐름넣기(편, 'C1', '갈림');
+  흐름넣기(편, 'C1__2', '같은방향');
+  const r = 돌리기(편, [], {}, { 흐름: true });
+  assert.equal(r.코드, 2, r.stdout + r.stderr);
+  assert.deepEqual(r.결과.판.C1.파일.map(f => [f.파일, f.흐름.걸림.map(h => h.항목)]), [['C1.mp4', ['흐름갈림']], ['C1__2.mp4', []]]);
+  assert.deepEqual(r.결과.쓸판, { C1: 'C1__2.mp4' }, '두 파일의 사람 값이 같으면 예전에는 첫 파일(흐름갈림)을 골랐다');
+  assert.deepEqual(r.결과.이을것, ['C1: 쓸 판이 C1__2이면 컷표 그 컷에 "판": "C1__2"을 적는다']);
+  assert.equal(r.결과.판.C1.조건.흐름, 1);
+  // 흐름을 잰 앞 기록은 흐름을 안 재는 회차가 그대로 쓴다
+  const 끔 = 돌리기(편, ['--판', 'C2']);
+  assert.deepEqual([끔.결과.안잰판, Object.keys(끔.결과.판), 끔.결과.쓸판], [[], ['C1'], { C1: 'C1__2.mp4' }]);
+  // 흐름을 안 잰 기록(옛 기록 · --흐름안함)은 흐름을 재는 회차가 그대로 쓰지 않는다 — 안 잰 판(확인)
+  const 옛 = 돌리기(편);
+  assert.deepEqual([옛.코드, 옛.결과.판.C1.조건.흐름, 옛.결과.판.C1.파일.map(f => f.흐름)], [2, '끔', [undefined, undefined]]);
+  const 켬 = 돌리기(편, ['--판', 'C2'], {}, { 흐름: true });
+  assert.deepEqual([켬.코드, 켬.결과.안잰판, Object.keys(켬.결과.판)], [2, ['C1'], []]);
+});
+
+test('흐름 측정(최종본 검사)을 못 부르면 흐름만 「못 잼」 확인이고 나머지는 낸다 · 길이가 걸린 판은 흐름을 재지 않는다', 건너뜀, (t) => {
+  const 편 = 편만들기(t, { C1: {}, C2: { 초: 2 } });
+  const r = 돌리기(편, ['--판', 'C1,C2'], { SYNK_FLOW_PY: path.join(편, '없는_최종본검사.py') }, { 흐름: true });
+  assert.equal(r.코드, 1, r.stdout + r.stderr);
+  const f = r.결과.판.C1.파일[0];
+  assert.deepEqual([f.걸림, f.사람.사람], [[], 0.5]);
+  assert.equal(f.확인.length, 1);
+  assert.match(f.확인[0], /^컷 안 움직임\(흐름\)을 못 쟀다 — 최종본 검사의 흐름 측정을 못 불렀다\(FileNotFoundError/);
+  assert.deepEqual(r.결과.쓸판, { C1: 'C1.mp4' });
+  const g = r.결과.판.C2.파일[0];
+  assert.match(g.걸림[0], /^받은 판의 영상이 2\.0초인데/);
+  assert.deepEqual([g.흐름, g.확인], [undefined, []], '다시 낼 판은 흐름을 재지 않는다');
 });
