@@ -19,7 +19,7 @@ await 화면시험({분:12},async()=>{
   let fixture,browser,failure,lastPage;
   const contexts=[],releases=[];
   const check=(label,value=true)=>{assert.ok(value,label);report.checks.push(label);};
-  async function ready(page){await page.locator('.admin-workspace h1').waitFor();await page.waitForFunction(()=>!adminState.loading&&!!adminState.data);}
+  async function ready(page){const scope=page.locator('[data-directory-scope="staff"]');if(await scope.getAttribute('aria-pressed')==='false')await scope.click();await page.locator('.admin-workspace h1').waitFor();await page.waitForFunction(()=>!adminState.loading&&!!adminState.data);}
   async function refresh(page){const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/admin-workspace');await page.locator('[data-admin-action="refresh"]').click();await response;await ready(page);}
   const root=page=>page.locator('.admin-workspace');
   async function tab(page,value){await page.locator(`[data-admin-tab="${value}"]`).click();}

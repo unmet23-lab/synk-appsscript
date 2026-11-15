@@ -89,6 +89,159 @@ function createInitialAdminState() {
   };
 }
 
+const directoryModes = [['workspace','Workspace 회원'],['synk','전체 SYNK ID'],['staff','직원 상세·성과']];
+const directoryStatuses = {active:'이용 중',disabled:'이용 중지','deletion-requested':'탈퇴 요청'};
+function newDirectoryState() {
+  return {mode:'workspace', q:'', draft:'', type:'all', company:'all', status:'all', page:1, data:null, error:'', busy:false, controller:null};
+}
+const directorySearches = new Map();
+let memberDirectory = newDirectoryState();
+
+function clearMemberDirectory() {
+  directorySearches.clear();
+  memberDirectory.controller?.abort();
+  memberDirectory = newDirectoryState();
+}
+
+function directoryScopeMarkup() {
+  return '<nav class="directory-scopes" aria-label="회원 관리 범위">'+directoryModes.map(([value,label]) =>
+    `<button type="button" class="admin-tab-btn" data-directory-scope="${value}" aria-pressed="${memberDirectory.mode===value}">${label}</button>`
+  ).join('')+'</nav>';
+}
+
+function directoryOptions(choices,value) {
+  return choices.map(([key,label]) => `<option value="${escape(key)}" ${key===value?'selected':''}>${escape(label)}</option>`).join('');
+}
+
+function directoryToolbar() {
+  const current=memberDirectory, local=current.mode==='workspace';
+  const statusOptions=Object.entries(directoryStatuses).filter(([key])=>!local||key!=='deletion-requested');
+  return `<div class="directory-heading"><h2>${local?'Workspace 회원':'전체 SYNK ID'}</h2>
+    <p>${local?'직원과 PULSE 고객을 조회합니다. 두 역할을 겸하는 회원은 한 번만 표시합니다.':'Workspace 방문 여부와 관계없이 SYNK ID 가입자를 조회합니다.'}</p></div>
+    <form data-directory-form class="directory-form" aria-label="회원 검색">
+      <label class="directory-query"><span>이름 또는 아이디</span><input name="q" type="search" maxlength="160" autocomplete="off" value="${escape(current.draft)}" placeholder="이름, 로그인 아이디, 회원 ID"></label>
+      ${local?`<label><span>회원 구분</span><select name="type">${directoryOptions([['all','전체 회원'],['staff','직원'],['customer','PULSE 고객']],current.type)}</select></label>
+      <label><span>소속 회사</span><select name="company">${directoryOptions([['all','전체 회사'],...ADMIN_COMPANY_FILTERS.filter(([key])=>['LAB','SHIFT','PULSE','PATH'].includes(key))],current.company)}</select></label>`:''}
+      <label><span>이용 상태</span><select name="status">${directoryOptions([['all','전체 상태'],...statusOptions],current.status)}</select></label>
+      <button type="submit" class="btn primary">검색</button>
+    </form>
+    <div data-directory-results>${directoryResults()}</div>`;
+}
+
+function directoryRow(row,local) {
+  const memberId=local && row.id.startsWith('staff:') ? row.staffId : row.id;
+  const secondaryId=local && row.staffId && row.staffId!==memberId ? `<small>직원 ID ${escape(row.staffId)}</small>` : '';
+  const title=escape(row.name||'이름 미등록');
+  const heading=local && row.staffId ? `<button type="button" class="admin-name-btn" data-directory-staff-id="${escape(row.staffId)}" aria-label="${title} 상세 보기">${title}</button>` : `<strong>${title}</strong>`;
+  const identity=`${heading}${row.loginId?`<span>${escape(row.loginId)}</span>`:''}<small>${escape(memberId)}</small>${secondaryId}`;
+  const roles=[];
+  if(local && row.staffId)roles.push(`직원 · ${roleLabel(row.role)||'직원'}${!row.staffActive?' (중지)':''}`);
+  if(local && row.brands.length)roles.push('PULSE 고객');
+  const affiliations=local?[...row.memberships.map(m=>`${m.company} · ${adminCompanyRoleLabel(m.company,m.role)}`),...row.brands.map(b=>`${b.name} · ${b.role==='admin'?'브랜드 관리자':'브랜드 회원'}${b.status==='active'?'':' (종료)'}`)]:[];
+  return `<tr><td data-label="회원" class="directory-identity">${identity}</td>
+    ${local?`<td data-label="구분">${roles.map(r=>`<span>${escape(r)}</span>`).join('')}</td>
+    <td data-label="소속과 역할">${affiliations.length?affiliations.map(a=>`<span>${escape(a)}</span>`).join(''):'소속 미지정'}</td>`:
+    `<td data-label="가입일">${escape(adminFormatDateTime(row.createdAt))}</td>`}
+    <td data-label="상태">${escape(directoryStatuses[row.status]||row.status)}</td></tr>`;
+}
+
+function directoryResults() {
+  const d=memberDirectory;
+  if(d.error)return `<p class="directory-feedback" role="alert">${escape(d.error)} <button type="button" class="btn small" data-directory-retry>다시 시도</button></p>`;
+  if(d.busy||!d.data)return '<p class="directory-feedback" role="status">회원 목록을 불러오는 중입니다.</p>';
+  const {rows,total,page,pageSize}=d.data,local=d.mode==='workspace',pages=Math.max(1,Math.ceil(total/pageSize));
+  return `<p class="directory-total" role="status" tabindex="-1">검색 결과 <strong>${adminInt(total)}명</strong></p>${rows.length?
+    `<table class="admin-table directory-table"><thead><tr><th scope="col">회원</th>${local?'<th scope="col">구분</th><th scope="col">소속과 역할</th>':'<th scope="col">가입일</th>'}<th scope="col">상태</th></tr></thead>
+    <tbody>${rows.map(r=>directoryRow(r,local)).join('')}</tbody></table>`:
+    '<p class="directory-feedback">조건에 맞는 회원이 없습니다.</p>'}
+    ${pages>1||page>1?`<nav class="directory-paging" aria-label="회원 목록 페이지"><button type="button" class="btn small" data-directory-page="-1" ${page<=1?'disabled':''}>이전</button>
+    <span>${adminInt(page)} / ${adminInt(pages)}</span><button type="button" class="btn small" data-directory-page="1" ${page>=pages?'disabled':''}>다음</button></nav>`:''}`;
+}
+
+async function loadMemberDirectory(focusTarget = '') {
+  const d=memberDirectory;
+  if(d.mode==='staff'||state.tab!=='admin'||!adminCanUse())return;
+  d.controller?.abort();
+  const controller=new AbortController(),stamp=companyAuthSnapshot();
+  d.controller=controller;d.busy=true;d.data=null;d.error='';
+  const current=()=>memberDirectory===d && d.controller===controller && !controller.signal.aborted && adminCanUse() && state.tab==='admin' && companyAuthCurrent(stamp);
+  const paint=()=>{const element=document.querySelector('[data-directory-results]');if(element)element.innerHTML=directoryResults();};
+  paint();
+  try{
+    const body={q:d.q,page:d.page,status:d.status};
+    if(d.mode==='workspace')Object.assign(body,{type:d.type,company:d.company});
+    const result=await api('/api/admin/member-directory/'+d.mode,body,'POST',{signal:controller.signal});
+    if(!current())return;
+    if(result.total>0 && !result.rows.length && d.page>1){d.page=Math.max(1,Math.ceil(result.total/result.pageSize));return loadMemberDirectory(focusTarget);}
+    d.data=result;
+  }catch(error){
+    if(!current())return;
+    d.error=error.message||'회원 목록을 불러오지 못했습니다.';
+  }finally{
+    if(current()){
+      d.busy=false;d.controller=null;paint();
+      if(focusTarget && document.activeElement===document.body){
+        const result=document.querySelector('[data-directory-results]');
+        const next=result?.querySelector(focusTarget+':not(:disabled)') || result?.querySelector('.directory-total, [data-directory-retry]');
+        next?.focus();
+      }
+    }
+  }
+}
+
+function showDirectoryMode(mode, refreshStaff = false) {
+  if(!directoryModes.some(([key])=>key===mode)||memberDirectory.mode===mode)return;
+  const {q,draft,type,company,status,page}=memberDirectory;
+  directorySearches.set(memberDirectory.mode,{q,draft,type,company,status,page});
+  memberDirectory.controller?.abort();
+  memberDirectory=Object.assign(newDirectoryState(),directorySearches.get(mode),{mode});
+  const root=document.querySelector('.admin-workspace');
+  const directory=root.querySelector('[data-directory-body]'),staff=root.querySelector('[data-directory-staff]');
+  root.querySelectorAll('[data-directory-scope]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.directoryScope===mode)));
+  directory.hidden=mode==='staff';staff.hidden=mode!=='staff';
+  if(mode==='staff'){
+    directory.replaceChildren();
+    if(refreshStaff)void adminManualRefresh();
+    else if(!adminState.data&&!adminState.loading)void loadAdminWorkspace();
+    else adminPaint();
+  }
+  else{root.querySelector('[data-admin-action="refresh"]').disabled=false;directory.innerHTML=directoryToolbar();void loadMemberDirectory();}
+}
+
+document.addEventListener('input',event=>{if(event.target.matches?.('[data-directory-form] input[name="q"]'))memberDirectory.draft=event.target.value;});
+document.addEventListener('change',event=>{
+  if(event.target.closest?.('[data-directory-form]') && event.target.matches('select'))event.target.form.requestSubmit();
+});
+document.addEventListener('submit',event=>{
+  if(!event.target.matches?.('[data-directory-form]'))return;
+  event.preventDefault();
+  const form=new FormData(event.target),d=memberDirectory;
+  d.q=d.draft=String(form.get('q')||'').trim();d.status=form.get('status');d.page=1;
+  if(d.mode==='workspace'){d.type=form.get('type');d.company=form.get('company');}
+  void loadMemberDirectory();
+});
+document.addEventListener('click',event=>{
+  const button=event.target.closest?.('.admin-workspace button');if(!button||button.disabled)return;
+  if(button.dataset.directoryScope){showDirectoryMode(button.dataset.directoryScope);return;}
+  if(button.dataset.directoryStaffId){
+    adminState.tab='members';adminState.search=button.dataset.directoryStaffId;adminState.company='all';adminState.status='all';
+    showDirectoryMode('staff',true);
+    const root=document.querySelector('.admin-workspace');
+    root.querySelector('[data-admin-search]').value=adminState.search;
+    root.querySelector('[data-admin-company]').value='all';
+    root.querySelector('[data-admin-status]').value='all';
+    adminPaint();
+    root.querySelector('[data-admin-search]').focus();
+    return;
+  }
+  if(button.hasAttribute('data-directory-retry'))void loadMemberDirectory('[data-directory-retry]');
+  if(button.dataset.directoryPage){
+    const step=button.dataset.directoryPage;
+    memberDirectory.page+=Number(step);
+    void loadMemberDirectory('[data-directory-page="'+step+'"]');
+  }
+});
+
 const adminState = createInitialAdminState();
 
 function adminCancelInFlight() {
@@ -100,6 +253,7 @@ function adminCancelInFlight() {
 }
 
 function resetAdminWorkspace() {
+  clearMemberDirectory();
   adminCancelInFlight();
   Object.assign(adminState, createInitialAdminState(), { request: adminState.request });
 }
@@ -160,7 +314,8 @@ function adminOnStateLoaded() {
   adminState.loading = true;
   adminState.refreshing = true;
   adminState.error = '';
-  void loadAdminWorkspace({ reason: 'state-saved' });
+  if(memberDirectory.mode!=='staff'){adminState.loading=false;adminState.refreshing=false;void loadMemberDirectory();}
+  else void loadAdminWorkspace({ reason: 'state-saved' });
 }
 
 function adminOnStateLoadFailed(err) {
@@ -199,6 +354,7 @@ function adminLeaveIfNeeded() {
   if (typeof state === 'undefined' || state.tab !== 'admin' || !adminCanUse()) {
     if (adminState.entered || adminState.loading || adminState.data || adminState.invitesModalOpen) {
       adminCancelInFlight();
+      clearMemberDirectory();
       adminState.entered = false;
       adminState.loading = false;
       adminState.refreshing = false;
@@ -217,7 +373,8 @@ function adminWorkspaceSyncMount() {
   if (!adminCanUse() || state.tab !== 'admin') return;
   if (!adminState.entered) {
     adminState.entered = true;
-    void loadAdminWorkspace({ reason: 'enter' });
+    if(memberDirectory.mode==='staff')void loadAdminWorkspace({ reason: 'enter' });
+    else void loadMemberDirectory();
   }
 }
 
@@ -320,6 +477,7 @@ async function loadAdminWorkspace({ reason = 'enter' } = {}) {
 }
 
 async function adminManualRefresh() {
+  if(memberDirectory.mode!=='staff')return loadMemberDirectory();
   if (!adminCanUse() || state.tab !== 'admin') return;
   const stamp = typeof companyAuthSnapshot === 'function' ? companyAuthSnapshot() : { userId: state.user?.id || null };
   adminState.pendingReloadStamp = null;
@@ -462,7 +620,7 @@ function adminMatchesSearch(member, query) {
   const q = String(query || '').trim().toLowerCase();
   if (!q) return true;
   const hay = `${member.name || ''} ${member.email || ''}`.toLowerCase();
-  return hay.includes(q);
+  return hay.includes(q) || String(member.id || '').toLowerCase()===q;
 }
 
 function adminFilteredMembers(allMembers = adminAllMembers()) {
@@ -1398,7 +1556,7 @@ function adminPaint() {
 
   const refreshBtn = root.querySelector('[data-admin-action="refresh"]');
   if (refreshBtn) {
-    refreshBtn.disabled = Boolean(adminState.loading);
+    refreshBtn.disabled = memberDirectory.mode==='staff' && Boolean(adminState.loading);
   }
 
   if (panelEl) {
@@ -1427,15 +1585,18 @@ function adminWorkspacePage() {
         <div class="admin-head-copy">
           <p class="admin-eyebrow">전사 운영 관리</p>
           <h1 id="admin-workspace-title">관리자</h1>
-          <p class="admin-head-desc">직원 소속과 초대를 관리하고 채널 성과와 업무 현황을 확인합니다.</p>
+          <p class="admin-head-desc">회원과 직원의 소속을 확인하고 초대코드를 관리합니다.</p>
         </div>
         <div class="admin-head-actions">
-          <button type="button" class="btn small quiet" data-admin-action="refresh" ${adminState.loading ? 'disabled' : ''}>${icon('refresh')}새로고침</button>
+          <button type="button" class="btn small quiet" data-admin-action="refresh" ${memberDirectory.mode==='staff' && adminState.loading ? 'disabled' : ''}>${icon('refresh')}새로고침</button>
           <button type="button" class="btn small" data-action="wa-invites">초대 관리</button>
           <button type="button" class="btn small primary" data-action="invite">${icon('plus')}초대코드 발급</button>
         </div>
       </header>
 
+      ${directoryScopeMarkup()}
+      <section class="directory-body" data-directory-body ${memberDirectory.mode==='staff'?'hidden':''}>${memberDirectory.mode==='staff'?'':directoryToolbar()}</section>
+      <div data-directory-staff ${memberDirectory.mode==='staff'?'':'hidden'}>
       <div class="admin-summary-grid" data-admin-summary aria-label="관리자 핵심 요약">
         ${adminSummaryMarkup(allMembers)}
       </div>
@@ -1497,6 +1658,7 @@ function adminWorkspacePage() {
 
       <div class="admin-panel" data-admin-panel>
         ${adminPanelMarkup(allMembers, filteredMembers, extraMap)}
+      </div>
       </div>
     </section>
   `;

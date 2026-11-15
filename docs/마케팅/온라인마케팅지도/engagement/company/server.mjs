@@ -113,6 +113,7 @@ import { buildContentLeaders } from './content-leaders.mjs';
 import {createCompanyWork} from './company-work.mjs';
 import {createWorkspaceAccessService} from './workspace-access-service.mjs';
 import {createAdminWorkspace} from './admin-workspace.mjs';
+import {createWorkspaceDirectory,directoryQuery} from './member-directory.mjs';
 import {hasWorkspaceFeature,requireWorkspaceFeature,workspaceRouteFeature} from './workspace-access.mjs';
 import { createAssistantService } from './assistant-service.mjs';
 import { createClientWorkflowService } from './client-workflow.mjs';
@@ -559,6 +560,7 @@ export function createCompanyApp(options={}) {
   const workspaceProfiles=createWorkspaceAccessService({store,clock});
   const companyWork=createCompanyWork({store,clock});
   const readAdminWorkspace=createAdminWorkspace({store,clock,report,membersFor:user=>visibleMembers(store,user),channelsFor:user=>visibleChannels(user).map(channel=>safeChannel(channel,user)),workspaceProfiles});
+  const readWorkspaceDirectory=createWorkspaceDirectory(store);
   const crewProfiles=createCrewProfileService({store,clock});
   const practiceSync=createPracticeSyncService({store,clock});
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
@@ -1624,6 +1626,20 @@ export function createCompanyApp(options={}) {
         }catch(error){if(error.status!==403)release();throw error;}
       }
       if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(path==='/api/admin/member-directory/workspace'||path==='/api/admin/member-directory/synk'){
+        if(demoRequest||url.search)throw httpError('실제 관리자 화면에서 회원을 검색해 주세요.',403);
+        const check=()=>{
+          const latest=session(req);
+          if(!latest||latest.hash!==auth.hash||latest.body.csrfToken!==req.headers['x-csrf-token'])throw httpError('로그인 상태를 확인해 주세요.',401);
+          if(latest.user.role!=='admin')throw httpError('관리자만 회원 명부를 볼 수 있어요.',403);
+          return latest;
+        };
+        const current=check();
+        if(path.endsWith('/workspace'))return send(res,200,readWorkspaceDirectory(input));
+        const result=await synkIdentity.searchMemberDirectory(current,directoryQuery(input,true));
+        check();
+        return send(res,200,result);
+      }
       if(path==='/api/computer-interpretation/delete'){
         if(url.search)throw httpError('본인의 서버 응답 인용만 삭제할 수 있어요.');
         return send(res,200,computerInterpretation.removeResponses(user,input));

@@ -1448,3 +1448,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+.directory-scopes { display:flex; flex-wrap:wrap; gap:.4rem; border-bottom:1px solid var(--ws-line); padding-bottom:.65rem; }
+.directory-scopes [aria-pressed="true"] { color:var(--ws-ink); background:var(--ws-surface); box-shadow:inset 0 -3px 0 currentColor; }
+.directory-body { min-width:0; }
+.admin-workspace [data-directory-staff][hidden], .admin-workspace .directory-body[hidden] { display:none; }
+.directory-heading h2 { margin:1rem 0 .35rem; }
+.directory-heading p, .directory-identity small { color:var(--ws-ink-muted); }
+.directory-heading p { word-break:keep-all; overflow-wrap:anywhere; }
+.directory-form { display:flex; flex-wrap:wrap; gap:.75rem; align-items:end; margin:1.25rem 0; }
+.directory-form label { display:grid; gap:.35rem; min-width:0; font-weight:600; font-size:.88rem; }
+.directory-form .directory-query { flex:1 1 16rem; }
+.directory-form input, .directory-form select { font:inherit; max-width:100%; min-height:40px; }
+.directory-form input { width:100%; box-sizing:border-box; }
+.directory-total,.directory-feedback { margin:1.15rem 0; }
+.directory-table { width:100%; table-layout:fixed; }
+.directory-table th { text-align:left; }
+.directory-table th:first-child { width:38%; }
+.directory-table td { overflow-wrap:anywhere; vertical-align:top; }
+.directory-table td > span,.directory-identity strong,.directory-identity small { display:block; }
+.directory-identity small { font-size:.77rem; line-height:1.4; }
+.directory-paging { display:flex; justify-content:center; align-items:center; gap:1rem; margin:1rem 0; }
+@media (max-width:650px) {
+  .directory-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .directory-form .directory-query { grid-column:1/-1; }
+}

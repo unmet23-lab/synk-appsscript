@@ -15,7 +15,7 @@ await 화면시험({분:12},async()=>{
   const report={synthetic:true,production:false,checks:[],errors:[],requests:[]};
   const contexts=[],releases=[];let fixture,browser,page,failure;
   const check=(label,value=true)=>{assert.ok(value,label);report.checks.push(label);};
-  const ready=async p=>{await p.locator('.admin-workspace h1').waitFor();await p.waitForFunction(()=>!adminState.loading&&!!adminState.data);};
+  const ready=async p=>{await p.locator('.admin-workspace h1').waitFor();const scope=p.locator('[data-directory-scope="staff"]');if(await scope.getAttribute('aria-pressed')==='false')await scope.click();await p.waitForFunction(()=>!adminState.loading&&!!adminState.data);};
   async function session(user){
     const context=await browser.newContext({viewport:{width:1440,height:1000}});contexts.push(context);
     if(user)await context.addCookies([{name:'synk_company_session',value:fixture.cookieFor(user),url:fixture.base}]);

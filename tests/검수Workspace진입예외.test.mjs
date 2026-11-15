@@ -9,11 +9,11 @@ import {정책만들기,다시검수자들,대신할검수자,끝판정책,후�
 
 const task='workspace-entry-handoff-20261115';
 const prefix='docs/마케팅/온라인마케팅지도/engagement/company/public/';
-const paths=['entry/index.html','entry/entry.mjs','entry/entry.css','pulse-app/entry-handoff.mjs','workspace-entry.js','app.js','index.html','pulse-app/app.mjs','pulse-app/sw.js','studio.js','maker-tools.js','maker-tools.css','workspace.js','workspace-access.js'];
+const paths=['entry/index.html','entry/entry.mjs','entry/entry.css','pulse-app/entry-handoff.mjs','workspace-entry.js','app.js','index.html','pulse-app/app.mjs','pulse-app/sw.js','studio.js','maker-tools.js','maker-tools.css','workspace.js','workspace-access.js','admin-workspace.js','admin-workspace.css'];
 const files=paths.map(p=>({경로:prefix+p,상태:'M'}));
 const options={종류:'화면',작성자:'GPT',담당예외:task};
 
-test('승인된 Workspace 진입 14경로만 GPT 작성 사실과 일반 화면 검수를 함께 기록한다',()=>{
+test('승인된 Workspace 진입과 관리자 화면 경로만 GPT 작성 사실과 일반 화면 검수를 함께 기록한다',()=>{
   for(const selected of [files,...files.map(file=>[file])]){
     const policy=정책만들기(options,selected);
     assert.equal(policy.작성자,'GPT');

@@ -151,6 +151,24 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
     }catch(error){if(sessions.get(row.hash)===entry){if(error.retryable){entry.blocked=true;onRevoked();throw error;}removeSession(row.hash);}return sessionAllowed(row);}finally{entry.checking=null;}})();return entry.checking;
   }
   async function refreshSessions(){for(const [sessionHash,entry]of sessions){if(closing)return;const stored=storedSession(sessionHash);if(!stored){removeSession(sessionHash);continue;}if(entry.blocked||entry.checkedAt+CHECK_MS/2<=now()||entry.expiresAt<=now()+REFRESH_MS)await validateSession(stored,{force:true}).catch(()=>{});}if(!closing)onRevoked();}
+  async function searchMemberDirectory(row,query){
+    const denied=()=>fail(403,'DIRECTORY_FORBIDDEN','전체 명부를 볼 권한이 있는 SYNK ID로 로그인해 주세요.');
+    if(!row?.body.synkIdentity||store.get('users',row.userId)?.role!=='admin'||!sessionAllowed(row))throw denied();
+    const entry=sessions.get(row.hash);
+    let response,data;
+    try{
+      response=await fetcher(config.accountApiUrl,{method:'POST',headers:{Authorization:'Bearer '+entry.accessToken,apikey:config.publishableKey,'X-SYNK-Product':'messenger','X-SYNK-Contract':'1','X-SYNK-App-Version':'0.2.0','Content-Type':'application/json'},body:JSON.stringify({...query,action:'admin-member-directory'}),redirect:'error',signal:AbortSignal.timeout(8000)});
+      if(response.ok)data=await response.json();
+    }catch{throw unavailable();}
+    if(!entryIsCurrent(row,entry)||!sessionAllowed(row)||store.get('users',row.userId)?.role!=='admin')throw denied();
+    if(response.status===401||response.status===403)throw denied();
+    if(!response.ok||data?.ok!==true||data.page!==query.page||data.pageSize!==25||!Number.isSafeInteger(data.total)||data.total<0||!Array.isArray(data.rows)||data.rows.length>25)throw unavailable();
+    const rows=data.rows.map(item=>{
+      if(!item||typeof item.id!=='string'||typeof item.name!=='string'||typeof item.loginId!=='string'||!['active','disabled','deletion-requested'].includes(item.status)||typeof item.createdAt!=='string')throw unavailable();
+      return {id:item.id,name:item.name,loginId:item.loginId,status:item.status,createdAt:item.createdAt};
+    });
+    return {total:data.total,page:data.page,pageSize:data.pageSize,rows};
+  }
   async function logout(sessionHash){
     const entry=sessions.get(sessionHash);removeSession(sessionHash);
     if(entry?.source!=='browser')return {ok:true,localSignedOut:true};
@@ -194,7 +212,7 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
   async function start(req,res,input,auth,getAuth=()=>auth){requireEnabled();if(!config.issuer||!config.clientId)throw fail(503,'BROWSER_NOT_CONFIGURED','브라우저 SYNK ID 로그인이 설정 전입니다.');const result=await challenge(req,res,input,auth,getAuth),flow=flows.get(hash(result.challenge)),verifier=random();flow.verifier=verifier;const url=new URL('/auth/v1/oauth/authorize',config.issuer);url.search=new URLSearchParams({client_id:config.clientId,response_type:'code',redirect_uri:origin+'/api/synk-id/callback',scope:'openid profile',state:result.challenge,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'S256'}).toString();return {...result,authorizationUrl:url.href};}
   async function callback(req,res,url,getAuth,setSession){requireEnabled();const allowed=['state','code','error','error_description'];if(url.hash||[...url.searchParams.keys()].some(key=>!allowed.includes(key)||url.searchParams.getAll(key).length!==1)||url.searchParams.has('code')&&url.searchParams.has('error'))throw fail(403,'CALLBACK','SYNK ID 콜백 주소를 확인해 주세요.');const flow=takeFlow(req,url.searchParams.get('state'));currentForFlow(flow,getAuth);const code=url.searchParams.get('code');if(!flow.verifier||!code||code.length>4000||url.searchParams.has('error'))throw fail(403,'FLOW','SYNK ID 로그인을 완료하지 못했습니다. 다시 시작해 주세요.');let data;try{const response=await fetcher(new URL('/auth/v1/oauth/token',config.issuer),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded',apikey:config.publishableKey},body:new URLSearchParams({grant_type:'authorization_code',code,client_id:config.clientId,redirect_uri:origin+'/api/synk-id/callback',code_verifier:flow.verifier}).toString(),redirect:'error',signal:AbortSignal.timeout(8000)});if(!response.ok)throw Error('exchange');data=await response.json();}catch{throw fail(401,'EXCHANGE_FAILED','SYNK ID 로그인을 완료하지 못했습니다. 다시 시작해 주세요.');}return complete(req,res,flow,data.access_token,getAuth,setSession,data);}
   let interval=null;
-  return {status,hasActiveCompanyAccount,challenge,exchange,renew,start,callback,sessionAllowed,validateSession,refreshSessions,dropUserSynkSessions,logout,
+  return {status,hasActiveCompanyAccount,searchMemberDirectory,challenge,exchange,renew,start,callback,sessionAllowed,validateSession,refreshSessions,dropUserSynkSessions,logout,
     startChecks(){if(!closing&&!interval){interval=setInterval(()=>refreshSessions().catch(()=>{}),CHECK_MS/2);interval.unref();}},
     close(){if(!closeTask){closing=true;clearInterval(interval);interval=null;flows.clear();closeTask=Promise.allSettled([...sessions.values()].map(entry=>entry.checking).filter(Boolean));}return closeTask;},
     // HTTP logout may finish while listeners drain. Keep its credentials and DB access until then.

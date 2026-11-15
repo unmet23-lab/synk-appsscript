@@ -575,7 +575,7 @@ export const Workspace진입화면정책 = p => p?.담당예외?.taskId === Work
 export const 직접승인화면정책 = p => 사이트점검화면정책(p) || Workspace진입화면정책(p);
 const Workspace진입원천 = new Set([
   'entry/index.html', 'entry/entry.mjs', 'entry/entry.css', 'pulse-app/entry-handoff.mjs', 'workspace-entry.js',
-  'app.js', 'index.html', 'pulse-app/app.mjs', 'pulse-app/sw.js', 'studio.js', 'maker-tools.js', 'maker-tools.css', 'workspace.js', 'workspace-access.js',
+  'app.js', 'index.html', 'pulse-app/app.mjs', 'pulse-app/sw.js', 'studio.js', 'maker-tools.js', 'maker-tools.css', 'workspace.js', 'workspace-access.js', 'admin-workspace.js', 'admin-workspace.css',
 ].map(p => `docs/마케팅/온라인마케팅지도/engagement/company/public/${p}`));
 function Workspace진입범위검사(o, files, candidate, 판) {
   if (판 !== 7 || o.작성자 !== 'GPT' || o.종류 !== '화면' || o.사용자지정 || o.예외 || o.페이블생략 != null

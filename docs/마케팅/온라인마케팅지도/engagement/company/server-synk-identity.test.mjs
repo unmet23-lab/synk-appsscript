@@ -453,3 +453,84 @@ test('after a restart a restored SYNK session without a password still sets the 
   await f.restart();assert.equal((await c.request('/api/account/password',{body:{password:'first-after-restart'}})).status,200);assert.equal((await c.request('/api/synk-id/status')).data.session,'synk');
   assert.equal((await f.client().request('/api/login',{body:{email:f.staff.email,password:'first-after-restart'}})).status,200);
 });
+
+test('admin member directory pages local members, merges only verified identities and separates central authority',async t=>{
+  let calls=0, hold, entered, mockResponse;
+  const name='중앙 합성 회원';
+  const f=await fixture(t,{fetcher:async(url,init)=>{
+    calls++;assert.equal(init.headers.Authorization,'Bearer '+access.one);
+    assert.deepEqual(JSON.parse(init.body),{action:'admin-member-directory',q:'검색',page:1,status:'all'});
+    if(entered){entered();await hold;}
+    if(mockResponse)return mockResponse();
+    return Response.json({ok:true,total:1,pageSize:25,page:1,rows:[{id:ids.two,name,loginId:'central@example.test',status:'active',createdAt:'2026-01-01T00:00:00Z',privateField:'omit'}]});
+  }});
+  const local='/api/admin/member-directory/workspace',global='/api/admin/member-directory/synk';
+  const post=(client,path,body={})=>client.request(path,{body});
+  const c=f.client(),member=f.client(),query={q:'검색'};
+  await c.login(f.admin);await member.login(f.staff);
+  assert.equal((await post(member,local)).status,403);
+  assert.equal((await post(c,global,query)).status,403);assert.equal(calls,0);
+  assert.equal((await c.request(local,{csrf:'invalid',body:{}})).status,403);
+  assert.equal((await post(c,local,{page:0})).status,400);
+  assert.equal((await post(c,local,{q:'%_'})).data.total,0);
+  assert.equal((await post(c,local,{q:'staff:'})).data.total,0);
+  assert.equal((await post(c,local,{q:f.staff.id.slice(0,8)})).data.rows[0].staffId,f.staff.id);
+  const unlinked=(await post(c,local,{q:f.staff.id})).data.rows[0];
+  assert.equal(unlinked.id,f.staff.id);
+  for(const q of [unlinked.id,'staff:'+f.staff.id])assert.equal((await post(c,local,{q})).data.rows[0].staffId,f.staff.id);
+  await c.link(f.admin);
+  const store=f.app.store;
+  store.put('customerWorkspaces','brand-1',{name:'합성 브랜드',status:'active',members:[
+    {synkUserId:ids.one,displayName:'다른 표시명',role:'admin'},{synkUserId:ids.two,displayName:f.admin.name,role:'member'}]});
+  store.put('users',f.staff.id,{...f.staff,workspaceProfile:'legacy-invalid'});
+  assert.equal((await post(c,local,{company:'LAB'})).data.total,0);
+  assert.equal((await post(c,local,{status:'active',type:'staff',company:'PULSE'})).data.total,0);
+  assert.equal((await post(c,local,{status:'active',type:'customer',company:'PULSE'})).data.total,2);
+  store.put('users',f.staff.id,{...f.staff,workspaceProfile:{memberships:[{company:'LAB',role:'teacher'}],duties:[]}});
+  assert.deepEqual((await post(c,local,{type:'staff',company:'LAB'})).data.rows.map(row=>row.staffId),[f.staff.id]);
+  // This member can still use an active brand after their staff access ends.
+  store.db.prepare('INSERT INTO synk_identity_links VALUES(?,?,?,?)').run(ids.two,f.staff.id,'test',new Date().toISOString());
+  store.put('users',f.staff.id,{...store.get('users',f.staff.id),active:false});
+  assert.equal((await post(c,local,{q:ids.two,type:'staff',status:'disabled'})).data.rows[0].status,'disabled');
+  assert.equal((await post(c,local,{q:ids.two,type:'customer',status:'active'})).data.rows[0].status,'active');
+  assert.equal((await post(c,local,{q:ids.two,status:'disabled'})).data.total,0);
+  store.db.prepare('DELETE FROM synk_identity_links WHERE synk_user_id=?').run(ids.two);
+  store.put('customerWorkspaces','invalid-identity',{name:'Invalid',status:'active',members:[{synkUserId:'z'.repeat(36),displayName:'잘못된 식별자',role:'member'}]});
+  assert.equal((await post(c,local,{q:'잘못된 식별자'})).data.total,0);
+  store.put('customerWorkspaces','legacy-brand',{name:'Legacy',members:[{synkUserId:'33333333-3333-4333-8333-333333333333',displayName:'Legacy client',role:'member'}]});
+  assert.equal((await post(c,local,{q:'Legacy client',type:'customer'})).data.rows[0].status,'disabled');
+  const clients=(await post(c,local,{type:'customer',q:f.admin.name})).data;
+  assert.equal(clients.total,2);
+  const both=clients.rows.find(row=>row.staffId===f.admin.id);
+  assert.equal(both.brands[0].name,'합성 브랜드');assert.equal(both.id,ids.one);
+  assert.equal(JSON.stringify(clients).includes('passwordHash'),false);
+  const staffOnly=(await post(c,local,{type:'staff',q:'다른 표시명'})).data;
+  assert.equal(staffOnly.total,1);assert.equal(staffOnly.rows[0].id,ids.one);
+  const found=(await post(c,global,query)).data;
+  assert.equal(found.rows[0].name,name);assert.equal(found.rows[0].privateField,undefined);
+  for(let i=0;i<29;i++)store.put('users','directory-test-'+i,{id:'directory-test-'+i,name:'동명',active:true,email:'member'+i+'@example.test',role:'member'});
+  const page1=(await post(c,local,{q:'동명'})).data,page2=(await post(c,local,{q:'동명',page:2})).data;
+  assert.equal(page1.total,29);assert.equal(page1.rows.length,25);assert.equal(page2.rows.length,4);
+  assert.equal(new Set([...page1.rows,...page2.rows].map(row=>row.id)).size,29);
+  for(const code of [401,403,503]){
+    mockResponse=()=>new Response(null,{status:code});
+    const response=await post(c,global,query);
+    assert.equal(response.status,code===503?503:403);assert.equal(response.data.rows,undefined);
+  }
+  const validRow={id:ids.one,name,loginId:'',status:'active',createdAt:'2026-01-01T00:00:00Z'};
+  const validPage={ok:true,pageSize:25,page:1,total:1,rows:[validRow]};
+  mockResponse=()=>Response.json(validPage);
+  assert.equal((await post(c,global,query)).status,200);
+  for(const invalid of [{page:2},{total:26,rows:Array(26).fill(validRow)},{rows:[{...validRow,status:'bogus'}]}]){
+    mockResponse=()=>Response.json({...validPage,...invalid});
+    assert.equal((await post(c,global,query)).status,503);
+  }
+  mockResponse=null;
+  let release;
+  hold=new Promise(resolve=>{release=resolve;});
+  const started=new Promise(resolve=>{entered=resolve;});
+  const pending=post(c,global,query);
+  await Promise.race([started,pending.then(result=>assert.fail('Central request ended early: '+result.status))]);
+  store.put('users',f.admin.id,{...store.get('users',f.admin.id),role:'member'});
+  release();assert.equal((await pending).status,403);
+});
