@@ -144,7 +144,7 @@ test('세 언어: 이야기 · 지도 글이 열쇠 그대로 새지 않고, 영
  const en=text(page(run,'en'));
  for(const line of ['You missed this notice line 2 times','You let in a guest who should have been stopped','Right after, 2 guests came in a row under the same rule. You missed 1 again and got 1 right on your own','The next new guest of the same kind, you stopped on your own','TOPIK I · 16 skills'])assert.ok(en.includes(line),line);
  assert.equal(t('position.story.lineAll',{n:1},'en'),'You missed this notice line once');
- const mn=text(page(run,'mn'));assert.ok(mn.includes('Зарын энэ мөрийн дагуу шалгахдаа 2 удаа алдсан байна'));
+ const mn=text(page(run,'mn'));assert.ok(mn.includes('Зарын энэ мөрөнд 2 удаа алдсан байна'));
  // 새 열쇠는 세 언어가 다 있다
  for(const [key,row] of Object.entries(STRINGS).filter(([key])=>/^position\.(story|map|list)\./.test(key)))for(const lang of ['ko','en','mn'])assert.ok(row[lang],`${key} ${lang}`);
 });
@@ -166,6 +166,23 @@ test('카본 A1 · A2 · A6: 바로 다음 손님을 다 맞히면 「모두」 
  const html=page(run);
  assert.match(html,/<li data-step="delayed" data-state="planned"><i class="wpv-dot" aria-hidden="true"><\/i>/);
  assert.equal((html.match(/다음 차례/g)||[]).length,1);
+});
+
+test('놓침이 두 자리로 나뉘면 「첫 놓침만」 · 「이어서」 꼴을 쓰지 않고 놓침 줄이 수를 그대로 말한다(다시 검수 A1)',()=>{
+ // 놓침 a, 바로 뒤 b(또 놓침) · c(맞힘), 나중에 따로 놓침 d, 바로 뒤 e(맞힘)
+ const run=bolor(),card=structuredClone(run.card);
+ card.evidence=['a','b','d'];
+ card.narrow=card.narrow.map(row=>row.layer==='skill'?{...row,count:3,of:5}:{...row,count:3,of:3});
+ Object.assign(card.again.find(row=>row.step==='spot'),{guests:3,right:2,eventIds:['b','c','e']});
+ const said=text(renderPositionPage({map:run.map,legacy:'',card,practice,...langs.ko}));
+ assert.ok(said.includes('놓침 막아야 할 손님을 3번 들여보냈어요'),said);
+ // 그 자리 줄은 또 놓친 b를 빼고 센다 — 놓침 3 + 바로 뒤 새 손님 2 = 머리 수 5(최종 검수 F1)
+ assert.ok(said.includes('바로 다음에 같은 규칙 손님 2명이 왔고, 모두 혼자 맞혔어요'),said);
+ assert.doesNotMatch(said,/이어서 왔어요|또 놓쳤고|손님 3명이 왔고/);
+ // 바로 뒤 손님이 모두 또 놓친 손님이면 그 자리 줄을 두지 않는다
+ const all=structuredClone(card);Object.assign(all.again.find(row=>row.step==='spot'),{guests:1,right:0,eventIds:['b']});
+ const html=renderPositionPage({map:run.map,legacy:'',card:all,practice,...langs.ko});
+ assert.doesNotMatch(html,/data-step="spot"/);assert.match(html,/data-step="again"/);
 });
 
 test('글 안전: 근무지 이름 · 안내문 줄 · 항목 이름의 꺾쇠와 따옴표는 글로만 들어간다',()=>{

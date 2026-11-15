@@ -25225,16 +25225,18 @@ function renderStory(card, { t: t3, has, formatDate: formatDate3, practice, skil
   };
   const notice = line ? `<figure class="wpv-notice"><figcaption>${esc2(t3("position.source.entry-check"))} \xB7 <span lang="ko">${esc2(line.venue)}</span></figcaption><blockquote lang="ko">${esc2(line.text)}</blockquote></figure>` : "";
   const evidenceIds = new Set(Array.isArray(card.evidence) ? card.evidence : []), spotRow = card.again.find((row) => row.step === "spot");
-  const chained = !!spotRow && spotRow.right > 0 && (Array.isArray(spotRow.eventIds) ? spotRow.eventIds : []).some((id2) => evidenceIds.has(id2));
+  const again = spotRow ? (Array.isArray(spotRow.eventIds) ? spotRow.eventIds : []).filter((id2) => evidenceIds.has(id2)).length : 0;
+  const chained = !!spotRow && spotRow.right > 0 && again > 0 && head.count === again + 1;
   const wayKey = way ? way.direction === "turned-away" ? "turned-away" : way.direction === "wrong-rule" ? "wrong-rule" : "let-in" : null;
   const missText = way && chained && way.count === way.of ? t3(`position.story.first.${wayKey}`) : way ? `${t3(`position.story.way.${way.direction === "turned-away" ? "turned-away" : way.direction === "wrong-rule" ? "wrong-rule" : "let-in"}`, { n: way.count })}${way.count === way.of ? "" : ` (${t3("position.missed.share.some", { n: way.count, of: way.of })})`}` : line ? count : "";
   const missRow = missText ? `<li data-step="miss" data-state="done"><i class="wpv-dot" aria-hidden="true"></i><span class="wpv-step">${esc2(t3("position.story.step.miss"))}</span><span class="wpv-what">${esc2(missText)}</span></li>` : "";
   const stepName = (row) => t3(`position.missed.step.${row.step}`);
   const stepText = (row) => {
     if (row.step === "spot") {
-      const missedIds = new Set(Array.isArray(card.evidence) ? card.evidence : []), again = (Array.isArray(row.eventIds) ? row.eventIds : []).filter((id2) => missedIds.has(id2)).length;
-      if (again > 0 && row.right > 0) return t3(`position.story.spot.${row.sameRule ? "sameRule" : "sameKind"}Mixed`, { n: row.guests, again, right: row.right });
-      return t3(`position.story.spot.${row.sameRule ? "sameRule" : "sameKind"}${!row.right ? "" : row.right >= row.guests ? "All" : "Right"}`, { n: row.guests, right: row.right });
+      if (chained) return t3(`position.story.spot.${row.sameRule ? "sameRule" : "sameKind"}Mixed`, { n: row.guests, again, right: row.right });
+      const fresh = row.guests - again;
+      if (fresh <= 0) return "";
+      return t3(`position.story.spot.${row.sameRule ? "sameRule" : "sameKind"}${!row.right ? "" : row.right >= fresh ? "All" : "Right"}`, { n: fresh, right: row.right });
     }
     if (row.step === "again") {
       if (row.state === "planned") return t3("position.story.again.left", { n: row.left });
@@ -25250,9 +25252,11 @@ function renderStory(card, { t: t3, has, formatDate: formatDate3, practice, skil
     return "";
   };
   const rows2 = card.again.filter((row) => STEPS.includes(row.step)).map((row) => {
+    const what = stepText(row);
+    if (!what) return "";
     const state = row.state === "done" ? "done" : "planned", win = row.step === "again" && row.state === "done" && row.result === "correct";
     const tag = state === "planned" ? `<span class="wpv-next">${esc2(t3("position.missed.legend.planned"))}</span>` : "";
-    return `<li data-step="${row.step}" data-state="${state}"${win ? " data-win" : ""}>${state === "done" ? `<i class="wpv-dot" role="img" aria-label="${esc2(t3("position.missed.legend.done"))}"></i>` : '<i class="wpv-dot" aria-hidden="true"></i>'}<span class="wpv-step">${esc2(stepName(row))}${tag}</span><span class="wpv-what">${esc2(stepText(row))}</span></li>`;
+    return `<li data-step="${row.step}" data-state="${state}"${win ? " data-win" : ""}>${state === "done" ? `<i class="wpv-dot" role="img" aria-label="${esc2(t3("position.missed.legend.done"))}"></i>` : '<i class="wpv-dot" aria-hidden="true"></i>'}<span class="wpv-step">${esc2(stepName(row))}${tag}</span><span class="wpv-what">${esc2(what)}</span></li>`;
   }).join("");
   const all = (Array.isArray(skill2?.evidence) ? skill2.evidence : []).filter((row) => row && ["correct", "incorrect"].includes(row.verdict)).slice().sort((a, b) => (Date.parse(a.at) || 0) - (Date.parse(b.at) || 0));
   const marks = all.slice(-10), more = (Number.isInteger(skill2?.folded) && skill2.folded > 0 ? skill2.folded : 0) + (all.length - marks.length);

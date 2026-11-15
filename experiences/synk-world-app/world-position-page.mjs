@@ -114,7 +114,9 @@ function renderStory(card,{t,has,formatDate,practice,skillName,skill=null}){
  // 「그 자리」 줄이 또 놓친 손님을 말하면(바로 뒤 손님 가운데 놓친 근거가 있으면) 놓침 줄은 첫 놓침만 말한다 — 줄을 차례로 읽으면 ✗ → ✗✓ → ✓로
  // 머리 수와 셈이 맞는다(최종 검수 2). 놓친 방향이 놓친 수의 일부뿐이면 수를 그대로 둔다.
  const evidenceIds=new Set(Array.isArray(card.evidence)?card.evidence:[]),spotRow=card.again.find(row=>row.step==='spot');
- const chained=!!spotRow&&spotRow.right>0&&(Array.isArray(spotRow.eventIds)?spotRow.eventIds:[]).some(id=>evidenceIds.has(id));
+ // 놓침 전부가 한 줄로 이어진 때(머리의 놓친 수 = 바로 뒤에서 또 놓친 수 + 1)만이다 — 놓침이 두 자리로 나뉘면 따로 놓친 손님이 줄에서 빠진다(다시 검수 A1).
+ const again=spotRow?(Array.isArray(spotRow.eventIds)?spotRow.eventIds:[]).filter(id=>evidenceIds.has(id)).length:0;
+ const chained=!!spotRow&&spotRow.right>0&&again>0&&head.count===again+1;
  const wayKey=way?(way.direction==='turned-away'?'turned-away':way.direction==='wrong-rule'?'wrong-rule':'let-in'):null;
  const missText=way&&chained&&way.count===way.of?t(`position.story.first.${wayKey}`):way?`${t(`position.story.way.${way.direction==='turned-away'?'turned-away':way.direction==='wrong-rule'?'wrong-rule':'let-in'}`,{n:way.count})}${way.count===way.of?'':` (${t('position.missed.share.some',{n:way.count,of:way.of})})`}`:line?count:'';
  const missRow=missText?`<li data-step="miss" data-state="done"><i class="wpv-dot" aria-hidden="true"></i><span class="wpv-step">${esc(t('position.story.step.miss'))}</span><span class="wpv-what">${esc(missText)}</span></li>`:'';
@@ -124,9 +126,11 @@ function renderStory(card,{t,has,formatDate,practice,skillName,skill=null}){
   // 바로 뒤 손님 가운데 이미 놓침으로 센 손님(놓친 근거와 같은 기록 — 또 놓친 손님)이 있으면 그 수를 갈라 말한다. 안 가르면 「2번 들여보냈어요」
   // 바로 아래에서 놓친 손님 위에 손님이 더 온 것처럼 읽혀 머리 수(「손님 4명」)와 셈이 어긋난다(최종 검수 2).
   if(row.step==='spot'){
-   const missedIds=new Set(Array.isArray(card.evidence)?card.evidence:[]),again=(Array.isArray(row.eventIds)?row.eventIds:[]).filter(id=>missedIds.has(id)).length;
-   if(again>0&&row.right>0)return t(`position.story.spot.${row.sameRule?'sameRule':'sameKind'}Mixed`,{n:row.guests,again,right:row.right});
-   return t(`position.story.spot.${row.sameRule?'sameRule':'sameKind'}${!row.right?'':row.right>=row.guests?'All':'Right'}`,{n:row.guests,right:row.right});
+   if(chained)return t(`position.story.spot.${row.sameRule?'sameRule':'sameKind'}Mixed`,{n:row.guests,again,right:row.right});
+   // 놓침이 서로 떨어진 자리에서 나왔으면 놓침 줄이 놓친 수 전부를 말하므로, 그 자리 줄은 또 놓친 손님을 빼고 센다.
+   // 빼지 않으면 「3번 들여보냈어요」 아래 「손님 3명이 왔고」가 겹쳐 3+3으로 읽힌다(최종 검수 F1). 빼고 0명이면 그 줄을 두지 않는다.
+   const fresh=row.guests-again;if(fresh<=0)return '';
+   return t(`position.story.spot.${row.sameRule?'sameRule':'sameKind'}${!row.right?'':row.right>=fresh?'All':'Right'}`,{n:fresh,right:row.right});
   }
   if(row.step==='again'){
    if(row.state==='planned')return t('position.story.again.left',{n:row.left});
@@ -142,9 +146,10 @@ function renderStory(card,{t,has,formatDate,practice,skillName,skill=null}){
   return '';
  };
  const rows=card.again.filter(row=>STEPS.includes(row.step)).map(row=>{
+  const what=stepText(row);if(!what)return '';
   const state=row.state==='done'?'done':'planned',win=row.step==='again'&&row.state==='done'&&row.result==='correct';
   const tag=state==='planned'?`<span class="wpv-next">${esc(t('position.missed.legend.planned'))}</span>`:'';
-  return `<li data-step="${row.step}" data-state="${state}"${win?' data-win':''}>${state==='done'?`<i class="wpv-dot" role="img" aria-label="${esc(t('position.missed.legend.done'))}"></i>`:'<i class="wpv-dot" aria-hidden="true"></i>'}<span class="wpv-step">${esc(stepName(row))}${tag}</span><span class="wpv-what">${esc(stepText(row))}</span></li>`;
+  return `<li data-step="${row.step}" data-state="${state}"${win?' data-win':''}>${state==='done'?`<i class="wpv-dot" role="img" aria-label="${esc(t('position.missed.legend.done'))}"></i>`:'<i class="wpv-dot" aria-hidden="true"></i>'}<span class="wpv-step">${esc(stepName(row))}${tag}</span><span class="wpv-what">${esc(what)}</span></li>`;
  }).join('');
  // 그 항목의 손님(문항) 줄: 지도가 그 항목의 근거로 센 첫 답을 시각 차례로 — ✗ 놓침 · ✓ 맞힘. 머리 수(「손님 4명 가운데 2명」)를 그림으로 보인 것이다.
  // 근거 일부가 접혀 로그에 없으면 그 수만 「+n」으로 붙인다. 열 개를 넘으면 최근 열 개만.
