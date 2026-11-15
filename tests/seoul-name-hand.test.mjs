@@ -243,3 +243,22 @@ test('카본 A1 · A2 · A3: 한 점 획은 촉 크기만큼만, 동그라미 �
  const r=strokeStats(ga,small,.05);assert.equal(r.n,ga.length);assert.equal(r.ord,ga.length);assert.equal(r.dir,ga.length);
  const back=strokeStats(ga,[small[1],small[0],...small.slice(2)],.05);assert.ok(back.ord<back.n,'순서를 바꾸면 여전히 깎인다');
 });
+
+// 비교판 두 줄의 결(11-16 유호님 「뭐가 바른글씨고 뭐가 직접 학생이(사용자가) 쓴 글씨인지 아예 안보여. 둘 다 똑같잖아」):
+// 바른 글씨는 붉은 겉선 본보기, 내가 쓴 글씨는 쓸 때 칸에 남은 잉크(빠르기 · 굵기 · 떨림) 그대로 — 모형대로 정확히 따라 써도 두 줄이 같은 그림이 되지 않게
+test('비교판: 바른 글씨는 붉은 겉선, 내가 쓴 글씨는 쓸 때의 잉크 그대로, 줄 이름 표가 칸 속 결과 같다', () => {
+ const src=fs.readFileSync(new URL('../experiences/seoul-arrival/name-trace.mjs',import.meta.url),'utf8');
+ const html=fs.readFileSync(new URL('../experiences/seoul-arrival/index.html',import.meta.url),'utf8');
+ const look=/const LOOK=\{([\s\S]*?)\};/.exec(src)[1];
+ assert.match(look,/model:\{[^}]*outline:'rgba\(178,62,44/,'바른 글씨는 붉은 겉선');
+ assert.doesNotMatch(src,/fillStyle='#3A404C'/,'바른 글씨를 잉크처럼 짙게 칠하지 않는다');
+ assert.match(src,/drawGuide\(g,glyph\(s\.ch\),sz<44\?LOOK\.modelSm:LOOK\.model\)/,'바른 글씨 줄은 겉선으로(아주 작은 칸은 붉은 면으로) 그린다');
+ assert.match(look,/modelSm:\{fill:'rgba\(178,62,44/,'작은 칸의 바른 글씨도 붉은색');
+ assert.match(src,/inkT\[i\]=W\?wet\.map/,'음절 끝에 쓴 잉크를 시각과 함께 남긴다');
+ assert.match(src,/inkT\[k\]\?\.some\(p=>p\.length\)\?inkT\[k\]\.map\(p=>p\.map\(\(\[u,v,t\]\)=>\[u\*sz,v\*sz,t\*sz\]\)\)/,'내가 쓴 글씨 줄은 쓴 잉크를 시각까지 칸 크기로 바꿔 다시 그린다');
+ assert.match(src,/inks\.length=0;inkT\.length=0;/,'다시 써 보기는 쓴 잉크도 비운다');
+ for(const [cls,key] of [['nt-cmp-lm','바른 글씨'],['nt-cmp-ly','내가 쓴 글씨']]){
+  assert.ok(html.includes(`<span class="nt-cmp-l ${cls}"><i class="nt-key" aria-hidden="true"></i><span data-l="${key}">${key}</span></span>`),cls);
+  for(const lang of ['en','mn']){const v=L(key,null,lang);assert.ok(v&&v!==key,`${lang} ${key}`);}
+ }
+});

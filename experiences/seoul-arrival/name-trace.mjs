@@ -13,7 +13,12 @@ const NS='http://www.w3.org/2000/svg';
 const dstr=pts=>pts.map(([a,b],i)=>(i?'L':'M')+a.toFixed(1)+' '+b.toFixed(1)).join('');
 const TIP={h:'획 안내 가로',v:'획 안내 세로',hv:'획 안내 ㄱ꼴',vh:'획 안내 ㄴ꼴',dl:'획 안내 왼삐침',dr:'획 안내 오른내림',o:'획 안내 동그라미',hdl:'획 안내 ㅈ꼴',tick:'획 안내 꼭지'};
 // 겉: 잉크(만년필 남흑) · 흐린 글씨(겉선 + 아주 옅은 면) · 지금 쓸 획의 붉은 엷은 면. 촉 각 · 굵기는 칸 굵기 lw에 비례
-const LOOK={ink:'#141B2B',guide:{fill:'rgba(20,27,43,.09)'},cur:'rgba(194,74,55,.14)',a:.42,h:.5,gh:.56,m:.26,gm:.3};
+// 비교판(11-16 유호님 「뭐가 바른글씨고 뭐가 직접 학생이 쓴 글씨인지 아예 안보여. 둘 다 똑같잖아」): 바른 글씨는 교본의 쌍구처럼
+// 붉은 겉선 + 아주 옅은 붉은 면(model), 내가 쓴 글씨 칸 뒤의 바른 글씨는 같은 붉은 겉선을 더 엷게(ghost). 잉크만 남흑으로 칠한다 — 붉은 것은 본보기, 남흑은 내 손
+const LOOK={ink:'#141B2B',guide:{fill:'rgba(20,27,43,.09)'},cur:'rgba(194,74,55,.14)',a:.42,h:.5,gh:.56,m:.26,gm:.3,
+ model:{fill:'rgba(194,74,55,.09)',outline:'rgba(178,62,44,.92)',ow:1},ghost:{fill:'rgba(194,74,55,.045)',outline:'rgba(194,74,55,.3)',ow:.8},
+ // 글자 칸이 44px 아래로 작아지면(320×568 · 높이 540 아래의 다시 쓴 판) 1px 겉선이 획을 뭉개므로 바른 글씨는 붉은 면으로, 뒤에 까는 것은 엷은 면으로만
+ modelSm:{fill:'rgba(178,62,44,.78)'},ghostSm:{fill:'rgba(194,74,55,.1)'}};
 const penK=(p,w,fin)=>inkScale(p,{thin:.22,lo:.7,hi:1,vref:.9,taperIn:w*.45,inFrom:.72,taperOut:w*1.5,outTo:.4,fin});
 // 잉크 한 획을 칠한다(p: [x,y,t] px, w: 칸 굵기 lw)
 function paintInk(x,p,w,fin=true){if(!p.length)return;const q=smooth(p);x.fillStyle=LOOK.ink;nib(x,q,penK(q,w,fin),{h:w*LOOK.h,a:LOOK.a,m:LOOK.m});}
@@ -74,6 +79,9 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   // 서하 선배 목소리(name-coach.mjs): 바로잡기 · 칭찬 · 끝 점수 줄. 소리를 끄면 글만 남는다
   const coach=createCoach({SND});coach.warm();
   const inks=[];   // 음절마다 다 쓴 잉크(칸 [0,1]²)
+  // 음절마다 칸에 실제로 그은 잉크 [u,v,t/W](손이 지나간 점 그대로 · 시각은 칸 폭으로 나눔) — 비교판의 「내가 쓴 글씨」를 쓰던 때의 빠르기 · 굵기 · 떨림 그대로 다시 그린다.
+  // 판정 · 저장은 inks(3px 간격으로 고른 점)를 쓴다
+  const inkT=[];
   const stats=[];  // 음절마다 {n 모형 획을 따라간 획 수, ord 차례대로 쓴 수, dir 바른 방향 수, r 마지막 판정}
   const showAccept=on=>{btnAccept.classList.toggle('off',!on);btnAccept.disabled=!on;};
   box.classList.remove('done','cmp');box.scrollTop=0;box.classList.toggle('knows',knows);cv.setAttribute('aria-label',L('이름 쓰는 칸',{w:word}));cmp.hidden=true;
@@ -177,6 +185,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    switching=true;clearTimeout(timer);clearTimeout(acceptT);showAccept(false);last=null;pid=null;live=null;paintLive();
    cancelAnimationFrame(soRaf);so.querySelectorAll('.nto-s').forEach(g=>g.classList.remove('cur','shown'));
    inks[i]=strokes.map(s=>s.slice());
+   inkT[i]=W?wet.map(p=>p.map(([x,y,t])=>[x/W,y/W,t/W])):null;
    const k=i,c=cell(k),st=stats[k];
    SND.sfx('pix_whoosh_short',.22);
    if(clean&&k<syl.length-1&&(!st||(st.ord===st.n&&st.dir===st.n)))setTimeout(()=>{if(!finished)coach.praise();},reduce?0:260);
@@ -267,10 +276,14 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    const sc=$('#ntScore');sc.classList.remove('land');
    const sz=cells[0].m.offsetWidth||60,c=sz*d,lwc=sz*.05;
    const prep=cvs=>{cvs.width=cvs.height=Math.round(c);const g=cvs.getContext('2d');g.setTransform(d,0,0,d,0,0);return g;};
-   // 바른 글씨: 모형 획을 넓적 촉으로(흐린 글씨와 같은 모양, 진하게)
-   cells.forEach(({s,m})=>{const g=prep(m.querySelector('canvas'));g.fillStyle='#3A404C';for(const st of syllableStrokes(s.ch)){const sh=shapeOf(st.k,st.p.map(([u,v])=>[u*sz,v*sz]));nib(g,sh.p,sh.K,{h:lwc*LOOK.gh,a:LOOK.a,m:LOOK.gm});}});
-   // 내 글씨: 칸에 쓴 자리 · 크기 그대로. 뒤에 바른 글씨를 엷게 깔아 어디가 다른지 보이게. 획을 차례로 다시 쓰며 나타난다
-   const mine=cells.map(({s,y},k)=>{const g=prep(y.querySelector('canvas'));return {g,ghost:syllableStrokes(s.ch),list:(inks[k]||[]).filter(p=>p.length).map(p=>p.map(([u,v])=>[u*sz,v*sz]))};});
+   const glyph=ch=>m=>{for(const st of syllableStrokes(ch)){const sh=shapeOf(st.k,st.p.map(([u,v])=>[u*sz,v*sz]));nib(m,sh.p,sh.K,{h:lwc*LOOK.gh,a:LOOK.a,m:LOOK.gm});}};
+   // 바른 글씨: 모형 획을 교본의 쌍구처럼 붉은 겉선으로(안은 아주 옅은 붉은 면) — 잉크로 칠하지 않아 내가 쓴 글씨와 한눈에 갈린다
+   cells.forEach(({s,m})=>{const g=prep(m.querySelector('canvas'));drawGuide(g,glyph(s.ch),sz<44?LOOK.modelSm:LOOK.model);});
+   // 내가 쓴 글씨: 칸에 쓴 자리 · 크기 · 빠르기 그대로(쓸 때 칸에 남은 잉크와 같은 굵기 · 떨림). 뒤에 바른 글씨 겉선을 엷게 깔아 어디가 다른지 보이게. 획을 차례로 다시 쓰며 나타난다.
+   // 시각은 칸 폭에 맞춰 늘이고 줄인다(t/W × sz) — 작은 칸에서도 빠르기 = 쓸 때의 빠르기라 굵기가 같다. 쓴 자국이 없으면(옛 판 · 시험) 고른 점으로 그린다
+   const mine=cells.map(({s,y},k)=>{const g=prep(y.querySelector('canvas')),bg=document.createElement('canvas');bg.width=bg.height=Math.round(c);const gb=bg.getContext('2d');gb.setTransform(d,0,0,d,0,0);drawGuide(gb,glyph(s.ch),sz<44?LOOK.ghostSm:LOOK.ghost);
+    const src=inkT[k]?.some(p=>p.length)?inkT[k].map(p=>p.map(([u,v,t])=>[u*sz,v*sz,t*sz])):(inks[k]||[]).map(p=>p.map(([u,v])=>[u*sz,v*sz]));
+    return {g,bg,list:src.filter(p=>p.length)};});
    const total2=mine.reduce((a,o)=>a+o.list.reduce((b,p)=>b+p.length,0),0),dur=reduce?0:Math.min(1100,260+total2*1.6),t0=performance.now();
    cancelAnimationFrame(cmpRaf);let tickAt=0;
    // 점수가 다 오르면: 숫자가 한 번 튀고, 층마다 다른 소리, 새 최고면 「최고 기록」 표, 서하가 점수에 맞는 한마디(목소리 · 말풍선)
@@ -280,7 +293,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
     const info={score:total,attempt,prev,knows},r=coach.final(info);say(finalLine(info),r?.dur||0);showKeep();};
    hint.textContent='';
    (function f(t){const u=dur?Math.min(1,(t-t0)/dur):1;let left=u*total2;
-    for(const o of mine){o.g.clearRect(0,0,sz,sz);drawGuide(o.g,m=>{for(const st of o.ghost){const sh=shapeOf(st.k,st.p.map(([a,b])=>[a*sz,b*sz]));nib(m,sh.p,sh.K,{h:lwc*LOOK.gh,a:LOOK.a,m:LOOK.gm});}},{fill:'rgba(194,74,55,.13)'});
+    for(const o of mine){o.g.clearRect(0,0,sz,sz);o.g.save();o.g.setTransform(1,0,0,1,0,0);o.g.drawImage(o.bg,0,0);o.g.restore();
      for(const p of o.list){if(left<=0)break;const n=Math.min(p.length,Math.ceil(left));paintInk(o.g,p.slice(0,n),lwc,n===p.length);left-=p.length;}}
     const v=Math.round(total*u);sc.textContent=String(v);if(v-tickAt>=9&&u<1){tickAt=v;SND.felt('tick');}
     if(u<1)cmpRaf=requestAnimationFrame(f);else landed();})(t0);
@@ -293,7 +306,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    if(dur)setTimeout(()=>hint.querySelector('.nt-who')?.classList.remove('talk'),dur*1000);}
   // 다시 써 보기: 이름 처음 음절부터(시범은 저절로 보이지 않는다 — 「획순 보기」로), 점수는 이번 판과 견준다
   const retry=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;
-   phase='write';attempt++;coach.hush();cancelAnimationFrame(cmpRaf);cmp.hidden=true;skipLabel('지난 글씨로 넣을게요');box.classList.remove('cmp');box.scrollTop=0;inks.length=0;stats.length=0;i=0;
+   phase='write';attempt++;coach.hush();cancelAnimationFrame(cmpRaf);cmp.hidden=true;skipLabel('지난 글씨로 넣을게요');box.classList.remove('cmp');box.scrollTop=0;inks.length=0;inkT.length=0;stats.length=0;i=0;
    row.querySelectorAll('.nt-cell').forEach(c=>{c.innerHTML='';});SND.felt('page');openSyllable(false);};
   const keep=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;finish(true);};
   function cleanup(){cancelAnimationFrame(soRaf);cancelAnimationFrame(cmpRaf);demoRun++;clearTimeout(idleT);coach.hush();clearTimeout(timer);clearTimeout(acceptT);clearTimeout(swT);clearTimeout(swT2);
