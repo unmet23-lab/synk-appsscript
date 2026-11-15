@@ -8,6 +8,7 @@ let workspaceEntryPreparing = false;
 let workspaceEntryLifecycle = 0;
 let workspaceEntrySuspended = false;
 let workspaceEntryRestoreAuth = false;
+let workspaceEntryNotice = null;
 
 function workspaceEntryError(code) {
   const messages = {
@@ -21,6 +22,24 @@ function workspaceEntryError(code) {
     TEMPORARY_UNAVAILABLE: '초대 연결을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.'
   };
   return Object.assign(new Error(messages[code] || messages.TEMPORARY_UNAVAILABLE), {code});
+}
+
+function clearWorkspaceEntryNotice() {
+  workspaceEntryNotice = null;
+  if (workspaceEntryPending) {
+    workspaceEntryPending.cancelNotice = false;
+    workspaceEntryPending.cancelNoticeLifecycle = -1;
+  }
+}
+
+function announceWorkspaceEntryNotice(code) {
+  if (!workspaceEntryNotice || workspaceEntryNotice.lifecycle !== workspaceEntryLifecycle) {
+    clearWorkspaceEntryNotice();
+    return;
+  }
+  if (workspaceEntryNotice.notified) return;
+  workspaceEntryNotice.notified = true;
+  notify(workspaceEntryError(code).message);
 }
 
 function workspaceEntryHasUnfinishedWork() {
@@ -103,6 +122,11 @@ function cancelWorkspaceEntryInvite(request = {}) {
   if (!pending || request.requestId && (request.requestId !== pending.requestId || request.accountGeneration !== pending.accountGeneration)) return;
   if (pending.consuming && !['ACCOUNT_CHANGED', 'PAGE_HIDDEN'].includes(request.reason)) {
     pending.cancelRequested = true;
+    if (request.reason === 'CANCELLED' && workspaceEntryNotice && workspaceEntryNotice.lifecycle === workspaceEntryLifecycle && !workspaceEntryNotice.notified) {
+      workspaceEntryNotice.notified = true;
+      pending.cancelNotice = true;
+      pending.cancelNoticeLifecycle = workspaceEntryLifecycle;
+    }
     return;
   }
   workspaceEntryPending = null;
@@ -111,11 +135,14 @@ function cancelWorkspaceEntryInvite(request = {}) {
     state.authMode = 'login';
     if (!workspaceEntryPreparing && request.reason !== 'PAGE_HIDDEN') renderAuth();
   }
+  pending.cancelNotice = false;
+  pending.cancelNoticeLifecycle = -1;
   pending.token = '';
 }
 
 function workspaceEntryIdentityChanged() {
   if (!workspaceEntryPending) return;
+  clearWorkspaceEntryNotice();
   cancelWorkspaceEntryInvite({reason: 'ACCOUNT_CHANGED'});
   workspaceEntryReceiver?.cancel('ACCOUNT_CHANGED');
 }
@@ -127,15 +154,26 @@ function beginWorkspaceEntryAcceptance() {
 }
 
 function failWorkspaceEntryAcceptance() {
-  if (!workspaceEntryPending) return;
-  workspaceEntryPending.consuming = false;
-  if (workspaceEntryPending.cancelRequested) cancelWorkspaceEntryInvite();
+  const pending = workspaceEntryPending;
+  if (!pending) return;
+  pending.consuming = false;
+  if (pending.cancelRequested) {
+    const shouldNotify = pending.cancelNotice === true && pending.cancelNoticeLifecycle === workspaceEntryLifecycle;
+    pending.cancelNotice = false;
+    pending.cancelNoticeLifecycle = -1;
+    cancelWorkspaceEntryInvite();
+    if (shouldNotify) notify(workspaceEntryError('CANCELLED').message);
+  }
 }
 
 function releaseWorkspaceEntryInvite() {
   const pending = workspaceEntryPending;
+  clearWorkspaceEntryNotice();
   workspaceEntryPending = null;
-  if (pending) pending.token = '';
+  if (pending) {
+    pending.cancelRequested = false;
+    pending.token = '';
+  }
   workspaceEntryReceiver?.cancel('CANCELLED');
 }
 
@@ -146,7 +184,10 @@ async function prepareWorkspaceEntryHandoff({waitForHandoff = true} = {}) {
   workspaceEntryPreparing = true;
   try {
     const {createCompanyEntryReceiver} = await import('/pulse-app/entry-handoff.mjs');
-    if (lifecycle !== workspaceEntryLifecycle || workspaceEntrySuspended) return false;
+    if (lifecycle !== workspaceEntryLifecycle || workspaceEntrySuspended) {
+      if (lifecycle !== workspaceEntryLifecycle) clearWorkspaceEntryNotice();
+      return false;
+    }
     workspaceEntryReceiver = createCompanyEntryReceiver({
       window,
       role: 'employee',
@@ -154,7 +195,19 @@ async function prepareWorkspaceEntryHandoff({waitForHandoff = true} = {}) {
       cancelInvite: cancelWorkspaceEntryInvite,
       isInvitePending: request => Boolean(workspaceEntryPending && workspaceEntryPending.requestId === request.requestId && workspaceEntryPending.accountGeneration === request.accountGeneration),
       onState: event => {
-        if (event.status === 'error' && !workspaceEntryPreparing) notify(workspaceEntryError(event.code).message);
+        if (lifecycle !== workspaceEntryLifecycle) {
+          clearWorkspaceEntryNotice();
+          return;
+        }
+        if (event.status === 'bound') {
+          workspaceEntryNotice = {lifecycle, notified: false};
+        } else if (event.status === 'error') {
+          announceWorkspaceEntryNotice(event.code);
+        } else if (event.status === 'cancelled') {
+          announceWorkspaceEntryNotice('CANCELLED');
+        } else if (event.status === 'disposed') {
+          workspaceEntryNotice = null;
+        }
       }
     });
     // This marker is only a scheduling hint from the dedicated native
@@ -162,7 +215,10 @@ async function prepareWorkspaceEntryHandoff({waitForHandoff = true} = {}) {
     if (waitForHandoff && (window.opener || window.synkCompanyEntryHost?.version === 1)) {
       await workspaceEntryReceiver.waitForFirstHandoff(15000);
     }
-    if (lifecycle !== workspaceEntryLifecycle) return false;
+    if (lifecycle !== workspaceEntryLifecycle) {
+      clearWorkspaceEntryNotice();
+      return false;
+    }
     return Boolean(workspaceEntryPending);
   } catch {
     return Boolean(workspaceEntryPending);
@@ -173,6 +229,7 @@ async function prepareWorkspaceEntryHandoff({waitForHandoff = true} = {}) {
 
 window.addEventListener('pagehide', event => {
   workspaceEntryLifecycle++;
+  clearWorkspaceEntryNotice();
   workspaceEntrySuspended = event.persisted === true;
   workspaceEntryRestoreAuth = workspaceEntrySuspended && Boolean(workspaceEntryPending && state.authMode === 'join' && state.authToken === workspaceEntryPending.token);
   workspaceEntryPreparing = false;

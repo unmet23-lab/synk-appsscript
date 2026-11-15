@@ -69,7 +69,12 @@ test('after picking, the room shows the chosen direction with terms and a way ba
   assert.match(html,/<h1 class="sx-display" data-room-title>이 방향으로 정했어요<\/h1>/);
   assert.match(html,/<section class="sx-dp-chosen" data-room-in><p class="sx-small">고르신 방향<\/p><h2 class="sx-serif">톡<\/h2>/);
   assert.match(html,/덧붙이신 말: 도망 좋아요/);assert.match(html,/data-room-go="pick">다시 고르기/);
-  assert.match(html,/<img class="sx-q-fill" src="\/pulse\/api\/studio\/media\/img-b"/);
+  const chosenSrc=html.match(/<img class="sx-q-fill" src="([^"]+)"/)?.[1];
+  assert.ok(chosenSrc,'the chosen direction keeps its actual image');
+  const chosenUrl=new URL(chosenSrc,globalThis.location);
+  assert.equal(chosenUrl.origin,globalThis.location.origin,'URL normalization keeps the image on the same service');
+  assert.equal(chosenUrl.pathname,'/pulse/api/studio/media/img-b');
+  assert.equal(chosenUrl.search,'');assert.equal(chosenUrl.hash,'');
   const settled=roomView(roomModel(project({direction:open({status:'settled',chosenId:'a'})})));
   assert.match(settled,/고르신 방향 · 담당자와 정함/);
   const waiting=roomView(roomModel(project({direction:open({round:2,status:'declined',answer:'아직'})})));

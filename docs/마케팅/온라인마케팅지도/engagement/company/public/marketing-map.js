@@ -89,14 +89,14 @@ function mmCollectionText(col){
 // 외부 통계 관측(API 자동 수집과 별개로 관리 화면 · 공식 내보내기 · 공개 화면에서 실제 확인한 기록).
 // post-lifetime 요약 수치는 계정 전체 합계가 아니므로 여기서는 관측 출처 · 종류 · 확인 시각만 따로 적는다.
 const MM_EXT_SOURCE={'creator-screen':'관리 화면 확인','official-export':'공식 내보내기','public-page':'공개 화면 확인'};
-const MM_EXT_KIND={'account-period':'계정 기간 통계','account-lifetime':'계정 누적 통계','post-lifetime':'게시물 누적 통계'};
+const MM_EXT_KIND={'account-period':'계정 기간 통계','account-lifetime':'계정 누적 통계','post-lifetime':'게시물별 누적 관측 기록'};
 const MM_EXT_ORDER=['account-period','account-lifetime','post-lifetime'];
 function mmExtKindText(kind,period,counts){
-  const base=MM_EXT_KIND[kind]||'외부 통계';
+  const base=MM_EXT_KIND[kind]||'플랫폼에서 확인한 통계';
   const days=kind==='account-period'&&period&&Number.isFinite(Number(period.days))&&Number(period.days)>0?`(${Number(period.days)}일)`:'';
   const raw=counts&&typeof counts==='object'?counts[kind]:null;
   const cnt=raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))?Number(raw):null;
-  const cntText=cnt!==null&&(kind==='post-lifetime'?cnt>0:cnt>1)?` ${cnt.toLocaleString('ko-KR')}건`:'';
+  const cntText=cnt!==null&&(kind==='post-lifetime'?cnt>0:cnt>1)?(kind==='post-lifetime'?` ${cnt.toLocaleString('ko-KR')}건`:` 관측 ${cnt.toLocaleString('ko-KR')}건`):'';
   return `${base}${days}${cntText}`;
 }
 function mmExternalText(ext){
@@ -107,8 +107,10 @@ function mmExternalText(ext){
     return entries.map(([k,item])=>{
       const src=MM_EXT_SOURCE[item.sourceType||ext.sourceType]||'출처 미확인';
       const kindText=mmExtKindText(k,item.period??(k===ext.kind?ext.period:null),ext.counts);
-      const rawAt=item.observedAt||(entries.length===1||k===ext.kind?ext.lastObservedAt||ext.observedAt:'');
-      const at=(item.observedDateOnly===true||ext.observedDateOnly===true)?mmWhen(String(rawAt||'').slice(0,10)):mmWhen(rawAt);
+      const topAt=ext.lastObservedAt||ext.observedAt||'',itemAt=item.lastObservedAt||item.observedAt||'';
+      const rawAt=itemAt||(entries.length===1||k===ext.kind?topAt:'');
+      const dateOnly=typeof item.observedDateOnly==='boolean'?item.observedDateOnly:(!itemAt||k===ext.kind&&itemAt===topAt)?ext.observedDateOnly===true:false;
+      const at=dateOnly?mmWhen(String(rawAt||'').slice(0,10)):mmWhen(rawAt);
       return `${src} · ${kindText}${at?` · ${at} 확인`:''}`;
     }).join(' / ');
   }
@@ -125,7 +127,7 @@ function mmOpsHtml(op){
   if(!op)return '<dl class="mm-ops"><div><dt>운영 상태</dt><dd>기록 미확인</dd></div></dl>';
   const rows=[['브라우저 로그인',mmLoginText(op?.login),op?.login?.state],['게시',mmPublicationText(op?.publication),''],['수집',mmCollectionText(op?.collection),op?.collection?.state]];
   const extText=mmExternalText(op?.externalCollection);
-  if(extText)rows.push(['외부 통계',extText,'observed']);
+  if(extText)rows.push(['플랫폼에서 확인한 통계',extText,'observed']);
   return `<dl class="mm-ops">${rows.map(([k,v,s])=>`<div${s?` data-state="${mmEsc(s)}"`:''}><dt>${mmEsc(k)}</dt><dd>${mmEsc(v)}</dd></div>`).join('')}</dl>`;
 }
 

@@ -30,8 +30,14 @@ test('영어 사전: 손님 화면의 t() · k() 문장은 빠짐없이 있고, 
   const quoted=text=>sources.some(src=>["'",'"','`'].some(q=>src.includes(q+text+q)));
   const dead=Object.keys(en).filter(key=>!calls.has(key)&&!quoted(key.includes('\u0004')?key.split('\u0004')[1]:key));
   // PI8 화면 개편에서 중복 머리말을 없앴다. 같은 배포를 쓰는 기존 고객 화면을 위해 승인된 사전 바이트는 유지한다.
-  // 이 한 키 외의 미사용 키와 현재 화면에서 빠진 번역은 계속 실패한다.
-  assert.deepEqual(dead,['글 콘티 · {round}판 · {count}컷 · {sec}초 · 영상 전 확인 {step}'],'보존 대상으로 명시하지 않은 미사용 번역 키');
+  // 고객 방에서 내려간 일반 예시 세 문장도 이미 열린 이전 화면을 위해 사전에 보존한다.
+  // 아래 네 키 외의 미사용 키와 현재 화면에서 빠진 번역은 계속 실패한다.
+  assert.deepEqual(dead,[
+    '저희가 만든 광고의 한 장면이에요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품',
+    '완성 영상의 예시예요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품',
+    '다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',
+    '글 콘티 · {round}판 · {count}컷 · {sec}초 · 영상 전 확인 {step}'
+  ],'보존 대상으로 명시하지 않은 미사용 번역 키');
   for(const [key,value]of Object.entries(en)){
     const forms=typeof value==='string'?[value]:Object.values(value);
     assert.ok(forms.length&&forms.every(form=>typeof form==='string'&&form.trim()),key);

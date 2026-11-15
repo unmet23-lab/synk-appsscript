@@ -98,12 +98,17 @@ test('the room screen: the model scene takes its large cut through srcset, and e
   assert.ok(model.includes(`<img class="sx-q-fill" src="./assets/request/model-scene-f02.webp" srcset="${sceneSet('./assets/request/model-scene-f02.webp')}" sizes="${ROOM_SCENE_SIZES}" data-cap alt="">`),'the proposed model: two cuts and the cap');
   // sizes = cover 폭 ÷ 1.47 — 넓은 창은 스크린 폭(54vw)과 창 높이 × 0.805 가운데 큰 쪽, 세로 창은 창 폭과 32vh × 0.805 가운데 큰 쪽.
   assert.equal(ROOM_SCENE_SIZES,'(max-width:820px) max(68.1vw,17.6vh), (max-aspect-ratio:1/1) max(68.1vw,17.6vh), max(36.8vw,54.8vh)');
-  assert.ok(roomView(project()).includes('<img class="sx-q-fill" src="./assets/request/w-gift-snow.webp" data-cap alt="">'),'the example picture before any work arrives');
-  assert.ok(roomView(project({state:'make'})).includes('<img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="">'),'the example picture while the film is made');
+  for(const info of [project(),project({state:'make'})]){
+    const html=roomView(info);assert.match(html,/<section class="sx-room-hero is-no-screen">/);assert.match(html,/data-room-title/);
+    assert.doesNotMatch(html,/w-gift|<div class="sx-room-screen">/,'there is no example or empty screen before actual work arrives');
+  }
   const files=roomView(project({files:['/m/a.jpg','/m/b.jpg']}));
-  assert.match(files,/<div class="sx-room-files" data-count="2"><img src="\/m\/a\.jpg" data-cap alt="" decoding="async"><img src="\/m\/b\.jpg" data-cap alt="" decoding="async"><\/div>/,'the customer’s own photos');
+  assert.match(files,/<section class="sx-room-hero is-no-screen">/);
+  const hero=files.match(/<section class="sx-room-hero[^"]*">[\s\S]*?<\/section>/)?.[0];assert.ok(hero);
+  assert.doesNotMatch(hero,/<div class="sx-room-screen">|<img[^>]+\/m\/[ab]\.jpg/,'request attachments are not presented as a delivered preview');
+  assert.match(files,/<section class="sx-room-paper"[\s\S]*<img src="\/m\/a\.jpg"[\s\S]*<img src="\/m\/b\.jpg"/,'both attachments remain in the request details');
   const views=read('film-views.mjs'),legacy=read('views.mjs'),persona=read('persona-view.mjs');
-  assert.ok(views.includes('<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">')&&views.includes('<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" data-cap alt="" decoding="async">'),'work news and the chosen direction');
+  assert.ok(views.includes('<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">')&&views.includes('<img class="sx-q-fill" src="${esc(chosenSrc)}" data-cap alt="" decoding="async">'),'work news and the chosen direction');
   assert.equal((legacy.match(/<img class="sx-q-fill" src="\.\/assets\/request\/w-gift(?:-snow)?\.webp" data-cap alt="" decoding="async">/g)||[]).length,3,'the older project screens’ example pictures');
   assert.equal((persona.match(/<img class="sx-q-fill" src="\$\{esc\(m\.reference\.assets\[0\]\.url\)\}" data-cap alt="" decoding="async">/g)||[]).length,2,'the persona card’s reference face');
   assert.doesNotMatch(views+legacy+persona,/<img class="sx-q-fill" src="[^"]*"(?![^>]*data-cap)[^>]*>/,'no screen picture left without the cap');

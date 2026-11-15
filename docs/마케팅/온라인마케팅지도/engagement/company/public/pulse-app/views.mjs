@@ -341,8 +341,21 @@ const ieyo=word=>isYi(word)?'이에요':'예요'; // i18n-skip
 const eulOf=word=>isYi(word)?'을':'를'; // i18n-skip
 // 오류 글(s.error)은 app.mjs가 언어를 입혀 넘긴다 — 여기서 한 번 더 t()로 감싸도 이미 옮긴 글은 그대로다.
 const alertBox=s=>s.error?`<div class="sx-alert" role="alert"><strong>${esc(s.conflict?t('처리하지 못했어요.'):s.reloadFailed?t('화면을 새로 고치지 못했어요.'):t('저장하지 못했어요.'))}</strong><div>${esc(t(s.error))}</div>${s.conflict?lnk(t('최신 내용 불러오기'),'refresh'):''}</div>`:'';
+function roomPreview(p){
+  const versions=p?.versions||[],finals=versions.filter(v=>v.kind==='final'),previews=versions.filter(v=>v.kind==='preview');
+  const pick=list=>{
+    for(let i=list.length-1;i>=0;i--){
+      const v=list[i],url=safeUrl(v?.media?.url,{media:true}),mime=v?.media?.mimeType||'',go=p?.stage==='delivered'&&v?.kind==='final'?'deliver':'review',label=v?.label||(v?.kind==='final'?t('최종본'):t('전달 파일'));
+      if(url&&mime.startsWith('video/'))return {kind:'video',src:url,label,go};
+      if(url&&mime.startsWith('image/'))return {kind:'image',src:url,label,go:'review'};
+      if(url||safeUrl(v?.url))return {kind:'media',html:mediaView(v),label,go:'review'};
+    }
+    return null;
+  };
+  return p?.stage==='delivered'?pick(finals)||pick(previews):pick(previews)||pick(finals);
+}
 // keep(판 4): 「내 모델로 모아 두기」 회원 상태(app.mjs가 그 프로젝트에서 읽은 것만 — 스위치가 꺼져 있으면 없다).
-const roomInfo=s=>({...roomModel(s.project),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{})});
+const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{})};};
 // 담당자 이름은 서버가 언어에 맞게 내려준다. 이름이 없을 때의 「담당자」만 화면 글이다.
 // 사진 붙이기는 실제 손님 방에서, 서버가 문의 사진을 받는다고 알릴 때만(체험 · 직원 미리 보기 · 옛 서버는 글만).
 const journalOf=(s,place,here,extra={})=>journalView(journalModel(s.project),{place,here,open:!!s.journalOpen,all:!!s.journalAll,talk:!!s.journalTalk,owner:s.project.ownerName||t('담당자'),attach:s.mode==='customer'&&!s.demo&&!!s.project?.studio?.request?.messagePhotos,...extra});
@@ -378,31 +391,59 @@ function customerRoom(s){
 // i18n-skip-start
 // 옛 흐름의 현황: 고객 방과 같은 짜임. 왼쪽 지금 할 일, 오른쪽 지금 단계의 실제 작업물, 아래 인화지에 고른 것과 소식.
 function overviewScreen(s,next){
-  const p=s.project,st=studio(p),versions=p.versions||[],latest=versions.filter(v=>v.kind==='preview').at(-1),final=versions.filter(v=>v.kind==='final').at(-1);
+  const p=s.project,st=studio(p),versions=p.versions||[],previews=versions.filter(v=>v.kind==='preview'),finals=versions.filter(v=>v.kind==='final'),latest=previews.at(-1),final=finals.at(-1);
   const clip=version=>{const url=safeUrl(version?.media?.url,{media:true});return url&&version.media.mimeType?.startsWith('video/')?`<video class="sx-q-fill" src="${esc(url)}" preload="metadata" muted playsinline aria-hidden="true" data-hold></video>`:'';};
-  if(next.tab==='review'&&latest){const inner=clip(latest);if(inner)return `${inner}<p class="sx-small sx-room-cap">${esc(latest.label)}</p>`;}
-  if(next.tab==='history'&&final){const inner=clip(final);if(inner)return `${inner}<p class="sx-small sx-room-cap">${esc(final.label)}</p>`;}
+  if(s.demo){
+    if(next.tab==='review'&&latest){const inner=clip(latest);if(inner)return {preview:true,html:`${inner}<p class="sx-small sx-room-cap">${esc(latest.label)}</p>`};}
+    if(next.tab==='history'&&final){const inner=clip(final);if(inner)return {preview:true,html:`${inner}<p class="sx-small sx-room-cap">${esc(final.label)}</p>`};}
+    const shownDemo=item=>item.visibility!=='internal',demoConcepts=(st.concepts||[]).filter(shownDemo),demoScenes=(st.scenes||[]).filter(shownDemo);
+    if(next.tab==='concepts'){const c=demoConcepts.find(item=>imageSource(item));if(c)return {preview:true,html:`<img class="sx-q-fill" src="${esc(imageSource(c))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">콘셉트 ${demoConcepts.length}개</p>`};}
+    const demoScene=demoScenes.find(item=>imageSource(item));
+    if(demoScene)return {preview:true,html:`<img class="sx-q-fill" src="${esc(imageSource(demoScene))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">장면 ${demoScenes.length}개. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`};
+    return {preview:true,html:`<img class="sx-q-fill" src="./assets/request/w-gift-snow.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`};
+  }
+  const pickVersion=list=>{for(let i=list.length-1;i>=0;i--){const v=list[i],url=safeUrl(v?.media?.url,{media:true}),mime=v?.media?.mimeType||'';if(url||safeUrl(v?.url))return {v,url,mime};}return null;};
+  const chosen=(p.stage==='delivered'||next.tab==='history')?pickVersion(finals)||pickVersion(previews):pickVersion(previews)||pickVersion(finals);
+  if(chosen){
+    const {v,url,mime}=chosen,tab=v.kind==='final'?'history':'review',label=v.label||(v.kind==='final'?'최종본':'시안');
+    if(url&&mime.startsWith('video/'))return {preview:true,html:`<video class="sx-q-fill" src="${esc(url)}" preload="metadata" muted playsinline aria-hidden="true" data-hold></video><button type="button" class="sx-room-play" data-action="tab" data-tab="${tab}"><span class="sr">${esc(label)} 보기</span></button><p class="sx-small sx-room-cap">${esc(label)}</p>`};
+    if(url&&mime.startsWith('image/'))return {preview:true,html:`<img class="sx-q-fill" src="${esc(url)}" data-cap alt="${esc(label)}" decoding="async"><button type="button" class="sx-room-play" data-action="tab" data-tab="${tab}"><span class="sr">${esc(label)} 보기</span></button><p class="sx-small sx-room-cap">${esc(label)}</p>`};
+    return {preview:true,html:`<div class="sx-room-media">${mediaView(v)}</div><p class="sx-small sx-room-cap"><button type="button" class="sx-link" data-action="tab" data-tab="${tab}">${esc(label)} · 열기</button></p>`};
+  }
   const shown=item=>item.visibility!=='internal',concepts=(st.concepts||[]).filter(shown),sceneList=(st.scenes||[]).filter(shown);
-  if(next.tab==='concepts'){const c=concepts.find(item=>imageSource(item));if(c)return `<img class="sx-q-fill" src="${esc(imageSource(c))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">콘셉트 ${concepts.length}개</p>`;}
+  if(next.tab==='concepts'){const c=concepts.find(item=>imageSource(item));if(c)return {preview:false,html:`<img class="sx-q-fill" src="${esc(imageSource(c))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">콘셉트 ${concepts.length}개</p>`};}
   const scene=sceneList.find(item=>imageSource(item));
-  if(scene)return `<img class="sx-q-fill" src="${esc(imageSource(scene))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">장면 ${sceneList.length}개. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
-  return `<img class="sx-q-fill" src="./assets/request/w-gift-snow.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
+  if(scene)return {preview:false,html:`<img class="sx-q-fill" src="${esc(imageSource(scene))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">장면 ${sceneList.length}개. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`};
+  const concept=concepts.find(item=>imageSource(item));
+  if(concept)return {preview:false,html:`<img class="sx-q-fill" src="${esc(imageSource(concept))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">콘셉트 ${concepts.length}개</p>`};
+  return {preview:false,html:''};
+}
+function legacyTalk(p){
+  const list=(p.messages||[]).filter(m=>m.action==='support'||m.author==='staff'),recent=list.slice(-4).reverse();
+  return `<aside class="sx-journal sx-legacy-talk" aria-label="담당자와 나눈 말">
+    <header class="sx-j-head"><h2 class="sx-serif">담당자와 나눈 말</h2>${list.length>4?'<button type="button" class="sx-quiet" data-action="tab" data-tab="review" data-scroll="inquiry">전체 보기</button>':''}</header>
+    <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000" required placeholder="담당자에게 물어보세요" aria-label="담당자에게 물어보기" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>보내기</span>${arrow}</button></form>
+    ${recent.length?`<ol class="sx-j-list" aria-label="지난 말">${recent.map(m=>`<li class="sx-j-row is-talk" data-who="${esc(m.author||'')}"><p class="sx-j-meta"><b>${esc(m.authorName||(m.author==='staff'?p.ownerName||'담당자':'고객'))}</b>${m.at&&stamp(m.at)?` · <time datetime="${esc(m.at)}">${esc(stamp(m.at))}</time>`:''}</p><p class="sx-body sx-j-text">${esc(m.text)}</p></li>`).join('')}</ol>`:'<p class="sx-small sx-j-empty">궁금한 점을 남기시면 담당자가 이곳에 답해 드려요.</p>'}
+  </aside>`;
 }
 function legacyOverview(s){
-  const p=s.project,next=nextOf(s),turn=turnOf(s,next);
+  const p=s.project,next=nextOf(s),turn=turnOf(s,next),screen=overviewScreen(s,next),heroCls=screen.preview?' is-preview-first':screen.html?'':' is-no-screen';
   return `<div class="sx-shell sx-room" data-mode="${esc(s.mode)}" data-tab="overview" data-state="overview" data-demo-overview="${s.demo?'true':'false'}">
-    <section class="sx-room-hero">
+    <section class="sx-room-hero${heroCls}">
       <div class="sx-room-left">
-        ${alertBox(s)}
-        <section class="sx-next-block">${s.demo?`<p class="sx-small sx-demo-line">체험 프로젝트 · 霜の肌理 15초 광고 · 가상 브랜드로 만든 자체 작품. ${s.demoPersistent?`체험 기록은 ${s.desktopApp?'이 PC 앱':'이 브라우저'}에만 남고, 실제 의뢰나 승인으로 이어지지 않아요.`:'체험 기록은 창을 닫으면 사라지고, 실제 의뢰나 승인으로 이어지지 않아요.'}</p>`:''}<p class="sx-kicker sx-turn"><i class="${turn==='customer'?'is-you':''}" aria-hidden="true"></i>${s.demo?`${esc(s.demoGuide.step)} / ${esc(s.demoGuide.total)}`:esc(turnLabel(s,turn))}<span>${esc(stages[p.stage]||p.stage)} · 6단계 중 ${doneCount(p)}단계 끝${p.dueDate?` · 전달 예정 ${esc(day(p.dueDate))}`:''}</span></p>
-        <h1 class="sx-display">${esc(next.title)}</h1>
-        <p class="sx-body sx-room-lead">${esc(next.text)}</p>
-        <div>${s.demo?(s.demoGuide.complete?`${inquiryLink('sx-go is-solid')}`:go(s.demoGuide.canAdvance?s.demoGuide.button:'이 단계 해 보기','demo-next')):go(next.button,'tab',`data-tab="${esc(next.tab)}"${next.scroll?` data-scroll="${esc(next.scroll)}"`:''}`)}</div></section>
-        ${next.note?`<p class="sx-note"><span>담당자 안내</span>${esc(next.note)}</p>`:''}
-        ${s.rememberOffer&&s.mode==='customer'&&!s.demo?rememberOffer(s):''}
-        ${legacySteps(s,next)}
+        <div class="sx-room-main">
+          ${alertBox(s)}
+          <section class="sx-next-block">${s.demo?`<p class="sx-small sx-demo-line">체험 프로젝트 · 霜の肌理 15초 광고 · 가상 브랜드로 만든 자체 작품. ${s.demoPersistent?`체험 기록은 ${s.desktopApp?'이 PC 앱':'이 브라우저'}에만 남고, 실제 의뢰나 승인으로 이어지지 않아요.`:'체험 기록은 창을 닫으면 사라지고, 실제 의뢰나 승인으로 이어지지 않아요.'}</p>`:''}<p class="sx-kicker sx-turn"><i class="${turn==='customer'?'is-you':''}" aria-hidden="true"></i>${s.demo?`${esc(s.demoGuide.step)} / ${esc(s.demoGuide.total)}`:esc(turnLabel(s,turn))}<span>${esc(stages[p.stage]||p.stage)} · 6단계 중 ${doneCount(p)}단계 끝${p.dueDate?` · 전달 예정 ${esc(day(p.dueDate))}`:''}</span></p>
+          <h1 class="sx-display">${esc(next.title)}</h1>
+          <p class="sx-body sx-room-lead">${esc(next.text)}</p>
+          <div>${s.demo?(s.demoGuide.complete?`${inquiryLink('sx-go is-solid')}`:go(s.demoGuide.canAdvance?s.demoGuide.button:'이 단계 해 보기','demo-next')):go(next.button,'tab',`data-tab="${esc(next.tab)}"${next.scroll?` data-scroll="${esc(next.scroll)}"`:''}`)}</div></section>
+          ${next.note?`<p class="sx-note"><span>담당자 안내</span>${esc(next.note)}</p>`:''}
+          ${s.rememberOffer&&s.mode==='customer'&&!s.demo?rememberOffer(s):''}
+          ${legacySteps(s,next)}
+        </div>
+        ${!s.demo&&!screen.preview?legacyTalk(p):''}
       </div>
-      <div class="sx-room-screen">${overviewScreen(s,next)}</div>
+      ${screen.html?`<div class="sx-room-screen">${screen.html}</div>`:''}
     </section>
     <section class="sx-legacy sx-overview-paper">${overviewChanges(p,next)}${overviewTiles(s)}</section>
   </div>`;
@@ -543,9 +584,9 @@ function demoNotes(s,current,latest,latestActive,messages){
 }
 // 영상이 아직 없을 때의 묻는 화면(고객 방의 「담당자에게 묻기」가 여기로 온다).
 function askRoom(s){
-  const p=s.project,messages=(p.messages||[]).filter(m=>m.action==='support'||m.author==='staff'),first=s.mode==='customer'&&!s.demo&&usesRoom(p);
+  const p=s.project,messages=(p.messages||[]).filter(m=>m.action==='support'||m.author==='staff'),first=s.mode==='customer'&&!s.demo&&usesRoom(p),hasThread=messages.length>0||(p.studio?.comments||[]).some(m=>m.targetType==='project');
   return `<div class="sx-shell sx-room${s.demo?' is-demo':''}" data-mode="${esc(s.mode)}" data-tab="review" data-state="ask-only">
-    <section class="sx-room-hero">
+    <section class="sx-room-hero${hasThread?'':s.demo?' is-preview-first':' is-no-screen'}">
       <div class="sx-room-left">
         ${alertBox(s)}
         ${s.demo?demoCredit(s):''}
@@ -555,16 +596,16 @@ function askRoom(s){
         <form class="review-form sx-say is-open" data-form="feedback" id="review-feedback"><input type="hidden" name="action" value="support"><textarea name="text" rows="2" required maxlength="3000" placeholder="궁금한 점을 적어 주세요." aria-label="궁금한 점" data-grow></textarea><div class="sx-say-tools"><button type="submit" class="sx-go" data-mutate><span>문의 보내기</span>${arrow}</button></div><p class="sx-small">${s.demo?`체험 기록에만 남아요. 실제로 맡기거나 물어보려면 ${inquiryLink('sx-link')}`:'보내면 담당자에게 바로 보여요.'}</p></form>
         ${stepsOf(s,nextOf(s))}
       </div>
-      ${messages.length||(p.studio?.comments||[]).some(m=>m.targetType==='project')?`<div class="sx-room-screen sx-ask-thread"><h2 class="sx-serif">문의와 답변</h2><div class="sx-thread">${messages.slice().reverse().map(threadRow).join('')}</div>${comments(p.studio?.comments||[],'project',null,s.notificationCommentId)}</div>`:`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`}
+      ${hasThread?`<div class="sx-room-screen sx-ask-thread"><h2 class="sx-serif">문의와 답변</h2><div class="sx-thread">${messages.slice().reverse().map(threadRow).join('')}</div>${comments(p.studio?.comments||[],'project',null,s.notificationCommentId)}</div>`:s.demo?`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`:''}
     </section>
   </div>`;
 }
 // 납품: 왼쪽 최종 파일 · 수령 확인, 오른쪽 완성본, 아래 인화지에 규격표와 기록.
 function deliveryRoom(s){
-  const p=s.project,st=studio(p),finals=(p.versions||[]).filter(v=>v.kind==='final'),film=finals.slice().reverse().find(v=>v.media?.mimeType?.startsWith('video/')&&safeUrl(v.media.url,{media:true})),c=p.closeout,received=!!c?.receipt,next=isCustomerRoom(s)?null:nextOf(s);
+  const p=s.project,st=studio(p),finals=(p.versions||[]).filter(v=>v.kind==='final'),film=finals.slice().reverse().find(v=>v.media?.mimeType?.startsWith('video/')&&safeUrl(v.media.url,{media:true})),shot=!film?finals.slice().reverse().find(v=>v.media?.mimeType?.startsWith('image/')&&safeUrl(v.media.url,{media:true})):null,hasFinalMedia=!!(film||shot),c=p.closeout,received=!!c?.receipt,next=isCustomerRoom(s)?null:nextOf(s);
   const events=historyEvents(p);
   return `<div class="sx-shell sx-room sx-delivery${s.demo?' is-demo':''}" data-mode="${esc(s.mode)}" data-tab="history" data-state="deliver">
-    <section class="sx-room-hero">
+    <section class="sx-room-hero${hasFinalMedia||s.demo?' is-preview-first':' is-no-screen'}">
       <div class="sx-room-left">
         ${alertBox(s)}
         ${s.demo?demoCredit(s):''}
@@ -576,7 +617,7 @@ function deliveryRoom(s){
         ${finals.length?`<p class="sx-small">파일이 열리지 않거나 다른 형식·길이가 필요하면 알려 주세요. ${lnk('담당자에게 묻기','tab','data-tab="review" data-scroll="inquiry"')}</p>`:''}
         ${stepsOf(s,next)}
       </div>
-      <div class="sx-room-screen${film?' sx-final':''}"${film?' data-final':''}>${film?`<video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(film.label)}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div>`:'<img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p>'}</div>
+      ${film?`<div class="sx-room-screen sx-final" data-final><video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(film.label)}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div></div>`:shot?`<div class="sx-room-screen"><img class="sx-q-fill" src="${esc(safeUrl(shot.media.url,{media:true}))}" data-cap alt="${esc(shot.label)}" decoding="async"><p class="sx-small sx-room-cap">${esc(shot.label)}</p></div>`:s.demo?`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`:''}
     </section>
     <section class="sx-legacy sx-history-paper">
       ${s.demo||s.example||!(st.deliverables?.revision||(st.deliverables?.items||[]).length)?'':deliverablesView(s,{readOnly:true})}

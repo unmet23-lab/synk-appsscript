@@ -15,6 +15,12 @@ function screen() {
   return context;
 }
 const geo = { w: 1000, h: 500, countries: ['KR', 'JP', 'AU', 'VN', 'US', 'SG'].map(a2 => ({ a2, d: 'M0 0' })).concat([{ a2: null, d: 'M1 1' }]) };
+
+test('관측 종류마다 날짜와 시각 정밀도를 보존하고 게시물 관측 건수를 구분한다',()=>{
+  const ext={kind:'post-lifetime',observedAt:'2026-11-15T00:00:00Z',observedDateOnly:true,counts:{'account-period':2,'post-lifetime':2},byKind:{'account-period':{sourceType:'creator-screen',period:{days:1},observedAt:'2026-11-15T02:02:00Z'},'post-lifetime':{sourceType:'creator-screen',observedAt:'2026-11-15T00:00:00Z',observedDateOnly:true}}};
+  const text=screen().mmExternalText(ext);
+  assert.match(text,/11월 15일 11:02 확인/);assert.match(text,/게시물별 누적 관측 기록 2건 · 11월 15일 확인/);assert.doesNotMatch(text,/11월 15일 09:00 확인/);
+});
 const acc = (id, business, platform, secured = true, extra = {}) => ({ id, business, contentTrack: extra.contentTrack || business, platform, handle: secured ? '@' + id : null, url: secured ? 'https://example.com/' + id : null, secured, state: secured ? '확보' : '계정 계획', note: null, ...extra });
 const country = (code, name, status, accounts, extra = {}) => ({ code, name, status, region: '동아시아', center: [10, 10], small: false, area: 500, secured: accounts.filter(a => a.secured).length, planned: accounts.length, accounts, lines: [], ...extra });
 const view = (brand, countries, shared = [], extra = {}) => ({ brand, name: brand, what: '', headline: { first: brand, second: '' }, countries, shared, sharedNote: null,

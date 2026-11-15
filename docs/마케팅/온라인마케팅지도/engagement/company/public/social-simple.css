@@ -169,7 +169,7 @@
 :root .synk-workspace .sw-simple .ss-foot{margin-top:18px;font-size:13px;line-height:1.6;color:var(--ss-ink-4)}
 
 /* 계정 */
-:root .synk-workspace .sw-simple :is(.ss-acc-head,.ss-acc){display:grid;grid-template-columns:minmax(0,1.6fr) 118px 96px minmax(0,1fr) 64px;gap:8px 14px;align-items:center}
+:root .synk-workspace .sw-simple :is(.ss-acc-head,.ss-acc){display:grid;grid-template-columns:minmax(0,1.6fr) 118px 120px minmax(0,1fr) 64px;gap:8px 14px;align-items:center}
 :root .synk-workspace .sw-simple .ss-acc-head{padding:10px 2px 8px;font-size:13px;font-weight:var(--w-label);color:var(--ss-ink-4);border-bottom:1px solid var(--ss-line)}
 :root .synk-workspace .sw-simple .ss-acc-head .is-r{text-align:right}
 :root .synk-workspace .sw-simple .ss-acc{padding:11px 2px;border-bottom:1px solid var(--ss-line);font-size:13.5px}
@@ -177,7 +177,7 @@
 :root .synk-workspace .sw-simple .ss-acc-name b{font-weight:var(--w-strong);white-space:nowrap}
 :root .synk-workspace .sw-simple .ss-acc-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ss-ink-4);font-size:13px}
 :root .synk-workspace .sw-simple .ss-acc-n{font-family:var(--ss-latin);font-variant-numeric:tabular-nums;color:var(--ss-ink-2);white-space:nowrap}
-:root .synk-workspace .sw-simple .ss-acc-n.is-zero{color:var(--ss-ink-5)}
+:root .synk-workspace .sw-simple .ss-acc-n.is-zero{color:var(--ss-ink-4)}
 :root .synk-workspace .sw-simple .ss-acc-last{font-family:var(--ss-latin);font-variant-numeric:tabular-nums;color:var(--ss-ink-3);text-align:right}
 :root .synk-workspace .sw-simple .ss-acc-fix{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;color:var(--ss-coral-ink)}
 
@@ -202,6 +202,7 @@
 }
 @media (max-width:700px){
   :root .synk-workspace .sw-simple .ss-tabs{display:flex;gap:2px;padding:3px;margin:0 0 18px;border:1px solid var(--ss-line-2);border-radius:8px;background:var(--ss-surface);width:max-content;max-width:100%}
+  :root .synk-workspace:has(.ws-subnav) .sw-simple .ss-tabs{display:none}
   :root .synk-workspace .sw-simple .ss-tabs button{border:1px solid transparent;background:none;height:38px;min-height:0;padding:0 15px;border-radius:6px;font-size:14px;font-weight:var(--w-label);color:var(--ss-ink-3);display:inline-flex;align-items:center;gap:6px;box-shadow:none}
   :root .synk-workspace .sw-simple .ss-tabs button[aria-current=page]{background:var(--ss-surface-2);border-color:var(--ss-lapis);color:var(--ss-ink)}
   :root .synk-workspace .sw-simple .ss-perf-target select{font-size:16px}
@@ -295,7 +296,9 @@
 :root .synk-workspace .sw-simple .ss-perf-svg:focus-visible{outline:2px solid var(--ss-lapis);outline-offset:4px;border-radius:6px}
 
 /* 외부 통계 관측(플랫폼에서 확인한 통계 · 계정 외부 확인 줄) — API 합계와 분리, 390px 폭 줄바꿈 보호 */
-:root .synk-workspace .sw-simple .ss-acc-col-stack{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;max-width:100%}
+:root .synk-workspace .sw-simple .ss-acc-col-stack{display:inline-flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;max-width:100%}
+:root .synk-workspace .sw-simple .ss-acc-col-stack .ss-st{align-items:flex-start;height:auto;min-height:26px;max-width:100%;padding:4px 9px;line-height:1.3;white-space:normal}
+:root .synk-workspace .sw-simple .ss-acc-col-stack .ss-st .ss-dot{margin-top:5px}
 :root .synk-workspace .sw-simple .ss-acc-col-sub{font-size:11.5px;line-height:1.35;color:var(--ss-ink-4);overflow-wrap:anywhere}
 :root .synk-workspace .sw-simple .ss-acc-ext{grid-column:1/-1;flex-basis:100%;display:flex;align-items:baseline;gap:6px;min-width:0;max-width:100%;margin-top:4px;font-size:12.5px;line-height:1.45;color:var(--ss-ink-3);overflow-wrap:anywhere;word-break:break-word}
 :root .synk-workspace .sw-simple .ss-ext{margin-top:18px;padding-top:16px;border-top:1px solid var(--ss-line);min-width:0;max-width:100%}
@@ -305,15 +308,21 @@
 :root .synk-workspace .sw-simple .ss-ext-fold{margin-top:10px;min-width:0;max-width:100%}
 :root .synk-workspace .sw-simple .ss-ext-fold>summary{cursor:pointer;font-size:13.5px;font-weight:var(--w-strong);color:var(--ss-ink-2);line-height:1.5;overflow-wrap:anywhere}
 :root .synk-workspace .sw-simple .ss-ext-table{margin-top:8px;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-:root .synk-workspace .sw-simple .ss-ext-table table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.45}
+:root .synk-workspace .sw-simple .ss-ext-table table{width:100%;min-width:0;border-collapse:collapse;font-size:13px;line-height:1.45}
 :root .synk-workspace .sw-simple .ss-ext-table th,:root .synk-workspace .sw-simple .ss-ext-table td{padding:8px 10px;border-bottom:1px solid var(--ss-line);text-align:left;vertical-align:top}
+:root .synk-workspace .sw-simple .ss-ext-table :is(th,td):not(.is-num){font-family:var(--ss-sans);white-space:normal}
+:root .synk-workspace .sw-simple .ss-ext-table :is(th,td):first-child{min-width:140px}
+:root .synk-workspace .sw-simple .ss-ext-table :is(th,td):nth-child(2){min-width:168px}
+:root .synk-workspace .sw-simple .ss-ext-table :is(th,td):nth-last-child(2){min-width:78px;font-variant-numeric:tabular-nums}
+:root .synk-workspace .sw-simple .ss-ext-table :is(th,td):last-child{min-width:116px}
 :root .synk-workspace .sw-simple .ss-ext-table th.is-num,:root .synk-workspace .sw-simple .ss-ext-table td.is-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 :root .synk-workspace .sw-simple .ss-ext-table td.is-dash{color:var(--ss-ink-4)}
-:root .synk-workspace .sw-simple .ss-ext-acc{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0;overflow-wrap:anywhere;word-break:break-word}
-:root .synk-workspace .sw-simple .ss-ext-period,:root .synk-workspace .sw-simple .ss-ext-src{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere;word-break:break-word}
+:root .synk-workspace .sw-simple .ss-ext-acc{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0;overflow-wrap:anywhere;word-break:keep-all}
+:root .synk-workspace .sw-simple .ss-ext-period,:root .synk-workspace .sw-simple .ss-ext-src{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere;word-break:keep-all}
 :root .synk-workspace .sw-simple .ss-ext-kind{font-size:12px;font-weight:var(--w-strong);color:var(--ss-ink)}
 :root .synk-workspace .sw-simple .ss-ext-diff{display:inline-block;width:fit-content;max-width:100%;margin-top:2px;padding:1px 7px;border-radius:999px;background:var(--ss-surface);box-shadow:inset 0 0 0 1px var(--ss-line-2,var(--ss-line));font-size:11.5px;color:var(--ss-ink-2);overflow-wrap:anywhere}
-:root .synk-workspace .sw-simple .ss-ext-sub{font-size:12px;color:var(--ss-ink-4);overflow-wrap:anywhere;word-break:break-word}
+:root .synk-workspace .sw-simple .ss-ext-sub{font-size:12px;color:var(--ss-ink-4);overflow-wrap:anywhere;word-break:keep-all}
+:root .synk-workspace .sw-simple .ss-ext-sub a{margin-left:0}
 :root .synk-workspace .sw-simple .ss-ext-foot{margin-top:10px}
 :root .synk-workspace .sw-simple .ss-ext-trunc{margin:0 0 12px}
 :root .synk-workspace .sw-simple .ss-ext-sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:2px 0 10px}
@@ -343,4 +352,8 @@
 }
 @container ss (max-width:520px){
   :root .synk-workspace .sw-simple .ss-ext-table th,:root .synk-workspace .sw-simple .ss-ext-table td{padding:7px 8px;font-size:12.5px}
+  :root .synk-workspace .sw-simple .ss-ext-table :is(th,td):first-child{min-width:120px}
+  :root .synk-workspace .sw-simple .ss-ext-table :is(th,td):nth-child(2){min-width:148px}
+  :root .synk-workspace .sw-simple .ss-ext-table :is(th,td):nth-last-child(2){min-width:72px}
+  :root .synk-workspace .sw-simple .ss-ext-table :is(th,td):last-child{min-width:104px}
 }

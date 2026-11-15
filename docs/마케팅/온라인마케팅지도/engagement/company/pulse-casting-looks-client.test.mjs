@@ -348,9 +348,13 @@ test('a photo order reads as photos from the stage line to the first sheet, and 
   const bare=project({answers:{package:'photo',models:['F02']},casting:{modelId:'F02'}}),bareFilm=project({answers:{package:'s15',models:['F02']},casting:{modelId:'F02'}});
   for(const state of ['prepare','make']){
     const shown=roomView({...roomModel(bare),state});
-    assert.match(shown,/저희가 만든 광고의 한 장면이에요\. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품/,state);assert.doesNotMatch(shown,/완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
+    assert.match(shown,/<section class="sx-room-hero is-no-screen">/,state);assert.match(shown,/data-room-title/,state);
+    assert.doesNotMatch(shown,/w-gift|<div class="sx-room-screen">|저희가 만든 광고의 한 장면이에요|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
   }
-  assert.match(roomView({...roomModel(bareFilm),state:'make'}),/완성 영상의 예시예요\./);assert.match(roomView({...roomModel(bareFilm),state:'prepare'}),/다음에 받으실 장면 이미지의 예시예요\./);
+  for(const state of ['make','prepare']){
+    const shown=roomView({...roomModel(bareFilm),state});assert.match(shown,/<section class="sx-room-hero is-no-screen">/,state);
+    assert.match(shown,/data-room-title/,state);assert.doesNotMatch(shown,/w-gift|<div class="sx-room-screen">|완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
+  }
   // 일지의 작업 소식 줄 단계 낱말(F3)과 첫 장 승인 뒤 알림(F1).
   assert.equal(journalModel(photo).photo,true);assert.equal('photo' in journalModel(film),false);
   assert.match(views,/stageName\(item\.stage,j\.photo\)/);

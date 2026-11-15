@@ -46,12 +46,13 @@ test('the overview leads with the work itself, what changed, progress and the ch
   assert.match(html,/담당자 답변 · 두 의견 모두 반영했어요\./);
 });
 
-test('a project with no work yet shows an example of what comes next instead of an empty frame, and says it is an example',()=>{
+test('a project with no work yet leads with its next action and conversation without an example or empty frame',()=>{
   const p=project();p.versions=[];p.stage='received';p.messages=[];Object.assign(p.studio,{concepts:[],scenes:[],sceneReviews:[],selectedConcept:null,references:[],preferences:{},strategy:{revision:0}});
   const html=projectView(state({project:p}));
-  assert.match(html,/class="sx-room-screen"><img class="sx-q-fill" src="\.\/assets\/request\/w-gift-snow\.webp"/);
-  assert.match(html,/다음에 받으실 장면 이미지의 예시예요\. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요\./);
-  assert.doesNotMatch(html,/<video/);
+  assert.match(html,/<section class="sx-room-hero is-no-screen">/);
+  assert.match(html,/<section class="sx-next-block">[\s\S]*data-action="tab"/);
+  assert.match(html,/<aside class="sx-journal sx-legacy-talk"[\s\S]*data-form="support"/);
+  assert.doesNotMatch(html,/<div class="sx-room-screen">|w-gift|<video/);
 });
 
 test('step pages keep the stage title and the refresh tool, and staff also get the manage step',()=>{

@@ -1,4 +1,4 @@
-import {esc,stamp} from './api.mjs';
+import {esc,safeUrl,stamp} from './api.mjs';
 import {t,k} from './i18n.mjs';
 import {CASTING_MODELS,modelLooks} from './casting-catalog.mjs';
 import {MODEL_LINES,MODEL_PICKS,sceneSet} from './request-data.mjs';
@@ -106,25 +106,29 @@ export function journalRelease(){for(const node of document.querySelectorAll('[d
 export const journalFocus=box=>{const title=box?.querySelector('#room-journal-title');if(title){title.setAttribute('tabindex','-1');title.focus({preventScroll:true});}};
 // 휴대폰에서만 보이는 「담당자에게 묻기」(넓은 화면은 같은 화면 왼쪽에 일지가 있다). 시트를 연다.
 export const journalAsk=(cls='')=>`<button type="button" class="sx-quiet sx-j-ask-open ${cls}" data-room-do="journal">${esc(t('담당자에게 묻기'))}</button>`;
-// 오른쪽 스크린: 그 상태에 가장 알맞은 실제 자료. 손님 자료가 없을 때만 예시를 놓고 예시라고 쓴다.
-// news: 맞춤 인물 카드가 「지금 차례」인 방(머리 「내 차례」)에서는 인물 그림이 없을 때 이리 떨어져도 소식 그림을 띄우지 않는다(운영 조각 4 화면 검수 F2).
+function roomPreviewScreen(p){
+  const filmSrc=safeUrl(p.film?.src,{media:true});
+  if(filmSrc)return `<video class="sx-q-fill" src="${esc(filmSrc)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go||'review')}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
+  const shots=Array.isArray(p.shots)?p.shots.map(shot=>({...shot,src:safeUrl(shot?.src,{media:true})})).filter(shot=>shot.src):[];
+  if(shots.length)return `<div class="sx-room-files is-shots" data-count="${Math.min(shots.length,6)}">${shots.slice(0,6).map(shot=>`<img src="${esc(shot.src)}" data-cap alt="${esc(shot.label)}" decoding="async">`).join('')}</div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">${esc(t('사진 보기'))}</span></button><p class="sx-small sx-room-cap">${esc(shots.length>1?t('완성 사진 {count}장',{count:shots.length}):shots[0].label)}</p>`;
+  const pv=p.preview,pvSrc=safeUrl(pv?.src,{media:true});
+  if(pv?.kind==='video'&&pvSrc)return `<video class="sx-q-fill" src="${esc(pvSrc)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(pv.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(pv.go||'review')}"><span class="sr">${esc(t('{label} 보기',{label:pv.label}))}</span></button><p class="sx-small sx-room-cap">${esc(pv.label)}</p>`;
+  if(pv?.kind==='image'&&pvSrc)return `<img class="sx-q-fill" src="${esc(pvSrc)}" data-cap alt="${esc(pv.label)}" decoding="async"><button type="button" class="sx-room-play" data-room-go="${esc(pv.go||'review')}"><span class="sr">${esc(t('{label} 보기',{label:pv.label}))}</span></button><p class="sx-small sx-room-cap">${esc(pv.label)}</p>`;
+  if(pv?.kind==='media'&&pv.html)return `<div class="sx-room-media">${pv.html}</div><p class="sx-small sx-room-cap"><button type="button" class="sx-link" data-room-go="${esc(pv.go||'review')}">${esc(pv.label)} · ${esc(t('열기',null,'open'))}</button></p>`;
+  return '';
+}
 function roomScreen(p,{news=true}={}){
-  // 저희 차례에 담당자가 올린 작업 소식 그림(운영 조각 4): 예시 · 지난 판 그림보다 앞에, 완성본이 아니라는 말과 함께. 「소식 보기」는 일지의 그 줄로.
-  if(news&&p.news?.pictures?.length){const pics=p.news.pictures;return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" data-cap alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
-  if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
   if(p.state==='model'&&p.proposal)return `${roomScene(modelScene(p.proposal.id))}<p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
-  if(p.film)return `<video class="sx-q-fill" src="${esc(p.film.src)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go)}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
-  // 사진 상품(2026-11-12): 도착한 사진 · 완성 사진을 그대로 건다(영상 상품이 도착한 영상을 트는 자리) — 저희 작품의 예시 대신 손님 사진. 누르면 사진 확인 화면으로.
-  if(p.shots?.length)return `<div class="sx-room-files is-shots" data-count="${Math.min(p.shots.length,6)}">${p.shots.slice(0,6).map(shot=>`<img src="${esc(shot.src)}" data-cap alt="${esc(shot.label)}" decoding="async">`).join('')}</div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">${esc(t('사진 보기'))}</span></button><p class="sx-small sx-room-cap">${esc(p.shots.length>1?t('완성 사진 {count}장',{count:p.shots.length}):p.shots[0].label)}</p>`;
+  const preview=roomPreviewScreen(p);
+  if(preview)return preview;
+  if(news&&p.news?.pictures?.length){const pics=p.news.pictures.map(src=>safeUrl(src,{media:true})).filter(Boolean);if(pics.length)return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" data-cap alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
+  const chosenSrc=p.state==='prepare'?safeUrl(p.direction?.chosen?.src,{media:true}):'';
+  if(chosenSrc)return `<img class="sx-q-fill" src="${esc(chosenSrc)}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
   const cuts=p.draft?.cuts||[];
-  const pictured=cuts.filter(cut=>cut.src);
+  const pictured=cuts.map(cut=>({...cut,src:safeUrl(cut?.src,{media:true})})).filter(cut=>cut.src);
   if(pictured.length)return `<div class="sx-room-cuts" data-count="${Math.min(pictured.length,12)}">${pictured.slice(0,12).map(cut=>`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><p class="sx-small sx-room-cap">${esc(p.photo?t('첫 장 {round}판 · {count}장',{round:String(p.draft.round),count:cuts.length}):t('{round}판 · {count}컷. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',{round:String(p.draft.round),count:cuts.length}))}</p>`;
   if(cuts.length)return `<div class="sx-room-word"><p class="sx-serif">${esc(p.draft.oneLine)}</p><ol>${cuts.slice(0,4).map((cut,i)=>`<li><span class="sx-no">${pad(i+1)}</span><span class="sx-small">${esc(cut.what)}</span></li>`).join('')}</ol></div>`;
-  if(p.files.length)return `<div class="sx-room-files" data-count="${Math.min(p.files.length,6)}">${p.files.slice(0,6).map(file=>`<img src="${esc(file.src)}" data-cap alt="" decoding="async">`).join('')}</div>`;
-  // 사진 상품에는 영상 · 장면 이미지를 받는다고 말하지 않는다 — 같은 그림을 저희 작품의 한 장면으로만 소개한다.
-  const own=k('저희가 만든 광고의 한 장면이에요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품');
-  const next=['make','review','deliver','done'].includes(p.state)?['w-gift',p.photo?own:k('완성 영상의 예시예요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품')]:['w-gift-snow',p.photo?own:k('다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')];
-  return `<img class="sx-q-fill" src="${ASSET}${next[0]}.webp" data-cap alt=""><p class="sx-small sx-room-cap">${esc(t(next[1]))}</p>`;
+  return '';
 }
 // ── 방향과 모델(영상 전 확인 1/3, 2026-11-07) ──
 // 시안 docs/마케팅/PULSE_방향제안_20261106/시안 그대로: 그림 둘이 양쪽 끝까지, 가운데 설명 한 장, 고른 쪽만 색. 휴대폰은 안내 → 두 그림 나란히 → 설명.
@@ -324,24 +328,27 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
   // 내 모델로 맡긴 의뢰인데 서버가 인물을 싣지 않은 다시 쓰기 방(연결 확인 전 · 지금 쓸 수 없는 모델 — 켜기 전 후속 11-11)은 내 모델로 가는 한 줄만 둔다.
   // 90일 시계로 지운 인물(판 4 설계 11-6)은 지운 날 한 줄만(p.personaRemoved — 살아 있는 인물이 있으면 서버가 싣지 않는다).
   const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:!p.persona&&p.keep?.state==='reuse'?personaReuseLine():!p.persona&&p.personaRemoved?personaRemovedLine(p.personaRemoved):'',late=p.state==='ask'&&!!journal;
+  const preview=!(p.state==='model'&&p.proposal)?roomPreviewScreen(p):'',screen=preview||(main&&personaScreen(p.persona)||roomScreen(p,{news:!main})),heroCls=preview?' is-preview-first':screen?'':' is-no-screen';
   return `<div class="sx-room" data-state="${esc(p.state)}">
     ${bar?exampleHead(p):''}
-    <section class="sx-room-hero">
+    <section class="sx-room-hero${heroCls}">
       <div class="sx-room-left">
-        ${top}
-        <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}${main&&pc.confirm?`<span>${esc(t('맞춤 인물 확인'))} <b class="sx-no">${pc.confirm}</b></span>`:''}</p>
-        <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
-        <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>
-        ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true})+keep:''}
-        ${p.state==='pay'?payCard(p):''}
-        ${p.state==='done'?doneCard(p):''}
-        ${p.state==='model'&&p.proposal?proposeCard(p.proposal,ui):''}
-        ${p.state==='prepare'&&p.direction?.chosen?chosenCard(p.direction):''}
-        ${p.state==='ask'&&!journal?askList(p):''}${late?'':below}
-        ${after}
-        ${journal}${late?below:''}
+        <div class="sx-room-main">
+          ${top}
+          <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}${main&&pc.confirm?`<span>${esc(t('맞춤 인물 확인'))} <b class="sx-no">${pc.confirm}</b></span>`:''}</p>
+          <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
+          <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>
+          ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true})+keep:''}
+          ${p.state==='pay'?payCard(p):''}
+          ${p.state==='done'?doneCard(p):''}
+          ${p.state==='model'&&p.proposal?proposeCard(p.proposal,ui):''}
+          ${p.state==='prepare'&&p.direction?.chosen?chosenCard(p.direction):''}
+          ${p.state==='ask'&&!journal?askList(p):''}${late?'':below}
+          ${after}
+        </div>
+        ${journal}${late&&below?`<div class="sx-room-sub">${below}</div>`:''}
       </div>
-      <div class="sx-room-screen">${main&&personaScreen(p.persona)||roomScreen(p,{news:!main})}</div>
+      ${screen?`<div class="sx-room-screen">${screen}</div>`:''}
     </section>
     ${foot?`<div class="sx-room-foot">${foot}</div>`:''}
     ${roomPaper(p)}

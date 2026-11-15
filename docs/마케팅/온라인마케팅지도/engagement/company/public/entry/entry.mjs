@@ -20,7 +20,14 @@ function showLinks(destinations){
   links.replaceChildren();
   for(const destination of destinations){
     if(!Object.hasOwn(labels,destination))continue;
-    const link=document.createElement('a');link.href=destination;link.textContent=labels[destination];links.append(link);
+    const link=document.createElement('a');link.href=destination;link.textContent=labels[destination];
+    if(destination==='/'){
+      link.addEventListener('click',event=>{
+        if(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey||(link.target&&link.target.toLowerCase()!=='_self'))return;
+        try{window.opener=null;}catch{}
+      });
+    }
+    links.append(link);
   }
   links.hidden=!links.childElementCount;
 }

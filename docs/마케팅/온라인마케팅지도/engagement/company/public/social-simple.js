@@ -328,10 +328,12 @@ function ssSafeUrl(u){
   const s=typeof u==='string'?u.trim():'',lo=s.toLowerCase();
   return lo.startsWith('https://')||lo.startsWith('http://')?s:'';
 }
-function ssExtWhen(at,today=''){
+function ssExtWhen(at,today='',dateOnly=false){
   const raw=String(at??'').trim();
   if(!raw)return '';
-  const kst=ssKstAt(raw),td=typeof today==='string'?today:'';
+  const td=typeof today==='string'?today:'';
+  if(dateOnly===true){const d=raw.slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(d)?ssRel(d,td):raw;}
+  const kst=ssKstAt(raw);
   return kst?ssRel(kst,td):raw;
 }
 function ssExtPeriod(period,labels){
@@ -357,7 +359,7 @@ function ssExtObsTable(items,metricCols,{range,days,today}={}){
       periodHtml=`<span>${ssEsc(pText||'지금까지 누적')}</span><small class="ss-ext-diff">기간 증가 아님</small>`;
     }else if(kind==='post-lifetime'){
       kindLabel='게시물 누적';
-      const pubDate=obs?.post?.publishedAt?String(ssKstAt(obs.post.publishedAt)||obs.post.publishedAt).slice(0,10):'';
+      const pubDate=obs?.post?.publishedAt?(obs.post.publishedDateOnly===true?String(obs.post.publishedAt).slice(0,10):String(ssKstAt(obs.post.publishedAt)||obs.post.publishedAt).slice(0,10)):'';
       const url=ssSafeUrl(obs?.post?.url),extId=String(obs?.post?.externalId??'').trim();
       const postRef=url?`<a class="ss-link" href="${ssEsc(url)}" target="_blank" rel="noopener noreferrer">${ssEsc(extId?`게시물 ${extId}`:'게시물 보기')}</a>`:extId?`<span>${ssEsc(`게시물 ${extId}`)}</span>`:'';
       periodHtml=`<span>${ssEsc([pubDate?`게시 ${pubDate}`:'','게시 후 누적',pText].filter(Boolean).join(' · '))}</span>${postRef?`<small class="ss-ext-sub">${postRef}</small>`:''}`;
@@ -366,11 +368,11 @@ function ssExtObsTable(items,metricCols,{range,days,today}={}){
       periodHtml=`<span>${ssEsc(pText||'—')}</span>`;
     }
     const cells=metricCols.map(k=>{const v=ssObsVal(obs?.metrics?.[k]);const rawLabel=String(obs?.labels?.metricLabels?.[k]??'').trim();const title=rawLabel?` title="${ssEsc(rawLabel)}"`:'';return `<td class="is-num${v==='—'?' is-dash':''}"${title}>${ssEsc(v)}</td>`;}).join('');
-    const when=ssExtWhen(obs?.observedAt,today)||'—';
+    const when=ssExtWhen(obs?.observedAt,today,obs?.observedDateOnly===true)||'—';
     const src=ssExtSource(obs?.sourceType??obs?.source),host=String(obs?.sourceHost??'').trim();
     return `<tr><td><div class="ss-ext-acc">${pf?ssPf(pf):''}<span>${ssEsc(name)}</span></div></td><td><div class="ss-ext-period"><b class="ss-ext-kind">${ssEsc(kindLabel)}</b>${periodHtml}</div></td>${cells}<td>${ssEsc(when)}</td><td><div class="ss-ext-src"><span>${ssEsc(src)}</span>${host?`<small class="ss-ext-sub">${ssEsc(host)}</small>`:''}</div></td></tr>`;
   }).join('');
-  return `<div class="ss-detail ss-ext-table"><table>${head}<tbody>${rows}</tbody></table></div>`;
+  return `<div class="ss-detail ss-ext-table"><p class="ss-scroll-hint">옆으로 밀면 지표 숫자와 출처가 더 보여요</p><table>${head}<tbody>${rows}</tbody></table></div>`;
 }
 const SS_EXT_NON_ADDITIVE=new Set(['reach','visitors','followers','posts']);
 const ssExtIsAdditive=k=>!SS_EXT_NON_ADDITIVE.has(k)&&!/unique/i.test(String(k||''));
@@ -414,10 +416,10 @@ function ssExtPeriodSummary(observations,metric,start,end,{truncated=false,previ
     if(!isExact&&!isDaily)return;
     const raw=obs.metrics?.[mKey];if(raw===null||raw===undefined||raw===''||typeof raw==='boolean')return;
     const num=typeof raw==='number'?raw:typeof raw==='string'&&raw.trim()!==''?Number(raw):NaN,at=String(obs.observedAt??'').trim(),def=ssExtDef(obs,mKey);
-    recs.push({obs,ps,isExact,isDaily,num,at,ms:ssExtTimeMs(at),def,tie:JSON.stringify([String(obs.id??obs.observationId??''),def.key,String(raw),def.sourceHost,String(obs.labels?.periodLabel??'')])});
+    recs.push({obs,ps,isExact,isDaily,num,at,dateOnly:obs.observedDateOnly===true,ms:ssExtTimeMs(at),def,tie:JSON.stringify([String(obs.id??obs.observationId??''),def.key,String(raw),def.sourceHost,String(obs.labels?.periodLabel??'')])});
   });
-  const exactRaw=recs.filter(r=>r.isExact),dailyRaw=recs.filter(r=>r.isDaily);
-  let total=null,complete=false,mode='none',reason=dates.length?'no-data':'invalid-range',definition=null,daily=dates.map(date=>({date,value:null,complete:true})),latestObservedAt=ssExtLatest(recs)?.at||'';
+  const exactRaw=recs.filter(r=>r.isExact),dailyRaw=recs.filter(r=>r.isDaily),latestAll=ssExtLatest(recs);
+  let total=null,complete=false,mode='none',reason=dates.length?'no-data':'invalid-range',definition=null,daily=dates.map(date=>({date,value:null,complete:true})),latestObservedAt=latestAll?.at||'',latestObservedDateOnly=Boolean(latestAll?.dateOnly);
   const fillDaily=list=>{const byDate=new Map();for(const r of list){const p=byDate.get(r.ps);if(!p||ssExtCmpRec(r,p)>0)byDate.set(r.ps,r);}return {byDate,rows:dates.map(date=>{const r=byDate.get(date);return {date,value:r&&Number.isInteger(r.num)&&r.num>=0?r.num:null,complete:true};})};};
   if(truncated){
     const defs=new Set(recs.map(r=>r.def.key));if(defs.size===1){definition=recs[0].def;if(dailyRaw.length&&sStr<eStr)daily=fillDaily(dailyRaw).rows;}
@@ -425,22 +427,22 @@ function ssExtPeriodSummary(observations,metric,start,end,{truncated=false,previ
   }else if(exactRaw.length){
     if(new Set(exactRaw.map(r=>r.def.key)).size>1)reason='heterogeneous-definition';
     else{
-      const win=ssExtLatest(exactRaw),sameDaily=dailyRaw.filter(r=>r.def.key===win.def.key);
-      definition=win.def;latestObservedAt=ssExtLatest([win,...sameDaily])?.at||win.at;
+      const win=ssExtLatest(exactRaw),sameDaily=dailyRaw.filter(r=>r.def.key===win.def.key),latestWin=ssExtLatest([win,...sameDaily])||win;
+      definition=win.def;latestObservedAt=latestWin.at;latestObservedDateOnly=Boolean(latestWin.dateOnly);
       if(Number.isFinite(win.num)&&win.num>=0){total=win.num;complete=true;mode='exact';reason=null;}else reason='invalid-value';
       if(sameDaily.length&&sStr<eStr)daily=fillDaily(sameDaily).rows;
     }
   }else if(dailyRaw.length){
     if(new Set(dailyRaw.map(r=>r.def.key)).size>1)reason='heterogeneous-definition';
     else{
-      const {byDate,rows}=fillDaily(dailyRaw);definition=dailyRaw[0].def;daily=rows;latestObservedAt=ssExtLatest([...byDate.values()])?.at||latestObservedAt;
+      const {byDate,rows}=fillDaily(dailyRaw),latestDaily=ssExtLatest([...byDate.values()]);definition=dailyRaw[0].def;daily=rows;if(latestDaily){latestObservedAt=latestDaily.at;latestObservedDateOnly=Boolean(latestDaily.dateOnly);}
       if(!additive)reason='non-additive';
       else if(dates.length&&daily.every(d=>d.value!==null)){total=daily.reduce((s,d)=>s+d.value,0);complete=true;mode='daily-sum';reason=null;}
       else reason='incomplete-days';
     }
   }
   const coveredDays=daily.filter(d=>d.value!==null).length,missingDays=Math.max(0,dates.length-coveredDays),hasDaily=coveredDays>0;
-  const out={metric:mKey,start:sStr,end:eStr,days:dates.length,total,value:total,complete,mode,additive,truncated:!!truncated,reason,coveredDays,missingDays,hasDaily,daily,definition,latestObservedAt,summary:{total,complete,mode,reason,coveredDays,missingDays,latestObservedAt}};
+  const out={metric:mKey,start:sStr,end:eStr,days:dates.length,total,value:total,complete,mode,additive,truncated:!!truncated,reason,coveredDays,missingDays,hasDaily,daily,definition,latestObservedAt,latestObservedDateOnly,summary:{total,complete,mode,reason,coveredDays,missingDays,latestObservedAt}};
   if(Array.isArray(previousObservations)&&prevStart&&prevEnd){out.previous=ssExtPeriodSummary(previousObservations,mKey,prevStart,prevEnd,{truncated:prevTruncated});out.comparison=ssExtCompare(out,out.previous);}
   return out;
 }
@@ -449,12 +451,12 @@ function ssExtCard({ch,acc,cur,prev,comp,curObs,prevObs},{metric,days,rStart,rEn
   const sub=acc?.name&&acc.name!==name?acc.name:acc?.handle&&acc.handle!==name?acc.handle:'';
   const def=cur.definition||prev.definition,mLabel=def?.label||ssExtMetricLabel(metric),firstObs=curObs[0]||prevObs[0]||null;
   const src=def?.sourceLabel||(firstObs?ssExtSource(firstObs.sourceType??firstObs.source):''),host=def?.sourceHost||String(firstObs?.sourceHost??'').trim();
-  const allCurAt=ssExtLatest(curObs.filter(o=>o?.observedAt).map(o=>({at:String(o.observedAt).trim(),ms:ssExtTimeMs(o.observedAt),tie:''})))?.at||'';
-  const latestAt=cur.latestObservedAt||allCurAt,whenText=latestAt?`최신 관측 ${ssExtWhen(latestAt,today)}`:'이번 기간 관측 없음';
+  const allCurRec=ssExtLatest(curObs.filter(o=>o?.observedAt).map(o=>({at:String(o.observedAt).trim(),dateOnly:o.observedDateOnly===true,ms:ssExtTimeMs(o.observedAt),tie:''})));
+  const latestAt=cur.latestObservedAt||allCurRec?.at||'',latestDateOnly=cur.latestObservedAt?Boolean(cur.latestObservedDateOnly):Boolean(allCurRec?.dateOnly),whenText=latestAt?`최신 관측 ${ssExtWhen(latestAt,today,latestDateOnly)}`:'이번 기간 관측 없음';
   const curSpan=rStart&&rEnd?`${ssMdShort(rStart)}~${ssMdShort(rEnd)}`:`${days}일`,prevSpan=pStart&&pEnd?`${ssMdShort(pStart)}~${ssMdShort(pEnd)}`:`이전 ${days}일`;
   const curNote=cur.complete?(cur.mode==='exact'?'플랫폼에서 제공한 기간 합계예요.':`${ssN(cur.days||days)}일치 하루 기록을 모두 더해 계산했어요.`):cur.reason==='truncated'?'관측 목록이 일부만 표시되어 합계를 계산하지 않아요.':cur.reason==='heterogeneous-definition'?'서로 다른 지표 기준이나 출처가 섞여 있어 합산하지 않아요.':cur.reason==='non-additive'?(['reach','visitors'].includes(metric)?'고유 인원 지표라 하루 수치를 더하지 않아요.':'시점 누적 지표라 하루 수치를 더하지 않아요.'):cur.reason==='incomplete-days'?`${ssN(cur.days||days)}일 중 ${ssN(cur.coveredDays)}일만 기록이 있어 합산하지 않아요.`:curObs.length?'선택한 기간과 일치하는 합계나 일별 기록이 없어요.':'이번 기간에 확인된 계정 기간 기록이 없어요.';
   let compVal='비교 불가',compNote='이전 기간 기록이 없어 비교할 수 없어요.',compText=true;
-  if(comp.status==='ok'){const pct=`${comp.percent>0?'▲ ':comp.percent<0?'▼ ':''}${Math.abs(comp.percent).toFixed(Math.abs(comp.percent)>=10?0:1)}%`;compVal=`${ssSigned(comp.delta)} (${pct})`;compText=false;compNote=`바로 앞 ${days}일(${prevSpan})보다 ${comp.delta>0?`${ssN(comp.delta)} 늘었어요.`:comp.delta<0?`${ssN(Math.abs(comp.delta))} 줄었어요.`:'변동이 없어요.'}`;}
+  if(comp.status==='ok'){const pct=`${comp.percent>0?'▲ ':comp.percent<0?'▼ ':''}${Math.abs(comp.percent).toFixed(Math.abs(comp.percent)>=10?0:1)}%`;compVal=`${ssSigned(comp.delta)} (${pct})`;compText=false;compNote=comp.delta>0?`바로 앞 ${days}일(${prevSpan})보다 ${ssN(comp.delta)} 늘었어요.`:comp.delta<0?`바로 앞 ${days}일(${prevSpan})보다 ${ssN(Math.abs(comp.delta))} 줄었어요.`:`바로 앞 ${days}일(${prevSpan})과 같아 변동이 없어요.`;}
   else if(comp.status==='new-activity'){compVal='새 활동';compNote=`이번 기간 ${ssSigned(comp.delta)} · 이전 기간이 0이라 증가율(%)은 계산할 수 없어요.`;}
   else if(comp.status==='same-zero'){compVal='0';compText=false;compNote='이번 기간과 이전 기간 모두 0으로 변동이 없어요.';}
   else if(comp.reason==='truncated')compNote='관측 목록이 잘려 있어 기간 비교를 계산하지 않아요.';
@@ -508,7 +510,7 @@ function ssPerfExternal(report,{previous=null,metric='views',days=30,range=null,
     const rank=cur.complete?3:cur.hasDaily?2:(prev.complete||prev.hasDaily)?1:0;
     return {...e,cur,prev,comp:ssExtCompare(cur,prev),rank};
   }).sort((a,b)=>b.rank-a.rank||a.idx-b.idx);
-  if(!all.length&&!cardEntries.length&&!curTrunc&&!prevTrunc)return `<div class="ss-ext"><div class="ss-ext-head"><h3>플랫폼에서 확인한 통계</h3><span class="ss-hint">계정 통계는 별도, 게시물 누적은 기존 기록에 반영될 수 있음</span></div><p class="ss-ext-empty">이 기간과 대상에는 플랫폼 화면이나 내보내기로 따로 확인한 통계가 아직 없어요.</p></div>`;
+  if(!all.length&&!cardEntries.length&&!curTrunc&&!prevTrunc)return `<div class="ss-ext"><div class="ss-ext-head"><h3>플랫폼에서 확인한 통계</h3><span class="ss-hint">계정 기간·누적 통계는 위 숫자에 더하지 않아요. 게시물별 누적은 다른 기록과 겹치지 않을 때만 게시물 기록에 들어가요.</span></div><p class="ss-ext-empty">이 기간과 대상에는 플랫폼 화면이나 내보내기로 따로 확인한 통계가 아직 없어요.</p></div>`;
   const isSingle=tKind==='channel',cardOpts={metric,days,rStart,rEnd,pStart,pEnd,today,isSingle};
   const truncBanner=curTrunc||prevTrunc?`<p class="ss-perf-warn ss-ext-trunc" role="note">${ssDot('butter')}<span>${ssEsc('관측 기록이 많아 일부만 불러왔어요. 잘린 자료로는 기간 합계와 이전 기간 비교를 계산하지 않으니, 위 대상에서 계정 하나를 골라 확인해 주세요.')}</span></p>`:'';
   const shownCards=isSingle?cardEntries:cardEntries.slice(0,6),restCards=isSingle?[]:cardEntries.slice(6);
@@ -523,7 +525,7 @@ function ssPerfExternal(report,{previous=null,metric='views',days=30,range=null,
   const postOpen=accItems.length===0&&postItems.length<=5;
   const postHtml=postItems.length?`<details class="ss-ext-fold"${postOpen?' open':''}><summary>${ssEsc(`게시물별 누적 관측 ${ssN(postItems.length)}건 보기 · 게시물마다 쌓인 값(계정 기간 합계 아님)`)}</summary>${ssExtObsTable(postItems,metricCols,opts)}</details>`:'';
   const truncNote=curTrunc?' 관측 기록이 많아 최근 일부만 표시했어요.':'';
-  return `<div class="ss-ext"><div class="ss-ext-head"><h3>플랫폼에서 확인한 통계</h3>${all.length?`<span class="ss-count">${ssN(all.length)}</span>`:''}<span class="ss-hint">계정 통계는 별도, 게시물 누적은 기존 기록에 반영될 수 있음</span></div>${truncBanner}${cardsHtml}${accHtml}${postHtml}<p class="ss-foot ss-ext-foot">${ssEsc(`플랫폼 화면·공식 내보내기·공개 화면에서 확인한 기록이에요. 계정의 기간 합계와 누적값은 위 게시물 합계에 더하지 않고, 게시물별로 확인한 누적 수치는 중복 없이 기존 게시물 기록에 반영될 수 있어요. 제공되지 않은 지표는 —로 표시해요.${truncNote}`)}</p></div>`;
+  return `<div class="ss-ext"><div class="ss-ext-head"><h3>플랫폼에서 확인한 통계</h3>${all.length?`<span class="ss-count">${ssN(all.length)}</span>`:''}<span class="ss-hint">계정 기간·누적 통계는 위 숫자에 더하지 않아요. 게시물별 누적은 다른 기록과 겹치지 않을 때만 게시물 기록에 들어가요.</span></div>${truncBanner}${cardsHtml}${accHtml}${postHtml}<p class="ss-foot ss-ext-foot">${ssEsc(`플랫폼 화면·공식 내보내기·공개 화면에서 확인한 기록이에요. 계정의 기간 합계와 누적값은 위 게시물 합계에 더하지 않고, 게시물별로 확인한 누적 수치는 중복 없이 기존 게시물 기록에 반영될 수 있어요. 제공되지 않은 지표는 —로 표시해요.${truncNote}`)}</p></div>`;
 }
 
 // ── 계정 ──
@@ -537,12 +539,15 @@ function ssAccExtMetricSummary(metrics){
 }
 function ssAccExt(ext,apiCollect,today=''){
   if(!ext||typeof ext!=='object')return '';
-  const src=ssExtSource(ext.sourceType??ext.source);
-  const when=ssExtWhen(ext.lastObservedAt??ext.observedAt??ext.byKind?.[ext.kind]?.observedAt,today);
-  const kind=ext.kind||'',scopeParts=[];
+  const src=ssExtSource(ext.sourceType??ext.source),kind=ext.kind||'';
+  const kindItem=kind&&ext.byKind&&typeof ext.byKind==='object'?ext.byKind[kind]:null;
+  const topAt=ext.lastObservedAt??ext.observedAt,hasTopAt=topAt!==undefined&&topAt!==null&&String(topAt).trim()!=='';
+  const whenAt=hasTopAt?topAt:kindItem?.lastObservedAt??kindItem?.observedAt;
+  const whenDateOnly=hasTopAt?(typeof ext.observedDateOnly==='boolean'?ext.observedDateOnly:kindItem?.observedDateOnly===true&&(kindItem?.lastObservedAt??kindItem?.observedAt)===topAt):(typeof kindItem?.observedDateOnly==='boolean'?kindItem.observedDateOnly:ext.observedDateOnly===true);
+  const when=ssExtWhen(whenAt,today,whenDateOnly),scopeParts=[];
   if(kind==='post-lifetime'){
     const cnt=ssObsVal(ext.counts?.['post-lifetime']);
-    scopeParts.push(cnt!=='—'?`게시물 ${cnt}건 개별 확인(계정 합계 아님)`:'게시물 개별 확인(계정 합계 아님)');
+    scopeParts.push(cnt!=='—'?`게시물별 누적 관측 기록 ${cnt}건(계정 합계 아님)`:'게시물별 누적 관측 기록(계정 합계 아님)');
     const ap=ext.byKind?.['account-period'];
     if(ap){
       const apSpan=ssExtPeriod(ap.period,ap.labels),apMet=ssAccExtMetricSummary(ap.metrics);
@@ -558,13 +563,13 @@ function ssAccExt(ext,apiCollect,today=''){
     scopeParts.push(kind);
   }
   const hasApi=apiCollect==='수집 중'||apiCollect==='수집 멈춤';
-  const detail=[...(hasApi?['화면 통계 확인',src]:[src]),...scopeParts,when?`확인 ${when}`:''].filter(Boolean).join(' · ');
+  const detail=[...(hasApi?['플랫폼에서 확인한 통계',src]:[src]),...scopeParts,when?`확인 ${when}`:''].filter(Boolean).join(' · ');
   return `<div class="ss-acc-ext">${ssDot('butter')}<span>${ssEsc(detail)}</span></div>`;
 }
 function ssAccRow(a,today=''){
   const td=typeof today==='string'?today:'',ext=a?.externalCollection||null;
   const pub=a.publish==='자동 게시'?`<span class="ss-st green ss-acc-pub">${ssDot()}자동 게시</span>`:a.publish==='앱에서 직접'?`<span class="ss-st butter ss-acc-pub">${ssDot()}앱에서 직접</span>`:'<span class="ss-st ss-acc-pub">안 켬</span>';
-  const col=a.collect==='수집 중'?`<span class="ss-st ss-acc-col">${ssDot('green')}수집 중</span>`:a.collect==='수집 멈춤'?`<span class="ss-st coral ss-acc-col">${ssDot()}수집 멈춤</span>`:ext?`<span class="ss-acc-col ss-acc-col-stack"><span class="ss-st butter">${ssDot()}화면 통계 확인</span><small class="ss-acc-col-sub">API 수집 안 함</small></span>`:'<span class="ss-st ss-acc-col">수집 안 함</span>';
+  const col=a.collect==='수집 중'?`<span class="ss-st ss-acc-col">${ssDot('green')}수집 중</span>`:a.collect==='수집 멈춤'?`<span class="ss-st coral ss-acc-col">${ssDot()}수집 멈춤</span>`:ext?`<span class="ss-acc-col ss-acc-col-stack"><span class="ss-st butter">${ssDot()}플랫폼에서 확인한 통계</span><small class="ss-acc-col-sub">API 수집 안 함</small></span>`:'<span class="ss-st ss-acc-col">수집 안 함</span>';
   const extLine=ssAccExt(ext,a.collect,td);
   const fix=a.fix?`<div class="ss-acc-fix">${ssDot('coral')}<span>${ssEsc(a.fix.message||'연결을 다시 확인해야 해요')}</span>${a.fix.kind==='publish'&&a.fix.connectUrl?`<a class="ss-link" href="${ssEsc(a.fix.connectUrl)}">게시 권한 다시 연결</a>`:`<button class="ss-link" type="button" data-ss-action="reconnect" data-value="${ssEsc(a.channelId)}">다시 연결</button>`}</div>`:'';
   return `<div class="ss-acc"><div class="ss-acc-name">${ssPf(a.platform)}<b>${ssEsc(a.handle||'이름 없음')}</b><span>${ssEsc(a.name||'')}</span></div>${pub}${col}<span class="ss-acc-n${a.posts30?'':' is-zero'}">${ssEsc(`${ssN(a.posts30)}편 · ${typeof a.views30==='number'?`${ssN(a.views30)}회`:'조회 미측정'}`)}</span><span class="ss-acc-last">${a.lastPost?ssEsc(ssMdShort(a.lastPost)):'—'}</span>${extLine}${fix}</div>`;
@@ -646,9 +651,10 @@ function snsSimpleRender(view){
 // 「옆으로 밀면」 안내는 표가 그려진 폭에서 실제로 넘칠 때만 켠다(칸 글 길이에 따라 넘치는 폭이 달라 CSS 폭으로는 못 맞춘다).
 // 그린 뒤 · 창 크기가 바뀐 뒤 · 숫자 글꼴이 늦게 와 표 폭이 바뀐 뒤 다시 잰다.
 function ssMarkWide(){for(const d of document.querySelectorAll('.sw-simple .ss-detail'))d.classList.toggle('is-wide',d.scrollWidth>d.clientWidth+1);}
-function ssWideSoon(){if(snsSimple.open.size&&typeof requestAnimationFrame==='function')requestAnimationFrame(ssMarkWide);}
+function ssWideSoon(){if(typeof requestAnimationFrame==='function')requestAnimationFrame(ssMarkWide);}
 globalThis.addEventListener?.('resize',ssWideSoon);
 globalThis.document?.fonts?.addEventListener?.('loadingdone',ssWideSoon);
+globalThis.document?.addEventListener?.('toggle',event=>{if(event.target?.matches?.('.sw-simple details'))ssWideSoon();},true);
 document.addEventListener('click',event=>{
   const target=event.target.closest?.('.sw-simple [data-ss-action]');if(!target||target.disabled)return;
   const action=target.dataset.ssAction,value=target.dataset.value||'';

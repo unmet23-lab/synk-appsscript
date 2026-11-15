@@ -77,32 +77,36 @@ function waScopeBar(){
   return `<section class="wa-scope-bar" aria-label="내 소속과 보기 범위"><div class="wa-scope-identity"><span class="wa-scope-label">내 소속</span><strong class="wa-scope-summary">${escape(waMembershipText(access))}</strong></div>${companies.length>1?`<label class="wa-company-switch"><span>화면 범위</span><select data-wa-company aria-label="화면에 표시할 회사 범위"><option value="all">겸임 업무 모두</option>${companies.map(row=>`<option value="${escape(row.id)}" ${wa.company===row.id?'selected':''}>${escape(row.name)}</option>`).join('')}</select></label>`:''}</section>${legacyBanner}`;
 }
 function waHomeTools(){
-  const access=waAccess();
-  const chip=(label,tab,section='')=>`<button type="button" class="wa-tool-chip" data-action="wa-open" data-tab="${tab}" data-section="${section}">${escape(label)}</button>`;
-  const actionChip=(label,action,attrs='')=>`<button type="button" class="wa-tool-chip" data-action="${action}" ${attrs}>${escape(label)}</button>`;
+  const access=waAccess(),demoMode=typeof isDemoMode==='function'&&isDemoMode();
+  const arrow=typeof icon==='function'?icon('arrow'):'',chevron=typeof icon==='function'?icon('right'):'';
+  const entry=(label,tab,section='',primary=false)=>`<button type="button" class="wa-entry-card${primary?' is-primary':''}" data-action="wa-open" data-tab="${tab}" data-section="${section}"><span class="wa-entry-copy"><strong>${escape(label)}</strong></span>${arrow}</button>`;
+  const adminAllowed=isAdmin()&&!demoMode;
   const pulse=(access.admin||access.companies.includes('PULSE'))&&['all','PULSE'].includes(wa.company);
-  const common=[
-    chip('메신저','messenger'),
-    actionChip('내 할 일','marin-workroom-panel','data-panel="tasks"'),
-    actionChip('내 업무 카드','marin-profile'),
-    chip('사람·조직','members'),
-    chip('회사 안내','handbook'),
-  ];
-  const assigned=[
-    isAdmin()&&!(typeof isDemoMode==='function'&&isDemoMode())?chip('관리자','admin'):'',
-    waFeature('teaching')?chip('LAB 내 수업','teaching'):'',
-    waFeature('path')?chip('PATH 상담·정착','path'):'',
-    waFeature('lectures')?chip('SHIFT 강의 일정','lectures'):'',
-    pulse&&waFeature('clients')?chip('PULSE 고객 관리','workroom','clients'):'',
-    pulse&&waFeature('production')?chip('PULSE 제작 데스크','workroom','desk'):'',
-    waFeature('social')?chip('SNS·마케팅','social'):'',
-    !pulse&&waFeature('clients')?chip('제작 고객 관리','workroom','clients'):'',
-    !pulse&&waFeature('production')?chip('콘텐츠 제작','workroom','desk'):'',
-    waFeature('pages')?chip('내 관리 페이지','workroom','pages'):'',
-    waFeature('feedback')?'<a class="wa-tool-chip" href="/trial-feedback/">체험 의견</a>':'',
-    isAdmin()?chip('회사 설정','settings'):'',
+  const explicitFeedback=!access.admin&&!access.legacy&&waFeature('feedback');
+  const domains=[
+    waFeature('teaching')?entry('LAB 내 수업','teaching'):'',
+    waFeature('path')?entry('PATH 상담·정착','path'):'',
+    waFeature('lectures')?entry('SHIFT 강의 일정','lectures'):'',
+    pulse&&waFeature('clients')?entry('PULSE 고객 관리','workroom','clients'):'',
+    pulse&&waFeature('production')?entry('PULSE 제작 데스크','workroom','desk'):'',
+    waFeature('social')?entry('SNS·마케팅','social'):'',
+    !pulse&&waFeature('clients')?entry('제작 고객 관리','workroom','clients'):'',
+    !pulse&&waFeature('production')?entry('콘텐츠 제작','workroom','desk'):'',
+    waFeature('pages')?entry('내 관리 페이지','workroom','pages'):'',
+    explicitFeedback?`<a class="wa-entry-card" href="/trial-feedback/"><span class="wa-entry-copy"><strong>체험 의견</strong></span>${arrow}</a>`:'',
   ].filter(Boolean);
-  return `<section class="wa-home-sections" aria-label="배정 업무와 공통 도구">${assigned.length?`<div class="wa-home-tools"><span class="wa-home-tools-label">배정된 업무</span>${assigned.join('')}</div>`:''}<div class="wa-home-tools"><span class="wa-home-tools-label">전사 공통</span>${common.join('')}</div></section>`;
+  if(adminAllowed){
+    const adminPrimary=`<div class="wa-primary-entry">${entry('관리자','admin','',true)}</div>`;
+    const domainSection=!domains.length?'':wa.company==='all'
+      ?`<details class="wa-domain-details"><summary><span>회사별 업무</span>${chevron}</summary><div class="wa-entry-grid">${domains.join('')}</div></details>`
+      :`<div class="wa-entry-grid">${domains.join('')}</div>`;
+    return `<section class="wa-home-sections" aria-label="내 업무">${adminPrimary}${domainSection}</section>`;
+  }
+  if(domains.length)return `<section class="wa-home-sections" aria-label="내 업무"><div class="wa-entry-grid">${domains.join('')}</div></section>`;
+  const statusCopy=wa.company!=='all'
+    ?'선택한 회사 범위에 열린 업무 화면이 없어요. 내 할 일에서 맡은 업무를 확인해 주세요.'
+    :'지정된 회사별 업무 화면이 없어요. 내 할 일에서 맡은 업무를 확인해 주세요.';
+  return `<section class="wa-home-sections" aria-label="내 업무"><div class="wa-common-only"><p class="wa-common-only-copy">${statusCopy}</p><button type="button" class="wa-entry-card is-primary" data-action="marin-workroom-panel" data-panel="tasks"><span class="wa-entry-copy"><strong>내 할 일</strong></span>${arrow}</button></div></section>`;
 }
 function waHome(){
   return waScopeBar()+waHomeTools();

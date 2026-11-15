@@ -23,7 +23,7 @@ test('API가 없는 플랫폼도 노출·도달을 원래 이름과 숫자로 �
   assert.match(html,/title="반응"/);
   assert.match(html,/class="is-num" title="반응">0<\/td>/);
   assert.match(html,/class="is-num is-dash">—<\/td>/);
-  assert.match(html,/계정 통계는 별도/);assert.match(html,/게시물별로 확인한 누적 수치는 중복 없이 기존 게시물 기록에 반영될 수 있어요/);
+  assert.match(html,/계정 기간·누적 통계는 위 숫자에 더하지 않아요/);assert.match(html,/게시물별로 확인한 누적 수치는 중복 없이 기존 게시물 기록에 반영될 수 있어요/);
 });
 test('다른 기간·계정 누적·게시물 누적을 선택 기간 총계로 바꾸지 않는다',()=>{
   const rows=[observation,{...observation,kind:'account-lifetime',period:null,metrics:{followers:7}},{...observation,kind:'post-lifetime',period:null,post:{externalId:'post1',publishedAt:'2026-10-01T12:00:00Z',url:'https://example.com/post1'},metrics:{views:987}}];
@@ -95,4 +95,20 @@ test('외부 일별 그래프는 누적값의 차분이 아닌 실제 하루 값
   const rows=[daily('2026-11-11',4),daily('2026-11-12',7),daily('2026-11-13',9)];
   const html=ui().ssPerfExternal({externalObservations:{channels:[{...channel,observations:rows}]}},{...options,days:3,range:{start:'2026-11-11',end:'2026-11-13',prevStart:'2026-11-08',prevEnd:'2026-11-10'}});
   assert.match(html,/하루 조회수/);assert.match(html,/>20<\/strong>/);assert.doesNotMatch(html,/aria-label="날마다 늘어난/);
+});
+
+test('같은 기간 합계는 변동 없음으로 설명하고 날짜만 알려진 관측에 시각을 붙이지 않는다',()=>{
+  const s=ui(),current={...observation,metrics:{views:120},observedAt:'2026-11-14T00:00:00Z',observedDateOnly:true};
+  const previous={...current,period:{start:'2026-09-15',end:'2026-10-14'},observedAt:'2026-10-15T00:00:00Z'};
+  const html=s.ssPerfExternal({externalObservations:{channels:[{...channel,observations:[current]}]}},{...options,metric:'views',previous:{externalObservations:{channels:[{...channel,observations:[previous]}]}}});
+  assert.match(html,/바로 앞 30일\(9\.15~10\.14\)과 같아 변동이 없어요\./);
+  assert.match(html,/최신 관측 오늘<\/span>/);assert.doesNotMatch(html,/최신 관측 오늘 09:00/);
+  const summary=s.ssExtPeriodSummary([current],'views',period.start,period.end);
+  assert.equal(summary.total,120);assert.equal(summary.complete,true);assert.equal(summary.latestObservedDateOnly,true);
+});
+
+test('관측 표는 날짜만 아는 기록과 정확한 시각을 아는 기록을 각각 표시한다',()=>{
+  const rows=[{...observation,observedAt:'2026-11-14T00:00:00Z',observedDateOnly:true},{...observation,kind:'account-lifetime',period:null,observedAt:'2026-11-14T02:02:00Z',observedDateOnly:false,metrics:{followers:7}}];
+  const html=ui().ssPerfExternal({externalObservations:{channels:[{...channel,observations:rows}]}},options);
+  assert.match(html,/<td>오늘<\/td>/);assert.match(html,/<td>오늘 11:02<\/td>/);assert.doesNotMatch(html,/<td>오늘 09:00<\/td>/);
 });

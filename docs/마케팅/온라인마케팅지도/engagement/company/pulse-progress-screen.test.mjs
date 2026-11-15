@@ -91,7 +91,7 @@ test('저희 차례 큰 그림 칸: 차례가 넘어온 뒤 올린 최근 소식
   assert.equal(roomModel(yours).news,null);
   // 그림 하나면 꽉 찬 그림.
   const one=roomView(roomModel(project({approvedAt:T(3),rounds,progress:[{id:N(2),at:T(4),text:'편집 중',assets:[A(2)]}]},{stage:'producing'},assets)),{bar:false});
-  assert.match(one,/<img class="sx-q-fill" src="\/pulse\/api\/studio\/media\/aaaaaaaa-0000-4000-8000-000000000002"/);
+  assert.match(one,/<img class="sx-q-fill" src="http:\/\/localhost\/pulse\/api\/studio\/media\/aaaaaaaa-0000-4000-8000-000000000002"/);
   assert.deepEqual(progressLines(made).map(item=>item.id),[N(1),N(2),N(3)]);
   // 영상이 온 뒤(손님이 의견을 보내 저희가 고치는 중이어도) 방은 늘 손님 차례(review)라 소식 그림을 띄우지 않는다 — 큰 그림 칸은 영상(화면 검수 A1).
   const reviewing=project({approvedAt:T(3),rounds,progress:[{id:N(4),at:T(9),text:'수정본 편집 중',assets:[A(2)]}]},{stage:'producing',versions:[{id:'v1',kind:'preview',label:'1차 영상',createdAt:T(6)}]},assets);
