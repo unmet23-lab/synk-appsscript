@@ -28,10 +28,14 @@ function loginOf({ registry = {}, audit = {}, observed = {}, now = Date.now() })
   const browser = newerObservation && explicit.browser ? explicit.browser : registry.egoProfile ? `Ego · ${registry.egoProfile}`
     : /Aside/i.test(audit.loginBrowser || '') ? audit.loginBrowser : /Profile [12](?:\D|$)/.test(audit.loginBrowser || '') ? '현재 운영 프로필 확인 전' : audit.loginBrowser || '경로 확인 전';
   let state = newerObservation ? explicit.state : registryAt ? 'verified' : auditAt ? 'historical' : 'unknown';
+  // 로그인 경로(어느 신원 · 어느 프로필로 들어가는가)는 가장 새 근거가 정한다. 로그인 점검표(audit)보다 나중에 실제로
+  // 로그인을 확인했으면 경로 확인이다. 72시간이 지나 「지금 확인」이 「이전 기록」이 되어도 경로 확인은 그대로 두고,
+  // 그보다 옛 점검표의 「전환만 · 보완 필요」로 되돌리지 않는다(11-15 — 11-12 로그인 확인이 72시간 뒤 옛 분류로 돌아갔다).
+  const routeConfirmed = state === 'verified' && Boolean(observedAt) && (!auditAt || observedAt > auditAt);
   // 시간 경과는 로그아웃의 증거가 아니다. 오래된 성공/실패는 당시 관측으로만 표시한다.
   if (['verified', 'login-required'].includes(state) && observedAt && now - Date.parse(observedAt) > 72 * 3600000) state = 'historical';
   const methods={'official-gid-email-verification':'GID 이메일 인증','overseas-creator-phone-sms':'해외 창작자 사이트 문자 인증'};
-  return { state, observedAt, observedDateOnly:/^\d{4}-\d{2}-\d{2}$/.test(observedRaw||''), browser, method: methods[registry.loginMethod] || audit.loginMethod || registry.loginMethod || '방식 확인 전',
+  return { state, routeConfirmed, observedAt, observedDateOnly:/^\d{4}-\d{2}-\d{2}$/.test(observedRaw||''), browser, method: methods[registry.loginMethod] || audit.loginMethod || registry.loginMethod || '방식 확인 전',
     scope: newerObservation ? explicit.scope : registryAt ? registry.egoProfileNote || '계정 원장의 로그인 확인 기록' : audit.loginSessionStatus || '현재 대상 계정 재검증 전' };
 }
 
@@ -84,7 +88,8 @@ function decorateAccount(row, ctx) {
   const source = ctx.registry.accounts[row.id] || {};
   const observed = ctx.observations.accounts[row.id] || {};
   const managed=['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus);
-  const login = managed ? loginOf({ registry: source, audit: ctx.audit.accounts[row.id], observed, now: ctx.now }) : {state:'unknown',observedAt:null,browser:'운영 대상 아님',method:'운영 대상 아님',scope:row.accountStatus==='planned'?'개설 미확인 계획':'운영 제외·보류 기록'};
+  // routeConfirmed는 경로 분류에만 쓰고 화면 자료(operations.login)에는 싣지 않는다.
+  const { routeConfirmed = false, ...login } = managed ? loginOf({ registry: source, audit: ctx.audit.accounts[row.id], observed, now: ctx.now }) : {state:'unknown',observedAt:null,browser:'운영 대상 아님',method:'운영 대상 아님',scope:row.accountStatus==='planned'?'개설 미확인 계획':'운영 제외·보류 기록'};
   const publication = publicationOf(ctx.publications.get(row.id) || [], ctx.now);
   // A dated owner screen is a separate observation, never inferred from a URL or a browser session.
   if (observed.publication && iso(observed.publication.observedAt)) publication.screenObservation = observed.publication;
@@ -95,7 +100,7 @@ function decorateAccount(row, ctx) {
     countryCode: source.countryCode || row.countryCode || null,
     loginBrowser: login.browser, loginMethod: login.method, loginEvidenceAt: login.observedAt,
     loginStatusLabel: statuses[login.state], loginSessionStatus: login.scope, loginCaveat: login.scope,
-    loginMappingStatus: !managed ? ctx.audit.accounts[row.id]?.loginMappingStatus || 'not-created' : login.state === 'verified' ? 'confirmed' : ctx.audit.accounts[row.id]?.loginMappingStatus || 'partial',
+    loginMappingStatus: !managed ? ctx.audit.accounts[row.id]?.loginMappingStatus || 'not-created' : routeConfirmed ? 'confirmed' : ctx.audit.accounts[row.id]?.loginMappingStatus || 'partial',
     operations: { login, publication, collection },
     publishStatus: publication.publishedCount || publication.scheduledCount || publication.pendingConfirmationCount
       ? `게시 확인 ${publication.publishedCount} · 예약 기록 ${publication.scheduledCount} · 게시 여부 확인 필요 ${publication.pendingConfirmationCount}` : '게시·예약 기록 미확인',

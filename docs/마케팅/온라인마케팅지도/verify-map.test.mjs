@@ -34,6 +34,20 @@ const mongoliaIds = ['lab-youtube', 'lab-instagram', 'lab-tiktok', 'lab-facebook
 const countryCodes = ['VN', 'CN', 'JP', 'UZ', 'MN', 'TW', 'MM', 'TH', 'ID', 'RU', 'IN', 'KZ', 'NP', 'KG', 'KH', 'US', 'PH', 'LK', 'AU', 'PY', 'NZ', 'MY', 'CA', 'MX', 'BR'];
 const contentIds = ['L1', 'L2', 'L3', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'C1', 'C2'];
 const identityIds = loginAudit.identities.map(row => row.id);
+// 로그인 「확인」 · 「로그인 필요」는 관측 뒤 72시간까지만 지금 상태로 보이고, 그 뒤로는 「이전 확인 기록」이다(tools/lib/계정현황.js).
+// 지도 자료는 만든 시각에 굳으므로, 시간에 따라 바뀌는 기대값은 시험을 돌리는 시각이 아니라 만든 시각(generatedAt)으로 원장에서 다시 센다.
+// 11-13 판은 그날의 숫자(로그인 확인 18 등)를 박아 두어, 11-12 확인이 72시간을 넘긴 11-15에 지도를 다시 만들자 시험 다섯이 깨졌다.
+const observations = read('inputs/account-observations.json');
+const builtAt = Date.parse(dashboard.generatedAt);
+function expectedLoginState(row) {
+  if (!['operating', 'operating-contact', 'confirmed-expansion'].includes(row.accountStatus)) return 'unknown';
+  const explicit = observations.accounts?.[row.id]?.login;
+  const explicitAt = Date.parse(explicit?.observedAt || ''), registryAt = Date.parse(registry.accounts[row.id]?.loginVerifiedAt || '');
+  const [state, at] = Number.isFinite(explicitAt) && (!Number.isFinite(registryAt) || explicitAt >= registryAt) ? [explicit.state, explicitAt]
+    : Number.isFinite(registryAt) ? ['verified', registryAt]
+    : Number.isFinite(Date.parse(loginAudit.accounts[row.id]?.loginEvidenceAt || '')) ? ['historical', null] : ['unknown', null];
+  return ['verified', 'login-required'].includes(state) && builtAt - at > 72 * 3600000 ? 'historical' : state;
+}
 
 test('account search intersects the current rows and searches Korean platform names and login routes', () => {
   const index = createSearchIndex(channels, channelSearchFields);
@@ -102,18 +116,26 @@ test('login filters and connection search use audited values without changing th
   // 화면 거르기 라벨은 운영 상태(operations.login.state)와 한 쌍으로만 나온다 — 옛 확인을 지금 확인으로, 미확인을 실패로 바꾸지 않는다.
   const labelOf={historical:'이전 확인 기록 · 현재 미재검증',verified:'로그인 확인','login-required':'확인한 프로필에서 로그인 필요',unknown:'현재 로그인 미확인'};
   const counts={};for(const row of channels)counts[row.loginStatusLabel]=(counts[row.loginStatusLabel]||0)+1;
-  assert.deepEqual(counts,{'이전 확인 기록 · 현재 미재검증':52,'로그인 확인':18,'확인한 프로필에서 로그인 필요':1,'현재 로그인 미확인':18});
+  const expected={};for(const row of channels){const label=labelOf[expectedLoginState(row)];expected[label]=(expected[label]||0)+1;}
+  assert.deepEqual(counts,expected);
+  // 시각과 상관없는 몫: 확인 기록이 있는 관리 계정 71곳(지금 확인 + 이전 기록 + 로그인 필요)과 미확인 18곳(계획 15 · 제외 · 보류 3).
+  // 11-14 판은 지금 확인 18 · 이전 기록 52 · 로그인 필요 1, 11-15 판은 11-12 확인이 72시간을 넘겨 3 · 67 · 1이다.
+  const n=label=>counts[label]||0;
+  assert.equal(n('로그인 확인')+n('이전 확인 기록 · 현재 미재검증')+n('확인한 프로필에서 로그인 필요'),71);
+  assert.equal(n('현재 로그인 미확인'),18);
   for(const row of channels){
     const login=row.operations?.login;
     assert.ok(login&&labelOf[login.state],row.id);
+    assert.equal(login.state,expectedLoginState(row),`${row.id}: 만든 시각 기준 로그인 상태`);
     assert.equal(row.loginStatusLabel,labelOf[login.state],row.id);
     if(['historical','verified','login-required'].includes(login.state))assert.ok(Number.isFinite(Date.parse(login.observedAt)),`${row.id}: 확인 시각 없는 확인`);
     if(login.state==='unknown')assert.ok(!managedChannels([row]).length,`${row.id}: 관리 계정을 미확인으로 두지 않는다`);
   }
-  // 로그인 필요는 확인한 프로필 범위로만(전체 로그아웃으로 넓히지 않음).
+  // 로그인 필요는 확인한 프로필 범위로만(전체 로그아웃으로 넓히지 않음). 72시간이 지나 이전 기록이 되어도 범위 글은 그대로다.
   const required=channels.filter(row=>row.operations.login.state==='login-required');
-  assert.deepEqual(required.map(row=>row.id),['yuhobuilds-x']);
-  assert.match(required[0].operations.login.scope,/확인한 두 프로필/);
+  const x=channels.find(row=>row.id==='yuhobuilds-x');
+  assert.deepEqual(required.map(row=>row.id),expectedLoginState(x)==='login-required'?['yuhobuilds-x']:[]);
+  assert.match(x.operations.login.scope,/확인한 두 프로필/);
   const identities=rows('identities');
   const index=createSearchIndex(identities,identitySearchFields);
   assert.deepEqual(searchRows(identities,index,'Behance').map(row=>row.id),['adobe-owner']);
@@ -348,8 +370,10 @@ test('confirmed account details follow the latest ledgers without promoting an i
   const vk=channels.find(row=>row.id==='lab-ru-vk');
   assert.equal(vk.accountStatus,'confirmed-expansion');
   assert.equal(vk.publicUrl,'https://vk.ru/synklab_ru');
+  // 11-12 Ego Profile 5 로그인 확인은 72시간이 지나도 경로 확인으로 남는다(지금 확인 여부만 만든 시각을 따른다).
   assert.equal(vk.loginMappingStatus,'confirmed');
-  assert.equal(vk.operations.login.state,'verified');
+  assert.match(vk.loginEvidenceAt,/^2026-11-12/);
+  assert.equal(vk.operations.login.state,expectedLoginState(vk));
   assert.equal(vk.loginBrowser,'Ego · Profile 5');
 });
 
@@ -445,7 +469,7 @@ test('login route confidence reconciles without claiming that every session is l
   assert.equal(active.filter(row=>['confirmed','switch-only','partial','missing'].includes(row.loginMappingStatus)).length,active.length);
   assert.deepEqual(active.filter(row=>row.loginMappingStatus==='missing').map(row=>row.id),[]);
   assert.ok(active.some(row=>row.operations.login.state==='historical'),'old evidence does not claim a live session');
-  for (const id of ['lab-th-tiktok','lab-kz-tiktok','lab-mx-tiktok']) { const row=channels.find(row=>row.id===id); assert.equal(row.operations.login.state,'verified'); assert.match(row.loginEvidenceAt,/2026-11-12/); assert.doesNotMatch(row.loginSessionStatus,/로그아웃/); }
+  for (const id of ['lab-th-tiktok','lab-kz-tiktok','lab-mx-tiktok']) { const row=channels.find(row=>row.id===id); assert.equal(row.operations.login.state,expectedLoginState(row),id); assert.notEqual(row.operations.login.state,'unknown',id); assert.equal(row.loginMappingStatus,'confirmed',id); assert.match(row.loginEvidenceAt,/2026-11-12/); assert.doesNotMatch(row.loginSessionStatus,/로그아웃/); }
 });
 
 test('parent administrators, account switching, and unknown identifiers remain distinct', () => {
