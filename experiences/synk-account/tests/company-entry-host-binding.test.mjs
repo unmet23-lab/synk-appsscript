@@ -2594,9 +2594,79 @@ for (const changedRaw of ['replacement', 'malformed', 'removed']) test('canonica
   else f.values.delete(f.key);
   assert.equal(f.realAccount.isAccountBound(account), false, 'the original manager fence must revoke the exact raw session binding');
   host.syncAccountState();
+  assert.equal(host.getState().phase, 'auth');
   finish({ ok: true, result: { status: 'resolved', destinations: ['/'], unavailable: [] } });
   await settleEntryHost();
   assert.notEqual(host.getState().accountKey, account);
-  assert.notEqual(host.getState().phase, 'entered');
+  assert.equal(host.getState().phase, 'auth');
   assert.equal(requests.length, 1, 'a stale result must not start another bound request');
 });
+
+for (const change of ['current', 'replacement', 'malformed', 'removed', 'same-account refresh']) {
+  test('canonical late company result without a host sync: ' + change, async t => {
+    const f = await canonicalAccountFixture(t);
+    const dom = createFakeDomEnvironment();
+    const opened = [];
+    const writes = [];
+    let lookups = 0;
+    let finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    const accountManager = {
+      identity: () => f.realAccount.identity(),
+      isAccountBound: id => f.realAccount.isAccountBound(id),
+      async completePurposeOnboarding(outcome) {
+        writes.push(outcome);
+        return { ok: true };
+      },
+    };
+    const host = mountWebPortalHost({
+      root: dom.root,
+      getReducedMotion: () => true,
+      getSessionStorage: () => f.storage,
+      getStartupState: accountManager.identity,
+      getAccount: () => accountManager,
+      companyBoundaries: {
+        resolveAssignedDestination() { lookups++; return pending; },
+        openAssignedDestination(destination) {
+          opened.push(destination);
+          return { ok: true, navigationRequested: true };
+        },
+        cancelCompanyEntry() {},
+      },
+    });
+    t.after(() => host.dispose());
+    await settleEntryHost();
+    assert.equal(host.getState().phase, 'entering');
+    assert.equal(lookups, 1);
+
+    if (change === 'replacement') {
+      f.values.set(f.key, JSON.stringify({ access_token: f.token(secondAccount), user: { id: secondAccount } }));
+    } else if (change === 'malformed') {
+      f.values.set(f.key, '{');
+    } else if (change === 'removed') {
+      f.values.delete(f.key);
+    } else if (change === 'same-account refresh') {
+      const generationBefore = accountManager.identity().accountGeneration;
+      const session = JSON.parse(f.values.get(f.key));
+      f.values.set(f.key, JSON.stringify({ ...session, expires_at: 4102444800 }));
+      await f.realAccount.refresh();
+      assert.equal(accountManager.isAccountBound(account), true);
+      assert.ok(accountManager.identity().accountGeneration > generationBefore);
+    }
+
+    // Resolve the original request before the host receives a session-change notification.
+    finish({ ok: true, result: { status: 'resolved', destinations: ['/'], unavailable: [] } });
+    await settleEntryHost();
+    const state = host.getState();
+    if (change === 'current') {
+      assert.equal(state.phase, 'entered');
+      assert.deepEqual(opened, ['/']);
+    } else {
+      assert.equal(state.phase, 'enter-error');
+      assert.equal(state.errorMessage, '계정 연결이 바뀌었어요. 다시 확인해 주세요.');
+      assert.deepEqual(opened, []);
+    }
+    assert.deepEqual(writes, []);
+    assert.equal(lookups, 1);
+  });
+}
