@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 143,
+  "expectedCount": 144,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1148,6 +1148,14 @@
       "name": "예약 입구: node를 띄우지 못한 OSError도 이번 회차 시각과 원인을 남기고 0이 아닌 코드로 끝내며, 보통 끝에도 회차 시각을 적는다",
       "group": "계정 통계 예약의 작업 소유자 확인과 실행 기록",
       "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S144",
+      "file": "tests/보호소스보관.test.cjs",
+      "name": "a worktree whose registration was pruned but whose folder stays skips its gone rows; a row whose file is still there stops (11-15)",
+      "group": "로컬 암호화 모듈",
+      "route": "local",
       "profile": "default"
     }
   ]

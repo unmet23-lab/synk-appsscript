@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 143);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 47, linux: 12, local: 84 });
+  assert.equal(check(root), 144);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 47, linux: 12, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -49,6 +49,28 @@ test('every root test that skips off Windows is registered — on the Windows PC
   assert.ok(seen >= 21, `the scan found only ${seen} Windows-only tests — the pattern no longer matches how they are written`);
   assert.deepEqual(unreadable, [], 'write the test name as one plain string literal on the test( line so it can be matched against cases.json');
   assert.deepEqual(missing, [], 'register these in tools/conditional-qa/cases.json with a route that really runs them (README table), or make them run on Linux too');
+});
+test('a root test that shares the skip condition of a registered case in the same file is registered too — on this PC the condition holds, so only this static scan sees it before the push', () => {
+  // 11-03 S114 (large-backup-receipt) and 11-15 `91f6c271f2` → S144 (보호소스보관) each added one more `{ skip: !crypt }` test beside registered ones;
+  // the PC with the crypto module ran it, Linux wide-tests skipped it and the 루트 bundle went red with 0 failures.
+  const declaration = /^\s*(?:test|it)\((['"`])((?:\\.|(?!\1).)*)\1\s*,\s*\{\s*skip\s*:\s*([^,}]+?)\s*[,}]/;
+  const registered = new Set(manifest.cases.map(row => `${row.file}\n${row.name}`));
+  const missing = [];
+  let shared = 0;
+  for (const file of fs.readdirSync(path.join(root, 'tests')).filter(name => /\.test\.(?:js|cjs|mjs)$/.test(name))) {
+    const rows = [];
+    fs.readFileSync(path.join(root, 'tests', file), 'utf8').split(/\r?\n/).forEach((line, index) => {
+      const match = declaration.exec(line);
+      if (match) rows.push({ line: index + 1, name: match[2].replace(/\\(.)/g, '$1'), skip: match[3].replace(/\s+/g, '') });
+    });
+    const conditions = new Set(rows.filter(row => registered.has(`tests/${file}\n${row.name}`)).map(row => row.skip));
+    for (const row of rows.filter(item => conditions.has(item.skip))) {
+      shared += 1;
+      if (!registered.has(`tests/${file}\n${row.name}`)) missing.push(`tests/${file}:${row.line} ${row.name} (skip: ${row.skip})`);
+    }
+  }
+  assert.ok(shared >= 40, `the scan matched only ${shared} tests beside a registered skip condition — the pattern no longer matches how they are written`);
+  assert.deepEqual(missing, [], 'register these in tools/conditional-qa/cases.json on the same route as their registered neighbours (README table), or make them run on Linux too');
 });
 test('the text checker conditional cases keep their localization inputs and have real local routes', () => {
   const rows = ['S120', 'S121', 'S122'].map(id => manifest.cases.find(row => row.id === id));
