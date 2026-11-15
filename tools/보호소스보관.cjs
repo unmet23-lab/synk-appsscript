@@ -213,9 +213,12 @@ async function reconcile({ vault, root, apply, onProgress = () => {}, roots: sup
     // 목록 뒤에 원본이나 그 범위 폴더가 통째로 지워진 줄. 읽을 것이 없으므로 그 줄만 source-disappeared로 남긴다.
     // 범위 폴더는 작업트리이거나, Documents 바로 아래에 만든 임시 작업트리처럼 자기 이름의 저장소 범위로 잡힌 폴더다(10-19 talk-wt-path).
     // 범위 밖 경로·남아 있는 폴더의 범위 불일치는 그대로 전체를 멈추고, 어느 줄인지 남긴다(10-19).
+    // 범위 폴더는 남았는데 작업트리 등록이 사라지고(git prunable · `git worktree prune`) 원본 파일도 없는 줄도 같다 — 11-15 얼린 보관 묶음이
+    // 옛 작업트리를 옮기며 비밀 모양 파일만 남겼고, 그 등록을 지운 뒤 앞 목록의 줄이 범위 불일치로 회차 전체를 멈췄다. 원본이 남아 있으면 그대로 멈춘다.
     const vanished = (row, error) => error.code === 'ENOENT' ||
       (error.message === 'PROTECTED_SOURCE_SCOPE_MISMATCH' && typeof row.sourceRoot === 'string' &&
-        path.isAbsolute(row.sourceRoot) && !fs.existsSync(row.sourceRoot));
+        path.isAbsolute(row.sourceRoot) && (!fs.existsSync(row.sourceRoot) ||
+          (typeof row.sourcePath === 'string' && path.isAbsolute(row.sourcePath) && !fs.existsSync(row.sourcePath))));
     for (const row of inventory.files) {
       try { sourceLocation(row, roots); } catch (error) {
         if (vanished(row, error)) continue;

@@ -122,6 +122,22 @@ test('a removed worktree skips only its rows while an existing unauthorized root
   assert.equal(strict.status, 'attention'); assert.deepEqual(strict.issues.map(issue => issue.code), ['PROTECTED_SOURCE_SCOPE_MISMATCH']);
 });
 
+test('a worktree whose registration was pruned but whose folder stays skips its gone rows; a row whose file is still there stops (11-15)', { skip: !crypt }, async t => {
+  // 11-15 얼린 보관 묶음이 SYNK-talk 작업트리 폴더에 비밀 모양 파일만 남겼고, 그 등록을 지운 뒤 앞 목록의 줄이 범위 불일치로 회차 전체를 멈췄다.
+  const f = await fixture(t), left = path.join(f.root, 'emptied-worktree');
+  fs.mkdirSync(left); fs.writeFileSync(path.join(left, '.env.example'), 'EXAMPLE=1\n');
+  const row = { ...f.row, sourceRoot: left, sourcePath: path.join(left, 'configuration.js'), worktree: true };
+  const file = path.join(f.vault, '상태/OneDrive/protected-sources.json'); fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({ status: 'success', checkedAt: new Date().toISOString(), files: [f.row, row] }));
+  const options = { vault: f.vault, root: f.root, apply: true, roots: f.options.roots, cryptoTool: f.options.cryptoTool };
+  const skipped = await reconcile(options);
+  assert.deepEqual(skipped.files.map(item => item.status), ['awaiting-drive-verification', 'source-disappeared']);
+  assert.equal(skipped.issues.some(issue => issue.code === 'PROTECTED_SOURCE_SCOPE_MISMATCH'), false);
+  fs.copyFileSync(f.sourcePath, row.sourcePath);
+  const strict = await reconcile(options);
+  assert.equal(strict.status, 'attention'); assert.deepEqual(strict.issues.map(issue => issue.code), ['PROTECTED_SOURCE_SCOPE_MISMATCH']);
+});
+
 test('a temporary repository folder removed after the inventory skips only its rows; a remaining one stops and names the row (10-19)', { skip: !crypt }, async t => {
   // Documents 바로 아래 임시 작업트리(talk-wt-path-20261019)는 작업트리 표시 없이 자기 이름의 저장소 범위로 목록에 올랐다.
   const f = await fixture(t), gone = path.join(f.root, 'talk-wt-path');

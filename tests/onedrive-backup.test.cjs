@@ -981,6 +981,29 @@ test('the worktree listing runs in batches with a heartbeat after each, small wh
   assert.equal(backup.scanWorktrees([], { runScan: () => { throw new Error('not called'); } }), null);
 });
 
+test('a worktree git marks prunable (folder left, .git gone) is skipped and counted, not run through git (11-15)', t => {
+  const f = fixture(t), vault = path.join(f.temp, 'vault'), trees = path.join(f.temp, 'trees');
+  const kept = path.join(trees, 'kept-tree'), emptied = path.join(trees, 'emptied-tree');
+  const { execFileSync } = require('node:child_process');
+  const git = (cwd, ...args) => execFileSync('git', ['-c', 'user.name=Backup Test', '-c', 'user.email=backup@example.invalid', ...args],
+    { cwd, windowsHide: true, stdio: 'pipe' }).toString().trim();
+  git(f.root, 'init', '-q', '-b', 'main'); f.put(f.root, 'plan.md', '# Plan'); git(f.root, 'add', '.'); git(f.root, 'commit', '-qm', 'base');
+  git(f.root, 'worktree', 'add', '-q', '--detach', kept); git(f.root, 'worktree', 'add', '-q', '--detach', emptied);
+  f.put(kept, 'kept.md', '# Kept');
+  // 11-15 얼린 보관 묶음이 옛 작업 폴더를 옮기며 .git까지 치우고 비밀 모양 파일만 남겼다 — git은 그 등록을 prunable로 낸다.
+  fs.rmSync(path.join(emptied, '.git')); fs.rmSync(path.join(emptied, 'plan.md')); f.put(emptied, '.env.example', 'EXAMPLE=1');
+  const found = backup.worktrees(f.root);
+  assert.deepEqual([...new Set(found.map(tree => path.basename(tree.root)))], ['kept-tree']);
+  assert.deepEqual([...new Set(found.prunable.map(root => path.basename(root)))], ['emptied-tree']);
+  // 그대로 두었던 판은 그 폴더에서 git status를 띄워 「not a git repository」로 실행 전체를 멈췄다.
+  const report = backup.preserveWorktreeDocuments(f.root, vault, { trees: found });
+  assert.ok(report.prunable >= 1, JSON.stringify(report));
+  assert.equal(report.vanished, 0);
+  const folder = path.join(vault, '작업문서_미통합_자동'), index = backup.readJson(path.join(folder, 'index.json'));
+  const entries = index.manifests.flatMap(item => backup.readJson(path.join(folder, item.file)).entries);
+  assert.ok(entries.some(row => path.basename(row.worktree) === 'kept-tree' && row.relativePath === 'kept.md'));
+  assert.ok(!entries.some(row => path.basename(row.worktree) === 'emptied-tree'));
+});
 test('the ops copy (tools/운영사본.js) is not walked whole — only its unpushed record files are preserved', t => {
   const f = fixture(t), ops = path.join(f.temp, 'ops'), vault = path.join(f.temp, 'vault');
   const { execFileSync } = require('node:child_process');

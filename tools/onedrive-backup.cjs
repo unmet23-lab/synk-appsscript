@@ -72,7 +72,7 @@ function opsCopyRecords(directory) {
 }
 
 function worktrees(root) {
-  const found = [];
+  const found = [], prunable = [];
   for (const scope of policy.systemScopes(root).filter(scope => scope.mode === 'repository')) {
     if (!fs.existsSync(scope.root)) continue;
     const data = execFileSync('git', ['--no-optional-locks', 'worktree', 'list', '--porcelain', '-z'],
@@ -81,9 +81,16 @@ function worktrees(root) {
     // 기록(기록 자리의 수정·새 파일)만 지킨다 — push가 실패한 동안 그 기록은 운영 사본에만 있다(10-22, 아르곤 P2)
     let ops = null;
     try { ops = path.resolve(fs.readFileSync(path.join(scope.root, '.git', 'synk-ops-path'), 'utf8').trim()).toLowerCase(); } catch {}
-    for (const field of data.split('\0').filter(value => value.startsWith('worktree '))) {
+    // -z 목록은 작업트리마다 칸을 NUL로 끝내고 작업트리 사이에 빈 칸을 하나 더 둔다.
+    for (const fields of data.split('\0\0').map(record => record.split('\0').filter(Boolean))) {
+      const field = fields.find(value => value.startsWith('worktree '));
+      if (!field) continue;
       const directory = path.resolve(field.slice(9));
       if (directory.toLowerCase() === path.resolve(scope.root).toLowerCase() || !fs.existsSync(directory)) continue;
+      // git이 prunable로 표시한 작업트리는 폴더만 남고 .git이 없다 — 작업트리가 아니라 보존할 git 상태도 없다. 11-15 얼린 보관 묶음
+      // (창고.py 옛작업폴더)이 SYNK-talk 작업트리 셋을 Drive로 옮기며 비밀 모양 파일(.env.example)만 남기자, 그 폴더에서 git status가
+      // 「not a git repository」로 실패해 OneDrive 실행 전체가 멈췄다. 건너뛰고 수만 영수증에 남긴다(등록 정리는 `git worktree prune`).
+      if (fields.some(value => value === 'prunable' || value.startsWith('prunable '))) { prunable.push(directory); continue; }
       if (directory.toLowerCase() === ops) {
         const changed = opsCopyRecords(directory);
         if (changed.length) found.push({ repository: scope.name, primary: scope.root, root: directory, merged: true, changedSources: changed, opsCopy: true });
@@ -92,6 +99,7 @@ function worktrees(root) {
       found.push({ repository: scope.name, primary: scope.root, root: directory });
     }
   }
+  Object.defineProperty(found, 'prunable', { value: prunable });
   return found;
 }
 // 본진과 다를 수 있는 작업트리 소스. 「본진 HEAD↔작업트리 HEAD」 트리 비교(파일을 걷지 않는다)와 git status 한 번
@@ -479,6 +487,7 @@ function preserveWorktreeDocuments(root, vault, { dryRun = false, trees = worktr
     }
   }
   const report = { schemaVersion: 1, checkedAt: new Date().toISOString(), worktrees: live.length, vanished: vanished.length,
+    ...(trees.prunable?.length ? { prunable: trees.prunable.length } : {}),
     documents: entries.filter(row => /\.md$/i.test(row.relativePath)).length, sourceFiles,
     sameAsPrimary, uniquePreserved: unique.size, preservedBytes, written, rejected: rejected.length, readFiles, gitTrees, reusedTrees, statusRuns, diffRuns,
     mergedOnOrigin: merged.size, timings };
