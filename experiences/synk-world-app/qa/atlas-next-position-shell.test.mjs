@@ -98,8 +98,35 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
   let active = null;
   const focused = [];
   const buttonsMade = new Map();
+  // 판 글의 능력 줄(details[data-skill])과 그 summary를 짓는다(focusing일 때만). 같은 판 글이면 같은 줄을 돌려준다.
+  const rowsIn = () => {
+    const key = `${shown.length}|details`;
+    if (!buttonsMade.has(key)) {
+      const html = shown.at(-1) ?? '';
+      const list = [...html.matchAll(new RegExp('<details[^>]*data-skill="([^"]*)"', 'g'))].map(match => {
+        const skill = match[1];
+        const row = {
+          inPanel: true,
+          tagName: 'DETAILS',
+          getAttribute: attr => (attr === 'data-skill' ? skill : null),
+          querySelector: selector => (selector === 'summary' ? summary : null),
+        };
+        const summary = {
+          inPanel: true,
+          tagName: 'SUMMARY',
+          hasAttribute: () => false,
+          closest: selector => (selector === 'details[data-skill]' ? row : null),
+          focus: () => focused.push(`summary=${skill}`),
+        };
+        return row;
+      });
+      buttonsMade.set(key, list);
+    }
+    return buttonsMade.get(key);
+  };
   // 판 글에서 그 속성을 가진 단추를 짓는다(focusing일 때만). 같은 판 글이면 같은 단추를 돌려준다(초점이 몇 번째 단추였는지 견줄 수 있게).
   const buttonsIn = selector => {
+    if (selector === 'details[data-skill]') return rowsIn();
     const found = /^\[(data-[a-z-]+)\]$/.exec(selector);
     if (!found) return [];
     const name = found[1];
@@ -272,6 +299,11 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
       const button = buttonsIn(`[${name}]`).find(row => row.getAttribute(name) === value);
       assert.ok(button, `판에 ${name}="${value}" 단추가 있다`);
       for (const fn of [...button.clicks]) fn({ type: 'click' });
+    },
+    // 능력 줄을 펴는 summary에 둔다.
+    focusSummary(skill) {
+      active = rowsIn().find(row => row.getAttribute('data-skill') === skill)?.querySelector('summary') ?? null;
+      assert.ok(active, `판에 ${skill} 능력 줄이 있다`);
     },
     focusGone(name, value) {
       active = { inPanel: true, hasAttribute: attr => attr === name, getAttribute: attr => (attr === name ? value : null) };
@@ -546,7 +578,7 @@ test('엔진 판 — pulled로 다시 그릴 때 판 안에 있던 초점을 같
   }
 });
 
-test('엔진 판 — 다시 그릴 때의 초점: 같은 단추가 여럿이면 몇 번째였는지로 찾고, 다시 그린 판에 그 단추가 없으면 판 머리에 두며, 판 밖의 초점은 건드리지 않는다(설계 주인 11-16 조건 3)', async () => {
+test('엔진 판 — 다시 그릴 때의 초점: 같은 단추가 여럿이면 몇 번째였는지로 찾고, 능력 줄의 summary는 그 줄로, 다시 그린 판에 그 단추가 없으면 판 머리에 두며, 판 밖의 초점은 건드리지 않는다(설계 주인 11-16 조건 3)', async () => {
   // 진짜 판은 먼저 볼 항목(attention)과 영역 줄에 같은 능력의 연습 단추를 함께 낼 수 있다 — 판 글에서 그 단추를 하나 더 둔다.
   const twice = html => {
     const at = html.indexOf('data-position-practice="ko.reading.detail"');
@@ -568,6 +600,7 @@ test('엔진 판 — 다시 그릴 때의 초점: 같은 단추가 여럿이면 
     };
     assert.deepEqual(redraw(() => app.focusOn('data-position-practice', 'ko.reading.detail', 1)), ['data-position-practice=ko.reading.detail#1'], '같은 단추가 둘이면 두 번째로 돌아온다');
     assert.deepEqual(redraw(() => app.focusRoot()), ['root'], '판 머리에 있던 초점은 판 머리로');
+    assert.deepEqual(redraw(() => app.focusSummary('ko.reading.detail')), ['summary=ko.reading.detail'], '능력 줄의 summary에 있던 초점은 그 줄의 summary로');
     assert.deepEqual(redraw(() => app.focusGone('data-position-recheck', 'ko.reading.gone')), ['root'], '다시 그린 판에 없는 단추면 판 머리');
     assert.deepEqual(redraw(() => app.focusOutside()), [], '판 밖의 초점은 건드리지 않는다');
     assert.deepEqual(redraw(() => app.focusOn('data-position-exam', 'topik2'), 'topik2'), ['data-position-exam=topik2#0'], '누른 시험 단추에 초점이 남는다');

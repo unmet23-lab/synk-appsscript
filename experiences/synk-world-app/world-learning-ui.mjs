@@ -784,14 +784,15 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   return {values,exam,board,plan,cards,fresh,judged,scope};
  }
  // 다시 그릴 때 판 안에 있던 초점을 같은 단추로 되돌린다(설계 주인 11-16 조건 3 — 다시 그리기는 스크롤과 초점을 지킨다. 생활 판 paint의 keepFocus와 같은 뜻).
- // 판 밖에 있던 초점은 건드리지 않는다. 같은 단추가 여럿이면 몇 번째였는지로 찾고, 그 단추가 없어졌으면 판 머리에 둔다.
+ // 판 밖에 있던 초점은 건드리지 않는다. 같은 단추가 여럿이면 몇 번째였는지로 찾고, 그 단추가 없어졌으면 판 머리에 둔다. 능력 줄을 펴는 summary에
+ // 있던 초점은 그 능력 줄(details[data-skill])의 summary로 되돌린다.
  const NEXT_FOCUS=['data-position-diagnostic','data-position-exam','data-position-practice','data-position-recheck','data-position-writing'];
  function nextFocusOf(root){
   try{
    const active=target.document?.activeElement;
    if(!root||!active||typeof root.contains!=='function'||!root.contains(active))return null;
    const name=NEXT_FOCUS.find(key=>active.hasAttribute?.(key))??null;
-   if(!name)return{name:null};
+   if(!name){const row=String(active.tagName||'').toUpperCase()==='SUMMARY'?active.closest?.('details[data-skill]'):null;return row?{name:null,skill:row.getAttribute('data-skill')}:{name:null};}
    const value=active.getAttribute(name);
    const same=[...(root.querySelectorAll?.(`[${name}]`)||[])].filter(el=>el.getAttribute?.(name)===value);
    return{name,value,index:Math.max(0,same.indexOf(active))};
@@ -801,7 +802,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(!root||!key)return;
   try{
    const same=key.name?[...(root.querySelectorAll?.(`[${key.name}]`)||[])].filter(el=>el.getAttribute?.(key.name)===key.value):[];
-   (same[key.index]??same[0]??root).focus?.({preventScroll:true});
+   const row=key.skill!=null?[...(root.querySelectorAll?.('details[data-skill]')||[])].find(el=>el.getAttribute?.('data-skill')===key.skill)?.querySelector?.('summary')??null:null;
+   (same[key.index]??same[0]??row??root).focus?.({preventScroll:true});
   }catch{/* 초점은 덤이다 */}
  }
  // 새 길 판 그리기(21-2): 지금 판으로 내려왔으면 지금 판 판(그 문서 전체가 지금 판이다), 확인 중이면 확인 중 판, 엔진이면 엔진 판.

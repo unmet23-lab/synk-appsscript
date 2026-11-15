@@ -26596,7 +26596,10 @@ function createWorldEducation({
       const active = target.document?.activeElement;
       if (!root || !active || typeof root.contains !== "function" || !root.contains(active)) return null;
       const name = NEXT_FOCUS.find((key) => active.hasAttribute?.(key)) ?? null;
-      if (!name) return { name: null };
+      if (!name) {
+        const row = String(active.tagName || "").toUpperCase() === "SUMMARY" ? active.closest?.("details[data-skill]") : null;
+        return row ? { name: null, skill: row.getAttribute("data-skill") } : { name: null };
+      }
       const value = active.getAttribute(name);
       const same = [...root.querySelectorAll?.(`[${name}]`) || []].filter((el) => el.getAttribute?.(name) === value);
       return { name, value, index: Math.max(0, same.indexOf(active)) };
@@ -26608,7 +26611,8 @@ function createWorldEducation({
     if (!root || !key) return;
     try {
       const same = key.name ? [...root.querySelectorAll?.(`[${key.name}]`) || []].filter((el) => el.getAttribute?.(key.name) === key.value) : [];
-      (same[key.index] ?? same[0] ?? root).focus?.({ preventScroll: true });
+      const row = key.skill != null ? [...root.querySelectorAll?.("details[data-skill]") || []].find((el) => el.getAttribute?.("data-skill") === key.skill)?.querySelector?.("summary") ?? null : null;
+      (same[key.index] ?? same[0] ?? row ?? root).focus?.({ preventScroll: true });
     } catch {
     }
   }
