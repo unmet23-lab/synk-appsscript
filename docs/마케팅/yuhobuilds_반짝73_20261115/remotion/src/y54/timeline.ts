@@ -1,6 +1,6 @@
 // 시간표(초) — 목소리 낱말 시각(음성/범수/V*.json)과 측정(data.ts)에 맞춤.
 // 판: A twinkle.mp4 · C twinkle2.mp4(같은 문장 순서만 바꾼 「twinkle」 판) · B steady.mp4 · D steady2.mp4(같은 문장 순서만 바꾼 고친 판). 넷 다 같은 첫 장면, 5.0초.
-export const LEN = 26.8;
+export const LEN = 26.2;
 
 export const T = {
   hook2: 1.6, // 「twinkle(반짝인다)」 — V1의 '반짝인다는'(0.25 + 1.37)
@@ -16,7 +16,8 @@ export const T = {
   typeEnd: 15.85, // 영어 줄이 다 쳐지고 우리말 뜻 — V5의 '등은'(14.5 + 1.37)
   after: 18.3, // 고친 판(후) — 끝에서 처음 보인다
   after2: 20.2, // 「꺼진 횟수 0번」 — V6의 '한 번도'(18.4 + 1.81)
-  card: 21.8, // 저장할 한 장
+  card: 21.8, // 끝 — 두 판 나란히(왼쪽 twinkle 판이 먼저)
+  cardR: 22.45, // 오른쪽 고친 판이 들어옴 — 원본 끝 자리 37.3초를 길이 비율로 맞춘 22.47초(올리기 전 검사 「뼈대 자리」 ±0.42초)
   card2: 22.95, // 「「처음부터 끝까지 켜진 채」」 — V7의 '처음부터'(21.9 + 1.07)
 };
 
@@ -34,7 +35,7 @@ export const VO: { id: string; at: number }[] = [
 
 export const CLIP = {
   A: 'clips/twinkle.mp4',
-  C: 'clips/twinkle2.mp4',
+  C: 'clips/twinkle2.mp4', // 셋째 판 — 같은 twinkle 문장인데 꺼짐 0(측정/반짝2), 화면에는 쓰지 않는다
   B: 'clips/steady.mp4',
   D: 'clips/steady2.mp4',
   lampCx: 400, // 등 줄 가운데(영상 좌표 720×1280) — 핵심 장면이 이쪽으로 다가간다

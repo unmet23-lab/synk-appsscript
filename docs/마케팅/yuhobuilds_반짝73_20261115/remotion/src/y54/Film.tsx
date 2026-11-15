@@ -18,6 +18,7 @@ const WHITE = '#FFFFFF';
 const BUTTER = '#F5C445';
 const SHADE = 'rgba(4,6,10,';
 const SCALE = 1080 / 720; // 720×1280 영상 → 1080×1920
+const BGM = 0.36; // 배경음 크기 — r5 0.26은 전체보다 13.8dB 작아 말 없는 자리가 빈 듯 들렸다(올리기 전 검사 11-15)
 
 type Clip = typeof TW;
 
@@ -56,11 +57,13 @@ const Rings: React.FC<{ f: number; c: Clip; segStart: number; from: number; f0: 
         const y = 960 + ((l.y - 640) * SCALE) * z + (640 - cy) * SCALE * (z - 1);
         const r = Math.max(22, l.r * SCALE * z * 1.15);
         if (x - r < 0 || y + r > 1920 || x + r > 1080) return null; // 화면 밖 등은 고리를 그리지 않는다
-        // 최근 4프레임(클립) 안에 바뀌었으면 번쩍
+        // 최근 4프레임(클립) 안에 바뀌었으면 번쩍. 켜진 채 그대로인 등에는 고리를 두지 않는다(맹검 11-15: 켜진 등에 남은 고리가 검수 도구 화면처럼 보임).
         let hit = 0;
         if (flash) for (let d = 0; d < 4; d++) { const j = k - d; if (j > 0 && c.state[i][j] !== c.state[i][j - 1]) { hit = 1 - d / 4; break; } }
+        const dark = c.state[i][k] === '0';
+        if (hit <= 0 && !dark) return null;
         return (
-          <div key={i} style={{ position: 'absolute', left: x - r, top: y - r, width: r * 2, height: r * 2, borderRadius: '50%', border: `${hit > 0 ? 5 : 2.5}px solid ${hit > 0 ? BUTTER : 'rgba(255,255,255,0.55)'}`, opacity: appear, boxShadow: hit > 0 ? `0 0 ${24 * hit}px ${6 * hit}px rgba(245,196,69,0.55)` : undefined }} />
+          <div key={i} style={{ position: 'absolute', left: x - r, top: y - r, width: r * 2, height: r * 2, borderRadius: '50%', border: hit > 0 ? `5px solid ${BUTTER}` : '2.5px dashed rgba(255,255,255,0.6)', opacity: appear, boxShadow: hit > 0 ? `0 0 ${24 * hit}px ${6 * hit}px rgba(245,196,69,0.55)` : undefined }} />
         );
       })}
     </AbsoluteFill>
@@ -142,12 +145,12 @@ const Prompt: React.FC<{ f: number; f0: number; f1: number; old: boolean; strike
         </div>
       ) : (
         <div>
-          <div style={{ fontWeight: 600, fontSize: 48, lineHeight: 1.24, letterSpacing: -1, minHeight: 300 }}>
+          <div style={{ fontWeight: 600, fontSize: 44, lineHeight: 1.24, letterSpacing: -1, minHeight: 280 }}>
             {shown}
             {tp < 1 ? <span style={{ opacity: Math.floor(f / 8) % 2 ? 1 : 0.2 }}>|</span> : null}
           </div>
           <div style={{ fontWeight: 700, fontSize: 36, letterSpacing: -0.6, color: 'rgba(255,255,255,0.62)', marginTop: 18, opacity: prog(f, F(typeEnd ?? f0), 8) }}>우리말 뜻</div>
-          <div style={{ fontWeight: 800, fontSize: 70, lineHeight: 1.2, letterSpacing: -1.6, marginTop: 4, opacity: prog(f, F(typeEnd ?? f0), 8) }}>
+          <div style={{ fontWeight: 800, fontSize: 60, lineHeight: 1.2, letterSpacing: -1.4, marginTop: 4, opacity: prog(f, F(typeEnd ?? f0), 8) }}>
             등은 <U p={prog(f, F(typeEnd ?? f0) + 4, 10)}>처음부터 끝까지 켜진 채 그대로.</U>
           </div>
         </div>
@@ -156,10 +159,15 @@ const Prompt: React.FC<{ f: number; f0: number; f1: number; old: boolean; strike
   );
 };
 
+/** 작은 글 받침 — 뒤 불빛과 겹쳐도 읽히게 옅은 검은 판(맹검 11-15: 작은 줄이 난간 불빛과 겹침). */
+const PILL: React.CSSProperties = { background: 'rgba(6,8,12,0.52)', borderRadius: 14, padding: '8px 16px', backdropFilter: 'blur(6px)' };
+
 /** 작은 출처 줄 — 이 영상이 무엇인지(새로 구워 잰 것). */
 const Source: React.FC<{ f: number; f0: number; f1: number; text: string; top?: number }> = ({ f, f0, f1, text, top = 1380 }) => {
   if (f < F(f0) || f >= F(f1)) return null;
-  return <div style={{ position: 'absolute', left: 74, top, width: 846, fontFamily: KO, fontWeight: 700, fontSize: 40, textShadow: '0 1px 10px rgba(0,0,0,0.6)', letterSpacing: -0.8, color: 'rgba(255,255,255,0.88)', opacity: prog(f, F(f0), 8) * (1 - prog(f, F(f1) - 3, 3)) }}>{text}</div>;
+  return (
+    <div style={{ position: 'absolute', left: 58, top, maxWidth: 862, fontFamily: KO, fontWeight: 700, fontSize: 40, letterSpacing: -0.8, color: 'rgba(255,255,255,0.9)', opacity: prog(f, F(f0), 8) * (1 - prog(f, F(f1) - 3, 3)), ...PILL }}>{text}</div>
+  );
 };
 
 /** 켜진 등 수 — 5초 동안 프레임마다(측정값). 0~10 계단선, 왼쪽에서 오른쪽으로 그려진다. */
@@ -196,33 +204,42 @@ const LitChart: React.FC<{ f: number; c: Clip; f0: number; f1: number; draw: num
   );
 };
 
-/** 끝 — 같은 첫 장면의 두 판을 나란히(왼쪽 twinkle · 오른쪽 고친 한 줄). 판 아래 꺼진 횟수(측정값). */
-const Pair: React.FC<{ len: number }> = ({ len }) => {
+/** 끝 — 같은 첫 장면의 두 판을 나란히(왼쪽 twinkle · 오른쪽 고친 한 줄). 판은 등 줄 쪽으로 크게 잘라 화면을 채우고,
+ *  판 아래쪽 어두운 길 위에 넣은 영어 한 줄과 꺼진 횟수(측정값)를 얹는다(맹검 11-15: 작은 상자 · 빈 검정 · 같은 크기 글 · 영어 지시문 없음).
+ *  오른쪽 판은 왼쪽보다 늦게(rightAt초) 들어온다 — 원본의 끝 자리(올리기 전 검사 「뼈대 자리」)에 바뀌는 순간. */
+const Pair: React.FC<{ len: number; rightAt: number }> = ({ len, rightAt }) => {
   const f = useCurrentFrame();
-  const W = 394, H = 700, top = 590;
+  const W = 445, H = 791, top = 575, GAP = 25;
+  const z = mix(1.2, 1.26, prog(f, 0, F(len), (x) => x));
   const box = (x: number, src: string, delay: number) => {
     const p = prog(f, delay, 9);
     return (
-      <div style={{ position: 'absolute', left: x, top, width: W, height: H, borderRadius: 18, overflow: 'hidden', background: '#000', opacity: p, transform: `translateY(${(1 - p) * 24}px)` }}>
-        <OffthreadVideo muted src={staticFile(src)} startFrom={0} style={{ width: W, height: H, objectFit: 'cover', transform: `scale(${mix(1.0, 1.05, prog(f, 0, F(len), IN_OUT))})` }} />
+      <div style={{ position: 'absolute', left: x, top, width: W, height: H, borderRadius: 20, overflow: 'hidden', background: '#000', opacity: p, transform: `translateY(${(1 - p) * 28}px)` }}>
+        {/* 등 줄(영상 좌표 78~484, 463~940)이 판 위쪽 3분의 2에 오도록 왼쪽 아래를 기준으로 키운다 */}
+        <OffthreadVideo muted src={staticFile(src)} startFrom={0} style={{ width: W, height: H, objectFit: 'cover', transformOrigin: '22.5% 100%', transform: `scale(${z})` }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 58%, rgba(0,0,0,0.78) 100%)' }} />
       </div>
     );
   };
-  const lab = (x: number, a: string, b: React.ReactNode, delay: number) => {
+  const lab = (x: number, w: number, en: string, n: number, color: string, delay: number) => {
     const p = prog(f, delay, 8);
     return (
-      <div style={{ position: 'absolute', left: x, top: top + H + 18, width: W, fontFamily: KO, color: WHITE, opacity: p }}>
-        <div style={{ fontWeight: 700, fontSize: 38, letterSpacing: -0.8, color: 'rgba(255,255,255,0.78)' }}>{a}</div>
-        <div style={{ fontWeight: 800, fontSize: 64, letterSpacing: -1.6, lineHeight: 1.1 }}>{b}</div>
+      <div style={{ position: 'absolute', left: x, width: w, top: top + H - 250, height: 228, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', fontFamily: KO, color: WHITE, opacity: p, transform: `translateY(${(1 - p) * 16}px)` }}>
+        <div style={{ fontWeight: 600, fontSize: 30, lineHeight: 1.22, letterSpacing: -0.4, color: 'rgba(255,255,255,0.86)' }}>{en}</div>
+        <div style={{ fontWeight: 800, fontSize: 104, lineHeight: 1.0, letterSpacing: -4, marginTop: 10, fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ color }}>{n}번</span>
+          <span style={{ fontSize: 50, letterSpacing: -1.4, marginLeft: 10 }}>꺼짐</span>
+        </div>
       </div>
     );
   };
+  const xL = 65, xR = xL + W + GAP, rf = F(rightAt);
   return (
     <AbsoluteFill>
-      {box(74, CLIP.A, 0)}
-      {box(526, CLIP.D, 4)}
-      {lab(74, 'twinkle', <><span style={{ color: BUTTER }}>{TW.offTotal}번</span> 꺼짐</>, 8)}
-      {lab(526, '처음부터 끝까지 켜진 채', <><span style={{ color: BUTTER }}>{ST.offTotal}번</span> 꺼짐</>, 12)}
+      {box(xL, CLIP.A, 0)}
+      {lab(xL + 22, W - 44, '“…lamps on the railing twinkle.”', TW.offTotal, BUTTER, 6)}
+      {box(xR, CLIP.D, rf)}
+      {lab(xR + 22, 920 - (xR + 22), '“…glow steadily from the first frame to the last”', ST.offTotal, WHITE, rf + 5)}
     </AbsoluteFill>
   );
 };
@@ -235,7 +252,7 @@ const Dots: React.FC<{ f: number; c: Clip; segStart: number; from: number; f0: n
   const out = 1 - prog(f, f1 - 3, 3);
   const on = c.state.reduce((n, row) => n + (row[k] === '1' ? 1 : 0), 0);
   return (
-    <div style={{ position: 'absolute', left: 74, top, display: 'flex', alignItems: 'center', gap: 12, opacity: ap * out, fontFamily: KO }}>
+    <div style={{ position: 'absolute', left: 58, top, display: 'flex', alignItems: 'center', gap: 12, opacity: ap * out, fontFamily: KO, ...PILL }}>
       <div style={{ fontWeight: 800, fontSize: 40, letterSpacing: -1, color: WHITE, marginRight: 8, textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>켜진 등</div>
       {c.state.map((row, i) => {
         const lit = row[k] === '1';
@@ -252,9 +269,9 @@ const HookLine: React.FC<{ f: number; f0: number; f1: number; top?: number }> = 
   const ap = prog(f, F(f0), 8);
   const out = 1 - prog(f, F(f1) - 3, 3);
   return (
-    <div style={{ position: 'absolute', left: 74, width: 846, top, fontFamily: KO, color: WHITE, opacity: ap * out, textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>
-      <div style={{ fontWeight: 700, fontSize: 36, letterSpacing: -0.6, color: 'rgba(255,255,255,0.7)' }}>지시문에 넣은 한 줄</div>
-      <div style={{ fontWeight: 600, fontSize: 44, lineHeight: 1.22, letterSpacing: -0.8, marginTop: 8, whiteSpace: 'nowrap' }}>“…lamps on the railing <U p={prog(f, F(f0) + 10, 10)}>twinkle</U>.”</div>
+    <div style={{ position: 'absolute', left: 58, top, fontFamily: KO, color: WHITE, opacity: ap * out, ...PILL }}>
+      <div style={{ fontWeight: 700, fontSize: 36, letterSpacing: -0.6, color: 'rgba(255,255,255,0.72)' }}>넣은 한 줄</div>
+      <div style={{ fontWeight: 600, fontSize: 44, lineHeight: 1.22, letterSpacing: -0.8, marginTop: 6, whiteSpace: 'nowrap' }}>“…lamps on the railing twinkle.”</div>
     </div>
   );
 };
@@ -268,20 +285,20 @@ export const Film: React.FC<{ bgm: boolean; voice: boolean; bare: boolean; hero?
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       {/* 기 — 「twinkle」 판 그대로(전) */}
-      {!hero ? <Sequence {...seg(0, T.count)}><Plate src={CLIP.C} from={0} f0={0} f1={F(T.count)} z0={1.0} z1={1.05} /></Sequence> : null}
+      {!hero ? <Sequence {...seg(0, T.count)}><Plate src={CLIP.A} from={0} f0={0} f1={F(T.count)} z0={1.0} z1={1.05} /></Sequence> : null}
       {/* 핵심 장면 — 등 줄로 다가가 바뀔 때마다 고리가 번쩍 · 횟수가 오른다(측정값) */}
       <Sequence {...seg(T.count, T.map)}><Plate src={CLIP.A} from={0} f0={0} f1={F(T.map) - F(T.count)} z0={1.3} z1={1.4} {...lamp} /></Sequence>
       {!hero ? (
         <>
           {/* 켜짐 지도 */}
-          <Sequence {...seg(T.map, T.why)}><Plate src={CLIP.C} from={2.4} f0={0} f1={F(T.why) - F(T.map)} z0={1.08} z1={1.12} dim={0.62} /></Sequence>
+          <Sequence {...seg(T.map, T.why)}><Plate src={CLIP.A} from={2.4} f0={0} f1={F(T.why) - F(T.map)} z0={1.06} z1={1.18} dim={0.6} /></Sequence>
           {/* 전 — 그날 그 한 줄 → ✕ */}
-          <Sequence {...seg(T.why, T.fix)}><Plate src={CLIP.A} from={0} f0={0} f1={F(T.fix) - F(T.why)} z0={1.12} z1={1.16} dim={0.72} /></Sequence>
+          <Sequence {...seg(T.why, T.fix)}><Plate src={CLIP.A} from={0} f0={0} f1={F(T.fix) - F(T.why)} z0={1.08} z1={1.24} dim={0.66} /></Sequence>
           {/* 전 — 고친 한 줄 */}
-          <Sequence {...seg(T.fix, T.after)}><Plate src={CLIP.A} from={1.1} f0={0} f1={F(T.after) - F(T.fix)} z0={1.18} z1={1.24} dim={0.74} /></Sequence>
+          <Sequence {...seg(T.fix, T.after)}><Plate src={CLIP.A} from={1.1} f0={0} f1={F(T.after) - F(T.fix)} z0={1.14} z1={1.32} dim={0.68} /></Sequence>
           {/* 결 — 같은 첫 장면, 한 줄만 바꾼 판(후) — 끝에서 처음 보인다 */}
-          <Sequence {...seg(T.after, T.card)}><Plate src={CLIP.B} from={0} f0={0} f1={F(T.card) - F(T.after)} z0={1.0} z1={1.04} /></Sequence>
-          <Sequence {...seg(T.card, LEN)}><Pair len={LEN - T.card} /></Sequence>
+          <Sequence {...seg(T.after, T.card)}><Plate src={CLIP.B} from={0} f0={0} f1={F(T.card) - F(T.after)} z0={1.0} z1={1.12} /></Sequence>
+          <Sequence {...seg(T.card, LEN)}><Pair len={LEN - T.card} rightAt={T.cardR - T.card} /></Sequence>
         </>
       ) : null}
 
@@ -301,17 +318,19 @@ export const Film: React.FC<{ bgm: boolean; voice: boolean; bare: boolean; hero?
               <Head f={f} from={T.map} to={T.why} lines={[{ at: T.map, node: <>등 열 개가 {CLIP.span}초 동안</> }, { at: T.map2, node: <><span style={{ color: BUTTER }}>{TW.offTotal}번</span> 꺼졌다</> }]} />
               <LitChart f={f} c={TW} f0={F(T.map) + 3} f1={F(T.why)} draw={F(1.4)} />
 
-              <Head f={f} from={T.why} to={T.fix} lines={[{ at: T.why, node: <>이 영상 AI는 twinkle을</> }, { at: T.why2, node: <>껐다 켜기로 그렸다</> }]} />
+              <Head f={f} from={T.why} to={T.fix} lines={[{ at: T.why, node: <span style={{ whiteSpace: 'nowrap' }}>이 영상 AI는 twinkle을</span> }, { at: T.why2, node: <>껐다 켜기로 그렸다</> }]} size={80} />
               <Prompt f={f} f0={T.why} f1={T.fix} old strike={T.strike} />
               <Head f={f} from={T.fix} to={T.after} lines={[{ at: T.fix, node: <>그래서</> }, { at: T.fix2, node: <>이 한 줄로 바꿨다</> }]} />
-              <Prompt f={f} f0={T.fix} f1={T.after} old={false} typeFrom={T.fix + 0.3} typeEnd={T.typeEnd} />
+              <Prompt f={f} f0={T.fix} f1={T.after} old={false} typeFrom={T.fix + 0.3} typeEnd={T.typeEnd} top={840} />
 
               <Head f={f} from={T.after} to={T.card} lines={[{ at: T.after, node: <>한 줄만 바꿨더니</> }, { at: T.after2, node: <>꺼진 횟수 <span style={{ color: BUTTER }}>{ST.offTotal}번</span></> }]} />
-              <Rings f={f} c={ST} segStart={T.after} from={0} f0={F(T.after)} f1={F(T.card)} z0={1.0} z1={1.04} flash={false} />
-              <Head f={f} from={T.card} to={LEN + 1} lines={[{ at: T.card, node: <>꺼지면 안 되는 불은</> }, { at: T.card2, node: <><U p={prog(f, F(T.card2) + 2, 8)}>「처음부터 끝까지</U></> }, { at: T.card2 + 0.25, node: <><U p={prog(f, F(T.card2 + 0.25) + 2, 8)}>켜진 채 그대로」</U></> }]} size={74} />
+              <Rings f={f} c={ST} segStart={T.after} from={0} f0={F(T.after)} f1={F(T.card)} z0={1.0} z1={1.12} flash={false} />
+              {/* 끝 글 — 낫표 한 겹만(밑줄 겹침 없앰), 낫표 두 줄은 함께 뜬다(반쪽 낫표 없음) */}
+              <Head f={f} from={T.card} to={LEN + 1} lines={[{ at: T.card, node: <>꺼지면 안 되는 불은</> }, { at: T.card2, node: <>「처음부터 끝까지</> }, { at: T.card2, node: <>켜진 채 그대로」</> }]} size={74} />
 
-              <HookLine f={f} f0={0.5} f1={T.count} />
-              <Source f={f} f0={0.8} f1={T.count} top={690} text="같은 지시문으로 새로 만들어 센 실제 영상" />
+              <HookLine f={f} f0={0.5} f1={T.count} top={540} />
+              <Source f={f} f0={T.count + 0.2} f1={T.map} top={622} text="같은 영상을 처음부터 다시 보며 셈" />
+              <Source f={f} f0={0.8} f1={T.count} top={700} text="같은 지시문으로 새로 만들어 센 실제 영상" />
               <Source f={f} f0={T.after + 0.3} f1={T.card} top={640} text="같은 첫 장면, 그 한 줄만 바꿔 다시 만든 영상" />
               <Dots f={f} c={ST} segStart={T.after} from={0} f0={F(T.after) + 2} f1={F(T.card)} top={548} />
             </>
@@ -320,7 +339,7 @@ export const Film: React.FC<{ bgm: boolean; voice: boolean; bare: boolean; hero?
       ) : null}
 
       {voice && !hero ? VO.map((v) => <Sequence key={v.id} from={F(v.at)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>) : null}
-      {bgm && !hero ? <Audio src={staticFile('bgm.wav')} volume={(x) => (x < F(0.6) ? mix(0, 0.26, x / F(0.6)) : x > F(LEN) - F(1.2) ? mix(0.26, 0, (x - (F(LEN) - F(1.2))) / F(1.2)) : 0.26)} /> : null}
+      {bgm && !hero ? <Audio src={staticFile('bgm.wav')} volume={(x) => (x < F(0.6) ? mix(0, BGM, x / F(0.6)) : x > F(LEN) - F(1.2) ? mix(BGM, 0, (x - (F(LEN) - F(1.2))) / F(1.2)) : BGM)} /> : null}
       {!hero ? CLIP.sfx.map((s, i) => <Sequence key={i} from={F(s.at)}><Audio src={staticFile(`sfx/${s.id}.wav`)} volume={s.vol} /></Sequence>) : null}
     </AbsoluteFill>
   );
