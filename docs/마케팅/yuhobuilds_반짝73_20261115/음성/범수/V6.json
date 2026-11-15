@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "같은 첫 장면에서 다시 만드니까, 한 번도 안 꺼져요.",
+ "dur": 2.708,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.02,
+   "end": 0.244
+  },
+  {
+   "text": "첫",
+   "start": 0.283,
+   "end": 0.389
+  },
+  {
+   "text": "장면에서",
+   "start": 0.441,
+   "end": 0.783
+  },
+  {
+   "text": "다시",
+   "start": 0.823,
+   "end": 0.994
+  },
+  {
+   "text": "만드니까,",
+   "start": 1.033,
+   "end": 1.442
+  },
+  {
+   "text": "한",
+   "start": 1.81,
+   "end": 1.903
+  },
+  {
+   "text": "번도",
+   "start": 1.942,
+   "end": 2.113
+  },
+  {
+   "text": "안",
+   "start": 2.179,
+   "end": 2.218
+  },
+  {
+   "text": "꺼져요.",
+   "start": 2.257,
+   "end": 2.708
+  }
+ ],
+ "source": {
+  "key": "3be6fe56ab2c85633c3918c6104d6c13",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1119,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 180
+ }
+}

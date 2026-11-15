@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "등마다 하나씩 세어 보니까, 5초 동안 59번 꺼졌어요.",
+ "dur": 2.897,
+ "words": [
+  {
+   "text": "등마다",
+   "start": 0.02,
+   "end": 0.29
+  },
+  {
+   "text": "하나씩",
+   "start": 0.329,
+   "end": 0.585
+  },
+  {
+   "text": "세어",
+   "start": 0.624,
+   "end": 0.777
+  },
+  {
+   "text": "보니까,",
+   "start": 0.816,
+   "end": 1.11
+  },
+  {
+   "text": "5초",
+   "start": 1.483,
+   "end": 1.611
+  },
+  {
+   "text": "동안",
+   "start": 1.689,
+   "end": 1.893
+  },
+  {
+   "text": "59번",
+   "start": 1.931,
+   "end": 2.304
+  },
+  {
+   "text": "꺼졌어요.",
+   "start": 2.343,
+   "end": 2.897
+  }
+ ],
+ "source": {
+  "key": "eefbba0f6dbd7467b6d6d5bc3aa1e2ff",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1119,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

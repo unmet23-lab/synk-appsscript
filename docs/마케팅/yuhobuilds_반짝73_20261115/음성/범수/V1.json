@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "영상 AI 지시문에, 반짝인다는 뜻의 'twinkle'을 넣었어요.",
+ "dur": 3.066,
+ "words": [
+  {
+   "text": "영상",
+   "start": 0.03,
+   "end": 0.311
+  },
+  {
+   "text": "AI",
+   "start": 0.378,
+   "end": 0.62
+  },
+  {
+   "text": "지시문에,",
+   "start": 0.673,
+   "end": 1.048
+  },
+  {
+   "text": "반짝인다는",
+   "start": 1.37,
+   "end": 1.919
+  },
+  {
+   "text": "뜻의",
+   "start": 1.958,
+   "end": 2.12
+  },
+  {
+   "text": "'twinkle'을",
+   "start": 2.173,
+   "end": 2.522
+  },
+  {
+   "text": "넣었어요.",
+   "start": 2.561,
+   "end": 3.066
+  }
+ ],
+ "source": {
+  "key": "3eeaab6e6fbb7c0e1adc3c3ef525c307",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1119,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "y54a": {
+  "ratio": "9:16",
+  "dur": 6,
+  "n": 1,
+  "model": "Omni 1.2 Flash",
+  "cost": "auto",
+  "start": "y54start.png",
+  "prompt": "The start image is the exact first frame of this video — same framing, same footbridge railing, same small round lamps, same river and the same distant city lights, same blue dusk light. ONE SINGLE CONTINUOUS SHOT, vertical 9:16, real-life footage. ACTION: The small round lamps on the railing twinkle. The river water ripples very gently. Nobody is on the bridge. CAMERA: locked-off static camera on a tripod — no zoom, no pan, no tilt. LOOK: keep the first frame's own light and colours. No text, no captions, no music."
+ },
+ "y54b": {
+  "ratio": "9:16",
+  "dur": 6,
+  "n": 1,
+  "model": "Omni 1.2 Flash",
+  "cost": "auto",
+  "start": "y54start.png",
+  "prompt": "The start image is the exact first frame of this video — same framing, same footbridge railing, same small round lamps, same river and the same distant city lights, same blue dusk light. ONE SINGLE CONTINUOUS SHOT, vertical 9:16, real-life footage. ACTION: All the small round lamps on the railing glow steadily from the first frame to the last; once lit, no lamp ever goes dark, blinks or dims. The river water ripples very gently. Nobody is on the bridge. CAMERA: locked-off static camera on a tripod — no zoom, no pan, no tilt. LOOK: keep the first frame's own light and colours. No text, no captions, no music."
+ },
+ "y54c": {
+  "ratio": "9:16",
+  "dur": 6,
+  "n": 1,
+  "model": "Omni 1.2 Flash",
+  "cost": "auto",
+  "start": "y54start.png",
+  "prompt": "The start image is the exact first frame of this video — same framing, same footbridge railing, same small round lamps, same river and the same distant city lights, same blue dusk light. ONE SINGLE CONTINUOUS SHOT, vertical 9:16, real-life footage. ACTION: The river water ripples very gently. The small round lamps on the railing twinkle. Nobody is on the bridge. CAMERA: locked-off static camera on a tripod — no zoom, no pan, no tilt. LOOK: keep the first frame's own light and colours. No text, no captions, no music."
+ },
+ "y54d": {
+  "ratio": "9:16",
+  "dur": 6,
+  "n": 1,
+  "model": "Omni 1.2 Flash",
+  "cost": "auto",
+  "start": "y54start.png",
+  "prompt": "The start image is the exact first frame of this video — same framing, same footbridge railing, same small round lamps, same river and the same distant city lights, same blue dusk light. ONE SINGLE CONTINUOUS SHOT, vertical 9:16, real-life footage. ACTION: Every small round lamp on the railing glows steadily from the first frame to the last; once lit, no lamp ever goes dark, blinks or dims. Nobody is on the bridge. The river water ripples very gently. CAMERA: locked-off static camera on a tripod — no zoom, no pan, no tilt. LOOK: keep the first frame's own light and colours. No text, no captions, no music."
+ }
+}

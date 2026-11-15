@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "그랬더니 난간 등이, 한꺼번에 꺼졌다 켜졌다 해요.",
+ "dur": 2.763,
+ "words": [
+  {
+   "text": "그랬더니",
+   "start": 0.01,
+   "end": 0.372
+  },
+  {
+   "text": "난간",
+   "start": 0.435,
+   "end": 0.722
+  },
+  {
+   "text": "등이,",
+   "start": 0.759,
+   "end": 0.935
+  },
+  {
+   "text": "한꺼번에",
+   "start": 1.309,
+   "end": 1.696
+  },
+  {
+   "text": "꺼졌다",
+   "start": 1.734,
+   "end": 2.033
+  },
+  {
+   "text": "켜졌다",
+   "start": 2.07,
+   "end": 2.357
+  },
+  {
+   "text": "해요.",
+   "start": 2.42,
+   "end": 2.763
+  }
+ ],
+ "source": {
+  "key": "882726cdd36fbdc8f344d5ceb09ec8e8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1119,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}
