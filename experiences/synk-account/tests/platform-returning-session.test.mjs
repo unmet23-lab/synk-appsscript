@@ -782,6 +782,15 @@ const flushMicrotasks = async (rounds = 6) => {
   }
 };
 
+// 수동 로그인의 PKCE는 진짜 webcrypto digest(스레드 풀)를 거치므로 정해진 횟수의 flush 안에 끝난다고 보지 않는다.
+// 바쁜 CI 러너에서 이동 전에 단언해 0 !== 1로 흔들렸다(11-16). 기다린 뒤의 단언은 그대로 정확한 횟수를 본다.
+const untilNavigated = async (dom, count, limitMs = 5000) => {
+  const started = Date.now();
+  while (dom.navigations.length < count && Date.now() - started < limitMs) {
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+};
+
 function buildTestConfig() {
   return readConfig({
     version: 1,
@@ -1291,6 +1300,7 @@ test('비로그인 손님은 recent-login 표시가 남아 있어도 외부 요�
 
   dom.portalRoot.querySelector('[data-portal-action="google"]').click();
   await flushMicrotasks();
+  await untilNavigated(dom, 1);
   assert.equal(dom.navigations.length, 1);
   const manualAuthorize = new URL(dom.navigations[0]);
   assert.equal(manualAuthorize.pathname, '/auth/v1/oauth/authorize');
@@ -1352,6 +1362,7 @@ test('자동 복귀(resumeCentralSession) 대기 중 사용자가 수동 Google/
 
   dom.portalRoot.querySelector('[data-portal-action="google"]').click();
   await flushMicrotasks();
+  await untilNavigated(dom, 1);
 
   // 수동 Google PKCE 요청과 의도가 기록되고 이동했음을 확인한다.
   assert.equal(dom.navigations.length, 1);
@@ -1782,6 +1793,7 @@ test('일반 첫 페이지 pageshow({ persisted: false })가 중앙 세션 검�
     host.handlePageShow({ persisted: false });
     releaseManualBegin();
     await flushMicrotasks();
+    await untilNavigated(dom, 1);
 
     assert.equal(dom.navigations.length, 1);
     const pendingPkce = sessionStorage.getItem('synk.oauth.pending.platform');
