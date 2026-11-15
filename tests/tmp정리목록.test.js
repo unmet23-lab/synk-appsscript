@@ -283,6 +283,77 @@ test('저장소의 추적 코드가 .tmp/<이름>으로 쓰는 폴더는 남기�
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
+test('_정리제외.txt의 「#! 저장소 언급 놓음」 절 이름은 저장소 파일이 적었어도 붙잡지 않는다 — 최근 작업이 가리키거나 절 밖에도 적히면 남는다(11-16)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-letgo-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(방, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    쓰기('docs/_ops/qa/옛검수/result.json', JSON.stringify({ 근거: ['.tmp/record-only-20261018/a.json', '.tmp/also-kept-20261017/a.json', '.tmp/still-used-20261016/a.json'] }));
+    쓰기('experiences/x/qa/world-20261104/굽기.mjs', "const 밖 = path.join(뿌리, '.tmp', 'done-bake-20261104');\nconst 그대로 = path.join(뿌리, '.tmp', 'live-bake-20261104');");
+    for (const 이름 of ['record-only-20261018', 'also-kept-20261017', 'still-used-20261016', 'done-bake-20261104', 'live-bake-20261104', 'held-by-done-20261001']) 쓰기(`.tmp/${이름}/a.json`, '{}');
+    쓰기('.tmp/done-bake-20261104/plan.json', JSON.stringify({ 원본: '.tmp/held-by-done-20261001/a.json' }));
+    쓰기('.tmp/fresh-work-20261115/run.cjs', "require('../still-used-20261016/a.json')");
+    for (const 이름 of fs.readdirSync(임시)) if (이름 !== 'fresh-work-20261115') 옛날로(path.join(임시, 이름), 30);
+    fs.writeFileSync(path.join(임시, '_정리제외.txt'), [
+      '#! 저장소 언급 놓음 시작 — 기록만 적었거나 끝난 편', 'record-only-20261018', 'also-kept-20261017', 'still-used-20261016', 'done-bake-20261104', '#! 저장소 언급 놓음 끝',
+      'also-kept-20261017  # 절 밖에도 있다 — 남기는 쪽이 이긴다', '',
+    ].join('\r\n'));
+    const git = (...a) => { const r = spawnSync('git', ['-C', 방, ...a], { encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); };
+    git('init', '-q');
+    git('add', 'docs', 'experiences');
+
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['done-bake-20261104', 'held-by-done-20261001', 'record-only-20261018'],
+      '놓은 이름 · 놓은 폴더만 가리키던 폴더는 후보가 된다');
+    assert.deepEqual(목록.참조로남김.map((x) => [x.이름, x.가리킨]), [
+      ['live-bake-20261104', ['저장소:experiences/x/qa/world-20261104/굽기.mjs']],
+      ['still-used-20261016', ['fresh-work-20261115']],
+    ], '놓지 않은 이름은 저장소 언급으로 남고, 놓은 이름도 최근 작업이 가리키면 남는다');
+    assert.ok(!목록.후보.some((c) => c.이름 === 'also-kept-20261017'), '절 밖에도 적힌 이름은 남긴다');
+
+    // 끝 표식을 빠뜨린 놓음 절 — 그 뒤 줄까지 놓지 않고 모두 평범한 남김 줄로 읽는다(GPT GA2)
+    fs.writeFileSync(path.join(임시, '_정리제외.txt'), ['#! 저장소 언급 놓음 시작 — 끝 줄을 빠뜨림', 'record-only-20261018', 'held-by-done-20261001  # 원래 남기려던 줄', ''].join('\n'));
+    const 열린절 = 정리.목록만들기({ 임시, 대기 });
+    assert.ok(!열린절.후보.some((c) => ['record-only-20261018', 'held-by-done-20261001'].includes(c.이름)), '끝나지 않은 놓음 절의 이름은 남긴다');
+    // 다른 절 표식이 먼저 와도 그 앞까지의 놓음 이름은 남긴다
+    fs.writeFileSync(path.join(임시, '_정리제외.txt'), ['#! 저장소 언급 놓음 시작', 'record-only-20261018', '#! 실측 계보 시작', 'done-bake-20261104', '#! 실측 계보 끝', ''].join('\n'));
+    const 섞인절 = 정리.목록만들기({ 임시, 대기 });
+    assert.ok(!섞인절.후보.some((c) => ['record-only-20261018', 'done-bake-20261104'].includes(c.이름)), '닫힘 절 표식이 먼저 오면 놓음 이름도 남긴다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('`.git` 안의 시각은 마지막 수정에 넣지 않는다 — 안쪽 저장소에서 git 명령만 돌린 옛 폴더도 조용한 폴더다(11-16)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-gitmtime-'));
+  try {
+    const 임시 = path.join(방, '.tmp'), 대기 = path.join(방, '정리대기');
+    const 쓰기 = (상대, 글) => { const p = path.join(임시, 상대); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, 글); };
+    쓰기('old-review-20261027/review-repo/a.cjs', "require('../../old-ref-20261020/a.cjs')");
+    쓰기('old-review-20261027/review-repo/.git/index', 'x'.repeat(100));
+    쓰기('old-ref-20261020/a.cjs', '//');
+    쓰기('worked-20261027/review-repo/.git/index', 'x');
+    쓰기('worked-20261027/review-repo/b.cjs', '//');
+    쓰기('committed-20261027/review-repo/.git/refs/heads/main', 'abc');
+    쓰기('committed-20261027/review-repo/.git/logs/HEAD', 'x');
+    쓰기('committed-20261027/review-repo/staged.cjs', '//');
+    for (const 이름 of fs.readdirSync(임시)) 옛날로(path.join(임시, 이름), 20);
+    // 오늘 git 명령이 .git 안만 바꿨다(잠금 파일을 만들었다 지움) — 작업 파일은 그대로
+    const 지금 = new Date();
+    for (const p of ['old-review-20261027/review-repo/.git', 'old-review-20261027/review-repo/.git/index', 'worked-20261027/review-repo/.git']) fs.utimesSync(path.join(임시, p), 지금, 지금);
+    fs.utimesSync(path.join(임시, 'worked-20261027/review-repo/b.cjs'), 지금, 지금);   // 이쪽은 작업 파일도 오늘 바뀌었다
+    // 이쪽은 예전에 스테이징한 변경을 오늘 커밋만 했다 — 작업 파일은 옛 시각, refs · logs가 오늘(GPT GA1)
+    for (const p of ['committed-20261027/review-repo/.git', 'committed-20261027/review-repo/.git/refs/heads/main', 'committed-20261027/review-repo/.git/logs/HEAD']) fs.utimesSync(path.join(임시, p), 지금, 지금);
+
+    const 잰 = 정리.훑기(path.join(임시, 'old-review-20261027'));
+    assert.ok(잰.최신 < Date.now() - 10 * 하루, '.git 안 시각은 마지막 수정이 아니다');
+    assert.equal(잰.크기, 100 + "require('../../old-ref-20261020/a.cjs')".length, '크기에는 .git 안도 넣는다');
+    const 목록 = 정리.목록만들기({ 임시, 대기 });
+    assert.deepEqual(목록.후보.map((c) => c.이름).sort(), ['old-ref-20261020', 'old-review-20261027'], '조용한 옛 폴더와 그 폴더만 가리키던 폴더는 후보');
+    assert.ok(!목록.후보.some((c) => c.이름 === 'worked-20261027'), '작업 파일이 바뀐 폴더는 최근이다');
+    assert.ok(!목록.후보.some((c) => c.이름 === 'committed-20261027'), '안쪽 저장소에서 오늘 커밋한 폴더(refs · logs가 바뀜)는 최근이다');
+    assert.ok(정리.훑기(path.join(임시, 'committed-20261027')).최신 >= 지금.getTime() - 2000);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
 test('릴리스·후보 사본은 갈래마다 새 판 둘만 남기고 옛 판은 날짜와 상관없이 후보 — 남는 판이 끌어 쓰는 옛 판·_보존은 뺀다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tmp-release-'));
   try {

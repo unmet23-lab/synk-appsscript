@@ -19,7 +19,8 @@
  * 쓰는 계보가 후보로 샜다).
  * 마지막 수정이 노트북 이사 복사 날(10-15~17)인 폴더는 따로 묶어 이름 속 날짜와 같이 보인다.
  * 모음 폴더(.tmp/검수)는 통째로 남기고, 안의 묶음을 하나씩 잰다 — 기준 안의 묶음과 그 다시 검수 사슬의 앞 고리만 언급을 따라간다(11-07,
- * 아래 「모음뿌리」). 저장소의 추적 코드가 `.tmp/<이름>`으로 쓰는 폴더도 남기고 그 언급을 따라간다(11-07, 아래 「저장소참조」).
+ * 아래 「모음뿌리」). 저장소의 추적 코드가 `.tmp/<이름>`으로 쓰는 폴더도 남기고 그 언급을 따라간다(11-07, 아래 「저장소참조」) — 다만 _정리제외.txt의
+ * 「#! 저장소 언급 놓음」 절에 적은 이름은 저장소 파일의 언급만으로는 붙잡지 않는다(11-16, 아래 「제외읽기」). `.git` 안에서는 커밋 흔적의 시각만 마지막 수정으로 센다(11-16, 「훑기」).
  */
 const fs = require('fs');
 const os = require('os');
@@ -60,22 +61,29 @@ function 기기모델() {
 /**
  * 링크(junction·심볼릭)는 따라 들어가지 않고, 가장 늦은 수정 시각·크기·파일 수를 모은다.
  * 훑는 사이 폴더가 사라졌으면 { 없음: true } — 세션 여럿이 쓰는 .tmp를 날마다 사람 없이 훑게 되면서(11-10 자동 정리) 예외로 통째 멈추지 않게 했다.
+ * `.git` 폴더 안에서는 커밋 · 가지 이동이 남기는 파일(HEAD · ORIG_HEAD · MERGE_HEAD · COMMIT_EDITMSG · packed-refs · refs/ · logs/ 아래)의 시각만
+ * 「마지막 수정」에 넣는다(크기 · 파일 수에는 모두 넣는다). 안쪽 저장소에서 `git status` 같은 읽기 명령만 돌려도 git이 `.git` 안에 잠금 파일을
+ * 만들었다 지워 `.git` 폴더 시각이 바뀐다 — 11-15 17:37에 누가 `backend-release-recovery-20261027` 안 저장소 셋에서 git을 돌려 10-27 폴더가
+ * 「최근 작업」이 되고, 그 언급을 따라 옛 폴더 13곳 3GB가 7일 더 남을 뻔했다(11-16). 오늘 커밋하면 refs · logs가 바뀌어 최근으로 남는다(GPT GA1).
  */
+const git활동파일 = /^(?:HEAD|ORIG_HEAD|MERGE_HEAD|CHERRY_PICK_HEAD|REVERT_HEAD|COMMIT_EDITMSG|packed-refs|(?:refs|logs)\/.+)$/;
 function 훑기(폴더) {
   let 최신, 크기 = 0, 파일 = 0;
   try { 최신 = fs.lstatSync(폴더).mtimeMs; } catch { return { 최신: 0, 크기: 0, 파일: 0, 없음: true }; }
-  const 쌓기 = [폴더];
+  const 쌓기 = [[폴더, null]];   // [폴더, 들어 있는 .git 폴더(없으면 null)]
   while (쌓기.length) {
-    const 지금 = 쌓기.pop();
+    const [지금, git뿌리] = 쌓기.pop();
     let 항목;
     try { 항목 = fs.readdirSync(지금, { withFileTypes: true }); } catch { continue; }
     for (const e of 항목) {
       const p = path.join(지금, e.name);
       let st;
       try { st = fs.lstatSync(p); } catch { continue; }
-      if (st.mtimeMs > 최신) 최신 = st.mtimeMs;
+      const 이번git = git뿌리 || (e.name === '.git' && st.isDirectory() ? p : null);
+      const 셈 = !이번git || (!st.isDirectory() && git활동파일.test(path.relative(이번git, p).split(path.sep).join('/')));
+      if (셈 && st.mtimeMs > 최신) 최신 = st.mtimeMs;
       if (st.isSymbolicLink()) continue;
-      if (st.isDirectory()) 쌓기.push(p);
+      if (st.isDirectory()) 쌓기.push([p, 이번git]);
       else { 파일++; 크기 += st.size; }
     }
   }
@@ -148,22 +156,37 @@ function 저장소참조(저장소, 이름들) {
 // 10-29 공간 정리가 회사 릴리스 계보를 옮겨 사슬 38 생성기가 MODULE_NOT_FOUND로 멈춘 뒤, 그 세션이 되돌린 폴더를 적었다.
 // 「#! 실측 계보 시작」~「#! 실측 계보 끝」 사이 이름(닫힘)은 남기되 참조 따라가기의 뿌리로 쓰지 않는다. 같은 이름이 그 밖에도
 // 적혀 있으면 따라가는 쪽이 이긴다. 옛 판 도구는 「#!」 줄을 설명으로 읽어 그 이름을 그냥 남기므로(따라가기 포함) 안전한 쪽이다.
+// 「#! 저장소 언급 놓음 시작」~「#! 저장소 언급 놓음 끝」 사이 이름(놓음)은 남기지 않는다 — 저장소 추적 파일이 그 이름을 적었어도(아래 「저장소참조」)
+// 그것만으로는 붙잡지 않는다. 검수 증거 json처럼 이름만 적은 기록이나, 끝난 편의 일회성 qa 스크립트가 적은 작업 폴더를 세션이 가려 적는다(11-16).
+// 최근 작업 · 남는 폴더 · 살아 있는 문서가 가리키면 그대로 남는다. 같은 이름이 절 밖(남김 · 닫힘)에도 있으면 남기는 쪽이 이긴다.
+// 옛 판 도구는 이 절의 이름을 평범한 줄로 읽어 남기므로(따라가기 포함) 이것도 안전한 쪽이다.
+// 놓음 절은 「… 놓음 끝」 표식을 만나야 닫힌다. 그 표식 없이 파일이 끝나거나 다른 절 표식이 먼저 오면 그 절의 이름은 놓지 않고 평범한 줄처럼
+// 남긴다 — 끝 줄을 빠뜨린 편집이 그 뒤 남김 줄까지 놓아 버리지 않게(남기는 쪽으로 틀린다, GPT GA2).
 const 제외파일 = '_정리제외.txt';
 function 제외읽기(임시) {
-  const 이름들 = new Set(), 닫힘 = new Set(), 따라감 = new Set();
+  const 이름들 = new Set(), 닫힘 = new Set(), 따라감 = new Set(), 놓음 = new Set();
   let 글;
-  try { 글 = fs.readFileSync(path.join(임시, 제외파일), 'utf8'); } catch { return { 이름들, 닫힘 }; }
-  let 닫힌절 = false;
+  try { 글 = fs.readFileSync(path.join(임시, 제외파일), 'utf8'); } catch { return { 이름들, 닫힘, 놓음 }; }
+  let 절 = null, 미결 = [];
+  const 남기기 = () => { for (const 이름 of 미결) { 이름들.add(이름); 따라감.add(이름); } 미결 = []; };
   for (const 줄 of 글.split(/\r?\n/)) {
-    if (/^#!\s*실측 계보 시작/.test(줄)) { 닫힌절 = true; continue; }
-    if (/^#!\s*실측 계보 끝/.test(줄)) { 닫힌절 = false; continue; }
+    const 닫힘시작 = /^#!\s*실측 계보 시작/.test(줄), 닫힘끝 = /^#!\s*실측 계보 끝/.test(줄);
+    const 놓음시작 = /^#!\s*저장소 언급 놓음 시작/.test(줄), 놓음끝 = /^#!\s*저장소 언급 놓음 끝/.test(줄);
+    if (절 === '놓음' && (닫힘시작 || 닫힘끝 || 놓음시작)) 남기기();   // 끝 표식 없이 다른 절이 왔다
+    if (닫힘시작) { 절 = '닫힘'; continue; }
+    if (놓음시작) { 절 = '놓음'; continue; }
+    if (놓음끝) { if (절 === '놓음') { for (const 이름 of 미결) 놓음.add(이름); 미결 = []; } 절 = null; continue; }
+    if (닫힘끝) { 절 = null; continue; }
     const 이름 = 줄.replace(/#.*/, '').trim();
     if (!이름) continue;
+    if (절 === '놓음') { 미결.push(이름); continue; }
     이름들.add(이름);
-    (닫힌절 ? 닫힘 : 따라감).add(이름);
+    (절 === '닫힘' ? 닫힘 : 따라감).add(이름);
   }
+  남기기();   // 파일 끝까지 놓음 끝 표식이 없었다
   for (const 이름 of 따라감) 닫힘.delete(이름);
-  return { 이름들, 닫힘 };
+  for (const 이름 of 이름들) 놓음.delete(이름);
+  return { 이름들, 닫힘, 놓음 };
 }
 
 /**
@@ -338,7 +361,9 @@ function 목록만들기(옵션 = {}) {
   let 볼곳 = [...최근.filter((이름) => !제외.닫힘.has(이름)), ...모음본것.flatMap((m) => m.뿌리)], 참조잘림 = false;
   const 큰파일 = [];
   // 저장소 코드가 .tmp/<이름>으로 쓰는 폴더도 남기고, 그 폴더가 가리키는 폴더도 따라간다(위 「저장소참조」).
-  const 저장소본것 = 후보.length ? 저장소참조(옵션.저장소 || path.dirname(임시), new Set(후보.map((c) => c.이름))) : { 찾은: new Map(), 큰파일: [], 본파일: null, 잘림: false };
+  // 「저장소 언급 놓음」 절의 이름은 저장소 파일이 적었어도 붙잡지 않는다(위 제외읽기).
+  const 저장소볼이름 = new Set(후보.map((c) => c.이름).filter((이름) => !제외.놓음.has(이름)));
+  const 저장소본것 = 저장소볼이름.size ? 저장소참조(옵션.저장소 || path.dirname(임시), 저장소볼이름) : { 찾은: new Map(), 큰파일: [], 본파일: null, 잘림: false };
   참조잘림 = 저장소본것.잘림;
   큰파일.push(...저장소본것.큰파일);
   for (const [이름, 파일들] of 저장소본것.찾은) {
