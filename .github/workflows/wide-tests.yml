@@ -144,7 +144,7 @@ jobs:
           cache-dependency-path: |
             SYNK-appsscript/package-lock.json
             SYNK-appsscript/.github/workflows/wide-tests.yml
-            SYNK-appsscript/${{ matrix.bundle == 'desktop' && 'desktop/package-lock.json' || matrix.bundle == 'experiences' && 'experiences/synk-account/package-lock.json' || matrix.bundle == '루트' && '영상/package-lock.json' || 'package-lock.json' }}
+            SYNK-appsscript/${{ matrix.bundle == 'desktop' && 'desktop/package-lock.json' || (matrix.bundle == 'experiences' || matrix.bundle == 'tools') && 'experiences/synk-account/package-lock.json' || matrix.bundle == '루트' && '영상/package-lock.json' || 'package-lock.json' }}
             SYNK-appsscript/${{ matrix.bundle == 'experiences' && 'experiences/solo-backup/package-lock.json' || 'package-lock.json' }}
             SYNK-appsscript/${{ matrix.bundle == 'experiences' && 'experiences/solo-backup-rust/engine/package-lock.json' || 'package-lock.json' }}
             SYNK-appsscript/${{ matrix.bundle == 'experiences' && 'packages/atlas/package-lock.json' || 'package-lock.json' }}
@@ -157,7 +157,9 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           if [ "$BUNDLE" = "desktop" ]; then (cd desktop && npm ci --ignore-scripts --no-audit --no-fund); fi
-          if [ "$BUNDLE" = "experiences" ]; then (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund); fi
+          # tools 묶음의 WORLD 공개 준비 시험(tools/synk-id/prepare-world-play-public.test.cjs)도 플랫폼 원천을 묶으며
+          # 계정 폴더의 @supabase/supabase-js를 찾는다 — 없으면 그 시험이 「Could not resolve」로 깨진다(11-16).
+          if [ "$BUNDLE" = "experiences" ] || [ "$BUNDLE" = "tools" ]; then (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund); fi
           # 업무 백업 시험판의 복구 시험은 자기 폴더의 tar-stream을 require한다 — 없으면 시험 파일째 죽는다(11-09).
           if [ "$BUNDLE" = "experiences" ]; then (cd experiences/solo-backup && npm ci --ignore-scripts --no-audit --no-fund); fi
           # 1단계부터 Rust 판이 갈라 온 엔진(11-12)도 같은 의존성을 자기 폴더에서 require한다.

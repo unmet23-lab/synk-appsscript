@@ -36,11 +36,20 @@ async function prepare(configPath,out,{includePlatform=false,platformSourceRoot=
   const source=await fs.readFile(file),bytes=Buffer.from(source.toString('utf8').replace(/\r\n/g,'\n'));
   platformRecords.set(name,{source:path.resolve(file),sourceSha256:sha(source),frozenSha256:sha(bytes),bytes});await write(path.join(platformSnapshot,name),bytes);return bytes;
  }
+ // esbuild reads package.json (exports, main, module, sideEffects) without onLoad,
+ // so a frozen npm package without it cannot be resolved again (11-16).
+ async function captureManifests(file,base,captureFile){
+  for(let dir=path.dirname(file);;dir=path.dirname(dir)){
+   const name=path.relative(base,dir).replaceAll('\\','/');if(name==='..'||name.startsWith('../')||path.isAbsolute(name))return;
+   const manifest=path.join(dir,'package.json');if(await fs.stat(manifest).then(stat=>stat.isFile(),()=>false))await captureFile(manifest);
+   if(!name)return;
+  }
+ }
  const esbuild=require(require.resolve('esbuild',{paths:[path.join(ROOT,SOURCE)]}));
  const options={bundle:true,write:false,platform:'browser',format:'iife',target:['es2022'],charset:'utf8',minifyWhitespace:true,metafile:true};
  async function bundle(entry){
  const entryRoot=entry==='platform'?platformSourceRoot:ROOT,frozenRoot=entry==='platform'?platformSnapshot:snapshot,captureEntry=entry==='platform'?capturePlatform:capture;
- const discovered=await esbuild.build({...options,absWorkingDir:entryRoot,entryPoints:[path.join(entryRoot,SOURCE,'src/'+entry+'.mjs')],plugins:[{name:'freeze-world-play',setup(build){build.onLoad({filter:/\.[cm]?js$/},async args=>({contents:await captureEntry(args.path),loader:'js'}));}}]});
+ const discovered=await esbuild.build({...options,absWorkingDir:entryRoot,entryPoints:[path.join(entryRoot,SOURCE,'src/'+entry+'.mjs')],plugins:[{name:'freeze-world-play',setup(build){build.onLoad({filter:/\.[cm]?js$/},async args=>{await captureManifests(args.path,entryRoot,captureEntry);return {contents:await captureEntry(args.path),loader:'js'};});}}]});
  if(entry==='client'){
  for(const name of ['account-host.mjs','account-view.mjs','world-play-entry.mjs'])if(!Object.keys(discovered.metafile.inputs).some(input=>input.replaceAll('\\','/').endsWith('/'+name)))throw Error('WORLD_PLAY_DEPENDENCY_MISSING: '+name);
  }

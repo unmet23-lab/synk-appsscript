@@ -35,15 +35,15 @@ test('experiences runs inside Xvfb and other bundles use node directly, preservi
   }
 });
 
-function run(t, { missing = [], updateExit = 0, updateFailures = 0, timeoutFailures = 0, probeExit = 0 } = {}) {
+function run(t, { bundle = 'experiences', missing = [], updateExit = 0, updateFailures = 0, timeoutFailures = 0, probeExit = 0 } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-deps-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const bin = path.join(root, 'bin'), log = path.join(root, 'calls');
+  const bin = path.join(root, 'bin'), log = path.join(root, 'calls'), npmLog = path.join(root, 'npm-calls');
   fs.mkdirSync(bin); for (const folder of ['synk-account', 'solo-backup', 'solo-backup-rust/engine']) fs.mkdirSync(path.join(root, 'experiences', folder), { recursive: true });
   // experiences 묶음은 WORLD 새 길 시험이 부르는 엔진(packages/atlas)의 의존성도 그 폴더에서 깐다(11-13).
   fs.mkdirSync(path.join(root, 'packages', 'atlas'), { recursive: true });
   const executable = (name, text) => fs.writeFileSync(path.join(bin, name), '#!/bin/sh\n' + text, { mode: 0o755 });
-  executable('npm', 'exit 0\n');
+  executable('npm', `printf '%s|%s\\n' "$PWD" "$*" >> "$NPM_CALLS"\nexit 0\n`);
   executable('timeout', `printf '%s\\n' "timeout $*" >> "$CALLS"
 n=0; if [ -f "$TIMEOUT_COUNT" ]; then read -r n < "$TIMEOUT_COUNT"; fi
 n=$((n+1)); printf '%s\\n' "$n" > "$TIMEOUT_COUNT"
@@ -70,12 +70,25 @@ esac
 `);
   const result = spawnSync(bash, ['-e', '-c', 'export PATH="$FIXTURE_BIN"\n'+script], {
     cwd: root, encoding: 'utf8', timeout: 10000,
-    env: { ...process.env, PATH: posix(bin), RUNNER_TEMP: posix(root), BUNDLE: 'experiences', CALLS: posix(log), FIXTURE_BIN: posix(bin), UPDATE_EXIT: String(updateExit), UPDATE_FAILURES: String(updateFailures), UPDATE_COUNT: posix(path.join(root,'update-count')), TIMEOUT_FAILURES: String(timeoutFailures), TIMEOUT_COUNT: posix(path.join(root,'timeout-count')) },
+    env: { ...process.env, PATH: posix(bin), RUNNER_TEMP: posix(root), BUNDLE: bundle, CALLS: posix(log), NPM_CALLS: posix(npmLog), FIXTURE_BIN: posix(bin), UPDATE_EXIT: String(updateExit), UPDATE_FAILURES: String(updateFailures), UPDATE_COUNT: posix(path.join(root,'update-count')), TIMEOUT_FAILURES: String(timeoutFailures), TIMEOUT_COUNT: posix(path.join(root,'timeout-count')) },
   });
   assert.equal(result.error, undefined, result.error?.message);
   const sources = path.join(root, 'synk-media-ubuntu.list');
-  return { ...result, sources: fs.existsSync(sources) ? fs.readFileSync(sources, 'utf8') : null, calls: fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n') : [] };
+  // npm을 부른 폴더를 저장소 뿌리에서 본 자리('' = 뿌리)로 남긴다.
+  const npm = fs.existsSync(npmLog) ? fs.readFileSync(npmLog, 'utf8').trim().split('\n').map(line => line.split('|')[0].replace(/^.*?\/synk-wide-deps-[^/]*/, '')) : [];
+  return { ...result, npm, sources: fs.existsSync(sources) ? fs.readFileSync(sources, 'utf8') : null, calls: fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n') : [] };
 }
+
+// 11-16 tools 묶음의 WORLD 공개 준비 시험이 플랫폼 원천을 묶다가 계정 폴더의 @supabase/supabase-js를 못 찾아 wide (tools)가 빨갰다.
+test('the tools bundle installs the account folder with its lock and keeps it in the npm cache key', t => {
+  const r = run(t, { bundle: 'tools' }); assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(r.npm, ['', '/experiences/synk-account']);
+  assert.deepEqual(r.calls, [], 'the tools bundle does not need ffmpeg');
+  const experiences = run(t); assert.equal(experiences.status, 0, experiences.stderr);
+  assert.deepEqual(experiences.npm, ['', '/experiences/synk-account', '/experiences/solo-backup', '/experiences/solo-backup-rust/engine', '/packages/atlas']);
+  const setup = workflow.match(/      - uses: actions\/setup-node@v5\n([\s\S]*?)(?=      - name:)/)?.[1];
+  assert.match(setup, /\(matrix\.bundle == 'experiences' \|\| matrix\.bundle == 'tools'\) && 'experiences\/synk-account\/package-lock\.json'/);
+});
 
 test('wide dependency setup has a bounded step and avoids apt when both tools work', t => {
   const limit = Number(step.match(/timeout-minutes: (\d+)/)?.[1]);
