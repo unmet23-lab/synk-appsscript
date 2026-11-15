@@ -181,15 +181,15 @@
     },
     {
       "계정": "lab-vn-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-15T13:00:00+07:00",
       "지문": "c098c16bb5e9ac7eb3f0e47da241ddbd6ee13b7bff8422e2a04d1bbd405c6dbc",
       "방법": "ego",
       "게시물ID": "dDGnbbVGMoM",
       "주소": "https://youtube.com/shorts/dDGnbbVGMoM",
-      "확인": "예약 한국 시각 2026-11-15 15:00 = 현지 13:00(2026-11-15) · 스튜디오 예약 창 「2026. 11. 15. 오후 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Vietnam | Tiếng Hàn thật vui」 목록 「예약됨 2026. 11. 15.」 · 글 첫 줄 「Ngày nào anh ấy cũng nói câu này… cho đến ngày cuối 🥲 #hoctienghan」 · 동영상 언어 베트남어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "로그인 없이 대조(11-15 18:3x KST): oEmbed 200 · 제목 「Ngày nào anh ấy cũng nói câu này… cho đến ngày cuối 🥲 #hoctienghan」 · 채널 「SYNK LAB Vietnam | Tiếng Hàn thật vui」 · 시청 화면 playability OK · 공개(isPrivate false · isUnlisted false) · publishDate 2026-11-14T22:00:06-08:00(= 현지 11-15 13:00 · 한국 15:00) · 길이 21초 · 소리 트랙 있음. 유튜브가 소리에서 짐작한 언어는 en으로 읽혔다(다른 나라 판도 ko로 읽혀 스튜디오 동영상 언어 칸과는 다른 값이다 — 예약 때 스튜디오에서 베트남어를 읽음)",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-11T05:37:18.252Z"
+      "기록시각": "2026-11-15T09:25:00.688Z"
     },
     {
       "계정": "lab-mx-youtube",
