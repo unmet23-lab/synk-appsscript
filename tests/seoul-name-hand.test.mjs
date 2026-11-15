@@ -254,11 +254,31 @@ test('비교판: 바른 글씨는 붉은 겉선, 내가 쓴 글씨는 쓸 때의
  assert.doesNotMatch(src,/fillStyle='#3A404C'/,'바른 글씨를 잉크처럼 짙게 칠하지 않는다');
  assert.match(src,/drawGuide\(g,glyph\(s\.ch\),sz<44\?LOOK\.modelSm:LOOK\.model\)/,'바른 글씨 줄은 겉선으로(아주 작은 칸은 붉은 면으로) 그린다');
  assert.match(look,/modelSm:\{fill:'rgba\(178,62,44/,'작은 칸의 바른 글씨도 붉은색');
- assert.match(src,/inkT\[i\]=W\?wet\.map/,'음절 끝에 쓴 잉크를 시각과 함께 남긴다');
- assert.match(src,/inkT\[k\]\?\.some\(p=>p\.length\)\?inkT\[k\]\.map\(p=>p\.map\(\(\[u,v,t\]\)=>\[u\*sz,v\*sz,t\*sz\]\)\)/,'내가 쓴 글씨 줄은 쓴 잉크를 시각까지 칸 크기로 바꿔 다시 그린다');
+ assert.match(src,/inkT\[i\]=W\?\{w:W,s:wet\.map\(p=>p\.map\(\(\[x,y,t\]\)=>\[x\/W,y\/W,t\]\)\)\}/,'음절 끝에 쓴 잉크를 원래 ms 시각 · 그때 칸 폭과 함께 남긴다');
+ assert.match(src,/if\(live\)\{wet\.push\(live\);redraw\(\);\}live=null;/,'긋는 중에 넘어가도 그 획을 마른 잉크로 넘긴다(최종 검수 F2)');
+ assert.match(src,/src=has\?it\.s\.map\(p=>p\.map\(\(\[u,v,t\]\)=>\[u\*sz,v\*sz,t\]\)\)/,'내가 쓴 글씨 줄은 쓴 잉크를 시각은 그대로, 자리만 칸 크기로 바꿔 다시 그린다');
+ assert.match(src,/vk:has\?sz\/it\.w:1/,'기준 빠르기에 칸 비율을 곱한다');
+ assert.match(src,/paintInk\(o\.g,p\.slice\(0,n\),lwc,n===p\.length,o\.vk\)/);
  assert.match(src,/inks\.length=0;inkT\.length=0;/,'다시 써 보기는 쓴 잉크도 비운다');
  for(const [cls,key] of [['nt-cmp-lm','바른 글씨'],['nt-cmp-ly','내가 쓴 글씨']]){
   assert.ok(html.includes(`<span class="nt-cmp-l ${cls}"><i class="nt-key" aria-hidden="true"></i><span data-l="${key}">${key}</span></span>`),cls);
   for(const lang of ['en','mn']){const v=L(key,null,lang);assert.ok(v&&v!==key,`${lang} ${key}`);}
+ }
+});
+
+// 최종 검수 F1(seoul-name-cmp-20261116): 비교판은 작은 칸에 다시 그린다 — 자리 · 촉 · 끝 빼기 길이와 기준 빠르기를 같은 비율로 줄이면, 시각은 그대로 두어도 굵기 배수가 쓸 때와 같아야 한다.
+// 시각을 줄여 맞추면 최소 점 간격(6ms)에 걸려 빠른 획이 굵어진다(120Hz · 0.9px/ms에서 약 18%)
+test('비교판 굵기: 칸을 줄여 다시 그려도 굵기 배수가 쓸 때와 같다(시각은 줄이지 않는다)', async () => {
+ const {inkScale}=await import('../experiences/seoul-arrival/name-ink.mjs');
+ const opt=(w,vk)=>({thin:.22,lo:.7,hi:1,vref:.9*vk,taperIn:w*.45,inFrom:.72,taperOut:w*1.5,outTo:.4,fin:true});
+ for(const [hz,v] of [[120,.9],[60,.6],[60,1.6],[144,.3]]){
+  const dt=1000/hz,W=280,w=W*.05,line=Array.from({length:60},(_,i)=>[20+i*v*dt+Math.sin(i/5)*3,40+i*.3*v*dt,1000+i*dt]);
+  const big=inkScale(line,opt(w,1));
+  for(const k of [.26,.18,.1]){
+   const small=inkScale(line.map(([x,y,t])=>[x*k,y*k,t]),opt(w*k,k));
+   big.forEach((b,i)=>assert.ok(Math.abs(b-small[i])<1e-9,hz+'Hz '+v+' k'+k+' 점'+i+': '+b+' ≠ '+small[i]));
+   // 옛 판(시각도 k배로 줄임)은 빠른 획에서 굵어졌다 — 이 시험이 그 차이를 잡는지 확인
+   if(hz>=120&&v>=.9){const old=inkScale(line.map(([x,y,t])=>[x*k,y*k,t*k]),opt(w*k,1));assert.ok(old[30]>big[30]+.05,'옛 판은 굵었다 '+old[30]+' '+big[30]);}
+  }
  }
 });
