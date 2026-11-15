@@ -55,15 +55,14 @@ function readPublicPage({platform, handle, urls}) {
       if(visible(el)&&m)add('followers','팔로워',m[1]||m[2]);
     }
   } else if(platform==='x'){
-    if(/\bThese posts are protected\b|게시물이 비공개|이 게시물은 비공개/i.test(pageText))return data;
+    data.empty=/(?:hasn.t posted|has not posted|아직 게시물을 작성하지 않았|아직 게시물을 올리지 않았)/i.test(pageText);
     for(const article of document.querySelectorAll('article[data-testid="tweet"]')){
       const time=article.querySelector('time[datetime]'),link=time?.closest('a[href]');
       if(!visible(time)||!link)continue;
       const post=new URL(link.href),m=post.pathname.match(/^\/([^/]+)\/status\/(\d+)$/);
       if(!m||m[1].toLowerCase()!==tag||post.origin!==location.origin)continue;
       const group=Array.from(article.querySelectorAll('[role="group"][aria-label]')).filter(e=>visible(e)&&e.closest('article')===article);
-      if(group.length!==1)continue;
-      const label=group[0].getAttribute('aria-label');
+      const label=group.length===1?group[0].getAttribute('aria-label'):'';
       const metrics={};
       const counters={views:/(?:^|[,，]\s+)(?:([\d,]+)\s+views?|조회수?\s*([\d,]+)회?)(?=\s*(?:[,，]\s+|$))/i,
         likes:/(?:^|[,，]\s+)(?:([\d,]+)\s+likes?|(?:마음에 들어요|좋아요)\s*([\d,]+)(?:개|회)?)(?=\s*(?:[,，]\s+|$))/i};
@@ -71,10 +70,55 @@ function readPublicPage({platform, handle, urls}) {
         const hit=label.match(re);
         if(hit){const n=exact(hit[1]||hit[2]);if(n!==null)metrics[key]=n;}
       }
+      const buttons=[
+        ['likes','[data-testid=like],[data-testid=unlike]',/^([\d,]+)\s+Likes?\.|^(?:좋아요|마음에 들어요)\s*([\d,]+)\s*(?:개|회)?(?:[.。]|$)/i],
+        ['views','a[href*="/analytics"]',/^([\d,]+)\s+Views?(?:[.。]|$)|^조회수?\s*([\d,]+)\s*회?(?:[.。]|$)/i],
+        ['comments','[data-testid=reply]',/^([\d,]+)\s+Repl(?:y|ies)\.|^답글\s*([\d,]+)\s*개?(?:[.。]|$)/i],
+        ['saves','[data-testid=bookmark],[data-testid=removeBookmark]',/^([\d,]+)\s+Bookmarks?\.|^북마크\s*([\d,]+)\s*개?(?:[.。]|$)/i]
+      ];
+      for(const [key,selector,re] of buttons){
+        const els=[...article.querySelectorAll(selector)].filter(e=>visible(e)&&e.closest('article')===article&&
+          (key!=='views'||new URL(e.href).pathname===post.pathname+'/analytics'));
+        if(els.length!==1)continue;
+        const m=(els[0].getAttribute('aria-label')||els[0].innerText||'').trim().match(re);
+        if(m){const n=exact(m[1]||m[2]);if(n!==null)metrics[key]=n;}
+      }
       if(Object.keys(metrics).length)data.posts.push({externalId:m[2],url:post.origin+post.pathname,publishedAt:time.dateTime,metrics});
     }
   }
   return data;
+}
+
+// X renders its navigation before its timeline. Keep exact counts from each set of visible, owner-bound cards as the list scrolls.
+async function readXTimeline(page,args,read){
+  const tag=String(args.handle||'').replace(/^@/,'').toLowerCase();
+  await page.waitForFunction(id=>[...document.querySelectorAll('article[data-testid=tweet] time[datetime]')]
+    .some(t=>t.closest('a')?.pathname.toLowerCase().startsWith('/'+id+'/status/'))||
+    /(?:hasn.t posted|has not posted|아직 게시물을 작성하지 않았|These posts are protected)/i.test(document.body?.innerText||''),tag,{timeout:18000}).catch(()=>{});
+  let data=await page.evaluate(read,args);
+  const found=new Map((data.posts||[]).map(p=>[p.externalId,p]));
+  if(!data.matched||data.empty)return data;
+  if(!found.size){
+    const access=await page.evaluate(()=>/These posts are protected|게시물이 비공개/i.test(document.body.innerText)?'need_owner':
+      /something went wrong|rate limit|try reloading|오류가 발생|다시 불러/i.test(document.body.innerText)?'retry':null);
+    return {...data,unavailable:access||'retry'};
+  }
+  for(let round=0;round<8 && found.size<80;round++){
+    const prior=[...found.keys()];
+    const moved=await page.evaluate(id=>{
+      const last=[...document.querySelectorAll('article[data-testid=tweet]')].reverse().find(e=>e.querySelector('time[datetime]')?.closest('a')?.pathname.toLowerCase().startsWith('/'+id+'/status/'));
+      if(!last)return false;last.scrollIntoView({block:'end'});return true;
+    },tag);
+    if(!moved)break;
+    await page.waitForFunction(({tag,prior})=>[...document.querySelectorAll('article[data-testid=tweet] time[datetime]')].some(t=>{
+      const path=t.closest('a')?.pathname.toLowerCase()||'';return path.startsWith('/'+tag+'/status/')&&!prior.includes(path.split('/').at(-1));
+    }),{tag,prior},{timeout:3500}).catch(()=>{});
+    data=await page.evaluate(read,args);
+    if(!data.matched)break;
+    for(const p of data.posts)if(found.size<80||found.has(p.externalId))found.set(p.externalId,p);
+    if(prior.length===found.size)break;
+  }
+  return {...data,posts:[...found.values()]};
 }
 
 function publicEnvelope({account,sourceUrl,snapshot,digest}){
@@ -92,5 +136,5 @@ function publicEnvelope({account,sourceUrl,snapshot,digest}){
     ...(account.externalId?{externalId:account.externalId}:{handle:account.handle})},evidenceSha256:digest,observations};
 }
 
-module.exports={readPublicPage,publicEnvelope};
+module.exports={readPublicPage,readXTimeline,publicEnvelope};
 

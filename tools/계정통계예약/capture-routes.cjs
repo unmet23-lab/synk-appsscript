@@ -7,7 +7,7 @@ const {execFile} = require('node:child_process');
 const {promisify} = require('node:util');
 const {createHash} = require('node:crypto');
 const runFile = promisify(execFile);
-const {readPublicPage,publicEnvelope} = require('./public-metrics.cjs');
+const {readPublicPage,readXTimeline,publicEnvelope} = require('./public-metrics.cjs');
 const {parseXhs} = require('../lib/외부통계파싱.cjs');
 const {officialScreen} = require('./official-screen.cjs');
 const {ownerCapture} = require('./owner-metrics.cjs');
@@ -119,13 +119,14 @@ async function nativeBrowser(ctx) {
   const nativeOwner=profile.browser==='ego' && profile.profileId && ['xiaohongshu','douyin','substack'].includes(account.platform);
   if (!publicRoute && !nativeOwner) return {more:true};
   const argument={platform:account.platform,handle:account.handle,urls};
+  const reader=(page)=>account.platform==='x'?'await ('+readXTimeline.toString()+')('+page+','+json(argument)+','+readPublicPage.toString()+')':'await '+page+'.evaluate('+readPublicPage.toString()+','+json(argument)+')';
   const output=path.join(dir,'public-snapshot.json');
   if (profile.browser==='aside' || account.id.startsWith('yuhokorean-')) {
     if (!publicRoute || !profile.account) return {more:true};
     const source = [
       'const page=await openTab('+json(urls[0])+');',
       'try {await page.waitForLoadState("domcontentloaded"); await page.waitForFunction(()=>document.body?.innerText.trim().length>30,null,{timeout:9000}).catch(()=>{});',
-      'const r=await page.evaluate('+readPublicPage.toString()+','+json(argument)+');console.log("SYNK_METRICS "+JSON.stringify(r));} finally {await page.close();}'
+      'const r='+reader('page')+';console.log("SYNK_METRICS "+JSON.stringify(r));} finally {await page.close();}'
     ].join('\n');
     const snapshot=await aside(ctx,'public-aside',source);
     if (!snapshot) return {more:true};
@@ -146,7 +147,7 @@ async function nativeBrowser(ctx) {
       'await p.goto('+json(urls[0])+',{waitUntil:"domcontentloaded",timeout:28000});',
       'await p.snapshot();await p.waitForFunction(()=>document.body?.innerText.trim().length>30,undefined,{timeout:10000}).catch(()=>{});',
       account.platform==='tiktok'?'await p.waitForFunction(()=>Boolean(document.querySelector("[data-e2e=likes-count]")),undefined,{timeout:10000}).catch(()=>{});':'',
-      'const result=await p.evaluate('+readPublicPage.toString()+','+json(argument)+');',
+      'const result='+reader('p')+';',
       'await fs.writeFile('+json(output)+',JSON.stringify(result),{flag:"wx"});'
     ].join('\n'):'';
     await egoRound(dir,'open-and-read',open+'\n'+body,signal);
@@ -167,6 +168,7 @@ async function nativeBrowser(ctx) {
 }
 
 async function savePublic(ctx,snapshot) {
+  if(snapshot.unavailable && ['need_owner','retry'].includes(snapshot.unavailable))return {more:false,reason:snapshot.unavailable};
   const envelope=publicEnvelope({account:ctx.account,sourceUrl:snapshot.url,snapshot,digest:null});
   if(envelope)await storeBatch(ctx,'public-verified',snapshot,envelope);
   if(ctx.covered())return {more:false,reason:'done'};
