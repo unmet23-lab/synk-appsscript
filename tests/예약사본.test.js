@@ -147,6 +147,23 @@ test('끝 — docs/마케팅 밖에 남긴 결과물은 「남은 것」, .tmp �
   } finally { t.치우기(); }
 });
 
+test('끝 — 편 폴더의 파이썬 캐시(__pycache__)는 넘기지 않고, 공용 쪽이 더 새것이어도 남은 것으로 보지 않는다', () => {
+  const t = 판();
+  try {
+    쓰기(t.메인, '.git/info/exclude', '__pycache__/\n');
+    const 원본 = 쓰기(t.사본, 'docs/마케팅/편A/도구/__pycache__/재기.cpython-314.pyc', '옛 캐시');
+    const 공용쪽 = 쓰기(t.메인, 'docs/마케팅/편A/도구/__pycache__/재기.cpython-314.pyc', '새 캐시');
+    const 앞 = new Date(Date.now() - 60_000); fs.utimesSync(원본, 앞, 앞);
+    쓰기(t.사본, 'docs/마케팅/편A/게시/b1_master.mp4', '최종본');
+    const 미리 = 도구.넘기기({ 저장소: t.사본 });
+    assert.deepEqual(미리.셈, { 복사: 1 }, '캐시는 세지 않고 영상만 넘긴다');
+    const r = 도구.끝({ 저장소: t.사본, 실행: true });
+    assert.equal(r.결과, '지워도 됨');
+    assert.deepEqual(r.남은것, []);
+    assert.equal(fs.readFileSync(공용쪽, 'utf8'), '새 캐시', '공용 쪽 캐시는 건드리지 않는다');
+  } finally { t.치우기(); }
+});
+
 test('넘기기 — 옆 이름을 먼저 차지한 쪽만 넘기고, 다른 쪽은 「열려 있음」, 남의 옆 이름은 오래돼도 지우지 않는다', () => {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-sched-side-'));
   try {

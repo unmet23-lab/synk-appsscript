@@ -170,7 +170,10 @@ function 무시항목(나, 아래 = null) {
   return [...new Set(r.split('\0').filter(Boolean).map((x) => x.replace(/\/$/, '')))];
 }
 
-/** docs/마케팅 아래 git 밖 항목 — { 파일: [상대 경로], 링크: [상대 경로] }. 무시된 폴더는 걸어 들어가되 링크 · node_modules는 들어가지 않는다 */
+/** 편 폴더 안에서도 넘기지 않는 폴더 — 도구가 다시 만드는 캐시다. 넘길 결과물로 세면 공용 쪽이 더 새것일 때 끝난 사본이 「남은 것 있음」으로 남는다(11-15, 7.7GiB 사본이 .pyc 하나로 남음) */
+const 넘기지않는폴더 = new Set(['node_modules', '__pycache__']);
+
+/** docs/마케팅 아래 git 밖 항목 — { 파일: [상대 경로], 링크: [상대 경로] }. 무시된 폴더는 걸어 들어가되 링크 · node_modules · __pycache__는 들어가지 않는다 */
 function git밖(나, 아래 = 넘길곳) {
   if (!fs.existsSync(path.join(나, 아래))) return { 파일: [], 링크: [] };
   const 파일 = [], 링크 = [];
@@ -180,7 +183,7 @@ function git밖(나, 아래 = 넘길곳) {
     try { st = fs.lstatSync(절대); } catch { return; }
     if (st.isSymbolicLink()) { 링크.push(상대); return; }
     if (st.isDirectory()) {
-      if (path.basename(상대) === 'node_modules') return;
+      if (넘기지않는폴더.has(path.basename(상대))) return;
       for (const d of fs.readdirSync(절대)) 걷기(path.posix.join(상대, d));
       return;
     }
