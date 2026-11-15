@@ -334,13 +334,13 @@ test('confirmed account details follow the latest ledgers without promoting an i
   const expansion=channels.filter(row=>row.accountStatus==='confirmed-expansion');
   assert.equal(expansion.filter(row=>row.platform==='YouTube').length,18);
   assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,16);
-  // 09-20 원장에서 생성 미확인이던 인도네시아 TikTok은 10-19 레지스트리 개설 확인으로 확보가 되고, 사진 미반영이 그대로 보인다.
+  // 09-20 원장에서 생성 미확인이던 인도네시아 TikTok은 10-19 레지스트리 개설 확인으로 확보가 된다. 사진은 11-15 밤에 LAB 로고로 채워 「사진 확인」으로 보인다(원장 profileStatus).
   const idTiktok=channels.find(row=>row.id==='lab-id-tiktok');
   assert.equal(social.channels.find(row=>row.id==='lab-id-tiktok').created,false);
   assert.equal(registry.accounts['lab-id-tiktok'].creationVerified,true);
   assert.equal(idTiktok.accountStatus,'confirmed-expansion');
   assert.equal(idTiktok.publicUrl,registry.accounts['lab-id-tiktok'].publicUrl);
-  assert.match(idTiktok.profileStatus,/사진 미반영/);
+  assert.match(idTiktok.profileStatus,/사진 확인/);
   assert.equal(idTiktok.observedGate,null);
   for(const record of [...youtube.channels,...jpVnYoutube.channels].filter(row=>row.id!=='lab-youtube')) {
     const row=channels.find(item=>item.id===record.id);
@@ -350,7 +350,7 @@ test('confirmed account details follow the latest ledgers without promoting an i
   const rednote=channels.find(row=>row.id==='lab-cn-xiaohongshu');
   assert.match(rednote.profileStatus,/미반영/);
   assert.match(rednote.verificationScope,/비로그인 공개 확인 아님/);
-  // Preserve the 10-02 record, except Mexico TikTok's owner verification on 11-08.
+  // Preserve the 10-02 record, except Mexico TikTok's owner verification on 11-08 and its name · bio · avatar saved on 11-15.
   const brMx = JSON.parse(fs.readFileSync(path.join(repo,'docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json'),'utf8'));
   for (const record of brMx.channels) {
     const row = channels.find(item => item.id === record.id);
@@ -358,7 +358,7 @@ test('confirmed account details follow the latest ledgers without promoting an i
     if (record.id === 'lab-mx-tiktok') {
       assert.equal(row.accountStatus, 'confirmed-expansion');
       assert.equal(row.publicUrl, 'https://www.tiktok.com/@synklab.mx');
-      assert.match(row.profileStatusCode, /name-bio-avatar-pending/);
+      assert.match(row.profileStatusCode, /name-bio-link-avatar-saved/);
       continue;
     }
     assert.equal(row.accountStatus, record.creationVerified ? 'confirmed-expansion' : 'planned', record.id);

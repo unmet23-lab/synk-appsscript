@@ -60,12 +60,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "vk-web",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "unknown",
       "metricsRoute": "vk-api",
       "metricsState": "missing",
@@ -90,7 +90,7 @@
       "bio": "想说的话，用韩语说。日常小场景＋韩国人真的在用的表达，配中文字幕。",
       "bioVerifiedAt": "2026-11-08",
       "profileStatus": "name-and-full-bio-owner-profile-verified-avatar-account-icon-verified-after-reload",
-      "publicProfileComplete": false,
+      "publicProfileComplete": true,
       "avatarStatus": "approved-lab-logo-visible-in-account-icon-after-reload",
       "avatarVerifiedAt": "2026-11-08",
       "avatarAsset": "docs/마케팅/프로필설정_20261108/avatar-lab-logo.png",
@@ -111,17 +111,19 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-16",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "douyin-creator",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "unknown",
       "metricsRoute": "screen-only",
       "metricsState": "missing",
       "egoProfile": "Profile 5",
-      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — 더우인 앱 QR 승인 — 「SYNK LAB 韩语」 39504393074 확인."
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — 더우인 앱 QR 승인 — 「SYNK LAB 韩语」 39504393074 확인.",
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "이름 · 소개 · LAB 로고 사진은 11-08 · 11-12 확인. 더우인 웹 프로필 편집기에는 링크 칸이 없고 소개 속 바깥 주소는 플랫폼이 막는 쪽이라 링크 없이 완성으로 본다(11-15 Claude 판단 — 결정 표 11-15)"
     },
     "lab-jp-instagram": {
       "brand": "LAB",
@@ -167,7 +169,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
-      "metricsState": "missing"
+      "metricsState": "missing",
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 열기 전 — ego Profile 5의 인스타 웹은 지금 @synkpulse로 열려 있어 이 계정으로 바꾸려면 비밀번호(때로 2단계 인증)가 든다. Business Suite 인스타 자산 목록에도 이 계정이 없다(「할당된 Instagram 계정 없음」). 소개에 주소 줄을 넣는 것과 매일 거는 것 모두 이 계정 로그인이 있어야 하니, 계정마다 ego 프로필을 따로 두고 유호님이 한 번 로그인하시면 연다(판본 JP · UZ는 이미 돌림에 든다)"
     },
     "lab-uz-instagram": {
       "brand": "LAB",
@@ -213,7 +217,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
-      "metricsState": "missing"
+      "metricsState": "missing",
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 열기 전 — ego Profile 5의 인스타 웹은 지금 @synkpulse로 열려 있어 이 계정으로 바꾸려면 비밀번호(때로 2단계 인증)가 든다. Business Suite 인스타 자산 목록에도 이 계정이 없다(「할당된 Instagram 계정 없음」). 소개에 주소 줄을 넣는 것과 매일 거는 것 모두 이 계정 로그인이 있어야 하니, 계정마다 ego 프로필을 따로 두고 유호님이 한 번 로그인하시면 연다(판본 JP · UZ는 이미 돌림에 든다)"
     },
     "lab-mx-youtube": {
       "brand": "LAB",
@@ -542,17 +548,20 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-16",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "egoProfile": "Profile 11",
-      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.vn」(Profile 11)에 로그인 확인 — Google unmet27. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.vn」(Profile 11)에 로그인 확인 — Google unmet27. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 ego Profile 11에서 소개를 「Nói điều bạn muốn bằng tiếng Hàn. Cảnh ngắn, câu thực tế, Vietsub. synk.im/lab/」로 바꿈(주소 포함 — 맥락 없는 Opus 확인) · 이름 SYNK LAB Vietnam · 사진(9-21 승인 까몽) 그대로, 프로필 쪽 데이터로 다시 읽음"
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -610,12 +619,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "rutube-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "unknown",
       "metricsRoute": "screen-only",
       "metricsState": "missing",
@@ -671,12 +680,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -731,12 +740,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -789,12 +798,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-16",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -814,7 +823,7 @@
       "publicUrl": "https://t.me/synklab_uz",
       "publicUrlVerifiedAt": "2026-09-20",
       "publicUrlEvidence": "기존 Telegram 로그인으로 공개 채널 생성 후 t.me 공개 페이지에서 이름·소개 전문·1 subscriber 확인",
-      "bio": "Koreys tilini zavq bilan o‘rganamiz! Hangul, kundalik iboralar va kichik testlar. Yangi boshlovchilar uchun materiallar tayyorlanmoqda. Bitta iborani o‘rganib, darrov aytib ko‘r.",
+      "bio": "Koreys tilini zavq bilan o‘rganamiz! Hangul, kundalik iboralar va 3 soniyalik testlar — yangi boshlovchilar uchun qisqa videolar. Bitta iborani o‘rganib, darrov aytib ko‘r.\nsynk.im/lab/",
       "ownerLogin": "existing-telegram-login-owner",
       "publisher": "manual-only",
       "connection": "web-owner-verified-bot-api-not-verified",
@@ -841,18 +850,18 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "telegram-web",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "unknown",
       "metricsRoute": "public-page",
       "metricsState": "missing",
-      "publicProfileComplete": false,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 t.me/s 공개 화면 — 이름 · 소개 · 사진 있음, 소개에 링크 없음(채운 뒤 true)"
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 텔레그램 웹(ego 기본 프로필) 채널 편집에서 소개 끝에 synk.im/lab/ 줄을 더하고 t.me/s 공개 화면에서 다시 읽음 — 이름 · 소개 · 링크 · 사진 있음"
     },
     "lab-ca-youtube": {
       "brand": "LAB",
@@ -1253,12 +1262,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "youtube-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -1294,12 +1303,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "youtube-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -1335,12 +1344,12 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "youtube-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -2069,12 +2078,12 @@
       "connection": "web-owner-verified; publishing-not-connected",
       "creationVerified": true,
       "registrationCompleted": true,
-      "profileStatus": "handle-and-owner-verified; name-bio-avatar-pending",
-      "publicProfileComplete": false,
-      "publicDisplayName": "synklab.mx",
+      "profileStatus": "name-bio-link-avatar-saved-and-publicly-reread-2026-11-15",
+      "publicProfileComplete": true,
+      "publicDisplayName": "SYNK LAB Mexico",
       "targetDisplayName": "SYNK LAB Mexico",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "publicBio": "",
+      "publicBio": "Dilo en coreano. Escenas cortas, frases reales y subs en español. synk.im/lab/",
       "loginIdentityRef": "naver-pulse",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
       "language": "es",
@@ -2088,17 +2097,19 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-16",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
       "egoProfile": "Profile 12",
-      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.mx」(Profile 12)에 로그인 확인 — 틱톡 이메일(PULSE 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.mx」(Profile 12)에 로그인 확인 — 틱톡 이메일(PULSE 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 ego Profile 12에서 이름 SYNK LAB Mexico · 소개(주소 synk.im/lab/ 포함) · 승인 LAB 로고 사진을 저장하고 다른 계정 프로필의 공개 화면 데이터로 다시 읽음(저장 응답이 비어도 몇 분 뒤 반영되는 일이 잦았다)"
     },
     "lab-kz-tiktok": {
       "brand": "LAB",
@@ -2112,12 +2123,12 @@
       "connection": "web-owner-verified; publishing-not-connected",
       "creationVerified": true,
       "registrationCompleted": true,
-      "profileStatus": "handle-and-owner-verified; name-bio-avatar-pending",
-      "publicProfileComplete": false,
-      "publicDisplayName": "synklab.kz",
+      "profileStatus": "name-bio-link-avatar-saved-and-reread-2026-11-15",
+      "publicProfileComplete": true,
+      "publicDisplayName": "SYNK LAB Kazakhstan",
       "targetDisplayName": "SYNK LAB Kazakhstan",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "publicBio": "",
+      "publicBio": "Ойыңды корейше айт. Қысқа көрініс, күнделікті сөз, қазақша субтитр synk.im/lab/",
       "loginIdentityRef": "naver-class",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
       "language": "kk",
@@ -2131,17 +2142,19 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
       "egoProfile": "Profile 13",
-      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.kz」(Profile 13)에 로그인 확인 — 틱톡 이메일(SHIFT 수업 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.kz」(Profile 13)에 로그인 확인 — 틱톡 이메일(SHIFT 수업 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 ego 계정별 프로필에서 이름 SYNK LAB Kazakhstan · 소개(주소 synk.im/lab/ 포함) · 승인 LAB 로고 사진을 저장하고 프로필 쪽 데이터(__UNIVERSAL_DATA_FOR_REHYDRATION__)로 다시 읽음"
     },
     "lab-th-tiktok": {
       "brand": "LAB",
@@ -2155,12 +2168,12 @@
       "connection": "web-owner-verified; publishing-not-connected",
       "creationVerified": true,
       "registrationCompleted": true,
-      "profileStatus": "handle-and-owner-verified; name-bio-avatar-pending",
-      "publicProfileComplete": false,
-      "publicDisplayName": "synklab.th",
+      "profileStatus": "name-bio-link-avatar-saved-and-reread-2026-11-15",
+      "publicProfileComplete": true,
+      "publicDisplayName": "SYNK LAB Thailand",
       "targetDisplayName": "SYNK LAB Thailand",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "publicBio": "",
+      "publicBio": "อยากพูดอะไร พูดเป็นภาษาเกาหลี ฉากสั้น ๆ ประโยคที่ใช้จริง ซับไทย synk.im/lab/",
       "loginIdentityRef": "tiktok-th-email",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
       "language": "th",
@@ -2174,17 +2187,19 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
       "egoProfile": "Profile 14",
-      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.th」(Profile 14)에 로그인 확인 — 틱톡 이메일(태국). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.th」(Profile 14)에 로그인 확인 — 틱톡 이메일(태국). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 ego 계정별 프로필에서 이름 SYNK LAB Thailand · 소개(주소 synk.im/lab/ 포함) · 승인 LAB 로고 사진을 저장하고 프로필 쪽 데이터(__UNIVERSAL_DATA_FOR_REHYDRATION__)로 다시 읽음"
     },
     "lab-id-tiktok": {
       "brand": "LAB",
@@ -2199,8 +2214,8 @@
       "connection": "web-owner-verified-workspace-read-api-connected-sandbox",
       "creationVerified": true,
       "registrationCompleted": true,
-      "profileStatus": "created-handle-and-owner-verified; public-name-and-bio-verified; avatar-not-uploaded; Workspace-brand-country-language-saved",
-      "publicProfileComplete": false,
+      "profileStatus": "name-bio-link-verified; avatar-lab-logo-saved-and-publicly-reread-2026-11-15",
+      "publicProfileComplete": true,
       "publicDisplayName": "SYNK LAB Indonesia",
       "workspaceDisplayName": "SYNK LAB Indonesia",
       "workspaceChannelId": "4c82692e-0530-4f37-8fdc-fd78b142551b",
@@ -2242,18 +2257,20 @@
         "노래"
       ],
       "dailyLine": "LAB 나라별",
-      "dailyFrom": "미정",
+      "dailyFrom": "2026-11-17",
       "dailyFormatsFrom": {
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false,
+      "postRouteVerified": "첫판",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "egoProfile": "Profile 15",
       "egoProfileNote": "2026-11-12 ego 「TikTok synklab.id」(Profile 15)에 로그인 확인 — Google unmet29. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
-      "loginMethod": "continue-with-google"
+      "loginMethod": "continue-with-google",
+      "profileCheckedAt": "2026-11-15",
+      "profileCheckNote": "2026-11-15 ego Profile 15에서 구글 기본 글자 그림(「가츠」)이던 사진을 승인 LAB 로고로 바꾸고 다른 계정 프로필의 공개 화면 데이터로 다시 읽음 — 이름 · 소개(주소 포함)는 10-19 확인 그대로"
     },
     "pulse-youtube": {
       "brand": "PULSE",
@@ -2338,7 +2355,7 @@
   "labRotation": {
     "설계": "LAB_하루두편_설계_20261110/README.md",
     "칸": "계정마다 dailyTimes(timeZone의 현지 시각) · dailyFormats — 13:00 이야기 · 21:00 노래(11-10 밤 유호님 — 퀴즈 대신), 텔레그램은 21:00 노래 한 편. 몽골 네 계정은 11-09 결정 시각(한국 13:00 · 21:00 = 울란바토르 12:00 · 20:00) 그대로",
-    "시작": "dailyFrom · dailyTimesFrom이 「미정」이면 그 칸은 시작 전(tools/예약큐.js · tools/돌림표.js가 셈에서 뺀다). 5일치 비축을 건 날을 적는다",
+    "시작": "dailyFrom · dailyTimesFrom이 「미정」이면 그 칸은 시작 전(tools/예약큐.js · tools/돌림표.js가 셈에서 뺀다). 여는 날(현지 날짜)을 적는다. 11-15부터 프로필 · 로그인이 된 계정은 판본과 비축을 기다리지 않고 「첫판」과 함께 연다 — 열린 계정의 빈 칸이 판본 회차의 할 일이 되고, 그 키 판본이 하나라도 검수를 넘기면 첫 판이 달린다(유호님 11-15 「응, 시작해」 · 제작 절차 「LAB 하루 두 편」 8). 처음 적은 「5일치 비축을 건 날을 적는다」는 한 번도 차지 않아 17곳이 닫힌 채 남아 바꿨다",
     "여는법": "나라별 계정은 13:00 이야기 칸부터 연다 — 21:00 노래 칸은 dailyFormatsFrom {\"노래\": 「미정」}으로 닫아 두고 노래 비축(리듬 한국어 준비안)이 차면 날짜를 적는다. 노래 원본은 「돌림」.형식 「노래」로 적고, 차례를 지키는 곡은 「돌림」.연재 {이름, 차례}, 다른 길로 이미 올린 계정은 「돌림」.이미받음에 적는다(tools/돌림표.js 머리말). 여는 차례: 프로필이 차고(publicProfileComplete true) 그 길로 로그인된 계정의 postRouteVerified를 「첫판」으로, dailyFrom을 여는 날로 → 판 하나(첫 판 시험) → 예약 목록 · 공개 뒤 대조 → true. 걸 길은 지금 길(브라우저 — 유호님 11-10 「지금 길로 열어」, 약관 근거는 postRoutePolicy · 게시경로.md)",
     "판본검수": [
       "뜻",

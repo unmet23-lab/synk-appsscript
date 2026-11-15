@@ -73,7 +73,7 @@ function allSlots(account) {
   return times.map((time, i) => ({ time, format: Array.isArray(account.dailyFormats) ? account.dailyFormats[i] || null : null }));
 }
 
-// 「미정」은 아직 안 연 칸(5일치 비축을 건 날 날짜로 바꾼다 — sns-계정.json labRotation.시작).
+// 「미정」은 아직 안 연 칸(여는 날 날짜로 바꾼다 — 11-15부터 비축을 기다리지 않는다, sns-계정.json labRotation.시작).
 const PENDING = '미정';
 const before = (day, from) => Boolean(from) && (from === PENDING || day < from);
 const notStarted = (account) => account?.dailyFrom === PENDING;

@@ -543,7 +543,7 @@ test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야
     const korea = a.dailyTimes.map((t) => T.localTime(T.zonedMs('2026-11-20', t, a.timeZone), 'Asia/Seoul'));
     if (a.countryCode === 'MN' && a.dailyLine === 'LAB 몽골') assert.deepEqual(korea, a.platform === 'telegram' ? ['21:00'] : ['13:00', '21:00'], `${key}: 몽골은 한국 시각 그대로`);
     else assert.deepEqual(a.dailyTimes, a.platform === 'telegram' ? ['21:00'] : ['13:00', '21:00'], `${key}: 현지 13:00 · 21:00`);
-    // 시작은 5일치 비축을 건 날(그 전엔 「미정」)
+    // 시작은 여는 날(그 전엔 「미정」)
     if (a.dailyLine === 'LAB 나라별') assert.ok(a.dailyFrom === '미정' || /^\d{4}-\d{2}-\d{2}$/.test(a.dailyFrom), `${key}: dailyFrom ${a.dailyFrom}`);
   }
   assert.equal(new Set(lab.map(([, a]) => a.language)).size, 21);

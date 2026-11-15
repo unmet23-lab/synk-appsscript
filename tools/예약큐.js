@@ -367,7 +367,7 @@ const dayOf = (plate, item, accounts = {}) => (plate.time && Number.isFinite(Dat
 const pendingDays = (item, accounts) => [...new Set(item.plates.filter((p) => !DONE.has(p.state) && p.state !== '보류').map((p) => dayOf(p, item, accounts)).filter(Boolean))].sort();
 
 // 매일 판의 줄(sns-계정.json dailyLine). 막힌 계정(dailyBlocked)은 줄에 적되 셈에서 뺀다. dailyFrom이 「미정」인 계정(11-10 LAB 나라별 —
-// 5일치 비축을 건 날 연다)은 「시작 전」으로 따로 보이고 셈에서 뺀다.
+// 11-15부터 프로필 · 로그인이 되면 판본 · 비축을 기다리지 않고 연다)은 「시작 전」으로 따로 보이고 셈에서 뺀다.
 function dailyLines(accounts) {
   const lines = new Map();
   for (const [key, a] of Object.entries(accounts)) {
@@ -710,7 +710,7 @@ function print(report) {
   if (report.pending.length) {
     const count = (list, f) => [...list.reduce((m, x) => m.set(f(x), (m.get(f(x)) || 0) + 1), new Map())].map(([k, n]) => `${k} ${n}`).join(' · ');
     const waiting = report.pending.filter((p) => p.why.length);
-    console.log(`  시작 전(dailyFrom 「미정」 — 5일치 비축을 건 날 연다) ${report.pending.length}곳: ${count(report.pending, (p) => `${p.line} ${p.platform}`)}`
+    console.log(`  시작 전(dailyFrom 「미정」 — 프로필 · 로그인이 되면 연다) ${report.pending.length}곳: ${count(report.pending, (p) => `${p.line} ${p.platform}`)}`
       + (waiting.length ? ` · 아직 못 엶: ${count(waiting.flatMap((p) => p.why.map((w) => ({ w }))), (x) => `${x.w} 확인 전`)}(node tools/돌림표.js가 계정마다 보인다)` : ''));
   }
   if (report.trial?.length) console.log(`  ${trialText(report.trial)}`);
