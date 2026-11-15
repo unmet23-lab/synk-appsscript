@@ -78,7 +78,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const FOLD_WAIT_MS=4000;
  // 첫 받기가 실패로 끝난 뒤 storage.sync.pulled(뒤의 받기가 됨)를 다시 보는 간격 — 처음 값에서 두 배씩, 가장 길게(Fable 끝 판 F1 · 홈 판 감시의 settle과 같은 꼴).
  const PULL_WATCH_MS=2000,PULL_WATCH_MOST=60000;
- let pullWatch={coach:null,timer:null,done:null};
+ let pullWatch={coach:null,timer:null,wait:PULL_WATCH_MS,done:null};
+ // 다시 보기 타이머 — target의 시계(창의 setTimeout · clearTimeout, 시험은 가짜 시계)를 쓴다. 없으면 전역 시계.
+ const watchClock={set:(fn,ms)=>typeof target.setTimeout==='function'?target.setTimeout(fn,ms):setTimeout(fn,ms),clear:id=>{if(id==null)return;if(typeof target.clearTimeout==='function')target.clearTimeout(id);else clearTimeout(id);}};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
  const view=position?position.createView({t,has:hasString,formatDate,lang:currentLang}):null;
@@ -712,21 +714,47 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 첫 받기가 실패로 끝났으면(오프라인 · since가 맞지 않음 · 저장소 예외 — 늦게 기다린 것도 끝나지 않았으면) 엔진은 synced()에 그 실패를 그 문서
  // 동안 돌려주고, 뒤의 받기가 되면 summary().storage.sync.pulled만 참이 된다(Fable 끝 판 F1 · 설계 주인 11-16). 셸은 호스트 알림을 듣지 않으므로
- // 열린 판에서 그 칸을 PULL_WATCH_MS부터 두 배씩 다시 보고, 참이 되면 판을 한 번 다시 그린다(recordsComplete가 pulled를 읽는다). 그 코치에서는
- // 그 뒤로 보지 않는다. 판이 닫히면 그치고, 판을 다시 열어 실패 답을 다시 받으면 다시 본다.
+ // 열린 판에서 그 칸을 PULL_WATCH_MS부터 두 배씩(PULL_WATCH_MOST까지) 다시 보고, 참이 되면 판을 한 번 다시 그린다(recordsComplete가 pulled를
+ // 읽는다 — 홈 판 감시의 settle과 같은 꼴). 멈출 때(설계 주인 11-16 조건 1): pulled가 서면 그 코치에서는 그 뒤로 보지 않는다. 판이 닫히면(판 자원의
+ // dispose) · 문서가 닫히면 그친다. 올리기 · 받기가 멈추면(stopped · writesOff · switchOff — 기록이 다 올 수 없다) 그친다. 손님 · 동의를 끈 계정의
+ // 판과 첫 받기가 된 판에서는 시작하지 않는다. 다시 연결되거나 화면이 다시 보이면 간격을 처음 값으로 되돌린다(조건 2 — 코치가 그때 받는다).
+ // 열린 판의 받기 상태 — 'wait'(다시 볼 까닭이 있다) · 'pulled'(받기가 됐다) · null(손님 · 기록부를 못 읽음 · 올리기나 받기가 멈춤).
+ function pullState(coachNow){
+  let storage=null;try{storage=coachNow.summary()?.storage??null;}catch{return null;}
+  if(!storage||storage.guest===true)return null;
+  const sync=storage.sync??{};
+  if(sync.stopped||sync.writesOff||sync.switchOff)return null;
+  return sync.pulled===true?'pulled':'wait';
+ }
+ function stopPullWatch(){
+  watchClock.clear(pullWatch.timer);
+  pullWatch={coach:null,timer:null,wait:PULL_WATCH_MS,done:pullWatch.done};
+ }
  function watchPulled(coachNow,wait=PULL_WATCH_MS){
-  if(!coachNow||pullWatch.done===coachNow||pullWatch.coach===coachNow&&pullWatch.timer)return;
-  clearTimeout(pullWatch.timer);
-  const timer=setTimeout(()=>{
+  if(!coachNow||stopped||pullWatch.done===coachNow||pullWatch.coach===coachNow&&pullWatch.timer)return;
+  const state=pullState(coachNow);
+  if(!state)return;
+  if(state==='pulled'){stopPullWatch();pullWatch.done=coachNow;redrawNext();return;}
+  watchClock.clear(pullWatch.timer);
+  const timer=watchClock.set(()=>{
    if(pullWatch.timer!==timer)return;
    pullWatch.timer=null;
-   if(stopped||nextSync.coach!==coachNow||!panelNode('[data-position-next]'))return;
-   let pulled=false;try{pulled=coachNow.summary()?.storage?.sync?.pulled===true;}catch{return;}
-   if(!pulled){watchPulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2));return;}
-   pullWatch.done=coachNow;redrawNext();
+   if(stopped||nextSync.coach!==coachNow||!panelNode('[data-position-next]')){stopPullWatch();return;}
+   const now=pullState(coachNow);
+   if(now==='wait'){pullWatch.coach=null;watchPulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2));return;}
+   stopPullWatch();
+   if(now==='pulled'){pullWatch.done=coachNow;redrawNext();}
   },wait);
   timer?.unref?.();
-  pullWatch={coach:coachNow,timer,done:pullWatch.done};
+  pullWatch={coach:coachNow,timer,wait,done:pullWatch.done};
+ }
+ // 다시 연결(online) · 화면이 다시 보임(visibilitychange) — 보고 있으면 간격을 처음 값으로 되돌린다(설계 주인 11-16 조건 2).
+ function hurryPullWatch(){
+  const coachNow=pullWatch.coach;
+  if(!coachNow||!pullWatch.timer||pullWatch.wait<=PULL_WATCH_MS)return;
+  watchClock.clear(pullWatch.timer);
+  pullWatch={...pullWatch,coach:null,timer:null};
+  watchPulled(coachNow,PULL_WATCH_MS);
  }
  const nextViewOf=()=>nextView||=homePlanner?.position?.createView?.({t,has:hasString,formatDate})||null;
  // 확인 중 판 — 판을 아직 못 정했거나(플래너를 받기 전 · 생활 판정이 확인 중) 홈 코치의 요약이 자리를 잡기 전. 줄 없이 「기록 확인 중」(21-2).
@@ -755,6 +783,27 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scope=owner==='guest'?'device':summary.storage?.guest===false?'account':null;
   return {values,exam,board,plan,cards,fresh,judged,scope};
  }
+ // 다시 그릴 때 판 안에 있던 초점을 같은 단추로 되돌린다(설계 주인 11-16 조건 3 — 다시 그리기는 스크롤과 초점을 지킨다. 생활 판 paint의 keepFocus와 같은 뜻).
+ // 판 밖에 있던 초점은 건드리지 않는다. 같은 단추가 여럿이면 몇 번째였는지로 찾고, 그 단추가 없어졌으면 판 머리에 둔다.
+ const NEXT_FOCUS=['data-position-diagnostic','data-position-exam','data-position-practice','data-position-recheck','data-position-writing'];
+ function nextFocusOf(root){
+  try{
+   const active=target.document?.activeElement;
+   if(!root||!active||typeof root.contains!=='function'||!root.contains(active))return null;
+   const name=NEXT_FOCUS.find(key=>active.hasAttribute?.(key))??null;
+   if(!name)return{name:null};
+   const value=active.getAttribute(name);
+   const same=[...(root.querySelectorAll?.(`[${name}]`)||[])].filter(el=>el.getAttribute?.(name)===value);
+   return{name,value,index:Math.max(0,same.indexOf(active))};
+  }catch{return null;}
+ }
+ function refocusNext(root,key){
+  if(!root||!key)return;
+  try{
+   const same=key.name?[...(root.querySelectorAll?.(`[${key.name}]`)||[])].filter(el=>el.getAttribute?.(key.name)===key.value):[];
+   (same[key.index]??same[0]??root).focus?.({preventScroll:true});
+  }catch{/* 초점은 덤이다 */}
+ }
  // 새 길 판 그리기(21-2): 지금 판으로 내려왔으면 지금 판 판(그 문서 전체가 지금 판이다), 확인 중이면 확인 중 판, 엔진이면 엔진 판.
  // fresh: 방금 홈을 다시 그렸다(판 감시의 알림 — refresh를 또 부르지 않는다). start: 진단이 낼 문항이 있으면 바로 시작한다(홈 추천 · 계획의 다시 확인).
  function showNext({start=false,keepScroll=false,fresh=false}={}){
@@ -766,12 +815,14 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let data=null;
   // 닫힌 코치(판이 막 다시 정해짐)는 던진다 — 확인 중 판으로 두고 판 감시의 알림에서 다시 그린다.
   if(coachNow&&P&&draw){try{data=nextData(coachNow,P);}catch{data=null;}}
-  const scroller=keepScroll?panelNode('[data-position-next]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
+  const scroller=keepScroll?panelNode('[data-position-next]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-position-next]')):null;
   if(!data){home.showPanel(t('position.title'),nextChecking(),PANEL);panelNode('[data-position-next]')?.focus?.({preventScroll:true});return;}
   const two=topik2Domains(),exams=studentExam(data.values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
   home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0}),PANEL);
   const root=panelNode('[data-position-next]');
-  if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
+  if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
+  // 판이 닫히면(다른 판을 열거나 닫음) 첫 받기 뒤의 받기를 다시 보는 것을 그친다(설계 주인 11-16 조건 1 — 남은 타이머가 없게).
+  home.attachPanelResource?.({dispose:stopPullWatch});
   // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(GPT 끝 판 GB1).
   void syncedNext(coachNow);
   root?.querySelector?.('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnosticNext(coachNow,data);}catch(error){failed(error);}},{once:true});
@@ -1370,6 +1421,8 @@ async function townSend(coachNow,{wait=true}={}){
   refresh();redrawNext();
  },()=>{if(stopped)return;homeFailed=true;refresh();redrawNext();});
  const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
+ const onOnline=()=>hurryPullWatch(),onVisible=()=>{if(target.document?.visibilityState!=='hidden')hurryPullWatch();};
+ target.addEventListener?.('online',onOnline);target.document?.addEventListener?.('visibilitychange',onVisible);
  // 배우기 판의 「이번 주 계획」 줄(life-ui.mjs moreRows): 시험을 고른 사람에게만. print는 그 판의 인화지 그림.
  function planRow(print=()=>''){
   const plan=current?.examPlan;if(!plan)return '';
@@ -1381,5 +1434,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;clearTimeout(pullWatch.timer);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;stopPullWatch();target.removeEventListener?.('online',onOnline);target.document?.removeEventListener?.('visibilitychange',onVisible);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

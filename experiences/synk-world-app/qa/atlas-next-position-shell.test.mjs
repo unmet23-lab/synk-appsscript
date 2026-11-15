@@ -74,7 +74,11 @@ function stage() {
 }
 
 // 셸 하나 — 새 길 홈 입구(homeNext)를 넘긴 학습 화면. 홈 코치는 열 때마다 새로 짓는다(판을 다시 정하면 새 코치).
-function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made } = {}) {
+// open: 홈 코치를 짓는 길(기본 손님 홈 코치). timers: 셸이 target으로 받는 시계(setTimeout · clearTimeout — 가짜 시계). panels: 홈처럼 판 자원을
+// 다룬다(판을 바꾸거나 닫으면 그 판의 자원을 dispose — home.mjs disposePanelContent). 창(online)과 문서(visibilitychange)의 알림은 fire로 낸다.
+// focusing: 판 글의 단추와 문서의 초점(activeElement)을 흉내 내고, 셸이 초점을 둔 자리를 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
+// paint: 판 글을 바꿔 둔다(진짜 판에서 생길 수 있는 꼴을 흉내 낸다).
+function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html } = {}) {
   const opens = [];
   const engine = {
     ...worldLearning,
@@ -91,16 +95,67 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
   const coaches = [];
   const retirees = [];
   let box = null;
+  let active = null;
+  const focused = [];
+  const buttonsMade = new Map();
+  // 판 글에서 그 속성을 가진 단추를 짓는다(focusing일 때만). 같은 판 글이면 같은 단추를 돌려준다(초점이 몇 번째 단추였는지 견줄 수 있게).
+  const buttonsIn = selector => {
+    const found = /^\[(data-[a-z-]+)\]$/.exec(selector);
+    if (!found) return [];
+    const name = found[1];
+    const key = `${shown.length}|${name}`;
+    if (!buttonsMade.has(key)) {
+      const seen = new Map();
+      const html = shown.at(-1) ?? '';
+      const list = [...html.matchAll(new RegExp(`\\s${name}(?:="([^"]*)")?(?=[\\s>])`, 'g'))].map(match => {
+        const value = match[1] ?? '';
+        const index = seen.get(value) ?? 0;
+        seen.set(value, index + 1);
+        const clicks = [];
+        return {
+          inPanel: true,
+          clicks,
+          dataset: { [name.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase())]: value },
+          getAttribute: attr => (attr === name ? value : null),
+          hasAttribute: attr => attr === name,
+          focus: () => focused.push(`${name}=${value}#${index}`),
+          addEventListener(type, fn) {
+            if (type === 'click') clicks.push(fn);
+          },
+        };
+      });
+      buttonsMade.set(key, list);
+    }
+    return buttonsMade.get(key);
+  };
   const node = () => ({
     isConnected: true,
-    focus() {},
+    focus() {
+      if (focusing) focused.push('root');
+    },
     closest: () => null,
     querySelector: () => null,
-    querySelectorAll: () => [],
+    querySelectorAll: selector => (focusing ? buttonsIn(selector) : []),
+    contains: element => focusing && (element?.inPanel === true || element?.isRoot === true),
     addEventListener() {},
     insertAdjacentHTML() {},
   });
+  const heard = new Map();
+  const listen = (scope, type, fn) => heard.set(`${scope}:${type}`, [...(heard.get(`${scope}:${type}`) ?? []), fn]);
+  const unlisten = (scope, type, fn) => heard.set(`${scope}:${type}`, (heard.get(`${scope}:${type}`) ?? []).filter(row => row !== fn));
+  let resource = null;
+  const disposeResource = () => {
+    const was = resource;
+    resource = null;
+    was?.dispose?.();
+  };
   const document = {
+    visibilityState: 'visible',
+    get activeElement() {
+      return active;
+    },
+    addEventListener: (type, fn) => listen('document', type, fn),
+    removeEventListener: (type, fn) => unlisten('document', type, fn),
     querySelector(selector) {
       const html = shown.at(-1) ?? '';
       if (selector.includes('[data-position-stage]')) return box && html.includes('data-position-stage') ? box : null;
@@ -119,9 +174,10 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
   const target = {
     localStorage,
     document,
-    addEventListener() {},
-    removeEventListener() {},
-    setTimeout,
+    addEventListener: (type, fn) => listen('window', type, fn),
+    removeEventListener: (type, fn) => unlisten('window', type, fn),
+    setTimeout: timers ? timers.setTimeout : setTimeout,
+    ...(timers ? { clearTimeout: timers.clearTimeout } : {}),
     ...(host ? { SYNKLearningHost: host } : {}),
   };
   const progress = {
@@ -137,17 +193,27 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
   const home = {
     updateStudy() {},
     toast: text => toasts.push(text),
-    closePanel() {},
-    attachPanelResource() {},
+    closePanel() {
+      if (!panels) return;
+      disposeResource();
+      shown.push('');
+    },
+    attachPanelResource(value) {
+      if (!panels || value === resource) return;
+      const was = resource;
+      resource = value;
+      was?.dispose?.();
+    },
     openPanel: () => 'life-position',
     showPanel(title, html) {
-      shown.push(String(html));
+      if (panels) disposeResource();
+      shown.push(String(paint(String(html))));
       if (/data-position-stage/.test(html)) box = stage();
     },
   };
   const homeNext = {
     async coach() {
-      const made = wrap(await homeCoach());
+      const made = wrap(await open());
       coaches.push(made);
       return made;
     },
@@ -187,6 +253,33 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     coaches,
     last: () => shown.at(-1) ?? '',
     box: () => box,
+    // 판을 닫는다(홈의 닫기 — panels일 때만 판 자원을 dispose).
+    closePanel: () => home.closePanel(),
+    // 초점(focusing일 때만) — 판 안의 단추(몇 번째), 판 머리, 판 밖, 다시 그린 판에는 없는 단추에 둔다.
+    focused,
+    focusOn(name, value = '', index = 0) {
+      active = buttonsIn(`[${name}]`).filter(button => button.getAttribute(name) === value)[index] ?? null;
+      assert.ok(active, `판에 ${name}="${value}"의 ${index + 1}번째 단추가 있다`);
+    },
+    focusRoot() {
+      active = { isRoot: true, hasAttribute: () => false };
+    },
+    focusOutside() {
+      active = { inPanel: false, hasAttribute: () => false };
+    },
+    // 판 단추를 누른다(focusing일 때만 — 셸이 그 단추에 단 click을 부른다).
+    click(name, value = '') {
+      const button = buttonsIn(`[${name}]`).find(row => row.getAttribute(name) === value);
+      assert.ok(button, `판에 ${name}="${value}" 단추가 있다`);
+      for (const fn of [...button.clicks]) fn({ type: 'click' });
+    },
+    focusGone(name, value) {
+      active = { inPanel: true, hasAttribute: attr => attr === name, getAttribute: attr => (attr === name ? value : null) };
+    },
+    // 창 · 문서 알림을 낸다 — online은 창, visibilitychange는 문서.
+    fire(type) {
+      for (const fn of heard.get(`${type === 'visibilitychange' ? 'document' : 'window'}:${type}`) ?? []) fn({ type });
+    },
     // 판을 다시 정한다(입구의 retired) — 그 코치를 지켜보던 화면 모두에 알린다.
     retire(made) {
       for (const entry of retirees) if (entry.made === made && !entry.gone) entry.fn({ reason: 'account' });
@@ -327,6 +420,206 @@ test('엔진 판 — 첫 받기가 실패로 끝난 뒤 판을 닫으면 pulled�
     // 다시 열면 그 칸을 읽어 기록이 다 온 판으로 그린다.
     await app.education.position();
     await until(() => /data-position-next="engine"[^>]*data-complete="true"/.test(app.last()), '다시 연 판');
+  } finally {
+    app.dispose();
+  }
+});
+
+// 가짜 시계 — 셸이 target으로 받는 다시 보기 타이머만 센다. advance는 때가 된 타이머를 부른다.
+function fakeClock() {
+  let now = 0;
+  let seq = 0;
+  const pending = new Map();
+  return {
+    setTimeout(fn, ms) {
+      seq += 1;
+      pending.set(seq, { fn, at: now + ms, ms });
+      return seq;
+    },
+    clearTimeout(id) {
+      pending.delete(id);
+    },
+    waits: () => [...pending.values()].map(row => row.ms),
+    advance(ms) {
+      now += ms;
+      for (const [id, row] of [...pending]) {
+        if (row.at > now || !pending.has(id)) continue;
+        pending.delete(id);
+        row.fn();
+      }
+    },
+  };
+}
+
+test('엔진 판 — 첫 받기가 실패로 끝난 뒤 pulled를 다시 보는 타이머: 2초부터 두 배씩, 다시 연결 · 화면이 다시 보이면 2초로 되돌리고, 판이나 문서가 닫히면 남은 타이머가 없다(설계 주인 11-16 조건 1 · 2 · 4)', async () => {
+  const clock = fakeClock();
+  const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }));
+  const app = shell({ wrap: sync.wrap, timers: clock, panels: true });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '기록 일부 판');
+    await until(() => clock.waits().length === 1, '다시 보기 타이머');
+    assert.deepEqual(clock.waits(), [2000]);
+    clock.advance(2000);
+    assert.deepEqual(clock.waits(), [4000], '받기가 아직이면 두 배');
+    clock.advance(4000);
+    assert.deepEqual(clock.waits(), [8000]);
+    app.fire('online');
+    assert.deepEqual(clock.waits(), [2000], '다시 연결되면 2초로 되돌린다(코치가 그때 받는다)');
+    clock.advance(2000);
+    assert.deepEqual(clock.waits(), [4000]);
+    app.fire('visibilitychange');
+    assert.deepEqual(clock.waits(), [2000], '화면이 다시 보이면 2초로 되돌린다');
+    app.closePanel();
+    assert.deepEqual(clock.waits(), [], '판을 닫으면 남은 타이머가 없다');
+    // 다시 열면 다시 본다. 문서를 닫으면 그친다.
+    await app.education.position();
+    await until(() => clock.waits().length === 1, '다시 연 판의 다시 보기');
+    app.education.dispose();
+    assert.deepEqual(clock.waits(), [], '문서를 닫으면 남은 타이머가 없다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 올리기 · 받기가 멈췄으면(stopped · writesOff · switchOff) pulled를 다시 보지 않고, 보는 중에 멈추면 그친다. 첫 받기가 된 판 · 손님 판에서는 시작하지 않는다(설계 주인 11-16 조건 1)', async () => {
+  const failure = () => ({ ok: false, kind: 'offline', code: 'NETWORK' });
+  for (const stop of [{ stopped: 'account' }, { writesOff: true }, { switchOff: true }]) {
+    const clock = fakeClock();
+    const sync = accountLike(failure, { sync: () => stop });
+    const app = shell({ wrap: sync.wrap, timers: clock, panels: true });
+    try {
+      await app.education.position();
+      await until(() => /data-position-next="engine"/.test(app.last()) && sync.calls.length > 0, '엔진 판과 첫 받기');
+      await tick(20);
+      assert.deepEqual(clock.waits(), [], JSON.stringify(stop));
+    } finally {
+      app.dispose();
+    }
+  }
+  // 보는 중에 올리기 · 받기가 멈춘다 — 다음에 볼 때 그친다.
+  let state = {};
+  const clock = fakeClock();
+  const halting = accountLike(failure, { sync: () => state });
+  const app = shell({ wrap: halting.wrap, timers: clock, panels: true });
+  try {
+    await app.education.position();
+    await until(() => clock.waits().length === 1, '다시 보기 타이머');
+    state = { stopped: 'auth' };
+    clock.advance(2000);
+    assert.deepEqual(clock.waits(), [], '멈추면 그친다');
+  } finally {
+    app.dispose();
+  }
+  // 첫 받기가 된 판과 손님 판.
+  for (const wrap of [accountLike(() => ({ ok: true })).wrap, made => made]) {
+    const quiet = fakeClock();
+    const done = shell({ wrap, timers: quiet, panels: true });
+    try {
+      await done.education.position();
+      await until(() => /data-position-next="engine"[^>]*data-complete="true"/.test(done.last()), '기록이 다 온 판');
+      await tick(20);
+      assert.deepEqual(quiet.waits(), []);
+    } finally {
+      done.dispose();
+    }
+  }
+});
+
+test('엔진 판 — pulled로 다시 그릴 때 판 안에 있던 초점을 같은 단추로 되돌린다(설계 주인 11-16 조건 3 — 다시 그리기는 스크롤과 초점을 지킨다)', async () => {
+  let pulled = false;
+  const clock = fakeClock();
+  const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }), { sync: () => ({ pulled }) });
+  const app = shell({ wrap: sync.wrap, timers: clock, focusing: true });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '기록 일부 판');
+    await until(() => clock.waits().length === 1, '다시 보기 타이머');
+    app.focusOn('data-position-practice', 'ko.reading.detail');
+    app.focused.splice(0);
+    pulled = true;
+    clock.advance(2000);
+    assert.match(app.last(), /data-complete="true"/, 'pulled로 다시 그렸다');
+    assert.deepEqual(app.focused, ['data-position-practice=ko.reading.detail#0'], '초점이 같은 단추로 돌아온다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 다시 그릴 때의 초점: 같은 단추가 여럿이면 몇 번째였는지로 찾고, 다시 그린 판에 그 단추가 없으면 판 머리에 두며, 판 밖의 초점은 건드리지 않는다(설계 주인 11-16 조건 3)', async () => {
+  // 진짜 판은 먼저 볼 항목(attention)과 영역 줄에 같은 능력의 연습 단추를 함께 낼 수 있다 — 판 글에서 그 단추를 하나 더 둔다.
+  const twice = html => {
+    const at = html.indexOf('data-position-practice="ko.reading.detail"');
+    if (at < 0) return html;
+    const start = html.lastIndexOf('<button', at);
+    const end = html.indexOf('</button>', at) + '</button>'.length;
+    return html.slice(0, end) + html.slice(start, end) + html.slice(end);
+  };
+  const app = shell({ focusing: true, paint: twice });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    // 시험 단추를 눌러 판을 다시 그린다(keepScroll — pulled의 다시 그리기와 같은 길). 누르기 전의 초점이 어디로 가는지 본다.
+    const redraw = (place, exam = 'topik1') => {
+      place();
+      app.focused.splice(0);
+      app.click('data-position-exam', exam);
+      return [...app.focused];
+    };
+    assert.deepEqual(redraw(() => app.focusOn('data-position-practice', 'ko.reading.detail', 1)), ['data-position-practice=ko.reading.detail#1'], '같은 단추가 둘이면 두 번째로 돌아온다');
+    assert.deepEqual(redraw(() => app.focusRoot()), ['root'], '판 머리에 있던 초점은 판 머리로');
+    assert.deepEqual(redraw(() => app.focusGone('data-position-recheck', 'ko.reading.gone')), ['root'], '다시 그린 판에 없는 단추면 판 머리');
+    assert.deepEqual(redraw(() => app.focusOutside()), [], '판 밖의 초점은 건드리지 않는다');
+    assert.deepEqual(redraw(() => app.focusOn('data-position-exam', 'topik2'), 'topik2'), ['data-position-exam=topik2#0'], '누른 시험 단추에 초점이 남는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 진짜 계정 길 코치: 앞 문서가 요약을 받아 둔 기기에서 첫 받기가 끊긴 뒤 같은 요약으로 받기가 되면, 열린 판이 다시 그려져 기록 일부 줄이 사라진다(Fable 끝 판 F1 · 설계 주인 11-16 조건 4)', async () => {
+  const { rng } = await import('../../../packages/atlas/test/support/seeds.mjs');
+  const { createServer } = await import('../../../packages/atlas/test/support/trail-sync.mjs');
+  const { subject } = await import('../../../packages/atlas/test/support/subject.mjs');
+  const { acquireHost, releaseHost } = await subject('coach/host.mjs');
+  const { PARAMS } = await subject('params.mjs');
+  const banks = homeBanksOf(worldPosition.practice.pool);
+  const mapData = { index: banks.map(bank => sliceOf(INDEX, bank, WORDS)), units: UNITS, words: WORDS };
+  const map = atlas.openMap(mapData);
+  const server = createServer({ random: rng(331), index: { edition: map.editions.index, lookup: key => map.item(key) } });
+  await server.fold();
+  let offline = false;
+  const transport = {
+    post: (events, since) => server.post(events, since),
+    async get(since) {
+      if (offline) throw Object.assign(new Error('NETWORK'), { code: 'NETWORK', retryable: true });
+      return { summary: await server.summary(since), serverTime: server.now };
+    },
+  };
+  stores += 1;
+  const key = `synk-atlas:position-shell-account-${process.pid}-${stores}`;
+  const host = { guest: false, account: 'acct-shell', revision: 1, key, port: atlas.memoryPort(), transport };
+  const accountCoach = async () => {
+    const coach = atlas.createCoach({ gameId: 'world-home', mapData, dayOffset: 540, host });
+    await coach.ready;
+    return coach;
+  };
+  // 앞 문서가 서버 요약을 받아 둔 기기.
+  const earlier = await accountCoach();
+  assert.equal((await earlier.synced(2000)).ok, true);
+  earlier.dispose();
+  offline = true;
+  const app = shell({ owner: 'acct-shell', open: accountCoach });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '첫 받기가 끊겨 기록 일부');
+    // 다시 연결 — 코치가 받기를 다시 하고 같은 요약을 받는다(제품에서는 호스트의 online · 화면 복귀 받기).
+    offline = false;
+    const handle = await acquireHost({ key, params: PARAMS, guest: false });
+    await handle.pull({ force: true });
+    releaseHost(handle);
+    assert.equal(app.coaches[0].summary().storage.sync.pulled, true);
+    assert.equal((await app.coaches[0].synced(500)).ok, false, 'synced()는 처음 실패 그대로');
+    await until(() => /data-position-next="engine"[^>]*data-complete="true"/.test(app.last()), '다시 그린 판 — 기록 일부 줄이 없다', 8000);
   } finally {
     app.dispose();
   }

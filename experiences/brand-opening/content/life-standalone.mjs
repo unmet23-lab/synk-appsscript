@@ -25392,7 +25392,12 @@ function createWorldEducation({
   const SYNC_LATE_MS = 6e4;
   const FOLD_WAIT_MS = 4e3;
   const PULL_WATCH_MS = 2e3, PULL_WATCH_MOST = 6e4;
-  let pullWatch = { coach: null, timer: null, done: null };
+  let pullWatch = { coach: null, timer: null, wait: PULL_WATCH_MS, done: null };
+  const watchClock = { set: (fn, ms) => typeof target.setTimeout === "function" ? target.setTimeout(fn, ms) : setTimeout(fn, ms), clear: (id) => {
+    if (id == null) return;
+    if (typeof target.clearTimeout === "function") target.clearTimeout(id);
+    else clearTimeout(id);
+  } };
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
   const view = position ? position.createView({ t: t2, has: hasString2, formatDate: formatDate2, lang: currentLang2 }) : null;
@@ -26491,28 +26496,61 @@ function createWorldEducation({
     nextSync = { coach: coachNow, value: same ? nextSync.value : null, asking };
     return asking;
   }
+  function pullState(coachNow) {
+    let storage = null;
+    try {
+      storage = coachNow.summary()?.storage ?? null;
+    } catch {
+      return null;
+    }
+    if (!storage || storage.guest === true) return null;
+    const sync = storage.sync ?? {};
+    if (sync.stopped || sync.writesOff || sync.switchOff) return null;
+    return sync.pulled === true ? "pulled" : "wait";
+  }
+  function stopPullWatch() {
+    watchClock.clear(pullWatch.timer);
+    pullWatch = { coach: null, timer: null, wait: PULL_WATCH_MS, done: pullWatch.done };
+  }
   function watchPulled(coachNow, wait = PULL_WATCH_MS) {
-    if (!coachNow || pullWatch.done === coachNow || pullWatch.coach === coachNow && pullWatch.timer) return;
-    clearTimeout(pullWatch.timer);
-    const timer = setTimeout(() => {
+    if (!coachNow || stopped || pullWatch.done === coachNow || pullWatch.coach === coachNow && pullWatch.timer) return;
+    const state = pullState(coachNow);
+    if (!state) return;
+    if (state === "pulled") {
+      stopPullWatch();
+      pullWatch.done = coachNow;
+      redrawNext();
+      return;
+    }
+    watchClock.clear(pullWatch.timer);
+    const timer = watchClock.set(() => {
       if (pullWatch.timer !== timer) return;
       pullWatch.timer = null;
-      if (stopped || nextSync.coach !== coachNow || !panelNode("[data-position-next]")) return;
-      let pulled = false;
-      try {
-        pulled = coachNow.summary()?.storage?.sync?.pulled === true;
-      } catch {
+      if (stopped || nextSync.coach !== coachNow || !panelNode("[data-position-next]")) {
+        stopPullWatch();
         return;
       }
-      if (!pulled) {
+      const now = pullState(coachNow);
+      if (now === "wait") {
+        pullWatch.coach = null;
         watchPulled(coachNow, Math.min(PULL_WATCH_MOST, wait * 2));
         return;
       }
-      pullWatch.done = coachNow;
-      redrawNext();
+      stopPullWatch();
+      if (now === "pulled") {
+        pullWatch.done = coachNow;
+        redrawNext();
+      }
     }, wait);
     timer?.unref?.();
-    pullWatch = { coach: coachNow, timer, done: pullWatch.done };
+    pullWatch = { coach: coachNow, timer, wait, done: pullWatch.done };
+  }
+  function hurryPullWatch() {
+    const coachNow = pullWatch.coach;
+    if (!coachNow || !pullWatch.timer || pullWatch.wait <= PULL_WATCH_MS) return;
+    watchClock.clear(pullWatch.timer);
+    pullWatch = { ...pullWatch, coach: null, timer: null };
+    watchPulled(coachNow, PULL_WATCH_MS);
   }
   const nextViewOf = () => nextView ||= homePlanner?.position?.createView?.({ t: t2, has: hasString2, formatDate: formatDate2 }) || null;
   const nextChecking = () => `<div class="wpos life-heading" data-position-next="checking" tabindex="-1" aria-busy="true"><div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape3(t2("position.title"))}</strong><p class="life-poster-sub">${escape3(t2("homeTutor.checking"))}</p></div></div>`;
@@ -26552,6 +26590,28 @@ function createWorldEducation({
     const scope = owner === "guest" ? "device" : summary.storage?.guest === false ? "account" : null;
     return { values, exam, board, plan, cards, fresh, judged, scope };
   }
+  const NEXT_FOCUS = ["data-position-diagnostic", "data-position-exam", "data-position-practice", "data-position-recheck", "data-position-writing"];
+  function nextFocusOf(root) {
+    try {
+      const active = target.document?.activeElement;
+      if (!root || !active || typeof root.contains !== "function" || !root.contains(active)) return null;
+      const name = NEXT_FOCUS.find((key) => active.hasAttribute?.(key)) ?? null;
+      if (!name) return { name: null };
+      const value = active.getAttribute(name);
+      const same = [...root.querySelectorAll?.(`[${name}]`) || []].filter((el) => el.getAttribute?.(name) === value);
+      return { name, value, index: Math.max(0, same.indexOf(active)) };
+    } catch {
+      return null;
+    }
+  }
+  function refocusNext(root, key) {
+    if (!root || !key) return;
+    try {
+      const same = key.name ? [...root.querySelectorAll?.(`[${key.name}]`) || []].filter((el) => el.getAttribute?.(key.name) === key.value) : [];
+      (same[key.index] ?? same[0] ?? root).focus?.({ preventScroll: true });
+    } catch {
+    }
+  }
   function showNext({ start = false, keepScroll = false, fresh = false } = {}) {
     check3();
     const phase = homePhase();
@@ -26578,7 +26638,7 @@ function createWorldEducation({
         data = null;
       }
     }
-    const scroller = keepScroll ? panelNode("[data-position-next]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
+    const scroller = keepScroll ? panelNode("[data-position-next]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0, focusKey = keepScroll ? nextFocusOf(panelNode("[data-position-next]")) : null;
     if (!data) {
       home.showPanel(t2("position.title"), nextChecking(), PANEL);
       panelNode("[data-position-next]")?.focus?.({ preventScroll: true });
@@ -26590,7 +26650,9 @@ function createWorldEducation({
     if (keepScroll) {
       const node = root?.closest?.("#panel-content");
       if (node) node.scrollTop = scrollTop;
+      refocusNext(root, focusKey);
     } else root?.focus?.({ preventScroll: true });
+    home.attachPanelResource?.({ dispose: stopPullWatch });
     void syncedNext(coachNow);
     root?.querySelector?.("[data-position-diagnostic]")?.addEventListener("click", () => {
       try {
@@ -28012,6 +28074,11 @@ function createWorldEducation({
   });
   const onFocus = () => refresh();
   target.addEventListener?.("focus", onFocus);
+  const onOnline = () => hurryPullWatch(), onVisible = () => {
+    if (target.document?.visibilityState !== "hidden") hurryPullWatch();
+  };
+  target.addEventListener?.("online", onOnline);
+  target.document?.addEventListener?.("visibilitychange", onVisible);
   function planRow(print = () => "") {
     const plan = current?.examPlan;
     if (!plan) return "";
@@ -28040,7 +28107,9 @@ function createWorldEducation({
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
   }, metrics: () => ({ owner, plan: current }), today: () => current?.today ? { ...current.today, selected: current.selected, selectedKind: current.selectedKind, reason: current.reason } : null, dispose() {
     stopped = true;
-    clearTimeout(pullWatch.timer);
+    stopPullWatch();
+    target.removeEventListener?.("online", onOnline);
+    target.document?.removeEventListener?.("visibilitychange", onVisible);
     homeWatch?.dispose();
     release(coach);
     release(practiceCoach);
