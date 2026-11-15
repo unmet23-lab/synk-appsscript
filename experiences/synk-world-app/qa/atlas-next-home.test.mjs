@@ -292,6 +292,22 @@ test('상한 날의 빈 날 — 판 · 이유 · 빈 날 코드는 한 차례(�
  coach.dispose();
 });
 
+test('레슨을 다 마친 상한 날에 소리를 끄면 잠긴 듣기 짧은 연습만 남아도 빈 날은 상한이다 — plan 머리의 상한(설계 주인 11-15 · §20-14)',async()=>{
+ const {coach,time}=await homeCoach({start:T0-3*DAY,params:{reviewsPerDay:0},words:true});
+ const pair=listeningPair(coach);
+ await answer(coach,pair.read.itemKey,true);
+ time.at(T0);
+ const pool=BANK.filter(item=>item.skillId===pair.heard.skillId);
+ const plan=planOf({coach,progress:progressOf({completed:ORDER}),now:time.t,pool,settings:{audio:'off'}});
+ assert.equal(plan.today.capped,true,'후보를 넘긴 열린 활동이 없어도 상한을 읽는다');
+ assert.deepEqual([plan.status,plan.today.empty],['empty',{code:'day.capped',text:'오늘은 여기까지예요. 남은 것은 내일 만나요.'}],'고치기 전에는 조건에 걸린 날이었다');
+ assert.equal(plan.reason,'');
+ // 홈은 plan 쪽 칸을 먼저 읽는다 — 항목이 상한을 모르는 꼴로 줘도 plan 쪽 칸이 상한이면 상한 날이다
+ const told=Object.create(coach,{plan:{value:list=>Object.assign(list.map(act=>({id:act.id,locked:true,fact:-1,tier:9,todo:0,offered:0,capped:false})),{capped:true})}});
+ assert.equal(planOf({coach:told,progress:progressOf({completed:ORDER}),now:time.t,pool,settings:{audio:'off'}}).today.capped,true);
+ coach.dispose();
+});
+
 test('엔진 판에서 plan()이 실패하면 확인 중 판으로 내려 제품 사실 줄만 그린다 — 다음 레슨이 남았는데 다 한 날이 되지 않는다(Fable 엔진급 끝 판 F3)',async()=>{
  const {coach,time}=await homeCoach();
  // 코치는 얼린 객체라 Proxy로 못 덮는다 — 바탕으로 두고 plan()만 던지게 덮는다.
@@ -459,6 +475,10 @@ test('줄이 되는 규칙 — 상한 날의 생활 복습 · 돌아옴이 아�
  assert.equal(capOf([entry(practice.plan.id,{capped:true,none:true,tier:9,why:{code:'day.capped',line:'오늘은 여기까지예요. 남은 것은 내일 만나요.'}})]),true,'짧은 연습만 상한');
  assert.equal(capOf([entry(lesson.plan.id,{capped:true,why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})]),true,'다음 레슨 항목만 있어도 상한');
  assert.equal(capOf([entry(lesson.plan.id,{why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})]),false);
+ // plan 쪽 칸(plan 머리에서 한 번 센 상한)을 먼저 읽는다 — 항목의 capped는 옛 호출을 위해서만 남는다(설계 주인 11-15 · §20-14)
+ const dayOf=(entries,dayCapped)=>todayRows({entries,activities:[lesson,life,practice],say,dayCapped}).capped;
+ assert.equal(dayOf([entry(lesson.plan.id,{why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})],true),true,'plan 쪽 칸이 상한');
+ assert.equal(dayOf([entry(lesson.plan.id,{capped:true,why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})],false),false,'plan 쪽 칸이 앞');
  // 짧은 연습은 돌아옴(층 1)일 때만 줄이다
  assert.deepEqual(rows([entry(practice.plan.id,{why:{code:'unit.new',line:'새 문항'}})]),[]);
  assert.deepEqual(rows([entry(practice.plan.id,{tier:1,why:{code:'unit.due',line:'돌아왔어요.'}})]),[['again',practice.plan.id,'unit.due']]);

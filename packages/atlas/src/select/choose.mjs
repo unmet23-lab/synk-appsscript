@@ -261,7 +261,7 @@ function markTop(rows, ctx) {
   const pending = rows.some(row => row.tier === 5);
   top.idle = top.tier >= 3 && !pending;
   top.none = top.tier === 9;
-  top.capped = ctx.capped && ctx.backlog > 0;
+  top.capped = heldBack(ctx);
   top.backlog = ctx.backlog;
   if (!top.idle) return;
   // 다 만난 것이 아니라 하루 상한에 걸렸거나, 끈질긴 단위의 이 판 몫을 다 쓴 것이다
@@ -289,6 +289,14 @@ function breathe(rows, ctx) {
     backlog: ctx.backlog,
     why,
   });
+}
+
+// 하루 복습 상한에 걸려 미룬 것이 있다 — 고르기의 맨 앞 줄(top.capped)과 plan() 머리(dayCapped)가 이 한 셈을 쓴다(단계4 §20-14).
+const heldBack = ctx => ctx.capped && ctx.backlog > 0;
+
+// plan()이 머리에서 한 번 세는 하루 상한. 후보 없는 항목과 잠긴 항목도 이 값을 싣는다(설계 주인 11-15, 단계4 §20-14).
+export function dayCapped(learner, memory, now, params = PARAMS) {
+  return heldBack(contextOf(learner, memory, now, params));
 }
 
 export function choose(candidates, learner, memory, now, { params = PARAMS, seed = 'seed' } = {}) {

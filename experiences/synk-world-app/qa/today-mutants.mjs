@@ -32,6 +32,18 @@ export const TODAY_MUTANTS = [
   ],
   ['상한', '상한 날에도 복습 줄을 세운다', '  if (capped || entry.none) return null;\n', '  if (entry.none) return null;\n'],
   [
+    '상한',
+    'plan 쪽 칸을 읽지 않고 항목에서만 읽는다(설계 주인 11-15 · §20-14)',
+    "  const capped = typeof dayCapped === 'boolean' ? dayCapped : entries.some(entry => Boolean(entry?.capped));\n",
+    '  const capped = entries.some(entry => Boolean(entry?.capped));\n',
+  ],
+  [
+    '상한',
+    '홈 계획이 plan 쪽 칸을 줄 규칙에 넘기지 않는다(§20-14)',
+    '  const { rows, capped } = todayRows({ entries, activities, opened, say, dayCapped: live ? planned.capped : undefined });\n',
+    '  const { rows, capped } = todayRows({ entries, activities, opened, say });\n',
+  ],
+  [
     '빈 날',
     '상한 날의 복습 칸 활동이 걸려도 조건에 걸린 날로 센다 — 풀려도 줄이 아닌데 조건을 바꾸라고 한다(Fable 엔진급 끝 판 F5)',
     "  const blocked = activities.some(act => act.blocked && !(capped && act.kind === 'again' && !act.open.resume));\n",
@@ -58,8 +70,8 @@ export const TODAY_MUTANTS = [
   [
     '상한',
     '상한을 생활 복습 항목에서만 읽는다 — 짧은 연습만 상한인 날을 다 한 날로 적는다(GPT 끝 판 GB1)',
-    '  const capped = entries.some(entry => Boolean(entry?.capped));\n',
-    '  const capped = Boolean(entries.find(entry => entry.id === LIFE_REVIEW_ID)?.capped);\n',
+    "  const capped = typeof dayCapped === 'boolean' ? dayCapped : entries.some(entry => Boolean(entry?.capped));\n",
+    "  const capped = typeof dayCapped === 'boolean' ? dayCapped : Boolean(entries.find(entry => entry.id === LIFE_REVIEW_ID)?.capped);\n",
   ],
   [
     '상한',

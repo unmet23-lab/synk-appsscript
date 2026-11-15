@@ -566,6 +566,32 @@ test('⑳ 활동 고르기 — 사실은 낼 것이 있는 활동만 앞세운�
   assert.equal(capped.capped, true);
   assert.equal(capped.none, true);
   assert.equal(capped.why.code, 'day.capped');
+  // 상한은 plan 머리에서 한 번 — 결과의 capped 칸 하나이고, 후보 없는 항목과 잠긴 항목도 같은 값이다(설계 주인 11-15 · 단계4 §20-14)
+  const bare = { id: 'bare', facts: { resume: true } };
+  const shut = { id: 'shut', candidates: [word('c', 2)], facts: { locked: true } };
+  const head = planActivities([known, bare, shut], rested, memory, later, {
+    params: { ...WIDE, reviewsPerDay: 0 },
+  });
+  assert.equal(head.capped, true);
+  assert.deepEqual(
+    head.map(entry => [entry.id, entry.capped]).sort(),
+    [
+      ['bare', true],
+      ['known', true],
+      ['shut', true],
+    ],
+    '후보 없는 항목 · 잠긴 항목도 머리의 값',
+  );
+  const lone = planActivities([bare, shut], rested, memory, later, {
+    params: { ...WIDE, reviewsPerDay: 0 },
+  });
+  assert.equal(lone.capped, true, '후보를 넘긴 열린 활동이 없어도 상한을 읽는다');
+  const free = planActivities([bare], rested, memory, later, { params: WIDE });
+  assert.deepEqual([free.capped, free[0].capped], [false, false]);
+  const fresh = planActivities([bare], createLearner(), memory, later, {
+    params: { ...WIDE, reviewsPerDay: 0 },
+  });
+  assert.equal(fresh.capped, false, '미룬 것이 없으면 상한 날이 아니다');
 });
 
 test('⑳ 설정 거르기 — 소리 없는 자리 · 「지금은 아니에요」를 후보에서 뺀다', () => {

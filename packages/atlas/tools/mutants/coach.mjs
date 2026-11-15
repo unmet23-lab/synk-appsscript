@@ -10,6 +10,14 @@ const SYNC = 'src/coach/sync.mjs';
 export const COACH_MUTANTS = [
   [
     C,
+    '코치',
+    'coach.plan이 하루 상한 칸을 넘기지 않는다 — 홈이 plan 쪽 칸을 읽지 못한다(§20-14)',
+    'src/coach/index.mjs',
+    '      entries.capped = planned.capped;\n',
+    '',
+  ],
+  [
+    C,
     '저장 실패',
     '저장이 실패한 답도 판 상태를 다시 세울 때 돌린다',
     SESSION,

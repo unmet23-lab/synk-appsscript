@@ -10,7 +10,7 @@
 import { unitsOf } from '../fold/units.mjs';
 import { PARAMS } from '../params.mjs';
 import { REASON_CODES } from '../reason/index.mjs';
-import { choose } from './choose.mjs';
+import { choose, dayCapped } from './choose.mjs';
 import { startSession } from './session.mjs';
 
 const REVIEW_CODES = Object.freeze({ missed: REASON_CODES.missed, bridge: REASON_CODES.bridge });
@@ -139,11 +139,14 @@ function whyOf(ruled, goals, top, none, facts) {
 
 // 항목: { id, locked, fact(앞지른 사실의 표 자리 · 없으면 -1), goals, tier, todo, offered(넘긴 후보 수 — 코치는 지도에 맞춘 뒤의 수),
 //        idle, none, capped(하루 복습 상한에 걸려 미룬 것이 있다 — 사실 문장이 이유를 덮어도 읽게, §20-3), why }
-function entryOf(activity, view, memory, now, params, seed) {
+// 결과: 항목의 배열(순위 차례)에 capped 칸 하나를 싣는다 — 하루 상한은 plan 머리에서 한 번 센 값이고, 항목의 capped도 모두 그 값이다
+// (항목의 칸은 옛 호출을 위해 남긴다 · 설계 주인 11-15, 단계4 §20-14).
+function entryOf(activity, view, memory, now, params, seed, capped) {
   const facts = activity.facts ?? {};
   const candidates = activity.candidates ?? [];
   const offered = candidates.length;
-  if (facts.locked) return { id: activity.id, locked: true, fact: -1, tier: 9, todo: 0, offered };
+  if (facts.locked)
+    return { id: activity.id, locked: true, fact: -1, tier: 9, todo: 0, offered, capped };
   const rows = offered ? choose(candidates, view, memory, now, { params, seed }) : [];
   const top = rows[0];
   // 숨 고르기는 판 안의 쉼이라 순위는 그 뒤 줄(숨 고르기 앞의 맨 앞)의 층으로 매긴다 — 할 것이 있는 활동이 채우기 활동 뒤로
@@ -165,7 +168,7 @@ function entryOf(activity, view, memory, now, params, seed) {
     offered,
     idle: Boolean(top?.idle),
     none,
-    capped: Boolean(top?.capped),
+    capped,
     why: whyOf(ruled, goals, top, none, facts),
   };
 }
@@ -188,5 +191,12 @@ export function planActivities(
   { params = PARAMS, seed = 'plan' } = {},
 ) {
   const view = viewOf(learner, now, params);
-  return activities.map(activity => entryOf(activity, view, memory, now, params, seed)).sort(rank);
+  // 하루 복습 상한은 plan 머리에서 한 번만 센다 — 값이 나오는 곳이 하나라 항목끼리 어긋나지 않고, 후보를 넘긴 열린 활동이 없는 날에도
+  // 상한을 읽는다(레슨을 다 마친 상한 날에 잠긴 듣기 짧은 연습만 남은 때 — 설계 주인 11-15, 단계4 §20-14).
+  const capped = dayCapped(view, memory, now, params);
+  const entries = activities
+    .map(activity => entryOf(activity, view, memory, now, params, seed, capped))
+    .sort(rank);
+  entries.capped = capped;
+  return entries;
 }

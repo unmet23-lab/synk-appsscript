@@ -531,13 +531,17 @@ export function createCoach(options = {}) {
         ...activity,
         candidates: (activity.candidates ?? []).map(mapItem).filter(Boolean),
       }));
-      return planActivities(mapped, view, state.host.memory, state.host.now(), {
+      const planned = planActivities(mapped, view, state.host.memory, state.host.now(), {
         params,
         seed: options.seed ?? gameId,
-      }).map(entry => ({
+      });
+      const entries = planned.map(entry => ({
         ...entry,
         why: entry.why ? { ...entry.why, line: say(entry.why, opts) } : null,
       }));
+      // 하루 복습 상한은 plan 쪽 칸 하나다 — 두뇌가 머리에서 한 번 센 값을 그대로 넘긴다(단계4 §20-14).
+      entries.capped = planned.capped;
+      return entries;
     },
 
     // 지도 문항의 단위(제품이 단위를 짓지 않는다 — 4-2 생활의 「복습 → 생활 단위」, 단계 4 §19-3 · 설계 주인 11-13). 받는 값은 열쇠 글자나

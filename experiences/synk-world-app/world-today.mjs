@@ -300,11 +300,12 @@ function rowWhy(entry, act, { capped, say }) {
 }
 
 // 세 줄 — plan()의 차례 그대로, 칸마다 한 줄. opened: 이번 학습일에 이 문서에서 연 칸.
-export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null } = {}) {
+export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null, dayCapped } = {}) {
   const byId = new Map(activities.map(act => [act.plan.id, act]));
-  // 하루 복습 상한(§20-3): 상한은 엔진 전체의 값이다(오늘 복습 수가 하루 상한에 닿았고 미룬 것이 있다 — 후보를 넘긴 활동이면 어느 항목이든
-  // 같은 값). 생활 복습 항목만 보면 생활 복습 없이 짧은 연습이나 다음 레슨만 있는 상한 날을 「다 만났어요」로 잘못 말한다(GPT 끝 판 GB1).
-  const capped = entries.some(entry => Boolean(entry?.capped));
+  // 하루 복습 상한(§20-3): plan 쪽 칸(dayCapped — plan 머리에서 한 번 센 엔진 전체의 값)을 먼저 읽는다(설계 주인 11-15, §20-14). 그 칸이 없는
+  // 옛 엔진이면 어느 항목의 capped로든 읽는다. 생활 복습 항목만 보면 생활 복습 없이 짧은 연습이나 다음 레슨만 있는 상한 날을 「다 만났어요」로
+  // 잘못 말한다(GPT 끝 판 GB1).
+  const capped = typeof dayCapped === 'boolean' ? dayCapped : entries.some(entry => Boolean(entry?.capped));
   const rows = [];
   const taken = new Set();
   for (const entry of entries) {
@@ -377,7 +378,7 @@ export function createWorldTodayPlan({
   const planned = engine ? quiet(() => coach.plan(activities.map(act => act.plan), { lang })) : null;
   const live = engine && Array.isArray(planned);
   const entries = live ? planned : checkingEntries(activities, say);
-  const { rows, capped } = todayRows({ entries, activities, opened, say });
+  const { rows, capped } = todayRows({ entries, activities, opened, say, dayCapped: live ? planned.capped : undefined });
   const selected = pickRow(rows, opened);
   const checking = !live;
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;

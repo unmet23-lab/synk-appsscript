@@ -912,6 +912,10 @@ test('plan()은 코치의 하루 경계(현지 새벽 4시)로 하루 한도를 
   time.advance(7 * HOUR); // 서울 11-11 10:00 — 새 하루(UTC로는 아직 같은 하루)
   const [top] = coach.plan([{ id: 'lesson', candidates: words.slice(20) }]);
   assert.equal(top.tier, 2, '서울의 새 하루라 새것을 다시 낸다');
+  // 하루 복습 상한은 plan 쪽 칸 하나다 — 코치가 두뇌의 값을 그대로 넘긴다(단계4 §20-14)
+  const planned = coach.plan([{ id: 'lesson', candidates: words.slice(20) }]);
+  assert.equal(typeof planned.capped, 'boolean');
+  assert.equal(planned.capped, planned[0].capped);
   coach.dispose();
 });
 
