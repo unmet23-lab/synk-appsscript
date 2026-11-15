@@ -13,9 +13,19 @@ def request(url,data=None,headers=None):
  r=urllib.request.Request(url,data=None if data is None else json.dumps(data).encode(),headers=headers or {})
  with urllib.request.urlopen(r,timeout=30) as s:return json.load(s)
 def radio_status(cfg):
- cred=read(pathlib.Path('/etc/synk-server-backup/credentials.json'))['drive77']
+ credentials=read(pathlib.Path('/etc/synk-server-backup/credentials.json'))
+ cred=credentials.get('drive77Radio',credentials['drive77'])
  req=urllib.request.Request('https://oauth2.googleapis.com/token',data=urllib.parse.urlencode(dict(cred,grant_type='refresh_token')).encode(),headers={'Content-Type':'application/x-www-form-urlencoded'})
  with urllib.request.urlopen(req,timeout=30) as r:token=json.load(r)['access_token']
+ expected_client=cfg.get('radioClientId',cfg.get('restrictedClientId'))
+ if cfg.get('requireRestrictedDrive') and not cfg.get('radioClientId'):
+  raise RuntimeError('RADIO_OAUTH_CLIENT_REQUIRED')
+ if expected_client:
+  if cred['client_id']!=expected_client or cred['client_id'].startswith('107294490549-'):
+   raise RuntimeError('RADIO_OAUTH_CLIENT_MISMATCH')
+  info=request('https://oauth2.googleapis.com/tokeninfo?'+urllib.parse.urlencode({'access_token':token}))
+  if info.get('aud',info.get('issued_to'))!=expected_client or set(info.get('scope','').split())!={'https://www.googleapis.com/auth/drive.file'}:
+   raise RuntimeError('RADIO_OAUTH_SCOPE_MISMATCH')
  headers={'Authorization':'Bearer '+token}
  account=request('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)',headers=headers)
  assert account['user']['emailAddress']=='77yuhbs@gmail.com'
