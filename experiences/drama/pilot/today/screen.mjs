@@ -124,7 +124,8 @@ export async function start(ctx) {
   paint(viewAfter(after), () => {
    T.root.querySelector('[data-close]')?.addEventListener('click', (e) => {
     e.currentTarget.disabled = true;
-    const a = S.boot.lesson.coach?.wrap?.audio;
+    // 다음 장의 태오 한마디를 구웠으면 그 목소리가 끝인사를 맡는다 — 코치 녹음과 겹치지 않게 코치 녹음은 틀지 않는다.
+    const a = after.line?.media?.video ? null : S.boot.lesson.coach?.wrap?.audio;
     if (a) try { const v = new Audio(a); v.play().catch(() => {}); } catch { /* 소리 없음 */ }
     // 이 장을 뜯으면 밑의 다음 장(내일)이 보이고 그대로 둔다. 드러난 장은 화면 낭독기에도 읽히게 숨김을 풀고 초점을 옮긴다(11-16 GPT 검수 GA2).
     motion('tearing', 950).then(() => {
@@ -134,6 +135,7 @@ export async function start(ctx) {
      // 뜯기 전에는 밑장이 inert라 키보드로도 닿지 않는다(11-16 GPT 다시 검수 GA1). 뜯은 뒤에는 윗장을 막고 밑장을 연다.
      const top = T.root.querySelector('.td-top');
      if (top) { top.setAttribute('aria-hidden', 'true'); top.inert = true; }
+     if (under) voice(under.querySelector('.td-say')); // 다음 장의 태오 한마디(구웠으면) — 「오늘은 여기까지」를 누른 뒤라 소리가 막히지 않는다
      if (under) { under.inert = false; under.removeAttribute('inert'); under.removeAttribute('aria-hidden'); under.setAttribute('tabindex', '-1'); under.focus({ preventScroll: true }); }
      // 머리의 연월은 다음 장의 것으로(11월 30일을 뜯으면 12월).
      const [y, m] = (under?.dataset.ym || '').split('|');
@@ -164,20 +166,22 @@ export async function start(ctx) {
   document.body.append(root);
   T.root = root;
   root.querySelectorAll('[data-card]').forEach((c) => c.addEventListener('click', () => { c.classList.toggle('open'); c.setAttribute('aria-expanded', c.classList.contains('open')); }));
-  // 태오 한마디를 구운 영상이 있으면 소리 내어 한 번 — 끝나면 듣는 고리로 돌아간다. 소리 자동 재생이 막히면 이름 옆에 「듣기」가 뜨고,
-  // 동그라미나 「듣기」를 누르면 듣는다. 파일이 없는 사본(재생 사본은 git 밖이다)이면 단추를 접고 듣는 고리로만 둔다.
-  const say = root.querySelector('.td-sheet:not(.td-under) .td-say');
+  voice(root.querySelector('.td-sheet:not(.td-under) .td-say'));
+  bind?.();
+ }
+ // 태오 한마디를 구운 영상이 있으면 소리 내어 한 번 — 끝나면 듣는 고리로 돌아간다. 소리 자동 재생이 막히면 이름 옆에 「듣기」가 뜨고,
+ // 동그라미나 「듣기」를 누르면 듣는다. 파일이 없는 사본(재생 사본은 git 밖이다)이면 단추를 접고 듣는 고리로만 둔다.
+ // 오늘 장은 그릴 때, 다음 장(장을 뜯으면 보임)은 뜯은 뒤에 부른다.
+ function voice(say) {
   const bub = say?.querySelector('[data-say]');
   const video = bub?.querySelector('video');
-  if (bub && video) {
-   const a = assets();
-   const loop = () => { say.classList.remove('speaking'); video.muted = true; video.loop = true; video.src = a.listenLoop; video.play().catch(() => {}); };
-   const speak = () => { say.classList.remove('tap'); say.classList.add('speaking'); video.muted = false; video.loop = false; video.src = bub.dataset.say; video.addEventListener('ended', loop, { once: true }); return video.play(); };
-   const failed = (e) => { if (video.error || e?.name === 'NotSupportedError') { bub.disabled = true; say.classList.remove('tap'); } else say.classList.add('tap'); loop(); };
-   speak().catch(failed);
-   for (const b of say.querySelectorAll('[data-say], .td-listen')) b.addEventListener('click', () => speak().catch(failed));
-  }
-  bind?.();
+  if (!bub || !video) return;
+  const a = assets();
+  const loop = () => { say.classList.remove('speaking'); video.muted = true; video.loop = true; video.src = a.listenLoop; video.play().catch(() => {}); };
+  const speak = () => { say.classList.remove('tap'); say.classList.add('speaking'); video.muted = false; video.loop = false; video.src = bub.dataset.say; video.addEventListener('ended', loop, { once: true }); return video.play(); };
+  const failed = (e) => { if (video.error || e?.name === 'NotSupportedError') { bub.disabled = true; say.classList.remove('tap'); } else say.classList.add('tap'); loop(); };
+  speak().catch(failed);
+  for (const b of say.querySelectorAll('[data-say], .td-listen')) b.addEventListener('click', () => speak().catch(failed));
  }
  const assets = () => ({ ...{ listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp' }, ...(lesson.assets || {}) });
  // 일력의 풀칠한 머리 — 연월을 종이색으로 찍는다(11-16 카본: 아무 글 없는 검은 띠는 어색했다).

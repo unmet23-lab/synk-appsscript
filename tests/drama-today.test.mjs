@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { world, read, doToday } from '../experiences/drama/qa/오늘한장-20261114/뽑기.mjs';
 import { buildToday, buildAfter, readTurns, revisitPlan, TAEO_LINES, dayKey, dayStart, dayParts } from '../experiences/drama/pilot/today/plan.mjs';
-import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL } from '../experiences/drama/pilot/today/content.mjs';
+import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA } from '../experiences/drama/pilot/today/content.mjs';
 import { planRevisit, REVISIT_DAYS } from '../experiences/drama/pilot/takes.mjs';
 import { STR } from '../experiences/drama/pilot/strings.mjs';
 
@@ -420,4 +420,12 @@ test('일력의 다음 장 번호는 해를 넘긴다 — 12월 31일의 내일�
  const eve = new Date(2026, 11, 31, 9).getTime();
  assert.deepEqual(dayParts(eve, 1, null), { year: 2027, month: 1, day: 1, weekday: new Date(2027, 0, 1).getDay() });
  assert.deepEqual(dayParts(eve, 3, 540), { year: 2027, month: 1, day: 3, weekday: new Date(2027, 0, 3).getDay() });
+});
+
+test('태오 한마디 영상 자리는 있는 틀에만, 정해 둔 이름으로 — 다음 장의 끝인사도 틀이 있다(11-16)', () => {
+ for (const [code, m] of Object.entries(TAEO_MEDIA)) {
+  assert.ok(TAEO_LINES[code], code);
+  assert.match(m.video, /^media\/today-taeo-[a-z0-9]+\.mp4$/, code);
+ }
+ assert.ok(TAEO_LINES.done && !/'요'/.test(TAEO_LINES.done));
 });
