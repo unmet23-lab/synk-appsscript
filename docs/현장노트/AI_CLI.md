@@ -1297,6 +1297,13 @@
 - 고침: `node tools/기록찾기.js <낱말>`로 찾는다. 찾은 줄을 150자 한 줄로 줄여 줄 번호와 함께 보이고, 다 보이지 못하면 몇 줄이 더 있는지 말한다. 줄 전체는 `--줄 <파일>:<줄번호>`로 본다.
 - 다시 확인: `node tools/기록찾기.js 드라마`의 첫 줄에 곳마다 찾은 수가 나오고, 출력이 3만 자 아래다.
 
+### 컴퓨터 사용으로는 Claude 앱 자기 화면을 누를 수 없다 — 예약 작업의 「워크트리」 칸은 유호님 손이다 (2026-11-15 Claude)
+
+- 증상: 유호님이 「네, 켜 줘」라고 하셔서 예약 작업 셋의 「워크트리」 칸을 켜려고 `request_access`에 「Claude」를 넣었다. 「Claude cannot be granted control of its own window」로 거절됐고, 다시 요청하지 말라는 말이 붙어 있었다.
+- 원인: 컴퓨터 사용은 Claude 앱 자기 창을 허락 목록에 넣지 못하게 막혀 있다. Claude가 자기 설정과 권한을 스스로 바꾸지 못하게 하려는 것이다. 예약 도구 `update_scheduled_task`에도 이 칸이 없다.
+- 고침: 앱 화면에서만 바뀌는 칸은 「제가 켤까요」로 여쭙지 않는다. 처음부터 유호님께 누르실 자리를 적어 드린다. 앱의 작업 기록 파일(`claude-code-sessions/<계정>/<조직>/scheduled-tasks.json`, 계정마다 사본이 있다)을 손으로 고쳐 돌아가지 않고, 그 파일은 확인에만 쓴다.
+- 다시 확인: 「워크트리」를 켠 작업은 그 파일의 작업 줄에 `"useWorktree": true`가 있다. 11-15 저녁에는 `synk-daily-lab`과 `synk-daily-publish`에는 있었고, `synk-card-apply`, `synk-daily-lab-versions`, `synk-sns-final-check`에는 없었다.
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)
