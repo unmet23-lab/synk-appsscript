@@ -45,7 +45,9 @@ function applies(prep) {
 
 function runTool(file) {
   const py = process.env.SYNK_PYTHON || 'python';
-  const r = spawnSync(py, ['-I', '-X', 'utf8', TOOL, file, '--json'], { encoding: 'utf8', windowsHide: true, timeout: 30 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 });
+  // 검사이력은 올리기 전 검사가 이 결과까지 한 줄로 남긴다 — 여기서 부른 최종본 검사는 따로 줄을 쓰지 않게 끈다(흠 장부 설계 1단계)
+  const r = spawnSync(py, ['-I', '-X', 'utf8', TOOL, file, '--json'], { encoding: 'utf8', windowsHide: true, timeout: 30 * 60 * 1000, maxBuffer: 32 * 1024 * 1024,
+    env: { ...process.env, SYNK_검사이력: '끔' } });
   if (r.error) throw r.error;
   const line = String(r.stdout || '').trim().split(/\r?\n/).filter((l) => l.startsWith('{')).pop();
   if (!line) throw Error((r.stderr || '').trim().split(/\r?\n/).pop() || `끝 코드 ${r.status}`);

@@ -1221,7 +1221,23 @@ async function run(dir, opts = {}) {
     fresh.검사 = record;
     fs.writeFileSync(bundle.file, JSON.stringify(fresh, null, 2) + '\n');
   }
+  // 검사이력(흠 장부 설계 1단계): 「검사」는 덮어써서 고치면 걸렸던 흔적이 사라진다 — 실행마다 게시/검사이력.jsonl에 한 줄을 남긴다(--저장안함에도).
+  // 무엇이 실패해도 결과와 끝 코드는 그대로다 — require부터 try 안이고, 남기기는 던지지 않는다.
+  try { 이력남기기(bundle, result, findings, fileSummaries); } catch { /* 이력은 검사 결과를 바꾸지 않는다 */ }
   return { bundle, record, findings };
+}
+
+// 고칠 것은 「걸림」, 확인할 것은 「확인」으로 옮긴다. ⑳의 final-cut-<항목>은 최종본 검사의 그 항목과 같은 점검표 번호를 단다(흠갈래.json).
+function 이력남기기(bundle, result, findings, files) {
+  const 이력 = require('./lib/검사이력.js');
+  const 걸림 = findings.filter((f) => f && (f.level === FIX || f.level === LOOK)).map((f) => {
+    const code = String(f.code || '');
+    const m = /^final-cut-(.+)$/.exec(code);
+    const 번호 = m ? 이력.번호찾기('최종본검사', m[1]) : undefined;
+    return { 규칙: code, ...(Number.isInteger(번호) ? { 번호 } : {}), 등급: f.level === FIX ? '걸림' : '확인', 글: `${f.where} · ${f.message}` };
+  });
+  이력.남기기({ 편: bundle.dir, 눈: '올리기전검사', 단계: '올리기 전', 결과: result === FIX ? '걸림' : result === LOOK ? '확인' : '통과', 끝코드: result === FIX ? 1 : 0,
+    판: 이력.지문([].concat(files || []).map((f) => `${f.경로}:${f.sha256 || f.바이트 || ''}`)), 걸림 });
 }
 
 function parseArgs(argv) {

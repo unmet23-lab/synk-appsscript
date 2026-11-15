@@ -128,7 +128,8 @@ def sheet(files, step, out, cols, t0=0.0, lines=None, labels=None):
 
 # 0) 최종본 검사(도구가 따로 잰다)
 def step_final_check():
-    r = run([sys.executable, '-I', '-X', 'utf8', FINAL_CHECK, MP4, '--json'], cwd=REPO, timeout=1800)
+    # 최종본 검사가 편 폴더 게시/검사이력.jsonl에 남기는 줄의 단계 — 최종 확인에서 잡혔는지 장부가 가른다(흠 장부 설계 1단계)
+    r = run([sys.executable, '-I', '-X', 'utf8', FINAL_CHECK, MP4, '--json'], cwd=REPO, timeout=1800, env={**os.environ, 'SYNK_검사단계': '최종 확인'})
     lines = [ln for ln in r.stdout.splitlines() if ln.startswith('{')]
     j = json.loads(lines[-1]) if lines else {'오류': (r.stderr or '')[-300:]}
     json.dump(j, open(os.path.join(OUT, '최종본검사.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)

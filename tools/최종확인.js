@@ -8,8 +8,9 @@
  *   node tools/최종확인.js <편 폴더> 작은흠 --메모 "남은 작은 흠(다음 편 검사 항목으로 넘길 것)" --독립검수 "누가 · 판정"
  *        시청자가 평소 속도로 한 번 봐서는 알아채기 어려운 흠만 남은 편 — 등록된다(11-15 유호님 「작은 흠은 올리기」)
  *   node tools/최종확인.js <편 폴더> 미흡 --메모 "걸린 것" --갈래 멈춘화면,끝약함
- *        --갈래는 작은흠과 미흡에 꼭 붙인다(tools/lib/최종확인.js KINDS). 판정마다 게시/최종확인_이력.jsonl에 한 줄이 쌓이고
- *        node tools/흠장부.js 가 편들을 모아 되풀이된 갈래를 센다 — 다음 편이 같은 실수를 하지 않게 콘티 전에 읽는다
+ *        --갈래는 작은흠과 미흡에 꼭 붙인다(tools/lib/최종확인.js KINDS 이름이나 슬롭 점검표 번호 — 「26」 · 「K26」, 11-15부터).
+ *        판정마다 게시/최종확인_이력.jsonl에 한 줄이 쌓이고 node tools/흠장부.js 가 편들을 모아 점검표 번호로 센다
+ *        (이름은 docs/마케팅/제작양식/흠갈래.json 「항목」이 번호에 잇는다). 올리기 안내에 기록 · 이력 · 검사이력 파일이 함께 나온다
  *   node tools/최종확인.js <편 폴더> [상태]            지금 등록을 막는 까닭(없으면 「통과 — 등록 가능」)
  *
  * 최종 확인 예약 작업(synk-sns-final-check, 3시간마다 — 11-15 유호님 「예약으로 바꿔」)과 제작 회차가 쓰는 것:
@@ -29,6 +30,7 @@
  * 영상이 하나라도 바뀌면 기록은 무효(다시 컷 전수). 이 파일은 저장소에 함께 올린다 — 예약큐(운영 사본)가 origin에서 읽는다.
  * 관문: tools/작업실예약.js의 planBundle(대기열 · 명시 등록 모두)이 tools/lib/최종확인.js problem()을 판마다의 까닭으로 넣는다.
  */
+const fs = require('node:fs');
 const path = require('node:path');
 const 묶음 = require('./lib/게시묶음.js');
 const 확인 = require('./lib/최종확인.js');
@@ -110,7 +112,10 @@ function main(argv) {
   let r;
   try { r = 확인.write(bundle, verb, memo, { 검수: opt('--검수') || '', 독립검수: opt('--독립검수') || '', 갈래: opt('--갈래') || '' }); } catch (error) { console.error(error.message); return 2; }
   console.log(`${bundle.name}: 최종 확인 ${r.결과} 기록 — ${path.relative(bundle.repo, 확인.recordFile(bundle))} · 영상 ${r.파일.length}개`);
-  console.log(`  올리기: node tools/바로올리기.js "${path.relative(bundle.repo, 확인.recordFile(bundle))}" -m "…" --실행 → 올린 뒤 node tools/최종확인.js "${dir}" 놓기 --누가 "…"`);
+  // 올릴 파일: 기록과 판정 이력(11-15까지 안내에 이력이 빠져 이력이 회차 사본에만 남았다), 검사가 남긴 검사이력이 있으면 그것도
+  const 올릴 = [확인.recordFile(bundle), 확인.historyFile(bundle), path.join(bundle.dir, '게시', '검사이력.jsonl')]
+    .filter((f) => fs.existsSync(f)).map((f) => `"${path.relative(bundle.repo, f)}"`);
+  console.log(`  올리기: node tools/바로올리기.js ${올릴.join(' ')} -m "…" --실행 → 올린 뒤 node tools/최종확인.js "${dir}" 놓기 --누가 "…"`);
   return 0;
 }
 

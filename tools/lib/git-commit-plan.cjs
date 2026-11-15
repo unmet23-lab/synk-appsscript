@@ -62,6 +62,14 @@ function 세판합치기(git, 저장, 경로, 원sha, 부sha, 내sha, { 옛판�
   return { 버퍼: R, 방법, ...(자리 ? { 자리 } : {}) };
 }
 
+/** 양쪽이 새로 만든 덧붙이기 장부 — 빈 바탕의 장부덧붙이기. 원격 줄 뒤에 원격에 없는 내 줄만 붙인다. 바이너리면 null. */
+function 새장부합치기(git, 저장, 원sha, 내sha) {
+  const O = 블롭(git, 저장, 원sha), C = 블롭(git, 저장, 내sha);
+  if (이진인가(O) || 이진인가(C)) return null;
+  const 덧 = 장부덧붙이기([], 줄나누기(글로(O)), 줄나누기(글로(C)));
+  return 덧 ? 바이트로(줄잇기(덧)) : null;
+}
+
 function 같은셈(a, b) {
   if (a.size !== b.size) return false;
   for (const [k, v] of a) if (b.get(k) !== v) return false;
@@ -179,7 +187,14 @@ function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝�
         if (cs === e.옛) { sha = e.새; 방법 = '내 판'; }
         else if (cs === e.새) { 기록('이미 같음'); continue; }
         else if (cs === null) { 막힘('origin에 없는 파일을 고쳤다 — 그 파일을 만든 앞 커밋이 아직 origin에 없다(내 커밋이면 같이 준다)'); continue; }
-        else if (e.옛 === null) { 막힘('새로 만든 파일인데 origin에 같은 이름의 다른 파일이 있다'); continue; }
+        else if (e.옛 === null) {
+          // 덧붙이기 장부(.jsonl)를 양쪽이 새로 만들었으면 빈 바탕에 양쪽이 덧붙인 것으로 합친다(11-15 — 편마다의 게시/검사이력.jsonl은
+          // 제작 회차와 최종 확인 회차가 저마다 처음 만들 수 있다). 장부가 아니거나 바이너리면 그대로 멈춘다.
+          const 덧 = 장부꼴.test(e.경로) ? 새장부합치기(git, 저장, cs, e.새) : null;
+          if (!덧) { 막힘('새로 만든 파일인데 origin에 같은 이름의 다른 파일이 있다'); continue; }
+          sha = 블롭쓰기(git, 저장, 덧);
+          방법 = '장부 덧붙임(양쪽 새 파일)';
+        }
         else {
           const m = 세판합치기(git, 저장, e.경로, cs, e.옛, e.새, { 옛판아님 });
           if (m.문제) { 막힘(m.문제); continue; }

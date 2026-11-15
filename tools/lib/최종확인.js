@@ -21,6 +21,25 @@ const OPEN = new Set(['통과', '작은 흠']);
 // 흠의 갈래 — 미흡과 작은 흠을 쓸 때 꼭 고른다(11-15 유호님 「그 실수와 작업내용을 기억해서 다음번에는 같은 실수 안하도록 시스템화」).
 // 메모 글만으로는 같은 실수가 몇 편에서 되풀이됐는지 셀 수 없어서 갈래를 정해 둔다. tools/흠장부.js가 편마다의 이력을 모아 센다.
 const KINDS = ['멈춘화면', '끝약함', '사람굳음', '인물튐', '소품튐', '점프컷', '같은구도반복', '글자표', '숫자불일치', '사실', '이해안됨', '소리', '화면작음어두움', '기타'];
+// 11-15 흠 장부 설계 1단계: 갈래 이름 열네 개는 docs/마케팅/제작양식/흠갈래.json 「항목」으로 남아 점검표 번호와 묶음에 이어진다.
+// --갈래는 이름과 함께 점검표 번호(「26」 · 「K26」 · 「#26」)도 받는다 — 번호는 「26」 꼴 글로 적는다. 흠 장부는 둘 다 번호로 센다.
+const 갈래표파일 = path.join(__dirname, '..', '..', 'docs', '마케팅', '제작양식', '흠갈래.json');
+let 점검표번호캐시;
+function 점검표번호들() {
+  if (점검표번호캐시 !== undefined) return 점검표번호캐시;
+  try { 점검표번호캐시 = new Set(JSON.parse(fs.readFileSync(갈래표파일, 'utf8')).줄.map((x) => x.번호)); } catch { 점검표번호캐시 = null; }
+  return 점검표번호캐시;
+}
+function 갈래맞추기(g) {
+  const m = /^[Kk#]?(\d{1,3})$/.exec(String(g).trim());
+  return m ? String(Number(m[1])) : String(g).trim();
+}
+// 번호 갈래인가 — 흠갈래.json을 못 읽으면 1~999를 받는다(표를 못 읽어 판정 기록이 막히지 않게)
+function 번호갈래인가(g) {
+  if (!/^\d+$/.test(g) || Number(g) < 1) return false;
+  const 번호들 = 점검표번호들();
+  return 번호들 ? 번호들.has(Number(g)) : Number(g) <= 999;
+}
 const HISTORY = '최종확인_이력.jsonl';
 function historyFile(bundle) { return path.join(bundle.dir, '게시', HISTORY); }
 
@@ -83,10 +102,10 @@ function changed(bundle, r) {
 // 결과: '통과' | '작은 흠' | '미흡' · 메모: 무엇을 봤나 / 무엇이 걸렸나 · 독립검수: 맥락 없는 눈(Fable 5.2 등)의 판정 한 줄 — 통과에는 꼭
 // (11-13 최종 확인 여섯 편: 측정 묶음은 둘만 잡았고 끝 3초 · 멈춘 카드 · 숫자 불일치는 맥락 없는 Fable 5.2 독립 검수가 찾았다)
 function write(bundle, 결과, 메모, { 검수 = '', 독립검수 = '', 갈래 = [] } = {}) {
-  const 갈래들 = [...new Set([].concat(갈래 || []).flatMap((g) => String(g).split(/[,\s]+/)).filter(Boolean))];
-  const 모르는 = 갈래들.filter((g) => !KINDS.includes(g));
-  if (모르는.length) throw new Error(`모르는 갈래: ${모르는.join(', ')} — ${KINDS.join(' · ')} 가운데서 고른다`);
-  if (결과 !== '통과' && ['통과', '작은 흠', '미흡'].includes(결과) && !갈래들.length) throw new Error(`${결과}에는 --갈래가 있어야 한다(쉼표로 여럿) — ${KINDS.join(' · ')}`);
+  const 갈래들 = [...new Set([].concat(갈래 || []).flatMap((g) => String(g).split(/[,\s]+/)).filter(Boolean).map(갈래맞추기))];
+  const 모르는 = 갈래들.filter((g) => !KINDS.includes(g) && !번호갈래인가(g));
+  if (모르는.length) throw new Error(`모르는 갈래: ${모르는.join(', ')} — ${KINDS.join(' · ')} 가운데서 고르거나 슬롭 점검표 번호(예: 26)를 쓴다`);
+  if (결과 !== '통과' && ['통과', '작은 흠', '미흡'].includes(결과) && !갈래들.length) throw new Error(`${결과}에는 --갈래가 있어야 한다(쉼표로 여럿) — ${KINDS.join(' · ')} 또는 슬롭 점검표 번호`);
   if (!['통과', '작은 흠', '미흡'].includes(결과)) throw new Error(`결과는 「통과」, 「작은 흠」, 「미흡」 가운데 하나다: ${결과}`);
   if (OPEN.has(결과) && !String(독립검수 || '').trim()) throw new Error(`${결과}에는 --독립검수 "누가 · 판정"(맥락 없는 독립 검수)이 있어야 한다`);
   if (결과 === '작은 흠' && String(메모 || '').trim().length < 10) throw new Error('작은 흠에는 남은 흠을 메모에 적는다 — 다음 편의 검사 항목으로 넘긴다');
@@ -98,7 +117,13 @@ function write(bundle, 결과, 메모, { 검수 = '', 독립검수 = '', 갈래 
   fs.writeFileSync(recordFile(bundle), JSON.stringify(record, null, 2) + '\n');
   // 이력: 최종확인.json은 마지막 판정으로 덮이므로 판정마다 한 줄을 따로 쌓는다(영상 지문은 빼고). 흠 장부가 이 줄을 센다.
   // 기록을 먼저 쓴다 — 기록 쓰기가 실패한 뒤 다시 쓸 때 이력이 두 줄이 되지 않게(11-15 Fable 검수 P3).
-  fs.appendFileSync(historyFile(bundle), JSON.stringify({ 결과, 시각: record.시각, 갈래: 갈래들, 메모: record.메모 }) + '\n');
+  // 판(영상 지문 앞 12자 — fingerprint()와 같은 셈)과 길(만드는 길)은 흠 장부가 첫 판 통과율과 길마다의 셈에 쓴다(설계 1단계, 앞 칸 뒤에 덧붙임).
+  let 덧 = {};
+  try {
+    const 판 = crypto.createHash('sha256').update([...files].sort((a, b) => a.경로.localeCompare(b.경로)).map((f) => `${f.경로}:${f.바이트}:${f.sha256}`).join('\n')).digest('hex').slice(0, 12);
+    덧 = { 판, 길: require('./검사이력.js').길of(bundle.dir, bundle.prep) };
+  } catch { /* 덧칸은 없어도 된다 */ }
+  fs.appendFileSync(historyFile(bundle), JSON.stringify({ 결과, 시각: record.시각, 갈래: 갈래들, 메모: record.메모, ...덧 }) + '\n');
   // 맡음은 여기서 풀지 않는다 — 기록이 아직 이 워크트리에만 있어, 올리기 전에 풀면 다른 회차가 같은 편을 또 맡는다(11-15 Fable 검수 P1).
   // 올린 뒤 finish()(명령 「놓기」)가 「판정 끝」 표시로 바꾼다.
   return record;

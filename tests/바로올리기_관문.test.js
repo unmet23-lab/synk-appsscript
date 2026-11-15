@@ -381,6 +381,24 @@ test('공용 작업본: 도구가 덧붙인 장부를 올리는 사이 origin이
   assert.deepEqual(공.상태(), []);
 });
 
+test('양쪽이 같은 이름의 덧붙이기 장부(.jsonl)를 새로 만들었으면 원격 줄 뒤에 내 줄을 붙여 올리고, 장부가 아닌 새 파일이 겹치면 그대로 멈춘다(11-15 검사이력)', async (t) => {
+  const 판 = 새판(t, { 파일: { '안내.md': '# 안내\n' } });
+  const 공 = 판.공용;
+  const 장부 = 'docs/마케팅/편/게시/검사이력.jsonl';
+  공.쓰기(장부, 장부줄(7) + 장부줄(5));                       // 5는 원격에도 있는 같은 줄 — 한 번만 둔다
+  const O = 판.남push({ [장부]: 장부줄(4) + 장부줄(5) });
+  const r = await 도구.올리기({ 저장소: 공.폴더, 경로들: [장부], 메시지: 'chore(검사이력): 시험', 실행: true });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(판.원격부모(), O);
+  assert.equal(판.원격파일(장부), 장부줄(4) + 장부줄(5) + 장부줄(7));
+  assert.equal(r.경로.find((x) => x.경로 === 장부).방법, '장부 덧붙임(양쪽 새 파일)');
+  공.쓰기('새.txt', '내 새 파일\n');
+  판.남push({ '새.txt': '남의 새 파일\n' });
+  const r2 = await 도구.올리기({ 저장소: 공.폴더, 경로들: ['새.txt'], 메시지: 'chore: 시험', 실행: true });
+  assert.notEqual(r2.결과, '올림');
+  assert.match(JSON.stringify(r2), /새로 만든 파일인데 origin에 같은 이름의 다른 파일이 있다/);
+});
+
 // ── 장부올리기(공용 작업본에서 도는 도구가 쓴 장부를 그 경로만 올린다) ───────
 
 const 장부올리기도구 = require(path.join(REPO, 'tools', 'lib', '장부올리기.js'));

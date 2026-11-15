@@ -2380,8 +2380,10 @@ def main(argv):
     r = 결과()
     if o["_"][0] == "지시문":
         지시문항목(None, r, o["_"][1:], o["실내"])
-        if o["json"]: print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); return r.코드()
-        return r.보고()
+        if o["json"]: print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); 코드 = r.코드()
+        else: 코드 = r.보고()
+        _검사이력(r, 코드, 시작=(o["_"][1:] or [None])[0], 단계="지시문", 판경로=o["_"][1:])
+        return 코드
     seq_path = Path(o["_"][0]); seq = 장면실내채움(json.loads(seq_path.read_text(encoding="utf-8")))
     출력 = Path(o.get("출력") or seq_path.parent / "검사_연속성"); 출력.mkdir(parents=True, exist_ok=True)
     지도 = None
@@ -2406,8 +2408,32 @@ def main(argv):
         if "고요" in 항목 and (영상 or 받음): 고요항목(seq, r, 지도, 영상, 받음, o["앞"])
         if "빛" in 항목: 빛항목(seq, r, 그림, 영상, 받음, o["앞"])
     (출력 / "결과.json").write_text(json.dumps(dict(컷순서=str(seq_path), 영상=영상, 받음=받음, 그림=그림, 항목=r.항목들, 코드=r.코드()), ensure_ascii=False, indent=1), encoding="utf-8")
-    if o["json"]: print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); return r.코드()
-    코드 = r.보고(); print(f"결과 {출력 / '결과.json'}"); return 코드
+    단계 = "편집" if 영상 else "받은 뒤" if 받음 else "이미지 콘티" if 그림 else "지시문" if (o.get("지시문") or o.get("그림지시문")) else "콘티"
+    판경로 = [str(seq_path), 영상, 받음, 그림, *(o.get("지시문") or []), *(o.get("그림지시문") or [])]
+    if o["json"]:
+        print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); 코드 = r.코드()
+    else:
+        코드 = r.보고(); print(f"결과 {출력 / '결과.json'}")
+    _검사이력(r, 코드, 시작=str(seq_path), 단계=단계, 판경로=판경로)
+    return 코드
+
+
+def _검사이력(r, 코드, 시작=None, 단계="", 판경로=None):
+    """편 폴더 게시/검사이력.jsonl에 이 실행 한 줄(tools/lib/검사이력.py, 흠 장부 설계 1단계) — 걸림 · 확인 줄만 옮긴다.
+    무엇이 실패해도 위 출력과 끝 코드는 그대로다. 편 폴더는 컷순서 · 지시문 파일에서 위로 찾는다(게시/준비.json · 컷표.json · 컷순서.json)."""
+    try:
+        import os
+        if os.environ.get("SYNK_검사이력") == "끔":
+            return
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("검사이력", str(Path(__file__).resolve().parent / "lib" / "검사이력.py"))
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        걸림 = [{"규칙": x.get("항목"), "등급": x.get("등급"), "글": f"{x.get('컷')}: {x.get('글')}"} for x in r.항목들 if x.get("등급") in ("걸림", "확인")]
+        m.도구에서남기기(시작=시작, 눈="컷연속성검사", 단계=단계, 결과={0: "통과", 1: "걸림", 2: "확인"}.get(코드, "못 잼"), 끝코드=코드,
+                     판=m.경로지문(판경로) if 판경로 else None, 걸림=걸림)
+    except BaseException:   # noqa: BLE001 — 이력은 검사 결과를 바꾸지 않는다
+        pass
 
 
 if __name__ == "__main__":

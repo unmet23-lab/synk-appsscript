@@ -448,7 +448,25 @@ def main(argv=None):
             print(f"  [못 잼 · {x['항목']}] {x['오류']}")
         if not hits and not failed:
             print("  걸림 없음")
-    return 1 if hits else (2 if failed else 0)
+    code = 1 if hits else (2 if failed else 0)
+    _검사이력(시작=o.mp4, 눈="최종본검사", 단계="편집", 결과="걸림" if hits else ("못 잼" if failed else "통과"), 끝코드=code,
+           판경로=[o.mp4], 걸림=[{"규칙": x["항목"], "등급": "걸림", "글": x["글"]} for x in hits]
+           + [{"규칙": x["항목"], "등급": "확인", "글": f"못 잼 — {x['오류']}"} for x in failed])
+    return code
+
+
+def _검사이력(판경로=None, **k):
+    """편 폴더 게시/검사이력.jsonl에 이 실행 한 줄(tools/lib/검사이력.py, 흠 장부 설계 1단계). 무엇이 실패해도 위 출력과 끝 코드는 그대로다.
+    올리기 전 검사 ⑳이 부를 때는 그 검사가 한 줄로 남기므로 SYNK_검사이력=끔으로 부른다. 최종 확인 묶음은 SYNK_검사단계=최종 확인을 넘긴다."""
+    try:
+        if os.environ.get("SYNK_검사이력") == "끔":
+            return
+        spec = importlib.util.spec_from_file_location("검사이력", os.path.join(HERE, "lib", "검사이력.py"))
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        m.도구에서남기기(판=m.경로지문(판경로) if 판경로 else None, **k)
+    except BaseException:   # noqa: BLE001 — 이력은 검사 결과를 바꾸지 않는다
+        pass
 
 
 if __name__ == "__main__":

@@ -315,8 +315,9 @@ def 연속성(컷표, 받음):
     """tools/컷연속성검사.py <컷표> --받음 <받음> → (끝 코드, [걸림 · 확인 줄]) — 못 돌리면 (None, [확인 한 줄])"""
     검사 = HERE / "컷연속성검사.py"
     try:
+        # 검사이력은 이 도구가 연속성 줄까지 한 줄로 남긴다 — 여기서 부른 연속성 검사는 따로 줄을 쓰지 않게 끈다(흠 장부 설계 1단계)
         r = subprocess.run([sys.executable, "-I", "-X", "utf8", str(검사), str(컷표), "--받음", str(받음), "--항목", "고요,소리,점,지도,빛", "--json"],
-                           capture_output=True, text=True, encoding="utf-8")
+                           capture_output=True, text=True, encoding="utf-8", env={**os.environ, "SYNK_검사이력": "끔"})
         항목들 = json.loads(r.stdout)
     except Exception as e:   # noqa: BLE001
         return None, [{"항목": "연속성", "컷": "표", "등급": "확인", "글": f"컷표의 받음 검사를 못 돌렸다({type(e).__name__}) — python -I -X utf8 tools/컷연속성검사.py <컷표> --받음 <받음>을 따로 돌린다"}]
@@ -416,6 +417,7 @@ def main(argv=None):
         자리.write_text(json.dumps(기록, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
     if o["json"]:
         print(json.dumps(기록, ensure_ascii=False, indent=1))
+        _검사이력(편, 컷표, 받음, 결과판, 연속줄, 끝)
         return 끝
     print(f"받은 뒤 검사 — 편 {편.name} · 받음 {받음} · 이번에 잰 판 {len(잰판)}개" + (f" · 앞 회차 기록 그대로 {len(그대로)}개" if 그대로 else "")
           + (f" · 아직 없는 판 {len(없는판)}({' · '.join(없는판[:8])}{' …' if len(없는판) > 8 else ''})" if 없는판 else ""))
@@ -451,7 +453,42 @@ def main(argv=None):
         print("이번에 잰 판이 없다 — 위에 적은 것은 잰 값이 없으니 통과가 아니다")
     else:
         print("받은 판이 없다")
+    _검사이력(편, 컷표, 받음, 결과판, 연속줄, 끝)
     return 끝
+
+
+def _판글규칙(글):
+    """판 파일 하나의 걸림 · 확인 글 → 규칙 이름(검사이력의 열쇠). 글은 한파일()이 만든 그대로다."""
+    s = str(글)
+    for 낱말, 규칙 in (("사람 움직임을 못 쟀다", "사람못잼"), ("얼굴 극접사", "사람가까움"), ("(26)", "사람"), ("쓰는 구간이", "길이"),
+                     ("「편.비율」", "비율"), ("소리 줄기가 없다", "소리"), ("영상 줄기 길이를 읽지 못해", "길이못읽음"),
+                     ("어느 컷의 판인지 모른다", "컷잇기"), ("컷표에 그 컷이 없다", "컷잇기"), ("in · out을 읽지 못해", "컷잇기")):
+        if 낱말 in s:
+            return 규칙
+    return "읽기"
+
+
+def _검사이력(편, 컷표, 받음, 결과판, 연속줄, 끝):
+    """편 폴더 게시/검사이력.jsonl에 이 실행 한 줄(tools/lib/검사이력.py, 흠 장부 설계 1단계) — 판 파일의 걸림 · 확인과 연속성 줄.
+    무엇이 실패해도 위 출력과 끝 코드는 그대로다."""
+    try:
+        if os.environ.get("SYNK_검사이력") == "끔":
+            return
+        spec = importlib.util.spec_from_file_location("검사이력", str(HERE / "lib" / "검사이력.py"))
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        걸림 = []
+        for 판id, v in 결과판.items():
+            for f in v.get("파일", []):
+                for 등급 in ("걸림", "확인"):
+                    for 글 in f.get(등급, []):
+                        걸림.append({"규칙": _판글규칙(글), "등급": 등급, "글": f"{f.get('파일', 판id)}: {글}"})
+        for x in 연속줄:
+            걸림.append({"규칙": f"연속성 {x.get('항목')}", "번호": m.번호찾기("컷연속성검사", x.get("항목")), "등급": x.get("등급"), "글": f"{x.get('컷')}: {x.get('글')}"})
+        m.도구에서남기기(시작=str(편), 눈="받은뒤검사", 단계="받은 뒤", 결과={0: "통과", 1: "걸림", 2: "확인"}.get(끝, "못 잼"), 끝코드=끝,
+                     판=m.경로지문([str(컷표), str(받음)]), 걸림=걸림)
+    except BaseException:   # noqa: BLE001 — 이력은 검사 결과를 바꾸지 않는다
+        pass
 
 
 if __name__ == "__main__":
