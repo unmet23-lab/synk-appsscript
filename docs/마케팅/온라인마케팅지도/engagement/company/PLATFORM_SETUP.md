@@ -104,6 +104,12 @@ $result = python -X utf8 tools/계정통계예약/공식일별파일.py $capture
 if ($LASTEXITCODE -eq 0) { $result | Out-File -LiteralPath $manifest -Encoding utf8 -NoClobber }
 ```
 
+## RUTUBE 공개 영상 목록
+
+운영 PC에서 `node tools/계정통계예약/rutube-public.cjs lab-ru-rutube`를 실행하면 원장의 채널 번호와 공개 채널 화면을 대조하고 공식 API에서 그 채널의 공개 영상 목록을 읽는다. 영상별로 API가 제공한 정확한 조회수를 보존한다. 페이지 원본과 해시는 `~/.synk/account-metrics/public-api/rutube`의 회차별 폴더에 저장된다. [RUTUBE의 공식 클라이언트 예제](https://github.com/rutube/php-api-client/blob/master/examples/search/videoByPersonId.php)
+
+빈 목록은 그 시각 이 API가 공개 영상을 돌려주지 않았다는 뜻이다. 계정 전체의 조회수나 좋아요와 공유는 이 값으로 계산할 수 없다. Workspace에는 관리자 화면에서 읽은 기간 통계가 별도 출처로 남는다. PC의 원본 보존과 서버의 API 연결 상태는 각각 확인한다.
+
 ## 기록과 보관
 
 - URL 등록만으로 비공개 통계·관리자 인사이트 접근 권한이 생기지 않는다. 지원하지 않는 플랫폼 주소는 등록할 수 있어도 자동 수집 연결은 준비되지 않았다고 표시한다.
