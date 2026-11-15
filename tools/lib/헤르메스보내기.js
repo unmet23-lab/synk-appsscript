@@ -45,3 +45,18 @@ function 보내기(exe, target, text, { spawn = spawnSync, timeout = 한도ms } 
 }
 
 module.exports = { 보내기, 결과, 한도ms };
+
+// 명령줄(11-16 참고 카드 시안 알림 · 앱 예약 세션이 쓴다): node tools/lib/헤르메스보내기.js --파일 <글.txt>
+// 받는 곳은 유호님 개인 대화 하나로 고정한다. 결과 JSON을 찍고, 보냈으면 종료 0.
+if (require.main === module) {
+  const i = process.argv.indexOf('--파일');
+  const 파일 = i > 0 ? process.argv[i + 1] : '';
+  if (!파일 || !fs.existsSync(파일)) {
+    console.error('쓰는 법: node tools/lib/헤르메스보내기.js --파일 <보낼 글.txt>');
+    process.exit(2);
+  }
+  const 헤르메스 = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'hermes', 'bin', 'hermes.exe');
+  const r = 보내기(헤르메스, 'telegram:6017495834', fs.readFileSync(파일, 'utf8'));
+  console.log(JSON.stringify(r));
+  process.exit(r.ok ? 0 : 1);
+}

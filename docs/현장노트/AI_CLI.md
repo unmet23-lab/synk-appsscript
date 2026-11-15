@@ -1714,6 +1714,12 @@
 - 고침: 하나 지우고 미러 기록(`claude-session-share.log`)에 `예약 작업 -<id> (<짝>에서 지움)` 줄이 찍힌 것을 본 뒤 다음을 지운다(1~10초 걸렸고, 17개 모두 이 길로 지워졌다). 같이 보관된 세션은 보관을 유호님이 정할 일이면 `unarchive_session`으로 푼다(작업 사본이 없는 세션이라 잃은 것은 없었다). 지시문은 지우기 전에 복사해 둔다 — 도구가 `~/.claude/scheduled-tasks/<id>/SKILL.md`는 남기지만 일정 · 실행 기록은 목록에만 있다.
 - 다시 확인: 계정 짝 폴더마다의 `scheduled-tasks.json`에서 `scheduledTasks` 개수가 같고(11-10: 9곳 모두 16), 미러 기록에 「지우지 않고 되살림」 줄이 새로 없다.
 
+### 텔레그램 받기 대화가 10-21부터 한 대화로 이어져 공유 한 건 첫 호출이 16만~53만 토큰을 읽었다 — 5만에서 Haiku로 압축하고, 받기에서 화면 보기를 뺐다 (2026-11-16 Claude)
+- 증상: 11-07~11-15 공유 여섯 건이 받기에서만 건마다 0.5~4.2달러가 들었다(Opus 5.5 단가로 agent.log에서 셈). 앞 공유 뒤 한 시간이 지나 캐시가 식으면 2.4달러를 넘었다. 11-15 23:42 공유는 첫 호출이 in=533,347(캐시 쓰기 533,343)이었고, 이어서 압축 요약을 Opus가 100초 동안 했다.
+- 원인: DM 세션 `20261021_200030_f369f9d1`이 10-21 `/new` 뒤로 한 대화였다. 압축 문턱이 `compression.threshold: 0.50`이라 Opus 5.5의 1M 창에서는 50만 토큰을 넘어야 압축했다. 압축 뒤에도 꼬리 5만 토큰과 머리가 남아 12만~16만에서 다시 쌓였다. 받기 스킬이 장면 열두 장을 모두 vision으로 읽게 해서, 그 그림이 뒤의 모든 호출에 다시 실렸다. 판단하는 Claude가 같은 장면을 또 본다. 코어는 시각 기반 세션 초기화(`session_reset`)를 없앴고, 커뮤니티 카탈로그 플러그인 `hermes-session-reset-policy`로만 되살린다(`hermes_cli/session_reset_retirement.py`). 남의 코드라 깔지 않았다.
+- 고침: `config.yaml`에 `compression.threshold_tokens: 50000`, `protect_first_n: 0`, `idle_compact_after_seconds: 1800`을 두고, `auxiliary.compression`을 `provider: anthropic` · `model: claude-haiku-5-5` · `reasoning_effort: low`로 했다. 줄끝이 섞인 파일이라 그 줄만 바꾸는 스크립트로 고쳤고, 원래 판은 `%LOCALAPPDATA%/hermes/backups/synk-tip-판단세갈래-20261116/`에 있다. 받기 스킬 3.0에서 화면 보기를 뺐다. 압축이 시스템 프롬프트를 다시 세우므로(`Compaction rebuilt a drifted system prompt`) `/new` 없이도 다음 압축부터 새 지침이 닿는다. 공식 `hermes gateway restart`는 내린 뒤 못 올려서(10-28 항목과 같다) `Start-ScheduledTask SYNK_Hermes_Gateway_Recovery`로 바로 띄웠다(02:13:49 시작, 02:14:08 polling healthy).
+- 다시 확인: 다음 공유의 `agent.log`에서 `API call #` 줄의 in 값이 5만 안쪽인지, `Auxiliary compression: using anthropic (claude-haiku-5-5)`가 찍히는지, `vision_analyze`가 없는지 본다. 11-16 02:15 기준으로는 확인 안 함(공유가 아직 없다).
+
 ## Codex 예약
 
 ### heartbeat RRULE의 시각 해석이 예약 형태마다 달랐다

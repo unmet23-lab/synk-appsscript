@@ -43,7 +43,7 @@ test('행 번호와 게시물 ID가 함께 요청과 일치해야 캐시·장부
 
 test('일치한 답은 한 번만 기록하고 성공한 비디자인 자료의 영상만 정리한다', async () => {
   const t = fixture();
-  const row = { row: 7, 게시물ID: 'fixture-a', 종류: 'AI 작업 팁' };
+  const row = { row: 7, 게시물ID: 'fixture-a', 종류: 'AI 작업 팁', 판단: '기록', 사유: '지금 방식과 차이가 작다', 카드: 'docs/참고카드/카드/x.md' };
   const r = await t.run([row, row]);
   assert.equal(r.기록, 1);
   assert.equal(t.reviews.length, 1);
@@ -52,11 +52,41 @@ test('일치한 답은 한 번만 기록하고 성공한 비디자인 자료의 
   assert.ok(t.deleted.every(file => path.basename(path.dirname(file)) === 'fixture-a'));
 });
 
-test('장부 거절 또는 디자인 참고 자료이면 원본 영상을 보존한다', async () => {
+test('장부 거절 또는 디자인 참고 시안 · 기록이면 원본 영상을 보존한다', async () => {
   for (const [code, kind] of [[1, 'AI 작업 팁'], [0, '디자인 참고']]) {
     const t = fixture(code);
-    const r = await t.run([{ row: 7, 게시물ID: 'fixture-a', 종류: kind }]);
+    const r = await t.run([{ row: 7, 게시물ID: 'fixture-a', 종류: kind, 판단: '시안', 사유: '확실히 낫다', 카드: 'docs/참고카드/카드/x.md' }]);
     assert.equal(r.기록, code === 0 ? 1 : 0);
     assert.equal(t.deleted.length, 0);
   }
+});
+
+test('판단은 장부 「언제」 옛 값으로 짝지어 쓰고, 적용안 칸에 판단 머리를 붙인다', async () => {
+  const t = fixture();
+  await t.run([
+    { row: 7, 게시물ID: 'fixture-a', 종류: '디자인 참고', 판단: '기각', 사유: '이미 쓰는 GSAP 전환이 더 낫다', 어디에: '홈페이지', 카드: 'docs/참고카드/카드/x.md' },
+    { row: 8, 게시물ID: 'fixture-b', 종류: 'AI 작업 팁', 판단: '시안', 사유: '검수 묶음을 절반으로 줄인다', 적용안: '전후 비용 비교 한 장', 어디에: 'AI 작업 방식', 카드: 'docs/참고카드/카드/y.md' },
+  ]);
+  const [기각, 시안] = t.writes.map(w => w.value);
+  assert.equal(기각.언제, '안 맞음');
+  assert.equal(기각.적용안, '[기각] 사유: 이미 쓰는 GSAP 전환이 더 낫다');
+  assert.equal(기각.카드, '', '기각은 카드를 장부에 잇지 않는다');
+  assert.equal(기각.어디에, '');
+  assert.equal(시안.언제, '지금');
+  assert.equal(시안.적용안, '[시안] 검수 묶음을 절반으로 줄인다 · 전후 비용 비교 한 장');
+  assert.equal(t.deleted.length, 4, '기각은 디자인 참고라도 영상을 지우고, 비디자인 시안도 지운다');
+  assert.equal(t.notifications.length, 1);
+  assert.match(t.notifications[0], /^\[판단\] 2건/);
+  assert.match(t.notifications[0], /→ 기각\n   사유: 이미 쓰는 GSAP/);
+  assert.match(t.notifications[0], /→ 시안 · AI 작업 방식\n   이유: 검수 묶음/);
+  assert.match(t.notifications[0], /시안은 다음 카드 적용 회차/);
+});
+
+test('판단 값이 세 갈래가 아니면 기록하지 않고 다음 실행에 남긴다', async () => {
+  const t = fixture();
+  const r = await t.run([{ row: 7, 게시물ID: 'fixture-a', 종류: '기타', 판단: '지금', 사유: '옛 값' }]);
+  assert.equal(r.기록, 0);
+  assert.equal(t.reviews.length, 0);
+  assert.equal(t.notifications.length, 0);
+  assert.ok(r.문제.some(x => /세 갈래|시안 · 기록 · 기각/.test(x)));
 });

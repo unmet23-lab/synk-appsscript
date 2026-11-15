@@ -7,7 +7,7 @@
  *   node tools/참고카드_목록.js --확인    쓰지 않고 새 목록만 보여 준다
  *   node tools/참고카드_목록.js --json    카드 머리 정보를 기계 판독용으로
  *
- * README의 「목록 시작」~「목록 끝」 표식 사이만 바꾼다. 맨 위에 「지금」인데 아직 적용하지 않은 카드,
+ * README의 「목록 시작」~「목록 끝」 표식 사이만 바꾼다. 맨 위에 판단이 「시안」인데 아직 닫지 않은 카드,
  * 그 아래 README 대상 표 순서대로 대상별 카드를 둔다(카드 하나가 여러 대상에 나올 수 있다).
  * 머리 정보는 `키: 값` 한 줄씩이다(README 「카드 형식」).
  */
@@ -40,20 +40,31 @@ function 대상나누기(값) {
   return String(값 || '').split(/\s+·\s+|\s*,\s*/).map(s => s.trim()).filter(Boolean);
 }
 
+/**
+ * 판단(2026-11-16 유호님): 시안 = 넣으면 확실히 좋아서 시안까지 만든다, 기록 = 적당히 좋아 카드만 둔다, 기각 = 카드 없음.
+ * 그 전 카드는 `판단:` 칸이 없어 `언제:`로 읽는다(지금 → 시안, 그 작업 때 → 기록, 안 맞음 → 기각).
+ */
+const 언제판단 = { '지금': '시안', '그 작업 때': '기록', '안 맞음': '기각' };
+function 판단읽기(머리) {
+  if (['시안', '기록', '기각'].includes(머리.판단)) return 머리.판단;
+  return 언제판단[머리.언제] || '';
+}
+
 function 카드들() {
   let 파일들 = [];
   try { 파일들 = fs.readdirSync(카드폴더).filter(f => f.endsWith('.md')).sort(); } catch (_) {}
   return 파일들.map(f => {
     const 머리 = 머리읽기(fs.readFileSync(path.join(카드폴더, f), 'utf8'));
     if (!머리) return { 파일: f, 오류: '머리 정보 없음' };
-    return { 파일: f, ...머리, 대상목록: 대상나누기(머리.대상) };
+    return { 파일: f, ...머리, 판단: 판단읽기(머리), 대상목록: 대상나누기(머리.대상) };
   });
 }
 
 function 한줄(c) {
-  const 표시 = c.상태 && c.상태.startsWith('적용함') ? ' · 적용함' : '';
+  const 상태 = String(c.상태 || '');
+  const 표시 = 상태.startsWith('적용함') ? ' · 적용함' : 상태.startsWith('시안 대기') ? ' · 시안 대기' : '';
   const 설명 = c.한줄 ? ` — ${c.한줄}` : '';
-  return `- [${c.제목 || c.파일}](카드/${c.파일.replace(/ /g, '%20')})${설명} · ${c.언제 || '언제 미정'} · ${c.공유일 || ''}${표시}`;
+  return `- [${c.제목 || c.파일}](카드/${c.파일.replace(/ /g, '%20')})${설명} · ${c.판단 || 판단읽기(c) || '판단 미정'} · ${c.공유일 || ''}${표시}`;
 }
 
 /** 목록 구간 글. 새 카드가 위로 오게 공유일 내림차순. */
@@ -62,9 +73,9 @@ function 목록글(목록) {
   const 틀린 = 목록.filter(c => c.오류);
   if (!정상.length && !틀린.length) return '아직 카드가 없다.';
   const 부분 = [];
-  const 지금 = 정상.filter(c => c.언제 === '지금' && !(c.상태 || '').startsWith('적용함'));
+  const 시안 = 정상.filter(c => (c.판단 || 판단읽기(c)) === '시안' && !/^(적용함|안 맞음|기각|버림)/.test(c.상태 || ''));
   부분.push(`카드 ${정상.length}장. 새 카드가 위.`);
-  if (지금.length) 부분.push(['### 지금 하기', ...지금.map(한줄)].join('\n'));
+  if (시안.length) 부분.push(['### 시안', ...시안.map(한줄)].join('\n'));
   const 대상들 = [...대상순서];
   정상.forEach(c => c.대상목록.forEach(t => { if (!대상들.includes(t)) 대상들.push(t); }));
   for (const 대상 of 대상들) {
@@ -107,4 +118,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { 머리읽기, 대상나누기, 목록글, 갈아쓰기 };
+module.exports = { 머리읽기, 대상나누기, 목록글, 갈아쓰기, 카드들, 판단읽기 };
