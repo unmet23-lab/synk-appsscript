@@ -150,3 +150,11 @@ code{font-size:16px}footer{margin-top:40px;padding-top:24px;font-size:16px;line-
   .town-records-row{grid-template-columns:minmax(0,1fr)}.town-records-row>button{justify-self:start}
   .recent-login{padding:12px 14px}
 }
+/* 플랫폼 포털 콜백 대기 시 첫 paint부터 검정 바탕과 기존 구만 표시한다. */
+.client-portal-orb{display:none}
+.client-portal-orb .portal-orb-canvas{display:block;width:100%;height:100%}
+html[data-platform-portal-boot="true"],html[data-platform-portal-boot="true"] body.sb-page{background:#000000!important;background-image:none!important;color-scheme:dark;overflow:hidden}
+html[data-platform-portal-boot="true"] body.sb-page::before,html[data-platform-portal-boot="true"] body.sb-page::after{display:none!important}
+html[data-platform-portal-boot="true"] body.sb-page>main{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+html[data-platform-portal-boot="true"] .client-portal-orb{display:block;position:fixed;inset:0;z-index:100;background:#000000;pointer-events:none}
+html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data-platform-portal-boot="true"] .client-portal-orb[data-orb-mode="static"]::after{content:'';position:absolute;left:50%;top:50%;width:clamp(136px,min(64vw,51svh),448px);height:clamp(136px,min(64vw,51svh),448px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(245,247,252,.52) 0%,rgba(20,23,29,.94) 38%,#040507 78%,#dce2ec 99%,#f4f7fc 100%);box-shadow:inset 0 0 0 1px rgba(236,241,248,.56)}

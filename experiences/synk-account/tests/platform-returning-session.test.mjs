@@ -808,6 +808,7 @@ async function runCentralPortalConsentStep(t, {
   consentDetails,
   nowMs = 1_800_000_000_500,
   accountResponse = null,
+  onAuthorizationLookup,
 }) {
   const ids = new Map();
   const events = new Map();
@@ -833,6 +834,12 @@ async function runCentralPortalConsentStep(t, {
     createElement: tag => new PortalIdElement(tag),
     querySelectorAll: () => modes,
   };
+  if (onAuthorizationLookup) {
+    doc.documentElement.dataset.platformPortalBoot = 'true';
+    for (const id of ['connection-restart', 'account-profile', 'account-security', 'google-onboarding']) {
+      get(id).hidden = true;
+    }
+  }
   let savedSession = initialSession;
   let authListener = null;
   const clock = createPortalClock(nowMs);
@@ -901,7 +908,10 @@ async function runCentralPortalConsentStep(t, {
       signUp: async args => { calls.push({ method: 'signUp', args }); return { data: {}, error: null }; },
       signInWithPassword: async args => { calls.push({ method: 'signInWithPassword', args }); return { data: {}, error: null }; },
       oauth: {
-        getAuthorizationDetails: async () => ({ data: consentDetails, error: null }),
+        getAuthorizationDetails: async () => {
+          onAuthorizationLookup?.(doc.body.dataset.platformContext);
+          return { data: consentDetails, error: null };
+        },
         approveAuthorization: async (id, opts) => {
           calls.push({ method: 'approveAuthorization', id, opts });
           return { data: { redirect_url: consentDetails.approveRedirectUrl }, error: null };
@@ -1094,6 +1104,8 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
 
   // 플랫폼 복귀 후: 검정 구가 자동으로 확대(zooming)된 뒤 배정 작업(Workspace)으로 바로 진입한다.
   const openedDestinations = [];
+  let finishDestinationLookup;
+  const destinationLookup = new Promise(resolve => { finishDestinationLookup = resolve; });
   const dom2 = createPlatformDomEnv({
     url: 'https://synk.im/account/platform.html#home',
     reducedMotion: false,
@@ -1112,14 +1124,7 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
     cryptoRef: webcrypto,
     nowFn: dom2.now,
     companyBoundaries: {
-      resolveAssignedDestination: async () => ({
-        ok: true,
-        result: {
-          status: 'resolved',
-          destinations: ['/'],
-          unavailable: [],
-        },
-      }),
+      resolveAssignedDestination: () => destinationLookup,
       openAssignedDestination: async dest => {
         openedDestinations.push(dest);
         return { ok: true, destination: dest, navigationRequested: true };
@@ -1150,6 +1155,15 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
   dom2.stepAnimationFrames(Math.ceil(PORTAL_DURATION_MS / 2) + 50, 6);
   await flushMicrotasks();
 
+  // 배정을 기다리는 동안에도 구만 보인다. 응답 전에는 작업을 열지 않는다.
+  assert.equal(dom2.portalRoot.querySelector('[data-portal-pane="welcome"]').hidden, false);
+  assert.equal(dom2.portalRoot.querySelector('[data-portal-interior]').hidden, true);
+  assert.deepEqual(openedDestinations, []);
+  finishDestinationLookup({
+    ok: true,
+    result: { status: 'resolved', destinations: ['/'], unavailable: [] },
+  });
+  await flushMicrotasks();
   assert.deepEqual(openedDestinations, ['/']);
 
   // localStorage에는 어떤 토큰도 새로 저장되지 않아야 한다.
@@ -1159,6 +1173,35 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
   assert.equal(persistedLocal.includes('refresh'), false);
 
   host2.dispose();
+});
+
+test('중앙 ID에 플랫폼 도착 주소만 등록된 운영 설정에서도 자동 복귀를 확인하는 동안 구를 유지한다', async t => {
+  const config = buildTestConfig();
+  const { clientId, redirectUri } = config.clients.platform;
+  const sessionStorage = createMemoryStorage();
+  const now = 1_800_000_000_000;
+  const subject = '11111111-2222-4333-8444-555555555555';
+  const authorization = await beginOAuth({ config, product: 'platform', storage: sessionStorage, now, cryptoAPI: webcrypto });
+  const state = new URL(authorization).searchParams.get('state');
+  rememberPlatformLogin(sessionStorage, { config, method: PLATFORM_RESUME_METHOD, subject, returnHash: '#home', now });
+  const callback = new URL(redirectUri);
+  callback.searchParams.set('code', 'fixture-return-code');
+  callback.searchParams.set('state', state);
+  const stages = [];
+  const result = await runCentralPortalConsentStep(t, {
+    config: {
+      ...config,
+      clients: { ...config.clients, platform: { clientId: '', redirectUri: '' } },
+      authorizationClients: [{ product: 'platform', clientId, redirectUris: [redirectUri] }],
+    },
+    sessionStorage,
+    localStorage: createMemoryStorage(),
+    initialSession: { access_token: 'fixture-session', user: { id: subject, email: 'member@example.test' } },
+    consentDetails: { redirect_url: callback.href, user: { id: subject } },
+    onAuthorizationLookup: stage => stages.push(stage),
+  });
+  assert.deepEqual(stages, ['boot']);
+  assert.deepEqual(result.destinations, [callback.href]);
 });
 
 test('비로그인 손님은 recent-login 표시가 남아 있어도 외부 요청이나 리디렉션 없이 검정 구 첫 화면과 신규 로그인·초대 흐름을 유지한다', async () => {

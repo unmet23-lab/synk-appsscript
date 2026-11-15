@@ -639,7 +639,14 @@ export function mountPortalEntry(root, options = {}) {
       (firstPurpose || headingEl)?.focus?.({ preventScroll: true });
       return;
     }
-    if (phase === 'error' || phase === 'enter-error' || phase === 'signing-in' || phase === 'checking' || phase === 'entering') {
+    if (phase === 'checking' || phase === 'entering') {
+      if (doc?.activeElement && !root.contains(doc.activeElement)) {
+        root.setAttribute('tabindex', '-1');
+        root.focus?.({ preventScroll: true });
+      }
+      return;
+    }
+    if (phase === 'error' || phase === 'enter-error' || phase === 'signing-in') {
       const firstAction = [retryEnterBtn, retryAuthBtn, goAuthBtn, cancelSignInBtn, statusBrowseBtn].find(isElementVisible);
       (firstAction || headingEl)?.focus?.({ preventScroll: true });
     }
@@ -699,6 +706,8 @@ export function mountPortalEntry(root, options = {}) {
     }
   }
 
+  const SIGNED_IN_ZOOM_PORTAL = 0.55;
+
   function render() {
     if (disposed) return;
     const state = machine.read();
@@ -750,14 +759,20 @@ export function mountPortalEntry(root, options = {}) {
 
     lockHostElements();
 
-    const showOrbScene = phase === 'welcome' || phase === 'zooming';
+    const isOrbHoldPhase = phase === 'checking' || phase === 'entering';
+    const showOrbScene = phase === 'welcome' || phase === 'zooming' || isOrbHoldPhase;
     welcomeSection.hidden = !showOrbScene;
     interiorSection.hidden = showOrbScene;
     root.dataset.portalMode = phase === 'purpose' || phase === 'workspace' ? 'purpose' : 'default';
 
     if (showOrbScene) {
       const orbInstance = ensureOrb();
-      orbButton.disabled = phase === 'zooming';
+      orbButton.disabled = phase !== 'welcome';
+      if (isOrbHoldPhase || (phase === 'zooming' && authStatus === 'signed-in')) {
+        orbButton.setAttribute('aria-busy', 'true');
+      } else {
+        orbButton.removeAttribute('aria-busy');
+      }
       if (phase === 'welcome') {
         orbInstance?.setScene({
           portal: 0,
@@ -767,8 +782,27 @@ export function mountPortalEntry(root, options = {}) {
           pointerY,
           active: true,
         });
+      } else if (phase === 'checking' || (phase === 'zooming' && authStatus === 'signed-in' && zoomFrameId === null)) {
+        orbInstance?.setScene({
+          portal: 0,
+          interior: 0,
+          hover: 0,
+          pointerX: 0,
+          pointerY: 0,
+          active: true,
+        });
+      } else if (phase === 'entering') {
+        orbInstance?.setScene({
+          portal: prefersReducedMotion() ? 0 : SIGNED_IN_ZOOM_PORTAL,
+          interior: 0,
+          hover: 0,
+          pointerX: 0,
+          pointerY: 0,
+          active: true,
+        });
       }
     } else {
+      orbButton.removeAttribute('aria-busy');
       // 내부 단계나 본문 대기에서는 상시 구체 루프를 돌리지 않고 해제한다.
       releaseOrb();
     }
@@ -915,19 +949,22 @@ export function mountPortalEntry(root, options = {}) {
     const step = () => {
       zoomFrameId = null;
       if (disposed) return;
-      if (machine.read().phase !== 'zooming') return;
+      const snap = machine.read();
+      if (snap.phase !== 'zooming') return;
       if (isImmediateEntry()) {
         finishZoomTransition();
         return;
       }
       const now = typeof win.performance?.now === 'function' ? win.performance.now() : Date.now();
       const progress = Math.min(1, Math.max(0, (now - zoomStartMs) / PORTAL_DURATION_MS));
+      const holdOrb = snap.authStatus === 'signed-in';
+      const signedInPortal = SIGNED_IN_ZOOM_PORTAL * (1 - ((1 - progress) * (1 - progress)));
       orbInstance?.setScene({
-        portal: progress,
-        interior: progress >= 1 ? 1 : 0,
+        portal: holdOrb ? signedInPortal : progress,
+        interior: holdOrb ? 0 : (progress >= 1 ? 1 : 0),
         hover: 0,
-        pointerX,
-        pointerY,
+        pointerX: holdOrb ? 0 : pointerX,
+        pointerY: holdOrb ? 0 : pointerY,
         active: true,
       });
       if (progress >= 1) {
@@ -2087,7 +2124,7 @@ export function mountPortalEntry(root, options = {}) {
       }
       return;
     }
-    if (current.phase === 'welcome') {
+    if (current.phase === 'welcome' || current.phase === 'checking' || current.phase === 'entering') {
       orb?.resume();
     }
   };

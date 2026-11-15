@@ -18,6 +18,7 @@ import {
   readBoundPlatformLoginIntent,
   resolvePlatformPortalEntryHint,
 } from './platform-login-return.mjs';
+import { createPortalOrb } from '../../../desktop/renderer/portal-orb.mjs';
 const $ = id => document.getElementById(id);
 // PATH's fixed public entrance: a plain page link that starts a new connection there, never a callback.
 const PATH_ENTRY = 'https://synk.im/path/app/', PATH_HINT_WINDOW = 7200000;
@@ -170,8 +171,44 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // The page line (#notice) and the copy beside a button (feedback) may say the same thing. While that copy shows, the page
   // line is folded (data-folded="true": kept for screen readers, not drawn) and the keyboard goes to the copy — one message, once.
   let renderCopies = () => null;
+  const initialHtmlBootMarked = !preview && window.top === window.self && document.documentElement?.dataset?.platformPortalBoot === 'true';
+  let currentPlatformStage = 'none', platformOrb = null, platformRedirecting = false, platformAutoApproving = false, platformVisualReleased = false, platformSyncReady = false;
+  const disposePlatformOrb = () => {
+    if (!platformOrb) return;
+    try { platformOrb.dispose(); } catch {}
+    platformOrb = null;
+  };
+  const syncPlatformOrb = stage => {
+    if (closed || preview || stage !== 'boot') {
+      disposePlatformOrb();
+      return;
+    }
+    const orbHost = $('platform-portal-orb');
+    if (!orbHost) return;
+    if (!platformOrb) {
+      try {
+        platformOrb = createPortalOrb(orbHost, {
+          documentObj: document,
+          windowObj: window,
+          getReducedMotion: () => {
+            try { return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true; }
+            catch { return false; }
+          },
+        });
+      } catch {
+        platformOrb = null;
+      }
+    }
+    platformOrb?.setScene?.({ portal: 0, interior: 0, hover: 0, pointerX: 0, pointerY: 0, active: true });
+    if (!document.hidden) platformOrb?.resume?.();
+  };
   const notice = (text, error = false, reveal = false, kind = error ? 'error' : 'info') => {
     noticeScope = null;const node = $('notice');setText(node, text);node.className = `notice${error ? ' error' : ''}`;node.setAttribute('data-kind', kind);
+    if (error || kind === 'error') {
+      platformRedirecting = false;
+      platformAutoApproving = false;
+      if (platformSyncReady && currentPlatformStage === 'boot') syncPlatformVisualContext();
+    }
     const copy = renderCopies(), target = copy || node;
     if (reveal) { target.setAttribute('tabindex', '-1');target.focus?.({ preventScroll: true });target.scrollIntoView?.({ block: 'center' }); }
   };
@@ -179,6 +216,9 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     try { delete document.documentElement?.dataset?.platformPortalBoot; } catch {}
   };
   const resetPlatformBodyAttrs = () => {
+    platformRedirecting = false;
+    platformAutoApproving = false;
+    disposePlatformOrb();
     clearPlatformBootMark();
     document.body?.classList?.remove('sid-platform-context');
     if (document.body?.dataset) {
@@ -369,7 +409,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     now: cooldownClock.now(),
   }) : null;
   let activePlatformAuthHint = initialPortalHint ? { ...initialPortalHint, expiresAt: initialPortalHint.createdAt + PLATFORM_LOGIN_TTL_MS } : null;
-  let emailOpenedByPlatformHint = false, platformAuthExpiryTimer = null, platformMotionToggle = false, currentPlatformStage = 'none';
+  let emailOpenedByPlatformHint = false, platformAuthExpiryTimer = null, platformMotionToggle = false;
   if (initialPortalHint && !hadCallback && !recoveryLink && !emailChangeLink) {
     if (initialPortalHint.method === 'email' && emailPanel === null) {
       emailPanel = true;
@@ -472,6 +512,101 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     }
     return false;
   }
+  const PLATFORM_VISUAL_BOOT_WINDOW_MS = 120000;
+  function derivePlatformVisualConfig(store) {
+    const existing = config?.clients?.platform;
+    if (typeof existing?.clientId === 'string' && existing.clientId && typeof existing?.redirectUri === 'string' && existing.redirectUri) {
+      return config;
+    }
+    if (!config?.configured || !Array.isArray(config.authorizationClients) || !store || typeof store.getItem !== 'function') {
+      return config;
+    }
+    let rawIntent = null;
+    try { rawIntent = store.getItem(PLATFORM_LOGIN_INTENT); } catch { return config; }
+    if (typeof rawIntent !== 'string' || !rawIntent) return config;
+    let parsedIntent = null;
+    try { parsedIntent = JSON.parse(rawIntent); } catch { return config; }
+    const clientId = typeof parsedIntent?.clientId === 'string' ? parsedIntent.clientId.trim() : '';
+    const redirectUri = typeof parsedIntent?.redirectUri === 'string' ? parsedIntent.redirectUri.trim() : '';
+    if (!clientId || !redirectUri || deviceDestination(redirectUri)) return config;
+    try {
+      const url = new URL(redirectUri);
+      if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.hash) return config;
+      if (url.searchParams.getAll('product').length !== 1 || url.searchParams.get('product') !== 'platform') return config;
+    } catch {
+      return config;
+    }
+    const registered = config.authorizationClients.find(entry =>
+      entry
+      && typeof entry.clientId === 'string'
+      && entry.clientId === clientId
+      && (!entry.product || entry.product === 'platform')
+      && Array.isArray(entry.redirectUris)
+      && entry.redirectUris.includes(redirectUri)
+    );
+    if (!registered) return config;
+    return {
+      ...config,
+      clients: {
+        ...config.clients,
+        platform: {
+          ...config.clients?.platform,
+          clientId: registered.clientId,
+          redirectUri,
+        },
+      },
+    };
+  }
+  function readVisualPlatformBootBound(now = cooldownClock.now()) {
+    if (closed || preview || !config.configured || window.top !== window.self || !authorizationId || abandonedAuthorization || platformVisualReleased) return null;
+    if (hadCallback || recoveryLink || emailChangeLink || emailChangeHalf || userTouchedAuth) return null;
+    if (requestedView && !['login', 'signup'].includes(requestedView)) return null;
+    const store = resolvePlatformStore();
+    if (!store) return null;
+    const directBound = readBoundPlatformLoginIntent({ storage: store, config, now });
+    if (directBound) {
+      return hasLiveForeignPending(store, directBound.intent.createdAt) ? null : directBound;
+    }
+    const visualConfig = derivePlatformVisualConfig(store);
+    if (visualConfig === config) return null;
+    const bound = readBoundPlatformLoginIntent({ storage: store, config: visualConfig, now });
+    if (!bound || hasLiveForeignPending(store, bound.intent.createdAt)) return null;
+    if (Number.isFinite(requestSeen) && requestSeen < bound.intent.createdAt) return null;
+    const withinRecentWindow = initialHtmlBootMarked
+      || (Number.isFinite(requestSeen) && requestSeen <= now && requestSeen - bound.intent.createdAt <= PLATFORM_VISUAL_BOOT_WINDOW_MS);
+    if (!withinRecentWindow) return null;
+    if (priorSeenRequests.some(entry => entry && entry.id === authorizationId && Number.isFinite(entry.at) && entry.at < bound.intent.createdAt)) return null;
+    if (priorSeenRequests.some(entry => entry && entry.id !== authorizationId && Number.isFinite(entry.at) && entry.at >= bound.intent.createdAt)) return null;
+    return bound;
+  }
+  function matchesVisualPlatformRedirect(targetUrl, bound) {
+    if (typeof targetUrl !== 'string' || !targetUrl || !bound || deviceDestination(targetUrl)) return false;
+    try {
+      const expected = bound.client.expectedUrl;
+      const actual = new URL(targetUrl);
+      if (actual.origin !== expected.origin || actual.pathname !== expected.pathname) return false;
+      if (actual.searchParams.getAll('product').length !== 1 || actual.searchParams.get('product') !== 'platform') return false;
+      const states = actual.searchParams.getAll('state');
+      return states.length === 1 && states[0] === bound.intent.state;
+    } catch {
+      return false;
+    }
+  }
+  function matchesVisualPlatformDetails(detailsObj, bound, authorization = null) {
+    if (!detailsObj || typeof detailsObj !== 'object' || !bound) return false;
+    const clientId = authorization?.clientId
+      || (typeof detailsObj.client?.id === 'string' && detailsObj.client.id)
+      || (typeof detailsObj.client_id === 'string' && detailsObj.client_id)
+      || '';
+    const redirectUri = typeof detailsObj.redirect_uri === 'string' && detailsObj.redirect_uri
+      ? detailsObj.redirect_uri
+      : authorization?.destination || '';
+    if (authorization?.product && authorization.product !== 'platform') return false;
+    if (!clientId || clientId !== bound.intent.clientId) return false;
+    if (redirectUri !== bound.intent.redirectUri) return false;
+    if (typeof detailsObj.state === 'string' && detailsObj.state && detailsObj.state !== bound.intent.state) return false;
+    return true;
+  }
   function isBoundPlatformStateLive(expectedState) {
     if (typeof expectedState !== 'string' || !expectedState) return false;
     const store = resolvePlatformStore(), now = cooldownClock.now();
@@ -498,16 +633,23 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     }, Math.min(left + 20, 2147483647));
   }
   function computePlatformContextStage() {
-    if (closed || preview || !config.configured || window.top !== window.self || !authorizationId || abandonedAuthorization) return 'none';
+    if (closed || preview || !config.configured || window.top !== window.self || !authorizationId || abandonedAuthorization || staleRecovery) return 'none';
     for (const id of ['setup', 'connection-restart', 'google-onboarding', 'account-profile', 'account', 'account-security']) {
       const section = $(id);
       if (section && !section.hidden) return 'none';
     }
+    if (callbackBlocked || callbackError || startupError) return 'none';
+    if ($('notice')?.getAttribute?.('data-kind') === 'error') return 'none';
+    if (platformRedirecting) return 'boot';
     if (!$('consent')?.hidden) {
       const consentState = platformConsent?.intent?.state || (consentTarget?.kind === 'platform-web' ? consentTarget.state : null);
+      if (platformAutoApproving) {
+        if (consentState && isBoundPlatformStateLive(consentState)) return 'boot';
+        const visualBound = readVisualPlatformBootBound();
+        if (visualBound && details && matchesVisualPlatformDetails(details, visualBound)) return 'boot';
+      }
       return consentState && isBoundPlatformStateLive(consentState) ? 'consent' : 'none';
     }
-    if (callbackBlocked || callbackError || startupError) return 'none';
     if (!$('auth-panel')?.hidden) {
       if (!['login', 'signup', 'recover'].includes(mode) || !activePlatformAuthHint) return 'none';
       if (!isBoundPlatformStateLive(activePlatformAuthHint.state)) {
@@ -517,6 +659,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       return 'auth';
     }
     if (activePlatformAuthHint && isBoundPlatformStateLive(activePlatformAuthHint.state)) return 'boot';
+    if (readVisualPlatformBootBound()) return 'boot';
     activePlatformAuthHint = null;
     return 'none';
   }
@@ -585,6 +728,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       && emailOpen()
       && (activePlatformAuthHint?.method === 'email' || googleAvailable === false);
     currentPlatformStage = nextStage;
+    syncPlatformOrb(nextStage);
     clearPlatformBootMark();
     if (document.body) {
       document.body.classList?.toggle('sid-platform-context', nextStage !== 'none');
@@ -613,8 +757,10 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     }
     if (nextStage !== 'consent') consentNode?.removeAttribute?.('data-platform-motion');
     else if (prevStage !== 'consent') consentNode?.setAttribute?.('data-platform-motion', 'enter');
-    if ((nextStage === 'auth' || nextStage === 'boot') && activePlatformAuthHint?.expiresAt) {
-      armPlatformAuthExpiry(activePlatformAuthHint.expiresAt);
+    const bootVisualBound = nextStage === 'boot' && !activePlatformAuthHint?.expiresAt ? readVisualPlatformBootBound() : null;
+    const stageExpiresAt = activePlatformAuthHint?.expiresAt ?? (bootVisualBound ? bootVisualBound.intent.createdAt + PLATFORM_LOGIN_TTL_MS : null);
+    if ((nextStage === 'auth' || nextStage === 'boot') && Number.isFinite(stageExpiresAt)) {
+      armPlatformAuthExpiry(stageExpiresAt);
     } else {
       disarmPlatformAuthExpiry();
     }
@@ -623,6 +769,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       renderMethods();
     }
   }
+  platformSyncReady = true;
   syncPlatformVisualContext();
   const setMode = value => {
     mode = value;
@@ -723,7 +870,12 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
             const autoApprovedResume = matchedRedirect.intent.method === PLATFORM_RESUME_METHOD
               && typeof session?.user?.id === 'string'
               && matchedRedirect.resumeSubject === session.user.id;
-            if (freshSessionUserId === session?.user?.id || autoApprovedResume) { location.assign(matchedRedirect.approveUrl);return; }
+            if (freshSessionUserId === session?.user?.id || autoApprovedResume) {
+              platformRedirecting = true;
+              syncPlatformVisualContext();
+              location.assign(matchedRedirect.approveUrl);
+              return;
+            }
             details = null;platformConsent = null;
             consentTarget = { kind: 'platform-web', method: matchedRedirect.intent.method, state: matchedRedirect.intent.state, approveUrl: matchedRedirect.approveUrl, cancelUrl: matchedRedirect.cancelUrl };
             automaticAuthorizationAttempted = true;
@@ -738,9 +890,17 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
           } catch { mismatchedPending = true; }
           if (hasStoredPlatformIntentRecord(platformStore) || mismatchedPending) { showStaleAuthorization(false, false);return; }
         }
+        if (matchesVisualPlatformRedirect(target, readVisualPlatformBootBound())) {
+          platformRedirecting = true;
+          syncPlatformVisualContext();
+        } else if (currentPlatformStage === 'boot') {
+          platformVisualReleased = true;
+          syncPlatformVisualContext();
+        }
         location.assign(target);return;
       }
       // Approved before, but its address is on this device: it still waits for this click.
+      platformVisualReleased = true;
       details = null;platformConsent = null;consentTarget = target;
       // Shown without the one-time code and state the address carries.
       const shown = new URL(target);shown.search = '';shown.hash = '';
@@ -765,12 +925,30 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         return;
       }
     }
+    const visualBound = readVisualPlatformBootBound();
+    const visualPlatformDetailsMatch = Boolean(
+      !preview
+      && !native
+      && authorization.product === 'platform'
+      && visualBound
+      && matchesVisualPlatformDetails(details, visualBound, authorization)
+    );
+    if (visualBound && !visualPlatformDetailsMatch) platformVisualReleased = true;
+    const holdAutoApproveOrb = Boolean((platformConsent || visualPlatformDetailsMatch) && !preview && !native && !automaticAuthorizationAttempted);
+    if (holdAutoApproveOrb) platformAutoApproving = true;
     showConsent({ product: authorization.product, destination: details.redirect_uri, scopes, native });
     // Only a registered first-party request that returns to a web address may proceed without a second click.
     // An app on this device always waits for 「연결하기」. A failure, account change or duplicate SDK event never starts an auto-retry.
     if (!preview && !native && !automaticAuthorizationAttempted) {
       automaticAuthorizationAttempted = true;
-      await respondToAuthorization('approveAuthorization', check);
+      try {
+        await respondToAuthorization('approveAuthorization', check);
+      } finally {
+        if (!platformRedirecting && platformAutoApproving) {
+          platformAutoApproving = false;
+          syncPlatformVisualContext();
+        }
+      }
     }
   }
   // Before the details arrive, only this tab's own recent PATH start whose client ID and fixed entrance are registered counts.
@@ -866,9 +1044,18 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         }
         const verifiedApprove = matchPlatformPreauthorizedRedirect({ targetUrl: target, storage: resolvePlatformStore(), config, now: cooldownClock.now() });
         if (!verifiedApprove || verifiedApprove.intent.state !== activePlatformConsent.intent.state) {
+          platformAutoApproving = false;
           showStaleAuthorization(false, false);return;
         }
-        operation.redirecting = true;location.assign(verifiedApprove.approveUrl);return;
+        operation.redirecting = true;platformRedirecting = true;syncPlatformVisualContext();location.assign(verifiedApprove.approveUrl);return;
+      }
+      if (method === 'approveAuthorization' && matchesVisualPlatformRedirect(target, readVisualPlatformBootBound())) {
+        operation.redirecting = true;platformRedirecting = true;syncPlatformVisualContext();location.assign(target);return;
+      }
+      if (currentPlatformStage === 'boot') {
+        platformVisualReleased = true;
+        platformAutoApproving = false;
+        syncPlatformVisualContext();
       }
       operation.redirecting = true;location.assign(target);
     } catch (error) {
@@ -1147,7 +1334,12 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         const boundResume = readBoundPlatformLoginIntent({ storage: platformStore, config, now: cooldownClock.now() });
         if (boundResume?.intent?.method === PLATFORM_RESUME_METHOD && !hasLiveForeignPending(platformStore, boundResume.intent.createdAt)) {
           const cancelUrl = buildPlatformCancelUrl({ config, state: boundResume.intent.state });
-          if (cancelUrl) { location.assign(cancelUrl);return; }
+          if (cancelUrl) {
+            platformRedirecting = true;
+            syncPlatformVisualContext();
+            location.assign(cancelUrl);
+            return;
+          }
         }
       }
       $('auth-panel').hidden = false;setMode(mode);
@@ -1456,14 +1648,18 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   for (const [id, method] of [['approve', 'approveAuthorization'], ['deny', 'denyAuthorization']]) $(id).onclick = () => respondToAuthorization(method);
   if ($('consent-switch')) $('consent-switch').onclick = () => switchConsentAccount();
   const onPlatformWindowSync = event => {
-    if (closed || event?.type === 'visibilitychange' && document.hidden) return;
+    if (closed) return;
+    if (event?.type === 'visibilitychange' && document.hidden) {
+      platformOrb?.pause?.();
+      return;
+    }
     syncPlatformVisualContext();
   };
   window.addEventListener('storage', onPlatformWindowSync);
   window.addEventListener('focus', onPlatformWindowSync);
   window.addEventListener('visibilitychange', onPlatformWindowSync);
   window.addEventListener('pagehide', () => {
-    closed = true;generation++;google?.stop();security.stop();view?.stop();
+    closed = true;generation++;platformOrb?.pause?.();google?.stop();security.stop();view?.stop();
     disarmSwitchUiTimer();if (accountSwitch) { accountSwitch.cancelled = true;accountSwitch = null; }
     consentOperation = null;clearCooldowns();disarmDeviceWait();disarmPlatformAuthExpiry();
     window.removeEventListener('storage', onPlatformWindowSync);
@@ -1590,5 +1786,5 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   await enter().catch(report);
   initialEntrySettled = true;
   if (startupError) showStartupError(startupError);
-  else await maybeApplyPlatformEntryHint().catch(report);
+  else if (!platformRedirecting) await maybeApplyPlatformEntryHint().catch(report);
 }

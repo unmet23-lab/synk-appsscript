@@ -17,10 +17,47 @@ import {
   finishPlatformErrorReturn,
   takePlatformLoginNotice,
 } from './platform-login-return.mjs';
+import { createPortalOrb } from '../../../desktop/renderer/portal-orb.mjs';
 export { PLATFORM_LOGIN_NOTICE, takePlatformLoginNotice };
 const isClientDocument = typeof window !== 'undefined' && typeof document?.getElementById === 'function' && !!document.getElementById('connect') && !!document.getElementById('notice');
 if (isClientDocument) rememberWorldPlayEntry();
 const $ = id => document.getElementById(id);
+let platformBootOrb = null;
+function syncPlatformPortalBootOrb() {
+  if (!isClientDocument || closed) return;
+  const active = document.documentElement?.dataset?.platformPortalBoot === 'true';
+  const orbHost = $('platform-portal-orb');
+  if (!active || !orbHost) {
+    if (platformBootOrb) {
+      try { platformBootOrb.dispose(); } catch {}
+      platformBootOrb = null;
+    }
+    return;
+  }
+  if (!platformBootOrb) {
+    try {
+      platformBootOrb = createPortalOrb(orbHost, {
+        documentObj: document,
+        windowObj: window,
+        getReducedMotion: () => {
+          try { return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true; }
+          catch { return false; }
+        },
+      });
+    } catch {
+      platformBootOrb = null;
+    }
+  }
+  platformBootOrb?.setScene?.({ portal: 0, interior: 0, hover: 0, pointerX: 0, pointerY: 0, active: true });
+  if (document.visibilityState !== 'hidden') platformBootOrb?.resume?.();
+}
+function releasePlatformPortalBoot() {
+  try { delete document.documentElement?.dataset?.platformPortalBoot; } catch {}
+  if (platformBootOrb) {
+    try { platformBootOrb.dispose(); } catch {}
+    platformBootOrb = null;
+  }
+}
 const notice = (text, error = false) => { $('notice').textContent = text;$('notice').className = `notice${error ? ' error' : ''}`; };
 let generation = 0, session, view, closed = false, entry = 0;
 let browserConfig = null, browserProduct = null, retryButton = null, recoveryNeeded = false, checking = false;
@@ -29,14 +66,17 @@ let studyReturn = null, platformReturn = null;
 let platformEntry = null;
 const AUTH_ERRORS = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
 const accountChanged = () => Object.assign(new Error('계정 연결이 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' });
+if (isClientDocument) syncPlatformPortalBootOrb();
 // Register before configuration/authentication can await a network response.
-if (isClientDocument) window.addEventListener('pagehide', () => { closed = true;entry++;generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;studyReturn = null;platformReturn = null; });
+if (isClientDocument) window.addEventListener('pagehide', () => { closed = true;entry++;generation++;platformBootOrb?.pause?.();view?.stop();view = null;session = null;verification = null;pendingExchange = null;studyReturn = null;platformReturn = null; });
 function recoveryControl() {
   if (!retryButton) { retryButton = document.createElement('button');retryButton.id = 'retry-connect';retryButton.type = 'button';retryButton.className = 'sb-btn soft';retryButton.textContent = '연결 다시 확인';retryButton.hidden = true;retryButton.onclick = () => { void reconnect(); };$('connect').before(retryButton); }
   return retryButton;
 }
 function reportConnectionError(error) {
   if (closed || error?.code === 'ACCOUNT_CHANGED') return;
+  const wasPlatformBoot = document.documentElement?.dataset?.platformPortalBoot === 'true';
+  releasePlatformPortalBoot();
   recoveryNeeded = true;let text = error.message || '계정 연결을 확인하지 못했어요. 「연결 다시 확인」을 눌러 주세요.';
   const revoked = AUTH_ERRORS.has(error?.code);
   if (error?.code === 'PLATFORM_ACCOUNT_MISMATCH') {
@@ -51,8 +91,13 @@ function reportConnectionError(error) {
   const configured = browserConfig?.configured && browserConfig.clients[browserProduct]?.clientId && browserConfig.clients[browserProduct]?.redirectUri;
   $('connect').hidden = !configured || !!session?.access_token;$('connect').disabled = false;
   if (browserProduct) recoveryControl().hidden = revoked;
+  if (wasPlatformBoot) {
+    const focusTarget = [retryButton, $('connect')].find(el => el && !el.hidden && !el.disabled);
+    focusTarget?.focus?.({ preventScroll: true });
+  }
 }
 async function startDesktop(product, bridge) {
+  releasePlatformPortalBoot();
   const environment = await bridge.getEnvironment();
   if (closed) return;
   if (environment.clientId !== product) throw new Error('이 앱에 맞는 계정 화면으로 이동해 주세요.');
@@ -158,6 +203,7 @@ async function start(attempt) {
   checkEntry();generation++;view?.stop();view = null;session = null;verification = null;browserConfig = null;
   $('setup').hidden = true;$('connect').hidden = true;notice('로그인 상태를 확인하고 있어요…');
   const product = new URL(location.href).searchParams.get('product') || 'platform';if (!PRODUCTS[product]) throw new Error('등록된 SYNK 제품 주소를 확인해 주세요.');
+  if (product !== 'platform') releasePlatformPortalBoot();
   const studyEntry=product==='world'&&!!(pendingExchange&&studyReturn||studyCallbackIntent({storage:sessionStorage,url:location.href,product}));
   $('product-label').textContent = PRODUCTS[product];$('product-copy').textContent = product === 'world' ? '로그인하면 게임 진도와 코인을 다른 기기에서도 이어 써요.' : '로그인하면 내 소속과 이용 권한, 로그인한 기기를 볼 수 있어요.';
   document.getElementById('app-manifest').href = product === 'world' ? './world.webmanifest' : './platform.webmanifest';
@@ -182,8 +228,9 @@ async function start(attempt) {
   const config = readConfig(raw || { version: 1 }, location.href), key = `synk.oauth.session.${product}`;
   browserConfig = config;
   $('learning-link').href = config.learningUrl;
-  if (!config.configured || !config.clients[product].clientId || !config.clients[product].redirectUri) { $('setup').hidden = false;recoveryNeeded = true;recoveryControl().hidden = false;notice('이 화면의 로그인 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
+  if (!config.configured || !config.clients[product].clientId || !config.clients[product].redirectUri) { releasePlatformPortalBoot();$('setup').hidden = false;recoveryNeeded = true;recoveryControl().hidden = false;notice('이 화면의 로그인 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
   const connect = async (explicit = true) => {
+    releasePlatformPortalBoot();
     const intent = ++generation;view?.stop();view = null;session = null;verification = null;
     $('connect').disabled = true;recoveryControl().hidden = true;pendingExchange = null;studyReturn = null;platformReturn = null;
     notice('SYNK ID 로그인 화면으로 이동하고 있어요…');
@@ -191,7 +238,7 @@ async function start(attempt) {
     catch (error) { if (!closed && attempt === entry && intent === generation) { notice(error.message, true);$('connect').hidden = false;$('connect').disabled = false; } }
   };
   $('connect').onclick = () => connect(true);
-  if (platformEntry?.isCancelled()) { $('connect').hidden = false;$('connect').disabled = false;notice('WORLD에서 로그아웃했어요. 다시 쓰려면 SYNK ID로 로그인해 주세요.');return; }
+  if (platformEntry?.isCancelled()) { releasePlatformPortalBoot();$('connect').hidden = false;$('connect').disabled = false;notice('WORLD에서 로그아웃했어요. 다시 쓰려면 SYNK ID로 로그인해 주세요.');return; }
   const params = new URL(location.href).searchParams;
   if (!callbackHandled && (params.has('code') || params.has('error'))) {
     callbackHandled = true;
@@ -242,8 +289,9 @@ async function start(attempt) {
       location.replace(destination);
       return;
     }
+    releasePlatformPortalBoot();
   }
-  else { if(studyEntry){$('connect').hidden=false;$('connect').disabled=false;notice('한국어 공부로 돌아가려면 SYNK ID를 다시 연결해 주세요.');return;}
+  else { releasePlatformPortalBoot();if(studyEntry){$('connect').hidden=false;$('connect').disabled=false;notice('한국어 공부로 돌아가려면 SYNK ID를 다시 연결해 주세요.');return;}
     try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { throw Object.assign(new Error('브라우저가 저장 공간을 막아 로그인 정보를 못 읽었어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요.'), { code: 'STORAGE' }); } }
   if (!session?.access_token) { if (platformEntry?.beginAttempt()) { await connect(false);return; }$('connect').hidden = false;notice('SYNK ID로 로그인하면 이 화면으로 돌아와요.');return; }
   const token = ++generation, guard = () => { if (closed || attempt !== entry || token !== generation || !session) throw accountChanged(); };
@@ -305,6 +353,8 @@ async function reconnect() {
   finally { if (attempt === entry) { checking = false;if (retryButton) retryButton.disabled = false; } }
 }
 if (isClientDocument) document.addEventListener?.('visibilitychange', async () => {
+  if (document.visibilityState === 'hidden') platformBootOrb?.pause?.();
+  else if (document.documentElement?.dataset?.platformPortalBoot === 'true') platformBootOrb?.resume?.();
   const record = verification;if (closed || checking || recoveryNeeded || document.visibilityState !== 'visible' || !record || record.pending) return;
   record.pending = true;const startedAfter = record.viewLoads;
   try {
