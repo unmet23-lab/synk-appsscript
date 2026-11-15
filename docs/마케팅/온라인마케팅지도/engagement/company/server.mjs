@@ -915,7 +915,16 @@ export function createCompanyApp(options={}) {
       const input=await body(req,{maxBytes:1024,maxChars:512});
       if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==1||typeof input.token!=='string'||!input.token||input.token.length>200)throw httpError('초대 코드를 확인해 주세요.');
       const release=inviteLookupIp.reserve(clientAddress(req));let employee,customer;
-      try{employee=Boolean(workspaceProfiles.check(input.token).invitation);customer=clientProjects.checkInvite(input.token)===true;}catch(error){release();throw error;}
+      try{
+        try{employee=Boolean(workspaceProfiles.check(input.token).invitation);}
+        catch(error){
+          // Request validation is complete. This check validates the stored
+          // employee profile; do not report its corruption as caller input.
+          if(error?.status===400&&error.code==='WORKSPACE_ACCESS')throw httpError('저장된 초대 정보를 확인하지 못했습니다.',500);
+          throw error;
+        }
+        customer=clientProjects.checkInvite(input.token)===true;
+      }catch(error){release();throw error;}
       if(employee===customer)throw httpError(INVITE_LOOKUP_REFUSED,403);
       release();
       return writeResponse(res,200,employee?{version:1,kind:'employee',destination:'/'}:{version:1,kind:'customer',destination:'/pulse-app/'});

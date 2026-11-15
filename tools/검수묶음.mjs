@@ -1024,7 +1024,7 @@ export function 시간초과대체설정(설정, 앞초과) {
 }
 const GPT시간초과글 = /^codex exec 시간 초과/;
 /** 계정·보내기·완료 안내의 모델 글 — 기본, 환경변수 바꿈, 시간 초과 자동 대체를 헷갈리지 않게 늘 어느 쪽인지 적는다. */
-export const GPT설정글 = s => `${s.모델}-${s.추론} · ${s.자동대체 ? `자동 대체(${s.자동대체} — 11-15 규칙, 묻지 않음)` : s.환경바꿈 ? `환경변수 ${GPT모델환경} 적용(기본 ${GPT검수.모델} 아님 — 지울 때까지 GPT 검수마다)` : `기본 모델(${GPT모델환경} 없음)`}`;
+export const GPT설정글 = s => `${s.모델}-${s.추론} · ${s.자동대체 ? `자동 대체(${s.자동대체} — 11-15 규칙, 묻지 않음)` : s.환경바꿈 ? `환경변수 ${GPT모델환경} 적용(${s.모델 === GPT검수.모델 ? '기본 모델과 같음' : `기본 ${GPT검수.모델} 아님`} — 지울 때까지 GPT 검수마다)` : `기본 모델(${GPT모델환경} 없음)`}`;
 const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초, 11-04~11 max 회차 가운데 가장 긴 것이 26분(astra 1,573초 · sol 1,097초) — 큰 묶음의 여유
 const GPT주간한계 = 90;  // 주간 이만큼(%) 넘게 쓴 계정은 검수에 쓰지 않는다
 const 굽기뿌리 = () => process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake');
@@ -1064,8 +1064,9 @@ function codex실행(args, 입력, timeoutMs, home = null) {
     if (home) env.CODEX_HOME = home; else delete env.CODEX_HOME;
     const 끝 = { 출력: '', 오류: '' };
     const 담기 = (곳, d) => { 끝[곳] = (끝[곳] + d).slice(-1 << 20); };
-    let 시간초과 = false;
+    let 시간초과 = false, invocationStarted = false;
     const child = spawn(command, argv, { env, windowsVerbatimArguments: verbatim, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+    child.once('spawn', () => { invocationStarted = true; });
     const 시계 = setTimeout(() => {
       시간초과 = true;
       if (process.platform === 'win32') spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
@@ -1073,30 +1074,32 @@ function codex실행(args, 입력, timeoutMs, home = null) {
     }, timeoutMs);
     child.stdout.on('data', d => 담기('출력', d));
     child.stderr.on('data', d => 담기('오류', d));
-    child.on('error', e => { clearTimeout(시계); resolve({ code: -1, ...끝, 오류: `${끝.오류}\n${e}`, 시간초과 }); });
-    child.on('close', code => { clearTimeout(시계); resolve({ code, ...끝, 시간초과 }); });
+    child.on('error', e => { clearTimeout(시계); resolve({ code: -1, ...끝, 오류: `${끝.오류}\n${e}`, 시간초과, invocationStarted }); });
+    child.on('close', code => { clearTimeout(시계); resolve({ code, ...끝, 시간초과, invocationStarted }); });
     child.stdin.on('error', () => {});
     child.stdin.end(입력);
   });
 }
 /** 아르곤 부르기와 같은 꼴: { prompt, schema, thinking, timeoutMs, 계정 } → { text, selectedModel, usage }. 한도·로그인은 막힘으로 읽히는 오류로 던진다.
  *  모델·추론은 GPT검수설정 값을 늘 -m·-c로 넘긴다 — 본 계정·굽기 장부 폴더의 config.toml(만들 때 옮긴 옛 값)이 무엇이든 같은 모델로 본다.
- *  부르러 간 뒤의 실패(시간 초과·한도·로그인·종료 코드·답 파일 없음)도 오류의 selectedModel에 성공과 같은 「모델-추론 · 계정」을 붙인다 —
- *  검수보내기가 실패 결과에 기본 모델을 적지 않게. 계정 없음·환경 모델 이름 꼴 아님은 부르기 전이라 붙이지 않는다.
+ *  CLI 프로세스가 시작된 뒤의 실패(시간 초과·한도·로그인·종료 코드·답 파일 없음)만 selectedModel에 「모델-추론 · 계정」을 붙인다.
+ *  invocationStarted는 프로세스 시작 여부이며 원격 모델의 응답이나 토큰 사용을 보장하지 않는다. 준비·spawn 실패는 false다.
  *  설정: 검수보내기가 그 묶음에 정한 모델·추론(시간 초과 자동 대체) — 없으면 GPT검수설정(thinking). */
 export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs = GPT제한분 * 60_000, 계정 = { 이름: null, home: null }, 설정 = null }) {
   const { 코덱스오류, 한도문구, 로그인문구 } = require코덱스();
-  if (!계정) throw new Error(`GPT quota — 주간 ${GPT주간한계}% 아래인 Pro 계정이 없다`);
-  const { 모델, 추론 } = 설정 || GPT검수설정(thinking);
-  if (!/^gpt-[a-z0-9][a-z0-9.-]{0,40}$/.test(모델) || !추론들.includes(추론)) throw new Error(`GPT 검수 설정이 모델·추론 꼴이 아니다: ${JSON.stringify({ 모델, 추론 }).slice(0, 120)} — 어느 모델도 부르지 않았다`);
-  const selectedModel = `${모델}-${추론} · ${계정말(계정)}`;
-  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gpt-review-'));
+  let 임시 = null, selectedModel = null, invocationStarted = false;
   try {
+    if (!계정) throw new Error(`GPT quota — 주간 ${GPT주간한계}% 아래인 Pro 계정이 없다`);
+    const { 모델, 추론 } = 설정 || GPT검수설정(thinking);
+    if (!/^gpt-[a-z0-9][a-z0-9.-]{0,40}$/.test(모델) || !추론들.includes(추론)) throw new Error(`GPT 검수 설정이 모델·추론 꼴이 아니다: ${JSON.stringify({ 모델, 추론 }).slice(0, 120)} — 어느 모델도 부르지 않았다`);
+    selectedModel = `${모델}-${추론} · ${계정말(계정)}`;
+    임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gpt-review-'));
     const 빈 = path.join(임시, 'empty'), 꼴파일 = path.join(임시, 'schema.json'), 답파일 = path.join(임시, 'answer.json');
     fs.mkdirSync(빈);
     fs.writeFileSync(꼴파일, JSON.stringify(schema));
     const r = await codex실행(['exec', '--ephemeral', '--skip-git-repo-check', '-s', 'read-only', '-C', 빈, '--output-schema', 꼴파일, '-o', 답파일, '--json',
       '-m', 모델, '-c', `model_reasoning_effort="${추론}"`, '-'], prompt, timeoutMs, 계정.home);
+    invocationStarted = r.invocationStarted;
     if (r.시간초과) throw new Error(`codex exec 시간 초과(${Math.round(timeoutMs / 60_000)}분)`);
     const 오류 = 코덱스오류(r).pop();
     if (r.code !== 0) {
@@ -1107,11 +1110,19 @@ export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs 
     if (!fs.existsSync(답파일)) throw new Error('codex exec가 답 파일을 남기지 않았다');
     let usage = null;
     for (const 줄 of r.출력.split(/\r?\n/)) { if (!줄.startsWith('{')) continue; try { const e = JSON.parse(줄); if (e?.type === 'turn.completed' && e.usage) usage = e.usage; } catch { /* 사건 아님 */ } }
-    return { text: fs.readFileSync(답파일, 'utf8'), selectedModel, usage };
+    return { text: fs.readFileSync(답파일, 'utf8'), selectedModel, usage, invocationStarted };
   } catch (e) {
-    if (e instanceof Error) e.selectedModel = selectedModel;
+    if (e instanceof Error) {
+      e.invocationStarted = invocationStarted;
+      if (invocationStarted) e.selectedModel = selectedModel;
+    }
     throw e;
-  } finally { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }
+  } finally {
+    if (임시) {
+      try { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }
+      catch (error) { console.error(`GPT 검수 임시 폴더 정리 실패 (${error.code || 'UNKNOWN'})`); }
+    }
+  }
 }
 /** 그 계정의 주간·5시간 몫(app-server, 토큰 0). 남은 몫으로 아르곤과 같은 꼴. 못 읽으면 null. */
 export async function GPT몫읽기(계정 = { 이름: null }) {
@@ -1229,18 +1240,25 @@ export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 =
     if (!표시잡기(폴더, 표시, 내표시)) { 알리기(`${자.출처} 묶음 ${묶음.이름}: 그새 다른 프로세스가 보내기 시작했다 — 건너뜀`); continue; }
     내표시들.push([표시, 내표시.표]);
     const 앞몫 = await 몫();
-    let 기록 = null, 오류 = null, 답 = null, 부른모델 = null;
+    let 기록 = null, 오류 = null, 답 = null, 부른모델 = null, 호출시작 = false;
     if (앞몫?.주간 === 0) 오류 = `주간 몫이 다 찼다(초기화 ${앞몫.주간초기화 || '?'}) — limit remaining 0`;
     else {
       알리기(`${자.출처} 묶음 ${묶음.이름} 보냄 · ${이번설정 ? GPT설정글(이번설정) : 수준 || '설정 그대로'} · ${Math.round(입력.length / 1024)}KB · 항목 ${묶음.항목.length}개${앞몫 ? ` · 주간 몫 ${퍼(앞몫.주간)}` : ''}`);
       try { 기록 = await call({ model: 이번모델, thinking: 수준, prompt: 입력.toString('utf8'), schema: 목록.갈래 === '델타' ? 다시답꼴 : 답꼴, timeoutMs: 자.제한분(수준) * 60_000, ...(이번설정 ? { 설정: 이번설정 } : {}) }); }
-      catch (e) { 오류 = e.message; if (설정 && typeof e?.selectedModel === 'string') 부른모델 = e.selectedModel; }
+      catch (e) {
+        오류 = e.message;
+        if (설정) {
+          if (typeof e?.selectedModel === 'string') 부른모델 = e.selectedModel;
+          호출시작 = typeof e?.invocationStarted === 'boolean' ? e.invocationStarted : 부른모델 ? true : null;
+        }
+      }
+      if (설정 && 기록) 호출시작 = typeof 기록.invocationStarted === 'boolean' ? 기록.invocationStarted : 기록.selectedModel ? true : null;
       if (기록) { try { 답 = JSON.parse(기록.text); } catch { 오류 = '답이 JSON이 아니다'; } }
     }
     const 차단증거 = 막힘증거(누구, 오류, 앞몫);
     const 대조 = 답 ? 답대조(묶음, 답) : { 상태: 차단증거 ? '막힘' : '실패', 표식맞음: false, 빠진항목: [] };
-    // 모델 칸: 답이 오면 그 답을 낸 모델, 부른 뒤 실패면 GPT부르기가 오류에 붙인 모델, 그 밖(부르기 전 막힘·가짜 call)은 이번에 부를 모델·추론
-    const r = { 묶음: 묶음.이름, 입력sha256: 입력sha, 표식: 묶음.표식, 수준, 모델: 기록?.selectedModel || 부른모델 || (이번모델 ? `${이번모델}-${수준}` : 자.출처), ...(이번설정 ? { 모델설정: 이번설정 } : {}), 보낸때: new Date(시작).toISOString(),
+    // GPT 호출 전 실패는 모델 null·호출시작 false로 남기고 예정값은 모델설정에만 둔다. 시작 정보를 주지 않는 가짜·옛 call은 null(미확인)이다.
+    const r = { 묶음: 묶음.이름, 입력sha256: 입력sha, 표식: 묶음.표식, 수준, 모델: 설정 && 호출시작 === false ? null : 기록?.selectedModel || 부른모델 || (이번모델 ? `${이번모델}-${수준}` : 자.출처), ...(이번설정 ? { 모델설정: 이번설정, 호출시작 } : {}), 보낸때: new Date(시작).toISOString(),
       초: Math.round((Date.now() - 시작) / 1000), ...대조, 오류, 실패원문: 오류, 원문: 기록?.text ?? null, 차단증거, usage: 기록?.usage ?? null, 몫: { 앞: 앞몫, 뒤: 기록 || 오류 ? await 몫() : 앞몫 }, 답 };
     // 기본 모델(환경 바꿈 · 자동 대체가 아닌)로 부른 이번 시도가 시간 초과면 하나 더한다. 쓸 만한 답이 오면 0으로 돌아간다.
     if (설정) r.기본시간초과 = 쓸만한가(r) ? 0 : 앞초과 + (!이번설정.환경바꿈 && !이번설정.자동대체 && GPT시간초과글.test(오류 || '') ? 1 : 0);
@@ -1254,7 +1272,7 @@ export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 =
     // — 결과 파일과 지적표가 같은 답을 가리키게.
     if (!쓸만한가(r) && 쓸만한가(앞결과)) {
       // GPT는 실패한 이번 시도의 모델·설정도 적는다(남긴 앞 답의 모델과 다를 수 있다)
-      const 둠 = { ...앞결과, 실패들: [...(앞결과.실패들 || []), { 보낸때: r.보낸때, 초: r.초, 수준, 상태: r.상태, 오류: r.오류, 빠진항목: r.빠진항목, ...(설정 ? { 모델: r.모델, 모델설정: 이번설정 } : {}) }], ...(설정 ? { 기본시간초과: r.기본시간초과 } : {}) };
+      const 둠 = { ...앞결과, 실패들: [...(앞결과.실패들 || []), { 보낸때: r.보낸때, 초: r.초, 수준, 상태: r.상태, 오류: r.오류, 빠진항목: r.빠진항목, ...(설정 ? { 모델: r.모델, 모델설정: 이번설정, 호출시작: r.호출시작 } : {}) }], ...(설정 ? { 기본시간초과: r.기본시간초과 } : {}) };
       writeJson(파일, 둠);
       알리기(`묶음 ${묶음.이름}: 다시 보낸 답이 ${r.상태}라 앞의 ${앞결과.상태} 답과 지적을 그대로 둔다`);
       결과들.push(둠);
@@ -1277,7 +1295,7 @@ const 쓸만한가 = r => Boolean(Array.isArray(r?.답?.findings) && (r.상태 =
 export function 이번자동대체(결과들, 시작때, 고른 = null) {
   return 결과들.filter(x => !고른 || 고른.includes(x.묶음))
     .flatMap(x => [x, ...(Array.isArray(x.실패들) ? x.실패들 : [])]
-      .filter(y => y?.모델설정?.자동대체 && typeof y.보낸때 === 'string' && y.보낸때 >= 시작때)
+      .filter(y => y?.모델설정?.자동대체 && y.호출시작 !== false && typeof y.모델 === 'string' && y.모델 && typeof y.보낸때 === 'string' && y.보낸때 >= 시작때)
       .map(y => `${x.묶음} ${y.모델}`));
 }
 const 보내는중파일 = (폴더, 누구, 묶음) => path.join(폴더, `${누구}-${묶음}.보내는중.json`);

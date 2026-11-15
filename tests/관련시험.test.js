@@ -260,10 +260,10 @@ test('돌리기 — 넓은 CI와 같은 120초 개별 한도를 Node 실행 인�
   assert.equal(실행.설정.timeout, 15 * 60e3, '전체 한도는 그대로다');
 });
 
-function 긴목록실행(t, { 응답 = () => ({ status: 0 }), 경과 = 0, 시각보정 = 0, 한도ms = 900000 } = {}) {
+function 긴목록실행(t, { 응답 = () => ({ status: 0 }), 경과 = 0, 시각보정 = 0, 한도ms = 900000, 시험: 선택시험, 파일당시험수 = 1, staleTap = null } = {}) {
   const root = 저장소(t, {}), calls = [], 파일 = require.resolve('../tools/관련시험.js');
   const 안require = require('node:module').createRequire(파일), 모듈 = { exports: {} };
-  const 시험 = Array.from({ length: 700 }, (_, i) => `tests/공백 있는 경로/${'검사대상'.repeat(9)}-${i}.test.js`);
+  const 시험 = 선택시험 || Array.from({ length: 700 }, (_, i) => `tests/공백 있는 경로/${'검사대상'.repeat(9)}-${i}.test.js`);
   let now = 1794690000000, monotonic = 0n;
   require('node:vm').runInNewContext(fs.readFileSync(파일, 'utf8'), {
     require: id => id === 'node:child_process' ? { spawnSync: (command, args, options) => {
@@ -272,8 +272,9 @@ function 긴목록실행(t, { 응답 = () => ({ status: 0 }), 경과 = 0, 시각
       const result = 응답(calls.length, selected);
       if (!result.noTap) {
         const fail = result.failed || 0;
-        const text = ['TAP version 13', ...selected.map((file, i) => `${i < fail ? 'not ok' : 'ok'} ${i + 1} - ${file}`),
-          `1..${selected.length}`, `# tests ${selected.length}`, `# pass ${selected.length - fail}`, `# fail ${fail}`, '# cancelled 0'].join('\n');
+        const cases = selected.flatMap(file => Array.from({ length: 파일당시험수 }, (_, i) => `${file} case ${i + 1}`));
+        const text = typeof result.tapText === 'string' ? result.tapText : ['TAP version 13', ...cases.map((name, i) => `${i < fail ? 'not ok' : 'ok'} ${i + 1} - ${name}`),
+          `1..${cases.length}`, `# tests ${cases.length}`, '# suites 0', `# pass ${cases.length - fail}`, `# fail ${fail}`, '# cancelled 0', '# skipped 0', '# todo 0', '# duration_ms 1'].join('\n');
         fs.writeFileSync(args.find(arg => arg.startsWith('--test-reporter-destination=')).split('=').slice(1).join('='), text);
       }
       const elapsed = typeof 경과 === 'function' ? 경과(calls.length) : 경과;
@@ -285,17 +286,198 @@ function 긴목록실행(t, { 응답 = () => ({ status: 0 }), 경과 = 0, 시각
     process: { ...process, platform: 'win32', hrtime: { bigint: () => monotonic } }, Buffer, console,
     Date: class extends Date { static now() { return now; } },
   });
+  if (staleTap !== null) fs.writeFileSync(path.join(os.tmpdir(), `synk-관련시험-${process.pid}-${now}.tap`), staleTap);
   const result = 모듈.exports.돌리기({ root, 시험, 워크트리: true, 새파일: ['tests/new.test.js'], 자리: false, 한도ms });
   return { result, calls, 시험, 관련: 모듈.exports };
 }
+
+// 실제로 인용한 명령 문자열의 UTF-16 길이를 잰다. 제품의 길이 계산 루프를 복제하지 않는다.
+const 인용명령길이 = args => args.map(arg => '"' + arg.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/g, '$1$1') + '"').join(' ').length;
+
+const 완전보고서 = (본문 = 'ok 1 - case', { tests = 1, pass = 1, fail = 0, cancelled = 0, skipped = 0, todo = 0, suites = 0 } = {}) =>
+  ['TAP version 13', 본문, '1..1', `# tests ${tests}`, `# suites ${suites}`, `# pass ${pass}`, `# fail ${fail}`, `# cancelled ${cancelled}`, `# skipped ${skipped}`, `# todo ${todo}`, '# duration_ms 1.25', ''].join('\n');
+
+test('보고서 판정은 마지막 계획 뒤의 요약만 읽고 없는 수치를 0으로 만들지 않는다', () => {
+  const text = 완전보고서('# tests 99\n# pass 99\n# fail 0\n# duration_ms 1\nok 1 - case', { tests: 2, pass: 0, fail: 2 });
+  assert.equal(관련.보고서판정(text).상태, '완료');
+  assert.equal(관련.보고서판정(text).요약.실패수, 2);
+  assert.equal(관련.보고서판정(text).요약.시험, 2);
+  const minimal = 완전보고서().replace(/^# (suites|skipped|todo) .*\n/gm, '');
+  assert.equal(관련.보고서판정(minimal).상태, '완료');
+  assert.equal(관련.보고서판정(minimal).요약.건너뜀, null);
+  for (const text of [null, '', 'TAP version 13\n', '# tests 0\n', '# comment\n']) assert.equal(관련.보고서판정(text).상태, '미확인');
+  assert.equal(관련.보고서판정('# tests 1\n# pass 1\n# fail 0\n# cancelled 0\n# duration_ms 1').상태, '미확인');
+  assert.equal(관련.보고서판정('ok 1 - partial\n1..1\n# tests 1\n').상태, '중간');
+});
+
+test('완료 요약의 절단·중복·잘못된 숫자와 숨은 줄 경계를 거절한다', () => {
+  const full = 완전보고서(), lines = full.trimEnd().split('\n');
+  for (let i = 1; i < lines.length; i++) assert.notEqual(관련.보고서판정(lines.slice(0, i).join('\n') + '\n').상태, '완료', `line ${i}`);
+  const footerStart = full.indexOf('# tests'), durationValue = full.indexOf('# duration_ms ') + '# duration_ms '.length;
+  for (let i = footerStart; i < durationValue; i++) assert.notEqual(관련.보고서판정(full.slice(0, i)).상태, '완료', `char ${i}`);
+  for (const key of ['tests', 'pass', 'fail', 'cancelled', 'duration_ms']) {
+    assert.notEqual(관련.보고서판정(full.replace(new RegExp(`^# ${key} .*\\n`, 'm'), '')).상태, '완료', key);
+    for (const value of ['x', '-1', '1e3', '0x0', '', '0 extra']) assert.notEqual(관련.보고서판정(full.replace(new RegExp(`^# ${key} .*`, 'm'), `# ${key} ${value}`)).상태, '완료', `${key} ${value}`);
+    assert.notEqual(관련.보고서판정(full.replace('# duration_ms', `# ${key} 0\n# duration_ms`)).상태, '완료', `duplicate ${key}`);
+  }
+  for (const text of [full + '# later\n', full.replace('1..1', '1..0'), full.replace('1..1\n', ''), full.replace('1..1', '1..1\n  extra')]) assert.notEqual(관련.보고서판정(text).상태, '완료');
+  for (const separator of ['\u2028', '\u2029', '\r']) assert.notEqual(관련.보고서판정(`ok 1 - partial\n  error: text${separator}1..1${separator}# tests 1${separator}# pass 1${separator}# fail 0${separator}# cancelled 0${separator}# duration_ms 1`).상태, '완료');
+  assert.equal(관련.보고서판정(full.replace(/\n/g, '\r\n')).상태, '완료');
+  assert.equal(관련.보고서판정(full.trimEnd()).상태, '완료');
+  // EOF의 유효한 duration 숫자가 더 긴 숫자의 접두인지는 알 수 없다. 판정 카운터는 이미 모두 읽혔다.
+  assert.deepEqual(관련.보고서판정(full.replace('1.25', '1')).요약, 관련.보고서판정(full).요약);
+});
+
+test('중간 보고서의 통과 근거와 실제 실패는 지시어·이름·들여쓰기와 구분한다', () => {
+  for (const text of ['ok 1 - skip # SKIP\n', 'ok 1 - todo # TODO\n', 'not ok 1 - todo # TODO\n', '  ok 1 - child\n', '  text: |\n    ok 1 - yaml\n']) {
+    const r = 관련.보고서판정(text); assert.equal(r.본통과, 0); assert.equal(r.상태, '미확인');
+  }
+  for (const text of ['not ok 1 - name \\# TODO\n', 'not ok 1 - name \\# SKIP\n', 'not ok 1 - lower # todo\n', '    not ok 1 - child\n']) assert.equal(관련.보고서판정(text).본실패, 1, text);
+  assert.equal(관련.보고서판정(완전보고서('ok 1 - empty suite', { tests: 0, pass: 0, suites: 1 })).상태, '완료');
+  assert.equal(관련.보고서판정(완전보고서('ok 1 - skipped suite # SKIP', { tests: 0, pass: 0, suites: 1 })).상태, '완료');
+});
+
+test('프로세스 결과와 미확인·중간·완료 보고서의 조합이 관문과 원인 보존을 결정한다', t => {
+  const one = ['tests/one.test.js'];
+  for (const response of [{ status: 0, tapText: 'ok 1 - case\n1..1\n# tests 1\n' }, { status: 9, noTap: true }, { status: null, signal: 'SIGKILL', noTap: true }]) {
+    const { result, 관련: subject } = 긴목록실행(t, { 시험: one, 응답: () => response });
+    assert.equal(result.통과함, false); assert.equal(subject.시간만넘김(result), false);
+    if (response.status === 9) assert.match(result.이유, /node --test 종료 9.*TAP/);
+    if (response.signal) assert.match(result.이유, /node --test 신호 SIGKILL/);
+  }
+  for (const code of ['ENOENT', 'EACCES', 'ENOBUFS']) {
+    const { result, 관련: subject } = 긴목록실행(t, { 시험: one, 응답: () => ({ status: null, error: { code } }) });
+    assert.equal(result.통과함, false); assert.equal(subject.시간만넘김(result), false); assert.match(result.이유, new RegExp(code));
+  }
+  const unknown = ['', '# tests 0\n', 'ok 1 - skip # SKIP\n', 'ok 1 - todo # TODO\n', '  ok 1 - child\n', '  value: |\n    ok 1 - yaml\n', 'not ok 1 - name \\# TODO\n', 완전보고서('not ok 1 - suite', { tests: 0, pass: 0, suites: 1 }), 완전보고서('ok 1 - case', { pass: 0, fail: 1 }), 완전보고서('ok 1 - case', { pass: 0, cancelled: 1 })];
+  for (const tapText of unknown) {
+    const { result, 관련: subject } = 긴목록실행(t, { 시험: one, 응답: () => ({ status: null, error: { code: 'ETIMEDOUT' }, tapText }) });
+    assert.equal(result.시간넘김, true); assert.equal(subject.시간만넘김(result), false, tapText); assert.ok(result.TAP오류);
+  }
+  for (const tapText of ['ok 1 - done\n', 완전보고서()]) {
+    const { result, 관련: subject } = 긴목록실행(t, { 시험: one, 응답: () => ({ status: null, error: { code: 'ETIMEDOUT' }, tapText }) });
+    assert.equal(result.통과함, false); assert.equal(subject.시간만넘김(result), true, tapText);
+    assert.equal(result.통과, tapText === 'ok 1 - done\n' ? 0 : 1);
+  }
+  const stale = 긴목록실행(t, { 시험: one, staleTap: 완전보고서(), 응답: () => ({ status: 0, noTap: true }) });
+  assert.equal(stale.result.통과함, false); assert.match(stale.result.TAP오류, /ENOENT/);
+});
+
+test('현재 Node의 실제 출력은 본문 stdout·빈 suite·skip·todo·하위 시험과 실패를 구분한다', t => {
+  const cases = {
+    pass: ["test('pass',()=>{});", 0], skip: ["test.skip('skip');test('option',{skip:true},()=>{});test('context',t=>t.skip());", 0],
+    todo: ["test.todo('future');test('todo failure',{todo:true},()=>{throw Error('synthetic');});", 0],
+    nested: ["describe('suite',()=>{test('parent',async t=>{await t.test('child',()=>{});});});", 0],
+    empty: ["describe('empty',()=>{});", 0], skipped_suite: ["describe.skip('skipped',()=>{});", 0], none: ['', 0],
+    stdout: ["test('stdout',()=>{for(const s of ['tests 0','pass 0','fail 0','cancelled 0','duration_ms 1','ok 1 - fake','not ok 1 - fake','1..9']) console.log(s);});", 0],
+    named_failure: ["test('failed # TODO',()=>{throw Error('synthetic');});test('failed # SKIP',()=>{throw Error('synthetic');});", 1],
+    failed_suite: ["describe('broken',()=>{throw Error('synthetic');});", 1], top_level: ["throw Error('synthetic top level');", 1],
+  };
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tap-contract-')); t.after(() => 지우기(folder));
+  const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
+  for (const [name, [body, status]] of Object.entries(cases)) {
+    const file = path.join(folder, name + '.cjs'); fs.writeFileSync(file, "const {test,describe}=require('node:test');\n" + body);
+    const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', file], { env, encoding: 'utf8', windowsHide: true, timeout: 10000 });
+    assert.equal(result.status, status, `${process.version} ${name}: ${result.stderr}`);
+    const report = 관련.보고서판정(result.stdout); assert.equal(report.상태, '완료', `${process.version} ${name}: ${result.stdout}`);
+    if (status === 0 && report.요약.실패수 === 0 && report.요약.취소 === 0) assert.equal(report.본실패, 0, name);
+    if (status === 1) assert.ok(report.본실패 > 0, name);
+    if (name === 'named_failure') assert.ok(result.stdout.includes('\\# TODO'));
+    if (name === 'stdout') {
+      for (const line of ['# ok 1 - fake', '# not ok 1 - fake', '# 1..9']) assert.ok(result.stdout.includes(line), line);
+      assert.equal(report.요약.시험, 1); assert.equal(report.요약.통과, 1);
+    }
+    const lines = result.stdout.trimEnd().split('\n');
+    for (let i = 1; i < lines.length; i++) assert.notEqual(관련.보고서판정(lines.slice(0, i).join('\n') + '\n').상태, '완료', `${process.version} ${name} cut ${i}`);
+  }
+});
+
+test('LF 없이 잘린 마지막 결과는 앞에 통과가 있어도 시간 예외의 근거가 아니다', t => {
+  const rows = ['ok 1 - slow # SKIP', 'ok 1 - future # TODO', 'not ok 1 - future # TODO', 'not ok 1 - broken'];
+  for (const row of rows) for (let i = 1; i <= row.length; i++) {
+    const report = 관련.보고서판정('ok 9 - finished\n' + row.slice(0, i));
+    assert.equal(report.상태, '미확인', row.slice(0, i));
+    assert.match(report.까닭, /마지막 줄이 끝나지 않았다/);
+  }
+  for (const tail of ['ok 1 - slow # SK', 'ok 1 - future # TO', 'ok 1 - slow', 'not ok 1 - broken', 'ok 1 - done\r']) {
+    for (const batch of [1, 2]) {
+      const { result, 관련: subject } = 긴목록실행(t, { 응답: index => index === batch
+        ? { status: null, error: { code: 'ETIMEDOUT' }, tapText: 'ok 9 - finished\n' + tail } : { status: 0 } });
+      assert.equal(result.통과함, false);
+      assert.equal(subject.시간만넘김(result), false, `${batch}: ${tail}`);
+      assert.match(result.TAP오류, /마지막 줄이 끝나지 않았다/);
+    }
+  }
+});
+
+test('YAML 진단 안의 결과 문구와 깊은 닫힘은 실제 실패로 세지 않는다', t => {
+  const diagnostic = 'not ok 1 - todo # TODO\n  ---\n  error: |-\n    not ok 9 - text\n    ...\n      ...\n    ---\n    ok 8 - text\n    # Subtest: text\n    1..9\n  ...';
+  const full = 완전보고서(diagnostic, { pass: 0, todo: 1 });
+  const report = 관련.보고서판정(full);
+  assert.equal(report.상태, '완료'); assert.equal(report.본실패, 0);
+  const good = 긴목록실행(t, { 시험: ['tests/todo.test.js'], 응답: () => ({ status: 0, tapText: full }) });
+  assert.equal(good.result.통과함, true); assert.equal(good.result.실패.length, 0);
+  const failed = 관련.보고서판정(diagnostic + '\n    not ok 2 - real\n');
+  assert.equal(failed.본실패, 1);
+  const open = 'ok 1 - finished\nnot ok 2 - todo # TODO\n  ---\n  error: |-\n    not ok 9 - text\n';
+  assert.equal(관련.보고서판정(open).본실패, 0);
+  assert.notEqual(관련.보고서판정(완전보고서(open)).상태, '완료', '열린 진단 뒤의 계획과 요약을 완료로 세지 않는다');
+  const timed = 긴목록실행(t, { 시험: ['tests/fail.test.js'], 응답: () => ({ status: null, error: { code: 'ETIMEDOUT' }, tapText: diagnostic + '\nnot ok 2 - real \\# TODO\n' }) });
+  assert.equal(timed.관련.시간만넘김(timed.result), false);
+  assert.match(timed.result.TAP오류, /실패 결과 1개/);
+});
+
+test('CRLF를 정규화해도 LF 없이 남은 CR 꼬리를 지우지 않는다', t => {
+  const full = 완전보고서().replace(/\n/g, '\r\n');
+  assert.equal(관련.보고서판정(full).상태, '완료');
+  for (let i = 1; i < full.length; i++) if (full[i - 1] === '\r') {
+    assert.equal(관련.보고서판정(full.slice(0, i)).상태, '미확인', `CR cut ${i}`);
+  }
+  for (const tail of ['\r', '\r\r']) for (const batch of [1, 2]) {
+    const { result, 관련: subject } = 긴목록실행(t, { 응답: index => index === batch
+      ? { status: null, error: { code: 'ETIMEDOUT' }, tapText: 'ok 1 - finished\r\n' + tail } : { status: 0 } });
+    assert.equal(subject.시간만넘김(result), false, `${batch}: ${JSON.stringify(tail)}`);
+    assert.match(result.TAP오류, /마지막 줄이 끝나지 않았다/);
+  }
+});
+
+test('실제 Node의 다중행 TODO·중첩·TODO 조상과 실제 실패를 함께 판정한다', t => {
+  const payload = 'first\nnot ok 1 - example\nok 2 - fake\n# Subtest: text\n---\n...\n  ...\n1..9';
+  const throwing = `()=>{throw Error(${JSON.stringify(payload)});}`;
+  const cases = {
+    todo: [`test('todo',{todo:true},${throwing});`, 0],
+    nested_todo: [`describe('suite',()=>{test('todo',{todo:true},${throwing});});`, 0],
+    child_todo: [`test('parent',async t=>{await t.test('todo',{todo:true},${throwing});});`, 0],
+    todo_parent: [`test('parent',{todo:true},async t=>{await t.test('child',${throwing});});`, 0],
+    todo_describe: [`describe.todo('parent',()=>{test('child',${throwing});});`, 0],
+    todo_throwing_describe: [`describe.todo('parent',${throwing});`, 0],
+    actual_failure: [`test('failed',${throwing});`, 1],
+    nested_failure: [`test('parent',async t=>{await t.test('failed',${throwing});});`, 1],
+  };
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-tap-diagnostic-')); t.after(() => 지우기(folder));
+  const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
+  t.diagnostic(`실제 Node ${process.version}에서 진단 자료와 TODO 조상을 확인한다.`);
+  for (const [name, [body, status]] of Object.entries(cases)) {
+    const file = name + '.cjs'; fs.writeFileSync(path.join(folder, file), "const {test,describe}=require('node:test');\n" + body);
+    const actual = spawnSync(process.execPath, ['--test', '--test-reporter=tap', path.join(folder, file)], { env, encoding: 'utf8', windowsHide: true, timeout: 10000 });
+    assert.equal(actual.status, status, `${name}: ${actual.stderr}`);
+    const report = 관련.보고서판정(actual.stdout);
+    assert.equal(report.상태, '완료', `${name}: ${actual.stdout}`);
+    if (status === 0) { assert.equal(report.요약.실패수, 0, name); assert.equal(report.요약.취소, 0, name); assert.equal(report.본실패, 0, name); }
+    else assert.ok(report.본실패 > 0, name);
+    const result = 관련.돌리기({ root: folder, 시험: [file], 자리: false });
+    assert.equal(result.통과함, status === 0, `${name}: ${JSON.stringify(result)}`);
+    if (status === 0) assert.equal(result.실패.length, 0, name);
+  }
+});
 
 test('Windows 긴 시험 목록은 빠뜨리거나 중복하지 않고 모두 실행하며 환경과 개별 한도를 보존한다', t => {
   const { result, calls, 시험 } = 긴목록실행(t, { 경과: 1500 });
   assert.ok(calls.length > 1, '32,767자를 넘는 명령 하나로 실행하지 않는다');
   assert.deepEqual(calls.flatMap(call => call.selected), 시험);
   for (const [index, call] of calls.entries()) {
-    const quotedLength = [call.command, ...call.args].map(arg => '"' + arg.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/g, '$1$1') + '"').join(' ').length;
-    assert.ok(quotedLength < 32767, quotedLength);
+    const quotedLength = 인용명령길이([call.command, ...call.args]);
+    assert.ok(quotedLength <= 30000, quotedLength);
     assert.ok(call.args.includes('--test-timeout=120000'));
     assert.equal(call.options.timeout, 900000 - 1500 * index, '뒷 묶음은 남은 시간만 쓴다');
     assert.equal(call.options.env.CI, '1');
@@ -306,19 +488,99 @@ test('Windows 긴 시험 목록은 빠뜨리거나 중복하지 않고 모두 �
   assert.equal(result.실패수, 0); assert.equal(result.묶음.실행, result.묶음.전체);
 });
 
+test('Windows 인용 경계는 짧은 공백 경로와 따옴표 앞·끝의 역슬래시까지 센다', t => {
+  // 이스케이프 경계 입력은 spawn 모의 경계까지만 전달하며 실제 Windows 파일로 만들지 않는다.
+  const lists = [
+    Array.from({ length: 2000 }, (_, i) => `tests/a ${String(i).padStart(4, '0')}.test.js`),
+    Array.from({ length: 900 }, (_, i) => `tests/${'\\'.repeat(5)}"공백 ${i}.test.js`),
+    Array.from({ length: 1400 }, (_, i) => `tests/끝 공백 ${i}.test.js${'\\'.repeat(8)}`),
+  ];
+  for (const 시험 of lists) {
+    const { result, calls } = 긴목록실행(t, { 시험 });
+    assert.equal(result.통과함, true);
+    assert.ok(calls.length > 1);
+    assert.deepEqual(calls.flatMap(call => call.selected), 시험);
+    for (const [index, call] of calls.entries()) {
+      assert.ok(인용명령길이([call.command, ...call.args]) <= 30000, '인용한 실제 명령은 여유 한도 안이다');
+      const next = calls[index + 1]?.selected[0];
+      if (next) assert.ok(인용명령길이([call.command, ...call.args, next]) > 29975, '불필요하게 작은 묶음으로 잘라 경계 검사를 피하지 않는다');
+    }
+  }
+});
+
+test('묶음마다 복수 시험이 있는 TAP을 파일 수로 줄이지 않고 합산한다', t => {
+  const { result, calls, 시험 } = 긴목록실행(t, { 파일당시험수: 3, 응답: index => index === 2 ? { status: 1, failed: 2 } : { status: 0 } });
+  assert.equal(calls.length, 2);
+  const expected = calls.reduce((sum, call) => sum + call.selected.length * 3, 0);
+  assert.ok(expected > 시험.length);
+  assert.equal(result.시험, expected);
+  assert.equal(result.통과, expected - 2);
+  assert.equal(result.실패수, 2);
+  assert.equal(result.실패.length, 2);
+  assert.equal(result.통과함, false);
+});
+
+test('정상 종료한 묶음의 TAP 읽기 실패는 앞선 집계만으로 성공 처리하지 않는다', t => {
+  for (const unreadableBatch of [1, 2]) {
+    const { result, calls, 관련: subject } = 긴목록실행(t, { 응답: index => ({ status: 0, noTap: index === unreadableBatch }) });
+    assert.equal(calls.length, unreadableBatch, '집계 실패 뒤에는 다음 묶음을 실행하지 않는다');
+    assert.equal(result.통과함, false);
+    assert.equal(subject.시간만넘김(result), false);
+    assert.match(result.이유, new RegExp(`${unreadableBatch}번 묶음 TAP 읽기 실패.*ENOENT`));
+    assert.equal(result.통과, unreadableBatch === 1 ? 0 : calls[0].selected.length, '확인한 앞선 결과만 보존한다');
+  }
+});
+
+test('정상 종료라도 빈 TAP과 완료 요약이 없는 TAP은 검증 통과로 세지 않는다', t => {
+  for (const tapText of ['', 'TAP version 13\n# reporter stopped\n', 'TAP version 13\nok 1 - partial case\n', 'TAP version 13\nok 1 - partial case\n1..1\n# tests 1\n']) {
+    for (const missingBatch of [1, 2]) {
+      const { result, calls, 관련: subject } = 긴목록실행(t, { 응답: index => index === missingBatch ? { status: 0, tapText } : { status: 0 } });
+      assert.equal(result.통과함, false);
+      assert.equal(subject.시간만넘김(result), false);
+      assert.equal(calls.length, missingBatch);
+      assert.match(result.TAP오류, new RegExp(`${missingBatch}번 묶음 TAP`));
+      assert.equal(result.묶음.미실행파일, calls.length === 1 ? 700 - calls[0].selected.length : 0);
+    }
+  }
+});
+
 test('긴 목록의 실제 실패와 실행 오류를 뒤 묶음의 결과로 덮지 않는다', t => {
   const failed = 긴목록실행(t, { 응답: () => ({ status: 1, failed: 1 }) });
   assert.equal(failed.calls.length, 1); assert.equal(failed.result.통과함, false); assert.equal(failed.result.실패수, 1);
   assert.equal(failed.관련.시간만넘김(failed.result), false);
+  const remaining = failed.시험.length - failed.calls[0].selected.length;
+  assert.equal(failed.result.묶음.미실행파일, remaining);
+  assert.equal(failed.result.이유, `전체 ${failed.result.묶음.전체}묶음 중 1묶음에서 멈췄다. 남은 ${remaining}개 파일은 실행하지 않았다.`);
   const spawnError = 긴목록실행(t, { 응답: () => ({ status: null, error: { code: 'ENOENT' }, noTap: true }) });
   assert.equal(spawnError.calls.length, 1); assert.equal(spawnError.result.통과함, false);
   assert.match(spawnError.result.이유, /ENOENT/); assert.equal(spawnError.관련.시간만넘김(spawnError.result), false);
 });
 
-test('뒤 묶음 시간 초과는 앞의 통과 수를 보존하되 전체 완료로 표시하지 않는다', t => {
+test('뒤 묶음 시간 초과에 TAP이 없으면 앞의 통과 수는 보존하되 시간만 넘긴 것으로 승인하지 않는다', t => {
   const { result, calls, 관련: subject } = 긴목록실행(t, { 응답: index => index === 1 ? { status: 0 } : { status: null, error: { code: 'ETIMEDOUT' }, noTap: true } });
   assert.equal(calls.length, 2); assert.equal(result.통과함, false); assert.equal(result.시간넘김, true);
-  assert.equal(result.통과, calls[0].selected.length); assert.equal(result.시험, calls[0].selected.length); assert.ok(result.시험 < result.묶음.선택파일); assert.equal(subject.시간만넘김(result), true);
+  assert.equal(result.통과, calls[0].selected.length); assert.equal(result.시험, calls[0].selected.length); assert.ok(result.시험 < result.묶음.선택파일); assert.equal(subject.시간만넘김(result), false);
+  assert.match(result.이유, /15분 안에 끝나지 않았다.*2번 묶음 TAP 읽기 실패.*ENOENT/);
+});
+
+test('시간 초과의 빈 TAP은 막고 읽을 수 있는 중간 통과 TAP은 기존 시간 초과 정책을 유지한다', t => {
+  for (const tapText of ['', 'TAP version 13\n# reporter started\n']) {
+    const { result, 관련: subject } = 긴목록실행(t, { 응답: () => ({ status: null, error: { code: 'ETIMEDOUT' }, tapText }) });
+    assert.equal(result.시간넘김, true);
+    assert.equal(subject.시간만넘김(result), false);
+    assert.match(result.TAP오류, /확인한 시험 결과가 없다/);
+  }
+  const { result, calls, 관련: subject } = 긴목록실행(t, { 응답: index => index === 1 ? { status: 0 } : { status: null, error: { code: 'ETIMEDOUT' }, tapText: 'TAP version 13\nok 1 - completed before timeout\n' } });
+  assert.equal(result.통과함, false);
+  assert.equal(result.시간넘김, true);
+  assert.equal(result.통과, calls[0].selected.length, '완료 요약이 없는 뒤 묶음의 통과 수는 만들어 더하지 않는다');
+  assert.equal(result.TAP오류, undefined);
+  assert.equal(subject.시간만넘김(result), true);
+  const later = 긴목록실행(t, { 응답: index => index === 1 ? { status: 0 } : { status: null, error: { code: 'ETIMEDOUT' }, tapText: '# tests 0\n' } });
+  assert.equal(later.calls.length, 2);
+  assert.equal(later.result.통과, later.calls[0].selected.length);
+  assert.equal(later.관련.시간만넘김(later.result), false);
+  for (const counts of [{ 실패수: 1, 취소: 0 }, { 실패수: 0, 취소: 1 }]) assert.equal(subject.시간만넘김({ 시간넘김: true, 실패: [], ...counts }), false);
 });
 
 test('앞 묶음이 전체 시간을 소진하면 남은 묶음을 새 한도로 실행하지 않는다', t => {
@@ -348,15 +610,15 @@ test('한도 0은 기존처럼 전체 제한 없이 실행하며 실제 실패�
   assert.equal(failed.관련.시간만넘김(failed.result), false);
 });
 
-test('돌리기 — 한도를 넘기면 시간넘김을 남기고, 그때까지 깨진 것이 없을 때만 시간만넘김이다(10-22)', (t) => {
+test('돌리기 — 실제 시간 초과 전에 확인한 시험 결과가 없으면 검증 미확인으로 막는다', (t) => {
   const root = 저장소(t, {
     'tests/느림.test.js': "require('node:test')('오래 걸림', () => new Promise((r) => setTimeout(r, 20000)));\n",
   });
   const r = 관련.돌리기({ root, 시험: ['tests/느림.test.js'], 한도ms: 2000 });
   assert.equal(r.통과함, false);
   assert.equal(r.시간넘김, true);
-  assert.equal(r.이유, '2초 안에 끝나지 않았다');
-  assert.equal(관련.시간만넘김(r), true);
+  assert.match(r.이유, /^2초 안에 끝나지 않았다/);
+  assert.equal(관련.시간만넘김(r), false);
   assert.equal(관련.시간만넘김({ ...r, 실패: [{ 이름: '먼저 깨짐', 위치: 'tests/느림.test.js:2', 파일: 'tests/느림.test.js' }] }), false, '끊기기 전에 깨진 것이 있으면 막는다');
   assert.equal(관련.시간만넘김({ 통과함: false, 실패: [], 이유: 'node --test 종료 1' }), false, '시간 말고 다른 까닭은 그대로 깨짐');
   assert.equal(관련.시간만넘김(null), false);

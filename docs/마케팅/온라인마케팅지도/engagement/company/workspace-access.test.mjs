@@ -589,3 +589,48 @@ test('common invite lookup takes only a small same-origin JSON token, no query o
   assert.equal(limited.data.code,'SYNK_RATE_LIMITED');
   assert.deepEqual(databaseState(app),before,'the limiter counts in memory only');
 });
+
+test('common invite lookup reports a corrupt stored employee profile as a server failure without side effects',async t=>{
+  const {app,a}=await fixture(t,{isolated:true}),lookup=inviteLookup(app);
+  const issued=await a('/api/members/invite',{name:'Synthetic stored profile',email:'stored-profile@example.test',workspaceProfile:profile('LAB')});
+  assert.equal(issued.status,201);
+  const code=issued.data.code,stored=app.store.readToken(code,'invite');
+  app.store.db.prepare('UPDATE tokens SET body=? WHERE hash=?').run(JSON.stringify({...stored.body,workspaceProfile:{...stored.body.workspaceProfile,memberships:[]}}),stored.hash);
+  // The older employee inspect contract stays intact; only the common lookup
+  // distinguishes an invalid stored profile from its own request input.
+  assert.throws(()=>createWorkspaceAccessService({store:app.store}).inspect(code),{status:400});
+  const before=databaseState(app),logged=[],printError=console.error;
+  const watched=watchCalls([['messenger.disconnectRevoked',app.messenger,'disconnectRevoked'],['messenger.notifyCompanyUsers',app.messenger,'notifyCompanyUsers'],['deviceNotifications.revokeSession',app.deviceNotifications,'revokeSession'],['clientProjects.open',app.clientProjects,'open'],['clientProjects.openVerified',app.clientProjects,'openVerified'],['clientProjects.session',app.clientProjects,'session'],...['resume','touch','bind','remember','forget'].map(name=>['devices.'+name,app.clientProjects.devices,name])]);
+  let invalid,result;
+  console.error=(...args)=>{logged.push(args.map(String).join(' '));};
+  try{
+    invalid=await lookup({token:42});
+    result=await lookup({token:code});
+    t.diagnostic(JSON.stringify({invalidInputStatus:invalid.status,storedProfileStatus:result.status,serverDiagnostics:logged.length,sideEffectCalls:watched.calls.length,databaseUnchanged:JSON.stringify(databaseState(app))===JSON.stringify(before)}));
+    assert.equal(invalid.status,400);
+    assert.deepEqual(databaseState(app),before,'lookup neither consumes the invitation nor changes users, sessions, devices or roles');
+    assert.deepEqual(watched.calls,[]);
+    for(const response of [invalid,result]){
+      assert.equal(response.cookie,null);assert.equal(response.cache,'no-store');
+      for(const secret of [code,stored.hash,stored.body.name,stored.body.email])assert.ok(!response.text.includes(secret));
+    }
+    assert.equal(result.status,500,'an invalid stored profile is not a malformed lookup request');
+    assert.deepEqual(Object.keys(result.data),['error']);
+    assert.deepEqual(logged,['SYNK_COMPANY_SERVER REQUEST_FAILED INTERNAL_ERROR']);
+    for(const secret of [code,stored.hash,stored.body.name,stored.body.email])assert.ok(!logged.join('\n').includes(secret));
+  }finally{console.error=printError;watched.restore();}
+});
+
+test('common invite lookup does not promote a same-code customer validation error outside the employee check',async t=>{
+  const {app,a}=await fixture(t,{isolated:true}),lookup=inviteLookup(app);
+  const issued=await a('/api/members/invite',{name:'Synthetic stage boundary',email:'stage-boundary@example.test',workspaceProfile:profile('LAB')});
+  assert.equal(issued.status,201);
+  const check=app.clientProjects.checkInvite,logged=[],printError=console.error,before=databaseState(app);
+  app.clientProjects.checkInvite=()=>{throw Object.assign(new Error('synthetic customer validation'),{status:400,code:'WORKSPACE_ACCESS'});};
+  console.error=(...args)=>{logged.push(args.map(String).join(' '));};
+  try{
+    const result=await lookup({token:issued.data.code});
+    assert.equal(result.status,400);assert.equal(result.cookie,null);
+    assert.deepEqual(logged,[]);assert.deepEqual(databaseState(app),before);
+  }finally{app.clientProjects.checkInvite=check;console.error=printError;}
+});

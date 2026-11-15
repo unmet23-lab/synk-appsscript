@@ -1399,6 +1399,151 @@ test('GPT 모델·추론 한 곳(11-14 후속): 공식 GPT보내기 → GPT부�
   assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6-astra', 추론: 'high' });
 });
 
+test('GPT 후속 GA1: 몫 조회 중 환경이 바뀌어도 처음 정한 설정으로 실제 가짜 CLI를 부른다', async t => {
+  const { 준비하기, GPT보내기, GPT부르기 } = await tool();
+  const 가짜 = 가짜코덱스(t), r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const x = await 준비하기({ 이름: 'ga1', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna';
+  const 알림 = [];
+  const [결과] = await GPT보내기(x.폴더, x.목록, { 수준: 'max',
+    몫: () => { process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra'; return null; },
+    call: a => GPT부르기(a), 알리기: m => 알림.push(m) });
+  assert.equal(결과.상태, '읽음');
+  assert.equal(결과.호출시작, true);
+  assert.deepEqual(가짜.부른것(), { 모델: 'gpt-6-luna', 추론: 'model_reasoning_effort="max"' });
+  assert.deepEqual(결과.모델설정, { 모델: 'gpt-6-luna', 추론: 'max', 환경바꿈: true });
+  assert.match(결과.모델, /^gpt-6-luna-max · /);
+  assert.match(알림.find(m => / 보냄 · /.test(m)), /gpt-6-luna-max/);
+});
+
+test('GPT 후속 GA2: schema 쓰기 실패는 예정 설정과 미호출로 남기고 이전 성공과 실패 이력을 보존한다', async t => {
+  const { 준비하기, GPT보내기, GPT부르기, GPT검수 } = await tool();
+  const 가짜 = 가짜코덱스(t), r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const 준비 = 이름 => 준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const 첫 = await 준비('ga2-first'), 앞 = await 준비('ga2-prior');
+  const 보내기 = (x, 덧 = {}) => GPT보내기(x.폴더, x.목록, { 몫: () => null, call: a => GPT부르기(a), ...덧 });
+  const [성공] = await 보내기(앞), 부름앞 = 가짜.부름수();
+  const 원래쓰기 = fs.writeFileSync;
+  const 막기 = t.mock.method(fs, 'writeFileSync', function (file, ...args) {
+    if (typeof file === 'string' && path.basename(file) === 'schema.json' && path.basename(path.dirname(file)).startsWith('synk-gpt-review-')) {
+      throw Object.assign(new Error('synthetic ENOSPC writing schema.json'), { code: 'ENOSPC' });
+    }
+    return 원래쓰기.call(this, file, ...args);
+  });
+  let 실패, 보존;
+  try { [실패] = await 보내기(첫); [보존] = await 보내기(앞, { 다시: true }); }
+  finally { 막기.mock.restore(); }
+  assert.equal(가짜.부름수(), 부름앞, 'schema 실패는 CLI를 시작하지 않는다');
+  assert.equal(실패.상태, '실패');
+  assert.match(실패.오류, /synthetic ENOSPC/);
+  assert.equal(실패.모델, null, '예정 모델과 계정을 실제 호출 모델로 기록하지 않는다');
+  assert.equal(실패.호출시작, false);
+  assert.deepEqual(실패.모델설정, { ...GPT검수, 환경바꿈: false });
+  assert.equal(보존.모델, 성공.모델);
+  assert.deepEqual(보존.답, 성공.답);
+  assert.equal(보존.실패들.at(-1).모델, null);
+  assert.equal(보존.실패들.at(-1).호출시작, false);
+  assert.deepEqual(보존.실패들.at(-1).모델설정, 실패.모델설정);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(첫.폴더, 'GPT-A.json'), 'utf8')).호출시작, false);
+});
+
+test('GPT 후속 GA3: 임시 폴더 정리 실패는 원래 실패·미호출 구분이나 성공 답을 덮지 않는다', async t => {
+  const { 준비하기, GPT보내기, GPT부르기 } = await tool();
+  const 가짜 = 가짜코덱스(t), r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const 준비 = 이름 => 준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const 첫 = await 준비('cleanup-failed'), 다음 = await 준비('cleanup-success');
+  const 쓰기 = fs.writeFileSync, 정리 = fs.rmSync, 남은폴더 = [], 알림 = [];
+  let 스키마실패 = true;
+  const mw = t.mock.method(fs, 'writeFileSync', function (file, ...args) {
+    if (typeof file === 'string' && path.basename(file) === 'schema.json' && path.basename(path.dirname(file)).startsWith('synk-gpt-review-')) {
+      남은폴더.push(path.dirname(file));
+      if (스키마실패) throw Object.assign(new Error('synthetic schema ENOSPC'), { code: 'ENOSPC' });
+    }
+    return 쓰기.call(this, file, ...args);
+  });
+  const mr = t.mock.method(fs, 'rmSync', function (file, ...args) {
+    if (남은폴더.includes(file)) throw Object.assign(new Error('synthetic cleanup EBUSY'), { code: 'EBUSY' });
+    return 정리.call(this, file, ...args);
+  });
+  const ml = t.mock.method(console, 'error', (...args) => 알림.push(args.join(' ')));
+  try {
+    const 보내기 = x => GPT보내기(x.폴더, x.목록, { 몫: () => null, call: a => GPT부르기(a) });
+    const [실패] = await 보내기(첫);
+    assert.equal(실패.상태, '실패');
+    assert.match(실패.오류, /synthetic schema ENOSPC/);
+    assert.equal(실패.호출시작, false);
+    assert.equal(실패.모델, null);
+    assert.equal(가짜.부름수(), 0);
+    스키마실패 = false;
+    const [성공] = await 보내기(다음);
+    assert.equal(성공.상태, '읽음');
+    assert.equal(성공.호출시작, true);
+    assert.match(성공.모델, /^gpt-6-astra-high · /);
+    assert.equal(가짜.부름수(), 1);
+    assert.deepEqual(알림, Array(2).fill('GPT 검수 임시 폴더 정리 실패 (EBUSY)'));
+    assert.ok(남은폴더.every(dir => !알림.join('\n').includes(dir)), '진단에는 임시 경로·입력 본문을 넣지 않는다');
+  } finally {
+    mw.mock.restore(); mr.mock.restore(); ml.mock.restore();
+    for (const dir of 남은폴더) 정리(dir, { recursive: true, force: true, maxRetries: 3 });
+  }
+});
+
+test('GPT 후속 GA3: 기본 모델과 같은 환경값은 적용 사실만 알리고 기본과 다르다고 쓰지 않는다', async t => {
+  const { GPT검수, GPT검수설정, GPT설정글 } = await tool();
+  가짜코덱스(t);
+  process.env.SYNK_GPT_REVIEW_MODEL = GPT검수.모델;
+  const 글 = GPT설정글(GPT검수설정());
+  assert.match(글, /환경변수 SYNK_GPT_REVIEW_MODEL 적용/);
+  assert.match(글, /지울 때까지 GPT 검수마다/);
+  assert.doesNotMatch(글, /아님/);
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna';
+  assert.match(GPT설정글(GPT검수설정()), /기본 gpt-6-astra 아님/);
+});
+
+test('GPT 후속 CA1: 자동 대체 안내는 CLI를 시작하지 않은 시도를 호출 목록에 넣지 않는다', async () => {
+  const { 이번자동대체 } = await tool();
+  const 보낸때 = '2026-11-15T09:00:00.000Z', 모델설정 = { 자동대체: '기본 모델 시간 초과 두 번', 모델: 'gpt-6-luna' };
+  const 결과 = [{ 묶음: 'A', 보낸때, 모델설정, 모델: null, 호출시작: false, 실패들: [
+    { 보낸때, 모델설정, 모델: 'gpt-6-luna-high · test', 호출시작: true },
+    { 보낸때, 모델설정, 모델: 'gpt-6-luna-high · planned', 호출시작: false },
+  ] }];
+  assert.deepEqual(이번자동대체(결과, 보낸때), ['A gpt-6-luna-high · test']);
+  assert.deepEqual(이번자동대체(결과, 보낸때, ['B']), []);
+  assert.deepEqual(이번자동대체([{ 묶음: 'A', 보낸때, 모델설정, 모델: 'legacy-called-model' }], 보낸때), ['A legacy-called-model'], '시작 필드가 없는 이전 유효 기록은 보존한다');
+});
+
+test('GPT 후속 GA2: 프로세스 시작 실패·계정 없음·사전 한도는 미호출이며 CLI의 로그인 실패와 구분한다', async t => {
+  const { 준비하기, GPT보내기, GPT부르기, 답꼴 } = await tool();
+  const 가짜 = 가짜코덱스(t), r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const 준비 = 이름 => 준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const exe = process.env.CODEX_BIN;
+  process.env.CODEX_BIN = path.join(가짜.뿌리, 'missing-cli.exe');
+  const x = await 준비('ga2-spawn');
+  const [실패] = await GPT보내기(x.폴더, x.목록, { 몫: () => null, call: a => GPT부르기(a) });
+  assert.equal(실패.상태, '실패');
+  assert.equal(실패.호출시작, false);
+  assert.equal(실패.모델, null);
+  assert.equal(가짜.부름수(), 0);
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, 계정: null }), e => e.invocationStarted === false && !('selectedModel' in e));
+  const q = await 준비('ga2-quota');
+  const [한도] = await GPT보내기(q.폴더, q.목록, { 몫: () => ({ 주간: 0 }), call: () => assert.fail('한도가 없으면 호출하지 않는다') });
+  assert.equal(한도.상태, '막힘');
+  assert.equal(한도.호출시작, false);
+  assert.equal(한도.모델, null);
+  process.env.CODEX_BIN = exe;
+  process.env.FAKE_CODEX = 'login';
+  const l = await 준비('ga2-login');
+  const [로그인] = await GPT보내기(l.폴더, l.목록, { 몫: () => null, call: a => GPT부르기(a) });
+  assert.equal(로그인.상태, '막힘');
+  assert.equal(로그인.호출시작, true, 'CLI는 시작됐지만 원격 모델 응답은 아니다');
+  assert.match(로그인.모델, /^gpt-6-astra-high · /);
+  assert.equal(가짜.부름수(), 1);
+});
+
 test('GPT 시간 초과 자동 대체(11-15 유호님 「응, 바꿔줘」): 기본 모델이 같은 묶음에서 시간 초과로 두 번 끝나면 다음 보내기는 묻지 않고 대체 모델 · 같은 추론, 다른 실패 · 환경 모델 회차는 세지 않는다 — 기본이 astra(11-15 「바로 바꿔줘」)라 시험은 대체 모델을 잠시 terra로 둔다', async t => {
   const { 준비하기, GPT보내기, GPT부르기, GPT시간초과대체, 이번자동대체 } = await tool();
   const 가짜 = 가짜코덱스(t);
@@ -1545,6 +1690,12 @@ test('GPT 명령(11-14 후속): 계정·보내기·완료 안내에 이번 모�
   assert.match(줄(기본.알림, /GPT 계정: /), /→ 본 계정\(~\/\.codex\)/);
   for (const l of 세안내(기본)) { assert.match(l, /gpt-6-astra-high · 기본 모델/, l); assert.doesNotMatch(l, /적용/, l); }
   assert.equal(기본.결과.모델, 'gpt-6-astra-high · 본 계정(~/.codex)');
+  // 기본값과 같은 명시적 환경 모델도 계정·보내기·완료 안내에서 적용 사실을 유지한다.
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
+  const 같은환경 = GPT명령(await 준비('명령-같은환경'));
+  assert.equal(같은환경.종료, 0, 같은환경.알림);
+  for (const l of 세안내(같은환경)) { assert.match(l, /환경변수 SYNK_GPT_REVIEW_MODEL 적용\(기본 모델과 같음/); assert.doesNotMatch(l, /아님/); }
+  assert.equal(같은환경.결과.호출시작, true);
   // 환경 모델: 이름이 다른 두 검수를 이어 돌려도 둘 다 계정·보내기·완료 안내에 바꾼 모델과 환경변수가 보인다
   process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-luna';
   for (const 이름 of ['명령-바꿈-1', '명령-바꿈-2']) {
