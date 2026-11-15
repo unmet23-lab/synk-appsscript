@@ -302,12 +302,37 @@ function main(argv) {
   fs.writeFileSync(path.join(out, '볼이유_질문.md'), buildWorthPrompt({ brand: args['브랜드'], sheets, speech, cuts }));
   console.log(`재료: ${out} · 장면 ${shots.length}칸 / 그림 ${sheets.length}장 · 지난 편 ${previous.length ? previous.map((p) => p.name).join(' · ') : '없음'}`);
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);
-  console.log('다음: 질문.md를 이 대화 맥락이 없는 새 시험관 넷(Agent model sonnet · model haiku, 그리고 `node tools/GPT시험관.mjs <이 폴더>` · `node tools/그록시험관.mjs <이 폴더>`, 서로 따로)에게 그대로 주고, 볼이유_질문.md는 새 심사관(Agent model opus)에게 준다 — 답을 한 장 기획의 「한 문장」 · 「무엇으로 이기나」와 견준다(제작절차 「시험」).');
+  for (const 줄 of 다음글(args['브랜드'])) console.log(줄);
   return 0;
+}
+
+// 재료를 다 만든 뒤 찍는 「다음:」 줄과, 사람이 나오는 브랜드면 그 아래 답 처리 줄(11-16 흠 장부). 파일을 쓰지 않고 던지지 않는다
+const 다음줄 = '다음: 질문.md를 이 대화 맥락이 없는 새 시험관 넷(Agent model sonnet · model haiku, 그리고 `node tools/GPT시험관.mjs <이 폴더>` · `node tools/그록시험관.mjs <이 폴더>`, 서로 따로)에게 그대로 주고, 볼이유_질문.md는 새 심사관(Agent model opus)에게 준다 — 답을 한 장 기획의 「한 문장」 · 「무엇으로 이기나」와 견준다(제작절차 「시험」).';
+function 다음글(brand, 갈래경로 = 흠갈래) {
+  return [다음줄, ...답처리줄(brand, 갈래경로).map((x) => `  → 할 것: ${x}`)];
+}
+
+// 답 10 · 11처럼 통과 판정과 따로 다룰 답(11-16 흠 장부 「인물튐」 · 「끝의 힘」) — 흠갈래.json에서 단계가 「검수 질문」이고 자리가 이 도구로
+// 시작하는 「올린곳」의 「할것」을 그대로 읽는다. 문장을 이 도구에 따로 두지 않는다 — 다음에 검수 질문을 올릴 때 흠갈래에 「할것」만 적으면
+// 저절로 뜬다. 사람이 나오는 브랜드(시청자 표의 사람편)만. 흠갈래를 못 읽거나 꼴이 다르면 빈 목록이다(끝 코드 · 만드는 파일 · 질문.md는 그대로).
+const 흠갈래 = path.join(ROOT, 'docs', '마케팅', '제작양식', '흠갈래.json');
+function 답처리줄(brand, 갈래경로 = 흠갈래) {
+  try {
+    if (!Object.prototype.hasOwnProperty.call(시청자, brand) || 시청자[brand].사람편 !== true) return [];
+    const 표 = JSON.parse(fs.readFileSync(갈래경로, 'utf8').replace(/^﻿/, ''));
+    if (!표 || typeof 표 !== 'object') return [];
+    const 자리들 = [...(Array.isArray(표.줄) ? 표.줄 : []), ...(표.항목 && typeof 표.항목 === 'object' ? Object.values(표.항목) : [])];
+    const 곳 = 자리들.flatMap((x) => (x && Array.isArray(x.올린곳) ? x.올린곳 : []))
+      .filter((o) => o && o.단계 === '검수 질문' && typeof o.자리 === 'string' && /^tools\/낯선이시험\.js(?:\s|$)/.test(o.자리) && typeof o.할것 === 'string' && o.할것.trim());
+    const 번호 = (o) => Number((/^tools\/낯선이시험\.js\s+(\d+)번/.exec(o.자리) || [])[1]) || Number.MAX_SAFE_INTEGER;
+    return [...new Set(곳.sort((a, b) => 번호(a) - 번호(b) || a.자리.localeCompare(b.자리, 'ko')).map((o) => o.할것.trim().replace(/\s+/g, ' ')))];
+  } catch {
+    return [];
+  }
 }
 
 if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
-module.exports = { srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자 };
+module.exports = { srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };

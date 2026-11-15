@@ -46,6 +46,24 @@ test('줄마다 묶음은 하나(G01~G20이나 새 묶음 후보) · 잴수는 �
   }
 });
 
+test('올린 검사의 「길」(11-16) — 없으면 모든 길, 있으면 세 길 이름(컷표영상 · 그래픽 · LAB)의 겹치지 않는 목록. 최종본검사는 LAB 밖, LAB에도 도는 still에는 달지 않는다', () => {
+  const 길들 = ['컷표영상', '그래픽', 'LAB'];
+  const 모든 = [...표.줄.map((x) => [`${x.번호}번`, x]), ...Object.entries(표.항목)];
+  for (const [이름, x] of 모든) {
+    for (const o of [].concat(x.올린검사 || [])) {
+      if (o.길 === undefined) continue;
+      assert.ok(Array.isArray(o.길) && o.길.length && o.길.every((g) => 길들.includes(g)) && new Set(o.길).size === o.길.length, `${이름} ${o.검사}: 길은 세 길 이름의 목록 — ${JSON.stringify(o.길)}`);
+      assert.ok(o.길.length < 길들.length, `${이름} ${o.검사}: 모든 길이면 길을 적지 않는다`);
+    }
+  }
+  // 최종본검사(올리기 전 검사 ⑳)는 synkbrief · yuhobuilds(또는 준비.json 사람편)만 잰다 — tools/lib/최종본관문.js BRANDS
+  const 최종본 = 표.줄.flatMap((x) => x.올린검사.filter((o) => o.검사 === '최종본검사').map((o) => [x.번호, o]));
+  assert.ok(최종본.length >= 4);
+  for (const [n, o] of 최종본) assert.deepEqual(o.길, ['컷표영상', '그래픽'], `${n}번 최종본검사 ${(o.규칙 || []).join(',')}`);
+  const still = 표.줄.find((x) => x.번호 === 20).올린검사.find((o) => (o.규칙 || []).includes('still'));
+  assert.equal(still.길, undefined, 'still은 LAB에도 돈다');
+});
+
 test('원칙 번호는 synk-video 스킬 「열두 원칙」 괄호에서 뽑은 것과 같다(화면 줄은 빔)', () => {
   const 원칙 = new Map();
   let on = false;
@@ -115,6 +133,8 @@ test('기계 검사 없이 올린 자리(「올린곳」) — 단계는 기본�
       // 「할것」은 새 편을 시작할 때 그 흠 아래에 그대로 뜬다(tools/흠장부.js 시작글). 기본값은 꼭 적는다 — 절차 문서의 문장으로만 두면
       // 만드는 세션이 그 자리에서 보지 못한다(11-16 유호님 「다음에 무조건 적용하게 해줘야해」). 한 줄에 뜨니 줄바꿈 없이 200자 안쪽으로
       if (o.단계 === '기본값') assert.ok(typeof o.할것 === 'string' && o.할것.trim(), `${이름}: 기본값으로 올렸으면 「할것」(만들 때 할 일 한 문장)을 적는다`);
+      // 검수 질문도 같다 — 그 답을 어떻게 다룰지가 시험 도구의 「다음:」 줄 아래에 이 「할것」 그대로 뜬다(tools/낯선이시험.js 답처리줄, 11-16)
+      if (o.단계 === '검수 질문') assert.ok(typeof o.할것 === 'string' && o.할것.trim(), `${이름}: 검수 질문으로 올렸으면 「할것」(그 답을 어떻게 다룰지 한 문장)을 적는다`);
       if (o.할것 !== undefined) assert.ok(typeof o.할것 === 'string' && o.할것.trim() && !/[\r\n]/.test(o.할것) && [...o.할것].length <= 200, `${이름}: 할것은 줄바꿈 없는 200자 안쪽 한 문장 — ${JSON.stringify(o.할것)}`);
       셈 += 1;
     }

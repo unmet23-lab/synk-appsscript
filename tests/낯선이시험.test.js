@@ -80,6 +80,34 @@ test('같은 셋에 11번 — 끝 3초를 보고 힘 있게 끝났나 흐지부�
   for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^11\. /m, brand);
 });
 
+test('「다음:」 줄 아래 답 처리(11-16 흠 장부) — 사람편 브랜드는 흠갈래 「올린곳」 가운데 검수 질문 · 이 도구 자리의 「할것」을 한 줄씩(답 10 · 11), LAB은 없음, 흠갈래를 못 읽으면 「다음:」 줄만', (t) => {
+  const { 답처리줄, 다음글 } = require('../tools/낯선이시험.js');
+  for (const brand of ['synkbrief', 'yuhobuilds', 'pulse']) {
+    const 줄 = 다음글(brand);
+    assert.match(줄[0], /^다음: 질문\.md를 /, brand);
+    assert.equal(줄.length, 3, `${brand}: ${JSON.stringify(줄)}`);
+    assert.match(줄[1], /^ {2}→ 할 것: 이해 시험 답 10이 /);
+    assert.match(줄[2], /^ {2}→ 할 것: 이해 시험 답 11이 /);
+  }
+  for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm', '없는브랜드', 'constructor']) assert.deepEqual(다음글(brand).slice(1), [], brand);
+  // 문장은 흠갈래에서 읽는다 — 가짜 표의 할것이 자리 번호 순으로 뜨고, 다른 단계 · 다른 도구 · 할것 없는 줄은 뜨지 않는다
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nangseon-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const 쓰기 = (이름, 글) => { const p = path.join(dir, 이름); fs.writeFileSync(p, 글); return p; };
+  const 가짜 = 쓰기('흠갈래.json', JSON.stringify({
+    줄: [{ 번호: 1, 올린곳: [{ 단계: '검수 질문', 자리: 'tools/낯선이시험.js 12번 — 끝', 할것: '가짜 할것 B' }, { 단계: '기본값', 자리: 'tools/낯선이시험.js 3번', 할것: '기본값은 안 뜸' }] }],
+    항목: { 가: { 올린곳: [{ 단계: '검수 질문', 자리: 'tools/낯선이시험.js 4번 — 사람', 할것: '가짜 할것 A' }, { 단계: '검수 질문', 자리: 'tools/낯선이시험.jsx 1번', 할것: '다른 도구는 안 뜸' },
+      { 단계: '검수 질문', 자리: 'tools/다른도구.js 1번', 할것: '안 뜸' }, { 단계: '검수 질문', 자리: 'tools/낯선이시험.js 5번' }] } },
+  }));
+  assert.deepEqual(답처리줄('synkbrief', 가짜), ['가짜 할것 A', '가짜 할것 B']);
+  assert.deepEqual(답처리줄('lab-en', 가짜), []);
+  // 못 읽음 — 없는 파일 · 깨진 JSON · 다른 꼴이면 던지지 않고 빈 목록, 「다음:」 줄은 그대로다(끝 코드와 만드는 파일은 이 줄들과 무관)
+  for (const p of [path.join(dir, '없음.json'), 쓰기('깨짐.json', '{깨짐'), 쓰기('목록.json', '[]'), 쓰기('널.json', 'null'), 쓰기('꼴.json', '{"줄": "x", "항목": 3}'), 쓰기('곳꼴.json', '{"줄": [{"올린곳": "x"}, null], "항목": {"가": null}}')]) {
+    assert.deepEqual(답처리줄('synkbrief', p), [], p);
+    assert.deepEqual(다음글('synkbrief', p), [다음글('lab-en')[0]], p);
+  }
+});
+
 test('--틀 퀴즈: 9번은 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 견주고 퀴즈 칸의 늘 있는 짜임은 세지 않는다(제작절차 LAB 하루 두 편 7)', () => {
   const prompt = buildPrompt({ brand: 'lab-mn', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'C:/a/지난1_Q5.jpg' }, { file: 'C:/a/지난2_Q4.jpg' }], 틀: '퀴즈' });
   assert.match(prompt, /^9\. 비교용 묶음\(같은 계정의 지난 퀴즈 편\)과 견주어 .*「같아 보임」 또는 「달라 보임」.*무대 · 주제 · 마스코트 표정 · 색 · 구도 가운데/m);

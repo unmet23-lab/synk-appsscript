@@ -71,10 +71,11 @@ function 줄들(p) {
 function 기준읽기(repo = REPO) {
   const 갈래 = json읽기(path.join(repo, 'docs', '마케팅', '제작양식', '흠갈래.json')) || { 줄: [], 항목: {} };
   const 자리 = new Map();
+  const 말씀칸 = new Map();   // 번호 → 점검표 셋째 칸(유호님 말씀 · 날짜) — 「같은 뿌리 말씀이 다시 나온 횟수」(말씀다시세기)가 읽는다
   try {
     for (const l of fs.readFileSync(path.join(repo, 'docs', '마케팅', '제작양식', '광고영상_슬롭점검표.md'), 'utf8').split(/\r?\n/)) {
-      const m = l.match(/^\| (\d+) \| ([^|]*)\|/);
-      if (m) 자리.set(Number(m[1]), m[2].trim());
+      const m = l.match(/^\| (\d+) \| ([^|]*)\|(?: ([^|]*)\|)?/);
+      if (m) { 자리.set(Number(m[1]), m[2].trim()); if (m[3] !== undefined) 말씀칸.set(Number(m[1]), m[3].trim()); }
     }
   } catch { /* 이름 없이 번호만 보인다 */ }
   const 줄 = new Map([].concat(갈래.줄 || []).map((x) => [x.번호, x]));
@@ -86,15 +87,22 @@ function 기준읽기(repo = REPO) {
     for (const o of [].concat(x?.올린검사 || [])) for (const r of [].concat(o.규칙 || [])) if (!규칙열쇠.has(`${o.검사}:${r}`)) 규칙열쇠.set(`${o.검사}:${r}`, `항목:${이름}`);
   }
   const 모음 = json읽기(path.join(repo, 'docs', '마케팅', '제작양식', '슬롭점검_모음.json')) || { 지적: [] };
-  return { 줄, 항목: 갈래.항목 || {}, 자리, 규칙번호, 규칙열쇠, 모음, 묶음이름: 갈래.묶음 || {}, 후보: 갈래.새묶음후보 || {} };
+  return { 줄, 항목: 갈래.항목 || {}, 자리, 말씀칸, 규칙번호, 규칙열쇠, 모음, 묶음이름: 갈래.묶음 || {}, 후보: 갈래.새묶음후보 || {} };
 }
 
-// 열쇠에 올린 검사 목록 — 「#번호」는 그 점검표 줄, 「항목:이름」은 그 갈래의 「올린검사」
-function 올린검사of(열쇠, 기준) {
+// 열쇠에 올린 검사 목록 — 「#번호」는 그 점검표 줄, 「항목:이름」은 그 갈래의 「올린검사」.
+// 길을 주면 그 길에서 도는 검사만 — 올린 검사의 「길」(목록, 없으면 모든 길) 밖이면 그 길에서는 올린 것으로 치지 않는다(11-16 — 최종본검사는
+// 올리기 전 검사 ⑳이 synkbrief · yuhobuilds만 재는데 LAB 장부에도 「검사로 올림」이라 보였다)
+function 올린검사of(열쇠, 기준, 길 = null) {
   const m = /^#(\d+)$/.exec(열쇠);
-  if (m) return [].concat(기준.줄.get(Number(m[1]))?.올린검사 || []);
   const h = /^항목:(.+)$/.exec(열쇠);
-  return h ? [].concat(기준.항목[h[1]]?.올린검사 || []) : [];
+  const 목록 = m ? [].concat(기준.줄.get(Number(m[1]))?.올린검사 || []) : h ? [].concat(기준.항목[h[1]]?.올린검사 || []) : [];
+  return 길 ? 목록.filter((o) => !o || !Array.isArray(o.길) || o.길.includes(길)) : 목록;
+}
+// 편들이 모두 한 길이면 그 길(장부는 길마다 센다) — 섞였으면 null(길로 거르지 않는다)
+function 한길of(편들) {
+  const 길 = 편들.length ? 편들[0].길 : null;
+  return 길 && 편들.every((p) => p.길 === 길) ? 길 : null;
 }
 
 // 열쇠에 기계 검사 없이 올린 자리(기본값 · 칸 · 검수 질문 — 「올린곳」, 날짜가 있는 것만). 잰 값으로 걸릴 편과 지나갈 편을 가르지 못해
@@ -288,8 +296,8 @@ function 앞서띄움(편, 열쇠, 때) { return 앞서띄운눈(편, 열쇠, �
 // 「검사가 일부만 잼」으로 계속 보인다 — 검사 하나를 올렸다고 그 갈래의 못 재는 흠이 시작 줄에서 사라지지 않게(GPT 검수 GA2)
 function 일부만(올린) { return 올린.length > 0 && 올린.every((o) => o.범위 === '일부'); }
 
-function 올림상태(열쇠, 기준, 최종놓침, 넘김 = []) {
-  const 올린 = 올린검사of(열쇠, 기준).filter((o) => o.날짜);
+function 올림상태(열쇠, 기준, 최종놓침, 넘김 = [], 길 = null) {
+  const 올린 = 올린검사of(열쇠, 기준, 길).filter((o) => o.날짜);
   if (!올린.length) {
     // 기계 검사 없이 기본값 · 칸 · 검수 질문으로만 올린 흠(「올린곳」) — 「올릴 차례」 대신 올린 자리와, 그 뒤에도 최종 확인에서 잡혔는지를 보인다
     const 곳 = 올린곳of(열쇠, 기준);
@@ -319,10 +327,11 @@ function 올림상태(열쇠, 기준, 최종놓침, 넘김 = []) {
 
 // 그 길에서 이력이 있는 편을 최근 순으로 최근 개 — 길세기와 시작줄들이 같은 스무 편을 본다
 function 최근편들(편들, 최근 = 20) {
-  return [...편들].sort((a, b) => String(b.마지막).localeCompare(String(a.마지막)) || a.편.localeCompare(b.편)).slice(0, 최근);
+  return [...편들].sort((a, b) => String(b.마지막).localeCompare(String(a.마지막)) || a.편.localeCompare(b.편, 'ko')).slice(0, 최근);
 }
 
-function 길세기(편들, 기준, { 최근 = 20 } = {}) {
+// 길: 올린 검사의 「길」로 거를 길(주지 않으면 편들이 모두 한 길일 때 그 길)
+function 길세기(편들, 기준, { 최근 = 20, 길 = 한길of(편들) } = {}) {
   const 고른 = 최근편들(편들, 최근);
   const N = 고른.length;
   const 표 = new Map();
@@ -350,10 +359,10 @@ function 길세기(편들, 기준, { 최근 = 20 } = {}) {
     // 기계 규칙은 점검표 번호에 이은 것만 올린다(올리기 전 검사의 시각 · 슬롯 같은 운영 규칙이 올릴 차례로 뜨지 않게). 최종 확인의 갈래 이름은 그대로 센다
     const 셀만한 = !c.열쇠.startsWith('규칙:') && !/^C\d{3}$/.test(c.열쇠);
     const 차례 = 셀만한 && 셀편.size >= 올릴편수 && N > 0 && 셀편.size / N > 올릴비율 - 1e-9;
-    const 상태 = 올림상태(c.열쇠, 기준, c.최종놓침, c.넘김);
+    const 상태 = 올림상태(c.열쇠, 기준, c.최종놓침, c.넘김, 길);
     return { 열쇠: c.열쇠, 이름: 이름(c.열쇠, 기준), 편수: 셀편.size, 최종편: c.최종.size, 기계편: c.기계.size, 맹검편: c.맹검.size, 판정: c.판정, 단계: c.단계,
       넘김: c.넘김.length, 올릴차례: 차례, 상태: 상태 || (차례 ? '올릴 차례' : '') };
-  }).sort((a, b) => b.편수 - a.편수 || b.판정 - a.판정 || b.맹검편 - a.맹검편 || a.열쇠.localeCompare(b.열쇠));
+  }).sort((a, b) => b.편수 - a.편수 || b.판정 - a.판정 || b.맹검편 - a.맹검편 || a.열쇠.localeCompare(b.열쇠, 'ko'));
   return { 편수: N, 전체편수: 편들.length, 편: 고른.map((p) => p.편), 줄, 미분류, 숫자: 숫자내기(고른) };
 }
 
@@ -408,7 +417,36 @@ function 말씀세기(기준) {
     const k = `#${x.점검표행}`;
     셈.set(k, (셈.get(k) || 0) + 1 + [].concat(x['같은 뜻'] || []).length);
   }
-  return [...셈.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { numeric: true }));
+  return [...셈.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ko', { numeric: true }));
+}
+
+// 유호님이 같은 뿌리의 지적을 다시 하신 횟수(설계 ⑤, 11-16) — 점검표 줄의 말씀 칸(셋째 칸)에서 날짜(MM-DD · YYYY-MM-DD)를 읽어
+// 흠갈래.json의 묶음으로 모은다. 묶음마다 처음 말씀 날짜, 그 뒤에 붙은 날짜 수와 줄, 가장 최근 날짜. AI 없이 센다.
+// 「(심사에서 나옴)」으로 시작하는 줄은 유호님 말씀이 아니라 빼고, 날짜를 못 읽은 줄은 세지 않고 몇 줄인지만 낸다. 장부 본문에만 보인다(시작 줄에는 넣지 않는다).
+const 말씀날 = /(?<![\d:.~/-])(?:20\d\d-)?(\d{1,2})-(\d{1,2})(?![\d:])/g;
+function 말씀다시세기(기준, { 상한 = 10 } = {}) {
+  const 묶음별 = new Map();
+  let 못읽음 = 0, 심사 = 0, 묶음없음 = 0, 읽은줄 = 0;
+  for (const [번호, 칸] of [...(기준.말씀칸 || new Map())].sort((a, b) => a[0] - b[0])) {
+    if (/^\(심사에서 나옴\)/.test(칸)) { 심사 += 1; continue; }
+    const 날들 = [...new Set([...String(칸).matchAll(말씀날)]
+      .map((m) => [Number(m[1]), Number(m[2])]).filter(([월, 일]) => 월 >= 1 && 월 <= 12 && 일 >= 1 && 일 <= 31)
+      .map(([월, 일]) => `${String(월).padStart(2, '0')}-${String(일).padStart(2, '0')}`))];
+    if (!날들.length) { 못읽음 += 1; continue; }
+    const 묶음 = 기준.줄.get(번호)?.묶음;
+    if (!묶음) { 묶음없음 += 1; continue; }
+    읽은줄 += 1;
+    if (!묶음별.has(묶음)) 묶음별.set(묶음, []);
+    for (const 날 of 날들) 묶음별.get(묶음).push({ 번호, 날 });
+  }
+  const 묶음들 = [...묶음별].map(([묶음, xs]) => {
+    const 날순 = [...xs].sort((a, b) => a.날.localeCompare(b.날) || a.번호 - b.번호);
+    const 처음 = 날순[0].날;
+    const 뒤 = 날순.filter((x) => x.날 > 처음);
+    return { 묶음, 이름: 기준.묶음이름[묶음] || 기준.후보[묶음]?.이름 || '', 처음, 다시: 뒤.length,
+      줄: [...new Set(뒤.map((x) => x.번호))], 날: 뒤.map((x) => `#${x.번호} ${x.날}`), 최근: 날순[날순.length - 1].날 };
+  }).sort((a, b) => b.다시 - a.다시 || b.최근.localeCompare(a.최근) || a.묶음.localeCompare(b.묶음, 'ko'));
+  return { 묶음: 묶음들.slice(0, 상한), 묶음수: 묶음들.length, 읽은줄, 못읽음, 심사, 묶음없음 };
 }
 
 // ── 시작할 때 읽힘(설계 ④ · 2단계) ──
@@ -445,11 +483,11 @@ function 마케팅아래(p) {
 }
 
 // 시작 줄을 낼 열쇠인가 — 번호(올린 검사 목록과 함께) · 묶음이 있는 갈래 이름만. 「기타」 · 모르는 이름 · 기계 규칙 · 맹검 모음 번호는 null
-function 시작종류(열쇠, 기준) {
+function 시작종류(열쇠, 기준, 길 = null) {
   const m = /^#(\d+)$/.exec(열쇠);
-  if (m) return { 번호: Number(m[1]), 올린: [].concat(기준.줄.get(Number(m[1]))?.올린검사 || []), 곳: 올린곳of(열쇠, 기준) };
+  if (m) return { 번호: Number(m[1]), 올린: 올린검사of(열쇠, 기준, 길), 곳: 올린곳of(열쇠, 기준) };
   const h = /^항목:(.+)$/.exec(열쇠);
-  if (h && 기준.항목[h[1]]?.묶음) return { 번호: null, 올린: 올린검사of(열쇠, 기준), 곳: 올린곳of(열쇠, 기준) };
+  if (h && 기준.항목[h[1]]?.묶음) return { 번호: null, 올린: 올린검사of(열쇠, 기준, 길), 곳: 올린곳of(열쇠, 기준) };
   return null;
 }
 
@@ -505,15 +543,15 @@ function 보인글(x, 열쇠, 기준) {
 const 한국날 = (t) => { const d = new Date(t); return Number.isNaN(d.getTime()) ? '' : new Date(d.getTime() + 9 * 36e5).toISOString().slice(5, 10); };
 
 // 그 길(편들은 이미 그 길의 편)에서 아직 검사가 받지 못하는 흠 — 셋 이하
-function 시작줄들(편들, 기준, { 최근 = 20, 상한 = 시작상한, 뿌리 = '' } = {}) {
-  const s = 길세기(편들, 기준, { 최근 });
+function 시작줄들(편들, 기준, { 최근 = 20, 상한 = 시작상한, 뿌리 = '', 길 = 한길of(편들) } = {}) {
+  const s = 길세기(편들, 기준, { 최근, 길 });
   const 고른 = 최근편들(편들, 최근);
   const 후보 = [];
   const 넘김후보 = [];   // 검사가 먼저 띄웠는데 넘겨서 최종 확인에서 다시 잡힌 흠 — 못 잡는 흠과 따로 낸다
   const 편글 = (p) => (뿌리 ? path.relative(뿌리, p.폴더).split(path.sep).join('/') : p.편);
   for (const c of s.줄) {
     if (!c.편수) continue;   // 맹검에만 나온 열쇠
-    const 종류 = 시작종류(c.열쇠, 기준);
+    const 종류 = 시작종류(c.열쇠, 기준, 길);
     if (!종류) continue;
     const 사건들 = [];
     for (const p of 고른) {
@@ -606,7 +644,7 @@ function 시작(입력, { 폴더 = '', 최근 = 20, 상한 = 시작상한 } = {}
     const 편들 = 모으기(뿌리, 기준);
     const g = 길이름 ? { 길: 길이름, 근거: '길 이름' } : 시작길(s, 편들);
     if (!g.길) return { 줄: [], 까닭: g.까닭 };
-    const r = 시작줄들(편들.filter((p) => p.길 === g.길), 기준, { 최근, 상한, 뿌리 });
+    const r = 시작줄들(편들.filter((p) => p.길 === g.길), 기준, { 최근, 상한, 뿌리, 길: g.길 });
     return { 길: g.길, 근거: g.근거, ...(g.편 ? { 편: g.편 } : {}), 편수: r.편수, 줄: r.줄, ...(r.넘김줄.length ? { 넘김줄: r.넘김줄 } : {}) };
   } catch (e) {
     return { 줄: [], 까닭: `장부를 못 읽음 — ${String(e && e.message || e).slice(0, 200)}` };
@@ -675,11 +713,12 @@ function main(argv) {
   const 길별 = {};
   for (const 길 of 길들) {
     const xs = 편들.filter((p) => p.길 === 길);
-    if (xs.length) 길별[길] = 길세기(xs, 기준, { 최근 });
+    if (xs.length) 길별[길] = 길세기(xs, 기준, { 최근, 길 });
   }
   const 말씀 = 말씀세기(기준);
+  const 다시 = 말씀다시세기(기준);
   if (argv.includes('--json')) {
-    console.log(JSON.stringify({ 거르기: 거르기 || '모두', 일수: 일수 || '제한 없음', 최근, 길: 길별, 말씀: Object.fromEntries(말씀) }, null, 2));
+    console.log(JSON.stringify({ 거르기: 거르기 || '모두', 일수: 일수 || '제한 없음', 최근, 길: 길별, 말씀: Object.fromEntries(말씀), 말씀다시: 다시 }, null, 2));
     return 0;
   }
   console.log(`흠 장부 · ${거르기 || '모든 길'} · 길마다 이력이 있는 최근 ${최근}편${일수 ? ` · 지난 ${일수}일` : ''} · 열쇠는 슬롭 점검표 번호`);
@@ -698,7 +737,15 @@ function main(argv) {
     if (s.미분류) console.log(`  미분류(갈래 없이 쓴 옛 판정) ${s.미분류}건`);
     console.log(`  숫자 분모: 첫 판 통과율 — ${s.숫자.첫판통과율_분모} · 맨 끝 — ${s.숫자.맨끝비율_분모} · 넘김 — ${s.숫자.넘김_분모}`);
   }
-  if (말씀.length) console.log(`유호님 말씀(슬롭점검_모음.json — 편 · 길과 이어진 기록이 없어 올릴 차례 셈 밖): ${말씀.slice(0, 8).map(([k, n]) => `${k} ${n}번`).join(' · ')}`);
+  if (다시.묶음.length) {
+    console.log(`같은 뿌리의 지적을 다시 하신 횟수(점검표 말씀 칸의 날짜를 흠갈래 묶음으로 모음 · AI 없이 셈 · 묶음 ${다시.묶음수}개 가운데 ${다시.묶음.length}개):`);
+    for (const g of 다시.묶음) {
+      const 날글 = g.날.length ? `(${g.날.slice(0, 8).join(' · ')}${g.날.length > 8 ? ` 외 ${g.날.length - 8}` : ''})` : '';
+      console.log(`  ${g.묶음} ${줄임(g.이름, 28)} — 처음 ${g.처음} · 그 뒤 ${g.다시}번 · 줄 ${g.줄.length}개${날글} · 가장 최근 ${g.최근}`);
+    }
+    console.log(`  읽은 줄 ${다시.읽은줄}개 · 날짜를 못 읽은 줄 ${다시.못읽음}개(세지 않음)${다시.묶음없음 ? ` · 묶음이 없는 줄 ${다시.묶음없음}개` : ''} · 「(심사에서 나옴)」 줄 ${다시.심사}개는 유호님 말씀이 아니라 뺐다`);
+  }
+  if (말씀.length) console.log(`유호님 말씀(슬롭점검_모음.json ${기준.모음.만든때 || '날짜 모름'} 판 — 그 뒤 말씀은 이 숫자에 없다 · 편 · 길과 이어진 기록이 없어 올릴 차례 셈 밖): ${말씀.slice(0, 8).map(([k, n]) => `${k} ${n}번`).join(' · ')}`);
   if (Object.values(길별).some((s) => s.줄.some((c) => c.상태 === '올릴 차례'))) {
     console.log('「올릴 차례」는 docs/_ops/트랙.md에 한 줄로 남기고 작업 세션이 검수와 함께 올린다(기본값 → 기계 검사 → 칸 → 검수 질문). 편을 닫는 세션과 최종 확인 세션은 올리지 않는다.');
   }
@@ -706,5 +753,5 @@ function main(argv) {
 }
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
-module.exports = { 기준읽기, 갈래열쇠, 맹검열쇠들, 편폴더들, 편읽기, 모으기, 길세기, 숫자내기, 말씀세기, main, 올릴편수, 올릴비율,
+module.exports = { 기준읽기, 갈래열쇠, 맹검열쇠들, 편폴더들, 편읽기, 모으기, 길세기, 숫자내기, 말씀세기, 말씀다시세기, 올린검사of, 올림상태, main, 올릴편수, 올릴비율,
   최근편들, 시작, 시작글, 시작줄들, 시작길, 흠조각, 보인글, 마케팅아래, 시작상한, 시작표지 };
