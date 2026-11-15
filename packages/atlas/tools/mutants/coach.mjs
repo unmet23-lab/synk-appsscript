@@ -1649,4 +1649,37 @@ export const COACH_MUTANTS = [
     '          peak: line.peak ?? null,\n',
     '',
   ],
+  // ── 받기가 된 적 있음(pulled — 4-4a Fable 끝 판 F1 · 설계 주인 11-16 조건 다섯) ──
+  [
+    C,
+    '받기가 된 적 있음(4-4a)',
+    '받은 답을 기록부에 받기 전에 pulled를 세운다(받은 답을 쓰다 예외가 나도 「받기가 됐다」가 된다 — 조건 1)',
+    SYNC,
+    '    const before = trail().summary();\n    await trail().receive({\n',
+    '    state.pulled = true;\n    const before = trail().summary();\n    await trail().receive({\n',
+  ],
+  [
+    C,
+    '받기가 된 적 있음(4-4a)',
+    '처음 된 받기에 요약이 그대로면 알리지 않는다(화면이 「기록 일부」로 남는다 — 조건 2)',
+    SYNC,
+    "    } else if (!state.pulled) tell('receive'); // 처음 된 받기는 요약이 그대로여도 한 번 알린다(F1 조건 2)\n",
+    '    }\n',
+  ],
+  [
+    C,
+    '받기가 된 적 있음(4-4a)',
+    '올리기 성공에서도 pulled를 세운다(받기는 계속 실패하는데 「기록이 다 왔다」가 된다 — 조건 1 · 시험 넷째)',
+    SYNC,
+    "    if (outcome === 'ok') {\n      state.failures = 0;\n",
+    "    if (outcome === 'ok') {\n      state.pulled = true;\n      state.failures = 0;\n",
+  ],
+  [
+    C,
+    '받기가 된 적 있음(4-4a)',
+    'status()에 pulled를 싣지 않는다(셸이 뒤의 받기를 모른다)',
+    SYNC,
+    '      pulled: state.pulled,\n',
+    '',
+  ],
 ];

@@ -25389,6 +25389,10 @@ function createWorldEducation({
   let homePlanner = null, homeWatch = null, homeFailed = false, homeBare = false;
   const opened = { key: "", kinds: /* @__PURE__ */ new Set() };
   let nextView = null, nextSync = { coach: null, value: null, asking: null }, redrawingNext = false;
+  const SYNC_LATE_MS = 6e4;
+  const FOLD_WAIT_MS = 4e3;
+  const PULL_WATCH_MS = 2e3, PULL_WATCH_MOST = 6e4;
+  let pullWatch = { coach: null, timer: null, done: null };
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
   const view = position ? position.createView({ t: t2, has: hasString2, formatDate: formatDate2, lang: currentLang2 }) : null;
@@ -26471,18 +26475,44 @@ function createWorldEducation({
     for (const [instance, host] of [[coach, coachHost], [practiceCoach, practiceHost], [mockCoach, mockHost], [lifeCoachNow, lifeHost]]) if (instance && host === source) return instance;
     return null;
   }
-  function syncedNext(coachNow) {
+  function syncedNext(coachNow, wait = null) {
     if (!coachNow || typeof coachNow.synced !== "function") return Promise.resolve(null);
-    if (nextSync.coach === coachNow) return nextSync.asking || Promise.resolve(nextSync.value);
-    const asking = Promise.resolve().then(() => coachNow.synced()).catch(() => null).then((value) => {
-      if (nextSync.coach === coachNow) {
-        nextSync.value = value;
-        nextSync.asking = null;
-      }
+    const same = nextSync.coach === coachNow;
+    if (same && (nextSync.asking || nextSync.value?.ok === true)) return nextSync.asking || Promise.resolve(nextSync.value);
+    const asking = Promise.resolve().then(() => wait == null ? coachNow.synced() : coachNow.synced(wait)).catch(() => null).then((value) => {
+      if (nextSync.coach !== coachNow || nextSync.asking !== asking) return value;
+      nextSync.value = value;
+      nextSync.asking = null;
+      if (value?.ok === true) redrawNext();
+      else if (value?.kind === "timeout" && wait == null) void syncedNext(coachNow, SYNC_LATE_MS);
+      else watchPulled(coachNow);
       return value;
     });
-    nextSync = { coach: coachNow, value: null, asking };
+    nextSync = { coach: coachNow, value: same ? nextSync.value : null, asking };
     return asking;
+  }
+  function watchPulled(coachNow, wait = PULL_WATCH_MS) {
+    if (!coachNow || pullWatch.done === coachNow || pullWatch.coach === coachNow && pullWatch.timer) return;
+    clearTimeout(pullWatch.timer);
+    const timer = setTimeout(() => {
+      if (pullWatch.timer !== timer) return;
+      pullWatch.timer = null;
+      if (stopped || nextSync.coach !== coachNow || !panelNode("[data-position-next]")) return;
+      let pulled = false;
+      try {
+        pulled = coachNow.summary()?.storage?.sync?.pulled === true;
+      } catch {
+        return;
+      }
+      if (!pulled) {
+        watchPulled(coachNow, Math.min(PULL_WATCH_MOST, wait * 2));
+        return;
+      }
+      pullWatch.done = coachNow;
+      redrawNext();
+    }, wait);
+    timer?.unref?.();
+    pullWatch = { coach: coachNow, timer, done: pullWatch.done };
   }
   const nextViewOf = () => nextView ||= homePlanner?.position?.createView?.({ t: t2, has: hasString2, formatDate: formatDate2 }) || null;
   const nextChecking = () => `<div class="wpos life-heading" data-position-next="checking" tabindex="-1" aria-busy="true"><div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape3(t2("position.title"))}</strong><p class="life-poster-sub">${escape3(t2("homeTutor.checking"))}</p></div></div>`;
@@ -26561,7 +26591,7 @@ function createWorldEducation({
       const node = root?.closest?.("#panel-content");
       if (node) node.scrollTop = scrollTop;
     } else root?.focus?.({ preventScroll: true });
-    if (nextSync.coach !== coachNow) void syncedNext(coachNow).then(() => redrawNext());
+    void syncedNext(coachNow);
     root?.querySelector?.("[data-position-diagnostic]")?.addEventListener("click", () => {
       try {
         startDiagnosticNext(coachNow, data);
@@ -26658,12 +26688,16 @@ function createWorldEducation({
       if (ended) return;
       ended = true;
       silence();
+      let set = null;
       try {
-        session.stop();
+        set = session.stop();
       } catch {
+        set = null;
       }
       if (session.results().length) diagnosed = true;
       queueMicrotask(() => refresh());
+      if (set?.folded) Promise.resolve(set.folded).then(() => redrawNext(), () => {
+      });
     };
     const closed = () => {
       if (ended && !finishing) return;
@@ -26716,12 +26750,28 @@ function createWorldEducation({
         await session.settled();
       } catch {
       }
-      if (!finishing || !box.isConnected) return;
+      if (!finishing || !box.isConnected) {
+        try {
+          session.finish({ record: false });
+        } catch {
+        }
+        return;
+      }
       finishing = false;
       unwatch();
       const results = session.results();
       if (results.length) diagnosed = true;
+      let local = false;
+      try {
+        local = coachNow.summary()?.storage?.guest === true;
+      } catch {
+        local = false;
+      }
       const set = session.finish({ record: answering() });
+      if (local && set?.folded) {
+        await Promise.race([Promise.resolve(set.folded).catch(() => null), new Promise((resolve) => setTimeout(resolve, FOLD_WAIT_MS))]);
+        if (stopped || !box.isConnected) return;
+      }
       refresh();
       let after = data;
       try {
@@ -27990,6 +28040,7 @@ function createWorldEducation({
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
   }, metrics: () => ({ owner, plan: current }), today: () => current?.today ? { ...current.today, selected: current.selected, selectedKind: current.selectedKind, reason: current.reason } : null, dispose() {
     stopped = true;
+    clearTimeout(pullWatch.timer);
     homeWatch?.dispose();
     release(coach);
     release(practiceCoach);

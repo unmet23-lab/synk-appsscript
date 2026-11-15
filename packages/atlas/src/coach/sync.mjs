@@ -135,6 +135,9 @@ export function createSync({
     lastPull: Number.NEGATIVE_INFINITY,
     first: null, // 첫 받기의 결과 { ok, code? }
     firstWaiters: new Set(),
+    // 이 문서에서 받기(GET)가 된 적 있음 — 받은 답을 기록부에 받은 뒤에만 서고, 뒤에 실패해도 거짓으로 돌아가지 않는다. 첫 받기가 실패로 적혀
+    // first가 그대로여도 셸이 「기록이 다 왔다」를 읽는 자리다(status().pulled — 4-4a Fable 끝 판 F1 · 설계 주인 11-16 승인).
+    pulled: false,
   };
 
   // GET · POST 한 줄 — 앞 일이 끝난 뒤에 다음 일을 시작한다(실패해도 줄은 이어진다).
@@ -397,7 +400,9 @@ export function createSync({
     if (trail().summary() !== before) {
       announce();
       tell('receive');
-    }
+    } else if (!state.pulled) tell('receive'); // 처음 된 받기는 요약이 그대로여도 한 번 알린다(F1 조건 2)
+    // 받기가 됐다 — 첫 받기의 된 답과 같은 자리에서만 선다(올리기 성공 · 시간 초과 · 받은 답을 쓰다 난 예외는 세우지 않는다, F1 조건 1).
+    state.pulled = true;
     settleFirst({ ok: true });
     return answer;
   }
@@ -478,6 +483,7 @@ export function createSync({
       paused: state.paused,
       skipped: state.skipped.size,
       failures: state.failures,
+      pulled: state.pulled,
     }),
     close() {
       state.closed = true;

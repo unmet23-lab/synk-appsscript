@@ -7,7 +7,7 @@
 //     끈 날의 규칙은 지금과 같다. 기록이 다 오지 않았으면(21-3) 열지 않는다. 진단용 레이싱 조각이 서기 전에는 그 문항을 뺀다(21-2).
 //   진행(createDiagnosticNextSession): 겉(다음 · 다시 듣기 · 전달 · 답 · 건너뛰기 · 그만두기 · 결과)은 지금 진단과 같다. 문항 차례를 제품이 정하므로
 //     recommend를 부르지 않고 present로 낸다(제품 순서 문항 — 이유 host.order, §3-6). 혼자 맞힘은 저장 뒤의 evidence로 읽는다. 끝나면
-//     finishSet({ kind: 'diagnostic' })로 닫는다.
+//     finishSet({ kind: 'diagnostic' })로 닫고, 그만두면 기록 없이(record: false) 닫는다(Fable 끝 판 F2).
 
 export const DIAGNOSTIC_NEXT_POLICY = Object.freeze({
   version: 'world-diagnostic-next-1',
@@ -360,12 +360,22 @@ export function createDiagnosticNextSession({ coach, items, plays } = {}) {
       return out ? close(out, choiceId, false) : null;
     },
     skip,
-    // 진단을 그만둔다. 보이던 문항은 건너뛴 것으로 남기고, 아직 안 보인 문항은 기록하지 않는다.
+    // 진단을 그만둔다. 보이던 문항은 건너뛴 것으로 남기고, 아직 안 보인 문항은 기록하지 않는다. 문항을 냈으면 판을 기록 없이 닫고(finishSet
+    // record: false) 그 결과(folded 포함)를 돌려준다. 닫지 않으면 손님 요약이 그만둔 답으로 다시 접히지 않아 칸이 「따라오는 중」에 머물고, 다음
+    // 진단이 같은 기본 판으로 묶였다(Fable 끝 판 F2 — 새 판 짧은 연습 ⑥과 같다). 이미 닫았거나 코치가 닫혔으면 두고, 닫힌 코치의 예외는 삼킨다.
     stop() {
-      if (stopped) return;
+      if (stopped) return null;
       skip();
       stopped = true;
       current = null;
+      if (finished === null && !disposed && index >= 0) {
+        try {
+          finished = coach.finishSet({ kind: 'diagnostic', record: false }) ?? null;
+        } catch {
+          finished = null;
+        }
+      }
+      return finished;
     },
     // 판을 닫는다(한 번) — finishSet({ kind: 'diagnostic' })의 결과(folded 포함)를 돌려준다. 코치가 닫혔거나 닫지 못하면 null.
     // record: false — 판 기록 없이 닫기만 한다(학습자 응답이 꺼졌거나 손님 — 지금 판도 그때 판 기록을 남기지 않는다, world-learning-ui.mjs finishSet).

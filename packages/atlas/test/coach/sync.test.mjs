@@ -332,6 +332,121 @@ test('첫 받기(synced) — 받으면 { ok, base }, 끊겼으면 offline, 한�
   close(waiting);
 });
 
+// ── 받기가 된 적 있음(pulled — 4-4a Fable 끝 판 F1 · 설계 주인 11-16 조건 다섯) ──
+const offlineGet = method => (method === 'get' ? { code: 'NETWORK', retryable: true } : null);
+const receives = heard => heard.filter(kind => kind === 'receive').length;
+
+test('첫 받기가 끊긴 뒤 받기가 되면 pulled가 참이 된다 — 같은 요약이어도 한 번 알리고, synced()는 처음 실패 그대로, 뒤의 실패가 되돌리지 않는다(F1)', async () => {
+  const w = world(91);
+  await w.server.fold();
+  const key = keyOf('late-same');
+  // 앞 문서가 요약을 받아 둔 기기 — 다시 연 문서의 첫 받기가 끊기고, 뒤의 받기는 같은 요약을 받는다.
+  const earlier = await open(w, key);
+  assert.equal((await earlier.coach.synced(1000)).ok, true);
+  assert.equal(earlier.handle.syncStatus().pulled, true, '처음 받기가 되면 곧 참');
+  close(earlier);
+  w.route.refuse = offlineGet;
+  const opened = await open(w, key);
+  const heard = [];
+  opened.handle.subscribe(note => heard.push(note.kind));
+  const first = await opened.coach.synced(1000);
+  assert.deepEqual(
+    [first.ok, first.kind, first.base],
+    [false, 'offline', true],
+    '받아 둔 요약은 있다',
+  );
+  assert.equal(opened.coach.summary().storage.sync.pulled, false);
+  await settle(); // 첫 받기의 줄이 끝난 뒤에 다시 받는다
+  w.route.refuse = null;
+  const summary = opened.handle.trail.summary();
+  await opened.handle.pull({ force: true });
+  assert.equal(opened.handle.trail.summary(), summary, '같은 요약 — 기록부가 바뀌지 않았다');
+  assert.equal(opened.coach.summary().storage.sync.pulled, true);
+  assert.equal(receives(heard), 1, '요약이 그대로여도 처음 된 받기는 한 번 알린다(조건 2)');
+  const again = await opened.coach.synced(1000);
+  assert.deepEqual(
+    [again.ok, again.kind],
+    [false, 'offline'],
+    'synced()는 처음 실패 그대로 — §18-5-5 G4의 판 정하기를 바꾸지 않는다(조건 4)',
+  );
+  // 다시 받아도 알림을 더 내지 않고, 뒤에 실패해도 거짓으로 돌아가지 않는다(조건 3).
+  await opened.handle.pull({ force: true });
+  assert.equal(receives(heard), 1, '그 뒤 같은 요약은 알리지 않는다');
+  w.route.refuse = offlineGet;
+  await opened.handle.pull({ force: true });
+  assert.equal(opened.coach.summary().storage.sync.pulled, true, '뒤의 실패가 되돌리지 않는다');
+  close(opened);
+});
+
+test('첫 받기가 끊긴 뒤 받은 요약이 다르면 기록부가 바뀐 알림 하나로 알린다 — 처음 된 받기의 알림을 겹쳐 내지 않는다(F1)', async () => {
+  const w = world(92);
+  await w.server.fold();
+  w.route.refuse = offlineGet;
+  const opened = await open(w, keyOf('late-new'));
+  const heard = [];
+  opened.handle.subscribe(note => heard.push(note.kind));
+  const first = await opened.coach.synced(1000);
+  assert.deepEqual([first.ok, first.base], [false, false], '받아 둔 요약이 없는 기기');
+  await settle();
+  w.route.refuse = null;
+  await opened.handle.pull({ force: true });
+  assert.equal(opened.coach.summary().storage.base, true, '요약을 받았다');
+  assert.equal(opened.coach.summary().storage.sync.pulled, true);
+  assert.equal(receives(heard), 1);
+  close(opened);
+});
+
+test('since가 맞지 않아(400) 통째로 다시 받는 것까지 끊기면 pulled는 거짓이고, 뒤에 받기가 되면 참이다(F1)', async () => {
+  const w = world(93);
+  await w.server.fold();
+  const key = keyOf('late-since');
+  const earlier = await open(w, key);
+  await answerAll(earlier.coach, w.items.slice(0, 2), w.time);
+  await earlier.handle.upload();
+  assert.ok(earlier.handle.trail.since(), '요약이 생겨 since가 선다');
+  close(earlier);
+  w.route.refuse = (method, since) =>
+    method === 'get'
+      ? since
+        ? fault(400, 'INVALID_SINCE')
+        : { code: 'NETWORK', retryable: true }
+      : null;
+  const before = w.route.calls.length;
+  const opened = await open(w, key);
+  const first = await opened.coach.synced(1000);
+  assert.deepEqual([first.ok, first.kind], [false, 'offline']);
+  const gets = w.route.calls.slice(before).filter(call => call.method === 'get');
+  assert.ok(
+    gets.length >= 2 && gets[0].since && gets[1].since === null,
+    'since 없이 한 번 더 받으려 했다',
+  );
+  assert.equal(opened.coach.summary().storage.sync.pulled, false);
+  await settle();
+  w.route.refuse = null;
+  await opened.handle.pull({ force: true });
+  assert.equal(opened.coach.summary().storage.sync.pulled, true);
+  close(opened);
+});
+
+test('올리기만 되고 받기는 계속 끊기면 pulled는 거짓으로 남는다 — 올리기 성공이 failures를 0으로 두어도 받기가 된 것이 아니다(F1)', async () => {
+  const w = world(94);
+  await w.server.fold();
+  w.route.refuse = offlineGet;
+  const opened = await open(w, keyOf('post-only'));
+  assert.equal((await opened.coach.synced(1000)).kind, 'offline');
+  await answerAll(opened.coach, w.items.slice(0, 2), w.time);
+  await opened.handle.upload();
+  assert.ok(onServer(w.server).size > 0, '올리기는 됐다');
+  const status = opened.handle.syncStatus();
+  assert.equal(
+    status.failures,
+    0,
+    '올리기 성공이 물러서기를 푼다 — failures로는 받기를 가를 수 없다',
+  );
+  assert.equal(status.pulled, false, '받기가 된 적은 없다');
+  close(opened);
+});
+
 test('닫힌 뒤 돌아온 POST 답은 받지 않는다 — 닫힌 호스트가 저장소에 쓰지 않는다', async () => {
   const w = world(91);
   const key = keyOf('closed');
@@ -510,6 +625,11 @@ test('받은 답을 기록부에 못 쓰면(저장소 예외) 계기에 남기�
     const first = await opened.coach.synced(2000);
     assert.notEqual(first.kind, 'timeout', '첫 받기를 한도까지 기다리게 두지 않는다');
     assert.equal(first.ok, false);
+    assert.equal(
+      opened.handle.syncStatus().pulled,
+      false,
+      '받은 답을 쓰다 난 예외는 받기가 된 것이 아니다(F1 조건 1)',
+    );
     await settle();
     await settle();
     assert.ok((health.snapshot().save.codes.SYNC_FAILED ?? 0) >= 1, '계기에 남긴다');

@@ -72,6 +72,13 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 새 길 「내 위치」(4-4a — 단계4_계획 §21-2): 입구가 준 최소 그림, 서버 길 계정의 「기록이 다 왔는가」가 읽는 이 문서의 첫 받기 답(홈 코치마다 한 번),
  // 확인 중 판을 다시 보는 중인가(refresh ↔ 다시 그리기가 서로를 부르지 않게).
  let nextView=null,nextSync={coach:null,value:null,asking:null},redrawingNext=false;
+ // 첫 받기가 한도(4초)를 넘겨 시간 초과로 답했을 때 받기가 끝나기를 한 번 더 기다리는 한도(GPT 끝 판 GB1).
+ const SYNC_LATE_MS=60000;
+ // 새 길 진단 끝 화면이 기기 기록부(손님 · 동의를 끈 계정)의 다시 접기(finishSet의 folded)를 기다리는 한도 — 접기는 기기 안이라 짧다(Fable 끝 판 F3).
+ const FOLD_WAIT_MS=4000;
+ // 첫 받기가 실패로 끝난 뒤 storage.sync.pulled(뒤의 받기가 됨)를 다시 보는 간격 — 처음 값에서 두 배씩, 가장 길게(Fable 끝 판 F1 · 홈 판 감시의 settle과 같은 꼴).
+ const PULL_WATCH_MS=2000,PULL_WATCH_MOST=60000;
+ let pullWatch={coach:null,timer:null,done:null};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
  const view=position?position.createView({t,has:hasString,formatDate,lang:currentLang}):null;
@@ -684,13 +691,42 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   for(const [instance,host] of [[coach,coachHost],[practiceCoach,practiceHost],[mockCoach,mockHost],[lifeCoachNow,lifeHost]])if(instance&&host===source)return instance;
   return null;
  }
- // 서버 길 계정의 「기록이 다 왔는가」(21-3 A3)가 읽는 첫 받기 답 — 홈 코치마다 한 번 묻고 들고 있는다(코치 synced — 한도 4초, 손님 · 기기 길은 곧 답한다).
- function syncedNext(coachNow){
+ // 서버 길 계정의 「기록이 다 왔는가」(21-3 A3)가 읽는 첫 받기 답 — 홈 코치마다 묻는다(코치 synced — 한도 4초, 손님 · 기기 길은 곧 답한다).
+ // 된 답(ok)만 그 코치 동안 든다. 시간 초과면 받기가 끝날 때까지 한 번 더 길게(SYNC_LATE_MS) 기다린다 — 받기가 4초를 넘겨 끝나도 판이 「기록 일부」와
+ // 닫힌 진단에 굳지 않게(GPT 끝 판 GB1). 실패면 다음에 판을 그릴 때 다시 묻고, 뒤의 받기는 storage.sync.pulled로 본다(watchPulled — Fable 끝 판 F1).
+ // 판은 답이 된 답으로 바뀔 때만 다시 그린다(되풀이해 묻지 않는다).
+ function syncedNext(coachNow,wait=null){
   if(!coachNow||typeof coachNow.synced!=='function')return Promise.resolve(null);
-  if(nextSync.coach===coachNow)return nextSync.asking||Promise.resolve(nextSync.value);
-  const asking=Promise.resolve().then(()=>coachNow.synced()).catch(()=>null).then(value=>{if(nextSync.coach===coachNow){nextSync.value=value;nextSync.asking=null;}return value;});
-  nextSync={coach:coachNow,value:null,asking};
+  const same=nextSync.coach===coachNow;
+  if(same&&(nextSync.asking||nextSync.value?.ok===true))return nextSync.asking||Promise.resolve(nextSync.value);
+  const asking=Promise.resolve().then(()=>wait==null?coachNow.synced():coachNow.synced(wait)).catch(()=>null).then(value=>{
+   if(nextSync.coach!==coachNow||nextSync.asking!==asking)return value;
+   nextSync.value=value;nextSync.asking=null;
+   if(value?.ok===true)redrawNext();
+   else if(value?.kind==='timeout'&&wait==null)void syncedNext(coachNow,SYNC_LATE_MS);
+   else watchPulled(coachNow);
+   return value;
+  });
+  nextSync={coach:coachNow,value:same?nextSync.value:null,asking};
   return asking;
+ }
+ // 첫 받기가 실패로 끝났으면(오프라인 · since가 맞지 않음 · 저장소 예외 — 늦게 기다린 것도 끝나지 않았으면) 엔진은 synced()에 그 실패를 그 문서
+ // 동안 돌려주고, 뒤의 받기가 되면 summary().storage.sync.pulled만 참이 된다(Fable 끝 판 F1 · 설계 주인 11-16). 셸은 호스트 알림을 듣지 않으므로
+ // 열린 판에서 그 칸을 PULL_WATCH_MS부터 두 배씩 다시 보고, 참이 되면 판을 한 번 다시 그린다(recordsComplete가 pulled를 읽는다). 그 코치에서는
+ // 그 뒤로 보지 않는다. 판이 닫히면 그치고, 판을 다시 열어 실패 답을 다시 받으면 다시 본다.
+ function watchPulled(coachNow,wait=PULL_WATCH_MS){
+  if(!coachNow||pullWatch.done===coachNow||pullWatch.coach===coachNow&&pullWatch.timer)return;
+  clearTimeout(pullWatch.timer);
+  const timer=setTimeout(()=>{
+   if(pullWatch.timer!==timer)return;
+   pullWatch.timer=null;
+   if(stopped||nextSync.coach!==coachNow||!panelNode('[data-position-next]'))return;
+   let pulled=false;try{pulled=coachNow.summary()?.storage?.sync?.pulled===true;}catch{return;}
+   if(!pulled){watchPulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2));return;}
+   pullWatch.done=coachNow;redrawNext();
+  },wait);
+  timer?.unref?.();
+  pullWatch={coach:coachNow,timer,done:pullWatch.done};
  }
  const nextViewOf=()=>nextView||=homePlanner?.position?.createView?.({t,has:hasString,formatDate})||null;
  // 확인 중 판 — 판을 아직 못 정했거나(플래너를 받기 전 · 생활 판정이 확인 중) 홈 코치의 요약이 자리를 잡기 전. 줄 없이 「기록 확인 중」(21-2).
@@ -736,8 +772,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0}),PANEL);
   const root=panelNode('[data-position-next]');
   if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
-  // 첫 받기 답을 아직 묻지 않은 코치(판이 다시 정해져 새로 연 코치)면 물어 두고, 오면 다시 그린다.
-  if(nextSync.coach!==coachNow)void syncedNext(coachNow).then(()=>redrawNext());
+  // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(GPT 끝 판 GB1).
+  void syncedNext(coachNow);
   root?.querySelector?.('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnosticNext(coachNow,data);}catch(error){failed(error);}},{once:true});
   root?.querySelectorAll?.('[data-position-exam]').forEach(button=>button.addEventListener('click',()=>{try{check();boardExam=button.dataset.positionExam==='topik2'?'topik2':'topik1';showNext({keepScroll:true});}catch(error){failed(error);}}));
   root?.querySelectorAll?.('[data-position-practice]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(startPractice(button.dataset.positionPractice)).catch(failed);}catch(error){failed(error);}}));
@@ -774,7 +810,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const session=P.createDiagnosticNextSession({coach:coachNow,items:data.plan.items.map(row=>row.item),plays:{allowedPlays:position.mock.allowedPlays,nextPlay:position.mock.nextPlay}});
   let clip=null,playing=false,notice='',ended=false,finishing=false,unwatch=()=>{};
   const silence=()=>{const sound=clip;clip=null;playing=false;try{sound?.pause();}catch{}};
-  const stop=()=>{unwatch();if(ended)return;ended=true;silence();try{session.stop();}catch{}if(session.results().length)diagnosed=true;queueMicrotask(()=>refresh());};
+  // 그만두면 세션이 판을 기록 없이 닫는다(Fable 끝 판 F2). 손님 요약이 그 답으로 다 접히면 열린 내 위치 판을 한 번 다시 그린다 — 판은 접히기 전 칸(따라오는 중)으로 먼저 선다.
+  const stop=()=>{unwatch();if(ended)return;ended=true;silence();let set=null;try{set=session.stop();}catch{set=null;}if(session.results().length)diagnosed=true;queueMicrotask(()=>refresh());if(set?.folded)Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});};
   // 코치가 닫혔다(판을 다시 정함 — DISPOSED · retired) — 안내 한 줄과 함께 진단을 닫고 내 위치를 다시 연다(그 판으로).
   const closed=()=>{if(ended&&!finishing)return;finishing=false;stop();home.toast(t('practice.next.changed'));void openMyPosition();};
   home.showPanel(t('position.diagnostic.title'),'<div class="wpos-stage" data-position-stage></div>',{...PANEL,eyebrow:'QUICK CHECK'});
@@ -797,11 +834,18 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    if(finishing||ended)return;
    finishing=true;ended=true;silence();
    try{await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
-   if(!finishing||!box.isConnected)return;
+   // 저장을 기다리는 사이 판이 닫혔거나(패널을 닫음) 코치가 닫혔다 — 판 기록 없이 닫기만 한다(닫힌 코치면 session.finish가 null). 닫지 않으면 손님
+   // 칸이 그 답으로 다시 접히지 않고 다음 진단이 같은 기본 판으로 묶였다(Fable 끝 판 F2).
+   if(!finishing||!box.isConnected){try{session.finish({record:false});}catch{/* 닫힌 코치 */}return;}
    finishing=false;unwatch();
    const results=session.results();if(results.length)diagnosed=true;
+   // 기기 기록부(손님 · 동의를 끈 계정 — storage.guest)는 판을 닫으면 요약이 그 판의 답으로 다시 접힌다. 접힌 뒤의 칸으로 끝 화면을 그린다(21-3 판 끝
+   // 칸 견주기 · Fable 끝 판 F3). 계정은 서버가 접어 칸이 아직 모를 수 있으니 기다리지 않는다(문항 줄은 답의 evidence로 그린다). 기록부는 판을
+   // 닫기 전에 읽는다 — 닫은 뒤 첫 요약 읽기가 접힌 칸이게.
+   let local=false;try{local=coachNow.summary()?.storage?.guest===true;}catch{local=false;}
    // 판 기록은 학습자 응답이 켜진 계정만(지금 판 finishSet과 같은 규칙) — 그 밖에는 닫기만 한다(손님 요약이 그 판의 답으로 다시 접힌다).
    const set=session.finish({record:answering()});
+   if(local&&set?.folded){await Promise.race([Promise.resolve(set.folded).catch(()=>null),new Promise(resolve=>setTimeout(resolve,FOLD_WAIT_MS))]);if(stopped||!box.isConnected)return;}
    refresh();
    let after=data;try{after=nextData(coachNow,P);}catch{after=data;}
    const routes=new Map([...after.fresh].map(id=>[id,{route:'practice',skillId:id}]));
@@ -1337,5 +1381,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;clearTimeout(pullWatch.timer);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

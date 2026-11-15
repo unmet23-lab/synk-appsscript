@@ -112,6 +112,23 @@ test('다의 길 — 닿을 수 없는 칸에서만 streak과 peak으로 푼다:
   assert.equal(old.skills[0].peak, null);
 });
 
+test('다의 길 — 칸이 따라오는 중(아직 접히지 않은 측정 답)이면 열지 않는다: 처음 보는 계열 수와 streak은 보기에서 바로 오르고 칸은 바탕 요약에서만 와서, 접히기 전에는 닿을 수 있는 칸이 닿을 수 없어 보인다(카본 끝 판 C1)', () => {
+  // ① 바탕 요약: 난도 1이 2/2(처음 보는 계열 둘), 난도 2가 1/1. 난도 1의 처음 보는 문항 하나를 방금 혼자 맞혔다 — n 4, streak 4, peak 2, 남은 계열 하나.
+  //    접히면 난도 1이 3/3에 하나가 남아 4/4로 닿을 수 있는 칸이다.
+  const one = board([line('ko.reading.a', [cell(1, 2, 2), cell(2, 1, 1)], { n: 4, streak: 4, level: 1, peak: 2 })], {
+    build: { unseen: left({ 'ko.reading.a|1': 1 }) },
+  });
+  assert.equal(cellOf(one, 'ko.reading.a'), 'practicing');
+  assert.equal(one.skills[0].catching, true, '칸이 따라오는 중');
+  // ② 바탕 요약: 난도 1이 3/3(처음 보는 계열 없음), 난도 2는 아직(처음 보는 계열 다섯). 난도 2의 첫 문항을 방금 혼자 맞혔다 — n 4, streak 4, peak 2.
+  //    접히면 난도 2가 1/1에 넷이 남아 닿을 수 있는 칸이다.
+  const two = board([line('ko.reading.a', [cell(1, 3, 3)], { n: 4, streak: 4, level: 2, peak: 2 })], {
+    build: { unseen: left({ 'ko.reading.a|2': 4 }) },
+  });
+  assert.equal(cellOf(two, 'ko.reading.a'), 'practicing');
+  assert.equal(two.skills[0].catching, true);
+});
+
 test('다의 길 — 쉬운 난도 넷의 streak(peak 1)으로는 막힌 난도 2를 풀지 않고, streak 3 · F를 모름 · 닿을 수 있는 칸이 하나라도 있으면 풀지 않는다', () => {
   const spent = { build: { unseen: left({}) } };
   assert.equal(cellOf(board([stuckLine({ streak: 4, level: 1, peak: 1 })], spent), 'ko.reading.a'), 'practicing', '쉬운 난도 넷');
@@ -154,6 +171,21 @@ test('다의 길의 F — 진단 풀과 짧은 연습 풀에서 칸마다 처음
   assert.equal(unseen('ko.reading.a', 3), 1);
   assert.equal(unseen('ko.reading.b', 2), 1);
   assert.equal(unseen('ko.reading.c', 1), 0, '문항이 없는 칸');
+});
+
+test('다의 길 — 만남을 모르는 문항(met null)은 처음 볼 수도 있는 문항이라 그 칸을 닿을 수 있는 칸으로 두어 streak 길을 열지 않는다(설계 주인 11-16 물음 4 덧붙임)', () => {
+  const item = n => ({ itemKey: `d.${n}`, familyKey: `f.${n}`, difficulty: 2, skillId: 'ko.reading.a' });
+  const items = [1, 2, 3, 4, 5, 6].map(item);
+  const fresh = [1, 2, 3, 4, 5].map(() => ({ met: false }));
+  const cellWith = unseen => cellOf(board([stuckLine({ streak: 4, level: 2, peak: 2 })], { build: { unseen } }), 'ko.reading.a');
+  // 난도 2(2/4)에 처음 보는 계열이 다섯이면 다 맞혀도 7/9 — 닿을 수 없어 streak 길로 풀린다(여섯째 문항은 이미 만났다).
+  assert.equal(cellWith(unseenFamilies([{ items, exposures: [...fresh, { met: true }] }])), 'independent');
+  // 여섯째 문항의 만남을 모르면(met null) 처음 볼 수도 있는 문항으로 센다 — 여섯이면 8/10에 닿을 수 있어 풀지 않는다.
+  const unknown = unseenFamilies([{ items, exposures: [...fresh, { met: null }] }]);
+  assert.equal(unknown('ko.reading.a', 2), 6);
+  assert.equal(cellWith(unknown), 'practicing', '만남을 모르는 문항이 길을 닫는다');
+  // 묶음 만남이 모자라 그 문항의 만남이 아예 없어도 같다.
+  assert.equal(cellWith(unseenFamilies([{ items, exposures: fresh }])), 'practicing');
 });
 
 test('방금 답한 능력 — 아직이면 연습 중으로 끌어올리고, 혼자 해냄은 이어서 맞혔으면 그대로 · 놓쳤으면 연습 중(카본 A4)', () => {
@@ -221,12 +253,18 @@ test('기록이 다 왔는가 — 기기에만 두는 기록부는 바탕 요약
   assert.equal(recordsComplete(server, null), false, '이 문서에서 첫 받기 전');
   assert.equal(recordsComplete(server, { ok: false }), false, '오프라인으로 연 계정');
   assert.equal(recordsComplete(server, { ok: true }), true);
-  for (const stop of ['stopped', 'writesOff', 'switchOff'])
+  // 첫 받기가 실패로 끝난 뒤 받기가 됐다 — 엔진은 synced()에 처음 실패를 그대로 돌려주고 pulled만 세운다(Fable 끝 판 F1).
+  const pulled = { ...server, sync: { ...server.sync, pulled: true } };
+  assert.equal(recordsComplete(pulled, { ok: false, kind: 'offline' }), true, '뒤의 받기가 됐다');
+  assert.equal(recordsComplete(pulled, null), true);
+  for (const stop of ['stopped', 'writesOff', 'switchOff']) {
     assert.equal(
       recordsComplete({ ...server, sync: { ...server.sync, [stop]: true } }, { ok: true }),
       false,
       stop,
     );
+    assert.equal(recordsComplete({ ...pulled, sync: { ...pulled.sync, [stop]: true } }, { ok: false }), false, `pulled · ${stop}`);
+  }
   const result = board([], { storage: guestStorage({ unfolded: 2 }) });
   assert.equal(result.complete, true);
   assert.equal(result.unfolded, true, '아직 칸에 들지 않은 답');
@@ -421,4 +459,60 @@ test('진짜 코치 · 진짜 지도 — 답한 능력은 접히기 전 연습 �
   assert.equal(after.skills[0].answered, fresh.length);
   assert.equal(after.complete, true);
   coach.dispose();
+});
+
+test('진짜 계정 길 코치 — 첫 받기가 끊긴 뒤 올리기만 되면 기록이 다 오지 않았고, 받기가 되면 synced()는 처음 실패 그대로인 채 다 왔다(Fable 끝 판 F1 · 설계 주인 11-16 조건 4)', async () => {
+  const { rng } = await import('../../../packages/atlas/test/support/seeds.mjs');
+  const { createServer } = await import('../../../packages/atlas/test/support/trail-sync.mjs');
+  const { bankOf, clock, createCoach, fakeMap, memoryPort, PARAMS } = await import('../../../packages/atlas/test/coach/support.mjs');
+  const { subject } = await import('../../../packages/atlas/test/support/subject.mjs');
+  const { acquireHost, releaseHost } = await subject('coach/host.mjs');
+  const items = bankOf(rng(311), { items: 6 });
+  const map = fakeMap(items);
+  const server = createServer({ random: rng(312), index: { edition: 'index-t', lookup: key => map.item(key) } });
+  await server.fold();
+  let offline = false;
+  const transport = {
+    post: (events, since) => server.post(events, since),
+    async get(since) {
+      if (offline) throw Object.assign(new Error('NETWORK'), { code: 'NETWORK', retryable: true });
+      return { summary: await server.summary(since), serverTime: server.now };
+    },
+  };
+  const time = clock();
+  const port = memoryPort();
+  const key = `synk-atlas:position-next-pulled-${process.pid}`;
+  const host = { guest: false, account: 'acct-pulled', revision: 1, key, port, transport, now: time.now };
+  const openCoach = async () => {
+    const coach = createCoach({ gameId: 'sync', map, seed: 's', dayOffset: 0, host });
+    await coach.ready;
+    return { coach, handle: await acquireHost({ key, params: PARAMS, now: time.now, guest: false }) };
+  };
+  // 앞 문서가 요약을 받아 둔 기기 — 다시 연 문서의 첫 받기가 끊긴다(바탕 요약은 있다).
+  const earlier = await openCoach();
+  assert.equal((await earlier.coach.synced(1000)).ok, true);
+  releaseHost(earlier.handle);
+  earlier.coach.dispose();
+  offline = true;
+  const { coach, handle } = await openCoach();
+  try {
+    const first = await coach.synced(1000);
+    assert.deepEqual([first.ok, first.kind, first.base], [false, 'offline', true]);
+    // 올리기만 된다(시험 넷째) — 답을 올려도 받기가 된 적이 없어 기록이 다 오지 않았다.
+    await coach.answer(coach.present(items[0]), { correct: true, assessable: true }).stored;
+    await handle.upload();
+    assert.equal(coach.summary().storage.sync.failures, 0, '올리기는 됐다');
+    assert.equal(recordsComplete(coach.summary().storage, first), false, '올리기만 되고 받기는 끊겼다');
+    // 뒤의 받기가 된다 — synced()는 처음 실패 그대로이고(§18-5-5 G4의 판 정하기는 그대로), 기록은 다 왔다.
+    offline = false;
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await handle.pull({ force: true });
+    const again = await coach.synced(1000);
+    assert.deepEqual([again.ok, again.kind], [false, 'offline'], 'synced()는 처음 실패 그대로');
+    assert.equal(coach.summary().storage.sync.pulled, true);
+    assert.equal(recordsComplete(coach.summary().storage, again), true, '뒤의 받기가 되면 기록이 다 왔다');
+  } finally {
+    releaseHost(handle);
+    coach.dispose();
+  }
 });

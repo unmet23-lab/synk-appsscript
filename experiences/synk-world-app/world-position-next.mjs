@@ -122,11 +122,14 @@ export function unseenFamilies(pools = [], skip = () => false) {
 // 합침): 아직 혼자 해냄이 아닌 본 난도가 모두 닿을 수 없는 칸이고(처음 보는 계열을 다 맞혀도 문턱에 못 닿는다), streak이 4 이상이고, peak(지금
 // streak 안의 측정 답 가운데 가장 높은 난도)이 그 칸들 가운데 가장 높은 난도 이상이면 혼자 해냄. 닿을 수 있는 칸이 하나라도 있으면 실제 문항으로
 // 확인하면 되므로 풀지 않는다. unseen이 없거나 F를 모르면 닿을 수 있는 것으로, peak이 없는 옛 요약은 풀지 않는 것으로 본다. 나머지는 연습 중.
-function skillCellOf(id, levels, line, policy, unseen) {
+// 칸이 따라오는 중이면(behind — 그 능력에 아직 칸에 들지 않은 측정 답이 있으면) 다의 길을 열지 않는다. 처음 보는 계열 수(unseen)와 streak · peak은
+// 보기에서 바로 오르고 칸은 바탕 요약에서만 와서, 접히기 전에는 닿을 수 있는 칸이 닿을 수 없는 칸으로 보이기 때문이다(카본 끝 판 C1). 접히면 다시 잰다.
+function skillCellOf(id, levels, line, policy, unseen, behind = 0) {
   const seen = levels.filter(level => level.cell !== 'notyet');
   if (!seen.length) return 'notyet';
   const open = seen.filter(level => level.cell !== 'independent');
   if (!open.length) return 'independent';
+  if (behind > 0) return 'practicing';
   const fresh = difficulty => {
     const value = typeof unseen === 'function' ? quiet(() => unseen(id, difficulty)) : null;
     return Number.isSafeInteger(value) && value >= 0 ? value : null;
@@ -156,12 +159,14 @@ function catchUp(cell, line, answered) {
 }
 
 // 기록이 다 왔는가(§21-3 A3 · 카본 A12) — 기기에만 두는 기록부(storage.guest — 손님 · 동의를 끈 계정)는 바탕 요약이 있고 보기가 기다리지
-// 않으면 다 왔다. 서버 길 계정은 그에 더해 이 문서에서 첫 받기가 됐고(synced().ok) 올리기가 멈추지 않았을 때만(stopped · writesOff · switchOff).
+// 않으면 다 왔다. 서버 길 계정은 그에 더해 이 문서에서 받기가 됐고 올리기가 멈추지 않았을 때만(stopped · writesOff · switchOff). 받기가 됐는가는
+// 첫 받기의 된 답(synced().ok)이나 storage.sync.pulled로 본다 — 첫 받기가 실패로 끝나면 엔진은 synced()에 그 실패를 그 문서 동안 돌려주고, 뒤의
+// 받기가 되면 pulled만 참이 된다(Fable 끝 판 F1 · 설계 주인 11-16).
 export function recordsComplete(storage, synced = null) {
   if (!storage || storage.base !== true || storage.waiting === true) return false;
   if (storage.guest === true) return true;
   const sync = storage.sync ?? {};
-  return synced?.ok === true && !sync.stopped && !sync.writesOff && !sync.switchOff;
+  return (synced?.ok === true || sync.pulled === true) && !sync.stopped && !sync.writesOff && !sync.switchOff;
 }
 
 // 먼저 볼 항목(§21-3 — 최대 셋): 연습 중인 능력 가운데 아직 혼자 해냄이 아닌 난도 칸에 놓친 수나 도움받은 수가 있는 것(카본 A5). 그 합이 큰
@@ -235,7 +240,8 @@ export function buildPositionNext({
     const line = lines.get(id) ?? null;
     const levels = levelsOf(line?.cells, policy);
     const answered = levels.reduce((n, level) => n + level.independent, 0);
-    const { cell, catching } = catchUp(skillCellOf(id, levels, line, policy, unseen), line, answered);
+    const behind = count(line?.n) - answered;
+    const { cell, catching } = catchUp(skillCellOf(id, levels, line, policy, unseen, behind), line, answered);
     counts[cell] += 1;
     // 놓친 수 · 도움받은 수는 아직 혼자 해냄이 아닌 난도 칸에서만(카본 A5) — 먼저 볼 항목 · 약한가 · 숙제 상태가 같은 수를 쓴다.
     const open = levels.filter(level => level.cell !== 'independent');
