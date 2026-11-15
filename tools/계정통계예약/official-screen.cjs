@@ -79,13 +79,14 @@ async function exportScreen(p,account,profile,file) {
     if(data.url!==sourceUrl)return {reason:'need_owner'};
     if(data.count!==1||data.range.length!==2)return {reason:'format',at:'chart',data};
     observedHandle=data.owner;range=data.range;format='substack-traffic';
-    const chartButton=await p.evaluate(i=>{const b=document.querySelectorAll('button[aria-label=Ellipsis]')[i];return b?.id||null;},data.index);
-    if(chartButton && /^[a-z][a-z0-9_-]*$/i.test(chartButton))await p.click('loc=css:#'+chartButton,{label:'트래픽 차트 메뉴 열기'});
-    else await p.evaluate(i=>{document.querySelectorAll('button[aria-label=Ellipsis]')[i].click();},data.index);
-    const snap=await p.snapshot({scope:'full_page'});
-    const line=snap.split('\n').find(l=>/CSV.*(?:다운로드|내려받|download)|(?:다운로드|내려받|download).*CSV|Download data|데이터 다운로드/i.test(l)&&/ref=\d+|@\d+/.test(l));
-    const ref=line?.match(/(?:ref=|@)(\d+)/)?.[1];
-    if(!ref)return {reason:'format',at:'download-menu',labels:snap.split('\n').filter(l=>/데이터|차트|CSV|download|export|데이터|받기/i.test(l)).slice(-12)};selector='@'+ref;
+    await p.click('loc=css:button[aria-label=Ellipsis] >> nth='+data.index,{label:'트래픽 차트 메뉴 열기'});
+    const downloadLabels=['CSV 다운로드','Download CSV','Download as CSV','Export CSV'];
+    await p.waitForFunction(labels=>[...document.querySelectorAll('[role=menuitem]')].some(e=>e.getClientRects().length && labels.includes(e.innerText.trim())),
+      downloadLabels,{timeout:8000}).catch(()=>{});
+    const labels=await p.evaluate(()=>[...document.querySelectorAll('[role=menuitem]')].filter(e=>e.getClientRects().length).map(e=>e.innerText.trim()));
+    const matches=labels.filter(label=>downloadLabels.includes(label));
+    if(matches.length!==1)return {reason:'format',at:'download-menu',labels};
+    selector='loc=role:menuitem[name="'+matches[0]+'"]';
   }
   if(range.some(x=>!/^\d{4}-\d\d-\d\d$/.test(x)))return {reason:'format'};
   const download=p.waitForEvent('download',{timeout:20000}).then(value=>({value}),()=>({}));

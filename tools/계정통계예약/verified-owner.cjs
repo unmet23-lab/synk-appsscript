@@ -4,16 +4,25 @@
 async function readLinkedIn(page, {entry, analytics, personal}) {
   const route = url => decodeURI(new URL(url).pathname).replace(/\/$/, '');
   if (personal) {
-    await page.waitForFunction(() => Array.from(document.links).some(a => a.pathname.endsWith('/edit/intro/')), undefined, {timeout:12000});
+    await page.waitForFunction(() => {
+      const paths = Array.from(document.links, a => a.pathname);
+      return paths.some(path => path.endsWith('/edit/intro/')) && paths.includes('/analytics/creator/content/');
+    }, undefined, {timeout:15000}).catch(() => {});
     const ownerLinks = await page.evaluate(() => [...document.links].map(a => a.pathname));
     if (route(await page.url()) !== route(entry) || !ownerLinks.some(link => decodeURI(link) === route(entry) + '/edit/intro/')) throw Error('SYNK_OWNER');
     if (!ownerLinks.includes('/analytics/creator/content/')) throw Error('SYNK_OWNER');
     await page.goto(analytics);
   }
-  await page.waitForFunction(() => /노출/.test(document.querySelector('main')?.innerText || ''), undefined, {timeout:15000});
+  await page.waitForFunction(isPersonal => {
+    const text = (document.querySelector('[aria-label="주요 콘텐츠"]') || document.querySelector('main'))?.innerText || '';
+    if (!isPersonal) return /하이라이트/.test(text) && /댓글/.test(text) && /통계/.test(text);
+    return text.includes('UTC') && text.includes('저장수') &&
+      Array.from(document.querySelectorAll('[aria-label]'), node => [node.getAttribute('aria-label'), node.textContent].join(' '))
+        .some(label => label.includes('X axis displaying Time') && label.includes('Data ranges from'));
+  }, personal, {timeout:18000}).catch(() => {});
   const data = await page.evaluate(() => ({
     at:new Date().toISOString(), url:location.origin + location.pathname,
-    text:document.querySelector('main')?.innerText || '',
+    text:(document.querySelector('[aria-label="주요 콘텐츠"]') || document.querySelector('main'))?.innerText || '',
     chartText:[...document.querySelectorAll('[aria-label]')].map(n => [n.getAttribute('aria-label'), n.textContent].join(' ')).find(v => v.includes('X axis displaying Time') && v.includes('Data ranges from')) || ''
   }));
   if (new URL(data.url).origin !== 'https://www.linkedin.com' || route(data.url) !== route(analytics)) throw Error('SYNK_OWNER');
