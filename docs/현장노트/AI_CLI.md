@@ -1832,6 +1832,12 @@
 - 다시 세운 직후의 함정 둘: ① 설치 뒤 첫 실행이 사용자 폴더 전체에 읽기 권한을 주는 일을 뒤에서 돈다(`~/.codex/.sandbox/sandbox.<날짜>.log`의 「granting read ACE … for sandbox users」 → 「read ACL run completed」, 11-07에는 22:18 → 22:48). 그 사이 실행은 `CreateProcessWithLogonW failed: 267`(폴더 이름이 잘못됨)로 막히니, 「completed」 줄을 본 뒤 시험한다. ② 격리 계정의 프로필이 `C:\Users\Default`로 잡혀 작업 폴더 연결(junction `…\.sandbox\cwd`)을 못 만든다(os error 5). 그래서 셸의 현재 폴더가 `-C` 폴더가 아니라 상대 경로(`.\probe.txt`)는 못 찾는다. 절대 경로 읽기는 된다 — 검수 묶음은 파일을 절대 경로로 주므로 그대로 돈다. 「setup is still running」이 나오면 Codex 앱을 다시 켜고 한 번 더 친다. 그 사이 GPT가 필수인 백엔드 검수는 배포 조건이 차지 않는다(아르곤 대신은 한도 · 로그인 막힘에만 인정).
 - 다시 확인: 먼저 `Get-LocalUser`에 `CodexSandboxOffline`이 보이는지 본다. 그다음 `codex exec -s read-only`로 파일 한 줄을 읽게 해 CryptUnprotectData 없이 글이 돌아오면 된다(스크래치 시험기 꼴: 빈 폴더에 probe.txt, 추론 low). 마지막으로 `node tools/검수묶음.mjs GPT <작은 묶음>`의 답이 「읽음」이면 풀린 것이다.
 
+### Codex 앱의 「전체 액세스가 켜져 있습니다」 띠가 GPT 계정을 바꾸면 다시 뜬다 — 「다시 표시하지 않기」는 계정마다 따로 저장된다 (2026-11-15 Claude)
+- 증상: 11-15 20:25에 Codex 앱의 새 대화 입력창 위에 「전체 액세스가 켜져 있습니다」 띠가 다시 떴다. 이 띠는 10-17 10:33에 「다시 표시하지 않기」로 닫은 기록이 있다. 유호님은 다른 세션이 권한 설정을 건드린 것으로 보고 여쭈셨다.
+- 원인: Codex 앱은 화면 상태를 `~/.codex/.codex-global-state.json`의 `electron-owner-atoms:<계정별 해시>` 칸에 로그인한 계정마다 따로 둔다. 띠를 닫은 기록 `full-access-warning-dismissed-at-v2`는 10월에 쓰던 계정의 칸에만 있고, 11월에 새로 로그인한 두 계정의 칸에는 없다. 권한 선택 `permission-selection-by-host-id:local`은 세 칸 모두 `full-access`이므로 권한 자체는 바뀌지 않았다. 11-15 17:27:36에 앱 창 안에서 로그아웃했고, 17:27:52에 다른 Pro 계정으로 다시 로그인했다(화면 로그의 `account/logout` → `account_login_completed`). 그 뒤 `electron-renderer-content-owner`가 새 계정의 칸을 가리켜 띠가 다시 나왔다. 같은 날 `config.toml`이 바뀐 것은 06:08의 워크트리 루트 한 줄(Claude 세션)과, 앱이 켤 때마다 다시 쓰는 computer-use 파이프 이름뿐이다. 둘 다 권한과 상관없다. Claude 세션 기록과 GPT 세션 기록에서는 그 로그아웃을 한 흔적을 찾지 못했다.
+- 고침: 바뀐 계정으로 로그인한 채 띠의 「다시 표시하지 않기」를 한 번 누른다. 계정을 바꿀 때마다 그 계정에서 한 번씩 누르면 된다. ✕로 닫으면 칸에 기록이 남지 않는지는 확인 안 함. 앱이 도는 중에 전역 상태 파일에 그 칸을 직접 넣는 방법은 앱이 이 파일과 `.bak`을 몇 분마다 다시 써서 지워질 것으로 보여 하지 않았다(확인 안 함).
+- 다시 확인: `node -e "const s=require(require('os').homedir()+'/.codex/.codex-global-state.json');const o=s['electron-owner-atoms:'+s['electron-renderer-content-owner']];console.log(o['full-access-warning-dismissed-at-v2']??'없음')"`가 숫자(누른 시각)를 내면 지금 계정에서는 띠가 다시 안 뜬다. 계정이 언제 바뀌었는지는 화면 로그(`…\LocalCache\Local\Codex\Logs\YYYY\MM\DD\codex-desktop-*-t0-*.log`)에서 `account/logout`과 `account_login_completed`를 찾으면 나온다. 11-15 20:40에는 「없음」이었다.
+
 ## Claude Code·공식 CLI 읽기(계정판)
 
 ### 다른 저장소 검수를 재개할 때 공용 검수 폴더가 작업 경로에 빠지면 읽기부터 거절된다 (2026-10-24 GPT)
