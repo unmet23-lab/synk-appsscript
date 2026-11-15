@@ -793,6 +793,11 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 - 추가 실측(2026-11-13 GPT): 등록 작업본 70개 중 C: 24개에서 조사한 playwright·parse5·odiff-bin 중 하나 이상을 못 찾았고 D: 26개는 모두 찾았다(보관·시험 작업본 포함). 직원 조직 작업본의 공개 importmap/CSP 시험은 parse5 누락으로 0/10, 공용은 10/10이었다. package·lock·시험·핵심 모듈 바이트 일치 확인 뒤 해당 작업본에만 node_modules junction을 두자 같은 소스로 10/10이 됐다. 드라이브 문자보다 부모 경로의 의존성 준비를 먼저 확인한다. [재점검 근거](../_ops/코드구조_전수조사_20261023/재점검_20261113.md).
 
+- 증상(2026-11-15 GPT): 새 워크트리의 관련 시험에서 이름이 확인된 `tests/공개.test.js` 다섯 개가 `Cannot find module 'parse5'`로 실패했다.
+- 원인: 그 작업본 루트에 `node_modules`가 없어 `tools/lib/importmap-csp.cjs`가 잠금 파일의 의존성을 읽지 못했다. 처음 실패한 나머지 네 개는 전문이 남지 않아 같은 원인으로 단정하지 않았다.
+- 고침: 그 작업본에서 `npm ci --ignore-scripts --no-audit --no-fund`로 설치했다. 공유 폴더와 package·lock, 시험·도구 원천은 바꾸지 않았다.
+- 다시 확인: 같은 다섯 개가 0/5에서 5/5로 통과했다. 이후 전체 실행의 시간 초과 두 개도 같은 120초 제한과 원천으로 별도 2/2를 통과했다. 최초 실패를 보존하고 다음 공식 올리기는 `--json`으로 전체 실패 목록을 남겼다.
+
 - 덧붙임(2026-11-10 Claude): `바로올리기` 짝 검사도 같은 까닭으로 Study 묶음을 「오류」로 막는다(`world-strings.mjs`를 고친 커밋). 링크를 둔 채 지어 보니 내용 변화 없이 줄끝만 달랐다 — 링크를 올리기 동안만 두고 끝나면 PowerShell `[System.IO.Directory]::Delete(<링크>, $false)`로 링크만 끊는다(PowerShell 도구는 `cmd /c rmdir`을 시스템 경로 지우기로 보고 명령째 막는다). 끊은 뒤 공용 `node_modules/esbuild`가 그대로인지 본다.
 
 ### Atlas 원천과 계정 호스트를 함께 고친 뒤 `sync-atlas`를 먼저 돌리면 드라마 시범 묶음에 옛 호스트가 남는다 — `check-account-bundles --build` 뒤 `sync-atlas`를 한 번 더 (2026-11-10 Claude)

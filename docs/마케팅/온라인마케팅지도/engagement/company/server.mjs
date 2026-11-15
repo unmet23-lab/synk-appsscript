@@ -123,6 +123,7 @@ import { createWebPushService, generateVapidKeys } from '../../../../../tools/co
 import { resolvePlatformUrl } from '../../../../../tools/company-messenger/platform-navigation.mjs';
 import { createSynkIdentity, synkIdentityConfig } from './synk-identity.mjs';
 import { createCustomerIdentity, customerIdentityConfig } from './customer-identity.mjs';
+import { createEntryDestinations } from './entry-destinations.mjs';
 import { createCustomerComputerDraft } from './customer-computer-draft.mjs';
 import { createCustomerRoutes } from './customer-routes.mjs';
 import { createAiMarketStore } from './ai-market-store.mjs';
@@ -210,7 +211,8 @@ export function createCompanyApp(options={}) {
   let messenger,clientNotifications,automationNotifications,socialPublishing,socialMarketing;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
-  const customerIdentity=createCustomerIdentity({store,origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
+  const customerConfig=options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig;
+  const customerIdentity=createCustomerIdentity({store,origin,config:customerConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
   messenger=createMessenger({dataDir:messengerDataDir,staticResponderFactory:createStaticResponder,publicFile:file=>staticSet.file(file),driveStorage:options.messengerDriveStorage,voice:options.messengerVoice,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
@@ -554,6 +556,8 @@ export function createCompanyApp(options={}) {
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
   const customerDrafts=createCustomerComputerDraft({store,clock,authorized:user=>customerIdentity.isCurrentUser(user)});
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
+  const entryDestinations=createEntryDestinations({origin,customerIdentity,customerConfig,synkIdentity,pulseWorkspaces,
+    fetch:options.synkEntryIdentityFetch,now:options.synkCustomerIdentityNow,body,send:writeResponse,stopping:()=>stopRequested,clientAddress});
   const aiMarketRoutes=aiMarketEnabled?createAiMarketRoutes({identity:customerIdentity,market:createAiMarketStore({store,now:clock}),origin,send,body,stopping:()=>stopRequested,clientAddress}):null;
   // PULSE 내 모델 회원 경로(판 4, /api/customer/pulse/*): 고객 SYNK ID 세션만, 스위치 myModels가 꺼져 있으면 모두 404.
   const pulseMemberRoutes=createPulseMemberRoutes({identity:customerIdentity,workspaces:pulseWorkspaces,origin,send,body,stopping:()=>stopRequested,clientAddress,enabled:()=>pulseFeatures.read().myModels,serveMedia:(req,res,media,authorize)=>serveStudioMedia(req,res,store.directory,media,authorize)});
@@ -887,7 +891,7 @@ export function createCompanyApp(options={}) {
   function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();writeResponse(res,status,body,type);}
   const encodeResearchJson=createJsonCompressor();
   async function body(req,{maxBytes=768000,maxChars=256000}={}){
-    if(!req.headers['content-type']?.startsWith('application/json'))throw httpError('JSON 입력이 필요합니다.');
+    if(String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase()!=='application/json')throw httpError('JSON 입력이 필요합니다.');
     const chunks=[];let bytes=0;
     for await(const part of req.iterator({destroyOnReturn:false})){bytes+=part.length;if(bytes>maxBytes){req.resume();throw httpError('입력이 너무 큽니다. 내용이나 항목 수를 줄여 주세요.',413);}chunks.push(part);}
     let raw;try{raw=new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks));}catch{throw httpError('UTF-8 JSON 입력을 확인해 주세요.');}
@@ -897,6 +901,9 @@ export function createCompanyApp(options={}) {
   const server=createServer(async(req,res)=>{try{
     if(req.headers.host!==originUrl.host&&!(options.allowTestHost&&req.headers.host?.startsWith('127.0.0.1:')))throw httpError('등록된 회사 주소로 접속해 주세요.',403);
     const url=new URL(req.url,origin),path=url.pathname,method=req.method;
+    // Entry reads precede employee session handling and messenger cleanup. They
+    // create no company/customer/project session and always use writeResponse.
+    if((path==='/api/native/entry/destinations'||path==='/api/customer/entry/destinations')&&await entryDestinations(req,res,url))return;
     // 공통 초대 조회(2026-11-14 계약 · 회사67 이후 별도 검수): 같은 출처의 작은 JSON {token} 하나만 받는다. 쿼리 · 임의 목적지 · 클라이언트가 주장한 종류는 받지 않는다.
     // 직원 · 고객 초대의 기존 읽기 확인을 서버가 둘 다 돌려 정확히 한쪽만 맞을 때 종류와 고정 상대 목적지만 준다. 둘 다 맞거나 둘 다 틀리면 같은 오류다.
     // 세션 · 기기 복구 · 쿠키 · send(메신저 정리)보다 먼저 끝내고 writeResponse로만 답한다(오류도 마지막 catch의 writeResponse). 아무것도 쓰지 않으며 인증 · 수락이 아니다.
@@ -2128,6 +2135,11 @@ export function createCompanyApp(options={}) {
     files['/client-desk.css']=['public/client-desk.css','text/css; charset=utf-8'];files['/client-desk-pulse.webp']=['public/client-desk-pulse.webp','image/webp'];for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];
     files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
     files['/pulse-app/index.html']=files['/pulse-app/'];
+    files['/pulse-app/entry-handoff.mjs']=['public/pulse-app/entry-handoff.mjs','text/javascript; charset=utf-8'];
+    files['/workspace-entry.js']=['public/workspace-entry.js','text/javascript; charset=utf-8'];
+    files['/entry/']=['public/entry/index.html','text/html; charset=utf-8'];
+    files['/entry/entry.mjs']=['public/entry/entry.mjs','text/javascript; charset=utf-8'];
+    files['/entry/entry.css']=['public/entry/entry.css','text/css; charset=utf-8'];
     for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs','ledger-view.mjs','persona-view.mjs','my-models.mjs','brand-desk-view.mjs','boot-locale.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
     // 의뢰 흐름(2026-11-04) 스타일 · 그림. 영상 둘은 mp4라 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
     for(const file of ['slate.css','slate-screens.css','slate-legacy.css','film.css','film-legacy.css','staff.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];

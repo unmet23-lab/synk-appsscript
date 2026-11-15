@@ -1,4 +1,5 @@
 import {request as networkRequest,parseInvite,PulseError,clock,esc} from './api.mjs';
+import {createCompanyEntryReceiver} from './entry-handoff.mjs';
 import {refreshCasting,takeCastingValues,syncCastingChoices,readCastingCode,applyCastingItem,castingCodeResult} from './casting-view.mjs';
 import {snapshotDeliverableRows,restoreDeliverableRows} from './deliverables-view.mjs';
 import {productionUI,feedbackDraftChanged,addProductionDraftReset} from './production-ui.mjs';
@@ -76,6 +77,7 @@ function ensureLegacyCss(){
 const wiredMedia=new WeakSet();
 const drafts=new Map();let epoch=0,busy=false,loading=false,noticeTimer,leaveAction,confirmAction;
 let pendingInvite='',inviteNavigationPrompt=false,inviteNavigationScheduled=false;
+let pendingInviteRequest=null,pulseEntryReceiver=null,pulseEntrySuspended=false;
 // 고객 화면은 프로젝트를 확인하는 동안 「초대 링크 붙여 넣기」 첫 화면 대신 확인 중 표시를 둔다(10-19 검수: 링크를 눌렀는데 붙여 넣기 화면이 먼저 보였다).
 let booting=!demo&&!filmDemo;
 if(staffMode){document.documentElement?.classList?.remove?.('sx');document.documentElement?.classList?.add?.('is-staff');const caption=document.querySelector?.('.header-caption');if(caption)caption.textContent='작업실';} // i18n-skip
@@ -696,11 +698,33 @@ function showInstallGuide(){openDialog('install',{guide:installationGuide(instal
 function updateInstallGuide(){document.querySelector('#header-actions').innerHTML=header(s);if(dialog.open&&dialog.dataset.installGuide==='true')showInstallGuide();}
 // Reused PWA windows can receive a new invitation without a page reload.
 // Keep the capability only in memory while an edit or request finishes.
-function cancelInviteNavigation(){pendingInvite='';if(inviteNavigationPrompt)leaveAction=null;inviteNavigationPrompt=false;}
+function cancelInviteNavigation(){const closeInvitePrompt=inviteNavigationPrompt;pendingInvite='';pendingInviteRequest=null;if(closeInvitePrompt)leaveAction=null;inviteNavigationPrompt=false;if(closeInvitePrompt)closeDialog();}
+function pulseEntryFailure(code){return Object.assign(new Error(code),{code});}
+function queuePulseEntryInvite(incoming){
+  if(demo||s.mode!=='customer')throw pulseEntryFailure('HANDOFF_UNAVAILABLE');
+  if(incoming.signal?.aborted||!incoming.isCurrent())throw pulseEntryFailure('CANCELLED');
+  const invite=parseInvite(incoming.token);
+  if(!invite||invite!==incoming.token||invite.length>200)throw pulseEntryFailure('INVALID_INPUT');
+  if(pendingInvite)throw pulseEntryFailure('BUSY');
+  pendingInvite=invite;
+  pendingInviteRequest={requestId:incoming.requestId,accountGeneration:incoming.accountGeneration};
+  if(busy||loading||dialog.open||composing)notice(t('새 초대 링크를 받았어요. 하던 일을 마치면 연결할게요.'));
+  scheduleInviteNavigation();
+  return {queued:true};
+}
+function cancelPulseEntryInvite(incoming){
+  if(pendingInviteRequest?.requestId!==incoming.requestId||pendingInviteRequest?.accountGeneration!==incoming.accountGeneration)return;
+  cancelInviteNavigation();
+}
+function connectPulseEntryReceiver(){
+  if(pulseEntryReceiver)return;
+  pulseEntryReceiver=createCompanyEntryReceiver({window,role:'customer',queueInvite:queuePulseEntryInvite,cancelInvite:cancelPulseEntryInvite,isInvitePending:incoming=>pendingInviteRequest?.requestId===incoming.requestId&&pendingInviteRequest?.accountGeneration===incoming.accountGeneration});
+}
 function queueInviteNavigation(){
   const params=new URLSearchParams(location.hash.slice(1));if(!params.has('invite'))return;
   const invite=parseInvite(params.get('invite'));history.replaceState({},'',location.pathname+location.search);
   if(!invite){notice(t('받은 초대 링크를 다시 확인해 주세요.'));return;}
+  if(pendingInviteRequest){notice(t('처리 중이에요. 끝난 뒤 이동해 주세요.'));return;}
   pendingInvite=invite;
   if(busy||loading||dialog.open||composing)notice(t('새 초대 링크를 받았어요. 하던 일을 마치면 연결할게요.'));
   scheduleInviteNavigation();
@@ -709,8 +733,8 @@ function scheduleInviteNavigation(){
   if(!pendingInvite||inviteNavigationScheduled)return;inviteNavigationScheduled=true;
   queueMicrotask(()=>{inviteNavigationScheduled=false;if(!pendingInvite||inviteNavigationPrompt||busy||loading||dialog.open||composing)return;
     inviteNavigationPrompt=!!drafts.size;
-    withLeave(()=>{inviteNavigationPrompt=false;const invite=pendingInvite;pendingInvite='';if(!invite)return;
-      if(demo||s.mode!=='customer'){location.assign(location.pathname+'#invite='+encodeURIComponent(invite));return;}
+    withLeave(()=>{inviteNavigationPrompt=false;const invite=pendingInvite,received=pendingInviteRequest;pendingInvite='';pendingInviteRequest=null;if(!invite)return;
+      if(demo||s.mode!=='customer'){if(received){notice(t('새 초대 링크를 받았어요. 하던 일을 마치면 연결할게요.'));return;}location.assign(location.pathname+'#invite='+encodeURIComponent(invite));return;}
       resetContext();s.user=null;s.workspace=null;s.csrf='';booting=true;render();void start(invite);
     });
   });
@@ -965,7 +989,7 @@ document.addEventListener('change',event=>{const target=event.target;if(target.m
 document.addEventListener('click',async event=>{
   const button=event.target.closest('[data-action]');if(!button||button.disabled)return;const action=button.dataset.action,id=button.dataset.id;
   if(['close-dialog','leave-cancel'].includes(action)){closeDialog();return;}
-  if(action==='leave-confirm'){drafts.clear();closeDialog();const next=leaveAction;leaveAction=null;next?.();return;}
+  if(action==='leave-confirm'){const next=leaveAction;leaveAction=null;if(typeof next!=='function'){closeDialog();return;}drafts.clear();closeDialog();next();return;}
   if(action==='mail-pick'){if(busy||!mailChoices)return;setBusy(true);try{await request('/pulse/api/mail-open/pick',{body:{ticket:mailChoices.ticket,projectId:id}});setBusy(false);await openedByMail();}catch(error){notice(error.message);setBusy(false);}return;}
   if(action==='mail-again'){const form=document.querySelector('[data-form=mail-open]');if(form){mailStep(form,'email');form.querySelector('[name=email]')?.focus();}return;}
   if(action==='confirm-action'){const check=dialog.querySelector('[data-confirm-check]');if(check&&!check.checked){check.focus();notice(t('안내를 확인했다고 체크해 주세요.'));return;}if(!busy)await confirmAction?.();return;}
@@ -1143,6 +1167,9 @@ window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();s.i
 window.addEventListener('appinstalled',()=>{s.installPrompt=null;s.installed=true;notice(t('PULSE를 설치했어요. 홈 화면에서 열고 기기 알림을 켜 주세요.'));updateInstallGuide();});
 const connectivity=()=>{document.querySelector('#connection-banner').hidden=navigator.onLine;};
 window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();
+connectPulseEntryReceiver();
+window.addEventListener('pagehide',event=>{pulseEntrySuspended=event.persisted===true;pulseEntryReceiver?.dispose();pulseEntryReceiver=null;cancelInviteNavigation();});
+window.addEventListener('pageshow',event=>{if(!event.persisted||!pulseEntrySuspended)return;pulseEntrySuspended=false;connectPulseEntryReceiver();});
 if(filmDemo)void openFilmDemo();if(startRequest)void openPublicRequest();
 if(demo){accept(demo.snapshot());s.tab=demo.guide().tab;render();}else{render();await start(parseInvite(initialInvite));if(memberReturn||LOGIN_FAILED)void resumeMemberReturn();}initialInvite='';
 // 첫 방문 무게(11-11): 서비스 워커(셸 미리 받기 — 화면 모듈 · 글꼴 · 모델 사진)는 문서가 다 불러진 뒤 쉴 때 등록한다.

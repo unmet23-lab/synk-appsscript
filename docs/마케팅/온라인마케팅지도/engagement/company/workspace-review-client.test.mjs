@@ -104,23 +104,55 @@ function actualFunction(source,name){
 }
 const sources=Object.fromEntries(['app.js','workspace.js','workspace-access.js','workroom.js','marin-home.js','maker-tools.js','studio.js'].map(n=>[n,readFileSync(new URL('./public/'+n,import.meta.url),'utf8')]));
 const fn=(file,name)=>actualFunction(sources[file],name);
+function renderedButton(html,label){
+ const matches=[...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)].filter(row=>row[2].replace(/<[^>]*>/g,'').trim().match(label));
+ assert.equal(matches.length,1,'one rendered button named '+label);
+ const attributes=matches[0][1],dataset=Object.fromEntries([...attributes.matchAll(/\bdata-([a-z-]+)="([^"]*)"/g)].map(([,key,value])=>[key.replace(/-([a-z])/g,(_m,c)=>c.toUpperCase()),value]));
+ const target={dataset,disabled:/\bdisabled(?:\s|=|$)/.test(attributes),isConnected:true,closest(selector){return selector==='[data-action]'&&Object.hasOwn(dataset,'action')?target:null;}};
+ return target;
+}
 function fixture(features=['production','clients','pages'],options={}){
  const profile={admin:options.admin||false,legacy:options.legacy||false,features,memberships:[{company:'PULSE',role:'producer'}],companies:['PULSE'],duties:[]},state={user:{id:'synthetic-producer',role:profile.admin?'admin':'member',workspaceAccess:profile},csrf:'synthetic',tab:'home',data:{channels:[],teams:[]},scope:'all'},events={},h={paint:''};
- const results={innerHTML:''};
+ const results={innerHTML:''},windowEvents={},toolLoads=[];
  const g={state,cp:{view:'library'},location:new URL('https://synthetic.invalid/?tab=home'),URL,URLSearchParams,document:{visibilityState:'visible',addEventListener(t,f){(events[t]||=[]).push(f);},querySelector(){return null;},getElementById(){return null;}},window:{addEventListener(){},scrollTo(){},matchMedia:()=>({matches:false})},sessionStorage:{removeItem(){},getItem:()=>null,setItem(){}},MutationObserver:class{observe(){}},setTimeout:()=>0,clearTimeout(){},clearInterval(){},history:{replaceState(){}},isAdmin:()=>profile.admin,isViewer:()=>false,isDemoMode:()=>false,canManageTeam:()=>profile.admin,escape:String,icon:()=>'',pageHeading:(_a,b)=>'<h1>'+b+'</h1>',button:(text,action,_icon,_cls,attrs='')=>`<button data-action="${action}" ${attrs}>${text}</button>`,shell:s=>{h.paint=s;},notify(){},clientDeskPanel:()=>'<section>CLIENTS</section>',mtSwitch:()=>'',mtEmpty:(a,b)=>a+' '+b,mtNow:o=>o.actions||o.title,swReviewed:()=>false,swBtn:()=>'',api:()=>{throw Error('No network allowed');},$:s=>s==='.command-results'?results:null,$$:()=>[],empty:(a,b)=>a+' '+b,channelName:x=>x.name,platformMark:()=>'',searchIcon:()=>'',modal(){}};
  for(const n of ['renderSocialWorkspace','companyGuidePage','marketingPage','analysisPage','historyPage','membersPage','settingsPage','messengerWorkspacePage','contentPage','renderAuth'])g[n]=()=>'';
+ g.window.addEventListener=(type,handler)=>(windowEvents[type]||=[]).push(handler);
+ Object.assign(g,{automationHealthPanel:()=>'<section>AUTOMATION</section>',publishCheckPanel:()=>'<section>PUBLISH</section>',automationHealthEnsure:()=>toolLoads.push('automation'),publishCheckEnsure:()=>toolLoads.push('publish'),publicationFlowEnsure:()=>toolLoads.push('publication'),weeklySummaryEnsure:()=>toolLoads.push('weekly')});
  g.overlay={};const context=vm.createContext(g);vm.runInContext(sources['workspace-access.js']+'\n'+sources['workspace.js']+'\n'+sources['workroom.js'],context);
- for(const [file,names]of [['app.js',['render','renderCommandResults','channelSearchText']],['marin-home.js',['marinWorkroomPage']],['maker-tools.js',['makerToolsMovedPanel']],['studio.js',['swNow']]])for(const n of names)vm.runInContext(fn(file,n),context);
+ for(const [file,names]of [['app.js',['button','render','renderCommandResults','channelSearchText']],['marin-home.js',['marinWorkroomPage']],['maker-tools.js',['makerToolsMovedPanel']],['studio.js',['swNow']]])for(const n of names)vm.runInContext(fn(file,n),context);
  vm.runInContext("wrDeskDrafts=()=>[];wrWorkingPlan=()=>null;wrDeskGuide=()=>'';wrPages=()=>'<section>PAGES</section>';",context);
- const run=s=>vm.runInContext(s,context);return Object.assign(h,{context,state,run,results,events,click:action=>{const target={dataset:action,disabled:false,isConnected:true,closest:()=>null},e={target:{closest:()=>target},preventDefault(){},stopImmediatePropagation(){this.stopped=true;}};for(const f of events.click||[]){f(e);if(e.stopped)break;}}});
+ if(options.maker)vm.runInContext(sources['maker-tools.js'],context);
+ h.toolLoads=toolLoads;h.message=event=>{for(const handler of windowEvents.message||[])handler(event);};
+ const run=s=>vm.runInContext(s,context);return Object.assign(h,{context,state,run,results,events,click:target=>{const e={target,preventDefault(){},stopImmediatePropagation(){this.stopped=true;}};for(const f of events.click||[]){f(e);if(e.stopped)break;}}});
 }
 
 for(const section of ['clients','pages'])test('first home shortcut preserves workroom '+section,()=>{
-  const h=fixture();h.run('waNormalizeView()');assert.match(h.run('waHome()'),new RegExp('data-section="'+section+'"'));
-  h.click({action:'wa-open',tab:'workroom',section});assert.equal(h.state.tab,'workroom');assert.equal(h.run('wr.view'),section);assert.match(h.paint,new RegExp(section==='clients'?'CLIENTS':'PAGES'));
+  const h=fixture();h.run('waNormalizeView()');const label=section==='clients'?/^PULSE 고객 관리$/:/^(?:내 관리 페이지|페이지 관리)$/;
+  h.click(renderedButton(h.run('waHome()'),label));assert.equal(h.state.tab,'workroom');assert.equal(h.run('wr.view'),section);assert.match(h.paint,new RegExp(section==='clients'?'CLIENTS':'PAGES'));
+});
+for(const initial of ['fresh','returning','different-account'])test('messenger automation entry opens the requested tool on '+initial+' workroom',()=>{
+  const h=fixture(['production'],{maker:true}),frame={};h.context.frameWindow=frame;
+  h.run('waNormalizeView();workspaceModule.frame={contentWindow:frameWindow};');
+  if(initial==='returning')h.run('wrIdentity()');
+  if(initial==='different-account')h.run("wr.userId='old-account';makerTools.view='productions';");
+  h.state.tab='messenger';h.context.location.href='https://synthetic.invalid/?tab=messenger';
+  const event={origin:h.context.location.origin,source:frame,data:{type:'messenger:automation-open'}};
+  h.message(event);
+  assert.equal(h.state.tab,'workroom');assert.equal(h.run('wr.userId'),h.state.user.id);assert.equal(h.run('makerTools.view'),'automation');
+  assert.match(h.paint,/data-mt="automation"/);assert.match(h.paint,/AUTOMATION/);assert.deepEqual(h.toolLoads,['automation']);
+});
+test('messenger automation entry ignores another window or origin',()=>{
+  const h=fixture(['production'],{maker:true}),frame={};h.context.frameWindow=frame;h.run('workspaceModule.frame={contentWindow:frameWindow};');h.state.tab='messenger';
+  h.message({origin:'https://foreign.invalid',source:frame,data:{type:'messenger:automation-open'}});
+  h.message({origin:h.context.location.origin,source:{},data:{type:'messenger:automation-open'}});
+  assert.equal(h.state.tab,'messenger');assert.equal(h.run('wr.userId'),null);assert.deepEqual(h.toolLoads,[]);
+});
+for(const moved of ['publication','weekly'])test('moved maker deep link '+moved+' renders its notice without loading the retired tool',()=>{
+  const h=fixture(['production'],{maker:true});h.state.tab='workroom';h.context.location.href='https://synthetic.invalid/?tab=workroom&section=tools&tool='+moved;
+  h.run('render();makerToolsEnsure();');assert.equal(h.run('makerTools.view'),moved);assert.match(h.paint,/SNS·마케팅/);assert.doesNotMatch(h.paint,/data-action="social-view"/);assert.deepEqual(h.toolLoads,[]);
 });
 test('client-only first home shortcut opens the client view without production access',()=>{
-  const h=fixture(['clients']);h.run('waNormalizeView()');h.click({action:'wa-open',tab:'workroom',section:'clients'});assert.equal(h.run("waFeature('production')"),false);assert.equal(h.run('wr.view'),'clients');assert.match(h.paint,/CLIENTS/);
+  const h=fixture(['clients']);h.run('waNormalizeView()');h.click(renderedButton(h.run('waHome()'),'PULSE 고객 관리'));assert.equal(h.run("waFeature('production')"),false);assert.equal(h.run('wr.view'),'clients');assert.match(h.paint,/CLIENTS/);
 });
 for(const config of [{name:'production-only',features:['production','clients']},{name:'social',features:['production','clients','social']},{name:'legacy',features:[],legacy:true},{name:'admin',features:[],admin:true}])test('SNS entry buttons respect '+config.name+' access',()=>{
   const h=fixture(config.features,config);h.run('waNormalizeView();wrIdentity();wr.guide={series:[]};');
@@ -169,10 +201,13 @@ function fixture(access,{signedIn=false,delay=false}={}){
 
 for(const signedIn of [false,true])test('invite link is inspectable with '+(signedIn?'an existing session':'a guest session'),async()=>{
   const h=fixture(sources.access,{signedIn});await h.initialize();await flush();const value=h.summary();assert.equal(value.authMode,'join');assert.equal(value.calls.filter(x=>x.endsWith('/inspect')).length,1);assert.equal(value.disabled,false);assert.equal(value.name,'Invited Synthetic Person');assert.equal(value.inviteError,'');
+  const summaryText=value.summary.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');assert.match(summaryText,/Invited Synthetic Person/);assert.match(summaryText,/PATH/);assert.doesNotMatch(value.summary,/초대를 확인하고 있어요/);
 });
 for(const signedIn of [false,true])test('late invite response cannot overwrite '+(signedIn?'an existing':'a guest')+' session after account change',async()=>{
   const h=fixture(sources.access,{signedIn,delay:true});await h.initialize();await flush();assert.equal(h.calls.filter(x=>x.url.endsWith('/inspect')).length,1);
-  h.state.user={id:'other-synthetic-account',role:'member'};h.state.csrf='other-synthetic-csrf';h.resolveInspect(response({name:'Stale Synthetic Person',memberships:[]}));await flush();const value=h.summary();assert.equal(value.invite,null);assert.notEqual(value.name,'Stale Synthetic Person');
+  const waitingSummary=h.summary().summary;assert.match(waitingSummary,/초대를 확인하고 있어요/);
+  h.state.user={id:'other-synthetic-account',role:'member'};h.state.csrf='other-synthetic-csrf';h.resolveInspect(response({name:'Stale Synthetic Person',memberships:[{company:'SHIFT'}]}));await flush();const value=h.summary();assert.equal(value.invite,null);assert.notEqual(value.name,'Stale Synthetic Person');
+  assert.equal(value.summary,waitingSummary);assert.doesNotMatch(value.summary,/Stale Synthetic Person|SHIFT/);
 });
 }
 

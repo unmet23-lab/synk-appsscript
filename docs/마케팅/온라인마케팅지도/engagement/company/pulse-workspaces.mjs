@@ -217,6 +217,12 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     const synkUserId=synkIdOf(user),now=clock();
     return store.readScope(()=>({workspaces:store.all(K.workspaces).filter(workspace=>workspace.status==='active'&&memberOf(workspace,synkUserId)).sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(workspace=>workspaceModels(workspace,memberOf(workspace,synkUserId),now))}));
   }
+  function entryAssignment(synkUserId){
+    synkIdOf({synkUserId});
+    // Unlike the UI availability helper, storage failures must remain failures.
+    if(features?.read?.()?.myModels!==true)return 'unavailable';
+    return store.readScope(()=>store.all(K.workspaces).some(workspace=>workspace.status==='active'&&memberOf(workspace,synkUserId))?'assigned':'unassigned');
+  }
   // 상세(설계 2절 만드는 차례의 뒤쪽): 승인 이력(종류 · 판 · 날짜 · 승인 방식), 이 브랜드에 연결된 사용 프로젝트, 판의 기준 얼굴 · 동작 시안.
   function model(user,personaId){
     const synkUserId=synkIdOf(user),now=clock();
@@ -726,7 +732,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
 
   // 작업실 파일 하나의 본문 sha256(없는 파일은 null). 인물 판 파일 하나를 빼기 전에 server가 잰다(pulse-personas는 파일을 읽지 않는다).
   const mediaSha=diskName=>{if(typeof diskName!=='string'||!MEDIA_NAME.test(diskName))throw fail('파일 이름을 확인해 주세요.');return fileSha(join(store.directory,'studio-media',diskName));};
-  return {mediaSha,enabled,projectProof,draftProof,projectState,claim,withdrawClaim,models,model,asset,attach,reuse,withdrawReuse,stop,deleteRequest,
+  return {mediaSha,enabled,projectProof,draftProof,projectState,claim,withdrawClaim,models,entryAssignment,model,asset,attach,reuse,withdrawReuse,stop,deleteRequest,
     attachedRequest,ownerFor,personaReferences,staffList,staffRead,decideClaim,workspaceAction,projectAction,personaAction,deletePersona,finishDeletion,resumeDeletions,
     retentionDue,sweepRetention};
 }

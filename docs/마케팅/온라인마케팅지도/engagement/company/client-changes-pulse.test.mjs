@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {createCompanyEntryReceiver} from './public/pulse-app/entry-handoff.mjs';
 import {readFileSync} from 'node:fs';
 import {changesView} from './public/pulse-app/changes-view.mjs';
 import {projectView} from './public/pulse-app/views.mjs';
@@ -54,7 +55,7 @@ function fixture({url=`http://127.0.0.1:64046/pulse-app/?mode=staff&project=${pr
   nodes.get('#main').querySelectorAll=selector=>selector==='.scene-card'?[cards.get('scene-'+sceneId)]:[];
   // Production-specific actions are outside this fixture; preserve the app router's await boundary.
   const productionUI=()=>({submit:()=>false,click:()=>false,render(){},reset(){}});
-  const context=vm.createContext({...i18nContext,productionUI,URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,PulseError,parseInvite,console,FormData:class{},setTimeout:()=>1,clearTimeout(){},location:new URL(url),history:{replaceState(){}},navigator:{onLine:true},window:{addEventListener(){},isSecureContext:false},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}},header:()=>'',welcome:()=>'',login:()=>'',picker:()=>'',projectView:()=>'',liveView:()=>'',dialogContent:()=>'',networkRequest(path,settings){requests.push({path,settings});return Promise.resolve({});},foregroundProjectOptions:(_path,settings)=>settings,createLiveConnection:()=>({stop(){}})});
+  const context=vm.createContext({createCompanyEntryReceiver,...i18nContext,productionUI,URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,PulseError,parseInvite,console,FormData:class{},setTimeout:()=>1,clearTimeout(){},location:new URL(url),history:{replaceState(){}},navigator:{onLine:true},window:{addEventListener(){},isSecureContext:false},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}},header:()=>'',welcome:()=>'',login:()=>'',picker:()=>'',projectView:()=>'',liveView:()=>'',dialogContent:()=>'',networkRequest(path,settings){requests.push({path,settings});return Promise.resolve({});},foregroundProjectOptions:(_path,settings)=>settings,createLiveConnection:()=>({stop(){}})});
   let source=readFileSync(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8').replace(/^import .*\r?\n/gm,'').replace("const demo=demoMode?(await import('./demo.mjs')).createDemoSession():null;",'const demo=null;');
   source=source.slice(0,source.indexOf("if(demo){accept(demo.snapshot());s.tab=demo.guide().tab;render();}else{render();await start"));
   vm.runInContext(source,context);context.seed=structuredClone(project);context.notes=notices;const run=code=>vm.runInContext(code,context);

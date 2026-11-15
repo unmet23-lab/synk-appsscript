@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import * as api from '../tools/검수묶음.mjs';
-import {정책만들기,다시검수자들,대신할검수자,끝판정책} from '../tools/lib/검수증명.mjs';
+import {정책만들기,다시검수자들,대신할검수자,끝판정책,후보읽기,sha256} from '../tools/lib/검수증명.mjs';
 
 const task='workspace-entry-handoff-20261115';
 const prefix='docs/마케팅/온라인마케팅지도/engagement/company/public/';
@@ -76,6 +76,7 @@ test('실제 준비·확인은 카본의 완독과 Fable 최종을 모두 요구
   assert.equal(api.검수확인(packet.폴더).통과,false);
   const part=packet.목록.묶음[0];
   assert.throws(()=>api.검수받기(packet.폴더,'아르곤',part.이름,JSON.stringify({...answer(part),seen:[]})),/응답 검증/);
+  assert.match(fs.readFileSync(path.join(packet.폴더,'fable.md'),'utf8'),/GPT가 만든 변경/);
   review(packet);assert.equal(api.검수확인(packet.폴더).통과,false);
   await api.페이블하기(packet.폴더,{시험:false,캡처:false});
   const proof=JSON.parse(fs.readFileSync(path.join(packet.폴더,'페이블자료.json'))).증명;
@@ -94,6 +95,7 @@ test('카본 P1 수정은 같은 사슬의 카본과 Fable 재검수를 모두 �
   api.지적표고치기(packet.폴더,p=>api.처리하기(p,['A1=일부:fixture correction requires confirmation']));
   f.write(files[0].경로,'<p>correct</p>\n');
   const next=await api.다시하기({이름:'fixed',폴더:path.join(f.dir,'fixed'),앞:packet.폴더,저장소:f.repo});
+  assert.match(fs.readFileSync(path.join(next.폴더,'fable.md'),'utf8'),/지적을 GPT가 고쳤다/);
   assert.deepEqual(next.목록.검수자들,['아르곤','Fable']);
   review(next);assert.equal(api.검수확인(next.폴더).통과,false);
   review(next,'Fable');assert.equal(api.검수확인(next.폴더).통과,true);
@@ -104,6 +106,60 @@ test('최종 자료에 끼어든 관문 코드와 배포 후보를 담당 예외
   f.write('tools/lib/검수증명.mjs','export const gate = true;\n');
   await assert.rejects(api.페이블하기(packet.폴더,{시험:false,캡처:false}),/직접 승인 범위/);
   const candidate=path.join(f.dir,'candidate');fs.mkdirSync(candidate);
-  fs.writeFileSync(path.join(candidate,'후보.json'),JSON.stringify({판:1,종류:'synk.im',항목:[]}));
-  assert.throws(()=>정책만들기({...options,배포후보:candidate},files));
+  const content=Buffer.from('<!doctype html><title>synthetic candidate</title>\n');
+  fs.writeFileSync(path.join(candidate,'index.html'),content);
+  fs.writeFileSync(path.join(candidate,'후보.json'),JSON.stringify({판:1,종류:'synk.im',항목:[{경로:'index.html',종류:'새',모드:'100644',sha256:sha256(content)}]}));
+  assert.equal(후보읽기(candidate).항목.length,1);
+  const general=정책만들기({종류:'화면',작성자:'Claude',배포후보:candidate},files);
+  assert.deepEqual(general.필수,['아르곤','Fable']);
+  assert.throws(()=>정책만들기({...options,배포후보:candidate},files),/Workspace 진입의 직접 승인 범위를 벗어난 담당 예외.*배포 후보/);
+});
+
+
+test('대상과 사유를 갖춘 일반 내부 예외도 Workspace 담당 예외와 혼합하면 거절한다',()=>{
+  const exception={예외:'내부',대상:files.map(f=>f.경로).join(','),사유:'synthetic internal-screen exception'};
+  const general=정책만들기({종류:'화면',작성자:'Claude',...exception},files);
+  assert.deepEqual(general.예외,{종류:'내부',대상:exception.대상,사유:exception.사유});
+  assert.throws(()=>정책만들기({...options,...exception},files),/Workspace 진입의 직접 승인 범위를 벗어난 담당 예외/);
+});
+
+test('Fable 최종만 완료해도 카본 미전송을 통과시키지 않는다',async t=>{
+  const f=fixture(t),packet=await api.준비하기(f.options);
+  await api.페이블하기(packet.폴더,{시험:false,캡처:false});
+  const proof=JSON.parse(fs.readFileSync(path.join(packet.폴더,'페이블자료.json'))).증명;
+  api.페이블받기(packet.폴더,JSON.stringify({...answer(proof),argonReview:[],reviewInputHash:proof.검토입력해시}));
+  const before=api.검수확인(packet.폴더);
+  assert.equal(before.통과,false);
+  assert.ok(before.사유.some(reason=>/필수 아르곤 검수 미완료/.test(reason)));
+  assert.ok(!before.사유.some(reason=>/Fable 최종 검수 미완료/.test(reason)));
+  review(packet);assert.equal(api.검수확인(packet.폴더).통과,true);
+});
+
+test('완료된 Workspace 검수의 다시 단계에 새 서버 파일이 끼면 정확한 범위 오류로 거절한다',async t=>{
+  const f=fixture(t),packet=await api.준비하기(f.options);review(packet);
+  await api.페이블하기(packet.폴더,{시험:false,캡처:false});
+  const proof=JSON.parse(fs.readFileSync(path.join(packet.폴더,'페이블자료.json'))).증명;
+  api.페이블받기(packet.폴더,JSON.stringify({...answer(proof),argonReview:[],reviewInputHash:proof.검토입력해시}));
+  assert.equal(api.검수확인(packet.폴더).통과,true);
+  f.write(files[0].경로,'<p>correct</p>\n');
+  f.write(prefix.replace(/public\/$/,'')+'server.mjs','export const synthetic = true;\n');
+  await assert.rejects(api.다시하기({이름:'outside',폴더:path.join(f.dir,'outside'),앞:packet.폴더,저장소:f.repo,함께올림:'synthetic scope regression'}),/Workspace 진입의 직접 승인 범위를 벗어난 담당 예외/);
+});
+
+for(const author of ['Claude','카본'])test(author+' 작성 화면의 Fable 첫판과 다시 안내는 정책 작성자를 보존한다',async t=>{
+  const f=fixture(t),packet=await api.준비하기({...f.options,작성자:author,담당예외:undefined});
+  const first=fs.readFileSync(path.join(packet.폴더,'fable.md'),'utf8');
+  assert.ok(first.includes((author==='Claude'?'Claude(Opus)':author)+'가 만든 변경'));
+  assert.ok(first.includes(author+'가 고친'));
+  review(packet,'아르곤',[{grade:'P1',location:files[0].경로+':1',quote:'after',problem:'synthetic defect',fix:'correct'}]);
+  await api.페이블하기(packet.폴더,{시험:false,캡처:false});
+  const current=fs.readFileSync(path.join(packet.폴더,'fable.md'),'utf8');
+  assert.ok(current.includes(author+'의 처리'));
+  if(author!=='Claude')assert.doesNotMatch(current,/Claude(?:\(Opus\))?(?:가 만든|가 고친|의 처리)/);
+  const proof=JSON.parse(fs.readFileSync(path.join(packet.폴더,'페이블자료.json'))).증명;
+  api.페이블받기(packet.폴더,JSON.stringify({...answer(proof),argonReview:[{id:'A1',agree:true,note:'synthetic defect remains'}],reviewInputHash:proof.검토입력해시}));
+  api.지적표고치기(packet.폴더,p=>api.처리하기(p,['A1=일부:fixture correction requires confirmation']));
+  f.write(files[0].경로,'<p>correct</p>\n');
+  const next=await api.다시하기({이름:'fixed',폴더:path.join(f.dir,'fixed'),앞:packet.폴더,저장소:f.repo});
+  assert.ok(fs.readFileSync(path.join(next.폴더,'fable.md'),'utf8').includes('지적을 '+author+'가 고쳤다'));
 });

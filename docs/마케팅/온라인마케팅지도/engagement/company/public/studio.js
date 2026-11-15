@@ -129,7 +129,7 @@ function swProductionDetail(row){
   const room=full?(typeof swrRoom==='function'?swrRoom(full):''):sw.detailError?.id===row.id?mtError(sw.detailError.message,swBtn('다시 불러오기','open-production',{attrs:`data-id="${key}"`})):'<p class="mt-loading" role="status">완성본과 의견을 불러오고 있어요.</p>';
   const next=`<div class="sw-next"><h4>다음 할 일</h4><p class="${production.nextAction?'':'is-empty'}">${escape(production.nextAction||'아직 정하지 않았어요.')}</p>${production.blocker?`<div class="sw-blocker"><h4>막힌 점 · 필요한 도움</h4><p>${escape(production.blocker)}</p></div>`:''}${write?`<div class="mt-actions">${swBtn('고치기','edit-production',{attrs:`data-id="${key}"`})}</div>`:''}</div>`;
   const sections=mtSec({num:'01',title:'완성본 · 의견',sum:roomSum,open:open('room',true),body:room,attrs:`id="sw-sec-room-${key}" data-sw-fold="room"`})+mtSec({num:'02',title:'다음 할 일 · 막힌 점',sum:production.blocker?'막힌 점이 있어요':swShortText(production.nextAction,'정하지 않았어요'),sumTone:production.blocker?'alert':'',open:open('next',false),body:next,attrs:`id="sw-sec-next-${key}" data-sw-fold="next"`});
-  const foot=production.stage==='published'?'<p class="mt-note sw-foot">「게시 기록」은 손으로 바꾼 단계예요. 실제로 올라갔는지는 게시 준비·성과에서 봐요.</p>':'';
+  const foot=production.stage==='published'?'<p class="mt-note sw-foot">「게시 기록」은 손으로 바꾼 단계예요. 실제로 올라갔는지는 SNS 성과에서 봐요.</p>':'';
   return `<div class="mt-detail sw-detail" data-sw-detail="${key}">${head}${now}${steps}${sections}${foot}</div>`;
 }
 function swShortText(value,empty='비어 있어요'){const text=value?String(value).replace(/\s+/g,' ').trim():'';return text?text.length>40?text.slice(0,40)+'…':text:empty;}

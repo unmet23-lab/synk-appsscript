@@ -36,6 +36,12 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
   let closing=false,closed=false,closeTask=null;
   const byCompany=id=>store.db.prepare('SELECT * FROM synk_identity_links WHERE company_user_id=?').get(id);
   const bySynk=id=>store.db.prepare('SELECT * FROM synk_identity_links WHERE synk_user_id=?').get(id);
+  function hasActiveCompanyAccount(synkUserId){
+    const link=bySynk(synkUserId);if(!link)return false;
+    const user=store.get('users',link.company_user_id);
+    if(!user||user.id!==link.company_user_id)throw fail(503,'LINK_UNAVAILABLE','회사 계정 연결을 확인할 수 없습니다.');
+    return Boolean(user.active);
+  }
   const requireEnabled=()=>{if(closing)throw unavailable();if(!enabled)throw fail(503,'NOT_CONFIGURED','SYNK ID 연결은 아직 설정 전입니다. 기존 회사 계정으로 로그인해 주세요.');};
   function rate(req){attempts.reserve(clientAddress(req));}
   function requireOrigin(req){if(req.headers.origin!==origin)throw fail(403,'ORIGIN','회사 로그인 화면에서 다시 시작해 주세요.');}
@@ -186,7 +192,7 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
   async function start(req,res,input,auth,getAuth=()=>auth){requireEnabled();if(!config.issuer||!config.clientId)throw fail(503,'BROWSER_NOT_CONFIGURED','브라우저 SYNK ID 로그인이 설정 전입니다.');const result=await challenge(req,res,input,auth,getAuth),flow=flows.get(hash(result.challenge)),verifier=random();flow.verifier=verifier;const url=new URL('/auth/v1/oauth/authorize',config.issuer);url.search=new URLSearchParams({client_id:config.clientId,response_type:'code',redirect_uri:origin+'/api/synk-id/callback',scope:'openid profile',state:result.challenge,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'S256'}).toString();return {...result,authorizationUrl:url.href};}
   async function callback(req,res,url,getAuth,setSession){requireEnabled();const allowed=['state','code','error','error_description'];if(url.hash||[...url.searchParams.keys()].some(key=>!allowed.includes(key)||url.searchParams.getAll(key).length!==1)||url.searchParams.has('code')&&url.searchParams.has('error'))throw fail(403,'CALLBACK','SYNK ID 콜백 주소를 확인해 주세요.');const flow=takeFlow(req,url.searchParams.get('state'));currentForFlow(flow,getAuth);const code=url.searchParams.get('code');if(!flow.verifier||!code||code.length>4000||url.searchParams.has('error'))throw fail(403,'FLOW','SYNK ID 로그인을 완료하지 못했습니다. 다시 시작해 주세요.');let data;try{const response=await fetcher(new URL('/auth/v1/oauth/token',config.issuer),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded',apikey:config.publishableKey},body:new URLSearchParams({grant_type:'authorization_code',code,client_id:config.clientId,redirect_uri:origin+'/api/synk-id/callback',code_verifier:flow.verifier}).toString(),redirect:'error',signal:AbortSignal.timeout(8000)});if(!response.ok)throw Error('exchange');data=await response.json();}catch{throw fail(401,'EXCHANGE_FAILED','SYNK ID 로그인을 완료하지 못했습니다. 다시 시작해 주세요.');}return complete(req,res,flow,data.access_token,getAuth,setSession,data);}
   let interval=null;
-  return {status,challenge,exchange,renew,start,callback,sessionAllowed,validateSession,refreshSessions,dropUserSynkSessions,logout,
+  return {status,hasActiveCompanyAccount,challenge,exchange,renew,start,callback,sessionAllowed,validateSession,refreshSessions,dropUserSynkSessions,logout,
     startChecks(){if(!closing&&!interval){interval=setInterval(()=>refreshSessions().catch(()=>{}),CHECK_MS/2);interval.unref();}},
     close(){if(!closeTask){closing=true;clearInterval(interval);interval=null;flows.clear();closeTask=Promise.allSettled([...sessions.values()].map(entry=>entry.checking).filter(Boolean));}return closeTask;},
     // HTTP logout may finish while listeners drain. Keep its credentials and DB access until then.

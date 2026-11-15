@@ -468,7 +468,7 @@ window.addEventListener('message',event=>{
   if(type==='messenger:device-notifications'){if(state.user)void window.SynkDeviceNotifications?.open();return;}
   if(type==='messenger:social-open'){if(state.user&&state.tab==='messenger'&&typeof openSocialWorkspace==='function')openSocialWorkspace('queue');return;}
   if(type==='messenger:automation-open'){
-    if(state.user&&state.tab==='messenger'){makerTools.view='automation';selectWorkspaceView('workroom','tools');render();makerToolsEnsure();}
+    if(state.user&&state.tab==='messenger'){if(typeof wrIdentity==='function')wrIdentity();makerTools.view='automation';selectWorkspaceView('workroom','tools');render();makerToolsEnsure();}
     return;
   }
   if(type==='messenger:client-open'){

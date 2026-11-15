@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve,dirname} from 'node:path';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {createCompanyEntryReceiver} from './public/pulse-app/entry-handoff.mjs';
 import {Store} from './store.mjs';
 import {createClientProjectsService} from './client-projects.mjs';
 import {createPulseStudioService} from './pulse-studio.mjs';
@@ -100,7 +101,7 @@ function eventFixture(project,csrf,dispatch){
   const nodes=new Map(['#main','#app-dialog','#notice','#header-actions','#pulse-live','#connection-banner'].map(key=>[key,element()]));
   const form={dataset:{form:'strategy',revision:String(project.studio.strategy.revision)},closest(){return this;},elements:[],querySelector:()=>null};
   form.elements=['primaryPromise','evidence1','desiredAction'].map(name=>({name,type:'textarea',value:project.studio.strategy.data[name],closest:selector=>selector==='details'?null:form}));
-  const context=vm.createContext({URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,PulseError,parseInvite,takeCastingValues,strategySaveMessage,strategyUnsavedReviewMessage,console,
+  const context=vm.createContext({createCompanyEntryReceiver,URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,PulseError,parseInvite,takeCastingValues,strategySaveMessage,strategyUnsavedReviewMessage,console,
     LOCALE_EVENT:'pulse-locale',chooseLocale(){},storedLocale:()=>null,setOfferedLocales(){},
     FormData:class{constructor(value){this.form=value;}*[Symbol.iterator](){for(const field of this.form.elements)yield [field.name,field.value];}getAll(){return [];}},
     setTimeout:()=>1,clearTimeout(){},location:new URL('http://127.0.0.1:64046/pulse-app/'),history:{replaceState(){}},navigator:{onLine:true},window:{addEventListener(){},isSecureContext:false},

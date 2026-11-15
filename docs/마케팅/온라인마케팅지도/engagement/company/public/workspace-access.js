@@ -181,7 +181,7 @@ function waPaintInvite(){
   host.setAttribute('role','status');
   const companySummary=wa.invite.memberships.map(row=>row.company).join(' · ')||'전사 공통 초대';
   host.textContent=`${wa.invite.name} 님 · ${companySummary}`;
-  host.innerHTML=`<strong>확인된 초대</strong><p>${escape(wa.invite.name)} 님 · ${escape(companySummary)}</p><small>소속 회사와 직무는 관리자가 지정했어요. 이름과 비밀번호를 정하면 바로 합류해요.</small>`;
+  host.innerHTML=`<strong>확인된 초대</strong><p>${escape(wa.invite.name)} 님 · ${escape(companySummary)}</p>`;
   const name=form?.querySelector?.('[name="name"]');if(name&&!name.value)name.value=wa.invite.name;
 }
 async function waInspectInvite(){

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {createCompanyEntryReceiver} from './public/pulse-app/entry-handoff.mjs';
 import {installationEnvironment,installationGuide,devicePermissionTimeout} from './public/pulse-app/install.mjs';
 import {deviceAvailability} from './public/pulse-app/push.mjs';
 import {header,dialogContent,projectView} from './public/pulse-app/views.mjs';
@@ -169,7 +170,7 @@ async function demoApp(userAgent){
   const listeners={},dialogs=[],replaced=[];
   const element=()=>({innerHTML:'',hidden:false,open:false,className:'',dataset:{},classList:{toggle(){}},querySelector:()=>null,querySelectorAll:()=>[],contains:()=>false,setAttribute(){},addEventListener(){},close(){this.open=false;},showModal(){this.open=true;}});
   const nodes=new Map(['#main','#app-dialog','#notice','#header-actions','#pulse-live','#connection-banner'].map(key=>[key,element()]));
-  const context=vm.createContext({...i18nContext,createDemoSession,storage:memoryStorage(),productionUI:()=>({submit:()=>false,click:()=>false,render(){},reset(){}}),dialogContent:(type,item)=>{dialogs.push({type,item});return '';},URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,console,setTimeout:()=>1,clearTimeout(){},location:new URL('https://workspace.synk.im/pulse-app/?demo=coffee'),history:{replaceState(_state,_title,url){replaced.push(url);}},navigator:{onLine:true,userAgent},window:{addEventListener(){},isSecureContext:true},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}}});
+  const context=vm.createContext({createCompanyEntryReceiver,...i18nContext,createDemoSession,storage:memoryStorage(),productionUI:()=>({submit:()=>false,click:()=>false,render(){},reset(){}}),dialogContent:(type,item)=>{dialogs.push({type,item});return '';},URL,URLSearchParams,Map,Set,WeakSet,Date,Intl,Number,JSON,Object,Array,String,Promise,console,setTimeout:()=>1,clearTimeout(){},location:new URL('https://workspace.synk.im/pulse-app/?demo=coffee'),history:{replaceState(_state,_title,url){replaced.push(url);}},navigator:{onLine:true,userAgent},window:{addEventListener(){},isSecureContext:true},document:{visibilityState:'visible',documentElement:{classList:{toggle(){}}},querySelector:key=>nodes.get(key)||null,querySelectorAll:()=>[],addEventListener(name,fn){(listeners[name]||=[]).push(fn);}}});
   const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
   const demoLine="const demo=demoMode?(await import('./demo.mjs')).createDemoSession():null;",boot=app.indexOf("if(demo){accept(demo.snapshot());");
   assert.ok(app.includes(demoLine)&&boot>0,'the demo import and the boot line are where this test expects them');

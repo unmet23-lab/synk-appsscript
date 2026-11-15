@@ -471,6 +471,7 @@
   :root .synk-workspace .mt .mt-steps li{font-size:0}
   :root .synk-workspace .mt .mt-steps li[data-s=now]{font-size:13px;overflow:visible}
   :root .synk-workspace .mt .mt-steps li[data-s=now]:last-child{align-items:flex-end}
+  :root .synk-workspace .mt .mt-steps li[data-s=now]:last-child::before{align-self:stretch}
   :root .synk-workspace .mt .mt-sec-body{padding-left:0}
   :root .synk-workspace .mt .mt-sec>summary{grid-template-columns:24px minmax(0,1fr) 16px}
   :root .synk-workspace .mt .mt-sec>summary .mt-sum{display:none}
