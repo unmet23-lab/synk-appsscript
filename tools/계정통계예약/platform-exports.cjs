@@ -37,17 +37,38 @@ async function vkPage(p,args){
   const ref=i>=0?ls.slice(i).find(l=>/combobox.*ref=/.test(l))?.match(/ref=(\d+)/)?.[1]:null;
   if(!ref)return {reason:'format'};
   await p.click('@'+ref,{label:'통계 파일 형식 고르기'});await p.snapshot();await p.click('loc=css:[role=option][value=csv]',{label:'CSV 형식 선택'});
+  const exportState=({index,uncheck})=>{
+    const node=[...document.querySelectorAll('[role=dialog]')].find(d=>d.getClientRects().length&&d.innerText.includes('Export statistics'));
+    if(!node||!node.innerText.includes('Data types')||!Array.from(node.querySelectorAll('input')).some(e=>e.value==='CSV (.csv)'))return false;
+    const checks=[...node.querySelectorAll('input[type=checkbox]')];
+    if(checks.length!==3||!checks[0].checked)return false;
+    if(index===0)return true;
+    if(uncheck&&checks[index].checked)checks[index].click();
+    return !checks[index].checked;
+  };
+  try{
+    await p.waitForFunction(exportState,{index:0},{timeout:12000});
+    for(const index of [1,2]){
+      await p.evaluate(exportState,{index,uncheck:true});
+      await p.waitForFunction(exportState,{index},{timeout:8000});
+    }
+  }catch{return {reason:'format'};}
   const selected=await p.evaluate(()=>{
-    const node=[...document.querySelectorAll('[role=dialog]')].find(d=>d.innerText.includes('Export statistics'));
+    const node=[...document.querySelectorAll('[role=dialog]')].find(d=>d.getClientRects().length&&d.innerText.includes('Export statistics'));
     if(!node||!node.innerText.includes('Data types')||!node.innerText.includes('CSV (.csv)'))return null;
     const checks=[...node.querySelectorAll('input[type=checkbox]')];
-    if(checks.length!==3||!checks[0].checked)return null;
-    for(const b of checks.slice(1))if(b.checked)b.click();
+    if(checks.length!==3||!checks[0].checked||checks.slice(1).some(b=>b.checked))return null;
     return [...node.querySelectorAll('input')].map(e=>e.value).filter(x=>/^\d\d\.\d\d\.\d{4}$/.test(x));
   });
   if(!selected||selected.length!==2)return {reason:'format'};
-  const dl=p.waitForEvent('download',{timeout:22000}).then(f=>f,()=>null);
-  await p.click('text="Export"',{label:'해당 커뮤니티의 공식 데이터 받기'});const f=await dl;
+  const exportButton='[role="dialog"] button[type="button"][aria-busy="false"]';
+  const ready=await p.evaluate(s=>{
+    const buttons=[...document.querySelectorAll(s)].filter(b=>b.getClientRects().length);
+    return buttons.length===1 && buttons[0].innerText.trim()==='Export' && !buttons[0].disabled;
+  },exportButton);
+  if(!ready)return {reason:'format'};
+  const dl=p.waitForEvent('download',{timeout:60000}).then(f=>f,()=>null);
+  await p.click('loc=css:'+exportButton,{label:'해당 커뮤니티의 공식 데이터 받기'});const f=await dl;
   if(!f)return {reason:'retry'};
   const filename=f.suggestedFilename(),m=filename.match(/^(\d+)_community_common_(\d{4}-\d\d-\d\d)_(\d{4}-\d\d-\d\d)\.csv$/);
   const dates=selected.map(x=>x.split('.').reverse().join('-'));
