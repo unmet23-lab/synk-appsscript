@@ -1071,7 +1071,7 @@ def 지시문파일들(경로들):
 
 
 # ───────── 결과 모으기 ─────────
-항목순서 = ("틀", "편집", "소품", "사건", "소리", "지시문", "연기", "그림지시문", "점", "고요", "지도", "빛")   # 「연기」는 --지시문이 함께 내는 사람 연기 줄(따로 고르지 않는다) · 「편집」은 옛 틀 표의 같은 판 잇달아 자르기(틀 항목이 함께 낸다)
+항목순서 = ("틀", "편집", "소품", "사건", "소리", "지시문", "연기", "그림지시문", "방향", "점", "고요", "지도", "빛")   # 「연기」는 --지시문이 함께 내는 사람 연기 줄(따로 고르지 않는다) · 「편집」은 옛 틀 표의 같은 판 잇달아 자르기(틀 항목이 함께 낸다) · 「방향」은 --그림지시문이 함께 낸다(점검표 43)
 기본항목 = ("틀", "소품", "사건", "소리", "지시문", "그림지시문", "점", "고요", "지도", "빛")
 
 
@@ -1828,6 +1828,63 @@ def 지시문항목(seq, r, 경로들, 실내목록=None):
             for 등급, 항목, 말 in 남길것검사(" ".join(str(d.get(k, "")) for k in ("keep", "남길 것", "line"))): r.더함("지시문", d["cut"], 등급, f"({항목}) {말}")
 
 
+# ───────── 방향(점검표 43) — 11-15 서울로 애니 네 지적(신발 · 유모차 · 거꾸로 걷는 사람)은 모두 시작 그림부터 반대쪽을 보고 있었고, 그림 글에 무엇이 어디를 보는지가 빠져 있었다 ─────────
+# 컷표 그 컷의 구도 · 연기에 걷기 · 들고 남 · 탈것 · 밀고 끄는 물건이 있는데 그림 지시문(표의 장소 · 빛 · 생김새 문장을 걷어 낸 나머지)에 화면 기준 방향이 한 마디도 없으면 걸림.
+# 방향을 부정문(「not backwards」 · 「neither foot is turned around」)으로 적으면 나노바나나가 그림을 거절했다(현장 노트 gemini_사진 11-15) — 주의.
+_움직이는컷 = re.compile(r"걷|걸어|걸음|들어오|들어와|들어선|떠나|떠난|달려|달아나|뛰어|돌아서|밀고|밀어|끌고|끌어|지나가|지나간|지나친|유모차|승합차|페리|버스|자전거|택시|오토바이")
+# 방향 말: 보는 쪽 · 가는 쪽을 뜻하는 말(facing · turned · toward · walking · pointing · from …) 뒤 서른 자 안의 화면 쪽, 또는 카메라 쪽.
+# 「near the left of the frame」처럼 자리만 말하는 문장은 세지 않는다 — 표의 장소 문장이 늘 그렇게 쓰여 있어 옛 판이 그것으로 지나갔다.
+_방향말 = re.compile(r"\b(fac(e|es|ing)|turn\w*|towards?|head(s|ed|ing)?|walk\w*|strid\w*|stroll\w*|mov(e|es|ing)|point\w*|look\w*|gaz\w*|eyes|glanc\w*|from|out\s+past|run\w*|slid\w*|roll\w*|swim\w*|lean\w*)\b"
+                   r"[^.;]{0,30}?(\b(left|right)\s+((edge|side|half|corner|third)\s+)?of\s+the\s+(frame|picture|photo|image|shot)\b|\bframe's\s+(left|right)\s+(edge|side|corner|half)\b)"
+                   r"|\btowards?\s+(the\s+camera|the\s+lens|us)\b|\baway\s+from\s+(the\s+camera|the\s+lens|us)\b"
+                   r"|\bfrom\s+behind\b|\bbacks?\s+(is\s+|are\s+)?(turned\s+)?(to|toward|towards)\s+the\s+camera\b|\bfac(e|es|ing)\s+(the\s+camera|the\s+lens|us)\b"
+                   r"|\bfrom\s+(the\s+)?(left|right)\s+to\s+(the\s+)?(left|right)\b|\b(left|right)-to-(left|right)\b"
+                   r"|\bfacing\s+the\s+(way|direction)\s+(they|she|he|it)\s+(walk|walks|are\s+walking|is\s+walking|move|moves|go|goes|are\s+going|is\s+going)\b", re.I)
+_방향부정 = re.compile(r"\b(not|never|no|neither|nor)\b[^.;]{0,40}?\b(backwards?|reversed|turned\s+around|upside[- ]down|the\s+wrong\s+way)\b", re.I)
+
+
+# 문장마다 볼 것: 걷는 사람과 탈것 · 밀고 끄는 물건을 부르는 문장은 그 문장이나 바로 다음 문장에 방향 말이 있어야 한다(컷 전체에 한 마디만 있으면 나머지가 빠져도 지나갔다).
+_움직이는것 = re.compile(r"\b(walk\w*|strid\w*|stroll\w*|march\w*|pram|prams|stroller|pushchair|buggy|ferry|bus|van|taxi|bicycle|bike|scooter|wheelchair|trolley)\b", re.I)
+_방향예시 = ("「walking toward the left edge of the frame」 · 「seen from behind, walking away from the camera」 · "
+          "「the pram's hood faces the left edge of the frame」처럼 화면 기준으로 보이는 대로 적는다(점검표 43)")
+
+
+def 방향검사(d, 나머지, 원문, 걷어낼=()):
+    """그림 지시문 한 장의 방향 줄 — [(등급, 글)]. d는 컷표 그 컷, 나머지는 표의 장소 · 빛 · 생김새 문장을 걷어 낸 지시문 글,
+    걷어낼은 더 걷어 낼 표 문장(인물 묘사 · 옷 — 「leather shoes」 같은 옷 낱말은 방향을 물을 일이 아니다)."""
+    out = []
+    글 = 나머지
+    for v in 걷어낼:
+        if not 빈칸(v): 글 = re.sub(r"\s+".join(re.escape(w) for w in 한칸(v).split()), " ", 글)
+    # 참고 그림 목록(REFS)과 금지(NOT) 줄은 이름을 늘어놓을 뿐이라 방향으로도 세지 않고 묻지도 않는다(「REFS: [IMG1] Sua facing the camera」는 장면의 방향이 아니다). 「inside the van」 · 「van interior」는 장소다.
+    본문 = "\n".join(l for l in 글.splitlines() if not re.match(r"\s*(REFS|NOT)\s*:", l))
+    움직임 = " ".join([str(d.get("구도") or "")] + [str(x.get("무엇") or "") for x in (d.get("연기") or []) if isinstance(x, dict)])
+    m = _움직이는컷.search(움직임)
+    if m and not _방향말.search(본문):
+        out.append(("걸림", f"컷표에 「{m.group(0)}」(걷기 · 들고 남 · 탈것 · 밀고 끄는 물건)이 있는데 그림 지시문에 어디를 보고 어느 쪽으로 가는지가 없다 — 사람 · 신발 · 탈것 · 미는 물건마다 {_방향예시}"))
+    else:
+        문장들 = [s.strip() for s in re.split(r"(?<=[.;!?])\s+|\n+", 본문) if s.strip()]
+        # 같은 것(걷는 사람 · 유모차 · 페리 …)은 지시문 어딘가에서 한 번 방향이 적히면 된다 — 다른 문장에서 자리만 다시 부를 때마다 묻지 않는다
+        def 갈래(w):
+            w = w.lower()
+            if re.match(r"(walk|strid|stroll|march)", w): return "걷는 사람"
+            if re.match(r"(pram|stroller|pushchair|buggy)", w): return "유모차"
+            return w
+        첫자리, 적힘 = {}, set()
+        for i, s in enumerate(문장들):
+            for x in _움직이는것.finditer(s):
+                if re.search(r"\binside\s+(the\s+|a\s+|his\s+|her\s+)?$", s[:x.start()], re.I) or re.match(r"['’]?s?\s+(interior|stop|stops|shelter|lane|station|route|timetable|ticket|driver)\b", s[x.end():], re.I): continue
+                g = 갈래(x.group(0)); 첫자리.setdefault(g, (x.group(0), s))
+                if any(_방향말.search(문장들[k]) for k in (i - 1, i, i + 1) if 0 <= k < len(문장들)): 적힘.add(g)
+        빠진 = [f"「{w}」 — 「{s[:70]}」" for g, (w, s) in 첫자리.items() if g not in 적힘]
+        if 빠진:   # 낱말로 짐작하는 판정이라 확인 — 그 물건이 화면에서 정말 어느 쪽을 보는지 읽고, 빠졌으면 적는다
+            out.append(("확인", f"걷는 사람 · 탈것 · 미는 물건 가운데 어디를 보고 어느 쪽으로 가는지가 한 번도 안 적힌 것: {' / '.join(빠진[:3])}{' …' if len(빠진) > 3 else ''} — {_방향예시}"))
+    n = _방향부정.search(원문)
+    if n:
+        out.append(("주의", f"방향을 부정문으로 적었다 — 「{n.group(0)[:80]}」(그림 엔진이 거절하거나 오히려 그린다 · 「the rounded back of each boot faces the camera」처럼 보이는 대로 적는다 · 점검표 43)"))
+    return out
+
+
 def 그림지시문항목(seq, r, 경로들):
     """이미지 콘티 지시문(<폴더>/<컷>.txt — 파일 이름이 컷 이름) — 틀 2일 때 그 컷 장면의 장소 · 빛, 인물마다 묘사 · 옷 문장이 글자 그대로 들었나(G11 · 51)."""
     if not 틀둘(seq):
@@ -1904,6 +1961,8 @@ def 그림지시문항목(seq, r, 경로들):
         if 빠짐: r.더함("그림지시문", cut, "걸림", f"{' · '.join(빠짐)} 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 · 소품 줄을 그대로 쓴다(G11 · 51)")
         else: r.더함("그림지시문", cut, "통과", "장소 · 빛 · 인물 줄이 표 그대로")
         for 말 in dict.fromkeys(확인들): r.더함("그림지시문", cut, "확인", 말)
+        사람문장 = [p.get(k) for p in 인물표.values() if isinstance(p, dict) for k in ("묘사", "맨얼굴묘사", "옷", "기준그림구성")]
+        for 등급, 말 in 방향검사(d, 나머지, 원문, 사람문장): r.더함("방향", cut, 등급, 말)
     for w, 컷색 in 탈것색.items():
         if len(컷색) < 2: continue
         색있는 = [s for s in 컷색.values() if s]

@@ -982,6 +982,51 @@ test('틀 2 + --그림지시문 — 두 단계(그림단계 맨얼굴) 컷은 �
   assert.deepEqual(r5.항목들.filter((x) => x.항목 === '그림지시문' && x.컷 === 'C4_끝').map((x) => x.등급), ['통과', '확인']);
 });
 
+test('틀 2 + --그림지시문 — 방향(점검표 43): 컷표에 걷기 · 들고 남 · 밀고 끄는 것이 있는데 그림 지시문에 가는 쪽이 없으면 걸림, 자리만 말하는 문장은 세지 않고, 물건마다 한 번 적히면 지나가고, 한 번도 안 적힌 물건은 확인, 부정문은 주의', { skip: !파이썬 && '파이썬 없음' }, () => {
+  // 11-15 서울로 애니 네 지적(신발이 거꾸로 · 유모차 방향 · 거꾸로 걷는 사람)은 모두 시작 그림부터 반대쪽을 보고 있었고, 그림 글에 무엇이 어디를 보는지가 빠져 있었다
+  const dir = 임시();
+  const 걷기 = (s) => { 컷(s, 'C1').연기[0].무엇 = '수아가 유모차를 밀고 부엌으로 걸어 들어온다'; };
+  let n = 0;
+  const 돌림 = (더) => {
+    const p = path.join(dir, `판${n++}`); fs.mkdirSync(p);
+    const 표 = 틀읽기(); 걷기(표);
+    for (const d of 표.detail) 쓰기(p, `${d.cut}.txt`, 표대로그림글(표, d, { 더: d.cut === 'C1' ? 더 : [] }));
+    const r = 틀돌리기(걷기, ['--그림지시문', p], dir);
+    return { r, 방향: r.항목들.filter((x) => x.항목 === '방향').map((x) => `${x.컷} ${x.등급}: ${x.글}`) };
+  };
+  // 옛 판 — 자리만 말한다(「at the left of the frame」 · 「near the frame's left edge」는 가는 쪽이 아니다): 걸림
+  let { r, 방향 } = 돌림(['Sua stands at the left of the frame, one hand on the pram.']);
+  assert.equal(방향.length, 1, JSON.stringify(방향));
+  assert.match(방향[0], /^C1 걸림: 컷표에 「(밀고|걸어|들어오|유모차)」\(걷기 · 들고 남 · 탈것 · 밀고 끄는 물건\)이 있는데 그림 지시문에 어디를 보고 어느 쪽으로 가는지가 없다.*\(점검표 43\)$/);
+  assert.equal(r.코드, 1);
+  ({ 방향 } = 돌림(['Sua stands near the frame\'s left edge, one hand on the pram.']));   // GPT 방향규칙-20261115b GA1
+  assert.match(방향[0] || '', /^C1 걸림: 컷표에 /, JSON.stringify(방향));
+  // 참고 그림 목록(REFS)의 방향 말은 장면의 방향이 아니다 — 걸림(GPT 방향규칙-20261115b GA2)
+  ({ 방향 } = 돌림(['REFS: [IMG1] Sua facing the camera.', 'Sua enters the kitchen holding a bowl.']));
+  assert.match(방향[0] || '', /^C1 걸림: 컷표에 /, JSON.stringify(방향));
+  // 보는 쪽 말 뒤의 「frame's left edge」는 방향이다
+  ({ 방향 } = 돌림(['Sua walks toward the frame\'s left edge, pushing the pram ahead of her.']));
+  assert.deepEqual(방향, []);
+  // 새 판 — 사람과 유모차마다 가는 쪽: 지나간다(다른 컷은 컷표에 걷기가 없어 묻지 않는다)
+  ({ r, 방향 } = 돌림(['Sua walks toward the left edge of the frame, facing the way she walks.', 'The kitchen is warm and quiet.',
+    'She pushes the pram ahead of her: its hood faces the left edge of the frame, its four wheels on the floor.', 'The pram stops by the table.']));
+  assert.deepEqual(방향, []);
+  assert.equal(r.코드, 0, JSON.stringify(r.항목들.filter((x) => x.등급 !== '통과' && x.등급 !== '알림')));
+  // 사람은 적었는데 유모차는 한 번도 안 적었다 — 확인(낱말로 짐작하는 판정이라)
+  ({ r, 방향 } = 돌림(['Sua walks toward the left edge of the frame.', 'The kitchen is warm and quiet.', 'A navy pram stands by the door.']));
+  assert.equal(방향.length, 1, JSON.stringify(방향));
+  assert.match(방향[0], /^C1 확인: 걷는 사람 · 탈것 · 미는 물건 가운데 어디를 보고 어느 쪽으로 가는지가 한 번도 안 적힌 것: 「pram」 — 「A navy pram stands by the door\.」/);
+  assert.equal(r.코드, 2);
+  // 참고 그림 목록(REFS) · 금지(NOT) 줄의 이름, 「inside the van」 · 「bus stop」은 묻지 않는다. 「from left to right」는 방향이다
+  ({ 방향 } = 돌림(['REFS: [IMG1] Sua with the pram.', 'Sua walks in from left to right.', 'The radio is playing.', 'Rain beads on the glass of a bus stop outside.',
+    'The light is like the light inside the van.', 'NOT: no one else walks by; no pram.']));
+  assert.deepEqual(방향, []);
+  // 방향을 부정문으로 적으면 주의(나노바나나가 그림을 거절했다 · 현장 노트 gemini_사진 11-15)
+  ({ 방향 } = 돌림(['Sua walks toward the camera.', 'Neither foot is turned around backwards on its leg.']));
+  assert.equal(방향.length, 1, JSON.stringify(방향));
+  assert.match(방향[0], /^C1 주의: 방향을 부정문으로 적었다 — 「Neither foot is turned around」.* · 점검표 43\)$/);
+});
+
 // ───────── 내기 도구(크레딧내기.py · 드리미나내기.py)의 굽기 전 검사 — 계정 · 잔액 · 네트워크 없이, --실행 없이 ─────────
 const 굽기전 = (...args) => spawnSync('python', ['-I', '-X', 'utf8', path.join(픽스처, '굽기전_시험.py'), ...args], { encoding: 'utf8', maxBuffer: 1 << 24 });
 const 굳은글 = 지시문글({ 연기: 'at about 0.4 s she stands perfectly still by the stove, expressionless.' });
@@ -2010,8 +2055,9 @@ test('되풀이 탈것 — 옛 판(버스 색을 그림 지시문마다 따로 �
   const 그림줄 = (r, 컷이름) => r.항목들.filter((x) => x.항목 === '그림지시문' && x.컷 === 컷이름).map((x) => `${x.등급}: ${x.글}`);
   // 옛 판 — 표에 버스 줄이 없고 그림 지시문마다 색을 따로 적었다(서울로 11-12 지시문의 꼴 그대로)
   const 옛 = 지시문들('옛', 틀읽기(), {
-    C1: ['Outside the window, one 1970s city bus (cream and cobalt blue, rounded roof, a row of square windows) drives past.'],
-    C2: ['Outside the window, a cream-and-vermilion rounded 1970s felt city bus drives past under a saffron-yellow sky.'],
+    // 방향(점검표 43)은 이 시험의 몫이 아니라 두 판 모두 가는 쪽을 적어 둔다 — 색만 다르다
+    C1: ['Outside the window, one 1970s city bus (cream and cobalt blue, rounded roof, a row of square windows) drives past from left to right.'],
+    C2: ['Outside the window, a cream-and-vermilion rounded 1970s felt city bus drives past from left to right under a saffron-yellow sky.'],
   });
   const r = 틀돌리기(null, ['--그림지시문', 옛], dir);
   assert.equal(r.코드, 2, JSON.stringify(r.항목들.filter((x) => x.등급 !== '통과')));
