@@ -133,6 +133,7 @@ async function processJob(api, job, options = {}) {
       // Aside exposes one local browser-control service across its accounts. Overlapping downloads time out there.
       const key=profile.browser==='aside'?'aside':'ego:'+(profile.profileId||'default');
       const read=()=>capture({account, profile, policy, dir, stateDir, requestedAt:job.requestedAt, missing:job.missing,
+        liveChannel:async()=>{const {channels}=await api.get('/api/state');return channels.find(channel=>channel.id===job.channelId);},
         setStage:sendStage, submit:take, covered:()=>job.missing.every(k=>touched.includes(k)), signal:control.signal});
       // Retry a temporary read once within the same leased account. Preserve the first capture and start with fresh files.
       const perform=async()=>{

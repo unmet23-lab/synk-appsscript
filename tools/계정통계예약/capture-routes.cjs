@@ -8,6 +8,7 @@ const {promisify} = require('node:util');
 const {createHash} = require('node:crypto');
 const runFile = promisify(execFile);
 const {readPublicPage,readXTimeline,publicEnvelope} = require('./public-metrics.cjs');
+const {youtubeAboutUrl,readAbout} = require('./youtube-public.cjs');
 const {parseXhs} = require('../lib/외부통계파싱.cjs');
 const {officialScreen} = require('./official-screen.cjs');
 const {ownerCapture} = require('./owner-metrics.cjs');
@@ -114,6 +115,18 @@ async function storeBatch(ctx, name, evidence, envelope) {
 async function nativeBrowser(ctx) {
   const {account,profile,dir,signal}=ctx;
   const urls=(account.platform==='brunch'?[account.publicUrl,profile.canonicalUrl]:[profile.canonicalUrl,account.publicUrl,profile.profileUrl]).filter(Boolean);
+  let youtubeId=account.externalId;
+  if(account.platform==='youtube'){
+    const about=youtubeAboutUrl(account);
+    if(!about)return {more:false,reason:'no_metrics'};
+    await ctx.setStage('public-page');
+    if(!youtubeId){
+      const channel=await ctx.liveChannel();
+      if(!channel)return {more:false,reason:'retry'};
+      youtubeId=channel.externalId;
+    }
+    urls.unshift(about);
+  }
   if(account.platform==='behance'&&account.publicUrl)urls.unshift(account.publicUrl.replace(/\/$/,'')+'/info');
   const publicRoute=PUBLIC.has(account.platform) && urls.length;
   const nativeOwner=profile.browser==='ego' && profile.profileId && ['xiaohongshu','douyin','substack'].includes(account.platform);
@@ -123,7 +136,14 @@ async function nativeBrowser(ctx) {
     argument.registeredUrl=account.publicUrl;argument.canonicalUrl=profile.canonicalUrl||account.publicUrl;
     argument.expectedTitle=profile.observedName||account.handle+'의 브런치';
   }
-  const reader=(page)=>account.platform==='x'?'await ('+readXTimeline.toString()+')('+page+','+json(argument)+','+readPublicPage.toString()+')':'await '+page+'.evaluate('+readPublicPage.toString()+','+json(argument)+')';
+  const reader=(page)=>{
+    if(account.platform==='x')return 'await ('+readXTimeline.toString()+')('+page+','+json(argument)+','+readPublicPage.toString()+')';
+    if(account.platform==='youtube'){
+      const params={registeredUrl:account.publicUrl,externalId:youtubeId,handle:account.handle};
+      return `await (async()=>{await ${page}.waitForFunction(()=>[...document.querySelectorAll('ytd-about-channel-renderer tr a[href]')].some(a=>a.getClientRects().length&&a.innerText.includes('youtube.com/@')),null,{timeout:18000}).catch(()=>{});return await ${page}.evaluate(${readAbout.toString()},${json(params)});})()`;
+    }
+    return 'await '+page+'.evaluate('+readPublicPage.toString()+','+json(argument)+')';
+  };
   const output=path.join(dir,'public-snapshot.json');
   if (profile.browser==='aside' || account.id.startsWith('yuhokorean-')) {
     if (!publicRoute || !profile.account) return {more:true};
@@ -183,6 +203,7 @@ async function savePublic(ctx,snapshot) {
 }
 
 async function capture(ctx,{ownerSource=ownerCapture,publicSource=nativeBrowser}={}) {
+  if(ctx.account.platform==='youtube' && Array.isArray(ctx.missing) && !ctx.missing.includes('views'))return 'no_metrics';
   let owner;
   try {
     owner=await ownerSource(ctx,{external,aside,read,pageJob,storeBatch,egoRound});
