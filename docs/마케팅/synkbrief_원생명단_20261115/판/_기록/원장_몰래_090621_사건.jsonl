@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1dc86-c65e-7642-a2e9-e9368159f269"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 얼굴·의상·사무실의 연속성을 유지하고, 요청하신 새 각도의 세로 영화 스틸 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":217438,"cached_input_tokens":192512,"cache_write_input_tokens":0,"output_tokens":1906,"reasoning_output_tokens":199}}

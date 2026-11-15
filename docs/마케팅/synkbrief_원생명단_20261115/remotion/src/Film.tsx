@@ -1,7 +1,7 @@
-// synkbrief B50 「무료 체험」 본편 — 새 방향 편(재연 드라마 + 끝에 지키는 법 한 줄). 뼈대는 우리편 B21 「목소리 전화」(Xx2i---7BmA · 42.5초)의 박자 자리 그대로.
-// 결(B47 Film.tsx의 장면 코드를 옮김 — 틀 파일은 tools/편틀 원천): 장면을 아래로 내리고 위는 같은 장면을 뒤집어 흐리게 · 위 그늘 위 큰 글자가 곧 말 ·
-// 사장님은 흰, 손님의 말은 회색 · 버터는 한 곳(LINES의 butter) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
-// 그린 앱 화면 칸은 없다 — 폰 속 결제 문자 · 「3일 무료 체험 시작」 · 「앱 삭제」 · 구독 화면은 시작 그림에 함께 구운 글자다.
+// synkbrief B54 「원생 명단」 본편 — 새 방향 편(재연 드라마 + 끝에 지키는 법 한 줄). 뼈대는 형식 원본 92mUc9V0eJY(AI 사기 예방 재연 숏드라마 · 39.2초)의 박자 자리.
+// 결(B50 Film.tsx의 장면 코드를 옮김 — 틀 파일은 tools/편틀 원천): 장면을 아래로 내리고 위는 같은 장면을 뒤집어 흐리게 · 위 그늘 위 큰 글자가 곧 말 ·
+// 원장은 흰, 전화 속 남자 · 경찰관의 말은 회색 · 버터는 한 곳(LINES의 butter · bi) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
+// 그린 앱 화면 칸은 없다 — 메일 · 「발신번호 표시제한」 · 송금 화면은 시작 그림에 함께 구운 글자다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from './lib/fonts';
@@ -65,7 +65,7 @@ const Shade: React.FC = () => {
 };
 
 // 큰 글자가 곧 말 — at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄만).
-const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter }) => {
+const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean; bi?: number }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter, bi = 0 }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
@@ -81,20 +81,20 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
       {/* 11-13 이해 시험: 작은 글(meta)은 줄의 from에 먼저 뜬다 — 큰 글(at)보다 앞서 「누구 · 어디」를 깔기 위해(지금까지 쓴 줄은 from = at[0]이라 그대로) */}
       {meta ? <div style={{ ...up(0), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18, maxWidth: 820, wordBreak: 'keep-all', lineHeight: 1.3, whiteSpace: 'pre-line' }}>{meta}</div> : null}
       {lines.map((l, i) => (
-        <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === 0 ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
+        <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === bi ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
       ))}
     </div>
   );
 };
 
-// 「재연 · 상황은 각색」 · 「SYNK 브리핑」 — 위 그늘 안 큰 글자 바로 위 고정 자리(11-13 카본 맹검 06 「출처 줄이 위 표시 바로 밑에 다닥다닥」 — 표시는 298 · 큰 글 자리 TOP을 352로 내려 띄움. 284로 올리면 위 머리 안전선 269에 걸림)
+// 위 표시 — 콘티 검수(11-15 · 「재연」과 「지어낸 이야기」가 부딪치고 끝 장면 전에 사라짐) → 「실제 사건을 바탕으로 꾸민 장면」을 끝까지 두고, 사실 카드(S.card) 위에서만 뺀다.
+// 당부(S.end)부터는 「SYNK 브리핑」을 붙인다. 자리는 위 그늘 안 큰 글자 바로 위(298 — 머리 안전선 269 안).
 const Label: React.FC = () => {
   const f = useCurrentFrame();
+  const [c0, c1] = S.card;
+  const o = interpolate(f, [sec(c0) - 4, sec(c0), sec(c1), sec(c1) + 4], [1, 0, 0, 1], clamp);
   const end = f >= sec(S.end);
-  // v12(컷 전수 2 「5.0초 위 표시가 바로 바뀜」): 바뀌는 자리에서 4장 흐렸다가 다시 뜬다
-  // B50: 콘티 검수(Fable) 「재연 표시를 처음부터 한 줄로」 — 끝(S.end) 전까지 바뀌지 않는다
-  const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : 1;
-  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : '재연 · 인물과 상황은 지어낸 이야기'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑 · 실제 사건을 바탕으로 꾸민 장면' : '실제 사건을 바탕으로 꾸민 장면'}</div>;
 };
 
 // 미학 맹검(11-14 · 끝 장면 「셔터 소리는 나는데 찍는 순간이 화면에 없다」) → 셔터(SOUNDS의 셔터.wav)에 맞춰 화면이 한 번 하얗게 번쩍인다(0.75 → 0, 6장 = 0.25초)
@@ -122,13 +122,13 @@ export const Film: React.FC = () => {
       {LINES.map((l, i) => {
         const next = LINES[i + 1];
         const fade = !next || next.from - l.to > 0.6 ? 8 : 3;
-        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} metaSize={l.metaSize} deep={l.deep} instant={l.instant} fade={fade} at={l.at} butter={l.butter} />;
+        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} metaSize={l.metaSize} deep={l.deep} instant={l.instant} fade={fade} at={l.at} butter={l.butter} bi={l.bi} />;
       })}
 
       <Label />
 
       {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
-      {/* 배경음(보유곡 시티팝_147 27.5초부터 — 곡 안 빈 마디 26.25~27초를 피함, docs/홍보물/BGM/README). 반전(S.reveal)에서 조금 올라오고 끝까지 간다(마지막 0.6초에 사그라짐) — 바탕에 방 소리 */}
+      {/* 배경음(일레븐랩스 연주곡 — 낮은 맥박 신스 · 시계 같은 잔 타악 · 어두운 펠트 피아노, 8초 마디라 0~32초에 16~32초를 이어 48초 · 빈 마디 없음). 반전(S.reveal)에서 조금 올라오고 끝까지 간다(마지막 0.6초에 사그라짐) — 바탕에 방 소리 */}
       <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.reveal - 0.3), sec(S.reveal + 0.3), sec(TOTAL_S - 0.6), sec(TOTAL_S)], [0.06, 0.1, 0.1, 0.13, 0.13, 0], clamp)} />
       {/* 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
       <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
