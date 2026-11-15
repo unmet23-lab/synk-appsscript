@@ -210,7 +210,7 @@ function 곳찾기(도구들) {
     }
   }
   const 줄 = [...점수].map(([곳, n]) => ({ 곳, 점수: n, 고침: 고침.get(곳) || 0, 길점수, 길고침 })).filter((x) => x.고침 > 0)
-    .sort((a, b) => b.점수 - a.점수 || a.곳.localeCompare(b.곳));
+    .sort((a, b) => b.점수 - a.점수 || a.곳.localeCompare(b.곳, 'ko'));
   const 높 = 줄.length ? 줄[0].점수 : 0;
   return 줄.filter((x) => x.점수 >= 3 && x.점수 >= 높 * 0.1).slice(0, 곳수);
 }
@@ -298,7 +298,7 @@ function 곳좁히기(곳, 길점수, 트랙줄, 길고침 = null) {
     // 고친 흔적이 있는 아래 폴더로만 내려간다 — 읽기만 한 폴더가 실제로 고친 폴더를 밀어내지 않게(GPT 다시 검수 GA2)
     const 후보 = [...아래].filter(([한칸]) => !길고침 || 아래고침.get(한칸));
     if (!후보.length) return 곳;
-    const 다음 = 후보.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+    const 다음 = 후보.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ko'))[0][0];
     // 내려간 곳을 품은 트랙 줄이 없으면 좁히지 않는다 — 한 제품 폴더(experiences/solo-backup-rust)에 그날 일이 여럿 붙어 7줄을 넘기자
     // 줄이 하나도 없는 engine으로 내려가, 그 세션이 자기 일의 트랙 줄 · 유호님 차례 · 결정 행을 모두 잃었다(업무 백업 세션 재현, 11-15)
     if (!트랙줄.some((r) => 경로품음(r, 다음))) return 곳;
@@ -443,8 +443,9 @@ function 밖글(밖, { 모두, 몫 }) {
     const 최근 = 그밖.filter((x) => 날들.includes(x.r.날));
     const 묶음 = new Map();
     for (const x of 최근) { const k = 일이름(x.r); const v = 묶음.get(k) || { 수: 0, 날: '' }; v.수++; if (x.r.날 > v.날) v.날 = x.r.날; 묶음.set(k, v); }
-    // 가장 최근 날의 이름을 먼저(그 안에서는 많은 것부터) — 이틀 치 이름이 몫을 넘으면 어제 것부터 잘린다
-    const 이름들 = [...묶음].sort((a, b) => b[1].날.localeCompare(a[1].날) || b[1].수 - a[1].수 || a[0].localeCompare(b[0]));
+    // 가장 최근 날의 이름을 먼저(그 안에서는 많은 것부터) — 이틀 치 이름이 몫을 넘으면 어제 것부터 잘린다.
+    // 이름 순서는 'ko'로 못 박는다 — 기본 로캘에 맡기면 이 PC(ko-KR)는 「흠 장부 · Workspace」, 리눅스 CI(en-US)는 「Workspace · 흠 장부」로 갈린다(11-16)
+    const 이름들 = [...묶음].sort((a, b) => b[1].날.localeCompare(a[1].날) || b[1].수 - a[1].수 || a[0].localeCompare(b[0], 'ko'));
     const 머 = `그 밖의 일(${날들.map((d) => d.slice(5)).reverse().join(' ~ ')}의 ${최근.length}개)을 이름으로 묶으면:`;
     const 붙인 = [];
     let 몫2 = 남몫 - [...머].length - 20;
