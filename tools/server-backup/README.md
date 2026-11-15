@@ -66,7 +66,7 @@ Supabase `vault.secrets` 복원에는 DB dump 외에 해당 프로젝트의 pgso
 - `backup.cjs`는 Drive 열쇠를 열 때마다 열쇠의 클라이언트가 `restrictedClientId`와 같은지 본다. 여는 자리는 77yuhbs 열쇠, 회사 메신저의 활성 연결과 첨부 연결, 키 의존성 확인이다. 다르면 `SERVER_OAUTH_CLIENT_MISMATCH`로 멈춘다. 같으면 받은 토큰을 tokeninfo로 확인한다. 토큰의 대상이 다르거나 범위가 `drive.file` 하나가 아니면 `SERVER_OAUTH_SCOPE_MISMATCH`이고, tokeninfo가 실패하면 `SERVER_OAUTH_CHECK_FAILED`이다. 토큰을 받을 때는 열쇠의 세 값(client_id, client_secret, refresh_token)만 보낸다.
 - 범위 판정은 같은 폴더의 `oauth-policy.cjs`(`assertRestrictedToken`)가 한다. clasp 클라이언트(`107294490549-`로 시작)는 설정에 적혀 있어도 받지 않는다. `backup.cjs`를 깔 때는 이 파일이 옆에 있어야 한다.
 - 회사 서버의 `watch.py`는 라디오 영수증을 라디오 앱의 열쇠로 읽는다. 열쇠는 `credentials.json`의 `drive77Radio`이고, 없으면 `drive77`을 쓴다. 열쇠의 클라이언트가 설정의 `radioClientId`(없으면 `restrictedClientId`)와 다르거나 clasp 클라이언트면 `RADIO_OAUTH_CLIENT_MISMATCH`다. 토큰의 대상이나 범위가 다르면 `RADIO_OAUTH_SCOPE_MISMATCH`다. `requireRestrictedDrive`가 참인데 `radioClientId`가 없으면 `RADIO_OAUTH_CLIENT_REQUIRED`다.
-- 이 세 코드는 경보에 실리지 않는다. `watch.py`가 라디오 검사의 예외를 모두 `RADIO_REMOTE_AUDIT_FAILED` 하나로 바꿔 보내기 때문이다. 그래서 그 경보가 오면 열쇠 문제인지 영수증 문제인지 서버에서 직접 확인해야 한다.
+- 이 세 코드는 경보 메일에 그대로 실린다(`RADIO_KEY_ERRORS`, 2026-11-16부터). 10-21 판은 라디오 검사의 예외를 모두 `RADIO_REMOTE_AUDIT_FAILED` 하나로 바꿔 보내서, 메일만으로는 열쇠 문제인지 영수증 문제인지 알 수 없었다. 그 밖의 예외(영수증을 못 읽음, 소유자나 크기가 다름, 네트워크 오류)는 지금도 `RADIO_REMOTE_AUDIT_FAILED` 하나다. 예외에 붙은 글은 경보에 싣지 않는다.
 
 2026-11-16 06시대에 세 서버의 파일을 받아 저장소와 견준 결과는 아래와 같다. 해시는 서버 파일 그대로의 sha256이다.
 

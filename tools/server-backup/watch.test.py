@@ -26,11 +26,17 @@ class WatchTests(unittest.TestCase):
   r=self.runwatch(timer=False);self.assertFalse(r['healthy']);self.assertEqual(self.events[0]['entries'][0]['jsonPayload']['error'],'BACKUP_TIMER_DISABLED')
  def test_original_failure_code_is_delivered_once(self):
   self.state.update(status='failed',error='STORAGE_ETAG_MISMATCH');self.runwatch();self.runwatch();self.assertEqual(len(self.events),1);self.assertEqual(self.events[0]['entries'][0]['jsonPayload']['error'],'STORAGE_ETAG_MISMATCH')
- def test_radio_key_refusal_still_alerts_but_only_as_remote_audit_failure(self):
-  # The server code folds every radio_status exception into one alert code; the narrow-key reason stays in neither the alert nor radio-audit.json.
-  def refuse(cfg):raise RuntimeError('RADIO_OAUTH_CLIENT_REQUIRED')
-  r=self.runwatch(cfg={'role':'company','radioFolderId':'radio_folder-1','requireRestrictedDrive':True},radio=refuse)
-  self.assertFalse(r['healthy']);self.assertEqual(len(self.events),1);self.assertEqual(self.events[0]['entries'][0]['jsonPayload']['error'],'RADIO_REMOTE_AUDIT_FAILED');self.assertFalse((self.root/'radio-audit.json').exists())
+ def radio_alert(self,failure):
+  def fail(cfg):raise failure
+  self.events=[];(self.root/'alert-ack.json').unlink(missing_ok=True);(self.root/'alert-pending.json').unlink(missing_ok=True)
+  r=self.runwatch(cfg={'role':'company','radioFolderId':'radio_folder-1','requireRestrictedDrive':True},radio=fail)
+  self.assertFalse(r['healthy']);self.assertEqual(len(self.events),1);self.assertFalse((self.root/'radio-audit.json').exists())
+  return self.events[0]['entries'][0]['jsonPayload']['error']
+ def test_radio_narrow_key_refusal_reaches_the_alert_as_its_own_code(self):
+  for code in ['RADIO_OAUTH_CLIENT_REQUIRED','RADIO_OAUTH_CLIENT_MISMATCH','RADIO_OAUTH_SCOPE_MISMATCH']:self.assertEqual(self.radio_alert(RuntimeError(code)),code)
+ def test_other_radio_failures_stay_one_code_and_never_carry_upstream_text(self):
+  for failure in [RuntimeError('Bearer test_fixture_only'),AssertionError(),OSError('HTTP Error 403: test_fixture_only'),ValueError('bad json')]:
+   self.assertEqual(self.radio_alert(failure),'RADIO_REMOTE_AUDIT_FAILED')
 class RadioKeyTests(unittest.TestCase):
  # Server-only check deployed 2026-10-21 on all three nodes: the company node reads radio receipts with the radio's own narrow (drive.file only) key.
  RADIO='radio-fixture.apps.googleusercontent.com';COMPANY='company-fixture.apps.googleusercontent.com';CLASP='107294490549-fixture.apps.googleusercontent.com';DRIVE='https://www.googleapis.com/auth/drive.file'

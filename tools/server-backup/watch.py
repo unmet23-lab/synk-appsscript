@@ -3,6 +3,8 @@
 import datetime,hashlib,json,os,pathlib,subprocess,urllib.request,urllib.parse,sys
 ROOT=pathlib.Path('/var/lib/synk-server-backup')
 PROJECT='synk-bake-unmet27'
+# Narrow-key refusals raised by radio_status reach the alert as themselves; any other failure stays RADIO_REMOTE_AUDIT_FAILED.
+RADIO_KEY_ERRORS=('RADIO_OAUTH_CLIENT_REQUIRED','RADIO_OAUTH_CLIENT_MISMATCH','RADIO_OAUTH_SCOPE_MISMATCH')
 def now():return datetime.datetime.now(datetime.timezone.utc)
 def save(p,v):
  t=p.with_suffix('.tmp');t.write_text(json.dumps(v));os.chmod(t,0o600);t.replace(p)
@@ -60,6 +62,7 @@ def main():
  if 'ActiveState=active' not in timer or 'UnitFileState=enabled' not in timer:error='BACKUP_TIMER_DISABLED'
  if cfg.get('radioFolderId'):
   try:error=radio_status(cfg) or error
+  except RuntimeError as refused:error=str(refused) if str(refused) in RADIO_KEY_ERRORS else 'RADIO_REMOTE_AUDIT_FAILED'
   except Exception:error='RADIO_REMOTE_AUDIT_FAILED'
  if '--self-test' in sys.argv:error='SYNTHETIC_BACKUP_ALERT_TEST'
  if error:
