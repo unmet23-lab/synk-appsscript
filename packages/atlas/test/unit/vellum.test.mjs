@@ -81,6 +81,12 @@ test('reasonLine이 다루는 이유 종류는 모두 표에 있다', () => {
   for (const code of Object.values(REASON_CODES)) {
     if (SILENT_CODES.includes(code)) {
       assert.equal(render({ code, slots: {} }, { label }), null, `${code}는 말하지 않는다`);
+      // 말하지 않는 종류는 가리키는 것도 없다 — 기본 칸 unit의 id를 내지 않는다(카본 엔진급 끝 판 C1)
+      assert.equal(
+        subjectOf({ code, slots: { unit: 'u1' } }),
+        null,
+        `${code}는 가리키는 것이 없다`,
+      );
       continue;
     }
     const slots = {
@@ -306,11 +312,55 @@ test('영어 · 몽골어 줄 — 홈 · 활동 고르기 종류마다 있고, �
       }
       if (slots.unit || slots.topic)
         assert.ok(line.includes(names[slots.unit ?? slots.topic]), `${lang} ${code}: 이름`);
+      assert.doesNotMatch(line, /‘\s*’|«\s*»/, `${lang} ${code}: 빈 따옴표가 없다`);
+    }
+  for (const lang of ['en', 'mn'])
+    assert.equal(
+      render({ code: 'host.homework', slots: { skill: 's' } }, { lang, label: () => 'R' }),
+      null,
+      `숙제 상태를 모르면 ${lang}도 말하지 않는다`,
+    );
+});
+
+// 이름 없는 복습 문장 — 생활 단위가 없거나(빈 칸) 이름이 실리지 않은(빈 이름) 복습은 세 언어 모두 이름 없는 틀이고, 이름이 있으면 따옴표 안에
+// 든다(카본 엔진급 끝 판 C2 — 홈 줄 시험은 꼴만 보아 이름 분기가 깨져 빈 따옴표가 찍혀도 통과했다).
+test('이름 없는 복습 문장 — 세 언어 모두 이름 없는 틀이고 빈 따옴표가 없다(카본 엔진급 끝 판 C2)', () => {
+  const NAMELESS_LINES = {
+    ko: {
+      'host.missed': '놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.',
+      'host.bridge': '레슨에서 만난 표현을 오늘은 새 상황에서 다시 만나요.',
+    },
+    en: {
+      'host.missed':
+        'You missed some expressions — today, let’s try them again in a different situation.',
+      'host.bridge': 'Today, let’s review expressions from your lessons in a new situation.',
+    },
+    mn: {
+      'host.missed': 'Алдсан үг хэллэгээ өнөөдөр өөр нөхцөл байдалд дахин ашиглаж үзье.',
+      'host.bridge': 'Хичээл дээр үзсэн үг хэллэгээ өнөөдөр шинэ нөхцөл байдалд дахин давтъя.',
+    },
+  };
+  for (const [lang, lines] of Object.entries(NAMELESS_LINES))
+    for (const [code, text] of Object.entries(lines)) {
+      assert.equal(
+        render({ code, slots: {} }, { lang, label: () => '은행' }),
+        text,
+        `${lang} ${code}: 단위 없음`,
+      );
+      for (const name of [null, '', '  '])
+        assert.equal(
+          render({ code, slots: { unit: 'u' } }, { lang, label: () => name }),
+          text,
+          `${lang} ${code}: 이름 없음(${JSON.stringify(name)})`,
+        );
     }
   assert.equal(
-    render({ code: 'host.homework', slots: { skill: 's' } }, { lang: 'en', label: () => 'R' }),
-    null,
-    '숙제 상태를 모르면 영어도 말하지 않는다',
+    render({ code: 'host.bridge', slots: { unit: 'u' } }, { lang: 'en', label: () => '은행' }),
+    'You learned ‘은행’ in a lesson — today, let’s review it in a new situation.',
+  );
+  assert.equal(
+    render({ code: 'host.bridge', slots: { unit: 'u' } }, { lang: 'mn', label: () => '은행' }),
+    'Хичээл дээр үзсэн үг хэллэг: «은행». Өнөөдөр шинэ нөхцөл байдалд дахин давтъя.',
   );
   assert.equal(
     render({ code: 'host.missed', slots: { unit: 'u' } }, { lang: 'en', label: () => '은행' }),
@@ -319,10 +369,6 @@ test('영어 · 몽골어 줄 — 홈 · 활동 고르기 종류마다 있고, �
   assert.equal(
     render({ code: 'host.missed', slots: { unit: 'u' } }, { lang: 'mn', label: () => '은행' }),
     'Алдсан үг хэллэг: «은행». Өнөөдөр өөр нөхцөл байдалд дахин ашиглаж үзье.',
-  );
-  assert.equal(
-    render({ code: 'host.bridge', slots: {} }, { lang: 'mn', label: () => null }),
-    'Хичээл дээр үзсэн үг хэллэгээ өнөөдөр шинэ нөхцөл байдалд дахин давтъя.',
   );
 });
 

@@ -34,9 +34,11 @@ const quiet = fn => {
   }
 };
 
-// 학습일 열쇠 — 차례 표시(§20-8)를 비우는 때. 기기 현지 새벽 4시가 경계다.
+// 학습일 열쇠 — 차례 표시(§20-8)를 비우는 때. 기기 현지 새벽 4시가 경계다. 다시 그리는 때(nextDayStart)와 같은 달력 현지 시각으로 센다 —
+// 4시간을 빼서 세면 서머타임이 바뀌는 날 열쇠가 현지 5시(봄)나 3시(가을)에 바뀌어 다시 그리는 때와 어긋난다(카본 엔진급 끝 판 B5).
 export function todayKey(now = Date.now()) {
-  const at = new Date(now - DAY_START_HOUR * 3_600_000);
+  const at = new Date(now);
+  if (at.getHours() < DAY_START_HOUR) at.setDate(at.getDate() - 1);
   return `${at.getFullYear()}-${at.getMonth() + 1}-${at.getDate()}`;
 }
 // 다음 학습일이 시작되는 때(다시 그리는 때, 설계 검토 H22).
@@ -106,15 +108,15 @@ export function reviewFact(items = []) {
 // 짧은 연습 — 항목(skillId)마다 하나. 그 항목에서 돌아온 단위마다 문항 하나만 후보다(§20-2). 두뇌는 할 것의 수를 문항으로 세고 새 문항까지
 // 세므로, 문항을 모두 넘기면 돌아온 단위가 하나뿐인 큰 짧은 연습이 돌아온 표현이 여럿인 생활 복습을 앞지른다(설계 검토 H14 넷째 장면). TOPIK
 // 문항은 단위를 여럿이 나눠 가져 돌아온 단위가 든 문항만 추려도 수가 커진다 — 그래서 단위마다 하나다. 그러면 할 것의 수가 돌아온 단위의 수가
-// 되어 생활 복습(lifeDue ③ — 단위마다 복습 하나)과 같은 셈이다. 소리를 끈 날은 듣기 문항을 뺀다. 연습 화면이 실제로 내는 문항은 연습 코치가 고른다.
+// 되어 생활 복습(lifeDue ③ — 단위마다 복습 하나)과 같은 셈이다. 연습 화면이 실제로 내는 문항은 연습 코치가 고른다. 소리를 끈 날 듣기 짧은 연습은
+// 빼지 않고 잠근다(activity → blockedBy의 소리 거름 — 사실 locked). 빼면 듣기 연습에만 돌아온 단위가 있는 날이 조건에 걸린 날(blocked)이 아니라
+// 다 한 날로 보인다(카본 엔진급 끝 판 B1).
 function practiceActivities({ pool, dueUnits, itemUnits, settings, labels, length }) {
   if (!Array.isArray(pool) || !dueUnits?.size || typeof itemUnits !== 'function') return [];
   const bySkill = new Map();
   const covered = new Map(); // 항목 → 이미 문항을 고른 돌아온 단위
   for (const item of pool) {
     if (typeof item?.itemKey !== 'string' || typeof item.skillId !== 'string') continue;
-    const listening = item.skillId.split('.')[1] === 'listening';
-    if (listening && settings.audioAvailable === false) continue;
     const units = (quiet(() => itemUnits(item.itemKey)) ?? []).map(row => row?.unit);
     const seen = covered.get(item.skillId) ?? new Set();
     const fresh = units.filter(unit => dueUnits.has(unit) && !seen.has(unit));
@@ -300,8 +302,9 @@ function rowWhy(entry, act, { capped, say }) {
 // 세 줄 — plan()의 차례 그대로, 칸마다 한 줄. opened: 이번 학습일에 이 문서에서 연 칸.
 export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null } = {}) {
   const byId = new Map(activities.map(act => [act.plan.id, act]));
-  const life = entries.find(entry => entry.id === LIFE_REVIEW_ID);
-  const capped = Boolean(life?.capped);
+  // 하루 복습 상한(§20-3): 상한은 엔진 전체의 값이다(오늘 복습 수가 하루 상한에 닿았고 미룬 것이 있다 — 후보를 넘긴 활동이면 어느 항목이든
+  // 같은 값). 생활 복습 항목만 보면 생활 복습 없이 짧은 연습이나 다음 레슨만 있는 상한 날을 「다 만났어요」로 잘못 말한다(GPT 끝 판 GB1).
+  const capped = entries.some(entry => Boolean(entry?.capped));
   const rows = [];
   const taken = new Set();
   for (const entry of entries) {

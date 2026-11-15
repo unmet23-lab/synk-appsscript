@@ -16,16 +16,18 @@ import {bankItems} from '../world-topik-items.mjs';
 const readJson=url=>JSON.parse(fs.readFileSync(new URL(url,import.meta.url),'utf8'));
 const MAP_DATA={index:readJson('../../../packages/atlas/map/index.json'),units:readJson('../../../packages/atlas/map/units.json')};
 const BANK=bankItems(readJson('../world-topik-items.json'));
+// 낱말 표 — 앱의 코치는 낱말 이름을 실어 연다(world-atlas-next.mjs words: true). 낱말 단위의 이유 문장이 이름을 말하려면 든다.
+const WORDS=readJson('../../../packages/atlas/map/words.json');
 const MIN=60_000,HOUR=3_600_000,DAY=86_400_000;
 const T0=Date.UTC(2026,10,16,1,0,0); // 11-16 10:00 KST
 const ORDER=PACKS.flatMap(pack=>pack.lessons.map(lesson=>lesson.id));
 const lessonOf=id=>LESSONS.find(lesson=>lesson.id===id);
 
 let stores=0;
-// 홈 코치 — 지도 전체(생활 · TOPIK 은행)를 안다. start: 코치의 시계가 시작하는 때(그 앞의 답을 지어 넣으려고 앞당긴다).
-async function homeCoach({start=T0,params=null}={}){
+// 홈 코치 — 지도 전체(생활 · TOPIK 은행)를 안다. start: 코치의 시계가 시작하는 때(그 앞의 답을 지어 넣으려고 앞당긴다). words: 낱말 표를 싣는다.
+async function homeCoach({start=T0,params=null,words=false}={}){
  stores+=1;let now=start;const time={now:()=>now,advance:ms=>{now+=ms;},at:value=>{now=value;},get t(){return now;}};
- const coach=atlas.createCoach({gameId:'world-home',mapData:MAP_DATA,dayOffset:540,...(params?{params:{...atlas.PARAMS,...params}}:{}),
+ const coach=atlas.createCoach({gameId:'world-home',mapData:words?{...MAP_DATA,words:WORDS}:MAP_DATA,dayOffset:540,...(params?{params:{...atlas.PARAMS,...params}}:{}),
   host:{guest:true,port:atlas.memoryPort(),key:`synk-atlas:world-home-test-${process.pid}-${stores}`,now:time.now}});
  await coach.ready;return {coach,time};
 }
@@ -97,14 +99,6 @@ test('방금 놓친 복습(①) — 복습 줄이 오늘 공부보다 앞이고,
  assert.equal(review.why.code,'host.missed');
  assert.equal(review.why.text,'놓친 「안녕하세요.」, 오늘은 다른 장면에서 다시 해 봐요.');
  assert.deepEqual(review.why.evidence,{fact:'review',review:'missed',unit:'ko.life.greet-hello'});
- // 생활 단위 없이 넘긴 사실(이름 없는 ①)도 생활 복습 활동에만 붙는다 — 다른 줄이 이 사실로 앞지르지 않는다(설계 주인 11-15 조건)
- const bare={...judged,items:judged.items.map(item=>({...item,unit:null}))};
- assert.deepEqual(reviewFact(bare.items),{kind:'missed'});
- const nameless=planOf({coach,progress,now:time.t,judged:bare});
- assert.deepEqual(kinds(nameless),['again','new']);
- assert.deepEqual(nameless.today.items.filter(row=>row.why.code==='host.missed').map(row=>row.activityId),[LIFE_REVIEW_ID]);
- assert.equal(nameless.today.items[0].why.text,'놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.');
- assert.deepEqual(nameless.today.items[0].why.evidence,{fact:'review',review:'missed'});
  assert.equal(plan.selected.route,'review');
  assert.deepEqual(plan.selected.reviewIds,['greetings-expressions-hello-transfer']);
  const later=planOf({coach,progress,now:time.t,judged,opened:new Set(['again'])});
@@ -115,11 +109,33 @@ test('방금 놓친 복습(①) — 복습 줄이 오늘 공부보다 앞이고,
  coach.dispose();
 });
 
-test('생활 단위가 없는 놓친 복습은 이름 없는 문장으로 선다(설계 주인 11-15 조건 2 · 19개)',()=>{
+test('생활 단위가 없는 놓친 복습은 이름 없는 문장으로 선다 — 지도에 생활 단위가 없는 진짜 복습 문항 모두(설계 주인 11-15 조건 2 · 카본 엔진급 끝 판 B6)',async()=>{
  assert.deepEqual(reviewFact([{id:'a',unit:null,why:'soon'}]),{kind:'missed'});
  assert.deepEqual(reviewFact([{id:'a',unit:null,why:'soon'},{id:'b',unit:'u',why:'soon'}]),{kind:'missed',unit:'u'});
  assert.deepEqual(reviewFact([{id:'b',unit:'u',why:'first'}]),{kind:'bridge',unit:'u'});
  assert.equal(reviewFact([{id:'c',unit:'u',why:'due'}]),null);
+ // 단위를 덮어 지운 가짜가 아니라 진짜 문항마다 그 문항을 방금 놓친 날을 짓는다. 후보가 서지 않는 문항이 있으면 복습 줄이 통째로 빠지므로
+ // 하나씩 본다. 이름 없는 사실은 생활 복습 활동에만 붙고, 다른 줄이 이 사실로 앞지르지 않는다(설계 주인 11-15 조건).
+ const {coach:look}=await homeCoach();
+ const unitsOf=lifeUnitsOf(look,LESSONS);
+ const bare=LESSONS.flatMap(lesson=>lesson.questions.map((question,index)=>({lesson,index,question})))
+  .filter(({question})=>question.review?.id&&!(unitsOf({id:question.review.id})??[]).length);
+ look.dispose();
+ assert.ok(bare.length>0,'생활 단위가 없는 복습 문항이 있다');
+ for(const {lesson,index,question} of bare){
+  const {coach,time}=await homeCoach();
+  const progress=progressOf({completed:ORDER.slice(0,ORDER.indexOf(lesson.id)+1),reviews:[reviewOf(lesson.id,index,{lapses:1,lastAt:T0-3*MIN,dueAt:T0-2*MIN})]});
+  const judged=judgeOf(coach,progress,time.t),label=question.review.id;
+  assert.deepEqual(reviewFact(judged.items),{kind:'missed'},label);
+  const plan=planOf({coach,progress,now:time.t,judged});
+  const [first]=plan.today.items;
+  assert.equal(first?.activityId,LIFE_REVIEW_ID,`${label}: 복습 줄이 맨 앞`);
+  assert.equal(first.why.code,'host.missed',label);
+  assert.equal(first.why.text,'놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.',label);
+  assert.deepEqual(first.why.evidence,{fact:'review',review:'missed'},label);
+  assert.deepEqual(plan.today.items.filter(row=>row.why.code==='host.missed').map(row=>row.activityId),[LIFE_REVIEW_ID],label);
+  coach.dispose();
+ }
 });
 
 test('다리 복습(②) — 이유가 「처음 만나요」가 아니라 레슨 다음 날의 새 상황 복습이다(설계 검토 H2)',async()=>{
@@ -205,6 +221,37 @@ test('시간 제한 — 정한 시간보다 긴 활동은 잠기고, 남는 줄�
  coach.dispose();
 });
 
+test('소리를 끈 날 — 듣기 짧은 연습은 빠지지 않고 잠긴다 · 듣기 연습에만 돌아온 단위가 있으면 다 한 날이 아니라 조건에 걸린 날이다(카본 엔진급 끝 판 B1)',async()=>{
+ // 읽기 문항으로 만난 낱말이 돌아왔고, 짧은 연습 풀에는 그 낱말이 든 듣기 문항의 항목만 있다. 레슨은 모두 마쳤다.
+ const {coach,time}=await homeCoach({start:T0-3*DAY,words:true});
+ const unitsOf=item=>coach.itemUnits(item.itemKey).map(row=>row.unit);
+ const heard=BANK.filter(item=>item.skillId.split('.')[1]==='listening').map(item=>({item,units:new Set(unitsOf(item))}));
+ let pair=null;
+ for(const item of BANK){
+  if(item.skillId.split('.')[1]!=='reading')continue;
+  const units=unitsOf(item);
+  if(units.length!==1||!units[0].startsWith('ko.word.'))continue;
+  const other=heard.find(row=>row.units.has(units[0]));
+  if(other){pair={read:item,heard:other.item,unit:units[0]};break;}
+ }
+ assert.ok(pair,'읽기로 만난 낱말이 든 듣기 문항');
+ await answer(coach,pair.read.itemKey,true);
+ time.at(T0);
+ assert.deepEqual(coach.due().map(row=>row.unit),[pair.unit],'그 낱말이 돌아왔다');
+ const pool=BANK.filter(item=>item.skillId===pair.heard.skillId);
+ const progress=progressOf({completed:ORDER});
+ const on=planOf({coach,progress,now:time.t,pool});
+ assert.deepEqual(on.today.items.map(row=>[row.kind,row.route]),[['again','practice']],'소리를 켠 날은 듣기 짧은 연습이 복습 줄');
+ assert.equal(on.today.items[0].why.code,'unit.due');
+ const off=planOf({coach,progress,now:time.t,pool,settings:{audio:'off'}});
+ assert.equal(off.today.items.length,0);
+ assert.equal(off.status,'unavailable');
+ assert.deepEqual(off.today.empty,{code:'blocked',text:null},'다 한 날(done)이 아니다');
+ assert.equal(off.reason,'지금 조건에 맞는 활동이 없어요. 시간이나 소리 설정을 바꿔 볼 수 있어요.');
+ assert.ok(off.candidates.some(candidate=>candidate.route==='practice'&&candidate.audioRequired),'잠긴 듣기 연습도 후보에 남는다');
+ coach.dispose();
+});
+
 test('하루 복습 상한 — 복습 줄이 없고 복습 칸 자리에 상한 문장, 오늘 공부는 선다 · 다 마친 학생은 빈 줄이 상한 문장이다(§20-3 · 설계 주인 11-15 조건 3)',async()=>{
  const {coach,time}=await homeCoach({start:T0-3*DAY,params:{reviewsPerDay:0}});
  await answer(coach,mainKeys('greetings-expressions')[0],true);
@@ -274,6 +321,30 @@ test('단추의 차례 — 하던 것 → 열지 않은 칸의 첫 줄 → 다 �
  assert.equal(pickRow([],new Set()),null);
 });
 
+// 시간대를 잠시 바꿔 본다 — Node는 process.env.TZ를 바꾸면 바로 따른다. 지우기만 하면 처음 시간대로 돌아가지 않아, 처음 시간대를 다시 넣은 뒤 지운다.
+function inZone(zone,fn){
+ const env=process.env.TZ,first=Intl.DateTimeFormat().resolvedOptions().timeZone;
+ process.env.TZ=zone;
+ try{return fn();}finally{process.env.TZ=first;if(env===undefined)delete process.env.TZ;else process.env.TZ=env;}
+}
+test('학습일 — 서머타임이 바뀌는 날에도 열쇠가 바뀌는 때와 다시 그리는 때가 같은 현지 새벽 4시다(카본 엔진급 끝 판 B5)',()=>{
+ const first=Intl.DateTimeFormat().resolvedOptions().timeZone;
+ inZone('America/New_York',()=>{
+  assert.equal(new Date(Date.UTC(2026,2,8,8,0)).getHours(),4,'시간대를 바꿨다');
+  // 3월 8일 새벽 2시에 시계가 3시로 뛴다 — 현지 4시(08:00 UTC)에 다시 그리면 열쇠도 그날이다
+  const spring=Date.UTC(2026,2,8,8,0);
+  assert.equal(nextDayStart(spring-MIN),spring);
+  assert.equal(todayKey(spring-MIN),'2026-3-7');
+  assert.equal(todayKey(spring),'2026-3-8');
+  // 11월 1일 새벽 2시에 시계가 1시로 돌아간다 — 현지 3시(08:00 UTC)는 아직 전날이고, 현지 4시(09:00 UTC)에 바뀐다
+  const fall=Date.UTC(2026,10,1,9,0);
+  assert.equal(nextDayStart(fall-HOUR),fall);
+  assert.equal(todayKey(fall-HOUR),'2026-10-31');
+  assert.equal(todayKey(fall),'2026-11-1');
+ });
+ assert.equal(Intl.DateTimeFormat().resolvedOptions().timeZone,first,'처음 시간대로 돌아왔다');
+});
+
 test('학습일 — 기기 현지 새벽 4시가 경계다',()=>{
  const at=new Date(2026,10,16,3,59).getTime(),after=new Date(2026,10,16,4,1).getTime();
  assert.notEqual(todayKey(at),todayKey(after));
@@ -330,6 +401,11 @@ test('줄이 되는 규칙 — 상한 날의 생활 복습 · 돌아옴이 아�
  const rows=entries=>todayRows({entries,activities:[lesson,life,practice],say}).rows.map(row=>[row.kind,row.activityId,row.why.code]);
  // 상한 날 — 생활 복습에 낼 것이 있고(①이 새것이라 상한에 안 걸림) 사실이 있어도 줄이 아니다(설계 주인 11-15 조건 3)
  assert.deepEqual(rows([entry(LIFE_REVIEW_ID,{fact:2,capped:true,why:{code:'host.missed',line:'놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.'}}),entry(lesson.plan.id,{why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})]),[['new',lesson.plan.id,'unit.new']]);
+ // 생활 복습 없이 짧은 연습만 상한에 걸린 날도 상한 날이다 — 상한은 엔진 전체의 값이라 어느 항목이든 같다(GPT 끝 판 GB1)
+ const capOf=entries=>todayRows({entries,activities:[lesson,life,practice],say}).capped;
+ assert.equal(capOf([entry(practice.plan.id,{capped:true,none:true,tier:9,why:{code:'day.capped',line:'오늘은 여기까지예요. 남은 것은 내일 만나요.'}})]),true,'짧은 연습만 상한');
+ assert.equal(capOf([entry(lesson.plan.id,{capped:true,why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})]),true,'다음 레슨 항목만 있어도 상한');
+ assert.equal(capOf([entry(lesson.plan.id,{why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})]),false);
  // 짧은 연습은 돌아옴(층 1)일 때만 줄이다
  assert.deepEqual(rows([entry(practice.plan.id,{why:{code:'unit.new',line:'새 문항'}})]),[]);
  assert.deepEqual(rows([entry(practice.plan.id,{tier:1,why:{code:'unit.due',line:'돌아왔어요.'}})]),[['again',practice.plan.id,'unit.due']]);

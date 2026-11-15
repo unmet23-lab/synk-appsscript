@@ -334,7 +334,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    // all used (practice.spent) is told apart from one that still has new items. Any failure keeps the plain call.
    const recommendActivities=input=>{if(summary!==empty&&typeof coachNow?.recommendActivities==='function'){try{return coachNow.recommendActivities(input.candidates,{settings:input.settings,at:input.at});}catch{}}return engine.recommendActivities(input);};
    current=planWith({summary,coachNow:summary===empty?null:coachNow,progress,values:settingsFor(progress.learningProfileValues()),recommendActivities});
-   home.updateStudy?.(current);return current;
+   // 새 길 홈에서 지금 판으로 내려온 때(플래너를 못 받음 · 생활 판정이 지금 판)도 열린 배우기 허브를 맞춘다 — 확인 중 · 새 길 포스터에 굳지 않게
+   // (카본 엔진급 끝 판 B3). 홈 입구가 없는 판(스위치 꺼짐)은 부르지 않는다.
+   home.updateStudy?.(current);try{homeNext?.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}return current;
   }catch{current=null;home.updateStudy?.(null);return null;}finally{refreshing=false;}
  }
  async function next(){

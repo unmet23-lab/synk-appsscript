@@ -42,6 +42,9 @@ const SUBJECT_SLOT = Object.freeze({
   'goal.match': 'topic',
   'host.homework': 'skill',
 });
+// 말하지 않는 종류 — 이유 종류이지만 문장이 없다(제품 순서 문항, 코치 fields.mjs). 모든 종류가 문장이 되는지 보는 시험은 이것을 뺀다(설계 검토 H17).
+export const SILENT_CODES = Object.freeze(['host.order']);
+// 가리키는 것이 없는 종류 — 말하지 않는 종류도 든다(빠지면 기본 칸 unit으로 가 이름을 가리킨다 — 카본 엔진급 끝 판 C1).
 const NAMELESS = new Set([
   'idle',
   'day.capped',
@@ -52,11 +55,10 @@ const NAMELESS = new Set([
   'host.recheck',
   'host.start',
   'host.next',
+  ...SILENT_CODES,
 ]);
 // 이름이 없어도 되는 종류 — 이름(단위)을 모르면 이름 없는 틀로 짓는다(생활 단위가 없는 복습 · 이름이 실리지 않은 단위, §20-6의 5).
 const NAME_OPTIONAL = new Set(['host.missed', 'host.bridge']);
-// 말하지 않는 종류 — 이유 종류이지만 문장이 없다(제품 순서 문항, 코치 fields.mjs). 모든 종류가 문장이 되는지 보는 시험은 이것을 뺀다(설계 검토 H17).
-export const SILENT_CODES = Object.freeze(['host.order']);
 
 // 이름 없는 종류 · 빈 이유에는 가리키는 것이 없다(null) — 슬롯 열쇠는 표의 제 열쇠만(카본 끝 판 C2).
 export const subjectOf = why => {

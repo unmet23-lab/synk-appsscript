@@ -33,6 +33,12 @@ export const TODAY_MUTANTS = [
   ['상한', '상한 날에도 복습 줄을 세운다', '  if (capped || entry.none) return null;\n', '  if (entry.none) return null;\n'],
   [
     '상한',
+    '상한을 생활 복습 항목에서만 읽는다 — 짧은 연습만 상한인 날을 다 한 날로 적는다(GPT 끝 판 GB1)',
+    '  const capped = entries.some(entry => Boolean(entry?.capped));\n',
+    '  const capped = Boolean(entries.find(entry => entry.id === LIFE_REVIEW_ID)?.capped);\n',
+  ],
+  [
+    '상한',
     '상한 문장을 짓지 않는다',
     "  const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;\n",
     '  const cappedText = null;\n',
@@ -117,6 +123,18 @@ export const TODAY_MUTANTS = [
     "    const named = typeof missed[0].unit === 'string' ? missed[0] : null;\n",
   ],
   ['학습일', '학습일 경계를 자정으로 둔다', 'const DAY_START_HOUR = 4;', 'const DAY_START_HOUR = 0;'],
+  [
+    '학습일',
+    '학습일 열쇠를 4시간을 빼서 센다 — 서머타임이 바뀌는 날 다시 그리는 때와 어긋난다(카본 엔진급 끝 판 B5)',
+    '  const at = new Date(now);\n  if (at.getHours() < DAY_START_HOUR) at.setDate(at.getDate() - 1);\n',
+    '  const at = new Date(now - DAY_START_HOUR * 3_600_000);\n',
+  ],
+  [
+    'Core 거름',
+    '소리를 끈 날 듣기 짧은 연습을 잠그지 않고 뺀다 — 듣기 연습만 남은 날을 다 한 날로 적는다(카본 엔진급 끝 판 B1)',
+    '    const units = (quiet(() => itemUnits(item.itemKey)) ?? []).map(row => row?.unit);\n',
+    "    if (settings.audioAvailable === false && item.skillId.split('.')[1] === 'listening') continue;\n    const units = (quiet(() => itemUnits(item.itemKey)) ?? []).map(row => row?.unit);\n",
+  ],
   [
     '다시 그리기',
     '①이 열리는 때를 다시 그리는 때에 넣지 않는다',

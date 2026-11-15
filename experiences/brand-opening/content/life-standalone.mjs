@@ -25690,6 +25690,10 @@ function createWorldEducation({
       };
       current = planWith({ summary, coachNow: summary === empty2 ? null : coachNow, progress: progress2, values: settingsFor(progress2.learningProfileValues()), recommendActivities });
       home.updateStudy?.(current);
+      try {
+        homeNext?.painted?.();
+      } catch {
+      }
       return current;
     } catch {
       current = null;
