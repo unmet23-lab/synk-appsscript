@@ -1,0 +1,754 @@
+{
+  "틀": 2,
+  "읽는법": "컷표 틀(docs/마케팅/제작양식/영상양식/컷표_틀.json)을 복사해 채웠다. 참고 카드 43행 「고양이 누아르」 자동 적용(2026-11-15 17시 회차)의 시안이다. 컷 하나가 영상 한 판이고, 원본이 한 장면 안에서 앵글을 여러 번 바꾸므로 판 안의 샷은 「카메라」 칸에 초와 함께 적었다(S14 멀티샷 꼴 — 장소가 같은 샷만 한 판에 묶는다, 지시문 틀 「샷 머리」). C0은 원본 0.0~0.3초 표지 자리의 정지 그림 한 장이라 영상을 뽑지 않는다. 영상은 아직 굽지 않았다 — 판 수와 크레딧 견적은 기획.md 「견적」.",
+  "편": {
+    "이름": "유호감독 둘째 꼴 — 집에선 냥이, 밖에선 두목 48초",
+    "비율": "9:16",
+    "길이": 48.4
+  },
+  "이기는것": "웃김 — 홍콩 누아르처럼 무게 잡고 찍은 고양이 조직이 한국 시장 · 수산시장 · 목욕탕 · 고깃집을 접수하는데, 끝에 두목이 처음 털어 온 붕어빵을 갈라 보니 팥뿐이다",
+  "한문장": "시장을 접수한 고양이 두목도 붕어빵에 붕어가 없는 줄은 몰랐다",
+  "가까운사례": "S14 멀티샷 — 다르게: 장소가 일곱이라 두 장면을 한 판에 묶지 않고 장소마다 한 판(같은 장소 안에서만 hard cut), 사람 대신 고양이 배역, 시작 그림은 Gemini 카본 구독판",
+  "엔진": {
+    "그림": "Gemini 카본",
+    "영상": "Seedance 2.5 720p"
+  },
+  "장면": {
+    "시장골목": {
+      "장소": "A traditional Korean street market lane in the late morning: a narrow wet asphalt lane runs straight away from the camera between two rows of low stalls under faded blue and orange canvas awnings — fish on crushed ice, cabbages and white radishes in plastic crates, stacked red plastic basins — a small fish-shaped-bread street cart with a steaming glass case stands at the left edge of the frame, tangled power lines and plain faded shop signboards with no legible letters hang above, and the lane ends far away at a grey apartment block.",
+      "빛": "Overcast late morning. Soft, even daylight comes down from a white sky above the lane; the wet asphalt shines with long soft reflections; under the awnings at both edges of the frame the stalls fall into cool soft shade; colours stay natural and slightly muted, like a real documentary phone photo.",
+      "빛이름": [
+        "Soft light",
+        "Top light"
+      ],
+      "시간대": "낮",
+      "실내": false,
+      "기준그림": "정지/S1.png"
+    },
+    "수산시장": {
+      "장소": "The auction floor of a big Korean wholesale fish market before dawn: a wide wet concrete floor under a high steel roof, long rows of white styrofoam boxes and blue plastic crates full of fish on crushed ice, a loose ring of buyers in dark waterproof aprons and yellow rubber boots seen only from the waist down, and open loading doors far away at the back.",
+      "빛": "Pre-dawn. Long fluorescent tube lights hanging high above the floor give hard cool-white top light; the wet concrete throws back bright streaks of it; the open loading doors at the back stay dark blue.",
+      "빛이름": [
+        "Top light",
+        "Practical light"
+      ],
+      "시간대": "새벽",
+      "실내": true,
+      "기준그림": "정지/S3.png"
+    },
+    "상인회사무실": {
+      "장소": "The small back office of a Korean market merchants' association: a heavy old wooden desk with a glass top in the foreground, a worn brown leather sofa against the back wall, a grey metal filing cabinet, a thermos and paper cups on a side table, half-closed venetian blinds on the window at the right edge of the frame, and a wall calendar with a landscape photo and no legible text.",
+      "빛": "Evening. A single warm desk lamp at the left edge of the frame is the key light — it lights the desk top and anything turned toward it, and the rest of the room falls into deep brown shadow; thin stripes of cool blue dusk come through the blinds at the right edge of the frame.",
+      "빛이름": [
+        "Practical light",
+        "Venetian blinds"
+      ],
+      "시간대": "저녁",
+      "실내": true,
+      "기준그림": "정지/S4.png"
+    },
+    "목욕탕": {
+      "장소": "An old neighbourhood Korean public bathhouse: pale blue and white square wall tiles, a sunken hot tub of clear water with steam rising off it, low red plastic stools and round pink plastic washbowls on a wet tiled floor, and a row of mirrors and shower heads along the wall at the right edge of the frame.",
+      "빛": "Daytime. Soft milky daylight pours down from above through frosted skylight windows in the ceiling; the steam glows white in it; the tiles and the water shine with soft highlights; colours stay clean pale blue and warm pink.",
+      "빛이름": [
+        "Window light",
+        "Soft light"
+      ],
+      "시간대": "낮",
+      "실내": true,
+      "기준그림": "정지/S5.png"
+    },
+    "고깃집": {
+      "장소": "A Korean barbecue restaurant at night: round steel tables with a charcoal grill set into the middle and a silver extraction hood hanging low over each, plates of side dishes, green glass soju bottles with no labels and small clear soju glasses, and a long red cloth banner strung across the back wall.",
+      "빛": "Night. Warm orange glow from the charcoal grills lights faces and paws from below and the front; warm bulbs above each table add soft top light; grey-white smoke hangs under the hoods and the back of the room stays warm and dim.",
+      "빛이름": [
+        "Practical light",
+        "Underlight"
+      ],
+      "시간대": "밤",
+      "실내": true,
+      "기준그림": "정지/S6.png"
+    },
+    "생선좌판": {
+      "장소": "A fish stall in the same traditional Korean street market at dusk: a slanted wooden stall table covered in crushed ice with rows of mackerel and hairtail fish in the foreground, a bare bulb hanging above it on a cord, a red plastic basin and a small hanging scale, and the narrow lane behind with closing stalls and half-lowered metal shutters.",
+      "빛": "Dusk. The bare incandescent bulb hanging over the stall is the key light, warm and hard from above; the strip of sky above the lane is deep blue; the wet ground holds the bulb's reflections.",
+      "빛이름": [
+        "Practical light",
+        "Blue hour"
+      ],
+      "시간대": "저녁",
+      "실내": false,
+      "기준그림": "정지/S7.png"
+    },
+    "은신처": {
+      "장소": "A cramped rooftop storage hut above the market: corrugated tin walls, stacked old white styrofoam boxes, a flattened cardboard box laid on the floor as a bed with an old checked blanket, and one small window at the right edge of the frame looking out over the market rooftops.",
+      "빛": "Evening, just after dusk. A single bare warm bulb hanging on a cord above the cardboard bed is the key light, warm and soft from above; the small window at the right edge of the frame shows deep blue dusk sky over the market rooftops; the corners of the hut fall into soft dark.",
+      "빛이름": [
+        "Practical light",
+        "Blue hour"
+      ],
+      "시간대": "저녁",
+      "실내": true,
+      "기준그림": "정지/S9.png"
+    }
+  },
+  "인물": {
+    "두목": {
+      "묘사": "A real adult tuxedo cat: short glossy black fur on the head, back, tail and legs, a clean white chest bib, white muzzle and chin, four white paws like socks, yellow-green eyes, an ordinary domestic shorthair body with real fur texture and whiskers — not a cartoon, not a costume, no clothing.",
+      "옷": "No clothing, no belt, no accessories — only its own black-and-white fur.",
+      "기준그림": "ref/배역_두목.png",
+      "설정": {
+        "믿음": "시장에서 나오는 맛있는 것은 다 내 몫이다",
+        "버릇": "무게를 잡을 때 꼬리 끝만 한 번 천천히 튕기고, 눈을 가늘게 뜬다",
+        "바라는것": "진짜 생선이 꽉 찬 한 입",
+        "두려운것": "체면이 깎이는 것",
+        "이편에서": "붕어빵을 털어 온 날 시장 전체를 한 바퀴 접수하고, 은신처에서 그 붕어빵을 갈라 보는 고양이",
+        "반복장치": "S1 붕어빵 봉지를 낚아챔 → S2 봉지를 입에 물고 입장 → S7 대면 때 발밑에 둔 봉지 → S9 은신처에서 봉지를 열고 붕어빵을 가른다"
+      }
+    },
+    "오른팔": {
+      "묘사": "A real big heavy-set adult orange tabby cat: thick ginger fur with darker orange stripes on the back and tail, a pale cream chest and chin, round copper-amber eyes, a broad round face and a heavy low belly — an ordinary domestic shorthair with real fur texture and whiskers, not a cartoon, no clothing.",
+      "옷": "No clothing, no collar, no accessories — only its own ginger fur.",
+      "기준그림": "ref/배역_오른팔.png",
+      "설정": {
+        "믿음": "두목 옆자리가 내 자리다",
+        "버릇": "두목보다 반 발 뒤에서 걷고, 술잔을 들 때 새끼발가락까지 편다",
+        "바라는것": "두목이 남긴 한 입",
+        "두려운것": "자리를 빼앗기는 것",
+        "이편에서": "두목 오른쪽에서 걷고, 회식에서 진돗개들과 잔을 부딪치는 고양이",
+        "반복장치": "S2 입장 · S6 회식 · S8 퇴장에서 늘 두목 오른쪽 반 발 뒤"
+      }
+    },
+    "막내": {
+      "묘사": "A real young slim adult brown mackerel tabby cat: grey-brown fur with narrow dark vertical stripes down its sides, a dark M mark on the forehead, a pale grey belly, bright green eyes and slightly large ears for its head — an ordinary domestic shorthair with real fur texture and whiskers, not a cartoon, no clothing.",
+      "옷": "No clothing, no collar, no accessories — only its own striped fur.",
+      "기준그림": "ref/배역_막내.png",
+      "설정": {
+        "믿음": "형님들 하는 건 다 따라 하면 된다",
+        "버릇": "눈치를 보며 귀를 이리저리 돌리고, 시키지 않은 일에 먼저 앞발을 든다",
+        "바라는것": "형님들에게 인정받는 것",
+        "두려운것": "혼자 남는 것",
+        "이편에서": "경매에서 먼저 앞발을 드는 막내, 두목 왼쪽 반 발 뒤에서 걷는다",
+        "반복장치": "S3 남보다 먼저 앞발을 들었다 내림 · S8 퇴장에서 두목 왼쪽"
+      }
+    },
+    "시중": {
+      "묘사": "A real small adult pure white cat: short soft white fur all over, pale blue eyes, a pink nose and pink inner ears — an ordinary domestic shorthair with real fur texture and whiskers, not a cartoon.",
+      "옷": "Only in the bathhouse: a small white towel folded and tied around its head into the Korean sheep-head towel style, two rolled 'ears' at the sides — nothing else.",
+      "기준그림": "ref/배역_시중.png",
+      "설정": "단역 — 목욕탕에서 두목의 등을 밀어 주는 고양이. 물을 싫어하면서도 꾹 참고 이태리타월로 민다"
+    },
+    "진돗개": {
+      "묘사": "Two real adult Korean Jindo dogs: one pure white with cream-tinged ears, one tawny yellow, both with pricked triangular ears, curled tails and thick double coats.",
+      "옷": "No clothing, no collars.",
+      "기준그림": "ref/배역_진돗개.png",
+      "설정": "단역 — 고깃집 회식에서 고양이 조직과 잔을 부딪치는 이웃 조직. 놀라 돌아보는 반응 한 번"
+    },
+    "붕어빵장수": {
+      "묘사": "A middle-aged Korean street vendor seen only from the chest down: hands in white cotton work gloves holding a metal tong.",
+      "옷": "A quilted navy winter vest over a grey sweatshirt and a faded red apron.",
+      "기준그림": "정지/S1.png",
+      "설정": "단역 — 손과 몸만 나온다. 붕어빵 봉지를 털리고 손을 움찔 뺀다"
+    },
+    "경매사": {
+      "묘사": "A Korean fish-market auctioneer seen only from the shoulders down: one hand raised with fingers spread to call a price, a small notepad in the other hand.",
+      "옷": "A dark green waterproof apron over a padded jacket, a striped towel around the neck, yellow rubber boots.",
+      "기준그림": "정지/S3.png",
+      "설정": "단역 — 몸과 손만 나온다. 고양이들의 앞발 신호를 받아 값을 부른다"
+    },
+    "회장": {
+      "묘사": "A heavy-set middle-aged Korean man seen only from the chest down and his hands: thick forearms with faded old tattoos, a gold ring on one finger.",
+      "옷": "A black short-sleeve shirt with a thick gold chain necklace showing at the open collar.",
+      "기준그림": "정지/S4.png",
+      "설정": "단역 — 몸과 손만 나온다. 상인회 사무실에서 두목에게 참치캔 한 상자를 밀어 준다",
+      "점": "Moles: none on the visible skin — only the faded old tattoos on his forearms."
+    },
+    "생선가게사장": {
+      "묘사": "A bald, heavy-set Korean fishmonger in his fifties: a cleanly shaved head, a thick neck, a stern but tired face with real skin texture — visible pores and fine lines, unretouched.",
+      "옷": "A dark rubber apron over a navy sweatshirt, grey sleeve covers on his forearms.",
+      "기준그림": "정지/S7.png",
+      "설정": "단역 — 이 편에서 얼굴이 나오는 단 한 사람. 좌판 위에 선 두목에게 머리를 톡톡 맞고도 표정 하나 안 바꾸다가 고개를 조금 숙인다",
+      "점": "Moles and marks: only what Image 2 shows on his face, scalp and neck — in S7, where his face is first set, none: only natural pores, fine lines and a little ruddiness from the cold."
+    }
+  },
+  "소품": {
+    "붕어빵봉지": {
+      "종류": "소품",
+      "낱말": [
+        "paper bag",
+        "bag"
+      ],
+      "색": "plain light-brown kraft paper",
+      "생김새": "A small plain light-brown kraft paper bag with its top rolled down once, so the golden tails of three fish-shaped Korean bungeoppang pastries stick up out of the opening, no printing on it.",
+      "기준그림": "ref/소품_봉지.png"
+    },
+    "장난감트럭": {
+      "종류": "탈것",
+      "낱말": [
+        "toy truck",
+        "truck"
+      ],
+      "색": "pale sky blue with black tyres",
+      "생김새": "A child's battery ride-on toy pickup truck in pale sky blue plastic, shaped like a small Korean one-ton market truck with an open cargo bed, black plastic tyres and no logos or lettering.",
+      "기준그림": "정지/S1.png"
+    }
+  },
+  "글자": [
+    {
+      "글": "냥이파",
+      "종류": "이름",
+      "어디": "C0 표지 0.0~0.3초, 화면 아래 3분의 1",
+      "만드는법": "그린 글자 — 붓으로 쓴 굵은 한글 제목을 표지 그림과 한 장으로 굽는다(Gemini 카본). 기본 글꼴로 치지 않는다"
+    },
+    {
+      "글": "경축 냥이파 결성 10주년",
+      "종류": "장면속",
+      "어디": "S6 고깃집 뒷벽 현수막, 판 전체",
+      "만드는법": "장면 속 글자 — 붉은 천 현수막의 흰 붓글씨로 시작 그림과 한 장으로 굽고 글자를 확인한 뒤 잇는다(제작 규칙 「장면 속 간판」)"
+    },
+    {
+      "글": "(채널 서명 — 이름이 정해진 뒤)",
+      "종류": "이름",
+      "어디": "모든 판 오른쪽 아래 구석, 작게",
+      "만드는법": "그린 서명 글자 — 첫 편과 같은 서명을 쓴다. 이름이 정해지면 손글씨 서명 시안 둘을 실제 장면 위에 놓고 고르심"
+    }
+  ],
+  "소리": {
+    "목소리": "없음 — 말 · 내레이션 없이 간다(원본도 처음부터 끝까지 음악뿐이다)",
+    "첫말초": null,
+    "초반을끄는것": "0.3초 첫 샷부터 판에서 나온 시장 소리(장난감 트럭 모터 · 붕어빵 틀 뒤집는 쇠 소리) 위로 무게 잡는 누아르 곡의 첫 저음",
+    "음악": "편집에서 우리 곡 — 느린 누아르 곡(낮은 현 · 콘트라베이스 · 브러시 드럼), 0.3초부터 44.8초까지 빈 마디 없이 깔고, 44.8초 붕어빵이 갈라지는 순간 곡을 끊는다",
+    "열쇠소리": "붕어빵 껍질이 바삭하게 갈라지는 소리, 그 뒤 두목의 짧은 콧김 — 판에서 나온 소리를 먼저 쓰고 이상할 때만 실제 녹음을 찾는다"
+  },
+  "끝": {
+    "컷": "S9",
+    "가장센그림": "은신처 상자 침대에서 두목이 붕어빵을 반으로 가르자 속이 팥뿐이다 — 팥 든 두 동강이 화면 앞에 크게 놓이고, 귀를 옆으로 눕힌 두목이 눈을 반쯤 감고 렌즈를 똑바로 본다",
+    "제품보임": false,
+    "브랜드보임": true,
+    "소리한방": "44.8초 S9로 넘어가 붕어빵이 갈라지는 바삭 소리와 함께 곡이 뚝 끊기고, 46.4초 두목의 짧은 콧김 한 번 — 그 뒤 2초 가까이 렌즈를 째려보는 얼굴에 머문다",
+    "로고없음": "정지 카드와 끝 로고를 두지 않는다 — 채널 서명이 판마다 오른쪽 아래 구석에 작게 있고, 원본도 끝 카드 없이 퇴장으로 닫힌다(제작 절차 「한 장면 먼저」 ③)"
+  },
+  "seq": [
+    [
+      "C0",
+      "0.0",
+      "기",
+      "표지 한 장 — 좌판 위에 선 두목과 「냥이파」 붓글씨"
+    ],
+    [
+      "S1",
+      "0.3",
+      "기",
+      "장난감 트럭을 몰고 와 붕어빵 봉지를 낚아채는 두목, 뒤에서 경광등"
+    ],
+    [
+      "S2",
+      "6.2",
+      "승",
+      "골목 턱 위로 줄지어 선 비둘기 떼 사이로 봉지를 문 두목과 오른팔 · 막내가 걸어온다"
+    ],
+    [
+      "S3",
+      "12.2",
+      "승",
+      "새벽 수산시장 경매 — 고양이들이 앞발 신호로 값을 부른다"
+    ],
+    [
+      "S4",
+      "17.4",
+      "승",
+      "상인회 사무실 — 회장이 두목에게 참치캔 한 상자를 밀어 준다"
+    ],
+    [
+      "S5",
+      "23.3",
+      "전",
+      "동네 목욕탕 — 탕에 몸을 담근 두목의 등을 양머리 수건 쓴 시중이 이태리타월로 민다"
+    ],
+    [
+      "S6",
+      "29.3",
+      "전",
+      "고깃집 회식 — 「경축 냥이파 결성 10주년」 현수막 아래 진돗개들과 소주잔 「짠」"
+    ],
+    [
+      "S7",
+      "36.4",
+      "전",
+      "저녁 생선 좌판 위에 두 발로 선 두목이 사장의 민머리를 앞발로 톡톡 친다"
+    ],
+    [
+      "S8",
+      "43.2",
+      "결",
+      "시장 골목 로우 앵글 — 셋이 카메라 쪽으로 천천히 걸어 나온다"
+    ],
+    [
+      "S9",
+      "44.8",
+      "결",
+      "은신처 — 붕어빵을 갈라 보니 팥, 허탈한 두목"
+    ]
+  ],
+  "end": 48.4,
+  "detail": [
+    {
+      "cut": "C0",
+      "t": 0,
+      "dur": 0.3,
+      "in": 0,
+      "out": 0.3,
+      "band": "기",
+      "시작그림": "정지/C0.png",
+      "정지그림": true,
+      "line": "표지 한 장 — 좌판 위에 선 두목과 「냥이파」 붓글씨(원본 0.0~0.3초 표지 자리)",
+      "장면": "생선좌판",
+      "인물": [
+        "두목",
+        "생선가게사장"
+      ],
+      "구도": "허리 높이 · 정면 넓게 — 왼쪽에 사장의 옆얼굴, 가운데 좌판 위에 뒷발로 선 두목, 아래 3분의 1에 제목 글자",
+      "카메라": "영상 없음 — 정지 그림 0.3초",
+      "연기": [
+        {
+          "t": 0,
+          "무엇": "두목이 좌판 위에서 뒷발로 서서 한 앞발을 사장의 정수리 위로 든다, 눈을 가늘게 뜬다"
+        },
+        {
+          "t": 0,
+          "무엇": "사장은 정면을 본 채 입을 다물고 눈썹만 살짝 올린다"
+        }
+      ],
+      "소리": "없음 — 0.3초 뒤 첫 판에서 곡이 시작한다",
+      "넘어옴": "첫 컷 — 원본처럼 0초 첫 프레임이 곧 표지다",
+      "소품": {
+        "붕어빵봉지": "두목 발밑에",
+        "장난감트럭": "화면밖"
+      },
+      "실외": true
+    },
+    {
+      "cut": "S1",
+      "t": 0.3,
+      "dur": 5.9,
+      "in": 0.8,
+      "out": 6.7,
+      "band": "기",
+      "길이": 7,
+      "시작그림": "정지/S1.png",
+      "line": "장난감 트럭을 몰고 와 붕어빵 봉지를 낚아채는 두목, 뒤에서 경광등",
+      "장면": "시장골목",
+      "인물": [
+        "두목",
+        "붕어빵장수"
+      ],
+      "구도": "붕어빵 수레 옆 낮은 자리 · 넓게 — 앞에 김 나는 붕어빵 유리 상자, 골목 안쪽에서 트럭이 다가온다",
+      "카메라": "Shot 1(0~2.9s): 붕어빵 수레 옆 무릎 높이에서 골목 안쪽을 보고 천천히 다가감 10%, 트럭이 화면 가운데로 커진다. hard cut — Shot 2(2.9~3.2s): 수레 옆 아주 가까이, 흰 앞발이 봉지를 걷어 가는 손 클로즈. hard cut — Shot 3(3.2~4.2s): 트럭 정면 낮은 자리, 트럭이 카메라 쪽으로 달려오고 뒤 멀리 경광등. hard cut — Shot 4(4.2~5.4s): 트럭 옆을 따라 빠르게 화면 왼쪽으로 미끄러짐 — 트럭은 화면 왼쪽으로 달리고 배경은 화면 오른쪽으로 흐른다. hard cut — Shot 5(5.4~6.7s): 골목 한가운데 고정 넓게, 트럭이 멀리 작아지고 경찰차가 카메라 옆을 지나간다",
+      "연기": [
+        {
+          "t": 0.8,
+          "무엇": "두목이 트럭 운전석에 앉아 두 앞발을 작은 핸들에 올리고, 고개를 수레 쪽으로 천천히 돌린다"
+        },
+        {
+          "t": 2.9,
+          "무엇": "두목이 흰 앞발을 뻗어 수레 위 종이봉지를 걸어 채고, 장갑 낀 장수의 손이 움찔 뒤로 빠진다"
+        },
+        {
+          "t": 3.4,
+          "무엇": "두목이 봉지를 입에 물고 정면을 노려본다, 귀가 뒤로 조금 눕는다"
+        },
+        {
+          "t": 4.4,
+          "무엇": "옆으로 지나가는 트럭 위에서 두목의 수염과 귀털이 바람에 날린다"
+        }
+      ],
+      "움직임": "장난감 트럭은 두목이 탄 채 배터리로 굴러간다 — 바퀴가 도는 만큼만 앞으로 간다",
+      "소리": "판은 소리 켬 — 장난감 트럭의 작은 모터 소리, 붕어빵 틀을 뒤집는 쇠 소리, 4초쯤 멀리 경찰차 사이렌 한 번. 음악은 편집에서",
+      "넘어옴": "표지 다음 — 그 두목이 어떻게 시장을 접수했나의 첫날",
+      "소품": {
+        "붕어빵봉지": "수레 위에서 입에",
+        "장난감트럭": "타고 있음"
+      },
+      "소품행동": {
+        "붕어빵봉지": "수레 위에서 두목이 앞발로 걸어 채 입에 문다(2.9~3.4s)"
+      },
+      "실외": true,
+      "시간건너뜀": true
+    },
+    {
+      "cut": "S2",
+      "t": 6.2,
+      "dur": 6,
+      "in": 0.8,
+      "out": 6.8,
+      "band": "승",
+      "길이": 7,
+      "시작그림": "정지/S2.png",
+      "line": "골목 턱 위로 줄지어 선 비둘기 떼 사이로 봉지를 문 두목과 오른팔 · 막내가 걸어온다",
+      "장면": "시장골목",
+      "인물": [
+        "두목",
+        "오른팔",
+        "막내"
+      ],
+      "구도": "바닥 높이 로우 앵글 · 정면 — 골목 양쪽 보도 턱에 비둘기 떼가 두 줄로 서서 고개를 숙이고, 그 사이 골목 가운데로 셋이 걸어온다. 골목 뒤에 하늘색 장난감 트럭이 세워져 있다",
+      "카메라": "Shot 1(0~3.0s): 턱 높이 아주 낮게, 오른쪽 비둘기 줄을 따라 화면 오른쪽으로 천천히 미끄러짐 8%, 비둘기들이 고개를 숙인다. hard cut — Shot 2(3.0~6.8s): 골목 한가운데 바닥 높이 고정 로우 앵글, 양쪽 비둘기 줄 사이로 셋이 카메라 쪽으로 커진다",
+      "연기": [
+        {
+          "t": 1.6,
+          "무엇": "양쪽 턱 위 비둘기들이 고개를 숙인 채, 셋이 다가오자 몸을 조금 더 낮추고 날개를 몸에 붙인다(사람 아닌 무리 반응)"
+        },
+        {
+          "t": 3.6,
+          "무엇": "두목이 봉지를 입에 문 채 가운데서 천천히 걸어온다, 어깨뼈가 걸음마다 오르내린다"
+        },
+        {
+          "t": 4.8,
+          "무엇": "오른팔은 두목 오른쪽 반 발 뒤에서 배를 흔들며 걷고, 막내는 왼쪽에서 귀를 이리저리 돌린다"
+        },
+        {
+          "t": 6.2,
+          "무엇": "끝 모습 — 셋이 같은 박자로 발을 디디며 두목이 눈을 가늘게 뜬 채 렌즈를 본다"
+        }
+      ],
+      "소리": "판은 소리 켬 — 비둘기 구구 소리, 젖은 바닥을 딛는 발소리. 음악은 편집에서",
+      "넘어옴": "잠시 뒤 — 트럭을 골목 뒤에 세워 두고 봉지를 문 채 본거지 골목으로 걸어 들어온다",
+      "소품": {
+        "붕어빵봉지": "두목 입에",
+        "장난감트럭": "골목 뒤에 세워 둠"
+      },
+      "실외": true,
+      "시간건너뜀": true
+    },
+    {
+      "cut": "S3",
+      "t": 12.2,
+      "dur": 5.2,
+      "in": 0.8,
+      "out": 6,
+      "band": "승",
+      "길이": 6,
+      "시작그림": "정지/S3.png",
+      "line": "새벽 수산시장 경매 — 고양이들이 앞발 신호로 값을 부른다",
+      "장면": "수산시장",
+      "인물": [
+        "두목",
+        "오른팔",
+        "막내",
+        "경매사"
+      ],
+      "실내": true,
+      "시간건너뜀": true,
+      "구도": "스티로폼 상자 높이 · 비스듬히 — 얼음 위 생선 상자 줄 뒤 상자 위에 고양이 셋, 모두 오른쪽 경매사의 손을 본다. 두목 옆 상자 위에 붕어빵 봉지",
+      "카메라": "Shot 1(0~1.3s): 넓게 고정, 경매사의 손이 오른다. hard cut — Shot 2(1.3~2.1s): 막내 얼굴 가까이, 앞발이 번쩍 오른다. hard cut — Shot 3(2.1~2.9s): 오른팔이 앞발 둘을 든다. hard cut — Shot 4(2.9~4.4s): 경매사의 손과 수첩, 손가락 셋을 편다. hard cut — Shot 5(4.4~6.0s): 두목 정면 가까이 천천히 다가감 6%, 두목이 앞발 하나를 느리게 든다",
+      "연기": [
+        {
+          "t": 1.5,
+          "무엇": "막내가 남보다 먼저 앞발을 번쩍 들었다가 눈치를 보며 반쯤 내린다"
+        },
+        {
+          "t": 2.3,
+          "무엇": "오른팔이 두 앞발을 들어 발가락을 쫙 편다"
+        },
+        {
+          "t": 3.3,
+          "무엇": "경매사가 든 손의 손가락 셋을 펴 흔들고, 다른 손에 쥔 수첩을 가슴 쪽으로 당긴다"
+        },
+        {
+          "t": 4.7,
+          "무엇": "두목이 눈을 가늘게 뜬 채 흰 앞발 하나를 천천히 어깨 높이로 든다 — 끝 모습, 앞발을 든 채 렌즈를 본다"
+        }
+      ],
+      "소리": "판은 소리 켬 — 경매장의 웅성거림, 얼음 긁는 소리, 경매사의 짧은 외침(알아들을 말 없이). 음악은 편집에서",
+      "넘어옴": "다음 날 새벽 — 조직이 시장 물건을 사들이는 자리",
+      "소품": {
+        "붕어빵봉지": "두목 옆 상자 위에",
+        "장난감트럭": "화면밖"
+      }
+    },
+    {
+      "cut": "S4",
+      "t": 17.4,
+      "dur": 5.9,
+      "in": 0.8,
+      "out": 6.7,
+      "band": "승",
+      "길이": 7,
+      "시작그림": "정지/S4.png",
+      "line": "상인회 사무실 — 회장이 두목에게 참치캔 한 상자를 밀어 준다",
+      "장면": "상인회사무실",
+      "인물": [
+        "두목",
+        "회장"
+      ],
+      "실내": true,
+      "시간건너뜀": true,
+      "구도": "책상 높이 · 가까이 — 유리 책상 위로 두목의 앞발, 맞은편에 회장의 가슴 아래와 두 손",
+      "카메라": "Shot 1(0~1.4s): 두목 옆 가까이, 두목이 앞발로 책상 위 금빛 방울을 상대 쪽으로 민다. hard cut — Shot 2(1.4~2.9s): 회장의 손 가까이, 방울을 집어 손가락 사이에서 굴려 본다. hard cut — Shot 3(2.9~4.4s): 책상 맞은편 허리 높이, 회장이 책상 밑에서 종이 상자를 올려 놓고 뚜껑을 젖히기 시작한다. hard cut — Shot 4(4.4~6.7s): 위에서 비스듬히, 뚜껑이 다 젖혀져 참치캔이 줄지어 보이고 두목이 앞발을 상자 가장자리에 올린다",
+      "연기": [
+        {
+          "t": 0.9,
+          "무엇": "두목이 흰 앞발로 작은 금빛 방울을 책상 위로 천천히 밀어 보낸다, 눈은 상대에게 고정"
+        },
+        {
+          "t": 1.9,
+          "무엇": "회장의 문신 팔이 방울을 집어 손가락 사이에서 한 번 굴려 본다"
+        },
+        {
+          "t": 3.3,
+          "무엇": "회장이 두 손으로 종이 상자를 책상에 올려 뚜껑을 젖힌다"
+        },
+        {
+          "t": 5.2,
+          "무엇": "끝 모습 — 두목이 앞발 하나를 상자 가장자리에 올리고, 수염이 앞으로 선 채 캔들을 내려다본다"
+        }
+      ],
+      "소리": "판은 소리 켬 — 방울이 유리 위를 구르는 소리, 상자 뚜껑 젖히는 종이 소리, 캔끼리 부딪는 소리. 음악은 편집에서",
+      "넘어옴": "같은 날 저녁 — 경매에서 산 물건값을 상인회와 정리하는 자리",
+      "소품": {
+        "붕어빵봉지": "두목 옆 책상 위에",
+        "장난감트럭": "화면밖"
+      }
+    },
+    {
+      "cut": "S5",
+      "t": 23.3,
+      "dur": 6,
+      "in": 0.8,
+      "out": 6.8,
+      "band": "전",
+      "길이": 7,
+      "시작그림": "정지/S5.png",
+      "line": "동네 목욕탕 — 탕에 몸을 담근 두목의 등을 양머리 수건 쓴 시중이 이태리타월로 민다",
+      "장면": "목욕탕",
+      "인물": [
+        "두목",
+        "시중"
+      ],
+      "실내": true,
+      "시간건너뜀": true,
+      "구도": "탕 가장자리 높이 · 옆에서 — 탕 속에 어깨까지 담근 두목, 탕 턱에 선 시중이 등을 민다",
+      "카메라": "Shot 1(0~2.8s): 탕 가장자리 높이 옆 넓게, 김 사이로 천천히 다가감 6%. hard cut — Shot 2(2.8~4.8s): 시중의 앞발과 초록 이태리타월 클로즈, 등털이 밀리는 결. hard cut — Shot 3(4.8~6.8s): 두목 얼굴 정면 가까이 고정, 김이 앞을 지나간다",
+      "연기": [
+        {
+          "t": 0.8,
+          "무엇": "두목이 탕에 어깨까지 담근 채 턱을 탕 턱에 올리고 천천히 눈을 감는다"
+        },
+        {
+          "t": 3.1,
+          "무엇": "시중이 초록 이태리타월을 감은 앞발로 두목의 등을 위아래로 문지르며 물이 튀자 귀를 한 번 뒤로 젖힌다"
+        },
+        {
+          "t": 5.2,
+          "무엇": "두목이 숨을 길게 내쉬며 수염이 물결에 닿고, 눈을 반쯤 뜬다 — 끝 모습, 반쯤 뜬 눈으로 김 너머를 본다"
+        }
+      ],
+      "소리": "판은 소리 켬 — 물 찰랑이는 소리, 수건이 털을 문지르는 소리, 멀리 물 떨어지는 소리. 음악은 편집에서",
+      "넘어옴": "다음 날 낮 — 조직 두목의 호사",
+      "소품": {
+        "붕어빵봉지": "탕 턱 위 두목 머리맡에",
+        "장난감트럭": "화면밖"
+      }
+    },
+    {
+      "cut": "S6",
+      "t": 29.3,
+      "dur": 7.1,
+      "in": 0.8,
+      "out": 7.9,
+      "band": "전",
+      "길이": 8,
+      "시작그림": "정지/S6.png",
+      "line": "고깃집 회식 — 「경축 냥이파 결성 10주년」 현수막 아래 진돗개들과 소주잔 「짠」",
+      "장면": "고깃집",
+      "인물": [
+        "두목",
+        "오른팔",
+        "막내",
+        "진돗개"
+      ],
+      "실내": true,
+      "시간건너뜀": true,
+      "구도": "탁자 높이 낮게 · 비스듬히 — 뒷벽 붉은 현수막 아래 불판 탁자, 렌즈 쪽 반에 고양이 셋이 잔과 서로를 보고, 탁자 건너편 현수막 아래에 진돗개 둘이 옆얼굴로 앉았다. 두목 옆 의자에 붕어빵 봉지",
+      "카메라": "Shot 1(0~2.2s): 탁자 높이 비스듬히 넓게 고정, 현수막과 탁자. hard cut — Shot 2(2.2~3.6s): 탁자 높이 가까이, 두목과 오른팔이 작은 소주잔을 든다. hard cut — Shot 3(3.6~5.6s): 두 잔이 부딪는 가까운 샷. hard cut — Shot 4(5.6~7.9s): 진돗개 둘이 놀라 고양이 쪽으로 고개를 홱 돌리는 얼굴 가까이 고정",
+      "연기": [
+        {
+          "t": 2.6,
+          "무엇": "두목과 오른팔이 앞발로 작은 소주잔을 하나씩 들어 올린다, 오른팔은 발가락까지 편다"
+        },
+        {
+          "t": 4,
+          "무엇": "두 잔이 부딪혀 맑은 소리를 내고, 두목이 고개를 살짝 뒤로 젖혀 잔을 기울인다"
+        },
+        {
+          "t": 5.8,
+          "무엇": "진돗개 둘이 동시에 고개를 홱 돌려 고양이들을 보고 귀가 앞으로 선다, 흰 진돗개의 입이 살짝 벌어진다"
+        }
+      ],
+      "소리": "판은 소리 켬 — 불판 고기 굽는 소리, 잔 부딪는 「짠」 한 번, 멀리 주방 소리(다른 손님 없음). 음악은 편집에서",
+      "넘어옴": "같은 날 밤 — 결성 10주년 회식",
+      "소품": {
+        "붕어빵봉지": "두목 옆 의자 위에",
+        "장난감트럭": "화면밖"
+      }
+    },
+    {
+      "cut": "S7",
+      "t": 36.4,
+      "dur": 6.8,
+      "in": 0.8,
+      "out": 7.6,
+      "band": "전",
+      "길이": 8,
+      "시작그림": "정지/S7.png",
+      "line": "저녁 생선 좌판 위에 두 발로 선 두목이 사장의 민머리를 앞발로 톡톡 친다",
+      "장면": "생선좌판",
+      "인물": [
+        "두목",
+        "생선가게사장"
+      ],
+      "시간건너뜀": true,
+      "구도": "가슴 높이 · 옆에서 — 왼쪽에 좌판 앞 낮은 의자에 앉은 사장의 옆얼굴과 어깨, 가운데 좌판 위에 뒷발로 선 두목, 발밑에 붕어빵 봉지",
+      "카메라": "Shot 1(0~7.3s): 가슴 높이 고정, 아주 느리게 다가감 4%. hard cut — Shot 2(7.3~7.6s): 같은 자리 조금 넓게, 두목이 좌판에서 뛰어내린다",
+      "연기": [
+        {
+          "t": 1,
+          "무엇": "두목이 뒷발로 선 채 사장을 내려다보며 눈을 가늘게 뜨고 꼬리 끝을 한 번 천천히 튕긴다"
+        },
+        {
+          "t": 2.4,
+          "무엇": "두목이 흰 앞발로 사장의 민머리를 톡, 톡 두 번 가볍게 친다"
+        },
+        {
+          "t": 3.6,
+          "무엇": "사장은 정면을 본 채 입을 다물고 숨만 한 번 크게 내쉰다, 눈썹 끝이 조금 내려간다"
+        },
+        {
+          "t": 5.2,
+          "무엇": "사장이 고개를 아주 조금 숙인다, 두목이 귀를 바로 세운다"
+        },
+        {
+          "t": 7.2,
+          "무엇": "끝 모습 — 두목이 봉지를 입에 물고 좌판에서 가볍게 뛰어내린다"
+        }
+      ],
+      "연기세기": "작게",
+      "소리": "판은 소리 켬 — 전구 웅웅 소리, 앞발이 머리에 닿는 작은 톡 소리 두 번, 사장의 콧숨. 음악은 편집에서",
+      "넘어옴": "며칠 뒤 저녁 — 자릿세를 미룬 생선가게",
+      "소품": {
+        "붕어빵봉지": "두목 입에",
+        "장난감트럭": "화면밖"
+      },
+      "소품행동": {
+        "붕어빵봉지": "좌판 위 발밑에 두었던 봉지를 뛰어내리기 직전 입에 문다(6.9~7.2s)"
+      },
+      "실외": true
+    },
+    {
+      "cut": "S8",
+      "t": 43.2,
+      "dur": 1.6,
+      "in": 0.8,
+      "out": 2.4,
+      "band": "결",
+      "길이": 4,
+      "시작그림": "정지/S8.png",
+      "line": "시장 골목 로우 앵글 — 셋이 카메라 쪽으로 천천히 걸어 나온다",
+      "장면": "생선좌판",
+      "인물": [
+        "두목",
+        "오른팔",
+        "막내"
+      ],
+      "구도": "바닥 높이 로우 앵글 · 정면 — 반쯤 내린 셔터 사이 골목으로 셋이 걸어 나온다, 두목 가운데",
+      "카메라": "0~2.4s 바닥 높이 고정, 셋이 카메라 쪽으로 커진다",
+      "연기": [
+        {
+          "t": 0.8,
+          "무엇": "두목이 봉지를 입에 문 채 가운데서 천천히 걸어 나온다, 오른팔 · 막내가 반 발 뒤에서 같은 박자로 걷는다"
+        },
+        {
+          "t": 1.8,
+          "무엇": "끝 모습 — 두목의 얼굴이 렌즈 가까이 와서 눈을 가늘게 뜬 채 지나간다"
+        }
+      ],
+      "소리": "판은 소리 켬 — 셔터 내리는 쇠 소리 멀리, 발소리. 음악은 편집에서",
+      "넘어옴": "대면을 마치고 좌판을 떠나는 길",
+      "소품": {
+        "붕어빵봉지": "두목 입에",
+        "장난감트럭": "화면밖"
+      },
+      "실외": true
+    },
+    {
+      "cut": "S9",
+      "t": 44.8,
+      "dur": 3.6,
+      "in": 0.8,
+      "out": 4.4,
+      "band": "결",
+      "길이": 5,
+      "시작그림": "정지/S9.png",
+      "line": "은신처 — 붕어빵을 갈라 보니 팥, 허탈한 두목",
+      "장면": "은신처",
+      "인물": [
+        "두목"
+      ],
+      "실내": true,
+      "시간건너뜀": true,
+      "구도": "상자 침대 높이 · 가까이 — 상자 침대에 앉은 두목의 가슴부터 위, 두 앞발 사이에 붕어빵 하나",
+      "카메라": "0~4.4s 상자 침대 높이 고정, 아주 느리게 물러남 3% — 끝에 팥 든 반쪽 둘이 화면 아래에 크게, 렌즈를 보는 두목이 그 뒤에",
+      "연기": [
+        {
+          "t": 0.8,
+          "무엇": "두목이 두 앞발로 붕어빵을 누르며 이빨로 물어 반으로 가른다, 바삭한 껍질이 갈라진다"
+        },
+        {
+          "t": 1.6,
+          "무엇": "반쪽 둘이 렌즈 쪽으로 벌어지며 속에 팥알이 보이는 검붉은 팥소만 보인다 — 두목의 귀가 천천히 옆으로 눕는다"
+        },
+        {
+          "t": 2.4,
+          "무엇": "두목이 고개를 들어 렌즈를 똑바로 보고 짧게 콧김을 내쉰다"
+        },
+        {
+          "t": 3.2,
+          "무엇": "끝 모습 — 귀를 옆으로 눕히고 눈을 반쯤 감은 채 렌즈를 보며 숨 쉬고 한 번 천천히 눈을 깜빡인다"
+        }
+      ],
+      "연기세기": "중간",
+      "소리": "판은 소리 켬 — 껍질 갈라지는 바삭 소리, 짧은 콧김. 곡은 갈라지는 순간 끊긴다",
+      "넘어옴": "그날 해가 진 뒤 은신처 — 첫날 턴 붕어빵을 이제야 연다",
+      "소품": {
+        "붕어빵봉지": "상자 침대 위에 열려",
+        "장난감트럭": "화면밖"
+      },
+      "끝그림": "정지/S9_끝.png"
+    }
+  ],
+  "소리사건": [],
+  "사건": [
+    {
+      "이름": "두목이 털어 온 붕어빵",
+      "넓게": "S1",
+      "감정": "S2",
+      "행동": "S7",
+      "결과": "S9",
+      "목적": "생선이 든 줄 알고 털어 온 붕어빵을 시장 접수를 다 마친 뒤 은신처에서 혼자 열어 본다",
+      "감정설계": [
+        {
+          "감정": "위세",
+          "장치": "S2 로우 앵글 입장 · S7 민머리를 톡톡 치는 앞발"
+        },
+        {
+          "감정": "호사",
+          "장치": "S5 반쯤 감기는 눈 · S6 잔을 기울이는 고개"
+        },
+        {
+          "감정": "허탈",
+          "장치": "S9 뒤로 눕는 귀와 짧은 콧김"
+        }
+      ]
+    }
+  ]
+}
