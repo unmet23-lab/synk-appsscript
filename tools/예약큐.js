@@ -838,6 +838,8 @@ const ROUTE = {
   workspace: ['작업실 자동(검토 링크 승인 뒤 서버가 올림)', '7일(링크 수명 = 슬롯+24시간, 최대 168시간)'],
   youtube: ['유튜브 스튜디오 예약 또는 tools/sns-발행.js', '제한 없음(공식 근거 못 찾음)'],
   instagram: ['Meta Business Suite 예약(ego)', '75일(바깥 정리 — 확인 전)'],
+  // Business Suite에 묶이지 않은 나라 인스타(11-16 일본 · 우즈베크) — 계정마다 ego 프로필 하나, 인스타 웹 만들기의 「콘텐츠 예약」(현장 노트 · 브라우저 게시)
+  'instagram-web': ['인스타 웹 「콘텐츠 예약」(그 계정 ego 프로필)', '확인 전'],
   facebook: ['Meta Business Suite 예약(ego)', '75일(바깥 정리 — 확인 전)'],
   tiktok: ['TikTok Studio 예약(그 계정 ego 프로필)', '10일'],
   xiaohongshu: ['크리에이터 센터 定时发布(ego)', '실측 4일 앞까지(14일은 바깥 정리)'],
@@ -852,7 +854,7 @@ const ROUTE = {
 };
 const LINE_WHAT = { 'LAB 영어': 'LAB 영어 편', 'LAB 몽골': 'LAB 몽골 편', 'LAB 나라별': 'LAB 나라별 돌림 판', synkbrief: 'synkbrief 편', yuhobuilds: 'yuhobuilds 편' };
 // 돌림 계정(11-10)의 예약 경로 이름(sns-계정.json postRoute) → ROUTE 키
-const ROUTE_OF = { workspace: 'workspace', 'youtube-studio': 'youtube', 'tiktok-studio': 'tiktok', 'meta-business-suite': 'instagram', 'telegram-web': 'telegram',
+const ROUTE_OF = { workspace: 'workspace', 'youtube-studio': 'youtube', 'tiktok-studio': 'tiktok', 'meta-business-suite': 'instagram', 'instagram-web': 'instagram-web', 'telegram-web': 'telegram',
   'xhs-creator': 'xiaohongshu', 'douyin-creator': 'douyin', 'vk-web': 'vk', 'rutube-studio': 'rutube' };
 ROUTE.douyin = ['더우인 크리에이터 센터 定时发布(ego) — 첫 예약 확인 전', '확인 전'];
 ROUTE.vk = ['VK 커뮤니티 예약 글(ego) — 첫 예약 확인 전', '확인 전'];

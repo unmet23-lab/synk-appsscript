@@ -179,6 +179,17 @@
       "원고": "게시/판본/MX/원고_youtube.json",
       "AI표시": false,
       "지문": "fbc0fd5f2fdf210d8e722070b3c5245232e4ce3ee9da81a4a7004fb084af361b"
+    },
+    {
+      "계정": "lab-jp-instagram",
+      "파일": "게시/판본/JP/video.mp4",
+      "시각": "2026-11-16T13:00:00+09:00",
+      "언어": "ja",
+      "돌림": true,
+      "표지": "게시/판본/JP/cover.png",
+      "원고": "게시/판본/JP/원고_instagram.json",
+      "AI표시": false,
+      "지문": "9c3121d53cf55c9149077cf873e436f605473d5109059ad5d725d3575906469a"
     }
   ],
   "미룰편": [],
