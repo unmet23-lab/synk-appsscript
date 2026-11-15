@@ -2,7 +2,8 @@
 param(
     [string]$TaskName = 'SYNK account metrics routine',
     [switch]$Apply,
-    [switch]$Remove
+    [switch]$Remove,
+    [switch]$Requests
 )
 
 # Registers the NO-AI account metrics routine as a hidden Windows task, daily at 09:20 and 21:20 Korea Standard Time.
@@ -16,6 +17,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $TaskFolder = '\'
 $Marker = '[synk-managed: account-metrics-routine v1]'
+if ($Requests) {
+    if (-not $PSBoundParameters.ContainsKey('TaskName')) { $TaskName = 'SYNK account metrics requests' }
+    $Marker = '[synk-managed: on-demand-account-metrics v1]'
+}
 
 # Account SID for a task principal's UserId (domain account name, plain name or S-1-...). $null when it cannot be resolved.
 function Resolve-TaskUserSid {
@@ -54,6 +59,10 @@ $routineName = -join [char[]](0xACC4, 0xC815, 0xD1B5, 0xACC4, 0xB8E8, 0xD2F4)
 $routine = Join-Path $opsRoot ('tools\' + $routineName + '.cjs')
 $pythonw = Join-Path $env:LOCALAPPDATA 'Python\pythoncore-3.14-64\pythonw.exe'
 $arguments = '-X utf8 -B "{0}"' -f $launcher
+if ($Requests) {
+    $routine = Join-Path $opsRoot ('tools\' + $folder + '\collect-requests.cjs')
+    $arguments += ' --requests'
+}
 $userSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 
 # Only the root task folder and exactly this name: a task with this name in another folder is a different task and never matches.
@@ -82,18 +91,24 @@ $triggers = @(
     (New-ScheduledTaskTrigger -Daily -At $today.AddHours(9).AddMinutes(20)),
     (New-ScheduledTaskTrigger -Daily -At $today.AddHours(21).AddMinutes(20))
 )
+if ($Requests) {
+    $triggers = @(New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 1))
+}
 Write-Output "Task: $TaskFolder$TaskName"
 Write-Output "User: $identity (interactive, limited)"
 Write-Output "Run: $pythonw $arguments"
 Write-Output "Working directory: $opsRoot"
-Write-Output 'Times: daily 09:20 and 21:20 (Korea Standard Time), start when available, ignore new while running, stop after 30 min, priority 4'
+if ($Requests) { Write-Output 'Checks for on-demand requests every 15 seconds while the PC is signed in.' }
+else { Write-Output 'Times: daily 09:20 and 21:20 (Korea Standard Time), start when available, ignore new while running, stop after 30 min, priority 4' }
 if (-not $Apply) {
     Write-Output 'Preview only. Nothing changed. Re-run with -Apply to register.'
     exit 0
 }
 $action = New-ScheduledTaskAction -Execute $pythonw -Argument $arguments -WorkingDirectory $opsRoot
 $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
-$settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 30) -Priority 4
-$task = New-ScheduledTask -Action $action -Trigger $triggers -Principal $principal -Settings $settings -Description ('SYNK account metrics routine, 09:20 and 21:20 KST. No AI: reads public Telegram channel pages and the private official-export inbox, then runs the official ingester. ' + $Marker)
+$limit = if ($Requests) { 40 } else { 30 }
+$description = if ($Requests) { 'Reads on-demand analytics requests from the company workspace in this Windows session. ' } else { 'SYNK account metrics routine, 09:20 and 21:20 KST. No AI: reads public Telegram channel pages and the private official-export inbox, then runs the official ingester. ' }
+$settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes $limit) -Priority 4
+$task = New-ScheduledTask -Action $action -Trigger $triggers -Principal $principal -Settings $settings -Description ($description + $Marker)
 Register-ScheduledTask -TaskPath $TaskFolder -TaskName $TaskName -InputObject $task -Force:$([bool]$existing) -ErrorAction Stop | Out-Null
 Write-Output "Installed: $TaskFolder$TaskName"

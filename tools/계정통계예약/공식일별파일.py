@@ -169,8 +169,95 @@ def convert(metadata_path):
     return {"version": 1, "batches": [{"accountId": meta["accountId"], "evidenceFile": name, "envelope": envelope}]}
 
 
+def checked_export_rows(mode, metadata):
+    meta = json.loads(metadata.read_text(encoding="utf-8"))
+    expected = "vk.csv" if mode == "--vk-rows" else "threads.pdf"
+    if meta["evidenceFile"] != expected:
+        raise ValueError("요청에서 받은 공식 원본 파일을 확인해 주세요.")
+    file = metadata.parent / expected
+    if not 0 < file.stat().st_size <= MAX_FILE:
+        raise ValueError("통계 파일의 크기를 확인해 주세요.")
+    raw = file.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != meta["evidenceSha256"]:
+        raise ValueError("통계 원본 파일이 바뀌었습니다.")
+    if mode == "--vk-rows":
+        start, end = (day(value) for value in meta["range"])
+        if end < start or (end-start).days > MAX_ROWS:
+            raise ValueError("VK 내보내기의 날짜 범위를 확인해 주세요.")
+        today = datetime.fromisoformat(meta["observedAt"].replace("Z","+00:00")).astimezone(timezone(timedelta(hours=3))).date()
+        out = {}
+        for r in csv.DictReader(io.StringIO(raw.decode("utf-8-sig")), delimiter=";"):
+            if (r["Раздел"],r["Подраздел"],r["Время"],r["Сортировка: гранулярность"],r["Сортировка: вид разреза"]) != ("Сообщество","Общее","#","По дням","#"):
+                continue
+            if r["Вид данных"].replace("\u00a0"," ") != "Unique visitors and community views":
+                continue
+            dt = datetime.strptime(r["Дата"],"%d.%m.%Y").date()
+            key = {"Посетители":"visitors","Просмотры":"views"}.get(r["Параметр легенды"])
+            if key is None or dt >= today:
+                continue
+            if not start <= dt <= end or not re.fullmatch(r"[0-9]+",r["Значение"]):
+                raise ValueError("VK 원본의 일별 값 또는 기간이 다릅니다.")
+            values = out.setdefault(dt.isoformat(),{})
+            if key in values:
+                raise ValueError("VK 원본에서 같은 날 같은 지표가 두 번 나왔습니다.")
+            values[key] = int(r["Значение"])
+        return [{"kind":"account-period","period":{"start":d,"end":d},"metrics":m,
+                 "labels":{"metricLabels":{k:{"views":"Просмотры","visitors":"Посетители"}[k] for k in m}}} for d,m in sorted(out.items())]
+    import pymupdf
+    handle = meta["handle"]
+    match = re.fullmatch(r"threads-insights-"+re.escape(handle)+r"-(\d{4}-\d\d-\d\d)-(\d{4}-\d\d-\d\d)\.pdf",meta["filename"])
+    if not match or not raw.startswith(b"%PDF-"):
+        raise ValueError("Threads 내보내기의 계정과 파일 형식이 다릅니다.")
+    start, end = (day(value) for value in match.groups())
+    if (end-start).days != 29:
+        raise ValueError("Threads의 30일 내보내기 범위를 확인해 주세요.")
+    with pymupdf.open(stream=raw,filetype="pdf") as doc:
+        if not 0 < doc.page_count <= 50:
+            raise ValueError("Threads PDF의 페이지 수를 확인해 주세요.")
+        lines = [x.strip() for x in doc[0].get_text().splitlines() if x.strip()]
+    if handle not in lines[:8] or "최근 30일" not in lines[:10]:
+        raise ValueError("Threads PDF 표지의 계정이나 기간이 다릅니다.")
+    printed = re.compile(r"(?:(\d{4})\.\s*)?(\d+)월\s*(\d+)일\s*[-–]\s*(\d{4})\.\s*(\d+)\.\s*(\d+)\.")
+    periods = [m for line in lines[:10] if (m:=printed.fullmatch(line))]
+    if len(periods) != 1:
+        raise ValueError("Threads PDF 표지의 날짜를 읽을 수 없습니다.")
+    year, sm, sd, ey, em, ed = periods[0].groups()
+    if date(int(year or start.year),int(sm),int(sd)) != start or date(int(ey),int(em),int(ed)) != end:
+        raise ValueError("Threads PDF의 날짜가 파일 이름과 다릅니다.")
+    values = {}
+    for key, label in {"views":"조회수","reach":"조회한 사람"}.items():
+        if label in lines:
+            index = lines.index(label)
+            if index+1 < len(lines) and re.fullmatch(r"(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)",lines[index+1]):
+                values[key]=int(lines[index+1].replace(",",""))
+    return [{"kind":"account-period","period":{"start":start.isoformat(),"end":end.isoformat()},"metrics":values,
+             "labels":{"metricLabels":{k:{"views":"조회수","reach":"조회한 사람"}[k] for k in values}}}] if values else []
+
+
 if __name__ == "__main__":
     try:
+        if len(sys.argv) == 3 and sys.argv[1] in ("--vk-rows","--threads-rows"):
+            print(json.dumps(checked_export_rows(sys.argv[1],Path(sys.argv[2])),ensure_ascii=False))
+            sys.exit(0)
+        if len(sys.argv) == 3 and sys.argv[1] == "--naver-sheet":
+            from openpyxl import load_workbook
+            source = Path(sys.argv[2])
+            if not 0 < source.stat().st_size <= MAX_FILE:
+                raise ValueError("내보내기 파일 크기를 확인해 주세요.")
+            with zipfile.ZipFile(source) as archive:
+                if sum(part.file_size for part in archive.infolist()) > MAX_FILE * 4:
+                    raise ValueError("내보내기 파일을 펼친 크기가 한도를 넘습니다.")
+            book = load_workbook(source, read_only=True, data_only=False)
+            try:
+                if len(book.worksheets) != 1:
+                    raise ValueError("네이버 일간 조회수 파일에 시트가 하나여야 합니다.")
+                sheet = book.worksheets[0]
+                sheet.reset_dimensions()
+                result = {"sheets": [{"name": sheet.title, "rows": bounded_rows(sheet.values)}]}
+                print(json.dumps(result, ensure_ascii=False, default=str))
+            finally:
+                book.close()
+            sys.exit(0)
         if len(sys.argv) != 2:
             raise ValueError("확인 JSON 파일 하나를 지정해 주세요.")
         print(json.dumps(convert(Path(sys.argv[1])), ensure_ascii=False, indent=2))

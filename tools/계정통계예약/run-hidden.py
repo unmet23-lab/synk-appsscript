@@ -17,6 +17,11 @@ NODE = pathlib.Path(r"C:\Program Files\nodejs\node.exe")
 ROUTINE = ROOT / "tools" / "계정통계루틴.cjs"
 LOG = pathlib.Path.home() / ".synk" / "account-metrics" / "logs" / "예약실행.log"
 TIMEOUT = 25 * 60  # 작업 스케줄러 한도(30분) 안에서 끝낸다. 루틴 자체 예산은 15분.
+ON_DEMAND = sys.argv[1:] == ["--requests"]
+if ON_DEMAND:
+    ROUTINE = pathlib.Path(__file__).resolve().parent / "collect-requests.cjs"
+    LOG = LOG.with_name("요청수집.log")
+    TIMEOUT = 38 * 60
 
 
 def now():
@@ -36,10 +41,11 @@ def main():
         write_log(started, f"node 또는 루틴 파일이 없습니다: {NODE} / {ROUTINE}".encode("utf-8"), "시작 못 함 · 종료 2")
         return 2
     try:
-        r = subprocess.run([str(NODE), str(ROUTINE), "--실행"], cwd=ROOT, stdin=subprocess.DEVNULL, capture_output=True,
+        args = [str(NODE), str(ROUTINE)] if ON_DEMAND else [str(NODE), str(ROUTINE), "--실행"]
+        r = subprocess.run(args, cwd=ROOT, stdin=subprocess.DEVNULL, capture_output=True,
                            creationflags=subprocess.CREATE_NO_WINDOW, timeout=TIMEOUT)
     except subprocess.TimeoutExpired as e:
-        write_log(started, (e.stdout or b"") + b"\n--- stderr ---\n" + (e.stderr or b""), "25분 넘어 멈춤 · 종료 1")
+        write_log(started, (e.stdout or b"") + b"\n--- stderr ---\n" + (e.stderr or b""), f"{TIMEOUT // 60}분 지나 종료")
         return 1
     except OSError as e:
         # node를 띄우지 못함(권한·작업 폴더 없음·실행 파일이 그 사이 사라짐 등). 지난 회차 기록이 성공처럼 남지 않게 이번 시각과 원인으로 덮어쓴다.
