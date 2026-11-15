@@ -9,6 +9,8 @@ import { createPlatformEntry } from './platform-entry.mjs';
 import { studyCallbackIntent, finishStudyLogin, rememberStudyLogin, STUDY_INTENT } from './study-login.mjs';
 import {
   PLATFORM_LOGIN_NOTICE,
+  clearPlatformAutoLoginPause,
+  pausePlatformAutoLogin,
   platformCallbackIntent,
   platformErrorCallbackIntent,
   finishPlatformLogin,
@@ -229,6 +231,9 @@ async function start(attempt) {
       return;
     }
     sessionStorage.setItem(key, JSON.stringify(session));
+    if (product === 'platform') {
+      try { clearPlatformAutoLoginPause(localStorage); } catch {}
+    }
     pendingExchange = null;
     if (platformReturn) {
       const capturedPlatformReturn = platformReturn;
@@ -251,6 +256,9 @@ async function start(attempt) {
     view?.stop();view = null;verification = null;recoveryControl().hidden = true;
     let cancellationError = null;
     try { platformEntry?.cancel(); } catch (error) { cancellationError = error; }
+    if (product === 'platform') {
+      try { pausePlatformAutoLogin(localStorage); } catch {}
+    }
     try { sessionStorage.removeItem(key); } catch { removed = false; }
     $('connect').hidden = false;$('connect').disabled = false;
     notice(removed ? '이 기기에서 로그아웃했어요. 서버의 연결 종료를 확인하고 있어요…' : '현재 화면의 로그인은 종료했지만 브라우저 저장을 지우지 못했어요. 이 창을 닫아 주세요.', !removed);

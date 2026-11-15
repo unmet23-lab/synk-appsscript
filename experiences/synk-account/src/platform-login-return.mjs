@@ -8,9 +8,13 @@ import { MEMBER_BENEFITS, MEMBER_INSIGHT } from '../../../desktop/renderer/benef
 
 export const PLATFORM_LOGIN_INTENT = 'synk.platform.login.intent';
 export const PLATFORM_LOGIN_NOTICE = 'synk.platform.login.notice';
+export const PLATFORM_RESUME_SUBJECT_KEY = 'synk.platform.login.resume';
+export const PLATFORM_AUTO_LOGIN_ATTEMPT_KEY = 'synk.platform.auto-login.attempt.v1';
+export const PLATFORM_AUTO_LOGIN_PAUSE_KEY = 'synk.platform.auto-login.pause.v1';
 export const PLATFORM_LOGIN_TTL_MS = 600000;
 export const PLATFORM_PORTAL_HINT_WINDOW_MS = 120000;
 export const PLATFORM_LOGIN_METHODS = Object.freeze(['google', 'email', 'signup']);
+export const PLATFORM_RESUME_METHOD = 'resume';
 export const PLATFORM_RETURN_ENTRY = './platform.html';
 
 const PLATFORM_PRODUCT = 'platform';
@@ -198,10 +202,17 @@ function validatePendingTransaction(pending, client, now) {
   return true;
 }
 
+function isValidResumeSubject(value) {
+  return typeof value === 'string'
+    && value.length > 0
+    && value.length <= 200
+    && !CONTROL_OR_SPACE.test(value);
+}
+
 function validateIntentRecord(record, now) {
   if (!hasExactKeys(record, INTENT_KEYS)) return null;
   if (record.v !== 1 || record.product !== PLATFORM_PRODUCT) return null;
-  if (!PLATFORM_LOGIN_METHODS.includes(record.method)) return null;
+  if (!PLATFORM_LOGIN_METHODS.includes(record.method) && record.method !== PLATFORM_RESUME_METHOD) return null;
   if (typeof record.state !== 'string' || !STATE_PATTERN.test(record.state)) return null;
   if (typeof record.clientId !== 'string' || !record.clientId || CONTROL_OR_SPACE.test(record.clientId)) return null;
   if (!parseRegisteredPlatformRedirect(record.redirectUri)) return null;
@@ -219,6 +230,42 @@ function validateIntentRecord(record, now) {
     createdAt: record.createdAt,
     method: record.method,
     route: canonicalRoute,
+  });
+}
+
+function validateResumeSubjectRecord(record, intent, now) {
+  if (!record || typeof record !== 'object' || Array.isArray(record)) return null;
+  const keys = Object.keys(record);
+  const allowedKeys = ['v', 'state', 'subject', 'createdAt', 'switchRequested'];
+  if (
+    keys.length < 4
+    || keys.length > 5
+    || !keys.includes('v')
+    || !keys.includes('state')
+    || !keys.includes('subject')
+    || !keys.includes('createdAt')
+    || !keys.every(key => allowedKeys.includes(key))
+  ) {
+    return null;
+  }
+  if (
+    record.v !== 1
+    || record.state !== intent.state
+    || record.createdAt !== intent.createdAt
+    || !isValidTimestamp(record.createdAt, now)
+    || !isValidResumeSubject(record.subject)
+  ) {
+    return null;
+  }
+  if (keys.includes('switchRequested') && typeof record.switchRequested !== 'boolean') {
+    return null;
+  }
+  return Object.freeze({
+    v: 1,
+    state: record.state,
+    subject: record.subject,
+    createdAt: record.createdAt,
+    switchRequested: record.switchRequested === true,
   });
 }
 
@@ -393,8 +440,117 @@ function isForeignOrStaleCallbackUrl(rawUrl, activeState) {
 
 export function clearPlatformLoginIntent(storage) {
   if (!storage || typeof storage.removeItem !== 'function') return false;
+  let removed = false;
   try {
     storage.removeItem(PLATFORM_LOGIN_INTENT);
+    removed = true;
+  } catch {
+    return false;
+  }
+  try {
+    storage.removeItem(PLATFORM_RESUME_SUBJECT_KEY);
+  } catch {
+    // 보조 자동 복귀 결속 정보 정리는 최선 노력으로 수행한다.
+  }
+  return removed;
+}
+
+export function hasPlatformAutoLoginAttempt(storage) {
+  if (!storage || typeof storage.getItem !== 'function') return false;
+  try {
+    const raw = storage.getItem(PLATFORM_AUTO_LOGIN_ATTEMPT_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return Boolean(parsed && parsed.v === 1 && Number.isFinite(parsed.at));
+  } catch {
+    return true;
+  }
+}
+
+export function markPlatformAutoLoginAttempt(storage, options = {}) {
+  const opts = options && typeof options === 'object' ? options : {};
+  const { now = Date.now() } = opts;
+  if (!storage || typeof storage.setItem !== 'function') return false;
+  const at = Number.isFinite(now) ? now : Date.now();
+  try {
+    storage.setItem(PLATFORM_AUTO_LOGIN_ATTEMPT_KEY, JSON.stringify({ v: 1, at }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearPlatformAutoLoginAttempt(storage) {
+  if (!storage || typeof storage.removeItem !== 'function') return false;
+  try {
+    storage.removeItem(PLATFORM_AUTO_LOGIN_ATTEMPT_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function isPlatformAutoLoginPaused(storage) {
+  if (!storage || typeof storage.getItem !== 'function') return false;
+  try {
+    const raw = storage.getItem(PLATFORM_AUTO_LOGIN_PAUSE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return Boolean(parsed && parsed.v === 1 && parsed.paused === true);
+  } catch {
+    return false;
+  }
+}
+
+export function pausePlatformAutoLogin(storage) {
+  if (!storage || typeof storage.setItem !== 'function') return false;
+  try {
+    storage.setItem(PLATFORM_AUTO_LOGIN_PAUSE_KEY, JSON.stringify({ v: 1, paused: true }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearPlatformAutoLoginPause(storage) {
+  if (!storage || typeof storage.removeItem !== 'function') return false;
+  try {
+    storage.removeItem(PLATFORM_AUTO_LOGIN_PAUSE_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function markPlatformResumeAccountSwitch(storage, expectedState, options = {}) {
+  const opts = options && typeof options === 'object' ? options : {};
+  const { now = Date.now() } = opts;
+  if (
+    !storage
+    || typeof storage.getItem !== 'function'
+    || typeof storage.setItem !== 'function'
+    || typeof expectedState !== 'string'
+    || !STATE_PATTERN.test(expectedState)
+  ) {
+    return false;
+  }
+  try {
+    const rawIntent = storage.getItem(PLATFORM_LOGIN_INTENT);
+    const rawResume = storage.getItem(PLATFORM_RESUME_SUBJECT_KEY);
+    if (!rawIntent || !rawResume) return false;
+    const validIntent = validateIntentRecord(JSON.parse(rawIntent), now);
+    if (!validIntent || validIntent.method !== PLATFORM_RESUME_METHOD || validIntent.state !== expectedState) {
+      return false;
+    }
+    const validResume = validateResumeSubjectRecord(JSON.parse(rawResume), validIntent, now);
+    if (!validResume) return false;
+    storage.setItem(PLATFORM_RESUME_SUBJECT_KEY, JSON.stringify({
+      v: 1,
+      state: validResume.state,
+      subject: validResume.subject,
+      createdAt: validResume.createdAt,
+      switchRequested: true,
+    }));
     return true;
   } catch {
     return false;
@@ -403,7 +559,7 @@ export function clearPlatformLoginIntent(storage) {
 
 export function rememberPlatformLogin(storage, options = {}) {
   const opts = options && typeof options === 'object' ? options : {};
-  const { config, method, returnHash = '', now = Date.now() } = opts;
+  const { config, method, subject = null, returnHash = '', now = Date.now() } = opts;
 
   if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function' || typeof storage.removeItem !== 'function') {
     throw new Error('브라우저 저장 공간을 사용할 수 없어요. 다시 로그인해 주세요.');
@@ -419,8 +575,12 @@ export function rememberPlatformLogin(storage, options = {}) {
   if (!Number.isFinite(now)) {
     throw new Error('로그인 시작 시각을 확인하지 못했어요. 다시 시작해 주세요.');
   }
-  if (!PLATFORM_LOGIN_METHODS.includes(method)) {
+  const isResume = method === PLATFORM_RESUME_METHOD;
+  if (!PLATFORM_LOGIN_METHODS.includes(method) && !isResume) {
     throw new Error('지원하지 않는 로그인 방식이에요.');
+  }
+  if (isResume && !isValidResumeSubject(subject)) {
+    throw new Error('확인된 계정 정보가 없어 자동 연결을 시작하지 못했어요.');
   }
 
   const canonicalRoute = normalizePlatformReturnHash(returnHash);
@@ -458,6 +618,14 @@ export function rememberPlatformLogin(storage, options = {}) {
 
   try {
     storage.setItem(PLATFORM_LOGIN_INTENT, JSON.stringify(intent));
+    if (isResume) {
+      storage.setItem(PLATFORM_RESUME_SUBJECT_KEY, JSON.stringify({
+        v: 1,
+        state: pending.state,
+        subject,
+        createdAt: pending.createdAt,
+      }));
+    }
   } catch {
     clearPlatformLoginIntent(storage);
     throw new Error('브라우저가 저장 공간을 막아 로그인 준비를 마치지 못했어요.');
@@ -799,8 +967,21 @@ export function finishPlatformErrorReturn(storage, errorIntent, options = {}) {
     throw new Error('로그인 연결이 만료되었거나 바뀌었어요. 다시 시작해 주세요.');
   }
 
+  let shouldRecordNotice = validLive.method !== PLATFORM_RESUME_METHOD;
+  if (validLive.method === PLATFORM_RESUME_METHOD) {
+    try {
+      const rawResume = storage.getItem(PLATFORM_RESUME_SUBJECT_KEY);
+      const parsedResume = rawResume ? JSON.parse(rawResume) : null;
+      const validResume = validateResumeSubjectRecord(parsedResume, validLive, now);
+      shouldRecordNotice = validResume?.switchRequested === true;
+    } catch {
+      shouldRecordNotice = false;
+    }
+  }
+
   try {
     storage.removeItem(PLATFORM_LOGIN_INTENT);
+    storage.removeItem(PLATFORM_RESUME_SUBJECT_KEY);
     storage.removeItem(PLATFORM_PENDING_KEY);
     if (storage.getItem(PLATFORM_LOGIN_INTENT) !== null || storage.getItem(PLATFORM_PENDING_KEY) !== null) {
       throw new Error('cleanup');
@@ -809,11 +990,13 @@ export function finishPlatformErrorReturn(storage, errorIntent, options = {}) {
     throw new Error('로그인 상태를 정리하지 못했어요. 다시 시작해 주세요.');
   }
 
-  const noticeRecord = { v: 1, kind: errorIntent.kind, createdAt: now };
-  try {
-    storage.setItem(PLATFORM_LOGIN_NOTICE, JSON.stringify(noticeRecord));
-  } catch {
-    // 복귀 안내 표지 기록이 막혀도 정적 경로 복귀는 진행한다.
+  if (shouldRecordNotice) {
+    const noticeRecord = { v: 1, kind: errorIntent.kind, createdAt: now };
+    try {
+      storage.setItem(PLATFORM_LOGIN_NOTICE, JSON.stringify(noticeRecord));
+    } catch {
+      // 복귀 안내 표지 기록이 막혀도 정적 경로 복귀는 진행한다.
+    }
   }
 
   return `${PLATFORM_RETURN_ENTRY}${canonicalHash}`;
@@ -902,7 +1085,20 @@ export function readBoundPlatformLoginIntent(options = {}) {
     return null;
   }
 
-  return Object.freeze({ intent: validIntent, client });
+  let resumeSubject = null;
+  if (validIntent.method === PLATFORM_RESUME_METHOD) {
+    try {
+      const rawResume = storage.getItem(PLATFORM_RESUME_SUBJECT_KEY);
+      if (!rawResume) return null;
+      const validResume = validateResumeSubjectRecord(JSON.parse(rawResume), validIntent, now);
+      if (!validResume) return null;
+      resumeSubject = validResume.subject;
+    } catch {
+      return null;
+    }
+  }
+
+  return Object.freeze({ intent: validIntent, client, resumeSubject });
 }
 
 export function buildPlatformCancelUrl(options = {}) {
@@ -940,6 +1136,7 @@ export function matchPlatformPreauthorizedRedirect(options = {}) {
   const approveUrl = new URL(typeof targetUrl === 'string' ? targetUrl : targetUrl.href).href;
   return Object.freeze({
     intent: bound.intent,
+    resumeSubject: bound.resumeSubject,
     approveUrl,
     cancelUrl,
     shownDestination: bound.client.expectedUrl.href,
@@ -980,6 +1177,7 @@ export function matchPlatformAuthorizationDetails(options = {}) {
 
   return Object.freeze({
     intent: bound.intent,
+    resumeSubject: bound.resumeSubject,
     cancelUrl,
     shownDestination: bound.client.expectedUrl.href,
     expiresAt: bound.intent.createdAt + PLATFORM_LOGIN_TTL_MS,

@@ -18,6 +18,7 @@ import { platformPublicEntry, platformCompanyEntry } from './platform-entry.mjs'
 import { shelfItem, shelfColumns } from './platform-shelf.mjs';
 import { PLATFORM_DOWNLOADS, DOWNLOAD_OS, DOWNLOAD_STEPS, RELEASE_PAGE, downloadHref, checksumHref, downloadSize, downloadsState, detectDownloadOS, refreshPlatformDownloads } from './platform-downloads.mjs';
 import { mountWebPortalHost } from './platform-portal.mjs';
+import { probeCentralPlatformSession } from './platform-central-session.mjs';
 const $ = id => document.getElementById(id), root = $('page-content');
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const image = (name, cls = '') => `<img${cls?` class="${cls}"`:''} src="./assets/${name}" alt="">`;
@@ -327,6 +328,17 @@ portalHost=mountWebPortalHost({
  },
 });
 render();
+let centralResumeInFlight=false;
+async function maybeResumeCentralBrowserAccount(accountStorage,expectedStartup=startup){
+ if(centralResumeInFlight||expectedStartup!==startup||!pageActive||document.hidden||typeof window.synkDesktop?.authStatus==='function')return;
+ if(browserAccount?.identity()?.status!=='signed-out'||!portalHost?.canAutoResumeCentralSession?.())return;
+ centralResumeInFlight=true;
+ try{
+  const central=await probeCentralPlatformSession({config,sessionStorageRef:accountStorage});
+  if(!central?.ok||expectedStartup!==startup||!pageActive||document.hidden||browserAccount?.identity()?.status!=='signed-out'||!portalHost?.canAutoResumeCentralSession?.())return;
+  await portalHost.resumeCentralSession({subject:central.subject});
+ }finally{centralResumeInFlight=false;}
+}
 async function loadStartup(){
  const attempt=++startup, browser=typeof window.synkDesktop?.authStatus!=='function';let failed=false;
  browserAccount?.stop();browserAccount=null;if(browser)showBrowserAccount({status:'loading',displayName:'',message:'로그인 상태를 확인하고 있어요.'});
@@ -337,7 +349,8 @@ async function loadStartup(){
  if(attempt!==startup)return;render();await refreshClients();if(!browser||attempt!==startup)return;
  if(failed){showBrowserAccount({status:'error',displayName:'',message:'로그인 설정을 못 불러왔어요. 로그인은 그대로이니 「다시 시도」를 눌러 주세요.'});return;}
  let accountStorage;try{accountStorage=sessionStorage;}catch{}
- browserAccount=createPlatformAccount({config,storage:accountStorage,onStatus:showBrowserAccount});browserAccount.subscribe(()=>portalHost?.syncAccountState());portalHost?.syncAccountState();if(!pageActive||document.hidden)browserAccount.invalidate();else await browserAccount.refresh();
+ browserAccount=createPlatformAccount({config,storage:accountStorage,onStatus:showBrowserAccount});browserAccount.subscribe(()=>portalHost?.syncAccountState());portalHost?.syncAccountState();if(!pageActive||document.hidden){browserAccount.invalidate();return;}await browserAccount.refresh();
+ await maybeResumeCentralBrowserAccount(accountStorage,attempt);
 }
 function start(){
  if(startupPromise)return startupPromise;
@@ -349,7 +362,8 @@ function refreshBrowserAccount(){
  // Invalidation hides identity as loading, so derive readiness from the config.
  // Concurrent online/return events still share one configuration retry.
  const client=config.clients?.platform;
- return !browserAccount||!config.configured||!client?.clientId||!client.redirectUri?start():browserAccount.refresh();
+ if(!browserAccount||!config.configured||!client?.clientId||!client.redirectUri)return start();
+ return browserAccount.refresh().then(()=>{let accountStorage;try{accountStorage=sessionStorage;}catch{}return maybeResumeCentralBrowserAccount(accountStorage);});
 }
 void start();
 window.addEventListener('pagehide',()=>{pageActive=false;memberInsight.setVisible(false);browserAccount?.invalidate();render();});

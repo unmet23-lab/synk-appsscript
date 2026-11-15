@@ -8,9 +8,13 @@ import { readRecentLogin, writeRecentLogin, forgetRecentLogin, recentMethodName 
 import {
   PLATFORM_LOGIN_INTENT,
   PLATFORM_LOGIN_TTL_MS,
+  PLATFORM_RESUME_METHOD,
   buildPlatformCancelUrl,
+  clearPlatformAutoLoginPause,
+  markPlatformResumeAccountSwitch,
   matchPlatformPreauthorizedRedirect,
   matchPlatformAuthorizationDetails,
+  pausePlatformAutoLogin,
   readBoundPlatformLoginIntent,
   resolvePlatformPortalEntryHint,
 } from './platform-login-return.mjs';
@@ -716,9 +720,12 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         if (!preview && isRegisteredPlatformCallbackTarget(target, config)) {
           const matchedRedirect = matchPlatformPreauthorizedRedirect({ targetUrl: target, storage: platformStore, config, now: cooldownClock.now() });
           if (matchedRedirect) {
-            if (freshSessionUserId === session?.user?.id) { location.assign(matchedRedirect.approveUrl);return; }
+            const autoApprovedResume = matchedRedirect.intent.method === PLATFORM_RESUME_METHOD
+              && typeof session?.user?.id === 'string'
+              && matchedRedirect.resumeSubject === session.user.id;
+            if (freshSessionUserId === session?.user?.id || autoApprovedResume) { location.assign(matchedRedirect.approveUrl);return; }
             details = null;platformConsent = null;
-            consentTarget = { kind: 'platform-web', state: matchedRedirect.intent.state, approveUrl: matchedRedirect.approveUrl, cancelUrl: matchedRedirect.cancelUrl };
+            consentTarget = { kind: 'platform-web', method: matchedRedirect.intent.method, state: matchedRedirect.intent.state, approveUrl: matchedRedirect.approveUrl, cancelUrl: matchedRedirect.cancelUrl };
             automaticAuthorizationAttempted = true;
             showConsent({ product: 'platform', destination: matchedRedirect.shownDestination, scopes: ['openid', 'email', 'profile'], native: false, webConfirm: true, expiresAt: matchedRedirect.expiresAt });
             return;
@@ -821,6 +828,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
           feedbacks.delete('consent');consentOperation = { redirecting: true };renderControls();
           location.assign(liveMatch.approveUrl);return;
         }
+        if (target.method === PLATFORM_RESUME_METHOD) pausePlatformAutoLogin(recentStore);
         feedbacks.delete('consent');consentOperation = { redirecting: true };renderControls();
         location.assign(target.cancelUrl);return;
       }
@@ -850,6 +858,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       const target = trustedConsentRedirect(result.data.redirect_url, config, authorization.clientId);
       if (activePlatformConsent) {
         if (method === 'denyAuthorization') {
+          if (activePlatformConsent.intent.method === PLATFORM_RESUME_METHOD) pausePlatformAutoLogin(recentStore);
           const serverState = new URL(target).searchParams.get('state');
           const safeCancel = buildPlatformCancelUrl({ config, state: serverState || activePlatformConsent.intent.state });
           if (!safeCancel) throw new Error('취소 주소를 확인하지 못했어요.');
@@ -1073,6 +1082,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       showStaleAuthorization(false, false);
       return;
     }
+    markPlatformResumeAccountSwitch(resolvePlatformStore(), expectedState, { now: cooldownClock.now() });
     const sw = {
       subject: switchingSubject,
       expectedState,
@@ -1132,6 +1142,14 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       else { mode = 'login';focusSecurity = true; }
     }
     if (!session || mode === 'reset' || mode === 'email-change') {
+      if (!session && mode === 'login' && !preview && window.top === window.self && authorizationId && !abandonedAuthorization && !callbackBlocked && !hadCallback && !startupError) {
+        const platformStore = resolvePlatformStore();
+        const boundResume = readBoundPlatformLoginIntent({ storage: platformStore, config, now: cooldownClock.now() });
+        if (boundResume?.intent?.method === PLATFORM_RESUME_METHOD && !hasLiveForeignPending(platformStore, boundResume.intent.createdAt)) {
+          const cancelUrl = buildPlatformCancelUrl({ config, state: boundResume.intent.state });
+          if (cancelUrl) { location.assign(cancelUrl);return; }
+        }
+      }
       $('auth-panel').hidden = false;setMode(mode);
       if (mode !== 'reset' && mode !== 'email-change' && landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(error ? text : text + ' 이 기기에서 로그인하지 않아도 돼요.', error, true, error ? 'error' : 'success');return; }
       // Every step's form says what to do itself (the heading and the line under it — for the mail-link steps, the one tap and
@@ -1167,13 +1185,14 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       // Only a sign-in that reached the account counts: a Google sign-in that just came back (not a link to an account
       // already signed in) and finished any sign-up step, or this tab's password sign-in. A first Google visit that
       // stops at the sign-up step records nothing until that step is done (the flag waits in google-auth until then).
-      if (google.takeSignedIn?.()) { pendingMethod = 'google';freshSessionUserId = verified.id; }
+      if (google.takeSignedIn?.()) { pendingMethod = 'google';freshSessionUserId = verified.id;clearPlatformAutoLoginPause(recentStore); }
       const verifiedEmail = normalizeEmail(verified.email);
       if (signupPending && (!signupPending.authorizationId || signupPending.authorizationId !== authorizationId || cooldownClock.now() > signupPending.until)) signupPending = null;
       if (signupPending && verifiedEmail && verifiedEmail === signupPending.email) {
         freshSessionUserId = verified.id;
         pendingMethod ||= 'email';
         signupPending = null;
+        clearPlatformAutoLoginPause(recentStore);
         try { resolvePlatformStore()?.removeItem(SIGNUP_CONFIRM_KEY); } catch {}
       } else {
         if (signupPending) signupPending = null;
@@ -1193,6 +1212,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
           if (matchedConfirm) {
             freshSessionUserId = verified.id;
             pendingMethod ||= 'email';
+            clearPlatformAutoLoginPause(recentStore);
           }
         }
       }
@@ -1249,6 +1269,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     google?.reset();
     // Leaving every SYNK app means leaving this device too: the 「지난번 로그인」 hint goes with it.
     if (request.scope === 'all') forgetRecentLogin({ storage: recentStore, realm: recentRealm });
+    clearPlatformAutoLoginPause(recentStore);
     authOperation = true;
     mode = 'login';void enter();
     notice('현재 계정 화면을 닫았어요. 브라우저 로그인 저장과 서버의 연결 종료를 확인하고 있어요…', false, false, 'pending');
@@ -1422,7 +1443,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         await enter();if (!$('account').hidden) notice('새 비밀번호를 저장했어요. 다른 기기와 앱(PC 앱·WORLD 포함)에서는 새 비밀번호로 다시 로그인해 주세요.', false, true, 'success');
         void tidySessions(generation);
       }
-      else { signedOutSubject = null;session = result.data.session;generation++;subject = session?.user?.id;freshSessionUserId = subject || null;signupPending = null;clearCooldowns();pendingMethod = 'email';await enter(); }
+      else { signedOutSubject = null;session = result.data.session;generation++;subject = session?.user?.id;freshSessionUserId = subject || null;signupPending = null;clearPlatformAutoLoginPause(recentStore);clearCooldowns();pendingMethod = 'email';await enter(); }
     } catch (error) {
       if (token === generation && mode === requestMode) {
         report(error, requestMode);
@@ -1506,7 +1527,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       url: initialUrl.href,
       now: cooldownClock.now(),
     });
-    if (!hint) { activePlatformAuthHint = null;syncPlatformVisualContext({ refreshAuth: true });portalEntryHintHandled = true;return; }
+    if (!hint || hint.method === PLATFORM_RESUME_METHOD) { activePlatformAuthHint = null;syncPlatformVisualContext({ refreshAuth: true });portalEntryHintHandled = true;return; }
     if (hint.method === 'email') {
       portalEntryHintHandled = true;
       emailPanel = true;

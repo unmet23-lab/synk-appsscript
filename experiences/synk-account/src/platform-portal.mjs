@@ -7,10 +7,17 @@ import { normalizePurposeOnboarding } from './platform-account.mjs';
 import { createCompanyEntryTransport } from './company-entry-web.mjs';
 import {
   PLATFORM_ALLOWED_HASHES,
+  PLATFORM_LOGIN_INTENT,
   PLATFORM_LOGIN_METHODS,
+  PLATFORM_LOGIN_NOTICE,
+  PLATFORM_RESUME_METHOD,
   rememberPlatformLogin,
   clearPlatformLoginIntent,
   takePlatformLoginNotice,
+  hasPlatformAutoLoginAttempt,
+  markPlatformAutoLoginAttempt,
+  isPlatformAutoLoginPaused,
+  pausePlatformAutoLogin,
 } from './platform-login-return.mjs';
 import {
   mountPortalEntry,
@@ -1106,6 +1113,7 @@ export function mountWebPortalHost({
   getAccount = () => null,
   getStartupState = () => null,
   getSessionStorage,
+  getLocalStorage,
   getReducedMotion,
   cryptoRef: customCryptoRef = null,
   beginOAuthFn = beginOAuth,
@@ -1117,6 +1125,7 @@ export function mountWebPortalHost({
   onRetryAuth,
   onSwitchAccount,
   onNavigateExternal,
+  onReplaceExternal,
   onNavigateHash,
   onOpenNewTab,
   onTrackAppLaunch,
@@ -1132,6 +1141,8 @@ export function mountWebPortalHost({
       shouldBlockShortcuts: () => false,
       syncAccountState() {},
       openAuth: () => false,
+      canAutoResumeCentralSession: () => false,
+      resumeCentralSession: () => Promise.resolve({ ok: false, code: 'BYPASS' }),
       openPurposePicker: () => false,
       closePurposePicker: () => Promise.resolve(false),
       handlePageShow() {},
@@ -1158,11 +1169,38 @@ export function mountWebPortalHost({
     }
   }
 
+  function resolveLocalStorage() {
+    if (typeof getLocalStorage === 'function') {
+      try {
+        return getLocalStorage();
+      } catch {
+        return null;
+      }
+    }
+    try {
+      return win?.localStorage || globalThis.localStorage || null;
+    } catch {
+      return null;
+    }
+  }
+
   const navigateExternal = typeof onNavigateExternal === 'function'
     ? onNavigateExternal
     : href => {
       win?.location?.assign?.(href);
     };
+
+  const replaceExternal = typeof onReplaceExternal === 'function'
+    ? onReplaceExternal
+    : typeof onNavigateExternal === 'function'
+      ? onNavigateExternal
+      : href => {
+        if (typeof win?.location?.replace === 'function') {
+          win.location.replace(href);
+        } else {
+          win?.location?.assign?.(href);
+        }
+      };
 
   const navigateHash = typeof onNavigateHash === 'function'
     ? onNavigateHash
@@ -1212,6 +1250,7 @@ export function mountWebPortalHost({
   let lastVerifiedKey = null;
   let observedPendingAccountId = null;
   let authIntentSeq = 0;
+  let portalUserInteracted = false;
   let hasCompletedPortalEntry = bypass === true;
   let lastSubmittedInviteRaw = '';
   let inviteCallbackInFlight = false;
@@ -1771,6 +1810,7 @@ export function mountWebPortalHost({
     if (!PLATFORM_LOGIN_METHODS.includes(method)) {
       return { ok: false, code: 'UNSUPPORTED_AUTH_METHOD', message: '지원하지 않는 로그인 방식이에요.' };
     }
+    portalUserInteracted = true;
     const mySeq = ++authIntentSeq;
     clearNoticeKindAttr();
 
@@ -2716,7 +2756,9 @@ export function mountWebPortalHost({
     },
 
     async onSwitchAccount() {
+      portalUserInteracted = true;
       authIntentSeq += 1;
+      pausePlatformAutoLogin(resolveLocalStorage());
       invalidateCompanyBinding({ cancelActive: true, markPendingSwitch: true });
       clearPendingWebOAuthState();
       try {
@@ -2739,6 +2781,7 @@ export function mountWebPortalHost({
     },
 
     async onBrowse() {
+      portalUserInteracted = true;
       clearNoticeKindAttr();
       requestCancelCompanyEntry();
       if (hasCompletedPortalEntry || isExplicitPlatformRouteHash(readCurrentHash())) {
@@ -3065,6 +3108,7 @@ export function mountWebPortalHost({
     },
 
     onInvite(validatedValue, meta) {
+      portalUserInteracted = true;
       inviteCallbackInFlight = true;
       const submittedSnapshot = lastSubmittedInviteRaw;
       const checked = validatePortalInviteInput(validatedValue);
@@ -3282,6 +3326,7 @@ export function mountWebPortalHost({
 
   const onRootSubmitCapture = event => {
     if (disposed) return;
+    portalUserInteracted = true;
     const form = event.target?.closest?.('[data-portal-pane="invite"]');
     if (!form || !root.contains(form)) return;
     const inviteInput = root.querySelector?.('#portal-invite-input');
@@ -3302,6 +3347,9 @@ export function mountWebPortalHost({
 
   const onRootClickCapture = event => {
     if (disposed) return;
+    if (event.target && root.contains?.(event.target)) {
+      portalUserInteracted = true;
+    }
     const actionBtn = event.target?.closest?.('[data-portal-action]');
     if (!actionBtn || !root.contains(actionBtn)) return;
     if (actionBtn.dataset.portalAction === 'close-invite') {
@@ -3313,6 +3361,9 @@ export function mountWebPortalHost({
   const onWindowKeyDownCapture = event => {
     if (disposed || !portal.shouldBlockShortcuts()) return;
     if (event.isComposing || event.keyCode === 229) return;
+    if ((event.key === 'Enter' || event.key === ' ') && event.target && root.contains?.(event.target)) {
+      portalUserInteracted = true;
+    }
 
     const mod = event.ctrlKey || event.metaKey;
     const lowerKey = typeof event.key === 'string' ? event.key.toLowerCase() : '';
@@ -3392,8 +3443,130 @@ export function mountWebPortalHost({
     return portal.setState(normalized);
   }
 
+  function canAutoResumeCentralSession() {
+    if (disposed || bypass || portalUserInteracted || authIntentSeq !== 0 || hasCompletedPortalEntry) {
+      return false;
+    }
+    const snap = portal.getState();
+    if (
+      !snap
+      || snap.phase !== 'welcome'
+      || snap.enteredOnce
+      || snap.authStatus === 'signed-in'
+      || snap.authStatus === 'signing-in'
+    ) {
+      return false;
+    }
+    const rawStorage = resolveSessionStorage();
+    if (
+      !rawStorage
+      || typeof rawStorage.getItem !== 'function'
+      || typeof rawStorage.setItem !== 'function'
+      || typeof rawStorage.removeItem !== 'function'
+    ) {
+      return false;
+    }
+    try {
+      if (
+        rawStorage.getItem(SESSION_KEY) !== null
+        || rawStorage.getItem(PENDING_OAUTH_KEY) !== null
+        || rawStorage.getItem(PLATFORM_LOGIN_INTENT) !== null
+        || rawStorage.getItem(PLATFORM_LOGIN_NOTICE) !== null
+        || hasPlatformAutoLoginAttempt(rawStorage)
+      ) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+    const rawLocalStorage = resolveLocalStorage();
+    if (rawLocalStorage && isPlatformAutoLoginPaused(rawLocalStorage)) {
+      return false;
+    }
+    return true;
+  }
+
+  async function resumeCentralSession({ subject } = {}) {
+    const normalizedSubject = typeof subject === 'string' ? subject.trim() : '';
+    if (!normalizedSubject || !canAutoResumeCentralSession()) {
+      return { ok: false, code: 'AUTO_RESUME_SKIPPED' };
+    }
+
+    const currentConfig = getConfig?.();
+    const platformClient = currentConfig?.clients?.platform;
+    if (!currentConfig?.configured || !platformClient?.clientId || !platformClient.redirectUri) {
+      return { ok: false, code: 'AUTH_UNCONFIGURED' };
+    }
+
+    const rawStorage = resolveSessionStorage();
+    if (
+      !rawStorage
+      || typeof rawStorage.getItem !== 'function'
+      || typeof rawStorage.setItem !== 'function'
+      || typeof rawStorage.removeItem !== 'function'
+    ) {
+      return { ok: false, code: 'AUTH_STORAGE_UNAVAILABLE' };
+    }
+
+    const startedAt = nowFn();
+    if (!markPlatformAutoLoginAttempt(rawStorage, { now: startedAt })) {
+      return { ok: false, code: 'AUTH_STORAGE_UNAVAILABLE' };
+    }
+
+    const mySeq = ++authIntentSeq;
+    const guardedStorage = createGuardedStorage(rawStorage, mySeq);
+    const returnHash = normalizePortalReturnHash(readCurrentHash());
+
+    try {
+      const authorizeUrl = await beginOAuthFn({
+        config: currentConfig,
+        product: 'platform',
+        storage: guardedStorage,
+        now: startedAt,
+      });
+      if (mySeq !== authIntentSeq) {
+        return { ok: false, code: 'AUTH_CANCELLED' };
+      }
+      if (
+        disposed
+        || portalUserInteracted
+        || portal.getState().phase !== 'welcome'
+      ) {
+        clearPendingWebOAuthState();
+        return { ok: false, code: 'AUTH_CANCELLED' };
+      }
+      rememberLoginFn(guardedStorage, {
+        config: currentConfig,
+        method: PLATFORM_RESUME_METHOD,
+        subject: normalizedSubject,
+        returnHash,
+        now: startedAt,
+      });
+      if (mySeq !== authIntentSeq) {
+        return { ok: false, code: 'AUTH_CANCELLED' };
+      }
+      if (
+        disposed
+        || portalUserInteracted
+        || portal.getState().phase !== 'welcome'
+      ) {
+        clearPendingWebOAuthState();
+        return { ok: false, code: 'AUTH_CANCELLED' };
+      }
+      invalidateCompanyBinding({ cancelActive: true });
+      replaceExternal(authorizeUrl);
+      return { ok: true, method: PLATFORM_RESUME_METHOD, returnHash, authorizeUrl };
+    } catch (error) {
+      if (mySeq === authIntentSeq && error?.code !== 'STALE_AUTH_INTENT') {
+        clearPendingWebOAuthState();
+      }
+      return { ok: false, code: mySeq !== authIntentSeq || error?.code === 'STALE_AUTH_INTENT' ? 'AUTH_CANCELLED' : 'AUTO_RESUME_FAILED' };
+    }
+  }
+
   function openAuth(triggerElement = doc?.activeElement) {
     if (disposed || bypass) return false;
+    portalUserInteracted = true;
     const normalized = buildNormalizedAuth({ cancelOnBindingChange: false });
     if (normalized.status === 'signed-in') {
       syncBindingCancellationIfNeeded();
@@ -3469,7 +3642,12 @@ export function mountWebPortalHost({
     shouldBlockShortcuts: () => portal.shouldBlockShortcuts(),
     syncAccountState,
     openAuth,
-    openPurposePicker: trigger => portal.openPurposePicker(trigger),
+    canAutoResumeCentralSession,
+    resumeCentralSession,
+    openPurposePicker: trigger => {
+      portalUserInteracted = true;
+      return portal.openPurposePicker(trigger);
+    },
     closePurposePicker: () => portal.closePurposePicker(),
     handlePageShow,
     dispose,
