@@ -1,5 +1,6 @@
 'use strict';
 const path=require('node:path'),fs=require('node:fs'),crypto=require('node:crypto');
+const {vkChartPage,vkChartRows}=require('./vk-chart.cjs');
 
 async function threadsPage(p,args,driver){
   if(driver==='aside')await p.waitForLoadState('domcontentloaded');
@@ -121,6 +122,16 @@ async function otherOwner(ctx,helpers){
   if(!/^[\w.-]+$/.test(handle))return 'need_owner';
   const vk=a.platform==='vk';
   if(vk&&(!/^\d+$/.test(profile.communityId)||profile.browser!=='ego'||a.publicUrl!=='https://vk.ru/'+handle))return 'need_owner';
+  if(vk){
+    await ctx.setStage('creator-screen');
+    const data=await helpers.pageJob(ctx,'vk-chart',vkChartPage,{entry:a.publicUrl,handle});
+    if(data?.reason==='user_control'||data?.reason==='need_owner')return data.reason;
+    const observations=vkChartRows(data,handle);
+    if(observations.length){
+      await helpers.storeBatch(ctx,'vk-daily-chart',data,{sourceType:'creator-screen',sourceUrl:data.source,observedAt:data.observedAt,identity:{accountId:a.id,handle},observations});
+      return 'limited';
+    }
+  }
   await ctx.setStage('official-export');
   const f=vk?'vk.csv':'threads.pdf',target=path.join(dir,f);
   const result=await helpers.pageJob(ctx,'verified-export',vk?vkPage:threadsPage,{entry:vk?a.publicUrl:'https://www.threads.com/insights/',handle,file:target,communityId:profile.communityId});
