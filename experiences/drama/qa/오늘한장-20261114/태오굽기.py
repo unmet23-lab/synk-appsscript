@@ -11,15 +11,18 @@
 #   python -I -X utf8 experiences/drama/qa/오늘한장-20261114/태오굽기.py <틀 code> [--초 8] [--모델 seedance_2.5_flash] [--상한 70] [--실행]
 #       한 틀만 굽는다(받기까지). 넣기는 --넣기로 따로 한다.
 #   python -I -X utf8 experiences/drama/qa/오늘한장-20261114/태오굽기.py --넣기 <틀 code>
-#       받은 판을 원천 폴더(~/Documents/synk-vendor/drama-today-20261116/)에 두고, 메타를 뺀 재생 사본을 pilot/media/today-taeo-<이름>.mp4(git 밖)에
-#       만들고 TAEO_MEDIA에 적는다. 드라마 manifest에는 넣지 않는다 — 공개 빌드가 manifest의 파일을 모두 싣기 때문이다.
-#       파일이 없는 사본에서는 화면의 동그라미가 듣는 고리로만 남는다.
+#       받은 판을 원천 폴더(~/Documents/synk-vendor/drama-today-20261116/)에 두고, 메타를 뺀 재생 사본을 공용 작업본(git 밖 미디어의 자리,
+#       tools/lib/공용작업본.js)의 pilot/media/today-taeo-<이름>.mp4에 만들고 TAEO_MEDIA에 적는다. 회차 사본에서 돌아도 사본에는 git 밖 파일을
+#       남기지 않는다(예약작업_작업자리.md 「끝」이 지울 수 있게). 드라마 manifest에는 넣지 않는다 — 공개 빌드가 manifest의 파일을 모두 싣기 때문이다.
+#       파일이 없는 작업본에서는 화면의 동그라미가 듣는 고리로만 남는다.
+#   python -I -X utf8 experiences/drama/qa/오늘한장-20261114/태오굽기.py --사본
+#       TAEO_MEDIA에 적힌 줄마다 원천 폴더의 판에서 재생 사본을 공용 작업본과 지금 작업본에 다시 만든다(없는 것만).
 # 받은 판과 기록(_드리미나.json)은 원천 폴더의 받음/에 남는다 — 어느 작업본에서 돌려도 같은 자리다.
 import json, os, re, shutil, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
-MEDIA = os.path.join(ROOT, 'experiences', 'drama', 'pilot', 'media')
+MEDIA = os.path.join(ROOT, 'experiences', 'drama', 'pilot', 'media')   # git 밖(.gitignore) — 회차 사본에는 없어 공용 작업본에서 읽는다(media_file)
 CONTENT = os.path.join(ROOT, 'experiences', 'drama', 'pilot', 'today', 'content.mjs')
 VENDOR = os.path.expanduser('~/Documents/synk-vendor/drama-today-20261116')
 OUT = os.path.join(VENDOR, '받음')
@@ -101,7 +104,7 @@ def anchors():
     first, later = os.path.join(OUT, 'loop_0.png'), os.path.join(OUT, 'loop_35.png')
     for t, f in ((0, first), (3.5, later)):
         if not os.path.exists(f):
-            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', str(t), '-i', os.path.join(MEDIA, 'taeo-listen.mp4'), '-frames:v', '1', f], check=True)
+            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', str(t), '-i', media_file('taeo-listen.mp4'), '-frames:v', '1', f], check=True)
     return first, later
 
 
@@ -126,7 +129,7 @@ def bake(code, text, sec, model=MODEL, cap=None):
     for attempt in (1, 2):
         before = balance()
         ids = [cli('resource', 'upload', '--file', f, '--project-id', PROJECT, '--name', f'{code}_{n}')['data']['resourceId']
-               for n, f in (('first', first), ('later', later), ('voice', os.path.join(MEDIA, 'senior-01.mp3')))]
+               for n, f in (('first', first), ('later', later), ('voice', media_file('senior-01.mp3')))]
         body = p.replace('@이미지 1', '{{res:%s}}' % ids[0]).replace('@이미지 2', '{{res:%s}}' % ids[1]).replace('@오디오 1', '{{res:%s}}' % ids[2])
         refs = [x for i in ids for x in ('--ref', f'res:{i}')]
         t0 = time.time()
@@ -170,14 +173,26 @@ def same_words(a, b):
     return keep(a) == keep(b)
 
 
-def place(code):
-    """받은 판 → 원천(그대로) + 재생 사본(30fps · 480×854 · 메타 없음) + content.mjs TAEO_MEDIA 한 줄."""
-    name = name_of(code)
-    src = os.path.join(OUT, f'{code}.mp4')
-    keep = os.path.join(VENDOR, f'{name}.mp4')
-    if os.path.abspath(src) != os.path.abspath(keep):
-        shutil.copyfile(src, keep)
-    dst = os.path.join(MEDIA, f'today-{name}.mp4')
+def shared_root():
+    """공용 작업본 뿌리 — git 밖 미디어는 거기 둔다(tools/lib/공용작업본.js를 그대로 쓴다)."""
+    js = "process.stdout.write(require('./tools/lib/공용작업본.js').공용작업본('.'))"
+    return subprocess.run(['node', '-e', js], cwd=ROOT, capture_output=True, text=True, encoding='utf-8', check=True).stdout.strip()
+
+
+def media_file(name):
+    """드라마 미디어 한 파일 — 이 작업본에 없으면 공용 작업본의 같은 자리(tools/lib/공용작업본.js 미디어경로와 같은 뜻)."""
+    here = os.path.join(MEDIA, name)
+    if os.path.exists(here):
+        return here
+    there = os.path.join(shared_root(), 'experiences', 'drama', 'pilot', 'media', name)
+    if not os.path.exists(there):
+        raise SystemExit(f'드라마 미디어가 없다 — {here} · {there}')
+    return there
+
+
+def playback(keep, dst):
+    """원천 판 → 재생 사본(30fps · 480×854 · 메타 없음)."""
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
     subprocess.run(['ffmpeg', '-hide_banner', '-v', 'error', '-nostdin', '-y', '-i', keep, '-vf', 'fps=30,scale=480:854', '-c:v', 'libx264', '-preset', 'slow', '-crf', '26',
                     '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '96k', '-movflags', '+faststart', '-flags:v', '+bitexact', '-bsf:v', 'filter_units=remove_types=6',
                     '-flags:a', '+bitexact', *CLEAN, dst], check=True)
@@ -185,6 +200,17 @@ def place(code):
     left = [n for n in ('Lavf', 'Lavc', 'x264', 'Users', 'dreamina', 'seedance') if n in raw]
     if left:
         raise SystemExit(f'재생 사본에 {left} 문자열이 남았다 — 확인할 것')
+
+
+def place(code):
+    """받은 판 → 원천(그대로) + 공용 작업본의 재생 사본 + content.mjs TAEO_MEDIA 한 줄."""
+    name = name_of(code)
+    src = os.path.join(OUT, f'{code}.mp4')
+    keep = os.path.join(VENDOR, f'{name}.mp4')
+    if os.path.abspath(src) != os.path.abspath(keep):
+        shutil.copyfile(src, keep)
+    dst = os.path.join(shared_root(), 'experiences', 'drama', 'pilot', 'media', f'today-{name}.mp4')
+    playback(keep, dst)
     # 화면 자리 — TAEO_MEDIA 덩이 안에 한 줄(있으면 그대로).
     s = open(CONTENT, encoding='utf-8', newline='').read()
     nl = '\r\n' if '\r\n' in s else '\n'
@@ -197,7 +223,22 @@ def place(code):
         body.sort(key=lambda x: ORDER.index(re.search(r"'([^']+)'", x).group(1)) if re.search(r"'([^']+)'", x).group(1) in ORDER else 99)
         s = s[:m.start(1)] + nl.join(body) + nl + s[m.end(1):]
         open(CONTENT, 'w', encoding='utf-8', newline='').write(s)
-    print(f'  넣음 {code} → media/today-{name}.mp4 ({os.path.getsize(dst)}바이트) · 원천 {keep}')
+    print(f'  넣음 {code} → media/today-{name}.mp4 ({os.path.getsize(dst)}바이트, {dst}) · 원천 {keep}')
+
+
+def copies():
+    """TAEO_MEDIA의 줄마다 재생 사본을 공용 작업본과 지금 작업본에 만든다(있으면 그대로)."""
+    roots = list(dict.fromkeys([shared_root(), ROOT]))
+    for code, m in media_now().items():
+        keep = os.path.join(VENDOR, f'{name_of(code)}.mp4')
+        for r in roots:
+            dst = os.path.join(r, 'experiences', 'drama', 'pilot', *m['video'].split('/'))
+            if os.path.exists(dst):
+                print(f'  있음 {dst}')
+            elif not os.path.exists(keep):
+                print(f'  ✗ 원천 판이 없다 — {keep}')
+            else:
+                playback(keep, dst); print(f'  만듦 {dst}')
 
 
 def queue(run):
@@ -235,8 +276,10 @@ def main():
         return queue('--실행' in a)
     if a[:1] == ['--넣기'] and len(a) >= 2:
         return place(a[1])
+    if a[:1] == ['--사본']:
+        return copies()
     if not a or a[0].startswith('--'):
-        raise SystemExit('쓰는 법: 태오굽기.py --차례 [--실행] | <틀 code> [--초 8] [--모델 seedance_2.5_flash] [--상한 70] [--실행] | --넣기 <틀 code>')
+        raise SystemExit('쓰는 법: 태오굽기.py --차례 [--실행] | <틀 code> [--초 8] [--모델 seedance_2.5_flash] [--상한 70] [--실행] | --넣기 <틀 code> | --사본')
     code = a[0]
     val = lambda k, d: a[a.index(k) + 1] if k in a else d
     text = lines()[code]
