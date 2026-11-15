@@ -898,6 +898,58 @@ class RetentionStepTests(unittest.TestCase):
         (self.root / health.VAULT['receipt']).write_text('{broken', encoding='utf-8')
         self.assertEqual(health.vault_copy(self.root, lib, self.now)['codes'], ['RECEIPT_UNREADABLE'])
 
+    def test_vault_known_unclassified_company_runs_are_a_note(self):
+        # 11-16 05:30 매일 백업의 실제 금고 상태 꼴: 서버 분류를 깔기 전의 46주 금고 판 하나와 앞선 판의 같은 내용 80개.
+        known = 'receipt-34d9a12e-eac2-4fcd-a6cd-bff569f464b3.json'
+        row46 = {'role': 'company', 'receipt': known, 'at': '2026-11-14T22:25:11.544000Z', 'why': '분류 줄 없음', 'media': 141, 'bundles': 0}
+
+        def withheld(closed=(row46,), files=80, because=(known,), runs=None, unsure=None, **sync):
+            closed = [dict(x) for x in closed]
+            return self.vault(status='attention', closedRuns=len(closed) if runs is None else runs,
+                              closedWhy=sorted({x.get('why') for x in closed if x.get('why')}),
+                              unsureFiles=files if unsure is None else unsure,
+                              lastSync={'errors': 0, 'available': True, **sync,
+                                        'withheld': {'closed': closed, 'marked': 0, 'unsure': {'files': files, 'because': list(because)}}})
+
+        row = withheld()
+        self.assertEqual((row['status'], row['codes']), ('healthy', []))
+        self.assertIn('서버 분류를 깔기 전의 회사 백업이라 금고에 새로 넣지 않음(알려진 몫, 그 판의 기한에 풀림): 1판의 영상 · 앞선 판의 같은 내용 80개',
+                      row['detail'])
+        # 앞선 판의 같은 내용만 남은 날(닫힌 판은 아직 금고 판이 아님 — 11-15 저녁의 꼴)도 같다.
+        self.assertEqual(withheld(closed=(), files=80)['codes'], [])
+        # 같은 날 다른 문제는 전처럼 알린다.
+        self.assertEqual(withheld(errors=2)['codes'], ['VAULT_COPY_ERRORS'])
+        self.assertEqual(withheld(available=False)['codes'], ['VAULT_DRIVE_NOT_MOUNTED'])
+        self.assertEqual(self.vault(status='attention', missing=1, closedRuns=1, closedWhy=['분류 줄 없음'], unsureFiles=0,
+                                    lastSync={'withheld': {'closed': [row46], 'unsure': {'files': 0, 'because': []}}})['codes'],
+                         ['VAULT_COPY_MISSING'])
+        old = self.vault(age=dt.timedelta(days=4), status='attention', closedRuns=1, closedWhy=['분류 줄 없음'], unsureFiles=0,
+                         lastSync={'withheld': {'closed': [row46], 'unsure': {'files': 0, 'because': []}}})
+        self.assertEqual((old['status'], old['codes']), ('attention', ['VAULT_STALE']))
+        # 알려진 넷으로 다 설명되지 않으면 전처럼 알린다.
+        later = dict(row46, receipt='receipt-3b0e600d-0ef3-4912-9962-da55f98dd0c9.json', at='2026-11-15T19:22:09Z')
+        for case in ({'closed': (row46, later)},                                          # 고친 뒤의 판이 닫힘
+                     {'closed': (dict(row46, why='classified:false'),)},                  # 다른 까닭
+                     {'closed': (dict(row46, why='legacyDeleted:1'),)},
+                     {'closed': (dict(row46, role='research'),)},
+                     {'because': (known, 'receipt-3b0e600d-0ef3-4912-9962-da55f98dd0c9.json')},  # 까닭 영수증에 모르는 것
+                     {'because': ()},                                                     # 까닭 영수증이 없음
+                     {'runs': 2},                                                         # 요약 수와 줄 수가 어긋남
+                     {'unsure': 81}):
+            with self.subTest(case=case):
+                row = withheld(**case)
+                self.assertEqual((row['status'], row['codes']), ('attention', ['VAULT_COMPANY_MEDIA_WITHHELD']))
+        # 줄이 없는 옛 꼴의 금고 상태(lastSync.withheld 없음)도 전처럼 알린다.
+        row = self.vault(status='attention', closedRuns=1, closedWhy=['분류 줄 없음'], unsureFiles=80)
+        self.assertEqual((row['status'], row['codes']), ('attention', ['VAULT_COMPANY_MEDIA_WITHHELD']))
+        # 설명할 몫도 코드도 없는데 attention인 금고 상태는 그대로 attention이다(모르는 까닭을 정상으로 덮지 않음).
+        self.assertEqual(self.vault(status='attention', closedRuns=0, unsureFiles=0, lastSync={'withheld': {}})['status'], 'attention')
+
+    def test_vault_known_unclassified_names_are_the_four_before_the_server_fix(self):
+        self.assertEqual(len(health.VAULT_KNOWN_UNCLASSIFIED), 4)
+        self.assertNotIn('receipt-3b0e600d-0ef3-4912-9962-da55f98dd0c9.json', health.VAULT_KNOWN_UNCLASSIFIED)  # 고친 뒤 첫 분류 판
+        self.assertTrue(all(re.fullmatch(r'receipt-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}\.json', x) for x in health.VAULT_KNOWN_UNCLASSIFIED))
+
     def test_new_checks_do_not_block_recovery_before_their_first_run(self):
         summary = health.gather(self.root, lib, {'components': []}, {'space': {'exists': False}}, self.now)
         self.assertEqual([(x['id'], x['status']) for x in summary['components']],

@@ -43,6 +43,16 @@ SPACE_LEDGER_WARN_BYTES = 8 * 1024 * 1024
 CAPACITY = {'id': 'capacity', 'receipt': '상태/용량/latest.json', 'upcoming': '상태/보존규칙/다가오는것.json',
             'attentionRatio': 0.5, 'failedRatio': 0.8, 'maxStaleHours': 72}
 VAULT = {'id': 'vault', 'receipt': '상태/금고/latest.json', 'maxStaleHours': 72}
+# 회사 서버 직접 백업에 인물 분류 두 파일을 깔기 전(2026-11-16 04:07 KST)에 생긴, 분류 줄 없는 회사 영수증 넷이다. 회사 판 61 무장
+# (2026-11-10 23:12Z) 뒤의 11-12 ~ 11-15 07:10 KST 실행이다. 서버는 이미 고쳤으니 사람이 더 고칠 것이 없다. 그런데 그중 46주 금고 판(34d9a12e)이
+# 금고 판으로 사는 90일 동안(2027-02-13 무렵까지) 보존규칙.py가 그 판을 닫힌 쪽으로 잡는다. 금고 칸은 이 넷으로 모두 설명되는 몫만 알림 없이
+# 메모로 남긴다. 다른 영수증, 다른 까닭, 복사 문제는 전처럼 알린다(결정 표 2026-11-16, 현장 노트 #vault-unclassified-company-runs).
+VAULT_KNOWN_UNCLASSIFIED = frozenset({
+    'receipt-3899d06c-bf11-4a3a-953b-71ddd766da26.json',
+    'receipt-299c2f91-05b4-47db-9346-b0d5bd31272a.json',
+    'receipt-2e8a999f-7147-4009-95dc-171aa47db8be.json',
+    'receipt-34d9a12e-eac2-4fcd-a6cd-bff569f464b3.json',
+})
 # The frozen archive groups (창고.frozen_groups: 옛 릴리스 · 다운로드 · 공모전 · town …) were uploaded once and most local copies
 # deleted, so their Drive file is often the only copy; the daily media run does not look at them. On 11-07 a hand deletion trashed
 # 160 of them and it showed only by chance (11-10). 원본백업.py re-verifies them weekly, and daily while the last result is not a
@@ -400,6 +410,24 @@ def drive_capacity(root, lib, now, item=CAPACITY, suspended=None):
             'receiptPath': item['receipt']}
 
 
+def known_withheld(receipt, sync, known=VAULT_KNOWN_UNCLASSIFIED):
+    """금고 상태의 닫힌 쪽 몫(closedRuns · unsureFiles)이 모두 서버를 고치기 전의 알려진 회사 영수증으로 설명되면 (판 수, 내용 수), 아니면 None.
+    닫힌 판은 회사 역할 · 까닭 「분류 줄 없음」 · 알려진 영수증이어야 하고, 앞선 판의 같은 내용은 그 까닭 영수증이 모두 알려진 것이어야 한다.
+    요약 수와 lastSync.withheld의 줄 수가 어긋나거나, 설명할 몫이 없으면 None이다."""
+    withheld = sync.get('withheld') if isinstance(sync.get('withheld'), dict) else {}
+    closed = withheld.get('closed') if isinstance(withheld.get('closed'), list) else []
+    unsure = withheld.get('unsure') if isinstance(withheld.get('unsure'), dict) else {}
+    files, because = unsure.get('files') or 0, unsure.get('because') if isinstance(unsure.get('because'), list) else []
+    if len(closed) != (receipt.get('closedRuns') or 0) or files != (receipt.get('unsureFiles') or 0) or not (closed or files):
+        return None
+    if any(not isinstance(row, dict) or row.get('role') != 'company' or row.get('why') != '분류 줄 없음' or row.get('receipt') not in known
+           for row in closed):
+        return None
+    if files and (not because or any(name not in known for name in because)):
+        return None
+    return len(closed), files
+
+
 def vault_copy(root, lib, now, item=VAULT, suspended=None):
     receipt, problem = read_receipt(root, lib, item['receipt'])
     checked = lib.instant((receipt or {}).get('checkedAt'))
@@ -422,14 +450,24 @@ def vault_copy(root, lib, now, item=VAULT, suspended=None):
         if sync.get('deferred'): notes.append(f"남은 {sync['deferred']}개는 다음 날 이어서")
         # 보존규칙.py(PULSE 고객 전용 인물 금고 제외, 2026-11-11): 분류를 못 믿는 회사 백업 판은 영상 본문을 금고에 새로 넣지 않는다 — 사람이
         # 회사 서버 판이나 해시 없는 인물 묘비를 고칠 때까지 이어지므로 까닭과 함께 알린다(판 4 설계 11-2).
-        if receipt.get('closedRuns'):
-            codes.append('VAULT_COMPANY_MEDIA_WITHHELD')
-            notes.append(f"분류를 못 믿는 회사 백업 {receipt['closedRuns']}판의 영상을 금고에 새로 넣지 않음({' · '.join(receipt.get('closedWhy') or []) or '까닭 미상'})")
-        if receipt.get('unsureFiles'):
-            codes.append('VAULT_COMPANY_MEDIA_WITHHELD')
-            notes.append(f"그 판에 있던 내용 {receipt['unsureFiles']}개는 앞선 판에서도 새로 넣지 않음")
+        # 서버를 고치기 전의 알려진 영수증(VAULT_KNOWN_UNCLASSIFIED)만으로 모두 설명되는 몫은 고칠 사람이 없으니 메모로만 남긴다(11-16).
+        known = known_withheld(receipt, sync)
+        if known:
+            runs, files = known
+            notes.append('서버 분류를 깔기 전의 회사 백업이라 금고에 새로 넣지 않음(알려진 몫, 그 판의 기한에 풀림): '
+                         + ' · '.join(([f'{runs}판의 영상'] if runs else []) + ([f'앞선 판의 같은 내용 {files}개'] if files else [])))
+        else:
+            if receipt.get('closedRuns'):
+                codes.append('VAULT_COMPANY_MEDIA_WITHHELD')
+                notes.append(f"분류를 못 믿는 회사 백업 {receipt['closedRuns']}판의 영상을 금고에 새로 넣지 않음({' · '.join(receipt.get('closedWhy') or []) or '까닭 미상'})")
+            if receipt.get('unsureFiles'):
+                codes.append('VAULT_COMPANY_MEDIA_WITHHELD')
+                notes.append(f"그 판에 있던 내용 {receipt['unsureFiles']}개는 앞선 판에서도 새로 넣지 않음")
         # A missing copy, an unmounted G: or a failed copy is a problem whatever status the receipt itself carries.
         if codes: state = 'attention'
+        # 보존규칙.py는 빠진 사본 · 복사 실패 · G: 끊김 · 닫힌 쪽 몫 때문에만 attention을 낸다. 앞의 셋은 위 코드가 잡으니, 코드가 없고
+        # 닫힌 쪽 몫이 모두 알려진 것이면 그 attention은 다 설명된 것이다.
+        elif known: state = 'healthy'
         late = stale_note(checked, now, item, suspended)
         if late:
             state = 'attention'; codes.append('VAULT_STALE'); notes.append(late)
