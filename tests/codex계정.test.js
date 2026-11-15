@@ -128,6 +128,26 @@ test('④ 굽기 계정이 하나도 없으면 예전처럼 본 계정으로 부
   assert.match(r.stderr, /굽기 계정이 아직 없다/);
 });
 
+test('④-1 굽기 뿌리가 정션이면 codex에는 정션을 푼 실제 자리를 CODEX_HOME으로 넘긴다(11-14 PC 멈춤)', (t) => {
+  const 실제 = fs.mkdtempSync(path.join(os.tmpdir(), 'codex계정-실제-'));
+  const 연결 = path.join(os.tmpdir(), `codex계정-연결-${process.pid}-${Date.now()}`);
+  fs.symlinkSync(실제, 연결, 'junction');
+  t.after(() => {
+    try { fs.unlinkSync(연결); } catch { fs.rmdirSync(연결); }   // 연결만 지운다 — 실제 폴더는 아래에서 따로
+    fs.rmSync(실제, { recursive: true, force: true });
+  });
+  const bin = path.join(실제, 'fake-codex.js');
+  fs.writeFileSync(bin, "process.stdin.resume(); process.stdin.on('end', () => console.log('home=' + process.env.CODEX_HOME));");
+  fs.writeFileSync(path.join(실제, '계정.json'), JSON.stringify({ 계정: [{ 이름: 'bake2' }] }));
+  const env = { ...process.env, CODEX_BAKE_DIR: 연결, CODEX_BIN: bin };
+  delete env.CODEX_HOME;
+  const r = spawnSync(process.execPath, [도구, 'exec', '--skip-git-repo-check', '-'], { input: 'hi', env, encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, r.stderr);
+  const home = (r.stdout.match(/home=(.*)/) || [])[1]?.trim();
+  assert.strictEqual(home, path.join(fs.realpathSync.native(실제), 'bake2'));
+  assert.ok(!home.startsWith(연결), home);
+});
+
 test('⑤ 풀리는 시각 — 날짜 있는 꼴·시각만·남은 시간', () => {
   const 지금 = new Date(2026, 9, 17, 16, 0);
   assert.strictEqual(풀리는시각('try again at Oct 21st, 2026 3:40 PM.', 지금), new Date(2026, 9, 21, 15, 40).getTime());

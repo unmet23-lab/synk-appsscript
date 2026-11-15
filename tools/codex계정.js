@@ -28,7 +28,11 @@ const { spawn } = require('child_process');
 /* 프로그램 찾기·Windows .cmd 감싸기·한도 창 가르기는 AI 구독 계정판과 같은 코드를 쓴다. */
 const { candidatePaths, commandFor, codexWindows } = require('../desktop/src/ai-subscriptions.cjs');
 
-const 뿌리 = process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake');
+/* 11-14 PC가 10시간 멈췄다(현장 노트 백업_업로드 #pc-hang-resource-timeout-20261114). ~/.codex-bake는 11-07에 D:로 옮긴 정션인데,
+ * codex.exe가 정션을 거쳐 파일을 열 때 Windows가 리디렉션 신뢰 기록을 남기다 Defender 검사와 서로 잠금을 기다려 풀리지 않았다.
+ * 계정 폴더(CODEX_HOME)는 정션을 풀어 실제 자리로 넘긴다. 폴더가 아직 없으면 받은 경로 그대로 쓴다. */
+const 실제자리 = (p) => { try { return fs.realpathSync.native(p); } catch { return p; } };
+const 뿌리 = 실제자리(process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake'));
 const 장부경로 = path.join(뿌리, '계정.json');
 const 본설정 = path.join(os.homedir(), '.codex', 'config.toml');
 /* 새 폴더에는 본 설정의 모델·로그인 방식만 옮긴다. 플러그인·notify·프로젝트 칸은 굽기에 필요 없다. */

@@ -1027,7 +1027,8 @@ const GPT시간초과글 = /^codex exec 시간 초과/;
 export const GPT설정글 = s => `${s.모델}-${s.추론} · ${s.자동대체 ? `자동 대체(${s.자동대체} — 11-15 규칙, 묻지 않음)` : s.환경바꿈 ? `환경변수 ${GPT모델환경} 적용(${s.모델 === GPT검수.모델 ? '기본 모델과 같음' : `기본 ${GPT검수.모델} 아님`} — 지울 때까지 GPT 검수마다)` : `기본 모델(${GPT모델환경} 없음)`}`;
 const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초, 11-04~11 max 회차 가운데 가장 긴 것이 26분(astra 1,573초 · sol 1,097초) — 큰 묶음의 여유
 const GPT주간한계 = 90;  // 주간 이만큼(%) 넘게 쓴 계정은 검수에 쓰지 않는다
-const 굽기뿌리 = () => process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake');
+// 정션(~/.codex-bake → D:)은 풀어서 넘긴다 — codex.exe가 정션을 거치다 11-14 PC가 멈췄다(tools/codex계정.js 뿌리 주석).
+const 굽기뿌리 = () => { const p = process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake'); try { return fs.realpathSync.native(p); } catch { return p; } };
 /** 후보 계정마다 요금제·주간 사용(app-server, 토큰 0). 이름 null = 본 계정(~/.codex). 메일은 남기지 않는다. */
 export async function GPT계정들읽기() {
   const { 묻기 } = require코덱스();
