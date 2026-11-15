@@ -20,7 +20,7 @@ const LOOK={ink:'#141B2B',guide:{fill:'rgba(20,27,43,.09)'},cur:'rgba(194,74,55,
  // 글자 칸이 44px 아래로 작아지면(320×568 · 높이 540 아래의 다시 쓴 판) 1px 겉선이 획을 뭉개므로 바른 글씨는 붉은 면으로, 뒤에 까는 것은 엷은 면으로만
  modelSm:{fill:'rgba(178,62,44,.78)'},ghostSm:{fill:'rgba(194,74,55,.1)'}};
 // vk: 기준 빠르기 배율 — 쓴 칸보다 작은 칸(비교판)에 다시 그릴 때 칸 비율을 곱해 빠르기 대 기준의 비가 쓸 때와 같게 한다(시각은 원래 ms 그대로)
-const penK=(p,w,fin,vk=1)=>inkScale(p,{thin:.22,lo:.7,hi:1,vref:.9*vk,taperIn:w*.45,inFrom:.72,taperOut:w*1.5,outTo:.4,fin});
+export const penK=(p,w,fin,vk=1)=>inkScale(p,{thin:.22,lo:.7,hi:1,vref:.9*vk,taperIn:w*.45,inFrom:.72,taperOut:w*1.5,outTo:.4,fin});
 // 잉크 한 획을 칠한다(p: [x,y,t] px, w: 칸 굵기 lw)
 function paintInk(x,p,w,fin=true,vk=1){if(!p.length)return;const q=smooth(p);x.fillStyle=LOOK.ink;nib(x,q,penK(q,w,fin,vk),{h:w*LOOK.h,a:LOOK.a,m:LOOK.m});}
 
@@ -185,7 +185,8 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    if(switching||finished)return;clearTimeout(idleT);
    switching=true;clearTimeout(timer);clearTimeout(acceptT);showAccept(false);last=null;pid=null;
    // 긋는 중에 다른 손가락으로 「이대로 쓸게요」를 눌렀으면 그 획도 마른 잉크로 넘긴다 — 판정 · 서명(strokes)에 든 획이 비교판에서만 빠지지 않게(최종 검수 F2)
-   if(live){wet.push(live);redraw();}live=null;paintLive();
+   // 그 획은 펜을 뗀 판정을 거치지 않았으니 덮음 · 엉뚱한 획 판정도 다시 구해 음절 점수가 그림과 어긋나지 않게 한다(다시 검수 F2)
+   if(live){wet.push(live);redraw();if(stats[i]&&strokes.length){const r=score(model,strokes,lw/W);api.last=r;stats[i].r=r;}}live=null;paintLive();
    cancelAnimationFrame(soRaf);so.querySelectorAll('.nto-s').forEach(g=>g.classList.remove('cur','shown'));
    inks[i]=strokes.map(s=>s.slice());
    inkT[i]=W?{w:W,s:wet.map(p=>p.map(([x,y,t])=>[x/W,y/W,t]))}:null;
@@ -286,7 +287,8 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    // 시각은 원래 ms로 두고 기준 빠르기에 칸 비율(sz/쓴 칸 폭)을 곱한다 — 시각을 줄이면 굵기 계산의 최소 점 간격(6ms)에 걸려 빠른 획이 굵어진다(최종 검수 F1). 쓴 자국이 없으면(옛 판 · 시험) 고른 점으로 그린다
    const mine=cells.map(({s,y},k)=>{const g=prep(y.querySelector('canvas')),bg=document.createElement('canvas');bg.width=bg.height=Math.round(c);const gb=bg.getContext('2d');gb.setTransform(d,0,0,d,0,0);drawGuide(gb,glyph(s.ch),sz<44?LOOK.ghostSm:LOOK.ghost);
     const it=inkT[k],has=it?.s?.some(p=>p.length)&&it.w>0,src=has?it.s.map(p=>p.map(([u,v,t])=>[u*sz,v*sz,t])):(inks[k]||[]).map(p=>p.map(([u,v])=>[u*sz,v*sz]));
-    return {g,bg,vk:has?sz/it.w:1,list:src.filter(p=>p.length)};});
+    // 촉 굵기도 쓸 때의 칸 굵기(lw=max(9, 칸 폭×.05))를 칸 비율로 줄인 값 — 아주 작은 칸(320×568)에서 9px 바닥이 걸린 만큼 비교판 촉이 가늘어지지 않게(다시 검수 F1)
+    return {g,bg,vk:has?sz/it.w:1,lw:has?Math.max(9,it.w*.05)*sz/it.w:lwc,list:src.filter(p=>p.length)};});
    const total2=mine.reduce((a,o)=>a+o.list.reduce((b,p)=>b+p.length,0),0),dur=reduce?0:Math.min(1100,260+total2*1.6),t0=performance.now();
    cancelAnimationFrame(cmpRaf);let tickAt=0;
    // 점수가 다 오르면: 숫자가 한 번 튀고, 층마다 다른 소리, 새 최고면 「최고 기록」 표, 서하가 점수에 맞는 한마디(목소리 · 말풍선)
@@ -297,7 +299,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    hint.textContent='';
    (function f(t){const u=dur?Math.min(1,(t-t0)/dur):1;let left=u*total2;
     for(const o of mine){o.g.clearRect(0,0,sz,sz);o.g.save();o.g.setTransform(1,0,0,1,0,0);o.g.drawImage(o.bg,0,0);o.g.restore();
-     for(const p of o.list){if(left<=0)break;const n=Math.min(p.length,Math.ceil(left));paintInk(o.g,p.slice(0,n),lwc,n===p.length,o.vk);left-=p.length;}}
+     for(const p of o.list){if(left<=0)break;const n=Math.min(p.length,Math.ceil(left));paintInk(o.g,p.slice(0,n),o.lw,n===p.length,o.vk);left-=p.length;}}
     const v=Math.round(total*u);sc.textContent=String(v);if(v-tickAt>=9&&u<1){tickAt=v;SND.felt('tick');}
     if(u<1)cmpRaf=requestAnimationFrame(f);else landed();})(t0);
   }
