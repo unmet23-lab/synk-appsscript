@@ -55,7 +55,7 @@
     },
     {
       "file": "inputs/existing-accounts.json",
-      "sha256": "83a397730a30691eeb92d0ed71a17bef6f873ddc2b37c36109cf38d76f95c8a8"
+      "sha256": "c0fd323875beddcfd2cc1b0a05656ad76b899641773a72ba050f5bf0eacf3bd0"
     },
     {
       "file": "inputs/content-status.json",
@@ -75,7 +75,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "446c11d8f5c08c5435a488fe0b8e1719b529c8f745739ef21f7e4f0e40f9b312"
+      "sha256": "f1191829fc5b4c54ccf85047967150ffe41503e59b5be36380321eb67ed837d0"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",

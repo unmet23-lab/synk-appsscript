@@ -16,6 +16,8 @@ import {createMetaConnectionService,verifyMetaConnection,hasVerifiedMetaComments
 import { canReadChannel,canWriteChannel,canManageOwners,visibleMembers,seedOwnership,recordOwnershipChange,ownerAt } from './organization.mjs';
 import { planFailure,shouldCollect,collectionHealth,collectionHours,recentPolicyChannel,recentNextCheckAt,shouldCollectRecent,RECENT_INTERVAL_MINUTES } from './collection-policy.mjs';
 import {classifiedChannel} from './account-catalog.mjs';
+import {createCatalogRegistration} from './catalog-registration.mjs';
+import {createExternalObservations,externalCollectionSummary} from './external-observations.mjs';
 import { recordsForOwner } from './ownership-report.mjs';
 import { buildHypeFeed } from './hype.mjs';
 import { createContentService } from './content-service.mjs';
@@ -479,6 +481,9 @@ export function createCompanyApp(options={}) {
   const publicationLinks=createPublicationLinkCheckService({store,studio,publicationPackages,postPerformance,clock,...(options.publicationLinkProbe?{probe:options.publicationLinkProbe}:{})});
   const socialSimple=createSocialSimple({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,clock});
   // SNS·마케팅 간편판(10-24) — 세 장이 서버에서 더 읽는 사실: 보이는 채널·수집 상태·게시 성과 관측(채널 비교 셈 없이 — 무거운 report는 쓰지 않는다).
+  // 원장 계정 등록과 로그인 통계 화면·공식 내보내기 관측(11-14). 채널 연결·자격증명·API 수집 상태는 바꾸지 않는다.
+  const catalogRegistration=createCatalogRegistration({store,clock,audit});
+  const externalObservations=createExternalObservations({store,clock,isConnected:hasConnection,audit});
   const socialSimpleSources=user=>{const channels=visibleChannels(user).map(c=>safeChannel(c,user)),schedule=store.get('settings','company');return {channels,collection:collectionHealth(channels,{at:clock(),hourKst:schedule.hourKst,hoursKst:schedule.hoursKst,enabled:schedule.enabled}),performance:postPerformance.observations(user).entries};};
   const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
@@ -573,7 +578,7 @@ export function createCompanyApp(options={}) {
   function hasConnection(c) {return !c.collectionDisabled&&(!!connection(c)?.accessToken||(c.platform==='youtube'&&!!(connection(c)?.apiKey||providerConfig(c.platform).apiKey||publicYouTubeReader(c))));}
   function disconnectChannel(c){store.transaction(()=>{const handoff=pending(c);if(handoff)store.put('handoffs',handoff.id,{...handoff,status:'cancelled',cancelledAt:clock(),reasonClosed:'connection-disconnected'});store.deleteSecret('channel:'+c.id);const ids=new Set(store.all('posts').filter(p=>p.channelId===c.id).map(p=>p.id));for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if(row.source?.startsWith('api:')&&(row.channelId===c.id||ids.has(row.postId)))store.remove(kind,row.id);store.put('channels',c.id,{...c,pendingHandoffId:null,status:'not-connected',lastCollectedAt:null,recentStatus:'not-connected',recentLastCollectedAt:null,collectionDisabled:true,connectionVersion:(c.connectionVersion||0)+1});});}
   function namedUsers(ids){return ids.map(id=>({id,name:store.get('users',id)?.name||'이전 담당자'}));}
-  function safeChannel(c,user) {const connectedBy=connection(c)?.connectedBy;return {...c,owners:namedUsers(c.ownerIds),teamName:(c.teamId&&store.get('teams',c.teamId)?.name)||'팀 없음',connected:hasConnection(c),canEdit:user?canWriteChannel(user,c):false,canManageOwners:user?canManageOwners(user,c):false,canConnect:user?user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c)):false,connectionOwner:connectedBy?namedUsers([connectedBy])[0]:null,pendingHandoff:pending(c)};}
+  function safeChannel(c,user) {const connectedBy=connection(c)?.connectedBy;return {...c,owners:namedUsers(c.ownerIds),teamName:(c.teamId&&store.get('teams',c.teamId)?.name)||'팀 없음',connected:hasConnection(c),canEdit:user?canWriteChannel(user,c):false,canManageOwners:user?canManageOwners(user,c):false,canConnect:user?user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c)):false,connectionOwner:connectedBy?namedUsers([connectedBy])[0]:null,pendingHandoff:pending(c),externalCollection:externalCollectionSummary(store,c)};}
   function scopeTeamId(user,query){return query.get('teamId')||(query.get('scope')==='team'?user.teamId:null)||null;}
   function scopedChannels(user,query){
     let channels=visibleChannels(user);const scope=query.get('scope'),teamId=scopeTeamId(user,query);
@@ -679,7 +684,7 @@ export function createCompanyApp(options={}) {
     const selected=ownerId?recordsForOwner(raw,candidates,events,ownerId,end):{records:raw,channels:candidates};
     const channels=selected.channels;
     const catalog={channels:channels.map(c=>({...c,ready:true,brand:c.displayName,handle:c.handle||'',publicUrl:c.canonicalUrl}))};
-    return {all,ownerId,events,channels,catalog,data:selected.records,overviewData};
+    return {all,candidates,ownerId,events,channels,catalog,data:selected.records,overviewData};
   }
   function contentLeaders(user,query){
     const date=query.get('date')||query.get('end')||today();dateRange(date,date);if(date>today())throw httpError('오늘 뒤 날짜는 볼 수 없어요.');
@@ -689,7 +694,7 @@ export function createCompanyApp(options={}) {
   function report(user,query,day=false){
     const end=query.get('date')||query.get('end')||today();const start=day?end:query.get('start')||shiftDate(end,-29);
     dateRange(start,end);if(end>today())throw httpError('오늘 뒤 날짜는 볼 수 없어요.');
-    const {all,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end,business:query.get('business')||'',country:query.get('country')||''});
+    const {all,candidates,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end,business:query.get('business')||'',country:query.get('country')||''});
     result.unassignedChannelCount=all.filter(c=>c.business==='UNASSIGNED'&&(!query.get('platform')||c.platform===query.get('platform'))&&(!query.get('channel')||c.id===query.get('channel'))).length;
     if(query.get('growth')==='1')result.growth=buildGrowthSummary(data,catalog,{asOf:end});
     if(query.get('history')==='1')result.history=buildGrowthHistory(data,catalog,{asOf:end,selectionStart:query.get('historyStart')||undefined,selectionEnd:query.get('historyEnd')||undefined});
@@ -697,7 +702,7 @@ export function createCompanyApp(options={}) {
     const users=visibleMembers(store,user);
     const memberGroups=users.map(u=>{const mine=recordsForOwner(data,catalog.channels,events,u.id,end);const item=analyze(mine.records,{channels:mine.channels},{start,end});return {id:u.id,name:u.name,active:u.active,teamId:u.teamId,channelCount:mine.channels.length,metrics:item.metrics};});
     const overviewCatalog={channels:all.map(c=>({...c,ready:true,brand:c.displayName,publicUrl:c.canonicalUrl}))};
-    return {...result,groups,memberGroups,memberGroupsBasis:'수집할 때의 담당자로 셌어요. 예전 담당자를 알 수 없는 기록과 담당자가 바뀐 날을 건너는 증감은 크루별 증가량에서 뺐어요. 여럿이 맡은 채널은 사람마다 겹쳐 셀 수 있어요.',overview:companyOverview(overviewData,overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
+    return {...result,groups,memberGroups,externalObservations:externalObservations.forAnalytics(ownerId?candidates.filter(c=>(c.ownerIds||[]).includes(ownerId)):candidates,{start,end}),memberGroupsBasis:'수집할 때의 담당자로 셌어요. 예전 담당자를 알 수 없는 기록과 담당자가 바뀐 날을 건너는 증감은 크루별 증가량에서 뺐어요. 여럿이 맡은 채널은 사람마다 겹쳐 셀 수 있어요.',overview:companyOverview(overviewData,overviewCatalog,end),_csv:()=>analyticsCsv(result),scope:{...result.scope,ownerId:ownerId||'',teamId:scopeTeamId(user,query)||'',scope:query.get('scope')||'all'},definitions:{basis:'수집 시점의 누적값 차이',missing:'—는 미확인 또는 제공되지 않는 지표입니다.',history:'등록 전 날짜별 실적은 누적값으로 복원하지 않습니다.',members:'관측 당시 담당자에 귀속하며 공동 담당은 크루별 합계에 중복될 수 있습니다. 회사 합계는 채널을 한 번만 셉니다.'}};
   }
   function saveCollection(channel,result,runId,withinTransaction=false,mode='full'){
     const live=store.get('channels',channel.id);
@@ -1726,6 +1731,27 @@ export function createCompanyApp(options={}) {
           audit(user,'membership-updated',target.id,{before:{role:target.role,teamId:target.teamId||null},after:{role,teamId}});
         });return send(res,200,{member:publicUser(updated)});
       }
+      // 원장 관리 계정 등록(11-14): 관리자만. 주소·연결을 지어내지 않고 이미 있는 채널은 그대로 돌려준다(catalog-registration.mjs).
+      if(path==='/api/channels/from-catalog'){
+        admin(user);
+        const teamId=input&&typeof input==='object'&&!Array.isArray(input)&&input.teamId!==undefined?(input.teamId||null):(user.teamId||null);
+        if(teamId!==null&&typeof teamId!=='string')throw httpError('운영 중인 팀을 골라 주세요.');
+        teamFor(teamId);
+        let result;
+        try{result=catalogRegistration.register(user,input,{teamId});}
+        catch(error){if(/^SYNK_CATALOG_[A-Z_]+$/.test(String(error?.code||''))&&Number.isInteger(error.status))return send(res,error.status,{error:safeError(error.message),code:error.code,...(error.details?{details:error.details}:{})});throw error;}
+        const view=row=>({accountId:row.accountId,channel:safeChannel(row.channel,user)});
+        return send(res,result.added.length?201:200,{added:result.added.map(view),existing:result.existing.map(view),summary:{requested:result.added.length+result.existing.length,added:result.added.length,existing:result.existing.length}});
+      }
+      // 로그인한 통계 화면·공식 내보내기·공개 화면 관측 기록(11-14): 기록(POST)은 관리자만 한다. 읽기(GET)는 그 채널을 볼 수 있는 사람에게 열려 있고 아래 GET 구간에서 처리한다. API 수집 성공으로 세지 않는다(external-observations.mjs).
+      const externalObservationWrite=path.match(/^\/api\/channels\/([^/]+)\/external-observations$/);
+      if(externalObservationWrite){
+        admin(user);const c=channelFor(user,externalObservationWrite[1],'write');
+        let result;
+        try{result=externalObservations.record(user,c,input);}
+        catch(error){if(/^SYNK_EXTERNAL_[A-Z_]+$/.test(String(error?.code||''))&&Number.isInteger(error.status))return send(res,error.status,{error:safeError(error.message),code:error.code,...(error.details?{details:error.details}:{})});throw error;}
+        return send(res,result.created.length?201:200,{...result,externalCollection:externalCollectionSummary(store,store.get('channels',c.id))});
+      }
       if(path==='/api/channels'){
         const urls=Array.isArray(input.urls)?input.urls:String(input.urls||'').split(/[\n\r]+/).map(s=>s.trim()).filter(Boolean);if(!urls.length||urls.length>100)throw httpError('주소는 한 번에 1~100개까지 넣어 주세요. 나머지는 이어서 등록하면 돼요.');
         const ownerId=['admin','manager'].includes(user.role)&&input.ownerId?input.ownerId:user.id;const owner=store.get('users',ownerId);if(!owner?.active||owner.role==='viewer')throw httpError('담당자는 이용 중인 크루 가운데서 골라 주세요.');if(user.role==='manager'&&owner.id!==user.id&&owner.teamId!==user.teamId)throw httpError('같은 팀 크루만 담당자로 고를 수 있어요.',403);
@@ -2049,6 +2075,13 @@ export function createCompanyApp(options={}) {
         const teams=store.all('teams').filter(t=>user.role==='admin'||teamIds.has(t.id)).map(t=>({...t,memberCount:members.filter(u=>u.teamId===t.id&&u.active).length,channelCount:channels.filter(c=>c.teamId===t.id&&c.active).length}));
         const safe=channels.map(c=>safeChannel(c,user));
         return send(res,200,{user:publicUser(user),permissions:permissions(user),workspaceCatalog:workspaceProfiles.catalog(user),teams,companyName:schedule.companyName,members,channels:safe,collection:collectionHealth(safe,{at:clock(),hourKst:schedule.hourKst,hoursKst:schedule.hoursKst,enabled:schedule.enabled}),capabilities:PLATFORM_CAPABILITIES,oauthProviders:providerStates(),schedule,pulseAutoReply:user.role==='admin'?pulseAutoReply.settings(user):null,runs:store.latestIn('runs','channelId',ids,'startedAt',100),deployment:{localOnly:isLocalHost(host),origin,serverMustStayRunning:true},legacyImportAvailable:user.role==='admin'&&existsSync(join(here,'../../dashboard/src/data.json')),demoAvailable:user.role==='admin'&&demo.available()});
+      }
+      // 외부 관측 읽기(11-14): 채널 읽기 권한 그대로. 증거 해시와 출처 주소(경로까지)만 있고 자격증명은 없다.
+      const externalObservationRead=path.match(/^\/api\/channels\/([^/]+)\/external-observations$/);
+      if(externalObservationRead){
+        const c=channelFor(user,externalObservationRead[1]);
+        try{return send(res,200,externalObservations.list(user,c,url.searchParams));}
+        catch(error){if(/^SYNK_EXTERNAL_[A-Z_]+$/.test(String(error?.code||''))&&Number.isInteger(error.status))return send(res,error.status,{error:safeError(error.message),code:error.code});throw error;}
       }
       const historyRoute=path.match(/^\/api\/channels\/([^/]+)\/history$/);
       if(historyRoute){const c=channelFor(user,historyRoute[1]),events=store.all('ownershipEvents').filter(e=>e.channelId===c.id).sort((a,b)=>a.effectiveAt.localeCompare(b.effectiveAt)||(a.sequence||0)-(b.sequence||0)).map(e=>({...e,beforeOwners:namedUsers(e.beforeOwnerIds),afterOwners:namedUsers(e.afterOwnerIds),actor:e.actorId?namedUsers([e.actorId])[0]:null}));return send(res,200,{events,handoffs:store.all('handoffs').filter(h=>h.channelId===c.id).map(h=>({...h,fromOwners:namedUsers(h.fromOwnerIds),toOwners:namedUsers(h.toOwnerIds)})),baselineAt:events.find(e=>e.baseline)?.effectiveAt||null});}

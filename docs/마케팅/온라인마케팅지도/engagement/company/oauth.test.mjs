@@ -85,7 +85,7 @@ test('read-only OAuth scopes and provider parameter families stay separate', () 
   const expected = {
     youtube: ['https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/yt-analytics.readonly'],
     instagram: ['instagram_business_basic', 'instagram_business_manage_insights'],
-    facebook: ['pages_show_list', 'pages_read_engagement', 'read_insights'],
+    facebook: ['pages_show_list', 'pages_read_engagement'],
     tiktok: ['user.info.basic', 'user.info.profile', 'user.info.stats', 'video.list'],
   };
   for (const [platform, scopes] of Object.entries(expected)) {
@@ -104,6 +104,15 @@ test('read-only OAuth scopes and provider parameter families stay separate', () 
   const instagram = new URL(createAuthorization('instagram', flow));
   assert.equal(instagram.hostname, 'www.instagram.com');
   assert.equal(instagram.searchParams.get('enable_fb_login'), '0');
+});
+
+test('Facebook statistics consent asks only page list and engagement read; legacy read_insights is never re-requested while other verified grants stay',()=>{
+  const scopes=options=>new URL(createAuthorization('facebook',{...flow,...options})).searchParams.get('scope').split(',');
+  assert.deepEqual(scopes({}),['pages_show_list','pages_read_engagement']);
+  const legacy=scopes({existingGrantedScopes:['pages_show_list','pages_read_engagement','read_insights','pages_manage_posts','pages_read_user_content','pages_manage_engagement','forged_scope']});
+  assert.deepEqual(legacy,['pages_show_list','pages_read_engagement','pages_manage_posts','pages_read_user_content','pages_manage_engagement']);
+  for(const options of [{comments:true,existingGrantedScopes:['read_insights']},{publishing:true,existingGrantedScopes:['read_insights']},{comments:true,publishing:true,existingGrantedScopes:['read_insights']}])assert.ok(!scopes(options).includes('read_insights'));
+  assert.deepEqual(providers().find(provider=>provider.id==='facebook').scopes,['pages_show_list','pages_read_engagement']);
 });
 
 test('YouTube consent excludes inherited Drive grants while retaining explicit verified YouTube capabilities',()=>{

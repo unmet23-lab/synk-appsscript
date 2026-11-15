@@ -15,7 +15,10 @@ const DEFINITIONS = Object.freeze({
   },
   facebook: {
     name: 'Facebook', requiresHttps: false, refreshMode: 'reconnect',
-    scopes: ['pages_show_list', 'pages_read_engagement', 'read_insights'],
+    // 통계 연결은 수집기(collectors.mjs facebook)가 읽는 me/accounts·me·posts·videos에 필요한 최소 권한만 묻는다.
+    // read_insights는 Meta 문서에 남아 있지만, 이 앱의 v26 OAuth에서 Invalid Scopes로 연결 전체를 막았고(2026-11-14 실연결)
+    // 수집기는 /insights를 부르지 않는다. 예전에 받은 read_insights가 저장된 scope에 남아 있어도 아래 allowed에 없으므로 다시 요청하지 않는다.
+    scopes: ['pages_show_list', 'pages_read_engagement'],
   },
   tiktok: {
     name: 'TikTok', requiresHttps: true, refreshMode: 'refresh-token',

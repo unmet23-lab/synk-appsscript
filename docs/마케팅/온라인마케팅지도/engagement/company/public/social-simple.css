@@ -293,3 +293,54 @@
 :root .synk-workspace .sw-simple .ss-perf-tipkey{display:inline-block;width:14px;height:0;margin-right:7px;vertical-align:3px;border-top:2px solid var(--ss-lapis)}
 :root .synk-workspace .sw-simple .ss-perf-tipkey.is-prev{border-top:1.5px dashed var(--ss-control)}
 :root .synk-workspace .sw-simple .ss-perf-svg:focus-visible{outline:2px solid var(--ss-lapis);outline-offset:4px;border-radius:6px}
+
+/* 외부 통계 관측(플랫폼에서 확인한 통계 · 계정 외부 확인 줄) — API 합계와 분리, 390px 폭 줄바꿈 보호 */
+:root .synk-workspace .sw-simple .ss-acc-col-stack{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;max-width:100%}
+:root .synk-workspace .sw-simple .ss-acc-col-sub{font-size:11.5px;line-height:1.35;color:var(--ss-ink-4);overflow-wrap:anywhere}
+:root .synk-workspace .sw-simple .ss-acc-ext{grid-column:1/-1;flex-basis:100%;display:flex;align-items:baseline;gap:6px;min-width:0;max-width:100%;margin-top:4px;font-size:12.5px;line-height:1.45;color:var(--ss-ink-3);overflow-wrap:anywhere;word-break:break-word}
+:root .synk-workspace .sw-simple .ss-ext{margin-top:18px;padding-top:16px;border-top:1px solid var(--ss-line);min-width:0;max-width:100%}
+:root .synk-workspace .sw-simple .ss-ext-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-bottom:10px}
+:root .synk-workspace .sw-simple .ss-ext-head h3{margin:0;font-size:15px;font-weight:var(--w-strong);color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-ext-empty{margin:0;padding:14px 16px;border-radius:12px;background:var(--ss-surface);font-size:13.5px;line-height:1.5;color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-ext-fold{margin-top:10px;min-width:0;max-width:100%}
+:root .synk-workspace .sw-simple .ss-ext-fold>summary{cursor:pointer;font-size:13.5px;font-weight:var(--w-strong);color:var(--ss-ink-2);line-height:1.5;overflow-wrap:anywhere}
+:root .synk-workspace .sw-simple .ss-ext-table{margin-top:8px;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+:root .synk-workspace .sw-simple .ss-ext-table table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.45}
+:root .synk-workspace .sw-simple .ss-ext-table th,:root .synk-workspace .sw-simple .ss-ext-table td{padding:8px 10px;border-bottom:1px solid var(--ss-line);text-align:left;vertical-align:top}
+:root .synk-workspace .sw-simple .ss-ext-table th.is-num,:root .synk-workspace .sw-simple .ss-ext-table td.is-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+:root .synk-workspace .sw-simple .ss-ext-table td.is-dash{color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-ext-acc{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0;overflow-wrap:anywhere;word-break:break-word}
+:root .synk-workspace .sw-simple .ss-ext-period,:root .synk-workspace .sw-simple .ss-ext-src{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere;word-break:break-word}
+:root .synk-workspace .sw-simple .ss-ext-kind{font-size:12px;font-weight:var(--w-strong);color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-ext-diff{display:inline-block;width:fit-content;max-width:100%;margin-top:2px;padding:1px 7px;border-radius:999px;background:var(--ss-surface);box-shadow:inset 0 0 0 1px var(--ss-line-2,var(--ss-line));font-size:11.5px;color:var(--ss-ink-2);overflow-wrap:anywhere}
+:root .synk-workspace .sw-simple .ss-ext-sub{font-size:12px;color:var(--ss-ink-4);overflow-wrap:anywhere;word-break:break-word}
+:root .synk-workspace .sw-simple .ss-ext-foot{margin-top:10px}
+:root .synk-workspace .sw-simple .ss-ext-trunc{margin:0 0 12px}
+:root .synk-workspace .sw-simple .ss-ext-sec-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:2px 0 10px}
+:root .synk-workspace .sw-simple .ss-ext-sec-head h4{margin:0;font-size:14px;font-weight:var(--w-strong);color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-ext-cards{display:grid;gap:12px;margin:8px 0 14px}
+:root .synk-workspace .sw-simple .ss-ext-cards-fold{margin:0 0 14px}
+:root .synk-workspace .sw-simple .ss-ext-card{padding:14px 16px;border:1px solid var(--ss-line-2);border-radius:16px;background:var(--ss-paper);min-width:0}
+:root .synk-workspace .sw-simple .ss-ext-card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;padding-bottom:10px;border-bottom:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-ext-card-title{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0}
+:root .synk-workspace .sw-simple .ss-ext-card-title b{font-size:14.5px;font-weight:var(--w-strong);color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-ext-sel{padding:2px 8px;border-radius:999px;background:var(--ss-lapis-wash);font-size:12px;font-weight:var(--w-strong);color:var(--ss-lapis-deep)}
+:root .synk-workspace .sw-simple .ss-ext-def-badge{padding:2px 8px;border-radius:999px;background:var(--ss-surface);font-size:12px;font-weight:var(--w-label);color:var(--ss-ink-2)}
+:root .synk-workspace .sw-simple .ss-ext-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12.5px;color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-ext-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:12px 0 4px}
+:root .synk-workspace .sw-simple .ss-ext-stat{display:grid;align-content:start;gap:3px;padding-right:14px;min-width:0}
+:root .synk-workspace .sw-simple .ss-ext-stat+.ss-ext-stat{padding-left:14px;border-left:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-ext-stat>span{font-size:12.5px;color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-ext-stat>strong{font:var(--w-title) 20px/1.2 var(--ss-latin);font-variant-numeric:tabular-nums;letter-spacing:-.015em;color:var(--ss-ink)}
+:root .synk-workspace .sw-simple .ss-ext-stat.is-text>strong{font-family:var(--ss-sans);font-size:17px}
+:root .synk-workspace .sw-simple .ss-ext-stat>small{font-size:12.5px;line-height:1.45;color:var(--ss-ink-4)}
+:root .synk-workspace .sw-simple .ss-ext-plot{margin-top:10px;padding-top:10px;border-top:1px solid var(--ss-line)}
+:root .synk-workspace .sw-simple .ss-ext-exact-note{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--ss-surface);font-size:13px;line-height:1.5;color:var(--ss-ink-3)}
+@container ss (max-width:760px){
+  :root .synk-workspace .sw-simple .ss-ext-stats{grid-template-columns:minmax(0,1fr);gap:10px}
+  :root .synk-workspace .sw-simple .ss-ext-stat{padding-right:0}
+  :root .synk-workspace .sw-simple .ss-ext-stat+.ss-ext-stat{padding:10px 0 0;border-left:0;border-top:1px solid var(--ss-line)}
+}
+@container ss (max-width:520px){
+  :root .synk-workspace .sw-simple .ss-ext-table th,:root .synk-workspace .sw-simple .ss-ext-table td{padding:7px 8px;font-size:12.5px}
+}

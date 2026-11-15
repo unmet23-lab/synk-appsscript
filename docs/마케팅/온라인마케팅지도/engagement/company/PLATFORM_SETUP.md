@@ -14,7 +14,7 @@
 |---|---|---|
 | YouTube | `https://sns.example.com/api/oauth/youtube/callback` | `youtube.readonly`, `yt-analytics.readonly` (전체 범위 URI는 아래 설명) |
 | Instagram | `https://sns.example.com/api/oauth/instagram/callback` | `instagram_business_basic`, `instagram_business_manage_insights` |
-| Facebook | `https://sns.example.com/api/oauth/facebook/callback` | `pages_show_list`, `pages_read_engagement`, `read_insights` |
+| Facebook | `https://sns.example.com/api/oauth/facebook/callback` | `pages_show_list`, `pages_read_engagement` |
 | TikTok | `https://sns.example.com/api/oauth/tiktok/callback` | `user.info.basic`, `user.info.profile`, `user.info.stats`, `video.list` |
 
 Instagram·TikTok 연결에는 HTTPS 콜백이 필요하다. 로컬 개발 화면만 열려 있다면 등록·화면 검증을 할 수 있지만 회사 직원용 연결 주소는 별도로 준비해야 한다. 개발자 앱을 설정한 상태와 실제 직원의 계정 승인 완료 상태는 서로 다르다.
@@ -43,11 +43,44 @@ Meta 앱의 Facebook Login을 준비한다. 직원이 승인한 사용자 토큰
 
 사용자 토큰은 장기 토큰으로 교환한다. Facebook에는 이 프로그램이 사용하는 일반 refresh-token 갱신 흐름이 없으므로 만료되면 다시 연결한다. [Meta 장기 토큰 안내](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived/)
 
+2026-11-14 수정본은 현재 수집기가 호출하지 않는 `read_insights`를 기본 요청에서 뺀다. 기존 게시·댓글 권한은 유지하고, 연결을 마친 뒤 실제 승인된 권한을 다시 읽는다. 이 변경은 현재 앱에서 재현된 권한 요청 오류를 줄이기 위한 것이며, Meta 전체에서 `read_insights`가 폐지됐다는 뜻이 아니다. 코드 반영과 운영 연결 성공은 따로 확인한다.
+
 ### TikTok
 
 TikTok 개발자 앱에서 Login Kit와 Display API를 준비하고 제품·요청 권한 승인을 받는다. `user.info.stats`가 팔로워·총 좋아요, `user.info.profile`이 계정 주소 일치 확인, `video.list`가 공개 영상 목록·조회·좋아요·댓글·공유에 필요하다. 연결 계정이 승인한 영상만 수집한다. [공식 시작 안내](https://developers.tiktok.com/docs/en/display-api-get-started), [사용자 정보 권한](https://developers.tiktok.com/docs/en/tiktok-api-v2-get-user-info), [영상 목록](https://developers.tiktok.com/docs/en/tiktok-api-v2-video-list)
 
 액세스 토큰을 자동 갱신하며 응답에 새로운 refresh token이 오면 함께 교체한다. refresh token까지 만료되거나 권한을 철회하면 재연결이 필요하다. 현재 Web 연결은 Client Secret을 사용하는 서버 인증 흐름이다. 계정 가입·통계 권한 연결·게시 권한은 별개이며, 옛 가입 보류 기록을 현재 계정 상태로 단정하지 않는다. [공식 토큰 관리](https://developers.tiktok.com/docs/en/oauth-user-access-token-management), [Web Login](https://developers.tiktok.com/docs/en/login-kit-web)
+
+## API 밖의 공식 통계 가져오기
+
+관리자는 `POST /api/channels/from-catalog`로 원장에 이미 확보된 계정을 등록할 수 있다. 등록은 수집 API 연결이나 로그인 완료를 뜻하지 않는다. 같은 계정을 다시 요청하면 기존 채널을 반환하고, 서로 다른 계정과 충돌하면 저장하지 않는다.
+
+로그인된 관리자 통계 화면, 공식 내보내기 파일, 공개 페이지에서 확인한 값은 `POST /api/channels/:id/external-observations`에 별도로 기록한다. 관리자만 기록할 수 있다. 계정 식별자, 플랫폼 주소, 실제 확인 시각, 원본 파일의 SHA-256, 지표의 기준 기간을 함께 검사한다. 같은 증거를 재입력해도 관측 수가 늘지 않는다. 브라우저 로그인 상태와 기존 API 연결 상태는 이 입력으로 바꾸지 않는다.
+
+운영자는 저장소 밖에 원본과 입력 목록을 둔다. 이 저장소는 공개이므로 원본 통계나 로그인 자료를 커밋하지 않는다. 목록 형식은 `tools/계정통계수집.cjs`의 파일 머리에 있다.
+
+```powershell
+node tools/계정통계수집.cjs --입력 <저장소_밖의_manifest.json>
+node tools/계정통계수집.cjs --입력 <저장소_밖의_manifest.json> --실행
+```
+
+첫 명령은 자격을 읽거나 서버에 접속하지 않고 검증한다. 두 번째 명령은 Workspace에 기록하고, 직접 만든 세션을 끝에 닫는다. 원본은 그대로 보존하고 실행 결과만 별도 영수증에 남긴다. 이 도구는 SNS에 글을 올리거나 예약을 바꾸지 않는다.
+
+| 통계 종류 | 표시와 비교 기준 |
+|---|---|
+| 게시물 누적 | 게시물별 조회·좋아요·공유를 확인한 시점의 누적값이다. 최근 30일에 발생한 조회수로 표시하지 않는다. |
+| 계정의 기간 합계 | 플랫폼이 명시한 시작일과 종료일을 그대로 사용한다. 같은 길이의 직전 기간 자료가 있을 때 비교한다. |
+| 계정의 일별 값 | 조회수처럼 더할 수 있는 지표는 모든 날짜가 확인된 기간만 합산한다. 빠진 날짜는 0으로 채우지 않는다. |
+| 도달·방문자 | 날짜 사이에 같은 사람이 겹칠 수 있어 일별 고유 인원을 더하지 않는다. 플랫폼이 제공한 기간 합계만 사용한다. |
+| 계정 누적 | 팔로워·전체 게시물 등 계정 전체 누적값이다. 기간 실적과 분리한다. |
+
+앞 기간이 0이고 현재 값이 생겼으면 증가율 대신 새 활동으로 표시한다. 두 기간의 지표 정의가 다르거나 자료가 일부만 있으면 비교값을 만들지 않는다. 좋아요와 모든 반응, 공유와 재게시, 동영상 조회와 커뮤니티 페이지 조회도 같은 뜻으로 합치지 않는다.
+
+공개 화면의 출처 주소도 등록된 계정의 프로필 또는 주소에서 소유 계정을 확인할 수 있는 게시물이어야 한다. 로그인해야 보이는 통계 화면을 공개 페이지로 기록할 수 없다. 요약의 수치와 관측 시각은 같은 기록에 묶이며, 다른 종류의 통계를 나중에 읽었다고 이전 수치의 확인 시각을 바꾸지 않는다.
+
+네이버 클립은 현재 계정 누적·기간 관측을 지원한다. 개별 게시물은 공식 주소 형식을 실제로 확인한 뒤 지원한다. 공개 프로필에 콘텐츠가 0개로 표시돼도 조회수·좋아요·공유가 0이라고 추정하지 않는다. 샤오훙수 파서는 화면에서 읽은 실제 프로필 번호와 설정의 계정 번호가 일치해야 하며 표시 이름만으로 계정을 판정하지 않는다.
+
+브라우저 보완 수집은 원장의 기존 프로필과 `~/.synk/account-metrics/browser-profiles.json`의 최근 소유자 확인을 먼저 읽는다. 이 파일은 로그인 성공 보장이 아니며 매번 실제 핸들과 계정 번호를 대조해야 한다. 11월 14일에는 샤오훙수와 PULSE Instagram 소유자를 기존 Ego Profile 5에서 확인했다. 다른 프로필의 로그인 화면을 이 계정의 로그아웃으로 확대하지 않는다. API 수집이 정상인 계정은 부족한 지표가 있을 때만 화면에서 보완한다.
 
 ## 기록과 보관
 

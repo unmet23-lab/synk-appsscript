@@ -69,7 +69,8 @@ const laterSocialIds = new Set(expansion.filter(([id,row]) => row.platform !== '
 const youtubeById = new Map([...youtube.channels,...jpVnYoutube.channels,
   ...brMxYoutube.map(row => ({id:row.id,url:row.publicUrl,verifiedAt:row.verifiedAt,publicVerified:String(row.status).startsWith('complete')}))].map(row => [row.id,row]));
 const brMxObserved = new Map(brMx.channels.filter(row => row.platform !== 'youtube').map(row => [row.id,row]));
-const existing = inventory.accounts.filter(row => row.accountStatus !== 'web-destination').map(row => ({
+// 지도 목록 행의 apiPageId와 그 확인 기록(apiPageIdVerifiedAt · apiPageIdEvidence)은 아래 카탈로그 externalId에만 쓴다. 현황판 행(data.json)에는 싣지 않는다.
+const existing = inventory.accounts.filter(row => row.accountStatus !== 'web-destination').map(({apiPageId, apiPageIdVerifiedAt, apiPageIdEvidence, ...row}) => ({
   ...row,
   sourceBrand:row.brand,
   brand:row.operatingScope === 'YUHO' ? 'YUHO' : row.brand,
@@ -260,7 +261,7 @@ const catalogue = {version:1,generatedAt,sourceAt:registry.updatedAt,accounts:ch
   id:row.id,business:row.business,secondaryBusinesses:row.secondaryBusinesses,contentTrack:row.contentTrack,purpose:row.purpose,
   classificationBasis:row.classificationBasis,classificationSourcePaths:row.classificationSourcePaths,
   platform:registry.accounts[row.id]?.platform || inventory.accounts.find(a=>a.id===row.id)?.platform || row.platform.toLowerCase(),
-  handle:row.handle,publicUrl:row.publicUrl,externalId:registry.accounts[row.id]?.channelId || registry.accounts[row.id]?.expectedChannelId || registry.accounts[row.id]?.profileId || null,
+  handle:row.handle,publicUrl:row.publicUrl,externalId:registry.accounts[row.id]?.channelId || registry.accounts[row.id]?.expectedChannelId || registry.accounts[row.id]?.profileId || registry.accounts[row.id]?.companyId || registry.accounts[row.id]?.apiPageId /* Graph·Business Suite 페이지 번호만 쓴다. 공개 프로필 번호(pageId·expectedPageId)는 쓰지 않는다. */ || inventory.accounts.find(a=>a.id===row.id&&a.platform==='facebook')?.apiPageId /* 원장 밖 기존 Facebook 계정은 지도 목록 행의 apiPageId만 쓴다. publicUrl의 공개 프로필 번호로 채우지 않는다. */ || null,
   country:row.country,countryCode:row.countryCode,accountStatus:row.accountStatus
 })),plans:longTermPlans};
 fs.writeFileSync(path.join(dir,'engagement/company/account-catalog.json'),JSON.stringify(catalogue,null,2)+'\n');

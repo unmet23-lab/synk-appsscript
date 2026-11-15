@@ -7,8 +7,9 @@ const cp = require('node:child_process');
 const a = require('node:assert/strict');
 const R = require('./closed-release.cjs');
 
-function runLocalQa({ candidate, compositionSha256, output, guard, expectedTests, dependencyRoots = [] }) {
+function runLocalQa({ candidate, compositionSha256, output, guard, expectedTests, dependencyRoots = [], timeoutMs = 600000 }) {
   a.ok([candidate, output, guard?.path].every(value => typeof value === 'string' && path.isAbsolute(value)), 'ABSOLUTE_QA_INPUT_REQUIRED');
+  a.ok(Number.isSafeInteger(timeoutMs) && timeoutMs >= 1000 && timeoutMs <= 1800000, 'BOUNDED_QA_TIMEOUT_REQUIRED');
   const relative = path.relative(candidate, output);
   a.ok(relative.startsWith('..' + path.sep) || path.isAbsolute(relative), 'QA_OUTPUT_OUTSIDE_CANDIDATE_REQUIRED');
   a.equal(fs.existsSync(output), false, 'NEW_QA_DIRECTORY_REQUIRED');
@@ -61,7 +62,7 @@ function runLocalQa({ candidate, compositionSha256, output, guard, expectedTests
   let result;
   try {
     result = cp.spawnSync(process.execPath, ['--require', guardFile, '--test', '--test-reporter=tap', '--test-concurrency=3', ...composition.tests],
-      { cwd: copy, env, windowsHide: true, stdio: ['ignore', logFd, errFd], timeout: 600000 });
+      { cwd: copy, env, windowsHide: true, stdio: ['ignore', logFd, errFd], timeout: timeoutMs });
   } finally { fs.closeSync(logFd); fs.closeSync(errFd); }
   const log = R.read(logFile), counts = {};
   for (const key of ['tests', 'pass', 'fail', 'cancelled', 'skipped', 'todo']) {
@@ -87,7 +88,7 @@ function runLocalQa({ candidate, compositionSha256, output, guard, expectedTests
   ]);
   const proof = { schema: 'synk-company-isolated-local-qa/v1', ok, status: ok ? 'passed-local' : 'failed-local',
     manifestSha256: composition.manifestSha256, parentManifestSha256: composition.parentManifestSha256, compositionSha256,
-    startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, error: result.error?.message || integrityError,
+    startedAt, finishedAt: new Date().toISOString(), timeoutMs, exitCode: result.status, error: result.error?.message || integrityError,
     node: process.version, platform: process.platform, tests: composition.tests, counts, expectedTests, sourceUnchanged,
     logSha256: R.sha(log), networkGuardSha256: guard.sha256, runnerSha256, verifierSha256,
     vectors: Object.fromEntries([...files].filter(([name]) => name.endsWith('.json')).map(([name, raw]) => [name, R.record(name, raw)])),

@@ -229,6 +229,7 @@ test('portable local QA runs real selected tests in a copy and saves both source
   t.after(() => { if (previous === undefined) delete process.env.SYNK_TEST_PRIVATE_ENV; else process.env.SYNK_TEST_PRIVATE_ENV = previous; });
   const result = runLocalQa(f.config);
   a.equal(result.ok, true); a.equal(result.counts.pass, 1); a.equal(result.finalDeploymentApproval, false);
+  a.equal(result.timeoutMs, 600000);
   a.deepEqual(JSON.parse(fs.readFileSync(path.join(f.config.output, 'source-before.json'))), JSON.parse(fs.readFileSync(path.join(f.config.output, 'source-after.json'))));
   a.equal(result.vectors['copy-before.json'].sha256, result.vectors['copy-after.json'].sha256);
   a.throws(() => runLocalQa(f.config), /NEW_QA_DIRECTORY_REQUIRED/);
@@ -240,6 +241,22 @@ test('missing guard pins and the wrong expected test count cannot produce a pass
   a.equal(fs.existsSync(f.config.output), false);
   const result = runLocalQa({ ...f.config, expectedTests: 2 });
   a.equal(result.ok, false); a.equal(result.status, 'failed-local'); a.equal(result.counts.pass, 1);
+});
+
+test('local QA rejects unbounded or malformed time budgets before creating any proof', t => {
+  const f = qaFixture(t, "import test from 'node:test';test('one real test',()=>{});\n");
+  for (const timeoutMs of [0, -1, 999, 1000.5, 1800001, Infinity, NaN, null, '1800000']) {
+    a.throws(() => runLocalQa({ ...f.config, timeoutMs }), /BOUNDED_QA_TIMEOUT_REQUIRED/);
+    a.equal(fs.existsSync(f.config.output), false);
+  }
+});
+
+test('an explicit longer QA budget is recorded and does not turn a failed real test into approval', t => {
+  const f = qaFixture(t, "import test from 'node:test';import assert from 'node:assert/strict';test('real failure',()=>assert.fail('expected fixture failure'));\n");
+  const result = runLocalQa({ ...f.config, timeoutMs: 1800000 });
+  a.equal(result.timeoutMs, 1800000); a.equal(result.ok, false); a.equal(result.status, 'failed-local');
+  a.equal(result.counts.fail, 1); a.equal(result.finalDeploymentApproval, false);
+  a.equal(JSON.parse(fs.readFileSync(path.join(f.config.output, 'result.json'))).timeoutMs, 1800000);
 });
 
 test('the QA copy runs outside the repository: a bare import that only the repository node_modules could answer fails here, as it does in the Linux QA', t => {

@@ -413,6 +413,32 @@ test('every registry account and supplemental channel has one explicit login aud
   }
 });
 
+test('yuhokorean Facebook keeps its public profile number and only the catalog gets its Graph page number', () => {
+  const catalog = read('engagement/company/account-catalog.json');
+  const source = inventory.accounts.find(row => row.id === 'yuhokorean-facebook');
+  const entry = catalog.accounts.find(row => row.id === 'yuhokorean-facebook');
+  // 11-14 Business Suite 페이지 설정에서 읽은 페이지 번호다. API 연결 확인이 아니며 공개 프로필 번호와 섞지 않는다.
+  assert.equal(source.publicUrl, 'https://www.facebook.com/profile.php?id=61596244437180');
+  assert.equal(source.apiPageId, '1439595579236894');
+  assert.equal(entry.publicUrl, source.publicUrl);
+  assert.equal(entry.externalId, '1439595579236894');
+  assert.equal(channels.find(row => row.id === 'yuhokorean-facebook').apiPageId, undefined, '현황판 행에는 싣지 않는다');
+  // 등록 수 불변: 게시 원장에 넣지 않고 카탈로그 행 수도 그대로다
+  assert.equal(registry.accounts['yuhokorean-facebook'], undefined);
+  assert.equal(catalog.accounts.length, loginAudit.counts.channelRows);
+  // 원장 밖 계정의 externalId는 Facebook 지도 목록 행의 apiPageId에서만 온다
+  for (const row of catalog.accounts) if (!registry.accounts[row.id]) assert.equal(row.externalId, (row.platform === 'facebook' && inventory.accounts.find(a => a.id === row.id)?.apiPageId) || null, row.id);
+});
+
+test('registry Graph page and company numbers generate the catalog numbers while public profile numbers stay in the registry', () => {
+  const catalog = read('engagement/company/account-catalog.json');
+  for (const account of catalog.accounts) { const row = registry.accounts?.[account.id]; if (row && (row.apiPageId || row.companyId)) assert.equal(account.externalId, row.channelId || row.expectedChannelId || row.profileId || row.companyId || row.apiPageId, account.id); }
+  const graph = {'lab-np-facebook': '1311065102093068', 'lab-kh-facebook': '1311331138729740', 'lab-lk-facebook': '1322127544319220', 'pulse-facebook': '1376159468922910'};
+  for (const [id, graphId] of Object.entries(graph)) { assert.equal(registry.accounts[id].apiPageId, graphId, id); assert.equal(catalog.accounts.find(row => row.id === id).externalId, graphId, id); }
+  assert.deepEqual(['lab-np-facebook', 'lab-kh-facebook', 'lab-lk-facebook'].map(id => registry.accounts[id].pageId), ['61594359371146', '61594726675164', '61594274084966'], 'public profile numbers stay as they were');
+  assert.equal(registry.accounts['pulse-facebook'].expectedPageId, '61596231157441');
+});
+
 test('login route confidence reconciles without claiming that every session is live', () => {
   const active=channels.filter(row=>['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus));
   assert.equal(active.length,71);
