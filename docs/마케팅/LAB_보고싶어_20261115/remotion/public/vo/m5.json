@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5",
+ "text": "나도 보고 싶어!",
+ "dur": 1.231,
+ "words": [
+  {
+   "text": "나도",
+   "start": 0.03,
+   "end": 0.272
+  },
+  {
+   "text": "보고",
+   "start": 0.353,
+   "end": 0.576
+  },
+  {
+   "text": "싶어!",
+   "start": 0.637,
+   "end": 1.231
+  }
+ ],
+ "source": {
+  "key": "5dc9aabc4a7dd0966bde928a8dc7f428",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1115,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "아… 부끄러워하다가, 수줍고 다정하게 친구에게 진짜 마음을 답장한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 439
+ }
+}

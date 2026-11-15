@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "보고 싶어? 나를?!",
+ "dur": 1.425,
+ "words": [
+  {
+   "text": "보고",
+   "start": 0.02,
+   "end": 0.303
+  },
+  {
+   "text": "싶어?",
+   "start": 0.364,
+   "end": 0.647
+  },
+  {
+   "text": "나를?!",
+   "start": 0.991,
+   "end": 1.425
+  }
+ ],
+ "source": {
+  "key": "9c7980ff5757056d5eb5c82a92824347",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 468
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "아…",
+ "dur": 1.025,
+ "words": [
+  {
+   "text": "아…",
+   "start": 0.21,
+   "end": 0.23
+  }
+ ],
+ "source": {
+  "key": "07a4c8d93680b21975de5dd8f1161280",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1115,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "친구가 웃으며 '아니 그게 아니라'라고 답하자, 그제야 뜻을 알아채고 부끄러워 작게 내는 소리.",
+   "next": "나도 보고 싶어!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 415
+ }
+}

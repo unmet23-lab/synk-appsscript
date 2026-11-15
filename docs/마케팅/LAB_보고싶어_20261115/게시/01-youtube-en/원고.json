@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "ko",
+  "title": "Your Korean friend texts “보고 싶어”… don’t send selfies 😳 #learnkorean",
+  "caption": "보고 싶어 (bo-go si-peo) = I miss you 💗\nWord by word it’s 보다 (to see) + -고 싶다 (want to) — “I want to see you” — but in a text it means “I miss you.”\n\nHow to reply:\n나도 보고 싶어 (na-do bo-go si-peo) = I miss you too\nMore polite: 보고 싶어요 (bo-go si-peo-yo)\n\nSYNK LAB\n#learnkorean #studykorean #koreanphrases #hangul",
+  "pinnedComment": "Who would you text “보고 싶어” to? 👇 (a friend? mom? your bias? 😉)",
+  "alt": [
+    "A needle-felt miniature bedroom at night. It opens on a floating lilac phone bursting dozens of felt polaroid selfies of Mongle, a coral felt ghost-like mascot, with “+37 photos sent”, then rewinds 10 seconds: a Korean friend texts 보고 싶어~. Word by word, 보고 = see and 싶어 = want to, so Mongle thinks “She wants to SEE me? Photos!”, poses for flashing selfies and sends a flood of polaroids. A close-up shows the friend doll on a mint phone laughing behind her hands: ㅋㅋㅋ (lol) 아니 그게 아니라… (no, that’s not what I meant). Mongle goes flat and red with embarrassment as the card explains 보고 싶어 means I miss you. Mongle replies 나도 보고 싶어 (I miss you too) with rising hearts, sends a few more selfies, and asks who you would text 보고 싶어 to."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = e44 v5(이해 시험 v4 뒤 글 · 자리만 고침, 다시 시험 안 함 · 18.0초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.7 LUFS. 10MB 올림판 upload_10MB.mp4(8.45MB). 표지 cover.png = 8.4초(사진이 쏟아지는 핵심 장면). 어린이 전용 아님. 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS.",
+  "version": "e44-en-v5"
+}

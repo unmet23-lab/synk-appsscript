@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a sprite sheet of props for a needle-felt miniature stop-motion short. Square 1:1.
+
+Show EIGHT separate small felt polaroid photos laid out in a neat grid of 4 columns and 2 rows, each one lying perfectly flat, upright (not rotated), facing the camera straight on, with wide empty space between them. Nothing touches or overlaps.
+
+Each polaroid: a cream felt frame (thicker at the bottom like a real instant photo) and inside it a tiny felt picture of the coral mascot Mongle in a different selfie pose against a soft dusty-blue felt backdrop — wink with tongue out, kissy face, big smile with sparkly eyes, peace-sign-like tilt, surprised round mouth, sleepy happy arcs, blushing cheeks, proud grin. Match the felt material, colours and soft lamp light of the FIRST attached photo (look at the polaroids flying in it), and Mongle's look from the SECOND attached image (coral wool, glossy black bead eyes, no white sclera, NO arms, NO hands).
+
+BACKGROUND: one flat, solid, evenly lit pure chroma-key green (#00FF00) everywhere around the polaroids — no texture, no gradient, no shadows, no table, no floor.
+
+Absolutely no text, letters, numbers, logos or watermarks anywhere.

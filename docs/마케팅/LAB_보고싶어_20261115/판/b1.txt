@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the mascot's pose and face and the floating phone, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, bed, lamp and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cozy night-time lamp light with cool moonlight from a window, shallow depth of field like a macro photo of a stop-motion set. Match the felt material and photographic look of the FIRST attached photo (use it ONLY for the felt look — not its scene or layout).
+
+FORMAT: portrait 2:3. Camera at the height of the mascot, looking straight at it. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: a cozy small bedroom in Korea at night.
+- Back wall: dark navy-blue felt wallpaper with a soft texture. The top 26% of the image is ONLY this plain dark wall — nothing there.
+- On the right, a small window with a felt moon outside (between about 62% and 86% of the width, between 28% and 48% of the height), and below it the corner of a bed with a plaid felt blanket.
+- On the left, a warm felt table lamp glowing on a small bedside table (between about 12% and 28% of the width).
+- FLOOR: a round braided felt rug in soft cream and dusty blue, and below it plain wooden floor; the lower 36% of the image is plain rug and floor — keep it empty.
+
+MONGLE (the mascot from the SECOND attached image): sits in the middle of the rug, the middle of its scalloped hem at about 52% of the image width and at about 64% of the image height, its body about 24% of the image width wide, facing the camera with its body turned slightly to the left.
+A felt smartphone (pastel lilac felt case) FLOATS by itself in mid-air to the LEFT of Mongle at Mongle's eye level (its centre at about 32% of the width and 46% of the height), screen facing Mongle and glowing softly with plain light (no text, no icons). Above the phone floats one small pink felt heart (a physical felt prop on a thin wire). Mongle looks at the phone with a curious, slightly surprised face: glossy black bead eyes, a tiny open mouth, a light blush.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+
+Exactly ONE Mongle, nobody else. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — no writing on the phone, wall, lamp or blanket.
