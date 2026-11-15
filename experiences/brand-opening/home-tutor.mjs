@@ -77,7 +77,8 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   container.dataset.recommendation=recommendation.kind;
   practiceButton.hidden=!practiceRecommendation||recommendation.command==='practice';
   practiceButton.textContent=t('homeTutor.practice');practiceButton.setAttribute('aria-label',practiceRecommendation?t('homeTutor.practiceWith',{title:practiceRecommendation.title}):t('homeTutor.practice'));
-  const due=recommendation.kind==='resume'&&data?.summary?.owner===selected.owner?data.summary.dueExpressions??data.summary.dueCount??0:0;
+  // 새 길 홈(§20-5): 「돌아온 표현 n개 복습하기」 곁 단추를 두지 않는다 — 돌아온 복습은 세 줄의 복습 줄이 맡는다.
+  const due=recommendation.kind==='resume'&&!data?.summary?.education?.today&&data?.summary?.owner===selected.owner?data.summary.dueExpressions??data.summary.dueCount??0:0;
   reviewButton.hidden=!due||!practiceButton.hidden;reviewButton.textContent=t('homeTutor.reviewDue',{n:due});
   const pending=data?.summary.status?.phase==='unsaved';
   note.textContent=(completed?t('homeTutor.note.practised'):tMessage(recommendation.reason)|| (recommendation.kind==='difficult'?t('homeTutor.note.difficult',{title:recommendation.lessonTitle}):recommendation.kind==='review'?t('homeTutor.note.review'):recommendation.kind==='resume'?t('homeTutor.note.resume'):recommendation.kind==='start'?t('homeTutor.note.start'):''))+(pending?t('homeTutor.note.pending'):'');

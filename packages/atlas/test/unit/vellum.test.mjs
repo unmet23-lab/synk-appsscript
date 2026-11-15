@@ -5,7 +5,7 @@ import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { PACKAGE_ROOT, subject } from '../support/subject.mjs';
 
-const { render, subjectOf, LANGS } = await subject('vellum/index.mjs');
+const { render, subjectOf, LANGS, SILENT_CODES } = await subject('vellum/index.mjs');
 const { finalOf, josa } = await subject('vellum/josa.mjs');
 const { reasonLine } = await subject('reason/ko.mjs');
 const { REASON_CODES } = await subject('reason/index.mjs');
@@ -73,9 +73,16 @@ test('한국어 기능 글은 reasonLine과 같다 — 다른 것은 받침 뒤�
   assert.ok(checked > 80);
 });
 
+// 말하지 않는 종류(제품 순서 host.order)는 이유 종류이지만 문장이 없다 — 이 시험은 말하는 종류만 본다(단계 4 §20-6의 4 · 설계 검토 H17).
 test('reasonLine이 다루는 이유 종류는 모두 표에 있다', () => {
   const host = new Set(['host.resume', 'host.prerequisite', 'host.homework', 'goal.match']);
+  assert.deepEqual([...SILENT_CODES], ['host.order']);
+  assert.ok(Object.values(REASON_CODES).includes('host.order'), '제품 순서도 이유 종류다');
   for (const code of Object.values(REASON_CODES)) {
+    if (SILENT_CODES.includes(code)) {
+      assert.equal(render({ code, slots: {} }, { label }), null, `${code}는 말하지 않는다`);
+      continue;
+    }
     const slots = {
       unit: 'u',
       skill: 's',
@@ -107,11 +114,12 @@ test('언어는 물러서지 않는다 — 그 언어 줄이 없으면 null, 눈
   assert.equal(render(why, { lang: 'ko', label }), '「이름:u1」 처음 만나요.');
   assert.equal(render(why, { lang: 'en', label }), 'Seeing ‘이름:u1’ for the first time.');
   assert.equal(render(why, { lang: 'fr', label }), null);
-  // 영어 · 몽골어 줄은 화면이 열린 종류만 있다 — 없는 종류(홈의 host.*)는 한국어로 물러서지 않는다
+  // 영어 · 몽골어 줄은 화면이 열린 종류만 있다 — 홈의 host.*는 4-3에서 들어왔다. 없는 언어는 한국어로 물러서지 않는다
   const home = { code: 'host.next', slots: {} };
-  assert.equal(typeof render(home, { lang: 'ko', label }), 'string');
-  assert.equal(render(home, { lang: 'en', label }), null);
-  assert.equal(render(home, { lang: 'mn', label }), null);
+  assert.equal(render(home, { lang: 'ko', label }), '생활 팩의 다음 레슨이에요.');
+  assert.equal(render(home, { lang: 'en', label }), 'This is your next daily-life lesson.');
+  assert.equal(render(home, { lang: 'mn', label }), 'Өдөр тутмын багцын дараагийн хичээл.');
+  assert.equal(render(home, { lang: 'fr', label }), null);
   assert.equal(
     render(why, { lang: 'ko', level: 'easy', speaker: 'marin', label }),
     '「이름:u1」 처음 만나요.',
@@ -154,6 +162,39 @@ test('제품 사실 · 목표 문장 — 숙제는 까닭에 따라, 관심 주�
     '더 배우고 싶다고 알려 준 「은행」이에요.',
   );
   assert.equal(subjectOf({ code: 'skill.up', slots: { skill: 'a', unit: 'b' } }), 'a');
+});
+
+// 4-3 홈의 생활 복습 사실(단계 4 §20-6의 5): 이름은 근거의 단위에서만 — 단위를 모르거나 이름이 실리지 않았으면 이름 없는 틀이다
+// (생활 단위가 없는 복습 19개는 놓친 것으로만 돌아온다). 다음 레슨은 엔진 기록을 읽지 않는 제품 사실이라 기록을 말하지 않는다(설계 검토 H8).
+test('생활 복습 사실 — 놓친 것 · 다리는 이름이 있으면 「」 안에, 없으면 이름 없는 문장이다', () => {
+  const opt = { label: labelOf({ u: '주문' }) };
+  assert.equal(
+    render({ code: 'host.missed', slots: { unit: 'u' } }, opt),
+    '놓친 「주문」, 혼자 맞힐 때까지 다시 만나요.',
+  );
+  assert.equal(
+    render({ code: 'host.missed', slots: {} }, opt),
+    '놓친 표현은 혼자 맞힐 때까지 다시 만나요.',
+  );
+  assert.equal(
+    render({ code: 'host.missed', slots: { unit: 'x' } }, opt),
+    '놓친 표현은 혼자 맞힐 때까지 다시 만나요.',
+    '이름이 실리지 않은 단위',
+  );
+  assert.equal(
+    render({ code: 'host.bridge', slots: { unit: 'u' } }, opt),
+    '레슨에서 만난 「주문」, 오늘은 새 상황에서 다시 만나요.',
+  );
+  assert.equal(
+    render({ code: 'host.bridge', slots: {} }, opt),
+    '레슨에서 만난 표현을 오늘은 새 상황에서 다시 만나요.',
+  );
+  assert.equal(render({ code: 'host.next', slots: {} }, opt), '생활 팩의 다음 레슨이에요.');
+  assert.equal(
+    render({ code: 'unit.new', slots: { unit: 'x' } }, opt),
+    null,
+    '다른 종류는 이름이 없으면 그대로 짓지 않는다',
+  );
 });
 
 test('조사 규칙은 제품의 kit/josa.mjs와 같다', async () => {
@@ -226,6 +267,58 @@ test('영어 · 몽골어 줄 — 짧은 연습에 보이는 종류마다 있고
     ),
     'You missed ‘은행’ last time — it’s back after 1 day.',
     '하루는 단수',
+  );
+});
+
+// 4-3 WORLD 홈의 세 줄과 활동 고르기 문장(단계 4 §20-8)은 영어 · 몽골어 줄이 있다 — 세 겹 대조를 지난 문장. 학습 대상 이름(단위 · 주제)은
+// 한국어 그대로 따옴표 안에, 능력 이름(숙제)은 화면 언어로 번역된 이름이라 따옴표 없이 맨 앞에 둔다.
+test('영어 · 몽골어 줄 — 홈 · 활동 고르기 종류마다 있고, 한국어는 따옴표 안 이름에만(단계 4 §20-8)', () => {
+  const HOME = [
+    ['goal.match', { topic: 't' }],
+    ['host.resume', {}],
+    ['host.prerequisite', {}],
+    ['host.homework', { skill: 's', status: 'review' }],
+    ['host.homework', { skill: 's', status: 'missed' }],
+    ['host.form', {}],
+    ['host.recheck', {}],
+    ['host.start', {}],
+    ['host.next', {}],
+    ['host.missed', { unit: 'u' }],
+    ['host.missed', {}],
+    ['host.bridge', { unit: 'u' }],
+    ['host.bridge', {}],
+  ];
+  const skillName = { en: 'Reading for details', mn: 'Уншаад нарийн мэдээллийг олох' };
+  for (const lang of ['en', 'mn'])
+    for (const [code, slots] of HOME) {
+      const names = { u: '은행', t: '카페에서 주문하기', s: skillName[lang] };
+      const line = render({ code, slots }, { lang, label: id => names[id] });
+      assert.equal(typeof line, 'string', `${lang} ${code}`);
+      assert.doesNotMatch(line, /「|」/, `${lang} ${code}: 낫표는 한국어 화면만`);
+      assert.doesNotMatch(
+        line.replace(lang === 'en' ? /‘[^’]*’/g : /«[^»]*»/g, ''),
+        /[가-힣]/,
+        `${lang} ${code}: 이름 밖에 한국어가 없다`,
+      );
+      if (code === 'host.homework') {
+        assert.ok(line.startsWith(`${skillName[lang]}:`), `${lang} ${code}: 능력 이름이 앞에`);
+        assert.doesNotMatch(line, /‘|«/, `${lang} ${code}: 능력 이름에 따옴표 없음`);
+      }
+      if (slots.unit || slots.topic)
+        assert.ok(line.includes(names[slots.unit ?? slots.topic]), `${lang} ${code}: 이름`);
+    }
+  assert.equal(
+    render({ code: 'host.homework', slots: { skill: 's' } }, { lang: 'en', label: () => 'R' }),
+    null,
+    '숙제 상태를 모르면 영어도 말하지 않는다',
+  );
+  assert.equal(
+    render({ code: 'host.missed', slots: { unit: 'u' } }, { lang: 'en', label: () => '은행' }),
+    'You missed ‘은행’ — it’ll keep coming back until you get it right on your own.',
+  );
+  assert.equal(
+    render({ code: 'host.bridge', slots: {} }, { lang: 'mn', label: () => null }),
+    'Хичээл дээр үзсэн үг хэллэгээ өнөөдөр шинэ нөхцөл байдалд дахин давтъя.',
   );
 });
 

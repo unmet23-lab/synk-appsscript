@@ -321,6 +321,155 @@ test('⑳ 활동 고르기 — 목표(숙제 · 관심)는 층을 앞지르지 �
   );
 });
 
+// 4-3 홈(단계 4 §20-6 — 조율 11-11 승인 · 설계 주인 11-15 승인): 설명 사실(describe)은 순위를 바꾸지 않고 엔진이 말할 것이 없을 때만
+// 이유다. 생활 복습 사실(review)은 하던 것 · 한글 뒤에서 앞지르고, 후보가 있을 때만 · 단위가 그 활동 후보의 단위일 때만 선다. 사실은
+// 낼 것이 있는 활동만 앞세운다. 항목에는 넘긴 후보 수(offered)와 하루 상한 표지(capped)가 실린다.
+test('⑳ 활동 고르기 — 설명 사실은 순위 밖이고 엔진이 말할 것이 없을 때만 이유다(단계 4 §20-6)', () => {
+  const learner = createLearner();
+  startSession(learner, T0, WIDE);
+  walk(learner, [true, true], T0, [word('a', 0), word('b', 1)]);
+  const now = T0 + 120_000;
+  const plan = list => planActivities(list, learner, memory, now, { params: WIDE });
+  const lesson = { id: 'lesson', candidates: [word('c', 2), word('d', 3)] };
+  const known = { id: 'known', candidates: [word('a', 0), word('b', 1)] };
+  const order = plan([known, lesson]).map(entry => entry.id);
+  assert.deepEqual(
+    plan([{ ...known, facts: { describe: 'next' } }, lesson]).map(entry => entry.id),
+    order,
+    '설명을 붙여도 차례가 같다',
+  );
+  assert.equal(
+    plan([{ ...lesson, facts: { describe: 'next' } }])[0].why.code,
+    'unit.new',
+    '맨 앞 줄이 새것이면 엔진의 문장',
+  );
+  const idle = plan([{ ...known, facts: { describe: 'next' } }])[0];
+  assert.equal(idle.idle, true);
+  assert.equal(idle.why.code, 'host.next', '할 것이 없으면 설명');
+  assert.deepEqual(idle.why.evidence, { fact: 'describe', describe: 'next' });
+  const form = plan([{ id: 'mock', facts: { describe: 'form' } }])[0];
+  assert.equal(form.why.code, 'host.form', '후보가 없으면 설명');
+  assert.equal(form.fact, -1, '설명은 앞지르는 사실이 아니다');
+  assert.equal(form.offered, 0);
+  assert.equal(
+    plan([{ id: 'mock', facts: { describe: 'nope' } }])[0].why,
+    null,
+    '모르는 값은 없는 것',
+  );
+  assert.equal(
+    plan([
+      { ...known, facts: { describe: 'next', goals: [{ kind: 'interest', topic: 'cafe' }] } },
+    ])[0].why.code,
+    'goal.match',
+    '목표 문장이 설명보다 먼저',
+  );
+  assert.equal(plan([lesson])[0].offered, 2, '넘긴 후보 수');
+});
+
+test('⑳ 활동 고르기 — 생활 복습 사실은 하던 것 · 한글 뒤에서 앞지르고, 그 활동 후보의 단위로만 선다(단계 4 §20-6 · 설계 주인 11-15)', () => {
+  const learner = createLearner();
+  startSession(learner, T0, WIDE);
+  walk(learner, [true, true], T0, [word('a', 0), word('b', 1)]);
+  const now = T0 + 120_000;
+  const plan = list => planActivities(list, learner, memory, now, { params: WIDE });
+  const lesson = { id: 'lesson', candidates: [word('c', 2), word('d', 3)] };
+  const missed = {
+    id: 'life-review',
+    candidates: [word('a2', 4, { units: ['word:a'] })],
+    facts: { review: { kind: 'missed', unit: 'word:a' } },
+  };
+  const resume = { id: 'resume', facts: { resume: true } };
+  const hangul = { id: 'hangul', facts: { prerequisite: true } };
+  const ranked = plan([lesson, missed, hangul, resume]);
+  assert.deepEqual(
+    ranked.map(entry => entry.id),
+    ['resume', 'hangul', 'life-review', 'lesson'],
+  );
+  const review = ranked[2];
+  assert.equal(review.idle, true, '채우기여도 사실이 앞세운다');
+  assert.equal(review.why.code, 'host.missed');
+  assert.deepEqual(review.why.slots, { unit: 'word:a' });
+  assert.deepEqual(review.why.evidence, { fact: 'review', review: 'missed', unit: 'word:a' });
+  // 다리 — 새것이어도 이유는 「처음 만나요」가 아니다
+  const bridge = {
+    id: 'bridge',
+    candidates: [word('e', 5)],
+    facts: { review: { kind: 'bridge', unit: 'word:e' } },
+  };
+  const [first] = plan([lesson, bridge]);
+  assert.equal(first.id, 'bridge');
+  assert.equal(first.why.code, 'host.bridge');
+  // 단위가 그 활동 후보의 단위가 아니면 사실이 없다 — 다른 활동이 이 사실로 앞지르지 않는다
+  const stray = plan([
+    {
+      id: 'stray',
+      candidates: [word('f', 6)],
+      facts: { review: { kind: 'missed', unit: 'word:z' } },
+    },
+  ])[0];
+  assert.equal(stray.fact, -1);
+  assert.equal(stray.why.code, 'unit.new');
+  // 생활 단위가 없는 놓친 복습은 이름 없이 선다
+  const unnamed = plan([
+    { id: 'unnamed', candidates: [word('g', 7)], facts: { review: { kind: 'missed' } } },
+  ])[0];
+  assert.equal(unnamed.why.code, 'host.missed');
+  assert.deepEqual(unnamed.why.slots, {});
+  assert.deepEqual(unnamed.why.evidence, { fact: 'review', review: 'missed' });
+  assert.equal(
+    plan([{ id: 'bare', facts: { review: { kind: 'missed' } } }])[0].fact,
+    -1,
+    '후보 없이 넘긴 복습에는 사실이 없다',
+  );
+  assert.equal(
+    plan([{ ...bridge, facts: { review: { kind: 'later', unit: 'word:e' } } }])[0].fact,
+    -1,
+    '모르는 kind는 없는 것',
+  );
+});
+
+test('⑳ 활동 고르기 — 사실은 낼 것이 있는 활동만 앞세운다, 하루 상한 표지(아르곤 A7 ② · 단계 4 §20-3)', () => {
+  const learner = createLearner();
+  startSession(learner, T0, WIDE);
+  walk(learner, [true, true], T0, [word('a', 0), word('b', 1)]);
+  const now = T0 + 120_000;
+  // 하루 새 단위가 한도(2)에 닿았다 — 새 단위만 든 문항은 낼 수 없다(none)
+  const TIGHT = { ...WIDE, newPerDay: 2 };
+  const tight = list => planActivities(list, learner, memory, now, { params: TIGHT });
+  const stuck = { id: 'resume-stuck', candidates: [word('n9', 9)], facts: { resume: true } };
+  const warm = { id: 'warm', candidates: [word('a', 0)] };
+  const blocked = tight([stuck, warm]);
+  assert.deepEqual(
+    blocked.map(entry => entry.id),
+    ['warm', 'resume-stuck'],
+    '후보를 넘겼는데 모두 낼 수 없으면 앞지르지 않는다',
+  );
+  assert.equal(blocked[1].none, true);
+  assert.equal(blocked[1].fact, -1);
+  assert.deepEqual(
+    tight([warm, { id: 'resume-bare', facts: { resume: true } }]).map(entry => entry.id),
+    ['resume-bare', 'warm'],
+    '후보 없이 여는 활동은 사실이 앞세운다',
+  );
+  // 하루 복습 상한 — 돌아온 단위를 미루면 capped가 참이고 이유는 상한 문장이다
+  const later = T0 + 10 * DAY;
+  const rested = createLearner({
+    memory: learner.memory,
+    ability: learner.ability,
+    met: learner.met,
+  });
+  const known = { id: 'known', candidates: [word('a', 0), word('b', 1)] };
+  const [open] = planActivities([known], rested, memory, later, { params: WIDE });
+  assert.equal(open.tier, 1, '열흘 뒤에는 돌아왔다');
+  assert.equal(open.capped, false);
+  const [capped] = planActivities([known], rested, memory, later, {
+    params: { ...WIDE, reviewsPerDay: 0 },
+  });
+  assert.equal(capped.capped, true);
+  assert.equal(capped.none, true);
+  assert.equal(capped.why.code, 'day.capped');
+});
+
 test('⑳ 설정 거르기 — 소리 없는 자리 · 「지금은 아니에요」를 후보에서 뺀다', () => {
   const items = [
     word('a', 0, { audioRequired: true }),

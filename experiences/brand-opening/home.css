@@ -93,6 +93,23 @@ html[lang=mn] #life-review-count[data-due=no]{display:none}
    11-09 360폭 이하 한국어 28문장 중 5개). 390폭 이상 한국어는 두 줄에 든다. */
 #home-tutor .home-tutor-context{margin:4px 0 0;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 #home-tutor .home-tutor-context:empty{display:none}
+/* 새 길 홈의 세 줄(Atlas 재설계 단계 4-3 — 단계4_계획 §20-8, home.mjs renderToday): 튜터 아래의 따로 된 부품이고 지금 판에는 없다. 줄은 배우기 허브의
+   줄(life-ui.css .life-row)과 같은 결 — 가는 선으로 나누고, 칸 이름 · 활동 이름과 이유 · 걸리는 시간을 한 줄에 둔다. 줄 자체는 단추가 아니다(흰 알약
+   단추 하나가 차례로 연다). 칸 이름은 한글이라 모노 라벨로 쓰지 않는다(11-09). 이유는 두 줄까지(390폭 한국어 이유 문장이 두 줄에 든다). */
+.home-today{flex-basis:100%;margin:2px 0 4px}
+.home-today-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--w-line)}
+.home-today-row{display:grid;grid-template-columns:5.4em minmax(0,1fr) auto;grid-template-areas:"kind copy time" "kind copy opened";column-gap:10px;align-items:start;padding:9px 2px;border-bottom:1px solid var(--w-line);font-size:13px;line-height:1.45}
+.home-today-kind{grid-area:kind;padding-top:1px;font-size:12.5px;font-weight:var(--wt-strong);color:var(--w-ink-3)}
+.home-today-copy{grid-area:copy;display:grid;gap:1px;min-width:0}
+.home-today-copy strong{font-size:14.5px;line-height:1.35;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere}
+.home-today-copy small{font-size:12.5px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-today-time{grid-area:time;justify-self:end;padding-top:1px;font-size:12.5px;font-weight:var(--wt-label);color:var(--w-ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.home-today-opened{grid-area:opened;justify-self:end;font-size:12px;font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap}
+/* 오늘 이미 연 칸은 조용히 — 이름만 한 단계 낮춘다(「했어요」가 아니라 연 사실, §20-8). */
+.home-today-row[data-opened] .home-today-copy strong{color:var(--w-ink-2)}
+/* 상한 날 복습 칸 자리의 문장(§20-3) · 줄이 하나도 없는 날의 문장 */
+.home-today-quiet .home-today-copy{font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty}
+.home-today-empty{margin:0;padding:9px 2px;border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line);font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-align:center;text-wrap:pretty}
 #home-tutor .game-tutor-help,#home-tutor .home-tutor-action,.home-tutor-choose{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:4px 0 2px;padding:0 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
 #home-tutor .home-tutor-action::after,.home-tutor-choose::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 #home-tutor .home-tutor-action:active,.home-tutor-choose:active{transform:scale(.98)}

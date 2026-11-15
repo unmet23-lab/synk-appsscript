@@ -53,6 +53,10 @@ const NAMELESS = new Set([
   'host.start',
   'host.next',
 ]);
+// 이름이 없어도 되는 종류 — 이름(단위)을 모르면 이름 없는 틀로 짓는다(생활 단위가 없는 복습 · 이름이 실리지 않은 단위, §20-6의 5).
+const NAME_OPTIONAL = new Set(['host.missed', 'host.bridge']);
+// 말하지 않는 종류 — 이유 종류이지만 문장이 없다(제품 순서 문항, 코치 fields.mjs). 모든 종류가 문장이 되는지 보는 시험은 이것을 뺀다(설계 검토 H17).
+export const SILENT_CODES = Object.freeze(['host.order']);
 
 // 이름 없는 종류 · 빈 이유에는 가리키는 것이 없다(null) — 슬롯 열쇠는 표의 제 열쇠만(카본 끝 판 C2).
 export const subjectOf = why => {
@@ -88,10 +92,11 @@ function templatesOf(code, { lang, level, speaker }) {
 
 function nameOf(why, label) {
   if (NAMELESS.has(why.code)) return '';
+  const missing = NAME_OPTIONAL.has(why.code) ? '' : null;
   const id = subjectOf(why);
-  if (id == null) return null;
+  if (id == null) return missing;
   const name = label(id);
-  return typeof name === 'string' && name.trim() ? name.trim() : null;
+  return typeof name === 'string' && name.trim() ? name.trim() : missing;
 }
 
 // why = { code, slots } → 문장 | null.

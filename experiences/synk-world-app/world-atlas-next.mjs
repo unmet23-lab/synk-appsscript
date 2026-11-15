@@ -4,6 +4,7 @@
 // 저장소 + 나르개), 기기 길(동의 꺼짐 · 쓰기 문 닫힘 — 올리지 않는 그 계정의 기기 저장소, F6), 지금 판(null).
 // 엔진이 준비되지 못하면(입구 · 묶음 · 지도 · 저장소) null을 돌려주고 셸은 지금 판으로 간다 — 학습이 막히지 않는다.
 import { createPracticeNextSession } from './world-practice-next.mjs';
+import { createWorldTodayPlan, todayKey, watchHomePlan } from './world-today.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
 // 지금 판 코치(atlas/game-learning.js)가 손님 기록을 두는 자리 — { version, epoch, events, ledger, … }.
@@ -19,6 +20,9 @@ export const GUEST_COUNT_MS = 8000;
 const MOVE_BANKS = ['topik-items'];
 // 생활 화면의 은행(4-2 — 생활 원고 132문항, 경험 world-life, 단계 4 §19-1 ①).
 const LIFE_BANKS = ['world-life'];
+// 홈 코치의 은행(4-3 — §20-4): 생활과 짧은 연습 문항 풀 전체(학생의 수준으로 거르기 전)의 은행을 고정 묶음으로 — 설정이 바뀌어도 코치와
+// 지도가 하나 더 열리지 않게(설계 검토 H24). 경험 이름은 world-home이다(다른 면과 같은 호스트라 기억은 문서 안에서 하나).
+export const homeBanksOf = pool => [...new Set([...LIFE_BANKS, ...banksOf(pool)])].sort();
 
 // 옛 기기 기록 읽개(계획 §1 #22 — 손님 호스트가 열 때마다 부른다). 옛 로그(events)와 접힌 장부(ledger)를 그대로 넘기고, 옮길 것을
 // 고르는 일(아직 안 옮긴 옛 꼴 사건 · 새로 든 장부)은 엔진(record/carry.mjs)이 한다. 못 읽으면 null — 새 길은 그대로 연다.
@@ -919,6 +923,27 @@ export function createAtlasNext({
       const since = loosened;
       if (!account) return answered(await coachFor(GUEST, LIFE_BANKS, 'world-life'), since);
       return faceCoach(LIFE_BANKS, 'world-life', since);
+    },
+    // 홈의 코치(4-3 — §20-4). 생활 · 짧은 연습과 같은 판 정하기 · 같은 호스트다. 지금 판이면 null. pool: 짧은 연습 문항 풀 전체.
+    async homeCoach(pool) {
+      if (disposed) return null;
+      const since = loosened;
+      const banks = homeBanksOf(pool);
+      if (!account) return answered(await coachFor(GUEST, banks, 'world-home'), since);
+      return faceCoach(banks, 'world-home', since);
+    },
+    // 홈 플래너(4-3 — world-today.mjs). 엔진을 받아야 화면 언어의 문장(Vellum)을 그린다 — 못 받으면 null(셸은 생활 판정을 따라 지금 판으로 간다).
+    async homePlanner() {
+      if (disposed) return null;
+      const loaded = await entry().catch(() => null);
+      const render = loaded?.engine?.renderReason;
+      if (disposed || typeof render !== 'function') return null;
+      return Object.freeze({
+        createWorldTodayPlan,
+        watchHomePlan,
+        todayKey,
+        say: (why, language = lang()) => render(why, { lang: language, label }),
+      });
     },
     // 지금 판을 준 뒤 새 길이 될 수 있을 때(판이 풀림 · 지금 판 뒤 새 길 코치를 줌) 부를 함수 — 생활 · 홈이 판을 다시 묻는다(§19-3 7 — 까닭을
     // 세지 않는다, 계정 · 손님 모두). retired(새 길 → 다시 정함)의 짝이다. 돌려준 함수로 끊는다.

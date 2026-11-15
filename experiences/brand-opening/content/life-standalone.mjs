@@ -17421,7 +17421,7 @@ var progressLine = (done, total) => `<span class="life-progress" aria-hidden="tr
 var meter = (done, total, label = `${done} / ${total}`) => `<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done, total)}%"></i></span><b>${label}</b></span>`;
 var expressionOf = (lesson2, q2) => lesson2?.expressions.find((e) => e.id === q2?.expressionId) || { korean: q2?.choices?.find((c) => c.id === q2.answerId)?.text || "", meaning: "" };
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
-}, onNext = null, presentation = null, leadRows = null, moreRows = null, positionTotal = null, learning: learning2 = null }) {
+}, onNext = null, presentation = null, leadRows = null, moreRows = null, positionTotal = null, learning: learning2 = null, today = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   let lastPoint = null, justChose = false, barMemo = { key: "", value: -1 };
   content?.addEventListener("pointerdown", (event) => {
@@ -17872,19 +17872,66 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? `<span class="life-pack-done"><i class="w-led ok"></i>${t("life.allDone")}</span>` : meter(done, total);
     return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
-  function nowPoster(s) {
-    const lesson2 = s.nextLesson;
-    if (lesson2 && (s.resume || !s.dueCount)) {
-      const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
-      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+  let todayMark = "";
+  const dayNow = () => {
+    if (typeof today !== "function") return null;
+    try {
+      return today() || null;
+    } catch {
+      return null;
     }
-    if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small><strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` };
-    const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "";
-    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">${t("life.allPacksWord")}</strong><span class="life-poster-sub">${future ? t("life.nextReviewOpens", { date: escape2(future) }) : t("life.pickPackAgain")}</span><button class="felt-button" data-life-review>${t("life.reviewSchedule")} <span aria-hidden="true">\u2192</span></button></section>` };
+  };
+  const todaySign = (day) => day ? [day.state, day.capped ? "capped" : "", day.selectedKind || "", day.selected?.id || "", day.reason || "", (day.items || []).map((row) => `${row.kind}:${row.activityId}`).join(",")].join("|") : "";
+  const cappedOf = (day) => day?.capped && day.cappedText ? day.cappedText : "";
+  const whyLine = (why) => why ? `<span class="life-poster-why">${escape2(why)}</span>` : "";
+  function lessonPoster(lesson2, started, why = "") {
+    const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length;
+    return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}${whyLine(why)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+  }
+  const reviewPoster = (s, why = "") => ({ kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small><strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}${whyLine(why)}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` });
+  function todayPoster(row) {
+    const open = row.open, hangul = open.route === "game" && open.gameId === "hangul", listening = open.modality === "listening";
+    let name = "";
+    try {
+      name = home.planLabel?.(open) || "";
+    } catch {
+      name = "";
+    }
+    const minutes2 = Number.isFinite(row.minutes) ? `<span class="life-poster-count">${escape2(t("goal.minutes.n", { n: row.minutes }))}</span>` : "";
+    return { kind: "today", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(hangul ? "hangul" : "goals")}<small class="life-poster-label">UP NEXT \xB7 ${hangul ? "HANGUL" : listening ? "LISTENING" : "READING"}</small><strong class="life-poster-word">${escape2(name || open.label || row.title || "")}</strong><span class="life-poster-sub">${escape2(row.why?.text || "")}</span>${minutes2}<button class="felt-button" data-life-next>${t("life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+  }
+  function rowPoster(s, day) {
+    const row = (day.items || []).find((item) => item.kind === day.selectedKind && item.open?.id === day.selected?.id);
+    if (!row) return null;
+    const why = row.why?.text || "";
+    if (row.route === "lesson") {
+      const lesson2 = lessonById(row.open.lessonId);
+      return lesson2 ? lessonPoster(lesson2, !!row.open.resume || stateOf(lesson2.id) === "started", why) : null;
+    }
+    if (row.route === "review") return reviewPoster(s, why);
+    return todayPoster(row);
+  }
+  function restPoster(s, day = null) {
+    const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "", capped = cappedOf(day);
+    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">${t("life.allPacksWord")}</strong><span class="life-poster-sub">${capped ? escape2(capped) : future ? t("life.nextReviewOpens", { date: escape2(future) }) : t("life.pickPackAgain")}</span><button class="felt-button" data-life-review>${t("life.reviewSchedule")} <span aria-hidden="true">\u2192</span></button></section>` };
+  }
+  function nowPoster(s) {
+    const day = dayNow();
+    todayMark = todaySign(day);
+    const poster = day ? rowPoster(s, day) : null;
+    if (poster) return poster;
+    const lesson2 = s.nextLesson;
+    if (lesson2 && (s.resume || !s.dueCount || day)) return lessonPoster(lesson2, s.resume || stateOf(lesson2.id) === "started");
+    if (s.dueCount && !day) return reviewPoster(s);
+    return restPoster(s, day);
   }
   function reviewRow(s) {
-    const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "";
-    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>${t("life.review")}</strong><small>${s.dueCount ? t("life.reviewBack", { n: backCount(s) }) : t("life.reviewNext", { date: escape2(future) })}</small></span>${s.dueCount ? `<span class="life-row-state"><i class="w-led check"></i>${t("life.count", { n: backCount(s) })}</span>` : ""}</button>`;
+    const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "", capped = cappedOf(dayNow()), count = s.dueCount && !capped;
+    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>${t("life.review")}</strong><small>${capped ? escape2(capped) : s.dueCount ? t("life.reviewBack", { n: backCount(s) }) : t("life.reviewNext", { date: escape2(future) })}</small></span>${count ? `<span class="life-row-state"><i class="w-led check"></i>${t("life.count", { n: backCount(s) })}</span>` : ""}</button>`;
+  }
+  function syncToday() {
+    if (ended || !shown || rendering || screenView !== "packs" || tutorBusy() || typeof today !== "function") return;
+    if (todayMark !== todaySign(dayNow())) packs({ again: true });
   }
   function packs({ again = false } = {}) {
     if (!ensureReadable()) return;
@@ -17893,7 +17940,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const s = summary(), now = nowPoster(s), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt);
     const episodes = PACKS.filter((p) => p.lessons.some((l) => l.type === "story")).length;
     const rows2 = [`<button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>${t("life.stories")}</strong><small>${t("life.storiesCount", { n: episodes })}</small></span></button>`];
-    if (now.kind === "lesson" && hasReviews) rows2.push(reviewRow(s));
+    if ((now.kind === "lesson" || now.kind === "today") && hasReviews) rows2.push(reviewRow(s));
     rows2.push(`<button class="life-row" data-view="position">${print(now.kind === "rest" ? "goals" : "complete", "life-row-print")}<span class="life-row-copy"><strong>${t("position.title")}</strong><small>${t("position.row", { total: positionCount() })}</small></span></button>`);
     if (typeof moreRows === "function") {
       const extra = moreRows(print);
@@ -18451,7 +18498,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     await p.flush();
     return result;
   }
-  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, hangulReading, setHangulReading, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot(), trail: trail.metrics() }), dispose() {
+  return { packs, syncToday, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, hangulReading, setHangulReading, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot(), trail: trail.metrics() }), dispose() {
     ended = true;
     trail.dispose();
     speech.dispose();
@@ -25186,9 +25233,12 @@ function createWorldEducation({
   town = null,
   responses = false,
   target = globalThis,
-  atlasNext = null
+  atlasNext = null,
+  homeNext = null
 }) {
   let stopped = false, coach = null, coachHost = null, practiceCoach = null, practiceHost = null, mockCoach = null, mockHost = null, lifeCoachNow = null, lifeHost = null, current = null, refreshing = false, classwork = { at: 0, rows: [], pending: null };
+  let homePlanner = null, homeWatch = null, homeFailed = false;
+  const opened = { key: "", kinds: /* @__PURE__ */ new Set() };
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
   const view = position ? position.createView({ t: t2, has: hasString2, formatDate: formatDate2, lang: currentLang2 }) : null;
@@ -25612,6 +25662,16 @@ function createWorldEducation({
         home.updateStudy?.(null);
         return null;
       }
+      const phase = homePhase();
+      if (phase !== "old") {
+        current = todayWith({ phase, progress: progress2, values: settingsFor(progress2.learningProfileValues()) });
+        home.updateStudy?.(current);
+        try {
+          homeNext.painted?.();
+        } catch {
+        }
+        return current;
+      }
       let summary = empty2, coachNow = null;
       try {
         coachNow = readCoach();
@@ -25657,8 +25717,24 @@ function createWorldEducation({
       await target.SYNKLearningHost?.ready?.();
     } catch {
     }
+    if (homeNext) {
+      try {
+        await homeNext.ask();
+      } catch {
+      }
+      check3();
+    }
     check3();
     const plan = refresh(), selected = plan?.selected;
+    const empty3 = plan?.today?.empty?.code;
+    if (!selected && empty3 === "checking") {
+      home.toast(t2("home.today.checking"));
+      return;
+    }
+    if (!selected && (empty3 === "done" || empty3 === "day.capped") && typeof homeNext?.packs === "function") {
+      homeNext.packs();
+      return;
+    }
     if (!selected) {
       home.toast(plan?.reason || "\uC9C0\uAE08 \uC870\uAC74\uC5D0 \uB9DE\uB294 \uC5F0\uC2B5\uC774 \uC5C6\uC5B4\uC694. \uD559\uC2B5 \uBAA9\uD45C\uC5D0\uC11C \uC2DC\uAC04\uACFC \uC18C\uB9AC\uB97C \uBC14\uAFD4 \uBCF4\uC138\uC694.");
       return;
@@ -25667,7 +25743,71 @@ function createWorldEducation({
       home.toast("\uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uC800\uC7A5\uD574 \uC8FC\uC138\uC694.");
       return;
     }
+    if (plan.today && plan.selectedKind) opened.kinds.add(plan.selectedKind);
     return launch(selected);
+  }
+  function homePhase() {
+    if (!homeNext || homeFailed || stopped) return "old";
+    let life = "checking";
+    try {
+      life = homeNext.life();
+    } catch {
+      life = "checking";
+    }
+    if (life === "old" || life === "disposed") return "old";
+    return homeWatch ? homeWatch.phase() : "checking";
+  }
+  const checkingPlan = () => ({
+    status: "checking",
+    selected: null,
+    selectedKind: null,
+    reason: "",
+    resume: null,
+    candidates: [],
+    examPlan: null,
+    today: { items: [], minutes: 0, line: null, empty: { code: "checking", text: null }, capped: false, cappedText: null, firstDay: false, state: "checking", redrawAt: null },
+    learningEffectClaim: false,
+    abilityClaim: false,
+    grade: null
+  });
+  function todayWith({ phase, progress: progress2, values }) {
+    if (!homePlanner) return checkingPlan();
+    const now = Date.now(), key = `${owner}|${homePlanner.todayKey(now)}`;
+    if (opened.key !== key) {
+      opened.key = key;
+      opened.kinds.clear();
+    }
+    let judged = null, answers = null, openGames = null;
+    try {
+      judged = homeNext.judge(progress2.exportSnapshot(), now);
+    } catch {
+      judged = null;
+    }
+    try {
+      answers = homeNext.answers();
+      openGames = homeNext.openGames();
+    } catch {
+      answers = null;
+      openGames = null;
+    }
+    const lang = currentLang2(), coachNow = phase === "engine" ? homeWatch.coach() : null;
+    const plan = homePlanner.createWorldTodayPlan({
+      coach: coachNow,
+      progress: progress2,
+      judged,
+      settings: values,
+      now,
+      answers,
+      openGames,
+      pool: practiceFor(values),
+      practiceLength: practiceLength(),
+      labels: (id) => skillLabel(id),
+      opened: opened.kinds,
+      lang,
+      say: (why) => homePlanner.say(why, lang)
+    });
+    homeWatch.redrawAt(plan.today.redrawAt);
+    return plan;
   }
   function launch(selected) {
     if (selected.route === "game") return launchGame(selected.gameId);
@@ -27198,6 +27338,23 @@ function createWorldEducation({
     });
     return "shown";
   }
+  if (homeNext) Promise.resolve().then(() => homeNext.planner()).then((planner) => {
+    if (stopped) return;
+    if (!planner) {
+      homeFailed = true;
+      refresh();
+      return;
+    }
+    homePlanner = planner;
+    homeWatch = planner.watchHomePlan({ open: () => homeNext.coach(position?.practice?.pool || []), retired: (made, fn) => homeNext.retired(made, fn), lifeState: () => homeNext.life(), onChange: () => {
+      if (!stopped) refresh();
+    } });
+    refresh();
+  }, () => {
+    if (stopped) return;
+    homeFailed = true;
+    refresh();
+  });
   const onFocus = () => refresh();
   target.addEventListener?.("focus", onFocus);
   function planRow(print = () => "") {
@@ -27226,8 +27383,9 @@ function createWorldEducation({
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
-  }, metrics: () => ({ owner, plan: current }), dispose() {
+  }, metrics: () => ({ owner, plan: current }), today: () => current?.today ? { ...current.today, selected: current.selected, selectedKind: current.selectedKind, reason: current.reason } : null, dispose() {
     stopped = true;
+    homeWatch?.dispose();
     release(coach);
     release(practiceCoach);
     release(mockCoach);

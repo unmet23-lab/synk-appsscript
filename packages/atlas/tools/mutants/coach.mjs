@@ -566,6 +566,22 @@ export const COACH_MUTANTS = [
   [
     'unit',
     'Vellum',
+    '이름을 모르는 생활 복습이 문장을 잃는다 — 생활 단위가 없는 복습이 홈 줄에서 빠진다(단계 4 §20-6의 5)',
+    'src/vellum/index.mjs',
+    "  const missing = NAME_OPTIONAL.has(why.code) ? '' : null;",
+    '  const missing = null;',
+  ],
+  [
+    'unit',
+    'Vellum',
+    '이름을 모르는 다른 종류도 이름 없이 짓는다(「」 처음 만나요)',
+    'src/vellum/index.mjs',
+    "  const missing = NAME_OPTIONAL.has(why.code) ? '' : null;",
+    "  const missing = '';",
+  ],
+  [
+    'unit',
+    'Vellum',
     '숙제 상태를 모르면 놓친 답 문장으로 짓는다(카본 끝 판 C4)',
     'src/vellum/ko.mjs',
     '      : null;',

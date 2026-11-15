@@ -49,6 +49,8 @@ const games={
 let lastFocus=null,panelKind='',inView=true,manualReduced=false,frameTimer,displayPreference='auto',layout='portrait';
 let learningUI=null,learningLoader=null,education=null,reminders=null,playLevel=null;
 let host=null,panelResource=null,sceneActive=false,entryPhase='restoring',toastTimer,equipment={slots:{},dyes:{}},accountOwner='guest',learningData={},photoBusy=false,panelEpoch=0;
+// 새 길 홈의 세 줄(Atlas 재설계 단계 4-3 — 단계4_계획 §20-8). 지금 판이면 null이다.
+let todayNow=null;
 let orientationTask=Promise.resolve();
 let tutorUI,homeTutor,firstRun,lastAccount=null;
 // 홈의 자리: 'town'(우리 동네, 첫 장면) 또는 'room'(우리 집 안 3D 방). 3D 방은 들어갔을 때만 그린다.
@@ -288,14 +290,21 @@ function updateLearning(summary,details){
  refreshOpenPlay();
  const next=summary.nextLesson,button=$('#life-next-button'),label=$('#life-next-title'),kicker=$('#life-next-kicker'),caption=$('#life-progress-caption'),review=$('#life-review-count');
  if(!button)return;
- button.disabled=summary.status?.phase==='loading';
+ button.disabled=summary.status?.phase==='loading'||button.dataset.checking==='true';
  label.textContent=summary.status?.phase==='loading'?t('home.next.connecting'):next?next.title:summary.dueCount?t('home.next.dueToday'):t('home.next.packsAgain');
  kicker.textContent=summary.resume?t('home.next.resume'):summary.cafe?.nextNumber?t('home.next.cafeVisit',{n:summary.cafe.nextNumber}):next?t('home.next.packs',{n:summary.packs?.length||6}):t('home.next.kicker');
  caption.textContent=t('home.caption',{done:summary.completed||0,total:summary.total||22});
  renderHeading();
  // 수는 장면이 아니라 돌아온 표현(life-progress dueExpressions) — 복습 화면 · 튜터 단추 · 배우기 줄과 같은 단위(11-09).
- review.textContent=summary.dueCount?t('home.short.count',{n:summary.dueExpressions??summary.dueCount}):t('home.short.schedule');review.dataset.due=summary.dueCount?'yes':'no';
+ paintReviewCount();
  button.setAttribute('aria-label',t(summary.resume?'home.next.continueLabel':'home.next.nextLabel',{title:label.textContent}));
+}
+// 복습 수 칩: 돌아온 표현 수(수는 장면이 아니라 표현 — 11-09). 새 길에서 하루 복습 상한에 걸린 날은 수로 재촉하지 않고 「일정」 그대로다
+// (단계4_계획 §20-3 · 설계 주인 11-15 조건 3).
+function paintReviewCount(){
+ const review=$('#life-review-count'),summary=learningData.summary;if(!review||!summary)return;
+ const count=summary.dueCount&&!todayNow?.capped;
+ review.textContent=count?t('home.short.count',{n:summary.dueExpressions??summary.dueCount}):t('home.short.schedule');review.dataset.due=count?'yes':'no';
 }
 // PC 가로 틀의 방 제목 아래 한 줄: 누구와 · 어디까지.
 function renderHeading(tutor=tutorUI?.choice()){
@@ -310,6 +319,8 @@ function planLabel(next){
  if(!next||currentLang()==='ko')return label;
  if(next.route==='game'&&next.gameId)return t(`plan.game.${next.gameId}`);
  if(next.id==='world.resume.review')return t('plan.resumeReview');
+ // 새 길 홈의 생활 복습 하나(4-3 — 여러 레슨의 돌아온 복습을 한 활동으로): 레슨이 하나면 「제목 · 새 상황 복습」, 여럿이면 이 이름.
+ if(next.id==='world.review.life'&&!label.includes(' · '))return t('plan.reviewLife');
  // 10-20 TOPIK 맞춤: 읽기 짧은 연습(그 항목)·짧은 진단·쓰기 연습(51~54)도 화면 언어로.
  // 10-21: 듣기 짧은 연습(문항 묶음의 듣기)과 시험 형식 연습도.
  if(next.route==='practice'&&next.skillId)return t(String(next.skillId).split('.')[1]==='listening'?'plan.practice.listening':'plan.practice',{skill:t(`position.skill.${next.skillId}`)});
@@ -325,16 +336,53 @@ function planLabel(next){
  if(reviewed!==null)return t('plan.review',{title:reviewed});
  return label;
 }
+// 새 길 홈의 세 줄(§20-8): 튜터 카드 아래의 따로 된 부품이다 — 나중에 서하 카드로 옮길 수 있게 튜터 카드에 묶지 않는다(설계 검토 ⑥-1). 지금 판에는
+// 없다(HTML에 두지 않고 새 길에서만 짓는다). 줄 자체는 단추가 아니고 흰 알약 단추 하나가 줄을 차례로 연다. 화면 읽기는 줄을 차례대로 읽는다 —
+// 숨긴 이유 줄 자리(.home-tutor-context)에 그리지 않는다(설계 검토 H23). 글은 textContent로만 넣는다.
+// 빈 줄 문장(§20-8): 확인 중 · 조건에 걸린 날(지금 판과 같은 조건 문장) · 다 한 날. 상한 날은 엔진의 상한 문장(today.empty.text)이다.
+const EMPTY_TEXT={checking:'home.today.checking',blocked:'msg.reasonNone',done:'home.today.empty.done'};
+// 줄이 없는 날 단추가 할 일(§20-4 · §20-8): 확인 중이면 잠금(checking), 다 한 날 · 상한 날이면 생활 팩(packs). 조건에 걸린 날(blocked)과
+// 지금 판(today 없음)은 null — 지금처럼 학습 조건(study)이다.
+const emptyStep=day=>!day||day.items.length?null:day.empty?.code==='checking'?'checking':day.empty?.code==='blocked'?null:'packs';
+function renderToday(today){
+ let box=$('#home-today');
+ if(!today){box?.remove();return;}
+ if(!box){box=document.createElement('section');box.id='home-today';box.className='home-today';$('#home-tutor')?.after(box);}
+ const el=(tag,className,value)=>{const node=document.createElement(tag);node.className=className;if(value!=null)node.textContent=value;return node;};
+ const kindLabel=kind=>t(kind==='again'?'home.short.review':`home.today.kind.${kind}`);
+ const list=el('ol','home-today-list');
+ // 상한 날(§20-3): 복습 칸 자리에 상한 문장 한 줄 — 줄이 아니라 단추가 열지 않는다.
+ if(today.capped&&today.cappedText&&today.items.length){const quiet=el('li','home-today-row home-today-quiet');quiet.dataset.kind='again';quiet.append(el('span','home-today-kind',kindLabel('again')),el('span','home-today-copy',today.cappedText));list.append(quiet);}
+ for(const row of today.items){
+  const item=el('li','home-today-row');item.dataset.kind=row.kind;if(row.opened)item.dataset.opened='true';
+  const copy=el('span','home-today-copy');copy.append(el('strong','',planLabel(row.open)||row.title),el('small','',row.why.text));
+  item.append(el('span','home-today-kind',kindLabel(row.kind)),copy);
+  if(Number.isFinite(row.minutes))item.append(el('span','home-today-time',t('goal.minutes.n',{n:row.minutes})));
+  // 이미 연 칸(§20-8): 연 사실만 말한다 — 「했어요」는 쓰지 않는다.
+  if(row.opened)item.append(el('span','home-today-opened',t('home.today.opened')));
+  list.append(item);
+ }
+ const parts=list.children.length?[list]:[];
+ if(!today.items.length){const code=today.empty?.code||'checking',copy=today.empty?.text||(EMPTY_TEXT[code]?t(EMPTY_TEXT[code]):'');if(copy)parts.push(el('p','home-today-empty',copy));}
+ box.setAttribute('aria-label',t('home.today.label'));box.dataset.state=today.state;
+ box.replaceChildren(...parts);
+}
 function updateStudy(plan){
  const next=plan?.selected,reason=$('#study-reason');
- $('#life-next-button').dataset.view=plan&&!next?'study':'learn';
+ todayNow=plan?.today||null;renderToday(todayNow);paintReviewCount();
+ const step=next?null:emptyStep(todayNow),button=$('#life-next-button');
+ button.dataset.view=step==='packs'?'packs':plan&&!next&&!step?'study':'learn';
+ // 확인 중 잠금은 새 길이 건 것만 푼다 — 지금 판에서는 updateLearning이 정한 값(진도를 불러오는 중) 그대로다.
+ if(step==='checking'){button.disabled=true;button.dataset.checking='true';}
+ else if(button.dataset.checking){delete button.dataset.checking;button.disabled=learningData.summary?.status?.phase==='loading';}
  if(reason)reason.textContent=tMessage(plan?.reason||'');
  // 「이번 주 계획」 단추(10-20, 시험을 고른 사람에게만): 이번 주에 한 연습 / 계획한 횟수. 못 한 것을 빨갛게 세지 않는다.
  const planButton=$('#study-plan-button'),week=plan?.examPlan;
  if(planButton){planButton.hidden=!week;if(week){const areas=week.areas||[];planButton.textContent=t('plan.week.home',{done:areas.reduce((n,row)=>n+Math.min(row.done,row.planned),0),total:areas.reduce((n,row)=>n+row.planned,0)});}}
  if(learningData.summary)homeTutor?.update({...learningData.summary,education:plan},learningData.details);
  if(!next){
-  if(plan){$('#life-next-title').textContent=t('home.study.find');$('#life-next-kicker').textContent=t('home.study.check');$('#life-next-button').setAttribute('aria-label',t('home.study.checkLabel'));}
+  if(step){const title=t(step==='checking'?'home.today.checking':'home.next.packsAgain');$('#life-next-title').textContent=title;$('#life-next-kicker').textContent=t('home.next.kicker');button.setAttribute('aria-label',title);}
+  else if(plan){$('#life-next-title').textContent=t('home.study.find');$('#life-next-kicker').textContent=t('home.study.check');$('#life-next-button').setAttribute('aria-label',t('home.study.checkLabel'));}
   return;
  }
  $('#life-next-title').textContent=planLabel(next)||t('home.study.mine');
@@ -444,6 +492,8 @@ export const home={
  // 게임·레슨 결과의 「우리 동네로」: 방에 있었으면 문이 맞물리며 동네가 된다. 시트를 닫는 소리가 났으면 문 소리는 더하지 않는다.
  place:()=>place,goTown:()=>{const closing=panel.open;if(closing)closePanel();return go('town',{sound:closing?'':'close'});},
  updateAccount,updateLearning,updateStudy,
+ // 활동 이름표(화면 언어) — 배우기 허브의 새 길 포스터가 홈과 같은 이름을 쓴다(4-3 — 단계4_계획 §20-8).
+ planLabel:next=>planLabel(next),
  // 사진은 3D 방에서 찍는다. 동네에서 부르면 문 열림 없이 바로 방으로 들어간다(capture는 방이 다 불러질 때까지 기다린다).
  photo:()=>{if(place!=='room'||trip)void go('room',{instant:true});return photo();},
  connectEducation(value){education=value;},connectPlayLevel(value){playLevel=value;},connectReminders(value){reminders=value;},openLearningGame:launchGame,

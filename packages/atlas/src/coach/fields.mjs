@@ -8,9 +8,10 @@
 // test/coach가 층 0~2인 문항에서 choose의 값과 같은지 견준다.
 import { unitsOf } from '../fold/units.mjs';
 import { PARAMS } from '../params.mjs';
+import { REASON_CODES } from '../reason/index.mjs';
 
 export const HOST_ARM = 'host';
-export const HOST_ORDER = 'host.order';
+export const HOST_ORDER = REASON_CODES.order;
 
 // 두뇌 choose의 「돌아온 단위」 — 이 판에서 만나지 않았고 돌아올 때가 됐다. 밀린 것이 많으면 살릴 수 있는 것부터.
 function dueOf(units, learner, memory, now, params) {

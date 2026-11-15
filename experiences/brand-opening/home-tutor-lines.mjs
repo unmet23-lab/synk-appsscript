@@ -9,6 +9,10 @@ export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],pract
  if(['unreadable','conflict'].includes(summary.status?.phase)||summary.status?.rejected||summary.status?.code==='LIFE_PROGRESS_REJECTED')return {kind:'unavailable'};
  if(summary.education?.status==='unavailable')return {kind:'conditions',command:'study',label:'학습 조건 바꾸기',reason:'지금 조건에 맞는 활동이 없어요. 시간이나 도움 방식을 바꿀 수 있어요.'};
  if(summary.education?.selected){const next=summary.education.selected;return {kind:summary.education.resume?'resume':'start',title:next.label||next.title,command:'learn',label:next.route==='review'?'나의 복습 시작':'맞춤 연습 시작',reason:summary.education.reason};}
+ // 새 길 홈(Atlas 재설계 단계 4-3 — 단계4_계획 §20-5): 튜터는 세 줄의 단추가 열 줄을 따른다(위 selected). 줄이 없으면 진도로 따로 고르지 않는다 —
+ // 확인 중이면 기다림, 그 밖(다 한 날 · 상한 날)은 마침이다. 조건에 걸려 줄이 모두 빈 날은 위 conditions가 먼저 받으므로,
+ // 여기까지 오는 빈 날은 생활 레슨을 다 마쳤을 때뿐이다.
+ if(summary.education?.today)return summary.education.today.state==='checking'?{kind:'loading'}:{kind:'complete',command:'packs',label:'생활 팩 둘러보기'};
  const known=Object.values(snapshot.reviews||{}).flatMap(r=>{
   const lesson=lessons.find(l=>l.id===r.lessonId),q=lesson?.questions.find(q=>q.id===r.questionId&&q.review?.id===r.id);
   return q?[{...r,expressionId:q.expressionId,title:lifeTutorExpression(lesson,q),lessonTitle:lesson.title}]:[];
@@ -46,6 +50,8 @@ export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],pract
 
 // Keep immediate guided help available beside the selected activity, using the same owner and daily checks.
 export function homeTutorPracticeRecommendation(input={}){
+ // 새 길 홈(§20-5): 곁 단추 「헷갈린 표현 연습하기」를 두지 않는다 — 그 일은 복습 줄이 맡는다.
+ if(input.summary?.education?.today)return null;
  const result=homeTutorRecommendation({...input,summary:input.summary?{...input.summary,education:null}:input.summary});
  return result.kind==='difficult'?result:null;
 }

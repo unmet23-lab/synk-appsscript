@@ -136,6 +136,14 @@ export default {
  'home.short.reviewLabel':{ko:'나의 복습 일정 보기',en:'See my review schedule',mn:'Давтлагын хуваариа харах'},
  'home.short.schedule':{ko:'일정',en:'Schedule',mn:'Хуваарь'},
  'home.short.count':{ko:'{n}개',en:'{n}',mn:'{n}'},
+ // 새 길 홈의 세 줄(Atlas 재설계 단계 4-3 — 단계4_계획 §20-8): 부품 이름, 칸 이름(복습은 home.short.review), 연 칸 표시, 빈 줄 문장, 확인 중
+ // (잠근 단추 · 빈 줄 · 알림이 같은 말). 영어 · 몽골어는 세 겹 대조(현지어대조 · 몽골어대조 · 원문을 안 본 Opus 직역)를 지난 판이다.
+ 'home.today.label':{ko:'오늘 할 공부',en:'Today’s study plan',mn:'Өнөөдрийн хичээл'},
+ 'home.today.kind.new':{ko:'오늘 공부',en:'Learn',mn:'Суралцах'},
+ 'home.today.kind.check':{ko:'점검',en:'Skill check',mn:'Шалгах'},
+ 'home.today.opened':{ko:'오늘 열었어요',en:'Opened today',mn:'Өнөөдөр нээсэн'},
+ 'home.today.empty.done':{ko:'생활 팩의 레슨을 모두 만났어요. 다시 가고 싶은 곳을 골라요.',en:'You’ve done every lesson in the daily-life packs. Pick a place you’d like to go back to.',mn:'Өдөр тутмын багцын бүх хичээлийг хийлээ. Дахин очмоор газраа сонгоорой.'},
+ 'home.today.checking':{ko:'오늘 할 공부를 확인하고 있어요',en:'Loading today’s study plan',mn:'Өнөөдрийн хичээлийг шалгаж байна'},
  'home.short.stories':{ko:'이야기',en:'Stories',mn:'Түүх'},
  'home.short.storiesLabel':{ko:'까몽 몽글 마린 이야기 모아 보기',en:'See the stories of Kkamong, Mongle and Marin',mn:'Камон, Монгль, Марин нарын түүхийг харах'},
  'home.memory.recovery':{ko:'학습 기록 저장 확인하기',en:'Check saved learning records',mn:'Сургалтын мэдээллийн хадгалалтыг шалгах'},
@@ -221,6 +229,8 @@ export default {
  'plan.resume':{ko:'{title} · 이어 하기',en:'{title} · continue',mn:'{title} · үргэлжлүүлэх'},
  'plan.review':{ko:'{title} · 새 상황 복습',en:'{title} · review in a new situation',mn:'{title} · шинэ нөхцөл байдалд давтах'},
  'plan.resumeReview':{ko:'하던 새 상황 복습 · 이어 하기',en:'Continue your review',mn:'Эхэлсэн давтлагаа үргэлжлүүлэх'},
+ // 새 길 홈의 생활 복습 하나가 여러 레슨의 복습을 묶을 때의 이름(4-3 — 레슨이 하나면 plan.review 「제목 · 새 상황 복습」).
+ 'plan.reviewLife':{ko:'새 상황 복습',en:'Review in new situations',mn:'Шинэ нөхцөл байдалд давтах'},
  'plan.practice':{ko:'읽기 짧은 연습 · {skill}',en:'Short reading practice · {skill}',mn:'Уншлагын богино дасгал · {skill}'},
  'plan.check':{ko:'짧은 진단 · 다시 확인',en:'Quick check · check again',mn:'Богино шалгалт · дахин шалгах'},
 

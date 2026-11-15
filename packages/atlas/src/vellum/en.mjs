@@ -2,7 +2,7 @@
 // 세 겹 대조(11-11): 아르곤 문법 · flash와 Opus 직역 역번역에서 뜻이 원문과 같다 — 처음 초안의 「meet」(만나다 직역)은 「try · review ·
 // back」으로 고쳤다. 셋째 겹 Fable은 4-1 화면 검수의 최종에서. 철자는 앱 영어 표의 이웃 줄을 따른다(이 흐름은 Practice).
 // 학습 대상의 한국어 이름은 영어 따옴표 ‘…’ 안에 그대로 둔다 — 화면 글 표에서 한국어 학습 내용이 값으로 드는 줄(홈 추천 이유 등)과
-// 같은 꼴이다(11-12 Fable 5.2 화면 최종 F5 — 낫표는 한국어 화면만). 홈 · 활동 고르기 문장(host.* · goal.match)은 그 화면(4-3)에서 더한다.
+// 같은 꼴이다(11-12 Fable 5.2 화면 최종 F5 — 낫표는 한국어 화면만). 홈 · 활동 고르기 문장(host.* · goal.match)은 4-3에서 더했다(맨 아래).
 const days = n => `${n} ${n === 1 ? 'day' : 'days'}`;
 const times = n => `${n} ${n === 1 ? 'time' : 'times'}`;
 const one = sentence => ({ standard: { default: [sentence] } });
@@ -11,6 +11,14 @@ const retry = (s, name) =>
   s.other
     ? `You just missed ‘${name}’ — let’s try it again in a different question.`
     : `You just missed ‘${name}’ — let’s try it one more time.`;
+
+// 숙제 — 능력 이름은 화면 언어로 번역된 이름이라 따옴표 없이 맨 앞에 둔다(skill.* 줄과 같다). 상태를 모르면 말하지 않는다(null).
+const homework = (s, name) =>
+  s.status === 'review'
+    ? `${name}: This is your homework for the week. It’s been a while since you last worked on this skill, so we’ll review it with new questions.`
+    : s.status === 'missed'
+      ? `${name}: This is your homework for the week. You got a question wrong earlier, so we’ll review this skill with new questions.`
+      : null;
 
 // 같은 하루(days 0)에 돌아오면 날 수를 말하지 않는다(Fable 5.2 끝 판 F4).
 const shaky = (s, name) => {
@@ -53,5 +61,37 @@ export const EN = Object.freeze({
       // 끈질긴 단위는 여러 날에 걸친 표시다 — 「this round」를 「kept missing」에 붙이면 「이번 판에서 자꾸 놓친 말」로 읽혀(이번 판에 한 문항만
       // 냈고 맞혔어도 나온다) 현재형 · 판 쪽으로 옮겼다(Fable 5.2 끝 판 넘친 #16 — 한국어 원문 「자꾸 놓치는 말은 이번 판에 여기까지」).
       'That’s it for this round on the expressions you keep missing. Next round, we’ll try them a different way.',
+  ),
+  // 홈 · 활동 고르기 문장(4-3 — 단계 4 §20-8). host.resume · host.prerequisite · host.form · host.recheck · host.start는 앱 화면 글 표
+  // (world-strings.mjs msg.*)가 대조를 거쳐 쓰던 번역을 옮겼다. 그 밖은 11-15 세 겹 대조(현지어대조.js — 카본 문법 · flash 직역 · Opus 직역)를
+  // 지났다(「met ‘…’」 → 「learned」, 명사구 조각 → 문장, 숙제의 「check it again」 → 「review」).
+  'goal.match': one((_, name) => `You said you want to learn more about ‘${name}’.`),
+  'host.resume': one(
+    () =>
+      'You’ll continue right where you left off. Your progress stays even if you pick something else.',
+  ),
+  'host.prerequisite': one(
+    () => 'Let’s meet Hangul first. Listen to the sounds, pick the letters, and learn how to read.',
+  ),
+  'host.homework': one(homework),
+  'host.form': one(
+    () => 'Like the test: new questions within a set time. Nothing becomes a score or a level.',
+  ),
+  'host.recheck': one(
+    () => 'This is this week’s check. We’ll see where you stand with questions you haven’t seen.',
+  ),
+  'host.start': one(
+    () => 'For your test goal, let’s first find your starting point with a quick check.',
+  ),
+  'host.next': one(() => 'This is your next daily-life lesson.'),
+  'host.missed': one((_, name) =>
+    name
+      ? `You missed ‘${name}’ — it’ll keep coming back until you get it right on your own.`
+      : 'Expressions you missed will keep coming back until you get them right on your own.',
+  ),
+  'host.bridge': one((_, name) =>
+    name
+      ? `You learned ‘${name}’ in a lesson — today, let’s review it in a new situation.`
+      : 'Today, let’s review expressions from your lessons in a new situation.',
   ),
 });

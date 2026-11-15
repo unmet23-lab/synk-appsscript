@@ -53,7 +53,7 @@ export function worldTopicAnswers(state,{now=Date.now()}={}){
  }
  return {interested:[...interested].slice(0,50),notNow:[...notNow].slice(0,50)};
 }
-function answersOf(value){
+export function answersOf(value){
  const pick=list=>Array.isArray(list)?[...new Set(list.filter(conceptId))].slice(0,50):[];
  const interested=pick(value?.interested),notNow=pick(value?.notNow).filter(id=>!interested.includes(id));
  return {interested,notNow};
@@ -63,7 +63,7 @@ function answersOf(value){
 // forward, its own missed items included, because the person put that topic off: a lesson of that
 // situation loses its goals, a game loses the items of that topic, and everything stays available
 // to choose. Other topics' needs and a review that is due (an activity's own schedule) stay as they are.
-function withAnswers(candidate,answers){
+export function withAnswers(candidate,answers){
  if(!answers.interested.length&&!answers.notNow.length)return candidate;
  const situations=PACK_SITUATIONS[candidate.packId]||[];
  const items=new Set(candidate.targets.flatMap(target=>Array.isArray(target.conceptIds)?target.conceptIds:[]));
@@ -170,7 +170,23 @@ export function buildWorldLearningCandidates({progress={},settings={},now=Date.n
  return candidates;
 }
 
-function resumeCandidates(progress,settings,now){
+// 새 길 홈(Atlas 재설계 단계 4-3 — 단계4_계획 §20-2, world-today.mjs)이 지을 활동 둘: 진도 요약이 고른 다음 레슨 하나(허브 「지금 할 일」과 같은 레슨)와,
+// 생활 판정(world-life-next lifeDue)이 낸 복습 모두를 한 활동으로(차례 그대로 — 설계 검토 H21). 꼴은 지금 판 후보와 같고 지금 판은 이 둘을 부르지 않는다.
+export function lifeLessonCandidate(lessonId,settings={}){
+ const lesson=knownLessons.get(lessonId);if(!lesson)return null;
+ return lessonCandidate(lesson,PACKS.findIndex(pack=>pack.id===lesson.packId),settings);
+}
+export function lifeReviewCandidate(ids,progress={},settings={},now=Date.now()){
+ const at=clock(now),order=Array.isArray(ids)?ids:[];
+ const rows=verifiedReviews(record(progress)?progress:{}).filter(review=>order.includes(review.id)).sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
+ if(!rows.length)return null;
+ const first=rows[0],lessons=new Set(rows.map(review=>review.lessonId));
+ return {id:'world.review.life',label:lessons.size===1?`${first.lesson.title} · 새 상황 복습`:'새 상황 복습',route:'review',lessonId:first.lessonId,packId:first.packId,
+  minutes:Math.max(1,Math.ceil(rows.length/3)),minutesEstimated:true,targets:rows.flatMap(review=>lifeTargets(review.lesson,[review.question],true)),goals:[...PACK_GOALS[first.packId]],supports:[...supports],audioRequired:false,modality:'reading',
+  reviewIds:rows.map(review=>review.id),reviewAt:iso(at),presentation:presentationFor(settings)};
+}
+
+export function resumeCandidates(progress,settings,now){
  const result=[];
  const lesson=knownLessons.get(progress?.activeLessonId),saved=lesson&&progress.lessons?.[lesson.id];
  // A lesson only opened (no answered question, still at its intro) is not 「하던 자리」: it must not jump ahead of a returned review.

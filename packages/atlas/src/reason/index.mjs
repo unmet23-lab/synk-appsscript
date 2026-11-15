@@ -18,6 +18,13 @@ export const REASON_CODES = Object.freeze({
   resume: 'host.resume',
   prerequisite: 'host.prerequisite',
   homework: 'host.homework',
+  missed: 'host.missed', // 제품이 차례를 정하는 생활 복습 — 놓친 것(혼자 맞힐 때까지, 단계 4 §20-6)
+  bridge: 'host.bridge', // 〃 — 처음 만나는 장면의 다리
+  form: 'host.form', // 엔진이 말할 것이 없을 때의 설명(describe) — 시험 형식 · 다시 확인 · 시작점 · 다음 레슨
+  recheck: 'host.recheck',
+  start: 'host.start',
+  next: 'host.next',
+  order: 'host.order', // 제품 순서 문항(코치 fields.mjs) — 문장이 없는 종류(Vellum SILENT)
   idle: 'idle',
   capped: 'day.capped',
   stubborn: 'pace.stubborn',

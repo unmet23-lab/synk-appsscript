@@ -2,7 +2,8 @@
 // 틀 = (slots, name, j) → 문장. name은 그 이유가 가리키는 단위 · 능력 · 주제의 화면 이름(낫표 밖), j는 조사(josa.mjs).
 // 단위 · 능력 이야기(unit.* · skill.* · pace.* · idle · day.capped)는 단계 2의 reasonLine(reason/ko.mjs)과 같은 문장이다 —
 // 다른 것은 받침 뒤의 「으로」 하나다(reasonLine은 「약국」로 — 시험이 이 차이만 허락한다).
-// host.* · goal.match는 WORLD의 hostReason(world-learning-plan.mjs)이 쓰던 문장을 옮겼다. host.order(제품 순서)는 문장이 없다.
+// host.* · goal.match는 WORLD의 hostReason(world-learning-plan.mjs)이 쓰던 문장을 옮겼다(host.next는 4-3에서 줄였다). host.missed ·
+// host.bridge는 4-3 홈의 생활 복습 사실이다. host.order(제품 순서)는 문장이 없다.
 const retry = (s, name) =>
   s.other
     ? `방금 놓친 「${name}」, 다른 문제로 한 번 더 만나요.`
@@ -66,5 +67,18 @@ export const KO = Object.freeze({
     () => '이번 주 계획의 다시 확인이에요. 처음 보는 문항으로 지금 위치를 확인해요.',
   ),
   'host.start': one(() => '시험 목표에 맞춰 짧은 진단으로 시작점을 먼저 확인해요.'),
-  'host.next': one(() => '생활 팩의 다음 레슨이에요. 아직 기록이 없는 표현을 새로 만나요.'),
+  // 다음 레슨은 엔진 기록을 읽지 않는 제품 사실이라 기록을 말하지 않는다(확인 중에도 쓴다 — 단계 4 §20-4 · 설계 검토 H8).
+  'host.next': one(() => '생활 팩의 다음 레슨이에요.'),
+  // 제품이 차례를 정하는 생활 복습(§20-6의 5). 놓친 것은 혼자 맞힐 때까지 돌아오고(world-life-next lifeDue ①), 다리는 레슨 다음 날의
+  // 새 상황 복습이다(②). 이름은 근거의 단위에서만 — 모르면 이름 없는 틀이다.
+  'host.missed': one((_, name) =>
+    name
+      ? `놓친 「${name}」, 혼자 맞힐 때까지 다시 만나요.`
+      : '놓친 표현은 혼자 맞힐 때까지 다시 만나요.',
+  ),
+  'host.bridge': one((_, name) =>
+    name
+      ? `레슨에서 만난 「${name}」, 오늘은 새 상황에서 다시 만나요.`
+      : '레슨에서 만난 표현을 오늘은 새 상황에서 다시 만나요.',
+  ),
 });

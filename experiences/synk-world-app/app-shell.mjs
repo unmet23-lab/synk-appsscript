@@ -50,6 +50,9 @@ function lazyAtlasNext(owner){
  return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
   // 생활 화면의 코치(4-2 — 은행 world-life, 단계4_계획 §19-1 ①). 지금 판이면 null.
   async lifeCoach(){if(disposed)return null;const entry=await load();return disposed?null:entry.lifeCoach();},
+  // 홈의 코치와 플래너(4-3 — 단계4_계획 §20-4). 지금 판이면 코치는 null, 엔진을 못 받으면 플래너도 null이다.
+  async homeCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.homeCoach(pool);},
+  async homePlanner(){if(disposed)return null;const entry=await load();return disposed?null:entry.homePlanner();},
   // 지금 판으로 정했던 판이 풀렸을 때(지금 판 → 새 길일 수 있음) — 생활 · 홈이 판을 다시 묻는다(단계4_계획 §19-3 7). 끊는 함수를 돌려준다.
   reopened(fn){if(disposed||typeof fn!=='function')return()=>{};reopeners.add(fn);return()=>reopeners.delete(fn);},
   note:(kind,outcome)=>{if(disposed)return;if(made)made.note(kind,outcome);else if(early.length<50)early.push([kind,outcome]);},
@@ -390,12 +393,20 @@ function mountLifeLearning({owner,progress,keep}){
  const atlasNext=atlasNextOn&&(owner!=='guest'||atlasNextGuestOn)?keep('atlasNext',lazyAtlasNext(owner)):null;
  const lifeDue=atlasNext&&progress&&typeof worldLearning.life.watchLifeDue==='function'?keep('lifeDue',worldLearning.life.watchLifeDue({open:()=>atlasNext.lifeCoach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),reopened:fn=>atlasNext.reopened(fn),progress,lessons:LESSONS,note:(kind,outcome)=>atlasNext.note(kind,outcome)})):null;
  const lifeNext=lifeDue?{coach:()=>lifeDue.coach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),note:(kind,outcome)=>atlasNext.note(kind,outcome),nextAt:id=>lifeDue.nextAt(id),state:()=>lifeDue.state()}:null;
+ // 새 길 홈(4-3 — 단계4_계획 §20-4): 생활 판정이 있을 때만. 홈은 생활 판정의 판을 따르고(ask — 단추를 누를 때 지금 판이면 다시 묻는다), 홈 코치 ·
+ // 플래너는 입구가 준다. 「내 성향」 답과 손님이 열 수 있는 게임은 지금 판의 createPlan과 같은 값이다. 꺼진 판은 null(지금 판 그대로).
+ const homeNext=lifeDue?{coach:pool=>atlasNext.homeCoach(pool),planner:()=>atlasNext.homePlanner(),retired:(coach,fn)=>atlasNext.retired(coach,fn),life:()=>lifeDue.state(),ask:()=>lifeDue.coach(),
+  judge:(snapshot,now)=>lifeDue.judge(snapshot,now),answers:()=>life.answers,openGames:()=>operating&&!client.snapshot?guestGames():null,
+  // 줄이 없는 날(다 한 날 · 상한 날)의 「다음 연습」은 생활 팩으로 · 홈 계획을 새로 그린 뒤 보고 있는 허브 포스터를 맞춘다(§20-8).
+  packs:()=>life.ui?.packs?.(),painted:()=>life.ui?.syncToday?.()}:null;
  // 입장 때 준비한 한글 옮기기 통로도 이 생활 기록에 딸린다. 계정 변경·다시 세우기·pagehide에서 함께 버린다.
  keep('hangulMigration',null,()=>{const port=hangulMigrationPort;hangulMigrationPort=null;port?.dispose();});
  const ui=keep('ui',createLifeExperience({home,getProgress:()=>life.progress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>{education?.refresh();queueMicrotask(repaintWritingRow);},onNext:()=>education?.next(),presentation:()=>education?.presentation(),
   // TOPIK II를 목표로 저장한 학생(이번 주 계획이 TOPIK II)은 쓰기 연습 줄이 생활 팩 위에 온다(10-22 — 첫 연락 메일·신청 페이지가 약속하는 무료 연습). 그 밖에는 아래 줄 그대로.
   leadRows:print=>education?.examType?.()==='topik2'?writingRow(print):'',
   moreRows:print=>[education?.planRow?.(print),education?.examType?.()==='topik2'?'':writingRow(print),speakingModule?.speakingRow?.(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.(),
+  // 새 길 홈의 세 줄(4-3 — 단계4_계획 §20-8): 허브 「지금 할 일」 포스터가 홈의 단추가 지금 열 줄을 따른다. 지금 판이면 null(지금 규칙 그대로).
+  today:()=>education?.today?.()??null,
   // 배움의 거울(Atlas × WORLD D, 11-08 — life-trail.mjs): 생활 화면이 먼저 서므로 학습 호스트는 늦게 읽는다.
   learning:{coach:()=>education?.lifeLearning?.coach()??null,prepare:()=>education?.lifeLearning?.prepare(),life:worldLearning.life,...(lifeNext?{next:lifeNext}:{})}}));
  // 공개판(계정 모드)의 손님은 GUEST_GAMES와 체험이 남은 게임만 바로 열고 나머지는 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
@@ -405,6 +416,7 @@ function mountLifeLearning({owner,progress,keep}){
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
  education=keep('education',createWorldEducation({home,getProgress:()=>life.progress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,responses:responsesOn,
   atlasNext,
+  homeNext,
   readHangulProgress:operating&&owner!=='guest'?async()=>{
    const port=await account.prepareHangulProgress({storage:localStorage,target:window});
    try{return port.read();}finally{port.dispose();}

@@ -9,6 +9,9 @@ export {createLocalWorldLearningHost} from './world-game-host.mjs';
 // WORLD 코치는 TOPIK I·II를 합친 지도로(world-learning-map.mjs, 10-21 ④). 게임 엔진(atlas/game-browser.js)은 그대로다.
 export {worldLearning} from './world-learning-map.mjs';
 export {createWorldLearningPlan} from './world-learning-plan.mjs';
+// 새 길 홈의 세 줄(Atlas 재설계 단계 4-3 — world-today.mjs)이 지금 판과 같은 후보 · 설정 규칙을 쓴다. world-learning-plan은 이 묶음 안에만 있어
+// world-today는 셸과 같은 주소로 이 묶음을 받는다(한 벌). 꺼진 판은 world-today를 부르지 않는다.
+export {answersOf,buildWorldLearningCandidates,lifeLessonCandidate,lifeReviewCandidate,resumeCandidates,withAnswers,worldLearningSettings} from './world-learning-plan.mjs';
 import {worldTopicAnswers} from './world-learning-plan.mjs';
 import {createLifeProgressPort} from './life-progress-port.mjs';
 import {createHangulProgressPort} from './hangul-progress-port.mjs';

@@ -62,8 +62,12 @@ function examMonths(now){
 // responses: 학습자 응답(설정값 worldFeedback, WORLD 학습자 응답 설계 — 기본 꺼짐). 켜지면 로그인한 학습자의 연습 끝 화면에 「이번 연습 어땠어요?」를 두고,
 //  짧은 연습의 길이(3·5·7)를 그 응답으로 정하고, 「내 계정」이 응답 목록(responses()·removeResponse())을 읽는다. 꺼지면 판 기록(finishSet)도 남기지 않는다.
 export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,readHangulProgress=null,
- readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis,atlasNext=null}){
+ readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis,atlasNext=null,homeNext=null}){
  let stopped=false,coach=null,coachHost=null,practiceCoach=null,practiceHost=null,mockCoach=null,mockHost=null,lifeCoachNow=null,lifeHost=null,current=null,refreshing=false,classwork={at:0,rows:[],pending:null};
+ // 새 길 홈(Atlas 재설계 단계 4-3 — 단계4_계획 §20): 셸이 넘긴 홈 입구(homeNext — 생활 판정이 있을 때만)가 있으면 판 셋(지금 판 · 확인 중 · 엔진)을 들고,
+ // 지금 판이 아니면 세 줄을 짓는다(입구가 준 플래너 — world-today.mjs). 차례 표시(이번 학습일에 이 문서에서 연 칸)는 저장하지 않고 학습일 · 주인이
+ // 바뀌면 비운다(§20-8 · 설계 주인 11-15 답 5). 플래너를 못 받으면(엔진을 못 받음) 지금 판이다.
+ let homePlanner=null,homeWatch=null,homeFailed=false;const opened={key:'',kinds:new Set()};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
  const view=position?position.createView({t,has:hasString,formatDate,lang:currentLang}):null;
@@ -321,6 +325,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   try{
    check();void loadBank();const progress=getProgress(),save=progress.status();
    if(['unreadable','conflict','loading'].includes(save.phase)||save.rejected){current=null;home.updateStudy?.(null);return null;}
+   // 새 길 홈(§20-4): 판이 지금 판이 아니면 세 줄 — 옛 코치의 요약을 읽지 않는다(§20-9 4).
+   const phase=homePhase();
+   if(phase!=='old'){current=todayWith({phase,progress,values:settingsFor(progress.learningProfileValues())});home.updateStudy?.(current);try{homeNext.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}return current;}
    let summary=empty,coachNow=null;
    try{coachNow=readCoach();summary=coachNow?.summary()||empty;applyPreferences();}catch{/* Unavailable account evidence remains unknown. */}
    // The coach's own call also hands Core what was already presented, so an activity whose items are
@@ -339,10 +346,42 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // The account's first memory read is bounded; wait for it so a help style chosen on another
   // screen or device is the one this plan uses. Device-local practice still starts without it.
   try{await target.SYNKLearningHost?.ready?.();}catch{/* the launcher reports account problems */}
+  // 새 길 홈(§20-4): 단추를 누를 때 판을 다시 묻는다 — 생활 판정이 지금 판이면 입구에 다시 묻는다(refresh마다 묻지 않는다, 설계 검토 H10).
+  if(homeNext){try{await homeNext.ask();}catch{/* 지금 판 그대로 */}check();}
   check();const plan=refresh(),selected=plan?.selected;
+  // 새 길에서 줄이 없는 날(§20-4 · §20-8): 확인 중이면 기다리라는 말, 다 한 날 · 상한 날이면 생활 팩으로 간다. 조건에 걸린 날은 지금 판처럼 조건 안내다.
+  const empty=plan?.today?.empty?.code;
+  if(!selected&&empty==='checking'){home.toast(t('home.today.checking'));return;}
+  if(!selected&&(empty==='done'||empty==='day.capped')&&typeof homeNext?.packs==='function'){homeNext.packs();return;}
   if(!selected){home.toast(plan?.reason||'지금 조건에 맞는 연습이 없어요. 학습 목표에서 시간과 소리를 바꿔 보세요.');return;}
   if(applyPreferences()===false){home.toast('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');return;}
+  // 차례 표시(§20-8): 홈의 단추와 결과 화면의 「다음 연습」으로 연 줄을 모두 연 칸으로 센다.
+  if(plan.today&&plan.selectedKind)opened.kinds.add(plan.selectedKind);
   return launch(selected);
+ }
+ // 새 길 홈의 판(§20-4): 홈 입구가 없거나 플래너를 못 받았거나 생활 판정이 지금 판이면 지금 판, 플래너를 받기 전이면 확인 중, 그 뒤는 감시가 정한다.
+ function homePhase(){
+  if(!homeNext||homeFailed||stopped)return 'old';
+  let life='checking';try{life=homeNext.life();}catch{life='checking';}
+  if(life==='old'||life==='disposed')return 'old';
+  return homeWatch?homeWatch.phase():'checking';
+ }
+ // 플래너를 받기 전의 확인 중 판 — 줄 없이 「확인 중」이다(§20-4).
+ const checkingPlan=()=>({status:'checking',selected:null,selectedKind:null,reason:'',resume:null,candidates:[],examPlan:null,
+  today:{items:[],minutes:0,line:null,empty:{code:'checking',text:null},capped:false,cappedText:null,firstDay:false,state:'checking',redrawAt:null},learningEffectClaim:false,abilityClaim:false,grade:null});
+ // 새 길 홈의 계획 한 번(§20-9 4): 생활 판정(셸의 lifeDue)과 홈 코치(엔진일 때만)로 세 줄을 짓는다. 다음에 다시 그릴 때(①이 열림 · 새벽 4시)를 걸어 둔다.
+ function todayWith({phase,progress,values}){
+  if(!homePlanner)return checkingPlan();
+  const now=Date.now(),key=`${owner}|${homePlanner.todayKey(now)}`;
+  if(opened.key!==key){opened.key=key;opened.kinds.clear();}
+  let judged=null,answers=null,openGames=null;
+  try{judged=homeNext.judge(progress.exportSnapshot(),now);}catch{judged=null;}
+  try{answers=homeNext.answers();openGames=homeNext.openGames();}catch{answers=null;openGames=null;}
+  const lang=currentLang(),coachNow=phase==='engine'?homeWatch.coach():null;
+  const plan=homePlanner.createWorldTodayPlan({coach:coachNow,progress,judged,settings:values,now,answers,openGames,pool:practiceFor(values),practiceLength:practiceLength(),
+   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:why=>homePlanner.say(why,lang)});
+  homeWatch.redrawAt(plan.today.redrawAt);
+  return plan;
  }
  // 고른 활동 열기: 게임·복습·레슨, 짧은 연습(그 항목), 짧은 진단(내 위치에서 바로 시작), 시험 형식 연습, 쓰기·말하기 연습(호스트가 연다).
  function launch(selected){
@@ -1044,6 +1083,14 @@ async function townSend(coachNow,{wait=true}={}){
   root?.querySelector('[data-plan-speaking]')?.addEventListener('click',()=>{try{check();if(typeof speakingPractice?.open==='function')void Promise.resolve(speakingPractice.open('speaking')).catch(failed);}catch(error){failed(error);}});
   return 'shown';
  }
+ // 새 길 홈의 플래너 · 감시(§20-4) — 입구가 엔진을 받아야 선다. 홈 코치는 짧은 연습 문항 풀 전체의 은행으로 연다(학생의 수준으로 거르기 전 — 설계 검토 H24).
+ if(homeNext)Promise.resolve().then(()=>homeNext.planner()).then(planner=>{
+  if(stopped)return;
+  if(!planner){homeFailed=true;refresh();return;}
+  homePlanner=planner;
+  homeWatch=planner.watchHomePlan({open:()=>homeNext.coach(position?.practice?.pool||[]),retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped)refresh();}});
+  refresh();
+ },()=>{if(stopped)return;homeFailed=true;refresh();});
  const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
  // 배우기 판의 「이번 주 계획」 줄(life-ui.mjs moreRows): 시험을 고른 사람에게만. print는 그 판의 인화지 그림.
  function planRow(print=()=>''){
@@ -1056,5 +1103,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),dispose(){stopped=true;release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

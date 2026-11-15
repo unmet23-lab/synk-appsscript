@@ -151,7 +151,7 @@ function recorder(name, log) {
 // 새 판 겉은 prepare()가 있는 겉(world-life-next.mjs createLifeNext)이고, 화면이 넘긴 겉 옵션(onRetired 등)은 nextOptions()로 꺼낸다.
 // 홈: 판을 열면(showPanel) · 닫으면(closePanel) 앞 화면 자원을 버린다(home.mjs openPanel · closePanel · attachPanelResource). 튜터 겉의
 // metrics()는 tutorWindow.metrics(「표현 도움」 · 「연습하기」 창)이고, mountLifeTutor에 넘긴 것은 tutors에 쌓인다.
-function lifeOn({ progress, state = { now: 'engine' }, nextAt = () => null, presentation = null }) {
+function lifeOn({ progress, state = { now: 'engine' }, nextAt = () => null, presentation = null, today = null }) {
   const log = [];
   const oldTrail = recorder('old', log);
   const newTrail = { ...recorder('next', log), prepare: () => log.push('next:prepare') };
@@ -194,6 +194,8 @@ function lifeOn({ progress, state = { now: 'engine' }, nextAt = () => null, pres
       previous?.dispose?.();
     },
     toast: message => toasts.push(message),
+    // 활동 이름표(홈 planLabel) — 허브의 새 길 포스터가 홈과 같은 이름을 쓰는지 본다(4-3).
+    planLabel: next => `[이름표] ${next.label}`,
     state: { reduced: true },
   };
   const ui = createLifeExperience({
@@ -201,6 +203,7 @@ function lifeOn({ progress, state = { now: 'engine' }, nextAt = () => null, pres
     getProgress: () => progress,
     asset: path => path,
     presentation,
+    today,
     learning: {
       coach: () => null,
       prepare: () => {
@@ -1152,6 +1155,125 @@ test('D1 (B1) — 23:50 안내 연습에서 본 표현의 복습을 00:15에 열
     assert.deepEqual(w.newTrail.released, []);
     playReview(w);
     assert.equal(progress.exportSnapshot().activeReview.answers[id].helped, true, '도움 받은 답');
+  } finally {
+    w.ui.dispose();
+  }
+});
+
+// ── 4-3 배우기 허브(단계4_계획 §20-8 · §20-3) ──
+// 셸이 학습 화면의 today()를 넘기면 「지금 할 일」 포스터는 홈의 단추가 지금 열 줄과 같은 활동 · 같은 이유이고, 상한 날에는 복습 수 대신 상한
+// 문장이다. today가 없는 문서(지금 판 · 생활 단독)는 지금 규칙 그대로다 — 위 시험들이 그 판이다.
+const CAPPED = '오늘은 여기까지예요. 남은 것은 내일 만나요.';
+const dayOf = (rows, { selected = rows[0] ?? null, capped = false, state = 'engine' } = {}) => ({
+  state,
+  capped,
+  cappedText: capped ? CAPPED : null,
+  items: rows,
+  selectedKind: selected?.kind ?? null,
+  selected: selected?.open ?? null,
+  reason: selected?.why.text ?? '',
+});
+const lessonRowOf = (lesson, why = '생활 팩의 다음 레슨이에요.') => ({
+  kind: 'new',
+  activityId: `world.life.${lesson.id}`,
+  route: 'lesson',
+  title: lesson.title,
+  why: { text: why },
+  minutes: 5,
+  open: { id: `world.life.${lesson.id}`, route: 'lesson', lessonId: lesson.id, label: lesson.title },
+});
+const HANGUL_ROW = {
+  kind: 'new',
+  activityId: 'world.play.hangul',
+  route: 'game',
+  title: '한글 만나기 · 소리와 글자',
+  why: { text: '한글부터 만나요.' },
+  minutes: 6,
+  open: { id: 'world.play.hangul', route: 'game', gameId: 'hangul', label: '한글 만나기 · 소리와 글자' },
+};
+const currentPack = html => /data-life-pack="([^"]+)"[^>]*data-current="true"/.exec(html)?.[1] ?? null;
+const felt = html => buttonsOf(html).find(b => b.class === 'felt-button') ?? null;
+
+test('4-3 허브 — 포스터가 홈의 단추가 열 줄을 따른다: 레슨 줄은 그 레슨 포스터와 같은 이유(팩 카드 「지금」은 그 팩) · 한글 먼저는 홈과 같은 이름 · 이유 · 길(data-life-next)', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const progress = freshProgress();
+  engine(progress);
+  let day = null;
+  const w = lifeOn({ progress, today: () => day });
+  try {
+    // 진도 요약의 다음 레슨(첫 레슨)이 아닌 레슨이 홈의 줄이면 포스터도 그 레슨이다 — 같은 활동 · 같은 이유
+    const other = LESSONS.find(lesson => lesson.packId !== LESSONS[0].packId);
+    day = dayOf([lessonRowOf(other, '「주문」 처음 만나요.')]);
+    w.ui.packs();
+    let html = last(w);
+    assert.equal(felt(html)?.['data-life-lesson'], other.id, '큰 단추는 그 레슨');
+    assert.ok(html.includes('<span class="life-poster-why">「주문」 처음 만나요.</span>'), '홈의 그 줄과 같은 이유 한 줄');
+    assert.equal(currentPack(html), other.packId, '팩 카드의 「지금」은 그 레슨의 팩');
+    // 한글 먼저 — 홈과 같은 이름표 · 이유 · 걸리는 시간, 단추는 홈과 같은 길
+    day = dayOf([HANGUL_ROW, lessonRowOf(LESSONS[0])]);
+    w.ui.packs();
+    html = last(w);
+    assert.ok(html.includes('UP NEXT · HANGUL'));
+    assert.ok(html.includes('[이름표] 한글 만나기 · 소리와 글자'), '이름은 홈의 이름표(화면 언어)');
+    assert.ok(html.includes('<span class="life-poster-sub">한글부터 만나요.</span>'), '이유는 홈의 그 줄 문장');
+    assert.ok(html.includes(t('goal.minutes.n', { n: 6 })), '걸리는 시간도 홈의 줄과 같다');
+    assert.ok(felt(html) && 'data-life-next' in felt(html), '큰 단추는 홈과 같은 길(education.next)');
+    assert.equal(currentPack(html), null, '레슨이 아닌 줄은 팩 카드에 「지금」을 붙이지 않는다');
+    // 홈의 줄이 바뀌면(판이 자리를 잡음 등) 보고 있는 허브를 다시 그린다 — 같으면 그리지 않는다
+    const painted = w.shows.length;
+    w.ui.syncToday();
+    assert.equal(w.shows.length, painted, '세 줄이 그대로면 다시 그리지 않는다');
+    day = dayOf([lessonRowOf(other, '「주문」 처음 만나요.')]);
+    w.ui.syncToday();
+    assert.equal(w.shows.length, painted + 1, '세 줄이 바뀌면 다시 그린다');
+    assert.equal(felt(last(w))?.['data-life-lesson'], other.id);
+  } finally {
+    w.ui.dispose();
+  }
+});
+
+test('4-3 허브 — 상한 날(§20-3): 복습 줄은 수 대신 상한 문장 · 학생이 고른 복습 화면은 그대로 · 줄이 없는 날은 복습 수 포스터를 세우지 않는다', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const progress = freshProgress();
+  engine(progress);
+  let day = null;
+  const w = lifeOn({ progress, today: () => day });
+  try {
+    const lesson = lessonById('greetings-expressions');
+    playLesson(w, lesson, { wrong: [0] });
+    goHome(w);
+    t0.mock.timers.tick(MINUTE);
+    assert.ok(w.ui.summary().dueCount > 0, '놓친 복습이 돌아왔다');
+    const next = LESSONS.find(row => row.id !== lesson.id && row.packId === lesson.packId) ?? LESSONS[1];
+    // 상한 날 — 홈의 줄은 오늘 공부뿐이고 복습 줄은 허브 아래에 상한 문장으로 선다(수 칩 없음)
+    day = dayOf([lessonRowOf(next)], { capped: true });
+    w.ui.packs();
+    let html = last(w);
+    assert.equal(felt(html)?.['data-life-lesson'], next.id);
+    const reviewRow = /<button class="life-row" data-life-review>[\s\S]*?<\/button>/.exec(html)?.[0] ?? '';
+    assert.ok(reviewRow.includes(`<small>${CAPPED}</small>`), '복습 줄은 상한 문장');
+    assert.ok(!reviewRow.includes('life-row-state'), '수 칩을 두지 않는다');
+    // 학생이 고른 복습 화면은 상한 날에도 그대로다 — 이번에 할 장면 수는 재촉이 아니고, 학생이 고른 복습은 막지 않는다(§20-3)
+    w.ui.review();
+    html = last(w);
+    assert.equal(posterLabel(html), 'REVIEW · 01');
+    assert.ok(!html.includes(CAPPED), '상한 문장을 얹지 않는다');
+    assert.ok(felt(html) && 'data-life-review-start' in felt(html), '큰 단추는 복습 시작 그대로');
+    // 상한이 풀린 날(새 판의 줄 없음 · 상한 아님)에도 줄이 없으면 복습 수 포스터를 세우지 않는다 — 엔진이 지금 낼 복습이 없다고 한 날
+    day = dayOf([], { selected: null });
+    // 진도는 그대로 — 다음 레슨이 있으면 지금 규칙의 레슨 포스터다
+    w.ui.packs();
+    html = last(w);
+    assert.ok(!html.includes(`REVIEW · `), '복습 수 포스터가 아니다');
+    // 지금 판(today 없음)은 지금 규칙 그대로 — 돌아온 복습이 있고 하던 레슨이 없으면 복습 포스터다
+    day = null;
+    const plain = lifeOn({ progress });
+    try {
+      plain.ui.packs();
+      assert.ok(last(plain).includes('REVIEW · '), '지금 판은 돌아온 복습 포스터');
+    } finally {
+      plain.ui.dispose();
+    }
   } finally {
     w.ui.dispose();
   }

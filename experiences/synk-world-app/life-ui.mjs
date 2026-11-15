@@ -73,7 +73,7 @@ const meter=(done,total,label=`${done} / ${total}`)=>`<span class="life-meter" a
 // 문제의 표현: 문제가 가리키는 레슨 표현(없으면 정답 문장).
 const expressionOf=(lesson,q)=>lesson?.expressions.find(e=>e.id===q?.expressionId)||{korean:q?.choices?.find(c=>c.id===q.answerId)?.text||'',meaning:''};
 // learning: 배움의 거울이 쓰는 학습 호스트(world-learning-ui.mjs lifeLearning — {coach(), prepare()}). 없으면 거울 없이 지금과 같다.
-export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null,presentation=null,leadRows=null,moreRows=null,positionTotal=null,learning=null}){
+export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null,presentation=null,leadRows=null,moreRows=null,positionTotal=null,learning=null,today=null}){
  const panel=document.querySelector('#world-panel'),content=document.querySelector('#panel-content');
  // 10-17 움직임: 고른 답의 초록이 손끝 자리에서 번지도록 마지막으로 누른 자리를 기억한다. 진행 막대는 같은 레슨에서 늘 때만 움직인다.
  let lastPoint=null,justChose=false,barMemo={key:'',value:-1};
@@ -307,25 +307,61 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   return `<button class="life-pack-card" data-life-pack="${pack.id}" data-state="${state}" data-shape="${packShapes[index%packShapes.length]}"${now?' data-current="true"':''} aria-label="${escape(t(state==='done'?'life.packCard.done':'life.packCard',{title:packTitle(pack),subtitle:packSub(pack),done,total}))}">${now?`<span class="life-pack-now"><i class="w-led ok"></i>${t('life.currentPack')}</span>`:print(pack.id,'life-pack-print')}<span class="life-pack-copy"><small class="life-pack-label">${pad(index+1)} · ${label}</small><strong class="life-pack-word" lang="ko">${escape(word)}</strong><span class="life-pack-title">${escape(packTitle(pack))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
  }
  // 「지금 할 일」: 하던 레슨 → 돌아온 복습 → 다음 레슨 순서. 코랄 포스터는 허브에 이것 하나.
+ // 새 길(Atlas 재설계 단계 4-3 — 단계4_계획 §20-8): 셸이 학습 화면의 today()를 넘기면 포스터는 홈의 단추가 지금 열 줄(selected)과 같은 활동이고
+ // 홈의 그 줄과 같은 이유 문장을 단다. 레슨 줄은 레슨 포스터(팩 카드의 「지금」은 그 팩에 — 지금 규칙), 복습 줄은 복습 포스터, 그 밖(한글 먼저 ·
+ // 짧은 연습)은 같은 꼴의 포스터이고 단추는 홈과 같은 길(data-life-next — education.next())로 연다. 줄이 없는 날은 지금 규칙이되 복습 수 포스터를
+ // 세우지 않는다(엔진이 지금 낼 복습이 없다고 한 날 · 상한 날 — §20-3). 지금 판과 생활 단독은 today가 없어 지금 규칙 그대로다.
+ let todayMark='';
+ const dayNow=()=>{if(typeof today!=='function')return null;try{return today()||null;}catch{return null;}};
+ const todaySign=day=>day?[day.state,day.capped?'capped':'',day.selectedKind||'',day.selected?.id||'',day.reason||'',(day.items||[]).map(row=>`${row.kind}:${row.activityId}`).join(',')].join('|'):'';
+ const cappedOf=day=>day?.capped&&day.cappedText?day.cappedText:'';
+ const whyLine=why=>why?`<span class="life-poster-why">${escape(why)}</span>`:'';
+ function lessonPoster(lesson,started,why=''){
+  const pack=packById(lesson.packId),packIndex=PACKS.indexOf(pack),index=Math.max(0,pack.lessons.findIndex(l=>l.id===lesson.id)),total=pack.lessons.length;
+  return {kind:'lesson',packId:pack.id,html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print(pack.id)}<small class="life-poster-label">${started?'CONTINUE':'UP NEXT'} · PACK ${pad(packIndex+1)}</small><strong class="life-poster-word" lang="ko">${escape(lesson.title)}</strong><span class="life-poster-sub">${escape(packTitle(pack))} · ${phaseName(lesson.type)}${whyLine(why)}</span>${meter(index,total,`${pad(index+1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson.id}">${t(started?'life.continue':'life.start')} <span aria-hidden="true">→</span></button></section>`};
+ }
+ const reviewPoster=(s,why='')=>({kind:'review',html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print('review')}<small class="life-poster-label">REVIEW · ${pad(backCount(s))}</small><strong class="life-poster-word">${t('life.backWord')}</strong><span class="life-poster-sub">${t('life.backSub',{n:backCount(s)})}${whyLine(why)}</span><button class="felt-button" data-life-review>${t('life.reviewNow')} <span aria-hidden="true">→</span></button></section>`});
+ // 새 길의 그 밖의 줄(한글 먼저 · 짧은 연습): 이름은 홈과 같은 이름표(home.planLabel — 화면 언어), 이유와 걸리는 시간도 홈의 그 줄 그대로다.
+ function todayPoster(row){
+  const open=row.open,hangul=open.route==='game'&&open.gameId==='hangul',listening=open.modality==='listening';
+  let name='';try{name=home.planLabel?.(open)||'';}catch{name='';}
+  const minutes=Number.isFinite(row.minutes)?`<span class="life-poster-count">${escape(t('goal.minutes.n',{n:row.minutes}))}</span>`:'';
+  return {kind:'today',html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print(hangul?'hangul':'goals')}<small class="life-poster-label">UP NEXT · ${hangul?'HANGUL':listening?'LISTENING':'READING'}</small><strong class="life-poster-word">${escape(name||open.label||row.title||'')}</strong><span class="life-poster-sub">${escape(row.why?.text||'')}</span>${minutes}<button class="felt-button" data-life-next>${t('life.start')} <span aria-hidden="true">→</span></button></section>`};
+ }
+ function rowPoster(s,day){
+  const row=(day.items||[]).find(item=>item.kind===day.selectedKind&&item.open?.id===day.selected?.id);if(!row)return null;
+  const why=row.why?.text||'';
+  if(row.route==='lesson'){const lesson=lessonById(row.open.lessonId);return lesson?lessonPoster(lesson,!!row.open.resume||stateOf(lesson.id)==='started',why):null;}
+  if(row.route==='review')return reviewPoster(s,why);
+  return todayPoster(row);
+ }
+ function restPoster(s,day=null){
+  const future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'',capped=cappedOf(day);
+  // 새 길의 상한 날(§20-3): 다음 복습 때 대신 상한 문장이다.
+  return {kind:'rest',html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print('complete')}<small class="life-poster-label">ALL PACKS · ${s.completed} / ${s.total}</small><strong class="life-poster-word">${t('life.allPacksWord')}</strong><span class="life-poster-sub">${capped?escape(capped):future?t('life.nextReviewOpens',{date:escape(future)}):t('life.pickPackAgain')}</span><button class="felt-button" data-life-review>${t('life.reviewSchedule')} <span aria-hidden="true">→</span></button></section>`};
+ }
  function nowPoster(s){
+  const day=dayNow();todayMark=todaySign(day);
+  const poster=day?rowPoster(s,day):null;if(poster)return poster;
   const lesson=s.nextLesson;
-  if(lesson&&(s.resume||!s.dueCount)){
-   const pack=packById(lesson.packId),packIndex=PACKS.indexOf(pack),index=Math.max(0,pack.lessons.findIndex(l=>l.id===lesson.id)),total=pack.lessons.length,started=s.resume||stateOf(lesson.id)==='started';
-   return {kind:'lesson',packId:pack.id,html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print(pack.id)}<small class="life-poster-label">${started?'CONTINUE':'UP NEXT'} · PACK ${pad(packIndex+1)}</small><strong class="life-poster-word" lang="ko">${escape(lesson.title)}</strong><span class="life-poster-sub">${escape(packTitle(pack))} · ${phaseName(lesson.type)}</span>${meter(index,total,`${pad(index+1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson.id}">${t(started?'life.continue':'life.start')} <span aria-hidden="true">→</span></button></section>`};
-  }
-  if(s.dueCount)return {kind:'review',html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print('review')}<small class="life-poster-label">REVIEW · ${pad(backCount(s))}</small><strong class="life-poster-word">${t('life.backWord')}</strong><span class="life-poster-sub">${t('life.backSub',{n:backCount(s)})}</span><button class="felt-button" data-life-review>${t('life.reviewNow')} <span aria-hidden="true">→</span></button></section>`};
-  const future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'';
-  return {kind:'rest',html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print('complete')}<small class="life-poster-label">ALL PACKS · ${s.completed} / ${s.total}</small><strong class="life-poster-word">${t('life.allPacksWord')}</strong><span class="life-poster-sub">${future?t('life.nextReviewOpens',{date:escape(future)}):t('life.pickPackAgain')}</span><button class="felt-button" data-life-review>${t('life.reviewSchedule')} <span aria-hidden="true">→</span></button></section>`};
+  if(lesson&&(s.resume||!s.dueCount||day))return lessonPoster(lesson,s.resume||stateOf(lesson.id)==='started');
+  if(s.dueCount&&!day)return reviewPoster(s);
+  return restPoster(s,day);
  }
  function reviewRow(s){
-  const future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'';
-  return `<button class="life-row" data-life-review>${print('review','life-row-print')}<span class="life-row-copy"><strong>${t('life.review')}</strong><small>${s.dueCount?t('life.reviewBack',{n:backCount(s)}):t('life.reviewNext',{date:escape(future)})}</small></span>${s.dueCount?`<span class="life-row-state"><i class="w-led check"></i>${t('life.count',{n:backCount(s)})}</span>`:''}</button>`;
+  const future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'',capped=cappedOf(dayNow()),count=s.dueCount&&!capped;
+  // 새 길의 상한 날(§20-3): 수 대신 상한 문장이고 수 칩을 두지 않는다.
+  return `<button class="life-row" data-life-review>${print('review','life-row-print')}<span class="life-row-copy"><strong>${t('life.review')}</strong><small>${capped?escape(capped):s.dueCount?t('life.reviewBack',{n:backCount(s)}):t('life.reviewNext',{date:escape(future)})}</small></span>${count?`<span class="life-row-state"><i class="w-led check"></i>${t('life.count',{n:backCount(s)})}</span>`:''}</button>`;
  }
+ // 새 길(§20-8): 홈의 세 줄이 바뀌면(판이 자리를 잡음 · 새벽 4시 · 방금 놓친 것이 열림) 보고 있는 허브를 다시 그린다 — 학습 화면이 다시 계획한 뒤
+ // 셸이 부른다. 지금 판에는 today가 없어 아무것도 하지 않는다.
+ function syncToday(){if(ended||!shown||rendering||screenView!=='packs'||tutorBusy()||typeof today!=='function')return;if(todayMark!==todaySign(dayNow()))packs({again:true});}
  function packs({again=false}={}){if(!ensureReadable())return;place='life';context=null;const s=summary(),now=nowPoster(s),hasReviews=s.dueCount>0||Number.isFinite(s.nextReviewAt);
   const episodes=PACKS.filter(p=>p.lessons.some(l=>l.type==='story')).length;
   // 처음 쓰는 사람에게는 복습 줄·완료 표시처럼 아직 쓸모없는 것을 두지 않는다.
   const rows=[`<button class="life-row" data-life-stories>${print('stories','life-row-print')}<span class="life-row-copy"><strong>${t('life.stories')}</strong><small>${t('life.storiesCount',{n:episodes})}</small></span></button>`];
-  if(now.kind==='lesson'&&hasReviews)rows.push(reviewRow(s));
+  // 새 길의 그 밖의 포스터(today — 한글 먼저 · 짧은 연습)일 때도 복습 줄을 둔다(복습으로 가는 길을 잃지 않게, §20-8).
+  if((now.kind==='lesson'||now.kind==='today')&&hasReviews)rows.push(reviewRow(s));
   // 내 위치(10-19 결정): TOPIK I 항목 지도와 짧은 진단. 홈이 그 판을 연다(data-view). 다 마친 포스터가 채운 칸 판을 쓰면 나침반으로.
   rows.push(`<button class="life-row" data-view="position">${print(now.kind==='rest'?'goals':'complete','life-row-print')}<span class="life-row-copy"><strong>${t('position.title')}</strong><small>${t('position.row',{total:positionCount()})}</small></span></button>`);
   // 호스트가 더하는 줄(app-shell의 TOPIK II 쓰기 연습 등). 호스트가 없는 화면에는 없다 — 누를 곳이 없는 단추를 두지 않는다.
@@ -608,5 +644,5 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 첫 실행 「한글을 읽을 수 있어요?」의 답: 이 진도 기록(계정이면 계정, 손님이면 이 기기)에 읽고 쓴다.
  function hangulReading(){try{return getProgress().hangulReading();}catch{return null;}}
  async function setHangulReading(answer,options){if(ended)throw Error('로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.');const p=getProgress(),result=p.setHangulReading(answer,options);updateHome();await p.flush();return result;}
- return {packs,stories,review,reviewStart,next,pack,start,cafe:()=>pack('cafe'),summary,refresh:updateHome,hangulReading,setHangulReading,metrics:()=>({shown,lessonId:context?.lessonId||null,phase:context?.phase||null,step:context?.questionIndex??null,cafe:isCafeLesson(context?.lessonId)?cafeRun:null,speech:speech.metrics(),tutor:companion?.metrics()||null,owner:getProgress().owner,progress:getProgress().exportSnapshot(),trail:trail.metrics()}),dispose(){ended=true;trail.dispose();speech.dispose();story.dispose();clearInterval(timer);document.removeEventListener('click',click);document.removeEventListener('visibilitychange',sitting);if(shown)home.closePanel();}};
+ return {packs,syncToday,stories,review,reviewStart,next,pack,start,cafe:()=>pack('cafe'),summary,refresh:updateHome,hangulReading,setHangulReading,metrics:()=>({shown,lessonId:context?.lessonId||null,phase:context?.phase||null,step:context?.questionIndex??null,cafe:isCafeLesson(context?.lessonId)?cafeRun:null,speech:speech.metrics(),tutor:companion?.metrics()||null,owner:getProgress().owner,progress:getProgress().exportSnapshot(),trail:trail.metrics()}),dispose(){ended=true;trail.dispose();speech.dispose();story.dispose();clearInterval(timer);document.removeEventListener('click',click);document.removeEventListener('visibilitychange',sitting);if(shown)home.closePanel();}};
 }
