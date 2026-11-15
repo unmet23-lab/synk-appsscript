@@ -19,6 +19,7 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const {spawn:nodeSpawn}=require('node:child_process');
 const {usageSummary}=require('./ai-usage.cjs');
+const {createTokenUsageWorker}=require('./ai-tokens.cjs');
 const {PRICES_URL,DEFAULT_PRICES,validatePrices,mergePrices,readCapped}=require('./ai-prices.cjs');
 
 const {
@@ -28,7 +29,7 @@ const {
 // secrets: {available(),encrypt(text)->Buffer,decrypt(Buffer)->text} — 데스크톱 본체가 safeStorage로 넘긴다. 없으면 키를 받지 않는다.
 // retryDelay: 「로그인 필요」로 읽힌 줄을 다시 읽기 전에 기다리는 시간(ms).
 // priceFetch: 요금표 갱신본을 받는 fetch(3차). 데스크톱 본체만 넘긴다 — 없으면 앱 기본 사본만 쓰고 밖으로 아무것도 묻지 않는다(시험이 인터넷에 닿지 않게).
-function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,priceFetch=null,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},retryDelay=3000}){
+function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,priceFetch=null,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},onTokens=()=>{},retryDelay=3000}){
   if(!root)throw new TypeError('root is required');
   const accountsDir=path.join(root,'accounts'),pricesFile=path.join(root,'prices.json');
   // checkQuiet: 자동 읽기처럼 회원이 누르지 않은 확인. 화면에는 「확인 중」·진행 수를 보이지 않고, 알림에 quiet를 달아 숫자를 굴리지 않게 한다.
@@ -127,6 +128,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   const rows=()=>load().rows;
   const system={platform,env,spawn,fetch:fetchImpl};
   const accounts={accountsDir,home,homeEnv,rows,root,agyCwd,secrets};
+  // 모델별 토큰(11-15): 이 PC의 AI 도구 기록에서 모델별 토큰을 센다(ai-tokens.cjs). 계정판이 연결한 Claude 계정 폴더의 기록도 함께 본다.
+  // 세기는 일꾼 스레드에서 돈다(첫 세기에 주 프로세스가 1초 넘게 서던 것 — ai-tokens.cjs 「일꾼 스레드」). 처음 부를 때 띄운다.
+  const tokenUsage=createTokenUsageWorker({root,home,env,claudeDirs:()=>rows().filter(row=>row.service==='claude'&&typeof row.folder==='string'&&row.folder).map(row=>path.join(accountsDir,row.folder)),onChange:state=>{try{onTokens(state);}catch{}}});
   const providers=createSubscriptionProviders({runtime,accounts,system,now,retryDelay});
   const {readConfirmed,verifyLogin}=providers;
   const sharedAccounts=Object.assign(Object.create(null),Object.fromEntries(Object.keys(SERVICES).filter(service=>providerPolicy(service)?.sharedAccount).map(service=>[service,createSharedAccounts({service,policy:providerPolicy(service).sharedAccount,load,now,applyRead,addRow})])));
@@ -381,7 +385,14 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     refreshPrices:guard(refreshPrices),
     check:guard(check),useExisting:guard(useExisting),startLogin,submitCode,cancelLogin,openLoginUrl,openInstaller,openHelp,save:guard(save),connectKey:guard(connectKey),
     autoTick:guard(autoTick),autoDue:guard(async at=>autoDue(at)),
-    dispose(){loginCoordinator.dispose();},
+    // 모델별 토큰: 판 보기 · 다시 세기 · 켜기와 끄기(끄면 모은 숫자를 지운다).
+    // 다시 세기는 시작만 하고 바로 돌려준다(첫 세기는 몇 분 — 화면은 진행을 onTokens 알림으로 받는다. Fable 설계 검토 6).
+    // force가 아니면 마지막으로 센 지 5분이 지났을 때만 센다. tokensAuto: 본체의 2분 틱이 부른다(켜져 있고 3시간이 지났을 때만).
+    tokens:async()=>tokenUsage.state(),
+    tokensScan:async({force=false}={})=>{void tokenUsage.scan({force:force===true});return tokenUsage.state();},
+    tokensAuto:()=>tokenUsage.auto(),
+    tokensEnable:async on=>tokenUsage.setEnabled(on===true),
+    dispose(){loginCoordinator.dispose();tokenUsage.dispose();},
   };
 }
 

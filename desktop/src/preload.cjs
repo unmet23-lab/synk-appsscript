@@ -111,6 +111,11 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     save:patch=>patch&&typeof patch==='object'?ipcRenderer.invoke('synk:subscriptions-save',JSON.parse(JSON.stringify(patch))):unknownSubscription('INVALID_REQUEST'),
     connectKey:(service,key,options={})=>SUBSCRIPTION_KEY_SERVICES.includes(service)&&typeof key==='string'?ipcRenderer.invoke('synk:subscriptions-key',service,key.trim().slice(0,512),{replace:typeof options?.replace==='string'?options.replace.slice(0,40):null}):unknownSubscription('INVALID_KEY_FORMAT'),
     onChanged:callback=>subscribe('synk:subscriptions-changed',callback),
+    // 모델별 토큰(11-15): 이 PC의 AI 도구 기록으로 센 모델별 토큰. 켜기 · 끄기 · 다시 세기만 넘긴다.
+    tokens:()=>ipcRenderer.invoke('synk:subscriptions-tokens'),
+    tokensScan:(options={})=>ipcRenderer.invoke('synk:subscriptions-tokens-scan',{force:options?.force===true}),
+    tokensEnable:on=>ipcRenderer.invoke('synk:subscriptions-tokens-enable',on===true),
+    onTokens:callback=>subscribe('synk:subscriptions-tokens-changed',callback),
   }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},
   onClientsChanged:callback=>subscribe('synk:clients-changed',callback),

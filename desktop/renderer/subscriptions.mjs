@@ -8,6 +8,8 @@
 //    예전부터 여기서 내보내던 계산 함수는 같은 이름으로 다시 내보낸다(기존 import·시험 그대로).
 import { DAY_MS, ORDER, SHORT, GOAL_KEYS, num, hasReset, isUsedUp, nextBill, leftPercent, gaugeLevel, planName, nameOf, passesOf, API_CREDIT_SERVICES, apiCreditPlan, apiCreditEndsAtBill, apiGrant, apiCreditOf, apiCredits, flowCreditOf, flowCredits, serviceGroups, upcoming, freshness, officialPrice, costOf, billList, nextMonthlyBill, usageDays, passPlan, pickUsageTips, restWeeks, restingCount, summaryOn, monthSummary, shownAnnual } from './subscriptions-model.mjs';
 export { hasReset, nextReset, isUsedUp, nextBill, balance, isLow, leftPercent, usedShown, limitGauge, gaugeLevel, planName, nameOf, accountState, passesOf, serviceGroups, upcoming, costSummary, freshness } from './subscriptions-model.mjs';
+// 모델별 토큰(11-15): 기간 묶음과 칸 HTML은 subscriptions-tokens.mjs, 세기는 본체 src/ai-tokens.cjs.
+import { tokensSection } from './subscriptions-tokens.mjs';
 const DAY = ['일', '월', '화', '수', '목', '금', '토'];
 const KINDS = [['weekly', '주간 한도', '주간 %와 초기화 시각'], ['credit', '크레딧', '잔액과 충전·결제일'], ['plan', '월 구독만', '결제일과 요금']];
 const AUTO = {
@@ -60,6 +62,8 @@ const CODE_TEXT = {
   SECURE_STORAGE_UNAVAILABLE: '이 PC에서는 키를 안전하게 저장할 수 없어 연결하지 않았어요.',
   BOARD_BUSY: '다른 프로그램이 AI 구독 관리 파일을 잠깐 쓰고 있어요. 잠시 뒤 다시 시도해 주세요.',
   NO_WORKSPACE: 'Higgsfield에서 쓸 작업공간이 골라져 있지 않아요. 터미널에서 「higgsfield workspace set」으로 고른 뒤 다시 시도해 주세요.',
+  SAVE_FAILED: '이 PC에 저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.',
+  DELETE_FAILED: '모은 숫자를 지우지 못해 켜 둔 채로 두었어요. 다른 프로그램이 그 파일을 쓰고 있을 수 있어요. 잠시 뒤 다시 꺼 주세요.',
 };
 const HELP = [
   ['설치했는데 「설치 안 됨」으로 나와요', '가이드의 「설치 끝났어요 · 다시 확인」을 눌러 주세요. 그래도 같으면 SYNK 앱을 완전히 껐다 켜거나 PC를 다시 시작해 주세요. Windows가 새 프로그램 위치를 아직 모를 때 생겨요.'],
@@ -175,12 +179,22 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // passEditing: 초기화권을 넣는 칸을 연 Claude 줄. apiEditing: API 크레딧을 넣는 칸을 연 Claude·GPT·Gemini 줄(10-28 · 10-29 · 11-02).
   // flowEditing: Flow 크레딧을 넣는 칸을 연 Gemini 줄(11-02). goalOpen: 고른 목표를 바꾸려고 다시 연 목표 묻기.
   // sumOpen·sumWhy: 한 달 요약의 「계정별로 보기」·「왜 이 숫자?」(3차).
-  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, apiEditing: null, flowEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false, goalOpen: false, sumOpen: false, sumWhy: false };
+  // tok*: 모델별 토큰 칸(11-15) — 고른 기간 · 펼친 모델 줄 · 「모두 보기」 · 「끄기」를 한 번 누른 상태.
+  const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, apiEditing: null, flowEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false, goalOpen: false, sumOpen: false, sumWhy: false, tokRange: 'week', tokOpen: new Set(), tokAll: false, tokOffArmed: false };
   const rolled = new Map();
   // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
   const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
   // 본체의 자동 읽기(quiet) 알림은 1분 다시 그리기처럼 숫자를 굴리지 않는다(저절로 움직이는 효과 없음).
   api?.onChanged?.(value => { if (value?.ok) { take(value); if (visible) paint({ quiet: !!value.quiet }); } });
+  // 모델별 토큰: 본체가 세는 동안 진행 수를 0.5초마다 알린다. 화면은 1초에 한 번까지만, 그리고 「모델별 토큰」 칸만 바꾼다
+  // (계정판 전체를 다시 그리면 다른 칸의 입력 · 열린 선택 상자 · 스크롤이 흔들렸다 — Fable 설계 검토 3). 계정 관리 화면이거나 입력 칸에 초점이 있으면 건드리지 않는다.
+  let tokens = null, tokPaint = null, focusNext = null;
+  const typing = () => !!(container?.contains(document.activeElement) && document.activeElement.matches('input,select,textarea'));
+  // 본체의 판에는 순서 번호(epoch · seq)가 붙는다. 알림과 응답이 바뀐 차례로 닿아도 늦게 온 옛 판으로 새 판을 덮지 않는다.
+  const newerTokens = (a, b) => !b || a.epoch == null || b.epoch == null || a.epoch > b.epoch || (a.epoch === b.epoch && a.seq >= b.seq);
+  const takeTokens = value => { if (!value?.ok || !newerTokens(value, tokens)) return; tokens = value; if (!visible || tokPaint) return; tokPaint = setTimeout(() => { tokPaint = null; paintTokens(); }, value.scanning ? 1000 : 0); };
+  api?.onTokens?.(takeTokens);
+  async function loadTokens() { if (!api?.tokens) return; try { takeTokens(await api.tokens()); if (tokens?.enabled) takeTokens(await api.tokensScan?.({ force: false })); } catch { /* 칸만 비운다 */ } }
   const loginActive = () => !!snapshot?.login && !['done', 'error', 'cancelled'].includes(snapshot.login.stage);
   const checkBusy = () => !!(busy || snapshot?.checking);
 
@@ -269,6 +283,16 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'remove') { if (ui.removeArmed !== id) { ui.removeArmed = id; return paint(); } ui.removeArmed = null; ui.menu = null; return void act('remove', () => api.save({ remove: id })); }
     if (name === 'used') { const row = rowById(id); if (row) return void act('used', () => api.save({ row: { id, usedUpAt: isUsedUp(row, Date.now()) ? null : Date.now() } })); }
     if (name === 'manual') { ui.manualOpen = !ui.manualOpen; return paint(); }
+    // 모델별 토큰(11-15). 켜면 본체가 뒤에서 세고 진행을 알린다. 끄기는 두 번 눌러야 하고(모은 숫자를 지운다), 기간 · 펼치기는 이 화면에만 남는다.
+    if (name === 'tokens-on') return void act('tokens', async () => { const r = await api.tokensEnable(true); takeTokens(r); if (r?.ok) toast('모델별 토큰을 켰어요. 기록을 세기 시작했어요.'); return r; });
+    // 다른 일이 도는 동안에는 단추가 잠겨 있다. 그래도 눌렸으면 확인 띠를 지우지 않고 그대로 둔다.
+    if (name === 'tokens-off') { if (busy) return; if (!ui.tokOffArmed) { ui.tokOffArmed = true; focusNext = '[data-subs="tokens-off-cancel"]'; return paint(); } ui.tokOffArmed = false; ui.tokOpen.clear(); ui.tokAll = false; return void act('tokens', async () => { const r = await api.tokensEnable(false); takeTokens(r); if (r?.ok) { focusNext = '[data-subs="tokens-on"]'; toast('모델별 토큰을 끄고 모은 숫자를 지웠어요.'); } else focusNext = '[data-subs="tokens-off"][data-id="off-link"]'; return r; }); }
+    if (name === 'tokens-off-cancel') { ui.tokOffArmed = false; focusNext = '[data-subs="tokens-off"][data-id="off-link"]'; return paint(); }
+    // 다시 세기는 본체가 시작만 하고 바로 돌려준다(진행은 onTokens 알림으로 — 그동안 다른 단추도 그대로 쓴다. Fable 설계 검토 6).
+    if (name === 'tokens-scan') return void act('tokens', async () => { const r = await api.tokensScan({ force: true }); takeTokens(r); return r; });
+    if (name === 'tokens-range') { if (['today', 'week', 'month'].includes(data.range)) ui.tokRange = data.range; return paint(); }
+    if (name === 'tokens-open') { ui.tokOpen.has(id) ? ui.tokOpen.delete(id) : ui.tokOpen.add(id); return paint(); }
+    if (name === 'tokens-all') { ui.tokAll = !ui.tokAll; return paint(); }
   }
   function formValues(form) {
     const get = n => form.querySelector(`[name="${n}"]`)?.value ?? '';
@@ -766,8 +790,11 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function glanceView(now, rows, groups) {
     const checkAt = snapshot?.check?.at || null, stale = freshness(checkAt, now) === 'stale';
-    const next = nextSection(now, rows, checkAt);
-    return frame(now, groups, `${fixBand(groups, now)}${nowSection(now, groups, stale)}${next}${usageSection(now, groups, next ? '03' : '02')}${rows.length ? footer(now, rows) : ''}`);
+    const next = nextSection(now, rows, checkAt), usage = usageSection(now, groups, next ? '03' : '02');
+    // 모델별 토큰(11-15)은 계정 연결과 따로 돈다 — 연결한 계정이 없어도 이 PC 기록으로 셀 수 있다. 칸 번호는 앞 칸 수를 따른다.
+    ui.tokNumber = pad(2 + (next ? 1 : 0) + (usage ? 1 : 0));
+    const tokenPart = tokenHtml(now);
+    return frame(now, groups, `${fixBand(groups, now)}${nowSection(now, groups, stale)}${next}${usage}${tokenPart}${rows.length ? footer(now, rows) : ''}`);
   }
 
   /* 계정 관리 */
@@ -1131,12 +1158,28 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   // 다시 그린 뒤에도 키보드 초점이 같은 단추·입력에 남게 한다.
   function focusKey() {
+    // 끄기 확인 띠를 열고 닫을 때는 초점을 그 띠의 단추 · 바닥 「끄기」로 옮긴다(누른 단추가 잠기거나 사라져 초점이 문서로 떨어지던 것).
+    if (focusNext) { const selector = focusNext; focusNext = null; return { selector }; }
     const el = document.activeElement;
     if (!el || !container?.contains?.(el)) return null;
     if (el.id) return { selector: `#${CSS.escape(el.id)}`, range: [el.selectionStart, el.selectionEnd] };
     const d = el.dataset || {};
     return d.subs ? { selector: `[data-subs="${CSS.escape(d.subs)}"]${d.id ? `[data-id="${CSS.escape(d.id)}"]` : ''}${d.service ? `[data-service="${CSS.escape(d.service)}"]` : ''}` } : null;
   }
+  // 어느 행동이든 도는 동안에는 토큰 단추도 잠근다(act가 말없이 돌려보내 눌러도 아무 일이 없던 것 — Fable 최종 검수 지적).
+  const tokenHtml = now => tokensSection({ state: tokens, view: { range: ui.tokRange, open: ui.tokOpen, all: ui.tokAll, offArmed: ui.tokOffArmed }, now, number: ui.tokNumber || '04', busy });
+  // 모델별 토큰 칸만 다시 그린다. 칸이 아직 없으면(처음 상태를 받은 때) 한눈에 보기 전체를 그린다.
+  function paintTokens() {
+    if (!container || !visible || ui.view !== 'glance' || !snapshot || !context.native || !context.signedIn || typing()) return;
+    const el = container.querySelector('#ms-tokens');
+    const html = el ? tokenHtml(Date.now()) : '';
+    if (!el || !html) return paint({ quiet: true });
+    const focus = focusKey(), tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    el.replaceWith(tpl.content);
+    restoreFocus(focus);
+  }
+  function restoreFocus(focus) { if (!focus) return; const el = container.querySelector(focus.selector); if (el) { el.focus({ preventScroll: true }); if (focus.range && typeof el.setSelectionRange === 'function') try { el.setSelectionRange(...focus.range); } catch {} } }
   function paint({ quiet = false } = {}) {
     if (!container || !visible) return;
     const now = Date.now(), rows = snapshot?.rows || [], checkAt = snapshot?.check?.at || null, groups = serviceGroups(rows, now, checkAt);
@@ -1151,7 +1194,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const focus = focusKey();
     container.innerHTML = `<div class="member-subs${stale ? ' is-stale' : ''}">${html}</div>`;
     rollChanged(quiet);
-    if (focus) { const el = container.querySelector(focus.selector); if (el) { el.focus({ preventScroll: true }); if (focus.range && typeof el.setSelectionRange === 'function') try { el.setSelectionRange(...focus.range); } catch {} } }
+    restoreFocus(focus);
   }
 
   return {
@@ -1159,12 +1202,15 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       container = el; bind(el); context = { signedIn: next.signedIn === true, native: next.native === true && !!api };
       visible = true;
       if (context.native && context.signedIn && !snapshot && !loadError) void load(false);
-      if (!timer) { timer = setInterval(() => { if (visible && !document.hidden && !(container?.contains(document.activeElement) && document.activeElement.matches('input,select,textarea'))) paint({ quiet: true }); }, 60000); timer?.unref?.(); }
+      // 모델별 토큰은 열 때마다 본체에 묻는다(켜져 있고 마지막으로 센 지 5분이 지났으면 본체가 뒤에서 다시 센다).
+      if (context.native && context.signedIn) void loadTokens();
+      // 1분마다: 입력 중이 아니면 다시 그리고, 모델별 토큰이 켜져 있으면 뒤에서 다시 세기를 부탁한다(마지막으로 센 지 5분이 지났을 때만 본체가 센다).
+      if (!timer) { timer = setInterval(() => { if (!visible || document.hidden) return; if (!typing()) paint({ quiet: true }); if (tokens?.enabled) void Promise.resolve(tokens.scanning ? api?.tokens?.() : api?.tokensScan?.({ force: false })).then(takeTokens, () => {}); }, 60000); timer?.unref?.(); }
       paint();
     },
     // 혜택을 떠나면 다음에 열 때 펼친 줄 없이 한눈에 보기부터(로그인이 진행 중이면 계정 관리에 둔다).
-    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; ui.open.clear(); ui.more = false; ui.goalOpen = false; ui.sumOpen = false; ui.sumWhy = false; rolled.clear(); if (!loginActive()) { ui.view = 'glance'; ui.menu = null; ui.editing = null; } } },
-    dispose() { clearInterval(timer); timer = null; visible = false; },
+    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; ui.open.clear(); ui.more = false; ui.goalOpen = false; ui.sumOpen = false; ui.sumWhy = false; ui.tokOpen.clear(); ui.tokAll = false; ui.tokOffArmed = false; rolled.clear(); if (!loginActive()) { ui.view = 'glance'; ui.menu = null; ui.editing = null; } } },
+    dispose() { clearInterval(timer); timer = null; clearTimeout(tokPaint); tokPaint = null; visible = false; },
     refresh: () => load(true),
   };
 }

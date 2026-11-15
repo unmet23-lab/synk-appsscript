@@ -158,13 +158,14 @@ const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId
 let aiSubscriptions=null;
 // Typecast처럼 API 키로 읽는 서비스의 키는 safeStorage(Windows DPAPI·macOS 키체인)로만 이 PC에 둔다.
 const subscriptionSecrets={available:()=>{try{return ['win32','darwin'].includes(process.platform)&&safeStorage.isEncryptionAvailable()&&safeStorage.getSelectedStorageBackend?.()!=='basic_text';}catch{return false;}},encrypt:value=>safeStorage.encryptString(value),decrypt:data=>safeStorage.decryptString(data)};
-function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(!aiSubscriptions)aiSubscriptions=createAiSubscriptions({root:path.join(app.getPath('userData'),'AiSubscriptions'),secrets:subscriptionSecrets,priceFetch:typeof globalThis.fetch==='function'?globalThis.fetch.bind(globalThis):null,openExternal:url=>shell.openExternal(url),onChange:snapshot=>sendDesktop('synk:subscriptions-changed',snapshot)});return aiSubscriptions;}
+function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(!aiSubscriptions)aiSubscriptions=createAiSubscriptions({root:path.join(app.getPath('userData'),'AiSubscriptions'),secrets:subscriptionSecrets,priceFetch:typeof globalThis.fetch==='function'?globalThis.fetch.bind(globalThis):null,openExternal:url=>shell.openExternal(url),onChange:snapshot=>sendDesktop('synk:subscriptions-changed',snapshot),onTokens:state=>sendDesktop('synk:subscriptions-tokens-changed',state)});return aiSubscriptions;}
 function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
 // 계정판 자동 읽기(지난 7일 사용량 기록용): 로그인한 회원이 계정판을 써 본 PC에서만, 앱이 켜 있는 동안 2분마다 읽을 때인지 본다.
 // 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.
 // 타이머는 node:timers에서 가져와 unref한다(앱은 창이 살아 있는 동안 돌고, main.cjs를 setInterval 없는 VM에서 돌리는 시험도 붙잡지 않는다).
 const subscriptionBoardFile=()=>path.join(app.getPath('userData'),'AiSubscriptions','board.json');
-require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});},2*60*1000).unref?.();
+// 모델별 토큰(11-15)도 같은 틱에서: 켜 둔 회원이면 3시간마다 뒤에서 센다(Claude Code가 오래된 대화를 지우기 전에 — Fable 설계 검토 7). 판단은 ai-tokens.cjs auto.
+require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())&&!fs.existsSync(path.join(app.getPath('userData'),'AiSubscriptions','token-usage.json'))))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});void Promise.resolve(subscriptions()?.tokensAuto?.()).catch(()=>{});},2*60*1000).unref?.();
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
 app.on('will-quit',event=>{
@@ -406,6 +407,9 @@ function createWindow(){
     'synk:subscriptions-help':key=>subscriptionCall(s=>s.openHelp(key)),
     'synk:subscriptions-save':patch=>subscriptionCall(s=>s.save(patch)),
     'synk:subscriptions-key':(service,key,options)=>subscriptionCall(s=>s.connectKey(service,key,{replace:typeof options?.replace==='string'?options.replace:null})),
+    'synk:subscriptions-tokens':()=>subscriptionCall(s=>s.tokens()),
+    'synk:subscriptions-tokens-scan':options=>subscriptionCall(s=>s.tokensScan({force:options?.force===true})),
+    'synk:subscriptions-tokens-enable':on=>subscriptionCall(s=>s.tokensEnable(on===true)),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
