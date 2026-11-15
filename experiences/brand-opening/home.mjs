@@ -375,7 +375,9 @@ function updateStudy(plan){
  // 확인 중 잠금은 새 길이 건 것만 푼다 — 지금 판에서는 updateLearning이 정한 값(진도를 불러오는 중) 그대로다.
  if(step==='checking'){button.disabled=true;button.dataset.checking='true';}
  else if(button.dataset.checking){delete button.dataset.checking;button.disabled=learningData.summary?.status?.phase==='loading';}
- if(reason)reason.textContent=tMessage(plan?.reason||'');
+ // 새 길(§20-4)에서 줄이 있으면 이유는 엔진이 화면 언어로 지은 그 줄의 문장이다 — 한국어 문장 표로 다시 찾지 않는다(4c 영어 · 몽골어 캡처에서 잼:
+ // 이름에 한글이 든 영어 문장을 표에서 못 찾아 경고를 냈다). 줄이 없는 날의 조건 문장(한국어)과 지금 판의 이유는 지금처럼 옮긴다.
+ if(reason)reason.textContent=plan?.today&&next?(plan.reason||''):tMessage(plan?.reason||'');
  // 「이번 주 계획」 단추(10-20, 시험을 고른 사람에게만): 이번 주에 한 연습 / 계획한 횟수. 못 한 것을 빨갛게 세지 않는다.
  const planButton=$('#study-plan-button'),week=plan?.examPlan;
  if(planButton){planButton.hidden=!week;if(week){const areas=week.areas||[];planButton.textContent=t('plan.week.home',{done:areas.reduce((n,row)=>n+Math.min(row.done,row.planned),0),total:areas.reduce((n,row)=>n+row.planned,0)});}}

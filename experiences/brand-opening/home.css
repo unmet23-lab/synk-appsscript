@@ -98,17 +98,20 @@ html[lang=mn] #life-review-count[data-due=no]{display:none}
    단추 하나가 차례로 연다). 칸 이름은 한글이라 모노 라벨로 쓰지 않는다(11-09). 이유는 두 줄까지(390폭 한국어 이유 문장이 두 줄에 든다). */
 .home-today{flex-basis:100%;margin:2px 0 4px}
 .home-today-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--w-line)}
-.home-today-row{display:grid;grid-template-columns:5.4em minmax(0,1fr) auto;grid-template-areas:"kind copy time" "kind copy opened";column-gap:10px;align-items:start;padding:9px 2px;border-bottom:1px solid var(--w-line);font-size:13px;line-height:1.45}
+/* 이유 문장은 시간 칸 아래까지 넓게 편다 — 시간 · 「오늘 열었어요」 칸 옆에 끼우면 영어 · 몽골어에서 이유가 세 줄을 넘어 말줄임에 걸리고 PC 가로 틀의
+   판이 넘쳤다(4c 세 언어 캡처). 「오늘 열었어요」는 그 칸의 상태라 칸 이름 아래에 둔다(시간 아래에 두면 이름과 이유 사이가 한 줄 떴다).
+   글의 차례(칸 · 이름 · 이유 · 시간 · 연 표시)는 그대로라 화면 읽기 차례도 그대로다. */
+.home-today-row{display:grid;grid-template-columns:5.4em minmax(0,1fr) auto;grid-template-areas:"kind title time" "opened why why";column-gap:10px;align-items:start;padding:9px 2px;border-bottom:1px solid var(--w-line);font-size:13px;line-height:1.45}
 .home-today-kind{grid-area:kind;padding-top:1px;font-size:12.5px;font-weight:var(--wt-strong);color:var(--w-ink-3)}
-.home-today-copy{grid-area:copy;display:grid;gap:1px;min-width:0}
-.home-today-copy strong{font-size:14.5px;line-height:1.35;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere}
-.home-today-copy small{font-size:12.5px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-today-copy{display:contents}
+.home-today-copy strong{grid-area:title;min-width:0;font-size:14.5px;line-height:1.35;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere}
+.home-today-copy small{grid-area:why;min-width:0;margin-top:1px;font-size:12.5px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;overflow-wrap:anywhere}
 .home-today-time{grid-area:time;justify-self:end;padding-top:1px;font-size:12.5px;font-weight:var(--wt-label);color:var(--w-ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
-.home-today-opened{grid-area:opened;justify-self:end;font-size:12px;font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap}
+.home-today-opened{grid-area:opened;min-width:0;padding-top:2px;font-size:12px;line-height:1.35;font-weight:var(--wt-label);color:var(--w-ink-3);overflow-wrap:anywhere}
 /* 오늘 이미 연 칸은 조용히 — 이름만 한 단계 낮춘다(「했어요」가 아니라 연 사실, §20-8). */
 .home-today-row[data-opened] .home-today-copy strong{color:var(--w-ink-2)}
 /* 상한 날 복습 칸 자리의 문장(§20-3) · 줄이 하나도 없는 날의 문장 */
-.home-today-quiet .home-today-copy{font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty}
+.home-today-quiet .home-today-copy{display:block;grid-column:2/-1;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty}
 /* PC 가로 틀(1440)에서는 홈 판 높이가 모자라 맨 아래 바로가기 칩이 잘렸다 — 줄 위아래 틈을 줄인다(4c 리허설). */
 [data-layout=landscape] .home-today-row{padding:6px 2px}
 .home-today-empty{margin:0;padding:9px 2px;border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line);font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-align:center;text-wrap:pretty}
@@ -397,6 +400,9 @@ noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:va
  [data-layout=landscape] .place-heading{top:92px;left:30px}
  [data-layout=landscape] .place-heading h1{font-size:34px}
  [data-layout=landscape] .lobby-action{left:20px;bottom:98px;width:380px}
+ /* PC 틀의 홈 판은 위의 계정 단추 아래까지 30px 더 자랄 수 있다 — 세 줄이 들어온 뒤 영어 · 몽골어에서 판이 22px 넘쳐 맨 아래 칩이 가려졌다(4c 캡처).
+    판이 그만큼 자라는 날에는 장소 제목(.place-heading)이 판 뒤에 가린다. 판이 짧은 날(한국어 등)은 지금 그대로다. */
+ [data-layout=landscape] .life-home-board{max-height:calc(var(--shell-height) - 200px)}
  [data-layout=landscape] .world-nav{left:20px;bottom:20px;width:380px}
  [data-layout=landscape] .world-panel{bottom:max(0px,calc((100dvh - var(--shell-height))/2));border-radius:var(--w-r-xl) var(--w-r-xl) 30px 30px}
 }
