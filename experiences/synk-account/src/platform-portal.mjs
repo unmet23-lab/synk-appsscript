@@ -3594,12 +3594,22 @@ export function mountWebPortalHost({
 
   function handlePageShow(event) {
     if (disposed || bypass) return;
-    authIntentSeq += 1;
     const noticeObj = readOneTimeLoginNotice();
+    const isOrdinaryInitialPageShow = event?.persisted === false && !noticeObj;
+    if (!isOrdinaryInitialPageShow) {
+      authIntentSeq += 1;
+    }
     const normalized = buildNormalizedAuth({ cancelOnBindingChange: false });
     const currentSnap = portal.getState();
 
     if (normalized.status !== 'signed-in') {
+      if (isOrdinaryInitialPageShow) {
+        syncBindingCancellationIfNeeded();
+        if (currentSnap.phase !== 'signing-in') {
+          portal.setState(normalized);
+        }
+        return;
+      }
       if (event?.persisted || currentSnap.phase === 'signing-in' || noticeObj) {
         clearPendingWebOAuthState();
       }

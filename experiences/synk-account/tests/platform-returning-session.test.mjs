@@ -1585,3 +1585,250 @@ test('오프라인·서버 오류·미완료 Google 가입·복귀 중 로그아
   assert.equal(secondProbeSameTab.ok, false);
   assert.equal(secondProbeSameTab.reason, 'already-handled');
 });
+
+test('일반 첫 페이지 pageshow({ persisted: false })가 중앙 세션 검증 전·도중에 끼어들어도 자동 복귀와 수동 로그인을 지우지 않으며, BFCache·알림·명시적 호출 안전 동작은 보존한다', async () => {
+  const config = buildTestConfig();
+  const centralSubject = '99999999-aaaa-4bbb-8ccc-dddddddddddd';
+  const centralUser = {
+    id: centralSubject,
+    email: 'returning-pageshow@synk.example.test',
+    identities: [{ provider: 'google' }],
+  };
+
+  // 1) 일반 초기 pageshow({ persisted: false })가 central probe 전 및 /auth/v1/user(188ms)·registration(360ms) 도중 끼어드는 실제 지연 재현
+  {
+    const localStorage = createMemoryStorage();
+    const sessionStorage = createMemoryStorage();
+    const dom = createPlatformDomEnv({
+      url: 'https://synk.im/account/platform.html',
+      reducedMotion: false,
+      sessionStorage,
+      localStorage,
+    });
+
+    let accountRef = null;
+    const host = mountWebPortalHost({
+      root: dom.portalRoot,
+      getConfig: () => config,
+      getAccount: () => accountRef,
+      getStartupState: () => accountRef?.identity() || { status: 'loading' },
+      getSessionStorage: () => sessionStorage,
+      getLocalStorage: () => localStorage,
+      cryptoRef: webcrypto,
+      beginOAuthFn: async opts => {
+        // beginOAuth 도중 초기 pageshow가 한 번 더 들어와도 취소되지 않아야 한다.
+        host.handlePageShow({ persisted: false });
+        return beginOAuth({ ...opts, cryptoAPI: webcrypto });
+      },
+      nowFn: dom.now,
+    });
+
+    accountRef = createPlatformAccount({
+      config,
+      storage: sessionStorage,
+      fetcher: async () => { throw new Error('플랫폼 탭 세션이 없으므로 호출되면 안 됨'); },
+      onStatus: () => host.syncAccountState(),
+    });
+    await accountRef.refresh();
+    assert.equal(host.canAutoResumeCentralSession(), true);
+
+    // probe 시작 전 일반 초기 pageshow
+    host.handlePageShow({ persisted: false });
+    assert.equal(host.canAutoResumeCentralSession(), true);
+
+    const probe = await probeCentralPlatformSession({
+      config,
+      sessionStorageRef: sessionStorage,
+      localStorageRef: localStorage,
+      createSdk: () => ({
+        auth: {
+          getSession: async () => ({
+            data: {
+              session: {
+                access_token: 'central-jwt-pageshow',
+                refresh_token: 'central-refresh-pageshow',
+                user: centralUser,
+              },
+            },
+            error: null,
+          }),
+          getUser: async () => {
+            dom.advanceNow(188);
+            await flushMicrotasks(2);
+            // /auth/v1/user 응답 직후, registration 조회 도중 일반 초기 pageshow 발생
+            host.handlePageShow({ persisted: false });
+            return { data: { user: centralUser }, error: null };
+          },
+        },
+      }),
+      fetchFn: async () => {
+        dom.advanceNow(360);
+        await flushMicrotasks(2);
+        host.handlePageShow({ persisted: false });
+        return new Response(JSON.stringify({
+          ok: true,
+          registration: { required: false },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      },
+    });
+
+    assert.equal(probe.ok, true);
+    assert.equal(host.canAutoResumeCentralSession(), true);
+
+    const resumed = await host.resumeCentralSession({ subject: probe.subject });
+    assert.equal(resumed.ok, true);
+    assert.equal(resumed.method, PLATFORM_RESUME_METHOD);
+    assert.equal(dom.replacedUrls.length, 1);
+    assert.equal(new URL(dom.replacedUrls[0]).pathname, '/auth/v1/oauth/authorize');
+    assert.ok(sessionStorage.getItem('synk.oauth.pending.platform'));
+    assert.ok(sessionStorage.getItem(PLATFORM_LOGIN_INTENT));
+    host.dispose();
+  }
+
+  // 2) 수동 로그인 진행 중 일반 초기 pageshow({ persisted: false })는 PKCE 상태와 signing-in 단계를 지우지 않고, 실제 BFCache({ persisted: true })는 정리 후 로그인 창을 다시 연다.
+  {
+    const localStorage = createMemoryStorage();
+    const sessionStorage = createMemoryStorage();
+    const dom = createPlatformDomEnv({
+      sessionStorage,
+      localStorage,
+    });
+    const account = {
+      identity: () => ({ configured: true, signedIn: false, status: 'signed-out', accountGeneration: 1 }),
+    };
+
+    let releaseManualBegin = null;
+    const manualGate = new Promise(resolve => {
+      releaseManualBegin = resolve;
+    });
+    const host = mountWebPortalHost({
+      root: dom.portalRoot,
+      getConfig: () => config,
+      getAccount: () => account,
+      getStartupState: () => account.identity(),
+      getSessionStorage: () => sessionStorage,
+      getLocalStorage: () => localStorage,
+      cryptoRef: webcrypto,
+      beginOAuthFn: async opts => {
+        await manualGate;
+        return beginOAuth({ ...opts, cryptoAPI: webcrypto });
+      },
+      nowFn: dom.now,
+    });
+    host.syncAccountState();
+
+    dom.portalRoot.querySelector('[data-portal-action="orb"]').click();
+    dom.stepAnimationFrames(PORTAL_DURATION_MS + 100, 4);
+    assert.equal(host.getState().phase, 'auth');
+
+    dom.portalRoot.querySelector('[data-portal-action="google"]').click();
+    await flushMicrotasks(2);
+    assert.equal(host.getState().phase, 'signing-in');
+
+    // beginOAuth 비동기 대기 도중 초기 pageshow({ persisted: false }) 발생
+    host.handlePageShow({ persisted: false });
+    releaseManualBegin();
+    await flushMicrotasks();
+
+    assert.equal(dom.navigations.length, 1);
+    const pendingPkce = sessionStorage.getItem('synk.oauth.pending.platform');
+    const savedIntent = sessionStorage.getItem(PLATFORM_LOGIN_INTENT);
+    assert.ok(pendingPkce);
+    assert.ok(savedIntent);
+    assert.equal(host.getState().phase, 'signing-in');
+
+    // 이동 직전 초기 pageshow({ persisted: false })가 도착해도 수동 PKCE 상태를 지우지 않는다.
+    host.handlePageShow({ persisted: false });
+    assert.equal(sessionStorage.getItem('synk.oauth.pending.platform'), pendingPkce);
+    assert.equal(sessionStorage.getItem(PLATFORM_LOGIN_INTENT), savedIntent);
+    assert.equal(host.getState().phase, 'signing-in');
+
+    // 반면 실제 BFCache 복귀({ persisted: true })는 대기 중이던 PKCE 상태를 비우고 로그인 선택 화면으로 되돌린다.
+    host.handlePageShow({ persisted: true });
+    assert.equal(sessionStorage.getItem('synk.oauth.pending.platform'), null);
+    assert.equal(sessionStorage.getItem(PLATFORM_LOGIN_INTENT), null);
+    assert.equal(host.getState().phase, 'auth');
+    host.dispose();
+  }
+
+  // 3) BFCache 복귀·명시적 1회 로그인 알림·명시적 무인자 handlePageShow() 호출은 자동 복귀를 차단하고 기존 안전 동작을 유지한다.
+  {
+    const bfDom = createPlatformDomEnv();
+    const bfAccount = {
+      identity: () => ({ configured: true, signedIn: false, status: 'signed-out', accountGeneration: 1 }),
+    };
+    const bfHost = mountWebPortalHost({
+      root: bfDom.portalRoot,
+      getConfig: () => config,
+      getAccount: () => bfAccount,
+      getStartupState: () => bfAccount.identity(),
+      getSessionStorage: () => bfDom.sessionStorage,
+      getLocalStorage: () => bfDom.localStorage,
+      cryptoRef: webcrypto,
+      nowFn: bfDom.now,
+    });
+    bfHost.syncAccountState();
+    assert.equal(bfHost.canAutoResumeCentralSession(), true);
+    bfHost.handlePageShow({ persisted: true });
+    assert.equal(bfHost.canAutoResumeCentralSession(), false);
+    bfHost.dispose();
+
+    const explicitDom = createPlatformDomEnv();
+    const explicitHost = mountWebPortalHost({
+      root: explicitDom.portalRoot,
+      getConfig: () => config,
+      getAccount: () => bfAccount,
+      getStartupState: () => bfAccount.identity(),
+      getSessionStorage: () => explicitDom.sessionStorage,
+      getLocalStorage: () => explicitDom.localStorage,
+      cryptoRef: webcrypto,
+      nowFn: explicitDom.now,
+    });
+    explicitHost.syncAccountState();
+    assert.equal(explicitHost.canAutoResumeCentralSession(), true);
+    explicitHost.handlePageShow();
+    assert.equal(explicitHost.canAutoResumeCentralSession(), false);
+    explicitHost.dispose();
+
+    const noticeStorage = createMemoryStorage();
+    const noticeDom = createPlatformDomEnv({ sessionStorage: noticeStorage });
+    const noticeHost = mountWebPortalHost({
+      root: noticeDom.portalRoot,
+      getConfig: () => config,
+      getAccount: () => bfAccount,
+      getStartupState: () => bfAccount.identity(),
+      getSessionStorage: () => noticeStorage,
+      getLocalStorage: () => noticeDom.localStorage,
+      cryptoRef: webcrypto,
+      nowFn: noticeDom.now,
+    });
+    noticeHost.syncAccountState();
+    await beginOAuth({ config, product: 'platform', storage: noticeStorage, now: noticeDom.now(), cryptoAPI: webcrypto });
+    const manualErrIntent = rememberPlatformLogin(noticeStorage, {
+      config,
+      method: 'google',
+      returnHash: '#home',
+      now: noticeDom.now(),
+    });
+    const deniedCallback = new URL(config.clients.platform.redirectUri);
+    deniedCallback.searchParams.set('error', 'access_denied');
+    deniedCallback.searchParams.set('state', manualErrIntent.state);
+    noticeDom.advanceNow(100);
+    const parsedDenied = platformErrorCallbackIntent({
+      storage: noticeStorage,
+      url: deniedCallback.href,
+      product: 'platform',
+      config,
+      now: noticeDom.now(),
+    });
+    finishPlatformErrorReturn(noticeStorage, parsedDenied, { now: noticeDom.now() });
+    assert.ok(noticeStorage.getItem(PLATFORM_LOGIN_NOTICE));
+
+    noticeHost.handlePageShow({ persisted: false });
+    assert.equal(noticeHost.canAutoResumeCentralSession(), false);
+    assert.equal(noticeHost.getState().phase, 'auth');
+    assert.equal(noticeStorage.getItem('synk.oauth.pending.platform'), null);
+    assert.equal(noticeStorage.getItem(PLATFORM_LOGIN_NOTICE), null);
+    noticeHost.dispose();
+  }
+});
