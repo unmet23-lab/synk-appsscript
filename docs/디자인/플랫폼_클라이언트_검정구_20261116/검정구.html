@@ -103,7 +103,7 @@ button,input{font:inherit;color:inherit}
 .row.now,.row:hover{color:var(--paper)}
 .row{transition:color .25s ease}
 .read{margin:16px 0 0;display:flex;align-items:center;justify-content:space-between;gap:14px;font:var(--small);color:var(--dim)}
-.reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 2px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0}
+.reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0}
 .reread:hover{border-bottom-color:var(--paper)}
 .rows.again .gauge i{animation:fill .9s cubic-bezier(.2,.7,.2,1) both}
 @keyframes fill{from{width:0}}
@@ -118,21 +118,24 @@ button,input{font:inherit;color:inherit}
 
 /* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다.
    이름은 구 아래에 가만히 있고, 이름을 가리키면 구가 지구본처럼 돌아 그 자리가 앞에 온다 */
-/* 갈 수 있는 곳의 이름은 밝고, 지금 있는 곳의 이름은 가라앉혀 「지금 여기」로 알린다 */
+/* 이름 셋은 밝기가 같다. 지금 있는 곳은 이름 앞의 점(구 위 고리 가운데의 점과 같은 것)과 「지금 여기」로 알린다 */
 .sw-names{position:absolute;left:16px;right:16px;top:66%;display:flex;flex-wrap:wrap;justify-content:center;gap:6px clamp(8px,2.4vw,36px)}
 .sw{appearance:none;background:none;border:0;margin:0;padding:10px 12px;width:min(248px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;color:var(--paper);cursor:pointer;border-radius:2px}
-.sw-n{font:400 clamp(17px,1.5vw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;padding-bottom:7px;border-bottom:1px solid transparent;transition:border-color .3s ease,color .3s ease}
-.sw-d{font:400 14px/1.4 var(--sans);color:var(--dim)}
-.sw-now{display:none;font:400 13px/1.4 var(--sans);color:rgba(243,241,236,.8)}
-.sw-now::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--paper);margin-right:9px;vertical-align:middle;transform:translateY(-1px)}
-.sw[aria-current="true"] .sw-n{color:rgba(243,241,236,.5)}
+.sw-n{position:relative;font:400 clamp(17px,1.5vw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;padding-bottom:8px}
+/* 밑줄은 글자 폭에 맞춘다(마지막 글자 뒤의 자간만큼은 긋지 않는다) */
+.sw-n::after{content:"";position:absolute;left:0;right:.2em;bottom:0;height:1px;background:var(--paper);opacity:0;transition:opacity .3s ease}
+.sw-d,.sw-now{font:400 14px/1.4 var(--sans);color:var(--dim);transition:color .3s ease}
+.sw-now{display:none}
+.sw[aria-current="true"] .sw-n::before{content:"";position:absolute;left:-18px;top:calc((100% - 8px) / 2 - 3px);width:6px;height:6px;border-radius:50%;background:var(--paper)}
 .sw[aria-current="true"] .sw-d{display:none}
 .sw[aria-current="true"] .sw-now{display:block}
-.sw:hover .sw-n,.sw:focus-visible .sw-n,.sw.hot .sw-n{border-bottom-color:var(--paper);color:var(--paper)}
+.sw:hover .sw-n::after,.sw:focus-visible .sw-n::after,.sw.hot .sw-n::after{opacity:1}
+.sw:hover .sw-d,.sw:focus-visible .sw-d,.sw.hot .sw-d{color:rgba(243,241,236,.84)}
 /* 구가 떠난 왼쪽 위 자리에 돌아가는 길을 둔다 */
 .back{appearance:none;position:absolute;left:clamp(20px,9.5vw,168px);top:calc(clamp(12px,3.4vh,38px) + 9px);height:26px;margin:0;padding:0;background:none;border:0;border-radius:2px;
   display:inline-flex;align-items:center;gap:10px;font:400 13px/1 var(--sans);color:rgba(243,241,236,.7);cursor:pointer;transition:color .25s ease}
-.back kbd{font:400 11px/1 var(--sans);letter-spacing:.06em;color:var(--dim);border:1px solid var(--hair-strong);border-radius:4px;padding:3px 6px}
+.back kbd{font:400 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+@media (hover:none),(max-width:640px){.back kbd{display:none}}
 .back:hover{color:var(--paper)}
 
 /* 시안 조작 막대 */
@@ -201,7 +204,7 @@ button,input{font:inherit;color:inherit}
         <div class="row rise" style="--i:3" role="listitem"><span class="nm">Claude</span><span class="gauge" aria-hidden="true"><i style="--v:64%"></i></span><span class="val">64% 남음</span><span class="when">목 09:00 초기화</span></div>
         <div class="row now rise" style="--i:4" role="listitem"><span class="nm">Codex</span><span class="gauge" aria-hidden="true"><i style="--v:12%"></i></span><span class="val">12% 남음</span><span class="when">토 14:00 초기화</span></div>
         <div class="row rise" style="--i:5" role="listitem"><span class="nm">Gemini</span><span class="gauge" aria-hidden="true"><i style="--v:88%"></i></span><span class="val">88% 남음</span><span class="when">일 00:00 초기화</span></div>
-        <div class="row rise" style="--i:6" role="listitem"><span class="nm">Higgsfield</span><span class="gauge" aria-hidden="true"><i style="--v:41%"></i></span><span class="val">1,240 남음</span><span class="when">3,000 크레딧 중 · 12월 3일 결제</span></div>
+        <div class="row rise" style="--i:6" role="listitem"><span class="nm">Higgsfield</span><span class="gauge" aria-hidden="true"><i style="--v:41%"></i></span><span class="val">41% 남음</span><span class="when">1,240 / 3,000 크레딧 · 12월 3일 결제</span></div>
       </div>
       <p class="read rise" style="--i:7"><span id="read-when">방금 읽은 값입니다.</span><button class="reread" id="reread" type="button">다시 읽기</button></p>
     </div>
@@ -225,11 +228,6 @@ button,input{font:inherit;color:inherit}
 
   <nav id="meta" aria-label="시안 조작">
     <span class="tag">시안</span>
-    <div class="grp" role="group" aria-label="구의 모습">
-      <button type="button" data-var="0" aria-pressed="true">구 가</button>
-      <button type="button" data-var="1" aria-pressed="false">구 나</button>
-      <button type="button" data-var="2" aria-pressed="false">구 다</button>
-    </div>
     <div class="grp" role="group" aria-label="켜는 상황">
       <button type="button" data-mode="first" aria-pressed="true">처음 켤 때</button>
       <button type="button" data-mode="back" aria-pressed="false">다시 켤 때</button>
@@ -256,7 +254,7 @@ const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const easeIOQ = t => t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
 
 let W = 1, H = 1, DPR = 1;
-let variant = 0, mode = 'first', space = 'solio', ui = 'none';
+let mode = 'first', space = 'solio', ui = 'none';
 let run = 0, tw = null, poseName = 'void', glintBoost = 0, glintWant = 0;
 /* az와 lz는 빛이 오는 쪽(화면에서의 각도, 보는 쪽으로 기운 정도), ax는 구를 깎은 축, spin은 그 축을 따라 구를 돌린 각이다.
    mark는 새긴 자리가 보이는 정도, par는 손을 따라 기우는 정도, calm은 글이 놓일 자리의 결을 가라앉히는 정도, open은 들어갈 자리가 열린 정도다 */
@@ -485,9 +483,7 @@ $('#sw-close').addEventListener('click', closeSwitch);
 
 /* ── 시안 조작 ── */
 const meta = $('#meta');
-function setVariant(v) { variant = v; stage.dataset.var = String(v); $$('[data-var]', meta).forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.var) === v))); }
 function setMode(m) { mode = m; $$('[data-mode]', meta).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m))); }
-$$('[data-var]', meta).forEach(b => b.addEventListener('click', () => setVariant(Number(b.dataset.var))));
 $$('[data-mode]', meta).forEach(b => b.addEventListener('click', () => { setMode(b.dataset.mode); boot(); }));
 $('#replay').addEventListener('click', boot);
 $('#sigbtn').addEventListener('click', () => {
@@ -516,8 +512,7 @@ document.addEventListener('keydown', e => {
     const list = $$('.sw'), i = Math.max(0, list.indexOf(document.activeElement));
     list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length].focus(); return;
   }
-  if (e.key === '1' || e.key === '2' || e.key === '3') setVariant(Number(e.key) - 1);
-  else if (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ') boot();
+  if (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ') boot();
 });
 
 /* ── 소리(꺼진 채로 시작). 낮은 두 음과 숨소리만 쓴다 ── */
@@ -558,25 +553,37 @@ const snd = (() => {
 const sig = (() => {
   const cv = $('#sig'), c = cv.getContext('2d');
   const glyphs = ['M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z', 'M117.3046875 86.0V33.6171875H126.55078125V62.48046875H127.21875L141.31640625 46.6953125H152.14453125L136.91339111328125 63.68389129638672L153.0234375 86.0H141.94921875L129.9180908203125 69.20931243896484L126.55078125 72.82667541503906V86.0Z'];   // 워드마크의 s · y · n과 k(desktop/assets/launcher/synk.svg의 글자 모양)
-  const X0 = 1.4, Y0 = 33.6, GW = 151.7, GH = 67.1, FADE = 320, STEP = 66;
+  /* 글자 넷(s · y · n · k)을 따로 뜬다: [그림, 왼쪽 끝, 오른쪽 끝, 뒤에 비울 칸 수].
+     통째로 뜨면 s와 y는 붙고 n과 k는 벌어져서, 글자마다 왼쪽 끝을 칸에 맞추고 사이를 한두 칸으로 고르게 둔다 */
+  const LET = [...glyphs[0].split(/(?=M)/).map(d => d.trim()).filter(Boolean), glyphs[1]].map((d, i) => [d, [1.4, 34.1, 73.1, 117.3][i], [36.7, 73.8, 109.3, 153.03][i], [1, 1, 2, 0][i]]);
+  const BASE = 86, XH = 39.3, ASC = 52.4, DESC = 14.7, FADE = 320, STEP = 66;   // 글자가 앉는 줄, 소문자 높이, 그 줄 위아래로 뻗는 길이
   const rnd = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
   let dots = [], k = 1, pitch = 5, dotR = 1.8, gx = 0, gy = 0, gc = 56, gr = 25, cw = 0, ch = 0, key = '', phase = 'off', t0 = 0, tuneMs = 460, holdMs = 400, done = null, timer = 0, seed = 1;
   /* 글자 모양을 전광판처럼 고른 간격, 같은 크기의 점으로 뜬다. 칸의 절반 넘게 글자에 든 칸만 켠다(반쯤 걸친 작은 점은 흐려 보인다) */
   function build() {
-    const want = clamp(W * .21, 184, 330), cols = want < 230 ? 44 : 56, dpr = Math.min(window.devicePixelRatio || 1, 3), id = Math.round(want) + '/' + dpr;
+    const want = clamp(W * .21, 184, 330), dpr = Math.min(window.devicePixelRatio || 1, 3), id = Math.round(want) + '/' + dpr;
     if (id === key) return; key = id;
-    k = want / GW; pitch = want / cols; dotR = pitch * .35; cw = Math.ceil(want + pitch * 16); ch = Math.ceil(GH * k + pitch * 10);
+    // 소문자 높이가 꼭 14칸(좁은 창에서는 11칸)이 되게 칸 크기를 잡아, 글자마다 높이와 획 굵기가 같게 한다
+    const unit = XH / (want < 230 ? 11 : 14), up = Math.ceil(ASC / unit - .2), rows = up + Math.ceil(DESC / unit - .2);
+    const spans = LET.map(l => Math.ceil((l[2] - l[1]) / unit - .15)), cols = spans.reduce((a, b) => a + b, 0) + LET.reduce((a, l) => a + l[3], 0);
+    pitch = want / cols; dotR = pitch * .37; cw = Math.ceil(want + pitch * 16); ch = Math.ceil((rows + 10) * pitch);
     cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
-    const paths = glyphs.map(d => new Path2D(d)), step = GW / cols, rows = Math.ceil(GH / step), ox = (cw - want) / 2, oy = (ch - rows * pitch) / 2;
-    const at = [1 / 6, .5, 5 / 6];
-    gx = ox; gy = oy; gc = cols; gr = rows;
-    c.setTransform(1, 0, 0, 1, 0, 0); dots = [];
-    for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
-      let n = 0;
-      for (const sy of at) for (const sx of at) if (paths.some(p => c.isPointInPath(p, X0 + (col + sx) * step, Y0 + (row + sy) * step))) n++;
-      if (n >= 5) dots.push({ x: ox + (col + .5) * pitch, y: oy + (row + .5) * pitch, row, i: dots.length });
-    }
+    const at = [1 / 6, .5, 5 / 6], cells = [];
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    let col0 = 0;
+    LET.forEach(([d, x0, , gap], li) => {
+      const p = new Path2D(d);
+      for (let row = 0; row < rows; row++) for (let col = 0; col < spans[li]; col++) {
+        let n = 0;
+        for (const sy of at) for (const sx of at) if (c.isPointInPath(p, x0 + (col + sx) * unit, BASE + (row - up + sy) * unit)) n++;
+        if (n >= 5) cells.push([col0 + col, row]);
+      }
+      col0 += spans[li] + gap;
+    });
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const top = Math.min(...cells.map(q => q[1])), bot = Math.max(...cells.map(q => q[1]));
+    gx = (cw - cols * pitch) / 2; gy = (ch - (bot - top + 1) * pitch) / 2 - top * pitch; gc = cols; gr = rows;
+    dots = cells.sort((a, b) => a[1] - b[1] || a[0] - b[0]).map(([col, row], i) => ({ x: gx + (col + .5) * pitch, y: gy + (row + .5) * pitch, row, i }));
   }
   /* 시작한 지 ms 지난 때의 모습. 맞춰지는 동안에는 몇 줄씩 묶여 옆으로 밀리고, 점이 듬성듬성 빠지고, 낟알이 떠돈다.
      밀리는 폭도 점 간격의 배수라 점은 늘 전광판의 칸 위에 있다 */
@@ -629,7 +636,7 @@ precision highp float;
 precision mediump float;
 #endif
 uniform vec2 uRes, uC;
-uniform float uR, uLit, uAz, uLz, uFocus, uVar, uGb, uDpr, uSeed, uMark, uCalm;
+uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm;
 uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen;
 const float RHO = 0.092;
 float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
@@ -643,14 +650,17 @@ vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2){
   vec2 gr = vec2(dv.x - dv.z * n.x / zz, dv.y - dv.z * n.y / zz) / max(dd, 0.0001);
   float sd = (dd - RHO) / max(length(gr), 0.05) * uR / uDpr;
   float show = smoothstep(0.02, 0.2, M.z);   /* 뒤로 넘어간 자리는 보이지 않는다 */
-  float ring = (1.0 - smoothstep(0.5, 1.25, abs(sd))) * show;
+  float lift = max(hot, open);
+  /* 가리킨 고리는 선이 굵어진다. 고리 둘레에 옅은 빛 번짐을 둬, 덧그린 선이 아니라 켜진 표시로 보이게 한다 */
+  float lw = mix(0.5, 1.0, hot);
+  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show;
+  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show;
   float facing = 0.5 + 0.5 * dot(dv.xy / max(length(dv.xy), 0.0001), l2);
   /* 가운데 점은 구가 커지거나 돌아가도 화면에서 같은 크기의 동그란 점으로 남는다 */
   float pd = length(n.xy - M.xy) * uR / uDpr;
   float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show;
   float glow = hot * 0.07 * (1.0 - smoothstep(0.0, RHO, dd)) * (1.0 - open) * show;
-  float lift = max(hot, open);
-  return vec2(ring * mix(0.44 + 0.30 * facing, 1.0, lift) + pin * 0.92 + glow, (1.0 - smoothstep(-1.2, 0.3, sd)) * open * show);
+  return vec2(ring * mix(0.44 + 0.30 * facing, 1.0, lift) + bloom + pin * 0.92 + glow, (1.0 - smoothstep(-1.2, 0.3, sd)) * open * show);
 }
 void main(){
   vec2 f = gl_FragCoord.xy;
@@ -674,9 +684,9 @@ void main(){
   if (px > 0.4 * uR / uDpr + 48.0) {
     /* 구에서 먼 자리는 셈하지 않는다. 구가 작게 남아 있는 동안 화면 대부분이 여기다 */
     col = vec3(0.0);
-  } else if (uVar < 1.5) {
-    /* 결을 깎은 구: 축을 둘러 가는 홈이 빛을 한 줄로 모은다(가는 결 150줄, 굵은 결 60줄) */
-    float N1 = uVar < 0.5 ? 110.0 : 52.0;
+  } else {
+    /* 결을 깎은 구: 축을 둘러 가는 가는 홈이 빛을 한 줄로 모은다 */
+    float N1 = 110.0;
     float h = sqrt(max(1.0 - uLz * uLz, 0.0));
     vec3 L = vec3(cos(uAz) * h, sin(uAz) * h, uLz);
     vec3 V = vec3(0.0, 0.0, 1.0);
@@ -700,7 +710,7 @@ void main(){
     float w1 = s1 / sqrt(s1 * s1 + e1 * e1), w2 = s2 / sqrt(s2 * s2 + e2 * e2), w3 = s3 / sqrt(s3 * s3 + 0.12);
     vec3 nn = normalize(n + B * (0.22 * w1 * v1 + 0.10 * w2 * v2 + 0.05 * w3 * v3));
     /* 축이 지나는 점에서는 빛줄기를 거둬 한 점으로 뾰족하게 모이지 않게 한다 */
-    float pole = smoothstep(0.03, 0.30, tl);
+    float pole = smoothstep(mix(0.03, 0.12, uMark), mix(0.30, 0.58, uMark), tl);
     float tdh = dot(T, H);
     float an = pow(max(1.0 - tdh * tdh, 0.0), mix(44.0, 110.0, uFocus)) * pole;
     float side = smoothstep(-0.28, 0.32, dot(n, L));
@@ -716,18 +726,12 @@ void main(){
     float calm = mix(1.0, mix(0.16, 1.0, smoothstep(0.47, 0.69, f.y / uRes.y)), uCalm);
     /* 작게 줄었을 때는 속의 빛을 줄이고 둘레를 가늘게 다 둘러, 얼룩이 아니라 구로 읽히게 한다 */
     float tiny = smoothstep(60.0, 14.0, uR / uDpr);
-    vec3 inC = vec3(0.005) + warm * uLit * mix(1.0, 0.42, tiny) * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + (an2 * groove * 0.09 + rings) * calm + spec * 0.20 * side + 0.010 * max(dot(n, L), 0.0));
+    vec3 inC = vec3(0.005) + warm * uLit * mix(1.0, 0.1, tiny) * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + (an2 * groove * 0.09 + rings) * calm + spec * 0.20 * side + 0.010 * max(dot(n, L), 0.0));
     /* 작을 때의 둘레선은 번지지 않게 또렷이 긋고, 빛 오는 쪽을 더 밝게 한다 */
     float edge = (1.0 - smoothstep(0.35, 1.0, abs(px))) * tiny * (0.26 + 0.5 * cres);
     float soft = 1.0 - 0.75 * tiny;
     inC += warm * uLit * (cres * (pow(1.0 - z, 5.0) * 0.14 + line * 0.16) * pulse * soft + edge);
     vec3 outC = warm * uLit * (cres * (line * 0.16 + halo * 0.03) * pulse * soft + edge);
-    col = mix(outC, inC, inside);
-  } else {
-    /* 매끈한 구: 가장자리에 닿는 빛으로만 드러난다 */
-    vec3 inC = vec3(0.0035) + warm * uLit * cres * (pow(1.0 - z, mix(3.0, 4.6, uFocus)) * mix(0.62, 0.5, uFocus) + line * 0.5) * pulse;
-    inC += warm * uLit * 0.014 * pow(max(dot(n, normalize(vec3(Ld * 0.55, 0.6))), 0.0), 2.0);
-    vec3 outC = warm * uLit * cres * (halo * 0.16 + line * 0.5) * pulse;
     col = mix(outC, inC, inside);
   }
   /* 새긴 자리. 구가 작게 줄면 보이지 않는다 */
@@ -756,7 +760,7 @@ function initGL() {
     gl.useProgram(pr);
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uVar', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen']) U[k] = gl.getUniformLocation(pr, k);
+    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen']) U[k] = gl.getUniformLocation(pr, k);
     return true;
   } catch (e) { console.warn('구 셰이더를 만들지 못했습니다.', e); gl = null; return false; }
 }
@@ -795,7 +799,7 @@ function draw(now) {
     gl.uniform2f(U.uRes, canvas.width, canvas.height);
     gl.uniform2f(U.uC, cx * DPR, (H - cy) * DPR);
     gl.uniform1f(U.uR, S.r * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
-    gl.uniform1f(U.uVar, variant); gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
+    gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
     gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
     gl.uniform1f(U.uMark, S.mark); gl.uniform1f(U.uCalm, S.calm);
     gl.uniform3f(U.uM0, mk[0][0], mk[0][1], mk[0][2]); gl.uniform3f(U.uM1, mk[1][0], mk[1][1], mk[1][2]); gl.uniform3f(U.uM2, mk[2][0], mk[2][1], mk[2][2]);
@@ -816,7 +820,7 @@ if (!initGL()) ctx2d = canvas.getContext('2d');
 canvas.addEventListener('webglcontextlost', e => e.preventDefault());
 canvas.addEventListener('webglcontextrestored', () => { initGL(); resize(); });
 new ResizeObserver(resize).observe(stage);
-resize(); setVariant(0); setMode('first'); applySpace(); wakeMeta();
+resize(); setMode('first'); applySpace(); wakeMeta();
 requestAnimationFrame(frame);
 boot();
 
@@ -824,7 +828,6 @@ boot();
 window.__orb = {
   at(scene, opt = {}) {
     ++run; skip = null;
-    if (opt.variant !== undefined) setVariant(opt.variant);
     if (opt.space) { space = opt.space; applySpace(); }
     const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'] }[scene];
     stage.classList.add('still'); resize(); sig.show(opt.sig);
@@ -835,7 +838,7 @@ window.__orb = {
   },
   /* 두 자리 사이의 한순간(t는 0~1)을 그린다. inside로 갈 때는 opt.dive에 들어갈 공간을 적는다 */
   mid(from, to, t, opt = {}) {
-    ++run; skip = null; if (opt.variant !== undefined) setVariant(opt.variant);
+    ++run; skip = null;
     if (opt.space) { space = opt.space; applySpace(); }
     if (opt.dive) diveTo = opt.dive;
     stage.classList.add('still'); resize(); sig.show(null); setUI('none'); pointAt(null);
@@ -847,7 +850,7 @@ window.__orb = {
   },
   /* 점으로 된 표가 시작한 지 ms 지난 때의 모습으로 선다(검정 화면 위) */
   sig(ms) { ++run; skip = null; stage.classList.add('still'); resize(); setUI('none'); snap('inside'); S.lit = 0; draw(performance.now()); return sig.show(ms); },
-  draw: () => draw(performance.now()), state: () => ({ ui, space, variant, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', sw: stage.dataset.sw, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), ...S }),
+  draw: () => draw(performance.now()), state: () => ({ ui, space, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', sw: stage.dataset.sw, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), ...S }),
   /* 화면이 가려져 프레임이 멈춘 곳에서도 흐름이 끝까지 가게 민다 */
   pump() { stage.classList.remove('still'); return setInterval(() => { const now = performance.now(); stepTween(now); draw(now); sig.step(now); }, 16); },
 };
