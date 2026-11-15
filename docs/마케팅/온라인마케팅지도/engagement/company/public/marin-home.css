@@ -44,7 +44,7 @@
   display: flex;
 }
 
-.next-home .next-recommend-bar {
+.next-home .next-button.next-recommend-bar {
   width: 100%;
   min-height: 46px;
   padding: 11px 14px;
@@ -57,12 +57,12 @@
   text-align: left;
 }
 
-.next-home .next-recommend-bar:not(:disabled):hover {
+.next-home .next-button.next-recommend-bar:not(:disabled):hover {
   background: var(--ws-surface-subtle);
   border-color: var(--ws-control-hover);
 }
 
-.next-home .next-recommend-bar > .icon {
+.next-home .next-button.next-recommend-bar > .icon {
   color: var(--ws-ink-muted);
 }
 

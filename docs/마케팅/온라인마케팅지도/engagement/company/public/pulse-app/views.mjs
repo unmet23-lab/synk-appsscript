@@ -343,16 +343,25 @@ const eulOf=word=>isYi(word)?'을':'를'; // i18n-skip
 const alertBox=s=>s.error?`<div class="sx-alert" role="alert"><strong>${esc(s.conflict?t('처리하지 못했어요.'):s.reloadFailed?t('화면을 새로 고치지 못했어요.'):t('저장하지 못했어요.'))}</strong><div>${esc(t(s.error))}</div>${s.conflict?lnk(t('최신 내용 불러오기'),'refresh'):''}</div>`:'';
 function roomPreview(p){
   const versions=p?.versions||[],finals=versions.filter(v=>v.kind==='final'),previews=versions.filter(v=>v.kind==='preview');
-  const pick=list=>{
-    for(let i=list.length-1;i>=0;i--){
-      const v=list[i],url=safeUrl(v?.media?.url,{media:true}),mime=v?.media?.mimeType||'',go=p?.stage==='delivered'&&v?.kind==='final'?'deliver':'review',label=v?.label||(v?.kind==='final'?t('최종본'):t('전달 파일'));
-      if(url&&mime.startsWith('video/'))return {kind:'video',src:url,label,go};
-      if(url&&mime.startsWith('image/'))return {kind:'image',src:url,label,go:'review'};
-      if(url||safeUrl(v?.url))return {kind:'media',html:mediaView(v),label,go:'review'};
+  const labelOf=v=>v?.label||(v?.kind==='final'?t('최종본'):t('전달 파일'));
+  const pickPlayable=list=>{
+    for(const prefix of ['video/','image/']){
+      for(let i=list.length-1;i>=0;i--){
+        const v=list[i],url=safeUrl(v?.media?.url,{media:true}),mime=v?.media?.mimeType||'';
+        if(url&&mime.startsWith(prefix))return {kind:prefix==='video/'?'video':'image',src:url,label:labelOf(v),go:'review'};
+      }
     }
     return null;
   };
-  return p?.stage==='delivered'?pick(finals)||pick(previews):pick(previews)||pick(finals);
+  const pickFallback=list=>{
+    for(let i=list.length-1;i>=0;i--){
+      const v=list[i],url=safeUrl(v?.media?.url,{media:true});
+      if(url||safeUrl(v?.url))return {kind:'media',html:mediaView(v),label:labelOf(v),go:'review'};
+    }
+    return null;
+  };
+  const [first,second]=p?.stage==='delivered'||finals.length?[finals,previews]:[previews,finals];
+  return pickPlayable(first)||pickPlayable(second)||pickFallback(first)||pickFallback(second);
 }
 // keep(판 4): 「내 모델로 모아 두기」 회원 상태(app.mjs가 그 프로젝트에서 읽은 것만 — 스위치가 꺼져 있으면 없다).
 const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{})};};
@@ -617,7 +626,7 @@ function deliveryRoom(s){
         ${finals.length?`<p class="sx-small">파일이 열리지 않거나 다른 형식·길이가 필요하면 알려 주세요. ${lnk('담당자에게 묻기','tab','data-tab="review" data-scroll="inquiry"')}</p>`:''}
         ${stepsOf(s,next)}
       </div>
-      ${film?`<div class="sx-room-screen sx-final" data-final><video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(film.label)}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div></div>`:shot?`<div class="sx-room-screen"><img class="sx-q-fill" src="${esc(safeUrl(shot.media.url,{media:true}))}" data-cap alt="${esc(shot.label)}" decoding="async"><p class="sx-small sx-room-cap">${esc(shot.label)}</p></div>`:s.demo?`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`:''}
+      ${film?`<div class="sx-room-screen sx-final" data-final><video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(film.label)}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div></div>`:shot?`<div class="sx-room-screen"><img class="sx-q-fill" src="${esc(safeUrl(shot.media.url,{media:true}))}" data-cap alt="${esc(shot.label||'최종본')}" decoding="async"><p class="sx-small sx-room-cap">${esc(shot.label||'최종본')}</p></div>`:s.demo?`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`:''}
     </section>
     <section class="sx-legacy sx-history-paper">
       ${s.demo||s.example||!(st.deliverables?.revision||(st.deliverables?.items||[]).length)?'':deliverablesView(s,{readOnly:true})}
