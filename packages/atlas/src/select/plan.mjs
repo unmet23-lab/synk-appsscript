@@ -197,6 +197,8 @@ export function planActivities(
   const entries = activities
     .map(activity => entryOf(activity, view, memory, now, params, seed, capped))
     .sort(rank);
+  // 결과 배열의 이름 붙은 칸(capped)은 map, 펼치기, JSON을 지나면 사라진다. 결과를 복사하는 쪽은 이 칸을 다시 싣는다(코치 plan이 그렇게
+  // 한다 — Fable 4-4 설계 검토 E3).
   entries.capped = capped;
   return entries;
 }

@@ -295,6 +295,7 @@ function breathe(rows, ctx) {
 const heldBack = ctx => ctx.capped && ctx.backlog > 0;
 
 // plan()이 머리에서 한 번 세는 하루 상한. 후보 없는 항목과 잠긴 항목도 이 값을 싣는다(설계 주인 11-15, 단계4 §20-14).
+// 판이 열린 학습자(viewOf 뒤)를 받아야 한다 — contextOf가 판(session)의 시작 자리와 이번 판에 만난 단위를 읽는다(Fable 4-4 설계 검토 E2).
 export function dayCapped(learner, memory, now, params = PARAMS) {
   return heldBack(contextOf(learner, memory, now, params));
 }
