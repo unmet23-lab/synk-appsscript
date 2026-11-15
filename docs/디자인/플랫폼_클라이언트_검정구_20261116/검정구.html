@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>검정 구 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+
+/* 짜임: 창 전체가 무대이고 물건은 구 하나다. 글은 구가 비켜 준 자리에만 놓는다. 스크롤과 메뉴는 없다. */
+:root{
+  color-scheme:dark;
+  --void:#000000;                       /* 바탕. 구의 안쪽이기도 하다 */
+  --paper:#F3F1EC;                      /* 글. 구에 닿는 빛과 같은 온도의 흰색 */
+  --dim:rgba(243,241,236,.46);          /* 둘째 줄, 덜 급한 것 */
+  --hair:rgba(243,241,236,.10);         /* 1px 선 */
+  --hair-strong:rgba(243,241,236,.20);
+  --ring:rgba(243,241,236,.55);         /* 자판 초점 */
+  --pit:#0C0C0B;                         /* 단추와 입력 칸의 바닥. 뒤의 결이 비치지 않게 막는다 */
+  --meta-bg:rgba(10,10,10,.84);         /* 시안 조작 막대(디자인의 일부가 아니다) */
+  /* 한글과 영문이 한 문장에 섞이므로 한 서체(SUIT)로 통일한다 */
+  --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --display:300 clamp(25px,min(3.5vw,5.6vh),54px)/1.3 var(--sans);
+  --choice:300 clamp(22px,2.3vw,34px)/1.2 var(--sans);
+  --body:400 16px/1.25 var(--sans);
+  --small:400 13px/1.3 var(--sans);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word}
+button,input{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+#stage{position:relative;height:100%;min-height:420px;overflow:hidden;background:var(--void);user-select:none;-webkit-user-select:none;cursor:default}
+#orb{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* 제목 줄 없는 창에서 맨 위 40px를 잡고 창을 옮긴다(브라우저에서는 아무 일도 없다) */
+#stage::before{content:"";position:absolute;left:0;right:0;top:0;height:40px;z-index:1;pointer-events:none;-webkit-app-region:drag}
+.here,#meta{-webkit-app-region:no-drag}
+
+/* 구만 있는 첫 화면에서는 어디를 눌러도 넘어간다 */
+#wake{position:absolute;inset:0;display:none;background:none;border:0;padding:0;cursor:pointer}
+#stage[data-boot="1"] #wake{display:block}
+#wake:focus-visible{outline:none}
+
+.layer{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#stage[data-ui="ask"] #ask,#stage[data-ui="app"] #app,#stage[data-ui="switch"] #switch{opacity:1;visibility:visible;transition:opacity .9s ease .05s,visibility 0s}
+.rise{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
+#stage[data-ui="ask"] #ask .rise,#stage[data-ui="app"] #app .rise,#stage[data-ui="switch"] #switch .rise{
+  opacity:var(--o,1);transform:none;transition:opacity 1s ease,transform 1.2s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*95ms + 140ms)}
+/* 다 떠오른 뒤에는 손에 바로 반응한다 */
+#stage.settled .layer .rise{transition:opacity .3s ease,transform .3s ease;transition-delay:0s}
+/* 화면 확인용: 움직임 없이 끝 모습으로 선다 */
+#stage.still,#stage.still *{transition:none !important}
+
+/* 로그인 방식을 묻는 자리 */
+.ask-in{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);width:min(520px,100% - 32px);display:flex;flex-direction:column;align-items:center}
+.mark{width:46px;height:auto;fill:var(--paper);margin-bottom:clamp(26px,4.6vh,44px);--o:.92}
+.ask-ways{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;width:100%;transition:opacity .35s ease}
+/* 누르는 것은 누르는 것처럼 보이게: 먼저 권하는 길은 채우고, 다른 길은 선으로 둔다 */
+.way{appearance:none;flex:1 1 220px;max-width:254px;height:54px;margin:0;padding:0 22px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font:500 16px/1 var(--sans);letter-spacing:0;color:var(--paper);cursor:pointer;transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+.way svg{width:18px;height:18px;flex:none}
+.way:hover{border-color:var(--paper);background:#1A1A19}
+.way-main{background:var(--paper);border-color:var(--paper);color:var(--void)}
+.way-main:hover{background:#FFFFFF;border-color:#FFFFFF}
+.way:focus-visible,.sw:focus-visible,#orb-btn:focus-visible,.reread:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+.invite{margin-top:clamp(26px,4.8vh,46px);width:min(520px,100%);display:flex;flex-direction:column;align-items:center;gap:12px}
+.invite label{font:400 14px/1.3 var(--sans);color:rgba(243,241,236,.78)}
+.invite input{width:min(320px,88%);height:46px;background:var(--pit);border:1px solid rgba(243,241,236,.24);border-radius:999px;outline:0;padding:0 20px;
+  font:400 15px/1 var(--sans);letter-spacing:.02em;text-align:center;color:var(--paper);user-select:text;-webkit-user-select:text;transition:border-color .3s ease}
+.invite input::placeholder{color:rgba(243,241,236,.4)}
+.invite input:hover{border-color:rgba(243,241,236,.55)}
+.invite input:focus{border-color:var(--paper)}
+/* 기다리는 동안에는 고를 것을 치우고 한 줄만 남긴다 */
+.status{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);margin:0;font:400 15px/1.5 var(--sans);color:rgba(243,241,236,.72);text-align:center;opacity:0;pointer-events:none;transition:opacity .5s ease}
+#stage[data-wait="1"] .ask-ways,#stage[data-wait="1"] #ask .invite{opacity:0;--o:0;pointer-events:none;transition:opacity .35s ease;transition-delay:0s}
+#stage[data-wait="1"] .status{opacity:1;transition-delay:.25s}
+
+/* 들어온 뒤. 왼쪽 위의 구가 이 앱의 하나뿐인 조작 자리다 */
+/* 구의 왼쪽 끝을 본문의 왼쪽 줄에 맞춘다(구 반지름 11px, 단추 44px) */
+.here{position:absolute;z-index:2;left:calc(clamp(20px,9.5vw,168px) - 9px);top:clamp(12px,3.4vh,38px);display:flex;align-items:center;gap:6px}
+#orb-btn{width:44px;height:44px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer}
+#orb-btn:focus-visible{outline-offset:1px}
+#here-name{font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.66)}
+.room{position:absolute;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);top:52%;transform:translateY(-50%);display:none}
+#stage[data-space="solio"] .room[data-room="solio"],#stage[data-space="workspace"] .room[data-room="workspace"],#stage[data-space="pulse"] .room[data-room="pulse"]{display:block}
+.say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
+.say .then{display:block;color:var(--dim)}
+.rows{margin-top:clamp(34px,8vh,84px);display:grid}
+.row{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 6.2em minmax(190px,auto);align-items:center;column-gap:clamp(16px,2.4vw,36px);
+  padding:17px 0;border-top:1px solid var(--hair);color:var(--dim)}
+.row:last-child{border-bottom:1px solid var(--hair)}
+.row.now,.row:hover{color:var(--paper)}
+.row{transition:color .25s ease}
+.read{margin:16px 0 0;display:flex;align-items:center;gap:14px;font:var(--small);color:var(--dim)}
+.reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 2px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0}
+.reread:hover{border-bottom-color:var(--paper)}
+.rows.again .gauge i{animation:fill .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes fill{from{width:0}}
+.nm{font:var(--body)}
+.gauge{position:relative;height:1px;background:rgba(243,241,236,.15)}
+.gauge i{position:absolute;left:0;top:0;height:1px;width:var(--v);background:rgba(243,241,236,.82)}
+.row.now .gauge i{background:var(--paper)}
+.gauge i::after{content:"";position:absolute;right:0;top:-4px;width:1px;height:9px;background:inherit}
+.val{font:var(--body);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.when{font:var(--small);font-variant-numeric:tabular-nums;text-align:right;color:var(--dim);white-space:nowrap}
+
+/* 구를 누르면 갈 수 있는 곳이 이름으로만 뜬다 */
+/* 셋 다 갈 수 있는 곳이라 밝기를 같게 둔다. 지금 있는 곳과 가리킨 곳은 구가 그 위로 가서 알린다 */
+.sw-names{position:absolute;left:16px;right:16px;top:55%;display:flex;flex-wrap:wrap;justify-content:center;gap:18px clamp(8px,2.4vw,36px)}
+.sw{appearance:none;background:none;border:0;margin:0;padding:10px 12px;width:min(248px,100%);display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--paper);--o:.86;cursor:pointer;border-radius:2px}
+.sw-n{font:400 clamp(17px,1.5vw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;padding-bottom:9px;border-bottom:1px solid transparent;transition:border-color .3s ease}
+.sw-d{font:400 14px/1.4 var(--sans);color:var(--dim)}
+.sw-now{display:none;font:400 12px/1 var(--sans);color:var(--paper)}
+.sw[aria-current="true"] .sw-n{border-bottom-color:var(--paper)}
+.sw[aria-current="true"] .sw-now{display:block}
+.sw[aria-current="true"],.sw:hover,.sw:focus-visible{--o:1}
+
+/* 시안 조작 막대 */
+#meta{position:absolute;z-index:5;left:0;right:0;margin-inline:auto;width:fit-content;bottom:calc(14px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 12px;padding:6px 14px;
+  background:var(--meta-bg);border:1px solid rgba(243,241,236,.12);border-radius:18px;font:400 12px/1 var(--sans);color:rgba(243,241,236,.62);transition:opacity .5s ease}
+#meta.idle{opacity:0;pointer-events:none}
+#meta .tag{letter-spacing:.04em;color:rgba(243,241,236,.38);padding-right:2px}
+#meta .grp{display:flex;align-items:center;gap:2px}
+#meta button{appearance:none;background:none;border:0;border-radius:999px;padding:7px 9px;cursor:pointer;white-space:nowrap}
+#meta button:hover{color:var(--paper)}
+#meta button[aria-pressed="true"]{color:var(--paper);background:rgba(243,241,236,.11)}
+#meta button:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
+
+@media (max-width:640px){
+  .row{grid-template-columns:minmax(0,1fr) auto;row-gap:10px;padding:14px 0}
+  .sw-names{top:50%}
+  .gauge{grid-column:1 / -1;grid-row:2}
+  .when{grid-column:1 / -1;grid-row:3;text-align:left}
+  .room{top:clamp(84px,13vh,128px);transform:none}
+  .rows{margin-top:28px}
+  #meta{gap:2px 6px;padding:5px 10px;font-size:11px}
+  #meta .tag{display:none}
+  #meta button{padding:6px 7px}
+}
+@media (max-height:620px) and (min-width:641px){
+  .room{top:47%}
+  .rows{margin-top:22px}
+  .row{padding:10px 0}
+  #meta{bottom:8px;padding:3px 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .layer,.rise,.way,.sw,#meta{transition-duration:.01s !important;transition-delay:0s !important}
+}
+</style>
+</head>
+<body>
+<div id="stage" data-ui="none" data-space="solio">
+  <canvas id="orb" aria-hidden="true"></canvas>
+  <button id="wake" type="button" aria-label="시작하기"></button>
+
+  <section id="ask" class="layer" aria-label="로그인 방법">
+    <div class="ask-in">
+      <svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱ㅋ"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>
+      <div class="ask-ways">
+        <button class="way way-main rise" style="--i:1" type="button" data-way="google"><svg viewBox="0 0 18 18" aria-hidden="true"><path fill="currentColor" d="M17.1 9.2c0-.6-.05-1.1-.17-1.64H9v3.18h4.65a4 4 0 0 1-1.88 2.78l2.86 2.21c1.71-1.58 2.47-3.9 2.47-6.53ZM9 17.4c2.28 0 4.2-.75 5.6-2.04l-2.86-2.21c-.76.53-1.78.9-2.74.9-2.1 0-3.88-1.41-4.52-3.36l-2.94 2.27A8.4 8.4 0 0 0 9 17.4ZM4.48 10.69a5.04 5.04 0 0 1 0-3.38L1.54 5.04a8.4 8.4 0 0 0 0 7.92l2.94-2.27ZM9 3.95c1.38 0 2.33.6 2.86 1.1l2.09-2.04A8.07 8.07 0 0 0 9 1.1a8.4 8.4 0 0 0-7.46 4.44l2.94 2.27C5.12 5.36 6.9 3.95 9 3.95Z"/></svg>Google로 계속</button>
+        <button class="way rise" style="--i:2" type="button" data-way="email"><svg viewBox="0 0 18 18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" d="M2.2 4.4h13.6v9.2H2.2zM2.6 4.8 9 10l6.4-5.2"/></svg>이메일로 계속</button>
+      </div>
+      <form id="invite" class="invite rise" style="--i:4" autocomplete="off" novalidate>
+        <label for="code">초대받으셨다면</label>
+        <input id="code" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
+      </form>
+      <p id="ask-status" class="status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="app" class="layer" aria-label="앱">
+    <div class="here">
+      <button id="orb-btn" type="button" aria-label="다른 공간으로 가기"></button>
+      <span id="here-name">SOLIO</span>
+    </div>
+
+    <div class="room" data-room="solio">
+      <p class="say rise" style="--i:1">Codex가 내일 오후에 바닥납니다.<span class="then">Claude와 Gemini는 이번 주 내내 넉넉합니다.</span></p>
+      <div class="rows" role="list" aria-label="구독별 남은 양">
+        <div class="row rise" style="--i:3" role="listitem"><span class="nm">Claude</span><span class="gauge" aria-hidden="true"><i style="--v:64%"></i></span><span class="val">64% 남음</span><span class="when">목 09:00 초기화</span></div>
+        <div class="row now rise" style="--i:4" role="listitem"><span class="nm">Codex</span><span class="gauge" aria-hidden="true"><i style="--v:12%"></i></span><span class="val">12% 남음</span><span class="when">토 14:00 초기화</span></div>
+        <div class="row rise" style="--i:5" role="listitem"><span class="nm">Gemini</span><span class="gauge" aria-hidden="true"><i style="--v:88%"></i></span><span class="val">88% 남음</span><span class="when">일 00:00 초기화</span></div>
+        <div class="row rise" style="--i:6" role="listitem"><span class="nm">Higgsfield</span><span class="gauge" aria-hidden="true"><i style="--v:41%"></i></span><span class="val">1,240 남음</span><span class="when">3,000 크레딧 중 · 12월 3일 결제</span></div>
+      </div>
+      <p class="read rise" style="--i:7"><span id="read-when">방금 읽은 값입니다.</span><button class="reread" id="reread" type="button">다시 읽기</button></p>
+    </div>
+
+    <div class="room" data-room="workspace">
+      <p class="say rise" style="--i:1">Workspace<span class="then">바깥 창 없이 이 창 안에서 열립니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
+    </div>
+    <div class="room" data-room="pulse">
+      <p class="say rise" style="--i:1">PULSE<span class="then">바깥 창 없이 이 창 안에서 열립니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
+    </div>
+  </section>
+
+  <section id="switch" class="layer" aria-label="공간 고르기">
+    <div class="sw-names">
+      <button class="sw rise" style="--i:0" type="button" data-go="solio"><span class="sw-n">SOLIO</span><span class="sw-d">솔리오 · 혼자 하는 사업의 도구</span><span class="sw-now">지금 여기</span></button>
+      <button class="sw rise" style="--i:1" type="button" data-go="workspace"><span class="sw-n">WORKSPACE</span><span class="sw-d">워크스페이스 · 팀이 함께 일하는 곳</span><span class="sw-now">지금 여기</span></button>
+      <button class="sw rise" style="--i:2" type="button" data-go="pulse"><span class="sw-n">PULSE</span><span class="sw-d">펄스 · 고객과 함께 만드는 곳</span><span class="sw-now">지금 여기</span></button>
+    </div>
+  </section>
+
+  <nav id="meta" aria-label="시안 조작">
+    <span class="tag">시안</span>
+    <div class="grp" role="group" aria-label="구의 모습">
+      <button type="button" data-var="0" aria-pressed="true">구 가</button>
+      <button type="button" data-var="1" aria-pressed="false">구 나</button>
+      <button type="button" data-var="2" aria-pressed="false">구 다</button>
+    </div>
+    <div class="grp" role="group" aria-label="켜는 상황">
+      <button type="button" data-mode="first" aria-pressed="true">처음 켤 때</button>
+      <button type="button" data-mode="back" aria-pressed="false">다시 켤 때</button>
+    </div>
+    <button type="button" id="replay">처음부터</button>
+    <button type="button" id="sound" aria-pressed="false">소리 꺼짐</button>
+  </nav>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const stage = $('#stage'), canvas = $('#orb'), wake = $('#wake'), orbBtn = $('#orb-btn');
+const layers = { ask: $('#ask'), app: $('#app'), switch: $('#switch') };
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rad = d => d * Math.PI / 180, lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeIOQ = t => t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+
+let W = 1, H = 1, DPR = 1;
+let variant = 0, mode = 'first', space = 'solio', ui = 'none';
+let run = 0, tw = null, poseName = 'void', glintBoost = 0, glintWant = 0;
+/* az와 lz는 빛이 오는 쪽(화면에서의 각도, 보는 쪽으로 기운 정도), ax는 구를 깎은 축이다 */
+const S = { cx: 0, top: 0, r: 1, az: 0, lz: .5, lit: 0, focus: 0, ax: [.28, .52, .81] };
+const ptr = { x: .5, y: .5 }, ptrS = { x: .5, y: .5 };
+let swTarget = null;
+
+/* ── 구가 서는 자리. top은 구의 맨 윗점, r은 반지름(화면 px) ── */
+function poses() {
+  const r0 = Math.min(H * .21, W * .3);
+  const rAsk = Math.max(H * 1.9, W * 1.25);
+  const b = orbBtn.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  const hx = b.left - s.left + b.width / 2, hy = b.top - s.top + b.height / 2, hr = 13;
+  const rs = Math.min(H * .075, W * .14);
+  const sws = $$('.sw'), names = $('.sw-names').getBoundingClientRect();
+  const stacked = sws[0].getBoundingClientRect().top !== sws[sws.length - 1].getBoundingClientRect().top;
+  const tb = (swTarget || sws.find(x => x.dataset.go === space) || sws[0]).getBoundingClientRect();
+  const rest = [.28, .52, .81], top = [0, .972, .235];
+  return {
+    void:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(-50), lz: .5, lit: 0, focus: 0, ax: rest },
+    rest:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: .5, lit: 1, focus: 0, ax: rest },
+    ask:    { cx: W / 2, top: H * .25, r: rAsk, az: rad(150), lz: -.3, lit: 1, focus: 1, ax: top },
+    inside: { cx: W / 2, top: -H * 1.6, r: Math.max(W, H) * 7, az: rad(150), lit: 0, focus: 1 },
+    home:   { cx: hx, top: hy - hr, r: hr, az: rad(135), lz: .5, lit: 1, focus: 0, ax: rest },
+    sw:     { cx: stacked ? W / 2 : tb.left - s.left + tb.width / 2, top: names.top - s.top - 40 - rs * 2, r: rs, az: rad(135), lz: .5, lit: 1, focus: 0, ax: rest },
+  };
+}
+function snap(name) { const p = poses()[name]; for (const k in p) S[k] = Array.isArray(p[k]) ? [...p[k]] : p[k]; poseName = name; tw = null; }
+function tween(name, ms, ease = easeIO, litCurve = null) {
+  if (tw) tw.res();
+  poseName = name;
+  return new Promise(res => { tw = { from: { ...S, ax: [...S.ax] }, name, t0: performance.now(), ms: reduce ? Math.min(ms, 220) : ms, ease, litCurve, res }; });
+}
+function stepTween(now) {
+  if (!tw) return;
+  const t = clamp((now - tw.t0) / tw.ms, 0, 1), e = tw.ease(t), a = tw.from, b = poses()[tw.name];
+  S.cx = lerp(a.cx, b.cx, e); S.top = lerp(a.top, b.top, e);
+  S.r = Math.exp(lerp(Math.log(a.r), Math.log(b.r), e));
+  S.az = lerp(a.az, b.az, e); S.focus = lerp(a.focus, b.focus, e);
+  if (b.lz !== undefined) S.lz = lerp(a.lz, b.lz, e);
+  if (b.ax) S.ax = [lerp(a.ax[0], b.ax[0], e), lerp(a.ax[1], b.ax[1], e), lerp(a.ax[2], b.ax[2], e)];
+  S.lit = tw.litCurve ? tw.litCurve(t, a.lit, b.lit) : lerp(a.lit, b.lit, e);
+  if (t >= 1) { const r = tw.res; tw = null; r(); }
+}
+const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 120) : ms));
+let skip = null;
+const waitSkippable = ms => new Promise(r => { const id = setTimeout(done, ms); function done() { clearTimeout(id); skip = null; r(); } skip = done; });
+
+/* ── 화면 층 ── */
+let settleTimer = 0, hurry = false;
+/* 구가 드러나는 동안 누르면 기다림을 줄이고 바로 다음으로 간다 */
+function hurryBoot() {
+  hurry = true;
+  if (skip) skip();
+  else if (tw && tw.name === 'rest') tw.ms = Math.min(tw.ms, performance.now() - tw.t0 + 320);
+}
+function setUI(next) {
+  ui = next; stage.dataset.ui = next;
+  if (next === 'ask' || next === 'app' || next === 'switch') delete stage.dataset.boot;
+  for (const k in layers) layers[k].inert = k !== next;
+  if (next !== 'ask') { delete stage.dataset.wait; glintWant = 0; }
+  stage.classList.remove('settled'); clearTimeout(settleTimer);
+  if (layers[next]) settleTimer = setTimeout(() => stage.classList.add('settled'), 1900);
+}
+function applySpace() {
+  stage.dataset.space = space;
+  $('#here-name').textContent = { solio: 'SOLIO', workspace: 'WORKSPACE', pulse: 'PULSE' }[space];
+  $$('.sw').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === space)));
+}
+
+/* ── 흐름 ── */
+async function boot() {
+  const my = ++run;
+  stage.classList.remove('still');
+  setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = '';
+  hurry = false; stage.dataset.boot = '1';
+  // 다시 켤 때는 날마다 보는 장면이라 짧게 간다(켜서 솔리오까지 3초 남짓).
+  await wait(mode === 'back' ? 300 : 520); if (my !== run) return;
+  snd.boot();
+  await tween('rest', mode === 'back' ? 1150 : 2400, easeOut, (t, a, b) => lerp(a, b, smooth(0, .62, t))); if (my !== run) return;
+  setUI('rest');
+  if (!hurry) await waitSkippable(mode === 'back' ? 220 : 1350); if (my !== run) return;
+  if (mode === 'back') return enter('solio', my, 1050);
+  setUI('none'); snd.rise();
+  await tween('ask', 1750, easeIOQ); if (my !== run) return;
+  setUI('ask');
+}
+async function enter(next, my = ++run, ms = 1250) {
+  setUI('none'); snd.dive();
+  await tween('inside', ms, easeIO, (t, a) => a * (1 - smooth(.45, .95, t))); if (my !== run) return;
+  space = next; applySpace();
+  snap('home'); S.lit = 0; S.r = 5;
+  setUI('app');
+  await tween('home', 700, easeOut);
+}
+async function openSwitch() {
+  const my = ++run; setUI('none'); snd.tick();
+  swTarget = null;
+  await tween('sw', 720, easeIO); if (my !== run) return;
+  setUI('switch');
+}
+/* 가리킨 곳 위로 구가 옮겨 간다 */
+function pointAt(button) {
+  if (ui !== 'switch' || swTarget === button) return;
+  swTarget = button; tween('sw', 420, easeIO);
+}
+async function closeSwitch() {
+  const my = ++run; setUI('none');
+  await tween('home', 620, easeIO); if (my !== run) return;
+  setUI('app');
+}
+function askWait(text) { stage.dataset.wait = '1'; $('#ask-status').textContent = text; glintWant = 1; }
+
+wake.addEventListener('click', hurryBoot);
+$$('.way').forEach(b => b.addEventListener('click', async () => {
+  const my = ++run; snd.tick();
+  askWait('브라우저에서 로그인을 마치면 이 창으로 돌아옵니다.');
+  await wait(1900); if (my !== run) return;
+  enter('solio');
+}));
+$('#invite').addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = $('#code').value.trim(); if (!v) return;
+  const my = ++run; snd.tick(); $('#code').blur();
+  askWait('초대를 확인하고 있습니다.');
+  await wait(1100); if (my !== run) return;
+  enter(/^p/i.test(v) ? 'pulse' : 'workspace');
+});
+document.addEventListener('paste', e => {
+  if (ui !== 'ask' || stage.dataset.wait || e.target === $('#code')) return;
+  const text = (e.clipboardData && e.clipboardData.getData('text') || '').trim(); if (!text) return;
+  e.preventDefault(); $('#code').value = text.slice(0, 200); $('#invite').requestSubmit();
+});
+orbBtn.addEventListener('click', openSwitch);
+$('#reread').addEventListener('click', () => {
+  const rows = $('.rows'); rows.classList.remove('again'); void rows.offsetWidth; rows.classList.add('again');
+  $('#read-when').textContent = '방금 다시 읽었습니다.'; snd.tick();
+});
+$$('.sw').forEach(b => {
+  b.addEventListener('click', () => { snd.tick(); if (b.dataset.go === space) closeSwitch(); else enter(b.dataset.go); });
+  b.addEventListener('pointerenter', () => pointAt(b));
+  b.addEventListener('focus', () => pointAt(b));
+});
+$('.sw-names').addEventListener('pointerleave', () => pointAt(null));
+layers.switch.addEventListener('click', e => { if (e.target === layers.switch) closeSwitch(); });
+
+/* ── 시안 조작 ── */
+const meta = $('#meta');
+function setVariant(v) { variant = v; stage.dataset.var = String(v); $$('[data-var]', meta).forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.var) === v))); }
+function setMode(m) { mode = m; $$('[data-mode]', meta).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m))); }
+$$('[data-var]', meta).forEach(b => b.addEventListener('click', () => setVariant(Number(b.dataset.var))));
+$$('[data-mode]', meta).forEach(b => b.addEventListener('click', () => { setMode(b.dataset.mode); boot(); }));
+$('#replay').addEventListener('click', boot);
+$('#sound').addEventListener('click', () => {
+  const on = !snd.on; snd.set(on);
+  $('#sound').setAttribute('aria-pressed', String(on)); $('#sound').textContent = on ? '소리 켜짐' : '소리 꺼짐';
+  if (on) snd.tick();
+});
+let idleTimer = 0;
+const canHover = matchMedia('(hover: hover)').matches;
+function wakeMeta() { meta.classList.remove('idle'); clearTimeout(idleTimer); if (canHover) idleTimer = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('idle'); }, 4200); }
+stage.addEventListener('pointermove', e => {
+  const s = stage.getBoundingClientRect(); ptr.x = (e.clientX - s.left) / s.width; ptr.y = (e.clientY - s.top) / s.height; wakeMeta();
+});
+stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; });
+document.addEventListener('keydown', e => {
+  wakeMeta();
+  const typing = e.target instanceof HTMLInputElement;
+  if (e.key === 'Escape') { if (ui === 'switch') closeSwitch(); else if (typing) e.target.blur(); return; }
+  if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+  if ((e.key === 'Enter' || e.key === ' ') && stage.dataset.boot && !(e.target instanceof HTMLButtonElement && meta.contains(e.target))) { e.preventDefault(); hurryBoot(); return; }
+  if (e.key === 'Enter' && ui === 'ask' && !stage.dataset.wait && !(e.target instanceof HTMLButtonElement)) { $('.way').click(); return; }
+  if (ui === 'switch' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+    const list = $$('.sw'), i = Math.max(0, list.indexOf(document.activeElement));
+    list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length].focus(); return;
+  }
+  if (e.key === '1' || e.key === '2' || e.key === '3') setVariant(Number(e.key) - 1);
+  else if (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ') boot();
+});
+
+/* ── 소리(꺼진 채로 시작). 낮은 두 음과 숨소리만 쓴다 ── */
+const snd = (() => {
+  let ac = null, out = null, on = false;
+  function ctx() {
+    if (!ac) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ac = new C(); out = ac.createGain(); out.gain.value = .5; out.connect(ac.destination); }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  function tone(f, delay, a, h, r, g, f2) {
+    const c = on && ctx(); if (!c) return;
+    const at = c.currentTime + delay, o = c.createOscillator(), v = c.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f, at); if (f2) o.frequency.exponentialRampToValueAtTime(f2, at + a + h + r);
+    v.gain.setValueAtTime(.0001, at); v.gain.exponentialRampToValueAtTime(g, at + a); v.gain.setValueAtTime(g, at + a + h); v.gain.exponentialRampToValueAtTime(.0001, at + a + h + r);
+    o.connect(v); v.connect(out); o.start(at); o.stop(at + a + h + r + .05);
+  }
+  function air(delay, dur, g, f0, f1) {
+    const c = on && ctx(); if (!c) return;
+    const at = c.currentTime + delay, n = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(), lp = c.createBiquadFilter(), v = c.createGain();
+    src.buffer = buf; lp.type = 'lowpass'; lp.Q.value = .7; lp.frequency.setValueAtTime(f0, at); lp.frequency.exponentialRampToValueAtTime(f1, at + dur * .6); lp.frequency.exponentialRampToValueAtTime(f0, at + dur);
+    v.gain.setValueAtTime(.0001, at); v.gain.exponentialRampToValueAtTime(g, at + dur * .5); v.gain.exponentialRampToValueAtTime(.0001, at + dur);
+    src.connect(lp); lp.connect(v); v.connect(out); src.start(at); src.stop(at + dur + .05);
+  }
+  return {
+    get on() { return on; }, set(v) { on = v; if (v) ctx(); },
+    boot() { tone(55, 0, 1.5, .5, 3, .22); tone(82.41, .3, 1.7, .2, 2.8, .09); tone(164.81, 1, 1.1, .1, 2.4, .02); },
+    rise() { tone(61.74, 0, .9, .2, 1.8, .14); air(0, 1.8, .012, 180, 700); },
+    dive() { tone(73.42, 0, .25, .2, 1.3, .2, 36.71); air(0, 1.4, .02, 160, 1100); },
+    tick() { tone(660, 0, .006, 0, .11, .025); },
+  };
+})();
+
+/* ── 그리기 ── */
+const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 uRes, uC;
+uniform float uR, uLit, uAz, uLz, uFocus, uVar, uGb, uDpr, uSeed;
+uniform vec3 uAxis;
+float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+void main(){
+  vec2 f = gl_FragCoord.xy;
+  vec2 q = f - uC;
+  float dist = length(q);
+  float px = (dist - uR) / uDpr;
+  float inside = 1.0 - smoothstep(-0.7, 0.7, px);
+  vec2 dir = q / max(dist, 0.001);
+  float d = min(dist / uR, 1.0);
+  float z = sqrt(max(0.0, 1.0 - d * d));
+  vec3 n = vec3(dir * d, z);
+  vec3 warm = vec3(1.0, 0.982, 0.955);
+  float line = exp(-abs(px) / 1.1);
+  float halo = exp(-max(px, 0.0) / (0.045 * uR / uDpr + 5.0));
+  vec2 Ld = normalize(mix(vec2(cos(uAz), sin(uAz)), vec2(-0.22, 1.0), uFocus));
+  float mu = dot(dir, Ld);
+  float cres = smoothstep(-0.5, 1.0, mu); cres *= cres;
+  cres *= mix(1.0, pow(max(mu, 0.0), 7.0), uFocus);
+  float pulse = 1.0 + 0.5 * uGb;
+  vec3 col;
+  if (px > 0.4 * uR / uDpr + 48.0) {
+    /* 구에서 먼 자리는 셈하지 않는다. 구가 작게 남아 있는 동안 화면 대부분이 여기다 */
+    col = vec3(0.0);
+  } else if (uVar < 1.5) {
+    /* 결을 깎은 구: 축을 둘러 가는 홈이 빛을 한 줄로 모은다(가는 결 150줄, 굵은 결 60줄) */
+    float N1 = uVar < 0.5 ? 110.0 : 52.0;
+    float h = sqrt(max(1.0 - uLz * uLz, 0.0));
+    vec3 L = vec3(cos(uAz) * h, sin(uAz) * h, uLz);
+    vec3 V = vec3(0.0, 0.0, 1.0);
+    vec3 H = normalize(L + V);
+    vec3 A = normalize(uAxis);
+    float th = acos(clamp(dot(n, A), -1.0, 1.0));
+    vec3 T = cross(A, n);
+    float tl = length(T);
+    T /= max(tl, 0.0001);
+    vec3 B = cross(n, T);
+    /* 홈 사이가 화면 점 몇 개인지로 보일지 정한다. 너무 촘촘해 물결무늬가 낄 결은 그리지 않는다 */
+    float sp = 3.14159265 / N1 * uR;
+    float v1 = smoothstep(2.4, 6.0, sp * z);
+    float v2 = smoothstep(2.4, 6.0, sp / 5.0 * z);
+    float v3 = smoothstep(2.4, 6.0, sp / 25.0 * z);
+    float s1 = sin(2.0 * N1 * th), s2 = sin(10.0 * N1 * th), s3 = sin(50.0 * N1 * th);
+    /* 사인 물결을 날 선 홈 모양으로 세운다 */
+    float w1 = s1 / sqrt(s1 * s1 + 0.07), w2 = s2 / sqrt(s2 * s2 + 0.07), w3 = s3 / sqrt(s3 * s3 + 0.12);
+    vec3 nn = normalize(n + B * (0.22 * w1 * v1 + 0.10 * w2 * v2 + 0.05 * w3 * v3));
+    /* 축이 지나는 점에서는 빛줄기를 거둬 한 점으로 뾰족하게 모이지 않게 한다 */
+    float pole = smoothstep(0.03, 0.30, tl);
+    float tdh = dot(T, H);
+    float an = pow(max(1.0 - tdh * tdh, 0.0), mix(44.0, 110.0, uFocus)) * pole;
+    float side = smoothstep(-0.28, 0.32, dot(n, L));
+    float groove = 0.60 + 0.40 * (0.70 * w1 * v1 * (1.0 - 0.7 * v2) + 0.42 * w2 * v2 * (1.0 - 0.5 * v3) + 0.30 * w3 * v3);
+    float spec = pow(max(dot(nn, H), 0.0), 30.0);
+    float amb = 0.5 + 0.5 * dot(nn, normalize(vec3(-0.25, 0.7, 0.66)));
+    float rings = ((0.5 + 0.5 * w1) * v1 * 0.036 + (0.5 + 0.5 * w2) * v2 * 0.016 + (0.5 + 0.5 * w3) * v3 * 0.010) * amb;
+    vec3 L2 = normalize(vec3(-L.x * 0.7 + 0.35, -L.y * 0.5 - 0.3, 0.6));
+    vec3 H2 = normalize(L2 + V);
+    float t2 = dot(T, H2);
+    float an2 = pow(max(1.0 - t2 * t2, 0.0), 28.0) * pole * smoothstep(-0.2, 0.4, dot(n, L2));
+    vec3 inC = vec3(0.005) + warm * uLit * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + an2 * groove * 0.09 + spec * 0.20 * side + rings + 0.010 * max(dot(n, L), 0.0));
+    /* 작게 줄었을 때는 둘레를 가늘게 다 둘러 구인 줄 알게 한다 */
+    float tiny = smoothstep(60.0, 14.0, uR / uDpr);
+    inC += warm * uLit * (cres * (pow(1.0 - z, 5.0) * 0.14 + line * 0.16) * pulse + line * 0.24 * tiny);
+    vec3 outC = warm * uLit * (cres * (line * 0.16 + halo * 0.03) * pulse + line * 0.24 * tiny);
+    col = mix(outC, inC, inside);
+  } else {
+    /* 매끈한 구: 가장자리에 닿는 빛으로만 드러난다 */
+    vec3 inC = vec3(0.0035) + warm * uLit * cres * (pow(1.0 - z, mix(3.0, 4.6, uFocus)) * mix(0.62, 0.5, uFocus) + line * 0.5) * pulse;
+    inC += warm * uLit * 0.014 * pow(max(dot(n, normalize(vec3(Ld * 0.55, 0.6))), 0.0), 2.0);
+    vec3 outC = warm * uLit * cres * (halo * 0.16 + line * 0.5) * pulse;
+    col = mix(outC, inC, inside);
+  }
+  /* 어두운 번짐이 계단으로 끊기지 않게 낟알을 얹는다 */
+  float g = ign(f + uSeed * 7.31) + ign(f.yx + 17.0 + uSeed * 3.17) - 1.0;
+  col += g * 2.8 / 255.0;
+  gl_FragColor = vec4(max(col, 0.0), 1.0);
+}`;
+let gl = null, U = null, ctx2d = null;
+function initGL() {
+  try { gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' }); } catch (e) { gl = null; }
+  if (!gl) return false;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || 'shader'); return s; };
+  try {
+    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error('link');
+    gl.useProgram(pr);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uVar', 'uGb', 'uDpr', 'uSeed', 'uAxis']) U[k] = gl.getUniformLocation(pr, k);
+    return true;
+  } catch (e) { console.warn('구 셰이더를 만들지 못했습니다.', e); gl = null; return false; }
+}
+function resize() {
+  const s = stage.getBoundingClientRect(); W = Math.max(1, s.width); H = Math.max(1, s.height); DPR = Math.min(Math.max(window.devicePixelRatio || 1, 2), Math.sqrt(7e6 / (W * H)));
+  const cw = Math.round(W * DPR), ch = Math.round(H * DPR);
+  if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
+  if (gl) gl.viewport(0, 0, cw, ch);
+  if (!tw) { const lit = S.lit; snap(poseName); if (poseName === 'inside') S.lit = lit; }
+}
+let frameNo = 0;
+function draw(now) {
+  const t = now / 1000;
+  ptrS.x += (ptr.x - ptrS.x) * .06; ptrS.y += (ptr.y - ptrS.y) * .06;
+  glintBoost += (glintWant - glintBoost) * .05;
+  const still = reduce ? 0 : 1, free = 1 - S.focus;
+  const par = free * S.r * .05 * still;
+  const cx = S.cx + (ptrS.x - .5) * par, cy = S.top + S.r + (ptrS.y - .5) * par;
+  // 손을 따라 빛줄기가 돌고 구가 조금 기운다
+  const az = S.az + ((ptrS.x - .5) * -(.7 * free + .14 * S.focus) + .05 * Math.sin(t * .4)) * still;
+  // 구 나는 깎은 축이 보는 쪽을 향해 고리가 한가운데서 퍼진다
+  const base = variant === 1 ? [S.ax[0] * S.focus, S.ax[1] * S.focus, lerp(1, S.ax[2], S.focus)] : S.ax;
+  const ax = [base[0] + (ptrS.x - .5) * .24 * free * still, base[1] - (ptrS.y - .5) * .2 * free * still, base[2]];
+  const lit = S.lit * (1 + .03 * Math.sin(t * .9) * still);
+  const gb = glintBoost * (1.2 + .8 * Math.sin(t * 3.1));
+  if (still) frameNo = (frameNo + 1) % 64;
+  if (gl) {
+    gl.uniform2f(U.uRes, canvas.width, canvas.height);
+    gl.uniform2f(U.uC, cx * DPR, (H - cy) * DPR);
+    gl.uniform1f(U.uR, S.r * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
+    gl.uniform1f(U.uVar, variant); gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
+    gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  } else if (ctx2d) {
+    const c = ctx2d; c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+    c.beginPath(); c.arc(cx, cy, S.r, 0, Math.PI * 2); c.fillStyle = '#030303'; c.fill();
+    c.lineWidth = 1.4; c.strokeStyle = 'rgba(243,241,236,' + (.6 * S.lit).toFixed(3) + ')'; c.beginPath(); c.arc(cx, cy, S.r, -az - 1.1, -az + 1.1); c.stroke();
+  }
+}
+function frame(now) { stepTween(now); draw(now); requestAnimationFrame(frame); }
+
+if (!initGL()) ctx2d = canvas.getContext('2d');
+canvas.addEventListener('webglcontextlost', e => e.preventDefault());
+canvas.addEventListener('webglcontextrestored', () => { initGL(); resize(); });
+new ResizeObserver(resize).observe(stage);
+resize(); setVariant(0); setMode('first'); applySpace(); wakeMeta();
+requestAnimationFrame(frame);
+boot();
+
+/* 화면 확인용. 움직임을 기다리지 않고 한 장면에 바로 선다 */
+window.__orb = {
+  at(scene, opt = {}) {
+    ++run; skip = null;
+    if (opt.variant !== undefined) setVariant(opt.variant);
+    if (opt.space) { space = opt.space; applySpace(); }
+    const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'] }[scene];
+    stage.classList.add('still'); resize();
+    swTarget = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; }
+    if (opt.point) { swTarget = $('.sw[data-go="' + opt.point + '"]'); snap('sw'); }
+    draw(performance.now()); return { ...S, W, H };
+  },
+  /* 두 자리 사이의 한순간(t는 0~1)을 그린다 */
+  mid(from, to, t, opt = {}) {
+    ++run; skip = null; if (opt.variant !== undefined) setVariant(opt.variant);
+    stage.classList.add('still'); resize(); setUI('none');
+    const a = poses()[from], b = poses()[to], e = (opt.ease || easeIO)(t);
+    tw = null; poseName = to;
+    S.cx = lerp(a.cx, b.cx, e); S.top = lerp(a.top, b.top, e); S.r = Math.exp(lerp(Math.log(a.r), Math.log(b.r), e));
+    S.az = lerp(a.az, b.az, e); S.focus = lerp(a.focus, b.focus, e);
+    if (b.lz !== undefined) S.lz = lerp(a.lz, b.lz, e);
+    if (b.ax) S.ax = [lerp(a.ax[0], b.ax[0], e), lerp(a.ax[1], b.ax[1], e), lerp(a.ax[2], b.ax[2], e)];
+    S.lit = opt.lit !== undefined ? opt.lit : lerp(a.lit, b.lit, e);
+    draw(performance.now()); return { ...S };
+  },
+  draw: () => draw(performance.now()), state: () => ({ ui, space, variant, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', ...S }),
+  /* 화면이 가려져 프레임이 멈춘 곳에서도 흐름이 끝까지 가게 민다 */
+  pump() { stage.classList.remove('still'); return setInterval(() => { const now = performance.now(); stepTween(now); draw(now); }, 16); },
+};
+})();
+</script>
+</body>
+</html>
