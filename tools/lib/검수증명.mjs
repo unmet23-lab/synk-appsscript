@@ -569,6 +569,21 @@ function 개인화생성물정책(o, files, candidate, 판) {
 // 2026-11-10 사이트 점검: 구현 담당만 직접 승인했다. 검수자·재검수·배포 증명은 일반 화면 정책 그대로다.
 export const 사이트점검작업ID = 'site-audit-20261110';
 export const 사이트점검화면정책 = p => p?.담당예외?.taskId === 사이트점검작업ID && p.작성자 === 'GPT' && p.종류 === '화면';
+// Workspace 요청의 GPT 구현 승인을 기록하되, 카본·Fable 검수와 기존 증명은 줄이지 않는다.
+export const Workspace진입작업ID = 'workspace-entry-handoff-20261115';
+export const Workspace진입화면정책 = p => p?.담당예외?.taskId === Workspace진입작업ID && p.작성자 === 'GPT' && p.종류 === '화면';
+export const 직접승인화면정책 = p => 사이트점검화면정책(p) || Workspace진입화면정책(p);
+const Workspace진입원천 = new Set([
+  'entry/index.html', 'entry/entry.mjs', 'entry/entry.css', 'pulse-app/entry-handoff.mjs', 'workspace-entry.js',
+  'app.js', 'index.html', 'pulse-app/app.mjs', 'pulse-app/sw.js', 'studio.js', 'maker-tools.js', 'maker-tools.css', 'workspace.js', 'workspace-access.js',
+].map(p => `docs/마케팅/온라인마케팅지도/engagement/company/public/${p}`));
+function Workspace진입범위검사(o, files, candidate, 판) {
+  if (판 !== 7 || o.작성자 !== 'GPT' || o.종류 !== '화면' || o.사용자지정 || o.예외 || o.페이블생략 != null
+    || o.GPT구독 && o.GPT구독 !== '유지' || candidate || !files.length
+    || files.some(f => !['A', 'M'].includes(f.상태) || f.옛경로 || !Workspace진입원천.has(f.경로))) {
+    throw new Error('Workspace 진입의 직접 승인 범위를 벗어난 담당 예외 — 정확한 원천과 일반 화면 검수가 필요하며 배포 후보·검수 생략은 지원하지 않는다');
+  }
+}
 const 사이트점검원천 = new Set([
   'site-v10/build.mjs', 'site-v10/drama.css', 'site-v10/drama.js', 'site-v10/content/ko.mjs', 'site-v10/content/en.mjs', 'site-v10/public-index.mjs',
   'experiences/path-travel/planner-ui.mjs', 'experiences/path-travel/index.html', 'experiences/brand-opening/home.html',
@@ -600,10 +615,12 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
   if (candidate && o.종류 !== (candidate.종류 === 'synk.im' && !기준이미지만 ? '화면' : '백엔드')) throw new Error(`배포 후보 ${candidate.종류}에 맞는 검수 종류가 아니다`);
   const 사이트점검 = o.담당예외 === 사이트점검작업ID;
   if (사이트점검) 사이트점검범위검사(o, files, candidate, 판);
+  const Workspace진입 = o.담당예외 === Workspace진입작업ID;
+  if (Workspace진입) Workspace진입범위검사(o, files, candidate, 판);
   if ([3, 4].includes(판)) return 사용자지정정책(o, files, candidate, 판);
   // 2026-10-28 직접 사용자 승인: 이 학습 흐름에 한해 담당과 Fable을 대체한다.
   // 일반 정책·검수 원문·SHA 사슬·P0/P1 처리·배포 바이트 검사는 그대로다.
-  if (o.담당예외 != null && !사이트점검) {
+  if (o.담당예외 != null && !사이트점검 && !Workspace진입) {
     const source = p => /^experiences\/korean-study\//.test(p)
       || /^experiences\/synk-account\/qa\/study-town-style-20261028\/[a-z0-9-]+\.mjs$/.test(p)
       || /^experiences\/synk-account\/(?:src\/(?:client|study-login)\.mjs|dist\/client\.js|build-manifest\.json|style\.css|client\.html)$/.test(p)
@@ -623,7 +640,7 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
   const 작성자 = o.작성자 || 'Claude', 구독 = o.GPT구독 || '유지';
   if (!['Claude', 'GPT', '카본'].includes(작성자)) throw new Error('--작성자는 Claude|GPT|카본');
   if (작성자 === '카본' && (판 < 6 || o.종류 !== '화면')) throw new Error('카본 작성자는 현재 판의 화면 구현에만 쓴다');
-  if (작성자 === 'GPT' && o.종류 === '화면' && !사이트점검) throw new Error('GPT 세션의 화면 구현은 카본, Claude 세션은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
+  if (작성자 === 'GPT' && o.종류 === '화면' && !사이트점검 && !Workspace진입) throw new Error('GPT 세션의 화면 구현은 카본, Claude 세션은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
   if (!['유지', '종료'].includes(구독)) throw new Error('--GPT구독은 유지|종료');
   if (구독 === '종료' && (!o.사유?.trim() || 작성자 !== 'Claude')) throw new Error('GPT 구독 종료는 Claude 작업에서 --사유와 함께 명시한다');
   // 화면 Fable 생략(2026-10-24 유호님): 그림·글·색만 바꾼 화면처럼 Fable이 볼 것이 적은 일은 아르곤만 받는다 — 까닭을 정책에 남긴다.
@@ -645,7 +662,8 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
     예외 = { 종류: o.예외, 대상: o.대상.trim(), 사유: o.사유.trim() };
   }
   return { 판, 작성자, 종류: o.종류, GPT구독: 구독, ...(구독 === '종료' ? { 구독사유: o.사유.trim() } : {}), 필수, 예외, ...(페이블생략 ? { 페이블생략 } : {}),
-    ...(사이트점검 ? { 담당예외: { taskId: 사이트점검작업ID, userStatement: '이번 수정은 GPT가 직접 진행', scope: '2026-11-10 사이트 점검의 GPT 화면 구현만 승인. 일반 화면 검수·재검수·앞판·SHA·배포 조건 유지.' } } : {}) };
+    ...(사이트점검 ? { 담당예외: { taskId: 사이트점검작업ID, userStatement: '이번 수정은 GPT가 직접 진행', scope: '2026-11-10 사이트 점검의 GPT 화면 구현만 승인. 일반 화면 검수·재검수·앞판·SHA·배포 조건 유지.' } } : {}),
+    ...(Workspace진입 ? { 담당예외: { taskId: Workspace진입작업ID, userStatement: '이번 작업은 GPT가 설계·구현·검토 진행', scope: 'Workspace 공통 진입과 후속 화면의 GPT 구현 승인. 카본·Fable 검수와 재검수·SHA·배포 조건 유지.' } } : {}) };
 }
 /** Claude 백엔드의 다른 회사 검수 순서 — 앞 검수자가 한도·로그인으로 막혔을 때만 다음으로 넘어간다(2026-10-24 다섯 가지 ①).
  *  화면(아르곤 → Fable 최종)과 GPT 작성(GPT·Claude 둘 다 필수)은 null. 봉인된 정책 판의 순서다 —
@@ -751,7 +769,7 @@ export const 끝판정책 = 정책 => 정책.판 >= 5 && 정책.작성자 === 'G
 export function 다시검수자들(정책, 대상, { 끝판 = false } = {}) {
   if (정책.사용자지정) return [...정책.필수];
   if (끝판정책(정책)) return 끝판 || 대상.some(t => t.출처 === 'Claude') ? ['GPT', 'Claude'] : ['GPT'];
-  if (정책.작성자 === 'GPT' && !사이트점검화면정책(정책)) return [...정책.필수];
+  if (정책.작성자 === 'GPT' && !직접승인화면정책(정책)) return [...정책.필수];
   const 낸 = ['아르곤', 'GPT', 'Fable'].filter(w => 대상.some(t => t.출처 === w));
   if (정책.종류 === '화면') return 정책.페이블생략 && !낸.length ? ['아르곤'] : [...new Set([...낸, 'Fable'])];
   return 낸.length ? 낸 : [대체순서(정책)[0]];
@@ -765,7 +783,7 @@ export function 대신할검수자(정책, 누구) {
   if (AI마켓아르곤대체(정책) && 누구 === '아르곤') return ['아르곤', 'GPT'];
   if (정책.사용자지정) return [누구];
   if (GPT자리대체정책(정책)) return 누구 === 'GPT' ? ['GPT', '아르곤'] : [누구];
-  if (정책.작성자 === 'GPT' && !사이트점검화면정책(정책)) return [누구];
+  if (정책.작성자 === 'GPT' && !직접승인화면정책(정책)) return [누구];
   if (그록대체정책(정책)) {
     const 순서 = 대체순서(정책), i = 순서.indexOf(누구), k = 순서.indexOf('그록');
     if (i < 0) return [누구];
