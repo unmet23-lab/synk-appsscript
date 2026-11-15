@@ -6,13 +6,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import * as atlas from '../../../packages/atlas/src/index.mjs';
 import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
-import { createWorldEducation } from '../world-learning-ui.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
 import { homeBanksOf, positionPlanner } from '../world-atlas-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
+
+// 변형 시험(qa/position-mutants.mjs)은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
+const { createWorldEducation } = await import(
+  process.env.SYNK_LEARNING_UI_MODULE ? pathToFileURL(process.env.SYNK_LEARNING_UI_MODULE).href : '../world-learning-ui.mjs'
+);
 
 const readJson = url => JSON.parse(fs.readFileSync(new URL(url, import.meta.url), 'utf8'));
 const INDEX = readJson('../../../packages/atlas/map/index.json');
@@ -77,7 +82,8 @@ function stage() {
 // open: 홈 코치를 짓는 길(기본 손님 홈 코치). timers: 셸이 target으로 받는 시계(setTimeout · clearTimeout — 가짜 시계). panels: 홈처럼 판 자원을
 // 다룬다(판을 바꾸거나 닫으면 그 판의 자원을 dispose — home.mjs disposePanelContent). 창(online)과 문서(visibilitychange)의 알림은 fire로 낸다.
 // focusing: 판 글의 단추와 문서의 초점(activeElement)을 흉내 내고, 셸이 초점을 둔 자리를 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
-// paint: 판 글을 바꿔 둔다(진짜 판에서 생길 수 있는 꼴을 흉내 낸다).
+// paint: 판 글을 바꿔 둔다(진짜 판에서 생길 수 있는 꼴을 흉내 낸다). focusing이면 판 안의 스크롤 칸(#panel-content)도 흉내 낸다 — 판 글을 바꾸면 스크롤 자리가
+// 처음으로 가고(셸이 되돌려야 한다), 능력 줄(details)은 접힌 채로 서며, 닫힌 줄 안의 단추에는 초점이 가지 않는다(브라우저는 닫힌 details의 몸을 그리지 않는다).
 function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html } = {}) {
   const opens = [];
   const engine = {
@@ -98,6 +104,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
   let active = null;
   const focused = [];
   const buttonsMade = new Map();
+  const content = { scrollTop: 0 };
   // 판 글의 능력 줄(details[data-skill])과 그 summary를 짓는다(focusing일 때만). 같은 판 글이면 같은 줄을 돌려준다.
   const rowsIn = () => {
     const key = `${shown.length}|details`;
@@ -108,6 +115,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
         const row = {
           inPanel: true,
           tagName: 'DETAILS',
+          open: false,
           getAttribute: attr => (attr === 'data-skill' ? skill : null),
           querySelector: selector => (selector === 'summary' ? summary : null),
         };
@@ -138,6 +146,10 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
         const value = match[1] ?? '';
         const index = seen.get(value) ?? 0;
         seen.set(value, index + 1);
+        // 그 단추가 능력 줄(details) 안이면 그 줄의 능력.
+        const rowAt = html.lastIndexOf('<details', match.index);
+        const inRow = rowAt >= 0 && html.indexOf('</details>', rowAt) > match.index;
+        const rowSkill = inRow ? (/data-skill="([^"]*)"/.exec(html.slice(rowAt, html.indexOf('>', rowAt))) ?? [])[1] ?? null : null;
         const clicks = [];
         return {
           inPanel: true,
@@ -145,7 +157,11 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
           dataset: { [name.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase())]: value },
           getAttribute: attr => (attr === name ? value : null),
           hasAttribute: attr => attr === name,
-          focus: () => focused.push(`${name}=${value}#${index}`),
+          rowSkill,
+          focus: () => {
+            if (rowSkill != null && rowsIn().find(row => row.getAttribute('data-skill') === rowSkill)?.open !== true) return;
+            focused.push(`${name}=${value}#${index}`);
+          },
           addEventListener(type, fn) {
             if (type === 'click') clicks.push(fn);
           },
@@ -160,7 +176,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     focus() {
       if (focusing) focused.push('root');
     },
-    closest: () => null,
+    closest: selector => (focusing && selector === '#panel-content' ? content : null),
     querySelector: () => null,
     querySelectorAll: selector => (focusing ? buttonsIn(selector) : []),
     contains: element => focusing && (element?.inPanel === true || element?.isRoot === true),
@@ -235,6 +251,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     showPanel(title, html) {
       if (panels) disposeResource();
       shown.push(String(paint(String(html))));
+      if (focusing) content.scrollTop = 0;
       if (/data-position-stage/.test(html)) box = stage();
     },
   };
@@ -287,6 +304,10 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     focusOn(name, value = '', index = 0) {
       active = buttonsIn(`[${name}]`).filter(button => button.getAttribute(name) === value)[index] ?? null;
       assert.ok(active, `판에 ${name}="${value}"의 ${index + 1}번째 단추가 있다`);
+      assert.ok(
+        active.rowSkill == null || rowsIn().find(row => row.getAttribute('data-skill') === active.rowSkill)?.open === true,
+        '닫힌 능력 줄 안의 단추에는 초점을 둘 수 없다 — 줄을 먼저 편다',
+      );
     },
     focusRoot() {
       active = { isRoot: true, hasAttribute: () => false };
@@ -299,6 +320,20 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
       const button = buttonsIn(`[${name}]`).find(row => row.getAttribute(name) === value);
       assert.ok(button, `판에 ${name}="${value}" 단추가 있다`);
       for (const fn of [...button.clicks]) fn({ type: 'click' });
+    },
+    // 판 안의 스크롤 칸(focusing일 때만) · 능력 줄 펴기 · 펴 둔 줄 · 화면 숨기기와 다시 보이기.
+    content,
+    openRow(skill) {
+      const row = rowsIn().find(item => item.getAttribute('data-skill') === skill);
+      assert.ok(row, `판에 ${skill} 능력 줄이 있다`);
+      row.open = true;
+    },
+    openRows: () => rowsIn().filter(row => row.open).map(row => row.getAttribute('data-skill')),
+    hide() {
+      document.visibilityState = 'hidden';
+    },
+    show() {
+      document.visibilityState = 'visible';
     },
     // 능력 줄을 펴는 summary에 둔다.
     focusSummary(skill) {
@@ -496,12 +531,20 @@ test('엔진 판 — 첫 받기가 실패로 끝난 뒤 pulled를 다시 보는 
     assert.deepEqual(clock.waits(), [4000], '받기가 아직이면 두 배');
     clock.advance(4000);
     assert.deepEqual(clock.waits(), [8000]);
+    app.hide();
+    app.fire('visibilitychange');
+    assert.deepEqual(clock.waits(), [8000], '화면이 숨겨질 때는 되돌리지 않는다');
+    app.show();
     app.fire('online');
     assert.deepEqual(clock.waits(), [2000], '다시 연결되면 2초로 되돌린다(코치가 그때 받는다)');
     clock.advance(2000);
     assert.deepEqual(clock.waits(), [4000]);
     app.fire('visibilitychange');
     assert.deepEqual(clock.waits(), [2000], '화면이 다시 보이면 2초로 되돌린다');
+    for (const next of [4000, 8000, 16000, 32000, 60000, 60000]) {
+      clock.advance(clock.waits()[0]);
+      assert.deepEqual(clock.waits(), [next], '두 배씩 늘되 60초에서 멈춘다');
+    }
     app.closePanel();
     assert.deepEqual(clock.waits(), [], '판을 닫으면 남은 타이머가 없다');
     // 다시 열면 다시 본다. 문서를 닫으면 그친다.
@@ -509,6 +552,38 @@ test('엔진 판 — 첫 받기가 실패로 끝난 뒤 pulled를 다시 보는 
     await until(() => clock.waits().length === 1, '다시 연 판의 다시 보기');
     app.education.dispose();
     assert.deepEqual(clock.waits(), [], '문서를 닫으면 남은 타이머가 없다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 첫 받기를 늦게 기다리는 사이 판을 닫으면, 그 늦은 답이 실패로 와도 pulled 다시 보기를 시작하지 않고(남은 타이머 0), 다시 열면 그 판이 다시 묻고 다시 본다(설계 주인 11-16 조건 1 · GPT 다시 검수 GA1 · 카본 A1)', async () => {
+  const clock = fakeClock();
+  let late = null;
+  // 첫 물음은 시간 초과로 답해 판을 기록 일부로 그리게 하고, 늦게 기다리는 둘째 물음(SYNC_LATE_MS)은 손으로 푼다. 그 뒤 물음은 곧 실패로 답한다
+  // (진짜 엔진은 첫 실패를 그 문서 동안 그대로 돌려준다).
+  const sync = accountLike(() => {
+    const asked = sync.calls.length;
+    if (asked === 1) return { ok: false, kind: 'timeout', code: 'PULL_TIMEOUT' };
+    if (asked === 2)
+      return new Promise(resolve => {
+        late = resolve;
+      });
+    return { ok: false, kind: 'offline', code: 'NETWORK' };
+  });
+  const app = shell({ wrap: sync.wrap, timers: clock, panels: true });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()) && late, '기록 일부 판과 늦게 묻는 첫 받기');
+    assert.deepEqual(sync.calls, [null, 60000], '시간 초과면 늦게 한 번 더 기다린다');
+    app.closePanel();
+    late({ ok: false, kind: 'offline', code: 'NETWORK' });
+    await tick(20);
+    assert.deepEqual(clock.waits(), [], '닫힌 판에 온 늦은 실패 답으로는 다시 보기 타이머를 만들지 않는다');
+    await app.education.position();
+    await until(() => clock.waits().length === 1, '다시 연 판의 다시 보기');
+    assert.deepEqual(clock.waits(), [2000]);
+    assert.match(app.last(), /data-complete="false"/, '다시 연 판은 기록 일부');
   } finally {
     app.dispose();
   }
@@ -558,7 +633,7 @@ test('엔진 판 — 올리기 · 받기가 멈췄으면(stopped · writesOff ·
   }
 });
 
-test('엔진 판 — pulled로 다시 그릴 때 판 안에 있던 초점을 같은 단추로 되돌린다(설계 주인 11-16 조건 3 — 다시 그리기는 스크롤과 초점을 지킨다)', async () => {
+test('엔진 판 — pulled로 다시 그릴 때 펴 둔 능력 줄을 다시 펴고, 스크롤 자리와 판 안의 초점(그 줄 안의 단추)을 지킨다(설계 주인 11-16 조건 3 · Fable 다시 검수)', async () => {
   let pulled = false;
   const clock = fakeClock();
   const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }), { sync: () => ({ pulled }) });
@@ -567,25 +642,31 @@ test('엔진 판 — pulled로 다시 그릴 때 판 안에 있던 초점을 같
     await app.education.position();
     await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '기록 일부 판');
     await until(() => clock.waits().length === 1, '다시 보기 타이머');
+    app.openRow('ko.reading.detail');
     app.focusOn('data-position-practice', 'ko.reading.detail');
+    app.content.scrollTop = 420;
     app.focused.splice(0);
     pulled = true;
     clock.advance(2000);
     assert.match(app.last(), /data-complete="true"/, 'pulled로 다시 그렸다');
-    assert.deepEqual(app.focused, ['data-position-practice=ko.reading.detail#0'], '초점이 같은 단추로 돌아온다');
+    assert.deepEqual(app.openRows(), ['ko.reading.detail'], '펴 둔 능력 줄을 다시 편다');
+    assert.equal(app.content.scrollTop, 420, '스크롤 자리를 지킨다');
+    assert.deepEqual(app.focused, ['data-position-practice=ko.reading.detail#0'], '초점이 펴 둔 줄 안의 같은 단추로 돌아온다');
   } finally {
     app.dispose();
   }
 });
 
 test('엔진 판 — 다시 그릴 때의 초점: 같은 단추가 여럿이면 몇 번째였는지로 찾고, 능력 줄의 summary는 그 줄로, 다시 그린 판에 그 단추가 없으면 판 머리에 두며, 판 밖의 초점은 건드리지 않는다(설계 주인 11-16 조건 3)', async () => {
-  // 진짜 판은 먼저 볼 항목(attention)과 영역 줄에 같은 능력의 연습 단추를 함께 낼 수 있다 — 판 글에서 그 단추를 하나 더 둔다.
+  // 진짜 판은 먼저 볼 항목(attention — 능력 줄 밖)과 그 능력 줄 안에 같은 능력의 연습 단추를 함께 낼 수 있다 — 판 글의 첫 능력 줄 앞에 그 단추를
+  // 하나 더 둔다(차례로 줄 밖이 첫째, 줄 안이 둘째).
   const twice = html => {
     const at = html.indexOf('data-position-practice="ko.reading.detail"');
-    if (at < 0) return html;
+    const rows = html.indexOf('<details');
+    if (at < 0 || rows < 0 || rows > at) return html;
     const start = html.lastIndexOf('<button', at);
     const end = html.indexOf('</button>', at) + '</button>'.length;
-    return html.slice(0, end) + html.slice(start, end) + html.slice(end);
+    return html.slice(0, rows) + html.slice(start, end) + html.slice(rows);
   };
   const app = shell({ focusing: true, paint: twice });
   try {
@@ -598,7 +679,15 @@ test('엔진 판 — 다시 그릴 때의 초점: 같은 단추가 여럿이면 
       app.click('data-position-exam', exam);
       return [...app.focused];
     };
-    assert.deepEqual(redraw(() => app.focusOn('data-position-practice', 'ko.reading.detail', 1)), ['data-position-practice=ko.reading.detail#1'], '같은 단추가 둘이면 두 번째로 돌아온다');
+    assert.deepEqual(redraw(() => app.focusOn('data-position-practice', 'ko.reading.detail', 0)), ['data-position-practice=ko.reading.detail#0'], '능력 줄 밖의 첫째 단추');
+    assert.deepEqual(
+      redraw(() => {
+        app.openRow('ko.reading.detail');
+        app.focusOn('data-position-practice', 'ko.reading.detail', 1);
+      }),
+      ['data-position-practice=ko.reading.detail#1'],
+      '같은 단추가 둘이면 두 번째(펴 둔 능력 줄 안)로 돌아온다',
+    );
     assert.deepEqual(redraw(() => app.focusRoot()), ['root'], '판 머리에 있던 초점은 판 머리로');
     assert.deepEqual(redraw(() => app.focusSummary('ko.reading.detail')), ['summary=ko.reading.detail'], '능력 줄의 summary에 있던 초점은 그 줄의 summary로');
     assert.deepEqual(redraw(() => app.focusGone('data-position-recheck', 'ko.reading.gone')), ['root'], '다시 그린 판에 없는 단추면 판 머리');

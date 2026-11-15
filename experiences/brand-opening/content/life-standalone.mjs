@@ -26514,6 +26514,7 @@ function createWorldEducation({
   }
   function watchPulled(coachNow, wait = PULL_WATCH_MS) {
     if (!coachNow || stopped || pullWatch.done === coachNow || pullWatch.coach === coachNow && pullWatch.timer) return;
+    if (nextSync.coach !== coachNow || !panelNode("[data-position-next]")) return;
     const state = pullState(coachNow);
     if (!state) return;
     if (state === "pulled") {
@@ -26590,6 +26591,20 @@ function createWorldEducation({
     const scope = owner === "guest" ? "device" : summary.storage?.guest === false ? "account" : null;
     return { values, exam, board, plan, cards, fresh, judged, scope };
   }
+  function openRowsOf(root) {
+    try {
+      return [...root?.querySelectorAll?.("details[data-skill]") || []].filter((el) => el.open === true).map((el) => el.getAttribute("data-skill"));
+    } catch {
+      return [];
+    }
+  }
+  function reopenRows(root, skills) {
+    if (!root || !skills?.length) return;
+    try {
+      for (const el of root.querySelectorAll?.("details[data-skill]") || []) if (skills.includes(el.getAttribute("data-skill"))) el.open = true;
+    } catch {
+    }
+  }
   const NEXT_FOCUS = ["data-position-diagnostic", "data-position-exam", "data-position-practice", "data-position-recheck", "data-position-writing"];
   function nextFocusOf(root) {
     try {
@@ -26642,7 +26657,7 @@ function createWorldEducation({
         data = null;
       }
     }
-    const scroller = keepScroll ? panelNode("[data-position-next]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0, focusKey = keepScroll ? nextFocusOf(panelNode("[data-position-next]")) : null;
+    const scroller = keepScroll ? panelNode("[data-position-next]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0, focusKey = keepScroll ? nextFocusOf(panelNode("[data-position-next]")) : null, openRows = keepScroll ? openRowsOf(panelNode("[data-position-next]")) : [];
     if (!data) {
       home.showPanel(t2("position.title"), nextChecking(), PANEL);
       panelNode("[data-position-next]")?.focus?.({ preventScroll: true });
@@ -26652,6 +26667,7 @@ function createWorldEducation({
     home.showPanel(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.fresh.has(id), scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0 }), PANEL);
     const root = panelNode("[data-position-next]");
     if (keepScroll) {
+      reopenRows(root, openRows);
       const node = root?.closest?.("#panel-content");
       if (node) node.scrollTop = scrollTop;
       refocusNext(root, focusKey);

@@ -732,6 +732,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  function watchPulled(coachNow,wait=PULL_WATCH_MS){
   if(!coachNow||stopped||pullWatch.done===coachNow||pullWatch.coach===coachNow&&pullWatch.timer)return;
+  // 판이 닫힌 뒤에 온 첫 받기 답(판을 그린 코치가 아니거나 내 위치 새 판이 없음)으로는 시작하지 않는다 — 다시 열면 그 판이 다시 묻는다(GPT 다시 검수 GA1).
+  if(nextSync.coach!==coachNow||!panelNode('[data-position-next]'))return;
   const state=pullState(coachNow);
   if(!state)return;
   if(state==='pulled'){stopPullWatch();pullWatch.done=coachNow;redrawNext();return;}
@@ -783,6 +785,10 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scope=owner==='guest'?'device':summary.storage?.guest===false?'account':null;
   return {values,exam,board,plan,cards,fresh,judged,scope};
  }
+ // 다시 그릴 때 펴 둔 능력 줄(details[data-skill])을 다시 편다(Fable 다시 검수). 다시 그린 판의 줄은 모두 접힌 채로 서는데, 닫힌 줄 안의 단추에는
+ // 초점이 가지 않고 접힌 만큼 스크롤 자리도 어긋난다. 그래서 스크롤과 초점을 되돌리기 전에 줄부터 다시 편다.
+ function openRowsOf(root){try{return[...(root?.querySelectorAll?.('details[data-skill]')||[])].filter(el=>el.open===true).map(el=>el.getAttribute('data-skill'));}catch{return[];}}
+ function reopenRows(root,skills){if(!root||!skills?.length)return;try{for(const el of root.querySelectorAll?.('details[data-skill]')||[])if(skills.includes(el.getAttribute('data-skill')))el.open=true;}catch{/* 펴 둔 줄은 덤이다 */}}
  // 다시 그릴 때 판 안에 있던 초점을 같은 단추로 되돌린다(설계 주인 11-16 조건 3 — 다시 그리기는 스크롤과 초점을 지킨다. 생활 판 paint의 keepFocus와 같은 뜻).
  // 판 밖에 있던 초점은 건드리지 않는다. 같은 단추가 여럿이면 몇 번째였는지로 찾고, 그 단추가 없어졌으면 판 머리에 둔다. 능력 줄을 펴는 summary에
  // 있던 초점은 그 능력 줄(details[data-skill])의 summary로 되돌린다.
@@ -817,12 +823,12 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let data=null;
   // 닫힌 코치(판이 막 다시 정해짐)는 던진다 — 확인 중 판으로 두고 판 감시의 알림에서 다시 그린다.
   if(coachNow&&P&&draw){try{data=nextData(coachNow,P);}catch{data=null;}}
-  const scroller=keepScroll?panelNode('[data-position-next]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-position-next]')):null;
+  const scroller=keepScroll?panelNode('[data-position-next]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-position-next]')):null,openRows=keepScroll?openRowsOf(panelNode('[data-position-next]')):[];
   if(!data){home.showPanel(t('position.title'),nextChecking(),PANEL);panelNode('[data-position-next]')?.focus?.({preventScroll:true});return;}
   const two=topik2Domains(),exams=studentExam(data.values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
   home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0}),PANEL);
   const root=panelNode('[data-position-next]');
-  if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
+  if(keepScroll){reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
   // 판이 닫히면(다른 판을 열거나 닫음) 첫 받기 뒤의 받기를 다시 보는 것을 그친다(설계 주인 11-16 조건 1 — 남은 타이머가 없게).
   home.attachPanelResource?.({dispose:stopPullWatch});
   // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(GPT 끝 판 GB1).

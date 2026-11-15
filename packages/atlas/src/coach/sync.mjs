@@ -12,6 +12,8 @@ export const SIFT_CAP = 8; // 한 세션에 가려낸 사건이 이것을 넘으
 export const UPLOAD_DELAY_MS = 1500;
 export const PULL_GAP_MS = 5 * 60_000; // 화면이 다시 보일 때의 GET은 5분에 한 번까지(B5)
 export const PULL_RETRY_MS = 3_000; // 첫 받기가 차례에 밀렸을 때(다른 탭이 쥠) 다시 받기까지
+// 이 문서에서 받기가 아직 안 됐는데 받기가 offline으로 끊겼을 때 다시 받기까지 — 받기만의 실패 수로 타고 300초에 머문다(설계 주인 11-16).
+export const PULL_LADDER_MS = [5_000, 15_000, 60_000, 300_000];
 export const WRITES_RETRY_MS = 300_000; // 쓰기 막힘(WRITES_DISABLED) 뒤 다시 보내 보기까지 — 물러서기의 마지막 간격과 같다
 const BACKOFF_MS = [UPLOAD_DELAY_MS, 5_000, 15_000, 60_000, 300_000]; // 같은 실패는 물러서기
 const AUTH_CODES = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
@@ -115,6 +117,8 @@ export function createSync({
   // 간격을 재는 시계 — 서버 시각으로 고치지 않은 기기 시계(호스트가 준다). 받기 간격을 고친 시계(now)로 재면 첫 받기로 서버와의 차이가 설 때
   // 시계가 한 번에 움직여, 기기 시계가 앞선 기기에서는 앞선 만큼 + 5분 동안 화면 복귀 받기가 돌지 않았다(Fable 5.2 끝 판 둘째 넘친 #18).
   clock = now,
+  // 받기 다시 하기의 시계(차례에 밀린 첫 받기 · 끊긴 받기의 다시 받기) — 시험이 가짜 시계를 넘긴다. 올리기의 시계는 그대로 전역이다.
+  timers = { setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: id => clearTimeout(id) },
 }) {
   const state = {
     closed: false,
@@ -138,6 +142,9 @@ export function createSync({
     // 이 문서에서 받기(GET)가 된 적 있음 — 받은 답을 기록부에 받은 뒤에만 서고, 뒤에 실패해도 거짓으로 돌아가지 않는다. 첫 받기가 실패로 적혀
     // first가 그대로여도 셸이 「기록이 다 왔다」를 읽는 자리다(status().pulled — 4-4a Fable 끝 판 F1 · 설계 주인 11-16 승인).
     pulled: false,
+    pullMisses: 0, // 받기만의 이어진 offline 실패 — 올리기 성공으로 0이 되지 않는다(받기 다시 하기의 사다리, 설계 주인 11-16)
+    pullTimer: null, // 다시 받기 — 차례에 밀린 첫 받기 · 끊긴 받기
+    pullDue: null, // 건 다시 받기가 돌 때(clock)
   };
 
   // GET · POST 한 줄 — 앞 일이 끝난 뒤에 다음 일을 시작한다(실패해도 줄은 이어진다).
@@ -172,6 +179,7 @@ export function createSync({
     if (kind !== 'auth' && kind !== 'switch') note('save', { ok: false, code });
     clearTimeout(state.timer);
     state.timer = null;
+    clearPullRetry(); // 올리기 · 받기가 멈추면(stopped · writesOff · switchOff) 다시 받기도 그친다(설계 주인 11-16 조건 5)
     const revision = Number.isSafeInteger(error?.revision) ? error.revision : null;
     try {
       onAccount?.({ kind, code, status: error?.status ?? null, revision });
@@ -243,6 +251,13 @@ export function createSync({
     return kind;
   }
 
+  // 올리기가 됐다 — 받기가 아직이면(첫 받기가 끊긴 뒤) 서버가 돌아온 것이니 다음 받기를 5초 뒤로 당긴다. 곧바로 받지 않는다 — 받기만 고장 난
+  // 서버에 올리기 답마다 GET이 가지 않게(설계 주인 11-16 조건 4). 이미 건 받기가 더 이르면 그대로 둔다. 받는 중이면 그 받기의 답을 따른다.
+  function pullSoonAfterUpload() {
+    if (!state.pulled && state.pullMisses > 0 && !state.pulling)
+      armPull({ delay: PULL_LADDER_MS[0], sooner: true });
+  }
+
   function settle(outcome, sent) {
     if (state.closed || outcome === 'closed') return;
     if (state.received) {
@@ -251,6 +266,7 @@ export function createSync({
     }
     if (outcome === 'ok') {
       state.failures = 0;
+      pullSoonAfterUpload();
       // 한 묶음 넘게 남았거나 올리는 사이에 쓴 것이 있으면 이어서 — 이번에 보낸 것만 남았으면 곧바로 다시 보내지 않는다(헛돌지 않게).
       if (
         trail()
@@ -358,8 +374,12 @@ export function createSync({
 
   // 받기 실패 — 닫힌 뒤 돌아온 실패는 getRound가 여기 오기 전에 거른다(닫을 때 첫 받기는 이미 CLOSED로 풀렸다).
   async function getFailed(kind, error) {
-    if (kind === 'offline') state.failures += 1;
-    else if (kind === 'bad-since') note('save', { ok: false, code: codeOf(error) });
+    if (kind === 'offline') {
+      state.failures += 1;
+      // 받기만의 실패 수 — 이 문서에서 받기가 아직이면 그 사다리로 다시 건다(설계 주인 11-16 — offline에서만, 다른 갈래는 멈추거나 셸이 맡는다).
+      state.pullMisses += 1;
+      if (!state.pulled) armPull();
+    } else if (kind === 'bad-since') note('save', { ok: false, code: codeOf(error) });
     else stop(kind, error);
     settleFirst({ ok: false, kind, code: codeOf(error) });
     return null;
@@ -397,14 +417,47 @@ export function createSync({
       state.timer = null;
       schedule();
     }
+    // 받기가 됐다 — 첫 받기의 된 답과 같은 자리에서만 선다(올리기 성공 · 시간 초과 · 받은 답을 쓰다 난 예외는 세우지 않는다, F1 조건 1).
+    // 알림보다 먼저 세워, 알림을 받는 쪽이 그 자리에서 status()를 읽어도 참이다(GPT · 카본 엔진 묶음 GA1 · A1). 받기 다시 하기는 여기서 그친다.
+    const newlyPulled = !state.pulled;
+    state.pulled = true;
+    state.pullMisses = 0;
+    clearPullRetry();
     if (trail().summary() !== before) {
       announce();
       tell('receive');
-    } else if (!state.pulled) tell('receive'); // 처음 된 받기는 요약이 그대로여도 한 번 알린다(F1 조건 2)
-    // 받기가 됐다 — 첫 받기의 된 답과 같은 자리에서만 선다(올리기 성공 · 시간 초과 · 받은 답을 쓰다 난 예외는 세우지 않는다, F1 조건 1).
-    state.pulled = true;
+    } else if (newlyPulled) tell('receive'); // 처음 된 받기는 요약이 그대로여도 한 번 알린다(F1 조건 2)
     settleFirst({ ok: true });
     return answer;
+  }
+
+  // 받기 다시 하기(설계 주인 11-16 — 4-4a 다시 검수 Fable P2). 이 문서에서 받기가 아직 안 됐을 때(pulled 거짓)만 쓴다. offline으로 끊긴 받기를
+  // 받기만의 실패 수로 사다리(PULL_LADDER_MS)를 타며 다시 건다. pulled가 서거나, 닫히거나, 올리기 · 받기가 멈추면(stopped · writesOff ·
+  // switchOff) 걸지 않고 건 것도 지운다. 받는 길(get)이 없는 나르개에서는 걸지 않는다(손님은 이 모듈을 쓰지 않는다).
+  const canRetryPull = () => !state.pulled && canGet() && !state.writesOff && !!carrier().get;
+  function clearPullRetry() {
+    timers.clearTimeout(state.pullTimer);
+    state.pullTimer = null;
+    state.pullDue = null;
+  }
+  // delay가 없으면 사다리의 지금 칸이다. sooner면 이미 건 받기가 그보다 이르면 두고, 늦으면 당긴다.
+  function armPull({ delay = null, sooner = false } = {}) {
+    if (!canRetryPull()) {
+      clearPullRetry();
+      return;
+    }
+    const wait =
+      delay ?? PULL_LADDER_MS[Math.min(Math.max(state.pullMisses, 1), PULL_LADDER_MS.length) - 1];
+    if (sooner && state.pullTimer && state.pullDue !== null && state.pullDue - clock() <= wait)
+      return;
+    timers.clearTimeout(state.pullTimer);
+    state.pullDue = clock() + wait;
+    state.pullTimer = timers.setTimeout(() => {
+      state.pullTimer = null;
+      state.pullDue = null;
+      if (canRetryPull()) void pull({ force: true });
+    }, wait);
+    state.pullTimer?.unref?.();
   }
 
   // 요약 받기. force가 아니면 5분에 한 번까지(화면이 다시 보일 때). 받는 길(get)이 없는 나르개면 하지 않는다 — 셸이 나르개를 늦게
@@ -415,17 +468,19 @@ export function createSync({
     // 간격이 음수면(고치지 않은 기기 시계가 문서가 열린 동안 뒤로 갔다 — 틀리게 앞서 있던 시계를 OS가 맞춤) 「5분 안」으로 치지 않고 받는다 —
     // 뒤로 간 만큼 + 5분 동안 화면 복귀 받기가 돌지 않았다(Fable 5.2 합친 끝 판 넘친 #17).
     const gap = clock() - state.lastPull;
-    if (!force && gap >= 0 && gap < PULL_GAP_MS) return Promise.resolve(null);
+    // 이 문서에서 받기가 아직 안 됐고 앞 받기가 offline으로 끊겼으면 5분 막이를 건너뛴다 — 화면이 다시 보이면 곧 받는다(설계 주인 11-16 (가)).
+    const retrying = !state.pulled && state.pullMisses > 0;
+    if (!force && !retrying && gap >= 0 && gap < PULL_GAP_MS) return Promise.resolve(null);
     const before = state.lastPull;
     state.lastPull = clock();
     // 차례를 못 얻어(다른 탭이 쥠) 받지 못했으면 받은 것으로 치지 않는다 — 첫 받기는 잠시 뒤 다시(카본 끝 판 D).
     const missedTurn = () => {
       state.lastPull = before;
       if (!state.first && !state.closed) {
-        clearTimeout(state.pullTimer);
-        state.pullTimer = setTimeout(() => void pull({ force: true }), PULL_RETRY_MS);
+        timers.clearTimeout(state.pullTimer);
+        state.pullTimer = timers.setTimeout(() => void pull({ force: true }), PULL_RETRY_MS);
         state.pullTimer?.unref?.();
-      }
+      } else if (state.pullMisses > 0) armPull(); // 다시 받기가 차례에 밀렸으면 같은 칸으로 다시 건다
     };
     state.pulling = inLane(() =>
       turn('get', getRound).catch(error =>
@@ -469,10 +524,13 @@ export function createSync({
     // 다시 온라인 — 물러서기를 풀고 곧 올리고 받는다.
     online() {
       state.failures = 0;
+      // 받기 다시 하기의 사다리도 처음으로 — 지금 받고, 또 끊기면 5초부터 다시 탄다(설계 주인 11-16 조건 4).
+      state.pullMisses = 0;
+      clearPullRetry();
       schedule();
       void pull({ force: true });
     },
-    // 화면이 다시 보일 때 — 받기는 5분에 한 번까지.
+    // 화면이 다시 보일 때 — 받기는 5분에 한 번까지. 이 문서에서 받기가 아직이고 앞 받기가 끊겼으면 곧 받는다(받는 중이면 그 받기를 같이 쓴다).
     visible() {
       void pull();
     },
@@ -489,7 +547,7 @@ export function createSync({
       state.closed = true;
       clearTimeout(state.timer);
       clearTimeout(state.writesTimer);
-      clearTimeout(state.pullTimer);
+      clearPullRetry();
       settleFirst({ ok: false, kind: 'closed', code: 'CLOSED' });
     },
   };

@@ -11,7 +11,8 @@ import { subject } from '../support/subject.mjs';
 import { bankOf, clock, createCoach, fakeMap, memoryPort, PARAMS, STEP } from './support.mjs';
 
 const { acquireHost, releaseHost } = await subject('coach/host.mjs');
-const { cutBatch, eventBytes, failureOf } = await subject('coach/sync.mjs');
+const { createSync, cutBatch, eventBytes, failureOf, PULL_GAP_MS } =
+  await subject('coach/sync.mjs');
 const { storeName } = await subject('record/port.mjs');
 const { createHealth } = await subject('health/index.mjs');
 const { createServer } = await import('../support/trail-sync.mjs');
@@ -348,7 +349,11 @@ test('첫 받기가 끊긴 뒤 받기가 되면 pulled가 참이 된다 — 같�
   w.route.refuse = offlineGet;
   const opened = await open(w, key);
   const heard = [];
-  opened.handle.subscribe(note => heard.push(note.kind));
+  const pulledAtReceive = [];
+  opened.handle.subscribe(note => {
+    heard.push(note.kind);
+    if (note.kind === 'receive') pulledAtReceive.push(opened.handle.syncStatus().pulled);
+  });
   const first = await opened.coach.synced(1000);
   assert.deepEqual(
     [first.ok, first.kind, first.base],
@@ -363,6 +368,11 @@ test('첫 받기가 끊긴 뒤 받기가 되면 pulled가 참이 된다 — 같�
   assert.equal(opened.handle.trail.summary(), summary, '같은 요약 — 기록부가 바뀌지 않았다');
   assert.equal(opened.coach.summary().storage.sync.pulled, true);
   assert.equal(receives(heard), 1, '요약이 그대로여도 처음 된 받기는 한 번 알린다(조건 2)');
+  assert.deepEqual(
+    pulledAtReceive,
+    [true],
+    '알림을 받는 자리에서 읽어도 pulled는 참이다(GPT · 카본 엔진 묶음 GA1 · A1)',
+  );
   const again = await opened.coach.synced(1000);
   assert.deepEqual(
     [again.ok, again.kind],
@@ -384,7 +394,11 @@ test('첫 받기가 끊긴 뒤 받은 요약이 다르면 기록부가 바뀐 �
   w.route.refuse = offlineGet;
   const opened = await open(w, keyOf('late-new'));
   const heard = [];
-  opened.handle.subscribe(note => heard.push(note.kind));
+  const pulledAtReceive = [];
+  opened.handle.subscribe(note => {
+    heard.push(note.kind);
+    if (note.kind === 'receive') pulledAtReceive.push(opened.handle.syncStatus().pulled);
+  });
   const first = await opened.coach.synced(1000);
   assert.deepEqual([first.ok, first.base], [false, false], '받아 둔 요약이 없는 기기');
   await settle();
@@ -393,6 +407,11 @@ test('첫 받기가 끊긴 뒤 받은 요약이 다르면 기록부가 바뀐 �
   assert.equal(opened.coach.summary().storage.base, true, '요약을 받았다');
   assert.equal(opened.coach.summary().storage.sync.pulled, true);
   assert.equal(receives(heard), 1);
+  assert.deepEqual(
+    pulledAtReceive,
+    [true],
+    '요약이 바뀐 알림에서도 pulled는 이미 참이다(GPT · 카본 엔진 묶음 GA1 · A1)',
+  );
   close(opened);
 });
 
@@ -445,6 +464,217 @@ test('올리기만 되고 받기는 계속 끊기면 pulled는 거짓으로 남�
   );
   assert.equal(status.pulled, false, '받기가 된 적은 없다');
   close(opened);
+});
+
+// ── 받기 다시 하기(첫 받기가 끊긴 뒤 — 4-4a 다시 검수 Fable P2 · 설계 주인 11-16 조건 여섯) ──
+// createSync를 가짜 기록부 · 나르개 · 시계로 바로 짓는다(호스트의 online · visible은 창과 문서 알림에만 붙어 node 시험에서 부를 길이 없다).
+const net = () => ({ code: 'NETWORK', retryable: true });
+const flush = async () => {
+  for (let i = 0; i < 30; i += 1) await new Promise(resolve => setImmediate(resolve));
+};
+function retryWorld() {
+  let now = 0;
+  let seq = 0;
+  const pending = new Map();
+  const timers = {
+    setTimeout(fn, ms) {
+      seq += 1;
+      pending.set(seq, { fn, at: now + ms });
+      return seq;
+    },
+    clearTimeout(id) {
+      pending.delete(id);
+    },
+  };
+  let summary = 's0';
+  const unsent = [];
+  const trail = {
+    summary: () => summary,
+    since: () => null,
+    async receive(answer) {
+      if (typeof answer?.summary === 'string') summary = answer.summary;
+    },
+    unsent: limit => unsent.slice(0, limit),
+    refresh: async () => {},
+    saved: async () => {},
+    compactDue: () => false,
+  };
+  const route = {
+    gets: 0,
+    getFail: null,
+    postFail: null,
+    async get() {
+      route.gets += 1;
+      const error = route.getFail?.();
+      if (error) throw error;
+      return { summary: 's1', serverTime: now };
+    },
+    async post() {
+      const error = route.postFail?.();
+      if (error) throw error;
+      return {};
+    },
+  };
+  const sync = createSync({
+    trail: () => trail,
+    carrier: () => route,
+    note: () => {},
+    tell: () => {},
+    announce: () => {},
+    onAccount: () => {},
+    now: () => now,
+    clock: () => now,
+    timers,
+  });
+  return {
+    sync,
+    route,
+    write: id => unsent.push({ id, type: 'answer' }),
+    waits: () => [...pending.values()].map(row => row.at - now).sort((a, b) => a - b),
+    async advance(ms) {
+      now += ms;
+      for (const [id, row] of [...pending]) {
+        if (row.at > now || !pending.has(id)) continue;
+        pending.delete(id);
+        row.fn();
+      }
+      await flush();
+    },
+  };
+}
+
+test('받기 다시 하기 — 첫 받기가 offline으로 끊기면 받기만의 실패 수로 5 · 15 · 60 · 300초 뒤 다시 받고(300초에 머문다), 받기가 되면 pulled가 서고 그친다', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  assert.deepEqual(r.waits(), [5_000]);
+  for (const next of [15_000, 60_000, 300_000, 300_000]) {
+    await r.advance(r.waits()[0]);
+    assert.deepEqual(r.waits(), [next], '또 끊기면 사다리를 이어서 탄다');
+  }
+  r.route.getFail = null;
+  await r.advance(300_000);
+  assert.equal(r.sync.status().pulled, true);
+  assert.deepEqual(r.waits(), [], 'pulled가 서면 다시 걸지 않는다');
+  assert.equal(r.route.gets, 6);
+  r.sync.close();
+});
+
+test('받기 다시 하기 — 첫 받기가 끊긴 뒤에는 화면이 다시 보이면 5분 막이를 건너뛰어 곧 받고, 받는 중이면 그 받기를 같이 쓰며, 또 끊기면 사다리를 이어서 탄다', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  await r.advance(1_000);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 2, '5분 안이어도 곧 받는다');
+  assert.deepEqual(r.waits(), [15_000], '처음부터가 아니라 이어서 탄다');
+  r.route.getFail = null;
+  const pulling = r.sync.pull({ force: true });
+  r.sync.visible();
+  await pulling;
+  await flush();
+  assert.equal(r.route.gets, 3, '받는 중이면 그 받기를 같이 쓴다');
+  assert.equal(r.sync.status().pulled, true);
+  assert.deepEqual(r.waits(), []);
+  r.sync.close();
+});
+
+test('받기 다시 하기 — pulled가 선 뒤에는 화면 복귀 받기가 끊겨도 5분 안에 다시 받지 않고 다시 걸지도 않는다(조건 1)', async () => {
+  const r = retryWorld();
+  await r.sync.first();
+  assert.equal(r.sync.status().pulled, true);
+  r.route.getFail = net;
+  await r.advance(PULL_GAP_MS);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 2, '5분이 지나면 화면 복귀에 받는다');
+  assert.deepEqual(r.waits(), [], '받기가 된 뒤의 실패는 다시 걸지 않는다');
+  await r.advance(1_000);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 2, '5분 막이를 지킨다');
+  r.sync.close();
+});
+
+test('받기 다시 하기 — offline이 아닌 받기 실패(bad-since · other · account · switch · auth)는 다시 걸지 않는다(조건 2)', async () => {
+  const kinds = [
+    [fault(400, 'INVALID_SINCE'), 'bad-since'],
+    [fault(404, 'NOT_FOUND'), 'other'],
+    [fault(409, 'REVISION_CONFLICT', { revision: 2 }), 'account'],
+    [fault(403, 'FEATURE_DISABLED'), 'switch'],
+    [fault(401, 'AUTH_REQUIRED'), 'auth'],
+  ];
+  for (const [error, kind] of kinds) {
+    assert.equal(failureOf(error, 'get'), kind);
+    const r = retryWorld();
+    r.route.getFail = () => error;
+    await r.sync.first();
+    assert.deepEqual(r.waits(), [], `${kind}는 다시 걸지 않는다`);
+    r.sync.close();
+  }
+});
+
+test('받기 다시 하기 — 받기가 아직일 때 올리기가 되면 다음 받기를 5초 뒤로 당기고(더 이른 것은 그대로), 사다리는 받기만의 실패 수로 탄다(조건 3 · 4)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  await r.advance(5_000);
+  await r.advance(15_000);
+  assert.deepEqual(r.waits(), [60_000]);
+  r.write('e1');
+  await r.sync.upload();
+  assert.deepEqual(r.waits(), [5_000], '올리기가 되면 다음 받기를 5초로 당긴다');
+  await r.advance(2_000);
+  r.write('e2');
+  await r.sync.upload();
+  assert.deepEqual(r.waits(), [3_000], '이미 건 받기가 더 이르면 미루지 않는다');
+  await r.advance(3_000);
+  assert.deepEqual(
+    r.waits(),
+    [300_000],
+    '올리기 성공은 받기만의 실패 수를 0으로 두지 않는다 — 넷째 실패는 300초',
+  );
+  r.sync.close();
+});
+
+test('받기 다시 하기 — 닫거나, 올리기 · 받기가 멈추면(stopped · writesOff) 건 받기를 지운다(조건 5)', async () => {
+  const closed = retryWorld();
+  closed.route.getFail = net;
+  await closed.sync.first();
+  assert.deepEqual(closed.waits(), [5_000]);
+  closed.sync.close();
+  assert.deepEqual(closed.waits(), [], '닫으면 남은 받기 타이머가 없다');
+  const stops = [
+    [fault(409, 'REVISION_CONFLICT', { revision: 2 }), 'stopped'],
+    [fault(403, 'WRITES_DISABLED'), 'writesOff'],
+  ];
+  for (const [error, flag] of stops) {
+    const r = retryWorld();
+    r.route.getFail = net;
+    await r.sync.first();
+    assert.deepEqual(r.waits(), [5_000]);
+    r.route.postFail = () => error;
+    r.write('e1');
+    await r.sync.upload();
+    assert.ok(r.sync.status()[flag], flag);
+    assert.deepEqual(r.waits(), [], `${flag}이면 건 받기를 지운다`);
+    r.sync.close();
+  }
+});
+
+test('받기 다시 하기 — 다시 온라인(online)이면 곧 받고, 또 끊기면 사다리를 처음(5초)부터 탄다(조건 4)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  await r.advance(5_000);
+  await r.advance(15_000);
+  assert.deepEqual(r.waits(), [60_000]);
+  r.sync.online();
+  await flush();
+  assert.equal(r.route.gets, 4, '곧 받는다');
+  assert.deepEqual(r.waits(), [5_000], '또 끊기면 5초부터');
+  r.sync.close();
 });
 
 test('닫힌 뒤 돌아온 POST 답은 받지 않는다 — 닫힌 호스트가 저장소에 쓰지 않는다', async () => {
