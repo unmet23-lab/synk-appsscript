@@ -95,8 +95,16 @@ test('방금 놓친 복습(①) — 복습 줄이 오늘 공부보다 앞이고,
  const [review]=plan.today.items;
  assert.equal(review.activityId,LIFE_REVIEW_ID);
  assert.equal(review.why.code,'host.missed');
- assert.equal(review.why.text,'놓친 「안녕하세요.」, 혼자 맞힐 때까지 다시 만나요.');
+ assert.equal(review.why.text,'놓친 「안녕하세요.」, 오늘은 다른 장면에서 다시 해 봐요.');
  assert.deepEqual(review.why.evidence,{fact:'review',review:'missed',unit:'ko.life.greet-hello'});
+ // 생활 단위 없이 넘긴 사실(이름 없는 ①)도 생활 복습 활동에만 붙는다 — 다른 줄이 이 사실로 앞지르지 않는다(설계 주인 11-15 조건)
+ const bare={...judged,items:judged.items.map(item=>({...item,unit:null}))};
+ assert.deepEqual(reviewFact(bare.items),{kind:'missed'});
+ const nameless=planOf({coach,progress,now:time.t,judged:bare});
+ assert.deepEqual(kinds(nameless),['again','new']);
+ assert.deepEqual(nameless.today.items.filter(row=>row.why.code==='host.missed').map(row=>row.activityId),[LIFE_REVIEW_ID]);
+ assert.equal(nameless.today.items[0].why.text,'놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.');
+ assert.deepEqual(nameless.today.items[0].why.evidence,{fact:'review',review:'missed'});
  assert.equal(plan.selected.route,'review');
  assert.deepEqual(plan.selected.reviewIds,['greetings-expressions-hello-transfer']);
  const later=planOf({coach,progress,now:time.t,judged,opened:new Set(['again'])});
@@ -321,7 +329,7 @@ test('줄이 되는 규칙 — 상한 날의 생활 복습 · 돌아옴이 아�
  const entry=(id,extra)=>({id,locked:false,fact:-1,tier:2,offered:1,idle:false,none:false,capped:false,...extra});
  const rows=entries=>todayRows({entries,activities:[lesson,life,practice],say}).rows.map(row=>[row.kind,row.activityId,row.why.code]);
  // 상한 날 — 생활 복습에 낼 것이 있고(①이 새것이라 상한에 안 걸림) 사실이 있어도 줄이 아니다(설계 주인 11-15 조건 3)
- assert.deepEqual(rows([entry(LIFE_REVIEW_ID,{fact:2,capped:true,why:{code:'host.missed',line:'놓친 표현은 혼자 맞힐 때까지 다시 만나요.'}}),entry(lesson.plan.id,{why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})]),[['new',lesson.plan.id,'unit.new']]);
+ assert.deepEqual(rows([entry(LIFE_REVIEW_ID,{fact:2,capped:true,why:{code:'host.missed',line:'놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.'}}),entry(lesson.plan.id,{why:{code:'unit.new',line:'「안녕하세요.」 처음 만나요.'}})]),[['new',lesson.plan.id,'unit.new']]);
  // 짧은 연습은 돌아옴(층 1)일 때만 줄이다
  assert.deepEqual(rows([entry(practice.plan.id,{why:{code:'unit.new',line:'새 문항'}})]),[]);
  assert.deepEqual(rows([entry(practice.plan.id,{tier:1,why:{code:'unit.due',line:'돌아왔어요.'}})]),[['again',practice.plan.id,'unit.due']]);

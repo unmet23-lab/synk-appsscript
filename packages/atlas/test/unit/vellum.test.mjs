@@ -170,15 +170,15 @@ test('생활 복습 사실 — 놓친 것 · 다리는 이름이 있으면 「�
   const opt = { label: labelOf({ u: '주문' }) };
   assert.equal(
     render({ code: 'host.missed', slots: { unit: 'u' } }, opt),
-    '놓친 「주문」, 혼자 맞힐 때까지 다시 만나요.',
+    '놓친 「주문」, 오늘은 다른 장면에서 다시 해 봐요.',
   );
   assert.equal(
     render({ code: 'host.missed', slots: {} }, opt),
-    '놓친 표현은 혼자 맞힐 때까지 다시 만나요.',
+    '놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.',
   );
   assert.equal(
     render({ code: 'host.missed', slots: { unit: 'x' } }, opt),
-    '놓친 표현은 혼자 맞힐 때까지 다시 만나요.',
+    '놓친 표현을 오늘은 다른 장면에서 다시 해 봐요.',
     '이름이 실리지 않은 단위',
   );
   assert.equal(
@@ -314,7 +314,11 @@ test('영어 · 몽골어 줄 — 홈 · 활동 고르기 종류마다 있고, �
   );
   assert.equal(
     render({ code: 'host.missed', slots: { unit: 'u' } }, { lang: 'en', label: () => '은행' }),
-    'You missed ‘은행’ — it’ll keep coming back until you get it right on your own.',
+    'You missed ‘은행’ — today, let’s try it again in a different situation.',
+  );
+  assert.equal(
+    render({ code: 'host.missed', slots: { unit: 'u' } }, { lang: 'mn', label: () => '은행' }),
+    'Алдсан үг хэллэг: «은행». Өнөөдөр өөр нөхцөл байдалд дахин ашиглаж үзье.',
   );
   assert.equal(
     render({ code: 'host.bridge', slots: {} }, { lang: 'mn', label: () => null }),

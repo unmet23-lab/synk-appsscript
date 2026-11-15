@@ -86,8 +86,8 @@ export const EN = Object.freeze({
   'host.next': one(() => 'This is your next daily-life lesson.'),
   'host.missed': one((_, name) =>
     name
-      ? `You missed ‘${name}’ — it’ll keep coming back until you get it right on your own.`
-      : 'Expressions you missed will keep coming back until you get them right on your own.',
+      ? `You missed ‘${name}’ — today, let’s try it again in a different situation.`
+      : 'You missed some expressions — today, let’s try them again in a different situation.',
   ),
   'host.bridge': one((_, name) =>
     name

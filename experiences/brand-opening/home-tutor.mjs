@@ -81,7 +81,10 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   const due=recommendation.kind==='resume'&&!data?.summary?.education?.today&&data?.summary?.owner===selected.owner?data.summary.dueExpressions??data.summary.dueCount??0:0;
   reviewButton.hidden=!due||!practiceButton.hidden;reviewButton.textContent=t('homeTutor.reviewDue',{n:due});
   const pending=data?.summary.status?.phase==='unsaved';
-  note.textContent=(completed?t('homeTutor.note.practised'):tMessage(recommendation.reason)|| (recommendation.kind==='difficult'?t('homeTutor.note.difficult',{title:recommendation.lessonTitle}):recommendation.kind==='review'?t('homeTutor.note.review'):recommendation.kind==='resume'?t('homeTutor.note.resume'):recommendation.kind==='start'?t('homeTutor.note.start'):''))+(pending?t('homeTutor.note.pending'):'');
+  // 새 길 홈(4-3 — 단계4_계획 §20-8): 이유는 세 줄이 줄마다 말한다(줄이 없는 날은 그 자리의 문장 하나). 튜터 카드의 이유 줄에 같은 문장을
+  // 한 번 더 두지 않는다(4c 리허설에서 잼). 연습을 마친 표시와 저장 대기 표시는 그대로다.
+  const rowsSpeak=!!data?.summary?.education?.today;
+  note.textContent=(completed?t('homeTutor.note.practised'):rowsSpeak?'':tMessage(recommendation.reason)|| (recommendation.kind==='difficult'?t('homeTutor.note.difficult',{title:recommendation.lessonTitle}):recommendation.kind==='review'?t('homeTutor.note.review'):recommendation.kind==='resume'?t('homeTutor.note.resume'):recommendation.kind==='start'?t('homeTutor.note.start'):''))+(pending?t('homeTutor.note.pending'):'');
   dayButton.hidden=!days.today.count||['loading','unavailable'].includes(recommendation.kind);dayButton.textContent=days.today.closed?t('homeTutor.day.closed'):t('homeTutor.day.count',{n:days.today.count});
   recap?.update(days,data.summary.status);
  }

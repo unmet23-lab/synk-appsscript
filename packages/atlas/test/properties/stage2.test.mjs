@@ -321,6 +321,59 @@ test('⑳ 활동 고르기 — 목표(숙제 · 관심)는 층을 앞지르지 �
   );
 });
 
+// 겹치는 목표(카본 C3 · 설계 주인 11-15): 여러 원천에서 목표를 합칠 때 상태 없는 같은 숙제가 앞에 와도 뒤의 상태를 버리지 않는다.
+// 글자 칸(kind · topic · skill) 가운데 어느 하나라도 글자가 아니면(배열 등) 글자로 바꿔 검사하지 않고 그 목표를 받지 않는다 — 목표 수에도
+// 문장에도 들지 않는다(skill은 설계 주인 11-15 셋째 답).
+test('⑳ 활동 고르기 — 겹치는 목표는 숙제 상태가 있는 쪽을 남기고, 글자 칸(kind · topic · skill)이 글자가 아닌 목표는 받지 않는다(카본 C3)', () => {
+  const learner = createLearner();
+  startSession(learner, T0, WIDE);
+  walk(learner, [true, true], T0, [word('a', 0), word('b', 1)]);
+  const now = T0 + 120_000;
+  const top = goals =>
+    planActivities(
+      [{ id: 'goal', candidates: [word('g1', 2)], facts: { goals } }],
+      learner,
+      memory,
+      now,
+      {
+        params: WIDE,
+      },
+    )[0];
+  const skill = 'ko.reading.vocabulary';
+  const bare = { kind: 'homework', skill };
+  const missed = { ...bare, status: 'missed' };
+  const review = { ...bare, status: 'review' };
+  const late = top([bare, missed]);
+  assert.equal(late.goals, 1, '같은 목표는 하나로 센다');
+  assert.equal(late.why.code, 'host.homework', '상태 없는 것이 앞에 와도 숙제 문장');
+  assert.deepEqual(late.why.slots, { skill, status: 'missed' });
+  assert.deepEqual(
+    top([missed, bare]).why.slots,
+    { skill, status: 'missed' },
+    '상태가 앞이면 그대로',
+  );
+  assert.deepEqual(
+    top([review, missed]).why.slots,
+    { skill, status: 'review' },
+    '둘 다 있으면 앞의 것',
+  );
+  for (const goal of [
+    { kind: ['interest'], topic: 'cafe' },
+    { kind: 'interest', topic: ['cafe'] },
+    { ...missed, skill: [skill] },
+  ]) {
+    const odd = top([goal]);
+    assert.equal(odd.goals, 0, `받지 않는다: ${JSON.stringify(goal)}`);
+    assert.equal(odd.why.code, 'unit.new', '이유는 엔진의 것');
+  }
+  assert.equal(
+    top([{ kind: 'interest', topic: 'cafe' }]).why.code,
+    'goal.match',
+    '글자인 목표는 그대로',
+  );
+  assert.equal(top([{ kind: 'travel' }]).goals, 1, 'topic이 없는 넓은 목표도 받는다');
+});
+
 // 4-3 홈(단계 4 §20-6 — 조율 11-11 승인 · 설계 주인 11-15 승인): 설명 사실(describe)은 순위를 바꾸지 않고 엔진이 말할 것이 없을 때만
 // 이유다. 생활 복습 사실(review)은 하던 것 · 한글 뒤에서 앞지르고, 후보가 있을 때만 · 단위가 그 활동 후보의 단위일 때만 선다. 사실은
 // 낼 것이 있는 활동만 앞세운다. 항목에는 넘긴 후보 수(offered)와 하루 상한 표지(capped)가 실린다.
@@ -425,6 +478,51 @@ test('⑳ 활동 고르기 — 생활 복습 사실은 하던 것 · 한글 뒤�
     plan([{ ...bridge, facts: { review: { kind: 'later', unit: 'word:e' } } }])[0].fact,
     -1,
     '모르는 kind는 없는 것',
+  );
+});
+
+// 단위 없이 넘긴 생활 복습 사실(설계 주인 11-15 조건): 생활 단위가 없는 놓친 복습은 unit 없이 넘어오고, 두뇌는 unit이 있을 때만 그 활동
+// 후보의 단위인지 본다. 그래도 사실은 받은 활동만 앞세운다 — 같은 후보를 든 활동도, 할 것이 더 많은 활동도 이 사실로 앞지르지 않고,
+// 받은 활동의 후보를 모두 낼 수 없으면 앞세우지 않는다. 제품은 생활 판정의 ① · ②를 든 생활 복습 활동에만 붙인다(world-today reviewFact).
+test('⑳ 활동 고르기 — 단위 없이 넘긴 생활 복습 사실은 받은 활동만 앞세운다(설계 주인 11-15 조건)', () => {
+  const learner = createLearner();
+  startSession(learner, T0, WIDE);
+  walk(learner, [true, true], T0, [word('a', 0), word('b', 1)]);
+  const now = T0 + 120_000;
+  const plan = (list, params = WIDE) => planActivities(list, learner, memory, now, { params });
+  const fact = { review: { kind: 'missed' } };
+  const life = { id: 'z-life', candidates: [word('c', 2)], facts: fact };
+  const twin = { id: 'a-twin', candidates: [word('c', 2)] };
+  const lesson = { id: 'b-lesson', candidates: [word('d', 3), word('e', 4)] };
+  const ranked = plan([twin, lesson, life]);
+  assert.deepEqual(
+    ranked.map(entry => [entry.id, entry.fact]),
+    [
+      ['z-life', 2],
+      ['b-lesson', -1],
+      ['a-twin', -1],
+    ],
+  );
+  assert.deepEqual(ranked[0].why.evidence, { fact: 'review', review: 'missed' });
+  assert.deepEqual(
+    ranked.slice(1).map(entry => entry.why.code),
+    ['unit.new', 'unit.new'],
+    '다른 활동의 이유는 엔진의 것',
+  );
+  assert.deepEqual(
+    plan([twin, lesson, { ...life, facts: {} }]).map(entry => entry.id),
+    ['b-lesson', 'a-twin', 'z-life'],
+    '사실이 없으면 그 활동은 앞서지 않는다',
+  );
+  const stuck = { id: 'a-stuck', candidates: [word('n9', 9)], facts: fact };
+  const warm = { id: 'b-warm', candidates: [word('a', 0)] };
+  assert.deepEqual(
+    plan([stuck, warm], { ...WIDE, newPerDay: 2 }).map(entry => [entry.id, entry.fact, entry.none]),
+    [
+      ['b-warm', -1, false],
+      ['a-stuck', -1, true],
+    ],
+    '받은 활동의 후보를 모두 낼 수 없으면 앞세우지 않는다',
   );
 });
 
@@ -756,6 +854,50 @@ test('㉑ 숨 고르기가 맨 앞인 활동은 그 뒤 줄의 층으로 순위�
       ['warm', warm.tier],
     ],
   );
+});
+
+// 숨 고르기의 뒤 줄(카본 C5 · 설계 주인 11-15): plan()은 숨 고르기 줄이 맨 앞이면 그 뒤 줄의 층으로 순위를 매기고, 뒤 줄이 없으면 맨 앞
+// 줄의 층을 쓴다. 지금 고르기는 뒤의 줄 하나를 맨 앞으로 옮길 뿐이라 숨 고르기 뒤에는 늘 옛 맨 앞 줄이 있고, 후보가 하나면 숨 고르기가
+// 서지 않는다 — 그래서 plan()의 그 지킴에 닿는 길이 없다. 이 장면은 그 불변을 못박는다(뒤 줄을 잃으면 할 것이 있는 활동의 층이 숨 고르기
+// 줄의 채우기 층이나 9로 흐른다).
+test('㉑ 숨 고르기는 맨 앞 줄을 밀어낼 뿐 버리지 않는다 — 뒤에 늘 옛 맨 앞 줄이 있고, 한 후보에는 서지 않는다(카본 C5)', () => {
+  const HOUR = 3_600_000;
+  const known = word('kk', 0);
+  const faded = word('ff', 1);
+  const fresh = word('nn', 5);
+  const learner = createLearner();
+  for (const [item, at] of [
+    [faded, T0 - 6 * DAY],
+    [faded, T0 - 2 * DAY],
+    [known, T0 - 3 * DAY],
+    [known, T0 - 2 * DAY],
+    [known, T0 - 7 * HOUR],
+  ]) {
+    learner.session = null;
+    startSession(learner, at, WIDE);
+    record(learner, memory, item, { correct: true, target: item.units[0] }, at, WIDE);
+  }
+  learner.session = null;
+  startSession(learner, T0, WIDE);
+  learner.session.missStreak = 2; // 이 판에서 이어서 둘 놓쳤다
+  const rows = choose([fresh, known], learner, memory, T0, { params: WIDE });
+  assert.deepEqual(
+    rows.map(row => [row.item.itemKey, Boolean(row.breather), row.tier]),
+    [
+      ['kk', true, rows[0].tier],
+      ['nn', false, 2],
+    ],
+    '숨 고르기 뒤에 옛 맨 앞 줄(새것)이 있다',
+  );
+  for (const item of [fresh, known]) {
+    const [only] = choose([item], learner, memory, T0, { params: WIDE });
+    assert.equal(Boolean(only.breather), false, `${item.itemKey} 하나에는 숨 고르기가 서지 않는다`);
+    const [entry] = planActivities([{ id: 'one', candidates: [item] }], learner, memory, T0, {
+      params: WIDE,
+    });
+    assert.equal(entry.tier, only.tier, '활동의 층은 그 후보의 층');
+    assert.notEqual(entry.tier, 9);
+  }
 });
 
 test('㉑ 판정 못 한 답(도움을 받았어도)을 거두는 제외 — 서버의 능력 줄 · 첫 만남이 그대로라 기기는 기다리지 않고 서버와 같다(단계 4 A3)', () => {

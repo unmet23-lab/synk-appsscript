@@ -72,14 +72,24 @@ const describeWhy = value => {
 };
 
 // 목표 — 제품이 넘긴 { kind, … }들. kind: homework(이번 주 숙제 — skill · status) · interest(「더 배우고 싶어요」 — topic) ·
-// 그 밖의 이름(배우는 이유의 넓은 목표 등 — 문장 없이 수에만). 같은 목표를 두 번 세지 않는다.
+// 그 밖의 이름(배우는 이유의 넓은 목표 등 — 문장 없이 수에만). 같은 목표를 두 번 세지 않는다 — 겹치면 숙제 상태(review · missed)가
+// 있는 쪽을 남기고, 둘 다 있거나 둘 다 없으면 앞의 것이다. 글자 칸(kind · topic · skill) 가운데 어느 하나라도 있는데 글자가 아니면 그
+// 목표는 받지 않는다 — 글자로 바꿔 검사하지 않는다. 배열이 근거와 문장 칸(slots)에 들어가 화면 글과 기록이 함께 틀어지지 않게 한 검사로
+// 묶는다(카본 C3 · 설계 주인 11-15).
 const GOAL_KEY = /^[a-z][a-zA-Z0-9_.:-]{0,79}$/;
+const HOMEWORK_STATUS = ['review', 'missed'];
+const TEXT_SLOTS = ['kind', 'topic', 'skill'];
+const goalOk = goal =>
+  TEXT_SLOTS.every(slot => goal?.[slot] == null || typeof goal[slot] === 'string') &&
+  GOAL_KEY.test(goal?.kind ?? '');
+const stated = goal => HOMEWORK_STATUS.includes(goal.status);
 function goalsOf(facts) {
   const seen = new Map();
   for (const goal of Array.isArray(facts?.goals) ? facts.goals : []) {
-    if (!GOAL_KEY.test(goal?.kind ?? '')) continue;
+    if (!goalOk(goal)) continue;
     const key = [goal.kind, goal.skill ?? '', goal.topic ?? '', goal.id ?? ''].join('|');
-    if (!seen.has(key)) seen.set(key, goal);
+    const kept = seen.get(key);
+    if (!kept || (!stated(kept) && stated(goal))) seen.set(key, goal);
   }
   return [...seen.values()];
 }
@@ -87,7 +97,6 @@ function goalsOf(facts) {
 // 목표가 문장이 되는 때 — 엔진에게 더 구체적인 말(다시 · 흔들림 · 돌아옴 · 수준 · 숨 고르기)이 없을 때만: 맨 앞 줄이 새것이거나
 // 할 것이 없거나(idle · none) 후보가 없다. 숙제가 먼저 말하고, 그다음 관심이다. 근거 칸은 사실 값의 정해진 열쇠만.
 const SPEAKS = new Set([REASON_CODES.fresh, REASON_CODES.idle]);
-const HOMEWORK_STATUS = ['review', 'missed'];
 function goalReason(goals, top) {
   if (top && !top.idle && !top.none && !SPEAKS.has(top.why?.code)) return null;
   // 숙제 문장은 제품이 숙제의 상태(review · missed)를 넘겼을 때만 — 모르면 「놓친 답이 있어…」처럼 사실 아닌 말을 짓지 않고
@@ -138,8 +147,9 @@ function entryOf(activity, view, memory, now, params, seed) {
   const rows = offered ? choose(candidates, view, memory, now, { params, seed }) : [];
   const top = rows[0];
   // 숨 고르기는 판 안의 쉼이라 순위는 그 뒤 줄(숨 고르기 앞의 맨 앞)의 층으로 매긴다 — 할 것이 있는 활동이 채우기 활동 뒤로
-  // 밀리지 않게(설계 §3-6 「위 층의 가장 높은 것」, GPT 끝 판 GB2).
-  const lead = top?.breather ? rows[1] : top;
+  // 밀리지 않게(설계 §3-6 「위 층의 가장 높은 것」, GPT 끝 판 GB2). 뒤 줄이 없으면 맨 앞 줄의 층이다(카본 C5 · 설계 주인 11-15 — 지금
+  // 고르기는 숨 고르기 뒤에 늘 옛 맨 앞 줄을 두어 이 갈래에 닿지 않는다. 고르기가 바뀌어도 할 것이 있는 활동이 층 9로 떨어지지 않게 지킨다).
+  const lead = top?.breather ? (rows[1] ?? top) : top;
   const none = !top || Boolean(top.none);
   // 사실은 낼 것이 있는 활동만 앞세운다 — 후보를 넘겼는데 모두 낼 수 없으면(none) 사실이 없는 것처럼 선다. 후보 없이 여는 활동
   // (하던 레슨 · 진단 · 시험 형식)은 사실이 그대로 앞세운다(진도와 화면은 제품의 것이다, 아르곤 A7 ②).

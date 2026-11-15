@@ -109,6 +109,8 @@ html[lang=mn] #life-review-count[data-due=no]{display:none}
 .home-today-row[data-opened] .home-today-copy strong{color:var(--w-ink-2)}
 /* 상한 날 복습 칸 자리의 문장(§20-3) · 줄이 하나도 없는 날의 문장 */
 .home-today-quiet .home-today-copy{font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty}
+/* PC 가로 틀(1440)에서는 홈 판 높이가 모자라 맨 아래 바로가기 칩이 잘렸다 — 줄 위아래 틈을 줄인다(4c 리허설). */
+[data-layout=landscape] .home-today-row{padding:6px 2px}
 .home-today-empty{margin:0;padding:9px 2px;border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line);font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-align:center;text-wrap:pretty}
 #home-tutor .game-tutor-help,#home-tutor .home-tutor-action,.home-tutor-choose{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:4px 0 2px;padding:0 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
 #home-tutor .home-tutor-action::after,.home-tutor-choose::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
