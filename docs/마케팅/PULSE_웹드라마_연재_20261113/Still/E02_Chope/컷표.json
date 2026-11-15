@@ -14,7 +14,7 @@
   },
   "장면": {
     "호커광장": {
-      "장소": "The open paved plaza in front of a hawker centre in Singapore: at the back, under a high corrugated roof with slowly turning ceiling fans, rows of round tables and plastic stools full with the lunch crowd, a small plain white tissue packet left on almost every free table, glowing stall signboards and a green recycling bin by a pillar; in the glaring sun on the open paving near the left of the frame, a small black wooden box where a living statue performs, sitting in the only shade on the plaza - a narrow patch of shadow cast by one branch of a single rain tree at the plaza's edge, just wide enough for the box and one person; in the shade of the hawker centre roof by a pillar at the right of the frame, a mint-green sampling stand with a row of white handheld fans on its counter, with a small folding stool beside it.",
+      "장소": "The open paved plaza in front of a hawker centre in Singapore: at the back, under a high corrugated roof with slowly turning ceiling fans, rows of round tables and plastic stools full with the lunch crowd, a small plain white tissue packet lying on almost every free table, glowing stall signboards and a green recycling bin by a pillar; in the glaring sun on the open paving near the left of the frame, a small black wooden box where a living statue performs, sitting in the only shade on the plaza - a narrow patch of shadow cast by one branch of a single rain tree at the plaza's edge, just wide enough for the box and one person; in the shade of the hawker centre roof by a pillar at the right of the frame, a mint-green sampling stand with a row of white handheld fans on its counter, with a small folding stool beside it.",
       "빛": "Humid tropical midday, about 33 degrees. Hard sunlight from almost directly overhead makes crisp, short, sharp-edged shadows on the pale paving and under every overhang; the sunlit plaza glares white, the narrow dappled patch of tree shade over the box looks visibly cooler than the glare around it, and the shade under the hawker centre roof at the back is soft and cool; a faint heat haze shimmers above the paving.",
       "빛이름": [
         "Hard light",
@@ -362,7 +362,7 @@
       "연기": [
         {
           "t": 0.5,
-          "무엇": "쉬는 시간에서 돌아온 은색 차림의 그가 왼손에 물병을 들고 땡볕에서 화면 오른쪽으로 걸어 들어와 나무 그늘 속 상자 앞에 선다 — 멀리 호커 센터 지붕 밑에서 도시락을 든 아주머니가 광장 쪽으로 걸어 나온다(작게)"
+          "무엇": "쉬는 시간에서 돌아온 은색 차림의 그가 왼손에 물병을 들고 땡볕에서 화면 오른쪽에서 걸어 들어와 나무 그늘 속 상자 앞에 선다 — 멀리 호커 센터 지붕 밑에서 도시락을 든 아주머니가 광장 쪽으로 걸어 나온다(작게)"
         },
         {
           "t": 1.1,

@@ -9,7 +9,7 @@
   "엔진": { "그림": "Seedream 5.5", "영상": "Seedance 2.5 720p" },
   "장면": {
     "부두낮": {
-      "장소": "The sandstone foreshore promenade beside the Sydney Opera House at the eastern end of Circular Quay, at midday in midsummer: smooth, flat sun-bleached paving; near the left of the frame the low railing along the water's edge opens onto the historic Man O'War Steps, a heritage stone jetty right beside the Opera House whose broad worn sandstone steps run on down into and under the deep green harbour water, the lower steps wet and lapped by small waves; the huge white sail-shaped roofs of the Opera House rise behind at the right of the frame; a green-and-yellow harbour ferry passing out on the water; a small black wooden box right beside the top of those steps where a living statue stands; one step to its right, a steel litter bin with a round open top standing against the unbroken railing, with a shaded corner full of a few dry leaves between its back and the railing posts; a white sunscreen sampling stand under a big yellow market parasol a few more steps to the right of the frame; tourists in sun hats and sunglasses passing through.",
+      "장소": "The sandstone foreshore promenade beside the Sydney Opera House at the eastern end of Circular Quay, at midday in midsummer: smooth, flat sun-bleached paving; near the left of the frame the low railing along the water's edge opens onto the historic Man O'War Steps, a heritage stone jetty just beside the Opera House whose broad worn sandstone steps run on down into and under the deep green harbour water, the lower steps wet and lapped by small waves; the huge white sail-shaped roofs of the Opera House rise behind at the right of the frame; a green-and-yellow harbour ferry passing out on the water; a small black wooden box just beside the top of those steps where a living statue stands; one step toward the right of the frame, a steel litter bin with a round open top standing against the unbroken railing, with a shaded corner full of a few dry leaves between its back and the railing posts; a white sunscreen sampling stand under a big yellow market parasol a few more steps to the right of the frame; tourists in sun hats and sunglasses passing through.",
       "빛": "Blazing midsummer midday. Hard direct sun from high above and slightly behind the right of the frame makes crisp, sharp-edged short shadows that fall toward the left of the frame; the silver paint flashes small hard highlights; the pale promenade glares bright; the sky is a deep cloudless blue.",
       "빛이름": ["Hard light"],
       "시간대": "낮",
@@ -17,7 +17,7 @@
       "기준그림": "ref/장면_부두낮.png"
     },
     "부두저녁": {
-      "장소": "The same sandstone foreshore promenade beside the Sydney Opera House in the early evening: near the left of the frame, the opening in the low railing onto the Man O'War Steps, the heritage stone jetty whose broad worn sandstone steps run on down into and under the water, and, right beside it, the bare patch of paving where the statue's box stood; the steel litter bin still standing against the railing one step to its right; the white sail-shaped roofs of the Opera House behind at the right of the frame; the white sunscreen sampling stand still set up and open a few steps further right, its big yellow market parasol folded shut, with an A-frame tour schedule board beside it; a few people walking home.",
+      "장소": "The same sandstone foreshore promenade beside the Sydney Opera House in the early evening: near the left of the frame, the opening in the low railing onto the Man O'War Steps, the heritage stone jetty whose broad worn sandstone steps run on down into and under the water, and, just beside it, the bare patch of paving where the statue's box stood; the steel litter bin still standing against the railing one step toward the right of the frame; the white sail-shaped roofs of the Opera House behind at the right of the frame; the white sunscreen sampling stand still set up and open a few steps further toward the right of the frame, its big yellow market parasol folded shut, with an A-frame tour schedule board beside it; a few people walking home.",
       "빛": "Early evening. The low warm sun sits just beyond the left edge of the frame and rakes across the promenade: long shadows stretch toward the right of the frame, the edges of hair and hands glow gold, the Opera House sails catch the light only along their edges, the harbour water glitters behind.",
       "빛이름": ["Golden hour"],
       "시간대": "저녁",
@@ -62,6 +62,7 @@
       "묘사": "Tourists and Sydneysiders of different ages and looks in summer clothes, sun hats and sunglasses, seen mostly from behind or in profile; their faces are small and natural, each a different person.",
       "옷": "Light summer shirts, singlets, shorts, sun hats, sunglasses.",
       "기준그림": "ref/인물_부두사람들.png",
+      "기준그림구성": "The reference image shows the three onlookers whose faces read clearly in this episode, standing apart on the sunny promenade, each a different adult or child with real skin texture: a mother in her late 30s with sun-tanned skin and shoulder-length brown hair under a wide natural straw sun hat, in a loose white linen shirt and denim shorts; her daughter, about six, in a yellow bucket hat and a blue-and-white striped T-shirt; and a man in his mid-40s with a short dark beard, mirrored aviator sunglasses and a sun-faded khaki bucket hat, in a loose short-sleeved shirt with a small palm-leaf print and khaki shorts.",
       "설정": "단역 — C02에서 엄마 손을 잡은 아이와, 선글라스를 쓰고 감자튀김 상자를 든 남자가 동상 앞을 지나 파라솔 그늘 쪽으로 간다. C03에서 그 엄마가 너무 많이 받은 선크림을 아이 코에 하얗게 발라 준다. 물가 계단의 재빠른 구조를 본 엄마와 선글라스 남자가 놀라 폰을 들고(C10, 남자는 다른 손에 감자튀김 상자를 든 채), 아이는 화면 밖에서 가리키는 팔과 목소리만 나온다. 흐린 사람 둘셋도 폰을 든다. 로지가 빈 과자 봉지를 바스락거리자(C13b) 달려든 따오기가 그 남자의 감자튀김 상자를 채 가고(C13c, 따오기의 부리와 목이 화면에 들어온다), 남자의 짧은 비명과 사람들의 웃음이 터지며 폰들이 따오기 쪽으로 돌아간다(C13c · C13d). 또렷한 얼굴은 엄마, 아이(C03), 선글라스 남자뿐이고 나머지는 흐린 등과 옆모습이다"
     }
   },
@@ -326,10 +327,10 @@
       "시작그림": "정지/C08.png",
       "line": "바닥 높이 — 「탁」 떨어진 폰을 휘청이는 로지의 운동화 앞코가 「툭」 차고, 폰이 물가 계단 쪽으로 미끄러져 나간다",
       "장면": "부두낮", "인물": ["로지", "지호"], "실외": true,
-      "구도": "바닥 높이 · 난간과 나란히 · 평평하고 매끈한 돌바닥 · 화면 오른쪽 앞에 휘청이며 물러서는 로지의 흰 운동화와 그 발 옆에 막 떨어진 노란 폰 · 화면 왼쪽에 한 걸음 거리의 검은 상자와 그 위 은색 구두 두 짝, 상자 바로 옆에 난간이 열린 물가 계단의 맨 위 단과 그 아래 물 · 폰이 갈 짧은 길이 한 화면에 보인다",
+      "구도": "바닥 높이 · 난간과 나란히 · 평평하고 매끈한 돌바닥 · 화면 오른쪽 앞에 휘청이며 계단 쪽으로 비틀거리는 로지의 흰 운동화와 그 발 옆에 막 떨어진 노란 폰 · 화면 왼쪽에 한 걸음 거리의 검은 상자와 그 위 은색 구두 두 짝, 상자 바로 옆에 난간이 열린 물가 계단의 맨 위 단과 그 아래 물 · 폰이 갈 짧은 길이 한 화면에 보인다",
       "카메라": "0.5~2.0s(쓰는 구간, 컷 1.5초) 고정",
       "연기": [
-        { "t": 0.6, "무엇": "로지의 흰 운동화가 휘청이며 왼쪽 뒤로 한 걸음 디딘다 — 그 발 옆 돌바닥에 폰이 막 떨어져 있다" },
+        { "t": 0.6, "무엇": "로지의 흰 운동화가 휘청이며 계단 쪽(화면 왼쪽)으로 비틀비틀 한 걸음 내딛는다 — 그 발 옆 돌바닥에 폰이 막 떨어져 있다" },
         { "t": 0.9, "무엇": "디디던 운동화 앞코가 폰을 툭 차는 것이 보이고, 폰이 돌바닥을 미끄러져 나간다" },
         { "t": 1.6, "무엇": "끝 모습 — 폰이 물가 계단 쪽으로 반쯤 미끄러져 가는 중이고, 로지의 운동화는 화면 오른쪽에서 겨우 균형을 잡는다" }
       ],
@@ -365,7 +366,7 @@
       "카메라": "0.5~2.5s(쓰는 구간, 컷 2.0초) 고정",
       "연기": [
         { "t": 0.6, "무엇": "내려온 은색 구두가 폰의 길목, 계단 맨 위 단을 딱 디딘다" },
-        { "t": 0.9, "무엇": "미끄러져 온 폰이 그 구두 옆면에 톡 부딪혀 멎는다 — 앞 끝이 계단 모서리 밖으로 조금 나가 있다" },
+        { "t": 0.9, "무엇": "미끄러져 온 폰이 그 구두 옆면에 톡 부딪혀 멎는다 — 계단 모서리까지 한 뼘이다" },
         { "t": 1.5, "무엇": "끝 모습 — 다른 구두도 내려와 나란히 디디고, 두 무릎이 굽었다 펴지며 은색 바짓단이 한 번 흔들린다. 아래에서 물이 찰싹 친다" }
       ],
       "넘어옴": "내려가는 다리 — 그 구두가 닿는 자리에 폰이 와서 닿는다",
@@ -378,11 +379,11 @@
       "시작그림": "정지/C10.png",
       "line": "「Mum! The statue moved!」 — 방금 그 재빠른 몸놀림을 본 엄마와 선글라스 남자가 놀라 폰을 들고, 화면 밖 아이의 팔이 가리킨다",
       "장면": "부두낮", "인물": ["부두사람들"], "실외": true,
-      "구도": "옆에서 비스듬히 · 허리 위 · 동상은 화면 오른쪽 밖 · 첫 장부터 엄마와 그 뒤 또렷한 선글라스 남자(C02에서 감자튀김 상자를 들고 지나가던 그 사람)가 방금 본 재빠른 몸놀림에 눈이 커진 채 화면 오른쪽을 보고 있다 · 화면 왼쪽 아래 가장자리로 화면 밖 아이의 작은 팔이 들어온다 · 나머지 관광객은 흐리게",
+      "구도": "옆에서 비스듬히 · 허리 위 · 넓은 컷 C02와 같은 쪽을 보아 동상은 화면 왼쪽 밖 · 첫 장부터 엄마와 그 뒤 또렷한 선글라스 남자(C02에서 감자튀김 상자를 들고 지나가던 그 사람)가 방금 본 재빠른 몸놀림에 눈이 커진 채 화면 왼쪽을 보고 있다 · 화면 오른쪽 아래 가장자리로 화면 밖 아이의 작은 팔이 들어온다 · 나머지 관광객은 흐리게",
       "카메라": "0.5~3.5s(쓰는 구간, 컷 3.0초) 천천히 물러남 3%",
       "연기": [
-        { "t": 0.6, "무엇": "화면 밖 아이의 작은 팔이 화면 왼쪽 아래에서 쑥 들어와, 손가락으로 화면 오른쪽 밖 동상 쪽을 가리킨다(화면 밖 「Mum! The statue moved!」)" },
-        { "t": 1.7, "무엇": "엄마가 웃음이 터지며 폰을 들어 화면 오른쪽으로 겨눈다" },
+        { "t": 0.6, "무엇": "화면 밖 아이의 작은 팔이 화면 오른쪽 아래에서 쑥 들어와, 손가락으로 화면 왼쪽 밖 동상 쪽을 가리킨다(화면 밖 「Mum! The statue moved!」)" },
+        { "t": 1.7, "무엇": "엄마가 웃음이 터지며 폰을 들어 화면 왼쪽으로 겨눈다" },
         { "t": 2.5, "무엇": "끝 모습 — 선글라스 남자가 한 손에 감자튀김 상자를 든 채, 폰 쥔 손으로 선글라스를 이마로 밀어 올리고 그 폰을 든다. 흐린 사람 둘셋도 걸음을 늦추고 폰을 든다" }
       ],
       "넘어옴": "방금 그 재빠른 몸놀림을 본 사람이 그녀만이 아니다 — 사람들은 그 구조에 놀라 폰을 든다",
@@ -464,7 +465,7 @@
       "시작그림": "정지/C13c.png",
       "line": "봉지 소리에 달려든 따오기의 길고 검은 부리와 목이 화면으로 쑥 들어와 선글라스 남자의 감자튀김을 채 간다 — 비명과 웃음에 폰들이 따오기 쪽으로 돌아간다",
       "장면": "부두낮", "인물": ["부두사람들"], "실외": true,
-      "구도": "허리 위 · 사람들 쪽에서 · 화면 가운데 옆모습의 선글라스 남자 — 한 손으로 폰을 동상 쪽으로 들고, 다른 손은 허리 높이에 감자튀김 상자를 들고 있다 — 그 옆 흐린 엄마 · 화면 오른쪽 아래에 따오기의 부리와 목이 반쯤 들어와 있다",
+      "구도": "허리 위 · 사람들 쪽에서, 넓은 컷 C02와 같은 쪽을 본다 · 화면 가운데 옆모습의 선글라스 남자(동상의 화면 오른쪽에 서서 화면 왼쪽의 동상을 겨눈다) — 한 손으로 폰을 동상 쪽으로 들고, 다른 손은 허리 높이에 감자튀김 상자를 들고 있다 — 그 옆 흐린 엄마 · 화면 오른쪽 아래에 따오기의 부리와 목이 반쯤 들어와 있다",
       "카메라": "0.5~2.5s(쓰는 구간, 컷 2.0초) 고정",
       "연기": [
         { "t": 0.6, "무엇": "화면 오른쪽 아래에 반쯤 들어와 있던 따오기의 길고 검은 부리와 털 없는 검은 목이 남자 손의 감자튀김 상자를 물고 채 간다 — 부리와 목은 화면 안에 보이고, 몸통은 화면 밖이다" },
