@@ -100,6 +100,52 @@ test('diff -U0에서 더한 줄과 그 새 줄 번호를 읽는다', () => {
   assert.deepEqual([...m.get('x.md').번호], [4, 5, 11]);
 });
 
+test('GPT 검수 GA1 — 지우기만 한 덩어리(+8,0)도 그 자리를 닿은 줄로 센다', () => {
+  const m = n.더한줄읽기('diff --git a/a/ROADMAP.md b/a/ROADMAP.md\n--- a/a/ROADMAP.md\n+++ b/a/ROADMAP.md\n@@ -9 +8,0 @@\n-이 표는 11월 12일의 계획이다. 지금 상태는 트랙에 있다.\n');
+  assert.deepEqual([...m.get('a/ROADMAP.md').글], []);
+  assert.deepEqual([...m.get('a/ROADMAP.md').번호], [8, 9]);
+  const 글 = '# 로드맵\n\n## 3. 가설\n\n- 하나\n\n## 9. 일정\n\n| 주 | 하는 일 |\n|---|---|\n| 1주 | 뼈대 |\n';
+  assert.deepEqual(n.계획표검사('experiences/a/ROADMAP.md', 글, { 닿은줄: m.get('a/ROADMAP.md').번호 }).map((x) => x.줄), [7]);
+});
+
+test('GPT 검수 GA2 · GA3 — 일정 절의 설명 목록 뒤 표와 하위 절의 표도 보고, 머리 줄은 그 표를 품은 절에서만 찾는다', () => {
+  const 목록뒤 = '# 설계\n\n## 9. 일정\n\n- 기간은 아래와 같다.\n\n| 주 | 하는 일 |\n|---|---|\n| 1주 | 뼈대 |\n';
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', 목록뒤).map((x) => x.머리), ['9. 일정'], 'GA2');
+  const 하위 = '# 설계\n\n## 9. 일정\n\n### 1차\n\n| 주 | 하는 일 |\n|---|---|\n| 1주 | 뼈대 |\n\n### 2차 일정\n\n| 주 | 하는 일 |\n|---|---|\n| 3주 | 마감 |\n\n## 10. 화면\n\n| 주 | 하는 일 |\n|---|---|\n| 1주 | 시안 |\n';
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', 하위).map((x) => [x.줄, x.머리]), [[5, '1차'], [11, '2차 일정']], 'GA3 — 하위 절의 표마다, 10절은 일정 절이 아니다');
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', 하위, { 닿은줄: new Set([16]) }).map((x) => x.줄), [5, 11], '바깥 일정 절의 어디든 닿으면 그 안의 표를 모두 본다');
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', 하위, { 닿은줄: new Set([18]) }), [], '10절만 닿으면 보지 않는다');
+  const 머리줄 = '이 표는 11월 12일의 계획이다. 지금 상태는 [트랙](../../docs/_ops/트랙.md)에 있다.';
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', 하위.replace('## 9. 일정\n', `## 9. 일정\n\n${머리줄}\n`)), [], '바깥 절 머리의 한 줄이 하위 절의 표를 모두 덮는다');
+  // GPT 다시 검수 GA1 · GA3 — 앞 하위 절에만 머리 줄이 있으면 둘째 하위 절의 표는 걸린다
+  const 첫만 = 하위.replace('### 1차\n', `### 1차\n\n${머리줄}\n`);
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', 첫만, { 닿은줄: new Set([15]) }).map((x) => x.머리), ['2차 일정']);
+  // GPT 다시 검수 GA1 · GA4 — 「## 일정 → ### 유호님께 여쭐 것 → 목록」의 목록도 계획이다
+  const 여쭐하위 = '# 설계\n\n## 9. 일정\n\n### 유호님께 여쭐 것\n\n- 예산 승인\n';
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', 여쭐하위).map((x) => x.머리), ['유호님께 여쭐 것']);
+  assert.deepEqual(n.계획표검사('experiences/a/STAGE1_DESIGN.md', '# 설계\n\n## 9. 일정\n\n```\n| 주 | 하는 일 |\n|---|---|\n| 1주 | 뼈대 |\n```\n'), [], '코드 울타리 속 표는 보지 않는다');
+});
+
+test('알림 줄을 남기고, 나중에 그 줄이 고쳐졌는지 센다', () => {
+  const 폴더 = fs.mkdtempSync(path.join(require('node:os').tmpdir(), '낡은곳알림-'));
+  const 옛 = process.env.SYNK_낡은곳폴더;
+  process.env.SYNK_낡은곳폴더 = 폴더;
+  try {
+    assert.equal(n.알림남기기([], {}), false);
+    assert.ok(n.알림남기기([{ 종류: '결정', 경로: 'a.md', 글: '시안 둘 → 유호님이 고르기' }, { 종류: '낱말', 경로: 'b.md', 글: '아르곤에게 보인다' }], { 머리: 'abc', 때: Date.parse('2026-11-16T01:00:00Z') }));
+    n.알림남기기([{ 종류: '결정', 경로: 'a.md', 글: '시안 둘 → 유호님이 고르기' }, { 종류: '길', 경로: 'c.md', 글: '`tools/x.js`' }], { 때: Date.parse('2026-11-16T02:00:00Z') });
+    const 파일 = { 'a.md': '# a\n시안 A로 간다\n', 'b.md': '# b\n아르곤에게 보인다\n' };
+    const git = (a) => { const p = a[1].split(':')[1]; if (!(p in 파일)) throw new Error('없음'); return 파일[p]; };
+    const r = n.알림재기({ git, 판: 'origin/master' });
+    assert.deepEqual([r.전체, r.고쳐짐, r.그대로, r.파일없음], [3, 1, 1, 1], '같은 줄은 한 번, a는 고쳐짐 · b는 그대로 · c는 파일 없음');
+    assert.deepEqual(r.종류별.결정, { 전체: 1, 고쳐짐: 1, 그대로: 0, 파일없음: 0 });
+    assert.equal(n.알림재기({ git, 판: 'x', 부터: Date.parse('2026-11-16T01:30:00Z') }).전체, 2, '부터 뒤의 것만');
+  } finally {
+    if (옛 === undefined) delete process.env.SYNK_낡은곳폴더; else process.env.SYNK_낡은곳폴더 = 옛;
+    fs.rmSync(폴더, { recursive: true, force: true });
+  }
+});
+
 // ── 바로올리기로 실제 push ───────────────────────────────────────────────
 
 const 결정머리 = '# 결정\n\n| 날짜 | 성격 | 결정 | 근거 |\n|---|---|---|---|\n';
@@ -143,4 +189,9 @@ test('바로올리기 — 낡은 곳은 알리기만 하고, 닿은 절의 계�
   assert.match(글, /물러난 낱말이 든 줄을 더했다 1개 — AGENTS\.md 「아르곤」/);
   assert.match(글, /이 push가 지우거나 옮긴 tools\/x\.js를 지금 읽히는 문서 1줄이 아직 가리킨다 — AGENTS\.md:3/);
   assert.match(도구._시험.올리기글(알림), /낡은 곳\(막지 않음\): 결정 「0\.7\.0 화면 시안 고르기」/);
+  // 실제로 올린 push의 알림 줄은 시험 폴더(바로올리기판이 정한 SYNK_낡은곳폴더)에 남는다 — 실제 기록에는 섞이지 않는다
+  const 남긴 = fs.readFileSync(path.join(process.env.SYNK_낡은곳폴더, '알림.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+  assert.ok(남긴.some((x) => x.종류 === '결정' && x.경로 === 'experiences/solo-backup-rust/STAGE1_DESIGN.md'), JSON.stringify(남긴));
+  assert.ok(남긴.some((x) => x.종류 === '낱말' && x.경로 === 'AGENTS.md'));
+  assert.ok(남긴.some((x) => x.종류 === '길' && x.경로 === 'AGENTS.md'));
 });

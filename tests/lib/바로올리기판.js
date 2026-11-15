@@ -31,6 +31,9 @@ Object.assign(process.env, {
 });
 // 시험은 파일을 쓰자마자 따라간다 — 「방금 저장된 파일」 시험만 따로 켠다
 process.env.SYNK_따라가기_저장중초 = '0';
+// 낡은 곳 알림 줄(tools/낡은곳.js 알림남기기)은 시험 폴더에 남긴다 — 실제 기록(%LOCALAPPDATA%/synk/낡은곳)에 시험 알림이 섞이면 고침 비율이 틀어진다
+process.env.SYNK_낡은곳폴더 = path.join(os.tmpdir(), `synk-baro-test-stale-${process.pid}`);
+process.on('exit', () => { try { fs.rmSync(process.env.SYNK_낡은곳폴더, { recursive: true, force: true }); } catch (_) {} });
 
 function 깃(폴더) {
   const g = (...args) => execFileSync('git', ['-c', 'core.quotepath=false', ...args], { cwd: 폴더, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });

@@ -25,6 +25,8 @@
  *   node tools/낡은곳.js 점검 [--모두] [--json]           작업본 전체 — (나) · (다) · (라)를 한 번에(정리할 때, --모두면 담당 원문의 없는 경로까지)
  *   node tools/낡은곳.js 결정 <결정.md 줄번호…> [--판 <커밋>] [--곳 <폴더>]  그 행들을 새 행으로 보고 (가)를 그 판에서 돌린다(--곳 = push가 바꾼 곳)
  *   node tools/낡은곳.js 계획표 <md…>                      그 파일들의 (라) — 파일 전체를 본다
+ *   node tools/낡은곳.js 재기 [--부터 <날짜>]               실제로 올린 push의 알림 줄(%LOCALAPPDATA%/synk/낡은곳/알림.jsonl) 가운데
+ *                                                          지금 origin에서 고쳐진 몫 — 낮으면 알림이 소음이라는 뜻이라 끌지 정하는 근거다
  * 시험: node --test tests/낡은곳.test.js
  */
 const fs = require('node:fs');
@@ -245,33 +247,56 @@ function 계획표검사(경로, 글, { 닿은줄 = null } = {}) {
   if (!설계문서(경로)) return [];
   const 줄 = String(글 || '').split(/\r?\n/);
   const 걸림 = [];
+  // 표 · 목록 덩어리마다 그것이 든 절을 바깥으로 따라 올라간다(GPT 검수 GA2 · GA3, 다시 검수 GA1 · GA3 · GA4).
+  //   위의 절 가운데 「여쭐 것 · 유호님 차례」가 있으면 모든 표와 목록, 「일정」이 있으면 시간 칸이 있는 표가 계획 표다.
+  //   머리 줄은 그 덩어리 앞, 그 덩어리를 품은 절들(가장 바깥의 맞는 절까지)의 제 글에 있어야 한다 — 옆 하위 절의 머리 줄은 치지 않는다.
   let 울 = false;
-  const 머리들 = [];
+  const 머리들 = [];   // { 자리, 수준, 제목, 위: 품은 머리 번호(-1 = 없음) }
+  const 울안 = [], 속절 = [];   // 줄마다: 코드 울타리 안인가 · 그 줄이 든 가장 안쪽 머리 번호
   줄.forEach((l, i) => {
-    if (/^\s*```/.test(l)) 울 = !울;
-    if (!울 && /^#{2,4} /.test(l)) 머리들.push(i);
-  });
-  머리들.forEach((h, k) => {
-    const 제목 = 줄[h].replace(/^#+\s*/, '');
-    const 여쭐 = 여쭐머리.test(제목), 일정 = 일정머리.test(제목);
-    if (!여쭐 && !일정) return;
-    const 끝 = k + 1 < 머리들.length ? 머리들[k + 1] : 줄.length;
-    if (닿은줄 && ![...닿은줄].some((n) => n - 1 >= h && n - 1 < 끝)) return;
-    let 첫 = -1, 표 = false;
-    for (let i = h + 1; i < 끝; i++) {
-      if (/^\s*\|/.test(줄[i]) && i + 1 < 끝 && /^\s*\|[\s:|-]+\|\s*$/.test(줄[i + 1])) { 첫 = i; 표 = true; break; }
-      if (/^\s*(?:[-*]|\d+\.)\s+\S/.test(줄[i])) { 첫 = i; break; }
+    const 울타리 = /^\s*```/.test(l);
+    if (울타리) 울 = !울;
+    울안[i] = 울 || 울타리;
+    const m = !울안[i] && /^(#{2,4}) (.*)$/.exec(l);
+    if (m) {
+      const 수준 = m[1].length;
+      let 위 = 머리들.length - 1;
+      while (위 >= 0 && 머리들[위].수준 >= 수준) 위 = 머리들[위].위;
+      머리들.push({ 자리: i, 수준, 제목: m[2].trim(), 위 });
     }
-    if (첫 < 0) return;
-    if (!여쭐) {
-      if (!표) return;
-      const 머리칸 = (칸나누기(줄[첫])[0] || '').replace(/\*/g, '').trim();
-      const 첫칸들 = 줄.slice(첫 + 2, Math.min(끝, 첫 + 6)).filter((l) => /^\s*\|/.test(l)).map((l) => (칸나누기(l)[0] || '').replace(/\*/g, '').trim());
-      if (!시간칸.test(머리칸) && !(첫칸들.length && 첫칸들.every((c) => 날꼴.test(c)))) return;
-    }
-    if (줄.slice(h + 1, 첫).some((l) => 계획머리줄.test(l) && /트랙/.test(l))) return;
-    걸림.push({ 줄: h + 1, 머리: 제목 });
+    속절[i] = 머리들.length - 1;
   });
+  const 끝 = (k) => { for (let j = k + 1; j < 머리들.length; j++) if (머리들[j].수준 <= 머리들[k].수준) return 머리들[j].자리; return 줄.length; };
+  const 조상들 = (k) => { const r = []; for (let j = k; j >= 0; j = 머리들[j].위) r.push(j); return r; };   // 자기부터 바깥으로
+  const 표줄 = (i) => i >= 0 && i < 줄.length && /^\s*\|/.test(줄[i]);
+  const 목록줄 = (i) => i >= 0 && i < 줄.length && /^\s*(?:[-*]|\d+\.)\s+\S/.test(줄[i]);
+  const 시간표 = (i) => {
+    const 머리칸 = (칸나누기(줄[i])[0] || '').replace(/\*/g, '').trim();
+    const 첫칸들 = [];
+    for (let j = i + 2; 표줄(j) && 첫칸들.length < 4; j++) 첫칸들.push((칸나누기(줄[j])[0] || '').replace(/\*/g, '').trim());
+    return 시간칸.test(머리칸) || (첫칸들.length > 0 && 첫칸들.every((c) => 날꼴.test(c)));
+  };
+  const 닿음 = 닿은줄 ? [...닿은줄].map((n) => n - 1) : null;
+  const 걸린머리 = new Set();
+  for (let i = 0; i < 줄.length; i++) {
+    if (울안[i] || 속절[i] < 0) continue;
+    const 표 = 표줄(i) && !표줄(i - 1) && i + 1 < 줄.length && /^\s*\|[\s:|-]+\|\s*$/.test(줄[i + 1]);
+    const 목록 = !표 && 목록줄(i) && !목록줄(i - 1);
+    if (!표 && !목록) continue;
+    const 위들 = 조상들(속절[i]);
+    const 여쭐위 = 위들.filter((j) => 여쭐머리.test(머리들[j].제목));
+    const 일정위 = 위들.filter((j) => 일정머리.test(머리들[j].제목));
+    if (!(여쭐위.length || (표 && 일정위.length && 시간표(i)))) continue;
+    const 바깥 = 위들.filter((j) => 여쭐위.includes(j) || 일정위.includes(j)).pop();
+    if (닿음 && !닿음.some((n) => n >= 머리들[바깥].자리 && n < 끝(바깥))) continue;
+    let 머리있음 = false;
+    for (let L = 머리들[바깥].자리 + 1; L < i && !머리있음; L++) {
+      if (!울안[L] && 위들.includes(속절[L]) && 계획머리줄.test(줄[L]) && /트랙/.test(줄[L])) 머리있음 = true;
+    }
+    if (머리있음 || 걸린머리.has(속절[i])) continue;
+    걸린머리.add(속절[i]);
+    걸림.push({ 줄: 머리들[속절[i]].자리 + 1, 머리: 머리들[속절[i]].제목 });
+  }
   return 걸림;
 }
 
@@ -286,8 +311,16 @@ function 더한줄읽기(글) {
   for (const l of String(글).split('\n')) {
     if (l.startsWith('diff --git ')) { 경로 = null; continue; }
     if (l.startsWith('+++ ')) { 경로 = l.slice(4).replace(/^"|"$/g, '').replace(/^b\//, ''); if (경로 === '/dev/null') 경로 = null; continue; }
-    const h = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(l);
-    if (h) { 번호 = Number(h[1]); continue; }
+    const h = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/.exec(l);
+    if (h) {
+      번호 = Number(h[1]);
+      // 지우기만 한 덩어리(+c,0)도 그 자리를 닿은 줄로 센다 — 머리 줄만 지운 push가 계획표 검사를 지나가지 않게(GPT 검수 GA1)
+      if (경로 && h[2] === '0') {
+        if (!out.has(경로)) out.set(경로, { 글: new Set(), 번호: new Set() });
+        out.get(경로).번호.add(번호); out.get(경로).번호.add(번호 + 1);
+      }
+      continue;
+    }
     if (경로 && l.startsWith('+')) {
       if (!out.has(경로)) out.set(경로, { 글: new Set(), 번호: new Set() });
       out.get(경로).글.add(l.slice(1).replace(/\r$/, ''));
@@ -315,6 +348,8 @@ const 줄임 = (s, n = 60) => { const g = [...String(s).replace(/\s+/g, ' ').tri
  */
 function push검사({ git, O, 머리 }) {
   const 알림 = [], 막음 = [];
+  const 항목 = [];   // 세션에 보인 줄 하나하나 — 알림남기기가 적고 알림재기가 「그 줄이 나중에 고쳐졌나」를 본다
+  const 항목더하기 = (종류, 경로, 글) => { if (경로 && 글 && 항목.length < 40) 항목.push({ 종류, 경로, 글: String(글).replace(/\r$/, '') }); };
   const 해 = (이름, f) => { try { f(); } catch (e) { 알림.push(`(${이름}을 보지 못했다: ${줄임(e.message, 80)})`); } };
   const 보기 = (p) => { try { return git(['show', `${머리}:${p}`]); } catch { return ''; } };
   let 상태줄 = [];
@@ -350,6 +385,7 @@ function push검사({ git, O, 머리 }) {
     const 결정글 = 보기('docs/_ops/결정.md'), 트랙글 = 보기('docs/_ops/트랙.md');
     const 바뀐곳들 = [...new Set(바뀐.map((p) => 곳으로(p)).filter(Boolean))];
     for (const x of 결정낡은줄({ 새행들, 찾기, 바뀐곳들, 핵심: 읽히는.filter(핵심문서), 더한줄: 더한글, 이름곳: (이름) => 이름의곳들(이름, 결정글, 트랙글) })) {
+      if (!x.넓음) for (const y of x.걸림) 항목더하기('결정', y.경로, y.글);
       알림.push(`결정 「${줄임(x.주제, 40)}」(${x.날.slice(5)})와 낱말이 겹치는데 이번 push에서 그대로인 줄 ${x.수}개${x.넓음 ? ' — 낱말이 넓어 줄은 보이지 않는다' : ` — ${x.걸림.map((y) => `${y.경로}:${y.줄} 「${줄임(산문(y.글).replace(/^[\s|>*#-]+/, ''), 40)}」`).join(' · ')}`}. 옛 모습이면 그 줄을 고치거나 표 머리에 날짜를 단다(전체: node tools/낡은곳.js 결정 <줄번호>)`);
     }
   });
@@ -364,6 +400,7 @@ function push검사({ git, O, 머리 }) {
       for (const 글 of 글들) 줄들.push({ 경로: p, 줄: null, 글 });
     }
     const 걸림 = 물러난말({ 표, 줄들 });
+    for (const x of 걸림.slice(0, 3)) 항목더하기('낱말', x.경로, x.글);
     if (걸림.length) 알림.push(`물러난 낱말이 든 줄을 더했다 ${걸림.length}개 — ${걸림.slice(0, 3).map((x) => `${x.경로} 「${x.낱말}」(${줄임(x.까닭, 40)})`).join(' · ')}`);
     // 표에 새 줄이 들어왔으면 그 꼴로 전체를 한 번 훑는다
     if (바뀐.includes(표길)) {
@@ -374,6 +411,7 @@ function push검사({ git, O, 머리 }) {
         let 글 = '';
         try { 글 = git(['-c', 'core.quotePath=false', 'grep', '-n', '-I', '--no-color', '-P', '-e', e.꼴, 머리, '--', ...읽히는, ...(e.코드 ? ['tools'] : [])]); } catch { 글 = ''; }
         const 걸 = 물러난말({ 표: [e], 줄들: 그렙줄(글).filter((x) => 읽힘.has(x.경로) || 코드파일(x.경로)) });
+        for (const x of 걸.slice(0, 4)) 항목더하기('낱말', x.경로, x.글);
         if (걸.length) 알림.push(`물러난 낱말 표에 더한 「${e.꼴}」이 지금 ${걸.length}줄에 있다 — ${걸.slice(0, 4).map((x) => `${x.경로}:${x.줄}`).join(' · ')}${걸.length > 4 ? ' …' : ''} (전체: node tools/낡은곳.js 점검)`);
       }
     }
@@ -386,6 +424,7 @@ function push검사({ git, O, 머리 }) {
       let 글 = '';
       try { 글 = git(['-c', 'core.quotePath=false', 'grep', '-n', '-I', '--no-color', '-F', '-e', p, 머리, '--', ...읽히는]); } catch { 글 = ''; }
       const 줄들 = 그렙줄(글);
+      for (const x of 줄들.slice(0, 3)) 항목더하기('길', x.경로, x.글);
       if (줄들.length) 알림.push(`이 push가 지우거나 옮긴 ${p}를 지금 읽히는 문서 ${줄들.length}줄이 아직 가리킨다 — ${줄들.slice(0, 3).map((x) => `${x.경로}:${x.줄}`).join(' · ')}`);
     }
     const 폴더 = new Set();
@@ -393,11 +432,60 @@ function push검사({ git, O, 머리 }) {
     const 없는 = [];
     for (const [p, 글들] of 더한글) {
       if (!읽힘.has(p)) continue;
-      for (const 글 of 글들) for (const 길 of 줄의길들(글, p)) if (!있음.has(길) && !폴더.has(길)) 없는.push(`${p} → ${길}`);
+      for (const 글 of 글들) for (const 길 of 줄의길들(글, p)) if (!있음.has(길) && !폴더.has(길)) { if (없는.length < 3) 항목더하기('길', p, 글); 없는.push(`${p} → ${길}`); }
     }
     if (없는.length) 알림.push(`더한 줄이 없는 파일을 가리킨다 ${없는.length}곳 — ${없는.slice(0, 3).join(' · ')}`);
   });
-  return { 알림: 알림.slice(0, 12), 막음 };
+  return { 알림: 알림.slice(0, 12), 막음, 항목 };
+}
+
+// ── 알림이 고침으로 이어졌나 ─────────────────────────────────────────────
+// 알림이 소음이면 끈다 — 그 판단을 숫자로 하려고, 실제로 올린 push의 알림 줄을 남기고 나중에 그 줄이 그대로인지 본다(업무 백업 세션 11-15 부탁).
+
+const 알림폴더 = () => process.env.SYNK_낡은곳폴더 || path.join(process.env.LOCALAPPDATA || path.join(require('node:os').homedir(), '.local'), 'synk', '낡은곳');
+const 알림파일 = () => path.join(알림폴더(), '알림.jsonl');
+
+/** 실제로 올린 push의 알림 줄을 남긴다. 던지지 않는다. */
+function 알림남기기(항목, { 머리 = null, 때 = Date.now() } = {}) {
+  if (!Array.isArray(항목) || !항목.length) return false;
+  try {
+    fs.mkdirSync(알림폴더(), { recursive: true });
+    const 줄들 = 항목.map((x) => JSON.stringify({ 때: new Date(때).toISOString(), 머리: 머리 ? String(머리).slice(0, 12) : null, ...x }));
+    fs.appendFileSync(알림파일(), `${줄들.join('\n')}\n`);
+    return true;
+  } catch { return false; }
+}
+
+/**
+ * 남긴 알림 줄마다 지금 판(origin)에서 그 줄이 그대로인지 본다 — { 전체, 고쳐짐, 그대로, 파일없음, 종류별 }.
+ *   같은 경로 · 같은 글은 하나로 센다(같은 알림이 여러 push에 나온다). 그 줄의 글이 그 파일에 더는 없으면 고쳐진 것으로 센다.
+ */
+function 알림재기({ git, 판, 부터 = 0, 까지 = Infinity, 글 = null }) {
+  let 원 = 글;
+  if (원 == null) { try { 원 = fs.readFileSync(알림파일(), 'utf8'); } catch { 원 = ''; } }
+  const 고유 = new Map();
+  for (const l of String(원).split('\n')) {
+    if (!l.trim()) continue;
+    let o; try { o = JSON.parse(l); } catch { continue; }
+    const t = Date.parse(o.때 || '');
+    if (!(t >= 부터 && t < 까지) || !o.경로 || !o.글) continue;
+    const k = `${o.경로}\n${o.글}`;
+    if (!고유.has(k)) 고유.set(k, o);
+  }
+  const 파일글 = new Map();
+  const 읽기 = (p) => {
+    if (!파일글.has(p)) { let s = null; try { s = git(['show', `${판}:${p}`]); } catch { s = null; } 파일글.set(p, s == null ? null : new Set(String(s).split(/\r?\n/))); }
+    return 파일글.get(p);
+  };
+  const 합 = { 전체: 0, 고쳐짐: 0, 그대로: 0, 파일없음: 0, 종류별: {} };
+  for (const o of 고유.values()) {
+    const 줄들 = 읽기(o.경로);
+    const 값 = 줄들 == null ? '파일없음' : 줄들.has(o.글) ? '그대로' : '고쳐짐';
+    합.전체++; 합[값]++;
+    const d = 합.종류별[o.종류] || (합.종류별[o.종류] = { 전체: 0, 고쳐짐: 0, 그대로: 0, 파일없음: 0 });
+    d.전체++; d[값]++;
+  }
+  return 합;
 }
 
 // ── 작업본 전체 점검 ─────────────────────────────────────────────────────
@@ -483,9 +571,27 @@ function main() {
     else console.log(계획머리안내);
     return 걸림 ? 1 : 0;
   }
-  console.error('사용법: node tools/낡은곳.js 점검 [--json] | 결정 <결정.md 줄번호…> [--판 <커밋>] [--곳 <폴더>] | 계획표 <md…>');
+  if (명령 === '재기') {
+    const 값 = (k) => (args.includes(k) ? args[args.indexOf(k) + 1] : null);
+    const 부터 = 값('--부터') ? Date.parse(`${값('--부터')}T00:00:00+09:00`) : 0;
+    const 까지 = 값('--까지') ? Date.parse(`${값('--까지')}T00:00:00+09:00`) : Infinity;
+    const git = (a) => execFileSync('git', ['-C', 뿌리, ...a], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] });
+    const r = 알림재기({ git, 판: 값('--판') || 'origin/master', 부터, 까지 });
+    if (json) { console.log(JSON.stringify(r, null, 1)); return 0; }
+    console.log(알림재기글(r));
+    return 0;
+  }
+  console.error('사용법: node tools/낡은곳.js 점검 [--json] | 결정 <결정.md 줄번호…> [--판 <커밋>] [--곳 <폴더>] | 계획표 <md…> | 재기 [--부터 <날짜>] [--까지 <날짜>] [--판 <커밋>]');
   return 2;
 }
 
+/** 알림재기 결과 한두 줄. */
+function 알림재기글(r) {
+  if (!r.전체) return `낡은 곳 알림: 남긴 줄이 아직 없다(${알림파일()})`;
+  const 몫 = (a, b) => `${a}/${b}(${Math.round((a / b) * 100)}%)`;
+  const 종류 = Object.entries(r.종류별).map(([k, d]) => `${k} ${몫(d.고쳐짐 + d.파일없음, d.전체)}`).join(' · ');
+  return `낡은 곳 알림 줄 ${r.전체}개 가운데 지금 판에서 고쳐진 것 ${몫(r.고쳐짐, r.전체)} · 파일째 없어진 것 ${r.파일없음} · 그대로 ${r.그대로} — 종류별 고쳐짐(파일 없음 포함) ${종류}`;
+}
+
 if (require.main === module) process.exitCode = main();
-module.exports = { push검사, 결정낡은줄, 행풀기, 낱말로, 필요수, 이름의곳들, 물러난말, 물러난표, 계획표검사, 계획머리안내, 설계문서, 읽히는문서들, 산문, 코드글, 줄의길들, 더한줄읽기, 전체점검, 기록인가, 핵심문서, 표길 };
+module.exports = { push검사, 결정낡은줄, 행풀기, 낱말로, 필요수, 이름의곳들, 물러난말, 물러난표, 계획표검사, 계획머리안내, 설계문서, 읽히는문서들, 산문, 코드글, 줄의길들, 더한줄읽기, 전체점검, 기록인가, 핵심문서, 표길, 알림남기기, 알림재기, 알림재기글 };

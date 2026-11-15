@@ -132,10 +132,41 @@ test('압축 뒤 — 트랙 줄 · 시안 결정 행 · 이 세션이 압축 앞
   assert.match(글, /끝난 것: 손님용 B2 준비/, 'D8 큰 줄의 끝난 증분을 보인다');
   assert.match(글, /솔리오와의 관계/, 'D1 압축 직후에는 앞 문맥에서 본 행도 다시 넣는다(경계 줄이 아직 없어도)');
   assert.match(글, /fix\(업무 백업 0\.7\.0 화면 A/);
-  assert.doesNotMatch(글, /Workspace/, '다른 일의 행 · 줄은 「백업」이 들어 있어도 잇지 않는다');
+  const 밖줄 = 글.split('\n').find((l) => l.startsWith('이 곳 밖의 새 결정 행'));
+  assert.ok(글.split('\n').filter((l) => l.startsWith('· ')).every((l) => !/Workspace/.test(l)), '다른 일의 행 · 줄은 「백업」이 들어 있어도 이 곳 줄로 잇지 않는다');
+  assert.match(밖줄 || '', /이름으로 묶으면: .*Workspace/, '다른 일의 새 결정은 일 이름만 따로 한 줄에');
+  assert.doesNotMatch(글, /Workspace 사람·조직/, '다른 일의 트랙 줄은 넣지 않는다');
   assert.doesNotMatch(글, /꺼 두기/, 'D16 링크만 고친 옛 행은 새것이 아니다');
   assert.match(글, /유호님 차례\(트랙 1절\) — 이 곳으로 적힌 것은 이 1줄이다:\n· 트랙\.md:\d+ 업무 백업 앱 시범 5명/, 'D8 유호님 차례를 따로 묶어 먼저');
   assert.ok([...글].length <= 4000);
+});
+
+test('이 곳 밖의 새 결정 — 새 말에는 공통 규칙만, 판단을 묻는 말과 압축 뒤에는 다른 일까지 제목만(11-15 흠 장부를 모른 채 「그대로입니다」)', (t) => {
+  const r = 오늘판(t);
+  const 앞글 = r.git(['show', 'HEAD:docs/_ops/결정.md']);
+  r.쓰기('docs/_ops/결정.md', 앞글.replace(결정머리, `${결정머리}${[
+    행('2026-11-15', '[흠 장부 구조 · 설계 1단계] 흠을 세는 이름과 장부를 하나로 묶는다. [흠갈래](../마케팅/제작양식/흠갈래.json)'),
+    행('2026-11-15', '[GPT 검수 · 기본값을 astra high로 · 유호님 「바로 바꿔줘」] 검수 도구의 기본 모델을 바꾼다. [운영 원칙](../AI_운영원칙.md)'),
+  ].join('\n')}\n`));
+  r.올림('2026-11-15T09:19:00Z', 'feat(흠 장부 · GPT 검수)');
+  const 판 = r.git(['rev-parse', 'HEAD']).trim();
+  const 밖 = (글) => (글 || '').split('\n').find((l) => l.startsWith('이 곳 밖의 새 결정 행')) || '';
+  const 앞판 = r.git(['rev-parse', 'HEAD~1']).trim();
+  const 상태 = { 본때: '2026-11-15T09:00:00Z', 넣은때: '2026-11-15T09:00:00Z', 본판: 앞판, 곳들: ['experiences/solo-backup-rust'] };
+  const 보통 = z.한번(기본(r, { 판, 사건: 'UserPromptSubmit', 지금: Date.parse('2026-11-15T09:30:00Z'), 상태, 말: '이어서 해' }));
+  assert.match(밖(보통.글), /\(공통 규칙만\).*GPT 검수/, JSON.stringify([보통.까닭, 보통.글]));
+  assert.doesNotMatch(밖(보통.글), /흠 장부/, '보통 말에는 다른 일의 결정을 넣지 않는다');
+  const 이른 = z.한번(기본(r, { 판, 사건: 'UserPromptSubmit', 지금: Date.parse('2026-11-15T09:44:00Z'), 상태: { ...상태, 본때: '2026-11-15T09:40:00Z' }, 말: '이 작업이 품질과 생산성에 도움이 되는지 판단해줘' }));
+  assert.ok(이른.글, '판단을 묻는 말은 10분 간격을 기다리지 않는다');
+  assert.match(밖(이른.글), /\(공통 규칙 1개\)\. 공통 규칙: 11-15 GPT 검수\. 그 밖의 일\(11-15의 1개\)을 이름으로 묶으면: 흠 장부\./, 밖(이른.글));
+  assert.match(밖(이른.글), /node tools\/기록찾기\.js <낱말>로 본다/);
+  const 곧또 = z.한번(기본(r, { 판, 사건: 'UserPromptSubmit', 지금: Date.parse('2026-11-15T09:50:00Z'), 상태: 이른.상태, 말: '그럼 판단해줘' }));
+  assert.equal(곧또.까닭, '간격', '30분 안에 넣었으면 판단 물음도 간격을 지킨다');
+  const 압축 = z.한번(기본(r, { 판, 사건: 'SessionStart', source: 'compact', 지금: Date.parse('2026-11-15T09:45:00Z') }));
+  assert.match(밖(압축.글), /흠 장부/);
+  // 일 이름 — 첫 낱말이 두 글자 이하면 둘째 낱말까지
+  assert.deepEqual(['[흠 장부 구조 · 설계 1단계] x', '[업무 백업 폴더 더하기] x', '[Workspace 원문 읽기 · GPT] x', '[그록봇 1.0 기능 여섯과 Proactive] x'].map((g) => z.일이름(z.결정들(행('2026-11-15', g))[0])), ['흠 장부', '업무 백업', 'Workspace', '그록봇']);
+  assert.ok([...압축.글].length <= 4000);
 });
 
 test('이어 받기(resume)는 지금 문맥(마지막 압축 뒤)에 있는 행만 뺀다', (t) => {
@@ -156,6 +187,17 @@ test('새 말 — 10분 안이면 아무것도 안 하고, 지나면 마지막�
   const 판 = r.git(['rev-parse', 'HEAD']).trim();
   const 그대로 = z.한번(기본(r, { 사건: 'UserPromptSubmit', 지금, 상태: { 본때: '2026-11-15T05:00:00Z', 본판: 판, 곳들: ['experiences/solo-backup-rust'] }, 말: '이어서 해' }));
   assert.equal(그대로.까닭, '바뀐 것 없음', '본 판 뒤로 곳 · 결정 · 트랙이 그대로면 기록을 읽지 않는다');
+  // GPT 검수 GA4 — 옛 곳만 비교하면 새로 고치기 시작한 곳을 못 본다. 기록이 크게 자랐으면 다시 읽는다
+  const 옛곳 = { 본때: '2026-11-15T05:00:00Z', 본판: 판, 곳들: ['experiences/old-app'], 기록크기: 1000 };
+  const 조금 = z.한번(기본(r, { 사건: 'UserPromptSubmit', 지금, 상태: 옛곳, 말: '이어서 해', 기록크기: 1000 + 100 * 1024 }));
+  assert.equal(조금.까닭, '바뀐 것 없음', '조금 자랐으면 지름길');
+  assert.equal(조금.상태.기록크기, 1000, '지름길은 다 읽은 때의 크기를 그대로 둔다');
+  const 많이 = z.한번(기본(r, { 사건: 'UserPromptSubmit', 지금, 상태: 옛곳, 말: '이어서 해', 기록크기: 1000 + 600 * 1024 }));
+  assert.notEqual(많이.까닭, '바뀐 것 없음');
+  assert.deepEqual(많이.상태.곳들, ['experiences/solo-backup-rust'], '새로 고친 곳으로 바뀐다');
+  assert.equal(많이.상태.기록크기, 1000 + 600 * 1024);
+  const 크기모름 = z.한번(기본(r, { 사건: 'UserPromptSubmit', 지금, 상태: { ...옛곳, 기록크기: undefined }, 말: '이어서 해', 기록크기: 5000 }));
+  assert.notEqual(크기모름.까닭, '바뀐 것 없음', '전에 잰 크기가 없으면 다시 읽는다');
   const 다넣음 = z.한번(기본(r, { 사건: 'UserPromptSubmit', 지금, 상태: { 본때: '2026-11-15T05:00:00Z', 넣은때: '2026-11-14T00:00:00Z' }, 말: '이어서 해' }));
   assert.equal(다넣음.글, null, '11-13 곁 커밋 뒤에 넣은 적이 있으면 새것이 없다');
   const 새것 = z.한번(기본(r, { 사건: 'UserPromptSubmit', 지금, 상태: { 본때: '2026-11-15T05:00:00Z', 넣은때: '2026-11-12T09:00:00Z' }, 말: '이어서 해' }));
@@ -283,4 +325,22 @@ test('되짚기 — 기록의 압축 · 사람 말마다 그때의 판으로 돌
   assert.match(압축.글, /A 확인서로 확정/);
   assert.match(압축.글, /손님용 B2 계정 준비/, '압축 앞 문맥에 쓴 행도 압축 뒤에는 넣는다');
   assert.ok(!결과.some((x) => x.사건 === '사람 말'), '압축 뒤 5분의 말은 간격 안이다');
+});
+
+test('여러 일이 함께 쓰는 큰 폴더는 세션이 만진 아래 폴더로 좁힌다 — 11-15 등록 첫 회차의 「유호님 차례」 8줄', () => {
+  const 줄 = (i, 길) => `- **일 ${i}(11-1${i % 10}, Claude):** [자료](../마케팅/온라인마케팅지도/${길}). 남은 일: ${i}.`;
+  const 트랙 = z.트랙들(`# 트랙\n\n${Array.from({ length: 8 }, (_, i) => 줄(i, i < 6 ? `engagement/sns${i}/README.md` : 'engagement/company/WORKSPACE.md')).join('\n')}\n`);
+  const 뿌리 = 'C:/Users/q1212/Documents/SYNK-appsscript';
+  const 도구들 = Array.from({ length: 5 }, () => ({ 이름: 'Edit', 입력: { file_path: `${뿌리}/docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md` }, cwd: 뿌리 }));
+  const [x] = z.곳찾기(도구들);
+  assert.equal(x.곳, 'docs/마케팅/온라인마케팅지도');
+  assert.equal(z.곳좁히기(x.곳, x.길점수, 트랙), 'docs/마케팅/온라인마케팅지도/engagement/company', '8줄 → engagement(8줄) → company(2줄)');
+  assert.equal(z.곳좁히기('docs/마케팅/온라인마케팅지도', x.길점수, 트랙.slice(0, 3)), 'docs/마케팅/온라인마케팅지도', '6줄 아래면 그대로');
+  // GPT 다시 검수 GA2 — 읽기만 한 폴더(sns0, 4점)가 한 번 고친 폴더(company, 3점)를 밀어내지 않는다
+  const 섞음 = [
+    { 이름: 'Edit', 입력: { file_path: `${뿌리}/docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md` }, cwd: 뿌리 },
+    ...Array.from({ length: 4 }, () => ({ 이름: 'Read', 입력: { file_path: `${뿌리}/docs/마케팅/온라인마케팅지도/engagement/sns0/README.md` }, cwd: 뿌리 })),
+  ];
+  const [y] = z.곳찾기(섞음);
+  assert.equal(z.곳좁히기(y.곳, y.길점수, 트랙, y.길고침), 'docs/마케팅/온라인마케팅지도/engagement/company');
 });

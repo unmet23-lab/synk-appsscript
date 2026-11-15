@@ -11,10 +11,14 @@
  *
  * 하는 일: 훅 입력(stdin JSON — hook_event_name · source · session_id · transcript_path · cwd · prompt)을 읽어, SYNK 작업본의 세션이면
  *   기록 끝 24MB의 어시스턴트 도구 입력에서 이 세션이 고친 「곳」(experiences/<x> · tools/<파일> · docs/마케팅/<편> …)을 셋까지 고른다
- *   (고친 흔적이 한 번은 있어야 곳이다 — 돌리기만 한 도구 · 읽기만 한 곳은 순위에만 쓴다). 운영 사본(이 파일의 저장소)의 git에서 셋을 찾아 넣는다.
+ *   (고친 흔적이 한 번은 있어야 곳이다 — 돌리기만 한 도구 · 읽기만 한 곳은 순위에만 쓴다. 트랙에서 7줄 넘게 품는 큰 폴더는 세션이 만진 아래 폴더로 좁힌다).
+ *   운영 사본(이 파일의 저장소)의 git에서 셋을 찾아 넣는다.
  *     ① 그 곳의 트랙 줄 — 「유호님 차례」(트랙 1절) 줄을 따로 묶어 먼저, 줄마다 제목 · 끝난 것 · 남은 일
  *     ② 세션 시작 뒤(새 말 때는 마지막으로 넣은 뒤) 생긴 결정 행 가운데 그 곳과 이어진 것 — 이 세션이 쓴 행도 넣는다(압축 뒤에는 잊는다)
  *     ③ 그 곳에 올라온 커밋 — 수와 최근 셋
+ *     ④ 이 곳 밖의 새 결정 행 한 줄 — 공통 규칙(운영 원칙 · 입구 · 검수 · 관문 · 훅 · 올리기 도구)은 제목, 그 밖의 일은 최근 이틀 것을 일 이름과 수로.
+ *        시작 · 압축 뒤와 판단을 묻는 말(「도움이 되는지 판단해줘」)에는 모두, 그 밖의 새 말에는 공통 규칙만 넣는다. 11-15 업무 백업 세션이
+ *        그날 다른 세션이 올린 흠 장부 결정을 모른 채 「품질 결함은 그대로입니다」라고 답했다(그 세션의 부탁). 판단을 묻는 말은 10분 간격도 기다리지 않는다.
  *   잇는 법: 줄의 md 링크를 docs/_ops 자리에서 풀거나 경로를 글자로 품으면 잇고, 태그 · 제목 첫 마디가 그 곳의 이름(그 곳의 경로를 품은 행 · 줄의 첫 마디)과
  *   같거나 앞머리면 잇는다. 지금 문맥(마지막 압축 뒤 기록 끝 4MB)에 이미 있는 것은 뺀다. 압축 직후에는 새 경계 줄이 아직 기록에 없으므로 문맥을 비운 것으로 본다.
  *   글은 압축 · 이어 받기 4,000자, 새 말 1,500자까지. 넣을 것이 없으면 아무것도 내지 않는다. AI가 요약하지 않는다(트랙 · 결정 표 · git 원문 조각만).
@@ -42,6 +46,8 @@ const 문맥한도 = 4 * 1024 * 1024;     // 「지금 문맥에 있다」는 �
 const BIG_LINE = 300 * 1024;
 const 말간격 = Number(process.env.SYNK_지금상태_간격분 || 10) * 60e3;
 const 다시넣기간격 = 30 * 60e3;
+// 마지막으로 기록을 다 읽은 뒤 기록이 이만큼 자랐으면 「바뀐 것 없음」 지름길을 쓰지 않는다 — 새로 고치기 시작한 곳을 놓치지 않게(GPT 검수 GA4)
+const 기록자람 = 512 * 1024;
 const 글상한 = { 시작: 4000, 말: 1500 };
 const 곳수 = 3;
 const 낡은판 = 30 * 60e3;
@@ -186,8 +192,13 @@ function 명령경로들(명령, 바탕) {
  * 점수: 고침 3점, 읽기와 그 밖의 명령 속 경로 1점. 가장 높은 곳의 10%에 못 미치면 뺀다.
  */
 function 곳찾기(도구들) {
-  const 점수 = new Map(), 고침 = new Map();
-  const 더 = (rel, n, 고친것) => { const 곳 = 곳으로(rel); if (!곳) return; 점수.set(곳, (점수.get(곳) || 0) + n); if (고친것) 고침.set(곳, (고침.get(곳) || 0) + 1); };
+  const 점수 = new Map(), 고침 = new Map(), 길점수 = new Map(), 길고침 = new Map();
+  const 더 = (rel, n, 고친것) => {
+    const 곳 = 곳으로(rel); if (!곳) return;
+    점수.set(곳, (점수.get(곳) || 0) + n); if (고친것) 고침.set(곳, (고침.get(곳) || 0) + 1);
+    const 길 = rel.replace(/\/+$/, ''); 길점수.set(길, (길점수.get(길) || 0) + n);
+    if (고친것) 길고침.set(길, (길고침.get(길) || 0) + 1);
+  };
   for (const { 이름, 입력, cwd } of 도구들) {
     const 바탕 = cwd ? 저장소안(cwd) : '';
     if (쓰는도구.has(이름)) { 더(저장소상대(입력.file_path || 입력.notebook_path, 바탕), 3, true); continue; }
@@ -198,7 +209,7 @@ function 곳찾기(도구들) {
       for (const w of r.길들) 더(저장소상대(w, r.바탕), 올림 ? 3 : 1, 올림);
     }
   }
-  const 줄 = [...점수].map(([곳, n]) => ({ 곳, 점수: n, 고침: 고침.get(곳) || 0 })).filter((x) => x.고침 > 0)
+  const 줄 = [...점수].map(([곳, n]) => ({ 곳, 점수: n, 고침: 고침.get(곳) || 0, 길점수, 길고침 })).filter((x) => x.고침 > 0)
     .sort((a, b) => b.점수 - a.점수 || a.곳.localeCompare(b.곳));
   const 높 = 줄.length ? 줄[0].점수 : 0;
   return 줄.filter((x) => x.점수 >= 3 && x.점수 >= 높 * 0.1).slice(0, 곳수);
@@ -268,6 +279,29 @@ const 이스케이프 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const 바늘틀 = (곳) => new RegExp(`(?:^|[^A-Za-z0-9가-힣_.-])${이스케이프(곳)}(?=$|[/\\s)\`#:,'"\\]|])`);
 /** 행 · 줄이 그 곳의 경로를 품나 — 글자로 품거나, 풀어 낸 링크가 그 곳 안이거나. */
 const 경로품음 = (r, 곳) => 바늘틀(곳).test(r.줄) || r.길.some((p) => p === 곳 || p.startsWith(`${곳}/`));
+
+const 넓은곳줄 = 6;
+/**
+ * 여러 일이 함께 쓰는 큰 폴더(docs/마케팅/온라인마케팅지도 따위)는 세션이 실제로 만진 아래 폴더로 좁힌다 — 트랙에서 그 곳을 품은 줄이 6줄을 넘으면
+ * 그 아래에서 가장 많이 만진 한 칸으로 내려간다(세 번까지). 11-15 등록 첫 회차에 이 폴더로 「유호님 차례」 8줄(PULSE · yuhobuilds)이 들어갔다.
+ */
+function 곳좁히기(곳, 길점수, 트랙줄, 길고침 = null) {
+  for (let k = 0; k < 3; k++) {
+    if (트랙줄.filter((r) => 경로품음(r, 곳)).length <= 넓은곳줄) return 곳;
+    const 아래 = new Map(), 아래고침 = new Map();
+    for (const [길, n] of 길점수 || []) {
+      if (!길.startsWith(`${곳}/`)) continue;
+      const 한칸 = `${곳}/${길.slice(곳.length + 1).split('/')[0]}`;
+      아래.set(한칸, (아래.get(한칸) || 0) + n);
+      if (길고침 && 길고침.get(길)) 아래고침.set(한칸, (아래고침.get(한칸) || 0) + 길고침.get(길));
+    }
+    // 고친 흔적이 있는 아래 폴더로만 내려간다 — 읽기만 한 폴더가 실제로 고친 폴더를 밀어내지 않게(GPT 다시 검수 GA2)
+    const 후보 = [...아래].filter(([한칸]) => !길고침 || 아래고침.get(한칸));
+    if (!후보.length) return 곳;
+    곳 = 후보.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+  }
+  return 곳;
+}
 
 /** 곳 → 이름 집합(그 곳의 경로를 품은 결정 행 · 트랙 줄의 첫 마디). */
 function 이름모으기(곳, 행들) {
@@ -357,12 +391,71 @@ function 결정글(r) {
 }
 
 const 남은일물음 = /남은|나머지|얼마나 걸|일정|다음(?:에|은| 할| 단계)|뭐 하면|내가 할|유호님 차례|할 일|어디까지|진행 상황|다 끝났|언제 끝/;
+// 이 곳 밖의 일까지 판단하라는 말 — 다른 일의 새 결정 제목도 넣는다(11-15 업무 백업 세션: 「품질과 생산성에 도움이 되는지 판단해줘」에
+// 그날 올라온 흠 장부 · GPT 검수 기본값 결정을 모른 채 「그대로입니다」라고 답했다)
+const 넓은물음 = /판단|도움이 되|어떻게 생각|어때|왜 그대로|반영이 안|다른 세션|전체적|요즘|지금 상태|뭐가 바뀌|바뀐 게|업그레이드/;
+
+/**
+ * 모든 세션에 걸리는 공통 영역 — 이 경로를 가리키거나 태그가 이 말인 결정 행은 폴더와 상관없이 제목을 넣는다.
+ * 운영 원칙 · 입구 · 검수 규칙과 도구 · 관문 · 훅 · 올리기 도구가 바뀌면 모든 세션의 일하는 법이 바뀐다.
+ */
+// 현장 노트 · 스킬 · 계정 문서는 넣지 않는다 — 도구 하나의 함정을 적은 행도 그 길을 가리켜 11-15 되짚기에서 공통이 43개로 부풀었다
+const 공통길 = /^(?:AGENTS\.md|CLAUDE\.md|docs\/AI_운영원칙\.md|docs\/_ops\/관문_자동화\.md|tools\/(?:바로올리기\.js|lib\/git-publish-core\.cjs|검수묶음\.mjs|지금상태\.js|낡은곳\.js|기록찾기\.js))$/;
+const 공통말 = /운영 원칙|GPT 검수|검수 (?:도구|규칙|판정|기본값|모델)|판정표|관문|훅|바로올리기|AGENTS|모든 세션|세션마다/;
+// 링크 · 백틱이 아닌 맨 글로 적은 길(「(tools/지금상태.js)」)도 본다
+const 공통글 = /(?:^|[^\w/.-])(?:AGENTS\.md|docs\/AI_운영원칙\.md|docs\/_ops\/관문_자동화\.md|tools\/(?:바로올리기\.js|lib\/git-publish-core\.cjs|검수묶음\.mjs|지금상태\.js|낡은곳\.js|기록찾기\.js))(?![\w.-])/;
+const 공통행 = (r) => r.길.some((p) => 공통길.test(p)) || 공통말.test(r.태그 || '') || 공통글.test(r.결정 || '');
+
+/** 결정 행의 짧은 제목 — 태그의 첫 마디(없으면 본문 앞). */
+function 행제목(r) {
+  const 태그 = r.태그 ? r.태그.split(/\s+·\s+/)[0].replace(/\s*\(.*$/, '') : '';
+  return 자르기(태그 || r.결정.replace(/^\[[^\]]*\]\s*/, ''), 28);
+}
+
+/** 일 이름 — 제목의 첫 낱말(두 글자 이하면 둘째 낱말까지: 「흠 장부」 · 「업무 백업」). 하루 70행을 서른 남짓한 이름으로 묶는다. */
+function 일이름(r) {
+  if (!r.태그) return '태그 없는 행';
+  const 말들 = 행제목(r).replace(/…$/, '').split(/\s+/).filter(Boolean);
+  if (!말들.length) return '?';
+  return [...말들[0]].length <= 2 && 말들[1] ? `${말들[0]} ${말들[1]}` : 말들[0];
+}
+
+/** 이 곳 밖의 새 결정 한 줄 — 공통 규칙은 제목으로, 나머지는 최근 이틀 것을 일 이름과 수로 묶는다(11-15 되짚기: 238행 가운데 열두 제목으로는 흠 장부가 보이지 않았다). */
+function 밖글(밖, { 모두, 몫 }) {
+  const 끝말 = '이 곳 밖의 일을 「없다 · 그대로다 · 아직 안 했다」고 말하기 전에 node tools/기록찾기.js <낱말>로 본다.';
+  const 공통 = 밖.filter((x) => x.공통);
+  const 조각 = [`이 곳 밖의 새 결정 행 ${밖.length}개${모두 ? `(공통 규칙 ${공통.length}개)` : '(공통 규칙만)'}.`];
+  let 남몫 = 몫 - [...조각[0]].length - [...끝말].length - 4;
+  if (남몫 < 40) return null;
+  const 제목들 = [];
+  for (const t of [...new Set(공통.map((x) => `${x.r.날.slice(5)} ${행제목(x.r)}`))].slice(0, 모두 ? 4 : 6)) {
+    if ([...t].length + 3 > 남몫 / (모두 ? 2 : 1)) break;
+    제목들.push(t); 남몫 -= [...t].length + 3;
+  }
+  if (제목들.length) 조각.push(`공통 규칙: ${제목들.join(' · ')}${공통.length > 제목들.length ? ` · … ${공통.length - 제목들.length}개 더` : ''}.`);
+  if (모두) {
+    const 그밖 = 밖.filter((x) => !x.공통);   // 공통 규칙은 위에서 제목으로 보였다
+    const 날들 = [...new Set(그밖.map((x) => x.r.날))].sort().reverse().slice(0, 2);
+    const 최근 = 그밖.filter((x) => 날들.includes(x.r.날));
+    const 묶음 = new Map();
+    for (const x of 최근) { const k = 일이름(x.r); const v = 묶음.get(k) || { 수: 0, 날: '' }; v.수++; if (x.r.날 > v.날) v.날 = x.r.날; 묶음.set(k, v); }
+    const 이름들 = [...묶음].sort((a, b) => b[1].수 - a[1].수 || b[1].날.localeCompare(a[1].날) || a[0].localeCompare(b[0]));
+    const 머 = `그 밖의 일(${날들.map((d) => d.slice(5)).reverse().join(' ~ ')}의 ${최근.length}개)을 이름으로 묶으면:`;
+    const 붙인 = [];
+    let 몫2 = 남몫 - [...머].length - 20;
+    for (const [k, v] of 이름들) { const t = v.수 > 1 ? `${k} ${v.수}` : k; if ([...t].length + 3 > 몫2) break; 붙인.push(t); 몫2 -= [...t].length + 3; }
+    if (붙인.length) 조각.push(`${머} ${붙인.join(' · ')}${이름들.length > 붙인.length ? ` · … 이름 ${이름들.length - 붙인.length}개 더` : ''}.`);
+  }
+  if (조각.length < 2) return null;
+  조각.push(끝말);
+  return 조각.join(' ');
+}
 
 /**
  * 핵심 — 무엇을 넣을지. 입력은 이미 읽은 것들이라 시험과 되짚기가 그대로 부른다.
  *   방식 '시작'(SessionStart) | '말'(UserPromptSubmit). 다시: 남은 일을 묻는 말 — 바뀌지 않은 트랙 줄도 넣는다.
  */
-function 고를것({ 방식, 세션, 곳들, 결정지금, 결정기준, 트랙지금, 트랙기준, 커밋목록, 다시 = false }) {
+function 고를것({ 방식, 세션, 곳들, 결정지금, 결정기준, 트랙지금, 트랙기준, 커밋목록, 다시 = false, 말 = '' }) {
   if (!곳들.length) return null;
   const 결정행 = 결정들(결정지금), 트랙줄 = 트랙들(트랙지금);
   const 이름표 = new Map(곳들.map((곳) => [곳, 이름모으기(곳, [...결정행, ...트랙줄])]));
@@ -381,18 +474,23 @@ function 고를것({ 방식, 세션, 곳들, 결정지금, 결정기준, 트랙�
   }
   트랙후보.sort((a, b) => b.점 - a.점 || b.r.번호 - a.r.번호);
 
-  const 결정후보 = [];
+  const 결정후보 = [], 밖후보 = [];
+  // 이 곳 밖의 새 결정은 제목만 — 시작 · 압축 뒤와 판단을 묻는 말에는 모든 일, 그 밖의 새 말에는 공통 영역만(알림 피로를 줄인다)
+  const 밖모두 = 방식 === '시작' || 넓은물음.test(String(말 || ''));
   for (const r of 결정행) {
     if (기준열쇠.has(r.열쇠)) continue;
     const 곳 = 이어진곳(r, 곳들, 이름표);
-    if (!곳 || 문맥에(r.결정)) continue;
-    결정후보.push({ r, 곳 });
+    if (문맥에(r.결정)) continue;
+    if (곳) { 결정후보.push({ r, 곳 }); continue; }
+    const 공통 = 공통행(r);
+    if (공통 || 밖모두) 밖후보.push({ r, 공통 });
   }
   결정후보.sort((a, b) => b.r.날.localeCompare(a.r.날) || a.r.번호 - b.r.번호);
+  밖후보.sort((a, b) => (b.공통 - a.공통) || b.r.날.localeCompare(a.r.날) || a.r.번호 - b.r.번호);
 
   const 커밋후보 = (커밋목록 || []).filter((c) => !세션.문맥글.includes(c.해시.slice(0, 9))).sort((a, b) => b.때 - a.때);
-  if (!트랙후보.length && !결정후보.length && !커밋후보.length) return null;
-  return { 곳들, 유호님: 트랙후보.filter((x) => x.r.유호님차례), 트랙: 트랙후보.filter((x) => !x.r.유호님차례), 결정: 결정후보, 커밋: 커밋후보 };
+  if (!트랙후보.length && !결정후보.length && !커밋후보.length && !밖후보.length) return null;
+  return { 곳들, 유호님: 트랙후보.filter((x) => x.r.유호님차례), 트랙: 트랙후보.filter((x) => !x.r.유호님차례), 결정: 결정후보, 커밋: 커밋후보, 밖: 밖후보, 밖모두 };
 }
 
 function 글만들기(고름, { 판, 판시각, 방식 = '시작' }) {
@@ -421,7 +519,13 @@ function 글만들기(고름, { 판, 판시각, 방식 = '시작' }) {
     if (길이 + [...t].length <= 상한) { 줄.push(t); 길이 += [...t].length + 1; }
   }
   const 보기 = (고름.유호님[0] || 고름.트랙[0]) ? `docs/_ops/트랙.md:${(고름.유호님[0] || 고름.트랙[0]).r.번호}` : 고름.결정[0] ? `docs/_ops/결정.md:${고름.결정[0].r.번호}` : null;
-  if (보기 && 길이 < 상한 - 60) 줄.push(`줄 전체: node tools/기록찾기.js --줄 ${보기}`);
+  if (보기 && 길이 < 상한 - 60) { const t = `줄 전체: node tools/기록찾기.js --줄 ${보기}`; 줄.push(t); 길이 += [...t].length + 1; }
+  const 밖 = 고름.밖 || [];
+  if (밖.length) {
+    // 밖 줄의 몫 — 시작 · 압축 뒤 700자, 새 말 400자를 넘지 않는다(이 곳의 기록이 먼저다)
+    const t = 밖글(밖, { 모두: 고름.밖모두, 몫: Math.min(상한 - 길이 - 2, 방식 === '말' ? 400 : 700) });
+    if (t) 줄.push(t);
+  }
   return 줄.length > 1 ? 줄.join('\n') : null;
 }
 
@@ -461,15 +565,20 @@ const synk세션인가 = (cwd) => 저장소안(cwd) != null;
  * 한 번 — { 글, 상태, 고름, 까닭 } (글이 없으면 null). 되짚기와 시험이 「지금」 · 기록 · 판 · 상태를 넣어 부른다.
  *   기록: [{o, raw}] (그때까지, 끝 24MB), 시작때: 세션 첫 시각, 판: 지금 판(커밋), git: git 함수, 말: 사람 말(새 말일 때).
  */
-function 한번({ 사건, source, 기록, 시작때, 지금, 판, 판시각 = null, git, 상태 = {}, 말 = '' }) {
+function 한번({ 사건, source, 기록, 시작때, 지금, 판, 판시각 = null, git, 상태 = {}, 말 = '', 기록크기 = null }) {
   const 방식 = 사건 === 'UserPromptSubmit' ? '말' : '시작';
   const 새상태 = { ...상태 };
   const 시작 = Date.parse(시작때 || '') || 지금;
-  const 다시 = 방식 === '말' && 남은일물음.test(String(말 || '')) && !(Date.parse(상태.넣은때 || '') > 지금 - 다시넣기간격);
+  const 늦음 = !(Date.parse(상태.넣은때 || '') > 지금 - 다시넣기간격);
+  const 다시 = 방식 === '말' && 남은일물음.test(String(말 || '')) && 늦음;
+  // 판단을 묻는 말은 10분 간격을 기다리지 않는다(30분 안에 넣었으면 기다린다) — 그 말 바로 앞에 다른 일의 새 결정 제목이 필요하다
+  const 넓게 = 방식 === '말' && 넓은물음.test(String(말 || '')) && 늦음;
   if (방식 === '말') {
-    if (Date.parse(상태.본때 || '') > 지금 - 말간격 && !다시) return { 글: null, 상태: 새상태, 까닭: '간격' };
-    // 곳 · 결정 표 · 트랙이 마지막으로 본 판 뒤로 바뀌지 않았으면 기록을 읽지 않는다
-    if (상태.본판 && Array.isArray(상태.곳들) && 상태.곳들.length && !다시) {
+    if (Date.parse(상태.본때 || '') > 지금 - 말간격 && !다시 && !넓게) return { 글: null, 상태: 새상태, 까닭: '간격' };
+    // 곳 · 결정 표 · 트랙이 마지막으로 본 판 뒤로 바뀌지 않았으면 기록을 읽지 않는다.
+    // 다만 그 뒤로 기록이 크게 자랐으면 세션이 다른 곳을 고치기 시작했을 수 있어 다시 읽는다(GA4)
+    const 자람 = 기록크기 == null ? 0 : Number.isFinite(상태.기록크기) ? 기록크기 - 상태.기록크기 : Infinity;
+    if (상태.본판 && Array.isArray(상태.곳들) && 상태.곳들.length && !다시 && !넓게 && 자람 <= 기록자람) {
       let 바뀐 = 'x';
       try { 바뀐 = git(['diff', '--name-only', `${상태.본판}..${판}`, '--', ...상태.곳들, 'docs/_ops/결정.md', 'docs/_ops/트랙.md']).trim(); } catch { 바뀐 = 'x'; }
       if (!바뀐) { 새상태.본때 = new Date(지금).toISOString(); 새상태.본판 = 판; return { 글: null, 상태: 새상태, 까닭: '바뀐 것 없음' }; }
@@ -477,17 +586,21 @@ function 한번({ 사건, source, 기록, 시작때, 지금, 판, 판시각 = nu
   }
   새상태.본때 = new Date(지금).toISOString();
   새상태.본판 = 판;
+  if (기록크기 != null) 새상태.기록크기 = 기록크기;
   // 압축 직후(compact)와 첫 시작에는 새 경계 줄이 아직 기록에 없다 — 앞 문맥을 「지금 문맥」으로 보면 방금 잊은 것을 뺀다(D1)
   const 세션 = 세션읽기(기록, { 문맥비움: 방식 === '시작' && source !== 'resume' });
-  const 곳들 = 곳찾기(세션.도구들).map((x) => x.곳);
+  const 찾은곳 = 곳찾기(세션.도구들);
+  if (!찾은곳.length) { 새상태.곳들 = []; return { 글: null, 상태: 새상태, 까닭: '곳 없음' }; }
+  const 트랙지금 = 판읽기(git, 판, 'docs/_ops/트랙.md');
+  const 트랙줄 = 트랙들(트랙지금);
+  const 곳들 = [...new Set(찾은곳.map((x) => 곳좁히기(x.곳, x.길점수, 트랙줄, x.길고침)))];
   새상태.곳들 = 곳들;
-  if (!곳들.length) return { 글: null, 상태: 새상태, 까닭: '곳 없음' };
   const 기준때 = 방식 === '말' ? (Date.parse(상태.넣은때 || '') || Date.parse(세션.지난주입 || '') || 시작) : 시작;
   const 기준 = 그때판(git, 판, new Date(기준때).toISOString());
   const 고름 = 고를것({
-    방식, 세션, 곳들, 다시,
+    방식, 세션, 곳들, 다시, 말,
     결정지금: 판읽기(git, 판, 'docs/_ops/결정.md'), 결정기준: 기준 ? 판읽기(git, 기준, 'docs/_ops/결정.md') : '',
-    트랙지금: 판읽기(git, 판, 'docs/_ops/트랙.md'), 트랙기준: 기준 ? 판읽기(git, 기준, 'docs/_ops/트랙.md') : '',
+    트랙지금, 트랙기준: 기준 ? 판읽기(git, 기준, 'docs/_ops/트랙.md') : '',
     커밋목록: 커밋들(git, 기준, 판, 곳들),
   });
   const 글 = 고름 ? 글만들기(고름, { 판, 판시각, 방식 }) : null;
@@ -503,7 +616,7 @@ function 훅(input) {
   if (사건 === 'SessionStart' && input.source === 'clear') return null;
   const 상태 = 상태읽기(input.session_id);
   const 지금 = Date.now();
-  const 다시 = 사건 === 'UserPromptSubmit' && 남은일물음.test(String(input.prompt || ''));
+  const 다시 = 사건 === 'UserPromptSubmit' && (남은일물음.test(String(input.prompt || '')) || 넓은물음.test(String(input.prompt || '')));
   // 새 말의 간격은 git · 기록을 읽기 전에 본다 — 대부분의 말은 node 시작만으로 끝난다
   if (사건 === 'UserPromptSubmit' && Date.parse(상태.본때 || '') > 지금 - 말간격 && !(다시 && !(Date.parse(상태.넣은때 || '') > 지금 - 다시넣기간격))) return null;
   const 뿌리 = 저장소뿌리();
@@ -516,7 +629,9 @@ function 훅(input) {
     if (받음 && 지금 - 받음 > 낡은판 && 사건 === 'SessionStart') {
       r = { 글: `${MARK} 운영 사본이 ${한국(받음)} 뒤로 origin을 따라가지 못해 이 세션 일의 지금 기록을 넣지 못했다. 남은 일이나 유호님 차례를 말하기 전에 node tools/기록찾기.js <일 이름>으로 직접 본다.`, 상태: { ...상태, 본때: new Date(지금).toISOString() }, 까닭: '운영 사본 낡음' };
     } else {
-      r = 한번({ 사건, source: input.source, 기록: 기록풀기(끝읽기(input.transcript_path)), 시작때: 첫시각(input.transcript_path), 지금, 판, 판시각: 판때(git, 판), git, 상태, 말: input.prompt });
+      let 기록크기 = null;
+      try { 기록크기 = fs.statSync(input.transcript_path).size; } catch { /* 크기를 모르면 지름길을 그대로 쓴다 */ }
+      r = 한번({ 사건, source: input.source, 기록: 기록풀기(끝읽기(input.transcript_path)), 시작때: 첫시각(input.transcript_path), 지금, 판, 판시각: 판때(git, 판), git, 상태, 말: input.prompt, 기록크기 });
     }
   } catch (e) {
     기록남기기({ ...줄, ms: Date.now() - 처음, 오류: String(e && e.message || e).slice(0, 200) });
@@ -591,4 +706,4 @@ function main() {
 }
 
 if (require.main === module) process.exitCode = main();
-module.exports = { MARK, 훅, 한번, 고를것, 글만들기, 세션읽기, 곳찾기, 곳으로, 저장소상대, 저장소안, 명령경로들, 기록풀기, 결정들, 트랙들, 첫마디, 이름맞음, 바늘, 줄길들, 되짚기, 남은일물음 };
+module.exports = { MARK, 훅, 한번, 고를것, 글만들기, 일이름, 밖글, 공통행, 세션읽기, 곳찾기, 곳좁히기, 곳으로, 저장소상대, 저장소안, 명령경로들, 기록풀기, 결정들, 트랙들, 첫마디, 이름맞음, 바늘, 줄길들, 되짚기, 남은일물음 };

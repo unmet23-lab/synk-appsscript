@@ -17,7 +17,9 @@
  *   넓게   — 위에 더해 결정 표 · 트랙을 직접 읽거나 grep · rg로 찾은 것도 센다(기록찾기가 생기기 전 11-15 00:12의 방법).
  *   훅     — 같은 문맥 안에 지금 상태 훅(〔지금 상태〕)이 넣은 글이 있었다.
  *   차례   — 같은 「차례」(마지막 사람 말 뒤) 안에서 찾은 것만 센 엄격한 값.
- *   바로잡음 — 유호님이 옛 내용을 바로잡은 말(「이미 … 않았어」 · 「예전 내용」 · 「벌써 했」 따위)의 수. 훅이 효과가 있으면 이 수가 줄어야 한다(Fable 5.2 설계 검토 D15).
+ *   바로잡음 — 유호님이 옛 내용을 바로잡은 말(「이미 … 않았어」 · 「예전 내용」 · 「벌써 했」 · 「바뀌지 않았어」 따위)의 수. 훅이 효과가 있으면 이 수가 줄어야 한다(Fable 5.2 설계 검토 D15).
+ *            장치가 얼마나 돌았는지가 아니라 결과를 보는 숫자다. 갈라 낸 세션의 사본 줄은 uuid로 한 번만 센다.
+ *   알림 고침 — 바로올리기의 낡은 곳 알림(tools/낡은곳.js) 가운데 그 줄이 지금 origin에서 고쳐진 몫(`node tools/낡은곳.js 재기`와 같다). 낮으면 알림이 소음이라 끌지 정한다.
  * 한계: 말의 꼴로만 고르므로 남은 일을 말하지 않은 자리도 섞인다(「남은 일: 없음」 따위). 찾은 낱말이 그 말의 일과 맞는지는 보지 않는다.
  */
 const fs = require('fs');
@@ -39,7 +41,8 @@ const 찾기꼴 = /기록찾기[.]js/;
 const 넓게꼴 = /(?:rg|grep|Select-String|sed|cat|head|tail)\b[^\n]*(?:_ops[\\/](?:결정|트랙)|결정[.]md|트랙[.]md)/;
 const 압축식 = /^This session is being continued from a previous conversation/;
 const 훅표 = '〔지금 상태〕';
-const 바로잡음꼴 = /이미 .{0,24}(?:했|않았|끝났|정했|골랐)|예전 내용|옛날 (?:내용|정보)|예전 정보|벌써 (?:했|끝)|아직도 .{0,12}(?:옛|예전)|너무 예전/;
+// 11-15 업무 백업 세션의 부탁으로 넓혔다 — 「이미 했잖아」 · 「예전 내용」 · 「바뀌지 않았어?」 · 「다른 세션에서 업그레이드 했는데 반영이 안된건가?」
+const 바로잡음꼴 = /이미 .{0,24}(?:했|않았|끝났|정했|골랐|바꿨)|예전 내용|옛날 (?:내용|정보|방식)|예전 (?:정보|방식)|옛 방식|벌써 (?:했|끝)|아직도 .{0,12}(?:옛|예전)|너무 예전|바뀌지 않았|바뀐 (?:거|것) 아니|업그레이드 (?:했|된)[^.?!\n]{0,30}반영|반영이 안 ?된 ?(?:건가|거야|거 ?같)/;
 const 한국 = (ts) => new Date(new Date(ts).getTime() + 9 * 36e5).toISOString().slice(5, 16).replace('T', ' ');
 
 function 사람말인가(o) {
@@ -51,6 +54,10 @@ function 사람말인가(o) {
   const 글 = c.filter((b) => b && b.type === 'text').map((b) => b.text).join('\n').trim();
   return !!글 && !글.startsWith('<') && !압축식.test(글);
 }
+
+// 갈라 낸 세션(fork) · 이어 받은 사본은 앞 대화 줄을 그대로 품는다 — 같은 uuid의 줄은 한 번만 센다
+const 본줄 = new Set();
+const 처음본다 = (o, 덧 = '') => { if (!o.uuid) return true; const k = `${o.uuid}${덧}`; if (본줄.has(k)) return false; 본줄.add(k); return true; };
 
 /** 세션 하나 — 말마다 { ts, 찾음, 넓게, 훅, 차례 }. */
 async function 한세션(파일) {
@@ -72,12 +79,13 @@ async function 한세션(파일) {
       const 글 = typeof c === 'string' ? c : Array.isArray(c) ? c.filter((b) => b && b.type === 'text').map((b) => b.text).join('\n') : '';
       if (압축식.test(글.trim())) { 문맥 = { 찾음: false, 넓게: false, 훅: false }; 차례 = { 찾음: false, 넓게: false }; continue; }
       if (글.includes(훅표)) 문맥.훅 = true;
-      if (사람말인가(o)) { 차례 = { 찾음: false, 넓게: false }; if (바로잡음꼴.test(글)) 바로잡음.push(ts); }
+      if (사람말인가(o)) { 차례 = { 찾음: false, 넓게: false }; if (바로잡음꼴.test(글) && 처음본다(o)) 바로잡음.push(ts); }
       continue;
     }
     if (o.type !== 'assistant' || !o.message || !Array.isArray(o.message.content)) continue;
-    for (const b of o.message.content) {
+    for (const [자리, b] of o.message.content.entries()) {
       if (!b) continue;
+      const 새것 = () => 처음본다(o, `#${자리}`);   // 문맥 표시(찾음 · 넓게)는 사본 줄로도 켜고, 말은 한 번만 센다
       if (b.type === 'tool_use' && b.input) {
         const i = b.input;
         const 명령 = String(i.command || '');
@@ -86,8 +94,8 @@ async function 한세션(파일) {
         let 말글 = '';
         if (/wrap_up$/.test(b.name)) 말글 = [i.recap, i.ask].filter(Boolean).join('\n');
         else if (b.name === 'AskUserQuestion' && Array.isArray(i.questions)) 말글 = i.questions.map((q) => q && q.question).filter(Boolean).join('\n');
-        if (말글 && 말꼴.test(말글)) 말.push({ ts, 글: 말글, 찾음: 문맥.찾음, 넓게: 문맥.넓게, 훅: 문맥.훅, 차례: 차례.찾음, 차례넓게: 차례.넓게 });
-      } else if (b.type === 'text' && 말꼴.test(b.text || '')) {
+        if (말글 && 말꼴.test(말글) && 새것()) 말.push({ ts, 글: 말글, 찾음: 문맥.찾음, 넓게: 문맥.넓게, 훅: 문맥.훅, 차례: 차례.찾음, 차례넓게: 차례.넓게 });
+      } else if (b.type === 'text' && 말꼴.test(b.text || '') && 새것()) {
         말.push({ ts, 글: b.text, 찾음: 문맥.찾음, 넓게: 문맥.넓게, 훅: 문맥.훅, 차례: 차례.찾음, 차례넓게: 차례.넓게 });
       }
     }
@@ -137,6 +145,13 @@ async function 한세션(파일) {
   console.log(`세션 ${합.세션}개 가운데 남은 일이나 유호님 차례를 말한 세션 ${합.말한세션}개(${한국(부터)} ~ ${한국(까지)})`);
   console.log(`그 말 ${합.말}번 — 같은 문맥에서 먼저 기록찾기를 돌림 ${몫(합.찾음, 합.말)} · 결정 표나 트랙을 직접 찾은 것까지 ${몫(합.넓게, 합.말)} · 지금 상태 훅이 넣은 글이 있음 ${몫(합.훅, 합.말)} · 기록찾기나 훅 ${몫(합.찾음또는훅, 합.말)}`);
   console.log(`  같은 차례(마지막 사람 말 뒤)만 보면 기록찾기 ${몫(합.차례, 합.말)} · 넓게 ${몫(합.차례넓게, 합.말)}`);
-  console.log(`  유호님이 옛 내용을 바로잡은 말 ${합.바로잡음}번`);
+  console.log(`  유호님이 옛 내용을 바로잡은 말 ${합.바로잡음}번(${Math.max(1, Math.round((Math.min(까지, Date.now()) - 부터) / 864e5))}일)`);
   for (const [하루, d] of Object.entries(날별).sort()) console.log(`  ${하루} 말 ${d.말} · 기록찾기 ${몫(d.찾음, d.말)} · 넓게 ${몫(d.넓게, d.말)} · 훅 ${몫(d.훅, d.말)} · 바로잡음 ${d.바로잡음 || 0}`);
+  // 낡은 곳 알림(바로올리기 안) 가운데 실제 고침으로 이어진 몫 — 낮으면 알림이 소음이다(업무 백업 세션 11-15 부탁)
+  try {
+    const 낡은곳 = require('./낡은곳.js');
+    const { execFileSync } = require('child_process');
+    const git = (a) => execFileSync('git', ['-C', path.join(__dirname, '..'), ...a], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] });
+    console.log(`  ${낡은곳.알림재기글(낡은곳.알림재기({ git, 판: 'origin/master', 부터: 부터.getTime(), 까지: 까지.getTime() }))}`);
+  } catch (e) { console.log(`  (낡은 곳 알림을 재지 못했다: ${String(e.message).slice(0, 80)})`); }
 })();
