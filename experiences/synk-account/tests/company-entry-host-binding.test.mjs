@@ -2472,3 +2472,75 @@ test('unassigned existing-user entry on PC stays inside the black portal when it
  const host=mountDesktopPortalHost({root:dom.root,getReducedMotion:()=>true,getAuth:()=>auth,bridge:{authStatus:async()=>auth,resolveCompanyEntryDestinations:async request=>({ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry:async()=>null,accountRequest:async(operation,params)=>{writes.push({operation,...params});return {ok:true};}},onEnsureEnteredView:()=>({ok:true})});
  t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'purpose');await host.closePurposePicker();await settleEntryHost();assert.notEqual(host.getState().phase,'entered');assert.equal(host.getState().active,true);assert.equal(host.getState().accountKey,account);assert.deepEqual(writes,[]);assert.equal(auth.signedIn,true);
 });
+
+for (const [kind, destination] of [['both', '/'], ['both', '/pulse-app/'], ['partial', '/']]) {
+  test('real transport preserves an existing account destination after personal chooser close: ' + kind + ' ' + destination, async t => {
+    const navigations = [], writes = [], requests = [];
+    const dom = createFakeDomEnvironment({ fetchImpl: async (url, init) => {
+      requests.push({ url, init });
+      assert.equal(init.method, 'POST');
+      return new Response(JSON.stringify({ version: 1, accountMatch: true,
+        workspace: { state: 'assigned', destination: '/' },
+        pulse: { state: kind === 'partial' ? 'unavailable' : 'assigned', destination: '/pulse-app/' },
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    } });
+    dom.win.location.assign = href => navigations.push(href);
+    const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
+    const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+      getStartupState: () => ({ status: 'signed-in' }),
+      getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account,
+        completePurposeOnboarding: async outcome => { writes.push(outcome); return { ok: true }; },
+      }),
+    });
+    t.after(() => host.dispose());
+    await settleEntryHost();
+    assert.equal(host.getState().phase, 'workspace');
+    assert.equal(requests.length, 1);
+    dom.root.querySelector('[data-portal-action="continue-personal"]').click();
+    await settleEntryHost();
+    assert.equal(host.getState().phase, 'purpose');
+    dom.root.querySelector('[data-portal-action="close-purpose"]').click();
+    await settleEntryHost();
+    assert.equal(host.getState().phase, 'workspace');
+    assert.deepEqual(host.getState().workspace.destinations, kind === 'partial' ? ['/'] : ['/', '/pulse-app/']);
+    dom.root.querySelector('[data-portal-workspace="' + destination + '"]').click();
+    await settleEntryHost();
+    assert.deepEqual(navigations, ['https://workspace.synk.im' + destination]);
+    assert.equal(requests.length, 1, 'a verified return must not require a second lookup');
+    assert.deepEqual(writes, [], 'existing account navigation must not complete newcomer onboarding');
+  });
+}
+
+for (const initialStatus of ['login_required', 'account_mismatch']) {
+  test('an unverified chooser return refreshes its company lookup and ignores the cancelled watch: ' + initialStatus, async t => {
+    const dom = createFakeDomEnvironment(), writes = [];
+    const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
+    let lookups = 0, oldUpdate;
+    const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+      getStartupState: () => ({ status: 'signed-in' }),
+      getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account,
+        completePurposeOnboarding: async outcome => { writes.push(outcome); return { ok: true }; },
+      }),
+      companyBoundaries: {
+        resolveAssignedDestination(args) {
+          lookups += 1;
+          if (lookups === 1) { oldUpdate = args.onAssignmentUpdate; return Promise.resolve({ ok: true, result: { status: initialStatus, destinations: [], unavailable: [] } }); }
+          return Promise.resolve({ ok: true, result: { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] } });
+        },
+        cancelCompanyEntry() {},
+        openAssignedDestination() { return { ok: true, navigationRequested: true }; },
+      },
+    });
+    t.after(() => host.dispose()); await settleEntryHost();
+    assert.equal(host.getState().phase, 'workspace');
+    dom.root.querySelector('[data-portal-action="continue-personal"]').click(); await settleEntryHost();
+    assert.equal(host.getState().phase, 'purpose');
+    oldUpdate({ ok: true, result: { status: 'resolved', destinations: [], unavailable: [] } });
+    await settleEntryHost(); assert.equal(host.getState().phase, 'purpose');
+    dom.root.querySelector('[data-portal-action="close-purpose"]').click(); await settleEntryHost();
+    assert.equal(lookups, 2);
+    assert.equal(host.getState().phase, 'workspace');
+    assert.deepEqual(host.getState().workspace.destinations, ['/', '/pulse-app/']);
+    assert.deepEqual(writes, []);
+  });
+}

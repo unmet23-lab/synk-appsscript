@@ -1855,8 +1855,21 @@ export function createCompanyEntryTransport(options = {}) {
     };
   }
 
-  function cancel() {
-    verifiedResolution = null;
+  function cancel(optionsArg = {}) {
+    const preserveVerified =
+      !disposed &&
+      isPlainObject(optionsArg) &&
+      optionsArg.preserveVerifiedResolution === true &&
+      verifiedResolution !== null &&
+      Array.isArray(verifiedResolution.destinations) &&
+      verifiedResolution.destinations.length > 0 &&
+      matchesBinding(
+        verifiedResolution.accountGeneration,
+        verifiedResolution.expectedAccountId,
+      );
+    if (!preserveVerified) {
+      verifiedResolution = null;
+    }
     if (activeSession !== null) {
       finishSessionWithError(activeSession, 'CANCELLED', false, true, { silentUpdate: true });
     }

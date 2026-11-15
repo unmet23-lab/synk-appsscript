@@ -1122,3 +1122,53 @@ test('deliver phase distinguishes proven product rejection errors from unconfirm
     destination: '/pulse-app/',
   });
 });
+
+async function resolvedDestinationFixture(t, body = httpDestinationsBody({ workspace: 'assigned', pulse: 'assigned' })) {
+  const f = fetchFixture({ onFetch: async () => jsonHttpResponse(200, body) });
+  t.after(() => f.transport.dispose());
+  assert.equal((await f.resolve()).ok, true);
+  return f;
+}
+test('preserving a current verified resolution retains an actual destination without a new lookup', async t => {
+  const f = await resolvedDestinationFixture(t);
+  f.transport.cancel({ preserveVerifiedResolution: true });
+  assert.equal(f.transport.openDestination('/pulse-app/').ok, true);
+  assert.deepEqual(f.sameTabNavigations, [{ method: 'assign', url: origin + '/pulse-app/' }]);
+  assert.equal(f.fetchCalls.length, 1);
+});
+test('ordinary cancellation clears a resolution retained for a personal chooser', async t => {
+  const f = await resolvedDestinationFixture(t);
+  f.transport.cancel({ preserveVerifiedResolution: true });
+  f.transport.cancel();
+  assert.equal(f.transport.openDestination('/').ok, false);
+  assert.deepEqual(f.sameTabNavigations, []);
+});
+for (const [label, binding] of [['generation', { accountGeneration: nextGeneration, expectedAccountId: account }], ['account', { accountGeneration: generation, expectedAccountId: nextAccount }]]) {
+  test('preserved resolution cannot survive a changed ' + label, async t => {
+    const f = await resolvedDestinationFixture(t);
+    f.transport.cancel({ preserveVerifiedResolution: true });
+    f.replaceBinding(binding);
+    f.transport.cancel({ preserveVerifiedResolution: true });
+    assert.equal(f.transport.openDestination('/').ok, false);
+    assert.deepEqual(f.sameTabNavigations, []);
+  });
+}
+test('a preservation request cannot invent an assigned destination for an unassigned account', async t => {
+  const f = await resolvedDestinationFixture(t, httpDestinationsBody());
+  f.transport.cancel({ preserveVerifiedResolution: true });
+  assert.equal(f.transport.openDestination('/').ok, false);
+  assert.deepEqual(f.sameTabNavigations, []);
+});
+test('preserving verification still aborts an unfinished lookup and ignores its late response', async t => {
+  const reply = deferred();
+  const f = fetchFixture({ onFetch: () => reply.promise });
+  t.after(() => f.transport.dispose());
+  const pending = f.resolve(); await tick();
+  f.transport.cancel({ preserveVerifiedResolution: true });
+  assert.equal((await pending).ok, false);
+  assert.equal(f.fetchCalls[0].signal.aborted, true);
+  reply.resolve(jsonHttpResponse(200, httpDestinationsBody({ workspace: 'assigned' })));
+  await tick(); await tick();
+  assert.equal(f.transport.openDestination('/').ok, false);
+  assert.deepEqual(f.sameTabNavigations, []);
+});

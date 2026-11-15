@@ -887,7 +887,11 @@ export function createDefaultWebCompanyBoundaries({
       return transport.openDestination(destination);
     },
 
-    cancelCompanyEntry() {
+    cancelCompanyEntry(options) {
+      if (options && typeof options === 'object' && options.preserveVerifiedResolution === true) {
+        transport.cancel({ preserveVerifiedResolution: true });
+        return;
+      }
       transport.cancel();
     },
 
@@ -1024,6 +1028,8 @@ export function mountWebPortalHost({
   let lastCancelledGeneration = null;
   let entrySeq = 0;
   let cancelledEntrySeq = 0;
+  let hasPreservedCompanyResolution = false;
+  let pendingWorkspaceReturnRefresh = null;
   let cancellingCompanyEntry = false;
 
   function readRawPlatformSession() {
@@ -1281,18 +1287,41 @@ export function mountWebPortalHost({
 
   let boundaries = null;
 
-  function requestCancelCompanyEntry({ reasonGeneration = null } = {}) {
+  function requestCancelCompanyEntry({
+    reasonGeneration = null,
+    preserveVerifiedResolution = false,
+  } = {}) {
     if (disposed || cancellingCompanyEntry) return false;
+    const preserve = preserveVerifiedResolution === true && reasonGeneration === null;
     const hasActiveEntry = entrySeq > cancelledEntrySeq;
+
+    if (preserve) {
+      if (!hasActiveEntry && !hasPreservedCompanyResolution) {
+        return false;
+      }
+      cancelledEntrySeq = entrySeq;
+      hasPreservedCompanyResolution = true;
+      cancellingCompanyEntry = true;
+      try {
+        boundaries?.cancelCompanyEntry?.({ preserveVerifiedResolution: true });
+        return true;
+      } finally {
+        cancellingCompanyEntry = false;
+      }
+    }
+
+    pendingWorkspaceReturnRefresh = null;
+    const hasPendingOrPreserved = hasActiveEntry || hasPreservedCompanyResolution;
     if (reasonGeneration !== null) {
-      if (lastCancelledGeneration === reasonGeneration && !hasActiveEntry) {
+      if (lastCancelledGeneration === reasonGeneration && !hasPendingOrPreserved) {
         return false;
       }
       lastCancelledGeneration = reasonGeneration;
-    } else if (!hasActiveEntry) {
+    } else if (!hasPendingOrPreserved) {
       return false;
     }
     cancelledEntrySeq = entrySeq;
+    hasPreservedCompanyResolution = false;
     cancellingCompanyEntry = true;
     try {
       boundaries?.cancelCompanyEntry?.();
@@ -1319,6 +1348,7 @@ export function mountWebPortalHost({
     const hasActiveEntry = entrySeq > cancelledEntrySeq;
     const shouldCancel =
       hasActiveEntry
+      || hasPreservedCompanyResolution
       || canHoldBoundCompanySession(prevKey)
       || (bindingHasSettledOnce && isInvalidationBindingKey(nextKey))
       || isAccountScopedPendingKey(prevKey);
@@ -1789,8 +1819,9 @@ export function mountWebPortalHost({
     };
   }
 
-  function handleAsyncAssignmentUpdate({ accountKey, expectedGen, outcome }) {
+  function handleAsyncAssignmentUpdate({ accountKey, expectedGen, entryToken = null, outcome }) {
     if (disposed || !portal) return;
+    if (Number.isInteger(entryToken) && entryToken <= cancelledEntrySeq) return;
     if (companyBinding.accountGeneration !== expectedGen) return;
     const boundAccount = verifyBoundAccount(accountKey);
     if (!boundAccount) return;
@@ -1956,7 +1987,7 @@ export function mountWebPortalHost({
 
     // 수동 로그인 복구(interactiveRecovery)에서는 첫 await 전에 동기적으로 창을 열고,
     // 저장 세션 자동 진입과 일반 오류 재확인은 팝업 없이 fetch로 조회한다.
-    entrySeq += 1;
+    const myEntrySeq = ++entrySeq;
     const pendingAssigned = boundaries.resolveAssignedDestination({
       identity: liveIdentity,
       accountKey,
@@ -1967,12 +1998,20 @@ export function mountWebPortalHost({
       onAssignmentUpdate: outcome => handleAsyncAssignmentUpdate({
         accountKey,
         expectedGen,
+        entryToken: myEntrySeq,
         outcome,
       }),
     });
 
     return (async () => {
       const assigned = await pendingAssigned;
+      if (disposed || myEntrySeq <= cancelledEntrySeq) {
+        return {
+          ok: false,
+          code: 'CANCELLED',
+          message: '작업 공간 확인이 중단됐어요.',
+        };
+      }
       const verifiedAfter = verifyBoundAccount(accountKey);
       if (!verifiedAfter || (!hasCustomResolver && companyBinding.accountGeneration !== expectedGen)) {
         return {
@@ -2106,6 +2145,230 @@ export function mountWebPortalHost({
     })();
   }
 
+  async function refreshWorkspaceAfterReturn({
+    accountKey,
+    generation,
+    expectedGen,
+    expectedSynkId,
+  }) {
+    const boundAccount = verifyBoundAccount(accountKey);
+    const liveIdentity = boundAccount?.identity?.();
+    if (
+      !boundAccount
+      || liveIdentity?.signedIn !== true
+      || liveIdentity.status !== 'signed-in'
+      || liveIdentity.accountId !== accountKey
+    ) {
+      return;
+    }
+
+    const hasCustomResolver = typeof customBoundaries?.resolveAssignedDestination === 'function';
+    const myEntrySeq = ++entrySeq;
+    const pendingAssigned = boundaries.resolveAssignedDestination({
+      identity: liveIdentity,
+      accountKey,
+      generation,
+      accountGeneration: expectedGen,
+      expectedAccountId: expectedSynkId,
+      interactiveRecovery: false,
+      onAssignmentUpdate: outcome => handleAsyncAssignmentUpdate({
+        accountKey,
+        expectedGen,
+        entryToken: myEntrySeq,
+        outcome,
+      }),
+    });
+
+    const assigned = await pendingAssigned;
+    if (disposed || !portal || myEntrySeq <= cancelledEntrySeq) return;
+    const verifiedAfter = verifyBoundAccount(accountKey);
+    if (!verifiedAfter || (!hasCustomResolver && companyBinding?.accountGeneration !== expectedGen)) {
+      return;
+    }
+    const portalSnap = portal.getState();
+    if (portalSnap.phase !== 'workspace' || portalSnap.accountKey !== accountKey) {
+      return;
+    }
+
+    syncObservedPendingOnboarding(verifiedAfter.identity?.() || liveIdentity);
+
+    if (assigned && assigned.kind === 'none') {
+      requestCancelCompanyEntry();
+      const purposeMode = resolveEnteringPurposeMode(verifiedAfter, accountKey);
+      const completed = portal.completeWorkspaceEntry({
+        action: 'purpose',
+        purposeMode,
+        accountKey,
+      });
+      if (purposeMode !== 'existing' && completed?.ok && completed.state?.phase === 'entered') {
+        onEnsureEnteredRoute?.();
+      }
+      return;
+    }
+
+    if (assigned && assigned.kind === 'destination' && typeof assigned.open === 'function') {
+      const opened = await assigned.open();
+      if (disposed || !portal || myEntrySeq <= cancelledEntrySeq) return;
+      const latestAccount = verifyBoundAccount(accountKey);
+      if (!latestAccount) return;
+      if (opened?.ok === false) {
+        portal.setWorkspaceState(
+          {
+            status: 'unavailable',
+            destinations: [],
+            unavailable: [],
+            message: opened.message || '배정된 작업 공간을 불러오지 못했어요. 다시 시도해 주세요.',
+            canSwitchAccount: true,
+            canContinuePersonal: true,
+          },
+          { accountKey },
+        );
+        return;
+      }
+      if (isPurposeOnboardingPending(latestAccount, accountKey)) {
+        const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
+        if (marked?.ok === false) return;
+      }
+      if (opened?.navigationRequested !== true) {
+        onEnsureEnteredRoute?.();
+      }
+      portal.completeWorkspaceEntry({ action: 'entered', accountKey });
+      return;
+    }
+
+    if (!assigned || assigned.ok === false) {
+      if (assigned?.code === 'ACCOUNT_CHANGED' || assigned?.code === 'CANCELLED') {
+        return;
+      }
+      portal.setWorkspaceState(
+        mapCompanyResolveErrorToWorkspace(assigned?.code, { interactiveRecovery: false }),
+        { accountKey },
+      );
+      return;
+    }
+
+    const res = assigned.result;
+    if (!res || typeof res !== 'object') {
+      portal.setWorkspaceState(
+        mapCompanyResolveErrorToWorkspace('TEMPORARY_UNAVAILABLE', { interactiveRecovery: false }),
+        { accountKey },
+      );
+      return;
+    }
+
+    if (
+      res.status === 'resolved'
+      && Array.isArray(res.destinations)
+      && Array.isArray(res.unavailable)
+      && res.unavailable.length === 0
+    ) {
+      if (res.destinations.length === 0) {
+        requestCancelCompanyEntry();
+        const purposeMode = resolveEnteringPurposeMode(verifiedAfter, accountKey);
+        const completed = portal.completeWorkspaceEntry({
+          action: 'purpose',
+          purposeMode,
+          accountKey,
+        });
+        if (purposeMode !== 'existing' && completed?.ok && completed.state?.phase === 'entered') {
+          onEnsureEnteredRoute?.();
+        }
+        return;
+      }
+
+      if (res.destinations.length === 1) {
+        const targetDest = res.destinations[0];
+        const opened = await Promise.resolve(boundaries.openAssignedDestination?.(targetDest));
+        if (disposed || !portal || myEntrySeq <= cancelledEntrySeq) return;
+        const latestAccount = verifyBoundAccount(accountKey);
+        if (!latestAccount) return;
+        if (opened && opened.ok !== false) {
+          if (isPurposeOnboardingPending(latestAccount, accountKey)) {
+            const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
+            if (marked?.ok === false) return;
+          }
+          if (opened.navigationRequested !== true) {
+            onEnsureEnteredRoute?.();
+          }
+          portal.completeWorkspaceEntry({ action: 'entered', accountKey });
+          return;
+        }
+        if (opened?.code === 'ACCOUNT_CHANGED') return;
+        portal.setWorkspaceState(
+          {
+            status: 'unavailable',
+            destinations: [],
+            unavailable: [],
+            message: '배정된 작업 공간으로 이동하지 못했어요. 아래 단추를 눌러 다시 확인해 주세요.',
+            canSwitchAccount: true,
+            canContinuePersonal: true,
+          },
+          { accountKey },
+        );
+        return;
+      }
+    }
+
+    portal.setWorkspaceState(
+      mapAssignmentResultToWorkspace(res, { interactiveRecovery: false }),
+      { accountKey },
+    );
+  }
+
+  function performWorkspaceReturnRefreshIfNeeded() {
+    const pending = pendingWorkspaceReturnRefresh;
+    if (!pending || disposed || !portal) return false;
+    const snap = portal.getState();
+    if (snap.phase !== 'workspace') return false;
+    pendingWorkspaceReturnRefresh = null;
+
+    const { accountKey, expectedGen, fallbackCode } = pending;
+    if (snap.accountKey !== accountKey) return true;
+    const boundAccount = verifyBoundAccount(accountKey);
+    if (!boundAccount) return true;
+    const hasCustomResolver = typeof customBoundaries?.resolveAssignedDestination === 'function';
+    if (!hasCustomResolver && companyBinding?.accountGeneration !== expectedGen) return true;
+
+    if (fallbackCode === 'LOGIN_REQUIRED' || fallbackCode === 'ACCOUNT_MISMATCH') {
+      portal.setWorkspaceState(
+        mapCompanyResolveErrorToWorkspace(fallbackCode, { interactiveRecovery: false }),
+        { accountKey },
+      );
+    }
+
+    const liveBinding = resolveCurrentCompanyBinding();
+    if (liveBinding.mismatch || (!hasCustomResolver && !liveBinding.accountId)) {
+      return true;
+    }
+
+    void refreshWorkspaceAfterReturn({
+      accountKey,
+      generation: snap.generation,
+      expectedGen: liveBinding.accountGeneration,
+      expectedSynkId: liveBinding.accountId,
+    });
+    return true;
+  }
+
+  function scheduleWorkspaceReturnRefresh() {
+    let hops = 0;
+    const check = () => {
+      if (disposed || !pendingWorkspaceReturnRefresh || !portal) return;
+      const phase = portal.getState()?.phase;
+      if (phase === 'workspace') {
+        performWorkspaceReturnRefreshIfNeeded();
+        return;
+      }
+      if (phase === 'purpose' && hops < 6) {
+        hops += 1;
+        queueMicrotask(check);
+        return;
+      }
+      pendingWorkspaceReturnRefresh = null;
+    };
+    queueMicrotask(check);
+  }
+
   portal = mountPortalEntry(root, {
     ...(Array.isArray(hostElements) && hostElements.length > 0 ? { hostElements } : {}),
     initialState: {
@@ -2125,6 +2388,16 @@ export function mountWebPortalHost({
       }
       if (!active) {
         hasCompletedPortalEntry = true;
+        if (hasPreservedCompanyResolution || pendingWorkspaceReturnRefresh) {
+          requestCancelCompanyEntry();
+        }
+      } else if (detail?.phase === 'workspace' && pendingWorkspaceReturnRefresh) {
+        performWorkspaceReturnRefreshIfNeeded();
+      } else if (
+        (detail?.phase === 'welcome' || detail?.phase === 'auth' || detail?.phase === 'signing-in')
+        && (hasPreservedCompanyResolution || pendingWorkspaceReturnRefresh)
+      ) {
+        requestCancelCompanyEntry();
       }
       onActiveChange?.(active, detail);
       if (!active && authTriggerEl) {
@@ -2186,6 +2459,7 @@ export function mountWebPortalHost({
 
     async onBrowse() {
       clearNoticeKindAttr();
+      requestCancelCompanyEntry();
       if (hasCompletedPortalEntry || isExplicitPlatformRouteHash(readCurrentHash())) {
         onEnsureEnteredRoute?.();
         return { ok: true };
@@ -2302,21 +2576,72 @@ export function mountWebPortalHost({
     },
 
     async onContinuePersonal(context) {
+      if (!disposed) {
+        syncBindingCancellationIfNeeded();
+      }
       const accountKey = context?.accountKey;
-      requestCancelCompanyEntry();
       const boundAccount = verifyBoundAccount(accountKey);
       if (!boundAccount) {
+        requestCancelCompanyEntry();
         return {
           ok: false,
           code: 'ACCOUNT_CHANGED',
           message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
         };
       }
+
+      const trimmedAccountKey = typeof accountKey === 'string' ? accountKey.trim() : '';
+      const liveBinding = resolveCurrentCompanyBinding();
+      const hasCustomResolver = typeof customBoundaries?.resolveAssignedDestination === 'function';
+      const snap = portal?.getState?.() || null;
+      const currentWorkspace = snap?.phase === 'workspace' && snap?.accountKey === accountKey
+        ? snap.workspace
+        : context?.workspace || null;
+      const canPreserveVerified =
+        !liveBinding.mismatch
+        && liveBinding.validSignedIn === true
+        && (Boolean(liveBinding.accountId) || hasCustomResolver)
+        && companyBinding?.boundVerifiedAccountKey === trimmedAccountKey
+        && (currentWorkspace?.status === 'resolved' || currentWorkspace?.status === 'partial')
+        && Array.isArray(currentWorkspace.destinations)
+        && currentWorkspace.destinations.length > 0;
+
+      if (canPreserveVerified) {
+        pendingWorkspaceReturnRefresh = null;
+        requestCancelCompanyEntry({ preserveVerifiedResolution: true });
+      } else {
+        requestCancelCompanyEntry();
+      }
+
       syncObservedPendingOnboarding(boundAccount.identity?.());
+      const purposeMode = resolveEnteringPurposeMode(boundAccount, accountKey);
+
+      if (!canPreserveVerified && purposeMode === 'existing') {
+        const unverifiedStatus = currentWorkspace?.status || null;
+        if (unverifiedStatus === 'login_required' || unverifiedStatus === 'account_mismatch') {
+          const fallbackCode = unverifiedStatus === 'login_required'
+            ? 'LOGIN_REQUIRED'
+            : 'ACCOUNT_MISMATCH';
+          if (snap?.phase === 'workspace' && snap?.accountKey === accountKey) {
+            portal.setWorkspaceState(
+              mapCompanyResolveErrorToWorkspace(fallbackCode, { interactiveRecovery: false }),
+              { accountKey },
+            );
+          }
+          if (!liveBinding.mismatch && (Boolean(liveBinding.accountId) || hasCustomResolver)) {
+            pendingWorkspaceReturnRefresh = {
+              accountKey,
+              expectedGen: liveBinding.accountGeneration,
+              fallbackCode,
+            };
+          }
+        }
+      }
+
       return {
         ok: true,
         action: 'purpose',
-        purposeMode: resolveEnteringPurposeMode(boundAccount, accountKey),
+        purposeMode,
       };
     },
 
@@ -2329,6 +2654,7 @@ export function mountWebPortalHost({
       const isExistingEntering = isEntering && context?.purposeMode === 'existing';
       const boundAccount = isEntering ? verifyBoundAccount(context.accountKey) : null;
       if (isEntering && !boundAccount) {
+        requestCancelCompanyEntry();
         return {
           ok: false,
           code: 'ACCOUNT_CHANGED',
@@ -2372,6 +2698,7 @@ export function mountWebPortalHost({
             const completed = await settlePurposeOnboarding(boundAccount, 'chosen', context.accountKey, { bounded: false });
             if (completed?.ok === false) return completed;
           } else if (!verifyBoundAccount(context.accountKey)) {
+            requestCancelCompanyEntry();
             return {
               ok: false,
               code: 'ACCOUNT_CHANGED',
@@ -2379,6 +2706,7 @@ export function mountWebPortalHost({
             };
           }
         }
+        requestCancelCompanyEntry();
         onEnsureEnteredRoute?.();
         return { ok: true, destination: target.href };
       }
@@ -2389,6 +2717,7 @@ export function mountWebPortalHost({
           if (completed?.ok === false) return completed;
         }
         if (!verifyBoundAccount(context.accountKey)) {
+          requestCancelCompanyEntry();
           return {
             ok: false,
             code: 'ACCOUNT_CHANGED',
@@ -2397,6 +2726,7 @@ export function mountWebPortalHost({
         }
       }
 
+      requestCancelCompanyEntry();
       if (target.trackAppId) {
         onTrackAppLaunch?.(target.trackAppId);
       }
@@ -2417,6 +2747,7 @@ export function mountWebPortalHost({
       }
       const boundAccount = verifyBoundAccount(context.accountKey);
       if (!boundAccount) {
+        requestCancelCompanyEntry();
         return {
           ok: false,
           code: 'ACCOUNT_CHANGED',
@@ -2424,8 +2755,17 @@ export function mountWebPortalHost({
         };
       }
       if (context?.purposeMode === 'existing') {
+        if (
+          pendingWorkspaceReturnRefresh
+          && pendingWorkspaceReturnRefresh.accountKey === context.accountKey
+        ) {
+          scheduleWorkspaceReturnRefresh();
+        } else {
+          pendingWorkspaceReturnRefresh = null;
+        }
         return { ok: true, action: 'return' };
       }
+      requestCancelCompanyEntry();
       if (isPurposeOnboardingPending(boundAccount, context.accountKey)) {
         const completed = await settlePurposeOnboarding(boundAccount, 'skipped', context.accountKey, { bounded: true });
         if (completed?.ok === false) return completed;
@@ -2458,6 +2798,9 @@ export function mountWebPortalHost({
 
       if (!disposed) {
         syncBindingCancellationIfNeeded();
+      }
+      if (hasPreservedCompanyResolution || pendingWorkspaceReturnRefresh) {
+        requestCancelCompanyEntry();
       }
       const liveBinding = resolveCurrentCompanyBinding();
       if (liveBinding.mismatch) {
