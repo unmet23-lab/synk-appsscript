@@ -15,6 +15,13 @@ const unix = value => value.replaceAll('\\', '/').replace(/^([A-Za-z]):/, (_, le
 const skip = !existsSync(bash) ? 'Bash is unavailable; Linux runtime checks still required' : false;
 const caddy = process.env.SYNK_QA_CADDY;
 
+function caddySpawnDiagnostic(result) {
+  return JSON.stringify({
+    error: String(result.error?.stack || result.error), code: String(result.error?.code),
+    status: String(result.status), stdout: String(result.stdout), stderr: String(result.stderr),
+  });
+}
+
 test('Caddy adapter advertises only reachable TCP protocols and clears cached alternatives', {
   skip: caddy ? false : 'Set SYNK_QA_CADDY to an existing Caddy binary; no download is performed.',
 }, () => {
@@ -52,7 +59,7 @@ test('Caddy runtime proxy error redacts a synthetic media capability URI', {skip
     assert.ok(resolve(root).startsWith(resolve(tmpdir())+sep));
     await rm(root,{recursive:true,force:true});
   });
-  const adapted=spawnSync(caddy,['adapt','--config',join(deploy,'Caddyfile'),'--adapter','caddyfile'],{env:{...process.env,SYNK_COMPANY_DOMAIN:'workspace.example.test',SYNK_TLS_EMAIL:'ops@example.test'},encoding:'utf8',timeout:10000,windowsHide:true});assert.equal(adapted.status,0,adapted.stderr);
+  const adapted=spawnSync(caddy,['adapt','--config',join(deploy,'Caddyfile'),'--adapter','caddyfile'],{env:{...process.env,SYNK_COMPANY_DOMAIN:'workspace.example.test',SYNK_TLS_EMAIL:'ops@example.test'},encoding:'utf8',timeout:10000,windowsHide:true});assert.equal(adapted.status,0,caddySpawnDiagnostic(adapted));
   const config=JSON.parse(adapted.stdout),listener=createNetServer();await new Promise(resolve=>listener.listen(0,'127.0.0.1',resolve));const port=listener.address().port;await new Promise(resolve=>listener.close(resolve));
   config.admin={disabled:true,config:{persist:false}};config.logging.logs.default.writer={output:'file',filename:output};const server=Object.values(config.apps.http.servers)[0];server.listen=['127.0.0.1:'+port];server.automatic_https={disable:true};delete server.routes[0].match;
   const visit=value=>{if(!value||typeof value!=='object')return;if(value.handler==='reverse_proxy')value.upstreams=[{dial:'127.0.0.1:1'}];for(const child of Object.values(value))visit(child);};visit(server.routes);
