@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { 세션인가, 코덱스인가, 조상세션, 세션과자손 } = require('../tools/세션우선순위.js');
+const { 세션인가, 코덱스인가, 조상세션, 세션과자손, 끌grep } = require('../tools/세션우선순위.js');
 
 const 앱 = 'C:\\Program Files\\WindowsApps\\Claude_5.11492.2.0_x64__pzs8sxrjxfjjc\\app\\Claude.exe';
 const 코드 = 'C:\\Users\\q\\AppData\\Local\\Claude-Data\\claude_pzs8sxrjxfjjc\\claude-code\\2.1.321\\d0e\\claude.exe';
@@ -58,6 +58,21 @@ test('GPT(Codex) 앱의 codex.exe와 그 자손도 함께 고른다 — 조건�
   const 고름 = 세션과자손(표2);
   assert.ok(고름.includes(60) && 고름.includes(61));
   assert.ok(!고름.includes(70) && !고름.includes(71) && !고름.includes(80));
+});
+
+test('주인 없이 10분 넘게 돈 grep만 끈다 — 주인이 살아 있거나 10분이 안 된 것은 두고, 번호를 물려받은 새 부모는 주인으로 보지 않는다', () => {
+  const 지금 = Date.parse('2026-11-15T08:00:00Z');
+  const 행들 = [
+    { ProcessId: 1, Created: '2026-11-15T07:21:00Z', ParentCreated: null }, // 39분째 · 부모 없음 → 끈다
+    { ProcessId: 2, Created: '2026-11-15T07:30:00Z', ParentCreated: '2026-11-15T07:29:59Z' }, // 부모 살아 있음 → 둔다
+    { ProcessId: 3, Created: '2026-11-15T07:55:00Z', ParentCreated: null }, // 5분째 → 둔다
+    { ProcessId: 4, Created: '2026-11-15T07:00:00Z', ParentCreated: '2026-11-15T07:40:00Z' }, // 부모 번호를 나중 프로세스가 물려받음 → 끈다
+    { ProcessId: 5, Created: '2026-11-15T07:50:00Z', ParentCreated: null }, // 딱 10분 → 끈다
+    { ProcessId: 6, Created: '읽지 못함', ParentCreated: null }, // 시각을 못 읽으면 둔다
+  ];
+  assert.deepEqual(끌grep(행들, 지금), [1, 4, 5]);
+  assert.deepEqual(끌grep(행들[0], 지금), [1]); // PowerShell이 행 하나를 배열 없이 줄 때
+  assert.deepEqual(끌grep(null, 지금), []);
 });
 
 test('부모가 자기 자신이거나 고리를 이뤄도 멈춘다', () => {

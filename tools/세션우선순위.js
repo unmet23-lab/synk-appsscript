@@ -11,8 +11,8 @@
  *   앱 화면(Program Files의 Claude.exe와 그 --type 자식)은 건드리지 않는다. 우선순위는 차례만 바꾸고 계산은 바꾸지 않아
  *   결과물(영상 · 검사 · 시험)은 같고, 유호님이 화면을 쓰지 않을 때는 CPU를 그대로 다 쓴다.
  *
- *   node tools/세션우선순위.js          SessionStart 훅 — 이 프로세스의 조상 가운데 세션 프로세스를 찾아 낮춘다. 출력 없음 · 늘 끝 코드 0.
- *   node tools/세션우선순위.js --지금   지금 떠 있는 모든 세션 프로세스와 그 자손 가운데 「보통」인 것을 낮춘다(이미 뜬 일에 한 번). 바꾼 수를 보인다.
+ *   node tools/세션우선순위.js          SessionStart 훅 — 이 프로세스의 조상 가운데 세션 프로세스를 찾아 낮추고, 주인 없이 10분 넘게 도는 grep을 끈다. 출력 없음 · 늘 끝 코드 0.
+ *   node tools/세션우선순위.js --지금   지금 떠 있는 모든 세션 프로세스와 그 자손 가운데 「보통」인 것을 낮추고(이미 뜬 일에 한 번) 주인 없는 grep을 끈다. 바꾼 수를 보인다.
  *
  * 훅 자리: `~/.claude/settings.json` SessionStart(matcher 없음 — 새로 · 이어서 · 압축 뒤 모두), 운영 사본의 이 파일을 부른다.
  * 관문 표: docs/_ops/관문_자동화.md 「Claude Code 훅」.
@@ -106,8 +106,35 @@ const 디스크준비 = 'Add-Type -TypeDefinition \'using System; using System.R
   + 'public static bool Low(int pid) { IntPtr h = OpenProcess(0x1200, false, pid); if (h == IntPtr.Zero) return false; int v = -1, r; '
   + 'NtQueryInformationProcess(h, 33, ref v, 4, out r); bool ok = false; if (v == 2) { int n = 1; ok = NtSetInformationProcess(h, 33, ref n, 4) == 0; } CloseHandle(h); return ok; } }\'; ';
 
-/** pid들의 디스크 우선순위를 「보통」에서 「낮음」으로. 바꾼 수. 덧붙여 GPT 앱 codex.exe 행들을 돌려준다(훅이 한 번에 쓰게). */
-function 디스크낮추기(pids, 코덱스도 = false) {
+/* 주인 없는 grep — 셸 명령이 시간 초과로 끊기면 bash만 죽고 `grep -r … docs tools`는 남아, 미디어가 든 docs를 30~60분 동안
+ * 초당 100MB씩 읽으며 C:를 막았다(11-15 하루에 넷). 유호님 「응, 꺼」(11-15 — 「주인 없이 10분 넘게 도는 grep은 앞으로도 꺼도 될까요?」).
+ * 부모가 없거나, 같은 번호의 부모가 grep보다 나중에 생겼으면(번호를 다른 프로세스가 물려받음) 주인이 없는 것이다. */
+const grep분 = 10;
+const grep읽기 = '$g=@(Get-CimInstance Win32_Process -Filter "Name=\'grep.exe\'" -Property ProcessId,ParentProcessId,CreationDate | ForEach-Object { '
+  + '$q=Get-CimInstance Win32_Process -Filter "ProcessId=$($_.ParentProcessId)" -Property CreationDate; '
+  + '@{ ProcessId=[int]$_.ProcessId; Created=$_.CreationDate.ToUniversalTime().ToString(\'o\'); '
+  + 'ParentCreated=$(if ($q) { $q.CreationDate.ToUniversalTime().ToString(\'o\') } else { $null }) } }); ';
+
+/** grep 행들(ProcessId · Created · ParentCreated, ISO 시각)에서 주인 없이 grep분 넘게 돈 pid. 지금은 ms. */
+function 끌grep(행들, 지금 = Date.now()) {
+  return [].concat(행들 || []).filter((행) => {
+    const 시작 = Date.parse(행 && 행.Created);
+    if (!Number.isFinite(시작) || 지금 - 시작 < grep분 * 60000) return false;
+    const 부모 = Date.parse(행.ParentCreated);
+    return !Number.isFinite(부모) || 부모 > 시작;
+  }).map((행) => Number(행.ProcessId)).filter((p) => Number.isInteger(p) && p > 0);
+}
+
+function grep끄기(행들) {
+  let 끔 = 0;
+  for (const pid of 끌grep(행들)) {
+    try { process.kill(pid); 끔 += 1; } catch { /* 그사이 끝났다 */ }
+  }
+  return 끔;
+}
+
+/** pid들의 디스크 우선순위를 「보통」에서 「낮음」으로. 바꾼 수. 덧붙여 GPT 앱 codex.exe 행들과 grep 행들을 돌려준다(훅이 PowerShell 한 번으로 쓰게). */
+function 디스크낮추기(pids, 코덱스도 = false, grep도 = false) {
   const 목록 = pids.filter((p) => Number.isInteger(p) && p > 0).join(',');
   const 명령 = 디스크준비
     + `$n=0; foreach ($p in @(${목록 || '0'})) { if ($p -gt 0 -and [SynkIo]::Low($p)) { $n++ } }; `
@@ -115,9 +142,14 @@ function 디스크낮추기(pids, 코덱스도 = false) {
       ? `$c=@(Get-CimInstance Win32_Process -Filter "Name='codex.exe'" -Property ProcessId,ParentProcessId,Name,ExecutablePath | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath); `
         + `foreach ($x in $c) { if ($x.ExecutablePath -like '*OpenAI.Codex*' -and [SynkIo]::Low([int]$x.ProcessId)) { $n++ } }; `
       : '$c=@(); ')
-    + 'ConvertTo-Json -InputObject @(@{ n = $n; codex = $c }) -Compress -Depth 4';
+    + (grep도 ? grep읽기 : '$g=@(); ')
+    + 'ConvertTo-Json -InputObject @(@{ n = $n; codex = $c; grep = $g }) -Compress -Depth 4';
   const [결과] = 파워셸(명령, 90000);
-  return { 바꿈: Number(결과 && 결과.n) || 0, 코덱스: (결과 && 결과.codex) ? [].concat(결과.codex) : [] };
+  return {
+    바꿈: Number(결과 && 결과.n) || 0,
+    코덱스: (결과 && 결과.codex) ? [].concat(결과.codex) : [],
+    grep: (결과 && 결과.grep) ? [].concat(결과.grep) : [],
+  };
 }
 
 function 낮추기(pid, 보통만 = false) {
@@ -138,8 +170,13 @@ function main(argv) {
     let 바꿈 = 0;
     for (const pid of 대상) if (낮추기(pid, true)) 바꿈 += 1;
     let 디스크 = 0;
-    try { 디스크 = 디스크낮추기(대상).바꿈; } catch { /* CPU만 바꾼 채 둔다 */ }
-    process.stdout.write(`세션과 자손 ${대상.length}개 가운데 CPU 「보통」이던 ${바꿈}개를 「보통 아래」로, 디스크 「보통」이던 ${디스크}개를 「낮음」으로 낮췄다\n`);
+    let 끔 = 0;
+    try {
+      const 결과 = 디스크낮추기(대상, false, true);
+      디스크 = 결과.바꿈;
+      끔 = grep끄기(결과.grep);
+    } catch { /* CPU만 바꾼 채 둔다 */ }
+    process.stdout.write(`세션과 자손 ${대상.length}개 가운데 CPU 「보통」이던 ${바꿈}개를 「보통 아래」로, 디스크 「보통」이던 ${디스크}개를 「낮음」으로 낮췄다. 주인 없이 ${grep분}분 넘게 돈 grep ${끔}개를 껐다\n`);
     return 0;
   }
   let 세션 = null;
@@ -152,14 +189,15 @@ function main(argv) {
   try {
     // 세션의 디스크 우선순위도 낮추고, GPT 앱은 다시 켜면 codex.exe가 「보통」으로 뜨니 Claude 세션이 시작될 때마다 함께 맞춘다
     // (그 뒤 띄우는 GPT 일부터 낮게). PowerShell 한 번으로 한다 — CPU가 꽉 찬 때 PowerShell을 띄우는 데만 몇 초가 든다.
-    const { 코덱스 } = 디스크낮추기(세션 ? [세션] : [], true);
+    const { 코덱스, grep } = 디스크낮추기(세션 ? [세션] : [], true, true);
     for (const 행 of 코덱스) if (코덱스인가(행)) 낮추기(Number(행.ProcessId), true);
+    grep끄기(grep); // 세션이 시작될 때마다 주인 없이 10분 넘게 도는 grep을 치운다
   } catch {
     // 그대로 둔다
   }
   return 0;
 }
 
-module.exports = { 세션인가, 코덱스인가, 조상세션, 세션과자손 };
+module.exports = { 세션인가, 코덱스인가, 조상세션, 세션과자손, 끌grep, 디스크낮추기 };
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
