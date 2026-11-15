@@ -130,8 +130,8 @@
   "font": "'Inter Tight', 'Yu Gothic', 'SUIT', sans-serif",
   "lineH": 1.2,
   "boss": "店長",
-  "scene": "店長とぶつかって\nコーヒーが…",
-  "sceneSize": 32,
+  "scene": "店長とぶつかり\nコーヒーをこぼす",
+  "sceneSize": 30,
   "level": "謝罪レベル{n}",
   "reads": [
     "mi-an",
@@ -180,7 +180,7 @@
   "helloSec": 1,
   "_원문": {
     "boss": "점장님",
-    "scene": "점장님이랑 부딪쳐서\n커피가…",
+    "scene": "점장님이랑 부딪치고\n커피를 쏟는다",
     "level": "사과 레벨{n}",
     "means.0": "미안",
     "means.1": "미안해요",
