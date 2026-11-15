@@ -45,6 +45,7 @@
 .dz--ga2 .dz-tag{color:var(--lw-ink-3);font-weight:500}
 .dz--ga.dz--ga2 .dz-card--first{width:100%}
 .dz-card{position:relative}
+.dz-more{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 24px;margin-top:16px!important;font-size:var(--k1);line-height:1.5;color:var(--lw-ink-3)}
 .dz-uline{position:absolute;height:3px;border-radius:2px;background:var(--lw-hot);pointer-events:none}
 .dz-card--first .dz-uline{background:rgba(255,255,255,.7)}
 

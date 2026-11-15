@@ -94,6 +94,12 @@ ${foot}
 </div>`,
 };
 
+// 가′ 맺음 줄 시험(11-16 판단 세션 물음 1): 쉬는 화면에서 걷었던 「왜 이렇게 만들었나 →」 링크와 출처 줄을 맺음 줄 아래 한 줄로 되살린 판.
+// 단계 줄(지금 · 1분 뒤 · … · 내 위치)은 쉬는 화면에서 걷은 채 둔다 — 고른 칸이 없는 쉬는 화면에서는 맹검이 「현재 상태 표시도 없이 덧붙은 군더더기」로 읽었다.
+const more = `<p class="dz-more"><a class="lw-link" href="/atlas/#learner-why">왜 이렇게 만들었나 <span class="arr" aria-hidden="true">→</span></a><span>실제 첫 레슨의 문제와 SYNK WORLD 화면 · 예시 학습자의 30일</span></p>`;
+시안.ga2b = 시안.ga2.replace('dz--ga2">', 'dz--ga2 dz--ga2b">').replace(`${foot}\n</div>`, `${foot}\n${more}\n</div>`);
+if (!시안.ga2b.includes('dz-more')) throw new Error('ga2b: 맺음 줄을 못 끼움');
+
 const script = `<script>(()=>{const s=document.getElementById('learner');if(!s)return;s.classList.add('is-rest');const b=s.querySelector('[data-dz-go]');if(b)b.addEventListener('click',()=>{s.classList.remove('is-rest');const n=s.querySelector('[data-next] .btn');if(n)n.click();});})();</script>`;
 
 fs.mkdirSync(path.join(낼, 'assets', 'v10'), { recursive: true });
