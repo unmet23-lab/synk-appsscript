@@ -123,8 +123,10 @@ test('valid dual sessions stay current when the staff check interval elapses dur
   const gate={entered:defer(),release:defer()};f.gate=gate;
   const pending=f.request(web,{input:{expectedAccountId:id}});
   await Promise.race([gate.entered.promise,pending.then(r=>assert.fail('entry finished before customer validation: '+r.status))]);
+  const beforeChecks=f.staffChecks;
   f.stamp+=300;gate.release.resolve();
   const result=await pending;assert.equal(result.status,200);assert.equal(result.data.workspace.state,'assigned');
+  assert.equal(f.staffChecks,beforeChecks+1);
 });
 
 test('a local employee login with no SYNK session cannot assert a web entry identity',async t=>{
