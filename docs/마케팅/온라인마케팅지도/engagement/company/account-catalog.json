@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T12:37:30.902Z",
+  "generatedAt": "2026-11-15T11:38:16.570Z",
   "sourceAt": "2026-11-10",
   "accounts": [
     {
@@ -793,7 +793,7 @@
       "platform": "facebook",
       "handle": "몽글몽글",
       "publicUrl": "https://www.facebook.com/profile.php?id=61596409163072",
-      "externalId": null,
+      "externalId": "1488754250980734",
       "country": "한국",
       "countryCode": null,
       "accountStatus": "operating"
