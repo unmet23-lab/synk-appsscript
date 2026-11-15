@@ -9,6 +9,8 @@
 //   같은판의 고칠 것은 11-12 B39 v10 컷 전수의 기준(같은 판을 배율 · 자리만 바꿔 이음 — 컷인 · 다시 짠 구도 모두)을 따른다. 11-11 B38 v14는 이 기준을
 //   느슨하게 봐 같은 판 이음 열한 곳을 통과시켰다(이 도구가 11-13에 찾음).
 //   일부러 둔 자리는 준비.json 「최종본판단」: {"같은판@5.5": "까닭", "굳음": "까닭(편 전체)"} — 고칠 것이 확인할 것으로 내려가고 까닭이 같이 적힌다.
+//   조용구간(가운데 10초 넘게 조용함, 11-15 흠 장부 설계 3단계)은 모든 브랜드 · 「사람편」에서 확인할 것이다 — HARD에 넣지 않는다. 고칠 것이 되면
+//   작업실 등록이 막혀 게시가 더 빈다(11-15 「작은 흠은 올리기」). 시험: tests/최종본관문.test.js 「조용구간」.
 // 잰 값은 게시/최종본검사.json에 영상 바이트 · 수정 시각과 함께 둔다 — 같은 영상이면 다시 재지 않는다(한 편 2~4분).
 const fs = require('node:fs');
 const path = require('node:path');
@@ -30,6 +32,7 @@ const HOW = {
   되풀이: '나중 컷을 다른 각도 · 다른 판으로 바꾼다 — 같은 그림이 두 번 나오면 「똑같은 장면이 반복」으로 읽힌다(점검표 50 · 11-12 서울로)',
   끝소리: '끝 3초에 소리 한 방(사건 소리 · 음악 마지막 박)을 둔다 — 방 소리만 남으면 끝이 맹하다(점검표 2)',
   끝화소: '끝 근접은 잘라 키우지 말고 근접으로 굽는다(점검표 48 · 2)',
+  조용구간: '그 구간에 말(해설 · 대사)이나 사건 소리를 두거나 구간을 줄인다 — 화면 글만 읽히는 긴 구간은 폰 스피커로 비어 들린다. 일부러 둔 정적이면 그대로 둔다',
 };
 
 // 관문에 드는 편인가 — 슬롯이나 판 시각 가운데 하나라도 FINAL_FROM 뒤면(슬롯은 그대로 두고 판 시각만 옮긴 편도 — Fable 검수 12)
@@ -82,7 +85,14 @@ function remember(cacheFile, key, file, result) {
   try { all = JSON.parse(fs.readFileSync(cacheFile, 'utf8')); } catch { /* 처음 */ }
   const stat = fs.statSync(file);
   const { 파일: _abs, ...kept } = result;   // 이 PC 절대 경로는 공개 저장소에 올리지 않는다(Fable 검수 7)
-  all[key] = { 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString(), 도구: stamp(), 결과: kept };
+  // 잰때: 흠 장부가 이 기록을 「그 판정 전에 기계가 띄운 것」으로 읽을 때 쓴다 — 판정 뒤에 다시 잰 기록을 앞선 경고로 세지 않게(11-15 3단계 GPT 검수 GA1)
+  // 처음: 같은 영상(바이트 · 수정 시각)을 도구 판이 바뀌어 다시 잴 때 그 영상을 처음 잰 때와 걸린 항목 이름을 넘겨 둔다 — 다시 재도 앞서 띄운 증거가
+  //   사라지지 않게(잰때가 없는 옛 줄은 영상 수정 시각). 영상이 바뀌면 새로 시작한다
+  const 수정 = new Date(stat.mtimeMs).toISOString();
+  const prev = all[key];
+  const 같은영상 = prev && prev.바이트 === stat.size && prev.수정 === 수정;
+  const 처음 = 같은영상 ? (prev.처음 || { 잰때: prev.잰때 || prev.수정, 걸림항목: [...new Set([].concat(prev.결과?.걸림 || []).map((h) => h && h.항목).filter(Boolean))] }) : undefined;
+  all[key] = { 바이트: stat.size, 수정, 도구: stamp(), 잰때: new Date().toISOString(), ...(처음 ? { 처음 } : {}), 결과: kept };
   fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
   fs.writeFileSync(cacheFile, JSON.stringify(all, null, 2) + '\n');
 }

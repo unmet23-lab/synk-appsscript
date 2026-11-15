@@ -80,3 +80,23 @@ test('최종 확인 갈래 이름 열네 개가 모두 「항목」에 있고, �
     else assert.ok(묶음들.has(x.묶음), `${이름}: 묶음 ${x.묶음}`);
   }
 });
+
+test('갈래(「항목」)에 둔 올린 검사 — 번호가 없는 갈래에만, 꼴은 줄과 같고, 규칙은 점검표 줄의 규칙과 겹치지 않는다(11-15 3단계 소리)', () => {
+  const 줄규칙 = new Set(표.줄.flatMap((x) => x.올린검사.flatMap((o) => (o.규칙 || []).map((r) => `${o.검사}:${r}`))));
+  const 본 = new Set();
+  for (const [이름, x] of Object.entries(표.항목)) {
+    if (x.올린검사 === undefined) continue;
+    assert.equal(x.번호, null, `${이름}: 번호가 있는 갈래는 그 점검표 줄에 올린 검사를 둔다`);
+    assert.ok(Array.isArray(x.올린검사) && x.올린검사.length, `${이름}: 올린검사는 목록`);
+    for (const o of x.올린검사) {
+      assert.ok(o.검사 && /^\d{4}-\d{2}-\d{2}$/.test(o.날짜) && Array.isArray(o.규칙) && o.규칙.length, `${이름}: 검사 · 날짜 · 규칙 ${JSON.stringify(o)}`);
+      assert.ok(o.범위 === undefined || o.범위 === '일부', `${이름}: 범위는 없거나 「일부」 — ${o.범위}`);
+      for (const r of o.규칙) {
+        const k = `${o.검사}:${r}`;
+        assert.ok(!줄규칙.has(k) && !본.has(k), `${k}가 두 곳에 있다`);
+        본.add(k);
+      }
+    }
+  }
+  assert.ok(본.has('최종본검사:조용구간'), '소리 갈래에 조용구간');
+});

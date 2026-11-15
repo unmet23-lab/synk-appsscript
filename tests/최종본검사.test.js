@@ -56,6 +56,60 @@ test('사람 움직임 모듈을 못 찾으면 굳음만 「못잼」, 앞서 �
   assert.deepEqual(j.못잼.map((m) => m.항목), ['굳음']);
 });
 
+// 조용구간(11-15 흠 장부 3단계): 24초 시험 그림에 사인파 — 큰 소리 사이 가운데 몇 초를 20dB 낮춘다. 무료체험(12.75초)처럼 11초면 걸리고,
+// 통과한 영상통화연인(8.0초)처럼 8초면 지나간다. 조용구간만 걸리면 끝 코드는 0(끝 코드를 바꾸지 않는 걸림), 검사이력 줄에는 등급 「확인」.
+function quietClip(t, quiet, { audio = 24 } = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '최종본검사-조용-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const video = path.join(dir, `quiet${quiet}.mp4`);
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=s=320x568:r=24:d=24',
+    '-f', 'lavfi', '-i', `aevalsrc=exprs='0.5*sin(2*PI*440*t)*if(between(t,5,${5 + quiet}),0.1,1)':s=48000:d=${audio}`,
+    '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', video]);
+  return { dir, video };
+}
+
+test('조용구간 — 가운데 11초가 큰 소리보다 20dB 작으면 걸리고(끝 코드 0 · 이력 등급 확인), 8초면 지나간다', { skip: 없음 }, (t) => {
+  const { dir, video } = quietClip(t, 11);
+  // 편 폴더처럼 꾸며 검사이력 줄을 본다(임시 폴더 — 실제 편에는 줄을 남기지 않는다)
+  fs.mkdirSync(path.join(dir, '게시'));
+  fs.writeFileSync(path.join(dir, '게시', '준비.json'), '{"브랜드":"synkbrief"}');
+  const env = { ...process.env, SYNK_검사편: dir, SYNK_검사이력: '' };
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '조용,끝', '--json'], { encoding: 'utf8', timeout: 300000, env });
+  assert.equal(r.status, 0, `조용구간만 걸리면 끝 코드 0 — ${r.stderr}`);
+  const j = lastJson(r.stdout);
+  const q = j.걸림.filter((h) => h.항목 === '조용구간');
+  assert.equal(q.length, 1, JSON.stringify(j.걸림));
+  assert.ok(Math.abs(q[0].초 - 5) <= 0.75 && Math.abs(q[0].끝초 - 16) <= 0.75, `자리 ${q[0].초}~${q[0].끝초}`);
+  assert.ok(q[0].값.길이초 >= 10 && q[0].값.기준dB > q[0].값.평균dB + 15, JSON.stringify(q[0].값));
+  assert.deepEqual(j.걸림.map((h) => h.항목), ['조용구간'], '끝소리는 걸리지 않는다(끝은 큰 소리)');
+  assert.ok(j.알림.some((n) => n.항목 === '조용구간' && n.최장초 === q[0].값.길이초));
+  const 줄 = fs.readFileSync(path.join(dir, '게시', '검사이력.jsonl'), 'utf8').trim().split(/\r?\n/).map((l) => JSON.parse(l)).pop();
+  assert.deepEqual([줄.눈, 줄.결과, 줄.끝코드, 줄.걸림.map((g) => [g.규칙, g.등급])], ['최종본검사', '확인', 0, [['조용구간', '확인']]]);
+  // 8초 — 통과한 편의 가장 긴 조용함과 같은 길이는 지나간다
+  const pass = quietClip(t, 8);
+  const p = spawnSync(py, ['-I', '-X', 'utf8', tool, pass.video, '--항목', '조용', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });
+  assert.equal(p.status, 0, p.stderr);
+  const pj = lastJson(p.stdout);
+  assert.deepEqual(pj.걸림, []);
+  const note = pj.알림.find((n) => n.항목 === '조용구간');
+  assert.ok(note && note.최장초 >= 7 && note.최장초 < 10, JSON.stringify(note));
+});
+
+test('조용구간과 다른 걸림이 함께면 끝 코드는 그대로 1 · 몸통이 10초보다 짧은 영상은 조용구간을 재지 않는다', { skip: 없음 }, (t) => {
+  // 소리가 20초에 끝나는 24초 영상 — 끝 4초가 조용해 끝소리가 걸리고, 가운데 11초도 조용하다
+  const { video } = quietClip(t, 11, { audio: 20 });
+  const env = { ...process.env, SYNK_검사이력: '끔' };
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '끝,조용', '--json'], { encoding: 'utf8', timeout: 300000, env });
+  assert.equal(r.status, 1, r.stderr);
+  assert.deepEqual(lastJson(r.stdout).걸림.map((h) => h.항목), ['끝소리', '조용구간']);
+  const short = synthetic(t);   // 6초 영상
+  const s = spawnSync(py, ['-I', '-X', 'utf8', tool, short, '--항목', '끝,조용', '--json'], { encoding: 'utf8', timeout: 300000, env });
+  assert.equal(s.status, 1, s.stderr);
+  const sj = lastJson(s.stdout);
+  assert.deepEqual(sj.걸림.map((h) => h.항목), ['끝소리']);
+  assert.ok(!sj.알림.some((n) => n.항목 === '조용구간'), '짧은 영상은 조용구간 알림도 없다');
+});
+
 test('없는 파일은 끝 코드 2와 오류 한 줄', { skip: 없음 }, () => {
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, path.join(os.tmpdir(), '없는영상.mp4'), '--json'], { encoding: 'utf8', timeout: 60000 });
   assert.equal(r.status, 2, r.stderr || r.error?.message);

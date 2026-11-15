@@ -6,7 +6,7 @@
 #   보는데, SNS 두 브랜드 편은 옛 컷표이거나 컷표가 없고 편집에서 판을 잘라 키운 것은 컷표에 안 나온다. 그래서 최종 영상 하나만 보고 잰다 —
 #   올리기 전 검사 ⑳이 부르고(재연 · 진행자 편), 혼자 불러도 된다.
 #
-#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소]
+#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소,조용]
 #
 # 잰 것(결과 「걸림」의 항목 이름 — 올리기 전 검사가 이 이름으로 등급을 매긴다):
 #   굳음      컷마다 사람움직임.py(카메라를 걷어 낸 사람 자리 움직임, 480×270 장당 px)의 「사람」 값 — 0.12 아래(점검표 26 문턱)이고 사람 자리를
@@ -18,9 +18,16 @@
 #   끝소리    끝에서 2초 넘게 0.25초 칸마다 몸통 소리 가운데보다 10dB 넘게 작다 — 끝에 소리 한 방 없이 방 소리만 남는다(점검표 2 · B39 v10 −43dB)
 #   끝화소    끝 3초에 걸린 컷의 가는 결 비(가는 결 / 중간 결 에너지)가 0.125 아래 — 720p 판을 화면에서 또 잘라 키운 흐린 끝(점검표 48 · 2,
 #             B39 v10 57~58.5초 0.107). 끝 밖의 컷은 값만 「알림」에 적는다(어두운 판 · 얕은 심도와 아직 가르지 못한다)
+#   조용구간  가운데(앞 0.5초 · 끝 3초 뺌) 1초 창 소리가 이 편의 큰 소리(몸통 0.25초 칸의 위 10%)보다 10dB 넘게 작은 채 10초 넘게 이어진다 —
+#             말 · 사건 소리 없이 작은 소리만 깔린 긴 구간(최종 확인 갈래 「소리」, 흠 장부 설계 3단계 · 11-15). 끝 코드를 바꾸지 않는 걸림이다(SOFT).
+#             맞춘 자료(두 브랜드 최종본 45개 · 만족 사례 영상 6개 실측, 걸림 1/51): 걸리는 것 synkbrief 무료체험 28.0~40.75초 12.75초(큰 소리 −11.4dB ·
+#             평균 −25.5dB), 지나가는 것 가운데 가장 긴 자리 영상통화연인 8.0초(최종 확인 통과 · 만족 사례 S52) · 없는판결 7.5초 · 질문다섯개 6.5초 · 나머지 5초 아래.
+#             10dB를 8 · 12dB로 바꿔도 무료체험만 걸린다(13.25초 · 10.5초).
+#             짧고 깊은 빈 소리(필라테스예약 14.0~16.25초 −37~−38dB)는 재지 않는다 — 통과한 영상통화연인 14.5~17.75초가 더 깊고 길어(−37~−40dB) 가를 문턱이 없다
 # 글자 판 · 표시가 컷을 넘어 그대로 남는 자리는 맞춤에서 뺀다 — 맞은 점이 화면 위아래로 네 줄(80px 칸) 넘게 퍼져야 그림으로 본다(자막 두 줄은 한두 줄).
 #
-# 끝 코드: 0 걸림 없음 / 1 걸림 있음 / 2 잴 수 없음(파일 · ffmpeg). 판정(고칠 것 · 확인할 것)은 올리기 전 검사가 한다 — 이 도구는 잰 값과 자리만 낸다.
+# 끝 코드: 0 걸림 없음(조용구간만 걸려도 0) / 1 걸림 있음 / 2 잴 수 없음(파일 · ffmpeg). 판정(고칠 것 · 확인할 것)은 올리기 전 검사가 한다 — 이 도구는 잰 값과 자리만 낸다.
+#   조용구간이 끝 코드를 바꾸지 않는 까닭: 혼자 부르는 편집 스크립트 · 세션이 끝 코드 1을 「고칠 것」으로 읽어 멈추지 않게(새 항목은 어디서나 확인할 것이다).
 # 맞춘 자료(11-13): B39 「없는 판결」 v10(컷 전수 검수 표 — 같은판 4.4→5.5→7.4 · 9.7→11.0 · 54.4→57.0→58.5, 되풀이 21.4=54.4,
 #   굳음 4.4~5.5 · 21.4~23.4 · 54.4~57.0, 끝 3초 방 소리 −44dB, 끝 근접 2.55배). 시험: node --test tests/최종본검사.test.js
 import argparse
@@ -55,6 +62,10 @@ END_QUIET_DB = 10.0
 END_QUIET_SEC = 2.0     # 끝에서 이만큼 넘게 조용하면 「끝 소리 한 방 없음」
 DETAIL_FLAG = 0.125    # 이 아래면 잘라 키운 판으로 본다(끝 3초만 걸림 — 그 밖은 알림)
 DETAIL_MIN = 5.0
+QUIET_REF_PCT = 90     # 조용구간: 몸통 0.25초 칸의 위 10%를 「큰 소리」 기준으로(가운데 값은 긴 조용함 자체에 끌려 내려간다 — 무료체험 가운데 −25.9dB)
+QUIET_DB = 10.0        # 1초 창 소리가 기준보다 이만큼 넘게 작으면 조용한 칸
+QUIET_SEC = 10.0       # 조용한 칸이 이만큼 넘게 이어지면 걸림
+SOFT = {"조용구간"}     # 끝 코드를 바꾸지 않는 걸림 — 검사이력에도 등급 「확인」으로 남는다
 
 
 def probe(path):
@@ -298,11 +309,31 @@ def audio_rms(path, dur=None, rate=16000):
     return db
 
 
+def quiet_runs(db):
+    """조용구간 — 0.25초 칸 dB 줄 → (큰 소리 기준 dB, [(시작 칸, 끝 칸, 그 자리 평균 dB)] 긴 순). 앞 0.5초와 끝 3초(끝소리가 본다)는 뺀다.
+    1초 창(칸 넷의 평균 전력)으로 다듬어 말 사이 짧은 숨 · 한 번 튄 효과음에 자리가 끊기지 않게 한다. 몸통이 QUIET_SEC보다 짧으면 (None, [])"""
+    a, b = 2, len(db) - int(END_SEC * 4)
+    if b - a < QUIET_SEC * 4:
+        return None, []
+    ref = float(np.percentile(db[a:b], QUIET_REF_PCT))
+    pw = 10 ** (np.asarray(db, np.float64) / 10)
+    runs, s = [], -1
+    for i in range(a, b + 1):
+        lo = max(0, i - 2)
+        q = i < b and 10 * math.log10(float(pw[lo:lo + 4].mean()) + 1e-12) < ref - QUIET_DB
+        if q and s < 0:
+            s = i
+        elif not q and s >= 0:
+            runs.append((s, i, round(10 * math.log10(float(pw[s:i].mean()) + 1e-12), 1)))
+            s = -1
+    return round(ref, 1), sorted(runs, key=lambda r: r[0] - r[1])
+
+
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="최종본 검사 — 굳음 · 같은 판 · 되풀이 · 끝 · 화소")
+    ap = argparse.ArgumentParser(description="최종본 검사 — 굳음 · 같은 판 · 되풀이 · 끝 · 화소 · 조용")
     ap.add_argument("mp4")
     ap.add_argument("--json", action="store_true")
-    ap.add_argument("--항목", default="굳음,같은판,되풀이,끝,화소")
+    ap.add_argument("--항목", default="굳음,같은판,되풀이,끝,화소,조용")
     o = ap.parse_args(argv)
     want = set(o.항목.split(","))
     try:
@@ -398,9 +429,17 @@ def main(argv=None):
 
     guard("화소", _detail)
 
+    sound = {}
+
+    def audio():
+        """0.25초 칸 dB — 끝 · 조용이 함께 쓰도록 한 번만 푼다"""
+        if "db" not in sound:
+            sound["db"] = audio_rms(o.mp4, dur)
+        return sound["db"]
+
     def _end():
         if "끝" in want:
-            db = audio_rms(o.mp4, dur)
+            db = audio()
             if db is not None and len(db) > 4 * (END_SEC + 2):
                 end_n = int(END_SEC * 4)
                 body_mid = float(np.median(db[4: len(db) - end_n]))
@@ -418,6 +457,25 @@ def main(argv=None):
                     notes.append({"항목": "끝소리", **row})
 
     guard("끝", _end)
+
+    def _quiet():
+        if "조용" in want:
+            db = audio()
+            if db is None:
+                return
+            ref, runs = quiet_runs(db)
+            if ref is None:
+                return
+            for s, e, lvl in runs:
+                if (e - s) / 4 <= QUIET_SEC:
+                    break
+                a_, b_, n_ = round(s / 4, 2), round(e / 4, 2), round((e - s) / 4, 2)
+                hits.append({"항목": "조용구간", "초": a_, "끝초": b_, "값": {"길이초": n_, "평균dB": lvl, "기준dB": ref},
+                             "글": f"{a_}~{b_}초 {n_}초 동안 소리가 이 편의 큰 소리({ref}dB)보다 {QUIET_DB:.0f}dB 넘게 작다(평균 {lvl}dB) — "
+                                   f"말 · 사건 소리 없이 작은 소리만 깔린 긴 구간이라 폰 스피커로는 비어 들린다(최종 확인 갈래 「소리」)"})
+            notes.append({"항목": "조용구간", "최장초": round((runs[0][1] - runs[0][0]) / 4, 2) if runs else 0, "기준dB": ref})
+
+    guard("조용", _quiet)
 
     def _motion():
         if want & {"굳음"}:
@@ -448,9 +506,10 @@ def main(argv=None):
             print(f"  [못 잼 · {x['항목']}] {x['오류']}")
         if not hits and not failed:
             print("  걸림 없음")
-    code = 1 if hits else (2 if failed else 0)
-    _검사이력(시작=o.mp4, 눈="최종본검사", 단계="편집", 결과="걸림" if hits else ("못 잼" if failed else "통과"), 끝코드=code,
-           판경로=[o.mp4], 걸림=[{"규칙": x["항목"], "등급": "걸림", "글": x["글"]} for x in hits]
+    hard = [x for x in hits if x["항목"] not in SOFT]
+    code = 1 if hard else (2 if failed else 0)
+    _검사이력(시작=o.mp4, 눈="최종본검사", 단계="편집", 결과="걸림" if hard else ("못 잼" if failed else ("확인" if hits else "통과")), 끝코드=code,
+           판경로=[o.mp4], 걸림=[{"규칙": x["항목"], "등급": "확인" if x["항목"] in SOFT else "걸림", "글": x["글"]} for x in hits]
            + [{"규칙": x["항목"], "등급": "확인", "글": f"못 잼 — {x['오류']}"} for x in failed])
     return code
 
