@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { 세션인가, 코덱스인가, 조상세션, 세션과자손, 끌grep } = require('../tools/세션우선순위.js');
+const { 세션인가, GPT앱서버인가, 조상세션, 세션과자손, GPT대상, 끌grep } = require('../tools/세션우선순위.js');
 
 const 앱 = 'C:\\Program Files\\WindowsApps\\Claude_5.11492.2.0_x64__pzs8sxrjxfjjc\\app\\Claude.exe';
 const 코드 = 'C:\\Users\\q\\AppData\\Local\\Claude-Data\\claude_pzs8sxrjxfjjc\\claude-code\\2.1.321\\d0e\\claude.exe';
@@ -43,21 +43,29 @@ test('「지금」은 세션들과 그 자손만 고른다', () => {
   assert.ok(!고름.includes(20) && !고름.includes(21) && !고름.includes(50));
 });
 
-test('GPT(Codex) 앱의 codex.exe와 그 자손도 함께 고른다 — 조건부 시험 같은 예약 일은 고르지 않는다', () => {
-  const 코덱스 = 'C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.1111.2228.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe';
+test('GPT 앱 서버(부모가 ChatGPT.exe인 codex.exe)는 낮추지 않고 그 자손만 고른다 — npm codex · 예약 일은 서버가 아니다', () => {
+  const 앱폴더 = 'C:\Program Files\WindowsApps\OpenAI.Codex_26.1111.2228.0_x64__2p2nqsd0c76g0\app';
   const 표2 = [
     ...표,
-    { ProcessId: 60, ParentProcessId: 10, Name: 'codex.exe', ExecutablePath: 코덱스 },
-    { ProcessId: 61, ParentProcessId: 60, Name: 'pwsh.exe', ExecutablePath: 'C:\\pwsh.exe' },
-    { ProcessId: 70, ParentProcessId: 1, Name: 'pythonw.exe', ExecutablePath: 'C:\\py\\pythonw.exe' }, // 예약 작업
-    { ProcessId: 71, ParentProcessId: 70, Name: 'node.exe', ExecutablePath: 'C:\\Program Files\\nodejs\\node.exe' }, // conditional-qa
-    { ProcessId: 80, ParentProcessId: 1, Name: 'codex.exe', ExecutablePath: 'C:\\Users\\q\\npm\\codex.exe' }, // 앱 밖 codex는 아니다
+    { ProcessId: 58, ParentProcessId: 10, Name: 'ChatGPT.exe', ExecutablePath: `${앱폴더}\ChatGPT.exe` },
+    { ProcessId: 60, ParentProcessId: 58, Name: 'codex.exe', ExecutablePath: `${앱폴더}\resources\codex.exe` }, // 앱 서버
+    { ProcessId: 61, ParentProcessId: 60, Name: 'pwsh.exe', ExecutablePath: 'C:\pwsh.exe' }, // GPT 세션 명령
+    { ProcessId: 62, ParentProcessId: 61, Name: 'node.exe', ExecutablePath: 'C:\Program Files\nodejs\node.exe' }, // 그 아래 시험
+    { ProcessId: 63, ParentProcessId: 58, Name: 'codex.exe', ExecutablePath: `${앱폴더}\resources\codex.exe` }, // 둘째 앱 서버
+    { ProcessId: 64, ParentProcessId: 58, Name: 'ChatGPT.exe', ExecutablePath: `${앱폴더}\ChatGPT.exe` }, // 앱 화면 담당 — 고르지 않는다
+    { ProcessId: 70, ParentProcessId: 1, Name: 'pythonw.exe', ExecutablePath: 'C:\py\pythonw.exe' }, // 예약 작업
+    { ProcessId: 71, ParentProcessId: 70, Name: 'node.exe', ExecutablePath: 'C:\Program Files\nodejs\node.exe' }, // conditional-qa
+    { ProcessId: 81, ParentProcessId: 1, Name: 'node.exe', ExecutablePath: 'C:\Program Files\nodejs\node.exe' },
+    { ProcessId: 80, ParentProcessId: 81, Name: 'codex.exe', ExecutablePath: 'C:\Users\q\AppData\Roaming\npm\node_modules\@openai\codex\bin\codex.exe' }, // npm codex
   ];
-  assert.equal(코덱스인가(표2.find((r) => r.ProcessId === 60)), true);
-  assert.equal(코덱스인가(표2.find((r) => r.ProcessId === 80)), false);
-  const 고름 = 세션과자손(표2);
-  assert.ok(고름.includes(60) && 고름.includes(61));
-  assert.ok(!고름.includes(70) && !고름.includes(71) && !고름.includes(80));
+  const 찾기 = (pid) => 표2.find((r) => r.ProcessId === pid);
+  assert.equal(GPT앱서버인가(찾기(60), 찾기(58)), true);
+  assert.equal(GPT앱서버인가(찾기(80), 찾기(81)), false);
+  const { 서버, 자손 } = GPT대상(표2);
+  assert.deepEqual(서버.sort((a, b) => a - b), [60, 63]);
+  assert.deepEqual(자손.sort((a, b) => a - b), [61, 62]);
+  const 클로드 = 세션과자손(표2);
+  for (const pid of [58, 60, 61, 62, 63, 64, 70, 71, 80, 81]) assert.ok(!클로드.includes(pid), `Claude 쪽에 ${pid}가 끼면 안 된다`);
 });
 
 test('주인 없이 10분 넘게 돈 grep만 끈다 — 주인이 살아 있거나 10분이 안 된 것은 두고, 번호를 물려받은 새 부모는 주인으로 보지 않는다', () => {
