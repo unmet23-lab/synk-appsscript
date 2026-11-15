@@ -88,6 +88,8 @@ test('🔴 용도를 안 주면 무료 «글» 열쇠다 · 어느 쪽이 없어
     assert.strictEqual(정책.제미나이키('돈'), null, '돈 열쇠가 없을 때 글 열쇠로 넘어갔다');
     assert.strictEqual(정책.제미나이키('글'), 'AQ.free', '글 열쇠는 따로 살아 있어야 한다(옵트인 예비)');
     assert.match(정책.제미나이키안내('글'), /만드는 법/, '없다고만 말하면 사람이 다음 수를 모른다');
+    assert.match(정책.제미나이키안내('돈'), /만들지 않기로 했다/, '유료 키는 만들지 않기로 했다(11-15) — 안내가 만드는 법을 알려 주면 안 된다');
+    assert.doesNotMatch(정책.제미나이키안내('돈'), /만드는 법/, '유료 키 안내에 만드는 법이 남았다');
     assert.throws(() => 정책.제미나이키('아무거나'), /용도/, '모르는 용도가 조용히 통과하면 안 된다');
   } finally {
     if (옛글 === undefined) delete process.env.GEMINI_KEY_PATH_FREE; else process.env.GEMINI_KEY_PATH_FREE = 옛글;
