@@ -799,6 +799,7 @@ export function mountDesktopPortalHost({
         sessionGeneration: Number.isSafeInteger(snapshot.sessionGeneration)
           ? snapshot.sessionGeneration
           : null,
+        purposePending: !completedPurposeAccounts.has(key) && snapshot.onboarding?.purpose === 'pending',
       };
       return;
     }
@@ -1071,13 +1072,126 @@ export function mountDesktopPortalHost({
     cancelActiveResolve();
   }
 
+  function markPurposeCompletedLocal(targetAccountId) {
+    if (!targetAccountId) return;
+    completedPurposeAccounts.add(targetAccountId);
+    if (confirmedSignedInBinding?.accountKey === targetAccountId) {
+      confirmedSignedInBinding.purposePending = false;
+    }
+  }
+
   function isPurposePendingForAccount(snapshot, accountKey) {
     if (!accountKey || completedPurposeAccounts.has(accountKey)) return false;
     const normalized = normalizeDesktopPortalAuth(snapshot, { hasBridge });
     return normalized.accountKey === accountKey && normalized.onboarding.purpose === 'pending';
   }
 
-  async function completePurposeForAccount(outcome, expectedAccountId, fence = null) {
+  function shouldCompletePurposeForAccount(snapshot, accountKey) {
+    if (!accountKey || completedPurposeAccounts.has(accountKey)) return false;
+    if (isPurposePendingForAccount(snapshot, accountKey)) return true;
+    const liveKey = verifiedPortalAccountKey(snapshot);
+    if (liveKey === accountKey) return false;
+    const hostSnapshot = getAuth();
+    if (isPurposePendingForAccount(hostSnapshot, accountKey)) return true;
+    if (verifiedPortalAccountKey(hostSnapshot) === accountKey) return false;
+    if (
+      confirmedSignedInBinding?.accountKey === accountKey
+      && !hasAccountDiverged(snapshot, accountKey)
+    ) {
+      return confirmedSignedInBinding.purposePending === true;
+    }
+    return false;
+  }
+
+  function resolveDesktopEnteringPurposeMode(snapshot, accountKey) {
+    return shouldCompletePurposeForAccount(snapshot, accountKey)
+      ? 'onboarding'
+      : 'existing';
+  }
+
+  async function completePurposeForAccount(
+    outcome,
+    expectedAccountId,
+    fence = null,
+    { preAuth: providedPreAuth = undefined } = {},
+  ) {
+    if (!PURPOSE_ONBOARDING_OUTCOMES.includes(outcome) || typeof expectedAccountId !== 'string' || !expectedAccountId.trim()) {
+      return {
+        ok: false,
+        code: 'INVALID_REQUEST',
+        message: '계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.',
+      };
+    }
+
+    const targetAccountId = expectedAccountId.trim();
+    const preAuth = providedPreAuth !== undefined ? providedPreAuth : await readLiveAuth();
+    if (fence) {
+      if (
+        !matchesAuthFence(preAuth, fence, {
+          requireAccountGeneration: Boolean(fence.accountGeneration),
+        })
+      ) {
+        return {
+          ok: false,
+          code: 'ACCOUNT_CHANGED',
+          message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+        };
+      }
+    } else if (hasAccountDiverged(preAuth, targetAccountId)) {
+      return {
+        ok: false,
+        code: 'ACCOUNT_CHANGED',
+        message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+      };
+    }
+
+    if (typeof bridge?.accountRequest !== 'function') {
+      markPurposeCompletedLocal(targetAccountId);
+      return { ok: true };
+    }
+
+    let result;
+    try {
+      result = await bridge.accountRequest('completePurposeOnboarding', {
+        outcome,
+        expectedAccountId: targetAccountId,
+      });
+    } catch {
+      // 네트워크나 일시 전송 오류는 입장을 막지 않는다.
+      markPurposeCompletedLocal(targetAccountId);
+      return { ok: true };
+    }
+
+    if (result?.ok === true) {
+      markPurposeCompletedLocal(targetAccountId);
+      return { ok: true };
+    }
+
+    const errorCode = result?.error?.code || result?.code || '';
+    if (errorCode === 'AUTH_CHANGED' || errorCode === 'SESSION_REVOKED' || errorCode === 'AUTH_REQUIRED') {
+      const latestAuth = await readLiveAuth();
+      const stillMatches = fence
+        ? matchesAuthFence(latestAuth, fence, {
+            requireAccountGeneration: Boolean(fence.accountGeneration),
+          })
+        : verifiedPortalAccountKey(latestAuth) === targetAccountId;
+      if (stillMatches) {
+        markPurposeCompletedLocal(targetAccountId);
+        return { ok: true };
+      }
+      return {
+        ok: false,
+        code: 'ACCOUNT_CHANGED',
+        message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+      };
+    }
+
+    // 일반 서버/네트워크 오류는 최선 노력 완료로 처리해 입장을 막지 않는다.
+    markPurposeCompletedLocal(targetAccountId);
+    return { ok: true };
+  }
+
+  async function settleEnteringPurposeIfNeeded(outcome, expectedAccountId, fence = null) {
     if (!PURPOSE_ONBOARDING_OUTCOMES.includes(outcome) || typeof expectedAccountId !== 'string' || !expectedAccountId.trim()) {
       return {
         ok: false,
@@ -1108,50 +1222,11 @@ export function mountDesktopPortalHost({
       };
     }
 
-    if (typeof bridge?.accountRequest !== 'function') {
-      completedPurposeAccounts.add(targetAccountId);
-      return { ok: true };
+    if (!shouldCompletePurposeForAccount(preAuth, targetAccountId)) {
+      return { ok: true, persisted: false };
     }
 
-    let result;
-    try {
-      result = await bridge.accountRequest('completePurposeOnboarding', {
-        outcome,
-        expectedAccountId: targetAccountId,
-      });
-    } catch {
-      // 네트워크나 일시 전송 오류는 입장을 막지 않는다.
-      completedPurposeAccounts.add(targetAccountId);
-      return { ok: true };
-    }
-
-    if (result?.ok === true) {
-      completedPurposeAccounts.add(targetAccountId);
-      return { ok: true };
-    }
-
-    const errorCode = result?.error?.code || result?.code || '';
-    if (errorCode === 'AUTH_CHANGED' || errorCode === 'SESSION_REVOKED' || errorCode === 'AUTH_REQUIRED') {
-      const latestAuth = await readLiveAuth();
-      const stillMatches = fence
-        ? matchesAuthFence(latestAuth, fence, {
-            requireAccountGeneration: Boolean(fence.accountGeneration),
-          })
-        : verifiedPortalAccountKey(latestAuth) === targetAccountId;
-      if (stillMatches) {
-        completedPurposeAccounts.add(targetAccountId);
-        return { ok: true };
-      }
-      return {
-        ok: false,
-        code: 'ACCOUNT_CHANGED',
-        message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
-      };
-    }
-
-    // 일반 서버/네트워크 오류는 최선 노력 완료로 처리해 입장을 막지 않는다.
-    completedPurposeAccounts.add(targetAccountId);
-    return { ok: true };
+    return completePurposeForAccount(outcome, targetAccountId, fence, { preAuth });
   }
 
   function showAuthFeedback(message) {
@@ -1401,10 +1476,7 @@ export function mountDesktopPortalHost({
       };
     }
 
-    if (
-      isPurposePendingForAccount(postOpenAuth, expectedAccountKey)
-      || isPurposePendingForAccount(getAuth(), expectedAccountKey)
-    ) {
+    if (shouldCompletePurposeForAccount(postOpenAuth, expectedAccountKey)) {
       const marked = await completePurposeForAccount('not-asked', expectedAccountKey, record.fence);
       if (marked.ok === false) return marked;
     }
@@ -1500,13 +1572,11 @@ export function mountDesktopPortalHost({
 
     // 기존 테스트용 customBoundaries 반환 형태도 함께 지원한다.
     if (hasCustomResolver && assigned && assigned.kind === 'none') {
-      onApplyHashRoute?.();
-      if (isPurposePendingForAccount(postResolveAuth, accountKey) || isPurposePendingForAccount(getAuth(), accountKey)) {
-        return { ok: true, action: 'purpose' };
+      const purposeMode = resolveDesktopEnteringPurposeMode(postResolveAuth, accountKey);
+      if (purposeMode === 'onboarding') {
+        onApplyHashRoute?.();
       }
-      const ensured = await onEnsureEnteredView?.();
-      if (ensured?.ok === false) return ensured;
-      return { ok: true };
+      return { ok: true, action: 'purpose', purposeMode };
     }
 
     if (hasCustomResolver && assigned && assigned.kind === 'destination' && typeof assigned.open === 'function') {
@@ -1530,7 +1600,7 @@ export function mountDesktopPortalHost({
           message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
         };
       }
-      if (isPurposePendingForAccount(afterCustomOpenAuth, accountKey)) {
+      if (shouldCompletePurposeForAccount(afterCustomOpenAuth, accountKey)) {
         const marked = await completePurposeForAccount('not-asked', accountKey, fence);
         if (marked.ok === false) return marked;
       }
@@ -1593,13 +1663,11 @@ export function mountDesktopPortalHost({
 
     if (parsedResult.status === 'resolved' && parsedResult.unavailable.length === 0) {
       if (parsedResult.destinations.length === 0) {
-        onApplyHashRoute?.();
-        if (isPurposePendingForAccount(postResolveAuth, accountKey) || isPurposePendingForAccount(getAuth(), accountKey)) {
-          return { ok: true, action: 'purpose' };
+        const purposeMode = resolveDesktopEnteringPurposeMode(postResolveAuth, accountKey);
+        if (purposeMode === 'onboarding') {
+          onApplyHashRoute?.();
         }
-        const ensured = await onEnsureEnteredView?.();
-        if (ensured?.ok === false) return ensured;
-        return { ok: true };
+        return { ok: true, action: 'purpose', purposeMode };
       }
 
       if (parsedResult.destinations.length === 1) {
@@ -1746,7 +1814,6 @@ export function mountDesktopPortalHost({
     async onContinuePersonal(context) {
       const accountKey = context?.accountKey;
       cancelActiveResolve();
-      verifiedAssignmentRecord = null;
 
       const liveAuth = await readLiveAuth();
       const fence = buildAuthFence(liveAuth, accountKey, context?.generation);
@@ -1756,6 +1823,7 @@ export function mountDesktopPortalHost({
           requireAccountGeneration: Boolean(fence.accountGeneration),
         })
       ) {
+        verifiedAssignmentRecord = null;
         return {
           ok: false,
           code: 'ACCOUNT_CHANGED',
@@ -1763,15 +1831,25 @@ export function mountDesktopPortalHost({
         };
       }
 
-      onApplyHashRoute?.();
-      if (isPurposePendingForAccount(liveAuth, accountKey) || isPurposePendingForAccount(getAuth(), accountKey)) {
-        return { ok: true, action: 'purpose' };
+      const purposeMode = resolveDesktopEnteringPurposeMode(liveAuth, accountKey);
+      if (purposeMode === 'existing') {
+        if (
+          verifiedAssignmentRecord
+          && (
+            verifiedAssignmentRecord.fence?.accountKey !== accountKey
+            || !matchesAuthFence(liveAuth, verifiedAssignmentRecord.fence, {
+              requireAccountGeneration: true,
+            })
+          )
+        ) {
+          verifiedAssignmentRecord = null;
+        }
+      } else {
+        verifiedAssignmentRecord = null;
+        onApplyHashRoute?.();
       }
-      const ensured = await onEnsureEnteredView?.();
-      if (ensured?.ok === false) {
-        return ensured;
-      }
-      return { ok: true };
+
+      return { ok: true, action: 'purpose', purposeMode };
     },
 
     onCancelInvite() {
@@ -1785,6 +1863,7 @@ export function mountDesktopPortalHost({
         return payload;
       };
       const isEntering = context?.origin === 'entering';
+      const isExistingEntering = isEntering && context?.purposeMode === 'existing';
       let enteringFence = null;
       if (isEntering) {
         const liveAuth = await readLiveAuth();
@@ -1801,7 +1880,31 @@ export function mountDesktopPortalHost({
             message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
           });
         }
+        if (isExistingEntering && purposeId === 'home') {
+          return failPurpose({
+            ok: false,
+            code: 'UNKNOWN_PURPOSE',
+            message: '선택한 화면을 찾지 못했어요. 다시 선택해 주세요.',
+          });
+        }
       }
+
+      const verifyExistingEnteringFence = async () => {
+        const afterAuth = await readLiveAuth();
+        if (
+          !enteringFence
+          || !matchesAuthFence(afterAuth, enteringFence, {
+            requireAccountGeneration: Boolean(enteringFence.accountGeneration),
+          })
+        ) {
+          return {
+            ok: false,
+            code: 'ACCOUNT_CHANGED',
+            message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+          };
+        }
+        return { ok: true };
+      };
 
       if (purposeId === 'shift') {
         if (typeof bridge?.openPortalPurpose !== 'function') {
@@ -1825,8 +1928,11 @@ export function mountDesktopPortalHost({
           });
         }
         if (isEntering) {
-          const completed = await completePurposeForAccount('chosen', context.accountKey, enteringFence);
+          const completed = isExistingEntering
+            ? await verifyExistingEnteringFence()
+            : await settleEnteringPurposeIfNeeded('chosen', context.accountKey, enteringFence);
           if (completed.ok === false) return failPurpose(completed);
+          verifiedAssignmentRecord = null;
         }
         syncSelectedPurposeMarker(null);
         onEnsureEnteredView?.();
@@ -1844,8 +1950,11 @@ export function mountDesktopPortalHost({
           });
         }
         if (isEntering) {
-          const completed = await completePurposeForAccount('chosen', context.accountKey, enteringFence);
+          const completed = isExistingEntering
+            ? await verifyExistingEnteringFence()
+            : await settleEnteringPurposeIfNeeded('chosen', context.accountKey, enteringFence);
           if (completed.ok === false) return failPurpose(completed);
+          verifiedAssignmentRecord = null;
         }
         syncSelectedPurposeMarker(null);
         onEnsureEnteredView?.();
@@ -1853,7 +1962,9 @@ export function mountDesktopPortalHost({
       }
 
       if (isEntering) {
-        const completed = await completePurposeForAccount('chosen', context.accountKey, enteringFence);
+        const completed = isExistingEntering
+          ? await verifyExistingEnteringFence()
+          : await settleEnteringPurposeIfNeeded('chosen', context.accountKey, enteringFence);
         if (completed.ok === false) return failPurpose(completed);
       }
 
@@ -1865,6 +1976,9 @@ export function mountDesktopPortalHost({
           message: navigated.message || '선택한 화면을 열지 못했어요. 다시 시도해 주세요.',
         });
       }
+      if (isEntering) {
+        verifiedAssignmentRecord = null;
+      }
       syncSelectedPurposeMarker(null);
       return { ok: true };
     },
@@ -1875,14 +1989,37 @@ export function mountDesktopPortalHost({
       }
       const liveAuth = await readLiveAuth();
       const dismissFence = buildAuthFence(liveAuth, context.accountKey, context.generation);
-      if (!dismissFence) {
+      if (
+        !dismissFence
+        || !matchesAuthFence(liveAuth, dismissFence, {
+          requireAccountGeneration: Boolean(dismissFence.accountGeneration),
+        })
+      ) {
+        verifiedAssignmentRecord = null;
         return {
           ok: false,
           code: 'ACCOUNT_CHANGED',
           message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
         };
       }
-      const completed = await completePurposeForAccount('skipped', context.accountKey, dismissFence);
+      if (context?.purposeMode === 'existing') {
+        if (
+          context?.returnTarget === 'welcome'
+          || (
+            verifiedAssignmentRecord
+            && (
+              verifiedAssignmentRecord.fence?.accountKey !== context.accountKey
+              || !matchesAuthFence(liveAuth, verifiedAssignmentRecord.fence, {
+                requireAccountGeneration: true,
+              })
+            )
+          )
+        ) {
+          verifiedAssignmentRecord = null;
+        }
+        return { ok: true, action: 'return' };
+      }
+      const completed = await settleEnteringPurposeIfNeeded('skipped', context.accountKey, dismissFence);
       if (completed.ok === false) {
         return completed;
       }

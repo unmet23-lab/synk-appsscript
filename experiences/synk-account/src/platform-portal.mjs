@@ -1010,6 +1010,7 @@ export function mountWebPortalHost({
   let lastAccountInstance = null;
   let lastAccountGeneration = 0;
   let lastVerifiedKey = null;
+  let observedPendingAccountId = null;
   let authIntentSeq = 0;
   let hasCompletedPortalEntry = bypass === true;
   let lastSubmittedInviteRaw = '';
@@ -1335,6 +1336,7 @@ export function mountWebPortalHost({
     if (disposed) return;
     const prevGen = syncedBindingGeneration ?? companyBinding?.accountGeneration ?? null;
     if (markPendingSwitch) {
+      observedPendingAccountId = null;
       companyBinding = {
         accountGeneration: generateMemoryUuid(hostCrypto),
         boundAuthKey: '__switching_account__',
@@ -1391,11 +1393,11 @@ export function mountWebPortalHost({
     const verifiedKey = extractIdentityTrackingKey(identity);
 
     if (account !== lastAccountInstance) {
-      if (
-        lastAccountInstance !== null
-        && (verifiedKey !== lastVerifiedKey || accountGen !== lastAccountGeneration || bindingInvalidated)
-      ) {
-        hostGeneration += 1;
+      if (lastAccountInstance !== null) {
+        observedPendingAccountId = null;
+        if (verifiedKey !== lastVerifiedKey || accountGen !== lastAccountGeneration || bindingInvalidated) {
+          hostGeneration += 1;
+        }
       }
       lastAccountInstance = account;
       lastAccountGeneration = accountGen;
@@ -1422,6 +1424,7 @@ export function mountWebPortalHost({
       bindingInvalidated = syncBindingCancellationIfNeeded();
     }
     const generation = advanceGenerationForAccount(account, identity, { bindingInvalidated });
+    syncObservedPendingOnboarding(identity);
     return normalizeWebPortalAuth(identity, {
       startupState: getStartupState?.() || null,
       generation,
@@ -1594,11 +1597,68 @@ export function mountWebPortalHost({
       : null;
   }
 
+  function syncObservedPendingOnboarding(identity) {
+    if (!identity || typeof identity !== 'object') return;
+    if (
+      identity.signedIn === true
+      && identity.status === 'signed-in'
+      && typeof identity.accountId === 'string'
+      && identity.accountId.trim()
+    ) {
+      const key = identity.accountId.trim();
+      if (normalizePurposeOnboarding(identity.onboarding) === 'pending') {
+        observedPendingAccountId = key;
+      } else if (observedPendingAccountId === key) {
+        observedPendingAccountId = null;
+      }
+      return;
+    }
+    if (
+      identity.status === 'signed-out'
+      || identity.status === 'unconfigured'
+      || identity.status === 'signing-in'
+    ) {
+      observedPendingAccountId = null;
+      return;
+    }
+    const trackingKey = extractIdentityTrackingKey(identity);
+    if (trackingKey && observedPendingAccountId && trackingKey !== observedPendingAccountId) {
+      observedPendingAccountId = null;
+    }
+  }
+
+  function isPurposeOnboardingPending(boundAccount, expectedAccountId) {
+    if (typeof expectedAccountId !== 'string' || !expectedAccountId.trim()) return false;
+    const trimmed = expectedAccountId.trim();
+    const live = boundAccount?.identity?.() || null;
+    if (live?.signedIn === true && live.status === 'signed-in' && live.accountId === trimmed) {
+      const pending = normalizePurposeOnboarding(live.onboarding) === 'pending';
+      if (pending) {
+        observedPendingAccountId = trimmed;
+      } else if (observedPendingAccountId === trimmed) {
+        observedPendingAccountId = null;
+      }
+      return pending;
+    }
+    return observedPendingAccountId === trimmed;
+  }
+
+  function resolveEnteringPurposeMode(boundAccount, expectedAccountId) {
+    return isPurposeOnboardingPending(boundAccount, expectedAccountId)
+      ? 'onboarding'
+      : 'existing';
+  }
+
   async function settlePurposeOnboarding(account, outcome, expectedAccountId, { bounded = false } = {}) {
+    const trimmedExpected = typeof expectedAccountId === 'string' ? expectedAccountId.trim() : '';
     if (typeof account?.completePurposeOnboarding !== 'function') {
-      return verifyBoundAccount(expectedAccountId)
-        ? { ok: true, persisted: false }
-        : { ok: false, code: 'ACCOUNT_CHANGED', message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.' };
+      if (!verifyBoundAccount(expectedAccountId)) {
+        return { ok: false, code: 'ACCOUNT_CHANGED', message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.' };
+      }
+      if (trimmedExpected && observedPendingAccountId === trimmedExpected) {
+        observedPendingAccountId = null;
+      }
+      return { ok: true, persisted: false };
     }
 
     const completionTask = account.completePurposeOnboarding(outcome, {
@@ -1607,7 +1667,11 @@ export function mountWebPortalHost({
     });
 
     if (!bounded || !(Number.isFinite(completionWaitMs) && completionWaitMs >= 0)) {
-      return completionTask;
+      const directResult = await completionTask;
+      if (directResult?.ok !== false && trimmedExpected && observedPendingAccountId === trimmedExpected) {
+        observedPendingAccountId = null;
+      }
+      return directResult;
     }
 
     let timerId = null;
@@ -1628,9 +1692,15 @@ export function mountWebPortalHost({
           message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
         };
       }
+      if (trimmedExpected && observedPendingAccountId === trimmedExpected) {
+        observedPendingAccountId = null;
+      }
       return { ok: true, deferred: true };
     }
 
+    if (raced?.ok !== false && trimmedExpected && observedPendingAccountId === trimmedExpected) {
+      observedPendingAccountId = null;
+    }
     return raced;
   }
 
@@ -1659,7 +1729,12 @@ export function mountWebPortalHost({
     const destinations = Array.isArray(res?.destinations) ? [...res.destinations] : [];
     const unavailable = Array.isArray(res?.unavailable) ? [...res.unavailable] : [];
 
-    if (res?.status === 'resolved' && unavailable.length === 0) {
+    if (
+      res?.status === 'resolved'
+      && Array.isArray(res.destinations)
+      && Array.isArray(res.unavailable)
+      && unavailable.length === 0
+    ) {
       return {
         status: 'resolved',
         destinations,
@@ -1757,17 +1832,24 @@ export function mountWebPortalHost({
     }
 
     const res = outcome.result;
-    if (res?.status === 'resolved' && Array.isArray(res.unavailable) && res.unavailable.length === 0) {
+    if (
+      res?.status === 'resolved'
+      && Array.isArray(res.destinations)
+      && Array.isArray(res.unavailable)
+      && res.unavailable.length === 0
+    ) {
       if (res.destinations.length === 0) {
         requestCancelCompanyEntry();
-        const onboardingPending = normalizePurposeOnboarding(boundAccount.identity?.()?.onboarding) === 'pending';
-        if (!onboardingPending) {
-          onEnsureEnteredRoute?.();
-        }
-        portal.completeWorkspaceEntry({
-          action: onboardingPending ? 'purpose' : 'entered',
+        syncObservedPendingOnboarding(boundAccount.identity?.());
+        const purposeMode = resolveEnteringPurposeMode(boundAccount, accountKey);
+        const completed = portal.completeWorkspaceEntry({
+          action: 'purpose',
+          purposeMode,
           accountKey,
         });
+        if (purposeMode !== 'existing' && completed?.ok && completed.state?.phase === 'entered') {
+          onEnsureEnteredRoute?.();
+        }
         return;
       }
 
@@ -1778,7 +1860,7 @@ export function mountWebPortalHost({
           const latestAccount = verifyBoundAccount(accountKey);
           if (!latestAccount) return;
           if (resolvedOpen && resolvedOpen.ok !== false) {
-            if (normalizePurposeOnboarding(latestAccount.identity?.()?.onboarding) === 'pending') {
+            if (isPurposeOnboardingPending(latestAccount, accountKey)) {
               void settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
             }
             if (resolvedOpen.navigationRequested !== true) {
@@ -1833,6 +1915,7 @@ export function mountWebPortalHost({
         message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
       });
     }
+    syncObservedPendingOnboarding(liveIdentity);
 
     if (!disposed) {
       syncBindingCancellationIfNeeded();
@@ -1900,14 +1983,15 @@ export function mountWebPortalHost({
       }
 
       const afterIdentity = verifiedAfter.identity?.() || liveIdentity;
+      syncObservedPendingOnboarding(afterIdentity);
 
       // 주입된 테스트 경계의 기존 반환 형식도 함께 지원한다.
       if (assigned && assigned.kind === 'none') {
-        if (normalizePurposeOnboarding(afterIdentity?.onboarding) === 'pending') {
-          return { ok: true, action: 'purpose' };
-        }
-        onEnsureEnteredRoute?.();
-        return { ok: true };
+        return {
+          ok: true,
+          action: 'purpose',
+          purposeMode: resolveEnteringPurposeMode(verifiedAfter, accountKey),
+        };
       }
 
       if (assigned && assigned.kind === 'destination' && typeof assigned.open === 'function') {
@@ -1919,7 +2003,7 @@ export function mountWebPortalHost({
             message: opened.message || '배정된 작업 공간을 불러오지 못했어요. 다시 시도해 주세요.',
           };
         }
-        if (normalizePurposeOnboarding(afterIdentity?.onboarding) === 'pending') {
+        if (isPurposeOnboardingPending(verifiedAfter, accountKey)) {
           const marked = await settlePurposeOnboarding(verifiedAfter, 'not-asked', accountKey, { bounded: true });
           if (marked?.ok === false) return marked;
         }
@@ -1959,14 +2043,19 @@ export function mountWebPortalHost({
         };
       }
 
-      if (res.status === 'resolved' && Array.isArray(res.unavailable) && res.unavailable.length === 0) {
+      if (
+        res.status === 'resolved'
+        && Array.isArray(res.destinations)
+        && Array.isArray(res.unavailable)
+        && res.unavailable.length === 0
+      ) {
         if (res.destinations.length === 0) {
           requestCancelCompanyEntry();
-          if (normalizePurposeOnboarding(afterIdentity?.onboarding) === 'pending') {
-            return { ok: true, action: 'purpose' };
-          }
-          onEnsureEnteredRoute?.();
-          return { ok: true };
+          return {
+            ok: true,
+            action: 'purpose',
+            purposeMode: resolveEnteringPurposeMode(verifiedAfter, accountKey),
+          };
         }
 
         if (res.destinations.length === 1) {
@@ -1994,7 +2083,7 @@ export function mountWebPortalHost({
             };
           }
 
-          if (normalizePurposeOnboarding(afterIdentity?.onboarding) === 'pending') {
+          if (isPurposeOnboardingPending(verifiedAfter, accountKey)) {
             const marked = await settlePurposeOnboarding(verifiedAfter, 'not-asked', accountKey, { bounded: true });
             if (marked?.ok === false) return marked;
           }
@@ -2196,7 +2285,7 @@ export function mountWebPortalHost({
           };
         }
 
-        if (normalizePurposeOnboarding(verifiedAfter.identity?.()?.onboarding) === 'pending') {
+        if (isPurposeOnboardingPending(verifiedAfter, accountKey)) {
           const marked = await settlePurposeOnboarding(verifiedAfter, 'not-asked', accountKey, { bounded: true });
           if (marked?.ok === false) return marked;
         }
@@ -2223,11 +2312,12 @@ export function mountWebPortalHost({
           message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
         };
       }
-      if (normalizePurposeOnboarding(boundAccount.identity?.()?.onboarding) === 'pending') {
-        return { ok: true, action: 'purpose' };
-      }
-      onEnsureEnteredRoute?.();
-      return { ok: true };
+      syncObservedPendingOnboarding(boundAccount.identity?.());
+      return {
+        ok: true,
+        action: 'purpose',
+        purposeMode: resolveEnteringPurposeMode(boundAccount, accountKey),
+      };
     },
 
     onCancelInvite() {
@@ -2236,12 +2326,20 @@ export function mountWebPortalHost({
 
     async onSelectPurpose(purposeId, context) {
       const isEntering = context?.origin === 'entering';
+      const isExistingEntering = isEntering && context?.purposeMode === 'existing';
       const boundAccount = isEntering ? verifyBoundAccount(context.accountKey) : null;
       if (isEntering && !boundAccount) {
         return {
           ok: false,
           code: 'ACCOUNT_CHANGED',
           message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+        };
+      }
+      if (isExistingEntering && purposeId === 'home') {
+        return {
+          ok: false,
+          code: 'UNKNOWN_PURPOSE',
+          message: '선택한 화면을 찾지 못했어요. 다시 선택해 주세요.',
         };
       }
 
@@ -2270,16 +2368,26 @@ export function mountWebPortalHost({
           onTrackAppLaunch?.(target.trackAppId);
         }
         if (isEntering) {
-          const completed = await settlePurposeOnboarding(boundAccount, 'chosen', context.accountKey, { bounded: false });
-          if (completed?.ok === false) return completed;
+          if (!isExistingEntering && isPurposeOnboardingPending(boundAccount, context.accountKey)) {
+            const completed = await settlePurposeOnboarding(boundAccount, 'chosen', context.accountKey, { bounded: false });
+            if (completed?.ok === false) return completed;
+          } else if (!verifyBoundAccount(context.accountKey)) {
+            return {
+              ok: false,
+              code: 'ACCOUNT_CHANGED',
+              message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+            };
+          }
         }
         onEnsureEnteredRoute?.();
         return { ok: true, destination: target.href };
       }
 
       if (isEntering) {
-        const completed = await settlePurposeOnboarding(boundAccount, 'chosen', context.accountKey, { bounded: true });
-        if (completed?.ok === false) return completed;
+        if (!isExistingEntering && isPurposeOnboardingPending(boundAccount, context.accountKey)) {
+          const completed = await settlePurposeOnboarding(boundAccount, 'chosen', context.accountKey, { bounded: true });
+          if (completed?.ok === false) return completed;
+        }
         if (!verifyBoundAccount(context.accountKey)) {
           return {
             ok: false,
@@ -2315,14 +2423,19 @@ export function mountWebPortalHost({
           message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
         };
       }
-      const completed = await settlePurposeOnboarding(boundAccount, 'skipped', context.accountKey, { bounded: true });
-      if (completed?.ok === false) return completed;
-      if (!verifyBoundAccount(context.accountKey)) {
-        return {
-          ok: false,
-          code: 'ACCOUNT_CHANGED',
-          message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
-        };
+      if (context?.purposeMode === 'existing') {
+        return { ok: true, action: 'return' };
+      }
+      if (isPurposeOnboardingPending(boundAccount, context.accountKey)) {
+        const completed = await settlePurposeOnboarding(boundAccount, 'skipped', context.accountKey, { bounded: true });
+        if (completed?.ok === false) return completed;
+        if (!verifyBoundAccount(context.accountKey)) {
+          return {
+            ok: false,
+            code: 'ACCOUNT_CHANGED',
+            message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+          };
+        }
       }
       onEnsureEnteredRoute?.();
       return { ok: true };

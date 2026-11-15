@@ -8,6 +8,7 @@ import {
   PORTAL_PURPOSE_ITEMS,
   PORTAL_ALLOWED_PURPOSES,
   PORTAL_PURPOSE_ORIGINS,
+  PORTAL_PURPOSE_MODES,
   PORTAL_WORKSPACE_STATUSES,
   PORTAL_WORKSPACE_ITEMS,
   normalizePortalWorkspaceDestination,
@@ -25,6 +26,7 @@ export {
   PORTAL_PURPOSE_ITEMS,
   PORTAL_ALLOWED_PURPOSES,
   PORTAL_PURPOSE_ORIGINS,
+  PORTAL_PURPOSE_MODES,
   PORTAL_WORKSPACE_STATUSES,
   PORTAL_WORKSPACE_ITEMS,
   normalizePortalWorkspaceDestination,
@@ -303,6 +305,7 @@ export function mountPortalEntry(root, options = {}) {
   const orbButton = root.querySelector('[data-portal-action="orb"]');
   const interiorSection = root.querySelector('[data-portal-interior]');
   const headNav = root.querySelector('[data-portal-head-nav]');
+  const backWelcomeBtn = root.querySelector('[data-portal-action="back-welcome"]');
   const headingEl = root.querySelector('#portal-heading');
   const leadEl = root.querySelector('[data-portal-lead]');
 
@@ -342,6 +345,7 @@ export function mountPortalEntry(root, options = {}) {
 
   const purposePane = root.querySelector('[data-portal-pane="purpose"]');
   const purposeErrorEl = root.querySelector('[data-portal-purpose-error]');
+  const homePurposeBtn = root.querySelector('[data-portal-purpose="home"]');
 
   const savedHostAttributes = new Map();
   let hostLocked = false;
@@ -667,6 +671,7 @@ export function mountPortalEntry(root, options = {}) {
       closeInviteBtn.disabled = disabled && busyAction !== 'invite';
     }
     for (const btn of [
+      backWelcomeBtn,
       googleBtn,
       unifiedSignInBtn,
       emailBtn,
@@ -706,6 +711,11 @@ export function mountPortalEntry(root, options = {}) {
       root.dataset.portalPurposeOrigin = purposeOrigin;
     } else {
       delete root.dataset.portalPurposeOrigin;
+    }
+    if (state.purposeMode) {
+      root.dataset.portalPurposeMode = state.purposeMode;
+    } else {
+      delete root.dataset.portalPurposeMode;
     }
     if (phase === 'workspace' && state.workspace) {
       root.dataset.portalWorkspaceStatus = state.workspace.status;
@@ -770,8 +780,12 @@ export function mountPortalEntry(root, options = {}) {
     const isStatusPhase = phase === 'checking' || phase === 'signing-in' || phase === 'entering' || phase === 'enter-error' || phase === 'error';
     statusPane.hidden = !isStatusPhase;
 
-    const canReturnWelcome = !state.enteredOnce && phase === 'auth' && authStatus !== 'signing-in';
+    const isExistingPurpose = phase === 'purpose' && purposeOrigin === 'entering' && state.purposeMode === 'existing';
+    const canReturnWelcome = (!state.enteredOnce && phase === 'auth' && authStatus !== 'signing-in') || isExistingPurpose;
     headNav.hidden = !canReturnWelcome;
+    if (homePurposeBtn) {
+      homePurposeBtn.hidden = isExistingPurpose;
+    }
 
     leadEl.hidden = true;
     leadEl.textContent = '';
@@ -958,13 +972,19 @@ export function mountPortalEntry(root, options = {}) {
     return startGen !== null && nextGen !== null && nextGen !== startGen;
   }
 
-  function buildPurposeContext(stateSnapshot) {
+  function buildPurposeContext(stateSnapshot, extra = {}) {
     const origin = stateSnapshot.purposeOrigin || (stateSnapshot.enteredOnce ? 'manual' : 'browse');
     const accountKey = origin === 'entering'
       ? stateSnapshot.purposeAccountKey
       : stateSnapshot.accountKey;
+    const purposeMode = origin === 'entering'
+      ? (stateSnapshot.purposeMode || 'onboarding')
+      : null;
     return {
       origin,
+      purposeMode,
+      returnPhase: stateSnapshot.purposeReturnPhase || null,
+      ...(extra.returnTarget ? { returnTarget: extra.returnTarget } : {}),
       generation: stateSnapshot.generation,
       accountKey,
     };
@@ -976,6 +996,7 @@ export function mountPortalEntry(root, options = {}) {
     if (cur.phase !== 'purpose' || cur.purposeOrigin !== context.origin) return false;
     if (context.origin === 'entering') {
       if (!context.accountKey) return false;
+      if ((cur.purposeMode || 'onboarding') !== (context.purposeMode || 'onboarding')) return false;
       return cur.purposeAccountKey === context.accountKey && cur.accountKey === context.accountKey;
     }
     if (context.accountKey !== null && cur.accountKey !== context.accountKey) {
@@ -1042,9 +1063,14 @@ export function mountPortalEntry(root, options = {}) {
         workspaceNeedsRetry = false;
         clearFeedbackMessages();
         purposeTriggerEl = null;
-        const moved = machine.enterToPurpose();
+        const nextPurposeMode = result.purposeMode === 'existing' ? 'existing' : 'onboarding';
+        const moved = machine.enterToPurpose({ mode: nextPurposeMode });
         if (!moved.ok) {
-          machine.completeEnter();
+          if (nextPurposeMode === 'existing') {
+            machine.failEnter('계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.');
+          } else {
+            machine.completeEnter();
+          }
         }
       } else {
         workspaceNeedsRetry = false;
@@ -1177,8 +1203,19 @@ export function mountPortalEntry(root, options = {}) {
       if (result && result.action === 'purpose') {
         workspaceNeedsRetry = false;
         purposeTriggerEl = null;
-        const moved = machine.workspaceToPurpose();
+        const nextPurposeMode = result.purposeMode === 'existing' ? 'existing' : 'onboarding';
+        const moved = machine.workspaceToPurpose({
+          mode: nextPurposeMode,
+          returnToWorkspace: false,
+        });
         if (!moved.ok) {
+          if (nextPurposeMode === 'existing') {
+            if (workspaceErrorEl) {
+              workspaceErrorEl.textContent = '계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.';
+              workspaceErrorEl.hidden = false;
+            }
+            return false;
+          }
           machine.completeEnter();
         }
         return true;
@@ -1245,8 +1282,19 @@ export function mountPortalEntry(root, options = {}) {
       workspaceNeedsRetry = false;
       if (result && result.action === 'purpose') {
         purposeTriggerEl = null;
-        const moved = machine.workspaceToPurpose();
+        const nextPurposeMode = result.purposeMode === 'existing' ? 'existing' : 'onboarding';
+        const moved = machine.workspaceToPurpose({
+          mode: nextPurposeMode,
+          returnToWorkspace: nextPurposeMode === 'existing',
+        });
         if (!moved.ok) {
+          if (nextPurposeMode === 'existing') {
+            if (workspaceErrorEl) {
+              workspaceErrorEl.textContent = '계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.';
+              workspaceErrorEl.hidden = false;
+            }
+            return false;
+          }
           machine.completeEnter();
         }
         return true;
@@ -1534,6 +1582,9 @@ export function mountPortalEntry(root, options = {}) {
     if (disposed || busyAction !== null || !PORTAL_ALLOWED_PURPOSES.includes(purposeId)) return false;
     const snap = machine.read();
     if (snap.phase !== 'purpose') return false;
+    if (snap.purposeOrigin === 'entering' && snap.purposeMode === 'existing' && purposeId === 'home') {
+      return false;
+    }
     if (typeof options.onSelectPurpose !== 'function') {
       return closePurposePicker();
     }
@@ -1613,8 +1664,15 @@ export function mountPortalEntry(root, options = {}) {
     return true;
   }
 
-  async function runEnteringDismissPurpose(snap) {
-    const context = buildPurposeContext(snap);
+  async function runEnteringDismissPurpose(snap, opts = {}) {
+    const forceWelcome = opts?.forceWelcome === true;
+    const isExisting = snap.purposeMode === 'existing';
+    const context = buildPurposeContext(
+      snap,
+      isExisting
+        ? { returnTarget: forceWelcome ? 'welcome' : (snap.purposeReturnPhase === 'workspace' ? 'workspace' : 'welcome') }
+        : {},
+    );
     if (!context.accountKey || context.generation === null || snap.accountKey !== context.accountKey) {
       if (purposeErrorEl) {
         purposeErrorEl.textContent = '계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.';
@@ -1627,6 +1685,19 @@ export function mountPortalEntry(root, options = {}) {
     clearFeedbackMessages();
     if (typeof options.onDismissPurpose !== 'function') {
       purposeTriggerEl = null;
+      if (isExisting) {
+        const returned = machine.returnFromExistingPurpose({ forceWelcome });
+        if (!returned.ok) {
+          if (purposeErrorEl) {
+            purposeErrorEl.textContent = '계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.';
+            purposeErrorEl.hidden = false;
+          }
+          render();
+          return false;
+        }
+        render();
+        return true;
+      }
       machine.completeEnter();
       render();
       return true;
@@ -1635,6 +1706,9 @@ export function mountPortalEntry(root, options = {}) {
     const runId = ++asyncSeq;
     busyAction = 'dismiss-purpose';
     syncButtonsDisabled();
+    const fallbackDismissError = isExisting
+      ? '이전 화면으로 돌아가지 못했어요. 다시 시도해 주세요.'
+      : '기본 화면을 열지 못했어요. 다시 시도해 주세요.';
 
     try {
       const result = await options.onDismissPurpose(context);
@@ -1643,18 +1717,29 @@ export function mountPortalEntry(root, options = {}) {
         if (purposeErrorEl) {
           purposeErrorEl.textContent = typeof result.message === 'string' && result.message.trim()
             ? result.message.trim()
-            : '기본 화면을 열지 못했어요. 다시 시도해 주세요.';
+            : fallbackDismissError;
           purposeErrorEl.hidden = false;
         }
         return false;
       }
       purposeTriggerEl = null;
+      if (isExisting) {
+        const returned = machine.returnFromExistingPurpose({ forceWelcome });
+        if (!returned.ok) {
+          if (purposeErrorEl) {
+            purposeErrorEl.textContent = '계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.';
+            purposeErrorEl.hidden = false;
+          }
+          return false;
+        }
+        return true;
+      }
       machine.completeEnter();
       return true;
     } catch {
       if (!isPurposeRunValid(runId, context)) return false;
       if (purposeErrorEl) {
-        purposeErrorEl.textContent = '기본 화면을 열지 못했어요. 다시 시도해 주세요.';
+        purposeErrorEl.textContent = fallbackDismissError;
         purposeErrorEl.hidden = false;
       }
       return false;
@@ -1764,6 +1849,11 @@ export function mountPortalEntry(root, options = {}) {
     if (action === 'back-welcome') {
       event.preventDefault();
       if (busyAction !== null) return;
+      const snap = machine.read();
+      if (snap.phase === 'purpose' && snap.purposeOrigin === 'entering' && snap.purposeMode === 'existing') {
+        void runEnteringDismissPurpose(snap, { forceWelcome: true });
+        return;
+      }
       clearFeedbackMessages();
       machine.showWelcomeOrb();
       render();
@@ -2059,7 +2149,11 @@ export function mountPortalEntry(root, options = {}) {
       }
       return updated;
     },
-    completeWorkspaceEntry({ action = 'entered', accountKey: expectedAccountKey } = {}) {
+    completeWorkspaceEntry({
+      action = 'entered',
+      purposeMode: requestedPurposeMode,
+      accountKey: expectedAccountKey,
+    } = {}) {
       if (disposed) return { ok: false, state: machine.read() };
       const snap = machine.read();
       if (snap.phase !== 'workspace' && snap.phase !== 'entering') {
@@ -2079,10 +2173,15 @@ export function mountPortalEntry(root, options = {}) {
       clearFeedbackMessages();
       if (action === 'purpose') {
         purposeTriggerEl = null;
+        const nextPurposeMode = requestedPurposeMode === 'existing' ? 'existing' : 'onboarding';
         const moved = snap.phase === 'workspace'
-          ? machine.workspaceToPurpose()
-          : machine.enterToPurpose();
+          ? machine.workspaceToPurpose({ mode: nextPurposeMode, returnToWorkspace: false })
+          : machine.enterToPurpose({ mode: nextPurposeMode });
         if (!moved.ok) {
+          if (nextPurposeMode === 'existing') {
+            render();
+            return { ok: false, state: machine.read() };
+          }
           machine.completeEnter();
         }
       } else {
@@ -2143,6 +2242,7 @@ export function mountPortalEntry(root, options = {}) {
       root.dataset.portalState = 'entered';
       delete root.dataset.portalAuthStatus;
       delete root.dataset.portalPurposeOrigin;
+      delete root.dataset.portalPurposeMode;
       delete root.dataset.portalWorkspaceStatus;
       if (doc?.documentElement?.dataset) {
         delete doc.documentElement.dataset.portalActive;

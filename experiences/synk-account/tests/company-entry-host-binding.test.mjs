@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mountDesktopPortalHost } from '../../../desktop/renderer/portal-host.mjs';
 import { createCompanyEntryTransport } from '../src/company-entry-web.mjs';
 import {
   createDefaultWebCompanyBoundaries,
@@ -1791,7 +1792,7 @@ test('R4: interactive login-recovery watch stays alive after initial return acro
   await tick();
   await tick();
   assert.equal(caseB.getCancelCalls(), 1);
-  assert.equal(caseB.host.getState().phase, 'entered');
+  assert.equal(caseB.host.getState().phase, 'purpose'); // Personal entry keeps the product chooser visible.
 
   // (c) Syncing signed-in B after initial return cancels once and ignores late update from A.
   const caseC = await setupLoginRecoveryWatch();
@@ -2437,4 +2438,37 @@ test('R7b: built-in default mountWebPortalHost boundaries complete guest invite 
 
   await runBuiltInRoundtripCase('signed-out');
   await runBuiltInRoundtripCase('unconfigured');
+});
+
+
+async function settleEntryHost() { for(let n=0;n<8;n++) await tick(); }
+for(const mode of ['web','pc'])for(const purpose of ['none','pending'])test('unassigned existing-user entry uses the product picker without creating onboarding '+mode+' '+purpose,async t=>{
+ const dom=createFakeDomEnvironment(),writes=[],opened=[];let ensureCount=0;
+ const identity={status:'signed-in',signedIn:true,accountId:account,accountKey:account,accountGeneration:1,onboarding:{purpose}};
+ const auth={configured:true,status:'signed-in',signedIn:true,accountGeneration:generation,sessionGeneration:1,account:{synk_user_id:account},onboarding:{purpose}};
+ let host;
+ if(mode==='web')host=mountWebPortalHost({root:dom.root,getReducedMotion:()=>true,getStartupState:()=>({status:'signed-in'}),getAccount:()=>({identity:()=>identity,isAccountBound:id=>id===account,completePurposeOnboarding:async outcome=>{writes.push(outcome);return {ok:true};}}),companyBoundaries:{resolveAssignedDestination:async()=>({ok:true,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry(){}},onEnsureEnteredRoute:()=>{ensureCount++;},onNavigateHash:hash=>opened.push(hash)});
+ else host=mountDesktopPortalHost({root:dom.root,getReducedMotion:()=>true,getAuth:()=>auth,bridge:{authStatus:async()=>auth,resolveCompanyEntryDestinations:async request=>({ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry:async()=>null,accountRequest:async(operation,params)=>{writes.push({operation,...params});return {ok:true};}},onEnsureEnteredView:()=>{ensureCount++;return {ok:true};},onOpenPurposeTarget:async id=>{opened.push(id);return {ok:true};}});
+ t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'purpose','a verified unassigned account should remain in the black product picker');assert.equal(ensureCount,0);assert.deepEqual(writes,[]);
+ dom.root.querySelector('[data-portal-purpose="solio"]').click();await settleEntryHost();assert.equal(host.getState().phase,'entered');assert.deepEqual(opened,[mode==='web'?'#solio':'solio']);
+ assert.equal(writes.length,purpose==='pending'?1:0,'only an actually pending newcomer may write an onboarding outcome');
+ if(purpose==='pending')assert.equal(mode==='web'?writes[0]:writes[0].outcome,'chosen');
+});
+test('unassigned existing-user entry after asynchronous company recovery uses the same picker without onboarding writes',async t=>{
+ const dom=createFakeDomEnvironment(),writes=[],identity={status:'signed-in',signedIn:true,accountId:account,accountKey:account,accountGeneration:1,onboarding:{purpose:'none'}};let onUpdate,ensureCount=0;
+ const host=mountWebPortalHost({root:dom.root,getReducedMotion:()=>true,getStartupState:()=>({status:'signed-in'}),getAccount:()=>({identity:()=>identity,isAccountBound:id=>id===account,completePurposeOnboarding:async outcome=>{writes.push(outcome);return {ok:true};}}),companyBoundaries:{resolveAssignedDestination:async context=>{onUpdate=context.onAssignmentUpdate;return {ok:true,result:{status:'login_required',destinations:[],unavailable:[]}};},cancelCompanyEntry(){}},onEnsureEnteredRoute:()=>{ensureCount++;}});
+ t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'workspace');assert.equal(typeof onUpdate,'function');
+ onUpdate({ok:true,result:{status:'resolved',destinations:[],unavailable:[]}});await settleEntryHost();assert.equal(host.getState().phase,'purpose');assert.equal(ensureCount,0);assert.deepEqual(writes,[]);
+ await host.closePurposePicker();await settleEntryHost();assert.deepEqual(writes,[],'dismissing a product menu is not newcomer onboarding');assert.notEqual(host.getState().phase,'entered','closing the existing-user picker must keep the black portal');assert.equal(host.getState().active,true);assert.equal(host.getState().accountKey,account);
+});
+for(const result of [{status:'partial',destinations:[],unavailable:['pulse']},{status:'unavailable',destinations:[],unavailable:['workspace','pulse']}])test('unassigned existing-user entry does not treat unresolved company lookup as no assignment '+result.status,async t=>{
+ const dom=createFakeDomEnvironment(),identity={status:'signed-in',signedIn:true,accountId:account,accountKey:account,accountGeneration:1,onboarding:{purpose:'none'}};
+ const host=mountWebPortalHost({root:dom.root,getReducedMotion:()=>true,getStartupState:()=>({status:'signed-in'}),getAccount:()=>({identity:()=>identity,isAccountBound:id=>id===account}),companyBoundaries:{resolveAssignedDestination:async()=>({ok:true,result}),cancelCompanyEntry(){}}});t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'workspace');assert.notEqual(host.getState().phase,'purpose');
+});
+
+
+test('unassigned existing-user entry on PC stays inside the black portal when its picker closes',async t=>{
+ const dom=createFakeDomEnvironment(),writes=[];const auth={configured:true,status:'signed-in',signedIn:true,accountGeneration:generation,sessionGeneration:1,account:{synk_user_id:account},onboarding:{purpose:'none'}};
+ const host=mountDesktopPortalHost({root:dom.root,getReducedMotion:()=>true,getAuth:()=>auth,bridge:{authStatus:async()=>auth,resolveCompanyEntryDestinations:async request=>({ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry:async()=>null,accountRequest:async(operation,params)=>{writes.push({operation,...params});return {ok:true};}},onEnsureEnteredView:()=>({ok:true})});
+ t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'purpose');await host.closePurposePicker();await settleEntryHost();assert.notEqual(host.getState().phase,'entered');assert.equal(host.getState().active,true);assert.equal(host.getState().accountKey,account);assert.deepEqual(writes,[]);assert.equal(auth.signedIn,true);
 });

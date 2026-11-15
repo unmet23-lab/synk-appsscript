@@ -39,6 +39,11 @@ export const PORTAL_PURPOSE_ORIGINS = Object.freeze([
   'manual',
 ]);
 
+export const PORTAL_PURPOSE_MODES = Object.freeze([
+  'onboarding',
+  'existing',
+]);
+
 export const PORTAL_PURPOSE_ITEMS = Object.freeze([
   Object.freeze({
     id: 'shift',
@@ -241,6 +246,10 @@ function normalizeAccountKey(value) {
   return trimmed ? trimmed : null;
 }
 
+function normalizePurposeMode(value) {
+  return value === 'existing' ? 'existing' : 'onboarding';
+}
+
 export function createPortalStateMachine(initial = {}) {
   let phase = initial.bypass === true ? 'entered' : 'welcome';
   let returnPhase = 'auth';
@@ -250,11 +259,13 @@ export function createPortalStateMachine(initial = {}) {
     ? null
     : normalizeAccountKey(initial.accountKey);
   let purposeOrigin = null;
+  let purposeMode = null;
   let purposeAccountKey = null;
   let purposeGeneration = null;
   let workspaceState = null;
   let workspaceAccountKey = null;
   let workspaceGeneration = null;
+  let welcomePausedAccountKey = null;
   let zoomConsumed = initial.bypass === true;
   let enteredOnce = initial.bypass === true;
   let errorMessage = typeof initial.errorMessage === 'string' ? initial.errorMessage : '';
@@ -262,6 +273,7 @@ export function createPortalStateMachine(initial = {}) {
 
   function clearPurposeBinding() {
     purposeOrigin = null;
+    purposeMode = null;
     purposeAccountKey = null;
     purposeGeneration = null;
   }
@@ -281,6 +293,8 @@ export function createPortalStateMachine(initial = {}) {
       generation,
       accountKey,
       purposeOrigin,
+      purposeMode,
+      purposeReturnPhase: phase === 'purpose' ? returnPhase : null,
       purposeAccountKey,
       workspaceAccountKey,
       workspace: workspaceState
@@ -368,6 +382,14 @@ export function createPortalStateMachine(initial = {}) {
       }
 
       const accountChanged = accountKey !== prevAccountKey;
+      if (
+        authStatus === 'signed-out'
+        || authStatus === 'unconfigured'
+        || authStatus === 'signing-in'
+        || accountKey !== welcomePausedAccountKey
+      ) {
+        welcomePausedAccountKey = null;
+      }
 
       if (typeof update.errorMessage === 'string') {
         errorMessage = update.errorMessage;
@@ -503,6 +525,9 @@ export function createPortalStateMachine(initial = {}) {
         if (authStatus === 'signed-in') {
           if (purposeAccountKey !== null && accountKey === purposeAccountKey) {
             purposeGeneration = generation;
+            if (workspaceAccountKey === accountKey) {
+              workspaceGeneration = generation;
+            }
             return {
               accepted: true,
               stale: false,
@@ -515,6 +540,7 @@ export function createPortalStateMachine(initial = {}) {
             };
           }
           clearPurposeBinding();
+          clearWorkspaceBinding();
           phase = 'entering';
           return {
             accepted: true,
@@ -531,6 +557,7 @@ export function createPortalStateMachine(initial = {}) {
         if (isAuthPendingStatus(authStatus)) {
           if (accountKey !== purposeAccountKey) {
             clearPurposeBinding();
+            clearWorkspaceBinding();
             phase = 'checking';
             return {
               accepted: true,
@@ -557,6 +584,7 @@ export function createPortalStateMachine(initial = {}) {
 
         if (authStatus === 'signed-out' || authStatus === 'unconfigured') {
           clearPurposeBinding();
+          clearWorkspaceBinding();
           phase = 'auth';
           return {
             accepted: true,
@@ -572,6 +600,7 @@ export function createPortalStateMachine(initial = {}) {
 
         if (authStatus === 'signing-in') {
           clearPurposeBinding();
+          clearWorkspaceBinding();
           phase = 'signing-in';
           return {
             accepted: true,
@@ -583,6 +612,10 @@ export function createPortalStateMachine(initial = {}) {
             shouldTriggerEnter: false,
             state: snapshot(),
           };
+        }
+
+        if (accountChanged) {
+          clearWorkspaceBinding();
         }
 
         // error 상태에서는 목적 화면을 닫지 않고 유지하며 완료 동작에서 결속을 다시 확인한다.
@@ -762,6 +795,18 @@ export function createPortalStateMachine(initial = {}) {
           };
         }
         if (phase === 'welcome') {
+          if (welcomePausedAccountKey !== null && accountKey === welcomePausedAccountKey) {
+            return {
+              accepted: true,
+              stale: false,
+              generationChanged,
+              accountChanged: false,
+              bindingInvalidated: false,
+              shouldStartZoom: false,
+              shouldTriggerEnter: false,
+              state: snapshot(),
+            };
+          }
           zoomConsumed = true;
           if (immediate) {
             phase = 'entering';
@@ -880,6 +925,7 @@ export function createPortalStateMachine(initial = {}) {
       if (phase !== 'welcome') {
         return { changed: false, shouldStartZoom: false, shouldTriggerEnter: false, state: snapshot() };
       }
+      welcomePausedAccountKey = null;
       zoomConsumed = true;
       if (immediate) {
         const result = resolveInteriorPhase();
@@ -898,13 +944,16 @@ export function createPortalStateMachine(initial = {}) {
     },
 
     // 검증된 세대와 계정 결속이 있는 entering 단계에서만 목적 선택 화면을 연다.
-    enterToPurpose() {
+    enterToPurpose(opts = {}) {
       if (phase !== 'entering' || generation === null || accountKey === null) {
         return { ok: false, changed: false, state: snapshot() };
       }
+      const nextMode = normalizePurposeMode(opts?.mode ?? opts?.purposeMode);
       clearWorkspaceBinding();
-      returnPhase = 'entering';
+      welcomePausedAccountKey = null;
+      returnPhase = nextMode === 'existing' ? 'welcome' : 'entering';
       purposeOrigin = 'entering';
+      purposeMode = nextMode;
       purposeAccountKey = accountKey;
       purposeGeneration = generation;
       errorMessage = '';
@@ -918,6 +967,7 @@ export function createPortalStateMachine(initial = {}) {
         return { ok: false, changed: false, state: snapshot() };
       }
       clearPurposeBinding();
+      welcomePausedAccountKey = null;
       workspaceState = normalizePortalWorkspaceState(rawWorkspace);
       workspaceAccountKey = accountKey;
       workspaceGeneration = generation;
@@ -937,6 +987,7 @@ export function createPortalStateMachine(initial = {}) {
         return { ok: false, changed: false, state: snapshot() };
       }
       clearPurposeBinding();
+      welcomePausedAccountKey = null;
       workspaceState = normalizePortalWorkspaceState(rawWorkspace);
       workspaceAccountKey = accountKey;
       workspaceGeneration = generation;
@@ -945,15 +996,23 @@ export function createPortalStateMachine(initial = {}) {
       return { ok: true, changed: true, state: snapshot() };
     },
 
-    workspaceToPurpose() {
+    workspaceToPurpose(opts = {}) {
       if (phase !== 'workspace' || generation === null || accountKey === null || workspaceAccountKey !== accountKey) {
         return { ok: false, changed: false, state: snapshot() };
       }
+      const nextMode = normalizePurposeMode(opts?.mode ?? opts?.purposeMode);
+      const keepWorkspace = nextMode === 'existing' && opts?.returnToWorkspace !== false && workspaceState !== null;
       const boundKey = workspaceAccountKey;
       const boundGen = generation;
-      clearWorkspaceBinding();
-      returnPhase = 'entering';
+      if (!keepWorkspace) {
+        clearWorkspaceBinding();
+      }
+      welcomePausedAccountKey = null;
+      returnPhase = nextMode === 'existing'
+        ? (keepWorkspace ? 'workspace' : 'welcome')
+        : 'entering';
       purposeOrigin = 'entering';
+      purposeMode = nextMode;
       purposeAccountKey = boundKey;
       purposeGeneration = boundGen;
       errorMessage = '';
@@ -961,10 +1020,48 @@ export function createPortalStateMachine(initial = {}) {
       return { ok: true, changed: true, state: snapshot() };
     },
 
+    returnFromExistingPurpose(opts = {}) {
+      if (
+        phase !== 'purpose'
+        || purposeOrigin !== 'entering'
+        || purposeMode !== 'existing'
+        || authStatus !== 'signed-in'
+        || generation === null
+        || accountKey === null
+        || purposeAccountKey === null
+        || accountKey !== purposeAccountKey
+      ) {
+        return { ok: false, changed: false, state: snapshot() };
+      }
+      const forceWelcome = opts?.forceWelcome === true;
+      const nextReturnPhase = returnPhase;
+      clearPurposeBinding();
+      errorMessage = '';
+      if (
+        !forceWelcome
+        && nextReturnPhase === 'workspace'
+        && workspaceState !== null
+        && workspaceAccountKey !== null
+        && workspaceAccountKey === accountKey
+      ) {
+        welcomePausedAccountKey = null;
+        workspaceGeneration = generation;
+        phase = 'workspace';
+        return { ok: true, changed: true, targetPhase: 'workspace', state: snapshot() };
+      }
+      clearWorkspaceBinding();
+      zoomConsumed = false;
+      welcomePausedAccountKey = accountKey;
+      returnPhase = 'auth';
+      phase = 'welcome';
+      return { ok: true, changed: true, targetPhase: 'welcome', state: snapshot() };
+    },
+
     beginSignIn() {
       if (phase === 'entered') return snapshot();
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       authStatus = 'signing-in';
       phase = 'signing-in';
       errorMessage = '';
@@ -975,6 +1072,7 @@ export function createPortalStateMachine(initial = {}) {
       if (phase === 'entered') return snapshot();
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       errorMessage = '';
       phase = 'auth';
       return snapshot();
@@ -991,6 +1089,7 @@ export function createPortalStateMachine(initial = {}) {
       }
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       errorMessage = '';
       zoomConsumed = false;
       phase = 'welcome';
@@ -1001,6 +1100,7 @@ export function createPortalStateMachine(initial = {}) {
       if (phase === 'entered') return snapshot();
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       errorMessage = '';
       authStatus = 'loading';
       phase = 'checking';
@@ -1010,6 +1110,7 @@ export function createPortalStateMachine(initial = {}) {
     completeEnter() {
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       errorMessage = '';
       enteredOnce = true;
       phase = 'entered';
@@ -1019,6 +1120,7 @@ export function createPortalStateMachine(initial = {}) {
     failEnter(message) {
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       errorMessage = typeof message === 'string' && message.trim()
         ? message.trim()
         : '배정된 작업 공간을 불러오지 못했어요. 다시 시도해 주세요.';
@@ -1031,6 +1133,7 @@ export function createPortalStateMachine(initial = {}) {
         return { shouldTriggerEnter: false, state: snapshot() };
       }
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       errorMessage = '';
       phase = 'entering';
       return { shouldTriggerEnter: true, state: snapshot() };
@@ -1039,6 +1142,7 @@ export function createPortalStateMachine(initial = {}) {
     completeBrowse() {
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       errorMessage = '';
       enteredOnce = true;
       phase = 'entered';
@@ -1079,6 +1183,7 @@ export function createPortalStateMachine(initial = {}) {
         : requestedOrigin === 'manual'
           ? 'manual'
           : (isEnteredContext ? 'manual' : 'browse');
+      purposeMode = null;
       purposeAccountKey = accountKey;
       purposeGeneration = generation;
       phase = 'purpose';
@@ -1105,6 +1210,7 @@ export function createPortalStateMachine(initial = {}) {
       if (normalizedGen !== null) generation = normalizedGen;
       clearPurposeBinding();
       clearWorkspaceBinding();
+      welcomePausedAccountKey = null;
       enteredOnce = false;
       zoomConsumed = true;
       authStatus = normalizeAuthStatus(status);
