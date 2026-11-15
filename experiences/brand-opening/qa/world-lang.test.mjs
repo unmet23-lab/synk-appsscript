@@ -182,7 +182,9 @@ test('1판 표: 모든 줄에 ko·en·mn이 있고 값 자리가 같다',()=>{
    if(value==null||forms(value).some(text=>typeof text!=='string'||!text.trim()))problems.push(`${key}: ${code} 비어 있음`);
   }
   if(problems.length)continue;
-  const want=slots(entry.ko);
+  // 한국어도 {one,other} 꼴을 쓸 수 있다(t()가 모든 언어에서 vars.n으로 고른다 — 「내 위치」 2판의 「모두 혼자 맞혔어요」 줄). 그때는 other의 값 자리로 맞춘다.
+  if(typeof entry.ko!=='string'&&!entry.ko.one)problems.push(`${key}: ko.one 없음`);
+  const want=slots(typeof entry.ko==='string'?entry.ko:entry.ko.other);
   for(const code of ['en','mn']){
    const value=entry[code];
    if(typeof value==='string'){if(slots(value)!==want)problems.push(`${key}: ${code} 값 자리 ${slots(value)} ≠ ko ${want}`);}

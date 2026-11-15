@@ -754,6 +754,109 @@ html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:
 .wmis-again>li[data-state=planned] .wmis-what{color:var(--w-ink-2)}
 .wmis-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;font-size:12.5px;line-height:1.5;color:var(--w-ink-3)}
 .wmis-legend>span{display:inline-flex;align-items:center;gap:6px}
+/* ── 「내 위치」 2판(11-16, world-position-page.mjs) — 드라마 「오늘」 한 장과 같은 결(qa/내위치2판-20261116/설계.md) ──
+ * 차례: 놓친 곳 이야기(상자 없이 판 위에 — 큰 한 줄 · 안내문 종이 한 장 · 줄 · 흰 알약) → 항목 지도 → 낮은 줄들(짧은 진단 · 다시 확인 · 항목별 · 예상 급수).
+ * 카드는 테두리 없이 옅은 면만. 누르는 곳은 두 꼴뿐: 흰 알약 하나(주 단추)와 선 알약(둘째 단추) — 접힘 줄은 오른쪽 화살표.
+ * 강조색은 한 곳: 다시 만나 혼자 해낸 칸의 따뜻한 노랑. 놓친 표시만 분홍(드라마의 틀림 색). 영문 모노 라벨을 쓰지 않는다(옛 묶음의 것도 화면 쪽이 뺀다).
+ * 글자 크기: 큰 한 줄 28 · 안내문 19 · 줄 글 15.5 · 머리 13.5 · 작은 말 12.5. */
+#world-panel .wpv{--wpv-face:rgba(255,255,255,.055);--wpv-face-2:rgba(255,255,255,.1);--wpv-line:rgba(255,255,255,.1);--wpv-ink:#f4f5f8;--wpv-dim:rgba(244,245,248,.68);--wpv-muted:rgba(244,245,248,.52);--wpv-faint:rgba(244,245,248,.3);--wpv-warm:#ffcf5c;--wpv-slip:#ff6b81;gap:14px;color:var(--wpv-ink);word-break:keep-all}
+.wpv :is(.wpv-map,.wpv-fold,.wpos-attention,.wpos-diagnostic,.wpos-followups[data-cards],[data-domain=writing],.wpos-advisory){border:0;border-radius:20px;background:var(--wpv-face);box-shadow:none}
+/* 놓친 곳 이야기 */
+.wpv-story{display:grid;padding:6px 2px 10px;min-width:0}
+.wpv-kicker{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:0;font-size:13px;line-height:1.4;font-weight:700;color:var(--wpv-dim)}
+.wpv-kicker::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--wpv-slip)}
+.wpv-kicker>span+span{font-weight:600;color:var(--wpv-muted)}
+.wpv-kicker>span+span::before{content:'·';margin-right:8px}
+.wpv-skill{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:6px 0 0;min-width:0}
+.wpv-skill>strong{font-size:15.5px;line-height:1.45;font-weight:700;color:var(--wpv-ink);overflow-wrap:anywhere}
+.wpv-skill>small{flex-basis:100%;font-size:13px;line-height:1.45;color:var(--wpv-muted)}
+/* 손님 표식: ✗ 놓침(분홍 테 · 엑스) · ✓ 맞힘(흰 면 · 체크) — 시각 차례 */
+.wpv-marks{display:inline-flex;align-items:center;gap:4px}
+.wpv-marks>i{position:relative;display:block;width:18px;height:18px;border-radius:5px;box-sizing:border-box}
+.wpv-marks>i[data-verdict=incorrect]{box-shadow:inset 0 0 0 1.5px var(--wpv-slip)}
+.wpv-marks>i[data-verdict=incorrect]::before,.wpv-marks>i[data-verdict=incorrect]::after{content:'';position:absolute;left:4px;right:4px;top:8px;height:2px;border-radius:1px;background:var(--wpv-slip);transform:rotate(45deg)}
+.wpv-marks>i[data-verdict=incorrect]::after{transform:rotate(-45deg)}
+.wpv-marks>i[data-verdict=correct]{background:var(--wpv-ink)}
+.wpv-marks>i[data-verdict=correct]::after{content:'';position:absolute;left:6px;top:3px;width:4px;height:8px;border:solid #111;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.wpv-marks>b{font-size:12px;font-weight:700;color:var(--wpv-muted)}
+.wpv .wpv-headline{margin:14px 0 0;font-size:28px;line-height:1.22;font-weight:800;letter-spacing:-.04em;color:var(--wpv-ink);text-wrap:balance}
+.wpv .wpv-headline[data-long]{font-size:23px;line-height:1.26;letter-spacing:-.03em}
+/* 안내문 한 장: 입장 검사 화면의 안내문처럼 종이 위 먹색 글 — 판에서 유일하게 밝은 면이라 눈이 먼저 간다. */
+.wpv-notice{margin:14px 0 0;padding:14px 16px 15px;border-radius:12px;background:#f3efe6;color:#17140f;box-shadow:0 24px 48px -28px rgba(0,0,0,.95)}
+.wpv-notice figcaption{font-size:12px;line-height:1.4;font-weight:700;color:rgba(23,20,15,.72)}
+.wpv-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.wpv-row li{position:relative}
+.wpv-notice blockquote{margin:5px 0 0;font-size:19px;line-height:1.4;font-weight:800;letter-spacing:-.025em;text-wrap:pretty}
+/* 놓침 → 다시 만난 일 → 다음 차례를 잇는 줄. 한 일은 찬 점과 실선, 다음 차례는 빈 점과 점선. */
+.wpv .wpv-steps{display:grid;grid-template-columns:none;gap:0;margin:18px 0 0;padding:0;list-style:none}
+.wpv .wpv-steps>li{position:relative;display:grid;grid-column:auto;grid-template-columns:22px minmax(0,1fr);column-gap:10px;row-gap:2px;align-items:start;padding:0 0 13px;border-top:0}
+.wpv .wpv-steps>li:last-child{padding-bottom:0}
+.wpv .wpv-steps>li::before{content:'';position:absolute;left:10px;top:17px;bottom:-1px;width:2px;border-radius:2px;background:rgba(255,255,255,.18)}
+.wpv .wpv-steps>li:last-child::before{display:none}
+.wpv .wpv-steps>li:has(+li[data-state=planned])::before{background:repeating-linear-gradient(180deg,rgba(255,255,255,.26) 0 4px,transparent 4px 8px)}
+.wpv-dot{grid-row:1 / span 2;justify-self:center;width:12px;height:12px;margin-top:4px;border-radius:50%;background:var(--wpv-ink);box-sizing:border-box}
+.wpv-steps>li[data-step=miss] .wpv-dot{background:var(--wpv-slip)}
+.wpv-steps>li[data-state=planned] .wpv-dot{background:transparent;border:2px solid var(--wpv-faint)}
+.wpv-steps>li[data-win] .wpv-dot{width:20px;height:20px;margin-top:0;background:var(--wpv-warm)}
+.wpv-steps>li[data-win] .wpv-dot::after{content:'';display:block;width:5px;height:9px;margin:3px auto 0;border:solid #17140f;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.wpv-step{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;line-height:1.4;font-weight:700;color:var(--wpv-muted)}
+.wpv-next{padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700;color:var(--wpv-ink);background:var(--wpv-face-2)}
+.wpv-what{grid-column:2;min-width:0;font-size:15.5px;line-height:1.48;font-weight:600;color:var(--wpv-ink);overflow-wrap:anywhere;text-wrap:pretty}
+.wpv-steps>li[data-win] .wpv-what{color:var(--wpv-warm)}
+.wpv-steps>li[data-state=planned] .wpv-what{font-weight:500;color:var(--wpv-dim)}
+/* 주 단추 하나: 드라마 「오늘」의 흰 알약. */
+#world-panel .wpv .wpv-go{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin:18px 0 0;padding:0 22px;border:0;border-radius:999px;background:#f4f5f8;color:#0b0b0d;font:800 16.5px/1.2 var(--w-sans);letter-spacing:-.02em;cursor:pointer;box-shadow:0 18px 40px -20px rgba(255,255,255,.45);transition:transform .2s cubic-bezier(.23,1,.32,1)}
+#world-panel .wpv .wpv-go:active{transform:scale(.97)}
+#world-panel .wpv .wpv-go:focus-visible{outline:2px solid #6fd3ff;outline-offset:3px}
+/* 둘째 단추는 모두 선 알약 하나의 꼴: 짧은 진단(이야기가 있을 때) · 이 항목 연습하기(목록 안) · 시험 형식 연습 · 다시 확인 · 쓰기 · 권장 연습 */
+#world-panel .wpv :is(.wpos-practice,[data-position-mock],[data-position-writing],.wfol-open,[data-advisory]),#world-panel .wpv:has(.wpv-go) .wpos-diagnostic>.felt-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--wpv-ink);font-size:14.5px;font-weight:700;text-decoration:none;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.26)}
+#world-panel .wpv:has(.wpv-go) .wpos-diagnostic>.felt-button{width:100%}
+/* 항목 지도: 칸 하나가 항목 하나. 빈 칸 아직 · 아래 반이 찬 칸 연습 중 · 찬 칸 혼자 해냄 · 분홍 테 놓친 곳. */
+.wpv-map{display:grid;padding:18px 18px 16px;min-width:0}
+.wpv .wpv-map>h3{margin:0;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:-.025em}
+.wpv-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 0;padding:0;list-style:none}
+.wpv-legend li{display:inline-flex;align-items:center;gap:6px;font-size:13px;line-height:1.4;color:var(--wpv-dim)}
+.wpv-legend b{font-size:15px;font-weight:800;color:var(--wpv-ink);font-variant-numeric:tabular-nums}
+.wpv-legend i,.wpv-row li{display:block;border-radius:6px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22);box-sizing:border-box}
+.wpv-legend i{width:14px;height:14px;border-radius:4px}
+.wpv-legend li[data-cell=practicing] i,.wpv-row li[data-cell=practicing]{background:linear-gradient(0deg,rgba(244,245,248,.8) 50%,transparent 50%)}
+.wpv-legend li[data-cell=independent] i,.wpv-row li[data-cell=independent]{background:var(--wpv-ink);box-shadow:none}
+.wpv-legend li[data-missed] i,.wpv-row li[data-missed]{box-shadow:inset 0 0 0 2px var(--wpv-slip)}
+.wpv-grid{display:grid;gap:8px;margin:16px 0 0}
+.wpv-row{display:grid;grid-template-columns:3.2em minmax(0,1fr);align-items:center;gap:8px}
+.wpv-row>span{font-size:12px;line-height:1.3;font-weight:700;color:var(--wpv-muted);overflow-wrap:anywhere}
+.wpv-row>ol{display:grid;grid-template-columns:repeat(var(--n,8),minmax(0,1fr));gap:5px;margin:0;padding:0;list-style:none}
+.wpv-row li{aspect-ratio:1;max-height:44px}
+.wpv .wpv-map .wpv-note{margin:14px 0 0;font-size:12.5px;line-height:1.5;color:var(--wpv-muted)}
+/* 낮은 줄들: 옛 묶음(먼저 볼 항목 · 짧은 진단 · 다시 확인 · 쓰기 · 권장 연습)과 접힘(항목별 · 예상 급수). */
+.wpv :is(.wpos-attention,.wpos-diagnostic,.wpos-followups[data-cards],[data-domain=writing],.wpos-advisory){padding:18px 18px 16px}
+.wpv .wpos-followups:not([data-cards]){margin:0;padding:2px 6px;border-top:0}
+.wpv .wpos-followups:not([data-cards])>h3{font-size:15px}
+.wpv .wpos-followups:not([data-cards])>p{font-size:13px}
+.wpv :is(.wpos-attention,.wpos-diagnostic,.wpos-followups,[data-domain=writing])>h3,.wpv .wpos-advisory h3{margin:0;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:-.025em}
+.wpv :is(.wpos-attention,.wpos-diagnostic,.wpos-followups,.wpos-estimate,.wpos-advisory) :is(p,.wpos-note){font-size:13.5px;color:var(--wpv-dim)}
+.wpv .wpos-advisory{margin:0}
+.wpv .wpos-followups>.life-section-label{display:none}
+.wpv :is(.wpos-attention li,.wfol-card){border-top-color:var(--wpv-line)}
+.wpv .wpos-diagnostic>.felt-button{min-height:56px;margin-top:10px}
+.wpv-lead>:is(.wpos-diagnostic,.wpos-attention){padding:20px 18px 18px}
+.wpv-lead>:is(.wpos-diagnostic,.wpos-attention)>h3{font-size:24px;font-weight:800;letter-spacing:-.035em}
+.wpv-fold{min-width:0}
+.wpv-fold>summary{display:flex;align-items:center;gap:10px;min-height:56px;padding:0 18px;list-style:none;cursor:pointer;font-size:15px;font-weight:700}
+.wpv-fold>summary::-webkit-details-marker{display:none}
+.wpv-fold>summary>small{margin-left:auto;font-size:13px;font-weight:600;color:var(--wpv-muted);text-align:right}
+.wpv-fold>summary::after{content:'';flex-shrink:0;width:14px;height:14px;background:var(--wpv-muted);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat;transform:rotate(90deg);transition:transform .2s}
+.wpv-fold[open]>summary::after{transform:rotate(-90deg)}
+.wpv-fold>summary:focus-visible{outline:2px solid #6fd3ff;outline-offset:-2px;border-radius:20px}
+.wpv-fold-body{display:grid;gap:16px;padding:0 18px 14px}
+.wpv .wpv-fold .wpos-group>h3{margin:4px 0 0;font-size:15px}
+.wpv .wpv-fold :is(.wpos-skills,.wpos-skill,.wpos-evidence){border-color:var(--wpv-line)}
+.wpv .wpv-estimate .wpos-estimate{display:grid;gap:10px;padding:0;background:none;box-shadow:none}
+.wpv>.wpos-scope,.wpv>.wpos-note{padding:0 6px;font-size:12.5px;color:var(--wpv-muted)}
+/* 시험 고르기는 판 전체의 거름이라 맨 위에 두되, 흰 알약과 겨루지 않게 낮은 칸으로. */
+.wpv>.wpos-exam{display:inline-flex;justify-self:start;gap:2px;margin:0;padding:2px;border-radius:999px;background:var(--wpv-face)}
+#world-panel .wpv>.wpos-exam>.wpos-exam-pill{min-height:44px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--wpv-muted);font-size:13.5px;font-weight:700;box-shadow:none}
+#world-panel .wpv>.wpos-exam>.wpos-exam-pill[aria-pressed=true]{background:var(--wpv-face-2);color:var(--wpv-ink)}
 .wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach{display:grid;gap:8px;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
 .wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach)>:is(.life-section-label,h3){margin:0}
 .wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks)>h3{font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}

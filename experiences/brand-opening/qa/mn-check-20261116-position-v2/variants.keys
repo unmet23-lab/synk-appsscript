@@ -1,0 +1,22 @@
+# 같은 카드의 다른 갈래(다른 학생의 기록에서 서는 문장) — 이야기 카드 차례대로
+position.story.lineSome {"n":3,"of":5}
+position.story.count.try {"n":5,"wrong":2}
+position.story.count.once
+position.story.step.miss — position.story.way.let-in {"n":2}
+position.story.step.miss — position.story.way.turned-away {"n":2}
+position.story.step.miss — position.story.way.wrong-rule {"n":3}
+position.missed.step.spot — position.story.spot.sameRule {"n":1}
+position.missed.step.spot — position.story.spot.sameKindRight {"n":3,"right":2}
+position.missed.step.spot — position.story.spot.sameKind {"n":2}
+position.missed.step.spot — position.story.spot.sameRuleAll {"n":1}
+position.missed.step.spot — position.story.spot.sameKindAll {"n":3}
+position.missed.step.again — position.story.again.correct
+position.missed.step.again — position.story.again.assisted
+position.missed.step.again — position.story.again.incorrect
+position.missed.step.again — position.story.again.other
+position.missed.step.again — position.story.again.left {"n":3}
+position.missed.step.practice — position.story.practice.done {"n":4,"right":3}
+position.missed.step.homework — position.story.homework.planned
+position.missed.step.delayed — position.story.delayed.observed {"n":2} position.story.delayed.next {"date":"11-р сарын 21"}
+position.missed.step.delayed — position.story.delayed.due
+position.missed.step.delayed — position.story.delayed.dueCheck

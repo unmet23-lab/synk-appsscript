@@ -216,7 +216,7 @@ import {createWorldEducation} from '../experiences/synk-world-app/world-learning
 import {worldPosition} from '../experiences/synk-world-app/world-position-kit.mjs';
 import {worldLearning} from '../experiences/synk-world-app/world-learning-map.mjs';
 import fs from 'node:fs';
-test('입구: 손님 기기 기록에 시연 근무 둘이 있으면 「내 위치」 판 맨 위에 놓친 곳 카드가 선다',async()=>{
+test('입구: 손님 기기 기록에 시연 근무 둘이 있으면 「내 위치」 판 맨 위에 놓친 곳 이야기가 선다(2판 11-16)',async()=>{
  worldPosition.topik.use(JSON.parse(fs.readFileSync(new URL('../experiences/synk-world-app/world-topik-items.json',import.meta.url),'utf8')));
  const values=new Map(),storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
  // 입장 검사(WORLD 안 게임)가 같은 기기 기록 열쇠에 남긴 것처럼: 실제 코치로 녹화 응답을 넣는다(시각은 지금 기준 어제 — 판의 Core는 지금 시각으로 읽는다).
@@ -235,7 +235,12 @@ test('입구: 손님 기기 기록에 시연 근무 둘이 있으면 「내 위�
  await education.position();
  const html=panels.at(-1).html;
  assert.match(html,/data-position-missed="ko\.reading\.negation"/);
- for(const text of ['손님 4명 중 2명 놓침','「음식은 가지고 들어갈 수 없습니다. 물은 괜찮습니다.」','막아야 할 손님을 들여보냄','바로 다음 같은 규칙 손님 2명 · 1명 혼자 맞힘','같은 종류 새 손님을 혼자 막음'])assert.ok(html.includes(text),text);
+ // 2판(world-position-page.mjs): 같은 사실을 완결된 문장으로 — 놓친 곳 이야기가 항목 지도보다 먼저, 항목별 근거는 접힌 목록에 그대로(16줄).
+ for(const text of ['손님 4명 가운데 2명을 놓쳤어요','이 안내문 줄에서 2번 놓쳤어요','<blockquote lang="ko">음식은 가지고 들어갈 수 없습니다. 물은 괜찮습니다.</blockquote>','막아야 할 손님을 들여보냈어요','바로 뒤에 같은 규칙 손님 2명이 이어서 왔어요. 1명은 또 놓쳤고, 1명은 혼자 맞혔어요','다음에 만난 같은 종류의 새 손님은 혼자 막았어요'])assert.ok(html.includes(text),text);
+ assert.ok(html.indexOf('data-position-missed')<html.indexOf('class="wpv-map"'),'이야기가 지도보다 먼저');
+ assert.equal((html.match(/<details class="wpos-skill"/g)||[]).length,16);
+ assert.doesNotMatch(html,/MISSED SPOT|LOOK FIRST|QUICK CHECK|ESTIMATE/);
+ assert.deepEqual([...html.matchAll(/<li data-step="(\w+)" data-state="(\w+)"/g)].map(m=>`${m[1]}:${m[2]}`),['miss:done','spot:done','again:done','delayed:planned']);
 });
 
 test('끼우기: 카드가 짚은 항목만 「먼저 볼 항목」에서 빼고 나머지 줄은 둔다 · 자리를 못 찾으면 판 그대로',()=>{

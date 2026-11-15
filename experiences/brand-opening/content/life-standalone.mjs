@@ -8425,7 +8425,7 @@ var require_engine2 = __commonJS({
         } else if (event.type === "decision.made") {
           if (!validId(event.experienceId) || !validId(event.variant) || !POLICIES.includes(event.policy) || !Array.isArray(event.evidence) || !event.evidence.every(validId)) throw new TypeError("Atlas: invalid decision record");
           if (event.arm != null && !ARMS.includes(event.arm)) throw new TypeError("Atlas: invalid decision record");
-          if (event.bundle != null && (typeof event.bundle !== "object" || Array.isArray(event.bundle) || !Object.entries(event.bundle).every(([lever, pick]) => validId(lever) && pick && (pick.option === null || validId(pick.option))))) throw new TypeError("Atlas: invalid decision record");
+          if (event.bundle != null && (typeof event.bundle !== "object" || Array.isArray(event.bundle) || !Object.entries(event.bundle).every(([lever, pick2]) => validId(lever) && pick2 && (pick2.option === null || validId(pick2.option))))) throw new TypeError("Atlas: invalid decision record");
         } else if (event.type === "experience.completed") {
           if (!validId(event.decisionId) || !validId(event.experienceId) || !validId(event.variant)) throw new TypeError("Atlas: invalid completion");
         } else if (event.type === "feedback.given") {
@@ -13347,7 +13347,7 @@ var require_ask = __commonJS({
           if (plan.status !== "ready") return { content: "unavailable", shape: null };
           const classes = Object.fromEntries(levers.map((lever) => [lever.id, lever.class]));
           const content = [plan.selected.id], shape = [];
-          for (const [lever, pick] of Object.entries(plan.bundle)) if (lever !== "mode") (classes[lever] === "content" ? content : shape).push(`${lever}=${pick.option}`);
+          for (const [lever, pick2] of Object.entries(plan.bundle)) if (lever !== "mode") (classes[lever] === "content" ? content : shape).push(`${lever}=${pick2.option}`);
           return { content, shape };
         };
         return choose({ ...rest, questions, decide });
@@ -14572,7 +14572,7 @@ var require_engine = __commonJS2({
         } else if (event.type === "decision.made") {
           if (!validId(event.experienceId) || !validId(event.variant) || !POLICIES.includes(event.policy) || !Array.isArray(event.evidence) || !event.evidence.every(validId)) throw new TypeError("Atlas: invalid decision record");
           if (event.arm != null && !ARMS.includes(event.arm)) throw new TypeError("Atlas: invalid decision record");
-          if (event.bundle != null && (typeof event.bundle !== "object" || Array.isArray(event.bundle) || !Object.entries(event.bundle).every(([lever, pick]) => validId(lever) && pick && (pick.option === null || validId(pick.option))))) throw new TypeError("Atlas: invalid decision record");
+          if (event.bundle != null && (typeof event.bundle !== "object" || Array.isArray(event.bundle) || !Object.entries(event.bundle).every(([lever, pick2]) => validId(lever) && pick2 && (pick2.option === null || validId(pick2.option))))) throw new TypeError("Atlas: invalid decision record");
         } else if (event.type === "experience.completed") {
           if (!validId(event.decisionId) || !validId(event.experienceId) || !validId(event.variant)) throw new TypeError("Atlas: invalid completion");
         } else if (event.type === "feedback.given") {
@@ -23420,8 +23420,8 @@ function clock(value) {
 var PACK_SITUATIONS = Object.fromEntries(PACKS.map((pack) => [pack.id, import_world_life3.default.lifeSituations(pack.skills.map((skill2) => skill2.id))]));
 var conceptId = (value) => typeof value === "string" && /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(value);
 function answersOf(value) {
-  const pick = (list) => Array.isArray(list) ? [...new Set(list.filter(conceptId))].slice(0, 50) : [];
-  const interested = pick(value?.interested), notNow = pick(value?.notNow).filter((id) => !interested.includes(id));
+  const pick2 = (list) => Array.isArray(list) ? [...new Set(list.filter(conceptId))].slice(0, 50) : [];
+  const interested = pick2(value?.interested), notNow = pick2(value?.notNow).filter((id) => !interested.includes(id));
   return { interested, notNow };
 }
 function withAnswers(candidate, answers) {
@@ -25135,6 +25135,151 @@ function placeMissedSpot(board, cardHtml, skillId = null) {
   return out.slice(0, at) + cardHtml + out.slice(at);
 }
 
+// experiences/synk-world-app/world-position-page.mjs
+var esc2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var CELLS = Object.freeze(["independent", "practicing", "notyet"]);
+var STEPS = Object.freeze(["spot", "again", "practice", "homework", "delayed"]);
+function pick(html, open, close) {
+  const at = html.indexOf(open);
+  if (at < 0) return "";
+  const end = html.indexOf(close, at);
+  return end < 0 ? "" : html.slice(at, end + close.length);
+}
+function pickAll(html, open, close) {
+  const out = [];
+  let from = 0;
+  for (; ; ) {
+    const at = html.indexOf(open, from);
+    if (at < 0) break;
+    const end = html.indexOf(close, at);
+    if (end < 0) break;
+    out.push(html.slice(at, end + close.length));
+    from = end + close.length;
+  }
+  return out;
+}
+var unlabel = (html) => html.replace(/<p class="life-section-label">[A-Z][A-Z ]*<\/p>/g, "");
+function legacyParts(legacy) {
+  const html = typeof legacy === "string" ? legacy : "";
+  return {
+    exam: pick(html, '<div class="wpos-exam"', "</div>"),
+    incomplete: pick(html, '<p class="wpos-note" data-position-incomplete', "</p>"),
+    attention: pick(html, '<section class="wpos-attention" data-position-attention', "</section>"),
+    diagnostic: pick(html, '<section class="wpos-diagnostic"', "</section>"),
+    groups: pickAll(html, '<section class="wpos-group"', "</section>"),
+    estimate: pick(html, '<section class="wpos-estimate"', "</section>"),
+    scope: pick(html, '<p class="wpos-scope"', "</p>")
+  };
+}
+function withoutSkill(section, skillId) {
+  if (!section || !skillId) return section;
+  const item = `<li data-skill="${esc2(skillId)}">`, at = section.indexOf(item);
+  if (at < 0) return section;
+  const end = section.indexOf("</li>", at);
+  if (end < 0) return section;
+  const trimmed = section.slice(0, at) + section.slice(end + "</li>".length);
+  return /<li data-skill="/.test(trimmed) ? trimmed : "";
+}
+function renderPositionPage({ map, legacy = "", card = null, practice = null, t: t3, has = () => true, formatDate: formatDate3 = null } = {}) {
+  if (typeof t3 !== "function") throw TypeError("WORLD position page needs the screen-language t()");
+  const parts = legacyParts(legacy);
+  const exam = map?.exam === "topik2" ? "topik2" : "topik1";
+  const skillName = (skill2) => skill2?.id && has(`position.skill.${skill2.id}`) ? t3(`position.skill.${skill2.id}`) : String(skill2?.label || skill2?.id || "");
+  const story = card && card.kind === "topik" ? renderStory(card, { t: t3, has, formatDate: formatDate3, practice, skillName, skill: map?.skills?.find?.((row) => row.id === card.target.skillId) || null }) : "";
+  const mapHtml = renderMap(map, { t: t3, exam, skillName, missedId: story ? card.target.skillId : null });
+  const attention = story ? withoutSkill(parts.attention, card.target.skillId) : parts.attention;
+  const empty2 = !map?.skills?.some?.((skill2) => skill2.cell !== "notyet");
+  const lead = story || (empty2 && parts.diagnostic ? `<div class="wpv-lead">${unlabel(parts.diagnostic)}</div>` : attention ? `<div class="wpv-lead">${unlabel(attention)}</div>` : "");
+  const usedDiagnostic = !story && empty2 && !!parts.diagnostic, usedAttention = !story && !usedDiagnostic && !!attention;
+  const groups = parts.groups.filter((group) => !/data-domain="writing"/.test(group)), writingBlock = parts.groups.find((group) => /data-domain="writing"/.test(group)) || "";
+  const list = groups.length ? `<details class="wpv-fold" data-position-list><summary><span>${esc2(t3("position.list.title"))}</span><small>${esc2(t3("position.list.count", { n: map?.total ?? 0 }))}</small></summary><div class="wpv-fold-body">${groups.join("")}</div></details>` : "";
+  const rest = [
+    usedAttention || !attention ? "" : unlabel(attention),
+    usedDiagnostic || !parts.diagnostic ? "" : unlabel(parts.diagnostic),
+    "<div data-position-followups></div>",
+    writingBlock,
+    list,
+    estimateFold(parts.estimate)
+  ].filter(Boolean).join("");
+  return `<div class="wpos wpv life-heading" data-position-board data-exam="${exam}" tabindex="-1">${parts.exam}${parts.incomplete}${lead}${mapHtml}${rest}${parts.scope}</div>`;
+}
+function estimateFold(section) {
+  if (!section) return "";
+  const title = section.match(/<h3>([^<]*)<\/h3>/)?.[1], state = section.match(/<p class="wpos-estimate-state">[\s\S]*?<strong>([^<]*)<\/strong>/)?.[1];
+  if (!title || !state) return unlabel(section);
+  const body = unlabel(section).replace(/<h3>[^<]*<\/h3>/, "").replace(/<p class="wpos-estimate-state">[\s\S]*?<\/p>/, "");
+  return `<details class="wpv-fold wpv-estimate"><summary><span>${title}</span><small>${state}</small></summary><div class="wpv-fold-body">${body}</div></details>`;
+}
+function renderStory(card, { t: t3, has, formatDate: formatDate3, practice, skillName, skill: skill2 = null }) {
+  const head = card.narrow.find((row) => row.layer === "skill");
+  if (!head) return "";
+  const line = card.narrow.find((row) => row.layer === "line"), way = card.narrow.find((row) => row.layer === "direction");
+  const id = card.target.skillId, name = skillName({ id, label: card.target.label });
+  const exam = t3(card.target.exam === "topik2" ? "goal.exam.type.topik2" : "goal.exam.type.topik1"), domain = t3(card.target.domain === "listening" ? "position.domain.listening" : "position.domain.reading");
+  const count = head.count === 1 && head.of === 1 ? t3("position.story.count.once") : t3(head.unit === "guest" ? "position.story.count.guest" : "position.story.count.try", { n: head.of, wrong: head.count });
+  const headline = line ? t3(line.count === line.of ? "position.story.lineAll" : "position.story.lineSome", { n: line.count, of: line.of }) : count;
+  const day = (value) => {
+    const at = Date.parse(value);
+    if (!Number.isFinite(at)) return "";
+    return formatDate3 ? formatDate3(at, { month: "short", day: "numeric" }) : new Date(at + 9 * 36e5).toISOString().slice(5, 10);
+  };
+  const notice = line ? `<figure class="wpv-notice"><figcaption>${esc2(t3("position.source.entry-check"))} \xB7 <span lang="ko">${esc2(line.venue)}</span></figcaption><blockquote lang="ko">${esc2(line.text)}</blockquote></figure>` : "";
+  const evidenceIds = new Set(Array.isArray(card.evidence) ? card.evidence : []), spotRow = card.again.find((row) => row.step === "spot");
+  const chained = !!spotRow && spotRow.right > 0 && (Array.isArray(spotRow.eventIds) ? spotRow.eventIds : []).some((id2) => evidenceIds.has(id2));
+  const wayKey = way ? way.direction === "turned-away" ? "turned-away" : way.direction === "wrong-rule" ? "wrong-rule" : "let-in" : null;
+  const missText = way && chained && way.count === way.of ? t3(`position.story.first.${wayKey}`) : way ? `${t3(`position.story.way.${way.direction === "turned-away" ? "turned-away" : way.direction === "wrong-rule" ? "wrong-rule" : "let-in"}`, { n: way.count })}${way.count === way.of ? "" : ` (${t3("position.missed.share.some", { n: way.count, of: way.of })})`}` : line ? count : "";
+  const missRow = missText ? `<li data-step="miss" data-state="done"><i class="wpv-dot" aria-hidden="true"></i><span class="wpv-step">${esc2(t3("position.story.step.miss"))}</span><span class="wpv-what">${esc2(missText)}</span></li>` : "";
+  const stepName = (row) => t3(`position.missed.step.${row.step}`);
+  const stepText = (row) => {
+    if (row.step === "spot") {
+      const missedIds = new Set(Array.isArray(card.evidence) ? card.evidence : []), again = (Array.isArray(row.eventIds) ? row.eventIds : []).filter((id2) => missedIds.has(id2)).length;
+      if (again > 0 && row.right > 0) return t3(`position.story.spot.${row.sameRule ? "sameRule" : "sameKind"}Mixed`, { n: row.guests, again, right: row.right });
+      return t3(`position.story.spot.${row.sameRule ? "sameRule" : "sameKind"}${!row.right ? "" : row.right >= row.guests ? "All" : "Right"}`, { n: row.guests, right: row.right });
+    }
+    if (row.step === "again") {
+      if (row.state === "planned") return t3("position.story.again.left", { n: row.left });
+      return t3(`position.story.again.${row.result === "correct" ? row.answer === "reject" ? "reject" : "correct" : row.result === "assisted" ? "assisted" : row.result === "incorrect" ? "incorrect" : "other"}`);
+    }
+    if (row.step === "practice") return t3("position.story.practice.done", { n: row.n, right: row.right });
+    if (row.step === "homework") return t3("position.story.homework.planned");
+    if (row.step === "delayed") {
+      const next = row.due ? t3(row.open ? "position.story.delayed.due" : "position.story.delayed.dueCheck") : row.dueAt ? t3("position.story.delayed.next", { date: day(row.dueAt) }) : "";
+      const done = row.observed ? t3("position.story.delayed.observed", { n: row.observed }) : "";
+      return [done, next].filter(Boolean).join(" ") || t3("position.story.delayed.planned");
+    }
+    return "";
+  };
+  const rows2 = card.again.filter((row) => STEPS.includes(row.step)).map((row) => {
+    const state = row.state === "done" ? "done" : "planned", win = row.step === "again" && row.state === "done" && row.result === "correct";
+    const tag = state === "planned" ? `<span class="wpv-next">${esc2(t3("position.missed.legend.planned"))}</span>` : "";
+    return `<li data-step="${row.step}" data-state="${state}"${win ? " data-win" : ""}>${state === "done" ? `<i class="wpv-dot" role="img" aria-label="${esc2(t3("position.missed.legend.done"))}"></i>` : '<i class="wpv-dot" aria-hidden="true"></i>'}<span class="wpv-step">${esc2(stepName(row))}${tag}</span><span class="wpv-what">${esc2(stepText(row))}</span></li>`;
+  }).join("");
+  const all = (Array.isArray(skill2?.evidence) ? skill2.evidence : []).filter((row) => row && ["correct", "incorrect"].includes(row.verdict)).slice().sort((a, b) => (Date.parse(a.at) || 0) - (Date.parse(b.at) || 0));
+  const marks = all.slice(-10), more = (Number.isInteger(skill2?.folded) && skill2.folded > 0 ? skill2.folded : 0) + (all.length - marks.length);
+  const tokens = marks.length ? `<span class="wpv-marks" aria-hidden="true">${more ? `<b>+${more}</b>` : ""}${marks.map((row) => `<i data-verdict="${row.verdict}"></i>`).join("")}</span>` : "";
+  let route = null;
+  try {
+    route = practice?.(id) || null;
+  } catch {
+    route = null;
+  }
+  const button = route ? `<button class="wpv-go" type="button" data-position-practice="${esc2(id)}">${esc2(route.route === "game" && route.gameId && has(`plan.game.${route.gameId}`) ? t3(`plan.game.${route.gameId}`) : t3("position.practice.start"))} <span aria-hidden="true">\u2192</span></button>` : "";
+  return `<section class="wpv-story" data-position-missed="${esc2(id)}" aria-labelledby="wpv-story-title"><p class="wpv-kicker"><span>${esc2(t3("position.missed.title"))}</span><span>${esc2(exam)} \xB7 ${esc2(domain)}</span></p><p class="wpv-skill"><strong>${esc2(name)}</strong>${tokens}${line ? `<small>${esc2(count)}</small>` : ""}</p><h3 class="wpv-headline" id="wpv-story-title"${headline.length > 24 ? " data-long" : ""}>${esc2(headline)}</h3>${notice}${missRow || rows2 ? `<ol class="wmis-again wpv-steps" aria-label="${esc2(t3("position.missed.again"))}">${missRow}${rows2}</ol>` : ""}${button}</section>`;
+}
+function renderMap(map, { t: t3, exam, skillName, missedId }) {
+  if (!map || !Array.isArray(map.skills)) return "";
+  const counts = map.counts || {};
+  const legend = CELLS.map((cell) => `<li data-cell="${cell}"><i aria-hidden="true"></i><b>${Number(counts[cell]) || 0}</b><span>${esc2(t3(`position.cell.${cell}`))}</span></li>`).join("") + (missedId && map.skills.some((skill2) => skill2.id === missedId) ? `<li data-missed><i aria-hidden="true"></i><span>${esc2(t3("position.missed.title"))}</span></li>` : "");
+  const rows2 = ["listening", "reading"].map((domain) => {
+    const skills = map.skills.filter((skill2) => skill2.domain === domain);
+    if (!skills.length) return "";
+    const cells = skills.map((skill2) => `<li data-skill="${esc2(skill2.id)}" data-cell="${esc2(skill2.cell)}"${skill2.id === missedId ? " data-missed" : ""}><span class="wpv-sr">${esc2([skillName(skill2), t3(`position.cell.${skill2.cell}`), skill2.id === missedId ? t3("position.missed.title") : ""].filter(Boolean).join(" \xB7 "))}</span></li>`).join("");
+    return `<div class="wpv-row" data-domain="${domain}"><span>${esc2(t3(`position.domain.${domain}`))}</span><ol style="--n:${skills.length}">${cells}</ol></div>`;
+  }).join("");
+  const title = t3("position.map.title", { exam: t3(exam === "topik2" ? "goal.exam.type.topik2" : "goal.exam.type.topik1"), total: map.total });
+  return `<section class="wpv-map" aria-labelledby="wpv-map-title"><h3 id="wpv-map-title">${esc2(title)}</h3><ul class="wpv-legend" aria-label="${esc2(t3(exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...counts, total: map.total }))}">${legend}</ul><div class="wpv-grid">${rows2}</div><p class="wpv-note">${esc2(t3("position.intro"))}</p></section>`;
+}
+
 // experiences/synk-world-app/life-followups.mjs
 function lifeFollowupRows({ projection, seen, snapshot = null, now = Date.now(), life = null, assessable = life?.lifeAssessable, taskVersion } = {}) {
   const items = typeof life?.lifeItems === "function" ? life.lifeItems() : null, productMet2 = life?.productMet;
@@ -25476,8 +25621,8 @@ function createWorldEducation({
     } catch {
       chosen = null;
     }
-    const pick = (key, list) => chosen && list.includes(chosen[key]) ? { [key]: chosen[key] } : {};
-    return { ...values, ...pick("support", ["choose", "step", "independent"]), ...pick("explanation", ["brief", "standard", "detailed"]) };
+    const pick2 = (key, list) => chosen && list.includes(chosen[key]) ? { [key]: chosen[key] } : {};
+    return { ...values, ...pick2("support", ["choose", "step", "independent"]), ...pick2("explanation", ["brief", "standard", "detailed"]) };
   }
   const seenBy = (coachNow) => (item) => {
     try {
@@ -26156,7 +26301,9 @@ function createWorldEducation({
       scope = getProgress().status().scoped ? "account" : "device";
     } catch {
     }
-    let board = view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: itemExcerpt, assessable: itemAssessable, diagnosed, scope, practice: (id) => routes.get(id) || null });
+    const practiceOf = (id) => routes.get(id) || null;
+    const legacy = view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: itemExcerpt, assessable: itemAssessable, diagnosed, scope, practice: practiceOf });
+    let missed = null;
     try {
       let projection = null;
       try {
@@ -26170,7 +26317,7 @@ function createWorldEducation({
       } catch {
         delayed = null;
       }
-      const missed = buildMissedSpot({
+      missed = buildMissedSpot({
         map,
         summary,
         events,
@@ -26183,8 +26330,19 @@ function createWorldEducation({
         },
         now: Date.now()
       });
-      if (missed) board = placeMissedSpot(board, renderMissedSpot(missed, { t: t2, has: hasString2, formatDate: formatDate2, practice: (id) => routes.get(id) || null }), missed.target.skillId);
     } catch {
+      missed = null;
+    }
+    let board;
+    try {
+      board = renderPositionPage({ map, legacy, card: missed, practice: practiceOf, t: t2, has: hasString2, formatDate: formatDate2 });
+    } catch {
+      board = legacy;
+      try {
+        if (missed) board = placeMissedSpot(legacy, renderMissedSpot(missed, { t: t2, has: hasString2, formatDate: formatDate2, practice: practiceOf }), missed.target.skillId);
+      } catch {
+        board = legacy;
+      }
     }
     home.showPanel(t2("position.title"), board, PANEL);
     const root = panelNode("[data-position-board]");
@@ -26208,9 +26366,11 @@ function createWorldEducation({
       };
       const incomplete = delayed.limited || life.available && life.limited ? `<p class="wfol-note" role="status">${escape3(t2("followup.incomplete"))}</p>` : "";
       const section = `<section class="wpos-followups"${list.length ? " data-cards" : ""}><p class="life-section-label">CHECK AGAIN</p><h3>${escape3(t2("followup.title"))}</h3><p>${escape3(t2("followup.note"))}</p>${incomplete}${list.length ? `<ul class="wfol-list">${list.map(card).join("")}</ul>` : `<p>${escape3(t2("followup.empty"))}</p>`}</section>`;
-      const before = list.length ? root.querySelector(".wpos-diagnostic") || root.querySelector(".wpos-group") : null;
+      const slot = root.querySelector("[data-position-followups]");
+      const before = slot || (list.length ? root.querySelector(".wpos-diagnostic") || root.querySelector(".wpos-group") : null);
       if (before) before.insertAdjacentHTML("beforebegin", section);
       else root.insertAdjacentHTML("beforeend", section);
+      slot?.remove?.();
       root.querySelectorAll("[data-followup]").forEach((button) => button.addEventListener("click", () => {
         void startPractice(null, { followupId: button.dataset.followup }).catch(failed);
       }));
@@ -26231,6 +26391,8 @@ function createWorldEducation({
           void startPractice(button.dataset.advisory).catch(failed);
         }));
       }
+      const scopeNote = root.querySelector?.(".wpv>.wpos-scope");
+      if (scopeNote) root.append?.(scopeNote);
     }
     if (keepScroll) {
       const node = root?.closest?.("#panel-content");
@@ -27596,7 +27758,7 @@ function selectMock({ forms, exam, pool = [], seen, sections = MOCK_POLICY.secti
       picks.push({ from: unit.from, items: rows2 });
     }
     if (sets2 < plan.setCount) missing.push({ type: "set", count: plan.setCount - sets2 });
-    for (const pick of picks.sort((a, b) => a.from - b.from)) items.push(...pick.items);
+    for (const pick2 of picks.sort((a, b) => a.from - b.from)) items.push(...pick2.items);
     const minutes2 = items.length ? Math.max(1, Math.round(items.length * plan.official.minutes / plan.official.items)) : 0;
     const status = items.length >= Math.ceil(plan.size * MOCK_POLICY.minShare) ? "ready" : items.length ? "short" : "none";
     out.push({ section, status, items: status === "ready" ? items : [], missing, minutes: status === "ready" ? minutes2 : 0, size: plan.size, official: plan.official, available: items.length });

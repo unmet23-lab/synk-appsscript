@@ -124,7 +124,8 @@ const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexByt
 const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
 // 놓친 곳 카드(11-14): 「내 위치」 판에 셸이 끼우는 묶음 밖 모듈 — 입장 검사 원고 · 규칙을 그 게임 사본(./entry-check/)에서 읽는다(rewrite).
-for(const name of ['world-learning-followups.mjs','world-followup-items.json','world-missed-spot.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+// 「내 위치」 2판(11-16): 판 한 장(world-position-page.mjs)도 같은 묶음 밖 모듈이다 — world-learning-ui.mjs가 정적으로 부르므로 빠지면 「내 위치」가 열리지 않는다.
+for(const name of ['world-learning-followups.mjs','world-followup-items.json','world-missed-spot.mjs','world-position-page.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 // Atlas 새 길(재설계 단계 4, 기능 atlasNext): 셸이 기능이 켜졌을 때만 부르는 입구 · 짧은 연습 새 판. 공개 설정에서는 꺼져 있어(operating-mode.mjs
 // REHEARSAL_ONLY) 불리지 않지만, 셸이 가리키는 파일이라 묶음에 싣는다 — 엔진 판(/atlas/<판>/)과 입구는 4-8에서 공개한다.
 // 홈 세 줄(world-today.mjs, 4-3)은 입구가 정적으로 받고, 지금 판과 같은 후보 규칙을 계정 묶음(world-account.bundle.mjs)에서 받는다.

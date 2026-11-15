@@ -1,6 +1,7 @@
 import {t,tMessage,hasString,formatDate,currentLang} from '../brand-opening/world-lang.mjs';
 import {followupRows,advisoryRows} from './world-learning-followups.mjs';
 import {buildMissedSpot,renderMissedSpot,placeMissedSpot} from './world-missed-spot.mjs';
+import {renderPositionPage} from './world-position-page.mjs';
 import {lifeFollowupRows} from './life-followups.mjs';
 import {lessonById} from './life-content.mjs';
 import {lifeTutorExpression} from '../brand-opening/life-tutor-lines.mjs';
@@ -591,16 +592,21 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scroller=keepScroll?panelNode('[data-position-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
   const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged,summary,events}=positionData(coachNow,id=>routes.has(id));
   let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
-  let board=view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:itemExcerpt,assessable:itemAssessable,diagnosed,scope,practice:id=>routes.get(id)||null});
+  const practiceOf=id=>routes.get(id)||null;
+  const legacy=view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:itemExcerpt,assessable:itemAssessable,diagnosed,scope,practice:practiceOf});
   // 놓친 곳 카드(11-14, world-missed-spot.mjs): 같은 기록(Core 요약 · Trail)과 이번 주 계획 숙제(시험 목표가 있을 때) · 짧은 연습의 다시 확인 투영만 읽는다.
-  // 판(계정 묶음) 밖 모듈이라 판 HTML에 끼운다. 못 세우면 카드 없이 판을 연다.
+  let missed=null;
   try{
    let projection=null;try{projection=readPracticeCoach()?.followups?.()||null;}catch{projection=null;}
    let delayed=null;try{delayed=delayedRows();}catch{delayed=null;}
-   const missed=buildMissedSpot({map,summary,events,homework:current?.examPlan?.homework??null,projection,practiceOpen:id=>routes.get(id)?.route==='practice',
+   missed=buildMissedSpot({map,summary,events,homework:current?.examPlan?.homework??null,projection,practiceOpen:id=>routes.get(id)?.route==='practice',
     followupOpen:id=>{const row=delayed?.rows?.find(value=>value.id===id);return row?row.status==='due'&&row.available===true:null;},now:Date.now()});
-   if(missed)board=placeMissedSpot(board,renderMissedSpot(missed,{t,has:hasString,formatDate,practice:id=>routes.get(id)||null}),missed.target.skillId);
-  }catch{/* the board opens without the card */}
+  }catch{missed=null;/* the board opens without the card */}
+  // 「내 위치」 2판(11-16, world-position-page.mjs): 놓친 곳 이야기 → 항목 지도 → 그 밖의 묶음 차례로 판을 새로 짠다. 옛 판(계정 묶음)의 묶음은 그대로 옮겨 담는다.
+  // 새 판을 못 그리면 옛 판에 놓친 곳 카드를 끼워 연다(11-14 판).
+  let board;
+  try{board=renderPositionPage({map,legacy,card:missed,practice:practiceOf,t,has:hasString,formatDate});}
+  catch{board=legacy;try{if(missed)board=placeMissedSpot(legacy,renderMissedSpot(missed,{t,has:hasString,formatDate,practice:practiceOf}),missed.target.skillId);}catch{board=legacy;}}
   home.showPanel(t('position.title'),board,PANEL);
   const root=panelNode('[data-position-board]');
   if(root&&position.followups){
@@ -625,8 +631,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    };
    const incomplete=delayed.limited||life.available&&life.limited?`<p class="wfol-note" role="status">${escape(t('followup.incomplete'))}</p>`:'';
    const section=`<section class="wpos-followups"${list.length?' data-cards':''}><p class="life-section-label">CHECK AGAIN</p><h3>${escape(t('followup.title'))}</h3><p>${escape(t('followup.note'))}</p>${incomplete}${list.length?`<ul class="wfol-list">${list.map(card).join('')}</ul>`:`<p>${escape(t('followup.empty'))}</p>`}</section>`;
-   const before=list.length?root.querySelector('.wpos-diagnostic')||root.querySelector('.wpos-group'):null;
+   // 2판은 판이 자리([data-position-followups])를 내준다 — 카드가 있든 없든 그 자리. 옛 판은 카드가 있으면 짧은 진단 · 항목 판 앞, 없으면 판 끝 한 줄.
+   const slot=root.querySelector('[data-position-followups]');
+   const before=slot||(list.length?root.querySelector('.wpos-diagnostic')||root.querySelector('.wpos-group'):null);
    if(before)before.insertAdjacentHTML('beforebegin',section);else root.insertAdjacentHTML('beforeend',section);
+   slot?.remove?.();
    root.querySelectorAll('[data-followup]').forEach(button=>button.addEventListener('click',()=>{void startPractice(null,{followupId:button.dataset.followup}).catch(failed);}));
    root.querySelectorAll('[data-followup-life]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(openLifeFollowup(button.dataset.followupLife)).catch(failed);}catch(error){failed(error);}}));
    const supply=position.practice.practiceSupply({pool:position.practice.pool,seen:seenBy(coachNow)});
@@ -634,6 +643,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const advisory=advisoryRows({targets,summary,lookup:position.recommendedBefore,supply});
    if(advisory.length){root.insertAdjacentHTML('beforeend',`<section class="wpos-advisory"><h3>${escape(t('followup.advisory'))}</h3><p>${escape(t('followup.optional'))}</p>${advisory.map(row=>`<p><button class="quiet-button" data-advisory="${escape(row.id)}">${escape(t(`position.skill.${row.id}`))}</button> → ${escape(t(`position.skill.${row.target}`))}</p>`).join('')}</section>`);
     root.querySelectorAll('[data-advisory]').forEach(button=>button.addEventListener('click',()=>{void startPractice(button.dataset.advisory).catch(failed);}));}
+   // 2판: 기록 범위 한 줄(어디 기록인지)은 판의 맨 끝에 둔다 — 권장 연습이 그 뒤에 붙지 않게.
+   const scopeNote=root.querySelector?.('.wpv>.wpos-scope');if(scopeNote)root.append?.(scopeNote);
   }
   if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
   panelNode('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnostic(coachNow,plan,map);}catch(error){failed(error);}},{once:true});

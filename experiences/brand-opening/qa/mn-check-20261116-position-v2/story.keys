@@ -1,0 +1,13 @@
+# 볼로르 기록으로 연 판을 위에서부터 읽는 차례(이야기 카드 → 지도 → 접힌 목록)
+position.missed.title — position.domain.reading
+position.skill.ko.reading.negation
+position.story.count.guest {"n":4,"wrong":2}
+position.story.lineAll {"n":2}
+position.story.step.miss — position.story.first.let-in
+position.missed.step.spot — position.story.spot.sameRuleMixed {"n":2,"again":1,"right":1}
+position.missed.step.again — position.story.again.reject
+position.missed.step.delayed — position.missed.legend.planned — position.story.delayed.planned
+position.practice.start
+position.map.title {"exam":"TOPIK I","total":16}
+position.cell.independent — position.cell.practicing — position.cell.notyet
+position.list.title — position.list.count {"n":16}
