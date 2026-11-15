@@ -265,7 +265,14 @@
       "계정": "lab-uz-instagram",
       "시각": "2026-11-16T13:00:00+05:00",
       "방법": "ego",
-      "풀림": "11-16 05:13 개인 계정에서 크리에이터 계정으로 바꾼 뒤 05:15 공유 단계까지 갔으나 Schedule content 칸이 없었고, 05:18~05:28 instagram.com/scheduled_content/ 10번 모두 「Sorry, this page isn't available」 — 바로 올리지 않고 풀어 14시 게시 회차가 칸이 보이면 건다"
+      "앞시도": [
+        {
+          "시각": "2026-11-16T13:00:00+05:00",
+          "방법": "ego",
+          "풀림": "11-16 05:13 개인 계정에서 크리에이터 계정으로 바꾼 뒤 05:15 공유 단계까지 갔으나 Schedule content 칸이 없었고, 05:18~05:28 instagram.com/scheduled_content/ 10번 모두 「Sorry, this page isn't available」 — 바로 올리지 않고 풀어 14시 게시 회차가 칸이 보이면 건다"
+        }
+      ],
+      "풀림": "11-16 07:16 다시 보니 크리에이터 전환 2시간 뒤에도 공유 단계에 Schedule content 칸이 없고 scheduled_content도 「isn't available」 — 바로 올리지 않고 풀어 14시 게시 회차에 맡긴다"
     }
   ]
 }
