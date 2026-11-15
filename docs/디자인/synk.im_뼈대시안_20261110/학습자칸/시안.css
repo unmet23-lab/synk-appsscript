@@ -1,0 +1,142 @@
+/* 아틀라스 「학습자가 보는 화면」 짜임 시안(2026-11-16). 쉬는 화면만 새 짜임(.dz), 단추를 누르면 지금 판 흐름(.lw-stage)으로 돌아간다.
+   크기는 뼈대 단계(--k1~k6, 제목은 지금 판 .lw-title 그대로), 굵기는 400 · 500 · 600만 쓴다. */
+.dz{display:none}
+#learner.is-rest>.dz{display:block}
+#learner.is-rest>:not(.dz):not(script){display:none!important}
+@media (min-width:901px){#learner.is-rest{min-height:0}#learner.is-rest>.dz{grid-column:2/-2;grid-row:1}}
+.dz{color:var(--lw-ink);padding-block:clamp(40px,4.2vw,60px) clamp(44px,4.6vw,64px)}
+.dz p{margin:0}
+.dz-eyebrow{margin:0 0 14px!important}
+.dz-title{margin:0}
+.dz-title span{display:block}
+.dz-say{font-size:var(--k4);font-weight:600;line-height:1.4;letter-spacing:-.02em;color:#fff;text-wrap:balance;word-break:keep-all}
+.dz-tag{font-style:normal;font-size:var(--k1);font-weight:600;line-height:1.4;color:#fff;white-space:nowrap}
+.dz-game{position:relative;aspect-ratio:780/420;border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 36px 80px -30px rgba(0,0,0,.8)}
+.dz-game img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 0}
+.dz-card{border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 36px 80px -30px rgba(0,0,0,.8)}
+.dz-card img{display:block;width:100%;height:auto}
+.dz-card--first{opacity:.72}
+.dz-foot{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-top:clamp(22px,2.4vw,32px)!important;padding-top:14px;border-top:1px solid var(--lw-line);font-size:var(--k2);line-height:1.5;color:var(--lw-ink-2)}
+.dz-foot span{min-width:0;text-wrap:pretty;word-break:keep-all}
+.dz-n{display:inline-grid;place-items:center;flex:none;align-self:center;width:22px;height:22px;border-radius:50%;background:var(--lw-hot);color:#1a1210;font-style:normal;font-size:var(--k1);font-weight:600;line-height:1}
+
+/* 가 · 나 머리: 제목은 왼쪽, 한 줄 요약과 단추는 오른쪽 */
+.dz--ga .dz-head,.dz--na .dz-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px 48px;padding-bottom:clamp(24px,2.6vw,34px);border-bottom:1px solid var(--lw-line)}
+.dz-lead{display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px}
+.dz-lead .dz-say{max-width:17em}
+
+/* ── 가 · 한 줄기 ── */
+.dz-flow{list-style:none;margin:clamp(26px,2.8vw,38px) 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:64px;align-items:start}
+.dz-step{position:relative;min-width:0}
+.dz-step+.dz-step::before{content:"";position:absolute;left:-41px;top:calc(34px + 6.2vw);width:13px;height:13px;border-top:2px solid var(--lw-hot);border-right:2px solid var(--lw-hot);transform:rotate(45deg)}
+.dz-cap{display:flex;align-items:baseline;gap:10px;margin:0 0 12px!important;font-size:var(--k2);font-weight:600;line-height:1.4;color:#fff}
+.dz-cap em{font-style:normal;font-size:var(--k1);font-weight:500;color:var(--lw-ink-3)}
+.dz-rows{margin:0;border-top:1px solid var(--lw-line)}
+.dz-rows>div{padding:12px 0 13px;border-bottom:1px solid rgba(255,255,255,.14)}
+.dz-rows dt{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:var(--k1);font-weight:500;line-height:1.4;color:var(--lw-ink-3)}
+.dz-rows dd{margin:5px 0 0;font-size:var(--k3);font-weight:600;line-height:1.42;letter-spacing:-.015em;color:#fff;text-wrap:pretty;word-break:keep-all}
+.dz-rows small,.dz-diff small{display:block;margin-top:3px;font-size:var(--k1);font-weight:500;line-height:1.5;color:var(--lw-hot)}
+.dz-mini{margin:0 0 8px!important;font-size:var(--k1);font-weight:500;line-height:1.4;color:var(--lw-ink-3)}
+.dz-mini.is-now{margin-top:14px!important;color:var(--lw-hot);font-weight:600}
+.dz--ga .dz-card--first{width:84%}
+
+/* 가′ */
+.dz--ga2 .dz-head>div:first-child .dz-say{margin-top:14px!important;max-width:none}
+.dz--ga2 .dz-tag{color:var(--lw-ink-3);font-weight:500}
+.dz--ga.dz--ga2 .dz-card--first{width:100%}
+.dz-card{position:relative}
+.dz-uline{position:absolute;height:3px;border-radius:2px;background:var(--lw-hot);pointer-events:none}
+.dz-card--first .dz-uline{background:rgba(255,255,255,.7)}
+
+/* ── 나 · 전후 맞대기 ── */
+.dz-vs,.dz-diff>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px) minmax(0,1fr);column-gap:clamp(28px,3.2vw,52px)}
+.dz-vs{align-items:start;margin-top:clamp(26px,2.8vw,38px)}
+.dz-colhead{margin:0 0 12px!important;font-size:var(--k3);font-weight:600;line-height:1.4}
+.dz-col--was .dz-colhead{color:var(--lw-ink-3)}
+.dz-col--now .dz-colhead{color:var(--lw-hot)}
+.dz-col--mid .dz-colhead{font-size:var(--k1);font-weight:500;color:var(--lw-ink-3);text-align:center}
+.dz-col--mid{padding-top:6px}
+.dz-diff{margin:clamp(24px,2.6vw,34px) 0 0;border-top:1px solid var(--lw-line)}
+.dz-diff>div{align-items:baseline;padding:14px 0 15px;border-bottom:1px solid rgba(255,255,255,.14)}
+.dz-diff dt{grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:var(--k1);font-weight:500;line-height:1.4;color:var(--lw-ink-3);text-align:center}
+.dz-diff dd{margin:0;min-width:0;text-wrap:pretty;word-break:keep-all}
+.dz-diff .dz-was{grid-column:1;grid-row:1;font-size:var(--k3);font-weight:400;line-height:1.42;color:var(--lw-ink-3)}
+.dz-diff .dz-now{grid-column:3;grid-row:1;font-size:var(--k3);font-weight:600;line-height:1.42;letter-spacing:-.015em;color:#fff}
+
+/* ── 다 · 시간 순서 ── */
+#learner.is-rest>.dz--da{display:grid;grid-template-columns:clamp(300px,28vw,420px) minmax(0,1fr);column-gap:clamp(28px,3.6vw,56px);align-items:start}
+.dz-side .dz-title{margin-bottom:clamp(18px,2vw,26px)}
+.dz-side .dz-say{max-width:16em}
+.dz-side .dz-go{margin-top:26px}
+.dz-time{list-style:none;margin:0;padding:0}
+.dz-time>li{position:relative;display:grid;grid-template-columns:118px minmax(0,360px) minmax(0,1fr);column-gap:26px;padding:0 0 30px 0}
+.dz-time>li::before{content:"";position:absolute;left:96px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--lw-ink-3)}
+.dz-time>li::after{content:"";position:absolute;left:100px;top:23px;bottom:0;width:2px;background:rgba(255,255,255,.16)}
+.dz-time>li:last-child{padding-bottom:0}
+.dz-time>li:last-child::after{display:none}
+.dz-time>li.is-hot::before{background:var(--lw-hot)}
+.dz-when{padding-right:28px;font-size:var(--k2);font-weight:600;line-height:1.4;color:#fff;word-break:keep-all}
+.dz-time>li.is-later .dz-when{color:var(--lw-ink-3);font-weight:500}
+.dz-time>li.is-later .dz-say2{grid-column:2/-1}
+.dz-say2{min-width:0;padding-top:2px}
+.dz-k{display:flex;align-items:baseline;gap:8px;font-size:var(--k1);font-weight:500;line-height:1.4;color:var(--lw-ink-3)}
+.dz-t{margin-top:4px!important;font-size:var(--k3);font-weight:600;line-height:1.42;letter-spacing:-.015em;color:#fff;text-wrap:pretty;word-break:keep-all}
+.dz-s{margin-top:4px!important;font-size:var(--k2);font-weight:400;line-height:1.5;color:var(--lw-ink-2);text-wrap:pretty;word-break:keep-all}
+.dz-time>li.is-later .dz-s{margin-top:0!important}
+.dz-time .dz-card--first{opacity:.72}
+
+/* 901~1179px: 가는 두 칸 + 셋째 아래, 다는 글 칸을 위로 */
+@media (min-width:901px) and (max-width:1179px){
+  .dz-flow{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:32px}
+  .dz-step:nth-child(3){grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:64px;align-items:end}
+  .dz-step:nth-child(3)::before{display:none}
+  .dz-step:nth-child(3)>.dz-cap{grid-column:1/-1;grid-row:1}
+  .dz-step:nth-child(3)>:nth-child(2){grid-column:1;grid-row:2}
+  .dz-step:nth-child(3)>:nth-child(3){grid-column:1;grid-row:3;width:100%;align-self:start}
+  .dz-step:nth-child(3)>:nth-child(4){grid-column:2;grid-row:2;margin-top:0!important}
+  .dz-step:nth-child(3)>:nth-child(5){grid-column:2;grid-row:3;align-self:start}
+  #learner.is-rest>.dz--da{grid-template-columns:1fr;row-gap:32px}
+  .dz-time>li{grid-template-columns:110px minmax(0,260px) minmax(0,1fr)}
+}
+/* 휴대폰 · 태블릿 */
+@media (max-width:900px){
+  #learner.is-rest>.dz{padding-inline:var(--gut)}
+  .dz{padding-block:44px 48px}
+  .dz--ga .dz-head,.dz--na .dz-head{display:block;padding-bottom:22px}
+  .dz-lead{display:block;margin-top:14px}
+  .dz-lead .dz-say{max-width:none}
+  .dz-go{margin-top:18px}
+  .dz-say{font-size:var(--k3)}
+  .dz-foot{display:block;font-size:var(--k1)}
+  .dz-foot .dz-tag{display:block;margin-top:4px}
+  /* 가: 세로로, 칸 사이에 아래 화살표 */
+  .dz-flow{grid-template-columns:1fr;row-gap:44px;margin-top:24px}
+  .dz-step+.dz-step::before{left:50%;top:-30px;margin-left:-7px;transform:rotate(135deg)}
+  .dz--ga .dz-card--first{width:78%}
+  /* 나: 첫날 카드와 놓친 뒤 카드를 붙여 위에, 그 사이에 한 것은 아래에 */
+  .dz-vs{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+  .dz-col--was{order:1}.dz-col--now{order:2}.dz-col--mid{order:3;margin-top:10px}
+  .dz-col--was .dz-card{width:84%}
+  .dz-colhead{margin-bottom:8px!important;font-size:var(--k2)}
+  .dz-col--mid .dz-colhead{text-align:left}
+  .dz-diff>div{display:block;padding:11px 0 12px}
+  .dz-diff dt{flex-direction:row;justify-content:space-between;align-items:baseline}
+  .dz-diff .dz-was{margin-top:4px;font-size:var(--k1);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.45)}
+  .dz-diff .dz-now{margin-top:2px}
+  /* 다: 왼쪽 시간줄 + 오른쪽 내용 */
+  #learner.is-rest>.dz--da{display:block}
+  .dz-side .dz-go{margin-top:18px}
+  .dz-time{margin-top:30px}
+  .dz-time>li{grid-template-columns:1fr;padding:0 0 26px 26px}
+  .dz-time>li::before{left:0;top:6px}
+  .dz-time>li::after{left:4px;top:22px}
+  .dz-when{padding:0 0 8px}
+  .dz-pic{margin-bottom:10px}
+  .dz-time>li.is-later .dz-say2{grid-column:auto}
+}
+/* 태블릿 폭 · 가로로 든 휴대폰: 그림이 칸 폭만큼 커지지 않게 */
+@media (min-width:560px) and (max-width:900px){
+  .dz-game,.dz-card{max-width:480px}
+  .dz-col--was .dz-card,.dz--ga .dz-card--first{max-width:400px}
+  .dz--ga.dz--ga2 .dz-card--first{max-width:480px}
+}
