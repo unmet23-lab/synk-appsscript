@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { world, read, doToday } from '../experiences/drama/qa/오늘한장-20261114/뽑기.mjs';
-import { buildToday, buildAfter, readTurns, revisitPlan, TAEO_LINES, dayKey, dayStart } from '../experiences/drama/pilot/today/plan.mjs';
+import { buildToday, buildAfter, readTurns, revisitPlan, TAEO_LINES, dayKey, dayStart, dayParts } from '../experiences/drama/pilot/today/plan.mjs';
 import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL } from '../experiences/drama/pilot/today/content.mjs';
 import { planRevisit, REVISIT_DAYS } from '../experiences/drama/pilot/takes.mjs';
 import { STR } from '../experiences/drama/pilot/strings.mjs';
@@ -45,6 +45,9 @@ function contract(today) {
  for (const it of today.items) {
   assert.ok(['again', 'new', 'check'].includes(it.kind));
   assert.ok(it.title && it.why?.code && it.why.text && it.why.evidence && typeof it.why.evidence === 'object');
+  // 목록 줄에 보이는 한 문장(11-16 일력 판 — 카본: 줄마다 두 문장이면 학습지처럼 빽빽하다). 까닭 글 안의 한 문장이고, 나머지는 펼치면 보인다.
+  assert.ok(it.why.lead && it.why.text.includes(it.why.lead), `${it.why.code}: ${it.why.lead}`);
+  assert.equal(it.why.lead.split(/(?<=[.?!])\s+/).length, 1, it.why.lead);
   assert.ok(it.open?.type);
  }
  const order = today.items.map((x) => x.kind);
@@ -60,7 +63,8 @@ test('기록 A(어제 6번 줄 끝맺음 노트 · B 안 함 · 입장 검사 �
  // 태오는 그 장면의 때와 곳만 떠올린다 — 6번 줄은 '요' 줄이라 끝맺음이면 「끝에 '요'까지요」가 붙는다.
  assert.equal(r.today.line.code, 'again.call.s1e01-6.yo');
  assert.equal(r.today.line.text, "식당에서 처음 만났죠? 그 장면, 오늘 한 번 더 해요. 이번엔 끝에 '요'까지 붙여서요.");
- assert.equal(r.today.line.media, null);
+ // 11-16 처음 구운 태오 한마디(동그라미 영상) — 자리가 채워진 틀만 영상을 받는다.
+ assert.deepEqual(r.today.line.media, { video: 'media/today-taeo-6yo.mp4' });
  assert.equal(again.kind, 'again');
  assert.deepEqual(again.open, { type: 'review', lineId: 's1e01-6' });
  assert.equal(again.why.code, 'again.ending.yo.retake');
@@ -328,6 +332,11 @@ test('끝 화면: 오늘 해낸 것만 전후로, 다음에 할 것은 같은 �
  const r6 = r.today.items.find((x) => x.kind === 'again');
  assert.equal(after.tomorrow.find((x) => x.kind === 'again')?.when, label(Date.parse(r6.why.evidence.at), DAYS));
  assert.equal(after.tomorrow.find((x) => x.kind === 'check')?.when, label(w.now, DAYS));
+ // 일력의 다음 장 번호(11-16) — 「내일」이면 다음 날, 「11월 18일」이면 그 날의 숫자 · 요일.
+ for (const x of after.tomorrow) {
+  const d = new Date(dayStart(w.now)); if (x.when === '내일') d.setDate(d.getDate() + 1); else { const [, m, dd] = /(\d+)월 (\d+)일/.exec(x.when); d.setMonth(+m - 1, +dd); }
+  assert.deepEqual(x.date, { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate(), weekday: d.getDay() }, x.when);
+ }
  // 옛 Atlas 7일 짝의 말이 남지 않는다.
  for (const t of visible(r.today, after)) assert.ok(!/7~10일|며칠 뒤|\b7일 (뒤|전)/.test(t), t);
  // 오늘 할 것을 다 했으면 같은 날 다시 열어도 그 줄은 다시 나오지 않는다.
@@ -405,4 +414,10 @@ test('깃발이 없으면 드라마는 그대로 — 「오늘」 모듈은 ?tod
  // 공개 빌드가 드라마에서 싣는 파일 목록에 today/가 없다.
  const build = fs.readFileSync(path.join(ROOT, 'tools/build-world-app-public.mjs'), 'utf8');
  assert.ok(!/drama[^\n]*today/.test(build));
+});
+
+test('일력의 다음 장 번호는 해를 넘긴다 — 12월 31일의 내일은 다음 해 1월 1일(11-16 GPT 검수 GA1)', () => {
+ const eve = new Date(2026, 11, 31, 9).getTime();
+ assert.deepEqual(dayParts(eve, 1, null), { year: 2027, month: 1, day: 1, weekday: new Date(2027, 0, 1).getDay() });
+ assert.deepEqual(dayParts(eve, 3, 540), { year: 2027, month: 1, day: 3, weekday: new Date(2027, 0, 3).getDay() });
 });

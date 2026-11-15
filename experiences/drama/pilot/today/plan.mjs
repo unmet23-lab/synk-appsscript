@@ -1,6 +1,6 @@
 // 「오늘」 한 장(11-14, 깃발 ?today=1 뒤)의 얇은 한 겹 — 계정 학습 기록(Atlas 사건 목록)에서 오늘 할 것을 짓는다. 화면은 이 꼴만 읽는다:
 //   today = { speaker, line: {code, text}, minutes, items: [{ kind: 'again'|'new'|'check', title, why: {code, text, evidence}, minutes, open }], empty, firstDay }
-//   after = { changed: [{ what, before, after }], tomorrow: [{ kind, title, when }] }
+//   after = { changed: [{ what, before, after }], line: { code: 'done', text, media }, tomorrow: [{ kind, title, when, date: { year, month, day, weekday } }] } — date는 일력의 다음 장 번호(11-16)
 // 뒤에 새 엔진의 「오늘 할 것」으로 갈아 끼워도 화면은 같은 꼴을 읽는다. 지키는 것:
 //  · 모든 까닭 글은 기록의 사실(줄 · 날짜 · 판정 갈래 · 몇 번)에서만 짓는다. 근거가 없으면 그 줄을 내지 않는다.
 //  · 드라마 기록과 게임 기록을 한 기록으로 합치지 않는다 — 드라마 줄은 drama-s1 사건에서, 입장 검사 줄은 입장 검사의 재방문 맞춤
@@ -36,11 +36,12 @@ export function dayKey(ms, tzOffsetMin = null) {
 // 그 학습일이 시작한 시각(기기 시간대 새벽 4시) — 시험 · 시연 기록을 학습일 기준으로 심을 때.
 export function dayStart(ms) { const d = learningDate(ms); d.setHours(DAY_START_HOUR, 0, 0, 0); return d.getTime(); }
 // 그 학습일에서 n일 뒤의 날짜(「11월 17일」) — 끝 화면이 3일 규칙으로 다시 나오는 날을 말할 때.
-function dayLabel(ms, plus, tz) {
+export function dayParts(ms, plus, tz) {
  const [y, m, d] = dayKey(ms, tz).split('-').map(Number);
  const x = new Date(Date.UTC(y, m - 1, d + plus));
- return `${x.getUTCMonth() + 1}월 ${x.getUTCDate()}일`;
+ return { year: x.getUTCFullYear(), month: x.getUTCMonth() + 1, day: x.getUTCDate(), weekday: x.getUTCDay() };
 }
+function dayLabel(ms, plus, tz) { const p = dayParts(ms, plus, tz); return `${p.month}월 ${p.day}일`; }
 const revisitDays = (lesson) => lesson?.revisit?.days || REVISIT_DAYS;
 // 1화 학생 줄의 차례. 목표 줄이 맨 앞이다(pilot.mjs lineRank와 같다 — 첫 화면과 같은 실수를 앞에 둔다).
 function rankOf(scene) {
@@ -152,7 +153,7 @@ function againItem({ turns, scene, plan, nowMs, tz, today, days }) {
  return {
   kind: 'again',
   title: '1화에서 그 대사 한 번 더',
-  why: { code: `again.${kind}${yo ? '.yo' : ''}${retakePass ? '.retake' : ''}${m.due ? (m.fixed ? '.due.tried' : '.due') : ''}`, text: parts.join(' '),
+  why: { code: `again.${kind}${yo ? '.yo' : ''}${retakePass ? '.retake' : ''}${m.due ? (m.fixed ? '.due.tried' : '.due') : ''}`, text: parts.join(' '), lead: parts[0],
    evidence: { lineId: line.id, skill: line.skill || null, choice, at: iso(m.at), day: m.ago === 1 ? 'yesterday' : 'before', ago: m.ago, due: m.due, tried: m.fixed,
     notes, coached, retakePass, yo, days } },
   minutes: MINUTES.review,
@@ -177,7 +178,7 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
   const when = whenWord(lastAt, nowMs, tz);
   const text = spokenScene.length ? `${when} 1화에서 내 대사 ${scene.length}개 중 ${spokenScene.length}개까지 했어요.` : `${when} 1화를 열어 보기만 했어요.`;
   return { kind: 'new', title: '1화 이어서 하기', minutes: MINUTES.scene, open: { type: 'scene' },
-   why: { code: spokenScene.length ? 'new.scene' : 'new.scene.opened', text, evidence: { spoken: spokenScene.map((x) => x.id), at: new Date(lastAt).toISOString() } } };
+   why: { code: spokenScene.length ? 'new.scene' : 'new.scene.opened', text, lead: text, evidence: { spoken: spokenScene.map((x) => x.id), at: new Date(lastAt).toISOString() } } };
  }
  const avoidSet = new Set(avoid);
  const B = lesson.transfer;
@@ -186,6 +187,7 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
   const at = ask ? spokenTurns(turns, ask.id, 'scene').at(-1)?.at : null;
   return { kind: 'new', title: '같은 과 다른 선배에게 길 묻기', minutes: MINUTES.situation, open: { type: 'situation', lineId: B.id, source: 'transfer' },
    why: { code: 'new.transfer', text: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 선배에게 도서관이 어디 있는지 물어봤죠. 오늘은 처음 보는 선배에게 다른 곳을 물어봐요.` : '1화 다음에 이어지는 새 상황이에요.',
+    lead: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 선배에게 도서관이 어디 있는지 물어봤죠.` : '1화 다음에 이어지는 새 상황이에요.',
     evidence: { lineId: B.id, spoken: false, skill: B.skill || null, like: ask?.id || null, likeAt: at != null ? new Date(at).toISOString() : null } } };
  }
  for (const id of NEW_ORDER) {
@@ -194,9 +196,10 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
   const like = scene.find((x) => x.id === item.like) || null;
   const tail = like ? lineTail(like.text, like.id) : '';
   const said = Boolean(like) && spokeLine(turns, like.id, 'scene');
-  const text = said ? `처음 해 보는 상황이에요. 1화의 「${tail}」${josa(tail, '과/와')} 비슷한 말이에요.` : '처음 해 보는 상황이에요.';
+  const lead = said ? `1화의 「${tail}」${josa(tail, '과/와')} 비슷한 말이에요.` : '처음 해 보는 상황이에요.';
+  const text = said ? `처음 해 보는 상황이에요. ${lead}` : lead;
   return { kind: 'new', title: item.title, minutes: MINUTES.situation, open: { type: 'situation', lineId: id },
-   why: { code: said ? 'new.pool.like' : 'new.pool', text, evidence: { lineId: id, spoken: false, skill: item.skill, like: said ? like.id : null } } };
+   why: { code: said ? 'new.pool.like' : 'new.pool', text, lead, evidence: { lineId: id, spoken: false, skill: item.skill, like: said ? like.id : null } } };
  }
  return null;
 }
@@ -205,17 +208,20 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
  * 점검: 나중 확인(C) → 입장 검사 재방문 맞춤(문장 그대로). C는 첫 화면 카드와 같은 3일 규칙이다(planRevisit().delayed — B를 처음 판정한
  * 학습일부터 3일째이고 C를 본 적이 없다). 실수와 따로 정하고, 차례만 복습 뒤다(설계 §18-2).
  */
+// 목록 줄에 보이는 한 문장(lead) — 마침표 · 물음표 · 느낌표 뒤 첫 띄어쓰기에서 자른다.
+const firstSentence = (t) => String(t || '').split(/(?<=[.?!])\s+/)[0];
+
 function checkItem({ turns, lesson, plan, facts, entry, nowMs, tz, entryToday, strings, days }) {
  const C = lesson.delayed;
  if (C && plan?.delayed === true && !seenLine(turns, C.id)) {
   const at = facts?.transferAt;
   return { kind: 'check', title: strings.delayedTitle, minutes: MINUTES.situation, open: { type: 'situation', lineId: C.id, source: 'delayed' },
-   why: { code: 'check.delayed', text: strings.delayedLead, evidence: { lineId: lesson.transfer?.id || null, at: Number.isFinite(at) ? iso(at) : null, days: Number.isFinite(at) ? daysBetween(at, nowMs, tz) : null, revisitDays: days } } };
+   why: { code: 'check.delayed', text: strings.delayedLead, lead: firstSentence(strings.delayedLead), evidence: { lineId: lesson.transfer?.id || null, at: Number.isFinite(at) ? iso(at) : null, days: Number.isFinite(at) ? daysBetween(at, nowMs, tz) : null, revisitDays: days } } };
  }
  if (entry && !entryToday) {
   const v = entry.venue || {};
   return { kind: 'check', title: v.name ? `입장 검사 게임 · ${v.name} 근무` : '입장 검사 게임 한 판', minutes: MINUTES.entry, open: { type: 'game', game: 'entry', venueId: v.id || null },
-   why: { code: `check.entry.${entry.patternId}`, text: entry.why, next: entry.next || null, evidence: { game: 'entry-check', patternId: entry.patternId, misses: entry.misses, seen: entry.seen, evidenceIds: entry.evidenceIds || [], targetId: entry.targetId || null, itemKey: entry.itemKey || null } } };
+   why: { code: `check.entry.${entry.patternId}`, text: entry.why, lead: entry.why, next: entry.next || null, evidence: { game: 'entry-check', patternId: entry.patternId, misses: entry.misses, seen: entry.seen, evidenceIds: entry.evidenceIds || [], targetId: entry.targetId || null, itemKey: entry.itemKey || null } } };
  }
  return null;
 }
@@ -230,6 +236,8 @@ export const TAEO_LINES = Object.freeze({
  'check.delayed': '며칠 전에 했던 말, 오늘은 처음 보는 곳에서 해 봐요.',
  plain: '왔어요? 오늘은 짧게 해요.',
  empty: '오늘은 새로 할 게 없어요. 2화가 열리면 동아리 박람회부터 해요.',
+ // 다 하고 장을 뜯은 뒤 다음 장에서(11-16 일력 판 — 카본: 뜯은 뒤 장이 텅 비어 만들다 만 화면 같았다).
+ done: '오늘 잘했어요. 내일 또 봐요.',
 });
 function taeoLine(items) {
  const first = items[0];
@@ -328,27 +336,27 @@ export function buildAfter({ events, lesson, start, startAt, now = Date.now(), r
   } else if (item.open.type === 'game' && item.open.game === 'entry' && entryTarget?.itemKey) {
    const hit = entryHit(events, entryTarget.itemKey, startAt);
    // 그 놓침이 한 근무 안이라는 근거는 없다 — 근거 그대로 「최근 몇 번 가운데 몇 번」(설계 세션 11-14).
-   if (hit === true) changed.push({ what: PATTERN_LABEL[item.why.evidence.patternId] || '입장 검사 게임', before: `최근 ${item.why.evidence.seen}번 중 ${item.why.evidence.misses}번 놓쳤어요`, after: '오늘은 그런 손님을 맞혔어요' });
+   if (hit === true) changed.push({ what: PATTERN_LABEL[item.why.evidence.patternId] || '입장 검사 게임', before: `최근 ${item.why.evidence.seen}번 중 ${item.why.evidence.misses}번 놓쳤어요`, after: '오늘은 그런 손님을 알아봤어요' });
   }
  }
  // 다음에 할 것 = 같은 규칙을 내일 날짜로 다시 돌린 결과(지어내지 않는다) + 3일 규칙으로 다시 나오는 날.
  //  · 오늘 복습한 줄이 아직 열려 있고 내일 줄에 없으면 그 실수의 3일째 날짜.
  //  · 오늘 새 상황 B를 처음 해 봤으면 나중 확인(C)의 날짜 — B를 처음 판정한 학습일부터 3일째(첫 화면 카드와 같은 날).
  const next = buildToday({ events, lesson, now: now + DAY, revisit, entry: entryAfter, strings, tzOffsetMin: tz });
- const tomorrow = next.items.map((x) => ({ kind: x.kind, title: x.title, when: '내일' }));
+ const tomorrow = next.items.map((x) => ({ kind: x.kind, title: x.title, when: '내일', date: dayParts(now, 1, tz) }));
  const soon = (id) => next.items.some((x) => x.open.lineId === id);
  for (const item of (start?.items || []).filter((x) => x.open.type === 'review')) {
   const m = plan?.mistakes.find((x) => x.lineId === item.open.lineId);
-  if (m && !m.due && !soon(m.lineId)) tomorrow.push({ kind: 'again', title: item.title, when: dayLabel(m.at, days, tz) });
+  if (m && !m.due && !soon(m.lineId)) tomorrow.push({ kind: 'again', title: item.title, when: dayLabel(m.at, days, tz), date: dayParts(m.at, days, tz) });
  }
  const B = lesson?.transfer, C = lesson?.delayed;
  const soloAt = B ? turns.filter((t) => t.lineId === B.id && t.phase === 'transfer').flatMap(judgedOf).map((a) => a.at).sort((a, b) => a - b)[0] : undefined;
  // C를 본 적이 있으면(접힌 기록에만 남아 사건 목록에 보임이 없어도 기록기가 안다) 다시 나오지 않으니 날짜를 약속하지 않는다(11-15 Fable 검수 P3).
  if (C && soloAt != null && revisit?.delayedSeen !== true && !seenLine(readTurns(events), C.id) && !soon(C.id)) {
   const at = Number.isFinite(revisit?.transferAt) ? revisit.transferAt : soloAt;
-  tomorrow.push({ kind: 'check', title: strings.delayedTitle || '지난번 그 말, 다른 곳에서', when: dayLabel(at, days, tz) });
+  tomorrow.push({ kind: 'check', title: strings.delayedTitle || '지난번 그 말, 다른 곳에서', when: dayLabel(at, days, tz), date: dayParts(at, days, tz) });
  }
- return { changed, tomorrow };
+ return { changed, tomorrow, line: { code: 'done', text: TAEO_LINES.done, media: TAEO_MEDIA.done || null } };
 }
 
 // 카드를 누르면 펼쳐지는 근거 — 앱이 기록에서 본 것을 평범한 문장으로. 시각은 기기 시간대.

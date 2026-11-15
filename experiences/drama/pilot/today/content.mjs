@@ -28,9 +28,13 @@ export const TAEO_CALL = Object.freeze({
  's1e01-8': { text: '같이 가자고 했던 거 기억나요? 그 장면, 오늘 한 번 더 해요.' },
 });
 
-// 태오 한 줄의 목소리 · 입 맞는 영상을 끼울 자리 — 틀 code(plan.mjs TAEO_LINES) → { video, audio }(drama/pilot 기준 경로).
-// 비어 있으면 듣는 고리 영상 + 화면 글로 간다. 굽는 일은 크레딧 숫자로 유호님께 여쭙고 답을 받은 뒤(설계 세션 11-14).
-export const TAEO_MEDIA = Object.freeze({});
+// 태오 한 줄의 목소리 · 입 맞는 영상을 끼울 자리 — 틀 code(plan.mjs TAEO_LINES) → { video }(drama/pilot 기준 경로).
+// 비어 있으면 듣는 고리 영상 + 화면 글로 간다. 굽는 법은 qa/오늘한장-20261114/태오굽기.py(11-16 유호님 「웅 써도 돼.」 — 드리미나 시댄스 2.5 flash 480p,
+// 1화 태오 녹음을 목소리 결 참고로). 11-16 첫 줄은 대사가 글자 그대로 나왔지만 음높이가 1화 녹음보다 낮다(가운데 121Hz ↔ 152~165Hz) —
+// 같은 목소리로 들리는지는 귀로 확인 안 했다. 나머지 열한 줄은 그 확인 뒤에 굽는다.
+export const TAEO_MEDIA = Object.freeze({
+ 'again.call.s1e01-6.yo': { video: 'media/today-taeo-6yo.mp4' },
+});
 
 const SEE_ABOVE = '(무엇을 말할지는 위 설명을 보세요.)';
 // 처음 보는 대사. title: 줄 위 짧은 제목. situation: 녹음 카드의 한국어 상황 글. prompt: 영어 설명. like: 1화의 어느 줄과 같은 말하기인지(까닭 글).

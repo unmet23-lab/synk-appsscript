@@ -1,81 +1,145 @@
-/* 「오늘」 한 장(11-14, 깃발 ?today=1 뒤) — 드라마 결(pilot.css 토큰 · 유리 카드 · 고정폭 영문 라벨) 그대로. 시안: qa/오늘한장-20261114/시안짓기.mjs.
-   글자 크기는 네 단계(태오 한 줄 · 제목과 단추 · 까닭 · 라벨), 가로줄 없음, 주 단추 하나, 강조색은 따옴표 속 '요' 하나.
-   휴대폰은 아래부터 쌓고(어떤 기록 길이에도 겹치지 않게), 넓은 화면은 세로 무대 기둥(원본 720 → 1.05배) + 오른쪽 데크. */
-.td { position: fixed; inset: 0; z-index: 60; overflow: hidden; isolation: isolate; background: var(--bg, #09090b); color: var(--ink);
- display: flex; flex-direction: column; justify-content: flex-end; padding: 0 16px max(16px, env(safe-area-inset-bottom)); font-family: var(--sans); }
-.td .mono { font-family: var(--mono); font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
-.td-yo { font-style: normal; color: var(--warm); background: color-mix(in srgb, var(--warm) 16%, transparent); border-radius: .28em; padding: 0 .16em; margin: 0 .04em; }
-.td-stage { position: absolute; inset: 0; overflow: hidden; background: #000; }
-.td-stage video, .td-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
-.td-shade { position: absolute; inset: -1px; background: linear-gradient(180deg, rgba(0,0,0,.5), transparent 14%, transparent 30%, rgba(9,9,11,.78) 52%, rgba(9,9,11,.96) 68%, var(--bg) 100%); }
-.td-grain { position: absolute; inset: 0; opacity: .08; mix-blend-mode: overlay; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"); }
-.td-top { position: absolute; z-index: 5; top: max(16px, env(safe-area-inset-top)); left: 20px; right: 20px; display: flex; align-items: center; gap: 10px; }
-.td-top-d { display: none; }
-.td-tag { font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,.1); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: var(--edge); }
-.td-right { position: relative; z-index: 4; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-.td-who { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.7); }
-.td-talk { padding: 0 6px 8px; }
-.td-line { margin: 6px 0 0; font-size: 24px; font-weight: 800; letter-spacing: -.035em; line-height: 1.26; text-wrap: balance; }
+/* 「오늘」 한 장 — 일력 한 장(11-16 뼈대 다시 짜기, 깃발 ?today=1 뒤). 시안: qa/오늘한장-20261114/뼈대시안.mjs.
+   11-14 A안(사진 위 + 어두운 판 + 유리 카드 + 흰 알약)은 카본이 「흔한 어두운 화면 틀」로 짚었고 11-16 맹검에서 3점이었다. 이 판은 6점으로 두 쌍을 다 이겼다.
+   밝은 종이 한 장 — 날짜 숫자가 주인공, 태오는 동그란 영상 쪽지, 선은 굵은 먹줄 하나와 가는 줄 하나만, 단추는 먹색 하나.
+   노랑(드라마의 따뜻한 빛)은 끝 화면의 날짜 동그라미와 체크에만 — 「고쳤다」는 순간에만 쓴다. 장면(드라마)은 어둡게 그대로 두고, 이 장이 들리면 그 어둠이 드러난다. */
+.td { position: fixed; inset: 0; z-index: 60; overflow: hidden; isolation: isolate;
+ --paper: #f2efe7; --paper-2: #e7e2d6; --ink-0: #17160f; --ink-2: rgba(23,22,15,.62); --ink-3: rgba(23,22,15,.46); --rule: rgba(23,22,15,.13);
+ --mark: #ffcf5c; --sun: #c8402c; --sat: #2c58c8; --num: 'Pilot Inter', 'Pilot SUIT', system-ui, sans-serif;
+ display: flex; flex-direction: column; background: var(--paper); color: var(--ink-0); font-family: var(--sans); color-scheme: light; }
+/* 위 묶음 — 일력의 풀칠한 머리 한 줄(선 모양은 이것과 가는 줄 둘뿐이다 — 11-16 카본: 점선 · 절취선 · 실선이 섞여 산만했다). */
+.td-bind { flex: none; display: flex; justify-content: space-between; align-items: flex-end; box-sizing: content-box; height: 30px; padding: env(safe-area-inset-top) 20px 0; background: var(--ink-0); color: var(--paper);
+ font: 600 12px/30px var(--num); letter-spacing: .04em; }
+.td-bind span:last-child { font-family: var(--sans); letter-spacing: 0; }
+.td-sheet { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 14px 20px 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; background: var(--paper); }
+.td-sheet::-webkit-scrollbar { display: none; }
+.td-sheet > .td-l, .td-sheet > .td-r { display: contents; } /* 휴대폰은 한 줄로 쌓는다 — 넓은 화면만 두 기둥 */
+
+/* 일력 머리 */
+.td-dn { display: flex; align-items: flex-end; gap: 14px; }
+.td-num { position: relative; font-family: var(--num); font-weight: 500; font-size: 128px; line-height: .86; letter-spacing: -.065em; margin: 4px 0 0 -6px; font-variant-numeric: tabular-nums; }
+.td-num.sun { color: var(--sun); } .td-num.sat { color: var(--sat); }
+.td-wd { padding-bottom: 8px; }
+.td-wd b { display: block; font-size: 22px; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; }
+.td-wd span { display: block; margin-top: 5px; font-size: 13px; color: var(--ink-2); }
+.td-date.small .td-num { font-size: 92px; }
+.td-date.small .td-wd b { font-size: 19px; }
+/* 다 한 날은 그 날짜에 형광펜으로 동그라미 — 달력에 동그라미 치듯 */
+/* 숫자 위에 손으로 그은 형광펜 — 한 번에 다 닫지 않고 겹쳐 지나가며, 왼쪽 여백 안에 머문다(11-16 카본: 숫자 뒤의 반듯한 타원이 여백을 뚫었다) */
+.td-ring { position: absolute; z-index: 1; left: -6%; top: -18%; width: 114%; height: 136%; overflow: visible; pointer-events: none; mix-blend-mode: multiply; }
+.td-ring path { fill: none; stroke: var(--mark); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: td-draw .9s .35s cubic-bezier(.6,.05,.3,1) forwards; }
+@keyframes td-draw { to { stroke-dashoffset: 0; } }
+
+/* 태오 쪽지 — 굵은 먹줄 아래, 동그란 영상과 한마디 */
+.td-say { display: grid; grid-template-columns: 60px 1fr; gap: 14px; align-items: start; margin: 20px 0 6px; padding: 16px 0 18px; border-top: 1.5px solid var(--ink-0); }
+.td-bub { position: relative; display: block; width: 60px; height: 60px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: #2a2620; box-shadow: 0 0 0 1px var(--rule); transition: box-shadow .25s; }
+/* 얼굴만 — 뒤의 학생들이 동그라미에 걸리지 않게 더 당긴다(11-16 카본) */
+.td-bub video { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; transform: scale(2.4); transform-origin: 50% 25%; }
+button.td-bub { cursor: pointer; transition: transform .22s var(--spring); }
+button.td-bub:active { transform: scale(.94); }
+button.td-bub:disabled { cursor: default; transform: none; }
+/* 말하는 동안만 가는 먹줄 하나. 소리 자동 재생이 막히면 이름 옆에 「듣기」가 뜬다(11-16 카본: 흰 틈 + 검은 테의 이중 테두리가 구식 배지 같았다). */
+.td-say.speaking .td-bub { box-shadow: 0 0 0 1.5px var(--ink-0); }
+.td-who { display: flex; align-items: center; gap: 10px; margin: 2px 0 0; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+.td-listen { display: none; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: var(--ink-0); font: 700 12.5px/1 var(--sans); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.td-listen::before { content: ''; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
+.td-say.tap .td-listen { display: inline-flex; }
+/* 태오의 말은 할 일 제목과 다른 목소리로 — 보통 굵기, 매단 따옴표(11-16 카본: 요일 · 태오의 말 · 할 일 제목이 같은 먹 · 굵기로 묶였다) */
+.td-line { position: relative; margin: 4px 0 0; font-size: 19.5px; font-weight: 500; line-height: 1.45; letter-spacing: -.03em; text-wrap: pretty; }
+.td-line::before { content: '“'; position: absolute; left: -.5em; top: -.02em; color: var(--ink-3); font-weight: 600; }
 .td-line .w { display: inline-block; animation: td-word .5s var(--spring) both; }
-.td-eyebrow { display: flex; align-items: baseline; gap: 8px; margin: 0; font-size: 12px; font-weight: 700; color: var(--dim); }
-.td-eyebrow .mono { font-size: 11px; color: var(--muted); }
-.td-end { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--muted); }
-.td h3 { margin: 4px 0 0; font-size: 17px; font-weight: 700; letter-spacing: -.025em; line-height: 1.35; }
-.td-why { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--dim); }
-.td-empty { padding: 0 6px 10px; }
-.td-proof { display: none; margin: 10px 0 0; font-size: 12px; color: var(--muted); }
-.td-proof.on, .td-item.open .td-proof { display: block; }
-.td-card { border: 0; border-radius: 20px; background: var(--glass); box-shadow: var(--edge); color: inherit; font: inherit; backdrop-filter: blur(22px) saturate(1.2); -webkit-backdrop-filter: blur(22px) saturate(1.2); }
-.td-deck { display: grid; gap: 8px; }
-.td-item { padding: 13px 16px 14px; text-align: left; width: 100%; cursor: pointer; transition: transform .22s var(--spring), background .2s; }
-.td-item:active { transform: scale(.985); }
-.td-item:hover { background: var(--glass-2); }
-.td-go { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 58px; margin-top: 8px; border: 0; border-radius: 999px; background: #f4f5f8; color: #0b0b0d;
- font: 800 17px/1 var(--sans); letter-spacing: -.02em; cursor: pointer; box-shadow: 0 18px 40px -18px rgba(255,255,255,.5); transition: transform .22s var(--spring); }
-.td-go:active { transform: scale(.97); }
-.td-go:focus-visible, .td-item:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; }
-.td-play { width: 0; height: 0; border-left: 11px solid #0b0b0d; border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
-.td-min { font-weight: 600; color: rgba(11,11,13,.55); }
-@keyframes td-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes td-word { from { opacity: 0; filter: blur(8px); transform: translateY(6px); } to { opacity: 1; filter: none; transform: none; } }
-.td .rise { animation: td-rise .52s var(--spring) both; }
+.td-yo { font-style: normal; font-weight: 800; }
 
-/* A안(11-14 유호님 고르심): 무대 위 칸 + 세 장 */
-.td-a .td-stage { height: 44%; }
-.td-a .td-shade, .td-after-root .td-shade { background: linear-gradient(180deg, rgba(0,0,0,.45), transparent 18%, transparent 62%, var(--bg) 100%); }
-.td-a .td-stage video, .td-a .td-stage img { object-position: 50% 12%; }
+/* 오늘 할 것 — 가는 줄로 나눈 세 줄, 줄마다 앱이 본 것 한 문장. 누르면 나머지 까닭과 근거가 펼쳐진다. */
+.td-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 10px 0 0; padding-bottom: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+.td-n { font-family: var(--num); font-size: 13px; font-weight: 600; color: var(--ink-0); }
+.td-row { position: relative; display: block; width: 100%; padding: 14px 0 15px; border: 0; border-bottom: 1px solid var(--rule); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .2s; }
+.td-row:active { background: rgba(23,22,15,.035); }
+.td-k { display: flex; gap: 7px; align-items: baseline; font-size: 12px; font-weight: 700; color: var(--ink-3); }
+.td-k b { font-family: var(--num); font-weight: 600; }
+/* 펼침은 글로 말한다 — 「자세히」 · 「접기」(11-16 카본: 「+」 · 「⌄」 기호가 무엇인지 모호했다) */
+.td-tog { margin-left: auto; font-weight: 600; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(23,22,15,.25); }
+.td-tog .c, .td-row.open .td-tog .o { display: none; }
+.td-row.open .td-tog .c { display: inline; }
+.td h3 { margin: 3px 0 0; font-size: 17px; font-weight: 700; letter-spacing: -.03em; line-height: 1.32; }
+.td-why { margin: 5px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.td-empty { margin: 14px 0 0; }
+.td-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s var(--spring); }
+.td-more > span { overflow: hidden; }
+.td-rest, .td-proof { display: block; font-size: 13px; line-height: 1.5; }
+.td-rest { padding-top: 6px; color: var(--ink-2); }
+.td-proof { padding-top: 6px; color: var(--ink-3); }
+.td-row.open .td-more { grid-template-rows: 1fr; }
+.td-row:focus-visible, .td-go:focus-visible, .td-bub:focus-visible { outline: 2px solid var(--ink-0); outline-offset: 3px; }
 
+/* 단추 — 먹색 하나. 아래에 붙어 있고, 바탕은 종이로 꽉 막는다(11-16 카본: 반투명 가림이 글을 반쯤 잘라 먹은 것처럼 보였다). */
+.td-foot { position: sticky; bottom: 0; z-index: 2; order: 9; margin: auto -20px 0; padding: 14px 20px max(16px, env(safe-area-inset-bottom)); background: var(--paper); }
+.td-go { display: flex; align-items: center; gap: 12px; width: 100%; height: 60px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--ink-0); color: var(--paper); font: 700 17px/1 var(--sans); letter-spacing: -.02em; cursor: pointer; transition: transform .22s var(--spring); }
+.td-go:active { transform: scale(.98); }
+.td-go.center { justify-content: center; }
+.td-go.ghost { justify-content: center; height: 52px; background: none; color: var(--ink-0); box-shadow: inset 0 0 0 1.5px var(--ink-0); }
+.td-go:disabled { cursor: default; }
+.td-m { margin-left: auto; font-family: var(--num); font-weight: 600; font-size: 15px; color: rgba(242,239,231,.62); }
+.td-arr { position: relative; width: 18px; height: 2px; background: currentColor; flex: none; }
+.td-go .td-arr:first-child { margin-left: auto; }
+.td-arr::after { content: ''; position: absolute; right: 0; top: -4px; width: 8px; height: 8px; border: solid currentColor; border-width: 2px 2px 0 0; transform: rotate(45deg); }
 
-/* 끝: 오늘 기록에 더하는 것 */
-.td-after { }
-.td:has(.td-after) .td-stage { height: 44%; }
-.td:has(.td-after) .td-stage img { filter: brightness(.62); object-position: 50% 12%; }
-.td:has(.td-after) .td-shade { background: linear-gradient(180deg, rgba(0,0,0,.45), transparent 18%, transparent 62%, var(--bg) 100%); }
-.td-sheet { display: flex; flex-direction: column; gap: 8px; max-height: calc(100dvh - 140px); overflow: auto; scrollbar-width: none; }
-.td-sheet h2 { margin: 0 6px 6px; font-size: 24px; font-weight: 800; letter-spacing: -.035em; }
-.td-chg { padding: 14px 16px 15px; }
-.td-before { margin: 6px 0 0; font-size: 13.5px; color: var(--muted); }
-.td-now { margin: 2px 0 0; font-size: 17px; font-weight: 700; letter-spacing: -.025em; display: flex; gap: 8px; align-items: baseline; }
-.td-now::before { content: ''; flex: none; width: 7px; height: 12px; border: solid var(--warm); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) translateY(-3px); margin: 0 4px 0 2px; }
-.td-sec { margin: 12px 6px 2px; font-size: 12px; font-weight: 700; color: var(--dim); }
-/* 내일 할 것은 누르는 것이 아니라 알림이라 단추 꼴(알약)로 그리지 않고 글 줄로 둔다(11-14 카본 그림 검수). */
-.td-tm { display: grid; gap: 6px; margin: 0 6px; }
-.td-tm span { display: flex; gap: 10px; align-items: baseline; font-size: 14px; font-weight: 600; color: var(--dim); }
-.td-tm b { flex: none; min-width: 3.4em; font-size: 12px; font-weight: 700; color: var(--ink); }
-.td.closing .td-right { opacity: .45; transition: opacity .8s; }
+/* 끝 — 전은 줄을 긋고, 후는 체크가 차례로 그어진다 */
+.td-chg { padding: 13px 0 14px; border-bottom: 1px solid var(--rule); }
+.td-chg .td-k { display: block; }
+.td-was { margin: 5px 0 0; font-size: 14px; color: var(--ink-3); text-decoration: line-through; text-decoration-color: rgba(23,22,15,.28); text-decoration-thickness: 1px; }
+.td-now { margin: 3px 0 0; display: flex; gap: 10px; align-items: baseline; font-size: 17px; font-weight: 700; letter-spacing: -.03em; }
+.td-now::before { content: ''; flex: none; width: 6px; height: 11px; border: solid var(--ink-0); border-width: 0 2.4px 2.4px 0; transform: rotate(45deg) translate(-2px,-3px) scale(0); animation: td-check .38s var(--d, .5s) var(--spring) forwards; }
+@keyframes td-check { to { transform: rotate(45deg) translate(-2px,-3px) scale(1); } }
+.td-next { order: 2; margin: 16px 0 4px; }
+.td-pg { display: grid; grid-template-columns: 50px 1fr; gap: 10px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.td-pd { font-family: var(--num); font-weight: 500; font-size: 26px; letter-spacing: -.05em; line-height: 1; }
+.td-pd small { margin-left: 3px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--ink-3); }
+.td-pt span { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.45; }
+.td-pt span + span { margin-top: 7px; }
+.td-top .td-date { order: 0; } .td-top .td-r > .td-sec, .td-top .td-chg, .td-top .td-r > .td-why { order: 1; }
+.td-top .td-r > .td-sec { margin-top: 18px; padding-top: 12px; border-top: 1.5px solid var(--ink-0); }
+
+/* 장 넘기기 — 시작하면 이 장이 위로 들려 어두운 장면이 드러나고, 다 하면 이 장을 뜯어 다음 장이 보인다 */
+.td-stack { flex: 1; min-height: 0; position: relative; }
+.td-stack > .td-sheet { position: absolute; inset: 0; }
+/* 윗장이 늘 위 — 밑장의 붙은 단추(z-index)가 윗장 위로 비치지 않게 겹침을 둘로 가른다 */
+.td-stack > .td-under { z-index: 1; } .td-stack > .td-top { z-index: 2; }
+.td-under:focus { outline: none; }
+.td-under .td-r > .td-sec { margin-top: 20px; padding-top: 12px; border-top: 1.5px solid var(--ink-0); }
+.td-under .td-row { cursor: default; padding-right: 0; }
+.td.lifting { background: #060608; transition: background .45s .15s; }
+.td.lifting .td-sheet { animation: td-lift .62s cubic-bezier(.6,0,.75,.2) forwards; transform-origin: 50% 0; }
+.td.lifting .td-bind { opacity: 0; transition: opacity .3s; }
+.td-under .td-say { margin-top: 18px; }
+@keyframes td-lift { to { transform: translateY(-105%) rotate(-2.5deg); box-shadow: 0 50px 90px -30px rgba(0,0,0,.6); } }
+.td.tearing .td-top { animation: td-tear .95s cubic-bezier(.55,0,.8,.2) forwards; transform-origin: 8% 0; pointer-events: none; }
+@keyframes td-tear { 0% { transform: none; } 16% { transform: rotate(1.4deg) translateY(6px); } 100% { transform: translate(-4%, -118%) rotate(-10deg); box-shadow: 0 40px 80px -30px rgba(0,0,0,.45); } }
+.td.torn .td-top { display: none; }
+
+@keyframes td-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes td-word { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+.td .rise { animation: td-rise .55s var(--spring) both; }
 
 @media (min-width: 1024px) {
- .td { display: grid; grid-template-columns: min(calc((100dvh - 96px) * 9 / 16), 506px) minmax(420px, 520px); justify-content: center; align-items: center; gap: 72px; padding: 48px 64px;
-  background: radial-gradient(70% 60% at 30% 45%, rgba(139,123,255,.08), transparent), var(--bg); }
- .td-stage, .td-a .td-stage, .td:has(.td-after) .td-stage { position: relative; inset: auto; height: min(calc(100dvh - 96px), 900px); border-radius: 28px; box-shadow: 0 60px 120px -50px rgba(0,0,0,.9), var(--edge); }
- .td-shade, .td-a .td-shade, .td:has(.td-after) .td-shade { background: linear-gradient(180deg, rgba(0,0,0,.35), transparent 18%, transparent 80%, rgba(0,0,0,.4)); }
- .td-top { display: none; }
- .td-top-d { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
- .td-right { display: grid; gap: 12px; align-content: center; }
- .td-talk { padding: 0; }
- .td-line { font-size: 44px; line-height: 1.18; margin-bottom: 18px; }
- .td-who { font-size: 14px; }
- .td-sheet { max-height: calc(100dvh - 96px); }
- .td-sheet h2 { font-size: 40px; }
+ .td-bind { height: 34px; line-height: 34px; padding: 0 64px; font-size: 13px; }
+ .td-sheet { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 520px); justify-content: center; align-content: center; align-items: center; column-gap: 96px; padding: 56px 64px 48px; }
+ .td-sheet > .td-l, .td-sheet > .td-r { display: flex; flex-direction: column; }
+ .td-num { font-size: 300px; margin-left: -14px; }
+ .td-date.small .td-num { font-size: 220px; }
+ .td-wd b { font-size: 34px; } .td-wd span { font-size: 15px; }
+ .td-say { grid-template-columns: 96px 1fr; margin-top: 36px; padding-top: 24px; }
+ .td-bub { width: 96px; height: 96px; }
+ .td-line { font-size: 26px; }
+ .td h3 { font-size: 19px; }
+ .td-foot { position: static; margin: 0; padding: 22px 0 0; background: none; box-shadow: none; }
+ .td-top .td-r > .td-sec, .td-under .td-r > .td-sec { margin-top: 0; }
+ .td-next { margin-top: 28px; }
 }
-@media (prefers-reduced-motion: reduce) { .td .rise, .td-line .w { animation: none !important; } .td * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+ .td .rise, .td-line .w { animation: none !important; }
+ .td-ring path { animation: none; stroke-dashoffset: 0; }
+ .td-bub { transition: none; }
+ .td-now::before { animation: none; transform: rotate(45deg) translate(-2px,-3px); }
+ .td.lifting .td-sheet, .td.tearing .td-top { animation: none; }
+ .td * { transition: none !important; }
+}
