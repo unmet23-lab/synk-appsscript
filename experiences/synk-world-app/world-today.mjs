@@ -372,14 +372,18 @@ export function createWorldTodayPlan({
     itemUnits: engine ? key => coach.itemUnits(key) : null,
     engine,
   });
-  const entries = engine
-    ? (quiet(() => coach.plan(activities.map(act => act.plan), { lang })) ?? [])
-    : checkingEntries(activities, say);
+  // 엔진 판에서 plan()이 실패하면(가정한 장애) 확인 중 판으로 내려 제품 사실 줄만 그린다 — 빈 목록으로 읽으면 다음 레슨이 남았는데 다 한 날이
+  // 된다(Fable 엔진급 끝 판 F3).
+  const planned = engine ? quiet(() => coach.plan(activities.map(act => act.plan), { lang })) : null;
+  const live = engine && Array.isArray(planned);
+  const entries = live ? planned : checkingEntries(activities, say);
   const { rows, capped } = todayRows({ entries, activities, opened, say });
   const selected = pickRow(rows, opened);
-  const checking = !engine;
+  const checking = !live;
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;
-  const blocked = activities.some(act => act.blocked);
+  // 조건에 걸린 날(blocked)은 걸린 활동이 풀리면 줄이 되는 때다. 상한 날의 복습 칸 활동(하던 것 밖)은 풀려도 줄이 아니라 그날의 까닭은 상한이다.
+  // 판(status) · 이유 · 빈 날 코드는 한 차례(확인 중 → 조건 → 상한 → 다 한 날)로 정한다(Fable 엔진급 끝 판 F5).
+  const blocked = activities.some(act => act.blocked && !(capped && act.kind === 'again' && !act.open.resume));
   const firstDay =
     !Object.values(snapshot.lessons ?? {}).some(run => Number.isFinite(run?.completedAt)) &&
     !Object.keys(snapshot.reviews ?? {}).length;
@@ -405,9 +409,10 @@ export function createWorldTodayPlan({
       empty: rows.length
         ? null
         : {
-            // 조건에 걸린 날(blocked)은 다 한 날이 아니다 — 홈 단추는 지금 판처럼 학습 조건으로 간다(§20-8).
-            code: checking ? 'checking' : capped ? 'day.capped' : blocked ? 'blocked' : 'done',
-            text: capped ? cappedText : null,
+            // 조건에 걸린 날(blocked)은 다 한 날이 아니다 — 홈 단추는 지금 판처럼 학습 조건으로 간다(§20-8). 조건이 상한보다 앞이다 — 걸린 활동은
+            // 조건을 바꾸면 줄이 되고, 상한은 복습만 미룬다(위 blocked · Fable 엔진급 끝 판 F5).
+            code: checking ? 'checking' : blocked ? 'blocked' : capped ? 'day.capped' : 'done',
+            text: !checking && !blocked && capped ? cappedText : null,
           },
       capped,
       cappedText,
@@ -533,6 +538,14 @@ export function watchHomePlan({
         redrawTimer = null;
         changed();
       }, delay);
+    },
+    // 코치를 내려놓고 다음 물음에서 다시 연다 — 은행이 늦게 와 은행 없이 연 코치를 바꿀 때(Fable 엔진급 끝 판 F2). 기다리던 다시 열기도 지운다.
+    reopen() {
+      if (disposed) return;
+      retryTimer = clear(retryTimer);
+      retryWait = every;
+      drop();
+      changed();
     },
     dispose() {
       disposed = true;

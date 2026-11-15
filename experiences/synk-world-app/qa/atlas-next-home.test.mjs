@@ -221,20 +221,23 @@ test('시간 제한 — 정한 시간보다 긴 활동은 잠기고, 남는 줄�
  coach.dispose();
 });
 
-test('소리를 끈 날 — 듣기 짧은 연습은 빠지지 않고 잠긴다 · 듣기 연습에만 돌아온 단위가 있으면 다 한 날이 아니라 조건에 걸린 날이다(카본 엔진급 끝 판 B1)',async()=>{
- // 읽기 문항으로 만난 낱말이 돌아왔고, 짧은 연습 풀에는 그 낱말이 든 듣기 문항의 항목만 있다. 레슨은 모두 마쳤다.
- const {coach,time}=await homeCoach({start:T0-3*DAY,words:true});
+// 읽기 문항 하나로 만난 낱말이 든 듣기 문항 — 듣기 답은 소리를 들려준 기록(delivery)이 있어야 근거라, 낱말은 읽기 답으로 돌아오게 한다.
+function listeningPair(coach){
  const unitsOf=item=>coach.itemUnits(item.itemKey).map(row=>row.unit);
  const heard=BANK.filter(item=>item.skillId.split('.')[1]==='listening').map(item=>({item,units:new Set(unitsOf(item))}));
- let pair=null;
  for(const item of BANK){
   if(item.skillId.split('.')[1]!=='reading')continue;
   const units=unitsOf(item);
   if(units.length!==1||!units[0].startsWith('ko.word.'))continue;
   const other=heard.find(row=>row.units.has(units[0]));
-  if(other){pair={read:item,heard:other.item,unit:units[0]};break;}
+  if(other)return {read:item,heard:other.item,unit:units[0]};
  }
- assert.ok(pair,'읽기로 만난 낱말이 든 듣기 문항');
+ assert.fail('읽기로 만난 낱말이 든 듣기 문항');
+}
+test('소리를 끈 날 — 듣기 짧은 연습은 빠지지 않고 잠긴다 · 듣기 연습에만 돌아온 단위가 있으면 다 한 날이 아니라 조건에 걸린 날이다(카본 엔진급 끝 판 B1)',async()=>{
+ // 읽기 문항으로 만난 낱말이 돌아왔고, 짧은 연습 풀에는 그 낱말이 든 듣기 문항의 항목만 있다. 레슨은 모두 마쳤다.
+ const {coach,time}=await homeCoach({start:T0-3*DAY,words:true});
+ const pair=listeningPair(coach);
  await answer(coach,pair.read.itemKey,true);
  time.at(T0);
  assert.deepEqual(coach.due().map(row=>row.unit),[pair.unit],'그 낱말이 돌아왔다');
@@ -263,6 +266,44 @@ test('하루 복습 상한 — 복습 줄이 없고 복습 칸 자리에 상한 
  assert.equal(plan.today.cappedText,'오늘은 여기까지예요. 남은 것은 내일 만나요.');
  const done=planOf({coach,progress:progressOf({completed:ORDER,reviews}),now:time.t});
  assert.deepEqual(done.today.empty,{code:'day.capped',text:'오늘은 여기까지예요. 남은 것은 내일 만나요.'});
+ coach.dispose();
+});
+
+test('상한 날의 빈 날 — 판 · 이유 · 빈 날 코드는 한 차례(확인 중 → 조건 → 상한 → 다 한 날)다 · 상한 날 걸린 복습 칸 활동은 조건이 아니다(Fable 엔진급 끝 판 F5)',async()=>{
+ const {coach,time}=await homeCoach({start:T0-3*DAY,params:{reviewsPerDay:0},words:true});
+ await answer(coach,mainKeys('greetings-expressions')[0],true);
+ // 읽기로 만난 낱말도 돌아온다 — 짧은 연습 풀에는 그 낱말이 든 듣기 문항의 항목만 둔다(소리를 끄면 잠긴다)
+ const pair=listeningPair(coach);
+ await answer(coach,pair.read.itemKey,true);
+ time.at(T0);
+ const reviews=[reviewOf('greetings-expressions',0,{streak:1,lastAt:T0-3*DAY,dueAt:T0})];
+ // 레슨이 정한 시간에 걸린 상한 날 — 시간을 늘리면 레슨이 줄이 되므로 조건에 걸린 날이고, 세 곳이 같은 까닭을 말한다
+ const timed=planOf({coach,progress:progressOf({completed:['greetings-expressions'],reviews}),now:time.t,settings:{minutes:1}});
+ assert.equal(timed.today.capped,true);
+ assert.deepEqual([timed.status,timed.today.empty],['unavailable',{code:'blocked',text:null}]);
+ assert.equal(timed.reason,'지금 조건에 맞는 활동이 없어요. 시간이나 소리 설정을 바꿔 볼 수 있어요.');
+ // 레슨을 다 마친 상한 날에 복습 칸 활동(듣기 짧은 연습)만 걸렸으면 풀려도 줄이 아니다 — 빈 날은 상한이고 조건 문장을 쓰지 않는다
+ const pool=BANK.filter(item=>item.skillId===pair.heard.skillId);
+ const quiet=planOf({coach,progress:progressOf({completed:ORDER,reviews}),now:time.t,pool,settings:{audio:'off'}});
+ assert.equal(quiet.today.capped,true,'상한을 읽을 항목(생활 복습)이 있다');
+ assert.ok(quiet.candidates.some(candidate=>candidate.route==='practice'&&candidate.audioRequired),'듣기 짧은 연습은 잠긴 채 후보에 있다');
+ assert.deepEqual([quiet.status,quiet.today.empty],['empty',{code:'day.capped',text:'오늘은 여기까지예요. 남은 것은 내일 만나요.'}]);
+ assert.equal(quiet.reason,'');
+ coach.dispose();
+});
+
+test('엔진 판에서 plan()이 실패하면 확인 중 판으로 내려 제품 사실 줄만 그린다 — 다음 레슨이 남았는데 다 한 날이 되지 않는다(Fable 엔진급 끝 판 F3)',async()=>{
+ const {coach,time}=await homeCoach();
+ // 코치는 얼린 객체라 Proxy로 못 덮는다 — 바탕으로 두고 plan()만 던지게 덮는다.
+ const broken=Object.create(coach,{plan:{value:()=>{throw new Error('plan');}}});
+ const progress=progressOf({completed:['greetings-expressions']});
+ const plan=planOf({coach:broken,progress,now:time.t});
+ assert.equal(plan.today.state,'checking');
+ assert.deepEqual(kinds(plan),['new']);
+ assert.equal(plan.today.items[0].why.code,'host.next');
+ assert.equal(plan.selected.lessonId,'greetings-story');
+ const all=planOf({coach:broken,progress:progressOf({completed:ORDER}),now:time.t});
+ assert.deepEqual([all.status,all.today.empty],['checking',{code:'checking',text:null}],'다 마친 학생도 다 한 날이 아니라 확인 중이다');
  coach.dispose();
 });
 
@@ -382,6 +423,18 @@ test('판 셋 — 홈 코치만 못 받으면 지금 판으로 내려가지 않�
  const waits=[];for(let i=0;i<4;i+=1){const timer=timers.run();waits.push(timer.ms);assert.equal(watch.phase(),'checking');await tick();}
  assert.deepEqual(waits,[1000,2000,4000,4000]);assert.equal(opens,5);
  watch.dispose();
+});
+
+test('판 셋 — reopen은 홈 코치를 내려놓고 다음 물음에서 새로 연다(은행이 늦게 온 때 — Fable 엔진급 끝 판 F2)',async()=>{
+ let opens=0,changes=0;const timers=fakeTimers();
+ const made=n=>({n,plan:()=>[],summary:()=>({storage:{base:true,waiting:false}})});
+ const watch=watchHomePlan({open:async()=>made(opens+=1),lifeState:()=>'engine',onChange:()=>{changes+=1;},timers});
+ assert.equal(watch.phase(),'checking');await tick();
+ assert.equal(watch.phase(),'engine');assert.equal(watch.coach().n,1);assert.equal(changes,1);
+ watch.reopen();assert.equal(changes,2,'내려놓으면 다시 그린다');
+ assert.equal(watch.phase(),'checking','내려놓은 뒤에는 확인 중이고 새로 연다');await tick();
+ assert.equal(opens,2);assert.equal(watch.phase(),'engine');assert.equal(watch.coach().n,2,'새로 연 코치');
+ watch.dispose();watch.reopen();assert.equal(opens,2,'닫은 뒤에는 열지 않는다');
 });
 
 test('다시 그리는 때 — 걸어 둔 때는 하나뿐이고 닫으면 지운다(설계 검토 H22)',()=>{

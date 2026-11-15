@@ -67,7 +67,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 새 길 홈(Atlas 재설계 단계 4-3 — 단계4_계획 §20): 셸이 넘긴 홈 입구(homeNext — 생활 판정이 있을 때만)가 있으면 판 셋(지금 판 · 확인 중 · 엔진)을 들고,
  // 지금 판이 아니면 세 줄을 짓는다(입구가 준 플래너 — world-today.mjs). 차례 표시(이번 학습일에 이 문서에서 연 칸)는 저장하지 않고 학습일 · 주인이
  // 바뀌면 비운다(§20-8 · 설계 주인 11-15 답 5). 플래너를 못 받으면(엔진을 못 받음) 지금 판이다.
- let homePlanner=null,homeWatch=null,homeFailed=false;const opened={key:'',kinds:new Set()};
+ let homePlanner=null,homeWatch=null,homeFailed=false,homeBare=false;const opened={key:'',kinds:new Set()};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
  const view=position?position.createView({t,has:hasString,formatDate,lang:currentLang}):null;
@@ -161,7 +161,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const bank=position?.topik;if(!bank||bank.ready)return Promise.resolve();
   // 못 불러왔으면 1분 동안은 다시 묻지 않는다 — refresh(초점·답)마다 요청이 되풀이되지 않게.
   if(!bankWait&&Date.now()-bankFailedAt<60000)return Promise.resolve();
-  bankWait||=Promise.resolve().then(()=>bank.load(bankUrl)).then(()=>{if(stopped)return;queueMicrotask(()=>{refresh();repaint();});},()=>{bankWait=null;bankFailedAt=Date.now();});
+  bankWait||=Promise.resolve().then(()=>bank.load(bankUrl)).then(()=>{if(stopped)return;if(homeBare){homeBare=false;homeWatch?.reopen?.();}queueMicrotask(()=>{refresh();repaint();});},()=>{bankWait=null;bankFailedAt=Date.now();});
   return bankWait;
  }
  // 은행을 기다리되 오래 붙잡지 않는다(못 불러와도 판은 기존 문항으로 연다).
@@ -320,14 +320,23 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(examPlan&&mock)examPlan.mock={status:mock.status,minutes:mock.minutes,total:mock.total,sections:mock.sections.map(row=>({section:row.section,status:row.status,count:row.items.length,minutes:row.minutes}))};
   return createPlan({summary,progress:progress.exportSnapshot(),settings:values,now,recommendActivities,extra,examPlan});
  }
+ // 홈 계획 한 번(drawHome) 뒤 열린 배우기 허브를 맞춘다(painted → 허브 syncToday). 맞춤은 잠금을 푼 뒤에 부른다 — 허브가 다시 그리며 부르는
+ // refresh(onSummary)가 잠금에 걸려 버려지면 홈에 마지막으로 닿는 것이 허브의 updateLearning(지금 판 규칙의 단추 제목 · 튜터)이 된다(Fable 엔진급
+ // 끝 판 F1). 다시 그린 허브가 부른 refresh가 current를 새로 짓고, 세 줄이 그대로면 허브는 다시 그리지 않아 되풀이가 멈춘다. 홈 입구가 없는
+ // 판(스위치 꺼짐)은 맞춤을 부르지 않는다.
  function refresh(){
-  if(stopped||refreshing)return current;refreshing=true;
+  if(stopped||refreshing)return current;
+  if(drawHome()&&homeNext){try{homeNext.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}}
+  return current;
+ }
+ function drawHome(){
+  refreshing=true;
   try{
    check();void loadBank();const progress=getProgress(),save=progress.status();
-   if(['unreadable','conflict','loading'].includes(save.phase)||save.rejected){current=null;home.updateStudy?.(null);return null;}
+   if(['unreadable','conflict','loading'].includes(save.phase)||save.rejected){current=null;home.updateStudy?.(null);return false;}
    // 새 길 홈(§20-4): 판이 지금 판이 아니면 세 줄 — 옛 코치의 요약을 읽지 않는다(§20-9 4).
    const phase=homePhase();
-   if(phase!=='old'){current=todayWith({phase,progress,values:settingsFor(progress.learningProfileValues())});home.updateStudy?.(current);try{homeNext.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}return current;}
+   if(phase!=='old'){current=todayWith({phase,progress,values:settingsFor(progress.learningProfileValues())});home.updateStudy?.(current);return true;}
    let summary=empty,coachNow=null;
    try{coachNow=readCoach();summary=coachNow?.summary()||empty;applyPreferences();}catch{/* Unavailable account evidence remains unknown. */}
    // The coach's own call also hands Core what was already presented, so an activity whose items are
@@ -335,9 +344,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const recommendActivities=input=>{if(summary!==empty&&typeof coachNow?.recommendActivities==='function'){try{return coachNow.recommendActivities(input.candidates,{settings:input.settings,at:input.at});}catch{}}return engine.recommendActivities(input);};
    current=planWith({summary,coachNow:summary===empty?null:coachNow,progress,values:settingsFor(progress.learningProfileValues()),recommendActivities});
    // 새 길 홈에서 지금 판으로 내려온 때(플래너를 못 받음 · 생활 판정이 지금 판)도 열린 배우기 허브를 맞춘다 — 확인 중 · 새 길 포스터에 굳지 않게
-   // (카본 엔진급 끝 판 B3). 홈 입구가 없는 판(스위치 꺼짐)은 부르지 않는다.
-   home.updateStudy?.(current);try{homeNext?.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}return current;
-  }catch{current=null;home.updateStudy?.(null);return null;}finally{refreshing=false;}
+   // (카본 엔진급 끝 판 B3). 맞춤은 refresh가 잠금을 푼 뒤에 한다(위).
+   home.updateStudy?.(current);return true;
+  }catch{current=null;home.updateStudy?.(null);return false;}finally{refreshing=false;}
  }
  async function next(){
   check();const profile=getProgress().learningProfile().profile;
@@ -1086,11 +1095,18 @@ async function townSend(coachNow,{wait=true}={}){
   return 'shown';
  }
  // 새 길 홈의 플래너 · 감시(§20-4) — 입구가 엔진을 받아야 선다. 홈 코치는 짧은 연습 문항 풀 전체의 은행으로 연다(학생의 수준으로 거르기 전 — 설계 검토 H24).
+ // 공개 TOPIK 은행은 짧은 연습을 열 때처럼 잠깐 기다린다(bankReady). 그래도 은행 없이 열었으면 은행이 온 뒤 한 번 다시 연다(loadBank → reopen) —
+ // 은행 없이 연 코치는 그 은행 문항의 단위를 몰라 짧은 연습 줄이 그 문서에서 끝까지 서지 않는다(Fable 엔진급 끝 판 F2).
+ async function openHome(){
+  try{await bankReady();}catch{/* 은행 없이 열고, 오면 다시 연다 */}
+  homeBare=Boolean(position?.topik)&&!position.topik.ready;
+  return homeNext.coach(position?.practice?.pool||[]);
+ }
  if(homeNext)Promise.resolve().then(()=>homeNext.planner()).then(planner=>{
   if(stopped)return;
   if(!planner){homeFailed=true;refresh();return;}
   homePlanner=planner;
-  homeWatch=planner.watchHomePlan({open:()=>homeNext.coach(position?.practice?.pool||[]),retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped)refresh();}});
+  homeWatch=planner.watchHomePlan({open:openHome,retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped)refresh();}});
   refresh();
  },()=>{if(stopped)return;homeFailed=true;refresh();});
  const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);

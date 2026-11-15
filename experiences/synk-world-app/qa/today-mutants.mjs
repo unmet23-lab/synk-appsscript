@@ -27,10 +27,34 @@ export const TODAY_MUTANTS = [
   [
     '빈 날',
     '조건에 걸린 날을 다 한 날로 적는다',
-    "capped ? 'day.capped' : blocked ? 'blocked' : 'done',",
+    "blocked ? 'blocked' : capped ? 'day.capped' : 'done',",
     "capped ? 'day.capped' : 'done',",
   ],
   ['상한', '상한 날에도 복습 줄을 세운다', '  if (capped || entry.none) return null;\n', '  if (entry.none) return null;\n'],
+  [
+    '빈 날',
+    '상한 날의 복습 칸 활동이 걸려도 조건에 걸린 날로 센다 — 풀려도 줄이 아닌데 조건을 바꾸라고 한다(Fable 엔진급 끝 판 F5)',
+    "  const blocked = activities.some(act => act.blocked && !(capped && act.kind === 'again' && !act.open.resume));\n",
+    '  const blocked = activities.some(act => act.blocked);\n',
+  ],
+  [
+    '빈 날',
+    '빈 날 코드에서 상한을 조건보다 앞에 둔다 — 판은 조건(unavailable)인데 빈 날은 상한이다(Fable 엔진급 끝 판 F5)',
+    "code: checking ? 'checking' : blocked ? 'blocked' : capped ? 'day.capped' : 'done',",
+    "code: checking ? 'checking' : capped ? 'day.capped' : blocked ? 'blocked' : 'done',",
+  ],
+  [
+    '확인 중',
+    'plan()이 실패해도 엔진 판으로 빈 목록을 읽는다 — 다음 레슨이 남았는데 다 한 날이 된다(Fable 엔진급 끝 판 F3)',
+    '  const live = engine && Array.isArray(planned);\n  const entries = live ? planned : checkingEntries(activities, say);\n',
+    '  const live = engine;\n  const entries = live ? (planned ?? []) : checkingEntries(activities, say);\n',
+  ],
+  [
+    '판 셋',
+    'reopen이 홈 코치를 내려놓지 않는다 — 은행 없이 연 코치가 그 문서에서 그대로 남는다(Fable 엔진급 끝 판 F2)',
+    '      retryWait = every;\n      drop();\n',
+    '      retryWait = every;\n',
+  ],
   [
     '상한',
     '상한을 생활 복습 항목에서만 읽는다 — 짧은 연습만 상한인 날을 다 한 날로 적는다(GPT 끝 판 GB1)',

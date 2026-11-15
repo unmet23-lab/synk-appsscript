@@ -25237,7 +25237,7 @@ function createWorldEducation({
   homeNext = null
 }) {
   let stopped = false, coach = null, coachHost = null, practiceCoach = null, practiceHost = null, mockCoach = null, mockHost = null, lifeCoachNow = null, lifeHost = null, current = null, refreshing = false, classwork = { at: 0, rows: [], pending: null };
-  let homePlanner = null, homeWatch = null, homeFailed = false;
+  let homePlanner = null, homeWatch = null, homeFailed = false, homeBare = false;
   const opened = { key: "", kinds: /* @__PURE__ */ new Set() };
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
@@ -25374,6 +25374,10 @@ function createWorldEducation({
     if (!bankWait && Date.now() - bankFailedAt < 6e4) return Promise.resolve();
     bankWait ||= Promise.resolve().then(() => bank.load(bankUrl)).then(() => {
       if (stopped) return;
+      if (homeBare) {
+        homeBare = false;
+        homeWatch?.reopen?.();
+      }
       queueMicrotask(() => {
         refresh();
         repaint();
@@ -25652,6 +25656,15 @@ function createWorldEducation({
   }
   function refresh() {
     if (stopped || refreshing) return current;
+    if (drawHome() && homeNext) {
+      try {
+        homeNext.painted?.();
+      } catch {
+      }
+    }
+    return current;
+  }
+  function drawHome() {
     refreshing = true;
     try {
       check3();
@@ -25660,17 +25673,13 @@ function createWorldEducation({
       if (["unreadable", "conflict", "loading"].includes(save.phase) || save.rejected) {
         current = null;
         home.updateStudy?.(null);
-        return null;
+        return false;
       }
       const phase = homePhase();
       if (phase !== "old") {
         current = todayWith({ phase, progress: progress2, values: settingsFor(progress2.learningProfileValues()) });
         home.updateStudy?.(current);
-        try {
-          homeNext.painted?.();
-        } catch {
-        }
-        return current;
+        return true;
       }
       let summary = empty2, coachNow = null;
       try {
@@ -25690,15 +25699,11 @@ function createWorldEducation({
       };
       current = planWith({ summary, coachNow: summary === empty2 ? null : coachNow, progress: progress2, values: settingsFor(progress2.learningProfileValues()), recommendActivities });
       home.updateStudy?.(current);
-      try {
-        homeNext?.painted?.();
-      } catch {
-      }
-      return current;
+      return true;
     } catch {
       current = null;
       home.updateStudy?.(null);
-      return null;
+      return false;
     } finally {
       refreshing = false;
     }
@@ -27342,6 +27347,14 @@ function createWorldEducation({
     });
     return "shown";
   }
+  async function openHome() {
+    try {
+      await bankReady();
+    } catch {
+    }
+    homeBare = Boolean(position?.topik) && !position.topik.ready;
+    return homeNext.coach(position?.practice?.pool || []);
+  }
   if (homeNext) Promise.resolve().then(() => homeNext.planner()).then((planner) => {
     if (stopped) return;
     if (!planner) {
@@ -27350,7 +27363,7 @@ function createWorldEducation({
       return;
     }
     homePlanner = planner;
-    homeWatch = planner.watchHomePlan({ open: () => homeNext.coach(position?.practice?.pool || []), retired: (made, fn) => homeNext.retired(made, fn), lifeState: () => homeNext.life(), onChange: () => {
+    homeWatch = planner.watchHomePlan({ open: openHome, retired: (made, fn) => homeNext.retired(made, fn), lifeState: () => homeNext.life(), onChange: () => {
       if (!stopped) refresh();
     } });
     refresh();
