@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// 「오늘」 한 장 흐름 시험(11-14) — 대역 판(오늘시험.mjs)을 가짜 마이크 크롬으로 끝까지 따라간다: 오늘 화면 → 버튼 하나 → 복습(사감 선생님)
-// → 새 상황(B) → 입장 검사 열림 → 「오늘로 돌아가기」 → 끝 화면(달라진 것 · 내일). 각 단계를 찍고 틀 · 콘솔 오류를 센다.
-//   node experiences/drama/qa/오늘한장-20261114/흐름시험.cjs [주소=http://127.0.0.1:8798] [--out .tmp/today-20261114/흐름] [--entry]
+// 「오늘」 한 장 흐름 시험(11-14) — 대역 판(오늘시험.mjs)을 가짜 마이크 크롬으로 끝까지 따라간다: 오늘 화면 → 버튼 하나 → 복습(첫 화면과 같은
+// 틀린 장면 복습 — 선배 대사 → 빈칸 카드 → 결과와 튜터 카드, 11-15) → 새 상황(B) → 입장 검사 열림 → 「오늘로 돌아가기」 → 끝 화면(달라진 것 ·
+// 다음에 할 것). 각 단계를 찍고 틀 · 콘솔 오류를 센다.
+//   node experiences/drama/qa/오늘한장-20261114/흐름시험.cjs [주소=http://127.0.0.1:8798] [--s A|B] [--out .tmp/today-20261114/흐름]
 // playwright는 공용 작업본 node_modules, 크롬은 설치된 헤드리스 껍데기(현장 노트 시험 · 화면)를 쓴다.
 const path = require('path');
 const fs = require('fs');
@@ -24,9 +25,11 @@ fs.mkdirSync(out, { recursive: true });
  const shot = async (name) => { await page.waitForTimeout(700); await page.screenshot({ path: path.join(out, `${String(++n).padStart(2, '0')}_${name}.png`) }); };
  const F = () => page.frame({ url: /\/(drama|entry-check)\// });
  const until = async (fn, ms = 15000) => { const t0 = Date.now(); for (;;) { try { const v = await fn(); if (v) return v; } catch { /* 틀이 바뀌는 중 */ } if (Date.now() - t0 > ms) throw new Error('기다림 넘김'); await page.waitForTimeout(200); } };
- await page.goto(`${base}/?s=A`);
+ // 기록: --s A(기본) · B. 줄마다 칸 이름(복습 · 오늘 공부 · 점검)과 제목을 읽어 그 차례대로 따라간다.
+ const scenario = args.includes('--s') ? args[args.indexOf('--s') + 1] : 'A';
+ await page.goto(`${base}/?s=${scenario}`);
  await until(async () => (await F()?.$('.td [data-go]')));
- const rows = await F().$$eval('.td h3', (x) => x.map((e) => e.textContent));
+ const rows = await F().$$eval('.td .td-item', (x) => x.map((e) => ({ kind: e.querySelector('.td-eyebrow span')?.textContent || '', title: e.querySelector('h3')?.textContent || '' })));
  await shot('오늘');
  await F().click('.td [data-go]');
  // 차례마다: (동의) → 구를 눌러 녹음 → 다시 눌러 끝 → 결과 → 마치기.
@@ -43,20 +46,47 @@ fs.mkdirSync(out, { recursive: true });
   await F().click(`.transfer button.pill:has-text("마치기")`);
   return heard;
  }
- const heard1 = await speakAndFinish('다시');
- const heard2 = await speakAndFinish('새로');
- // 입장 검사가 같은 자리에 열린다(부모 대역의 「오늘」 통로).
- await until(async () => page.frame({ url: /\/entry-check\// }));
- await page.waitForTimeout(2500);
- await shot('입장검사');
- const lobby = await page.frame({ url: /\/entry-check\// }).$eval('#rec-reason', (e) => e.textContent).catch(() => null);
- await page.click('#back');
+ // 복습: 표지 → 그 줄 앞 선배 대사 → (받아쓰기 동의) → 빈칸 카드에서 구가 녹음 단추가 되면 → 녹음 → 결과(튜터 카드) → 「마치기」가 다음 차례로.
+ // 헤드리스 껍데기 크롬은 mp4(H.264)를 못 틀어 선배 대사가 「계속」 단추로 멈춘다 — 누르고 지나간다(소리 · 영상은 이 시험이 보는 것이 아니다).
+ async function reviewAndFinish(tag) {
+  await until(async () => /REVIEW/i.test((await F()?.$eval('#epTag', (e) => e.textContent)) || ''), 20000);
+  await until(async () => {
+   const d = await F()?.$('dialog[open] button.pill'); if (d) { await d.click(); return false; }
+   const c = await F()?.$('.beat button.pill'); if (c) { await c.click(); return false; }
+   // 내 차례 카드(빈칸 대사)가 떠 있고 구가 녹음 단추일 때 — 표지 · 선배 대사 동안 구는 앞 화면의 상태를 잠깐 들고 있다.
+   return (await F()?.$('.turn .cardline')) && F()?.$('#orbBtn:not([disabled])');
+  }, 60000);
+  await page.waitForTimeout(500); // 카드가 올라오는 움직임이 끝날 때까지
+  await shot(`${tag}_빈칸`);
+  await F().click('#orbBtn');
+  await page.waitForTimeout(4800);
+  await F().click('#orbBtn');
+  await until(async () => (await F()?.$('.director.review')), 20000);
+  await shot(`${tag}_결과`);
+  const result = await F().$eval('.director.review', (e) => ({ lead: e.querySelector('.lead')?.textContent || '', tutor: !!e.querySelector('.card.tutor'), last: e.querySelector('.last')?.textContent || '' }));
+  await F().click('.director.review button.pill:has-text("마치기")');
+  return result;
+ }
+ const steps = [];
+ for (const row of rows) {
+  if (row.kind === '복습') steps.push({ ...row, result: await reviewAndFinish('복습') });
+  else if (row.title.startsWith('입장 검사')) {
+   // 입장 검사가 같은 자리에 열린다(부모 대역의 「오늘」 통로). 열린 것만 보고 바로 돌아온다.
+   await until(async () => page.frame({ url: /\/entry-check\// }));
+   await page.waitForTimeout(2500);
+   await shot('입장검사');
+   const lobby = await page.frame({ url: /\/entry-check\// }).$eval('#rec-reason', (e) => e.textContent).catch(() => null);
+   await page.click('#back');
+   steps.push({ ...row, result: lobby });
+  } else if (row.title === '1화 이어서 하기') { steps.push({ ...row, result: '장면 흐름으로 넘어감 — 이 시험은 여기서 멈춘다' }); break; }
+  else steps.push({ ...row, result: await speakAndFinish(row.kind === '점검' ? '점검' : '새로') });
+ }
  await until(async () => (await F()?.$('.td [data-close]')));
  const changed = await F().$$eval('.td .td-now', (x) => x.map((e) => e.textContent));
  const tomorrow = await F().$$eval('.td .td-tm span', (x) => x.map((e) => e.textContent));
  await shot('끝');
  await browser.close();
- const report = { rows, heard1, heard2, lobby, changed, tomorrow, errors };
+ const report = { scenario, steps, changed, tomorrow, errors };
  fs.writeFileSync(path.join(out, '흐름.json'), JSON.stringify(report, null, 1));
  console.log(JSON.stringify(report, null, 1));
  process.exit(errors.length ? 1 : 0);

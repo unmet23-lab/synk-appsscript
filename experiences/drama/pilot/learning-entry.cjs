@@ -157,32 +157,15 @@ function createRecorder({ win = typeof window === 'undefined' ? null : window, o
         delayedSeen: delayed === true || delayed === false ? delayed : null };
     });
   }
-  // 7~10일 뒤 처음 보는 문항: Atlas 지연 관측(followups, d7 창)이 이 문항의 측정 칸(같은 게임 · 지도판 · 능력 · 새 상황 난이도 2 ·
-  // spoken · speaking)으로 「due」이고, 이 문항을 한 번도 보이지 않았을 때만 참. 기록이 덜 모였으면 null.
-  // 11-14부터 WORLD 드라마 첫 화면의 C 차례는 이 창 대신 드라마 정책 3일(review · takes.mjs planRevisit)로 정한다(설계 §18-2).
-  // 이 함수는 깃발 뒤 「오늘」 한 장(today/gather.mjs)이 아직 부르므로 그대로 둔다 — 그쪽이 3일 정책으로 옮기면 지운다.
-  function delayedDue({ lineId, skillId }) {
-    if (!identifier(lineId) || map.getNode(skillId)?.kind !== 'skill') return false;
-    return safe(() => {
-      const c = game();
-      if (typeof c.followups !== 'function' || typeof c.exposure !== 'function') return false;
-      const report = c.followups();
-      if (report?.evidenceComplete !== true) return null;
-      const due = report.items.some(row => row.status === 'due' && row.window === 'd7' && row.gameId === GAME_ID
-        && (row.current ?? row.measure.taskVersion === map.map_ver) && row.measure.skillId === skillId && row.measure.difficulty === 2
-        && row.measure.responseFormat === 'spoken' && row.measure.modality === 'speaking' && row.measure.audioRequired === false);
-      if (!due) return false;
-      const seen = c.exposure({ itemKey: lineId, familyKey: lineId }).seen;
-      return seen === false ? true : seen === true ? false : null;
-    });
-  }
+  // C(처음 보는 문항) 차례는 첫 화면과 「오늘」 한 장 모두 드라마 정책 3일(review · takes.mjs planRevisit().delayed)로 정한다(설계 §18-2).
+  // Atlas 지연 관측 7일 짝(followups d7)으로 정하던 delayedDue는 11-15에 「오늘」이 3일 정책으로 옮겨 부르는 곳이 없어 지웠다.
   // 이 계정이 그 대사를 본 적이 있는지(Atlas 노출 — 접힌 기록 포함). 기록이 아직 덜 모였으면 null. 받아쓰기가 막혀 남겨 둔 새 상황(B)을
   // 첫 화면에서 다시 내밀지 정할 때 쓴다(장면 줄은 봤고 B는 안 봄).
   function seen(lineId) {
     if (!identifier(lineId)) return null;
     return safe(() => { const v = game().exposure({ itemKey: lineId, familyKey: lineId }).seen; return v === true || v === false ? v : null; });
   }
-  return Object.freeze({ open, review, delayedDue, seen, flush: () => safe(() => coach?.flush?.()) });
+  return Object.freeze({ open, review, seen, flush: () => safe(() => coach?.flush?.()) });
 }
 
 // 이PC 시범 서버의 리허설 계정(합성 계정)으로 왕복을 볼 때만 쓴다. WORLD 안에서는 WORLD가 세운 호스트를 쓴다(findHost).

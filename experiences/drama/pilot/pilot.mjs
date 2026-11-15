@@ -765,7 +765,7 @@ async function startToday() {
  try { if (TODAY) mod = await import('./today/screen.mjs'); } catch { mod = null; }
  if (!mod) return intro();
  try { return await mod.start({ S, W, ui, h, tx, anim, panel, cardIn, subs, stageMode, slate, hideSlate, hideMic, orbMode, newScope, live, sleep, choose, setPhase, pushStill, celebrate,
-  intro, runScene, runTransfer, runRetake, sceneItems, studentItems, inWorld, newAttemptState, setupTrail }); }
+  intro, runScene, runTransfer, runReview, sceneItems, studentItems, inWorld, newAttemptState, setupTrail }); }
  catch { S.today = null; return intro(); }
 }
 
@@ -1272,16 +1272,17 @@ async function retakeResult(item, r) {
   if (!live(s) || v == null) return;
   if (v === 'same' || v === 'differs') { checked = v; r.selfCheck = v; R.selfCheck = v; if (v === 'differs') R.trail?.excludeLast(); continue; }
   if (v === 'again') return runRetake();
-  return S.today?.retake ? S.today.finish(null) : runTransfer(); // 「오늘」(깃발 뒤)에서 연 테이크 2면 다음 차례로
+  return runTransfer();
  }
 }
 
 /* ───────── 틀린 장면 복습(설계 §18-4, 유호님 11-14) ───────── */
 // 첫 화면에서 고른 틀린 줄 하나: 표지 → 그 줄 앞 선배 대사(처음부터) → 내 차례(빈칸 카드 + 「지난번: 끝맺음」) → 판정된 첫 테이크 → 결과 + 튜터 카드.
 // 결과의 「다시 해 보기」는 같은 바퀴(같은 보임의 시도 2, 3…), 첫 화면에서 다시 고르면 새 바퀴다.
+// 「오늘」(깃발 뒤, S.today.review)이 연 복습은 같은 화면이고, 결과의 「마치기」가 「오늘」의 다음 차례로 간다. 깃발이 없으면 S.today가 없다.
 async function runReview(lineId) {
  const items = sceneItems(), idx = items.findIndex((x) => x.id === lineId), item = items[idx];
- if (!item || item.type !== 'student') return intro();
+ if (!item || item.type !== 'student') return S.today?.review ? S.today.leave() : intro();
  const again = S.review?.lineId === lineId;
  // 장면 줄 상태(빈칸 열림 · 어긋남 · 안 들림)는 복습 차례마다 비운다 — 「다시 해 보기」도 빈칸부터.
  S.lines.delete(lineId);
@@ -1289,7 +1290,14 @@ async function runReview(lineId) {
  if (!again) {
   // WORLD 줄당 테이크 상한(takes.mjs beginTake 9번)은 바퀴마다 센다.
   if (inWorld()) { W.attempts.attempts.delete(`review:${lineId}`); W.counts.delete(`review:${lineId}`); }
-  S.review = { lineId, mistake: (S.cards?.plan?.mistakes || []).find((m) => m.lineId === lineId) || null, trail: undefined, lastTakeId: null };
+  let mistake = (S.cards?.plan?.mistakes || []).find((m) => m.lineId === lineId) || null;
+  if (S.today?.review?.lineId === lineId) {
+   // 「오늘」이 연 복습: 단추를 누른 때 남긴 실수가 아니라 지금 기록의 실수를 쓴다 — 탭을 닫았다 같은 날 다시 열면 그사이 앞 시도로
+   // 닫혔거나 기준일이 옮겨졌을 수 있다(11-15 Fable 검수 P2-3). 지금 기록을 모르면 남긴 값을 쓴다.
+   const plan = inWorld() && S.trail ? cardsNow().plan : null;
+   mistake = plan ? plan.mistakes.find((m) => m.lineId === lineId) || null : S.today.review.mistake || null;
+  }
+  S.review = { lineId, mistake, trail: undefined, lastTakeId: null };
  }
  const s = newScope(); S.step = 'review'; S.render = null; S.cardKey = null;
  stageMode('still'); subs(null); hideMic(); panel(); setPhase('review', 0);
@@ -1326,7 +1334,8 @@ async function reviewResult(item, r) {
  const take = takeById(R.lastTakeId);
  const fresh = inWorld() && S.trail ? cardsNow() : null;
  if (fresh) S.cards = { ...(S.cards || {}), ...fresh };
- const others = (S.cards?.plan?.mistakes || []).filter((m) => m.lineId !== item.id && !S.reviewChain?.has(m.lineId));
+ const today = !!S.today?.review; // 「오늘」에서 연 복습 — 차례 하나만 하고 다음 차례로 간다
+ const others = today ? [] : (S.cards?.plan?.mistakes || []).filter((m) => m.lineId !== item.id && !S.reviewChain?.has(m.lineId));
  let checked = r.selfCheck || null;
  const render = () => choose(s, (go) => [stepper('review'), h('div', { class: 'director review' },
   h('p', { class: 'k' }, 'Review', h('b', {}, tx('reviewSlate'))),
@@ -1341,7 +1350,7 @@ async function reviewResult(item, r) {
   h('div', { class: 'card' }, h('p', { class: 'ko line', lang: 'ko' }, item.text), meaningOf(item) ? h('p', { class: 'mean', lang: meaningLang(item) }, meaningOf(item)) : null),
   tutor ? tutorCard(item, tutor, note) : null,
   h('div', { class: 'row aux' }, take ? mineBtn(take, s) : null, item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null),
-  h('div', { class: 'row main' }, h('button', { type: 'button', class: 'pill', on: { click: () => go('home') } }, tx('reviewHome')),
+  h('div', { class: 'row main' }, h('button', { type: 'button', class: 'pill', on: { click: () => go('home') } }, tx(today ? 'finish' : 'reviewHome')),
    h('button', { type: 'button', class: 'ghost', data: { rec: '1' }, on: { click: () => go('again') } }, tx('mistakeRetry')),
    others.length ? h('button', { type: 'button', class: 'link', on: { click: () => go('next') } }, tx('reviewNext')) : null))]);
  for (;;) {
@@ -1353,7 +1362,7 @@ async function reviewResult(item, r) {
   leaveReview();
   if (v === 'next' && others.length) return runReview(others[0].lineId);
   S.reviewChain = null;
-  return intro();
+  return today && S.today ? S.today.finish() : intro();
  }
 }
 // 튜터 카드 「왜?」 — 규칙 한 문장(화면 언어) · 반말 → 높임 꼴 또는 핵심 말 · 근거(대본 칸 글 그대로). 생성하지 않는 저작 글이다(설계 §18-5, content.mjs TUTOR).

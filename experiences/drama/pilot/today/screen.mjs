@@ -1,13 +1,14 @@
 // 「오늘」 한 장 화면(11-14, 깃발 ?today=1 뒤 — pilot.mjs startToday가 부른다). 둘째 날부터 첫 화면 대신:
 //   태오의 한마디 + 단추 하나(「오늘 시작 · N분」) + 오늘 할 것 세 가지(복습 · 오늘 공부 · 점검)와 그 이유 → 누르면 고르는 화면 없이 차례로 →
-//   끝나면 오늘 달라진 것(전 → 후)과 내일 할 것.
-// 값은 plan.mjs 계약(today · after)만 읽는다. 차례는 드라마 장면 함수를 그대로 부른다(새 상황 = runTransfer('today'), 장면 줄 다시 = runRetake).
+//   끝나면 오늘 달라진 것(전 → 후)과 다음에 할 것.
+// 값은 plan.mjs 계약(today · after)만 읽는다. 차례는 드라마 장면 함수를 그대로 부른다(새 상황 = runTransfer('today'),
+// 틀린 장면 복습 = runReview — 첫 화면과 같은 복습 화면이고, 「오늘」에서 열면 결과 화면의 「마치기」가 다음 차례로 간다).
 // 입장 검사는 드라마 틀 밖이라 부모 창 통로(SYNKTodayHost.open)로 연다 — 지금은 시연 대역(qa/오늘한장-20261114/오늘시험.mjs)에만 있다.
 // 중간에 나가도(창을 닫거나 다른 게임으로 가도) 버튼을 누른 때의 「오늘」과 한 차례가 이 탭(sessionStorage)에 남아 다시 열면 이어진다.
 // 목소리: 태오 한 줄은 녹음 길이 정해질 때까지 글로만(자막 결) 보인다 — 듣는 고리 영상(손 인사)은 있는 것을 쓴다.
 import { buildToday, buildAfter, dayKey, dayStart, proofLine as proof } from './plan.mjs';
 import { poolItem, TEXT } from './content.mjs';
-import { findLearningHost, readEvents, readDelayed, readEntry } from './gather.mjs';
+import { findLearningHost, readEvents, readRevisit, readEntry } from './gather.mjs';
 import { STR } from '../strings.mjs';
 
 const RUN = 'synk.drama.today.run';
@@ -28,24 +29,25 @@ export async function start(ctx) {
  const strings = { delayedTitle: STR.ko.delayedTitle, delayedLead: STR.ko.delayedLead };
  const lineAttempts = new Map();
  const T = {
-  lesson, strings, text: TEXT, run: store.get(), root: null, item: null, retake: false,
+  // item: 지금 여는 새 상황(runTransfer('today')가 읽는다). review: 지금 여는 틀린 장면 복습 { lineId, mistake }(runReview가 읽는다).
+  lesson, strings, text: TEXT, run: store.get(), root: null, item: null, review: null,
   attempts(lineId) { if (!lineAttempts.has(lineId)) lineAttempts.set(lineId, ctx.newAttemptState()); return lineAttempts.get(lineId); },
   // 차례 하나를 마쳤다(새 상황 마치기 · 테이크 2 뒤 다음) → 다음 차례.
   finish() { markDone(); return next(); },
   // 나중에 하기 · 받아쓰기가 막혀 남겨 둠 → 「오늘」로 돌아간다(그 차례는 남는다).
-  leave() { T.item = null; T.retake = false; return show(); },
+  leave() { T.item = null; T.review = null; return show(); },
  };
  S.today = T;
 
  async function gather() {
-  const [events, delayedDue, entry] = await Promise.all([readEvents({ host, D }), readDelayed({ trail: S.trail, lesson }), readEntry({ host }).catch(() => null)]);
-  return { events, delayedDue, entry };
+  const [events, revisit, entry] = await Promise.all([readEvents({ host, D }), readRevisit({ trail: S.trail, lesson }), readEntry({ host }).catch(() => null)]);
+  return { events, revisit, entry };
  }
  function markDone() {
   const r = T.run; if (!r) return;
   if (r.current != null && !r.done.includes(r.current)) r.done.push(r.current);
   r.current = null; r.opened = null; store.set(r);
-  T.item = null; T.retake = false;
+  T.item = null; T.review = null;
  }
  const remaining = () => (T.run ? T.run.start.items.map((it, i) => ({ it, i })).filter(({ i }) => !T.run.done.includes(i)) : []);
 
@@ -81,10 +83,9 @@ export async function start(ctx) {
    T.item = itemOf(it);
    return ctx.runTransfer('today');
   }
-  if (it.open.type === 'retake') {
-   T.retake = true;
-   S.retake = { lineId: it.open.lineId, mode: 'note', note: { kind: it.note }, noteTakeId: null, take2Id: null };
-   return ctx.runRetake();
+  if (it.open.type === 'review') {
+   T.review = { lineId: it.open.lineId, mistake: it.mistake || null };
+   return ctx.runReview(it.open.lineId);
   }
   // 장면 끝까지: 지금 장면 흐름 그대로(끝은 지금 기록 화면). 이 차례는 연 것으로 친다.
   markDone();
@@ -114,7 +115,7 @@ export async function start(ctx) {
   ctx.newScope(); ctx.hideMic(); ctx.subs(null); ctx.hideSlate(); ctx.stageMode('still');
   const r = T.run;
   const g = await gather();
-  const after = buildAfter({ events: g.events, lesson, start: r.start, startAt: r.startAt, now: Date.now(), entryAfter: g.entry, entryTarget: r.entryTarget, strings });
+  const after = buildAfter({ events: g.events, lesson, start: r.start, startAt: r.startAt, now: Date.now(), revisit: g.revisit, entryAfter: g.entry, entryTarget: r.entryTarget, strings });
   paint(viewAfter(after), () => {
    T.root.querySelector('[data-close]')?.addEventListener('click', (e) => {
     e.currentTarget.disabled = true;
@@ -162,7 +163,9 @@ export async function start(ctx) {
   <section class="td-deck">${t.items.map((it, i) => `<button type="button" class="td-card td-item rise" data-card style="animation-delay:${420 + i * 60}ms">${head(it, null)}<h3>${esc(it.title)}</h3><p class="td-why">${yo(it.why.text)}</p><p class="td-proof">${esc(proof(it))}</p></button>`).join('')}${go}</section></div>`;
  }
  function viewAfter(a) {
-  const tm = a.tomorrow.length ? `<p class="td-sec rise" style="animation-delay:340ms">내일 할 것</p><div class="td-tm rise" style="animation-delay:380ms">${a.tomorrow.map((x) => `<span><b>${esc(x.when)}</b>${esc(x.title)}</span>`).join('')}</div>` : '';
+  // 3일 규칙으로 다시 나오는 날(「11월 17일」)이 섞이면 「내일 할 것」이 아니다.
+  const tmHead = a.tomorrow.every((x) => x.when === '내일') ? '내일 할 것' : '다음에 할 것';
+  const tm = a.tomorrow.length ? `<p class="td-sec rise" style="animation-delay:340ms">${tmHead}</p><div class="td-tm rise" style="animation-delay:380ms">${a.tomorrow.map((x) => `<span><b>${esc(x.when)}</b>${esc(x.title)}</span>`).join('')}</div>` : '';
   const close = `<button type="button" class="td-go rise" data-close style="animation-delay:440ms">오늘은 여기까지</button>`;
   const head = `<header class="td-top"><span class="td-tag">오늘 공부 끝</span></header>`;
   if (!a.changed.length) return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag">오늘 공부 끝</span></div><section class="td-sheet"><h2 class="rise">오늘 기록</h2><p class="td-why rise">오늘 한 것이 기록에 남았어요.</p>${tm}${close}</section></div>`;

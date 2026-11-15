@@ -40,7 +40,11 @@ const TRANSCRIPTS = {
  's1e01-t6': ['길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?'],
 };
 // &miss=1: 「오늘」 줄의 첫 테이크를 끝맺음 노트로(반말 끝).
-const MISS = { 's1e01-t3': '처음엔 힘들었지만 이제 조금씩 익숙해지고 있어', 's1e01-t9': '선배, 편의점 어디 있어', 's1e01-t8': '교수님, 과제 어디에 내야 돼', 's1e01-t6': '정문 어디야' };
+const MISS = { 's1e01-t3': '처음엔 힘들었지만 이제 조금씩 익숙해지고 있어', 's1e01-t9': '선배, 편의점 어디 있어', 's1e01-t8': '교수님, 과제 어디에 내야 돼', 's1e01-t6': '정문 어디야',
+ 's1e01-6': '네, 맞아요. 길을 잃어서 한참 헤맸어', 's1e01-7': '네 선배님 그런데 혹시 도서관이 어디에 있는지 알아', 's1e01-8': '정말요? 선배님 덕분에 살았어' };
+// 기록 A · B는 1화 장면을 이미 심어 둔 「오늘」이다 — 장면 줄은 「오늘」의 복습(11-15부터 첫 화면과 같은 틀린 장면 복습)으로만 다시 말하므로
+// 첫 테이크에 맞는 말(위 표의 마지막 글)을 받아 적는다(&miss=1이면 MISS). 기록 F · none은 1화를 처음부터 하는 판이라 6번 줄은 두 번 놓친 뒤 해낸다.
+const REVIEW_RUN = new Set(['A', 'B']);
 const used = new Map();
 const log = [];
 const TYPES = new Map([['.html', 'text/html; charset=utf-8'], ['.mjs', 'text/javascript; charset=utf-8'], ['.js', 'text/javascript; charset=utf-8'], ['.css', 'text/css; charset=utf-8'], ['.json', 'application/json'],
@@ -122,7 +126,9 @@ const server = http.createServer(async (req, res) => {
    if (!line) return reply(res, 409, { code: 'ITEM_CHANGED' });
    if (body.seconds > line.answerSec + 5) return reply(res, 200, { ok: true, status: 'too_long' });
    const n = used.get(line.id) || 0; used.set(line.id, n + 1);
-   const list = url.searchParams.get('miss') === '1' && MISS[line.id] && n === 0 ? [MISS[line.id]] : TRANSCRIPTS[line.id] || [line.line];
+   const review = REVIEW_RUN.has(url.searchParams.get('s') || 'A') && /^s1e01-\d+$/.test(line.id);
+   const base = TRANSCRIPTS[line.id] || [line.line];
+   const list = url.searchParams.get('miss') === '1' && MISS[line.id] && n === 0 ? [MISS[line.id]] : review ? [base.at(-1)] : base;
    const transcript = list[Math.min(n, list.length - 1)];
    const result = judgeLine(line.spec, { transcript, seconds: body.seconds, speechSeconds: body.seconds, language: '' });
    const gated = result.status !== 'ok';

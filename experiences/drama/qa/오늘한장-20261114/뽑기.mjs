@@ -30,13 +30,14 @@ export async function world({ scenario = 'A', now = Date.now() } = {}) {
  return { D, E, host, entryLearning, VENUES, playStorage, now };
 }
 
-/** gather.mjs와 같은 일을 Node에서: 드라마 사건 · C 차례 · 입장 검사 재방문 맞춤을 읽어 buildToday에 넘긴다. */
+/** gather.mjs와 같은 일을 Node에서: 드라마 사건 · 3일 규칙의 재료(기록기 review()) · 입장 검사 재방문 맞춤을 읽어 buildToday에 넘긴다. */
 export async function read(w, lesson) {
  const { D, E, host, entryLearning, VENUES, playStorage, now } = w;
  const g = host.createGame({ gameId: 'drama-s1' }, D.engine.createGame, D.engine.createLearningSync);
  const events = g.events();
  const rec = D.createRecorder({ win: null, owner: host });
- const delayedDue = lesson.delayed ? rec.delayedDue({ lineId: lesson.delayed.id, skillId: lesson.delayed.skill }) : false;
+ const lineIds = lesson.scene.filter((x) => x.type === 'student').map((x) => x.id);
+ const revisit = rec.review({ lineIds, transferId: lesson.transfer?.id || null, delayedId: lesson.delayed?.id || null });
  g.dispose?.();
  let entry = null;
  const progress = JSON.parse(playStorage.getItem('synk.entry-check.v1') || 'null');
@@ -53,10 +54,13 @@ export async function read(w, lesson) {
     itemKey: plan.target.meta.itemKey, venue: { id: v.id, day: v.day, name: WORLD_VENUES[v.id]?.name || v.name } };
   }
  }
- return { events, delayedDue, entry, today: buildToday({ events, lesson, now, delayedDue, entry, strings: STR.ko }) };
+ return { events, revisit, entry, today: buildToday({ events, lesson, now, revisit, entry, strings: STR.ko }) };
 }
 
-/** 「오늘」 할 것을 해낸 것처럼 남긴다(끝 화면 값 뽑기): 다시 · 새 상황은 첫 테이크 통과, 입장 검사는 약속한 손님을 맞힌 한 근무. */
+/**
+ * 「오늘」 할 것을 해낸 것처럼 남긴다(끝 화면 값 뽑기): 복습은 빈칸 카드로 첫 테이크 통과, 새 상황은 첫 테이크 통과, 입장 검사는 약속한 손님을 맞힌 한 근무.
+ * results[줄 id]로 그 줄의 첫 테이크 판정을 바꾼다(예: 'note-ending').
+ */
 export async function doToday(w, today, { minutesAgo = 30, results = {} } = {}) {
  const { D, E, host, entryLearning, VENUES, playStorage, now } = w;
  const ago = (m) => m / 1440;
@@ -64,6 +68,13 @@ export async function doToday(w, today, { minutesAgo = 30, results = {} } = {}) 
  let m = minutesAgo;
  const SKILL = Object.fromEntries((await import('../../pilot/today/content.mjs')).POOL.map((x) => [x.id, x.skill]));
  for (const item of today.items) {
+  if (item.open.type === 'review') {
+   // 복습 화면은 빈칸 카드(도움 text)로 시작한다 — 빈칸을 열지 않았으니 도움 answer는 없다.
+   m -= 3;
+   const line = (w.lesson || {}).scene?.find((x) => x.id === item.open.lineId);
+   drama.push({ daysAgo: ago(m), phase: 'review', lineId: item.open.lineId, skill: line?.skill || item.why.evidence.skill, helps: ['text'], takes: [results[item.open.lineId] || 'pass'] });
+   continue;
+  }
   if (item.open.type !== 'situation') continue;
   m -= 4;
   const skill = SKILL[item.open.lineId] || 'ko.speaking.ask';
@@ -86,7 +97,7 @@ export async function doToday(w, today, { minutesAgo = 30, results = {} } = {}) 
  return { startAt: now - minutesAgo * 60000, entryTarget: target };
 }
 
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` || process.argv[1]?.endsWith('뽑기.mjs')) {
+if (process.argv[1] && import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` || process.argv[1]?.endsWith('뽑기.mjs')) {
  const args = process.argv.slice(2);
  const scenario = args.find((a) => /^[A-Z]$/.test(a)) || 'A';
  const i = args.indexOf('--now');
@@ -104,11 +115,11 @@ if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` || proc
   const done = await doToday(w, r.today, { minutesAgo: 30 });
   const again = await read(w, lesson);
   const { buildAfter } = await import('../../pilot/today/plan.mjs');
-  const after = buildAfter({ events: again.events, lesson, start: r.today, startAt: done.startAt, now, entryAfter: again.entry, entryTarget: done.entryTarget, strings: STR.ko });
+  const after = buildAfter({ events: again.events, lesson, start: r.today, startAt: done.startAt, now, revisit: again.revisit, entryAfter: again.entry, entryTarget: done.entryTarget, strings: STR.ko });
   console.log(JSON.stringify({ today: r.today, after }, null, 1));
  } else if (args.includes('--json')) console.log(JSON.stringify(r.today, null, 1));
  else {
-  console.log(`[${scenario}] 사건 ${r.events.length} · C 차례 ${r.delayedDue} · 입장 검사 ${r.entry ? r.entry.patternId : '없음'}`);
+  console.log(`[${scenario}] 사건 ${r.events.length} · 3일 규칙 재료 ${r.revisit ? "있음" : "모름"} · 입장 검사 ${r.entry ? r.entry.patternId : '없음'}`);
   console.log(JSON.stringify(r.today, null, 1));
  }
 }

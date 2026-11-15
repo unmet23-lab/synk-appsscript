@@ -1,6 +1,7 @@
 // 「오늘」(깃발 ?today=1 뒤) — 기록을 모으는 곳(얇은 한 겹). 줄마다 제 기록에서 읽는다:
 //  · 드라마: 계정 학습 호스트(SYNKLearningHost)의 계정 기록에서 drama-s1 사건(드라마 묶음 엔진으로 연 읽기 손잡이 — 쓰지 않는다).
-//  · C 차례: 드라마 기록기(createRecorder)의 delayedDue — 지금 첫 화면 C 카드와 같은 판단(Atlas 지연 관측 d7).
+//  · 복습과 C 차례: 드라마 기록기(createRecorder)의 review() — 첫 화면 카드가 3일 규칙(takes.mjs planRevisit)에 넣는 것과 같은 재료다.
+//    plan.mjs가 같은 함수로 정한다(11-15부터. 그 전에는 C를 기록기 delayedDue, 곧 Atlas 지연 관측 7일 짝으로 정했다).
 //  · 입장 검사: 그 게임 묶음 엔진(SynkLearning)으로 연 손잡이에 그 게임의 재방문 맞춤(shiftPlan — 입구가 보이는 문장 그대로)을 묻는다.
 //    열린 근무지 · 연수 여부는 그 게임 진도(synk.entry-check.v1 — WORLD 놀이 계정 기록, 없으면 이 기기)에서 읽는다.
 // 계정 호스트가 없으면(로그인 전 · 이PC 시범) 아무것도 읽지 않는다 — 화면은 지금 첫 화면으로 간다.
@@ -25,13 +26,17 @@ export async function readEvents({ host, D }) {
  } finally { try { g.dispose?.(); } catch { /* 읽기 손잡이 */ } }
 }
 
-/** C 차례: true | false | null(모름). 모르면 잠시 다시 묻는다. */
-export async function readDelayed({ trail, lesson }) {
- const C = lesson?.delayed;
- if (!C || !trail?.delayedDue) return false;
+/**
+ * 3일 규칙의 재료(기록기 review()의 돌려줌) | null(모름). 첫 화면 cardsNow와 같은 줄 목록으로 묻고, 기록이 덜 모였으면 잠시 다시 묻는다.
+ * 끝내 모르면 null — plan.mjs는 복습과 나중 확인 줄을 내지 않는다.
+ */
+export async function readRevisit({ trail, lesson }) {
+ if (!trail?.review) return null;
+ const lineIds = (lesson?.scene || []).filter((x) => x.type === 'student').map((x) => x.id);
+ const ask = { lineIds, transferId: lesson?.transfer?.id || null, delayedId: lesson?.delayed?.id || null };
  for (let i = 0; i < 8; i++) {
-  const due = trail.delayedDue({ lineId: C.id, skillId: C.skill });
-  if (due !== null) return due;
+  const facts = trail.review(ask);
+  if (facts) return facts;
   await wait(250);
  }
  return null;

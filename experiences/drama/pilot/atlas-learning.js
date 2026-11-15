@@ -7000,19 +7000,6 @@ var DramaLearning = (() => {
             };
           });
         }
-        function delayedDue({ lineId, skillId }) {
-          if (!identifier(lineId) || map.getNode(skillId)?.kind !== "skill") return false;
-          return safe(() => {
-            const c = game();
-            if (typeof c.followups !== "function" || typeof c.exposure !== "function") return false;
-            const report = c.followups();
-            if (report?.evidenceComplete !== true) return null;
-            const due = report.items.some((row) => row.status === "due" && row.window === "d7" && row.gameId === GAME_ID && (row.current ?? row.measure.taskVersion === map.map_ver) && row.measure.skillId === skillId && row.measure.difficulty === 2 && row.measure.responseFormat === "spoken" && row.measure.modality === "speaking" && row.measure.audioRequired === false);
-            if (!due) return false;
-            const seen2 = c.exposure({ itemKey: lineId, familyKey: lineId }).seen;
-            return seen2 === false ? true : seen2 === true ? false : null;
-          });
-        }
         function seen(lineId) {
           if (!identifier(lineId)) return null;
           return safe(() => {
@@ -7020,7 +7007,7 @@ var DramaLearning = (() => {
             return v === true || v === false ? v : null;
           });
         }
-        return Object.freeze({ open, review, delayedDue, seen, flush: () => safe(() => coach?.flush?.()) });
+        return Object.freeze({ open, review, seen, flush: () => safe(() => coach?.flush?.()) });
       }
       function createRehearsalHost({ accountKey, revision, connected, transport, storage, win = typeof window === "undefined" ? null : window }) {
         const prefix = `synk.drama.rehearsal.${accountKey}.r${revision}.`;
