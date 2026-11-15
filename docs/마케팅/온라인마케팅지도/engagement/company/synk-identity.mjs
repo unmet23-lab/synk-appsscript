@@ -132,11 +132,13 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
     if(typeof data.access_token!=='string'||data.access_token.length<10||data.access_token.length>16_384||/\s/.test(data.access_token)||!verifyIdentity&&jwtExpiry(data.access_token)<=now())throw unavailable();
     entry.pendingAccessToken=data.access_token;persist(row,entry);
   }
-  async function validateSession(row,{force=false}={}){
+  // Optional callers can distinguish a credential already unusable at lookup
+  // from a session revoked while its central verification was pending.
+  async function validateSession(row,{force=false,allowMissing=false}={}){
     if(!row?.body.synkIdentity)return true;
     if(closing)return false;
     const entry=sessions.get(row.hash),canRefresh=entry?.source==='browser'&&Boolean(entry.refreshToken&&config?.issuer);
-    if(!enabled||!entry||!entryIsCurrent(row,entry)||entry.expiresAt<=now()&&!canRefresh&&!entry.pendingAccessToken){removeSession(row.hash);return false;}
+    if(!enabled||!entry||!entryIsCurrent(row,entry)||entry.expiresAt<=now()&&!canRefresh&&!entry.pendingAccessToken){removeSession(row.hash);return allowMissing?null:false;}
     if(entry.pendingAccessToken&&jwtExpiry(entry.pendingAccessToken)>0&&jwtExpiry(entry.pendingAccessToken)<=now())entry.pendingAccessToken=null;
     const needsRefresh=canRefresh&&entry.expiresAt<=now()+REFRESH_MS;
     if(!force&&!entry.blocked&&!entry.pendingAccessToken&&!needsRefresh&&entry.checkedAt+CHECK_MS>now())return true;

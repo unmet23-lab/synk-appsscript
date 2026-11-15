@@ -37,7 +37,7 @@ export function createEntryDestinationReader({synkIdentity,pulseWorkspaces}){
   };
 }
 
-export function createEntryDestinations({origin,customerIdentity,customerConfig=null,synkIdentity,pulseWorkspaces,
+export function createEntryDestinations({origin,customerIdentity,customerConfig=null,synkIdentity,pulseWorkspaces,readStaffSession=()=>null,
   fetch:fetcher=globalThis.fetch,now=()=>Date.now(),body,send,stopping=()=>false,clientAddress=createClientAddress()}){
   const read=createEntryDestinationReader({synkIdentity,pulseWorkspaces});
   const attempts=createAttemptLimiter({limit:60,windowMs:60_000,maxEntries:1000,now});
@@ -79,7 +79,7 @@ export function createEntryDestinations({origin,customerIdentity,customerConfig=
     const portal=!native&&req.headers.origin===PORTAL_ORIGIN;
     const allowPortal=()=>{res.setHeader('Access-Control-Allow-Origin',PORTAL_ORIGIN);res.setHeader('Access-Control-Allow-Credentials','true');};
     if(!native)res.setHeader('Vary','Origin');
-    // Only this read-only customer route accepts the portal's existing cookie.
+    // Only this read-only route accepts the portal origin for existing browser sessions.
     // Set POST headers before validation so safe errors remain readable there.
     if(portal&&req.method==='POST')allowPortal();
     try{
@@ -103,22 +103,36 @@ export function createEntryDestinations({origin,customerIdentity,customerConfig=
       if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==1||!Object.hasOwn(input,'expectedAccountId')||
         typeof input.expectedAccountId!=='string'||!UUID.test(input.expectedAccountId))throw fault(400,'INVALID_INPUT');
       available();
-      let synkUserId,auth;
+      let synkUserId,auth,staff;
       if(native)synkUserId=await nativeIdentity(req);
       else{
         if(!customerIdentity.status().enabled)throw unavailable();
+        const companySession=readStaffSession(req);
+        if(companySession?.body.synkIdentity){
+          // A company password session alone proves no central account identity.
+          const valid=await synkIdentity.validateSession(companySession,{allowMissing:true});
+          if(valid===false)throw fault(401,'LOGIN_REQUIRED');
+          if(valid)staff=companySession;
+        }
         try{auth=await customerIdentity.authenticate(req);}catch(error){if(error.status===401)throw fault(401,'LOGIN_REQUIRED');throw unavailable();}
         available();
+        if(staff&&!synkIdentity.sessionAllowed(staff)){
+          // A customer round trip can cross the employee identity recheck interval.
+          if(!await synkIdentity.validateSession(staff))throw fault(401,'LOGIN_REQUIRED');
+          available();
+        }
         if(!customerIdentity.status().enabled)throw unavailable();
-        if(!auth||!customerIdentity.isCurrent(auth))throw fault(401,'LOGIN_REQUIRED');
-        synkUserId=auth.user.synkUserId;
-        if(!UUID.test(synkUserId||''))throw unavailable();
+        if(!staff&&!auth)throw fault(401,'LOGIN_REQUIRED');
+        if(staff&&!synkIdentity.sessionAllowed(staff)||auth&&!customerIdentity.isCurrent(auth))throw fault(401,'LOGIN_REQUIRED');
+        const staffId=staff?.body.synkIdentity,customerId=auth?.user.synkUserId;
+        if(staff&&!UUID.test(staffId||'')||auth&&!UUID.test(customerId||''))throw unavailable();
+        if(staff&&auth&&staffId.toLowerCase()!==customerId.toLowerCase())throw fault(409,'ACCOUNT_MISMATCH');
+        synkUserId=staffId||customerId;
       }
       available();
       if(synkUserId.toLowerCase()!==input.expectedAccountId.toLowerCase())throw fault(409,'ACCOUNT_MISMATCH');
-      // No await follows: a logout, superseded customer session, or shutdown cannot
-      // interleave with this synchronous own-assignment read and its response.
-      if(!native&&!customerIdentity.isCurrent(auth))throw fault(401,'LOGIN_REQUIRED');
+      // Both session checks and the assignment read finish synchronously after authentication.
+      if(auth&&!customerIdentity.isCurrent(auth))throw fault(401,'LOGIN_REQUIRED');
       const result=read(synkUserId);
       send(res,200,result);return true;
     }catch(error){

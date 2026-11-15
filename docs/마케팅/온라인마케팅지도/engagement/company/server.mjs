@@ -556,7 +556,7 @@ export function createCompanyApp(options={}) {
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
   const customerDrafts=createCustomerComputerDraft({store,clock,authorized:user=>customerIdentity.isCurrentUser(user)});
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
-  const entryDestinations=createEntryDestinations({origin,customerIdentity,customerConfig,synkIdentity,pulseWorkspaces,
+  const entryDestinations=createEntryDestinations({origin,customerIdentity,customerConfig,synkIdentity,pulseWorkspaces,readStaffSession:rawSession,
     fetch:options.synkEntryIdentityFetch,now:options.synkCustomerIdentityNow,body,send:writeResponse,stopping:()=>stopRequested,clientAddress});
   const aiMarketRoutes=aiMarketEnabled?createAiMarketRoutes({identity:customerIdentity,market:createAiMarketStore({store,now:clock}),origin,send,body,stopping:()=>stopRequested,clientAddress}):null;
   // PULSE 내 모델 회원 경로(판 4, /api/customer/pulse/*): 고객 SYNK ID 세션만, 스위치 myModels가 꺼져 있으면 모두 404.

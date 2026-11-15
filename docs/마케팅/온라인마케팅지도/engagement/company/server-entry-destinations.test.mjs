@@ -12,7 +12,7 @@ const subject='44444444-4444-4444-8444-444444444444',sessionId='33333333-3333-43
 const native='/api/native/entry/destinations',web='/api/customer/entry/destinations';
 const config={issuer,accountApiUrl:issuer+'/functions/v1/synk-account',publishableKey:'sb_publishable_synthetic_fixture',clientId:'customer-browser-fixture',redirectUri:origin+'/api/customer/synk-id/callback'};
 const defer=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
-async function fixture(t){
+async function fixture(t,{staffIdentity=false}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-entry-http-'));
   const f={directory,stamp:Date.parse('2026-11-15T00:00:00Z'),centralStatus:200,externalAttempts:0,calls:[],gate:null};
   const token=(clientId,owner=id,extra={})=>'synthetic.'+Buffer.from(JSON.stringify({iss:issuer+'/auth/v1',client_id:clientId,sub:subject,
@@ -35,7 +35,13 @@ async function fixture(t){
   t.after(async()=>{try{if(app)await app.stop();}finally{globalThis.fetch=originalFetch;assert.equal(dirname(resolve(directory)),resolve(tmpdir()));assert.ok(basename(directory).startsWith('synk-entry-http-'));await rm(directory,{recursive:true,force:true});}assert.equal(f.externalAttempts,0);});
   app=createCompanyApp({dataDir:directory,messengerDataDir:join(directory,'messenger'),port:0,host:'127.0.0.1',origin,allowTestHost:true,
     platformUrl:origin+'/platform/',schedule:false,workNotificationsEnabled:false,deviceNotificationsEnabled:false,
-    synkIdentityConfig:null,teachingConfig:null,synkCustomerIdentityConfig:config,synkCustomerIdentityFetch:identityFetch,
+    synkIdentityConfig:staffIdentity?{accountApiUrl:config.accountApiUrl,publishableKey:config.publishableKey}:null,
+    synkIdentityVerifier:async value=>{
+      assert.equal(value,'fixture-staff-synk-session');
+      f.staffChecks=(f.staffChecks||0)+1;
+      return {synkUserId:id,expiresAt:f.stamp+3600_000};
+    },synkIdentityNow:()=>f.stamp,
+    teachingConfig:null,synkCustomerIdentityConfig:config,synkCustomerIdentityFetch:identityFetch,
     synkEntryIdentityFetch:identityFetch,synkCustomerIdentityNow:()=>f.stamp,messengerIdentityLinks:[],
     messengerDriveStorage:{active:async()=>null,status:async()=>({provider:'local'})}});
   const address=await app.start(),base=`http://127.0.0.1:${address.port}`;
@@ -50,14 +56,83 @@ async function fixture(t){
   };
   const snapshot=()=>JSON.stringify(app.store.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all().map(({name})=>{
     assert.match(name,/^[A-Za-z_][A-Za-z0-9_]*$/);return [name,app.store.db.prepare('SELECT * FROM '+name+' ORDER BY 1').all()];}));
-  const login=async()=>{const start=await request('/api/customer/synk-id/start',{input:{}});assert.equal(start.status,200);const state=new URL(start.data.authorizationUrl).searchParams.get('state');
-    assert.equal((await request('/api/customer/synk-id/callback?'+new URLSearchParams({state,code:id}))).status,302);};
+  const login=async(owner=id)=>{const start=await request('/api/customer/synk-id/start',{input:{}});assert.equal(start.status,200);const state=new URL(start.data.authorizationUrl).searchParams.get('state');
+    assert.equal((await request('/api/customer/synk-id/callback?'+new URLSearchParams({state,code:owner}))).status,302);};
   app.store.put('users','staff',{id:'staff',name:'Synthetic staff',active:true,role:'member'});
   app.store.db.prepare('INSERT INTO synk_identity_links VALUES (?,?,?,?)').run(id,'staff','revision','2026-11-15T00:00:00Z');
   app.store.put('pulseFeatureSettings','main',{myModels:true});
   app.store.put('customerWorkspaces','brand',{id:'brand',status:'active',members:[{synkUserId:id,role:'member'}]});
   return Object.assign(f,{app,request,login,snapshot,jar,token:(owner=id,extra={})=>token(NATIVE_ENTRY_IDENTITY.clientId,owner,extra)});
 }
+
+async function staffLogin(f){
+  const challenge=await f.request('/api/synk-id/challenge',{input:{action:'login'}});
+  assert.equal(challenge.status,200);
+  const exchange=await f.request('/api/synk-id/exchange',{input:{challenge:challenge.data.challenge,confirm:true},bearer:'fixture-staff-synk-session'});
+  assert.equal(exchange.status,200);
+  assert.equal((await f.request('/api/me')).data.synkUserId,id);
+}
+
+test('web entry accepts the current linked employee session without customer login or new privileges',async t=>{
+  const f=await fixture(t,{staffIdentity:true});await staffLogin(f);
+  const query=expectedAccountId=>f.request(web,{originHeader:'https://synk.im',input:{expectedAccountId}});
+  const before=f.snapshot(),cookies=[...f.jar];
+  const response=await query(id);
+  assert.equal(response.status,200);assert.equal(response.data.workspace.state,'assigned');
+  assert.equal(response.data.pulse.state,'assigned');assert.deepEqual(response.headers.getSetCookie(),[]);
+  assert.equal((await query(other)).status,409);
+  assert.equal((await f.request(native,{input:{expectedAccountId:id}})).status,401);
+  assert.equal(f.snapshot(),before);assert.deepEqual([...f.jar],cookies);
+  await f.login();assert.equal((await query(id)).status,200);
+  await f.login(other);
+  for(const who of [id,other]){
+    const result=await query(who);assert.equal(result.status,409);assert.equal(result.data.error.code,'ACCOUNT_MISMATCH');
+    assert.deepEqual(result.headers.getSetCookie(),[]);
+  }
+});
+
+test('web entry drops a linked employee session invalidated during the customer check',async t=>{
+  const f=await fixture(t,{staffIdentity:true});await staffLogin(f);await f.login();
+  const gate={entered:defer(),release:defer()};f.gate=gate;
+  const pending=f.request(web,{input:{expectedAccountId:id}});
+  await Promise.race([gate.entered.promise,pending.then(r=>assert.fail('entry finished before customer validation: '+r.status))]);
+  try{f.app.store.db.prepare("DELETE FROM tokens WHERE purpose='session' AND userId=?").run('staff');}
+  finally{gate.release.resolve();}
+  const result=await pending;assert.equal(result.status,401);assert.equal(result.data.error.code,'LOGIN_REQUIRED');
+});
+
+test('web entry revalidates employee identity after its check interval',async t=>{
+  const f=await fixture(t,{staffIdentity:true});await staffLogin(f);
+  const checks=f.staffChecks;
+  f.stamp+=40_000;
+  const result=await f.request(web,{input:{expectedAccountId:id}});
+  assert.equal(result.status,200);assert.equal(f.staffChecks,checks+1);
+});
+
+test('an employee credential already expired before entry does not block the current customer',async t=>{
+  const f=await fixture(t,{staffIdentity:true});await staffLogin(f);
+  f.stamp+=3600_001;await f.login(other);
+  const result=await f.request(web,{input:{expectedAccountId:other}});
+  assert.equal(result.status,200);assert.equal(result.data.workspace.state,'unassigned');
+  assert.deepEqual(result.headers.getSetCookie(),[]);
+});
+
+test('valid dual sessions stay current when the staff check interval elapses during customer authentication',async t=>{
+  const f=await fixture(t,{staffIdentity:true});await staffLogin(f);await f.login();
+  f.stamp+=29_900;
+  const gate={entered:defer(),release:defer()};f.gate=gate;
+  const pending=f.request(web,{input:{expectedAccountId:id}});
+  await Promise.race([gate.entered.promise,pending.then(r=>assert.fail('entry finished before customer validation: '+r.status))]);
+  f.stamp+=300;gate.release.resolve();
+  const result=await pending;assert.equal(result.status,200);assert.equal(result.data.workspace.state,'assigned');
+});
+
+test('a local employee login with no SYNK session cannot assert a web entry identity',async t=>{
+  const f=await fixture(t,{staffIdentity:true});
+  f.jar.set('synk_company_session',f.app.store.mint('session','staff',{csrfToken:'test-csrf'},10));
+  const r=await f.request(web,{input:{expectedAccountId:id}});assert.equal(r.status,401);
+  assert.equal(r.data.error.code,'LOGIN_REQUIRED');assert.deepEqual(r.headers.getSetCookie(),[]);
+});
 
 test('real HTTP native and customer reads preserve company records and cookies while returning the same own assignments',async t=>{
   const f=await fixture(t);await f.login();const before=f.snapshot(),cookies=[...f.jar];
