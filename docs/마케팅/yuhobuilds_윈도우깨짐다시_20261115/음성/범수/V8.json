@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "예전 자리를 열면, 새 드라이브로 이어지게요.",
+ "dur": 2.523,
+ "words": [
+  {
+   "text": "예전",
+   "start": 0.02,
+   "end": 0.228
+  },
+  {
+   "text": "자리를",
+   "start": 0.286,
+   "end": 0.57
+  },
+  {
+   "text": "열면,",
+   "start": 0.627,
+   "end": 0.949
+  },
+  {
+   "text": "새",
+   "start": 1.29,
+   "end": 1.404
+  },
+  {
+   "text": "드라이브로",
+   "start": 1.461,
+   "end": 1.859
+  },
+  {
+   "text": "이어지게요.",
+   "start": 1.915,
+   "end": 2.523
+  }
+ ],
+ "source": {
+  "key": "09224aca7abc89a680ed7642c5ebc223",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 176
+ }
+}

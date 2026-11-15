@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V11",
+ "text": "문서 폴더 파일까지, 그대로요.",
+ "dur": 1.568,
+ "words": [
+  {
+   "text": "문서",
+   "start": 0.02,
+   "end": 0.236
+  },
+  {
+   "text": "폴더",
+   "start": 0.297,
+   "end": 0.498
+  },
+  {
+   "text": "파일까지,",
+   "start": 0.545,
+   "end": 0.931
+  },
+  {
+   "text": "그대로요.",
+   "start": 1.071,
+   "end": 1.568
+  }
+ ],
+ "source": {
+  "key": "262463b1586cf6c9eca1c08bc35f84a2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 136
+ }
+}

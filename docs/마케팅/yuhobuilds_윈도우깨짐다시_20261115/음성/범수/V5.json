@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "그래서 AI한테 맡겨서, 다른 드라이브에 이미 있는 사본만 골랐더니, 칠백 기가가 넘었어요.",
+ "dur": 4.567,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "AI한테",
+   "start": 0.333,
+   "end": 0.764
+  },
+  {
+   "text": "맡겨서,",
+   "start": 0.803,
+   "end": 1.129
+  },
+  {
+   "text": "다른",
+   "start": 1.56,
+   "end": 1.742
+  },
+  {
+   "text": "드라이브에",
+   "start": 1.782,
+   "end": 2.173
+  },
+  {
+   "text": "이미",
+   "start": 2.264,
+   "end": 2.395
+  },
+  {
+   "text": "있는",
+   "start": 2.434,
+   "end": 2.616
+  },
+  {
+   "text": "사본만",
+   "start": 2.656,
+   "end": 2.969
+  },
+  {
+   "text": "골랐더니,",
+   "start": 3.008,
+   "end": 3.387
+  },
+  {
+   "text": "칠백",
+   "start": 3.543,
+   "end": 3.764
+  },
+  {
+   "text": "기가가",
+   "start": 3.804,
+   "end": 4.026
+  },
+  {
+   "text": "넘었어요.",
+   "start": 4.065,
+   "end": 4.567
+  }
+ ],
+ "source": {
+  "key": "58481ed6ef774601c53fb6abce7a3c60",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

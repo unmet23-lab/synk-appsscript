@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V10",
+ "text": "드라이브 정리 전에, 이 세 줄은 저장해 두세요.",
+ "dur": 2.267,
+ "words": [
+  {
+   "text": "드라이브",
+   "start": 0.02,
+   "end": 0.318
+  },
+  {
+   "text": "정리",
+   "start": 0.359,
+   "end": 0.562
+  },
+  {
+   "text": "전에,",
+   "start": 0.603,
+   "end": 0.78
+  },
+  {
+   "text": "이",
+   "start": 1.132,
+   "end": 1.145
+  },
+  {
+   "text": "세",
+   "start": 1.213,
+   "end": 1.295
+  },
+  {
+   "text": "줄은",
+   "start": 1.349,
+   "end": 1.526
+  },
+  {
+   "text": "저장해",
+   "start": 1.566,
+   "end": 1.838
+  },
+  {
+   "text": "두세요.",
+   "start": 1.878,
+   "end": 2.267
+  }
+ ],
+ "source": {
+  "key": "53cbed2538b80ba651ce42b1569a7888",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.02,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

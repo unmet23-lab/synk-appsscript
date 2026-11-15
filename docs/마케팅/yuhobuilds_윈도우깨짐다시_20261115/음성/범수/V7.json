@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "지우는 클릭은, 제가 했어요.",
+ "dur": 1.629,
+ "words": [
+  {
+   "text": "지우는",
+   "start": 0.02,
+   "end": 0.351
+  },
+  {
+   "text": "클릭은,",
+   "start": 0.4,
+   "end": 0.779
+  },
+  {
+   "text": "제가",
+   "start": 0.927,
+   "end": 1.141
+  },
+  {
+   "text": "했어요.",
+   "start": 1.191,
+   "end": 1.629
+  }
+ ],
+ "source": {
+  "key": "2cf5e053999149316b13186214b4ec2e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 0.98,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

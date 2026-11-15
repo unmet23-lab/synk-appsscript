@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1112,
+  "lufs": -17
+ },
+ "made": "2026-11-15T01:15:43.689Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "새 SSD를 달다가, 윈도우가 깨졌어요.",
+   "dur": 2.588,
+   "syllablesPerSec": 5.02,
+   "src": "V1.wav",
+   "key": "8b545cea7fd8171c4360c2a0d4fe297b",
+   "words": 5
+  },
+  {
+   "id": "V2",
+   "text": "원래 드라이브를 통째로 새 드라이브에 백업하고, 다시 깔았더니 잃은 파일은 하나도 없었어요.",
+   "dur": 4.352,
+   "syllablesPerSec": 8.73,
+   "src": "V2.wav",
+   "key": "499e9d43da7d15e9256c7d05a7eafa7f",
+   "words": 12
+  },
+  {
+   "id": "V11",
+   "text": "문서 폴더 파일까지, 그대로요.",
+   "dur": 1.568,
+   "syllablesPerSec": 7.65,
+   "src": "V11.wav",
+   "key": "262463b1586cf6c9eca1c08bc35f84a2",
+   "words": 4
+  },
+  {
+   "id": "V3",
+   "text": "무거운 자료는 새 드라이브로 옮기고, 원래 자리엔 바로가기를 뒀죠.",
+   "dur": 3.203,
+   "syllablesPerSec": 8.43,
+   "src": "V3.wav",
+   "key": "e8a1b4b577c7550074f4604ef3c8fa88",
+   "words": 9
+  },
+  {
+   "id": "V8",
+   "text": "예전 자리를 열면, 새 드라이브로 이어지게요.",
+   "dur": 2.523,
+   "syllablesPerSec": 7.13,
+   "src": "V8.wav",
+   "key": "09224aca7abc89a680ed7642c5ebc223",
+   "words": 6
+  },
+  {
+   "id": "V4",
+   "text": "근데 옮기고 나서 원래 것을 안 지워서, 원래 드라이브는 거의 꽉 차 있었어요.",
+   "dur": 3.724,
+   "syllablesPerSec": 8.06,
+   "src": "V4.wav",
+   "key": "91bd6ebd904afaa5e91c7e730f05a864",
+   "words": 13
+  },
+  {
+   "id": "V5",
+   "text": "그래서 AI한테 맡겨서, 다른 드라이브에 이미 있는 사본만 골랐더니, 칠백 기가가 넘었어요.",
+   "dur": 4.567,
+   "syllablesPerSec": 7.66,
+   "src": "V5.wav",
+   "key": "58481ed6ef774601c53fb6abce7a3c60",
+   "words": 12
+  },
+  {
+   "id": "V6",
+   "text": "백업 속에서 달라졌거나 한쪽에만 있는 건, 남겨 두고요.",
+   "dur": 2.927,
+   "syllablesPerSec": 7.52,
+   "src": "V6.wav",
+   "key": "3bfdafe4b148e28f214875356e6c55db",
+   "words": 8
+  },
+  {
+   "id": "V7",
+   "text": "지우는 클릭은, 제가 했어요.",
+   "dur": 1.629,
+   "syllablesPerSec": 6.75,
+   "src": "V7.wav",
+   "key": "2cf5e053999149316b13186214b4ec2e",
+   "words": 4
+  },
+  {
+   "id": "V9",
+   "text": "옛 사본 쪽만 지웠더니, 칠백 기가가 비었어요.",
+   "dur": 2.503,
+   "syllablesPerSec": 7.19,
+   "src": "V9.wav",
+   "key": "af59774f4511508cd5a78dc7017b4b3a",
+   "words": 7
+  },
+  {
+   "id": "V10",
+   "text": "드라이브 정리 전에, 이 세 줄은 저장해 두세요.",
+   "dur": 2.267,
+   "syllablesPerSec": 7.94,
+   "src": "V10.wav",
+   "key": "53cbed2538b80ba651ce42b1569a7888",
+   "words": 8
+  }
+ ]
+}

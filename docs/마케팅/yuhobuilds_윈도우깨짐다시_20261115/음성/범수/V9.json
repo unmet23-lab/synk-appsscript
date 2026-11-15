@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V9",
+ "text": "옛 사본 쪽만 지웠더니, 칠백 기가가 비었어요.",
+ "dur": 2.503,
+ "words": [
+  {
+   "text": "옛",
+   "start": 0.02,
+   "end": 0.133
+  },
+  {
+   "text": "사본",
+   "start": 0.175,
+   "end": 0.385
+  },
+  {
+   "text": "쪽만",
+   "start": 0.428,
+   "end": 0.653
+  },
+  {
+   "text": "지웠더니,",
+   "start": 0.695,
+   "end": 1.089
+  },
+  {
+   "text": "칠백",
+   "start": 1.329,
+   "end": 1.596
+  },
+  {
+   "text": "기가가",
+   "start": 1.638,
+   "end": 1.85
+  },
+  {
+   "text": "비었어요.",
+   "start": 1.892,
+   "end": 2.503
+  }
+ ],
+ "source": {
+  "key": "af59774f4511508cd5a78dc7017b4b3a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 195
+ }
+}

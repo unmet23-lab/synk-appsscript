@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "백업 속에서 달라졌거나 한쪽에만 있는 건, 남겨 두고요.",
+ "dur": 2.927,
+ "words": [
+  {
+   "text": "백업",
+   "start": 0.02,
+   "end": 0.218
+  },
+  {
+   "text": "속에서",
+   "start": 0.271,
+   "end": 0.495
+  },
+  {
+   "text": "달라졌거나",
+   "start": 0.548,
+   "end": 1.022
+  },
+  {
+   "text": "한쪽에만",
+   "start": 1.127,
+   "end": 1.523
+  },
+  {
+   "text": "있는",
+   "start": 1.563,
+   "end": 1.72
+  },
+  {
+   "text": "건,",
+   "start": 1.76,
+   "end": 1.905
+  },
+  {
+   "text": "남겨",
+   "start": 2.261,
+   "end": 2.485
+  },
+  {
+   "text": "두고요.",
+   "start": 2.524,
+   "end": 2.927
+  }
+ ],
+ "source": {
+  "key": "3bfdafe4b148e28f214875356e6c55db",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}
