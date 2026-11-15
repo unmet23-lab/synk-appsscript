@@ -497,6 +497,31 @@ test('git 무시·QA·미디어 폴더의 작업 MD와 창고 복원 목록을 �
   assert.equal(fs.readFileSync(path.join(f.dest, 'SYNK/시스템/Videos/한강/media/콘티.md'), 'utf8'), '# 영상 원문');
 });
 
+test('작업문서 보존 폴더는 지금 색인이 가리키는 판과 조각만 OneDrive에 담고, 색인을 못 읽으면 예전처럼 모두 담는다(11-16)', t => {
+  const f = fixture(t), vault = path.join(f.dir, 'SYNK_원본창고'), base = path.join(vault, '작업문서_미통합_자동');
+  require('node:child_process').execFileSync('git', ['init', '-q'], { cwd: f.root });
+  const add = (rel, body) => { fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true }); fs.writeFileSync(path.join(base, rel), body); };
+  const sha = text => require('node:crypto').createHash('sha256').update(text).digest('hex');
+  const current ='files/' + sha('# 지금 판') + '.md', old = 'files/' + sha('# 옛 판') + '.md', oldCode = 'files/' + sha('옛 코드') + '.js';
+  add(current, '# 지금 판'); add(old, '# 옛 판'); add(oldCode, '옛 코드');
+  add('manifests/aa-0.json', JSON.stringify({ entries: [{ relativePath: 'doc.md', sameAsPrimary: false, preservedFile: current }, { relativePath: 'same.md', sameAsPrimary: true }] }));
+  add('manifests/bb-0.json', JSON.stringify({ entries: [{ relativePath: 'doc.md', preservedFile: old }, { relativePath: 'a.js', preservedFile: oldCode }] }));
+  add('sources/ab.json', '{}');
+  add('excluded-protected-manifest.json', JSON.stringify({ rejected: [] }));
+  add('index.json', JSON.stringify({ manifests: [{ file: 'manifests/aa-0.json' }] }));
+  const listed = () => new Set(시스템목록(f.root).filter(row => row.sourceScope === 'SYNK_원본창고').map(row => row.source));
+  const rows = listed();
+  for (const rel of [current, 'manifests/aa-0.json', 'sources/ab.json', 'index.json', 'excluded-protected-manifest.json'])
+    assert.ok(rows.has('작업문서_미통합_자동/' + rel), rel);
+  for (const rel of [old, oldCode, 'manifests/bb-0.json']) assert.ok(!rows.has('작업문서_미통합_자동/' + rel), rel);
+  // 색인이 깨졌거나 가리키는 조각이 없으면 덤 사본에서 빠뜨리지 않는다.
+  add('index.json', '{"manifests": [');
+  assert.ok(listed().has('작업문서_미통합_자동/' + old));
+  add('index.json', JSON.stringify({ manifests: [{ file: 'manifests/cc-0.json' }] }));
+  const missingShard = listed();
+  assert.ok(missingShard.has('작업문서_미통합_자동/' + old) && missingShard.has('작업문서_미통합_자동/manifests/bb-0.json'));
+});
+
 test('공간 지킴이 장부(이어 쓴 조각 포함)·마지막 점검·Drive에 없는 목록은 담고 다른 상태 파일은 계속 뺀다(10-19)', t => {
   const f = fixture(t), { execFileSync } = require('node:child_process');
   execFileSync('git', ['init', '-q'], { cwd: f.root });

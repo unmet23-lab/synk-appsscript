@@ -471,6 +471,28 @@ function rowRoot(root, row) {
   if (row.kind !== 'system' || !scope) throw new Error('허용하지 않는 시스템 범위');
   return scope.root;
 }
+// 작업문서 보존 폴더의 files·manifests는 지금 색인(index.json)이 가리키는 것만 OneDrive 덤 사본에 둔다(11-16, 유호님 「옛 판 빼기」).
+// 없어진 작업트리의 옛 판까지 담았더니 11-15에 49,683개 4.0GB가 되어 OneDrive 저장 공간이 찼다(색인이 가리키는 판은 3,464개 0.13GB).
+// 옛 판은 창고와 복원 묶음 「작업기록」(77yuhbs 암호문)에 그대로 남는다. 색인이나 그 조각을 읽지 못하면 예전처럼 모두 담는다.
+const PRESERVED_OUTPUT = /^작업문서_미통합_자동\/((?:files\/[a-f0-9]{64}\.[a-z0-9]+)|(?:manifests\/[a-f0-9]+-\d+\.json))$/i;
+function currentWorktreePreserved(vault) {
+  const base = path.join(vault, '작업문서_미통합_자동'), keep = new Set();
+  try {
+    const index = JSON.parse(fs.readFileSync(path.join(base, 'index.json'), 'utf8'));
+    if (!Array.isArray(index.manifests)) return null;
+    for (const shard of index.manifests) {
+      if (typeof shard?.file !== 'string' || !/^manifests\/[a-f0-9]+-\d+\.json$/.test(shard.file)) return null;
+      const content = JSON.parse(fs.readFileSync(path.join(base, shard.file), 'utf8'));
+      if (!Array.isArray(content.entries)) return null;
+      keep.add(shard.file.toLowerCase());
+      for (const row of content.entries) if (typeof row?.preservedFile === 'string') keep.add(row.preservedFile.toLowerCase());
+    }
+  } catch { return null; }
+  return source => {
+    const match = source.replace(/\\/g, '/').match(PRESERVED_OUTPUT);
+    return !match || keep.has(match[1].toLowerCase());
+  };
+}
 function 시스템목록(root = ROOT, { onProgress = () => {} } = {}) {
   const rows = [], scopes = systemScopes(root), linked = linkPaths(scopes.map(scope => scope.root));
   for (const scope of scopes) {
@@ -497,6 +519,10 @@ function 시스템목록(root = ROOT, { onProgress = () => {} } = {}) {
         { cwd: scope.root, maxBuffer: 32 << 20 }).toString('utf8').split('\0').filter(Boolean);
       // Git 무시 규칙은 대용량 자산용일 수 있다. 그 안의 작업 MD는 별도로 보존한다.
       sources.push(...workTextFiles(scope.root, undefined, onProgress));
+    }
+    if (scope.mode === 'vault') {
+      const keep = currentWorktreePreserved(scope.root);
+      if (keep) sources = sources.filter(keep);
     }
     scope.status = 'available';
     for (const source of new Set(sources)) rows.push({ brand: 'SYNK', source, sourceScope: scope.name,
