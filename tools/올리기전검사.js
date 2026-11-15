@@ -165,7 +165,12 @@ const inShot = (times, ranges) => times.length > 0 && times.every((t) => ranges.
 // 표준편차가 70 넘게 나와 걸리지 않는다(E8 · 퀴즈 #5 실측). 노란 글자처럼 밝은 글자도 판 없이 그림 위면 같이 걸린다.
 // 고칠 것은 6자 넘는 줄이 1초 넘게 머물고 둘레 어두운 칸이 45% 아래일 때만이고, 짧은 낱말 · 잠깐 지나가는 줄(퀴즈 「NOPE!」 도장,
 // 화면 속 앱 단추) · 그림자가 반쯤 있는 줄(E8 첫 화면 제목 48%) · 잘못 읽은 줄은 확인할 것이다.
+// 11-15 덧붙임(LAB M52 간체 판): 크림색 말풍선 위의 굵은 빨간 한자 줄은 획이 빽빽해 상자 안 흰 칸(종이)이 33~36%로 떨어지고, 빨간 획이
+// 회색 100 언저리라 「어두운 둘레」로도 안 잡혀 판 없는 흰 글자로 오판됐다. 그래서 줄 상자 바로 바깥 6칸 둘레를 함께 본다 — 둘레의
+// 60% 넘게 흰 칸이면 밝은 판(말풍선 · 흰 카드) 위 글자라 걸지 않는다(그 줄 둘레 실측 98~100%, 그림 위 흰 글자의 둘레는 그림이라 0%대).
 const WHITE = 215;
+const PANEL_MARGIN = 6;
+const PANEL_BRIGHT = 0.6;
 function plainWhite(gray, w, h, line) {
   const s = w / 1080;
   const x0 = Math.max(0, Math.floor(line.x0 * s)), x1 = Math.min(w, Math.ceil(line.x1 * s));
@@ -178,6 +183,16 @@ function plainWhite(gray, w, h, line) {
   for (let y = 0; y < bh; y += 1) for (let x = 0; x < bw; x += 1) if (at(x, y) >= WHITE) { bright[y * bw + x] = 1; nb += 1; }
   const frac = nb / (bw * bh);
   if (frac < 0.05 || frac > 0.42) return { frac, plain: false };
+  let edge = 0, edgeBright = 0;
+  for (let y = Math.max(0, y0 - PANEL_MARGIN); y < Math.min(h, y1 + PANEL_MARGIN); y += 1) {
+    for (let x = Math.max(0, x0 - PANEL_MARGIN); x < Math.min(w, x1 + PANEL_MARGIN); x += 1) {
+      if (x >= x0 && x < x1 && y >= y0 && y < y1) continue;
+      edge += 1;
+      if (gray[y * w + x] >= WHITE) edgeBright += 1;
+    }
+  }
+  const panel = edge ? edgeBright / edge : 0;
+  if (panel > PANEL_BRIGHT) return { frac, panel, plain: false };
   const near = new Uint8Array(bw * bh);
   for (let y = 0; y < bh; y += 1) for (let x = 0; x < bw; x += 1) {
     if (!bright[y * bw + x]) continue;
@@ -196,7 +211,7 @@ function plainWhite(gray, w, h, line) {
   const ringDark = ring ? dark / ring : 0;
   const bgMean = n ? sum / n : 0;
   const bgStd = n ? Math.sqrt(Math.max(0, sq / n - bgMean * bgMean)) : 0;
-  return { frac, ringDark, bgMean, bgStd, plain: n >= 20 && ringDark < 0.5 && bgStd >= 25 && bgStd < 60 };
+  return { frac, panel, ringDark, bgMean, bgStd, plain: n >= 20 && ringDark < 0.5 && bgStd >= 25 && bgStd < 60 };
 }
 
 // 0.5초마다(글자 인식과 같은 장면) 540×960 회색 프레임 → { w, h, frame(i) }
