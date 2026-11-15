@@ -26,7 +26,8 @@ export const CUTS: CutT[] = [
   // 메일 아래 줄 「3일 안에 연락 없으면 / 학부모님들께 보낸다」(V2 뒤쪽 — 1.3배로 당겨 글 줄을 키우고, 책상 위 휴대폰은 화면 밖으로)
   { from: 5.6, to: 6.5, src: 'img/V2.mp4', start: 5.0, crop: { s: 1.3, cx: 600, cy: 960 }, audio: 1.0, drift: 0 },
   // 몰래 누르는 손(V10 · 화면은 안 보임) — 반전 「신고하신 원장님?」의 씨앗
-  { from: 6.5, to: 7.7, src: 'img/V10.mp4', start: 0.3, crop: F, audio: 1.0, drift: 0 },
+  // 11-16 최종 확인 미흡 고침(7.7초 점프 컷 — 손에 든 휴대폰이 한 프레임 만에 책상 위로): V10 뒤쪽 3.6~4.8초(한 번 더 누름 → 내려놓음)를 써서 다음 컷의 책상 위 휴대폰과 잇는다
+  { from: 6.5, to: 7.7, src: 'img/V10.mp4', start: 3.6, crop: F, audio: 1.0, drift: 0 },
   // 승 — 울리던 휴대폰을 집어 귀에 댐 · 「…여보세요?」(V3r 3.52~4.08) · 휴대폰 속 「메일 보셨죠? 경찰에 알리면, 바로 뿌립니다」(협박1)
   { from: 7.7, to: 13.8, src: 'img/V3.mp4', start: 1.8, crop: F, audio: 1.0, drift: 0.008 },
   // 이해 시험(11-15 · 넷 중 셋 「14~24초가 늘어진다」) → 송금 · 시간 끌기 구간을 2.3초 줄였다(10.8 → 8.5초)
@@ -36,7 +37,8 @@ export const CUTS: CutT[] = [
   // 볼펜 딸깍(4.64) · 눈이 문 쪽으로 · 「잠깐만요…」(V5b 받은 판 — 대본 정렬 「잠깐만요」 7.84~8.56)
   { from: 15.0, to: 20.7, src: 'img/V5b.mp4', start: 3.0, crop: F, audio: 1.0, drift: 0 },
   // 엄지가 「보내기」에 닿을 듯하다 비켜남(V4r 4.6~6.2) — 바로 다음에 경찰관
-  { from: 20.7, to: 22.3, src: 'img/V4.mp4', start: 4.6, crop: F, audio: 1.0, drift: 0 },
+  // 11-16 최종 확인 미흡 고침(「엄지가 보내기 위에 머문 채 끝나 돈을 보낸 것으로 읽힘」): 5.2~6.8초 — 엄지가 「보내기」에서 비켜나는 6.4초 뒤까지 보인다
+  { from: 20.7, to: 22.3, src: 'img/V4.mp4', start: 5.2, crop: F, audio: 1.0, drift: 0 },
   // 전 — 경찰관이 문으로 들어오며 받아 적음 · 원장은 휴대폰을 귀에 댄 채 「쉿」 · 경찰관 「신고하신—」(V6 받은 판 — 대본 정렬 3.75~5.36)
   { from: 22.3, to: 26.1, src: 'img/V6.mp4', start: 0.35, crop: F, audio: 1.0, drift: 0.006 },
   // 회상 1.4초 — 메일을 본 그 자리에서 몰래 누르던 손(V10 앞쪽, 빛 바랜 결). 소리는 V6 그대로 이어 「…원장님 맞으시죠?」
@@ -55,14 +57,14 @@ export const CUTS: CutT[] = [
   { from: 45.7, to: 48.7, src: 'img/V9.mp4', start: 6.6, crop: F, audio: 1.0, drift: 0.006 },
 ];
 
-// 큰 글자 = 말. grey = 전화 속 남자 · 경찰관의 말(원장은 흰). at = 줄마다 뜨는 초. butter = 버터를 쓰는 한 줄(버터 줄 번호 bi, 없으면 첫 줄).
+// 큰 글자 = 말. grey = 휴대폰 속 협박범의 말뿐이다. 방 안 사람(원장 · 경찰관)의 말은 흰(11-16 최종 확인 미흡 고침 — 경찰관 말이 협박범과 같은 회색이라 소리를 끄면 협박범 말로 읽혔다). at = 줄마다 뜨는 초. butter = 버터를 쓰는 한 줄(버터 줄 번호 bi, 없으면 첫 줄).
 export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; at?: number[]; butter?: boolean; bi?: number }[] = [
   { lines: ['학원 원장에게 온', '메일 한 통'], from: 0.25, to: 3.15, size: 104, instant: true },
   { lines: ['우리 애들…', '명단을…?'], from: 3.55, to: 5.55, size: 104, at: [3.55, 4.75] },
   { lines: ['메일 보셨죠?', '경찰에 알리면', '바로 뿌립니다'], from: 10.2, to: 14.05, grey: true, size: 84, at: [10.2, 11.8, 13.08] },
   { lines: ['10분 드릴게요', '안 그러면', '단톡방에 올립니다'], from: 14.3, to: 17.95, grey: true, size: 84, at: [14.3, 15.74, 16.78] },
   { lines: ['잠깐만요…'], from: 19.8, to: 20.65, size: 104 },
-  { lines: ['신고하신 원장님', '맞으시죠?'], from: 25.7, to: 27.4, grey: true, size: 96 },
+  { lines: ['신고하신 원장님', '맞으시죠?'], from: 25.7, to: 27.4, size: 96 },
   // 핵심 장면은 V7r이 스스로 다가가 경찰관 얼굴이 위로 올라온다 — 두 줄을 쌓으면 둘째 줄이 경찰관 눈을 덮어(11-15 v05 정지 그림) 한 줄씩 바꿔 띄운다
   { lines: ['여보세요?'], from: 29.2, to: 30.1, grey: true, size: 92 },
   { lines: ['왜 말이 없어요?'], from: 30.16, to: 31.5, grey: true, size: 92 },
@@ -70,7 +72,7 @@ export const LINES: { lines: string[]; from: number; to: number; grey?: boolean;
   { lines: ['다 뿌립니다'], from: 32.72, to: 33.6, grey: true, size: 92 },
   { lines: ['근데요, 지금 경찰분이'], from: 33.66, to: 35.25, size: 88 },
   { lines: ['옆에서 같이 듣고 계세요'], from: 35.3, to: 37.05, size: 88 },
-  { lines: ['이제부터는', '저희가 맡을게요'], from: 39.78, to: 42.4, grey: true, size: 96, at: [39.78, 40.98] },
+  { lines: ['이제부터는', '저희가 맡을게요'], from: 39.78, to: 42.4, size: 96, at: [39.78, 40.98] },
   { lines: ['AI로 업체 90여 곳을 털고', '38곳에 이런 메일을 보냈다'], from: 42.6, to: 45.6, size: 80, meta: '실제 사건 · 서울경찰청 발표 2026년 10월 26일', metaSize: 40, deep: true, at: [42.6, 43.4] },
   { lines: ['협상도 송금도 말고', '바로 112 신고'], from: 45.85, to: 49.1, size: 104, meta: '경찰 당부', metaSize: 42, butter: true, bi: 1, at: [45.85, 46.5] },
 ];

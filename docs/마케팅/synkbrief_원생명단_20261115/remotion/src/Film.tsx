@@ -1,6 +1,6 @@
 // synkbrief B54 「원생 명단」 본편 — 새 방향 편(재연 드라마 + 끝에 지키는 법 한 줄). 뼈대는 형식 원본 92mUc9V0eJY(AI 사기 예방 재연 숏드라마 · 39.2초)의 박자 자리.
 // 결(B50 Film.tsx의 장면 코드를 옮김 — 틀 파일은 tools/편틀 원천): 장면을 아래로 내리고 위는 같은 장면을 뒤집어 흐리게 · 위 그늘 위 큰 글자가 곧 말 ·
-// 원장은 흰, 전화 속 남자 · 경찰관의 말은 회색 · 버터는 한 곳(LINES의 butter · bi) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
+// 원장 · 경찰관(방 안 사람)은 흰, 휴대폰 속 협박범의 말은 회색(11-16) · 버터는 한 곳(LINES의 butter · bi) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
 // 그린 앱 화면 칸은 없다 — 메일 · 「발신번호 표시제한」 · 송금 화면은 시작 그림에 함께 구운 글자다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
