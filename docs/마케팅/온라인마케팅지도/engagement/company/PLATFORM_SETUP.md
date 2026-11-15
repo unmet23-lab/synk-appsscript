@@ -86,6 +86,24 @@ node tools/계정통계수집.cjs --입력 <저장소_밖의_manifest.json> --�
 
 브라우저 보완 수집은 원장의 기존 프로필과 `~/.synk/account-metrics/browser-profiles.json`의 최근 소유자 확인을 먼저 읽는다. 이 파일은 로그인 성공 보장이 아니며 매번 실제 핸들과 계정 번호를 대조해야 한다. 11월 14일에는 샤오훙수와 PULSE Instagram 소유자를 기존 Ego Profile 5에서 확인했다. 다른 프로필의 로그인 화면을 이 계정의 로그아웃으로 확대하지 않는다. API 수집이 정상인 계정은 부족한 지표가 있을 때만 화면에서 보완한다.
 
+<a id="official-daily-exports"></a>
+### 서브스택과 더우인의 일별 내보내기
+
+서브스택은 원장에 등록된 발행물의 관리자 화면에서 트래픽 CSV를 받는다. `Views`는 이메일을 포함한 조회수다. 더우인은 소유자 번호를 확인한 뒤 데이터 센터의 작품과 팔로워 화면에서 각각 XLSX를 받는다. 작품 파일은 게시 수, 조회수, 좋아요, 공유, 댓글을 제공한다. 팔로워 파일에서는 일별 유입과 이탈을 읽는다.
+
+예약 수집 때는 원본과 확인 JSON을 같은 비공개 회차 폴더에 둔다. JSON의 `accountId`는 원장 ID, `observedHandle`은 화면에서 대조한 소유자, `sourceUrl`은 실제 통계 화면, `observedAt`은 시간대가 있는 확인 시각이다. `format`에는 `substack-traffic`, `douyin-posts`, `douyin-followers` 중 하나를 쓴다. `evidenceFile`에는 원본 파일 이름을, `evidenceSha256`에는 다운로드한 원본의 SHA-256을 쓴다.
+
+`start`와 `end`에는 화면에서 선택한 기간을 적는다. `completeThrough`에는 그 기간에서 수집할 마지막 완료일을 적는다. 세 날짜의 형식은 `YYYY-MM-DD`다. 더우인은 중국 표준시를 사용한다. 서브스택 CSV에는 시간대가 없으므로 파일의 날짜와 화면에서 확인한 완료일을 그대로 쓴다. 파일에 없는 날짜와 빈 지표는 건너뛰고, 실제 숫자 0은 그대로 보존한다.
+
+아래 PowerShell 명령은 확인 파일 옆에 새 입력 목록을 만든다. 더우인 XLSX를 읽을 때는 PC에 설치된 Python의 `openpyxl`을 사용한다. 변환이 성공하면 위의 `계정통계수집.cjs`로 미리 본 뒤 입력한다. 한 파일에 최대 200일을 담을 수 있다.
+
+```powershell
+$capture = 'D:/비공개/회차/확인.json'
+$manifest = Join-Path (Split-Path $capture) '입력.json'
+$result = python -X utf8 tools/계정통계예약/공식일별파일.py $capture
+if ($LASTEXITCODE -eq 0) { $result | Out-File -LiteralPath $manifest -Encoding utf8 -NoClobber }
+```
+
 ## 기록과 보관
 
 - URL 등록만으로 비공개 통계·관리자 인사이트 접근 권한이 생기지 않는다. 지원하지 않는 플랫폼 주소는 등록할 수 있어도 자동 수집 연결은 준비되지 않았다고 표시한다.
