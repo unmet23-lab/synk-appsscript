@@ -725,7 +725,7 @@ test('넘친 #5 · #9 — 새 길 복습 첫 화면의 때는 날까지만(오�
   const progress = freshProgress();
   const lesson = lessonById('greetings-expressions');
   const [hello, thanks, name] = ['greet-hello', 'greet-thanks', 'greet-name'].map(id => lesson.questions.find(q => q.expressionId === id));
-  // 표현 레슨의 복습 셋은 각자 생활 단위 — 「저는 몽글이에요.」 단위만 기억 줄이 있다(사흘 뒤에 돌아옴).
+  // 표현 레슨의 복습 셋은 각자 생활 단위 — 「저는 수진이에요.」 단위만 기억 줄이 있다(사흘 뒤에 돌아옴).
   const units = new Map([hello, thanks, name].map(q => [q.review.id, [`unit-${q.expressionId}`]]));
   engine(progress, { unitsOf: review => units.get(review.id) ?? [], memory: [{ unit: `unit-${name.expressionId}`, lastAt: START - DAY, dueAt: START + 3 * DAY }] });
   const w = lifeOn({ progress });
@@ -811,7 +811,7 @@ test('넘친 #9 — 새 길 복습 결과 줄: 혼자 맞힌 표현은 그 생�
     goHome(w);
     t0.mock.timers.tick(MINUTE);
     assert.equal(w.ui.summary().dueCount, 3);
-    // 첫 판: 「안녕하세요.」 혼자(다음 때 2시간 뒤 — 하루 안) · 「저는 몽글이에요.」 해설을 열고 맞힘 · 「감사합니다.」 틀림
+    // 첫 판: 「안녕하세요.」 혼자(다음 때 2시간 뒤 — 하루 안) · 「저는 수진이에요.」 해설을 열고 맞힘 · 「감사합니다.」 틀림
     nextAt.set(hello.review.id, Date.now() + 2 * HOUR);
     nextAt.set(name.review.id, Date.now() + 2 * HOUR);
     w.ui.reviewStart();
@@ -822,7 +822,7 @@ test('넘친 #9 — 새 길 복습 결과 줄: 혼자 맞힌 표현은 그 생�
       [korean(lesson, thanks)]: t('life.reviewSoon'),
     });
     goHome(w);
-    // 둘째 판(1분 뒤 — 도움 · 틀림은 다시 돌아온다): 둘 다 혼자 — 「감사합니다.」 다음 때 이틀 뒤(하루 밖) · 「저는 몽글이에요.」 다음 때 모름
+    // 둘째 판(1분 뒤 — 도움 · 틀림은 다시 돌아온다): 둘 다 혼자 — 「감사합니다.」 다음 때 이틀 뒤(하루 밖) · 「저는 수진이에요.」 다음 때 모름
     t0.mock.timers.tick(MINUTE);
     nextAt.set(thanks.review.id, Date.now() + 2 * DAY);
     nextAt.delete(name.review.id);

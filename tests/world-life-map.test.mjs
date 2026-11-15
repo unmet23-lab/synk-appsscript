@@ -52,7 +52,8 @@ test('계열 불변식: 정답 글이 같으면 한 계열 · 같은 표현의 �
   same(row => ['ko.reading.vocabulary', 'ko.reading.grammar'].includes(row.own.skillId) ? row.question.expressionId : null, rows);
   for (const row of rows.filter(row => row.review && sameChoices(row.question))) assert.equal(row.own.familyKey, lifeItem({ lesson: row.lesson, question: row.question }).familyKey, row.own.itemKey);
   const measured = rows.filter(row => !row.own.confounded);
-  assert.deepEqual([measured.length, new Set(measured.map(row => row.own.familyKey)).size], [117, 66]);
+  // 11-15: 인사 레슨 이름 소개 표현을 마스코트 대신 「저는 수진이에요」로 바꿔, 표현 레슨 이름 문항과 적용 레슨 이름 문항의 정답 글이 같아졌다 — 한 계열로 합쳐져 66 → 65.
+  assert.deepEqual([measured.length, new Set(measured.map(row => row.own.familyKey)).size], [117, 65]);
   // 정답 · 보기가 바뀐 새 상황 복습은 새 계열(재확인 짝이 될 수 있다).
   const order = rows.find(row => row.own.itemKey === 'life.cafe-expressions-order-transfer'), main = rows.find(row => row.own.itemKey === 'life.cafe-expressions-order');
   assert.notEqual(order.own.familyKey, main.own.familyKey);

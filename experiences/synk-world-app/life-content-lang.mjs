@@ -23,9 +23,9 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'A staff member found the umbrella you lost.',context:'You want to thank the staff member who helped you.',explanation:'For the help finding your umbrella, say ‘감사합니다’.'},
   {prompt:'Ажилтан таны гээсэн шүхрийг олж өглөө.',context:'Тусалсан ажилтандаа талархлаа илэрхийлэхийг хүсэж байна.',explanation:'Шүхрийг олж өгч тусалсанд «감사합니다» гэж хэлнэ.'}),
  'greetings-expressions-name':q(
-  {prompt:'자기 이름을 소개하는 말을 골라요.',context:'내 이름은 몽글이에요.',explanation:'‘저는 몽글이에요’는 내가 몽글이라는 소개예요.'},
-  {prompt:'Choose the sentence that introduces your own name.',context:'Your name is Mongle.',explanation:'‘저는 몽글이에요’ introduces you as Mongle.'},
-  {prompt:'Өөрийн нэрээ танилцуулах үгийг сонгоно уу.',context:'Таны нэр Монгль.',explanation:'«저는 몽글이에요» гэдэг нь «Би Монгль» гэж өөрийгөө танилцуулж буй үг.'}),
+  {prompt:'자기 이름을 소개하는 말을 골라요.',context:'내 이름은 수진이에요.',explanation:'‘저는 수진이에요’는 내가 수진이라는 소개예요.'},
+  {prompt:'Choose the sentence that introduces your own name.',context:'Your name is Sujin.',explanation:'‘저는 수진이에요’ introduces you as Sujin.'},
+  {prompt:'Өөрийн нэрээ танилцуулах үгийг сонгоно уу.',context:'Таны нэр Сүжин.',explanation:'«저는 수진이에요» гэдэг нь «Би Сүжин» гэж өөрийгөө танилцуулж буй үг.'}),
  'greetings-expressions-name-transfer':q(
   {prompt:'자기 이름을 소개하는 말을 골라요.',context:'내 이름은 마린이에요.',explanation:'‘저는 마린이에요’는 자기 이름을 말하는 소개예요.'},
   {prompt:'Choose the sentence that introduces your own name.',context:'Your name is Marin.',explanation:'‘저는 마린이에요’ is how you say your own name.'},
@@ -82,7 +82,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
 
 // 표현 익히기 카드의 설명(표현 자체는 한국어 그대로).
 export const LIFE_EXPRESSION_TEXT=Object.freeze({
- 'greet-hello':q('처음 만나거나 만난 사람에게 정중하게 인사해요.','A polite greeting for anyone you meet, even for the first time.','Хэнтэй уулзсан ч, бүр анх удаа ч гэсэн эелдгээр мэндлэх үг.'),
+ 'greet-hello':q('처음 만난 사람이나 아는 사람에게 정중하게 인사해요.','A polite greeting for anyone you meet, even for the first time.','Хэнтэй уулзсан ч, бүр анх удаа ч гэсэн эелдгээр мэндлэх үг.'),
  'greet-thanks':q('도움을 받았을 때 정중하게 고마움을 전해요.','Politely says thank you when someone helps you.','Тусламж авахдаа эелдгээр талархлаа илэрхийлнэ.'),
  'greet-name':q('자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’를 써요.','Introduces your own name. If the name ends in a final consonant (받침), use ‘이에요’.','Өөрийн нэрээ танилцуулна. Нэр нь гийгүүлэгчээр (받침) төгссөн бол «이에요»-г хэрэглэнэ.'),
 });
@@ -93,13 +93,12 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '감사합니다.':{en:'Thank you.',mn:'Баярлалаа.'},
  '다녀왔어요.':{en:'I’m back. (said when you get home)',mn:'Ирлээ. (гэртээ ирэхдээ хэлдэг)'},
  '다녀왔습니다.':{en:'I’m back. (said politely when you get home)',mn:'Ирлээ. (гэртээ ирэхдээ эелдгээр хэлдэг)'},
- '저는 몽글이에요.':{en:'I’m Mongle.',mn:'Би Монгль.'},
  '저는 마린이에요.':{en:'I’m Marin.',mn:'Би Марин.'},
  '저는 수진이에요.':{en:'I’m Sujin.',mn:'Би Сүжин.'},
  '저는 지훈이에요.':{en:'I’m Jihun.',mn:'Би Жихүн.'},
  '처음 뵙겠습니다.':{en:'Nice to meet you. (very polite, at a first meeting)',mn:'Танилцсандаа таатай байна. (анх уулзахдаа хэлдэг, маш эелдэг)'},
  '저는 학교에 가요.':{en:'I go to school.',mn:'Би сургууль руу явна.'},
- '몽글은 어디에 있어요?':{en:'Where is Mongle?',mn:'Монгль хаана байна?'},
+ '수진은 어디에 있어요?':{en:'Where is Sujin?',mn:'Сүжин хаана байна?'},
  '마린은 어디에 있어요?':{en:'Where is Marin?',mn:'Марин хаана байна?'},
  '마린은 학교에 가요.':{en:'Marin goes to school.',mn:'Марин сургууль руу явна.'},
  '까몽':{en:'Kkamong (a name)',mn:'Камон (нэр)'},

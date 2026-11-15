@@ -21,10 +21,13 @@ const lesson = (id, type, title, goal, expressions, scenes, questions) => ({
 });
 
 const greetingExpressions = [
-  expression('greet-hello', '안녕하세요.', '처음 만나거나 만난 사람에게 정중하게 인사해요.'),
+  expression('greet-hello', '안녕하세요.', '처음 만난 사람이나 아는 사람에게 정중하게 인사해요.'),
   expression('greet-thanks', '감사합니다.', '도움을 받았을 때 정중하게 고마움을 전해요.'),
-  expression('greet-name', '저는 몽글이에요.', '자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’를 써요.'),
+  expression('greet-name', '저는 수진이에요.', '자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’를 써요.'),
 ];
+// 이야기 레슨은 몽글이 자기 이름을 말하는 장면을 형광펜으로 잇는다 — 그 레슨만 소개 표현을 「저는 몽글이에요.」로 둔다(11-15).
+// 표현 · 적용 레슨의 문항은 작성 기준 §8(마스코트 이름을 쓰지 않음)에 따라 흔한 이름 「수진」을 쓴다. 이야기 자체에서 마스코트를 뺄지는 따로 정한다.
+const greetingStoryExpressions = greetingExpressions.map(e => e.id === 'greet-name' ? { ...e, korean: '저는 몽글이에요.' } : e);
 const cafeExpressions = [
   expression('cafe-order', '따뜻한 차 한 잔 주세요.', '음료의 종류·온도·수를 함께 말하며 주문해요.'),
   expression('cafe-here', '여기서 마실게요.', '카페 안에서 마시겠다고 말해요.'),
@@ -80,10 +83,10 @@ export const PACKS = [
         scene('marine', '첫 만남 확인. 인사, 이름, 고마움. 준비 완료.'),
       ], [
         question('greetings-expressions-hello', 'greet-response', 'greet-hello', '처음 만난 선생님에게 어떤 인사를 할까요?', '교실에 들어가 선생님을 처음 만났어요.', ['안녕하세요.', '감사합니다.', '다녀왔어요.'], 'a', '새로 만난 사람에게는 ‘안녕하세요’라고 인사해요.', transfer('학교에서 처음 만난 직원에게 인사해요.', '아직 도움을 받거나 헤어지는 상황은 아니에요.', ['다녀왔어요.', '안녕하세요.', '감사합니다.'], 'b', '처음 만난 직원에게 정중하게 ‘안녕하세요’라고 해요.')),
-        question('greetings-expressions-thanks', 'greet-gratitude', 'greet-thanks', '도움을 받았어요. 어떤 말을 할까요?', '친구가 떨어진 책을 주워 줬어요.', ['저는 몽글이에요.', '안녕하세요.', '감사합니다.'], 'c', '도움을 받은 뒤에는 ‘감사합니다’로 고마움을 전해요.', transfer('직원이 잃어버린 우산을 찾아 줬어요.', '도움을 준 직원에게 고마움을 전하려고 해요.', ['감사합니다.', '처음 뵙겠습니다.', '저는 마린이에요.'], 'a', '우산을 찾아 준 도움에 ‘감사합니다’라고 말해요.')),
-        question('greetings-expressions-name', 'greet-introduction', 'greet-name', '자기 이름을 소개하는 말을 골라요.', '내 이름은 몽글이에요.', ['저는 학교에 가요.', '저는 몽글이에요.', '몽글은 어디에 있어요?'], 'b', '‘저는 몽글이에요’는 내가 몽글이라는 소개예요.', transfer('자기 이름을 소개하는 말을 골라요.', '내 이름은 마린이에요.', ['마린은 어디에 있어요?', '저는 마린이에요.', '마린은 학교에 가요.'], 'b', '‘저는 마린이에요’는 자기 이름을 말하는 소개예요.')),
+        question('greetings-expressions-thanks', 'greet-gratitude', 'greet-thanks', '도움을 받았어요. 어떤 말을 할까요?', '친구가 떨어진 책을 주워 줬어요.', ['저는 수진이에요.', '안녕하세요.', '감사합니다.'], 'c', '도움을 받은 뒤에는 ‘감사합니다’로 고마움을 전해요.', transfer('직원이 잃어버린 우산을 찾아 줬어요.', '도움을 준 직원에게 고마움을 전하려고 해요.', ['감사합니다.', '처음 뵙겠습니다.', '저는 마린이에요.'], 'a', '우산을 찾아 준 도움에 ‘감사합니다’라고 말해요.')),
+        question('greetings-expressions-name', 'greet-introduction', 'greet-name', '자기 이름을 소개하는 말을 골라요.', '내 이름은 수진이에요.', ['저는 학교에 가요.', '저는 수진이에요.', '수진은 어디에 있어요?'], 'b', '‘저는 수진이에요’는 내가 수진이라는 소개예요.', transfer('자기 이름을 소개하는 말을 골라요.', '내 이름은 마린이에요.', ['마린은 어디에 있어요?', '저는 마린이에요.', '마린은 학교에 가요.'], 'b', '‘저는 마린이에요’는 자기 이름을 말하는 소개예요.')),
       ]),
-      lesson('greetings-story', 'story', '이름표를 찾아서', '이야기를 읽고 인사와 소개의 뜻을 확인해요.', greetingExpressions, [
+      lesson('greetings-story', 'story', '이름표를 찾아서', '이야기를 읽고 인사와 소개의 뜻을 확인해요.', greetingStoryExpressions, [
         scene('narrator', '한강 마루의 첫 모임 날이에요. 입구에는 이름표 세 장이 놓여 있어요.'),
         scene('mongle', '우와! 우리 이름이 있네! 같이 인사부터 할까?'),
         scene('mongle', '안녕하세요! 저는 몽글이에요!'),
