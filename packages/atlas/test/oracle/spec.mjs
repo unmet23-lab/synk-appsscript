@@ -174,6 +174,10 @@ export function specSkill(rows, params) {
     level = row.difficulty;
   }
   const broken = sorted.map(row => row.grade === 'again' || !row.unaided).lastIndexOf(true);
-  const streak = sorted.slice(broken + 1).filter(row => row.lead && row.unaided).length;
-  return { theta, n, streak, level, lastAt: sorted.at(-1).at };
+  const tail = sorted.slice(broken + 1).filter(row => row.lead && row.unaided);
+  const streak = tail.length;
+  // peak — 마지막으로 끊긴 뒤의 측정 답 가운데 가장 높은 난도. 없거나 난도를 모르는 답이 끼면 null(단계 4 계획 §21-3 · 설계 주인 11-16)
+  const known = tail.length && tail.every(row => Number.isFinite(row.difficulty));
+  const peak = known ? Math.max(...tail.map(row => row.difficulty)) : null;
+  return { theta, n, streak, level, peak, lastAt: sorted.at(-1).at };
 }

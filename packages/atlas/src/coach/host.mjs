@@ -24,6 +24,8 @@ const MAKER = '__synkAtlasHostMaker';
 // 옛 기록 읽개의 시간 한도(아래 carryLegacy). 시험만 host.legacyWait로 바꾼다.
 export const LEGACY_WAIT_MS = 4000;
 const DONE = Promise.resolve();
+// 칸(측정 요약)을 바꾸는 내 사건 — 답과 도움(아래 unfolded).
+const UNFOLDED_TYPES = new Set([EVENT_TYPES.attempted, EVENT_TYPES.helped]);
 
 // 같은 출처의 가장 위 창(지금 판의 쓰기 임대 주인 __synkAtlasHistoryLease와 같은 자리).
 export function hostScope(scope = globalThis) {
@@ -382,6 +384,15 @@ function createHost({
     // 이 호스트에서 저장 실패가 한 번이라도 났나(state.failedOnce — 판이 그 뒤 내 답 · 도움을 저장 뒤 한 번 더 세운다).
     failedOnce: () => state.failedOnce,
     pendingCount: () => pending.size + issuing.size,
+    // 바탕 요약에 아직 접히지 않은 내 답 · 도움(단계 4 계획 §21-3 M1) — 저장 중인 쓰기와, 저장됐지만 요약이 아직 접지 않은 사건(손님은 다음
+    // 접기 전, 계정은 서버가 받았어도 접은 요약이 오기 전 — 기록부의 미접힘 표)을 번호로 합쳐 센다. 제시 · 판 기록 · 본인 말은 세지 않는다.
+    unfolded() {
+      const ids = new Set();
+      for (const [id, event] of saving) if (UNFOLDED_TYPES.has(event.type)) ids.add(id);
+      for (const id of state.trail.pending())
+        if (UNFOLDED_TYPES.has(state.trail.heldEvent(id)?.type)) ids.add(id);
+      return ids.size;
+    },
     // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이 — 기록부가 부모를 기다리는 자식까지).
     settled: () => Promise.allSettled([...inflight]).then(() => state.trail.saved()),
     retain() {

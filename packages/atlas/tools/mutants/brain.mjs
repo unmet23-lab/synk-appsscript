@@ -948,4 +948,46 @@ export const BRAIN_MUTANTS = [
     '  view.mine.clear();\n',
     '',
   ],
+  // ── peak(단계 4 · 4-4a — 설계 주인 11-16 새벽 덧붙인 물음 4): 지금 streak 안의 측정 답 가운데 가장 높은 난도. 접기 · 독립 기준과 맞대어
+  // 잡는다. 옛 요약의 줄(peak 칸 없음)은 임의 시험이 만들지 않으므로 그 규칙은 unit 묶음(test/unit/ability-peak.test.mjs)이 잡는다 ──
+  [
+    P,
+    '능력',
+    '혼자 놓친 측정 답이 peak을 비우지 않는다(streak은 0인데 peak이 남는다 — 4-4a 물음 4)',
+    'src/ability/index.mjs',
+    '    peak: miss ? null : peakAfter(skill, row.difficulty),',
+    '    peak: peakAfter(skill, row.difficulty),',
+  ],
+  [
+    P,
+    '능력',
+    '도움을 받거나 복습을 놓쳐 streak이 끊겨도 peak이 남는다(4-4a 물음 4)',
+    'src/ability/index.mjs',
+    'peak: streak ? (skill.peak ?? null) : null,',
+    'peak: skill.peak ?? null,',
+  ],
+  [
+    P,
+    '능력',
+    'peak이 streak 안의 가장 높은 난도가 아니라 마지막 난도다(level과 같아진다 — 4-4a 물음 4)',
+    'src/ability/index.mjs',
+    '  return Math.max(skill.peak, difficulty);',
+    '  return difficulty;',
+  ],
+  [
+    'unit',
+    '능력',
+    'peak 칸이 없던 옛 요약의 줄에 이어 붙인 streak에 이번 난도를 peak으로 낸다(앞 답의 난도를 모르는 채 칸을 푼다 — 4-4a 물음 4 조건 3)',
+    'src/ability/index.mjs',
+    '  if (!Number.isFinite(skill.peak)) return null;',
+    '  if (!Number.isFinite(skill.peak)) return difficulty;',
+  ],
+  [
+    'unit',
+    '능력',
+    '난도를 모르는 측정 답이 peak에 난도 아닌 값을 남긴다(4-4a 물음 4)',
+    'src/ability/index.mjs',
+    '  if (!Number.isFinite(difficulty)) return null;\n',
+    '',
+  ],
 ];

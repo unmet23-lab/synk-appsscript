@@ -7,6 +7,7 @@
 import { openMap } from '../map/index.mjs';
 import { EDITION } from '../edition.mjs';
 import { PARAMS } from '../params.mjs';
+import { firstLedgerCells } from '../record/carry.mjs';
 import { EVENT_TYPES, FEEDBACK_VALUES } from '../record/events.mjs';
 import { storeName } from '../record/port.mjs';
 import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
@@ -85,6 +86,22 @@ const testHost = (host = {}) => ({
   ...(host.locks !== undefined ? { locks: host.locks } : {}),
   ...(host.turnJobs ? { turnJobs: host.turnJobs } : {}),
 });
+
+// 묶음 만남(코치 exposures)의 한 문항 — 열쇠와 물러서기는 exposure() · metBefore와 같다. 화면용 계열은 지도 밖 문항이면 제품이 준
+// itemKey로, 측정용 계열은 지도가 준 itemKey까지 물러선다(metBefore와 같은 물러서기).
+function keysOf(brain, product) {
+  const itemKey = brain?.itemKey ?? product.itemKey;
+  const family = brain?.familyKey ?? product.familyKey;
+  return { itemKey, familyKey: family ?? product.itemKey, metFamily: family ?? itemKey };
+}
+function exposureIn({ itemKey, familyKey, metFamily }, seen) {
+  const { base, view, shownItems, shownFamilies, unknown } = seen;
+  const listed = Boolean(base?.lines.item.has(itemKey));
+  const fallback = unknown ? null : false;
+  const met = view.met.has(metFamily) || listed ? true : fallback;
+  const shown = shownItems.has(itemKey) || shownFamilies.has(familyKey);
+  return { seen: view.met.has(familyKey) || listed || shown ? true : fallback, met };
+}
 
 export function createCoach(options = {}) {
   if (options === null || typeof options !== 'object') {
@@ -317,6 +334,7 @@ export function createCoach(options = {}) {
           n: line.n,
           streak: line.streak,
           level: line.level ?? null,
+          peak: line.peak ?? null,
           cells: cells
             .filter(cell => cell.skillId === id)
             .map(({ difficulty, independent, correct, helped, lastAt }) => ({
@@ -341,6 +359,10 @@ export function createCoach(options = {}) {
             // 생활 화면 · 알림이 「다음 복습은 ○일쯤」을 이 값으로 낸다(단계 4 §19-1 ⑤ F).
             dueAt: line.lastAt + memory.intervalDays(line) * DAY_MS,
           })),
+        // 옮겨 오기 전 기록(정본 §5-6 · 단계 4 계획 §21-3 A4) — 한 기기에서 처음 옮긴 장부의 칸 요약을 능력마다 따로 낸다. skills의 측정
+        // 요약에는 더하지 않는다. 사건을 치우지 않는 기록부(손님 판 — 손님과 동의를 끈 계정)에서만 낸다. 계정 기기는 이틀 뒤 사건을 치우고
+        // 서버가 주는 요약에는 이 칸이 없어, 이틀만 보이다 사라지는 칸이 된다(§21-10 덧붙인 물음 3 — 서버 길 계정은 4-4c). 없으면 null.
+        carried: state.host.guest ? firstLedgerCells(state.host.trail.heldEvents()) : null,
         storage: {
           available: true,
           guest: state.host.guest,
@@ -348,6 +370,9 @@ export function createCoach(options = {}) {
           base: state.host.guest || base != null,
           pending: state.host.pendingCount(),
           unsent: state.host.trail.unsent().length,
+          // 바탕 요약에 아직 접히지 않은 내 답 · 도움의 수(§21-3 M1) — 저장 중인 것과, 저장됐지만 요약이 아직 접지 않은 것(계정은 서버가
+          // 받았어도 접은 요약이 오기 전까지). 0보다 크면 위 칸(skills[].cells)이 아직 모르는 답이 있다. pending · unsent로는 알 수 없다.
+          unfolded: state.host.unfolded(),
           sync: state.host.syncStatus(),
           // 보기가 아무것도 얹지 못하는 동안(판 묶음이 다른 요약 · 서버가 누른 사건) — 위 단위 · 능력 줄이 아직 내 답을 다 담지 않았다.
           // 제품의 「돌아온 복습」은 그동안 「확인 중」이다(단계 4 §19-1 ⑤ M7).
@@ -454,6 +479,32 @@ export function createCoach(options = {}) {
       // 보기가 얹지 못하는 동안은 화면용 seen도 모른다(카본 끝 판 B1과 같은 까닭).
       if (view.waitAll === true) return { seen: null, met };
       return { seen: state.host.guest || base != null ? false : null, met };
+    },
+
+    // 묶음 만남(단계 4 계획 §21-3 — 설계 주인 11-15): 여러 문항의 exposure()를 한 번에 — 판을 여는 진단 · 시작점 고르기가 쓴다. 문항마다
+    // 부르면 그때마다 든 사건 전체를 줄 세우고 보기를 두 번 지어, 사건 만 건의 손님에서 527문항에 15초쯤 걸렸다(§21-0). 결과는 문항마다
+    // exposure()를 부른 것과 같다 — exposure()가 기준이고 대조 시험이 깊은 같음으로 맞댄다(test/coach/exposures.test.mjs). 요약 · 보기 ·
+    // 든 사건은 부를 때마다 한 번 읽고 그 위에서 문항마다 가린다. 부르는 사이에 들고 있는 것은 없다 — 새 사건이 든 뒤 낡은 답을 내지 않게.
+    exposures(items) {
+      live();
+      if (!Array.isArray(items)) throw new TypeError('Atlas coach: exposures는 문항 배열을 받는다');
+      const base = state.host.trail.summary();
+      const view = state.host.view(); // 부를 때마다 새로 짓는다 — 들고 있지 않는다
+      const shownItems = new Set();
+      const shownFamilies = new Set();
+      for (const event of state.host.trail.heldEvents()) {
+        if (event.type !== EVENT_TYPES.presented) continue;
+        shownItems.add(event.itemKey);
+        shownFamilies.add(event.familyKey);
+      }
+      const waiting = view.waitAll === true;
+      // 앞선 만남이 없다고 단정할 수 있을 때만 false — 보기가 얹지 못하거나 계정 요약이 없으면 모름(null).
+      const unknown = waiting || !(state.host.guest || base != null);
+      const seen = { base, view, shownItems, shownFamilies, unknown };
+      return items.map(item => {
+        const product = item ?? {};
+        return exposureIn(keysOf(mapItem(product), product), seen);
+      });
     },
 
     // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).

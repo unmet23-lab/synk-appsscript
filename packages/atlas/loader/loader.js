@@ -26,6 +26,7 @@
     'synced',
     'guestRecords',
     'itemUnits',
+    'exposures',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;

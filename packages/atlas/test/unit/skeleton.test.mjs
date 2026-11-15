@@ -6,7 +6,8 @@ import fs from 'node:fs';
 import test from 'node:test';
 import { subject, subjectPath } from '../support/subject.mjs';
 
-// 설계 §8의 표 — 「그대로」 열여섯 + 「더함」 넷(ready는 메서드가 아니라 기다릴 약속이다, synced는 단계 4 §18-5-5 G4).
+// 설계 §8의 표 — 「그대로」 열여섯 + 「더함」(ready는 메서드가 아니라 기다릴 약속이다, synced는 단계 4 §18-5-5 G4, exposures는 단계 4
+// §21-3의 묶음 만남).
 const DESIGN_METHODS = [
   'recommend',
   'present',
@@ -30,6 +31,7 @@ const DESIGN_METHODS = [
   'synced',
   'guestRecords',
   'itemUnits',
+  'exposures',
 ];
 
 test('모듈 자리 여섯은 채울 단계와 함께 있다(설계 §11)', async () => {

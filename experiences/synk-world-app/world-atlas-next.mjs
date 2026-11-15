@@ -5,8 +5,27 @@
 // 엔진이 준비되지 못하면(입구 · 묶음 · 지도 · 저장소) null을 돌려주고 셸은 지금 판으로 간다 — 학습이 막히지 않는다.
 import { createPracticeNextSession } from './world-practice-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from './world-today.mjs';
+import { buildPositionNext, examSkills, recheckCards, unitRoutes, unseenFamilies } from './world-position-next.mjs';
+import { createDiagnosticNextSession, selectDiagnosticNext, withheldItem } from './world-diagnostic-next.mjs';
+import { createPositionNextView } from './world-position-next-view.mjs';
+import { lifeReviewCandidate } from './world-account.bundle.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
+// 「내 위치」 새 판(4-4a — 단계4_계획 §21-2 ~ 21-5): 계약(칸 셋 · 다시 확인 카드 · 짧은 진단)과 최소 그림. 홈 플래너에 실어 셸에 넘긴다 — 홈 코치
+// 하나로 그린다(코치와 지도를 하나 더 열지 않는다, 21-2). 생활 카드는 지금 판 홈과 같은 생활 복습 후보 규칙(lifeReviewCandidate — 계정 묶음,
+// world-today.mjs와 같은 주소)으로 연다.
+export const positionPlanner = Object.freeze({
+  examSkills,
+  buildPositionNext,
+  unseenFamilies,
+  unitRoutes,
+  recheckCards,
+  selectDiagnosticNext,
+  withheldItem,
+  createDiagnosticNextSession,
+  createView: createPositionNextView,
+  lifeReview: lifeReviewCandidate,
+});
 // 지금 판 코치(atlas/game-learning.js)가 손님 기록을 두는 자리 — { version, epoch, events, ledger, … }.
 export const LEGACY_KEY = 'synk.atlas.learning.v1.device';
 // 「새 길 간 적 있음」 · 「스위치 꺼짐」 표지 — 계정마다 하나, 판과 무관한 자리(§18-5-5 B4 · R15). 값 { went?: true, off?: true, path?, revision? }
@@ -943,6 +962,8 @@ export function createAtlasNext({
         watchHomePlan,
         todayKey,
         say: (why, language = lang()) => render(why, { lang: language, label }),
+        // 내 위치 새 판(4-4a) — 홈과 같은 판 셋 · 같은 홈 코치로 그린다(셸 world-learning-ui.mjs openPosition).
+        position: positionPlanner,
       });
     },
     // 지금 판을 준 뒤 새 길이 될 수 있을 때(판이 풀림 · 지금 판 뒤 새 길 코치를 줌) 부를 함수 — 생활 · 홈이 판을 다시 묻는다(§19-3 7 — 까닭을

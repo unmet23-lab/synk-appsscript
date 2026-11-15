@@ -324,6 +324,15 @@ test('하루 복습 상한에 걸려 낼 것이 없으면(none) 그 까닭(day.c
   assert.match(none.why.line, /오늘은 여기까지예요/);
   // 까닭을 모르는 none(후보가 없음)에는 이유가 없다
   assert.equal(coach.recommend([]).why, null);
+  // 상한에 걸린 날의 plan() — 결과 배열의 capped 칸이 참으로 넘어온다(열린 후보가 없는 활동만 넘겨도 — 카본 4-4 설계 검토 B1).
+  const planned = coach.plan([{ id: 'reviews', candidates: left() }]);
+  assert.equal(planned.capped, true, '상한 날');
+  assert.equal(planned[0].capped, true);
+  assert.equal(
+    coach.plan([{ id: 'empty', candidates: [] }]).capped,
+    true,
+    '열린 후보가 없어도 상한 날',
+  );
   coach.dispose();
 });
 

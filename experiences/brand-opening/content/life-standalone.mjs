@@ -25384,6 +25384,7 @@ function createWorldEducation({
   let stopped = false, coach = null, coachHost = null, practiceCoach = null, practiceHost = null, mockCoach = null, mockHost = null, lifeCoachNow = null, lifeHost = null, current = null, refreshing = false, classwork = { at: 0, rows: [], pending: null };
   let homePlanner = null, homeWatch = null, homeFailed = false, homeBare = false;
   const opened = { key: "", kinds: /* @__PURE__ */ new Set() };
+  let nextView = null, nextSync = { coach: null, value: null, asking: null }, redrawingNext = false;
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
   const view = position ? position.createView({ t: t2, has: hasString2, formatDate: formatDate2, lang: currentLang2 }) : null;
@@ -25807,6 +25808,10 @@ function createWorldEducation({
       } catch {
       }
     }
+    try {
+      if (homeNext && panelNode('[data-position-next="checking"]')) redrawNext();
+    } catch {
+    }
     return current;
   }
   function drawHome() {
@@ -25967,7 +25972,7 @@ function createWorldEducation({
     if (selected.route === "game") return launchGame(selected.gameId);
     if (selected.route === "review") return startReview(selected.lessonId, selected.reviewIds);
     if (selected.route === "practice") return startPractice(selected.skillId);
-    if (selected.route === "position") return openPosition({ start: true });
+    if (selected.route === "position") return openMyPosition({ start: true });
     if (selected.route === "mock") return openMock();
     if (selected.route === "writing" && typeof writingPractice?.open === "function") return writingPractice.open(selected.routeId);
     if (selected.route === "speaking" && typeof speakingPractice?.open === "function") return speakingPractice.open(selected.routeId);
@@ -26437,6 +26442,10 @@ function createWorldEducation({
   function repaint() {
     try {
       if (home.openPanel?.() === "" || openPosition.pending) return;
+      if (panelNode("[data-position-next]")) {
+        showNext({ keepScroll: true });
+        return;
+      }
       if (panelNode("[data-position-board]") && !panelNode('[data-position-board="hangul"]')) showBoard(readCoach(), { keepScroll: true });
       else if (panelNode("[data-plan-board]")) void openPlan({ keepScroll: true });
     } catch {
@@ -26452,6 +26461,337 @@ function createWorldEducation({
         failed(error2);
       }
     }, { once: true });
+  }
+  function heldCoach() {
+    const source = target.SYNKLearningHost || null;
+    for (const [instance, host] of [[coach, coachHost], [practiceCoach, practiceHost], [mockCoach, mockHost], [lifeCoachNow, lifeHost]]) if (instance && host === source) return instance;
+    return null;
+  }
+  function syncedNext(coachNow) {
+    if (!coachNow || typeof coachNow.synced !== "function") return Promise.resolve(null);
+    if (nextSync.coach === coachNow) return nextSync.asking || Promise.resolve(nextSync.value);
+    const asking = Promise.resolve().then(() => coachNow.synced()).catch(() => null).then((value) => {
+      if (nextSync.coach === coachNow) {
+        nextSync.value = value;
+        nextSync.asking = null;
+      }
+      return value;
+    });
+    nextSync = { coach: coachNow, value: null, asking };
+    return asking;
+  }
+  const nextViewOf = () => nextView ||= homePlanner?.position?.createView?.({ t: t2, has: hasString2, formatDate: formatDate2 }) || null;
+  const nextChecking = () => `<div class="wpos life-heading" data-position-next="checking" tabindex="-1" aria-busy="true"><div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape3(t2("position.title"))}</strong><p class="life-poster-sub">${escape3(t2("homeTutor.checking"))}</p></div></div>`;
+  function nextData(coachNow, P) {
+    let values = {};
+    try {
+      values = getProgress().learningProfileValues() || {};
+    } catch {
+      values = {};
+    }
+    const exam = examOf(values), audioAvailable = values.audio !== "off", listening = (item) => item.audioRequired ?? item.modality === "listening";
+    const summary = coachNow.summary(), diagnostic = position.items, practice = position.practice.pool;
+    const met = coachNow.exposures([...diagnostic, ...practice]);
+    const fresh = /* @__PURE__ */ new Set();
+    practice.forEach((item, i) => {
+      if (met[diagnostic.length + i]?.seen === false && (audioAvailable || !listening(item))) fresh.add(item.skillId);
+    });
+    const synced = nextSync.coach === coachNow ? nextSync.value : null;
+    const unseen = P.unseenFamilies([{ items: diagnostic, exposures: met.slice(0, diagnostic.length) }, { items: practice, exposures: met.slice(diagnostic.length) }], (item) => P.withheldItem(item));
+    const board = P.buildPositionNext({ exam, skills: P.examSkills(engine.SKILLS, exam), summary, prefer: (id) => fresh.has(id), synced, unseen });
+    const plan = P.selectDiagnosticNext({ position: board, items: diagnostic, exposures: met.slice(0, diagnostic.length), audioAvailable });
+    let life = [];
+    try {
+      life = engine.life?.lifeItems?.() || [];
+    } catch {
+      life = [];
+    }
+    const routes = P.unitRoutes({ itemUnits: (item) => coachNow.itemUnits(item), practice, diagnostic, life });
+    let judged = null;
+    try {
+      judged = homeNext.judge(getProgress().exportSnapshot(), Date.now());
+    } catch {
+      judged = null;
+    }
+    const lifeOpen = (unit) => judged?.state === "engine" && Array.isArray(judged.items) ? judged.items.some((row) => row.unit === unit) : null;
+    const cards = P.recheckCards({ due: coachNow.due(), units: summary.units, routes, capped: current?.today?.capped === true, audioAvailable, lifeOpen });
+    const scope = owner === "guest" ? "device" : summary.storage?.guest === false ? "account" : null;
+    return { values, exam, board, plan, cards, fresh, judged, scope };
+  }
+  function showNext({ start = false, keepScroll = false, fresh = false } = {}) {
+    check3();
+    const phase = homePhase();
+    if (phase === "old") {
+      const shown = showBoard(readCoach(), { keepScroll });
+      if (start && shown.plan?.status === "ready" && shown.plan.items.length) startDiagnostic(shown.coachNow, shown.plan, shown.map);
+      return;
+    }
+    if (!fresh) {
+      const was = redrawingNext;
+      redrawingNext = true;
+      try {
+        refresh();
+      } finally {
+        redrawingNext = was;
+      }
+    }
+    const P = homePlanner?.position, draw = nextViewOf(), coachNow = phase === "engine" ? homeWatch?.coach?.() ?? null : null;
+    let data = null;
+    if (coachNow && P && draw) {
+      try {
+        data = nextData(coachNow, P);
+      } catch {
+        data = null;
+      }
+    }
+    const scroller = keepScroll ? panelNode("[data-position-next]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
+    if (!data) {
+      home.showPanel(t2("position.title"), nextChecking(), PANEL);
+      panelNode("[data-position-next]")?.focus?.({ preventScroll: true });
+      return;
+    }
+    const two2 = topik2Domains(), exams = studentExam(data.values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
+    home.showPanel(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.fresh.has(id), scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0 }), PANEL);
+    const root = panelNode("[data-position-next]");
+    if (keepScroll) {
+      const node = root?.closest?.("#panel-content");
+      if (node) node.scrollTop = scrollTop;
+    } else root?.focus?.({ preventScroll: true });
+    if (nextSync.coach !== coachNow) void syncedNext(coachNow).then(() => redrawNext());
+    root?.querySelector?.("[data-position-diagnostic]")?.addEventListener("click", () => {
+      try {
+        startDiagnosticNext(coachNow, data);
+      } catch (error2) {
+        failed(error2);
+      }
+    }, { once: true });
+    root?.querySelectorAll?.("[data-position-exam]").forEach((button) => button.addEventListener("click", () => {
+      try {
+        check3();
+        boardExam = button.dataset.positionExam === "topik2" ? "topik2" : "topik1";
+        showNext({ keepScroll: true });
+      } catch (error2) {
+        failed(error2);
+      }
+    }));
+    root?.querySelectorAll?.("[data-position-practice]").forEach((button) => button.addEventListener("click", () => {
+      try {
+        check3();
+        void Promise.resolve(startPractice(button.dataset.positionPractice)).catch(failed);
+      } catch (error2) {
+        failed(error2);
+      }
+    }));
+    root?.querySelectorAll?.("[data-position-recheck]").forEach((button) => button.addEventListener("click", () => {
+      try {
+        check3();
+        void Promise.resolve(openRecheck(button.dataset.positionRecheck, data)).catch(failed);
+      } catch (error2) {
+        failed(error2);
+      }
+    }));
+    root?.querySelector?.("[data-position-writing]")?.addEventListener("click", () => {
+      try {
+        check3();
+        const first = writingList()[0];
+        if (first && typeof writingPractice?.open === "function") void Promise.resolve(writingPractice.open(first.route)).catch(failed);
+      } catch (error2) {
+        failed(error2);
+      }
+    });
+    if (start && data.plan.status === "ready" && data.plan.items.length) startDiagnosticNext(coachNow, data);
+  }
+  function redrawNext() {
+    if (redrawingNext || stopped || openPosition.pending) return;
+    redrawingNext = true;
+    try {
+      if (panelNode("[data-position-next]")) showNext({ keepScroll: true, fresh: true });
+    } catch {
+    } finally {
+      redrawingNext = false;
+    }
+  }
+  function openRecheck(unit, data) {
+    const card = data.cards.find((row) => row.unit === unit && row.open);
+    if (!card) {
+      home.toast(t2("followup.noSupply"));
+      return;
+    }
+    if (card.source === "life") {
+      const ids = (data.judged?.items || []).filter((row) => row.unit === unit).map((row) => row.id);
+      let open2 = null;
+      try {
+        open2 = homePlanner.position.lifeReview(ids, getProgress().exportSnapshot(), data.values, Date.now());
+      } catch {
+        open2 = null;
+      }
+      if (!open2) {
+        home.toast(t2("followup.noSupply"));
+        return;
+      }
+      return startReview(open2.lessonId, open2.reviewIds);
+    }
+    return startPractice(null, { only: card.items });
+  }
+  function startDiagnosticNext(coachNow, data) {
+    check3();
+    const P = homePlanner?.position;
+    if (!P || data?.plan?.status !== "ready" || !data.plan.items.length) return;
+    const session = P.createDiagnosticNextSession({ coach: coachNow, items: data.plan.items.map((row) => row.item), plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
+    let clip = null, playing = false, notice = "", ended = false, finishing = false, unwatch = () => {
+    };
+    const silence = () => {
+      const sound = clip;
+      clip = null;
+      playing = false;
+      try {
+        sound?.pause();
+      } catch {
+      }
+    };
+    const stop = () => {
+      unwatch();
+      if (ended) return;
+      ended = true;
+      silence();
+      try {
+        session.stop();
+      } catch {
+      }
+      if (session.results().length) diagnosed = true;
+      queueMicrotask(() => refresh());
+    };
+    const closed = () => {
+      if (ended && !finishing) return;
+      finishing = false;
+      stop();
+      home.toast(t2("practice.next.changed"));
+      void openMyPosition();
+    };
+    home.showPanel(t2("position.diagnostic.title"), '<div class="wpos-stage" data-position-stage></div>', { ...PANEL, eyebrow: "QUICK CHECK" });
+    home.attachPanelResource?.({ dispose: stop });
+    const box = panelNode("[data-position-stage]");
+    if (!box) {
+      stop();
+      return;
+    }
+    unwatch = homeNext?.retired?.(coachNow, closed) ?? (() => {
+    });
+    const top = () => {
+      for (const node of [box.closest?.("#panel-content"), box.closest?.("dialog")]) if (node) node.scrollTop = 0;
+    };
+    function paint(focus = ".wpos-run-skill") {
+      if (session.disposed) {
+        closed();
+        return;
+      }
+      const now = session.current;
+      if (!now) {
+        void finish();
+        return;
+      }
+      box.innerHTML = view.renderDiagnosticItem({ view: now, skill: { id: now.item.skillId }, notice, playing });
+      if (focus) box.querySelector(focus)?.focus?.({ preventScroll: true });
+    }
+    function advance(message = "") {
+      notice = message;
+      if (!session.next()) {
+        if (session.disposed) closed();
+        else void finish();
+        return;
+      }
+      paint();
+      top();
+    }
+    async function finish() {
+      if (finishing || ended) return;
+      finishing = true;
+      ended = true;
+      silence();
+      try {
+        await session.settled();
+      } catch {
+      }
+      if (!finishing || !box.isConnected) return;
+      finishing = false;
+      unwatch();
+      const results = session.results();
+      if (results.length) diagnosed = true;
+      const set = session.finish({ record: answering() });
+      refresh();
+      let after = data;
+      try {
+        after = nextData(coachNow, P);
+      } catch {
+        after = data;
+      }
+      const routes = new Map([...after.fresh].map((id) => [id, { route: "practice", skillId: id }]));
+      const response = answering() && set?.completionId ? set : null;
+      box.innerHTML = view.renderDiagnosticDone({ map: after.board, results, items: position.itemsById, practice: (id) => routes.get(id) || null, response: responseView(response, "diagnostic") });
+      bindPractice(box, routes);
+      bindResponse({ box, coachNow, set: response, kind: "diagnostic" });
+      box.querySelector("[data-position-done]")?.focus?.({ preventScroll: true });
+      top();
+      evidenced();
+    }
+    function listen() {
+      const now = session.current;
+      if (!now || now.answered || playing || !now.item.audio) return;
+      if (session.replay() === false) {
+        if (session.disposed) closed();
+        return;
+      }
+      notice = "";
+      let sound;
+      try {
+        sound = new target.Audio(audioUrl(now.item.audio));
+      } catch {
+        session.delivery("failed");
+        paint("[data-position-listen]");
+        return;
+      }
+      clip = sound;
+      playing = true;
+      paint("[data-position-listen]");
+      const done = (status) => {
+        if (clip !== sound) return;
+        clip = null;
+        playing = false;
+        if (ended) return;
+        try {
+          session.delivery(status);
+        } catch {
+        }
+        paint(status === "completed" ? ".wpos-choice:not([disabled])" : "[data-position-listen]");
+      };
+      sound.addEventListener("ended", () => done("completed"), { once: true });
+      sound.addEventListener("error", () => done("failed"), { once: true });
+      Promise.resolve(sound.play()).catch(() => done("failed"));
+    }
+    box.addEventListener("click", (event) => {
+      const button = event.target.closest?.("button");
+      if (!button || button.disabled || ended && !button.hasAttribute("data-position-back")) return;
+      try {
+        check3();
+        if (button.dataset.positionChoice) {
+          silence();
+          if (session.answer(button.dataset.positionChoice)) advance(t2("position.diagnostic.saved"));
+          else paint();
+        } else if (button.hasAttribute("data-position-listen")) listen();
+        else if (button.hasAttribute("data-position-skip")) {
+          silence();
+          session.skip();
+          advance("");
+        } else if (button.hasAttribute("data-position-stop")) {
+          stop();
+          showNext();
+        } else if (button.hasAttribute("data-position-back")) showNext();
+      } catch (error2) {
+        stop();
+        failed(error2);
+      }
+    });
+    advance("");
   }
   async function openPosition({ start = false } = {}) {
     if (!position) return;
@@ -26517,6 +26857,76 @@ function createWorldEducation({
       if (openPosition.pending === ticket) openPosition.pending = 0;
     }
   }
+  async function openPositionNext({ start = false } = {}) {
+    if (!position) return;
+    check3();
+    const ticket = ++positionOpen;
+    openPosition.pending = ticket;
+    try {
+      let settled = false;
+      home.attachPanelResource?.({ dispose() {
+        if (!settled && ticket === positionOpen) {
+          positionOpen++;
+          if (openPosition.pending === ticket) openPosition.pending = 0;
+        }
+      } });
+      try {
+        await prepare();
+      } catch {
+      }
+      check3();
+      if (ticket !== positionOpen) return;
+      try {
+        await target.SYNKLearningHost?.ready?.();
+      } catch {
+      }
+      check3();
+      if (ticket !== positionOpen) return;
+      try {
+        await bankReady();
+      } catch {
+      }
+      check3();
+      if (ticket !== positionOpen) return;
+      if (homePhase() === "engine") {
+        try {
+          await syncedNext(homeWatch.coach());
+        } catch {
+        }
+        check3();
+        if (ticket !== positionOpen) return;
+      }
+      if (homePhase() === "old") {
+        settled = true;
+        return openPosition({ start });
+      }
+      let reading = null;
+      try {
+        reading = getProgress().hangulReading?.() || null;
+      } catch {
+        reading = null;
+      }
+      let stage;
+      try {
+        stage = await hangulStage(heldCoach());
+      } catch (error2) {
+        check3();
+        if (ticket === positionOpen) failed(error2);
+        return;
+      }
+      check3();
+      if (ticket !== positionOpen) return;
+      settled = true;
+      if (position.showsHangulBoard({ reading, stage })) {
+        showHangul(stage);
+        return;
+      }
+      showNext({ start });
+    } finally {
+      if (openPosition.pending === ticket) openPosition.pending = 0;
+    }
+  }
+  const openMyPosition = (options) => homePhase() === "old" ? openPosition(options) : openPositionNext(options);
   function startDiagnostic(coachNow, plan, map) {
     check3();
     if (!coachNow || plan?.status !== "ready" || !plan.items.length) return;
@@ -26812,7 +27222,7 @@ function createWorldEducation({
     box.querySelector("[data-town-position]")?.addEventListener("click", () => {
       try {
         check3();
-        void openPosition();
+        void openMyPosition();
       } catch (error2) {
         failed(error2);
       }
@@ -26886,7 +27296,7 @@ function createWorldEducation({
     } };
   }
   let practiceOpen = 0;
-  async function startPractice(skillId, { followupId = null, more = false } = {}) {
+  async function startPractice(skillId, { followupId = null, more = false, only = null } = {}) {
     if (!position?.practice) return;
     check3();
     const ticket = ++practiceOpen;
@@ -26928,8 +27338,12 @@ function createWorldEducation({
       if (!active()) return;
       if (next2) {
         launching = false;
-        return runPracticeNext({ next: next2, skillId, more });
+        return runPracticeNext({ next: next2, skillId, more, only });
       }
+    }
+    if (only) {
+      home.toast(t2("practice.unavailable"));
+      return;
     }
     const coachNow = readPracticeCoach();
     if (!coachNow) {
@@ -26951,7 +27365,7 @@ function createWorldEducation({
     const selection = followup ? { status: "ready", items: [followup.item] } : position.practice.selectPractice({ summary, pool: position.practice.pool, seen, skillId, audioAvailable, count: practiceLength() });
     if (selection.status === "none") {
       home.toast(t2(selection.reason === "history.incomplete" ? "position.diagnostic.history" : selection.reason === "audio" ? "practice.audioOff" : "practice.shortage"));
-      void openPosition();
+      void openMyPosition();
       return;
     }
     const session = position.practice.createPracticeSession({ coach: coachNow, items: selection.items });
@@ -27050,9 +27464,9 @@ function createWorldEducation({
           advance();
         } else if (button.hasAttribute("data-practice-stop")) {
           stop();
-          void openPosition();
+          void openMyPosition();
         } else if (button.hasAttribute("data-practice-again")) void Promise.resolve(startPractice(skillId)).catch(failed);
-        else if (button.hasAttribute("data-practice-position")) void openPosition();
+        else if (button.hasAttribute("data-practice-position")) void openMyPosition();
         else if (button.hasAttribute("data-practice-home")) home.closePanel();
       } catch (error2) {
         stop();
@@ -27061,17 +27475,19 @@ function createWorldEducation({
     });
     advance();
   }
-  function runPracticeNext({ next: next2, skillId, more = false }) {
+  function runPracticeNext({ next: next2, skillId, more = false, only = null }) {
     let audioAvailable = true;
     try {
       audioAvailable = getProgress().learningProfileValues().audio !== "off";
     } catch {
     }
-    const all = position.practice.pool, listening = String(skillId).split(".")[1] === "listening";
-    const pool = all.filter((item) => item.skillId === skillId && (audioAvailable || !(item.audioRequired ?? item.modality === "listening")));
+    const all = position.practice.pool, fits = (item) => audioAvailable || !(item.audioRequired ?? item.modality === "listening");
+    const pool = Array.isArray(only) ? all.filter((item) => only.includes(item.itemKey) && fits(item)) : all.filter((item) => item.skillId === skillId && fits(item));
+    if (Array.isArray(only) && pool.length) skillId = pool[0].skillId;
+    const listening = String(skillId).split(".")[1] === "listening";
     if (!pool.length) {
       home.toast(t2(audioAvailable ? "practice.shortage" : "practice.audioOff"));
-      void openPosition();
+      void openMyPosition();
       return;
     }
     const count = practiceLength(), skill2 = { id: skillId, label: skillLabel(skillId) };
@@ -27104,7 +27520,7 @@ function createWorldEducation({
       if (ended) return;
       stop();
       home.toast(t2("practice.next.changed"));
-      void openPosition();
+      void openMyPosition();
     }) ?? (() => {
     });
     const box = panelNode("[data-practice-stage]");
@@ -27152,7 +27568,7 @@ function createWorldEducation({
       if (changedWhileFinishing) {
         unwatch();
         home.toast(t2("practice.next.changed"));
-        void openPosition();
+        void openMyPosition();
         return;
       }
       let more2 = null;
@@ -27192,10 +27608,10 @@ function createWorldEducation({
           advance();
         } else if (button.hasAttribute("data-practice-stop")) {
           stop();
-          void openPosition();
+          void openMyPosition();
         } else if (button.hasAttribute("data-practice-again")) void Promise.resolve(startPractice(skillId, { more })).catch(failed);
         else if (button.hasAttribute("data-practice-more")) void Promise.resolve(startPractice(skillId, { more: true })).catch(failed);
-        else if (button.hasAttribute("data-practice-position")) void openPosition();
+        else if (button.hasAttribute("data-practice-position")) void openMyPosition();
         else if (button.hasAttribute("data-practice-home")) home.closePanel();
       } catch (error2) {
         stop();
@@ -27240,7 +27656,7 @@ function createWorldEducation({
     const plan = coachNow.summary().evidenceComplete ? mockPlan({ coachNow, values, exam: which }) : null;
     if (!plan || plan.status !== "ready") {
       home.toast(t2(plan ? "mock.unavailable" : "position.diagnostic.history"));
-      void openPosition();
+      void openMyPosition();
       return;
     }
     const sections = plan.sections.filter((row) => row.status === "ready");
@@ -27263,7 +27679,7 @@ function createWorldEducation({
     }, { once: true });
     box.querySelector("[data-mock-later]")?.addEventListener("click", () => {
       try {
-        void openPosition();
+        void openMyPosition();
       } catch (error2) {
         failed(error2);
       }
@@ -27412,7 +27828,7 @@ function createWorldEducation({
           } catch {
           }
           finish();
-        } else if (button.hasAttribute("data-mock-position")) void openPosition();
+        } else if (button.hasAttribute("data-mock-position")) void openMyPosition();
         else if (button.hasAttribute("data-mock-home")) home.closePanel();
       } catch (error2) {
         stop();
@@ -27478,7 +27894,7 @@ function createWorldEducation({
     root?.querySelector("[data-plan-recheck]")?.addEventListener("click", () => {
       try {
         check3();
-        void openPosition({ start: true });
+        void openMyPosition({ start: true });
       } catch (error2) {
         failed(error2);
       }
@@ -27522,17 +27938,23 @@ function createWorldEducation({
     if (!planner) {
       homeFailed = true;
       refresh();
+      redrawNext();
       return;
     }
     homePlanner = planner;
     homeWatch = planner.watchHomePlan({ open: openHome, retired: (made, fn) => homeNext.retired(made, fn), lifeState: () => homeNext.life(), onChange: () => {
-      if (!stopped) refresh();
+      if (!stopped) {
+        refresh();
+        redrawNext();
+      }
     } });
     refresh();
+    redrawNext();
   }, () => {
     if (stopped) return;
     homeFailed = true;
     refresh();
+    redrawNext();
   });
   const onFocus = () => refresh();
   target.addEventListener?.("focus", onFocus);
@@ -27558,7 +27980,7 @@ function createWorldEducation({
       return Promise.resolve();
     }
   }, life: engine.life || null });
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, lifeLearning, ...position ? { position: openPosition, practice: startPractice, plan: openPlan, mock: openMock, townCheck, townEvidence } : {}, presentation() {
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));

@@ -239,7 +239,7 @@ const full = s => {
   return [plain(s), s.open.at, s.open.grade, prev].join('|');
 };
 const skillKey = s =>
-  !s ? 'none' : [s.theta.toFixed(9), s.n, s.streak, s.level, s.lastAt].join('|');
+  !s ? 'none' : [s.theta.toFixed(9), s.n, s.streak, s.level, String(s.peak), s.lastAt].join('|');
 const shape = s => ({ units: s.memory, skills: s.ability, met: s.met });
 const shuffle = (r, list) => {
   const a = [...list];

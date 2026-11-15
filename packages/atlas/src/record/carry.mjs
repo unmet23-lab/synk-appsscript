@@ -82,6 +82,26 @@ export function carriedSoFar(events) {
   };
 }
 
+// 옮겨 오기 전 기록(정본 §5-6 · 단계 4 계획 §21-3) — 한 기기에서 처음 옮긴 장부의 칸 요약. 사건들(기록부의 차례 — 열쇠 순)에서 after가
+// 없고 거두지 않은 장부 사건 가운데 맨 앞 하나만 읽는다(§18-5 R10 — 옛 판에 다녀온 뒤의 장부에는 이미 사건으로 옮긴 답이 접혀 있어 그것까지
+// 읽으면 겹쳐 센다). 측정 요약에 더하지 않고 능력마다 따로 낸다: { at, skills: [{ id, cells: [{ difficulty, independent, correct, helped,
+// lastAt }] }] }(summary().skills[]와 같은 칸 꼴). 그런 장부가 없으면 null.
+export function firstLedgerCells(events) {
+  const withdrawn = new Set(
+    events.filter(event => event.type === EVENT_TYPES.excluded).map(event => event.targetId),
+  );
+  const first = events.find(
+    event => event.type === EVENT_TYPES.carried && event.after === null && !withdrawn.has(event.id),
+  );
+  if (!first) return null;
+  const skills = new Map();
+  for (const { skillId, difficulty, independent, correct, helped, lastAt } of first.cells ?? []) {
+    if (!skills.has(skillId)) skills.set(skillId, []);
+    skills.get(skillId).push({ difficulty, independent, correct, helped, lastAt });
+  }
+  return { at: first.at, skills: [...skills].map(([id, cells]) => ({ id, cells })) };
+}
+
 // 장부 하나 → record.carried의 칸(새로 든 것이 없으면 null).
 export function carriedFields(
   ledger,
