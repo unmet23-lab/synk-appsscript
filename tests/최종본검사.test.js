@@ -110,6 +110,117 @@ test('조용구간과 다른 걸림이 함께면 끝 코드는 그대로 1 · �
   assert.ok(!sj.알림.some((n) => n.항목 === '조용구간'), '짧은 영상은 조용구간 알림도 없다');
 });
 
+// ── 흐름(11-16 — 컷 안 탈것 · 배경 움직임, 영상 마감 관문이 「--항목 흐름」으로 부른다) ──
+// 합성 영상: 고정된 무늬 바탕(640×360, 24fps) 위에 무늬 네모(차) · 무늬 원판(바퀴)을 움직인다. 셋 다 끝 코드를 바꾸지 않는 「확인」이다.
+// 실제 편 대조(서울로 「다리가 기억하는 것」, 화면 너비 1000 기준 px/s):
+//   ① 흐름갈림  11-14 판 C08 55.3~57.7초 가운데 띠 왼쪽 −8.0 · 오른쪽 +3.2 → 걸림. 고친 지금 판(11-15 라n 뒤)은 지나간다.
+//   ② 멈췄다감  11-14 판 E03k 147.8~151.7초 위 띠 오른쪽 금빛 버스 — 가다가 약 1초 섰다가 다시 감 → 걸림.
+//   ③ 제자리바퀴 라f 판(11-14 23:56) Q06 16.6~18.1초 파란 버스 바퀴 — 나머지 칸 흐름 90번째 값 0.2 → 걸림.
+//              11-14 노란 택시 판 Q06은 배경이 초당 240px 넘게 흘러 지나간다(그 판의 「1픽셀」은 카메라가 따라가는 택시 몸통을 잰 값이었다).
+//   11-14 판 53컷(컷표 경계를 --컷초로 더함)에서 걸린 것은 C08 · E03k와 S06k 셋이다. S06k는 사진 찍는 아이가 0.9초 굳었다가 다시 움직이는 자리로,
+//   11-15 카본이 「굳음」으로 짚어 맞음 판정을 받았다. 그래서 나머지 50컷의 헛걸림은 0이다. 고친 지금 판(55덩이)에서는 S06k 하나만 걸린다.
+//   라h(C08 · 바퀴 고침)는 E03k · S06k, 라m(E03k b판)도 E03k · S06k다 — 고친 흠은 그 판부터 빠지고 헛걸림은 다섯 판 모두 0이다.
+//   문턱을 정하며 걸러 낸 헛걸림: 한 방향 몫 0.8이면 R03 와이퍼(0.82)가 ①에 걸려 0.85로 올렸다. 「감」을 한 창만 봐도 되면 차가 화면 밖으로
+//   나간 Y15w가 ②에 걸려 두 창 잇달아로 바꿨다. 컷표 경계 없이 장 차이로만 컷을 나누면 천 닦기 전환 다섯 곳이 붙어 Q02+Y70이 ①에 걸린다.
+//   카메라 위로 지나가는 버스(라f Q04, 세로 / 가로 1.4~1.8)는 「옆으로 감」 조건으로 ①에서 뺐다. ②의 멈춤을 「속도 15% 아래」로 두면 몸을 앞뒤로
+//   흔드는 S04y와 느려진 실(지금 판 E04m)이 걸려 「크기 1.5px/s 아래」로 바꿨다. 퍼짐 조건을 ②에서 빼면 다가오는 버스(지금 판 Q04)가 걸리고,
+//   바닥 없이 쓰면 퍼짐이 0.3%뿐인 라f E03k가 빠져, 두 퍼짐이 모두 1% 넘을 때만 ②를 뺀다.
+const 합성 = String.raw`
+import sys, subprocess, numpy as np, cv2
+kind, out = sys.argv[1], sys.argv[2]
+W, H, FPS, DUR = 640, 360, 24, 4.5
+def tex(h, w, seed):
+    r = np.random.default_rng(seed).integers(0, 256, (h, w)).astype(np.float32)
+    r = cv2.GaussianBlur(r, (0, 0), 1.2)
+    return np.clip((r - r.mean()) / (r.std() + 1e-6) * 50 + 128, 0, 255).astype(np.uint8)
+bg, car, wheel = tex(H, W * 3, 1), tex(80, 160, 2), tex(220, 220, 3)
+yy, xx = np.mgrid[0:220, 0:220]
+disc = (xx - 110) ** 2 + (yy - 110) ** 2 <= 105 ** 2
+def paste(f, img, x, y):
+    x = int(round(x)); x0, x1 = max(0, x), min(W, x + img.shape[1])
+    if x1 > x0: f[y:y + img.shape[0], x0:x1] = img[:, x0 - x:x1 - x]
+def stopgo(t, stop):
+    a, b = stop
+    return 40 + 48 * (min(t, a) + max(0.0, t - b))
+p = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'gray', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
+                      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', out], stdin=subprocess.PIPE)
+for n in range(int(DUR * FPS)):
+    t = n / FPS
+    off = int(round(90 * t)) if kind == '바퀴흐름' else 0
+    f = bg[:, off:off + W].copy()
+    if kind == '갈림':
+        paste(f, car, 120 - 25 * t, 150); paste(f, car, 360 + 25 * t, 150)
+    elif kind == '같은방향':
+        paste(f, car, 60 + 25 * t, 150); paste(f, car, 360 + 25 * t, 150)
+    elif kind == '멈춤':
+        paste(f, car, stopgo(t, (1.3, 2.5)), 20)
+    elif kind == '고른':
+        paste(f, car, 40 + 48 * t, 20)
+    elif kind == '출발':
+        paste(f, car, 40 + 48 * max(0.0, t - 1.5), 20)
+    elif kind in ('바퀴', '바퀴흐름'):
+        w = cv2.warpAffine(wheel, cv2.getRotationMatrix2D((110, 110), float(np.degrees(2.0 * t)), 1.0), (220, 220), borderMode=cv2.BORDER_REFLECT)
+        sub = f[70:290, 210:430]; sub[disc] = w[disc]
+    p.stdin.write(f.tobytes())
+p.stdin.close(); p.wait()
+`;
+
+function flowClip(t, kind) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '최종본검사-흐름-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const gen = path.join(dir, 'gen.py');
+  fs.writeFileSync(gen, 합성);
+  const video = path.join(dir, `${kind}.mp4`);
+  execFileSync(py, ['-I', '-X', 'utf8', gen, kind, video], { stdio: 'pipe' });
+  return video;
+}
+function flow(video) {
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '흐름', '--json'],
+    { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });
+  assert.equal(r.status, 0, `흐름 걸림은 끝 코드를 바꾸지 않는다 — ${r.stderr}`);
+  const j = lastJson(r.stdout);
+  assert.equal(j.못잼, undefined, JSON.stringify(j.못잼));
+  return j;
+}
+const 흐름이름 = new Set(['흐름갈림', '멈췄다감', '제자리바퀴']);
+const 흐름걸림 = (j) => j.걸림.filter((h) => 흐름이름.has(h.항목));
+
+test('흐름 ① 같은 띠의 두 차가 반대로 가면 「흐름갈림」, 같은 방향이면 지나간다', { skip: 없음 }, (t) => {
+  const j = flow(flowClip(t, '갈림'));
+  const hit = 흐름걸림(j);
+  assert.deepEqual(hit.map((h) => h.항목), ['흐름갈림'], JSON.stringify(hit));
+  assert.equal(hit[0].값.띠, '가운데');
+  assert.ok(hit[0].값.왼 < -2.5 && hit[0].값.오른 > 2.5, JSON.stringify(hit[0].값));
+  assert.ok(j.알림.some((n) => n.항목 === '흐름' && n.칸.가운데왼 < 0 && n.칸.가운데오 > 0), JSON.stringify(j.알림));
+  assert.deepEqual(흐름걸림(flow(flowClip(t, '같은방향'))), []);
+});
+
+test('흐름 ② 가다가 1.2초 섰다가 다시 가면 「멈췄다감」, 고르게 가거나 서 있다가 처음 출발하면 지나간다', { skip: 없음 }, (t) => {
+  const hit = 흐름걸림(flow(flowClip(t, '멈춤')));
+  assert.deepEqual(hit.map((h) => h.항목), ['멈췄다감'], JSON.stringify(hit));
+  assert.equal(hit[0].값.칸, '위왼');
+  assert.ok(hit[0].초 >= 1.0 && hit[0].초 <= 1.7 && hit[0].끝초 >= 2.2 && hit[0].끝초 <= 2.9, `멈춘 자리 ${hit[0].초}~${hit[0].끝초}(실제 1.3~2.5)`);
+  assert.deepEqual(흐름걸림(flow(flowClip(t, '고른'))), []);
+  assert.deepEqual(흐름걸림(flow(flowClip(t, '출발'))), []);
+});
+
+test('흐름 ③ 바퀴만 돌고 배경이 안 흐르면 「제자리바퀴」, 배경이 흐르면 지나간다', { skip: 없음 }, (t) => {
+  const hit = 흐름걸림(flow(flowClip(t, '바퀴')));
+  assert.deepEqual(hit.map((h) => h.항목), ['제자리바퀴'], JSON.stringify(hit));
+  assert.ok(hit[0].값.바탕90 < 10, JSON.stringify(hit[0].값));
+  assert.deepEqual(흐름걸림(flow(flowClip(t, '바퀴흐름'))), []);
+});
+
+test('흐름은 기본 항목이 아니다 — 올리기 전 검사 ⑳이 부르는 기본 항목에는 들지 않는다', () => {
+  const src = fs.readFileSync(tool, 'utf8');
+  const m = src.match(/^DEFAULT_ITEMS = "([^"]+)"/m);
+  assert.ok(m, 'DEFAULT_ITEMS 줄');
+  assert.deepEqual(m[1].split(','), ['굳음', '같은판', '되풀이', '끝', '화소', '조용']);
+  for (const k of 흐름이름) assert.ok(new RegExp(`SOFT = \\{[^}]*"${k}"`).test(src), `${k}는 끝 코드를 바꾸지 않는다(SOFT)`);
+  const gate = fs.readFileSync(path.join(__dirname, '..', 'tools', '영상관문판.py'), 'utf8');
+  assert.ok(/최종본항목 = "[^"]*흐름/.test(gate), '마감 관문 판이 흐름을 붙여 부른다');
+});
+
 test('없는 파일은 끝 코드 2와 오류 한 줄', { skip: 없음 }, () => {
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, path.join(os.tmpdir(), '없는영상.mp4'), '--json'], { encoding: 'utf8', timeout: 60000 });
   assert.equal(r.status, 2, r.stderr || r.error?.message);

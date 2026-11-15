@@ -6,7 +6,8 @@
 #   보는데, SNS 두 브랜드 편은 옛 컷표이거나 컷표가 없고 편집에서 판을 잘라 키운 것은 컷표에 안 나온다. 그래서 최종 영상 하나만 보고 잰다 —
 #   올리기 전 검사 ⑳이 부르고(재연 · 진행자 편), 혼자 불러도 된다.
 #
-#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소,조용]
+#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소,조용[,흐름]] [--컷초 3.9,5.87,…]
+#   「흐름」은 기본 항목이 아니다. 영상 마감 관문(tools/영상관문판.py)이 붙여 부른다. 맞춘 자료가 애니 공모전 한 편뿐이라 SNS 올리기 전 검사에는 아직 넣지 않았다.
 #
 # 잰 것(결과 「걸림」의 항목 이름 — 올리기 전 검사가 이 이름으로 등급을 매긴다):
 #   굳음      컷마다 사람움직임.py(카메라를 걷어 낸 사람 자리 움직임, 480×270 장당 px)의 「사람」 값 — 0.12 아래(점검표 26 문턱)이고 사람 자리를
@@ -24,6 +25,28 @@
 #             평균 −25.5dB), 지나가는 것 가운데 가장 긴 자리 영상통화연인 8.0초(최종 확인 통과 · 만족 사례 S52) · 없는판결 7.5초 · 질문다섯개 6.5초 · 나머지 5초 아래.
 #             10dB를 8 · 12dB로 바꿔도 무료체험만 걸린다(13.25초 · 10.5초).
 #             짧고 깊은 빈 소리(필라테스예약 14.0~16.25초 −37~−38dB)는 재지 않는다 — 통과한 영상통화연인 14.5~17.75초가 더 깊고 길어(−37~−40dB) 가를 문턱이 없다
+#   흐름(11-16, 컷 안의 탈것과 배경 움직임 — 셋 다 끝 코드를 바꾸지 않는 「확인」이다)
+#             왜: 11-15 서울로 「다리가 기억하는 것」 시험에서 카본 영상 심사와 Fable 마감 관문이 유호님이 짚으신 움직임 흠을 하나도 못 봤다. 카본은 1초에 한 장쯤,
+#             Fable은 8장 띠로 보기 때문이다(docs/마케팅/PULSE_AI모델_캐스팅_20260930/검수방식_시험_완성영상_카본과Fable_20261115.md). 그래서 기계가 잰다.
+#             어떻게: 컷마다 특징점을 긴 변 1000으로 이어 추적한다(Lucas-Kanade, 앞뒤로 추적해 0.3px 넘게 어긋난 점은 버림). 장마다 닮음 변환으로 카메라 움직임을
+#             맞추고 그 나머지를 그 점의 움직임으로 본다. 0.5초 넘게 이어진 점의 평균 가로 속도가 초당 2px(화면 너비 1000 기준) 넘으면 「움직이는 점」이다.
+#             화면을 띠 셋(위 · 가운데 · 아래) × 왼쪽 · 오른쪽 여섯 칸으로 나누고, 움직이는 점이 25개 넘고 그 85% 넘게 한 방향이면 그 칸의 방향으로 친다.
+#             컷은 장 차이로 찾은 경계에 --컷초(관문은 컷표 경계를 준다)를 더해 나눈다 — 천 닦기 같은 전환은 장 차이로 못 찾는다.
+#             카메라 배율이 초당 2% 넘게 바뀌는 컷(앞으로 가는 카메라 · 확대)은 ①②를 재지 않는다. 움직이는 점이 가로와 세로로 함께 퍼지거나 모이는 컷
+#             (다가오는 차)은 ①을 재지 않는다. 두 퍼짐이 모두 초당 1%를 넘으면 ②도 재지 않는다(바닥 없이 쓰면 퍼짐이 0에 가까운 서울로 라f E03k도
+#             부호만 같아 빠졌고, ②에서 아예 빼면 다가오는 버스 지금 판 Q04가 걸렸다).
+#   흐름갈림  ① 같은 띠의 왼쪽 칸과 오른쪽 칸이 반대 방향으로 가고, 둘 다 초당 2.5px 넘고, 두 칸의 점이 옆으로 간다(세로 / 가로 속도의 가운데 값 0.5 아래 —
+#             카메라 위로 지나가는 버스는 1.4~1.8이라 빠진다) — 같은 길의 차가 서로 반대로 가거나 한쪽이 뒤로 밀린다
+#             (서울로 11-14 판 C08 55.3~57.7초: 가운데 띠 왼쪽 −8.0, 오른쪽 +3.2. 고친 지금 판은 같은 방향이라 지나간다)
+#   멈췄다감  ② 한 방향으로 가는 칸의 1/8초 속도가, 가다가 0.5초 넘게 멈춘 뒤 다시 간다(간다 = 그 칸 속도 위 20% 값의 40% 넘음, 멈춤 = 속도의 크기가
+#             초당 1.5px 아래 — 뒤로 가는 창(차단벽을 밀며 몸을 흔드는 서울로 S04y)과 느려진 창(실이 풀리는 지금 판 E04m 0.6~3.5)은 멈춤이 아니다)
+#             (서울로 11-14 판 E03k 147.8~151.7초: 위 띠 오른쪽 금빛 버스가 1초 서 있다가 다시 감. 서 있다가 처음 출발하거나 가다가 끝에 서는 컷은 걸지 않는다.
+#             「감」은 1/8초 창 둘 넘게 잇달아야 한다 — 탈것이 화면 밖으로 나간 뒤 남은 점 몇 개가 한 창씩 튀는 값(서울로 Y15w)을 치지 않으려고.
+#             사람도 걸린다: 같은 판 S06k는 사진 찍는 아이가 0.9초 굳었다가 다시 움직인다 — 11-15 카본이 짚은 굳음과 같은 자리)
+#   제자리바퀴 ③ 한 열에서 위와 아래의 가로 흐름이 반대로 초당 20px 넘고 한 줄에서 왼쪽과 오른쪽의 세로 흐름도 반대다(도는 것). 그런데 도는 자리와
+#             그 옆 한 열을 뺀 나머지 칸 흐름의 90번째 값이 초당 10px 아래다 — 바퀴만 돌고 탈것도 배경도 안 간다(긴 변 480 조밀 흐름, 4 × 8칸)
+#             (서울로 라f 판 Q06 16.6~18.1초 파란 버스 바퀴: 나머지 칸 흐름 90번째 값 0.2px/s. 11-14 노란 택시 판은 배경이 초당 240px 넘게 흘러 지나간다)
+#             맞춘 자료와 헛걸림 수는 tests/최종본검사.test.js 머리에 있다.
 # 글자 판 · 표시가 컷을 넘어 그대로 남는 자리는 맞춤에서 뺀다 — 맞은 점이 화면 위아래로 네 줄(80px 칸) 넘게 퍼져야 그림으로 본다(자막 두 줄은 한두 줄).
 #
 # 끝 코드: 0 걸림 없음(조용구간만 걸려도 0) / 1 걸림 있음 / 2 잴 수 없음(파일 · ffmpeg). 판정(고칠 것 · 확인할 것)은 올리기 전 검사가 한다 — 이 도구는 잰 값과 자리만 낸다.
@@ -65,7 +88,30 @@ DETAIL_MIN = 5.0
 QUIET_REF_PCT = 90     # 조용구간: 몸통 0.25초 칸의 위 10%를 「큰 소리」 기준으로(가운데 값은 긴 조용함 자체에 끌려 내려간다 — 무료체험 가운데 −25.9dB)
 QUIET_DB = 10.0        # 1초 창 소리가 기준보다 이만큼 넘게 작으면 조용한 칸
 QUIET_SEC = 10.0       # 조용한 칸이 이만큼 넘게 이어지면 걸림
-SOFT = {"조용구간"}     # 끝 코드를 바꾸지 않는 걸림 — 검사이력에도 등급 「확인」으로 남는다
+SOFT = {"조용구간", "흐름갈림", "멈췄다감", "제자리바퀴"}     # 끝 코드를 바꾸지 않는 걸림 — 검사이력에도 등급 「확인」으로 남는다
+DEFAULT_ITEMS = "굳음,같은판,되풀이,끝,화소,조용"
+# 흐름(컷 안 탈것 · 배경 움직임) — 값은 모두 「화면 너비 1000 기준 px/s」다
+FLOW_LONG = 1000       # 특징점 추적은 긴 변 1000으로 푼다
+FLOW_EDGE = 2          # 컷 앞뒤 2장(경계 · 전환)은 뺀다
+FLOW_MIN_SEC = 0.75    # 앞뒤를 뺀 컷이 이보다 짧으면 재지 않는다
+FLOW_SEED = 6          # 0.25초마다 빈 자리에 새 점을 뿌린다
+FLOW_FB = 0.3          # 앞뒤로 추적해 이만큼(px) 넘게 어긋난 점은 버린다
+TRACK_MIN = 12         # 0.5초 넘게 이어진 점만 센다
+MOVE_MIN = 2.0         # 카메라를 걷어 낸 가로 속도가 이만큼 넘으면 움직이는 점
+CELL_MIN = 25          # 칸에 움직이는 점이 이만큼 있어야 칸의 방향을 낸다
+AGREE = 0.85           # 칸 안 움직이는 점의 이만큼이 한 방향이어야 그 칸의 방향이다(0.8이면 서울로 R03 와이퍼 0.82가 걸린다)
+SPLIT_MIN = 2.5        # ① 엇갈린 두 칸이 모두 이만큼 넘게 간다
+SIDEWAYS = 0.5         # ① 엇갈린 두 칸의 점이 옆으로 간다(세로 / 가로 속도의 가운데 값이 이 아래) — 카메라 위로 지나가는 버스(서울로 라f Q04 1.4~1.8)는 뺀다
+ZOOM_MAX = 2.0         # 카메라 배율이 초당 이만큼(%) 넘게 바뀌는 컷은 ①②를 재지 않는다
+STEP_WIN = 3           # ② 1/8초 창
+STOP_RUN = 4           # ② 1/8초 창 넷(0.5초) 넘게 멈춘 뒤 다시 간다
+GO_FRAC, STOP_FRAC = 0.4, 0.15
+STOP_ABS = 1.5         # ② 멈춤은 1/8초 창의 가로 속도 크기가 이 아래(px/s) — 서울로 E03k · S06k의 멈춤은 0.0~0.2
+ZOOM_SPREAD = 0.01     # ② 움직이는 점의 가로 · 세로 퍼짐이 둘 다 초당 1% 넘을 때만 확대로 본다(라f E03k 0.3%는 확대가 아니다, 다가오는 버스 Q04는 15% · 54%)
+ROT_MIN = 20.0         # ③ 한 열 위아래 가로 흐름이 반대로 이만큼 넘으면 도는 것
+BG_MAX = 10.0          # ③ 도는 자리 밖 칸 흐름의 90번째 값이 이 아래면 배경이 안 흐른다
+DENSE_LONG = 480       # ③ 조밀 흐름은 긴 변 480으로
+BANDS = ("위", "가운데", "아래")
 
 
 def probe(path):
@@ -96,17 +142,31 @@ def decode(path, size, gray=True):
 
 
 def pick(path, size, idxs):
-    """필요한 장만 골라 푼다 — {장 번호: 회색 그림}"""
+    """필요한 장만 골라 푼다 — {장 번호: 회색 그림}. 한 번 흘려 읽으며 고른다.
+    11-16까지는 select='eq(n,…)+…' 식 하나로 골랐는데, 컷이 쉰 개 남짓인 편(서울로 3분)은 식이 길어 ffmpeg가 아무것도 안 내
+    같은판 · 되풀이가 KeyError로 못 쟀다(현장 노트 영상 「select=eq(n…)」 항목과 같은 함정)."""
     idxs = sorted(set(int(i) for i in idxs))
     if not idxs:
         return {}
     w, h = size
-    sel = "+".join(f"eq(n\\,{i})" for i in idxs)
-    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-an", "-vf", f"fps={FPS:g},select='{sel}',scale={w}:{h}", "-fps_mode", "passthrough",
-                          "-f", "rawvideo", "-pix_fmt", "gray", "-"], capture_output=True).stdout
-    n = len(raw) // (w * h)
-    arr = np.frombuffer(raw[: n * w * h], np.uint8).reshape(n, h, w)
-    return dict(zip(idxs, arr))
+    want, last, out = set(idxs), idxs[-1], {}
+    proc = subprocess.Popen(["ffmpeg", "-v", "error", "-i", path, "-an", "-vf", f"fps={FPS:g},scale={w}:{h}",
+                             "-f", "rawvideo", "-pix_fmt", "gray", "-"], stdout=subprocess.PIPE)
+    try:
+        k = 0
+        while k <= last:
+            raw = proc.stdout.read(w * h)
+            if len(raw) < w * h:
+                break
+            if k in want:
+                out[k] = np.frombuffer(raw, np.uint8).reshape(h, w)
+            k += 1
+    finally:
+        proc.stdout.close()
+        if proc.poll() is None:
+            proc.kill()
+        proc.wait()
+    return out
 
 
 # ── 컷 ──
@@ -309,6 +369,238 @@ def audio_rms(path, dur=None, rate=16000):
     return db
 
 
+# ── 흐름(컷 안 탈것 · 배경 움직임) ──
+_LK = dict(winSize=(21, 21), maxLevel=3, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01))
+
+
+class FlowCut:
+    """한 컷의 장을 차례로 받아 특징점 추적(①②)과 조밀 흐름(③)을 함께 쌓는다."""
+
+    def __init__(self, W, H):
+        self.W, self.H, self.k = W, H, 1000.0 / W            # k: 화면 너비 1000 기준으로 바꾸는 배율
+        s = DENSE_LONG / max(W, H)
+        self.dw, self.dh = max(16, int(W * s) // 2 * 2), max(16, int(H * s) // 2 * 2)
+        self.gx, self.gy = (8, 4) if W >= H else (4, 8)
+        self.prev = self.prev_small = self.pts = self.ids = None
+        self.nid, self.n, self.scales = 0, 0, []
+        self.tracks = {}       # id → [첫 x, 첫 y, 걸음 수, 가로 합, 세로 합]
+        self.steps = []        # 걸음마다 {id: 카메라를 걷어 낸 가로 이동}
+        self.dense = []        # 조밀 흐름 칸 값(가로, 세로) — 두 장에 한 번
+
+    def add(self, g):
+        if self.prev is not None and self.pts is not None and len(self.pts):
+            self._track(g)
+        small = cv2.resize(g, (self.dw, self.dh), interpolation=cv2.INTER_AREA)
+        if self.prev_small is not None and self.n % 2 == 1:
+            f = cv2.calcOpticalFlowFarneback(self.prev_small, small, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+            cells = np.zeros((self.gy, self.gx, 2), np.float32)
+            for r in range(self.gy):
+                for c in range(self.gx):
+                    cells[r, c] = np.median(f[r * self.dh // self.gy:(r + 1) * self.dh // self.gy,
+                                              c * self.dw // self.gx:(c + 1) * self.dw // self.gx].reshape(-1, 2), axis=0)
+            self.dense.append(cells)
+        if self.n % FLOW_SEED == 0:
+            self._seed(g)
+        self.prev, self.prev_small = g, small
+        self.n += 1
+
+    def _seed(self, g):
+        mask = np.full(g.shape, 255, np.uint8)
+        if self.pts is not None:
+            for x, y in self.pts.reshape(-1, 2):
+                cv2.circle(mask, (int(x), int(y)), 8, 0, -1)
+        new = cv2.goodFeaturesToTrack(g, 800, 0.005, 8, mask=mask)
+        if new is None:
+            return
+        ids = np.arange(self.nid, self.nid + len(new))
+        self.nid += len(new)
+        if self.pts is None or not len(self.pts):
+            self.pts, self.ids = new, ids
+        else:
+            self.pts, self.ids = np.concatenate([self.pts, new]), np.concatenate([self.ids, ids])
+
+    def _track(self, g):
+        q, st, _ = cv2.calcOpticalFlowPyrLK(self.prev, g, self.pts, None, **_LK)
+        back, st2, _ = cv2.calcOpticalFlowPyrLK(g, self.prev, q, None, **_LK)
+        fb = np.linalg.norm((back - self.pts).reshape(-1, 2), axis=1)
+        ok = (st.ravel() == 1) & (st2.ravel() == 1) & (fb < FLOW_FB)
+        P, Q = self.pts.reshape(-1, 2)[ok], q.reshape(-1, 2)[ok]
+        ids = self.ids[ok]
+        self.pts, self.ids = q[ok], ids
+        step = {}
+        if len(P) >= 8:
+            M, _ = cv2.estimateAffinePartial2D(P, Q, method=cv2.RANSAC, ransacReprojThreshold=0.5, maxIters=2000)
+            if M is not None:
+                self.scales.append(float(math.hypot(M[0, 0], M[1, 0])))
+                R = (Q - P) - (P @ M[:, :2].T + M[:, 2] - P)
+                for i, p, r in zip(ids, P, R):
+                    t = self.tracks.setdefault(int(i), [float(p[0]), float(p[1]), 0, 0.0, 0.0])
+                    t[2] += 1
+                    t[3] += float(r[0])
+                    t[4] += float(r[1])
+                    step[int(i)] = float(r[0])
+        self.steps.append(step)
+
+    # ── 판정 ──
+    def zoom_rate(self):
+        """카메라 배율이 초당 몇 % 바뀌나(앞으로 가는 카메라 · 확대)"""
+        if not self.scales:
+            return 0.0
+        return (float(np.exp(np.mean(np.log(np.clip(self.scales, 0.5, 2.0))) * FPS)) - 1) * 100
+
+    def _moving(self):
+        """0.5초 넘게 이어진 점 → (x, y, 가로 속도, 세로 속도) — px/s(화면 너비 1000 기준)"""
+        rows = [(t[0], t[1], t[3] / t[2] * FPS * self.k, t[4] / t[2] * FPS * self.k, i) for i, t in self.tracks.items() if t[2] >= TRACK_MIN]
+        return [r for r in rows if math.hypot(r[2], r[3]) >= MOVE_MIN]
+
+    def _cells(self, mv):
+        """칸(띠, 쪽) → (가운데 가로 속도, 한 방향 몫, 점 수, 그 방향 점 id들) — 방향이 서는 칸만"""
+        out = {}
+        for b in range(3):
+            for side in range(2):
+                m = [r for r in mv if min(2, int(r[1] / self.H * 3)) == b and (r[0] >= self.W / 2) == bool(side) and abs(r[2]) >= MOVE_MIN]
+                if len(m) < CELL_MIN:
+                    continue
+                med = float(np.median([r[2] for r in m]))
+                agree = float(np.mean([np.sign(r[2]) == np.sign(med) for r in m]))
+                if agree >= AGREE:
+                    side_ratio = float(np.median([abs(r[3]) / abs(r[2]) for r in m]))     # 세로 / 가로 — 옆으로 가는 탈것은 작다
+                    out[(b, side)] = (med, agree, len(m), {r[4] for r in m if np.sign(r[2]) == np.sign(med)}, side_ratio)
+        return out
+
+    def _zoomlike(self, mv, floor=0.0):
+        """움직이는 점이 가로 · 세로로 함께 퍼지거나 모이나(다가오는 · 멀어지는 것 — 확대처럼 보이는 것). floor: 두 퍼짐이 모두 넘어야 할 초당 몫"""
+        if len(mv) < 10:
+            return False
+        a = np.array(mv)
+        sx = np.polyfit(a[:, 0] - self.W / 2, a[:, 2], 1)[0]
+        sy = np.polyfit(a[:, 1] - self.H / 2, a[:, 3], 1)[0]
+        return bool(sx * sy > 0 and abs(sy) >= 0.5 * abs(sx) and min(abs(sx), abs(sy)) >= floor)
+
+    def judge(self, t0, t1):
+        hits, zoom = [], self.zoom_rate()
+        mv = self._moving()
+        cells = self._cells(mv)
+        zoomlike = self._zoomlike(mv)
+        note = {"항목": "흐름", "초": t0, "끝초": t1, "카메라배율": round(zoom, 2), "움직이는점": len(mv),
+                "칸": {f"{BANDS[b]}{'왼오'[s]}": round(v[0], 1) for (b, s), v in sorted(cells.items())}}
+        if abs(zoom) < ZOOM_MAX:
+            갈림 = []
+            for b in range(3 if not zoomlike else 0):
+                L, R = cells.get((b, 0)), cells.get((b, 1))
+                if (L and R and np.sign(L[0]) != np.sign(R[0]) and min(abs(L[0]), abs(R[0])) >= SPLIT_MIN
+                        and max(L[4], R[4]) <= SIDEWAYS):
+                    갈림.append((b, L, R))
+            if 갈림:   # 한 컷에 한 줄 — 가장 세게 엇갈린 띠를 글에, 나머지 띠는 값에
+                b, L, R = max(갈림, key=lambda x: min(abs(x[1][0]), abs(x[2][0])))
+                hits.append({"항목": "흐름갈림", "초": t0, "끝초": t1,
+                             "값": {"띠": BANDS[b], "왼": round(L[0], 1), "오른": round(R[0], 1), "점": [L[2], R[2]], "한방향": [round(L[1], 2), round(R[1], 2)],
+                                   "띠들": [BANDS[x[0]] for x in 갈림]},
+                             "글": f"{t0}~{t1}초 컷의 {BANDS[b]} 띠에서 왼쪽은 {L[0]:+.1f}, 오른쪽은 {R[0]:+.1f}로 가로 방향이 엇갈린다"
+                                   f"(카메라를 걷어 낸 움직이는 점의 가운데 값, 화면 너비 1000 기준 px/s) — 같은 길의 탈것이 서로 반대로 가거나 뒤로 밀리는지 본다"})
+            멈춤 = [] if self._zoomlike(mv, ZOOM_SPREAD) else [((b, s), r) for (b, s), v in sorted(cells.items()) for r in [self._stop_go(v)] if r]
+            if 멈춤:   # 한 컷에 한 줄 — 가장 오래 멈춘 칸을 글에
+                (b, s), (a_, b_, ser) = max(멈춤, key=lambda x: x[1][1] - x[1][0])
+                hits.append({"항목": "멈췄다감", "초": round(t0 + a_, 2), "끝초": round(t0 + b_, 2),
+                             "값": {"컷": [t0, t1], "칸": f"{BANDS[b]}{'왼오'[s]}", "칸들": [f"{BANDS[x[0][0]]}{'왼오'[x[0][1]]}" for x in 멈춤], "속도": ser},
+                             "글": f"{t0}~{t1}초 컷의 {BANDS[b]} {('왼쪽', '오른쪽')[s]} 칸에서 가던 것이 {t0 + a_:.2f}~{t0 + b_:.2f}초 동안 멈췄다가 다시 간다"
+                                   f"(1/8초마다 가로 속도 px/s: {' '.join(f'{x:+.0f}' for x in ser if x is not None)}) — 탈것이 뚝 섰다가 튀어 나가는지, 사람이 잠깐 굳는지 본다"})
+        r = self._spin()
+        if r:
+            hits.append({"항목": "제자리바퀴", "초": t0, "끝초": t1, "값": r,
+                         "글": f"{t0}~{t1}초 컷에 도는 것(바퀴)이 있는데 나머지 화면이 거의 안 흐른다(흐름 90번째 값 {r['바탕90']}px/s, 문턱 {BG_MAX:g}) — "
+                               f"바퀴만 돌고 탈것도 배경도 제자리인지 본다"})
+        return hits, note
+
+    def _stop_go(self, cell):
+        """가다가 0.5초 넘게 멈춘 뒤 다시 가는 자리 → (멈춘 시작초, 끝초, 1/8초 속도 줄) — 컷 첫 장 기준 초"""
+        med, _, _, group, _ = cell
+        sign = 1.0 if med > 0 else -1.0
+        ser = []
+        for s0 in range(0, len(self.steps) - STEP_WIN + 1, STEP_WIN):
+            win = self.steps[s0:s0 + STEP_WIN]
+            common = [i for i in group if all(i in st for st in win)]
+            ser.append(float(np.median([sum(st[i] for st in win) for i in common])) * FPS / STEP_WIN * self.k if len(common) >= 8 else None)
+        vals = [x * sign for x in ser if x is not None]
+        if len(vals) < 6:
+            return None
+        ref = float(np.percentile(vals, 80))
+        if ref < 2 * MOVE_MIN:
+            return None
+        go = [x is not None and x * sign >= max(MOVE_MIN, GO_FRAC * ref) for x in ser]
+        # 거의 서 있음 — 뒤로 가는 창은 멈춤이 아니다(서울로 S04y 차단벽을 밀며 몸을 앞뒤로 흔듦). 느려진 것도 멈춤이 아니다(지금 판 E04m 실이 풀리며 초당 0.6~3.5)
+        stop = [x is not None and abs(x) < min(max(1.0, STOP_FRAC * ref), STOP_ABS) for x in ser]
+
+        def 이어감(g):
+            """창 둘 넘게 잇달아 가나 — 탈것이 화면 밖으로 나간 뒤 남은 점 몇 개가 한 창씩 튀는 값(서울로 Y15w 125 · 60)을 「감」으로 치지 않는다"""
+            return any(g[k] and g[k + 1] for k in range(len(g) - 1))
+
+        i = 0
+        while i < len(ser):
+            if not stop[i]:
+                i += 1
+                continue
+            j = i
+            while j < len(ser) and stop[j]:
+                j += 1
+            if j - i >= STOP_RUN and 이어감(go[:i]) and 이어감(go[j:]):   # 걸음 k = 컷 첫 장에서 FLOW_EDGE + k번째 장 → 다음 장
+                return round((FLOW_EDGE + i * STEP_WIN) / FPS, 2), round((FLOW_EDGE + j * STEP_WIN) / FPS, 2), [None if x is None else round(x, 1) for x in ser]
+            i = j
+        return None
+
+    def _spin(self):
+        """도는 것(한 열 위아래 가로 흐름 반대 + 한 줄 좌우 세로 흐름 반대)이 있는데 그 밖 칸이 거의 안 흐르면 값을 낸다"""
+        if len(self.dense) < 3:
+            return None
+        m = np.mean(self.dense, axis=0) * FPS * (1000.0 / self.dw)      # px/s(화면 너비 1000 기준)
+        dx, dy = m[..., 0], m[..., 1]
+        cols = {c for c in range(self.gx) for r1 in range(self.gy) for r2 in range(r1 + 1, self.gy)
+                if dx[r1, c] * dx[r2, c] < 0 and min(abs(dx[r1, c]), abs(dx[r2, c])) >= ROT_MIN}
+        if not cols:
+            return None
+        c0, c1 = max(0, min(cols) - 1), min(self.gx, max(cols) + 2)
+        flip = any(dy[r, a] * dy[r, b] < 0 and min(abs(dy[r, a]), abs(dy[r, b])) >= ROT_MIN / 2
+                   for r in range(self.gy) for a in range(c0, c1) for b in range(a + 1, c1))
+        rest = np.ones((self.gy, self.gx), bool)
+        rest[:, c0:c1] = False
+        if not flip or not rest.any():
+            return None
+        bg = np.hypot(dx[rest], dy[rest])
+        bg90 = float(np.percentile(bg, 90))
+        if bg90 >= BG_MAX:
+            return None
+        return {"도는열": [min(cols), max(cols)], "바탕90": round(bg90, 1), "바탕가운데": round(float(np.median(bg)), 1),
+                "도는칸가로": [round(float(x), 0) for x in dx[:, min(cols)]]}
+
+
+def measure_flow(path, segs, w, h):
+    """컷마다 FlowCut — 긴 변 1000 회색 장을 한 번만 풀어(24fps) 컷 앞뒤 2장을 빼고 잰다 → (걸림, 알림)"""
+    W, H = fit_size(w, h, FLOW_LONG)
+    proc = subprocess.Popen(["ffmpeg", "-v", "error", "-i", path, "-an", "-vf", f"fps={FPS:g},scale={W}:{H}",
+                             "-f", "rawvideo", "-pix_fmt", "gray", "-"], stdout=subprocess.PIPE)
+    size = W * H
+    hits, notes, i = [], [], 0
+    try:
+        for a, b in segs:
+            lo, hi = a + FLOW_EDGE, b - FLOW_EDGE
+            fc = FlowCut(W, H) if (hi - lo) / FPS >= FLOW_MIN_SEC else None
+            while i < b:
+                raw = proc.stdout.read(size)
+                if len(raw) < size:
+                    break
+                if fc is not None and lo <= i < hi:
+                    fc.add(np.frombuffer(raw, np.uint8).reshape(H, W))
+                i += 1
+            if fc is not None and fc.n >= 4:
+                hs, note = fc.judge(round(a / FPS, 2), round(b / FPS, 2))
+                hits += hs
+                notes.append(note)
+    finally:
+        proc.stdout.close()
+        proc.wait()
+    return hits, notes
+
+
 def quiet_runs(db):
     """조용구간 — 0.25초 칸 dB 줄 → (큰 소리 기준 dB, [(시작 칸, 끝 칸, 그 자리 평균 dB)] 긴 순). 앞 0.5초와 끝 3초(끝소리가 본다)는 뺀다.
     1초 창(칸 넷의 평균 전력)으로 다듬어 말 사이 짧은 숨 · 한 번 튄 효과음에 자리가 끊기지 않게 한다. 몸통이 QUIET_SEC보다 짧으면 (None, [])"""
@@ -330,10 +622,11 @@ def quiet_runs(db):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="최종본 검사 — 굳음 · 같은 판 · 되풀이 · 끝 · 화소 · 조용")
+    ap = argparse.ArgumentParser(description="최종본 검사 — 굳음 · 같은 판 · 되풀이 · 끝 · 화소 · 조용 (+ 흐름: 관문이 붙여 부른다)")
     ap.add_argument("mp4")
     ap.add_argument("--json", action="store_true")
-    ap.add_argument("--항목", default="굳음,같은판,되풀이,끝,화소,조용")
+    ap.add_argument("--항목", default=DEFAULT_ITEMS)
+    ap.add_argument("--컷초", default="", help="흐름만 쓴다: 컷이 바뀌는 초(쉼표) — 천 닦기 같은 전환은 장 차이로 못 찾아 컷표 경계를 더한다")
     o = ap.parse_args(argv)
     want = set(o.항목.split(","))
     try:
@@ -476,6 +769,23 @@ def main(argv=None):
             notes.append({"항목": "조용구간", "최장초": round((runs[0][1] - runs[0][0]) / 4, 2) if runs else 0, "기준dB": ref})
 
     guard("조용", _quiet)
+
+    def _flow():
+        if "흐름" in want:
+            fsegs = segs
+            extra = sorted({int(round(float(x) * fps)) for x in o.컷초.split(",") if x.strip()})
+            if extra:   # 장 차이로 찾은 경계와 합친다(3장 안은 하나로) — 컷표가 낡았어도 한 컷이 둘로 나뉠 뿐이다
+                bs = sorted(set(cuts))
+                for e in extra:
+                    if 2 <= e <= n - 2 and all(abs(e - c) > 3 for c in bs):
+                        bs.append(e)
+                bs = [0] + sorted(bs) + [n]
+                fsegs = [(bs[k], bs[k + 1]) for k in range(len(bs) - 1)]
+            hs, ns = measure_flow(o.mp4, fsegs, w, h)
+            hits.extend(hs)
+            notes.extend(ns)
+
+    guard("흐름", _flow)
 
     def _motion():
         if want & {"굳음"}:

@@ -19,6 +19,11 @@
 #           · 원본_<컷>.jpg(컷표 detail에 "원본": [시작초, 끝초]가 있고 --원본을 줬을 때 — 위 우리 25 · 50 · 75%, 아래 원본 같은 자리)
 #           · 전체 · 장면(컷 가운데 장) · 얼굴 판은 굽기전과 같은 꼴. 정지 폴더가 있으면 시작 그림의 엔진 흔적도 숫자에 붙인다(제작 규칙 「검수」 엔진 표)
 #   그리고 tools/컷연속성검사.py(굽기전 --그림 · --그림지시문 · --지시문, 마감 --영상) · 끝판검사.py · 사람움직임.py(사람 컷마다)를 돌려 숫자에 붙인다.
+#   마감에서는 tools/최종본검사.py(굳음 · 구간굳음 · 같은판 · 되풀이 · 끝소리 · 끝화소 · 조용구간 + 흐름 — 컷 안 탈것 · 배경 움직임)도 처음부터 함께 돌린다(11-16).
+#     11-15 서울로 관문에서 이 도구가 돌지 않아 「빠진 것 찾기」가 짚었고, 정지 판만 본 검수자들은 유호님이 짚으신 움직임 흠 여섯을 하나도 못 봤다.
+#     걸린 항목은 그 시각이 든 컷의 숫자 「최종본」 줄에 붙고, 판목록 「도구」에 요약이, 출력 폴더 최종본검사.json에 원래 결과가 남는다.
+#     흐름 · 굳음 항목이 걸린 컷은 「살펴볼움직임」에 넣는다. 흐름 항목이 걸린 컷에는 흐름_<컷>.jpg(시간띠 — 띠 셋의 가운데 가로 줄을 1/24초마다 아래로 쌓음.
+#     세로로 곧은 줄은 멈춤, 기운 줄은 움직임)를 그 컷 그림에 더한다. 최종본검사를 못 돌리면 「못함」에 남는다.
 #
 # 숫자 문턱(거르기용): 첫 장 dHash 거리 5 이하면 같은 시작 그림 의심(「이어찍기」 이웃은 뺌) · 같은 시간대 이웃 평균보다 밝기 30 · 붉푸 비 0.3 넘게
 #   다르면 튐(같은 장면 이웃끼리) · 사람 컷인데 얼굴 0 · 사람 없는 컷인데 얼굴 · 한 사람 컷에 얼굴 여럿 · 사람 움직임(컷 가운데 2.5초) 0.12 아래는 「살펴볼움직임」 —
@@ -50,6 +55,10 @@ except ImportError as e:
 사람움직임도구 = 굽기폴더 / "시댄스무제한" / "사람움직임.py"
 끝판도구 = 굽기폴더 / "video" / "끝판검사.py"
 연속성도구 = 뿌리 / "tools" / "컷연속성검사.py"
+최종본도구 = 뿌리 / "tools" / "최종본검사.py"
+최종본항목 = "굳음,같은판,되풀이,끝,화소,조용,흐름"
+흐름항목 = {"흐름갈림", "멈췄다감", "제자리바퀴"}
+최종본시간 = 3600   # 3분 2000×550 편에서 흐름만 1~2분, 굳음(사람움직임 · rembg)까지 몇 분 — 관문 판의 다른 일과 함께 돈다
 YUNET = Path.home() / ".rembg" / "models" / "yunet" / "face_detection_yunet_2023mar.onnx"
 글꼴후보 = [Path("C:/Windows/Fonts/malgunbd.ttf"), Path("C:/Windows/Fonts/malgun.ttf"), Path("/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf")]
 긴변, 화소 = 1568, 1_150_000
@@ -233,6 +242,53 @@ def 돌리기(명령, 시간=1200):
         return None, "", str(e)
 
 
+def 시간띠(영상, t, dur, 크기):
+    """컷 안 시간띠 — 띠 셋(위 · 가운데 · 아래)의 가운데 가로 줄(5줄 평균)을 1/24초마다 아래로 쌓는다. 곧은 세로 줄은 멈춤, 기운 줄은 움직임.
+    화면 전체의 이동(카메라 · 편집의 자르는 창)은 장마다 위상 상관으로 재서 빼고 같은 장면 줄을 따라간다 — 서울로 11-14 판 C08은 자르는 창이
+    2.3초에 240줄 올라가, 고정 줄로 쌓으면 장면을 훑은 사진처럼 나왔다. 화면 밖으로 나간 자리는 검게 둔다."""
+    w, h = 크기
+    t0, t1 = t + 0.08, t + max(0.2, dur - 0.08)
+    r = subprocess.run(["ffmpeg", "-v", "error", "-nostdin", "-ss", f"{t0:.3f}", "-i", str(영상), "-t", f"{t1 - t0:.3f}", "-an",
+                        "-vf", f"fps=24,scale={w}:{h}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True)
+    n = len(r.stdout) // (w * h * 3)
+    if n < 4:
+        return None
+    a = np.frombuffer(r.stdout[: n * w * h * 3], np.uint8).reshape(n, h, w, 3)
+    import cv2
+    작게 = np.ascontiguousarray(a[:, ::4, ::4].mean(axis=3), dtype=np.float32)
+    창 = cv2.createHanningWindow((작게.shape[2], 작게.shape[1]), cv2.CV_32F)
+    ox, oy, 이동 = 0.0, 0.0, [(0.0, 0.0)]
+    for i in range(1, n):
+        (dx, dy), _ = cv2.phaseCorrelate(작게[i - 1], 작게[i], 창)
+        ox, oy = ox + dx * 4, oy + dy * 4
+        이동.append((ox, oy))
+    겹 = max(1, min(4, 360 // n))
+    cx, cy = 이동[n // 2]          # 띠 줄은 컷 가운데 장에 맞춘다 — 화면이 많이 움직여도 양 끝에서 덜 빠진다
+    이동 = [(mx - cx, my - cy) for mx, my in 이동]
+    덩이 = []
+    for b, 이름 in enumerate(("위", "가운데", "아래")):
+        y0 = (b + 0.5) * h / 3
+        줄 = np.zeros((n, w, 3), np.uint8)
+        for i, (mx, my) in enumerate(이동):
+            y = int(round(y0 + my))
+            if not 2 <= y < h - 2:
+                continue
+            row = a[i, y - 2:y + 3].mean(axis=0).astype(np.uint8)
+            s = int(round(-mx))
+            if s >= 0:
+                줄[i, s:] = row[:w - s] if s < w else 0
+            else:
+                줄[i, :w + s] = row[-s:]
+        판 = Image.fromarray(np.repeat(줄, 겹, axis=0))
+        덩이.append(꼬리표(판, f"{이름} 띠  {t0:.2f}→{t1:.2f}s ↓ (카메라 이동을 뺌)", max(12, w // 90)))
+    전체 = Image.new("RGB", (w, sum(d.size[1] for d in 덩이) + 8 * (len(덩이) - 1)), (255, 255, 255))
+    y = 0
+    for d in 덩이:
+        전체.paste(d, (0, y))
+        y += d.size[1] + 8
+    return 전체
+
+
 def 컷시간(표):
     d, seq, 끝 = 표.get("detail") or [], 표.get("seq") or [], float(표.get("end") or 0)
     시작 = {str(r[0]): float(r[1]) for r in seq if isinstance(r, list) and len(r) > 1}
@@ -285,6 +341,72 @@ def 시작그림찾기(폴더, 컷, 줄=None, 편=None):
     return None, None
 
 
+def 최종본받기(일, 출력, 최종, 표, 순서, 숫자, 살펴볼, 컷목록, 편항목, 도구, 못함):
+    """함께 돌린 최종본검사를 받아 걸린 항목을 그 시각이 든 컷의 숫자 「최종본」 줄에 붙인다. 흐름 · 굳음이 걸린 컷은 살펴볼움직임에, 흐름이 걸린 컷엔 시간띠를."""
+    try:
+        코드 = 일.wait(timeout=최종본시간)
+    except subprocess.TimeoutExpired:
+        일.kill()
+        못함.append(f"최종본검사가 {최종본시간}초 넘게 걸려 멈춤")
+        도구.append({"이름": "최종본검사", "끝코드": None, "요약": "시간 넘김 — 못 받음"})
+        return
+    결과파일 = 출력 / "최종본검사.json"
+    try:
+        j = json.loads((결과파일.read_text(encoding="utf-8").strip().splitlines() or ["{}"])[-1])
+    except (OSError, json.JSONDecodeError):
+        j = {}
+    if "걸림" not in j:
+        오류 = (출력 / "최종본검사.오류.txt").read_text(encoding="utf-8", errors="replace").strip() if (출력 / "최종본검사.오류.txt").exists() else ""
+        못함.append(f"최종본검사 결과를 못 읽음(끝 코드 {코드}): {(j.get('오류') or 오류)[:200]}")
+        도구.append({"이름": "최종본검사", "끝코드": 코드, "요약": "결과 없음"})
+        return
+    시간 = [(c, *tt) for c, tt in zip(순서, 컷시간(표))]
+    항목별 = {}
+
+    def 그컷(h):
+        a = float(h.get("초") or 0)
+        b = float(h.get("끝초") or a)
+        m = (a + b) / 2
+        for c, t, dur in 시간:
+            if t is not None and dur and t <= m < t + dur:
+                return c
+        return None
+
+    띠한 = set()
+    w, hgt, _, _ = 영상정보(최종)
+    크기 = 뽑을크기(w, hgt, 긴변)
+    줄 = {c: i for i, c in enumerate(순서)}
+    for h in j.get("걸림", []):
+        이름 = str(h.get("항목"))
+        항목별[이름] = 항목별.get(이름, 0) + 1
+        c = 그컷(h)
+        글 = f"{이름} · {str(h.get('글'))[:260]}"
+        if c is None:
+            편항목.append(f"최종본 · {글}")
+            continue
+        if c not in 숫자:
+            continue   # 다시 검수(--컷)에서 고르지 않은 컷
+        숫자[c].setdefault("최종본", []).append(글)
+        if (이름 in 흐름항목 or 이름 in ("굳음", "구간굳음")) and c not in 살펴볼:
+            살펴볼.append(c)
+        if 이름 in 흐름항목 and c not in 띠한:
+            띠한.add(c)
+            t, dur = 시간[줄[c]][1], 시간[줄[c]][2]
+            그림 = 시간띠(최종, t, dur, 크기) if t is not None and dur else None
+            항목 = next((x for x in 컷목록 if x["cut"] == c), None)
+            if 그림 is not None and 항목 is not None:
+                항목["그림"].append(저장(그림, 출력 / f"흐름_{파일이름(c)}.jpg"))
+    for x in j.get("못잼", []):
+        못함.append(f"최종본검사 {x.get('항목')}: 못 잼 — {str(x.get('오류'))[:160]}")
+    단단 = {k: v for k, v in 항목별.items() if k not in 흐름항목 and k != "조용구간"}
+    부드 = {k: v for k, v in 항목별.items() if k in 흐름항목 or k == "조용구간"}
+    도구.append({"이름": "최종본검사", "끝코드": 코드,
+                "요약": (f"걸림 {sum(단단.values())}" + (f"({' · '.join(f'{k} {v}' for k, v in 단단.items())})" if 단단 else "")
+                       + f" · 확인 {sum(부드.values())}" + (f"({' · '.join(f'{k} {v}' for k, v in 부드.items())})" if 부드 else "")
+                       + (f" · 못 잼 {len(j.get('못잼', []))}" if j.get("못잼") else "")),
+                "결과": str(결과파일.resolve())})
+
+
 def main(argv):
     ap = argparse.ArgumentParser(add_help=True)
     ap.add_argument("컷표")
@@ -320,6 +442,16 @@ def main(argv):
         return 1
     컷들, 없는컷 = 고른컷(표, o.컷)
     못함 = [f"{c}: 컷표에 없는 컷" for c in 없는컷]
+    최종본일 = None
+    if o.관문 == "마감":   # 오래 걸려 처음부터 함께 돌리고 끝에서 받는다 — 결과는 출력 폴더 최종본검사.json
+        최종본파일 = 출력 / "최종본검사.json"
+        try:
+            with open(최종본파일, "w", encoding="utf-8") as 나감, open(출력 / "최종본검사.오류.txt", "w", encoding="utf-8") as 오류:
+                컷초 = ",".join(f"{t:.3f}" for t, _ in 컷시간(표)[1:] if t is not None)   # 천 닦기 같은 전환은 장 차이로 못 찾는다(서울로 다섯 곳)
+                최종본일 = subprocess.Popen([sys.executable, "-I", "-X", "utf8", str(최종본도구), str(최종), "--json", "--항목", 최종본항목, "--컷초", 컷초],
+                                        stdout=나감, stderr=오류)
+        except OSError as e:
+            못함.append(f"최종본검사를 못 띄움: {e}")
     줄 = {str(x.get("cut")): x for x in detail}
     순서 = [str(x.get("cut")) for x in detail]
     장면표, 인물표 = 표.get("장면") or {}, 표.get("인물") or {}
@@ -396,6 +528,8 @@ def main(argv):
             w, h, fps, 길이 = 영상정보(최종)
             if not (w and h and 길이):
                 print(f"최종 영상을 못 읽음: {최종}", file=sys.stderr)
+                if 최종본일 is not None:
+                    최종본일.kill()
                 return 1
             크기 = 뽑을크기(w, h)
             비 = 크기[0] / 크기[1]
@@ -581,6 +715,8 @@ def main(argv):
                 if 사람값 is None or 사람값 < 굳음 or "굳음" in str(r.get("판정", "")) or "눈으로" in str(r.get("판정", "")) or "멈춘" in str(r.get("판정", "")):
                     살펴볼.append(c)
         도구.append({"이름": "사람움직임", "끝코드": 0, "요약": f"사람 컷 {len(사람컷)} · 살펴볼 {len(살펴볼)}(0.12 아래 · 굳음 · 극접사 · 못 잼)"})
+        if 최종본일 is not None:
+            최종본받기(최종본일, 출력, 최종, 표, 순서, 숫자, 살펴볼, 컷목록, 편항목, 도구, 못함)
 
     # ── 쓰기 ──
     (출력 / "숫자.json").write_text(json.dumps({"관문": o.관문, "컷표": str(컷표), "최종": str(최종) if 최종 else "", "문턱": {"겹침": 겹침문턱, "밝기": 밝기문턱, "붉푸": 붉푸문턱, "사람": 굳음},
