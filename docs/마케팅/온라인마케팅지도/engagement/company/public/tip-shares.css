@@ -1,0 +1,653 @@
+/* 공유한 게시물(2026-11-16) — 11-14 개편 토큰(--ws-*)만 쓰고 .tip-shares 아래에 가둔다. */
+
+.tip-shares {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  min-width: 0;
+  color: var(--ws-ink);
+  font-family: var(--ws-sans);
+}
+
+.tip-shares *,
+.tip-shares *::before,
+.tip-shares *::after {
+  box-sizing: border-box;
+}
+
+/* 머리 */
+.tip-shares .ts-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--ws-line);
+}
+
+.tip-shares .ts-head-copy {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.tip-shares .ts-eyebrow {
+  margin: 0 0 6px;
+  color: var(--ws-accent);
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 1.4;
+}
+
+.tip-shares h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  word-break: keep-all;
+}
+
+.tip-shares .ts-desc {
+  max-width: 60ch;
+  margin: 8px 0 0;
+  color: var(--ws-ink-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.tip-shares .ts-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tip-shares .ts-fresh {
+  color: var(--ws-ink-muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tip-shares .ts-fresh.is-stale {
+  color: var(--ws-warn);
+  font-weight: 600;
+}
+
+/* 구역 머리 */
+.tip-shares .ts-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0 0 14px;
+}
+
+.tip-shares .ts-section-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.tip-shares .ts-section-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--ws-cta);
+  color: var(--ws-cta-ink);
+  font: 680 12px/1 var(--ws-latin);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 고르실 시안 */
+.tip-shares .ts-pick {
+  margin-top: 26px;
+}
+
+.tip-shares .ts-stale-note {
+  margin: -4px 0 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--ws-warn-line);
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.tip-shares .ts-pick-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 14px;
+}
+
+.tip-shares .ts-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--ws-line-muted);
+  border-radius: var(--ws-radius-lg);
+  background: var(--ws-surface);
+}
+
+.tip-shares .ts-card:focus-visible {
+  outline: 2px solid var(--ws-accent);
+  outline-offset: 2px;
+}
+
+.tip-shares .ts-card.is-decided {
+  border-color: var(--ws-line);
+  background: transparent;
+}
+
+.tip-shares .ts-card-meta,
+.tip-shares .ts-row-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  min-width: 0;
+  color: var(--ws-ink-muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-shares .ts-target {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 1px solid var(--ws-line-muted);
+  border-radius: 999px;
+  color: var(--ws-ink-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.tip-shares .ts-card-title {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.tip-shares .ts-card-note,
+.tip-shares .ts-row-note {
+  margin: 0;
+  color: var(--ws-ink-secondary);
+  font-size: 13.5px;
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.tip-shares .ts-card-note {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.tip-shares .ts-card-note > span,
+.tip-shares .ts-row-note > span {
+  margin-right: 4px;
+  color: var(--ws-ink-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.tip-shares .ts-card-links,
+.tip-shares .ts-row-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  min-width: 0;
+}
+
+.tip-shares .ts-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  color: var(--ws-ink-secondary);
+  font-size: 13px;
+  font-weight: 560;
+  text-decoration: underline;
+  text-decoration-color: var(--ws-line-muted);
+  text-underline-offset: 3px;
+}
+
+.tip-shares .ts-link .icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  stroke: currentColor;
+}
+
+.tip-shares .ts-link:hover {
+  color: var(--ws-ink);
+  text-decoration-color: currentColor;
+}
+
+.tip-shares .ts-link:focus-visible,
+.tip-shares .ts-more:focus-visible {
+  outline: 2px solid var(--ws-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.tip-shares .ts-draft-link {
+  color: var(--ws-accent);
+  font-weight: 620;
+  text-decoration-color: var(--ws-accent-line);
+}
+
+.tip-shares .ts-draft-link:hover {
+  color: var(--ws-accent-hover);
+}
+
+/* 옛 카드의 「시안 대기 — <자리 설명>」. 고를 때 볼 자리라 접지 않는다(300자까지). */
+.tip-shares .ts-draft-place {
+  display: block;
+  min-width: 0;
+  color: var(--ws-ink-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.tip-shares .ts-draft-place > .ts-draft-nolink {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--ws-ink-secondary);
+  font-weight: 500;
+}
+
+.tip-shares .ts-draft-place > span {
+  margin-right: 4px;
+  color: var(--ws-ink-muted);
+  font-weight: 600;
+}
+
+.tip-shares .ts-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.tip-shares .ts-card-actions .btn {
+  min-height: 44px;
+  font-size: 14.5px;
+}
+
+.tip-shares .ts-decided {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--ws-ok-line);
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-ok-bg);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.tip-shares .ts-decided-copy {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ws-ink);
+}
+
+.tip-shares .ts-decided-copy .icon {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+  stroke: var(--ws-ok);
+}
+
+.tip-shares .ts-decided .btn {
+  min-height: 36px;
+}
+
+.tip-shares .ts-locked {
+  margin: auto 0 0;
+  color: var(--ws-ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 모든 공유 */
+.tip-shares .ts-all {
+  margin-top: 34px;
+}
+
+.tip-shares .ts-all-head {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.tip-shares .ts-filter > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+}
+
+.tip-shares .ts-filter-count {
+  color: var(--ws-ink-muted);
+  font: 560 12px/1 var(--ws-latin);
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-shares .ts-filter > button[aria-pressed="true"] .ts-filter-count {
+  color: var(--ws-ink-secondary);
+}
+
+.tip-shares .ts-filter > button:focus-visible {
+  outline: 2px solid var(--ws-accent);
+  outline-offset: 1px;
+}
+
+.tip-shares .ts-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ws-line);
+}
+
+.tip-shares .ts-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) minmax(150px, 210px);
+  gap: 6px 22px;
+  align-items: start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--ws-line);
+}
+
+.tip-shares .ts-row-date {
+  padding-top: 2px;
+  color: var(--ws-ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tip-shares .ts-row-date-inline {
+  display: none;
+}
+
+.tip-shares .ts-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tip-shares .ts-verdict {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.tip-shares .ts-verdict.is-draft {
+  border-color: var(--ws-accent-line);
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+}
+
+.tip-shares .ts-verdict.is-note {
+  border-color: var(--ws-line-muted);
+  color: var(--ws-ink-secondary);
+}
+
+.tip-shares .ts-verdict.is-drop,
+.tip-shares .ts-verdict.is-wait {
+  border-color: var(--ws-line);
+  color: var(--ws-ink-muted);
+}
+
+.tip-shares .ts-row-summary {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ws-ink);
+  font-size: 14.5px;
+  font-weight: 560;
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.tip-shares .ts-row-note {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.tip-shares .ts-row.is-open .ts-row-summary,
+.tip-shares .ts-row.is-open .ts-row-note,
+.tip-shares .ts-card.is-open .ts-card-title,
+.tip-shares .ts-card.is-open .ts-card-note {
+  display: block;
+  overflow: visible;
+}
+
+.tip-shares .ts-row.is-drop .ts-row-summary {
+  color: var(--ws-ink-secondary);
+  font-weight: 500;
+}
+
+.tip-shares .ts-more[hidden] {
+  display: none;
+}
+
+.tip-shares .ts-more {
+  align-self: flex-start;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ws-ink-muted);
+  font: 560 12.5px/1.4 var(--ws-sans);
+  text-decoration: underline;
+  text-decoration-color: var(--ws-line-muted);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.tip-shares .ts-more:hover {
+  color: var(--ws-ink);
+}
+
+.tip-shares .ts-row-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+  text-align: right;
+}
+
+.tip-shares .ts-row-side .ts-row-links {
+  justify-content: flex-end;
+}
+
+.tip-shares .ts-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ws-ink-secondary);
+  font-size: 12.5px;
+  font-weight: 620;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.tip-shares .ts-stage::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--ws-ink-muted);
+}
+
+.tip-shares .ts-stage.is-pick { color: var(--ws-ink); }
+.tip-shares .ts-stage.is-pick::before { background: var(--ws-cta); }
+.tip-shares .ts-stage.is-doing { color: var(--ws-accent); }
+.tip-shares .ts-stage.is-doing::before { background: var(--ws-accent); }
+.tip-shares .ts-stage.is-done { color: var(--ws-ok); }
+.tip-shares .ts-stage.is-done::before { background: var(--ws-ok); }
+.tip-shares .ts-stage.is-hold { color: var(--ws-warn); }
+.tip-shares .ts-stage.is-hold::before { background: var(--ws-warn); }
+.tip-shares .ts-stage.is-gone { color: var(--ws-ink-muted); }
+.tip-shares .ts-stage.is-gone::before { background: transparent; box-shadow: inset 0 0 0 1px var(--ws-ink-muted); }
+
+.tip-shares .ts-row-pending,
+.tip-shares .ts-row-when {
+  color: var(--ws-ink-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-shares .ts-row-pending {
+  color: var(--ws-ok);
+}
+
+.tip-shares .ts-row-when.is-warn {
+  color: var(--ws-warn);
+}
+
+/* 상태 글 */
+.tip-shares .ts-state {
+  margin-top: 26px;
+  padding: 22px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--ws-radius-lg);
+  background: var(--ws-surface);
+  color: var(--ws-ink-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.tip-shares .ts-state p {
+  margin: 0;
+}
+
+.tip-shares .ts-state p + p,
+.tip-shares .ts-state .btn {
+  margin-top: 8px;
+}
+
+.tip-shares .ts-state b {
+  color: var(--ws-ink);
+}
+
+.tip-shares .ts-state.is-error,
+.tip-shares .ts-inline-error {
+  border-color: var(--ws-danger-line);
+  background: var(--ws-danger-bg);
+  color: var(--ws-danger);
+}
+
+.tip-shares .ts-inline-error {
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--ws-danger-line);
+  border-radius: var(--ws-radius-sm);
+  font-size: 13.5px;
+}
+
+.tip-shares .ts-empty {
+  margin: 0;
+  padding: 22px 0;
+  color: var(--ws-ink-muted);
+  font-size: 14px;
+}
+
+/* 화면에는 숨기고 화면 낭독기만 읽는 글(수의 뜻) */
+.ts-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 서랍의 수 */
+.ts-drawer-badge {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 좁은 화면 */
+@media (max-width: 760px) {
+  .tip-shares h1 { font-size: 24px; }
+  .tip-shares .ts-head { align-items: flex-start; }
+  .tip-shares .ts-head-actions { width: 100%; justify-content: space-between; }
+  .tip-shares .ts-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 14px 0;
+  }
+  .tip-shares .ts-row-date { display: none; }
+  .tip-shares .ts-row-date-inline { display: inline; color: var(--ws-ink-muted); }
+  .tip-shares .ts-row-side {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    text-align: left;
+  }
+  .tip-shares .ts-row-side .ts-row-links { justify-content: flex-start; }
+  .tip-shares .ts-all-head { align-items: flex-start; flex-direction: column; }
+  .tip-shares .ts-filter { width: 100%; }
+  .tip-shares .ts-filter > button { flex: 1 1 0; justify-content: center; min-height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tip-shares * { transition: none !important; }
+}

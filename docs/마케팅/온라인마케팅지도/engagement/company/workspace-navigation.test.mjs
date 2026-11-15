@@ -208,7 +208,7 @@ test('resize before the app state script loads does not break workspace initiali
 });
 
 test('people remains available within the server member scope for every signed-in role',()=>{
-  for(const [role,count] of [['admin',3],['manager',1],['member',1],['viewer',1]]){
+  for(const [role,count] of [['admin',4],['manager',1],['member',1],['viewer',1]]){
     const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
     f.run("selectWorkspaceView('members');syncWorkspaceLocation()");
@@ -216,10 +216,22 @@ test('people remains available within the server member scope for every signed-i
   }
 });
 
+test('the shared posts screen opens only for admins and keeps its address',()=>{
+  const admin=fixture('admin');
+  admin.run("selectWorkspaceView('tips');syncWorkspaceLocation()");
+  assert.equal(admin.state.tab,'tips');assert.equal(admin.location.searchParams.get('tab'),'tips');assert.equal(admin.location.searchParams.has('section'),false);
+  assert.equal(admin.run("waViewAllowed('tips')"),true);
+  for(const role of ['manager','member','viewer']){
+    const f=fixture(role);f.run("selectWorkspaceView('tips')");
+    assert.notEqual(f.state.tab,'tips');assert.equal(f.run("waViewAllowed('tips')"),false);
+    assert.equal(Array.from(f.run('workspaceUtilityTabs().map(row=>row[0])')).includes('tips'),false);
+  }
+});
+
 test('server computed admin access includes all company tabs',()=>{
   const f=fixture('admin');f.state.user.workspaceAccess=workspaceAccess({...f.state.user,active:true});
   assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching','path','lectures']);
-  assert.deepEqual(Array.from(f.run('workspaceUtilityTabs().map(row=>row[0])')),['handbook','admin','settings']);
+  assert.deepEqual(Array.from(f.run('workspaceUtilityTabs().map(row=>row[0])')),['handbook','admin','tips','settings']);
 });
 
 test('teaching has a canonical direct entry without leaking marketing filters into classroom links',()=>{

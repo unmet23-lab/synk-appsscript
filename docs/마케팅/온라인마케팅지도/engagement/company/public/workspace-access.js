@@ -27,7 +27,7 @@ function waViewAllowed(view,section=''){
   if(['teaching','lectures','path'].includes(view))return waFeature(view);
   if(['content','studio'].includes(view))return waFeature('production');
   if(['social','marketing','mine','team','all','overview','analysis','history','summary','channels','collection'].includes(view))return waFeature('social');
-  if(view==='admin')return isAdmin()&&!(typeof isDemoMode==='function'&&isDemoMode());
+  if(view==='admin'||view==='tips')return isAdmin()&&!(typeof isDemoMode==='function'&&isDemoMode());
   if(view==='members')return Boolean(state.user);if(view==='settings')return isAdmin();
   return true;
 }

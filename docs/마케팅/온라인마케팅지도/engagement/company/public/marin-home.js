@@ -197,7 +197,7 @@ async function dispatchMarinAction(entryIndex,actionIndex){
   selectWorkspaceView(action.view,action.section,action.teamId);state.error='';state.report=null;render();window.scrollTo(0,0);if(reportTabs())await loadReport();if(state.tab==='content')await loadContentWorkspace();return true;
 }
 function marinAccountDialog(){
-  const descriptions={handbook:'직원 안내 · 학생 복지 · 수업 기준',members:'소속 회사와 담당 업무 확인',admin:'직원 관리와 초대 및 성과 확인',settings:'회사 정보 · 초대 · 수집 설정'};
+  const descriptions={handbook:'직원 안내 · 학생 복지 · 수업 기준',tips:'판단 결과 확인과 시안 고르기',members:'소속 회사와 담당 업무 확인',admin:'직원 관리와 초대 및 성과 확인',settings:'회사 정보 · 초대 · 수집 설정'};
   const entry=(label,description,action,view,extra='')=>`<button type="button" class="workspace-settings-link${extra}" data-action="${action}" ${action==='command-tab'?`data-tab="${view}"`:''}>${workspaceFeltIcon(view)}<span><strong>${escape(label)}</strong><small>${escape(description)}</small></span>${icon('right')}</button>`;
   const company=state.data?.companyName&&state.data.companyName!=='SYNK'?` · ${state.data.companyName}`:'';
   const platform=state.platformUrl?`<a class="workspace-settings-link" href="${escape(state.platformUrl)}" rel="noreferrer" referrerpolicy="no-referrer">${workspaceFeltIcon('external')}<span><strong>SYNK 플랫폼</strong><small>플랫폼 앱으로 이동</small></span>${icon('external')}</a>`:'';

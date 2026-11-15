@@ -95,6 +95,8 @@ import { createSocialReview } from './social-review.mjs';
 import { createSocialPublicRoutes } from './social-public-routes.mjs';
 import { createTrialFeedback } from './trial-feedback.mjs';
 import { createTrialFeedbackRoutes } from './trial-feedback-routes.mjs';
+import { createTipSharesService } from './tip-shares.mjs';
+import { createTipShareRoutes } from './tip-share-routes.mjs';
 import { createSocialCapacity } from './social-capacity.mjs';
 import { createSocialReplies } from './social-replies.mjs';
 import { createSocialVariantPerformanceService } from './social-variant-performance.mjs';
@@ -494,6 +496,8 @@ export function createCompanyApp(options={}) {
   const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const trialFeedbackRoutes=createTrialFeedbackRoutes({service:trialFeedback,body,send,session,clientAddress,isStopped:()=>stopRequested});
+  // 공유한 게시물(11-16, TIP-SHARES.md): 관리자 화면과 PC 팁 장부 동기 도구가 쓰는 줄 묶음 · 단추 요청.
+  const tipShareRoutes=createTipShareRoutes({service:createTipSharesService({store,clock}),body,send,session,origin,isStopped:()=>stopRequested});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
@@ -1175,6 +1179,7 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&path==='/api/workspace-invites'){if(!user)throw httpError('먼저 로그인해 주세요.',401);return send(res,200,{invites:workspaceProfiles.list(user)});}
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
     if(path.startsWith('/api/trial-feedback/')&&await trialFeedbackRoutes.staffRoutes(req,res,{url,demoRequest}))return;
+    if((path==='/api/tip-shares'||path.startsWith('/api/tip-shares/'))&&await tipShareRoutes(req,res,{url,demoRequest}))return;
     if(path==='/trial-feedback'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/trial-feedback/','Cache-Control':'no-store'});res.end();return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
@@ -2122,6 +2127,7 @@ export function createCompanyApp(options={}) {
       throw httpError('요청을 찾을 수 없습니다.',404);
     }
     const files={'/automation-health.js':['public/automation-health.js','text/javascript; charset=utf-8'],'/automation-health.css':['public/automation-health.css','text/css; charset=utf-8'],'/weekly-summary.js':['public/weekly-summary.js','text/javascript; charset=utf-8'],'/weekly-summary.css':['public/weekly-summary.css','text/css; charset=utf-8'],'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
+    Object.assign(files,{'/tip-shares.js':['public/tip-shares.js','text/javascript; charset=utf-8'],'/tip-shares.css':['public/tip-shares.css','text/css; charset=utf-8']});
     Object.assign(files,{'/admin-workspace.js':['public/admin-workspace.js','text/javascript; charset=utf-8'],'/admin-workspace.css':['public/admin-workspace.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/signal.css':['public/signal.css','text/css; charset=utf-8'],'/member-organization.js':['public/member-organization.js','text/javascript; charset=utf-8'],'/member-organization.css':['public/member-organization.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
