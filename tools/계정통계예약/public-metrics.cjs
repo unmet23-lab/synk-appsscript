@@ -1,7 +1,7 @@
 'use strict';
 
 // This function also runs inside the browser. Return only visible counts and their account/post identities.
-function readPublicPage({platform, handle, urls}) {
+function readPublicPage({platform, handle, urls,registeredUrl,canonicalUrl,expectedTitle}) {
   const cleanUrl = raw => {
     try {const u=new URL(raw);return u.origin+u.pathname.replace(/\/+$/,'')+(u.pathname==='/profile.php'?'?id='+u.searchParams.get('id'):'');}
     catch {return '';}
@@ -26,6 +26,13 @@ function readPublicPage({platform, handle, urls}) {
     }
     data.empty=/아직 게시된 동영상이 없습니다|어떤 동영상도 게시하지 않았습니다|아직 동영상 없음|아직 동영상이 없|No videos yet|还没有作品/i.test(pageText);
   } else if(platform==='brunch'){
+    const canonical=cleanUrl(document.querySelector('link[rel=canonical]')?.href);
+    const author=pageText.split('\n').map(s=>s.trim()).find(s=>s===handle);
+    if(!registeredUrl||urls[0]!==registeredUrl||!/^https:\/\/brunch\.co\.kr\/@{1,2}[\w-]+\/?$/.test(registeredUrl)||
+       !canonical||canonical!==url||canonical!==cleanUrl(canonicalUrl)||document.title!==expectedTitle||!author){
+      data.matched=false;return data;
+    }
+    data.authorRoute={requestedUrl:registeredUrl,finalUrl:url,canonical,author,profileTitle:document.title};
     const m=pageText.match(/(?:^|\n)팔로워\s*\n?\s*((?:\d{1,3}(?:,\d{3})+|\d+))(?=\s*(?:\n|$))/);
     if(m)add('followers','팔로워',m[1]);
   } else if(platform==='behance'){
@@ -123,6 +130,12 @@ async function readXTimeline(page,args,read){
 
 function publicEnvelope({account,sourceUrl,snapshot,digest}){
   if(!snapshot.matched)return null;
+  if(account.platform==='brunch'){
+    const route=snapshot.authorRoute;
+    if(!route||route.requestedUrl!==account.publicUrl||route.finalUrl!==snapshot.url||
+       route.canonical!==route.finalUrl||route.author!==account.handle)return null;
+    sourceUrl=route.requestedUrl;
+  }
   const observations=[];
   if(Object.keys(snapshot.metrics).length)observations.push({kind:'account-lifetime',metrics:snapshot.metrics,labels:{metricLabels:snapshot.labels}});
   const seen=new Set();

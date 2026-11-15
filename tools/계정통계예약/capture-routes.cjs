@@ -113,12 +113,16 @@ async function storeBatch(ctx, name, evidence, envelope) {
 // Only fixed executable code runs in the browser. Profile IDs and known canonical URLs are serialized as data.
 async function nativeBrowser(ctx) {
   const {account,profile,dir,signal}=ctx;
-  const urls=[profile.canonicalUrl,account.publicUrl,profile.profileUrl].filter(Boolean);
+  const urls=(account.platform==='brunch'?[account.publicUrl,profile.canonicalUrl]:[profile.canonicalUrl,account.publicUrl,profile.profileUrl]).filter(Boolean);
   if(account.platform==='behance'&&account.publicUrl)urls.unshift(account.publicUrl.replace(/\/$/,'')+'/info');
   const publicRoute=PUBLIC.has(account.platform) && urls.length;
   const nativeOwner=profile.browser==='ego' && profile.profileId && ['xiaohongshu','douyin','substack'].includes(account.platform);
   if (!publicRoute && !nativeOwner) return {more:true};
   const argument={platform:account.platform,handle:account.handle,urls};
+  if(account.platform==='brunch'&&account.publicUrl&&urls[0]===account.publicUrl){
+    argument.registeredUrl=account.publicUrl;argument.canonicalUrl=profile.canonicalUrl||account.publicUrl;
+    argument.expectedTitle=profile.observedName||account.handle+'의 브런치';
+  }
   const reader=(page)=>account.platform==='x'?'await ('+readXTimeline.toString()+')('+page+','+json(argument)+','+readPublicPage.toString()+')':'await '+page+'.evaluate('+readPublicPage.toString()+','+json(argument)+')';
   const output=path.join(dir,'public-snapshot.json');
   if (profile.browser==='aside' || account.id.startsWith('yuhokorean-')) {
@@ -147,6 +151,7 @@ async function nativeBrowser(ctx) {
       'await p.goto('+json(urls[0])+',{waitUntil:"domcontentloaded",timeout:28000});',
       'await p.snapshot();await p.waitForFunction(()=>document.body?.innerText.trim().length>30,undefined,{timeout:10000}).catch(()=>{});',
       account.platform==='tiktok'?'await p.waitForFunction(()=>Boolean(document.querySelector("[data-e2e=likes-count]")),undefined,{timeout:10000}).catch(()=>{});':'',
+      account.platform==='brunch'?'await p.waitForFunction(name=>document.body.innerText.split("\\n").some(s=>s.trim()===name)&&document.body.innerText.includes("팔로워"),'+json(account.handle)+',{timeout:12000}).catch(()=>{});':'',
       'const result='+reader('p')+';',
       'await fs.writeFile('+json(output)+',JSON.stringify(result),{flag:"wx"});'
     ].join('\n'):'';
