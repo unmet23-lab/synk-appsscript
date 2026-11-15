@@ -19,13 +19,14 @@ const X = 84;
 const TOP = 352; // B38 컷 전수 검수 3: 고지 글 · 큰 글자를 안전선(269px) 안으로. 11-13: 위 표시(298)와 출처 줄 사이를 띄우려 340 → 352
 
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
-const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number; blur?: number }> = ({ src, start, crop, rate = 1, drift = 0.012, blur = 0 }) => {
+// look: 'past' = 회상(이해 시험 11-15 「경찰을 언제 불렀는지 안 보인다」 → 몰래 누르던 손을 빛 바랜 결로 다시) · 'dim' = 사실 카드 밑 장면(흐리지 않고 어둡게만)
+const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number; blur?: number; look?: 'past' | 'dim' }> = ({ src, start, crop, rate = 1, drift = 0.012, blur = 0, look }) => {
   const f = useCurrentFrame();
   const s = crop.s * (1 + (f / FPS) * drift) * (crop.push ? interpolate(f / FPS, [crop.push.t0, crop.push.t1], [1, crop.push.to], { ...clamp, easing: Easing.inOut(Easing.cubic) }) : 1);
   const ay = crop.ay ?? 1000;
   const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
   const y = Math.min(0, Math.max(1920 - 1920 * s, ay - crop.cy * s));
-  const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})`, filter: blur ? `blur(${blur}px) brightness(0.62)` : undefined };
+  const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})`, filter: blur ? `blur(${blur}px) brightness(0.62)` : look === 'past' ? 'grayscale(0.85) sepia(0.12) contrast(1.06) brightness(1.06)' : look === 'dim' ? 'brightness(0.42) saturate(0.7)' : undefined };
   return (
     <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
       {/\.(png|jpg)$/.test(src)
@@ -88,13 +89,12 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
 };
 
 // 위 표시 — 콘티 검수(11-15 · 「재연」과 「지어낸 이야기」가 부딪치고 끝 장면 전에 사라짐) → 「실제 사건을 바탕으로 꾸민 장면」을 끝까지 두고, 사실 카드(S.card) 위에서만 뺀다.
-// 당부(S.end)부터는 「SYNK 브리핑」을 붙인다. 자리는 위 그늘 안 큰 글자 바로 위(298 — 머리 안전선 269 안).
+// 이해 시험(11-15 · 둘이 「SYNK 브리핑」이 끝에야 작게 나온다) → 처음부터 「SYNK 브리핑 · 」을 붙인다. 자리는 위 그늘 안 큰 글자 바로 위(298 — 머리 안전선 269 안).
 const Label: React.FC = () => {
   const f = useCurrentFrame();
   const [c0, c1] = S.card;
   const o = interpolate(f, [sec(c0) - 4, sec(c0), sec(c1), sec(c1) + 4], [1, 0, 0, 1], clamp);
-  const end = f >= sec(S.end);
-  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑 · 실제 사건을 바탕으로 꾸민 장면' : '실제 사건을 바탕으로 꾸민 장면'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{'SYNK 브리핑 · 실제 사건을 바탕으로 꾸민 장면'}</div>;
 };
 
 // 미학 맹검(11-14 · 끝 장면 「셔터 소리는 나는데 찍는 순간이 화면에 없다」) → 셔터(SOUNDS의 셔터.wav)에 맞춰 화면이 한 번 하얗게 번쩍인다(0.75 → 0, 6장 = 0.25초)
@@ -107,12 +107,20 @@ const Flash: React.FC = () => {
   return <AbsoluteFill style={{ background: '#fff', opacity: interpolate(f, [a, a + 1, a + 6], [0.75, 0.6, 0], clamp) }} />;
 };
 
+// 회상 들고 나기 — 들어갈 때 흰 빛 0.55 → 0(5장), 나올 때 0 → 0.45(마지막 4장)
+const PastFlash: React.FC<{ dur: number }> = ({ dur }) => {
+  const f = useCurrentFrame();
+  const o = Math.max(interpolate(f, [0, 5], [0.55, 0], clamp), interpolate(f, [dur - 4, dur], [0, 0.45], clamp));
+  return <AbsoluteFill style={{ background: '#fff', opacity: o }} />;
+};
+
 export const Film: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       {CUTS.map((c, i) => (
         <Sequence key={i} from={sec(c.from)} durationInFrames={sec(c.to) - sec(c.from)}>
-          <Lowered d={c.low ?? 210}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} blur={c.blur} /></Lowered>
+          <Lowered d={c.low ?? 210}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} blur={c.blur} look={c.look} /></Lowered>
+          {c.look === 'past' ? <PastFlash dur={sec(c.to) - sec(c.from)} /> : null}
           {!MASTER && c.a ? <Audio src={staticFile(c.a.src)} trimBefore={sec(c.a.start)} volume={c.a.vol ?? 1} /> : !MASTER && c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
       ))}
