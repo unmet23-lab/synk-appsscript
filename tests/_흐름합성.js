@@ -5,6 +5,7 @@
 //   멈춤     위 띠의 차가 1.3~2.5초에 섰다가 다시 간다(멈췄다감)   고른      고르게 간다          출발  1.5초까지 서 있다가 처음 출발한다
 //   바퀴     바퀴만 돌고 바탕이 서 있다(제자리바퀴)                 바퀴흐름  바퀴가 돌고 바탕도 흐른다
 //   앞갈림   2.5초까지 두 차가 반대로 가다가 그 자리에 선다 — 받은 판의 앞쪽 버리는 구간에만 흠이 있는 판
+//   아래갈림 화면 아래쪽(270~350줄)의 두 차가 반대로 간다 — 편집이 위쪽 띠만 잘라 쓰면 보이지 않는 흠(컷표 「창」 시험)
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -39,6 +40,8 @@ for n in range(int(DUR * FPS)):
     elif kind == '앞갈림':
         u = min(t, 2.5)
         paste(f, car, 120 - 25 * u, 150); paste(f, car, 360 + 25 * u, 150)
+    elif kind == '아래갈림':
+        paste(f, car, 120 - 25 * t, 270); paste(f, car, 360 + 25 * t, 270)
     elif kind == '같은방향':
         paste(f, car, 60 + 25 * t, 150); paste(f, car, 360 + 25 * t, 150)
     elif kind == '멈춤':

@@ -573,13 +573,14 @@ class FlowCut:
                 "도는칸가로": [round(float(x), 0) for x in dx[:, min(cols)]]}
 
 
-def measure_flow(path, segs, w, h):
+def measure_flow(path, segs, w, h, pre=None):
     """컷마다 FlowCut — 긴 변 1000 회색 장을 한 번만 풀어(24fps) 컷 앞뒤 2장을 빼고 잰다 → (걸림, 알림).
     segs는 차례대로 겹치지 않는 (첫 장, 끝 장) 줄이다. 받은 뒤 검사(tools/받은뒤검사.py)는 판의 쓰는 구간만 준다(11-16).
+    pre는 풀기 앞에 거는 ffmpeg 거르개다(받은 뒤 검사가 편집 창으로 자르는 crop) — 그때 w · h는 자른 크기다. 재는 법은 같다.
     풀기는 마지막 덩이의 끝 장에서 멈춘다 — 판 뒤의 버리는 구간까지 풀다가 읽기를 끊으면 ffmpeg가 「Broken pipe」를 쏟는다."""
     W, H = fit_size(w, h, FLOW_LONG)
     last = max((b for _a, b in segs), default=0)
-    proc = subprocess.Popen(["ffmpeg", "-v", "error", "-i", path, "-an", "-vf", f"fps={FPS:g},scale={W}:{H}",
+    proc = subprocess.Popen(["ffmpeg", "-v", "error", "-i", path, "-an", "-vf", (f"{pre}," if pre else "") + f"fps={FPS:g},scale={W}:{H}",
                              "-frames:v", str(max(1, last)), "-f", "rawvideo", "-pix_fmt", "gray", "-"], stdout=subprocess.PIPE)
     size = W * H
     hits, notes, i = [], [], 0
