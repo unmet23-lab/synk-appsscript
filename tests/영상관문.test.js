@@ -60,10 +60,23 @@ function 가짜판(n) {
 const 지적들 = prompt => JSON.parse(prompt.slice(prompt.indexOf('지적:\n[') + 4));
 const 그림수 = prompt => new Set(prompt.match(/[A-Za-z]:[\\/][^\s"'`]+?\.jpe?g/g) || []).size;
 
-async function 돌리기({ 판 = 가짜판(12), 훑기답 = () => [], 반박답 = () => ({}), 비평답 = () => [], 덧 = {}, 모델 = 'claude-fable-5-2', 빈관점 = null } = {}) {
+// 하네스가 실제로 돌려주는 꼴 — 영문 틀(칸 설명 맨 앞의 「한글」로 짝을 찾는다)대로 칸 이름을 영문으로 바꾼다(11-15 서울로 마감 관문 400)
+function 영문으로(v, 틀) {
+  if (v == null || !틀) return v;
+  if (Array.isArray(v)) return v.map(x => 영문으로(x, 틀.items));
+  if (typeof v !== 'object' || !틀.properties) return v;
+  const 짝 = {};
+  for (const [ek, pt] of Object.entries(틀.properties)) { const m = /^「(.+?)」 칸/.exec(pt.description || ''); 짝[m ? m[1] : ek] = [ek, pt]; }
+  const out = {};
+  for (const [k, x] of Object.entries(v)) { const [ek, pt] = 짝[k] || [k, null]; out[ek] = 영문으로(x, pt); }
+  return out;
+}
+
+async function 돌리기({ 판 = 가짜판(12), 훑기답 = () => [], 반박답 = () => ({}), 비평답 = () => [], 덧 = {}, 모델 = 'claude-fable-5-2', 빈관점 = null, 영문답 = false } = {}) {
   const 부름 = [];
   const 로그 = [];
-  const agent = async (prompt, opts = {}) => {
+  const agent = async (prompt, opts = {}) => { const r = await 답하기(prompt, opts); return 영문답 ? 영문으로(r, opts.schema) : r; };
+  const 답하기 = async (prompt, opts = {}) => {
     부름.push({ prompt, opts });
     if (opts.phase === '준비') return 판;
     if (opts.phase === '훑기') return 빈관점 && opts.label.startsWith(빈관점) ? null : { 모델, 본컷: [], 지적: 훑기답(opts.label, prompt) };
@@ -224,6 +237,35 @@ test('다시 검수는 고친 컷 · 앞결과가 있어야 하고, 고친 자�
   const 판정 = Object.fromEntries(결과.컷별.map(c => [c.cut, c.판정]));
   assert.equal(판정.C2, '영상만', '「그대로」인 지난 지적은 판정에 남는다');
   assert.equal(판정.C3, '편집');
+});
+
+test('답 틀 칸 이름은 영문만 보낸다 — 한글 칸이면 API가 400으로 거절했다(11-15 서울로 마감 관문)', async () => {
+  const { 부름 } = await 돌리기({ 훑기답: l => (l.startsWith('컷 전수') ? [지적('C1', 'P1', '영상만')] : []), 반박답: () => ({ 답: '맞음' }) });
+  const 칸들 = (틀, 모음 = []) => {
+    if (Array.isArray(틀)) { 틀.forEach(x => 칸들(x, 모음)); return 모음; }
+    if (!틀 || typeof 틀 !== 'object') return 모음;
+    for (const [k, v] of Object.entries(틀)) { if (k === 'properties') { 모음.push(...Object.keys(v)); Object.values(v).forEach(x => 칸들(x, 모음)); } else 칸들(v, 모음); }
+    return 모음;
+  };
+  const 틀있는 = 부름.filter(b => b.opts.schema);
+  assert.ok(틀있는.length >= 5, '준비 · 훑기 · 반박 · 빠진 것 · 기록이 모두 틀을 보낸다');
+  for (const b of 틀있는) {
+    for (const k of 칸들(b.opts.schema)) assert.match(k, /^[a-zA-Z0-9_.-]{1,64}$/, `${b.opts.label} 틀에 API가 거절하는 칸 이름 「${k}」`);
+    for (const r of b.opts.schema.required || []) assert.ok(r in b.opts.schema.properties, `${b.opts.label} required 「${r}」가 칸에 없다`);
+    assert.match(b.prompt, /^답 틀\(StructuredOutput\)의 칸 이름은 영문/, `${b.opts.label} 지시문 앞에 칸 안내가 없다`);
+  }
+});
+
+test('영문 칸으로 받은 답도 한글 칸으로 되돌려 같은 판정을 낸다', async () => {
+  const 훑기답 = l => (l.startsWith('컷 전수') ? [지적('C1', 'P1', '영상만'), 지적('C2', 'P0', '시작 그림부터'), 지적('C3', 'P2', '편집')] : []);
+  const 한글 = await 돌리기({ 훑기답, 반박답: () => ({ 답: '맞음' }) });
+  const 영문 = await 돌리기({ 훑기답, 반박답: () => ({ 답: '맞음' }), 영문답: true });
+  assert.ok(영문.부름.filter(b => b.opts.phase === '반박').length > 0, '영문 답에서도 반박이 돌았다');
+  assert.deepEqual(영문.결과.컷별, 한글.결과.컷별);
+  assert.deepEqual(영문.결과.지적.map(f => [f.컷, f.등급, f.상태]), 한글.결과.지적.map(f => [f.컷, f.등급, f.상태]));
+  assert.equal(영문.반환.모델확인.맞음, true, '영문 칸의 모델 답도 읽었다');
+  const 훑기틀 = 영문.부름.find(b => b.opts.phase === '훑기').opts.schema;
+  assert.deepEqual(영문으로({ 모델: 'm', 본컷: [], 지적: [{ 컷: 'C1', 등급: 'P1' }] }, 훑기틀), { k_model: 'm', k_seen_cuts: [], k_findings: [{ k_cut: 'C1', k_grade: 'P1' }] }, '모의 답이 정말 영문 칸으로 갔다');
 });
 
 test('판목록을 못 받으면 검수자를 띄우지 않고 멈춘다', async () => {

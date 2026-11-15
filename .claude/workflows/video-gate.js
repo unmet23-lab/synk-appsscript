@@ -100,9 +100,57 @@ const 기록틀 = {
   required: ['결과파일', '보고파일', '지적수', '컷수'],
 }
 
+// ── 틀 칸 이름은 영문으로 보낸다(2026-11-15 서울로 마감 관문) ──
+// 하네스가 답 틀(StructuredOutput)의 칸 이름을 API에 그대로 넘기는데, 칸 이름이 한글이면 첫 에이전트가
+// 「400 … Property keys should match pattern '^[a-zA-Z0-9_.-]{1,64}$'」로 멈췄다(/굽기전검수 · /마감작업 둘 다).
+// 틀의 칸 이름만 영문(k_…)으로 바꿔 보내고, 받은 답의 칸 이름은 한글로 되돌린다. 지시문 · 판정 논리는 그대로다.
+// 칸 설명 맨 앞에 한글 이름을 적어 검수자가 지시문의 칸 이름과 짝을 맞추게 한다. 표에 없는 한글 칸은 보내기 전에 막는다.
+const 칸표 = {
+  컷: 'k_cut', 등급: 'k_grade', 무엇: 'k_what', 근거: 'k_evidence', 고칠곳: 'k_fix_where', 고칠법: 'k_fix_how', 지난: 'k_prev_id', 상태: 'k_status',
+  모델: 'k_model', 본컷: 'k_seen_cuts', 못본것: 'k_not_seen', 지적: 'k_findings', 맹검읽기: 'k_blind_reading',
+  판정: 'k_verdicts', 답: 'k_answer', 까닭: 'k_reason', 빠짐: 'k_gaps',
+  끝코드: 'k_exit_code', 장면: 'k_scene', 인물: 'k_people', 소품: 'k_props', 그림: 'k_images', 움직임: 'k_motion',
+  기준: 'k_refs', 종류: 'k_kind', 이름: 'k_name', 판: 'k_boards', 전체: 'k_all', 얼굴: 'k_faces', 끝: 'k_end',
+  숫자: 'k_numbers', 살펴볼움직임: 'k_motion_to_check', 도구: 'k_tools', 요약: 'k_summary', 못함: 'k_failed',
+  결과파일: 'k_result_file', 보고파일: 'k_report_file', 지적수: 'k_finding_count', 컷수: 'k_cut_count',
+}
+const 칸거꾸로 = Object.fromEntries(Object.entries(칸표).map(([k, v]) => [v, k]))
+function 영문틀(s) {
+  if (Array.isArray(s)) return s.map(영문틀)
+  if (!s || typeof s !== 'object') return s
+  const out = {}
+  for (const [k, v] of Object.entries(s)) {
+    if (k === 'properties') {
+      out.properties = {}
+      for (const [pk, pv] of Object.entries(v)) {
+        const nk = 칸표[pk] || pk
+        if (!/^[a-zA-Z0-9_.-]{1,64}$/.test(nk)) throw new Error(`답 틀 칸 「${pk}」의 영문 이름이 칸표에 없다`)
+        const 틀 = 영문틀(pv)
+        out.properties[nk] = nk === pk ? 틀 : { ...틀, description: `「${pk}」 칸${틀.description ? ` — ${틀.description}` : ''}` }
+      }
+    } else if (k === 'required') out.required = v.map(x => 칸표[x] || x)
+    else out[k] = 영문틀(v)
+  }
+  return out
+}
+function 한글칸(v) {
+  if (Array.isArray(v)) return v.map(한글칸)
+  if (!v || typeof v !== 'object') return v
+  const out = {}
+  for (const [k, x] of Object.entries(v)) out[칸거꾸로[k] || k] = 한글칸(x)
+  return out
+}
+const 칸안내 = '답 틀(StructuredOutput)의 칸 이름은 영문(k_…)이다. 칸 설명 맨 앞의 「한글 이름」이 아래 글에서 말하는 그 칸이다.\n\n'
+async function 에이전트(글, opts) {
+  const o = { ...opts }
+  if (o.schema) o.schema = 영문틀(o.schema)
+  const r = await agent(칸안내 + 글, o)
+  return r == null ? r : 한글칸(r)
+}
+
 // ── 준비: 판목록 읽기(Sonnet — 기계 일) ──
 phase('준비')
-const 판 = await agent(
+const 판 = await 에이전트(
   `판목록 옮기기 — 기계 일이다. 판단하지 않는다.\n\n${A.판폴더}/판목록.json을 Read로 읽고, 그 내용을 고치거나 줄이지 말고 그대로 StructuredOutput 칸에 옮긴다. 판목록에 「도구」의 끝코드가 null이면 -1로 적는다.\n파일이 없으면 끝코드 -1, 못함에 「판목록.json 없음」, 나머지는 빈 값으로 낸다.`,
   { label: '판목록', phase: '준비', schema: 판목록틀, model: 'sonnet', effort: 'low' },
 )
@@ -285,7 +333,7 @@ const 관점들 = 다시
   ? 조각내기(컷들).map(다시관점).concat(사이관점(), 얼굴관점()) // 판 도구가 --컷으로 고친 컷과 앞뒤 이웃만 판을 만들었다
   : 조각내기(컷들).map(컷관점).concat(사이관점(), 얼굴관점(), 이야기관점())
 log(`관점 ${관점들.length}개: ${관점들.map(v => `${v.관점}(그림 ${v.그림수})`).join(' · ')}`)
-const 훑기 = await parallel(관점들.map(v => () => agent(머리(v.관점, v.글), { label: v.관점, phase: '훑기', schema: 훑기틀 })))
+const 훑기 = await parallel(관점들.map(v => () => 에이전트(머리(v.관점, v.글), { label: v.관점, phase: '훑기', schema: 훑기틀 })))
 
 const 본모델 = []
 let 번호 = 0
@@ -341,7 +389,7 @@ ${JSON.stringify(b.map(f => ({ id: f.id, 컷: f.컷, 등급: f.등급, 무엇: f
 }
 async function 반박차례(fs, 차례) {
   const 묶음 = 묶기(fs)
-  const 답 = await parallel(묶음.map((b, i) => () => agent(반박글(b, 차례), { label: `반박 ${차례}-${i + 1}`, phase: '반박', schema: 반박틀 })))
+  const 답 = await parallel(묶음.map((b, i) => () => 에이전트(반박글(b, 차례), { label: `반박 ${차례}-${i + 1}`, phase: '반박', schema: 반박틀 })))
   const 판정 = {}
   답.forEach((r, i) => {
     if (!r) {
@@ -386,7 +434,7 @@ if (!다시) {
   phase('빠진 것')
   const 덮음 = 관점들.map((v, i) => `${v.관점}: ${훑기[i] ? `본 컷 ${(훑기[i].본컷 || []).join(',') || '(적지 않음)'}` : '결과 없음'}`)
   const 요약 = 지적.filter(f => f.상태 !== '기각').map(f => `${f.id} ${f.컷} ${f.등급} [${f.상태}] ${String(f.무엇).slice(0, 90)}`)
-  const 비평 = await agent(
+  const 비평 = await 에이전트(
     머리(
       '빠진 것 찾기',
       `할 일 — 이번 관문에서 안 본 곳을 찾는다. 새로 다 훑지 말고 구멍만 본다.
@@ -481,7 +529,7 @@ const 결과 = {
 
 // ── 기록(Sonnet — 기계 일) ──
 phase('기록')
-const 기록 = await agent(
+const 기록 = await 에이전트(
   `기록 — 기계 일이다. 판단하지 않는다.
 1) 아래 JSON을 고치거나 줄이지 말고 ${A.출력}/결과.json에 그대로 쓴다(Write).
 2) 같은 내용으로 ${A.출력}/보고.md를 아래 꼴로 쓴다. 지적 글은 그대로 옮기고, 없는 말을 보태지 않는다.
