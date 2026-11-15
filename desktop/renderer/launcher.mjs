@@ -18,6 +18,7 @@ import {mountPlatformUpdates} from './update-view.mjs';
 import {mountAccountPage} from './account-page.mjs';
 import {createAccountLifecycle} from './account-lifecycle.mjs';
 import {rememberSignIn,recentSignIn,recentSignInText} from './recent-sign-in.mjs';
+import {mountDesktopPortalHost,parseDesktopHashRoute,formatDesktopRouteHash} from './portal-host.mjs';
 const $=id=>document.getElementById(id),bridge=globalThis.synkDesktop,asset='/assets/launcher/';
 const apps=APPS;
 const localStore={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)};
@@ -28,8 +29,12 @@ const games={runner:{name:'바람길',image:'runner.jpg',tag:'들은 말대로 9
 const worldExtras=[['TOPIK 연습','짧은 진단으로 TOPIK I 내 위치를 보고, 듣기·읽기 연습과 TOPIK II 쓰기 연습을 해요.'],['첫 문장 놀이','짧은 문장 세 개를 읽고 상황에 어울리는 답을 골라요.'],['싱크타운','내가 고른 차림 그대로 광장을 걸어요.'],['옷장','세 친구에게 옷을 입혀 보고 사진으로 남겨요.'],['노래 듣기','한글 노래와 뮤직비디오를 들어요.']];
 let prefs=parsePreferences(readPrefs()),clients=clientRows([],{native:!!bridge}),environment=null,view='home',detail='overview',filter='all',search='',busy=new Set(),toastTimer,toastSeq=0;
 let selectedBenefit=null,solioTab='home',profileOpen=false,environmentRevision=0,sessionPurpose=null,sessionPurposeOwner=null,leaveDecision=null;
-let continuity=null,convenience=null,platformUpdates=null,libraryActionQueue=Promise.resolve(),pendingLibraryActions=0;
-let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false,signOutPending=false,rememberedOwner=null,signInLanding=false,landing=null;
+let continuity=null,convenience=null,platformUpdates=null,portalHost=null,libraryActionQueue=Promise.resolve(),pendingLibraryActions=0;
+let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false,signOutPending=false,rememberedOwner=null,signInLanding=false,landing=null,pendingHashRoute=null;
+function replaceHashSilently(nextHash){if(!nextHash||typeof globalThis.history?.replaceState!=='function')return;try{if(globalThis.location?.hash!==nextHash)globalThis.history.replaceState(null,'',nextHash);}catch{}}
+function readHashRoute({replaceLegacy=false}={}){const parsed=parseDesktopHashRoute(globalThis.location?.hash||'');if(!parsed)return null;if(replaceLegacy&&parsed.legacy)replaceHashSilently(parsed.canonicalHash);if(parsed.view==='benefits'&&parsed.benefitId&&!memberBenefit(parsed.benefitId))return {view:'benefits',benefitId:null,canonicalHash:'#benefits'};return parsed;}
+function toLauncherHashRoute(parsed){if(!parsed)return null;if(parsed.worldPhone)return {view:'home',worldPhone:true};return {view:parsed.view,appId:parsed.appId??null,detail:parsed.detail||'overview',benefitId:parsed.benefitId??null,section:parsed.section??null};}
+pendingHashRoute=readHashRoute({replaceLegacy:true});
 // 라이브러리는 격자(앱 선반 칸)와 앱 소개 두 상태다. 경로의 appId가 있으면 앱 소개, 없으면 격자(convenience가 뒤로 · 앞으로를 기억한다).
 let libraryDetail=false,libraryOrigin='library',libraryEmpty=false;
 // Screens register their account-change reset, render and draft hooks here (the list after the library mount).
@@ -137,9 +142,10 @@ function setAuth(snapshot,{environmentOnly=false}={}){
   else if(auth.signedIn&&signInLanding){signInLanding=false;if($('account-dialog').open)$('account-dialog').close();toast(`${auth.account?.display_name||'SYNK 회원'} 님으로 로그인했어요.`);}
   else if(auth.status!=='restoring'){
     // Ended without signing in while the dialog is closed (the home banner asked to wait there): say why once. A cancel is the member's own doing.
-    if(signInLanding&&!auth.signedIn&&auth.error&&auth.error.code!=='AUTH_CANCELLED'&&!$('account-dialog').open)toast(auth.error.message||'로그인을 마치지 못했어요. 다시 해 주세요.');
+    if(signInLanding&&!auth.signedIn&&auth.error&&auth.error.code!=='AUTH_CANCELLED'&&!$('account-dialog').open&&!portalHost?.isActive?.())toast(auth.error.message||'로그인을 마치지 못했어요. 다시 해 주세요.');
     signInLanding=false;
   }
+  portalHost?.syncAuth(auth);
 }
 async function refreshAuth({reload=false}={}){
   if(!bridge)return;const revision=authRevision;
@@ -252,9 +258,10 @@ function readRoute(){return {view,appId:view==='library'&&!libraryDetail?null:pr
 // 화면 이동. 옛 회원 혜택 경로(내 성향 · 구독 계정판)는 새 자리로 바꿔 받는다(2026-11-13). 화면을 떠나면 그 화면의 개인 글 · 다시 그리기를 끈다 —
 // 내 성향은 #insight-detail을 비우고 보이기를 끄며, AI 구독 관리는 솔리오의 그 탭이 아닐 때 보이기를 끄고 그릇을 비운다(1분 다시 그리기가 다른 화면을 덮지 않게).
 const VIEW_IDS=['home','library','solio','benefits','downloads','settings','account','insight'];
+function focusCurrentViewHeading(){if(portalHost?.isActive?.()||document.querySelector('dialog[open]'))return;if(view==='home')$('member-home-title')?.focus?.({preventScroll:true});else if(view==='library')(libraryDetail?$('hero-title'):$('main'))?.focus?.({preventScroll:true});else if(view==='benefits')$(selectedBenefit?'benefit-title':'benefits-title')?.focus?.({preventScroll:true});else if(view==='solio')$(solioTab==='subscriptions'?'benefit-title':'solio-title')?.focus?.({preventScroll:true});else if(view==='insight')$('benefit-title')?.focus?.({preventScroll:true});else if(view==='account')($('account-page-title')||$('main'))?.focus?.({preventScroll:true});else $('main')?.focus?.({preventScroll:true});}
 function showView(next,{restore=false,...route}={}){if(next==='benefits'&&Object.hasOwn(SOLIO_LEGACY_BENEFITS,route.benefitId||'')){const moved=solioMigrateRoute({view:next,...route});next=moved.view;route={...route,benefitId:null,section:moved.section};}if(!VIEW_IDS.includes(next))return;closeProfileMenu();if(convenience&&!restore){convenience.navigate({view:next,appId:next==='library'?null:prefs.selected,...route});return;}view=next;if(view==='library'){libraryDetail=allowed(route.appId);if(!libraryDetail)libraryOrigin='library';}if(view!=='benefits')$('benefit-detail').innerHTML='';if(view!=='insight'){memberInsight.setVisible(false);$('insight-detail').innerHTML='';}if(view==='solio')solioTab=solioSection(route.section);if(!(view==='solio'&&solioTab==='subscriptions')){subscriptionsBoard.setVisible(false);$('solio-subscriptions').innerHTML='';}if(allowed(route.appId))prefs.selected=route.appId;detail=route.detail||'overview';selectedBenefit=view==='benefits'&&memberBenefit(route.benefitId)?route.benefitId:null;for(const name of VIEW_IDS)$('view-'+name).hidden=name!==view;
   // 「내 계정」 sits under 설정, so that tab stays lit; an app intro opened from 내 홈 keeps 내 홈 lit (its 위치 줄 says 「내 홈 / …」).
-  const tab=['account','insight'].includes(view)?'settings':view==='library'&&libraryDetail&&libraryOrigin==='home'?'home':view;if(view!=='account')accountPage.hide();document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===tab);if(el.dataset.view===tab)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});if(view==='home'){memberHome.render();$('member-home-title').focus({preventScroll:true});}if(view==='library'){renderLibrary();renderSelected();(libraryDetail?$('hero-title'):$('main'))?.focus?.({preventScroll:true});}if(view==='downloads')renderDownloads();if(view==='settings')renderSettings();if(view==='account')accountPage.show();if(view==='benefits'){renderBenefits();$(selectedBenefit?'benefit-title':'benefits-title').focus({preventScroll:true});}if(view==='solio'){renderSolio();$(solioTab==='subscriptions'?'benefit-title':'solio-title')?.focus?.({preventScroll:true});}if(view==='insight'){renderInsightView();$('benefit-title')?.focus?.({preventScroll:true});}document.documentElement.dataset.view=view;$('main').scrollTop=route.scroll||0;globalThis.scrollTo?.(0,route.pageScroll||0);$('titlebar')?.classList.toggle('scrolled',(route.scroll||0)>4);}
+  const tab=['account','insight'].includes(view)?'settings':view==='library'&&libraryDetail&&libraryOrigin==='home'?'home':view;if(view!=='account')accountPage.hide();document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===tab);if(el.dataset.view===tab)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});if(view==='home')memberHome.render();if(view==='library'){renderLibrary();renderSelected();}if(view==='downloads')renderDownloads();if(view==='settings')renderSettings();if(view==='account')accountPage.show();if(view==='benefits')renderBenefits();if(view==='solio')renderSolio();if(view==='insight')renderInsightView();focusCurrentViewHeading();if(globalThis.location?.hash)replaceHashSilently(formatDesktopRouteHash({view,appId:view==='library'&&libraryDetail?prefs.selected:null,section:view==='solio'?solioTab:null,benefitId:view==='benefits'?selectedBenefit:null}));document.documentElement.dataset.view=view;$('main').scrollTop=route.scroll||0;globalThis.scrollTo?.(0,route.pageScroll||0);$('titlebar')?.classList.toggle('scrolled',(route.scroll||0)>4);}
 function canPreviewBenefit(id){return typeof bridge?.openProductPreview==='function'&&benefitPreviewAvailable(id,{native:!!bridge,appIds:library.appIds,productPreviewsAvailable:environment?.productPreviewsAvailable});}
 // 라이브러리 검색칸: 앱 아래에 솔리오 · 회원 혜택 · 맞춤 정보에서 찾은 곳을 보인다(옛 이름 「계정판」 · 「성향」으로 찾아도 새 자리, 2026-11-13).
 function renderBenefitSearch(){const results=solioSearch(search);$('benefits-search').hidden=!results.length;$('benefits-search').innerHTML=results.length?'<span class="field-label">솔리오·회원 혜택에서 찾은 것</span>'+results.map(item=>'<button type="button" data-solio-find="'+item.id+'"><strong>'+escape(item.title)+'</strong><small>'+escape(item.where)+' · 열기</small></button>').join(''):'';}
@@ -344,7 +351,7 @@ async function command(action,id=prefs.selected){
   }catch{if(active())toast('요청을 완료하지 못했어요. 다시 시도해 주세요.');}
   finally{commandBusy.delete(id);if(active()){await refresh();memberHome.render();renderActions();renderDownloads();renderBenefits();}}
 }
-document.addEventListener('click',event=>{if(profileOpen&&!event.target.closest('#profile-menu,#account-button'))closeProfileMenu();const button=event.target.closest('button');if(!button)return;if(button.dataset&&'worldPhone' in button.dataset){showWorldPhone();return;}if(button.dataset.profile){const action=button.dataset.profile;closeProfileMenu();if(action==='account')openAccount();else if(action==='benefits')showView('benefits');else if(action==='sign-out')void signOut();return;}if(button.dataset.solioSection){showView('solio',{section:button.dataset.solioSection});return;}if(button.dataset.solioFind){openSolioFind(button.dataset.solioFind);return;}if(button.dataset.benefitPin){void toggleFavorite(button.dataset.benefitPin);return;}if(['enable-activity','disable-activity'].includes(button.dataset.insightAction)){void memberActivity.setConsent(button.dataset.insightAction==='enable-activity');return;}if(button.dataset.insightAction==='activity'){const id=button.dataset.insightTarget;if(id==='world'){showWorldPhone();return;}if(['messenger','path','pulse'].includes(id)){if(allowed(id))void launchFromHome(id);else toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.');}return;}if(button.dataset.insightAction==='refresh'){void refreshAuth({reload:true}).then(()=>memberInsight.refresh());return;}else if(button.dataset.insightAction==='account'){openAccount();return;}else if(button.dataset.themeChoice)setTheme(button.dataset.themeChoice);else if(button.dataset.benefit)openBenefit(button.dataset.benefit);else if(button.dataset.benefitPublic)return command('public-web',button.dataset.benefitPublic);else if(button.dataset.benefitPreview){if(canPreviewBenefit(button.dataset.benefitPreview))return command('product-preview',button.dataset.benefitPreview);}else if(button.dataset.pulseLegacy)selectApp('pulse',{legacy:true});else if(button.dataset.app)selectApp(button.dataset.app);else if(button.dataset.personalApp)selectApp(button.dataset.personalApp);else if(button.dataset.view)showView(button.dataset.view);else if(button.dataset.filter){filter=button.dataset.filter;renderLibrary();}else if(button.dataset.detail||button.dataset.showDetail){showView('library',{appId:prefs.selected,detail:button.dataset.detail||button.dataset.showDetail});}else if(button.dataset.command)command(button.dataset.command,button.dataset.client);else if(button.dataset.window)void windowAction(button.dataset.window);else if(button.dataset.game){if(!allowed('world')||prefs.selected!=='world')return;const game=games[button.dataset.game];if(!game)return;$('content-image').src=asset+game.image;$('content-image').alt=game.name+' 게임 화면';$('content-title').textContent=game.name;$('content-description').textContent=game.description;$('content-dialog').showModal();}});
+document.addEventListener('click',event=>{if(portalHost?.isActive?.()||event.target?.closest?.('#portal-entry'))return;if(profileOpen&&!event.target.closest('#profile-menu,#account-button'))closeProfileMenu();const button=event.target.closest('button');if(!button)return;if(button.dataset&&'worldPhone' in button.dataset){showWorldPhone();return;}if(button.dataset.profile){const action=button.dataset.profile;closeProfileMenu();if(action==='account')openAccount();else if(action==='benefits')showView('benefits');else if(action==='sign-out')void signOut();return;}if(button.dataset.solioSection){showView('solio',{section:button.dataset.solioSection});return;}if(button.dataset.solioFind){openSolioFind(button.dataset.solioFind);return;}if(button.dataset.benefitPin){void toggleFavorite(button.dataset.benefitPin);return;}if(['enable-activity','disable-activity'].includes(button.dataset.insightAction)){void memberActivity.setConsent(button.dataset.insightAction==='enable-activity');return;}if(button.dataset.insightAction==='activity'){const id=button.dataset.insightTarget;if(id==='world'){showWorldPhone();return;}if(['messenger','path','pulse'].includes(id)){if(allowed(id))void launchFromHome(id);else toast('아직 설치하지 않았거나 이 계정에서 쓸 수 없는 앱이에요. 「설치·업데이트」에서 설치 상태를 봐 주세요.');}return;}if(button.dataset.insightAction==='refresh'){void refreshAuth({reload:true}).then(()=>memberInsight.refresh());return;}else if(button.dataset.insightAction==='account'){openAccount();return;}else if(button.dataset.themeChoice)setTheme(button.dataset.themeChoice);else if(button.dataset.benefit)openBenefit(button.dataset.benefit);else if(button.dataset.benefitPublic)return command('public-web',button.dataset.benefitPublic);else if(button.dataset.benefitPreview){if(canPreviewBenefit(button.dataset.benefitPreview))return command('product-preview',button.dataset.benefitPreview);}else if(button.dataset.pulseLegacy)selectApp('pulse',{legacy:true});else if(button.dataset.app)selectApp(button.dataset.app);else if(button.dataset.personalApp)selectApp(button.dataset.personalApp);else if(button.dataset.view)showView(button.dataset.view);else if(button.dataset.filter){filter=button.dataset.filter;renderLibrary();}else if(button.dataset.detail||button.dataset.showDetail){showView('library',{appId:prefs.selected,detail:button.dataset.detail||button.dataset.showDetail});}else if(button.dataset.command)command(button.dataset.command,button.dataset.client);else if(button.dataset.window)void windowAction(button.dataset.window);else if(button.dataset.game){if(!allowed('world')||prefs.selected!=='world')return;const game=games[button.dataset.game];if(!game)return;$('content-image').src=asset+game.image;$('content-image').alt=game.name+' 게임 화면';$('content-title').textContent=game.name;$('content-description').textContent=game.description;$('content-dialog').showModal();}});
 $('brand-home').addEventListener('click',()=>showView('home'));
 // 본문을 내리면 위 막대 아래에 1px 선이 생긴다.
 $('main').addEventListener('scroll',()=>{$('titlebar')?.classList.toggle('scrolled',$('main').scrollTop>4);},{passive:true});
@@ -439,24 +446,236 @@ function renderPersonalization(){
   if(studyOnPhone){$('recommendation').innerHTML='<span class="atlas-dot" aria-hidden="true"></span><div><span class="eyebrow">한국어 공부</span><strong>SYNK WORLD는 휴대폰에서</strong><p>'+escape(STUDY_ON_PHONE)+'</p></div><button class="ghost-button" type="button" data-world-phone>내 홈의 QR 보기 '+icon('arrow-right')+'</button>';}
   else if(state.active&&!unmatched&&allowed(state.selected)){const app=apps[state.selected];$('recommendation').innerHTML='<span class="atlas-dot" aria-hidden="true"></span><div><span class="eyebrow">먼저 볼 앱</span><strong>'+escape(app.name)+'</strong><p>'+escape(state.reason)+'</p><p class="recommendation-extra">고른 일에 맞춘 순서일 뿐, 실력이나 권한과는 상관없어요.</p><span class="recommendation-stage">'+escape(statusLabel(client(state.selected)))+'</span></div><button class="ghost-button" data-personal-app="'+state.selected+'">'+(app.stage==='planned'?'준비 중인 것 보기':'앱 보기')+' '+icon('arrow-right')+'</button>';}
 }
-function applyPersonalization(){const saved=personal.current({appIds:displayLibraryAppIds(library)});personalState=sessionPurpose&&library.owner===sessionPurposeOwner?previewPurpose(saved,sessionPurpose,displayLibraryAppIds(library)):saved;document.documentElement.dataset.textSize=personalState.presentation.textSize;document.documentElement.dataset.explanation=personalState.presentation.explanation;document.documentElement.dataset.motion=personalState.presentation.motion;renderPersonalization();}
+function applyPersonalization(){const saved=personal.current({appIds:displayLibraryAppIds(library)});personalState=sessionPurpose&&library.owner===sessionPurposeOwner?previewPurpose(saved,sessionPurpose,displayLibraryAppIds(library)):saved;document.documentElement.dataset.textSize=personalState.presentation.textSize;document.documentElement.dataset.explanation=personalState.presentation.explanation;document.documentElement.dataset.motion=personalState.presentation.motion;renderPersonalization();portalHost?.syncReducedMotion?.(personalState.presentation.motion==='reduced');}
 function openPersonalization(){if(!library.owner)return;const state=personalState;const values=state.values||{};$('personal-context').value=state.context||'everyday';$('personal-goal').value=values.goal||'explore';$('personal-text').value=values.textSize||'standard';$('personal-explanation').value=values.explanation||'standard';$('personal-motion').value=values.motion||'full';$('personal-consent').checked=state.active&&!state.sessionOnly;$('personal-message').textContent=state.error||'';$('personal-dialog').showModal();}
 for(const id of ['personal-open','personal-settings-open'])$(id).addEventListener('click',openPersonalization);
 $('personal-context').addEventListener('change',()=>{$('personal-goal').value=CONTEXTS[$('personal-context').value]?.goal||'explore';});
 $('personal-form').addEventListener('submit',event=>{event.preventDefault();if(!library.owner)return;try{personal.save({context:$('personal-context').value,goal:$('personal-goal').value,textSize:$('personal-text').value,explanation:$('personal-explanation').value,motion:$('personal-motion').value,consent:$('personal-consent').checked===true});sessionPurpose=null;applyPersonalization();renderLibrary();$('personal-dialog').close();toast('앱 순서와 보기 설정을 저장했어요.');}catch(error){$('personal-message').textContent=error.message;}});
 $('personal-skip').addEventListener('click',()=>{$('personal-dialog').close();});
 $('personal-clear').addEventListener('click',()=>{if(!library.owner)return;try{personal.clear();sessionPurpose=null;applyPersonalization();renderLibrary();$('personal-dialog').close();toast('저장한 설정을 지웠어요. 기본 순서로 돌아왔어요.');}catch(error){$('personal-message').textContent=error.message;}});
-function windowState(state){$('maximize').setAttribute('aria-label',state?.maximized?'창 크기 복원':'최대화');$('maximize').dataset.maximized=String(!!state?.maximized);}
+let windowMaximized=false,portalWindowChrome=null;
+function syncMaximizeButton(button,maximized){if(!button)return;button.setAttribute('aria-label',maximized?'창 크기 복원':'최대화');button.dataset.maximized=String(Boolean(maximized));}
+function windowState(state){windowMaximized=Boolean(state?.maximized);syncMaximizeButton($('maximize'),windowMaximized);portalWindowChrome?.syncMaximize(windowMaximized);}
+function createPortalWindowChrome(portalRoot){
+  if(!portalRoot)return null;
+  const hasWindowAction=()=>typeof bridge?.windowAction==='function';
+  const buildBar=()=>{
+    const fromTemplate=$('portal-window-chrome')?.content?.firstElementChild?.cloneNode?.(true);
+    if(fromTemplate)return fromTemplate;
+    const el=document.createElement('div');
+    el.className='portal-window-bar';
+    el.dataset.portalWindowBar='';
+    el.hidden=true;
+    el.innerHTML='<div class="portal-window-drag" data-portal-window-drag aria-hidden="true"></div><div class="portal-window-actions" role="group" aria-label="창 조절"><button type="button" data-window="minimize" aria-label="최소화"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button><button type="button" data-window="toggle-maximize" data-portal-maximize data-maximized="false" aria-label="최대화"><svg class="i when-normal" aria-hidden="true"><use href="#i-square"/></svg><svg class="i when-maximized" aria-hidden="true"><use href="#i-restore"/></svg></button><button type="button" data-window="close" class="window-close" aria-label="닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>';
+    return el;
+  };
+  const bar=buildBar();
+  const maximizeBtn=bar.querySelector?.('[data-portal-maximize]')||null;
+  let disposed=false,syncing=false;
+  const onClick=event=>{
+    if(disposed)return;
+    const origin=event.target?.nodeType===1?event.target:event.target?.parentElement;
+    const button=origin?.closest?.('button[data-window]');
+    if(!button||!bar.contains(button)||button.disabled)return;
+    event.stopPropagation();
+    void windowAction(button.dataset.window);
+  };
+  bar.addEventListener('click',onClick);
+  const sync=forcedActive=>{
+    if(disposed||syncing)return;
+    syncing=true;
+    try{
+      for(const node of portalRoot.querySelectorAll?.('[data-portal-window-bar]')||[]){if(node!==bar)node.remove();}
+      if(!hasWindowAction()||!portalRoot.querySelector?.('[data-portal-stage]')){
+        if(!bar.hidden&&document.activeElement&&bar.contains(document.activeElement))document.activeElement.blur?.();
+        bar.hidden=true;
+        if(bar.parentNode)bar.remove();
+        return;
+      }
+      if(bar.parentElement!==portalRoot)portalRoot.append(bar);
+      syncMaximizeButton(maximizeBtn,windowMaximized);
+      const active=typeof forcedActive==='boolean'?forcedActive&&!portalRoot.hidden:!portalRoot.hidden&&portalRoot.dataset?.portalActive==='true';
+      if(!active&&document.activeElement&&bar.contains(document.activeElement))document.activeElement.blur?.();
+      if(bar.hidden===active)bar.hidden=!active;
+    }finally{syncing=false;}
+  };
+  const onPortalState=event=>{sync(typeof event?.detail?.active==='boolean'?event.detail.active:undefined);};
+  portalRoot.addEventListener?.('synk:portal-state',onPortalState);
+  const observer=typeof MutationObserver==='function'?new MutationObserver(()=>{sync();}):null;
+  observer?.observe(portalRoot,{childList:true,attributes:true,attributeFilter:['hidden','data-portal-active']});
+  const dispose=()=>{
+    if(disposed)return;
+    disposed=true;
+    observer?.disconnect();
+    portalRoot.removeEventListener?.('synk:portal-state',onPortalState);
+    bar.removeEventListener('click',onClick);
+    if(document.activeElement&&bar.contains(document.activeElement))document.activeElement.blur?.();
+    bar.hidden=true;
+    if(bar.parentNode)bar.remove();
+  };
+  return {sync,syncMaximize:maximized=>syncMaximizeButton(maximizeBtn,maximized),dispose};
+}
 // A sign-in comes back to the screen it started from and a sign-out opens the guest home, not each account's last place.
 // Each landing waits for its own side: the main process reports a plain signed-out (its discard) before 'signing-in', and
 // that guest step must not use up the sign-in's landing. A sign-in that ends without an account drops it (see setAuth).
-convenience=mountConvenience({takeLanding:owner=>{if(!landing||(owner==='anonymous-local')!==landing.guest)return null;const {route}=landing;landing=null;return route;},bridge,storage:localStore,apps,getSnapshot:()=>({owner:library.owner,appIds:visibleLibraryAppIds(library),prefs:effectivePrefs(),environment,auth,clients}),readRoute,applyRoute:route=>showView(route.view,{...route,restore:true}),launchApp:launchFromHome,onToast:toast,onFavorite:toggleFavorite,onMoveFavorite:moveFavorite,onLibrarySearch:()=>{showView('library');openLibrarySearch();},getNotes:query=>[...(memberHome.searchRecords?.(query)||[]).map(row=>({...row,source:'device'})),...(continuity?.searchNotes?.(query)||[]).map(row=>({...row,source:'account'}))],openNote:note=>note.source==='account'?continuity?.openNote?.(note.id):memberHome.focusRecord?.(note.id),onDesktopPreferences:snapshot=>{if(environment)environment.closeToTray=snapshot.preferences?.closeToTray===true&&snapshot.capabilities?.tray===true;}});
+convenience=mountConvenience({takeLanding:owner=>{if(landing&&(owner==='anonymous-local')===landing.guest){const {route}=landing;landing=null;return route;}if(pendingHashRoute){const route=toLauncherHashRoute(pendingHashRoute);pendingHashRoute=null;return route;}return null;},isPortalBlocked:()=>Boolean(portalHost?.shouldBlockShortcuts?.()),bridge,storage:localStore,apps,getSnapshot:()=>({owner:library.owner,appIds:visibleLibraryAppIds(library),prefs:effectivePrefs(),environment,auth,clients}),readRoute,applyRoute:route=>{if(route.worldPhone){showWorldPhone();return;}showView(route.view,{...route,restore:true});},launchApp:launchFromHome,onToast:toast,onFavorite:toggleFavorite,onMoveFavorite:moveFavorite,onLibrarySearch:()=>{showView('library');openLibrarySearch();},getNotes:query=>[...(memberHome.searchRecords?.(query)||[]).map(row=>({...row,source:'device'})),...(continuity?.searchNotes?.(query)||[]).map(row=>({...row,source:'account'}))],openNote:note=>note.source==='account'?continuity?.openNote?.(note.id):memberHome.focusRecord?.(note.id),onDesktopPreferences:snapshot=>{if(environment)environment.closeToTray=snapshot.preferences?.closeToTray===true&&snapshot.capabilities?.tray===true;}});
+function applyHashNavigation(){const parsed=readHashRoute({replaceLegacy:true});if(!parsed)return false;pendingHashRoute=null;const route=toLauncherHashRoute(parsed);if(route.worldPhone)showWorldPhone();else showView(route.view,route);return true;}
+window.addEventListener('hashchange',()=>{applyHashNavigation();});
+portalWindowChrome=createPortalWindowChrome($('portal-entry'));
+portalHost=mountDesktopPortalHost({
+  root:$('portal-entry'),
+  hostElements:[document.querySelector('.launcher')].filter(Boolean),
+  bridge,
+  getAuth:()=>auth,
+  getReducedMotion:()=>document.documentElement.dataset.motion==='reduced'||Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches),
+  onActiveChange:active=>{
+    portalWindowChrome?.sync(active);
+    if(active){
+      closeProfileMenu();
+      convenience?.closeOverlays?.();
+      for(const id of ['account-dialog','content-dialog','personal-dialog']){if($(id)?.open)$(id).close();}
+    }else{
+      focusCurrentViewHeading();
+    }
+  },
+  onStartSignIn:async()=>{
+    if(!bridge||typeof bridge.authSignIn!=='function')return {ok:false,code:'AUTH_UNAVAILABLE',message:'로그인은 SYNK Platform PC 앱에서 할 수 있어요.'};
+    if(!auth.configured)return {ok:false,code:'AUTH_NOT_CONFIGURED',message:errorText({code:'AUTH_NOT_CONFIGURED'})};
+    if(accountRetryPending||signUpPending||auth.status==='signing-out')return {ok:false,code:'AUTH_BUSY',message:'이전 계정 작업을 마무리하고 있어요. 잠시 뒤 다시 눌러 주세요.'};
+    landing=pendingHashRoute?{route:toLauncherHashRoute(pendingHashRoute),guest:false}:{route:readRoute(),guest:false};
+    try{
+      const result=await bridge.authSignIn();
+      await refreshAuth();
+      if(result?.ok===false||auth.status==='error'||(auth.status==='signed-out'&&!auth.signedIn)){
+        const code=result?.code||result?.error?.code||auth.error?.code||'AUTH_FAILED';
+        const message=result?.error?.message||auth.error?.message||errorText({code});
+        if(!auth.signedIn&&!landing?.guest)landing=null;
+        return {ok:false,code,message};
+      }
+      return {ok:true};
+    }catch(error){
+      await refreshAuth();
+      if(!auth.signedIn&&!landing?.guest)landing=null;
+      const code=auth.error?.code||error?.code||'AUTH_FAILED';
+      const message=auth.error?.message||'로그인 창을 열지 못했어요. 다시 시도해 주세요.';
+      return {ok:false,code,message};
+    }
+  },
+  onStartSignUp:async()=>{
+    if(typeof bridge?.authSignUp!=='function')return {ok:false,code:'AUTH_SIGNUP_UNAVAILABLE',message:'회원가입은 SYNK Platform PC 앱에서 할 수 있어요.'};
+    if(signUpPending||accountRetryPending||['restoring','signing-in','signing-out'].includes(auth.status)){
+      return {ok:false,code:'AUTH_SIGNUP_BUSY',message:'계정 상태를 확인하고 있어요. 잠시 뒤 다시 눌러 주세요.'};
+    }
+    signUpPending=true;renderAuth();
+    try{
+      const result=await bridge.authSignUp();
+      if(result?.ok===true){signUpOpened=true;return {ok:true};}
+      return {ok:false,code:result?.code||'AUTH_SIGNUP_OPEN_FAILED',message:'회원가입 페이지를 열지 못했어요. 잠시 뒤 다시 눌러 주세요.'};
+    }catch{
+      return {ok:false,code:'AUTH_SIGNUP_OPEN_FAILED',message:'회원가입 페이지를 열지 못했어요. 잠시 뒤 다시 눌러 주세요.'};
+    }finally{signUpPending=false;renderAuth();}
+  },
+  onCancelSignIn:async()=>{
+    const revision=authRevision;
+    await bridge?.authCancelSignIn?.();
+    if(revision===authRevision)await refreshAuth();
+  },
+  onRetryAuth:async()=>{
+    if(!bridge)return {ok:false,message:'브라우저 미리보기에서는 저장된 로그인을 확인할 수 없어요.'};
+    await refreshAuth({reload:true});
+    if(auth.status==='error'){
+      const extra=auth.error?.code==='SUITE_UNAVAILABLE'?' PC 저장 공간이 부족하면 공간을 비운 뒤 다시 시도해 주세요.':'';
+      return {ok:false,message:(auth.error?.message||'저장된 로그인을 다시 확인하지 못했어요.')+extra};
+    }
+    return {ok:true};
+  },
+  onSwitchAccount:async()=>{
+    if(!bridge)throw new Error('BRIDGE_UNAVAILABLE');
+    if(auth.signedIn){
+      await signOut();
+      if(auth.signedIn)throw new Error('SIGN_OUT_CANCELLED');
+    }
+  },
+  describePurposeTarget:purposeId=>{
+    if(purposeId==='world'){
+      const action=allowed('world')?getAppAction('world'):null;
+      return {external:Boolean(bridge&&action&&!action.disabled&&action.action==='launch')};
+    }
+    if(purposeId==='path'){
+      if(!bridge)return {external:false};
+      const action=allowed('path')?getAppAction('path'):null;
+      if(action&&!action.disabled&&['product-preview','public-web','launch'].includes(action.action))return {external:true};
+      if(typeof bridge.openPublicApp==='function'&&(!environment||Array.isArray(environment.publicAppsAvailable)&&environment.publicAppsAvailable.includes('path')))return {external:true};
+      return {external:false};
+    }
+    return {external:false};
+  },
+  onOpenPurposeTarget:async purposeId=>{
+    if(purposeId==='solio'){pendingHashRoute=null;showView('solio',{section:'home'});return {ok:true};}
+    if(purposeId==='home'){if(!applyHashNavigation())showView('home');return {ok:true};}
+    if(purposeId==='world'){
+      if(bridge&&allowed('world')){
+        const action=getAppAction('world');
+        if(action&&!action.disabled&&action.action==='launch'){
+          const result=await bridge.launch('world');
+          if(result?.ok){recordLaunch('world');showView('home');return {ok:true};}
+          return {ok:false,code:result?.code,message:errorText(result)};
+        }
+      }
+      pendingHashRoute=null;showWorldPhone();return {ok:true};
+    }
+    if(purposeId==='path'){
+      if(bridge&&!environment){try{await loadEnvironment();}catch{}}
+      if(bridge&&allowed('path')){
+        const action=getAppAction('path');
+        if(action&&!action.disabled&&action.action==='product-preview'){
+          const result=await bridge.openProductPreview('path');
+          if(result?.ok){recordLaunch('path');return {ok:true};}
+          return {ok:false,code:result?.code,message:errorText(result)};
+        }
+        if(action&&!action.disabled&&action.action==='public-web'){
+          const result=await bridge.openPublicApp('path');
+          if(result?.ok){recordLaunch('path','web');return {ok:true};}
+          return {ok:false,code:result?.code,message:errorText(result)};
+        }
+        if(action&&!action.disabled&&action.action==='launch'){
+          const result=await bridge.launch('path');
+          if(result?.ok){recordLaunch('path');return {ok:true};}
+          return {ok:false,code:result?.code,message:errorText(result)};
+        }
+      }
+      if(typeof bridge?.openPublicApp==='function'&&Array.isArray(environment?.publicAppsAvailable)&&environment.publicAppsAvailable.includes('path')){
+        const result=await bridge.openPublicApp('path');
+        if(result?.ok){if(allowed('path'))recordLaunch('path','web');return {ok:true};}
+        return {ok:false,code:result?.code||'PUBLIC_APP_OPEN_FAILED',message:'기본 브라우저에서 PATH 화면을 열지 못했어요. 잠시 뒤 다시 시도해 주세요.'};
+      }
+      if(allowed('path')){pendingHashRoute=null;selectApp('path',{intro:true});return {ok:true};}
+      if(!bridge){showView('home');return {ok:true};}
+      return {ok:false,code:'PUBLIC_APP_UNAVAILABLE',message:'이 판에서는 PATH 면접 연습을 바로 열 수 없어요. 다른 항목이나 플랫폼 홈을 골라 주세요.'};
+    }
+    return {ok:true};
+  },
+  onApplyHashRoute:()=>{applyHashNavigation();},
+  onEnsureEnteredView:()=>{if(!VIEW_IDS.includes(view))showView('home');return {ok:true};},
+});
+portalWindowChrome?.sync();
+if(portalHost&&typeof portalHost.dispose==='function'){
+  const disposePortalHost=portalHost.dispose.bind(portalHost);
+  portalHost={...portalHost,dispose:()=>{try{return disposePortalHost();}finally{portalWindowChrome?.dispose();}}};
+}
 platformUpdates=mountPlatformUpdates({bridge,document,getEnvironment:()=>environment,confirmInstall:confirmUpdateInstall});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)accountLifecycle.flushDrafts();});
 async function init(){
   // Home is the default view; the after-render hooks may then restore this owner's saved route.
-  accountLifecycle.render();showView('home',{restore:true});accountLifecycle.afterRender();
+  accountLifecycle.render();
+  const initialRoute=pendingHashRoute?toLauncherHashRoute(pendingHashRoute):null;
+  if(initialRoute?.worldPhone)showWorldPhone();
+  else if(initialRoute)showView(initialRoute.view,{...initialRoute,restore:true});
+  else showView('home',{restore:true});
+  accountLifecycle.afterRender();
   if(bridge){
+    $('window-actions').hidden=!bridge.windowAction;
+    if(bridge.getWindowState)bridge.getWindowState().then(windowState).catch(()=>{});bridge.onWindowStateChanged?.(windowState);
     let clientEvents=0;const revision=authRevision;
     bridge.onAuthChanged?.(setAuth);
     const receiveClients=snapshot=>{clientEvents++;setClients(snapshot);};bridge.onClientsChanged?.(receiveClients);
@@ -465,8 +684,6 @@ async function init(){
     if(results[2].status==='fulfilled'&&authRevision===revision)setAuth(results[2].value);
     else if(results[2].status==='rejected'&&authRevision===revision)setAuth({status:'error',signedIn:false});
     if(results.some(result=>result.status==='rejected'))toast('일부 정보를 불러오지 못했어요. 창을 닫았다 다시 열어 주세요.');
-    $('window-actions').hidden=!bridge.windowAction;
-    if(bridge.getWindowState)bridge.getWindowState().then(windowState).catch(()=>{});bridge.onWindowStateChanged?.(windowState);
   }
   $('edition').textContent=bridge?'':'화면 미리보기';$('runtime-label').textContent=bridge?`${systemName()} · ${environment?.mode==='release'?'SYNK Platform':'시험판'}`:'브라우저 미리보기';renderAuth();renderActions();renderBenefits();document.documentElement.dataset.ready='true';
 }

@@ -9,7 +9,7 @@ const session=id=>({user:{id,identities:[{provider:'email'}]},access_token:'synt
 const deferred=()=>{let resolve;const promise=new Promise(done=>resolve=done);return {promise,resolve};};
 const settle=async()=>{for(let n=0;n<8;n++)await new Promise(resolve=>setImmediate(resolve));};
 class Element{
- constructor(tag='div'){Object.assign(this,{tagName:tag,children:[],dataset:{},hidden:false,disabled:false,value:'',textContent:'',classList:{add(){},remove(){}}});}
+ constructor(tag='div'){Object.assign(this,{tagName:tag,children:[],dataset:{},hidden:false,disabled:false,value:'',textContent:'',classList:{add(){},remove(){}, toggle() {}}});}
  append(...nodes){this.children.push(...nodes);}replaceChildren(...nodes){this.children=nodes;}setAttribute(key,value){this[key]=value;}closest(){return this;}before(){}querySelector(){return null;}addEventListener(){}
 }
 async function fixture(t){
@@ -19,7 +19,7 @@ async function fixture(t){
  const clock={now:()=>now,setTimeout(fn,ms){timers.set(++timerId,{at:now+ms,fn});return timerId;},clearTimeout(id){timers.delete(id);},advance(ms){now+=ms;for(const[id,timer]of [...timers])if(timer.at<=now){timers.delete(id);timer.fn();}}};
  const emit=(event,value)=>{saved=value;listener(event,value);};
  const old=['document','window','location','fetch'].map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]);
- Object.assign(globalThis,{document:{body:new Element(),getElementById:get,createElement:tag=>new Element(tag),querySelectorAll:()=>modes},window:{addEventListener:(name,fn)=>events.set(name,fn),history:{}},location:{href:'https://synthetic-id.invalid/id/',assign(){},reload(){}},fetch:async(url,options)=>{
+ Object.assign(globalThis,{document:{body:new Element(),getElementById:get,createElement:tag=>new Element(tag),querySelectorAll:()=>modes},window:{addEventListener:(name,fn)=>events.set(name,fn), removeEventListener: (name, fn) => { if (events.get(name) === fn) events.delete(name); },history:{}},location:{href:'https://synthetic-id.invalid/id/',assign(){},reload(){}},fetch:async(url,options)=>{
   const target=new URL(url);assert.equal(target.origin,'https://synthetic-auth.invalid');assert.equal(target.pathname,'/functions/v1/synk-account');
   if(options.method==='POST'){
    const body=JSON.parse(options.body);assert.deepEqual(body,body.action==='revoke-all-sessions'?{action:'revoke-all-sessions'}:{action:'revoke-session',session_id:'00000000-0000-4000-8000-000000000456'});

@@ -11,7 +11,7 @@ import { emptyPlayState } from '../../play-common/play-data.mjs';
 // Exercise the real view and the built client entry point against a minimal DOM.
 // No remote Auth service, browser credentials or production account is used.
 class Node {
-  constructor(tag = 'div') { this.tagName = tag;this.children = [];this.dataset={};this.textContent = '';this.hidden = false;this.disabled = false;this.classList = { add() {}, remove() {} }; }
+  constructor(tag = 'div') { this.tagName = tag;this.children = [];this.dataset={};this.textContent = '';this.hidden = false;this.disabled = false;this.classList = { add() {}, remove() {}, toggle() {} }; }
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this.children = [...nodes]; }
   addEventListener() {}
@@ -163,7 +163,7 @@ async function portalFixture(t, { server = 'offline', clear = true, preview = fa
   const page = dom(), calls = [], cleanupAccounts = [], initial = { access_token: 'synthetic-access', user: { id: 'synthetic-user' } };
   let saved = initial, listener;
   const originals = ['document', 'window', 'location'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]);
-  Object.assign(globalThis, { document: page.document, window: { addEventListener() {} }, location: { href: 'https://id.example.test/index.html' } });
+  Object.assign(globalThis, { document: page.document, window: { addEventListener() {}, removeEventListener() {} }, location: { href: 'https://id.example.test/index.html' } });
   t.after(() => { for (const [key, descriptor] of originals) { if (descriptor) Object.defineProperty(globalThis, key, descriptor);else delete globalThis[key]; } });
   const sdk = { auth: {
     getSession: async () => ({ data: { session: saved } }), getUser: async () => ({ data: { user: saved.user } }),

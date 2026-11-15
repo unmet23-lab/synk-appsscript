@@ -176,6 +176,7 @@
 .sid .consent-native{font-size:var(--t15);font-weight:600;line-height:1.6;color:var(--ink)}
 .sid .actions{display:grid;gap:12px}
 .sid .consent .actions>.sb-btn{width:100%}
+.sid .consent-switch-note{margin-top:-4px}
 
 /* 내 SYNK 계정 — PC 앱 「내 계정」(desktop/renderer/account-page.css)과 같은 문법: 제목 34 · 사람 한 줄 · 구역 제목 22 + 검은 1px 선 아래 줄 목록.
    줄은 왼쪽에 이름(17)과 설명(15), 오른쪽에 값과 선 알약. 좁으면 단추가 아랫줄로. */
@@ -295,10 +296,427 @@
   .sid .method-btn{padding-left:16px;padding-right:10px;column-gap:10px}
   .sid .account-head{flex-direction:column}
 }
+/* 플랫폼 요청 문맥 — 검증된 플랫폼 시작 요청과 기존 계정 연결 확인에만 적용하며 일반 /id/ 화면은 위 기본 규칙을 그대로 쓴다. */
+html[data-platform-portal-boot="true"],
+html:has(>body.sid-platform-context[data-platform-context]){background:#000;color-scheme:dark}
+
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))),
+.sid.sid-platform-context[data-platform-context]{
+  --paper:#000000;
+  --ink:#ffffff;
+  --ink-2:#b4becd;
+  --ink-3:#96a0b0;
+  --line:rgba(255,255,255,.14);
+  --line-2:rgba(255,255,255,.24);
+  --edge:rgba(255,255,255,.34);
+  --g-edge:rgba(255,255,255,.24);
+  --g-ink:#eaedf4;
+  --surface:rgba(255,255,255,.06);
+  --hover:#edf0f5;
+  --under:rgba(255,255,255,.38);
+  --err:#ff9c8f;
+  --ok:#7ee2b8;
+  --alert:#ff8b7b;
+  --portal-ease:cubic-bezier(.22,1,.36,1);
+  color-scheme:dark;
+  padding:clamp(24px,5vh,52px) max(20px,env(safe-area-inset-right,0px)) clamp(20px,4vh,36px) max(20px,env(safe-area-inset-left,0px));
+  background:#000000 radial-gradient(circle at 50% 42%,rgba(16,18,24,.58) 0%,rgba(0,0,0,.96) 72%,#000000 100%);
+  color:var(--ink);
+  overflow-x:clip
+}
+
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))) .sid-main,
+.sid.sid-platform-context[data-platform-context] .sid-main{
+  max-width:416px;
+  margin-block:auto
+}
+.sid.sid-platform-context[data-platform-context] .sid-main:has(>#consent:not([hidden])){max-width:440px}
+
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))) .brand,
+.sid.sid-platform-context[data-platform-context] .brand{color:#ffffff;opacity:.92}
+
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))) .wordmark,
+.sid.sid-platform-context[data-platform-context] .wordmark{width:52px}
+
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))) .id-kicker,
+.sid.sid-platform-context[data-platform-context] .id-kicker{
+  margin-top:6px;
+  font-family:var(--mono);
+  font-size:11.5px;
+  font-weight:500;
+  letter-spacing:.1em;
+  color:var(--ink-3)
+}
+
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))) .sid-foot,
+.sid.sid-platform-context[data-platform-context] .sid-foot{
+  margin-top:28px;
+  padding-top:16px;
+  border-top:1px solid var(--line)
+}
+
+.sid.sid-platform-context[data-platform-context] :focus-visible{
+  outline:2px solid rgba(244,248,255,.9);
+  outline-offset:3px
+}
+
+.sid.sid-platform-context[data-platform-context] .intro-copy{
+  gap:10px;
+  margin-bottom:26px
+}
+.sid.sid-platform-context[data-platform-context] h1{
+  font-size:clamp(30px,3.8vw,40px);
+  font-weight:400;
+  line-height:1.18;
+  letter-spacing:-.038em;
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] .intro-copy>p{
+  font-size:14.5px;
+  line-height:1.55;
+  color:var(--ink-2)
+}
+
+.sid.sid-platform-context[data-platform-context] .auth-card{gap:20px}
+.sid.sid-platform-context[data-platform-context] .recent-login{
+  margin-top:-10px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:3px;
+  background:rgba(255,255,255,.03);
+  font-size:14px;
+  color:var(--ink-2)
+}
+.sid.sid-platform-context[data-platform-context] .email-fields{gap:18px}
+.sid.sid-platform-context[data-platform-context] label{
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:-.01em;
+  color:#cfd6e2
+}
+.sid.sid-platform-context[data-platform-context] label>input:not([type="checkbox"]),
+.sid.sid-platform-context[data-platform-context] label>select{margin-top:6px}
+.sid.sid-platform-context[data-platform-context] .field-row{gap:6px}
+
+.sid.sid-platform-context[data-platform-context] input:not([type="checkbox"]),
+.sid.sid-platform-context[data-platform-context] select{
+  height:52px;
+  padding:10px 0;
+  border:0;
+  border-bottom:1.5px solid var(--edge);
+  border-radius:0;
+  background:transparent;
+  color:#ffffff;
+  font-size:17px;
+  transition:border-color .2s var(--portal-ease)
+}
+.sid.sid-platform-context[data-platform-context] .password-field input{padding-right:68px}
+.sid.sid-platform-context[data-platform-context] input:not([type="checkbox"]):focus,
+.sid.sid-platform-context[data-platform-context] select:focus{
+  outline:none;
+  border-bottom-color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] input:not([type="checkbox"]):focus-visible,
+.sid.sid-platform-context[data-platform-context] select:focus-visible{
+  outline:2px solid rgba(244,248,255,.88);
+  outline-offset:4px;
+  border-bottom-color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] input[aria-invalid="true"]{
+  border-bottom-color:var(--err);
+  box-shadow:0 1px 0 0 var(--err)
+}
+.sid.sid-platform-context[data-platform-context] input:-webkit-autofill,
+.sid.sid-platform-context[data-platform-context] input:-webkit-autofill:hover,
+.sid.sid-platform-context[data-platform-context] input:-webkit-autofill:focus{
+  -webkit-text-fill-color:#ffffff;
+  -webkit-box-shadow:0 0 0 1000px #050608 inset;
+  caret-color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] select{
+  padding-right:36px;
+  background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23eaedf4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E") right 6px center/20px no-repeat
+}
+.sid.sid-platform-context[data-platform-context] select option{background:#0b0d12;color:#ffffff}
+
+.sid.sid-platform-context[data-platform-context] .password-toggle{
+  right:0;
+  top:4px;
+  min-width:52px;
+  padding:0 10px;
+  border-radius:3px;
+  color:var(--ink-2)
+}
+.sid.sid-platform-context[data-platform-context] .password-toggle:hover{
+  background:rgba(255,255,255,.08);
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] .password-toggle[aria-pressed="true"]{color:#ffffff}
+.sid.sid-platform-context[data-platform-context] .forgot-row{margin-top:-12px}
+.sid.sid-platform-context[data-platform-context] .link-button{
+  font-size:14px;
+  font-weight:500;
+  color:#d6dde8;
+  text-decoration-color:var(--under);
+  transition:color .18s var(--portal-ease),text-decoration-color .18s var(--portal-ease)
+}
+.sid.sid-platform-context[data-platform-context] .link-button:hover:not(:disabled),
+.sid.sid-platform-context[data-platform-context] .link-button:focus-visible{
+  color:#ffffff;
+  text-decoration-color:#ffffff
+}
+
+.sid.sid-platform-context[data-platform-context] input[type="checkbox"]{
+  border:1.5px solid rgba(255,255,255,.42);
+  border-radius:3px;
+  background:rgba(255,255,255,.04)
+}
+.sid.sid-platform-context[data-platform-context] input[type="checkbox"]:checked{
+  border-color:#ffffff;
+  background:#ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2308090c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 10.5 3.2 3.2L15 7'/%3E%3C/svg%3E") center/16px no-repeat
+}
+.sid.sid-platform-context[data-platform-context] .signup-details summary::before,
+.sid.sid-platform-context[data-platform-context] .support-id summary::before{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23b4becd' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m8 5 5 5-5 5'/%3E%3C/svg%3E")
+}
+
+.sid.sid-platform-context[data-platform-context] .sb-btn{
+  min-height:52px;
+  padding:10px 20px;
+  border-radius:3px;
+  border:1px solid #ffffff;
+  background:#ffffff;
+  color:#08090c;
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:-.018em;
+  transition:background-color .18s var(--portal-ease),border-color .18s var(--portal-ease),color .18s var(--portal-ease),transform .18s var(--portal-ease)
+}
+.sid.sid-platform-context[data-platform-context] .sb-btn:hover:not(:disabled){
+  background:var(--hover);
+  border-color:var(--hover);
+  color:#08090c;
+  transform:translateY(-1px)
+}
+.sid.sid-platform-context[data-platform-context] .sb-btn:active:not(:disabled){transform:translateY(0)}
+.sid.sid-platform-context[data-platform-context] .sb-btn:disabled{
+  background:rgba(255,255,255,.14);
+  border-color:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.46)
+}
+.sid.sid-platform-context[data-platform-context] .sb-btn.soft{
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--g-edge);
+  color:#eaedf4;
+  font-weight:500
+}
+.sid.sid-platform-context[data-platform-context] .sb-btn.soft:hover:not(:disabled),
+.sid.sid-platform-context[data-platform-context] .sb-btn.soft:focus-visible{
+  background:rgba(255,255,255,.1);
+  border-color:#ffffff;
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] .sb-btn.soft:disabled{
+  background:rgba(255,255,255,.02);
+  border-color:rgba(255,255,255,.1);
+  color:rgba(255,255,255,.38)
+}
+
+.sid.sid-platform-context[data-platform-context] .method-btn{
+  border-radius:3px;
+  border:1px solid var(--g-edge);
+  background:rgba(255,255,255,.04);
+  color:var(--g-ink);
+  font-weight:500;
+  transition:border-color .18s var(--portal-ease),background-color .18s var(--portal-ease),color .18s var(--portal-ease)
+}
+.sid.sid-platform-context[data-platform-context] .method-btn:hover:enabled{
+  border-color:#ffffff;
+  background:rgba(255,255,255,.09);
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] .method-btn[aria-expanded="true"]{
+  border-color:#ffffff;
+  background:rgba(255,255,255,.1);
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context] .method-btn[aria-expanded="true"] .recent-badge{background:rgba(255,255,255,.14);color:#ffffff}
+.sid.sid-platform-context[data-platform-context] .method-btn[data-off="true"]{
+  color:#8b94a3;
+  border-color:rgba(255,255,255,.12);
+  background:transparent
+}
+.sid.sid-platform-context[data-platform-context] .email-mark{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23eaedf4' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.3' y='4.3' width='15.4' height='11.4' rx='2.2'/%3E%3Cpath d='m3.4 6.2 6.6 5 6.6-5'/%3E%3C/svg%3E")
+}
+
+/* 이메일 선택 뒤 진입한 주흐름: 이메일·비밀번호 입력을 중심에 두고 Google은 아래 절제된 대안 행으로 배치 */
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices{
+  gap:8px;
+  margin-top:2px;
+  border-top:1px solid var(--line)
+}
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices .method-btn{
+  min-height:48px;
+  padding:10px 0;
+  border:0;
+  border-bottom:1px solid var(--line);
+  border-radius:0;
+  background:transparent;
+  color:#eaedf4
+}
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices .method-btn:hover:enabled,
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices .method-btn:focus-visible{
+  border-bottom-color:#ffffff;
+  background:transparent;
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices #google-login:not(:has(#google-recent:not([hidden])))::after{
+  content:"→";
+  justify-self:end;
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--ink-3);
+  transition:transform .2s var(--portal-ease),color .18s var(--portal-ease)
+}
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices #google-login:hover:enabled::after,
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices #google-login:focus-visible::after{
+  transform:translateX(3px);
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-email-primary="true"] #method-choices .method-btn[data-off="true"]{
+  color:#8b94a3;
+  border-bottom-color:rgba(255,255,255,.1)
+}
+.sid.sid-platform-context[data-platform-email-primary="true"] .google-privacy-note{margin-top:-10px}
+
+.sid.sid-platform-context[data-platform-context] .switch-row{
+  padding-top:14px;
+  border-top:1px solid var(--line);
+  font-size:15px;
+  color:var(--ink-2)
+}
+.sid.sid-platform-context[data-platform-context] .switch-row .link-button{font-size:15px;color:#ffffff}
+
+/* 기존 세션 계정 연결 확인 (#consent) */
+.sid.sid-platform-context[data-platform-context="consent"]{
+  padding-top:clamp(20px,3.6vh,40px);
+  padding-bottom:clamp(18px,3vh,28px)
+}
+.sid.sid-platform-context[data-platform-context="consent"] .consent{gap:16px}
+.sid.sid-platform-context[data-platform-context="consent"] .consent>h1{
+  margin-bottom:0;
+  font-size:clamp(28px,3.6vw,38px)
+}
+.sid.sid-platform-context[data-platform-context="consent"] #consent-account{
+  padding:10px 14px;
+  border:1px solid var(--line-2);
+  border-radius:3px;
+  background:rgba(255,255,255,.04);
+  font-size:14.5px;
+  line-height:1.5;
+  color:#ffffff
+}
+.sid.sid-platform-context[data-platform-context="consent"] .consent-lead{
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--ink-2)
+}
+.sid.sid-platform-context[data-platform-context="consent"] #scopes{border-top:1px solid var(--line-2)}
+.sid.sid-platform-context[data-platform-context="consent"] #scopes li{
+  min-height:44px;
+  border-bottom:1px solid var(--line);
+  font-size:14.5px;
+  color:#eaedf4
+}
+.sid.sid-platform-context[data-platform-context="consent"] #consent-destination{
+  font-family:var(--mono);
+  font-size:12.5px;
+  color:var(--ink-2)
+}
+.sid.sid-platform-context[data-platform-context="consent"] .consent-native{
+  font-size:14px;
+  font-weight:400;
+  line-height:1.6;
+  color:#d6dde8
+}
+.sid.sid-platform-context[data-platform-context="consent"] .actions{gap:10px}
+.sid.sid-platform-context[data-platform-context="consent"] .consent-switch-note{
+  margin-top:-2px;
+  line-height:1.55;
+  color:var(--ink-3)
+}
+
+/* 알림 아이콘 다크 대응 */
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]) .notice[data-kind="error"]::before,
+.sid.sid-platform-context[data-platform-context] .notice[data-kind="error"]::before{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23ff9c8f' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='7.6'/%3E%3Cpath d='M10 6.2v4.6M10 13.6v.1'/%3E%3C/svg%3E")
+}
+html[data-platform-portal-boot="true"] .sid:not([data-platform-context]) .notice[data-kind="success"]::before,
+.sid.sid-platform-context[data-platform-context] .notice[data-kind="success"]::before{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%237ee2b8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='7.6'/%3E%3Cpath d='m6.6 10.3 2.3 2.3 4.5-4.8'/%3E%3C/svg%3E")
+}
+
+/* 짧은 진입·단계 전환 모션 */
+@keyframes sid-platform-enter-a{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sid-platform-enter-b{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sid.sid-platform-context[data-platform-context="auth"] #auth-panel[data-platform-motion="a"]{animation:sid-platform-enter-a .26s var(--portal-ease) both}
+.sid.sid-platform-context[data-platform-context="auth"] #auth-panel[data-platform-motion="b"]{animation:sid-platform-enter-b .26s var(--portal-ease) both}
+.sid.sid-platform-context[data-platform-context="consent"] #consent[data-platform-motion="enter"]{animation:sid-platform-enter-a .28s var(--portal-ease) both}
+
+/* 낮은 데스크톱 창 (1024x560 등) */
+@media (max-height:640px) and (min-width:761px){
+  html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))),
+  .sid.sid-platform-context[data-platform-context]{padding-top:16px;padding-bottom:18px}
+  .sid.sid-platform-context[data-platform-context] .id-kicker{margin-top:4px}
+  .sid.sid-platform-context[data-platform-context] .intro-copy{gap:6px;margin-bottom:16px}
+  .sid.sid-platform-context[data-platform-context] h1,
+  .sid.sid-platform-context[data-platform-context="consent"] .consent>h1{font-size:28px}
+  .sid.sid-platform-context[data-platform-context] .auth-card,
+  .sid.sid-platform-context[data-platform-context="consent"] .consent{gap:14px}
+  .sid.sid-platform-context[data-platform-context] .email-fields{gap:12px}
+  .sid.sid-platform-context[data-platform-context] input:not([type="checkbox"]),
+  .sid.sid-platform-context[data-platform-context] select{height:46px;padding-block:8px}
+  .sid.sid-platform-context[data-platform-context] .password-toggle{top:1px}
+  .sid.sid-platform-context[data-platform-context] .sb-btn{min-height:46px;padding-block:8px}
+  .sid.sid-platform-context[data-platform-email-primary="true"] #method-choices .method-btn{min-height:44px;padding-block:8px}
+  .sid.sid-platform-context[data-platform-context] .sid-foot{margin-top:18px;padding-top:12px}
+}
+
+/* 모바일 세로 (390x844 등) */
+@media (max-width:760px){
+  html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))),
+  .sid.sid-platform-context[data-platform-context]{padding-top:24px;padding-bottom:28px}
+  .sid.sid-platform-context[data-platform-context] h1{font-size:clamp(28px,8vw,34px)}
+}
+
+/* 초저높이 가로 화면 (568x320 등): 필수 내용 삭제 없이 여백만 압축하고 44px 조작 높이와 세로 스크롤 보장 */
+@media (max-height:420px){
+  html[data-platform-portal-boot="true"] .sid:not([data-platform-context]):not(:has(#setup:not([hidden]),#connection-restart:not([hidden]),#account-profile:not([hidden]),#google-onboarding:not([hidden]))),
+  .sid.sid-platform-context[data-platform-context]{padding-top:12px;padding-bottom:14px}
+  .sid.sid-platform-context[data-platform-context] .wordmark{width:46px}
+  .sid.sid-platform-context[data-platform-context] .id-kicker{margin-top:2px}
+  .sid.sid-platform-context[data-platform-context] .intro-copy{gap:4px;margin-bottom:12px}
+  .sid.sid-platform-context[data-platform-context] h1,
+  .sid.sid-platform-context[data-platform-context="consent"] .consent>h1{font-size:24px}
+  .sid.sid-platform-context[data-platform-context] .auth-card,
+  .sid.sid-platform-context[data-platform-context="consent"] .consent{gap:12px}
+  .sid.sid-platform-context[data-platform-context] .email-fields{gap:10px}
+  .sid.sid-platform-context[data-platform-context] input:not([type="checkbox"]),
+  .sid.sid-platform-context[data-platform-context] select{height:44px;padding-block:6px;font-size:16px}
+  .sid.sid-platform-context[data-platform-context] .password-toggle{top:0}
+  .sid.sid-platform-context[data-platform-context] .forgot-row{margin-top:-8px}
+  .sid.sid-platform-context[data-platform-context] .sb-btn{min-height:44px;padding-block:6px}
+  .sid.sid-platform-context[data-platform-email-primary="true"] #method-choices .method-btn{min-height:44px;padding-block:6px}
+  .sid.sid-platform-context[data-platform-context="consent"] #scopes li{min-height:40px}
+  .sid.sid-platform-context[data-platform-context] .sid-foot{margin-top:14px;padding-top:10px}
+}
+
 @media (forced-colors:active){
   .sid .method-btn[aria-expanded="true"]:not(:focus-visible),.sid .switch[aria-checked="true"]:not(:focus-visible){outline:2px solid CanvasText;outline-offset:1px}
   .sid input[type="checkbox"]{appearance:auto;width:22px;height:22px;background:none}
   .sid select{appearance:auto;background-image:none;padding-right:16px}
+  .sid.sid-platform-context[data-platform-context] input:not([type="checkbox"]){border:1px solid ButtonText;padding-inline:12px}
 }
-@media (prefers-reduced-motion:reduce){.sid *,.sid *::before,.sid *::after{transition:none!important;animation:none!important}
+@media (prefers-reduced-motion:reduce){.sid,.sid *,.sid *::before,.sid *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   .sid .method-status[data-state="checking"]{animation:sid-late-line .01s .6s both!important}}

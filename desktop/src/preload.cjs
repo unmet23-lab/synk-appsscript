@@ -3,6 +3,39 @@ const {contextBridge,ipcRenderer}=require('electron');
 // Fixed operations only. Tokens, raw IPC, paths, URLs and commands stay in main.
 const SUBSCRIPTION_SERVICES=['claude','gpt','higgsfield','gemini'],SUBSCRIPTION_KEY_SERVICES=['typecast'],SUBSCRIPTION_HELP=['node','claude-plans','chatgpt-plans','claude-install','codex-install','higgsfield-install','gemini-plans','antigravity-install','typecast-api','higgsfield-credits','codex-resets','claude-resets','claude-usage','claude-api-credits','claude-console-billing','gpt-api-credits','gpt-credit-grants','gemini-api-credits','gemini-ai-studio-billing','gemini-dev-benefits','flow-app','flow-credits','higgsfield-pricing','higgsfield-annual','typecast-api-pricing'];
 const unknownSubscription=code=>Promise.resolve({ok:false,code});
+// The entry portal names a visit purpose; main opens that purpose's fixed page.
+const PORTAL_PURPOSES=['shift'];
+// A customer's own invite, taken from a complete link the portal checked: its
+// token crosses with the portal's request, as a fresh exact
+// {token,requestId,accountGeneration} (company-entry-contract-v1 §7).
+// accountGeneration is the UUID from the latest auth status, never the numeric
+// sessionGeneration. A lone {token} and every other form are refused here
+// without crossing. Main checks the same again; a refusal here has main's
+// answer form. The UUIDs are lowercase, of versions 1 to 8 with the RFC
+// variant, as main and the company entry check them.
+const INVITE_TOKEN=/^[A-Za-z0-9_-]{16,200}$/,INVITE_UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const inviteFields=(input,keys)=>{if(!input||typeof input!=='object'||Array.isArray(input))return null;const own=Reflect.ownKeys(input);if(own.length!==keys.length||!keys.every(key=>own.includes(key)))return null;const fields={};for(const key of keys){const field=Object.getOwnPropertyDescriptor(input,key);if(!field||!('value' in field))return null;fields[key]=field.value;}return fields;};
+const inviteUuid=value=>typeof value==='string'&&INVITE_UUID.test(value);
+const pulseInvite=input=>{
+  const fields=inviteFields(input,['token','requestId','accountGeneration']);
+  return fields&&typeof fields.token==='string'&&INVITE_TOKEN.test(fields.token)&&inviteUuid(fields.requestId)&&inviteUuid(fields.accountGeneration)?{token:fields.token,requestId:fields.requestId,accountGeneration:fields.accountGeneration}:null;
+};
+const inviteNamed=(input,key)=>{try{const field=input&&typeof input==='object'?Object.getOwnPropertyDescriptor(input,key):null;return field&&'value' in field&&inviteUuid(field.value)?field.value:null;}catch{return null;}};
+// The company entry (company-entry.cjs, company-entry-destinations.cjs). Each
+// call crosses as a fresh object with exactly its own keys. An employee's
+// complete link is https://workspace.synk.im/#invite=<token> and nothing else;
+// a bare code is the token alone, sent without guessing its kind. Main picks
+// the window, its storage partition, the URL and the account itself and takes
+// none of them from here. A refusal here has main's answer form, and a cancel
+// refused here cancels nothing (null). A destination to open is one of the two
+// fixed names the member's own lookup confirmed, '/' or '/pulse-app/', with that
+// lookup's own two IDs; main opens it with an existing product function only.
+const COMPANY_LINK=/^https:\/\/workspace\.synk\.im\/#invite=[A-Za-z0-9_-]{16,200}$/,COMPANY_DESTINATIONS=['/','/pulse-app/'];
+const companyLink=input=>{const fields=inviteFields(input,['href','requestId','accountGeneration']);return fields&&typeof fields.href==='string'&&COMPANY_LINK.test(fields.href)&&inviteUuid(fields.requestId)&&inviteUuid(fields.accountGeneration)?{href:fields.href,requestId:fields.requestId,accountGeneration:fields.accountGeneration}:null;};
+const companyCode=input=>{const fields=inviteFields(input,['code','requestId','accountGeneration']);return fields&&typeof fields.code==='string'&&INVITE_TOKEN.test(fields.code)&&inviteUuid(fields.requestId)&&inviteUuid(fields.accountGeneration)?{code:fields.code,requestId:fields.requestId,accountGeneration:fields.accountGeneration}:null;};
+const companyEntryIds=input=>{const fields=inviteFields(input,['requestId','accountGeneration']);return fields&&inviteUuid(fields.requestId)&&inviteUuid(fields.accountGeneration)?{requestId:fields.requestId,accountGeneration:fields.accountGeneration}:null;};
+const companyDestination=input=>{const fields=inviteFields(input,['destination','requestId','accountGeneration']);return fields&&typeof fields.destination==='string'&&COMPANY_DESTINATIONS.includes(fields.destination)&&inviteUuid(fields.requestId)&&inviteUuid(fields.accountGeneration)?{destination:fields.destination,requestId:fields.requestId,accountGeneration:fields.accountGeneration}:null;};
+const companyInvalid=input=>Promise.resolve({ok:false,requestId:inviteNamed(input,'requestId'),accountGeneration:inviteNamed(input,'accountGeneration'),code:'INVALID_INPUT',retryable:false});
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   teacher:Object.freeze({
     getEnvironment:()=>ipcRenderer.invoke('synk:teacher-environment'),
@@ -41,6 +74,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   openTeacherPreview:()=>ipcRenderer.invoke('synk:teacher-preview'),
   openProductPreview:id=>typeof id==='string'&&['path','care','fortune'].includes(id)?ipcRenderer.invoke('synk:product-preview',id):Promise.resolve({ok:false,code:'UNKNOWN_PREVIEW'}),
   openPublicApp:id=>typeof id==='string'&&['care','fortune','path'].includes(id)?ipcRenderer.invoke('synk:open-public-app',id):Promise.resolve({ok:false,code:'UNKNOWN_PUBLIC_APP'}),
+  openPortalPurpose:id=>typeof id==='string'&&PORTAL_PURPOSES.includes(id)?ipcRenderer.invoke('synk:open-portal-purpose',id):Promise.resolve({ok:false,code:'UNKNOWN_PORTAL_PURPOSE'}),
   prepareClient:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:prepare-client',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   cancelPreparation:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:cancel-preparation',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   openInstaller:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:open-installer',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
@@ -58,6 +92,12 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   authRecover:()=>ipcRenderer.invoke('synk:auth-recover'),
   companyRequest:(operation,params={})=>ipcRenderer.invoke('synk:company-request',operation,params),
   openPulseApp:()=>ipcRenderer.invoke('synk:pulse-app-open'),
+  openPulseAppInvite:input=>{const invite=pulseInvite(input);return invite?ipcRenderer.invoke('synk:pulse-app-open-invite',invite):Promise.resolve({ok:false,requestId:inviteNamed(input,'requestId'),accountGeneration:inviteNamed(input,'accountGeneration'),code:'PULSE_APP_INVITE_INVALID',retryable:false});},
+  handoffCompanyInviteLink:input=>{const value=companyLink(input);return value?ipcRenderer.invoke('synk:company-invite-handoff',value):companyInvalid(input);},
+  inspectCompanyInviteCode:input=>{const value=companyCode(input);return value?ipcRenderer.invoke('synk:company-invite-inspect',value):companyInvalid(input);},
+  cancelCompanyEntry:input=>{const value=companyEntryIds(input);return value?ipcRenderer.invoke('synk:company-entry-cancel',value):Promise.resolve(null);},
+  resolveCompanyEntryDestinations:input=>{const value=companyEntryIds(input);return value?ipcRenderer.invoke('synk:company-entry-destinations',value):companyInvalid(input);},
+  openAssignedCompanyDestination:input=>{const value=companyDestination(input);return value?ipcRenderer.invoke('synk:company-entry-open-destination',value):companyInvalid(input);},
   subscriptions:Object.freeze({
     snapshot:(options={})=>ipcRenderer.invoke('synk:subscriptions-snapshot',{refreshTools:options?.refreshTools===true}),
     check:(ids)=>ipcRenderer.invoke('synk:subscriptions-check',Array.isArray(ids)?ids.filter(id=>typeof id==='string').slice(0,200).map(id=>id.slice(0,80)):null),

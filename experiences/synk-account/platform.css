@@ -498,3 +498,27 @@ body.launcher .platform-continuity :focus-visible{outline:2px solid var(--ink);o
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.topbar,.tabbar{background:var(--paper)}}
 @media (hover:none){.peek,.shelf-item .go{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.launcher *,.launcher *::before,.launcher *::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}.shelf-item:is(:hover,:focus-within) .stage img{transform:none}}
+
+/* ── 공통 첫 화면(#portal-entry) 웹 호스트 전용 보강: 공통 원천은 ./portal-entry.css를 그대로 쓴다 ── */
+html[data-portal-active="true"],
+html[data-portal-active="true"] body.launcher {
+  overflow: hidden;
+}
+
+body.launcher > #portal-entry {
+  z-index: 120;
+}
+
+#portal-entry ::selection {
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+
+#portal-entry :focus-visible {
+  outline: 2px solid rgba(244, 248, 255, 0.9);
+  outline-offset: 3px;
+}
+
+#portal-entry .portal-inline-error[data-notice-kind="cancelled"] {
+  color: var(--portal-ink-muted);
+}

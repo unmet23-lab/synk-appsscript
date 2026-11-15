@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
 class Element{
-  constructor(tag='div'){this.tagName=tag;this.children=[];this.dataset={};this.hidden=false;this.disabled=false;this.value='';this.textContent='';this.classList={add(){},remove(){}};}
+  constructor(tag='div'){this.tagName=tag;this.children=[];this.dataset={};this.hidden=false;this.disabled=false;this.value='';this.textContent='';this.classList={add(){},remove(){}, toggle() {}};}
   append(...nodes){this.children.push(...nodes);} replaceChildren(...nodes){this.children=nodes;}
   setAttribute(key,value){this[key]=value;} closest(){return this;} before(){} addEventListener(){} querySelector(){return null;}
 }

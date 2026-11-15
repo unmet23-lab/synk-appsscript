@@ -21,6 +21,7 @@ const {createTeacherPreview}=require('./teacher-preview.cjs');
 const {createMessengerTeacherService,bindMessengerTeacherIPC,sendMessengerTeacherAuth,messengerViewEntry}=require('./messenger-teacher.cjs');
 const {createProductPreviews}=require('./product-preview.cjs');
 const {createPublicApps}=require('./public-apps.cjs');
+const {createPortalNavigation}=require('./portal-navigation.cjs');
 const {createDownloadHandler}=require('./downloads.cjs');
 const {installDraftExitGuard,WORKSPACE_EXIT_TEXT}=require('./draft-exit.cjs');
 const {createPlatformTray}=require('./platform-tray.cjs');
@@ -31,7 +32,9 @@ const {createWindowPlacement}=require('./window-placement.cjs');
 const {createDraftRecovery}=require('./draft-recovery.cjs');
 const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
 const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
-const {createPulseApp}=require('./pulse-app.cjs');
+const {createPulseApp,pulseInviteRefusal}=require('./pulse-app.cjs');
+const {createCompanyEntryManager,createCompanyEntryPartitions,companyAnswerFromPulse,entryRefusal,bindingFromAuth}=require('./company-entry.cjs');
+const {createCompanyEntryDestinations}=require('./company-entry-destinations.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
 const {createStartupUpdateGate}=require('./platform-startup-update.cjs');
 const {createStartupUpdateWindow}=require('./platform-startup-window.cjs');
@@ -58,6 +61,8 @@ const smoke=runtime.mode==='development'&&process.argv.includes('--synk-smoke');
 const current=identity(runtime.clientId,runtime.mode,{packaged}),entry=messengerViewEntry(runtime.entry,runtime.clientId,process.argv);
 const localServer=createLocalServerGate({entry:runtime.entry});
 const publicApps=createPublicApps({clientId:runtime.clientId,mode:runtime.mode,openExternal:url=>shell.openExternal(url),accountStatus:()=>accountStatus()});
+// The entry portal's visit purpose (SHIFT) opens one fixed public page by ID; no URL comes from the window.
+const portalNavigation=createPortalNavigation({clientId:runtime.clientId,smoke,openExternal:url=>shell.openExternal(url)});
 const teacherPreview=createTeacherPreview({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath});
 const smokeArtifacts=smoke?(packaged?path.join(app.getPath('temp'),'SYNK Desktop Smoke',current.sessionScope):path.join(__dirname,'..','artifacts')):null;
 const authConfig=configuration(runtime.mode==='development'&&!runtime.auth?.clients?.[runtime.clientId]?null:runtime.auth,runtime.clientId,runtime.mode);
@@ -69,11 +74,15 @@ app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
 let window,platformTray,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,suiteDeviceId=null,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
+let companyEntry,companyPartitions,companyDestinations;
 let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+// The suite can mask a verified sign-in (suite-session.cjs project). Only a verified sign-in carries the entry
+// portal's visit-purpose state (auth-service.cjs), so a masked one never shows the question pending.
+function projectAuth(state){const value=suitePublisher?suitePublisher.project(state):state;return value?.onboarding&&value.signedIn!==true?{...value,onboarding:null}:value;}
 function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
 function desktopSnapshot(){const result=desktopPreferences?.snapshot()||{ok:false,code:'LAUNCHER_ONLY'};return {...result,capabilities:{...result.capabilities,tray:!!platformTray?.isActive(),encryptedDrafts:!!draftRecovery?.available()}};}
 let careConfiguration=Promise.resolve();
@@ -127,7 +136,22 @@ async function signOutAccount(){
   return result;
 }
 function sendTeachingView(){if(pendingTeachingView&&runtime.clientId==='messenger'&&window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId)){window.webContents.send('synk:open-view','teaching');pendingTeachingView=false;}}
-const accountStatus=()=>suitePublisher?suitePublisher.project(auth.status()):auth?.status();
+const accountStatus=()=>projectAuth(suitePublisher?auth.status():auth?.status());
+// A same-account token renewal keeps PULSE's window and drafts (pulse-app.cjs). Only auth knows it, and it reaches no
+// renderer. While the suite masks the sign-in there is no renewal to keep, as before.
+const renewingAccount=()=>suitePublisher&&!suitePublisher.available()?null:auth?.renewingAccountId?.()??null;
+// The UUID auth issued for its current epoch (auth-service.cjs accountGeneration). PULSE binds every invite hand-off
+// to it, so a request a renderer made for another account or epoch is never applied to this one. Masked like the renewal.
+const pulseAccountGeneration=()=>suitePublisher&&!suitePublisher.available()?null:auth?.accountGeneration?.()??null;
+// The company entry (company-entry.cjs, company-entry-destinations.cjs) binds every hand-off and lookup to main's own
+// account: auth's UUID generation and numeric epoch (the generation masked like PULSE's while the suite hides the
+// sign-in), the SYNK ID auth verified, and whether that sign-in is settled (company-entry.cjs bindingFromAuth). A
+// renewal, a platform binding still being checked (auth reports it as restoring), a failure or a masked sign-in reads
+// as restoring or error, so nothing is handed over or looked up for it. No renderer value takes part.
+function companyBinding(){return bindingFromAuth(accountStatus(),pulseAccountGeneration());}
+// An account change ends a company hand-off of another account or generation, drops a lookup in flight for another
+// account, and removes the company windows and in-memory storage of earlier generations.
+function syncCompanyEntry(){companyEntry?.syncAccount();companyDestinations?.syncAccount();companyPartitions?.sync();}
 const requireSuite=operation=>suitePublisher&&!suitePublisher.refresh()?Promise.resolve({ok:false,code:'SUITE_UNAVAILABLE'}):operation();
 const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>accountStatus()});
 // AI 구독 계정판: 플랫폼 창에서 로그인한 회원만, 공식 프로그램 출력만 읽는다(ai-subscriptions.cjs).
@@ -153,7 +177,7 @@ app.on('will-quit',event=>{
       else{quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();if(startupGate?.isBlocking())startupWindow?.show();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
     });return;
   }
-  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();pulseApp?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
+  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();companyEntry?.dispose();companyDestinations?.dispose();pulseApp?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
 });
 if(!app.requestSingleInstanceLock())app.quit();
 else {
@@ -209,7 +233,7 @@ function initializeMain(){
   if(mainInitialized||!startupAllowed||!appLocationReady)return;mainInitialized=true;
   const suiteDirectory=!smoke&&authConfig?path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),suiteBindingKey):null;
   suiteStore=suiteDirectory?createSuiteStore({directory:suiteDirectory,key:suiteBindingKey}):null;suiteDeviceId=suiteDirectory?suiteDevice({directory:suiteDirectory}):null;
-  suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
+  suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(projectAuth(auth.status()));}}):null;
   if(runtime.clientId==='platform'){
     desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,name:current.appId});
     desktopPreferences.initialize();
@@ -228,7 +252,7 @@ function createWindow(){
   const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);
   if(!auth){const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:current.sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
     const signInReturn=createSignInReturn();
-    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:suiteDeviceId,onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);if(signInReturn(state))bringToFront(window,{app});}});
+    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:suiteDeviceId,onChange:state=>{suitePublisher?.publish(state);publishAuthState(projectAuth(state));if(signInReturn(state))bringToFront(window,{app});}});
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
   if(runtime.clientId==='platform'&&!careNotifications){
@@ -239,7 +263,19 @@ function createWindow(){
   // update install, as the platform window's own will-prevent-unload handler
   // below does. The PULSE window is not attached to the tray, so its quit state
   // is reset here; leaving the page without quitting changes nothing.
-  if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,BrowserWindow,session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+  if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,getRenewingAccount:renewingAccount,getAccountGeneration:pulseAccountGeneration,BrowserWindow,session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+  // The company entry: one fixed company window at a time in an in-memory partition bound to the verified account and
+  // its generation (company-entry.cjs), and main's own lookup of the member's company destinations
+  // (company-entry-destinations.cjs). A customer invite the company receiver classified goes once to the PULSE manager
+  // as exactly {token,requestId,accountGeneration}, and PULSE's answer returns in the contract's codes; cancelling that
+  // request cancels the same PULSE invite by the same two IDs. Keeping an unsaved company draft while quitting cancels
+  // the quit, as for PULSE. A destination the lookup confirmed opens only through the existing product functions: the
+  // Workspace app launch and the PULSE window opening, each with its own sign-in and access checks.
+  if(runtime.clientId==='platform'&&!companyEntry){
+    companyPartitions=createCompanyEntryPartitions({session,getBinding:companyBinding});
+    companyEntry=createCompanyEntryManager({BrowserWindow,session,getBinding:companyBinding,selectCompanyPartition:binding=>companyPartitions.select(binding),deliverCustomer:request=>Promise.resolve(pulseApp.openInvite(request)).then(companyAnswerFromPulse),cancelCustomer:request=>companyAnswerFromPulse(pulseApp.cancelInvite(request)),dialog,onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+    companyDestinations=createCompanyEntryDestinations({getBinding:companyBinding,getAccessToken:()=>auth.getAccessToken(),fetcher:typeof globalThis.fetch==='function'?globalThis.fetch.bind(globalThis):null,openWorkspace:()=>installations.launch('messenger'),openPulse:()=>pulseApp.open()});
+  }
   if(runtime.clientId==='messenger'&&!teacherService){
     const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
     const teacherDirectory=!smoke&&teacherAuthConfig?path.join(app.getPath('appData'),'SYNK Desktop','Suite',sourceScope(runtime.mode,packaged),teacherKey):null;
@@ -273,6 +309,11 @@ function createWindow(){
   const contents=window.webContents;
   contents.on('did-finish-load',sendTeachingView);
   if(isPlatform){windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
+  // A new document committed in the platform window drops the company assignment its former document confirmed and
+  // ends that document's lookup in flight (company-entry-destinations.cjs invalidate). Electron sends did-navigate only
+  // for a main-frame document that actually changed: a move inside the same document, a subframe, and a navigation
+  // will-navigate stopped (an outside link opened in the browser) keep the record.
+  if(isPlatform)contents.on('did-navigate',()=>companyDestinations?.invalidate());
   // The Workspace page keeps unsaved drafts with beforeunload; without this prompt closing, reopening or quitting is cancelled with no word (10-22).
   if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});else if(runtime.clientId==='messenger')installDraftExitGuard({contents,window,dialog,text:WORKSPACE_EXIT_TEXT});
   platformTray?.attachWindow(window);
@@ -292,6 +333,22 @@ function createWindow(){
   if(!installations)installations=createClientLifecycle({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,programRoot,packageRoot:packaged?path.join(process.resourcesPath,'clients'):path.join(app.getAppPath(),'dist'),cacheRoot:path.join(app.getPath('userData'),'Installers'),releases:runtime.releases||[],spawn,openPath:file=>shell.openPath(file),onChange:async()=>{try{const state=await installations.getClients();send('synk:clients-changed',state);send('synk:client-progress',state);}catch{}}});
   window.on('focus',async()=>{try{send('synk:clients-changed',await installations.getClients());}catch{}});
   const companyRequest=createCompanyRequests({entry,clientId:runtime.clientId,session:ownSession,auth});
+  // The company entry's refusals before its own service sees a request (another client, the smoke run, the sign-in
+  // suite not ready) have the same answer form (company-entry.cjs entryRefusal).
+  const companyEntryCall=(operation,input,unavailable)=>{
+    if(!isPlatform||smoke||!companyEntry||!companyDestinations)return entryRefusal(input,unavailable,false);
+    return requireSuite(operation).then(result=>result?.code==='SUITE_UNAVAILABLE'?entryRefusal(input,'TEMPORARY_UNAVAILABLE',true):result);
+  };
+  // The platform window and main frame that asked, read just after the sender check accepted them. A lookup that
+  // outlives them (another window, another document) ends without reading its answer, and the assignment it confirmed
+  // opens only for that same window and frame.
+  const platformSender=()=>{const asked=window,frame=asked?.webContents?.mainFrame;return ()=>!!asked&&asked===window&&!asked.isDestroyed()&&asked.webContents.mainFrame===frame&&frame?.detached!==true&&trustedEntry(frame?.url,entry,runtime.clientId);};
+  // One public cancel for the request the portal names by exactly {requestId,accountGeneration}: a company invite
+  // hand-off (and the PULSE invite a customer code was passed on to, by the same two IDs), a lookup in flight or the
+  // assignment it confirmed, or the portal's own PULSE invite. Each part matches both IDs exactly, so another request
+  // or generation is left alone. The answer is how the matched request ended, in the company entry's public form
+  // (CANCELLED before its token left main, HANDOFF_UNCONFIRMED after), or null when nothing matched.
+  const cancelCompanyEntry=input=>{const company=companyEntry.cancel(input),lookup=companyDestinations.cancel(input),pulse=companyAnswerFromPulse(pulseApp.cancelInvite(input));return company??lookup??pulse??null;};
   const handlers={
     'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available(),...(runtime.clientId==='world'?{worldRoutes:WORLD_ROUTE_NAMES}:{})}),
     'synk:desktop-preferences':()=>desktopSnapshot(),
@@ -311,6 +368,7 @@ function createWindow(){
     'synk:draft-recovery-save':(slot,value,owner)=>isPlatform?draftRecoveryRequests.save(slot,value,owner):{ok:false,code:'LAUNCHER_ONLY'},
     'synk:draft-recovery-clear':(slot,owner)=>isPlatform?draftRecoveryRequests.clear(slot,owner):{ok:false,code:'LAUNCHER_ONLY'},
     'synk:open-public-app':id=>requireSuite(()=>publicApps.open(id)),
+    'synk:open-portal-purpose':id=>isPlatform&&!smoke?requireSuite(()=>portalNavigation.openPurpose(id)):{ok:false,code:'PORTAL_PURPOSE_UNAVAILABLE'},
     'synk:teacher-preview':()=>requireSuite(()=>teacherPreview.open()),
     'synk:product-preview':id=>requireSuite(()=>productPreviews.open(id)),
     'synk:clients':()=>installations.getClients(),'synk:launch':id=>requireSuite(()=>installations.launch(id)),
@@ -320,6 +378,23 @@ function createWindow(){
     'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
     'synk:account-identity':()=>isPlatform?requireSuite(()=>auth.identity()):{ok:false,code:'LAUNCHER_ONLY'},'synk:auth-security':section=>openAccountSecurity(section),'synk:auth-recover':openAccountRecover,
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
+    // A customer invite with its request, exactly {token,requestId,accountGeneration}; any other form, a lone {token}
+    // included, is refused. pulse-app.cjs checks it again, binds it to auth's current generation, waits for the
+    // document's own receipt and keeps the token out of every result. Every answer, a refusal here included, has the
+    // same two forms.
+    'synk:pulse-app-open-invite':input=>isPlatform&&!smoke?requireSuite(()=>pulseApp.openInvite(input)).then(result=>result?.code==='SUITE_UNAVAILABLE'?pulseInviteRefusal(input,'SUITE_UNAVAILABLE'):result):pulseInviteRefusal(input,'PULSE_APP_UNAVAILABLE'),
+    // The company entry (company-entry-contract-v1 §7, company-entry-native-assignment §4). The renderer names only its request: an employee's
+    // complete link {href,requestId,accountGeneration}, a bare code {code,requestId,accountGeneration} whose kind the
+    // company's receiver decides, the cancel of exactly that request {requestId,accountGeneration}, the lookup of
+    // the member's own company destinations {requestId,accountGeneration}, and the opening of one fixed destination
+    // that lookup confirmed {destination,requestId,accountGeneration}. Main picks the URL, the window, its partition,
+    // the product function and the account. Each answer is {ok:true,...} or {ok:false,requestId,accountGeneration,code,
+    // retryable}; a cancel answers with the response of the request it ended, or null.
+    'synk:company-invite-handoff':input=>companyEntryCall(()=>companyEntry.handoffLink(input),input,'HANDOFF_UNAVAILABLE'),
+    'synk:company-invite-inspect':input=>companyEntryCall(()=>companyEntry.inspectCode(input),input,'HANDOFF_UNAVAILABLE'),
+    'synk:company-entry-cancel':input=>isPlatform&&!smoke&&companyEntry&&companyDestinations?requireSuite(()=>Promise.resolve(cancelCompanyEntry(input))).then(result=>result?.code==='SUITE_UNAVAILABLE'?null:result??null):null,
+    'synk:company-entry-destinations':input=>{const asking=platformSender();return companyEntryCall(()=>companyDestinations.resolve(input,{isCurrentSender:asking}),input,'TEMPORARY_UNAVAILABLE');},
+    'synk:company-entry-open-destination':input=>{const asking=platformSender();return companyEntryCall(()=>companyDestinations.open(input,{isCurrentSender:asking}),input,'HANDOFF_UNAVAILABLE');},
     'synk:subscriptions-snapshot':options=>subscriptionCall(s=>s.snapshot({refreshTools:options?.refreshTools===true})),
     'synk:subscriptions-check':ids=>subscriptionCall(s=>s.check(Array.isArray(ids)?{ids:ids.filter(id=>typeof id==='string')}:{})),
     'synk:subscriptions-use-existing':service=>subscriptionCall(s=>s.useExisting(service)),

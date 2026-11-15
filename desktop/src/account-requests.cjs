@@ -5,6 +5,8 @@ const {PERSONAL_OPERATIONS,PLATFORM_OPERATIONS,personalRequestSpec}=require('./p
 // SYNK TOWN's own rights (SYNK-talk lib/town-scope.js RIGHTS — the only commands the town's records route takes) and their payload words.
 const TOWN_RIGHTS=Object.freeze(['MEMORY_FORGET','FEEDBACK_REMOVE','OBSERVED_CORRECT','SEEN_CLEAR','MEMORY_CLEAR','EVAL_CONSENT','PREF_VISIT_BANDS']);
 const TOWN_WORDS=Object.freeze(['npc','eventId','family','state','ver']);
+// How the entry portal's visit-purpose question ended (SYNK-talk lib/synk-account-purpose-onboarding.js OUTCOMES).
+const PURPOSE_ONBOARDING_OUTCOMES=Object.freeze(['chosen','skipped','not-asked']);
 function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
   if(operation==='worldRequest')return worldRequestSpec(params,product,clientKey);
   // WORLD reads the person's 「내 성향」 answers to choose practice: a read of the same document, never a write.
@@ -62,6 +64,15 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
     case 'requestDeletion':keys(['request_id']);return action('delete-request',{request_id:uuid(params.request_id)});
     // A pending deletion stays cancellable for 7 days; the server refuses any other request id.
     case 'cancelDeletion':keys(['request_id']);return action('delete-cancel',{request_id:uuid(params.request_id)});
+    // The platform's own entry portal records only how its visit-purpose question ended: no purpose ID or free text.
+    // expectedAccountId is the verified SYNK ID the question was shown to. auth-service checks it against the
+    // current verified account; it stays out of the body and never reaches the server.
+    case 'completePurposeOnboarding':{
+      if(product!=='platform'||clientKey!=='platform')invalid();
+      const names=Object.keys(params),{outcome,expectedAccountId}=params;
+      if(names.length!==2||!names.includes('outcome')||!names.includes('expectedAccountId')||!PURPOSE_ONBOARDING_OUTCOMES.includes(outcome)||typeof expectedAccountId!=='string'||!expectedAccountId||expectedAccountId.length>128)invalid();
+      return {...action('purpose-onboarding-complete',{outcome}),method:'POST',expectedAccountId};
+    }
     case 'exportPage':{keys(['after','until']);const after=integer(params.after??0),until=params.until==null?null:integer(params.until);return {path:`synk-account?view=export&after=${after}`+(until==null?'':`&until=${until}`)};}
     case 'learningGet':keys(['after','revision']);return {path:`synk-learning?after=${integer(params.after)}&revision=${integer(params.revision)}`};
     case 'learningPost':keys(['revision','events']);if(!Array.isArray(params.events)||params.events.length>256||Buffer.byteLength(JSON.stringify({revision:params.revision,events:params.events}))>262144)invalid();return {path:'synk-learning',body:{revision:integer(params.revision),events:params.events}};
@@ -119,4 +130,4 @@ function redactAccountResponse(value,operation,params){
     value.invite&&!Array.isArray(value.invite)&&typeof value.invite.token==='string'&&/^[a-f0-9]{32}$/.test(value.invite.token))clean.invite.token=value.invite.token;
   return clean;
 }
-module.exports={requestSpec,redact,redactAccountResponse};
+module.exports={requestSpec,redact,redactAccountResponse,PURPOSE_ONBOARDING_OUTCOMES};

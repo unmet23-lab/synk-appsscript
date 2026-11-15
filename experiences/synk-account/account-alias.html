@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>SYNK 플랫폼</title>
+<script>
+(function () {
+  var ROUTES = Object.freeze(Object.assign(Object.create(null), {
+    'home': '#home',
+    'solio': '#solio',
+    'solio/home': '#solio',
+    'solio/subscriptions': '#solio/subscriptions',
+    'solio/backup': '#solio/backup',
+    'benefits': '#benefits',
+    'benefits/care': '#benefits/care',
+    'benefits/insight': '#account/insight',
+    'benefits/subscriptions': '#solio/subscriptions',
+    'account': '#account',
+    'account/insight': '#account/insight',
+    'discover': '#discover',
+    'library': '#library',
+    'updates': '#updates',
+    'downloads': '#downloads',
+    'settings': '#settings',
+    'help': '#help',
+    'app/world': '#app/world',
+    'app/messenger': '#app/messenger',
+    'app/path': '#app/path'
+  }));
+  var rawHash = typeof window.location.hash === 'string' ? window.location.hash : '';
+  var route = '#home';
+  if (rawHash.length > 1 && rawHash.charAt(0) === '#') {
+    var key = rawHash.slice(1);
+    if (
+      key.indexOf('#') === -1 &&
+      key.indexOf('?') === -1 &&
+      key.indexOf('&') === -1 &&
+      key.indexOf('=') === -1 &&
+      key.indexOf('%') === -1 &&
+      /^[a-z]+(?:\/[a-z]+)?$/.test(key) &&
+      typeof ROUTES[key] === 'string'
+    ) {
+      route = ROUTES[key];
+    }
+  }
+  window.location.replace('./platform.html' + route);
+})();
+</script>
+<style>
+  html, body { margin: 0; padding: 0; background: #faf9f6; color: #1c1b18; font-family: system-ui, -apple-system, sans-serif; }
+  main { max-width: 28rem; margin: 4rem auto; padding: 0 1.25rem; line-height: 1.6; }
+  a { color: #1c1b18; }
+</style>
+</head>
+<body>
+<noscript>
+  <main>
+    <p>SYNK 플랫폼 화면으로 이동해 주세요.</p>
+    <p><a href="./platform.html#home" rel="noreferrer">SYNK 플랫폼 열기</a></p>
+  </main>
+</noscript>
+</body>
+</html>

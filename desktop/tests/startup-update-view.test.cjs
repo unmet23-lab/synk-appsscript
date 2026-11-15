@@ -2,20 +2,97 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const loaded=import('../renderer/startup-update.mjs');
 const deferred=()=>{let resolve,reject;const promise=new Promise((done,fail)=>{resolve=done;reject=fail;});return {resolve,reject,promise};};
-async function fixture({snapshot={state:'checking',currentVersion:'0.4.5',platform:'win32'},overrides={},native=true}={}){
-  const nodes=new Map(),calls=[];let callback;
-  const element=id=>{if(!nodes.has(id))nodes.set(id,{id,hidden:false,disabled:false,textContent:'',value:0,dataset:{},attributes:{},handlers:{},setAttribute(key,value){this.attributes[key]=value;},removeAttribute(key){delete this.attributes[key];},addEventListener(type,handler){this.handlers[type]=handler;}});return nodes.get(id);};
-  const document={getElementById:element,documentElement:{dataset:{}}};
+function create2dContext(stats={draws:0}){
+  const gradient=()=>({addColorStop(){}});
+  return {
+    fillStyle:'#000000',
+    strokeStyle:'#ffffff',
+    lineWidth:1,
+    globalCompositeOperation:'source-over',
+    setTransform(){},
+    fillRect(){stats.draws++;},
+    save(){},
+    restore(){},
+    beginPath(){},
+    arc(){},
+    clip(){},
+    fill(){},
+    stroke(){},
+    createRadialGradient:gradient,
+  };
+}
+async function fixture({snapshot={state:'checking',currentVersion:'0.4.5',platform:'win32'},overrides={},native=true,reducedMotion=false,canvasContext=()=>null,viewport={width:560,height:440}}={}){
+  const nodes=new Map(),calls=[],rafQueue=new Map(),focused=[];let callback,rafSeq=0,motionReduced=reducedMotion;
+  const mediaListeners=new Set();
+  const makeNode=(id='',tagName='DIV')=>({
+    id,
+    tagName,
+    className:'',
+    hidden:false,
+    disabled:false,
+    textContent:'',
+    value:0,
+    width:0,
+    height:0,
+    children:[],
+    parentNode:null,
+    dataset:{},
+    attributes:{},
+    handlers:{},
+    setAttribute(key,value){this.attributes[key]=String(value);},
+    getAttribute(key){return Object.hasOwn(this.attributes,key)?this.attributes[key]:null;},
+    removeAttribute(key){delete this.attributes[key];},
+    addEventListener(type,handler){this.handlers[type]=handler;},
+    removeEventListener(type,handler){if(this.handlers[type]===handler)delete this.handlers[type];},
+    append(...items){for(const item of items){item.parentNode=this;this.children.push(item);}},
+    remove(){if(!this.parentNode)return;const idx=this.parentNode.children.indexOf(this);if(idx!==-1)this.parentNode.children.splice(idx,1);this.parentNode=null;},
+    getBoundingClientRect(){return {width:viewport.width,height:viewport.height};},
+    getContext(kind,attrs){return canvasContext(kind,attrs,this);},
+    focus(){focused.push(this.id);},
+  });
+  const element=id=>{if(!nodes.has(id))nodes.set(id,makeNode(id));return nodes.get(id);};
+  const win={
+    innerWidth:viewport.width,
+    innerHeight:viewport.height,
+    devicePixelRatio:1,
+    performance:{now:()=>1200},
+    addEventListener(){},
+    removeEventListener(){},
+    requestAnimationFrame(fn){const id=++rafSeq;rafQueue.set(id,fn);return id;},
+    cancelAnimationFrame(id){rafQueue.delete(id);},
+    matchMedia(){return {get matches(){return motionReduced;},addEventListener(_t,fn){mediaListeners.add(fn);},removeEventListener(_t,fn){mediaListeners.delete(fn);}};},
+  };
+  const document={
+    defaultView:win,
+    hidden:false,
+    getElementById:element,
+    createElement:tag=>makeNode('',String(tag||'div').toUpperCase()),
+    addEventListener(){},
+    removeEventListener(){},
+    documentElement:{dataset:{}},
+  };
   const bridge={getStatus:async()=>snapshot,retry:async()=>{calls.push('retry');return snapshot;},openCurrent:async()=>{calls.push('current');return snapshot;},install:async()=>{calls.push('install');return snapshot;},onChanged:listener=>{callback=listener;return ()=>callback=null;},...overrides};
-  const {mountStartupUpdate}=await loaded,controller=mountStartupUpdate({bridge:native?bridge:null,document});
-  return {element,document,calls,controller,click:action=>element('startup-'+({current:'open-current'}[action]||action)).handlers.click?.(),emit:value=>{snapshot=value;callback?.(value);}};
+  const {mountStartupUpdate}=await loaded,controller=mountStartupUpdate({bridge:native?bridge:null,document,window:win});
+  return {
+    element,
+    document,
+    calls,
+    focused,
+    controller,
+    pendingFrames:()=>rafQueue.size,
+    setReducedMotion(next){motionReduced=next;for(const fn of mediaListeners)fn();},
+    click:action=>element('startup-'+({current:'open-current'}[action]||action)).handlers.click?.(),
+    emit:value=>{snapshot=value;callback?.(value);},
+  };
 }
 test('checking, real download progress and installation never expose a skip or retry action',async()=>{
   const f=await fixture();await f.controller.ready;
   assert.match(f.element('startup-title').textContent,/최신 버전을 확인/);assert.equal(f.document.documentElement.dataset.startupReady,'true');
+  assert.equal(f.element('startup-surface').dataset.visible,'false');
   for(const state of ['checking','downloading','installing']){
     f.emit({state,platform:'win32',currentVersion:'0.4.5',latestVersion:'0.4.6',progress:42.8,canRetry:true,canOpenCurrent:true,canInstall:true});
     assert.equal(f.element('startup-actions').hidden,true);await f.click('retry');await f.click('current');await f.click('install');
+    assert.equal(f.element('startup-surface').dataset.visible,String(state!=='checking'));
     if(state==='downloading'){assert.equal(f.element('startup-progress').value,42.8);assert.equal(f.element('startup-percent').textContent,'42%');assert.equal(f.element('startup-progress-wrap').hidden,false);}
     else assert.equal(f.element('startup-progress-wrap').hidden,true);
   }
@@ -60,6 +137,51 @@ test('Mac ready opens only the installer bridge and clearly explains manual repl
 test('missing or failing startup capability gives a safe closed fallback',async()=>{
   const f=await fixture({native:false});await f.controller.ready;assert.equal(f.element('startup-actions').hidden,true);assert.match(f.element('startup-description').textContent,/앱을 끈 뒤/);
   const g=await fixture({overrides:{getStatus:async()=>{throw Error('private failure');}}});await g.controller.ready;assert.equal(g.element('startup-update').dataset.state,'error');assert.doesNotMatch(g.element('startup-description').textContent,/private/);assert.deepEqual(g.calls,[]);
+});
+test('startup orb reuses portal-orb with non-WebGL fallback, reduced motion and clean disposal',async()=>{
+  const staticView=await fixture();await staticView.controller.ready;
+  assert.equal(staticView.element('startup-orb-stage').dataset.orbMode,'static');
+  assert.equal(staticView.pendingFrames(),0);
+  staticView.controller.dispose();
+
+  const stats={draws:0};
+  const liveOrb=await fixture({canvasContext:kind=>kind==='2d'?create2dContext(stats):null});await liveOrb.controller.ready;
+  const stage=liveOrb.element('startup-orb-stage');
+  assert.equal(stage.dataset.orbMode,'2d');
+  assert.equal(stage.children.length,1);
+  assert.equal(stage.children[0].attributes['aria-hidden'],'true');
+  assert.ok(stats.draws>0);
+  assert.equal(liveOrb.pendingFrames(),1);
+
+  liveOrb.setReducedMotion(true);
+  assert.equal(liveOrb.pendingFrames(),0);
+  liveOrb.emit({state:'error',canRetry:true,canOpenCurrent:true});
+  assert.equal(liveOrb.focused.at(-1),'startup-retry');
+
+  liveOrb.controller.dispose();
+  assert.equal(liveOrb.pendingFrames(),0);
+  assert.equal(stage.children.length,0);
+  assert.equal(stage.dataset.orbMode,undefined);
+
+  const reducedFromStart=await fixture({reducedMotion:true,canvasContext:kind=>kind==='2d'?create2dContext():null,viewport:{width:360,height:400}});
+  await reducedFromStart.controller.ready;
+  assert.equal(reducedFromStart.element('startup-orb-stage').dataset.orbMode,'2d');
+  assert.equal(reducedFromStart.pendingFrames(),0);
+  reducedFromStart.controller.dispose();
+});
+test('startup markup and styles keep a decorative black-screen orb in checking while preserving screen-reader status',()=>{
+  const html=fs.readFileSync(path.join(__dirname,'../renderer/startup-update.html'),'utf8');
+  const css=fs.readFileSync(path.join(__dirname,'../renderer/startup-update.css'),'utf8');
+  assert.match(html,/id="startup-orb-stage"[^>]*aria-hidden="true"/);
+  assert.doesNotMatch(html,/<button[^>]*orb|startup-steps|class="brand"/);
+  assert.match(html,/id="startup-update"[^>]*data-state="checking"[^>]*aria-labelledby="startup-title"/);
+  assert.match(html,/class="message"[^>]*aria-live="polite"/);
+  assert.match(html,/id="startup-progress-wrap"[^>]*hidden/);
+  assert.match(html,/id="startup-actions"[^>]*hidden/);
+  assert.match(css,/--bg:\s*#000000/);
+  assert.match(css,/#startup-update\[data-state="checking"\]\s+\.startup-surface\s*\{[^}]*opacity:\s*0/);
+  assert.match(css,/prefers-reduced-motion:\s*reduce/);
+  assert.match(css,/max-width:\s*420px/);
 });
 test('startup preload has five fixed operations without auth, raw IPC or renderer arguments',async()=>{
   const invokes=[],events=new Map();let exposed;

@@ -7,18 +7,28 @@ import { createAccountWorkspace } from './account-classroom.mjs';
 import { rememberWorldPlayEntry } from './world-play-entry.mjs';
 import { createPlatformEntry } from './platform-entry.mjs';
 import { studyCallbackIntent, finishStudyLogin, rememberStudyLogin, STUDY_INTENT } from './study-login.mjs';
-rememberWorldPlayEntry();
+import {
+  PLATFORM_LOGIN_NOTICE,
+  platformCallbackIntent,
+  platformErrorCallbackIntent,
+  finishPlatformLogin,
+  finishPlatformErrorReturn,
+  takePlatformLoginNotice,
+} from './platform-login-return.mjs';
+export { PLATFORM_LOGIN_NOTICE, takePlatformLoginNotice };
+const isClientDocument = typeof window !== 'undefined' && typeof document?.getElementById === 'function' && !!document.getElementById('connect') && !!document.getElementById('notice');
+if (isClientDocument) rememberWorldPlayEntry();
 const $ = id => document.getElementById(id);
 const notice = (text, error = false) => { $('notice').textContent = text;$('notice').className = `notice${error ? ' error' : ''}`; };
 let generation = 0, session, view, closed = false, entry = 0;
 let browserConfig = null, browserProduct = null, retryButton = null, recoveryNeeded = false, checking = false;
 let callbackHandled = false, pendingExchange = null, verification = null;
-let studyReturn = null;
+let studyReturn = null, platformReturn = null;
 let platformEntry = null;
 const AUTH_ERRORS = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
 const accountChanged = () => Object.assign(new Error('계정 연결이 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' });
 // Register before configuration/authentication can await a network response.
-window.addEventListener('pagehide', () => { closed = true;entry++;generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null; });
+if (isClientDocument) window.addEventListener('pagehide', () => { closed = true;entry++;generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;studyReturn = null;platformReturn = null; });
 function recoveryControl() {
   if (!retryButton) { retryButton = document.createElement('button');retryButton.id = 'retry-connect';retryButton.type = 'button';retryButton.className = 'sb-btn soft';retryButton.textContent = '연결 다시 확인';retryButton.hidden = true;retryButton.onclick = () => { void reconnect(); };$('connect').before(retryButton); }
   return retryButton;
@@ -28,10 +38,10 @@ function reportConnectionError(error) {
   recoveryNeeded = true;let text = error.message || '계정 연결을 확인하지 못했어요. 「연결 다시 확인」을 눌러 주세요.';
   const revoked = AUTH_ERRORS.has(error?.code);
   if (error?.code === 'PLATFORM_ACCOUNT_MISMATCH') {
-    generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;
+    generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;studyReturn = null;platformReturn = null;
   }
   if (revoked) {
-    generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;
+    generation++;view?.stop();view = null;session = null;verification = null;pendingExchange = null;studyReturn = null;platformReturn = null;
     try { sessionStorage.removeItem(`synk.oauth.session.${browserProduct}`); }
     catch { text = '현재 화면의 연결은 종료했지만 브라우저 저장을 지우지 못했어요. 이 창을 닫아 주세요.'; }
   } else if (session?.access_token && error.retryable !== false) text += ' 로그인 정보는 유지했으니 「연결 다시 확인」을 눌러 주세요.';
@@ -173,7 +183,7 @@ async function start(attempt) {
   if (!config.configured || !config.clients[product].clientId || !config.clients[product].redirectUri) { $('setup').hidden = false;recoveryNeeded = true;recoveryControl().hidden = false;notice('이 화면의 로그인 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
   const connect = async (explicit = true) => {
     const intent = ++generation;view?.stop();view = null;session = null;verification = null;
-    $('connect').disabled = true;recoveryControl().hidden = true;pendingExchange = null;
+    $('connect').disabled = true;recoveryControl().hidden = true;pendingExchange = null;studyReturn = null;platformReturn = null;
     notice('SYNK ID 로그인 화면으로 이동하고 있어요…');
     try { if (explicit) { platformEntry?.resume();platformEntry?.stop(); }const destination = await beginOAuth({ config, product, storage: sessionStorage });if (closed || attempt !== entry || intent !== generation) throw accountChanged();if(studyEntry)rememberStudyLogin(sessionStorage);location.assign(destination); }
     catch (error) { if (!closed && attempt === entry && intent === generation) { notice(error.message, true);$('connect').hidden = false;$('connect').disabled = false; } }
@@ -183,12 +193,51 @@ async function start(attempt) {
   const params = new URL(location.href).searchParams;
   if (!callbackHandled && (params.has('code') || params.has('error'))) {
     callbackHandled = true;
-    try { studyReturn=studyCallbackIntent({storage:sessionStorage,url:location.href,product});pendingExchange = consumeCallback({ config, product, url: location.href, storage: sessionStorage }); }
-    finally { const clean = new URL(location.href);for (const name of ['code', 'state', 'error', 'error_description']) clean.searchParams.delete(name);history.replaceState(null, '', clean); }
+    const callbackUrl = location.href;
+    let errorDestination = null;
+    try {
+      const platformError = platformErrorCallbackIntent({ storage: sessionStorage, url: callbackUrl, product, config });
+      if (platformError) {
+        errorDestination = finishPlatformErrorReturn(sessionStorage, platformError);
+      } else {
+        platformReturn = platformCallbackIntent({ storage: sessionStorage, url: callbackUrl, product, config });
+        studyReturn = studyCallbackIntent({ storage: sessionStorage, url: callbackUrl, product });
+        pendingExchange = consumeCallback({ config, product, url: callbackUrl, storage: sessionStorage });
+      }
+    } catch (error) {
+      platformReturn = null;
+      studyReturn = null;
+      throw error;
+    } finally {
+      const clean = new URL(location.href);
+      for (const name of ['code', 'state', 'error', 'error_description', 'error_uri', 'error_code']) clean.searchParams.delete(name);
+      history.replaceState(null, '', clean);
+    }
+    if (errorDestination) {
+      location.replace(errorDestination);
+      return;
+    }
   }
-  if (pendingExchange) { session = await tokenRequest(config, pendingExchange);checkEntry();
-    if(studyReturn){const destination=finishStudyLogin(sessionStorage,session,studyReturn);pendingExchange=null;studyReturn=null;location.replace(destination);return;}
-    sessionStorage.setItem(key, JSON.stringify(session));pendingExchange = null; }
+  if (pendingExchange) {
+    session = await tokenRequest(config, pendingExchange);
+    checkEntry();
+    if (studyReturn) {
+      const destination = finishStudyLogin(sessionStorage, session, studyReturn);
+      pendingExchange = null;
+      studyReturn = null;
+      location.replace(destination);
+      return;
+    }
+    sessionStorage.setItem(key, JSON.stringify(session));
+    pendingExchange = null;
+    if (platformReturn) {
+      const capturedPlatformReturn = platformReturn;
+      platformReturn = null;
+      const destination = finishPlatformLogin(sessionStorage, capturedPlatformReturn);
+      location.replace(destination);
+      return;
+    }
+  }
   else { if(studyEntry){$('connect').hidden=false;$('connect').disabled=false;notice('한국어 공부로 돌아가려면 SYNK ID를 다시 연결해 주세요.');return;}
     try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { throw Object.assign(new Error('브라우저가 저장 공간을 막아 로그인 정보를 못 읽었어요. 사이트 데이터 저장을 허용한 뒤 다시 열어 주세요.'), { code: 'STORAGE' }); } }
   if (!session?.access_token) { if (platformEntry?.beginAttempt()) { await connect(false);return; }$('connect').hidden = false;notice('SYNK ID로 로그인하면 이 화면으로 돌아와요.');return; }
@@ -247,7 +296,7 @@ async function reconnect() {
   catch (error) { if (attempt === entry) reportConnectionError(error); }
   finally { if (attempt === entry) { checking = false;if (retryButton) retryButton.disabled = false; } }
 }
-document.addEventListener?.('visibilitychange', async () => {
+if (isClientDocument) document.addEventListener?.('visibilitychange', async () => {
   const record = verification;if (closed || checking || recoveryNeeded || document.visibilityState !== 'visible' || !record || record.pending) return;
   record.pending = true;const startedAfter = record.viewLoads;
   try {
@@ -262,6 +311,6 @@ document.addEventListener?.('visibilitychange', async () => {
   catch (error) { if (!closed && record.attempt === entry && record.token === generation && record.viewLoads === startedAfter) reportConnectionError(error); }
   finally { record.pending = false; }
 });
-void reconnect();
+if (isClientDocument) void reconnect();
 // BFCache retained a stopped host; a fresh entry revalidates browser/native credentials.
-window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
+if (isClientDocument) window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});

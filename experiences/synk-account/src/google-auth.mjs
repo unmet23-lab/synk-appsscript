@@ -1,8 +1,68 @@
 // Google authenticates the person; SYNK owns registration and its stable account.
 // OAuth tokens/OTP/profile fields are never copied to the pending-flow storage.
 export const COUNTRY_CODES = Object.freeze(('AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW').split(' '));
-const FLOW_KEY = 'synk.google.pending.v1', MAX_AGE = 600000;
+export const GOOGLE_AUTOSTART_KEY = 'synk.google.autostart.v1';
+const FLOW_KEY = 'synk.google.pending.v1', MAX_AGE = 600000, AUTOSTART_HISTORY_LIMIT = 8;
+const STATE_PATTERN = /^[A-Za-z0-9_-]{32,200}$/, CONTROL_OR_SPACE = /[\u0000-\u0020\u007F]/;
 const fault = (code, message) => Object.assign(new Error(message), { code });
+function readGoogleAutostartEntries(storage) {
+  if (!storage || typeof storage.getItem !== 'function') return [];
+  try {
+    const raw = storage.getItem(GOOGLE_AUTOSTART_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return [];
+    const valid = item => item && typeof item === 'object' && !Array.isArray(item)
+      && typeof item.state === 'string' && !!item.state
+      && typeof item.authorizationId === 'string' && !!item.authorizationId;
+    const entries = [];
+    if (Array.isArray(parsed.history)) {
+      for (const item of parsed.history) {
+        if (valid(item)) entries.push({ state: item.state, authorizationId: item.authorizationId, createdAt: Number.isFinite(item.createdAt) ? item.createdAt : null });
+      }
+    }
+    if (valid(parsed) && !entries.some(item => item.state === parsed.state && item.authorizationId === parsed.authorizationId)) {
+      entries.push({ state: parsed.state, authorizationId: parsed.authorizationId, createdAt: Number.isFinite(parsed.createdAt) ? parsed.createdAt : null });
+    }
+    return entries;
+  } catch {
+    return [];
+  }
+}
+export function readGoogleAutostartMark(storage) {
+  const entries = readGoogleAutostartEntries(storage);
+  if (!entries.length) return null;
+  return Object.freeze({ ...entries[entries.length - 1] });
+}
+export function hasGoogleAutostartMark({ storage, state, authorizationId = null } = {}) {
+  const entries = readGoogleAutostartEntries(storage);
+  if (!entries.length) return false;
+  return entries.some(entry =>
+    (typeof state === 'string' && state && entry.state === state)
+    || (typeof authorizationId === 'string' && authorizationId && entry.authorizationId === authorizationId),
+  );
+}
+export function claimGoogleAutostart({ storage, state, authorizationId, now = Date.now() } = {}) {
+  if (typeof state !== 'string' || !STATE_PATTERN.test(state) || typeof authorizationId !== 'string' || !authorizationId || CONTROL_OR_SPACE.test(authorizationId) || !Number.isFinite(now))
+    return { ok: false, reason: 'invalid' };
+  if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function')
+    return { ok: false, reason: 'storage-unavailable' };
+  const entries = readGoogleAutostartEntries(storage);
+  const conflict = entries.find(entry => entry.state === state || entry.authorizationId === authorizationId);
+  if (conflict)
+    return { ok: false, reason: conflict.state === state && conflict.authorizationId !== authorizationId ? 'different-authorization' : 'already-started', mark: Object.freeze({ ...conflict }) };
+  const current = { state, authorizationId, createdAt: now };
+  const history = [...entries.slice(-(AUTOSTART_HISTORY_LIMIT - 1)), current];
+  const record = { version: 1, ...current, history };
+  const serialized = JSON.stringify(record);
+  try {
+    storage.setItem(GOOGLE_AUTOSTART_KEY, serialized);
+    if (storage.getItem(GOOGLE_AUTOSTART_KEY) !== serialized) throw new Error('storage');
+  } catch {
+    return { ok: false, reason: 'storage-unavailable' };
+  }
+  return { ok: true, mark: Object.freeze({ version: 1, ...current }) };
+}
 export function normalizePhone(value) {
   const phone = String(value || '').trim().replace(/[ ()-]/g, '');
   if (!/^\+[1-9]\d{7,14}$/.test(phone)) throw fault('PHONE_INVALID', '국가번호를 포함해 입력해 주세요. 예: +821012345678');
@@ -66,7 +126,7 @@ export async function publicLoginSettings(config, fetcher = fetch) {
   } catch { return { google: false, phone: false }; }
 }
 export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled = false, storage, getSession, generation, setBusy, hostBusy = () => false,
-  notice, bounded = promise => promise, continuePortal, endSession, existingAccount = endSession, settled = true, onRegistrationCompleted = () => {}, registrationHeaders = () => ({}), authorizationId = null, fetcher = fetch, now = () => Date.now(), initialUrl = location.href }) {
+  notice, bounded = promise => promise, continuePortal, endSession, existingAccount = endSession, settled = true, onUserStart = () => {}, onRegistrationCompleted = () => {}, registrationHeaders = () => ({}), authorizationId = null, fetcher = fetch, now = () => Date.now(), initialUrl = location.href }) {
   const node = id => document.getElementById(id), button = node('google-login'), link = node('google-link'), section = node('google-onboarding');
   let closed = false, busy = false, operationSequence = 0, user = null, required = false, phoneRequired = true, accountVisible = false, confirmedPhone = null, sentPhone = null, sendAfter = 0, flow = null, flowError = null, checkedSubject = null, signedIn = false, linked = false, mode = 'login';
   try { flow = consumeGoogleFlow({ storage, url: initialUrl, now: now() }); } catch (error) { flowError = error; }
@@ -145,7 +205,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     if (result.error) throw result.error;
     location.assign(googleDestination(result.data?.url, config));
   }
-  if (button) button.onclick = () => action(() => start('login'));
+  if (button) button.onclick = () => { onUserStart();return action(() => start('login')); };
   if (link) link.onclick = () => action(() => start('link'));
   if (node('google-phone')) node('google-phone').oninput = () => {
     let phone;try { phone = normalizePhone(node('google-phone').value); } catch { phone = null; }
@@ -187,7 +247,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     const token = generation(), subject = user.id;const completed = await request(body);check(token, subject);
     // A successful account-server completion is observed separately; tracking never delays or fails signup.
     void Promise.resolve().then(() => onRegistrationCompleted(completed)).catch(() => {});
-    required = false;section.hidden = true;notice('SYNK 가입을 마쳤어요. 내 계정으로 연결하고 있어요…');await continuePortal();
+    required = false;signedIn = true;section.hidden = true;notice('SYNK 가입을 마쳤어요. 내 계정으로 연결하고 있어요…');await continuePortal();
   }); };
   if (node('google-cancel')) node('google-cancel').onclick = () => action(async () => { required = false;section.hidden = true;confirmedPhone = sentPhone = null;await endSession(); });
   // 「기존 SYNK ID로 로그인」: the account server removes this unfinished Google sign-up — only the caller's own login owner, and only while
@@ -239,6 +299,28 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
       for (const id of ['google-privacy', 'google-learning']) if (node(id)) node(id).checked = false;
       if (node('google-gender-text-label')) node('google-gender-text-label').hidden = true;render(); },
     authMode(next) { mode = next;if (node('method-choices')) node('method-choices').hidden = !['login', 'signup'].includes(mode);render(); },
+    focusLogin() { if (button && !button.disabled) button.focus?.(); },
+    async autoStart({ state, seenDifferentAuthorization = false } = {}) {
+      if (closed) return { started: false, reason: 'closed' };
+      if (typeof authorizationId !== 'string' || !authorizationId || CONTROL_OR_SPACE.test(authorizationId) || typeof state !== 'string' || !STATE_PATTERN.test(state))
+        return { started: false, reason: 'unbound' };
+      const conflict = readGoogleAutostartEntries(storage).find(entry => entry.state === state || entry.authorizationId === authorizationId);
+      if (seenDifferentAuthorization || conflict) {
+        if (!settled) return { started: false, reason: 'pending-settings' };
+        if (button && !button.disabled) button.focus?.();
+        return { started: false, reason: seenDifferentAuthorization || conflict?.authorizationId !== authorizationId ? 'different-authorization' : 'already-started' };
+      }
+      if (!settled) return { started: false, reason: 'pending-settings' };
+      if (!enabled) return { started: false, reason: 'disabled' };
+      if (busy || hostBusy() || getSession()) return { started: false, reason: 'busy' };
+      const claimed = claimGoogleAutostart({ storage, state, authorizationId, now: now() });
+      if (!claimed.ok) {
+        if (button && !button.disabled) button.focus?.();
+        return { started: false, reason: claimed.reason };
+      }
+      await action(() => start('login'));
+      return { started: true, mark: claimed.mark };
+    },
     stop() { closed = true;operationSequence++;user = null;confirmedPhone = sentPhone = null;for (const id of ['google-phone-code', 'google-phone', 'google-gender-text']) if (node(id)) node(id).value = ''; },
   };
 }

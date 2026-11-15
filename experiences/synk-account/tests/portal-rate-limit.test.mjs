@@ -51,7 +51,7 @@ async function fixture(t, { initial = null, reset = false, consent = false, prev
       return time[method](...args);
     };
   }
-  Object.assign(globalThis, { document, window: { addEventListener: (type, fn) => events.set(type, fn), ...(sessionStorage ? { sessionStorage } : {}), ...(localStorage ? { localStorage } : {}), ...(framed ? { top: {}, self: {} } : {}), history: { state: null, replaceState(_state, _title, url) { historyUrls.push(url);location.href = url; } } }, location: {
+  Object.assign(globalThis, { document, window: { addEventListener: (type, fn) => events.set(type, fn), removeEventListener: (type, fn) => { if (events.get(type) === fn) events.delete(type); }, ...(sessionStorage ? { sessionStorage } : {}), ...(localStorage ? { localStorage } : {}), ...(framed ? { top: {}, self: {} } : {}), history: { state: null, replaceState(_state, _title, url) { historyUrls.push(url);location.href = url; } } }, location: {
     href: `https://id.example.test/?${reset ? 'view=reset' : consent ? 'authorization_id=synthetic-authorization' : ''}${callbackQuery}`,
     assign: value => destinations.push(value), reload() {},
   } });

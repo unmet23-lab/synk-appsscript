@@ -20,7 +20,9 @@ test('SOLIO and account routes resolve, and the two old benefit addresses move t
   const platform = source('../src/platform.mjs');
   assert.match(platform, /function solioFollowLegacy\(\)\{const moved=solioLegacyHash\(location\.hash\);if\(moved\)window\.history\.replaceState\(/);
   assert.match(platform, /window\.addEventListener\('hashchange',\(\)=>\{solioFollowLegacy\(\);/);
-  assert.ok(platform.indexOf('solioFollowLegacy();\r\ncontinuity=mountPlatformLibrary(') > 0 || platform.indexOf('solioFollowLegacy();\ncontinuity=mountPlatformLibrary(') > 0);
+  const initialLegacy = /(?:^|\n)solioFollowLegacy\(\);/.exec(platform);
+  const mountLibrary = /(?:^|\n)continuity=mountPlatformLibrary\(/.exec(platform);
+  assert.ok(initialLegacy && mountLibrary && initialLegacy.index < mountLibrary.index);
 });
 
 test('the SOLIO page: underline tabs, home with what works now, backup only in preparation, and a web intro that never reads PC usage', () => {
@@ -74,7 +76,7 @@ test('my account and 맞춤 정보: signed-in shows the insight row, signed-out 
   assert.match(insight, /<span class="mi2-eyebrow">맞춤 정보<\/span>/);assert.match(insight, /<a class="mi2-back" href="#account">/);
   // 내 성향을 보일 때만 불러오는 조건은 새 주소로 옮겼다.
   const platform = source('../src/platform.mjs');
-  assert.match(platform, /memberInsight\.setVisible\(pageActive&&!document\.hidden&&route\(\)\.page==='account'&&route\(\)\.id==='insight'\)/);
+  assert.match(platform, /memberInsight\.setVisible\(!portalActive&&pageActive&&!document\.hidden&&route\(\)\.page==='account'&&route\(\)\.id==='insight'\)/);
   assert.match(platform, /onChange: \(\) => \{ if \(route\(\)\.page === 'account' && route\(\)\.id === 'insight'\) render\(\); \}/);
 });
 
@@ -85,7 +87,7 @@ test('the profile menu opens only for a signed-in account, closes on Escape, foc
   assert.match(html, /<footer class="launcher-footer">[^]*<a href="#benefits">회원 혜택<\/a>/);
   assert.doesNotMatch(html + platform, /aria-haspopup/);
   assert.match(platform, /solioProfileEntry\.setAttribute\('role','button'\);solioProfileEntry\.setAttribute\('aria-expanded',String\(open\)\);solioProfileEntry\.setAttribute\('aria-controls','profile-menu'\);/);
-  assert.match(platform, /solioProfileEntry\?\.addEventListener\('click',event=>\{if\(!signedIn\(\)\)return;event\.preventDefault\(\);/);
+  assert.match(platform, /solioProfileEntry\?\.addEventListener\('click',event=>\{if\(signedIn\(\)\)\{event\.preventDefault\(\);solioProfileSet\(solioProfileMenu\.hidden\);return;\}/);
   assert.match(platform, /document\.addEventListener\('focusout',event=>\{const next=event\.relatedTarget;if\(solioProfileMenu&&!solioProfileMenu\.hidden&&\(solioProfileMenu\.contains\(event\.target\)\|\|solioProfileEntry\?\.contains\(event\.target\)\)&&next&&!solioProfileMenu\.contains\(next\)&&!solioProfileEntry\?\.contains\(next\)\)solioProfileSet\(false\);\}/);
   assert.match(platform, /if\(event\.key==='Escape'&&solioProfileMenu&&!solioProfileMenu\.hidden\)\{solioProfileSet\(false\);solioProfileEntry\?\.focus\(\);\}/);
   assert.match(platform, /window\.addEventListener\('hashchange',\(\)=>\{solioFollowLegacy\(\);solioProfileSet\(false\);/);

@@ -83,7 +83,10 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
   }
   element('toast').hidden=true; // index.html starts the notice hidden
   const root=element('html');root.dataset=new Proxy({}, {set(object,key,value){object[key]=value;if(key==='ready')ready.resolve(value);return true;}});
-  const document={getElementById:element,documentElement:root,activeElement:null,head:element('head'),createElement:tag=>new ContinuityElement(tag),
+  // This fixture exercises the entered launcher and its account lifecycle, not
+  // portal layout. The real portal is mounted by portal-host-browser.cjs with
+  // the actual index.html, DOM and Chromium events rather than this DOM double.
+  const document={getElementById:id=>id==='portal-entry'?null:element(id),documentElement:root,activeElement:null,head:element('head'),createElement:tag=>new ContinuityElement(tag),
     querySelectorAll:selector=>selector==='dialog[open]'?[...nodes.values()].filter(node=>node.open):[],
     querySelector:selector=>selector==='.footer-progress'?element('footer-progress'):selector==='dialog[open]'?[...nodes.values()].find(node=>node.open):null,
     addEventListener:(name,callback)=>documentHandlers.set(name,callback)};
@@ -124,7 +127,7 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     ids:()=>[...element('app-list').innerHTML.matchAll(/data-app="([^"]+)"/g)].map(match=>match[1]),
     emit(channel,value){if(channel==='auth')currentAuth=value;for(const callback of subscriptions.get(channel)||[])callback(value);},
     async click(id){const callback=element(id).handlers.get('click');assert.equal(typeof callback,'function');await callback();},
-    async action(dataset){await documentHandlers.get('click')({target:{closest:()=>({dataset})}});},
+    async action(dataset){await documentHandlers.get('click')({target:{closest:selector=>selector==='button'?{dataset}:null}});},
     async clickOutside(){await documentHandlers.get('click')({target:{closest:()=>null}});},
     focusIn(target){documentHandlers.get('focusin')?.({target});},
     publicBenefitControl(){

@@ -5,6 +5,15 @@ import { createGoogleAccess } from './google-auth.mjs';
 import { createSignupConversion } from './social-signup-conversion.mjs';
 import { createPortalSecurity, passwordProblem, signInMethods } from './portal-security.mjs';
 import { readRecentLogin, writeRecentLogin, forgetRecentLogin, recentMethodName } from './recent-login.mjs';
+import {
+  PLATFORM_LOGIN_INTENT,
+  PLATFORM_LOGIN_TTL_MS,
+  buildPlatformCancelUrl,
+  matchPlatformPreauthorizedRedirect,
+  matchPlatformAuthorizationDetails,
+  readBoundPlatformLoginIntent,
+  resolvePlatformPortalEntryHint,
+} from './platform-login-return.mjs';
 const $ = id => document.getElementById(id);
 // PATH's fixed public entrance: a plain page link that starts a new connection there, never a callback.
 const PATH_ENTRY = 'https://synk.im/path/app/', PATH_HINT_WINDOW = 7200000;
@@ -29,6 +38,53 @@ function destinationProduct(value, config) {
   const clients = [...Object.entries(config.clients).map(([product, client]) => ({ product, clientId: client.clientId })), ...config.authorizationClients.map(client => ({ product: client.product, clientId: client.clientId }))];
   return clients.find(({ clientId }) => { if (!clientId) return false;try { trustedConsentRedirect(value, config, clientId);return true; } catch { return false; } })?.product || null;
 }
+const NATIVE_CONSENT_NOTE = '이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했을 때만 「연결하기」를 눌러 주세요. 그런 적이 없다면 「취소」를 눌러 주세요.';
+const WEB_PLATFORM_CONSENT_NOTE = '방금 웹에서 SYNK 로그인을 시작했어요. 지금 로그인된 계정으로 계속할지 확인해 주세요. 다른 계정으로 들어가려면 「다른 계정으로 로그인」을 눌러 주세요.';
+const WEB_PLATFORM_FALLBACK_NOTE = '방금 웹에서 SYNK 로그인을 시작했어요. 지금 로그인된 계정으로 계속할지 확인하고 「연결하기」나 「취소」를 눌러 주세요.';
+const WEB_PLATFORM_CONSENT_NOTICE = '로그인한 계정을 확인하고 「연결하기」, 「취소」, 「다른 계정으로 로그인」 가운데 하나를 눌러 주세요.';
+const WEB_PLATFORM_SWITCH_RETRY_TEXT = '이 브라우저에서 로그아웃하지 못해 다른 계정으로 바꾸지 않았어요. 「다른 계정으로 로그인」을 다시 눌러 시도해 주세요.';
+const WEB_PLATFORM_SWITCH_TIMEOUT_TEXT = '로그아웃 확인이 지연돼 다른 계정으로 바꾸지 않았어요. 현재 연결 화면은 그대로 두었으니 「다른 계정으로 로그인」을 다시 눌러 시도해 주세요.';
+const WEB_PLATFORM_SWITCH_FALLBACK_TEXT = '이 브라우저에서 로그아웃했어요. 플랫폼으로 돌아가 로그인 방법을 다시 골라 주세요.';
+const SIGNUP_CONFIRM_KEY = 'synk.id.signup-confirm.v1', SIGNUP_CONFIRM_TTL = 600000;
+function isRegisteredPlatformCallbackTarget(value, config) {
+  const redirectUri = config?.clients?.platform?.redirectUri;
+  if (typeof redirectUri !== 'string' || !redirectUri || typeof value !== 'string' || !value) return false;
+  try {
+    const expected = new URL(redirectUri), actual = new URL(value);
+    return actual.origin === expected.origin && actual.pathname === expected.pathname
+      && expected.searchParams.get('product') === 'platform'
+      && actual.searchParams.getAll('product').length === 1
+      && actual.searchParams.get('product') === 'platform';
+  } catch { return false; }
+}
+function hasStoredPlatformIntentRecord(store) {
+  if (!store || typeof store.getItem !== 'function') return false;
+  try { return store.getItem(PLATFORM_LOGIN_INTENT) !== null; } catch { return false; }
+}
+const normalizeEmail = value => typeof value === 'string' ? value.trim().toLowerCase() : '';
+function makeSignupSalt() {
+  if (globalThis.crypto?.getRandomValues) {
+    const bytes = new Uint8Array(16);globalThis.crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+async function digestSignupEmail(salt, email) {
+  const input = `${salt}:${email}`;
+  if (globalThis.crypto?.subtle && typeof TextEncoder === 'function') {
+    try {
+      const bytes = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(input)));
+      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    } catch { /* fallback below */ }
+  }
+  let h1 = 0x811c9dc5, h2 = 0x01000193;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ (ch + i), 0x85ebca6b) >>> 0;
+  }
+  return `${h1.toString(16).padStart(8, '0')}${h2.toString(16).padStart(8, '0')}`;
+}
 const AUTH_LABELS = { login: '로그인', signup: '가입하기', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장', 'email-change': '이메일 변경 확인하기' };
 // After a mail went out, the same button sends it again for the same address.
 const RESEND_LABELS = { recover: '메일 다시 보내기' };
@@ -43,6 +99,12 @@ const MODE_COPY = {
   'signup-no-google': ['이메일로 가입해요.', '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요.'],
   recover: ['비밀번호를 다시 정해요.', '가입한 이메일로 새 비밀번호를 정하는 링크를 보내 드려요. Google로 가입했다면 비밀번호가 필요 없어요 — 아래 「로그인하기」로 돌아가 「Google로 로그인」을 눌러 주세요.'],
 };
+const PLATFORM_EMAIL_MODE_COPY = {
+  login: ['이메일로 로그인해요.', '가입한 이메일과 비밀번호를 입력해 주세요.'],
+  signup: ['이메일로 가입해요.', '이메일과 비밀번호(8자 이상)를 입력해 주세요.'],
+};
+const PLATFORM_RECOVER_COPY = '가입한 이메일로 새 비밀번호를 정하는 링크를 보내 드려요.';
+const FOREIGN_PENDING_KEYS = ['world', 'messenger', 'care', 'path', 'path-travel', 'path-app'].map(name => `synk.oauth.pending.${name}`);
 // Sign-in and sign-up choose between the same two ways; every other step is an e-mail step.
 const CHOICE_MODES = new Set(['login', 'signup']);
 const SWITCH_COPY = { login: '처음이세요?', signup: '이미 계정이 있나요?', recover: '비밀번호가 생각났나요?', reset: '' };
@@ -107,9 +169,24 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     const copy = renderCopies(), target = copy || node;
     if (reveal) { target.setAttribute('tabindex', '-1');target.focus?.({ preventScroll: true });target.scrollIntoView?.({ block: 'center' }); }
   };
-  if (preview) $('preview-banner').hidden = false;
+  const clearPlatformBootMark = () => {
+    try { delete document.documentElement?.dataset?.platformPortalBoot; } catch {}
+  };
+  const resetPlatformBodyAttrs = () => {
+    clearPlatformBootMark();
+    document.body?.classList?.remove('sid-platform-context');
+    if (document.body?.dataset) {
+      delete document.body.dataset.platformContext;
+      delete document.body.dataset.platformEmailPrimary;
+    }
+    $('auth-panel')?.removeAttribute?.('data-platform-motion');
+    $('consent')?.removeAttribute?.('data-platform-motion');
+    if ($('consent-switch')) $('consent-switch').hidden = true;
+    if ($('consent-switch-note')) $('consent-switch-note').hidden = true;
+  };
+  if (preview) { resetPlatformBodyAttrs();$('preview-banner').hidden = false; }
   $('learning-link').href = config.learningUrl;
-  if (!config.configured) { $('setup').hidden = false;notice('지금은 로그인할 수 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
+  if (!config.configured) { resetPlatformBodyAttrs();$('setup').hidden = false;notice('지금은 로그인할 수 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
   const requestedView = new URL(location.href).searchParams.get('view');
   // ?view=recover is the PC app's 「비밀번호를 잊었어요」 (and any 「비밀번호 찾기」 link): the mail form straight away.
   let mode = requestedView === 'reset' ? 'reset' : requestedView === 'signup' ? 'signup' : requestedView === 'recover' ? 'recover' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false, initializing = true, authVersion = 0, callbackBlocked = false;
@@ -144,12 +221,27 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // After a confirmed reset link a reload keeps the new-password form for ten minutes, for that account only.
   const RECOVERY_KEY = 'synk.id.recovery.v1', RECOVERY_GRACE = 600000;
   let recoveryStorage = null;try { recoveryStorage = window.sessionStorage; } catch { /* The form then needs the link again. */ }
+  let pendingGoogleStorage = googleStorage;
+  if (pendingGoogleStorage === undefined) { try { pendingGoogleStorage = window.sessionStorage; } catch { /* Google fails closed; email stays usable. */ } }
+  const resolvePlatformStore = () => {
+    if (pendingGoogleStorage) {
+      try { if (pendingGoogleStorage.getItem(PLATFORM_LOGIN_INTENT) !== null) return pendingGoogleStorage; } catch {}
+    }
+    if (recoveryStorage && recoveryStorage !== pendingGoogleStorage) {
+      try { if (recoveryStorage.getItem(PLATFORM_LOGIN_INTENT) !== null) return recoveryStorage; } catch {}
+    }
+    return pendingGoogleStorage || recoveryStorage || null;
+  };
   const rememberRecovery = userId => { try { if (userId) recoveryStorage?.setItem(RECOVERY_KEY, JSON.stringify({ userId, until: Date.now() + RECOVERY_GRACE }));else recoveryStorage?.removeItem(RECOVERY_KEY); } catch { /* best effort */ } };
   const recoveryGrace = userId => { try { const value = JSON.parse(recoveryStorage?.getItem(RECOVERY_KEY) || 'null');return !!userId && value?.userId === userId && Number.isFinite(value.until) && value.until > Date.now(); } catch { return false; } };
   const cooldowns = new Map(), feedbacks = new Map();let cooldownTimer = null, logoutPending = null, signedOutSubject = null;
   let automaticAuthorizationAttempted = false;
   // An app on this device that was approved before: its arrival address, opened only by 「연결하기」.
   let consentTarget = null;
+  let platformConsent = null;
+  let freshSessionUserId = null, signupPending = null, userTouchedAuth = false, initialEntrySettled = false, portalEntryHintHandled = false;
+  if ($('consent-switch')) $('consent-switch').hidden = true;
+  if ($('consent-switch-note')) $('consent-switch-note').hidden = true;
   // The pending end of a PC app's five-minute wait (see armDeviceWait).
   let deviceTimer = null;
   // The verified account whose app request was gone, and whether that request was PATH's.
@@ -187,6 +279,10 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if ($('resend-confirm')) { $('resend-confirm').disabled = authOperation || resendSeconds > 0;setText($('resend-confirm'), resendSeconds ? `${resendSeconds}초 뒤 다시 요청` : '확인 메일 다시 받기'); }
     $('approve').disabled = $('deny').disabled = !!consentOperation || consentSeconds > 0;
     setText($('approve'), consentSeconds ? `${consentSeconds}초 뒤 다시 요청` : '연결하기');
+    if ($('consent-switch')) {
+      $('consent-switch').disabled = !!consentOperation || authOperation;
+      setText($('consent-switch'), consentOperation?.switchingAccount ? (consentOperation.redirecting ? '플랫폼으로 이동 중…' : '로그아웃 확인 중…') : '다른 계정으로 로그인');
+    }
     renderCopies();
     google?.refreshControls();
   }
@@ -214,15 +310,18 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // read a short list of the last few requests, so a mail link that returns in a new tab keeps the same clock. The
   // earliest time known for this request counts. Only request IDs and times are kept; the list holds four requests
   // and drops the others once they are an hour old. The synthetic preview keeps none.
+  let priorSeenRequests = [];
   const requestSeen = (() => {
     const now = cooldownClock.now();if (preview) return now;
     const known = entry => !!entry && typeof entry.id === 'string' && Number.isFinite(entry.at) && entry.at <= now;
     // A storage holds one record (this tab) or a list (other tabs); what cannot be read counts as nothing and is replaced.
     const load = store => { let raw = null, list = [];try { raw = store.getItem(CONNECT_SEEN_KEY);const value = JSON.parse(raw || 'null');list = (Array.isArray(value) ? value : [value]).filter(known); } catch { /* nothing known */ }return { raw, list }; };
     const save = (store, text) => { try { if (text) store.setItem(CONNECT_SEEN_KEY, text);else store.removeItem(CONNECT_SEEN_KEY); } catch { /* the other record still counts */ } };
-    const tab = recoveryStorage ? load(recoveryStorage) : { raw: null, list: [] }, shared = recentStore ? load(recentStore) : { raw: null, list: [] };
-    const seen = authorizationId ? Math.min(now, ...[...tab.list, ...shared.list].filter(entry => entry.id === authorizationId).map(entry => entry.at)) : now;
-    if (authorizationId && recoveryStorage) save(recoveryStorage, JSON.stringify({ id: authorizationId, at: seen }));
+    const tabStore = recoveryStorage || pendingGoogleStorage;
+    const tab = tabStore ? load(tabStore) : { raw: null, list: [] }, shared = recentStore ? load(recentStore) : { raw: null, list: [] };
+    priorSeenRequests = [...tab.list, ...shared.list];
+    const seen = authorizationId ? Math.min(now, ...priorSeenRequests.filter(entry => entry.id === authorizationId).map(entry => entry.at)) : now;
+    if (authorizationId && tabStore) save(tabStore, JSON.stringify({ id: authorizationId, at: seen }));
     if (recentStore) {
       const kept = shared.list.filter(entry => entry.id !== authorizationId && now - entry.at < CONNECT_SEEN_AGE).map(({ id, at }) => ({ id, at }));
       if (authorizationId) kept.push({ id: authorizationId, at: seen });
@@ -234,15 +333,32 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const initialUrl = new URL(location.href), initialFragment = new URLSearchParams(initialUrl.hash.slice(1));
   const recoveryRequested = initialUrl.searchParams.get('view') === 'reset';
   const hadCallback = initialUrl.searchParams.has('code') || initialUrl.searchParams.has('error') || initialFragment.has('error') || initialUrl.searchParams.has('google_flow');
-  let initializationPromise, initializationFinished = false, callbackError = null, callbackEntryPending = false;
+  let initializationPromise, initializationFinished = false, callbackError = null, callbackEntryPending = false, startupError = null;
   // Both ways in are the same pair of buttons; the e-mail fields open under them once e-mail is the way — pressed here,
   // used last time on this device, the only way on offer, or the way a mail link just came back by. null follows those.
   let emailPanel = hadCallback && !initialUrl.searchParams.has('google_flow') ? true : null;
+  const initialPortalHint = !preview && window.top === window.self ? resolvePlatformPortalEntryHint({
+    storage: resolvePlatformStore(),
+    config,
+    authorizationId,
+    requestSeen,
+    hadCallback,
+    url: initialUrl.href,
+    now: cooldownClock.now(),
+  }) : null;
+  let activePlatformAuthHint = initialPortalHint ? { ...initialPortalHint, expiresAt: initialPortalHint.createdAt + PLATFORM_LOGIN_TTL_MS } : null;
+  let emailOpenedByPlatformHint = false, platformAuthExpiryTimer = null, platformMotionToggle = false, currentPlatformStage = 'none';
+  if (initialPortalHint && !hadCallback && !recoveryLink && !emailChangeLink) {
+    if (initialPortalHint.method === 'email' && emailPanel === null) {
+      emailPanel = true;
+      emailOpenedByPlatformHint = true;
+    } else if (initialPortalHint.method === 'signup' && !requestedView) {
+      mode = 'signup';
+    }
+  }
   const emailOpen = () => !CHOICE_MODES.has(mode) || googleAvailable === false || (emailPanel ?? (mode === 'login' && recent()?.method === 'email'));
-  let pendingGoogleStorage = googleStorage;
-  if (pendingGoogleStorage === undefined) { try { pendingGoogleStorage = window.sessionStorage; } catch { /* Google fails closed; email stays usable. */ } }
   google = createGoogleAccess({ config, sdk, enabled: !preview && loginSettings.google, phoneEnabled: !preview && loginSettings.phone, settled: typeof loginSettings?.then !== 'function',
-    storage: pendingGoogleStorage, getSession: () => session, generation: () => generation,
+    storage: pendingGoogleStorage, getSession: () => session, generation: () => generation, onUserStart: () => { userTouchedAuth = true; },
     setBusy: value => { authOperation = value;renderControls(); }, hostBusy: () => authOperation || hadCallback && !initializationFinished, notice, bounded, authorizationId,
     continuePortal: () => enter(), registrationHeaders: () => signupConversion?.registrationHeaders() || {}, onRegistrationCompleted: result => signupConversion?.googleCompleted(result), endSession: async () => { authOperation = false;await leaveSignUp('가입을 완료하지 않고 이 브라우저에서 로그아웃했어요.'); },
     // 「기존 SYNK ID로 로그인」 on the Google sign-up step: the unfinished sign-up is gone, or its login had already ended — then nobody knows whether
@@ -286,8 +402,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   }
   // Provider discovery must not hold up email login or the SDK's PKCE callback.
   if (typeof loginSettings?.then === 'function') void Promise.resolve(loginSettings).then(
-    value => { if (!closed) { google.settings(preview ? { google: false, phone: false } : value);googleAvailable = !preview && value?.google === true;renderCopy();renderMethods(); } },
-    () => { if (!closed) { google.settings({ google: false, phone: false });googleAvailable = false;renderCopy();renderMethods(); } });
+    value => { if (!closed) { google.settings(preview ? { google: false, phone: false } : value);googleAvailable = !preview && value?.google === true;syncPlatformVisualContext({ refreshAuth: true });void maybeApplyPlatformEntryHint().catch(report); } },
+    () => { if (!closed) { google.settings({ google: false, phone: false });googleAvailable = false;syncPlatformVisualContext({ refreshAuth: true });void maybeApplyPlatformEntryHint().catch(report); } });
   const callbackWaitText = '확인 링크 처리 중… 잠시 기다려 주세요. 계속 같으면 페이지를 새로고침해 주세요.';
   const showCallbackWaiting = (reveal = false) => {
     feedbacks.set(mode, { text: callbackWaitText, kind: 'pending' });notice(callbackWaitText, false, reveal, 'pending');renderControls();
@@ -312,8 +428,89 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     $('google-recent').hidden = last?.method !== 'google';$('email-recent').hidden = last?.method !== 'email';
     if (last?.email && !$('email').value) $('email').value = last.email;
   }
+  function hasLiveForeignPending(store, intentCreatedAt) {
+    if (!store || typeof store.getItem !== 'function') return false;
+    const keys = new Set(FOREIGN_PENDING_KEYS);
+    if (typeof store.length === 'number' && typeof store.key === 'function') {
+      try {
+        for (let i = 0; i < store.length; i++) {
+          const key = store.key(i);
+          if (typeof key === 'string' && key.startsWith('synk.oauth.pending.') && key !== 'synk.oauth.pending.platform') keys.add(key);
+        }
+      } catch {}
+    }
+    for (const key of keys) {
+      let raw = null;
+      try { raw = store.getItem(key); } catch { continue; }
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Number.isFinite(parsed?.createdAt) || parsed.createdAt >= intentCreatedAt) return true;
+      } catch { return true; }
+    }
+    return false;
+  }
+  function isBoundPlatformStateLive(expectedState) {
+    if (typeof expectedState !== 'string' || !expectedState) return false;
+    const store = resolvePlatformStore(), now = cooldownClock.now();
+    const bound = readBoundPlatformLoginIntent({ storage: store, config, now });
+    if (!bound || bound.intent.state !== expectedState) return false;
+    return !hasLiveForeignPending(store, bound.intent.createdAt);
+  }
+  function disarmPlatformAuthExpiry() {
+    if (platformAuthExpiryTimer !== null) cooldownClock.clearTimeout(platformAuthExpiryTimer);
+    platformAuthExpiryTimer = null;
+  }
+  function armPlatformAuthExpiry(expiresAt) {
+    disarmPlatformAuthExpiry();
+    if (!Number.isFinite(expiresAt)) return;
+    const left = expiresAt - cooldownClock.now();
+    if (left <= 0) {
+      activePlatformAuthHint = null;
+      syncPlatformVisualContext({ refreshAuth: true });
+      return;
+    }
+    platformAuthExpiryTimer = cooldownClock.setTimeout(() => {
+      platformAuthExpiryTimer = null;
+      if (!closed) syncPlatformVisualContext({ refreshAuth: true });
+    }, Math.min(left + 20, 2147483647));
+  }
+  function computePlatformContextStage() {
+    if (closed || preview || !config.configured || window.top !== window.self || !authorizationId) return 'none';
+    for (const id of ['setup', 'connection-restart', 'google-onboarding', 'account-profile', 'account', 'account-security']) {
+      const section = $(id);
+      if (section && !section.hidden) return 'none';
+    }
+    if (!$('consent')?.hidden) {
+      const consentState = platformConsent?.intent?.state || (consentTarget?.kind === 'platform-web' ? consentTarget.state : null);
+      return consentState && isBoundPlatformStateLive(consentState) ? 'consent' : 'none';
+    }
+    if (callbackBlocked || callbackError || startupError) return 'none';
+    if (!$('auth-panel')?.hidden) {
+      if (!['login', 'signup', 'recover'].includes(mode) || !activePlatformAuthHint) return 'none';
+      if (!isBoundPlatformStateLive(activePlatformAuthHint.state)) {
+        activePlatformAuthHint = null;
+        return 'none';
+      }
+      return 'auth';
+    }
+    if (activePlatformAuthHint && isBoundPlatformStateLive(activePlatformAuthHint.state)) return 'boot';
+    activePlatformAuthHint = null;
+    return 'none';
+  }
   // The words above the card; the login step follows a returning browser and whether Google sign-in is on.
   function renderCopy() {
+    if (document.body?.dataset?.platformEmailPrimary === 'true' && PLATFORM_EMAIL_MODE_COPY[mode]) {
+      const [heading, copy] = PLATFORM_EMAIL_MODE_COPY[mode];
+      $('auth-heading').textContent = heading;
+      $('auth-copy').textContent = mode === 'login' && recent() ? '' : copy;
+      return;
+    }
+    if (document.body?.dataset?.platformContext === 'auth' && mode === 'recover') {
+      $('auth-heading').textContent = MODE_COPY.recover[0];
+      $('auth-copy').textContent = PLATFORM_RECOVER_COPY;
+      return;
+    }
     const key = mode === 'login' ? recent() ? 'recent' : googleAvailable === false ? 'login-no-google' : 'login' : mode === 'signup' && googleAvailable === false ? 'signup-no-google' : mode;
     const [heading, copy] = MODE_COPY[key] || [];
     $('auth-heading').textContent = heading || ({ reset: '새 비밀번호를 정해 주세요.', 'email-change': '이메일 변경을 확인해요.' })[mode];
@@ -324,20 +521,89 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // (「○○로 로그인」 / 「○○로 가입」) and tells whether its fields are open.
   function renderMethods() {
     const choosing = CHOICE_MODES.has(mode), open = emailOpen();
-    if ($('email-fields')) $('email-fields').hidden = !open;
+    const emailPrimary = document.body?.dataset?.platformEmailPrimary === 'true' && choosing && open;
+    const recentRow = $('recent-login'), choices = $('method-choices'), fields = $('email-fields'), note = $('google-privacy-note'), emailBtn = $('email-method');
+    if (fields) fields.hidden = !open;
+    if (emailPrimary) {
+      if (fields && choices && fields.nextElementSibling !== choices) fields.after?.(choices);
+      if (choices && note && choices.nextElementSibling !== note) choices.after?.(note);
+      choices?.setAttribute('aria-label', mode === 'signup' ? '다른 가입 방법' : '다른 로그인 방법');
+      if (emailBtn) {
+        emailBtn.hidden = true;
+        emailBtn.setAttribute('aria-expanded', 'true');
+        setText($('email-method-label'), mode === 'signup' ? '이메일로 가입' : '이메일로 로그인');
+      }
+      renderCopies();
+      return;
+    }
+    if (recentRow && choices && recentRow.nextElementSibling !== choices) recentRow.after?.(choices);
     // The Google note follows the pair while the pair is the choice; with the e-mail fields open it goes below them, so it does
     // not cut between the e-mail button and its fields (blind review 11-11, round 2). Moved in the document: Tab follows the eye.
-    const note = $('google-privacy-note'), anchor = open ? $('email-fields') : $('method-choices');
+    const anchor = open ? fields : choices;
     if (note && anchor && anchor.nextElementSibling !== note) anchor.after?.(note);
     // The pair is named for what it chooses (the card's heading already names the card and the form).
-    $('method-choices')?.setAttribute('aria-label', mode === 'signup' ? '가입 방법' : '로그인 방법');
-    if (!$('email-method')) return;
-    $('email-method').setAttribute('aria-expanded', String(choosing && open));
+    choices?.setAttribute('aria-label', mode === 'signup' ? '가입 방법' : '로그인 방법');
+    if (!emailBtn) return;
+    emailBtn.hidden = false;
+    emailBtn.setAttribute('aria-expanded', String(choosing && open));
     setText($('email-method-label'), mode === 'signup' ? '이메일로 가입' : '이메일로 로그인');
     renderCopies();
   }
+  function syncPlatformVisualContext({ animate = false, refreshAuth = false } = {}) {
+    const prevStage = currentPlatformStage;
+    const prevEmailPrimary = document.body?.dataset?.platformEmailPrimary === 'true';
+    const nextStage = computePlatformContextStage();
+    if (nextStage === 'none') activePlatformAuthHint = null;
+    if (prevStage !== 'none' && nextStage === 'none' && emailOpenedByPlatformHint) {
+      emailOpenedByPlatformHint = false;
+      if (!userTouchedAuth && !$('email')?.value && !$('password')?.value) emailPanel = null;
+    }
+    const nextEmailPrimary = nextStage === 'auth'
+      && CHOICE_MODES.has(mode)
+      && emailOpen()
+      && (activePlatformAuthHint?.method === 'email' || googleAvailable === false);
+    currentPlatformStage = nextStage;
+    clearPlatformBootMark();
+    if (document.body) {
+      document.body.classList?.toggle('sid-platform-context', nextStage !== 'none');
+      if (document.body.dataset) {
+        if (nextStage === 'none') {
+          delete document.body.dataset.platformContext;
+          delete document.body.dataset.platformEmailPrimary;
+        } else {
+          document.body.dataset.platformContext = nextStage;
+          if (nextEmailPrimary) document.body.dataset.platformEmailPrimary = 'true';
+          else delete document.body.dataset.platformEmailPrimary;
+        }
+      }
+    }
+    const authNode = $('auth-panel'), consentNode = $('consent');
+    const showConsentSwitch = nextStage === 'consent';
+    if ($('consent-switch')) $('consent-switch').hidden = !showConsentSwitch;
+    if ($('consent-switch-note')) $('consent-switch-note').hidden = !showConsentSwitch;
+    if (!showConsentSwitch && !consentNode?.hidden && !$('consent-native')?.hidden && $('consent-native')?.textContent === WEB_PLATFORM_CONSENT_NOTE) {
+      setText($('consent-native'), WEB_PLATFORM_FALLBACK_NOTE);
+    }
+    if (nextStage !== 'auth') authNode?.removeAttribute?.('data-platform-motion');
+    else if (animate || prevStage !== 'auth') {
+      platformMotionToggle = !platformMotionToggle;
+      authNode?.setAttribute?.('data-platform-motion', platformMotionToggle ? 'a' : 'b');
+    }
+    if (nextStage !== 'consent') consentNode?.removeAttribute?.('data-platform-motion');
+    else if (prevStage !== 'consent') consentNode?.setAttribute?.('data-platform-motion', 'enter');
+    if ((nextStage === 'auth' || nextStage === 'boot') && activePlatformAuthHint?.expiresAt) {
+      armPlatformAuthExpiry(activePlatformAuthHint.expiresAt);
+    } else {
+      disarmPlatformAuthExpiry();
+    }
+    if (refreshAuth || prevEmailPrimary !== nextEmailPrimary || (prevStage !== nextStage && !authNode?.hidden)) {
+      renderCopy();
+      renderMethods();
+    }
+  }
+  syncPlatformVisualContext();
   const setMode = value => {
-    mode = value;renderCopy();
+    mode = value;
     const linkStep = resetLinkStep() || mode === 'email-change', newPassword = mode === 'reset' && !linkStep;
     $('password-label').hidden = mode === 'recover' || linkStep;$('password').required = mode !== 'recover' && !linkStep;$('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
     // Password managers pair 「username」 with the current password; a new account's address is just an e-mail.
@@ -353,28 +619,40 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     const noEmail = mode === 'reset' || mode === 'email-change';
     $('email').closest('label').hidden = noEmail;$('email').required = !noEmail;$('signup-choices').hidden = mode !== 'signup';
     google?.authMode(mode);
-    renderMethods();
-    renderControls();
     // The e-mail-change step is a single tap with no other form beside it; finding a password does not offer sign-up.
     document.querySelectorAll('[data-view]').forEach(button => { button.hidden = mode === 'email-change' || button.dataset.view === mode || mode === 'login' && button.dataset.view === 'login'
       || ['recover', 'reset'].includes(mode) && button.dataset.view === 'signup'; });
+    syncPlatformVisualContext({ animate: userTouchedAuth && !$('auth-panel')?.hidden, refreshAuth: true });
+    renderControls();
   };
   const guarded = token => () => { if (token !== generation || !session) throw Object.assign(new Error('로그인 상태가 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
-  // One card for every connect request. An app on this device also names the signed-in account and says when to press.
-  function showConsent({ product, destination, scopes, native }) {
+  // One card for every connect request. An app on this device or a paused web platform session names the signed-in account and says when to press.
+  function showConsent({ product, destination, scopes, native, webConfirm = false, expiresAt = null }) {
     let address = null;try { address = new URL(destination); } catch { /* shown as text only */ }
     // The production Care client was registered under the shared platform product.
     $('consent-name').textContent = address?.origin === 'https://synk.im' && address.pathname === '/care/' ? 'SYNK 플레저' : PRODUCTS[product] || 'SYNK 서비스';
     $('consent-destination').textContent = destination;
     $('scopes').replaceChildren(...scopes.map(scope => { const li = document.createElement('li');li.textContent = ({ openid: '계정을 구분하는 정보', email: '이메일 주소', profile: '기본 프로필' })[scope] || scope;return li; }));
+    const showAccountConfirm = Boolean(native || webConfirm);
     const account = $('consent-account'), email = session?.user?.email;
-    if (account) { account.hidden = !native || !email;setText(account, native && email ? `로그인한 계정: ${email}` : ''); }
-    const deviceNote = $('consent-native');if (deviceNote) deviceNote.hidden = !native;
+    if (account) { account.hidden = !showAccountConfirm || !email;setText(account, showAccountConfirm && email ? `로그인한 계정: ${email}` : ''); }
+    const deviceNote = $('consent-native');
+    if (deviceNote) deviceNote.hidden = !showAccountConfirm;
     $('consent').hidden = false;
+    syncPlatformVisualContext();
+    const showPlatformSwitch = currentPlatformStage === 'consent';
+    if (deviceNote && showAccountConfirm) {
+      setText(deviceNote, native ? NATIVE_CONSENT_NOTE : showPlatformSwitch ? WEB_PLATFORM_CONSENT_NOTE : WEB_PLATFORM_FALLBACK_NOTE);
+    }
     // The device line comes first so the synthetic preview shows the very notice people will see.
-    notice(native ? '이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했다면, 계정을 확인하고 「연결하기」를 눌러 주세요.' : preview ? '제품과 연결할 정보를 확인한 뒤 선택해 주세요.'
+    notice(native ? '이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했다면, 계정을 확인하고 「연결하기」를 눌러 주세요.'
+      : showPlatformSwitch ? WEB_PLATFORM_CONSENT_NOTICE
+      : webConfirm ? '로그인한 계정을 확인하고 「연결하기」나 「취소」를 눌러 주세요.'
+      : preview ? '제품과 연결할 정보를 확인한 뒤 선택해 주세요.'
       : automaticAuthorizationAttempted ? '연결할 앱을 보고 「연결하기」나 「취소」를 눌러 주세요.' : '로그인한 계정으로 앱에 연결하고 있어요…');
-    if (native && pcAppCallback(destination)) armDeviceWait();else disarmDeviceWait();
+    if (native && pcAppCallback(destination)) armDeviceWait();
+    else if (!native && webConfirm && Number.isFinite(expiresAt)) armWebIntentWait(expiresAt);
+    else disarmDeviceWait();
   }
   // A PC app stops waiting five minutes after it opened this sign-in: then its card gives way to the restart card.
   function disarmDeviceWait() { if (deviceTimer !== null) cooldownClock.clearTimeout(deviceTimer);deviceTimer = null; }
@@ -390,9 +668,19 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if (consentOperation) { deviceTimer = cooldownClock.setTimeout(expireDeviceWait, 1000);return; }
     showStaleAuthorization(false, true);
   }
+  function armWebIntentWait(expiresAt) {
+    disarmDeviceWait();const left = expiresAt - cooldownClock.now();
+    if (left <= 0) expireWebIntentWait();
+    else deviceTimer = cooldownClock.setTimeout(left > 2147483647 ? () => armWebIntentWait(expiresAt) : expireWebIntentWait, Math.min(left, 2147483647));
+  }
+  function expireWebIntentWait() {
+    deviceTimer = null;if (closed || $('consent').hidden) return;
+    if (consentOperation) { deviceTimer = cooldownClock.setTimeout(expireWebIntentWait, 1000);return; }
+    showStaleAuthorization(false, false);
+  }
   async function loadConsent(check) {
     // An app connection is answered only in a top-level window — no other page can frame this card and borrow the click.
-    if (window.top !== window.self) { details = null;consentTarget = null;$('consent').hidden = true;notice('앱 연결은 SYNK ID를 새 창에서 연 상태에서만 할 수 있어요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', true);return; }
+    if (window.top !== window.self) { details = null;consentTarget = null;platformConsent = null;$('consent').hidden = true;syncPlatformVisualContext({ refreshAuth: true });notice('앱 연결은 SYNK ID를 새 창에서 연 상태에서만 할 수 있어요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', true);return; }
     const result = await bounded(sdk.auth.oauth.getAuthorizationDetails(authorizationId));check();
     // The account is verified but this app's request is gone: offer a restart, not the sign-in form.
     if (result.error && staleAuthorization(result.error)) { showStaleAuthorization(pathEntryHint());return; }
@@ -400,19 +688,56 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // The card is shown only for the account this page checked: a request answered for another account (this tab's SDK session
     // moved under it) closes like a failed check (11-12).
     const owner = result.data?.user?.id;if (owner && owner !== session?.user?.id) throw new Error('로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.');
+    const platformStore = resolvePlatformStore();
     if (result.data?.redirect_url) {
       const target = trustedConsentRedirect(result.data.redirect_url, config);
-      if (!deviceDestination(target)) { location.assign(target);return; }
+      if (!deviceDestination(target)) {
+        if (!preview && isRegisteredPlatformCallbackTarget(target, config)) {
+          const matchedRedirect = matchPlatformPreauthorizedRedirect({ targetUrl: target, storage: platformStore, config, now: cooldownClock.now() });
+          if (matchedRedirect) {
+            if (freshSessionUserId === session?.user?.id) { location.assign(matchedRedirect.approveUrl);return; }
+            details = null;platformConsent = null;
+            consentTarget = { kind: 'platform-web', state: matchedRedirect.intent.state, approveUrl: matchedRedirect.approveUrl, cancelUrl: matchedRedirect.cancelUrl };
+            automaticAuthorizationAttempted = true;
+            showConsent({ product: 'platform', destination: matchedRedirect.shownDestination, scopes: ['openid', 'email', 'profile'], native: false, webConfirm: true, expiresAt: matchedRedirect.expiresAt });
+            return;
+          }
+          const targetState = new URL(target).searchParams.get('state');
+          let mismatchedPending = false;
+          try {
+            const pending = JSON.parse(platformStore?.getItem('synk.oauth.pending.platform') || 'null');
+            if (pending && typeof pending.state === 'string' && pending.state !== targetState) mismatchedPending = true;
+          } catch { mismatchedPending = true; }
+          if (hasStoredPlatformIntentRecord(platformStore) || mismatchedPending) { showStaleAuthorization(false, false);return; }
+        }
+        location.assign(target);return;
+      }
       // Approved before, but its address is on this device: it still waits for this click.
-      details = null;consentTarget = target;
+      details = null;platformConsent = null;consentTarget = target;
       // Shown without the one-time code and state the address carries.
       const shown = new URL(target);shown.search = '';shown.hash = '';
       showConsent({ product: destinationProduct(target, config), destination: shown.href, scopes: ['openid', 'email', 'profile'], native: true });
       return;
     }
-    details = result.data;consentTarget = null;
+    details = result.data;consentTarget = null;platformConsent = null;
     const authorization = firstPartyAuthorization(details, config), native = deviceDestination(authorization.destination);
-    showConsent({ product: authorization.product, destination: details.redirect_uri, scopes: (details.scope || '').split(' ').filter(Boolean), native });
+    const scopes = (details.scope || '').split(' ').filter(Boolean);
+    if (!preview && !native && authorization.product === 'platform' && isRegisteredPlatformCallbackTarget(details.redirect_uri, config)) {
+      const matchedDetails = matchPlatformAuthorizationDetails({ details, storage: platformStore, config, now: cooldownClock.now() });
+      if (matchedDetails) {
+        platformConsent = matchedDetails;
+        const needsAccountConfirm = freshSessionUserId !== session?.user?.id;
+        if (needsAccountConfirm) {
+          automaticAuthorizationAttempted = true;
+          showConsent({ product: authorization.product, destination: matchedDetails.shownDestination, scopes, native: false, webConfirm: true, expiresAt: matchedDetails.expiresAt });
+          return;
+        }
+      } else if (hasStoredPlatformIntentRecord(platformStore)) {
+        showStaleAuthorization(false, false);
+        return;
+      }
+    }
+    showConsent({ product: authorization.product, destination: details.redirect_uri, scopes, native });
     // Only a registered first-party request that returns to a web address may proceed without a second click.
     // An app on this device always waits for 「연결하기」. A failure, account change or duplicate SDK event never starts an auto-retry.
     if (!preview && !native && !automaticAuthorizationAttempted) {
@@ -434,7 +759,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // Signed in, only the app connection must start again: no form, no old connect card, no new sign-up.
   // device: a PC app's request whose five-minute wait ended (the app no longer listens), named as such.
   function showStaleAuthorization(path, device = false) {
-    staleRecovery = { subject: session?.user?.id || null, path: path === true, device: device === true };details = null;consentTarget = null;disarmDeviceWait();
+    staleRecovery = { subject: session?.user?.id || null, path: path === true, device: device === true };details = null;consentTarget = null;platformConsent = null;activePlatformAuthHint = null;disarmDeviceWait();
     $('consent').hidden = true;$('auth-panel').hidden = true;if ($('account-next')) $('account-next').hidden = true;
     setText($('consent-name'), '');setText($('consent-destination'), '');$('scopes').replaceChildren();
     cooldowns.delete('consent');feedbacks.delete('consent');renderControls();
@@ -445,12 +770,12 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       : staleRecovery.device ? 'You are signed in. The SYNK app waits only five minutes after you start signing in. No new sign-up needed: go back to the SYNK app and sign in again there.'
       : 'You are signed in. The app request expired or was already used. No new sign-up needed: go back to your app and sign in again there.';
     const card = $('connection-restart');
-    if (!card) { notice(staleRecovery.device ? 'SYNK 앱이 연결을 기다리는 5분이 지났어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. SYNK 앱에서 로그인을 다시 시작해 주세요.' : '앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', false, true);return; }
+    if (!card) { syncPlatformVisualContext({ refreshAuth: true });notice(staleRecovery.device ? 'SYNK 앱이 연결을 기다리는 5분이 지났어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. SYNK 앱에서 로그인을 다시 시작해 주세요.' : '앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', false, true);return; }
     setText($('connection-restart-next'), next);setText($('connection-restart-en'), en);
     const pathLink = $('connection-restart-path');pathLink.hidden = !staleRecovery.path;if (pathLink.style) pathLink.style.display = staleRecovery.path ? '' : 'none';
     // 「내 SYNK 계정 보기」 is a side way on every version of this card (a line pill): what to do is go back to the app.
     $('connection-restart-home').classList?.add('soft');
-    card.hidden = false;notice('', false, false, 'idle');
+    card.hidden = false;syncPlatformVisualContext({ refreshAuth: true });notice('', false, false, 'idle');
     const heading = $('connection-restart-heading');heading?.focus?.({ preventScroll: true });heading?.scrollIntoView?.({ block: 'center' });
   }
   async function respondToAuthorization(method, check = () => {}) {
@@ -460,7 +785,18 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if (consentTarget) {
       // Approved before: 「연결하기」 opens the app's address with its one-time code; 「취소」 sends the app only
       // the standard refusal with its own state (never the code), so the app stops waiting at once.
-      const target = consentTarget;consentTarget = null;consentOperation = { redirecting: true };renderControls();
+      const target = consentTarget;consentTarget = null;
+      if (target && typeof target === 'object' && target.kind === 'platform-web') {
+        if (method === 'approveAuthorization') {
+          const liveMatch = matchPlatformPreauthorizedRedirect({ targetUrl: target.approveUrl, storage: resolvePlatformStore(), config, now: cooldownClock.now() });
+          if (!liveMatch) { showStaleAuthorization(false, false);return; }
+          feedbacks.delete('consent');consentOperation = { redirecting: true };renderControls();
+          location.assign(liveMatch.approveUrl);return;
+        }
+        feedbacks.delete('consent');consentOperation = { redirecting: true };renderControls();
+        location.assign(target.cancelUrl);return;
+      }
+      feedbacks.delete('consent');consentOperation = { redirecting: true };renderControls();
       if (method === 'approveAuthorization') { location.assign(target);return; }
       const cancel = new URL(target), state = cancel.searchParams.get('state');cancel.search = '';cancel.searchParams.set('error', 'access_denied');if (state) cancel.searchParams.set('state', state);
       location.assign(cancel.href);return;
@@ -468,15 +804,35 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // Nothing is waiting once a card was answered or closed (a stray press does nothing).
     if (!details) return;
     const authorization = firstPartyAuthorization(details, config);
+    const activePlatformConsent = platformConsent;
+    if (activePlatformConsent && method === 'approveAuthorization') {
+      const liveDetails = matchPlatformAuthorizationDetails({ details, storage: resolvePlatformStore(), config, now: cooldownClock.now() });
+      if (!liveDetails || liveDetails.intent.state !== activePlatformConsent.intent.state) {
+        showStaleAuthorization(false, false);return;
+      }
+    }
     const operation = { redirecting: false }, token = generation, entry = entryId;
     // Only the answer for this screen, account and press may redirect, report or show the restart card.
     const current = () => !closed && token === generation && entry === entryId && consentOperation === operation;
-    consentOperation = operation;cooldowns.delete('consent');renderControls();
+    consentOperation = operation;cooldowns.delete('consent');feedbacks.delete('consent');renderControls();
     try {
       const result = await bounded(sdk.auth.oauth[method](authorizationId, { skipBrowserRedirect: true }));
       guarded(token)();check();if (!current()) return;
       if (result.error) throw result.error;
       const target = trustedConsentRedirect(result.data.redirect_url, config, authorization.clientId);
+      if (activePlatformConsent) {
+        if (method === 'denyAuthorization') {
+          const serverState = new URL(target).searchParams.get('state');
+          const safeCancel = buildPlatformCancelUrl({ config, state: serverState || activePlatformConsent.intent.state });
+          if (!safeCancel) throw new Error('취소 주소를 확인하지 못했어요.');
+          operation.redirecting = true;location.assign(safeCancel);return;
+        }
+        const verifiedApprove = matchPlatformPreauthorizedRedirect({ targetUrl: target, storage: resolvePlatformStore(), config, now: cooldownClock.now() });
+        if (!verifiedApprove || verifiedApprove.intent.state !== activePlatformConsent.intent.state) {
+          showStaleAuthorization(false, false);return;
+        }
+        operation.redirecting = true;location.assign(verifiedApprove.approveUrl);return;
+      }
       operation.redirecting = true;location.assign(target);
     } catch (error) {
       operation.redirecting = false;
@@ -484,9 +840,79 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     }
     finally { if (consentOperation === operation && !operation.redirecting) { consentOperation = null;renderControls(); } }
   }
+  async function switchConsentAccount() {
+    if (closed || preview || staleRecovery || consentOperation || authOperation || $('consent')?.hidden) return;
+    if (window.top !== window.self) return;
+    const activePreauthorized = consentTarget && typeof consentTarget === 'object' && consentTarget.kind === 'platform-web' ? consentTarget : null;
+    const activeDetailsConsent = !activePreauthorized && details && platformConsent ? platformConsent : null;
+    const expectedState = activePreauthorized?.state || activeDetailsConsent?.intent?.state || null;
+    if (!expectedState) return;
+    if (!isBoundPlatformStateLive(expectedState) || !buildPlatformCancelUrl({ config, state: expectedState })) {
+      showStaleAuthorization(false, false);
+      return;
+    }
+    const switchingSubject = session?.user?.id || subject || null;
+    const operation = { redirecting: false, switchingAccount: true }, token = generation, entry = entryId;
+    const current = () => !closed && token === generation && entry === entryId && consentOperation === operation;
+    consentOperation = operation;
+    if (remaining('consent') === 0) cooldowns.delete('consent');
+    feedbacks.delete('consent');
+    renderControls();
+    notice('이 브라우저에서 현재 계정을 로그아웃하고 있어요…', false, false, 'pending');
+    try {
+      const signOutResult = await bounded(Promise.resolve().then(() => sdk.auth.signOut({ scope: 'local' })));
+      if (!current()) return;
+      if (signOutResult?.error) throw signOutResult.error;
+      const sessionResult = await bounded(Promise.resolve().then(() => sdk.auth.getSession()));
+      if (!current()) return;
+      if (sessionResult?.error) throw sessionResult.error;
+      if (sessionResult?.data?.session !== null) {
+        throw new Error(WEB_PLATFORM_SWITCH_RETRY_TEXT);
+      }
+      const afterSignOutToken = ++generation;
+      signedOutSubject = switchingSubject;
+      session = null;
+      subject = null;
+      freshSessionUserId = null;
+      signupPending = null;
+      details = null;
+      consentTarget = null;
+      platformConsent = null;
+      activePlatformAuthHint = null;
+      disarmDeviceWait();
+      disarmPlatformAuthExpiry();
+      google?.reset();
+      const cancelUrl = isBoundPlatformStateLive(expectedState) ? buildPlatformCancelUrl({ config, state: expectedState }) : null;
+      if (cancelUrl) {
+        operation.redirecting = true;
+        renderControls();
+        location.assign(cancelUrl);
+        return;
+      }
+      consentOperation = null;
+      mode = 'login';
+      await enter();
+      if (!closed && generation === afterSignOutToken) notice(WEB_PLATFORM_SWITCH_FALLBACK_TEXT, false, true, 'success');
+    } catch (error) {
+      operation.redirecting = false;
+      await Promise.resolve();
+      if (!current()) return;
+      const text = error?.code === 'AUTH_TIMEOUT' ? WEB_PLATFORM_SWITCH_TIMEOUT_TEXT : WEB_PLATFORM_SWITCH_RETRY_TEXT;
+      if (remaining('consent') === 0) cooldowns.delete('consent');
+      feedbacks.set('consent', { text, kind: 'error' });
+      consentOperation = null;
+      renderControls();
+      notice(text, true, true);
+    } finally {
+      if (consentOperation === operation && !operation.redirecting) {
+        consentOperation = null;
+        renderControls();
+      }
+    }
+  }
   async function enter() {
     if (closed) return;
-    view?.stop();view = null;consentTarget = null;$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;
+    view?.stop();view = null;consentTarget = null;platformConsent = null;disarmDeviceWait();$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;
     // The restart card belongs to one signed-in account; sign-out or another account starts clean.
     if (staleRecovery && staleRecovery.subject !== (session?.user?.id || null)) staleRecovery = null;
     const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true;
@@ -510,6 +936,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       return;
     }
     $('auth-panel').hidden = true;
+    syncPlatformVisualContext();
     notice('로그인 정보를 확인하고 내 계정을 불러오고 있어요…', false, false, 'pending');
     try {
       // Auth answers for this tab's own SDK session, and only that session can open the account: every later request (password,
@@ -526,11 +953,39 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       }
       if (!mine(checked)) throw new Error('로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.');
       const verified = checked.data.user;
-      if (!await google.check(verified, check)) { $('auth-panel').hidden = true;return; }check();
+      if (!await google.check(verified, check)) { $('auth-panel').hidden = true;activePlatformAuthHint = null;syncPlatformVisualContext({ refreshAuth: true });return; }check();
       // Only a sign-in that reached the account counts: a Google sign-in that just came back (not a link to an account
       // already signed in) and finished any sign-up step, or this tab's password sign-in. A first Google visit that
       // stops at the sign-up step records nothing until that step is done (the flag waits in google-auth until then).
-      if (google.takeSignedIn?.()) pendingMethod = 'google';
+      if (google.takeSignedIn?.()) { pendingMethod = 'google';freshSessionUserId = verified.id; }
+      const verifiedEmail = normalizeEmail(verified.email);
+      if (signupPending && (!signupPending.authorizationId || signupPending.authorizationId !== authorizationId || cooldownClock.now() > signupPending.until)) signupPending = null;
+      if (signupPending && verifiedEmail && verifiedEmail === signupPending.email) {
+        freshSessionUserId = verified.id;
+        pendingMethod ||= 'email';
+        signupPending = null;
+        try { resolvePlatformStore()?.removeItem(SIGNUP_CONFIRM_KEY); } catch {}
+      } else {
+        if (signupPending) signupPending = null;
+        if (hadCallback && !callbackBlocked && !initialUrl.searchParams.has('google_flow') && !recoveryRequested && requestedView !== 'security' && authorizationId && verifiedEmail) {
+          let matchedConfirm = false;
+          try {
+            const store = resolvePlatformStore(), rawConfirm = store?.getItem(SIGNUP_CONFIRM_KEY);
+            if (rawConfirm) {
+              const parsedConfirm = JSON.parse(rawConfirm);
+              if (parsedConfirm?.v === 1 && parsedConfirm.authorizationId === authorizationId && typeof parsedConfirm.salt === 'string' && typeof parsedConfirm.digest === 'string' && Number.isFinite(parsedConfirm.until) && parsedConfirm.until >= cooldownClock.now()) {
+                const computed = await digestSignupEmail(parsedConfirm.salt, verifiedEmail);check();
+                matchedConfirm = computed === parsedConfirm.digest;
+              }
+              if (matchedConfirm || !Number.isFinite(parsedConfirm?.until) || parsedConfirm.until < cooldownClock.now()) store?.removeItem(SIGNUP_CONFIRM_KEY);
+            }
+          } catch {}
+          if (matchedConfirm) {
+            freshSessionUserId = verified.id;
+            pendingMethod ||= 'email';
+          }
+        }
+      }
       // A Google added from 「로그인과 보안」 came back on this account: say so once the account is drawn (the ways-in row now names its
       // address, 2026-11-12). Held here, not in landingNotice, so an account load that fails drops it with this entry (Fable FA1).
       const addedGoogle = google.takeLinked?.() === true;
@@ -544,6 +999,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         if (staleRecovery?.subject === verified.id) { showStaleAuthorization(staleRecovery.path, staleRecovery.device);return; }
         await loadConsent(check);return;
       }
+      activePlatformAuthHint = null;syncPlatformVisualContext({ refreshAuth: true });
       const client = accountFactory({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: 'platform', guard: check,
         getAccessToken: () => session?.access_token, refresh: async () => { const result = await bounded(sdk.auth.refreshSession());check();session = result.data?.session;return session?.access_token; },
         fetch: (url,options) => {
@@ -552,6 +1008,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
           return fetch(url,accountGet?{...options,headers:{...options.headers,...conversionHeaders}}:options);
         } });
       view = createPortalAccount({ client, user: verified, guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();
+      syncPlatformVisualContext({ refreshAuth: true });
       notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아니에요.' : '로그인됐어요. 아래에서 내 계정을 보고 바꿀 수 있어요.', false, false, 'success');
       if ($('account-next')) $('account-next').hidden = preview || callbackBlocked;
       google.showAccount(!preview);
@@ -560,7 +1017,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       else if (addedGoogle) notice('Google 계정을 더했어요. 이제 그 Google로도 로그인할 수 있어요.', false, true, 'success');
     } catch (error) {
       if (token !== generation || entry !== entryId || error.code === 'ACCOUNT_CHANGED') return;
-      view?.stop();view = null;security.hide();mode = 'login';setMode(mode);$('auth-panel').hidden = false;report(error);
+      view?.stop();view = null;security.hide();mode = 'login';$('auth-panel').hidden = false;setMode(mode);report(error);
     }
   }
   async function logout(note, request = {}, check) {
@@ -571,7 +1028,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     logoutPending = operation;signedOutSubject = subject;authOperation = true;
     const current = () => !closed && operation.generation === generation;
     // Fence ordinary requests before either remote revocation or SDK storage cleanup can await.
-    view?.stop();view = null;session = null;subject = null;consentOperation = null;clearCooldowns();
+    view?.stop();view = null;session = null;subject = null;freshSessionUserId = null;signupPending = null;platformConsent = null;activePlatformAuthHint = null;emailOpenedByPlatformHint = false;emailPanel = null;userTouchedAuth = true;consentOperation = null;clearCooldowns();disarmDeviceWait();disarmPlatformAuthExpiry();syncPlatformVisualContext({ refreshAuth: true });
     google?.reset();
     // Leaving every SYNK app means leaving this device too: the 「지난번 로그인」 hint goes with it.
     if (request.scope === 'all') forgetRecentLogin({ storage: recentStore, realm: recentRealm });
@@ -623,6 +1080,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   }
   document.querySelectorAll('[data-view]').forEach(button => { button.onclick = () => {
     if (closed || authOperation) return;
+    userTouchedAuth = true;
     // Coming back from the password steps is still the e-mail way.
     if (!CHOICE_MODES.has(mode) && button.dataset.view === 'login') emailPanel = true;
     setMode(button.dataset.view);
@@ -637,18 +1095,21 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // Small helps on the form: show what was typed, warn about Caps Lock, forget this device's hint, resend a sign-up mail.
   for (const id of ['password', 'password-confirm']) {
     const toggle = $(`${id}-toggle`);
-    if (toggle) toggle.onclick = () => { const shown = $(id).type === 'password';$(id).type = shown ? 'text' : 'password';toggle.setAttribute('aria-pressed', String(shown)); };
+    if (toggle) toggle.onclick = () => { userTouchedAuth = true;const shown = $(id).type === 'password';$(id).type = shown ? 'text' : 'password';toggle.setAttribute('aria-pressed', String(shown)); };
     const caps = on => { $('caps-warning').hidden = !on;if (on) $(id).setAttribute('aria-describedby', 'caps-warning');else $(id).removeAttribute?.('aria-describedby'); };
     $(id).onkeyup = $(id).onkeydown = event => { if (typeof event?.getModifierState === 'function') caps(event.getModifierState('CapsLock')); };
+    $(id).oninput = () => { userTouchedAuth = true; };
     $(id).onblur = () => caps(false);
   }
-  $('email').oninput = () => renderControls();
+  $('email').oninput = () => { userTouchedAuth = true;renderControls(); };
   if ($('email-method')) $('email-method').onclick = () => {
     if (closed || authOperation || !CHOICE_MODES.has(mode)) return;
-    emailPanel = !emailOpen();renderMethods();
+    userTouchedAuth = true;
+    emailPanel = !emailOpen();syncPlatformVisualContext({ refreshAuth: true });
     if (emailOpen()) ($('email').value && mode === 'login' ? $('password') : $('email')).focus?.();
   };
   $('recent-login-forget').onclick = () => {
+    userTouchedAuth = true;
     // The fields stay as they are; only the hint goes.
     if (emailPanel === null) emailPanel = emailOpen();
     const last = recent();forgetRecentLogin({ storage: recentStore, realm: recentRealm });
@@ -657,6 +1118,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   };
   $('resend-confirm').onclick = async () => {
     if (closed || authOperation || remaining('resend') > 0 || !['login', 'signup'].includes(mode)) return;
+    userTouchedAuth = true;
     const email = $('email').value.trim(), token = generation;if (!email) { notice('확인 메일을 받을 이메일을 넣어 주세요.', true, true);return; }
     authOperation = true;renderControls();notice('확인 메일을 다시 요청하고 있어요…', false, false, 'pending');
     try {
@@ -669,6 +1131,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   };
   $('auth-form').onsubmit = async event => {
     event.preventDefault();if (closed || authOperation || remaining(mode) > 0) return;
+    userTouchedAuth = true;
     if (hadCallback && !initializationFinished) { showCallbackWaiting(true);return; }
     const requestMode = mode, token = ++generation, requestStartedAt = Date.now(), verifying = resetLinkStep(), confirmingEmail = emailChangeStep(), previous = session?.user || null;
     authOperation = true;cooldowns.delete(requestMode);$('resend-confirm').hidden = true;feedbacks.set(requestMode, { text: '요청을 보내고 있어요. 잠시만 기다려 주세요.', kind: 'pending' });renderControls();notice('요청을 보내고 있어요. 잠시만 기다려 주세요.', false, false, 'pending');
@@ -718,6 +1181,17 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         await enter();
       }
       else if (requestMode === 'recover' || requestMode === 'signup' && !result.data?.session) {
+        if (requestMode === 'signup') {
+          const normalizedSignupEmail = normalizeEmail(email);
+          signupPending = normalizedSignupEmail && authorizationId ? { email: normalizedSignupEmail, authorizationId, until: cooldownClock.now() + SIGNUP_CONFIRM_TTL } : null;
+          if (signupPending) {
+            try {
+              const salt = makeSignupSalt(), digest = await digestSignupEmail(salt, normalizedSignupEmail);
+              if (closed) return;
+              resolvePlatformStore()?.setItem(SIGNUP_CONFIRM_KEY, JSON.stringify({ v: 1, authorizationId, salt, digest, until: signupPending.until }));
+            } catch { /* in-memory confirmation still holds in this tab */ }
+          }
+        }
         const text = `${requestMode === 'signup' ? '가입 확인 메일을 요청했어요.' : '비밀번호 재설정 메일을 요청했어요.'} 메일함에서 메일을 열고 안에 있는 단추를 눌러 주세요. 안 보이면 스팸함도 보고, 그래도 없으면 아래 단추로 다시 보내 주세요.`;
         sent = { mode: requestMode, email };feedbacks.set(requestMode, { text, kind: 'success' });notice(text, false, true, 'success');
         // A sign-up mail is sent again by address alone (the password field was just emptied).
@@ -731,7 +1205,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
         await enter();if (!$('account').hidden) notice('새 비밀번호를 저장했어요. 다른 기기와 앱(PC 앱·WORLD 포함)에서는 새 비밀번호로 다시 로그인해 주세요.', false, true, 'success');
         void tidySessions(generation);
       }
-      else { signedOutSubject = null;session = result.data.session;generation++;subject = session?.user?.id;clearCooldowns();pendingMethod = 'email';await enter(); }
+      else { signedOutSubject = null;session = result.data.session;generation++;subject = session?.user?.id;freshSessionUserId = subject || null;signupPending = null;clearCooldowns();pendingMethod = 'email';await enter(); }
     } catch (error) {
       if (token === generation && mode === requestMode) {
         report(error, requestMode);
@@ -742,10 +1216,24 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     finally { authOperation = false;renderControls(); }
   };
   for (const [id, method] of [['approve', 'approveAuthorization'], ['deny', 'denyAuthorization']]) $(id).onclick = () => respondToAuthorization(method);
-  window.addEventListener('pagehide', () => { closed = true;generation++;google?.stop();security.stop();view?.stop();consentOperation = null;clearCooldowns();disarmDeviceWait(); });
+  if ($('consent-switch')) $('consent-switch').onclick = () => { void switchConsentAccount(); };
+  const onPlatformWindowSync = event => {
+    if (closed || event?.type === 'visibilitychange' && document.hidden) return;
+    syncPlatformVisualContext();
+  };
+  window.addEventListener('storage', onPlatformWindowSync);
+  window.addEventListener('focus', onPlatformWindowSync);
+  window.addEventListener('visibilitychange', onPlatformWindowSync);
+  window.addEventListener('pagehide', () => {
+    closed = true;generation++;google?.stop();security.stop();view?.stop();consentOperation = null;clearCooldowns();disarmDeviceWait();disarmPlatformAuthExpiry();
+    window.removeEventListener('storage', onPlatformWindowSync);
+    window.removeEventListener('focus', onPlatformWindowSync);
+    window.removeEventListener('visibilitychange', onPlatformWindowSync);
+  });
   window.addEventListener('pageshow', event => { if(event.persisted) location.reload(); });
   const showStartupError = error => {
     if (hadCallback && !initializationFinished) { showCallbackWaiting(true);return; }
+    activePlatformAuthHint = null;syncPlatformVisualContext({ refreshAuth: true });
     if ($('account-next')) $('account-next').hidden = true;
     const retained = !$('account').hidden;
     const text = error?.code === 'GOOGLE_CALLBACK_INCOMPLETE'
@@ -762,11 +1250,12 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   };
   async function applyAuthEvent(event, value) {
     if (closed) return;
+    if (consentOperation?.switchingAccount && (!value?.user?.id || value.user.id === subject)) return;
     // Even when storage cleanup fails, focus/refresh cannot undo this tab's explicit logout.
     // A successful new sign-in request can authorize this account again.
     if (signedOutSubject && value?.user?.id === signedOutSubject) return;
     authVersion++;const next = value?.user?.id || null, changed = next !== subject;
-    if (changed) { generation++;subject = next;google?.reset();security.hide();view?.stop();consentOperation = null;consentTarget = null;clearCooldowns();staleRecovery = null;const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true; }session = value;
+    if (changed) { generation++;subject = next;if (next !== freshSessionUserId) freshSessionUserId = null;google?.reset();security.hide();view?.stop();consentOperation = null;consentTarget = null;platformConsent = null;clearCooldowns();disarmDeviceWait();staleRecovery = null;const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true; }session = value;
     if (event === 'PASSWORD_RECOVERY') { mode = 'reset';recoveryReady = true;rememberRecovery(next); }
     const version = authVersion, token = generation, awaitingCallback = hadCallback && !initializationFinished;
     // SIGNED_IN may precede the SDK's URL cleanup. Judge only its final initialize result.
@@ -777,6 +1266,42 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       if (callbackError) setMode(recoveryRequested && !session ? 'recover' : 'login');
       await enter();
       if (!closed && token === generation && callbackError) showStartupError(callbackError);
+    }
+  }
+  async function maybeApplyPlatformEntryHint() {
+    if (closed || preview || portalEntryHintHandled || !initialEntrySettled || initializing || userTouchedAuth || session || startupError || callbackBlocked || callbackError || hadCallback) return;
+    if (window.top !== window.self || !CHOICE_MODES.has(mode) || feedbacks.has(mode) || cooldowns.has(mode)) return;
+    const hint = resolvePlatformPortalEntryHint({
+      storage: resolvePlatformStore(),
+      config,
+      authorizationId,
+      requestSeen,
+      hadCallback,
+      url: initialUrl.href,
+      now: cooldownClock.now(),
+    });
+    if (!hint) { activePlatformAuthHint = null;syncPlatformVisualContext({ refreshAuth: true });portalEntryHintHandled = true;return; }
+    if (hint.method === 'email') {
+      portalEntryHintHandled = true;
+      emailPanel = true;
+      if (!requestedView && mode !== 'login') setMode('login');
+      else syncPlatformVisualContext({ refreshAuth: true });
+      ($('email')?.value && mode === 'login' ? $('password') : $('email'))?.focus?.();
+      return;
+    }
+    if (hint.method === 'signup') {
+      if (!requestedView && mode !== 'signup') setMode('signup');
+      if (googleAvailable === null && !emailOpen()) return;
+      portalEntryHintHandled = true;
+      if (emailOpen()) $('email')?.focus?.();
+      else ($('google-login')?.disabled ? $('email-method') : $('google-login'))?.focus?.();
+      return;
+    }
+    if (hint.method === 'google') {
+      if (!requestedView && mode !== 'login') setMode('login');
+      const seenDifferentAuthorization = priorSeenRequests.some(entry => entry.id !== authorizationId && entry.at >= hint.createdAt);
+      const outcome = await google.autoStart({ state: hint.state, seenDifferentAuthorization });
+      if (outcome.reason !== 'pending-settings') portalEntryHintHandled = true;
     }
   }
   sdk.auth.onAuthStateChange((event, value) => { queueMicrotask(() => { void applyAuthEvent(event, value).catch(report); }); });
@@ -791,6 +1316,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       // verified existing session usable; successful callbacks still validate the nonce/owner.
       if (callbackError.code === 'GOOGLE_CALLBACK_INCOMPLETE') google.clearCallback();
       if (callbackError.code === 'AUTH_RECOVERY_CALLBACK' || requestedView === 'security') focusSecurity = true;
+      activePlatformAuthHint = null;syncPlatformVisualContext({ refreshAuth: true });
     }
     // The second e-mail-change confirmation returns here and signs this browser in with the changed address.
     else if (hadCallback && requestedView === 'security') landingNotice = { text: '이메일 변경 확인을 마쳤어요. 아래 「로그인과 보안」에서 지금 로그인 이메일을 확인해 주세요.', error: false };
@@ -802,7 +1328,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     return callbackError ? { ...result, error: callbackError } : result;
   });
   if (hadCallback) showCallbackWaiting();
-  let startupError = null;
+  startupError = null;
   try {
     const initialized = await bounded(initializationPromise);
     startupError = initialized?.error || null;
@@ -815,5 +1341,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   else if (mode === 'reset' && !session && !recoveryLink) { mode = 'recover';startupError = { code: 'AUTH_RECOVERY_REQUIRED' }; }
   initializing = false;setMode(mode);
   await enter().catch(report);
+  initialEntrySettled = true;
   if (startupError) showStartupError(startupError);
+  else await maybeApplyPlatformEntryHint().catch(report);
 }

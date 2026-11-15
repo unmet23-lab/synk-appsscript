@@ -53,6 +53,7 @@ output('assets/world-annyeong.webp', fs.readFileSync(path.join(sourceRoot, 'docs
 output('assets/laptop.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/SNS키트/assets/felt-laptop.webp')));
 for (const id of ['train', 'gate', 'idol']) output(`assets/scene-${id}.webp`, fs.readFileSync(path.join(sourceRoot, 'experiences/seoul-arrival/assets/img', `${id}.webp`)));
 output('member-insight.css', fs.readFileSync(path.join(sourceRoot, 'desktop/renderer/member-insight.css')));
+output('portal-entry.css', fs.readFileSync(path.join(sourceRoot, 'desktop/renderer/portal-entry.css')));
 for (const file of ['wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
 // 회원 혜택 포스터 물건은 웹에서 가장 크게 보이는 크기에 맞춘 판이다(이름은 데스크톱 앱과 같고, 데스크톱 앱은 원본을 쓴다).
 for (const id of ['gift', 'insight', 'subscriptions', 'care', 'fortune']) output(`assets/member/benefit-${id}.webp`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림', `benefit-${id}.webp`)));

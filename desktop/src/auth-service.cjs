@@ -1,7 +1,7 @@
 'use strict';
 const http=require('node:http'),crypto=require('node:crypto');
 const {requestSpec}=require('./account-requests.cjs');
-const {accountResponseContract,missingAsset}=require('./account-response-contract.cjs');
+const {accountResponseContract,missingAsset,purposeOnboarding,platformClient}=require('./account-response-contract.cjs');
 const {projectLibrary}=require('./library-access.cjs');
 const MESSAGES={AUTH_CONFIG:'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.',AUTH_REQUIRED:'SYNK ID로 다시 로그인해 주세요.',AUTH_CANCELLED:'로그인을 취소했어요.',AUTH_TIMEOUT:'로그인 시간이 지났어요. 다시 시작해 주세요.',CALLBACK_UNAVAILABLE:'로그인 창과 연결하지 못했어요. 잠시 뒤 다시 해 주세요.',AUTH_FAILED:'로그인을 마치지 못했어요. 다시 해 주세요.',AUTH_CHANGED:'로그인 상태가 바뀌었어요.',SECURE_STORAGE_UNAVAILABLE:'이 PC의 암호화 저장소를 쓸 수 없어 로그인을 저장하지 못했어요.',NETWORK:'서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.',INVALID_REQUEST:'요청을 처리하지 못했어요. 다시 해 주세요.',AUTH_SERVER_UNAVAILABLE:'로그인 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.'};
 MESSAGES.PLATFORM_AUTH_REQUIRED='SYNK Platform에서 로그인하면 이 앱도 같은 계정으로 연결돼요.';
@@ -16,8 +16,20 @@ function publicError(error){return {code:error.code||'AUTH_FAILED',message:MESSA
 function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,appVersion='0.1.0',device=null,now=Date.now,timeoutMs=12000,loginTimeoutMs=300000,onChange=()=>{}}){
   let status=config?'signed-out':'unconfigured',lastError=null,session=null,account=null,librarySource=null,pending=null,starting=null,epoch=0,accountLoadSequence=0,refreshing=null,initialized=false;
   const controllers=new Set();let platformBinding=null,confirmedBinding=null;
+  // verifiedOwner is the SYNK ID this epoch last verified (renewingAccountId). onboarding is the platform entry's
+  // visit-purpose state read with that verified account. onboardingClosed is the account whose completion this
+  // epoch confirmed, so a read that started earlier and answers 'pending' cannot reopen the question.
+  let verifiedOwner=null,onboarding=null,onboardingClosed=null;
+  // The wire accountGeneration (company-entry-contract-v1 §7): one random UUID for each epoch, issued when first read.
+  // It is no credential and never the numeric sessionGeneration. A same-account renewal stays in its epoch and keeps
+  // it; a sign-out, a new sign-in, a confirmed rejection and a platform account change move the epoch and replace it.
+  let issuedGeneration=null;
+  const accountGeneration=()=>{if(issuedGeneration?.epoch!==epoch)issuedGeneration={epoch,id:crypto.randomUUID()};return issuedGeneration.id;};
   const bindingAllows=()=>!platformBinding||platformBinding.status==='signed-in'&&account?.synk_user_id===platformBinding.accountId;
-  const snapshot=()=>{const allowed=bindingAllows();return {configured:!!config,status:platformBinding&&platformBinding.status!=='signed-in'?(platformBinding.status==='signed-out'?'signed-out':'restoring'):status,signedIn:allowed&&status==='signed-in'&&!!session,sessionGeneration:epoch,secureStorage:store.available(),account:allowed&&account?{synk_user_id:account.synk_user_id,display_name:account.profile?.display_name||''}:null,learningSync:allowed&&status==='signed-in'&&session?.verified===true&&librarySource?.capabilities?.learningSync===true,library:projectLibrary(allowed&&status==='signed-in'&&session?.verified?librarySource:null,now()),error:lastError};};
+  // Only the platform's own verified sign-in carries the visit-purpose state; restoring, failed and other clients' states never show it pending.
+  const onboardingState=allowed=>allowed&&status==='signed-in'&&session?.verified===true&&!!account&&onboarding?.accountId===account.synk_user_id?{purpose:onboarding.purpose}:null;
+  const snapshot=()=>{const allowed=bindingAllows();return {configured:!!config,status:platformBinding&&platformBinding.status!=='signed-in'?(platformBinding.status==='signed-out'?'signed-out':'restoring'):status,signedIn:allowed&&status==='signed-in'&&!!session,sessionGeneration:epoch,accountGeneration:accountGeneration(),secureStorage:store.available(),account:allowed&&account?{synk_user_id:account.synk_user_id,display_name:account.profile?.display_name||''}:null,learningSync:allowed&&status==='signed-in'&&session?.verified===true&&librarySource?.capabilities?.learningSync===true,library:projectLibrary(allowed&&status==='signed-in'&&session?.verified?librarySource:null,now()),...(platformClient(config)?{onboarding:onboardingState(allowed)}:{}),error:lastError};};
+  function noteOnboarding(accountId,data){if(platformClient(config))onboarding={accountId,purpose:onboardingClosed===accountId?'none':purposeOnboarding(data)};}
   // A platform binding is only an account expectation. It carries no token and
   // cannot authorize a request; the normal OAuth/user/account checks still run.
   function bindPlatform(next){
@@ -69,10 +81,21 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
   async function install(next,expected,expectedSubject){
     check(expected);await store.save({refreshToken:next.refreshToken,subject:expectedSubject||null});check(expected);
     session={...next,subject:expectedSubject||null,verified:false};account=null;librarySource=null;status='restoring';lastError=null;emit();
-    const verified=await verify(next,expectedSubject);check(expected);await store.save({refreshToken:verified.next.refreshToken,subject:verified.next.subject});check(expected);session={...verified.next,verified:true};account=verified.account;librarySource=verified.librarySource;status='signed-in';lastError=null;emit();
+    const verified=await verify(next,expectedSubject);check(expected);await store.save({refreshToken:verified.next.refreshToken,subject:verified.next.subject});check(expected);session={...verified.next,verified:true};account=verified.account;librarySource=verified.librarySource;
+    verifiedOwner={accountId:account.synk_user_id,epoch:expected};noteOnboarding(account.synk_user_id,verified.librarySource);status='signed-in';lastError=null;emit();
   }
   function closePending(){if(!pending)return;clearTimeout(pending.timer);pending.server.close();pending.server.closeAllConnections?.();pending=null;}
-  async function discard(code){epoch++;accountLoadSequence++;closePending();for(const c of controllers)c.abort();session=null;account=null;librarySource=null;status=config?'signed-out':'unconfigured';lastError=code?publicError(fault(code)):null;emit();await store.clear();}
+  async function discard(code){epoch++;accountLoadSequence++;closePending();for(const c of controllers)c.abort();session=null;account=null;librarySource=null;verifiedOwner=null;onboarding=null;onboardingClosed=null;status=config?'signed-out':'unconfigured';lastError=code?publicError(fault(code)):null;emit();await store.clear();}
+  // Main keeps an open PULSE window, its drafts and its storage while the SYNK ID it was opened for renews its token
+  // in this same epoch, or waits to retry after a retryable failure (pulse-app.cjs getRenewingAccount). Only main reads
+  // this. It is no credential and no renderer state: the public snapshot still says restoring or error, and nothing
+  // new opens until the account is verified again. A sign-out, a new sign-in or a confirmed rejection (discard) and a
+  // platform account change (bindPlatform) move the epoch first, so they never count as a renewal.
+  function renewingAccountId(){
+    if(!verifiedOwner||verifiedOwner.epoch!==epoch||!session||pending||starting)return null;
+    if(platformBinding&&(platformBinding.status!=='signed-in'||platformBinding.accountId!==verifiedOwner.accountId))return null;
+    return status==='restoring'||status==='error'&&lastError?.retryable===true?verifiedOwner.accountId:null;
+  }
   async function refresh(){
     if(refreshing)return refreshing;
     const expected=epoch,old=session;
@@ -134,7 +157,40 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
     }
     return {ok:!localError,status:snapshot(),serverRevoked:serverSessionRevoked&&refreshRevoked,serverSessionRevoked,refreshRevoked,...(localError?{error:publicError(fault('AUTH_FAILED'))}:{})};
   }
-  async function accountRequest(operation,params){let spec,loadSequence,requestEpoch,requestToken;try{const contract=accountResponseContract(operation,params,config,fault);spec=requestSpec(operation,params,appVersion,config?.product,config?.clientKey);const expected=epoch;requestEpoch=expected;if(operation==='load'){loadSequence=++accountLoadSequence;librarySource=null;emit();}let token=await getAccessToken();check(expected);const ownerId=account?.synk_user_id;
+  // The entry portal's visit-purpose question ends once (SYNK-talk lib/synk-account-purpose-onboarding.js). The record
+  // belongs to the verified SYNK ID the question was shown to (expectedAccountId, never sent). A sign-out or another
+  // account before the answer is AUTH_CHANGED and writes nothing for the new one, while a token renewal of that same
+  // account carries on. A failure keeps its own code and is never reported as success. It clears neither this
+  // sign-in nor the library, except the server's session rejection, which is handled as for every other request.
+  async function completePurposeOnboarding(params){
+    let expected;
+    try{
+      const contract=accountResponseContract('completePurposeOnboarding',params,config,fault),spec=requestSpec('completePurposeOnboarding',params,appVersion,config?.product,config?.clientKey),owner=spec.expectedAccountId;
+      expected=epoch;
+      // Another SYNK ID verified in this sign-in is an account change, decided before any token is read or renewed:
+      // that account's renewal and its failures are not this answer's.
+      if(verifiedOwner?.epoch===epoch&&verifiedOwner.accountId!==owner)throw fault('AUTH_CHANGED');
+      // The verified token of that same account, after any renewal this request had to wait for.
+      const ownerToken=()=>{check(expected);requireBindingAccess();if(!session?.verified)throw fault('AUTH_SERVER_UNAVAILABLE',undefined,true);if(session.accountId!==owner)throw fault('AUTH_CHANGED');return session.accessToken;};
+      const send=token=>json(config.accountApiUrl+'/functions/v1/'+spec.path,{method:spec.method,headers:{...functionHeaders(token),'Content-Type':'application/json'},body:JSON.stringify(spec.body)},contract.maxBytes);
+      await getAccessToken();let token=ownerToken(),result=await send(token);check(expected);requireBindingAccess();
+      if(contract.shouldRefresh(result)){if(session?.accessToken===token)await refresh();else await getAccessToken();token=ownerToken();result=await send(token);check(expected);requireBindingAccess();}
+      const decoded=contract.decode(result,owner);
+      if(decoded.kind==='error'){
+        // As for every request, an older token's rejection cannot close the replacement token's session.
+        if(decoded.discard){if(session?.accessToken!==token)throw fault('AUTH_CHANGED');await discard('AUTH_REQUIRED');}
+        return decoded.data;
+      }
+      onboardingClosed=owner;
+      if(onboarding?.accountId===owner&&onboarding.purpose!=='none'){onboarding={accountId:owner,purpose:'none'};emit();}
+      return decoded.data;
+    }catch(error){
+      // A sign-out or another sign-in aborts the request in flight; that transport failure is the account change.
+      if(expected!==undefined&&expected!==epoch&&error.retryable)return {ok:false,error:publicError(fault('AUTH_CHANGED'))};
+      return {ok:false,error:publicError(error)};
+    }
+  }
+  async function accountRequest(operation,params){if(operation==='completePurposeOnboarding')return completePurposeOnboarding(params);let spec,loadSequence,requestEpoch,requestToken;try{const contract=accountResponseContract(operation,params,config,fault);spec=requestSpec(operation,params,appVersion,config?.product,config?.clientKey);const expected=epoch;requestEpoch=expected;if(operation==='load'){loadSequence=++accountLoadSequence;librarySource=null;emit();}let token=await getAccessToken();check(expected);const ownerId=account?.synk_user_id;
       const send=t=>{requestToken=t;return json(config.accountApiUrl+'/functions/v1/'+spec.path,{method:spec.method||(spec.body===undefined?'GET':'POST'),headers:{...functionHeaders(t),...(spec.contractVer?{'X-Contract-Ver':spec.contractVer}:{}),...(spec.body===undefined?{}:{'Content-Type':'application/json'})},...(spec.body===undefined?{}:{body:JSON.stringify(spec.body)})},contract.maxBytes);};
       let result=await send(token);check(expected);requireBindingAccess();if(contract.shouldRefresh(result)){if(session.accessToken===token)token=await refresh();else token=session.accessToken;check(expected);requireBindingAccess();result=await send(token);check(expected);requireBindingAccess();}
       const decoded=contract.decode(result,ownerId);
@@ -150,12 +206,12 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
         if(typeof data.account?.synk_user_id!=='string'||data.account.synk_user_id!==ownerId){await discard('AUTH_REQUIRED');return {ok:false,error:publicError(fault('AUTH_REQUIRED'))};}
         // A same-account refresh temporarily clears identity while verifying its new token.
         // An older token's response must neither discard it nor replace the new verified rights.
-        if(status==='signed-in'&&session?.verified&&session.accessToken===token){account=data.account;librarySource=data;emit();}
+        if(status==='signed-in'&&session?.verified&&session.accessToken===token){account=data.account;librarySource=data;noteOnboarding(data.account.synk_user_id,data);emit();}
       }
       // A saved name shows in the title bar at once; a full reload would empty the library meanwhile.
       if(operation==='updateProfile'||operation==='accountView'){
         if(typeof data.account?.synk_user_id!=='string'||data.account.synk_user_id!==ownerId){await discard('AUTH_REQUIRED');return {ok:false,error:publicError(fault('AUTH_REQUIRED'))};}
-        if(status==='signed-in'&&session?.verified&&session.accessToken===token){account=data.account;if(librarySource)librarySource={...librarySource,account:data.account};emit();}
+        if(status==='signed-in'&&session?.verified&&session.accessToken===token){account=data.account;if(librarySource)librarySource={...librarySource,account:data.account};if(operation==='accountView')noteOnboarding(data.account.synk_user_id,data);emit();}
       }
       if(operation==='revokeAll'||operation==='revokeSession'&&(data.current===true||data.currentRevoked===true))await discard();return data;
     }catch(error){
@@ -187,6 +243,6 @@ function createAuthService({config,store,openExternal,fetcher=globalThis.fetch,a
       return {ok:false,error:publicError(error)};
     }
   }
-  return {status:snapshot,initialize,signIn,bindPlatform,identity,cancel:async()=>{if(pending||starting?.expected===epoch)await discard('AUTH_CANCELLED');return snapshot();},signOut,accountRequest,getAccessToken,dispose:()=>{epoch++;accountLoadSequence++;closePending();for(const c of controllers)c.abort();session=null;account=null;librarySource=null;}};
+  return {status:snapshot,initialize,signIn,bindPlatform,identity,cancel:async()=>{if(pending||starting?.expected===epoch)await discard('AUTH_CANCELLED');return snapshot();},signOut,accountRequest,getAccessToken,renewingAccountId,accountGeneration,dispose:()=>{epoch++;accountLoadSequence++;closePending();for(const c of controllers)c.abort();session=null;account=null;librarySource=null;verifiedOwner=null;onboarding=null;onboardingClosed=null;}};
 }
 module.exports={createAuthService,publicError};

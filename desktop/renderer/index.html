@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./member-insight.css">
   <link rel="stylesheet" href="./subscriptions.css">
   <link rel="stylesheet" href="./account-page.css">
+  <link rel="stylesheet" href="./portal-entry.css">
   <script src="/assets/launcher/engine.js"></script>
   <script src="/assets/launcher/personalization.js"></script>
   <script type="module" src="./launcher.mjs"></script>
@@ -178,4 +179,15 @@
   <label class="consent-choice"><input id="personal-consent" type="checkbox"><span>고른 내용을 이 PC에 저장해 앱 순서와 보기에 반영하는 데 동의해요.</span></label><p class="fine-print">실력이나 회사 권한을 판단하는 데 쓰지 않고, 학습 기록·회사 자료도 가져오지 않아요. 저장한 설정은 언제든 지울 수 있어요.</p><p id="personal-message" role="status"></p><button class="primary" type="submit" id="personal-save">저장하고 적용</button><div class="personal-secondary"><button type="button" class="ghost-button" id="personal-skip">건너뛰기</button><button type="button" class="text-link" id="personal-clear">저장한 설정 지우기</button></div>
 </form></dialog>
 <dialog id="leave-dialog" class="account-dialog leave-dialog" aria-labelledby="leave-title" aria-describedby="leave-description"><h2 id="leave-title">작성 중인 메모가 있어요</h2><p id="leave-description"></p><form method="dialog" class="leave-actions"><button class="solid-button" value="keep" autofocus>돌아가서 저장</button><button class="ghost-button" value="discard">저장 없이 나가기</button></form></dialog>
+<div id="portal-entry"></div>
+<template id="portal-window-chrome">
+  <div class="portal-window-bar" data-portal-window-bar hidden>
+    <div class="portal-window-drag" data-portal-window-drag aria-hidden="true"></div>
+    <div class="portal-window-actions" role="group" aria-label="창 조절">
+      <button type="button" data-window="minimize" aria-label="최소화"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+      <button type="button" data-window="toggle-maximize" data-portal-maximize data-maximized="false" aria-label="최대화"><svg class="i when-normal" aria-hidden="true"><use href="#i-square"/></svg><svg class="i when-maximized" aria-hidden="true"><use href="#i-restore"/></svg></button>
+      <button type="button" data-window="close" class="window-close" aria-label="닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+  </div>
+</template>
 </body></html>

@@ -33,7 +33,7 @@ async function fixture(t, { loginSettings = { google: true, phone: false }, stor
   const localStorage = memory(stored), sessionStorage = memory();
   const original = ['document', 'window', 'location'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]);
   Object.assign(globalThis, { document: { body: new Element(), getElementById: get, createElement: tag => new Element(tag), querySelectorAll: () => modes },
-    window: { addEventListener: (type, fn) => events.set(type, fn), localStorage, sessionStorage, history: { state: null, replaceState(_state, _title, url) { location.href = url; } } },
+    window: { addEventListener: (type, fn) => events.set(type, fn), removeEventListener: (type, fn) => { if (events.get(type) === fn) events.delete(type); }, localStorage, sessionStorage, history: { state: null, replaceState(_state, _title, url) { location.href = url; } } },
     location: { href: `https://id.example.test/id/${query}`, assign() {}, reload() {} } });
   t.after(() => { events.get('pagehide')?.({});for (const [key, descriptor] of original) { if (descriptor) Object.defineProperty(globalThis, key, descriptor);else delete globalThis[key]; } });
   const invoke = async (method, args) => { calls.push({ method, args });return typeof replies[method] === 'function' ? replies[method](args) : replies[method] || { data: { session: null }, error: null }; };

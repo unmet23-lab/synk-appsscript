@@ -13,7 +13,7 @@ const deferred = () => { let resolve;const promise = new Promise(done => { resol
 const settled = async () => { for (let i = 0; i < 5; i++) await new Promise(resolve => setImmediate(resolve)); };
 class Element {
   constructor(tag = 'div', writes = []) {
-    Object.assign(this, { tagName: tag, children: [], dataset: {}, hidden: false, disabled: false, value: '', checked: false, textContent: '', classList: { add() {}, remove() {} } });
+    Object.assign(this, { tagName: tag, children: [], dataset: {}, hidden: false, disabled: false, value: '', checked: false, textContent: '', classList: { add() {}, remove() {}, toggle() {} } });
     return new Proxy(this, { set(target, key, value) { writes.push({ key, value });return Reflect.set(target, key, value); } });
   }
   append(...nodes) { this.children.push(...nodes); }
@@ -50,7 +50,7 @@ function fixture(t, { user = null, callback = false, initialize = null, loginSet
   const emit = (event, value) => { saved = value;listener(event, value); };
   Object.assign(globalThis, {
     document: { body: new Element('body', writes), getElementById: get, createElement: tag => new Element(tag, writes), querySelectorAll: () => modes },
-    window: { addEventListener: (name, fn) => events.set(name, fn), history: { state: null, replaceState(_state, _title, url) { location.href = url; } } },
+    window: { addEventListener: (name, fn) => events.set(name, fn), removeEventListener: (name, fn) => { if (events.get(name) === fn) events.delete(name); }, history: { state: null, replaceState(_state, _title, url) { location.href = url; } } },
     location: { href: initialUrl.href, assign: url => redirects.push(url), reload() {} },
     fetch: async (url, options) => {
       assert.equal(new URL(url).href.split('?')[0], 'https://account.example.invalid/functions/v1/synk-account');

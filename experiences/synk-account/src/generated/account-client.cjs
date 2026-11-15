@@ -29,7 +29,7 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
   fetch: fetcher = globalThis.fetch, timeoutMs = 12000 }) {
   if (!['world', 'platform'].includes(product) || typeof guard !== 'function' || typeof getAccessToken !== 'function') throw new TypeError('An authenticated product host is required');
   const configured = !!url && !!anonKey;
-  async function request(path, body, { signal } = {}) {
+  async function request(path, body, { signal, keepalive } = {}) {
     const checkCancelled = () => { if (signal?.aborted) throw fault('NETWORK', '요청을 중단했어요.', true); };
     guard();
     checkCancelled();
@@ -45,7 +45,7 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
       const timer = setTimeout(cancel, timeoutMs);
       try {
         const response = await fetcher(`${url.replace(/\/$/, '')}/functions/v1/${path}`, {
-          method: body === undefined ? 'GET' : 'POST', signal: abort.signal,
+          method: body === undefined ? 'GET' : 'POST', signal: abort.signal, ...(keepalive === true ? { keepalive: true } : {}),
           headers: { apikey: anonKey, Authorization: `Bearer ${token}`, 'X-SYNK-Product': product, 'X-SYNK-Contract': '1', 'X-SYNK-App-Version': appVersion,
             ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
           ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -118,6 +118,10 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     requestDeletion: request_id => action('delete-request', { request_id }),
     // 7일 취소 유예 동안(요청이 아직 처리 전일 때) 같은 요청 번호로 취소한다.
     cancelDeletion: request_id => action('delete-cancel', { request_id }),
+    // 「방문 목적 안내」 완료(platform 전용, lib/synk-account-purpose-onboarding.js). outcome은 'chosen' · 'skipped' · 'not-asked' 가운데 하나이고,
+    // 고른 목적은 보내지 않는다. 이미 닫혔거나 줄이 없어도 { ok:true, onboarding:{ purpose:'none' } }다. 대기 여부는 load()의 onboarding이 그대로 넘긴다.
+    // options: { signal, keepalive }.
+    completePurposeOnboarding: (outcome, options) => action('purpose-onboarding-complete', { outcome }, options),
     // 「나 > 내 정보」 — 배우는 이유(덧붙이기)와 평가 전용 선택 응답(맞춤의 입력이 아니다).
     saveReasons: (reasons, other = null) => action('learn-reasons', { reasons, other }),
     skipReasons: () => action('learn-reasons-skip'),

@@ -17,6 +17,7 @@ import { solioLegacyHash, solioPage, solioHomeItem, solioDiscoverSection, solioA
 import { platformPublicEntry, platformCompanyEntry } from './platform-entry.mjs';
 import { shelfItem, shelfColumns } from './platform-shelf.mjs';
 import { PLATFORM_DOWNLOADS, DOWNLOAD_OS, DOWNLOAD_STEPS, RELEASE_PAGE, downloadHref, checksumHref, downloadSize, downloadsState, detectDownloadOS, refreshPlatformDownloads } from './platform-downloads.mjs';
+import { mountWebPortalHost } from './platform-portal.mjs';
 const $ = id => document.getElementById(id), root = $('page-content');
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const image = (name, cls = '') => `<img${cls?` class="${cls}"`:''} src="./assets/${name}" alt="">`;
@@ -29,7 +30,7 @@ const library={...deviceLibrary,read(){const device=deviceLibrary.read(),cloud=c
 let config = readConfig({ version: 1 }, location.href), messengerUrl = null, clients = [], environment = null;
 let category = 'all', collection = 'all', sort = 'default', query = platformRoute(location.hash).query, timer, detailTab = 'overview', downloadOS = 'windows', downloadPicked = false, downloadStarted = null, detectedOS = null;
 const launches = new Map();
-let browserAccount = null, startup = 0, startupPromise = null, pageActive = true, identity = { status: 'loading', displayName: '', message: '로그인 상태를 확인하고 있어요.' };
+let browserAccount = null, portalHost = null, startup = 0, startupPromise = null, pageActive = true, identity = { status: 'loading', displayName: '', message: '로그인 상태를 확인하고 있어요.' };
 let nativeIdentity = { status: 'loading' }, nativeIdentityVersion = 0;
 const insightIdentity=()=>typeof window.synkDesktop?.authStatus==='function'?nativeIdentity:browserAccount?.identity()||identity;
 const insightRequest=(operation,params)=>typeof window.synkDesktop?.authStatus==='function'?window.synkDesktop.accountRequest(operation,params):browserAccount.request(operation,params);
@@ -53,7 +54,7 @@ const news = [
  {id:'benefits',app:'platform',label:'회원 혜택',date:'2026.10.18',title:'회원 혜택을 네 가지로 정리했어요',body:'회원 혜택은 이제 내 성향, AI 구독 계정판, 플레저, 무료 운세예요. 대화 리허설과 가족 이야기 앨범은 서비스를 마쳤어요.'},
  {id:'auto-update',app:'platform',label:'PC 앱',date:'2026.10.14',title:'Windows PC 앱이 스스로 업데이트해요',body:'Windows용 SYNK PC 앱은 새 판이 나오면 스스로 받아 설치하고 다시 켜져요. Mac은 새 판을 받아 두면 DMG를 열어 앱을 바꿔 주세요.'},{id:'workspace',app:'messenger',label:'SYNK Workspace',date:'2026.10.09',title:'사내 메신저가 SYNK Workspace가 됐어요',body:'대화와 자료, 작업실을 쓰던 사내 메신저의 이름을 SYNK Workspace로 바꿨어요. 교사는 같은 앱의 「내 수업」에서 맡은 반을 챙겨요.'}
 ];
-function notice(text) { clearTimeout(timer);$('platform-message').textContent = text;$('platform-message').hidden = false;timer = setTimeout(() => $('platform-message').hidden = true, 6500); }
+function notice(text) { if (portalHost?.isActive()) return; clearTimeout(timer);$('platform-message').textContent = text;$('platform-message').hidden = false;timer = setTimeout(() => $('platform-message').hidden = true, 6500); }
 function dispatch(action) { if(action.type==='launch')void memberActivity.trackLaunch(action.id);if(continuity?.connected()&&['favorite','launch','remember','clear-recent'].includes(action.type)){void continuity.dispatch(action).catch(error=>notice(error.message));return true;}try { deviceLibrary.dispatch(action);if(action.type==='favorite')void memberActivity.syncFavorites();render();return true; } catch { render();notice('브라우저가 저장을 막아 이 기기에 담지 못했어요. 사이트 데이터 저장을 허용해 주세요.');return false; } }
 async function openInsightActivity(id){
  if(!['world','messenger','path','pulse'].includes(id)||!accountEntryReady(id))return accountEntryUnavailable();
@@ -119,7 +120,7 @@ function showBrowserAccount(state) {
  if(!label){label=document.createElement('span');label.dataset.accountLabel='';entry.replaceChildren(...[entry.querySelector('img, .avatar'),label].filter(Boolean));}
  label.textContent = state.status==='signed-in' ? (state.displayName || '내 SYNK ID') : state.status==='loading'?'확인 중':state.status==='error'?'SYNK ID 확인':'SYNK ID 로그인';
  const avatar = entry.querySelector('.avatar');if(avatar)avatar.textContent = state.status==='signed-in'&&state.displayName ? [...state.displayName.trim()][0]?.toLocaleUpperCase('ko-KR') || 'S' : 'S';
- entry.setAttribute('aria-label',state.status==='signed-in'?'내 계정 메뉴':'SYNK ID로 로그인');solioProfileSync();render();continuity?.render?.();continuity?.authChanged?.();
+ entry.setAttribute('aria-label',state.status==='signed-in'?'내 계정 메뉴':'SYNK ID로 로그인');solioProfileSync();render();continuity?.render?.();continuity?.authChanged?.();portalHost?.syncAccountState();
 }
 // Signed out in this browser, the library card's way in is the SYNK ID sign-in itself (the same page as the header's).
 // 지금 이 화면에서 로그인한 사람인가(웹 계정 · PC 앱 계정). 상태 줄 글을 고를 때만 쓴다.
@@ -163,7 +164,7 @@ function whoLine() {
  if (identity.status === 'signed-in') return esc(identity.displayName ? `${identity.displayName} 님` : 'SYNK ID로 로그인했어요');
  if (identity.status === 'loading') return '로그인 상태를 확인하고 있어요.';
  if (identity.status === 'error') return '로그인 상태를 못 불러왔어요';
- if (identity.status === 'signed-out') return '<a href="./client.html?product=platform">SYNK ID로 로그인</a>';
+ if (identity.status === 'signed-out') return '<a href="./client.html?product=platform" data-action="open-portal-auth">SYNK ID로 로그인</a>';
  return 'SYNK 플랫폼';
 }
 function homePage() {
@@ -230,27 +231,27 @@ function settings() { const state=library.read(), theme=document.documentElement
  +`<section class="content-panel"><h2>이 기기에 저장한 것</h2><p>이 기기의 바로가기, 컬렉션, 화면 설정이에요. 계정에 저장한 즐겨찾기와 최근 기록, 메모는 맨 위 계정 라이브러리에서 지울 수 있어요.</p><div class="actions">${button('설정 파일로 받기','export')}${button('이 기기 설정 지우기','reset-confirm','','plain danger')}</div></section><section class="content-panel"><h2>SYNK ID와 앱 기록</h2><p>회사 대화와 자료, WORLD 학습 기록은 앱마다 따로 저장하고 서로 섞지 않아요.</p><a class="link" href="./client.html?product=platform">SYNK ID 관리 ↗</a></section>`; }
 function help() { return heading('SYNK를 시작하는 방법')+`<ol class="help-rows"><li><h2>1. SYNK PC 앱을 설치해요.</h2><p>Windows와 Mac에서 써요. 다운로드 화면에서 내 기기에 맞는 파일을 받아 설치해요. 웹에서만 쓸 거라면 설치하지 않아도 돼요.</p></li><li><h2>2. Workspace는 PC 앱 안에서 설치해요.</h2><p>PC 앱을 깔아도 Workspace가 저절로 깔리지는 않아요. PC 앱에서 Workspace를 고르고 「설치 파일 준비」 → 「설치 시작」을 누르면 설치 창이 열려요. 한국어 공부 앱 WORLD는 설치 없이 휴대폰 브라우저에서 열려요. 주소는 synk.im/world예요.</p></li><li><h2>3. SYNK ID 하나로 로그인해요.</h2><p>앱마다 같은 SYNK ID로 로그인해요. 「학습 기록 연결」은 계정 화면에서 켜고 꺼요. Workspace는 회사 초대를 받은 계정만 들어갈 수 있어요.</p></li><li><h2>라이브러리에 담으면 쓸 수 있게 되나요?</h2><p>아니요. 라이브러리는 바로가기를 모아 두는 곳이에요. 설치나 이용 권한은 그대로예요.</p></li><li><h2>지금 웹에서 쓸 수 있는 것은요?</h2><p>WORLD(휴대폰 브라우저가 가장 편해요), PATH 면접 연습, 플레저는 웹에서 바로 열려요. 내 성향은 로그인한 뒤 「내 계정 → 맞춤 정보」에서 보고, 솔리오의 AI 구독 관리는 PC 앱에서 써요.</p></li><li><h2>솔리오는 무엇인가요?</h2><p>AI 1인기업을 위한 통합 업무 앱 SYNK SOLIO예요. 지금은 AI 구독 관리를 PC 앱에서 회원 무료로 쓰고, 백업·복구는 준비하고 있어요. 위 메뉴 「솔리오」에서 봐요.</p></li></ol><div class="help-foot"><a href="#downloads" class="sb-btn">PC 앱 받기</a></div>`; }
 const MORE_PAGES = ['updates','downloads','settings','help','benefits'];
-function render() { const restoreInsightFocus=captureMemberUnderstandingFocus(root);memberActivity.read();memberInsight.setVisible(pageActive&&!document.hidden&&route().page==='account'&&route().id==='insight');const active = root.contains(document.activeElement) ? document.activeElement : null;const focus = active ? ['id','data-action','data-insight-action','data-insight-target','data-id','data-collection','data-setting','href','data-web'].map(key=>[key,active.getAttribute(key)]).filter(([,value])=>value!==null) : [];const {page,id}=route(), state=library.read();document.title=page==='home'?'SYNK 플랫폼':`${labels[page]} · SYNK 플랫폼`;const count=$('library-count'),savedListed=state.saved.filter(listedItem).length;count.textContent=savedListed;count.hidden=!savedListed;document.body.classList.toggle('compact-cards',state.compact);document.querySelectorAll('[data-route]').forEach(node=>{ if(node.dataset.route===page)node.setAttribute('aria-current','page');else node.removeAttribute('aria-current'); });$('more-toggle')?.classList.toggle('is-current',MORE_PAGES.includes(page));root.innerHTML=page==='home'?homePage():page==='solio'?solioPage(id):page==='account'?(id==='insight'?solioInsightPage(memberInsight.read(),{signedIn:signedIn()}):solioAccountPage(solioAccountState())):page==='benefits'?(id?benefitDetail(id,location.href,{library:state,insight:memberInsight.read(),signedIn:signedIn()}):benefitsPage({signedIn:signedIn()})):page==='discover'?discover():page==='library'?libraryPage():page==='app'?appPage(id):page==='downloads'?downloads():page==='settings'?settings():page==='updates'?heading('새소식','앱과 솔리오 · 회원 혜택에서 바뀐 점을 날짜와 함께 적어 둬요.')+newsCards():help();for(const link of root.querySelectorAll('[data-web]'))updateWebLink(link);if(focus.length){const next=[...root.querySelectorAll('a,button,input,select')].find(node=>focus.every(([key,value])=>node.getAttribute(key)===value));next?.focus({preventScroll:true});}restoreInsightFocus(); }
+function render() { const portalActive=portalHost?.isActive()===true;const restoreInsightFocus=captureMemberUnderstandingFocus(root);memberActivity.read();memberInsight.setVisible(!portalActive&&pageActive&&!document.hidden&&route().page==='account'&&route().id==='insight');const active = !portalActive && root.contains(document.activeElement) ? document.activeElement : null;const focus = active ? ['id','data-action','data-insight-action','data-insight-target','data-id','data-collection','data-setting','href','data-web'].map(key=>[key,active.getAttribute(key)]).filter(([,value])=>value!==null) : [];const {page,id}=route(), state=library.read();document.title=page==='home'?'SYNK 플랫폼':`${labels[page]} · SYNK 플랫폼`;const count=$('library-count'),savedListed=state.saved.filter(listedItem).length;count.textContent=savedListed;count.hidden=!savedListed;document.body.classList.toggle('compact-cards',state.compact);document.querySelectorAll('[data-route]').forEach(node=>{ if(node.dataset.route===page)node.setAttribute('aria-current','page');else node.removeAttribute('aria-current'); });$('more-toggle')?.classList.toggle('is-current',MORE_PAGES.includes(page));root.innerHTML=page==='home'?homePage():page==='solio'?solioPage(id):page==='account'?(id==='insight'?solioInsightPage(memberInsight.read(),{signedIn:signedIn()}):solioAccountPage(solioAccountState())):page==='benefits'?(id?benefitDetail(id,location.href,{library:state,insight:memberInsight.read(),signedIn:signedIn()}):benefitsPage({signedIn:signedIn()})):page==='discover'?discover():page==='library'?libraryPage():page==='app'?appPage(id):page==='downloads'?downloads():page==='settings'?settings():page==='updates'?heading('새소식','앱과 솔리오 · 회원 혜택에서 바뀐 점을 날짜와 함께 적어 둬요.')+newsCards():help();for(const link of root.querySelectorAll('[data-web]'))updateWebLink(link);if(!portalActive&&focus.length){const next=[...root.querySelectorAll('a,button,input,select')].find(node=>focus.every(([key,value])=>node.getAttribute(key)===value));next?.focus({preventScroll:true});}if(!portalActive)restoreInsightFocus(); }
 // 좁은 창 아래 탭 막대의 「더 보기」: 새소식 · 다운로드 · 설정 · 도움말 · SYNK ID 관리.
 const moreToggle=$('more-toggle'), moreMenu=$('more-menu');
-function setMore(open){if(!moreToggle||!moreMenu)return;moreMenu.hidden=!open;moreToggle.setAttribute('aria-expanded',String(open));if(open)moreMenu.querySelector('a')?.focus({preventScroll:true});}
+function setMore(open){if(!moreToggle||!moreMenu||(open&&portalHost?.isActive()))return;moreMenu.hidden=!open;moreToggle.setAttribute('aria-expanded',String(open));if(open)moreMenu.querySelector('a')?.focus({preventScroll:true});}
 moreToggle?.addEventListener('click',()=>setMore(moreMenu.hidden));
 moreMenu?.addEventListener('click',event=>{if(event.target.closest('a'))setMore(false);});
 document.addEventListener('click',event=>{if(moreMenu&&!moreMenu.hidden&&!moreMenu.contains(event.target)&&!moreToggle.contains(event.target))setMore(false);});
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&moreMenu&&!moreMenu.hidden){setMore(false);moreToggle.focus();}});
+document.addEventListener('keydown',event=>{if(portalHost?.isActive())return;if(event.key==='Escape'&&moreMenu&&!moreMenu.hidden){setMore(false);moreToggle.focus();}});
 // 오른쪽 프로필 메뉴(2026-11-13 솔리오 판): 로그인했으면 위 막대 계정 칩이 펼침 단추가 되어 내 계정 · 회원 혜택 · SYNK ID 관리를 펼친다.
 // 로그인 전 · 확인 중 · 오류에는 지금처럼 SYNK ID 로그인 링크로 간다. Esc · 초점 이탈 · 바깥 누름 · 항목 누름 · 주소 바뀜에 닫힌다.
 const solioProfileEntry=document.querySelector('.account-entry'),solioProfileMenu=$('profile-menu');
 function solioProfileName(){return typeof window.synkDesktop?.authStatus==='function'?nativeIdentity.account?.display_name||'':identity.displayName||'';}
 function solioAccountState(){return {status:signedIn()?'signed-in':(typeof window.synkDesktop?.authStatus==='function'?nativeIdentity.status:identity.status)==='loading'?'loading':'signed-out',name:solioProfileName()};}
-function solioProfileSet(open){if(!solioProfileMenu||!solioProfileEntry)return;const can=signedIn();open=!!open&&can;solioProfileMenu.hidden=!open;if(can){solioProfileEntry.setAttribute('role','button');solioProfileEntry.setAttribute('aria-expanded',String(open));solioProfileEntry.setAttribute('aria-controls','profile-menu');}else{for(const key of ['role','aria-expanded','aria-controls'])solioProfileEntry.removeAttribute(key);}if(open){const who=$('profile-menu-who');if(who)who.textContent=solioProfileName()?`${solioProfileName()} 님`:'SYNK ID';solioProfileMenu.querySelector('a')?.focus({preventScroll:true});}}
+function solioProfileSet(open){if(!solioProfileMenu||!solioProfileEntry)return;const can=signedIn()&&!portalHost?.isActive();open=!!open&&can;solioProfileMenu.hidden=!open;if(signedIn()){solioProfileEntry.setAttribute('role','button');solioProfileEntry.setAttribute('aria-expanded',String(open));solioProfileEntry.setAttribute('aria-controls','profile-menu');}else{for(const key of ['role','aria-expanded','aria-controls'])solioProfileEntry.removeAttribute(key);}if(open){const who=$('profile-menu-who');if(who)who.textContent=solioProfileName()?`${solioProfileName()} 님`:'SYNK ID';solioProfileMenu.querySelector('a')?.focus({preventScroll:true});}}
 function solioProfileSync(){solioProfileSet(solioProfileMenu?!solioProfileMenu.hidden:false);}
-solioProfileEntry?.addEventListener('click',event=>{if(!signedIn())return;event.preventDefault();solioProfileSet(solioProfileMenu.hidden);});
+solioProfileEntry?.addEventListener('click',event=>{if(signedIn()){event.preventDefault();solioProfileSet(solioProfileMenu.hidden);return;}if(typeof window.synkDesktop?.authStatus!=='function'&&event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&portalHost?.openAuth(solioProfileEntry))event.preventDefault();});
 solioProfileEntry?.addEventListener('keydown',event=>{if(event.key===' '&&signedIn()){event.preventDefault();solioProfileSet(solioProfileMenu.hidden);}});
 solioProfileMenu?.addEventListener('click',event=>{if(event.target.closest('a'))solioProfileSet(false);});
 document.addEventListener('focusout',event=>{const next=event.relatedTarget;if(solioProfileMenu&&!solioProfileMenu.hidden&&(solioProfileMenu.contains(event.target)||solioProfileEntry?.contains(event.target))&&next&&!solioProfileMenu.contains(next)&&!solioProfileEntry?.contains(next))solioProfileSet(false);});
 document.addEventListener('click',event=>{if(solioProfileMenu&&!solioProfileMenu.hidden&&!solioProfileMenu.contains(event.target)&&!solioProfileEntry?.contains(event.target))solioProfileSet(false);});
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&solioProfileMenu&&!solioProfileMenu.hidden){solioProfileSet(false);solioProfileEntry?.focus();}});
+document.addEventListener('keydown',event=>{if(portalHost?.isActive())return;if(event.key==='Escape'&&solioProfileMenu&&!solioProfileMenu.hidden){solioProfileSet(false);solioProfileEntry?.focus();}});
 // 옛 주소(#benefits/insight · #benefits/subscriptions)는 새 자리로 바꿔 적는다 — 기록을 더하지 않아 뒤로 가기 한 번에 앞 쪽으로 간다.
 function solioFollowLegacy(){const moved=solioLegacyHash(location.hash);if(moved)window.history.replaceState(window.history.state,'',moved);}
 function modal(title,body,extra='') { $('dialog-content').innerHTML=`<h2>${title}</h2><p>${body}</p>${extra}`;$('platform-dialog').showModal(); }
@@ -266,6 +267,8 @@ root.addEventListener('click',async event=>{
   await memberInsight.refresh();render();return;
  }
  const link=event.target.closest('[data-web]');if(link) { event.preventDefault();if(!updateWebLink(link)){accountEntryUnavailable();return;}openActivityWindow(link.href,link.dataset.web);return; }
+ const guestSignInLink=event.target.closest('.solio-account a.sb-btn:not(.soft)[href="./client.html?product=platform"], a[data-action="open-portal-auth"]');
+ if(guestSignInLink&&!signedIn()&&typeof window.synkDesktop?.authStatus!=='function'&&event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&portalHost?.openAuth(guestSignInLink)){event.preventDefault();return;}
  const control=event.target.closest('[data-action]');if(!control)return;const {action,id}=control.dataset;
  if(action==='scroll-benefits')document.getElementById('benefit-collection')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   else if(action==='retry-account')await refreshBrowserAccount();
@@ -291,13 +294,38 @@ root.addEventListener('change',event=>{const target=event.target;if(target.id===
 $('platform-search').value=query;
 $('search-form').onsubmit=event=>{event.preventDefault();query=$('platform-search').value.trim().slice(0,120);category='all';collection='all';location.hash=searchRoute(route().page,query);render();};
 $('platform-search').addEventListener('search',()=>{if(!$('platform-search').value){query='';location.hash=searchRoute(route().page,'');render();}});
-window.addEventListener('hashchange',()=>{solioFollowLegacy();solioProfileSet(false);setMore(false);detailTab='overview';query=route().query;$('platform-search').value=query;if(route().page!=='library'&&category==='life')category='all';render();root.focus({preventScroll:true});window.scrollTo(0,0);});
+window.addEventListener('hashchange',()=>{solioFollowLegacy();solioProfileSet(false);setMore(false);detailTab='overview';query=route().query;$('platform-search').value=query;if(route().page!=='library'&&category==='life')category='all';render();if(!portalHost?.isActive()){root.focus({preventScroll:true});window.scrollTo(0,0);}});
 window.addEventListener('storage',event=>{if(event.key===LIBRARY_KEY||event.key===null){library.reload();render();}});
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');root.before(continuityRoot);
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./src/platform-library.css';document.head.append(continuityStyle);
 // 계정 라이브러리 띠도 PC(visibleLibraryAppIds)처럼 WORLD 칸을 두지 않는다 — 계정에 저장한 기록은 그대로다(2026-11-11).
 solioFollowLegacy();
-continuity=mountPlatformLibrary(continuityRoot,{getAppIds:()=>ACTIVE_PLATFORM_APP_IDS.filter(listedItem),getHost:()=>browserAccount,signIn:{guest:browserGuest,open:()=>location.assign('./client.html?product=platform')},ensureReady:()=>refreshBrowserAccount(),onChange:()=>render(),onFavoritesChanged:()=>memberActivity.syncFavorites(),getDevice:()=>deviceLibrary.read(),onLogin:()=>location.assign('./client.html?product=platform'),onManage:()=>location.assign('./client.html?product=platform'),onOpen:id=>{const destination=shortcutDestination(id,{base:location.href,clients,learningUrl:config.learningUrl,messengerUrl});if(destination?.kind==='web'){if(!accountEntryReady(id)){accountEntryUnavailable();return;}openActivityWindow(publicEntry(id,destination.href),id);}else location.hash=libraryItemRoute(id);}});
+const openWebSignIn=()=>{if(typeof window.synkDesktop?.authStatus==='function'||!portalHost?.openAuth())location.assign('./client.html?product=platform');};
+continuity=mountPlatformLibrary(continuityRoot,{getAppIds:()=>ACTIVE_PLATFORM_APP_IDS.filter(listedItem),getHost:()=>browserAccount,signIn:{guest:browserGuest,open:openWebSignIn},ensureReady:()=>refreshBrowserAccount(),onChange:()=>render(),onFavoritesChanged:()=>memberActivity.syncFavorites(),getDevice:()=>deviceLibrary.read(),onLogin:openWebSignIn,onManage:()=>location.assign('./client.html?product=platform'),onOpen:id=>{const destination=shortcutDestination(id,{base:location.href,clients,learningUrl:config.learningUrl,messengerUrl});if(destination?.kind==='web'){if(!accountEntryReady(id)){accountEntryUnavailable();return;}openActivityWindow(publicEntry(id,destination.href),id);}else location.hash=libraryItemRoute(id);}});
+portalHost=mountWebPortalHost({
+ root:$('portal-entry'),
+ bypass:typeof window.synkDesktop?.authStatus==='function',
+ getConfig:()=>config,
+ ensureConfigReady:()=>startupPromise||(!config.configured?start():Promise.resolve()),
+ getAccount:()=>browserAccount,
+ getStartupState:()=>identity,
+ onRetryAuth:()=>refreshBrowserAccount(),
+ onTrackAppLaunch:appId=>{dispatch({type:'launch',id:appId,mode:'web'});},
+ onEnsureEnteredRoute:()=>{solioFollowLegacy();render();},
+ onActiveChange:active=>{
+  if(active){
+   setMore(false);solioProfileSet(false);clearTimeout(timer);
+   if($('platform-message'))$('platform-message').hidden=true;
+   if($('platform-dialog')?.open)$('platform-dialog').close();
+   memberInsight.setVisible(false);
+  }else{
+   render();
+   if(!document.activeElement||document.activeElement===document.body||$('portal-entry')?.contains(document.activeElement)){
+    root.focus({preventScroll:true});
+   }
+  }
+ },
+});
 render();
 async function loadStartup(){
  const attempt=++startup, browser=typeof window.synkDesktop?.authStatus!=='function';let failed=false;
@@ -309,7 +337,7 @@ async function loadStartup(){
  if(attempt!==startup)return;render();await refreshClients();if(!browser||attempt!==startup)return;
  if(failed){showBrowserAccount({status:'error',displayName:'',message:'로그인 설정을 못 불러왔어요. 로그인은 그대로이니 「다시 시도」를 눌러 주세요.'});return;}
  let accountStorage;try{accountStorage=sessionStorage;}catch{}
- browserAccount=createPlatformAccount({config,storage:accountStorage,onStatus:showBrowserAccount});if(!pageActive||document.hidden)browserAccount.invalidate();else await browserAccount.refresh();
+ browserAccount=createPlatformAccount({config,storage:accountStorage,onStatus:showBrowserAccount});browserAccount.subscribe(()=>portalHost?.syncAccountState());portalHost?.syncAccountState();if(!pageActive||document.hidden)browserAccount.invalidate();else await browserAccount.refresh();
 }
 function start(){
  if(startupPromise)return startupPromise;
@@ -332,7 +360,7 @@ async function refreshNativeInsight(){
  catch{if(expected!==nativeIdentityVersion)return;nativeIdentity={status:'error'};}
  render();
 }
-window.addEventListener('pageshow',event=>{pageActive=true;if(event.persisted){if(typeof window.synkDesktop?.authStatus==='function')void refreshNativeInsight();else void refreshBrowserAccount();}});
+window.addEventListener('pageshow',event=>{pageActive=true;portalHost?.handlePageShow(event);if(event.persisted){if(typeof window.synkDesktop?.authStatus==='function')void refreshNativeInsight();else void refreshBrowserAccount();}});
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden){nativeIdentityVersion++;memberInsight.setVisible(false);browserAccount?.invalidate();render();}
  else if(typeof window.synkDesktop?.authStatus==='function')void refreshNativeInsight();
