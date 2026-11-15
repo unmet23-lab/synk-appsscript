@@ -87,6 +87,44 @@ test('서로 다른 Aside 계정의 동시 요청도 공용 브라우저에서�
   assert.equal(count,3);assert.equal(max,2);assert.deepEqual(attempted,['one','three','two']);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+test('느린 Aside 요청이 앞에 세 개여도 Ego와 Telegram이 먼저 완료되고 동시에 세 계정까지만 읽는다',async t=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-worker-claims-'));
+  t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+  const ids=['aside1','aside2','aside3','ego1','telegram','ego2'];
+  const accounts=ids.map(id=>({id,platform:id==='telegram'?'telegram':'x',accountStatus:'operating'}));
+  const profiles=Object.fromEntries(ids.map(id=>[id,id.startsWith('aside')?{browser:'aside',account:id}:{browser:'ego',profileId:id}]));
+  const jobs=ids.map(id=>({channelId:id,accountId:id,requestId:id,token:'lease',requestedAt:new Date().toISOString(),missing:['views']}));
+  const claims=[],finished=[],active=new Set();let max=0,releaseEgo,releaseTelegram;
+  const telegramStarted=new Promise(resolve=>{releaseEgo=resolve;});
+  const egoStarted=new Promise(resolve=>{releaseTelegram=resolve;});
+  const api={post:async (url,body)=>{
+    if(url.endsWith('/claim')){
+      claims.push(body);
+      const index=jobs.findIndex(job=>body.accountIds.includes(job.accountId));
+      return {job:index===-1?null:jobs.splice(index,1)[0]};
+    }
+    if(body.reason)finished.push(body.channelId);
+    return {};
+  }};
+  async function read(id){
+    active.add(id);max=Math.max(max,active.size);
+    assert(active.size<=3);
+    assert([...active].filter(k=>k.startsWith('aside')).length<=1);
+    if(id==='aside1')await new Promise(resolve=>setImmediate(resolve));
+    if(id==='ego1'){releaseTelegram();await telegramStarted;}
+    if(id==='telegram'){releaseEgo();await egoStarted;}
+    active.delete(id);
+  }
+  const count=await drain(api,{requestDir:dir,idleMs:0,profiles,policies:{},catalog:{accounts},workerId:'test_claim_worker',
+    capture:async({account})=>{await read(account.id);return 'limited';},
+    telegram:async(account)=>{await read(account.id);return {batches:[]};}});
+  assert.equal(count,ids.length);assert.equal(max,3);
+  assert.deepEqual(claims[1].accountIds,['ego1','telegram','ego2']);
+  assert(claims.every(c=>c.workerId==='test_claim_worker'));
+  assert(finished.indexOf('ego1')<finished.indexOf('aside1'));
+  assert(finished.indexOf('telegram')<finished.indexOf('aside1'));
+  assert.deepEqual(finished.filter(id=>id.startsWith('aside')),['aside1','aside2','aside3']);
+});
 test('설치별 담당 계정만 요청하며 작업자가 누구인지 드러내지 않는 안정된 번호를 보낸다',()=>{
  for(const config of [{},null,{configured:true},{accountIds:[]},{accountIds:'one'},{allManaged:true,configured:false}])assert.equal(configured(config),false);
  assert.equal(configured({configured:true,allManaged:true}),true);

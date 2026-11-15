@@ -48,6 +48,9 @@ async function telegram(account, dir) {
 function lease(job) {
   return {channelId:job.channelId, requestId:job.requestId, token:job.token,workerId:job.workerId};
 }
+function profileKey(profile) {
+  return profile?.browser==='aside'?'aside':'ego:'+(profile?.profileId||'default');
+}
 function readWorkerConfig(stateDir=HOME_DIR){
   try{return JSON.parse(fs.readFileSync(path.join(stateDir,'worker-config.json'),'utf8').replace(/^\uFEFF/,''));}
   catch(error){if(error.code==='ENOENT')return {};throw error;}
@@ -131,7 +134,7 @@ async function processJob(api, job, options = {}) {
       }
     } else {
       // Aside exposes one local browser-control service across its accounts. Overlapping downloads time out there.
-      const key=profile.browser==='aside'?'aside':'ego:'+(profile.profileId||'default');
+      const key=profileKey(profile);
       const read=()=>capture({account, profile, policy, dir, stateDir, requestedAt:job.requestedAt, missing:job.missing,
         liveChannel:async()=>{const {channels}=await api.get('/api/state');return channels.find(channel=>channel.id===job.channelId);},
         setStage:sendStage, submit:take, covered:()=>job.missing.every(k=>touched.includes(k)), signal:control.signal});
@@ -163,6 +166,7 @@ async function drain(api,{wait=sleep, idleMs=15_000, until=()=>false, ...options
   let processed=0;
   const claim=workerIdentity(options);
   const profiles=new Map(),running=new Set();
+  const telegramIds=new Set((options.catalog||catalog).accounts.filter(account=>account.platform==='telegram').map(account=>account.id));
   function onProfile(key,run){
     const prior=profiles.get(key)||Promise.resolve();
     const next=prior.catch(()=>{}).then(run);
@@ -170,17 +174,20 @@ async function drain(api,{wait=sleep, idleMs=15_000, until=()=>false, ...options
     return next.finally(()=>{if(profiles.get(key)===next)profiles.delete(key);});
   }
   let failure;
-  async function run(job){
-    try{await processJob(api,job,{...options,onProfile});processed++;}
+  async function run(job,assignments){
+    try{await processJob(api,job,{...options,profiles:assignments,onProfile});processed++;}
     catch(error){if(Number(error.status||error.statusCode)!==409)failure=error;}
   }
   try{
   while (!until()) {
     if(failure)throw failure;
     if(running.size>=3){await Promise.race(running);continue;}
-    const {job}=await api.post(ROUTE+'/claim',claim);
+    const assignments=options.profiles||settings('browser-profiles',options.stateDir);
+    // Keep busy browser accounts in the server queue. Telegram reads need no browser profile.
+    const accountIds=claim.accountIds.filter(id=>telegramIds.has(id)||!profiles.has(profileKey(assignments[id])));
+    const {job}=await api.post(ROUTE+'/claim',{workerId:claim.workerId,accountIds});
     if (job) {
-      const next=run(job).finally(()=>running.delete(next));
+      const next=run(job,assignments).finally(()=>running.delete(next));
       running.add(next);
     } else {
       if(running.size){await Promise.race(running);continue;}
