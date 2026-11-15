@@ -3,7 +3,8 @@ param(
     [string]$TaskName = 'SYNK account metrics routine',
     [switch]$Apply,
     [switch]$Remove,
-    [switch]$Requests
+    [switch]$Requests,
+    [switch]$Start
 )
 
 # Registers the NO-AI account metrics routine as a hidden Windows task, daily at 09:20 and 21:20 Korea Standard Time.
@@ -20,6 +21,12 @@ $Marker = '[synk-managed: account-metrics-routine v1]'
 if ($Requests) {
     if (-not $PSBoundParameters.ContainsKey('TaskName')) { $TaskName = 'SYNK account metrics requests' }
     $Marker = '[synk-managed: on-demand-account-metrics v1]'
+}
+# -Start (2026-11-16): daily 09:40 and 21:40 KST, registers the same request as the dashboard 'collect all' button and exits.
+# It replaces the Codex app heartbeat 'synk-2', which ended when its GPT thread was archived. The -Requests task does the reading.
+if ($Start) {
+    if (-not $PSBoundParameters.ContainsKey('TaskName')) { $TaskName = 'SYNK account metrics collect all' }
+    $Marker = '[synk-managed: scheduled-collect-all v1]'
 }
 
 # Account SID for a task principal's UserId (domain account name, plain name or S-1-...). $null when it cannot be resolved.
@@ -50,6 +57,7 @@ function Get-TaskOwnership {
 if ($MyInvocation.InvocationName -eq '.') { return }
 
 if ($Apply -and $Remove) { throw 'Use -Apply or -Remove, not both.' }
+if ($Requests -and $Start) { throw 'Use -Requests or -Start, not both.' }
 if ($TaskName -notmatch '^[A-Za-z0-9][A-Za-z0-9 ._-]{0,99}$') { throw 'TaskName may use letters, digits, spaces, dots, underscores and hyphens only (no wildcards or folders).' }
 if (-not $env:LOCALAPPDATA) { throw 'LOCALAPPDATA is not set.' }
 $opsRoot = Join-Path $env:LOCALAPPDATA 'synk\ops\SYNK-appsscript'
@@ -62,6 +70,10 @@ $arguments = '-X utf8 -B "{0}"' -f $launcher
 if ($Requests) {
     $routine = Join-Path $opsRoot ('tools\' + $folder + '\collect-requests.cjs')
     $arguments += ' --requests'
+}
+if ($Start) {
+    $routine = Join-Path $opsRoot ('tools\' + $folder + '\collect-requests.cjs')
+    $arguments += ' --start'
 }
 $userSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 
@@ -81,7 +93,7 @@ if ($Remove) {
 }
 
 $zone = [TimeZoneInfo]::Local
-if ($zone.Id -ne 'Korea Standard Time') { throw ('Local time zone is {0}. 09:20 and 21:20 are meant as Korea Standard Time; refusing.' -f $zone.Id) }
+if ($zone.Id -ne 'Korea Standard Time') { throw ('Local time zone is {0}. The daily times are meant as Korea Standard Time; refusing.' -f $zone.Id) }
 foreach ($required in @($pythonw, $launcher, $routine)) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Missing: $required" }
 }
@@ -94,11 +106,18 @@ $triggers = @(
 if ($Requests) {
     $triggers = @(New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 1))
 }
+if ($Start) {
+    $triggers = @(
+        (New-ScheduledTaskTrigger -Daily -At $today.AddHours(9).AddMinutes(40)),
+        (New-ScheduledTaskTrigger -Daily -At $today.AddHours(21).AddMinutes(40))
+    )
+}
 Write-Output "Task: $TaskFolder$TaskName"
 Write-Output "User: $identity (interactive, limited)"
 Write-Output "Run: $pythonw $arguments"
 Write-Output "Working directory: $opsRoot"
 if ($Requests) { Write-Output 'Checks for on-demand requests every 15 seconds while the PC is signed in.' }
+elseif ($Start) { Write-Output 'Times: daily 09:40 and 21:40 (Korea Standard Time), start when available, ignore new while running, stop after 10 min, priority 4' }
 else { Write-Output 'Times: daily 09:20 and 21:20 (Korea Standard Time), start when available, ignore new while running, stop after 30 min, priority 4' }
 if (-not $Apply) {
     Write-Output 'Preview only. Nothing changed. Re-run with -Apply to register.'
@@ -106,8 +125,18 @@ if (-not $Apply) {
 }
 $action = New-ScheduledTaskAction -Execute $pythonw -Argument $arguments -WorkingDirectory $opsRoot
 $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
-$limit = if ($Requests) { 40 } else { 30 }
-$description = if ($Requests) { 'Reads on-demand analytics requests from the company workspace in this Windows session. ' } else { 'SYNK account metrics routine, 09:20 and 21:20 KST. No AI: reads public Telegram channel pages and the private official-export inbox, then runs the official ingester. ' }
+$limit = 30
+$description = 'SYNK account metrics routine, 09:20 and 21:20 KST. No AI: reads public Telegram channel pages ' +
+    'and the private official-export inbox, then runs the official ingester. '
+if ($Requests) {
+    $limit = 40
+    $description = 'Reads on-demand analytics requests from the company workspace in this Windows session. '
+}
+if ($Start) {
+    $limit = 10
+    $description = 'SYNK account metrics collect all, 09:40 and 21:40 KST. No AI: registers the dashboard ' +
+        'collect-all request for the request worker, skipped when one is active or recent. '
+}
 $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes $limit) -Priority 4
 $task = New-ScheduledTask -Action $action -Trigger $triggers -Principal $principal -Settings $settings -Description ($description + $Marker)
 Register-ScheduledTask -TaskPath $TaskFolder -TaskName $TaskName -InputObject $task -Force:$([bool]$existing) -ErrorAction Stop | Out-Null

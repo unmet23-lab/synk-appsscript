@@ -200,17 +200,47 @@ async function drain(api,{wait=sleep, idleMs=15_000, until=()=>false, ...options
   return processed;
 }
 
-async function main() {
+// 09:40·21:40 KST 정기 회차(2026-11-16부터). GPT 대화에 붙어 있던 Codex 예약 `synk-2`가 그 대화를 보관하면서 사라져 PC 예약으로 옮겼다.
+// 현황판의 ‘모두 수집’ 버튼과 같은 요청 하나만 넣는다. 실제 읽기는 1분마다 도는 요청 수집기(`--requests`)가 맡는다. AI를 부르지 않는다.
+// 아직 끝나지 않은 요청이 있거나 최근 RECENT_MS 안에 누군가 요청을 넣었으면 넣지 않는다(같은 회차를 두 번 돌리지 않는다).
+const RECENT_MS=3*60*60_000;
+const ACTIVE=new Set(['queued','running']);
+function countBy(items,key){
+  const out={};
+  for(const item of items)out[item[key]]=(out[item[key]]||0)+1;
+  return out;
+}
+async function startScheduled(api,{now=Date.now(),recentMs=RECENT_MS}={}){
+  const before=await api.get(ROUTE+'?scope=all');
+  const items=Array.isArray(before?.items)?before.items:[];
+  const active=items.filter(item=>ACTIVE.has(item.status)).length;
+  if(active)return {started:false,reason:'active',active};
+  const times=items.map(item=>Date.parse(item.requestedAt)).filter(Number.isFinite);
+  const latest=times.length?Math.max(...times):0;
+  if(latest&&now-latest<recentMs)return {started:false,reason:'recent',minutesAgo:Math.round((now-latest)/60_000)};
+  const result=await api.post('/api/collect',{scope:'all'});
+  const after=Array.isArray(result?.progress?.items)?result.progress.items:[];
+  return {started:true,channels:after.length,apiRuns:Array.isArray(result?.runs)?result.runs.length:0,
+    byStatus:countBy(after,'status'),workerOnline:result?.progress?.worker?.online===true};
+}
+
+async function main(argv=process.argv.slice(2)) {
   const workerConfig=readWorkerConfig();
   if(!configured(workerConfig)){
     console.log('이 PC에는 수집을 맡길 계정이 지정되지 않았습니다.');
     return;
   }
   const api=await connect({origin:ORIGIN,session:null});
+  if(argv.includes('--start')){
+    // 숫자와 이유만 남긴다. 계정 이름이나 주소는 기록에 넣지 않는다.
+    try { console.log(JSON.stringify(await startScheduled(api))); }
+    finally { await api.post('/api/logout',{}); }
+    return;
+  }
   const deadline=Date.now()+20*60_000;
   try { await drain(api,{workerConfig,until:()=>Date.now()>=deadline}); }
   finally { await api.post('/api/logout',{}); }
 }
 if(require.main===module) main().catch(error=>{console.error('통계 요청 수집기가 중단됐습니다.',String(error.status || error.code || 'WORKER_ERROR'));process.exitCode=1;});
-module.exports={processJob,drain,submit,settings,telegram,saveEvidence,downloadCapture,workerIdentity,readWorkerConfig,configured};
+module.exports={processJob,drain,submit,settings,telegram,saveEvidence,downloadCapture,workerIdentity,readWorkerConfig,configured,startScheduled,RECENT_MS};
 

@@ -18,10 +18,18 @@ ROUTINE = ROOT / "tools" / "계정통계루틴.cjs"
 LOG = pathlib.Path.home() / ".synk" / "account-metrics" / "logs" / "예약실행.log"
 TIMEOUT = 25 * 60  # 작업 스케줄러 한도(30분) 안에서 끝낸다. 루틴 자체 예산은 15분.
 ON_DEMAND = sys.argv[1:] == ["--requests"]
+# 09:40·21:40 정기 회차(「SYNK account metrics collect all」, 2026-11-16부터): 현황판 ‘모두 수집’과 같은 요청 하나만 넣고 끝난다.
+SCHEDULED_START = sys.argv[1:] == ["--start"]
+EXTRA = []
 if ON_DEMAND:
     ROUTINE = pathlib.Path(__file__).resolve().parent / "collect-requests.cjs"
     LOG = LOG.with_name("요청수집.log")
     TIMEOUT = 38 * 60
+elif SCHEDULED_START:
+    ROUTINE = pathlib.Path(__file__).resolve().parent / "collect-requests.cjs"
+    LOG = LOG.with_name("정기요청.log")
+    TIMEOUT = 5 * 60
+    EXTRA = ["--start"]
 
 
 def now():
@@ -41,7 +49,12 @@ def main():
         write_log(started, f"node 또는 루틴 파일이 없습니다: {NODE} / {ROUTINE}".encode("utf-8"), "시작 못 함 · 종료 2")
         return 2
     try:
-        args = [str(NODE), str(ROUTINE)] if ON_DEMAND else [str(NODE), str(ROUTINE), "--실행"]
+        if ON_DEMAND:
+            args = [str(NODE), str(ROUTINE)]
+        elif SCHEDULED_START:
+            args = [str(NODE), str(ROUTINE), *EXTRA]
+        else:
+            args = [str(NODE), str(ROUTINE), "--실행"]
         r = subprocess.run(args, cwd=ROOT, stdin=subprocess.DEVNULL, capture_output=True,
                            creationflags=subprocess.CREATE_NO_WINDOW, timeout=TIMEOUT)
     except subprocess.TimeoutExpired as e:

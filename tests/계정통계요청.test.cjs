@@ -181,3 +181,21 @@ test('네이버는 일시적인 브라우저 오류만 한 번 더 시도하고 
  }
 });
 
+
+test('정기 회차는 끝나지 않은 요청이 있거나 세 시간 안에 요청이 있었으면 넣지 않고, 아니면 모두 수집 요청 하나만 넣는다',async()=>{
+  const {startScheduled,RECENT_MS}=require('../tools/계정통계예약/collect-requests.cjs');
+  const now=Date.parse('2026-11-16T00:40:00Z');
+  const fake=items=>{const calls=[];return {calls,get:async url=>{calls.push(['get',url]);return {items};},
+    post:async(url,body)=>{calls.push(['post',url,body]);return {runs:[{id:'r1'},{id:'r2'}],progress:{items:[{status:'queued'},{status:'queued'},{status:'complete'}],worker:{online:true}}};}};};
+  const busy=fake([{status:'running',requestedAt:'2026-11-15T12:00:00Z'},{status:'partial',requestedAt:'2026-11-15T12:00:00Z'}]);
+  assert.deepEqual(await startScheduled(busy,{now}),{started:false,reason:'active',active:1});
+  assert.deepEqual(busy.calls,[['get','/api/collection-progress?scope=all']]);
+  const recent=fake([{status:'partial',requestedAt:new Date(now-RECENT_MS+60_000).toISOString()}]);
+  assert.deepEqual(await startScheduled(recent,{now}),{started:false,reason:'recent',minutesAgo:179});
+  assert.equal(recent.calls.length,1);
+  for(const items of [[],[{status:'partial',requestedAt:new Date(now-RECENT_MS).toISOString()},{status:'complete',requestedAt:'not a date'}]]){
+    const due=fake(items);
+    assert.deepEqual(await startScheduled(due,{now}),{started:true,channels:3,apiRuns:2,byStatus:{queued:2,complete:1},workerOnline:true});
+    assert.deepEqual(due.calls.at(-1),['post','/api/collect',{scope:'all'}]);
+  }
+});
