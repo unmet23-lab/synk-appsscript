@@ -120,7 +120,7 @@ function 작업만들기(j, dir, 이름, o = {}) {
   let prompt = j.prompt != null ? String(j.prompt) : '';
   let 읽기오류 = '';
   if (!prompt && j.promptFile) {
-    try { prompt = fs.readFileSync(abs(j.promptFile), 'utf8'); } catch (e) { 읽기오류 = `지시문 파일을 못 읽음: ${abs(j.promptFile)}`; }
+    try { prompt = fs.readFileSync(abs(j.promptFile), 'utf8').replace(/\r\n?/g, '\n'); } catch (e) { 읽기오류 = `지시문 파일을 못 읽음: ${abs(j.promptFile)}`; }
   }
   const out = abs(j.out);
   return {
@@ -1333,7 +1333,9 @@ function 보고(결과, 멈춤) {
 // 결과가 어떻게 나올지(참조 그림이 이기는 문장 · 엔진이 무시하는 문장)는 아르곤 · Fable 지시문 검수 몫이다.
 
 function 지시문읽기(file) {
-  const 글 = fs.readFileSync(file, 'utf8').replace(/^﻿/, '');
+  // 줄끝을 LF로 맞춰 센다 — 공용 작업본은 core.autocrlf=true라, 저장소에 LF로 올린 지시문도 받아 오면 CRLF가 되어
+  // 줄마다 한 자씩 더 세어 4,300자 한도를 넘었다(11-15 「Still」 1화 C05 4,320자 · 실제 글은 4,300자 안).
+  const 글 = fs.readFileSync(file, 'utf8').replace(/^﻿/, '').replace(/\r\n?/g, '\n');
   const 이름 = path.basename(file).replace(/\.[^.]+$/, '');
   if (/\.json$/i.test(file)) {
     const j = JSON.parse(글);

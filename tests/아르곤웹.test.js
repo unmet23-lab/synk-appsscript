@@ -541,6 +541,19 @@ test('지시문 읽기 — 작업 JSON 배열 · 이름 붙은 객체 · 「## �
   assert.equal(r.막힘, 1, '나이가 빠진 F08_skin 하나');
 });
 
+test('지시문 읽기 — CRLF 작업본도 LF로 세어 줄끝 때문에 4,300자 한도를 넘지 않는다(11-15 autocrlf 작업본)', () => {
+  const dir = 임시();
+  const 줄들 = `${좋은}\n${'Soft blur behind her. '.repeat(10)}`.split(' ').join('\n');
+  const 몸 = `${줄들}\n${'x'.repeat(웹.지시문한도 - 줄들.length - 1)}`;
+  assert.equal(몸.length, 웹.지시문한도, 'LF로는 한도와 꼭 같은 길이');
+  const crlf = 쓰기(dir, 'crlf.txt', 몸.replace(/\n/g, '\r\n'));
+  const [편] = 웹.지시문읽기(crlf);
+  assert.ok(!편.prompt.includes('\r'));
+  assert.ok(!웹.점검한편(편).걸림.some((x) => x.항목 === '길이'), '줄끝 CR은 세지 않는다');
+  const 작업 = 웹.작업만들기({ files: [], promptFile: 'crlf.txt', out: '답.md' }, dir, '줄끝');
+  assert.ok(!작업.prompt.includes('\r'), '보내는 지시문에도 CR을 싣지 않는다');
+});
+
 // ── 올리기 잠금(11-08) ──
 // 07:13에 잠금을 쥔 주인(다른 세션의 공모전 영상 검수)이 gemini a · b 줄이 꺼진 07:41~14:22 내내 차례만 기다려, 이 PC의 아르곤 아홉 건이
 // 「다른 아르곤웹이 파일을 올리는 중」만 찍었다(10번 전체 검수는 55분 뒤 timeout). 고친 뒤 — 잠금은 차례 뒤 올리기 한 건에만,
