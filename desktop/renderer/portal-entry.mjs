@@ -364,6 +364,7 @@ export function mountPortalEntry(root, options = {}) {
   let lastAnnouncedPhase = null;
   let lastRenderedPhase = null;
   let workspaceNeedsRetry = false;
+  let navigationHoldActive = false;
 
   let inviteTriggerEl = null;
   let purposeTriggerEl = null;
@@ -646,23 +647,37 @@ export function mountPortalEntry(root, options = {}) {
       }
       return;
     }
+    if (phase === 'entered' && navigationHoldActive) {
+      if (
+        doc?.activeElement
+        && (!root.contains(doc.activeElement) || !isElementVisible(doc.activeElement))
+      ) {
+        root.setAttribute('tabindex', '-1');
+        root.focus?.({ preventScroll: true });
+      }
+      return;
+    }
     if (phase === 'error' || phase === 'enter-error' || phase === 'signing-in') {
       const firstAction = [retryEnterBtn, retryAuthBtn, goAuthBtn, cancelSignInBtn, statusBrowseBtn].find(isElementVisible);
       (firstAction || headingEl)?.focus?.({ preventScroll: true });
     }
   }
 
-  function emitStateIfChanged(state) {
-    if (lastAnnouncedActive === state.active && lastAnnouncedPhase === state.phase) return;
-    lastAnnouncedActive = state.active;
+  function emitStateIfChanged(
+    state,
+    effectiveActive = state.active,
+    effectiveBlockShortcuts = state.blockShortcuts,
+  ) {
+    if (lastAnnouncedActive === effectiveActive && lastAnnouncedPhase === state.phase) return;
+    lastAnnouncedActive = effectiveActive;
     lastAnnouncedPhase = state.phase;
     const detail = {
-      active: state.active,
-      blockShortcuts: state.blockShortcuts,
+      active: effectiveActive,
+      blockShortcuts: effectiveBlockShortcuts,
       phase: state.phase,
       authStatus: state.authStatus,
     };
-    options.onActiveChange?.(state.active, detail);
+    options.onActiveChange?.(effectiveActive, detail);
     if (typeof CustomEvent === 'function') {
       root.dispatchEvent(new CustomEvent(PORTAL_STATE_EVENT, { bubbles: true, detail }));
     }
@@ -712,10 +727,16 @@ export function mountPortalEntry(root, options = {}) {
     if (disposed) return;
     const state = machine.read();
     const { phase, active, authStatus, purposeOrigin, errorMessage } = state;
+    if (phase !== 'entered' && navigationHoldActive) {
+      navigationHoldActive = false;
+    }
+    const holdingExitOrb = phase === 'entered' && navigationHoldActive;
+    const effectiveActive = active || holdingExitOrb;
+    const effectiveBlockShortcuts = state.blockShortcuts || holdingExitOrb;
 
     root.dataset.portalState = phase;
     root.dataset.portalAuthStatus = authStatus;
-    root.dataset.portalActive = String(active);
+    root.dataset.portalActive = String(effectiveActive);
     if (purposeOrigin) {
       root.dataset.portalPurposeOrigin = purposeOrigin;
     } else {
@@ -731,9 +752,9 @@ export function mountPortalEntry(root, options = {}) {
     } else {
       delete root.dataset.portalWorkspaceStatus;
     }
-    root.hidden = !active;
+    root.hidden = !effectiveActive;
     if (doc?.documentElement?.dataset) {
-      doc.documentElement.dataset.portalActive = String(active);
+      doc.documentElement.dataset.portalActive = String(effectiveActive);
     }
 
     if (phase !== 'invite') {
@@ -746,20 +767,23 @@ export function mountPortalEntry(root, options = {}) {
       }
     }
 
-    if (!active) {
+    if (!effectiveActive) {
       stopZoomAnimation();
       releaseOrb();
       restoreHostElements();
       root.classList.remove('portal-workspace-compact');
       workspacePane.classList.remove('is-resolved-multi', 'has-workspace-retry');
       lastRenderedPhase = phase;
-      emitStateIfChanged(state);
+      emitStateIfChanged(state, false, false);
       return;
     }
 
+    if (holdingExitOrb) {
+      stopZoomAnimation();
+    }
     lockHostElements();
 
-    const isOrbHoldPhase = phase === 'checking' || phase === 'entering';
+    const isOrbHoldPhase = phase === 'checking' || phase === 'entering' || holdingExitOrb;
     const showOrbScene = phase === 'welcome' || phase === 'zooming' || isOrbHoldPhase;
     welcomeSection.hidden = !showOrbScene;
     interiorSection.hidden = showOrbScene;
@@ -791,7 +815,7 @@ export function mountPortalEntry(root, options = {}) {
           pointerY: 0,
           active: true,
         });
-      } else if (phase === 'entering') {
+      } else if (phase === 'entering' || holdingExitOrb) {
         orbInstance?.setScene({
           portal: prefersReducedMotion() ? 0 : SIGNED_IN_ZOOM_PORTAL,
           interior: 0,
@@ -922,7 +946,7 @@ export function mountPortalEntry(root, options = {}) {
     if (prevPhase !== phase && phase !== 'zooming') {
       moveFocusIntoPhase(phase, prevPhase);
     }
-    emitStateIfChanged(state);
+    emitStateIfChanged(state, effectiveActive, effectiveBlockShortcuts);
   }
 
   function finishZoomTransition() {
@@ -1106,11 +1130,13 @@ export function mountPortalEntry(root, options = {}) {
           if (nextPurposeMode === 'existing') {
             machine.failEnter('계정 연결 상태를 확인하지 못했어요. 다시 시도해 주세요.');
           } else {
+            navigationHoldActive = false;
             machine.completeEnter();
           }
         }
       } else {
         workspaceNeedsRetry = false;
+        navigationHoldActive = result?.navigationRequested === true;
         machine.completeEnter();
       }
     } catch (err) {
@@ -1142,6 +1168,7 @@ export function mountPortalEntry(root, options = {}) {
     }
     if (typeof options.onSelectWorkspace !== 'function') {
       workspaceNeedsRetry = false;
+      navigationHoldActive = false;
       machine.completeEnter();
       render();
       return true;
@@ -1171,6 +1198,7 @@ export function mountPortalEntry(root, options = {}) {
         return false;
       }
       workspaceNeedsRetry = false;
+      navigationHoldActive = result?.navigationRequested === true;
       machine.completeEnter();
       return true;
     } catch {
@@ -1253,11 +1281,13 @@ export function mountPortalEntry(root, options = {}) {
             }
             return false;
           }
+          navigationHoldActive = false;
           machine.completeEnter();
         }
         return true;
       }
       workspaceNeedsRetry = false;
+      navigationHoldActive = result?.navigationRequested === true;
       machine.completeEnter();
       return true;
     } catch {
@@ -1690,7 +1720,7 @@ export function mountPortalEntry(root, options = {}) {
   }
 
   function openPurposePicker(triggerElement = doc?.activeElement) {
-    if (disposed || busyAction !== null) return false;
+    if (disposed || busyAction !== null || navigationHoldActive) return false;
     const snap = machine.read();
     if (snap.phase === 'zooming' || snap.phase === 'entering' || snap.phase === 'workspace') return false;
     if (snap.phase === 'purpose' && snap.purposeOrigin === 'entering') return false;
@@ -1823,6 +1853,17 @@ export function mountPortalEntry(root, options = {}) {
     }
     const result = machine.receiveAuth(authPatch);
     if (!result.accepted) return result.state;
+    if (
+      navigationHoldActive
+      && (
+        result.state.phase !== 'entered'
+        || result.accountChanged
+        || result.bindingInvalidated
+        || result.state.authStatus === 'signing-in'
+      )
+    ) {
+      navigationHoldActive = false;
+    }
     if (
       result.accountChanged
       || result.bindingInvalidated
@@ -2017,8 +2058,15 @@ export function mountPortalEntry(root, options = {}) {
     clearInviteStatus();
   };
 
+  function releaseNavigationHold() {
+    if (disposed || !navigationHoldActive) return false;
+    navigationHoldActive = false;
+    render();
+    return true;
+  }
+
   const onRootKeyDown = event => {
-    if (disposed || !machine.read().active) return;
+    if (disposed || !(machine.read().active || navigationHoldActive)) return;
 
     if (event.key === 'Escape') {
       const snap = machine.read();
@@ -2074,16 +2122,21 @@ export function mountPortalEntry(root, options = {}) {
   };
 
   const onDocKeyDown = event => {
-    if (disposed || !machine.read().active) return;
+    if (disposed || !(machine.read().active || navigationHoldActive)) return;
     if (event.target && root.contains(event.target)) return;
     onRootKeyDown(event);
   };
 
   const onDocFocusIn = event => {
-    if (disposed || !machine.read().active) return;
+    if (disposed || !(machine.read().active || navigationHoldActive)) return;
     if (event.target && root.contains(event.target)) return;
     const items = focusableInPortal();
-    items[0]?.focus?.({ preventScroll: true });
+    if (items.length > 0) {
+      items[0]?.focus?.({ preventScroll: true });
+    } else {
+      root.setAttribute('tabindex', '-1');
+      root.focus?.({ preventScroll: true });
+    }
   };
 
   const onOrbPointerEnter = () => {
@@ -2115,7 +2168,7 @@ export function mountPortalEntry(root, options = {}) {
     if (disposed) return;
     const current = machine.read();
     // 이미 본문에 들어간 뒤에는 visibilitychange로 포털을 다시 열지 않는다.
-    if (!current.active) return;
+    if (!current.active && !navigationHoldActive) return;
     if (doc?.hidden) {
       if (current.phase === 'zooming') {
         finishZoomTransition();
@@ -2124,7 +2177,12 @@ export function mountPortalEntry(root, options = {}) {
       }
       return;
     }
-    if (current.phase === 'welcome' || current.phase === 'checking' || current.phase === 'entering') {
+    if (
+      current.phase === 'welcome'
+      || current.phase === 'checking'
+      || current.phase === 'entering'
+      || navigationHoldActive
+    ) {
       orb?.resume();
     }
   };
@@ -2132,6 +2190,12 @@ export function mountPortalEntry(root, options = {}) {
   const onPageHide = () => {
     clearInviteInput();
     orb?.pause();
+  };
+
+  const onPageShow = event => {
+    if (event?.persisted === true) {
+      releaseNavigationHold();
+    }
   };
 
   root.addEventListener('click', onRootClick);
@@ -2147,6 +2211,9 @@ export function mountPortalEntry(root, options = {}) {
   doc?.addEventListener?.('focusin', onDocFocusIn);
   doc?.addEventListener?.('visibilitychange', onVisibilityChange);
   win.addEventListener?.('pagehide', onPageHide);
+  if (options.managePageShow !== true) {
+    win.addEventListener?.('pageshow', onPageShow);
+  }
 
   // 초기 상태를 반영한다. 이미 signed-in으로 전달된 경우 즉시 자동 전환이나 진입을 수행한다.
   if (options.initialState?.bypass === true) {
@@ -2163,11 +2230,12 @@ export function mountPortalEntry(root, options = {}) {
       return machine.read();
     },
     isActive() {
-      return !disposed && machine.read().active;
+      return !disposed && (machine.read().active || navigationHoldActive);
     },
     shouldBlockShortcuts() {
-      return !disposed && machine.read().blockShortcuts;
+      return !disposed && (machine.read().blockShortcuts || navigationHoldActive);
     },
+    releaseNavigationHold,
     setWorkspaceState(workspacePatch = {}, guard = {}) {
       if (disposed) return { ok: false, changed: false, state: machine.read() };
       const updated = machine.updateWorkspace(workspacePatch, guard);
@@ -2190,6 +2258,7 @@ export function mountPortalEntry(root, options = {}) {
       action = 'entered',
       purposeMode: requestedPurposeMode,
       accountKey: expectedAccountKey,
+      navigationRequested = false,
     } = {}) {
       if (disposed) return { ok: false, state: machine.read() };
       const snap = machine.read();
@@ -2219,9 +2288,11 @@ export function mountPortalEntry(root, options = {}) {
             render();
             return { ok: false, state: machine.read() };
           }
+          navigationHoldActive = false;
           machine.completeEnter();
         }
       } else {
+        navigationHoldActive = navigationRequested === true;
         machine.completeEnter();
       }
       render();
@@ -2232,6 +2303,7 @@ export function mountPortalEntry(root, options = {}) {
     reopenAuth(patch = {}) {
       if (disposed) return machine.read();
       const hadBusyInvite = busyAction === 'invite';
+      navigationHoldActive = false;
       workspaceNeedsRetry = false;
       asyncSeq += 1;
       busyAction = null;
@@ -2248,6 +2320,7 @@ export function mountPortalEntry(root, options = {}) {
       if (disposed) return;
       const hadBusyInvite = busyAction === 'invite';
       disposed = true;
+      navigationHoldActive = false;
       workspaceNeedsRetry = false;
       asyncSeq += 1;
       busyAction = null;
@@ -2271,6 +2344,9 @@ export function mountPortalEntry(root, options = {}) {
       doc?.removeEventListener?.('focusin', onDocFocusIn);
       doc?.removeEventListener?.('visibilitychange', onVisibilityChange);
       win.removeEventListener?.('pagehide', onPageHide);
+      if (options.managePageShow !== true) {
+        win.removeEventListener?.('pageshow', onPageShow);
+      }
 
       restoreHostElements();
       root.classList.remove('portal-workspace-compact');

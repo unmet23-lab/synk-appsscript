@@ -1265,6 +1265,7 @@ export function mountWebPortalHost({
   let cancelledEntrySeq = 0;
   let hasPreservedCompanyResolution = false;
   let pendingWorkspaceReturnRefresh = null;
+  let pendingNavigationHold = false;
   let cancellingCompanyEntry = false;
 
   function readPlatformSessionSnapshot() {
@@ -2180,10 +2181,15 @@ export function mountWebPortalHost({
             if (isPurposeOnboardingPending(latestAccount, accountKey)) {
               void settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
             }
-            if (resolvedOpen.navigationRequested !== true) {
+            const navigationRequested = resolvedOpen.navigationRequested === true;
+            if (!navigationRequested) {
               onEnsureEnteredRoute?.();
             }
-            portal.completeWorkspaceEntry({ action: 'entered', accountKey });
+            portal.completeWorkspaceEntry({
+              action: 'entered',
+              accountKey,
+              navigationRequested,
+            });
             return;
           }
           portal.setWorkspaceState(
@@ -2349,10 +2355,11 @@ export function mountWebPortalHost({
           const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
           if (marked?.ok === false) return marked;
         }
-        if (opened?.navigationRequested !== true) {
+        const navigationRequested = opened?.navigationRequested === true;
+        if (!navigationRequested) {
           onEnsureEnteredRoute?.();
         }
-        return { ok: true };
+        return navigationRequested ? { ok: true, navigationRequested: true } : { ok: true };
       }
 
       if (!assigned || assigned.ok === false) {
@@ -2445,13 +2452,14 @@ export function mountWebPortalHost({
             const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
             if (marked?.ok === false) return marked;
           }
-          if (opened.navigationRequested !== true) {
+          const navigationRequested = opened.navigationRequested === true;
+          if (!navigationRequested) {
             onEnsureEnteredRoute?.();
           }
           return {
             ok: true,
             destination: targetDest,
-            navigationRequested: true,
+            navigationRequested,
           };
         }
       }
@@ -2549,10 +2557,15 @@ export function mountWebPortalHost({
         const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
         if (marked?.ok === false) return;
       }
-      if (opened?.navigationRequested !== true) {
+      const navigationRequested = opened?.navigationRequested === true;
+      if (!navigationRequested) {
         onEnsureEnteredRoute?.();
       }
-      portal.completeWorkspaceEntry({ action: 'entered', accountKey });
+      portal.completeWorkspaceEntry({
+        action: 'entered',
+        accountKey,
+        navigationRequested,
+      });
       return;
     }
 
@@ -2608,10 +2621,15 @@ export function mountWebPortalHost({
             const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
             if (marked?.ok === false) return;
           }
-          if (opened.navigationRequested !== true) {
+          const navigationRequested = opened.navigationRequested === true;
+          if (!navigationRequested) {
             onEnsureEnteredRoute?.();
           }
-          portal.completeWorkspaceEntry({ action: 'entered', accountKey });
+          portal.completeWorkspaceEntry({
+            action: 'entered',
+            accountKey,
+            navigationRequested,
+          });
           return;
         }
         if (opened?.code === 'ACCOUNT_CHANGED') return;
@@ -2692,6 +2710,7 @@ export function mountWebPortalHost({
 
   portal = mountPortalEntry(root, {
     ...(Array.isArray(hostElements) && hostElements.length > 0 ? { hostElements } : {}),
+    managePageShow: true,
     initialState: {
       status: initialAuth.status,
       generation: initialAuth.generation,
@@ -2707,7 +2726,7 @@ export function mountWebPortalHost({
       if (!active || detail?.phase !== 'invite') {
         lastSubmittedInviteRaw = '';
       }
-      if (!active) {
+      if (!active || detail?.phase === 'entered') {
         hasCompletedPortalEntry = true;
         if (hasPreservedCompanyResolution || pendingWorkspaceReturnRefresh) {
           requestCancelCompanyEntry();
@@ -2719,6 +2738,17 @@ export function mountWebPortalHost({
         && (hasPreservedCompanyResolution || pendingWorkspaceReturnRefresh)
       ) {
         requestCancelCompanyEntry();
+      }
+      if (active && detail?.phase === 'entered') {
+        pendingNavigationHold = true;
+      } else if (!active) {
+        const shouldEnsureEnteredRoute = pendingNavigationHold && detail?.phase === 'entered';
+        pendingNavigationHold = false;
+        if (shouldEnsureEnteredRoute) {
+          onEnsureEnteredRoute?.();
+        }
+      } else {
+        pendingNavigationHold = false;
       }
       onActiveChange?.(active, detail);
       if (!active && authTriggerEl) {
@@ -2890,13 +2920,14 @@ export function mountWebPortalHost({
           if (marked?.ok === false) return marked;
         }
 
-        if (opened.navigationRequested !== true) {
+        const navigationRequested = opened.navigationRequested === true;
+        if (!navigationRequested) {
           onEnsureEnteredRoute?.();
         }
         return {
           ok: true,
           destination: normalizedDest,
-          navigationRequested: true,
+          navigationRequested,
         };
       })();
     },
@@ -3598,6 +3629,9 @@ export function mountWebPortalHost({
     const isOrdinaryInitialPageShow = event?.persisted === false && !noticeObj;
     if (!isOrdinaryInitialPageShow) {
       authIntentSeq += 1;
+    }
+    if (event?.persisted === true) {
+      portal.releaseNavigationHold?.();
     }
     const normalized = buildNormalizedAuth({ cancelOnBindingChange: false });
     const currentSnap = portal.getState();

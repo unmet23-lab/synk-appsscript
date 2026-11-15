@@ -1166,6 +1166,16 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
   await flushMicrotasks();
   assert.deepEqual(openedDestinations, ['/']);
 
+  // 목적지의 첫 응답이 늦어도 출발 문서에 예전 홈이 한 프레임이라도 드러나지 않는다.
+  assert.equal(host2.getState().phase, 'entered');
+  assert.equal(dom2.portalRoot.hidden, false);
+  assert.equal(dom2.portalRoot.querySelector('[data-portal-pane="welcome"]').hidden, false);
+  assert.equal(dom2.portalRoot.querySelector('[data-portal-interior]').hidden, true);
+
+  // 뒤로 돌아와 이 문서를 복원하면 떠나는 동안 유지하던 구를 해제한다.
+  host2.handlePageShow({ persisted: true });
+  assert.equal(dom2.portalRoot.hidden, true);
+
   // localStorage에는 어떤 토큰도 새로 저장되지 않아야 한다.
   const persistedLocal = JSON.stringify(localStorage.snapshot());
   assert.equal(persistedLocal.includes('central-jwt-do-not-persist'), false);
