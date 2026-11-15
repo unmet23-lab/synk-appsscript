@@ -1311,6 +1311,13 @@
 - 고침: source가 `compact`(와 `startup`)면 기록에서 경계를 찾지 않고 문맥을 빈 것으로 본다. `resume`과 UserPromptSubmit만 마지막 경계 뒤를 문맥으로 본다. 되짚기(`--되짚기`)도 압축 사건에는 경계 줄 앞까지만 준다.
 - 다시 확인: 훅을 등록한 뒤 압축이 한 번 난 세션의 기록에서 `〔지금 상태〕` 첨부 줄과 그 뒤 `compact_boundary` 줄의 시각을 견준다. `%LOCALAPPDATA%\synk\지금상태\기록.jsonl`의 그 회차 줄이 「넣음」인지 본다.
 
+### 곁 세션이 「브랜치를 체크아웃하지 못했습니다(Background full checkout failed: other)」로 시작하지 않으면 메모리 부족부터 본다 — 화면 안내의 「커밋되지 않은 변경」과는 상관없었다 (2026-11-15 Claude)
+
+- 증상: 11-15 20:21에 유호님이 제안 카드 「백업 감시 「확인 필요」 원인 찾기와 고침」을 눌러 곁 세션을 시작하셨다. 그 세션 창에 「이 세션이 시작되지 않았습니다」와 「브랜치를 체크아웃하지 못했습니다」가 떴다. 세부 정보는 「Background full checkout failed: other」 한 줄이었고, 화면 안내는 커밋되지 않은 변경을 커밋하거나 스태시하라고 했다.
+- 원인: 실제 오류는 앱 기록 `%LOCALAPPDATA%\Claude\logs\main.log`에 있었다. 앱은 D: 사본을 만들고 몇 경로만 먼저 채운 뒤, 나머지를 `git -c core.longpaths=true checkout <커밋> -- . :(exclude).claude`로 한꺼번에 채운다. 이 명령이 20:22:24에 `fatal: Out of memory, malloc failed (tried to allocate 1048576 bytes)`로 끝났다. 1분쯤 앞(20:21:27)에 앱은 「memory pressure (critical)」를 적고 쉬는 세션 하나를 내렸다. 실패 2초 앞(20:22:22)에 앱이 잰 자기 프로세스 묶음은 RSS 14.6GB였다. 앱은 실패한 사본을 지웠고, 시작 글(브리프)은 보내지 않고 거둬들였다(「1 undelivered input(s) withdrawn」). 열 분 앞(20:11)에 만든 다른 세션의 사본은 71초 만에 정상으로 채워졌다.
+- 고침: 메모리가 풀린 뒤 다시 시작한다. 브리프가 거둬들여졌으므로 같은 브리프로 새 세션을 띄운다. 실패한 창에서 다시 시도할 때 브리프가 다시 가는지는 확인 안 함. 끝난 세션을 보관하면 Claude 프로세스가 줄어든다. 20:30쯤 잰 값은 실제 메모리 63.4GB 중 23.4GB 남음, 약속 한도(메모리와 페이지 파일) 113.4GB 중 44.9GB 남음이었다. 이때 claude.exe 43개가 약속 21.3GB를, python 10개가 8.2GB를 쓰고 있었다.
+- 다시 확인: `main.log`에서 `full checkout`, `Out of memory`, `memory pressure`를 찾아 그 세션 id 근처의 오류 줄을 본다. 다시 띄운 세션은 같은 기록에 「Full checkout done」 줄을 남기고 첫 차례를 시작해야 한다.
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)
