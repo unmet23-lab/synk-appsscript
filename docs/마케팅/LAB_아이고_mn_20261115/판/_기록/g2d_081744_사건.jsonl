@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1dc5a-4dd0-7f43-9213-eb26d698acbf"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one landing pose, with Mongle squashed into the cushion and the room and camera kept fixed.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle lands with a joyful shout, squashed wide into the deeply compressed left sofa cushion."}}
+{"type":"turn.completed","usage":{"input_tokens":124077,"cached_input_tokens":101376,"cache_write_input_tokens":0,"output_tokens":1088,"reasoning_output_tokens":225}}

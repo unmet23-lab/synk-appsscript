@@ -1,0 +1,20 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the mascot's pose and face, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, sofa, TV and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cozy evening lamp light, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look and light — not its café, counter, cup or people).
+
+FORMAT: portrait 2:3. Camera at the height of the sofa seat, looking straight at the sofa. Keep every important thing between 10% and 90% of the image width (the left and right edges will be cropped).
+
+SET: a small cozy one-room studio apartment in Korea at night.
+- Back wall: plain warm-cream felt wall with a soft texture. The top 24% of the image is ONLY this plain wall — nothing there.
+- WALL SHELF: one short wooden felt shelf board fixed to the wall, its underside at about 30% of the image height, spanning from about 45% to 82% of the image width, directly above the right half of the sofa. On it: one small potted green plant at the right end and two plain felt books standing upright near the left end (blank covers, no writing).
+- SOFA: a small two-seat mustard-yellow felt sofa against the back wall, spanning about 36% to 90% of the image width; its backrest top at about 40% of the image height and its seat cushion surface at about 52% of the image height.
+- TV: on a low wooden stand at the LEFT, between about 10% and 34% of the image width, the screen between about 36% and 50% of the image height, turned slightly toward the sofa so the screen is clearly visible. On the screen: a felt Korean TV-drama scene — two felt doll actors (a young man and a young woman) in a café, the man has just tripped comically and the woman laughs. Screen glows softly. NO subtitles, NO text on the screen.
+- FLOOR: a plain soft felt rug in a muted sage-green colour fills the lower part of the image from about 55% of the image height down to the bottom — keep it plain and empty (no table, no objects on it).
+
+MONGLE (the mascot from the SECOND attached image): sits on the LEFT seat cushion of the sofa (its scalloped hem on the cushion, the middle of the hem at about 52% of the image width and at about 52% of the image height), its body about 20% of the image width wide, turned in three-quarter view toward the TV on the left. It is laughing hard at the drama: eyes squeezed into happy arcs, a big open laughing mouth, one tiny tear of laughter, body leaning back a little, warm blush.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+
+The space directly above Mongle up to the shelf must be empty wall (Mongle will jump into it later). Exactly ONE Mongle; the only other figures are the two tiny actors inside the TV screen.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — no writing on the TV, books, wall or sofa.

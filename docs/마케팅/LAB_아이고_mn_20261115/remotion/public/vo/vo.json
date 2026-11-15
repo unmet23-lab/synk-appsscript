@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1115,
+  "lufs": -16
+ },
+ "made": "2026-11-14T23:54:05.434Z",
+ "lines": [
+  {
+   "id": "s1",
+   "text": "아하하하! 대박!",
+   "dur": 1.637,
+   "syllablesPerSec": 3.67,
+   "src": "s1.wav",
+   "key": "42b84fcdaf4215522d2747124c244571",
+   "words": 2
+  },
+  {
+   "id": "c1",
+   "text": "하나!",
+   "dur": 0.499,
+   "syllablesPerSec": 4.01,
+   "src": "c1.wav",
+   "key": "c9c8d3de842caeeb010e8656f88032d1",
+   "words": 1
+  },
+  {
+   "id": "c2",
+   "text": "둘!",
+   "dur": 0.441,
+   "syllablesPerSec": 2.27,
+   "src": "c2.wav",
+   "key": "754387397ed4f269c3666d9d3423e12d",
+   "words": 1
+  },
+  {
+   "id": "c3",
+   "text": "셋!",
+   "dur": 0.319,
+   "syllablesPerSec": 3.13,
+   "src": "c3.wav",
+   "key": "a490ed05bd09bb7874f4e6abd8271996",
+   "words": 1
+  },
+  {
+   "id": "a1",
+   "text": "아이고!",
+   "dur": 0.803,
+   "syllablesPerSec": 3.74,
+   "src": "a1.wav",
+   "key": "1109d51ad0d876ae374771641b2e464c",
+   "words": 1
+  },
+  {
+   "id": "e1",
+   "text": "어? 나 한국 사람 다 됐네?",
+   "dur": 1.821,
+   "syllablesPerSec": 4.94,
+   "src": "e1.wav",
+   "key": "8cff3f14921503153b12af5aedef2ef2",
+   "words": 6
+  },
+  {
+   "id": "e2",
+   "text": "어? 나… 한국 사람?!",
+   "dur": 1.413,
+   "syllablesPerSec": 4.25,
+   "src": "e2.wav",
+   "key": "2001ed27f648a3c387b414d9f367ccf0",
+   "words": 4
+  }
+ ]
+}

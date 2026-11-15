@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a1",
+ "text": "아이고!",
+ "dur": 0.803,
+ "words": [
+  {
+   "text": "아이고!",
+   "start": 0.03,
+   "end": 0.803
+  }
+ ],
+ "source": {
+  "key": "1109d51ad0d876ae374771641b2e464c",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1115,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "셋! 너무 높이 뛰다가 선반에 머리를 쾅 부딪혔다. 아파서 저절로 튀어나오는 소리.",
+   "next": "어? 나… 한국 사람?!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 462
+ }
+}

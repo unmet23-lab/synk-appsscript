@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "아하하하! 대박!",
+ "dur": 1.637,
+ "words": [
+  {
+   "text": "아하하하!",
+   "start": 0.02,
+   "end": 0.585
+  },
+  {
+   "text": "대박!",
+   "start": 1.171,
+   "end": 1.637
+  }
+ ],
+ "source": {
+  "key": "42b84fcdaf4215522d2747124c244571",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1115,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "밤에 혼자 소파에서 한국 드라마를 자막 없이 보다가, 웃긴 장면에서 웃음이 빵 터진다.",
+   "next": "하나!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 504
+ }
+}
