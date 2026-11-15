@@ -163,7 +163,8 @@ function 결정낡은줄({ 새행들, 찾기, 바뀐곳들 = [], 핵심 = [], �
       const 행의곳 = 행곳.some((g) => x.경로.startsWith(`${g}/`));
       걸림.push({ ...x, 점: 든 * 2 + (계획말.test(글) ? 1 : 0) + (행의곳 ? 1 : 0) + (행의곳 && /설계|DESIGN|ROADMAP|로드맵/i.test(x.경로) ? 1 : 0) });
     }
-    걸림.sort((a, b) => b.점 - a.점 || a.경로.localeCompare(b.경로) || a.줄 - b.줄);
+    // 경로 순서는 'ko'로 못 박는다 — 기본 로캘에 맡기면 이 PC(ko-KR)와 리눅스 CI(en-US)의 순서가 갈린다(지금상태.js 2536d28fa와 같은 함정, 11-16)
+    걸림.sort((a, b) => b.점 - a.점 || a.경로.localeCompare(b.경로, 'ko') || a.줄 - b.줄);
     if (걸림.length) 결과.push({ 날: r.날, 태그: r.태그, 주제: r.주제, 수: 걸림.length, 넓음: 걸림.length > 한도, 걸림: 걸림.slice(0, 3), 모두: 걸림 });
   }
   return 결과;
