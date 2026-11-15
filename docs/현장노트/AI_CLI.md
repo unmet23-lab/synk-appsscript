@@ -1304,6 +1304,13 @@
 - 고침: 앱 화면에서만 바뀌는 칸은 「제가 켤까요」로 여쭙지 않는다. 처음부터 유호님께 누르실 자리를 적어 드린다. 앱의 작업 기록 파일(`claude-code-sessions/<계정>/<조직>/scheduled-tasks.json`, 계정마다 사본이 있다)을 손으로 고쳐 돌아가지 않고, 그 파일은 확인에만 쓴다.
 - 다시 확인: 「워크트리」를 켠 작업은 그 파일의 작업 줄에 `"useWorktree": true`가 있다. 11-15 저녁에는 `synk-daily-lab`과 `synk-daily-publish`에는 있었고, `synk-card-apply`, `synk-daily-lab-versions`, `synk-sns-final-check`에는 없었다.
 
+### 압축 뒤 SessionStart 훅이 돌 때 세션 기록에는 새 압축 경계 줄이 아직 없다 (2026-11-15 Claude)
+
+- 증상: 지금 상태 훅(`tools/지금상태.js`)을 설계할 때 「지금 문맥에 있는 것」을 기록의 마지막 `compact_boundary` 뒤로 가르려 했다. 그러면 압축 직후에는 방금 사라진 앞 문맥 전체가 「문맥에 있다」로 읽혀 넣어야 할 줄이 빠진다(Fable 5.2 설계 검토 D1).
+- 원인: 업무 백업 세션 `aa9e8858`의 압축 아홉 번 모두에서 SessionStart 훅 글(`hook_additional_context`)의 시각이 경계 줄보다 1~4초 앞선다(11-14는 훅 15:11:59.702Z, 경계 15:12:03.963Z). 경계 줄 · 요약 · 붙임은 훅 뒤에 한 묶음으로 적힌다. 줄에 찍힌 시각으로 본 것이고 파일이 적힌 때를 직접 재지는 않았다.
+- 고침: source가 `compact`(와 `startup`)면 기록에서 경계를 찾지 않고 문맥을 빈 것으로 본다. `resume`과 UserPromptSubmit만 마지막 경계 뒤를 문맥으로 본다. 되짚기(`--되짚기`)도 압축 사건에는 경계 줄 앞까지만 준다.
+- 다시 확인: 훅을 등록한 뒤 압축이 한 번 난 세션의 기록에서 `〔지금 상태〕` 첨부 줄과 그 뒤 `compact_boundary` 줄의 시각을 견준다. `%LOCALAPPDATA%\synk\지금상태\기록.jsonl`의 그 회차 줄이 「넣음」인지 본다.
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)

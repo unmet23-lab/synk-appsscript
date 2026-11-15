@@ -237,6 +237,7 @@ function 메모점검화면(점검) {
   for (const 글 of 점검.문제) 줄.push(`✗ ${글}`);
   for (const 글 of 점검.알림) 줄.push(`· ${글}`);
   if (!점검.문제.length && !점검.알림.length) 줄.push('  걸린 것이 없다. 목록이 끝까지 실리고, 목록과 파일이 맞고, 메모가 가리키는 저장소 파일이 모두 있다.');
+  줄.push('  스킬과 늘 읽히는 문서가 가리키는 없는 파일, 물러난 낱말(tools/lib/물러난말.json)까지는 node tools/낡은곳.js 점검');
   return 줄.join('\n');
 }
 
