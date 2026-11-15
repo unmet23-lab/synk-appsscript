@@ -566,15 +566,31 @@ function ssAccExt(ext,apiCollect,today=''){
   const detail=[...(hasApi?['플랫폼에서 확인한 통계',src]:[src]),...scopeParts,when?`확인 ${when}`:''].filter(Boolean).join(' · ');
   return `<div class="ss-acc-ext">${ssDot('butter')}<span>${ssEsc(detail)}</span></div>`;
 }
-function ssAccRow(a,today=''){
+const SS_COLLECTION_METRICS = {views:'조회수',likes:'좋아요',shares:'공유',reach:'도달',impressions:'노출',visitors:'방문자',followers:'팔로워',posts:'게시물',comments:'댓글',saves:'저장',profileVisits:'프로필 방문'};
+const SS_COLLECTION_ROUTES = {api:'공식 API',pc:'수집 PC','public-page':'공개 화면','creator-screen':'관리자 통계','official-export':'공식 내보내기'};
+const SS_COLLECTION_STATUS = {queued:'대기',running:'수집 중',complete:'수집 완료',partial:'일부 확인',unavailable:'제공 지표 없음',failed:'수집 실패'};
+const ssCollectionActive = row => row?.status==='queued'||row?.status==='running';
+const ssCollectionDate = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+function ssCollectionProgress(row){
+  if(!row)return '';
+  const stage=SS_COLLECTION_ROUTES[row.stage],status=SS_COLLECTION_STATUS[row.status]||'상태 확인 중';
+  const title=stage?`${stage} · ${status}`:status;
+  const stamp=new Date(row.updatedAt||'');
+  const when=Number.isFinite(stamp.getTime())?`<time datetime="${ssEsc(stamp.toISOString())}">${ssEsc(ssCollectionDate.format(stamp))} 확인</time>`:'';
+  const sources={...row.otherSources,...row.sources};
+  const fields=[...new Set(['views','likes','shares',...Object.keys(sources).filter(k=>Object.hasOwn(SS_COLLECTION_METRICS,k))])];
+  const metrics=fields.map(k=>ssEsc(SS_COLLECTION_METRICS[k])+' '+ssEsc(SS_COLLECTION_ROUTES[sources[k]]||'미확인')).join(' / ');
+  return `<div class="channel-collection-note ss-collection-progress"><strong>${ssEsc(title)}</strong><span>${ssEsc(row.message||'')}</span><small>${metrics}</small>${when}</div>`;
+}
+function ssAccRow(a,today='',progress=a.collectionProgress){
   const td=typeof today==='string'?today:'',ext=a?.externalCollection||null;
   const pub=a.publish==='자동 게시'?`<span class="ss-st green ss-acc-pub">${ssDot()}자동 게시</span>`:a.publish==='앱에서 직접'?`<span class="ss-st butter ss-acc-pub">${ssDot()}앱에서 직접</span>`:'<span class="ss-st ss-acc-pub">안 켬</span>';
-  const col=a.collect==='수집 중'?`<span class="ss-st ss-acc-col">${ssDot('green')}수집 중</span>`:a.collect==='수집 멈춤'?`<span class="ss-st coral ss-acc-col">${ssDot()}수집 멈춤</span>`:ext?`<span class="ss-acc-col ss-acc-col-stack"><span class="ss-st butter">${ssDot()}플랫폼에서 확인한 통계</span><small class="ss-acc-col-sub">API 수집 안 함</small></span>`:'<span class="ss-st ss-acc-col">수집 안 함</span>';
-  const extLine=ssAccExt(ext,a.collect,td);
+  const col=a.collect==='수집 중'?`<span class="ss-st ss-acc-col">${ssDot('green')}정기 API 수집 중</span>`:a.collect==='수집 멈춤'?`<span class="ss-st ss-acc-col">${ssDot()}정기 API 수집 멈춤</span>`:ext?`<span class="ss-acc-col ss-acc-col-stack"><span class="ss-st butter">${ssDot()}플랫폼에서 확인한 통계</span><small class="ss-acc-col-sub">정기 API 수집 안 함</small></span>`:'<span class="ss-st ss-acc-col">정기 API 수집 안 함</span>';
+  const extLine=ssAccExt(ext,a.collect,td)+`<div class="ss-progress-slot" data-ss-progress="${ssEsc(a.channelId||'')}"${progress?'':' hidden'}>${ssCollectionProgress(progress)}</div>`;
   const fix=a.fix?`<div class="ss-acc-fix">${ssDot('coral')}<span>${ssEsc(a.fix.message||'연결을 다시 확인해야 해요')}</span>${a.fix.kind==='publish'&&a.fix.connectUrl?`<a class="ss-link" href="${ssEsc(a.fix.connectUrl)}">게시 권한 다시 연결</a>`:`<button class="ss-link" type="button" data-ss-action="reconnect" data-value="${ssEsc(a.channelId)}">다시 연결</button>`}</div>`:'';
   return `<div class="ss-acc"><div class="ss-acc-name">${ssPf(a.platform)}<b>${ssEsc(a.handle||'이름 없음')}</b><span>${ssEsc(a.name||'')}</span></div>${pub}${col}<span class="ss-acc-n${a.posts30?'':' is-zero'}">${ssEsc(`${ssN(a.posts30)}편 · ${typeof a.views30==='number'?`${ssN(a.views30)}회`:'조회 미측정'}`)}</span><span class="ss-acc-last">${a.lastPost?ssEsc(ssMdShort(a.lastPost)):'—'}</span>${extLine}${fix}</div>`;
 }
-function ssAccounts(D){
+function ssAccounts(D,options={}){
   // views30은 「최근 30일 게시물의 지금까지 누적 조회」다. 서버가 숫자를 못 받은 계정은 null — 0으로 더하지 않고 몇 곳이 빠졌는지 밝힌다.
   const A=D.accounts||[],country=A.filter(a=>a.country),known=v=>typeof v==='number'&&Number.isFinite(v),order=(a,b)=>(known(b.views30)?b.views30:-1)-(known(a.views30)?a.views30:-1);
   const measured=country.filter(a=>known(a.views30)),missing=country.length-measured.length;
@@ -582,7 +598,7 @@ function ssAccounts(D){
   const viewsText=countryViews===null?'— (조회 수를 아직 못 받았어요)':`${ssN(countryViews)}회${missing?`(${missing}곳은 조회 수 미측정이라 뺌)`:''}`;
   const head='<div class="ss-acc-head"><span>계정</span><span>게시</span><span>수집</span><span title="최근 30일에 올린 게시물 수 · 그 게시물들의 지금까지 누적 조회(기간 동안 늘어난 조회가 아님)">30일 게시 · 누적 조회</span><span class="is-r">마지막</span></div>';
   const brandOrder=[...new Set(['유호','브리핑','LAB','SHIFT','PULSE','PATH','SYNK','회사',...A.filter(a=>!a.country).map(a=>a.brand||'회사')])];
-  const renderRow=a=>ssAccRow(a,D.today);
+  const renderRow=a=>ssAccRow(a,D.today,options.progress?.get(a.channelId)??(options.collectionSnapshot?null:a.collectionProgress));
   const blocks=brandOrder.map(b=>{
     const list=A.filter(a=>(a.brand||'회사')===b&&!a.country).sort(order),extra=b==='LAB'?country:[];
     if(!list.length&&!extra.length)return '';
@@ -594,8 +610,8 @@ function ssAccounts(D){
   const cRange=cLast.length?(cLast[0]===cLast.at(-1)?ssMdShort(cLast[0]):`${ssMdShort(cLast[0])}~${ssMdShort(cLast.at(-1))}`):'';
   const decide=country.length?`<div class="ss-task is-first"><div><div class="ss-task-label">${ssDot()}정할 것</div><b>${ssEsc(`나라별 LAB 계정 ${country.length}개 · 최근 30일 게시물의 누적 조회 ${viewsText}`)}</b><p>${ssEsc(`${cPosts?`30일 동안 ${cPosts}편 올렸어요${cRange?`(마지막 게시 ${cRange})`:''}`:'30일 동안 올린 게시가 없어요'}. 이 숫자는 나라별 계정만이에요 — 본 LAB 계정은 아래 LAB 목록에 따로 있고, 기간 동안 늘어난 조회는 성과 장의 「기간 성과」에서 봐요. 계속 둘지 정해 주세요.`)}</p></div><button class="ss-btn" type="button" data-ss-action="country">계정 보기</button></div>`:'';
   return ssHead({title:'계정',lede:'계정마다 자동 게시·수집 상태와 최근 30일 게시물의 누적 조회를 보여 줘요.',poster:ssPoster({label:'SNS · 계정',stats:[[ssN(A.length),'계정'],[ssN(auto),'자동 게시']],word:'계정',art:'accounts'})})
-    +ssMeter([['자동 게시',ssUnit(auto,'개'),'green','자동'],['앱에서 직접',ssUnit(app,'개'),'butter','앱 직접'],['나라별',ssUnit(country.length,'개'),undefined,'나라별'],stopped?['수집 멈춤',ssUnit(stopped,'개'),'coral','멈춤']:['수집 안 함',ssUnit(off,'개'),undefined,'수집 안 함']])
-    +decide+blocks;
+    +ssMeter([['자동 게시',ssUnit(auto,'개'),'green','자동'],['앱에서 직접',ssUnit(app,'개'),'butter','앱 직접'],['나라별',ssUnit(country.length,'개'),undefined,'나라별'],stopped?['정기 API 수집 멈춤',ssUnit(stopped,'개'),undefined,'정기 API']:['정기 API 수집 안 함',ssUnit(off,'개'),undefined,'정기 API']])
+    +`<div class="ss-collection-controls">${options.canCollect?`<button type="button" class="ss-btn" data-ss-action="collect-all"${options.posting?' disabled':''}>모두 수집</button>`:''}<span role="status" data-ss-progress-summary></span></div>`+decide+blocks;
 }
 
 // 폰(맥락 메뉴가 서랍이 되는 700px 이하)에서만 보이는 세 장 탭
@@ -603,7 +619,7 @@ function ssTabs(view,D){return `<nav class="ss-tabs" aria-label="SNS·마케팅 
 // 편 요약(저장소 → 서버)이 늦거나 없으면 숨기지 않고 한 줄로 알린다.
 function ssDigestNote(D){const d=D.digest;if(!d)return '<p class="ss-stale">저장소 편 기록이 아직 오지 않았어요. 작업실 예약만 보여요(Meta·직접 예약과 멈춘 편은 빠져요).</p>';return d.ageMinutes>120?`<p class="ss-stale">${ssEsc(`저장소 편 기록이 ${Math.floor(d.ageMinutes/60)}시간 전 것이에요. Meta·직접 예약은 그 뒤 바뀐 것이 빠졌을 수 있어요.`)}</p>`:'';}
 function ssPage(view,D,options={}){
-  const body=view==='results'?ssResults(D,options):view==='accounts'?ssAccounts(D):ssToday(D);
+  const body=view==='results'?ssResults(D,options):view==='accounts'?ssAccounts(D,options):ssToday(D);
   return `${view==='accounts'?'':ssDigestNote(D)}${body}`;
 }
 
@@ -611,7 +627,83 @@ function ssPage(view,D,options={}){
 const ssPerfBlank=()=>({days:30,metric:'views',target:'',status:'idle',error:'',current:null,previous:null,range:null,key:'',request:0,loadedAt:0});
 const snsSimple={identity:'',request:0,loading:false,attempted:false,attemptedAt:0,data:null,error:'',brand:'전체',sort:'recent',open:new Set(),perf:ssPerfBlank()};
 const SS_STALE_MS=5*60000;
-function snsSimpleIdentity(){const key=typeof snswIdentityKey==='function'?snswIdentityKey():'';if(snsSimple.identity!==key){Object.assign(snsSimple,{identity:key,request:snsSimple.request+1,loading:false,attempted:false,attemptedAt:0,data:null,error:'',brand:'전체',sort:'recent',open:new Set(),perf:{...ssPerfBlank(),request:snsSimple.perf.request+1}});}}
+const ssProgressBlank = () => ({items:new Map(),worker:null,posting:false,reading:false,readAt:0,snapshot:false,seq:0,timer:0,notice:''});
+let ssProgress = ssProgressBlank();
+function ssCanCollect(){
+  if(!state.user||state.user.role==='viewer'||(typeof isDemoMode==='function'&&isDemoMode()))return false;
+  return (state.data?.channels||[]).some(c=>c.active!==false&&canEditChannel(c));
+}
+function ssProgressPanel(){return document.querySelector('.sw-simple[data-sw-view="accounts"]');}
+function ssPaintProgress(){
+  const panel=ssProgressPanel();if(!panel)return;
+  for(const slot of panel.querySelectorAll('[data-ss-progress]')){
+    const row=ssProgress.items.get(slot.dataset.ssProgress);
+    if(!row){if(ssProgress.snapshot){slot.replaceChildren();slot.hidden=true;}continue;}
+    const html=ssCollectionProgress(row);if(slot.innerHTML!==html)slot.innerHTML=html;
+    slot.hidden=false;
+  }
+  const button=panel.querySelector('[data-ss-action="collect-all"]');
+  const rows=[...ssProgress.items.values()],active=rows.filter(ssCollectionActive);
+  if(button){
+    button.disabled=ssProgress.posting||active.length>0;
+    button.textContent=ssProgress.posting?'요청 중…':active.length?'수집 중…':'모두 수집';
+  }
+  const output=panel.querySelector('[data-ss-progress-summary]');if(!output)return;
+  const counts=rows.length?`계정 ${rows.length}개 중 ${rows.length-active.length}개 확인 종료`:'';
+  const offline=ssProgress.worker?.online===false&&active.some(row=>row.stage!=='api')?'수집 PC 연결 대기':'';
+  const summary=[ssProgress.notice,counts,offline].filter(Boolean).join(' · ');
+  if(output.textContent!==summary)output.textContent=summary;
+}
+function ssTakeProgress(st,response,full=false){
+  if(full){st.items.clear();st.snapshot=true;}
+  for(const row of response?.items||[])if(row?.channelId)st.items.set(row.channelId,row);
+  st.worker=response?.worker||null;st.readAt=Date.now();
+}
+function ssLaterProgress(st,delay){
+  if(st.timer)return;
+  st.timer=setTimeout(()=>{st.timer=0;if(st===ssProgress)void ssRefreshProgress(st);},delay);
+}
+async function ssRefreshProgress(st){
+  const identity=snsSimple.identity;
+  if(st!==ssProgress||st.reading||st.posting||document.hidden||!ssProgressPanel()||!state.user||isDemoMode())return;
+  const seq=++st.seq;st.reading=true;
+  try{
+    const result=await api('/api/collection-progress?scope=all');
+    if(st!==ssProgress||seq!==st.seq||identity!==snswIdentityKey()||!ssProgressPanel())return;
+    ssTakeProgress(st,result,true);ssPaintProgress();
+  }catch{st.readAt=Date.now();}
+  finally{
+    st.reading=false;
+    if(st===ssProgress&&ssProgressPanel()&&[...st.items.values()].some(ssCollectionActive))ssLaterProgress(st,7000);
+  }
+}
+async function ssCollectAll(){
+  const st=ssProgress,identity=snsSimple.identity;
+  if(st.posting||[...st.items.values()].some(ssCollectionActive)||!ssCanCollect()||!ssProgressPanel())return;
+  st.posting=true;st.seq++;st.notice='수집을 요청하고 있어요.';ssPaintProgress();
+  try{
+    const result=await api('/api/collect',{scope:'all',teamId:''});
+    if(st!==ssProgress||identity!==snswIdentityKey())return;
+    ssTakeProgress(st,result.progress);st.notice=(result.progress?.items||[]).length?'수집 요청을 접수했어요.':'수집할 수 있는 계정이 없어요.';
+  }catch(error){if(st===ssProgress&&identity===snswIdentityKey())st.notice=error.message||'수집 요청을 보내지 못했어요.';}
+  finally{st.posting=false;if(st===ssProgress){ssPaintProgress();ssLaterProgress(st,1500);}}
+}
+function ssShowProgress(D){
+  const st=ssProgress;
+  for(const a of st.snapshot?[]:(D.accounts||[])){
+    const row=a.collectionProgress,old=st.items.get(a.channelId);
+    if(row&&(!old||row.updatedAt>old.updatedAt))st.items.set(a.channelId,row);
+  }
+  if(typeof isDemoMode==='function'&&!isDemoMode()&&!st.reading&&!st.posting){
+    if(!st.readAt||Date.now()-st.readAt>30000)ssLaterProgress(st,0);
+    else if([...st.items.values()].some(ssCollectionActive))ssLaterProgress(st,7000);
+  }
+  if(typeof requestAnimationFrame==='function')requestAnimationFrame(ssPaintProgress);
+}
+globalThis.document?.addEventListener?.('visibilitychange',()=>{
+  if(!document.hidden&&ssProgressPanel())ssLaterProgress(ssProgress,0);
+});
+function snsSimpleIdentity(){const key=typeof snswIdentityKey==='function'?snswIdentityKey():'';if(snsSimple.identity!==key){if(ssProgress.timer)clearTimeout(ssProgress.timer);ssProgress=ssProgressBlank();Object.assign(snsSimple,{identity:key,request:snsSimple.request+1,loading:false,attempted:false,attemptedAt:0,data:null,error:'',brand:'전체',sort:'recent',open:new Set(),perf:{...ssPerfBlank(),request:snsSimple.perf.request+1}});}}
 async function snsSimpleLoad(){
   snsSimpleIdentity();const identity=snsSimple.identity,request=++snsSimple.request;
   Object.assign(snsSimple,{loading:true,attempted:true,attemptedAt:Date.now(),error:''});
@@ -644,7 +736,8 @@ function snsSimpleRender(view){
   if(view==='map')return `<section class="sw-simple" data-sw-view="map" aria-label="SNS·마케팅 · 나라 지도">${ssTabs(view,D)}${typeof marketingMapRender==='function'?marketingMapRender():''}</section>`;
   const error=snsSimple.error?`<div class="ss-alert" role="alert">${ssEsc(snsSimple.error)}<button class="ss-link" type="button" data-ss-action="reload"${snsSimple.loading?' disabled':''}>다시 불러오기</button></div>`:'';
   if(view==='results'&&D&&state.user)ssPerfEnsure();
-  const body=D?ssPage(view,D,{brand:snsSimple.brand,sort:snsSimple.sort,open:snsSimple.open,perf:view==='results'?snsSimple.perf:null}):`<div class="ss-empty" role="status"><h2>${snsSimple.error?'불러오지 못했어요':'불러오고 있어요'}</h2><p>${snsSimple.error?'잠시 뒤 다시 불러와 주세요.':'예약·수집·성과를 모으고 있어요.'}</p></div>`;
+  if(view==='accounts'&&D&&state.user)ssShowProgress(D);
+  const body=D?ssPage(view,D,{canCollect:view==='accounts'&&ssCanCollect(),posting:ssProgress.posting,progress:ssProgress.items,collectionSnapshot:ssProgress.snapshot,brand:snsSimple.brand,sort:snsSimple.sort,open:snsSimple.open,perf:view==='results'?snsSimple.perf:null}):`<div class="ss-empty" role="status"><h2>${snsSimple.error?'불러오지 못했어요':'불러오고 있어요'}</h2><p>${snsSimple.error?'잠시 뒤 다시 불러와 주세요.':'예약·수집·성과를 모으고 있어요.'}</p></div>`;
   ssWideSoon();
   return `<section class="sw-simple" data-sw-view="${ssEsc(view)}" aria-label="SNS·마케팅" aria-busy="${snsSimple.loading}">${ssTabs(view,D)}${error}${body}</section>`;
 }
@@ -658,6 +751,7 @@ globalThis.document?.addEventListener?.('toggle',event=>{if(event.target?.matche
 document.addEventListener('click',event=>{
   const target=event.target.closest?.('.sw-simple [data-ss-action]');if(!target||target.disabled)return;
   const action=target.dataset.ssAction,value=target.dataset.value||'';
+  if(action==='collect-all'){void ssCollectAll();return;}
   if(action==='brand'){snsSimple.brand=value;snswRender();return;}
   if(action==='sort'){snsSimple.sort=value==='best'?'best':'recent';snswRender();return;}
   if(action==='detail'){snsSimple.open.has(value)?snsSimple.open.delete(value):snsSimple.open.add(value);snswRender();document.querySelector(`.sw-simple [data-ss-action="detail"][data-value="${CSS.escape(value)}"]`)?.focus?.({preventScroll:true});return;}

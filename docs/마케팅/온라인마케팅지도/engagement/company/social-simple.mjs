@@ -240,7 +240,7 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},c
     const fix=item&&['reconnect','connect'].includes(item.action)?{kind:'collect',message:item.label||'수집 연결을 다시 해야 해요'}:row?.supported&&row.enabled&&!row.connected?{kind:'publish',message:'게시 권한을 다시 연결해야 해요',connectUrl}:null;
     const brand=brandOf(c),name=String(c.displayName||'');
     const known=mine.filter(p=>typeof p.views==='number'&&Number.isFinite(p.views));
-    return {channelId:c.id,accountId:c.accountId,business:c.business,contentTrack:c.contentTrack,platform:c.platform,handle:atHandle(c.platform,c.handle),name:name==='유호'&&brand!=='유호'?'':name,brand,country:countryOf(c),publish,collect,externalCollection:c.externalCollection||null,posts30:mine.length,
+    return {channelId:c.id,accountId:c.accountId,business:c.business,contentTrack:c.contentTrack,platform:c.platform,handle:atHandle(c.platform,c.handle),name:name==='유호'&&brand!=='유호'?'':name,brand,country:countryOf(c),publish,collect,externalCollection:c.externalCollection||null,collectionProgress:c.collectionProgress||null,posts30:mine.length,
       views30:known.length?known.reduce((s,p)=>s+p.views,0):null,views30Basis:'최근 30일에 게시한 콘텐츠의 최신 누적 조회수 · 해당 기간 발생 조회수 아님',views30Known:known.length,views30Eligible:mine.length,
       lastPost:last?kstDay(Date.parse(last)):null,fix};
   });

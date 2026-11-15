@@ -18,6 +18,7 @@ import { planFailure,shouldCollect,collectionHealth,collectionHours,recentPolicy
 import {classifiedChannel} from './account-catalog.mjs';
 import {createCatalogRegistration} from './catalog-registration.mjs';
 import {createExternalObservations,externalCollectionSummary} from './external-observations.mjs';
+import {createCollectionProgress,measuredApiMetrics} from './collection-progress.mjs';
 import { recordsForOwner } from './ownership-report.mjs';
 import { buildHypeFeed } from './hype.mjs';
 import { createContentService } from './content-service.mjs';
@@ -486,6 +487,9 @@ export function createCompanyApp(options={}) {
   // 원장 계정 등록과 로그인 통계 화면·공식 내보내기 관측(11-14). 채널 연결·자격증명·API 수집 상태는 바꾸지 않는다.
   const catalogRegistration=createCatalogRegistration({store,clock,audit});
   const externalObservations=createExternalObservations({store,clock,isConnected:hasConnection,audit});
+  const collectionProgress=createCollectionProgress({store,clock,connected:hasConnection,enqueue:enqueueCollection,
+    currentRun:channelId=>store.latestIn('runs','channelId',[channelId],'startedAt',5).find(r=>['queued','running'].includes(r.status)),
+    record:externalObservations.record});
   const socialSimpleSources=user=>{const channels=visibleChannels(user).map(c=>safeChannel(c,user)),schedule=store.get('settings','company');return {channels,collection:collectionHealth(channels,{at:clock(),hourKst:schedule.hourKst,hoursKst:schedule.hoursKst,enabled:schedule.enabled}),performance:postPerformance.observations(user).entries};};
   const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
@@ -582,7 +586,7 @@ export function createCompanyApp(options={}) {
   function hasConnection(c) {return !c.collectionDisabled&&(!!connection(c)?.accessToken||(c.platform==='youtube'&&!!(connection(c)?.apiKey||providerConfig(c.platform).apiKey||publicYouTubeReader(c))));}
   function disconnectChannel(c){store.transaction(()=>{const handoff=pending(c);if(handoff)store.put('handoffs',handoff.id,{...handoff,status:'cancelled',cancelledAt:clock(),reasonClosed:'connection-disconnected'});store.deleteSecret('channel:'+c.id);const ids=new Set(store.all('posts').filter(p=>p.channelId===c.id).map(p=>p.id));for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if(row.source?.startsWith('api:')&&(row.channelId===c.id||ids.has(row.postId)))store.remove(kind,row.id);store.put('channels',c.id,{...c,pendingHandoffId:null,status:'not-connected',lastCollectedAt:null,recentStatus:'not-connected',recentLastCollectedAt:null,collectionDisabled:true,connectionVersion:(c.connectionVersion||0)+1});});}
   function namedUsers(ids){return ids.map(id=>({id,name:store.get('users',id)?.name||'이전 담당자'}));}
-  function safeChannel(c,user) {const connectedBy=connection(c)?.connectedBy;return {...c,owners:namedUsers(c.ownerIds),teamName:(c.teamId&&store.get('teams',c.teamId)?.name)||'팀 없음',connected:hasConnection(c),canEdit:user?canWriteChannel(user,c):false,canManageOwners:user?canManageOwners(user,c):false,canConnect:user?user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c)):false,connectionOwner:connectedBy?namedUsers([connectedBy])[0]:null,pendingHandoff:pending(c),externalCollection:externalCollectionSummary(store,c)};}
+  function safeChannel(c,user) {const connectedBy=connection(c)?.connectedBy;return {...c,owners:namedUsers(c.ownerIds),teamName:(c.teamId&&store.get('teams',c.teamId)?.name)||'팀 없음',connected:hasConnection(c),canEdit:user?canWriteChannel(user,c):false,canManageOwners:user?canManageOwners(user,c):false,canConnect:user?user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c)):false,connectionOwner:connectedBy?namedUsers([connectedBy])[0]:null,pendingHandoff:pending(c),externalCollection:externalCollectionSummary(store,c),collectionProgress:user&&canReadChannel(user,c)?collectionProgress.item(c):null};}
   function scopeTeamId(user,query){return query.get('teamId')||(query.get('scope')==='team'?user.teamId:null)||null;}
   function scopedChannels(user,query){
     let channels=visibleChannels(user);const scope=query.get('scope'),teamId=scopeTeamId(user,query);
@@ -727,7 +731,9 @@ export function createCompanyApp(options={}) {
       const successState={status:complete?'success':'partial',lastCollectedAt:stamp,lastSuccessAt:complete?stamp:live.lastSuccessAt,lastError:null,failureKind:null,failureCode:null,lastFailureAt:null,retryCount:0,nextRetryAt:null,requiresReconnect:false,coverage:result.coverage,warnings:result.warnings||[]};
       const recentState=recentFields({...successState,lastSuccessAt:complete?stamp:live.recentLastSuccessAt});
       if(result.coverage?.collectionError)Object.assign(recentState,recentFields(planFailure(result.coverage.collectionError,recentPolicyChannel(live),stamp)),{recentStatus:'error',recentLastError:'일부 수치는 권한이나 호출 한도 때문에 못 받았어요. 권한을 확인하거나 다음 시도를 기다려 주세요.'});
-      store.put('channels',channel.id,{...live,externalId,displayName:result.channel.displayName||live.displayName,...(mode==='full'?successState:{}),...recentState});
+      const collectedChannel={...live,externalId,displayName:result.channel.displayName||live.displayName,...(mode==='full'?successState:{}),...recentState};
+      store.put('channels',channel.id,collectedChannel);
+      collectionProgress.identifyAfterApi(live,collectedChannel,runId);
       const ownership=ownerAt(store.all('ownershipEvents'),live,stamp);
       const channelSnapshot={id:`${channel.id}:${date}`,channelId:channel.id,date,followers:count(result.channel.followers),views:count(result.channel.views),postCount:count(result.channel.metrics?.posts),collectedPostCount:result.posts.length,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
       if(mode==='full')store.put('channelSnapshots',channelSnapshot.id,channelSnapshot);
@@ -752,7 +758,7 @@ export function createCompanyApp(options={}) {
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized){for(const old of store.all('snapshots'))if(renewedPosts.has(old.postId)&&old.source==='api:youtube')store.put('snapshots',old.id,{...old,expiresAt});}
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized)for(const old of store.all('channelSnapshots').filter(s=>s.channelId===channel.id&&s.source==='api:youtube'))store.put('channelSnapshots',old.id,{...old,expiresAt});
       if(mode==='full'&&result.coverage?.inventoryComplete===true){const seen=new Set(result.posts.map(p=>`${channel.id}:${p.externalId}`));for(const old of store.all('posts'))if(old.channelId===channel.id&&old.source?.startsWith('api:')&&!seen.has(old.id)&&!old.unavailableAt)store.put('posts',old.id,{...old,unavailableAt:stamp});}
-      const run=store.get('runs',runId);store.put('runs',runId,{...run,status:complete?'success':'partial',finishedAt:stamp,message:result.warnings?.join(' · ')||`콘텐츠 ${result.posts.length}개를 확인했어요`,postCount:result.posts.length,coverage:result.coverage});
+      const run=store.get('runs',runId);store.put('runs',runId,{...run,status:complete?'success':'partial',finishedAt:stamp,message:result.warnings?.join(' · ')||`콘텐츠 ${result.posts.length}개를 확인했어요`,postCount:result.posts.length,coverage:result.coverage,measuredMetrics:measuredApiMetrics(result)});
     };
     return withinTransaction?write():store.transaction(write);
   }
@@ -831,7 +837,9 @@ export function createCompanyApp(options={}) {
       // 대기 중에 보관한 채널은 실패로 적지 않는다. 실패로 적으면 보관을 풀어도 자동 수집이 다시 돌지 않는다(10-20).
       if(live&&live.active===false){store.put('channels',c.id,{...live,...(mode==='recent'?{recentStatus:'ready',recentLastAttemptAt:null}:{status:'ready',lastAttemptAt:null})});store.put('runs',id,{...store.get('runs',id),status:'cancelled',finishedAt:clock(),message:safeError(error.message)});return;}
       const failure=planFailure(error,mode==='recent'?recentPolicyChannel(live||c):(live||c),clock());if(live&&!live.collectionDisabled&&(live.connectionVersion||0)===(c.connectionVersion||0))store.put('channels',c.id,{...live,...(mode==='recent'?{...recentFields(failure),recentStatus:'error',recentLastError:safeError(error.message)}:{...failure,status:'error',lastError:safeError(error.message)})});store.put('runs',id,{...store.get('runs',id),...failure,status:'error',finishedAt:clock(),message:safeError(error.message)});
-    }finally{inflight.delete(c.id);const latest=store.get('channels',c.id);if(mode==='recent'&&latest?.recentStatus==='collecting'&&(latest.connectionVersion||0)!==(c.connectionVersion||0))store.put('channels',c.id,{...latest,recentStatus:hasConnection(latest)?'ready':'not-connected',recentLastAttemptAt:null});}})
+    }finally{inflight.delete(c.id);const latest=store.get('channels',c.id);if(mode==='recent'&&latest?.recentStatus==='collecting'&&(latest.connectionVersion||0)!==(c.connectionVersion||0))store.put('channels',c.id,{...latest,recentStatus:hasConnection(latest)?'ready':'not-connected',recentLastAttemptAt:null});
+      if(mode==='recent'&&!stopRequested)collectionProgress.afterRecent(c.id,id);
+    }})
     // 한 채널의 저장 오류(디스크 가득 등)가 사슬을 끊으면 뒤의 모든 수집이 조용히 멈추고, 처리기가 없으면 프로세스가 죽는다.
       .catch(()=>{});
     return{id,channelId:c.id,status:'queued'};
@@ -1806,7 +1814,13 @@ export function createCompanyApp(options={}) {
         if(cm[2]==='disconnect')disconnectChannel(c);
         audit(user,cm[2],c.id);return send(res,200,{ok:true});
       }
-      if(path==='/api/collect'){const results=[];const q=new URLSearchParams();if(input.scope)q.set('scope',input.scope);if(input.teamId)q.set('teamId',input.teamId);for(const c of scopedChannels(user,q).filter(c=>canWriteChannel(user,c)&&c.active&&hasConnection(c)))results.push(enqueueCollection(user,c));return send(res,202,{runs:results});}
+      if(path==='/api/collect'){
+        const q=new URLSearchParams();if(input.scope)q.set('scope',input.scope);if(input.teamId)q.set('teamId',input.teamId);
+        return send(res,202,collectionProgress.start(user,scopedChannels(user,q)));
+      }
+      if(path==='/api/collection-progress/claim'){admin(user);return send(res,200,collectionProgress.claim(input));}
+      if(path==='/api/collection-progress/update'){admin(user);return send(res,200,collectionProgress.update(input));}
+      if(path==='/api/collection-progress/observations'){admin(user);return send(res,200,collectionProgress.observe(user,input));}
       if(companyWorkRoute)return send(res,companyWorkRoute[2]?200:201,companyWork.save(user,companyWorkRoute[1],companyWorkRoute[2],input));
       if(path==='/api/members/invite'){const result=workspaceProfiles.issue(user,input);return send(res,201,{...result,inviteUrl:origin+'/#invite='+result.code});}
       const profileRoute=path.match(/^\/api\/members\/([^/]+)\/workspace-profile$/);
@@ -2086,6 +2100,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/settings/pulse-auto-reply')return send(res,200,pulseAutoReply.settings(user));
       if(path==='/api/settings/pulse-features')return send(res,200,pulseFeatures.settings(user));
       if(path==='/api/settings/pulse-capacity')return send(res,200,pulseCapacity.settings(user));
+      if(path==='/api/collection-progress')return send(res,200,collectionProgress.list(scopedChannels(user,url.searchParams).filter(c=>canReadChannel(user,c))));
       if(path==='/api/state'){
         const channels=visibleChannels(user),ids=new Set(channels.map(c=>c.id)),members=visibleMembers(store,user),teamIds=new Set([...channels.map(c=>c.teamId),user.teamId]),schedule=store.get('settings','company');
         const teams=store.all('teams').filter(t=>user.role==='admin'||teamIds.has(t.id)).map(t=>({...t,memberCount:members.filter(u=>u.teamId===t.id&&u.active).length,channelCount:channels.filter(c=>c.teamId===t.id&&c.active).length}));

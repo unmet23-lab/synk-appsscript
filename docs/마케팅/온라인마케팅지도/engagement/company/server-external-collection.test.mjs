@@ -11,6 +11,7 @@ import {createCompanyApp} from './server.mjs';
 import {accountCatalog,matchAccount,facebookLegacyPublicId,MANAGED_ACCOUNT_STATUSES} from './account-catalog.mjs';
 import {EXTERNAL_OBSERVATION_KIND,EXTERNAL_LIMITS,createExternalObservations} from './external-observations.mjs';
 import {planCatalogRegistration} from './catalog-registration.mjs';
+import {measuredApiMetrics} from './collection-progress.mjs';
 
 const MANAGED=accountCatalog.accounts.filter(account=>MANAGED_ACCOUNT_STATUSES.includes(account.accountStatus)).map(account=>account.id);
 const DAY_MS=86400000;
@@ -18,9 +19,9 @@ const kstDay=ms=>new Date(ms+9*3600000).toISOString().slice(0,10);
 const shift=(day,n)=>new Date(Date.parse(day+'T00:00:00Z')+n*DAY_MS).toISOString().slice(0,10);
 const sha=text=>createHash('sha256').update(text).digest('hex');
 
-async function fixture(t){
+async function fixture(t,options={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-external-collection-'));
-  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false});
+  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,schedule:false,...options});
   const address=await app.start(),base=`http://127.0.0.1:${address.port}`;
   t.after(async()=>{await app.stop();await rm(directory,{recursive:true,force:true});});
   app.store.put('teams','team-synthetic',{id:'team-synthetic',name:'Synthetic team',active:true,createdAt:new Date().toISOString()});
@@ -41,6 +42,87 @@ async function fixture(t){
   };
   return {app,users,request,register};
 }
+
+test('one click records current API metrics, leased PC observations and the same progress after refresh',async t=>{
+  let calls=0;
+  const f=await fixture(t,{collector:async()=>{calls++;
+    return {channel:{externalId:'synthetic-provider-canonical-id',views:0},posts:[],coverage:{status:'complete'}};}});
+  const ids=await f.register(['lab-youtube','shift-tistory','yuhobuilds-telegram']);
+  const connected=ids['lab-youtube'];
+  f.app.store.setSecret('channel:'+connected,{apiKey:'fixture-reader'});
+  const route='/api/collection-progress';
+  const capability={workerId:'fixture-worker',accountIds:Object.keys(ids)};
+  const start=await f.request('admin','/api/collect',{});
+  assert.equal(start.status,202);
+  assert.equal(start.body.progress.items.length,3);
+  const again=await f.request('admin','/api/collect',{});
+  assert.equal(again.status,202);assert.equal(calls,1);
+  assert.equal((await f.request('member',route+'/claim',{})).status,403);
+  assert.equal((await f.request('admin',route+'/claim',{})).status,400);
+  assert.equal((await f.request('admin',route+'/claim',{...capability,accountIds:['shift-brunch']})).body.job,null);
+  const seen=new Set();
+  for(let n=0;n<2;n++){
+    const claim=await f.request('admin',route+'/claim',capability);
+    assert.equal(claim.status,200);const job=claim.body.job;assert.ok(job);seen.add(job.accountId);
+    assert.equal((await f.request('admin',route+'/update',{...job,token:'expired',reason:'done'})).status,409);
+    if(job.accountId==='shift-tistory'){
+      const observedAt=new Date().toISOString(),envelope={sourceType:'creator-screen',sourceUrl:'https://yuhobuilds.tistory.com/manage/statistics',observedAt,
+        evidenceSha256:sha('one click fixture'),identity:{accountId:'shift-tistory',handle:'yuhobuilds.tistory.com'},
+        observations:[{kind:'account-lifetime',metrics:{views:0,visitors:0}}]};
+      assert.equal((await f.request('admin',route+'/observations',{...job,envelope:{...envelope,observedAt:'2020-01-01T00:00:00Z'}})).status,400);
+      for(const expected of ['created','existing']){
+        const saved=await f.request('admin',route+'/observations',{...job,envelope});
+        assert.equal(saved.status,200,JSON.stringify(saved.body));assert.equal(saved.body[expected],1);
+      }
+    }else{assert.equal(job.accountId,'lab-youtube');assert.deepEqual(job.missing,['likes','shares']);}
+    assert.equal((await f.request('admin',route+'/update',{...job,reason:'limited'})).body.item.status,'partial');
+  }
+  assert.deepEqual([...seen].sort(),['lab-youtube','shift-tistory']);
+  assert.equal((await f.request('admin',route+'/claim',capability)).body.job,null);
+  const read=await f.request('admin',route);
+  assert.equal(read.body.worker.online,true);
+  const byId=Object.fromEntries(read.body.items.map(row=>[row.accountId,row]));
+  assert.equal(byId['lab-youtube'].sources.views,'api');
+  assert.equal(byId['yuhobuilds-telegram'].reason,'contact');
+  assert.equal(byId['shift-tistory'].otherSources.visitors,'creator-screen');
+  assert.equal(byId['shift-tistory'].sources.views,'creator-screen');
+  assert.equal((await f.request('admin','/api/state')).body.channels.find(c=>c.id===ids['shift-tistory']).collectionProgress.status,'partial');
+  assert.equal((await f.request('member',route)).body.items.length,0);
+});
+
+test('a PC lease cannot import after ownership changes, and a new worker retries an expired lease',async t=>{
+  let at=Date.now();const f=await fixture(t,{clock:()=>new Date(at).toISOString()});
+  const ids=await f.register(['shift-tistory']);const base='/api/collection-progress';
+  await f.request('admin','/api/collect',{});
+  const claim=async()=>(await f.request('admin',base+'/claim',{workerId:'fixture-worker',accountIds:['shift-tistory']})).body.job;
+  const first=await claim();assert.ok(first);assert.equal(await claim(),null);
+  at+=5*60_000;const second=await claim();assert.ok(second);assert.equal(second.requestId,first.requestId);assert.notEqual(second.token,first.token);
+  assert.equal((await f.request('admin',base+'/update',{...first,reason:'done'})).status,409);
+  const id=ids['shift-tistory'],ch=f.app.store.get('channels',id);
+  f.app.store.put('channels',id,{...ch,ownerIds:[f.users.member.id]});
+  await f.request('admin',base);
+  f.app.store.put('channels',id,ch);
+  assert.equal((await f.request('admin',base+'/update',{...second,reason:'done'})).status,409);
+});
+
+test('a repeated official file needs a download for this lease, and preserves its original observation date',async t=>{
+  const f=await fixture(t);const ids=await f.register(['shift-tistory']);const id=ids['shift-tistory'];
+  const path='/api/channels/'+id+'/external-observations',route='/api/collection-progress';
+  const original={sourceType:'official-export',sourceUrl:'https://yuhobuilds.tistory.com/manage/statistics',exportFormat:'csv',
+    observedAt:new Date(Date.now()-60000).toISOString(),evidenceSha256:sha('same downloaded report'),
+    identity:{accountId:'shift-tistory',handle:'yuhobuilds.tistory.com'},observations:[{kind:'account-lifetime',metrics:{views:0}}]};
+  assert.equal((await f.request('admin',path,original)).status,201);
+  await f.request('admin','/api/collect',{});
+  const job=(await f.request('admin',route+'/claim',{accountIds:['shift-tistory'],workerId:'fixture-worker'})).body.job;
+  const envelope={...original,observedAt:new Date().toISOString()};
+  const send=capture=>f.request('admin',route+'/observations',{...job,envelope,capture});
+  assert.equal((await send(null)).status,400);
+  const capture={requestId:job.requestId,token:job.token,evidenceSha256:original.evidenceSha256,downloadedAt:envelope.observedAt};
+  assert.equal((await send({...capture,token:'other-lease'})).status,400);
+  const repeated=await send(capture);assert.equal(repeated.status,200);assert.equal(repeated.body.existing,1);
+  assert.equal((await f.request('admin',path)).body.observations[0].observedAt,original.observedAt);
+  assert.deepEqual(measuredApiMetrics({channel:{followers:0},posts:[{metrics:{comments:0,likes:null}}]}),['followers','comments']);
+});
 
 function tistoryObservation(overrides={}){
   const observedMs=Date.now()-60*60000,day=kstDay(observedMs);

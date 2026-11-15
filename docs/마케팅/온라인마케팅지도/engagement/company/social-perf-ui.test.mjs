@@ -176,3 +176,22 @@ test('공개 통계만 연결한 YouTube 안내는 60·90일에 YouTube가 대�
   const noYt = ssPerfBlock({ days: 90, metric: 'views', target: '', status: 'ready', current: report(), previous: report() }, { ...D, accounts: [{ channelId: 'ig', platform: 'instagram' }] });
   assert.doesNotMatch(noYt, note);
 });
+
+test('계정 목록은 이번 요청의 단계와 확인한 지표를 계정마다 따로 표시한다', () => {
+  const { ssAccounts } = screen();
+  const account = { brand: 'LAB', platform: 'instagram', channelId: 'test-ig', handle: '@test-ig' };
+  const progress = {
+    channelId: account.channelId, accountId: 'catalog-ig', status: 'partial', stage: 'finished',
+    sources: { views: 'api', likes: 'official-export' }, otherSources: { reach: 'creator-screen' },
+    metrics: ['views', 'likes'], message: '계정에서 확인한 수치 <원본>',
+    updatedAt: '2026-11-15T11:00:00Z'
+  };
+  const html = ssAccounts({ accounts: [{ ...account, collectionProgress: progress }] });
+  assert.match(html, /계정에서 확인한 수치 &lt;원본&gt;/);
+  for (const label of ['조회수', '좋아요', '공유']) assert.ok(html.includes(label), label);
+  assert.doesNotMatch(html, /<원본>/);
+  assert.doesNotMatch(ssAccounts({ accounts: [account] }), /계정에서 확인한 수치/);
+  const afterReassignment = ssAccounts({ accounts: [{ ...account, collectionProgress: progress }] },
+    { progress: new Map(), collectionSnapshot: true });
+  assert.doesNotMatch(afterReassignment, /계정에서 확인한 수치/, '담당 변경으로 최신 응답에서 제외된 행을 예전 계정 자료로 되살리지 않는다');
+});
