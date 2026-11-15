@@ -95,7 +95,7 @@ async function processJob(api, job, options = {}) {
   const account = (options.catalog || catalog).accounts.find(a=>a.id===job.accountId && MANAGED.has(a.accountStatus));
   const stateDir = options.stateDir || HOME_DIR;
   const root = options.requestDir || REQUEST_DIR;
-  const dir = freshDir(root);
+  let dir = freshDir(root);
   const capture = options.capture || require('./capture-routes.cjs').capture;
   const control = new AbortController();
   let stage = 'public-page', touched = [], pending = Promise.resolve(), reason = 'retry';
@@ -108,10 +108,12 @@ async function processJob(api, job, options = {}) {
     return pending;
   };
   const timer = setInterval(()=>{ if (!control.signal.aborted) sendStage(stage).catch(()=>{}); },40_000);
+  let submitted = false;
   const take = async file => {
     await pending;
     if (control.signal.aborted) throw Error('Collection lease ended');
     touched = await submit(file,dir,job,api);
+    submitted = true;
   };
   try {
     if (!account) throw Error('Account is absent from the local operating catalog');
@@ -130,8 +132,18 @@ async function processJob(api, job, options = {}) {
     } else {
       // Aside exposes one local browser-control service across its accounts. Overlapping downloads time out there.
       const key=profile.browser==='aside'?'aside':'ego:'+(profile.profileId||'default');
-      const perform=()=>capture({account, profile, policy, dir, stateDir, requestedAt:job.requestedAt, missing:job.missing,
+      const read=()=>capture({account, profile, policy, dir, stateDir, requestedAt:job.requestedAt, missing:job.missing,
         setStage:sendStage, submit:take, covered:()=>job.missing.every(k=>touched.includes(k)), signal:control.signal});
+      // Retry a temporary read once within the same leased account. Preserve the first capture and start with fresh files.
+      const perform=async()=>{
+        const first=await read();
+        if(first!=='retry'||submitted||control.signal.aborted)return first;
+        const next=freshDir(root);
+        saveEvidence(dir,'retry.json',{at:timestamp(),next:path.basename(next)});
+        dir=next;
+        await sendStage('public-page');
+        return read();
+      };
       reason = options.onProfile ? await options.onProfile(key,perform) : await perform();
     }
     if (job.missing.every(k=>touched.includes(k))) reason='done';

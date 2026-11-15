@@ -2,10 +2,32 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {capture,marker}=require('../tools/계정통계예약/capture-routes.cjs');
-const {drain,workerIdentity,downloadCapture,configured}=require('../tools/계정통계예약/collect-requests.cjs');
+const {drain,processJob,workerIdentity,downloadCapture,configured}=require('../tools/계정통계예약/collect-requests.cjs');
 const {metaRows,kakaoRows,sameRoute,getNaverDownload}=require('../tools/계정통계예약/owner-metrics.cjs');
 const {rutubeRows,otherOwner}=require('../tools/계정통계예약/platform-exports.cjs');
 function base(platform='instagram'){return {account:{platform},profile:{},covered:()=>false,signal:new AbortController().signal};}
+
+test('일시적 읽기 실패만 같은 요청에서 한 번 다시 확인하고 첫 자료를 보존한다',async t=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-worker-retry-'));
+  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  const job={accountId:'example',channelId:'channel',requestId:'request',token:'lease',requestedAt:new Date().toISOString(),missing:['views']};
+  const baseOptions={requestDir:root,catalog:{accounts:[{id:job.accountId,platform:'vk',accountStatus:'operating'}]},profiles:{},policies:{}};
+  for(const [first,second] of [['retry','limited'],['retry','retry'],['user_control'],['need_owner'],['format']]){
+    const dirs=[],events=[];
+    await processJob({post:async(_url,body)=>{events.push(body);return {}; }},job,{...baseOptions,capture:async({dir})=>{
+      dirs.push(dir);fs.writeFileSync(path.join(dir,'example.csv'),'original',{flag:'wx'});
+      return dirs.length===1?first:second;
+    }});
+    assert.equal(events.at(-1).reason,second||first);
+    assert.equal(dirs.length,second?2:1);
+    if(second){
+      assert.notEqual(dirs[0],dirs[1]);
+      const receipt=JSON.parse(fs.readFileSync(path.join(dirs[0],'retry.json'),'utf8'));
+      assert.equal(receipt.next,path.basename(dirs[1]));
+      assert.equal(fs.readFileSync(path.join(dirs[0],'example.csv'),'utf8'),'original');
+    }
+  }
+});
 
 test('관리 화면 부분 수집과 오류 뒤에도 지원되는 공개 경로에서 누락값을 계속 확인한다',async()=>{
   for(const get of [async()=> 'limited',async()=>{throw Error('expired platform request');}]){
