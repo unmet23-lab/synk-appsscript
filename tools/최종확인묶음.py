@@ -228,6 +228,17 @@ FULL = guard('2fps 원본 장', lambda: extract('full', 2, W, H)) or []
 
 
 # 5) 얼굴 무리
+def imread_any(path):
+    """그림 한 장을 BGR로 — 못 읽으면 None. cv2.imread는 윈도우에서 한글이 든 경로(--out 「메일비서」 · 편 폴더의 --ref)를 못 열어 경고 한 줄과
+    None만 내고, 얼굴 단계가 통째로 「못 만듦」이 됐다(11-15 메일비서 · 원생명단 최종 확인). 바이트로 읽어 푼다(현장 노트 윈도우 셸 「cv2가 한글 경로를 조용히 못 연다」)"""
+    import cv2
+    try:
+        buf = np.fromfile(path, np.uint8)
+    except OSError:
+        return None
+    return cv2.imdecode(buf, cv2.IMREAD_COLOR) if buf.size else None
+
+
 def step_faces():
     import cv2
     ff = FULL
@@ -235,9 +246,12 @@ def step_faces():
         raise RuntimeError('2fps 원본 장이 없다')
     fd = cv2.FaceDetectorYN.create(FACE_MODELS + 'face_detection_yunet_2023mar.onnx', '', (320, 320), 0.6, 0.3, 5000)
     fr = cv2.FaceRecognizerSF.create(FACE_MODELS + 'face_recognition_sface_2021dec.onnx', '')
-    items = []
+    items, unread = [], 0
     for i, f in enumerate(ff):
-        img = cv2.imread(f)
+        img = imread_any(f)
+        if img is None:
+            unread += 1
+            continue
         hh, ww = img.shape[:2]
         fd.setInputSize((ww, hh))
         _, faces = fd.detect(img)
@@ -253,9 +267,13 @@ def step_faces():
             x1, y1 = int(min(ww, x + fw + m)), int(min(hh, y + fh + m))
             crop = Image.fromarray(cv2.cvtColor(img[y0:y1, x0:x1], cv2.COLOR_BGR2RGB)).resize((160, 160))
             items.append(dict(t=i * 0.5, fw=int(fw), feat=feat, crop=crop))
+    if unread == len(ff):
+        raise RuntimeError(f'2fps 원본 장 {len(ff)}장을 하나도 못 읽었다 — {ff[0]}')
+    if unread:
+        say(f'  못 읽은 장 {unread}개는 빼고 묶는다')
     ref = None
     if a.ref:
-        rimg = cv2.imread(a.ref)
+        rimg = imread_any(a.ref)
         if rimg is None:
             say(f'  승인 얼굴 그림을 못 읽음 — 대조 없이 무리만 낸다: {a.ref}')
         else:

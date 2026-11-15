@@ -100,3 +100,21 @@ test('갈래(「항목」)에 둔 올린 검사 — 번호가 없는 갈래에�
   }
   assert.ok(본.has('최종본검사:조용구간'), '소리 갈래에 조용구간');
 });
+
+test('기계 검사 없이 올린 자리(「올린곳」) — 단계는 기본값 · 칸 · 검수 질문, 자리가 저장소 안에 있고, 검사를 못 올린 까닭(「기계검사」)을 함께 둔다(11-16 인물튐)', () => {
+  const 모든 = [...표.줄.map((x) => [`${x.번호}번`, x]), ...Object.entries(표.항목)];
+  let 셈 = 0;
+  for (const [이름, x] of 모든) {
+    if (x.올린곳 === undefined) continue;
+    assert.ok(Array.isArray(x.올린곳) && x.올린곳.length, `${이름}: 올린곳은 목록`);
+    assert.ok(typeof x.기계검사 === 'string' && x.기계검사.trim(), `${이름}: 검사 없이 올린 까닭(「기계검사」)이 있어야 한다`);
+    for (const o of x.올린곳) {
+      assert.ok(['기본값', '칸', '검수 질문'].includes(o.단계) && /^\d{4}-\d{2}-\d{2}$/.test(o.날짜), `${이름}: 단계 · 날짜 ${JSON.stringify(o)}`);
+      const 파일 = String(o.자리 || '').split(/\s/)[0];
+      assert.ok(fs.existsSync(path.join(REPO, 파일)), `${이름}: 자리의 파일이 저장소에 있어야 한다 — ${파일}`);
+      셈 += 1;
+    }
+  }
+  assert.ok(표.항목.인물튐.올린곳.some((o) => o.단계 === '기본값') && 표.항목.인물튐.올린곳.some((o) => o.단계 === '검수 질문'), '인물튐은 기본값과 검수 질문으로 올렸다');
+  assert.ok(셈 >= 2);
+});

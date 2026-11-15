@@ -59,6 +59,18 @@ test('지난 편 묶음이 있으면 9번에만 열게 하고, 같아 보이면 
   assert.match(buildPrompt({ brand: 'synkbrief', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /「SYNK 브리핑」 이름표/);
 });
 
+test('사람이 나오는 브랜드만 10번 — 같은 사람이 장면마다 다른 사람처럼 보인 자리(11-16 흠 장부 인물튐), LAB은 묻지 않는다', () => {
+  for (const brand of ['synkbrief', 'yuhobuilds', 'pulse']) {
+    const p = buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' });
+    assert.match(p, /^10\. 같은 사람인데 장면마다 다른 사람처럼 보인 자리 — 누가, 몇 초와 몇 초 사이에서.*없으면 「없음」/m, brand);
+    assert.ok(p.indexOf('\n9. ') < p.indexOf('\n10. '), '10번은 9번 뒤');
+  }
+  for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^10\. /m, brand);
+  // 지난 편 묶음이 있으면 10번도 이 영상만 보고 답한다
+  assert.match(buildPrompt({ brand: 'synkbrief', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /1~8번과 10번은 이 영상만 보고/);
+  assert.match(buildPrompt({ brand: 'lab-en', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /1~8번은 이 영상만 보고/);
+});
+
 test('--틀 퀴즈: 9번은 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 견주고 퀴즈 칸의 늘 있는 짜임은 세지 않는다(제작절차 LAB 하루 두 편 7)', () => {
   const prompt = buildPrompt({ brand: 'lab-mn', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'C:/a/지난1_Q5.jpg' }, { file: 'C:/a/지난2_Q4.jpg' }], 틀: '퀴즈' });
   assert.match(prompt, /^9\. 비교용 묶음\(같은 계정의 지난 퀴즈 편\)과 견주어 .*「같아 보임」 또는 「달라 보임」.*무대 · 주제 · 마스코트 표정 · 색 · 구도 가운데/m);

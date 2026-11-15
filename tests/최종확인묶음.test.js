@@ -14,6 +14,9 @@ const py = process.env.SYNK_PYTHON || 'python';
 const 라이브러리 = spawnSync(py, ['-I', '-X', 'utf8', '-c', 'import numpy, cv2, PIL'], { encoding: 'utf8' }).status === 0;
 const ffmpeg = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' }).status === 0 && spawnSync('ffprobe', ['-version'], { encoding: 'utf8' }).status === 0;
 const 없음 = !(라이브러리 && ffmpeg) && `${라이브러리 ? '' : 'numpy · cv2 · PIL '}${ffmpeg ? '' : 'ffmpeg '}없음`;
+// 얼굴 모델(YuNet · SFace)이 있는 PC에서만 얼굴 단계까지 돌았는지 본다 — 리눅스 CI에는 모델이 없어 그 단계만 「못 만듦」이다
+const 얼굴모델 = ['face_detection_yunet_2023mar.onnx', 'face_recognition_sface_2021dec.onnx']
+  .every((f) => fs.existsSync(path.join(os.homedir(), '.rembg', 'models', 'yunet', f)));
 
 test('묶음 자료와 독립 검수 지시문을 만들고, 지시문에는 컷 경계 · 음량 · 기계 검사 걸림 · 채울 칸이 든다', { skip: 없음, timeout: 600000 }, (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), '최종확인묶음-'));
@@ -25,11 +28,20 @@ test('묶음 자료와 독립 검수 지시문을 만들고, 지시문에는 컷
       + '[1:v]trim=0:2,setpts=PTS-STARTPTS,format=yuv420p,setsar=1[v3];[v1][v2][v3]concat=n=3:v=1:a=0,format=yuv420p[v]',
     '-map', '[v]', '-map', '2:a', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', video]);
   const out = path.join(dir, '묶음');
-  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--out', out, '--skip-stt'], { encoding: 'utf8', timeout: 600000 });
+  // 승인 얼굴 그림도 한글 경로에 둔다 — 11-15까지 cv2.imread가 한글 경로(묶음 폴더 · 편 폴더)를 못 열어 얼굴 단계가 통째로 빠졌다
+  const ref = path.join(dir, '승인얼굴.jpg');
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', video, '-frames:v', '1', ref]);
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--out', out, '--skip-stt', '--ref', ref], { encoding: 'utf8', timeout: 600000 });
   // 얼굴 모델이 없는 PC에서는 얼굴 단계만 「못 만듦」(끝 코드 2)이고 나머지는 만든다
   assert.ok([0, 2].includes(r.status), r.stderr);
   const last = JSON.parse(r.stdout.trim().split(/\r?\n/).filter((l) => l.startsWith('{')).pop());
   assert.deepEqual(last.컷, [2, 4]);
+  if (얼굴모델) {
+    assert.ok(!last.못만듦.some((x) => x.startsWith('얼굴')), `한글 경로에서도 얼굴 단계가 돈다: ${last.못만듦.join(' / ')}`);
+    const report = fs.readFileSync(path.join(out, 'report.txt'), 'utf8');
+    assert.match(report, /얼굴 \d+개 · 무리 \d+/);
+    assert.doesNotMatch(report, /승인 얼굴 그림을 못 읽음/, '한글 경로의 승인 얼굴 그림도 읽는다');
+  }
   for (const f of ['sheet_0.jpg', 'm8_00.jpg', 'cuts_0.jpg', 'end.jpg', 'report.txt', '최종본검사.json', '독립검수_지시문.md']) {
     assert.ok(fs.existsSync(path.join(out, f)), `${f}가 있어야 한다`);
   }
