@@ -41,6 +41,7 @@ const ALLOWED_HASH_SET = new Set(PLATFORM_ALLOWED_HASHES);
 const TIME_LIMIT_SENTINEL = Symbol('portal-completion-wait-limit');
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PREFIXED_UUID_PATTERN = /^[a-z0-9._-]+:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+const CANONICAL_PREFIXED_UUID_PATTERN = /^(?:synk|account):([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 
 const FOCUSABLE_IN_PORTAL = [
   'button:not([disabled])',
@@ -303,6 +304,20 @@ function decodeJwtSubUuid(rawToken) {
   }
 }
 
+function extractCanonicalUuidString(value) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (UUID_PATTERN.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+  const prefixed = CANONICAL_PREFIXED_UUID_PATTERN.exec(trimmed);
+  if (prefixed) {
+    return prefixed[1].toLowerCase();
+  }
+  return null;
+}
+
 function collectConsistentUuid(candidates) {
   let found = null;
   for (const item of candidates) {
@@ -317,30 +332,193 @@ function collectConsistentUuid(candidates) {
   return { uuid: found, conflict: false };
 }
 
-export function extractVerifiedSynkId({ identity, rawSessionString = null } = {}) {
-  if (!identity || identity.signedIn !== true || identity.status !== 'signed-in') {
+function collectCanonicalSynkIdentity(candidates) {
+  let token = null;
+  let uuid = null;
+  for (const item of candidates) {
+    if (item === null || item === undefined) continue;
+    if (typeof item !== 'string') {
+      return { token: null, uuid: null, conflict: true };
+    }
+    const trimmed = item.trim();
+    if (!trimmed) continue;
+    const parsedUuid = extractCanonicalUuidString(trimmed);
+    const normalizedToken = parsedUuid || trimmed;
+    if (token === null) {
+      token = normalizedToken;
+      uuid = parsedUuid;
+    } else if (token !== normalizedToken) {
+      return { token: null, uuid: null, conflict: true };
+    }
+  }
+  return { token, uuid, conflict: false };
+}
+
+function extractNormalizedEmail(value) {
+  return typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : '';
+}
+
+function hasNonEmptyTokenString(record, keys) {
+  if (!isPlainBindingRecord(record)) return false;
+  return keys.some(key => typeof record[key] === 'string' && record[key].trim().length > 0);
+}
+
+function hasMalformedExplicitAccessToken(record) {
+  if (!isPlainBindingRecord(record)) return false;
+  for (const key of ['access_token', 'accessToken']) {
+    if (Object.prototype.hasOwnProperty.call(record, key) && record[key] !== undefined) {
+      if (typeof record[key] !== 'string' || !record[key].trim()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function hasValidStoredSessionShape(
+  parsedSession,
+  { hasCanonicalToken = false, hasAuthUuid = false } = {},
+) {
+  if (!isPlainBindingRecord(parsedSession)) return false;
+  if (
+    parsedSession.session !== undefined
+    && parsedSession.session !== null
+    && !isPlainBindingRecord(parsedSession.session)
+  ) {
+    return false;
+  }
+  if (
+    parsedSession.user !== undefined
+    && parsedSession.user !== null
+    && !isPlainBindingRecord(parsedSession.user)
+  ) {
+    return false;
+  }
+  if (
+    parsedSession.session?.user !== undefined
+    && parsedSession.session?.user !== null
+    && !isPlainBindingRecord(parsedSession.session.user)
+  ) {
+    return false;
+  }
+  if (
+    hasMalformedExplicitAccessToken(parsedSession)
+    || hasMalformedExplicitAccessToken(parsedSession.session)
+  ) {
+    return false;
+  }
+  const tokenKeys = ['access_token', 'accessToken', 'id_token', 'idToken'];
+  const hasToken =
+    hasNonEmptyTokenString(parsedSession, tokenKeys)
+    || hasNonEmptyTokenString(parsedSession.session, tokenKeys);
+  return hasToken || hasCanonicalToken || hasAuthUuid;
+}
+
+export function extractVerifiedSynkId({
+  identity,
+  rawSessionString = null,
+  account = null,
+  isAccountBound = null,
+  storageError = false,
+} = {}) {
+  if (storageError === true) {
+    return { synkId: null, mismatch: true };
+  }
+  if (!identity || typeof identity !== 'object' || Array.isArray(identity)) {
     return { synkId: null, mismatch: false };
   }
-
-  const identityScan = collectConsistentUuid([
-    identity.synkId,
-    identity.accountId,
-    identity.userId,
-    identity.sub,
-    identity.user?.synkId,
-    identity.user?.id,
-    identity.user?.sub,
-    identity.accountKey,
-  ]);
-  if (identityScan.conflict) {
+  if (identity.signedIn !== true || identity.status !== 'signed-in') {
+    return { synkId: null, mismatch: false };
+  }
+  if (
+    (identity.user !== undefined && identity.user !== null && !isPlainBindingRecord(identity.user))
+    || (identity.account !== undefined && identity.account !== null && !isPlainBindingRecord(identity.account))
+  ) {
+    return { synkId: null, mismatch: true };
+  }
+  if (
+    isAccountBound === false
+    || (
+      account !== null
+      && account !== undefined
+      && (
+        typeof account !== 'object'
+        || (
+          account.isAccountBound !== undefined
+          && account.isAccountBound !== null
+          && typeof account.isAccountBound !== 'function'
+        )
+      )
+    )
+  ) {
     return { synkId: null, mismatch: true };
   }
 
-  if (rawSessionString === null || rawSessionString === undefined || rawSessionString === '') {
-    return { synkId: identityScan.uuid, mismatch: false };
+  const identityCanonical = collectCanonicalSynkIdentity([
+    identity.synkId,
+    identity.synk_user_id,
+    identity.accountId,
+    identity.accountKey,
+    identity.user?.synkId,
+    identity.user?.synk_user_id,
+    identity.user?.accountId,
+    identity.account?.synk_user_id,
+    identity.account?.synkId,
+    identity.account?.accountId,
+  ]);
+  if (
+    identityCanonical.conflict
+    || !identityCanonical.token
+    || identityCanonical.token === 'anonymous-local'
+  ) {
+    return { synkId: null, mismatch: true };
   }
 
-  if (typeof rawSessionString !== 'string') {
+  const boundCheckFn = typeof isAccountBound === 'function'
+    ? isAccountBound
+    : typeof account?.isAccountBound === 'function'
+      ? id => account.isAccountBound(id)
+      : null;
+
+  let isProvenBound = false;
+  if (boundCheckFn) {
+    const rawAccountId = typeof identity.accountId === 'string' && identity.accountId.trim()
+      ? identity.accountId.trim()
+      : identityCanonical.token;
+    let boundOk = false;
+    try {
+      boundOk = boundCheckFn(rawAccountId) === true;
+    } catch {
+      boundOk = false;
+    }
+    if (!boundOk) {
+      return { synkId: null, mismatch: true };
+    }
+    isProvenBound = true;
+  }
+
+  const identityAuthScan = collectConsistentUuid([
+    identity.userId,
+    identity.sub,
+    identity.user?.id,
+    identity.user?.sub,
+  ]);
+  if (identityAuthScan.conflict) {
+    return { synkId: null, mismatch: true };
+  }
+  if (
+    !isProvenBound
+    && identityAuthScan.uuid
+    && (!identityCanonical.uuid || identityAuthScan.uuid !== identityCanonical.uuid)
+  ) {
+    return { synkId: null, mismatch: true };
+  }
+
+  if (rawSessionString === null || rawSessionString === undefined) {
+    return { synkId: identityCanonical.uuid, mismatch: false };
+  }
+
+  if (typeof rawSessionString !== 'string' || !rawSessionString.trim()) {
     return { synkId: null, mismatch: true };
   }
 
@@ -351,71 +529,89 @@ export function extractVerifiedSynkId({ identity, rawSessionString = null } = {}
     return { synkId: null, mismatch: true };
   }
 
-  if (!parsedSession || typeof parsedSession !== 'object' || Array.isArray(parsedSession)) {
+  if (!isPlainBindingRecord(parsedSession)) {
     return { synkId: null, mismatch: true };
   }
 
-  const sessionDirectScan = collectConsistentUuid([
+  const sessionCanonical = collectCanonicalSynkIdentity([
     parsedSession.synkId,
+    parsedSession.synk_user_id,
     parsedSession.accountId,
+    parsedSession.accountKey,
+    parsedSession.user?.synkId,
+    parsedSession.user?.synk_user_id,
+    parsedSession.user?.accountId,
+    parsedSession.session?.synkId,
+    parsedSession.session?.synk_user_id,
+    parsedSession.session?.accountId,
+    parsedSession.session?.accountKey,
+  ]);
+  if (sessionCanonical.conflict) {
+    return { synkId: null, mismatch: true };
+  }
+  if (sessionCanonical.token && sessionCanonical.token !== identityCanonical.token) {
+    return { synkId: null, mismatch: true };
+  }
+
+  const sessionAuthScan = collectConsistentUuid([
     parsedSession.userId,
     parsedSession.sub,
-    parsedSession.user?.synkId,
     parsedSession.user?.id,
-    parsedSession.user?.accountId,
     parsedSession.user?.sub,
-    parsedSession.session?.synkId,
-    parsedSession.session?.accountId,
+    parsedSession.session?.userId,
     parsedSession.session?.sub,
     parsedSession.session?.user?.id,
     parsedSession.session?.user?.sub,
+    decodeJwtSubUuid(parsedSession.idToken),
+    decodeJwtSubUuid(parsedSession.id_token),
+    decodeJwtSubUuid(parsedSession.accessToken),
+    decodeJwtSubUuid(parsedSession.access_token),
+    decodeJwtSubUuid(parsedSession.session?.idToken),
+    decodeJwtSubUuid(parsedSession.session?.id_token),
+    decodeJwtSubUuid(parsedSession.session?.accessToken),
+    decodeJwtSubUuid(parsedSession.session?.access_token),
   ]);
-  if (sessionDirectScan.conflict) {
+  if (sessionAuthScan.conflict) {
+    return { synkId: null, mismatch: true };
+  }
+  if (
+    identityAuthScan.uuid
+    && sessionAuthScan.uuid
+    && identityAuthScan.uuid !== sessionAuthScan.uuid
+  ) {
     return { synkId: null, mismatch: true };
   }
 
-  let sessionUuid = sessionDirectScan.uuid;
-  if (!sessionUuid) {
-    const jwtScan = collectConsistentUuid([
-      decodeJwtSubUuid(parsedSession.idToken),
-      decodeJwtSubUuid(parsedSession.id_token),
-      decodeJwtSubUuid(parsedSession.accessToken),
-      decodeJwtSubUuid(parsedSession.access_token),
-      decodeJwtSubUuid(parsedSession.session?.idToken),
-      decodeJwtSubUuid(parsedSession.session?.accessToken),
-    ]);
-    if (jwtScan.conflict) {
+  if (!hasValidStoredSessionShape(parsedSession, {
+    hasCanonicalToken: Boolean(sessionCanonical.token),
+    hasAuthUuid: Boolean(sessionAuthScan.uuid),
+  })) {
+    return { synkId: null, mismatch: true };
+  }
+
+  if (!isProvenBound) {
+    if (
+      sessionAuthScan.uuid
+      && (!identityCanonical.uuid || sessionAuthScan.uuid !== identityCanonical.uuid)
+    ) {
       return { synkId: null, mismatch: true };
     }
-    sessionUuid = jwtScan.uuid;
-  }
 
-  if (identityScan.uuid && sessionUuid && identityScan.uuid !== sessionUuid) {
-    return { synkId: null, mismatch: true };
-  }
+    const sessionEmail = extractNormalizedEmail(
+      parsedSession.user?.email ?? parsedSession.email ?? parsedSession.session?.user?.email,
+    );
+    const liveEmail = extractNormalizedEmail(identity.email ?? identity.user?.email);
+    if (sessionEmail && liveEmail && sessionEmail !== liveEmail) {
+      return { synkId: null, mismatch: true };
+    }
 
-  const sessionAccountKey = typeof parsedSession.accountKey === 'string' && parsedSession.accountKey.trim()
-    ? parsedSession.accountKey.trim()
-    : null;
-  const liveAccountKey = typeof identity.accountKey === 'string' && identity.accountKey.trim()
-    ? identity.accountKey.trim()
-    : null;
-  if (sessionAccountKey && liveAccountKey && sessionAccountKey !== liveAccountKey) {
-    return { synkId: null, mismatch: true };
-  }
-
-  const sessionEmail = typeof (parsedSession.user?.email ?? parsedSession.email ?? parsedSession.session?.user?.email) === 'string'
-    ? (parsedSession.user?.email ?? parsedSession.email ?? parsedSession.session?.user?.email).trim().toLowerCase()
-    : '';
-  const liveEmail = typeof (identity.email ?? identity.user?.email) === 'string'
-    ? (identity.email ?? identity.user?.email).trim().toLowerCase()
-    : '';
-  if (sessionEmail && liveEmail && sessionEmail !== liveEmail) {
-    return { synkId: null, mismatch: true };
+    if (!sessionCanonical.token && !sessionAuthScan.uuid) {
+      return { synkId: null, mismatch: true };
+    }
   }
 
   return {
-    synkId: sessionUuid || identityScan.uuid || null,
+    synkId: identityCanonical.uuid,
     mismatch: false,
   };
 }
@@ -1032,13 +1228,33 @@ export function mountWebPortalHost({
   let pendingWorkspaceReturnRefresh = null;
   let cancellingCompanyEntry = false;
 
-  function readRawPlatformSession() {
-    const storage = resolveSessionStorage();
-    if (!storage || typeof storage.getItem !== 'function') return null;
+  function readPlatformSessionSnapshot() {
+    let storage = null;
+    if (typeof getSessionStorage === 'function') {
+      try {
+        storage = getSessionStorage();
+      } catch {
+        return { raw: null, error: true };
+      }
+    } else {
+      try {
+        storage = win?.sessionStorage ?? globalThis.sessionStorage ?? null;
+      } catch {
+        return { raw: null, error: true };
+      }
+    }
+
+    if (storage === null || storage === undefined) {
+      return { raw: null, error: false };
+    }
+    if (typeof storage !== 'object' || typeof storage.getItem !== 'function') {
+      return { raw: null, error: true };
+    }
+
     try {
-      return storage.getItem(SESSION_KEY);
+      return { raw: storage.getItem(SESSION_KEY), error: false };
     } catch {
-      return null;
+      return { raw: null, error: true };
     }
   }
 
@@ -1103,10 +1319,29 @@ export function mountWebPortalHost({
       }
 
       const verifiedAccountKey = identity.accountId.trim();
-      const bound = typeof account?.isAccountBound === 'function'
-        ? account.isAccountBound(verifiedAccountKey)
-        : true;
-      if (!bound) {
+      if (
+        account?.isAccountBound !== undefined
+        && account?.isAccountBound !== null
+        && typeof account.isAccountBound !== 'function'
+      ) {
+        return {
+          boundAuthKey: '__unbound__',
+          boundVerifiedAccountKey: null,
+          accountId: null,
+          validSignedIn: false,
+          mismatch: true,
+        };
+      }
+      const hasAccountBoundFn = typeof account?.isAccountBound === 'function';
+      let boundVerified = true;
+      if (hasAccountBoundFn) {
+        try {
+          boundVerified = account.isAccountBound(verifiedAccountKey) === true;
+        } catch {
+          boundVerified = false;
+        }
+      }
+      if (hasAccountBoundFn && !boundVerified) {
         return {
           boundAuthKey: '__unbound__',
           boundVerifiedAccountKey: null,
@@ -1116,9 +1351,12 @@ export function mountWebPortalHost({
         };
       }
 
+      const sessionSnapshot = readPlatformSessionSnapshot();
       const extracted = extractVerifiedSynkId({
         identity,
-        rawSessionString: readRawPlatformSession(),
+        rawSessionString: sessionSnapshot.raw,
+        account,
+        storageError: sessionSnapshot.error,
       });
       if (extracted.mismatch) {
         return {
@@ -1617,9 +1855,14 @@ export function mountWebPortalHost({
     const trimmed = expectedAccountId.trim();
     if (!trimmed) return null;
     const account = getAccount?.();
-    if (!account) return null;
-    if (typeof account.isAccountBound === 'function') {
-      return account.isAccountBound(trimmed) ? account : null;
+    if (!account || typeof account !== 'object') return null;
+    if (account.isAccountBound !== undefined && account.isAccountBound !== null) {
+      if (typeof account.isAccountBound !== 'function') return null;
+      try {
+        return account.isAccountBound(trimmed) === true ? account : null;
+      } catch {
+        return null;
+      }
     }
     const live = account.identity?.();
     return live?.signedIn === true && live.status === 'signed-in' && live.accountId === trimmed
@@ -1822,7 +2065,8 @@ export function mountWebPortalHost({
   function handleAsyncAssignmentUpdate({ accountKey, expectedGen, entryToken = null, outcome }) {
     if (disposed || !portal) return;
     if (Number.isInteger(entryToken) && entryToken <= cancelledEntrySeq) return;
-    if (companyBinding.accountGeneration !== expectedGen) return;
+    const liveBinding = resolveCurrentCompanyBinding();
+    if (liveBinding.mismatch || liveBinding.accountGeneration !== expectedGen) return;
     const boundAccount = verifyBoundAccount(accountKey);
     if (!boundAccount) return;
     const portalSnap = portal.getState();
@@ -1887,7 +2131,9 @@ export function mountWebPortalHost({
       if (res.destinations.length === 1) {
         const targetDest = res.destinations[0];
         const finalizeOpened = resolvedOpen => {
-          if (disposed || !portal || companyBinding.accountGeneration !== expectedGen) return;
+          if (disposed || !portal) return;
+          const latestBinding = resolveCurrentCompanyBinding();
+          if (latestBinding.mismatch || latestBinding.accountGeneration !== expectedGen) return;
           const latestAccount = verifyBoundAccount(accountKey);
           if (!latestAccount) return;
           if (resolvedOpen && resolvedOpen.ok !== false) {
@@ -2013,7 +2259,8 @@ export function mountWebPortalHost({
         };
       }
       const verifiedAfter = verifyBoundAccount(accountKey);
-      if (!verifiedAfter || (!hasCustomResolver && companyBinding.accountGeneration !== expectedGen)) {
+      const afterBinding = resolveCurrentCompanyBinding();
+      if (!verifiedAfter || afterBinding.mismatch || afterBinding.accountGeneration !== expectedGen) {
         return {
           ok: false,
           code: 'ACCOUNT_CHANGED',
@@ -2035,6 +2282,22 @@ export function mountWebPortalHost({
 
       if (assigned && assigned.kind === 'destination' && typeof assigned.open === 'function') {
         const opened = await assigned.open();
+        if (disposed || myEntrySeq <= cancelledEntrySeq) {
+          return {
+            ok: false,
+            code: 'CANCELLED',
+            message: '작업 공간 확인이 중단됐어요.',
+          };
+        }
+        const latestAccount = verifyBoundAccount(accountKey);
+        const latestBinding = resolveCurrentCompanyBinding();
+        if (!latestAccount || latestBinding.mismatch || latestBinding.accountGeneration !== expectedGen) {
+          return {
+            ok: false,
+            code: 'ACCOUNT_CHANGED',
+            message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+          };
+        }
         if (opened?.ok === false) {
           return {
             ok: false,
@@ -2042,8 +2305,8 @@ export function mountWebPortalHost({
             message: opened.message || '배정된 작업 공간을 불러오지 못했어요. 다시 시도해 주세요.',
           };
         }
-        if (isPurposeOnboardingPending(verifiedAfter, accountKey)) {
-          const marked = await settlePurposeOnboarding(verifiedAfter, 'not-asked', accountKey, { bounded: true });
+        if (isPurposeOnboardingPending(latestAccount, accountKey)) {
+          const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
           if (marked?.ok === false) return marked;
         }
         if (opened?.navigationRequested !== true) {
@@ -2100,6 +2363,22 @@ export function mountWebPortalHost({
         if (res.destinations.length === 1) {
           const targetDest = res.destinations[0];
           const opened = await Promise.resolve(boundaries.openAssignedDestination?.(targetDest));
+          if (disposed || myEntrySeq <= cancelledEntrySeq) {
+            return {
+              ok: false,
+              code: 'CANCELLED',
+              message: '작업 공간 확인이 중단됐어요.',
+            };
+          }
+          const latestAccount = verifyBoundAccount(accountKey);
+          const latestBinding = resolveCurrentCompanyBinding();
+          if (!latestAccount || latestBinding.mismatch || latestBinding.accountGeneration !== expectedGen) {
+            return {
+              ok: false,
+              code: 'ACCOUNT_CHANGED',
+              message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+            };
+          }
           if (!opened || opened.ok === false) {
             if (opened?.code === 'ACCOUNT_CHANGED') {
               return {
@@ -2122,8 +2401,8 @@ export function mountWebPortalHost({
             };
           }
 
-          if (isPurposeOnboardingPending(verifiedAfter, accountKey)) {
-            const marked = await settlePurposeOnboarding(verifiedAfter, 'not-asked', accountKey, { bounded: true });
+          if (isPurposeOnboardingPending(latestAccount, accountKey)) {
+            const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
             if (marked?.ok === false) return marked;
           }
           if (opened.navigationRequested !== true) {
@@ -2162,7 +2441,6 @@ export function mountWebPortalHost({
       return;
     }
 
-    const hasCustomResolver = typeof customBoundaries?.resolveAssignedDestination === 'function';
     const myEntrySeq = ++entrySeq;
     const pendingAssigned = boundaries.resolveAssignedDestination({
       identity: liveIdentity,
@@ -2182,7 +2460,8 @@ export function mountWebPortalHost({
     const assigned = await pendingAssigned;
     if (disposed || !portal || myEntrySeq <= cancelledEntrySeq) return;
     const verifiedAfter = verifyBoundAccount(accountKey);
-    if (!verifiedAfter || (!hasCustomResolver && companyBinding?.accountGeneration !== expectedGen)) {
+    const afterBinding = resolveCurrentCompanyBinding();
+    if (!verifiedAfter || afterBinding.mismatch || afterBinding.accountGeneration !== expectedGen) {
       return;
     }
     const portalSnap = portal.getState();
@@ -2210,7 +2489,8 @@ export function mountWebPortalHost({
       const opened = await assigned.open();
       if (disposed || !portal || myEntrySeq <= cancelledEntrySeq) return;
       const latestAccount = verifyBoundAccount(accountKey);
-      if (!latestAccount) return;
+      const latestBinding = resolveCurrentCompanyBinding();
+      if (!latestAccount || latestBinding.mismatch || latestBinding.accountGeneration !== expectedGen) return;
       if (opened?.ok === false) {
         portal.setWorkspaceState(
           {
@@ -2281,7 +2561,8 @@ export function mountWebPortalHost({
         const opened = await Promise.resolve(boundaries.openAssignedDestination?.(targetDest));
         if (disposed || !portal || myEntrySeq <= cancelledEntrySeq) return;
         const latestAccount = verifyBoundAccount(accountKey);
-        if (!latestAccount) return;
+        const latestBinding = resolveCurrentCompanyBinding();
+        if (!latestAccount || latestBinding.mismatch || latestBinding.accountGeneration !== expectedGen) return;
         if (opened && opened.ok !== false) {
           if (isPurposeOnboardingPending(latestAccount, accountKey)) {
             const marked = await settlePurposeOnboarding(latestAccount, 'not-asked', accountKey, { bounded: true });
@@ -2327,7 +2608,8 @@ export function mountWebPortalHost({
     const boundAccount = verifyBoundAccount(accountKey);
     if (!boundAccount) return true;
     const hasCustomResolver = typeof customBoundaries?.resolveAssignedDestination === 'function';
-    if (!hasCustomResolver && companyBinding?.accountGeneration !== expectedGen) return true;
+    const liveBinding = resolveCurrentCompanyBinding();
+    if (liveBinding.accountGeneration !== expectedGen) return true;
 
     if (fallbackCode === 'LOGIN_REQUIRED' || fallbackCode === 'ACCOUNT_MISMATCH') {
       portal.setWorkspaceState(
@@ -2336,7 +2618,6 @@ export function mountWebPortalHost({
       );
     }
 
-    const liveBinding = resolveCurrentCompanyBinding();
     if (liveBinding.mismatch || (!hasCustomResolver && !liveBinding.accountId)) {
       return true;
     }
@@ -2520,6 +2801,7 @@ export function mountWebPortalHost({
           },
         });
       }
+      const expectedGen = liveBinding.accountGeneration;
 
       const normalizedDest = normalizePortalWorkspaceDestination(destination);
       if (!normalizedDest) {
@@ -2551,7 +2833,8 @@ export function mountWebPortalHost({
         }
 
         const verifiedAfter = verifyBoundAccount(accountKey);
-        if (!verifiedAfter) {
+        const afterBinding = resolveCurrentCompanyBinding();
+        if (!verifiedAfter || afterBinding.mismatch || afterBinding.accountGeneration !== expectedGen) {
           return {
             ok: false,
             code: 'ACCOUNT_CHANGED',

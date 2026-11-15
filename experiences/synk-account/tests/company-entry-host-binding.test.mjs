@@ -1,3 +1,4 @@
+import { createPlatformAccount } from '../src/platform-account.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mountDesktopPortalHost } from '../../../desktop/renderer/portal-host.mjs';
@@ -2544,3 +2545,58 @@ for (const initialStatus of ['login_required', 'account_mismatch']) {
     assert.deepEqual(writes, []);
   });
 }
+
+
+async function canonicalAccountFixture(t) {
+  const authId = '90000000-0000-4000-8000-000000000009';
+  const token = sub => 'e30.' + Buffer.from(JSON.stringify({ sub })).toString('base64url') + '.synthetic';
+  const key = 'synk.oauth.session.platform';
+  const values = new Map([[key, JSON.stringify({ access_token: token(authId), user: { id: authId } })]]);
+  const storage = { getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, String(v)), removeItem: k => values.delete(k) };
+  const realAccount = createPlatformAccount({
+    config: { configured: true, clients: { platform: { clientId: 'synthetic-client', redirectUri: 'https://synthetic.invalid/platform' } }, accountApiUrl: 'https://synthetic.invalid', supabasePublishableKey: 'synthetic-key' },
+    storage,
+    accountFactory: () => ({ load: async () => ({ ok: true, account: { synk_user_id: account, profile: { display_name: '합성 회원' } }, onboarding: { purpose: 'none' }, capabilities: { learningSync: false } }) }),
+    requestToken: async () => assert.fail('no refresh expected'), fetcher: async () => assert.fail('no operating service request'),
+  });
+  t.after(() => realAccount.stop());
+  await realAccount.refresh();
+  assert.equal(realAccount.isAccountBound(account), true);
+  return { realAccount, storage, values, key, token, authId };
+}
+
+test('canonical account binding accepts a distinct Auth UUID and sends only verified SYNK ID to company resolution', async t => {
+  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment(), requests = [];
+  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+    getSessionStorage: () => f.storage, getStartupState: () => ({ status: 'signed-in' }), getAccount: () => f.realAccount,
+    companyBoundaries: { resolveAssignedDestination: async args => { requests.push(args); return { ok: true, result: { status: 'resolved', destinations: ['/'], unavailable: [] } }; }, cancelCompanyEntry() {} },
+  });
+  t.after(() => host.dispose()); await settleEntryHost();
+  assert.equal(requests.length, 1, 'a legitimate different Auth UUID must reach company resolution');
+  assert.equal(requests[0].expectedAccountId, account);
+  assert.notEqual(requests[0].expectedAccountId, f.authId);
+  assert.equal(host.getState().phase, 'workspace');
+  assert.equal(host.getState().accountKey, account);
+});
+
+for (const changedRaw of ['replacement', 'malformed', 'removed']) test('canonical account binding rejects '+changedRaw+' raw session and ignores its late company result', async t => {
+  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment(), requests = [];
+  let finish;
+  const deferred = new Promise(resolve => { finish = resolve; });
+  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+    getSessionStorage: () => f.storage, getStartupState: () => f.realAccount.identity(), getAccount: () => f.realAccount,
+    companyBoundaries: { resolveAssignedDestination: args => { requests.push(args); return deferred; }, cancelCompanyEntry() {} },
+  });
+  t.after(() => host.dispose()); await settleEntryHost();
+  assert.equal(requests.length, 1);
+  if (changedRaw === 'replacement') f.values.set(f.key, JSON.stringify({ access_token: f.token(secondAccount), user: { id: secondAccount } }));
+  else if (changedRaw === 'malformed') f.values.set(f.key, '{');
+  else f.values.delete(f.key);
+  assert.equal(f.realAccount.isAccountBound(account), false, 'the original manager fence must revoke the exact raw session binding');
+  host.syncAccountState();
+  finish({ ok: true, result: { status: 'resolved', destinations: ['/'], unavailable: [] } });
+  await settleEntryHost();
+  assert.notEqual(host.getState().accountKey, account);
+  assert.notEqual(host.getState().phase, 'entered');
+  assert.equal(requests.length, 1, 'a stale result must not start another bound request');
+});
