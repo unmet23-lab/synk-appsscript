@@ -2104,7 +2104,7 @@ test('페이지 스크립트(Gemini 오류) — 답 파일을 쓰기 전에 보�
   const 몸 = s.slice(처음, 끝 + 3);
   assert.ok(몸.indexOf('Gemini오류답(text)') > 0 && 몸.indexOf('Gemini오류답(text)') < 몸.indexOf('fs.writeFile(out'), '오류 문구는 답 파일을 쓰기 전에 본다');
   assert.match(몸, /await fs\.unlink\(mark\)\.catch\(\(e\) => \{ if \(e\.code !== "ENOENT"\) throw e; \}\)/, '표시를 못 지우면 삼키지 않고 「없음」으로(Fable 설계 검토 ⑤)');
-  const 판단 = new Function(`${웹.판단머리()}\nreturn { Gemini오류답, 풀린기록, 답파일글 };`)();
+  const 판단 = new Function(`${웹.판단머리()}\nreturn { Gemini오류답, 빈답몸, 풀린기록, 답파일글 };`)();
   const AsyncFunction = (async () => {}).constructor;
   const 대화 = 'https://gemini.google.com/u/8/app/772ae5c0aeca19a0';
   const 돌려 = async (글, { 표시 = true, 앞기록 = null, 지우기실패 = false } = {}) => {
@@ -2124,8 +2124,8 @@ test('페이지 스크립트(Gemini 오류) — 답 파일을 쓰기 전에 보�
     // 표시 지우기 실패(EPERM)를 흉내 — 없는 표시(ENOENT)는 그대로 지나간다
     const 파일 = 지우기실패 ? { ...fs.promises, unlink: async (p) => { if (p === mark) { const e = new Error('EPERM: operation not permitted'); e.code = 'EPERM'; throw e; } return fs.promises.unlink(p); } } : fs.promises;
     try {
-      await new AsyncFunction('Gemini오류답', '풀린기록', '답파일글', '표시읽기', 'fs', 'unsentMark', 'mark', 'out', 'files', 'base', 'head', 'now', 'log', 'fail', 'shot', 'page', '글', '주소', '끝', `${몸}\ntry { await finish(글, 주소); } finally { 끝(page); }`)(
-        판단.Gemini오류답, 판단.풀린기록, 판단.답파일글, 표시읽기, 파일, unsentMark, mark, out, ['C:/x/화면05.png'], (f) => f.split(/[\\/]/).pop(), '아르곤 답', () => '2026-11-13 01:49:48', (o) => 기록.push(o), fail, path.join(dir, 'shot.png'), page, 글, 대화, (p) => { 끝페이지 = p; });
+      await new AsyncFunction('Gemini오류답', '빈답몸', '풀린기록', '답파일글', '표시읽기', 'fs', 'unsentMark', 'mark', 'out', 'files', 'base', 'head', 'now', 'log', 'fail', 'shot', 'page', '글', '주소', '끝', `${몸}\ntry { await finish(글, 주소); } finally { 끝(page); }`)(
+        판단.Gemini오류답, 판단.빈답몸, 판단.풀린기록, 판단.답파일글, 표시읽기, 파일, unsentMark, mark, out, ['C:/x/화면05.png'], (f) => f.split(/[\\/]/).pop(), '아르곤 답', () => '2026-11-13 01:49:48', (o) => 기록.push(o), fail, path.join(dir, 'shot.png'), page, 글, 대화, (p) => { 끝페이지 = p; });
     } catch (e) { 오류 = e; }
     const 옮김 = fs.existsSync(unsentMark) ? JSON.parse(fs.readFileSync(unsentMark, 'utf8')) : null;
     return { 오류, 기록, 셈, 답: fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : null, 표시: fs.existsSync(mark), 옮김, 끝페이지, page };
@@ -2142,6 +2142,11 @@ test('페이지 스크립트(Gemini 오류) — 답 파일을 쓰기 전에 보�
   const 거절판 = await 돌려('Gemini의 응답\n\n저는 그런 것을 하도록 프로그램되지 않았습니다.', { 앞기록: [{ 까닭: '사이드바 최근 대화 15개에 없다 · 보낸 지 23분' }] });
   assert.equal(거절판.오류 && 거절판.오류.kind, 'Gemini오류');
   assert.equal(거절판.옮김.length, 2, '앞 기록에 덧붙인다');
+  // 몸이 빈 답(11-15 카본눈 작업3 — 생각 제목과 머리 51자를 「받음」으로 썼다) — 답을 안 쓰고 표시를 두며 「빈답」
+  const 빈답판 = await 돌려("Analyzing a golden light-bus's direction\nGemini의 응답");
+  assert.equal(빈답판.오류 && 빈답판.오류.kind, '빈답');
+  assert.deepEqual([빈답판.답, 빈답판.표시, 빈답판.옮김], [null, true, null], '답 파일을 안 쓰고 표시는 그대로 — 20분 뒤 읽기가 대화를 다시 본다');
+  assert.match(빈답판.오류.message, /다시 보내지 말고 보낸 지 20분 뒤 「읽기」/);
   const 진짜판 = await 돌려('Gemini의 응답\n\n{"낱장":[{"번호":"01","판정":"통과"}]}');
   assert.equal(진짜판.오류, null);
   assert.match(진짜판.답, /^# 아르곤 답 — 2026-11-13 01:49:48\n\n대화: https:\/\/gemini\.google\.com\/u\/8\/app\/772ae5c0aeca19a0\n올린 것: 화면05\.png\n\nGemini의 응답/);
@@ -2181,6 +2186,23 @@ test('페이지 스크립트(읽기 ① 탭) — 보냄 표시가 없으면 맞�
   assert.match(실패.why, /이 작업의 보냄 표시가 없다/);
   assert.equal(정보, 0, '탭을 고르지 않았다');
   assert.ok(!fs.existsSync(job.out), '남의 답을 이 작업 답으로 쓰지 않는다');
+});
+
+test('빈답몸 — 생각 제목과 「Gemini의 응답」 머리뿐인 답만 빈 답으로 본다, 진짜 답 · 머리 없는 짧은 답은 그대로(11-15 카본눈 작업3)', () => {
+  const 판단 = new Function(`${웹.판단머리()}\nreturn { 빈답몸 };`)();
+  for (const 잡기 of [웹.빈답몸, 판단.빈답몸]) {
+    assert.equal(잡기("Analyzing a golden light-bus's direction\nGemini의 응답"), true, '11-15 작업3 그대로');
+    assert.equal(잡기('Gemini의 응답'), true);
+    assert.equal(잡기('생각 제목\r\nGemini의 응답\r\n\r\n  '), true, '줄끝 · 빈칸만 남아도 빈 답');
+    assert.equal(잡기('Gemini의 응답\n\n1. 판정\n\n결과: 통과'), false, '진짜 답');
+    assert.equal(잡기('통과입니다.'), false, '머리 없는 짧은 답은 가리지 못하니 그대로');
+    assert.equal(잡기(''), false);
+    assert.equal(잡기(`${'가'.repeat(300)}\nGemini의 응답`), false, '머리 앞이 200자를 넘으면 생각 제목이 아니다');
+  }
+  const out = path.join(임시(), '답.md');
+  fs.writeFileSync(out, 웹.답파일글('아르곤 답', '2026-11-15 21:29:06', 'https://gemini.google.com/u/2/app/355847002f947b13', '보기용_자막_1400.mp4 · 의뢰인말씀.txt', "Analyzing a golden light-bus's direction\nGemini의 응답"));
+  assert.equal(웹.오류답파일(out), '답 몸이 비었다', '이미 쓴 빈 답 파일은 답이 없는 것으로 — 다음 보내기가 다시 보낸다');
+  assert.equal(웹.답있음(out), false);
 });
 
 test('답 파일 머리 — 쓰기(답파일글)와 떼기(답파일몸)는 한 쌍, 파일 판정은 화면 판정과 같다 · 몸 안의 「대화: 」 · 「올린 것: 」 · 「# 」 줄은 몸이다(Fable 설계 검토 ①)', () => {
@@ -2269,7 +2291,7 @@ test('Gemini 오류 뒤 다시 보내기(11-13) — 보내기 부름은 쉬고 �
     assert.deepEqual(본.ego().map((x) => x.mode), ['보내기'], '건너뛰지 않고 보낸다');
     assert.match(fs.readFileSync(j.out, 'utf8'), /답답답/, '새로 받은 답을 그 자리에 쓴다');
     assert.deepEqual(fs.readdirSync(dir).filter((f) => /오류답/.test(f)), [], '옛 오류 답을 옆 이름으로 옮기지 않는다');
-    assert.match(찍힘.join('\n'), /작업1: 답 파일이 Gemini 오류 문구뿐이다\(「오류가 발생했습니다\.」\) — 답이 없는 것으로 보고 다시 한다/);
+    assert.match(찍힘.join('\n'), /작업1: 답 파일에 답이 없다\(「오류가 발생했습니다\.」\) — 답이 없는 것으로 보고 다시 한다/);
   });
   await 여러줄시험(async (dir, 찍힘, 본) => {
     // 다시 보낸 것도 오류면 옛 오류 답 파일은 그대로 남는다(페이지 스크립트가 답을 안 쓴다) — 지우지 않는다
@@ -2280,4 +2302,17 @@ test('Gemini 오류 뒤 다시 보내기(11-13) — 보내기 부름은 쉬고 �
     assert.deepEqual(본.ego().map((x) => x.mode), ['보내기', '보내기']);
     assert.equal(fs.readFileSync(j.out, 'utf8'), 옛글);
   }, { 환경: { FAKE_GEMINI_ERROR_OUTS: '답1.md*' } });
+});
+
+test('영상 권리 동의 창 — 작업에 유호님 허락 원문(동의허락)이 있을 때만 JOB에 실어 페이지가 「동의」를 누른다(11-15)', () => {
+  const 허락 = '응, 눌러';
+  const a = 웹.작업만들기({ files: ['C:\a\편.mp4'], prompt: '질문', out: 'C:\a\답.md', 동의허락: 허락 }, 'C:\a', 't');
+  const b = 웹.작업만들기({ files: ['C:\a\편.mp4'], prompt: '질문', out: 'C:\a\답.md', 동의허락: '   ' }, 'C:\a', 't');
+  const JOB글 = (j) => JSON.parse(웹.페이지글(j, 2, '보내기', '77yuhbs').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
+  assert.equal(JOB글(a).동의허락, 허락);
+  assert.equal(JOB글(b).동의허락, undefined, '빈 허락은 허락이 아니다 — 창이 뜨면 전처럼 멈춘다');
+  const 글 = 웹.페이지글(a, 2, '보내기', '77yuhbs');
+  assert.ok(/if \(!동의허락 \|\| 동의누름 >= 2\) return false/.test(글), '허락이 없으면 누르지 않는다');
+  assert.ok(/st\.consent && await 동의누르기\(\)\) continue/.test(글), '보낸 뒤 동의 창에서도 허락이 있을 때만 누르고 잇는다');
+  assert.ok(/영상 권리 동의 창이 떴다 — 누르지 않고 멈춤/.test(글), '허락이 없으면 전처럼 멈추는 줄이 남아 있다');
 });

@@ -35,6 +35,8 @@ const mark = J.mark || `${out}.보냄.json`;
 const unsentMark = J.unsentMark || mark.replace(/\.보냄\.json$/, ".안보내짐.json");
 const failShot = J.failShot || `${shots}/${out.split(/[\\/]/).pop().replace(/\.[^.]+$/, "")}_실패.png`;
 const sentWait = (J.sentWaitSec || 180) * 1000;
+// 영상 권리 동의 창: 작업에 유호님 허락 원문(동의허락)이 있을 때만 그 창 안의 「동의」 하나를 누른다. 없으면 전처럼 멈춘다(11-15).
+const 동의허락 = J.동의허락 ? String(J.동의허락) : "";
 const answerMs = (J.answerMin || 12) * 60_000;
 const releaseAfter = J.releaseAfterMs || 20 * 60_000;
 const base = (f) => f.split(/[\\/]/).pop();
@@ -75,6 +77,26 @@ const state = () => page.evaluate(() => {
     consent: /동영상 제작에 관한 알림|필요한 권리가 있는지 확인/.test(text) && /동의/.test(text),
   };
 });
+// 허락이 있으면 「동영상 제작에 관한 알림」 창 안의 「동의」만 찾아 누른다. 창이 없거나 단추가 하나로 안 잡히면 false.
+let 동의누름 = 0;
+const 동의누르기 = async () => {
+  if (!동의허락 || 동의누름 >= 2) return false;
+  const 찾음 = await page.evaluate(() => {
+    document.querySelectorAll('[data-synk="agree"]').forEach((e) => e.removeAttribute("data-synk"));
+    const 창 = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"], mat-dialog-container, .cdk-overlay-pane')]
+      .filter((d) => /동영상 제작에 관한 알림|필요한 권리가 있는지 확인/.test(d.innerText || ""));
+    const 단추 = 창.length ? [...창[창.length - 1].querySelectorAll("button")].filter((b) => (b.innerText || "").trim() === "동의") : [];
+    if (단추.length !== 1) return false;
+    단추[0].setAttribute("data-synk", "agree");
+    return true;
+  }).catch(() => false);
+  if (!찾음) return false;
+  await page.click('loc=css:[data-synk="agree"]', { timeout: 15000, label: "agree video notice" });
+  동의누름 += 1;
+  log({ step: "consent", 허락: 동의허락 });
+  await page.waitForTimeout(3000);
+  return true;
+};
 const answerNow = (p) => p.evaluate(() => {
   const resp = [...document.querySelectorAll("model-response")];
   const el = resp[resp.length - 1];
@@ -135,6 +157,9 @@ const waitAnswer = async (url, 빈답마감 = 0, 사라짐진단 = false) => {
   return await fail("답이 안 나옴: " + text.slice(0, 200));
 };
 const finish = async (text, url) => {
+  // 몸이 빈 답(11-15 카본눈 작업3 — 생각 제목과 「Gemini의 응답」 머리 51자를 「받음」으로 썼고 대화는 곧 사라졌다). 답 파일을 쓰지 않고 표시는 둔다 —
+  // 보낸 지 20분 뒤 「읽기」가 대화를 다시 열고, 없으면 사이드바를 본 뒤 표시를 풀어 다음 보내기가 다시 보낸다(사라짐과 같은 길)
+  if (빈답몸(text)) await fail("답 몸이 비었다(생각 제목과 「Gemini의 응답」 머리뿐) — 다시 보내지 말고 보낸 지 20분 뒤 「읽기」(대화가 없으면 표시를 푼다)", "빈답", { url, chars: text.length });
   // 답 대신 Gemini 오류 · 거절 문구(11-13 — 「오류가 발생했습니다. / 다시 시도」를 답으로 써 「받음」으로 셌고 다시 보내지 않았다). 대화는 끝났고 답이 없다 —
   // 답 파일은 쓰지 않고, 표시는 「안 보내짐」처럼 기록 파일에 덧붙여 옮긴다(기록을 먼저 쓰고 표시를 지운다 · 다음 보내기가 다시 보낸다)
   const 오류 = Gemini오류답(text);
@@ -703,6 +728,7 @@ if (mode === "읽기") {
       await 마감확인(); // 파일 넣기 바로 앞 — 고르기 창을 기다리는 사이 마감이 왔으면 넣지 않는다
       await chooser.setFiles(files);
       for (let i = 0; i < 40; i++) { await page.waitForTimeout(1500); s = await state(); if (s.closes >= chipN || s.failed || s.consent) break; }
+      if (s.consent && await 동의누르기()) { for (let i = 0; i < 20; i++) { s = await state(); if (s.closes >= chipN || s.failed || s.consent) break; await page.waitForTimeout(1500); } }
       if (s.consent) await fail("영상 권리 동의 창이 떴다 — 누르지 않고 멈춤(유호님 손)", "멈춤");
       if (s.failed) await fail("업로드 실패 표시 — 멈춤(보안 확인 신호일 수 있음)", "멈춤");
       if (s.closes < chipN) await fail(`첨부 칸의 사진 · 영상이 ${s.closes}/${chipN}개`);
@@ -772,6 +798,7 @@ if (mode === "읽기") {
       const st = await state().catch(() => null);
       if (!st) continue;
       url = await page.url().catch(() => url);
+      if (st.consent && await 동의누르기()) continue; // 허락이 있으면 눌렀다 — 창이 닫히고 보내기가 이어지는지 다시 본다
       if (st.consent) await fail("보낸 뒤 영상 권리 동의 창 — 누르지 않고 멈춤(유호님 손)", "멈춤");
       if (/\/app\/[0-9a-f]+/.test(url) || st.busy || (st.uqN > 0 && norm(st.uq).includes(promptHead))) { sent = true; break; }
       if (Date.now() - t1 > 60_000 && st.uqN === 0 && Math.abs(st.len - promptLen) <= 3) { notSent = true; break; }
