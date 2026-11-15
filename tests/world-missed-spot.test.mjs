@@ -352,6 +352,50 @@ test('다른 기기에서 놓치기 전에 한 짧은 연습이 뒤늦게 받아
  assert.equal(step(card,'practice'),null,'놓치기 전에 한 연습은 다시 만난 일이 아니다');
 });
 
+// ── 판 4: 사건 차례를 시각 순서로 읽는다 — 받아 붙인 다른 기기 기록이 어느 줄의 차례도 바꾸지 않는다(판 3 최종 검수 P2 · 카본 A1) ──
+const device=(gameId,start)=>{const clock={t:Date.parse(start)};const m=new Map();
+ const game=createGame({gameId,map:createMap(worldMapData()),storage:{getItem:key=>m.has(key)?m.get(key):null,setItem:(key,value)=>m.set(key,String(value)),removeItem:key=>m.delete(key)},clock:()=>new Date(clock.t).toISOString()});
+ return {game,clock,
+  shift(lines,gap=0){clock.t+=gap;for(const line of lines){const [id,picked,ok,how]=line.split(' '),item=CASES.get(id);clock.t+=4000;const pid=game.present(caseMetadata(item));if(how==='도움')game.help(pid,'replay');clock.t+=3000;
+   game.answer(pid,{correct:ok==='true',assessable:true,choice:{selectedId:option(picked),correctId:option(item.answer)}});}},
+  practice(numbers){for(const n of numbers){clock.t+=4000;const pid=game.present(practiceItem(n));clock.t+=3000;game.answer(pid,{correct:true,assessable:true});}}};};
+const readCard=(target,now)=>cardOf({summary:target.game.summary(),events:target.game.events(),now}).card;
+
+test('받아 붙인 하루 전 다른 기기의 같은 종류 손님은 「● 나중에 다시」가 아니다',()=>{
+ const phone=device('entry-check','2026-11-13T09:00:00+09:00');
+ phone.shift(RECORDED.second);                                   // 11-13 도서관 근무 — library-06 음식 손님을 혼자 막음
+ const laptop=device('entry-check','2026-11-14T10:00:00+09:00');
+ laptop.shift(RECORDED.first);                                   // 11-14 수영장 근무 — 음식 줄 손님 둘을 놓침
+ laptop.game.syncPort.importEvents(phone.game.events());          // 받은 도서관 기록은 로그 끝에 붙는다
+ const card=readCard(laptop,laptop.clock.t);
+ assert.equal(card.target.skillId,NEG);
+ const again=step(card,'again');
+ assert.equal(again.state,'planned','놓치기 하루 전의 답은 놓친 뒤 다시 만난 일이 아니다');
+ assert.equal(step(card,'spot').guests,2,'같은 기기의 그 자리는 그대로');
+});
+
+test('받아 붙인 한 시간 전 다른 기기의 뒤쪽 손님은 「● 그 자리」가 아니다',()=>{
+ const phone=device('entry-check','2026-11-14T09:00:00+09:00');
+ phone.shift(['pool-10 pass true 혼자','pool-13 pass true 혼자']);   // 09:00 뒤쪽 손님 둘만 봄(맞힘)
+ const laptop=device('entry-check','2026-11-14T10:00:00+09:00');
+ laptop.shift(['pool-01 pass true 혼자','pool-02 pass false 혼자']); // 10:00 pool-02를 놓치고 멈춤
+ laptop.game.syncPort.importEvents(phone.game.events());
+ const card=readCard(laptop,laptop.clock.t);
+ assert.equal(card.target.skillId,NEG);
+ assert.equal(step(card,'spot'),null,'놓치기 전에 본 손님은 바로 다음 손님이 아니다');
+});
+
+test('놓친 기록을 나중에 받아도, 시각상 놓친 뒤에 한 짧은 연습은 「● 짧은 연습」에 센다(카본 A1)',()=>{
+ const laptop=device('entry-check','2026-11-14T10:00:00+09:00');
+ laptop.shift(RECORDED.first);                                   // 10:00 음식 줄 손님 둘을 놓침
+ const phone=device('world-practice','2026-11-14T11:00:00+09:00');
+ phone.practice([1,2]);                                          // 11:00 다른 기기에서 같은 항목 새 문항 둘을 혼자 맞힘
+ phone.game.syncPort.importEvents(laptop.game.events());          // 놓친 근무 기록이 연습 뒤에(로그 끝에) 붙는다
+ const card=readCard(phone,phone.clock.t);
+ assert.equal(card.target.skillId,NEG);
+ assert.deepEqual([step(card,'practice').n,step(card,'practice').right],[2,2]);
+});
+
 test('최근 창(30일)을 넘긴 옛 오답만 남으면 카드가 없다',()=>{
  // 시각이 앞으로 흐르는 시계로 근무 둘을 두고, 40일 뒤 시각으로 Core 요약을 다시 읽는다(창은 지금 시각으로 자른다).
  let at=Date.parse('2026-10-01T03:18:00+09:00');const memory=new Map();

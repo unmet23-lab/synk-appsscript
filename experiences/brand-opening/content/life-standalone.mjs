@@ -24769,7 +24769,7 @@ var choicesFor = (venue, at) => ["pass", ...activeRules(venue, at).map((r) => r.
 
 // experiences/synk-world-app/world-missed-spot.mjs
 var MISSED_SPOT_POLICY = Object.freeze({
-  version: "world-missed-spot-3",
+  version: "world-missed-spot-4",
   // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
   sittingGapMs: 30 * 6e4,
   // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
@@ -24798,8 +24798,12 @@ function missDirection(choice) {
 }
 function msIndex(events) {
   const list = Array.isArray(events) ? events : [], shown = /* @__PURE__ */ new Map(), first = /* @__PURE__ */ new Map(), attempt = /* @__PURE__ */ new Map(), experience = /* @__PURE__ */ new Map(), order2 = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set(), help = /* @__PURE__ */ new Map();
-  list.forEach((event, at) => {
-    if (!msRecord(event)) return;
+  const timeOf = (event) => {
+    const value = Date.parse(event?.at);
+    return Number.isFinite(value) ? value : Infinity;
+  };
+  const sequence = list.map((event, index) => ({ event, index, time: timeOf(event) })).filter((row) => msRecord(row.event)).sort((a, b) => a.time - b.time || a.index - b.index);
+  sequence.forEach(({ event }, at) => {
     order2.set(event.id, at);
     if (event.type === "decision.made") experience.set(event.id, event.experienceId);
     else if (event.type === "practice.presented") shown.set(event.id, event);
@@ -24830,7 +24834,8 @@ function msIndex(events) {
       const presentation = shown.get(row.presentationId);
       return excluded.has(row.id) || excluded.has(row.presentationId) || !!presentation && excluded.has(presentation.decisionId);
     },
-    // 그 제시에 이 답보다 먼저 도움이 남았나(기록 순서나 시각 가운데 하나라도 앞서면 — Trail과 같다).
+    // 그 제시에 이 답보다 먼저 도움이 남았나(차례나 시각 가운데 하나라도 앞서면). Trail은 기록 순서나 시각으로 가르는데, 여기 차례는 판 4부터
+    // 시각 순서라 기기 시계가 크게 뒤로 간 드문 경우에만 Trail과 갈린다 — 그때는 「도움 받아 맞힘」 대신 덜 말하는 「만남」이 된다.
     helped: (row) => {
       const hit = help.get(row?.presentationId);
       if (!hit) return false;

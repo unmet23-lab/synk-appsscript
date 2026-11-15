@@ -16,7 +16,8 @@ import {activeRules,minutes} from '../entry-check/core.mjs';
 
 // 판 2(11-14 다음 판): 그 자리 · 나중에 다시가 뺀 답을 거르고 도움을 practice.helped로 읽음 · 접힌 기록의 분모 · 짧은 연습은 마지막 놓침 뒤만.
 // 판 3(11-15): 짧은 연습의 「마지막 놓침 뒤」를 기록 순서와 시각 둘 다로 잰다(다른 기기 기록을 받아 붙인 경우).
-export const MISSED_SPOT_POLICY=Object.freeze({version:'world-missed-spot-3',
+// 판 4(11-15): 사건 차례를 시각 순서로 읽는다(msIndex) — 받아 붙인 기록이 그 자리 · 나중에 다시 · 짧은 연습 어느 줄에도 차례를 바꾸지 않는다.
+export const MISSED_SPOT_POLICY=Object.freeze({version:'world-missed-spot-4',
  // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
  sittingGapMs:30*60000,
  // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
@@ -44,16 +45,21 @@ export function missDirection(choice){
  return 'wrong-rule';
 }
 
-// Trail 사건 묶음: 제시 · 시도 · 첫 시도 · 결정의 경험 · 기록 순서 · 처음 본 제시 · 뺀 기록 · 도움.
+// Trail 사건 묶음: 제시 · 시도 · 첫 시도 · 결정의 경험 · 차례 · 처음 본 제시 · 뺀 기록 · 도움.
+// 차례(order)는 시각 순서이고, 같은 시각이면 기록 순서다(판 4, 11-15). 다른 기기 · 손님 기록을 받으면(game-learning importEvents) 받은 사건이
+// 로그 끝에 붙어 기록 순서가 실제로 한 차례와 달라진다 — 그러면 놓치기 전의 답이 「그 자리」 · 「나중에 다시」 · 「짧은 연습」에 세어졌다.
+// 한 기기 안의 기록은 게임 시계가 뒤로 가지 않아(game-learning monotonic clock) 시각 순서가 기록 순서와 같다 — 기기 시계가 그 시계의 여유(5분)보다
+// 크게 뒤로 가면 갈릴 수 있고, 그때는 「●」를 덜 내는 쪽으로 갈린다.
 function msIndex(events){
  const list=Array.isArray(events)?events:[],shown=new Map(),first=new Map(),attempt=new Map(),experience=new Map(),order=new Map(),excluded=new Set(),help=new Map();
- list.forEach((event,at)=>{
-  if(!msRecord(event))return;
+ const timeOf=event=>{const value=Date.parse(event?.at);return Number.isFinite(value)?value:Infinity;};
+ const sequence=list.map((event,index)=>({event,index,time:timeOf(event)})).filter(row=>msRecord(row.event)).sort((a,b)=>a.time-b.time||a.index-b.index);
+ sequence.forEach(({event},at)=>{
   order.set(event.id,at);
   if(event.type==='decision.made')experience.set(event.id,event.experienceId);
   else if(event.type==='practice.presented')shown.set(event.id,event);
   else if(event.type==='record.excluded'&&event.targetId)excluded.add(event.targetId);
-  // 도움(글 · 힌트 · 정답 · 다시 듣기 — practice.helped): 그 제시에 처음 남은 도움의 기록 순서와 시각. 뺀 도움도 도움이다
+  // 도움(글 · 힌트 · 정답 · 다시 듣기 — practice.helped): 그 제시에 처음 남은 도움의 차례와 시각. 뺀 도움도 도움이다
   // (Trail summarize의 독립 판정과 같다 — 보여 준 사실은 빼기로 지우지 않는다).
   else if(event.type==='practice.helped'&&event.presentationId){const earlier=help.get(event.presentationId),time=Date.parse(event.at);
    help.set(event.presentationId,{index:Math.min(earlier?.index??Infinity,at),at:Math.min(earlier?.at??Infinity,Number.isFinite(time)?time:Infinity)});}
@@ -66,12 +72,13 @@ function msIndex(events){
   fresh:presentation=>[presentation.itemKey,presentation.measure?.familyKey].filter(Boolean).every(key=>firstSight.get(key)===presentation.id),
   // 뺀 답(「제가 한 말과 달라요」 · record.excluded): 그 시도 · 그 제시 · 그 결정을 뺐으면 기록이 받쳐 주지 않는 답이다(Trail summarize의 omitted와 같은 가름).
   omitted:row=>{if(!msRecord(row))return true;const presentation=shown.get(row.presentationId);return excluded.has(row.id)||excluded.has(row.presentationId)||!!presentation&&excluded.has(presentation.decisionId);},
-  // 그 제시에 이 답보다 먼저 도움이 남았나(기록 순서나 시각 가운데 하나라도 앞서면 — Trail과 같다).
+  // 그 제시에 이 답보다 먼저 도움이 남았나(차례나 시각 가운데 하나라도 앞서면). Trail은 기록 순서나 시각으로 가르는데, 여기 차례는 판 4부터
+  // 시각 순서라 기기 시계가 크게 뒤로 간 드문 경우에만 Trail과 갈린다 — 그때는 「도움 받아 맞힘」 대신 덜 말하는 「만남」이 된다.
   helped:row=>{const hit=help.get(row?.presentationId);if(!hit)return false;const index=order.get(row.id),time=Date.parse(row.at);
    return hit.index<(index??Infinity)||Number.isFinite(time)&&hit.at<time;}};
 }
 
-// 입장 검사 게임(경험 entry-check)의 제시를 기록 순서로. sitting: 근무지가 같고 · 손님 도착 시각(원고 at)이 늘고 · 30분 안에 이어진 묶음 번호.
+// 입장 검사 게임(경험 entry-check)의 제시를 차례(시각 순서)로. sitting: 근무지가 같고 · 손님 도착 시각(원고 at)이 늘고 · 30분 안에 이어진 묶음 번호.
 // 근무 안의 손님은 도착 시각이 늘 늘어난다(correction.mjs preservesShift) — 화면은 이 묶음을 「근무」라 부르지 않는다(설계 검토 P2 ④).
 function msSittings(ix,policy){
  const rows=[];let sitting=-1,prev=null;
@@ -147,8 +154,8 @@ function msLaterStep({rows,missedSittings,skillId,independent,ix}){
 
 // 짧은 연습 · 이번 주 숙제: 마지막으로 놓친 뒤 짧은 연습(world-practice)에서 그 항목 새 문항에 혼자 낸 첫 답(한 일 — 숙제였는지는 가르지 않는다).
 // 기준은 놓친 근거 가운데 가장 늦은 답이다 — 짧은 연습 안에서 놓쳤으면 머리 줄에 센 둘째 놓침과 그 앞 답이 「다시 만난 일」로
-// 한 번 더 들어가지 않는다(검수 F3). 「뒤」는 기록 순서와 시각 둘 다로 잰다: 다른 기기 · 손님 기록을 받아 붙이면(importEvents) 놓치기 전에 한
-// 연습이 로그 끝에 붙어 기록 순서만으로는 뒤로 보인다(다음 판 검수 P2). 뺀 답(시도 · 제시 · 결정)은 세지 않는다.
+// 한 번 더 들어가지 않는다(검수 F3). 「뒤」는 차례(시각 순서, msIndex)와 시각 둘 다로 잰다 — 다른 기기 · 손님 기록을 받아 붙여도
+// 놓치기 전에 한 연습은 뒤로 세지 않는다(다음 판 검수 P2, 판 3 · 4). 뺀 답(시도 · 제시 · 결정)은 세지 않는다.
 // 없으면 이번 주 계획 숙제에 그 항목이 있을 때만(시험 목표를 넣은 학생 — homework가 null이면 줄 없음).
 function msPracticeStep({skillId,after,afterAt,ix,independent,homework,policy}){
  const done=[];
@@ -216,7 +223,7 @@ export function buildMissedSpot({map,summary=null,events=[],homework=null,projec
  if(way)narrow.push({layer:'direction',direction:way.key,count:way.rows.length,of});
  const rows=msSittings(ix,policy),inGame=detail.filter(row=>row.experienceId===ENTRY_GAME).map(row=>ix.attempt.get(row.eventId)?.presentationId).filter(Boolean);
  const missedSittings=rows.filter(row=>inGame.includes(row.presentation.id)).map(row=>row.sitting);
- // 마지막 놓침의 기록 순서와 시각 — 놓친 근거는 판이 로그에서 찾은 답이라 모두 기록 순서가 있다(짧은 연습 줄은 둘 다 뒤인 답만 센다).
+ // 마지막 놓침의 차례와 시각 — 놓친 근거는 판이 로그에서 찾은 답이라 모두 차례가 있다(짧은 연습 줄은 둘 다 뒤인 답만 센다).
  const lastMiss=Math.max(-Infinity,...missed.map(row=>ix.order.get(row.eventId)).filter(Number.isInteger));
  const lastMissAt=Math.max(-Infinity,...missed.map(row=>Date.parse(row.at)).filter(Number.isFinite));
  let open=false;try{open=practiceOpen(skill.id)===true;}catch{open=false;}
