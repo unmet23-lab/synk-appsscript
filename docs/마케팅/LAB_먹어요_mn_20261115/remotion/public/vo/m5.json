@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5",
+ "text": "나이를… 먹어요?!",
+ "dur": 1.15,
+ "words": [
+  {
+   "text": "나이를…",
+   "start": 0.02,
+   "end": 0.405
+  },
+  {
+   "text": "먹어요?!",
+   "start": 0.466,
+   "end": 1.15
+  }
+ ],
+ "source": {
+  "key": "5a6dd58ed9e269802de2e670a6785b14",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1153,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "떡국을 먹자 김이 펑 피어오르고, 하얀 수염이 난 할아버지가 된 자기를 보고 깜짝 놀란다.",
+   "next": "다… 먹어요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 349
+ }
+}

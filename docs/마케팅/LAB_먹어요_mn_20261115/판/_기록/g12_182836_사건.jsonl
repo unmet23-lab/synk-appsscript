@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1de89-8459-74f3-8f71-96de843069c6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the image-generation skill to preserve the fixed scene and change only the owner’s offer and Mongle’s panicked reaction.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Old Mongle recoils in horror as the grinning owner offers another steaming bowl of tteokguk."}}
+{"type":"turn.completed","usage":{"input_tokens":113776,"cached_input_tokens":93696,"cache_write_input_tokens":0,"output_tokens":1184,"reasoning_output_tokens":145}}

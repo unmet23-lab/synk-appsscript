@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3).
+
+The FIRST attached image is the base panel. Reproduce it EXACTLY — same camera position, framing, focus and warm lamp light, same plain cream felt-tile wall, same pendant lamp, same honey-brown counter at the same height, same small pot and chopstick cup at the far left, same gas stove and black wok at the right. Mongle stays on the SAME spot of the counter with the SAME body size and the SAME coral wool colour. The owner is the SAME felt man (same face, black hair, white headband, white apron, navy shirt).
+
+CHANGE ONLY these things:
+- Mongle has stopped slurping and looks straight into the camera with a curious, thoughtful face: glossy black bead eyes open and round, one long noodle still hanging from its mouth down into the same ramen bowl, head tilted slightly as if asking a question.
+- The owner keeps cooking at the wok, same pose.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, ever.
+Exactly ONE Mongle and exactly ONE owner. Absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere.

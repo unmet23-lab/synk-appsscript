@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1161,
+  "lufs": -16
+ },
+ "made": "2026-11-15T10:28:13.700Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "라면을 먹어요~",
+   "dur": 1.153,
+   "syllablesPerSec": 5.2,
+   "src": "m1.wav",
+   "key": "e0a4e848dfcf0a9307cf1d0b52d3e069",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "으악!",
+   "dur": 0.37,
+   "syllablesPerSec": 5.41,
+   "src": "m2.wav",
+   "key": "e503e20a3e77ea43ef36ff145a40a525",
+   "words": 1
+  },
+  {
+   "id": "m3",
+   "text": "겁을 먹어요…",
+   "dur": 1.234,
+   "syllablesPerSec": 4.05,
+   "src": "m3.wav",
+   "key": "0363105cd0cea1f66db3aeb1c1c981df",
+   "words": 2
+  },
+  {
+   "id": "b1",
+   "text": "다 쏟았잖아!",
+   "dur": 1.365,
+   "syllablesPerSec": 3.66,
+   "src": "b1.wav",
+   "key": "d127ef54944bd70b874f958fec94a6eb",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "욕을 먹어요…",
+   "dur": 1.461,
+   "syllablesPerSec": 3.42,
+   "src": "m4.wav",
+   "key": "4226f87f9535a51673c1ca58efe06fd6",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "나이를… 먹어요?!",
+   "dur": 1.15,
+   "syllablesPerSec": 5.22,
+   "src": "m5.wav",
+   "key": "5a6dd58ed9e269802de2e670a6785b14",
+   "words": 2
+  },
+  {
+   "id": "b3",
+   "text": "한 그릇 더~?",
+   "dur": 0.833,
+   "syllablesPerSec": 4.8,
+   "src": "b3.wav",
+   "key": "0444477b00302f32b2b635d7ee475f85",
+   "words": 3
+  },
+  {
+   "id": "e2",
+   "text": "나이 그만 먹을래요!",
+   "dur": 1.514,
+   "syllablesPerSec": 5.28,
+   "src": "e2.wav",
+   "key": "defeffe9aa31c453c52bfe1594382356",
+   "words": 3
+  },
+  {
+   "id": "b4",
+   "text": "새해 떡국 먹어~",
+   "dur": 1.425,
+   "syllablesPerSec": 4.21,
+   "src": "b4.wav",
+   "key": "6738bd778dd51a2c544d9286c2be0b93",
+   "words": 3
+  }
+ ]
+}

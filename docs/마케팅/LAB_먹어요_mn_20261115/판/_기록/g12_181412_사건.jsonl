@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1de7c-5686-78c1-8e71-57af6f12c613"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the image generation tool to preserve the scene and change only Mongle’s expression and the owner’s reaction.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Old Mongle sighs with a wry smile as the owner covers his mouth, struggling to contain his laughter."}}
+{"type":"turn.completed","usage":{"input_tokens":44312,"cached_input_tokens":33536,"cache_write_input_tokens":0,"output_tokens":702,"reasoning_output_tokens":0}}

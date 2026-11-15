@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e2",
+ "text": "나이 그만 먹을래요!",
+ "dur": 1.514,
+ "words": [
+  {
+   "text": "나이",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "그만",
+   "start": 0.362,
+   "end": 0.624
+  },
+  {
+   "text": "먹을래요!",
+   "start": 0.684,
+   "end": 1.514
+  }
+ ],
+ "source": {
+  "key": "defeffe9aa31c453c52bfe1594382356",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1153,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "떡국 한 그릇에 한 살씩 먹은 할아버지 몽글이, 한 그릇 더 내미는 사장님에게 질겁해서 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 469
+ }
+}

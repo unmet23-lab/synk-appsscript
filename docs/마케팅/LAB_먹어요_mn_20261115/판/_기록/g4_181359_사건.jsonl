@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1de7c-25a2-7d80-806d-e7a68602d84c"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to keep the fixed scene and create the felt flame-show surprise.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle leaps in shock as felt flames rise from the owner’s wok and ramen spills across the counter."}}
+{"type":"turn.completed","usage":{"input_tokens":144465,"cached_input_tokens":115584,"cache_write_input_tokens":0,"output_tokens":1343,"reasoning_output_tokens":287}}

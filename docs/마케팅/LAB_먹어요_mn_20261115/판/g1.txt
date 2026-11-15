@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the mascot and the owner, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, counter, bowl, stove and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cozy evening light from a hanging lamp, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look and light — not its room, furniture or people).
+
+FORMAT: portrait 2:3. Camera at the height of the counter top, looking straight across the counter. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: a tiny Korean snack bar (bunsik-jip) at night, seen from the customer side.
+- Back wall: plain warm-cream felt tiles with a soft texture. The top 30% of the image is ONLY this plain wall and one small round felt pendant lamp hanging from the very top centre — no menu, no signs, no posters, nothing else there.
+- COUNTER: a long honey-brown wooden felt counter runs across the whole image; its top surface (where things sit) is at about 64% of the image height, its front panel fills the image below that down to the bottom.
+- OWNER behind the counter on the RIGHT, between about 55% and 85% of the image width: a felt doll of a cheerful middle-aged Korean man — round face, short black hair, thick black eyebrows, small black bead eyes, a white cotton headband, a white apron over a navy shirt. He is visible from the counter top up to his head (head top at about 34% of the image height). He stands at a small felt gas stove with a black wok and holds a ladle, glancing kindly toward the mascot.
+- On the counter at the far LEFT (about 12%–22% width): one small stainless felt pot with a little steam, and a felt cup with wooden chopsticks. Keep the middle of the counter clear.
+
+MONGLE (the mascot from the SECOND attached image): sits ON the counter top a little left of centre (the middle of its scalloped hem at about 38% of the image width, resting on the counter at about 64% of the image height), its body about 22% of the image width wide, facing the camera. In front of it, slightly to the right, a big white felt bowl of ramen — wavy yellow felt noodles, half a boiled egg, green onion. Mongle is happily slurping: a few noodles hang from its mouth into the bowl, eyes squeezed into happy arcs, warm blush.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+
+The wall space above Mongle and the upper-left wall must stay empty (word cards will be added there later). Exactly ONE Mongle and exactly ONE owner, no other people.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — no writing on the wall, bowl, apron, headband or counter.

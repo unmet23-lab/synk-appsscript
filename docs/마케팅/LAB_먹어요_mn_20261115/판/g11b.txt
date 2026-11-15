@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3).
+
+The FIRST attached image is the previous panel. Reproduce it EXACTLY — same camera position, framing, focus and warm lamp light, same wall, pendant lamp, counter, small pot and chopstick cup at the far left, same gas stove and black wok at the right, the same empty white bowl and the same ladle lying on the counter. The owner stays frozen in the SAME shocked pose (hands on cheeks, mouth open). Mongle is the SAME old-grandpa Mongle on the SAME spot with the SAME size: same bushy white felt eyebrows, same long white felt beard and moustache, same small round wire glasses, same few white hairs on top, the same tiny wooden cane.
+
+CHANGE ONLY Mongle's pose and face: old Mongle wobbles unsteadily — its whole body tilts about 12 degrees to its right and leans its weight on the tiny cane (the cane still just leans against its side, Mongle has no arms); its round glasses have slid down to the tip of its face; its glossy black bead eyes look DOWN cross-eyed at its own long white beard in total disbelief; mouth a small wobbly 'o' under the moustache. Two tiny white felt sweat drops near its head.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, ever.
+Exactly ONE Mongle and exactly ONE owner. Absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere.

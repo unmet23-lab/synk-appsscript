@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1de80-3d5b-7ce0-a435-d1712930a46c"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the image generation tool to preserve the scene and make only the requested changes to Mongle and the owner.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle trembles on the counter as the surprised owner stares at the spilled ramen, ladle in hand."}}
+{"type":"turn.completed","usage":{"input_tokens":113908,"cached_input_tokens":93696,"cache_write_input_tokens":0,"output_tokens":1051,"reasoning_output_tokens":97}}

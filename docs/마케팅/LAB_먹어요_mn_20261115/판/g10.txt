@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). A magic "poof" moment.
+
+The FIRST attached image is the previous panel. Reproduce it EXACTLY — same camera position, framing, focus and warm lamp light, same wall, pendant lamp, counter, small pot and chopstick cup at the far left, same gas stove and black wok at the right, the SAME white bowl on the SAME spot.
+
+CHANGE ONLY these things:
+- A big round puffy cloud of WHITE felted wool steam has just burst up out of the soup bowl and completely covers Mongle — the cloud is about 40% of the image width wide, centred on where Mongle sits (about 38% of the image width), from the counter top up to about 40% of the image height, made of soft bumpy wool balls with a few small wisps flying outward. Mongle is NOT visible at all inside it.
+- The owner behind the counter leans back in surprise, eyes wide, mouth open, arms uncrossed with hands up.
+
+Exactly ONE owner, no Mongle visible. Absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere.

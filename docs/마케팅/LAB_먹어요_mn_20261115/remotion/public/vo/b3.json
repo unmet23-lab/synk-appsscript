@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "한 그릇 더~?",
+ "dur": 0.833,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.02,
+   "end": 0.161
+  },
+  {
+   "text": "그릇",
+   "start": 0.242,
+   "end": 0.444
+  },
+  {
+   "text": "더~?",
+   "start": 0.525,
+   "end": 0.833
+  }
+ ],
+ "source": {
+  "key": "0444477b00302f32b2b635d7ee475f85",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1153,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "할아버지가 된 몽글을 보고 웃음을 참던 사장님이 장난스럽게 떡국 한 그릇을 더 내민다.",
+   "next": "나이 그만 먹을래요!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 181
+ }
+}
