@@ -237,11 +237,14 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},c
     const waiting=['scheduled','overdue'].includes(now)&&Number.isFinite(lastOk)&&lastOk<=nowMs&&nowMs-lastOk<=COLLECT_FRESH;
     const collect=['success','partial','collecting'].includes(now)||waiting?'수집 중':now==='unsupported'||(!item&&c.status==='not-connected')?'수집 안 함':'수집 멈춤';
     let connectUrl=null;try{const u=new URL(row?.connectUrl||'','https://workspace.invalid');if(u.origin==='https://workspace.invalid'&&u.pathname==='/api/oauth/'+c.platform+'/start'&&u.searchParams.get('channelId')===c.id&&u.searchParams.get('publishing')==='1')connectUrl=u.pathname+u.search;}catch{}
-    const fix=item&&['reconnect','connect'].includes(item.action)?{kind:'collect',message:item.label||'수집 연결을 다시 해야 해요'}:row?.supported&&row.enabled&&!row.connected?{kind:'publish',message:'게시 권한을 다시 연결해야 해요',connectUrl}:null;
     // 직접 자동 게시를 켜고 끄는 단추의 근거(11-16). 옛 카드(snswDirectAccount)가 보던 provider.settings 줄과 같은 값이고, 직접 게시를 지원하는 계정에만 준다.
     // ready = 게시 권한은 확인됐고 켜기만 남았다. 메타 · 유튜브 판정(issue)은 「켜지 않음(NOT_CONFIGURED)」을 권한 검사 뒤 마지막에 보므로,
     // 켜기 전 계정은 권한이 있어도 connected가 거짓이고 그 코드만 남는다.
-    const direct=row?.supported===true?{canConfigure:row.canConfigure===true,enabled:row.enabled===true,connected:row.connected===true,ready:row.connected===true||row.errorCode==='NOT_CONFIGURED',connectUrl}:null;
+    // 켜 둔 계정도 OAuth를 다시 마치면(server.mjs가 connectionVersion을 올린다) 연결 기록이 어긋나 같은 코드가 된다 — 이때는 권한을 다시 연결해도
+    // 또 어긋나므로 「게시 권한 다시 연결」 안내(fix)를 내지 않고, 화면이 같은 켜기(provider/connect)로 다시 묶게 한다(카본 끝 판 A1).
+    const ready=row?.connected===true||row?.errorCode==='NOT_CONFIGURED',rebind=row?.supported===true&&row.enabled===true&&row.connected!==true&&ready;
+    const fix=item&&['reconnect','connect'].includes(item.action)?{kind:'collect',message:item.label||'수집 연결을 다시 해야 해요'}:row?.supported&&row.enabled&&!row.connected&&!rebind?{kind:'publish',message:'게시 권한을 다시 연결해야 해요',connectUrl}:null;
+    const direct=row?.supported===true?{canConfigure:row.canConfigure===true,enabled:row.enabled===true,connected:row.connected===true,ready,connectUrl}:null;
     const brand=brandOf(c),name=String(c.displayName||'');
     const known=mine.filter(p=>typeof p.views==='number'&&Number.isFinite(p.views));
     return {channelId:c.id,accountId:c.accountId,business:c.business,contentTrack:c.contentTrack,platform:c.platform,handle:atHandle(c.platform,c.handle),name:name==='유호'&&brand!=='유호'?'':name,brand,country:countryOf(c),publish,collect,externalCollection:c.externalCollection||null,collectionProgress:c.collectionProgress||null,posts30:mine.length,

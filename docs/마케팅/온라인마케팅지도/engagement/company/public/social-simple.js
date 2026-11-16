@@ -585,8 +585,11 @@ function ssCollectionProgress(row){
 // 직접 자동 게시 켜기 · 끄기(11-16). 서버 a.direct는 직접 게시를 지원하는 계정에만 오는 provider.settings 값이다(옛 카드 snswDirectAccount와 같은 근거).
 // 단추는 그 계정을 관리할 수 있는 사람(canConfigure)에게만 보이고, 누르면 옛 카드와 같은 POST /api/social/provider/connect · disconnect를 부른다.
 // 켜기는 서버가 게시 권한을 다시 확인한 뒤에만 켜진다. 끄기는 예약 게시가 멈추는 일이라 줄 안에서 한 번 더 묻는다.
+// 켜 둔 계정이 OAuth를 다시 마치면 연결 기록이 어긋나 게시가 멈춘다(enabled · !connected · ready) — 이때도 같은 켜기로 다시 묶는다(카본 끝 판 A1).
 // ui = {can, busy:채널ID, confirm:채널ID, note:{channelId,tone,message}, highlight:채널ID}
 function ssDirectConnectUrl(url){const s=typeof url==='string'?url:'';return /^\/api\/oauth\/[a-z]+\/start\?[^"'<>\s]*publishing=1/.test(s)?s:'';}
+const ssDirectRebind=d=>d?.enabled===true&&d.connected!==true&&d.ready===true;
+const ssDirectCanConnect=d=>d?.enabled!==true||ssDirectRebind(d);
 function ssAccDirect(a,ui={}){
   const d=a?.direct;if(!ui.can||!d||d.canConfigure!==true||!a.channelId)return {off:'',line:''};
   const id=ssEsc(a.channelId),mine=ui.busy===a.channelId,dis=ui.busy?' disabled':'',note=ui.note?.channelId===a.channelId?ui.note:null;
@@ -599,12 +602,13 @@ function ssAccDirect(a,ui={}){
     return {off:'',line:`<div class="ss-acc-direct"><span class="ss-acc-direct-text">${ssDot('butter')}<span>${ssEsc(text)}</span></span><span class="ss-acc-direct-actions">${link}<button class="ss-btn ss-btn-sm" type="button" data-ss-action="direct-connect" data-value="${id}"${dis}>${mine?'권한 확인하는 중…':'권한 확인 후 자동 게시 켜기'}</button></span>${noteHtml}</div>`};
   }
   const off=`<button class="ss-link ss-acc-off" type="button" data-ss-action="direct-off" data-value="${id}"${dis}>자동 게시 끄기</button>`;
+  if(ssDirectRebind(d)&&ui.confirm!==a.channelId)return {off,line:`<div class="ss-acc-direct is-confirm"><span class="ss-acc-direct-text">${ssDot('coral')}<span>${ssEsc('자동 게시를 켜 두었지만 계정 연결이 바뀌어 지금은 예약이 올라가지 않아요. 권한을 다시 확인하면 다시 켜져요.')}</span></span><span class="ss-acc-direct-actions"><button class="ss-btn ss-btn-sm" type="button" data-ss-action="direct-connect" data-value="${id}"${dis}>${mine?'권한 확인하는 중…':'권한 확인 후 자동 게시 켜기'}</button></span>${noteHtml}</div>`};
   if(ui.confirm===a.channelId)return {off,line:`<div class="ss-acc-direct is-confirm"><span class="ss-acc-direct-text">${ssDot('coral')}<span>${ssEsc('자동 게시를 끄면 승인된 예약이 이 계정에 자동으로 올라가지 않아요. 댓글과 채널 조회 연결은 그대로예요.')}</span></span><span class="ss-acc-direct-actions"><button class="ss-btn ss-btn-sm" type="button" data-ss-action="direct-disconnect" data-value="${id}"${dis}>${mine?'끄는 중…':'자동 게시 끄기'}</button><button class="ss-link" type="button" data-ss-action="direct-keep" data-value="${id}"${dis}>그대로 두기</button></span>${noteHtml}</div>`};
   return {off,line:note?`<div class="ss-acc-direct">${noteHtml}</div>`:''};
 }
 function ssAccRow(a,today='',progress=a.collectionProgress,ui={}){
   const td=typeof today==='string'?today:'',ext=a?.externalCollection||null,direct=ssAccDirect(a,ui);
-  // 자동 게시를 켜 두었는데 게시 권한이 끊긴 계정은 「안 켬」이 아니라 「권한 확인 필요」로 보인다(아래 줄에 「게시 권한 다시 연결」이 뜬다).
+  // 자동 게시를 켜 두었는데 게시 권한이 끊기거나 연결 기록이 어긋난 계정은 「안 켬」이 아니라 「권한 확인 필요」로 보인다(아래 줄에 고칠 길이 뜬다).
   const [tone,label]=a.publish==='자동 게시'?['green','자동 게시']:a.direct?.enabled===true&&a.direct.connected!==true?['coral','권한 확인 필요']:a.publish==='앱에서 직접'?['butter','앱에서 직접']:['','안 켬'];
   const chip=cls=>`<span class="ss-st${tone?' '+tone:''}${cls}">${tone?ssDot():''}${ssEsc(label)}</span>`;
   const pub=direct.off?`<span class="ss-acc-pub ss-acc-pub-stack">${chip('')}${direct.off}</span>`:chip(' ss-acc-pub');
@@ -733,7 +737,7 @@ function snsSimpleIdentity(){const key=typeof snswIdentityKey==='function'?snswI
 function ssCanDirect(){return !!state.user&&state.user.role!=='viewer'&&!(typeof isDemoMode==='function'&&isDemoMode());}
 async function ssDirectSet(action,channelId){
   const S=snsSimple,on=action==='direct-connect',d=(S.data?.accounts||[]).find(a=>a.channelId===channelId)?.direct;
-  if(S.direct.busy||!ssCanDirect()||!d||d.canConfigure!==true||(on?d.enabled===true:d.enabled!==true||S.direct.confirm!==channelId))return;
+  if(S.direct.busy||!ssCanDirect()||!d||d.canConfigure!==true||(on?!ssDirectCanConnect(d):d.enabled!==true||S.direct.confirm!==channelId))return;
   const identity=S.identity;let note=null;
   S.direct={...S.direct,busy:channelId,note:null};snswRender();
   try{

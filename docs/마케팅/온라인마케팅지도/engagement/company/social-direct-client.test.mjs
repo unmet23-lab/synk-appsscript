@@ -166,7 +166,7 @@ test('the row enable button calls provider/connect once, then rereads the simple
   f.click('direct-connect','uz');f.click('direct-connect','uz');await settle();
   assert.deepEqual(f.provider(),[{path:'/api/social/provider/connect',body:{channelId:'uz'}}],'두 번 눌러도 한 번만 보낸다');
   assert.match(f.row('uz'),/권한 확인하는 중…/);assert.match(f.row('uz'),/ disabled/);
-  f.accounts[0]={...f.accounts[0],publish:'자동 게시',direct:{...f.accounts[0].direct,enabled:true}};
+  f.accounts[0]={...f.accounts[0],publish:'자동 게시',direct:{...f.accounts[0].direct,enabled:true,connected:true}};
   release();await settle();
   assert.equal(f.requests.at(-1).path,'/api/social/simple','켠 뒤 간편판 자료를 다시 읽는다');
   const after=f.row('uz');
@@ -193,7 +193,8 @@ test('disabling asks once more inside the row and only then calls provider/disco
   assert.equal(f.provider().length,0);
   const confirm=f.row('yt');
   assert.match(confirm,/자동 게시를 끄면 승인된 예약이 이 계정에 자동으로 올라가지 않아요/);
-  assert.match(confirm,/data-ss-action="direct-keep"/);
+  assert.match(confirm,/data-ss-action="direct-disconnect" data-value="yt">자동 게시 끄기</,'확인 줄에 실제로 끄는 단추가 그려진다(카본 끝 판 C1)');
+  assert.match(confirm,/data-ss-action="direct-keep" data-value="yt"/);
   f.click('direct-keep','yt');assert.doesNotMatch(f.row('yt'),/자동 게시를 끄면/);
   f.click('direct-off','yt');f.accounts[1]={...f.accounts[1],publish:'안 켬',direct:{...f.accounts[1].direct,enabled:false}};
   f.click('direct-disconnect','yt');await settle();
@@ -202,13 +203,40 @@ test('disabling asks once more inside the row and only then calls provider/disco
   assert.match(f.row('yt'),/권한 확인 후 자동 게시 켜기/);
 });
 
-test('returning from publishing consent highlights that account row and the highlight leaves with the screen',()=>{
+test('returning from publishing consent opens the fold around that row, focuses its enable button and the highlight leaves with the screen',()=>{
   const f=simpleFixture();
+  assert.doesNotMatch(f.run('snsSimpleRender("accounts")'),/is-focus/,'돌아오기 전에는 강조가 없다');
   f.run("snsSimpleFocus('uz')");
-  assert.match(f.row('uz'),/^data-ss-channel="uz"/);
   assert.match(f.run('snsSimpleRender("accounts")'),/class="ss-acc is-focus" data-ss-channel="uz"/);
+  // 그린 뒤 ssFocusRow가 하는 일을 가짜 DOM으로 본다(카본 끝 판 C2): 그 줄의 접힘을 열고, 줄로 옮기고, 켜기 단추에 초점을 둔다.
+  const seen={scrolled:0,focused:0},fold={open:false},button={focus(){seen.focused++;}};
+  const rows=['yh','uz'].map(id=>({dataset:{ssChannel:id},closest:sel=>sel==='details'&&id==='uz'?fold:null,scrollIntoView(){if(id==='uz')seen.scrolled++;},querySelector:sel=>sel==='[data-ss-action="direct-connect"]'&&id==='uz'?button:null}));
+  f.context.document.querySelectorAll=selector=>selector==='.sw-simple [data-ss-channel]'?rows:[];
+  f.run('ssFocusRow()');
+  assert.deepEqual([fold.open,seen.scrolled,seen.focused],[true,1,1]);
+  assert.equal(f.run('snsSimple.direct.focus'),'','한 번만 옮긴다');
+  f.run('ssFocusRow()');assert.equal(seen.scrolled,1);
   f.run('snsSimpleRender("today")');
   assert.doesNotMatch(f.run('snsSimpleRender("accounts")'),/is-focus/);
+});
+
+test('an enabled account whose binding went stale after a new consent offers the same enable again instead of a dead end (카본 끝 판 A1)',async()=>{
+  const f=simpleFixture();
+  const stale={canConfigure:true,enabled:true,connected:false,ready:true,connectUrl:null};
+  f.run(`Object.assign(snsSimple.data.accounts[1],{publish:'안 켬',direct:${JSON.stringify(stale)}})`);
+  const yt=f.row('yt');
+  assert.match(yt,/ss-st coral">.*권한 확인 필요/);
+  assert.match(yt,/계정 연결이 바뀌어 지금은 예약이 올라가지 않아요/);
+  assert.match(yt,/data-ss-action="direct-connect" data-value="yt"[^>]*>권한 확인 후 자동 게시 켜기</);
+  assert.match(yt,/data-ss-action="direct-off" data-value="yt"/,'끄기도 그대로 둔다');
+  f.accounts[1]={...f.accounts[1],publish:'자동 게시',direct:{...stale,connected:true}};
+  f.click('direct-connect','yt');await settle();
+  assert.deepEqual(f.provider(),[{path:'/api/social/provider/connect',body:{channelId:'yt'}}]);
+  assert.doesNotMatch(f.row('yt'),/계정 연결이 바뀌어/);
+  f.run(`snsSimple.data.accounts[1].direct=${JSON.stringify({...stale,ready:false})}`);
+  assert.doesNotMatch(f.row('yt'),/direct-connect/,'권한이 끊긴 계정(ready 거짓)은 권한을 다시 연결하는 길만 남긴다');
+  f.click('direct-connect','yt');await settle();
+  assert.equal(f.provider().length,1);
 });
 
 test('the simple server sends the direct publishing state only for supported accounts',async()=>{
@@ -246,4 +274,12 @@ test('HTTP: a consented Instagram account reads ready in the simple view, and th
   assert.equal((await api(admin,'/api/social/provider/disconnect',{channelId:'uz'})).status,200);
   uz=await row();
   assert.deepEqual([uz.publish,uz.direct.enabled,uz.direct.ready],['안 켬',false,true],'끈 뒤에도 권한은 그대로라 다시 켤 수 있다');
+  // 켜 둔 계정이 OAuth를 다시 마치면 서버가 connectionVersion을 올려 연결 기록이 어긋난다(카본 끝 판 A1) — 같은 켜기로 다시 묶인다.
+  assert.equal((await api(admin,'/api/social/provider/connect',{channelId:'uz'})).status,200);
+  app.store.put('channels','uz',{...app.store.get('channels','uz'),connectionVersion:2});
+  uz=await row();
+  assert.deepEqual([uz.publish,uz.direct.enabled,uz.direct.connected,uz.direct.ready,uz.fix],['안 켬',true,false,true,null],'권한을 다시 연결해도 또 어긋나므로 「게시 권한 다시 연결」 안내를 내지 않는다');
+  assert.equal((await api(admin,'/api/social/provider/connect',{channelId:'uz'})).status,200);
+  uz=await row();
+  assert.deepEqual([uz.publish,uz.direct.enabled,uz.direct.connected],['자동 게시',true,true]);
 });
