@@ -5,7 +5,6 @@ import {resolve,dirname} from 'node:path';
 import {spawn} from 'node:child_process';
 import vm from 'node:vm';
 import {STUDIO_MEDIA_LIMIT,validMediaSignature} from './studio-media.mjs';
-import {ensureLocalMedia} from './studio-media-cloud.mjs';
 import {DELIVERY_SUBTITLE_LIMIT} from './client-delivery-media.mjs';
 
 // Only the fixed, local parser is evaluated. Uploaded subtitle text is data.
@@ -84,7 +83,6 @@ export function createDeliveryFileInspector({directory,ffprobe=process.env.SYNK_
     if(dirname(path)!==root)return {error:outcome('corrupt','invalid_path','저장된 파일 경로를 확인해 주세요.')};
     let handle,retained=false;
     try{
-      await ensureLocalMedia(directory,media.diskName);
       const rootInfo=await lstat(root),info=await lstat(path,{bigint:true});
       if(!rootInfo.isDirectory()||rootInfo.isSymbolicLink()||!info.isFile()||info.isSymbolicLink()||dirname(await realpath(path))!==await realpath(root))return {error:outcome('corrupt','invalid_path','저장된 파일 경로가 변경되었습니다.')};
       if(info.size!==BigInt(media.byteSize)||info.size<1n||info.size>BigInt(limit))return {error:outcome('corrupt','size_changed','저장된 파일 크기가 변경되었습니다. 다시 올려 주세요.')};
@@ -98,22 +96,17 @@ export function createDeliveryFileInspector({directory,ffprobe=process.env.SYNK_
         if(!current.isFile()||current.isSymbolicLink()||['dev','ino','size','mtimeNs','ctimeNs'].some(key=>after[key]!==opened[key]||current[key]!==opened[key]))return {error:outcome('corrupt','file_changed','검사 중 파일이 변경되었습니다. 다시 확인해 주세요.')};
         return {cached:structuredClone(previous.result)};
       };
-      // A same-tick write can keep every timestamp (an NTFS tick lasts up to
-      // 15.6ms; Linux stamps coarse jiffies), so only timestamps older than this
-      // one-second guard can reveal a write. Until then a second hash pass must
-      // match before a cached result or FFprobe uses the bytes, and a cache entry
-      // made then is hashed again before timestamps alone are trusted. No reader
-      // can tell a write into bytes not yet read from stored content; the hash
-      // then covers those new bytes, as the probe does.
-      const stableBefore=BigInt(Date.now()-1000)*1000000n,settled=opened.mtimeNs<stableBefore&&opened.ctimeNs<stableBefore;
-      if(!force&&previous?.key===cacheKey&&previous.settled&&settled)return await cachedResult();
+      // A same-tick Windows write can preserve both timestamps. Fresh files must
+      // still match their cached SHA256. A one-second timestamp age guard avoids
+      // recent same-tick cache collisions without delaying any inspection.
+      const stableBefore=BigInt(Date.now()-1000)*1000000n;
+      if(!force&&previous?.key===cacheKey&&opened.mtimeNs<stableBefore&&opened.ctimeNs<stableBefore)return await cachedResult();
       cache.delete(media.diskName);
-      const subtitle=type.kind==='subtitle',source=await readVerified(handle,opened,{subtitle});if(source.error)return source;
+      const source=await readVerified(handle,opened,{subtitle:type.kind==='subtitle'});if(source.error)return source;
       const {evidence}=source;
-      if(!settled){const again=await readVerified(handle,opened,{subtitle,readBuffer:source.readBuffer});if(again.error)return again;if(again.evidence.sha256!==evidence.sha256)return {error:outcome('corrupt','file_changed','검사 중 파일이 변경되었습니다. 다시 확인해 주세요.')};}
-      if(!subtitle&&!validMediaSignature(media.mimeType,source.head))return {error:outcome('corrupt','signature_mismatch','파일 내용이 등록된 형식과 다릅니다.',evidence)};
-      if(!force&&previous?.key===cacheKey&&previous.result.sha256===evidence.sha256){const result=await cachedResult();if(result.cached)cache.set(media.diskName,{...previous,settled});return result;}
-      retained=!subtitle;return {type,evidence,cacheKey,settled,...(retained?{handle,path,readBuffer:source.readBuffer}:{bytes:source.bytes}),identity:opened};
+      if(type.kind!=='subtitle'&&!validMediaSignature(media.mimeType,source.head))return {error:outcome('corrupt','signature_mismatch','파일 내용이 등록된 형식과 다릅니다.',evidence)};
+      if(!force&&previous?.key===cacheKey&&previous.result.sha256===evidence.sha256){const result=await cachedResult();if(result.cached)cache.set(media.diskName,previous);return result;}
+      retained=type.kind!=='subtitle';return {type,evidence,cacheKey,...(retained?{handle,path,readBuffer:source.readBuffer}:{bytes:source.bytes}),identity:opened};
     }catch(error){
       return {error:['ENOENT','ENOTDIR'].includes(error.code)?outcome('unavailable','missing','저장된 파일을 찾을 수 없습니다.'):outcome('unavailable','file_unavailable','저장된 파일을 읽지 못했습니다. 접근 권한과 파일 상태를 확인해 주세요.')};
     }finally{if(!retained)await handle?.close().catch(()=>{});}
@@ -151,7 +144,7 @@ export function createDeliveryFileInspector({directory,ffprobe=process.env.SYNK_
   async function inspectFile(media,options){
     const source=await bytesFor(media,options);if(closing){await source.handle?.close().catch(()=>{});return stopped();}if(source.error)return source.error;if(source.cached)return source.cached;
     const {bytes,type,evidence}=source;
-    const remember=result=>{if(result.status==='inspected'){if(cache.size>=128)cache.delete(cache.keys().next().value);cache.set(media.diskName,{key:source.cacheKey,settled:source.settled,result:structuredClone(result)});}return result;};
+    const remember=result=>{if(result.status==='inspected'){if(cache.size>=128)cache.delete(cache.keys().next().value);cache.set(media.diskName,{key:source.cacheKey,result:structuredClone(result)});}return result;};
     if(type.kind==='subtitle'){
       let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{return outcome('corrupt','subtitle_encoding','자막을 UTF-8 형식으로 저장한 뒤 다시 올려 주세요.',evidence);}
       let report;try{report=inspectSubtitles(text,{fileName:'subtitle.'+type.extension});}catch{return outcome('corrupt','subtitle_invalid','자막의 시간과 내용을 확인해 주세요.',evidence);}

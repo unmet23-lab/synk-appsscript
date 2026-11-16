@@ -1,13 +1,10 @@
 import {randomUUID,createHash} from 'node:crypto';
-import {websiteInquiryView} from './social-inquiries.mjs';
 import {readFile,lstat,realpath} from 'node:fs/promises';
 import {resolve,dirname} from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {canReadChannel,canWriteChannel,canManageOwners,visibleMembers} from './organization.mjs';
 import {validMediaSignature,STUDIO_MEDIA_LIMIT} from './studio-media.mjs';
-import {ensureLocalMedia,mediaPresent} from './studio-media-cloud.mjs';
-import {lstatSync} from 'node:fs';
 import {inboxReplyState} from './social-reply-observations.mjs';
 import {normalizePerformancePostUrl} from './post-performance.mjs';
 // A post address in one canonical form (reel and /p/, youtu.be and watch, query strings) so a published job meets its record.
@@ -44,7 +41,7 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
     for(const row of store.all('socialInbox')){
       if(!channels.has(row.channelId))channels.set(row.channelId,store.get('channels',row.channelId));const c=channels.get(row.channelId);
       if(!c||c.active===false||c.hidden===true||!canReadChannel(user,c))continue;
-      const {metaReplyProofIds,metaReplyCompleteAt,metaAccountReply,...publicRow}=row;items.push({...websiteInquiryView(store,publicRow,clock),...inboxReplyState(row,c),canEdit:canWriteChannel(user,c)});
+      const {metaReplyProofIds,metaReplyCompleteAt,metaAccountReply,...publicRow}=row;items.push({...publicRow,...inboxReplyState(row,c),canEdit:canWriteChannel(user,c)});
     }
     return items.sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
   }
@@ -54,17 +51,17 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
     const c=channel(user,old?.channelId||input.channelId,true);
     if(old&&input.revision!==old.revision)throw fail('다른 사람이 문의를 먼저 수정했어요. 새로고침해 주세요.',409);
     if(old&&input.channelId&&input.channelId!==old.channelId)throw fail('문의가 들어온 계정은 바꿀 수 없어요.');
-    const imported=old?.source&&old.source!=='manual',original=imported?websiteInquiryView(store,old,clock):old;
-    if(imported&&['text','author','url','kind','postId'].some(key=>input[key]!=null&&input[key]!==original[key]))throw fail('수집한 문의 원문은 바꿀 수 없어요. 담당자·처리 상태·답변 초안만 고쳐 주세요.');
+    const imported=old?.source&&old.source!=='manual';
+    if(imported&&['text','author','url','kind','postId'].some(key=>input[key]!=null&&input[key]!==old[key]))throw fail('수집한 문의 원문은 바꿀 수 없어요. 담당자·처리 상태·답변 초안만 고쳐 주세요.');
     const assigneeId=clean(input.assigneeId??old?.assigneeId??user.id,100),assignee=store.get('users',assigneeId);
     if(!assignee?.active||!canWriteChannel(assignee,c))throw fail('이 계정을 담당할 수 있는 크루를 선택해 주세요.');
     const status=input.status??old?.status??'open';if(!['open','assigned','resolved'].includes(status))throw fail('문의 상태를 확인해 주세요.');
     const kind=input.kind??old?.kind??'comment';if(!['comment','message','mention'].includes(kind))throw fail('문의 종류를 확인해 주세요.');
-    const text=clean(imported?old.text:input.text??old?.text,10000);if(!text)throw fail('문의 내용을 입력해 주세요.');
+    const text=clean(input.text??old?.text,10000);if(!text)throw fail('문의 내용을 입력해 주세요.');
     const postId=clean(input.postId??old?.postId,100);
     if(postId&&!imported){const post=store.get('socialPosts',postId);if(!post?.variants?.some(v=>v.channelId===c.id)||!post.variants.every(v=>{const target=store.get('channels',v.channelId);return target&&target.active!==false&&!target.hidden&&canReadChannel(user,target);}))throw fail('접근 가능한 이 계정의 게시물을 연결해 주세요.');}
-    const row={...old,id:old?.id||randomUUID(),revision:(old?.revision||0)+1,channelId:c.id,postId,kind,author:clean(imported?old.author:input.author??old?.author,120),text,url:href(input.url??old?.url),status,assigneeId,replyDraft:clean(input.replyDraft??old?.replyDraft,10000),source:old?.source||'manual',outboundSent:old?.outboundSent===true,createdBy:old?.createdBy||user.id,createdAt:old?.createdAt||clock(),updatedAt:clock()};
-    store.put('socialInbox',row.id,row);return {item:websiteInquiryView(store,row,clock)};
+    const row={...old,id:old?.id||randomUUID(),revision:(old?.revision||0)+1,channelId:c.id,postId,kind,author:clean(input.author??old?.author,120),text,url:href(input.url??old?.url),status,assigneeId,replyDraft:clean(input.replyDraft??old?.replyDraft,10000),source:old?.source||'manual',outboundSent:old?.outboundSent===true,createdBy:old?.createdBy||user.id,createdAt:old?.createdAt||clock(),updatedAt:clock()};
+    store.put('socialInbox',row.id,row);return {item:row};
   }
   function clientReference(user,id){
     const stored=store.all('clientProjects').find(p=>p.versions?.some(v=>v.media?.id===id));
@@ -90,10 +87,7 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
     if(refs.some(ref=>!ref||typeof ref!=='object'||Array.isArray(ref)))throw fail('미디어 입력을 확인해 주세요.');
     return refs;
   }
-  async function bytesFor(media,{read=true}={}){const root=resolve(store.directory,'studio-media');if(!/^[a-f0-9-]{36}\.(mp4|webm|png|jpg)$/.test(media.diskName||''))throw fail('미디어 경로를 확인해 주세요.',409);const path=resolve(root,media.diskName);
-    // 읽을 때는 버킷에서 받아 놓고, 메타데이터만 볼 때는 버킷에 확인된 같은 크기의 파일이면 받지 않는다(작업실 영상 클라우드 설계 3판 6절).
-    if(read)await ensureLocalMedia(store.directory,media.diskName);else if(mediaPresent(store.directory,media.diskName,media.byteSize)===true){try{lstatSync(path);}catch{return {fileName:media.fileName,mimeType:media.mimeType,sha256:media.sha256||null};}}
-    const info=await lstat(path);if(dirname(path)!==root||info.isSymbolicLink()||!info.isFile()||info.size>STUDIO_MEDIA_LIMIT||info.size!==media.byteSize||dirname(await realpath(path))!==await realpath(root))throw fail('저장된 미디어 파일이 바뀌었어요.',409);if(!read)return {fileName:media.fileName,mimeType:media.mimeType,sha256:media.sha256||null};const bytes=await readFile(path);if(!validMediaSignature(media.mimeType,bytes.subarray(0,4096)))throw fail('미디어 파일 형식을 확인해 주세요.',409);const sum=media.sha256?digest(bytes):null;if(media.sha256&&sum!==media.sha256)throw fail('예약에 쓴 미디어가 바뀌었어요.',409);return {bytes,fileName:media.fileName,mimeType:media.mimeType,sha256:sum};}
+  async function bytesFor(media,{read=true}={}){const root=resolve(store.directory,'studio-media');if(!/^[a-f0-9-]{36}\.(mp4|webm|png|jpg)$/.test(media.diskName||''))throw fail('미디어 경로를 확인해 주세요.',409);const path=resolve(root,media.diskName),info=await lstat(path);if(dirname(path)!==root||info.isSymbolicLink()||!info.isFile()||info.size>STUDIO_MEDIA_LIMIT||info.size!==media.byteSize||dirname(await realpath(path))!==await realpath(root))throw fail('저장된 미디어 파일이 바뀌었어요.',409);if(!read)return {fileName:media.fileName,mimeType:media.mimeType,sha256:media.sha256||null};const bytes=await readFile(path);if(!validMediaSignature(media.mimeType,bytes.subarray(0,4096)))throw fail('미디어 파일 형식을 확인해 주세요.',409);const sum=media.sha256?digest(bytes):null;if(media.sha256&&sum!==media.sha256)throw fail('예약에 쓴 미디어가 바뀌었어요.',409);return {bytes,fileName:media.fileName,mimeType:media.mimeType,sha256:sum};}
   async function inspect(media,{signal}={}){const data=await bytesFor(media),out={sha256:digest(data.bytes)};try{const {stdout}=await run(ffprobe,['-v','error','-protocol_whitelist','file,pipe','-show_entries','stream=codec_type,width,height:stream_tags=rotate:stream_side_data=rotation:format=duration','-of','json',resolve(store.directory,'studio-media',media.diskName)],{windowsHide:true,timeout:20000,maxBuffer:1024*1024,signal});const parsed=JSON.parse(stdout),v=parsed.streams?.find(s=>s.codec_type==='video');if(!v?.width||!v?.height)throw new Error('missing');const rotate=Number(v.side_data_list?.find(x=>x.rotation!==undefined)?.rotation??v.tags?.rotate??0);out.width=Math.abs(rotate)%180===90?v.height:v.width;out.height=Math.abs(rotate)%180===90?v.width:v.height;if(media.mimeType.startsWith('video/')){out.duration=Number(parsed.format?.duration);if(!Number.isFinite(out.duration)||out.duration<=0)throw new Error('duration');}out.inspection='verified';}catch{if(signal?.aborted)throw fail('미디어 준비가 중단됐어요.',409);throw fail('영상·이미지 규격을 읽지 못했어요. 재생되는 파일인지, 서버에 FFprobe가 설치돼 있는지 확인해 주세요.',422);}return out;}
   async function addMedia(user,metadata,{authorize=()=>user}={}){user=current(user,true);const inspected=await inspect(metadata);const live=current(authorize(),true);if(live.id!==user.id)throw fail('로그인 상태를 확인해 주세요.',401);const row={...metadata,...inspected,ownerId:user.id,teamId:live.teamId||null,createdAt:clock()};store.put('socialMedia',row.id,row);return {asset:safeAsset(row)};}
   async function prepareMedia(user,ids,{authorize=()=>user,signal}={}){
