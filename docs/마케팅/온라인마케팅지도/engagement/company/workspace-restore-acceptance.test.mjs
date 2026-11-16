@@ -249,6 +249,36 @@ test('a backup that left verified bodies in the media bucket is accepted only af
   assert.deepEqual((await accept(candidate)).issues,['MEDIA_LIST_BYTES_MISMATCH']);
 });
 
+// 카본 끝 판 C3(2026-11-17): 목록이 없는 복사 방식 백업도 클라우드 목록을 이 스냅숏의 시각에 묶는다. 같은 이름을 다시 올린 「~n」 객체는 받아들이고, 대소문자가 다른 이름은 거절한다.
+test('a copy-mode backup binds its cloud list to the snapshot time and accepts a numbered object of the same name',async t=>{
+  const f=await fixture(t),body=Buffer.from('synthetic-media'),digest=createHash('sha256').update(body).digest('hex');
+  const store=new Store(f.companyDir);
+  try{store.put('studioMediaCloud',f.media,{diskName:f.media,state:'verified',bucket:'synk-company-media-123456789012',object:'studio-media/'+f.media+'~1',generation:'1778',bytes:body.length,sha256:digest,md5:createHash('md5').update(body).digest('base64')});}finally{store.close();}
+  const candidate=await backupWorkspace({destination:join(f.root,'copy-cloud-candidate'),companyDataDir:f.companyDir,media:'copy'});
+  const baseline=await backupWorkspace({destination:join(f.root,'copy-cloud-baseline'),companyDataDir:f.companyDir,media:'copy'});
+  const written=JSON.parse(await readFile(join(candidate,'media-cloud.json'),'utf8')),integration=JSON.parse(await readFile(join(candidate,'integration-manifest.json'),'utf8'));
+  assert.equal(written.manifestSha256,null);assert.equal(written.createdAt,integration.createdAt);assert.equal(written.files[0].object,'studio-media/'+f.media+'~1');
+  await assert.rejects(access(join(candidate,'media-manifest.json')),{code:'ENOENT'});
+  for(const folder of [candidate,baseline]){await mkdir(join(folder,'company','studio-media'),{recursive:true});await writeFile(join(folder,'company','studio-media',f.media),body);}
+  const accept=async candidateDirectory=>acceptWorkspaceRestore({candidateDirectory,baselineDirectory:baseline,freshnessEvidence:await f.evidence(baseline)});
+  const hydrated=await accept(candidate);assert.equal(hydrated.status,'candidate-matches-declared-baseline',JSON.stringify(hydrated));
+  const edits={
+    createdAt:cloud=>{cloud.createdAt='2000-01-01T00:00:00Z';},
+    listDigest:cloud=>{cloud.manifestSha256='0'.repeat(64);},
+    numberZero:cloud=>{cloud.files[0].object='studio-media/'+f.media+'~0';},
+    numberTooLong:cloud=>{cloud.files[0].object='studio-media/'+f.media+'~10000';},
+    upperName:cloud=>{cloud.files[0].object='studio-media/'+f.media.toUpperCase();},
+    upperFolder:cloud=>{cloud.files[0].object='STUDIO-MEDIA/'+f.media;},
+    md5:cloud=>{cloud.files[0].md5=cloud.files[0].md5.replace(/==$/,'=A');},
+  };
+  for(const [mode,change] of Object.entries(edits)){
+    const copy=await f.clone('copy-cloud-'+mode,candidate),file=join(copy,'media-cloud.json'),cloud=JSON.parse(await readFile(file,'utf8'));change(cloud);await writeFile(file,JSON.stringify(cloud));
+    assert.deepEqual((await accept(copy)).issues,['MEDIA_CLOUD_INVALID'],mode);
+  }
+  await writeFile(join(candidate,'company','studio-media',f.media),Buffer.concat([body,Buffer.from('!')]));
+  assert.deepEqual((await accept(candidate)).issues,['MEDIA_LIST_BYTES_MISMATCH']);
+});
+
 test('persona photos, revisions and tombstone hashes retain their non-vault classification during restore',async t=>{
   const f=await fixture(t),photo='71234567-1234-4234-8234-123456789abc.png',revision='81234567-1234-4234-8234-123456789abc.png',removed='91234567-1234-4234-8234-123456789abc.mp4';
   const bodies=new Map([[photo,'synthetic-persona-photo'],[revision,'synthetic-persona-revision'],[removed,'synthetic-removed-copy']]);

@@ -9,7 +9,7 @@
 // 없거나 못 읽으면 off다. off여도 받아 놓기와 하루 대조(읽기)는 돈다. 백업이 버킷을 가리킬지는 스위치가 아니라 장부로 정한다.
 import {createHash,randomUUID} from 'node:crypto';
 import {constants,lstatSync,unlinkSync} from 'node:fs';
-import {lstat,open,readFile,rename,statfs,unlink,readdir} from 'node:fs/promises';
+import {lstat,mkdir,open,readFile,rename,statfs,unlink,readdir} from 'node:fs/promises';
 import {join,resolve,dirname,basename} from 'node:path';
 import {pipeline} from 'node:stream/promises';
 import {Readable,Writable} from 'node:stream';
@@ -114,7 +114,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
   const o={...DEFAULTS,...options},root=resolve(directory,'studio-media'),switchPath=join(resolve(directory),SWITCH_FILE);
   let abort=new AbortController();
   gcs=gcs||gcsClient({credentials});
-  const lastUse=new Map(),inflight=new Map(),fetching=new Set();let bucketName=options.bucket||null,mode={mode:'off',cacheBytes:o.cacheBytes},modeReadAt=0,ticking=null,timers=[],stopped=false;
+  const lastUse=new Map(),inflight=new Map(),fetching=new Set(),failedAt=new Map();let bucketName=options.bucket||null,mode={mode:'off',cacheBytes:o.cacheBytes},modeReadAt=0,ticking=null,timers=[],stopped=false;
   const status={lastTickAt:null,lastUploadAt:null,lastErrorAt:null,lastError:null,lastReconcileAt:null,reconcile:null,lowSpace:false};
   const pathOf=name=>{if(!MEDIA_NAME.test(name))throw notFound();const path=resolve(root,name);if(dirname(path)!==root)throw notFound();return path;};
   const ledger=name=>store.get(MEDIA_CLOUD_KIND,name);
@@ -123,16 +123,21 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
   function noteError(error){status.lastErrorAt=new Date(clock()).toISOString();status.lastError=String(error?.code||error?.message||error).slice(0,120);log('media-cloud',status.lastError);}
 
   // 스위치는 1분마다 다시 읽는다. 링크, 다른 소유자, 0600이 아닌 파일, 깨진 JSON은 off다.
-  async function readMode(){
-    if(clock()-modeReadAt<o.tickMs/2&&modeReadAt)return mode;modeReadAt=clock();
+  // 읽는 중인 다른 호출은 같은 읽기를 기다린다. 읽은 시각은 다 읽은 뒤 적는다(카본 끝 판 B6).
+  let modeReading=null;
+  function readMode(){
+    if(modeReadAt&&clock()-modeReadAt<o.tickMs/2)return Promise.resolve(mode);
+    if(!modeReading)modeReading=readSwitch().then(next=>{mode=next;modeReadAt=clock();return mode;}).finally(()=>{modeReading=null;});
+    return modeReading;
+  }
+  async function readSwitch(){
     try{const info=await lstat(switchPath);
       const owned=process.platform==='win32'||(info.uid===process.getuid?.()&&(info.mode&0o777)===0o600);
       if(!info.isFile()||info.nlink!==1||!owned||info.size>4096)throw new Error('switch');
       const body=JSON.parse(await readFile(switchPath,'utf8'));if(!MODES.includes(body?.mode))throw new Error('switch');
       const cacheBytes=body.cacheBytes==null?o.cacheBytes:Number(body.cacheBytes);if(!Number.isSafeInteger(cacheBytes)||cacheBytes<o.minCacheBytes||cacheBytes>1024*GiB)throw new Error('switch');
-      mode={mode:body.mode,cacheBytes};}
-    catch{mode={mode:'off',cacheBytes:o.cacheBytes};}
-    return mode;
+      return {mode:body.mode,cacheBytes};}
+    catch{return {mode:'off',cacheBytes:o.cacheBytes};}
   }
 
   async function freeBytes(){const info=await statfs(root).catch(()=>statfs(resolve(directory)));return Number(info.bavail)*Number(info.bsize);}
@@ -161,7 +166,9 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
   // 받아 놓기: 장부가 verified일 때만. 임시 이름에 받아 대조한 뒤 원래 이름이 없을 때 rename으로 놓는다(링크 수는 늘 1).
   async function fetchOne(name,row,{urgentEvict=false}={}){
     const path=pathOf(name);
-    if((await freeBytes())-row.bytes<o.floorBytes){if(urgentEvict)await evict({urgent:true});if((await freeBytes())-row.bytes<o.floorBytes)throw busy();}
+    const short=o.floorBytes-((await freeBytes())-row.bytes);
+    if(short>0){if(urgentEvict)await evict({urgent:true,needBytes:short});if((await freeBytes())-row.bytes<o.floorBytes)throw busy();}
+    await mkdir(root,{recursive:true,mode:0o700});  // 영상 폴더가 없는 복원 직후에도 받는다(카본 끝 판 B1)
     const temporary=join(root,'.fetch-'+randomUUID());fetching.add(basename(temporary));let handle;
     try{handle=await open(temporary,'wx',0o600);}catch(error){fetching.delete(basename(temporary));throw error;}let closed=false;
     try{
@@ -174,8 +181,10 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       if(await occupied(path)){await unlink(temporary).catch(()=>{});return;}
       await rename(temporary,path);
       // 받는 사이에 고객이 지웠으면(문서가 먼저 빠지고 unlink는 ENOENT로 지나감) 놓은 파일을 같은 틱에서 지운다 — 지운 자료가 되살아나지 않게(3판 검토 1).
-      if(!new Set(namesOf()).has(name)){unlinkSync(path);return;}
-      const placed=lstatSync(path);writeLedger(name,{...row,localStamp:stampOf(placed)});
+      // rename 뒤 같은 틱 전에 삭제가 돌아 이미 지워졌으면(ENOENT) 던지지 않고 돌아간다(카본 끝 판 B2).
+      if(!new Set(namesOf()).has(name)){try{unlinkSync(path);}catch(error){if(error?.code!=='ENOENT')throw error;}return;}
+      let placed;try{placed=lstatSync(path);}catch(error){if(error?.code==='ENOENT')return;throw error;}
+      writeLedger(name,{...row,localStamp:stampOf(placed)});
     }catch(error){if(!closed)await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
     finally{fetching.delete(basename(temporary));}
   }
@@ -204,7 +213,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
   function ledgerSha(name){const row=ledger(name);return row?.state==='verified'?row.sha256:null;}
 
   // 비우기: 캐시 상한을 넘을 때만. 메타데이터를 대조한 뒤 같은 틱에서 다시 보고 unlinkSync한다.
-  async function evict({urgent=false}={}){
+  async function evict({urgent=false,needBytes=0}={}){
     const {mode:current,cacheBytes}=await readMode();if(current!=='evict')return {removed:0};
     const drafts=new Set(draftNamesOf?draftNamesOf():draftNames()),now=clock(),idle=urgent?o.urgentIdleMs:o.idleMs,cached=[];let total=0;
     for(const row of store.all(MEDIA_CLOUD_KIND)){
@@ -213,9 +222,10 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       total+=Number(info.size);cached.push({name,row,info,used:Math.max(lastUse.get(name)||0,Date.parse(row.lastUsedAt||'')||0,Math.trunc(Number(info.mtimeMs)))});
     }
     if(!urgent&&total<=cacheBytes)return {removed:0,total};
-    cached.sort((a,b)=>a.used-b.used);let removed=0;
+    cached.sort((a,b)=>a.used-b.used);let removed=0,freed=0;
     for(const item of cached){
       if(!urgent&&total<=cacheBytes)break;
+      if(urgent&&needBytes>0&&freed>=needBytes)break;  // 급한 비우기는 필요한 만큼만(카본 끝 판 B4)
       const {name,row,info}=item;
       if(!EVICTABLE.has(extensionOf(name))||Number(info.size)<o.minEvictBytes||drafts.has(name)||now-item.used<idle)continue;
       if(!sameStamp(stampOf(info),row.localStamp))continue;
@@ -225,7 +235,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       const usedNow=lastUse.get(name)||0;if(clock()-usedNow<o.recentMs&&usedNow)continue;
       let again;try{again=lstatSync(pathOf(name));}catch{continue;}
       if(!sameStamp(stampOf(again),row.localStamp)||inflight.has(name))continue;
-      unlinkSync(pathOf(name));total-=Number(again.size);removed++;
+      unlinkSync(pathOf(name));total-=Number(again.size);freed+=Number(again.size);removed++;
     }
     return {removed,total};
   }
@@ -240,14 +250,17 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       status.lastTickAt=new Date(clock()).toISOString();const {mode:current}=await readMode();if(current==='off')return {skipped:'off'};
       const names=namesOf(),began=clock(),uploaded=[];
       // 한 번에 45초 또는 20개까지 올린다(처음 172개 남짓을 몇 분에 채운다).
+      // 파일 하나가 실패해도 다음 이름으로 간다. 실패한 이름은 10분 동안 다시 시도하지 않는다(카본 끝 판 B5).
+      const failed=[],resting=name=>clock()-(failedAt.get(name)||-Infinity)<10*60000;
       for(const name of names){
-        if(stopped||uploaded.length>=20||clock()-began>45000)break;if(!MEDIA_NAME.test(name))continue;const row=ledger(name);if(row)continue;
-        try{if(await exists(pathOf(name))){await uploadOne(name);uploaded.push(name);}}catch(error){noteError(error);return {uploaded,failed:name};}
+        if(stopped||uploaded.length>=20||clock()-began>45000)break;if(!MEDIA_NAME.test(name)||resting(name))continue;const row=ledger(name);if(row)continue;
+        try{if(await exists(pathOf(name))){await uploadOne(name);uploaded.push(name);}}catch(error){noteError(error);failedAt.set(name,clock());failed.push(name);}
       }
-      if(uploaded.length)return {uploaded};
+      if(uploaded.length||failed.length)return {uploaded,...(failed.length?{failed}:{})};
       if(current==='hydrate'){
-        for(const name of names){if(stopped||!MEDIA_NAME.test(name))continue;const row=ledger(name);if(row?.state!=='verified')continue;
-          try{if(await occupied(pathOf(name)))continue;await ensureLocal(name);if(await exists(pathOf(name)))return {hydrated:name};}catch(error){noteError(error);return {failed:name};}}
+        for(const name of names){if(stopped||clock()-began>45000)break;if(!MEDIA_NAME.test(name)||resting(name))continue;const row=ledger(name);if(row?.state!=='verified')continue;
+          try{if(await occupied(pathOf(name)))continue;await ensureLocal(name);if(await exists(pathOf(name)))return {hydrated:name,...(failed.length?{failed}:{})};}catch(error){noteError(error);failedAt.set(name,clock());failed.push(name);}}
+        if(failed.length)return {failed};
       }
       return {idle:true};
     })().finally(()=>{ticking=null;});
@@ -261,7 +274,8 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
     const rows=new Map(store.all(MEDIA_CLOUD_KIND).filter(row=>row?.diskName).map(row=>[row.diskName,row]));
     const now=clock(),result={at:new Date(now).toISOString(),verified:0,verifiedBytes:0,missing:0,reuploaded:0,lost:0,stampDrift:0,stampFixed:0,conflict:0,unreferenced:0,localRemoved:0,staleObjects:0,lastCleanupAt:null,cleanupStale:false,freeBytes:null,lowSpace:false};
     try{result.freeBytes=await freeBytes();result.lowSpace=result.freeBytes<o.warnBytes;status.lowSpace=result.lowSpace;}catch{}
-    if(!rows.size){status.reconcile=result;status.lastReconcileAt=result.at;await raise(result);return result;}
+    // 장부가 비고 스위치가 off이면 경보를 내지 않는다 — 스위치가 없으면 바깥 호출이 하나도 없게(카본 끝 판 B3).
+    if(!rows.size){status.reconcile=result;status.lastReconcileAt=result.at;if((await readMode()).mode!=='off')await raise(result);return result;}
     const target=await bucket(),listed=new Map((await gcs.list(target,'studio-media/')).map(item=>[item.name,item]));
     const referenced=new Set(namesOf());
     for(const [name,row] of rows){
@@ -276,7 +290,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       const row=rows.get(name);if(!row)continue;if(row.state==='conflict'){result.conflict++;continue;}
       // 아직 가리키는 lost 줄은 회차마다 센다(하루 한 번 경보, GPT 검수 GA4). 로컬에 같은 바이트가 다시 있으면 새 이름으로 올려 되살린다.
       if(row.state==='lost'){const local=await lstat(pathOf(name)).catch(()=>null);
-        if(local?.isFile()){const again=await rehash(name).catch(()=>null);if(again?.sha256===row.sha256){try{if(await uploadOne(name,{objectName:nextObject(row.object,listed)})==='verified'){result.reuploaded++;continue;}}catch(error){noteError(error);}}}
+        if(local?.isFile()){const again=await rehash(name);if(again.sha256===row.sha256){try{if(await uploadOne(name,{objectName:nextObject(row.object,listed)})==='verified'){result.reuploaded++;continue;}}catch(error){noteError(error);}}}
         result.lost++;continue;}
       if(row.state!=='verified')continue;
       const remote=listed.get(row.object),local=await lstat(pathOf(name)).catch(()=>null);
@@ -289,11 +303,13 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
         result.missing++;
         if(local?.isFile()){
           const again=await rehash(name);
-          if(again?.sha256===row.sha256){try{const outcome=await uploadOne(name,{objectName:nextObject(row.object,listed)});if(outcome==='verified')result.reuploaded++;}catch(error){noteError(error);}}
-          else{writeLedger(name,{...row,state:'conflict'});result.conflict++;}
+          if(again.sha256===row.sha256){try{const outcome=await uploadOne(name,{objectName:nextObject(row.object,listed)});if(outcome==='verified')result.reuploaded++;}catch(error){noteError(error);}}
+          else if(again.missing){writeLedger(name,{...row,state:'lost',lostAt:result.at});result.lost++;}
+          else if(again.sha256){writeLedger(name,{...row,state:'conflict'});result.conflict++;}
+          // 잠깐 못 읽음(도장이 바뀜 · 읽기 오류): 내일 다시 본다(카본 끝 판 B7)
         }else{writeLedger(name,{...row,state:'lost',lostAt:result.at});result.lost++;}
         continue;}
-      if(local?.isFile()&&!sameStamp(stampOf(local),row.localStamp)){result.stampDrift++;const again=await rehash(name);if(again?.sha256===row.sha256){writeLedger(name,{...ledger(name),localStamp:again.stamp});result.stampFixed++;}else{writeLedger(name,{...ledger(name),state:'conflict'});result.conflict++;}}
+      if(local?.isFile()&&!sameStamp(stampOf(local),row.localStamp)){result.stampDrift++;const again=await rehash(name);if(again.sha256===row.sha256){writeLedger(name,{...ledger(name),localStamp:again.stamp});result.stampFixed++;}else if(again.sha256){writeLedger(name,{...ledger(name),state:'conflict'});result.conflict++;}}
     }
     // PC 정리 작업은 돌 때마다 미디어 버킷 gc/runs/에 작은 기록을 남긴다. 한 번이라도 돈 뒤로 7일 넘게 새 기록이 없으면 경보다.
     try{const runs=(await gcs.list(target,'gc/runs/')).map(item=>Date.parse(item.created||'')).filter(Number.isFinite);
@@ -308,7 +324,8 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       try{await alert?.({code,count,at:result.at,freeBytes:result.freeBytes});}catch(error){noteError(error);}}
     return codes.map(([code])=>code);
   }
-  async function rehash(name){let handle;try{handle=await open(pathOf(name),constants.O_RDONLY|NOFOLLOW);const info=await handle.stat();if(!info.isFile())return null;const {sha256}=await digestsOf(handle,Number(info.size));const after=await handle.stat();return sameStamp(stampOf(info),stampOf(after))?{sha256,stamp:stampOf(info)}:null;}catch{return null;}finally{await handle?.close().catch(()=>{});}}
+  // 다시 재기: {sha256, stamp}(다 읽음) · {missing:true}(파일 없음) · {transient:true}(보통 파일 아님 · 읽는 중 바뀜 · 다른 읽기 오류)를 나눠 돌려준다(카본 끝 판 B7).
+  async function rehash(name){let handle;try{handle=await open(pathOf(name),constants.O_RDONLY|NOFOLLOW);const info=await handle.stat();if(!info.isFile())return {transient:true};const {sha256}=await digestsOf(handle,Number(info.size));const after=await handle.stat();return sameStamp(stampOf(info),stampOf(after))?{sha256,stamp:stampOf(info)}:{transient:true};}catch(error){return error?.code==='ENOENT'?{missing:true}:{transient:true};}finally{await handle?.close().catch(()=>{});}}
   function nextObject(object,listed){const base=object.replace(/~[0-9]+$/,'');for(let n=1;n<10000;n++){const name=base+'~'+n;if(!listed.has(name)&&name!==object)return name;}throw fail('새 객체 이름을 찾지 못했어요.',500,'MEDIA_OBJECT_EXHAUSTED');}
 
   // 서버 시작 때: 1시간 넘은 받기 임시 파일을 지운다(점으로 시작해 다른 코드의 이름 규칙에 걸리지 않는다).

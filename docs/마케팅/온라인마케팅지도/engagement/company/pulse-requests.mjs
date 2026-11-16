@@ -489,9 +489,11 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
 }
 export async function streamDraftFile(res,{paths,file},req){
   let path,info;
-  for(path of paths){info=await stat(path).catch(()=>null);if(info)break;
-    // studio-media 쪽은 버킷에 있으면 받아 놓는다(작업실 영상 클라우드 설계 3판 6절).
-    if(basename(dirname(path))==='studio-media'){await ensureLocalMedia(dirname(dirname(path)),basename(path)).catch(()=>{});info=await stat(path).catch(()=>null);if(info)break;}}
+  for(path of paths){
+    // studio-media 쪽은 열기 전에 받아 놓는다 — 로컬에 있어도 부르면 쓴 시각이 적혀 비우기가 읽는 중인 파일을 건드리지 않는다.
+    // 받은 바이트가 다르거나(502) 자리가 모자라면(503) 그대로 알린다(작업실 영상 클라우드 설계 3판 6절, 카본 끝 판 A1).
+    if(basename(dirname(path))==='studio-media')await ensureLocalMedia(dirname(dirname(path)),basename(path));
+    info=await stat(path).catch(()=>null);if(info)break;}
   if(!info)throw fail('파일을 찾지 못했어요.',404);
   res.writeHead(200,{'Content-Type':file.mimeType,'Content-Length':info.size,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'; sandbox"});
   if(req.method==='HEAD')return res.end();

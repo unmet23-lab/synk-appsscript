@@ -48,7 +48,7 @@ function mediaPlan(media,archive){
  const seen=new Set(),project=/^synk-company-backups-([0-9]{6,20})$/.exec(media.bucket)?.[1];
  // A sidecar of this backup (no own bucket), or (studio media cloud, 2026-11-16) an object of the media bucket of the same project named by its disk name.
  const sidecar=o=>o.bucket===undefined&&(o.object===media.backup+'.media-'+o.sha256||o.object.endsWith('/'+media.backup+'.media-'+o.sha256));
- const inMediaBucket=o=>!!project&&o.bucket==='synk-company-media-'+project&&/^studio-media\/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$/i.exec(o.object)?.[1]===o.diskName;
+ const inMediaBucket=o=>!!project&&o.bucket==='synk-company-media-'+project&&/^studio-media\/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$/.exec(o.object)?.[1]===o.diskName;
  for(const o of media.objects){need(o&&/^[0-9a-f]{64}$/.test(o.sha256)&&!seen.has(o.sha256)&&Number.isSafeInteger(o.bytes)&&o.bytes>=0&&typeof o.object==='string'&&(sidecar(o)||inMediaBucket(o))&&/^[0-9]+$/.test(o.generation)&&/^[A-Za-z0-9+/]{22}==$/.test(o.md5Hash)&&/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$/i.test(o.diskName),'MEDIA_PLAN_INVALID');seen.add(o.sha256);}
  return media;
 }

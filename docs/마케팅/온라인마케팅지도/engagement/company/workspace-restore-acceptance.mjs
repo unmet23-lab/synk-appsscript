@@ -125,13 +125,15 @@ async function snapshot(directory){
     // snapshot and the hydrated bytes, then leave it out of the payload comparison.
     if(before.has('media-cloud.json')||manifest.mediaCloud!==undefined){
       let cloud;try{cloud=JSON.parse(await readFile(join(root,'media-cloud.json'),'utf8'));}catch{throw issue('MEDIA_CLOUD_INVALID');}
-      if(manifest.mediaCloud!=='media-cloud.json'||!object(cloud)||cloud.schema!=='synk-workspace-media-cloud/v1'||!validDate(cloud.createdAt)||!Array.isArray(cloud.files)||!cloud.files.length||(list?cloud.createdAt!==list.createdAt||cloud.manifestSha256!==sha(listBytes):cloud.manifestSha256!==null))throw issue('MEDIA_CLOUD_INVALID');
+      if(manifest.mediaCloud!=='media-cloud.json'||!object(cloud)||cloud.schema!=='synk-workspace-media-cloud/v1'||!validDate(cloud.createdAt)||!Array.isArray(cloud.files)||!cloud.files.length||(list?cloud.createdAt!==list.createdAt||cloud.manifestSha256!==sha(listBytes):cloud.manifestSha256!==null||cloud.createdAt!==manifest.createdAt))throw issue('MEDIA_CLOUD_INVALID');
       const names=new Set(media),listed=new Map((list?.files||[]).map(file=>[file.diskName,file])),seen=new Set();
       for(const file of cloud.files){
-        const objectName=typeof file?.object==='string'?/^studio-media\/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$/i.exec(file.object):null;
-        if(!object(file)||!names.has(file.diskName)||seen.has(file.diskName)||objectName?.[1]!==file.diskName||typeof file.bucket!=='string'||!/^synk-company-media-[0-9]{6,20}$/.test(file.bucket)||typeof file.generation!=='string'||!/^[0-9]{1,20}$/.test(file.generation)||typeof file.md5!=='string'||!file.md5||!Number.isSafeInteger(file.bytes)||file.bytes<0||typeof file.sha256!=='string'||!/^[0-9a-f]{64}$/.test(file.sha256)||(list&&listed.get(file.diskName)?.sha256!==file.sha256))throw issue('MEDIA_CLOUD_INVALID');
+        const objectName=typeof file?.object==='string'?/^studio-media\/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$/.exec(file.object):null;
+        if(!object(file)||!names.has(file.diskName)||seen.has(file.diskName)||objectName?.[1]!==file.diskName||typeof file.bucket!=='string'||!/^synk-company-media-[0-9]{6,20}$/.test(file.bucket)||typeof file.generation!=='string'||!/^[0-9]{1,20}$/.test(file.generation)||typeof file.md5!=='string'||!/^[A-Za-z0-9+/]{22}==$/.test(file.md5)||!Number.isSafeInteger(file.bytes)||file.bytes<0||typeof file.sha256!=='string'||!/^[0-9a-f]{64}$/.test(file.sha256)||(list&&listed.get(file.diskName)?.sha256!==file.sha256))throw issue('MEDIA_CLOUD_INVALID');
         seen.add(file.diskName);
         if(before.get(join('company','studio-media',file.diskName))!==file.sha256)throw issue('MEDIA_LIST_BYTES_MISMATCH');
+        const placed=await lstat(join(root,'company','studio-media',file.diskName)).catch(()=>null);
+        if(!placed?.isFile()||placed.size!==file.bytes)throw issue('MEDIA_LIST_BYTES_MISMATCH');
       }
     }
     return {root,before,manifest,key,company,messenger,practices,retentionValidated};

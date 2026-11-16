@@ -22,7 +22,7 @@ ARCHIVES=pathlib.Path('/srv/synk/backup-archives')
 RECEIPT=re.compile(r'(synk-workspace-[0-9TZ-]+)\.tar\.gz\.media\.json')
 NAME=re.compile(r'[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)',re.I)
 B64MD5=re.compile(r'[A-Za-z0-9+/]{22}==')
-CLOUD_OBJECT=re.compile(r'studio-media/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?',re.I)
+CLOUD_OBJECT=re.compile(r'studio-media/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?')
 def need(v,c):
  if not v:raise AssertionError(c)
 LISTS=('media-manifest.json','integration-manifest.json','media-retention.json')

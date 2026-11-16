@@ -565,6 +565,7 @@ class Cloud(Base):
             lambda c: c['files'][0].update(object='studio-media/../x.mp4'),
             lambda c: c['files'][0].update(generation='12a'),
             lambda c: c['files'][0].update(md5='short'),
+            lambda c: c['files'][0].update(object='studio-media/' + TWIN),  # an object of another file's name
         ]
         for index, edit in enumerate(cases):
             snapshot = self.cloud_backup('synk-workspace-2026-11-%02dT18-30-00-000Z' % (10 + index), edit=edit)
@@ -589,7 +590,79 @@ class Cloud(Base):
         self.assertEqual((code, out['status'], out['missing'], out['mismatched'], out['setClosed']), (0, 'verified', 0, 0, True))
         del self.server.objects[(MEDIA, 'studio-media/' + A)]
         code, out, _ = self.run_tool('verify', '--snapshot', str(self.snapshot), '--source', CLOUD_DEST)
-        self.assertEqual((code, out['status'], out['missing']), (1, 'incomplete', 1))
+        self.assertEqual((code, out['status'], out['missing'], out['setClosed']), (1, 'incomplete', 1, True))
+
+    def twin_in_cloud(self):
+        """TWIN holds the same bytes as A and also lives only in the media bucket: two referenced objects of one content."""
+        self.bodies[TWIN] = self.bodies[A]
+        twin = self.server.add(MEDIA, 'studio-media/' + TWIN, self.bodies[A])
+        rows = [{'diskName': n, 'sha256': sha(self.bodies[A]), 'bytes': len(self.bodies[A]), 'bucket': MEDIA, 'object': 'studio-media/' + n,
+                 'generation': g, 'md5': md5(self.bodies[A])} for n, g in ((A, self.generation), (TWIN, twin))]
+        return self.cloud_backup(SECOND, rows=rows)
+
+    def spoil(self, bucket, name):
+        generation, body, created = self.server.objects[(bucket, name)]
+        self.server.objects[(bucket, name)] = (generation, b'X' * len(body), created)  # same generation and size, other bytes
+
+    def test_hydrate_tries_every_media_bucket_copy_of_a_content_then_its_sidecars(self):
+        snapshot = self.twin_in_cloud()
+        self.assertEqual(self.cloud_upload(snapshot)[0], 0)
+        media = snapshot / 'company' / 'studio-media'
+        self.spoil(MEDIA, 'studio-media/' + A)
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(snapshot), '--source', CLOUD_DEST)
+        self.assertEqual((code, err, out['fromOtherBackups']), (0, '', 0))
+        self.assertEqual({p.name: p.read_bytes() for p in media.iterdir()}, self.bodies)
+        # both media bucket copies gone bad: a sidecar of the same content in another backup still brings it back
+        self.spoil(MEDIA, 'studio-media/' + TWIN)
+        self.server.add(BACKUPS, sidecar(FIRST, self.bodies[A]), self.bodies[A])
+        for name in (A, TWIN):
+            os.unlink(media / name)
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(snapshot), '--source', CLOUD_DEST)
+        self.assertEqual((code, err, out['fromOtherBackups']), (0, '', 1))
+        self.assertEqual({p.name: p.read_bytes() for p in media.iterdir()}, self.bodies)
+        # no good copy anywhere: the media bucket is named as the missing place
+        del self.server.objects[(BACKUPS, sidecar(FIRST, self.bodies[A]))]
+        for name in (A, TWIN):
+            os.unlink(media / name)
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(snapshot), '--source', CLOUD_DEST)
+        self.assertEqual((code, err), (1, 'SYNK_BACKUP_MEDIA MEDIA_CLOUD_MISSING\n'))
+
+    def test_verify_counts_each_referenced_object_on_its_own_and_still_reads_the_closing(self):
+        snapshot = self.twin_in_cloud()
+        self.assertEqual(self.cloud_upload(snapshot)[0], 0)
+        code, out, _ = self.run_tool('verify', '--snapshot', str(snapshot), '--source', CLOUD_DEST, '--download')
+        self.assertEqual((code, out['status'], out['missing'], out['mismatched'], out['setClosed']), (0, 'verified', 0, 0, True))
+        del self.server.objects[(MEDIA, 'studio-media/' + A)]
+        code, out, _ = self.run_tool('verify', '--snapshot', str(snapshot), '--source', CLOUD_DEST, '--download')
+        self.assertEqual((code, out['status'], out['missing'], out['mismatched'], out['setClosed']), (1, 'incomplete', 1, 0, True))
+        del self.server.objects[(MEDIA, 'studio-media/' + TWIN)]
+        code, out, _ = self.run_tool('verify', '--snapshot', str(snapshot), '--source', CLOUD_DEST)
+        self.assertEqual((code, out['missing'], out['setClosed']), (1, 2, True))
+
+    def test_verify_download_reads_a_referenced_object_even_when_a_local_file_has_the_same_bytes(self):
+        self.bodies[TWIN] = self.bodies[A]
+        (self.volume / 'studio-media' / TWIN).write_bytes(self.bodies[A])
+        snapshot = self.cloud_backup(SECOND)
+        code, out, err = self.cloud_upload(snapshot)
+        self.assertEqual((code, err, out['uploaded'], out['referenced']), (0, '', 2, 1))
+        self.server.requests.clear()
+        code, out, _ = self.run_tool('verify', '--snapshot', str(snapshot), '--source', CLOUD_DEST, '--download')
+        self.assertEqual((code, out['status'], out['mismatched']), (0, 'verified', 0))
+        self.assertTrue(any(MEDIA in r[1] and 'alt=media' in r[1] for r in self.server.requests))
+
+    def test_hydrate_from_a_local_folder_never_asks_the_media_bucket(self):
+        self.assertEqual(self.cloud_upload()[0], 0)
+        bodies = self.root / 'decrypted'
+        bodies.mkdir()
+        (bodies / 'one.bin').write_bytes(self.bodies[B])
+        self.server.requests.clear()
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(self.snapshot), '--from-dir', str(bodies), token='')
+        self.assertEqual((code, err), (1, 'SYNK_BACKUP_MEDIA MEDIA_OFFSITE_MISSING\n'))
+        (bodies / 'two.bin').write_bytes(self.bodies[A])
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(self.snapshot), '--from-dir', str(bodies), token='')
+        self.assertEqual((code, err), (0, ''))
+        self.assertEqual(self.server.requests, [])
+        self.assertEqual({p.name: p.read_bytes() for p in (self.snapshot / 'company' / 'studio-media').iterdir()}, self.bodies)
 
     def test_without_a_cloud_list_the_set_is_v1_exactly_as_before(self):
         (self.volume / 'studio-media' / A).write_bytes(self.bodies[A])

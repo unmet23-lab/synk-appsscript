@@ -5,11 +5,12 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {createHash,randomUUID} from 'node:crypto';
 import {mkdtemp,mkdir,writeFile,readFile,rm,readdir,stat,utimes,chmod,symlink} from 'node:fs/promises';
-import {existsSync} from 'node:fs';
+import {existsSync,unlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {Store} from './store.mjs';
-import {createMediaCloud,gcsClient,MEDIA_CLOUD_KIND,SWITCH_FILE,ensureLocalMedia,registerMediaCloud,mediaPresent,mediaLedgerSha,bucketForProject,validObject} from './studio-media-cloud.mjs';
+import {streamDraftFile} from './pulse-requests.mjs';
+import {createMediaCloud,gcsClient,MEDIA_CLOUD_KIND,SWITCH_FILE,ensureLocalMedia,registerMediaCloud,mediaPresent,mediaLedgerSha,bucketForProject,validObject,metadataCredentials,cloudLoggingAlert} from './studio-media-cloud.mjs';
 
 const BUCKET='synk-company-media-931078180935',KiB=1024;
 const md5b64=b=>createHash('md5').update(b).digest('base64'),sha=b=>createHash('sha256').update(b).digest('hex');
@@ -101,7 +102,7 @@ test('upload: an existing object with the same bytes is verified, with other byt
 test('upload: a file that changes while it is sent is not written to the ledger',async t=>{
   const ctx=await setup(t),{name}=await ctx.file();
   ctx.gcs.setHook(async()=>{await writeFile(localPath(ctx,name),Buffer.from('changed while uploading'));});
-  const result=await ctx.cloud.tick();assert.equal(result.failed,name);assert.equal(ctx.store.get(MEDIA_CLOUD_KIND,name),null);
+  const result=await ctx.cloud.tick();assert.deepEqual(result.failed,[name]);assert.equal(ctx.store.get(MEDIA_CLOUD_KIND,name),null);
 });
 
 test('switch: missing, broken, unknown mode and a link all mean off — nothing is uploaded',async t=>{
@@ -323,4 +324,99 @@ test('reconcile: a cleanup run record older than seven days raises MEDIA_CLEANUP
 
 test('without a registered cloud the helpers do nothing (local development and older tests)',async()=>{
   const dir=join(tmpdir(),'no-cloud-'+randomUUID());await ensureLocalMedia(dir,randomUUID()+'.mp4');assert.equal(mediaPresent(dir,'x.mp4',1),null);assert.equal(mediaLedgerSha(dir,'x.mp4'),null);
+});
+
+// ---- 카본 끝 판 company-media-cloud-a1-20261117-r2-끝판 B1~B8 ----
+test('a restore without the studio-media folder still fetches into a new private folder (카본 B1)',async t=>{
+  const ctx=await setup(t),{name,bytes}=await ctx.file();await ctx.cloud.tick();await rm(join(ctx.dir,'studio-media'),{recursive:true,force:true});
+  await ensureLocalMedia(ctx.dir,name);assert.deepEqual(await readFile(localPath(ctx,name)),bytes);
+});
+
+test('a deletion that lands between the rename and the reference check does not throw (카본 B2)',async t=>{
+  const ctx=await setup(t),{name}=await ctx.file();await ctx.cloud.tick();await rm(localPath(ctx,name));
+  // the customer deletion runs at the very moment the reference is checked: the file is already gone and the name is no longer referenced
+  let calls=0;const real=[...ctx.list];
+  const cloud=createMediaCloud({store:ctx.store,directory:ctx.dir,credentials:{token:async()=>'test-token',bucket:async()=>BUCKET},gcs:gcsClient({credentials:{token:async()=>'test-token'},base:ctx.gcs.base}),
+    namesOf:()=>{calls++;try{unlinkSync(localPath(ctx,name));}catch{}return real.filter(n=>n!==name);},options:{floorBytes:0}});
+  await cloud.ensureLocal(name);assert.ok(calls>=1);assert.ok(!existsSync(localPath(ctx,name)));cloud.stop();
+});
+
+test('with the switch off and an empty ledger the daily reconcile raises nothing, even with little space (카본 B3)',async t=>{
+  const ctx=await setup(t,{mode:null}),alerts=[];
+  const cloud=createMediaCloud({store:ctx.store,directory:ctx.dir,credentials:{token:async()=>{throw new Error('no network');},bucket:async()=>BUCKET},gcs:{list:async()=>{throw new Error('no network');}},
+    alert:async entry=>{alerts.push(entry);},namesOf:()=>[],options:{warnBytes:Number.MAX_SAFE_INTEGER}});
+  const result=await cloud.reconcile();assert.equal(result.lowSpace,true);assert.deepEqual(alerts,[]);cloud.stop();
+});
+
+test('an urgent eviction frees only what the fetch needs (카본 B4)',async t=>{
+  const day=86400000,ctx=await setup(t,{mode:'evict'});
+  const files=[];for(let i=0;i<4;i++){files.push(await ctx.file('mp4',Buffer.alloc(300*KiB,i+1)));}
+  await ctx.cloud.tick();await ctx.cloud.tick();
+  ctx.now.t+=2*day;  // the fake clock is days ahead of the files' real modification times, so every file is idle
+  const result=await ctx.cloud.evict({urgent:true,needBytes:300*KiB});
+  assert.equal(result.removed,1,'one 300KiB file is enough');
+});
+
+test('one file that keeps failing does not block the others behind it (카본 B5)',async t=>{
+  const ctx=await setup(t),a=await ctx.file(),b=await ctx.file();
+  let first=true;ctx.gcs.setHook(async(kind,s)=>{if(kind==='upload'&&first){first=false;await writeFile(localPath(ctx,a.name),Buffer.from('changed while uploading'));}});
+  const result=await ctx.cloud.tick();
+  assert.ok(result.failed.length===1,'the changed file failed');assert.ok(result.uploaded.length===1,'the next file still went up');
+  assert.equal(ctx.store.get(MEDIA_CLOUD_KIND,result.uploaded[0]).state,'verified');
+});
+
+test('readers that ask for the switch while it is being read get the new value, not the old one (카본 B6)',async t=>{
+  const ctx=await setup(t,{mode:'off'});await ctx.cloud.tick();
+  ctx.now.t+=10*60000;await setMode(ctx.dir,'evict');
+  const [a,b]=await Promise.all([ctx.cloud.readMode(),ctx.cloud.readMode()]);
+  assert.equal(a.mode,'evict');assert.equal(b.mode,'evict');
+});
+
+test('a local file that disappears while the reconcile re-reads it becomes lost, not conflict (카본 B7)',async t=>{
+  const ctx=await setup(t),{name}=await ctx.file();await ctx.cloud.tick();
+  ctx.gcs.objects.delete('studio-media/'+name);
+  // the object is gone; the local copy is still there when it is looked at and vanishes right as it is re-read (during the pinned stat)
+  const real=gcsClient({credentials:{token:async()=>'test-token'},base:ctx.gcs.base});
+  const gcs={...real,stat:async(...args)=>{await rm(localPath(ctx,name),{force:true});return real.stat(...args);}};
+  const cloud=createMediaCloud({store:ctx.store,directory:ctx.dir,credentials:{token:async()=>'test-token',bucket:async()=>BUCKET},gcs,namesOf:()=>[...ctx.list],clock:()=>ctx.now.t,options:{floorBytes:0}});
+  const result=await cloud.reconcile();cloud.stop();
+  assert.equal(result.conflict,0);assert.equal(result.lost,1);assert.equal(ctx.store.get(MEDIA_CLOUD_KIND,name).state,'lost');
+});
+
+test('metadata credentials renew a minute before expiry and refuse bad tokens or project values (카본 B8)',async()=>{
+  let now=0,calls=[];const replies={'instance/service-accounts/default/token':()=>({access_token:'tok-'+calls.length,expires_in:120}),'project/numeric-project-id':()=>'931078180935','project/project-id':()=>'synk-example-1'};
+  const fetchImpl=async(url,init)=>{assert.equal(init.headers['Metadata-Flavor'],'Google');const key=url.replace('http://meta/','');calls.push(key);const v=replies[key]();return {ok:true,json:async()=>v,text:async()=>String(v)};};
+  const c=metadataCredentials({fetchImpl,base:'http://meta/',clock:()=>now});
+  const t1=await c.token();assert.equal(await c.token(),t1);now=59000;assert.equal(await c.token(),t1);now=61000;assert.notEqual(await c.token(),t1);
+  assert.equal(await c.bucket(),BUCKET);assert.equal(await c.projectId(),'synk-example-1');
+  replies['instance/service-accounts/default/token']=()=>({access_token:'bad token!',expires_in:120});now=1e9;await assert.rejects(c.token(),error=>error.code==='MEDIA_TOKEN_INVALID');
+  replies['project/project-id']=()=>'../etc';await assert.rejects(c.projectId(),error=>error.code==='MEDIA_PROJECT_INVALID');
+  const failing=metadataCredentials({fetchImpl:async()=>({ok:false}),base:'http://meta/'});await assert.rejects(failing.token(),error=>error.code==='MEDIA_METADATA_FAILED');
+});
+
+test('the Cloud Logging alert writes one ERROR entry to the synk-media-cloud log and reports a failed write (카본 B8)',async()=>{
+  const sent=[];const credentials={projectId:async()=>'synk-example-1',token:async()=>'tok'};
+  const alert=cloudLoggingAlert({credentials,base:'http://log',fetchImpl:async(url,init)=>{sent.push({url,init});return {ok:sent.length===1};}});
+  await alert({code:'MEDIA_LOST',count:2,at:'2026-11-17T00:00:00.000Z'});
+  const body=JSON.parse(sent[0].init.body);assert.equal(sent[0].url,'http://log/v2/entries:write');assert.equal(sent[0].init.headers.authorization,'Bearer tok');
+  assert.equal(body.logName,'projects/synk-example-1/logs/synk-media-cloud');assert.equal(body.entries[0].severity,'ERROR');assert.equal(body.entries[0].jsonPayload.code,'MEDIA_LOST');
+  await assert.rejects(alert({code:'MEDIA_LOST',count:1}),error=>error.code==='MEDIA_ALERT_FAILED');
+});
+
+// 카본 끝 판 A1(11-17): 검토 파일 내려받기(streamDraftFile)는 studio-media 경로를 열기 전에 받아 놓기를 부른다.
+// 로컬에 있어도 부르고(쓴 시각이 적혀 비우기가 그 파일을 건드리지 않는다), 받은 바이트가 다르거나(502) 자리가 모자라면(503) 그대로 알린다.
+test('검토 파일 내려받기는 열기 전에 받아 놓기를 부르고 그 실패를 그대로 알린다(카본 끝 판 A1)',async t=>{
+  const dir=await mkdtemp(join(tmpdir(),'smc-a1-'));t.after(()=>{registerMediaCloud(dir,null);return rm(dir,{recursive:true,force:true});});
+  const name=randomUUID()+'.mp4',path=join(dir,'studio-media',name);await mkdir(join(dir,'studio-media'));await writeFile(path,'synthetic-body');
+  const calls=[];let failure=null;
+  registerMediaCloud(dir,{ensureLocal:async diskName=>{calls.push(diskName);if(failure)throw failure;}});
+  const reply=()=>{const r={status:null,ended:false,writeHead(status){r.status=status;},end(){r.ended=true;}};return r;};
+  const draft={paths:[path],file:{mimeType:'video/mp4'}},ok=reply();
+  await streamDraftFile(ok,draft,{method:'HEAD'});
+  assert.deepEqual([ok.status,ok.ended,calls],[200,true,[name]],'로컬에 있어도 받아 놓기를 부른다');
+  for(const status of [502,503]){
+    failure=Object.assign(new Error('synthetic'),{status});const r=reply();
+    await assert.rejects(streamDraftFile(r,draft,{method:'HEAD'}),error=>error.status===status);
+    assert.equal(r.status,null,'실패하면 응답 머리를 쓰지 않는다');
+  }
 });

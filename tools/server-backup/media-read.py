@@ -30,7 +30,7 @@ import urllib.request
 
 NAME = re.compile(r'^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$', re.I)
 CLOUD_BUCKET = re.compile(r'^synk-company-media-[0-9]{6,20}$')
-CLOUD_OBJECT = re.compile(r'^studio-media/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$', re.I)
+CLOUD_OBJECT = re.compile(r'^studio-media/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$')
 METADATA_TOKEN = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token'
 STORAGE = 'https://storage.googleapis.com/storage/v1/b/'
 OWNER_UID = 1000
