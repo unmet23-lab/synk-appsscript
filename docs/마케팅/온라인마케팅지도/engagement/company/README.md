@@ -217,6 +217,8 @@ node "docs/마케팅/온라인마케팅지도/engagement/company/backup.mjs" "D:
 | `POST /api/client-projects/<id>/marketing/report` | 몸통 `{ report }`를 꼴 검사한 뒤 저장합니다. 감사 기록은 `pulse-marketing-report-saved`이고 덮어썼는지(`replaced`)를 남깁니다 |
 | `POST /api/client-projects/<id>/marketing/report/remove` | 몸통 `{ kind, runId }`의 리포트를 지웁니다. 감사 기록은 `pulse-marketing-report-removed`입니다 |
 
+**올리는 도구.** 리포트는 측정 스크립트가 JSON으로 만들기 때문에 화면에 붙여 넣지 않고 저장소의 `tools/마케팅리포트.js`가 위 직원 경로로 올립니다(2026-11-17). `프로젝트`로 프로젝트 id를 찾고, `목록 <id>`로 올라가 있는 것과 고객에게 보이는지를 보고, `올리기 <id> <리포트.json>…`로 미리 본 뒤 `--실행`을 붙여 올립니다. 올리기 전에 이 서버와 같은 꼴 검사를 PC에서 먼저 돌려 하나라도 걸리면 로그인도 하지 않습니다. 같은 종류와 회차가 이미 있으면 멈추고, 고쳐 올릴 때만 `--덮어쓰기`를 붙입니다. `내리기 <id> <종류> <회차>`도 `--실행`이 있어야 지웁니다. 작업실 자동화 계정으로 들어가므로 그 계정이 그 프로젝트의 담당자이거나 관리자여야 합니다. 시험은 `node --test tests/마케팅리포트.test.mjs`이고 이 서버 코드를 임시로 띄워 올리기부터 고객 방까지 봅니다.
+
 **저장.** 범용 표 `documents`의 종류 둘을 씁니다. `pulseMarketingIndex`는 프로젝트마다 한 문서인 목록이고, `pulseMarketingReports`는 리포트 한 건마다 한 문서입니다. 프로젝트 문서 안에는 넣지 않으므로 올려도 프로젝트 판 번호가 오르지 않습니다. 한 프로젝트에 120건까지 두고, 같은 `kind`와 `runId`로 다시 올리면 덮어씁니다. 목록 문서가 깨져 있으면 읽기는 빈 목록으로 하고 쓰기는 409로 막습니다. `ai-search`와 `label-review`의 `summary`는 받은 값을 쓰지 않고 서버가 다시 셉니다.
 
 **지울 때 주의.** 지금은 프로젝트 문서를 지우는 운영 경로가 없습니다. 그런 경로를 만들면 그 프로젝트의 `pulseMarketingIndex`와 `pulseMarketingReports` 문서도 함께 지워야 합니다.
