@@ -51,14 +51,16 @@ export function createStore(api, { onChange = () => {}, setTimer = setInterval, 
     busy = method; emit();
     try {
       const r = await api[method](...args);
-      if (r && r.ok === true) { if (isState(r.value)) { seq++; state = r.value; } return { ok: true, value: r.value }; }
+      // 상태를 품은 답(takeWriteSeat · restoreRun의 { …, state })도 화면 상태로 받아 들인다
+      if (r && r.ok === true) { const next = isState(r.value) ? r.value : isState(r.value?.state) ? r.value.state : null; if (next) { seq++; state = next; } return { ok: true, value: r.value }; }
       // 폴더 고르기 · 확인 창을 사람이 닫은 것은 실패가 아니다. 엔진 글은 갈래를 가리는 데만 읽고 화면에 옮기지 않는다
       if (r && !r.code && typeof r.error === 'string' && /취소했습니다/.test(r.error)) return { ok: false, code: 'CANCELED' };
       // 코드 없이 오는 거절 둘(전체 되살리기의 놓을 자리 · 마지막 폴더 빼기)도 갈래만 가린다. 엔진 담당에 코드를 붙여 달라고 넘겼다
       if (r && !r.code && typeof r.error === 'string' && /분리된 위치를 선택/.test(r.error)) return { ok: false, code: 'OUTPUT_UNSAFE' };
       if (r && !r.code && typeof r.error === 'string' && /하나 이상 남겨/.test(r.error)) return { ok: false, code: 'LAST_FOLDER' };
       if (r && !r.code && typeof r.error === 'string' && /진행 중인 작업이 끝난 뒤/.test(r.error)) return { ok: false, code: 'JOB_BUSY' };
-      return { ok: false, code: (r && typeof r.code === 'string' && r.code) || 'FAILED' };
+      // LIMIT_DEVICES는 끊을 기기 목록을 details로 함께 준다(엔진 account.cjs signIn)
+      return { ok: false, code: (r && typeof r.code === 'string' && r.code) || 'FAILED', ...(r?.details && typeof r.details === 'object' ? { details: r.details } : {}) };
     } catch { return { ok: false, code: 'FAILED' }; }
     finally { busy = null; emit(); }
   }
@@ -102,5 +104,36 @@ export function failureText(code) {
     READ_FAILED: '지금 상태를 읽지 못했습니다. 잠시 뒤 다시 읽습니다.',
     CATALOG_EXPIRED: '목록을 연 지 오래되어 새로 열었습니다. 되살릴 파일을 다시 골라 주세요.',
     SELECTION_STALE: '그사이 새 백업이 들어와 목록을 새로 열었습니다. 되살릴 파일을 다시 골라 주세요.',
+    // 개통(Google로 시작 · 보호 시작 · 기기 · 되돌리기, engine/src/account.cjs · 개통 서버의 부호)
+    NO_GOOGLE: '이 판에서는 Google로 시작할 수 없습니다. 새 판으로 업데이트한 뒤 다시 열어 주세요.',
+    NOT_SIGNED_IN: '먼저 「Google로 시작」을 눌러 주세요.',
+    NOT_WRITER: '이 계정의 백업은 다른 PC가 하고 있습니다.',
+    OTHER_BACKUP: '이 PC에는 다른 백업이 이어져 있어 이 계정의 백업을 열 수 없습니다. SYNK에 연락해 주세요.',
+    WRITE_KEY: '백업할 준비를 마치지 못했습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요.',
+    GOOGLE_STEP: 'Google 계정에서 잃어버린 기기의 접근을 먼저 지워 주세요.',
+    ENVELOPE: '복구 정보를 Google 계정에 맡기지 못했습니다. 다시 눌러 주세요.',
+    NO_ENVELOPE: '이 계정의 복구 정보를 Google 계정에서 찾지 못했습니다. SYNK에 연락해 주세요.',
+    BAD_INPUT: '요청을 확인하지 못했습니다. 다시 눌러 주세요.',
+    REPO_EXISTS: '이 계정에는 이미 백업이 있습니다.',
+    LIMIT_DEVICES: '이 계정에 이을 수 있는 기기가 다 찼습니다.',
+    LIMIT_KEYS_DAY: '오늘 연결을 새로 받을 수 있는 횟수를 다 썼습니다. 내일 다시 눌러 주세요.',
+    MOVED: '백업하는 자리가 다른 PC로 옮겨져 이 PC는 백업을 쉽니다. 「이 PC로 다시 백업」을 누르면 이어서 합니다.',
+    OVER_QUOTA: '백업 용량을 넘어 새 백업을 쉽니다. 지키는 폴더를 줄여 주세요.',
+    RESTORE_PENDING: '되돌리기를 마칠 때까지 백업을 쉽니다. 되돌리기를 마치는 화면은 다음 업데이트에서 열립니다. 급하면 SYNK에 연락해 주세요.',
+    NOT_INVITED: '이 Google 계정은 아직 시범 손님으로 등록되지 않았습니다. SYNK에 연락해 주세요.',
+    SUB_MISMATCH: '이 백업을 시작한 Google 계정으로 로그인해 주세요.',
+    ACCOUNT: '이 백업을 시작한 Google 계정으로 로그인해 주세요.',
+    NONCE: 'Google 로그인을 확인하지 못했습니다. 다시 눌러 주세요.',
+    TOKEN: 'Google 로그인을 확인하지 못했습니다. 다시 눌러 주세요.',
+    INVALID: 'Google 로그인을 확인하지 못했습니다. 다시 눌러 주세요.',
+    DENIED: 'Google 계정에서 허락을 받지 못했습니다. 다시 눌러 「계속」까지 눌러 주세요.',
+    DEVICE: '이 PC의 연결이 끊겼습니다. 「Google로 시작」을 다시 눌러 주세요.',
+    DEVICE_GONE: '이 PC의 연결이 끊겼습니다. 「Google로 시작」을 다시 눌러 주세요.',
+    DEVICE_STATE: '이 PC는 끊겼거나 다른 PC로 옮겨진 기기라 이 일을 할 수 없습니다.',
+    RATE: '요청이 너무 잦아 잠시 막혔습니다. 한참 뒤 다시 눌러 주세요.',
+    TOO_OLD: '되돌릴 수 있는 기간(29일)이 지난 시각입니다.',
+    NOT_FOUND: '그 요청을 찾지 못했습니다. 창을 닫았다가 다시 열어 주세요.',
+    SERVER: 'SYNK 서버에 닿지 못했습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요.',
+    NETWORK: 'SYNK 서버에 닿지 못했습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요.',
   })[code] || '마치지 못했습니다. 잠시 뒤 다시 눌러 주세요.';
 }

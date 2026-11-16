@@ -274,3 +274,157 @@ test('예약이 빠졌으면 다음 확인 시각을 쓰지 않는다 · 마지�
   const api = { getState: async () => ({ ok: true, value: { version: '0.7.0' } }), openFileCatalog: async () => ({ ok: false, error: '진행 중인 작업이 끝난 뒤 다시 눌러 주세요.' }) };
   assert.deepEqual(await createStore(api).call('openFileCatalog', {}), { ok: false, code: 'JOB_BUSY' });
 });
+
+// 개통 잇기(11-16 · 조율 세션 48f797b69의 메서드 13개 · Fable 개통 설계 검토 「고쳐서 간다」)
+test('개통: 첫 시작의 걸음, 이어서 백업 · 연결 다시 받기 · 복구 정보 · 되돌리기 답 없음 갈래', async () => {
+  const { homeModel, startStep, writerName, deviceLine } = await load('screen-model.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  assert.equal(startStep(STATES.start), 'signin');
+  assert.equal(startStep(STATES['start-signin']), 'signin');
+  assert.equal(startStep(STATES['start-write']), 'scope');
+  assert.equal(startStep(STATES['start-read']), 'read');
+  assert.equal(homeModel(STATES['start-write'], { now: NOW }).id, 'start');
+  // 복구 전용으로 남은 PC가 쓰는 기기면 「이어서 백업」 — 고른 폴더가 없으면 부르지 않는다(Fable 지적 1 · 2)
+  const opened = { ...STATES.home, mode: 'restore', protection: { level: 'restoreOnly', reason: 'restoreOnly' }, account: STATES['start-write'].account };
+  const m1 = homeModel(opened, { now: NOW });
+  assert.equal(m1.id, 'home-continue');
+  assert.ok(m1.actions[0].pending, '폴더가 비면 이어서 백업을 부르지 않는다');
+  const m2 = homeModel({ ...opened, selection: { sources: ['C:\\Users\\studio\\Documents'] } }, { now: NOW });
+  assert.equal(m2.actions[0].call, 'continueBackup');
+  assert.equal(m2.actions[0].account, true);
+  // 읽기 기기의 복구 전용 연결은 지금 그대로 되살리기만
+  assert.equal(homeModel({ ...opened, account: STATES['start-read'].account }, { now: NOW }).id, 'home-restore-only');
+  const wk = homeModel(STATES['home-writekey'], { now: NOW });
+  assert.equal(wk.id, 'home-writekey');
+  assert.equal(wk.actions[0].call, 'takeWriteSeat');
+  const rk = homeModel(STATES['home-lost-step'], { now: NOW });
+  assert.equal(rk.id, 'home-readkey');
+  assert.equal(rk.googleStep, true);
+  assert.ok(rk.box && /Google/.test(rk.box.title));
+  const wait = homeModel({ ...STATES.home, account: { ...STATES['home-writekey'].account, needs: ['restore', 'write-key'] } }, { now: NOW });
+  assert.equal(wait.id, 'home-restore-wait');
+  assert.equal(wait.evidence.head.length, 1, '쉬는 동안 다음 확인 시각을 약속하지 않는다');
+  // 쓰는 기기 이름은 상태가 비면 기기 목록에서(Fable 지적 12)
+  assert.equal(writerName(STATES['start-read']), '작업 노트북');
+  const devices = [{ id: 'a'.repeat(12), name: '사무실 PC', role: 'write', state: 'active', current: false }, { id: 'b'.repeat(12), name: '새 데스크톱', role: 'read', state: 'active', current: true }];
+  assert.equal(writerName({ account: { writer: null } }, devices), '사무실 PC');
+  assert.equal(writerName({ account: { writer: null } }, []), null);
+  assert.deepEqual(deviceLine({ name: '옛 노트북', role: 'write', state: 'lost', lastSeenAt: Date.parse('2026-11-12T10:00:00+09:00') }, NOW), { name: '옛 노트북', role: '분실 신고함', seen: '마지막 연결 어제 오전 10:00' });
+  assert.equal(deviceLine({ name: '새 데스크톱', role: 'read', state: 'active', current: true }, NOW).name, '새 데스크톱(이 PC)');
+  // 쓰는 자리가 다른 PC로 간 옛 PC(엔진 movedTo, def8dde6d) — 「이 PC로 다시 백업」은 takeWriteSeat
+  const moved = homeModel(STATES['home-moved'], { now: NOW });
+  assert.equal(moved.id, 'home-moved');
+  assert.equal(moved.actions.find((a) => a.id === 'reclaim').call, 'takeWriteSeat');
+});
+
+test('개통: 첫 시작 · 보호 범위 · 다른 PC가 쓰는 계정 · 되돌리기 미리 보기를 실제 상태로 그린다', async () => {
+  const { renderScreen } = await load('screen-view.js');
+  const { homeModel } = await load('screen-model.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (id, state, extra = {}) => renderScreen(id, { state, model: homeModel(state, { now: NOW }), now: NOW, fake: true, ...extra });
+  const s1 = draw('start-1', STATES['start-signin']);
+  assert.equal(s1.acts.google.call, 'signInGoogle');
+  assert.match(draw('start-1', STATES['start-signin'], { acct: { signing: true } }).html, /브라우저에서 계속해 주세요[\s\S]*5분/);
+  const full = draw('start-1', STATES['start-signin'], { acct: { limit: [{ id: 'a'.repeat(12), name: '옛 노트북', role: 'write', state: 'active' }] } }).html;
+  assert.match(full, /기기가 다 찼습니다/);
+  assert.match(full, /옛 노트북/);
+  assert.doesNotMatch(full, /data-act="revoke/, '토큰 없는 끊기는 엔진 부탁 뒤에 연다(Fable 지적 3)');
+  // 보호 범위: 고른 폴더가 없으면 보호 시작을 막는다 · 예시 값(진단 · 예상 크기)을 그리지 않는다
+  const empty = draw('start-2', STATES['start-write']);
+  assert.match(empty.html, /지킬 폴더를 고르세요/);
+  assert.match(empty.html, /data-act="protect" aria-disabled="true"/);
+  assert.equal(empty.acts.protect.call, 'startProtection');
+  assert.equal(empty.acts.pick.call, 'chooseSources');
+  assert.doesNotMatch(empty.html, /찾아낸 작업 폴더 ·|OneDrive에만 있는 파일/);
+  const picked = draw('start-2', STATES['start-write-picked']);
+  assert.doesNotMatch(picked.html, /data-act="protect" aria-disabled/);
+  assert.match(picked.html, /Pictures/);
+  // 분실 신고 뒤: Google 걸음을 확인해야 단추가 열린다
+  assert.match(draw('start-2', STATES['start-google-step']).html, /data-act="protect" aria-disabled="true"/);
+  assert.doesNotMatch(draw('start-2', STATES['start-google-step'], { acct: { googleAck: true } }).html, /data-act="protect" aria-disabled/);
+  // 저장소가 이미 있음 → 이어서 백업
+  const again = draw('start-2', STATES['start-write-picked'], { acct: { repoExists: true } });
+  assert.match(again.html, /이미 백업이 있습니다/);
+  assert.equal(again.acts.continue.call, 'continueBackup');
+  // 다른 PC가 쓰는 계정: 옮겨 오기 · 이어서 백업은 아직 잇지 않는다(Fable 지적 1)
+  const read = draw('start-2', STATES['start-read']);
+  assert.match(read.html, /「작업 노트북」이 하고 있습니다/);
+  assert.ok(read.acts.move.pending && read.acts.take.pending);
+  // 상태에 계정이 없는 예시 화면은 지금의 예시 그대로
+  assert.match(draw('start-2', STATES.start).html, /찾아낸 작업 폴더/);
+  // 되돌리기 미리 보기 — 서버 답(suggestions · plan)으로 그리고, 실행은 아직 잇지 않는다(Fable 지적 4 · 5)
+  const at = Date.parse('2026-11-12T14:59:00+09:00');
+  const value = { suggestions: [{ at, reason: 'before-mass-hide' }, { at: at - 86400000, reason: 'before-overwrite' }], plan: { at, counts: { copy: 3412, hide: 120, unchanged: 9000 }, copyBytes: 5 * 1024 ** 3 }, oldestAt: NOW - 29 * 86400000 };
+  const plans = { [at]: value.plan };
+  const u1 = draw('undo-1', STATES.home, { undo: { value, plans, pickAt: at } });
+  assert.match(u1.html, /11월 12일 오후 2:59/);
+  assert.match(u1.html, /한꺼번에 지워지기 직전/);
+  assert.match(u1.html, /aria-checked="true" data-act="undo-pick"/);
+  assert.doesNotMatch(u1.html, /class="bars"/, '서버가 주지 않는 시간 막대를 그리지 않는다');
+  assert.match(draw('undo-1', STATES.home, { undo: { value: { suggestions: [], plan: null, oldestAt: 0 }, plans: {} } }).html, /찾지 못했습니다/);
+  const u2 = draw('undo-2', STATES.home, { undo: { value, plans, pickAt: at } });
+  assert.match(u2.html, /3,412개/);
+  assert.match(u2.html, /5GB/);
+  assert.ok(u2.acts.run.pending, '되돌리기 실행은 엔진 부탁 7 · 8 뒤에 잇는다');
+  // 예시 화면(창이 아무것도 묻지 않은 예시 모드)은 지금의 예시 그대로
+  assert.match(draw('undo-1', STATES.home).html, /class="bars"/);
+  // 카본 A4 — 받침 있는 숫자로 끝나는 시각 뒤 조사
+  const at3 = Date.parse('2026-11-12T15:00:00+09:00');
+  assert.match(draw('undo-2', STATES.home, { undo: { value: { ...value, plan: { ...value.plan, at: at3 } }, plans: { [at3]: { ...value.plan, at: at3 } }, pickAt: at3 } }).html, /오후 3:00으로/);
+  // 카본 B1 — 기기가 다 찼을 때 한도에 들지 않는 끊긴 기기는 보이지 않는다
+  const fullHtml = draw('start-1', STATES['start-signin'], { acct: { limit: [{ id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active' }, { id: 'b'.repeat(12), name: '옛 데스크톱', role: 'read', state: 'revoked' }] } }).html;
+  assert.match(fullHtml, /작업 노트북/);
+  assert.doesNotMatch(fullHtml, /옛 데스크톱/);
+  // 카본 A2 — 기기 목록을 읽지 못하면 「없다」고 말하지 않는다
+  const failed = draw('start-2', STATES['start-read'], { acct: { devices: null, devicesError: '서버에 닿지 못했습니다.' } }).html;
+  assert.match(failed, /읽지 못했습니다/);
+  assert.doesNotMatch(failed, /비어 있습니다/);
+  const { drawer } = await load('screen-view.js');
+  assert.match(drawer(STATES['home-lost-step'], { devices: null, devicesError: 'x' }), /다른 기기를 읽지 못했습니다/);
+  assert.doesNotMatch(drawer(STATES['home-lost-step'], { devices: null, devicesError: 'x' }), /다른 기기는 없습니다/);
+  // Fable F2 — 다른 PC가 쓰는 계정 화면에서 못 읽은 기기 목록은 다시 읽을 수 있다
+  assert.match(failed, /data-act="devices-reload"/);
+  // Fable F3 — 실제 상태의 첫 화면은 폴더를 고르는 흐름대로 말한다(예시 화면은 시안 글 그대로)
+  assert.match(draw('start-1', STATES['start-signin']).html, /지킬 폴더를 고르면/);
+  assert.match(draw('start-1', STATES.start).html, /찾아낸 작업 폴더를 암호화해/);
+  // Fable F1 — 계정 PC의 보호 시작이 복구 정보 걸음에서 멈추면 옛 연결이 아니라 startProtection으로 잇는다
+  const stuck = { ...STATES['start-write-picked'], configured: true, lastBackup: null, recoverySaved: false, protection: { level: 'attention', reason: 'recovery', nextAction: 'recovery' } };
+  const rm = homeModel(stuck, { now: NOW });
+  assert.equal(rm.id, 'home-recovery');
+  assert.equal(rm.actions[0].call, 'startProtection');
+  assert.equal(rm.actions[0].label, '이어서 보호 시작');
+  const rmStep = homeModel({ ...stuck, account: { ...stuck.account, googleStepRequired: true } }, { now: NOW });
+  assert.equal(rmStep.googleStep, true, 'Google 걸음 확인 단추가 함께 온다');
+  assert.equal(homeModel({ ...STATES.home, protection: { level: 'attention', reason: 'recovery' } }, { now: NOW }).actions[0].call, 'connectRecovery', '계정에 잇지 않은 PC는 옛 길 그대로');
+  // Fable F4 — 복구 전용 연결(sources 빔)에 「지키는 폴더 0곳」을 쓰지 않는다
+  assert.doesNotMatch(draw('home', STATES['home-continue']).html, /0곳/);
+  // Fable FA3 — sources는 비었어도 마지막 판이 담은 폴더가 있으면 그 수로 센다
+  const restoreOnly = { ...STATES.home, mode: 'restore', sources: [], protection: { level: 'restoreOnly', reason: 'restoreOnly' } };
+  assert.match(draw('home', restoreOnly).html, /지키는 폴더<\/span><span class="v">네 곳/);
+  // Fable FA2 — 도는 중인 단추는 창 상태(acct.running)로 막혀 다시 그려도 막힌 채 나온다
+  assert.match(draw('home', STATES['home-writekey'], { acct: { running: 'writekey' } }).html, /data-act="writekey" aria-disabled="true"/);
+  assert.doesNotMatch(draw('home', STATES['home-writekey']).html, /data-act="writekey" aria-disabled/);
+  // Fable -c FA1 — rotateReadKey는 받아 둔 열쇠가 없을 때만 브라우저를 연다: 두 경우에 다 맞는 안내(maybe)
+  assert.equal(homeModel(STATES['home-lost-step'], { now: NOW }).actions[0].google, 'maybe');
+  assert.equal(homeModel(STATES['home-writekey'], { now: NOW }).actions[0].google, true);
+  // Fable -c FA2 — 보호 범위 화면도 도는 중인 단추를 막는다
+  const busy = draw('start-2', STATES['start-write-picked'], { acct: { running: 'pick' } }).html;
+  assert.match(busy, /data-act="protect" aria-disabled="true"/);
+  assert.match(busy, /data-act="pick" aria-disabled="true"/);
+});
+
+test('개통: 호출 응답의 details와 상태를 품은 답, 오류 부호 글', async () => {
+  const { createStore, failureText } = await load('state-store.js');
+  const devices = [{ id: 'a'.repeat(12), name: '옛 노트북' }];
+  const api = { getState: async () => ({ ok: true, value: { version: '0.7.0' } }),
+    signInGoogle: async () => ({ ok: false, error: '…', code: 'LIMIT_DEVICES', details: { devices } }),
+    takeWriteSeat: async () => ({ ok: true, value: { previous: '옛 노트북', state: { version: '0.7.0', configured: true } } }) };
+  const store = createStore(api);
+  assert.deepEqual(await store.call('signInGoogle', {}), { ok: false, code: 'LIMIT_DEVICES', details: { devices } });
+  const r = await store.call('takeWriteSeat', {});
+  assert.equal(r.ok, true);
+  assert.equal(store.state?.configured, true, '{ state }를 품은 답의 상태를 받아 들인다');
+  for (const code of ['NO_GOOGLE', 'NOT_WRITER', 'REPO_EXISTS', 'GOOGLE_STEP', 'LIMIT_DEVICES', 'RESTORE_PENDING', 'NOT_INVITED', 'SUB_MISMATCH', 'DEVICE_GONE', 'RATE', 'TOO_OLD', 'SERVER', 'NETWORK']) {
+    assert.notEqual(failureText(code), failureText('UNKNOWN_CODE'), code);
+  }
+});

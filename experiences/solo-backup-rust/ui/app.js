@@ -3,7 +3,7 @@
 // 엔진에 아직 없는 기능의 단추는 「아직 준비 중」 한 줄만 띄우고 아무것도 보내지 않는다(QA 「가짜 상태로 그린 화면」).
 
 import { createStore, failureText } from './state-store.js';
-import { homeModel, createRestoreWatch } from './screen-model.js';
+import { homeModel, createRestoreWatch, startStep } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -24,11 +24,19 @@ let failure = null, queued = null, closing = null, opener = null, lastDrawer = '
 // 이 창이 지켜본 전체 되살리기가 실패했는지 — 엔진은 그 실패를 백업 실패와 같은 칸(lastError)에 적는다(Fable F2)
 const restoreWatch = createRestoreWatch();
 let prevJob = null, restoreFail = null;
+// 창이 기억하는 개통 걸음(엔진 상태에 없는 것) — 로그인 기다림 · 기기가 다 참(LIMIT_DEVICES의 기기 목록) · 저장소가 이미 있음(REPO_EXISTS) ·
+// Google 걸음 확인 · 계정의 기기 목록(devicesList). 되돌리기 미리 보기(restorePlan)는 undo에 둔다
+let acct = { signing: false, limit: null, repoExists: false, googleAck: false, devices: null, devicesError: null, devicesBusy: false };
+let undo = null;
+// 단추가 보낸 호출 — 기다리는 동안과 보내는 동안 내내 둔다. 같은 호출이 또 오면 버린다(Fable FA1 · -c FA2)
+const runningCalls = new Set();
 function watchJobs(s) {
   if (!s) return;
   restoreFail = restoreWatch.see(s);
   // 예약 백업 때문에 못 연 되살리기 목록은 그 일이 끝나면 저절로 연다(Fable F5)
   if (prevJob && !s.job && screen === 'restore' && catalog?.waiting) void openCatalog();
+  // 하던 일 때문에 못 읽은 기기 목록은 그 일이 끝나면 다시 읽는다(Fable F2)
+  if (prevJob && !s.job && acct.devicesError) { acct = { ...acct, devicesError: null }; if (!drawerWrap.hidden || screen === 'home') void loadDevices(); }
   prevJob = s.job?.kind || null;
 }
 // 상태 읽기가 실패하면 그 까닭을 첫 화면에 쓴다. 호출이 끝나면 밀려 있던 찾기를 잇는다(늦게 친 글이 버려지지 않게)
@@ -39,20 +47,29 @@ const state = () => (fixture ? fixture.state : store.state);
 const now = () => (fixture ? fixture.now : Date.now());
 
 /** 엔진에 아직 없는 기능의 화면 — 실제 상태에서는 열지 않고 「준비 중」 한 줄만 띄운다 */
-const SOON = { 'start-2': '보호 범위 고르기', 'move-1': '이 PC로 옮겨 오기', 'move-2': '이 PC로 옮겨 오기', 'move-3': '이 PC로 옮겨 오기', 'move-4': '이 PC로 옮겨 오기',
-  'undo-1': '사고 되돌리기', 'undo-2': '사고 되돌리기', 'undo-3': '사고 되돌리기', lost: '분실 신고', 'lost-2': '분실 신고', code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
+const SOON = { 'move-1': '이 PC로 옮겨 오기', 'move-2': '이 PC로 옮겨 오기', 'move-3': '이 PC로 옮겨 오기', 'move-4': '이 PC로 옮겨 오기',
+  'undo-3': '사고 되돌리기', lost: '분실 신고', 'lost-2': '분실 신고', code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
 const soon = (what) => note(`${josa(what, '은/는')} 아직 준비 중입니다. 다음 업데이트에서 열립니다.`);
 
-function note(text) {
+/** 실제 상태에서 아직 열 수 없는 화면이면 그 이름, 열 수 있으면 null — 되돌리기 미리 보기는 계정에 이은 PC에서만 연다 */
+function notYet(to) {
+  if (fixture || !to) return null;
+  if (SOON[to]) return SOON[to];
+  const s = state();
+  if ((to === 'undo-1' || to === 'undo-2') && !(s?.account?.connected && s?.configured)) return '사고 되돌리기';
+  return null;
+}
+
+function note(text, holdMs = 4200) {
   noteBar.textContent = text; noteBar.classList.add('on');
-  clearTimeout(noteTimer); noteTimer = setTimeout(() => noteBar.classList.remove('on'), 4200);
+  clearTimeout(noteTimer); noteTimer = setTimeout(() => noteBar.classList.remove('on'), holdMs);
 }
 
 /** 기본 화면이 첫 시작 · 첫 백업일 때는 그 화면으로 */
 function resolve(id, s, model) {
   if (id !== 'home') return id;
   if (s?.job?.kind === 'protect') return 'start-3';
-  if (model.id === 'start') return 'start-1';
+  if (model.id === 'start') return startStep(s) === 'signin' ? 'start-1' : 'start-2';
   return 'home';
 }
 
@@ -74,7 +91,8 @@ function paint() {
   }
   const model = homeModel(s, { now: now(), restoreFail: fixture ? null : restoreFail });
   const id = resolve(screen, s, model);
-  out = renderScreen(id, { state: s, model, now: now(), catalog, ui, fake: !!fixture });
+  if (!fixture) prepare(id, s);
+  out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, fake: !!fixture });
   stage.dataset.tone = out.tone; stage.dataset.kind = out.kind; stage.dataset.screen = id;
   orb.setBusy(!!s.job);
   hereS.textContent = out.here || '';
@@ -103,7 +121,15 @@ function paint() {
     void room.offsetWidth; stage.classList.add('shown');
     if (!lit) { lit = true; orb.lightUp(); }
   }
-  if (!drawerWrap.hidden) { const d = drawer(s); if (d !== lastDrawer) { lastDrawer = d; drawerPanel.innerHTML = d; } }
+  if (!drawerWrap.hidden) {
+    const d = drawer(s, { devices: acct.devices, devicesError: acct.devicesError, now: now() });
+    if (d !== lastDrawer) {
+      // 기기 목록이 늦게 와 서랍을 다시 그려도 키보드 포커스를 그 단추에 둔다(카본 A7)
+      const a = document.activeElement, k = a && drawerPanel.contains(a) && a !== drawerPanel ? focusKey(a) : null;
+      lastDrawer = d; drawerPanel.innerHTML = d;
+      if (k) drawerPanel.querySelector(k)?.focus({ preventScroll: true });
+    }
+  }
 }
 
 /** 다시 그린 뒤 같은 요소를 찾을 열쇠(id · 고른 줄 · 단추 · 고르는 칸) */
@@ -112,6 +138,7 @@ function focusKey(el) {
   if (el.id) return `#${CSS.escape(el.id)}`;
   if (el.dataset?.file) return q('data-file', el.dataset.file);
   if (el.dataset?.pick) return q('data-pick', el.dataset.pick);
+  if (el.dataset?.path) return q('data-path', el.dataset.path); // 서랍의 폴더 「빼기」는 같은 data-act가 여럿이다
   if (el.dataset?.act) return q('data-act', el.dataset.act);
   return null;
 }
@@ -120,8 +147,68 @@ function go(id) {
   if (id !== 'restore' && screen === 'restore') closeCatalog();
   screen = SCREENS.includes(id) ? id : 'home';
   if (screen === 'restore') openCatalog();
+  // 되돌리기 화면을 떠나면 찾은 시각을 버린다 — 다시 들어오면 새로 찾는다(서버가 5분 동안 같은 답을 준다)
+  if (!screen.startsWith('undo-')) undo = null;
+  if (screen === 'undo-1' && !fixture && !undo?.value && !undo?.loading) void loadPlan();
   paint();
   room.focus({ preventScroll: true });
+}
+
+/* ── 개통(engine/src/account.cjs) ── */
+/** 그 화면이 엔진에서 먼저 읽을 것 — 보호 범위는 b2 프로필의 고른 폴더를, 다른 PC가 쓰는 계정은 기기 목록을 */
+function prepare(id, s) {
+  // 한 번만 시도한다 — 그리기마다 부르면 실패나 BUSY가 그리기를 다시 부르며 돈다
+  if (id === 'start-2' && startStep(s) === 'scope' && s.profile !== 'b2' && !acct.switchTried) {
+    acct.switchTried = true; setTimeout(() => void store.call('selectProfile', 'b2'), 0);
+  }
+  if (id === 'start-2' && startStep(s) === 'read' && acct.devices === null && !acct.devicesError && !acct.devicesBusy) setTimeout(() => void loadDevices(), 0);
+}
+/** 다른 호출(단추 · 목록 읽기)이 끝날 때까지 기다린다 — 창의 호출은 한 번에 하나라 겹치면 BUSY로 튕긴다(카본 A1) */
+async function untilFree(limitMs = 60000) {
+  for (let waited = 0; store.busy && waited < limitMs; waited += 250) await new Promise((r) => setTimeout(r, 250));
+  return !store.busy;
+}
+async function loadDevices() {
+  if (fixture || !state()?.account?.connected || acct.devicesBusy) return;
+  acct.devicesBusy = true;
+  let r;
+  try { r = (await untilFree()) ? await store.call('devicesList') : { ok: false, code: 'BUSY' }; } finally { acct.devicesBusy = false; }
+  // 읽지 못하면 빈 목록이 아니라 「읽지 못함」이다 — 다른 기기가 없다고 말하지 않는다(카본 A2). 서랍을 다시 열면 다시 읽는다
+  acct = r.ok && Array.isArray(r.value) ? { ...acct, devices: r.value, devicesError: null } : { ...acct, devices: null, devicesError: failureText(r.code) };
+  paint();
+}
+/** Google로 시작 — 브라우저 로그인을 기다린다(5분이면 엔진이 REAUTH로 끝낸다) */
+async function signIn() {
+  const s = state();
+  if (s?.account && s.account.available === false) return note(failureText('NO_GOOGLE'));
+  acct = { ...acct, signing: true, limit: null }; paint();
+  const r = await store.call('signInGoogle', {});
+  acct = { ...acct, signing: false, devices: null };
+  if (!r.ok) {
+    if (r.code === 'LIMIT_DEVICES') acct = { ...acct, limit: Array.isArray(r.details?.devices) ? r.details.devices : [] };
+    else if (['REAUTH', 'DENIED', 'CANCELED'].includes(r.code)) note('Google 로그인을 마치지 않았습니다. 다시 눌러 주세요.');
+    else note(failureText(r.code));
+  }
+  paint();
+}
+/** 사고 되돌리기 — 서버가 찾은 시각과 그 시각의 계획(restorePlan). 계획은 시각마다 한 번만 묻는다(서버 하루 20번) */
+async function loadPlan(at) {
+  if (fixture) return;
+  if (at === undefined) undo = { loading: true, plans: {} };
+  else undo = { ...undo, pickAt: at, planError: null };
+  paint();
+  const r = (await untilFree()) ? await store.call('restorePlan', ...(at === undefined ? [] : [at])) : { ok: false, code: 'BUSY' };
+  if (!screen.startsWith('undo-')) return; // 그사이 화면을 떠났다 — 다시 들어오면 새로 찾는다(카본 A8)
+  if (!r.ok) {
+    if (at === undefined) undo = { error: r.code === 'BUSY' ? failureText('BUSY') : failureText(r.code), plans: {} };
+    else undo = { ...undo, planError: failureText(r.code) };
+    return paint();
+  }
+  const v = r.value || {};
+  const plans = { ...(undo?.plans || {}) };
+  if (v.plan && Number.isFinite(Number(v.plan.at))) plans[Number(v.plan.at)] = v.plan;
+  undo = at === undefined ? { value: v, plans, pickAt: Number(v.plan?.at ?? v.suggestions?.[0]?.at) } : { ...undo, value: { ...undo.value, plan: v.plan ?? undo.value?.plan }, plans };
+  paint();
 }
 
 /* ── 파일 되살리기 목록(엔진 openFileCatalog · queryFileCatalog · setFileSelection) ── */
@@ -180,10 +267,31 @@ async function run(a, el) {
   if (!a) return;
   if (a.pending) return soon(a.pending);
   if (a.drawer) return openDrawer(el);
-  if (a.to && !fixture && SOON[a.to]) return soon(SOON[a.to]);
+  if (a.to && notYet(a.to)) return soon(notYet(a.to));
   if (a.to) return go(a.to);
   if (!a.call) return;
   if (fixture) return note('예시 화면이라 실제로 보내지 않았습니다.');
+  if (a.signin) return signIn();
+  // 같은 호출이 이미 기다리거나 도는 중이면 버린다 — 두 번 눌러 폴더 고르기 창이 다시 뜨지 않게(프로필 바꾸기를 먼저 보내는 단추도 같다).
+  // 다른 호출(기기 목록 읽기 · 시각 찾기)이 잡고 있을 때만 잠깐 기다렸다 보낸다
+  if (runningCalls.has(a.call)) return;
+  runningCalls.add(a.call);
+  // 도는 동안 그 단추를 막는다 — 창 상태(acct.running)에 두어 화면을 다시 그려도 막힌 채 나온다(Fable FA2).
+  // Google 안내: takeWriteSeat는 늘 브라우저를 연다. rotateReadKey는 받아 둔 열쇠가 없을 때만 열어 두 경우에 다 맞는 글을 쓴다(Fable -c FA1)
+  acct = { ...acct, running: a.id }; paint();
+  try {
+    if (store.busy && !(await untilFree(15000))) return note(failureText('BUSY'));
+    if (a.google) note(a.google === 'maybe' ? '브라우저가 열리면 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저에서 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
+    return await send(a, el);
+  } finally {
+    runningCalls.delete(a.call);
+    acct = { ...acct, running: null };
+    if (a.google && /^브라우저(에서|가 열리면) Google/.test(noteBar.textContent)) noteBar.classList.remove('on');
+    paint();
+  }
+}
+/** 단추 하나의 호출과 그 답의 갈래 */
+async function send(a, el) {
   if (a.call === 'closeWindow') { const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close(); }
   let r;
   if (a.call === 'restoreSelected') {
@@ -192,12 +300,27 @@ async function run(a, el) {
     if (r.ok && r.value?.started) { catalog = null; screen = 'home'; return go('home'); }
     if (!r.ok && (r.code === 'CATALOG_EXPIRED' || r.code === 'SELECTION_STALE')) { note(failureText(r.code)); return openCatalog(); }
   } else if (a.call === 'removeSource') r = await store.call('removeSource', el?.dataset.path ?? a.arg);
+  // 분실 신고 뒤에는 Google 걸음을 확인받아야 봉투를 올린다(설계 2.4 (5)(나)) — 확인했을 때만 googleStepDone
+  else if (a.account) {
+    if (state()?.account?.googleStepRequired && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
+    r = await store.call(a.call, { googleStepDone: acct.googleAck === true });
+    // Google 걸음 확인은 그 한 번의 호출에만 쓴다 — 성공하면 비워, 같은 창에서 다시 걸음이 생기면 다시 확인받는다(카본 A3)
+    if (r.ok) acct = { ...acct, googleAck: false };
+  } else if (a.b2) {
+    // 보호 범위의 폴더는 b2 프로필에 고른다 — 새로 깐 PC의 지금 프로필은 local이다(profiles.cjs)
+    if (state()?.profile !== 'b2') { const sw = await store.call('selectProfile', 'b2'); if (!sw.ok) return note(failureText(sw.code)); }
+    r = await store.call(a.call);
+    if (r.ok) void store.refresh();
+  }
   else if (a.withProfile) r = await store.call(a.call, { profile: state()?.profile });
   else if (a.arg !== undefined) r = await store.call(a.call, a.arg);
   else r = await store.call(a.call);
   // 다른 일이 도는 중이라 거절된 것은 폴더가 없다는 뜻이 아니다(FA3)
   if (!r.ok && (a.call === 'openSelectedRestoreFolder' || a.call === 'openRestoreFolder') && !['BUSY', 'JOB_BUSY', 'CANCELED'].includes(r.code)) return note('되살린 폴더를 찾을 수 없습니다. 옮기거나 지웠다면 「파일 되살리기」로 다시 꺼내 주세요.');
+  if (!r.ok && r.code === 'REPO_EXISTS') { acct = { ...acct, repoExists: true }; return paint(); }
+  if (!r.ok && r.code === 'GOOGLE_STEP') acct = { ...acct, googleAck: false };
   if (!r.ok) return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
+  if (a.call === 'startProtection' || a.call === 'continueBackup') { acct = { ...acct, repoExists: false, googleAck: false }; return go('home'); }
   if (a.call === 'restoreLatest' && store.state?.job) { catalog = null; screen = 'home'; return go('home'); }
   if (a.then) go(a.then);
 }
@@ -221,6 +344,15 @@ stage.addEventListener('click', (e) => {
   if (id === 'more' && catalog) return void query(catalog.query, (catalog.offset || 0) + catalog.rows.length, true);
   if (id === 'clear') return void select('clear');
   if (id === 'reopen') return void openCatalog();
+  if (id === 'google-ack') { acct = { ...acct, googleAck: !acct.googleAck }; return paint(); }
+  if (id === 'devices-reload') { acct = { ...acct, devicesError: null }; paint(); return void loadDevices(); }
+  if (id === 'replan') return void loadPlan();
+  if (id === 'undo-pick') {
+    const at = Number(el.dataset.at); if (!Number.isFinite(at)) return;
+    if (fixture) { undo = { ...undo, pickAt: at }; return paint(); }
+    if (undo?.plans?.[at]) { undo = { ...undo, pickAt: at }; return paint(); }
+    return void loadPlan(at);
+  }
   if (id === 'reveal') {
     const cg = $('#cg'); if (!cg) return;
     const hidden = cg.classList.toggle('hide');
@@ -229,7 +361,7 @@ stage.addEventListener('click', (e) => {
   }
   const inDrawer = drawerPanel.contains(el);
   const a = (!inDrawer && out?.acts?.[id]) || GLOBAL[id];
-  if (inDrawer && a?.to && (fixture || !SOON[a.to])) closeDrawer();
+  if (inDrawer && a?.to && !notYet(a.to)) closeDrawer();
   void run(a, el);
 });
 $('#orb-btn').addEventListener('click', () => { closeDrawer(); go('home'); });
@@ -242,13 +374,15 @@ room.addEventListener('input', (e) => {
 const behind = () => [$('header.top'), room];
 function openDrawer(from) {
   opener = from || (document.activeElement !== document.body ? document.activeElement : null);
-  drawerPanel.innerHTML = drawer(state()); drawerWrap.hidden = false;
+  lastDrawer = drawer(state(), { devices: acct.devices, devicesError: acct.devicesError, now: now() });
+  drawerPanel.innerHTML = lastDrawer; drawerWrap.hidden = false;
+  if (!fixture && state()?.account?.connected) { acct = { ...acct, devicesError: null }; void loadDevices(); }
   for (const el of behind()) if (el) el.inert = true;
   drawerPanel.focus();
 }
 function closeDrawer() {
   if (drawerWrap.hidden) return;
-  drawerWrap.hidden = true;
+  drawerWrap.hidden = true; drawerPanel.innerHTML = ''; lastDrawer = '';
   for (const el of behind()) if (el) el.inert = false;
   const back = opener && opener.isConnected ? opener : $('#orb-btn'); opener = null;
   back.focus();
@@ -285,6 +419,7 @@ window.__wb = Object.freeze({
   show(id, opt = {}) {
     if (opt.state) fixture = { state: opt.state, now: opt.now ?? Date.now() }; else if (opt.live) fixture = null;
     catalog = opt.catalog ?? null; ui = { pick: 'same', ...(opt.ui || {}) };
+    acct = { signing: false, limit: null, repoExists: false, googleAck: false, devices: null, devicesError: null, devicesBusy: false, ...(opt.acct || {}) }; undo = opt.undo ?? null;
     closeDrawer(); screen = SCREENS.includes(id) ? id : 'home'; shownId = null; paint();
     if (opt.drawer) openDrawer();
     stage.classList.toggle('still', !!opt.still);

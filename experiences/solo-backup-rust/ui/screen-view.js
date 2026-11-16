@@ -4,7 +4,7 @@
 // 동적인 값(경로 · 파일 이름 · 기기 이름)은 모두 h()로 막는다. 인라인 style은 쓰지 않는다(CSP) — 너비는 data-pct를 app.js가 넣는다.
 
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
-import { folderName, undoWindow } from './screen-model.js';
+import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 
 export const h = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -47,33 +47,54 @@ function homeRows(m) {
   out.push(row('마지막 확인', h(ev.head[0].v), next ? `다음은 ${h(next.v)}` : ''));
   const [files, bytes] = String(ev.total.v || '').split(' · ');
   const present = ev.folders.rows.filter((r) => !r.x || r.v !== '찾을 수 없음').length;
-  out.push(row('지키는 폴더', `${h(placesKo(present))}${files ? ` · ${h(files)}` : ''}`, h(bytes || '')));
+  // 지킬 폴더를 아직 모르는 연결(복구 전용, 첫 판 전)에는 「0곳」을 쓰지 않는다(Fable F4)
+  if (present || ev.folders.rows.length) out.push(row('지키는 폴더', `${h(placesKo(present))}${files ? ` · ${h(files)}` : ''}`, h(bytes || '')));
   for (const r of ev.folders.rows.filter((x) => x.x)) out.push(r.gone ? row(h(r.k), h(r.path || ''), '<span class="x">찾을 수 없음</span>', 'sub') : row(h(r.k), h(r.v.replace(/ · −.*/, '')), `<span class="x">${h(r.v.replace(/.* · /, ''))}</span>`, 'sub'));
   for (const e of ev.extra) out.push(row(h(e.k), h(e.v)));
   if (m.id !== 'home-run') out.push(row(h(ev.proof.k), h(ev.proof.day), ev.proof.bad ? `<span class="x">${h(ev.proof.short)}</span>` : h(ev.proof.short || '')));
   return `<div class="rows rise i4">${out.join('')}</div>`;
 }
 
-export function homeScreen(m) {
+export function homeScreen(m, acct = null) {
   const link = m.link ? `<div class="act rise i3"><button class="lnk" type="button" data-act="${h(m.link.to)}">${h(m.link.label)} ${I.rarr}</button></div>` : '';
   const r = m.restored;
   const done = r ? `<p class="done${r.bad ? ' bad' : ''} rise i3"><i class="dot" aria-hidden="true"></i><span>${h(r.text)}</span>${r.act ? `<button class="lnk sm" type="button" data-act="${h(r.act.id)}">${h(r.act.label)}</button>` : ''}</p>` : '';
-  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(m.actions.map((a) => ({ ...a })), m.hint ? `<span class="hint">${h(m.hint)}</span>` : '')}</div>`;
-  const map = {}; for (const a of m.actions) map[a.id] = a; if (m.link) map[m.link.to] = { id: m.link.to, to: m.link.to }; if (r?.act) map[r.act.id] = r.act;
+  // 분실 신고 뒤 Google 걸음 — 확인을 받아야 그 화면의 계정 단추(continueBackup · rotateReadKey)가 열린다
+  const ack = !!acct?.googleAck, stepAck = m.googleStep ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="google-ack" aria-pressed="${ack}">${ack ? 'Google에서 지웠습니다 · 확인함' : 'Google에서 지웠습니다'}</button></div>` : '';
+  // 도는 중인 단추(acct.running)와, Google 걸음을 확인하기 전의 계정 단추는 막는다
+  const actions = m.actions.map((a) => (acct?.running === a.id || (m.googleStep && !ack && a.account) ? { ...a, disabled: true } : a));
+  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), m.hint ? `<span class="hint">${h(m.hint)}</span>` : '')}</div>`;
+  const map = {}; for (const a of m.actions) map[a.id] = a; if (m.googleStep) map['google-ack'] = { id: 'google-ack' }; if (m.link) map[m.link.to] = { id: m.link.to, to: m.link.to }; if (r?.act) map[r.act.id] = r.act;
   return { kind: 'home', tone: m.tone, here: '백업·복구', top: [{ id: 'drawer', label: '설정' }], html, acts: map };
 }
 
 /* ── 첫 시작 ───────────────────────────────── */
-function start1() {
-  const html = `<div class="in">${kick('설정할 것이 없습니다')}${say('업무 자료를', '매시간 저절로 지킵니다.')}
-    ${then('Google 계정으로 시작하면 이 PC의 문서, 바탕화면, 사진과 찾아낸 작업 폴더를 암호화해 클라우드에 올립니다.')}
-    ${notes(['<b>SYNK도 백업 내용을 열 수 없습니다.</b> 여는 열쇠는 내 Google 계정에만 맡깁니다.', '그래서 Google 계정에 들어갈 수 있는 사람은 백업도 열 수 있습니다. <b>Google 2단계 인증을 켜 두세요.</b>'])}
-    ${acts([{ id: 'google', label: 'Google로 시작', kind: 'main', icon: 'google' }], `<span class="hint">브라우저가 열리면 계정을 고르고 「계속」을 누르세요.</span><p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><button class="lnk sm" type="button" data-act="code-in">복구 코드로 되살리기</button></p>`)}
+/** 기기 목록의 한 줄(서버 devices · LIMIT_DEVICES의 details.devices) */
+// 좁은 판에서도 꺾이지 않게 마지막 연결은 이름 아래 작은 글로 둔다
+const deviceRow = (d, now) => { const x = deviceLine(d, now); return row(`${h(x.name)}${x.seen ? `<span class="sr"> · </span><br><span class="meta">${h(x.seen)}</span>` : ''}`, h(x.role)); };
+/** 계정 주소 — 개통 계정(account.email), 없으면 옛 복구 연결(recovery.email) */
+const mail = (s) => s?.account?.email || s?.recovery?.email || '';
+/** 11월 12일 오후 2:59 */
+const atKo = (t) => `${dayKo(t).replace(/ [일월화수목금토]$/, '')} ${timeKo(t)}`;
+
+/** 첫 시작 — Google로 시작(signInGoogle). acct는 창이 기억하는 개통 걸음(app.js): signing · limit(기기가 다 참) */
+function start1(s, acct, now, fake) {
+  const signing = !!acct?.signing, limit = Array.isArray(acct?.limit) ? acct.limit.filter((d) => !d?.state || d.state === 'active') : null;
+  const full = limit ? `<div class="box rise i3"><b>이 계정에 이을 수 있는 기기가 다 찼습니다</b>백업하는 기기 하나와 되살리기만 하는 기기 둘까지 이을 수 있습니다. 쓰지 않는 기기를 끊는 길은 다음 업데이트에서 엽니다. 급하면 SYNK에 연락해 주세요.</div>
+    ${limit.length ? `<div class="rows rise i3">${limit.map((d) => deviceRow(d, now)).join('')}</div>` : ''}` : '';
+  const hint = signing ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저가 열리면 계정을 고르고 「계속」을 누르세요.';
+  // 진단(찾아낸 작업 폴더)이 엔진에 들어오기 전에는 다음 화면에서 손님이 폴더를 고른다 — 그 흐름대로 말한다(Fable F3).
+  // 상태에 계정 칸이 없는 예시 화면은 시안 A의 글 그대로
+  const real = !!s?.account || !fake;
+  const html = `<div class="in">${kick(real ? 'Google로 시작' : '설정할 것이 없습니다')}${say('업무 자료를', '매시간 저절로 지킵니다.')}
+    ${then(real ? 'Google 계정으로 시작한 뒤 지킬 폴더를 고르면, 그 폴더를 암호화해 클라우드에 올리고 그다음부터 매시간 바뀐 것만 저절로 올립니다.' : 'Google 계정으로 시작하면 이 PC의 문서, 바탕화면, 사진과 찾아낸 작업 폴더를 암호화해 클라우드에 올립니다.')}
+    ${full || notes(['<b>SYNK도 백업 내용을 열 수 없습니다.</b> 여는 열쇠는 내 Google 계정에만 맡깁니다.', '그래서 Google 계정에 들어갈 수 있는 사람은 백업도 열 수 있습니다. <b>Google 2단계 인증을 켜 두세요.</b>'])}
+    ${acts([{ id: 'google', label: signing ? '브라우저에서 계속해 주세요' : limit ? '다시 시작' : 'Google로 시작', kind: 'main', icon: 'google', disabled: signing }], `<span class="hint">${h(hint)}</span><p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><button class="lnk sm" type="button" data-act="code-in">복구 코드로 되살리기</button></p>`)}
     <p class="foot rise i6">${h(EX.telemetry)}</p></div>`;
-  return { kind: 'home', tone: 'setup', here: '백업·복구', top: [], html, acts: { google: { id: 'google', pending: '개통' }, 'code-in': { id: 'code-in', pending: '복구 코드' } } };
+  return { kind: 'home', tone: 'setup', here: '백업·복구', top: [], html, acts: { google: { id: 'google', call: 'signInGoogle', signin: true }, 'code-in': { id: 'code-in', pending: '복구 코드' } } };
 }
 
-function start2() {
+function start2Example() {
   const list = EX.folders.map((f) => `<div class="row share"><span class="k">${h(f.name)}<span class="sr"> · </span><br><span class="meta">${f.found ? '찾아낸 작업 폴더 · ' : ''}${h(f.path)}</span></span><span class="v">${gauge(f.pct)}</span><span class="w">${h(f.size)} · ${h(f.files)}개</span></div>`).join('');
   const r = panel('보호 범위', `예상 ${EX.total.files}개 · ${EX.total.size}`, `<div class="rows">${list}</div>
     <div class="act"><button class="lnk sm" type="button" data-act="add">다른 폴더 더하기 ${I.rarr}</button></div>
@@ -81,6 +102,44 @@ function start2() {
     <div class="rows">${row('지키는 양', gauge(EX.capPct), `${EX.total.size} / ${EX.cap}까지`, 'share')}</div>`);
   const l = `${kick(`${h(EX.device)} · 보호 범위`)}${say('이 폴더를 지킵니다.')}${then('앱이 골라 둔 그대로 두면 됩니다. 「보호 시작」을 누르면 목록의 폴더를 암호화해 올리기 시작합니다.')}${acts([{ id: 'protect', label: '보호 시작', kind: 'main' }])}<p class="foot rise i6">${h(EX.telemetry)}</p>`;
   return { kind: 'flow', tone: 'setup', here: '보호 범위', top: [], html: flow(l, r), acts: { protect: { id: 'protect', pending: '개통' }, add: { id: 'add', call: 'addSources' } } };
+}
+
+/**
+ * 보호 범위(실제 상태) — 이 PC가 백업할 기기일 때. 고른 폴더(state.selection — b2 프로필)를 보이고 「보호 시작」(startProtection)으로 간다.
+ * 저장소가 이미 있으면(REPO_EXISTS) 「이어서 백업」(continueBackup). 분실 신고 뒤에는 Google 걸음을 확인받아야 단추가 열린다.
+ * 진단이 찾은 작업 폴더 · 예상 크기는 엔진이 아직 주지 않아 그리지 않는다(엔진 부탁 3).
+ */
+function start2(s, acct, fake, now) {
+  if (!s?.account && fake) return start2Example();
+  if (startStep(s) === 'read') return startRead(s, acct, now);
+  const device = h(s?.device || '이 PC');
+  const picked = Array.isArray(s?.selection?.sources) ? s.selection.sources : [];
+  const needStep = !!s?.account?.googleStepRequired, ack = !!acct?.googleAck, run = acct?.running || null;
+  const blocked = !picked.length || (needStep && !ack) || !!run;
+  const stepBox = needStep ? `<div class="box rise i3"><b>${h(GOOGLE_STEP.title)}</b>${h(GOOGLE_STEP.text)}</div>
+    <div class="act rise i3"><button class="lnk sm" type="button" data-act="google-ack" aria-pressed="${ack}">${ack ? 'Google에서 지웠습니다 · 확인함' : 'Google에서 지웠습니다'}</button></div>` : '';
+  const list = picked.length ? picked.map((p) => row(h(folderName(p)), `<span class="meta">${h(p)}</span>`)).join('') : '<p class="empty">아직 고른 폴더가 없습니다.</p>';
+  const r = panel(acct?.repoExists ? '이어서 지킬 폴더' : '보호 범위', picked.length ? `폴더 ${count(picked.length)}개` : '', `<div class="rows">${list}</div>
+    <div class="act"><button class="lnk sm" type="button" data-act="pick"${run ? ' aria-disabled="true"' : ''}>${picked.length ? '폴더 다시 고르기' : '폴더 고르기'} ${I.rarr}</button></div>
+    <p class="foot">여러 폴더를 한 번에 고를 수 있습니다. 고른 폴더 안의 파일을 모두 암호화해 올립니다.</p>`);
+  const hint = !picked.length ? '<span class="hint">지킬 폴더를 먼저 골라 주세요.</span>' : needStep && !ack ? '<span class="hint">Google 계정을 정리한 뒤에 누를 수 있습니다.</span>' : '';
+  const l = acct?.repoExists
+    ? `${kick(`${device} · 이어서 백업`)}${say('이 계정에는', '이미 백업이 있습니다.')}${then('같은 PC를 다시 깔았거나 옛 PC의 연결을 끊었다면, 그 백업에 이어서 이 PC가 매시간 올립니다. 지금까지의 판은 그대로 둡니다.')}${stepBox}${acts([{ id: 'continue', label: '이어서 백업', kind: 'main', disabled: blocked }], hint)}`
+    : `${kick(`${device} · 보호 범위`)}${say(picked.length ? '이 폴더를 지킵니다.' : '지킬 폴더를 고르세요.')}${then(picked.length ? '「보호 시작」을 누르면 목록의 폴더를 암호화해 올리기 시작합니다.' : '문서, 바탕화면, 작업 폴더처럼 매일 고치는 폴더를 고르세요.')}${stepBox}${acts([{ id: 'protect', label: '보호 시작', kind: 'main', disabled: blocked }], hint)}`;
+  return { kind: 'flow', tone: 'setup', here: '보호 범위', top: [], html: flow(l, r),
+    acts: { protect: { id: 'protect', call: 'startProtection', account: true }, continue: { id: 'continue', call: 'continueBackup', account: true }, pick: { id: 'pick', call: 'chooseSources', b2: true }, 'google-ack': { id: 'google-ack' } } };
+}
+
+/** 이 계정의 백업을 다른 PC가 하고 있을 때(role read). 옮겨 오기 · 이어서 백업은 엔진 부탁(12 · 옮겨 오기 메서드)이 들어온 뒤에 잇는다 */
+function startRead(s, acct, now) {
+  const device = h(s?.device || '이 PC'), writer = writerName(s, acct?.devices);
+  const l = `${kick(`${device} · 이 계정의 백업`)}${say('이 계정의 백업은', writer ? `「${h(writer)}」${pp(writer, '이/가')} 하고 있습니다.` : '다른 PC가 하고 있습니다.')}
+    ${then('백업하는 기기는 한 번에 하나입니다. 새 PC로 바꾸셨다면 옛 PC의 백업을 이 PC로 옮겨 올 수 있습니다.')}
+    ${acts([{ id: 'move', label: '이 PC로 옮겨 오기', kind: 'main' }, { id: 'take', label: '되살리지 않고 이 PC에서 이어서 백업', kind: 'link' }], '<span class="hint">두 길 모두 다음 업데이트에서 열립니다. 그때까지 옛 PC는 그대로 매시간 백업합니다.</span>')}`;
+  const devices = Array.isArray(acct?.devices) ? acct.devices : null;
+  const r = panel('이 계정의 기기', '', devices ? (devices.length ? `<div class="rows">${devices.map((d) => deviceRow(d, now)).join('')}</div>` : '<p class="empty">기기 목록이 비어 있습니다.</p>')
+    : acct?.devicesError ? `<p class="empty">기기 목록을 읽지 못했습니다. ${h(acct.devicesError)}</p><div class="act"><button class="lnk sm" type="button" data-act="devices-reload">다시 읽기 ${I.rarr}</button></div>` : '<p class="empty">기기 목록을 읽는 중입니다.</p>');
+  return { kind: 'flow', tone: 'setup', here: '이 계정의 백업', top: [], html: flow(l, r), acts: { move: { id: 'move', pending: '이 PC로 옮겨 오기' }, take: { id: 'take', pending: '이 PC에서 이어서 백업' } } };
 }
 
 function start3(s, fake) {
@@ -164,7 +223,7 @@ function move0(s, now, fake) {
     ${acts([{ id: 'backup', label: '지금 한 번 더 백업', kind: 'main' }], '<p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><button class="lnk sm" type="button" data-act="code">복구 코드 만들기</button></p><span class="hint">복구 코드로는 새 PC에 파일만 옮겨 옵니다. 이어서 백업하려면 Google 로그인이 필요합니다.</span>')}`;
   const r = panel('새 PC에서 할 일', '이 PC는 그대로 두고, 새 PC에서 합니다', `${steps([
     { h: '업무 백업 깔기', p: '처음 받은 곳에서 설치 파일을 다시 받아 새 PC에서 엽니다.' },
-    { h: '같은 Google 계정으로 시작', p: h(s?.recovery?.email || (fake ? EX.account : '이 PC에서 백업을 시작한 그 계정입니다.')) },
+    { h: '같은 Google 계정으로 시작', p: h(mail(s) || (fake ? EX.account : '이 PC에서 백업을 시작한 그 계정입니다.')) },
     { h: '「이 PC로 옮겨 오기」 누르기', p: '놓을 자리, 원본과의 대조, 다시 깔 프로그램까지 앱이 차례로 안내합니다.' },
   ])}<div class="rows">${row('옮겨 올 것', h(files))}${fake ? row('다시 깔 프로그램', `${EX.programs.length}개 찾아 둠`) : ''}</div>`);
   return { kind: 'flow', tone: 'ok', here: '새 PC로 옮겨 오기', top: [{ id: 'home', label: '닫기' }], html: flow(l, r),
@@ -230,7 +289,7 @@ function move4() {
 }
 
 /* ── 사고 되돌리기 ─────────────────────────── */
-function undo1(now) {
+function undo1Example(now) {
   const u = EX.undo, w = undoWindow(u.pickAt, now), max = Math.max(...EX.undoHours.map(([, v]) => v));
   const bars = EX.undoHours.map(([, v], i) => `<div class="b${v > 1000 ? ' hot' : ''}${v === 0 ? ' z' : ''}${i === 6 ? ' pickd' : ''}" data-pct="${v === 0 ? 0 : Math.max(1.4, (v / max) * 100).toFixed(1)}">${v > 1000 ? `<span class="v">${v.toLocaleString('en-US')}</span>` : ''}${i === 6 ? '<span class="pk">오후 2:59</span>' : ''}</div>`).join('');
   const ticks = EX.undoHours.map((_, i) => `<span class="${EX.undoTicks[i] ? 's' : ''}${i === EX.undoHours.length - 1 ? ' e' : ''}">${EX.undoTicks[i] || ''}</span>`).join('');
@@ -244,7 +303,7 @@ function undo1(now) {
   return { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [1, 3], top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { next: { id: 'next', to: 'undo-2' }, other: { id: 'other', pending: '다른 시각' } } };
 }
 
-function undo2() {
+function undo2Example() {
   const u = EX.undo;
   const l = `${kick('미리 보기')}${say(`${h(u.pickShortKo)}로`, '되돌립니다.')}${then('클라우드 백업만 그 시각으로 되돌리고, 이 PC의 파일은 그대로 둡니다.')}
     <div class="rise i3">${steps([
@@ -258,6 +317,63 @@ function undo2() {
     <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-app">연결된 앱 ${I.ext}</button></div>`);
   return { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [2, 3], back: 'undo-1', top: [{ id: 'back', label: '뒤로' }, { id: 'home', label: '닫기' }], html: flow(l, r),
     acts: { next: { id: 'next', pending: '되돌리기' }, 'g-dev': { id: 'g-dev', pending: 'Google 기기 관리 열기' }, 'g-app': { id: 'g-app', pending: '연결된 앱 열기' } } };
+}
+
+/** 서버가 고른 되돌릴 시각의 까닭(server/detect.mjs suggest) */
+const REASON = { 'before-overwrite': '파일이 한꺼번에 덮어써지기 직전', 'before-settings-change': '백업 설정이 바뀌기 직전', 'before-mass-hide': '백업 묶음이 한꺼번에 지워지기 직전' };
+const reasonKo = (r) => REASON[r] || '백업이 크게 바뀌기 직전';
+
+/**
+ * 사고 되돌리기 1(실제 상태) — restorePlan()의 { suggestions, plan, oldestAt }. 시간마다 숨겨진 묶음 수는 서버가 주지 않아
+ * 예시의 막대 그림 대신 서버가 찾은 시각을 고르게 한다. undo는 창이 기억하는 { loading, error, value, pickAt }.
+ */
+function undo1(undo, now) {
+  const v = undo?.value, list = Array.isArray(v?.suggestions) ? v.suggestions.filter((x) => Number.isFinite(Number(x?.at))) : [];
+  const pickAt = Number(undo?.pickAt ?? v?.plan?.at ?? list[0]?.at);
+  const pick = list.find((x) => Number(x.at) === pickAt) || null;
+  const top = [{ id: 'home', label: '닫기' }];
+  const base = { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [1, 3], top };
+  if (!v) {
+    const l = `${kick('사고가 났을 때 되돌리기')}${say('되돌릴 시각을', '찾고 있습니다.')}${then(undo?.error ? h(undo.error) : '지난 29일 동안 백업이 한꺼번에 바뀐 때를 SYNK 서버가 찾습니다.')}${undo?.error ? acts([{ id: 'replan', label: '다시 찾기', kind: 'line' }]) : ''}`;
+    return { ...base, html: flow(l, panel('되돌릴 수 있는 시각', '', `<p class="empty">${undo?.error ? '시각을 찾지 못했습니다.' : '찾는 중입니다.'}</p>`)), acts: { replan: { id: 'replan' } } };
+  }
+  if (!list.length) {
+    const l = `${kick('사고가 났을 때 되돌리기')}${say('한꺼번에 바뀐 때를', '찾지 못했습니다.')}${then('지난 29일 동안 백업 묶음이 덮어써지거나 한꺼번에 지워진 때가 없습니다. 파일 하나를 잘못 고쳤다면 「파일 되살리기」로 꺼내는 편이 빠릅니다.')}
+      ${acts([{ id: 'restore', label: '파일 되살리기', kind: 'main' }, { id: 'other', label: '다른 시각 고르기', kind: 'link' }])}`;
+    return { ...base, html: flow(l, panel('되돌릴 수 있는 시각', '', '<p class="empty">서버가 찾은 시각이 없습니다.</p>')), acts: { restore: { id: 'restore', to: 'restore' }, other: { id: 'other', pending: '다른 시각 고르기' } } };
+  }
+  const w = pick ? undoWindow(Number(pick.at), now) : null;
+  const rows = list.map((x) => `<button class="fl pickrow" type="button" role="radio" aria-checked="${Number(x.at) === pickAt}" data-act="undo-pick" data-at="${Number(x.at)}"><span class="cb" aria-hidden="true"></span><span class="nm">${h(atKo(Number(x.at)))}</span><span class="ds">${h(reasonKo(x.reason))}</span></button>`).join('');
+  const l = `${kick('백업이 바뀌었습니다')}${say('언제로 되돌릴까요?')}
+    ${then(pick ? `${h(reasonKo(pick.reason))}인 <b class="num">${h(atKo(Number(pick.at)))}</b>${pp(atKo(Number(pick.at)), '을/를')} 골라 두었습니다.` : '오른쪽에서 되돌릴 시각을 골라 주세요.')}
+    ${w ? `<div class="box rise i3"><b>되돌릴 수 있는 날이 ${w.daysLeft}일 남았습니다</b>지워진 묶음은 30일째부터 사라지기 시작해, 하루 여유를 두고 <span class="keep">${h(w.untilKo)}</span>까지 되돌릴 수 있습니다.</div>` : ''}
+    ${acts([{ id: 'next', label: '이 시각으로 미리 보기', kind: 'main', disabled: !pick }, { id: 'other', label: '다른 시각 고르기', kind: 'link' }])}`;
+  const r = panel('되돌릴 수 있는 시각', 'SYNK 서버가 찾은 때 · 지난 29일', `<div class="files" role="radiogroup" aria-label="되돌릴 시각">${rows}</div>
+    <p class="foot">백업은 작은 묶음으로 나눠 올리고, 지워진 묶음은 30일 동안 숨겨 둡니다. 서버는 묶음이 한꺼번에 덮어써지거나 숨겨진 때의 바로 앞을 고릅니다.</p>`);
+  return { ...base, html: flow(l, r), acts: { next: { id: 'next', to: 'undo-2' }, other: { id: 'other', pending: '다른 시각 고르기' } } };
+}
+
+/** 사고 되돌리기 2(실제 상태) — 고른 시각의 계획(plan: counts{copy, hide, unchanged} · copyBytes). 실행은 엔진 부탁 7 · 8 뒤에 잇는다 */
+function undo2(undo, now) {
+  const plan = undo?.plans?.[undo?.pickAt] || (Number(undo?.value?.plan?.at) === Number(undo?.pickAt) ? undo.value.plan : null);
+  const at = Number(undo?.pickAt ?? plan?.at);
+  const when = Number.isFinite(at) ? atKo(at) : '';
+  const c = plan?.counts || {};
+  const l = `${kick('미리 보기')}${say(when ? `${h(when)}${pp(when, '으로/로')}` : '고른 시각으로', '되돌립니다.')}${then('클라우드 백업만 그 시각으로 되돌리고, 이 PC의 파일은 그대로 둡니다.')}
+    <div class="rise i3">${steps([
+      { h: '이 계정의 모든 기기 연결을 새 것으로 바꿉니다', p: '이 PC만 새 연결을 받습니다. 누가 연결 열쇠를 가져갔을 수도 있어서입니다.' },
+      { h: '그 시각의 백업을 다시 보이게 합니다', p: '지우는 것은 없습니다. 그 시각 뒤에 올라온 묶음은 숨겨 두었다가 「되돌리기 취소」로 다시 보이게 할 수 있습니다.' },
+      { h: '되돌린 결과를 확인할 때까지 자동 백업과 정리를 멈춥니다', p: '되돌린 뒤 「여기서부터 계속」과 「되돌리기 취소」 가운데 하나를 고르면 다시 돕니다. 요청과 실행은 이 계정의 모든 기기와 메일로 알립니다.' },
+    ])}</div>
+    ${acts([{ id: 'run', label: 'Google로 확인하고 되돌리기', kind: 'main', icon: 'google' }], '<span class="hint">되돌리기 실행은 다음 업데이트에서 열립니다. 지금은 미리 보기까지 됩니다.</span>')}`;
+  const body = plan ? `<div class="rows">${row('다시 보이게 할 묶음', `${count(c.copy ?? 0)}개`, h(size(plan.copyBytes ?? 0)))}${row('숨길 묶음', `${count(c.hide ?? 0)}개`, '그 시각 뒤에 올라온 것')}${row('그대로인 묶음', `${count(c.unchanged ?? 0)}개`)}</div>
+    <p class="foot">묶음은 백업을 나눠 올린 조각이라 파일 수와 다릅니다. 되돌린 뒤에는 「파일 되살리기」로 그 시각의 파일을 꺼내 확인합니다.</p>`
+    : `<p class="empty">${undo?.planError ? h(undo.planError) : '계획을 세우는 중입니다.'}</p>`;
+  const r = panel('그 시각으로 되돌리면', when ? `${h(when)} 기준` : '', `${body}
+    <h3>이 PC가 감염됐을 수 있으면</h3><p class="foot">먼저 치료하거나 깨끗한 다른 PC에서 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요.</p>
+    <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-app">연결된 앱 ${I.ext}</button></div>`);
+  return { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [2, 3], back: 'undo-1', top: [{ id: 'back', label: '뒤로' }, { id: 'home', label: '닫기' }], html: flow(l, r),
+    acts: { run: { id: 'run', pending: '되돌리기 실행' }, 'g-dev': { id: 'g-dev', pending: 'Google 기기 관리 열기' }, 'g-app': { id: 'g-app', pending: '연결된 앱 열기' } } };
 }
 
 function undo3() {
@@ -305,7 +421,7 @@ function code(s) {
     ${acts([{ id: 'print', label: '인쇄', kind: 'main' }, { id: 'usb', label: 'USB에 저장', kind: 'line' }, { id: 'home', label: '다음에 하기', kind: 'link' }], '<span class="hint">건너뛰면 설정 › 복구 코드에서 언제든 만들 수 있습니다.</span>')}`;
   const groups = EX.codeGroups;
   const grid = Array.from({ length: Math.ceil(groups.length / 4) }, (_, r) => `<i>${r + 1}</i>${groups.slice(r * 4, r * 4 + 4).map((g) => `<span>${g}</span>`).join('')}`).join('');
-  const r = panel('업무 백업 · 복구 코드', `만든 날 2026. 11. 13. · ${h(s?.device || EX.device)} · ${h(s?.recovery?.email || EX.account)}`, `<div class="code">
+  const r = panel('업무 백업 · 복구 코드', `만든 날 2026. 11. 13. · ${h(s?.device || EX.device)} · ${h(mail(s) || EX.account)}`, `<div class="code">
     <div class="selbar"><span>가려 둠 · 옆에 다른 사람이 없을 때만 펼쳐 보세요</span><button class="lnk sm" type="button" data-act="reveal" aria-controls="cg" aria-expanded="false">글자 보기</button></div>
     <div class="cg hide" id="cg" role="group" aria-label="복구 코드" aria-hidden="true">${grid}</div>
     <p class="foot">새 PC에서 업무 백업을 깔고 첫 화면의 <b>「복구 코드로 되살리기」</b>를 누른 뒤, USB에 저장한 파일을 열거나 이 글자를 그대로 넣으세요. Google 계정 없이 열립니다.</p>
@@ -322,26 +438,41 @@ function massList() {
 }
 
 /* ── 설정 서랍 ─────────────────────────────── */
-export function drawer(s) {
+export function drawer(s, extra = {}) {
   const st = s || {};
   const folders = (st.sources || []).map((p) => `<div class="dr"><span class="nm">${h(folderName(p))}</span><span class="vl">${h(p)}${(st.missingSources || []).some((m) => m.toLowerCase() === p.toLowerCase()) ? ' · 찾을 수 없음' : ''}</span><button class="lnk sm" type="button" data-act="drop" data-path="${h(p)}" aria-label="「${h(folderName(p))}」 지키는 목록에서 빼기">빼기</button></div>`).join('');
   const automatic = !!st.automatic;
   const G = (title, rows) => `<section class="dg"><h3>${h(title)}</h3>${rows}</section>`;
   const R = (nm, vl, a = null, nudge = false) => `<div class="dr"><span class="nm">${h(nm)}${nudge ? '<i aria-hidden="true"></i><span class="sr"> (권함)</span>' : ''}</span><span class="vl">${vl}</span>${a ? `<button class="lnk sm" type="button" data-act="${h(a.id)}" aria-label="${h(`${nm} ${a.label}`)}">${h(a.label)}</button>` : ''}</div>`;
   return `<div class="dh"><h2>설정</h2><button class="tbtn" type="button" data-act="drawer-close">닫기</button></div>
-    <p class="who">${h(st.recovery?.email || '')}${st.recovery?.email ? ' · ' : ''}${h(st.device || '이 PC')} · <span class="num">${h(st.version || '0.7.0')}</span></p>
+    <p class="who">${h(mail(st))}${mail(st) ? ' · ' : ''}${h(st.device || '이 PC')} · <span class="num">${h(st.version || '0.7.0')}</span></p>
     ${G('지키는 것', `${folders || R('지키는 폴더', '아직 없음')}<div class="dr"><span class="nm">폴더 더하기</span><span class="vl">문서, 바탕화면 밖의 작업 폴더도 지킬 수 있습니다</span><button class="lnk sm" type="button" data-act="add">더하기</button></div>
       ${R('쓰는 중인 파일', st.admin === false ? '표준 사용자 계정이라 그 프로그램을 닫았을 때 새로 담깁니다' : st.admin === true ? '관리자 계정이라 4시간에 한 번 따로 읽어 채웁니다' : '다른 프로그램이 쓰는 중인 파일은 그 프로그램을 닫은 뒤 첫 확인 때 담깁니다')}
       ${R('외장 드라이브 사본', '꺼짐', { id: 'external', label: '켜기' })}`)}
     ${G('되찾는 길', `${R('복구 코드', 'Google 계정에 못 들어갈 때 쓰는 종이 한 장 · 다음 업데이트에서 엽니다', { id: 'code', label: '만들기' }, true)}
-      ${R('내 기기', `${st.device ? `${h(st.device)}(이 PC)` : '이 PC'} · 백업하는 기기. 잃어버리면 다른 PC나 새 PC의 이 서랍에서 분실 신고합니다(다음 업데이트에서 엽니다). 다른 PC가 없으면 SYNK에 연락해 주세요`, { id: 'lost', label: '다른 기기 분실 신고' })}
-      ${R('사고가 났을 때 되돌리기', '29일 안이면 그 시각으로 되돌립니다 · 다음 업데이트에서 엽니다', { id: 'undo-1', label: '되돌리기' })}`)}
+      ${myDevices(st, extra, R)}
+      ${R('사고가 났을 때 되돌리기', st.account?.connected && st.configured ? '29일 안이면 그 시각으로 되돌립니다. 지금은 시각 찾기와 미리 보기까지 됩니다' : '29일 안이면 그 시각으로 되돌립니다 · 다음 업데이트에서 엽니다', { id: 'undo-1', label: '되돌리기' })}`)}
     ${G('이 앱', `${R('매시간 자동 백업', automatic ? '켜짐 · 창을 닫아도 매시간 뒤에서 조용히 돕니다' : '꺼짐', { id: automatic ? 'auto-off' : 'auto-on', label: automatic ? '끄기' : '켜기' })}
       ${R('트레이 아이콘', '알림 영역의 아이콘이 없어도 백업은 매시간 돕니다', { id: 'tray', label: '켜고 끄기' })}
       ${R('시범 측정', '백업, 알림, 설치 결과 숫자를 보냅니다. 파일 이름, 경로, 내용은 보내지 않습니다', { id: 'telemetry', label: '보내는 내용 보기' })}
       ${R('업데이트', `지금 판 <span class="num">${h(st.version || '0.7.0')}</span>`)}
       ${R('도움 요청', '보낼 내용을 먼저 보여 드립니다', { id: 'help', label: '쓰기' })}
-      ${R('계정', `${h(st.recovery?.email || 'Google 계정')} · Google 2단계 인증을 켜 두세요`)}`)}`;
+      ${R('계정', `${h(mail(st) || 'Google 계정')} · Google 2단계 인증을 켜 두세요`)}`)}`;
+}
+
+/**
+ * 설정 서랍의 「내 기기」 — 계정에 이은 PC면 기기 목록(devicesList, 서랍을 열 때 읽는다)을 줄마다 보인다.
+ * 분실 신고 · 끊기는 엔진 부탁(9 · 10 · 11)이 들어온 뒤에 연다.
+ */
+function myDevices(st, extra, R) {
+  const devices = extra?.devices, now = extra?.now ?? Date.now();
+  const me = `${st.device ? `${h(st.device)}(이 PC)` : '이 PC'}`;
+  const lostBtn = { id: 'lost', label: '다른 기기 분실 신고' };
+  if (!st.account?.connected) return R('내 기기', `${me} · 백업하는 기기. 잃어버리면 다른 PC나 새 PC의 이 서랍에서 분실 신고합니다(다음 업데이트에서 엽니다). 다른 PC가 없으면 SYNK에 연락해 주세요`, lostBtn);
+  const role = st.account.role === 'read' ? '되살리기만 하는 기기' : '백업하는 기기';
+  const list = Array.isArray(devices) ? devices.filter((d) => !d.current) : null;
+  const rows = list ? list.map((d) => { const x = deviceLine(d, now); return `<div class="dr sub"><span class="nm">${h(x.name)}</span><span class="vl">${h(x.role)}${x.seen ? ` · ${h(x.seen)}` : ''}</span></div>`; }).join('') : '';
+  return `${R('내 기기', `${me} · ${role}${list && !list.length ? ' · 이 계정에 이은 다른 기기는 없습니다' : list ? '' : extra?.devicesError ? ' · 다른 기기를 읽지 못했습니다. 서랍을 다시 열면 다시 읽습니다' : ' · 다른 기기를 읽는 중입니다'}. 분실 신고는 다음 업데이트에서 엽니다`, lostBtn)}${rows}`;
 }
 
 /** 쓰는 중인 파일 화면의 계정 갈래 — 엔진이 관리자 여부를 아직 주지 않으면(FUTURE.admin) 4시간 따로 읽기를 약속하지 않는다 */
@@ -355,8 +486,8 @@ function partialMode(id, s, fake) {
 export function renderScreen(id, ctx) {
   const s = ctx.state, now = ctx.now, fake = !!ctx.fake;
   switch (id) {
-    case 'start-1': return start1();
-    case 'start-2': return start2();
+    case 'start-1': return start1(s, ctx.acct, now, fake);
+    case 'start-2': return start2(s, ctx.acct, fake, now);
     case 'start-3': return start3(s, fake);
     case 'restore': return restore(s, now, ctx.catalog);
     case 'partial': case 'partial-std': return partial(s, now, partialMode(id, s, fake));
@@ -365,14 +496,14 @@ export function renderScreen(id, ctx) {
     case 'move-2': return move2();
     case 'move-3': return move3();
     case 'move-4': return move4();
-    case 'undo-1': return undo1(now);
-    case 'undo-2': return undo2();
+    case 'undo-1': return ctx.undo || !fake ? undo1(ctx.undo, now) : undo1Example(now);
+    case 'undo-2': return ctx.undo || !fake ? undo2(ctx.undo, now) : undo2Example();
     case 'undo-3': return undo3();
     case 'lost': return lost1();
     case 'lost-2': return lost2();
     case 'code': return code(s);
     case 'mass-list': return massList();
-    default: return homeScreen(ctx.model);
+    default: return homeScreen(ctx.model, ctx.acct);
   }
 }
 

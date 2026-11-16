@@ -99,7 +99,9 @@ test('화면 원천: 손님이 보는 글(HTML · 화면 스크립트의 문자�
     const src = fs.readFileSync(path.join(UI, f), 'utf8');
     // 주석은 개발자 글이라 뺀다. 스크립트는 문자열 · 템플릿 글 조각을 모두 본다(한글이 없는 라틴 글도). orb.js는 셰이더 원천(GLSL)뿐이고 손님 글이 없어 뺀다
     // 하이픈으로 이은 영문 소문자 값(엔진 상태 값 'no-snapshot' · 작업 종류 'restore-selected')은 코드 이름이라 뺀다. 손님 글은 이런 꼴이 아니다
-    const text = f.endsWith('.html') ? visibleText(src) : literals(src).filter((x) => !/^[a-z0-9]+(?:-[a-z0-9]+)+$/.test(x)).join(' \n ');
+    // 대문자와 밑줄로 쓴 엔진 오류 부호('REPO_EXISTS')와 프로필 이름('b2' · 'local', engine/src/profiles.cjs)도 코드 값이라 뺀다
+    const code = (x) => /^[a-z0-9]+(?:-[a-z0-9]+)+$/.test(x) || /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(x) || ['b2', 'local'].includes(x);
+    const text = f.endsWith('.html') ? visibleText(src) : literals(src).filter((x) => !code(x)).join(' \n ');
     assert.deepEqual(findBanned(text), [], `${f}`);
   }
 });

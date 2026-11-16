@@ -51,6 +51,10 @@ async function wd(method, url, body) {
     check('실제 엔진 상태로 첫 화면이 그려진다', live && live.screen, live ? `${live.screen} · 「${live.title}」` : '120번 기다려도 화면 없음');
     const engine = await runAsync('const done=arguments[arguments.length-1];window.backup.getState().then(r=>done({ok:r.ok,configured:r.value&&r.value.configured,version:r.value&&r.value.version}),()=>done(null))');
     check('브리지 getState가 엔진에 닿는다', engine && engine.ok, JSON.stringify(engine));
+    // 개통 상태(engine/src/account.cjs state()) — 화면이 읽는 칸이 오고, 열쇠 · 토큰 · 비밀번호 칸은 없다
+    const acc = await runAsync('const done=arguments[arguments.length-1];window.backup.getState().then(r=>{const a=r.value&&r.value.account;done(a?{keys:Object.keys(a),available:a.available,connected:a.connected,text:JSON.stringify(a)}:null)},()=>done(null))');
+    check('상태에 계정 칸이 온다(account)', acc && typeof acc.available === 'boolean' && typeof acc.connected === 'boolean', acc ? acc.keys.join(',') : '없음');
+    check('계정 칸에 열쇠 · 토큰 · 비밀번호가 없다', acc && !/token|secret|password|refresh|applicationKey|keyId/i.test(acc.text), acc ? acc.keys.join(',') : '없음');
     const env2 = await run("return {font:document.fonts.check('16px \"SUIT Variable\"'),fonts:[...document.fonts].map(f=>f.family+':'+f.status),webgl:(()=>{const c=document.createElement('canvas');return !!c.getContext('webgl')})(),w:innerWidth,h:innerHeight}");
     check('SUIT 글꼴이 실렸다(Tauri CSP font-src)', env2.font, env2.fonts.join(', '));
     check('WebGL이 켜진다(구)', env2.webgl);
@@ -85,6 +89,11 @@ async function wd(method, url, body) {
     await run('document.querySelector(\'.drawer [data-act="code"]\').click()');
     const after = await run('return {screen:document.getElementById("stage").dataset.screen,note:document.getElementById("note").textContent}');
     check('실제 상태에서 「복구 코드 만들기」는 예시 화면을 열지 않는다', after.screen !== 'code' && /준비 중/.test(after.note), JSON.stringify(after));
+    // 계정에 잇지 않은 PC에서는 「사고가 났을 때 되돌리기」도 서버에 묻지 않고 「준비 중」 한 줄만
+    await run('document.querySelector(\'.drawer [data-act="undo-1"]\').click()');
+    const undoAfter = await run('return {screen:document.getElementById("stage").dataset.screen,note:document.getElementById("note").textContent}');
+    check('계정에 잇지 않은 PC에서 되돌리기는 열지 않는다', undoAfter.screen !== 'undo-1' && /준비 중/.test(undoAfter.note), JSON.stringify(undoAfter));
+    if (liveScreen === 'start-1') check('첫 시작에 「Google로 시작」 단추가 있다', await run('return !!document.querySelector(\'#room [data-act="google"]\')'));
     await run('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape"}))');
     check('Esc로 설정 서랍이 닫힌다', await run('return document.getElementById("drawer").hidden'));
     // ③ 쪽 오류(앱이 남긴 것)

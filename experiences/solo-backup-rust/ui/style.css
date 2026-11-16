@@ -266,3 +266,7 @@ a { color: inherit; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .rise { opacity: 1; transform: none; }
 }
+
+/* 설정 서랍 · 이 계정의 다른 기기(내 기기 아래 줄) */
+.dr.sub { padding: 9px 0 9px 14px; }
+.dr.sub .nm { font-size: 14px; }

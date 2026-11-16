@@ -37,6 +37,29 @@ function serve() {
   return new Promise((r) => server.listen(0, '127.0.0.1', () => r(server)));
 }
 
+// 계정의 기기(서버 devices 꼴)와 되돌리기 미리 보기(restorePlan 꼴)
+const DEVICES = [
+  { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', createdAt: Date.parse('2026-11-01T09:00:00+09:00'), lastSeenAt: Date.parse('2026-11-13T14:02:00+09:00'), current: false },
+  { id: 'b'.repeat(12), name: '옛 데스크톱', role: 'read', state: 'revoked', createdAt: Date.parse('2026-10-20T09:00:00+09:00'), lastSeenAt: Date.parse('2026-11-02T18:00:00+09:00'), current: false },
+  { id: 'c'.repeat(12), name: '새 데스크톱', role: 'read', state: 'active', createdAt: Date.parse('2026-11-13T14:30:00+09:00'), lastSeenAt: Date.parse('2026-11-13T14:39:00+09:00'), current: true },
+];
+// 기본 화면 상태(이 PC가 「작업 노트북」)에서 여는 서랍의 기기 목록
+const DEVICES_HOME = [
+  { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', createdAt: Date.parse('2026-11-01T09:00:00+09:00'), lastSeenAt: Date.parse('2026-11-13T14:39:00+09:00'), current: true },
+  { id: 'b'.repeat(12), name: '옛 데스크톱', role: 'read', state: 'revoked', createdAt: Date.parse('2026-10-20T09:00:00+09:00'), lastSeenAt: Date.parse('2026-11-02T18:00:00+09:00'), current: false },
+  { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active', createdAt: Date.parse('2026-11-05T20:00:00+09:00'), lastSeenAt: Date.parse('2026-11-12T21:10:00+09:00'), current: false },
+];
+// 기기가 다 찬 계정(LIMIT_DEVICES의 details.devices) — 한도를 채운 셋과, 한도에 들지 않는 끊긴 기기 하나
+const DEVICES_FULL = [
+  { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', lastSeenAt: Date.parse('2026-11-13T14:02:00+09:00') },
+  { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active', lastSeenAt: Date.parse('2026-11-12T21:10:00+09:00') },
+  { id: 'e'.repeat(12), name: '옛 노트북', role: 'read', state: 'active', lastSeenAt: Date.parse('2026-09-30T18:00:00+09:00') },
+  { id: 'b'.repeat(12), name: '옛 데스크톱', role: 'read', state: 'revoked', lastSeenAt: Date.parse('2026-11-02T18:00:00+09:00') },
+];
+const PICK = Date.parse('2026-11-12T14:59:00+09:00');
+const PLAN = { at: PICK, counts: { copy: 3412, hide: 186, unchanged: 9120 }, copyBytes: Math.round(5.6 * 1024 ** 3) };
+const UNDO = { value: { suggestions: [{ at: PICK, reason: 'before-mass-hide' }, { at: Date.parse('2026-11-04T09:12:00+09:00'), reason: 'before-overwrite' }], plan: PLAN, oldestAt: Date.parse('2026-10-15T14:40:00+09:00') }, plans: { [PICK]: PLAN }, pickAt: PICK };
+
 // 화면마다 쓸 예시 상태
 const CASES = [
   ['home', 'home'], ['home-run', 'home'], ['home-partial', 'home'], ['home-missing', 'home'], ['home-mass', 'home'], ['home-moved', 'home'],
@@ -44,6 +67,15 @@ const CASES = [
   ['start', 'start-1'], ['home', 'start-2'], ['home', 'start-3'], ['home', 'restore'], ['home-partial', 'partial'], ['home-partial', 'partial-std'],
   ['home', 'move-0'], ['home', 'move-1'], ['home', 'move-2'], ['home', 'move-3'], ['home', 'move-4'],
   ['home', 'undo-1'], ['home', 'undo-2'], ['home', 'undo-3'], ['home', 'lost'], ['home', 'lost-2'], ['home', 'code'], ['home-mass', 'mass-list'], ['home', 'drawer'],
+  // 개통 잇기(11-16) — 실제 상태 모양의 갈래. 셋째 칸은 창이 기억하는 개통 걸음(app.js acct)과 되돌리기 미리 보기(undo)
+  ['home-writekey', 'home'], ['home-lost-step', 'home'], ['home-continue', 'home'], ['home-restore-wait', 'home'],
+  ['start-signin', 'start-1', { name: 'start-1-signing', acct: { signing: true } }],
+  ['start-signin', 'start-1', { name: 'start-1-full', acct: { limit: DEVICES_FULL } }],
+  ['start-write', 'start-2', { name: 'start-2-empty' }], ['start-write-picked', 'start-2', { name: 'start-2-picked' }],
+  ['start-google-step', 'start-2', { name: 'start-2-google' }], ['start-write-picked', 'start-2', { name: 'start-2-again', acct: { repoExists: true } }],
+  ['start-read', 'start-2', { name: 'start-2-read', acct: { devices: DEVICES } }],
+  ['home', 'undo-1', { name: 'undo-1-plan', undo: 'UNDO' }], ['home', 'undo-2', { name: 'undo-2-plan', undo: 'UNDO' }],
+  ['home-lost-step', 'drawer', { name: 'drawer-devices', acct: { devices: DEVICES_HOME }, scrollTo: '[data-act="lost"]' }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,
@@ -79,14 +111,16 @@ const CATALOG = {
     pg.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
     await pg.goto(base);
     await pg.waitForFunction(() => window.__wb && document.fonts.status === 'loaded');
-    for (const [stateName, screen] of CASES) {
-      const name = screen === 'home' ? stateName : screen;
+    for (const [stateName, screen, extra = {}] of CASES) {
+      const name = extra.name || (screen === 'home' ? stateName : screen);
       if (only && !only.includes(name)) continue;
       const before = errors.length;
-      await pg.evaluate(({ screen, state, now, catalog }) => {
-        if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true });
-        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null });
-      }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG });
+      await pg.evaluate(({ screen, state, now, catalog, acct, undo }) => {
+        if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true, acct });
+        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo });
+      }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG, acct: extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null });
+      // 서랍 아래쪽처럼 첫 화면 밖에 있는 줄은 그 자리로 굴려서 찍는다
+      if (extra.scrollTo) await pg.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ block: 'start' }), extra.scrollTo);
       await pg.waitForTimeout(120);
       const m = await pg.evaluate(() => {
         const vw = innerWidth, vh = innerHeight, room = document.getElementById('room');

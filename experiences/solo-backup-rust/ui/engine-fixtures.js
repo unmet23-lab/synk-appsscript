@@ -21,6 +21,12 @@ const base = {
   protection: { level: 'active', reason: 'active', nextAction: 'backup' },
 };
 
+const acct = (v = {}) => ({ available: true, signedIn: false, email: null, connected: false, role: null, deviceId: null, device: '새 데스크톱', writer: null,
+  googleStepRequired: false, needs: [], envelope: null, envelopeInvalid: false, damaged: [], ...v });
+const signed = (role) => ({ signedIn: true, email: 'studio@example.com', connected: true, role, deviceId: 'd'.repeat(12) });
+const first = { version: '0.7.0', configured: false, mode: 'backup', profile: 'b2', device: '새 데스크톱', sources: [], selection: { sources: [], target: null }, job: null,
+  protection: { level: 'setup', reason: 'setup', nextAction: 'setup' } };
+
 export const STATES = {
   home: base,
   'home-run': { ...base, job: { kind: 'backup', stage: '예약 백업 · 작업 파일 백업 중', percent: 62, scheduled: true }, nextBackupAt: at('2026-11-13T16:02:00+09:00'), protection: { level: 'running', reason: 'job', nextAction: 'none' } },
@@ -38,4 +44,15 @@ export const STATES = {
   'home-startup': { ...base, launchAtLogin: false, protection: { level: 'partial', reason: 'startup', nextAction: 'protect' } },
   'home-restored': { ...base, lastSelectedRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 2026-11-13', at: at('2026-11-13T14:20:00+09:00'), files: 3, bytes: 6381567 } },
   start: { version: '0.7.0', configured: false, sources: [], job: null, protection: { level: 'setup', reason: 'setup', nextAction: 'setup' } },
+  // 개통(account) 갈래 — 워커 state()의 account · selection 모양(engine/src/account.cjs state())
+  'start-noclient': { ...first, account: acct({ available: false }) },
+  'start-signin': { ...first, account: acct() },
+  'start-write': { ...first, account: acct(signed('write')) },
+  'start-write-picked': { ...first, selection: { sources: SOURCES.slice(0, 3), target: null }, account: acct(signed('write')) },
+  'start-google-step': { ...first, selection: { sources: SOURCES.slice(0, 3), target: null }, account: acct({ ...signed('write'), googleStepRequired: true }) },
+  'start-read': { ...first, account: acct({ ...signed('read'), writer: '작업 노트북' }) },
+  'home-writekey': { ...base, account: acct({ ...signed('write'), device: base.device, needs: ['write-key'] }) },
+  'home-lost-step': { ...base, account: acct({ ...signed('write'), device: base.device, googleStepRequired: true, needs: ['read-key'] }) },
+  'home-continue': { ...base, mode: 'restore', automatic: false, nextBackupAt: null, sources: [], lastBackup: null, lastProbe: null, selection: { sources: SOURCES.slice(0, 3), target: null }, protection: { level: 'restoreOnly', reason: 'restoreOnly', nextAction: 'restore' }, account: acct({ ...signed('write'), device: base.device }) },
+  'home-restore-wait': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, needs: ['restore'] }) },
 };
