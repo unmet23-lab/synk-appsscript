@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e3b2-038b-7e63-9067-07b7298493e7"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll preserve the fixed-camera scene and change only the reactions, Mongle’s happy chewing, and the now-empty dumpling plate.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle happily chews the last dumpling while three stunned coworkers stare at the empty plate."}}
+{"type":"turn.completed","usage":{"input_tokens":114577,"cached_input_tokens":98048,"cache_write_input_tokens":0,"output_tokens":1226,"reasoning_output_tokens":110}}

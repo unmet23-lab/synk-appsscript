@@ -1,0 +1,23 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses and faces of the characters, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, table, dish, food and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cosy evening light from a round paper lamp above, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look and light — not its room, furniture or people).
+
+FORMAT: portrait 2:3. Camera at the height of the table top, looking straight across the table. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: the private floor-seating room of a friendly Korean restaurant at the very END of a company dinner (hoesik).
+- Back wall: plain warm-cream felt wall with a soft texture and one thin wooden lattice strip near the bottom of the wall. The top 26% of the image is ONLY this plain wall — nothing there (a label will be added there later).
+- TABLE: one long low dark-walnut felt table runs across the whole image; its top surface (where things sit) is at about 60% of the image height, its plain front edge/panel fills the image below that down to the bottom — keep the front panel plain and empty.
+- ON THE TABLE, end-of-dinner leftovers: a few empty white felt plates with crumbs, two small side dishes with a little leftover kimchi and greens, small cups of brown barley tea, wooden chopsticks resting on the plates. No bottles, no alcohol. In the CENTRE FRONT of the table, nearest the camera: one round white plate with exactly ONE plump pleated steamed dumpling (mandu) on it — the last one, clearly visible, golden-white.
+
+CHARACTERS (all visible from the table top up, sitting on floor cushions behind the table; exactly these three people plus Mongle, nobody else):
+- LEFT, between about 12% and 32% of the image width: the ASSISTANT MANAGER (daeri) — a felt doll of a Korean woman in her thirties, chin-length black bob, small black bead eyes, soft pink cheeks, a beige blouse.
+- CENTRE-LEFT, between about 32% and 54% of the image width: the TEAM LEADER (timjang) — a felt doll of a cheerful Korean man in his fifties, round glasses, short grey-black hair, a little round belly, white shirt with a loosened navy tie and a grey knitted vest.
+- CENTRE-RIGHT, between about 54% and 72% of the image width: the NEW EMPLOYEE (sawon) — a felt doll of a young Korean man in his twenties, neat black hair, white shirt with rolled sleeves.
+- RIGHT, between about 72% and 88% of the image width: MONGLE (the mascot from the SECOND attached image) sits on a cushion behind the table, its body about 15% of the image width wide, its top a little lower than the people's heads. It looks happy and full: bright eyes, small smile, light blush.
+All three people sit politely with relaxed smiles, hands near their tea cups, and all of them — and Mongle — are secretly glancing down at the last dumpling with their eyes.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+
+Exactly ONE Mongle and exactly three people, nobody else. The wall above them must stay empty.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — no writing on the wall, dishes, cups, clothes or table.

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e3a9-37cb-7330-a903-e0e9a7c8f6a7"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to preserve the fixed scene, turn all three people’s gaze toward Mongle, and make Mongle stiffen.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Three teasing smiles turn toward a stiffened Mongle as the last dumpling waits."}}
+{"type":"turn.completed","usage":{"input_tokens":141002,"cached_input_tokens":124032,"cache_write_input_tokens":0,"output_tokens":1469,"reasoning_output_tokens":457}}
