@@ -195,7 +195,7 @@
     {
       "id": "reveal",
       "칸": "진행",
-      "글": "Isang kuya,\ndalawang pangalan!",
+      "글": "Isang kuya,\ndalawang tawag!",
       "원문": "손위 남자 형제는 한 명,\n이름은 둘!",
       "초": [
         10.2,
@@ -604,13 +604,13 @@
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "Sa Tagalog, kuya at ate lang — pareho para sa lahat. Sa Korean, depende kung sino ang tumatawag: ang lalaki, 형 (hyeong) at 누나 (nuna); ang babae, 오빠 (oppa) at 언니 (eonni).",
+      "글": "Sa Tagalog, kuya at ate lang — pareho para sa lahat. Sa Korean, depende kung sino ang tumatawag: kapag lalaki, 형 (hyeong) at 누나 (nuna); kapag babae, 오빠 (oppa) at 언니 (eonni).",
       "원문": "타갈로그어에서는 쿠야와 아테뿐이다 — 누구에게나 같다. 한국어는 누가 부르느냐에 따라 다르다: 남자는 형과 누나, 여자는 오빠와 언니."
     },
     {
       "id": "게시글.youtube.본문.2",
       "칸": "게시글",
-      "글": "Tinatawag ng bunsong babae ang kuya niya para sa merienda? 오빠 (oppa)! ang isisigaw niya.",
+      "글": "Tinatawag ba ng bunsong babae ang kuya niya para mag-merienda? “오빠 (oppa)!” ang isisigaw niya.",
       "원문": "막내 여동생이 간식 먹으라고 손위 남자 형제를 부른다? 오빠! 하고 외칠 것이다."
     },
     {
