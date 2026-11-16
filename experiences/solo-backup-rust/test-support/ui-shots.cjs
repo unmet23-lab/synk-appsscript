@@ -77,6 +77,11 @@ const CASES = [
   ['home-writekey', 'home'], ['home-lost-step', 'home'], ['home-continue', 'home'], ['home-restore-wait', 'home'],
   ['start-signin', 'start-1', { name: 'start-1-signing', acct: { signing: true } }],
   ['start-signin', 'start-1', { name: 'start-1-full', acct: { limit: DEVICES_FULL } }],
+  // 기기가 다 참 — 다시 깐 PC의 옛 연결(백업하는 기기, 줄의 sameInstall)과, 되살리기 기기 하나를 끊은 뒤(화면 요청 9 · 15)
+  ['start-signin', 'start-1', { name: 'start-1-full-same', acct: { limit: DEVICES_FULL.map((d) => (d.role === 'write' ? { ...d, sameInstall: true } : { ...d, sameInstall: false })) } }],
+  ['start-signin', 'start-1', { name: 'start-1-revoking', acct: { limit: DEVICES_FULL, running: 'limit-revoke', revoking: (DEVICES_FULL.find((d) => d.name === '거실 PC') || {}).id, googleWait: true } }],
+  ['start-signin', 'start-1', { name: 'start-1-why', acct: { limit: DEVICES_FULL, limitWhy: { name: '옛 노트북', text: '이 Google 계정에서 「옛 노트북」을 찾지 못했습니다. 기기 목록을 받을 때 고른 Google 계정으로 다시 눌러 주세요. 같은 계정이었다면 「다시 시작」을 눌러 목록을 새로 받아 주세요.' } } }],
+  ['start-signin', 'start-1', { name: 'start-1-freed', acct: { limit: DEVICES_FULL.map((d) => (d.name === '거실 PC' ? { ...d, state: 'revoked' } : d)), freed: '거실 PC' } }],
   ['start-write', 'start-2', { name: 'start-2-empty' }], ['start-write-picked', 'start-2', { name: 'start-2-picked' }],
   ['start-google-step', 'start-2', { name: 'start-2-google' }], ['start-write-picked', 'start-2', { name: 'start-2-again', acct: { repoExists: true } }],
   ['start-read', 'start-2', { name: 'start-2-read', acct: { devices: DEVICES } }],

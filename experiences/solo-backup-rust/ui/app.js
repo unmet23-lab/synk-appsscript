@@ -179,6 +179,7 @@ function focusKey(el) {
   if (el.dataset?.app && el.dataset.kind) return `${q('data-app', el.dataset.app)}${q('data-kind', el.dataset.kind)}`;
   if (el.dataset?.app) return `${q('data-act', el.dataset.act || '')}${q('data-app', el.dataset.app)}`;
   if (el.dataset?.check) return q('data-check', el.dataset.check);
+  if (el.dataset?.device) return q('data-device', el.dataset.device);
   if (el.dataset?.act) return q('data-act', el.dataset.act);
   return null;
 }
@@ -256,11 +257,51 @@ async function loadDevices() {
   acct = r.ok && Array.isArray(r.value) ? { ...acct, devices: r.value, devicesError: null } : { ...acct, devices: null, devicesError: failureText(r.code) };
   paint();
 }
+/**
+ * 기기가 다 찼을 때 되살리기만 하는 기기를 끊는다(revokeDevice — 이 PC에 기기가 없어도 Google 확인만으로 된다, 화면 요청 9).
+ * 끊은 줄은 목록에서 빼고(revoked) 「다시 시작」을 누르게 한다(기기가 다 찬 동안 주 단추의 이름)
+ */
+async function limitRevoke(deviceId) {
+  const d = (acct.limit || []).find((x) => x && x.id === deviceId && x.role === 'read' && (!x.state || x.state === 'active'));
+  if (!d || acct.freed) return;
+  if (fixture) return note('예시 화면이라 실제로 보내지 않았습니다.');
+  if (runningCalls.has('revokeDevice') || acct.signing) return;
+  runningCalls.add('revokeDevice');
+  acct = { ...acct, running: 'limit-revoke', revoking: d.id, googleWait: true, limitWhy: null }; paint();
+  try {
+    if (store.busy && !(await untilFree(15000))) return note(failureText('BUSY'));
+    note('브라우저에서 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
+    const r = await store.call('revokeDevice', d.id);
+    const name = String(d.name || '').trim() || '이름 없는 기기';
+    if (r.ok) { acct = { ...acct, limit: (acct.limit || []).map((x) => (x && x.id === d.id ? { ...x, state: 'revoked' } : x)), freed: name }; note(`「${name}」 연결을 끊었습니다. 「다시 시작」을 눌러 주세요.`, 9000); }
+    else if (['REAUTH', 'DENIED', 'CANCELED'].includes(r.code)) note('Google 로그인을 마치지 않아 끊지 않았습니다. 다시 눌러 주세요.');
+    // 서버는 그때 백업하는 기기를 끊지 않는다 — 목록이 낡았다(그 사이 자리가 옮겨졌다)
+    // 다른 Google 계정을 골랐거나(그 계정에 이 기기가 없다) 그 사이 다른 곳에서 끊겼다 — 공용 글 「그 요청을 찾지 못했습니다」로는 알 수 없다(Fable F1)
+    else if (r.code === 'NOT_FOUND' || r.code === 'DEVICE_STATE') {
+      const text = r.code === 'NOT_FOUND'
+        ? `이 Google 계정에서 「${name}」${josa(name, '을/를').slice(name.length)} 찾지 못했습니다. 기기 목록을 받을 때 고른 Google 계정으로 다시 눌러 주세요. 같은 계정이었다면 「다시 시작」을 눌러 목록을 새로 받아 주세요.`
+        : `「${name}」${josa(name, '은/는').slice(name.length)} 지금 백업하는 기기라 끊을 수 없습니다. 「다시 시작」을 눌러 목록을 새로 받아 주세요.`;
+      acct = { ...acct, limitWhy: { name, text } }; note(text, 9000);
+    }
+    else note(failureText(r.code));
+  } finally {
+    runningCalls.delete('revokeDevice');
+    acct = { ...acct, running: null, revoking: null, googleWait: false };
+    if (/^브라우저에서 Google/.test(noteBar.textContent)) noteBar.classList.remove('on');
+    paint();
+    // 끊은 뒤에는 「끊기」가 모두 사라진다 — 포커스가 그 단추와 함께 떨어졌을 때만 다음에 누를 「다시 시작」에 둔다(Fable -b 1).
+    // 기다리는 동안 손님이 다른 곳(위쪽 단추 등)으로 옮겨 둔 포커스는 끌어오지 않는다(Fable -c 1)
+    const fell = !document.activeElement || document.activeElement === document.body;
+    if (acct.freed && fell) room.querySelector('[data-act="google"]')?.focus({ preventScroll: true });
+  }
+}
 /** Google로 시작 — 브라우저 로그인을 기다린다(5분이면 엔진이 REAUTH로 끝낸다) */
 async function signIn() {
   const s = state();
   if (s?.account && s.account.available === false) return note(failureText('NO_GOOGLE'));
-  acct = { ...acct, signing: true, limit: null }; paint();
+  // 기기를 끊는 중이면 버린다 — 목록을 먼저 지우고 BUSY로 끝나지 않게(단추도 그동안 막힌다)
+  if (acct.signing || runningCalls.has('revokeDevice')) return;
+  acct = { ...acct, signing: true, limit: null, freed: null, limitWhy: null }; paint();
   const r = await store.call('signInGoogle', {});
   acct = { ...acct, signing: false, devices: null };
   if (!r.ok) {
@@ -810,6 +851,7 @@ stage.addEventListener('click', (e) => {
   if (id === 'more' && catalog) return void query(catalog.query, (catalog.offset || 0) + catalog.rows.length, true);
   if (id === 'clear') return void select('clear');
   if (id === 'reopen') return void openCatalog();
+  if (id === 'limit-revoke') return void limitRevoke(el.dataset.device);
   // 옛 PC 백업에서 꺼내기 — 고르기는 창 안에서, 한 층 읽기와 목록 열기는 엔진에
   if (id === 'old-start') return oldStart(el.dataset.folder);
   if (id === 'old-folder') { const f = oldFolders(mv?.result).find((x) => x.original === el.dataset.folder); if (!f || !old) return; old = { ...old, folder: f.original, label: f.label, sub: '' }; return void oldLoad(); }

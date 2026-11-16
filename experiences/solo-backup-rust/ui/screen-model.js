@@ -165,8 +165,9 @@ export function deviceLine(d, now = Date.now(), same = []) {
   const STATE = { moved: '옮겨짐', revoked: '끊김', lost: '분실 신고함', abandoned: '개통을 마치지 않음' };
   const role = d?.state && d.state !== 'active' ? STATE[d.state] || '쓰지 않음' : d?.role === 'write' ? '백업하는 기기' : '되살리기만 하는 기기';
   const seen = Number.isFinite(Number(d?.lastSeenAt)) && Number(d.lastSeenAt) > 0 ? `마지막 연결 ${whenKo(Number(d.lastSeenAt), now)}` : '';
-  // 이 PC에 앞서 깔았던 연결(sameInstall)은 「이 PC」로 부른다 — 다시 깐 PC가 제 옛 연결을 남의 기기로 읽지 않게
-  const earlier = !d?.current && sameOf(same).includes(d?.id);
+  // 이 PC에 앞서 깔았던 연결(sameInstall)은 「이 PC」로 부른다 — 다시 깐 PC가 제 옛 연결을 남의 기기로 읽지 않게.
+  // 계정 상태의 목록(account.sameInstall) 말고, 기기가 다 찼을 때의 목록은 줄마다 sameInstall: true를 준다(화면 요청 15, 개통 서버 ecbb3f91d)
+  const earlier = !d?.current && (d?.sameInstall === true || sameOf(same).includes(d?.id));
   return { name: `${String(d?.name || '').trim() || '이름 없는 기기'}${d?.current ? '(이 PC)' : earlier ? '(이 PC · 앞서 깐 것)' : ''}`, role, seen, earlier };
 }
 /** 엔진 account.sameInstall — 기기 번호 목록만 받는다 */

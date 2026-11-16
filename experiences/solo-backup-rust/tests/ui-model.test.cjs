@@ -440,7 +440,8 @@ test('개통: 첫 시작 · 보호 범위 · 다른 PC가 쓰는 계정 · 되�
   const full = draw('start-1', STATES['start-signin'], { acct: { limit: [{ id: 'a'.repeat(12), name: '옛 노트북', role: 'write', state: 'active' }] } }).html;
   assert.match(full, /기기가 다 찼습니다/);
   assert.match(full, /옛 노트북/);
-  assert.doesNotMatch(full, /data-act="revoke/, '토큰 없는 끊기는 엔진 부탁 뒤에 연다(Fable 지적 3)');
+  // 백업하는 기기만 있으면 끊는 단추가 없다(되살리기만 하는 기기의 끊기는 아래 「기기가 다 찼을 때」 시험, 화면 요청 9)
+  assert.doesNotMatch(full, /data-act="limit-revoke/);
   // 보호 범위: 고른 폴더가 없으면 보호 시작을 막는다 · 예시 값(진단 · 예상 크기)을 그리지 않는다
   const empty = draw('start-2', STATES['start-write']);
   assert.match(empty.html, /지킬 폴더를 고르세요/);
@@ -1528,4 +1529,45 @@ test('옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc): 옛 PC 판의 폴�
   // 넘기기 전 기본 화면 — 너무 큰 폴더가 있을 때만 꺼내는 길
   assert.ok(m.homeModel(read, { now: NOW, move: res.state, result: res.result }).actions.some((a) => a.id === 'old-start'));
   assert.ok(!m.homeModel(read, { now: NOW, move: MOVE_MV.result.state, result: MOVE_MV.result.result }).actions.some((a) => a.id === 'old-start'));
+});
+
+test('기기가 다 찼을 때(화면 요청 9 · 15, 개통 서버 ecbb3f91d): 되살리기만 하는 기기를 끊고, 다시 깐 PC의 옛 연결을 「이 PC」로 부른다', async () => {
+  const { homeModel, deviceLine } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (acct) => renderScreen('start-1', { state: STATES['start-signin'], model: homeModel(STATES['start-signin'], { now: NOW }), now: NOW, fake: true, acct });
+  const W = { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active' }, R1 = { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active' }, R2 = { id: 'e'.repeat(12), name: '옛 노트북', role: 'read', state: 'active' };
+  // 요청 15 — 목록의 줄마다 오는 sameInstall이 참이면 「이 PC · 앞서 깐 것」이다(계정 상태의 목록이 없어도)
+  assert.match(deviceLine({ ...W, sameInstall: true }, NOW, []).name, /\(이 PC · 앞서 깐 것\)$/); assert.equal(deviceLine({ ...W, sameInstall: true }, NOW, []).earlier, true);
+  assert.equal(deviceLine({ ...W, sameInstall: false }, NOW, []).earlier, false);
+  // 요청 9 — 되살리기만 하는 기기에만 「끊기」. 백업하는 기기는 서버가 끊지 않는다
+  const full = draw({ limit: [W, R1, R2] }).html;
+  assert.match(full, /data-act="limit-revoke" data-device="d{12}"/); assert.match(full, /data-act="limit-revoke" data-device="e{12}"/);
+  assert.doesNotMatch(full, /data-device="a{12}"/); assert.match(full, /쓰지 않는 되살리기 기기를 끊으면 이 PC를 이을 수 있습니다/);
+  assert.doesNotMatch(full, /다음 업데이트에서 엽니다/);
+  // 다시 깐 PC의 옛 연결이 백업하는 기기 — 되살리기 기기 하나를 끊고 이은 뒤 자리를 옮기는 길
+  const same = draw({ limit: [{ ...W, sameInstall: true }, R1, R2] }).html;
+  assert.match(same, /작업 노트북\(이 PC · 앞서 깐 것\)/); assert.match(same, /「이 PC로 옮겨 오기」나 「되살리지 않고 이 PC에서 이어서 백업」을 고르면 이 PC가 백업을 이어받습니다/);
+  assert.doesNotMatch(full, /이 PC가 백업을 이어받습니다/);
+  // 백업하는 기기만 남은 목록 — 끊을 것이 없다고 쓴다
+  assert.match(draw({ limit: [W] }).html, /백업하는 기기는 여기서 끊을 수 없습니다/);
+  // 끊는 중 · 끊은 뒤
+  const busy = draw({ limit: [W, R1, R2], running: 'limit-revoke', revoking: R1.id }).html;
+  // 끊는 줄은 「끊는 중」과 그 줄의 「그만두기」(Fable F3 · F4), 다른 줄의 「끊기」는 막힘. 그만두기는 그 줄에만 있다
+  assert.match(busy, /<span class="meta">끊는 중<\/span> <button class="lnk sm" type="button" data-act="google-cancel" data-device="d{12}" aria-label="「거실 PC」 연결 끊기 그만두기">그만두기<\/button>/);
+  assert.match(busy, /data-device="e{12}"[^>]*aria-disabled="true">끊기/); assert.doesNotMatch(busy, /data-act="limit-revoke" data-device="d{12}"/);
+  assert.equal((busy.match(/data-act="google-cancel"/g) || []).length, 1);
+  assert.equal((draw({ limit: [W, R1, R2], running: 'limit-revoke', revoking: R1.id, googleWait: true }).html.match(/data-act="google-cancel"/g) || []).length, 1);
+  // 끊는 동안 「다시 시작」도 막힌다(signIn이 목록을 지우지 않게)
+  assert.match(busy, /data-act="google"[^>]*aria-disabled="true"/); assert.doesNotMatch(full, /data-act="google"[^>]*aria-disabled/);
+  assert.match(busy, /「계속」을 누르면 그 기기의 연결을 끊습니다/); assert.doesNotMatch(full, /그 기기의 연결을 끊습니다/);
+  const freed = draw({ limit: [W, { ...R1, state: 'revoked' }, R2], freed: '거실 PC' }).html;
+  assert.match(freed, /「거실 PC」 연결을 끊었습니다<\/b>「다시 시작」을 누르면 이 PC를 이을 수 있습니다/); assert.match(freed, /data-act="google"[^]*?<\/svg>다시 시작<\/button>/); assert.doesNotMatch(freed, /거실 PC<\/span>|data-device="d{12}"/);
+  // 끊지 못한 까닭은 상자에 남는다(Fable -b 2). 끊기 단추는 그대로 둔다
+  const why = draw({ limit: [W, R1, R2], limitWhy: { name: '거실 PC', text: '이 Google 계정에서 「거실 PC」를 찾지 못했습니다. 다시 눌러 주세요.' } }).html;
+  assert.match(why, /<b>「거실 PC」 연결을 끊지 못했습니다<\/b>이 Google 계정에서 「거실 PC」를 찾지 못했습니다/); assert.match(why, /data-device="d{12}"/);
+  // 끊는 줄의 「그만두기」도 같은 기기 번호를 달아, 다시 그려도 포커스가 그 줄에 남는다(Fable -b 1)
+  assert.match(busy, /data-act="google-cancel" data-device="d{12}"/);
+  // 끊은 뒤에는 남은 줄에 「끊기」를 두지 않는다 — 한 자리면 이을 수 있다(Fable F2)
+  assert.match(freed, /옛 노트북/); assert.doesNotMatch(freed, /data-act="limit-revoke"/);
 });

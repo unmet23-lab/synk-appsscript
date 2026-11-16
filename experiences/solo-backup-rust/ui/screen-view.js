@@ -90,19 +90,49 @@ const stepBoxOf = (needStep, ack) => (needStep ? `<div class="box rise i3"><b>${
 /** 11월 12일 오후 2:59 */
 const atKo = (t) => `${dayKo(t).replace(/ [일월화수목금토]$/, '')} ${timeKo(t)}`;
 
+/**
+ * 기기가 다 찼을 때(LIMIT_DEVICES) — 되살리기만 하는 기기는 Google 확인만으로 끊는다(revokeDevice, 화면 요청 9 — 이 PC에 기기가 없어도 된다).
+ * 서버는 그때 백업하는 기기를 끊지 않으므로(DEVICE_STATE) 그 줄에는 단추를 두지 않는다. 다시 깐 PC의 옛 연결(sameInstall, 요청 15)이 백업하는
+ * 기기이면 되살리기만 하는 기기 하나를 끊고 이은 뒤 「이 PC로 옮겨 오기」나 「되살리지 않고 이 PC에서 이어서 백업」(startRead)으로 자리를 옮기게 한다.
+ * acct.freed = 방금 끊은 기기 이름 — 그동안 남은 줄에는 「끊기」를 두지 않는다(한 자리면 이을 수 있다, Fable F2). 「다시 시작」이 freed를 비운다
+ */
+function limitBox(limit, acct, now, s) {
+  const run = acct?.running || null, same = s?.account?.sameInstall;
+  const rows = limit.map((d) => {
+    const x = deviceLine(d, now, same), can = !acct?.freed && d?.role === 'read' && typeof d?.id === 'string' && d.id;
+    const btn = !can ? ''
+      : acct?.revoking === d.id ? `<span class="meta">끊는 중</span> <button class="lnk sm" type="button" data-act="google-cancel" data-device="${h(d.id)}" aria-label="${h(`「${x.name}」 연결 끊기 그만두기`)}">그만두기</button>`
+      : `<button class="lnk sm" type="button" data-act="limit-revoke" data-device="${h(d.id)}" aria-label="${h(`「${x.name}」 연결 끊기`)}"${run ? ' aria-disabled="true"' : ''}>끊기</button>`;
+    return row(`${h(x.name)}${x.seen ? `<span class="sr"> · </span><br><span class="meta">${h(x.seen)}</span>` : ''}`, h(x.role), btn);
+  }).join('');
+  const reads = limit.filter((d) => d?.role === 'read').length, oldWrite = limit.some((d) => d?.role === 'write' && deviceLine(d, now, same).earlier);
+  // 다시 깐 PC의 옛 연결이 백업하는 기기이면, 끊기 안내 대신 자리를 옮기는 길을 상자 안에 쓴다(좁은 창에서도 주 단추가 첫 화면에 남게)
+  const body = !reads ? '백업하는 기기는 여기서 끊을 수 없습니다. 급하면 SYNK에 연락해 주세요.'
+    : oldWrite ? '「이 PC · 앞서 깐 것」은 백업하는 기기라 끊을 수 없습니다. 되살리기만 하는 기기 하나를 끊고 이 PC를 이으세요. 그다음 「이 PC로 옮겨 오기」나 「되살리지 않고 이 PC에서 이어서 백업」을 고르면 이 PC가 백업을 이어받습니다.'
+    : '쓰지 않는 되살리기 기기를 끊으면 이 PC를 이을 수 있습니다. 끊을 때 Google 로그인을 한 번 더 합니다.';
+  // 끊지 못한 까닭(acct.limitWhy — NOT_FOUND · DEVICE_STATE)은 다음 누름까지 상자에 남긴다(Fable -b 2)
+  const why = acct?.limitWhy && typeof acct.limitWhy.text === 'string' ? acct.limitWhy : null;
+  const head = acct?.freed ? `<b>「${h(acct.freed)}」 연결을 끊었습니다</b>「다시 시작」을 누르면 이 PC를 이을 수 있습니다.`
+    : why ? `<b>「${h(why.name || '그 기기')}」 연결을 끊지 못했습니다</b>${h(why.text)}`
+    : `<b>이 계정에 이을 수 있는 기기가 다 찼습니다</b>백업하는 기기 하나와 되살리기만 하는 기기 둘까지 이을 수 있습니다. ${body}`;
+  return `<div class="box rise i3">${head}</div>${rows ? `<div class="rows rise i3">${rows}</div>` : ''}`;
+}
+
 /** 첫 시작 — Google로 시작(signInGoogle). acct는 창이 기억하는 개통 걸음(app.js): signing · limit(기기가 다 참) */
 function start1(s, acct, now, fake) {
   const signing = !!acct?.signing, limit = Array.isArray(acct?.limit) ? acct.limit.filter((d) => !d?.state || d.state === 'active') : null;
-  const full = limit ? `<div class="box rise i3"><b>이 계정에 이을 수 있는 기기가 다 찼습니다</b>백업하는 기기 하나와 되살리기만 하는 기기 둘까지 이을 수 있습니다. 쓰지 않는 기기를 끊는 길은 다음 업데이트에서 엽니다. 급하면 SYNK에 연락해 주세요.</div>
-    ${limit.length ? `<div class="rows rise i3">${limit.map((d) => deviceRow(d, now, s?.account?.sameInstall)).join('')}</div>` : ''}` : '';
-  const hint = signing ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저가 열리면 계정을 고르고 「계속」을 누르세요.';
+  const full = limit ? limitBox(limit, acct, now, s) : '';
+  // 기기를 끊는 동안(limit-revoke)에도 브라우저의 Google 로그인을 기다린다 — 그 걸음에 맞는 글을 쓴다(카본 A1)
+  const revoking = acct?.running === 'limit-revoke';
+  const hint = signing ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.'
+    : revoking ? '브라우저에서 Google 계정을 고르고 「계속」을 누르면 그 기기의 연결을 끊습니다.' : '브라우저가 열리면 계정을 고르고 「계속」을 누르세요.';
   // 진단(찾아낸 작업 폴더)이 엔진에 들어오기 전에는 다음 화면에서 손님이 폴더를 고른다 — 그 흐름대로 말한다(Fable F3).
   // 상태에 계정 칸이 없는 예시 화면은 시안 A의 글 그대로
   const real = !!s?.account || !fake;
   const html = `<div class="in">${kick(real ? 'Google로 시작' : '설정할 것이 없습니다')}${say('업무 자료를', '매시간 저절로 지킵니다.')}
-    ${then(real ? 'Google 계정으로 시작한 뒤 지킬 폴더를 고르면, 그 폴더를 암호화해 클라우드에 올리고 그다음부터 매시간 바뀐 것만 저절로 올립니다.' : 'Google 계정으로 시작하면 이 PC의 문서, 바탕화면, 사진과 찾아낸 작업 폴더를 암호화해 클라우드에 올립니다.')}
+    ${limit ? '' : then(real ? 'Google 계정으로 시작한 뒤 지킬 폴더를 고르면, 그 폴더를 암호화해 클라우드에 올리고 그다음부터 매시간 바뀐 것만 저절로 올립니다.' : 'Google 계정으로 시작하면 이 PC의 문서, 바탕화면, 사진과 찾아낸 작업 폴더를 암호화해 클라우드에 올립니다.')}
     ${full || notes(['<b>SYNK도 백업 내용을 열 수 없습니다.</b> 여는 열쇠는 내 Google 계정에만 맡깁니다.', '그래서 Google 계정에 들어갈 수 있는 사람은 백업도 열 수 있습니다. <b>Google 2단계 인증을 켜 두세요.</b>'])}
-    ${acts([{ id: 'google', label: signing ? '브라우저에서 계속해 주세요' : limit ? '다시 시작' : 'Google로 시작', kind: 'main', icon: 'google', disabled: signing }], `<span class="hint">${h(hint)}</span>${gcancel(acct)}<p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><button class="lnk sm" type="button" data-act="code-in">복구 코드로 되살리기</button></p>`)}
+    ${acts([{ id: 'google', label: signing ? '브라우저에서 계속해 주세요' : limit ? '다시 시작' : 'Google로 시작', kind: 'main', icon: 'google', disabled: signing || revoking }], `<span class="hint">${h(hint)}</span>${revoking ? '' : gcancel(acct)}<p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><button class="lnk sm" type="button" data-act="code-in">복구 코드로 되살리기</button></p>`)}
     <p class="foot rise i6">${h(EX.telemetry)}</p></div>`;
   return { kind: 'home', tone: 'setup', here: '백업·복구', top: [], html, acts: { google: { id: 'google', call: 'signInGoogle', signin: true }, 'code-in': { id: 'code-in', pending: '복구 코드' } } };
 }

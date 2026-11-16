@@ -42,12 +42,12 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
   /** 한 갈래 — start: 'handed'(넘긴 PC를 다시 켬) · 'read'(복구 전용 PC에서 옮겨 온 결과가 있음) · 'flaky'(넘긴 PC, 첫 moveState만 실패) ·
    *  'slowfail'(넘긴 PC, 첫 moveState는 바로 실패, 둘째는 2.5초 뒤 실패, 셋째부터 성공) · 'old'(복구 전용 PC, 사진 폴더가 너무 커서 옮기지 않은 결과 —
    *  옛 PC 백업에서 꺼내기, 조율 세션 793e0d6dc. 「2023」 층은 1.5초 늦게 「늦은폴더」를 답하고, 둘째 맨 위 층 읽기도 1.5초 걸린다 —
-   *  그 사이에 늦은 답이 화면에 올라오지 않는지 본다) */
+   *  그 사이에 늦은 답이 화면에 올라오지 않는지 본다) · 'limit'(계정에 잇지 않은 PC, Google로 시작이 LIMIT_DEVICES로 막힘 — 화면 요청 9 · 15) */
   async function scenario(start) {
     const ctx = await browser.newContext({ viewport: { width: 1080, height: 820 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce' });
-    await ctx.addInitScript(({ handedHome, readState, handed, ended, result, bigResult, list, checklist, start }) => {
+    await ctx.addInitScript(({ handedHome, readState, signinState, handed, ended, result, bigResult, list, checklist, start }) => {
       const calls = []; window.__calls = calls; window.__args = [];
-      let cur = start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
+      let cur = start === 'limit' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
       window.__TAURI__ = { core: { invoke: async (_n, { method, args }) => {
         calls.push(method); window.__args.push({ method, input: args?.[0] ?? null });
         // 옛 PC 판 — 한 층 읽기와 범위 목록
@@ -60,6 +60,12 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'openFileCatalog') return { ok: true, value: { profile: 'b2', token: 'tk', from: args?.[0]?.from ?? null, snapshotAt: '2026-11-13T05:02:00Z', fileCount: 1, totalBytes: 10, scope: args?.[0]?.folder ? [{ source: '03-Pictures', folder: args[0].folder, sub: args[0].sub || '' }] : null, selection: { revision: 1, count: 0, bytes: 0 } } };
         if (method === 'queryFileCatalog') return { ok: true, value: { profile: 'b2', token: 'tk', query: '', offset: 0, total: 1, pageSize: 100, selection: { revision: 1, count: 0, bytes: 0 }, rows: [{ id: '1', source: '03-Pictures', path: '/2024/여행/a.jpg', name: 'a.jpg', size: 10, mtime: '2024-07-01T00:00:00Z', selected: false }] } };
         if (method === 'closeFileCatalog') return { ok: true, value: null };
+        // 기기가 다 참 — 다시 깐 PC의 옛 연결(백업하는 기기, sameInstall)과 되살리기 기기 둘
+        if (method === 'signInGoogle') return { ok: false, error: 'x', code: 'LIMIT_DEVICES', details: { devices: [
+          { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', sameInstall: true },
+          { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active', sameInstall: false },
+          { id: 'e'.repeat(12), name: '옛 노트북', role: 'read', state: 'active', sameInstall: false }] } };
+        if (method === 'revokeDevice') return args?.[0] === 'e'.repeat(12) ? { ok: false, error: 'x', code: 'NOT_FOUND' } : { ok: true, value: { suggestReadKeyRotation: true } };
         if (method === 'setFileSelection') return { ok: true, value: { profile: 'b2', token: 'tk', selection: { revision: 2, count: 1, bytes: 10 } } };
         if (method === 'getState') return { ok: true, value: cur };
         // 넘기기 전에는 옮겨 온 결과가 있는 상태, 넘긴 뒤에는 넘긴 PC의 상태(다시 로그인할 곳 7곳 남음)
@@ -79,7 +85,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'continueBackup') { cur = handedHome; return { ok: true, value: cur }; }
         return { ok: false, error: 'x', code: 'FIXTURE' };
       } }, event: { listen: async (n, fn) => { if (n === 'backup:state') window.__push = () => fn({ payload: { ...cur } }); return () => {}; } } };
-    }, { handedHome, readState, handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, start });
+    }, { handedHome, readState, signinState: STATES['start-signin'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, start });
     const pg = await ctx.newPage(), errors = [];
     pg.on('pageerror', (e) => errors.push(e.message));
     await pg.goto(base);
@@ -204,6 +210,22 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     o = await lastArgs(pg, 'openFileCatalog');
     check('다른 길로 「파일 되살리기」에 오면 이 PC의 판을 연다(범위 없이)', x.screen === 'restore' && o.length === 2 && o[1].from === undefined && o[1].folder === undefined, JSON.stringify(o));
     check('쪽 오류 없음(옛 PC 백업에서 꺼내기)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  // 7. 기기가 다 참 — 되살리기만 하는 기기를 Google 확인만으로 끊고, 다시 「Google로 시작」을 누르게 한다(화면 요청 9 · 15)
+  {
+    const { pg, ctx, errors } = await scenario('limit');
+    await click(pg, '#room [data-act="google"]');
+    let x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, btns: [...document.querySelectorAll('#room [data-act="limit-revoke"]')].map((b) => b.dataset.device) }));
+    check('기기가 다 차면 목록을 보이고 되살리기만 하는 기기에만 「끊기」를 둔다', x.btns.length === 2 && x.btns.every((d) => /^[de]{12}$/.test(d)) && /작업 노트북\(이 PC · 앞서 깐 것\)/.test(x.text), JSON.stringify(x.btns));
+    await click(pg, '#room [data-act="limit-revoke"][data-device="eeeeeeeeeeee"]');
+    x = await pg.evaluate(() => ({ note: document.getElementById('note')?.textContent || '', box: document.querySelector('#room .box')?.innerText || '', left: [...document.querySelectorAll('#room [data-act="limit-revoke"]')].map((b) => b.dataset.device), focus: document.activeElement?.dataset?.device || document.activeElement?.dataset?.act || '' }));
+    check('다른 Google 계정이라 그 기기가 없으면(NOT_FOUND) 알림과 상자에 계정을 확인하라고 쓰고, 목록과 포커스는 그 줄에 둔다', /이 Google 계정에서 「옛 노트북」을 찾지 못했습니다/.test(x.note) && /「옛 노트북」 연결을 끊지 못했습니다/.test(x.box) && x.left.length === 2 && x.focus === 'e'.repeat(12), JSON.stringify(x));
+    await click(pg, '#room [data-act="limit-revoke"][data-device="dddddddddddd"]');
+    const rv = await pg.evaluate(() => window.__args.filter((a) => a.method === 'revokeDevice').map((a) => a.input));
+    x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, left: [...document.querySelectorAll('#room [data-act="limit-revoke"]')].map((b) => b.dataset.device), focus: document.activeElement?.dataset?.act || '' }));
+    check('「끊기」는 그 기기 번호로 revokeDevice를 부르고, 끊은 기기를 목록에서 빼며 남은 줄의 「끊기」를 거두고 다시 시작하라고 쓴다(포커스는 「다시 시작」)', rv.join() === ['e'.repeat(12), 'd'.repeat(12)].join() && !x.left.length && /옛 노트북/.test(x.text) && /「거실 PC」 연결을 끊었습니다/.test(x.text) && /「다시 시작」을 누르면/.test(x.text) && !/끊지 못했습니다/.test(x.text) && x.focus === 'google', JSON.stringify({ rv, left: x.left, focus: x.focus }));
+    check('쪽 오류 없음(기기가 다 참)', !errors.length, errors.join(' | '));
     await ctx.close();
   }
   await browser.close(); server.close();
