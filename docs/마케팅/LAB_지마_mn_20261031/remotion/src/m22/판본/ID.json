@@ -133,7 +133,7 @@
     "Jangan dibuka!",
     "Jangan pergi…",
     "Jangan nangis.",
-    "Makan, ya."
+    "Makanlah."
   ],
   "meanSize": 48,
   "rule": "jangan",
@@ -142,13 +142,13 @@
   "lastSize": 64,
   "endCard": "가지 마 = Jangan pergi",
   "endSize": 60,
-  "ask": "Mau bilang ini ke siapa?",
+  "ask": "Mau bilang “jangan pergi” ke siapa?",
   "askSize": 46,
   "coverAt": 4.7,
   "_원문": {
     "hook": "예전에 그는 늘 “하지 마”라고 했다…",
     "last": "그의 마지막 날…",
     "endCard": "가지 마 = 가지 마",
-    "ask": "이 말을 누구에게 하고 싶어?"
+    "ask": "“가지 마”라고 누구에게 말하고 싶어?"
   }
 }

@@ -169,8 +169,8 @@
     "Lalaki? Bawal ang “언니”!"
   ],
   "whySize": 50,
-  "rowM": "Sabi ng lalaki",
-  "rowF": "Sabi ng babae",
+  "rowM": "Tawag ng lalaki",
+  "rowF": "Tawag ng babae",
   "rowSize": 64,
   "end": "Depende sa tumatawag!",
   "endSize": 62,
@@ -192,8 +192,8 @@
     "means.3": "여자가 손위 여자 형제를 부르는 말",
     "why.0": "여자? 「형」은 안 돼!",
     "why.1": "남자? 「언니」는 안 돼!",
-    "rowM": "남자가 하는 말",
-    "rowF": "여자가 하는 말",
+    "rowM": "남자가 부르는 말",
+    "rowF": "여자가 부르는 말",
     "end": "부르는 사람에 따라 달라!"
   }
 }

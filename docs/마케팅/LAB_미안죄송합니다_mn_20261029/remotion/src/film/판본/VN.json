@@ -146,7 +146,7 @@
     "Mà khoan…",
     "Sao tôi phải\nxin lỗi?",
     "Là sếp đụng\ntôi trước mà!",
-    "Còn phải tăng\nlương cho tôi nữa!"
+    "Còn phải tăng lương\ncho tôi nữa!"
   ],
   "meanSizes": [
     56,
@@ -168,7 +168,7 @@
     "",
     ""
   ],
-  "endCard": "Làm đổ cà phê lên sếp?\n→ 죄송합니다.",
+  "endCard": "Làm đổ cà phê lên người sếp?\n→ 죄송합니다.",
   "endSize": 36,
   "ask": "Bạn từng nói 죄송합니다 với ai?",
   "askSize": 32,
@@ -189,11 +189,11 @@
     "means.4": "근데 잠깐…",
     "means.5": "내가 왜\n사과해야 해?",
     "means.6": "사장님이 먼저\n나랑 부딪쳤잖아!",
-    "means.7": "그리고 내 월급도\n올려 줘야 해!",
+    "means.7": "내 월급도 올려\n줘야 해!",
     "tags.0": "친구",
     "tags.1": "공손",
     "tags.2": "선생님 · 사장님께 ✓",
-    "endCard": "사장님한테 커피를 쏟았다?\n→ 죄송합니다.",
+    "endCard": "사장님 몸에 커피를 쏟았다?\n→ 죄송합니다.",
     "ask": "너는 누구한테 죄송합니다라고 해 봤어?"
   }
 }
