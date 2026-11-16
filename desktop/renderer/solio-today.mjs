@@ -38,10 +38,13 @@ export function whenWords(t, now, { withTime = false } = {}) {
   // 이미 지난 때는 「1분 뒤」로 읽지 않고 날과 때로 적는다(줄 안의 shortWhen과 같은 기준). 1시간 안은 59분을 넘기지 않는다(0.4.95 원천 후보 카본)
   if (ms > 0 && ms < 3600e3) return Math.min(59, Math.max(1, Math.round(ms / 60e3))) + '분 뒤';
   const d = new Date(t), days = daysBetween(t, now), h = d.getHours(), m = d.getMinutes();
+  const hour = h === 0 ? 0 : h % 12 === 0 ? 12 : h % 12; // 새벽 0시 · 오후 12시 · 오후 1시
+  const time = withTime ? ' ' + hour + '시' + (m ? ' ' + m + '분' : '') : '';
+  // 날이 바뀐 지난 때는 요일이 아니라 날짜로 적는다. 자정을 넘겨 어제가 된 때가 「일요일 밤」처럼 다가올 날로 읽혔다. 같은 날 지난 때는 「오늘」이다(0.4.95 다시 검수 Fable FA2)
+  if (ms <= 0 && days < 0) return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + partOf(h) + time;
   if (days >= 7) return (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
   const day = days === 0 ? '오늘' : days === 1 ? '내일' : days === 2 ? '모레' : WEEKDAY[d.getDay()] + '요일';
-  const hour = h === 0 ? 0 : h % 12 === 0 ? 12 : h % 12; // 새벽 0시 · 오후 12시 · 오후 1시
-  return day + ' ' + partOf(h) + (withTime ? ' ' + hour + '시' + (m ? ' ' + m + '분' : '') : '');
+  return day + ' ' + partOf(h) + time;
 }
 /* 줄 안의 때: 7일 안이면 「목 09:00」, 그 뒤 「12월 3일」 */
 export function shortWhen(t, now) {

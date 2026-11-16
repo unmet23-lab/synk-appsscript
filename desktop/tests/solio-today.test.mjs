@@ -255,3 +255,10 @@ process.stdout.write(out.rows[0].when);`;
   const when = execFileSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8' });
   assert.equal(when, '11월 2일 결제');
 });
+
+test('a time already past is said as a date, not a weekday that reads as coming (0.4.95 re-review FA2)', () => {
+  const now = new Date(2026, 10, 16, 0, 30).getTime(); // 11-16(월) 00:30
+  assert.equal(whenWords(now - H, now, { withTime: true }), '11월 15일 밤 11시 30분');
+  assert.equal(whenWords(now - 3 * D, now), '11월 13일 새벽');
+  assert.equal(whenWords(now + 2 * H, now, { withTime: true }), '오늘 새벽 2시 30분');
+});

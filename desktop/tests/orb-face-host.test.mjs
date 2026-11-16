@@ -318,3 +318,22 @@ test('a space that fails to open is said in switch words, never pointing at the 
     await settle();
   }
 });
+
+test('a failed fresh lookup for an expired record is said in switch words too (0.4.95 re-review FA1)', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth() };
+  let n = 0;
+  const base = companyBridge(auth, { destinations: ['/', '/pulse-app/'] });
+  const bridge = { ...base, resolveCompanyEntryDestinations: async request => (++n === 1 ? base.resolveCompanyEntryDestinations(request) : { ok: false, code: 'ACCOUNT_CHANGED', requestId: request.requestId }) };
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onOpenPurposeTarget: async () => ({ ok: true }) });
+  t.after(() => host.dispose());
+  await settle();
+  made.face.handle('continue-personal');
+  await settle();
+  made.face.handle('open-switch');
+  await settle();
+  made.face.handle('go', 'pulse');
+  await settle();
+  assert.equal(made.view.scenes.at(-1).switch.error, '계정 연결이 바뀌었습니다. 잠시 뒤 다시 시도해 주세요.');
+});
