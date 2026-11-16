@@ -10,7 +10,7 @@ const { clientConfig } = require(path.join(engineRoot, 'src/recovery-auth.cjs'))
 const { protection } = require(path.join(engineRoot, 'src/protection.cjs'));
 const fileSelection = require(path.join(engineRoot, 'src/restore-select.cjs'));
 const { RecommendedBackup } = require(path.join(engineRoot, 'src/recommended.cjs'));
-const { Account } = require(path.join(engineRoot, 'src/account.cjs'));
+const { Account, APP_VERSION } = require(path.join(engineRoot, 'src/account.cjs'));
 const contract = require('../contract/methods.json');
 
 async function createApplication({ host, root, workRoot = null, resticPath, clientPath, publish, testMode = false }) {
@@ -42,7 +42,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   const recovery = new RecoveryService({root, secretStore, engine: profiles.engines.b2, client, openExternal: googleOnly});
   await recovery.open();
   // 「Google로 시작」 · 「보호 시작」 (STAGE1_DESIGN.md 2.1 · 4.5): the provisioning server, envelope v3, the cloud profile.
-  const account = new Account({root, secretStore, client, openExternal: googleOnly, engine: profiles.engines.b2, appVersion: '0.7.0'});
+  const account = new Account({root, secretStore, client, openExternal: googleOnly, engine: profiles.engines.b2, appVersion: APP_VERSION});
   await account.open();
   launchAtLogin = await host('startup.read', []);
   const recommended = new RecommendedBackup({root:path.join(root,'recommended'),workRoot:workRoot?path.join(workRoot,'recommended'):null,resticPath,secretStore,
@@ -296,6 +296,20 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     let held = false;
     try { held = await engineLock(); if (held) await recovery.tick(); } catch { /* next minute */ } finally { if (held) engineUnlock(); }
   }
+  // The account's look each hour while this window is open, and the envelope read back once a day (4.5). It writes the
+  // engine's settings (moved, pins), so it runs under the engine lock like the recovery check.
+  let accountAt = 0, recheckAt = 0;
+  async function accountTick() {
+    if (closing || dialogBusy || Date.now() - accountAt < 3600000) return;
+    let held = false;
+    try {
+      held = await engineLock(); if (!held) return;
+      accountAt = Date.now();
+      const recheck = Date.now() - recheckAt >= 86400000;
+      await account.refresh({ recheck });
+      if (recheck) recheckAt = Date.now();
+    } catch { /* the next hour */ } finally { if (held) engineUnlock(); push(); }
+  }
   async function refreshRun() {
     if (closing) return;
     const next = await host('run.progress', []).catch(() => null);
@@ -306,9 +320,9 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     if (ended && lockUsers === 0 && !jobsRunning()) await reloadSettings().catch(() => {});
     push();
   }
-  const timers = [setInterval(() => void recoveryTick(), 60000), setInterval(() => void refreshRun(), 5000)];
+  const timers = [setInterval(() => void recoveryTick(), 60000), setInterval(() => void refreshRun(), 5000), setInterval(() => void accountTick(), 60000)];
   for (const t of timers) t.unref?.();
-  void recoveryTick(); void refreshRun();
+  void recoveryTick(); void refreshRun(); void accountTick();
   let startupRefresh = null;
   return {
     state,

@@ -249,3 +249,151 @@ test('the account refuses what it cannot check, and no key reaches the screen', 
   full.provision.provision = async () => { throw Object.assign(new Error('full'), { code: 'LIMIT_DEVICES', extra: { devices: [{ id: OLD, name: '옛 노트북', role: 'read', state: 'active', createdAt: 5, token: 'wbd_secret' }] } }); };
   await assert.rejects(full.account.signIn(), (e) => e.code === 'LIMIT_DEVICES' && !JSON.stringify(e.details).includes('wbd_secret') && e.details.devices[0].id === OLD);
 });
+
+test('the server status reaches the writer: a moved seat rests the PC, a restore or the limit holds the run, a copied snapshot is pinned', async () => {
+  const { applyStatus } = require('../src/account.cjs');
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const e = f.engine; e.config.automatic = true;
+  const at = Date.now() + 86400000, pinned = 'f'.repeat(64);
+  // Another device's status, or a restore-only connection, changes nothing here.
+  assert.equal(await applyStatus(e, { device: { state: 'moved', movedTo: { id: OLD, name: '새 노트북' } } }, OLD), false);
+  assert.equal(e.config.movedTo, undefined);
+  await applyStatus(e, { device: { state: 'active' }, restore: null, customer: { overQuota: false }, move: { snapshotId: pinned, until: at, byThisDevice: false } }, ME);
+  assert.deepEqual(e.config.movePin, { snapshotId: pinned, until: new Date(at).toISOString() });
+  assert.equal(e.accountHold, null);
+  await applyStatus(e, { device: { state: 'active' }, move: { snapshotId: pinned, until: at, byThisDevice: true } }, ME);
+  assert.equal(e.config.movePin, undefined, 'this PC is not asked to keep its own copy');
+  for (const [status, reason] of [[{ device: { state: 'active' }, restore: { state: 'running' } }, 'restore'], [{ device: { state: 'active' }, restore: { state: 'done', awaitingChoice: true } }, 'restore'], [{ device: { state: 'active' }, customer: { overQuota: true } }, 'over-quota']]) {
+    await applyStatus(e, status, ME);
+    assert.deepEqual(await e.runOnce({ force: true }), { outcome: 'skipped', reason });
+  }
+  await applyStatus(e, { device: { state: 'moved', movedTo: { id: OLD, name: '새 노트북' } } }, ME);
+  assert.equal(e.getState().movedTo.device, '새 노트북');
+  assert.deepEqual(await e.runOnce({ force: true }), { outcome: 'skipped', reason: 'moved' });
+  assert.throws(() => e.assertBackupReady(), (x) => x.code === 'MOVED');
+  // 「이 PC로 다시 백업」 takes the seat back and ends the rest.
+  await f.account.takeWriteSeat({ sources: [f.source] });
+  assert.equal(e.config.movedTo, undefined);
+  await applyStatus(e, { device: { state: 'active' } }, ME);
+  assert.equal(e.accountHold, null);
+});
+
+test("cleanup keeps this device's newest complete backup and the pinned copy; another device's never counts or goes", async () => {
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const e = f.engine, now = Date.now(), day = 86400000, vault = `vault:${e.config.vaultId}`;
+  const snap = (c, ago, host, tags = [VERIFIED]) => ({ id: c.repeat(64), time: new Date(now - ago).toISOString(), hostname: host, tags: [APP, vault, ...tags], paths: [f.source] });
+  e.config.health = { status: 'ok', checkedAt: new Date(now - 1000).toISOString() };
+  e.config.lastBackup = { id: 'd'.repeat(64), at: new Date(now).toISOString() };
+  e.config.movePin = { snapshotId: 'e'.repeat(64), until: new Date(now + day).toISOString() };
+  // The other device's backup is newer than this one's: it is not this device's newest, and it is never forgotten.
+  e.snapshots = async () => [snap('f', -60000, OLD), snap('d', 0, ME), snap('e', 2 * day, ME), snap('9', 3 * day, ME), snap('8', 4 * day, OLD)];
+  await e.retain();
+  const forgot = f.repo.calls.filter((c) => c.args[0] === 'forget').flatMap((c) => c.args.slice(1));
+  assert.deepEqual(forgot, ['9'.repeat(64)]);
+  // Once the pin's time is over the copy goes like any other old backup.
+  e.config.movePin.until = new Date(now - 1).toISOString(); f.repo.calls.length = 0;
+  await e.retain();
+  assert.deepEqual(f.repo.calls.filter((c) => c.args[0] === 'forget').flatMap((c) => c.args.slice(1)), ['e'.repeat(64), '9'.repeat(64)]);
+});
+
+test('a run reads the status first and sends its measurement when the worker stops; one not sent waits for the next run', async () => {
+  const { createRunner } = require('../../worker/runner.cjs');
+  const { cleanBatch } = await import('../../server/telemetry.mjs');
+  // The run's profiles read the settings the window wrote (secrets kept in the clear by this fake host).
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'solo-account-run-'));
+  const source = path.join(root, 'source'); await fs.mkdir(source);
+  const plain = { encrypt: async (v) => Buffer.from(v), decrypt: async (b) => b.toString() };
+  const repo = restic();
+  const engine = new BackupEngine({ stateDir: path.join(root, 'cloud-vault'), resticPath: 'fixture', providerType: 'b2', secretStore: plain, probe: async () => ({ serverTime: Date.now() }), runner: repo.run });
+  await engine.open();
+  const log = [], p = fakeProvision(log), env = fakeEnvelope(log);
+  const account = new Account({ root, secretStore: plain, engine, appVersion: '0.7.0', make: { auth: () => ({ async open() {}, getState: () => ({ available: true, connected: true, email: null }) }), provision: () => p, envelope: () => env } });
+  await account.open(); await account.signIn(); await account.startProtection({ sources: [source] });
+  const host = async (m, a) => m === 'secret.encrypt' ? Buffer.from(String(a[0])).toString('base64') : m === 'secret.decrypt' ? Buffer.from(a[0], 'base64').toString() : null;
+  const sent = [];
+  let status = { device: { state: 'active' }, move: { snapshotId: 'f'.repeat(64), until: Date.now() + 86400000, byThisDevice: false } }, offline = false;
+  const server = { state: () => ({ connected: true, deviceId: ME }), status: async () => status, telemetry: async (b) => { if (offline) throw Object.assign(new Error('offline'), { code: 'NETWORK' }); sent.push(b); return { accepted: true }; } };
+  const run = async (trigger) => { const r = await createRunner({ host, root, resticPath: 'fixture', server, restic: repo.run }); const v = await r.runOnce({ trigger }); await r.stop(); return v; };
+  const settings = async () => JSON.parse(await fs.readFile(path.join(root, 'cloud-vault', 'settings.json'), 'utf8'));
+  assert.deepEqual((await run('hourly')).profiles.b2, { outcome: 'skipped', reason: 'off' });
+  assert.equal((await settings()).movePin.snapshotId, 'f'.repeat(64), 'the pin is written before the run');
+  assert.equal(sent.length, 1);
+  const kept = cleanBatch(sent[0]);
+  assert.deepEqual(kept.runs.map((r) => [r.trigger, r.result, r.pause]), [['hourly', 'skipped', 'none']]);
+  assert.equal(kept.dropped.unknownFields, 0); assert.equal(kept.dropped.items, 0);
+  assert.equal(kept.env.appVersion, '0.7.0');
+  // Moved: even the person's run rests. Offline: the run is queued and goes with the next one.
+  status = { device: { state: 'moved', movedTo: { id: OLD, name: '새 노트북' } } }; offline = true;
+  assert.deepEqual((await run('manual')).profiles.b2, { outcome: 'skipped', reason: 'moved' });
+  assert.equal((await settings()).movedTo.device, '새 노트북');
+  assert.equal(JSON.parse(await fs.readFile(path.join(root, 'telemetry-queue.json'), 'utf8')).runs.length, 1);
+  offline = false;
+  await run('logon');
+  assert.deepEqual(cleanBatch(sent.at(-1)).runs.map((r) => [r.trigger, r.result]), [['manual', 'skipped'], ['logon', 'skipped']]);
+  await assert.rejects(fs.access(path.join(root, 'telemetry-queue.json')), 'the queue goes once it is sent');
+  // A test run is not measured.
+  const before = sent.length; await run('test'); assert.equal(sent.length, before);
+});
+
+test('measurements are whole numbers and fixed words the server keeps', async () => {
+  const { telemetryRun } = require('../src/account.cjs');
+  const { cleanBatch } = await import('../../server/telemetry.mjs');
+  const startedAt = Date.now() - 60000;
+  const items = [
+    telemetryRun({ trigger: 'hourly', startedAt, result: { outcome: 'complete', durationMs: 4200, files: 12, bytes: 3456, filesNew: 1, filesChanged: 2, filesUnmodified: 9, dataAdded: 77, resticStartedAt: startedAt + 800 }, maxRssKb: 81234, cpuMs: 950 }),
+    telemetryRun({ trigger: 'wake', startedAt, result: { outcome: 'partial', unreadable: 3, fill: ['C:'], durationMs: 9000 }, fill: { outcome: 'fill', left: 0 } }),
+    telemetryRun({ trigger: 'unlock', startedAt, result: { outcome: 'failed', exitCode: 1, durationMs: 300 } }),
+    telemetryRun({ trigger: 'logon', startedAt, result: { outcome: 'skipped', reason: 'paused' } }),
+    telemetryRun({ trigger: 'hourly', startedAt, result: { outcome: 'skipped', reason: 'battery' }, skipCloud: 'battery' }),
+  ];
+  const kept = cleanBatch({ runs: items });
+  assert.equal(kept.runs.length, 5); assert.deepEqual(kept.dropped, { unknownFields: 0, items: 0 });
+  assert.deepEqual(kept.runs[0].files, { new: 1, changed: 2, unmodified: 9 }); assert.deepEqual(kept.runs[0].bytes, { added: 77, processed: 3456 });
+  assert.equal(kept.runs[0].resticStartMs, 800); assert.equal(kept.runs[0].peakMemory, 81234 * 1024);
+  assert.deepEqual(kept.runs[1].fill, { tried: true, result: 'done' });
+  assert.deepEqual([kept.runs[3].result, kept.runs[3].pause, kept.runs[4].pause], ['paused', 'user', 'battery']);
+  assert.equal(telemetryRun({ trigger: 'test', startedAt, result: { outcome: 'complete' } }), null);
+  assert.ok(!JSON.stringify(items).includes('C:'), 'no drive, path or name goes');
+});
+
+test('a run that rests asks no fill and writes none; a late status answer changes nothing under the run (GPT runstatus GA1 · GA2)', async () => {
+  const { applyStatus } = require('../src/account.cjs');
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const e = f.engine;
+  e.config.lastPartial = { id: 'c'.repeat(64), at: new Date().toISOString(), volumes: ['C:'] }; e.config.lastFill = null;
+  assert.deepEqual(e.fillDue(), ['C:'], 'due while nothing holds it');
+  for (const [status, code] of [[{ device: { state: 'active' }, restore: { state: 'preparing' } }, 'RESTORE_PENDING'], [{ device: { state: 'active' }, customer: { overQuota: true } }, 'OVER_QUOTA']]) {
+    await applyStatus(e, status, ME);
+    assert.equal(e.fillDue(), null);
+    assert.throws(() => e.assertBackupReady(), (x) => x.code === code);
+  }
+  await applyStatus(e, { device: { state: 'active' } }, ME);
+  assert.deepEqual(e.fillDue(), ['C:']);
+  // The choice clears the wait the window knew of.
+  e.accountHold = 'restore'; e.config.serverRestore = { since: new Date().toISOString() };
+  await f.account.restoreChoose('job1', 'continue');
+  assert.equal(e.accountHold, null);
+
+  // A status that answers after the run's limit is not applied, then or later.
+  const { createRunner } = require('../../worker/runner.cjs');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'solo-account-late-'));
+  const source = path.join(root, 'source'); await fs.mkdir(source);
+  const plain = { encrypt: async (v) => Buffer.from(v), decrypt: async (b) => b.toString() };
+  const repo = restic();
+  const engine = new BackupEngine({ stateDir: path.join(root, 'cloud-vault'), resticPath: 'fixture', providerType: 'b2', secretStore: plain, probe: async () => ({ serverTime: Date.now() }), runner: repo.run });
+  await engine.open();
+  const log = [], account = new Account({ root, secretStore: plain, engine, appVersion: '0.7.0', make: { auth: () => ({ async open() {}, getState: () => ({ available: true, connected: true, email: null }) }), provision: () => fakeProvision(log), envelope: () => fakeEnvelope(log) } });
+  await account.open(); await account.signIn(); await account.startProtection({ sources: [source] });
+  const host = async (m, a) => m === 'secret.encrypt' ? Buffer.from(String(a[0])).toString('base64') : m === 'secret.decrypt' ? Buffer.from(a[0], 'base64').toString() : null;
+  let answered = false;
+  const server = { state: () => ({ connected: true, deviceId: ME }), status: () => new Promise((ok) => setTimeout(() => { answered = true; ok({ device: { state: 'moved', movedTo: { id: OLD, name: '새 노트북' } } }); }, 300)), telemetry: async () => ({ accepted: true }) };
+  const r = await createRunner({ host, root, resticPath: 'fixture', server, restic: repo.run, serverMs: 50 });
+  assert.deepEqual((await r.runOnce({ trigger: 'hourly' })).profiles.b2, { outcome: 'skipped', reason: 'off' });
+  await new Promise((ok) => setTimeout(ok, 400));
+  assert.equal(answered, true);
+  await r.stop();
+  assert.equal(JSON.parse(await fs.readFile(path.join(root, 'cloud-vault', 'settings.json'), 'utf8')).movedTo, undefined);
+});

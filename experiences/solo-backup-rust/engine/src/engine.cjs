@@ -255,7 +255,9 @@ class BackupEngine extends EventEmitter {
       const c = this.config;
       if (c.schema !== 1 || !['backup', 'restore'].includes(c.mode) || !/^[a-f0-9-]{36}$/.test(c.vaultId) || !Array.isArray(c.sources) || (c.repositoryId !== null && !isId(c.repositoryId))
         || (c.removedSources != null && !(Array.isArray(c.removedSources) && c.removedSources.every(removedEntry))) || (c.host != null && !DEVICE.test(c.host))
-        || (c.serverRestore != null && !(c.serverRestore && typeof c.serverRestore.since === 'string'))) throw new Error('설정 형식이 올바르지 않습니다.');
+        || (c.serverRestore != null && !(c.serverRestore && typeof c.serverRestore.since === 'string'))
+        || (c.movedTo != null && !(c.movedTo && typeof c.movedTo.device === 'string' && c.movedTo.device.length <= 64 && typeof c.movedTo.at === 'string'))
+        || (c.movePin != null && !(c.movePin && isId(c.movePin.snapshotId) && typeof c.movePin.until === 'string'))) throw new Error('설정 형식이 올바르지 않습니다.');
       normalizeProtection(c);
       if ((c.provider?.type || 'local') !== this.providerType) throw new Error('백업 프로필과 저장소 종류가 다릅니다.');
       if (this.isCloud()) {
@@ -309,7 +311,7 @@ class BackupEngine extends EventEmitter {
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
       recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, lastFill: c?.lastFill || null, missingSources: c?.missingSources || [],
       removedSources: (c?.removedSources || []).map(r => ({ path: r.path, at: r.at, until: new Date(Date.parse(r.since ?? r.at) + REMOVED_KEEP).toISOString() })),
-      lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null,
+      lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null,
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
       lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
@@ -655,6 +657,25 @@ class BackupEngine extends EventEmitter {
     this.config.serverRestore = { since: new Date(this.now()).toISOString() };
     await this.save(); return this.getState();
   }
+  // The account's write seat went to another PC (4.6 다시 확인 N2): this PC rests and says so until it takes the seat
+  // back (「이 PC로 다시 백업」). Written from the server status, by the run and the window.
+  async markMoved({ device, at }) {
+    if (!this.config?.repositoryId) return this.getState();
+    const name = typeof device === 'string' ? device.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 64) : '';
+    if (this.config.movedTo?.device === name) return this.getState();
+    this.config.movedTo = { device: name, at: typeof at === 'string' ? at : new Date(this.now()).toISOString() };
+    await this.save(); return this.getState();
+  }
+  async clearMoved() { if (this.config?.movedTo) { delete this.config.movedTo; await this.save(); } return this.getState(); }
+  // 옮겨 오기 원본(4.2 · 4.6 「move/pin」): the snapshot a reading PC is copying is kept by this writer's cleanup until
+  // the server's `until` (7 days at most) or until the pin goes.
+  async setMovePin(pin) {
+    if (!this.config?.repositoryId) return this.getState();
+    const next = pin && isId(pin.snapshotId) && Number.isFinite(Date.parse(pin.until)) ? { snapshotId: pin.snapshotId, until: new Date(Date.parse(pin.until)).toISOString() } : null;
+    if (JSON.stringify(next) === JSON.stringify(this.config.movePin || null)) return this.getState();
+    if (next) this.config.movePin = next; else delete this.config.movePin;
+    await this.save(); return this.getState();
+  }
   async releaseServerRestore() { if (this.config?.serverRestore) { delete this.config.serverRestore; await this.save(); } return this.getState(); }
   async setAutomatic(enabled) {
     if (this.job) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
@@ -667,6 +688,11 @@ class BackupEngine extends EventEmitter {
   assertBackupReady() {
     if (this.config?.mode !== 'backup' || this.config.readOnly || !this.config.repositoryId) throw new Error('백업용 연결을 먼저 준비해 주세요. 복구 전용 연결에서는 실행할 수 없습니다.');
     if (this.config.serverRestore) throw Object.assign(new Error('되돌리기가 끝날 때까지 백업을 쉽니다.'), { code: 'RESTORE_PENDING' });
+    if (this.config.movedTo) throw Object.assign(new Error('이 PC의 백업은 다른 PC로 옮겨졌습니다.'), { code: 'MOVED' });
+    // The server status this run or window read (accountHold): nothing is written while a restore runs or waits, or
+    // while the account is over its limit — a fill included (GPT workbackup-runstatus GA1).
+    if (this.accountHold === 'restore') throw Object.assign(new Error('되돌리기가 끝날 때까지 백업을 쉽니다.'), { code: 'RESTORE_PENDING' });
+    if (this.accountHold === 'over-quota') throw Object.assign(new Error('백업 용량을 넘어 새 백업을 쉽니다. 백업할 폴더를 줄여 주세요.'), { code: 'OVER_QUOTA' });
     if (!this.secret) throw new Error('저장된 인증 정보를 다시 연결해 주세요.');
     if (!this.hasRecovery()) throw new Error('복구 키를 먼저 저장한 뒤 백업을 시작해 주세요.');
   }
@@ -908,6 +934,8 @@ class BackupEngine extends EventEmitter {
   fillDue(now = this.now()) {
     const c = this.config, p = c?.lastPartial, f = c?.lastFill;
     if (!p?.volumes?.length || c.mode !== 'backup' || c.readOnly) return null;
+    // A run that rests (server restore, moved seat, the status this run read) asks no fill either (GPT runstatus GA1).
+    if (c.serverRestore || c.movedTo || this.accountHold) return null;
     if (f && (f.partial === p.id || now - Date.parse(f.at) < FILL_SPACING)) return null;
     return p.volumes;
   }
@@ -1049,7 +1077,8 @@ class BackupEngine extends EventEmitter {
     const all = await this.snapshots(); // Tag edits change IDs, so enumerate immediately before exact-ID deletion.
     // A recommended-backup snapshot is not this one's to keep or forget, as restoreLatest does not mix it in (끝판 카본 A2).
     const mine = s => s.hostname === this.hostName && !s.tags.includes('recommended-verified-v1');
-    const verified = all.filter(s => s.tags.includes(VERIFIED) && !s.tags.includes('recommended-verified-v1'));
+    // This device's newest complete backup: another device's in the same customer repository is not this one's (4.6).
+    const verified = all.filter(s => s.tags.includes(VERIFIED) && mine(s));
     const latest = verified[0];
     if (!latest || latest.id !== this.config.lastBackup?.id) throw new Error('가장 최근 백업 번호가 바뀌었습니다.');
     // Kept: the latest complete snapshot, and — when newer — the newest partial one with its list (meta, same run tag),
@@ -1066,6 +1095,9 @@ class BackupEngine extends EventEmitter {
       if (s.tags.includes('partial')) { const f = fillsIn(all, s)[0]; if (f && !keep.has(f.id)) hold(f); }
     };
     hold(latest);
+    // 옮겨 오기 원본: the snapshot a reading PC is copying stays until the server's time for it ends (4.6 「move/pin」).
+    const pinned = this.config.movePin && Date.parse(this.config.movePin.until) > now ? own.find(s => s.id === this.config.movePin.snapshotId) : null;
+    if (pinned) hold(pinned);
     // While the complete place is itself a partial snapshot (no backup has read everything yet), the listed partial
     // snapshots before it stay too: a file only they hold — one the later ones could not read — is in no other. This
     // is the vault whose first backups were partial under the previous version (GPT workbackup-missing GA1); a
@@ -1434,6 +1466,10 @@ class BackupEngine extends EventEmitter {
     if (c.mode !== 'backup' || c.readOnly) return { outcome: 'skipped', reason: 'read-only' };
     if (!this.secret) return { outcome: 'skipped', reason: 'credential' };
     if (c.serverRestore) return { outcome: 'skipped', reason: 'restore' };
+    // The server status this run read (accountHold): a restore is running or waits for the choice, or the account is
+    // over its limit. A PC whose seat moved rests until it takes it back.
+    if (c.movedTo) return { outcome: 'skipped', reason: 'moved' };
+    if (this.accountHold) return { outcome: 'skipped', reason: this.accountHold };
     if (!c.automatic && !force) return { outcome: 'skipped', reason: 'off' };
     if (this.job || this.stopping) return { outcome: 'busy', reason: 'job' };
     if (skipCloud && this.isCloud() && !force) return { outcome: 'skipped', reason: String(skipCloud).slice(0, 40) };

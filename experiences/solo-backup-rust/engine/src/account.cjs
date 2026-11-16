@@ -11,6 +11,8 @@ const { GoogleAuth } = require('./recovery-auth.cjs');
 const { ProvisionClient } = require('./provision-client.cjs');
 const { EnvelopeV3 } = require('./recovery-service.cjs');
 
+// This app's version as the provisioning server and its measurements see it.
+const APP_VERSION = '0.7.0';
 const DEVICE = /^[a-z0-9]{12}$/;
 const NEEDS = ['write-key', 'read-key', 'restore'];
 const MESSAGES = {
@@ -34,6 +36,43 @@ const text = (v, n) => (typeof v === 'string' ? v.slice(0, n) : null);
 const ms = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : null);
 const listed = (devices) => (Array.isArray(devices) ? devices.slice(0, 50) : []).filter((d) => d && DEVICE.test(d.id || '')).map((d) => ({
   id: d.id, name: text(d.name, 64) || '', role: d.role === 'write' ? 'write' : 'read', state: text(d.state, 16), createdAt: ms(d.createdAt), lastSeenAt: ms(d.lastSeenAt), current: d.current === true }));
+
+// The server status (GET status) as the writer's engine needs it (4.5 「회차 실행기」 · 4.6 N2), for the run and the
+// window alike: a seat that moved makes this PC rest and say so; a restore running or waiting for the choice, or an
+// account over its limit, holds this run (accountHold — not written down); the snapshot a reading PC copies is pinned
+// in the cleanup. Only this device's backup of the customer repository is touched.
+async function applyStatus(engine, status, deviceId) {
+  const c = engine.config;
+  if (!status || typeof status !== 'object' || !c?.repositoryId || c.mode !== 'backup' || !b2.customerRepository(c.provider?.prefix) || c.host !== deviceId) return false;
+  const d = status.device || {};
+  if (d.state === 'moved') await engine.markMoved({ device: text(d.movedTo?.name, 64) || '', at: new Date().toISOString() });
+  else if (d.state === 'active' && c.movedTo) await engine.clearMoved();
+  const r = status.restore;
+  engine.accountHold = r && (['preparing', 'running'].includes(r.state) || r.awaitingChoice === true) ? 'restore' : status.customer?.overQuota === true ? 'over-quota' : null;
+  const m = status.move;
+  const until = m && (Number.isSafeInteger(m.until) ? m.until : Date.parse(m.until));
+  await engine.setMovePin(m && m.byThisDevice !== true && /^[a-f0-9]{64}$/.test(m.snapshotId || '') && Number.isFinite(until) ? { snapshotId: m.snapshotId, until: new Date(until).toISOString() } : null);
+  return true;
+}
+// One run as the server's measurement intake takes it (서버API.md 「측정 받는 꼴」): fixed words and whole numbers
+// only. A test run is not sent. `result` is the cloud profile's run result, `fill` its fill (if one was asked).
+const PAUSES = { battery: 'battery', saver: 'saver', metered: 'metered' };
+function telemetryRun({ trigger, startedAt, result, fill = null, skipCloud = null, maxRssKb = null, cpuMs = null }) {
+  if (!['hourly', 'logon', 'wake', 'unlock', 'manual'].includes(trigger) || !result || !Number.isSafeInteger(startedAt)) return null;
+  const n = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : undefined);
+  const outcome = result.outcome === 'skipped' && result.reason === 'paused' ? 'paused' : result.outcome;
+  if (!['complete', 'partial', 'skipped', 'failed', 'busy', 'not-due', 'paused'].includes(outcome)) return null;
+  const pause = PAUSES[skipCloud] || (result.reason === 'clock' ? 'clock' : result.reason === 'paused' ? 'user' : 'none');
+  const item = { trigger, startedAt, result: outcome, pause, durationMs: n(result.durationMs), exitCode: Number.isSafeInteger(result.exitCode) && result.exitCode >= -1 && result.exitCode <= 255 ? result.exitCode : undefined,
+    unreadable: n(result.unreadable), peakMemory: n(Number.isSafeInteger(maxRssKb) ? maxRssKb * 1024 : null), cpuMs: n(cpuMs),
+    resticStartMs: Number.isSafeInteger(result.resticStartedAt) && result.resticStartedAt >= startedAt ? result.resticStartedAt - startedAt : undefined };
+  const files = { new: n(result.filesNew), changed: n(result.filesChanged), unmodified: n(result.filesUnmodified) };
+  if (Object.values(files).every((v) => v !== undefined)) item.files = files;
+  if (n(result.dataAdded) !== undefined && n(result.bytes) !== undefined) item.bytes = { added: result.dataAdded, processed: result.bytes };
+  if (result.fill) item.fill = { tried: !!fill, result: !fill ? 'none' : fill.outcome === 'fill' ? 'done' : fill.outcome === 'skipped' ? 'skipped' : 'failed' };
+  for (const k of Object.keys(item)) if (item[k] === undefined) delete item[k];
+  return item;
+}
 
 class Account {
   /** `engine` is the cloud profile's BackupEngine. `make` replaces the three parts in tests. */
@@ -166,7 +205,7 @@ class Account {
     const credentials = await this.provision.writeCredentials(), p = this.provision.state(), e = this.engine;
     if (!credentials) throw failure('WRITE_KEY');
     if (e.config?.mode === 'restore' && b2.customerRepository(e.config.provider?.prefix)) await e.becomeWriter({ sources, credentials, host: p.deviceId });
-    else if (e.config?.repositoryId) { this.ours(); await e.updateCloudCredentials(credentials); }
+    else if (e.config?.repositoryId) { this.ours(); await e.updateCloudCredentials(credentials); await e.clearMoved(); }
     return { previous: typeof r.previous?.name === 'string' ? r.previous.name.slice(0, 64) : null, ...this.state() };
   }
   async revokeDevice(deviceId) {
@@ -220,13 +259,36 @@ class Account {
     } catch (error) { return { jobId: r.jobId, left: /^[A-Z][A-Z_]{1,31}$/.test(error.code || '') ? error.code : 'ENVELOPE' }; }
     return { jobId: r.jobId };
   }
+  // The window's look at the account (each hour while it is open, and when it opens): the server status goes to the
+  // engine as in a run, the Google step after a loss comes back from the server, and a read key the server still
+  // counts as unconfirmed is published and confirmed when this PC holds it. Once a day the envelope is read back
+  // (4.5 「봉투 매일 재확인」); one that is gone or different is marked for 「다시 로그인」 (envelopeInvalid).
+  async refresh({ recheck = false } = {}) {
+    const p = this.provision.state();
+    if (!this.auth || !p.connected) return this.state();
+    const status = await this.provision.status();
+    await applyStatus(this.engine, status, p.deviceId);
+    if (status.lost?.googleStepRequired === true) this.info.googleStepRequired = true;
+    if (status.writer && typeof status.writer === 'object') this.info.writer = status.writer;
+    const e = this.engine;
+    if (e.config?.repositoryId && b2.customerRepository(e.config.provider?.prefix) && this.auth.getState().connected) {
+      if (status.readKey === 'unconfirmed' && await this.provision.pendingReadKey() && !this.info.googleStepRequired) await this.publishEnvelope({ googleStepDone: false });
+      else if (recheck && this.envelope.getState().verified) {
+        const checked = await this.envelope.recheck({ repositoryId: e.config.repositoryId, password: e.secret });
+        if (checked.verified?.verifiedAt) await e.markEnvelope({ verifiedAt: checked.verified.verifiedAt });
+      }
+    }
+    return this.state();
+  }
   async restoreJob(jobId) { this.need(); if (typeof jobId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(jobId)) throw failure('BAD_INPUT'); return this.provision.restoreJob(jobId); }
   async restoreChoose(jobId, choice) {
     this.need();
     if (typeof jobId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(jobId) || !['continue', 'undo'].includes(choice)) throw failure('BAD_INPUT');
     const r = await this.provision.restoreChoose(jobId, choice);
     await this.engine.releaseServerRestore();
+    // The choice ends the wait the last status reported; the next look reads the server again.
+    if (this.engine.accountHold === 'restore') this.engine.accountHold = null;
     return { ok: !!r.ok };
   }
 }
-module.exports = { Account, MESSAGES };
+module.exports = { Account, MESSAGES, applyStatus, telemetryRun, APP_VERSION };
