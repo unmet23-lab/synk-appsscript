@@ -50,8 +50,29 @@ function sourcePlans(snapshot) {
     return { index, original, label, selector: `${snapshot.id}:${subtree}` };
   });
 }
+/** A device name as restic writes it (the move's `from`): printable, no spaces, short. */
+const hostOk = h => typeof h === 'string' && h.length >= 1 && h.length <= 128 && /^[\x21-\x7e]+$/.test(h);
+/**
+ * 「옛 PC 백업에서 꺼내기」 · 화면 세션 E26: which part of a backup a catalog opens. Nothing named: every folder. `folder`:
+ * one of the backup's folders (as its `paths` say, Windows compares it by case). `sub`: a folder inside it, `a/b`, every
+ * part a name Windows can hold — so a folder past the catalog's limit is taken a part at a time. Returns
+ * `[{ index, sub }]` in the backup's folder order.
+ */
+function scopeOf(plans, { folder, sub } = {}) {
+  if (folder === undefined && sub === undefined) return plans.map(p => ({ index: p.index, sub: '' }));
+  if (typeof folder !== 'string' || folder.length > 1024) throw issue('INVALID_REQUEST');
+  const key = path.win32.resolve(folder).toLowerCase().replace(/\\+$/, '');
+  const plan = plans.find(p => path.win32.resolve(p.original).toLowerCase().replace(/\\+$/, '') === key);
+  if (!plan) throw issue('INVALID_REQUEST');
+  if (sub === undefined || sub === '') return [{ index: plan.index, sub: '' }];
+  if (typeof sub !== 'string' || sub.length > 1024 || /[\x00-\x1f\x7f\\]/.test(sub) || sub.split('/').some(p => !p || p === '.' || p === '..')) throw issue('INVALID_REQUEST');
+  try { if (!entryPath(path.resolve('scope-check'), sub)) throw issue('INVALID_REQUEST'); } catch { throw issue('INVALID_REQUEST'); }
+  return [{ index: plan.index, sub }];
+}
 function budget(limits = LIMITS) { return { bytes: 0, nodes: 0, limits: { ...LIMITS, ...limits } }; }
-async function parseCatalog(input, { root, snapshotId, budget: meter = budget() }) {
+/** `prefix`: the listing is of a folder inside the backup's folder (scopeOf's `sub`); its names are put under it, and its
+ *  own folders are added, so paths stay those of the backup's folder (restore writes `<label>/<sub>/…`). */
+async function parseCatalog(input, { root, snapshotId, budget: meter = budget(), prefix = '' }) {
   const nodes = new Map(), decoder = new TextDecoder('utf-8', { fatal: true });
   let pending = '', snapshots = 0, unavailableCount = 0;
   function line(text) {
@@ -61,8 +82,8 @@ async function parseCatalog(input, { root, snapshotId, budget: meter = budget() 
     if (node?.message_type === 'snapshot') { if (++snapshots !== 1 || node.id !== snapshotId) throw issue('UNSAFE_MANIFEST'); return; }
     if (++meter.nodes > meter.limits.nodes) throw issue('CATALOG_TOO_LARGE');
     if (node?.message_type !== 'node' || typeof node.path !== 'string' || !node.path.startsWith('/') || typeof node.type !== 'string') throw issue('UNSAFE_MANIFEST');
-    const name = node.path.slice(1);
-    try { if (!entryPath(root, name)) throw issue('UNSAFE_MANIFEST'); } catch { throw issue('UNSAFE_MANIFEST'); }
+    const name = prefix ? `${prefix}/${node.path.slice(1)}` : node.path.slice(1);
+    try { if (!node.path.slice(1) || !entryPath(root, name)) throw issue('UNSAFE_MANIFEST'); } catch { throw issue('UNSAFE_MANIFEST'); }
     const key = name.toLowerCase();
     if (nodes.has(key)) throw issue('UNSAFE_MANIFEST');
     if (node.type === 'file' && (!Number.isSafeInteger(node.size) || node.size < 0)) throw issue('UNSAFE_MANIFEST');
@@ -83,6 +104,15 @@ async function parseCatalog(input, { root, snapshotId, budget: meter = budget() 
   try { pending += decoder.decode(); } catch { throw issue('UNSAFE_MANIFEST'); }
   drain(); if (pending) line(pending);
   if (snapshots !== 1) throw issue('UNSAFE_MANIFEST');
+  if (prefix) {
+    let at = '';
+    for (const part of prefix.split('/')) {
+      at = at ? `${at}/${part}` : part;
+      const had = nodes.get(at.toLowerCase());
+      if (had && had.type !== 'dir') throw issue('UNSAFE_MANIFEST');
+      if (!had) nodes.set(at.toLowerCase(), { path: at, type: 'dir', size: 0, mtime: null });
+    }
+  }
   for (const node of nodes.values()) {
     let parent = path.posix.dirname(node.path);
     while (parent !== '.') {
@@ -96,13 +126,18 @@ function queryKey(query) {
   if (typeof query !== 'string' || query.length > 200 || /[\x00-\x1f\x7f]/.test(query)) throw issue('QUERY_INVALID');
   return query.normalize('NFC').trim().toLowerCase();
 }
+/** `manifests[i]` is plan i's listing, or null for a folder the catalog's scope leaves out. `host` is whose backup it is,
+ *  `from` the other device it names (null: this device's own). `scoped`: the catalog was opened for a folder (scopeOf's
+ *  `folder`), told by the caller, not guessed from the scope — a backup of one folder opened for that folder is still
+ *  scoped (카본 끝판 A1). */
 class FileCatalog {
-  constructor({ snapshot, plans, manifests, repositoryId, vaultId, profile, now }) {
-    this.snapshotId = snapshot.id; this.snapshotAt = snapshot.time; this.plans = plans;
+  constructor({ snapshot, plans, manifests, repositoryId, vaultId, profile, now, host = snapshot.hostname, from = null, scope = plans.map(p => ({ index: p.index, sub: '' })), scoped = false }) {
+    this.snapshotId = snapshot.id; this.snapshotAt = snapshot.time; this.plans = plans; this.host = host; this.from = from; this.scope = scope; this.scoped = scoped;
     this.repositoryId = repositoryId; this.vaultId = vaultId; this.profile = profile;
     this.token = crypto.randomBytes(16).toString('hex'); this.openedAt = now; this.expiresAt = now + LIMITS.ttl;
     this.files = []; this.byId = new Map(); this.selected = new Set(); this.revision = 0; this.totalBytes = 0; this.unavailableCount = 0;
     for (const [index, manifest] of manifests.entries()) {
+      if (!manifest) continue;
       this.unavailableCount += manifest.unavailableCount;
       const files = [...manifest.nodes.values()].filter(n => n.type === 'file').sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
       for (const f of files) {
@@ -116,7 +151,8 @@ class FileCatalog {
     if (token !== this.token || now >= this.expiresAt || now < this.openedAt || config?.repositoryId !== this.repositoryId || config?.vaultId !== this.vaultId) throw issue('CATALOG_EXPIRED');
   }
   meta() {
-    return { profile: this.profile, token: this.token, snapshotAt: this.snapshotAt, expiresAt: new Date(this.expiresAt).toISOString(), fileCount: this.files.length, totalBytes: this.totalBytes, unavailableCount: this.unavailableCount,
+    return { profile: this.profile, token: this.token, from: this.from, snapshotAt: this.snapshotAt, expiresAt: new Date(this.expiresAt).toISOString(), fileCount: this.files.length, totalBytes: this.totalBytes, unavailableCount: this.unavailableCount,
+      scope: this.scoped ? this.scope.map(s => ({ source: this.plans[s.index].label, folder: this.plans[s.index].original, sub: s.sub })) : null,
       selection: { revision: this.revision, count: this.selected.size, bytes: [...this.selected].reduce((sum, id) => sum + this.byId.get(id).size, 0) } };
   }
   matches(query) { const key = queryKey(query); return this.files.filter(f => f.searchKey.includes(key)); }
@@ -141,7 +177,7 @@ class FileCatalog {
   capture(revision) {
     if (!Number.isSafeInteger(revision) || revision !== this.revision) throw issue('SELECTION_STALE');
     if (!this.selected.size) throw issue('SELECTION_EMPTY');
-    return { snapshotId: this.snapshotId, repositoryId: this.repositoryId, vaultId: this.vaultId, plans: this.plans.map(p => ({ ...p })), files: this.files.filter(f => this.selected.has(f.id)).map(f => ({ ...f })) };
+    return { snapshotId: this.snapshotId, host: this.host, from: this.from, scope: this.scope.map(s => ({ ...s })), repositoryId: this.repositoryId, vaultId: this.vaultId, plans: this.plans.map(p => ({ ...p })), files: this.files.filter(f => this.selected.has(f.id)).map(f => ({ ...f })) };
   }
 }
 async function hashFile(file) { const hash = crypto.createHash('sha256'); for await (const chunk of createReadStream(file)) hash.update(chunk); return hash.digest('hex'); }
@@ -166,4 +202,4 @@ async function spaceRequired(base, files, plans, statfs = fs.statfs) {
   required += BigInt(dirs.size + 1) * space.bsize;
   if (required > space.bavail * space.bsize) throw issue('NO_SPACE');
 }
-module.exports = { LIMITS, MESSAGES, CatalogError, issue, safeError, request, sourcePlans, budget, parseCatalog, FileCatalog, writeFileStream, spaceRequired };
+module.exports = { LIMITS, MESSAGES, CatalogError, issue, safeError, request, sourcePlans, hostOk, scopeOf, budget, parseCatalog, FileCatalog, writeFileStream, spaceRequired };

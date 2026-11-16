@@ -38,11 +38,13 @@ test('bridge, worker and native method contract preserves all existing app actio
   const account=['signInGoogle','startProtection','continueBackup','openAccountBackup','devicesList','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restorePlan','restoreRun','restoreJob','restoreChoose','restoreSeen','cancelGoogle','openGoogleAccount'];
   // 「새 PC로 옮겨 오기」 (4.6 · 4.6b): done on a PC that does not write, so every one is allowed restore-only.
   const move=['moveDevices','movePreview','moveStart','moveResult','moveState','moveOpen','setNextSources','moveReinstallList','moveReinstall','moveRestoreSettings','moveChecklist','moveCheck','moveOpenProgramPage','moveRelease'];
-  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move].sort();
+  // 「옛 PC 백업에서 꺼내기」 (4.6 · 화면 세션 E26): the folders right inside a part of an old device's backup.
+  const oldBackup=['browseBackupFolder'];
+  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
   for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials','addSources','removeSource'])assert.equal(contract[name].allowedReadOnly,false);
-  for(const name of ['restoreLatest','restoreSelected','openFileCatalog'])assert.equal(contract[name].allowedReadOnly,true);
+  for(const name of ['restoreLatest','restoreSelected','openFileCatalog','browseBackupFolder'])assert.equal(contract[name].allowedReadOnly,true);
   // A Google sign-in opens the browser (dialog) and waits for the person, so it has no time limit.
   for(const name of ['signInGoogle','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restoreRun','restoreChoose'])assert.deepEqual([contract[name].dialog,contract[name].timeoutMs],[true,0],name);
   for(const name of ['devicesList','restorePlan','restoreJob','restoreSeen','cancelGoogle','openGoogleAccount'])assert.equal(contract[name].mutating,false,name);

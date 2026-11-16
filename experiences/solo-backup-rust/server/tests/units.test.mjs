@@ -662,7 +662,9 @@ test('도움 요청 부호 목록: every error code the engine, the worker and t
   const shapes = [/code:\s*'([A-Z][A-Z0-9_]{1,40})'/g, /(?:failure|err|ServerError)\(\s*'([A-Z][A-Z0-9_]{1,40})'/g];
   for (const f of files) {
     const text = fs.readFileSync(f, 'utf8');
-    for (const re of shapes) for (const m of text.matchAll(re)) if (!KNOWN_ERROR_CODES.has(m[1])) missing.add(`${m[1]} (${path.relative(app, f)})`);
+    // `EXIT_<number>` is an installer's exit code in a program's reinstall result (move-service.cjs), not a code anything
+    // raises; the window's sample results write it in the same shape.
+    for (const re of shapes) for (const m of text.matchAll(re)) if (!KNOWN_ERROR_CODES.has(m[1]) && !/^EXIT_\d+$/.test(m[1])) missing.add(`${m[1]} (${path.relative(app, f)})`);
   }
   assert.deepEqual([...missing], []);
 });

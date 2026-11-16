@@ -1426,29 +1426,113 @@ class BackupEngine extends EventEmitter {
       if (typeof lock.exclusive !== 'boolean' || lock.exclusive) throw selection.issue('REMOTE_MAINTENANCE');
     }
   }
-  async readFileManifest(plan, snapshotId, meter) {
+  async readFileManifest(plan, snapshotId, meter, sub = '') {
     let manifest;
-    await this.run(['ls', '--json', '--recursive', plan.selector], { timeoutMs: 300000, consumeStdout: async input => {
-      manifest = await selection.parseCatalog(input, { root: path.resolve(this.stateDir, 'catalog-root'), snapshotId, budget: meter });
+    await this.run(['ls', '--json', '--recursive', sub ? `${plan.selector}/${sub}` : plan.selector], { timeoutMs: 300000, consumeStdout: async input => {
+      manifest = await selection.parseCatalog(input, { root: path.resolve(this.stateDir, 'catalog-root'), snapshotId, budget: meter, prefix: sub });
     } });
     if (!manifest) throw selection.issue('OPERATION_FAILED');
     return manifest;
   }
-  async openFileCatalog() {
+  /** Whose backup a catalog reads (「옛 PC 백업에서 꺼내기」, STAGE1_DESIGN.md 4.6): this device's, or the other device
+   *  `from` names. Files still go only to a new folder (restoreSelected). */
+  catalogHost(from) {
+    if (from === undefined || from === null || from === this.hostName) return { host: this.hostName, from: null };
+    if (!selection.hostOk(from)) throw selection.issue('INVALID_REQUEST');
+    return { host: from, from };
+  }
+  /**
+   * 「파일 되살리기」. `from`: another device's newest complete backup (「옛 PC 백업에서 꺼내기」). `folder` · `sub`: only
+   * that folder of it, or a folder inside it (화면 세션 E26 — a folder past the catalog's limit, a part at a time).
+   */
+  async openFileCatalog({ from, folder, sub } = {}) {
     this.assertCatalogReady();
+    const { host, from: other } = this.catalogHost(from);
     return this.hold('browse', async () => {
       this.discardCatalog();
       try {
         await this.assertNoRemoteMaintenance(); await this.identity();
-        const snapshot = (await this.snapshots([VERIFIED], { host: this.hostName }))[0];
+        const snapshot = (await this.snapshots([VERIFIED], { host }))[0];
         if (!snapshot) throw selection.issue('NO_SNAPSHOT');
-        const plans = selection.sourcePlans(snapshot), manifests = [], meter = selection.budget();
-        for (const plan of plans) manifests.push(await this.readFileManifest(plan, snapshot.id, meter));
-        this.fileCatalog = new selection.FileCatalog({ snapshot, plans, manifests, repositoryId: this.config.repositoryId, vaultId: this.config.vaultId, profile: this.providerType, now: this.now() });
+        const plans = selection.sourcePlans(snapshot), scope = selection.scopeOf(plans, { folder, sub }), manifests = plans.map(() => null), meter = selection.budget();
+        for (const part of scope) manifests[part.index] = await this.readPart(plans[part.index], snapshot.id, part.sub, () => this.readFileManifest(plans[part.index], snapshot.id, meter, part.sub));
+        this.fileCatalog = new selection.FileCatalog({ snapshot, plans, manifests, host, from: other, scope, scoped: folder !== undefined, repositoryId: this.config.repositoryId, vaultId: this.config.vaultId, profile: this.providerType, now: this.now() });
         this.catalogTimer = setTimeout(() => this.discardCatalog(), selection.LIMITS.ttl); this.catalogTimer.unref?.();
         return this.fileCatalog.meta();
       } catch (e) { throw selection.safeError(e); }
     });
+  }
+  /**
+   * 화면 세션 E26: the folders right inside one folder of a backup (`sub` inside it, or its top), so a part small enough for
+   * a catalog can be chosen. Only that level is read, never what is under it. At most 2,000 names (`cut` past them).
+   */
+  async browseBackupFolder({ from, folder, sub } = {}) {
+    this.assertCatalogReady();
+    const { host, from: other } = this.catalogHost(from);
+    if (folder === undefined) throw selection.issue('INVALID_REQUEST');
+    return this.hold('browse', async () => {
+      try {
+        await this.assertNoRemoteMaintenance(); await this.identity();
+        const snapshot = (await this.snapshots([VERIFIED], { host }))[0];
+        if (!snapshot) throw selection.issue('NO_SNAPSHOT');
+        const plans = selection.sourcePlans(snapshot), [part] = selection.scopeOf(plans, { folder, sub });
+        const plan = plans[part.index];
+        const level = await this.readPart(plan, snapshot.id, part.sub, () => this.listLevel(plan, snapshot.id, part.sub));
+        // A name a catalog could not hold is left out of the list: opening it would be refused.
+        const fits = level.folders.filter(name => { try { return !!entryPath(path.resolve(this.stateDir, 'catalog-root'), part.sub ? `${part.sub}/${name}` : name); } catch { return false; } });
+        return { profile: this.providerType, from: other, folder: plan.original, sub: part.sub, snapshotAt: snapshot.time, folders: fits.sort(), files: level.files, ...(level.cut ? { cut: true } : {}), ...(fits.length < level.folders.length ? { leftOut: level.folders.length - fits.length } : {}) };
+      } catch (e) { throw selection.safeError(e); }
+    });
+  }
+  /** One level of a backup's folder (`sub` inside it, or its top), read with `restic ls --json <folder[/sub]> /` and no
+   *  --recursive, which lists only that level (a deeper path is refused). Keeps the first `keep` folder names (`cut` past
+   *  them), counts the files, and says whether a folder named `want` is there. */
+  async listLevel(plan, snapshotId, sub, { keep = 2000, want = null } = {}) {
+    const folders = [];
+    let files = 0, cut = false, found = false, snapshots = 0;
+    await this.run(['ls', '--json', sub ? `${plan.selector}/${sub}` : plan.selector, '/'], { timeoutMs: 300000, consumeStdout: async input => {
+      const decoder = new TextDecoder('utf-8', { fatal: true }); let pending = '', lines = 0;
+      const line = text => {
+        if (!text.trim()) return;
+        if (++lines > 200000 || Buffer.byteLength(text) > selection.LIMITS.line) throw selection.issue('CATALOG_TOO_LARGE');
+        let node; try { node = JSON.parse(text); } catch { throw selection.issue('UNSAFE_MANIFEST'); }
+        if (node?.message_type === 'snapshot') { if (++snapshots !== 1 || node.id !== snapshotId) throw selection.issue('UNSAFE_MANIFEST'); return; }
+        if (node?.message_type !== 'node' || typeof node.path !== 'string' || !/^\/[^/]+$/.test(node.path)) throw selection.issue('UNSAFE_MANIFEST');
+        if (node.type === 'dir') { const name = node.path.slice(1); if (name === want) found = true; if (folders.length < keep) folders.push(name); else cut = true; }
+        else if (node.type === 'file') files++;
+      };
+      for await (const chunk of input) {
+        try { pending += decoder.decode(chunk, { stream: true }); } catch { throw selection.issue('UNSAFE_MANIFEST'); }
+        let end; while ((end = pending.indexOf('\n')) >= 0) { line(pending.slice(0, end)); pending = pending.slice(end + 1); }
+        if (Buffer.byteLength(pending) > selection.LIMITS.line) throw selection.issue('CATALOG_TOO_LARGE');
+      }
+      try { pending += decoder.decode(); } catch { throw selection.issue('UNSAFE_MANIFEST'); }
+      line(pending);
+    } });
+    if (snapshots !== 1) throw selection.issue('UNSAFE_MANIFEST');
+    return { folders, files, cut, found };
+  }
+  /** Reads a part of a backup's folder with `read`. When that fails for a folder inside it (`sub`), a part the backup does
+   *  not have — the screen's list was older than the backup — is told apart as INVALID_REQUEST (「목록을 새로 열어
+   *  주세요」); any other failure stands. */
+  async readPart(plan, snapshotId, sub, read) {
+    try { return await read(); }
+    catch (e) {
+      if (sub && e?.code !== 'CATALOG_TOO_LARGE' && await this.partMissing(plan, snapshotId, sub)) throw selection.issue('INVALID_REQUEST');
+      throw e;
+    }
+  }
+  /** Walks down from the folder's top a level at a time: true when a part of `sub` is not a folder there. A level that
+   *  cannot be read says nothing (false), so the first failure stands. */
+  async partMissing(plan, snapshotId, sub) {
+    let at = '';
+    for (const name of sub.split('/')) {
+      let level;
+      try { level = await this.listLevel(plan, snapshotId, at, { keep: 0, want: name }); } catch { return false; }
+      if (!level.found) return true;
+      at = at ? `${at}/${name}` : name;
+    }
+    return false;
   }
   queryFileCatalog({ token, query, offset }) { return this.catalogFor(token).query(query, offset); }
   setFileSelection(input) {
@@ -1478,13 +1562,16 @@ class BackupEngine extends EventEmitter {
         if ([...this.forbidden(), ...this.config.sources, ...capture.plans.map(p => p.original)].some(p => overlap(base, p))) throw selection.issue('OUTPUT_UNSAFE');
         if (this.config.repositoryId !== capture.repositoryId || this.config.vaultId !== capture.vaultId) throw selection.issue('REPOSITORY_CHANGED');
         await this.assertNoRemoteMaintenance(); await this.identity();
-        const snapshot = (await this.snapshots([VERIFIED], { host: this.hostName })).find(s => s.id === capture.snapshotId);
+        // The device the catalog was opened for (「옛 PC 백업에서 꺼내기」), and only the part it opened (화면 세션 E26).
+        const snapshot = (await this.snapshots([VERIFIED], { host: capture.host })).find(s => s.id === capture.snapshotId);
         if (!snapshot) throw selection.issue('SNAPSHOT_GONE');
         const plans = selection.sourcePlans(snapshot);
         if (JSON.stringify(plans) !== JSON.stringify(capture.plans)) throw selection.issue('INTEGRITY_FAILED');
         const meter = selection.budget();
         for (const index of new Set(capture.files.map(f => f.sourceIndex))) {
-          const manifest = await this.readFileManifest(plans[index], snapshot.id, meter);
+          const part = capture.scope.find(p => p.index === index);
+          if (!part) throw selection.issue('INTEGRITY_FAILED');
+          const manifest = await this.readFileManifest(plans[index], snapshot.id, meter, part.sub);
           for (const file of capture.files.filter(f => f.sourceIndex === index)) {
             const fresh = manifest.nodes.get(file.path.toLowerCase());
             if (!fresh || fresh.type !== 'file' || fresh.path !== file.path || fresh.size !== file.size || fresh.mtime !== file.mtime) throw selection.issue('INTEGRITY_FAILED');
@@ -1510,7 +1597,7 @@ class BackupEngine extends EventEmitter {
           count++; bytes += written.bytes;
         }
         const mapping = capture.files.map(f => ({ source: plans[f.sourceIndex].label, path: f.path, bytes: f.size }));
-        await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify({ snapshotAt: snapshot.time, files: mapping }, null, 2), { flag: 'wx' });
+        await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify({ snapshotAt: snapshot.time, ...(capture.from ? { from: capture.from } : {}), files: mapping }, null, 2), { flag: 'wx' });
         await fs.unlink(marker);
         this.config.lastSelectedRestore = { path: target, at: new Date(this.now()).toISOString(), files: count, bytes };
         // Persist before emitting success. If finalization fails, restore the old

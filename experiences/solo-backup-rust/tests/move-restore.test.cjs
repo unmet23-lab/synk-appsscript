@@ -225,4 +225,39 @@ test('move: synthetic old PC → backup → new PC, every file by SHA-256, nothi
     assert.ok(result.counts.onedrive >= 1, JSON.stringify(result.counts));
     assert.deepEqual(walk(odNew).map(p => path.basename(p)).sort(), ['empty.txt', '한글 문서.txt']);
   });
+  await t.test('the old PC\'s backup opens on the new PC a part at a time and comes out in a new folder (4.6 「옛 PC 백업에서 꺼내기」 · 화면 세션 E26)', async () => {
+    // The new PC is another device of the same repository: its own name, no backup of its own yet.
+    const had = Object.hasOwn(engine.config, 'host'), own = engine.config.host; engine.config.host = 'new-pc';
+    try {
+      const refused = expected => e => e.code === expected;
+      await assert.rejects(engine.openFileCatalog(), refused('NO_SNAPSHOT'));
+      // One level of the old Documents: its folders (not the junction, not what is under them) and how many files.
+      const first = '깊은 폴더 이름 0 abcdefghijklmnop', second = '깊은 폴더 이름 1 abcdefghijklmnop';
+      const top = await engine.browseBackupFolder({ from, folder: docs });
+      assert.deepEqual([top.from, top.folder, top.sub, top.folders, top.files, top.cut, top.leftOut], [from, docs, '', ['PowerShell', first, '링크 자리', '빈 폴더'], 4, undefined, undefined]);
+      const inner = await engine.browseBackupFolder({ from, folder: docs, sub: first });
+      assert.deepEqual([inner.folders, inner.files], [[second], 0]);
+      // A part two levels down holds only the deep file.
+      const deepPart = await engine.openFileCatalog({ from, folder: docs, sub: `${first}/${second}` });
+      assert.equal(deepPart.fileCount, 1);
+      assert.match(engine.queryFileCatalog({ token: deepPart.token, query: '', offset: 0 }).rows[0].path, new RegExp(`^${first}/${second}/.+/끝\\.txt$`));
+      // One folder inside Documents, out into a new folder by SHA-256, with the old PC named in 복구경로.json.
+      const meta = await engine.openFileCatalog({ from, folder: docs, sub: '링크 자리' });
+      assert.deepEqual([meta.from, meta.fileCount, meta.scope.length, meta.scope[0].folder, meta.scope[0].sub], [from, 1, 1, docs, '링크 자리']);
+      engine.setFileSelection({ token: meta.token, revision: 0, action: 'all', query: '' });
+      const out = path.join(root, 'out-old'); fs.mkdirSync(out);
+      await engine.restoreSelected({ token: meta.token, revision: 1, parent: out });
+      const got = engine.config.lastSelectedRestore.path;
+      assert.equal(shaOf(path.join(got, meta.scope[0].source, '링크 자리', 'x.txt')), source[path.join(docs, '링크 자리', 'x.txt')]);
+      assert.deepEqual(walk(got).map(p => path.basename(p)).sort(), ['x.txt', '복구경로.json']);
+      assert.equal(JSON.parse(fs.readFileSync(path.join(got, '복구경로.json'), 'utf8')).from, from);
+      // A device with no backup, a folder the old backup does not have, a part that climbs out.
+      await assert.rejects(engine.openFileCatalog({ from: 'gone-pc' }), refused('NO_SNAPSHOT'));
+      await assert.rejects(engine.browseBackupFolder({ from, folder: path.join(root, 'nowhere') }), refused('INVALID_REQUEST'));
+      await assert.rejects(engine.openFileCatalog({ from, folder: docs, sub: '../Desktop' }), refused('INVALID_REQUEST'));
+      // A part the old backup does not have (the screen's list was older): both say to open the list again.
+      await assert.rejects(engine.browseBackupFolder({ from, folder: docs, sub: '없는 폴더' }), refused('INVALID_REQUEST'));
+      await assert.rejects(engine.openFileCatalog({ from, folder: docs, sub: `${first}/없는 폴더` }), refused('INVALID_REQUEST'));
+    } finally { if (had) engine.config.host = own; else delete engine.config.host; }
+  });
 });

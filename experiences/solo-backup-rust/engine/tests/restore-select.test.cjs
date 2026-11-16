@@ -2,7 +2,7 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os');
 const { Readable } = require('node:stream');
-const { LIMITS, parseCatalog, budget, FileCatalog, sourcePlans, writeFileStream, spaceRequired } = require('../src/restore-select.cjs');
+const { LIMITS, parseCatalog, budget, FileCatalog, sourcePlans, writeFileStream, spaceRequired, hostOk, scopeOf } = require('../src/restore-select.cjs');
 const id = 'a'.repeat(64), root = path.resolve(os.tmpdir(), 'selective-placeholder');
 const snapshot = { id, time: '2026-11-08T00:00:00.000Z', paths: ['C:\\Z work', 'D:\\A work'] };
 const row = (name, size = 3, type = 'file') => ({ message_type: 'node', path: '/' + name, type, size });
@@ -59,4 +59,34 @@ test('file stream uses exclusive creation, size bound, preserved partial writes 
   const short = await writeFileStream(Readable.from([Buffer.from('ab')]), path.join(dir, 'short'), 3, dir); assert.equal(short.bytes, 2);
   await assert.rejects(writeFileStream(Readable.from([Buffer.from('abcd')]), path.join(dir, 'long'), 3, dir), code('INTEGRITY_FAILED'));
   await assert.rejects(spaceRequired(dir, [{ sourceIndex: 0, path: 'a/b', size: 1 }], [{ label: '01-work' }], async () => ({ bsize: 4096n, bavail: 1n })), code('NO_SPACE'));
+});
+test('a catalog of part of a backup: the folder chosen, its names under the part, the parts left out empty (4.6 · 화면 세션 E26)', async () => {
+  const plans = sourcePlans(snapshot);
+  assert.deepEqual(scopeOf(plans), [{ index: 0, sub: '' }, { index: 1, sub: '' }]);
+  assert.deepEqual(scopeOf(plans, { folder: 'd:\\a WORK\\' }), [{ index: 1, sub: '' }]);
+  assert.deepEqual(scopeOf(plans, { folder: 'C:\\Z work', sub: '' }), [{ index: 0, sub: '' }]);
+  assert.deepEqual(scopeOf(plans, { folder: 'C:\\Z work', sub: '사진/2024' }), [{ index: 0, sub: '사진/2024' }]);
+  for (const bad of [{ folder: 'E:\\none' }, { sub: 'a' }, { folder: 3 }, { folder: 'C:\\' + 'x'.repeat(1025) }, { folder: 'C:\\Z work', sub: 3 }, { folder: 'C:\\Z work', sub: '../x' }, { folder: 'C:\\Z work', sub: 'a/./b' },
+    { folder: 'C:\\Z work', sub: 'a\\b' }, { folder: 'C:\\Z work', sub: 'a//b' }, { folder: 'C:\\Z work', sub: '/a' }, { folder: 'C:\\Z work', sub: 'a/' }, { folder: 'C:\\Z work', sub: 'CON' }, { folder: 'C:\\Z work', sub: 'a\u0001' }, { folder: 'C:\\Z work', sub: 'x'.repeat(1025) }])
+    assert.throws(() => scopeOf(plans, bad), code('INVALID_REQUEST'), JSON.stringify(bad));
+  assert.deepEqual(['old-pc', 'f'.repeat(36), '', 'old pc', '한글', 'x'.repeat(129), 3, null].map(hostOk), [true, true, false, false, false, false, false, false]);
+  // A listing of 2024 inside the folder: its names go under 사진/2024, and those two folders are made up so parents check.
+  const part = await parseCatalog(input([row('x.txt'), row('d', 0, 'dir'), row('d/y.txt')]), { root, snapshotId: id, prefix: '사진/2024' });
+  assert.deepEqual([...part.nodes.values()].map(n => n.path).sort(), ['사진', '사진/2024', '사진/2024/d', '사진/2024/d/y.txt', '사진/2024/x.txt']);
+  await assert.rejects(parseCatalog(input([{ message_type: 'node', path: '/', type: 'dir', size: 0 }]), { root, snapshotId: id, prefix: '사진' }), code('UNSAFE_MANIFEST'));
+  const c = new FileCatalog({ snapshot, plans, manifests: [null, part], host: 'old-pc', from: 'old-pc', scope: [{ index: 1, sub: '사진/2024' }], scoped: true, repositoryId: 'repo', vaultId: 'vault', profile: 'local', now: 1000 });
+  const meta = c.meta();
+  assert.deepEqual([meta.from, meta.fileCount, meta.totalBytes], ['old-pc', 2, 6]);
+  assert.deepEqual(meta.scope, [{ source: '02-A work', folder: 'D:\\A work', sub: '사진/2024' }]);
+  c.select({ revision: 0, action: 'all', query: '' });
+  const copy = c.capture(1);
+  assert.deepEqual([copy.host, copy.from, copy.scope], ['old-pc', 'old-pc', [{ index: 1, sub: '사진/2024' }]]);
+  assert.ok(copy.files.every(f => f.sourceIndex === 1 && f.path.startsWith('사진/2024/')));
+  copy.scope[0].sub = 'changed'; assert.equal(c.scope[0].sub, '사진/2024', 'the capture is a copy');
+  // A backup of one folder opened for that folder is still scoped (카본 끝판 A1); a catalog of a whole backup says nothing of
+  // scope; this device's own says no other device.
+  const single = { ...snapshot, paths: ['C:\\Z work'] }, singlePlans = sourcePlans(single);
+  const one = new FileCatalog({ snapshot: single, plans: singlePlans, manifests: [part], scope: scopeOf(singlePlans, { folder: 'C:\\Z work' }), scoped: true, repositoryId: 'repo', vaultId: 'vault', profile: 'local', now: 1000 });
+  assert.deepEqual(one.meta().scope, [{ source: '01-Z work', folder: 'C:\\Z work', sub: '' }]);
+  const all = await catalog(); assert.deepEqual([all.meta().from, all.meta().scope], [null, null]);
 });

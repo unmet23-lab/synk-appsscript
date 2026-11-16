@@ -14,7 +14,7 @@
     'saveRecoveryKit', 'startAutomatic', 'setAutomatic',
     'backupNow', 'restoreLatest', 'checkRepository',
     'protectNow', 'pauseAutomatic', 'resumeAutomatic', 'probeRestore',
-    'openFileCatalog', 'queryFileCatalog', 'setFileSelection',
+    'openFileCatalog', 'browseBackupFolder', 'queryFileCatalog', 'setFileSelection',
     'closeFileCatalog', 'restoreSelected', 'openSelectedRestoreFolder',
     'importRecoveryKit', 'setLaunchAtLogin', 'openRestoreFolder',
     'signInGoogle', 'startProtection', 'continueBackup',

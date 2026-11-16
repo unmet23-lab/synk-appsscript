@@ -269,8 +269,15 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       if (!['local', 'b2'].includes(input.profile) || input.profile !== profiles.profile || engine !== profiles.engines[input.profile]) throw fileSelection.issue('CATALOG_EXPIRED');
       return input;
     }
+    // 「옛 PC 백업에서 꺼내기」 (4.6): `from` an old device of this repository, `folder` · `sub` a part of its backup
+    // (화면 세션 E26). The engine checks them; the files still go to a new folder only.
     handle('openFileCatalog', async (context, input) => {
-      catalogInput(context, input, ['profile']); return context.engine.openFileCatalog();
+      catalogInput(context, input, ['profile', 'from', 'folder', 'sub'], ['profile']);
+      return context.engine.openFileCatalog({ from: input.from, folder: input.folder, sub: input.sub });
+    }, { safeErrors: true });
+    handle('browseBackupFolder', async (context, input) => {
+      catalogInput(context, input, ['profile', 'from', 'folder', 'sub'], ['profile', 'folder']);
+      return context.engine.browseBackupFolder({ from: input.from, folder: input.folder, sub: input.sub });
     }, { safeErrors: true });
     handle('queryFileCatalog', (context, input) => {
       catalogInput(context, input, ['profile', 'token', 'query', 'offset']); return context.engine.queryFileCatalog(input);
