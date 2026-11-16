@@ -283,7 +283,7 @@ restic 단독(같은 자료, 새 저장소): 첫 백업 2.2초 · 최대 342.7MB
 - 화면 시험 `node --test tests/ui-model.test.cjs tests/ui-words.test.cjs tests/ui-store.test.cjs tests/bridge.test.cjs` — 28개 통과. 검수에서 나온 자리마다 시험을 더했다(조사, 빈칸과 갈래, 예시 값으로 메우지 않기, 첫 상태 다시 읽기, 낱말 읽개, 엔진의 실제 답 꼴, 실패 글).
 - 화면 글 검사(T18): 금지 낱말 목록은 `ui/banned-words.js` 하나다. 화면 모델의 모든 예시 상태, 화면 원천의 모든 문자열과 템플릿 조각(겹친 템플릿 속과 한글이 없는 라틴 글까지), Playwright 캡처의 보이는 글, 실제 창의 보이는 글을 같은 목록으로 본다.
 - Playwright 캡처 점검 `node test-support/ui-shots.cjs <출력>` — 34화면 × 기본 창 1080×820 · 최소 창 760×640 = 68장, 걸림 0장. 가로 넘침, 창 밖 요소, 주 단추가 첫 화면 밖으로 밀림, 화면 글 검사, 쪽 오류, SUIT 글꼴, 제 글을 가진 모든 요소의 대비를 본다. 1440 · 1920 폭은 카본 반영 판에서 64장 걸림 0장이었다.
-- 실제 Tauri 창 `node test-support/ui-driver.cjs <WorkBackup.exe> <tauri-driver.exe> <msedgedriver.exe> <출력> --자원 <resources>` — tauri-driver 2.1.0과 WebView2와 같은 판의 msedgedriver(157.0.4341.60)로 앱을 `--test-mode`로 띄운다. 상태는 출력 폴더 안의 새 폴더라 `%APPDATA%`의 어떤 상태도 읽거나 쓰지 않는다. 고친 판에서 11항목 모두 통과했다: 실제 엔진 상태로 첫 화면이 그려짐, 브리지 getState가 엔진에 닿음, SUIT 글꼴, WebGL 구, 화면 글 검사 34장 걸림 0장, 「파일 되살리기」로 이동, 실제 상태로 돌아옴, 실제 상태에서 설정 서랍이 열림, 실제 상태에서 「복구 코드 만들기」가 예시 화면을 열지 않음, Esc로 서랍 닫힘, 쪽 오류 없음. 지금 `tauri.conf.json`의 CSP에는 `font-src`가 없어, 이 시험은 CSP에 글꼴만 덧댄 시험 빌드(`TAURI_CONFIG` 환경변수)로 돌렸다. 덧대지 않은 정식 설정에서는 글꼴 한 항목만 실패한다(맑은 고딕으로 내려앉음).
+- 실제 Tauri 창 `node test-support/ui-driver.cjs <WorkBackup.exe> <tauri-driver.exe> <msedgedriver.exe> <출력> --자원 <resources>` — tauri-driver 2.1.0과 WebView2와 같은 판의 msedgedriver(157.0.4341.60)로 앱을 `--test-mode`로 띄운다. 상태는 출력 폴더 안의 새 폴더라 `%APPDATA%`의 어떤 상태도 읽거나 쓰지 않는다. 고친 판에서 11항목 모두 통과했다: 실제 엔진 상태로 첫 화면이 그려짐, 브리지 getState가 엔진에 닿음, SUIT 글꼴, WebGL 구, 화면 글 검사 34장 걸림 0장, 「파일 되살리기」로 이동, 실제 상태로 돌아옴, 실제 상태에서 설정 서랍이 열림, 실제 상태에서 「복구 코드 만들기」가 예시 화면을 열지 않음, Esc로 서랍 닫힘, 쪽 오류 없음. 처음에는 `tauri.conf.json`의 CSP에 `font-src`가 없어 글꼴만 덧댄 시험 빌드(`TAURI_CONFIG` 환경변수)로 돌렸다(정식 설정에서는 글꼴 한 항목만 실패해 맑은 고딕으로 내려앉았다). 설치 세션이 CSP에 `font-src 'self'`를 더한 뒤(`0f3bb6e911`), 덧대지 않은 정식 설정 빌드와 그 판의 엔진 자원으로 다시 돌려 11항목 모두 통과했다. 실제 창 캡처도 이 빌드의 것이다.
 
 ### 검수
 
@@ -297,7 +297,7 @@ restic 단독(같은 자료, 새 저장소): 첫 백업 2.2초 · 최대 342.7MB
 ### 넘긴 것
 
 - **조율 세션:** 공유 노트 「화면세션_엔진요청_20261116」. 상태 칸(`FUTURE`), 개통 · 되살리기 자리 메서드(이름은 정해졌다: `signInGoogle` · `startProtection` · `{ place }`), 워커의 네이티브 대화창 글 세 곳(고쳐서 올리는 중이라고 받았다), 열기 낱말 알림 `backup:open`. Fable 검수 뒤에 둘을 더 넘겼다. 전체 되살리기의 실패가 백업 실패 칸(`lastError`)에 적히고 되살리기 성공이 백업 오류를 지우는 것, 그리고 놓을 자리 거절과 마지막 폴더 거절에 `code`가 없는 것이다.
-- **설치 세션:** Tauri CSP에 `font-src 'self'`, 창 닫기 권한 `core:window:allow-close`, 창 바탕색 검정. 이 절을 쓸 때 origin에는 아직 들어오지 않았다. `backup:open` 알림은 이미 떠 있는 창에 낱말을 건네는 길과 함께 다음 판에 넣는다고 받았다.
+- **설치 세션:** Tauri CSP에 `font-src 'self'`, 창 닫기 권한 `core:window:allow-close`, 창 바탕색 검정 — `0f3bb6e911`로 들어왔다. `backup:open` 알림은 이미 떠 있는 창에 낱말을 건네는 길과 함께 다음 판에 넣는다고 받았다.
 - **트레이:** 설계는 「설정에서 켤 때만」인데 지금 `main.rs`는 늘 띄운다. 화면 서랍은 켜짐 · 꺼짐을 말하지 않게 두었다.
 
 ## 1단계 설치기 · 자동 업데이트 · 깨끗한 Windows 연습 — 2026-11-16
