@@ -105,3 +105,16 @@ test('칸: 처음 세는 중에는 「찾지 못했어요」를 말하지 않고
   assert.match(old, /기록 2025\/11\/5부터/);
 });
 
+test('칸: 실시간으로 지켜보는 동안 바닥 줄에 「실시간」을 붙이고, 마지막으로 센 때는 실시간으로 더한 때까지 본다(11-16)', () => {
+  const at = new Date(2026, 10, 15, 21, 5).getTime(), liveAt = new Date(2026, 10, 15, 21, 28).getTime();
+  const watching = tokensSection({ state: { ...state, scannedAt: at, live: true, liveAt }, view: { range: 'week' }, now: NOW });
+  assert.match(watching, /기록 \d+\/\d+부터 · <span class="mt-live"><i aria-hidden="true"><\/i>실시간<\/span> · 마지막으로 센 때 21:28 · /);
+  assert.match(watching, /이 화면을 열어 두면 AI가 답을 마칠 때마다 몇 초 안에 숫자를 더해요/);
+  // 지켜보지 않으면 붙이지 않고, 다 훑은 때가 더 늦으면 그때를 쓴다.
+  const idle = tokensSection({ state: { ...state, scannedAt: liveAt, live: false, liveAt: at }, view: { range: 'week' }, now: NOW });
+  assert.equal(idle.includes('mt-live'), false);
+  assert.match(idle, /마지막으로 센 때 21:28/);
+  // 처음 세는 중에는 위 칸이 진행을 보이니 붙이지 않는다.
+  const first = tokensSection({ state: { ok: true, enabled: true, scanning: true, scannedAt: null, live: true, progress: { done: 3, total: 10 }, tools: {}, cells: [] }, now: NOW });
+  assert.equal(first.includes('mt-live'), false);
+});

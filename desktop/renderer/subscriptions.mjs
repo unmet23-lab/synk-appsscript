@@ -172,7 +172,7 @@ function roll(el, { delay = 0, duration = 1000 } = {}) {
 /* ---------- 화면 ---------- */
 export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = null } = {}) {
   const api = bridge?.subscriptions;
-  let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '';
+  let snapshot = null, container = null, visible = false, context = { signedIn: false, native: false }, loadError = null, timer = null, busy = '', onHidden = null;
   // view: 한눈에 보기(glance) · 계정 관리(manage). open: 펼친 서비스 줄. menu: ⋯을 연 계정 줄. help: 펼친 「막혔을 때」 질문.
   // relogin: 「다시 로그인」을 누른 줄. API 키 서비스는 새 키를 그 줄에 넣는다(옛 줄이 남지 않게).
   // tipOpen: 펼친 팁. tipDone: 이 화면에서 반응한 팁(누른 뒤 한 줄을 보여 주고, 화면을 옮기면 사라진다). why: 「왜 이 숫자?」.
@@ -194,7 +194,16 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   const newerTokens = (a, b) => !b || a.epoch == null || b.epoch == null || a.epoch > b.epoch || (a.epoch === b.epoch && a.seq >= b.seq);
   const takeTokens = value => { if (!value?.ok || !newerTokens(value, tokens)) return; tokens = value; if (!visible || tokPaint) return; tokPaint = setTimeout(() => { tokPaint = null; paintTokens(); }, value.scanning ? 1000 : 0); };
   api?.onTokens?.(takeTokens);
-  async function loadTokens() { if (!api?.tokens) return; try { takeTokens(await api.tokens()); if (tokens?.enabled) takeTokens(await api.tokensScan?.({ force: false })); } catch { /* 칸만 비운다 */ } }
+  async function loadTokens() { if (!api?.tokens) return; try { takeTokens(await api.tokens()); if (tokens?.enabled) { takeTokens(await api.tokensScan?.({ force: false })); goLive(); } } catch { /* 칸만 비운다 */ } }
+  // 실시간(11-16 유호님 「실시간으로 나오게 하고싶은데」): 이 화면이 보이는 동안 본체에 기록 폴더를 지켜봐 달라고 1분마다 부탁한다(3분 동안 부탁이 없으면 본체가 멈춘다).
+  // 떠나거나 창을 내리면 바로 그만 부탁한다. 켠 회원에게만 부탁한다(켠 적이 없으면 본체가 일꾼도 띄우지 않는다).
+  const goLive = () => { if (visible && !document.hidden && tokens?.enabled && api?.tokensLive) void Promise.resolve(api.tokensLive(true)).then(takeTokens, () => {}); };
+  const stopLive = () => { if (tokens?.enabled && api?.tokensLive) void Promise.resolve(api.tokensLive(false)).then(takeTokens, () => {}); };
+  // 누르는 사이(눌렀다 떼기 전)에 칸을 갈아 끼우면 그 누름이 사라진다 — 실시간 알림은 손을 뗀 뒤에 그린다.
+  // released: 창에 붙인 손 떼기 알림(보드 하나에 한 벌 — 치울 때 뗀다, 카본 지적), releaseTimer: 뗀 뒤 그리기.
+  let pressing = false, paintAfterPress = false, released = null, releaseTimer = null;
+  // 칸만 갈아 끼운 때 그린 글(칸 요소마다 — 계정판 전체를 다시 그리면 새 요소라 비교하지 않는다).
+  const tokDrawn = new WeakMap();
   const loginActive = () => !!snapshot?.login && !['done', 'error', 'cancelled'].includes(snapshot.login.stage);
   const checkBusy = () => !!(busy || snapshot?.checking);
 
@@ -214,6 +223,14 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   function bind(el) {
     if (el.dataset.subsBound === 'true') return; el.dataset.subsBound = 'true';
     el.addEventListener('click', event => { if (!visible) return; const b = event.target.closest('[data-subs]'); if (b && !b.disabled) onAction(b.dataset.subs, b.dataset); });
+    // 누르는 동안은 실시간 알림으로 칸을 갈아 끼우지 않는다(뗄 때 그린다). 떼기는 창 어디서든 받는다(누른 채 칸 밖으로 끌어도 풀리게).
+    el.addEventListener('pointerdown', () => { pressing = true; });
+    if (!released) {
+      const win = el.ownerDocument?.defaultView || (typeof window !== 'undefined' ? window : null);
+      const fn = () => { if (!pressing) return; pressing = false; if (paintAfterPress) { paintAfterPress = false; clearTimeout(releaseTimer); releaseTimer = setTimeout(() => { releaseTimer = null; paintTokens(); }, 0); } };
+      win?.addEventListener?.('pointerup', fn, true); win?.addEventListener?.('pointercancel', fn, true); win?.addEventListener?.('blur', fn);
+      released = { win, fn };
+    }
     el.addEventListener('submit', event => { if (!visible) return; const form = event.target.closest('form[data-subs-form]'); if (!form) return; event.preventDefault(); onForm(form.dataset.subsForm, form); });
     el.addEventListener('input', event => { if (!visible) return; if (event.target.id === 'ms-email') ui.email = event.target.value; if (event.target.id === 'ms-code') ui.code = event.target.value; if (event.target.id === 'ms-key') ui.key = event.target.value; if (event.target.id === 'ms-manual-label') { const k = MANUAL_KIND[event.target.value.trim().toLowerCase().replace(/\s+/g, '')]; const kind = el.querySelector('#ms-manual-kind'); if (k && kind) { kind.value = k; el.querySelector('.ms-manual')?.setAttribute('data-kind', k); } } });
     el.addEventListener('change', event => { if (!visible) return; if (event.target.matches('[data-kind-select]')) event.target.closest('form')?.setAttribute('data-kind', event.target.value); if (event.target.matches('[data-cycle-select]')) event.target.closest('form')?.setAttribute('data-cycle', event.target.value); if (event.target.id === 'ms-rate') void act('rate', () => api.save({ settings: { usdKrw: Number(event.target.value) } })); });
@@ -284,7 +301,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'used') { const row = rowById(id); if (row) return void act('used', () => api.save({ row: { id, usedUpAt: isUsedUp(row, Date.now()) ? null : Date.now() } })); }
     if (name === 'manual') { ui.manualOpen = !ui.manualOpen; return paint(); }
     // 모델별 토큰(11-15). 켜면 본체가 뒤에서 세고 진행을 알린다. 끄기는 두 번 눌러야 하고(모은 숫자를 지운다), 기간 · 펼치기는 이 화면에만 남는다.
-    if (name === 'tokens-on') return void act('tokens', async () => { const r = await api.tokensEnable(true); takeTokens(r); if (r?.ok) toast('모델별 토큰을 켰어요. 기록을 세기 시작했어요.'); return r; });
+    if (name === 'tokens-on') return void act('tokens', async () => { const r = await api.tokensEnable(true); takeTokens(r); if (r?.ok) { toast('모델별 토큰을 켰어요. 기록을 세기 시작했어요.'); goLive(); } return r; });
     // 다른 일이 도는 동안에는 단추가 잠겨 있다. 그래도 눌렸으면 확인 띠를 지우지 않고 그대로 둔다.
     if (name === 'tokens-off') { if (busy) return; if (!ui.tokOffArmed) { ui.tokOffArmed = true; focusNext = '[data-subs="tokens-off-cancel"]'; return paint(); } ui.tokOffArmed = false; ui.tokOpen.clear(); ui.tokAll = false; return void act('tokens', async () => { const r = await api.tokensEnable(false); takeTokens(r); if (r?.ok) { focusNext = '[data-subs="tokens-on"]'; toast('모델별 토큰을 끄고 모은 숫자를 지웠어요.'); } else focusNext = '[data-subs="tokens-off"][data-id="off-link"]'; return r; }); }
     if (name === 'tokens-off-cancel') { ui.tokOffArmed = false; focusNext = '[data-subs="tokens-off"][data-id="off-link"]'; return paint(); }
@@ -1171,13 +1188,34 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // 모델별 토큰 칸만 다시 그린다. 칸이 아직 없으면(처음 상태를 받은 때) 한눈에 보기 전체를 그린다.
   function paintTokens() {
     if (!container || !visible || ui.view !== 'glance' || !snapshot || !context.native || !context.signedIn || typing()) return;
+    if (pressing) { paintAfterPress = true; return; }
     const el = container.querySelector('#ms-tokens');
     const html = el ? tokenHtml(Date.now()) : '';
     if (!el || !html) return paint({ quiet: true });
-    const focus = focusKey(), tpl = document.createElement('template');
+    // 실시간 알림이 와도 보이는 것이 같으면(다른 기간 · 같은 숫자) 갈아 끼우지 않는다(가리키던 줄의 강조가 깜빡이지 않게).
+    if (tokDrawn.get(el) === html) return;
+    const tpl = document.createElement('template');
     tpl.innerHTML = html;
+    const next = tpl.content.firstElementChild;
+    // 짜임이 같으면(숫자 · 막대 너비 · 시각만 바뀐 실시간 판) 그 자리에서 글자와 속성만 바꾼다 — 초점과 가리킴이 그대로 남아
+    // 낭독기가 초점 단추를 판마다 다시 읽지 않는다(Fable 최종 검수 지적: 여러 세션이 쓰면 1.5초마다 칸을 갈아 끼웠다).
+    // 줄의 순서가 바뀐 판(두 모델의 순위가 엇갈림)은 갈아 끼운다 — 그 자리에서 바꾸면 초점 단추가 다른 모델이 된다(Fable 다시 검수 지적). data-id로 같은 모델에 초점을 돌려준다.
+    if (next && sameShape(el, next) && idOrder(el) === idOrder(next)) { patchNode(el, next); tokDrawn.set(el, html); return; }
+    const focus = focusKey(), wasInside = el.contains(document.activeElement);
     el.replaceWith(tpl.content);
+    if (next) tokDrawn.set(next, html);
     restoreFocus(focus);
+    // 초점이 있던 모델이 순위에서 밀려 보이는 줄 밖으로 나갔으면 「모두 보기」(없으면 첫 줄)에 초점을 둔다 — 문서로 떨어지지 않게(Fable 다시 검수 지적).
+    // 쉼표로 묶은 선택자는 문서 순서로 찾아 늘 첫 줄이 잡혔다 — 둘로 나눠 찾는다(Fable 다시 검수 지적).
+    if (wasInside && !next?.contains(document.activeElement)) (next?.querySelector('[data-subs="tokens-all"]') || next?.querySelector('.mt-row-btn'))?.focus({ preventScroll: true });
+  }
+  function sameShape(a, b) { return a.nodeType === b.nodeType && a.nodeName === b.nodeName && (a.nodeType !== 1 || (a.childNodes.length === b.childNodes.length && [...a.childNodes].every((n, i) => sameShape(n, b.childNodes[i])))); }
+  function idOrder(node) { return [...node.querySelectorAll('[data-id]')].map(n => n.getAttribute('data-id')).join('\u0001'); }
+  function patchNode(a, b) {
+    if (a.nodeType !== 1) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    for (const { name } of [...a.attributes]) if (!b.hasAttribute(name)) a.removeAttribute(name);
+    for (const { name, value } of [...b.attributes]) if (a.getAttribute(name) !== value) a.setAttribute(name, value);
+    for (let i = 0; i < a.childNodes.length; i++) patchNode(a.childNodes[i], b.childNodes[i]);
   }
   function restoreFocus(focus) { if (!focus) return; const el = container.querySelector(focus.selector); if (el) { el.focus({ preventScroll: true }); if (focus.range && typeof el.setSelectionRange === 'function') try { el.setSelectionRange(...focus.range); } catch {} } }
   function paint({ quiet = false } = {}) {
@@ -1205,12 +1243,16 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       // 모델별 토큰은 열 때마다 본체에 묻는다(켜져 있고 마지막으로 센 지 5분이 지났으면 본체가 뒤에서 다시 센다).
       if (context.native && context.signedIn) void loadTokens();
       // 1분마다: 입력 중이 아니면 다시 그리고, 모델별 토큰이 켜져 있으면 뒤에서 다시 세기를 부탁한다(마지막으로 센 지 5분이 지났을 때만 본체가 센다).
-      if (!timer) { timer = setInterval(() => { if (!visible || document.hidden) return; if (!typing()) paint({ quiet: true }); if (tokens?.enabled) void Promise.resolve(tokens.scanning ? api?.tokens?.() : api?.tokensScan?.({ force: false })).then(takeTokens, () => {}); }, 60000); timer?.unref?.(); }
+      // 실시간: 같은 1분마다 지켜보기 부탁을 잇는다. 창을 내리면 바로 그만 부탁하고, 다시 올리면 바로 다시 부탁한다.
+      if (!timer) { timer = setInterval(() => { if (!visible || document.hidden) return; if (!typing()) paint({ quiet: true }); if (tokens?.enabled) { void Promise.resolve(tokens.scanning ? api?.tokens?.() : api?.tokensScan?.({ force: false })).then(takeTokens, () => {}); goLive(); } }, 60000); timer?.unref?.(); }
+      if (!onHidden) { onHidden = () => { if (document.hidden) stopLive(); else goLive(); }; document.addEventListener?.('visibilitychange', onHidden); }
       paint();
     },
     // 혜택을 떠나면 다음에 열 때 펼친 줄 없이 한눈에 보기부터(로그인이 진행 중이면 계정 관리에 둔다).
-    setVisible(value) { visible = !!value; if (!visible) { ui.removeArmed = null; ui.open.clear(); ui.more = false; ui.goalOpen = false; ui.sumOpen = false; ui.sumWhy = false; ui.tokOpen.clear(); ui.tokAll = false; ui.tokOffArmed = false; rolled.clear(); if (!loginActive()) { ui.view = 'glance'; ui.menu = null; ui.editing = null; } } },
-    dispose() { clearInterval(timer); timer = null; clearTimeout(tokPaint); tokPaint = null; visible = false; },
+    setVisible(value) { const was = visible; visible = !!value; if (!visible && was) stopLive(); if (visible && !was) goLive(); if (!visible) { ui.removeArmed = null; ui.open.clear(); ui.more = false; ui.goalOpen = false; ui.sumOpen = false; ui.sumWhy = false; ui.tokOpen.clear(); ui.tokAll = false; ui.tokOffArmed = false; rolled.clear(); if (!loginActive()) { ui.view = 'glance'; ui.menu = null; ui.editing = null; } } },
+    dispose() { clearInterval(timer); timer = null; clearTimeout(tokPaint); tokPaint = null; if (visible) stopLive(); visible = false; if (onHidden) { document.removeEventListener?.('visibilitychange', onHidden); onHidden = null; }
+      if (released) { const { win, fn } = released; win?.removeEventListener?.('pointerup', fn, true); win?.removeEventListener?.('pointercancel', fn, true); win?.removeEventListener?.('blur', fn); released = null; }
+      clearTimeout(releaseTimer); releaseTimer = null; pressing = false; paintAfterPress = false; },
     refresh: () => load(true),
   };
 }

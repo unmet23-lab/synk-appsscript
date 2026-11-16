@@ -563,6 +563,10 @@
 .member-subs .mt-foot-line{margin:0;color:var(--ink-3,#6C6C72);font-size:var(--ms-t13);font-weight:600;line-height:1.6}
 /* 줄 안 글자 단추도 누르는 높이 24px를 지킨다(WCAG 2.2 목표 크기 — 화면 점검이 24px 아래 단추를 잡는다). */
 .member-subs .mt-foot-line .ms-link{min-height:24px;font-size:var(--ms-t13)}
+/* 실시간(11-16): 기록 폴더를 지켜보는 동안 바닥 줄에 초록 점과 「실시간」. 점은 2.4초에 한 번 천천히 옅어졌다 돌아오고, 움직임 줄이기를 고른 회원에게는 멈춰 있다. */
+.member-subs .mt-live{display:inline-flex;align-items:center;gap:6px;color:var(--ms-ok-text)}
+.member-subs .mt-live>i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--ms-ok);animation:mt-live 2.4s ease-in-out infinite}
+@keyframes mt-live{50%{opacity:.35}}
 .member-subs .mt-off-confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 0;border-top:1px solid var(--ms-alert);border-bottom:1px solid var(--line,#E7E7EA);color:var(--ink-2,#4F4F55);font-size:var(--ms-t13);font-weight:600}
 .member-subs .mt-off-confirm>span{flex:1 1 240px}
 .member-subs .mt-notes{display:flex;flex-direction:column;gap:2px;margin:0;padding-left:1.1em;color:var(--ink-3,#6C6C72);font-size:var(--ms-t13);line-height:1.6;list-style:disc}
@@ -577,4 +581,4 @@
   .member-subs .mt-days.is-long{column-gap:1px}
   .member-subs .mt-day em{font-size:.6875rem;letter-spacing:0}
 }
-@media (prefers-reduced-motion:reduce){.member-subs *{scroll-behavior:auto!important}.member-subs .ms-roll>i{display:none}.member-subs .ms-roll>.ms-roll-t{color:inherit}}
+@media (prefers-reduced-motion:reduce){.member-subs *{scroll-behavior:auto!important}.member-subs .ms-roll>i{display:none}.member-subs .ms-roll>.ms-roll-t{color:inherit}.member-subs .mt-live>i{animation:none}}

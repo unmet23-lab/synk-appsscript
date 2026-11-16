@@ -392,6 +392,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     tokensScan:async({force=false}={})=>{void tokenUsage.scan({force:force===true});return tokenUsage.state();},
     tokensAuto:()=>tokenUsage.auto(),
     tokensEnable:async on=>tokenUsage.setEnabled(on===true),
+    // 실시간(11-16): 화면이 열려 있는 동안 1분마다 true로 부탁하고 떠나면 false. 일꾼이 기록 폴더를 지켜보다 바뀐 파일만 읽어 알린다.
+    tokensLive:async on=>tokenUsage.live(on===true),
     dispose(){loginCoordinator.dispose();tokenUsage.dispose();},
   };
 }

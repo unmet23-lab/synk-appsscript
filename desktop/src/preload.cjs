@@ -115,6 +115,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     tokens:()=>ipcRenderer.invoke('synk:subscriptions-tokens'),
     tokensScan:(options={})=>ipcRenderer.invoke('synk:subscriptions-tokens-scan',{force:options?.force===true}),
     tokensEnable:on=>ipcRenderer.invoke('synk:subscriptions-tokens-enable',on===true),
+    tokensLive:on=>ipcRenderer.invoke('synk:subscriptions-tokens-live',on===true),
     onTokens:callback=>subscribe('synk:subscriptions-tokens-changed',callback),
   }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},

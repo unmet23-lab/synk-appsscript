@@ -410,6 +410,7 @@ function createWindow(){
     'synk:subscriptions-tokens':()=>subscriptionCall(s=>s.tokens()),
     'synk:subscriptions-tokens-scan':options=>subscriptionCall(s=>s.tokensScan({force:options?.force===true})),
     'synk:subscriptions-tokens-enable':on=>subscriptionCall(s=>s.tokensEnable(on===true)),
+    'synk:subscriptions-tokens-live':on=>subscriptionCall(s=>s.tokensLive(on===true)),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});

@@ -102,6 +102,8 @@ function notes(state) {
   const lines = [];
   // 처음 세는 중에는 아직 모른다 — 「찾지 못했어요」는 다 센 뒤에만(카본 지적: 진행 표시와 함께 떴다).
   if (!found.length && state?.scannedAt) lines.push(`이 PC에서 ${TOOL_NAMES}의 기록을 아직 찾지 못했어요. 이 도구들을 쓰면 여기에 모여요.`);
+  // 실시간(11-16)은 이 화면이 열려 있을 때만이라 그렇게 알린다.
+  lines.push('이 화면을 열어 두면 AI가 답을 마칠 때마다 몇 초 안에 숫자를 더해요. 화면을 닫아 두면 3시간마다 다시 세어요.');
   if (tools.agy) lines.push('Antigravity CLI(Gemini)는 토큰 수를 읽을 수 있는 기록으로 남기지 않아 세지 못해요.');
   lines.push('claude.ai · ChatGPT 웹과 휴대폰 앱처럼 이 PC에 기록이 남지 않는 사용은 빠져요.');
   return `<ul class="mt-notes">${lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>`;
@@ -138,9 +140,13 @@ export function tokensSection({ state, view = {}, now = Date.now(), number = '04
 function foot(state, view, now, busy) {
   const p = state.progress;
   // 처음 세는 중이면 진행 수는 위 칸에 있으니 아래 줄에서 되풀이하지 않는다.
+  // 마지막으로 센 때: 다 훑은 때와 실시간으로 더한 때 중 늦은 것.
+  const last = state.scannedAt ? Math.max(state.scannedAt, Number(state.liveAt) || 0) : 0;
   const status = state.scanning
     ? (state.scannedAt ? `세는 중${p?.total ? ` ${p.done.toLocaleString('ko-KR')}/${p.total.toLocaleString('ko-KR')}` : '…'}` : '')
-    : state.scannedAt ? `마지막으로 센 때 ${new Date(state.scannedAt).toDateString() === new Date(now).toDateString() ? '' : `${md(tokenDay(state.scannedAt), now)} `}${hm(state.scannedAt)}` : '';
+    : last ? `마지막으로 센 때 ${new Date(last).toDateString() === new Date(now).toDateString() ? '' : `${md(tokenDay(last), now)} `}${hm(last)}` : '';
+  // 실시간(11-16): 본체가 기록 폴더를 지켜보는 동안. 처음 세는 중에는 위 칸이 진행을 보이니 붙이지 않는다.
+  const liveTag = state.live && state.scannedAt ? '<span class="mt-live"><i aria-hidden="true"></i>실시간</span>' : '';
   const since = state.since ? `기록 ${md(state.since, now)}부터` : '';
   const warn = state.error && state.scannedAt ? '<span class="ms-warn-text">지난번에 끝까지 세지 못했어요</span>' : '';
   const failed = state.failed > 0 && !state.scanning ? `읽지 못한 파일 ${Number(state.failed).toLocaleString('ko-KR')}개` : '';
@@ -151,6 +157,6 @@ function foot(state, view, now, busy) {
   // 처음 세다 멈춘 판은 위 칸에 「다시 세기」가 있으니 여기서는 되풀이하지 않는다.
   const scanBtn = state.scanning || !state.scannedAt ? '' : `<button type="button" class="ms-link" data-subs="tokens-scan" ${busy ? 'disabled' : ''}>다시 세기</button>`;
   const offBtn = `<button type="button" class="ms-link" data-subs="tokens-off" data-id="off-link" ${busy || view.offArmed ? 'disabled' : ''}>끄기</button>`;
-  const parts = [esc(since), esc(status), warn, esc(failed), scanBtn, offBtn].filter(Boolean);
+  const parts = [esc(since), liveTag, esc(status), warn, esc(failed), scanBtn, offBtn].filter(Boolean);
   return `<div class="mt-foot"><p class="mt-foot-line">${parts.join(' · ')}</p>${off}${notes(state)}</div>`;
 }
