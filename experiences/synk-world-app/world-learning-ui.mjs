@@ -64,7 +64,7 @@ function examMonths(now){
 // responses: 학습자 응답(설정값 worldFeedback, WORLD 학습자 응답 설계 — 기본 꺼짐). 켜지면 로그인한 학습자의 연습 끝 화면에 「이번 연습 어땠어요?」를 두고,
 //  짧은 연습의 길이(3·5·7)를 그 응답으로 정하고, 「내 계정」이 응답 목록(responses()·removeResponse())을 읽는다. 꺼지면 판 기록(finishSet)도 남기지 않는다.
 export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,readHangulProgress=null,
- readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis,atlasNext=null,homeNext=null}){
+ readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis,atlasNext=null,homeNext=null,mockChanged=null}){
  let stopped=false,coach=null,coachHost=null,practiceCoach=null,practiceHost=null,mockCoach=null,mockHost=null,lifeCoachNow=null,lifeHost=null,current=null,refreshing=false,classwork={at:0,rows:[],pending:null};
  // 새 길 홈(Atlas 재설계 단계 4-3 — 단계4_계획 §20): 셸이 넘긴 홈 입구(homeNext — 생활 판정이 있을 때만)가 있으면 판 셋(지금 판 · 확인 중 · 엔진)을 들고,
  // 지금 판이 아니면 세 줄을 짓는다(입구가 준 플래너 — world-today.mjs). 차례 표시(이번 학습일에 이 문서에서 연 칸)는 저장하지 않고 학습일 · 주인이
@@ -348,6 +348,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   hearHome();heard.home=false;
   // 새 길 「내 위치」가 확인 중 판이면 판이 섰는지 다시 본다(§21-2 — 생활 판정이 서면 셸이 홈을 다시 그린다). 엔진 판은 판 감시가 알릴 때만 다시 그린다.
   try{if(homeNext&&panelNode('[data-position-next="checking"]'))redrawNext();}catch{/* the next open draws it */}
+  // 시험 점검 카드의 판정이 바뀌었을 수 있다(판 · 은행 · 기록이 다 왔는가 — 4-4d §21-23의 5). 앱이 열린 카드만 맞춘다.
+  if(typeof mockChanged==='function')try{mockChanged();}catch{/* 알림 카드는 다음에 열 때 맞춘다 */}
   return current;
  }
  function drawHome(){
@@ -1398,7 +1400,13 @@ async function townSend(coachNow,{wait=true}={}){
  // 안내 → 영역(듣기 → 읽기, 실제 시험 순서) → 영역 사이 → 끝 한 장(영역별 맞힘·틀림·답하지 않음, 틀린 문항 해설, 다음 연습).
  // 고른 답은 바로 첫 답으로 기록되고 바꾸지 않는다. 정답·해설은 끝난 뒤에만. 급수·점수로 바꾸지 않는다.
  let mockOpen=0;
- async function openMock({exam=null}={}){
+ // 판 셋(4-4d — 단계4_계획 §21-23의 1 · 설계 검토 Fable F7): 여는 곳 넷(알림 시트 · 홈 줄 · 내 위치 단추 · 이번 주 계획 단추)이 모두 이 검사를 지난다.
+ // 지금 판이면 지금 판 연습(openMockOld — 손대지 않는다), 아니면 새 길 연습(openMockNext — 새 길 문서에서는 옛 코치 'world-mock'을 열지 않는다).
+ function openMock(options){
+  if(!position?.mock)return;
+  return homePhase()==='old'?openMockOld(options):openMockNext(options);
+ }
+ async function openMockOld({exam=null}={}){
   if(!position?.mock)return;
   check();const ticket=++mockOpen;
   try{await prepare();}catch{/* device-local practice still runs */}
@@ -1483,6 +1491,149 @@ async function townSend(coachNow,{wait=true}={}){
   });
   startSection();
  }
+ // 새 길 시험 형식 고르기(4-4d — §21-23의 1 · 5): 홈 코치의 묶음 만남과 「기록이 다 왔는가」(내 위치 판과 같은 첫 받기 답 — 21-3)로 지금 판 구성
+ // (selectMock)을 고른다. 시험 형식 풀의 은행(topik-items · blank-slice)은 홈 은행 안에 있고 같은 판의 코치들은 한 호스트를 나눠 쓰므로, 어느 코치로
+ // 보아도 만남이 같다. 알림 시트의 판정(canMock)과 여는 길(openMockNext)이 이 고르기 하나를 쓴다 — 단추 글과 여는 것이 어긋나지 않게. 못 고르면 null.
+ function mockNextPlan(coachNow,values,exam){
+  const P=homePlanner?.position,N=homePlanner?.plan,mock=position?.mock;
+  if(!mock||typeof P?.selectMockNext!=='function'||typeof N?.recordsComplete!=='function'||typeof coachNow?.exposures!=='function')return null;
+  const synced=nextSync.coach===coachNow?nextSync.value:null;
+  try{return P.selectMockNext({select:mock.selectMock,forms:mock.forms,exam,pool:mock.pool,exposures:coachNow.exposures(mock.pool),complete:N.recordsComplete(coachNow.summary().storage,synced),audioAvailable:values?.audio!=='off'});}catch{return null;}
+ }
+ // 알림 시트 「시험 점검」의 판정(4-4d — §21-23의 5): 지금 판이면 지금처럼 참이다(열 수 없으면 openMock이 알린다). 새 길이면 그 자리에서 홈 코치로
+ // 판정한다 — 엔진 판이고, 홈 코치와 시험 은행이 준비됐고, 기록이 다 왔고, 고르기가 홈 코치의 묶음 만남으로 ready일 때만 참이다. 시험 형식 코치를
+ // 따로 만들지 않는다(같은 호스트의 만남이라 어느 코치로 보아도 같다). 하나라도 모르면 거짓이다.
+ function mockReady(){
+  if(stopped||!position?.mock)return false;
+  const phase=homePhase();
+  if(phase==='old')return true;
+  if(phase!=='engine'||position.topik?.ready===false)return false;
+  const coachNow=homeWatch?.coach?.()??null;if(!coachNow)return false;
+  let values={};try{values=getProgress().learningProfileValues()||{};}catch{return false;}
+  return mockNextPlan(coachNow,values,studentExam(values))?.status==='ready';
+ }
+ // 새 길 시험 형식 연습 열기(§21-23의 1): 지금 판 열기와 같은 차례(학습 호스트 · 은행)를 따른다. 확인 중이면 판이 설 때까지 한도(PLAN_WAIT_MS) 안에서
+ // 기다리고(이번 주 계획과 같은 기다림 — settledHome), 넘기면 「확인 중」으로 알린다 — 옛 코치를 열지 않는다. 기다리는 사이 이 문서가 지금 판으로
+ // 내려오면 지금 판 열기로 넘긴다(내 위치와 같다). 엔진 판이면 홈 코치의 첫 받기 답을 한도 안에서 기다린 뒤 고르고, 열 수 없으면(처음 보는 문항이
+ // 모자람 · 기록이 다 오지 않음) 지금처럼 알리고 내 위치로 간다. 연습은 입구가 연 'world-mock' 코치로 한다(판 번호 set.world-mock.…이 예상 급수
+ // 근거의 판을 가린다 — §21-23의 2). 그 코치를 못 받으면(입구가 지금 판으로 정함 · 엔진을 못 받음) 지금 판의 안내 한 줄이다. 기다림(판이 서기 ·
+ // 첫 받기 · 코치 받기)이 길 수 있어, 그 사이 학생이 다른 판을 열거나 닫았으면 덮지 않는다(이번 주 계획과 같은 막이 — 4-4b 다시 검수 Fable FA2).
+ // 열 수 없는 날에는 시험 형식 코치를 열지 않는다(고르기는 홈 코치로 한다).
+ async function openMockNext({exam=null}={}){
+  check();const ticket=++mockOpen,panel=home.openPanel?.()??'';
+  const moved=()=>ticket!==mockOpen||(home.openPanel?.()??'')!==panel;
+  try{await prepare();}catch{/* device-local practice still runs */}
+  check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local practice still runs */}
+  check();try{await bankReady();}catch{/* the intro says what is missing */}
+  check();if(ticket!==mockOpen)return;
+  if(homePhase()==='checking'){await settledHome();check();if(moved())return;}
+  if(homePhase()==='old')return openMockOld({exam});
+  const homeCoach=homePhase()==='engine'?homeWatch?.coach?.()??null:null;
+  if(!homeCoach){home.toast(t('homeTutor.checking'));return;}
+  try{await syncedNext(homeCoach);}catch{/* 답이 없으면 기록이 덜 왔다 — 아래 고르기가 열지 않는다 */}
+  check();if(moved())return;
+  let values={};try{values=getProgress().learningProfileValues()||{};}catch{values={};}
+  const which=exam||studentExam(values),plan=mockNextPlan(homeCoach,values,which);
+  if(!plan||plan.status!=='ready'){home.toast(t(plan?.reason==='history.incomplete'?'position.diagnostic.history':'mock.unavailable'));void openMyPosition();return;}
+  let next=null;try{next=await atlasNext?.mockCoach?.(position.mock.pool)??null;}catch{next=null;}
+  check();if(moved())return;
+  if(homePhase()==='old')return openMockOld({exam});
+  if(!next){home.toast(t('practice.unavailable'));return;}
+  const sections=plan.sections.filter(row=>row.status==='ready');
+  home.showPanel(t('mock.title'),'<div class="wpos-stage" data-mock-stage></div>',{...PANEL,eyebrow:'EXAM FORM'});
+  const box=panelNode('[data-mock-stage]');if(!box)return;
+  const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
+  box.innerHTML=view.renderMockIntro({plan,exam:which,mode:values.examMode||null});
+  box.querySelector('[data-mock-intro]')?.focus?.({preventScroll:true});top();
+  box.querySelector('[data-mock-start]')?.addEventListener('click',()=>{try{check();runMockNext({next,plan,sections,exam:which,mode:values.examMode||null,audioAvailable:values.audio!=='off',box,top});}catch(error){failed(error);}},{once:true});
+  box.querySelector('[data-mock-later]')?.addEventListener('click',()=>{try{void openMyPosition();}catch(error){failed(error);}},{once:true});
+ }
+ // 새 길 시험 형식 연습 한 번(§21-23의 1): 겉(영역 · 이동 · 재생 · 답 · 영역 사이 · 끝 한 장)은 지금 판 runMock과 같고, 새 코치를 다룬다
+ // (world-mock-next.mjs createMockNextSession). 판을 다시 정해 코치가 닫히면(DISPOSED · retired) 안내 한 줄과 함께 닫고 내 위치를 연다(진단 새 길과
+ // 같다). 끝 한 장은 답이 다 저장된 뒤의 evidence로 그린다. 판은 끝까지 하면 판 기록(학습자 응답이 켜진 계정만 — 지금 판 finishSet과 같은 규칙)과
+ // 함께, 그만두거나 판이 닫히면 기록 없이 닫는다 — 닫지 않으면 손님 요약이 그 판의 답으로 다시 접히지 않는다(진단 Fable 끝 판 F2). 기기 기록부(손님 ·
+ // 동의를 끈 계정)는 접힌 뒤의 칸으로 끝 한 장을 그린다(진단 Fable 끝 판 F3).
+ function runMockNext({next,plan,sections,exam,mode=null,audioAvailable=true,box,top}){
+  const session=homePlanner.position.createMockNextSession({coach:next,sections,exam,plays:{allowedPlays:position.mock.allowedPlays,nextPlay:position.mock.nextPlay}});
+  // finishing: 끝 한 장이 답 저장을 기다리는 중 · drawn: 끝 한 장을 그렸다(한 번만).
+  let ended=false,finishing=false,drawn=false,notice='',ticker=null,confirm=false,unwatch=()=>{};
+  const cell=()=>session.current;
+  let finishedAt=null;
+  const proxy={get current(){const now=cell();return now&&!now.between?{...now,heard:now.heard}:null;},replay:()=>session.play(),
+   delivery:status=>{finishedAt=cell()?.sounding??null;return session.delivery(status);}};
+  const player=soundPlayer({session:proxy,url:audioUrl,onChange:state=>{
+   if(ended)return;if(session.disposed){closed();return;}
+   const now=cell(),other=state!=='playing'&&Number.isInteger(finishedAt)&&!!now&&!now.between&&finishedAt!==now.index;
+   notice=state!=='failed'?'':other?t('mock.failedOther',{n:finishedAt+1}):now?.heard?t('position.diagnostic.audioFailed'):'';
+   paint(state==='playing'?'[data-mock-listen]':other?'.wpos-run-skill':state==='completed'?'.wpos-choice:not([disabled])':'[data-mock-listen]');}});
+  const stopTick=()=>{if(ticker){clearInterval(ticker);ticker=null;}};
+  // 판을 닫거나 다른 판이 열리면 판을 기록 없이 닫는다. 손님 요약이 그 답으로 다 접히면 열린 내 위치 판을 한 번 다시 그린다.
+  const stop=()=>{unwatch();if(ended)return;ended=true;stopTick();player.silence();let set=null;try{set=session.stop();}catch{set=null;}queueMicrotask(()=>refresh());if(set?.folded)Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});};
+  // 코치가 닫혔다(판을 다시 정함) — 안내 한 줄과 함께 연습을 닫고 내 위치를 다시 연다(그 판으로).
+  const closed=()=>{if(ended&&!finishing||drawn)return;finishing=false;stop();home.toast(t('practice.next.changed'));void openMyPosition();};
+  home.attachPanelResource?.({dispose:stop});
+  unwatch=atlasNext?.retired?.(next,closed)??(()=>{});
+  function paint(focus='.wpos-run-skill'){
+   if(ended)return;
+   if(session.disposed){closed();return;}
+   const now=session.current;
+   if(!now||session.finished){void finish();return;}
+   if(now.between){stopTick();player.silence();box.innerHTML=view.renderMockBetween({view:now,parts:session.parts});box.querySelector('[data-mock-between]')?.focus?.({preventScroll:true});top();return;}
+   box.innerHTML=view.renderMockItem({view:now,playing:player.playing,notice,confirm,parts:session.parts});
+   if(focus)box.querySelector(focus)?.focus?.({preventScroll:true});
+  }
+  // 시계: 남은 시간 칸만 1초마다 고치고, 시간이 다 되면 그 영역을 닫는다(session.current가 확인한다).
+  function tick(){
+   if(ended)return;
+   if(session.disposed){closed();return;}
+   const now=session.current;
+   if(!now||now.between){paint();return;}
+   const clock=box.querySelector('[data-mock-clock]');if(clock)clock.textContent=view.mockClock(now.remainingMs);
+  }
+  function startSection(){stopTick();notice='';confirm=false;session.start();ticker=setInterval(tick,1000);paint();top();}
+  async function finish(){
+   if(finishing||drawn||ended&&!box.isConnected)return;
+   finishing=true;ended=true;stopTick();player.silence();
+   try{await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
+   // 저장을 기다리는 사이 판이 닫혔거나(패널을 닫음) 코치가 닫혔다 — 판 기록 없이 닫기만 한다(닫힌 코치면 null).
+   if(!finishing||!box.isConnected){try{session.finish({record:false});}catch{/* 닫힌 코치 */}return;}
+   finishing=false;drawn=true;unwatch();
+   // 기기 기록부는 판을 닫으면 요약이 그 판의 답으로 다시 접힌다 — 접힌 뒤의 칸으로 끝 한 장을 그린다. 기록부는 판을 닫기 전에 읽는다.
+   let local=false;try{local=next.summary()?.storage?.guest===true;}catch{local=false;}
+   let set=null;try{set=session.finish({record:answering()});}catch{set=null;}
+   if(local&&set?.folded){await Promise.race([Promise.resolve(set.folded).catch(()=>null),new Promise(resolve=>setTimeout(resolve,FOLD_WAIT_MS))]);if(stopped||!box.isConnected)return;}
+   refresh();
+   // 「다음 연습」은 그날 낼 것이 있는 짧은 연습만(world-mock-next.mjs todayPractice). 홈 코치로 센다 — 짧은 연습 풀의 은행은 홈 코치만 다 받는다(같은
+   // 호스트라 만남과 하루 한도는 같다). 못 셈하면 잇지 않는다.
+   let routes=new Map();try{routes=homePlanner.position.todayPractice({coach:homePhase()==='engine'?homeWatch?.coach?.()??null:null,pool:position.practice.pool,audioAvailable});}catch{routes=new Map();}
+   const response=answering()&&set?.completionId?set:null;
+   box.innerHTML=view.renderMockDone({results:session.results(),items:position.itemsById,plan,exam,mode,practice:id=>routes.get(id)||null,response:responseView(response,'mock')});
+   bindPractice(box,routes);bindResponse({box,coachNow:next,set:response,kind:'mock'});
+   box.querySelector('[data-mock-done]')?.focus?.({preventScroll:true});top();evidenced();
+  }
+  box.addEventListener('click',event=>{
+   const button=event.target.closest?.('button');if(!button||button.disabled)return;
+   try{
+    check();
+    // 영역 안에서 답하거나 다른 번호로 옮겨도 듣던 소리는 끊지 않는다(지금 판과 같다). 소리는 영역이 끝날 때 · 그만둘 때만 멈춘다.
+    if(button.dataset.mockChoice){confirm=false;session.answer(button.dataset.mockChoice);notice=t('position.diagnostic.saved');paint('[data-mock-status]');}
+    else if(button.hasAttribute('data-mock-listen'))player.play();
+    else if(button.dataset.mockGo){notice='';confirm=false;session.go(Number(button.dataset.mockGo));paint();}
+    else if(button.hasAttribute('data-mock-submit')){
+     const now=session.current,left=now&&!now.between?now.marks.filter(mark=>mark!=='answered').length:0;
+     if(left&&!confirm){confirm=true;paint('[data-mock-confirm]');return;}
+     player.silence();confirm=false;const after=session.finishSection();if(session.disposed)closed();else if(!after||session.finished)void finish();else paint();
+    }
+    else if(button.hasAttribute('data-mock-keep')){confirm=false;paint();}
+    else if(button.hasAttribute('data-mock-next-section')){const now=session.current;if(now?.between&&now.started)session.finishSection();if(session.disposed)closed();else if(session.finished||!session.current)void finish();else startSection();}
+    // 그만두기: 판을 기록 없이 닫고(남은 영역은 시작하지 않는다) 지금까지의 끝 한 장을 그린다(지금 판과 같은 화면 — 응답 줄은 없다).
+    else if(button.hasAttribute('data-mock-stop')){player.silence();try{session.stop();}catch{}void finish();}
+    else if(button.hasAttribute('data-mock-position'))void openMyPosition();
+    else if(button.hasAttribute('data-mock-home'))home.closePanel();
+   }catch(error){stop();failed(error);}
+  });
+  startSection();
+ }
  // ── 이번 주 계획(10-20 결정, world-exam-plan.mjs) ──
  // 시험을 고른 사람에게만. 계획은 따로 저장하지 않고 열 때마다 기록·선언값·날짜로 다시 세운다(추천과 같은 계산).
  // quiet: 학생이 누르지 않은 열기(주소 바로가기·저장 뒤) — 기다리는 사이 학생이 다른 판을 열었으면 덮지 않고, 계획이 없어도 목표 창을 열지 않는다.
@@ -1550,5 +1701,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

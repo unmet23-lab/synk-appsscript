@@ -2,7 +2,9 @@
 // 앱 안 묻기 → 권한, 거절, 그 시각에 띄우기, 그날 공부했으면 띄우지 않기, 한글 단계 학생의 글 언어, 휴대폰·태블릿 판정(10-21 아르곤 지적 셋 포함).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createWorldReminders,createTrailTimes,reminderSupport,reminderHourLabel,reminderDateLabel} from '../world-reminder-device.mjs';
+import {pathToFileURL} from 'node:url';
+// 변형 시험(qa/position-mutants.mjs)은 깬 사본을 SYNK_REMINDER_DEVICE_MODULE로 넘긴다. 그 밖에는 원본이다.
+const {createWorldReminders,createTrailTimes,reminderSupport,reminderHourLabel,reminderDateLabel}=await import(process.env.SYNK_REMINDER_DEVICE_MODULE?pathToFileURL(process.env.SYNK_REMINDER_DEVICE_MODULE).href:'../world-reminder-device.mjs');
 import {setLang} from '../../brand-opening/world-lang.mjs';
 
 const MINUTE=60000,HOUR=60*MINUTE,DAY=24*HOUR,SEOUL=540;
@@ -138,14 +140,56 @@ test('하루 하나는 이 기기 기준이다 — 계정이 오늘 띄운 뒤 �
  try{next.tick();assert.equal(target.notes.length,2);}finally{next.dispose();}
 });
 
-test('시험 점검 시트의 주 단추: 시험 형식 연습이 있는 화면이면 그 글, 없으면 짧은 진단',()=>{
- const base={owner:'guest',storage:memory(),target:fakeWindow(),offset:SEOUL};
+test('시험 점검 시트의 주 단추는 그린 때의 판정에 묶인다 — 열 수 있으면 시험 형식(reminder-exam-mock), 아니면 짧은 진단(reminder-exam-start)이고, 누르면 그 대상을 연다(4-4d §21-23의 5)',()=>{
+ const opened=[];
+ const base={owner:'guest',storage:memory(),target:fakeWindow(),offset:SEOUL,open:kind=>opened.push(kind)};
  const withMock=createWorldReminders({...base,canMock:()=>true}),without=createWorldReminders({...base});
  try{
-  assert.match(withMock.examMarkup(),/시험 형식 연습 시작하기/);assert.doesNotMatch(withMock.examMarkup(),/짧은 진단 시작하기/);
-  assert.match(without.examMarkup(),/짧은 진단 시작하기/);
-  for(const markup of [withMock.examMarkup(),without.examMarkup()])assert.equal((markup.match(/class="felt-button"/g)||[]).length,1,'흰 알약 하나');
+  const mock=withMock.examMarkup(),quick=without.examMarkup();
+  assert.match(mock,/data-world="reminder-exam-mock">시험 형식 연습 시작하기/);assert.doesNotMatch(mock,/짧은 진단 시작하기|reminder-exam-start/);
+  assert.match(quick,/data-world="reminder-exam-start">짧은 진단 시작하기/);assert.doesNotMatch(quick,/reminder-exam-mock/);
+  for(const markup of [mock,quick])assert.equal((markup.match(/class="felt-button"/g)||[]).length,1,'흰 알약 하나');
+  withMock.command('reminder-exam-mock');without.command('reminder-exam-start');
+  assert.deepEqual(opened,['exam-mock','exam-start'],'누른 때 다시 고르지 않는다');
  }finally{withMock.dispose();without.dispose();}
+});
+
+// 열린 시험 점검 카드 흉내: 카드 글을 들고, 짧은 진단 단추 곁에 끼워 넣은 글과 자리를 적는다.
+function examSheet(){
+ const sheet={html:'',inserted:[],attrs:{}};
+ const start={insertAdjacentHTML:(where,html)=>sheet.inserted.push({where,html})};
+ const card={querySelector:selector=>selector==='[data-world="reminder-exam-start"]'&&sheet.html.includes('data-world="reminder-exam-start"')?start:null,setAttribute:(name,value)=>{sheet.attrs[name]=value;}};
+ sheet.document={querySelector:selector=>selector==='[data-reminder-exam="check"]'&&sheet.html.includes('data-reminder-exam="check"')&&sheet.attrs['data-reminder-exam']!=='added'?card:null,addEventListener(){},removeEventListener(){}};
+ return sheet;
+}
+test('준비 전에 연 시험 점검 카드는 판정이 참이 되면 짧은 진단 단추 곁에 시험 형식 단추를 더한다 — 닫히는 중이거나 다른 판이면 더하지 않고, 참으로 그린 카드는 판정이 거짓이 되어도 바꾸지 않는다(4-4d §21-23의 5 · -c FA1)',()=>{
+ let ready=false,kind='world-reminder';
+ const sheet=examSheet();
+ const target={...fakeWindow(),document:sheet.document};
+ const reminders=createWorldReminders({owner:'guest',storage:memory(),target,offset:SEOUL,canMock:()=>ready,panel:()=>kind,show:(title,html)=>{sheet.html=html;}});
+ try{
+  reminders.openKind('exam');
+  assert.match(sheet.html,/data-reminder-exam="check"/,'준비 전 — 짧은 진단 카드');
+  assert.equal(reminders.examChanged(),false,'판정이 거짓이면 그대로');
+  ready=true;kind='';
+  assert.equal(reminders.examChanged(),false,'닫히며 흐려지는 판에는 더하지 않는다');
+  kind='world-writing';
+  assert.equal(reminders.examChanged(),false,'다른 판이면 더하지 않는다');
+  kind='world-reminder';
+  assert.equal(reminders.examChanged(),true);
+  assert.deepEqual(sheet.inserted.map(row=>row.where),['afterend'],'짧은 진단 단추는 그 자리에 두고 곁에 더한다');
+  assert.match(sheet.inserted[0].html,/class="plain-button" data-world="reminder-exam-mock">시험 형식 연습 시작하기/);
+  assert.equal(sheet.attrs['data-reminder-exam'],'added');
+  assert.equal(reminders.examChanged(),false,'한 번만 더한다');
+  const added=reminders.examMarkup({added:true});
+  assert.ok(added.indexOf('reminder-exam-start')<added.indexOf('reminder-exam-mock'),'다시 그린 꼴도 짧은 진단 단추가 앞이다');
+  assert.equal((added.match(/class="felt-button"/g)||[]).length,1);
+  sheet.attrs={};reminders.openKind('exam');
+  assert.match(sheet.html,/data-reminder-exam="mock"/,'참으로 그린 카드');
+  ready=false;
+  assert.equal(reminders.examChanged(),false,'참에서 거짓이 되면 바꾸지 않는다');
+  assert.equal(sheet.inserted.length,1);
+ }finally{reminders.dispose();}
 });
 
 test('시각·날짜 이름은 기기 달력·시각으로, 세 언어로 쓴다',()=>{

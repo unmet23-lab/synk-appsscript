@@ -53,6 +53,8 @@ function lazyAtlasNext(owner){
   async lifeCoach(){if(disposed)return null;const entry=await load();return disposed?null:entry.lifeCoach();},
   // 홈의 코치와 플래너(4-3 — 단계4_계획 §20-4). 지금 판이면 코치는 null, 엔진을 못 받으면 플래너도 null이다.
   async homeCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.homeCoach(pool);},
+  // 시험 형식 연습의 코치(4-4d — 단계4_계획 §21-23의 1, 경험 world-mock). 지금 판이면 null.
+  async mockCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.mockCoach(pool);},
   async homePlanner(){if(disposed)return null;const entry=await load();return disposed?null:entry.homePlanner();},
   // 지금 판으로 정했던 판이 풀렸을 때(지금 판 → 새 길일 수 있음) — 생활 · 홈이 판을 다시 묻는다(단계4_계획 §19-3 7). 끊는 함수를 돌려준다.
   reopened(fn){if(disposed||typeof fn!=='function')return()=>{};reopeners.add(fn);return()=>reopeners.delete(fn);},
@@ -422,6 +424,8 @@ function mountLifeLearning({owner,progress,keep}){
  education=keep('education',createWorldEducation({home,getProgress:()=>life.progress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,responses:responsesOn,
   atlasNext,
   homeNext,
+  // 홈을 다시 그릴 때마다 — 시험 점검 카드의 판정이 바뀌었으면 열린 카드에 시험 형식 단추를 더한다(4-4d §21-23의 5).
+  mockChanged:()=>reminders?.examChanged?.(),
   readHangulProgress:operating&&owner!=='guest'?async()=>{
    const port=await account.prepareHangulProgress({storage:localStorage,target:window});
    try{return port.read();}finally{port.dispose();}
@@ -450,7 +454,9 @@ function mountLifeLearning({owner,progress,keep}){
  keep('trail',createTrailTimes({host:()=>window.SYNKLearningHost||null,
   make:source=>source?source.createGame({gameId:'world-reminders'},worldLearning.engine.createGame,worldLearning.createLearningSync)
    :owner==='guest'?worldLearning.engine.createGame({gameId:'world-reminders',storage:localStorage,followups:true}):null}));
- reminders=keep('reminders',createWorldReminders({owner,storage:localStorage,target:window,read:reminderInputs,open:openReminder,canMock:()=>typeof education?.mock==='function',
+ reminders=keep('reminders',createWorldReminders({owner,storage:localStorage,target:window,read:reminderInputs,open:openReminder,
+  // 시험 점검 카드의 판정(4-4d §21-23의 5): 셸이 낸 판정(새 길이면 홈 코치로 — 지금 판이면 입구가 있는가). 판정이 바뀌면 열린 카드에 단추를 더한다(panel).
+  canMock:()=>typeof education?.mockReady==='function'?education.mockReady()===true:typeof education?.mock==='function',panel:()=>home.openPanel?.()??null,
   show:(title,html)=>show(title,html,'world-reminder'),toast:message=>home.toast(message),repaint:repaintReminderCard,push:owner==='guest'?null:worldPush,pushFeature:pushOn,close}),value=>{value.dispose();home.connectReminders?.(null);});
  home.connectReminders?.(reminders);window.__synkReminders=reminders;reminders.schedule();
  window.__synkLife=ui;
@@ -480,12 +486,14 @@ function studyTimes(snapshot){
  return times;
 }
 // 알림을 누르면 그 알림이 가리키는 자리로: 돌아온 복습은 나의 복습 화면, 이번 주 연습은 이번 주 계획, 시험 점검 카드의 주 단추는
-// 시험 형식 연습(미니 모의, ④ education.mock — 열 수 없으면 그쪽이 알리고 내 위치로 간다), 그 입구가 없는 화면이면 짧은 진단.
+// 시험 형식 연습(미니 모의, ④ education.mock — 열 수 없으면 그쪽이 알리고 내 위치로 간다), 짧은 진단 단추는 짧은 진단. 두 단추는 그린 때 고른 대상을
+// 그대로 연다 — 누른 때 「education.mock이 있는가」로 다시 고르지 않는다(4-4d §21-23의 5 · 설계 다시 검수 카본 A1 · A2).
 // (추천 「다음 연습」으로 바로 보내면 목표를 아직 정하지 않은 학생에게 목표 창이 먼저 떠서, 알림이 말한 자리와 달라진다.)
 function openReminder(kind){
  const run=task=>void Promise.resolve().then(task).catch(e=>home.toast(errorText(e)));
  if(kind==='plan')return run(()=>life.education?.plan?.());
- if(kind==='exam-start')return run(()=>{const education=life.education;return typeof education?.mock==='function'?education.mock():education?.position?.({start:true});});
+ if(kind==='exam-mock')return run(()=>life.education?.mock?.());
+ if(kind==='exam-start')return run(()=>life.education?.position?.({start:true}));
  return run(()=>openLife('review'));
 }
 // 2단 알림으로 들어온 자리를 연다: 입구가 끝나고(튜터 고르기 등) 그 주인의 학습이 준비된 뒤에만. 손님이면 한 번 로그인 안내만 하고 기다린다.
@@ -930,7 +938,7 @@ const commands={
  refresh:async()=>{try{await client.refresh();home.toast(t('account.reconnected'));}catch(e){home.toast(errorText(e));}},
  // 학습 알림 단추(world-reminder-device.mjs): 앱 안 묻기·멈춤 뒤 묻기·시험 점검 카드. 「알려 주세요」는 누른 그 자리에서 OS 권한을 청한다.
  // 2단(앱을 닫아도 받기): 휴대폰 묻는 카드 · 동의 상자의 「동의하고 켜기」(누른 그 동작 안에서 world-push가 권한을 청한다) · 「괜찮아요」.
- ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>life.reminders?.command(name)])),
+ ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-mock','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>life.reminders?.command(name)])),
  // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
  logout:async()=>{accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
    // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.

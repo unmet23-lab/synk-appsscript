@@ -7,6 +7,7 @@ import { createPracticeNextSession } from './world-practice-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from './world-today.mjs';
 import { buildPositionNext, examSkills, recheckCards, unitRoutes, unseenFamilies } from './world-position-next.mjs';
 import { createDiagnosticNextSession, selectDiagnosticNext, withheldItem } from './world-diagnostic-next.mjs';
+import { createMockNextSession, selectMockNext, todayPractice } from './world-mock-next.mjs';
 import { createPositionNextView } from './world-position-next-view.mjs';
 import { buildPlanNext, createPlanLog, planBoard, planReader, planStart, recordsComplete } from './world-plan-next.mjs';
 import { monthWhy, pickMonth } from './world-lookback-next.mjs';
@@ -25,6 +26,11 @@ export const positionPlanner = Object.freeze({
   selectDiagnosticNext,
   withheldItem,
   createDiagnosticNextSession,
+  // 시험 형식 연습 새 판(4-4d — 단계4_계획 §21-23의 1): 구성은 지금 판 selectMock(셸이 넘긴다), 처음 보는 문항은 묶음 만남, 진행은 'world-mock' 코치,
+  // 끝 한 장의 「다음 연습」은 그날 낼 것이 있는 짧은 연습만(todayPractice).
+  selectMockNext,
+  createMockNextSession,
+  todayPractice,
   createView: createPositionNextView,
   lifeReview: lifeReviewCandidate,
   // 30일째 문장(4-4c — 단계4_계획 §21-7): 코치(손님 · 동의를 끈 계정)나 서버 읽기가 낸 단위마다의 수에서 이름이 서는 단위 하나를 고르고 이유를 짓는다.
@@ -989,6 +995,14 @@ export function createAtlasNext({
       const banks = homeBanksOf(pool);
       if (!account) return answered(await coachFor(GUEST, banks, 'world-home'), since);
       return faceCoach(banks, 'world-home', since);
+    },
+    // 시험 형식 연습의 코치(4-4d — §21-23의 1). 짧은 연습 · 생활 · 홈과 같은 판 정하기 · 같은 호스트이고 gameId는 'world-mock'이다 — 판 번호
+    // (set.world-mock.…)가 예상 급수 근거의 판을 가린다(§21-23의 2). 지금 판이면 null. pool: 시험 형식 풀(은행 + 빈칸 베기).
+    async mockCoach(pool) {
+      if (disposed) return null;
+      const since = loosened;
+      if (!account) return answered(await coachFor(GUEST, banksOf(pool), 'world-mock'), since);
+      return faceCoach(banksOf(pool), 'world-mock', since);
     },
     // 홈 플래너(4-3 — world-today.mjs). 엔진을 받아야 화면 언어의 문장(Vellum)을 그린다 — 못 받으면 null(셸은 생활 판정을 따라 지금 판으로 간다).
     async homePlanner() {

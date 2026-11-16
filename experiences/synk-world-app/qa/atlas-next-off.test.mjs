@@ -36,7 +36,7 @@ test('셸은 기능이 켜졌을 때만 새 길 입구를 동적으로 부르고
  assert.match(shell,/\n  atlasNext,\r?\n/,'학습 화면에도 같은 입구');
  assert.equal(shell.match(/import\(['"]\.\/world-atlas-next\.mjs['"]\)/g)?.length,1,'새 길 입구를 부르는 곳은 lazyAtlasNext 하나');
  for(const file of ['app-shell.mjs','world-learning-ui.mjs','world-position-ui.mjs','world-reading-practice.mjs','operating-mode.mjs'])
-  assert.doesNotMatch(read(file),/^import[^;]*(world-atlas-next|world-practice-next|world-today|world-position-next|world-diagnostic-next|\/atlas\/)/m,`${file}이 새 길을 정적으로 부르지 않는다`);
+  assert.doesNotMatch(read(file),/^import[^;]*(world-atlas-next|world-practice-next|world-today|world-position-next|world-diagnostic-next|world-mock-next|\/atlas\/)/m,`${file}이 새 길을 정적으로 부르지 않는다`);
 });
 
 // 셸은 node에서 못 올려 글이 유일한 지킴이다 — 4-2가 더한 줄 가운데 꺼진 판 갈래의 식을 잡는다(새 길 쪽에 조건이 한 겹 더 붙어도 견디게).
@@ -80,9 +80,9 @@ test('꺼진 판의 알림 입력(셸 원문) — 판정 없이 진도의 dueAt 
 // 꺼진 판이 정적으로 받는 모듈(첫 화면 · 계정 묶음 · 생활 단독 묶음에 실리는 것)은 새 길 입구 · 판 · 엔진을 부르지 않는다. import 글은 파서로 읽는다
 // (한 줄에 이어 붙인 import도 잡는다). 묶음에 실리는 모듈의 동적 import는 묶음에 같이 실리므로(esbuild는 쪼개지 않고 싣는다) 그것도 본다.
 // 새 길 표지: 입구(world-atlas-next) · 연습 판(world-practice-next) · 홈 세 줄(world-today — 4-3, 설계 주인 11-15) · 내 위치 새 판(world-position-next ·
-// world-position-next-view · world-diagnostic-next — 4-4a) · 엔진(/atlas/… — 서버가 내는 절대 주소 · packages/atlas 원천).
+// world-position-next-view · world-diagnostic-next — 4-4a) · 시험 형식 새 판(world-mock-next — 4-4d) · 엔진(/atlas/… — 서버가 내는 절대 주소 · packages/atlas 원천).
 // 지금 판 엔진(저장소의 atlas/ — ../../atlas/game-browser.js 등)은 4-2 앞부터 첫 화면 묶음에 있다.
-const NEXT_PATH=specifier=>/world-atlas-next|world-practice-next|world-today|world-position-next|world-diagnostic-next|world-plan-next/.test(specifier)||specifier.startsWith('/atlas/')||/(^|\/)packages\/atlas\//.test(specifier);
+const NEXT_PATH=specifier=>/world-atlas-next|world-practice-next|world-today|world-position-next|world-diagnostic-next|world-mock-next|world-plan-next/.test(specifier)||specifier.startsWith('/atlas/')||/(^|\/)packages\/atlas\//.test(specifier);
 function importsOf(source){
  const found=[],stack=[parse(source)];
  while(stack.length){
@@ -109,7 +109,7 @@ test('첫 화면 · 생활 묶음에 실리는 모듈은 새 길을 부르지 �
  for(const bundle of ['world-account.bundle.mjs','../brand-opening/content/life-standalone.mjs']){
   const text=read(bundle);
   assert.ok(text.length>100000,`${bundle}을 읽었다`);
-  for(const marker of ['world-atlas-next','world-practice-next','world-today','world-position-next','world-diagnostic-next','world-plan-next','indexedDB','/atlas/'])assert.ok(!text.includes(marker),`${bundle}에 「${marker}」 글이 없다`);
+  for(const marker of ['world-atlas-next','world-practice-next','world-today','world-position-next','world-diagnostic-next','world-mock-next','world-plan-next','indexedDB','/atlas/'])assert.ok(!text.includes(marker),`${bundle}에 「${marker}」 글이 없다`);
  }
 });
 
@@ -125,9 +125,9 @@ test('홈 세 줄 모듈(world-today)은 입구만 받는다 — 셸과 첫 화�
  assert.match(read('world-atlas-next.mjs'),/^import \{[^}]*createWorldTodayPlan[^}]*\} from '\.\/world-today\.mjs';/m);
 });
 // 4-4a 내 위치 새 판(칸 셋 · 진단 · 최소 그림)도 입구만 정적으로 받는다 — 셸은 입구가 준 홈 플래너의 position으로만 닿는다(단계4_계획 §21-11).
-test('내 위치 새 판 모듈(world-position-next · world-diagnostic-next · world-position-next-view)은 입구만 받는다(4-4a)',()=>{
+test('내 위치 새 판 모듈(world-position-next · world-diagnostic-next · world-position-next-view)과 시험 형식 새 판(world-mock-next — 4-4d)은 입구만 받는다(4-4a)',()=>{
  const dirs=[['',fs.readdirSync(new URL('../',import.meta.url))],['../brand-opening/',fs.readdirSync(new URL('../../brand-opening/',import.meta.url))]];
- for(const name of ['world-position-next','world-diagnostic-next','world-position-next-view']){
+ for(const name of ['world-position-next','world-diagnostic-next','world-mock-next','world-position-next-view']){
   const takers=[];
   for(const [dir,names] of dirs)for(const file of names.filter(file=>file.endsWith('.mjs')&&!file.endsWith('.bundle.mjs'))){
    if(importsOf(read(dir+file)).some(row=>row.specifier===`./${name}.mjs`||row.specifier.endsWith(`/${name}.mjs`)))takers.push(dir+file);

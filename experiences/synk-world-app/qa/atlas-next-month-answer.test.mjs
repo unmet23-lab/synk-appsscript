@@ -13,6 +13,8 @@ import { acquireHost, releaseHost } from '../../../packages/atlas/src/coach/host
 import { createRehearsalTrail } from '../rehearsal-trail.mjs';
 import { rehearsalTrail } from '../world-atlas-next.mjs';
 import { bankItems } from '../world-topik-items.mjs';
+// 저장소 기본 장면(설계 주인 11-17 — 단계4_계획 §21-23의 6) — 예상 급수 근거 상자의 셈 시험도 같은 목록을 돈다.
+import { blockedStorages, memoryStorage, writesBlockedAfter } from './storage-scenes.mjs';
 
 const {
   aheadOf,
@@ -36,15 +38,6 @@ const WINDOWS = {
   since: { from: 2, to: 3 },
   last7: { from: 2.5, to: 3 },
 };
-function memoryStorage() {
-  const map = new Map();
-  return {
-    getItem: key => (map.has(key) ? map.get(key) : null),
-    setItem: (key, value) => map.set(key, String(value)),
-    removeItem: key => map.delete(key),
-    map,
-  };
-}
 
 // ── 낱 규칙 ─────────────────────────────────────────────────────────────────────────────
 
@@ -220,9 +213,12 @@ async function deviceOf(world) {
   const line = await world.trail();
   const revision = line.learning.revision;
   const base = line.transport(revision);
-  const knobs = { hold: null, offline: false, asks: 0, replies: [], lookbackHold: null };
+  const knobs = { hold: null, offline: false, asks: 0, replies: [], lookbackHold: null, postHold: null };
   const transport = {
-    post: (events, since) => base.post(events, since),
+    post: async (events, since) => {
+      if (knobs.postHold) await knobs.postHold;
+      return base.post(events, since);
+    },
     get: async since => {
       if (knobs.hold) await knobs.hold;
       if (knobs.offline) throw Object.assign(new Error('NETWORK'), { code: 'NETWORK', retryable: true });
@@ -261,6 +257,18 @@ async function deviceOf(world) {
   };
 }
 
+// 올리기를 잡아 둔다(시험이 올릴 때 푼다) — 엔진은 쓰기 1.5초 뒤 스스로 올린다(UPLOAD_DELAY_MS). 「아직 올리지 않은 사건」을 보는 장면이 쓰기 뒤
+// 짧게 기다리는(quiet) 동안 기계가 바빠 1.5초를 넘기면 그 사이 올라가 접혀 돌아와 한 번 묻는다(11-17 실측 — 15회 가운데 3회 흔들림).
+function holdPosts(device) {
+  let release = null;
+  device.knobs.postHold = new Promise(resolve => {
+    release = resolve;
+  });
+  return () => {
+    device.knobs.postHold = null;
+    release();
+  };
+}
 // 한 문항을 차례로 푼다 — 단계마다 시각 · 맞힘 · 힌트. 단계마다 올린다(서버가 받은 뒤 접는다).
 async function study(world, device, steps, item = ITEM) {
   for (const step of steps) {
@@ -671,6 +679,7 @@ test('내 놓침이 서버에 닿기 전에는 묻지 않는다 · 물은 사이
   await device.coach.synced();
   const panel = panelOf(world, device);
   // 놓침 — 저장됐지만 아직 올리지 않았다.
+  let posts = holdPosts(device);
   const pid = device.coach.present(ITEM);
   world.time.advance(20_000);
   await device.coach.answer(pid, { correct: false, assessable: true }).stored;
@@ -678,6 +687,7 @@ test('내 놓침이 서버에 닿기 전에는 묻지 않는다 · 물은 사이
   assert.equal(panel.render(), null);
   await quiet();
   assert.equal(device.knobs.asks, 0, '내 놓침이 서버에 닿기 전에는 묻지 않는다');
+  posts();
   await device.handle.settled();
   await device.handle.upload();
   await until(() => device.knobs.asks === 1 && panel.counts.shown);
@@ -690,6 +700,7 @@ test('내 놓침이 서버에 닿기 전에는 묻지 않는다 · 물은 사이
   world.time.set(T + DAY); // 다음 학습일 — 다시 묻는다
   panel.render();
   await until(() => device.knobs.asks === 2);
+  posts = holdPosts(device); // 이 답은 끝까지 올리지 않는다(저장만)
   const next = device.coach.present(ITEM);
   world.time.advance(20_000);
   await device.coach.answer(next, { correct: true, assessable: true }).stored;
@@ -699,6 +710,7 @@ test('내 놓침이 서버에 닿기 전에는 묻지 않는다 · 물은 사이
   await quiet();
   assert.equal(panel.answers.read(A_ID, { revision: device.revision, day: dayOf(world.time.now()) }), null, '물은 사이 칸 밖의 답이 섰다 — 적지 않는다');
   panel.bounded(device.knobs.asks, device.knobs.replies, '놓침');
+  posts();
   panel.close();
   device.close();
 });
@@ -727,6 +739,7 @@ test('응답을 지우면 30일째 문장이 바로 숨고, 그 제외가 접혀
   assert.ok(panel.counts.shown.every(row => row.reviews === 3), '그 뒤로 세 번 모두 혼자 맞혔다');
   const asked = device.knobs.asks;
   // 응답 지우기 — 오늘 답을 거둔다. 칸(unfolded)은 바뀌지 않지만 30일째 문장의 수와 조건이 바뀐다.
+  const excludePosts = holdPosts(device);
   device.coach.exclude(today.eventId);
   const { storage } = device.coach.summary();
   assert.ok(storage.unfoldedRows > 0, '접혀 돌아오지 않은 제외가 있다');
@@ -734,6 +747,7 @@ test('응답을 지우면 30일째 문장이 바로 숨고, 그 제외가 접혀
   assert.equal(panel.render(), null, '문장이 바로 숨는다');
   await quiet();
   assert.equal(device.knobs.asks, asked, '제외가 접혀 돌아오기 전에는 묻지 않는다');
+  excludePosts();
   await device.handle.settled();
   await device.handle.upload();
   await until(() => device.knobs.asks === asked + 1 && Array.isArray(panel.counts.shown));
@@ -759,6 +773,7 @@ test('「이미 알아요」를 말하면 그 단위의 30일째 문장이 바�
   const before = panel.counts.shown.map(row => row.unit);
   const unit = before[0];
   const asked = device.knobs.asks;
+  const tellPosts = holdPosts(device);
   device.coach.tell(unit, 'known');
   const { storage } = device.coach.summary();
   assert.ok(storage.unfoldedRows > 0, '접혀 돌아오지 않은 본인 말이 있다');
@@ -766,6 +781,7 @@ test('「이미 알아요」를 말하면 그 단위의 30일째 문장이 바�
   assert.equal(panel.render(), null, '문장이 바로 숨는다');
   await quiet();
   assert.equal(device.knobs.asks, asked, '본인 말이 접혀 돌아오기 전에는 묻지 않는다(옛 답이 와서 헛묻기를 하지 않는다)');
+  tellPosts();
   await device.handle.settled();
   await device.handle.upload();
   await until(() => device.knobs.asks === asked + 1 && Array.isArray(panel.counts.shown));
@@ -910,24 +926,7 @@ const held = box => {
 };
 
 test('저장소가 막혀도(없음 · 읽기가 던짐 · 쓰기가 말없이 버림 · 쓰기가 던짐) 완결된 답 뒤에는 다시 묻지 않고, 이 문서가 든 답으로 문장을 그린다(Fable 다시 보기 FA1)', { timeout: 60_000 }, async () => {
-  const blocked = {
-    없음: null,
-    '읽기가 던짐': {
-      getItem() {
-        throw new Error('blocked');
-      },
-      setItem() {},
-      removeItem() {},
-    },
-    '쓰기가 말없이 버림': { getItem: () => null, setItem() {}, removeItem() {} },
-    '쓰기가 던짐': {
-      getItem: () => null,
-      setItem() {
-        throw new Error('quota');
-      },
-      removeItem() {},
-    },
-  };
+  const blocked = blockedStorages();
   for (const [name, storage] of Object.entries(blocked)) {
     const box = fakeAsker({ storage, reply: (_n, b) => done(b.device) });
     assert.equal(box.render(), null, `${name} — 처음은 묻는다`);
@@ -1008,14 +1007,12 @@ test('로그아웃으로 끊긴 물음은 실패로 적지 않고, 다시 들어
 // ── 장면: 끝 판 검수(GPT)로 고친 둘 ──────────────────────────────────────────────────────
 
 test('쓰기만 막히고(용량 초과) 저장소에 앞 답이 남아도 이 문서가 든 새 답으로 견준다 · 다른 탭이 더 새 답을 적었으면 그것으로 견준다(4-4c 끝 판 GPT GB1)', { timeout: 60_000 }, async () => {
-  const storage = memoryStorage();
-  const seed = createMonthAnswers({ storage });
   // 같은 학습일의 앞 답(자리 10)이 저장소에 있다 — 기기(자리 11)보다 뒤다. 그 뒤로 쓰기만 던진다(읽기는 된다).
-  seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(9), at: at(10), windows: WINDOWS, month: [], since: seed.generation() });
-  const write = storage.setItem;
-  storage.setItem = () => {
-    throw new Error('quota');
-  };
+  let seed = null;
+  const { storage, unblock } = writesBlockedAfter(store => {
+    seed = createMonthAnswers({ storage: store });
+    seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(9), at: at(10), windows: WINDOWS, month: [], since: seed.generation() });
+  });
   const box = fakeAsker({ storage, reply: (_n, b) => done(b.device) });
   box.device = at(11);
   assert.equal(box.render(), null, '저장소의 앞 답은 기기보다 뒤 — 묻는다');
@@ -1026,7 +1023,7 @@ test('쓰기만 막히고(용량 초과) 저장소에 앞 답이 남아도 이 �
   assert.equal(box.redraws, 1, '같은 자리의 답으로 한 번 다시 그린다');
   assert.equal(box.render()?.month.length, 1, '이 문서가 든 새 답(자리 11)으로 문장을 그린다');
   // 다른 탭이 더 새 답(자리 12)을 적었다 — 저장소 것이 앞서면 그것으로 견주고 묻지 않는다.
-  storage.setItem = write;
+  unblock();
   seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(11), at: at(12), windows: WINDOWS, month: [], since: seed.generation() });
   box.device = at(12);
   assert.deepEqual(box.render()?.month, [], '저장소의 더 새 답으로 문장을 그린다');

@@ -73,12 +73,14 @@ export const pushErrorKey=code=>PUSH_ERRORS[code]||'reminder.push.error';
 
 // owner: 'guest' 또는 계정 id(기록은 주인마다 따로). read(): 위 머리글의 입력. open(kind): 알림이 가리키는 자리로(복습·계획·시험 점검).
 // show(title, html): 시트 열기(시험 점검 카드·휴대폰의 2단 동의). toast(text). repaint(): 묻는 카드가 바뀌었을 때 배우기 판을 다시 그린다.
-// canMock(): 시험 형식 연습(미니 모의, education.mock)을 열 수 있는 화면인지 — 시험 점검 카드의 단추 글이 그 판에 맞게 바뀐다.
+// canMock(): 시험 형식 연습(미니 모의, education.mock)을 지금 열 수 있는지 — 시험 점검 카드의 주 단추가 그린 때의 이 판정에 묶인다(4-4d §21-23의 5).
+// panel(): 열린 판의 종류(home.openPanel — 닫히는 중이면 빈 값). 판정이 바뀌어 카드에 단추를 더할 때 그 카드가 열려 있는지 본다.
 // push: 2단 기기 쪽(world-push.mjs createWorldPush) — 로그인한 계정 주인일 때만, 손님은 null. close(): 열린 시트를 닫는다(휴대폰의 2단 동의 시트).
 export function createWorldReminders({owner,storage=globalThis.localStorage,target=globalThis,read=()=>null,open=()=>{},show=()=>{},toast=()=>{},repaint=()=>{},
- canMock=()=>false,now=()=>Date.now(),offset=deviceOffset,push=null,pushFeature=false,close=()=>{}}){
+ canMock=()=>false,panel=()=>null,now=()=>Date.now(),offset=deviceOffset,push=null,pushFeature=false,close=()=>{}}){
  const key=`${REMINDER_KEY}.${owner}`;
- let stopped=false,timer=null,last=null,pending=null,confirming=false,settingsRoot=null,unwatch=null,settingsUpdate=null;
+ // examDrawn: 마지막으로 그린 시험 점검 카드의 꼴('mock' · 'check' · 'added') — 판정이 거짓이던 카드에만 시험 형식 단추를 더한다.
+ let stopped=false,timer=null,last=null,pending=null,confirming=false,settingsRoot=null,unwatch=null,settingsUpdate=null,examDrawn=null;
  const load=()=>{try{return readReminderState(JSON.parse(storage?.getItem(key)||'null'));}catch{return readReminderState(null);}};
  const save=state=>{try{storage?.setItem(key,JSON.stringify(state));return true;}catch{return false;}};
  const support=()=>reminderSupport(target);
@@ -308,14 +310,37 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
    if(pushDevice())return disablePush({localOff:true});
    save(updateReminderSettings(load(),{enabled:false},now()));refresh();toast(t('reminder.off'));repaint();return;
   }
+  // 시험 점검 카드의 두 단추 — 그린 때 고른 대상을 그대로 연다(누른 때 다시 고르지 않는다 — 4-4d §21-23의 5).
+  if(name==='reminder-exam-mock')return open('exam-mock');
   if(name==='reminder-exam-start')return open('exam-start');
   if(name==='reminder-exam-plan')return open('plan');
  }
  // 시험일 점검을 누르면 여는 카드: 잠금 화면에는 일의 종류를 쓰지 않았으므로 여기서 무엇을 권하는지 말한다.
- // 주 단추는 시험 형식 연습(미니 모의)이 있는 화면이면 그것을, 없으면 짧은 진단을 연다(host open('exam-start')와 같은 고르기).
- function examMarkup(){
+ // 주 단추는 그린 때의 판정(canMock)에 묶는다(4-4d §21-23의 5 · 설계 다시 검수 카본 A1 · A2): 열 수 있으면 시험 형식 연습(reminder-exam-mock),
+ // 아니면 짧은 진단(reminder-exam-start)이고, 누른 때 다시 고르지 않는다. added: 판정이 거짓이던 카드를 연 뒤 참이 된 꼴 — 짧은 진단 단추는 그
+ // 자리에 두고 시험 형식 단추를 곁에 둔다(examChanged가 열린 카드에 같은 꼴로 끼워 넣는다).
+ const examButton=(name,key,primary)=>`<button type="button" class="${primary?'felt-button':'plain-button'}" data-world="${name}">${escape(t(key))}${primary?' <span aria-hidden="true">→</span>':''}</button>`;
+ function examMarkup({added=false}={}){
+  let mock=false;try{mock=!added&&canMock()===true;}catch{mock=false;}
+  examDrawn=added?'added':mock?'mock':'check';
+  const lead=mock?examButton('reminder-exam-mock','reminder.exam.mock',true):examButton('reminder-exam-start','reminder.exam.start',true)+(added?examButton('reminder-exam-mock','reminder.exam.mock',false):'');
+  return `<div class="reminder-exam" data-reminder-exam="${examDrawn}"><div class="world-notice" data-tone="info" data-label="CHECK"><strong>${escape(t('reminder.exam.title'))}</strong><span>${escape(t('reminder.exam.body'))}</span></div><div class="world-actions">${lead}${examButton('reminder-exam-plan','reminder.exam.plan',false)}</div></div>`;
+ }
+ // 판정이 바뀌었을 수 있을 때(셸이 홈을 다시 그릴 때마다 앱이 부른다): 열린 판이 판정이 거짓일 때 그린 시험 점검 카드이고 지금 판정이 참이면,
+ // 판을 다시 열지 않고 짧은 진단 단추 곁에 시험 형식 단추를 끼워 넣는다 — 학생이 읽던 단추의 자리와 대상은 그대로다(둘째 다시 검수 -c Opus
+ // 대체 FA1). 판정이 참에서 거짓이 되면 바꾸지 않는다(그 단추를 누르면 openMock이 알리고 내 위치로 간다). 닫히며 흐려지는 판은 열린 판이 아니다
+ // (panel()이 빈 값 — 내 위치 판의 설계 검토 D1과 같은 막이). 끼워 넣었으면 참.
+ function examChanged(){
+  if(stopped||examDrawn!=='check')return false;
+  let kind=null;try{kind=panel();}catch{kind=null;}
+  if(kind!=='world-reminder')return false;
+  const card=target.document?.querySelector?.('[data-reminder-exam="check"]'),start=card?.querySelector?.('[data-world="reminder-exam-start"]');
+  if(!card||typeof start?.insertAdjacentHTML!=='function')return false;
   let mock=false;try{mock=canMock()===true;}catch{mock=false;}
-  return `<div class="reminder-exam"><div class="world-notice" data-tone="info" data-label="CHECK"><strong>${escape(t('reminder.exam.title'))}</strong><span>${escape(t('reminder.exam.body'))}</span></div><div class="world-actions"><button type="button" class="felt-button" data-world="reminder-exam-start">${escape(t(mock?'reminder.exam.mock':'reminder.exam.start'))} <span aria-hidden="true">→</span></button><button type="button" class="plain-button" data-world="reminder-exam-plan">${escape(t('reminder.exam.plan'))}</button></div></div>`;
+  if(!mock)return false;
+  start.insertAdjacentHTML('afterend',examButton('reminder-exam-mock','reminder.exam.mock',false));
+  card.setAttribute?.('data-reminder-exam','added');examDrawn='added';
+  return true;
  }
 
  // ── 설정 시트의 「학습 알림」 묶음(brand-opening/home.mjs가 설정을 그릴 때 넣는다) ──
@@ -448,7 +473,7 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   const state=load(),entries=state.entries.filter(row=>Number.isFinite(row.deliveredAt));
   if(entries.length!==state.entries.length)save({...state,entries});
  }
- return {refresh,schedule,tick,askMarkup,examMarkup,consentMarkup,settingsMarkup,bindSettings,command,opened,openKind,forgetPending,
+ return {refresh,schedule,tick,askMarkup,examMarkup,examChanged,consentMarkup,settingsMarkup,bindSettings,command,opened,openKind,forgetPending,
   metrics:()=>({owner,state:load(),plan:last,support:support(),push:remote(),hour:last?last.hour:reminderHour({hour:load().hour,now:now(),offset}).hour}),
   dispose(){stopped=true;clearInterval(timer);timer=null;clearTimeout(pending);pending=null;unwatch?.();unwatch=null;target.removeEventListener?.('focus',onVisible);target.document?.removeEventListener?.('visibilitychange',onVisible);}};
 }

@@ -9,6 +9,10 @@
 // 문항을 다르게 냄」은 packages/atlas/tools/mutants/coach.mjs, 「숙제 연습의 층 9 거름을 뺌」은 4-4b에서 더한다).
 // 30일째 문장의 계정 길(world-month-answer.mjs — 학습일 답의 저장 · 견주기 · 묻기와 받기의 상한)도 같은 꼴로 본다 — 사본을 SYNK_MONTH_ANSWER_MODULE로
 // 넘겨 셈 시험(qa/atlas-next-month-answer.test.mjs)이 잡는지 본다(4-4c 둘째 묶음 — 설계 주인 11-16 밤 조건 3).
+// 시험 형식 새 판(world-mock-next.mjs — 4-4d §21-23의 1)은 사본을 SYNK_MOCK_NEXT_MODULE로 넘겨 장면 시험(qa/atlas-next-mock.test.mjs)이, 그 셸 배선
+// (openMock의 판 셋 · runMockNext)은 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘겨 qa/atlas-next-mock-shell.test.mjs가 잡는지 본다.
+// 알림 시트 「시험 점검」(world-reminder-device.mjs — 4-4d §21-23의 5)은 사본을 SYNK_REMINDER_DEVICE_MODULE로 넘겨 qa/world-reminder-device.test.mjs가,
+// 그 앱 배선(app-shell.mjs)은 깬 원문을 SYNK_APP_SHELL_SOURCE로 넘겨 qa/atlas-next-mock-shell.test.mjs가 잡는지 본다.
 // 쓰는 법: node experiences/synk-world-app/qa/position-mutants.mjs [--갈래 <갈래>]
 // 종료코드: 0 = 모든 변형을 잡음 · 1 = 살아남은 변형이 있음 · 2 = 목록 오류 또는 깨지 않은 사본이 장면 시험에 떨어짐
 import fs from 'node:fs';
@@ -43,6 +47,30 @@ const MODULES = {
     source: path.join(here, '..', 'world-learning-ui.mjs'),
     scenes: path.join(here, 'atlas-next-position-shell.test.mjs'),
     env: 'SYNK_LEARNING_UI_MODULE',
+  },
+  // 시험 형식 새 판(4-4d — §21-23의 1): 고르기 · 진행 · 끝 한 장의 「다음 연습」. 진짜 엔진 코치로 새벽 4시 · 31분 쉼을 돈다.
+  mockNext: {
+    source: path.join(here, '..', 'world-mock-next.mjs'),
+    scenes: path.join(here, 'atlas-next-mock.test.mjs'),
+    env: 'SYNK_MOCK_NEXT_MODULE',
+  },
+  // 시험 형식 새 판의 셸 배선(openMock의 판 셋 · runMockNext) — 같은 셸 원천을 시험 형식 셸 장면이 본다.
+  mockShell: {
+    source: path.join(here, '..', 'world-learning-ui.mjs'),
+    scenes: path.join(here, 'atlas-next-mock-shell.test.mjs'),
+    env: 'SYNK_LEARNING_UI_MODULE',
+  },
+  // 알림 시트 「시험 점검」 카드(4-4d — §21-23의 5): 그린 때의 판정에 묶은 두 단추 · 열린 카드에 시험 형식 단추 더하기.
+  reminder: {
+    source: path.join(here, '..', 'world-reminder-device.mjs'),
+    scenes: path.join(here, 'world-reminder-device.test.mjs'),
+    env: 'SYNK_REMINDER_DEVICE_MODULE',
+  },
+  // 시험 형식 새 판과 시험 점검의 앱 배선(app-shell.mjs — 입구 감싸기 · 카드 판정 · 두 단추 · 열린 카드 맞추기)을 시험 형식 셸 시험이 원문으로 본다.
+  mockAppShell: {
+    source: path.join(here, '..', 'app-shell.mjs'),
+    scenes: path.join(here, 'atlas-next-mock-shell.test.mjs'),
+    env: 'SYNK_APP_SHELL_SOURCE',
   },
   // 셸(app-shell.mjs)은 node에서 못 올려 글 지킴이가 본다 — 깬 사본의 글을 학습일 답 셈 시험이 읽는다(4-4c 끝 판 Fable F3).
   appShell: {
@@ -1023,6 +1051,216 @@ export const POSITION_MUTANTS = [
     '적기 전 자리만 칸 밖의 답 수를 본다 — 묻는 사이 응답을 지웠는데 지우기 전의 답을 적고 다시 그린다(카본 4-4d 설계 A1)',
     '      if (storage && heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다\n',
     '      if (storage && (storage.unfolded || 0) > 0) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다\n',
+  ],
+  [
+    "mockNext",
+    "고르기",
+    "모르는 문항(null)을 처음 보는 문항으로 고른다(§21-23의 1 — 모르면 처음이 아니다)",
+    "    return value === false ? false : value === true ? true : null;\n",
+    "    return value === true ? true : false;\n",
+  ],
+  [
+    "mockNext",
+    "고르기",
+    "기록이 다 오지 않아도 연다(21-3)",
+    "  if (complete !== true)\n    return {\n",
+    "  if (complete === 'never')\n    return {\n",
+  ],
+  [
+    "mockNext",
+    "고르기",
+    "화면용 봤나(seen)로 고른다 — 띄우기만 한 문항을 만난 것으로 친다(측정용 만남 met)",
+    "    met.set(item.id, exposures[i]?.met ?? null);\n",
+    "    met.set(item.id, exposures[i]?.seen ?? null);\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "다시 낼 때 늘 「처음이 아니다」를 넘긴다 — 다시 낸 혼자 답이 근거에서 빠진다(카본 설계 검토 B1)",
+    "        cell.pid = coach.present(cell.item);\n        represented += 1;\n",
+    "        cell.pid = coach.present(cell.item, { firstExposure: false });\n        represented += 1;\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "다시 낸 제시에 끝까지 들은 전달을 잇지 않는다",
+    "        for (let n = 0; n < cell.delivered; n += 1) coach.delivery(cell.pid, { audio: 'completed' });\n",
+    "",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "영역을 닫을 때 듣지 못한 문항도 「답하지 않음」으로 남긴다(audio를 가르지 않는다)",
+    "        const reasonOf = cell.track.heard ? 'unanswered' : 'audio';\n",
+    "        const reasonOf = 'unanswered';\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "허용 재생 수를 넘겨도 들린다(시험 형식은 closed)",
+    "      if (kind === 'closed') return false;\n",
+    "      if (kind === 'never') return false;\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "그만둔 판을 판 기록과 함께 닫는다(그만두면 기록 없이 — 21-5와 같은 규칙)",
+    "    return closeSet(false);\n",
+    "    return closeSet(true);\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "코치가 닫혀도(DISPOSED) 닫힌 줄 모르고 다음 문항을 부른다",
+    "      if (error?.code === 'DISPOSED') {\n        end();\n        return null;\n      }\n      if (error?.code !== 'PRESENTATION_GONE') throw error;\n",
+    "      if (error?.code === 'DISPOSED') {\n        return null;\n      }\n      if (error?.code !== 'PRESENTATION_GONE') throw error;\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "영역을 닫을 때 열어 보지 않은 문항도 남긴다(본 적 없는 문항은 다음에 처음 보는 문항으로 남아야 한다)",
+    "      if (cell.pid && !cell.result && !disposed) {\n",
+    "      if (!cell.result && !disposed) {\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "시간이 다 돼도 영역을 닫지 않는다",
+    "    if (row && row.startedAt !== null && row.ended === null && clock() >= deadline(row)) close(row, 'time');\n",
+    "    if (row && row.startedAt !== null && row.ended === null && clock() >= deadline(row) + 3600000) close(row, 'time');\n",
+  ],
+  [
+    "mockNext",
+    "진행",
+    "끝까지 들은 재생을 지금 문항에만 남긴다(세트 대본은 열어 둔 세트 문항 모두에)",
+    "        for (const entry of row.cells)\n          if (entry.track === track && entry.pid && !entry.result && !disposed) deliver(entry, 'completed');\n",
+    "        if (cell.pid && !cell.result && !disposed) deliver(cell, 'completed');\n",
+  ],
+  [
+    "mockNext",
+    "다음 연습",
+    "두뇌가 낼 것 없음(none)이라 한 연습도 잇는다(설계 검토 Fable F8)",
+    "      if (entry && entry.none !== true && entry.locked !== true && bySkill.has(entry.id))\n",
+    "      if (entry && entry.locked !== true && bySkill.has(entry.id))\n",
+  ],
+  [
+    "mockNext",
+    "다음 연습",
+    "소리를 끈 날에도 듣기 문항을 센다",
+    "      if (met[i]?.seen !== false || (listening && !audioAvailable)) return;\n",
+    "      if (met[i]?.seen !== false) return;\n",
+  ],
+  [
+    "mockShell",
+    "시험 형식 여는 곳",
+    "판 셋 검사를 뺀다 — 새 길 문서에서도 옛 코치 world-mock을 연다(설계 검토 Fable F7)",
+    "  return homePhase()==='old'?openMockOld(options):openMockNext(options);\n",
+    "  return openMockOld(options);\n",
+  ],
+  [
+    "mockShell",
+    "시험 형식 여는 곳",
+    "확인 중에 기다림이 넘치면 옛 코치로 연다",
+    "  if(!homeCoach){home.toast(t('homeTutor.checking'));return;}\n",
+    "  if(!homeCoach)return openMockOld({exam});\n",
+  ],
+  [
+    "mockShell",
+    "시험 형식 여는 곳",
+    "기다린 사이 학생이 연 다른 판을 덮는다(4-4b 다시 검수 Fable FA2와 같은 막이)",
+    "  if(homePhase()==='checking'){await settledHome();check();if(moved())return;}\n",
+    "  if(homePhase()==='checking'){await settledHome();check();}\n",
+  ],
+  [
+    "mockShell",
+    "시험 형식 셸",
+    "판을 다시 정해 코치가 닫혀도 연습을 닫지 않는다",
+    "  unwatch=atlasNext?.retired?.(next,closed)??(()=>{});\n",
+    "  unwatch=()=>{};\n",
+  ],
+  [
+    "mockShell",
+    "시험 형식 셸",
+    "끝까지 한 판을 닫지 않는다 — 손님 요약이 그 답으로 다시 접히지 않는다(진단 Fable 끝 판 F2)",
+    "   let set=null;try{set=session.finish({record:answering()});}catch{set=null;}\n",
+    "   let set=null;\n",
+  ],
+  [
+    "reminder",
+    "시험 점검 카드",
+    "판정이 참이 되어도 열린 카드에 시험 형식 단추를 더하지 않는다(설계 다시 검수 카본 A2)",
+    "  if(!mock)return false;\n  start.insertAdjacentHTML(",
+    "  if(mock||!mock)return false;\n  start.insertAdjacentHTML(",
+  ],
+  [
+    "reminder",
+    "시험 점검 카드",
+    "닫히며 흐려지는 판에도 단추를 더한다(내 위치 판 D1과 같은 막이)",
+    "  if(kind!=='world-reminder')return false;\n",
+    "  if(kind==='never')return false;\n",
+  ],
+  [
+    "reminder",
+    "시험 점검 카드",
+    "시험 형식 단추가 짧은 진단 명령을 쓴다 — 누른 때 앱이 다시 고르게 된다(설계 다시 검수 카본 A1)",
+    "  const lead=mock?examButton('reminder-exam-mock',",
+    "  const lead=mock?examButton('reminder-exam-start',",
+  ],
+  [
+    "reminder",
+    "시험 점검 카드",
+    "더할 때 짧은 진단 단추 앞에 끼운다 — 학생이 읽던 단추의 자리가 바뀐다(둘째 다시 검수 -c FA1)",
+    "  start.insertAdjacentHTML('afterend',",
+    "  start.insertAdjacentHTML('beforebegin',",
+  ],
+  [
+    "reminder",
+    "시험 점검 카드",
+    "시험 형식 단추의 명령이 짧은 진단을 연다",
+    "  if(name==='reminder-exam-mock')return open('exam-mock');\n",
+    "  if(name==='reminder-exam-mock')return open('exam-start');\n",
+  ],
+  [
+    "mockAppShell",
+    "시험 점검 앱 배선",
+    "누른 때 「education.mock이 있는가」로 다시 고른다(설계 다시 검수 카본 A1)",
+    " if(kind==='exam-start')return run(()=>life.education?.position?.({start:true}));\n",
+    " if(kind==='exam-start')return run(()=>{const education=life.education;return typeof education?.mock==='function'?education.mock():education?.position?.({start:true});});\n",
+  ],
+  [
+    "mockAppShell",
+    "시험 점검 앱 배선",
+    "홈을 다시 그려도 열린 카드를 맞추지 않는다",
+    "  mockChanged:()=>reminders?.examChanged?.(),\n",
+    "",
+  ],
+  [
+    "mockAppShell",
+    "시험 점검 앱 배선",
+    "카드 판정이 입구가 있는가만 본다(새 길 판정을 보지 않는다)",
+    "canMock:()=>typeof education?.mockReady==='function'?education.mockReady()===true:typeof education?.mock==='function',",
+    "canMock:()=>typeof education?.mock==='function',",
+  ],
+  [
+    "mockAppShell",
+    "시험 점검 앱 배선",
+    "입구 감싸기가 시험 형식 코치를 잇지 않는다(셸 시험 틀은 입구 칸을 손으로 짓는다)",
+    "  async mockCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.mockCoach(pool);},\n",
+    "",
+  ],
+  [
+    "mockShell",
+    "시험 점검 셸",
+    "홈을 다시 그려도 앱에 알리지 않는다",
+    "  if(typeof mockChanged==='function')try{mockChanged();}catch{/* 알림 카드는 다음에 열 때 맞춘다 */}\n",
+    "",
+  ],
+  [
+    "mockShell",
+    "시험 점검 셸",
+    "새 길 판정이 고르기를 보지 않는다(엔진 판이면 참)",
+    "  return mockNextPlan(coachNow,values,studentExam(values))?.status==='ready';\n",
+    "  return true;\n",
   ],
 ];
 
