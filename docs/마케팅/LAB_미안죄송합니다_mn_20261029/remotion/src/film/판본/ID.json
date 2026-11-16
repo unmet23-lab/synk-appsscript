@@ -168,9 +168,9 @@
     "",
     ""
   ],
-  "endCard": "Bos ketumpahan kopi?\n→ 죄송합니다.",
+  "endCard": "Numpahin kopi ke bos?\n→ 죄송합니다.",
   "endSize": 44,
-  "ask": "죄송합니다 buat siapa aja?",
+  "ask": "Ke siapa bilang 죄송합니다?",
   "askSize": 36,
   "coverAt": 1.8,
   "hello": "",
@@ -193,7 +193,7 @@
     "tags.0": "친구한테만",
     "tags.1": "공손",
     "tags.2": "선생님 · 사장님께 ✓",
-    "endCard": "사장님한테 커피가 튀었다?\n→ 죄송합니다.",
-    "ask": "죄송합니다는 누구한테 써?"
+    "endCard": "사장님한테 커피를 쏟았어?\n→ 죄송합니다.",
+    "ask": "누구한테 죄송합니다라고 해?"
   }
 }

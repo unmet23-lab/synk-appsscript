@@ -147,7 +147,7 @@
   "floorSize": 66,
   "so": "4 → F",
   "soSize": 66,
-  "soSub": "F = Four (4)",
+  "soSub": "F = Four (төрт)",
   "soSubSize": 92,
   "phew": "Уф… кутулдум!",
   "phewSize": 62,
@@ -169,7 +169,7 @@
     "floorA": "4층 =",
     "floorF": "유령들의 층",
     "so": "4 → F",
-    "soSub": "F = Four (4)",
+    "soSub": "F = Four (төрт)",
     "phew": "휴… 살았다!",
     "endCard": "이제 F를\n누를 거야?",
     "ask": ""
