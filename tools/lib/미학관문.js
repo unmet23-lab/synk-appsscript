@@ -44,7 +44,9 @@ const 읽기 = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } c
 const 바뀐때 = (f) => { try { return fs.statSync(f).mtimeMs; } catch { return 0; } };
 const 만든때of = (기록, 파일) => Date.parse(기록?.만든때 || '') || 바뀐때(파일);
 const 배열 = (x) => (Array.isArray(x) ? x : []);
-const 짧게글 = (s, n = 70) => { const t = String(s || '').replace(/\s+/g, ' ').trim(); return t.length > n ? `${t.slice(0, n - 1)}…` : t; };
+// 글자 단위(코드 포인트)로 자른다(11-16) — UTF-16 단위로 자르면 이모지 가운데가 잘려 짝 잃은 대리 문자가 준비.json 「검사」에 남고,
+// 그 파일을 읽어 다시 쓰는 Python 도구가 「surrogates not allowed」로 멈추며 파일을 반쯤 쓴 채 남겼다(LAB M51).
+const 짧게글 = (s, n = 70) => { const t = [...String(s || '').replace(/\s+/g, ' ').trim()]; return t.length > n ? `${t.slice(0, n - 1).join('')}…` : t.join(''); };
 
 /** 막힌 증거 한 줄이 쓸 만한가 — 꼴이 알려진 것이고, 보낸 시각 · 거절 첫 줄 · 줄 끈 때 가운데 하나가 있다. */
 function 막힘됨(m) {
