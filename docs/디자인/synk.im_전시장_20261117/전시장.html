@@ -114,39 +114,66 @@ html[data-gate="orb"] .gate-doors{position:absolute;left:var(--gl);right:var(--g
 html[data-gate="orb"] .gate-sub{justify-content:center}
 html[data-gate="orb"] .gate{height:100svh;min-height:640px;padding-bottom:0}
 
-/* ── 한눈에 보기. 같은 처마의 밤이다. 싱ㅋ가 있던 자리에 구가 뜬다 ── */
-.hall{height:100svh;min-height:640px}
-.hall-sky{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(0,0,0,.3) 0,rgba(0,0,0,.3) calc(var(--fade) - 12%),rgba(0,0,0,.84) calc(var(--fade) + 6%),#000 96%),url(assets/eaves-night.webp);
-  background-size:100% 100%,var(--photo-size);background-position:0 0,var(--pos);background-repeat:no-repeat;transition:opacity .6s ease}
-.hall-peek{position:absolute;inset:0;z-index:1;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,transparent 26%,#000 60%);mask-image:linear-gradient(90deg,transparent 26%,#000 60%)}
-.hall-peek i{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transition:opacity .55s ease}
-.hall-peek::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#000 6%,rgba(0,0,0,.74) 34%,rgba(0,0,0,0) 62%),linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,0) 22%);opacity:0;transition:opacity .55s ease}
-.hall[data-peek] .hall-peek::after{opacity:1}
-.hall[data-peek] .hall-sky{opacity:.0}
-.hall[data-peek="atlas"] .hall-peek i[data-p="atlas"],.hall[data-peek="lab"] .hall-peek i[data-p="lab"],.hall[data-peek="path"] .hall-peek i[data-p="path"],.hall[data-peek="shift"] .hall-peek i[data-p="shift"],.hall[data-peek="pulse"] .hall-peek i[data-p="pulse"]{opacity:.82}
-.hall-orb{position:absolute;left:var(--gut);top:var(--mark-top);width:var(--mark-w);height:var(--mark-h);pointer-events:none}
-.hall-doors{position:absolute;z-index:5;left:var(--gl);right:var(--gr);bottom:clamp(22px,3.6svh,40px);display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,404px);column-gap:clamp(24px,5vw,88px);align-items:end}
-.hall-say{font:var(--display);letter-spacing:-.02em;text-wrap:balance}
+/* ── 한눈에 보기. 위에는 구와 엔진(아틀라스)이 서고, 아래에는 그 엔진이 일하는 네 곳이 작품으로 걸려 있다.
+      네 곳은 「배우는 사람에게」와 「맡기는 회사에」 두 묶음으로 갈라, 손님이 제 쪽 둘만 보면 되게 한다 ── */
+.hall{height:100svh;min-height:680px;display:flex;flex-direction:column;padding:calc(var(--top) + 54px) var(--gr) clamp(22px,3.6svh,40px) var(--gl)}
+.hall-head{flex:none;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:clamp(18px,2.4vw,36px)}
+.hall-orb{width:clamp(84px,9.4vw,136px);aspect-ratio:1;pointer-events:none}
+.hall-say{margin-top:16px;font:var(--display);letter-spacing:-.02em;text-wrap:balance}
 .hall-say .dim{display:block;color:var(--dim)}
-.hall-sub{margin-top:14px;max-width:46em;font:var(--lead);color:var(--dim);text-wrap:pretty}
-.index{position:relative;display:grid}
-.index::before{content:"";position:absolute;z-index:-1;inset:-70px -60px -50px -90px;background:radial-gradient(closest-side,rgba(0,0,0,.8),rgba(0,0,0,.56) 60%,rgba(0,0,0,0));pointer-events:none}
-.ix-g{padding:15px 0 8px;font:400 12px/1 var(--sans);letter-spacing:.04em;color:var(--dim)}
-.ix{display:grid;grid-template-columns:5.6em minmax(0,1fr) auto;align-items:baseline;gap:14px;padding:12px 0;border-top:1px solid var(--hair);color:var(--dim);transition:color .2s ease,border-color .2s ease}
-.ix:first-child{border-top-color:transparent}
-.ix-n{font:400 13px/1.3 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.88);transition:color .2s ease}
-.ix-d{font:400 15px/1.4 var(--sans)}
-.ix .arr{font:400 13px/1 var(--sans);opacity:0;transform:translateX(-6px);transition:opacity .2s ease,transform .2s var(--ease)}
-.ix:hover,.ix:focus-visible{color:var(--paper);border-top-color:rgba(243,241,236,.4)}
-.ix:hover .ix-n,.ix:focus-visible .ix-n{color:var(--paper)}
-.ix:hover .arr,.ix:focus-visible .arr{opacity:1;transform:none}
-@media (max-width:700px),(max-aspect-ratio:4/5){
-  .hall{height:auto;min-height:100svh;padding-bottom:40px}
-  .hall-sky{bottom:auto;height:var(--sky-h);background-image:linear-gradient(rgba(0,0,0,.3) 0,rgba(0,0,0,.3) 52%,#000 96%),url(assets/eaves-night-port.webp)}
-  .hall-doors{position:relative;left:auto;right:auto;bottom:auto;margin:calc(var(--sky-h) - 64px) var(--gr) 0 var(--gl);grid-template-columns:minmax(0,1fr);row-gap:22px}
-  .hall-peek{display:none}
-  .hall[data-peek] .hall-sky{opacity:1}
-  .index::before{display:none}
+.hall-head .go{margin:0 0 8px;align-self:end}
+.hall-sub{flex:none;margin-top:clamp(16px,3svh,32px);font:var(--say);color:rgba(243,241,236,.86);text-wrap:pretty}   /* 네 곳을 적은 줄. 작고 흐리면 읽지 않고 지나간다(맹검 셋째 판) */
+.wall{flex:1;min-height:0;margin-top:clamp(12px,2svh,20px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto minmax(0,1fr) auto;column-gap:clamp(12px,1.4vw,22px);transition:grid-template-columns .55s var(--ease)}
+.wl{grid-row:1;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--hair);font:var(--say);color:var(--paper)}
+.wl-2{grid-column:1 / span 2}.wl-3{grid-column:3 / span 2}
+.wl-3,.ix[data-to="shift"]{margin-left:clamp(8px,1.4vw,24px)}
+.ix{grid-row:2 / span 2;min-width:0;min-height:0;display:grid;grid-template-rows:subgrid;transition:opacity .35s ease}   /* 그림 줄과 글 줄을 벽과 같이 써서, 글이 두 줄로 넘어가는 칸이 있어도 그림의 아래가 한 줄로 맞는다 */
+.ix[data-to="lab"]{grid-column:1}.ix[data-to="path"]{grid-column:2}.ix[data-to="shift"]{grid-column:3}.ix[data-to="pulse"]{grid-column:4}
+.ix-w{position:relative;min-height:0;overflow:hidden;background:#0b0c0e}
+.ix-w::after{content:"";position:absolute;inset:0;border:1px solid rgba(243,241,236,.1);pointer-events:none}
+.ix-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .9s var(--ease)}
+.ix:hover .ix-bg,.ix:focus-visible .ix-bg{transform:scale(1.03)}
+.ix-c{display:grid;align-content:start;gap:7px;min-height:130px;padding-top:14px}
+.ix-n{font:400 12px/1 var(--sans);letter-spacing:.2em;color:var(--dim)}
+.ix-d{font:var(--say);color:var(--paper)}
+.ix .arr{display:inline-block;transition:transform .25s var(--ease)}
+.ix:hover .arr,.ix:focus-visible .arr{transform:translateX(4px)}
+.ix-now{display:flex;align-items:baseline;gap:7px;font:var(--small);color:var(--dim)}
+.ix-now i{flex:none;width:5px;height:5px;border-radius:50%;background:var(--live);transform:translateY(-2px)}
+/* 칸마다 「… 보기」를 글로 적는다. 화살표만 있으면 누르는 곳인 줄 모른다(맹검 셋째 판) */
+.ix-go{margin-top:3px;font:var(--small);color:rgba(243,241,236,.86);transition:color .2s ease}
+.ix-go .ul{text-decoration:underline;text-decoration-color:rgba(243,241,236,.4);text-underline-offset:4px}
+.ix:hover .ix-go,.ix:focus-visible .ix-go{color:var(--paper)}
+/* SHIFT의 작품은 그림이 아니라 지금 도는 예약표다 */
+.ix-clock{display:grid;align-content:center;padding:0 clamp(14px,1.6vw,26px)}
+.ix-clock b{font:200 clamp(40px,4.6vw,72px)/1 var(--sans);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ix-clock small{margin-top:8px;font:400 12px/1 var(--sans);letter-spacing:.06em;color:var(--faint)}
+.hk-list{margin-top:clamp(14px,2.4svh,26px);display:grid}
+.hk-list span{display:grid;grid-template-columns:3.4em minmax(0,1fr);gap:8px;padding:7px 0;border-top:1px solid var(--hair);font:var(--small);color:var(--dim);font-variant-numeric:tabular-nums}
+.hk-list span span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;padding:0;border:0;overflow:hidden}
+.hk-list>span:first-child,.hk-list>span:first-child span{color:var(--paper)}
+/* 가리킨 작품의 칸이 넓어지고 나머지는 물러난다. 아틀라스를 가리키면 네 곳이 모두 물러난다 */
+.hall[data-peek="lab"] .wall{grid-template-columns:1.5fr .85fr .85fr .85fr}
+.hall[data-peek="path"] .wall{grid-template-columns:.85fr 1.5fr .85fr .85fr}
+.hall[data-peek="shift"] .wall{grid-template-columns:.85fr .85fr 1.5fr .85fr}
+.hall[data-peek="pulse"] .wall{grid-template-columns:.85fr .85fr .85fr 1.5fr}
+.hall[data-peek] .ix{opacity:.46}
+.hall[data-peek="lab"] .ix[data-to="lab"],.hall[data-peek="path"] .ix[data-to="path"],.hall[data-peek="shift"] .ix[data-to="shift"],.hall[data-peek="pulse"] .ix[data-to="pulse"]{opacity:1}
+@media (max-width:760px),(max-aspect-ratio:4/5){
+  .hall{height:auto;min-height:100svh;padding-top:calc(var(--top) + 50px)}
+  .hall-head{grid-template-columns:minmax(0,1fr);row-gap:6px}
+  .hall-orb{width:84px}
+  .hall-head .go{justify-self:start;margin:14px 0 0}
+  .wall,.hall[data-peek] .wall{flex:none;grid-template-columns:minmax(0,1fr);grid-template-rows:none;transition:none}
+  .wl,.wl-2,.wl-3{grid-row:auto;grid-column:1;margin:26px 0 0}
+  .ix,.ix[data-to]{grid-row:auto;grid-column:1;margin-left:0;display:grid;grid-template-columns:92px minmax(0,1fr);grid-template-rows:none;column-gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--hair)}
+  .hall[data-peek] .ix{opacity:1}
+  .ix-w{width:92px;height:92px}
+  .ix-c{min-height:0;padding-top:0}
+  .ix-d{font:400 15px/1.4 var(--sans)}
+  .ix-clock small,.hk-list{display:none}
+  .ix-clock{padding:0;justify-items:center}
+  .ix-clock b{font-size:26px}
 }
 
 /* ── 작품 방. 작품 하나, 문장 하나, 작은 라벨 하나 ── */
@@ -161,21 +188,22 @@ html[data-gate="orb"] .gate{height:100svh;min-height:640px;padding-bottom:0}
 .now{margin-top:18px;display:flex;align-items:baseline;gap:9px;font:var(--small);color:rgba(243,241,236,.86)}
 .now i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--live);transform:translateY(-1px)}
 .now b{font-weight:500;color:var(--live)}
-.in{margin-top:20px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 20px;padding-top:14px;border-top:1px solid var(--hair);min-height:48px}
-.in-t{font:400 12px/1.4 var(--sans);letter-spacing:.04em;color:var(--faint);transition:color .2s ease}
+.in{margin-top:18px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 20px;min-height:28px}
+.in-t{font:400 12px/1.4 var(--sans);letter-spacing:.04em;color:var(--dim)}
 .in-t b{margin-left:6px;font-weight:400;font-variant-numeric:tabular-nums}
 .in-l{display:flex;flex-wrap:wrap;gap:6px 20px}
-.in-l li{opacity:0;transform:translateX(-14px);transition:opacity .22s ease calc(var(--k) * 55ms),transform .34s var(--ease) calc(var(--k) * 55ms)}
-.in-l a{font:var(--small);color:rgba(243,241,236,.86);border-bottom:1px solid transparent;padding-bottom:2px;transition:border-color .2s ease,color .2s ease}
+.in-l li{transition:opacity .3s ease calc(var(--k) * 70ms + 260ms),transform .46s var(--ease) calc(var(--k) * 70ms + 260ms)}
+/* 방에 들어서면 차례로 나온다. 들어서기 전에는 물러나 있다 */
+.room.wait .in-l li{opacity:0;transform:translateX(-14px);transition:none}
+.in-l a{font:var(--small);color:rgba(243,241,236,.86);border-bottom:1px solid rgba(243,241,236,.3);padding-bottom:2px;transition:border-color .2s ease,color .2s ease}
 .in-l a:hover{color:var(--paper);border-bottom-color:var(--paper)}
-.cap:hover .in-l li,.cap:focus-within .in-l li,.cap.open .in-l li{opacity:1;transform:none}
-.cap:hover .in-t,.cap:focus-within .in-t{color:var(--dim)}
-@media (hover:none){.in-l li{opacity:1;transform:none}}
-.go{justify-self:start;margin-top:18px;display:inline-flex;align-items:center;gap:8px;padding:0 0 5px;border-bottom:1px solid rgba(243,241,236,.5);font:500 15px/1.3 var(--sans);transition:border-color .2s ease}
-.go:hover{border-bottom-color:var(--paper)}
+.go{justify-self:start;margin-top:20px;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border:1px solid rgba(243,241,236,.4);border-radius:999px;font:500 15px/1.3 var(--sans);transition:border-color .2s ease,background-color .2s ease}
+.go:hover{border-color:var(--paper);background:rgba(243,241,236,.08)}
 .go .arr{transition:transform .2s var(--ease)}
 .go:hover .arr{transform:translateX(3px)}
-.plate{position:absolute;z-index:3;right:var(--gr);bottom:clamp(36px,6.4svh,76px);max-width:300px;text-align:right;font:var(--small);color:var(--dim)}
+.plate{position:absolute;z-index:3;right:var(--gr);bottom:clamp(36px,6.4svh,76px);max-width:300px;text-align:right;font:var(--small);color:var(--dim);text-wrap:balance}
+/* 벽에 작품 하나만 걸린 방(LAB, SHIFT)은 글을 세로 가운데에 둔다. 왼쪽 위가 비어 보이지 않는다 */
+#lab .cap,#shift .cap{bottom:auto;top:50%;transform:translateY(-50%)}
 .plate b{display:block;font-weight:400;color:rgba(243,241,236,.86)}
 
 /* 아틀라스: 창밖의 시간이 지나가고, 그때의 실제 화면 한 조각이 뜬다 */
@@ -184,10 +212,10 @@ html[data-gate="orb"] .gate{height:100svh;min-height:640px;padding-bottom:0}
 .pcs{position:absolute;z-index:2;right:clamp(28px,8vw,150px);top:46%;transform:translateY(-50%);width:min(36vw,470px);display:grid;place-items:center}
 .pcs img{grid-area:1/1;width:100%;height:auto;border-radius:18px;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 34px 70px -26px rgba(0,0,0,.9);opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .6s var(--ease)}
 .pcs img.on{opacity:1;transform:none}
-.mo{margin-top:22px;display:flex;flex-wrap:wrap;gap:4px 4px;margin-left:-10px}
-.mo button{appearance:none;background:none;border:0;margin:0;padding:8px 10px;font:400 13px/1 var(--sans);color:var(--faint);cursor:pointer;border-radius:2px;position:relative;transition:color .2s ease}
-.mo button::after{content:"";position:absolute;left:10px;right:10px;bottom:2px;height:1px;background:var(--paper);opacity:0;transition:opacity .2s ease}
-.mo button:hover{color:var(--dim)}
+.mo{margin-top:22px;display:flex;flex-wrap:wrap;gap:0 20px;border-bottom:1px solid var(--hair)}
+.mo button{appearance:none;background:none;border:0;margin:0;padding:9px 0 12px;font:400 13px/1 var(--sans);color:var(--dim);cursor:pointer;position:relative;transition:color .2s ease}
+.mo button::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--paper);opacity:0;transition:opacity .2s ease}
+.mo button:hover{color:var(--paper)}
 .mo button[aria-selected="true"]{color:var(--paper)}
 .mo button[aria-selected="true"]::after{opacity:1}
 .mq{margin-top:14px;font:var(--say)}
@@ -195,9 +223,12 @@ html[data-gate="orb"] .gate{height:100svh;min-height:640px;padding-bottom:0}
 .ma b{font-weight:500;color:var(--paper)}
 
 /* LAB: 세로로 선 작품 하나가 벽에 걸린다 */
-.hung{inset:auto;right:clamp(28px,11vw,200px);top:50%;transform:translateY(-50%);height:min(78svh,760px);aspect-ratio:9/16;overflow:hidden;background:#0a0a0a}
+.hung{inset:auto;right:clamp(28px,18vw,320px);top:50%;transform:translateY(-50%);height:min(78svh,760px);aspect-ratio:9/16;overflow:hidden;background:#0a0a0a}
+/* 세로 작품이 걸린 벽에는 그 작품의 빛이 번진다 */
+.lab-back{position:absolute;inset:0;z-index:0;background:url(assets/lab-scene.webp) 60% 36%/cover no-repeat;filter:blur(80px) brightness(.55) saturate(1.15);-webkit-mask-image:radial-gradient(ellipse 46% 70% at 68% 50%,rgba(0,0,0,.85) 0,rgba(0,0,0,.3) 58%,transparent 100%);mask-image:radial-gradient(ellipse 46% 70% at 68% 50%,rgba(0,0,0,.85) 0,rgba(0,0,0,.3) 58%,transparent 100%);pointer-events:none}
+#lab .cap{width:min(640px,calc(100% - var(--gl) - var(--gr)),calc(100% - clamp(28px,18vw,320px) - min(78svh,760px) * 9 / 16 - var(--gl) - 44px))}
 #lab .shade{background:linear-gradient(0deg,rgba(0,0,0,.5) 0,rgba(0,0,0,0) 40%)}
-#lab .plate{right:auto;left:calc(100% - clamp(28px,11vw,200px) + 18px);bottom:calc(50% - min(39svh,380px));text-align:left;max-width:clamp(120px,9vw,180px)}
+#lab .plate{right:auto;left:calc(100% - clamp(28px,18vw,320px) + 28px);bottom:calc(50% - min(39svh,380px));text-align:left;max-width:clamp(120px,14vw,240px)}
 
 /* SHIFT: 작품은 지금 돌아가는 예약표다 */
 .clock{position:absolute;z-index:2;right:var(--gr);top:50%;transform:translateY(-52%);width:min(46vw,620px);display:grid;gap:0}
@@ -215,9 +246,9 @@ html[data-gate="orb"] .gate{height:100svh;min-height:640px;padding-bottom:0}
 .ck-foot{margin-top:14px;text-align:right;font:var(--small);color:var(--dim)}
 
 /* ── 묻기. 구에게 묻는다 ── */
-.ask{display:grid;place-items:center;padding:calc(var(--top) + 60px) var(--gr) 64px var(--gl)}
+.ask{display:grid;place-items:center;padding:calc(var(--top) + 48px) var(--gr) 44px var(--gl)}
 .ask-in{width:min(680px,100%);display:grid;justify-items:center;text-align:center}
-.ask-orb{width:min(220px,44vw);height:min(220px,24svh)}
+.ask-orb{width:min(200px,44vw);height:min(200px,20svh)}
 .ask h2{margin-top:10px;font:var(--display);letter-spacing:-.02em}
 .ask .ld{margin-top:12px}
 .ask-form{margin-top:30px;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;border-bottom:1px solid rgba(243,241,236,.44);transition:border-color .25s ease}
@@ -226,49 +257,53 @@ html[data-gate="orb"] .gate{height:100svh;min-height:640px;padding-bottom:0}
 .ask-form input::placeholder{color:var(--faint)}
 .ask-form button{appearance:none;background:none;border:0;padding:12px 2px;display:inline-flex;align-items:center;gap:8px;font:500 15px/1 var(--sans);cursor:pointer;color:var(--paper)}
 .ask-note{margin-top:12px;min-height:1.5em;font:var(--small);color:var(--dim)}
-.faq{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px}
-.faq button{appearance:none;background:none;border:0;border-bottom:1px solid transparent;padding:6px 0 3px;font:var(--small);color:var(--dim);cursor:pointer;transition:color .2s ease,border-color .2s ease}
-.faq button:hover{color:var(--paper);border-bottom-color:var(--paper)}
+.faq{margin-top:22px;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:36px;text-align:left}
+.faq li{border-bottom:1px solid var(--hair)}
+.faq button{appearance:none;background:none;border:0;width:100%;display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 0;font:var(--small);text-align:left;color:var(--dim);cursor:pointer;transition:color .2s ease}
+.faq button::after{content:"→";color:var(--faint);transition:transform .25s var(--ease),color .2s ease}
+.faq button:hover{color:var(--paper)}
+.faq button:hover::after{color:var(--paper);transform:translateX(3px)}
+@media (max-width:640px){.faq{grid-template-columns:minmax(0,1fr)}}
 .mail{margin-top:34px;display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:8px 22px;font:var(--small);color:var(--dim)}
 .mail #mail{font:500 15px/1.3 var(--sans);color:var(--paper);user-select:all;-webkit-user-select:all}
 .mail button,.mail a{appearance:none;background:none;border:0;border-bottom:1px solid var(--hair);padding:0 0 3px;font:var(--small);color:var(--dim);cursor:pointer}
 .mail button:hover,.mail a:hover{color:var(--paper);border-bottom-color:var(--paper)}
 
-/* ── 나가는 길. 소식, 플랫폼, 지키는 것, 바닥 ── */
-.desk{position:relative;background:var(--void);padding:clamp(56px,9svh,110px) var(--gr) 40px var(--gl);border-top:1px solid var(--hair)}
-.desk-in{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px clamp(28px,5vw,80px);max-width:1360px}
-.dk h3{font:400 12px/1 var(--sans);letter-spacing:.06em;color:var(--faint)}
-.dk-list{margin-top:16px;display:grid}
-.dk-list li{padding:11px 0;border-top:1px solid var(--hair);font:var(--small);color:var(--dim)}
-.dk-list a{display:grid;grid-template-columns:6.4em 4.2em minmax(0,1fr);gap:10px;align-items:baseline}
-.dk-list a:hover span:last-child{color:var(--paper)}
-.dk-list span:last-child{color:rgba(243,241,236,.86);transition:color .2s ease}
-.dk-say{margin-top:16px;font:var(--say)}
-.dk-acts{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px 24px}
+/* ── 나가는 길. 소식과 플랫폼은 왼쪽, 지키는 것 셋은 오른쪽, 바닥은 맨 아래 ── */
+.desk{min-height:100svh;display:flex;flex-direction:column;justify-content:space-between;gap:clamp(36px,6svh,72px);padding:calc(var(--top) + 76px) var(--gr) 34px var(--gl)}
+.desk-in{margin-block:auto;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0 clamp(40px,7vw,120px);align-items:start}
+.dk+.dk{margin-top:clamp(34px,6svh,64px)}
+.dk h3{padding-bottom:12px;border-bottom:1px solid var(--hair);font:400 12px/1 var(--sans);letter-spacing:.06em;color:var(--dim)}
+.dk-list{display:grid}
+.dk-list li{border-bottom:1px solid var(--hair)}
+.dk-list a{display:grid;grid-template-columns:6.6em 4.6em minmax(0,1fr) auto;gap:12px;align-items:baseline;padding:17px 0;font:var(--small);color:var(--dim);font-variant-numeric:tabular-nums}
+.dk-list b{font:var(--say);color:var(--paper)}
+.dk-list .arr{color:var(--faint);transition:transform .25s var(--ease),color .2s ease}
+.dk-list a:hover .arr{color:var(--paper);transform:translateX(3px)}
+.dk-say{margin-top:18px;font:var(--say)}
+.dk-acts{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px 24px}
 .dk-acts a,.dk-more{display:inline-flex;gap:8px;padding-bottom:4px;border-bottom:1px solid rgba(243,241,236,.44);font:500 15px/1.3 var(--sans)}
 .dk-acts a:hover,.dk-more:hover{border-bottom-color:var(--paper)}
-.dk-more{margin-top:16px;font-weight:400;color:var(--dim)}
-.pr li{padding:11px 0;border-top:1px solid var(--hair)}
-.pr b{display:block;font:400 15px/1.4 var(--sans)}
-.pr p{display:grid;grid-template-rows:0fr;font:var(--small);color:var(--dim);transition:grid-template-rows .4s var(--ease),margin-top .4s var(--ease)}
-.pr p span{overflow:hidden}
-.pr li:hover p,.pr li:focus-within p,.pr.open p{grid-template-rows:1fr;margin-top:6px}
-@media (hover:none){.pr p{grid-template-rows:1fr;margin-top:6px}}
-.foot{margin-top:clamp(48px,8svh,96px);padding-top:26px;border-top:1px solid var(--hair);display:grid;gap:22px;font:var(--small);color:var(--faint)}
+.dk-more{margin-top:18px;font-weight:400;color:var(--dim)}
+.pr li{padding:18px 0;border-bottom:1px solid var(--hair)}
+.pr b{display:block;font:var(--say)}
+.pr p{margin-top:6px;font:var(--small);color:var(--dim)}
+.foot{padding-top:24px;border-top:1px solid var(--hair);display:grid;gap:16px;font:var(--small);color:var(--faint)}
 .foot-say{color:var(--dim)}
 .foot nav{display:flex;flex-wrap:wrap;gap:8px 22px}
 .foot nav a:hover{color:var(--paper)}
-@media (max-width:860px){.desk-in{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){.desk{padding-top:calc(var(--top) + 64px)}.desk-in{grid-template-columns:minmax(0,1fr)}.desk-in>div+div{margin-top:40px}.dk-list a{grid-template-columns:6.6em minmax(0,1fr) auto}.dk-list a span:nth-child(2){display:none}}
 
 /* ── 좁은 창. 작품은 화면을 채우고 글은 아래에 놓인다 ── */
 @media (max-width:860px){
   .work-room{display:flex;flex-direction:column;justify-content:flex-end;padding:calc(var(--top) + 64px) 0 34px}
-  .cap{position:relative;left:auto;bottom:auto;width:auto;margin:0 var(--gr) 0 var(--gl);order:2}
+  .cap,#lab .cap,#shift .cap{position:relative;left:auto;top:auto;bottom:auto;transform:none;width:auto;margin:0 var(--gr) 0 var(--gl);order:2}
   .plate{position:relative;right:auto;bottom:auto;max-width:none;text-align:left;margin:0 var(--gr) 18px var(--gl);order:1}
   .plate b{display:inline;margin-right:8px}
   .shade{background:linear-gradient(0deg,#000 0,rgba(0,0,0,.86) 30%,rgba(0,0,0,.3) 62%,rgba(0,0,0,.2) 100%),linear-gradient(180deg,rgba(0,0,0,.6) 0,rgba(0,0,0,0) 22%)}
   .pcs{position:relative;right:auto;top:auto;transform:none;width:auto;margin:0 var(--gr) 26px var(--gl);order:-1}
   .hung{inset:0;right:0;top:0;transform:none;height:auto;aspect-ratio:auto}
+  .lab-back{display:none}
   #lab .shade{background:linear-gradient(0deg,#000 0,rgba(0,0,0,.86) 30%,rgba(0,0,0,.2) 64%),linear-gradient(180deg,rgba(0,0,0,.6) 0,rgba(0,0,0,0) 22%)}
   #lab .plate{left:auto;bottom:auto;max-width:none}
   .clock{position:relative;right:auto;top:auto;transform:none;width:auto;margin:0 var(--gr) 30px var(--gl)}
@@ -286,6 +321,7 @@ body.fan-on .veil{opacity:1}
 #orb-btn{appearance:none;background:none;border:0;margin:0;padding:0;width:36px;height:36px;border-radius:50%;cursor:pointer}
 #here{appearance:none;background:none;border:0;margin:0;padding:10px 8px;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.8);cursor:pointer;text-shadow:0 1px 8px rgba(0,0,0,.7);transition:opacity .25s ease,color .2s ease}
 #here:hover{color:var(--paper)}
+#here::after{content:"";display:inline-block;width:5px;height:5px;margin:0 0 3px 10px;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg);opacity:.72}
 body.fan-on #here{opacity:0;pointer-events:none}
 body[data-at="gate"] .guide,body[data-at="hall"] .guide,body[data-at="ask"] .guide{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}
 .fan{position:fixed;z-index:40;left:calc(var(--gl) + var(--fr,60px) * 2 + 24px);top:calc(var(--top) - 2px);display:grid;visibility:hidden}
@@ -301,6 +337,16 @@ body.fan-on .fan-go{opacity:1;transform:none;transition:opacity .3s ease calc(va
 body.fan-on .fan-foot{opacity:1;transition:opacity .4s ease .5s}
 .fan-foot a:hover{color:var(--paper)}
 @media (max-width:640px){.fan{left:var(--gl);top:calc(var(--top) + var(--fr,60px) * 2 + 14px)}}
+/* 늘 보이는 차례 한 줄. 어느 방에 있든 무엇이 있는지 보이고, 지금 있는 방에 밑줄이 선다 */
+.ways{position:fixed;z-index:40;left:50%;top:var(--top);height:36px;transform:translateX(-50%);display:flex;align-items:center;gap:clamp(14px,1.7vw,26px);font:400 13px/1 var(--sans);color:rgba(243,241,236,.64);text-shadow:0 1px 8px rgba(0,0,0,.7);white-space:nowrap;transition:opacity .25s ease}
+.ways a{position:relative;padding:8px 0;transition:color .2s ease}
+.ways a:hover,.ways a[aria-current="true"]{color:var(--paper)}
+.ways a[aria-current="true"]::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:1px;background:var(--paper)}
+body.fan-on .ways{opacity:0;pointer-events:none}
+/* 입구에서는 사진 위라 어두운 알약 바탕을 깐다(공개본의 메뉴와 같은 꼴) */
+html[data-gate="eaves"] body[data-at="gate"] .ways{padding:0 20px;border-radius:999px;background:rgba(8,9,12,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:rgba(243,241,236,.8);text-shadow:none}
+@media (max-width:900px){.ways{display:none}}
+.gate-top .brands{display:none}   /* 위의 차례 한 줄이 같은 말을 한다 */
 .util{position:fixed;z-index:40;right:var(--gr);top:var(--top);height:36px;display:flex;align-items:center;gap:16px;font:400 12px/1 var(--sans);letter-spacing:.12em;color:rgba(243,241,236,.7);text-shadow:0 1px 8px rgba(0,0,0,.7)}
 .util a:hover,.util a[aria-current="true"]{color:var(--paper)}
 .util .me{margin-left:6px;padding:9px 14px;border:1px solid rgba(243,241,236,.34);border-radius:999px;letter-spacing:.04em;color:var(--paper);transition:border-color .2s ease,background-color .2s ease}
@@ -345,6 +391,8 @@ html[data-sky="day"][data-gate="eaves"] body[data-at="gate"] .util .me{color:#0a
 </nav>
 <div class="util"><a href="https://synk.im/" aria-current="true">KR</a><a href="https://synk.im/en/" target="_blank" rel="noopener">EN</a><a href="https://synk.im/mn/" target="_blank" rel="noopener">MN</a><a class="me" href="https://synk.im/account/platform.html#home" target="_blank" rel="noopener">내 홈</a></div>
 
+<nav class="ways" aria-label="전시 차례 한 줄"><a href="#atlas" data-go="atlas">아틀라스</a><a href="#lab" data-go="lab">한국어</a><a href="#path" data-go="path">유학</a><a href="#shift" data-go="shift">AI 특강</a><a href="#pulse" data-go="pulse">광고</a><a href="#ask" data-go="ask">묻기</a><a href="#desk" data-go="desk">소식</a></nav>
+
 <main>
 <!-- 입구 -->
 <section class="room gate geo" id="gate" data-room="gate" aria-label="SYNK 입구">
@@ -353,7 +401,7 @@ html[data-sky="day"][data-gate="eaves"] body[data-at="gate"] .util .me{color:#0a
     <div class="gate-mark" role="img" aria-label="싱크, SYNK의 한글 표기"><svg class="singk" viewBox="0 0 560 328" fill="currentColor" aria-hidden="true" focusable="false"><path class="sk-s" d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"></path><path class="sk-i" d="M222 8h58v172h-58Z"></path><g class="sk-o"><ellipse class="sk-hole" cx="157" cy="257" rx="70" ry="23"></ellipse><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"></path></g><path class="sk-k" d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"></path></svg></div>
   </div>
   <div class="gate-roof" aria-hidden="true"></div>
-  <div class="gate-top" aria-hidden="true"><span>싱ㅋ = SYNK</span><span class="rule"></span><span class="brands">LAB · SHIFT · PULSE · PATH</span></div>
+  <div class="gate-top" aria-hidden="true"><span>싱ㅋ = SYNK</span><span class="rule"></span><span class="brands">LAB · PATH · SHIFT · PULSE</span></div>
   <div class="gate-doors">
     <div>
       <h1 class="gate-claim"><span class="dim">사람마다 막히는 곳이 다릅니다</span> <span>그 한 곳부터 풀어&nbsp;주는 AI를 만듭니다</span></h1>
@@ -364,25 +412,36 @@ html[data-sky="day"][data-gate="eaves"] body[data-at="gate"] .util .me{color:#0a
 </section>
 
 <!-- 한눈에 보기 -->
-<section class="room hall geo" id="hall" data-room="hall" aria-labelledby="hall-say">
-  <div class="hall-sky" aria-hidden="true"></div>
-  <div class="hall-peek" aria-hidden="true"><i data-p="atlas" style="background-image:url(assets/window-evening.webp)"></i><i data-p="lab" style="background-image:url(assets/lab-scene.webp);background-size:auto 100%;background-position:100% 50%"></i><i data-p="path" style="background-image:url(assets/path-home.webp)"></i><i data-p="shift" style="background:#000"></i><i data-p="pulse" style="background-image:url(assets/pulse-reel.webp)"></i></div>
-  <div class="hall-orb" id="hall-orb" aria-hidden="true"></div>
-  <div class="hall-doors">
+<section class="room hall" id="hall" data-room="hall" aria-labelledby="hall-say">
+  <div class="hall-head">
+    <div class="hall-orb" id="hall-orb" aria-hidden="true"></div>
     <div>
+      <p class="eb">한눈에 보기</p>
       <h2 class="hall-say" id="hall-say"><span class="dim">한 사람이 실제로 해 본 것을 읽고</span> 다음 할 일을 고르는 엔진, 아틀라스를 만듭니다</h2>
-      <p class="hall-sub">SYNK는 지금 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.</p>
     </div>
-    <nav class="index" aria-label="전시 차례">
-      <a class="ix" href="#atlas" data-to="atlas"><span class="ix-n">ATLAS</span><span class="ix-d">한 사람을 읽는 엔진</span><span class="arr" aria-hidden="true">→</span></a>
-      <p class="ix-g">배우는 사람에게</p>
-      <a class="ix" href="#lab" data-to="lab"><span class="ix-n">LAB</span><span class="ix-d">한국어 · TOPIK 공부</span><span class="arr" aria-hidden="true">→</span></a>
-      <a class="ix" href="#path" data-to="path"><span class="ix-n">PATH</span><span class="ix-d">한국 유학 · 취업 준비</span><span class="arr" aria-hidden="true">→</span></a>
-      <p class="ix-g">맡기는 회사에</p>
-      <a class="ix" href="#shift" data-to="shift"><span class="ix-n">SHIFT</span><span class="ix-d">AI 특강 · 업무 자동화</span><span class="arr" aria-hidden="true">→</span></a>
-      <a class="ix" href="#pulse" data-to="pulse"><span class="ix-n">PULSE</span><span class="ix-d">광고 · 영상 제작</span><span class="arr" aria-hidden="true">→</span></a>
-    </nav>
+    <a class="go hall-atlas" href="#atlas" data-to="atlas">아틀라스 보기 <span class="arr" aria-hidden="true">→</span></a>
   </div>
+  <p class="hall-sub">SYNK는 지금 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.</p>
+  <nav class="wall" aria-label="네 가지 사업">
+    <p class="wl wl-2">배우는 사람에게</p>
+    <a class="ix" href="#lab" data-to="lab">
+      <span class="ix-w"><img class="ix-bg" src="assets/lab-scene.webp" alt="" width="540" height="960" style="object-position:50% 30%"></span>
+      <span class="ix-c"><span class="ix-n">SYNK LAB</span><span class="ix-d">한국어 · TOPIK 공부</span><span class="ix-now"><i></i><span class="vh">지금 </span>K드라마 상황극, TOPIK 연습과 한국어 게임</span><span class="ix-go"><span class="ul">LAB 보기</span> <span class="arr" aria-hidden="true">→</span></span></span>
+    </a>
+    <a class="ix" href="#path" data-to="path">
+      <span class="ix-w"><img class="ix-bg" src="assets/path-interview.webp" alt="" width="610" height="983" style="object-position:50% 60%"></span>
+      <span class="ix-c"><span class="ix-n">SYNK PATH</span><span class="ix-d">한국 유학 · 취업 준비</span><span class="ix-now"><i></i><span class="vh">지금 </span>면접 연습과 서울 하루(무료)</span><span class="ix-go"><span class="ul">PATH 보기</span> <span class="arr" aria-hidden="true">→</span></span></span>
+    </a>
+    <p class="wl wl-3">맡기는 회사에</p>
+    <a class="ix" href="#shift" data-to="shift">
+      <span class="ix-w ix-clock"><b id="hk">00:00</b><small>서울 지금 · 오늘의 예약표</small><span class="hk-list" id="hk-list"></span></span>
+      <span class="ix-c"><span class="ix-n">SYNK SHIFT</span><span class="ix-d">AI 특강 · 업무 자동화</span><span class="ix-now"><i></i><span class="vh">지금 </span>AI 특강과 학교 AI 진로 강의 의뢰</span><span class="ix-go"><span class="ul">SHIFT 보기</span> <span class="arr" aria-hidden="true">→</span></span></span>
+    </a>
+    <a class="ix" href="#pulse" data-to="pulse">
+      <span class="ix-w"><img class="ix-bg" src="assets/pulse-model.webp" alt="" width="676" height="1200" style="object-position:50% 34%"></span>
+      <span class="ix-c"><span class="ix-n">SYNK PULSE</span><span class="ix-d">광고 · 영상 제작</span><span class="ix-now"><i></i><span class="vh">지금 </span>AI 모델 캐스팅북과 광고 의뢰</span><span class="ix-go"><span class="ul">PULSE 보기</span> <span class="arr" aria-hidden="true">→</span></span></span>
+    </a>
+  </nav>
 </section>
 
 <!-- 아틀라스 -->
@@ -431,6 +490,7 @@ html[data-sky="day"][data-gate="eaves"] body[data-at="gate"] .util .me{color:#0a
 
 <!-- LAB -->
 <section class="room work-room" id="lab" data-room="lab" data-name="SYNK LAB" aria-labelledby="lab-t">
+  <div class="lab-back" aria-hidden="true"></div>
   <div class="work hung"><video muted loop playsinline preload="metadata" poster="assets/lab-scene.webp" src="assets/lab-scene.mp4" aria-label="학생 식당에서 반갑게 손을 드는 태오 선배"></video></div>
   <div class="shade" aria-hidden="true"></div>
   <div class="cap">
@@ -540,28 +600,30 @@ html[data-sky="day"][data-gate="eaves"] body[data-at="gate"] .util .me{color:#0a
 </section>
 
 <!-- 나가는 길 -->
-<section class="desk" id="desk" data-room="desk" data-name="SYNK" aria-label="소식과 플랫폼">
+<section class="room desk" id="desk" data-room="desk" data-name="SYNK" aria-label="소식과 플랫폼">
   <div class="desk-in">
-    <div class="dk">
-      <h3>최근에 새로 연 것</h3>
-      <ul class="dk-list">
-        <li><a href="https://synk.im/#platform-get" target="_blank" rel="noopener"><span>2026.11.16</span><span>플랫폼</span><span>PC 앱 Preview 0.4.95</span></a></li>
-        <li><a href="https://synk.im/lab/#world" target="_blank" rel="noopener"><span>2026.11.05</span><span>LAB</span><span>SYNK WORLD에 새 놀이 셋을 열었습니다</span></a></li>
-        <li><a href="https://synk.im/pulse/casting/" target="_blank" rel="noopener"><span>2026.11.03</span><span>PULSE</span><span>아이돌 두 팀 여덟 명이 합류했습니다</span></a></li>
-      </ul>
-      <a class="dk-more" href="https://synk.im/#now" target="_blank" rel="noopener">지난 소식 6</a>
-    </div>
-    <div class="dk">
-      <h3>플랫폼</h3>
-      <p class="dk-say">SYNK ID 하나로 전부 씁니다</p>
-      <p class="dk-acts"><a href="https://synk.im/account/platform.html#home" target="_blank" rel="noopener">웹에서 열기 <span aria-hidden="true">→</span></a><a href="https://synk.im/#platform-get" target="_blank" rel="noopener">PC 앱 받기 <span aria-hidden="true">↓</span></a></p>
+    <div>
+      <div class="dk">
+        <h3>최근에 새로 연 것</h3>
+        <ul class="dk-list">
+          <li><a href="https://synk.im/#platform-get" target="_blank" rel="noopener"><span>2026.11.16</span><span>플랫폼</span><b>PC 앱 Preview 0.4.95</b><span class="arr" aria-hidden="true">→</span></a></li>
+          <li><a href="https://synk.im/lab/#world" target="_blank" rel="noopener"><span>2026.11.05</span><span>LAB</span><b>SYNK WORLD에 새 놀이 셋을 열었습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+          <li><a href="https://synk.im/pulse/casting/" target="_blank" rel="noopener"><span>2026.11.03</span><span>PULSE</span><b>아이돌 두 팀 여덟 명이 합류했습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+        </ul>
+        <a class="dk-more" href="https://synk.im/#now" target="_blank" rel="noopener">지난 소식 6</a>
+      </div>
+      <div class="dk">
+        <h3>플랫폼</h3>
+        <p class="dk-say">SYNK ID 하나로 전부 씁니다</p>
+        <p class="dk-acts"><a href="https://synk.im/account/platform.html#home" target="_blank" rel="noopener">웹에서 열기 <span aria-hidden="true">→</span></a><a href="https://synk.im/#platform-get" target="_blank" rel="noopener">PC 앱 받기 <span aria-hidden="true">↓</span></a></p>
+      </div>
     </div>
     <div class="dk">
       <h3>지키는 것 셋</h3>
       <ul class="pr">
-        <li tabindex="0"><b>나이로 짐작하지 않습니다</b><p><span>나이 · 성별 · 국적으로 넘겨짚지 않습니다. 본인이 고른 것과 실제로 해 본 것만 봅니다.</span></p></li>
-        <li tabindex="0"><b>내가 한 것과 AI의 짐작을 섞지 않습니다</b><p><span>직접 쓴 답과 한 행동은 그대로 두고, AI가 짐작한 것은 따로 표시합니다. 틀렸으면 본인이 고칩니다.</span></p></li>
-        <li tabindex="0"><b>되는 것만 된다고 말합니다</b><p><span>지금 되는 것과 준비하는 것을 나눠 적습니다. 재 보지 않은 효과는 말하지 않습니다.</span></p></li>
+        <li><b>나이로 짐작하지 않습니다</b><p>나이 · 성별 · 국적으로 넘겨짚지 않습니다. 본인이 고른 것과 실제로 해 본 것만 봅니다.</p></li>
+        <li><b>내가 한 것과 AI의 짐작을 섞지 않습니다</b><p>직접 쓴 답과 한 행동은 그대로 두고, AI가 짐작한 것은 따로 표시합니다. 틀렸으면 본인이 고칩니다.</p></li>
+        <li><b>되는 것만 된다고 말합니다</b><p>지금 되는 것과 준비하는 것을 나눠 적습니다. 재 보지 않은 효과는 말하지 않습니다.</p></li>
       </ul>
       <a class="dk-more" href="https://synk.im/atlas/" target="_blank" rel="noopener">아틀라스 쪽에서 더 보기 →</a>
     </div>
@@ -631,7 +693,7 @@ const restR = () => Math.min(H * .2, W * .27);
 const POSE = {
   hidden: () => { const [x, y] = homeXY(); return { cx: x, cy: y, r: 16, lit: 0, eye: 0, mark: 0, par: 0 }; },
   rest: () => { const b = gateEl.getBoundingClientRect(), r = restR(); return { cx: W / 2, cy: b.top + Math.max(r + 110, H * .38), r, lit: 1, eye: 1, mark: 0, par: 1 }; },
-  hall: () => ({ ...anchor(hallOrb, .44, .44, 64, 230), lit: 1, eye: 1, mark: 1, par: .5 }),
+  hall: () => ({ ...anchor(hallOrb, .5, .5, 30, 90), lit: 1, eye: 1, mark: 1, par: .6 }),
   home: () => { const [x, y] = homeXY(); return { cx: x, cy: y, r: 16, lit: 1, eye: 1, mark: 0, par: 1 }; },
   fan: () => { const [x, y] = homeXY(), fr = fanR(); return { cx: x - 16 + fr, cy: y - 16 + fr, r: fr, lit: 1, eye: 1, mark: 1, par: 0 }; },
   ask: () => ({ ...anchor(askOrb, .5, .46, 40, 104), lit: 1, eye: 1, mark: 0, par: 1 }),
@@ -658,11 +720,11 @@ function stepEye(now, shown) {
 }
 async function blink() { const k = ++eye.token; await lidTo(0, 90); if (k !== eye.token) return; await lidTo(1, 170, easeOut); }
 async function setMood(m, ms = 0) {
-  const k = ++eye.token;
+  const k = ++eye.token; eye.nextBlink = performance.now() + 1400;   // 표정을 바꾸는 동안에는 깜빡이지 않는다(밀려 있던 깜빡임이 표정 바꾸기를 지우지 않게)
   if (m !== eye.mood) { await lidTo(0, 110); if (k !== eye.token) return; eye.mood = m; await lidTo(1, m === 'calm' ? 260 : 190, easeOut); if (k !== eye.token) return; }
   if (ms) { await wait(ms); if (k !== eye.token) return; setMood('calm'); }
 }
-async function eyesWake() { const k = ++eye.token; eye.gate = 1; await lidTo(0, 160); if (k !== eye.token) return; eye.mood = 'calm'; await lidTo(1, 460, easeOut); if (k !== eye.token) return; eye.nextBlink = performance.now() + 1100; }
+async function eyesWake() { const k = ++eye.token; eye.gate = 1; eye.nextBlink = performance.now() + 1400; await lidTo(0, 160); if (k !== eye.token) return; eye.mood = 'calm'; await lidTo(1, 460, easeOut); if (k !== eye.token) return; eye.nextBlink = performance.now() + 1100; }
 
 /* 지도: 구에 다가가거나 이름을 가리키면 눈이 물러나고 자리가 켜진다 */
 let mapOn = false, mapK = 0, mapT0 = 0, faceWant = null, hereName = null;
@@ -902,14 +964,15 @@ document.addEventListener('visibilitychange', () => { running = !document.hidden
 
 /* ── 어느 방에 있는지 ── */
 const ROOMS = $$('[data-room]'); let at = 'gate', seenHall = false;
+if (!reduce) ROOMS.forEach(r => { if (r.dataset.room !== 'gate') r.classList.add('wait'); });   // 방에 들어설 때 「안에 있는 것」이 차례로 나온다
 function poseFor(id) { if (fanOn) return 'fan'; if (id === 'gate') return root.dataset.gate === 'orb' ? 'rest' : 'hidden'; if (id === 'hall') return 'hall'; if (id === 'ask') return 'ask'; return 'home'; }
 function syncPose(ms = 900) { goPose(poseFor(at), ms); }
 function syncVideos() { for (const v of $$('video')) { const mine = v.closest('[data-room]').dataset.room === at; if (mine && !reduce) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else v.pause(); } }
 function setAt(id) {
   if (id === at) return;
   const was = at; at = id; body.dataset.at = id;
-  const el = $('#' + id); hereBtn.textContent = el.dataset.name || 'SYNK';
-  $$('.fan-go').forEach(a => a.setAttribute('aria-current', String(a.dataset.go === id)));
+  const el = $('#' + id); el.classList.remove('wait'); hereBtn.textContent = el.dataset.name || 'SYNK';
+  $$('.fan-go, .ways a').forEach(a => a.setAttribute('aria-current', String(a.dataset.go === id)));
   hereName = PLACES.includes(id) ? id : null;
   if (fanOn) closeFan();
   if (id !== 'hall') { faceWant = null; setMap(false); delete hallEl.dataset.peek; }
@@ -969,7 +1032,7 @@ function pointRow(to) {
   if (to === 'atlas') { faceWant = null; setMap(false); setMood('smile'); }   // 아틀라스는 구 자신이다
   else { faceWant = to; setMap(true); if (eye.mood === 'smile') setMood('calm'); }
 }
-$$('.ix').forEach(a => {
+$$('.ix, .hall-atlas').forEach(a => {
   a.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') pointRow(a.dataset.to); });
   a.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') pointRow(null); });
   a.addEventListener('focus', () => pointRow(a.dataset.to));
@@ -1008,6 +1071,9 @@ function tick() {
   const now = fmt.format(new Date()).replace(/^24/, '00'); $('#ck').textContent = now;
   const rows = $$('#ck-list li'); let next = rows.find(r => r.dataset.t > now) || rows[0];
   rows.forEach(r => { r.classList.toggle('done', r.dataset.t <= now); r.classList.toggle('next', r === next); });
+  // 한눈에 보기의 작은 예약표: 다음 일부터 세 줄
+  $('#hk').textContent = now; const hk = $('#hk-list'), k = rows.indexOf(next); hk.textContent = '';
+  for (let i = 0; i < 3; i++) { const r = rows[(k + i) % rows.length], row = document.createElement('span'), t = document.createElement('span'), d = document.createElement('span'); t.textContent = r.dataset.t; d.textContent = r.children[1].textContent; row.append(t, d); hk.append(row); }
 }
 tick(); setInterval(tick, 20000);
 
