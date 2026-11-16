@@ -275,6 +275,9 @@ test('a copy-mode backup binds its cloud list to the snapshot time and accepts a
     const copy=await f.clone('copy-cloud-'+mode,candidate),file=join(copy,'media-cloud.json'),cloud=JSON.parse(await readFile(file,'utf8'));change(cloud);await writeFile(file,JSON.stringify(cloud));
     assert.deepEqual((await accept(copy)).issues,['MEDIA_CLOUD_INVALID'],mode);
   }
+  // 목록이 없어도 크기가 같고 내용이 다른 파일은 sha256 대조(스냅숏 파일 해시)로 거절한다(카본 -r4 A1 재현 안 됨의 근거).
+  await writeFile(join(candidate,'company','studio-media',f.media),'synthetic-MEDIA');
+  assert.deepEqual((await accept(candidate)).issues,['MEDIA_LIST_BYTES_MISMATCH']);
   await writeFile(join(candidate,'company','studio-media',f.media),Buffer.concat([body,Buffer.from('!')]));
   assert.deepEqual((await accept(candidate)).issues,['MEDIA_LIST_BYTES_MISMATCH']);
 });

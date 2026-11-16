@@ -19,6 +19,7 @@
  *   - 정기 백업 자리(기본 company/production/)의 가장 최근 완료 객체가 48시간보다 오래되었다(백업이 멈춘 것이다).
  *   - 완료 객체를 하나라도 읽지 못했거나 꼴이 틀렸다.
  *   - 지울 것이 객체의 20%를 넘는다. 유호님이 그 실행의 목록을 보신 뒤 --한번넘김 <실행 ID>로 한 번만 넘긴다.
+ *     넘김은 20% 하나로만 멈춘 가장 최근 실행이어야 하고, 그 실행의 목록에 있는 것만 지운다.
  * 목록을 끝까지 읽지 못하면 실패로 끝난다(끝 코드 1).
  * 시각은 GCS 응답의 Date와 객체의 timeCreated로 잰다. PC 시계는 쓰지 않는다.
  * 백업 버킷에는 목록과 읽기만 한다. 미디어 버킷에는 목록, gc/runs/ 기록 한 장 새로 만들기, 그리고 지우기 실행일 때
@@ -54,7 +55,10 @@ const RULES = Object.freeze({
   createdMs: 3 * DAY, seenMs: 3 * DAY, backupStaleMs: 48 * HOUR, maxShare: 0.2,
   maxComplete: 4 << 20, maxReferenced: 8000, maxPages: 1000, maxJson: 32 << 20, timeoutMs: 60000, lockStaleMs: 2 * HOUR,
 });
-const OBJECT = /^studio-media\/[0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)(?:~[1-9][0-9]{0,3})?$/;
+// 지울 수 있는 이름은 UUID 꼴(8-4-4-4-12)만이다(GPT GA3). 서버는 randomUUID로 이름을 짓는다.
+const OBJECT = /^studio-media\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)(?:~[1-9][0-9]{0,3})?$/;
+// 완료 객체의 가리킴은 서버와 backup-media.py가 받는 넓은 꼴로 읽는다. 이 꼴 밖의 가리킴이 있으면 그 완료 객체를 못 읽은 것으로 보고 멈춘다.
+const REFERENCE = /^studio-media\/[0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)(?:~[1-9][0-9]{0,3})?$/;
 const MEDIA_BUCKET = /^synk-company-media-[0-9]{6,20}$/;
 const GENERATION = /^[0-9]{1,20}$/;
 const PROJECT = /^[0-9]{6,20}$/;
@@ -68,7 +72,7 @@ const REASONS = Object.freeze({
   COMPLETE_UNREADABLE: '완료 객체를 읽지 못했거나 꼴이 틀렸습니다',
   BACKUP_STALE: '정기 백업의 가장 최근 완료 객체가 48시간보다 오래되었습니다(백업이 멈춘 것 같습니다)',
   TOO_MANY: '지울 것이 객체의 20%를 넘습니다(목록을 보신 뒤 --한번넘김 <실행 ID>로 한 번만 넘깁니다)',
-  OVERRIDE_INVALID: '--한번넘김에 준 실행이 20%에 걸려 멈춘 가장 최근 실행이 아니거나, 이미 넘겼거나, 그때 목록에 없던 것이 생겼습니다',
+  OVERRIDE_INVALID: '--한번넘김에 준 실행이 20% 하나로만 멈춘 가장 최근 실행이 아니거나, 그 넘김으로 이미 지웠습니다',
 });
 
 class Failure extends Error {
@@ -163,22 +167,33 @@ function writeJson(file, value) {
   fs.renameSync(temporary, file);
 }
 
+function alive(pid) {
+  try { process.kill(pid, 0); return true; } catch (error) { return error.code === 'EPERM'; }
+}
+
+/** 한 번에 하나만 돈다. 잠금을 잡은 프로세스가 이 PC에서 살아 있으면 나이와 상관없이 기다리고, 내 잠금일 때만 푼다(GPT GA2).
+ *  죽은 프로세스가 남긴 잠금은 치운다. 내용을 못 읽는 잠금(쓰는 도중이거나 깨짐)은 2시간이 지난 뒤에만 치운다. */
 function takeLock(stateDir) {
   fs.mkdirSync(stateDir, { recursive: true });
   const file = path.join(stateDir, 'lock');
+  const mine = JSON.stringify({ pid: process.pid, token: crypto.randomBytes(8).toString('hex'), at: new Date().toISOString() });
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const fd = fs.openSync(file, 'wx', 0o600);
-      fs.writeSync(fd, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }));
-      fs.closeSync(fd);
-      return () => { try { fs.unlinkSync(file); } catch {} };
+      fs.writeFileSync(file, mine, { flag: 'wx', mode: 0o600 });
+      return () => { try { if (fs.readFileSync(file, 'utf8') === mine) fs.unlinkSync(file); } catch {} };
     } catch (error) {
       if (error.code !== 'EEXIST') throw error;
-      // 멈춘 실행이 남긴 잠금만 치운다(이 PC의 파일 시각으로 2시간). 잠금은 겹쳐 도는 것만 막고 지우기 판단에는 쓰지 않는다.
-      let stale = false;
-      try { stale = Date.now() - fs.statSync(file).mtimeMs > RULES.lockStaleMs; } catch {}
-      if (!stale) throw new Failure('BUSY', 3);
-      try { fs.unlinkSync(file); } catch {}
+      let text = null, holder = null;
+      try { text = fs.readFileSync(file, 'utf8'); holder = JSON.parse(text); } catch {}
+      if (holder && Number.isInteger(holder.pid) && holder.pid > 0) {
+        if (alive(holder.pid)) throw new Failure('BUSY', 3);
+      } else {
+        let old = false;
+        try { old = Date.now() - fs.statSync(file).mtimeMs > RULES.lockStaleMs; } catch {}
+        if (!old) throw new Failure('BUSY', 3);
+      }
+      // 치우기 직전에 같은 잠금인지 한 번 더 본다. 그사이 다른 실행이 새로 잡았으면 기다린다.
+      try { if (fs.readFileSync(file, 'utf8') !== text) throw new Failure('BUSY', 3); fs.unlinkSync(file); } catch (e) { if (e instanceof Failure) throw e; }
     }
   }
   throw new Failure('BUSY', 3);
@@ -186,7 +201,7 @@ function takeLock(stateDir) {
 
 function validReference(ref) {
   return !!ref && typeof ref === 'object' && typeof ref.bucket === 'string' && MEDIA_BUCKET.test(ref.bucket)
-    && typeof ref.object === 'string' && OBJECT.test(ref.object) && typeof ref.generation === 'string' && GENERATION.test(ref.generation);
+    && typeof ref.object === 'string' && REFERENCE.test(ref.object) && typeof ref.generation === 'string' && GENERATION.test(ref.generation);
 }
 
 function runsOf(stateDir) {
@@ -268,47 +283,67 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
       eligible = candidates.filter(item => startedAt - Date.parse(firstSeen[key(item.name, item.generation)]) >= RULES.seenMs);
     }
 
-    let overrode = null;
-    if (!reasons.length && eligible.length > RULES.maxShare * valid.length) {
-      // 넘길 수 있는 것은 20% 하나로만 멈춘 그 실행이다. 그 뒤로 지우기 실행이 없었고, 지금 지울 것이 모두 그때 목록에 있어야 한다.
-      // 미리 보기로 넘겨 본 것은 쓴 것으로 치지 않는다.
-      const runs = runsOf(stateDir), at = runs.findIndex(r => r.runId === override), stopped = at >= 0 ? runs[at] : null;
-      const listed = new Set(stopped && Array.isArray(stopped.eligible) ? stopped.eligible : []);
+    // 한 번 넘김(카본 A1 · A2): 주면 비율과 상관없이 늘 검사하고, 그 실행의 목록에 있는 것만 지운다(목록 밖의 것은 다음 실행이 보통 규칙으로 본다).
+    //   넘길 수 있는 실행은 20% 하나로만 멈춘 가장 최근 실행이다. 그 뒤에 다시 20%로 멈춘 실행이 있으면 그 새 실행으로 넘긴다.
+    //   그 넘김으로 지우기가 진행된 적(지우는 중 · 지움 · 실패)이 있으면 다시 쓰지 못한다. 미리 보기로 넘겨 본 것과 멈춘 지우기 실행은 쓴 것으로 치지 않는다.
+    let overrode = null, notApproved = [];
+    if (!reasons.length && override) {
+      const runs = runsOf(stateDir), at = runs.findIndex(r => r.runId === override), stopped = at >= 0 ? runs[at] : null, later = at >= 0 ? runs.slice(at + 1) : [];
+      const tooMany = r => r.status === 'stopped' && Array.isArray(r.reasons) && r.reasons.includes('TOO_MANY');
       const allowed = !!stopped && stopped.status === 'stopped' && Array.isArray(stopped.reasons) && stopped.reasons.length === 1 && stopped.reasons[0] === 'TOO_MANY'
-        && !runs.slice(at + 1).some(r => r.mode === 'delete') && eligible.every(item => listed.has(key(item.name, item.generation)));
-      if (allowed) overrode = override;
-      else reasons.push(override ? 'OVERRIDE_INVALID' : 'TOO_MANY');
-    }
+        && !later.some(tooMany) && !later.some(r => r.mode === 'delete' && r.overrode === override && r.status !== 'stopped');
+      if (allowed) {
+        const listed = new Set(Array.isArray(stopped.eligible) ? stopped.eligible : []);
+        overrode = override;
+        notApproved = eligible.filter(item => !listed.has(key(item.name, item.generation)));
+        eligible = eligible.filter(item => listed.has(key(item.name, item.generation)));
+      } else reasons.push('OVERRIDE_INVALID');
+    } else if (!reasons.length && eligible.length > RULES.maxShare * valid.length) reasons.push('TOO_MANY');
 
     const deleted = [], changed = [], failed = [];
     let kept = [];
+    const earlier = runsOf(stateDir);
+    const seq = earlier.length ? (earlier[earlier.length - 1].seq || 0) + 1 : 1;
+    const runFile = path.join(stateDir, 'runs', runId + '.json');
+    const reportOf = status => ({
+      schema: RUN_SCHEMA, runId, seq, mode: execute ? 'delete' : 'preview', status, reasons: [...reasons], startedAt: iso(startedAt), overrode,
+      objects: valid.length, strange, completes, latestComplete: latest ? { name: latest.name, at: iso(latest.created), schema: latest.schema } : null,
+      latestIsV1: !!latest && latest.schema === SCHEMA_V1, referenced: referenced.size, unreadable: [...unreadable],
+      candidates: candidates.map(item => key(item.name, item.generation)), eligible: eligible.map(item => key(item.name, item.generation)),
+      eligibleBytes: eligible.reduce((sum, item) => sum + item.size, 0), keptByNewBackup: kept.map(item => key(item.name, item.generation)),
+      notApproved: notApproved.map(item => key(item.name, item.generation)),
+      deleted: [...deleted], changed: [...changed], failed: [...failed],
+    });
     if (execute && !reasons.length && eligible.length) {
       // 지우기 직전에 이 실행이 시작된 뒤 생긴 완료 객체를 한 번 더 읽고, 새로 가리킨 객체는 지우지 않는다.
       await readCompletes();
       if (unreadable.length) reasons.push('COMPLETE_UNREADABLE');
       else {
         kept = eligible.filter(item => referenced.has(key(item.name, item.generation)));
-        for (const item of eligible) {
-          if (referenced.has(key(item.name, item.generation))) continue;
-          const result = await gcs.remove(item.name, item.generation);
-          (result === 'deleted' ? deleted : result === 'changed' ? changed : failed).push(key(item.name, item.generation));
+        // 지우기 전에 이 실행을 「지우는 중」으로 남기고, 지울 때마다 고쳐 쓴다. 도중에 끊겨도 한 번 넘김을 쓴 것과 지운 것이 남는다(GPT GA1).
+        writeJson(runFile, reportOf('deleting'));
+        try {
+          for (const item of eligible) {
+            if (referenced.has(key(item.name, item.generation))) continue;
+            const result = await gcs.remove(item.name, item.generation);
+            (result === 'deleted' ? deleted : result === 'changed' ? changed : failed).push(key(item.name, item.generation));
+            writeJson(runFile, reportOf('deleting'));
+          }
+        } catch (error) {
+          const report = reportOf('failed');
+          writeJson(runFile, report);
+          throw Object.assign(error, { report });
         }
       }
     }
 
-    const status = reasons.length ? 'stopped' : execute ? 'cleaned' : 'previewed';
-    const earlier = runsOf(stateDir);
-    const report = {
-      schema: RUN_SCHEMA, runId, seq: earlier.length ? (earlier[earlier.length - 1].seq || 0) + 1 : 1, mode: execute ? 'delete' : 'preview', status, reasons, startedAt: iso(startedAt), overrode,
-      objects: valid.length, strange, completes, latestComplete: latest ? { name: latest.name, at: iso(latest.created), schema: latest.schema } : null,
-      latestIsV1: !!latest && latest.schema === SCHEMA_V1, referenced: referenced.size, unreadable,
-      candidates: candidates.map(item => key(item.name, item.generation)), eligible: eligible.map(item => key(item.name, item.generation)),
-      eligibleBytes: eligible.reduce((sum, item) => sum + item.size, 0), keptByNewBackup: kept.map(item => key(item.name, item.generation)), deleted, changed, failed,
-    };
-    writeJson(path.join(stateDir, 'runs', runId + '.json'), report);
-    if (status !== 'stopped') {
+    const status = reasons.length ? 'stopped' : failed.length ? 'failed' : execute ? 'cleaned' : 'previewed';
+    const report = reportOf(status);
+    writeJson(runFile, report);
+    // gc/runs/에는 멈추지도 실패하지도 않은 실행만 남긴다. 지우기가 계속 실패하면 7일 뒤 서버가 경보를 올린다(GPT GA4).
+    if (status === 'previewed' || status === 'cleaned') {
       await gcs.record('gc/runs/' + runId + '.json', { schema: RUN_SCHEMA, runId, mode: report.mode, status, startedAt: report.startedAt,
-        objects: valid.length, candidates: candidates.length, eligible: eligible.length, deleted: deleted.length, failed: failed.length });
+        objects: valid.length, candidates: candidates.length, eligible: eligible.length, deleted: deleted.length });
     }
     if (failed.length) throw Object.assign(new Failure('DELETE_FAILED'), { report });
     return report;
@@ -324,7 +359,7 @@ function describe(report) {
   if (report.latestIsV1) lines.push('  가장 최근 완료 객체가 v1입니다. 그 백업은 미디어 버킷의 영상을 가리키지 않았습니다(가리킨 영상이 없으면 정상입니다).');
   lines.push('  후보는 ' + report.candidates.length + '개이고, 처음 본 지 3일이 지나 지울 것은 ' + report.eligible.length + '개(' + Math.round(report.eligibleBytes / 1048576) + 'MiB)입니다.');
   if (report.mode === 'delete') lines.push('  지운 것 ' + report.deleted.length + '개 · 그사이 바뀌어 둔 것 ' + report.changed.length + '개 · 새 백업이 가리켜 둔 것 ' + report.keptByNewBackup.length + '개 · 실패 ' + report.failed.length + '개입니다.');
-  if (report.overrode) lines.push('  20% 멈춤을 실행 ' + report.overrode + '의 목록으로 한 번 넘겼습니다.');
+  if (report.overrode) lines.push('  20% 멈춤을 실행 ' + report.overrode + '의 목록으로 한 번 넘겼습니다.' + (report.notApproved && report.notApproved.length ? ' 그 목록에 없던 ' + report.notApproved.length + '개는 이번에 지우지 않았습니다.' : ''));
   for (const reason of report.reasons) lines.push('  멈춤: ' + (REASONS[reason] || reason) + '.');
   return lines.join('\n');
 }
@@ -381,5 +416,5 @@ async function main(argv = process.argv.slice(2)) {
   }
 }
 
-module.exports = { run, describe, RULES, OBJECT, _storage: storage };
+module.exports = { run, describe, RULES, OBJECT, _storage: storage, _takeLock: takeLock };
 if (require.main === module) main().then(code => { process.exitCode = code; });

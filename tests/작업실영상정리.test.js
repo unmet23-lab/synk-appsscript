@@ -8,8 +8,8 @@ const http = require('node:http');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawn } = require('node:child_process');
-const { run, describe, _storage } = require('../tools/작업실영상정리.js');
+const { spawn, spawnSync } = require('node:child_process');
+const { run, describe, _storage, _takeLock } = require('../tools/작업실영상정리.js');
 
 const NUMBER = '123456789012';
 const MEDIA = 'synk-company-media-' + NUMBER;
@@ -22,7 +22,8 @@ const TOOL = path.join(__dirname, '..', 'tools', '작업실영상정리.js');
 const object = (i, ext = 'mp4') => 'studio-media/' + String(i).padStart(8, '0') + '-1234-4234-8234-123456789abc.' + ext;
 
 function fakeGcs() {
-  const s = { now: T0, objects: new Map(), calls: [], pageSize: 1000, generation: 1000, failListPage: null, onList: null, lists: { [MEDIA]: 0, [BACKUP]: 0 } };
+  const s = { now: T0, objects: new Map(), calls: [], pageSize: 1000, generation: 1000, failListPage: null, onList: null, lists: { [MEDIA]: 0, [BACKUP]: 0 },
+    deleteHook: null, deletes: 0 };
   s.put = (bucket, name, body, { created = s.now, generation } = {}) => {
     const g = String(generation ?? ++s.generation);
     s.objects.set(bucket + '\n' + name, { generation: g, body: Buffer.from(body), created });
@@ -75,6 +76,10 @@ function fakeGcs() {
         return reply(200, JSON.stringify({ name: target, generation: g }));
       }
       if (req.method === 'DELETE') {
+        const count = ++s.deletes;  // 이 서버가 받은 지우기 요청 수(훅과 상관없이 센다)
+        const hooked = s.deleteHook ? s.deleteHook(name, count) : undefined;
+        if (hooked === 'drop') return req.socket.destroy();
+        if (typeof hooked === 'number') return reply(hooked);
         if (!found) return reply(404);
         if (url.searchParams.get('ifGenerationMatch') !== found.generation) return reply(412);
         s.objects.delete(bucket + '\n' + name);
@@ -262,6 +267,9 @@ test('미디어 버킷 기록과 지우기는 정해진 이름만 받는다', as
   await assert.rejects(gcs.remove('gc/runs/20310310T060000Z-abcdef.json', '1'), error => error.code === 'DELETE_NAME_REFUSED');
   await assert.rejects(gcs.remove(object(1).toUpperCase(), '1'), error => error.code === 'DELETE_NAME_REFUSED');
   await assert.rejects(gcs.remove(object(1), '1a'), error => error.code === 'DELETE_NAME_REFUSED');
+  // UUID 꼴(8-4-4-4-12)이 아닌 이름은 지우지 않는다(GPT GA3).
+  await assert.rejects(gcs.remove('studio-media/' + '-'.repeat(36) + '.mp4', '1'), error => error.code === 'DELETE_NAME_REFUSED');
+  await assert.rejects(gcs.remove('studio-media/' + 'a'.repeat(36) + '.mp4', '1'), error => error.code === 'DELETE_NAME_REFUSED');
 });
 
 function cli(args, input) {
@@ -292,4 +300,131 @@ test('명령줄: 토큰은 stdin으로만 받고 출력에 나오지 않으며, 
   const stopped = await cli(base, TOKEN + '\n');
   assert.equal(stopped.code, 3);
   assert.match(stopped.out, /멈춤: 정기 백업의 가장 최근 완료 객체가 48시간보다 오래되었습니다/);
+});
+
+const ENABLED = { '지우기': true };
+const readRuns = dir => fs.readdirSync(path.join(dir, 'runs')).map(f => JSON.parse(fs.readFileSync(path.join(dir, 'runs', f), 'utf8')));
+
+test('지우기 도중 끊겨도 지운 것과 한 번 넘김을 쓴 것이 실행 기록에 남아, 같은 넘김을 다시 쓰지 못한다(GPT GA1)', async t => {
+  const { s, dir, go } = await setup(t);
+  const old = { created: T0 - 10 * DAY };
+  const kept = [object(10), object(11), object(12)], gone = [object(1), object(2)];
+  for (const name of [...kept, ...gone]) s.put(MEDIA, name, 'body ' + name, old);
+  backupNow(s, kept.map(n => ref(s, n)), 'a');
+  await go();
+  s.now = T0 + 3 * DAY;
+  backupNow(s, kept.map(n => ref(s, n)), 'b');
+  const stopped = await go({ execute: true, config: ENABLED });
+  assert.deepEqual(stopped.reasons, ['TOO_MANY']);
+  s.deleteHook = (name, count) => (count === 2 ? 'drop' : undefined);
+  await assert.rejects(go({ execute: true, override: stopped.runId, config: ENABLED }), error => error.code === 'STORAGE_REQUEST_FAILED' && error.report.status === 'failed');
+  const broken = readRuns(dir).find(r => r.status === 'failed');
+  assert.deepEqual([broken.mode, broken.overrode, broken.deleted.length], ['delete', stopped.runId, 1]);
+  assert.equal([...s.objects.keys()].filter(n => n.startsWith(MEDIA + '\ngc/runs/')).length, 1, '끊긴 실행은 gc/runs/에 남기지 않는다(앞의 미리 보기 한 장만)');
+  s.deleteHook = null;
+  const again = await go({ execute: true, override: stopped.runId, config: ENABLED });
+  assert.deepEqual([again.status, again.reasons], ['stopped', ['OVERRIDE_INVALID']]);
+  assert.equal(s.deletes, 2, '끊긴 뒤에 같은 넘김으로 다시 지우지 않는다');
+});
+
+test('잠금은 살아 있는 프로세스의 것이면 나이와 상관없이 지키고, 내 잠금일 때만 푼다(GPT GA2)', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-gc-lock-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const lock = path.join(dir, 'lock'), old = new Date(Date.now() - 5 * HOUR);
+  fs.writeFileSync(lock, JSON.stringify({ pid: process.pid, token: 'running' }));
+  fs.utimesSync(lock, old, old);
+  assert.throws(() => _takeLock(dir), error => error.code === 'BUSY', '2시간이 지나도 살아 있는 실행의 잠금은 치우지 않는다');
+  const dead = spawnSync(process.execPath, ['-e', '0']).pid;
+  fs.writeFileSync(lock, JSON.stringify({ pid: dead, token: 'gone' }));
+  const release = _takeLock(dir);
+  assert.equal(JSON.parse(fs.readFileSync(lock, 'utf8')).pid, process.pid, '죽은 프로세스의 잠금은 치우고 잡는다');
+  fs.writeFileSync(lock, JSON.stringify({ pid: process.pid, token: 'someone else' }));
+  release();
+  assert.ok(fs.existsSync(lock), '남이 잡은 잠금은 풀지 않는다');
+  fs.writeFileSync(lock, '{half');
+  assert.throws(() => _takeLock(dir), error => error.code === 'BUSY', '내용을 못 읽는 새 잠금은 기다린다');
+  fs.utimesSync(lock, old, old);
+  _takeLock(dir)();
+  assert.equal(fs.existsSync(lock), false, '내용을 못 읽는 잠금은 2시간 뒤에 치우고, 내 잠금은 푼다');
+});
+
+test('UUID 꼴이 아닌 이름은 후보가 되지 않고, 넓은 꼴의 가리킴은 그대로 읽는다(GPT GA3)', async t => {
+  const { s, go } = await setup(t);
+  const odd = 'studio-media/' + '-'.repeat(36) + '.mp4';
+  s.put(MEDIA, odd, 'odd', { created: T0 - 10 * DAY });
+  s.put(MEDIA, object(1), 'kept', { created: T0 - 10 * DAY });
+  backupNow(s, [ref(s, object(1)), { bucket: MEDIA, object: 'studio-media/' + 'a'.repeat(36) + '.mp4', generation: '5' }], 'odd');
+  const report = await go();
+  assert.equal(report.status, 'previewed');
+  assert.deepEqual(report.strange, [odd]);
+  assert.deepEqual(report.candidates, []);
+});
+
+test('지우기가 실패한 실행은 실패로 남기고 gc/runs/에 남기지 않는다(GPT GA4)', async t => {
+  const { s, dir, go } = await setup(t);
+  const { kept } = fill(s);
+  for (let i = 0; i < 10; i++) s.put(MEDIA, object(30 + i), 'more kept', { created: T0 - 10 * DAY });
+  const keepAll = () => [...kept, ...[...Array(10)].map((_, i) => object(30 + i))].map(n => ref(s, n));
+  backupNow(s, keepAll(), 'first-b');
+  await go();
+  s.now = T0 + 3 * DAY;
+  backupNow(s, keepAll(), 'later');
+  s.deleteHook = () => 403;
+  await assert.rejects(go({ execute: true, config: ENABLED }), error => error.code === 'DELETE_FAILED' && error.report.status === 'failed' && error.report.failed.length === 3);
+  assert.equal([...s.objects.keys()].filter(n => n.startsWith(MEDIA + '\ngc/runs/')).length, 1, '앞의 미리 보기 한 장만 있다');
+  assert.equal(readRuns(dir).filter(r => r.status === 'failed').length, 1);
+});
+
+test('넘김을 주면 비율이 20% 아래여도 늘 검사하고, 그 실행의 목록에 있는 것만 지운다(카본 A1)', async t => {
+  const { s, go } = await setup(t);
+  const old = { created: T0 - 10 * DAY };
+  const kept = [object(10), object(11), object(12)], gone = [object(1), object(2)], X = object(3);
+  for (const name of [...kept, ...gone]) s.put(MEDIA, name, 'body ' + name, old);
+  backupNow(s, kept.map(n => ref(s, n)), 'a');
+  await go();
+  s.now = T0 + DAY;
+  s.put(MEDIA, X, 'late', old);  // 하루 늦게 후보가 된 객체
+  backupNow(s, kept.map(n => ref(s, n)), 'b');
+  await go();
+  s.now = T0 + 3 * DAY;
+  backupNow(s, kept.map(n => ref(s, n)), 'c');
+  const stopped = await go({ execute: true, config: ENABLED });
+  assert.deepEqual([stopped.reasons, stopped.eligible.length], [['TOO_MANY'], 2]);
+  s.now = T0 + 4 * DAY;
+  const more = [...Array(10)].map((_, i) => object(40 + i));
+  for (const name of more) s.put(MEDIA, name, 'more', old);
+  backupNow(s, [...kept, ...more].map(n => ref(s, n)), 'd');
+  const wrong = await go({ execute: true, override: '20310314T060000Z-abcdef', config: ENABLED });
+  assert.deepEqual([wrong.status, wrong.reasons], ['stopped', ['OVERRIDE_INVALID']], '없는 실행으로 넘기면 지울 것이 20% 아래여도 멈춘다');
+  const xKey = k(s, X);
+  const cleaned = await go({ execute: true, override: stopped.runId, config: ENABLED });
+  assert.deepEqual([cleaned.status, cleaned.deleted.slice().sort(), cleaned.notApproved], ['cleaned', stopped.eligible.slice().sort(), [xKey]]);
+  assert.ok(s.get(MEDIA, X), '그 실행의 목록 밖에 있던 객체는 지우지 않는다');
+  assert.match(describe(cleaned), /목록에 없던 1개는 이번에 지우지 않았습니다/);
+});
+
+test('넘김은 20%로 멈춘 가장 최근 실행만 받고, 아무것도 지우지 않은 지우기 실행은 쓴 것으로 치지 않는다(카본 A2)', async t => {
+  const { s, go } = await setup(t);
+  const old = { created: T0 - 10 * DAY };
+  const kept = [object(10), object(11), object(12)], gone = [object(1), object(2)];
+  for (const name of [...kept, ...gone]) s.put(MEDIA, name, 'body ' + name, old);
+  backupNow(s, kept.map(n => ref(s, n)), 'a');
+  await go();
+  s.now = T0 + 3 * DAY;
+  backupNow(s, kept.map(n => ref(s, n)), 'b');
+  const first = await go({ execute: true, config: ENABLED });
+  assert.deepEqual(first.reasons, ['TOO_MANY']);
+  s.now = T0 + 3 * DAY + 49 * HOUR;
+  const stale = await go({ execute: true, config: ENABLED });
+  assert.deepEqual([stale.mode, stale.reasons], ['delete', ['BACKUP_STALE']]);
+  backupNow(s, kept.map(n => ref(s, n)), 'c');
+  const peek = await go({ override: first.runId });
+  assert.deepEqual([peek.status, peek.overrode], ['previewed', first.runId], '백업이 멈춰 아무것도 안 지운 지우기 실행 뒤에도 그 넘김은 그대로 쓸 수 있다');
+  const second = await go();
+  assert.deepEqual([second.mode, second.reasons], ['preview', ['TOO_MANY']]);
+  const older = await go({ execute: true, override: first.runId, config: ENABLED });
+  assert.deepEqual(older.reasons, ['OVERRIDE_INVALID'], '뒤에 다시 20%로 멈춘 실행이 있으면 옛 실행으로는 넘기지 못한다');
+  const cleaned = await go({ execute: true, override: second.runId, config: ENABLED });
+  assert.deepEqual([cleaned.status, cleaned.deleted.length], ['cleaned', 2]);
+  assert.equal(s.deletes, 2);
 });
