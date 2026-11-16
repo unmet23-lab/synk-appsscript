@@ -76,7 +76,7 @@ if(!process.versions.electron){
       if(restore){if(restoreAfter)setTimeout(()=>{w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')').catch(()=>{});},restoreAfter);else await w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')');}
       return t0;
     }
-    const state=w=>w.js(`(()=>{const r=document.getElementById('portal-entry'),s=r?.querySelector('.orb-stage');return {phase:r?.dataset.portalState,ui:s?.dataset.ui,mode:document.documentElement.dataset.orbClient,wait:s?.dataset.wait||null,active:r?.dataset.portalActive,hidden:document.hidden,ready:document.documentElement.dataset.ready};})()`);
+    const state=w=>w.js(`(()=>{const r=document.getElementById('portal-entry'),s=r?.querySelector('.orb-stage');return {phase:r?.dataset.portalState,ui:s?.dataset.ui,mode:document.documentElement.dataset.orbClient,wait:s?.dataset.wait||null,active:r?.dataset.portalActive,hidden:document.hidden,ready:document.documentElement.dataset.ready,eyes:s?.dataset.eyes||null};})()`);
     async function until(w,fn,{timeout=9000,every=40}={}){const t=Date.now();let last;while(Date.now()-t<timeout){last=await state(w);if(fn(last))return {ok:true,ms:Date.now()-t,state:last};await wait(every);}return {ok:false,ms:Date.now()-t,state:last};}
     // 끝 모습으로 찍는다: 첫 화면(구가 드러나는 중) 말고는 글의 나타남 효과를 끄고, 숨은 창이 새 장면을 그리도록 다시 그리기를 요청한 뒤 두 번 찍는다
     async function capture(w,name,{moving=false}={}){
@@ -130,6 +130,8 @@ if(!process.versions.electron){
           const first=await state(w);timings.documentHidden=first.hidden;
           await wait(900);await capture(w,'welcome',{moving:true});
           const r=await until(w,s=>s.phase==='auth'&&s.ui==='ask');timings.guestToAsk=Date.now()-t0;check('1 guest reaches the ask scene by itself',r.ok,{...r.state,ms:timings.guestToAsk});
+          // 켤 때 잠든 눈이 떠올라 곧 뜬다(시안 boot). 묻는 장면에서는 자세가 눈을 가리지만 표정은 평소로 남는다
+          check('1 the eyes woke during the opening',r.state?.eyes==='calm',r.state);
           check('1 ask shows sign-in, sign-up and the code field',await w.js("['[data-orb-act=signin]','[data-orb-act=signup]','#portal-invite-input'].every(s=>{const e=document.querySelector(s);const b=e.getBoundingClientRect();return b.width>0&&getComputedStyle(e).visibility!=='hidden';})"));
           check('1 window buttons are on the face',await w.js("!!document.querySelector('#portal-entry .portal-window-bar:not([hidden])')"));
           await captureSizes(w,'auth');
@@ -159,6 +161,9 @@ if(!process.versions.electron){
           await click(w,'[data-orb-act="signin"]');await until(w,s=>s.phase==='signing-in');
           await w.js('window.__orbFixture.setAuth('+JSON.stringify(signedIn('pending'))+')');
           const sol=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});
+          // 처음 들어온 때는 작은 구가 자리를 잡은 뒤 잠깐 웃고 평소로 돌아온다(시안 enter)
+          const smile=await until(w,s=>s.eyes==='smile',{timeout:4000});check('2 a fresh sign-in smiles once on arrival',smile.ok,smile.state);
+          const calm=await until(w,s=>s.eyes==='calm',{timeout:4000});check('2 the smile returns to calm',calm.ok,calm.state);
           const c2=await calls(w);check('2 sign-in lands on Solio and writes not-asked once',sol.ok&&c2.filter(c=>c==='completePurposeOnboarding:not-asked').length===1,{...sol.state,calls:c2});
           // 때 말(「내일 오후」 따위)은 시험을 돌리는 시각에 따라 달라지므로 꼴만 본다(카본 C3)
           check('2 Solio sentence from the synthetic subscriptions',/^Codex가 (?:\d+분 뒤|오늘|내일|모레|[일월화수목금토]요일) ?(?:새벽|오전|오후|저녁|밤)?에 바닥납니다.$/.test(await text(w,'[data-say]')),{say:await text(w,'[data-say]'),then:await text(w,'[data-then]')});

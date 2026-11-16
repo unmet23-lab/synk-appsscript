@@ -139,6 +139,8 @@ app.whenReady().then(async () => {
     if (s.drop) continue;
     fs.writeFileSync(path.join(out, s.name + '-시안.png'), ia.toPNG());
     fs.writeFileSync(path.join(out, s.name + '-pc.png'), ib.toPNG());
+    // 설치기 판(GPU, CPU)을 같은 값으로 그릴 때 쓴다(--installer)
+    fs.writeFileSync(path.join(out, s.name + '.uni.json'), uni);
     result.scenes[s.name] = { ...compare(ia, ib), uR: u.uR?.[0], uCut: u.uCut?.[0], uEye: u.uEye };
     console.log(s.name, JSON.stringify(result.scenes[s.name]));
   }

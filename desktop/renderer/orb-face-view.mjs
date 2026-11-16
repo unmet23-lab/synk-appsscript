@@ -124,7 +124,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* 시작 창에서 넘어올 때: 드러남이 시작 창과 같은 자세에서 이어지는 첫 장을 그리면 본체에 알린다. 본체는 그때 앱 창을 보이고 시작 창을 없앤다(1-가 구현 설계 2절) */
   let introPainted = false, firstFrameSent = false;
   const onRender = () => { if (!introPainted || firstFrameSent) return; firstFrameSent = true; try { void Promise.resolve(options.onFirstFrame?.()).catch(() => {}); } catch { /* 무시 */ } };
-  const stage = createOrbStage($('.orb-canvas'), { getReducedMotion: reduced, getHome: homePoint, places: look.places !== false, eyes: look.eyes !== false, noWebGL, noCanvas, onRender });
+  const stage = createOrbStage($('.orb-canvas'), { getReducedMotion: reduced, getHome: homePoint, places: look.places !== false, eyes: look.eyes !== false, noWebGL, noCanvas, onRender, onEyes: m => { stageEl.dataset.eyes = m; } });
   const sig = createOrbSignature($('.orb-sig'), { getReducedMotion: reduced, getWidth: () => stageEl.getBoundingClientRect().width || win.innerWidth || 1440 });
 
   /* ── 옛 런처 가리기(지금 얼굴의 lockHostElements와 같다) ── */
@@ -471,7 +471,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stage.setSpace(space);
   }
   /* 점 로고가 맞춰지고 물러나며 왼쪽 위의 작은 구가 된다. 작은 구가 자리를 잡기 시작하는 순간에 돌아온다 */
-  async function arrive(space, sigKind) {
+  async function arrive(space, sigKind, { smile = false } = {}) {
     if (disposed) return;
     const gen = motionGen;
     if (sigKind && !doc?.hidden) await sig.play(sigKind);
@@ -481,10 +481,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stage.setLit(0);
     stage.setRadius(5);
     stage.eyesCalm?.();
-    // 처음 들어온 때(점 로고를 다 보인 때)는 잠깐 웃는다(시안 enter)
-    if (sigKind === 'full') void stage.setMood?.('smile', 1100);
     sig.fade();
-    void stage.tween('home', 700, easeOut);
+    // 처음 들어온 때는 작은 구가 자리를 잡은 뒤 잠깐 웃는다(시안 enter). 점 로고를 끈 판에서도 같다
+    void Promise.resolve(stage.tween('home', 700, easeOut)).then(() => { if (smile && !disposed && gen === motionGen) void stage.setMood?.('smile', 1100); });
   }
 
   /* ── 누름 · 자판 · 붙여 넣기 ── */

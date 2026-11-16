@@ -542,7 +542,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     });
   }
   async function arrive(gen, kind) {
-    await view.arrive(space, look.signature ? kind : null);
+    await view.arrive(space, look.signature ? kind : null, { smile: kind === 'full' });
     if (!current(gen)) return;
     orbAt = 'home';
     orbTarget = 'home';
