@@ -206,7 +206,11 @@ function 물러난말({ 표, 줄들 }) {
       if (코드 && !e.코드) continue;
       const m = e.틀.exec(볼글);
       if (!m || 물러났다고.test(볼글.slice(Math.max(0, m.index - 12), m.index + m[0].length + 24)) || (!코드 && 앞선날짜(x.글, e.결정))) continue;
-      걸림.push({ ...x, 낱말: m[0], 까닭: e.까닭 });
+      // 문맥들 — 그 줄에 든 이 낱말마다 앞뒤 5글자(물러났다고 적은 자리는 뺀다). 옮겨 온 낱말인지 가를 때 줄 안의 낱말을 모두 짝짓는다(GPT 검수 GA2)
+      const 문맥들 = [...볼글.matchAll(new RegExp(e.틀.source, e.틀.flags.includes('g') ? e.틀.flags : `${e.틀.flags}g`))]
+        .filter((y) => !물러났다고.test(볼글.slice(Math.max(0, y.index - 12), y.index + y[0].length + 24)))
+        .map((y) => 볼글.slice(Math.max(0, y.index - 5), y.index + y[0].length + 5));
+      걸림.push({ ...x, 낱말: m[0], 까닭: e.까닭, 꼴: e.꼴, 문맥들 });
       break;
     }
   }
@@ -305,9 +309,11 @@ const 계획머리안내 = '그 절의 표 · 목록 앞에 「이 표는 11월 
 
 // ── push 때 ──────────────────────────────────────────────────────────────
 
-/** diff -U0 글 → Map<경로, { 글: Set<더한 줄>, 번호: Set<새 줄 번호> }> */
+/** diff -U0 글 → Map<경로, { 글: Set<더한 줄>, 번호: Set<새 줄 번호>, 뺀: 지운 줄[] }> */
 function 더한줄읽기(글) {
   const out = new Map();
+  // 목록은 더한 줄을 겹친 것까지 그대로 둔다 — 같은 줄을 둘 더하면 물러난 낱말도 둘로 센다(GPT 검수 GA1). 글(Set)은 다른 단계가 그대로 쓴다
+  const 자리 = (p) => { if (!out.has(p)) out.set(p, { 글: new Set(), 목록: [], 번호: new Set(), 뺀: [] }); return out.get(p); };
   let 경로 = null, 번호 = 0;
   for (const l of String(글).split('\n')) {
     if (l.startsWith('diff --git ')) { 경로 = null; continue; }
@@ -316,19 +322,45 @@ function 더한줄읽기(글) {
     if (h) {
       번호 = Number(h[1]);
       // 지우기만 한 덩어리(+c,0)도 그 자리를 닿은 줄로 센다 — 머리 줄만 지운 push가 계획표 검사를 지나가지 않게(GPT 검수 GA1)
-      if (경로 && h[2] === '0') {
-        if (!out.has(경로)) out.set(경로, { 글: new Set(), 번호: new Set() });
-        out.get(경로).번호.add(번호); out.get(경로).번호.add(번호 + 1);
-      }
+      if (경로 && h[2] === '0') { 자리(경로).번호.add(번호); 자리(경로).번호.add(번호 + 1); }
       continue;
     }
     if (경로 && l.startsWith('+')) {
-      if (!out.has(경로)) out.set(경로, { 글: new Set(), 번호: new Set() });
-      out.get(경로).글.add(l.slice(1).replace(/\r$/, ''));
-      out.get(경로).번호.add(번호++);
+      const 줄글 = l.slice(1).replace(/\r$/, '');
+      자리(경로).글.add(줄글); 자리(경로).목록.push(줄글);
+      자리(경로).번호.add(번호++);
+    } else if (경로 && l.startsWith('-')) {
+      // 지운 줄 — 물러난 낱말이 이 push로 새로 든 것인지, 고친 줄에 원래 있던 것인지 가르는 데 쓴다(11-16)
+      자리(경로).뺀.push(l.slice(1).replace(/\r$/, ''));
     }
   }
   return out;
+}
+
+/** 물러난 낱말 걸림 가운데 이 push가 새로 들인 것만 — 같은 파일에서 지운 줄에 같은 낱말이 같은 앞뒤 글(문맥)로 있었으면
+ *  고친 줄에 원래 있던 낱말을 옮겨 온 것이라 세지 않는다. 지운 줄의 문맥 하나는 더한 쪽의 문맥 하나만 덮고, 한 줄의 낱말이 모두 덮여야
+ *  그 줄을 뺀다(11-16 검수묶음.mjs에서 console.log를 감싸기만 한 줄 하나가 알림으로 남았다 · GPT 검수 GA1 · GA2). */
+function 새로든낱말(걸림, { 표, 뺀글 }) {
+  const 남은문맥 = new Map();
+  const 문맥못 = (경로, 꼴) => {
+    const 열쇠 = `${경로}\u0000${꼴}`;
+    if (!남은문맥.has(열쇠)) {
+      const 뺀 = 뺀글.get(경로) || [];
+      남은문맥.set(열쇠, 물러난말({ 표: 표.filter((e) => e.꼴 === 꼴), 줄들: 뺀.map((글) => ({ 경로, 줄: null, 글 })) }).flatMap((y) => y.문맥들));
+    }
+    return 남은문맥.get(열쇠);
+  };
+  return 걸림.filter((x) => {
+    if (!x.문맥들 || !x.문맥들.length) return true;
+    const 남은 = 문맥못(x.경로, x.꼴), 시험 = [...남은];
+    for (const c of x.문맥들) {
+      const i = 시험.indexOf(c);
+      if (i < 0) return true;   // 덮이지 않은 낱말이 하나라도 있으면 새로 든 것 — 못을 쓰지 않는다
+      시험.splice(i, 1);
+    }
+    남은.splice(0, 남은.length, ...시험);
+    return false;
+  });
 }
 
 const 그렙줄 = (글) => String(글).split('\n').map((l) => /^[^:]+:(.+?):(\d+):(.*)$/.exec(l)).filter(Boolean).map((m) => ({ 경로: m[1], 줄: Number(m[2]), 글: m[3].replace(/\r$/, '') }));
@@ -365,6 +397,7 @@ function push검사({ git, O, 머리 }) {
   let 더한 = new Map();
   해('더한 줄', () => { 더한 = 더한줄읽기(git(['-c', 'core.quotePath=false', 'diff', '-U0', '--no-color', '--no-ext-diff', O, 머리, '--', ...바뀐])); });
   const 더한글 = new Map([...더한].map(([p, v]) => [p, v.글]));
+  const 뺀글 = new Map([...더한].map(([p, v]) => [p, v.뺀 || []]));
   let 목록 = [];
   해('파일 목록', () => { 목록 = git(['-c', 'core.quotePath=false', 'ls-tree', '-r', '--name-only', 머리]).split('\n').filter(Boolean); });
   const 있음 = new Set(목록);
@@ -396,11 +429,11 @@ function push검사({ git, O, 머리 }) {
     const 표 = 물러난표(보기(표길));
     if (!표.length) return;
     const 줄들 = [];
-    for (const [p, 글들] of 더한글) {
+    for (const [p, v] of 더한) {
       if (!(읽힘.has(p) || 코드파일(p))) continue;
-      for (const 글 of 글들) 줄들.push({ 경로: p, 줄: null, 글 });
+      for (const 글 of v.목록 || v.글) 줄들.push({ 경로: p, 줄: null, 글 });   // 겹친 줄도 하나씩(GPT 검수 GA1)
     }
-    const 걸림 = 물러난말({ 표, 줄들 });
+    const 걸림 = 새로든낱말(물러난말({ 표, 줄들 }), { 표, 뺀글 });
     for (const x of 걸림.slice(0, 3)) 항목더하기('낱말', x.경로, x.글);
     if (걸림.length) 알림.push(`물러난 낱말이 든 줄을 더했다 ${걸림.length}개 — ${걸림.slice(0, 3).map((x) => `${x.경로} 「${x.낱말}」(${줄임(x.까닭, 40)})`).join(' · ')}`);
     // 표에 새 줄이 들어왔으면 그 꼴로 전체를 한 번 훑는다
@@ -595,4 +628,4 @@ function 알림재기글(r) {
 }
 
 if (require.main === module) process.exitCode = main();
-module.exports = { push검사, 결정낡은줄, 행풀기, 낱말로, 필요수, 이름의곳들, 물러난말, 물러난표, 계획표검사, 계획머리안내, 설계문서, 읽히는문서들, 산문, 코드글, 줄의길들, 더한줄읽기, 전체점검, 기록인가, 핵심문서, 표길, 알림남기기, 알림재기, 알림재기글 };
+module.exports = { push검사, 결정낡은줄, 행풀기, 낱말로, 필요수, 이름의곳들, 물러난말, 물러난표, 계획표검사, 계획머리안내, 설계문서, 읽히는문서들, 산문, 코드글, 줄의길들, 더한줄읽기, 새로든낱말, 전체점검, 기록인가, 핵심문서, 표길, 알림남기기, 알림재기, 알림재기글 };

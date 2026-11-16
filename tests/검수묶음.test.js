@@ -1077,7 +1077,7 @@ test('정책 판 2·5: Claude 백엔드는 GPT 하나 — 막히면 아르곤 �
   const 집 = api.집계하기(c.목록, api.결과들읽기(c.폴더, c.목록), api.지적표읽기(c.폴더), api.결과들읽기(c.폴더, c.목록, 'GPT'));
   assert.ok(집.조건.some(x => /GPT·아르곤 검수가 막혀 Fable 검수로 대신/.test(x)), 집.조건.join(' / '));
   await api.페이블하기(c.폴더, { 시험: false, 캡처: false });
-  assert.match(fs.readFileSync(path.join(c.폴더, 'fable.md'), 'utf8'), /GPT·아르곤\(다른 회사 모델\)이 한도·로그인으로 막혀 그 대신/);
+  assert.match(fs.readFileSync(path.join(c.폴더, 'fable.md'), 'utf8'), /GPT·카본\(다른 회사 모델\)이 한도·로그인으로 막혀 그 대신/);
   api.페이블받기(c.폴더, final답(JSON.parse(fs.readFileSync(path.join(c.폴더, '페이블자료.json'))).증명));
   assert.deepEqual(api.검수확인(c.폴더).사유, []);
   // 옛 판 1: 필수 [아르곤, GPT]로 적힌 증거 — 둘 다 받은 것과 GPT만 받은 것은 통과, 아르곤만은 안 된다
@@ -2075,7 +2075,7 @@ test('그록 대체(정책 판 6 · 11-08): 백엔드는 GPT·아르곤이 둘 �
   assert.match(v.사유, /필수 검수\(GPT·아르곤·그록\)가 한도·로그인으로 막혀 Fable 대체 검수 필요/);
   assert.ok(v.집계.조건.some(x => /^GPT·아르곤·그록 검수가 막혀 Fable 검수로 대신해야 한다/.test(x)), v.집계.조건.join(' / '));
   await api.페이블하기(c.폴더, { 시험: false, 캡처: false });
-  assert.match(fs.readFileSync(path.join(c.폴더, 'fable.md'), 'utf8'), /GPT·아르곤·그록\(다른 회사 모델\)이 한도·로그인으로 막혀 그 대신/);
+  assert.match(fs.readFileSync(path.join(c.폴더, 'fable.md'), 'utf8'), /GPT·카본·그록\(다른 회사 모델\)이 한도·로그인으로 막혀 그 대신/);
   api.페이블받기(c.폴더, final답(JSON.parse(fs.readFileSync(path.join(c.폴더, '페이블자료.json'))).증명));
   assert.deepEqual(api.검수확인(c.폴더).사유, []);
   // ③ 아르곤만 막히고 GPT는 미실행 — 그록이 읽어도 그록 차례가 아니다(GPT가 막힌 증거가 없다). 일반 실패도 막힘 증거가 아니다
@@ -2226,6 +2226,10 @@ test('보이는 이름(11-16): 화면 · md 글은 카본으로 바꾸고, 지�
   // 인용 · 코드 · 경로는 원문 그대로 둔다(GPT 검수 GA1) — 이름만 바꾼다
   assert.equal(api.보이는이름("인용 「x.출처 === '아르곤'」 · `아르곤보내기()` · C:\\검수\\아르곤-a\\보고.md · tmp/아르곤/a · 아르곤 1건"),
     "인용 「x.출처 === '아르곤'」 · `아르곤보내기()` · C:\\검수\\아르곤-a\\보고.md · tmp/아르곤/a · 카본 1건");
+  // 검수자가 따옴표로 든 예문도 원문 그대로다 — 낡은 말 자체를 다루는 지적이 뜻을 잃지 않게
+  assert.equal(api.보이는이름(`기존 '화면 검수는 아르곤에게 보인다' 줄과 "아르곤 0건" 글을 아르곤이 봤다`), `기존 '화면 검수는 아르곤에게 보인다' 줄과 "아르곤 0건" 글을 카본이 봤다`);
+  // 영어 축약의 아포스트로피는 인용이 아니다 — 뒤의 실제 인용문은 그대로, 바깥 이름만 바뀐다(GPT 검수 carbon-name-quotes GA1)
+  assert.equal(api.보이는이름("Don't use '아르곤 0건'; 아르곤이 확인"), "Don't use '아르곤 0건'; 카본이 확인");
   const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
   const { 폴더, 목록 } = await api.준비하기({ 이름: 'carbon-name', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
   await api.GPT보내기(폴더, 목록, { call: async () => { throw new Error('GPT 한도(quota) — You have hit your usage limit'); }, 몫: 몫충분 });

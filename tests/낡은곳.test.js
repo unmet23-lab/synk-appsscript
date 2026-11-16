@@ -98,6 +98,36 @@ test('diff -U0에서 더한 줄과 그 새 줄 번호를 읽는다', () => {
   const m = n.더한줄읽기('diff --git a/x.md b/x.md\n--- a/x.md\n+++ b/x.md\n@@ -3,0 +4,2 @@\n+가\n+나\n@@ -9 +11 @@\n-옛\n+새\n');
   assert.deepEqual([...m.get('x.md').글], ['가', '나', '새']);
   assert.deepEqual([...m.get('x.md').번호], [4, 5, 11]);
+  assert.deepEqual(m.get('x.md').뺀, ['옛']);
+});
+
+test('(나) 물러난 낱말 — 고친 줄에 같은 앞뒤 글로 원래 있던 낱말은 세지 않고, 새로 든 낱말만 알린다(11-16)', () => {
+  const 표 = n.물러난표(fs.readFileSync(path.join(__dirname, '..', n.표길), 'utf8'));
+  const 꼴 = n.물러난말({ 표, 줄들: [{ 경로: 'AGENTS.md', 줄: 1, 글: '화면 검수는 아르곤에게 먼저 보인다' }] })[0].꼴;
+  // 코드: console.log를 감싸기만 한 줄 — 지운 줄에도 같은 낱말이 있었다
+  const 옛줄 = "  글쓰기(path.join(폴더, 'x.md'), `# 아르곤 지적과 Claude의 처리 — ${이름}`);";
+  const 새줄 = "  md쓰기(path.join(폴더, 'x.md'), `# 아르곤 지적과 Claude의 처리 — ${이름}`);";
+  const 코드걸림 = n.물러난말({ 표, 줄들: [{ 경로: 'tools/검수묶음.mjs', 줄: null, 글: 새줄 }] });
+  assert.equal(코드걸림.length, 1, '줄 하나만 보면 걸린다');
+  assert.deepEqual(n.새로든낱말(코드걸림, { 표, 뺀글: new Map([['tools/검수묶음.mjs', [옛줄]]]) }), []);
+  // 문서: 낱말이 든 줄 하나는 끝에 마침표만 더했고, 다른 하나는 새로 썼다 — 새로 쓴 줄만 알린다
+  const 줄들 = [{ 경로: 'AGENTS.md', 줄: null, 글: '화면 검수는 아르곤에게 먼저 보인다.' }, { 경로: 'AGENTS.md', 줄: null, 글: '백엔드도 그 다음 아르곤에게 보인다' }];
+  const 걸림 = n.물러난말({ 표, 줄들 });
+  assert.equal(걸림.length, 2); assert.ok(걸림.every((x) => x.꼴 === 꼴));
+  assert.deepEqual(n.새로든낱말(걸림, { 표, 뺀글: new Map([['AGENTS.md', ['화면 검수는 아르곤에게 먼저 보인다']]]) }).map((x) => x.글), ['백엔드도 그 다음 아르곤에게 보인다']);
+  // 하나를 지우고 다른 자리에 새로 써도(수는 같다) 새로 쓴 줄은 알린다 — 지운 줄 하나는 더한 줄 하나만 덮는다
+  assert.equal(n.새로든낱말(걸림, { 표, 뺀글: new Map([['AGENTS.md', ['코드 검수는 아르곤이 본다', '화면 검수는 아르곤에게 먼저 보인다']]]) }).length, 1);
+  // 지운 줄이 없는 파일(새로 쓴 줄만)은 그대로 알린다
+  assert.equal(n.새로든낱말(걸림, { 표, 뺀글: new Map() }).length, 2);
+  // GPT 검수 GA1 — 한 줄을 지우고 같은 줄 둘을 더하면, 지운 줄은 하나만 덮고 하나는 알린다(더한 줄을 겹친 것까지 센다)
+  const d = n.더한줄읽기('diff --git a/A.md b/A.md\n--- a/A.md\n+++ b/A.md\n@@ -3 +3,2 @@\n-화면 검수는 아르곤에게 먼저 보인다\n+화면 검수는 아르곤에게 먼저 보인다.\n+화면 검수는 아르곤에게 먼저 보인다.\n').get('A.md');
+  assert.equal(d.목록.length, 2); assert.equal(d.글.size, 1);
+  const 겹침 = n.물러난말({ 표, 줄들: d.목록.map((글) => ({ 경로: 'AGENTS.md', 줄: null, 글 })) });
+  assert.equal(n.새로든낱말(겹침, { 표, 뺀글: new Map([['AGENTS.md', d.뺀]]) }).length, 1);
+  // GPT 검수 GA2 — 원래 있던 낱말 뒤에 같은 낱말을 한 줄 안에 새로 더하면 그 줄을 알린다
+  const 둘 = n.물러난말({ 표, 줄들: [{ 경로: 'AGENTS.md', 줄: null, 글: '화면 검수는 아르곤에게 먼저 보인다. 백엔드 검수도 아르곤에게 보인다.' }] });
+  assert.equal(둘[0].문맥들.length, 2);
+  assert.equal(n.새로든낱말(둘, { 표, 뺀글: new Map([['AGENTS.md', ['화면 검수는 아르곤에게 먼저 보인다']]]) }).length, 1);
 });
 
 test('GPT 검수 GA1 — 지우기만 한 덩어리(+8,0)도 그 자리를 닿은 줄로 센다', () => {
