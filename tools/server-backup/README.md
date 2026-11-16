@@ -68,21 +68,22 @@ Supabase `vault.secrets` 복원에는 DB dump 외에 해당 프로젝트의 pgso
 - 회사 서버의 `watch.py`는 라디오 영수증을 라디오 앱의 열쇠로 읽는다. 열쇠는 `credentials.json`의 `drive77Radio`이고, 없으면 `drive77`을 쓴다. 열쇠의 클라이언트가 설정의 `radioClientId`(없으면 `restrictedClientId`)와 다르거나 clasp 클라이언트면 `RADIO_OAUTH_CLIENT_MISMATCH`다. 토큰의 대상이나 범위가 다르면 `RADIO_OAUTH_SCOPE_MISMATCH`다. `requireRestrictedDrive`가 참인데 `radioClientId`가 없으면 `RADIO_OAUTH_CLIENT_REQUIRED`다.
 - 이 세 코드는 경보 메일에 그대로 실린다(`RADIO_KEY_ERRORS`, 2026-11-16부터). 10-21 판은 라디오 검사의 예외를 모두 `RADIO_REMOTE_AUDIT_FAILED` 하나로 바꿔 보내서, 메일만으로는 열쇠 문제인지 영수증 문제인지 알 수 없었다. 그 밖의 예외(영수증을 못 읽음, 소유자나 크기가 다름, 네트워크 오류)는 지금도 `RADIO_REMOTE_AUDIT_FAILED` 하나다. 예외에 붙은 글은 경보에 싣지 않는다.
 
-2026-11-16 06시대에 세 서버의 파일을 받아 저장소와 견준 결과는 아래와 같다. 해시는 서버 파일 그대로의 sha256이다.
+2026-11-16 08:41 ~ 08:58 KST에 세 서버의 `/opt/synk-server-backup/`을 저장소 `b97a1048f`과 똑같이 맞췄다. 이제 세 서버의 모든 파일(회사 12개, 조사 8개, 라디오 6개)이 저장소의 같은 이름 파일과 sha256이 같다. 해시는 git에 든 바이트(LF) 그대로의 sha256이다.
 
-| 파일 | 회사 `synk-company-1` | 조사 `synk-company-2` | 라디오 `synk-radio-1` |
-|---|---|---|---|
-| `watch.py` | `1306f1f2…`(10-21) | 같음 | 같음 |
-| `oauth-policy.cjs` | `ddbc1370…`(10-21) | 같음 | 같음 |
-| `backup.cjs` | `02656862…`(11-16 04:07에 깐 `3f692ec8d` 판) | `8fc44fcd…`(10-21) | 조사 서버와 같음 |
+| 파일 | 깔기 전(11-16 06시대) | 깐 뒤(세 서버 모두) |
+|---|---|---|
+| `backup.cjs` | 회사 `02656862…`(04:07에 깐 `3f692ec8d` 판, 좁은 열쇠 검사 없음), 조사 · 라디오 `8fc44fcd…`(10-21 판) | `24973a0a…` |
+| `watch.py` | 세 서버 모두 `1306f1f2…`(10-21 판, CRLF) | `31d97f02…`(경보 코드 고침 포함) |
+| `oauth-policy.cjs` | 세 서버 모두 `ddbc1370…`(10-21) | 그대로 `ddbc1370…` |
+| 역할에 맞지 않아 쓰이지 않던 옛 파일 | 회사 `argon-capture.py`, 조사 `company-sources.py`(둘 다 10-18 판) | 저장소 판(동작은 그대로) |
 
-- 저장소의 `watch.py`와 `oauth-policy.cjs`는 이제 서버 파일과 바이트까지 같다. 서버의 `watch.py`는 줄끝이 CRLF이다. 저장소에는 LF로 들어가고, LF로 바꾼 내용의 sha256은 `0f79e127…`이다.
-- 조사 · 라디오 서버의 `backup.cjs`는 저장소 10-19 판에 좁은 열쇠 검사 일곱 줄만 더한 판이다. 저장소의 `backup.cjs`는 이제 `3f692ec8d` 판에 그 일곱 줄을 더한 판이다. 옮긴 줄은 서버 판의 줄과 글자까지 같다. 그 뒤의 영상과 인물 분류 고침은 회사 역할에서만 돌아서, 조사 · 라디오 서버에는 없어도 된다.
-- 회사 서버의 `backup.cjs`에는 지금 이 검사가 없다. 11-01 영상 판은 저장소 10-19 판에서 시작했고, 그 판을 회사 서버에 깔 때 검사가 빠진 것으로 보인다([현장 노트](../../docs/현장노트/백업_업로드.md#server-only-edits-lost-on-install)).
-- 그래도 회사 서버의 열쇠는 좁은 열쇠다. 11-16에 값은 찍지 않고 같음 여부만 봤다. `drive77`과 메신저 활성 연결의 클라이언트는 `restrictedClientId`와 같고, `drive77Radio`의 클라이언트는 `radioClientId`와 같았다. 셋 다 clasp 클라이언트가 아니었다. 회사 열쇠 둘의 tokeninfo 범위는 확인하지 않았다. 라디오 열쇠의 범위는 `watch.py`가 15분마다 확인하고, 11-16 06:30 KST 회차의 `radio-audit.json`이 성공이었다.
-- 다음에 어느 서버에든 저장소의 `backup.cjs`를 깔면 검사가 함께 간다. 회사 서버에 깔면 바로 손으로 한 번 돌려 영수증이 성공인지 본다. `SERVER_OAUTH_SCOPE_MISMATCH`로 멈추면 회사 열쇠의 범위가 `drive.file` 하나가 아닌 것이다. 그때는 옛 파일로 되돌리고 열쇠부터 본다.
-- 역할에 맞지 않는 옛 파일도 둘 있다. 회사 서버의 `argon-capture.py`와 조사 서버의 `company-sources.py`는 10-18 판이다. 둘 다 다른 역할에서만 도는 파일이라 그 서버에서는 쓰이지 않는다.
-- 깔린 판이 저장소 판과 같은지는 `read-status.cjs --save`가 남기는 `nodes[].sourceHashes`를 저장소 파일의 sha256과 견줘 본다. 서버 파일이 CRLF일 수 있으니, 다르면 줄끝을 LF로 바꿔 한 번 더 견준다.
+- 바꾸기 전 파일은 각 서버의 `/var/backups/synk-server-backup/pre-narrow-key-20261116/`에 있다. 되돌리려면 그 파일을 `/opt/synk-server-backup/`에 root 0644로 다시 넣는다.
+- 깔기 전에 다섯 열쇠의 tokeninfo를 서버 안에서 확인했다. 회사 `drive77`, `drive77Radio`, 메신저 활성 연결, 조사 `drive77`, 라디오 `drive77` 모두 대상이 설정의 클라이언트와 같고 범위는 `drive.file` 하나였다. 값은 찍지 않고 참 · 거짓만 봤다.
+- 깐 뒤 세 서버 백업을 손으로 한 번씩 돌렸다. 회사 `998882f3…`(08:41 ~ 08:55, 항목 155개), 조사 `1515a1f7…`(항목 3개), 라디오 `5ccd02cc…`(항목 2개) 모두 원격 대조까지 성공했다. 회사와 조사 서버의 감시도 한 번씩 돌려 정상 신호(08:56, 08:57)를 받았다. 회사 감시의 라디오 영수증 확인도 새 검사로 성공했다.
+- 회사 서버는 11-01 영상 판을 깔 때부터 11-16 08:41까지 이 검사 없이 돌았다. 11-01 영상 판이 저장소 10-19 판에서 시작해서 10-21 검사가 빠진 것으로 보인다([현장 노트](../../docs/현장노트/백업_업로드.md#server-only-edits-lost-on-install)). 그동안에도 열쇠는 좁은 열쇠였다.
+- 저장소의 `backup.cjs`는 `3f692ec8d` 판에 조사 · 라디오 서버 10-21 판의 일곱 줄을 글자 그대로 더한 판이다. 10-19 뒤의 다른 고침(영상, 인물 분류, Storage 제외 버킷)은 회사 역할 안에서만 돌아서 조사 · 라디오 서버의 동작은 그대로다.
+- 검수: GPT 읽기 전용 검수 `server-backup-narrow-keys-20261116` 0건(반영 0).
+- 깔린 판이 저장소 판과 같은지는 `read-status.cjs --save`가 남기는 `nodes[].sourceHashes`를 저장소 파일의 sha256과 견줘 본다. 다르면 줄끝을 LF로 바꿔 한 번 더 견준다. 그래도 다르면 서버 판을 받아 diff부터 본다. 서버에만 있는 줄은 저장소에 먼저 올린 뒤에 깐다.
 
 ## 실패·지연·서버 중단 알림
 
@@ -129,7 +130,7 @@ Supabase `vault.secrets` 복원에는 DB dump 외에 해당 프로젝트의 pgso
 - 복원: 그 회차 영수증 items에서 sourceKey가 `….media-<sha256>`인 것을 내려받아 복호화해 한 폴더에 두고, `backup-media.py hydrate --snapshot <데이터 스냅숏> --from-dir <그 폴더> --prepared <준비된 회사 볼륨>`(sha256으로 짝지음, 토큰 없음).
 - 설치: `backup.cjs`·`company-sources.py`·새 `media-read.py`를 `synk-company-1`의 `/opt/synk-server-backup/`에 root 0644로 바꿔 넣는다(다른 파일·설정·타이머 그대로, 실행 중이 아닐 때). 11-16부터 `backup.cjs`는 같은 폴더의 `oauth-policy.cjs`를 부른다. 세 서버에는 그 파일이 10-21부터 있다([좁은 열쇠 검사](#narrow-keys)). 자기 백업(`self-capture.py`)이 폴더 전체를 담는다. 영수증이 없으면(회사 판 전) 동작은 지금과 같다.
 
-<a id="persona-vault"></a>금고 제외 표시(2026-11-11, 회사 판 62부터): PULSE 고객 전용 인물 파일은 unmet23 금고에 넣지 않는다(결정 표 11-11 ① · [판 4 설계 11-2](../../docs/마케팅/PULSE_의뢰흐름_20261104/판4_설계_20261110.md#retention-rules-20261111)). 데이터 백업이 목록 방식이면 맨 위에 `media-retention.json`(`noVault` — 인물 문서가 가진 본문의 sha256, 같은 목록 바이트의 sha256 · 시각에 묶임)을 두고, `company-sources.py`가 그 파일을 같은 흐름에서 읽어 `retention:{classified, noVault, bytesIncluded}`를 낸다(이름이 적혔는데 없거나 목록과 어긋나면 `MEDIA_RETENTION_INVALID`). `backup.cjs`는 그 본문 줄과, 인물 바이트를 품은 압축본이면 DR 묶음 줄에 `vault:false`를 달고 `sourceChecks`에 `media-retention`을 남긴다. 받는 쪽은 PC `보존규칙.py`의 `si_no_vault` · `si_plan`(입구 규칙 판 — 이 두 파일보다 먼저, 늦어도 11-16 05:51 KST 매일 백업 전에 깐다) — 표시 줄과 같은 내용의 줄을 금고에 새로 넣지 않고(이미 든 사본은 그 판의 기한으로만 빠진다), 기준 시각 뒤 분류를 못 믿는 회사 실행은 영상 본문 줄을 모두 새로 넣지 않으며 그 사실을 금고 상태에 남긴다. 하루 · 주 · 달 보존과 복원은 그대로다. 설치는 위 「작업실 영상」과 같은 꼴(`backup.cjs` · `company-sources.py` 둘, 회사 판 62 무장 뒤 · 실행 중이 아닐 때). 되돌리기는 옛 두 파일로 바꿔 넣기 — 그러면 PC가 다시 닫힌 쪽 규칙으로 영상 본문을 금고에서 뺀다. 이 두 파일은 2026-11-16 04:07 KST에 `synk-company-1`에 깔았다. 깐 판은 `3f692ec8d`의 두 파일과 sha256이 같다. 옛 두 파일은 같은 서버의 `/var/backups/synk-server-backup/pre-persona-vault-20261116/`에 있다. 그 뒤 첫 영수증(04:08 실행)부터 `media-retention` 점검이 `classified: true`, `legacyDeleted: 0`으로 붙는다. 조사 · 라디오 노드에는 깔지 않았다(인물 분류는 회사 역할에서만 돈다). 그때 회사 노드의 `watch.py`에는 저장소에 없는 라디오 좁은 열쇠 검사가 있었다. 같은 날 그 판을 저장소에 넣었으니 이제 저장소 판으로 깔아도 검사가 빠지지 않는다([좁은 열쇠 검사](#narrow-keys)).
+<a id="persona-vault"></a>금고 제외 표시(2026-11-11, 회사 판 62부터): PULSE 고객 전용 인물 파일은 unmet23 금고에 넣지 않는다(결정 표 11-11 ① · [판 4 설계 11-2](../../docs/마케팅/PULSE_의뢰흐름_20261104/판4_설계_20261110.md#retention-rules-20261111)). 데이터 백업이 목록 방식이면 맨 위에 `media-retention.json`(`noVault` — 인물 문서가 가진 본문의 sha256, 같은 목록 바이트의 sha256 · 시각에 묶임)을 두고, `company-sources.py`가 그 파일을 같은 흐름에서 읽어 `retention:{classified, noVault, bytesIncluded}`를 낸다(이름이 적혔는데 없거나 목록과 어긋나면 `MEDIA_RETENTION_INVALID`). `backup.cjs`는 그 본문 줄과, 인물 바이트를 품은 압축본이면 DR 묶음 줄에 `vault:false`를 달고 `sourceChecks`에 `media-retention`을 남긴다. 받는 쪽은 PC `보존규칙.py`의 `si_no_vault` · `si_plan`(입구 규칙 판 — 이 두 파일보다 먼저, 늦어도 11-16 05:51 KST 매일 백업 전에 깐다) — 표시 줄과 같은 내용의 줄을 금고에 새로 넣지 않고(이미 든 사본은 그 판의 기한으로만 빠진다), 기준 시각 뒤 분류를 못 믿는 회사 실행은 영상 본문 줄을 모두 새로 넣지 않으며 그 사실을 금고 상태에 남긴다. 하루 · 주 · 달 보존과 복원은 그대로다. 설치는 위 「작업실 영상」과 같은 꼴(`backup.cjs` · `company-sources.py` 둘, 회사 판 62 무장 뒤 · 실행 중이 아닐 때). 되돌리기는 옛 두 파일로 바꿔 넣기 — 그러면 PC가 다시 닫힌 쪽 규칙으로 영상 본문을 금고에서 뺀다. 이 두 파일은 2026-11-16 04:07 KST에 `synk-company-1`에 깔았다. 깐 판은 `3f692ec8d`의 두 파일과 sha256이 같다. `backup.cjs`는 같은 날 08:41에 좁은 열쇠 검사를 더한 판으로 다시 바꿨다([좁은 열쇠 검사](#narrow-keys)). 옛 두 파일은 같은 서버의 `/var/backups/synk-server-backup/pre-persona-vault-20261116/`에 있다. 그 뒤 첫 영수증(04:08 실행)부터 `media-retention` 점검이 `classified: true`, `legacyDeleted: 0`으로 붙는다. 조사 · 라디오 노드에는 깔지 않았다(인물 분류는 회사 역할에서만 돈다). 그때 회사 노드의 `watch.py`에는 저장소에 없는 라디오 좁은 열쇠 검사가 있었다. 같은 날 그 판을 저장소에 넣었으니 이제 저장소 판으로 깔아도 검사가 빠지지 않는다([좁은 열쇠 검사](#narrow-keys)).
 
 「제2의 나」 사진(2026-11-04): `me2-intake` · `me2-media` 버킷은 받지 않는다 — 동의 화면이 「원본은 늦어도 하루 안에 지운다 · 내가 지우면 함께 지운다」고 약속하는데 이 사본은 원본 삭제를 따라 지우지 않아서다(최대 1년). 잃으면 학생이 다시 찍는다. 목록 SQL과 코드 두 겹으로 막고 `backup.test.cjs`의 「제외 버킷 0건」이 지킨다. 원본창고의 `talk백업.js`도 같다.
 
