@@ -124,11 +124,33 @@ test('미리 보기는 서버 목록까지 읽지만 쓰지 않고, --실행이 
   assert.equal(올림.끝코드, 0, 올림.오류);
   assert.deepEqual(올림.올림, [{ kind: 'memo', runId: 'm1', 덮음: false }, { kind: 'ai-search', runId: 'a1', 덮음: false }]);
   assert.equal(올림.뒤건수, 2); assert.equal(올림.고객에게보임, false);
-  assert.equal(올림.스위치, '모름', '담당자는 스위치를 읽지 못한다');
+  // 담당자는 스위치 설정을 읽지 못한다. 그래도 리포트가 있는데 보이지 않으면 스위치가 꺼진 것이라 「모름」으로 적지 않는다.
+  assert.equal(올림.스위치, '꺼짐');
+  assert.match(도구.글(올림), /이제 2건이 있다\. 스위치 marketing이 꺼져 있어 고객에게는 보이지 않는다\./);
+  assert.ok(!/올리는 즉시 보인다/.test(도구.글(올림)), '방금 올렸는데 「올리면 보인다」고 적지 않는다');
   assert.deepEqual(f.저장된().map((h) => `${h.kind}:${h.runId}`).sort(), ['ai-search:a1', 'memo:m1']);
   assert.equal(f.저장된().find((h) => h.kind === 'ai-search').summaryLine, 미리.줄[1].한줄, '도구가 미리 보인 한 줄과 서버가 저장한 한 줄이 같다');
   assert.equal(f.app.store.all('audit').filter((row) => row.action === 'pulse-marketing-report-saved').length, 2);
   assert.match(도구.글(올림), /2건을 올렸다\(새로 2건, 덮어쓴 것 0건\)\. 이제 2건이 있다\./);
+});
+
+test('보이는지를 틀리지 않게 적는다: 리포트가 없을 때만 스위치를 모른다고 하고, 다 올린 뒤 확인 읽기가 실패해도 올린 것을 실패로 적지 않는다', async (t) => {
+  const f = await fixture(t);
+  // 담당자, 리포트 0건: 스위치를 알 길이 없다.
+  const 빈 = await 도구.올리기(f.project.id, [f.파일('memo.json', memo())], f.옵(f.owner));
+  assert.equal(빈.스위치, '모름'); assert.match(도구.글(빈), /올라가 있는 리포트가 없어 지금은 고객에게 보이지 않는다\. 스위치 marketing이 켜져 있으면 올리는 즉시 보인다/);
+  // 다 올린 뒤 마지막 목록 읽기만 실패하게 한다(목록 읽기의 두 번째 부름).
+  const 끝읽기실패 = async () => { const ws = await f.연결(f.owner)(); let n = 0; const get = ws.get.bind(ws); ws.get = async (p) => { if (p.endsWith('/marketing') && ++n === 2) throw Object.assign(new Error('목록 읽기 실패(503)'), { status: 503 }); return get(p); }; return ws; };
+  const 올림 = await 도구.올리기(f.project.id, [f.파일('memo.json', memo()), f.파일('memo2.json', memo('m2'))], { 연결: 끝읽기실패, 잠금이름: f.잠금이름, 실행: true });
+  assert.equal(올림.끝코드, 0, 올림.오류); assert.equal(올림.오류, undefined); assert.equal(올림.뒤확인, '못 읽음');
+  assert.equal(올림.올림.length, 2); assert.equal(f.저장된().length, 2);
+  assert.match(도구.글(올림), /2건을 올렸다\(새로 2건, 덮어쓴 것 0건\)\. 올린 뒤 목록을 다시 읽지 못해 지금 건수는 확인하지 못했다\(저장 답은 건마다 받았다\)\. 스위치 marketing이 꺼져 있어 고객에게는 보이지 않는다\./);
+  // 스위치가 꺼진 채 마지막 한 건을 내리는 미리 보기: 지금 보이지 않는 칸이 「사라진다」고 적지 않는다.
+  await 도구.내리기(f.project.id, 'memo', 'm2', f.옵(f.admin, { 실행: true }));
+  const 미리 = await 도구.내리기(f.project.id, 'memo', 'm1', f.옵(f.owner));
+  assert.equal(미리.마지막, true); assert.equal(미리.고객에게보임, false);
+  assert.match(도구.글(미리), /이 프로젝트의 마지막 리포트다\. 스위치 marketing이 꺼져 있어 지금도 고객에게는 칸이 보이지 않는다\./);
+  assert.ok(!/칸이 사라진다/.test(도구.글(미리)));
 });
 
 test('같은 종류와 회차가 이미 있으면 멈추고, --덮어쓰기를 붙여야 고쳐 올린다', async (t) => {
