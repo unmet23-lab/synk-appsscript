@@ -1,0 +1,78 @@
+{
+  "note": "멕시코 채널 시험(11-17 유호님 「시험해」): 멕시코 판 두 편(「사층F」 · 「형오빠」)의 인사 바로 뒤, 화면 첫 물음이 떠 있는 동안 몽글(소진)이 그 물음을 스페인어로 읽는다. 글은 판본 글의 첫 물음(hook)과 같다(숫자 4는 소리대로 cuatro). 원본의 첫 대사 전 빈자리에 들어가야 해서 「사층F」는 1.2초, 「형오빠」는 1.7초 안이다. 대조는 손대지 않은 파라과이 판이다(인사카드 README 「멕시코 시험」).",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "es",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1031,
+    "lufs": -16
+  },
+  "out": "../../../../../.tmp/인사카드/vo_mxhook",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "사층F_a",
+      "text": "¿Dónde está el cuatro?"
+    },
+    {
+      "id": "사층F_b",
+      "text": "¿Dónde está el cuatro?",
+      "seed": 1033,
+      "speed": 1.06
+    },
+    {
+      "id": "사층F_c",
+      "text": "¿Dónde está el cuatro?",
+      "emotion": "smart",
+      "prev": "Mongle mira a sus amigos de México y pregunta con curiosidad."
+    },
+    {
+      "id": "사층F_d",
+      "text": "¿Dónde está el cuatro?",
+      "emotion": "smart",
+      "seed": 1033,
+      "prev": "Mongle mira a sus amigos de México y pregunta con curiosidad."
+    },
+    {
+      "id": "형오빠_a",
+      "text": "Hermano en coreano, ¿cómo se dice?"
+    },
+    {
+      "id": "형오빠_b",
+      "text": "Hermano en coreano, ¿cómo se dice?",
+      "seed": 1033
+    },
+    {
+      "id": "형오빠_c",
+      "text": "Hermano en coreano, ¿cómo se dice?",
+      "emotion": "smart",
+      "prev": "Mongle mira a sus amigos de México y pregunta con curiosidad."
+    },
+    {
+      "id": "형오빠_d",
+      "text": "Hermano en coreano, ¿cómo se dice?",
+      "emotion": "smart",
+      "seed": 1033,
+      "prev": "Mongle mira a sus amigos de México y pregunta con curiosidad."
+    },
+    {
+      "id": "형오빠_e",
+      "text": "¿Hermano en coreano?"
+    },
+    {
+      "id": "형오빠_f",
+      "text": "¿Hermano en coreano?",
+      "seed": 1033
+    }
+  ],
+  "고름": {
+    "사층F": "사층F_b(빠르기 1.06 · 인사 그림 시작 1.38초에 시작 · 원본 셈 「일」 2.56초 전에 끝)",
+    "형오빠": "형오빠_e(짧은 물음 「¿Hermano en coreano?」 · 1.40초에 시작 · 원본 「형!」 3.10초 전에 끝 — 긴 물음 a~d는 2.2초라 빈자리 1.8초에 들지 않았다)"
+  }
+}
