@@ -977,13 +977,12 @@ test('옮겨 오기: 조율 세션 c6ae51da6의 엔진 값(E3 · E4 · E5 · E6 
   // E4 · E9 GA1 — 목록 초과(늘 장부 전)로 멈췄으면 자리를 다시 고르게 한다. 공간 부족은 놓기 시작한 뒤 이어 할 때도 나서
   // 엔진이 처음 자리를 지키므로 이어서 한다(카본 A2 — begun을 받으면 그것으로 가른다). 시작 전의 실패는 이번 실패가 아니다
   const ns = STATES['home-move-listbig'], st = MOVE_MV.nospace.state, space = STATES['home-move-nospace'], fresh = MOVE_MV.nospaceFresh.state;
-  // 목록 초과는 미리 보기부터 거절되어 자리를 다시 골라도 풀리지 않는다 — 되살리기와 이어서 백업으로 보낸다(Fable F1)
-  assert.equal(m.moveRechoose(ns, st), false); assert.equal(m.moveBlocked('MOVE_LIST_TOO_BIG'), true);
-  assert.equal(home(ns, st).actions[0].id, 'restore'); assert.equal(home(ns, st).actions[1].to, 'move-4');
-  assert.doesNotMatch(home(ns, st).sub, /이어서 옮겨 오면/);
-  assert.match(draw('move-2', ns, MOVE_MV.nospace).html, /data-act="restore"[^>]*>파일 되살리기/);
-  const big = draw('move-1', ns, MOVE_MV.listbig).html;
-  assert.match(big, /지금은 옮겨 올 수 없습니다/); assert.match(big, /data-act="restore"/); assert.match(big, /data-act="move-quit"/); assert.doesNotMatch(big, /data-act="move-reload"/);
+  // 앞선 판이 남긴 목록 초과 실패는 이제 이어서 한다 — 지금 판은 그 폴더만 빼고 옮겨 온다(E25, 앞서는 Fable F1로 되살리기로 보냈다).
+  // 그 폴더를 「파일 되살리기」로 꺼낼 수 있다고 권하지 않는다(조율 세션이 확인하지 않았다)
+  assert.equal(m.moveRechoose(ns, st), false); assert.equal(m.moveBlocked, undefined);
+  assert.equal(home(ns, st).actions[0].flow, 'moveResume'); assert.match(home(ns, st).sub, /그 폴더만 빼고 옮겨 옵니다\. 이어서 옮겨 오면/);
+  assert.doesNotMatch(home(ns, st).sub, /파일 되살리기/); assert.doesNotMatch(failureText('MOVE_LIST_TOO_BIG'), /파일 되살리기|옮겨 올 수 없습니다/);
+  assert.match(draw('move-2', ns, MOVE_MV.nospace).html, /data-act="move-resume"[^>]*>이어서 옮겨 오기/);
   assert.equal(m.moveRechoose(space, st), false); assert.equal(m.moveRechoose(space, { ...st, begun: false }), true); assert.equal(m.moveRechoose(space, { ...st, begun: true }), false);
   assert.equal(home(space, st).actions[0].flow, 'moveResume'); assert.match(home(space, st).sub, /공간을 비운 뒤 다시 눌러 주세요/);
   assert.equal(m.moveRechoose({ ...ns, lastMoveError: { code: 'MOVE_LIST_TOO_BIG', at: '2026-11-13T05:00:00Z' } }, st), false);
@@ -1006,7 +1005,7 @@ test('옮겨 오기: 조율 세션 c6ae51da6의 엔진 값(E3 · E4 · E5 · E6 
   assert.match(draw('move-2', read, rr).html, /data-act="move-result"[^>]*>앞서 옮겨 온 결과 보기/);
   // E5 — OneDrive에서 견주지 못한 수는 따로 센다. 줄로 보이되 합계에는 더하지 않는다(onedrive의 일부)
   const u = { ...MOVE_MV.ok.result, complete: false, counts: { placed: 10, onedrive: 5, unverified: 2 } };
-  assert.deepEqual(m.moveLeft(u), { n: 2, failed: 0, unverified: 2, cut: false });
+  assert.deepEqual(m.moveLeft(u), { n: 2, failed: 0, unverified: 2, cut: false, big: 0 });
   assert.match(m.moveTitle(u).soft, /2개는 내용을 견주지 못했습니다/);
   const three = draw('move-3', read, { ...MOVE_MV.ok, result: u }).html;
   assert.match(three, /그 가운데 내용은 견주지 못함<\/span><span class="v">2개/); assert.match(three, /합계<\/span><span class="v">15개/);
@@ -1185,11 +1184,10 @@ test('옮겨 오기 4b: 카본 검수 지적 자리(workbackup-ui-move4b-2026111
   // FA2 — 쓰지 못한 파일이 섞여도 되돌린 파일이 있으면 「되돌렸습니다」다
   const mixed = { ...MOVE_MV['apps-ok'], apps: { ...MOVE_MV['apps-ok'].apps, settings: [{ app: 'git', name: 'Git', restored: ['a'], kept: [], side: [], failed: [{ path: 'b', code: 'MOVE_MKDIR' }], left: [] }] } };
   assert.match(draw('move-apps', STATES['home-move-apps-ok'], mixed).html, /프로그램을 깔고<br><span class="soft">설정을 되돌렸습니다/);
-  // FA1 — 목록 초과로 막힌 옛 PC에서도 다른 옛 PC를 고를 수 있다
-  const two = { ...MOVE_MV.listbig, devices: [...MOVE_MV.listbig.devices, { from: 'OLD-DESKTOP', lastBackupAt: '2026-09-02T09:10:00Z' }] };
-  assert.match(draw('move-1', STATES['home-move-listbig'], two).html, /data-act="move-from" data-from="OLD-DESKTOP"/);
-  assert.match(draw('move-1', STATES['home-move-listbig'], two).html, /옮겨 올 수 있을지도 모릅니다/); // Fable -c FA1 — 「수 있」을 겹치지 않는다
-  assert.doesNotMatch(draw('move-1', STATES['home-move-listbig'], MOVE_MV.listbig).html, /data-act="move-from"/);
+  // 옛 PC가 둘 이상이면 다른 옛 PC를 고를 수 있다(목록 초과로 막히던 갈래는 E25로 걷었다)
+  const two = { ...MOVE_MV.toobig, devices: [...MOVE_MV.toobig.devices, { from: 'OLD-DESKTOP', lastBackupAt: '2026-09-02T09:10:00Z' }] };
+  assert.match(draw('move-1', read, two).html, /data-act="move-from" data-from="OLD-DESKTOP"/);
+  assert.doesNotMatch(draw('move-1', read, MOVE_MV.toobig).html, /data-act="move-from"/);
   // FA3 — 멈춘 옮겨 오기를 이을 때는 남은 것이 0이어도 막지 않는다
   const tail = { ...MOVE_MV.nokit, preview: { ...MOVE_MV.nokit.preview, folders: MOVE_MV.nokit.preview.folders.map((x) => ({ ...x, files: 0, bytes: 0 })) }, first: null };
   const tailHtml = draw('move-1', read, tail).html;
@@ -1332,4 +1330,66 @@ test('옮겨 오기 4b 엔진 판 잇기(E16~E24 · 조율 세션 e244f42e4): �
   assert.match(op, /data-act="app-page" data-app="Git\.Git" data-kind="license" aria-label="Git 사용권 열기">사용권 열기/);
   assert.doesNotMatch(op, /data-app="VideoLAN\.VLC" data-kind/);
   assert.doesNotMatch(pk.html, /data-act="app-page"/);
+});
+
+test('옮겨 오기 E25(조율 세션 178555524): 100만 개 넘는 폴더는 그 폴더만 옮기지 않고 나머지를 옮겨 온다', async () => {
+  const m = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW, MOVE_MV, MOVE_ACCT } = await load('engine-fixtures.js');
+  const draw = (id, state, mv) => renderScreen(id, { state, model: m.homeModel(state, { now: NOW, move: mv?.state || null }), now: NOW, ui: {}, acct: { ...MOVE_ACCT }, mv, fake: true });
+  const read = STATES['home-move-read'], big = MOVE_MV.toobig, res = MOVE_MV.toobigResult;
+  // 놓을 자리 — 그 폴더는 손님이 고른 자리가 있어도 「옮기지 않음」이고, 수와 크기에 들지 않는다. 바꾸는 단추도 없다
+  const rows = m.moveRows(big.preview, big.choices, big.first);
+  const pic = rows.rows.find((r) => r.label === '사진');
+  assert.equal(pic.tooBig, true); assert.equal(pic.place.kind, 'skip'); assert.equal(pic.files, 0); assert.deepEqual(pic.modes, []);
+  assert.equal(rows.big.length, 1); assert.equal(rows.places, 4);
+  assert.equal(rows.files, rows.rows.filter((r) => r.label !== '사진').reduce((n, r) => n + r.files, 0));
+  const one = draw('move-1', read, big).html;
+  assert.match(one, /「사진」 폴더는 옮겨 오지 못합니다\.<\/b>파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다/);
+  // 카본 A2 — 모든 폴더가 너무 크면 「나머지 폴더만」이라 하지 않는다
+  const allBig = { ...big, preview: { ...big.preview, folders: big.preview.folders.map((x) => ({ ...x, tooBig: true, mode: 'skip', modes: ['skip'], files: 0, bytes: 0 })) } };
+  assert.match(draw('move-1', read, allBig).html, /옮겨 올 수 있는 폴더가 없습니다/); assert.doesNotMatch(draw('move-1', read, allBig).html, /나머지 폴더만/);
+  assert.match(one, /<span class="nm">사진<\/span><span class="vl"><\/span><span class="ds">너무 커서 옮기지 않음<\/span>/);
+  assert.doesNotMatch(one, /data-folder="[^"]*Pictures"/); assert.doesNotMatch(one, /파일 되살리기로|「파일 되살리기」로 꺼/);
+  assert.match(draw('move-1', read, { ...big, open: true }).html, /data-act="move-mode" data-folder="C:\\Users\\studio\\Documents"/);
+  assert.doesNotMatch(draw('move-1', read, { ...big, open: true }).html, /data-act="move-mode" data-folder="C:\\Users\\studio\\Pictures"/);
+  // 모든 폴더가 너무 크면 「옮기지 않음을 풀어 주세요」가 아니다
+  const all = { ...big, preview: { ...big.preview, folders: big.preview.folders.map((x) => ({ ...x, tooBig: true, mode: 'skip', modes: ['skip'], files: 0, bytes: 0 })) } };
+  assert.match(draw('move-1', read, all).html, /모든 폴더가 너무 커서 옮겨 올 폴더가 없습니다/); assert.doesNotMatch(draw('move-1', read, all).html, /풀어 주세요/);
+  // 확인서 — 폴더 단위로 따로 묶고, 「N개는 옮겨 오지 못했습니다」의 파일 수에 섞지 않는다. 「다시 옮겨 오기」를 권하지 않는다
+  const left = m.moveLeft(res.result);
+  assert.equal(left.big, 1); assert.equal(left.failed, 0); assert.equal(left.n, 0);
+  const t = m.moveTitle(res.result);
+  assert.equal(t.main, '옮겨 왔습니다.'); assert.equal(t.soft, '「사진」 폴더는 너무 커서 옮기지 않았습니다.'); assert.equal(t.tone, 'warn');
+  const three = draw('move-3', read, res).html;
+  // 폴더는 「곳」으로 센다
+  assert.match(three, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(three, /그 폴더는 옛 PC의 백업에 그대로 있습니다/);
+  assert.match(three, /<span class="ds">C:\\Users\\studio\\Pictures<\/span>/);
+  assert.doesNotMatch(three, /data-act="move-again"/); assert.doesNotMatch(three, /파일 되살리기로/);
+  // 넘기기 — 그 폴더는 지킬 폴더에 없고(엔진이 roots []를 준다), 옛 PC의 백업에 남는다고 쓴다
+  const four = draw('move-4', read, res).html;
+  assert.match(four, /「사진」 폴더는 너무 커서 옮기지 않았습니다\. 「작업 노트북」의 백업에는 그대로 있습니다/);
+  assert.doesNotMatch(four, /data-root="C:\\Users\\studio\\Pictures"/);
+  // Fable F1 — 항목이 2,000개를 넘어 폴더 항목이 잘려도 묶음은 결과의 폴더 목록으로 만든다(「이상」을 붙이지 않는다)
+  const cut = { ...res, result: { ...res.result, items: Array.from({ length: 2000 }, (_, i) => ({ original: 'C:\\Users\\studio\\Documents', name: `f${i}`, result: 'side', p: `x${i}` })) } };
+  const cutG = m.moveGroups(cut.result).list.find((g) => g.key === 'toobig');
+  assert.equal(cutG.n, 1); assert.equal(cutG.exact, true); assert.deepEqual(cutG.examples, ['C:\\Users\\studio\\Pictures']);
+  const cut3 = draw('move-3', read, cut).html;
+  // Fable -b FA1 — 정확히 센 폴더 묶음만 있으면 「앞의 2,000개 안에서 센 것」이라는 아래 글을 붙이지 않는다
+  assert.doesNotMatch(cut3, /앞의 2,000개만 남겼습니다/);
+  const cutMixed = { ...cut, result: { ...cut.result, items: cut.result.items.map((x, i) => (i < 5 ? { ...x, result: 'fail', c: 'MOVE_BUSY' } : x)) } };
+  assert.match(draw('move-3', read, cutMixed).html, /앞의 2,000개만 남겼습니다\. 파일 수는 그 안에서 센 것입니다/);
+  assert.match(cut3, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(cut3, /<span class="ds">C:\\Users\\studio\\Pictures<\/span>/);
+  // Fable F5 — 확인 없이도 참인 조건문을 붙인다(그 폴더를 「파일 되살리기」로 꺼낼 수 있는지는 확인되지 않았다)
+  assert.match(four, /옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요/); assert.match(three, /정리하기 전에 그 폴더를 직접 옮겨 두세요/);
+  assert.match(one, /정리하기 전에 그 폴더를 직접 옮겨 두세요/);
+  // Fable F3 — 예시의 공간과 합계가 남은 폴더의 합이다
+  assert.equal(big.preview.volumes[0].bytes, big.preview.bytes); assert.equal(big.preview.files, rows.files);
+  // 폴더 묶음의 주어 말 — 셋 이상이어도 「외 2곳 폴더는」처럼 단위가 겹치지 않는다(카본 A1)
+  assert.equal(m.folderSubjectKo([{ label: '사진' }]), '「사진」 폴더');
+  assert.equal(m.folderSubjectKo([{ label: '사진' }, { label: '영상' }]), '「사진」과 「영상」 폴더');
+  assert.equal(m.folderSubjectKo([{ label: '문서' }, { label: '사진' }, { label: '영상' }]), '「문서」 등 폴더 3곳');
+  const three3 = { ...res, result: { ...res.result, folders: res.result.folders.map((x) => ({ ...x, mode: 'skip', roots: [], tooBig: true })) } };
+  assert.match(m.moveTitle(three3.result).soft, /^「문서」 등 폴더 4곳은 너무 커서 옮기지 않았습니다\.$/);
+  assert.doesNotMatch(draw('move-4', read, three3).html, /곳 폴더/);
 });

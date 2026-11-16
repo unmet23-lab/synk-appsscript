@@ -6,7 +6,7 @@
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
-  moveRechoose, moveBlocked, moveStopCode, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
+  moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
   appsJob, appsSettings, appsUnrestored, movedHere } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
@@ -343,20 +343,16 @@ const mvActs = { home: { id: 'home', to: 'home' }, 'move-in': { id: 'move-in', t
 const mvReading = (s, seg, what, title = '옮겨 오기') => ({ ...mvBase(seg, { tone: 'run' }), acts: mvActs,
   html: flow(`${kick(`${h(s?.device || '이 PC')} · ${title}`)}${say(what, '읽고 있습니다.')}`, panel(seg === 3 ? '옮겨 오기 확인서' : seg === 5 ? '이 PC에서 지킬 폴더' : '옮겨 올 것', '', '<p class="empty">읽는 중입니다.</p>')) });
 
-/** 옮겨 올 PC 고르기(옛 기기가 둘 이상일 때) — 목록 초과로 막힌 PC에서도 다른 PC로 돌아갈 길이다(Fable FA1) */
+/** 옮겨 올 PC 고르기(옛 기기가 둘 이상일 때) */
 const devPickOf = (s, mv, acct, now, dis) => ((mv?.devices || []).length > 1 ? `<h3>옮겨 올 PC</h3><div class="files" role="group" aria-label="옮겨 올 PC">${mv.devices.map((d) => `<button class="fl" type="button" aria-pressed="${d.from === mv.from}" data-act="move-from" data-from="${h(d.from)}"${dis}><span class="cb" aria-hidden="true"></span><span class="nm">${h(moveDeviceName(d.from, acct?.devices, s?.account?.sameInstall))}</span><span class="vl">마지막 백업 ${h(whenKo(d.lastBackupAt, now))}</span></button>`).join('')}</div>` : '');
 /** 어디에 놓을까요 — 옛 기기 · 폴더마다 놓일 자리(접어 두고 「폴더마다 바꾸기」로 편다) · 드라이브 공간 */
 function move1Real(s, mv, acct, now) {
   const device = h(s?.device || '이 PC'), run = acct?.running || null, top = kick(`${device} · 같은 Google 계정`);
   const quit = { id: 'move-quit', label: '되살리지 않고 이 PC에서 이어서 백업', kind: 'link' };
   if (mv?.error) {
-    // 폴더 하나가 100만 개를 넘으면 다시 읽어도 같다 — 되살리기와 이어서 백업으로 보낸다(Fable F1)
-    const blocked = moveBlocked(mv.errorCode);
-    const l = blocked
-      ? `${top}${say('옛 PC의 백업을', '지금은 옮겨 올 수 없습니다.')}${then('파일과 폴더가 100만 개를 넘는 폴더가 있어 옛 PC의 목록을 다 읽지 못했습니다. 필요한 파일은 「파일 되살리기」로 꺼낼 수 있습니다.')}${acts([{ id: 'restore', label: '파일 되살리기', kind: 'main' }, quit, { id: 'home', label: '돌아가기', kind: 'link' }])}`
-      : `${top}${say('옛 PC의 백업을', '읽지 못했습니다.')}${then(h(mv.error))}${acts([{ id: 'move-reload', label: '다시 읽기', kind: 'main' }, { id: 'home', label: '돌아가기', kind: 'link' }])}`;
-    const others = blocked ? devPickOf(s, mv, acct, now, run ? ' aria-disabled="true"' : '') : '';
-    return { ...mvBase(1, { tone: 'warn' }), html: flow(l, panel('놓을 자리', '', `<p class="empty">읽지 못했습니다.</p>${others ? `${others}<p class="foot">다른 PC의 백업은 옮겨 올 수 있을지도 모릅니다. 그 PC를 눌러 보세요.</p>` : ''}`)), acts: mvActs };
+    // 100만 개 넘는 폴더는 이제 미리 보기를 막지 않는다(E25) — 「지금은 옮겨 올 수 없습니다」 갈래를 걷었다
+    const l = `${top}${say('옛 PC의 백업을', '읽지 못했습니다.')}${then(h(mv.error))}${acts([{ id: 'move-reload', label: '다시 읽기', kind: 'main' }, { id: 'home', label: '돌아가기', kind: 'link' }])}`;
+    return { ...mvBase(1, { tone: 'warn' }), html: flow(l, panel('놓을 자리', '', '<p class="empty">읽지 못했습니다.</p>')), acts: mvActs };
   }
   if (Array.isArray(mv?.devices) && !mv.devices.length) {
     const l = `${top}${say('이 계정에는 옮겨 올', 'PC 백업이 없습니다.')}${then('옛 PC가 아직 한 번도 백업을 마치지 않았거나, 다른 Google 계정으로 백업했을 수 있습니다.')}
@@ -379,7 +375,7 @@ function move1Real(s, mv, acct, now) {
   // 멈춘 옮겨 오기를 이을 때는 남은 것이 0이어도 누르면 확인서를 마저 쓴다 — 막지 않는다(Fable FA3)
   const nothing = !!rows.places && !rows.files && !mv.dirty && !resuming, hadResult = !!(mv.state?.resultAt && mv.state.from === mv.from);
   const hint = mv.counting ? '고른 자리로 공간을 다시 세고 있습니다. 폴더가 크면 몇 분 걸립니다.'
-    : !rows.places ? '옮겨 올 폴더가 하나도 없습니다. 「놓을 자리」 목록에서 한 폴더 이상 「옮기지 않음」을 풀어 주세요.'
+    : !rows.places ? (rows.rows.length && rows.big.length === rows.rows.length ? '모든 폴더가 너무 커서 옮겨 올 폴더가 없습니다.' : '옮겨 올 폴더가 하나도 없습니다. 「놓을 자리」 목록에서 한 폴더 이상 「옮기지 않음」을 풀어 주세요.')
       : nothing ? (hadResult ? '받을 파일이 없어 시작하지 않습니다. 확인서에서 앞서 옮겨 온 결과를 볼 수 있습니다.' : '받을 파일이 없어 시작하지 않습니다.')
       : blocked ? `${vol.short.map((v) => `${v.drive} 드라이브`).join(', ')}의 빈 공간이 모자랍니다. ${resuming ? '공간을 비운 뒤' : '공간을 비우거나 다른 자리를 고른 뒤'} 「공간 다시 세기」를 누르세요.`
         : mv.dirty ? '누르면 고른 자리로 공간을 한 번 더 센 뒤 시작합니다.' : '누르면 바로 시작합니다. 끝날 때까지 파일 되살리기와 다른 일은 기다립니다.';
@@ -389,12 +385,13 @@ function move1Real(s, mv, acct, now) {
     ${notes([...(kit ? [h(kit)] : []), ...(resuming ? ['앞서 멈춘 옮겨 오기를 잇습니다. 그때 고른 자리를 그대로 씁니다.'] : []),
       ...(rechoose ? [`${h(moveStopText(s, mv.state))} 파일을 놓기 전에 멈춰 자리를 다시 고를 수 있습니다.`] : []),
       '이미 있는 파일은 덮어쓰지 않습니다. 내용이 다르면 「(복구본)」을 붙여 나란히 둡니다.', '창을 닫아도 계속되고, 끊겨도 다시 시작하면 멈춘 곳부터 잇습니다.'])}
+    ${rows.big.length ? `<div class="box rise i3"><b>${h(josa(folderSubjectKo(rows.big), '은/는'))} 옮겨 오지 못합니다.</b>${rows.big.length === rows.rows.length ? '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않습니다. 옮겨 올 수 있는 폴더가 없습니다.' : '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다.'} 옛 PC의 백업에는 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요.</div>` : ''}
     ${p.suggestKeepAsIs ? '<div class="box rise i3"><b>이 PC에 같은 파일이 이미 많습니다.</b>같은 PC를 다시 깐 것이라면 되살리지 않고 이 PC에서 이어서 백업하는 편이 빠릅니다.</div>' : ''}
     ${acts([nothing && hadResult ? { id: 'move-result', label: '확인서 보기', kind: 'main' } : { id: 'move-go', label: '이 자리로 옮겨 오기', kind: 'main', disabled: !rows.places || blocked || busy || nothing }, ...(p.suggestKeepAsIs ? [quit] : [])], `<span class="hint">${h(hint)}</span>`)}`;
   const dis = busy ? ' aria-disabled="true"' : '';
   const devPick = devPickOf(s, mv, acct, now, dis);
   const folderRow = (r) => {
-    const where = r.place.kind === 'skip' ? '옮기지 않음' : `${placeKo(r.place)}${r.place.path ? ` · ${r.place.path}` : ''}`;
+    const where = r.tooBig ? '너무 커서 옮기지 않음' : r.place.kind === 'skip' ? '옮기지 않음' : `${placeKo(r.place)}${r.place.path ? ` · ${r.place.path}` : ''}`;
     const opts = mv.open && !resuming && r.modes.length > 1 ? `<span class="mvopt" role="group" aria-label="${h(`「${r.label}」 놓을 자리`)}">${r.modes.map((m) => `<button type="button" aria-pressed="${m.id === r.mode}" data-act="move-mode" data-folder="${h(r.original)}" data-mode="${h(m.id)}"${dis}>${h(m.label)}</button>`).join('')}</span>` : '';
     return `<div class="fl plain mv"><span class="nm">${h(r.label)}</span><span class="vl">${r.place.kind === 'skip' ? '' : `${count(r.files)}개 · ${h(size(r.bytes))}`}</span><span class="ds">${h(where)}</span>${r.why ? `<span class="why">${h(r.why)}</span>` : ''}${opts}</div>`;
   };
@@ -428,9 +425,10 @@ function move2Real(s, mv, acct, now) {
   }
   if (st?.unfinished) {
     // 파일을 놓기 전에 공간이나 목록 때문에 멈췄으면 같은 자리로 다시 눌러도 또 멈춘다 — 자리를 다시 고르게 한다(E9 GA1)
-    const again = moveRechoose(s, st), stuck = moveBlocked(moveStopCode(s, st));
+    // 100만 개 넘는 폴더로 멈춘 앞선 판의 옮겨 오기도 이제는 그 폴더만 빼고 잇는다(E25) — 「파일 되살리기」로 보내지 않는다
+    const again = moveRechoose(s, st);
     const l = `${kick(`${device} · 옮겨 오기 멈춤`)}${say('옮겨 오기가', '중간에 멈췄습니다.')}${then(h(moveStopText(s, st)))}
-      ${acts([stuck ? { id: 'restore', label: '파일 되살리기', kind: 'main' } : again ? { id: 'move-in', label: '자리 다시 고르기', kind: 'main', disabled: !!run } : { id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', disabled: !!run },
+      ${acts([again ? { id: 'move-in', label: '자리 다시 고르기', kind: 'main', disabled: !!run } : { id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', disabled: !!run },
         ...(st.resultAt ? [{ id: 'move-result', label: '앞서 옮겨 온 결과 보기', kind: 'line' }] : []), { id: 'home', label: '돌아가기', kind: 'link' }])}`;
     return { ...mvBase(2, { tone: 'warn' }), html: flow(l, r), acts: { ...mvActs, 'move-resume': { id: 'move-resume', flow: 'moveResume' }, 'move-result': { id: 'move-result', to: 'move-3' } } };
   }
@@ -473,8 +471,8 @@ function move3Real(s, mv, acct, now) {
   const places = [...moveRoots(res).list, ...(res.side && side ? [{ path: res.side, label: '따로 둔 것', where: '따로 둔 자리', missing: false }] : [])];
   const dis = run ? ' aria-disabled="true"' : '';
   const open = places.length ? `<h3>옮겨 온 자리</h3><div class="files mvlist" role="group" aria-label="옮겨 온 자리">${places.map((x) => `<div class="fl plain mv"><span class="nm">${h(x.label)}</span><span class="vl">${x.missing ? '지금 없음' : h(x.where)}</span><span class="ds">${h(x.path)}</span>${x.missing ? '<span class="why">놓인 파일이 없어 폴더가 만들어지지 않았거나, 그 뒤 옮기거나 지웠습니다.</span>' : `<span class="mvopt"><button type="button" data-act="move-folder" data-path="${h(x.path)}" aria-label="${h(`「${x.label}」 폴더 열기`)}"${dis}>폴더 열기</button></span>`}</div>`).join('')}</div>` : '';
-  const more = groups.cut ? ' 이상' : '';
-  const grp = groups.list.length ? `<h3>옮기지 않은 것 · 까닭별</h3><div class="files mvlist" role="group" aria-label="옮기지 않은 것">${groups.list.map((g) => `<div class="fl plain mv"><span class="nm">${h(g.label)}</span><span class="vl">${g.tone === 'warn' ? `<span class="x">${count(g.n)}개${more}</span>` : `${count(g.n)}개${more}`}</span><span class="why">${h(g.text)}</span>${g.examples.map((p) => `<span class="ds">${h(p)}</span>`).join('')}</div>`).join('')}</div>${groups.cut ? '<p class="foot">목록이 길어 앞의 2,000개만 남겼습니다. 까닭별 수는 그 안에서 센 것입니다.</p>' : ''}` : '';
+  const moreAll = groups.cut ? ' 이상' : '';
+  const grp = groups.list.length ? `<h3>옮기지 않은 것 · 까닭별</h3><div class="files mvlist" role="group" aria-label="옮기지 않은 것">${groups.list.map((g) => { const u = g.key === 'toobig' ? '곳' : '개', more = g.exact ? '' : moreAll; return `<div class="fl plain mv"><span class="nm">${h(g.label)}</span><span class="vl">${g.tone === 'warn' ? `<span class="x">${count(g.n)}${u}${more}</span>` : `${count(g.n)}${u}${more}`}</span><span class="why">${h(g.text)}</span>${g.examples.map((p) => `<span class="ds">${h(p)}</span>`).join('')}</div>`; }).join('')}</div>${groups.cut && groups.list.some((g) => !g.exact) ? '<p class="foot">목록이 길어 앞의 2,000개만 남겼습니다. 파일 수는 그 안에서 센 것입니다.</p>' : ''}` : '';
   const r = panel('옮겨 오기 확인서', `「${h(fromName)}」 → ${device}`, `<div class="rows">${counts}${row('합계', `${count(total)}개`)}</div>${grp}${open}`);
   return { ...mvBase(3, { tone: t.tone }), html: flow(l, r), acts: { ...mvActs, 'move-next': { id: 'move-next', to: 'move-apps' }, 'move-again': { id: 'move-again', flow: 'moveAgain' }, 'move-resume': { id: 'move-resume', flow: 'moveResume' } } };
 }
@@ -501,6 +499,7 @@ function move4Real(s, mv, acct, now) {
     ${stepBoxOf(needStep, ack)}
     ${notes([...(g?.failed ? [`옮겨 오지 못한 파일(${count(g.failed)}개${g.cut ? ' 이상' : ''})은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
       ...(g?.unverified ? [`내용을 견주지 못한 파일(${count(g.unverified)}개${g.cut ? ' 이상' : ''})은 이 PC에 있던 것을 그대로 두었고, 백업의 것은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
+      ...(g?.big ? [`${h(josa(folderSubjectKo(moveBigFolders(res)), '은/는'))} 너무 커서 옮기지 않았습니다. 「${h(fromName)}」의 백업에는 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요.`] : []),
       ...(!res && st?.unfinished ? ['옮겨 오기를 마치지 않았습니다. 옮겨 오지 않은 파일은 옛 PC 백업에 그대로 있습니다.'] : []),
       ...(res ? ['넘긴 뒤에도 「설정」의 「프로그램과 설정」에서 프로그램을 깔고 다시 로그인할 곳을 볼 수 있습니다.'] : [])])}
     ${res ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="move-apps-open"${run ? ' aria-disabled="true"' : ''}>프로그램과 설정${installing ? ' · 까는 중' : left ? ` · 다시 로그인할 곳 ${count(left)}곳 남음` : ''} ${I.rarr}</button></div>` : ''}

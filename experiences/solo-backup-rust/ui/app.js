@@ -441,7 +441,7 @@ async function moveAgain() {
   if (!p.ok || !p.value) return note(mvError(p.ok ? 'FAILED' : p.code));
   const short = moveVolumes(p.value).short;
   if (short.length) return note(`${short.map((v) => `${v.drive} 드라이브`).join(', ')}의 빈 공간이 모자라 다시 옮겨 오지 않았습니다. 다시 받을 양만큼 빈 공간이 있어야 합니다. 공간을 비운 뒤 다시 눌러 주세요.`, 12000);
-  if (Number(p.value.files) === 0) return note(moveLeft(mv?.result).failed ? '다시 받을 수 있는 파일이 없습니다. 옮기지 못한 파일은 까닭이 그대로라 다시 옮겨 와도 놓이지 않습니다. 확인서의 까닭을 보고 고친 뒤 다시 눌러 주세요.' : '다시 받을 파일이 없습니다. 고른 자리에 모두 놓여 있습니다.', 12000);
+  if (Number(p.value.files) === 0) return note(moveLeft(mv?.result).failed ? '다시 받을 수 있는 파일이 없습니다. 옮기지 못한 파일은 까닭이 그대로라 다시 옮겨 와도 놓이지 않습니다. 확인서의 까닭을 보고 고친 뒤 다시 눌러 주세요.' : moveLeft(mv?.result).big ? '다시 받을 파일이 없습니다. 옮겨 온 파일은 고른 자리에 그대로 있고, 너무 커서 옮기지 않은 폴더는 다시 해도 옮기지 않습니다.' : '다시 받을 파일이 없습니다. 고른 자리에 모두 놓여 있습니다.', 12000);
   return moveStartWith(from, choices, p.value, true);
 }
 /** 끝난 옮겨 오기 — 상태와 결과를 다시 읽고, 진행 화면에 있었으면 확인서로 넘어간다 */

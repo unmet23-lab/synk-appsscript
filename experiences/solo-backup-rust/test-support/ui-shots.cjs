@@ -111,7 +111,8 @@ const CASES = [
   ['home-move-read', 'home', { name: 'home-move-stopped', mv: 'stopped', acct: 'MOVE' }], ['home-move-read', 'home', { name: 'home-move-done', mv: 'result', acct: 'MOVE' }],
   ['home-move-run', 'home', { name: 'home-move-run', mv: 'run', acct: 'MOVE' }], ['home-move-read', 'home', { name: 'home-move-read', acct: 'MOVE' }],
   // 조율 세션 c6ae51da6의 엔진 값(E4 · E9 공간 부족으로 멈춤 · E13 다시 시작한 뒤 멈춤 · E15 없는 자리 · E10 적어 둔 고름)
-  ['home-move-nospace', 'move-2', { name: 'move-2-nospace', mv: 'nospace', acct: 'MOVE' }], ['home-move-listbig', 'move-1', { name: 'move-1-listbig', mv: 'listbig', acct: 'MOVE' }], ['home-move-nospace', 'move-1', { name: 'move-1-nospace-fresh', mv: 'nospaceFresh', acct: 'MOVE' }],
+  ['home-move-nospace', 'move-2', { name: 'move-2-nospace', mv: 'nospace', acct: 'MOVE' }], ['home-move-read', 'move-1', { name: 'move-1-toobig', mv: 'toobig', acct: 'MOVE' }], ['home-move-read', 'move-3', { name: 'move-3-toobig', mv: 'toobigResult', acct: 'MOVE' }],
+  ['home-move-read', 'move-4', { name: 'move-4-toobig', mv: 'toobigResult', acct: 'MOVE' }], ['home-move-listbig', 'home', { name: 'home-move-listbig', mv: 'nospace', acct: 'MOVE' }], ['home-move-nospace', 'move-1', { name: 'move-1-nospace-fresh', mv: 'nospaceFresh', acct: 'MOVE' }],
   ['home-move-read', 'move-3', { name: 'move-3-rerun', mv: 'rerun', acct: 'MOVE' }], ['home-move-read', 'move-3', { name: 'move-3-carried', mv: 'carried', acct: 'MOVE' }], ['home-move-read', 'move-3', { name: 'move-3-gone', mv: 'gone', acct: 'MOVE' }],
   ['home-move-read', 'move-4', { name: 'move-4-gone', mv: 'gone', acct: 'MOVE' }], ['home-move-saved', 'move-4', { name: 'move-4-saved', mv: 'saved', acct: 'MOVE' }],
   // 옮겨 오기 4b — 프로그램과 설정(다시 깔기 · 앱 설정 되돌리기 · 다시 로그인할 곳)

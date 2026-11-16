@@ -89,6 +89,7 @@ export const { MOVE_ACCT, MOVE_MV } = (() => {
   // 공간이 모자라 멈춘 옮겨 오기(E4) — 놓기 시작한 뒤 이어 할 때도 나므로 공간을 비우고 이어 한다(카본 A2). 실패는 시작(14:10) 뒤에 적혔다
   STATES['home-move-nospace'] = { ...reader, lastMoveError: { code: 'MOVE_NO_SPACE', at: at('2026-11-13T14:12:00+09:00') } };
   // 폴더 하나가 100만 개를 넘어 목록 읽기에서 멈춤 — 미리 보기도 같은 까닭으로 거절되어 자리를 다시 골라도 풀리지 않는다(Fable F1)
+  // 앞선 판에서 100만 개 넘는 폴더로 멈춘 옮겨 오기 — 지금 판은 그 폴더만 빼고 이어서 옮겨 온다(E25)
   STATES['home-move-listbig'] = { ...reader, lastMoveError: { code: 'MOVE_LIST_TOO_BIG', at: at('2026-11-13T14:12:00+09:00') } };
   STATES['home-move-reading'] = { ...reader, job: { kind: 'move', stage: '준비 중', percent: null } };
   STATES['home-move-quit'] = { ...reader, nextSources: [`${HOME}\\Documents`, 'D:\\Projects'] };
@@ -155,8 +156,18 @@ export const { MOVE_ACCT, MOVE_MV } = (() => {
     nospace: { state: started, from: OLD, preview, first, choices: {}, devices },
     // 한 파일도 놓기 전에 공간이 모자라 멈춤 — 엔진이 begun을 주면(E24) 자리를 다시 고른다
     nospaceFresh: { state: { ...started, begun: false }, from: OLD, preview, first, choices: {}, devices },
-    // 미리 보기가 목록 초과로 거절됨(state-store.js failureText MOVE_LIST_TOO_BIG의 글)
-    listbig: { state: started, from: OLD, devices, errorCode: 'MOVE_LIST_TOO_BIG', error: '파일과 폴더가 100만 개를 넘는 폴더가 있어 지금은 옮겨 올 수 없습니다. 필요한 파일은 「파일 되살리기」로 꺼내 주세요.' },
+    // 사진 폴더가 100만 개를 넘음(E25) — 미리 보기는 거절하지 않고 그 폴더만 tooBig · skip · files 0으로 준다. 손님이 고른 자리가 있어도 엔진은 건너뛴다
+    toobig: (() => {
+      const fs2 = preview.folders.map((x) => (x.label === '사진' ? { ...x, tooBig: true, mode: 'skip', modes: ['skip'], files: 0, bytes: 0 } : x));
+      const files = fs2.reduce((n, x) => n + x.files, 0), bytes = fs2.reduce((n, x) => n + x.bytes, 0);
+      return { state: null, devices, from: OLD, first, choices: { [`${HOME}\\Pictures`]: { mode: 'original' } },
+        preview: { ...preview, files, bytes, volumes: [{ ...preview.volumes[0], bytes }], folders: fs2 } };
+    })(),
+    // 그 옮겨 오기의 결과 — 사진은 folder-skip 항목(tooBig)과 결과 folders[]의 tooBig · roots []로 남고 complete는 거짓이다
+    toobigResult: { state: ended, from: OLD, devices,
+      result: { ...result, counts: { placed: 7229, same: 352, copy: 12, side: 2, skip: 4, 'folder-skip': 1 },
+        items: [...result.items.filter((x) => x.result !== 'fail'), { original: `${HOME}\\Pictures`, result: 'folder-skip', tooBig: true }],
+        folders: result.folders.map((x) => (x.label === '사진' ? { ...x, mode: 'skip', roots: [], tooBig: true } : x)) } },
     // 끝난 옮겨 오기(14:36)를 14:40에 다시 시작했다가 멈춤 — 앞선 결과는 새 결과가 적힐 때까지 남는다(E13)
     rerun: { state: { ...ended, startedAt: at('2026-11-13T14:40:00+09:00'), unfinished: true }, from: OLD, result, devices },
     // 옮겨 온 자리 가운데 지금 이 PC에 없는 곳(E15 exists false) — 사진의 파일이 모두 놓이지 못했다

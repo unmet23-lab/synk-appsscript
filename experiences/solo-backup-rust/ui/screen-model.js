@@ -351,9 +351,8 @@ function baseModel(state, now, opts) {
       if (mvs.unfinished) {
         return { ...base, ...step, id: 'home-move-stopped', tone: 'warn', stamp: '멈춤', kick: `${device} · 옮겨 오기 멈춤`, title: '옮겨 오기가 중간에 멈췄습니다.', sub: moveStopText(s, mvs),
           // 파일을 놓기 전에 공간이나 목록 때문에 멈췄으면 같은 자리로는 또 멈춘다 — 자리를 다시 고르게 한다(E9 GA1)
-          actions: moveBlocked(moveStopCode(s, mvs)) ? [RESTORE, { id: 'move-quit', label: '되살리지 않고 이 PC에서 이어서 백업', kind: 'link', to: 'move-4' }]
-            : [moveRechoose(s, mvs) ? { id: 'move-in', label: '자리 다시 고르기', kind: 'main', to: 'move-1' } : { id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', flow: 'moveResume' },
-              { ...RESTORE, kind: 'line' }, { id: 'move-quit', label: '그만두고 이 PC로 이어서 백업', kind: 'link', to: 'move-4' }],
+          actions: [moveRechoose(s, mvs) ? { id: 'move-in', label: '자리 다시 고르기', kind: 'main', to: 'move-1' } : { id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', flow: 'moveResume' },
+            { ...RESTORE, kind: 'line' }, { id: 'move-quit', label: '그만두고 이 PC로 이어서 백업', kind: 'link', to: 'move-4' }],
           evidence: evidence(s, now, { state: 'moved' }) };
       }
       if (mvs.resultAt && !mvs.released) {
@@ -616,15 +615,33 @@ export const modeId = (c) => (c?.sameDrive ? 'sameDrive' : c?.mode || null);
  * 「어디에 놓을까요」의 폴더 줄과 합계. 수와 크기는 처음 본 미리 보기의 것(first)을 쓴다 — 「옮기지 않음」으로 바꾸면 미리 보기가 0을 주고,
  * 고름을 바꿀 때마다 미리 보기를 다시 부르지 않기 때문이다(Fable F12)
  */
+export const TOO_BIG_WHY = '파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못합니다. 옛 PC의 백업에는 그대로 있습니다.';
 export function moveRows(preview, choices = {}, first = null) {
   const folders = Array.isArray(preview?.folders) ? preview.folders : [];
   const rows = folders.map((f) => {
-    const choice = choices?.[f.original] || { mode: f.mode }, b = first?.[f.original] || f, place = movePlace(f, choice);
-    return { original: f.original, label: f.label || folderName(f.original), files: Number(b.files) || 0, bytes: Number(b.bytes) || 0, skipped: Number(f.skipped) || 0,
-      place, mode: modeId(choice) || f.mode, why: moveWhy(f, choice, place), modes: moveModes(f) };
+    // 100만 개 넘는 폴더(E25 tooBig)는 고름과 상관없이 옮기지 않는다 — 엔진이 어떤 고름을 보내도 그 폴더를 건너뛴다
+    const big = f?.tooBig === true, choice = big ? { mode: 'skip' } : choices?.[f.original] || { mode: f.mode }, b = first?.[f.original] || f, place = movePlace(f, choice);
+    return { original: f.original, label: f.label || folderName(f.original), files: big ? 0 : Number(b.files) || 0, bytes: big ? 0 : Number(b.bytes) || 0, skipped: Number(f.skipped) || 0,
+      place, mode: big ? 'skip' : modeId(choice) || f.mode, why: big ? TOO_BIG_WHY : moveWhy(f, choice, place), modes: big ? [] : moveModes(f), tooBig: big };
   });
   const moving = rows.filter((r) => r.place.kind !== 'skip');
-  return { rows, files: moving.reduce((n, r) => n + r.files, 0), bytes: moving.reduce((n, r) => n + r.bytes, 0), places: moving.length };
+  return { rows, files: moving.reduce((n, r) => n + r.files, 0), bytes: moving.reduce((n, r) => n + r.bytes, 0), places: moving.length, big: rows.filter((r) => r.tooBig) };
+}
+/** 옮겨 온 결과에서 너무 커서 옮기지 않은 폴더(E25 — 결과 folders[]의 tooBig) */
+export function moveBigFolders(result) {
+  return (Array.isArray(result?.folders) ? result.folders : []).filter((f) => f && f.tooBig === true).map((f) => ({ original: f.original, label: f.label || folderName(f.original) }));
+}
+/**
+ * 폴더 묶음의 주어 말 — 「사진」 폴더 · 「사진」과 「영상」 폴더 · 「문서」 등 폴더 3곳. 조사는 부르는 쪽이 josa로 붙인다
+ * (「폴더는」 · 「3곳은」 — 「외 2곳 폴더는」처럼 단위가 겹치지 않게, 카본 A1)
+ */
+export function folderSubjectKo(list) {
+  const items = Array.isArray(list) ? list : [], names = items.map((x) => `「${x.label}」`);
+  if (!names.length) return '';
+  if (names.length === 1) return `${names[0]} 폴더`;
+  // 조사는 꺾쇠가 아니라 이름의 끝 소리에 맞춘다(「사진」과)
+  if (names.length === 2) return `${names[0]}${josa(items[0].label, '과/와').slice(String(items[0].label).length)} ${names[1]} 폴더`;
+  return `${names[0]} 등 폴더 ${names.length}곳`;
 }
 /** 드라이브마다 드는 양과 남은 공간 — 남은 공간을 못 읽은 드라이브(enough: null)는 막지 않고 그렇게 적는다 */
 export function moveVolumes(preview) {
@@ -661,9 +678,9 @@ export function moveStopText(s, st) {
   const kept = st?.resultAt ? ' 앞서 옮겨 온 결과는 그대로 있습니다.' : '';
   if (!fresh || fresh === 'MOVE_FAILED') return `옛 PC의 백업은 그대로 있습니다. 이어서 옮겨 오면 멈춘 곳부터 잇습니다.${kept}`;
   if (fresh === 'BUSY') return `다른 PC가 백업을 쓰고 있어 멈췄습니다. 잠시 뒤 이어서 옮겨 오면 멈춘 곳부터 잇습니다.${kept}`;
-  // 장부를 쓰기 전에 난 실패(공간 · 목록 초과)는 자리를 다시 고르게 한다 — 엔진은 그때 새 고름을 받는다(E9 · GPT GA1)
-  // 목록 초과는 이어서 해도 같은 오류다 — 「이어서」를 권하지 않는다(Fable F1)
-  if (moveRechoose(s, st) || moveBlocked(fresh)) return `${failureText(fresh)}${kept}`;
+  // 한 파일도 놓기 전의 공간 부족은 자리를 다시 고르게 한다 — 엔진은 그때 새 고름을 받는다(E9 · E24 begun)
+  // 목록 초과(앞선 판이 남긴 실패)는 이제 그 폴더만 빼고 옮겨 오므로 이어서 하면 된다(E25)
+  if (moveRechoose(s, st)) return `${failureText(fresh)}${kept}`;
   return `${failureText(fresh)} 이어서 옮겨 오면 멈춘 곳부터 잇습니다.${kept}`;
 }
 /** 이번 시작 뒤에 적힌 실패의 부호 — 옛 실패는 지금 실패가 아니다(Fable F5). 새로 시작하면 엔진이 앞선 실패 칸을 비운다(E4) */
@@ -673,15 +690,13 @@ export function moveStopCode(s, st) {
 }
 /**
  * 멈춘 옮겨 오기에서 자리를 다시 고를 수 있는지. 엔진은 한 파일도 놓기 전(장부가 빈) 멈춘 것만 새 고름을 받는다(E9 begun).
- * 공간 부족은 놓기 시작한 뒤 이어 할 때도 나서(그때 엔진은 처음 고른 자리를 지킨다) begun이 거짓일 때만 푼다(카본 A2, E24 부탁).
- * 목록 초과는 고름과 상관없이 미리 보기부터 거절되어 자리를 다시 골라도 풀리지 않는다(Fable F1) — moveBlocked로 가른다
+ * 공간 부족은 놓기 시작한 뒤 이어 할 때도 나서(그때 엔진은 처음 고른 자리를 지킨다) begun이 거짓일 때만 푼다(카본 A2, E24).
+ * 100만 개 넘는 폴더는 이제 거절되지 않고 그 폴더만 「옮기지 않음」으로 고정된다(E25) — 따로 가르지 않는다
  */
 export function moveRechoose(s, st) {
   if (!st?.unfinished) return false;
   return moveStopCode(s, st) === 'MOVE_NO_SPACE' && st.begun === false;
 }
-/** 이 옛 PC의 백업은 지금 옮겨 올 수 없는지 — 폴더 하나가 100만 개를 넘으면 미리 보기도 시작도 거절된다(Fable F1, 엔진 부탁 E25) */
-export const moveBlocked = (code) => code === 'MOVE_LIST_TOO_BIG';
 /**
  * 옮겨 오는 동안의 양 · 폴더 · 속도(E7 move.progress — 옮겨 오기가 도는 동안만 있다). 이어받기에서는 전체가 남은 양이라 「이번에 받을 양」이라 쓴다.
  * 남은 시간은 처음 5초 뒤 엔진이 준 속도로만 어림한다(속도가 없으면 쓰지 않는다)
@@ -730,6 +745,7 @@ const WHY = {
   other: { label: '그 밖의 까닭', text: '까닭을 가리지 못한 오류로 놓지 못했습니다.', tone: 'warn' },
   unverified: { label: '같아 보이나 내용은 견주지 못함', text: '이 PC에 크기와 시각이 같은 파일이 있어 그대로 두었지만, 내용까지 견주지는 못했습니다.', tone: 'warn' },
   'od-unverified': { label: 'OneDrive에서 내용을 견주지 못함', text: 'OneDrive에 같은 이름의 파일이 있지만 온라인 전용이라 내용을 견주지 못했습니다.', tone: 'warn' },
+  toobig: { label: '너무 커서 옮기지 않은 폴더', text: '파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못했습니다. 그 폴더는 옛 PC의 백업에 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요.', tone: 'warn' },
 };
 const WHY_CODE = [[/^(link|MOVE_SKIP_LINK|LINK_ABOVE)$/, 'link'], [/^special$/, 'special'], [/^chosen$/, 'chosen'], [/^(name|MOVE_PATH)$/, 'name'], [/^(long|ENAMETOOLONG)$/, 'long'],
   [/^MOVE_PROTECTED$/, 'protected'], [/^(MOVE_SKIP_FILE|FILE_ABOVE|EEXIST)$/, 'blocked'], [/^(MOVE_BUSY|EBUSY)$/, 'busy'],
@@ -757,6 +773,10 @@ export function moveGroups(result) {
     else if (it?.result === 'same-unverified') put('unverified', 'unverified', 'warn', it);
     else if (it?.result === 'onedrive' && it.u) put('od-unverified', 'od-unverified', 'warn', it);
   }
+  // 너무 커서 옮기지 않은 폴더(E25)는 항목이 아니라 결과의 폴더 목록으로 묶는다 — 엔진은 폴더 항목을 파일 항목 뒤에 붙이고 앞 2,000개만
+  // 남겨, 항목이 많은 옮겨 오기에서는 폴더 항목이 잘린다(Fable F1). 폴더 목록은 잘리지 않아 수가 정확하다(exact — 「이상」을 붙이지 않는다)
+  const big = moveBigFolders(result);
+  if (big.length) groups.set('toobig', { key: 'toobig', ...WHY.toobig, tone: 'warn', n: big.length, exact: true, examples: big.slice(0, 3).map((f) => f.original) });
   return { cut: items.length >= 2000, list: [...groups.values()].sort((a, b) => (a.tone === b.tone ? b.n - a.n : a.tone === 'warn' ? -1 : 1)) };
 }
 /**
@@ -767,10 +787,11 @@ export function moveLeft(result) {
   const g = moveGroups(result), sum = (list) => list.reduce((k, x) => k + x.n, 0);
   // 견주지 못한 것은 이 PC에 이미 있어 그대로 둔 파일이다 — 옮기지 못한 것과 따로 센다(Fable 화면 검수 FA1).
   // 실패와 견주지 못한 수는 counts가 정확하다 — 앞 2,000개만 남긴 목록보다 작게 세지 않는다
-  const c = result?.counts || {}, warn = g.list.filter((x) => x.tone === 'warn'), unv = (x) => x.key === 'unverified' || x.key === 'od-unverified';
+  // 너무 커서 옮기지 않은 폴더(E25)는 파일이 아니라 폴더 단위라 따로 센다(big) — 「N개는 옮겨 오지 못했습니다」에 섞지 않는다
+  const c = result?.counts || {}, warn = g.list.filter((x) => x.tone === 'warn' && x.key !== 'toobig'), unv = (x) => x.key === 'unverified' || x.key === 'od-unverified';
   // OneDrive에서 견주지 못한 수는 엔진이 따로 센다(E5 counts.unverified)
   const failed = Math.max(Number(c.fail) || 0, sum(warn.filter((x) => !unv(x)))), unverified = Math.max((Number(c['same-unverified']) || 0) + (Number(c.unverified) || 0), sum(warn.filter(unv)));
-  return { n: failed + unverified, failed, unverified, cut: g.cut };
+  return { n: failed + unverified, failed, unverified, cut: g.cut, big: moveBigFolders(result).length };
 }
 /** 확인서의 큰 글 — 「다」와 「모두 같다」는 그 말이 맞을 때만 쓴다(Fable F10) */
 export function moveTitle(result) {
@@ -784,6 +805,8 @@ export function moveTitle(result) {
     : { main: '옮겨 온 파일이 없습니다.', soft: '', then: '옮기지 않은 것은 옛 PC 백업에 그대로 있습니다.', tone: 'warn' };
   if (fail) return { main: '옮겨 왔습니다.', soft: `${count(fail)}개${left.cut ? ' 이상은' : '는'} 옮겨 오지 못했습니다.`, then, tone: 'warn' };
   if (left.unverified) return { main: '옮겨 왔습니다.', soft: `${count(left.unverified)}개${left.cut ? ' 이상은' : '는'} 내용을 견주지 못했습니다.`, then, tone: 'warn' };
+  // 너무 커서 옮기지 않은 폴더(E25) — 나머지는 다 왔어도 「다 옮겨 왔습니다」가 아니다
+  if (left.big) return { main: '옮겨 왔습니다.', soft: `${josa(folderSubjectKo(moveBigFolders(result)), '은/는')} 너무 커서 옮기지 않았습니다.`, then, tone: 'warn' };
   if (result?.complete === true) return { main: '다 옮겨 왔습니다.', soft: '', then, tone: 'ok' };
   return { main: '옮겨 왔습니다.', soft: '옮기지 않은 것은 옛 PC 백업에 그대로 있습니다.', then, tone: 'ok' };
 }
