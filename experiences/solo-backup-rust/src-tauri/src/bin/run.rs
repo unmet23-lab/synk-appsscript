@@ -22,7 +22,8 @@
 //! the helper for shadow copy links and has the worker fill them (`$fill`) before it ends.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 // The binary root looks beside itself for modules; the helper lives in its own folder (`src/bin/run/`).
-#[path = "run/helper.rs"] mod helper;
+// Outside src/bin: the Tauri bundler takes every file and folder there for a program of its own (11-16 CI).
+#[path = "../run_helper.rs"] mod helper;
 use backup_native::{bundle, notify, platform, power, runlog, schedule, secret, worker::Worker};
 use serde_json::{json, Map, Value};
 use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Instant, SystemTime, UNIX_EPOCH}};
