@@ -171,7 +171,7 @@
   "lang": "si",
   "font": "'Inter Tight', 'Nirmala UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "hook": "කොරියන් ලේසියිලුද?",
+  "hook": "කොරියන් ලේසිද?",
   "hookSize": 52,
   "magic": "මැජික් “배”",
   "magicSize": 52,
@@ -209,7 +209,7 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "hook": "한국어가 쉽다던데?",
+    "hook": "한국어 쉬워?",
     "magic": "마법의 “배”",
     "belly": "나 배 아파…",
     "pear": "자, 배(과일)!",
