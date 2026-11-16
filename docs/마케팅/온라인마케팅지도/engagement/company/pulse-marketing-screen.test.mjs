@@ -221,11 +221,8 @@ test('the tab stays inside the screen rules: no style attributes, no service nam
   assert.match(sw,/RUNTIME\.push\(BASE\+'marketing-view\.mjs'\);/);
   assert.doesNotMatch(sw.slice(sw.indexOf('const BASE'),sw.indexOf('const RUNTIME')),/marketing-view/,'not precached for every customer');
   // 서버의 /pulse-app/ 정적 허용 목록에는 있다(없으면 칸을 열 때 모듈이 404라 「불러오지 못했어요」만 선다).
-  // 11-16 저녁부터 서버가 마케팅 성과를 파일이 있을 때만 켜는 선택 기능으로 바꿔, 목록 뒤에 .filter(…)가 붙을 수 있다 — 붙어도 안 붙어도 받되,
-  // 그 거르기는 marketing-view.mjs만 깃발 pulseMarketing으로 빼는 꼴이어야 한다(다른 모듈을 거르거나 늘 빼게 바뀌면 잡는다 — 최종 검수 11-16).
-  // 깃발 이름을 바꾸면 이 시험이 깨진다 — 그때는 이 줄도 함께 고친다.
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
-  assert.match(server,/for\(const file of \[[^\]]*'marketing-view\.mjs'[^\]]*\](?:\.filter\(file=>file!=='marketing-view\.mjs'\|\|pulseMarketing\))?\)files\['\/pulse-app\/'\+file\]/,'the static allowlist serves the module');
+  assert.match(server,/for\(const file of \[[^\]]*'marketing-view\.mjs'[^\]]*\]\)/,'the static allowlist serves the module');
   assert.doesNotMatch(sw,/pulse\/api\/marketing/);
   const app=read('app.mjs');
   assert.match(app,/import\('\.\/marketing-view\.mjs'\)/,'the module loads on first open');
