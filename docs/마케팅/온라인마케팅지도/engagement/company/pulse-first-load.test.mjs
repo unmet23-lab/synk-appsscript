@@ -98,7 +98,12 @@ test('the shell worker waits until the page has loaded and gone idle, and the re
   const inviteInputs=[...entryView({}).match(/<div class="sx-invite"[\s\S]*$/)[0].matchAll(/<input\b[^>]*>/g)].map(m=>m[0]).filter(tag=>attr(tag,'tabindex')!=='-1');
   assert.ok(inviteInputs.length>=3,`다시 열기 판의 칸 ${inviteInputs.length}개`);
   for(const tag of inviteInputs)assert.equal(takesHangul(tag),false,`다시 열기 판의 칸이 나머지 글꼴을 부른다: ${tag.slice(0,90)}`);
-  assert.equal(app.match(/face\.load\(\)/g).length,1,'글꼴을 미리 받는 곳은 글 칸 focusin 하나');
+  // 미리 받는 곳은 둘이다: 글 칸 focusin, 그리고 「마케팅 성과」 칸을 처음 열 때(11-16 — 리포트는 서버 글이라 화면 원문 조각에 없는 음절이 많고,
+  // 명조 ui 조각이 음절 칸을 통째로 덮어 나머지 조각이 저절로 오지 않았다). 그 칸은 스위치가 켜진 손님이 탭을 열 때만이고 같은 절약 · 끊김 조건을 지킨다.
+  assert.equal(app.match(/face\.load\(\)/g).length,2,'글꼴을 미리 받는 곳은 글 칸 focusin과 마케팅 성과 칸 둘');
+  assert.ok(app.includes(`function marketingFonts(){if(marketingFontsAsked||leanData()||!navigator.onLine||!document.fonts)return;marketingFontsAsked=true;for(const face of document.fonts)if(['SYNK Sans','Noto Serif KR'].includes(face.family.replace(/["']/g,''))&&face.status==='unloaded')face.load().catch(()=>{});}`));
+  assert.equal(app.match(/marketingFonts\(\)/g).length,2,'정의 한 곳과 칸을 열 때 부르는 한 곳');
+  assert.match(app,/function loadMarketingView\(\)\{\r?\n  if\(s\.marketingView\|\|marketingViewLoading\|\|s\.marketingViewFailed\|\|!roomCustomer\(\)\|\|roomTab\(s\.tab\)!=='marketing'\|\|marketingNow\(\)\?\.on!==true\)return;\r?\n  marketingFonts\(\);/,'스위치가 켜진 손님이 칸을 열 때만');
 });
 
 test('first-screen pictures behind later pages are attached only when the visitor comes near them',async()=>{

@@ -1,4 +1,4 @@
-import {request as networkRequest,parseInvite,PulseError,clock,esc} from './api.mjs';
+import {request as networkRequest,parseInvite,PulseError,clock,esc,marketingList,marketingReport} from './api.mjs';
 import {createCompanyEntryReceiver} from './entry-handoff.mjs';
 import {refreshCasting,takeCastingValues,syncCastingChoices,readCastingCode,applyCastingItem,castingCodeResult} from './casting-view.mjs';
 import {snapshotDeliverableRows,restoreDeliverableRows} from './deliverables-view.mjs';
@@ -14,7 +14,7 @@ import {mountRequestFlow} from './request-flow.mjs';
 import {mountEntry,mountRoom,mountDraft,mountDirection,JOURNAL_SHOWN,JOURNAL_SHEET,journalOverlay,journalSetOpen,journalFocus,sayPhotoChips} from './film-views.mjs';
 import {mountFilmList,leanData} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
-import {draftModel,deskModel,roomState,roomStage,directionModel,usesRoom,roomTab,roomRoute,journalModel,journalShownIds,journalSeenUpTo} from './room-view.mjs';
+import {draftModel,deskModel,roomState,roomStage,directionModel,usesRoom,roomTab,roomRoute,journalModel,journalShownIds,journalSeenUpTo,marketingHeads} from './room-view.mjs';
 import {PACKAGES,MODEL_LINES} from './request-data.mjs';
 import {MODEL_OPTIONAL_CHOICES,personaRefOf} from './casting-choice.mjs';
 import {PERSONA_DONE} from './persona-view.mjs';
@@ -117,7 +117,7 @@ function setBusy(value){busy=value;document.documentElement.classList.toggle('is
 // 첫 화면이 길어 입장 칸이 화면 밖일 수 있다 — 어느 길로 왔든 새 알림이 나면 그 자리를 보인다. 같은 알림으로 다시 그릴 때는 읽던 자리를 두고 움직이지 않는다.
 let shownEntryError=null;
 // 직원 첫 화면의 카드 그림(img[data-staff-pic])은 다시 그릴 때 같은 주소의 옛 노드를 옮겨 쓴다 — 직원 매체는 no-store라 새 img가 원본을 다시 받을 수 있다(실시간 갱신 · 단계 탭 · 쉬기 칸). 받기에 실패한(숨은 · 너비 0) 노드는 옮기지 않아 새 img가 다시 받는다.
-function render({remote=false}={}){if((s.mode==='staff'||s.project)&&!legacyCssReady){void ensureLegacyCss().then(()=>render({remote}));return;}followLocale();loadDesk();syncJournalSeen();s.feedbackDraftVersion=drafts.get([identity(),'feedback',''].join(':'))?.versionId||'';s.feedbackDraftAction=drafts.get([identity(),'feedback',''].join(':'))?.values.action||'';if(demo){s.demoGuide=demo.guide();s.demoPersistent=demo.snapshot().demo.persistent;}const files=remote?Array.from(main.querySelectorAll('input[type=file]')).filter(node=>node.files?.length).map(node=>({node,key:draftKey(node.form),name:node.name})):[];const headBox=document.querySelector('.app-header'),previousFocus=remote&&(main.contains(document.activeElement)||headBox?.contains(document.activeElement))?document.activeElement:null,focusKey=previousFocus?{action:previousFocus.dataset.action,id:previousFocus.dataset.id,tab:previousFocus.dataset.tab,href:previousFocus.getAttribute('href'),room:previousFocus.dataset.roomGo||previousFocus.dataset.roomDo||previousFocus.dataset.draftDo||previousFocus.dataset.journalDo||previousFocus.dataset.journalGo||'',say:previousFocus.dataset.sayPhotoRemove??'',look:previousFocus.dataset.roomLookPick?previousFocus.dataset.roomLookPick+':'+previousFocus.dataset.value:''}:null;const media=remote||main.querySelector('#review-video')?Array.from(main.querySelectorAll('video,audio')).map(node=>({node,playing:!node.paused,time:node.currentTime})):[],pillarTop=main.querySelector('.sx-dr-right')?.scrollTop||0,journalTop=main.querySelector('[data-journal]')?.scrollTop||0,details=remote?Array.from(main.querySelectorAll('details')).map((node,index)=>node.open?index:-1):[],scroll=remote?{x:scrollX,y:scrollY}:null,staffPics=s.mode==='staff'&&!s.project?new Map(Array.from(main.querySelectorAll('img[data-staff-pic]')).filter(node=>!node.hidden&&(!node.complete||node.naturalWidth>0)).map(node=>[node.getAttribute('src'),node])):null;const sayPick=main.querySelector('[data-journal] [data-say-photos]'),sayNote=main.querySelector('[data-journal] [data-say-note]'),keepPics=new Map(Array.from(main.querySelectorAll('img[data-keep-pic]')).filter(node=>!node.hidden&&(!node.complete||node.naturalWidth>0)).map(node=>[node.getAttribute('src'),node]));document.querySelector('#header-actions').innerHTML=header(s);document.documentElement.classList.toggle('has-room-head',roomCustomer());const crumb=document.querySelector('#header-crumb');if(crumb)crumb.innerHTML=headerCrumb(s);const keepEntry=!!entryHandle&&!s.project&&s.mode!=='staff';if(keepEntry)entryHandle.update({resume:!!s.requestResume,paused:intakeBlocked(s.intake),entryError:s.entryError||null,busy:booting});else{entryHandle?.unmount();entryHandle=null;main.innerHTML=s.project?projectView(s):booting?loadingView():s.mode==='staff'?(s.user?(s.brands?brandsView():s.ledger?ledgerView():picker(s)):login()):welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}for(const fresh of media.length?main.querySelectorAll('video,audio'):[]){const index=media.findIndex(old=>old.node.dataset.version===fresh.dataset.version&&old.node.getAttribute('src')===fresh.getAttribute('src')&&old.node.id===fresh.id);if(index!==-1){const old=media.splice(index,1)[0];fresh.replaceWith(old.node);if(old.playing&&old.node.paused)old.node.play().catch(()=>{});}}if(staffPics?.size)for(const fresh of main.querySelectorAll('img[data-staff-pic]')){const old=staffPics.get(fresh.getAttribute('src'));if(old){staffPics.delete(fresh.getAttribute('src'));fresh.replaceWith(old);}}if(keepPics.size)for(const fresh of main.querySelectorAll('img[data-keep-pic]')){const old=keepPics.get(fresh.getAttribute('src'));if(old){keepPics.delete(fresh.getAttribute('src'));fresh.replaceWith(old);}}const pillar=main.querySelector('.sx-dr-right');if(pillar&&pillarTop)pillar.scrollTop=pillarTop;const journalNode=main.querySelector('[data-journal]');if(journalNode&&journalTop)journalNode.scrollTop=journalTop;restore(main);drawSay(sayPick,sayNote);mountScreens();placeTimeline();if(s.ledger)s.ledgerPlace?.(main);wireCompare();const strategyForm=main.querySelector('[data-form=strategy]');if(strategyForm)syncCastingChoices(strategyForm,drafts.get(draftKey(strategyForm))?.values);refreshCasting(strategyForm);if(remote){for(const old of files){const form=Array.from(main.querySelectorAll('form[data-form]')).find(node=>draftKey(node)===old.key);const input=form&&Array.from(form.elements).find(node=>node.type==='file'&&node.name===old.name);if(input)input.replaceWith(old.node);}for(const [index,node] of Array.from(main.querySelectorAll('details')).entries())if(details.includes(index))node.open=true;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else if(focusKey){const replacement=[...main.querySelectorAll('button,a'),...(headBox?.querySelectorAll('button,a')||[])].find(node=>node.offsetParent!==null&&(focusKey.look?node.dataset.roomLookPick+':'+node.dataset.value===focusKey.look:focusKey.room?[node.dataset.roomGo,node.dataset.roomDo,node.dataset.draftDo,node.dataset.journalDo,node.dataset.journalGo].includes(focusKey.room):focusKey.action?node.dataset.action===focusKey.action&&node.dataset.id===focusKey.id&&node.dataset.tab===focusKey.tab:focusKey.href&&node.getAttribute('href')===focusKey.href));replacement?.focus({preventScroll:true});if(focusKey.say!==''){const chips=main.querySelectorAll('[data-say-photo-remove]');(chips[Math.min(Number(focusKey.say),chips.length-1)]||main.querySelector('[data-say-photos]'))?.focus({preventScroll:true});}}if(scroll)window.scrollTo(scroll.x,scroll.y);}const inviteField=document.querySelector('[name="invite-url"]');if(inviteField)inviteField.readOnly=true;wireMedia();production.render();if(busy)setBusy(true);syncLive();renderLive();focusInitialStaffScene();focusInitialStaffHistory();}
+function render({remote=false}={}){if((s.mode==='staff'||s.project)&&!legacyCssReady){void ensureLegacyCss().then(()=>render({remote}));return;}followLocale();loadDesk();checkMarketing();loadMarketingView();syncJournalSeen();s.feedbackDraftVersion=drafts.get([identity(),'feedback',''].join(':'))?.versionId||'';s.feedbackDraftAction=drafts.get([identity(),'feedback',''].join(':'))?.values.action||'';if(demo){s.demoGuide=demo.guide();s.demoPersistent=demo.snapshot().demo.persistent;}const files=remote?Array.from(main.querySelectorAll('input[type=file]')).filter(node=>node.files?.length).map(node=>({node,key:draftKey(node.form),name:node.name})):[];const headBox=document.querySelector('.app-header'),previousFocus=remote&&(main.contains(document.activeElement)||headBox?.contains(document.activeElement))?document.activeElement:null,focusKey=previousFocus?{action:previousFocus.dataset.action,id:previousFocus.dataset.id,tab:previousFocus.dataset.tab,href:previousFocus.getAttribute('href'),room:previousFocus.dataset.roomGo||previousFocus.dataset.roomDo||previousFocus.dataset.draftDo||previousFocus.dataset.journalDo||previousFocus.dataset.journalGo||'',say:previousFocus.dataset.sayPhotoRemove??'',look:previousFocus.dataset.roomLookPick?previousFocus.dataset.roomLookPick+':'+previousFocus.dataset.value:''}:null;const media=remote||main.querySelector('#review-video')?Array.from(main.querySelectorAll('video,audio')).map(node=>({node,playing:!node.paused,time:node.currentTime})):[],pillarTop=main.querySelector('.sx-dr-right')?.scrollTop||0,journalTop=main.querySelector('[data-journal]')?.scrollTop||0,details=remote?Array.from(main.querySelectorAll('details:not([data-mk-key])')).map((node,index)=>node.open?index:-1):[],scroll=remote?{x:scrollX,y:scrollY}:null,staffPics=s.mode==='staff'&&!s.project?new Map(Array.from(main.querySelectorAll('img[data-staff-pic]')).filter(node=>!node.hidden&&(!node.complete||node.naturalWidth>0)).map(node=>[node.getAttribute('src'),node])):null;const sayPick=main.querySelector('[data-journal] [data-say-photos]'),sayNote=main.querySelector('[data-journal] [data-say-note]'),keepPics=new Map(Array.from(main.querySelectorAll('img[data-keep-pic]')).filter(node=>!node.hidden&&(!node.complete||node.naturalWidth>0)).map(node=>[node.getAttribute('src'),node]));document.querySelector('#header-actions').innerHTML=header(s);document.documentElement.classList.toggle('has-room-head',roomCustomer());const crumb=document.querySelector('#header-crumb');if(crumb)crumb.innerHTML=headerCrumb(s);const keepEntry=!!entryHandle&&!s.project&&s.mode!=='staff';if(keepEntry)entryHandle.update({resume:!!s.requestResume,paused:intakeBlocked(s.intake),entryError:s.entryError||null,busy:booting});else{entryHandle?.unmount();entryHandle=null;main.innerHTML=s.project?projectView(s):booting?loadingView():s.mode==='staff'?(s.user?(s.brands?brandsView():s.ledger?ledgerView():picker(s)):login()):welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}for(const fresh of media.length?main.querySelectorAll('video,audio'):[]){const index=media.findIndex(old=>old.node.dataset.version===fresh.dataset.version&&old.node.getAttribute('src')===fresh.getAttribute('src')&&old.node.id===fresh.id);if(index!==-1){const old=media.splice(index,1)[0];fresh.replaceWith(old.node);if(old.playing&&old.node.paused)old.node.play().catch(()=>{});}}if(staffPics?.size)for(const fresh of main.querySelectorAll('img[data-staff-pic]')){const old=staffPics.get(fresh.getAttribute('src'));if(old){staffPics.delete(fresh.getAttribute('src'));fresh.replaceWith(old);}}if(keepPics.size)for(const fresh of main.querySelectorAll('img[data-keep-pic]')){const old=keepPics.get(fresh.getAttribute('src'));if(old){keepPics.delete(fresh.getAttribute('src'));fresh.replaceWith(old);}}const pillar=main.querySelector('.sx-dr-right');if(pillar&&pillarTop)pillar.scrollTop=pillarTop;const journalNode=main.querySelector('[data-journal]');if(journalNode&&journalTop)journalNode.scrollTop=journalTop;restore(main);drawSay(sayPick,sayNote);mountScreens();placeTimeline();if(s.ledger)s.ledgerPlace?.(main);wireCompare();const strategyForm=main.querySelector('[data-form=strategy]');if(strategyForm)syncCastingChoices(strategyForm,drafts.get(draftKey(strategyForm))?.values);refreshCasting(strategyForm);if(remote){for(const old of files){const form=Array.from(main.querySelectorAll('form[data-form]')).find(node=>draftKey(node)===old.key);const input=form&&Array.from(form.elements).find(node=>node.type==='file'&&node.name===old.name);if(input)input.replaceWith(old.node);}for(const [index,node] of Array.from(main.querySelectorAll('details:not([data-mk-key])')).entries())if(details.includes(index))node.open=true;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else if(focusKey){const replacement=[...main.querySelectorAll('button,a'),...(headBox?.querySelectorAll('button,a')||[])].find(node=>node.offsetParent!==null&&(focusKey.look?node.dataset.roomLookPick+':'+node.dataset.value===focusKey.look:focusKey.room?[node.dataset.roomGo,node.dataset.roomDo,node.dataset.draftDo,node.dataset.journalDo,node.dataset.journalGo].includes(focusKey.room):focusKey.action?node.dataset.action===focusKey.action&&node.dataset.id===focusKey.id&&node.dataset.tab===focusKey.tab:focusKey.href&&node.getAttribute('href')===focusKey.href));replacement?.focus({preventScroll:true});if(focusKey.say!==''){const chips=main.querySelectorAll('[data-say-photo-remove]');(chips[Math.min(Number(focusKey.say),chips.length-1)]||main.querySelector('[data-say-photos]'))?.focus({preventScroll:true});}}if(scroll)window.scrollTo(scroll.x,scroll.y);}const inviteField=document.querySelector('[name="invite-url"]');if(inviteField)inviteField.readOnly=true;wireMedia();production.render();if(busy)setBusy(true);syncLive();renderLive();focusInitialStaffScene();focusInitialStaffHistory();}
 // 슬레이트 판 화면(첫 화면 · 고객 방 · 1차안): 움직임과 듣개는 새로 그린 칸에 붙인다. 같은 화면을 다시 그릴 때는 다시 움직이지 않는다.
 let screenKey='',draftHandle=null,entryHandle=null,reviewHandle=null,finalHandle=null,directionHandle=null,resumeChecked=false,entryLocale='';
 function mountScreens(){
@@ -141,6 +141,7 @@ function mountScreens(){
   if(room)mountRoom(main,{animate,ui:proposeKey?s.proposeUi:{},onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>openJournal(),onModel:answerModel,onFiles:sendMoreFiles,onPaper:showRoomPaper,onPersona:({decision})=>personaDecide({decision}),onPersonaFiles:sendPersonaFiles,onKeep:()=>keepProject(),onMyModels:()=>openMyModels()});
   // 판 4: 이 방의 「내 모델로 모아 두기」 회원 상태는 프로젝트마다 한 번 읽는다(스위치 · 인물이 없으면 읽지 않는다).
   if(room&&s.keep?.projectId!==s.project?.id&&keepWanted())void loadKeep();
+  mountMarketing();
   watchJournal();setJournalOpen(!!s.journalOpen);
 }
 // 첫 화면의 「내 모델」 입구(판 4): 공개 스위치(myModels)가 켜져 있을 때만 붙인다. 못 읽으면 붙이지 않는다.
@@ -586,6 +587,86 @@ async function openFilmDemo(){
   try{await ensureLegacyCss();const {mountFilmDemo}=await import('./demo-film.mjs');document.documentElement.classList.add('has-demo-nav');const overlay=overlayState(true);overlay.innerHTML='<div></div>';mountFilmDemo(overlay.firstElementChild,{onLeave:()=>location.assign('./')});}catch(error){notice(error.message);}}
 // 예시를 열지 않을 때: 주소에서 예시를 지우고 처음 온 손님처럼 연다(기억한 기기면 그 프로젝트, 아니면 첫 화면).
 function leaveFilmDemo(){filmDemo=false;history.replaceState({},'',location.pathname);entryHandle?.unmount();entryHandle=null;booting=true;render();void start('');}
+// ── 마케팅 성과(11-16 계약 docs/마케팅/PULSE_마케팅성과_20261116/계약.md) ──
+// 의뢰 흐름 손님 방에서만: 고객 방 자료(GET /pulse/api/project)의 features.marketing이 참일 때 — 서버가 스위치가 켜져 있고 그 프로젝트에 리포트가
+// 한 건 이상 있을 때만 참을 준다(계약 11-16 고침, 공개 /pulse/api/features에는 없다) — 리포트 목록을 한 번 읽어 방에 입구 줄 · 머리 칸 이름을 그린다.
+// 칸을 열면 화면 모듈(marketing-view.mjs)을 처음 한 번 불러오고, 종류마다 고른 회차(기본은 최신)를 따로 부른다. 상태는 프로젝트마다 s.marketing 하나다.
+// 목록이 404면 서버 스위치가 꺼진 것이라 칸을 거두고 방으로 돌린다. 리포트 한 건이 404면 지워졌을 수 있어 목록을 한 번 다시 읽는다(계약 「지킬 것」).
+// 리포트는 메모리에만 두고 셸 캐시(sw.js)도 API를 담지 않는다.
+let marketingViewLoading=null,marketingRedrawTimer=0,marketingFocus='';
+const marketingNow=()=>s.marketing&&s.marketing.projectId===s.project?.id?s.marketing:null;
+// 다시 그리기: 글 칸에 쓰는 중이면(canApplyRemote 거짓) 그 틈을 기다린다 — 회차 고르기 칸에 초점이 있을 때는 바로 그리고, 다시 그린 뒤 그 칸에 초점을 돌려준다(리포트가 늦게 와도 — 카본 검수 11-16).
+// 방이나 칸이 막 그려져 등장 움직임(유한한 Web Animations)이 도는 중이면 끝날 때까지 기다린다 — 목록 · 리포트가 곧바로 와도 움직임을 끊지 않게(최종 검수 11-16). 3초를 넘기면 기다리지 않는다.
+const entering=()=>typeof main.getAnimations==='function'&&main.getAnimations({subtree:true}).some(a=>(a.playState==='running'||a.playState==='pending')&&Number.isFinite(a.effect?.getComputedTiming?.().endTime));
+function marketingRedraw(m,since=Date.now()){clearTimeout(marketingRedrawTimer);if(s.marketing!==m||!s.project)return;const picking=document.activeElement?.matches?.('select[data-mk-run]')?document.activeElement.dataset.mkRun||'':'';if(picking||canApplyRemote()&&!(entering()&&Date.now()-since<3000)){if(picking)marketingFocus=picking;render({remote:true});return;}marketingRedrawTimer=setTimeout(()=>marketingRedraw(m,since),canApplyRemote()?120:500);}
+function marketingOff(m){m.on=false;m.status='off';if(roomTab(s.tab)==='marketing')s.tab='overview';}
+// render 머리에서 그릴 때마다 본다: 방 자료가 새로 와 값이 바뀌었으면(켜짐 ↔ 꺼짐) 이번 그리기부터 따른다 — 그리기 안에서 다시 그리지 않는다(최종 검수 11-16).
+// 상태는 어느 값으로 만들었는지(wanted)를 들고 있어, 켜짐인데 목록이 404라 거둔 칸은 서버 값이 다시 바뀔 때까지 또 읽지 않는다(그리기마다 목록을 다시 부르지 않게).
+// open은 칸에서 펼친 목록의 열쇠(data-mk-key)다 — 다시 그려도 그대로 연다.
+function checkMarketing(){
+  if(!roomCustomer())return;
+  const want=projectFeatures?.marketing===true,m=marketingNow();
+  if(m&&m.wanted===want)return;
+  if(!want){s.marketing={projectId:s.project.id,wanted:false,on:false,status:'off',heads:[],picks:{},reports:{},open:new Set()};if(roomTab(s.tab)==='marketing')s.tab='overview';return;}
+  void loadMarketingHeads(s.marketing={projectId:s.project.id,wanted:true,on:true,status:'idle',heads:[],picks:{},reports:{},relisted:new Set(),open:new Set()},{draw:false});
+}
+// draw: 처음 읽기(render 머리)는 그 그리기가 이미 「불러오는 중」을 그리므로 다시 그리지 않는다. 다시 불러오기 · 목록 다시 읽기는 그 자리에서 그린다.
+async function loadMarketingHeads(m,{draw=true}={}){
+  m.status='loading';m.reports={};if(draw)marketingRedraw(m);
+  try{
+    const result=await marketingList();if(s.marketing!==m)return;
+    m.heads=marketingHeads(result?.reports);m.status='ready';
+    const picks={};for(const head of m.heads)if(!picks[head.kind])picks[head.kind]=m.picks[head.kind]&&m.heads.some(item=>item.kind===head.kind&&item.runId===m.picks[head.kind])?m.picks[head.kind]:head.runId;m.picks=picks;
+  }catch(error){if(s.marketing!==m)return;if(error?.status===404)marketingOff(m);else m.status='error';}
+  marketingRedraw(m);if(roomTab(s.tab)==='marketing')loadMarketingReports(m);
+}
+function loadMarketingReports(m=marketingNow()){
+  if(!m||m.on!==true||m.status!=='ready')return;
+  for(const [kind,run] of Object.entries(m.picks)){
+    // 한 번 부른 것(못 불러온 것 포함)은 다시 그릴 때 또 부르지 않는다 — 다시 부르기는 「다시 불러오기」를 눌렀을 때만(그 자리에서 실패 칸을 지운다).
+    const key=kind+'\u0001'+run;if(m.reports[key])continue;
+    m.reports[key]={status:'loading'};
+    // 계약의 답은 Report 한 건 그대로다. 서버가 { report }로 감싸 보내도 같은 것으로 읽는다.
+    marketingReport(kind,run).then(result=>{const report=result&&!result.kind&&result.report&&typeof result.report==='object'?result.report:result;m.reports[key]=report?.kind===kind&&report?.runId===run?{status:'ready',report}:{status:'missing'};},error=>{
+      // 404: 직원이 그 리포트(마지막 리포트일 수도)를 지웠을 수 있다 — 그 회차마다 한 번만 목록을 다시 읽고(남은 회차 · 빈 상태로 바뀐다), 다시 읽은 뒤에도 404면 「찾지 못함」.
+      if(error?.status===404&&s.marketing===m){if(!m.relisted.has(key)){m.relisted.add(key);if(m.status!=='loading')void loadMarketingHeads(m);return;}m.reports[key]={status:'missing'};return;}
+      m.reports[key]={status:'error'};}).then(()=>marketingRedraw(m));
+  }
+}
+// 칸을 열 때 화면 모듈을 한 번만 받는다. 못 받으면 칸에 「다시 불러오기」를 두고 그 단추를 누를 때만 다시 받는다(실패 뒤 그리기마다 또 받지 않게 — 카본 검수 11-16).
+// 리포트는 거의 다 서버 글(결론 문장 · 질문 · 광고 본문 · 경쟁사 이름)이라 화면 원문 조각에 없는 음절이 많다. 명조 ui 조각이 한글 음절 칸을
+// 통째로 덮어 크롬이 명조 나머지 조각을 저절로 받지 않고 다른 글꼴로 그렸다(11-16 실측 — 결론 제목이 고딕으로 섰다). 그래서 칸을 처음 열 때
+// 두 글꼴의 나머지 조각을 한 번 받는다. 데이터 절약 · 끊긴 동안은 받지 않는다(글쓰기 칸 focusin과 같은 조건, 언어와는 상관없다 — 리포트 글은 한국어다).
+let marketingFontsAsked=false;
+function marketingFonts(){if(marketingFontsAsked||leanData()||!navigator.onLine||!document.fonts)return;marketingFontsAsked=true;for(const face of document.fonts)if(['SYNK Sans','Noto Serif KR'].includes(face.family.replace(/["']/g,''))&&face.status==='unloaded')face.load().catch(()=>{});}
+function loadMarketingView(){
+  if(s.marketingView||marketingViewLoading||s.marketingViewFailed||!roomCustomer()||roomTab(s.tab)!=='marketing'||marketingNow()?.on!==true)return;
+  marketingFonts();
+  marketingViewLoading=import('./marketing-view.mjs').then(module=>{s.marketingView=module.marketingScreen;s.marketingViewFailed=false;},()=>{s.marketingViewFailed=true;}).then(()=>{marketingViewLoading=null;const m=marketingNow();if(m)marketingRedraw(m);});
+}
+function mountMarketing(){
+  const m=marketingNow();if(!m)return;
+  if(roomTab(s.tab)==='marketing'){loadMarketingReports(m);if(marketingFocus){const select=main.querySelector(`select[data-mk-run="${CSS.escape(marketingFocus)}"]`);marketingFocus='';select?.focus({preventScroll:true});}}
+}
+main.addEventListener('toggle',event=>{
+  const node=event.target,m=marketingNow();if(!m||!node?.matches?.('details[data-mk-key]'))return;
+  const key=node.dataset.mkKey;(m.open||=new Set());if(node.open)m.open.add(key);else m.open.delete(key);
+},true);
+main.addEventListener('change',event=>{
+  const select=event.target?.closest?.('select[data-mk-run]'),m=marketingNow();if(!select||!m)return;
+  const kind=select.dataset.mkRun,run=select.value;if(!m.heads.some(head=>head.kind===kind&&head.runId===run))return;
+  m.picks={...m.picks,[kind]:run};marketingFocus=kind;loadMarketingReports(m);render({remote:true});
+});
+main.addEventListener('click',event=>{
+  const jump=event.target?.closest?.('[data-mk-jump]');
+  if(jump){event.preventDefault();main.querySelector(`#mk-${CSS.escape(jump.dataset.mkJump)}`)?.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth'});return;}
+  const retry=event.target?.closest?.('[data-mk-do="retry"]'),m=marketingNow();if(!retry||!m)return;
+  event.preventDefault();
+  if(s.marketingViewFailed&&!s.marketingView){s.marketingViewFailed=false;render();return;}
+  if(m.status==='error'){void loadMarketingHeads(m);return;}
+  for(const [key,entry] of Object.entries(m.reports))if(entry.status==='error')delete m.reports[key];
+  loadMarketingReports(m);render({remote:true});
+});
 // 내부 확인 화면은 직원이 그 탭을 열 때만 불러온다(손님 묶음에 넣지 않는다). 직원 화면이라 번역하지 않는다.
 let deskLoading=null;
 function loadDesk(){if(s.mode!=='staff'||s.tab!=='desk'||s.deskView||deskLoading)return;deskLoading=import('./desk-view.mjs').then(module=>{s.deskView=module.deskView;deskLoading=null;render();}).catch(()=>{deskLoading=null;notice('내부 확인 화면을 불러오지 못했어요. 새로 고쳐 주세요.');});} // i18n-skip

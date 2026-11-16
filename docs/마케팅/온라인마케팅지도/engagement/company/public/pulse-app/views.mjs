@@ -11,7 +11,7 @@ import {strategyView,strategySummary,strategyHistory,strategyConfirmDialog,strat
 import {FINISHED_FILMS,filmLine,filmNote,filmsView,hasFinishedFilms,filmTitle} from './films-view.mjs';
 import {arrow} from './film-home.mjs';
 import {entryView,roomView,roomHead,exampleHead,draftView,directionView as directionScreen,journalView,journalAsk} from './film-views.mjs';
-import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew,staffBoard} from './room-view.mjs';
+import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew,staffBoard,marketingLine} from './room-view.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {personaModelsLine} from './persona-view.mjs';
 import {MODEL_LINES,PACKAGES,BOLD,noticeLabel} from './request-data.mjs';
@@ -364,7 +364,19 @@ function roomPreview(p){
   return pickPlayable(first)||pickFallback(first)||pickPlayable(second)||pickFallback(second);
 }
 // keep(판 4): 「내 모델로 모아 두기」 회원 상태(app.mjs가 그 프로젝트에서 읽은 것만 — 스위치가 꺼져 있으면 없다).
-const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{})};};
+const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{}),...(marketingOn(s)?{marketing:true}:{})};};
+// 마케팅 성과(11-16 계약): 스위치(features.marketing)를 읽어 켜져 있는 의뢰 흐름 손님에게만 칸을 그린다. 상태는 app.mjs가 프로젝트마다 s.marketing에 둔다.
+const marketingOn=s=>isCustomerRoom(s)&&s.marketing?.projectId===s.project?.id&&s.marketing.on===true;
+// 고객 방 왼쪽 단의 입구 한 줄: 이번 달 한 장의 결론(없으면 가장 최근 리포트의 한 문장)과 「리포트 보기」. 휴대폰은 머리의 칸 이름이 숨으므로 이 줄이 입구다.
+function marketingEntry(s){
+  const m=s.marketing,line=m.status==='ready'?marketingLine(m.heads)||t('아직 잰 것이 없어요. 첫 회차를 재면 여기에 올라와요.'):t('SYNK가 재서 올린 리포트를 여기에서 읽으실 수 있어요.');
+  return `<section class="sx-extra sx-mk-entry" data-room-in><div><h2>${esc(t('마케팅 성과'))}</h2><p class="sx-small">${esc(line)}</p></div><button type="button" class="sx-go" data-room-go="marketing"><span>${esc(t('리포트 보기'))}</span>${arrow}</button></section>`;
+}
+// 마케팅 성과 칸: 화면 모듈(marketing-view.mjs)은 처음 열 때 app.mjs가 불러 s.marketingView로 둔다. 오기 전에는 기다림 한 줄.
+function marketingRoom(s){
+  const m=s.marketing,body=s.marketingView?s.marketingView(m,{failed:!!s.marketingViewFailed}):s.marketingViewFailed?`<div class="sx-mk-page"><p class="sx-kicker">${esc(t('마케팅 성과'))}</p><h1 class="sx-display" data-room-title>${esc(t('리포트를 불러오지 못했어요'))}</h1><p class="sx-body">${esc(t('인터넷 연결을 확인한 뒤 다시 불러와 주세요.'))}</p><button type="button" class="sx-go is-solid" data-mk-do="retry"><span>${esc(t('다시 불러오기'))}</span>${arrow}</button></div>`:`<div class="sx-mk-page"><p class="sx-kicker">${esc(t('마케팅 성과'))}</p><p class="sx-small sx-mk-wait" role="status">${esc(t('리포트를 불러오고 있어요.'))}</p></div>`;
+  return `<div class="sx-shell sx-room sx-mk" data-mode="customer" data-tab="marketing" data-state="marketing">${body}${journalOf(s,'drawer',{tab:'marketing'})}</div>`;
+}
 // 담당자 이름은 서버가 언어에 맞게 내려준다. 이름이 없을 때의 「담당자」만 화면 글이다.
 // 사진 붙이기는 실제 손님 방에서, 서버가 문의 사진을 받는다고 알릴 때만(체험 · 직원 미리 보기 · 옛 서버는 글만).
 const journalOf=(s,place,here,extra={})=>journalView(journalModel(s.project),{place,here,open:!!s.journalOpen,all:!!s.journalAll,talk:!!s.journalTalk,owner:s.project.ownerName||t('담당자'),attach:s.mode==='customer'&&!s.demo&&!!s.project?.studio?.request?.messagePhotos,...extra});
@@ -389,7 +401,7 @@ function customerRoom(s){
   // 제안이 바뀌었으면(안 id가 다르면) 옛 화면 상태(모델 · 펼침 · 둘 다 아니에요)를 그리기 전에 버린다(11-07 검수).
   const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick)){const key=info.direction.options.map(o=>o.id).join(',');return directionScreen(info,{top:alertBox(s),ui:s.directionUi?.key===key?s.directionUi:{},journal:journalOf(s,'drawer',{tab:'pick'})});}
   const extras=roomExtras(p);
-  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join('')}`;
+  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join('')}${info.marketing?marketingEntry(s):''}`;
   // 기기 기억 안내는 왼쪽 단(지금 할 일) 한가운데가 아니라 그림 아래 띠로 — 맹검 11-07 「시스템 안내가 내용 자리에 들어옴」.
   // 내 모델 입구(판 4 운영 시험 P3): 스위치 myModels가 켜진 손님 방에서, 위 인물 칸이 이미 「내 모델 열기」를 둔 방(브랜드 회원 · 다시 쓰기)이 아니면 아래 띠에 한 줄.
   // 위 인물 칸이 실제로 「내 모델 열기」를 그린 방만 뺀다 — 인물이 끝난 방(turn end)은 personaKeep이 아무것도 그리지 않는다(최종 검수 F4).
@@ -665,7 +677,7 @@ export function projectView(s){
   if(s.mode==='staff'&&s.tab==='desk'&&s.project.studio?.request)return deskScreen(s);
   if(s.mode!=='staff'){
     // 의뢰 흐름 손님(판 3): 방 · 1차안 · 방향 · 영상과 납품 · 묻기 · 완성 광고. 옛 탭 이름은 roomTab이 이 중 하나로 옮긴다.
-    if(isCustomerRoom(s)){const view=roomTab(s.tab);if(view==='films')return filmsRoom(s);if(view==='review'&&(s.project.versions||[]).length)return reviewRoom(s);return customerRoom(s);}
+    if(isCustomerRoom(s)){const view=roomTab(s.tab);if(view==='films')return filmsRoom(s);if(view==='marketing'&&marketingOn(s))return marketingRoom(s);if(view==='review'&&(s.project.versions||[]).length)return reviewRoom(s);return customerRoom(s);}
     if(s.tab==='review')return reviewRoom(s);
     if(s.tab==='history')return deliveryRoom(s);
     if(s.tab==='films')return filmsRoom(s);

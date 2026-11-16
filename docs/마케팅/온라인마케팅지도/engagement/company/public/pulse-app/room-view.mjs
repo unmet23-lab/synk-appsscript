@@ -49,7 +49,20 @@ const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redi
 export const roomStage=state=>STAGE_OF[state]||'check';
 // 단계 id · 옛 탭 이름을 고객 방의 화면 하나로. 머리의 단계 줄 · 방 안 이동 · 알림 이동이 이것만 쓴다.
 // 묻기(contact)는 판 3b부터 화면이 아니라 일지다 — 옛 이름으로 오면 고객 방(app.mjs가 일지를 연다).
-export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','pick'].includes(id)?id:'overview';
+export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','pick','marketing'].includes(id)?id:'overview';
+// 마케팅 성과(11-16 계약): GET /pulse/api/marketing의 reports를 화면이 믿는 꼴로만 남긴다(최신 회차가 앞). 종류마다 앞의 것이 그 종류의 최신이다.
+// 문자열은 평문이고 화면은 esc로만 넣는다. 꼴이 어긋난 줄은 버린다.
+const MARKETING_KIND_IDS=['memo','ai-search','competitor-ads','label-review'];
+const plainText=(value,max)=>typeof value==='string'?value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,'').trim().slice(0,max):'';
+export function marketingHeads(list){
+  const seen=new Set();
+  return (Array.isArray(list)?list:[]).filter(item=>item&&MARKETING_KIND_IDS.includes(item.kind)&&typeof item.runId==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.-]{0,39}$/.test(item.runId)).map(item=>({kind:item.kind,runId:item.runId,title:plainText(item.title,120),summaryLine:plainText(item.summaryLine,300),from:typeof item.measuredAt?.from==='string'?item.measuredAt.from:'',to:typeof item.measuredAt?.to==='string'?item.measuredAt.to:''})).filter(item=>{const key=item.kind+'\u0001'+item.runId;if(seen.has(key))return false;seen.add(key);return true;});
+}
+// 고객 방의 입구 한 줄: 이번 달 한 장의 결론, 없으면 가장 최근 리포트의 한 문장. 아무것도 없으면 빈 글자(부르는 쪽이 「아직 잰 것이 없어요」를 쓴다).
+export function marketingLine(heads){
+  const memo=heads.find(item=>item.kind==='memo'&&item.summaryLine);
+  return (memo||heads.find(item=>item.summaryLine))?.summaryLine||'';
+}
 // 알림을 누르면 의뢰 흐름 손님이 갈 화면. 대화(담당자 답 · 자동 안내 · 프로젝트 답변)는 화면을 옮기지 않고 지금 화면의 일지 그 줄로(tab ''),
 // 최종본은 영상 화면의 그 최종본, 옛 탭 소식은 고객 방.
 export function roomRoute(item,p){

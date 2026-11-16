@@ -33,6 +33,15 @@ export async function request(path,{body,csrf='',staff=false,member=false,file,h
   if(!response.ok){const error=serverError(result,response.status,k('요청을 저장하지 못했어요. 다시 시도해 주세요.'));if(result?.offer&&typeof result.offer==='object')error.offer=result.offer;throw error;}
   return result;
 }
+// 마케팅 성과(11-16 계약 docs/마케팅/PULSE_마케팅성과_20261116/계약.md): 직원이 올린 리포트를 고객이 읽기만 한다. 두 GET 모두 고객 세션 쿠키로 그 프로젝트 하나만 본다.
+// 스위치(features.marketing)가 꺼져 있으면 서버가 404를 낸다. 종류는 넷이고, 회차 이름은 서버가 정한 짧은 글자(20261116-1 · 2026-11)라 꼴이 다르면 부르지 않는다.
+export const MARKETING_KINDS=Object.freeze(['memo','ai-search','competitor-ads','label-review']);
+export const marketingRunOk=value=>typeof value==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.-]{0,39}$/.test(value);
+export const marketingList=({signal}={})=>request('/pulse/api/marketing',{signal});
+export function marketingReport(kind,run,{signal}={}){
+  if(!MARKETING_KINDS.includes(kind)||!marketingRunOk(run))return Promise.reject(new PulseError(t('요청 주소를 확인해 주세요.'),400));
+  return request(`/pulse/api/marketing/report?kind=${encodeURIComponent(kind)}&run=${encodeURIComponent(run)}`,{signal});
+}
 export function parseInvite(value){
   const text=String(value||'').trim();if(/^[A-Za-z0-9_-]{16,500}$/.test(text))return text;
   try{const url=new URL(text);if(!['https:','http:'].includes(url.protocol))return '';const token=new URLSearchParams(url.hash.slice(1)).get('invite');return /^[A-Za-z0-9_-]{16,500}$/.test(token||'')?token:'';}catch{return '';}

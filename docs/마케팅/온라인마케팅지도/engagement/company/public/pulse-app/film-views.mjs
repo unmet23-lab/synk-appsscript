@@ -32,10 +32,12 @@ const withMarks=(text,marks)=>Object.entries(marks).reduce((html,[name,mark])=>h
 // ── 고객 방 ──
 // 단계 낱말 줄(판 3, 11-08): 앱 머리에 하나만 둔다. 지금 단계까지만 열리고, 완성 광고는 줄 끝에.
 export function roomRail(p,{tab='overview'}={}){
-  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films'].includes(view)?view:p.stage,away=view==='films';
+  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films','marketing'].includes(view)?view:p.stage,away=view==='films'||view==='marketing';
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
-  return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id,p.photo))}</button>`).join('')}</div>${p.films?`<div class="sx-steps-foot sx-small"><button type="button" class="${view==='films'?'is-now':''}" ${view==='films'?'aria-current="page"':''} data-room-go="films">${esc(t('완성 광고'))}</button></div>`:''}</nav>`;
+  // 줄 끝의 따로 선 칸: 완성 광고와, 스위치(features.marketing)가 켜진 손님의 마케팅 성과(11-16).
+  const foot=[p.films&&['films',t('완성 광고')],p.marketing&&['marketing',t('마케팅 성과')]].filter(Boolean);
+  return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id,p.photo))}</button>`).join('')}</div>${foot.length?`<div class="sx-steps-foot sx-small">${foot.map(([id,label])=>`<button type="button" class="${view===id?'is-now':''}" ${view===id?'aria-current="page"':''} data-room-go="${id}">${esc(label)}</button>`).join('')}</div>`:''}</nav>`;
 }
 // 머리 하나: 프로젝트 이름(누르면 고객 방) · 접수 번호 · 단계 줄. 앱에서는 앱 머리 칸에, 예시에서는 화면 안 머리에 같은 마크업을 그린다.
 // 언어 메뉴(다국어 판 2)는 이 가운데 칸에 두지 않는다 — 앱 머리 오른쪽 끝(views.mjs header)에 하나만 선다(같은 머리에 둘이 서지 않게).
