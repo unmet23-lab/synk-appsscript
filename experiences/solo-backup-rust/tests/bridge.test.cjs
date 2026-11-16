@@ -37,7 +37,7 @@ test('bridge, worker and native method contract preserves all existing app actio
   // The account's requests (STAGE1_DESIGN.md 2.1 · 4.5): 「Google로 시작」 · 「보호 시작」 and the provisioning server's.
   const account=['signInGoogle','startProtection','continueBackup','openAccountBackup','devicesList','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restorePlan','restoreRun','restoreJob','restoreChoose','restoreSeen','cancelGoogle','openGoogleAccount'];
   // 「새 PC로 옮겨 오기」 (4.6 · 4.6b): done on a PC that does not write, so every one is allowed restore-only.
-  const move=['moveDevices','movePreview','moveStart','moveResult','moveReinstallList','moveReinstall','moveRestoreSettings','moveChecklist','moveCheck','moveRelease'];
+  const move=['moveDevices','movePreview','moveStart','moveResult','moveState','moveReinstallList','moveReinstall','moveRestoreSettings','moveChecklist','moveCheck','moveRelease'];
   const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);

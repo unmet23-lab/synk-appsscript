@@ -662,3 +662,61 @@ test('GPT 2차 -g 지적(11-16): the kit search passes over a snapshot without t
   await assert.rejects(kitLib.loadKit(engine([fail('Fatal: repository does not exist: unable to open config file: no such file or directory'), kit]), 'old'), /unable to open config file/);
   await assert.rejects(kitLib.loadKit(engine([new Error('백업 엔진의 출력이 중단되었습니다.'), kit]), 'old'), /중단/);
 });
+
+test('화면 세션 E1 · E2(11-16): the state of a move, and where each folder now lives — the same place on another drive too', async () => {
+  const { MoveService, placed } = require('../engine/src/move-service.cjs');
+  const sources = ['C:\\Users\\kim\\Documents', 'D:\\Projects', 'C:\\Users\\kim\\Desktop', 'C:\\Users\\kim\\Music'];
+  const fps = plan.folderPlans(sources, { old: OLD, now: NOW });
+  const folders = sources.map((original, i) => ({ original, fp: fps[i] }));
+  const chosen = { 'D:\\Projects': { mode: 'original', sameDrive: true }, 'C:\\Users\\kim\\Desktop': { mode: 'newFolder' }, 'C:\\Users\\kim\\Music': { mode: 'skip' } };
+  const out = placed(folders, chosen, { old: OLD, now: NOW });
+  assert.deepEqual(out[0], { original: 'C:\\Users\\kim\\Documents', mode: 'original', sameDrive: false, destination: 'C:\\Users\\lee\\Documents',
+    newFolder: 'C:\\Users\\lee\\옮겨 온 자료\\문서', label: '문서', roots: [{ path: 'C:\\Users\\lee\\Documents', kind: 'place' }] });
+  // The same place on the other drive is where it is, not under 「옮겨 온 자료」 (E2).
+  assert.deepEqual([out[1].sameDrive, out[1].destination, out[1].roots], [true, 'D:\\Projects', [{ path: 'D:\\Projects', kind: 'place' }]]);
+  assert.deepEqual(placed(folders, {}, { old: OLD, now: NOW })[1].roots, [{ path: 'C:\\Users\\lee\\옮겨 온 자료\\D 드라이브\\Projects', kind: 'moved' }]);
+  assert.deepEqual(out[2].roots, [{ path: 'C:\\Users\\lee\\옮겨 온 자료\\바탕 화면', kind: 'newFolder' }]);
+  assert.deepEqual([out[3].mode, out[3].roots], ['skip', []]);
+  // 'oneDriveGaps': the OneDrive place it was compared with, then the new folder.
+  const sha = 'a'.repeat(64);
+  const odOld = snap('C:\\Users\\kim', { known: { documents: { path: 'C:\\Users\\kim\\OneDrive\\문서', oneDrive: true, synced: true } }, oneDrive: [{ path: 'C:\\Users\\kim\\OneDrive', emailSha256: sha }] });
+  const odNow = snap('C:\\Users\\lee', { known: { documents: { path: 'C:\\Users\\lee\\OneDrive\\문서', oneDrive: true, synced: true } }, oneDrive: [{ path: 'C:\\Users\\lee\\OneDrive', emailSha256: sha }] });
+  const od = plan.folderPlans(['C:\\Users\\kim\\OneDrive\\문서'], { old: odOld, now: odNow });
+  assert.equal(od[0].mode, 'oneDriveGaps');
+  assert.deepEqual(placed([{ original: 'C:\\Users\\kim\\OneDrive\\문서', fp: od[0] }], {}, { old: odOld, now: odNow })[0].roots,
+    [{ path: 'C:\\Users\\lee\\OneDrive\\문서', kind: 'oneDrive' }, { path: 'C:\\Users\\lee\\옮겨 온 자료\\문서', kind: 'newFolder' }]);
+
+  // Every place the files went, not only the folder's own (GPT workbackup-movestate GA1): a profile folder puts its
+  // documents where this PC keeps them (another drive here), its app places, dot folders and loose files in 「따로 둔 것」,
+  // and a second name differing only by case there too.
+  const docsElsewhere = snap('C:\\Users\\lee', { known: { documents: { path: 'D:\\Docs', oneDrive: false, synced: false } }, drives: [{ letter: 'C' }, { letter: 'D' }] });
+  const [prof] = plan.folderPlans(['C:\\Users\\kim'], { old: OLD, now: docsElsewhere });
+  const node = (name, type = 'file') => [name.toLowerCase(), { name, type }];
+  const listing = { nodes: new Map([node('Documents', 'dir'), node('Documents/보고서/a.hwp'), node('AppData/Roaming/x.json'), node('.ssh/config'), node('notes.txt'), node('작업/c.js')]), aside: new Map() };
+  const side = 'C:\\Users\\lee\\옮겨 온 자료\\따로 둔 것';
+  assert.deepEqual(placed([{ original: 'C:\\Users\\kim', fp: prof, listing }], {}, { old: OLD, now: docsElsewhere })[0].roots,
+    [{ path: 'C:\\Users\\lee', kind: 'place' }, { path: 'D:\\Docs', kind: 'place' }, { path: side, kind: 'side' }]);
+  const onlyWork = { nodes: new Map([node('작업/c.js')]), aside: new Map([node('작업/C.js')]) };
+  assert.deepEqual(placed([{ original: 'C:\\Users\\kim', fp: prof, listing: onlyWork }], { 'C:\\Users\\kim': { mode: 'newFolder' } }, { old: OLD, now: docsElsewhere })[0].roots,
+    [{ path: prof.newFolder, kind: 'newFolder' }, { path: side, kind: 'side' }], 'a case twin goes apart in any way');
+  // What an earlier backup added is placed the same way; a path the rules turn down has no root.
+  assert.deepEqual(placed([{ original: 'C:\\Users\\kim', fp: prof, listing: { nodes: new Map([node('bad:name.txt')]), aside: new Map() }, extra: [{ name: 'Documents/b.txt' }] }], {}, { old: OLD, now: docsElsewhere })[0].roots,
+    [{ path: 'C:\\Users\\lee', kind: 'place' }, { path: 'D:\\Docs', kind: 'place' }]);
+
+  // E1: a move stopped part-way is told by its state; a finished one by its result's time.
+  const service = new MoveService({ engine: null, host: null, stateDir: 'C:\\state', localDir: 'C:\\local' });
+  service.state = async () => ({ moveId: 'm1', from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', result: null, released: null, checked: ['x'] });
+  assert.deepEqual(await service.status(), { from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', unfinished: true, released: null, resultAt: null, complete: null });
+  service.state = async () => ({ from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', released: '2026-11-16T09:30:00.000Z', result: { at: '2026-11-16T09:00:00.000Z', complete: false, folders: out } });
+  assert.deepEqual(await service.status(), { from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', unfinished: false, released: '2026-11-16T09:30:00.000Z', resultAt: '2026-11-16T09:00:00.000Z', complete: false });
+  service.state = async () => ({});
+  assert.deepEqual(await service.status(), { from: null, choices: {}, startedAt: null, unfinished: false, released: null, resultAt: null, complete: null });
+  service.state = async () => ({ from: 7, choices: [1], startedAt: 'yesterday', result: null });
+  assert.deepEqual(await service.status(), { from: null, choices: {}, startedAt: null, unfinished: false, released: null, resultAt: null, complete: null }, 'a damaged state says nothing');
+  // The vault mapping keeps the same-drive choice too (E2 — Obsidian on another drive); a result from before it moved there.
+  service.context = async () => ({ old: OLD, now: NOW });
+  service.state = async () => ({ from: 'dev000000000', result: { folders: out } });
+  assert.equal((await service.mapper())('D:\\Projects\\vault\\a.md'), 'D:\\Projects\\vault\\a.md');
+  service.state = async () => ({ from: 'dev000000000', result: { folders: out.map(({ sameDrive, ...rest }) => rest) } });
+  assert.equal((await service.mapper())('D:\\Projects\\vault\\a.md'), 'C:\\Users\\lee\\옮겨 온 자료\\D 드라이브\\Projects\\vault\\a.md');
+});

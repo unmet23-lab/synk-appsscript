@@ -952,6 +952,23 @@ test('개통 서버 r7: a read key the server retired never goes into an envelop
   assert.equal(f.account.state().googleRemovalUrl, 'https://myaccount.google.com/connections?hl=ko');
   f.provision.lost = async () => ({ next: 'read-key-rotate', googleRemovalUrl: 'https://evil.example/connections' });
   assert.equal((await f.account.reportLost(OLD)).googleRemovalUrl, null, 'a page that is not Google\'s is never kept');
+  // The step done, the loss report's page goes (화면 세션 부탁 17): from the server's word, or from the envelope this PC
+  // published with its new read key.
+  f.provision.lost = async () => ({ next: 'read-key-rotate', googleRemovalUrl: 'https://myaccount.google.com/connections?hl=ko' });
+  await f.account.reportLost(OLD);
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: { googleStepRequired: true }, readKey: 'missing' };
+  await f.account.refresh();
+  assert.equal(f.account.googlePage('removal'), 'https://myaccount.google.com/connections?hl=ko', 'kept while the step is open');
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.equal(f.account.info.googleRemovalUrl, null); assert.equal(f.account.googlePage('removal'), 'https://myaccount.google.com/connections');
+  f.provision.statusValue = null;
+  await f.account.reportLost(OLD);
+  f.account.info.googleStepRequired = false;
+  assert.equal(f.account.googlePage('removal'), 'https://myaccount.google.com/connections', 'a closed step never opens the old page');
+  f.account.info.googleStepRequired = true;
+  await f.account.rotateReadKey({ googleStepDone: true });
+  assert.equal(f.account.info.googleRemovalUrl, null);
   // The same PC's earlier devices, as the client gives them.
   f.provision.state = function () { return { connected: true, role: 'write', deviceId: ME, customerId: CUSTOMER, repository: { ...REPO }, needs: [], sameInstall: [OLD, 'NOT A DEVICE'] }; };
   assert.deepEqual(f.account.state().sameInstall, [OLD]);
@@ -959,4 +976,19 @@ test('개통 서버 r7: a read key the server retired never goes into an envelop
   const run = (exitCode) => telemetryRun({ trigger: 'hourly', startedAt: Date.now(), result: { outcome: 'failed', exitCode } });
   assert.equal(run(3221225477).exitCode, 3221225477); assert.equal(run(-1).exitCode, -1);
   assert.equal(run(2 ** 32).exitCode, undefined); assert.equal(run(-(2 ** 31) - 1).exitCode, undefined);
+});
+
+test('되살리기 실패 칸의 부호와 기본 자리 표시(화면 세션 부탁 14 · 18)', async () => {
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const out = await fs.mkdtemp(path.join(os.tmpdir(), 'solo-restore-out-'));
+  // No complete backup yet: NO_SNAPSHOT, and the record says the window's default place was used.
+  await assert.rejects(f.engine.restoreLatest({ parent: out, named: true }), (e) => e.code === 'NO_SNAPSHOT');
+  assert.deepEqual({ ...f.engine.getState().lastRestoreError, at: 0 }, { code: 'NO_SNAPSHOT', at: 0, named: true });
+  await assert.rejects(f.engine.restoreLatest({ parent: out }), (e) => e.code === 'NO_SNAPSHOT');
+  assert.equal(f.engine.getState().lastRestoreError.named, undefined, 'a place the person chose');
+  // A place inside the backed-up folders is refused as before, with the same mark.
+  await assert.rejects(f.engine.restoreLatest({ parent: f.source, named: true }), (e) => e.code === 'OUTPUT_UNSAFE');
+  assert.deepEqual([f.engine.getState().lastRestoreError.code, f.engine.getState().lastRestoreError.named], ['OUTPUT_UNSAFE', true]);
+  const again = f.make(); await again.open(); assert.equal(again.getState().lastRestoreError.named, true, 'kept in the settings');
 });

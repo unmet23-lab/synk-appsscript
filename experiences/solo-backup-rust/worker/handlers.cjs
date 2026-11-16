@@ -370,6 +370,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       return launchJob(engine, () => engine.operation('move', () => move.start({ from, choices, onProgress: p => engine.stage('옮겨 오는 중', Number.isFinite(p.percent) ? p.percent : null) })));
     }, { codes: true });
     handle('moveResult', () => move.result(), { read: true });
+    // A move stopped part-way is told by its state (화면 세션 E1); `running`: one runs in this window now.
+    handle('moveState', async () => ({ ...await move.status(), running: cloud().job?.kind === 'move' }), { read: true });
     handle('moveReinstallList', () => move.reinstallList(), { codes: true });
     handle('moveReinstall', (_context, input) => {
       const v = objectInput(input);

@@ -21,7 +21,7 @@
     'openAccountBackup', 'devicesList', 'takeWriteSeat', 'revokeDevice',
     'reportLost', 'rotateReadKey', 'restorePlan', 'restoreRun',
     'restoreJob', 'restoreChoose', 'restoreSeen', 'cancelGoogle', 'openGoogleAccount',
-    'moveDevices', 'movePreview', 'moveStart', 'moveResult', 'moveReinstallList', 'moveReinstall', 'moveRestoreSettings', 'moveChecklist', 'moveCheck', 'moveRelease'
+    'moveDevices', 'movePreview', 'moveStart', 'moveResult', 'moveState', 'moveReinstallList', 'moveReinstall', 'moveRestoreSettings', 'moveChecklist', 'moveCheck', 'moveRelease'
   ];
 
   const failure = () => ({ ok: false, error: SAFE_ERROR });

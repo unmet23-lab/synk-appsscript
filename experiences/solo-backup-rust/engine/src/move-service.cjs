@@ -17,6 +17,55 @@ async function readJson(file) { try { return JSON.parse(await fs.readFile(file, 
 /** Each write its own temporary name (카본 끝판 E3), so two never share one. */
 async function writeJson(file, value) { await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = `${file}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`; await fs.writeFile(tmp, JSON.stringify(value, null, 2)); await fs.rename(tmp, file); }
 
+/**
+ * Where each folder of a move now lives on this PC (화면 세션 E2): the way chosen, the same-drive choice, and its roots —
+ * every place its files went, not only the folder's own (GPT workbackup-movestate GA1): 'place' (back where it was, a
+ * known folder where this PC keeps it, or the same place on the other drive), 'moved' (under 「옮겨 온 자료」), 'side'
+ * (「따로 둔 것」 — app places, dot folders, files right in the profile, PowerShell folders, a second name differing only
+ * by case), 'newFolder', and for 'oneDriveGaps' the OneDrive place it was compared with ('oneDrive') first.
+ * `destination` is where 「원래 자리」 puts the folder itself with that same-drive choice. The files come from the
+ * folder's listing (and what an earlier backup added), each placed as the move places it; a path the rules turn down
+ * has no root, a skipped folder none at all. At most ROOTS roots (`rootsCut` then).
+ */
+const ROOTS = 32;
+function placed(folders, choices, { old, now }) {
+  const at = plan.places(now);
+  return folders.map(f => {
+    const choice = choices[f.original] || {};
+    const mode = choice.mode || f.fp.mode, sameDrive = !!choice.sameDrive;
+    const back = plan.destination(f.fp, '', { old, now, mode: 'original', sameDrive, dir: true });
+    const roots = []; let cut = false;
+    const kind = p => (plan.within(p, at.side) ? 'side' : mode !== 'original' ? 'newFolder' : plan.within(p, at.base) ? 'moved' : 'place');
+    // A root of one kind can hold one of another (「따로 둔 것」 sits in the new profile): each kind is kept apart.
+    const under = (p, k = kind(p)) => roots.some(r => r.kind === k && plan.within(p, r.path));
+    const add = (p, k = kind(p)) => { if (under(p, k)) return; if (roots.length >= ROOTS) { cut = true; return; } roots.push({ path: p, kind: k }); };
+    const where = (name, dir) => plan.destination(f.fp, name, { old, now, mode, sameDrive, dir });
+    // One placed file or folder: 「따로 둔 것」 counts as one root; elsewhere the shallowest folder above it that lands
+    // apart from the roots so far (a known folder this PC keeps on another drive) is the root.
+    const reach = (name, dir) => {
+      const d = where(name, dir);
+      if (d.skip) return;
+      const k = kind(d.path);
+      if (k === 'side') { if (!under(d.path, 'side')) add(at.side, 'side'); return; }
+      if (under(d.path, k)) return;
+      const parts = name.split('/');
+      for (let i = 1; i <= parts.length; i++) {
+        const a = i === parts.length ? d : where(parts.slice(0, i).join('/'), true);
+        if (!a.skip && plan.within(d.path, a.path) && kind(a.path) === k && !under(a.path, k)) return add(a.path, k);
+      }
+    };
+    if (mode !== 'skip') {
+      const top = where('', true);
+      if (!top.skip) { if (mode === 'oneDriveGaps' && top.check) add(top.check, 'oneDrive'); add(top.path); }
+      for (const n of f.listing?.nodes?.values?.() || []) reach(n.name, n.type === 'dir');
+      for (const file of f.extra || []) reach(file.name, false);
+      // A second name differing only by case goes to 「따로 둔 것」 whatever the way (move-restore place()).
+      if (f.listing?.aside?.size) add(at.side, 'side');
+    }
+    return { original: f.original, mode, sameDrive, destination: back.skip ? f.fp.destination : back.path, newFolder: f.fp.newFolder, label: f.fp.label, roots, ...(cut ? { rootsCut: true } : {}) };
+  });
+}
+
 class MoveService {
   constructor({ engine, host, stateDir, localDir, server = null }) {
     Object.assign(this, { engine, host, stateDir, localDir, server });
@@ -84,12 +133,21 @@ class MoveService {
     const latest = prepared.map(f => f.selector.split(':')[0]).find(Boolean);
     if (this.server && latest) await this.server.pinMove(latest).catch(() => {});
     const result = await move.run();
-    const folders = (move.folders || []).map(f => ({ original: f.original, mode: choices[f.original]?.mode || f.fp.mode, destination: f.fp.destination, newFolder: f.fp.newFolder, label: f.fp.label }));
+    const folders = placed(move.folders || [], choices, ctx);
     const saved = { at: new Date().toISOString(), counts: result.counts, complete: result.complete, removedTemp: result.removedTemp, items: result.items.slice(0, 2000), folders, side: plan.places(ctx.now).side };
     await this.save({ result: saved });
     return saved;
   }
   async result() { return (await this.state()).result || null; }
+  /** 「옮겨 오기」의 지금 (화면 세션 E1): a move stopped part-way — the PC off, the app ended — leaves no job, no result and
+   *  no failure, so the screen reads it here (`unfinished`: started, no result yet). Whether one runs now is the window's. */
+  async status() {
+    const st = await this.state();
+    const when = v => (typeof v === 'string' && Number.isFinite(Date.parse(v)) ? v : null);
+    const result = st.result && typeof st.result === 'object' ? st.result : null;
+    return { from: typeof st.from === 'string' ? st.from : null, choices: st.choices && typeof st.choices === 'object' && !Array.isArray(st.choices) ? st.choices : {},
+      startedAt: when(st.startedAt), unfinished: !!when(st.startedAt) && !result, released: when(st.released), resultAt: when(result?.at), complete: result ? result.complete === true : null };
+  }
   /** Where the last move put an old path (for Obsidian's vaults): the folder plan that holds it, in the mode it used. */
   async mapper() {
     const st = await this.state(); const ctx = await this.context(st.from);
@@ -97,7 +155,7 @@ class MoveService {
     return p => {
       const f = folders.find(x => plan.within(p, x.original)); if (!f) return null;
       const r = plan.rel(p, f.original).replace(/\\/g, '/');
-      const out = plan.destination({ original: f.original, newFolder: f.newFolder, mode: f.mode }, r, { old: ctx.old, now: ctx.now, mode: f.mode === 'oneDriveGaps' ? 'newFolder' : f.mode });
+      const out = plan.destination({ original: f.original, newFolder: f.newFolder, mode: f.mode }, r, { old: ctx.old, now: ctx.now, mode: f.mode === 'oneDriveGaps' ? 'newFolder' : f.mode, sameDrive: f.sameDrive === true });
       return out.skip ? null : out.path;
     };
   }
@@ -180,4 +238,4 @@ class MoveService {
    *  the server could not be told, nothing is marked: the screen says so and the person tries again (카본 끝판 E7). */
   async release() { if (this.server) await this.server.unpinMove(); return this.save({ released: new Date().toISOString() }); }
 }
-module.exports = { MoveService };
+module.exports = { MoveService, placed };

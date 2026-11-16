@@ -400,7 +400,8 @@ class BackupEngine extends EventEmitter {
     await atomic(path.join(this.stateDir, 'settings.json'), 'null');
     this.config = null; this.secret = null; this.cloudCredentials = null; this.emitState();
   }
-  async operation(kind, fn) {
+  // `note`: what the failure record of this job also says (a restore to the window's default place: `named`).
+  async operation(kind, fn, note = {}) {
     if (this.job || this.stopping) throw new Error('진행 중인 작업이 끝난 뒤 다시 눌러 주세요.');
     if (this.config && !['protect', 'probe'].includes(kind)) this.config.protectRun = null;
     this.job = { kind, stage: '준비 중', percent: null }; this.emitState();
@@ -420,7 +421,7 @@ class BackupEngine extends EventEmitter {
       // A restore that failed is written down as such (lastRestoreError), never as the backups' failure (화면 세션 부탁 4).
       if (this.config && OWN_ERROR[kind]) {
         const code = e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : kind === 'move' ? 'MOVE_FAILED' : 'RESTORE_FAILED';
-        this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}) };
+        this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}), ...(note.named === true ? { named: true } : {}) };
         await this.save().catch(() => {});
       } else if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
       else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
@@ -1323,7 +1324,7 @@ class BackupEngine extends EventEmitter {
       const base = await directory(parent);
       if ([...this.forbidden(), ...this.config.sources].some(p => overlap(base, p))) throw Object.assign(new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.'), { code: 'OUTPUT_UNSAFE' });
       const latest = (await this.snapshots([VERIFIED], { host: this.hostName }))[0];
-      if (!latest) throw new Error('완료된 백업이 없습니다.');
+      if (!latest) throw Object.assign(new Error('완료된 백업이 없습니다.'), { code: 'NO_SNAPSHOT' });
       if (latest.tags?.includes('recommended-verified-v1')) {
         // The window's default place holds the dated folder here too (GPT workbackup-restoreplace GA1).
         await require('./recommended.cjs').restoreWhole(this, named ? await namedFolder(base, this.now()) : base, latest);
@@ -1339,7 +1340,7 @@ class BackupEngine extends EventEmitter {
         const plans = await this.restorePlans(latest, { base });
         const space = await fs.statfs(base, { bigint: true });
         const required = plans.reduce((sum, p) => sum + [...p.manifest.nodes.values(), ...p.extra].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), 0n), 16n * 1024n * 1024n);
-        if (required > space.bavail * space.bsize) throw new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.');
+        if (required > space.bavail * space.bsize) throw Object.assign(new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.'), { code: 'NO_SPACE' });
         if (named) target = await namedFolder(base, this.now());
         else {
           target = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`);
@@ -1381,7 +1382,7 @@ class BackupEngine extends EventEmitter {
       }
       this.config.lastRestore = { path: target, at: new Date(this.now()).toISOString(), fromEarlier, inNone, ...(skippedAll ? { skipped: skippedAll } : {}) }; await this.save();
       return this.getState();
-    });
+    }, { named: named === true });
   }
   discardCatalog() { clearTimeout(this.catalogTimer); this.fileCatalog = null; }
   assertCatalogReady() {
@@ -1509,7 +1510,7 @@ class BackupEngine extends EventEmitter {
         const error = selection.safeError(e, 'RESTORE_INCOMPLETE');
         this.config.lastSelectedRestore = previous;
         if (marker) await fs.writeFile(marker, '복구가 완료되지 않았습니다. 이전 완료 결과는 유지됩니다.\n', { flag: 'wx' }).catch(() => {});
-        this.config.lastSelectedRestoreError = { code: error.code, message: error.message, at: new Date(this.now()).toISOString(), ...(target ? { path: target } : {}) };
+        this.config.lastSelectedRestoreError = { code: error.code, message: error.message, at: new Date(this.now()).toISOString(), ...(target ? { path: target } : {}), ...(named === true ? { named: true } : {}) };
         if (error.code === 'INTEGRITY_FAILED') this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: error.message };
         await this.save().catch(() => {}); throw error;
       }

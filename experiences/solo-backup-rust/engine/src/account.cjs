@@ -194,6 +194,8 @@ class Account {
     const lost = s.lost?.googleStepRequired === true;
     if ((lost && !this.info.googleStepRequired) || s.readKey === 'missing') await this.lostKey();
     this.info.googleStepRequired = lost;
+    // The step done, the page the loss report gave goes with it (화면 세션 부탁 17).
+    if (!lost) this.info.googleRemovalUrl = null;
     this.info.readKey = READ_KEY.includes(s.readKey) ? s.readKey : null;
   }
   // A restore holds this PC (the window looks each minute then, 4.5).
@@ -371,7 +373,7 @@ class Account {
       if (e.config.mode === 'restore') await e.updateCloudCredentials(readKey);
     }
     await this.provision.confirmReadKey(readKey.keyId);
-    Object.assign(this.info, { googleStepRequired: false, left: null, readKey: 'ready', readKeyHeld: false, deadReadKey: null, needs: this.info.needs.filter((x) => x !== 'read-key') });
+    Object.assign(this.info, { googleStepRequired: false, googleRemovalUrl: null, left: null, readKey: 'ready', readKeyHeld: false, deadReadKey: null, needs: this.info.needs.filter((x) => x !== 'read-key') });
     await this.keep();
   }
   // The keys a restore (or a rotation) brought: the engine writes with the new write key and the new read key goes
@@ -434,7 +436,7 @@ class Account {
   // 「Google 기기 관리 열기」 · 「연결된 앱 열기」 · the page the loss report gave (화면 세션 부탁): the address is this
   // file's, the screen only names which.
   googlePage(kind) {
-    const url = kind === 'removal' ? this.info.googleRemovalUrl || GOOGLE_PAGES.apps : Object.hasOwn(GOOGLE_PAGES, kind) ? GOOGLE_PAGES[kind] : null;
+    const url = kind === 'removal' ? (this.info.googleStepRequired && this.info.googleRemovalUrl) || GOOGLE_PAGES.apps : Object.hasOwn(GOOGLE_PAGES, kind) ? GOOGLE_PAGES[kind] : null;
     if (!url || !ACCOUNT_PAGE.test(url)) throw failure('BAD_INPUT');
     return url;
   }
