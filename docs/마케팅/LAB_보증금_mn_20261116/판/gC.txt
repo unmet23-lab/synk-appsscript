@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses and faces of the two characters and whether the door is open, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, door and doll is made of felted wool and fabric, soft fuzzy fibres visible, slightly dim warm corridor light from one small ceiling lamp, shallow depth of field like a macro photo of a stop-motion set. Match the felt material and photographic look of the FIRST attached photo (use it ONLY for the felt look and light).
+
+FORMAT: portrait 2:3. Camera at the eye level of a small mascot, looking straight at the corridor wall. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: the long narrow corridor of a Korean goshiwon (a tiny-room boarding house): a plain cream felt wall with a row of many identical narrow light-wood doors set very close together (each door only a little wider than Mongle), plain grey felt floor. The top 22% of the image is only plain wall and ceiling — nothing there. The doors have plain round brass knobs and NO numbers, NO signs.
+CHARACTERS: the REAL-ESTATE AGENT from the THIRD attached image (same felt doll: friendly Korean woman in her fifties, short permed dark-brown hair, round glasses on a beaded chain, burgundy knitted cardigan over a cream blouse) stands at the LEFT (between about 12% and 40% of the image width), full body, smiling and presenting the door in the CENTRE with one open hand. MONGLE (the SECOND attached image) stands on the floor at the RIGHT (between about 60% and 86% of the image width), its body about 24% of the image width, looking at the centre door with excited bright eyes. The centre door is CLOSED.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands — never. Mongle stands on the floor with a soft shadow — it does not float.
+
+Exactly ONE Mongle and exactly one person, nobody else. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere.

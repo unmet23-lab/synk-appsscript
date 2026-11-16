@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e456-22ad-7df2-afe2-21c696db416f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create one felt-diorama photo with the fixed framing and clear “1000/50” card.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle gazes up at “1000/50” outside a snowy felt miniature real-estate office."}}
+{"type":"turn.completed","usage":{"input_tokens":178141,"cached_input_tokens":156416,"cache_write_input_tokens":0,"output_tokens":1667,"reasoning_output_tokens":393}}

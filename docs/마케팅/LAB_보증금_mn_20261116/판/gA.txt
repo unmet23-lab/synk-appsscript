@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change Mongle's pose and face, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, window, card and doll is made of felted wool and fabric, soft fuzzy fibres visible, bright soft winter daylight, shallow depth of field like a macro photo of a stop-motion set. Match the felt material and photographic look of the FIRST attached photo (use it ONLY for the felt look — not its room, furniture or people).
+
+FORMAT: portrait 2:3. Camera at the eye level of a small mascot, looking straight at a shop front. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: a quiet Seoul neighbourhood street in WINTER (no flowers, no cherry blossoms, bare grey branches, a little old snow at the kerb). The front of a tiny Korean real-estate office: a warm wooden frame with one big glass window. The window glass is covered with about ten small white paper listing cards in a neat grid; every small card has only faint grey blank lines (no readable writing). In the CENTRE of the window, at about 40% of the image height, there is ONE big white card that reads exactly "1000/50" in big bold black numbers — this must be perfectly legible and spelled exactly 1000/50 (one-zero-zero-zero, slash, five-zero). Nothing else in the whole image has any writing. The top 22% of the image is the plain warm-grey felt wall and roof edge above the window — nothing there (a label will be added there later). The bottom 25% is a plain grey felt pavement — keep it empty.
+
+MONGLE (the mascot from the SECOND attached image) stands on the pavement in front of the window, a little right of centre, its body about 26% of the image width, tilting its whole body back to look up at the big "1000/50" card with curious, slightly puzzled bead eyes.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands — never. Mongle stands on the ground (its hem touches the pavement, with a soft shadow) — it does not float.
+
+Exactly ONE Mongle and nobody else. No logos, no symbols, no watermarks.

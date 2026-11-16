@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e45a-f2f5-7601-b737-13c42f0a8ae0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to preserve the base scene and change only the agent’s gesture and Mongle’s listening pose.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The agent warmly explains with an open palm as Mongle leans forward eagerly in the cosy felt office."}}
+{"type":"turn.completed","usage":{"input_tokens":142740,"cached_input_tokens":122368,"cache_write_input_tokens":0,"output_tokens":1124,"reasoning_output_tokens":108}}

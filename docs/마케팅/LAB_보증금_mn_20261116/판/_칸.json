@@ -1,0 +1,89 @@
+{
+  "_설명": "LAB 몽골 M59 「1000/50이 뭐예요?」 칸 지시문 원천(11-16 곁 세션 lab-mn-21). 장면 셋(A 가게 앞 · B 사무실 · C 고시원 복도) — 칸마다 그 장면의 기준 판을 첫 참고로, 몽글 정본을 둘째로 넣어 바꿀 것만 바꾼다. 지시문 파일은 scratchpad 칸쓰기.js가 이 파일에서 찍는다. 11-16 장면 심사 v1(「방이 좁다는 근거가 그림에 없다 · 몽글이 커져서 낀 것처럼 읽힌다 · 표정이 안 바뀐다」)로 고시원 칸 c1n · c2n · c2f · c3n을 새로 굽는다 — c2n · c2f · c3n은 c1n을 셋째 참고로 넣어 같은 방 · 같은 몽글 크기로. 장면 심사 v2 「꽉 낀 얼굴(><)이 깔깔 웃는 얼굴로 읽힌다 · 억지웃음이 안 읽힌다」로 얼굴만 바꾼 c2p(괴로움 — c2n 기준) · c2g(억지웃음 — c2f 기준)를 굽는다.",
+  "장면": {
+    "A": {
+      "머리": "IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only Mongle's pose, face and the small props in front of Mongle change.\n\nThe FIRST attached image is the base photo. Reproduce it EXACTLY — same camera position, framing, focus and soft winter daylight, same Seoul winter street, same tiny real-estate office front with its wooden window frame, the same grid of small blank white listing cards and the same big white card in the centre that reads exactly \"1000/50\" (keep it perfectly legible, spelled exactly 1000/50), same bare branches, same plain grey felt pavement.",
+      "꼬리": "The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands, ever — it moves by tilting, squashing, stretching, sliding and bouncing its whole soft body. Mongle stays on the ground with a soft shadow.\nExactly ONE Mongle and nobody else. Nothing floats in the air. Apart from the \"1000/50\" card (and anything this panel asks to show on a screen), absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere."
+    },
+    "B": {
+      "머리": "IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only the two characters' poses and faces and what sits on the desk change.\n\nThe FIRST attached image is the base photo. Reproduce it EXACTLY — same camera position, framing, focus and warm cosy indoor light, same plain warm-beige felt back wall with the small felt map board (coloured blocks only) and the potted plant, same paper lamp, same light-wood felt desk with its plain front panel, same pen holder, small felt house model and cup of tea. The REAL-ESTATE AGENT stays in her place sitting BEHIND the desk on the LEFT (friendly Korean woman in her fifties, short permed dark-brown hair, round glasses on a beaded chain, burgundy knitted cardigan over a cream blouse) — same doll, same face, same clothes. Mongle sits on its small felt stool at the RIGHT in front of the desk.",
+      "꼬리": "The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands, ever — it moves by tilting, squashing, stretching, sliding and bouncing its whole soft body.\nExactly ONE Mongle and exactly one person, nobody else. Nothing floats in the air. Absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere — no writing on banknotes, bands, papers, wall or desk."
+    },
+    "C": {
+      "머리": "IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only the two characters' poses and faces and the centre door change.\n\nThe FIRST attached image is the base photo. Reproduce it EXACTLY — same camera position, framing, focus and slightly dim warm corridor light, same narrow goshiwon corridor with the plain cream felt wall, the same row of many identical narrow light-wood doors set very close together with plain round brass knobs, same plain grey felt floor. The REAL-ESTATE AGENT (friendly Korean woman in her fifties, short permed dark-brown hair, round glasses on a beaded chain, burgundy knitted cardigan over a cream blouse) stays at the LEFT — same doll, same face, same clothes.",
+      "꼬리": "The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands, ever — it moves by tilting, squashing, stretching, sliding and bouncing its whole soft body.\nExactly ONE Mongle and exactly one person, nobody else. Nothing floats in the air. Absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere — no numbers or signs on the doors."
+    }
+  },
+  "칸": [
+    {
+      "이름": "a1",
+      "장면": "A",
+      "바꿈": "a big chunky cream felt pocket CALCULATOR now lies flat on the pavement right in front of Mongle. Mongle has bounced its whole soft body down onto the calculator's round buttons (its hem squashed on the keys) with squinting concentrating bead eyes. The calculator's small green-grey screen shows exactly the number \"20\" in big dark digits (perfectly legible, exactly 20). Everything else stays exactly as in the base photo, including the \"1000/50\" card."
+    },
+    {
+      "이름": "b0",
+      "장면": "B",
+      "바꿈": "the agent leans forward warmly and explains, one hand raised with the palm open toward Mongle, a friendly smile, mouth open as if speaking. Mongle leans forward on its stool, listening eagerly with bright round eyes. The centre of the desk stays empty."
+    },
+    {
+      "이름": "b1",
+      "장면": "B",
+      "바꿈": "on the empty centre of the desk now stands a TALL TOWER of exactly TEN thick bundles of GREEN felt Korean 10,000-won banknotes stacked one on another, each bundle wrapped around its middle with a plain white paper band (no writing, no portraits, no numbers) — the tower rises higher than the agent's head. The agent pats the tower proudly with one hand, smiling. Mongle leans far back on its stool in shock, eyes wide, a small sweat drop on its side, its body wobbling."
+    },
+    {
+      "이름": "b2",
+      "장면": "B",
+      "바꿈": "the same tall tower of ten green felt banknote bundles still stands in the centre of the desk. Mongle has collapsed in shock — its whole soft body has gone flat and wobbly, drooping and sliding down over the edge of its stool like melted jelly, bead eyes wide and dazed. The agent's hands fly up to her cheeks in surprise, mouth a small 'o'."
+    },
+    {
+      "이름": "b3",
+      "장면": "B",
+      "바꿈": "the tower of ten green felt banknote bundles still stands in the centre of the desk. Mongle has sprung back up tall on its stool, leaning hopefully toward the agent with big pleading shiny eyes and a small hopeful smile, as if asking a question. The agent smiles knowingly and raises ONE index finger as if she has a great idea."
+    },
+    {
+      "이름": "c1",
+      "장면": "C",
+      "바꿈": "the CENTRE door is now OPEN, swung inward, showing the inside of a goshiwon room: an extremely tiny room — a very narrow single bed squeezed against the wall, a tiny desk at its foot and a tiny window, the whole room barely wider than the open door. Mongle has rushed to the open doorway and peeks in with sparkling excited eyes. The agent at the left presents the open door proudly with one open hand."
+    },
+    {
+      "이름": "c2",
+      "장면": "C",
+      "바꿈": "the CENTRE door is OPEN. Mongle has squeezed itself INTO the tiny goshiwon doorway and room — its soft coral body is squashed and stuffed into the narrow space, bulging out of the door frame like soft dough on both sides and at the top, its cheeks pressed flat, only its two bead eyes and a small brave smile visible in the middle, a tiny sweat drop. The narrow bed and tiny desk are just visible squashed behind it. The agent at the left claps her hands together once, cheerfully, with a big smile."
+    },
+    {
+      "이름": "c1n",
+      "장면": "C",
+      "바꿈": "the CENTRE door is now OPEN, swung inward. Through it: the room behind the open door is TINY — barely deeper than the door is wide: a very narrow single bed with a checked blanket fills the WHOLE room from its back wall right up to the door threshold (no floor space at all inside), a tiny window and one tiny wall shelf just above the bed, the back wall very close. Mongle, the SAME size as in the base photo, bounces in front of the open door in excitement — caught mid-hop with a small gap under its hem and its soft shadow on the floor below, sparkling excited eyes and a big open happy mouth. The agent at the left presents the open door proudly with one open hand."
+    },
+    {
+      "이름": "c2n",
+      "장면": "C",
+      "바꿈": "the CENTRE door is OPEN and the tiny room is the same as in the THIRD attached image (the room behind the open door is TINY — barely deeper than the door is wide: a very narrow single bed with a checked blanket fills the WHOLE room from its back wall right up to the door threshold (no floor space at all inside), a tiny window and one tiny wall shelf just above the bed, the back wall very close). Mongle — exactly the SAME size as in the THIRD attached image, NOT bigger — has crammed itself INTO that tiny room: its soft coral body is squeezed between the room's side walls and pressed down onto the narrow bed, bulging out through the door frame on both sides like soft dough, its top squashed flat under the low shelf; its face is squished, bead eyes squeezed tight in strain, a big clear sweat drop on its side. The agent at the left claps her hands together once, cheerfully, with a big smile."
+    },
+    {
+      "이름": "c2f",
+      "장면": "C",
+      "바꿈": "exactly the same moment as the THIRD attached image: Mongle is still crammed into the tiny room, bulging out through the door frame, the same size and squeeze as in the THIRD attached image. Now Mongle forces a stiff, trembling polite smile — bead eyes open wide and glassy, a bigger clear sweat drop rolling down its side. The agent at the left now holds up ONE open hand with all FIVE fingers spread wide toward the viewer, beaming brightly as if announcing a price."
+    },
+    {
+      "이름": "c3n",
+      "장면": "C",
+      "바꿈": "the CENTRE door is OPEN and the tiny room is the same as in the THIRD attached image. Mongle has MELTED in shock in the doorway — its whole soft body gone flat and drooping like melted jelly, sliding off the narrow bed and spilling out over the door threshold onto the corridor floor, bead eyes wide and dazed. The agent at the left still holds up one open hand with all five fingers spread, smiling, a little surprised."
+    },
+    {
+      "이름": "c1m",
+      "장면": "C",
+      "바꿈": "NOTHING changes except Mongle's position: Mongle — the same size, the same mid-hop pose with a small gap under its hem, the same sparkling eyes and big open happy mouth, its soft shadow on the floor right below it — is now a little further LEFT, between about 55% and 82% of the image width (its right edge well inside 82%). The open door, the tiny room with the bed, window and shelf, the agent and her pose stay exactly as in the base photo."
+    },
+    {
+      "이름": "c2p",
+      "장면": "C",
+      "바꿈": "NOTHING changes except Mongle's FACE: Mongle is still crammed into the tiny room exactly as in the base photo (same size, same squeeze, bulging out of the door frame). Its face is now clearly PAINED and uncomfortable, NOT laughing: bead eyes squeezed shut in strain as two short tight straight lines, a tiny tight wavy mouth (closed), its cheek squashed flat against the side wall, a big clear sweat drop on its side. The agent at the left stays exactly as in the base photo (clapping cheerfully, big smile)."
+    },
+    {
+      "이름": "c2g",
+      "장면": "C",
+      "바꿈": "NOTHING changes except Mongle's FACE: Mongle is still crammed into the tiny room exactly as in the base photo (same size, same squeeze). Its face now shows an obviously FORCED, shaky polite smile: a crooked smile with one mouth corner up and the other pulled down and trembling, bead eyes wide open and glassy with a tiny tear welling at one eye, a big clear sweat drop rolling down its side, small trembling lines beside its body. The agent at the left stays exactly as in the base photo (one open hand with all five fingers spread, beaming)."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e47d-8dab-7572-a884-ab4a7d7f1f08"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to keep the corridor and framing fixed while changing the characters’ poses.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle squeezes into the tiny room while the delighted agent claps beside the open door."}}
+{"type":"turn.completed","usage":{"input_tokens":122283,"cached_input_tokens":104192,"cache_write_input_tokens":0,"output_tokens":1313,"reasoning_output_tokens":259}}

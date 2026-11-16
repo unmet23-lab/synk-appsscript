@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses and faces of the two characters and what sits on the desk, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, desk, chair and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cosy indoor light from a round paper lamp, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, light warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look and light — not its room, furniture or people).
+
+FORMAT: portrait 2:3. Camera at desk-top height, looking straight across the desk. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: inside a tiny cosy Korean neighbourhood real-estate office in winter. Back wall: plain warm-beige felt with a small felt map board (only coloured blocks, no writing) and a potted green plant. The top 24% of the image is ONLY this plain wall — nothing there. A light-wood felt office DESK runs across the image; its top surface is at about 62% of the image height and its plain front panel fills the image below that — keep the front panel plain and empty. On the desk: a felt pen holder at the far left, a small felt house model, a cup of tea, and a CLEAR EMPTY space in the centre of the desk (something will be put there later).
+
+CHARACTERS (both visible from the desk top up):
+- LEFT, between about 14% and 48% of the image width, BEHIND the desk: the REAL-ESTATE AGENT — a felt doll of a friendly Korean woman in her fifties, short permed dark-brown hair, round glasses on a beaded chain, a warm burgundy knitted cardigan over a cream blouse, sitting in an office chair, smiling kindly, one hand resting on the desk.
+- RIGHT, between about 58% and 86% of the image width, IN FRONT of the desk on a small felt stool: MONGLE (the mascot from the SECOND attached image), its body about 24% of the image width, its top a little lower than the agent's head, listening eagerly with bright bead eyes.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands — never.
+
+Exactly ONE Mongle and exactly one person, nobody else. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere.
