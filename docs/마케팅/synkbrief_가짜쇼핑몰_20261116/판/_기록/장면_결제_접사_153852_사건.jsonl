@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e314-7c0c-7421-a02d-00a8225b8cfc"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 첨부 이미지의 크림색 후디를 기준으로 요청하신 휴대폰 결제 화면 클로즈업을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":164091,"cached_input_tokens":143744,"cache_write_input_tokens":0,"output_tokens":1794,"reasoning_output_tokens":375}}

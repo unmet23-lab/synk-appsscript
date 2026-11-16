@@ -1,0 +1,9 @@
+{"type":"thread.started","thread_id":"01a1e32d-9566-7d62-b66c-cf63018e1e45"}
+{"type":"turn.started"}
+{"type":"error","message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 8:24 PM."}
+{"type":"turn.failed","error":{"message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 8:24 PM."}}
+{"type":"thread.started","thread_id":"01a1e32d-a9ce-73b2-b6be-fde92b748053"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 첨부 인물의 크림색 후디와 손을 참고하고, 요청하신 한글 화면 문구를 정확히 담은 세로 인서트 컷을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"완성했습니다."}}
+{"type":"turn.completed","usage":{"input_tokens":136264,"cached_input_tokens":115200,"cache_write_input_tokens":0,"output_tokens":1834,"reasoning_output_tokens":233}}
