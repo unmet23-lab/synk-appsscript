@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "ko",
+  "title": "Korean winter survival item: 전기장판 🥶→🫠 #learnkorean",
+  "caption": "전기장판 (jeon-gi-jang-pan) = electric heating mat 🔥\nWord by word: 전기 (jeon-gi) = electricity + 장판 (jang-pan) = the vinyl floor covering of a Korean room.\nKorean homes heat the floor, not the air — and a 전기장판 is a little heated floor you can sleep on.\n\nWords in this video:\n추워 (chu-wo) = I’m cold\n따뜻해 (tta-tteu-tae) = it’s warm\n못 일어나 (mo-di-reo-na) = I can’t get up\n포기 (po-gi) = I give up\n\nSYNK LAB\n#learnkorean #studykorean #koreanwords #koreanwinter",
+  "pinnedComment": "What keeps YOU warm in winter? 👇 (a heater? hot tea? a 전기장판? 😆)",
+  "alt": [
+    "A needle-felt miniature Korean studio apartment on a freezing night, −12°C and no heater. Mongle, a coral felt ghost-like mascot, shivers under a grey knitted blanket on a cream quilted mat and says 추, 추워 (so cold). In a close-up it presses the mat’s controller with its body; the light turns orange, the mat glows and Mongle says 아~ 따뜻해 (ahh, so warm), then slowly melts flat like cheese: 녹는다 (I’m melting). A card shows 전기장판, jeon-gi-jang-pan, electric heating mat. Next morning the alarm phone rings; Mongle says 일어나야지 (gotta get up) and tries three times to get up, stretching up like melted cheese — 못 일어나 (I can’t get up!) — then splats flat again and says 포기 (I give up). The end shows 전기장판 in big letters and asks what keeps you warm in winter."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = e40 v4(이해 시험 v3 뒤 시험 없이 고침 · 20.4초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.5 LUFS. 표지 cover.png = 6.1초(녹아 퍼진 핵심 장면). 어린이 전용 아님. 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS. 10MB 올림판은 만들지 않았다 — 유튜브 스튜디오는 원본을 그대로 올린다(v2 §2-4 예외는 크롬 확장 경로만).",
+  "version": "e40-en-v4"
+}

@@ -1,0 +1,21 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the mascot's pose and face, the blanket, and how much the heating mat glows, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, window, kitchen and doll is made of felted wool and fabric, soft fuzzy fibres visible, shallow depth of field like a macro photo of a stop-motion set. Use the attached photos ONLY for Mongle's look and the felt material — not their scene or layout.
+
+FORMAT: portrait 2:3. Camera a little above the mascot, looking slightly down at it. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+LIGHT: a freezing winter night — cold pale-blue moonlight from the window, the whole room in cool blue shadow, no warm light anywhere yet.
+
+SET: a tiny Korean studio apartment ("one-room") at night in deep winter.
+- Back wall: plain dark slate-blue felt wallpaper. The top 26% of the image is ONLY this plain dark wall — nothing there.
+- On the right, a small window (between about 64% and 86% of the width, between 28% and 46% of the height) with thick white felt frost ferns on the glass and felt snow falling outside.
+- On the left, far in the background and small, a tiny felt kitchenette corner (a little sink and a two-burner stove), between about 12% and 30% of the width.
+- FLOOR: the whole floor is a glossy honey-brown vinyl floor sheet with a faint wood-grain print (a Korean "jangpan" floor), plain and empty.
+- In the middle of the floor lies a single-size Korean electric heating mat: a flat rectangular quilted felt mat in cream with a soft dusty-rose stitched grid pattern, about 70% of the image width wide, its front edge at about 80% of the image height and its back edge at about 56% of the image height. From its right side a thin cream felt cord runs to a small cream felt controller box (about the size of Mongle's eye-to-eye distance times two) lying on the mat's front-right corner, with one big round dial and one tiny indicator light that is OFF (dark grey).
+
+MONGLE (the coral mascot from the attached photos): sits in the middle of the mat, the middle of its scalloped hem at about 50% of the image width and at about 70% of the image height, its body about 24% of the image width wide. A thick grey-blue knitted felt blanket is wrapped over its head and around its body like a hood, so only its face shows. Mongle is FREEZING: glossy black bead eyes squeezed half shut, a tiny wobbly mouth, pale cheeks with a faint blue tint, and a small white cotton-wool puff of frozen breath floating beside its mouth (a physical cotton puff on a thin wire).
+Use the attached photos ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+
+Exactly ONE Mongle, nobody else. No heater, no radiator, no fireplace in the room. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — no writing on the controller, dial, wall, window or mat.

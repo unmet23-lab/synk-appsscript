@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "아~ 따뜻해~",
+ "dur": 1.514,
+ "words": [
+  {
+   "text": "아~",
+   "start": 0.02,
+   "end": 0.282
+  },
+  {
+   "text": "따뜻해~",
+   "start": 0.543,
+   "end": 1.514
+  }
+ ],
+ "source": {
+  "key": "fbc2208194252b234f6c9873a251932b",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "추, 추워… 깔고 앉은 전기장판을 켜자 바닥에서 따뜻한 열기가 올라온다. 꽁꽁 얼었던 몸이 풀리며 행복하게 탄성을 낸다.",
+   "next": "녹는다~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 516
+ }
+}

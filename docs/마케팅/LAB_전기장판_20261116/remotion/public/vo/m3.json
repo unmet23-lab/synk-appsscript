@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "녹는다~",
+ "dur": 1.134,
+ "words": [
+  {
+   "text": "녹는다~",
+   "start": 0.23,
+   "end": 1.134
+  }
+ ],
+ "source": {
+  "key": "b4f9ddda764a56563a9b0e422ab003c1",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "아~ 따뜻해~ 너무 따뜻해서 몸이 치즈처럼 바닥으로 녹아 퍼진다. 나른하고 행복하게 늘어지는 목소리.",
+   "next": "전기장판…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 460
+ }
+}

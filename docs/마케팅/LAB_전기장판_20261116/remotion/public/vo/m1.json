@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "추, 추워…",
+ "dur": 1.486,
+ "words": [
+  {
+   "text": "추,",
+   "start": 0.02,
+   "end": 0.201
+  },
+  {
+   "text": "추워…",
+   "start": 0.744,
+   "end": 1.486
+  }
+ ],
+ "source": {
+  "key": "9a3eae9113398672083685cc35dc2f33",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "sad",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1131,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 386
+ }
+}

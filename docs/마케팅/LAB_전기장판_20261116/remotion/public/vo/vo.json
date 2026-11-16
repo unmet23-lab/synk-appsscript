@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "sad",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1131,
+  "lufs": -16
+ },
+ "made": "2026-11-16T07:13:37.732Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "추, 추워…",
+   "dur": 1.486,
+   "syllablesPerSec": 2.02,
+   "src": "m1.wav",
+   "key": "9a3eae9113398672083685cc35dc2f33",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "아~ 따뜻해~",
+   "dur": 1.514,
+   "syllablesPerSec": 2.64,
+   "src": "m2.wav",
+   "key": "fbc2208194252b234f6c9873a251932b",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "녹는다~",
+   "dur": 1.134,
+   "syllablesPerSec": 2.65,
+   "src": "m3.wav",
+   "key": "b4f9ddda764a56563a9b0e422ab003c1",
+   "words": 1
+  },
+  {
+   "id": "m4",
+   "text": "전기장판…",
+   "dur": 1.195,
+   "syllablesPerSec": 3.35,
+   "src": "m4.wav",
+   "key": "6a268aa7916e22a17d798b63133fa506",
+   "words": 1
+  },
+  {
+   "id": "m6",
+   "text": "일어나야지…",
+   "dur": 1.098,
+   "syllablesPerSec": 4.55,
+   "src": "m6.wav",
+   "key": "8265ad836f2d101a39bcb85d9379a1e8",
+   "words": 1
+  },
+  {
+   "id": "m7",
+   "text": "포기…",
+   "dur": 0.626,
+   "syllablesPerSec": 3.19,
+   "src": "m7.wav",
+   "key": "d55ca135e3379199d9dcda31d4d5ccf7",
+   "words": 1
+  },
+  {
+   "id": "m8",
+   "text": "못 일어나…!",
+   "dur": 1.052,
+   "syllablesPerSec": 3.8,
+   "src": "m8.wav",
+   "key": "20e1a5d639b59819984c2795b7224508",
+   "words": 2
+  }
+ ]
+}
