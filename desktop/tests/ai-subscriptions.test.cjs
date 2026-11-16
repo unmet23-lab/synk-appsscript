@@ -132,10 +132,13 @@ function fakeSystem({claudeLoggedIn=true,geminiLoggedIn=true,fetch=null,secrets=
       if(log)fs.writeFileSync(log,'I1022 14:20:08.610133      31 server.go:1790] Language server version: 1.4.5\n'+(state.geminiLoggedIn&&state.geminiEmail?`I1022 14:20:09.140210       1 server_oauth.go:224] applyAuthResult: email=${state.geminiEmail}, authMethod=consumer, quotaProject=\nI1022 14:20:09.141833       1 server_oauth.go:229] OAuth: authenticated successfully as ${state.geminiEmail}\n`:''));
       reply(state.geminiLoggedIn?state.geminiUsage||AGY_USAGE:'Error: not signed in. Run agy to sign in.\n',state.geminiLoggedIn?0:1);
     }
+    // claudeUsageByDir: 계정 폴더마다 다른 /usage 답(종료 코드 1, usageDelay만큼 늦게).
+    else if(joined.includes('/usage')&&state.claudeUsageByDir?.[options.env.CLAUDE_CONFIG_DIR]!=null)reply(state.claudeUsageByDir[options.env.CLAUDE_CONFIG_DIR],1,state.usageDelay||0);
     else if(joined.includes('/usage')&&state.claudeExpiredTimes>0){state.claudeExpiredTimes--;reply('OAuth token has expired. Please obtain a new token or refresh your existing token.\n',1);}
     else if(joined.includes('/usage')&&state.claudeUsageOverride!=null)reply(state.claudeUsageOverride);
     else if(joined.includes('/usage'))reply(state.claudeLoggedIn?USAGE:'Not logged in · Please run /login\n',state.claudeLoggedIn?0:1,state.usageDelay||0);
-    else if(joined.includes('auth status'))reply(state.claudeAuthOverride!=null?state.claudeAuthOverride:JSON.stringify({loggedIn:state.claudeLoggedIn,email:state.claudeEmail,subscriptionType:'max'}));
+    // claudeAuthByDir: 계정 폴더(CLAUDE_CONFIG_DIR)마다 다른 auth status 답(없으면 아래 공통 답).
+    else if(joined.includes('auth status'))reply(state.claudeAuthByDir?.[options.env.CLAUDE_CONFIG_DIR]??(state.claudeAuthOverride!=null?state.claudeAuthOverride:JSON.stringify({loggedIn:state.claudeLoggedIn,email:state.claudeEmail,subscriptionType:'max'})));
     else if(joined.includes('auth login')&&command.endsWith('claude.exe')){loginChild=child;child.pid=++pidSeq;setImmediate(()=>child.stdout.emit('data','Opening browser to sign in…\nIf the browser didn\'t open, visit: https://claude.com/cai/oauth/authorize?code=true&state=abc\nPaste code here if prompted > '));child.onInput=()=>{state.claudeLoggedIn=true;setImmediate(()=>child.emit('close',0));};}
     else if(joined.includes('app-server')){
       child.onInput=text=>{for(const line of text.split('\n').filter(Boolean)){const m=JSON.parse(line);
@@ -355,6 +358,43 @@ test('a Claude login keeps its official time limit, says plainly when it ends, a
   rows=(await f.service.check()).rows.filter(r=>r.service==='claude');
   assert.equal(rows[0].state,'needs-login');assert.match(rows[0].stateMessage,/^Claude 로그인 기한이 끝났어요\./);
   assert.equal(rows[0].loginUntil,Date.parse(second));
+});
+
+test('a renewal that lands while a full check is reading the old folder keeps the new login, and the default login never stamps its limit on a foldered row',async()=>{
+  // Fable F3 · F4(claude-login-limit-20261116).
+  const f=fakeSystem({claudeLoggedIn:false});
+  const first='2026-11-29T15:56:43.000Z',second='2026-12-27T03:00:00.000Z',third='2027-01-05T00:00:00.000Z';
+  const auth=until=>JSON.stringify({loggedIn:true,email:f.state.claudeEmail,subscriptionType:'max',loginExpiresAt:until});
+  const login=async email=>{
+    const started=await f.service.startLogin('claude',{email});assert.equal(started.ok,true);
+    const folder=f.calls.filter(c=>c.argv.includes('login')).at(-1).options.env.CLAUDE_CONFIG_DIR;
+    await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
+    f.service.submitCode(started.id,'abcDEF123456#state');
+    for(let i=0;i<60&&!['done','error'].includes(f.changes.at(-1)?.login?.stage);i++)await new Promise(r=>setTimeout(r,5));
+    return {folder,last:f.changes.at(-1).login};
+  };
+  f.state.claudeAuthOverride=auth(first);
+  const one=await login('member@example.com');assert.equal(one.last.stage,'done');
+  await f.service.check();
+  // 전체 확인이 옛 폴더를 읽는 동안(사용량 답을 늦춘다) 같은 계정으로 다시 로그인한다. 다시 로그인이 옛 폴더를 지우므로 옛 읽기는 실패로 끝난다
+  // (여기서는 사용량 화면을 못 읽은 답으로 흉내 낸다 — 「로그인 필요」와 달리 다시 읽지 않는 실패다). 새 폴더는 새 기한을 답한다.
+  f.state.claudeUsageByDir={[one.folder]:'Error: ENOENT: no such file or directory\n'};
+  f.state.claudeAuthByDir={[one.folder]:JSON.stringify({loggedIn:false,authMethod:'none'})};f.state.claudeAuthOverride=auth(second);f.state.usageDelay=80;
+  const before=f.calls.length,running=f.service.check();
+  // 전체 확인이 옛 폴더의 사용량을 실제로 읽기 시작한 뒤에 다시 로그인한다(경합을 확실히 만든다).
+  for(let i=0;i<100&&!f.calls.slice(before).some(c=>c.argv.includes('/usage')&&c.options.env.CLAUDE_CONFIG_DIR===one.folder);i++)await new Promise(r=>setTimeout(r,2));
+  assert.ok(f.calls.slice(before).some(c=>c.argv.includes('/usage')&&c.options.env.CLAUDE_CONFIG_DIR===one.folder));
+  const two=await login('member@example.com');assert.equal(two.last.stage,'done');
+  await running;
+  let row;
+  for(let i=0;i<80;i++){const snap=await f.service.snapshot();row=snap.rows.find(r=>r.service==='claude');if(!snap.checking&&row.loginUntil===Date.parse(second))break;await new Promise(r=>setTimeout(r,10));}
+  assert.equal(row.loginUntil,Date.parse(second));assert.equal(row.state,'ok');
+  f.state.usageDelay=0;
+  // 「이 PC의 기존 로그인 쓰기」가 같은 계정을 찾으면 자기 폴더로 읽는 줄에 기본 로그인의 기한을 적지 않는다(그 회차에 폴더의 auth status를 못 읽어도).
+  f.state.claudeAuthByDir={[two.folder]:'garbled'};f.state.claudeAuthOverride=auth(third);
+  assert.equal((await f.service.useExisting('claude')).ok,true);
+  row=(await f.service.snapshot()).rows.find(r=>r.service==='claude');
+  assert.equal(row.loginUntil,Date.parse(second));assert.equal(row.folder,true);
 });
 
 test('Gemini reads the Antigravity quota from the app data folder and signs in through a console window',async t=>{

@@ -188,7 +188,16 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   const ui = { view: 'glance', open: new Set(), more: false, menu: null, guide: null, guideClosed: false, editing: null, passEditing: null, apiEditing: null, flowEditing: null, removeArmed: null, manualOpen: false, email: '', code: '', key: '', help: new Set(), relogin: null, tipOpen: new Set(), tipDone: {}, why: false, goalOpen: false, sumOpen: false, sumWhy: false, tokRange: 'week', tokOpen: new Set(), tokAll: false, tokOffArmed: false };
   const rolled = new Map();
   // 알림과 응답은 따로 도착해 순서가 바뀔 수 있다. 본체가 붙인 번호(seq)보다 옛 스냅숏은 버린다.
-  const take = value => { if (value?.ok && !(value.seq < snapshot?.seq)) snapshot = value; };
+  const take = value => {
+    if (!value?.ok || value.seq < snapshot?.seq) return;
+    const was = snapshot?.login;
+    snapshot = value;
+    // 줄의 「다시 로그인」으로 연 로그인이 끝나면 그 모드를 푼다 — 같은 안내에서 이어서 다른 계정을 더할 때 「새 계정 연결」로 돌아온다(Fable F2).
+    if (ui.relogin && value.login?.stage === 'done' && !(was?.id === value.login.id && was.stage === 'done')) { ui.relogin = null; ui.email = ''; }
+  };
+  // 다시 로그인 모드: 줄의 「다시 로그인」으로 연 Claude 안내는 그 줄의 계정으로만 로그인한다(메일을 비우면 새 계정 연결로 보고 막히던 것 — Fable F2).
+  const reloginRow = service => { const row = ui.relogin ? rowById(ui.relogin) : null; return service === 'claude' && row?.service === service && row.email ? row : null; };
+  const loginEmail = service => (service === 'claude' ? reloginRow(service)?.email || ui.email.trim() || undefined : undefined);
   // 본체의 자동 읽기(quiet) 알림은 1분 다시 그리기처럼 숫자를 굴리지 않는다(저절로 움직이는 효과 없음).
   api?.onChanged?.(value => { if (value?.ok) { take(value); if (visible) paint({ quiet: !!value.quiet }); } });
   // 모델별 토큰: 본체가 세는 동안 진행 수를 0.5초마다 알린다. 화면은 1초에 한 번까지만, 그리고 「모델별 토큰」 칸만 바꾼다
@@ -294,8 +303,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (name === 'copy') { const text = AUTO[service]?.install; if (text) navigator.clipboard?.writeText(text).then(() => toast('설치 명령을 복사했어요. PowerShell에 붙여 넣어 주세요.'), () => toast('복사하지 못했어요. 명령을 직접 선택해 복사해 주세요.')); return; }
     if (name === 'help') return void api.help(data.link);
     if (name === 'existing') return void act('existing', async () => { const r = await api.useExisting(service); if (r?.ok) { toast(`${AUTO[service].label} 계정을 연결했어요.`); ui.guide = null; } return r; });
-    if (name === 'login') return void act('login', () => api.login(service, { email: service === 'claude' ? ui.email.trim() || undefined : undefined }));
-    if (name === 'console-login') return void act('login', () => api.login(service, { email: service === 'claude' ? ui.email.trim() || undefined : undefined, console: true }));
+    if (name === 'login') return void act('login', () => api.login(service, { email: loginEmail(service) }));
+    if (name === 'console-login') return void act('login', () => api.login(service, { email: loginEmail(service), console: true }));
     if (name === 'open-url') return void api.openLoginUrl(snapshot?.login?.id);
     // 브라우저에 남은 다른 계정으로 승인되지 않게, 로그인 주소를 시크릿 창에 붙여 넣을 수 있게 한다.
     if (name === 'copy-url') { const url = snapshot?.login?.url; if (url) navigator.clipboard?.writeText(url).then(() => toast('로그인 주소를 복사했어요. 시크릿 창(Ctrl+Shift+N) 주소창에 붙여 넣어 주세요.'), () => toast('복사하지 못했어요. 「로그인 페이지 다시 열기」를 써 주세요.')); return; }
@@ -424,7 +433,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
         ? `<div class="ms-fix-row"><i class="ms-dot" data-state="low" aria-hidden="true"></i><span>${a.row.loginUntil > now ? `로그인 기한 ${esc(loginWhen(a.row.loginUntil, now))}` : '로그인 기한 지남 · 곧 끊겨요'} · <b>${esc(a.name)}</b>(${esc(a.label)})</span><button type="button" class="ms-button ms-button-small" data-subs="relogin" data-id="${esc(a.row.id)}">미리 다시 로그인</button></div>`
         : `<div class="ms-fix-row"><i class="ms-dot" data-state="error" aria-hidden="true"></i><span>읽지 못함 · <b>${esc(a.name)}</b>(${esc(a.label)})${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}</span><button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button></div>`;
     const shown = items.length > 3 ? items.slice(0, 2) : items;
-    return `<div class="ms-fix">${shown.map(line).join('')}${items.length > shown.length ? `<div class="ms-fix-row"><i class="ms-dot" aria-hidden="true"></i><span>손볼 계정이 ${items.length - shown.length}개 더 있어요</span><button type="button" class="ms-button ms-button-small" data-subs="manage">계정 관리에서 모두 보기</button></div>` : ''}</div>`;
+    // 넘쳐서 가려진 줄에 로그인 기한이 다가온 계정이 있으면 그 수를 따로 말한다(끊긴 계정이 많을 때 묻히던 것 — Fable F1).
+    const hiddenSoon = items.slice(shown.length).filter(a => a.state === 'expiring').length;
+    return `<div class="ms-fix">${shown.map(line).join('')}${items.length > shown.length ? `<div class="ms-fix-row"><i class="ms-dot" aria-hidden="true"></i><span>손볼 계정이 ${items.length - shown.length}개 더 있어요${hiddenSoon ? `(로그인 기한이 다가온 계정 ${hiddenSoon}개 포함)` : ''}</span><button type="button" class="ms-button ms-button-small" data-subs="manage">계정 관리에서 모두 보기</button></div>` : ''}</div>`;
   }
   // 점의 뜻을 범례 없이 글로 함께 말한다: 초록 바로 써요 · 노랑 거의 다 씀 · 초록 테두리 풀렸을 거예요 · 빈 원 다 씀 · 빨강 손볼 것.
   function countText(g) {
@@ -841,7 +852,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const checkAt = snapshot?.check?.at;
     const read = auto && row.live?.readAt && (!checkAt || Math.abs(row.live.readAt - checkAt) > 2 * 60e3) ? `${stamp(row.live.readAt, now)}에 읽음` : '';
     const pass = passesOf(row, now);
-    return `<div class="ms-mrow${open ? ' open' : ''}" data-row="${esc(row.id)}"><div class="ms-mline"><span class="ms-mname">${esc(name)}${pass ? `<small class="ms-pass-mark">초기화권 ${pass.count}장</small>` : ''}</span><span class="ms-mplan">${esc(plan)}</span>${stateMark(row, now)}<span class="ms-mread">${esc(read)}</span><button type="button" class="ms-menu" data-subs="menu" data-id="${esc(row.id)}" aria-expanded="${open}" aria-label="${esc(name)} 관리 열기">${moreIcon}</button></div>${open ? menuPanel(row, now) : ''}</div>`;
+    // 로그인 기한이 7일 안인 줄은 ⋯을 열지 않아도 줄에서 보인다(Fable F1).
+    const soonMark = loginSoon(row, now) ? `<small class="ms-pass-mark">${row.loginUntil > now ? `로그인 기한 ${esc(loginWhen(row.loginUntil, now))}` : '로그인 기한 지남'}</small>` : '';
+    return `<div class="ms-mrow${open ? ' open' : ''}" data-row="${esc(row.id)}"><div class="ms-mline"><span class="ms-mname">${esc(name)}${pass ? `<small class="ms-pass-mark">초기화권 ${pass.count}장</small>` : ''}${soonMark}</span><span class="ms-mplan">${esc(plan)}</span>${stateMark(row, now)}<span class="ms-mread">${esc(read)}</span><button type="button" class="ms-menu" data-subs="menu" data-id="${esc(row.id)}" aria-expanded="${open}" aria-label="${esc(name)} 관리 열기">${moreIcon}</button></div>${open ? menuPanel(row, now) : ''}</div>`;
   }
   function menuPanel(row, now) {
     const auto = row.source === 'auto', armed = ui.removeArmed === row.id, editing = ui.editing === row.id, dd = nextBill(row.billDay, now);
@@ -1165,9 +1178,15 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
         <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button>${key === 'claude' && !login.console ? '<button type="button" class="ms-link" data-subs="console-login">코드가 안 들어가면 · 검은 창으로 로그인하기</button>' : ''}</div>`;
     } else {
       const last = login && ['done', 'error'].includes(login.stage) ? `<p class="${login.stage === 'done' ? 'ms-ok-text' : 'ms-warn-text'}">${esc(login.message)}</p>` : '';
-      loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. ${signedOut ? `지금은 이 PC의 ${esc(info.tool)}에 로그인된 계정이 없어요. 「${esc(info.label)} 로그인」을 누르면 바로 로그인 화면이 나와요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : switching ? `다른 Google 계정으로 바꾸려면 「${esc(info.label)} 로그인」을 눌러 열린 검은 창(agy)에서 <code>/logout</code> → <code>/login</code> 순서로 쳐요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : info.single ? `처음이라면 「${esc(info.label)} 로그인」을 눌러요.` : '다른 계정은 「새 계정 연결」로 하나씩 더해요.'}</p>
+      // 줄의 「다시 로그인」으로 연 Claude 안내: 그 계정 하나로만 로그인하고, 기한이 새로 시작된다는 것을 말한다(Fable F2).
+      const again = reloginRow(key);
+      if (again) loginBody = `${last}<p><b>${esc(again.email)}</b> 계정으로 다시 로그인해요. 다시 로그인하면 로그인 기한이 새로 시작돼요. Claude는 한 번 로그인하면 4주쯤 쓸 수 있어요.</p>
+        <p class="ms-soft">브라우저(claude.ai)에 다른 Claude 계정이 로그인돼 있으면 그 계정으로 연결돼요. 먼저 브라우저에서 이 계정으로 바꿔 두세요.</p>
+        <div class="ms-inline"><button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>다시 로그인</button></div>
+        ${otherLogin ? '<p class="ms-soft">다른 서비스의 로그인이 진행 중이에요. 끝난 뒤 이어서 해 주세요.</p>' : ''}`;
+      else loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. ${signedOut ? `지금은 이 PC의 ${esc(info.tool)}에 로그인된 계정이 없어요. 「${esc(info.label)} 로그인」을 누르면 바로 로그인 화면이 나와요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : switching ? `다른 Google 계정으로 바꾸려면 「${esc(info.label)} 로그인」을 눌러 열린 검은 창(agy)에서 <code>/logout</code> → <code>/login</code> 순서로 쳐요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : info.single ? `처음이라면 「${esc(info.label)} 로그인」을 눌러요.` : '다른 계정은 「새 계정 연결」로 하나씩 더해요.'}</p>
         ${info.email ? `<label class="ms-field" for="ms-email">연결할 이메일 (선택)<input id="ms-email" type="email" autocomplete="email" value="${esc(ui.email)}" placeholder="name@example.com"><small>로그인 화면에 미리 채워져요. 다만 브라우저에 다른 Claude 계정이 이미 로그인돼 있으면 그 계정으로 연결되니, 먼저 브라우저(claude.ai)에서 연결할 계정으로 바꿔 두세요.</small></label>` : ''}
-        <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button><button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>${info.single ? `${esc(info.label)} 로그인` : ui.relogin && rowById(ui.relogin)?.service === key ? '다시 로그인' : '새 계정 연결'}</button></div>
+        <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button><button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>${info.single ? `${esc(info.label)} 로그인` : '새 계정 연결'}</button></div>
         ${otherLogin ? '<p class="ms-soft">다른 서비스의 로그인이 진행 중이에요. 끝난 뒤 이어서 해 주세요.</p>' : ''}`;
     }
     const loginState = !installed ? 'wait' : login?.stage === 'done' ? 'done' : 'now';

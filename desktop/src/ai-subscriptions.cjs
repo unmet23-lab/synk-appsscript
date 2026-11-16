@@ -188,7 +188,9 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
           if(live)group.owner.apply(await readConfirmed(live));
         }else{
           if(!b.rows.includes(group.row))continue;
-          applyRead(group.row,await readConfirmed(group.row));
+          // 읽는 사이에 다시 로그인으로 폴더가 바뀌었으면 옛 폴더의 결과(옛 기한 · 읽기 실패)를 새 줄에 덮지 않는다(Fable F3).
+          const folder=group.row.folder,result=await readConfirmed(group.row);
+          if(group.row.folder===folder)applyRead(group.row,result);
         }
         checkProgress.done+=group.count;emit();
       }};
@@ -216,7 +218,14 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const mine=row=>row.source==='auto'&&row.service===service;
     const same=b.rows.find(row=>mine(row)&&(email&&String(row.email||'').toLowerCase()===email||!email&&row.folder===folder&&(spec.folders||!row.email)))
       ||(!spec.folders?b.rows.find(row=>mine(row)&&!row.email)||(!email?b.rows.find(mine):null):null);
-    if(same){if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;}if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';if(info.plan)same.plan=info.plan;if(Object.hasOwn(info,'loginUntil'))same.loginUntil=clampNumber(info.loginUntil,0,9e15);persist();return same;}
+    if(same){
+      // 폴더를 옮긴 줄이 지금 도는 확인에 들어 있으면 그 확인의 몫에서 뺀다 — 옛 폴더로 읽은 결과는 버리고(check), 연결 뒤의 읽기가 새 폴더로 다시 읽는다(Fable F3).
+      if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;checkingIds?.delete(same.id);}
+      if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';if(info.plan)same.plan=info.plan;
+      // 로그인 기한은 그 기한을 준 로그인이 이 줄의 로그인일 때만 넣는다(자기 폴더로 읽던 줄에 기본 로그인의 기한을 적지 않는다 — Fable F4).
+      if(Object.hasOwn(info,'loginUntil')&&(same.folder||null)===(folder||null))same.loginUntil=clampNumber(info.loginUntil,0,9e15);
+      persist();return same;
+    }
     const row=normalizeRow({id:'r-'+randomId(),service,source:'auto',label:spec.label,kind:spec.kind,folder,email:info.email,plan:info.plan,loginUntil:info.loginUntil});
     b.rows.push(row);persist();return row;
   }

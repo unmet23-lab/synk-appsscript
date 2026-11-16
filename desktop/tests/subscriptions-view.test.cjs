@@ -1632,8 +1632,8 @@ test('a Claude login nearing its time limit is flagged a week ahead with a way t
   const past=row({id:'c-past',email:'past@example.com',plan:'max_20x',loginUntil:now-3600e3,live:live()});
   const ended=row({id:'c-ended',email:'ended@example.com',plan:'max_20x',state:'needs-login',stateMessage:'Claude 로그인 기한이 끝났어요. Claude는 한 번 로그인하면 4주쯤 쓸 수 있어요. 다시 로그인해 주세요.',loginUntil:now-864e5,live:live({readAt:now-2*864e5})});
   const snapshot={ok:true,tools:{claude:{installed:true,version:'2.1.323'}},rows:[soon,later,ended],settings:{usdKrw:1400},check:{at:now,total:3,ok:2},login:null,checking:false};
-  const logins=[];
-  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:()=>()=>{},save:async()=>snapshot,help:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};}}};
+  const logins=[],listeners=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:cb=>{listeners.push(cb);return ()=>{};},save:async()=>snapshot,help:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};}}};
   const board=createSubscriptionsBoard({bridge});
   const el=fakeContainer(),{click}=driver(el);
   board.render(el,{signedIn:true,native:true});
@@ -1643,7 +1643,10 @@ test('a Claude login nearing its time limit is flagged a week ahead with a way t
   assert.match(el.innerHTML,/<i class="ms-dot" data-state="low" aria-hidden="true"><\/i><span>로그인 기한 [^·<]+ · <b>soon<\/b>\(Claude\)<\/span><button type="button" class="ms-button ms-button-small" data-subs="relogin" data-id="c-soon">미리 다시 로그인<\/button>/);
   assert.doesNotMatch(el.innerHTML,/<b>later<\/b>\(Claude\)/);
   // 계정 관리 ⋯: 7일 안이면 경고와 앞세운 단추, 멀면 흐리게 기한만, 끝난 계정은 끝났다는 말만(기한 줄을 겹쳐 쓰지 않는다).
+  // 7일 안인 계정은 ⋯을 열지 않아도 줄에 기한이 보인다(Fable F1).
   await click({subs:'manage'});
+  assert.match(el.innerHTML,/<span class="ms-mname">soon@example\.com<small class="ms-pass-mark">로그인 기한 [^<]+<\/small><\/span>/);
+  assert.doesNotMatch(el.innerHTML,/later@example\.com<small/);
   await click({subs:'menu',id:'c-soon'});
   assert.match(el.innerHTML,/<p class="ms-warn-text">로그인 기한 [^<]+ · 그 전에 「다시 로그인」을 누르면 끊기지 않아요\.<\/p>/);
   assert.match(el.innerHTML,/ms-button-primary" data-subs="relogin" data-id="c-soon">다시 로그인<\/button>/);
@@ -1653,12 +1656,28 @@ test('a Claude login nearing its time limit is flagged a week ahead with a way t
   await click({subs:'menu',id:'c-ended'});
   assert.match(el.innerHTML,/<p class="ms-warn-text">Claude 로그인 기한이 끝났어요\./);
   assert.doesNotMatch(el.innerHTML,/<p class="ms-(soft|warn-text)">로그인 기한/);
-  // 미리 다시 로그인: 그 계정 메일을 채운 안내가 「다시 로그인」 단추로 열리고, 누르면 그 메일로 로그인한다.
+  // 미리 다시 로그인: 그 계정 하나로만 로그인하는 안내가 열린다. 메일 칸 · 기존 로그인 가져오기는 없고, 기한이 새로 시작된다고 말한다(Fable F2).
   await click({subs:'relogin',id:'c-soon'});
+  assert.match(el.innerHTML,/<p><b>soon@example\.com<\/b> 계정으로 다시 로그인해요\. 다시 로그인하면 로그인 기한이 새로 시작돼요\./);
   assert.match(el.innerHTML,/data-subs="login" data-service="claude" >다시 로그인<\/button>/);
+  assert.doesNotMatch(el.innerHTML,/id="ms-email"/);assert.doesNotMatch(el.innerHTML,/이 PC의 기존 로그인 쓰기/);assert.doesNotMatch(el.innerHTML,/새 계정 연결/);
   await click({subs:'login',service:'claude'});
   assert.deepEqual(logins,[['claude',{email:'soon@example.com'}]]);
+  // 로그인이 끝나면 다시 로그인 모드가 풀려, 같은 안내에서 이어서 다른 계정을 더하는 길(「새 계정 연결」, 빈 메일 칸)로 돌아온다.
+  const done={...snapshot,seq:2,login:{id:'l-1',service:'claude',stage:'done',message:'soon@example.com 계정을 연결했어요.',needsCode:false,url:null,console:false}};
+  listeners.forEach(cb=>cb(done));
+  assert.match(el.innerHTML,/soon@example\.com 계정을 연결했어요\./);
+  assert.match(el.innerHTML,/>새 계정 연결<\/button>/);assert.match(el.innerHTML,/id="ms-email" type="email" autocomplete="email" value=""/);
   board.dispose();
+  // 손볼 줄이 넘쳐 기한이 다가온 계정이 가려지면 「더 있어요」 줄이 그 수를 말한다(끊긴 계정이 많을 때 — Fable F1).
+  const broken=n=>row({id:`c-b${n}`,email:`b${n}@example.com`,plan:'max_20x',state:'needs-login',stateMessage:'Claude 로그인이 풀렸어요. 다시 연결해 주세요.',live:live({readAt:now-864e5})});
+  const snap3={...snapshot,rows:[broken(1),broken(2),broken(3),soon],check:{at:now,total:4,ok:1}};
+  const board3=createSubscriptionsBoard({bridge:{subscriptions:{...bridge.subscriptions,snapshot:async()=>snap3,check:async()=>snap3}}});
+  const el3=fakeContainer();
+  board3.render(el3,{signedIn:true,native:true});
+  await tick();
+  assert.match(el3.innerHTML,/<span>손볼 계정이 2개 더 있어요\(로그인 기한이 다가온 계정 1개 포함\)<\/span>/);
+  board3.dispose();
   // 기한이 지났는데 아직 읽히는 줄(받아 둔 토큰이 남은 몇 시간)은 곧 끊긴다고 말한다.
   const snap2={...snapshot,rows:[past],check:{at:now,total:1,ok:1}};
   const board2=createSubscriptionsBoard({bridge:{subscriptions:{...bridge.subscriptions,snapshot:async()=>snap2,check:async()=>snap2}}});
