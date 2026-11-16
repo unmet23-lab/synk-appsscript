@@ -223,6 +223,17 @@
       "원고": "게시/판본/VN/원고_youtube.json",
       "AI표시": false,
       "지문": "4b0f9178f5e97ff3f2a00b424c7e8ab009cc89ccad0630b86856235616d513ed"
+    },
+    {
+      "계정": "lab-cn-douyin",
+      "파일": "게시/판본/CN/video.mp4",
+      "시각": "2026-11-18T13:00:00+08:00",
+      "언어": "zh-Hans",
+      "돌림": true,
+      "표지": "게시/판본/CN/cover.png",
+      "원고": "게시/판본/CN/원고_douyin.json",
+      "AI표시": false,
+      "지문": "9e5c5ff78dc1f64451a31f06072f377f66d0c44ab0774f55f74e0b9b3ac973ad"
     }
   ],
   "미룰편": [],
