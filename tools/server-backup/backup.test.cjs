@@ -14,6 +14,20 @@ test('studio media plan carries only well-formed sidecars of the DR archive data
  for(const bad of [{...good,bucket:'other'},{...good,dataDir:'/etc'},{...good,dataDir:'/srv/synk/../etc'},{...good,objects:[{...o,object:'company/production/other.media-'+sha}]},{...good,objects:[{...o,generation:'x'}]},{...good,objects:[{...o,diskName:'../x.mp4'}]},{...good,objects:[o,o]},{...good,backup:'../x'}])
   assert.throws(()=>mediaPlan(bad,{bucket:'fixture-bucket'}),/MEDIA_PLAN_INVALID/);
 });
+test('studio media plan accepts a media bucket object of the same project named by its disk name (studio media cloud, 2026-11-16)',()=>{const {mediaPlan}=require('./backup.cjs'),sha='c'.repeat(64),backup='synk-workspace-2026-11-06T18-30-00-000Z',disk='61234567-1234-4234-8234-123456789abc.mp4';
+ const plan={backup,bucket:'synk-company-backups-123456789012',dataDir:'/srv/synk/company',objects:[{sha256:sha,bytes:3,bucket:'synk-company-media-123456789012',object:'studio-media/'+disk,generation:'4242',md5Hash:'A'.repeat(22)+'==',diskName:disk}]};
+ assert.equal(mediaPlan(plan,{bucket:plan.bucket}),plan);
+ const o=plan.objects[0];assert.equal(mediaPlan({...plan,objects:[{...o,object:'studio-media/'+disk+'~2'}]},{bucket:plan.bucket}).objects[0].object,'studio-media/'+disk+'~2');
+ for(const bad of [{...o,bucket:'synk-company-media-111111111111'},{...o,object:'studio-media/71234567-1234-4234-8234-123456789abc.mp4'},{...o,object:'studio-media/../x.mp4'},{...o,bucket:plan.bucket,object:'studio-media/'+disk},{...o,object:'company/production/'+backup+'.media-'+sha}])
+  assert.throws(()=>mediaPlan({...plan,objects:[bad]},{bucket:plan.bucket}),/MEDIA_PLAN_INVALID/);
+ // a backup bucket outside the project rule never takes media bucket objects
+ assert.throws(()=>mediaPlan({...plan,bucket:'fixture-bucket'},{bucket:'fixture-bucket'}),/MEDIA_PLAN_INVALID/);
+});
+test('a reused media bucket file the PC trashed or emptied is uploaded again; every other source keeps the strict check',()=>{const source=fs.readFileSync(path.join(__dirname,'backup.cjs'),'utf8');
+ // the fallback is limited to media bucket source keys and to a trashed or missing (404) Drive file
+ assert.match(source,/if\(old&&sourceKey\.startsWith\('gcs\/synk-company-media-'\)\)\{let gone=false;try\{gone=\(await d\.meta\(old\.remoteId\)\)\.trashed===true;\}catch\(e\)\{if\(e\.message!=='DRIVE_HTTP_404'\)throw e;gone=true;\}/);
+ assert.match(source,/if\(gone\)\{delete prior\[identity\];atomic\(ledgerfile,prior\);old=undefined;\}\}\n?\s*if\(old\)\{matches\(await d\.meta\(old\.remoteId\),old,dest,d\.auth\.email\);/);
+});
 test('studio media plan also accepts a bucket without a prefix',()=>{const {mediaPlan}=require('./backup.cjs'),sha='b'.repeat(64),backup='synk-workspace-2026-11-06T18-30-00-000Z';
  const plan={backup,bucket:'b',dataDir:'/srv/synk/company',objects:[{sha256:sha,bytes:1,object:backup+'.media-'+sha,generation:'1',md5Hash:'A'.repeat(22)+'==',diskName:'61234567-1234-4234-8234-123456789abc.mp4'}]};
  assert.equal(mediaPlan(plan,{bucket:'b'}),plan);assert.throws(()=>mediaPlan({...plan,objects:[{...plan.objects[0],object:'x'+backup+'.media-'+sha}]},{bucket:'b'}),/MEDIA_PLAN_INVALID/);

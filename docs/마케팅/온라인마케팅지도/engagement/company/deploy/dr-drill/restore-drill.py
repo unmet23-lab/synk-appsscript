@@ -55,6 +55,12 @@ MEDIA_SCHEMA = 'synk-workspace-media/v1'
 MEDIA_PREFIX = 'company/production/'
 MEDIA_OBJECT = re.compile(r'company/production/(synk-workspace-[0-9TZ-]+)\.media-([0-9a-f]{64})')
 MEDIA_NAME = re.compile(r'[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)', re.I)
+# Studio media cloud (2026-11-16): a backup may leave bodies in the media bucket and name them in media-cloud.json.
+CLOUD_SCHEMA = 'synk-workspace-media-cloud/v1'
+CLOUD_BUCKET = re.compile(r'synk-company-media-([0-9]{6,20})')
+BACKUP_BUCKET = re.compile(r'synk-company-backups-([0-9]{6,20})')
+CLOUD_OBJECT = re.compile(r'studio-media/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?', re.I)
+CLOUD_KEYS = {'diskName', 'sha256', 'bytes', 'bucket', 'object', 'generation', 'md5'}
 EMPLOYEE_IDENTITY = {'SYNK_ID_ACCOUNT_API_URL', 'SYNK_ID_PUBLISHABLE_KEY', 'SYNK_ID_SUPABASE_URL', 'SYNK_ID_MESSENGER_CLIENT_ID'}
 CUSTOMER_IDENTITY = {'SYNK_ID_CUSTOMER_' + k for k in ('ACCOUNT_API_URL', 'PUBLISHABLE_KEY', 'SUPABASE_URL', 'CLIENT_ID', 'REDIRECT_URI')}
 
@@ -391,6 +397,38 @@ def media_list(manifest, integration):
     return {'included': manifest['bytesIncluded'], 'files': files, 'contents': contents}
 
 
+def cloud_list(cloud, media, manifest_sha, integration, backup_bucket):
+    """diskName -> media bucket row for the bodies this backup left in the media bucket; {} for a backup without media-cloud.json.
+    The list is bound to this snapshot's media list (its sha256) and the bucket to the backup bucket's project."""
+    if cloud is None:
+        need(integration.get('mediaCloud') is None, 'MEDIA_CLOUD_MISSING')
+        return {}
+    need(media is not None and not media['included'] and integration.get('mediaCloud') == 'media-cloud.json', 'MEDIA_CLOUD_INVALID')
+    need(isinstance(cloud, dict) and cloud.get('schema') == CLOUD_SCHEMA and cloud.get('manifestSha256') == manifest_sha, 'MEDIA_CLOUD_INVALID')
+    rows = cloud.get('files')
+    need(isinstance(rows, list) and 0 < len(rows) <= 8000, 'MEDIA_CLOUD_INVALID')
+    project = BACKUP_BUCKET.fullmatch(backup_bucket) if isinstance(backup_bucket, str) else None
+    need(project is not None, 'MEDIA_CLOUD_BUCKET_MISMATCH')
+    listed, out = {item['diskName']: item for item in media['files']}, {}
+    for row in rows:
+        need(isinstance(row, dict) and set(row) == CLOUD_KEYS, 'MEDIA_CLOUD_INVALID')
+        item = listed.get(row['diskName'])
+        need(item is not None and row['diskName'] not in out and row['sha256'] == item['sha256'] and row['bytes'] == item['bytes'], 'MEDIA_CLOUD_INVALID')
+        name = CLOUD_OBJECT.fullmatch(row['object']) if isinstance(row['object'], str) else None
+        need(name is not None and name.group(1) == row['diskName'] and isinstance(row['generation'], str) and re.fullmatch('[0-9]{1,20}', row['generation'])
+             and isinstance(row['md5'], str) and row['md5'], 'MEDIA_CLOUD_INVALID')
+        bucket = CLOUD_BUCKET.fullmatch(row['bucket']) if isinstance(row['bucket'], str) else None
+        need(bucket is not None and bucket.group(1) == project.group(1), 'MEDIA_CLOUD_BUCKET_MISMATCH')
+        out[row['diskName']] = row
+    return out
+
+
+def cloud_rows(cloud, sha256):
+    """The media bucket objects that hold `sha256`, shaped like listing rows (with their bucket) for good_copy."""
+    return [{'bucket': row['bucket'], 'name': row['object'], 'generation': row['generation'], 'size': str(row['bytes']), 'md5Hash': row['md5']}
+            for row in sorted(cloud.values(), key=lambda row: row['diskName']) if row['sha256'] == sha256]
+
+
 def list_media(bucket, backup):
     """sha256 -> this backup's own sidecar objects, newest first (one listing by prefix)."""
     need(re.fullmatch(r'synk-workspace-[0-9TZ-]+', backup), 'DATA_SNAPSHOT_NAME')
@@ -445,7 +483,8 @@ def good_copy(bucket, rows, sha256, size, target=None):
         fd = os.open(target, flags, 0o600) if target else None
         good = False
         try:
-            got_sha, got_md5 = stream_object(bucket, row, size, (lambda block: os.write(fd, block)) if fd is not None else (lambda block: None))
+            # A media bucket row carries its own bucket; a sidecar row is in the backup bucket.
+            got_sha, got_md5 = stream_object(row.get('bucket') or bucket, row, size, (lambda block: os.write(fd, block)) if fd is not None else (lambda block: None))
             good = got_sha == sha256 and got_md5 == row.get('md5Hash')
         except Exception as error:  # this copy failed: try an older one, but a stop request stops
             if isinstance(error, Hold) and str(error) == 'TERMINATED':
@@ -491,11 +530,17 @@ def media_step(bucket, run_dir, snapshot, data_dirs, backup):
     manifest_file = snapshot / 'media-manifest.json'
     integration = json.loads(inside(snapshot, 'integration-manifest.json').read_text())
     manifest = json.loads(inside(snapshot, 'media-manifest.json').read_text()) if manifest_file.exists() else None
+    cloud_file = snapshot / 'media-cloud.json'
+    cloud_raw = json.loads(inside(snapshot, 'media-cloud.json').read_text()) if os.path.lexists(cloud_file) else None
     media = media_list(manifest, integration)
     if media is None:
+        need(cloud_raw is None and integration.get('mediaCloud') is None, 'MEDIA_CLOUD_INVALID')
         return {'mode': 'absent'}
+    cloud = cloud_list(cloud_raw, media, digest(manifest_file), integration, bucket)
     contents, total = media['contents'], sum(media['contents'].values())
     report = {'files': len(media['files']), 'contents': len(contents), 'bytes': total}
+    if cloud:
+        report['referenced'] = len(cloud)
     snapshot_media = snapshot / 'company' / 'studio-media'
     copies = list_media(bucket, backup) if contents else {}
     if media['included']:
@@ -519,7 +564,9 @@ def media_step(bucket, run_dir, snapshot, data_dirs, backup):
         folder.mkdir(mode=0o700)
     for sha256, size in contents.items():
         body = staging / sha256
-        need(good_copy(bucket, copies.get(sha256, []), sha256, size, body), 'MEDIA_OFFSITE_MISSING')
+        # A content some unreferenced name holds has a sidecar of this backup; one only referenced names hold is in the media
+        # bucket at the listed generation (this backup's completion object keeps it). Sidecars first, then the media bucket.
+        need(good_copy(bucket, copies.get(sha256, []) + cloud_rows(cloud, sha256), sha256, size, body), 'MEDIA_OFFSITE_MISSING')
         own = None  # names with the same content share the snapshot's own copy
         for item in media['files']:
             if item['sha256'] == sha256:
@@ -1067,22 +1114,26 @@ def run_now():
 
 
 def nested_media_lists(archive):
-    """(media-manifest.json or None, integration-manifest.json, snapshot name) of the data archive inside a capsule, streamed."""
+    """(media-manifest.json or None, integration-manifest.json, snapshot name, media-cloud.json or None, sha256 of the media list bytes or None)
+    of the data archive inside a capsule, streamed."""
     with tarfile.open(archive, 'r:gz') as capsule:
         for member in capsule:
             if member.name != 'data/workspace.tar.gz':
                 continue
             need(member.isfile(), 'DATA_ARCHIVE_TYPE')
-            found, roots = {}, set()
+            found, raw, roots = {}, {}, set()
             with tarfile.open(fileobj=capsule.extractfile(member), mode='r|gz') as data:
                 for inner in data:
                     parts = inner.name.split('/')
                     roots.add(parts[0])
-                    if len(parts) == 2 and parts[1] in ('media-manifest.json', 'integration-manifest.json'):
+                    if len(parts) == 2 and parts[1] in ('media-manifest.json', 'integration-manifest.json', 'media-cloud.json'):
                         need(inner.isfile() and inner.size <= 16 << 20 and parts[1] not in found, 'DATA_ARCHIVE_LIST_INVALID')
-                        found[parts[1]] = json.loads(data.extractfile(inner).read())
+                        raw[parts[1]] = data.extractfile(inner).read()
+                        found[parts[1]] = json.loads(raw[parts[1]])
             need('integration-manifest.json' in found and len(roots) == 1, 'DATA_ARCHIVE_INCOMPLETE')
-            return found.get('media-manifest.json'), found['integration-manifest.json'], roots.pop()
+            listed = raw.get('media-manifest.json')
+            return (found.get('media-manifest.json'), found['integration-manifest.json'], roots.pop(), found.get('media-cloud.json'),
+                    hashlib.sha256(listed).hexdigest() if listed is not None else None)
     raise Hold('DATA_ARCHIVE_MISSING')
 
 
@@ -1116,15 +1167,17 @@ def verify_media():
         archive = work / 'recovery.tar.gz'
         download(bucket, receipt['archiveObject'], receipt['generation'], archive, receipt['bytes'])
         need(digest(archive) == receipt['sha256'] and digest(archive, 'md5') == receipt['md5Hash'], 'ARCHIVE_INTEGRITY_MISMATCH')
-        manifest, integration, backup = nested_media_lists(archive)
+        manifest, integration, backup, cloud_raw, manifest_sha = nested_media_lists(archive)
         media = media_list(manifest, integration)
         archive.unlink()
         need(media is not None, 'MEDIA_LIST_MISSING')
+        cloud = cloud_list(cloud_raw, media, manifest_sha, integration, bucket)
         copies = list_media(bucket, backup) if media['contents'] else {}
-        missing = sum(1 for sha256, size in media['contents'].items() if not good_copy(bucket, copies.get(sha256, []), sha256, size))
+        missing = sum(1 for sha256, size in media['contents'].items() if not good_copy(bucket, copies.get(sha256, []) + cloud_rows(cloud, sha256), sha256, size))
         report.update({'status': 'verified' if not missing else 'incomplete', 'archiveGeneration': receipt['generation'],
                        'dataBackupCreatedAt': receipt['dataBackupCreatedAt'], 'mode': 'included' if media['included'] else 'external',
-                       'files': len(media['files']), 'contents': len(media['contents']), 'bytes': sum(media['contents'].values()), 'missing': missing})
+                       'files': len(media['files']), 'contents': len(media['contents']), 'bytes': sum(media['contents'].values()), 'missing': missing,
+                       **({'referenced': len(cloud)} if cloud else {})})
     except Exception as error:
         report.update(status='failed', code=str(error) if isinstance(error, Hold) else 'VERIFY_' + type(error).__name__.upper())
     finally:

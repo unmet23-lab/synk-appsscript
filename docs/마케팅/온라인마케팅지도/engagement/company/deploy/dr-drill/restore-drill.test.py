@@ -367,6 +367,8 @@ def media_rows():
 
 
 BACKUP = 'synk-workspace-2026-11-07T18-30-00-000Z'
+BACKUP_BUCKET = 'synk-company-backups-123456789012'
+MEDIA_BUCKET = 'synk-company-media-123456789012'
 
 
 def object_rows(body, *created, backup=BACKUP):
@@ -381,7 +383,11 @@ class FakeBodies:
 
     def __call__(self, bucket, item, size, write):
         self.fetched.append(item['name'])
-        body = {sha(b): b for b in BODIES.values()}[item['name'][-64:]]
+        self.buckets = getattr(self, 'buckets', []) + [bucket]
+        if item['name'].startswith('studio-media/'):  # a media bucket object is named by its disk name (with an optional ~n)
+            body = BODIES[item['name'][len('studio-media/'):].split('~')[0]]
+        else:
+            body = {sha(b): b for b in BODIES.values()}[item['name'][-64:]]
         if (item['name'], item['generation']) in self.corrupt or item['name'] in self.corrupt:
             body = b'X' + body[1:]
         write(body)
@@ -517,6 +523,75 @@ class Media(unittest.TestCase):
             drill.media_step('b', self.run_dir, self.snapshot, self.data, BACKUP)
         self.assertEqual(len(self.bodies.fetched), 1)
 
+    # ---- studio media cloud (2026-11-16): bodies the backup left in the media bucket --------------------------------
+    def cloud(self, rows=None, edit=None, named=True, write=True):
+        self.lists(False, extra={'mediaCloud': 'media-cloud.json'} if named else None)
+        listed = drill.digest(self.snapshot / 'media-manifest.json')
+        files = [{'diskName': B, 'sha256': sha(BODIES[B]), 'bytes': len(BODIES[B]), 'bucket': MEDIA_BUCKET, 'object': 'studio-media/' + B,
+                  'generation': '4242', 'md5': md5(BODIES[B])}] if rows is None else rows
+        body = {'schema': drill.CLOUD_SCHEMA, 'createdAt': 'x', 'manifestSha256': listed, 'files': files}
+        if edit:
+            edit(body)
+        if write:
+            (self.snapshot / 'media-cloud.json').write_text(json.dumps(body))
+
+    def cloud_step(self, copies=None):
+        # B is only in the media bucket: this backup sent no sidecar for it. A (and its twin) have sidecars.
+        copies = {sha(BODIES[A]): object_rows(BODIES[A], '2026-11-07T18-30-00-000Z')} if copies is None else copies
+        with patch.object(drill, 'list_media', return_value=copies), patch.object(drill, 'stream_object', side_effect=self.bodies):
+            return drill.media_step(BACKUP_BUCKET, self.run_dir, self.snapshot, self.data, BACKUP)
+
+    def test_a_body_left_in_the_media_bucket_is_filled_from_its_exact_generation(self):
+        self.cloud()
+        report = self.cloud_step()
+        self.assertEqual((report['mode'], report['referenced'], report['offsiteVerified']), ('external', 1, True))
+        for folder in [self.snapshot / 'company' / 'studio-media'] + [d / 'studio-media' for d in self.data]:
+            self.assertEqual({p.name: p.read_bytes() for p in folder.iterdir()}, BODIES)
+        self.assertIn('studio-media/' + B, self.bodies.fetched)
+        self.assertEqual(self.bodies.buckets[self.bodies.fetched.index('studio-media/' + B)], MEDIA_BUCKET)
+        self.assertEqual(self.bodies.buckets[self.bodies.fetched.index(object_rows(BODIES[A], 's')[0]['name'])], BACKUP_BUCKET)
+
+    def test_a_referenced_body_that_is_gone_or_different_fails_the_drill(self):
+        self.cloud()
+        self.bodies.corrupt.add('studio-media/' + B)
+        with self.assertRaisesRegex(drill.Hold, 'MEDIA_OFFSITE_MISSING'):
+            self.cloud_step()
+
+    def test_a_cloud_list_not_bound_to_this_snapshot_or_project_is_refused(self):
+        good = lambda: [{'diskName': B, 'sha256': sha(BODIES[B]), 'bytes': len(BODIES[B]), 'bucket': MEDIA_BUCKET, 'object': 'studio-media/' + B,
+                         'generation': '4242', 'md5': md5(BODIES[B])}]
+        cases = [
+            (dict(edit=lambda c: c.update(manifestSha256='0' * 64)), 'MEDIA_CLOUD_INVALID'),
+            (dict(edit=lambda c: c['files'][0].update(object='studio-media/' + A)), 'MEDIA_CLOUD_INVALID'),
+            (dict(edit=lambda c: c['files'][0].update(extra=1)), 'MEDIA_CLOUD_INVALID'),
+            (dict(edit=lambda c: c['files'][0].update(sha256=sha(BODIES[A]))), 'MEDIA_CLOUD_INVALID'),
+            (dict(edit=lambda c: c['files'][0].update(generation='12a')), 'MEDIA_CLOUD_INVALID'),
+            (dict(edit=lambda c: c['files'].append(dict(c['files'][0]))), 'MEDIA_CLOUD_INVALID'),
+            (dict(edit=lambda c: c.update(files=[])), 'MEDIA_CLOUD_INVALID'),
+            (dict(edit=lambda c: c['files'][0].update(bucket='synk-company-media-111111111111')), 'MEDIA_CLOUD_BUCKET_MISMATCH'),
+            (dict(named=False), 'MEDIA_CLOUD_INVALID'),
+            (dict(write=False), 'MEDIA_CLOUD_MISSING'),
+        ]
+        for options, code in cases:
+            self.tearDown()
+            self.setUp()
+            self.cloud(good(), **options)
+            with self.assertRaisesRegex(drill.Hold, code, msg=str(options)):
+                self.cloud_step()
+
+    def test_a_cloud_list_beside_bytes_or_without_a_media_list_is_refused(self):
+        self.lists(True, extra={'mediaCloud': 'media-cloud.json'})
+        (self.snapshot / 'media-cloud.json').write_text(json.dumps({'schema': drill.CLOUD_SCHEMA, 'manifestSha256': drill.digest(self.snapshot / 'media-manifest.json'), 'files': []}))
+        (self.snapshot / 'company' / 'studio-media').mkdir()
+        for name, body in BODIES.items():
+            (self.snapshot / 'company' / 'studio-media' / name).write_bytes(body)
+        with self.assertRaisesRegex(drill.Hold, 'MEDIA_CLOUD_INVALID'):
+            self.cloud_step()
+        (self.snapshot / 'media-manifest.json').unlink()
+        (self.snapshot / 'integration-manifest.json').write_text(json.dumps({'version': 1, 'mediaCount': 3}))
+        with self.assertRaisesRegex(drill.Hold, 'MEDIA_CLOUD_INVALID'):
+            self.cloud_step()
+
     def test_stream_object_pins_the_generation_and_size(self):
         class Response(io.BytesIO):
             status, headers = 200, {'x-goog-generation': '100'}
@@ -544,10 +619,10 @@ class ManualEntries(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def capsule(self, media, integration):
+    def capsule(self, media, integration, cloud=None):
         inner = io.BytesIO()
         with tarfile.open(fileobj=inner, mode='w:gz') as data:
-            for name, value in (('integration-manifest.json', integration), ('media-manifest.json', media)):
+            for name, value in (('integration-manifest.json', integration), ('media-manifest.json', media), ('media-cloud.json', cloud)):
                 if value is None:
                     continue
                 body = json.dumps(value).encode()
@@ -606,6 +681,21 @@ class ManualEntries(unittest.TestCase):
         self.assertEqual(self.verify(body, copies)['missing'], 1)
         old = self.capsule(None, {'version': 1, 'mediaCount': 3})
         self.assertEqual(self.verify(old, copies)['code'], 'MEDIA_LIST_MISSING')
+
+    def test_verify_media_counts_a_body_left_in_the_media_bucket(self):
+        manifest = {'schema': drill.MEDIA_SCHEMA, 'bytesIncluded': False, 'files': media_rows()}
+        integration = {'version': 1, 'mediaCount': 3, 'mediaManifest': 'media-manifest.json', 'mediaBytesIncluded': False, 'mediaCloud': 'media-cloud.json'}
+        cloud = {'schema': drill.CLOUD_SCHEMA, 'createdAt': 'x', 'manifestSha256': sha(json.dumps(manifest).encode()),
+                 'files': [{'diskName': B, 'sha256': sha(BODIES[B]), 'bytes': len(BODIES[B]), 'bucket': MEDIA_BUCKET, 'object': 'studio-media/' + B,
+                            'generation': '4242', 'md5': md5(BODIES[B])}]}
+        self.cfg['backupBucket'] = BACKUP_BUCKET
+        copies = {sha(BODIES[A]): object_rows(BODIES[A], '2026-11-06T18:31:00Z')}
+        report = self.verify(self.capsule(manifest, integration, cloud), copies)
+        self.assertEqual({k: report.get(k) for k in ('status', 'mode', 'contents', 'missing', 'referenced')},
+                         {'status': 'verified', 'mode': 'external', 'contents': 2, 'missing': 0, 'referenced': 1})
+        # without the cloud list B has no copy anywhere, and the integration manifest still names the list
+        self.assertEqual(self.verify(self.capsule(manifest, integration), copies)['code'], 'MEDIA_CLOUD_MISSING')
+        self.assertEqual(self.verify(self.capsule(manifest, dict(integration, mediaCloud=None)), copies)['missing'], 1)
 
     def test_run_now_skips_only_the_weekly_schedule(self):
         with patch.object(drill, 'load_config', return_value=self.cfg), patch.object(drill, 'attempt', return_value={'status': 'passed'}) as attempt, \

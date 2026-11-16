@@ -18,6 +18,8 @@ B = '71234567-1234-4234-8234-123456789abc.png'
 TWIN = '81234567-1234-4234-8234-123456789abc.mp4'
 BODIES = {A: b'synthetic video body', B: b'synthetic image body!', TWIN: b'synthetic video body'}
 BUCKET = 'synk-media-fixture'
+BACKUPS = 'synk-company-backups-123456789012'
+MEDIA = 'synk-company-media-123456789012'
 OWNER = os.getuid() if hasattr(os, 'getuid') else None
 
 
@@ -124,6 +126,45 @@ class Receipts(Capsules):
             self.media(capsule, bucket='another-bucket')
         good.unlink()
 
+    # ---- studio media cloud (2026-11-16): a content only the media bucket holds -------------------------------------
+    def cloud_receipt(self, digest, refs=None, sidecars=True):
+        """B is only in the media bucket; A (and its twin) have sidecars."""
+        objects = [{'sha256': sha(BODIES[A]), 'bytes': len(BODIES[A]), 'object': 'company/production/' + self.BACKUP + '.media-' + sha(BODIES[A]),
+                    'generation': '17', 'md5Hash': md5(BODIES[A])}] if sidecars else []
+        refs = [{'bucket': MEDIA, 'object': 'studio-media/' + B, 'generation': '4242', 'sha256': sha(BODIES[B]), 'bytes': len(BODIES[B]),
+                 'md5Hash': md5(BODIES[B])}] if refs is None else refs
+        return self.receipt(digest, objects=objects, overrides={'bucket': BACKUPS, 'referenced': refs})
+
+    def test_a_referenced_content_is_carried_from_its_media_bucket_object(self):
+        capsule, digest = self.capsule()
+        self.cloud_receipt(digest)
+        media = self.media(capsule, bucket=BACKUPS)
+        rows = {o['diskName']: o for o in media['objects']}
+        self.assertEqual(sorted(rows), sorted([A, B]))
+        self.assertNotIn('bucket', rows[A])
+        self.assertEqual((rows[B]['bucket'], rows[B]['object'], rows[B]['generation']), (MEDIA, 'studio-media/' + B, '4242'))
+
+    def test_a_reference_outside_the_rule_or_a_content_left_uncovered_stops_the_run(self):
+        capsule, digest = self.capsule()
+        good = {'bucket': MEDIA, 'object': 'studio-media/' + B, 'generation': '4242', 'sha256': sha(BODIES[B]), 'bytes': len(BODIES[B]), 'md5Hash': md5(BODIES[B])}
+        for refs, code in (([dict(good, bucket='synk-company-media-111111111111')], 'MEDIA_RECEIPT_INVALID'),
+                           ([dict(good, object='studio-media/' + A)], 'MEDIA_RECEIPT_INVALID'),
+                           ([dict(good, sha256=sha(BODIES[A]))], 'MEDIA_RECEIPT_INVALID'),
+                           ([dict(good, extra=1)], 'MEDIA_RECEIPT_INVALID'),
+                           ([dict(good, generation='12a')], 'MEDIA_RECEIPT_INVALID'),
+                           ([], 'MEDIA_RECEIPT_INVALID')):
+            path = self.cloud_receipt(digest, refs)
+            with self.assertRaisesRegex(AssertionError, code):
+                self.media(capsule, bucket=BACKUPS)
+            path.unlink()
+        path = self.cloud_receipt(digest, sidecars=False)  # A is held only by unreferenced names, yet no sidecar
+        with self.assertRaisesRegex(AssertionError, 'MEDIA_RECEIPT_INCOMPLETE'):
+            self.media(capsule, bucket=BACKUPS)
+        path.unlink()
+        self.cloud_receipt(digest)  # the backup bucket must name the project
+        with self.assertRaisesRegex(AssertionError, 'MEDIA_RECEIPT_INVALID'):
+            self.media(capsule, bucket=BACKUPS.replace('backups', 'other'))
+
 
 class Retention(Capsules):
     """2026-11-11 결정 표 ① · 판 4 설계 11-2: the data backup names the persona-owned bodies; the Drive copy marks them vault:false."""
@@ -205,6 +246,44 @@ class LiveReader(unittest.TestCase):
         self.assertEqual(self.read(A, len(BODIES[A]) + 1), (2, b''))
         self.assertEqual(self.read('../escape.mp4', 3), (2, b''))
         self.assertEqual(self.read('91234567-1234-4234-8234-123456789abc.mp4', 3), (2, b''))
+
+    # ---- studio media cloud (2026-11-16): a missing file falls back to its exact generation in the media bucket -------
+    def cloud_read(self, name, size, generation='4242', header=None, body=None):
+        calls = []
+
+        class Response(io.BytesIO):
+            def __init__(self, data, status=200, headers=None):
+                super().__init__(data)
+                self.status, self.headers = status, headers or {}
+
+        def urlopen(request, timeout=None):
+            calls.append(request.full_url)
+            if 'metadata' in request.full_url:
+                return Response(json.dumps({'access_token': 'synthetic-token'}).encode())
+            return Response(BODIES[name] if body is None else body, headers={'x-goog-generation': header or generation})
+        out = io.BytesIO()
+        code = reader.main([str(self.data), name, str(size), MEDIA, 'studio-media/' + name, generation], out,
+                           OWNER if OWNER is not None else 1000, urlopen)
+        return code, out.getvalue(), calls
+
+    def test_a_missing_file_is_streamed_from_the_media_bucket_and_a_present_one_never_is(self):
+        code, body, calls = self.cloud_read(A, len(BODIES[A]))
+        self.assertEqual((code, body, calls), (0, BODIES[A], []))  # on the volume: read there, no network
+        os.unlink(self.data / 'studio-media' / A)
+        code, body, calls = self.cloud_read(A, len(BODIES[A]))
+        self.assertEqual((code, body), (0, BODIES[A]))
+        self.assertTrue(calls[1].endswith('/b/' + MEDIA + '/o/studio-media%2F' + A + '?alt=media&generation=4242'))
+
+    def test_the_fallback_checks_its_arguments_generation_and_size(self):
+        os.unlink(self.data / 'studio-media' / A)
+        self.assertEqual(self.cloud_read(A, len(BODIES[A]), header='1')[:2], (2, b''))
+        self.assertEqual(self.cloud_read(A, len(BODIES[A]), body=BODIES[A] + b'!')[0], 2)
+        self.assertEqual(self.cloud_read(A, len(BODIES[A]), body=BODIES[A][:-1])[0], 2)
+        out = io.BytesIO()
+        for args in ((MEDIA, 'studio-media/' + B, '4242'), ('other-bucket', 'studio-media/' + A, '4242'), (MEDIA, 'studio-media/' + A, 'x')):
+            self.assertEqual(reader.main([str(self.data), A, str(len(BODIES[A])), *args], out, 1000, lambda *a, **k: self.fail('no network')), 2)
+        # a file that is there but wrong never falls back
+        self.assertEqual(self.cloud_read(B, len(BODIES[B]) + 1), (2, b'', []))
 
     @unittest.skipUnless(os.name == 'posix', 'links and FIFOs need the Linux node path')
     def test_links_fifos_and_extra_links_are_refused(self):

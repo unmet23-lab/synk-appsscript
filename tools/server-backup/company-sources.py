@@ -7,6 +7,9 @@ is read from the DR archive itself (its data backup's media-manifest.json); for 
 list-only backup the node's host-only receipt `<snapshot>.tar.gz.media.json`
 (each sidecar's generation and md5, bound to the same list bytes) must exist, and
 `media` below names the bodies the server-only Drive copy carries with it.
+Since the 2026-11 studio media cloud a content that only bodies in the media bucket
+hold has no sidecar: the receipt's `referenced` names that object (bucket, object,
+exact generation), and its row below carries its own `bucket`.
 
 Since the 2026-11 retention rule (PULSE persona files never go to the unmet23
 vault, 판 4 설계 11-2) a listed backup also holds media-retention.json: the
@@ -19,6 +22,7 @@ ARCHIVES=pathlib.Path('/srv/synk/backup-archives')
 RECEIPT=re.compile(r'(synk-workspace-[0-9TZ-]+)\.tar\.gz\.media\.json')
 NAME=re.compile(r'[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)',re.I)
 B64MD5=re.compile(r'[A-Za-z0-9+/]{22}==')
+CLOUD_OBJECT=re.compile(r'studio-media/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?',re.I)
 def need(v,c):
  if not v:raise AssertionError(c)
 LISTS=('media-manifest.json','integration-manifest.json','media-retention.json')
@@ -102,6 +106,21 @@ def media_from(raw,integration,backup,created_at,bucket,data,archives,owner):
   need(isinstance(o,dict) and o.get('sha256') in names and o.get('bytes')==names[o['sha256']]['bytes'] and o.get('object')==r['prefix']+r['backup']+'.media-'+o['sha256']
        and str(o.get('generation','')).isdigit() and B64MD5.fullmatch(str(o.get('md5Hash'))),'MEDIA_RECEIPT_INVALID')
   out.append({'sha256':o['sha256'],'bytes':o['bytes'],'object':o['object'],'generation':str(o['generation']),'md5Hash':o['md5Hash'],'diskName':names[o['sha256']]['diskName']})
+ # Studio media cloud (2026-11-16): a content only referenced names hold has no sidecar; the receipt's `referenced`
+ # (backup-media.py, each object read at its exact generation) names it in the media bucket of the same project.
+ refs=r.get('referenced')
+ if refs is not None:
+  project=re.fullmatch(r'synk-company-backups-([0-9]{6,20})',str(bucket))
+  need(isinstance(refs,list) and refs and project,'MEDIA_RECEIPT_INVALID')
+  by_name={f['diskName']:f for f in files};have={o['sha256'] for o in out}
+  for ref in refs:
+   m=CLOUD_OBJECT.fullmatch(str(ref.get('object'))) if isinstance(ref,dict) else None
+   f=by_name.get(m.group(1)) if m else None
+   need(isinstance(ref,dict) and set(ref)=={'bucket','object','generation','sha256','bytes','md5Hash'} and f is not None and f['sha256']==ref['sha256'] and f['bytes']==ref['bytes']
+        and ref['bucket']=='synk-company-media-'+project.group(1) and str(ref['generation']).isdigit() and B64MD5.fullmatch(str(ref['md5Hash'])),'MEDIA_RECEIPT_INVALID')
+   if ref['sha256'] in have:continue  # a sidecar (or an earlier reference) already carries this content
+   have.add(ref['sha256'])
+   out.append({'sha256':ref['sha256'],'bytes':ref['bytes'],'bucket':ref['bucket'],'object':ref['object'],'generation':str(ref['generation']),'md5Hash':ref['md5Hash'],'diskName':f['diskName']})
  need(len({o['sha256'] for o in out})==len(out)==len(names),'MEDIA_RECEIPT_INCOMPLETE')
  return {'backup':r['backup'],'createdAt':r['createdAt'],'bucket':bucket,'dataDir':str(data),'objects':out}
 def run(args):return subprocess.check_output(args,text=True,timeout=30)

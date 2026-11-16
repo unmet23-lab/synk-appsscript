@@ -45,8 +45,11 @@ function freeEnough(bytes){const s=fs.statfsSync(STATE);need(s.bavail*s.bsize>by
 function mediaPlan(media,archive){
  if(media===null||media===undefined)return null;
  need(media&&typeof media==='object'&&/^synk-workspace-[0-9TZ-]+$/.test(media.backup)&&media.bucket===archive?.bucket&&typeof media.dataDir==='string'&&media.dataDir.startsWith('/srv/synk/')&&!media.dataDir.split('/').includes('..')&&Array.isArray(media.objects),'MEDIA_PLAN_INVALID');
- const seen=new Set();
- for(const o of media.objects){need(o&&/^[0-9a-f]{64}$/.test(o.sha256)&&!seen.has(o.sha256)&&Number.isSafeInteger(o.bytes)&&o.bytes>=0&&typeof o.object==='string'&&(o.object===media.backup+'.media-'+o.sha256||o.object.endsWith('/'+media.backup+'.media-'+o.sha256))&&/^[0-9]+$/.test(o.generation)&&/^[A-Za-z0-9+/]{22}==$/.test(o.md5Hash)&&/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$/i.test(o.diskName),'MEDIA_PLAN_INVALID');seen.add(o.sha256);}
+ const seen=new Set(),project=/^synk-company-backups-([0-9]{6,20})$/.exec(media.bucket)?.[1];
+ // A sidecar of this backup (no own bucket), or (studio media cloud, 2026-11-16) an object of the media bucket of the same project named by its disk name.
+ const sidecar=o=>o.bucket===undefined&&(o.object===media.backup+'.media-'+o.sha256||o.object.endsWith('/'+media.backup+'.media-'+o.sha256));
+ const inMediaBucket=o=>!!project&&o.bucket==='synk-company-media-'+project&&/^studio-media\/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$/i.exec(o.object)?.[1]===o.diskName;
+ for(const o of media.objects){need(o&&/^[0-9a-f]{64}$/.test(o.sha256)&&!seen.has(o.sha256)&&Number.isSafeInteger(o.bytes)&&o.bytes>=0&&typeof o.object==='string'&&(sidecar(o)||inMediaBucket(o))&&/^[0-9]+$/.test(o.generation)&&/^[A-Za-z0-9+/]{22}==$/.test(o.md5Hash)&&/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$/i.test(o.diskName),'MEDIA_PLAN_INVALID');seen.add(o.sha256);}
  return media;
 }
 // 금고 제외(2026-11-11 결정 표 ① · 판 4 설계 11-2): company-sources.py가 데이터 백업의 media-retention.json에서 읽은 「금고에 넣지 않을 본문」.
@@ -69,7 +72,12 @@ async function execute(config,secrets){
  const save=()=>{status.heartbeatAt=NOW();atomic(statefile,status);};save();
  const d=drive(oauth(secrets.drive77,'77yuhbs@gmail.com',config.restrictedClientId));await d.identity();const top=await folder(d,'server-independent',config.archiveRootId);const dest=await folder(d,config.role,top);status.folderId=dest;
  async function backup(sourceKey,version,reader,validate,extra={}){
-  const identity=sha(sourceKey+'\n'+version+'\n'+keyId),old=prior[identity];
+  const identity=sha(sourceKey+'\n'+version+'\n'+keyId);let old=prior[identity];
+  // A media bucket object keeps its name and generation across days, so its Drive file is reused run after run. When the PC
+  // retention job has trashed (or emptied) that file after every run naming it aged out and the object comes back (a restored DB),
+  // upload it again instead of failing (2026-11-16). Every other source keeps the strict check.
+  if(old&&sourceKey.startsWith('gcs/synk-company-media-')){let gone=false;try{gone=(await d.meta(old.remoteId)).trashed===true;}catch(e){if(e.message!=='DRIVE_HTTP_404')throw e;gone=true;}
+   if(gone){delete prior[identity];atomic(ledgerfile,prior);old=undefined;}}
   if(old){matches(await d.meta(old.remoteId),old,dest,d.auth.email);const row={...old,...extra,reused:true,remoteVerifiedAt:NOW()};status.items.push(row);save();return row;}
   // A terminated invocation may leave its ciphertext. Preserve it and use a
   // unique staging name so the next invocation can recover without a stuck lock.
@@ -99,7 +107,8 @@ async function execute(config,secrets){
    const afterObjects=storageToBackup(await commandJson('/usr/bin/python3',sqlArgs));need(JSON.stringify(objects)===JSON.stringify(afterObjects),'STORAGE_CHANGED_DURING_BACKUP');status.sourceChecks.push({kind:'supabase-storage',checkedAt:NOW(),objects:objects.length,beforeAfterMatched:true,excludedBuckets:STORAGE_EXCLUDED});
    // Last for the company role: a body deleted from the live volume since the backup fails the run only after the DB and Storage copies are in.
    const media=mediaPlan(refs.media,refs.archives[0]);
-   if(media){let carried=0;for(const o of media.objects){let proc;await backup('gcs/'+media.bucket+'/'+o.object,o.generation,async()=>{proc=spawn('/usr/bin/python3',['-I',path.join(__dirname,'media-read.py'),media.dataDir,o.diskName,String(o.bytes)],{stdio:['ignore','pipe','ignore']});proc.done=new Promise(r=>proc.on('close',r));return proc.stdout;},async e=>{need(await proc.done===0,'MEDIA_READ_FAILED');need(e.bytes===o.bytes&&e.sha256===o.sha256&&e.md5b64===o.md5Hash,'MEDIA_BODY_MISMATCH');},{expectedBytes:o.bytes,mediaOf:media.backup,mediaSha256:o.sha256,...noVault(o)});carried+=o.bytes;}
+   // A media bucket object (o.bucket) is read from the live volume like a sidecar; media-read.py falls back to that exact generation when the volume no longer holds it.
+   if(media){let carried=0;for(const o of media.objects){let proc;await backup('gcs/'+(o.bucket||media.bucket)+'/'+o.object,o.generation,async()=>{proc=spawn('/usr/bin/python3',['-I',path.join(__dirname,'media-read.py'),media.dataDir,o.diskName,String(o.bytes),...(o.bucket?[o.bucket,o.object,o.generation]:[])],{stdio:['ignore','pipe','ignore']});proc.done=new Promise(r=>proc.on('close',r));return proc.stdout;},async e=>{need(await proc.done===0,'MEDIA_READ_FAILED');need(e.bytes===o.bytes&&e.sha256===o.sha256&&e.md5b64===o.md5Hash,'MEDIA_BODY_MISMATCH');},{expectedBytes:o.bytes,mediaOf:media.backup,mediaSha256:o.sha256,...noVault(o)});carried+=o.bytes;}
     status.sourceChecks.push({kind:'studio-media',backup:media.backup,dataBackupCreatedAt:media.createdAt,contents:media.objects.length,bytes:carried,checkedAt:NOW()});}
   }else if(config.role==='research'){
    const raw=await commandJson('/usr/bin/python3',['-I',path.join(__dirname,'docs-read.py')]);const b=Buffer.from(raw.bodyBase64,'base64');need(sha(b)===raw.proof.sha256&&b.length===raw.proof.bytes,'RESEARCH_DOC_BODY_MISMATCH');await backup('drive/unmet23/'+raw.proof.documentId,raw.proof.revisionHash,async()=>Readable.from([b]),null,{sourceAccount:'unmet23@gmail.com',fileId:raw.proof.documentId,mimeType:'application/vnd.google-apps.document+json',sourceProof:raw.proof});b.fill(0);
