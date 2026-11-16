@@ -181,6 +181,17 @@
       "원고": "게시/판본/JP/원고_instagram.json",
       "AI표시": false,
       "지문": "a68f920ae88860150e7d41de7a4306716f0b0232ec9031d822146a18b36010ea"
+    },
+    {
+      "계정": "lab-py-youtube",
+      "파일": "게시/판본/PY/video.mp4",
+      "시각": "2026-11-17T13:00:00-03:00",
+      "언어": "es",
+      "돌림": true,
+      "표지": "게시/판본/PY/cover.png",
+      "원고": "게시/판본/PY/원고_youtube.json",
+      "AI표시": false,
+      "지문": "745b3df2fd0bf57fb544ed941b897aa7c32d0d985023be7574912aec2318ccdd"
     }
   ],
   "미룰편": [],
