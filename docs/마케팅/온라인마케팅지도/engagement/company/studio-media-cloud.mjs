@@ -10,7 +10,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {constants,lstatSync,unlinkSync} from 'node:fs';
 import {lstat,open,readFile,rename,statfs,unlink,readdir} from 'node:fs/promises';
-import {join,resolve,dirname} from 'node:path';
+import {join,resolve,dirname,basename} from 'node:path';
 import {pipeline} from 'node:stream/promises';
 import {Readable,Writable} from 'node:stream';
 import {workspaceMediaNames} from './workspace-media.mjs';
@@ -64,10 +64,15 @@ export function metadataCredentials({fetchImpl=fetch,base='http://169.254.169.25
 }
 
 // GCS JSON API(필요한 것만). 같은 지역 VM과 버킷 사이라 망 요금이 없다.
-export function gcsClient({credentials,fetchImpl=fetch,base='https://storage.googleapis.com'}){
-  async function call(url,init={},{allow=[]}={}){
+// 요청마다 시간 제한을 건다(GPT 검수 GA5). 목록 · 조회 · 업로드 시작은 timeoutMs, 몸통을 흘리는 PUT과 받기는 크기를 최저 속도(minBytesPerSecond)로 나눈 시간과
+// transferFloorMs 가운데 긴 쪽이다. 신호가 끊기면 fetch가 몸통 흐름까지 끊고, 부른 쪽이 임시 파일과 진행 표시를 치운다. 받기 · 올리기에 넘긴 signal은
+// 서버가 멈출 때 진행 중인 요청을 끊는다(createMediaCloud의 stop).
+export function gcsClient({credentials,fetchImpl=fetch,base='https://storage.googleapis.com',timeoutMs=60000,transferFloorMs=5*60000,minBytesPerSecond=1<<20}){
+  const transferMs=size=>Math.max(transferFloorMs,Math.ceil(Number(size||0)/minBytesPerSecond)*1000);
+  async function call(url,init={},{allow=[],timeout=timeoutMs,stop=null}={}){
     const token=await credentials.token();
-    const r=await fetchImpl(url,{...init,headers:{...init.headers,authorization:'Bearer '+token},redirect:'error'});
+    const signal=stop?AbortSignal.any([AbortSignal.timeout(timeout),stop]):AbortSignal.timeout(timeout);
+    const r=await fetchImpl(url,{...init,headers:{...init.headers,authorization:'Bearer '+token},redirect:'error',signal});
     if(!r.ok&&!allow.includes(r.status)){const text=await r.text().catch(()=>'');throw fail('미디어 버킷 요청이 실패했어요.',502,'MEDIA_GCS_'+r.status+(text?'':''));}
     return r;
   }
@@ -76,15 +81,15 @@ export function gcsClient({credentials,fetchImpl=fetch,base='https://storage.goo
   return {
     async stat(bucket,name,generation){const r=await call(objectUrl(bucket,name)+'?fields=name,generation,size,md5Hash,timeCreated'+(generation?'&generation='+encodeURIComponent(generation):''),{},{allow:[404]});return r.status===404?null:meta(await r.json());},
     // 끝까지 흘린 뒤에야 객체가 생긴다. 이미 있으면(412) null을 돌려 부른 쪽이 stat으로 견준다. 몸통은 PUT 때에만 연다(FileHandle 스트림을 버리면 핸들이 닫힌다).
-    async upload(bucket,name,{size,md5,body}){
+    async upload(bucket,name,{size,md5,body,signal=null}){
       const start=await call(base+'/upload/storage/v1/b/'+encodeURIComponent(bucket)+'/o?uploadType=resumable&ifGenerationMatch=0&fields=name,generation,size,md5Hash',{method:'POST',
-        headers:{'content-type':'application/json; charset=UTF-8','x-upload-content-type':'application/octet-stream','x-upload-content-length':String(size)},body:JSON.stringify({name,md5Hash:md5})},{allow:[412]});
+        headers:{'content-type':'application/json; charset=UTF-8','x-upload-content-type':'application/octet-stream','x-upload-content-length':String(size)},body:JSON.stringify({name,md5Hash:md5})},{allow:[412],stop:signal});
       if(start.status===412)return null;
       const session=start.headers.get('location');if(!session||!session.startsWith(base+'/'))throw fail('업로드 주소를 확인해 주세요.',502,'MEDIA_GCS_SESSION');
-      const done=await call(session,{method:'PUT',headers:{'content-length':String(size)},body:Readable.toWeb(body()),duplex:'half'},{allow:[412]});
+      const done=await call(session,{method:'PUT',headers:{'content-length':String(size)},body:Readable.toWeb(body()),duplex:'half'},{allow:[412],timeout:transferMs(size),stop:signal});
       if(done.status===412)return null;return meta(await done.json());
     },
-    async download(bucket,name,generation,writable){const r=await call(objectUrl(bucket,name)+'?alt=media&generation='+encodeURIComponent(generation),{},{allow:[404]});if(r.status===404)return false;await pipeline(Readable.fromWeb(r.body),writable);return true;},
+    async download(bucket,name,generation,writable,{size,signal=null}={}){const r=await call(objectUrl(bucket,name)+'?alt=media&generation='+encodeURIComponent(generation),{},{allow:[404],timeout:transferMs(size),stop:signal});if(r.status===404)return false;await pipeline(Readable.fromWeb(r.body),writable);return true;},
     async list(bucket,prefix){const out=[];let page='';do{const r=await call(base+'/storage/v1/b/'+encodeURIComponent(bucket)+'/o?prefix='+encodeURIComponent(prefix)+'&fields='+encodeURIComponent('nextPageToken,items(name,generation,size,md5Hash,timeCreated)')+(page?'&pageToken='+encodeURIComponent(page):''));
       const body=await r.json();for(const row of body.items||[])out.push(meta(row));page=body.nextPageToken||'';}while(page);return out;}
   };
@@ -107,8 +112,9 @@ export function cloudLoggingAlert({credentials,fetchImpl=fetch,base='https://log
 export function createMediaCloud({store,directory=store?.directory,credentials,gcs,clock=Date.now,options={},log=()=>{},namesOf=()=>workspaceMediaNames(store.db),draftNamesOf=null,alert=null}={}){
   if(!store||!directory)throw new Error('Media cloud requires a store.');
   const o={...DEFAULTS,...options},root=resolve(directory,'studio-media'),switchPath=join(resolve(directory),SWITCH_FILE);
+  let abort=new AbortController();
   gcs=gcs||gcsClient({credentials});
-  const lastUse=new Map(),inflight=new Map();let bucketName=options.bucket||null,mode={mode:'off',cacheBytes:o.cacheBytes},modeReadAt=0,ticking=null,timers=[],stopped=false;
+  const lastUse=new Map(),inflight=new Map(),fetching=new Set();let bucketName=options.bucket||null,mode={mode:'off',cacheBytes:o.cacheBytes},modeReadAt=0,ticking=null,timers=[],stopped=false;
   const status={lastTickAt:null,lastUploadAt:null,lastErrorAt:null,lastError:null,lastReconcileAt:null,reconcile:null,lowSpace:false};
   const pathOf=name=>{if(!MEDIA_NAME.test(name))throw notFound();const path=resolve(root,name);if(dirname(path)!==root)throw notFound();return path;};
   const ledger=name=>store.get(MEDIA_CLOUD_KIND,name);
@@ -137,7 +143,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
     try{
       const before=await handle.stat();if(!before.isFile())throw fail('보통 파일이 아니에요.',409,'MEDIA_NOT_REGULAR');
       const size=Number(before.size),{sha256,md5}=await digestsOf(handle,size),target=await bucket();
-      const sent=await gcs.upload(target,objectName,{size,md5,body:()=>handle.createReadStream({start:0,autoClose:false,emitClose:false})});
+      const sent=await gcs.upload(target,objectName,{size,md5,body:()=>handle.createReadStream({start:0,autoClose:false,emitClose:false}),signal:abort.signal});
       const after=await handle.stat(),onDisk=await lstat(path);
       if(!sameStamp(stampOf(before),stampOf(after))||!sameStamp(stampOf(before),stampOf(onDisk)))throw fail('올리는 중에 파일이 바뀌었어요.',409,'MEDIA_CHANGED');
       const remote=sent||await gcs.stat(target,objectName);
@@ -156,11 +162,12 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
   async function fetchOne(name,row,{urgentEvict=false}={}){
     const path=pathOf(name);
     if((await freeBytes())-row.bytes<o.floorBytes){if(urgentEvict)await evict({urgent:true});if((await freeBytes())-row.bytes<o.floorBytes)throw busy();}
-    const temporary=join(root,'.fetch-'+randomUUID()),handle=await open(temporary,'wx',0o600);let closed=false;
+    const temporary=join(root,'.fetch-'+randomUUID());fetching.add(basename(temporary));let handle;
+    try{handle=await open(temporary,'wx',0o600);}catch(error){fetching.delete(basename(temporary));throw error;}let closed=false;
     try{
       const sha=createHash('sha256'),md5=createHash('md5');let bytes=0;
       const sink=new Writable({async write(chunk,_,done){try{sha.update(chunk);md5.update(chunk);bytes+=chunk.length;if(bytes>row.bytes)throw fail('받은 크기가 달라요.',502,'MEDIA_FETCH_MISMATCH');let at=0;while(at<chunk.length){const {bytesWritten}=await handle.write(chunk,at,chunk.length-at);at+=bytesWritten;}done();}catch(error){done(error);}}});
-      const found=await gcs.download(row.bucket,row.object,row.generation,sink);
+      const found=await gcs.download(row.bucket,row.object,row.generation,sink,{size:row.bytes,signal:abort.signal});
       if(!found){await handle.close().catch(()=>{});closed=true;await unlink(temporary).catch(()=>{});if(!(await occupied(path)))writeLedger(name,{...row,state:'lost',lostAt:new Date(clock()).toISOString()});return;}
       if(bytes!==row.bytes||sha.digest('hex')!==row.sha256||md5.digest('base64')!==row.md5)throw fail('받은 파일이 장부와 달라요.',502,'MEDIA_FETCH_MISMATCH');
       await handle.sync();await handle.close();closed=true;
@@ -170,6 +177,7 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       if(!new Set(namesOf()).has(name)){unlinkSync(path);return;}
       const placed=lstatSync(path);writeLedger(name,{...row,localStamp:stampOf(placed)});
     }catch(error){if(!closed)await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
+    finally{fetching.delete(basename(temporary));}
   }
   async function exists(path){try{const info=await lstat(path);return info.isFile();}catch(error){if(error.code==='ENOENT')return false;throw error;}}
   // 그 자리에 무엇이든(파일 · 링크 · 폴더) 있거나 읽다 ENOENT 말고 다른 오류가 나면 「차 있음」 — 받지 않고 부른 쪽 검사에 맡긴다.
@@ -183,8 +191,10 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
     const path=pathOf(name);lastUse.set(name,clock());
     if(await occupied(path))return;
     const row=ledger(name);if(row?.state!=='verified')return;
+    // 같은 이름의 동시 받기는 한 번만 한다 — 작업을 첫 await 전에 등록하고, 끝나면 자기가 등록한 작업일 때만 지운다(GPT 검수 GA2).
     let job=inflight.get(name);
-    if(!job){job=fetchOne(name,row,{urgentEvict:(await readMode()).mode==='evict'}).finally(()=>inflight.delete(name));inflight.set(name,job);}
+    if(!job){const mine=(async()=>fetchOne(name,row,{urgentEvict:(await readMode()).mode==='evict'}))();job=mine;inflight.set(name,mine);
+      mine.finally(()=>{if(inflight.get(name)===mine)inflight.delete(name);}).catch(()=>{});}
     await job;lastUse.set(name,clock());
   }
   function present(name,byteSize){
@@ -263,7 +273,12 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
       if(now-since>o.staleObjectMs&&listed.has(row.object))result.staleObjects++;
     }
     for(const name of referenced){
-      const row=rows.get(name);if(!row)continue;if(row.state==='conflict'){result.conflict++;continue;}if(row.state!=='verified')continue;
+      const row=rows.get(name);if(!row)continue;if(row.state==='conflict'){result.conflict++;continue;}
+      // 아직 가리키는 lost 줄은 회차마다 센다(하루 한 번 경보, GPT 검수 GA4). 로컬에 같은 바이트가 다시 있으면 새 이름으로 올려 되살린다.
+      if(row.state==='lost'){const local=await lstat(pathOf(name)).catch(()=>null);
+        if(local?.isFile()){const again=await rehash(name).catch(()=>null);if(again?.sha256===row.sha256){try{if(await uploadOne(name,{objectName:nextObject(row.object,listed)})==='verified'){result.reuploaded++;continue;}}catch(error){noteError(error);}}}
+        result.lost++;continue;}
+      if(row.state!=='verified')continue;
       const remote=listed.get(row.object),local=await lstat(pathOf(name)).catch(()=>null);
       if(remote&&remote.generation===row.generation&&remote.size===row.bytes&&remote.md5===row.md5){result.verified++;result.verifiedBytes+=row.bytes;}
       else{
@@ -298,29 +313,30 @@ export function createMediaCloud({store,directory=store?.directory,credentials,g
 
   // 서버 시작 때: 1시간 넘은 받기 임시 파일을 지운다(점으로 시작해 다른 코드의 이름 규칙에 걸리지 않는다).
   async function cleanLeftovers(){let names;try{names=await readdir(root);}catch{return 0;}let removed=0;
-    for(const name of names){if(!/^\.fetch-[0-9a-f-]{36}$/.test(name))continue;const path=join(root,name);try{const info=await lstat(path);if(info.isFile()&&clock()-Number(info.mtimeMs)>o.fetchLeftoverMs){await unlink(path);removed++;}}catch{}}
+    for(const name of names){if(!/^\.fetch-[0-9a-f-]{36}$/.test(name)||fetching.has(name))continue;const path=join(root,name);try{const info=await lstat(path);if(info.isFile()&&clock()-Number(info.mtimeMs)>o.fetchLeftoverMs){await unlink(path);removed++;}}catch{}}
     return removed;}
 
   // 예약은 이름 있는 타이머 하나다(서버의 「허락된 예약만 돈다」 시험이 이름과 주기로 센다). 비우기 · 쓴 시각 적기 · 하루 대조는
   // 그 타이머가 흐른 시간(단조 시계)을 보고 차례가 된 것만 돌린다. 앞 회차가 아직 돌면 그 회차를 건너뛴다.
-  const due={evict:0,flush:0,reconcile:0};let beat=null;
+  const due={evict:0,flush:0,reconcile:0,leftovers:0};let beat=null;
   async function tickMediaCloud(now=performance.now()){
     if(stopped||beat)return beat;
     beat=(async()=>{
       await tick();
       if(now>=due.evict){due.evict=now+o.evictMs;await evict();}
       if(now>=due.flush){due.flush=now+o.flushMs;flushUse();}
+      if(now>=due.leftovers){due.leftovers=now+o.fetchLeftoverMs;await cleanLeftovers();}
       if(now>=due.reconcile){due.reconcile=now+o.reconcileMs;await reconcile();}
     })().catch(noteError).finally(()=>{beat=null;});
     return beat;
   }
   function start(){
-    stopped=false;void cleanLeftovers();
-    const now=performance.now();due.evict=now+o.evictMs;due.flush=now+o.flushMs;due.reconcile=now+o.firstReconcileMs;
+    stopped=false;if(abort.signal.aborted)abort=new AbortController();void cleanLeftovers();
+    const now=performance.now();due.evict=now+o.evictMs;due.flush=now+o.flushMs;due.reconcile=now+o.firstReconcileMs;due.leftovers=now+o.fetchLeftoverMs;
     const t=setInterval(tickMediaCloud,o.tickMs);t.unref?.();timers.push(t);
     registerMediaCloud(directory,api);return api;
   }
-  function stop(){stopped=true;for(const t of timers){clearInterval(t);clearTimeout(t);}timers=[];flushUse();registerMediaCloud(directory,null);}
+  function stop(){stopped=true;for(const t of timers){clearInterval(t);clearTimeout(t);}timers=[];abort.abort();flushUse();registerMediaCloud(directory,null);}
   const api={ensureLocal,present,ledgerSha,tick,tickMediaCloud,evict,reconcile,flushUse,cleanLeftovers,start,stop,readMode,status:()=>({...status,mode:mode.mode}),uploadOne};
   return api;
 }

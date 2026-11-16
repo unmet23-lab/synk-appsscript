@@ -600,6 +600,30 @@ const filesOf=(f,personaId)=>[...f.store().all('pulsePersonaSources').filter(ite
 const mediaPath=(f,name)=>join(f.store().directory,'studio-media',name);
 const touch=(f,projectId)=>{const row=f.store().get('clientProjects',projectId);f.store().put('clientProjects',projectId,{...row,updatedAt:new Date(f.stamp).toISOString()});};
 
+// 작업실 영상 클라우드(11-16) · GPT 검수 GA1: 비운 인물 파일은 로컬에 없어도 장부의 sha256(lost여도)이 묘비 해시가 된다. 장부 줄이 있는데 해시가 없으면 지우지 않는다.
+test('작업실 영상 클라우드 · 비워졌고 장부가 lost인 인물 파일도 묘비 해시를 남기고, 해시 없는 장부 줄은 삭제를 멈춘다(GPT 검수 GA1)',async t=>{
+  const f=await fixture(t);await f.features({personaRequest:true,myModels:true});
+  const a=f.browser(),x=await f.readyPersona(a);
+  {const row=f.store().get('clientProjects',x.projectId);f.store().put('clientProjects',x.projectId,{...row,stage:'archived'});}
+  const {createHash}=await import('node:crypto');
+  const xf=filesOf(f,x.personaId),shas=new Map();for(const name of xf)shas.set(name,createHash('sha256').update(await readFile(mediaPath(f,name))).digest('hex'));
+  assert.ok(xf.length>=3);
+  // 판 자산과 출처에 해시 칸이 없는 옛 꼴로 둔다 — 그래야 해시를 파일이나 장부에서 찾는다.
+  for(const source of f.store().all('pulsePersonaSources').filter(item=>item.personaId===x.personaId)){const {sha256,...rest}=source;f.store().put('pulsePersonaSources',source.id,rest);}
+  for(const revision of f.store().all('pulsePersonaRevisions').filter(item=>item.personaId===x.personaId))f.store().put('pulsePersonaRevisions',revision.id,{...revision,assets:(revision.assets||[]).map(({sha256,...rest})=>rest)});
+  // 본문은 미디어 버킷으로 갔다가 비워졌고, 그 뒤 객체가 없어진 것이 드러났다(lost). 한 줄은 해시가 없다.
+  const [first,...rest]=xf;
+  for(const name of xf)await rm(mediaPath(f,name));
+  for(const name of rest)f.store().put('studioMediaCloud',name,{diskName:name,state:'lost',sha256:shas.get(name)});
+  f.store().put('studioMediaCloud',first,{diskName:first,state:'verified'});
+  const blocked=await f.personaAct(x.personaId,{action:'delete',note:'관리자 확인'});
+  assert.equal(blocked.status,409,JSON.stringify(blocked.data));assert.equal(f.store().get('pulsePersonas',x.personaId).status,'ready','해시를 못 얻으면 지우지 않는다');
+  f.store().put('studioMediaCloud',first,{diskName:first,state:'lost',sha256:shas.get(first)});
+  const deleted=await f.personaAct(x.personaId,{action:'delete',note:'관리자 확인'});assert.equal(deleted.status,200,JSON.stringify(deleted.data));
+  const tomb=f.store().get('pulsePersonas',x.personaId);
+  assert.equal(tomb.status,'deleted');assert.deepEqual(tomb.deletion.noVault,[...new Set(shas.values())].sort(),'비운 파일의 해시도 묘비에 남는다');
+});
+
 test('시나리오 10 · 프로젝트 정리 때 삭제(결정 표 11-11 ⑤): 원 프로젝트 90일 정리는 브랜드 없는 인물만 함께 지우고, 브랜드 인물 · 다시 쓰기 프로젝트 · 다른 프로젝트 인물 · 초대 폐기는 그대로',async t=>{
   const f=await fixture(t);await f.features({personaRequest:true,myModels:true});
   const a=f.browser(),x=await f.readyPersona(a);                                   // 브랜드 없는 인물 — 원 프로젝트가 정리된다

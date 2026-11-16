@@ -16,7 +16,7 @@ const md5b64=b=>createHash('md5').update(b).digest('base64'),sha=b=>createHash('
 
 // 가짜 GCS: 필요한 JSON API만. objects는 name → {bytes, generation, created}.
 async function fakeGcs(){
-  const objects=new Map(),calls={upload:0,download:0,list:0,stat:0};let generation=1000,hook=null;
+  const objects=new Map(),calls={upload:0,download:0,list:0,stat:0};let generation=1000,hook=null,downloadHook=null;
   const server=http.createServer(async(req,res)=>{
     const url=new URL(req.url,'http://x'),body=await new Promise(done=>{const parts=[];req.on('data',c=>parts.push(c));req.on('end',()=>done(Buffer.concat(parts)));});
     const send=(status,json,headers={})=>{res.writeHead(status,{'content-type':'application/json',...headers});res.end(json==null?'':JSON.stringify(json));};
@@ -37,7 +37,10 @@ async function fakeGcs(){
     if(req.method==='GET'&&(m=/^\/storage\/v1\/b\/([^/]+)\/o\/(.+)$/.exec(url.pathname))){
       const name=decodeURIComponent(m[2]),o=objects.get(name),gen=url.searchParams.get('generation');
       if(!o||(gen&&gen!==String(o.generation)))return send(404,{});
-      if(url.searchParams.get('alt')==='media'){calls.download++;res.writeHead(200,{'content-type':'application/octet-stream'});return res.end(o.bytes);}
+      if(url.searchParams.get('alt')==='media'){calls.download++;res.writeHead(200,{'content-type':'application/octet-stream'});
+        // 받기 도중 고리: 앞 절반을 보낸 뒤 멈추고, 고리가 끝나면(또는 끊으면) 나머지를 보낸다.
+        if(downloadHook){const half=Math.floor(o.bytes.length/2);res.write(o.bytes.subarray(0,half));const go=await downloadHook(name);if(go==='hang')return;return res.end(o.bytes.subarray(half));}
+        return res.end(o.bytes);}
       calls.stat++;return send(200,meta(name,o));
     }
     if(req.method==='GET'&&(m=/^\/storage\/v1\/b\/([^/]+)\/o$/.exec(url.pathname))){
@@ -47,7 +50,7 @@ async function fakeGcs(){
     send(404,{});
   });
   const sessions=new Map();await new Promise(done=>server.listen(0,'127.0.0.1',done));const base='http://127.0.0.1:'+server.address().port;
-  return {base,objects,calls,setHook:fn=>{hook=fn;},close:()=>new Promise(done=>server.close(done))};
+  return {base,objects,calls,setHook:fn=>{hook=fn;},setDownloadHook:fn=>{downloadHook=fn;},close:()=>new Promise(done=>{server.closeAllConnections?.();server.close(done);})};
 }
 
 async function setup(t,{mode='upload',names=null,options={},clock=null}={}){
@@ -223,13 +226,59 @@ test('leftover fetch files older than an hour are removed at start; others stay'
   assert.equal(await ctx.cloud.cleanLeftovers(),1);assert.ok(!existsSync(old));assert.ok(existsSync(fresh));assert.ok(existsSync(other));
 });
 
-test('a file the customer deleted while it was being fetched is not left on disk (3판 검토 1)',async t=>{
+test('a file the customer deleted while it was being fetched is not left on disk (3판 검토 1 · GPT 검수 GB1)',async t=>{
   const ctx=await setup(t),{name}=await ctx.file();await ctx.cloud.tick();await rm(localPath(ctx,name));
-  ctx.gcs.setHook(null);const original=ctx.gcs.objects.get('studio-media/'+name);
-  // the DB stops pointing at the name while the bytes are on their way
-  const realList=ctx.list;ctx.list.delete(name);
+  // the DB still points at the name when the fetch starts, and stops pointing at it while the bytes are on their way
+  let started=false;ctx.gcs.setDownloadHook(async()=>{started=true;ctx.list.delete(name);});
   await ensureLocalMedia(ctx.dir,name);
-  assert.ok(!existsSync(localPath(ctx,name)));assert.ok(original);realList.add(name);
+  assert.ok(started,'the deletion happened mid-download');
+  assert.ok(!existsSync(localPath(ctx,name)));assert.deepEqual((await readdir(join(ctx.dir,'studio-media'))).filter(n=>n.startsWith('.fetch-')),[]);
+});
+
+test('two reads of the same evicted name share one download even when the switch is read first (GPT 검수 GA2)',async t=>{
+  const ctx=await setup(t,{mode:'evict'}),{name,bytes}=await ctx.file();await ctx.cloud.tick();await rm(localPath(ctx,name));
+  await Promise.all([ensureLocalMedia(ctx.dir,name),ensureLocalMedia(ctx.dir,name),ensureLocalMedia(ctx.dir,name)]);
+  assert.equal(ctx.gcs.calls.download,1);assert.deepEqual(await readFile(localPath(ctx,name)),bytes);
+});
+
+test('a stuck download times out, leaves no temporary file, and the next read tries again (GPT 검수 GA5)',async t=>{
+  const ctx=await setup(t),{name,bytes}=await ctx.file();await ctx.cloud.tick();await rm(localPath(ctx,name));
+  const fast=createMediaCloud({store:ctx.store,directory:ctx.dir,credentials:{token:async()=>'test-token',bucket:async()=>BUCKET},gcs:gcsClient({credentials:{token:async()=>'test-token'},base:ctx.gcs.base,timeoutMs:300,transferFloorMs:300}),namesOf:()=>[...ctx.list],options:{floorBytes:0}});
+  ctx.gcs.setDownloadHook(async()=>'hang');
+  await assert.rejects(fast.ensureLocal(name));
+  assert.ok(!existsSync(localPath(ctx,name)));assert.deepEqual((await readdir(join(ctx.dir,'studio-media'))).filter(n=>n.startsWith('.fetch-')),[]);
+  ctx.gcs.setDownloadHook(null);await fast.ensureLocal(name);assert.deepEqual(await readFile(localPath(ctx,name)),bytes);fast.stop();
+});
+
+test('stop cuts a download in progress (GPT 검수 GA5)',async t=>{
+  const ctx=await setup(t),{name}=await ctx.file();await ctx.cloud.tick();await rm(localPath(ctx,name));
+  ctx.cloud.start();let reached;const inside=new Promise(done=>{reached=done;});ctx.gcs.setDownloadHook(async()=>{reached();return 'hang';});
+  const reading=ctx.cloud.ensureLocal(name);await inside;ctx.cloud.stop();
+  await assert.rejects(reading);assert.deepEqual((await readdir(join(ctx.dir,'studio-media'))).filter(n=>n.startsWith('.fetch-')),[]);
+});
+
+test('a leftover temporary file is cleaned by the schedule, never one still being written (GPT 검수 GA3)',async t=>{
+  const ctx=await setup(t),{name}=await ctx.file();await ctx.cloud.tick();await rm(localPath(ctx,name));
+  const old=join(ctx.dir,'studio-media','.fetch-'+randomUUID());await writeFile(old,'partial');
+  const past=new Date(ctx.now.t-2*3600000);await utimes(old,past,past);
+  // a download in progress keeps its own temporary file even when it is old
+  let reached,release;const inside=new Promise(done=>{reached=done;});const gate=new Promise(done=>{release=done;});
+  ctx.gcs.setDownloadHook(async()=>{reached();await gate;});
+  const reading=ctx.cloud.ensureLocal(name);await inside;
+  const live=(await readdir(join(ctx.dir,'studio-media'))).filter(n=>n.startsWith('.fetch-')&&join(ctx.dir,'studio-media',n)!==old);
+  for(const n of live)await utimes(join(ctx.dir,'studio-media',n),past,past);
+  assert.equal(await ctx.cloud.cleanLeftovers(),1);assert.ok(!existsSync(old));
+  for(const n of live)assert.ok(existsSync(join(ctx.dir,'studio-media',n)),'the temporary file of a running download stays');
+  release();await reading;
+});
+
+test('a name still referenced but lost is counted on every reconcile and comes back when its bytes return (GPT 검수 GA4)',async t=>{
+  const ctx=await setup(t),{name,bytes}=await ctx.file();await ctx.cloud.tick();await rm(localPath(ctx,name));ctx.gcs.objects.delete('studio-media/'+name);
+  await ensureLocalMedia(ctx.dir,name);assert.equal(ctx.store.get(MEDIA_CLOUD_KIND,name).state,'lost');
+  assert.equal((await ctx.cloud.reconcile()).lost,1);assert.equal((await ctx.cloud.reconcile()).lost,1);
+  await writeFile(localPath(ctx,name),bytes,{mode:0o600});
+  const result=await ctx.cloud.reconcile();assert.deepEqual([result.lost,result.reuploaded],[0,1]);
+  assert.equal(ctx.store.get(MEDIA_CLOUD_KIND,name).state,'verified');
 });
 
 test('reconcile: an unreferenced row gets its time; after three days a local copy is removed, after forty days a remaining object is reported and alerted once a day',async t=>{

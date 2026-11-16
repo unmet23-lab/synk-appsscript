@@ -590,7 +590,9 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   }
   // 지울 인물 파일(살아 있는 출처 · 판 자산)의 이름 → 본문 sha256. 출처는 받을 때 잰 값, 판 자산은 지금 잰다(없는 파일은 null — 지킬 바이트가 없다).
   // 버킷에 확인된 파일이면 장부의 sha256을 쓴다 — 비운 파일도 해시가 빠지지 않는다(작업실 영상 클라우드 설계 3판 6절). 장부는 저장소 문서라 이 모듈의 import 목록은 그대로다.
-  const cloudSha=name=>{const row=store.get('studioMediaCloud',name);return row?.state==='verified'&&SHA256.test(row.sha256||'')?row.sha256:null;};
+  // 장부 줄의 sha256은 올리기 전에 로컬 바이트로 잰 값이다 — verified · lost · conflict 어느 상태든 그 바이트의 해시라 쓴다(GPT 검수 GA1).
+  // 장부 줄이 있는데 그 해시도 파일도 없으면 멈춘다: 비운 파일의 금고 제외 해시가 조용히 빠지지 않게.
+  const cloudSha=name=>{const row=store.get('studioMediaCloud',name);if(!row)return null;if(SHA256.test(row.sha256||''))return row.sha256;throw fail('인물 파일의 해시를 확인하지 못했어요. 잠시 뒤 다시 해 주세요.',409);};
   async function personaHashes(persona){
     const out=new Map();
     for(const source of store.all(K.sources).filter(item=>item.personaId===persona.id&&live(item)&&typeof item.diskName==='string'))
