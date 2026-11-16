@@ -153,8 +153,16 @@ async function checkRecovery(directory = KEY_DIRECTORY) {
   if (!recoveryPub) throw Error('the app has no recovery key built in (tauri.conf.json plugins.synkUpdate.recoveryPubkey)');
   const pinned = JSON.parse(fs.readFileSync(path.join(directory, 'pinned-keys.json'), 'utf8'));
   if (pinned.keys.find(k => k.role === 'recovery')?.pubkey !== recoveryPub) throw Error('this folder\'s recovery key is not the one built into the app');
-  const passphrase = await askHidden('복원 암호: ');
-  const privateKey = backup.unlockPrivate(JSON.parse(fs.readFileSync(backup.PRIV(), 'utf8')), passphrase);
+  // A wrong passphrase asks again, as many times as needed; Ctrl+C stops (11-16 유호님 「계속 암호 띄워줄래」).
+  const locked = JSON.parse(fs.readFileSync(backup.PRIV(), 'utf8'));
+  let privateKey = null;
+  for (let attempt = 1; !privateKey; attempt++) {
+    const passphrase = await askHidden(attempt === 1 ? '복원 암호: ' : `복원 암호(${attempt}번째): `);
+    // The passphrase was made 12 characters or longer (tools/복원/암호.js 열쇠만들기), so a shorter one is said at once.
+    if (passphrase.length < 12) { console.log(`${passphrase.length}자를 치셨습니다. 이 암호는 만들 때 12자 이상이었습니다. 다시 쳐 주세요. 그만두려면 Ctrl+C를 누르세요.`); continue; }
+    try { privateKey = backup.unlockPrivate(locked, passphrase); }
+    catch { console.log('암호가 맞지 않습니다. 다시 쳐 주세요. 그만두려면 Ctrl+C를 누르세요.'); }
+  }
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-recovery-check-'));
   try {
     const keyFile = path.join(temp, 'recovery.key');
