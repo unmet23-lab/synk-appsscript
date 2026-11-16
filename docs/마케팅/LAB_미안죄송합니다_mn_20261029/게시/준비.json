@@ -1875,6 +1875,34 @@
             "확인할것": 5
           }
         }
+      },
+      "MM": {
+        "언어": "my",
+        "파일": "게시/판본/MM/video.mp4",
+        "표지": "게시/판본/MM/cover.png",
+        "글": "게시/판본/MM/글.json",
+        "원고": {
+          "youtube": "게시/판본/MM/원고_youtube.json"
+        }
+      },
+      "KG": {
+        "언어": "ky",
+        "파일": "게시/판본/KG/video.mp4",
+        "표지": "게시/판본/KG/cover.png",
+        "글": "게시/판본/KG/글.json",
+        "원고": {
+          "youtube": "게시/판본/KG/원고_youtube.json"
+        }
+      },
+      "VN": {
+        "언어": "vi",
+        "파일": "게시/판본/VN/video.mp4",
+        "표지": "게시/판본/VN/cover.png",
+        "글": "게시/판본/VN/글.json",
+        "원고": {
+          "tiktok": "게시/판본/VN/원고_tiktok.json",
+          "youtube": "게시/판본/VN/원고_youtube.json"
+        }
       }
     }
   }

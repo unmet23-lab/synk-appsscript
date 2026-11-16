@@ -140,39 +140,39 @@
   "lang": "fil",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "",
+  "hook": "Kuya at Ate\nsa Korean?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "Isang kuya,\ndalawang pangalan!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "Kuya",
+  "colB": "Ate",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "Tawag ng lalaki sa kuya",
+    "Tawag ng babae sa kuya",
+    "Tawag ng lalaki sa ate",
+    "Tawag ng babae sa ate"
   ],
   "meanSize": 50,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "Babae? Bawal ang “형”!",
+    "Lalaki? Bawal ang “언니”!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "Sabi ng lalaki",
+  "rowF": "Sabi ng babae",
   "rowSize": 64,
-  "end": "",
+  "end": "Depende sa tumatawag!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 남자 형제(쿠야)와 손위 여자 형제(아테)를\n한국어로?",
+    "reveal": "손위 남자 형제는 한 명,\n이름은 둘!",
+    "colA": "손위 남자 형제(쿠야)",
+    "colB": "손위 여자 형제(아테)",
+    "means.0": "남자가 손위 남자 형제를 부르는 말",
+    "means.1": "여자가 손위 남자 형제를 부르는 말",
+    "means.2": "남자가 손위 여자 형제를 부르는 말",
+    "means.3": "여자가 손위 여자 형제를 부르는 말",
+    "why.0": "여자? 「형」은 안 돼!",
+    "why.1": "남자? 「언니」는 안 돼!",
+    "rowM": "남자가 하는 말",
+    "rowF": "여자가 하는 말",
+    "end": "부르는 사람에 따라 달라!"
+  }
 }
