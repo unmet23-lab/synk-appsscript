@@ -1129,7 +1129,7 @@
     {
       "id": "S141",
       "file": "tests/스레드예약_PC상태기록.test.js",
-      "name": "PC 상태 기록: 한 줄을 열세 칸으로 남긴다",
+      "name": "PC 상태 기록: 한 줄을 열네 칸으로 남긴다",
       "group": "Windows 네이티브 PC 상태 기록",
       "route": "windows",
       "profile": "default"

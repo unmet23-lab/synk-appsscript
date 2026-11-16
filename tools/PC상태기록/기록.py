@@ -11,10 +11,12 @@
 남기는 곳: %LOCALAPPDATA%\\synk\\pc-state\\YYYY-MM-DD.tsv (git 밖, 14일 지나면 지운다).
 한 줄의 칸: 시각 · 늦음(초, 정각 분에서 얼마나 늦게 떴나) · CPU % · 메모리 쓴 GB/전체 GB · 커밋 쓴 GB/한도 GB ·
 프로세스 수 · 스레드 수 · 핸들 수 · C: 쓰기 ms(작은 파일을 쓰고 디스크에 내리는 데 걸린 시간) · C: 여유 GB · D: 여유 GB ·
-메모리 큰 프로그램 다섯(이름 × 개수 = GB) · 커널 비페이징 풀 GB.
-마지막 칸은 2026-11-16에 더했다. 그날 아침 두 번의 멈춤 직전에 커밋이 1분에 24~36GB 늘었지만, 이 칸이 없어 누가
+메모리 큰 프로그램 다섯(이름 × 개수 = GB) · 커널 비페이징 풀 GB · 비페이징 풀을 가장 많이 쓴 태그 셋(태그=MB).
+마지막 두 칸은 2026-11-16에 더했다. 그날 아침 두 번의 멈춤 직전에 커밋이 1분에 24~36GB 늘었지만, 칸이 없어 누가
 가져갔는지 바로 가리지 못했다. 같은 날 08:45에 따로 재 보니 커널 비페이징 풀이 1분 만에 20GB 넘게 불어 있었다.
-11-16 앞의 파일에는 이 칸이 없다.
+저녁에 같은 조건으로 세 번 다시 일으켜 보려 했지만 일어나지 않아 드라이버를 정하지 못했다. 그래서 다음에 또 불면
+그 순간의 태그가 남게 했다. 태그 뜻은 WinDbg 설치 폴더의 amd64\\triage\\pooltag.txt에 있다.
+11-16 앞의 파일에는 두 칸이 없고, 11-16의 줄은 09:32부터 비페이징 칸, 저녁부터 태그 칸이 붙는다.
 파이썬 표준 모듈만 쓴다(예약 작업의 파이썬에는 psutil이 없다).
 """
 import ctypes
@@ -47,6 +49,37 @@ class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
                 ("WorkingSetSize", ctypes.c_size_t), ("QuotaPeakPagedPoolUsage", ctypes.c_size_t), ("QuotaPagedPoolUsage", ctypes.c_size_t),
                 ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t), ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
                 ("PagefileUsage", ctypes.c_size_t), ("PeakPagefileUsage", ctypes.c_size_t)]
+
+
+class SYSTEM_POOLTAG(ctypes.Structure):
+    _fields_ = [("Tag", ctypes.c_ubyte * 4), ("PagedAllocs", wintypes.ULONG), ("PagedFrees", wintypes.ULONG), ("PagedUsed", ctypes.c_size_t),
+                ("NonPagedAllocs", wintypes.ULONG), ("NonPagedFrees", wintypes.ULONG), ("NonPagedUsed", ctypes.c_size_t)]
+
+
+def 큰풀태그(개수=3):
+    """비페이징 풀을 가장 많이 쓴 태그(「태그=MB」를 띄어 씀). 관리자 권한 없이 읽힌다(NtQuerySystemInformation 22).
+    읽지 못하면 빈 글을 돌려 한 줄 남기기를 막지 않는다."""
+    try:
+        nt = ctypes.windll.ntdll
+        nt.NtQuerySystemInformation.restype = ctypes.c_long
+        nt.NtQuerySystemInformation.argtypes = [wintypes.ULONG, ctypes.c_void_p, wintypes.ULONG, ctypes.POINTER(wintypes.ULONG)]
+        크기 = 1 << 20
+        for _ in range(6):
+            buf = ctypes.create_string_buffer(크기)
+            받은 = wintypes.ULONG()
+            st = nt.NtQuerySystemInformation(22, buf, 크기, ctypes.byref(받은)) & 0xFFFFFFFF
+            if st == 0xC0000004:  # 칸이 모자라다는 뜻이라 늘려서 다시 읽는다
+                크기 = max(크기 * 2, 받은.value + 65536)
+                continue
+            if st != 0:
+                return ""
+            수 = ctypes.c_uint32.from_buffer(buf).value
+            표 = (SYSTEM_POOLTAG * 수).from_buffer(buf, 8)
+            큰 = sorted(표, key=lambda t: -t.NonPagedUsed)[:개수]
+            return " ".join("".join(chr(b) if 32 < b < 127 else "_" for b in t.Tag) + f"={t.NonPagedUsed / 2 ** 20:.0f}" for t in 큰)
+    except (OSError, ValueError, AttributeError):
+        return ""
+    return ""
 
 
 def 폴더():
@@ -149,7 +182,7 @@ def 한줄(자리):
     return "\t".join([
         뜬때.strftime("%Y-%m-%d %H:%M:%S"), f"{늦음:.1f}", f"{cpu:.0f}", f"{m['쓴']:.1f}/{m['전체']:.1f}", f"{m['커밋']:.1f}/{m['커밋한도']:.1f}",
         str(m["프로세스"]), str(m["스레드"]), str(m["핸들"]), f"{쓰기:.0f}", f"{여유('C:/'):.1f}", f"{여유('D:/'):.1f}", 큰,
-        f"{m['비페이징']:.1f}",
+        f"{m['비페이징']:.1f}", 큰풀태그(),
     ])
 
 
@@ -188,7 +221,7 @@ def 줄들(자리, 날수=3):
 
 
 def 보기(수):
-    제목 = "시각\t늦음초\tCPU%\t메모리GB\t커밋GB\t프로세스\t스레드\t핸들\tC쓰기ms\tC여유\tD여유\t메모리 큰 프로그램\t비페이징GB"
+    제목 = "시각\t늦음초\tCPU%\t메모리GB\t커밋GB\t프로세스\t스레드\t핸들\tC쓰기ms\tC여유\tD여유\t메모리 큰 프로그램\t비페이징GB\t큰 비페이징 태그(MB)"
     print(제목)
     for 줄 in 줄들(폴더())[-수:]:
         print(줄)

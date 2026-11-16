@@ -56,7 +56,7 @@ test('스레드 게시: 스크립트 출력의 마지막 JSON 줄을 읽고 한�
   assert.deepEqual(게시.한국시각(new Date('2026-11-15T15:30:00Z')), { 날짜: '2026-11-16', 분: 30 });
 });
 
-test('PC 상태 기록: 한 줄을 열세 칸으로 남긴다', { skip: process.platform !== 'win32' && 'Windows에서만 돈다' }, () => {
+test('PC 상태 기록: 한 줄을 열네 칸으로 남긴다', { skip: process.platform !== 'win32' && 'Windows에서만 돈다' }, () => {
   const 자리 = fs.mkdtempSync(path.join(os.tmpdir(), 'pc-state-'));
   const r = spawnSync('python', ['-X', 'utf8', '-B', path.join(__dirname, '..', 'tools', 'PC상태기록', '기록.py')], { env: { ...process.env, LOCALAPPDATA: 자리 }, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
@@ -64,7 +64,7 @@ test('PC 상태 기록: 한 줄을 열세 칸으로 남긴다', { skip: process.
   const 파일 = fs.readdirSync(폴더).filter((f) => f.endsWith('.tsv'));
   assert.equal(파일.length, 1);
   const 칸 = fs.readFileSync(path.join(폴더, 파일[0]), 'utf8').trim().split('\t');
-  assert.equal(칸.length, 13, 칸.join(' | '));
+  assert.equal(칸.length, 14, 칸.join(' | '));
   assert.match(칸[0], /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/);
   assert.match(칸[3], /^\d+\.\d\/\d+\.\d$/);
   assert.ok(Number(칸[5]) > 10, '프로세스 수');
@@ -73,4 +73,6 @@ test('PC 상태 기록: 한 줄을 열세 칸으로 남긴다', { skip: process.
   // 11-16: 커밋만 크게 늘고 큰 프로그램은 줄어든 멈춤을 가리려고 커널 비페이징 풀을 끝 칸에 남긴다
   assert.match(칸[12], /^\d+\.\d$/);
   assert.ok(Number(칸[12]) > 0, '비페이징 풀 GB');
+  // 11-16 저녁: 풀이 다시 불면 어느 드라이버인지 가리려고 비페이징을 가장 많이 쓴 태그 셋(태그=MB)을 남긴다
+  assert.match(칸[13], /^\S{4}=\d+( \S{4}=\d+){2}$/);
 });
