@@ -93,9 +93,118 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+  # Work-backup provisioning server (experiences/solo-backup-rust/server/README.md).
+  # OFF: the plain `compose up` in company-stack.sh starts no profiled service, nothing
+  # above depends on these, and every value below has a default, so the company stack
+  # reads and starts exactly as before. The HA guards and disaster capture still expect
+  # exactly the company, https and spaceship containers, so turning the profile on is a
+  # later infrastructure release, not a switch. Each service mounts only its own folder
+  # on the persistent disk: the api never sees a B2 key, the workers never see each other.
+  wb-api:
+    profiles: ["workbackup"]
+    image: ${WB_IMAGE:-synk-workbackup:local}
+    build:
+      context: ../../../../../../experiences/solo-backup-rust/server
+    command: ["node", "main.mjs", "api"]
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      WB_PORT: "4210"
+      WB_SETTINGS: /wb/settings.env
+      WB_SECRETS_DIR: /wb/secrets
+      WB_DB: /wb/data/wb.sqlite
+      WB_BACKUP_DIR: /wb/backups
+      WB_KEYS_URL: http://wb-keys:4211/rpc
+      WB_FILES_URL: http://wb-files:4212/rpc
+      WB_TRUSTED_PROXIES: "172.30.77.3"
+    networks:
+      edge:
+        ipv4_address: 172.30.77.4
+      wb-keys: {}
+      wb-files: {}
+    expose:
+      - "4210"
+    volumes:
+      - type: bind
+        source: ${WB_DIR:-/srv/synk/workbackup}/api
+        target: /wb
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  wb-keys:
+    profiles: ["workbackup"]
+    image: ${WB_IMAGE:-synk-workbackup:local}
+    command: ["node", "main.mjs", "keys"]
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      WB_PORT: "4211"
+      WB_SETTINGS: /wb/settings.env
+      WB_SECRETS_DIR: /wb/secrets
+      WB_STATE_DIR: /wb/state
+    networks:
+      - wb-keys
+    expose:
+      - "4211"
+    volumes:
+      - type: bind
+        source: ${WB_DIR:-/srv/synk/workbackup}/keys
+        target: /wb
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  wb-files:
+    profiles: ["workbackup"]
+    image: ${WB_IMAGE:-synk-workbackup:local}
+    command: ["node", "main.mjs", "files"]
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      WB_PORT: "4212"
+      WB_SETTINGS: /wb/settings.env
+      WB_SECRETS_DIR: /wb/secrets
+      WB_STATE_DIR: /wb/state
+    networks:
+      - wb-files
+    expose:
+      - "4212"
+    volumes:
+      - type: bind
+        source: ${WB_DIR:-/srv/synk/workbackup}/files
+        target: /wb
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 networks:
   edge:
     driver: bridge
     ipam:
       config:
         - subnet: 172.30.77.0/29
+  # Only the api reaches each worker; the workers reach B2 and nothing else of ours.
+  wb-keys:
+    driver: bridge
+  wb-files:
+    driver: bridge

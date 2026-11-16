@@ -5,6 +5,10 @@ const { parseKit } = require('./engine.cjs');
 const { validSub } = require('./recovery-auth.cjs');
 const { request, requestJson, failure } = require('./recovery-http.cjs');
 const MARKER = 'workbackup-recovery-v1';
+// Envelope v3 (STAGE1_DESIGN.md 5.4 and 「봉투 v3의 꼴」): its own app-data marker, so it never mixes with v1.
+const MARKER3 = 'synk-workbackup-recovery-v3';
+const FORMAT3 = 'synk-workbackup-recovery';
+const CUSTOMER_REPO = /^c\/[a-z0-9]{16}\/r$/;
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 const FILE = /^[A-Za-z0-9_-]{1,200}$/;
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -31,8 +35,37 @@ async function validateReadKey(provider, key, json = requestJson) {
   if (!a || !Array.isArray(a.buckets) || a.buckets.length !== 1 || a.buckets[0].name !== provider.bucket || !/^[a-f0-9]{8,64}$/.test(a.buckets[0].id) || !Array.isArray(a.capabilities) || !['listFiles', 'readFiles'].every(x => a.capabilities.includes(x)) || a.capabilities.some(x => !allowed.has(x)) || (a.namePrefix !== null && a.namePrefix !== '' && a.namePrefix !== provider.prefix + '/') || data.applicationKeyExpirationTimestamp !== null || b2.endpoint(storage.s3ApiUrl) !== provider.endpoint) throw new Error('만료가 없는 버킷 전용 읽기 키가 필요합니다. 쓰기·삭제 권한이 있는 키는 복구 정보에 넣지 않습니다.');
   return { bucketId: a.buckets[0].id };
 }
+function repositoryV3(value) {
+  if (!equalKeys(value, ['endpoint', 'bucket', 'prefix'])) throw failure('INVALID');
+  const endpoint = b2.endpoint(value.endpoint);
+  if (typeof value.bucket !== 'string' || !/^[a-z0-9][a-z0-9-]{4,61}[a-z0-9]$/.test(value.bucket) || typeof value.prefix !== 'string' || !CUSTOMER_REPO.test(value.prefix)) throw failure('INVALID');
+  return { endpoint, bucket: value.bucket, prefix: value.prefix };
+}
+// The B2 name prefix of a customer's keys: the repository's parent folder, c/<customer>/.
+const customerPrefix = repository => repository.prefix.slice(0, -1);
+function parseEnvelopeV3(bytes, subject) {
+  try {
+    if (Buffer.byteLength(bytes) > 65536) throw failure('INVALID');
+    const e = JSON.parse(bytes.toString());
+    if (!equalKeys(e, ['format', 'version', 'generationId', 'generation', 'createdAt', 'subject', 'repository', 'repositoryId', 'password', 'readKey', 'bucketId', 'resticVersion']) || e.format !== FORMAT3 || e.version !== 3 || !UUID.test(e.generationId) || !Number.isSafeInteger(e.generation) || e.generation < 1 || !Number.isFinite(Date.parse(e.createdAt)) || new Date(e.createdAt).toISOString() !== e.createdAt || !validSub(e.subject) || e.subject !== subject || e.resticVersion !== '0.19.1' || !/^[a-f0-9]{8,64}$/.test(e.bucketId)) throw failure('INVALID');
+    if (typeof e.repositoryId !== 'string' || !/^[a-f0-9]{64}$/.test(e.repositoryId) || typeof e.password !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(e.password) || !equalKeys(e.readKey, ['keyId', 'applicationKey'])) throw failure('INVALID');
+    e.repository = repositoryV3(e.repository);
+    e.readKey = b2.credentials(e.readKey);
+    return e;
+  } catch { throw failure('INVALID'); }
+}
+// The customer read key: exactly the customer prefix (never bucket-wide), read-only, no expiry.
+async function validateReadKeyV3(repository, key, json = requestJson) {
+  const repo = repositoryV3(repository), c = b2.credentials(key);
+  const data = await json('https://api.backblazeb2.com/b2api/v4/b2_authorize_account', { headers: { authorization: `Basic ${Buffer.from(`${c.keyId}:${c.applicationKey}`).toString('base64')}` } });
+  const storage = data?.apiInfo?.storageApi, a = storage?.allowed;
+  const allowed = new Set(['listBuckets', 'readBuckets', 'readBucketEncryption', 'readBucketNotifications', 'readBucketLogging', 'readBucketReplications', 'readBucketLifecycleRules', 'readBucketRetentions', 'readFileRetentions', 'readFileLegalHolds', 'listFiles', 'readFiles']);
+  if (!a || !Array.isArray(a.buckets) || a.buckets.length !== 1 || a.buckets[0].name !== repo.bucket || !/^[a-f0-9]{8,64}$/.test(a.buckets[0].id) || !Array.isArray(a.capabilities) || !['listBuckets', 'listFiles', 'readFiles'].every(x => a.capabilities.includes(x)) || a.capabilities.some(x => !allowed.has(x)) || a.namePrefix !== customerPrefix(repo) || data.applicationKeyExpirationTimestamp !== null || b2.endpoint(storage.s3ApiUrl) !== repo.endpoint) throw failure('INVALID');
+  return { bucketId: a.buckets[0].id };
+}
 class DriveVault {
-  constructor(auth, transport = request) { this.auth = auth; this.transport = transport; }
+  // marker/parse select the envelope generation: v1 (default, 0.6 · the operator path) or v3.
+  constructor(auth, transport = request, { marker = MARKER, parse = parseEnvelope } = {}) { this.auth = auth; this.transport = transport; this.marker = marker; this.parse = parse; }
   async call(route, options = {}) {
     const access = await this.auth.access();
     return this.transport(`https://www.googleapis.com/${route}`, { ...options, headers: { ...options.headers, authorization: `Bearer ${access}` } });
@@ -42,13 +75,13 @@ class DriveVault {
     if (!validSub(subject)) throw failure('INVALID');
     const found = []; let pageToken;
     for (let page = 0; page < 10; page++) {
-      const q = `trashed = false and appProperties has { key='app' and value='${MARKER}' } and appProperties has { key='owner' and value='${sha(subject)}' }`;
+      const q = `trashed = false and appProperties has { key='app' and value='${this.marker}' } and appProperties has { key='owner' and value='${sha(subject)}' }`;
       const params = new URLSearchParams({ spaces: 'appDataFolder', q, pageSize: '100', fields: 'nextPageToken,files(id,name,size,sha256Checksum,appProperties,trashed)', ...(pageToken ? { pageToken } : {}) });
       const r = await this.json(`drive/v3/files?${params}`, { limit: 262144 });
       if (!Array.isArray(r.files) || r.files.length > 100) throw failure('INVALID');
       for (const file of r.files) {
         const p = file.appProperties;
-        if (!FILE.test(file.id) || !p || p.app !== MARKER || p.owner !== sha(subject) || !UUID.test(p.generationId) || !['pending', 'committed'].includes(p.status) || !/^[a-f0-9]{64}$/.test(p.digest) || file.trashed || !Number.isSafeInteger(Number(file.size)) || Number(file.size) <= 0 || Number(file.size) > 65536) throw failure('INVALID');
+        if (!FILE.test(file.id) || !p || p.app !== this.marker || p.owner !== sha(subject) || !UUID.test(p.generationId) || !['pending', 'committed'].includes(p.status) || !/^[a-f0-9]{64}$/.test(p.digest) || file.trashed || !Number.isSafeInteger(Number(file.size)) || Number(file.size) <= 0 || Number(file.size) > 65536) throw failure('INVALID');
         if (found.some(f => f.id === file.id)) throw failure('INVALID');
         found.push(file);
       }
@@ -62,19 +95,19 @@ class DriveVault {
     if (!FILE.test(file?.id)) throw failure('INVALID');
     const r = await this.call(`drive/v3/files/${file.id}?alt=media`);
     if (r.bytes.length !== Number(file.size) || sha(r.bytes) !== file.appProperties.digest || (file.sha256Checksum && sha(r.bytes) !== file.sha256Checksum)) throw failure('INVALID');
-    const e = parseEnvelope(r.bytes, subject);
+    const e = this.parse(r.bytes, subject);
     if (e.generationId !== file.appProperties.generationId) throw failure('INVALID');
     return e;
   }
   async publish(envelope) {
-    const bytes = Buffer.from(JSON.stringify(envelope)); parseEnvelope(bytes, envelope.subject);
+    const bytes = Buffer.from(JSON.stringify(envelope)); this.parse(bytes, envelope.subject);
     const digest = sha(bytes), files = await this.list(envelope.subject);
     const existing = files.filter(f => f.appProperties.generationId === envelope.generationId);
     if (existing.length > 1) throw failure('INVALID');
     let file = existing[0];
     if (!file) {
       const boundary = `workbackup_${crypto.randomBytes(24).toString('hex')}`;
-      const metadata = { name: `WorkBackup-${envelope.generationId}.json`, mimeType: 'application/json', parents: ['appDataFolder'], appProperties: { app: MARKER, owner: sha(envelope.subject), generationId: envelope.generationId, digest, status: 'pending' } };
+      const metadata = { name: `WorkBackup-${envelope.generationId}.json`, mimeType: 'application/json', parents: ['appDataFolder'], appProperties: { app: this.marker, owner: sha(envelope.subject), generationId: envelope.generationId, digest, status: 'pending' } };
       const body = Buffer.concat([Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n`), bytes, Buffer.from(`\r\n--${boundary}--\r\n`)]);
       file = await this.json('upload/drive/v3/files?uploadType=multipart&fields=id,name,size,sha256Checksum,appProperties', { method: 'POST', headers: { 'content-type': `multipart/related; boundary=${boundary}` }, body });
     }
@@ -85,7 +118,7 @@ class DriveVault {
       const result = await this.json(`drive/v3/files/${file.id}?fields=id,appProperties`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ appProperties: { status: 'committed' } }) });
       if (result.id !== file.id || result.appProperties?.status !== 'committed' || result.appProperties.digest !== digest) throw failure('INVALID');
     }
-    return { fileId: file.id, generationId: envelope.generationId, digest, verifiedAt: new Date().toISOString(), repositoryId: envelope.kit.repositoryId };
+    return { fileId: file.id, generationId: envelope.generationId, digest, verifiedAt: new Date().toISOString(), repositoryId: envelope.kit?.repositoryId ?? envelope.repositoryId };
   }
 }
-module.exports = { DriveVault, parseEnvelope, validateReadKey, MARKER, sha };
+module.exports = { DriveVault, parseEnvelope, validateReadKey, MARKER, sha, MARKER3, FORMAT3, parseEnvelopeV3, validateReadKeyV3, repositoryV3, customerPrefix };

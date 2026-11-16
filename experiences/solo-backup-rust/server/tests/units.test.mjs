@@ -14,6 +14,7 @@ import { createVerifier } from '../google-token.mjs';
 import { createMailer, signRequest, SIGNED_TAG } from '../mail.mjs';
 import { cleanBatch } from '../telemetry.mjs';
 import { Store } from '../store.mjs';
+import { withSettings, secretFile } from '../config.mjs';
 import { FakeB2, fakeGoogle, clockAt, sessionOf } from './fakes.mjs';
 
 const P = 'c/abcdefghijklmnop/';
@@ -196,4 +197,23 @@ test('telemetry: closed words, bounds and time window', () => {
     notifications: [{ kind: 'stale' }, { kind: 'my-project' }], installs: [{ step: 'provision', ok: true }, { step: 'C:/x' }] }, { now });
   assert.equal(r.runs.length, 200); assert.equal(r.notifications.length, 1); assert.equal(r.installs.length, 1);
   assert.equal(r.dropped.items, 51 + 1 + 1);
+});
+
+test('settings file and secrets folder: only WB_ names, never secrets, environment wins', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-settings-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const file = path.join(dir, 'settings.env');
+  fs.writeFileSync(file, '# 손님 버킷\r\nWB_BUCKET=fixture-bucket\r\n\r\nWB_GOOGLE_AUDIENCES=a.apps.googleusercontent.com,b\n');
+  const env = withSettings({ WB_SETTINGS: file, WB_GOOGLE_AUDIENCES: 'from-env' });
+  assert.equal(env.WB_BUCKET, 'fixture-bucket');
+  assert.equal(env.WB_GOOGLE_AUDIENCES, 'from-env', 'the environment wins');
+  assert.deepEqual(withSettings({ A: '1' }), { A: '1' }, 'no settings file, nothing read');
+  for (const bad of ['WB_SECRET_WB_KEYS_RPC=x', 'PATH=/tmp', 'WB_SETTINGS=/etc/passwd', 'not a line']) {
+    fs.writeFileSync(file, bad);
+    assert.throws(() => withSettings({ WB_SETTINGS: file }), /CONFIG_INVALID/);
+  }
+  assert.throws(() => withSettings({ WB_SETTINGS: path.join(dir, 'missing') }), /CONFIG_MISSING/);
+  fs.mkdirSync(path.join(dir, 'secrets'));
+  fs.writeFileSync(path.join(dir, 'secrets', 'wb-keys-rpc'), 'k'.repeat(64) + '\n');
+  assert.equal(secretFile('WB_KEYS_RPC', { env: { WB_SECRETS_DIR: path.join(dir, 'secrets') } }), 'k'.repeat(64));
+  assert.throws(() => secretFile('WB_FILES_RPC', { env: { WB_SECRETS_DIR: path.join(dir, 'secrets') } }), /SECRET_MISSING/);
 });

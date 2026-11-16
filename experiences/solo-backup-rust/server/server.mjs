@@ -14,6 +14,8 @@ export const LIMITS = { writers: 1, readers: 2, keyRequestsPerDay: 5, quotaBytes
 const DAY = 86400000;
 const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,6}(?:-[a-z0-9.]{1,20})?$/;
 const ID16 = /^[a-z0-9]{16}$/, ID12 = /^[a-z0-9]{12}$/;
+const MOVE_PIN_MS = 7 * DAY;
+const SNAPSHOT_ID = /^[0-9a-f]{64}$/;
 // Nonce purposes are the request names, so a sign-in for one action cannot be spent on another.
 export const PURPOSES = ['provision', 'take-write-seat', 'revoke', 'lost', 'read-key-rotate', 'restore-run', 'restore-undo'];
 
@@ -135,6 +137,15 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     store.addAlert({ customerId: customer.id, kind, audience: 'customer', detail });
     mailer?.toCustomer(customer, kind, detail, unique);
   }
+  // 옮겨 오기(4.6): the snapshot a reading PC is copying, kept by the writer's prune.
+  // Ignored after MOVE_PIN_MS or once the pinning device is no longer an active reader.
+  function movePin(customer) {
+    let pin; try { pin = JSON.parse(customer.move_pin || 'null'); } catch { return null; }
+    if (!pin || !(pin.since > now() - MOVE_PIN_MS)) return null;
+    const by = store.device(pin.by);
+    if (!by || by.customer_id !== customer.id || by.state !== 'active' || by.role !== 'read') return null;
+    return { by: { id: by.id, name: by.name }, snapshotId: pin.snapshotId, since: pin.since, until: pin.since + MOVE_PIN_MS };
+  }
   function restoreBusy(customer) { if (store.runningJob(customer.id)) fail(409, 'BUSY'); }
   // Old write keys first; if deleting fails nothing moves. Then the seat, then the
   // new key — a stop after any step is continued by calling the same request again.
@@ -144,6 +155,8 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     store.tx(() => {
       if (before && before.id !== device.id) store.setDevice(before.id, { role: 'read', state: 'moved', moved_to: device.id });
       store.setDevice(device.id, { role: 'write', state: 'active', moved_to: null });
+      // The move this pin served is over once the seat moves.
+      store.setCustomer(customer.id, { move_pin: null });
     });
     return before && before.id !== device.id ? before : null;
   }
@@ -250,7 +263,31 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         writer: writer ? { id: writer.id, name: writer.name } : null,
         alerts: store.alertsFor(customer.id, now() - 7 * DAY).map((a) => ({ id: a.id, kind: a.kind, at: a.created_at, detail: a.detail ? JSON.parse(a.detail) : null })),
         restore, lost: customer.google_step ? { googleStepRequired: true } : null, readKey: readKeyState(customer), minAppVersion: cfg.minAppVersion,
+        move: (() => { const pin = movePin(customer); return pin ? { ...pin, byThisDevice: pin.by.id === device.id } : null; })(),
       };
+    },
+
+    // 옮겨 오기(4.6 · 옮겨 오기 검토 M8): the new (reading) PC names the snapshot it copies;
+    // the writing PC reads it from status and keeps that snapshot out of its prune.
+    // One pin per customer; pinning again replaces it. Device token only — a pin can only
+    // make the writer keep one more snapshot for at most MOVE_PIN_MS.
+    'POST /v1/move/pin': async (req, body) => {
+      const { device, customer } = bearer(req, ['active']);
+      if (typeof body?.snapshotId !== 'string' || !SNAPSHOT_ID.test(body.snapshotId)) fail(400, 'BAD_INPUT');
+      if (device.role !== 'read') fail(409, 'DEVICE_STATE', { state: 'writer' });
+      return serial(customer.id, async () => {
+        store.setCustomer(customer.id, { move_pin: JSON.stringify({ by: device.id, snapshotId: body.snapshotId, since: now() }) });
+        return { move: movePin(store.customerById(customer.id)) };
+      });
+    },
+    'POST /v1/move/unpin': async (req) => {
+      const { device, customer } = bearer(req, ['active', 'moved']);
+      return serial(customer.id, async () => {
+        const pin = movePin(store.customerById(customer.id));
+        const mine = !!pin && pin.by.id === device.id;
+        if (mine) store.setCustomer(customer.id, { move_pin: null });
+        return { unpinned: mine };
+      });
     },
 
     'GET /v1/devices': async (req) => {

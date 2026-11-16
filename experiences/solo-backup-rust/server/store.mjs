@@ -22,7 +22,7 @@ create table if not exists meta(k text primary key, v text not null);
 create table if not exists customers(
   id text primary key, sub text not null unique, email text not null unique, prefix text not null unique,
   state text not null default 'active', created_at integer not null,
-  lost_at integer, google_step integer not null default 0, read_key text, detect_since integer);
+  lost_at integer, google_step integer not null default 0, read_key text, detect_since integer, move_pin text);
 create table if not exists invites(email text primary key, added_at integer not null, used_at integer, customer_id text);
 create table if not exists nonces(value text primary key, purpose text not null, created_at integer not null, used_at integer);
 create table if not exists devices(

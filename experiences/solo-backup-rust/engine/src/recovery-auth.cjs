@@ -30,8 +30,10 @@ async function verifier({ loadDiscovery = requestJson, loadKeys = request } = {}
   };
 }
 // Single-use loopback authorization. Invalid traffic never consumes the state.
-async function authorize(client, openExternal, { timeoutMs = 300000, signal } = {}) {
-  const state = random(), nonce = random(), codeVerifier = random();
+async function authorize(client, openExternal, { timeoutMs = 300000, signal, nonce: given } = {}) {
+  // A provisioning-server nonce makes the ID token usable once, for one server request.
+  if (given !== undefined && (typeof given !== 'string' || !/^[A-Za-z0-9_-]{20,128}$/.test(given))) throw failure('INVALID');
+  const state = random(), nonce = given ?? random(), codeVerifier = random();
   let settled = false, timer, resolveCode, rejectCode;
   const codeResult = new Promise((resolve, reject) => { resolveCode = resolve; rejectCode = reject; });
   // Avoid unhandled rejection if the browser opener is still pending at timeout.
@@ -59,9 +61,9 @@ async function authorize(client, openExternal, { timeoutMs = 300000, signal } = 
   finally { settled = true; clearTimeout(timer); signal?.removeEventListener('abort', cancel); server.close(); server.closeAllConnections(); }
 }
 class GoogleAuth {
-  constructor({ dir, secretStore, client, openExternal, json = requestJson, verify = null, authorizeFlow = authorize }) {
+  constructor({ dir, secretStore, client, openExternal, json = requestJson, http = request, verify = null, authorizeFlow = authorize }) {
     this.dir = dir; this.secretStore = secretStore; this.client = client ? clientConfig(client) : null; this.openExternal = openExternal;
-    this.json = json; this.verify = verify; this.authorizeFlow = authorizeFlow; this.tokens = null; this.refreshing = null;
+    this.json = json; this.http = http; this.verify = verify; this.authorizeFlow = authorizeFlow; this.tokens = null; this.refreshing = null;
   }
   async open() {
     await fs.mkdir(this.dir, { recursive: true });
@@ -76,19 +78,31 @@ class GoogleAuth {
   async check(token, options) { this.verify ||= await verifier(); return this.verify(token, this.client.client_id, options); }
   async exchange(values) { return this.json(TOKEN, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ ...values, client_id: this.client.client_id, client_secret: this.client.client_secret }).toString() }); }
   validateTokens(v) { if (v.token_type !== 'Bearer' || typeof v.access_token !== 'string' || !v.access_token || v.access_token.length > 8192 || !Number.isFinite(v.expires_in) || v.expires_in <= 0 || v.expires_in > 86400 || (v.scope && !v.scope.split(' ').includes(SCOPE))) throw failure('DENIED'); }
-  async connect(expectedSub) {
+  // A browser sign-in. With a provisioning-server nonce the returned ID token is the
+  // 「방금 한 Google 로그인」 for exactly one server request (STAGE1_DESIGN.md 4.5).
+  async signIn({ nonce, expectedSub } = {}) {
     if (!this.client) throw failure('INVALID');
     this.controller = new AbortController();
     let flow;
-    try { flow = await this.authorizeFlow(this.client, this.openExternal, { signal: this.controller.signal }); }
+    try { flow = await this.authorizeFlow(this.client, this.openExternal, { signal: this.controller.signal, ...(nonce ? { nonce } : {}) }); }
     finally { this.controller = null; }
+    if (nonce && flow.nonce !== nonce) throw failure('INVALID');
     const v = await this.exchange({ code: flow.code, code_verifier: flow.codeVerifier, redirect_uri: flow.redirect, grant_type: 'authorization_code' });
     this.validateTokens(v);
     const user = await this.check(v.id_token, { nonce: flow.nonce });
     if (expectedSub && user.sub !== expectedSub) throw failure('ACCOUNT');
     if (typeof v.refresh_token !== 'string' || !v.refresh_token || v.refresh_token.length > 8192) throw failure('REAUTH');
     await this.persist({ clientId: this.client.client_id, ...user, access: v.access_token, refresh: v.refresh_token, expires: Date.now() + v.expires_in * 1000 });
-    return this.getState();
+    return { idToken: v.id_token, nonce: flow.nonce, sub: user.sub, email: user.email };
+  }
+  async connect(expectedSub) { await this.signIn({ expectedSub }); return this.getState(); }
+  // 2.4 (5)(가): a new PC after a loss revokes its own grant so Google may end the lost PC's
+  // refresh token too (whether it does is measured in week 2). Then signs in again.
+  async revoke() {
+    if (!this.tokens?.refresh) return false;
+    await this.http('https://oauth2.googleapis.com/revoke', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: this.tokens.refresh }).toString() });
+    await this.disconnect();
+    return true;
   }
   async access() {
     if (!this.tokens || this.needsLogin) throw failure('REAUTH');

@@ -445,3 +445,33 @@ test('S10: help bundles keep only checked fields', async (t) => {
   assert.deepEqual(saved.errorCodes, ['SCHEDULE_FOREIGN']);
   assert.deepEqual(saved.settings, { sources: 3, mode: 'backup' });
 });
+
+test('move pin: the reading PC pins the snapshot it copies, the writer sees it, the seat move or 7 days end it', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const w = await h.provision('옛 PC'); await h.ack(w);
+  const r = await h.provision('새 PC'); await h.ack(r);
+  const snap = 'ab'.repeat(32);
+  assert.equal((await h.call('POST', 'move/pin', { snapshotId: 'short' }, r.device.token)).code, 'BAD_INPUT');
+  assert.equal((await h.call('POST', 'move/pin', { snapshotId: snap }, w.device.token)).code, 'DEVICE_STATE', 'the writer cannot pin');
+  const pinned = await h.call('POST', 'move/pin', { snapshotId: snap }, r.device.token);
+  assert.equal(pinned.ok, true); assert.equal(pinned.move.snapshotId, snap);
+  const ws = await h.call('GET', 'status', null, w.device.token);
+  assert.deepEqual({ by: ws.move.by.name, snapshotId: ws.move.snapshotId, mine: ws.move.byThisDevice }, { by: '새 PC', snapshotId: snap, mine: false });
+  // Only the pinning device can unpin.
+  assert.equal((await h.call('POST', 'move/unpin', {}, w.device.token)).unpinned, false);
+  // Pinning again replaces the pin.
+  const snap2 = 'cd'.repeat(32);
+  await h.call('POST', 'move/pin', { snapshotId: snap2 }, r.device.token);
+  assert.equal((await h.call('GET', 'status', null, w.device.token)).move.snapshotId, snap2);
+  // Seven days end a pin nobody released.
+  h.clock.advance(7 * 24 * 3600 * 1000 + 1);
+  assert.equal((await h.call('GET', 'status', null, w.device.token)).move, null);
+  // The seat move ends it.
+  await h.call('POST', 'move/pin', { snapshotId: snap }, r.device.token);
+  assert.equal((await h.call('GET', 'status', null, w.device.token)).move.snapshotId, snap);
+  const seat = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, r.device.token);
+  assert.equal(seat.ok, true);
+  assert.equal((await h.call('GET', 'status', null, r.device.token)).move, null);
+  assert.equal((await h.call('GET', 'status', null, w.device.token)).move, null);
+});

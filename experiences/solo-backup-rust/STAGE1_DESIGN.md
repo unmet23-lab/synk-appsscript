@@ -369,7 +369,7 @@
 | `POST nonce` | 없음(IP 속도 제한) | — | `{purpose}` → `{nonce, expiresAt}` |
 | `POST provision` | 로그인 | — | 손님 자리를 찾거나 만들고 기기를 만든다. 쓰는 자리가 비었으면 이 기기가 쓰는 기기가 되어 쓰기 출입증을 받고, 아니면 읽기만 하는 기기가 된다. 손님 읽기 출입증은 확정된 것과 아직 살아 있는 미확정 것이 모두 없을 때만 함께 준다. 답: 손님 번호 · 저장소 위치(`c/<번호>/r`) · 기기 번호 · 기기 토큰 · 출입증 · 받았다는 알림 기한 · 지금 쓰는 기기 · 분실 뒤 Google 걸음이 필요한지. 기기가 꽉 차면 `LIMIT_DEVICES`와 기기 목록 |
 | `POST keys/ack` | 기기 | active | `{keyIds}` — 그 출입증을 받은 기기만 |
-| `GET status` | 기기 | active · moved | 손님 · 이 기기 상태, 쓰는 기기, 저장량과 「용량 초과」, 알림거리, 되돌리기 상태, 분실 뒤 Google 걸음, 손님 읽기 출입증 상태(`ready` · `unconfirmed` · `missing`), 지원하는 가장 낮은 앱 판 |
+| `GET status` | 기기 | active · moved | 손님 · 이 기기 상태, 쓰는 기기, 저장량과 「용량 초과」, 알림거리, 되돌리기 상태, 분실 뒤 Google 걸음, 손님 읽기 출입증 상태(`ready` · `unconfirmed` · `missing`), 지원하는 가장 낮은 앱 판, 옮겨 오기 판 고정(`move`) |
 | `GET devices` | 기기 | active | 내 기기 목록 |
 | `POST devices/take-write-seat` | 기기 + 로그인 | active · moved | 이 기기를 쓰는 기기로 만든다. 이미 쓰는 기기면 「쓰기 출입증 다시 받기」다. 옛 쓰기 출입증을 먼저 지우고 새 것을 준다(아래 「여러 걸음 요청」). 옛 기기는 `moved`가 된다. 옮겨 오기의 「옛 PC 연결 끊기」, 옮겨진 PC의 「이 PC로 다시 백업」이 이 요청이다 |
 | `POST devices/revoke` | 기기 + 로그인, 또는 로그인만(쓰는 기기가 아닌 기기) | active | `{deviceId}` — 그 기기의 출입증을 지우고 `revoked`로 둔다. 읽기만 하는 기기를 끊으면 답에 「손님 읽기 출입증 바꾸기를 권함」을 싣는다 — 그 기기에 봉투에서 받은 읽기 출입증과 복구 암호가 남기 때문이다 |
@@ -380,6 +380,8 @@
 | `POST restore/run` | 기기 + 로그인 | active | `{at}` — 2.5의 차례로 돈다(아래 「되돌리기」). 답에 새 쓰기 · 읽기 출입증과 `jobId` |
 | `GET restore/job?id=` | 기기 | active · moved | 진행 · 결과 · 상태(`running` · `done` · `failed` · `continued` · `undone`) |
 | `POST restore/choose` | 기기(요청한 기기만) — 「취소」는 + 로그인 | active | `{jobId, choice}` — 「여기서부터 계속」 또는 「되돌리기 취소」 |
+| `POST move/pin` | 기기(읽기만 하는 기기만) | active | `{snapshotId}` — 옮겨 오기(4.6)에서 새 PC가 받는 판을 적는다. 쓰는 기기는 다음 `status`의 `move`를 읽고 그 판을 정리에서 뺀다(옮겨 오기 설계 검토 M8). 손님마다 하나만 두고 다시 보내면 바꾼다. 쓰는 자리를 넘기거나, 고정한 기기가 끊기거나, 7일이 지나면 풀린다. 판 하나를 더 남기게 할 뿐이라 로그인은 묻지 않는다 |
+| `POST move/unpin` | 기기(고정한 기기만) | active · moved | 옮겨 오기를 「아니오」로 끝낼 때 고정을 푼다 |
 | `POST telemetry` | 기기 | active | 회차 기록 · 알림 · 설치 단계(아래 「측정 받기」) |
 | `POST help` | 기기 | active · moved | 손님 글과 측정과 같은 검사를 거친 묶음 — 운영자 메일 |
 
@@ -445,7 +447,7 @@
 
 **먼저 잴 것(M10).** 출입증을 지운 뒤에도 미리 받은 B2 인증 토큰과 올리기 주소가 통하는지 재지 않았다. 시험 개통 자리에서 인증 토큰과 올리기 주소를 받고 → 출입증을 지우고 → 10초 · 1분 · 10분 뒤에 숨기기 · 올리기 · 내려받기를 해 본다. 통하면 분실 신고의 「즉시」와 T10의 「옛 출입증 거부」를 그 시간만큼 고쳐 적고, 되돌리기 전 기다림도 그만큼 늘린다.
 
-**만드는 파일.** `server/`의 `main.mjs`(진입) · `boot.mjs` · `server.mjs`(api) · `google-token.mjs` · `store.mjs` · `keys-worker.mjs` · `files-worker.mjs` · `rpc.mjs`(서명 요청) · `detect.mjs` · `reconcile.mjs` · `jobs.mjs` · `mail.mjs` · `telemetry.mjs` · `admin.mjs` · `audit.mjs` · `config.mjs` · `Dockerfile` · `mail-relay/` · `tests/`. 앱 쪽은 `engine/src/provision-client.cjs`(새 파일)와 `recovery-auth.cjs`(서버 nonce로 로그인 · 토큰 철회) · `recovery-http.cjs`(서버 주소) · `recovery-vault.cjs`(봉투 v3 · 새 읽기 출입증 규칙) · `recovery-service.cjs`(v3 올리기 · 읽기 출입증 바꾸기). 엔진에 잇는 것(`b2.cjs`의 새 접두사 꼴, 호스트 = 기기 번호, `handlers.cjs` · `methods.json` · `bridge.js`)은 조율 세션에 보낸다. 기기 쓰기 출입증은 지금 DPAPI 통로(`secret.encrypt`)로 보관하므로 `secret.rs`는 바꾸지 않는다.
+**만드는 파일.** `server/`의 `main.mjs`(진입) · `boot.mjs` · `server.mjs`(api) · `google-token.mjs` · `store.mjs` · `keys-worker.mjs` · `files-worker.mjs` · `rpc.mjs`(서명 요청) · `detect.mjs` · `reconcile.mjs` · `jobs.mjs` · `mail.mjs` · `telemetry.mjs` · `admin.mjs` · `audit.mjs` · `config.mjs`(설정 파일 · 비밀값 폴더) · `Dockerfile` · `README.md`(회사 서버에 두는 법) · `mail-relay/` · `tests/`. 회사 `deploy/compose.yaml`에는 서비스 셋을 `workbackup` 프로필로 꺼진 채 넣고, `deploy/Caddyfile`에는 `/backup-api/*` 길을 연다. 프로필을 켜는 일은 회사 HA의 컨테이너 검사를 함께 고치는 인프라 판으로 한다(README). 앱 쪽은 `engine/src/provision-client.cjs`(새 파일)와 `recovery-auth.cjs`(서버 nonce로 로그인 · 토큰 철회) · `recovery-http.cjs`(서버 주소) · `recovery-vault.cjs`(봉투 v3 · 새 읽기 출입증 규칙) · `recovery-service.cjs`(v3 올리기 · 읽기 출입증 바꾸기). 엔진에 잇는 것(`b2.cjs`의 새 접두사 꼴, 호스트 = 기기 번호, `handlers.cjs` · `methods.json` · `bridge.js`)은 조율 세션에 보낸다. 기기 쓰기 출입증은 지금 DPAPI 통로(`secret.encrypt`)로 보관하므로 `secret.rs`는 바꾸지 않는다.
 
 **설계 검토 반영표(Fable 5.2, 11-16).** 원문은 Git 밖 공유 노트 `fable52-server-design.md`다.
 
@@ -713,7 +715,7 @@
 
 | 표 | 칸 |
 |---|---|
-| customers | 번호 · Google sub · 메일 · 접두사 · 상태 · 만든 때 |
+| customers | 번호 · Google sub · 메일 · 접두사 · 상태 · 만든 때 · 분실 때와 Google 걸음 · 손님 읽기 출입증 · 탐지 기준 시각 · 옮겨 오기 판 고정 |
 | invites | 메일 · 넣은 때 · 쓴 때 |
 | nonces | 값 · 목적 · 만든 때 · 쓴 때 |
 | devices | 번호 · 손님 · 이름 · 역할(쓰기 · 읽기만) · 만든 때 · 마지막 소식 · 상태 · 쓰기 출입증 번호 · 기기 토큰 해시 · 판 |
@@ -747,7 +749,7 @@
 - `experiences/solo-backup-rust/ui/` — 화면 원천(11-13에 정한 시안 A 「확인서」로 새로 짬).
 - `src-tauri/src/bin/run.rs`(`WorkBackupRun.exe`), `schedule.rs`(작업 스케줄러 COM), `helper.rs`(섀도 복사본 · 확인 · 정리), `power.rs`(배터리 · 절전 · 종량 · 대기 방식), `notify.rs`(토스트 · 기록 읽기), `folders.rs`(알려진 폴더 · OneDrive), `runlog.rs`(회차 기록 · 진행 파일 · 측정 프록시), `files.rs`(덮지 않는 이름 바꾸기 · 연결점을 따라가지 않는 열기).
 - `src-tauri/nsis/hooks.nsh` — 설치기 훅(보통 권한으로 앱 열기 · 도우미 등록).
-- `experiences/solo-backup-rust/server/` — 개통 서버(`main.mjs` · `boot.mjs` · `server.mjs` · `b2-native.mjs` · `google-token.mjs` · `store.mjs` · `keys-worker.mjs` · `files-worker.mjs` · `rpc.mjs` · `restore-hidden.mjs` · `detect.mjs` · `reconcile.mjs` · `jobs.mjs` · `mail.mjs` · `telemetry.mjs` · `admin.mjs` · `audit.mjs` · `config.mjs` · `Dockerfile` · `mail-relay/` · 시험). 실측 도구 `server/tools/`(11-12 있음).
+- `experiences/solo-backup-rust/server/` — 개통 서버(`main.mjs` · `boot.mjs` · `server.mjs` · `b2-native.mjs` · `google-token.mjs` · `store.mjs` · `keys-worker.mjs` · `files-worker.mjs` · `rpc.mjs` · `restore-hidden.mjs` · `detect.mjs` · `reconcile.mjs` · `jobs.mjs` · `mail.mjs` · `telemetry.mjs` · `admin.mjs` · `audit.mjs` · `config.mjs` · `Dockerfile` · `README.md` · `mail-relay/` · 시험). 실측 도구 `server/tools/`(11-12 있음).
 - `test-support/` — 합성 자료 D0 · D1 · D2, 파일 잠그기, tauri-driver 화면 시험.
 - `.github/workflows/workbackup-clean-windows.yml` · 서버 밖 감사 예약.
 - `src-tauri/src/solio.rs` — 솔리오 상태 파일 쓰기, 요청 파일 읽기, 결과 파일(4.13). `contract/solio/` — 세 파일의 꼴과 시험용 견본.

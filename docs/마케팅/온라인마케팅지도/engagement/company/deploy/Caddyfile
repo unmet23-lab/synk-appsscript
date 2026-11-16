@@ -23,6 +23,18 @@
     # Invalidate the earlier HTTP/3 advertisement cached by returning browsers.
     header >Alt-Svc clear
 
+    # Work-backup provisioning server (experiences/solo-backup-rust/server/README.md).
+    # Its services stay off until a later infrastructure release; until then this path
+    # answers 502 and every other path is unchanged. The api strips /backup-api itself.
+    handle /backup-api/* {
+        request_body {
+            max_size 1MB
+        }
+        reverse_proxy wb-api:4210 {
+            header_up X-Forwarded-For {remote_host}
+        }
+    }
+
     reverse_proxy company:4191 {
         # Caddy is the only public entry; discard client-supplied forwarding.
         header_up X-Forwarded-For {remote_host}

@@ -1,15 +1,16 @@
 // Operator commands, run inside the api container:
-//   docker compose exec -T workbackup-api node admin.mjs <command> [arg]
+//   docker compose exec -T wb-api node admin.mjs <command> [arg]
 // invite-add and invite-remove read the address from standard input so it does not
 // stay in shell history or process listings. Output never prints a key secret;
 // customer addresses are printed only by `customers --email`.
 import fs from 'node:fs';
 import { apiFromEnv } from './boot.mjs';
+import { withSettings } from './config.mjs';
 
 const [command, arg, flag] = process.argv.slice(2);
 const stdin = () => fs.readFileSync(0, 'utf8').trim();
 const out = (v) => console.log(JSON.stringify(v, null, 1));
-const { store, api, jobs } = apiFromEnv();
+const { store, api, jobs } = apiFromEnv(withSettings(process.env));
 
 try {
   switch (command) {

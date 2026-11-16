@@ -5,7 +5,8 @@ const crypto = require('node:crypto');
 const { EventEmitter } = require('node:events');
 const { atomic } = require('./paths.cjs');
 const { GoogleAuth } = require('./recovery-auth.cjs');
-const { DriveVault, validateReadKey, parseEnvelope, MARKER, sha } = require('./recovery-vault.cjs');
+const { DriveVault, validateReadKey, parseEnvelope, MARKER, sha, MARKER3, FORMAT3, parseEnvelopeV3, validateReadKeyV3, repositoryV3 } = require('./recovery-vault.cjs');
+const b2 = require('./b2.cjs');
 const { failure, RecoveryError } = require('./recovery-http.cjs');
 class RecoveryService extends EventEmitter {
   constructor({ root, secretStore, engine, client, openExternal, auth, vault, validateKey = validateReadKey }) {
@@ -142,4 +143,82 @@ class RecoveryService extends EventEmitter {
   async invalidateProof() { await this.save({ ...this.record, invalidProof: true }); delete this.engine.config.remoteRecovery; await this.engine.save(); }
   async stop() { this.stopping = true; clearInterval(this.timer); this.auth.cancel?.(); if (this.busy) await new Promise(resolve => this.once('idle', resolve)); }
 }
-module.exports = { RecoveryService };
+// Envelope v3 (STAGE1_DESIGN.md 5.4 · 「봉투 v3의 꼴」): the recovery password, the customer
+// read key and the repository place, in the Google app-data folder of the backup-only
+// project. Same discipline as v1: the pending generation goes to this PC's DPAPI store
+// before upload, is published, read back and committed, and is re-read daily. It never
+// holds a write key. After it is verified the caller confirms the read key to the
+// provisioning server (POST read-key/confirm) — only then may the server retire the old one.
+class EnvelopeV3 {
+  constructor({ root, secretStore, auth, vault, validateKey = validateReadKeyV3, now = () => Date.now() }) {
+    this.dir = path.join(root, 'account-recovery-v3'); this.secretStore = secretStore; this.auth = auth; this.now = now;
+    this.vault = vault || new DriveVault(auth, undefined, { marker: MARKER3, parse: parseEnvelopeV3 }); this.validateKey = validateKey; this.record = {};
+  }
+  async open() {
+    await fs.mkdir(this.dir, { recursive: true });
+    try { this.record = JSON.parse(await this.secretStore.decrypt(await fs.readFile(path.join(this.dir, 'envelope.bin')))); }
+    catch (e) { if (e.code !== 'ENOENT') throw failure('INVALID'); }
+    return this.getState();
+  }
+  async save(next) { await atomic(path.join(this.dir, 'envelope.bin'), await this.secretStore.encrypt(JSON.stringify(next))); this.record = next; }
+  getState() { const v = this.record.verified; return { verified: v ? { verifiedAt: v.verifiedAt, repositoryId: v.repositoryId, readKeyId: this.record.readKeyId } : null, pending: !!this.record.pending, invalid: !!this.record.invalid }; }
+  subject() {
+    if (!this.auth.getState().connected) throw failure('REAUTH');
+    const sub = this.auth.tokens.sub;
+    if (this.record.subject && this.record.subject !== sub) throw failure('ACCOUNT');
+    return sub;
+  }
+  async publish({ repository, repositoryId, password, readKey }) {
+    const subject = this.subject(), repo = repositoryV3(repository), key = b2.credentials(readKey);
+    const { bucketId } = await this.validateKey(repo, key);
+    let pending = this.record.pending;
+    if (pending) {
+      try { pending = parseEnvelopeV3(Buffer.from(JSON.stringify(pending)), subject); } catch { pending = null; }
+      if (pending && (pending.repositoryId !== repositoryId || pending.password !== password || pending.readKey.keyId !== key.keyId || pending.readKey.applicationKey !== key.applicationKey || pending.repository.prefix !== repo.prefix)) pending = null;
+    }
+    if (!pending) {
+      pending = { format: FORMAT3, version: 3, generationId: crypto.randomUUID(), generation: Math.max(this.record.generation || 0, this.record.pending?.generation || 0) + 1, createdAt: new Date(this.now()).toISOString(), subject, repository: repo, repositoryId, password, readKey: key, bucketId, resticVersion: '0.19.1' };
+      parseEnvelopeV3(Buffer.from(JSON.stringify(pending)), subject);
+      await this.save({ ...this.record, subject, pending });
+    }
+    const verified = await this.vault.publish(pending);
+    await this.save({ ...this.record, subject, verified, generation: pending.generation, pending: null, readKeyId: key.keyId, invalid: false });
+    return this.getState();
+  }
+  // Daily: the committed envelope still exists, reads back the same repository, password and
+  // read key, and the key still authorizes. A missing or different envelope marks the state
+  // invalid (the caller publishes again); a network error leaves it as it was.
+  async recheck({ repositoryId, password }) {
+    const subject = this.subject(), v = this.record.verified;
+    if (!v) throw failure('INVALID');
+    const files = await this.vault.list(subject), current = files.find(f => f.id === v.fileId && f.appProperties.status === 'committed');
+    try {
+      if (!current) throw failure('INVALID');
+      const e = await this.vault.read(current, subject);
+      if (e.repositoryId !== repositoryId || e.password !== password || e.readKey.keyId !== this.record.readKeyId) throw failure('INVALID');
+      await this.validateKey(e.repository, e.readKey);
+    } catch (error) { if (error.code !== 'NETWORK') await this.save({ ...this.record, invalid: true }); throw error; }
+    await this.save({ ...this.record, verified: { ...v, verifiedAt: new Date(this.now()).toISOString() }, invalid: false });
+    return this.getState();
+  }
+  // New PC: the committed envelopes of this Google account, newest first, without secrets.
+  async discover() {
+    const subject = this.subject(), out = [];
+    for (const file of (await this.vault.list(subject)).filter(f => f.appProperties.status === 'committed')) {
+      const e = await this.vault.read(file, subject);
+      out.push({ fileId: file.id, createdAt: e.createdAt, repositoryLabel: e.repositoryId.slice(0, 8), customer: e.repository.prefix.slice(2, 18) });
+    }
+    return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.fileId.localeCompare(a.fileId));
+  }
+  // The full envelope of one committed file, read key checked, for a restore-only connection.
+  async read(fileId) {
+    const subject = this.subject();
+    const file = (await this.vault.list(subject)).find(f => f.id === fileId && f.appProperties.status === 'committed');
+    if (!file) throw failure('INVALID');
+    const e = await this.vault.read(file, subject);
+    const { bucketId } = await this.validateKey(e.repository, e.readKey);
+    if (bucketId !== e.bucketId) throw failure('INVALID');
+    return e;
+  }
+}
+module.exports = { RecoveryService, EnvelopeV3 };
