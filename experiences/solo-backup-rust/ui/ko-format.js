@@ -98,10 +98,12 @@ export function josa(word, pair) {
   const [a, b] = pair.split('/');
   const c = String(word).trim().slice(-1);
   const code = c.charCodeAt(0);
-  let batchim;
-  if (code >= 0xac00 && code <= 0xd7a3) batchim = (code - 0xac00) % 28 !== 0;
-  else if (/[0-9]/.test(c)) batchim = '013678'.includes(c);
-  else batchim = /[bcdgjklmnpqrtvxz]$/i.test(c) && !/[aeiouy]$/i.test(c);
+  let batchim, rieul = false;
+  if (code >= 0xac00 && code <= 0xd7a3) { batchim = (code - 0xac00) % 28 !== 0; rieul = (code - 0xac00) % 28 === 8; }
+  else if (/[0-9]/.test(c)) { batchim = '013678'.includes(c); rieul = '178'.includes(c); }
+  else { batchim = /[bcdgjklmnpqrtvxz]$/i.test(c) && !/[aeiouy]$/i.test(c); rieul = /l$/i.test(c); }
+  // 「으로/로」는 ㄹ 받침 뒤에서도 「로」다(사무실로 · 1로 · Dell로)
+  if (a === '으로' && rieul) return word + b;
   return word + (batchim ? a : b);
 }
 

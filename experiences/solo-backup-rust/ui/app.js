@@ -3,10 +3,11 @@
 // 엔진에 아직 없는 기능의 단추는 「아직 준비 중」 한 줄만 띄우고 아무것도 보내지 않는다(QA 「가짜 상태로 그린 화면」).
 
 import { createStore, failureText } from './state-store.js';
-import { homeModel } from './screen-model.js';
+import { homeModel, createRestoreWatch } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
+import { josa } from './ko-format.js';
 
 // 쪽 오류를 모아 둔다(tauri-driver 시험이 읽는다)
 const errs = [];
@@ -19,11 +20,28 @@ const stage = $('#stage'), room = $('#room'), topR = $('#top-r'), hereS = $('#he
 const drawerWrap = $('#drawer'), drawerPanel = $('#drawer-panel');
 
 let lastHtml = '', screen = 'home', shownId = null, out = null, fixture = null, catalog = null, ui = { pick: 'same' }, noteTimer = 0, findTimer = 0, lit = false;
-const store = createStore(window.backup, { onChange: () => paint() });
+let failure = null, queued = null, closing = null, opener = null, lastDrawer = '', lastLive = '', retryTimer = 0, shownQuery = null;
+// 이 창이 지켜본 전체 되살리기가 실패했는지 — 엔진은 그 실패를 백업 실패와 같은 칸(lastError)에 적는다(Fable F2)
+const restoreWatch = createRestoreWatch();
+let prevJob = null, restoreFail = null;
+function watchJobs(s) {
+  if (!s) return;
+  restoreFail = restoreWatch.see(s);
+  // 예약 백업 때문에 못 연 되살리기 목록은 그 일이 끝나면 저절로 연다(Fable F5)
+  if (prevJob && !s.job && screen === 'restore' && catalog?.waiting) void openCatalog();
+  prevJob = s.job?.kind || null;
+}
+// 상태 읽기가 실패하면 그 까닭을 첫 화면에 쓴다. 호출이 끝나면 밀려 있던 찾기를 잇는다(늦게 친 글이 버려지지 않게)
+const store = createStore(window.backup, { onChange: (x) => { failure = x.failure; if (!fixture) watchJobs(x.state); paint(); if (!x.busy && queued) setTimeout(flushQuery, 0); } });
 const orb = createOrb($('#orb'), $('#orb-btn'));
 
 const state = () => (fixture ? fixture.state : store.state);
 const now = () => (fixture ? fixture.now : Date.now());
+
+/** 엔진에 아직 없는 기능의 화면 — 실제 상태에서는 열지 않고 「준비 중」 한 줄만 띄운다 */
+const SOON = { 'start-2': '보호 범위 고르기', 'move-1': '이 PC로 옮겨 오기', 'move-2': '이 PC로 옮겨 오기', 'move-3': '이 PC로 옮겨 오기', 'move-4': '이 PC로 옮겨 오기',
+  'undo-1': '사고 되돌리기', 'undo-2': '사고 되돌리기', 'undo-3': '사고 되돌리기', lost: '분실 신고', 'lost-2': '분실 신고', code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
+const soon = (what) => note(`${josa(what, '은/는')} 아직 준비 중입니다. 다음 업데이트에서 열립니다.`);
 
 function note(text) {
   noteBar.textContent = text; noteBar.classList.add('on');
@@ -49,12 +67,14 @@ function fillBars(root, animate) {
 function paint() {
   const s = state();
   if (!s) {
-    if (!room.firstChild) room.innerHTML = '<div class="in"><p class="kick"><i class="dot" aria-hidden="true"></i>상태를 읽는 중입니다</p></div>';
+    const say = failure ? failureText(failure) : '상태를 읽는 중입니다';
+    const html = `<div class="in"><p class="kick"><i class="dot" aria-hidden="true"></i>${say}</p></div>`;
+    if (lastHtml !== html) { room.innerHTML = html; lastHtml = html; }
     return;
   }
-  const model = homeModel(s, { now: now() });
+  const model = homeModel(s, { now: now(), restoreFail: fixture ? null : restoreFail });
   const id = resolve(screen, s, model);
-  out = renderScreen(id, { state: s, model, now: now(), catalog, ui });
+  out = renderScreen(id, { state: s, model, now: now(), catalog, ui, fake: !!fixture });
   stage.dataset.tone = out.tone; stage.dataset.kind = out.kind; stage.dataset.screen = id;
   orb.setBusy(!!s.job);
   hereS.textContent = out.here || '';
@@ -62,19 +82,38 @@ function paint() {
   segSr.textContent = out.seg ? `${out.seg[1]}걸음 가운데 ${out.seg[0]}` : '';
   topR.innerHTML = out.top.map((t) => `<button class="tbtn" type="button" data-act="${t.id}">${t.label}</button>`).join('');
   const fresh = id !== shownId;
-  // 같은 화면을 다시 그릴 때는 찾기 칸의 글과 커서를 지킨다
-  const active = document.activeElement, focusId = active && room.contains(active) ? active.id : null;
-  const caret = focusId === 'find' ? [active.selectionStart, active.selectionEnd] : null;
-  const typed = focusId === 'find' ? active.value : null;
+  // 같은 화면을 다시 그릴 때는 찾기 칸의 글과 커서, 목록의 스크롤, 포커스가 있던 단추나 줄을 지킨다(Fable F4 · F7)
+  const active = document.activeElement, inRoom = active && room.contains(active);
+  const key = inRoom ? focusKey(active) : null;
+  const caret = active?.id === 'find' ? [active.selectionStart, active.selectionEnd] : null;
+  const typed = active?.id === 'find' ? active.value : null;
+  const sameList = id === 'restore' && (catalog?.query ?? null) === shownQuery;
+  const filesTop = sameList ? room.querySelector('.files')?.scrollTop ?? 0 : 0, roomTop = room.scrollTop;
+  shownQuery = id === 'restore' ? (catalog?.query ?? null) : null;
   if (fresh) { stage.classList.remove('shown'); room.scrollTop = 0; }
-  if (lastHtml !== out.html) { room.innerHTML = out.html; lastHtml = out.html; fillBars(room, fresh); }
-  if (focusId) { const el = document.getElementById(focusId); if (el) { if (typed !== null) el.value = typed; el.focus(); if (caret) el.setSelectionRange(...caret); } }
+  if (lastHtml !== out.html) {
+    room.innerHTML = out.html; lastHtml = out.html; fillBars(room, fresh);
+    if (!fresh) { const files = room.querySelector('.files'); if (files) files.scrollTop = filesTop; room.scrollTop = roomTop; }
+  }
+  if (key) { const el = room.querySelector(key); if (el) { if (typed !== null) el.value = typed; el.focus({ preventScroll: true }); if (caret) el.setSelectionRange(...caret); } }
+  const live = out.kind === 'home' ? `${model.kick}. ${model.title}` : out.here || '';
+  if (live !== lastLive) { lastLive = live; $('#live').textContent = live; }
   if (fresh) {
     shownId = id;
     void room.offsetWidth; stage.classList.add('shown');
     if (!lit) { lit = true; orb.lightUp(); }
   }
-  if (!drawerWrap.hidden) drawerPanel.innerHTML = drawer(s);
+  if (!drawerWrap.hidden) { const d = drawer(s); if (d !== lastDrawer) { lastDrawer = d; drawerPanel.innerHTML = d; } }
+}
+
+/** 다시 그린 뒤 같은 요소를 찾을 열쇠(id · 고른 줄 · 단추 · 고르는 칸) */
+function focusKey(el) {
+  const q = (k, v) => `[${k}="${CSS.escape(v)}"]`;
+  if (el.id) return `#${CSS.escape(el.id)}`;
+  if (el.dataset?.file) return q('data-file', el.dataset.file);
+  if (el.dataset?.pick) return q('data-pick', el.dataset.pick);
+  if (el.dataset?.act) return q('data-act', el.dataset.act);
+  return null;
 }
 
 function go(id) {
@@ -88,18 +127,40 @@ function go(id) {
 /* ── 파일 되살리기 목록(엔진 openFileCatalog · queryFileCatalog · setFileSelection) ── */
 async function openCatalog() {
   const s = state(); if (fixture || !s) return;
-  catalog = { loading: true, query: '', rows: [] }; paint();
+  catalog = { loading: true, query: '', rows: [] }; queued = null; paint();
+  if (closing) await closing;
+  if (screen !== 'restore') return;
   const opened = await store.call('openFileCatalog', { profile: s.profile });
-  if (!opened.ok) { catalog = { loading: true, error: failureText(opened.code), rows: [] }; paint(); return; }
+  if (screen !== 'restore') {
+    if (opened.ok && opened.value?.token) void store.call('closeFileCatalog', { profile: opened.value.profile ?? s.profile, token: opened.value.token });
+    return;
+  }
+  if (!opened.ok) {
+    const waiting = ['RUN_ACTIVE', 'JOB_BUSY', 'BUSY'].includes(opened.code);
+    catalog = { loading: false, waiting, error: waiting ? '예약 백업이나 하던 일이 끝나면 저절로 엽니다.' : failureText(opened.code), rows: [] };
+    clearTimeout(retryTimer);
+    if (waiting) retryTimer = setTimeout(() => { if (screen === 'restore' && catalog?.waiting) void openCatalog(); }, 15000);
+    paint(); return;
+  }
   catalog = { ...opened.value, query: '', rows: [], offset: 0, loading: false };
   await query('', 0, false);
 }
 async function query(q, offset, append) {
-  if (!catalog?.token) return;
+  if (!catalog?.token) { if (catalog?.loading) queued = { q, offset, append }; return; }
   const r = await store.call('queryFileCatalog', { profile: catalog.profile, token: catalog.token, query: q, offset });
-  if (!r.ok) { if (r.code === 'CATALOG_EXPIRED') return openCatalog(); if (r.code !== 'BUSY') note(failureText(r.code)); return; }
+  if (!r.ok) {
+    if (r.code === 'BUSY') { queued = { q, offset, append }; return; } // 앞선 호출이 끝나면 이어서 찾는다
+    if (r.code === 'CATALOG_EXPIRED') return openCatalog();
+    return note(failureText(r.code));
+  }
+  if (!catalog?.token) return;
   catalog = { ...catalog, ...r.value, rows: append ? [...catalog.rows, ...r.value.rows] : r.value.rows, offset: append ? catalog.offset : r.value.offset, query: q };
   paint();
+}
+function flushQuery() {
+  if (!queued || store.busy || !catalog?.token) return;
+  const x = queued; queued = null;
+  void query(x.q, x.offset, x.append);
 }
 async function select(action, ids) {
   if (!catalog?.token) return;
@@ -110,15 +171,16 @@ async function select(action, ids) {
   paint();
 }
 function closeCatalog() {
-  if (catalog?.token && !fixture) void store.call('closeFileCatalog', { profile: catalog.profile, token: catalog.token });
-  catalog = null;
+  const c = catalog; catalog = null; queued = null; clearTimeout(retryTimer);
+  if (c?.token && !fixture) closing = store.call('closeFileCatalog', { profile: c.profile, token: c.token }).finally(() => { closing = null; });
 }
 
 /* ── 단추 ── */
 async function run(a, el) {
   if (!a) return;
-  if (a.pending) return note(`${a.pending}은 아직 준비 중입니다. 다음 판에서 이어집니다.`);
-  if (a.drawer) return openDrawer();
+  if (a.pending) return soon(a.pending);
+  if (a.drawer) return openDrawer(el);
+  if (a.to && !fixture && SOON[a.to]) return soon(SOON[a.to]);
   if (a.to) return go(a.to);
   if (!a.call) return;
   if (fixture) return note('예시 화면이라 실제로 보내지 않았습니다.');
@@ -128,9 +190,13 @@ async function run(a, el) {
     if (!catalog?.token || !catalog.selection?.count) return;
     r = await store.call('restoreSelected', { profile: catalog.profile, token: catalog.token, revision: catalog.selection.revision });
     if (r.ok && r.value?.started) { catalog = null; screen = 'home'; return go('home'); }
+    if (!r.ok && (r.code === 'CATALOG_EXPIRED' || r.code === 'SELECTION_STALE')) { note(failureText(r.code)); return openCatalog(); }
   } else if (a.call === 'removeSource') r = await store.call('removeSource', el?.dataset.path ?? a.arg);
+  else if (a.withProfile) r = await store.call(a.call, { profile: state()?.profile });
   else if (a.arg !== undefined) r = await store.call(a.call, a.arg);
   else r = await store.call(a.call);
+  // 다른 일이 도는 중이라 거절된 것은 폴더가 없다는 뜻이 아니다(FA3)
+  if (!r.ok && (a.call === 'openSelectedRestoreFolder' || a.call === 'openRestoreFolder') && !['BUSY', 'JOB_BUSY', 'CANCELED'].includes(r.code)) return note('되살린 폴더를 찾을 수 없습니다. 옮기거나 지웠다면 「파일 되살리기」로 다시 꺼내 주세요.');
   if (!r.ok) return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
   if (a.call === 'restoreLatest' && store.state?.job) { catalog = null; screen = 'home'; return go('home'); }
   if (a.then) go(a.then);
@@ -154,10 +220,16 @@ stage.addEventListener('click', (e) => {
   if (id === 'back') return go(out?.back || 'home');
   if (id === 'more' && catalog) return void query(catalog.query, (catalog.offset || 0) + catalog.rows.length, true);
   if (id === 'clear') return void select('clear');
-  if (id === 'reveal') { const cg = $('#cg'); if (cg) { cg.classList.toggle('hide'); el.textContent = cg.classList.contains('hide') ? '글자 보기' : '글자 가리기'; } return; }
+  if (id === 'reopen') return void openCatalog();
+  if (id === 'reveal') {
+    const cg = $('#cg'); if (!cg) return;
+    const hidden = cg.classList.toggle('hide');
+    cg.setAttribute('aria-hidden', String(hidden)); el.setAttribute('aria-expanded', String(!hidden));
+    el.textContent = hidden ? '글자 보기' : '글자 가리기'; return;
+  }
   const inDrawer = drawerPanel.contains(el);
   const a = (!inDrawer && out?.acts?.[id]) || GLOBAL[id];
-  if (inDrawer && a?.to) closeDrawer();
+  if (inDrawer && a?.to && (fixture || !SOON[a.to])) closeDrawer();
   void run(a, el);
 });
 $('#orb-btn').addEventListener('click', () => { closeDrawer(); go('home'); });
@@ -167,8 +239,20 @@ room.addEventListener('input', (e) => {
   clearTimeout(findTimer); findTimer = setTimeout(() => void query(q, 0, false), 250);
 });
 
-function openDrawer() { drawerPanel.innerHTML = drawer(state()); drawerWrap.hidden = false; drawerPanel.focus(); }
-function closeDrawer() { if (drawerWrap.hidden) return; drawerWrap.hidden = true; $('#orb-btn').focus(); }
+const behind = () => [$('header.top'), room];
+function openDrawer(from) {
+  opener = from || (document.activeElement !== document.body ? document.activeElement : null);
+  drawerPanel.innerHTML = drawer(state()); drawerWrap.hidden = false;
+  for (const el of behind()) if (el) el.inert = true;
+  drawerPanel.focus();
+}
+function closeDrawer() {
+  if (drawerWrap.hidden) return;
+  drawerWrap.hidden = true;
+  for (const el of behind()) if (el) el.inert = false;
+  const back = opener && opener.isConnected ? opener : $('#orb-btn'); opener = null;
+  back.focus();
+}
 $('#drawer-dim').addEventListener('click', closeDrawer);
 document.addEventListener('keydown', (e) => {
   const pk = e.target.closest?.('[data-pick]');
@@ -190,7 +274,7 @@ const TOPICS = { status: 'home', changes: 'home', restore: 'restore', signin: 'h
 export function openTopic(topic) {
   const to = TOPICS[topic]; if (!to) return false;
   if (to === 'drawer') { go('home'); openDrawer(); return true; }
-  if (to === 'move') { go(state()?.configured ? 'move-0' : 'move-1'); return true; }
+  if (to === 'move') { if (state()?.configured) go('move-0'); else if (fixture) go('move-1'); else { go('home'); soon(SOON['move-1']); } return true; }
   closeDrawer(); go(to); return true;
 }
 try { window.__TAURI__?.event?.listen?.('backup:open', (e) => { const t = e && typeof e.payload === 'object' ? e.payload?.topic : e?.payload; if (typeof t === 'string') openTopic(t); }); } catch { /* 알림이 없는 판 */ }

@@ -86,7 +86,8 @@ a { color: inherit; }
 .row .k { font: 400 15px/1.35 var(--sans); }
 .row .v { font: 400 16px/1.35 var(--sans); color: var(--paper); font-variant-numeric: tabular-nums; min-width: 0; }
 .row .w { font: 400 13px/1.35 var(--sans); text-align: right; font-variant-numeric: tabular-nums; }
-.row .x, .x { color: var(--bad); }
+/* 상태 색은 점에만 둔다(검정 말씨) — 짚을 값은 밝은 글로 세운다(Fable 그림 지적) */
+.row .x, .x { color: var(--paper); font-weight: 500; }
 .row.sub .k { padding-left: 14px; }
 .row.sub { padding: 9px 0; }
 .row.g { align-items: center; }
@@ -176,7 +177,11 @@ a { color: inherit; }
 .fl.plain .ds { grid-column: 1 / -1; }
 .selbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; padding-top: 14px; font: 400 13px/1.5 var(--sans); color: var(--dim); }
 .selbar b { font-weight: 500; color: var(--paper); }
-.empty { padding: 26px 0; font: 400 14px/1.6 var(--sans); color: var(--dim); }
+.empty { padding: 26px 0 10px; font: 400 14px/1.6 var(--sans); color: var(--dim); }
+/* 되살리기 결과 한 줄 — 상태 색은 점에만 */
+.done { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-top: clamp(14px, 2.2vh, 20px); max-width: 46em; font: 400 14px/1.6 var(--sans); color: var(--soft); }
+.done .dot { align-self: center; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex: none; }
+.done.bad .dot { background: var(--warn); }
 
 /* 진행 줄 */
 .bar { position: relative; height: 1px; margin-top: clamp(20px, 3.4vh, 32px); max-width: 34em; background: var(--hair-2); }
@@ -184,12 +189,13 @@ a { color: inherit; }
 .bar i::after { content: ""; position: absolute; right: 0; top: -4px; width: 1px; height: 9px; background: inherit; }
 
 /* 그래프(시간마다 숨겨진 묶음) — 0부터 세는 양이라 빗금 막대(그래프 문법) */
-.chart { margin-top: 14px; }
+.chart { margin-top: 30px; }
 .bars { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); align-items: end; gap: 3px; height: clamp(150px, 26vh, 230px); border-bottom: 1px solid var(--hair-2); }
 .bars .b { position: relative; height: 0; background: repeating-linear-gradient(135deg, rgba(243, 241, 236, .5) 0 1px, transparent 1px 4px); border-top: 1px solid rgba(243, 241, 236, .7); }
 .bars .b.z { border-top: 0; }
-.bars .b.hot { background: repeating-linear-gradient(135deg, rgba(240, 138, 108, .75) 0 1px, transparent 1px 4px); border-top-color: var(--bad); }
-.bars .b .v { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); font: 400 12px/1 var(--sans); color: var(--bad); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bars .b.hot { background: repeating-linear-gradient(135deg, rgba(243, 241, 236, .95) 0 1px, transparent 1px 3px); border-top-color: var(--paper); }
+/* 큰 막대의 수는 막대 왼쪽 끝에서 오른쪽으로 쓴다 — 가운데 맞춤은 좁은 막대에서 옆 막대에 가렸다 */
+.bars .b .v { position: absolute; bottom: calc(100% + 6px); left: 0; font: 400 12px/1 var(--sans); color: var(--paper); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .bars .b.pickd::before { content: ""; position: absolute; right: -2px; bottom: 0; width: 0; height: clamp(150px, 26vh, 230px); border-right: 1px dashed rgba(243, 241, 236, .7); }
 .bars .b .pk { position: absolute; right: 2px; top: calc(-1 * clamp(150px, 26vh, 230px) + 2px); font: 400 12px/1 var(--sans); color: var(--paper); white-space: nowrap; transform: translateX(-4px); text-align: right; }
 .ticks { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; margin-top: 8px; font: 400 11px/1.3 var(--sans); color: var(--dim); }
@@ -197,7 +203,7 @@ a { color: inherit; }
 .ticks span.e { text-align: right; direction: rtl; }
 .ticks span.s { visibility: visible; }
 .legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-top: 14px; font: 400 13px/1.5 var(--sans); color: var(--dim); }
-.legend b { font-weight: 400; color: var(--bad); }
+.legend b { font-weight: 500; color: var(--paper); }
 
 /* 복구 코드 견본 */
 .code { display: grid; gap: 12px; }
@@ -208,7 +214,7 @@ a { color: inherit; }
 .cg.hide span { color: transparent; background: repeating-linear-gradient(90deg, rgba(243, 241, 236, .28) 0 7px, transparent 7px 10px); background-size: 100% 1px; background-repeat: no-repeat; background-position: 0 60%; }
 
 /* 아래 알림 줄(호출 결과) */
-.note-bar { position: absolute; z-index: 4; left: var(--gut); right: var(--gut); bottom: 18px; margin: 0; font: 400 13px/1.5 var(--sans); color: var(--soft); opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+.note-bar { position: absolute; z-index: 8; left: var(--gut); right: auto; max-width: calc(100% - 2 * var(--gut)); bottom: 18px; margin: 0; padding: 9px 14px; font: 400 13px/1.5 var(--sans); color: var(--paper); background: var(--void); border: 1px solid var(--hair-2); border-radius: 999px; opacity: 0; transition: opacity .4s ease; pointer-events: none; }
 .note-bar.on { opacity: 1; }
 
 /* ── 설정 서랍 ── */
@@ -245,6 +251,8 @@ a { color: inherit; }
   :root { --say: 300 clamp(24px, min(3.2vw, 5.4vh), 40px)/1.26 var(--sans); }
   .then { font-size: 15px; }
   .row { padding: 10px 0; }
+  .rows { margin-top: 18px; }
+  .box { padding: 10px 0 10px 16px; }
   .note { font-size: 13px; }
   .pill { height: 44px; }
 }

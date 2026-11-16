@@ -40,7 +40,7 @@ function serve() {
 // 화면마다 쓸 예시 상태
 const CASES = [
   ['home', 'home'], ['home-run', 'home'], ['home-partial', 'home'], ['home-missing', 'home'], ['home-mass', 'home'], ['home-moved', 'home'],
-  ['home-overdue', 'home'], ['home-credential', 'home'], ['home-health', 'home'], ['home-paused', 'home'], ['home-off', 'home'], ['home-probe', 'home'], ['home-error', 'home'],
+  ['home-overdue', 'home'], ['home-credential', 'home'], ['home-startup', 'home'], ['home-restored', 'home'], ['home-health', 'home'], ['home-paused', 'home'], ['home-off', 'home'], ['home-probe', 'home'], ['home-error', 'home'],
   ['start', 'start-1'], ['home', 'start-2'], ['home', 'start-3'], ['home', 'restore'], ['home-partial', 'partial'], ['home-partial', 'partial-std'],
   ['home', 'move-0'], ['home', 'move-1'], ['home', 'move-2'], ['home', 'move-3'], ['home', 'move-4'],
   ['home', 'undo-1'], ['home', 'undo-2'], ['home', 'undo-3'], ['home', 'lost'], ['home', 'lost-2'], ['home', 'code'], ['home-mass', 'mass-list'], ['home', 'drawer'],
@@ -48,12 +48,13 @@ const CASES = [
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,
   selection: { revision: 3, count: 3, bytes: 6396314 },
+  // source는 엔진의 목록 줄과 같은 꼴(번호 붙은 폴더 이름, engine/src/restore-select.cjs)이다(Fable F6 — 전체 경로를 넣어 차이를 가렸다)
   rows: [
-    { id: '1', name: '견적서_1112_최종.pdf', source: 'C:\\Users\\studio\\Documents', path: '/견적/견적서_1112_최종.pdf', size: 1258291, mtime: '2026-11-12T10:00:00+09:00', selected: true },
-    { id: '2', name: '견적서_1112_최종.hwp', source: 'C:\\Users\\studio\\Documents', path: '/견적/견적서_1112_최종.hwp', size: 90112, mtime: '2026-11-12T10:00:00+09:00', selected: true },
-    { id: '3', name: '견적 참고 사진.jpg', source: 'C:\\Users\\studio\\Pictures', path: '/현장/견적 참고 사진.jpg', size: 5033164, mtime: '2026-11-09T10:00:00+09:00', selected: true },
-    { id: '4', name: '견적 양식.xlsx', source: 'C:\\Users\\studio\\Documents', path: '/양식/견적 양식.xlsx', size: 47104, mtime: '2026-10-02T10:00:00+09:00', selected: false },
-    { id: '5', name: '2026 견적 모음.zip', source: 'D:\\Projects', path: '/보관/2026 견적 모음.zip', size: 222298112, mtime: '2026-09-30T10:00:00+09:00', selected: false },
+    { id: '1', name: '견적서_1112_최종.pdf', source: '01-Documents', path: '/견적/견적서_1112_최종.pdf', size: 1258291, mtime: '2026-11-12T10:00:00+09:00', selected: true },
+    { id: '2', name: '견적서_1112_최종.hwp', source: '01-Documents', path: '/견적/견적서_1112_최종.hwp', size: 90112, mtime: '2026-11-12T10:00:00+09:00', selected: true },
+    { id: '3', name: '견적 참고 사진.jpg', source: '03-Pictures', path: '/현장/견적 참고 사진.jpg', size: 5033164, mtime: '2026-11-09T10:00:00+09:00', selected: true },
+    { id: '4', name: '견적 양식.xlsx', source: '01-Documents', path: '/양식/견적 양식.xlsx', size: 47104, mtime: '2026-10-02T10:00:00+09:00', selected: false },
+    { id: '5', name: '2026 견적 모음.zip', source: '04-Projects', path: '/보관/2026 견적 모음.zip', size: 222298112, mtime: '2026-09-30T10:00:00+09:00', selected: false },
   ],
 };
 
@@ -89,18 +90,23 @@ const CATALOG = {
       await pg.waitForTimeout(120);
       const m = await pg.evaluate(() => {
         const vw = innerWidth, vh = innerHeight, room = document.getElementById('room');
-        const main = [...document.querySelectorAll('#room .pill.main, .drawer .lnk')][0];
+        // 서랍이 열렸으면 서랍 안의 첫 단추를, 아니면 화면의 채운 단추를 잰다(카본 A14 — 서랍 화면에서 뒷화면 단추를 쟀다)
+        const drawerOpen = !document.getElementById('drawer').hidden;
+        const main = drawerOpen ? document.querySelector('.drawer .lnk') : document.querySelector('#room .pill.main');
         const r = main ? main.getBoundingClientRect() : null;
         const over = [...document.querySelectorAll('#stage *')].filter((el) => { const b = el.getBoundingClientRect(); return b.width && (b.right > vw + 1 || b.left < -1) && getComputedStyle(el).position !== 'fixed'; }).map((el) => el.className || el.tagName).slice(0, 5);
         // 작은 글의 대비(검정 바탕) — 글자색 알파를 바탕에 섞어 잰다
         const lum = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
         const low = [];
-        for (const el of document.querySelectorAll('#stage p, #stage span, #stage h4, #stage button, #stage b, #stage em, #stage label')) {
+        // 제 글을 가진 요소는 모두 잰다(카본 A14 — h1~h3 · div · i 같은 것이 빠져 있었다). 서랍이 열리면 가린 뒷화면은 빼고 서랍 안만 본다
+        for (const el of document.querySelectorAll('#stage *')) {
+          if (/^(SCRIPT|STYLE|svg|path|circle|CANVAS)$/i.test(el.tagName)) continue;
           if (!el.textContent.trim() || el.closest('[hidden]') || el.closest('.cg.hide')) continue;
+          if (drawerOpen && !el.closest('.drawer')) continue;
           const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()); if (!own) continue;
           const s = getComputedStyle(el); if (s.visibility === 'hidden' || +s.opacity === 0) continue;
           const m2 = s.color.match(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?/); if (!m2) continue;
-          let bg = [0, 0, 0]; if (el.closest('.pill.main')) bg = [243, 241, 236];
+          let bg = [0, 0, 0]; if (el.closest('.pill.main')) bg = [243, 241, 236]; else if (el.closest('.drawer')) bg = [5, 5, 5];
           const a = m2[4] === undefined ? 1 : +m2[4];
           const rgb = [+m2[1], +m2[2], +m2[3]].map((c, i) => c * a + bg[i] * (1 - a));
           const L1 = 0.2126 * lum(rgb[0]) + 0.7152 * lum(rgb[1]) + 0.0722 * lum(rgb[2]), L2 = 0.2126 * lum(bg[0]) + 0.7152 * lum(bg[1]) + 0.0722 * lum(bg[2]);

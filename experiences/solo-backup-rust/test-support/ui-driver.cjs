@@ -67,16 +67,24 @@ async function wd(method, url, body) {
       try { const png = await wd('GET', `/session/${session}/screenshot`); fs.writeFileSync(path.join(out, `${screen === 'home' ? st : screen}.png`), Buffer.from(png, 'base64')); } catch { /* 숨은 창은 찍히지 않을 수 있다 */ }
     }
     check(`화면 글 검사 ${cases.length}장`, report.screens.every((x) => !x.banned.length), `걸림 ${report.screens.filter((x) => x.banned.length).length}장`);
-    // ⑥ 단추: 실제 상태로 돌아와 설정 서랍 열고 닫기, 예시 상태에서 「파일 되살리기」로 넘어가기
-    await run('window.__wb.live()');
+    // ⑥ 단추: 예시 상태에서 「파일 되살리기」로 넘어갔다 돌아오기
     await run('const [state,now]=arguments;window.__wb.show("home",{state,now,still:true})', [STATES.home, NOW]);
     await run('document.querySelector(\'#room [data-act="restore"]\').click()');
     const moved = await run('return document.getElementById("stage").dataset.screen');
     check('「파일 되살리기」를 누르면 되살리기 화면으로 간다', moved === 'restore', moved);
     await run('document.querySelector(\'#top-r [data-act="home"]\').click()');
-    await run('document.querySelector(\'#top-r [data-act="drawer"]\').click()');
+    // ⑦ 실제 상태로 돌아와 설정 서랍 열고 닫기(카본 A15 — 앞 판은 live() 바로 뒤 예시 상태로 덮어 실제 상태를 보지 못했다).
+    // 설정 전의 첫 시작 화면에는 「설정」 단추가 없어 열기 낱말 folders로 연다
+    await run('window.__wb.live()');
+    const liveScreen = await run('return document.getElementById("stage").dataset.screen');
+    check('실제 상태로 돌아온다', liveScreen === 'start-1' || liveScreen === 'home', liveScreen);
+    await run('window.__wb.open("folders")');
     const drawerOpen = await run('return !document.getElementById("drawer").hidden && document.querySelectorAll(".drawer .dg").length');
-    check('설정 서랍이 열린다', drawerOpen === 3, String(drawerOpen));
+    check('실제 상태에서 설정 서랍이 열린다', drawerOpen === 3, String(drawerOpen));
+    // 실제 상태에서는 예시 화면(예시 복구 코드)을 열지 않고 「준비 중」 한 줄만 띄운다
+    await run('document.querySelector(\'.drawer [data-act="code"]\').click()');
+    const after = await run('return {screen:document.getElementById("stage").dataset.screen,note:document.getElementById("note").textContent}');
+    check('실제 상태에서 「복구 코드 만들기」는 예시 화면을 열지 않는다', after.screen !== 'code' && /준비 중/.test(after.note), JSON.stringify(after));
     await run('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape"}))');
     check('Esc로 설정 서랍이 닫힌다', await run('return document.getElementById("drawer").hidden'));
     // ③ 쪽 오류(앱이 남긴 것)

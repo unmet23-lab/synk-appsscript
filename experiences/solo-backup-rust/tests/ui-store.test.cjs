@@ -65,3 +65,30 @@ test('폴더 고르기를 사람이 닫은 것은 실패가 아니라 CANCELED�
   const api = { getState: async () => ({ ok: true, value: S(1) }), restoreLatest: async () => ({ ok: false, error: '복구를 취소했습니다.' }) };
   assert.deepEqual(await createStore(api).call('restoreLatest'), { ok: false, code: 'CANCELED' });
 });
+
+test('첫 읽기가 실패하고 구독만 되면, 첫 상태가 올 때까지 다시 읽고 그 뒤로는 알림만 받는다(카본 A13)', async () => {
+  const { createStore } = await load();
+  let timer = null, reads = 0, listener = null, seen = [];
+  const api = {
+    getState: async () => (++reads === 1 ? { ok: false } : { ok: true, value: S(reads) }),
+    onState: async (cb) => { listener = cb; return () => {}; },
+  };
+  const store = createStore(api, { onChange: (x) => seen.push(x.failure), setTimer: (fn, ms) => { timer = { fn, ms }; return 1; }, clearTimer: () => { timer = null; } });
+  await store.start();
+  assert.equal(store.state, null);
+  assert.equal(seen.at(-1), 'READ_FAILED'); // 화면은 이 code로 까닭을 쓴다
+  assert.equal(timer.ms, 2000);
+  await timer.fn();
+  assert.equal(store.state.n, 2);
+  assert.equal(timer, null);
+  listener(S(9));
+  assert.equal(store.state.n, 9);
+});
+
+test('코드 없이 오는 거절 둘(놓을 자리 · 마지막 폴더)도 갈래를 가린다(Fable F3)', async () => {
+  const { createStore } = await load();
+  const api = { getState: async () => ({ ok: true, value: S(1) }), restoreLatest: async () => ({ ok: false, error: '모든 작업 폴더·백업 저장소·앱 설정과 분리된 위치를 선택해 주세요.' }), removeSource: async () => ({ ok: false, error: '백업할 폴더를 하나 이상 남겨 주세요.' }) };
+  const store = createStore(api);
+  assert.deepEqual(await store.call('restoreLatest'), { ok: false, code: 'OUTPUT_UNSAFE' });
+  assert.deepEqual(await store.call('removeSource', 'x'), { ok: false, code: 'LAST_FOLDER' });
+});
