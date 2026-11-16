@@ -56,10 +56,18 @@ const ms = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : null);
 const listed = (devices) => (Array.isArray(devices) ? devices.slice(0, 50) : []).filter((d) => d && DEVICE.test(d.id || '')).map((d) => ({
   id: d.id, name: text(d.name, 64) || '', role: d.role === 'write' ? 'write' : 'read', state: text(d.state, 16), createdAt: ms(d.createdAt), lastSeenAt: ms(d.lastSeenAt), current: d.current === true }));
 // A restore as the screen gets it, from the server status (`restore`) or a job (`restore/job`).
+// `undoError`: this restore waits for its choice again because the undo chosen for it failed (with that code).
+const errorCode = (v) => (typeof v === 'string' && /^[A-Z][A-Z_]{1,39}$/.test(v) ? v : null);
 const restoreView = (r) => (r && typeof r === 'object' && JOB.test(r.jobId || r.id || '') ? {
   jobId: r.jobId || r.id, state: RESTORE_STATES.includes(r.state) ? r.state : null, awaitingChoice: r.awaitingChoice === true,
-  at: ms(r.at), byThisDevice: typeof r.byThisDevice === 'boolean' ? r.byThisDevice : null,
-  error: typeof r.error === 'string' && /^[A-Z][A-Z_]{1,39}$/.test(r.error) ? r.error : null, undo: r.undo === true || JOB.test(r.undoOf || '') } : null);
+  at: ms(r.at), finishedAt: ms(r.finishedAt), byThisDevice: typeof r.byThisDevice === 'boolean' ? r.byThisDevice : null,
+  error: errorCode(r.error), undo: r.undo === true || JOB.test(r.undoOf || ''), undoError: errorCode(r.undoError) } : null);
+// How this PC's last restore ended, once it is no longer open (화면 세션 부탁 3): 'continued' — the customer kept the
+// restored files; 'undone' — the undo finished and the files are as before the restore. Kept for a week, until the
+// screen says it showed it (restoreSeen), or until another restore.
+const ENDED_MS = 7 * 24 * 3600 * 1000;
+const endedView = (v) => (v && typeof v === 'object' && JOB.test(v.jobId || '') && ['continued', 'undone'].includes(v.result) && ms(v.at) !== null
+  ? { jobId: v.jobId, result: v.result, at: v.at } : null);
 // A received read key the account lost is named by a fingerprint of its id only (the view holds no key).
 const mark = (k) => (k?.keyId ? crypto.createHash('sha256').update(`solo-work-backup-dead-read-key\0${k.keyId}`).digest('hex').slice(0, 32) : null);
 const writerOf = (w) => (w && typeof w === 'object' && typeof w.name === 'string' ? { id: DEVICE.test(w.id || '') ? w.id : null, name: w.name.slice(0, 64) } : null);
@@ -67,7 +75,7 @@ const writerOf = (w) => (w && typeof w === 'object' && typeof w.name === 'string
 function cleanInfo(v) {
   const o = v && typeof v === 'object' ? v : {};
   return { googleStepRequired: o.googleStepRequired === true, writer: writerOf(o.writer), readKey: READ_KEY.includes(o.readKey) ? o.readKey : null,
-    restore: restoreView(o.restore), left: typeof o.left === 'string' && CODE.test(o.left) ? o.left : null,
+    restore: restoreView(o.restore), restoreEnded: endedView(o.restoreEnded), undoAsked: typeof o.undoAsked === 'string' && JOB.test(o.undoAsked) ? o.undoAsked : null, left: typeof o.left === 'string' && CODE.test(o.left) ? o.left : null,
     needs: Array.isArray(o.needs) ? NEEDS.filter((x) => x !== 'restore' && o.needs.includes(x)) : [], readKeyHeld: false,
     deadReadKey: typeof o.deadReadKey === 'string' && /^[a-f0-9]{32}$/.test(o.deadReadKey) ? o.deadReadKey : null,
     googleRemovalUrl: typeof o.googleRemovalUrl === 'string' && ACCOUNT_PAGE.test(o.googleRemovalUrl) ? o.googleRemovalUrl : null };
@@ -82,27 +90,43 @@ function cleanInfo(v) {
 // open goes — the restore was continued, undone or failed. Whoever writes these settings holds the engine lock (the
 // run, the window), so no restore request of this PC is on its way while this runs. A status without the `restore`
 // field says nothing about it. The answer says what happened to the hold, for the window.
-async function applyStatus(engine, status, deviceId) {
+// A restore-only connection to the account's backup (`prefix`: the device's customer repository, which the window
+// passes) follows its own restore's hold only (화면 세션 부탁 1): its restore took the write seat on the server (설계
+// 2.5 · 4.5), but it writes nothing here, and the seat, the account's limit and the pin stay the writing PC's.
+// The job adopted is an undo when the hold followed the restore itself (the undo's answer was lost); when the hold
+// followed an undo, the job now open is the restore it undid, waiting for its choice again because the undo failed
+// (화면 세션 부탁 2). The window reads the job afterwards for its own word on that.
+async function applyStatus(engine, status, deviceId, prefix = null) {
   const c = engine.config;
-  if (!status || typeof status !== 'object' || !c?.repositoryId || c.mode !== 'backup' || !b2.customerRepository(c.provider?.prefix) || c.host !== deviceId) return false;
-  const d = status.device || {};
-  if (d.state === 'moved') await engine.markMoved({ device: text(d.movedTo?.name, 64) || '', at: new Date().toISOString() });
-  else if (d.state === 'active' && c.movedTo) await engine.clearMoved();
+  if (!status || typeof status !== 'object' || !c?.repositoryId || !b2.customerRepository(c.provider?.prefix)) return false;
+  const writer = c.mode === 'backup' && c.host === deviceId;
+  const reader = c.mode === 'restore' && typeof prefix === 'string' && c.provider.prefix === prefix;
+  if (!writer && !reader) return false;
   const r = status.restore;
-  engine.accountHold = r && (['preparing', 'running'].includes(r.state) || r.awaitingChoice === true) ? 'restore' : status.customer?.overQuota === true ? 'over-quota' : null;
+  if (writer) {
+    const d = status.device || {};
+    if (d.state === 'moved') await engine.markMoved({ device: text(d.movedTo?.name, 64) || '', at: new Date().toISOString() });
+    else if (d.state === 'active' && c.movedTo) await engine.clearMoved();
+    engine.accountHold = r && (['preparing', 'running'].includes(r.state) || r.awaitingChoice === true) ? 'restore' : status.customer?.overQuota === true ? 'over-quota' : null;
+  }
   const followed = {};
   const hold = c.serverRestore;
   if (hold && Object.prototype.hasOwnProperty.call(status, 'restore')) {
     const open = r && typeof r === 'object' && ['preparing', 'running', 'done'].includes(r.state) && JOB.test(r.jobId || '') ? r : null;
     if (open && open.jobId === hold.jobId) { /* still this one */ }
     else if (open && open.byThisDevice === true) {
-      await engine.holdForServerRestore({ jobId: open.jobId, undo: !!hold.jobId });
+      // What the window reads afterwards is kept with the hold, so a run that takes the job up first loses nothing (GPT
+      // restore3 GA1). A lost answer's keys stay to be asked for across takings-up the window has not read yet.
+      const lost = !hold.jobId || hold.adopted?.lost === true;
+      await engine.holdForServerRestore({ jobId: open.jobId, undo: !!hold.jobId && !hold.undo, adopted: { from: hold.jobId || null, fromUndo: !!hold.undo, lost } });
       Object.assign(followed, { adopted: open.jobId, hadJob: !!hold.jobId });
-    } else { await engine.releaseServerRestore(); followed.released = hold.jobId || null; }
+    } else { await engine.releaseServerRestore({ ended: true }); followed.released = hold.jobId || null; }
   }
-  const m = status.move;
-  const until = m && (Number.isSafeInteger(m.until) ? m.until : Date.parse(m.until));
-  await engine.setMovePin(m && m.byThisDevice !== true && /^[a-f0-9]{64}$/.test(m.snapshotId || '') && Number.isFinite(until) ? { snapshotId: m.snapshotId, until: new Date(until).toISOString() } : null);
+  if (writer) {
+    const m = status.move;
+    const until = m && (Number.isSafeInteger(m.until) ? m.until : Date.parse(m.until));
+    await engine.setMovePin(m && m.byThisDevice !== true && /^[a-f0-9]{64}$/.test(m.snapshotId || '') && Number.isFinite(until) ? { snapshotId: m.snapshotId, until: new Date(until).toISOString() } : null);
+  }
   return followed;
 }
 // One run as the server's measurement intake takes it (서버API.md 「측정 받는 꼴」): fixed words and whole numbers
@@ -186,13 +210,15 @@ class Account {
     const held = !!hold || this.engine.accountHold === 'restore';
     const v = this.info.restore && (!hold?.jobId || this.info.restore.jobId === hold.jobId) ? this.info.restore : null;
     const restore = held || v ? { hold: held, jobId: hold?.jobId || v?.jobId || null, state: v?.state || null, awaitingChoice: !!v?.awaitingChoice, at: v?.at ?? null,
-      byThisDevice: v ? v.byThisDevice : hold ? true : null, error: v?.error || null, undo: !!hold?.undo || !!v?.undo } : null;
+      finishedAt: v?.finishedAt ?? null, byThisDevice: v ? v.byThisDevice : hold ? true : null, error: v?.error || null,
+      undo: !!hold?.undo || !!v?.undo, undoError: v?.undoError || null } : null;
+    const ended = this.info.restoreEnded && Date.now() - this.info.restoreEnded.at < ENDED_MS ? this.info.restoreEnded : null;
     return { available: !!this.auth, signedIn: !!g.connected, email: g.email || null, connected: p.connected, role: p.role, deviceId: p.deviceId,
       device: this.deviceName, writer: this.info.writer?.name || null, googleStepRequired: this.info.googleStepRequired || p.googleStepRequired === true, needs,
       // This PC's earlier devices of the account (same install, newest first): the screen says 「이 PC」 for them.
       sameInstall: (Array.isArray(p.sameInstall) ? p.sameInstall : []).filter((id) => DEVICE.test(id || '')).slice(0, 5),
       googleRemovalUrl: this.info.googleStepRequired ? this.info.googleRemovalUrl : null,
-      readKey: this.info.readKey, readKeyPending: this.info.readKeyHeld, left: this.info.left, restore,
+      readKey: this.info.readKey, readKeyPending: this.info.readKeyHeld, left: this.info.left, restore, restoreEnded: ended,
       envelope: e.verified ? { verifiedAt: e.verified.verifiedAt } : null, envelopeInvalid: !!e.invalid, damaged: [...this.damaged] };
   }
   need({ device = true } = {}) {
@@ -299,6 +325,14 @@ class Account {
     const c = this.engine.config, p = this.provision.state();
     if (c.host !== p.deviceId || c.provider?.prefix !== p.repository?.prefix) throw failure('OTHER_BACKUP');
   }
+  // The account's backup as this PC holds it for a restore (4.5): the one it writes, or the one a restore-only
+  // connection reads (its host is the writing PC's number). A clean PC so puts back what an infected writer's backup
+  // lost; the server moves the write seat to it with the request (설계 2.5 · 4.5, 화면 세션 부탁 1).
+  restoreHere() {
+    const c = this.engine.config, p = this.provision.state();
+    if (!c?.repositoryId || !b2.customerRepository(c.provider?.prefix) || c.provider.prefix !== p.repository?.prefix) return false;
+    return c.mode === 'restore' || c.host === p.deviceId;
+  }
   // The read key this device received goes into a new envelope, which is read back, and only then is the key
   // confirmed to the server (it retires the old one after that). 2.4 (5)(나): after a loss report the customer
   // first removes the lost device's Google access — that screen cannot be skipped, whatever this window remembers:
@@ -346,8 +380,10 @@ class Account {
   async finishKeys() {
     const e = this.engine;
     try {
-      const credentials = await this.provision.writeCredentials();
-      if (credentials && e.config?.mode === 'backup' && e.cloudCredentials?.keyId !== credentials.keyId) await e.updateCloudCredentials(credentials);
+      // Only a writing PC uses the write key: a restore-only connection's restore brought one too (the seat moved to it
+      // on the server), and it does not wait for that key to become usable.
+      const credentials = e.config?.mode === 'backup' ? await this.provision.writeCredentials() : null;
+      if (credentials && e.cloudCredentials?.keyId !== credentials.keyId) await e.updateCloudCredentials(credentials);
       await this.publishEnvelope({ googleStepDone: false });
       this.info.left = null;
     } catch (error) { this.info.left = CODE.test(error.code || '') ? error.code : 'ENVELOPE'; }
@@ -424,16 +460,25 @@ class Account {
     if (!Number.isSafeInteger(at)) throw failure('BAD_INPUT');
     const e = this.engine;
     if (!e.config?.repositoryId) throw failure('NOT_SIGNED_IN');
-    this.ours();
+    if (!this.restoreHere()) throw failure('OTHER_BACKUP');
     // A hold already here belongs to a restore asked before (its answer lost, or awaiting the choice): a refusal of this
     // new request says nothing about that one, so only a hold this request wrote goes (GPT workbackup-account GA1).
     const earlier = !!e.config.serverRestore;
     if (!earlier) await e.holdForServerRestore();
     let r;
     try { r = await this.google(() => this.provision.restoreRun(at)); }
-    catch (error) { if (!earlier && DEFINITE.has(error.code)) await e.releaseServerRestore(); throw error; }
+    catch (error) {
+      if (!earlier && DEFINITE.has(error.code)) await e.releaseServerRestore();
+      // An answer that never came may have started a new restore: an earlier one's end is not told under it (GPT
+      // restore3-r4 GA1).
+      else if (!DEFINITE.has(error.code)) { this.info.restoreEnded = null; await e.clearRestoreReleased(); await this.keep(); }
+      throw error;
+    }
     await e.holdForServerRestore({ jobId: r.jobId });
-    this.info.restore = { jobId: r.jobId, state: 'running', awaitingChoice: false, at, byThisDevice: true, error: null, undo: false };
+    // An earlier restore's end not read yet is not told after this one began.
+    await e.clearRestoreReleased();
+    this.info.restore = { jobId: r.jobId, state: 'running', awaitingChoice: false, at, finishedAt: null, byThisDevice: true, error: null, undo: false, undoError: null };
+    this.info.restoreEnded = null;
     // The server gave new keys with the job. The job has started either way, so its number always comes back; a step
     // that could not be done here is named (`left`).
     const left = await this.finishKeys();
@@ -449,20 +494,82 @@ class Account {
     if (!this.auth || !p.connected) return this.state();
     const status = await this.provision.status();
     const e = this.engine;
-    const followed = await applyStatus(e, status, p.deviceId);
+    await applyStatus(e, status, p.deviceId, p.repository?.prefix);
     await this.heard(status);
     if (status.writer && typeof status.writer === 'object') this.info.writer = writerOf(status.writer);
-    // The restore as the server tells it. A hold that went is read once more for how its job ended; a failure stays
-    // to be read until another restore (the screen offers 「다시 되돌리기」, INTERRUPTED included).
-    let view = Object.prototype.hasOwnProperty.call(status, 'restore') ? restoreView(status.restore) : this.info.restore;
-    if (followed?.released) { try { const end = restoreView(await this.provision.restoreJob(followed.released)); if (end?.state === 'failed') view = end; } catch { /* the job is not read again */ } }
+    // The restore as the server tells it. What the status changed in the hold is read here from the settings, whoever
+    // applied it — this look or a run before it (GPT restore3 GA1). A hold that went is read once more for how its job
+    // ended: a failure stays to be read until another restore (the screen offers 「다시 되돌리기」, INTERRUPTED
+    // included), and an end that was kept or undone is told once (restoreEnded).
+    const told = Object.prototype.hasOwnProperty.call(status, 'restore');
+    let view = told ? restoreView(status.restore) : this.info.restore;
+    // A restore whose answer was lost: its keys never reached this PC (the server replaced the write keys; a
+    // restore-only connection uses the read key only).
+    const askKeys = () => { this.info.needs = [...new Set([...this.info.needs, ...(e.config?.mode === 'backup' ? ['write-key'] : []), 'read-key'])]; };
+    const released = e.config?.restoreReleased;
+    if (released) {
+      let read = !released.jobId;
+      if (released.jobId) {
+        try {
+          const end = restoreView({ ...(await this.provision.restoreJob(released.jobId)), jobId: released.jobId });
+          read = true;
+          if (end?.state === 'failed') view = end;
+          else if (end?.state === 'continued') this.ended(end.jobId, end.undo ? 'undone' : 'continued');
+          // The restore itself was undone and no restore is open any more: its undo finished before any look took the
+          // undo's job up — an undo whose answer was lost (GPT restore3-r3 GA1). A failed undo would have opened it
+          // again, and one still running would be open.
+          else if (end?.state === 'undone' && told && !status.restore) this.ended(end.jobId, 'undone');
+        } catch (error) { if (error.code === 'NOT_FOUND') read = true; /* else the next look reads it */ }
+      }
+      // A lost answer's restore that ended before this window took it up (GPT restore3-r2 GA1).
+      if (released.lost && (!released.jobId || p.jobId !== released.jobId)) askKeys();
+      if (read) await e.clearRestoreReleased(released.jobId);
+    }
+    // A job taken up from the status is read for its own word: whether it is an undo (the hold is set right), and,
+    // when the hold followed an undo, how that undo failed (the restore it undid waits for its choice again).
+    const hold = e.config?.serverRestore;
+    const taken = hold?.adopted && hold.jobId ? { jobId: hold.jobId, ...hold.adopted } : null;
+    // Keys a taken-up request brought that reached this PC after all (its answer was stored, the hold was not).
+    let keysHere = false;
+    if (taken) {
+      let undo = !!hold.undo, read = false;
+      try {
+        const job = restoreView({ ...(await this.provision.restoreJob(taken.jobId)), jobId: taken.jobId });
+        read = true;
+        if (job) { undo = job.undo; view = { ...job, byThisDevice: true }; }
+      } catch { /* the status's word stands until the next look */ }
+      if (taken.fromUndo && taken.from && !undo && view?.jobId === taken.jobId) {
+        // The server opens the undone restore again only when its undo failed; an answer that never came says so too.
+        let undoError = 'FAILED';
+        try {
+          const u = await this.provision.restoreJob(taken.from);
+          if (u?.undoOf !== taken.jobId || u.state !== 'failed') undoError = null; else undoError = errorCode(u.error) || 'FAILED';
+        } catch { /* as failed */ }
+        if (undoError) view = { ...view, undoError };
+      }
+      // A job of this PC open again: an earlier restore's end is no longer the news.
+      if (this.info.restoreEnded && this.info.restoreEnded.jobId !== taken.jobId) this.info.restoreEnded = null;
+      if (taken.lost && p.jobId !== taken.jobId) askKeys();
+      keysHere = taken.lost && p.jobId === taken.jobId;
+      if (read) await e.holdForServerRestore({ jobId: taken.jobId, undo });
+    }
+    // 「되돌리기 취소」 whose answer never came (GPT restore3-r2 GA2): the restore still waiting for its choice under
+    // the same number means no undo happened — the request never reached the server, or its undo failed before this
+    // look. An undo the server started is taken up from the status like any job.
+    const asked = this.info.undoAsked;
+    if (asked && told) {
+      if (view?.jobId === asked && view.awaitingChoice && !view.undoError) view = { ...view, undoError: 'FAILED' };
+      this.info.undoAsked = null;
+    }
+    // A failed undo is said until that restore's choice (or until it is no longer open).
+    if (view && !view.undoError && this.info.restore?.jobId === view.jobId && this.info.restore.undoError) view = { ...view, undoError: this.info.restore.undoError };
     if (!view && this.info.restore?.state === 'failed') view = this.info.restore;
     this.info.restore = view;
-    // A restore whose answer was lost: its keys never reached this PC (the server replaced the write keys).
-    if (followed?.adopted && !followed.hadJob && p.jobId !== followed.adopted) this.info.needs = [...new Set([...this.info.needs, 'write-key', 'read-key'])];
     if (e.config?.repositoryId && b2.customerRepository(e.config.provider?.prefix) && this.auth.getState().connected) {
-      const keys = (followed?.adopted && p.jobId === followed.adopted) || this.info.left || (status.readKey === 'unconfirmed' && await this.fresh());
+      const keys = keysHere || this.info.left || (status.readKey === 'unconfirmed' && await this.fresh());
       if (keys && !this.info.googleStepRequired) await this.finishKeys();
+      // Keys that must wait for the Google step are named, so a later look finishes them once it is done.
+      else if (keysHere) this.info.left = 'GOOGLE_STEP';
       else if (recheck && this.envelope.getState().verified) {
         const checked = await this.envelope.recheck({ repositoryId: e.config.repositoryId, password: e.secret });
         if (checked.verified?.verifiedAt) await e.markEnvelope({ verifiedAt: checked.verified.verifiedAt });
@@ -479,7 +586,8 @@ class Account {
     const hold = this.engine.config?.serverRestore;
     if (hold?.jobId === jobId || this.info.restore?.jobId === jobId) {
       const v = restoreView({ ...r, jobId });
-      if (v) { this.info.restore = { ...v, byThisDevice: this.info.restore?.jobId === jobId ? this.info.restore.byThisDevice : true }; await this.keep(); }
+      const same = this.info.restore?.jobId === jobId;
+      if (v) { this.info.restore = { ...v, byThisDevice: same ? this.info.restore.byThisDevice : true, undoError: same ? this.info.restore.undoError || null : null }; await this.keep(); }
     }
     return r;
   }
@@ -488,20 +596,38 @@ class Account {
   async restoreChoose(jobId, choice) {
     this.need();
     if (typeof jobId !== 'string' || !JOB.test(jobId) || !['continue', 'undo'].includes(choice)) throw failure('BAD_INPUT');
-    const r = await this.google(() => this.provision.restoreChoose(jobId, choice));
+    let r;
+    try { r = await this.google(() => this.provision.restoreChoose(jobId, choice)); }
+    catch (error) {
+      // An undo whose answer never came may have started on the server: the window's next look tells which.
+      if (choice === 'undo' && !DEFINITE.has(error.code)) { this.info.undoAsked = jobId; await this.keep(); }
+      throw error;
+    }
+    this.info.undoAsked = null;
     const e = this.engine;
     const next = choice === 'undo' && JOB.test(r?.jobId || '') ? r.jobId : null;
-    if (next && e.config?.repositoryId && e.config.mode === 'backup') {
+    const undoing = next ? { jobId: next, state: 'running', awaitingChoice: false, at: null, finishedAt: null, byThisDevice: true, error: null, undo: true, undoError: null } : null;
+    // The undo holds the PC that holds this backup for a restore (the writer, or a restore-only connection whose restore
+    // it was): a hold the status cannot follow would stop the backups for good.
+    if (next && this.restoreHere()) {
       await e.holdForServerRestore({ jobId: next, undo: true });
-      this.info.restore = { jobId: next, state: 'running', awaitingChoice: false, at: null, byThisDevice: true, error: null, undo: true };
+      this.info.restore = undoing;
     } else {
       await e.releaseServerRestore();
       // The choice ends the wait the last status reported; the next look reads the server again.
       if (e.accountHold === 'restore') e.accountHold = null;
-      this.info.restore = next ? { jobId: next, state: 'running', awaitingChoice: false, at: null, byThisDevice: true, error: null, undo: true } : null;
+      this.info.restore = undoing;
     }
+    if (choice === 'continue' && r?.state === 'continued') this.ended(jobId, 'continued');
     await this.keep();
-    return next ? { ok: true, jobId: next } : { ok: !!r.ok };
+    return next ? { ok: true, jobId: next } : { ok: r?.state === 'continued' || r?.ok === true };
+  }
+  ended(jobId, result) { this.info.restoreEnded = { jobId, result, at: Date.now() }; }
+  // The screen told the customer how the restore ended (restoreEnded): it is not told again.
+  async restoreSeen(jobId) {
+    if (typeof jobId !== 'string' || !JOB.test(jobId)) throw failure('BAD_INPUT');
+    if (this.info.restoreEnded?.jobId === jobId) { this.info.restoreEnded = null; await this.keep(); }
+    return this.state();
   }
 }
 module.exports = { Account, MESSAGES, applyStatus, telemetryRun, APP_VERSION };

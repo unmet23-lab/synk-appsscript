@@ -147,6 +147,8 @@ const REMOVED_KEEP = 30 * DAY;
 const FILL_SPACING = 4 * 3600000;
 /** A taken-out folder's entry in the settings: its path, when it was taken out, and — once a cleanup has seen it —
  *  that cleanup's time (`since`), from which the 30 days count. */
+const adoptedMark = (a) => !!a && typeof a === 'object' && (a.from === null || (typeof a.from === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(a.from)))
+  && typeof a.fromUndo === 'boolean' && typeof a.lost === 'boolean';
 const removedEntry = r => typeof r?.path === 'string' && Number.isFinite(Date.parse(r.at)) && (r.since === undefined || Number.isFinite(Date.parse(r.since)));
 /** Unreadable items kept for a partial snapshot's list; past this the list says it is cut short. */
 const UNREADABLE_MAX = 200000;
@@ -270,7 +272,10 @@ class BackupEngine extends EventEmitter {
       const c = this.config;
       if (c.schema !== 1 || !['backup', 'restore'].includes(c.mode) || !/^[a-f0-9-]{36}$/.test(c.vaultId) || !Array.isArray(c.sources) || (c.repositoryId !== null && !isId(c.repositoryId))
         || (c.removedSources != null && !(Array.isArray(c.removedSources) && c.removedSources.every(removedEntry))) || (c.host != null && !DEVICE.test(c.host))
-        || (c.serverRestore != null && !(c.serverRestore && typeof c.serverRestore.since === 'string' && (c.serverRestore.jobId === undefined || /^[A-Za-z0-9_-]{1,64}$/.test(c.serverRestore.jobId)) && (c.serverRestore.undo === undefined || typeof c.serverRestore.undo === 'boolean')))
+        || (c.serverRestore != null && !(c.serverRestore && typeof c.serverRestore.since === 'string' && (c.serverRestore.jobId === undefined || /^[A-Za-z0-9_-]{1,64}$/.test(c.serverRestore.jobId)) && (c.serverRestore.undo === undefined || typeof c.serverRestore.undo === 'boolean')
+          && (c.serverRestore.adopted === undefined || adoptedMark(c.serverRestore.adopted))))
+        || (c.restoreReleased != null && !(c.restoreReleased && typeof c.restoreReleased.at === 'string' && (c.restoreReleased.lost === undefined || c.restoreReleased.lost === true)
+          && (c.restoreReleased.jobId === undefined ? c.restoreReleased.lost === true : /^[A-Za-z0-9_-]{1,64}$/.test(c.restoreReleased.jobId))))
         || (c.nextSources != null && !(c.mode === 'restore' && Array.isArray(c.nextSources) && c.nextSources.length <= 30 && c.nextSources.every(p => typeof p === 'string')))
         || (c.movedTo != null && !(c.movedTo && typeof c.movedTo.device === 'string' && c.movedTo.device.length <= 64 && typeof c.movedTo.at === 'string'))
         || (c.movePin != null && !(c.movePin && isId(c.movePin.snapshotId) && typeof c.movePin.until === 'string'))) throw new Error('설정 형식이 올바르지 않습니다.');
@@ -680,11 +685,17 @@ class BackupEngine extends EventEmitter {
   // A server restore (4.5 `restore/run`) is written down before it is asked for and kept with its job's number until
   // the restore is no longer open (the choice, an undo that ended, a failure): until then no backup or clean-up runs
   // here (the server is putting hidden files back). An undo is a new job under the same hold.
-  async holdForServerRestore({ jobId, undo } = {}) {
+  // `adopted`: the server status showed this PC's job under another number and the hold took it up (account
+  // applyStatus, from the run or the window — GPT restore3 GA1). It names the job followed before (`from`, null for a
+  // request whose answer was lost), whether that was an undo, and whether a lost answer's keys are still to come
+  // (`lost`). The window reads the jobs once and writes the hold again without it.
+  async holdForServerRestore({ jobId, undo, adopted } = {}) {
     if (!this.config?.repositoryId) throw new Error('백업 준비를 먼저 완료해 주세요.');
     if (jobId !== undefined && (typeof jobId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(jobId))) throw new Error('되돌리기 작업 번호가 올바르지 않습니다.');
+    if (adopted !== undefined && (!jobId || !adoptedMark(adopted))) throw new Error('되돌리기 작업 번호가 올바르지 않습니다.');
     const since = this.config.serverRestore?.since || new Date(this.now()).toISOString();
-    this.config.serverRestore = { since, ...(jobId ? { jobId } : {}), ...(undo ? { undo: true } : {}) };
+    this.config.serverRestore = { since, ...(jobId ? { jobId } : {}), ...(undo ? { undo: true } : {}),
+      ...(adopted ? { adopted: { from: adopted.from, fromUndo: adopted.fromUndo, lost: adopted.lost } } : {}) };
     await this.save(); return this.getState();
   }
   // A restore-only connection to the account's backup chooses the folders this PC backs up once it takes the write
@@ -717,7 +728,24 @@ class BackupEngine extends EventEmitter {
     if (next) this.config.movePin = next; else delete this.config.movePin;
     await this.save(); return this.getState();
   }
-  async releaseServerRestore() { if (this.config?.serverRestore) { delete this.config.serverRestore; await this.save(); } return this.getState(); }
+  // `ended`: the status no longer shows the hold's job open (account applyStatus). Its number stays (`restoreReleased`)
+  // until the window read how it ended — kept, undone or failed — whoever let the hold go (GPT restore3 GA1). A hold
+  // of a request whose answer was lost says so (`lost`, kept across releases the window has not read): the keys it
+  // brought never came, and the window asks for them again (GPT restore3-r2 GA1).
+  async releaseServerRestore({ ended = false } = {}) {
+    const hold = this.config?.serverRestore;
+    if (!hold) return this.getState();
+    delete this.config.serverRestore;
+    const lost = !hold.jobId || hold.adopted?.lost === true || this.config.restoreReleased?.lost === true;
+    if (ended && (hold.jobId || lost)) this.config.restoreReleased = { ...(hold.jobId ? { jobId: hold.jobId } : {}), at: new Date(this.now()).toISOString(), ...(lost ? { lost: true } : {}) };
+    await this.save(); return this.getState();
+  }
+  // The window read the released job (`jobId`), or a new restore starts (none given): the number goes.
+  async clearRestoreReleased(jobId) {
+    if (!this.config?.restoreReleased || (jobId !== undefined && this.config.restoreReleased.jobId !== jobId)) return this.getState();
+    delete this.config.restoreReleased;
+    await this.save(); return this.getState();
+  }
   async setAutomatic(enabled) {
     if (this.job) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
     if (typeof enabled !== 'boolean' || this.config?.mode !== 'backup' || !this.config.repositoryId) throw new Error('자동 백업을 설정할 수 없습니다.');

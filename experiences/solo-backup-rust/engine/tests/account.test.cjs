@@ -59,7 +59,7 @@ function fakeProvision(log, { role = 'write', readKey = RK, writer = null, googl
     async restorePlan(at) { return { suggestions: [], plan: null, oldestAt: at ?? 0 }; },
     async restoreRun(at) { log.push(['restoreRun', at, this.hold?.()]); if (this.restoreError) throw this.restoreError; this.write = WK2; this.pending = RK2; return { jobId: 'job1', readKey: RK2 }; },
     async restoreJob(id) { return this.jobs?.[id] ?? { id, state: 'done' }; },
-    async restoreChoose(jobId, choice) { log.push(['choose', jobId, choice]); return this.chooseAnswer ?? { ok: true }; },
+    async restoreChoose(jobId, choice) { log.push(['choose', jobId, choice]); return this.chooseAnswer ?? (choice === 'continue' ? { state: 'continued' } : { ok: true }); },
     async status() { return this.statusValue ?? { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' }; },
     // As the real client: the server removes every read key of the account, the one kept here stays (GPT ui2 GA1).
     async lost() { log.push(['lost']); return { next: 'other' }; },
@@ -412,7 +412,7 @@ test('되돌리기 상태: the hold keeps its job, an undo keeps it on the new j
   const at = Date.now() - 60000;
   assert.deepEqual(await f.account.restoreRun(at), { jobId: 'job1' });
   assert.deepEqual(e.config.serverRestore.jobId, 'job1');
-  assert.deepEqual(f.account.state().restore, { hold: true, jobId: 'job1', state: 'running', awaitingChoice: false, at, byThisDevice: true, error: null, undo: false });
+  assert.deepEqual(f.account.state().restore, { hold: true, jobId: 'job1', state: 'running', awaitingChoice: false, at, finishedAt: null, byThisDevice: true, error: null, undo: false, undoError: null });
   // Closed and opened again: the settings keep the hold and its number, the view keeps what the server said.
   const reopened = new Account({ root: f.root, secretStore, engine: f.make(), appVersion: '0.7.0', make: { auth: () => ({ async open() {}, getState: () => ({ available: true, connected: true, email: null }) }), provision: () => f.provision, envelope: () => f.envelope } });
   await reopened.engine.open(); await reopened.open();
@@ -441,11 +441,12 @@ test('되돌리기 상태: the hold keeps its job, an undo keeps it on the new j
   // A failed restore: the window's look lets the hold go and keeps how it ended for the screen.
   f.provision.chooseAnswer = null;
   await f.account.restoreRun(at);
-  f.provision.jobs = { job1: { id: 'job1', state: 'failed', at, error: 'INTERRUPTED', awaitingChoice: false } };
+  f.provision.jobs = { job1: { id: 'job1', state: 'failed', at, finishedAt: at + 5000, error: 'INTERRUPTED', awaitingChoice: false }, job4: { id: 'job4', state: 'running', at } };
   f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
   await f.account.refresh();
   assert.equal(e.config.serverRestore, undefined);
-  assert.deepEqual(f.account.state().restore, { hold: false, jobId: 'job1', state: 'failed', awaitingChoice: false, at, byThisDevice: null, error: 'INTERRUPTED', undo: false });
+  assert.deepEqual(f.account.state().restore, { hold: false, jobId: 'job1', state: 'failed', awaitingChoice: false, at, finishedAt: at + 5000, byThisDevice: null, error: 'INTERRUPTED', undo: false, undoError: null });
+  assert.equal(f.account.state().restoreEnded, null, 'a failure is the restore view\'s, not an end to tell');
   await f.account.refresh();
   assert.equal(f.account.state().restore.error, 'INTERRUPTED', 'a failure stays until another restore');
 
@@ -466,6 +467,255 @@ test('되돌리기 상태: the hold keeps its job, an undo keeps it on the new j
   assert.equal(e.config.serverRestore, undefined); assert.equal(e.accountHold, 'restore');
   assert.equal(f.account.state().restore.byThisDevice, false);
   assert.equal(f.account.holding(), true);
+});
+
+const reopen = async (f) => {
+  const a = new Account({ root: f.root, secretStore, engine: f.make(), appVersion: '0.7.0', make: { auth: () => ({ async open() {}, getState: () => ({ available: true, connected: true, email: null }) }), provision: () => f.provision, envelope: () => f.envelope } });
+  await a.engine.open(); await a.open(); return a;
+};
+
+test('복구 전용 연결 PC의 되돌리기: the request takes the seat on the server; this PC holds and follows it, and only reads (화면 부탁 1)', async () => {
+  const { applyStatus } = require('../src/account.cjs');
+  const repo = restic({ password: OTHER_PASSWORD, snapshots: [{ id: 'b'.repeat(64), time: '2026-11-15T00:00:00.000Z', hostname: OLD, tags: [APP, `vault:${customerVault(PREFIX)}`, VERIFIED] }] });
+  const f = await fixture({ repo, provision: { role: 'read', readKey: null, writer: { id: OLD, name: '옛 노트북' } }, envelope: { repository: { ...REPO }, repositoryId: ID, password: OTHER_PASSWORD, readKey: RK } });
+  await f.account.signIn(); await f.account.openBackup();
+  const e = f.engine;
+  assert.equal(e.config.mode, 'restore'); assert.equal(e.config.host, OLD);
+  let waited = false;
+  f.provision.writeCredentials = async () => { waited = true; return WK2; };
+  const at = Date.now() - 60000;
+  assert.deepEqual(await f.account.restoreRun(at), { jobId: 'job1' });
+  assert.equal(waited, false, 'a reading PC does not wait for the write key it does not use');
+  assert.equal(e.config.mode, 'restore'); assert.equal(e.config.host, OLD);
+  assert.deepEqual(e.cloudCredentials, RK2, 'it reads with the new read key, which went into the envelope');
+  assert.deepEqual(f.log.filter((x) => x[0] === 'publish').at(-1)[1].readKey, RK2);
+  assert.equal(e.config.serverRestore.jobId, 'job1');
+  assert.equal(f.account.state().restore.hold, true); assert.equal(f.account.holding(), true);
+  // The run's status (no repository given) leaves a reading PC alone; the window's follows its hold only — the seat,
+  // the limit and the pin stay the writing PC's.
+  assert.equal(await applyStatus(e, { device: { state: 'moved', movedTo: { name: 'x' } }, restore: null }, ME), false);
+  assert.equal(e.config.serverRestore.jobId, 'job1');
+  const busy = { device: { state: 'moved', movedTo: { name: 'x' } }, restore: { jobId: 'job1', state: 'done', awaitingChoice: true, at, byThisDevice: true }, customer: { overQuota: true }, move: { snapshotId: 'd'.repeat(64), until: Date.now() + 60000, byThisDevice: false } };
+  assert.deepEqual(await applyStatus(e, busy, ME, PREFIX), {});
+  assert.equal(e.config.movedTo, undefined); assert.equal(e.config.movePin, undefined); assert.ok(!e.accountHold);
+  assert.equal(await applyStatus(e, busy, ME, 'c/abcdefghijklmnoq/r'), false, 'another customer\'s repository');
+  // 「되돌리기 취소」 holds it on the undo job, and the window lets it go once the undo ended.
+  f.provision.chooseAnswer = { state: 'undone', jobId: 'job2' };
+  assert.deepEqual(await f.account.restoreChoose('job1', 'undo'), { ok: true, jobId: 'job2' });
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job2', undo: true });
+  f.provision.jobs = { job2: { id: 'job2', state: 'continued', at, undoOf: 'job1' } };
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.equal(e.config.serverRestore, undefined);
+  assert.deepEqual({ ...f.account.state().restoreEnded, at: 0 }, { jobId: 'job2', result: 'undone', at: 0 });
+  // A lost answer on a reading PC asks again for the read key only.
+  f.provision.restoreError = Object.assign(new Error('offline'), { code: 'NETWORK' });
+  await assert.rejects(f.account.restoreRun(at), (x) => x.code === 'NETWORK');
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job3', state: 'running', at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  f.provision.jobs.job3 = { id: 'job3', state: 'running', at };
+  await f.account.refresh();
+  assert.equal(e.config.serverRestore.jobId, 'job3'); assert.deepEqual(f.account.state().needs, ['read-key']);
+
+  // A backup this PC writes under another device's number is still not restored from here, before any sign-in.
+  const w = await fixture();
+  await w.account.signIn(); await w.account.startProtection({ sources: [w.source] });
+  w.engine.config.host = OLD;
+  await assert.rejects(w.account.restoreRun(at), (x) => x.code === 'OTHER_BACKUP');
+  assert.equal(w.log.some((x) => x[0] === 'restoreRun'), false); assert.equal(w.engine.config.serverRestore, undefined);
+});
+
+test('되돌리기 취소가 실패하면: the restore waits for its choice again, is not marked as an undo, and the failure is said until the choice (화면 부탁 2)', async () => {
+  const { applyStatus } = require('../src/account.cjs');
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const e = f.engine, at = Date.now() - 60000;
+  await f.account.restoreRun(at);
+  f.provision.chooseAnswer = { state: 'undone', jobId: 'job2' };
+  await f.account.restoreChoose('job1', 'undo');
+  assert.equal(e.config.serverRestore.undo, true);
+  f.provision.chooseAnswer = null;
+  // The undo failed: the server opens job1 again, waiting for its choice.
+  f.provision.jobs = { job1: { id: 'job1', state: 'done', awaitingChoice: true, at, finishedAt: at + 1000 }, job2: { id: 'job2', state: 'failed', at, error: 'INTERRUPTED', undoOf: 'job1' } };
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job1', state: 'done', awaitingChoice: true, at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job1' });
+  let s = f.account.state().restore;
+  assert.deepEqual([s.jobId, s.awaitingChoice, s.undo, s.undoError, s.finishedAt], ['job1', true, false, 'INTERRUPTED', at + 1000]);
+  assert.deepEqual(f.account.state().needs, [], 'its keys came with the restore');
+  await f.account.refresh();
+  assert.equal(f.account.state().restore.undoError, 'INTERRUPTED', 'said until the choice');
+  await f.account.restoreJob('job1');
+  assert.equal(f.account.state().restore.undoError, 'INTERRUPTED');
+  assert.equal((await reopen(f)).state().restore.undoError, 'INTERRUPTED', 'kept when the window opens again');
+  // The run looks first (GPT restore3 GA1): it takes job1 up without reading a job and does not mark it as an undo;
+  // what it changed stays in the settings, and the window's look afterwards still says how the undo failed.
+  e.config.serverRestore = { since: new Date().toISOString(), jobId: 'job2', undo: true }; await e.save();
+  f.account.info.restore = null;
+  await applyStatus(e, f.provision.statusValue, ME);
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job1', adopted: { from: 'job2', fromUndo: true, lost: false } });
+  assert.deepEqual((await (async () => { const x = f.make(); await x.open(); return x; })()).config.serverRestore.adopted, { from: 'job2', fromUndo: true, lost: false }, 'the settings keep it');
+  await f.account.refresh();
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job1' }, 'read once, then written again without it');
+  s = f.account.state().restore;
+  assert.deepEqual([s.jobId, s.awaitingChoice, s.undo, s.undoError], ['job1', true, false, 'INTERRUPTED']);
+  // An undo whose answer was lost: the status shows the undo job, taken up as an undo, and its own word agrees.
+  f.provision.jobs.job3 = { id: 'job3', state: 'running', at, undoOf: 'job1' };
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job3', state: 'running', at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job3', undo: true });
+  s = f.account.state().restore; assert.deepEqual([s.jobId, s.undo, s.undoError], ['job3', true, null]);
+  // The job's word wins over the guess: a job taken up as an undo that is not one is set right.
+  e.config.serverRestore = { since: new Date().toISOString(), jobId: 'job1' };
+  f.provision.jobs.job5 = { id: 'job5', state: 'running', at };
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job5', state: 'running', at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job5' });
+  assert.equal(f.account.state().restore.undo, false);
+  // The choice ends what was said.
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job5', state: 'done', awaitingChoice: true, at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  await f.account.restoreChoose('job5', 'continue');
+  assert.equal(f.account.state().restore, null);
+  // A request whose answer was lost, its job taken up by a run and then by another run before the window looks: the
+  // window still asks again for the keys that never came.
+  f.account.info.needs = [];
+  e.config.serverRestore = { since: new Date().toISOString() }; await e.save();
+  f.provision.jobs.job6 = { id: 'job6', state: 'running', at }; f.provision.jobs.job7 = { id: 'job7', state: 'running', at, undoOf: 'job6' };
+  await applyStatus(e, { device: { state: 'active' }, restore: { jobId: 'job6', state: 'running', at, byThisDevice: true } }, ME);
+  await applyStatus(e, { device: { state: 'active' }, restore: { jobId: 'job7', state: 'running', at, byThisDevice: true } }, ME);
+  assert.deepEqual(e.config.serverRestore.adopted, { from: 'job6', fromUndo: false, lost: true });
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job7', state: 'running', at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.deepEqual(f.account.state().needs, ['write-key', 'read-key']);
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job7', undo: true });
+  // The same, its job ended before the window looked (GPT restore3-r2 GA1): the release keeps that the keys never came.
+  const ended = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+  for (const steps of [['job6', 'release'], [null, 'release']]) {
+    f.account.info.needs = [];
+    e.config.serverRestore = { since: new Date().toISOString() }; await e.save();
+    if (steps[0]) await applyStatus(e, { device: { state: 'active' }, restore: { jobId: 'job6', state: 'running', at, byThisDevice: true } }, ME);
+    f.provision.jobs.job6 = { id: 'job6', state: 'failed', at, error: 'INTERRUPTED' };
+    await applyStatus(e, ended, ME);
+    assert.deepEqual(e.config.restoreReleased, { ...(steps[0] ? { jobId: 'job6' } : {}), at: e.config.restoreReleased.at, lost: true });
+    const x = f.make(); await x.open(); assert.equal(x.config.restoreReleased.lost, true, 'the settings keep it');
+    f.provision.statusValue = ended;
+    await f.account.refresh();
+    assert.deepEqual(f.account.state().needs, ['write-key', 'read-key'], String(steps[0]));
+    assert.equal(e.config.restoreReleased, undefined);
+    if (steps[0]) assert.equal(f.account.state().restore.state, 'failed');
+  }
+  // 「되돌리기 취소」 whose answer never came (GPT restore3-r2 GA2): the restore waiting under the same number means no
+  // undo happened, and that is said; an undo the server did start is taken up as one.
+  const choose = f.provision.restoreChoose;
+  for (const started of [false, true]) {
+    f.account.info.restore = null;
+    await f.engine.holdForServerRestore({ jobId: 'job1' });
+    f.provision.restoreChoose = async () => { throw Object.assign(new Error('offline'), { code: 'NETWORK' }); };
+    await assert.rejects(f.account.restoreChoose('job1', 'undo'), (x) => x.code === 'NETWORK');
+    assert.equal((await reopen(f)).info.undoAsked, 'job1', 'kept for the next look');
+    f.provision.jobs.job1 = { id: 'job1', state: 'done', awaitingChoice: true, at };
+    f.provision.jobs.job9 = { id: 'job9', state: 'running', at, undoOf: 'job1' };
+    f.provision.statusValue = { device: { state: 'active' }, restore: started ? { jobId: 'job9', state: 'running', at, byThisDevice: true } : { jobId: 'job1', state: 'done', awaitingChoice: true, at, byThisDevice: true }, lost: null, readKey: 'ready' };
+    await f.account.refresh();
+    const v = f.account.state().restore;
+    assert.deepEqual([v.jobId, v.undo, v.undoError], started ? ['job9', true, null] : ['job1', false, 'FAILED'], String(started));
+    assert.equal(f.account.info.undoAsked, null);
+  }
+  // The same lost undo, finished before any look took its job up (GPT restore3-r3 GA1): the restore was undone and
+  // nothing is open, so the end is told as undone — whether the run or the window let the hold go.
+  for (const runFirst of [false, true]) {
+    f.account.info.restore = null; f.account.info.restoreEnded = null;
+    await f.engine.holdForServerRestore({ jobId: 'job1' });
+    await assert.rejects(f.account.restoreChoose('job1', 'undo'), (x) => x.code === 'NETWORK');
+    f.provision.jobs.job1 = { id: 'job1', state: 'undone', at };
+    f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+    if (runFirst) await applyStatus(e, f.provision.statusValue, ME);
+    await f.account.refresh();
+    assert.equal(e.config.serverRestore, undefined);
+    assert.deepEqual({ ...f.account.state().restoreEnded, at: 0 }, { jobId: 'job1', result: 'undone', at: 0 }, String(runFirst));
+    assert.equal(f.account.state().restore, null);
+  }
+  // An undone restore while another PC's restore is open is not told as ended (that one may be the undo).
+  f.account.info.restoreEnded = null;
+  await f.engine.holdForServerRestore({ jobId: 'job1' });
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job10', state: 'running', at, byThisDevice: false }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.equal(f.account.state().restoreEnded, null);
+  f.provision.restoreChoose = choose;
+});
+
+test('끝난 되돌리기는 한 번 알린다: kept or undone, told until seen or for a week, gone with another restore (화면 부탁 3)', async () => {
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const at = Date.now() - 60000;
+  await f.account.restoreRun(at);
+  assert.equal(f.account.state().restoreEnded, null);
+  assert.deepEqual(await f.account.restoreChoose('job1', 'continue'), { ok: true });
+  const ended = f.account.state().restoreEnded;
+  assert.deepEqual({ ...ended, at: 0 }, { jobId: 'job1', result: 'continued', at: 0 }); assert.ok(Math.abs(Date.now() - ended.at) < 10000);
+  assert.deepEqual((await reopen(f)).state().restoreEnded, ended, 'told when the window opens again');
+  await assert.rejects(f.account.restoreSeen('../x'), (x) => x.code === 'BAD_INPUT');
+  assert.deepEqual((await f.account.restoreSeen('job9')).restoreEnded, ended, 'another job\'s word leaves it');
+  assert.equal((await f.account.restoreSeen('job1')).restoreEnded, null);
+  assert.equal((await reopen(f)).state().restoreEnded, null, 'not told again');
+  // An undo that finished, let go by a run before the window looked (GPT restore3 GA1): the settings keep the job's
+  // number, and the window's look tells it as undone, then forgets the number.
+  const { applyStatus } = require('../src/account.cjs');
+  await f.account.restoreRun(at);
+  f.provision.chooseAnswer = { state: 'undone', jobId: 'job2' }; await f.account.restoreChoose('job1', 'undo');
+  assert.equal(f.account.state().restoreEnded, null, 'not ended while the undo runs');
+  f.provision.jobs = { job2: { id: 'job2', state: 'continued', at, finishedAt: at + 2000, undoOf: 'job1' } };
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+  assert.deepEqual(await applyStatus(f.engine, f.provision.statusValue, ME), { released: 'job2' });
+  assert.equal((await (async () => { const x = f.make(); await x.open(); return x; })()).config.restoreReleased.jobId, 'job2', 'the settings keep it');
+  await f.account.refresh();
+  assert.deepEqual({ ...f.account.state().restoreEnded, at: 0 }, { jobId: 'job2', result: 'undone', at: 0 });
+  assert.equal(f.account.state().restore, null);
+  assert.equal(f.engine.config.restoreReleased, undefined);
+  // A week later it is not told any more.
+  const kept = f.account.info.restoreEnded.at;
+  f.account.info.restoreEnded.at = Date.now() - 8 * 24 * 3600 * 1000; assert.equal(f.account.state().restoreEnded, null);
+  f.account.info.restoreEnded.at = kept;
+  // A job the window cannot read now is read at its next look; one the server no longer has is forgotten.
+  f.engine.config.restoreReleased = { jobId: 'job8', at: new Date().toISOString() };
+  const read = f.provision.restoreJob;
+  f.provision.restoreJob = async () => { throw Object.assign(new Error('offline'), { code: 'NETWORK' }); };
+  await f.account.refresh(); assert.equal(f.engine.config.restoreReleased?.jobId, 'job8');
+  f.provision.restoreJob = async () => { throw Object.assign(new Error('gone'), { code: 'NOT_FOUND' }); };
+  await f.account.refresh(); assert.equal(f.engine.config.restoreReleased, undefined);
+  f.provision.restoreJob = read;
+  // A failed restore let go by a run is the restore view's, as before.
+  f.provision.chooseAnswer = null;
+  await f.account.restoreRun(at);
+  f.provision.jobs.job1 = { id: 'job1', state: 'failed', at, error: 'INTERRUPTED' };
+  await applyStatus(f.engine, f.provision.statusValue, ME);
+  await f.account.refresh();
+  assert.deepEqual([f.account.state().restore.state, f.account.state().restore.error], ['failed', 'INTERRUPTED']);
+  assert.equal(f.account.state().restoreEnded, null, 'another restore takes the end away at once');
+  // A new restore forgets an end not read yet.
+  f.engine.config.restoreReleased = { jobId: 'job2', at: new Date().toISOString() };
+  f.provision.statusValue = null;
+  await f.account.restoreRun(at);
+  assert.equal(f.engine.config.restoreReleased, undefined);
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+  // A new request whose answer never came may have started a restore: the earlier end goes too (GPT restore3-r4 GA1),
+  // and so does one a run's taking-up of this PC's new job finds.
+  await f.account.restoreChoose('job1', 'continue');
+  assert.equal(f.account.state().restoreEnded.jobId, 'job1');
+  f.provision.restoreError = Object.assign(new Error('offline'), { code: 'NETWORK' });
+  await assert.rejects(f.account.restoreRun(at), (x) => x.code === 'NETWORK');
+  assert.equal(f.account.state().restoreEnded, null);
+  assert.equal((await reopen(f)).state().restoreEnded, null, 'not kept either');
+  f.provision.restoreError = null;
+  f.account.ended('job1', 'continued');
+  f.provision.jobs.job11 = { id: 'job11', state: 'running', at };
+  await applyStatus(f.engine, { device: { state: 'active' }, restore: { jobId: 'job11', state: 'running', at, byThisDevice: true } }, ME);
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job11', state: 'running', at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.equal(f.account.state().restoreEnded, null);
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+  // A damaged kept end is the same as none.
+  f.account.info.restoreEnded = { jobId: '../x', result: 'continued', at: 1 }; await f.account.keep();
+  assert.equal((await reopen(f)).state().restoreEnded, null);
 });
 
 test('the Google step and the read key the server reports stay after the window opens again (화면 부탁 11)', async () => {

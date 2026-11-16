@@ -20,7 +20,7 @@
     'signInGoogle', 'startProtection', 'continueBackup',
     'openAccountBackup', 'devicesList', 'takeWriteSeat', 'revokeDevice',
     'reportLost', 'rotateReadKey', 'restorePlan', 'restoreRun',
-    'restoreJob', 'restoreChoose', 'cancelGoogle', 'openGoogleAccount',
+    'restoreJob', 'restoreChoose', 'restoreSeen', 'cancelGoogle', 'openGoogleAccount',
     'moveDevices', 'movePreview', 'moveStart', 'moveResult', 'moveReinstallList', 'moveReinstall', 'moveRestoreSettings', 'moveChecklist', 'moveCheck', 'moveRelease'
   ];
 

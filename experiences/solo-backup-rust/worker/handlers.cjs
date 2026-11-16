@@ -341,6 +341,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     handle('restoreRun', async (_context, at) => { const r = await account.restoreRun(at); return { jobId: r.jobId, ...(r.left ? { left: r.left } : {}), state: state() }; }, { codes: true });
     handle('restoreJob', (_context, jobId) => account.restoreJob(jobId), { lock: false, codes: true });
     handle('restoreChoose', async (_context, jobId, choice) => { await account.restoreChoose(jobId, choice); return state(); }, { codes: true });
+    // The screen told how the restore ended (account.restoreEnded): it is not told again.
+    handle('restoreSeen', async (_context, jobId) => { await account.restoreSeen(jobId); return state(); }, { lock: false, codes: true });
     // 「그만두기」 while a Google sign-in waits in the browser (화면 세션 부탁 13): the waiting request ends as CANCELED.
     // It reads nothing and takes no slot, so it reaches the worker while that request holds the window.
     handle('cancelGoogle', () => { account.cancelSignIn(); recovery.auth?.cancel?.(); return null; }, { read: true });
