@@ -463,7 +463,8 @@ test('판 셋 — 요약이 자리를 잡기를 기다리는 동안은 받기 �
  for(const fn of [...listeners])fn({kind:'receive'});
  assert.equal(changes,1,'자리를 잡지 않은 알림으로는 다시 그리지 않는다');assert.equal(timers.list.length,0);
  settled=true;for(const fn of [...listeners])fn({kind:'receive'});
- assert.equal(changes,2,'자리를 잡은 알림에 곧 다시 그린다');assert.equal(listeners.size,0,'자리를 잡으면 듣기를 그친다 — 그 뒤는 셸이 듣는다');
+ assert.equal(changes,1,'알림을 받은 자리에서는 그리지 않는다 — 다음 차례로 미룬다(셸의 받기 알림과 같은 규칙)');assert.equal(listeners.size,0,'자리를 잡으면 듣기를 그친다 — 그 뒤는 셸이 듣는다');
+ await tick();assert.equal(changes,2,'자리를 잡은 알림에 곧 다시 그린다');assert.equal(timers.list.length,0,'미루기에도 타이머를 두지 않는다');
  assert.equal(watch.phase(),'engine');assert.equal(listeners.size,0,'자리를 잡은 코치에는 다시 걸지 않는다');
  settled=false;assert.equal(watch.phase(),'checking');assert.equal(listeners.size,1,'다시 기다리면 다시 듣는다');assert.equal(timers.list.length,0);
  watch.reopen();assert.equal(listeners.size,0,'코치를 내려놓으면 듣기를 되돌린다');

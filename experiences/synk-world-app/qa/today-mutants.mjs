@@ -298,7 +298,7 @@ export const TODAY_MUTANTS = [
   [
     '판 셋',
     "판 감시가 받은 코치의 받기 알림을 듣지 않는다 — 요약이 자리를 잡아도 타이머(3초부터 60초)까지 확인 중이다(받기 알림 설계 검토 D7)",
-    "    offSettle = quiet(() =>\n      typeof made.watch === 'function'\n        ? made.watch(() => {\n            if (disposed || at !== generation || coach !== made) return;\n            if (!settled(quiet(() => made.summary()))) return;\n            stopSettle();\n            settleWait = every;\n            changed();\n          })\n        : null,\n    );\n",
+    "    offSettle = quiet(() =>\n      typeof made.watch === 'function'\n        ? made.watch(() => {\n            if (disposed || at !== generation || coach !== made) return;\n            if (!settled(quiet(() => made.summary()))) return;\n            stopSettle();\n            settleWait = every;\n            queueMicrotask(() => {\n              if (!disposed && at === generation && coach === made) changed();\n            });\n          })\n        : null,\n    );\n",
     "",
   ],
   [
@@ -306,6 +306,12 @@ export const TODAY_MUTANTS = [
     "받기 알림을 걸어도 타이머를 남긴다 — 자리를 잡기를 기다리는 길이 다시 둘이 된다(받기 알림 설계 검토 D7 · 설계 주인 조건 4)",
     "    if (typeof offSettle === 'function') return;\n",
     "",
+  ],
+  [
+    '판 셋',
+    "판 감시가 자리를 잡은 알림을 받은 자리에서 바로 그린다 — 엔진의 알림 도중에 홈을 다시 짓는다(§21-20 조건 3 · 4-4b 다시 검수 -d Fable P3)",
+    "            queueMicrotask(() => {\n              if (!disposed && at === generation && coach === made) changed();\n            });\n",
+    "            changed();\n",
   ],
 ];
 

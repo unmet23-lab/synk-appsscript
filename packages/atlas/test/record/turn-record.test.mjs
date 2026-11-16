@@ -424,6 +424,9 @@ test('손님 요약 저장 묶음이 끝나면 호스트 고리(onLocalSaved)를
     const gate = new Promise(resolve => {
       release = resolve;
     });
+    // 접기나 열기가 저장을 기다리는 판(변형 R2 따위)에서도 시험이 멈추지 않게 차례는 늦게라도 풀린다 — 시험에는 시간 한도가 없어,
+    // 차례를 쥔 채 접기를 기다리면 gate가 그 변형에서 멈췄다(11-16 저녁).
+    const loose = setTimeout(() => release(), 3000);
     const calls = [];
     const record = await guest(port, {
       exclusive: (_job, work) => gate.then(work),
@@ -432,6 +435,7 @@ test('손님 요약 저장 묶음이 끝나면 호스트 고리(onLocalSaved)를
     await practise(record, items[3]);
     await record.refold(); // 열 때 건 첫 저장이 차례를 기다리는 사이 새로 접는다
     release();
+    clearTimeout(loose);
     await record.localSaved();
     assert.equal(localWrites, 2, '한 저장 묶음에서 요약을 두 번 썼다');
     assert.deepEqual(calls, [2], '알림은 묶음이 끝난 뒤 한 번 — 두 번째 쓰기까지 끝난 뒤다');

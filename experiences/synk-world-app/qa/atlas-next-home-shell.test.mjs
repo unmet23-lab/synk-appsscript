@@ -83,7 +83,8 @@ test('공개 TOPIK 은행이 홈 코치보다 늦게 오면 은행이 온 뒤 �
  // 진짜 위치 도구(얼린 객체라 Proxy로는 못 덮는다)를 바탕으로 두고 은행과 짧은 연습 풀만 제 칸으로 덮는다.
  const practice=Object.create(worldPosition.practice,{pool:{get:()=>pool}});
  const position=Object.create(worldPosition,{topik:{value:topik},practice:{value:practice}});
- const coach={plan:()=>[],summary:()=>({storage:{base:true,waiting:false}}),due:()=>[],itemUnits:()=>[]};
+ // 새 길 홈 코치는 받기 알림(watch)을 낸다 — 겉에 watch가 없으면 셸이 이 문서를 지금 판으로 내린다(4-4b 다시 검수 -d Fable P3).
+ const coach={plan:()=>[],summary:()=>({storage:{base:true,waiting:false}}),due:()=>[],itemUnits:()=>[],watch:()=>()=>{}};
  // 플래너는 진짜 세 줄 모듈(감시 · 계획)이고, 홈 입구의 코치만 가짜다 — 연 때의 풀 크기를 남긴다.
  const w=world({planner:async()=>({...homeToday,say:()=>null}),life:()=>'engine',judge:()=>({state:'engine',items:[],times:[]}),
   coach:async items=>{log.push(`coach:${items.length}`);return coach;}},{log,position});

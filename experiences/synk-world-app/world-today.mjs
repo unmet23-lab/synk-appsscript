@@ -618,6 +618,7 @@ export function watchHomePlan({
     // 받기 알림 — 요약이 자리를 잡기를 받기 알림으로 기다린다. 첫 받기 · 받기 사다리의 늦은 칸에서 자리를 잡으면 곧 다시 그린다(받기 알림 설계 검토
     // D7 — 단계 4 계획 §21-20). 알림을 걸면 타이머를 두지 않는다 — 타이머를 남기면 길이 다시 둘이 된다(설계 주인 11-16 저녁 조건 4). 자리를 잡으면
     // 듣기를 그치고, 그 뒤의 알림은 셸이 듣는다(hearHome). 받기 알림이 없는 코치만 타이머로 기다린다(3초부터 두 배씩, 60초까지).
+    // 다시 그리기는 알림을 받은 자리가 아니라 다음 차례(마이크로태스크)로 미룬다 — 셸의 받기 알림과 같은 규칙이다(§21-20 조건 3 · 4-4b 다시 검수 -d Fable P3).
     const made = coach;
     const at = generation;
     offSettle = quiet(() =>
@@ -627,7 +628,9 @@ export function watchHomePlan({
             if (!settled(quiet(() => made.summary()))) return;
             stopSettle();
             settleWait = every;
-            changed();
+            queueMicrotask(() => {
+              if (!disposed && at === generation && coach === made) changed();
+            });
           })
         : null,
     );

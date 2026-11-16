@@ -99,7 +99,10 @@ export const PLAN_MUTANTS = [
   ['shell', "알림이 묶음 만남을 버리지 않는다 — 다른 창에서 건너뛰기만 한 판의 만남을 그날 내내 못 본다(§21-20 시험 3 · Fable FA1)", "  if(weekMet.coach===coachNow)weekMet={coach:null,key:null,met:null};\n", ""],
   ['shell', "문서를 닫아도 받기 알림의 듣기를 되돌리지 않는다(§21-20 조건 1)", "wakePlanWaits();stopHearing();homeWatch?.dispose();", "wakePlanWaits();homeWatch?.dispose();"],
   ['shell', "열린 이번 주 계획 판을 알림으로 다시 그리지 않는다 — 판 뒤의 홈만 새로 그려 학생이 보는 판은 옛 계획이다(받기 알림 설계 검토 D3)", "  if(planOpen&&heard.panel)void openPlan({keepScroll:true}).catch(()=>{});\n", ""],
-  ['shell', "받기 알림을 걸지 못하는 엔진 판에서도 새 길 홈을 그대로 둔다 — 다른 기기의 답을 놓친다(받기 알림 설계 검토 D5)", "   if(error instanceof TypeError&&!homeFailed){homeFailed=true;queueMicrotask(()=>{if(!stopped){refresh();redrawNext();}});}\n", ""],
+  ['shell', "받기 알림을 걸지 못하는 엔진 판에서도 새 길 홈을 그대로 둔다 — 다른 기기의 답을 놓친다(받기 알림 설계 검토 D5)", "   if(error instanceof TypeError)unheard();\n", ""],
+  ['shell', "겉에 watch가 없는 엔진 코치에서도 새 길 홈을 그대로 둔다 — 조용히 듣지 않아 다른 기기의 답을 놓친다(4-4b 다시 검수 -d Fable P3)", "  if(typeof coachNow.watch!=='function'){unheard();return;}\n", "  if(typeof coachNow.watch!=='function')return;\n"],
+  ['shell', "알림으로 다시 그린 이번 주 계획 판이 판 안의 초점을 되돌리지 않는다 — 초점이 닫기 단추로 간다(4-4b 다시 검수 -d GPT GA1)", "const root=panelNode('[data-plan-board]');if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}", "const root=panelNode('[data-plan-board]');if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}"],
+  ['shell', "계획 판의 초점을 내 위치 판의 단추 이름으로만 찾는다 — 계획 판 단추로 되돌리지 못하고 판 머리로 간다(4-4b 다시 검수 -d GPT GA1)", "nextFocusOf(panelNode('[data-plan-board]'),PLAN_FOCUS)", "nextFocusOf(panelNode('[data-plan-board]'))"],
   ['shell', "생활 레슨 · 복습 · 카페 판이 열린 동안에도 알림마다 홈과 묶음 만남을 다시 짓는다(받기 알림 설계 검토 D8)", "return LIFE_SESSIONS.has(kind)||SESSION_PANELS.some(selector=>panelNode(selector));", "return SESSION_PANELS.some(selector=>panelNode(selector));"],
 ];
 

@@ -26544,20 +26544,26 @@ function createWorldEducation({
     } catch {
     }
     heard = { ...heard, coach: null, off: null };
-    if (!coachNow || typeof coachNow.watch !== "function") return;
+    if (!coachNow) return;
+    if (typeof coachNow.watch !== "function") {
+      unheard();
+      return;
+    }
     try {
       heard = { ...heard, coach: coachNow, off: coachNow.watch(() => heardHome(coachNow)) };
     } catch (error2) {
-      if (error2 instanceof TypeError && !homeFailed) {
-        homeFailed = true;
-        queueMicrotask(() => {
-          if (!stopped) {
-            refresh();
-            redrawNext();
-          }
-        });
-      }
+      if (error2 instanceof TypeError) unheard();
     }
+  }
+  function unheard() {
+    if (homeFailed) return;
+    homeFailed = true;
+    queueMicrotask(() => {
+      if (!stopped) {
+        refresh();
+        redrawNext();
+      }
+    });
   }
   function heardHome(coachNow) {
     if (stopped || heard.coach !== coachNow) return;
@@ -26745,11 +26751,12 @@ function createWorldEducation({
     }
   }
   const NEXT_FOCUS = ["data-position-diagnostic", "data-position-exam", "data-position-practice", "data-position-recheck", "data-position-writing"];
-  function nextFocusOf(root) {
+  const PLAN_FOCUS = ["data-plan-next", "data-plan-practice", "data-plan-game", "data-plan-recheck", "data-plan-writing", "data-plan-speaking", "data-plan-mock", "data-view"];
+  function nextFocusOf(root, names = NEXT_FOCUS) {
     try {
       const active = target.document?.activeElement;
       if (!root || !active || typeof root.contains !== "function" || !root.contains(active)) return null;
-      const name = NEXT_FOCUS.find((key) => active.hasAttribute?.(key)) ?? null;
+      const name = names.find((key) => active.hasAttribute?.(key)) ?? null;
       if (!name) {
         const row = String(active.tagName || "").toUpperCase() === "SUMMARY" ? active.closest?.("details[data-skill]") : null;
         return row ? { name: null, skill: row.getAttribute("data-skill") } : { name: null };
@@ -28176,13 +28183,14 @@ function createWorldEducation({
       if (!keepScroll && !quiet) open();
       return "missing";
     }
-    const scroller = keepScroll ? panelNode("[data-plan-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
+    const scroller = keepScroll ? panelNode("[data-plan-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0, focusKey = keepScroll ? nextFocusOf(panelNode("[data-plan-board]"), PLAN_FOCUS) : null;
     home.showPanel(t2("plan.week.title"), view.renderExamPlan({ plan: examPlan, next: plan.selected, reason: tMessage2(plan.reason || ""), count: practiceLength() }), { type: "life-position", eyebrow: "MY WEEK", nav: "packs" });
     heard.panel = false;
     const root = panelNode("[data-plan-board]");
     if (keepScroll) {
       const node = root?.closest?.("#panel-content");
       if (node) node.scrollTop = scrollTop;
+      refocusNext(root, focusKey);
     } else root?.focus?.({ preventScroll: true });
     root?.querySelector("[data-plan-next]")?.addEventListener("click", () => {
       try {

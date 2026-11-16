@@ -84,7 +84,9 @@ function stage() {
 // 셸 하나 — 새 길 홈 입구(homeNext)를 넘긴 학습 화면. values: 학습 목표 값(시험 정보). planLog(made): 입구의 판 기록(시험은 기기 저장소 하나).
 // wrap: 홈 코치에 얹을 것(묶음 만남을 세거나 기록부를 계정처럼 보이게).
 // planner: 입구가 플래너를 주는 때(끝내 주지 않으면 홈이 확인 중에 머문다). fast: 창의 시계를 30ms로 줄인다(기다림 한도를 넘기는 장면).
-function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, planLog = null, planner = async () => PLANNER, fast = false } = {}) {
+// focusing: 판 글의 단추와 문서의 초점(activeElement), 판 안의 스크롤 칸(#panel-content)을 흉내 낸다. 진짜 홈처럼 판을 보일 때마다 스크롤 자리가 처음으로
+// 가고 초점은 닫기 단추(판 밖)로 간다(home.mjs openPanel) — 셸이 되돌려야 한다. 셸이 초점을 둔 자리는 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
+function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, planLog = null, planner = async () => PLANNER, fast = false, focusing = false } = {}) {
   const opens = [];
   const toasts = [];
   const waits = [];
@@ -106,9 +108,57 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
   // 창 · 문서의 듣는 함수 — 시험이 초점 · 화면 복귀 · 다시 연결을 일으킨다(fire).
   const listeners = [];
   const listen = (type, fn) => listeners.push({ type, fn });
+  let active = null;
+  const focused = [];
+  const content = { scrollTop: 0 };
+  const buttonsMade = new Map();
+  // 판 글에서 그 속성을 가진 단추를 짓는다(focusing일 때만). 같은 판 글이면 같은 단추를 돌려준다(초점이 몇 번째 단추였는지 견줄 수 있게).
+  const buttonsIn = selector => {
+    const found = /^\[(data-[a-z-]+)\]$/.exec(selector);
+    if (!found) return [];
+    const name = found[1];
+    const key = `${shown.length}|${name}`;
+    if (!buttonsMade.has(key)) {
+      const seen = new Map();
+      const html = shown.at(-1) ?? '';
+      const list = [...html.matchAll(new RegExp(`\\s${name}(?:="([^"]*)")?(?=[\\s>])`, 'g'))].map(match => {
+        const value = match[1] ?? '';
+        const index = seen.get(value) ?? 0;
+        seen.set(value, index + 1);
+        const button = {
+          inPanel: true,
+          dataset: {},
+          getAttribute: attr => (attr === name ? value : null),
+          hasAttribute: attr => attr === name,
+          focus: () => {
+            active = button;
+            focused.push(`${name}=${value}#${index}`);
+          },
+          addEventListener() {},
+        };
+        return button;
+      });
+      buttonsMade.set(key, list);
+    }
+    return buttonsMade.get(key);
+  };
+  const node = () => ({
+    isConnected: true,
+    focus() {
+      if (focusing) focused.push('root');
+    },
+    closest: selector => (focusing && selector === '#panel-content' ? content : null),
+    querySelector: selector => (focusing ? (buttonsIn(selector)[0] ?? null) : null),
+    querySelectorAll: selector => (focusing ? buttonsIn(selector) : []),
+    contains: element => focusing && element?.inPanel === true,
+    addEventListener() {},
+    insertAdjacentHTML() {},
+  });
   const document = {
     visibilityState: 'visible',
-    activeElement: null,
+    get activeElement() {
+      return active;
+    },
     addEventListener: listen,
     removeEventListener() {},
     querySelector(selector) {
@@ -118,7 +168,7 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
       if (!found) return null;
       const [, name, value] = found;
       const hit = value === undefined ? new RegExp(`\\s${name}(?=[\\s=>])`).test(html) : html.includes(`${name}="${value}"`);
-      return hit ? { isConnected: true, focus() {}, closest: () => null, querySelector: () => null, querySelectorAll: () => [], contains: () => false, addEventListener() {}, insertAdjacentHTML() {} } : null;
+      return hit ? node() : null;
     },
   };
   const target = {
@@ -157,6 +207,11 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
     showPanel(title, html) {
       shown.push(String(html));
       if (/data-position-stage/.test(html)) box = stage();
+      // 진짜 홈처럼 판 글을 바꾸면 스크롤 자리가 처음으로 가고 초점은 닫기 단추로 간다(focusing일 때만).
+      if (focusing) {
+        content.scrollTop = 0;
+        active = { inPanel: false, hasAttribute: () => false };
+      }
     },
   };
   const homeNext = {
@@ -203,6 +258,13 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
     },
     box: () => box,
     plan: () => education.metrics().plan,
+    // 초점(focusing일 때만) — 판 안의 단추(몇 번째)에 둔다. 셸이 초점을 둔 자리는 focused에, 판 안의 스크롤 칸은 content에 있다.
+    focused,
+    content,
+    focusOn(name, value = '', index = 0) {
+      active = buttonsIn(`[${name}]`).filter(button => button.getAttribute(name) === value)[index] ?? null;
+      assert.ok(active, `판에 ${name}="${value}"의 ${index + 1}번째 단추가 있다`);
+    },
     dispose() {
       education.dispose();
       for (const made of coaches) made.dispose();
@@ -649,6 +711,57 @@ test('열린 이번 주 계획 판도 받기 알림으로 한 번 다시 그린�
     await until(() => boards() > before, '열린 계획 판을 다시 그린다');
     await tick(40);
     assert.equal(boards(), before + 1, '한 번만 그린다');
+  } finally {
+    app.dispose();
+  }
+});
+
+// 계획 판 단추의 속성(셸의 PLAN_FOCUS와 같은 이름) — 판 글에 있는 것 가운데 하나를 골라 초점을 둔다.
+const PLAN_BUTTONS = ['data-plan-practice', 'data-plan-recheck', 'data-plan-next', 'data-plan-mock', 'data-plan-writing', 'data-plan-speaking', 'data-plan-game', 'data-view'];
+
+test('열린 이번 주 계획 판을 받기 알림으로 다시 그려도 판 안의 초점과 스크롤 자리를 지킨다 — 홈은 판 글을 바꿀 때마다 닫기 단추에 초점을 둔다(4-4b 다시 검수 -d GPT GA1 · Fable)', async () => {
+  const { counted, wrap, emit } = accountWrap({ pulled: true });
+  const app = shell({ wrap, focusing: true });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    assert.equal(await app.education.plan(), 'shown');
+    await tick(30);
+    const html = app.last();
+    const pick = PLAN_BUTTONS.map(name => ({
+      name,
+      values: [...html.matchAll(new RegExp(`\\s${name}(?:="([^"]*)")?(?=[\\s>])`, 'g'))].map(match => match[1] ?? ''),
+    })).find(row => row.values.length);
+    assert.ok(pick, '계획 판에 단추가 있다');
+    // 같은 값의 단추가 여럿이면 마지막 것 — 몇 번째였는지까지 되돌리는지 본다.
+    const value = pick.values.at(-1);
+    const index = pick.values.filter(item => item === value).length - 1;
+    app.focusOn(pick.name, value, index);
+    app.content.scrollTop = 240;
+    const boards = () => app.shown.filter(text => /data-plan-board/.test(text)).length;
+    const before = boards();
+    const mark = app.focused.length;
+    counted.shift = OTHER_DEVICE;
+    emit('receive');
+    await until(() => boards() > before, '열린 계획 판을 다시 그린다');
+    await tick(40);
+    assert.equal(app.content.scrollTop, 240, '스크롤 자리를 지킨다');
+    assert.deepEqual(app.focused.slice(mark), [`${pick.name}=${value}#${index}`], '판 안의 같은 단추로 초점을 되돌린다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('겉에 받기 알림(watch)이 아예 없는 엔진 코치면(받기 알림 앞의 입구 판이 실린 때) 이 문서는 지금 판으로 내린다 — 조용히 듣지 않으면 다른 기기의 답을 놓친다(4-4b 다시 검수 -d Fable P3)', async () => {
+  const { wrap } = accountWrap({ pulled: true }, { watch: undefined });
+  const app = shell({ wrap });
+  try {
+    app.education.refresh();
+    await until(() => app.coaches.length > 0 && app.plan() && app.plan().today?.state !== 'checking', '판이 선다');
+    await tick(30);
+    assert.equal(typeof app.coaches[0].watch, 'undefined', '겉에 watch가 없다');
+    assert.notEqual(app.plan()?.today?.state, 'engine', '새 길 홈이 아니다 — 지금 판으로 내렸다');
+    assert.ok(app.opens.length > 0, '지금 판이 옛 코치를 연다');
   } finally {
     app.dispose();
   }

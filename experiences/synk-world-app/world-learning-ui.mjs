@@ -743,13 +743,21 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(heard.coach===coachNow)return;
   try{heard.off?.();}catch{/* 닫힌 코치 */}
   heard={...heard,coach:null,off:null};
-  if(!coachNow||typeof coachNow.watch!=='function')return;
+  if(!coachNow)return;
+  // 겉에 watch가 아예 없는 코치(받기 알림 앞의 입구 판이 실린 때)도 아래 TypeError와 같이 지금 판으로 내린다. 조용히 듣지 않으면 새 길 홈이
+  // 다른 기기의 답을 놓친다(4-4b 다시 검수 -d Fable P3).
+  if(typeof coachNow.watch!=='function'){unheard();return;}
   try{heard={...heard,coach:coachNow,off:coachNow.watch(()=>heardHome(coachNow))};}
   catch(error){
    // 입구의 겉은 메서드 이름마다 함수를 짓는다 — 실린 엔진 판에 watch가 없으면(엔진만 앞 판으로 되돌린 때) 부를 때 TypeError다. 받기 알림 없이는
    // 새 길 홈이 다른 기기의 답을 놓치므로 이 문서는 지금 판으로 내린다(설계 검토 D5). 닫힌 코치(DISPOSED)면 다음 refresh가 다시 건다.
-   if(error instanceof TypeError&&!homeFailed){homeFailed=true;queueMicrotask(()=>{if(!stopped){refresh();redrawNext();}});}
+   if(error instanceof TypeError)unheard();
   }
+ }
+ // 받기 알림을 걸 수 없는 엔진 판 — 이 문서를 지금 판으로 내리고 홈과 열린 판을 다시 그린다(한 번만).
+ function unheard(){
+  if(homeFailed)return;
+  homeFailed=true;queueMicrotask(()=>{if(!stopped){refresh();redrawNext();}});
  }
  function heardHome(coachNow){
   if(stopped||heard.coach!==coachNow)return;
@@ -865,11 +873,14 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 판 밖에 있던 초점은 건드리지 않는다. 같은 단추가 여럿이면 몇 번째였는지로 찾고, 그 단추가 없어졌으면 판 머리에 둔다. 능력 줄을 펴는 summary에
  // 있던 초점은 그 능력 줄(details[data-skill])의 summary로 되돌린다.
  const NEXT_FOCUS=['data-position-diagnostic','data-position-exam','data-position-practice','data-position-recheck','data-position-writing'];
- function nextFocusOf(root){
+ // 이번 주 계획 판의 단추 — 알림으로 열린 계획 판을 다시 그릴 때(D3)도 판 안의 초점을 같은 단추로 되돌린다. 홈의 판 보이기는 부를 때마다 닫기 단추에
+ // 초점을 두므로, 되돌리지 않으면 초점을 잃는다(4-4b 다시 검수 -d GPT GA1 · Fable).
+ const PLAN_FOCUS=['data-plan-next','data-plan-practice','data-plan-game','data-plan-recheck','data-plan-writing','data-plan-speaking','data-plan-mock','data-view'];
+ function nextFocusOf(root,names=NEXT_FOCUS){
   try{
    const active=target.document?.activeElement;
    if(!root||!active||typeof root.contains!=='function'||!root.contains(active))return null;
-   const name=NEXT_FOCUS.find(key=>active.hasAttribute?.(key))??null;
+   const name=names.find(key=>active.hasAttribute?.(key))??null;
    if(!name){const row=String(active.tagName||'').toUpperCase()==='SUMMARY'?active.closest?.('details[data-skill]'):null;return row?{name:null,skill:row.getAttribute('data-skill')}:{name:null};}
    const value=active.getAttribute(name);
    const same=[...(root.querySelectorAll?.(`[${name}]`)||[])].filter(el=>el.getAttribute?.(name)===value);
@@ -1488,9 +1499,9 @@ async function townSend(coachNow,{wait=true}={}){
   // 한도를 넘겨도 확인 중이면 계획이 없는 것이 아니라 아직 모르는 것이다 — 목표 창을 열지 않는다(학생이 누른 열기에만 한 줄 알린다).
   if(!examPlan&&homePhase()==='checking'&&examChosen()){if(!keepScroll&&!quiet)home.toast(t('home.today.checking'));return 'skipped';}
   if(!examPlan||!view){if(!keepScroll&&!quiet)open();return 'missing';}
-  const scroller=keepScroll?panelNode('[data-plan-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
+  const scroller=keepScroll?panelNode('[data-plan-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-plan-board]'),PLAN_FOCUS):null;
   home.showPanel(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||''),count:practiceLength()}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});heard.panel=false;
-  const root=panelNode('[data-plan-board]');if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
+  const root=panelNode('[data-plan-board]');if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
   root?.querySelector('[data-plan-next]')?.addEventListener('click',()=>{try{check();if(plan.selected)void Promise.resolve(launch(plan.selected)).catch(failed);}catch(error){failed(error);}});
   root?.querySelectorAll('[data-plan-practice]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(startPractice(button.dataset.planPractice)).catch(failed);}catch(error){failed(error);}}));
   root?.querySelectorAll('[data-plan-game]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(launchGame(button.dataset.planGame)).catch(failed);}catch(error){failed(error);}}));
