@@ -463,3 +463,41 @@ test('카본 r6 A6: an empty or malformed server nonce stops before the browser 
   await assert.rejects(pc.provision({ name: 'PC' }), { code: 'SERVER' });
   assert.equal(pc.auth.calls.length, 0);
 });
+
+test('조율 세션 부탁 2: readKeyAlive() tells a read key another PC\'s rotation replaced, before it goes into the envelope', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); await a.provision({ name: 'PC-A' });
+  await a.confirmReadKey(a.device.read.keyId);
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' });
+  await b.rotateReadKey();
+  assert.equal(await b.readKeyAlive(), true);
+  await a.rotateReadKey(); // b's unconfirmed key is deleted on the server
+  assert.equal(await b.readKeyAlive(), false);
+  assert.equal(await b.pendingReadKey(), null);
+  assert.ok(b.state().needs.includes('read-key'));
+  assert.equal(await a.readKeyAlive(), true);
+});
+
+test('GPT r7 GA1 · GA2: a seat request whose answer was lost hands out no deleted key; a loss report of this device whose answer was lost forgets it', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); await a.provision({ name: 'PC-A' });
+  assert.ok(await a.writeCredentials());
+  const real = a.call;
+  a.call = async (u, o) => { const r = await real(u, o); if (u.endsWith('take-write-seat')) throw Object.assign(new Error('cut'), { code: 'ETIMEDOUT' }); return r; };
+  await assert.rejects(a.takeWriteSeat(), { code: 'NETWORK' });
+  a.call = real;
+  assert.equal(await a.writeCredentials(), null, 'the old key was deleted on the server');
+  assert.ok(a.state().needs.includes('write-key'));
+  const reopened = new ProvisionClient({ dir: path.join(h.dir, 'a'), secretStore, auth: a.auth, call: real, now: () => h.clock.t, mono: () => h.clock.t });
+  await reopened.open();
+  assert.equal(await reopened.writeCredentials(), null);
+  await reopened.takeWriteSeat();
+  assert.ok(await reopened.writeCredentials());
+  // This device reported lost, the answer lost on the way: forgotten here.
+  reopened.call = async (u, o) => { const r = await real(u, o); if (u.endsWith('/lost')) throw Object.assign(new Error('cut'), { code: 'ETIMEDOUT' }); return r; };
+  await assert.rejects(reopened.lost(reopened.device.deviceId), { code: 'NETWORK' });
+  assert.equal(reopened.state().connected, false);
+  assert.equal(await reopened.writeCredentials(), null);
+});

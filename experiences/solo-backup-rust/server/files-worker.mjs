@@ -40,20 +40,22 @@ function restoreCounter(stateDir, now) {
     return all;
   };
   return {
-    peek(prefix, at) {
+    peek(prefix, at, runId = null) {
       const t = now(), run = read(t).started[prefix];
+      // The same run asked again after its answer was lost: what it did, not a new restore (GPT r7 GB1).
+      if (runId && run?.runId === runId && run.at === at && run.done && run.result) return { replay: run.result };
       if (run?.at === at && !run.done) return { free: true, t0: run.t };
       if (run?.done && !run.undo && Number.isSafeInteger(run.preAt) && run.preAt === at) return { free: true, undo: true, t0: t };
       return { free: false, t0: t };
     },
-    take(prefix, at, { free, undo, t0 }) {
+    take(prefix, at, { free, undo, t0 }, runId = null) {
       if (free && !undo) return;
       const t = now(), day = new Date(t).toISOString().slice(0, 10), all = read(t);
       const today = all.day === day ? all.counts || {} : {};
       const n = (today[prefix] || 0) + (undo ? 0 : 1);
       if (n > RESTORES_PER_DAY) throw err('LIMIT_WORKER_DAY');
       const tmp = `${file}.${process.pid}.tmp`;
-      fs.writeFileSync(tmp, JSON.stringify({ day, counts: { ...today, [prefix]: n }, started: { ...all.started, [prefix]: { at, t: t0, ...(undo ? { undo: true } : {}) } } })); fs.renameSync(tmp, file);
+      fs.writeFileSync(tmp, JSON.stringify({ day, counts: { ...today, [prefix]: n }, started: { ...all.started, [prefix]: { at, t: t0, ...(runId ? { runId } : {}), ...(undo ? { undo: true } : {}) } } })); fs.renameSync(tmp, file);
     },
   };
 }
@@ -74,12 +76,15 @@ function preAtOf(stateDir, prefix, at, compute) {
   return preAt;
 }
 // The run for (prefix, at) came back: a later `resume` of it is a new restore.
-function markFinished(stateDir, prefix, at) {
+function markFinished(stateDir, prefix, at, result) {
   const file = path.join(stateDir, 'restore-days.json');
   let all = {};
   try { all = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) { if (e.code !== 'ENOENT') throw err('WORKER_STATE'); }
   if (all.started?.[prefix]?.at !== at) return;
   all.started[prefix].done = true;
+  // What it did (without the per-file journal, which the journal file keeps): a retry of the
+  // same run gets this answer instead of a new restore.
+  all.started[prefix].result = result;
   const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(all)); fs.renameSync(tmp, file);
 }
@@ -138,13 +143,15 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
     // still accepted from a just-deleted key is caught. A stopped run continues on
     // the next call (done items drop out of a new plan).
     // `resume` is accepted for older callers; the worker decides from its own record.
-    async 'restore.apply'({ prefix, at }) {
+    async 'restore.apply'({ prefix, at, runId = null }) {
       checkPrefix(prefix); checkTime(at);
-      const run = countRestore.peek(prefix, at);
+      if (runId !== null && !/^[a-z0-9]{16}$/.test(runId)) throw err('BAD_INPUT');
+      const run = countRestore.peek(prefix, at, runId);
+      if (run.replay) return { ...run.replay, journal: [], replayed: true };
       const repo = prefix + 'r/';
       let list = await versions(repo);
       plan(list, at, repo, run.t0); // a bad time is refused before the day's count is used
-      countRestore.take(prefix, at, run);
+      countRestore.take(prefix, at, run, runId);
       const preAt = preAtOf(stateDir, prefix, at, () => list.reduce((m, v) => Math.max(m, v.uploadTimestamp || 0), 0));
       const journal = []; let first = null, rounds = 0, left = 0;
       for (; rounds < MAX_ROUNDS; rounds++) {
@@ -158,8 +165,9 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
       }
       if (rounds === MAX_ROUNDS) left = plan(list, at, repo, run.t0).items.length;
       // Something still left after the last round: the same run may continue, free.
-      if (!left) markFinished(stateDir, prefix, at);
-      return { at, preAt, rounds, remaining: left, counts: first.counts, copyBytes: first.copyBytes, journal };
+      const result = { at, preAt, rounds, remaining: left, counts: first.counts, copyBytes: first.copyBytes };
+      if (!left) markFinished(stateDir, prefix, at, result);
+      return { ...result, journal };
     },
   };
 }

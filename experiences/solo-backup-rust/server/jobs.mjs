@@ -58,7 +58,7 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     const summary = await files('prefix.scan', { prefix: customer.prefix, since, to, from: baseline }, { timeout: 1800000 });
     // A restore chosen while the worker scanned: this judgment was of the old baseline.
     if ((store.customerById(customer.id)?.detect_since || 0) !== baseline) { log({ task: 'scan', code: 'BASELINE_MOVED' }); return; }
-    let reported = store.reportedSince(customer.id, since);
+    let reported = store.reportedSince(customer.id, since, to);
     if (reported === null && cursor !== null && cursor < t - 7 * DAY) reported = { runs: 0, pruned: 0, massConfirmed: false };
     const verdict = judge(summary, { baseline, reported, previousSnapshots: prev ? prev.visible_snapshots : null, seen: (id) => store.seen(customer.id, id), now: t });
     const finished = !verdict.deferred.length;

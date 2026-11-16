@@ -8,14 +8,14 @@ import path from 'node:path';
 import { summarize, judge, suggest, DAY, HOUR } from '../detect.mjs';
 import { reconcile, EXPECTED_RULES } from '../reconcile.mjs';
 import { rpcClient, rpcServer } from '../rpc.mjs';
-import { keyHandlers, WRITE_CAPS, DAILY_CAP } from '../keys-worker.mjs';
+import { keyHandlers, WRITE_CAPS, READ_CAPS, DAILY_CAP } from '../keys-worker.mjs';
 import { fileHandlers, RESTORES_PER_DAY } from '../files-worker.mjs';
 import { applyPlan } from '../restore-hidden.mjs';
 import { createRequire } from 'node:module';
 const require_ = createRequire(import.meta.url);
 import { createVerifier } from '../google-token.mjs';
 import { createMailer, signRequest, SIGNED_TAG } from '../mail.mjs';
-import { cleanBatch } from '../telemetry.mjs';
+import { cleanBatch, cleanBundle } from '../telemetry.mjs';
 import { Store } from '../store.mjs';
 import { createJobs } from '../jobs.mjs';
 import { withSettings, secretFile } from '../config.mjs';
@@ -37,7 +37,7 @@ test('detect: same-size overwrite, settings and key changes are events; restore 
   const copyBack = { ...ow, fileId: 'copy1', contentSha1: sha('AAAA'), uploadTimestamp: T0 + 2 * HOUR };
   const newKey = up('keys/k2', 'k2', T0 + 2 * DAY);
   const cfgHide = hide('config', T0 + 3 * DAY);
-  const noSha = up('index/i1', 'i', T0, {}); const noSha2 = { ...up('index/i1', 'j', T0 + HOUR + 1), contentSha1: 'none' };
+  const noSha = up('index/i1', 'i', T0, { contentSha1: 'none' }); const noSha2 = { ...up('index/i1', 'j', T0 + HOUR + 1), contentSha1: 'none' };
   s = summarize([...v, ow, copyBack, newKey, cfgHide, noSha, noSha2], { customerPrefix: P, since: T0, now: T0 + 4 * DAY, journal: { copies: ['copy1'] } });
   assert.deepEqual(s.events.map((e) => [e.kind, e.fileId]), [['overwrite', ow.fileId], ['overwrite', noSha2.fileId], ['keys', newKey.fileId], ['config', cfgHide.fileId]]);
   assert.equal(s.usage.visibleSnapshots, 1);
@@ -150,7 +150,10 @@ test('keys worker: fixed capabilities and names, customer prefixes only, never d
     await assert.rejects(h['keys.create'](bad), { code: 'BAD_INPUT' });
   }
   const k = await h['keys.create']({ kind: 'write', prefix: P, name });
-  assert.deepEqual(b2.keys.get(k.keyId).capabilities, WRITE_CAPS);
+  // The approved write set, written out here (GPT r7 GE1): no deleteFiles, no key or bucket powers.
+  assert.deepEqual(b2.keys.get(k.keyId).capabilities, ['listBuckets', 'listFiles', 'readFiles', 'writeFiles']);
+  assert.deepEqual(WRITE_CAPS, ['listBuckets', 'listFiles', 'readFiles', 'writeFiles']);
+  assert.deepEqual(READ_CAPS, ['listBuckets', 'listFiles', 'readFiles']);
   await assert.rejects(h['keys.delete']({ keyId: own.applicationKeyId }), { code: 'BAD_INPUT' });
   await assert.rejects(h['keys.delete']({ keyId: foreign.applicationKeyId }), { code: 'NOT_OURS' });
   assert.deepEqual(await h['keys.delete']({ keyId: 'missing-key-id' }), { deleted: false, missing: true });
@@ -265,8 +268,14 @@ test('GPT GA1: a claimed resume of a restore this worker never started still cou
   clock.advance(DAY);
   const at = clock.t - 1000;
   // A run that stopped half-way (the worker answered with an error) is continued free.
-  const stop = fileHandlers({ withSession: async () => { throw Object.assign(new Error('stop'), { code: 'B2' }); }, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
-  await assert.rejects(stop['restore.apply']({ prefix: P, at }));
+  // It stops after its first plan passed (카본 r7 E2): the copy fails, so it is counted and unfinished.
+  b2.upload(R + 'config', 'changed');
+  const realCopy = b2.copyFile.bind(b2);
+  b2.copyFile = async () => { throw Object.assign(new Error('stop'), { status: 503 }); };
+  await assert.rejects(f['restore.apply']({ prefix: P, at }));
+  b2.copyFile = realCopy;
+  const ledger = JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8'));
+  assert.equal(ledger.started[P].done, undefined, 'left unfinished');
   await f['restore.apply']({ prefix: P, at, resume: true });
   await f['restore.apply']({ prefix: P, at: at - 1 });
   await f['restore.apply']({ prefix: P, at: at - 2 });
@@ -446,4 +455,43 @@ test('jobs 관문 둘: hides after the window\'s end are not in it', () => {
   assert.equal(s.window.snapshotHides, 1);
   assert.equal(s.window.to, T0 + 2 * HOUR);
   assert.equal(s.usage.visibleSnapshots, 0, 'usage is as listed');
+});
+
+test('GPT r7 GB1: the same run asked again after its answer was lost gets what it did — not a second restore', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-replay-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c'); b2.upload(R + 'data/aa/p1', 'A'); clock.advance(HOUR);
+  const at = clock.t - 1; b2.upload(R + 'data/aa/p1', 'B'); clock.advance(HOUR);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const first = await f['restore.apply']({ prefix: P, at, runId: 'abcdefghij012345' });
+  clock.advance(HOUR);
+  const again = await f['restore.apply']({ prefix: P, at, runId: 'abcdefghij012345' });
+  assert.equal(again.replayed, true);
+  assert.equal(again.preAt, first.preAt, 'the moment before the first run, not after its copy');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8')).counts[P], 1);
+  // Another run to the same time is a new restore.
+  const third = await f['restore.apply']({ prefix: P, at, runId: 'abcdefghij999999' });
+  assert.notEqual(third.replayed, true);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8')).counts[P], 2);
+  await assert.rejects(f['restore.apply']({ prefix: P, at, runId: 'BAD' }), { code: 'BAD_INPUT' });
+});
+
+test('GPT r7 GD1: a help bundle keeps only error codes the app and the server raise', () => {
+  const b = cleanBundle({ errorCodes: ['CLIENT_ACME_PAYROLL_2026', 'secretproject', 'SCHEDULE_FOREIGN', 'NETWORK', 'REPO_EXISTS'] });
+  assert.deepEqual(b.errorCodes, ['SCHEDULE_FOREIGN', 'NETWORK', 'REPO_EXISTS']);
+});
+
+test('카본 r7 D1 · D2: a Windows exit status is kept; a help bundle keeps runs from before a long stop', () => {
+  const now = T0 + 40 * DAY;
+  const b = cleanBatch({ runs: [{ startedAt: now - HOUR, result: 'failed', exitCode: -1073741510 }, { startedAt: now - 2 * HOUR, result: 'failed', exitCode: 3221225786 }] }, { now });
+  assert.deepEqual(b.runs.map((r) => r.exitCode), [-1073741510, 3221225786]);
+  const help = cleanBundle({ runs: [{ startedAt: now - 9 * DAY, result: 'failed' }, { startedAt: now - 31 * DAY, result: 'failed' }] }, { now });
+  assert.equal(help.runs.length, 1, 'nine days back is kept, a month back is not');
+  assert.equal(cleanBatch({ runs: [{ startedAt: now - 9 * DAY, result: 'failed' }] }, { now }).runs.length, 0, 'the hourly measurements keep their week');
+});
+
+test('카본 r7 D4: the fake lists names in byte order like B2', async () => {
+  const b2 = new FakeB2({ clock: clockAt(T0) });
+  b2.upload('c/x/r_1', 'a'); b2.upload('c/x/r/1', 'b');
+  assert.deepEqual((await b2.listFileVersions({ prefix: 'c/x/' })).map((v) => v.fileName), ['c/x/r/1', 'c/x/r_1']);
 });

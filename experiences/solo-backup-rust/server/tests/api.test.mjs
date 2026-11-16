@@ -995,6 +995,8 @@ test('GPT r6 GB2: the operator\'s cut takes the device\'s unconfirmed read key a
   await h.api.cutDevice(a.device.id);
   assert.equal(h.store.job(run.jobId).state, 'continued');
   assert.equal(h.store.liveKeys(a.customer.id, 'write').length, 0);
+  assert.equal(h.b2.keys.has(run.keys.write.keyId), false, 'deleted on B2 too (카본 r7 D3)');
+  assert.equal([...h.b2.keys.values()].filter((k) => k.keyName.startsWith('wbw-') && k.namePrefix === `c/${a.customer.id}/`).length, 0);
 });
 
 // ── 카본 r6 B · C(11-16)
@@ -1054,6 +1056,7 @@ test('카본 r6 C3 · C4 · C5: B2 never holds three read keys of a prefix; a re
   assert.equal(failed.code, 'SERVER');
   h.b2.createKey = realCreate;
   assert.equal(h.store.liveKeys(a.customer.id, 'write').length, 0, 'no write key left from the failed request');
+  assert.equal([...h.b2.keys.values()].filter((k) => k.keyName.startsWith('wbw-') && k.namePrefix === `c/${a.customer.id}/`).length, 0, 'none on B2 either (카본 r7 D3)');
   // C5: after a loss, the first read-key request is free; the next ones count.
   const b = await h.provision('PC-2'); await h.ack(b);
   await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
@@ -1245,4 +1248,52 @@ test('jobs 관문 둘: while the cursor waits, a new overwrite mails again', asy
   await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
   assert.ok(JSON.parse(h.store.lastUsage(a.customer.id).detect).deferred.includes('no-telemetry'));
   assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:repo-changed:%content:%'")[0].n, 2);
+});
+
+test('GPT r7 GB2: a measurement received after the window\'s end does not cover this window\'s hides', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.b2.hide(base + 'snapshots/s1'); snapshots(h, base, 20, 'n');
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  const next = h.clock.t + 86400000; // the next scan
+  h.clock.advance(3600000);
+  await report(h, a, 0); // an ordinary run inside the window
+  h.clock.t = next - 6 * 60000;
+  for (let i = 1; i <= 6; i++) h.b2.hide(base + `snapshots/n${i}`); // with nothing measured
+  h.clock.t = next - 2 * 60000;
+  for (let i = 7; i <= 12; i++) h.b2.hide(base + `snapshots/n${i}`);
+  await report(h, a, 6); // a real prune, after the window's end
+  h.clock.t = next;
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.ok(JSON.parse(h.store.lastUsage(a.customer.id).detect).alerts.some((x) => x.reason === 'hide-surge'));
+});
+
+test('GPT r7 GC1 · GC2: the last device leaving releases a finished restore whoever asked; reporting a lost device again changes nothing', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  await h.call('POST', 'devices/revoke', { google: await h.proof('revoke'), deviceId: a.device.id }, b.device.token);
+  assert.equal(h.store.job(run.jobId).state, 'done', 'b may still choose');
+  await h.call('POST', 'devices/revoke', { google: await h.proof('revoke'), deviceId: b.device.id }, b.device.token);
+  assert.equal(h.store.job(run.jobId).state, 'continued', 'nobody is left to choose');
+  const c = await h.provision('PC-3'); await h.ack(c);
+  assert.equal(c.ok, true);
+  // GC2: c reports a lost, then recovers the read key; reporting a again changes nothing.
+  await h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id });
+  const lostAt = h.store.customerById(a.customer.id).lost_at;
+  const rot = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, c.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [rot.keys.read.keyId] }, c.device.token);
+  await h.call('POST', 'read-key/confirm', { keyId: rot.keys.read.keyId }, c.device.token);
+  h.clock.advance(60000);
+  const again = await h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id });
+  assert.equal(again.alreadyLost, true);
+  assert.equal(h.store.keyById(rot.keys.read.keyId).state, 'active', 'the recovered read key stays');
+  assert.equal(h.store.customerById(a.customer.id).lost_at, lostAt);
+  assert.equal(h.store.customerById(a.customer.id).google_step, 0);
 });

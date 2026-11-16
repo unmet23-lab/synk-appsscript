@@ -195,7 +195,9 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
   // can sign up.
   function releaseRestoreOf(customer, deviceId) {
     const open = store.openJob(customer.id);
-    if (!open || open.device_id !== deviceId || open.state !== 'done') return;
+    if (!open || open.state !== 'done') return;
+    // Somebody can still choose (the requester or another active device): it waits. With
+    // nobody left — whoever left last, the requester or not (GPT r7 GC1) — it is kept.
     if (store.devicesOf(customer.id).some((d) => d.state === 'active' && d.id !== deviceId)) return;
     store.tx(() => { store.setJob(open.id, { state: 'continued', choice_at: now() }); store.setCustomer(customer.id, { detect_since: now() }); });
   }
@@ -253,7 +255,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         // the grace since the last write key deletion — after a restart too.
         { const left = usableAt(customer) - now(); if (left > 0) await sleep(left); }
         if (!job.started_at) store.setJob(job.id, { started_at: now() });
-        const r = await files('restore.apply', { prefix: customer.prefix, at: job.at, resume }, { timeout: 3600000 });
+        const r = await files('restore.apply', { prefix: customer.prefix, at: job.at, runId: job.id, resume }, { timeout: 3600000 });
         const prior = (() => { try { return JSON.parse(store.job(job.id).journal || '[]'); } catch { return []; } })();
         const fresh = store.job(job.id);
         store.setJob(job.id, { state: job.undo_of ? 'continued' : 'done', finished_at: now(), pre_at: fresh.pre_at ?? r.preAt, rounds: r.rounds,
@@ -450,6 +452,9 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const target = typeof body?.deviceId === 'string' && ID12.test(body.deviceId) ? store.device(body.deviceId) : null;
       if (!target || target.customer_id !== customer.id) fail(404, 'NOT_FOUND');
       return serial(customer.id, async () => {
+        // Already reported: the keys made since (the recovered read key) stay, and the incident
+        // time and its one free key request are not opened again (GPT r7 GC2).
+        if (store.device(target.id)?.state === 'lost') return { next: 'read-key-rotate', googleRemovalUrl: 'https://myaccount.google.com/connections', alreadyLost: true };
         await dropAll([...store.liveKeys(customer.id, 'write').filter((k) => k.device_id === target.id), ...readKeys(customer)], 'lost');
         store.tx(() => {
           store.setDevice(target.id, { state: 'lost', role: 'read' });

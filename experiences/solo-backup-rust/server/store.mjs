@@ -223,8 +223,10 @@ drop table restore_jobs_old;`);
   // What the customer's devices reported for a window: null when no run record arrived at all.
   // By the time the server received it (a run's record comes after its prune; a run of hours
   // is covered and a device cannot move it — Fable 5.2 설계 관문 둘째).
-  reportedSince(customerId, since) {
-    const rows = this.all('select data from runs where customer_id = ? and received_at > ?', customerId, since);
+  // `to`: the window's end, so a record received after it explains the next window's hides,
+  // not this one's (GPT r7 GB2).
+  reportedSince(customerId, since, to = Number.MAX_SAFE_INTEGER) {
+    const rows = this.all('select data from runs where customer_id = ? and received_at > ? and received_at <= ?', customerId, since, to);
     if (!rows.length) return null;
     let pruned = 0, massConfirmed = false;
     for (const r of rows) { try { const d = JSON.parse(r.data); pruned += Number(d.prunedSnapshots) || 0; massConfirmed ||= d.massChangeConfirmed === true; } catch {} }

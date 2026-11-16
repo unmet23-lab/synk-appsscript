@@ -95,7 +95,7 @@ class ProvisionClient {
     this.device = v;
     if (v && v.v !== 2) await this.importOld();
     // A request whose answer never got stored: this PC asks again for what it was getting.
-    if (this.device?.inflight) await this.update({ inflight: null, needs: this.needs([LOST[this.device.inflight.op]].filter(Boolean)) });
+    if (this.device?.inflight) await this.update(this.lostAnswer(this.device.inflight.op));
     // Offline or refused now: the keys stay stored and the next call settles them.
     try { await this.lock(() => this.settle()); } catch (e) { if (!(e instanceof ServerError)) throw e; }
     return this.state();
@@ -187,6 +187,16 @@ class ProvisionClient {
     if (!this.deadlines.has(w.keyId)) this.deadlines.set(w.keyId, this.mono() + this.waitOf(w));
     return Math.min(this.deadlines.get(w.keyId) - this.mono(), MAX_WAIT_MS);
   }
+  // A key request whose answer never came may have happened: the server then deleted the keys
+  // it replaces — every write key for a seat or a restore, the unconfirmed read keys for a
+  // rotation or a restore. Those are dropped here too, so no deleted key is handed out, and
+  // what to ask again is named in `needs` (GPT r7 GA1).
+  lostAnswer(op) {
+    const change = { inflight: null, needs: this.needs([LOST[op]].filter(Boolean)) };
+    if (op === 'take-write-seat' || op === 'restore-run') change.write = null;
+    if (op === 'read-key-rotate' || op === 'restore-run') change.read = this.device.read?.confirmed ? this.device.read : null;
+    return change;
+  }
   // A key request: `inflight` is stored before it is sent and cleared in the same write that
   // stores its answer, so a stop in between is known on the next open.
   async keyRequest(op, route, body, store) {
@@ -196,7 +206,7 @@ class ProvisionClient {
     catch (e) {
       if (!this.device) throw e; // forgotten (DEVICE_GONE)
       // No answer, or not one from our server: it may or may not have happened — ask again later.
-      if (e.code === 'NETWORK' || e.code === 'SERVER') await this.update({ inflight: null, needs: this.needs([LOST[op]]) });
+      if (e.code === 'NETWORK' || e.code === 'SERVER') await this.update(this.lostAnswer(op));
       // A refusal: nothing changed there.
       else await this.update({ inflight: null });
       throw e;
@@ -294,8 +304,12 @@ class ProvisionClient {
       const other = async () => { if (this.device && this.device.deviceId !== deviceId) await this.update({ read: null, googleStepRequired: true, needs: this.needs(['read-key']) }); };
       let r;
       try { r = await this.request('POST', 'lost', { google, deviceId }, { device: false }); }
-      catch (e) { if (e.code === 'NETWORK' || e.code === 'SERVER') await other(); throw e; }
-      if (this.device?.deviceId === deviceId) await this.drop(); else await other();
+      catch (e) {
+        if (e.code === 'NETWORK' || e.code === 'SERVER') { if (this.device?.deviceId === deviceId) await this.drop(); else await other(); }
+        throw e;
+      }
+      if (this.device?.deviceId === deviceId) await this.drop();
+      else if (!r.alreadyLost) await other();
       return r;
     });
   }
@@ -305,6 +319,19 @@ class ProvisionClient {
       const r = await this.keyRequest('read-key-rotate', 'read-key/rotate', { google }, (a) => ({ read: keyOf(a.keys.read, { confirmed: false }), googleStepRequired: !!a.googleStepRequired, needs: this.needs([], ['read-key']) }));
       if (!this.device.read?.acked) throw new ServerError('KEY_GONE');
       return { readKey: credentials(this.device.read), googleStepRequired: !!r.googleStepRequired };
+    });
+  }
+  // Whether the read key this PC holds is still one the server keeps — a rotation from another
+  // PC deletes the earlier unconfirmed ones. Ask right before putting it in the envelope. One
+  // the server no longer takes is dropped here and named in `needs` (조율 세션 부탁, 11-16).
+  readKeyAlive() {
+    return this.withDevice(async () => {
+      const r = this.device.read;
+      if (!r?.acked) return false;
+      const { acked } = await this.request('POST', 'keys/ack', { keyIds: [r.keyId] });
+      if (Array.isArray(acked) && acked.includes(r.keyId)) return true;
+      if (this.device?.read?.keyId === r.keyId) await this.update({ read: null, needs: this.needs(['read-key']) });
+      return false;
     });
   }
   confirmReadKey(keyId) {

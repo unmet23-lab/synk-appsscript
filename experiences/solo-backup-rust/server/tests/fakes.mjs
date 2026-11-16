@@ -31,7 +31,7 @@ export class FakeB2 {
   hide(fileName, at = this.clock.t) { const v = { fileName, fileId: this.id('4_h'), action: 'hide', uploadTimestamp: at, contentSha1: 'none', contentLength: 0 }; this.versions.push(v); return v; }
   async listFileVersions({ prefix }) {
     return this.versions.filter((v) => v.fileName.startsWith(prefix))
-      .map((v, i) => ({ ...v, i })).sort((a, b) => a.fileName.localeCompare(b.fileName) || b.uploadTimestamp - a.uploadTimestamp || b.i - a.i).map(({ i, ...v }) => v);
+      .map((v, i) => ({ ...v, i })).sort((a, b) => Buffer.compare(Buffer.from(a.fileName), Buffer.from(b.fileName)) || b.uploadTimestamp - a.uploadTimestamp || b.i - a.i).map(({ i, ...v }) => v);
   }
   async hideFile({ fileName }) { this.calls.push(['hideFile', fileName]); return { ...this.hide(fileName) }; }
   async copyFile({ sourceFileId, fileName }) {
