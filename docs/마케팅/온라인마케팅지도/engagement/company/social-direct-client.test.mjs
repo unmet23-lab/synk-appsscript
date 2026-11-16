@@ -155,6 +155,12 @@ test('the simple account row offers the old card enable and disable only to mana
   const outside=f.row('uz');
   assert.doesNotMatch(outside,/other\.test/,'바깥 주소는 링크로 만들지 않는다');
   assert.match(outside,/href="\/\?tab=channels">플랫폼 앱 연결 준비 확인/,'연결 주소가 없으면 옛 카드처럼 채널 화면을 가리킨다');
+  // 카본 끝 판 B2: 인자 경계 없이 「publishing=1」 글자만 보던 검사를 주소 풀이로 바꿨다.
+  for(const bad of ['/api/oauth/instagram/start?channelId=uz&not_publishing=1','/api/oauth/instagram/start?channelId=uz&publishing=10','/api/oauth/instagram/start/x?publishing=1','//other.test/api/oauth/instagram/start?publishing=1']){
+    f.context.badUrl=bad;f.run('snsSimple.data.accounts[0].direct.connectUrl=badUrl');assert.doesNotMatch(f.row('uz'),/publishing=1/,bad);
+  }
+  f.run("snsSimple.data.accounts[0].direct.connectUrl='/api/oauth/instagram/start?channelId=uz&publishing=1&x=\"y'");
+  assert.match(f.row('uz'),/href="\/api\/oauth\/instagram\/start\?channelId=uz&amp;publishing=1&amp;x=%22y">게시 권한 연결/,'따옴표는 주소 안에서 풀린 채로만 남는다');
   f.run("Object.assign(snsSimple.data.accounts[1],{publish:'안 켬',direct:{canConfigure:true,enabled:true,connected:false,connectUrl:null}})");
   assert.match(f.row('yt'),/ss-st coral">.*권한 확인 필요.*자동 게시 끄기/,'켜 두었는데 권한이 끊긴 계정을 「안 켬」으로 보이지 않는다');
   const viewer=simpleFixture({role:'viewer'});
@@ -207,7 +213,8 @@ test('returning from publishing consent opens the fold around that row, focuses 
   const f=simpleFixture();
   assert.doesNotMatch(f.run('snsSimpleRender("accounts")'),/is-focus/,'돌아오기 전에는 강조가 없다');
   f.run("snsSimpleFocus('uz')");
-  assert.match(f.run('snsSimpleRender("accounts")'),/class="ss-acc is-focus" data-ss-channel="uz"/);
+  f.run('snsSimpleRender("today")');
+  assert.match(f.run('snsSimpleRender("accounts")'),/class="ss-acc is-focus" data-ss-channel="uz"/,'그 줄로 옮기기 전에 다른 화면이 먼저 그려져도 강조가 남는다(카본 끝 판 B1)');
   // 그린 뒤 ssFocusRow가 하는 일을 가짜 DOM으로 본다(카본 끝 판 C2): 그 줄의 접힘을 열고, 줄로 옮기고, 켜기 단추에 초점을 둔다.
   const seen={scrolled:0,focused:0},fold={open:false},button={focus(){seen.focused++;}};
   const rows=['yh','uz'].map(id=>({dataset:{ssChannel:id},closest:sel=>sel==='details'&&id==='uz'?fold:null,scrollIntoView(){if(id==='uz')seen.scrolled++;},querySelector:sel=>sel==='[data-ss-action="direct-connect"]'&&id==='uz'?button:null}));

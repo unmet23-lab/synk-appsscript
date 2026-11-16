@@ -587,7 +587,8 @@ function ssCollectionProgress(row){
 // 켜기는 서버가 게시 권한을 다시 확인한 뒤에만 켜진다. 끄기는 예약 게시가 멈추는 일이라 줄 안에서 한 번 더 묻는다.
 // 켜 둔 계정이 OAuth를 다시 마치면 연결 기록이 어긋나 게시가 멈춘다(enabled · !connected · ready) — 이때도 같은 켜기로 다시 묶는다(카본 끝 판 A1).
 // ui = {can, busy:채널ID, confirm:채널ID, note:{channelId,tone,message}, highlight:채널ID}
-function ssDirectConnectUrl(url){const s=typeof url==='string'?url:'';return /^\/api\/oauth\/[a-z]+\/start\?[^"'<>\s]*publishing=1/.test(s)?s:'';}
+// 서버(social-simple.mjs)가 이미 거른 주소지만 화면도 같은 꼴만 받는다: 같은 출처의 /api/oauth/<플랫폼>/start 이고 publishing 인자가 정확히 1(카본 끝 판 B2).
+function ssDirectConnectUrl(url){try{const u=new URL(typeof url==='string'?url:'','https://workspace.invalid');return u.origin==='https://workspace.invalid'&&/^\/api\/oauth\/[a-z]+\/start$/.test(u.pathname)&&u.searchParams.get('publishing')==='1'?u.pathname+u.search:'';}catch{return '';}}
 const ssDirectRebind=d=>d?.enabled===true&&d.connected!==true&&d.ready===true;
 const ssDirectCanConnect=d=>d?.enabled!==true||ssDirectRebind(d);
 function ssAccDirect(a,ui={}){
@@ -789,7 +790,8 @@ function snsSimpleEnsure(){if(!state.user)return;snsSimpleIdentity();if(snsSimpl
 function snsSimpleRender(view){
   snsSimpleIdentity();const D=snsSimple.data;
   // 계정 화면을 떠나면 줄 안의 끄기 확인 · 결과 글 · 강조를 지운다(누르는 중인 요청은 그대로 둔다).
-  if(view!=='accounts'&&(snsSimple.direct.highlight||snsSimple.direct.confirm||snsSimple.direct.note))snsSimple.direct={...snsSimple.direct,highlight:'',confirm:'',note:null};
+  // 돌아와 아직 그 줄로 옮기기 전(focus가 남음)에 다른 화면이 먼저 그려져도 강조는 남긴다(카본 끝 판 B1).
+  if(view!=='accounts'&&(snsSimple.direct.highlight&&!snsSimple.direct.focus||snsSimple.direct.confirm||snsSimple.direct.note))snsSimple.direct={...snsSimple.direct,highlight:snsSimple.direct.focus?snsSimple.direct.highlight:'',confirm:'',note:null};
   // 나라 지도(11-11)는 자기 자료(/marketing-map.json)로 그린다 — 간편판 자료가 없거나 늦어도 지도는 그대로 연다.
   if(view==='map')return `<section class="sw-simple" data-sw-view="map" aria-label="SNS·마케팅 · 나라 지도">${ssTabs(view,D)}${typeof marketingMapRender==='function'?marketingMapRender():''}</section>`;
   const error=snsSimple.error?`<div class="ss-alert" role="alert">${ssEsc(snsSimple.error)}<button class="ss-link" type="button" data-ss-action="reload"${snsSimple.loading?' disabled':''}>다시 불러오기</button></div>`:'';
