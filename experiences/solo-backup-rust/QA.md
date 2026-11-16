@@ -253,7 +253,7 @@ restic 단독(같은 자료, 새 저장소): 첫 백업 2.2초 · 최대 342.7MB
 | 첫 시작(`start-1`) | `configured`가 거짓이면 이 화면이다. 「Google로 시작」과 「복구 코드로 되살리기」는 개통 연결 전이라 「준비 중」 한 줄만 띄운다 |
 | 기본 화면 | `protection.level · reason`을 엔진 순서(`engine/src/protection.cjs`)대로 가른다. 되살리기만 하는 연결, 다시 로그인, 한꺼번에 지워짐, 되살려 본 파일이 다름, 폴더를 찾을 수 없음(하나 · 여럿 · 모두), 복구 정보, 시계, 점검 실패, 지난 백업 실패, 첫 백업 없음, 오래 못 함, 예약 없음, 모르는 까닭의 「확인 필요」, 쉼, 꺼짐, 쓰는 중인 파일(부분 판), 안전 |
 | 도는 작업 | `job.kind` 열네 가지마다 제 문장을 쓴다. 엔진의 단계 글은 옮기지 않고 「올리는 중」 같은 말로 바꾼다 |
-| 되살린 뒤 | 하루 안에 끝난 되살리기는 기본 화면에 「되살린 폴더 열기」 한 줄로 남는다(`lastSelectedRestore` · `lastRestore` → `openSelectedRestoreFolder` · `openRestoreFolder`). 고른 파일 되살리기가 실패하면 그 까닭(`lastSelectedRestoreError.code`)을 쓴다 |
+| 되살린 뒤 | 하루 안에 끝난 되살리기는 기본 화면에 「되살린 폴더 열기」 한 줄로 남는다(`lastSelectedRestore` · `lastRestore` → `openSelectedRestoreFolder` · `openRestoreFolder`). 고른 파일 되살리기가 실패하면 그 까닭(`lastSelectedRestoreError.code`)을 쓴다. 전체 되살리기가 만들지 않고 건너뛴 수(`lastRestore.skipped`, 다른 곳을 가리키는 연결 · 특수 파일 · Windows에서 쓸 수 없는 이름)도 같은 줄에 쓴다 |
 | 첫 백업(`start-3`) | `job.kind = protect`와 `percent` |
 | 파일 되살리기(`restore`) | `openFileCatalog` · `queryFileCatalog` · `setFileSelection` · `restoreSelected` · `restoreLatest` · `closeFileCatalog`. 예약 백업 때문에 목록을 못 열면 끝나는 대로(그리고 15초마다) 다시 연다 |
 | 쓰는 중인 파일(`partial`) | `lastPartial`(개수 · 시각 · 첫 백업이 부분 판인지). 프로그램 이름과 파일 목록, 관리자 여부는 엔진에 아직 없어 「다른 프로그램」으로 쓰고 4시간 따로 읽기를 약속하지 않는다 |

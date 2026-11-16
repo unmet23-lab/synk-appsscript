@@ -189,6 +189,12 @@ test('기본 화면: 엔진의 실제 답과 맞춘다(Fable F1 · F2 · F9 · F
   const selErr = homeModel({ ...base, lastSelectedRestoreError: { code: 'NO_SPACE', at: new Date(NOW - 60000).toISOString() } }, { now: NOW });
   assert.equal(selErr.restored.bad, true);
   assert.match(selErr.restored.text, /다른 드라이브를 골라/);
+  // 전체 되살리기가 건너뛴 수(엔진 lastRestore.skipped — 연결 · 특수 파일 · 쓸 수 없는 이름, 폴더도 센다)
+  const skippedFull = homeModel({ ...base, lastRestore: { path: 'x', at: new Date(NOW - 60000).toISOString(), skipped: 4 } }, { now: NOW });
+  assert.match(skippedFull.restored.text, /전체를 되살렸습니다\. 4개는 만들지 않고 건너뛰었습니다\. 다른 곳을 가리키는 연결, 특수 파일, Windows에서 쓸 수 없는 이름입니다\./);
+  const { findBanned } = await load('banned-words.js');
+  assert.deepEqual(findBanned(skippedFull.restored.text), []); // 예시 상태 묶음에 없는 글이라 화면 글 검사를 여기서 건다
+  assert.doesNotMatch(homeModel({ ...base, lastRestore: { path: 'x', at: new Date(NOW - 60000).toISOString() } }, { now: NOW }).restored.text, /건너뛰었습니다/);
   const old = homeModel({ ...base, lastRestore: { path: 'x', at: new Date(NOW - 2 * 86400000).toISOString() } }, { now: NOW });
   assert.equal(old.restored, undefined);
   const failed = { ...STATES['home-error'], lastError: '복구 폴더를 만들지 못했습니다.' };
