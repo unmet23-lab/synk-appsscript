@@ -21,8 +21,8 @@
   --meta-bg:rgba(10,10,10,.84);         /* 시안 조작 막대(디자인의 일부가 아니다) */
   /* 한글과 영문이 한 문장에 섞이므로 한 서체(SUIT)로 통일한다 */
   --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
-  --display:300 clamp(25px,min(3.5vw,5.6vh),54px)/1.3 var(--sans);
-  --choice:300 clamp(22px,2.3vw,34px)/1.2 var(--sans);
+  --display:300 clamp(25px,min(3.5cqw,5.6cqh),54px)/1.3 var(--sans);
+  --choice:300 clamp(22px,2.3cqw,34px)/1.2 var(--sans);
   --body:400 16px/1.25 var(--sans);
   --small:400 13px/1.3 var(--sans);
 }
@@ -32,7 +32,8 @@ body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);
 button,input{font:inherit;color:inherit}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-#stage{position:relative;height:100%;min-height:420px;overflow:hidden;background:var(--void);user-select:none;-webkit-user-select:none;cursor:default}
+/* 무대가 곧 창이다. 안의 것은 창이 아니라 무대의 크기를 보고 놓인다(무대를 줄이면 그 크기에 맞춰진다) */
+#stage{position:relative;height:100%;min-height:420px;overflow:hidden;background:var(--void);user-select:none;-webkit-user-select:none;cursor:default;container-type:size;container-name:stage}
 #orb{position:absolute;inset:0;width:100%;height:100%;display:block}
 /* 점으로 된 synk 표가 뜨는 자리. 구 안으로 들어온 순간에만 그린다 */
 #sig{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;pointer-events:none}
@@ -55,7 +56,7 @@ button,input{font:inherit;color:inherit}
 #stage.settled .layer .rise{transition:opacity .3s ease,transform .3s ease;transition-delay:0s}
 /* 새 판을 받거나 처음 설치하는 동안. 구가 가운데에서 새로 깎이고, 그 아래에 한 문장과 판 번호만 둔다 */
 .forge-in{position:absolute;left:16px;right:16px;top:var(--forge-top,70%);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
-.forge-say{margin:0;font:300 clamp(19px,2.2vw,29px)/1.36 var(--sans);letter-spacing:-.012em}
+.forge-say{margin:0;font:300 clamp(19px,2.2cqw,29px)/1.36 var(--sans);letter-spacing:-.012em}
 .forge-say .then{display:block;color:var(--dim)}
 .forge-ver{font:400 12px/1 var(--sans);letter-spacing:.22em;margin-right:-.22em;color:rgba(243,241,236,.6);font-variant-numeric:tabular-nums}
 #forge-go{display:none;flex:none;width:220px;margin-top:6px}
@@ -63,13 +64,13 @@ button,input{font:inherit;color:inherit}
 .forge-acts{margin:2px 0 0;display:none;gap:26px}
 #stage[data-forge="failed"] .forge-acts{display:flex}
 /* 웅장한 판: 구가 창을 채우므로 글은 왼쪽 아래에 작품 설명처럼 둔다. 깎는 날이 가운데를 가로질러 내려와 가운데 글과 겹치기 때문이다 */
-#stage[data-grand] .forge-in{left:clamp(20px,9.5vw,168px);right:auto;top:auto;bottom:clamp(84px,13vh,128px);align-items:flex-start;text-align:left;isolation:isolate} /* 큰 구의 결과 깎는 선이 글 뒤를 지나가도 글이 읽히게, 글 뒤만 부드럽게 어둡힌다 */ #stage[data-grand] .forge-in::before{content:"";position:absolute;inset:-70px -160px -90px -210px;z-index:-1;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.84),rgba(0,0,0,.58) 54%,rgba(0,0,0,0))}
+#stage[data-grand] .forge-in{left:clamp(20px,9.5cqw,168px);right:auto;top:auto;bottom:clamp(84px,13cqh,128px);align-items:flex-start;text-align:left;isolation:isolate} /* 큰 구의 결과 깎는 선이 글 뒤를 지나가도 글이 읽히게, 글 뒤만 부드럽게 어둡힌다 */ #stage[data-grand] .forge-in::before{content:"";position:absolute;inset:-70px -160px -90px -210px;z-index:-1;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.84),rgba(0,0,0,.58) 54%,rgba(0,0,0,0))}
 /* 화면 확인용: 움직임 없이 끝 모습으로 선다 */
 #stage.still,#stage.still *{transition:none !important}
 
 /* 로그인 방식을 묻는 자리 */
 .ask-in{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);width:min(520px,100% - 32px);display:flex;flex-direction:column;align-items:center}
-.mark{width:58px;height:auto;fill:var(--paper);margin-bottom:clamp(26px,4.6vh,44px);--o:.92}
+.mark{width:58px;height:auto;fill:var(--paper);margin-bottom:clamp(26px,4.6cqh,44px);--o:.92}
 .ask-ways{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;width:100%;transition:opacity .35s ease}
 /* 누르는 것은 누르는 것처럼 보이게: 먼저 권하는 길은 채우고, 다른 길은 선으로 둔다 */
 .way{appearance:none;flex:1 1 220px;max-width:254px;height:54px;margin:0;padding:0 22px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);
@@ -80,7 +81,7 @@ button,input{font:inherit;color:inherit}
 .way-main{background:var(--paper);border-color:var(--paper);color:var(--void)}
 .way-main:hover{background:#FFFFFF;border-color:#FFFFFF}
 .way:focus-visible,.sw:focus-visible,.back:focus-visible,#orb-btn:focus-visible,.reread:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
-.invite{margin-top:clamp(26px,4.8vh,46px);width:min(520px,100%);display:flex;flex-direction:column;align-items:center;gap:12px}
+.invite{margin-top:clamp(26px,4.8cqh,46px);width:min(520px,100%);display:flex;flex-direction:column;align-items:center;gap:12px}
 .invite label{font:400 14px/1.3 var(--sans);color:rgba(243,241,236,.78)}
 /* 글을 넣는 칸은 누르는 단추와 모양을 달리한다: 테두리 없이 밑줄 한 줄 */
 .invite input{width:min(300px,88%);height:42px;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;outline:0;padding:0 6px;
@@ -107,24 +108,68 @@ button,input{font:inherit;color:inherit}
 
 /* 들어온 뒤. 왼쪽 위의 구가 이 앱의 하나뿐인 조작 자리다 */
 /* 구의 왼쪽 끝을 본문의 왼쪽 줄에 맞춘다(구 반지름 11px, 단추 44px) */
-.here{position:absolute;z-index:2;left:calc(clamp(20px,9.5vw,168px) - 9px);top:clamp(12px,3.4vh,38px);display:flex;align-items:center;gap:6px}
+.here{position:absolute;z-index:2;left:calc(clamp(20px,9.5cqw,168px) - 9px);top:clamp(12px,3.4cqh,38px);display:flex;align-items:center;gap:6px}
 #orb-btn{width:44px;height:44px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer}
 #orb-btn:focus-visible{outline-offset:1px}
 /* 이름도 누르는 자리다. 작은 꺾쇠로 열린다는 것을 알린다 */
-#here-name{appearance:none;background:none;border:0;margin:0;padding:10px 8px 10px 0;display:inline-flex;align-items:center;gap:9px;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7);cursor:pointer;border-radius:2px;transition:color .25s ease}
+#here-name{appearance:none;background:none;border:0;margin:0;padding:10px 8px 10px 0;display:inline-flex;align-items:center;gap:9px;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7);cursor:pointer;border-radius:2px;transition:color .25s ease,opacity .2s ease}
 #here-name svg{width:8px;height:5px;flex:none;opacity:.7}
 .here:hover #here-name,#here-name:focus-visible{color:var(--paper)}
 #here-name:focus-visible{outline:1px solid var(--ring);outline-offset:2px}
-.room{position:absolute;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);top:52%;transform:translateY(-50%);display:none}
+/* 이 공간의 프로그램: 구 옆에 놓인 작은 오브제. 다가가면 이름이 차례로 펼쳐진다 */
+.rail{display:flex;align-items:center;gap:2px;margin-left:18px;transition:opacity .25s ease}
+#stage:not([data-space="solio"]) .rail{display:none}
+.obj{appearance:none;background:none;border:0;margin:0;padding:10px 8px;display:inline-flex;align-items:center;color:rgba(243,241,236,.46);cursor:pointer;border-radius:2px;transition:color .25s ease}
+.obj svg{width:18px;height:18px;flex:none}
+.obj-n{display:inline-flex;align-items:baseline;gap:7px;max-width:0;margin-left:0;opacity:0;overflow:hidden;white-space:nowrap;font:400 13px/1.3 var(--sans);letter-spacing:.03em;transition:max-width .46s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 70ms),margin-left .46s cubic-bezier(.2,.8,.2,1) calc(var(--k) * 70ms),opacity .3s ease calc(var(--k) * 70ms)}
+.obj-n small{font:var(--small);color:var(--dim)}
+.rail.near .obj-n,.obj[aria-current="true"] .obj-n,.obj:focus-visible .obj-n{max-width:9em;margin-left:9px;opacity:1}
+.obj[aria-current="true"],.obj:hover,.obj:focus-visible{color:var(--paper)}
+.obj:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
+/* 구 곁의 펼침: 갈 수 있는 공간이 구 옆으로 차례로 나온다 */
+.fan{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:1px;visibility:hidden;pointer-events:none;transition:visibility 0s linear .2s}
+#stage[data-fan] .fan{visibility:visible;pointer-events:auto;transition:visibility 0s}
+.fan-go{appearance:none;background:none;border:0;margin:0;padding:8px 14px 8px 0;display:flex;align-items:baseline;gap:18px;color:var(--paper);cursor:pointer;text-align:left;border-radius:2px;opacity:0;transform:translateX(-16px);transition:opacity .16s ease,transform .16s ease}
+.fan-foot{margin:12px 0 0;display:flex;gap:22px;opacity:0;transform:translateX(-16px);transition:opacity .16s ease,transform .16s ease}
+#stage[data-fan] .fan-go,#stage[data-fan] .fan-foot{opacity:1;transform:none;transition:opacity .34s ease calc(110ms + var(--k) * 60ms),transform .5s cubic-bezier(.2,.8,.2,1) calc(110ms + var(--k) * 60ms)}
+.fan-n{position:relative;min-width:8.6em;font:400 13px/1.3 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7);transition:color .2s ease}
+.fan-d,.fan-now{font:var(--small);color:var(--dim);transition:color .2s ease}
+.fan-now{display:none}
+.fan-go[aria-current="true"] .fan-d{display:none}
+.fan-go[aria-current="true"] .fan-now{display:inline}
+.fan-go[aria-current="true"] .fan-n{color:var(--paper)}
+.fan-go:hover .fan-n,.fan-go:focus-visible .fan-n,.fan-go.hot .fan-n{color:var(--paper)}
+.fan-go:hover .fan-d,.fan-go:focus-visible .fan-d,.fan-go.hot .fan-d{color:rgba(243,241,236,.84)}
+.fan-go:focus-visible{outline:1px solid var(--ring);outline-offset:2px}
+.fan-foot .quiet{border-bottom-color:transparent;color:rgba(243,241,236,.62)}
+.fan-foot .quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
+#stage[data-fan] #here-name,#stage[data-fan] .rail{opacity:0;pointer-events:none}
+#stage[data-fan] .room{opacity:.14}
+/* 방은 위에서부터 놓는다. 줄이 펼쳐져 길어져도 손 밑의 줄이 움직이지 않는다 */
+.room{position:absolute;left:clamp(20px,9.5cqw,168px);right:clamp(20px,9.5cqw,168px);top:clamp(92px,21cqh,196px);max-height:calc(100% - clamp(92px,21cqh,196px) - 70px);overflow-y:auto;scrollbar-width:none;display:none;transition:opacity .3s ease;-webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
 #stage[data-space="solio"] .room[data-room="solio"],#stage[data-space="workspace"] .room[data-room="workspace"],#stage[data-space="pulse"] .room[data-room="pulse"]{display:block}
 .say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
 .say .then{display:block;color:var(--dim)}
 /* 줄들은 한 격자의 열을 같이 쓴다. 한 줄의 글이 길어도 모든 줄의 열이 같이 움직인다 */
-.rows{margin-top:clamp(34px,8vh,84px);display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 6.2em minmax(190px,auto);column-gap:clamp(16px,2.4vw,36px)}
+.rows{margin-top:clamp(34px,8cqh,84px);display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 6.2em minmax(190px,auto);column-gap:clamp(16px,2.4cqw,36px)}
 .row{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:center;padding:17px 0;border-top:1px solid var(--hair);color:var(--dim)}
 .row:last-child{border-bottom:1px solid var(--hair)}
 .row.now,button.row:hover{color:var(--paper)}
 .row{transition:color .25s ease}
+/* 줄의 안쪽: 다가가면 그 줄 아래로 차례로 펼쳐진다 */
+.more{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;grid-template-rows:0fr;transition:grid-template-rows .46s cubic-bezier(.2,.8,.2,1)}
+.more.open{grid-template-rows:1fr}
+.more:last-child{border-bottom:1px solid var(--hair)}
+.more-in{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-content:start;min-height:0;overflow:hidden}
+.more-in > *{grid-column:1 / -1;opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
+.more.open .more-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j) * 50ms),transform .46s cubic-bezier(.2,.8,.2,1) calc(70ms + var(--j) * 50ms)}
+.more-in .row{border:0;padding:8px 0}
+.more-say{margin:0;padding:0 0 10px;font:var(--body);color:rgba(243,241,236,.84)}
+.row.sub .nm{color:var(--dim)}
+.row.sub.now .nm{color:var(--paper)}
+.more-note{margin:0;padding:0 0 18px;min-height:0;font:var(--small);color:var(--dim)}
+button.row.opened{color:var(--paper)}
+button.row.opened .gauge i{background:var(--paper)}
 .read{margin:16px 0 0;display:flex;align-items:center;justify-content:space-between;gap:14px;font:var(--small);color:var(--dim)}
 .reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0}
 .reread:hover{border-bottom-color:var(--paper)}
@@ -135,7 +180,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 /* 글이나 그림이 가운데를 차지하는 줄(백업, 지난 7일, 요금) */
 .row-plain > :nth-child(2){grid-column:2 / 4}
 .row-plain > :last-child{grid-column:4;justify-self:end}
-.rows-more{margin-top:clamp(18px,3.2vh,30px)}
+.rows-more{margin-top:clamp(18px,3.2cqh,30px)}
 .note{font:var(--body);color:var(--dim);transition:color .3s ease}
 .note.ok{color:var(--paper)}
 .nm small{display:block;margin-top:5px;font:var(--small);color:var(--dim)}
@@ -143,11 +188,11 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 .week{display:flex;align-items:flex-end;gap:9px;height:24px}
 .week i{display:block;width:2px;height:var(--h);min-height:1px;background:rgba(243,241,236,.38)}
 .week i.today{background:var(--paper)}
-.up{display:inline-block;margin-bottom:clamp(16px,3vh,30px)}
+.up{display:inline-block;margin-bottom:clamp(16px,3cqh,30px)}
 .acts{display:flex;gap:22px}
 /* 안쪽으로 들어가면 첫 화면이 물러나고 같은 짜임(한 문장과 줄)의 방이 뜬다 */
-#stage[data-space="solio"][data-sub] .room[data-room="solio"]{display:none}
-#stage[data-space="solio"][data-sub] .room[data-room="solio-detail"]{display:block}
+#stage[data-space="solio"][data-prog="backup"] .room[data-room="solio"]{display:none}
+#stage[data-space="solio"][data-prog="backup"] .room[data-room="solio-backup"]{display:block}
 #stage[data-aside][data-space] .room[data-room]{display:none}
 #stage[data-aside="account"][data-space] .room[data-room="account"],#stage[data-aside="settings"][data-space] .room[data-room="settings"]{display:block}
 .room.enter > *{animation:up .55s cubic-bezier(.2,.7,.2,1) both}
@@ -158,7 +203,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 @keyframes up{from{opacity:0;transform:translateY(10px)}}
 #stage.still .room.enter > *{animation:none}
 /* 구를 눌러 여는 화면의 아래: 계정, 설정, 로그아웃 */
-.sw-foot{position:absolute;left:16px;right:16px;bottom:clamp(58px,9vh,92px);margin:0;display:flex;justify-content:center;gap:28px}
+.sw-foot{position:absolute;left:16px;right:16px;bottom:clamp(58px,9cqh,92px);margin:0;display:flex;justify-content:center;gap:28px}
 .sw-foot .quiet{border-bottom-color:transparent;color:rgba(243,241,236,.62)}
 .sw-foot .quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
 .rows.again .gauge i{animation:fill .9s cubic-bezier(.2,.7,.2,1) both}
@@ -175,9 +220,9 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 /* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다.
    이름은 구 아래에 가만히 있고, 이름을 가리키면 구가 지구본처럼 돌아 그 자리가 앞에 온다 */
 /* 이름 셋은 밝기가 같다. 지금 있는 곳은 이름 앞의 점(구 위 고리 가운데의 점과 같은 것)과 「지금 여기」로 알린다 */
-.sw-names{position:absolute;left:16px;right:16px;top:66%;display:flex;flex-wrap:wrap;justify-content:center;gap:6px clamp(8px,2.4vw,36px)}
+.sw-names{position:absolute;left:16px;right:16px;top:66%;display:flex;flex-wrap:wrap;justify-content:center;gap:6px clamp(8px,2.4cqw,36px)}
 .sw{appearance:none;background:none;border:0;margin:0;padding:10px 12px;width:min(248px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;color:var(--paper);cursor:pointer;border-radius:2px}
-.sw-n{position:relative;font:400 clamp(17px,1.5vw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;padding-bottom:8px}
+.sw-n{position:relative;font:400 clamp(17px,1.5cqw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;padding-bottom:8px}
 /* 밑줄은 글자 폭에 맞춘다(마지막 글자 뒤의 자간만큼은 긋지 않는다) */
 .sw-n::after{content:"";position:absolute;left:0;right:.2em;bottom:0;height:1px;background:var(--paper);opacity:0;transition:opacity .3s ease}
 .sw-d,.sw-now{font:400 14px/1.4 var(--sans);color:var(--dim);transition:color .3s ease}
@@ -188,14 +233,15 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 .sw:hover .sw-n::after,.sw:focus-visible .sw-n::after,.sw.hot .sw-n::after{opacity:1}
 .sw:hover .sw-d,.sw:focus-visible .sw-d,.sw.hot .sw-d{color:rgba(243,241,236,.84)}
 /* 구가 떠난 왼쪽 위 자리에 돌아가는 길을 둔다 */
-.back{appearance:none;position:absolute;left:clamp(20px,9.5vw,168px);top:calc(clamp(12px,3.4vh,38px) + 9px);height:26px;margin:0;padding:0;background:none;border:0;border-radius:2px;
+.back{appearance:none;position:absolute;left:clamp(20px,9.5cqw,168px);top:calc(clamp(12px,3.4cqh,38px) + 9px);height:26px;margin:0;padding:0;background:none;border:0;border-radius:2px;
   display:inline-flex;align-items:center;gap:10px;font:400 13px/1 var(--sans);color:rgba(243,241,236,.7);cursor:pointer;transition:color .25s ease}
 .back kbd{font:400 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-@media (hover:none),(max-width:640px){.back kbd{display:none}}
+@media (hover:none){.back kbd{display:none}}
+@container stage (max-width:640px){.back kbd{display:none}}
 .back:hover{color:var(--paper)}
 
 /* 시안 조작 막대 */
-#meta{position:absolute;z-index:5;left:0;right:0;margin-inline:auto;width:fit-content;bottom:calc(14px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);
+#meta{position:fixed;z-index:5;left:0;right:0;margin-inline:auto;width:fit-content;bottom:calc(14px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);
   display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 12px;padding:6px 14px;
   background:var(--meta-bg);border:1px solid rgba(243,241,236,.12);border-radius:18px;font:400 12px/1 var(--sans);color:rgba(243,241,236,.62);transition:opacity .5s ease}
 #meta.idle{opacity:0;pointer-events:none}
@@ -206,7 +252,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 #meta button[aria-pressed="true"]{color:var(--paper);background:rgba(243,241,236,.11)}
 #meta button:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
 
-@media (max-width:640px){
+@container stage (max-width:640px){
   .rows{grid-template-columns:minmax(0,1fr)}
   .row{grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:10px;padding:14px 0}
   .gauge{grid-column:1 / -1;grid-row:2}
@@ -214,21 +260,42 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
   .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   .row-plain > :last-child{grid-column:2;grid-row:1}
   /* 좁은 창에서는 줄이 다 들어가지 않으므로 방 안에서 스크롤한다 */
-  .room{top:clamp(84px,13vh,128px);transform:none;bottom:calc(78px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
+  .room{top:clamp(84px,13cqh,128px);max-height:none;bottom:calc(78px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5cqw,168px) - 6px);right:calc(clamp(20px,9.5cqw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
   .rows{margin-top:28px}
   .sw-foot{bottom:calc(84px + env(safe-area-inset-bottom,0px))} /* 좁은 창에서는 시안 막대가 두 줄이라 그 위로 올린다 */
+  /* 좁은 창에서는 자란 구와 이름이 본문 위에 놓이므로 본문을 더 가라앉힌다 */
+  #stage[data-fan] .room{opacity:.05}
+}
+/* 시안 막대가 한 줄에 다 들어가지 않는 폭에서는 한 줄로 두고 옆으로 민다(단추가 늘어도 높이가 그대로다) */
+@media (max-width:1100px){
+  #meta{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;width:auto;left:16px;right:16px;border-radius:14px}
+  #meta .grp,#meta button{flex:none}
+}
+@media (max-width:640px){
   #meta{gap:2px 6px;padding:5px 10px;font-size:11px}
   #meta .tag{display:none}
   #meta button{padding:6px 7px}
 }
-@media (max-height:620px) and (min-width:641px){
-  .room{top:47%}
+@container stage (max-height:620px) and (min-width:641px){
+  .room{top:16cqh;max-height:calc(100% - 16cqh - 56px)}
   .rows{margin-top:22px}
   .row{padding:10px 0}
   .rows-more{margin-top:8px}
   .up{margin-bottom:10px}
+}
+@media (max-height:620px) and (min-width:641px){
   #meta{bottom:8px;padding:3px 12px}
 }
+/* 아주 작은 창: 구와 한 문장만 남는다 */
+@container stage (max-height:340px){
+  .rail,.rows,.read,.up,#here-name{display:none}
+  .here{left:12px;top:8px}
+  .room{left:24px;right:24px;top:62px;bottom:14px;max-height:none;padding:0}
+  .say{font-size:clamp(17px,5.4cqw,22px);line-height:1.36}
+}
+/* 창 크기를 바꿔 보는 시안: 무대를 창처럼 줄였다 늘린다 */
+body.sized{background:#0d0d0d}
+body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:translate(-50%,-50%);width:var(--sw);height:var(--sh);min-height:0;border-radius:10px;box-shadow:0 0 0 1px rgba(243,241,236,.17),0 30px 90px rgba(0,0,0,.7);transition:width .85s cubic-bezier(.3,.7,.2,1),height .85s cubic-bezier(.3,.7,.2,1)}
 @media (prefers-reduced-motion:reduce){
   .layer,.rise,.way,.sw,#meta{transition-duration:.01s !important;transition-delay:0s !important}
   .room.enter > *{animation:none}
@@ -236,7 +303,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 </style>
 </head>
 <body>
-<div id="stage" data-ui="none" data-space="solio">
+<div id="stage" data-ui="none" data-space="solio" data-prog="subs">
   <canvas id="orb" aria-hidden="true"></canvas>
   <canvas id="sig" aria-hidden="true"></canvas>
   <button id="wake" type="button" aria-label="시작하기"></button>
@@ -261,6 +328,16 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
     <div class="here">
       <button id="orb-btn" type="button" aria-label="다른 공간으로 가기"></button>
       <button id="here-name" type="button" aria-label="다른 공간으로 가기"><span id="here-text">SOLIO</span><svg viewBox="0 0 8 5" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="M1 1l3 3 3-3"/></svg></button>
+      <nav class="rail" aria-label="이 공간의 프로그램">
+        <button class="obj" type="button" data-prog="subs" aria-current="true" style="--k:0"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg><span class="obj-n">구독</span></button>
+        <button class="obj" type="button" data-prog="backup" aria-current="false" style="--k:1"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="10" cy="10" r="2.9" fill="none" stroke="currentColor" stroke-width="1.1"/></svg><span class="obj-n">백업<small>준비 중</small></span></button>
+      </nav>
+    </div>
+    <div id="fan" class="fan" role="group" aria-label="갈 수 있는 공간과 계정">
+      <button class="fan-go" type="button" data-go="solio" style="--k:0"><span class="fan-n">SOLIO</span><span class="fan-d">혼자 하는 사업의 도구</span><span class="fan-now">지금 여기</span></button>
+      <button class="fan-go" type="button" data-go="workspace" style="--k:1"><span class="fan-n">WORKSPACE</span><span class="fan-d">팀이 함께 일하는 곳</span><span class="fan-now">지금 여기</span></button>
+      <button class="fan-go" type="button" data-go="pulse" style="--k:2"><span class="fan-n">PULSE</span><span class="fan-d">고객과 함께 만드는 곳</span><span class="fan-now">지금 여기</span></button>
+      <p class="fan-foot" style="--k:3"><button class="quiet" type="button" data-foot="account">계정</button><button class="quiet" type="button" data-foot="settings">설정</button><button class="quiet" type="button" data-foot="logout">로그아웃</button></p>
     </div>
 
     <div class="room" data-room="solio">
@@ -272,16 +349,11 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
         <button type="button" data-svc="higgsfield" class="row rise" style="--i:6"><span class="nm">Higgsfield</span><span class="gauge" aria-hidden="true"><i style="--v:41%"></i></span><span class="val">41% 남음</span><span class="when">1,240 / 3,000 크레딧 · 12월 3일 결제</span></button>
       </div>
       <p class="read rise" style="--i:7"><span id="read-when">방금 읽은 값입니다.</span><button class="reread" id="reread" type="button">다시 읽기</button></p>
-      <div class="rows rows-more">
-        <div class="row row-plain rise" style="--i:8"><span class="nm">백업</span><span class="note" id="backup-note">아직 보호를 시작하지 않았습니다.</span><button class="reread" id="backup-go" type="button">보호 시작</button></div>
-      </div>
     </div>
 
-    <div class="room" data-room="solio-detail">
-      <button class="quiet up" id="detail-back" type="button">구독 전체로</button>
-      <p class="say" id="detail-say" aria-live="polite"></p>
-      <div class="rows" id="detail-rows"></div>
-      <p class="read"><span id="detail-note"></span><span class="acts"><button class="reread" type="button" data-later>계정 더하기</button><button class="reread" type="button" data-later>모델별 토큰</button></span></p>
+    <div class="room" data-room="solio-backup">
+      <p class="say">백업은 준비하고 있습니다.<span class="then">이 PC의 작업 폴더를 지키고, 잃어버려도 되살리는 프로그램입니다.</span></p>
+      <div class="rows"><div class="row row-plain"><span class="nm">상태</span><span class="note">준비 중입니다. 열리면 이 자리에서 바로 켭니다.</span><span></span></div></div>
     </div>
     <div class="room" data-room="account">
       <button class="quiet up" type="button" data-aside-back>돌아가기</button>
@@ -319,20 +391,23 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
     <button id="sw-close" class="back rise" style="--i:3" type="button">돌아가기<kbd>Esc</kbd></button>
   </section>
 
-  <nav id="meta" aria-label="시안 조작">
-    <span class="tag">시안</span>
-    <div class="grp" role="group" aria-label="켜는 상황">
-      <button type="button" data-mode="first" aria-pressed="true">처음 켤 때</button>
-      <button type="button" data-mode="back" aria-pressed="false">다시 켤 때</button>
-      <button type="button" data-mode="update" aria-pressed="false">새 판이 있을 때</button>
-      <button type="button" data-mode="install" aria-pressed="false">처음 설치할 때</button>
-    </div>
-    <button type="button" id="replay">처음부터</button>
-    <button type="button" id="sigbtn" aria-pressed="true">로고 켜짐</button>
-    <button type="button" id="grandbtn" aria-pressed="false">웅장한 판 꺼짐</button>
-    <button type="button" id="sound" aria-pressed="false">소리 꺼짐</button>
-  </nav>
 </div>
+<nav id="meta" aria-label="시안 조작">
+  <span class="tag">시안</span>
+  <div class="grp" role="group" aria-label="켜는 상황">
+    <button type="button" data-mode="first" aria-pressed="true">처음 켤 때</button>
+    <button type="button" data-mode="back" aria-pressed="false">다시 켤 때</button>
+    <button type="button" data-mode="update" aria-pressed="false">새 판이 있을 때</button>
+    <button type="button" data-mode="install" aria-pressed="false">처음 설치할 때</button>
+  </div>
+  <button type="button" id="replay">처음부터</button>
+  <button type="button" id="sigbtn" aria-pressed="true">로고 켜짐</button>
+  <button type="button" id="eyebtn">점 눈</button>
+  <button type="button" id="moodbtn">표정 · 평소</button>
+  <button type="button" id="grandbtn" aria-pressed="false">웅장한 판 꺼짐</button>
+  <button type="button" id="sizebtn">창 크기 · 꽉 참</button>
+  <button type="button" id="sound" aria-pressed="false">소리 꺼짐</button>
+</nav>
 
 <script>
 (() => {
@@ -355,8 +430,8 @@ let run = 0, tw = null, poseName = 'void', glintBoost = 0, glintWant = 0;
 /* 새 판을 깎는 정도. cut은 깎인 만큼(0~1), cutOn은 그 장면이 켜진 정도다 */
 let cut = 1, cutOn = 0, cutOnWant = 0, grand = false, forgeP = 0;
 /* az와 lz는 빛이 오는 쪽(화면에서의 각도, 보는 쪽으로 기운 정도), ax는 구를 깎은 축, spin은 그 축을 따라 구를 돌린 각이다.
-   mark는 새긴 자리가 보이는 정도, par는 손을 따라 기우는 정도, calm은 글이 놓일 자리의 결을 가라앉히는 정도, open은 들어갈 자리가 열린 정도다 */
-const S = { cx: 0, top: 0, r: 1, az: 0, lz: .5, lit: 0, focus: 0, ax: [.28, .52, .81], spin: 0, mark: 0, par: 1, calm: 0, open: 0 };
+   mark는 새긴 자리가 보이는 정도, par는 손을 따라 기우는 정도, calm은 글이 놓일 자리의 결을 가라앉히는 정도, open은 들어갈 자리가 열린 정도, eye는 눈이 보이는 자세인지다 */
+const S = { cx: 0, top: 0, r: 1, az: 0, lz: .5, lit: 0, focus: 0, ax: [.28, .52, .81], spin: 0, mark: 0, par: 1, calm: 0, open: 0, eye: 0 };
 const ptr = { x: .5, y: .5 }, ptrS = { x: .5, y: .5 };
 let diveTo = 'solio', hotWant = -1, faceWant = null, sigOn = true;
 const hot = [0, 0, 0], markXY = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
@@ -384,6 +459,8 @@ function placeXY(s, name) { const m = placeDir(s.ax, s.spin, name); return [s.cx
 /* ── 구가 서는 자리. top은 구의 맨 윗점, r은 반지름(화면 px) ── */
 /* 깎은 축의 방향 둘: 쉴 때와 로그인을 물을 때. 자리를 내보이거나 들어갈 때는 faceAx를 쓴다 */
 const AX = { rest: [.28, .52, .81], top: [0, .972, .235] };
+/* 구에 다가가 지도가 켜졌을 때의 반지름. 고리가 보일 만큼은 커야 한다 */
+const fanR = () => clamp(H * .086, 50, 84);
 function swGeom() {
   const wide = W >= 760 && H >= 470, r = wide ? Math.min(H * .2, W * .19) : Math.min(H * .13, W * .23);
   return { wide, r, cy: wide ? H * .4 : r + Math.max(64, H * .09) };
@@ -398,16 +475,18 @@ function poses() {
   const r0 = Math.min(H * .21, W * .3);
   const rAsk = Math.max(H * 1.9, W * 1.25);
   const b = orbBtn.getBoundingClientRect(), s = stage.getBoundingClientRect();
-  const hx = b.left - s.left + b.width / 2, hy = b.top - s.top + b.height / 2, hr = 13;
-  const g = swGeom(), fg = forgeGeom(), rIn = Math.hypot(W, H) * .56 / RHO;
+  const hx = b.left - s.left + b.width / 2, hy = b.top - s.top + b.height / 2, hr = 16;
+  const g = swGeom(), fg = forgeGeom(), rIn = Math.hypot(W, H) * .56 / RHO, fr = fanR();
   return {
     void:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(-50), lz: .5, lit: 0, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
-    rest:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: .5, lit: 1, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
-    forge:  { cx: W / 2, top: fg.cy - fg.r, r: fg.r, az: rad(128), lz: grand ? .42 : .5, lit: grand ? .58 : 1, focus: 0, ax: AX.rest, mark: 0, par: grand ? .16 : .35, calm: grand ? .85 : 0 },
+    rest:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: .5, lit: 1, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0, eye: 1 },
+    forge:  { cx: W / 2, top: fg.cy - fg.r, r: fg.r, az: rad(128), lz: grand ? .42 : .5, lit: grand ? .58 : 1, focus: 0, ax: AX.rest, mark: 0, par: grand ? .16 : .35, calm: grand ? .85 : 0, eye: 1 },
     ask:    { cx: W / 2, top: H * .25, r: rAsk, az: rad(150), lz: -.3, lit: 1, focus: 1, ax: AX.top, mark: 0, par: 0, calm: 1 },
     /* 들어갈 자리가 보는 쪽을 똑바로 향하고 그 고리가 창보다 커진 때다. 거기까지 가는 길은 mix가 자리를 따라가며 잡는다 */
     inside: { cx: W / 2, top: H / 2 - rIn, r: rIn, az: rad(150), lit: 0, focus: 1, ax: faceAx(diveTo), spin: -LON[diveTo], mark: 1, par: 0, calm: 0, dive: true },
-    home:   { cx: hx, top: hy - hr, r: hr, az: rad(135), lz: .5, lit: 1, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
+    home:   { cx: hx, top: hy - hr, r: hr, az: rad(135), lz: .5, lit: 1, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0, eye: 1 },
+    /* 구에 다가가면 구가 제자리에서 자라 지도가 켜진다. 왼쪽 위 모서리는 그대로 두고 오른쪽 아래로 자란다. 눈은 물러난다 */
+    fan:    { cx: hx - hr + fr, top: hy - hr, r: fr, az: rad(140), lz: .45, lit: 1, focus: 0, ax: faceAx(faceWant || space), spin: -LON[faceWant || space], mark: 1, par: 0, calm: 0 },
     /* 공간을 고를 때는 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 이름을 가리키면 그 자리가 앞으로 돌아온다 */
     sw:     { cx: W / 2, top: g.cy - g.r, r: g.r, az: rad(140), lz: .45, lit: 1, focus: 0, ax: faceAx(faceWant || space), spin: -LON[faceWant || space], mark: 1, par: 0, calm: 0 },
   };
@@ -415,7 +494,7 @@ function poses() {
 function snap(name) {
   const p = poses()[name];
   for (const k in p) if (k !== 'dive') S[k] = Array.isArray(p[k]) ? [...p[k]] : p[k];
-  S.open = name === 'inside' ? 1 : 0; poseName = name; tw = null;
+  S.open = name === 'inside' ? 1 : 0; S.eye = p.eye || 0; poseName = name; tw = null;
 }
 function tween(name, ms, ease = easeIO, litCurve = null) {
   if (tw) tw.res();
@@ -431,6 +510,8 @@ function mix(a, b, t, o) {
   S.r = Math.exp(lerp(Math.log(a.r), Math.log(b.r), e));
   S.az = lerp(a.az, b.az, eo); S.focus = lerp(a.focus, b.focus, eo);
   S.mark = lerp(a.mark, b.mark, eo); S.par = lerp(a.par, b.par, eo); S.calm = lerp(a.calm, b.calm, eo);
+  /* 눈은 자리를 옮기는 길의 앞쪽에서 사라지고 뒤쪽에서 나타난다 */
+  S.eye = (a.eye || 0) > (b.eye || 0) ? lerp(a.eye || 0, b.eye || 0, smooth(0, .3, t)) : lerp(a.eye || 0, b.eye || 0, smooth(.6, 1, t));
   if (b.lz !== undefined) S.lz = lerp(a.lz, b.lz, eo);
   S.ax = [lerp(a.ax[0], b.ax[0], eo), lerp(a.ax[1], b.ax[1], eo), lerp(a.ax[2], b.ax[2], eo)];
   if (b.spin !== undefined) S.spin = lerp(a.spin, b.spin, eo);
@@ -474,24 +555,66 @@ function setUI(next) {
 function applySpace() {
   stage.dataset.space = space;
   $('#here-text').textContent = { solio: 'SOLIO', workspace: 'WORKSPACE', pulse: 'PULSE' }[space];
-  $$('.sw').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === space)));
+  $$('.sw, .fan-go').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === space)));
   delete stage.dataset.sub; delete stage.dataset.aside;
 }
 
+/* ── 눈. 구 겉에 켜지는 두 눈이다. 손이 있는 쪽을 보고, 가끔 깜빡이고, 표정으로 상태를 말한다 ── */
+const EYE_KINDS = [['dot', '점 눈'], ['slit', '틈 눈'], ['light', '빛 눈'], ['none', '눈 없음']];
+const MOODS = [['calm', '평소'], ['smile', '웃음'], ['busy', '일하는 중'], ['sorry', '문제'], ['sleep', '잠']];
+const MOOD_NO = { calm: 0, smile: 1, sleep: 2, sorry: 3, busy: 4 };
+/* gate는 눈을 켠 정도, open은 뜬 정도, face는 얼굴이 향한 쪽, gaze는 눈길이 얼굴보다 앞서 간 만큼(점 한 칸이 1)이다. fixed는 화면 확인용으로 멈춰 둔 값이다 */
+const eye = { kind: 'dot', gate: 0, gateS: 0, mood: 'calm', open: 1, face: [0, 0], gaze: [0, 0], lid: null, nextBlink: 0, token: 0, fixed: null };
+function lidTo(v, ms, ease = easeIO) {
+  if (eye.lid) eye.lid.res();
+  return new Promise(res => { eye.lid = { from: eye.open, to: v, t0: performance.now(), ms: reduce ? Math.min(ms, 80) : ms, ease, res }; });
+}
+function stepEye(now) {
+  const l = eye.lid;
+  if (l) { const t = clamp((now - l.t0) / l.ms, 0, 1); eye.open = lerp(l.from, l.to, l.ease(t)); if (t >= 1) { eye.lid = null; l.res(); } }
+  eye.gateS += (eye.gate - eye.gateS) * .09;
+  if (!reduce && !eye.lid && !eye.fixed && eye.mood === 'calm' && eye.gateS > .9 && S.eye > .9 && now > eye.nextBlink) { eye.nextBlink = now + 2600 + Math.random() * 4200; blink(); }
+}
+async function blink() { const k = ++eye.token; await lidTo(0, 90); if (k !== eye.token) return; await lidTo(1, 170, easeOut); }
+/* 표정을 바꾼다. 눈을 감았다 뜨는 사이에 바뀐다. ms를 주면 그 뒤 평소로 돌아온다 */
+async function setMood(m, ms = 0) {
+  const k = ++eye.token;
+  if (m !== eye.mood) { await lidTo(0, 110); if (k !== eye.token) return; eye.mood = m; syncMoodBtn(); await lidTo(1, m === 'calm' ? 260 : 190, easeOut); if (k !== eye.token) return; }
+  if (ms) { await wait(ms); if (k !== eye.token) return; setMood('calm'); }
+}
+/* 잠든 눈으로 떠오른다 */
+function eyeStop() { ++eye.token; if (eye.lid) { const l = eye.lid; eye.lid = null; l.res(); } }
+function eyesAsleep() { eyeStop(); eye.mood = 'sleep'; eye.open = 1; eye.gate = 1; syncMoodBtn(); }
+/* 눈을 뜬다 */
+async function eyesWake() {
+  const k = ++eye.token; eye.gate = 1;
+  await lidTo(0, 160); if (k !== eye.token) return;
+  eye.mood = 'calm'; syncMoodBtn();
+  await lidTo(1, 460, easeOut); if (k !== eye.token) return;
+  eye.nextBlink = performance.now() + 1100;
+}
+function eyesCalm() { eyeStop(); eye.mood = 'calm'; eye.open = 1; eye.gate = 1; eye.fixed = null; syncMoodBtn(); }
+function setEyeKind(kind) { eye.kind = kind; $('#eyebtn').textContent = EYE_KINDS.find(x => x[0] === kind)[1]; }
+function syncMoodBtn() { $('#moodbtn').textContent = '표정 · ' + MOODS.find(x => x[0] === eye.mood)[1]; }
 /* ── 흐름 ── */
 async function boot() {
   const my = ++run;
   stage.classList.remove('still');
-  sig.stop(); pointAt(null); S.spin = 0;
+  sig.stop(); pointAt(null); S.spin = 0; fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); closeMores(true);
   cut = 1; cutOn = cutOnWant = 0; delete stage.dataset.forge; delete stage.dataset.sub; delete stage.dataset.aside; setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = ''; $('#ask-note').textContent = '';
   hurry = false; stage.dataset.boot = '1';
+  eyeStop(); eye.gate = 0; eye.gateS = 0; eye.fixed = null; eye.mood = 'sleep'; eye.open = 1; syncMoodBtn();
   if (mode === 'install') { delete stage.dataset.boot; return installBoot(my); }
   // 다시 켤 때는 날마다 보는 장면이라 짧게 간다(켜서 솔리오까지 3초 남짓).
   await wait(mode !== 'first' ? 300 : 520); if (my !== run) return;
   snd.boot();
+  // 빛이 자리를 잡을 즈음 잠든 눈이 떠오르고, 곧 눈을 뜬다. 새 판을 받을 때는 다 깎일 때까지 잠들어 있다
+  wait(mode !== 'first' ? 600 : 1700).then(() => { if (my === run) eyesAsleep(); });
+  if (mode === 'back') wait(900).then(() => { if (my === run) eyesWake(); });
   await tween('rest', mode !== 'first' ? 1150 : 2400, easeOut, (t, a, b) => lerp(a, b, smooth(0, .62, t))); if (my !== run) return;
   setUI('rest');
-  if (!hurry) await waitSkippable(mode !== 'first' ? 220 : 1350); if (my !== run) return;
+  if (mode === 'first') wait(380).then(() => { if (my === run) eyesWake(); });
+  if (!hurry) await waitSkippable(mode !== 'first' ? 320 : 1500); if (my !== run) return;
   if (mode === 'update') return forge(my);
   if (mode === 'back') return enter('solio', my, 1050);
   setUI('none'); snd.rise();
@@ -500,7 +623,8 @@ async function boot() {
 }
 /* 구가 그 공간의 자리를 보는 쪽으로 돌리면서, 그 고리 안으로 들어간다. 들어온 순간 점이 맞춰져 synk 표가 된다 */
 async function enter(next, my = ++run, ms = 1250) {
-  const quick = ui === 'switch' || mode === 'update' || (mode === 'back' && ui === 'rest');
+  const quick = ui === 'switch' || fanOn || mode === 'update' || (mode === 'back' && ui === 'rest');
+  fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); dropFanFocus();
   setUI('none'); snd.dive(); sig.stop(); pointAt(null);
   diveTo = next; hotWant = ORDER.indexOf(next);
   if (S.mark < .05) S.spin = -LON[next];   // 자리가 아직 안 보일 때는 도는 것을 보일 까닭이 없다
@@ -508,9 +632,11 @@ async function enter(next, my = ++run, ms = 1250) {
   space = next; applySpace();
   if (sigOn) { snd.lock(); await sig.play(quick); if (my !== run) return; }
   hotWant = -1;
-  snap('home'); S.lit = 0; S.r = 5;
+  snap('home'); S.lit = 0; S.r = 5; eyesCalm();
   setUI('app'); sig.fade();
-  await tween('home', 700, easeOut);
+  await tween('home', 700, easeOut); if (my !== run) return;
+  // 처음 들어온 때는 잠깐 웃는다
+  if (!quick) setMood('smile', 1100);
 }
 async function openSwitch() {
   const my = ++run; setUI('none'); snd.tick();
@@ -521,10 +647,10 @@ async function openSwitch() {
 /* 가리킨 공간의 고리와 이름을 밝힌다. 이름을 가리킨 것이면(turn) 구가 돌아 그 자리가 앞에 온다.
    구 위의 고리를 가리킨 것이면 밝히기만 한다(돌리면 고리가 손 밑에서 달아난다) */
 function pointAt(name, turn = true) {
-  if (name && ui !== 'switch') return;
+  if (name && ui !== 'switch' && !fanOn) return;
   hotWant = name ? ORDER.indexOf(name) : -1;
   if (turn) faceWant = name;
-  $$('.sw').forEach(b => b.classList.toggle('hot', b.dataset.go === name));
+  $$('.sw, .fan-go').forEach(b => b.classList.toggle('hot', b.dataset.go === name));
 }
 async function closeSwitch() {
   const my = ++run; setUI('none'); pointAt(null);
@@ -574,8 +700,8 @@ document.addEventListener('paste', e => {
   const text = (e.clipboardData && e.clipboardData.getData('text') || '').trim(); if (!text) return;
   e.preventDefault(); if (stage.dataset.wait) askBack(); $('#code').value = text.slice(0, 200); $('#invite').requestSubmit();
 });
-orbBtn.addEventListener('click', openSwitch);
-$('#here-name').addEventListener('click', openSwitch);
+orbBtn.addEventListener('click', toggleFan);
+$('#here-name').addEventListener('click', toggleFan);
 $('#reread').addEventListener('click', () => {
   const rows = $('.rows'); rows.classList.remove('again'); void rows.offsetWidth; rows.classList.add('again');
   $('#read-when').textContent = '방금 다시 읽었습니다.'; snd.tick();
@@ -598,7 +724,7 @@ layers.switch.addEventListener('click', e => {
 });
 $('#sw-close').addEventListener('click', closeSwitch);
 
-/* ── 솔리오 안쪽. 구독 줄을 누르면 그 구독의 방으로 들어간다. 방은 첫 화면과 같은 짜임(한 문장과 줄)이다. 숫자는 예시 값이다 ── */
+/* ── 솔리오 안쪽. 구독 줄에 다가가면 그 줄의 안쪽이 그 자리에서 펼쳐진다. 숫자는 예시 값이다 ── */
 const SVC = {
   claude: { say: 'Claude는 초기화 전에 바닥나지 않습니다.', then: '목요일 09:00에 다시 찹니다.', acc: [['업무용', 64, '64% 남음', '목 09:00 초기화', 1]], week: [7, 9, 12, 8, 10, 6, 9], avg: '하루 평균 9%', plan: '월 290,000원', pay: '다음 결제 12월 9일' },
   codex: { say: 'Codex는 내일 오후 3시쯤 막힙니다.', then: '토요일 14:00에 다시 찹니다.', acc: [['업무용', 12, '12% 남음', '토 14:00 초기화', 1], ['개인', 0, '막힘', '목 09:00에 다시 열림', 0]], week: [8, 14, 11, 19, 16, 9, 21], avg: '하루 평균 14%', plan: '월 290,000원', pay: '다음 결제 12월 2일' },
@@ -608,45 +734,141 @@ const SVC = {
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
 /* 방이 바뀔 때 안의 것들이 차례로 떠오른다 */
 function flashRoom(name) { const r = $('.room[data-room="' + name + '"]'); r.classList.remove('enter'); void r.offsetWidth; r.classList.add('enter'); }
-function openDetail(svc) {
-  const d = SVC[svc]; if (!d || ui !== 'app') return;
-  const say = $('#detail-say'); say.textContent = d.say; say.appendChild(el('span', 'then', d.then));
-  const rows = $('#detail-rows'); rows.textContent = ''; $('#detail-note').textContent = '';
-  for (const [name, v, val, when, using] of d.acc) {
-    const r = el('div', 'row' + (using ? ' now' : '')), nm = el('span', 'nm', name);
-    if (using && d.acc.length > 1) nm.appendChild(el('small', '', '지금 쓰는 계정'));
-    const g = el('span', 'gauge'), bar = el('i'); g.setAttribute('aria-hidden', 'true'); bar.style.setProperty('--v', v + '%'); g.appendChild(bar);
-    r.append(nm, g, el('span', 'val', val), el('span', 'when', when)); rows.appendChild(r);
+/* 지금 보이는 방 */
+function roomNow() { return stage.dataset.aside || (space === 'solio' ? (stage.dataset.prog === 'backup' ? 'solio-backup' : 'solio') : space); }
+/* 줄마다 안쪽을 미리 지어 둔다: 그 구독의 결론 한 문장, 계정마다 남은 양, 지난 7일, 요금과 할 수 있는 일 */
+function buildMore() {
+  $$('button.row[data-svc]').forEach(b => {
+    const d = SVC[b.dataset.svc], m = el('div', 'more'), inn = el('div', 'more-in'); m.dataset.for = b.dataset.svc; let j = 0;
+    const put = n => { n.style.setProperty('--j', j++); inn.appendChild(n); };
+    put(el('p', 'more-say', d.say + ' ' + d.then));
+    if (d.acc.length > 1) for (const [name, v, val, when, using] of d.acc) {
+      const r = el('div', 'row sub' + (using ? ' now' : '')), g = el('span', 'gauge'), bar = el('i');
+      g.setAttribute('aria-hidden', 'true'); bar.style.setProperty('--v', v + '%'); g.appendChild(bar);
+      r.append(el('span', 'nm', name + (using ? ' · 지금 쓰는 계정' : '')), g, el('span', 'val', val), el('span', 'when', when)); put(r);
+    }
+    const w = el('div', 'row sub row-plain'), wk = el('span', 'week'), top = Math.max(...d.week, 1);
+    wk.setAttribute('role', 'img'); wk.setAttribute('aria-label', '지난 7일의 하루 사용량');
+    d.week.forEach((x, k) => { const i = el('i', k === d.week.length - 1 ? 'today' : ''); i.style.setProperty('--h', Math.round(x / top * 100) + '%'); wk.appendChild(i); });
+    w.append(el('span', 'nm', '지난 7일'), wk, el('span', 'val', d.avg)); put(w);
+    const p = el('div', 'row sub row-plain'), acts = el('span', 'acts');
+    for (const t of ['계정 더하기', '모델별 토큰']) { const a = el('button', 'reread', t); a.type = 'button'; a.dataset.later = ''; acts.appendChild(a); }
+    p.append(el('span', 'nm', '요금'), el('span', 'note', d.plan + ' · ' + d.pay), acts); put(p);
+    const note = el('p', 'more-note'); note.setAttribute('role', 'status'); put(note);
+    m.appendChild(inn); b.after(m); b.setAttribute('aria-expanded', 'false');
+  });
+}
+/* 줄 하나를 펼친다. 그 줄 아래에 열려 있던 줄은 접는다. 위쪽 줄은 접지 않는다(접으면 손 밑의 줄이 위로 달아난다).
+   pin이면 눌러서 연 것이라, 손이 떠나도 열려 있다 */
+function setMore(b, on) {
+  const m = b.nextElementSibling; if (!m || !m.classList.contains('more')) return;
+  m.classList.toggle('open', on); b.classList.toggle('opened', on); b.setAttribute('aria-expanded', String(on)); if (!on) b.classList.remove('pin');
+}
+function openMore(svc, pin = false) {
+  const rows = $$('button.row[data-svc]'), i = rows.findIndex(b => b.dataset.svc === svc); if (i < 0) return;
+  rows.forEach((b, k) => { if (k > i && !b.classList.contains('pin')) setMore(b, false); });
+  if (pin) rows[i].classList.add('pin');
+  setMore(rows[i], true);
+}
+function closeMores(all = false) { $$('button.row[data-svc]').forEach(b => { if (all || !b.classList.contains('pin')) setMore(b, false); }); }
+/* 다가가서 잠깐 머물러야 열리고, 벗어나서 잠깐 지나야 닫힌다. 스치기만 해서는 아무것도 움직이지 않는다 */
+const NEAR = { open: 150, fast: 260, row: 120, prog: 180, close: 400 };
+let moreTimer = 0, moreLeave = 0;
+buildMore();
+$$('button.row[data-svc]').forEach(b => {
+  b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(moreTimer); moreTimer = setTimeout(() => openMore(b.dataset.svc), NEAR.row); });
+  b.addEventListener('pointerleave', () => clearTimeout(moreTimer));
+  b.addEventListener('focus', () => { if (b.matches(':focus-visible')) openMore(b.dataset.svc); });
+  b.addEventListener('click', () => { if (b.classList.contains('pin')) setMore(b, false); else openMore(b.dataset.svc, true); snd.tick(); });
+});
+{
+  const box = $('.room[data-room="solio"] .rows');
+  box.addEventListener('pointerenter', () => clearTimeout(moreLeave));
+  box.addEventListener('pointerleave', () => { clearTimeout(moreTimer); clearTimeout(moreLeave); moreLeave = setTimeout(() => closeMores(), NEAR.close); });
+}
+$$('[data-later]').forEach(b => b.addEventListener('click', () => { b.closest('.more-in').querySelector('.more-note').textContent = '「' + b.textContent + '」는 다음 시안에서 짓습니다.'; }));
+
+/* ── 이 공간의 프로그램. 구 옆에 작은 오브제로 놓인다. 다가가면 이름이 펼쳐지고, 그 위에 잠깐 머물면 그 프로그램이 열린다 ── */
+let progTimer = 0;
+function showProg(name) {
+  if (stage.dataset.prog === name && !stage.dataset.aside) return;
+  stage.dataset.prog = name; $$('.obj').forEach(o => o.setAttribute('aria-current', String(o.dataset.prog === name)));
+  delete stage.dataset.aside; closeMores(true); flashRoom(roomNow()); snd.tick();
+}
+$$('.obj').forEach(o => {
+  o.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(progTimer); progTimer = setTimeout(() => showProg(o.dataset.prog), NEAR.prog); });
+  o.addEventListener('pointerleave', () => clearTimeout(progTimer));
+  o.addEventListener('click', () => showProg(o.dataset.prog));
+  o.addEventListener('focus', () => { if (o.matches(':focus-visible')) showProg(o.dataset.prog); });
+});
+
+/* ── 구 곁의 펼침. 구에 다가가면 구가 자라 지도가 켜지고(고리가 하나씩 그어진다), 갈 수 있는 공간이 옆으로 펼쳐진다.
+      이름을 가리키면 구가 돌아 그 자리가 앞에 온다. 보는 데는 누를 것이 없고, 공간을 옮길 때만 한 번 누른다 ── */
+let fanOn = false, fanPin = false, fanTimer = 0, fanLeave = 0, nearK = 0;
+const sweep = [1, 1, 1], ptrPx = { x: -9999, y: -9999, t: 0, v: 0 };
+function layoutFan() {
+  const b = orbBtn.getBoundingClientRect(), s = stage.getBoundingClientRect(), fr = fanR(), fan = $('#fan');
+  const ox = b.left - s.left + b.width / 2 - 16, oy = b.top - s.top + b.height / 2 - 16, side = W >= 560;
+  fan.style.left = Math.round(side ? ox + fr * 2 + 26 : ox + 4) + 'px'; fan.style.top = Math.round(side ? oy + 2 : oy + fr * 2 + 16) + 'px';
+}
+function openFan(pin = false) {
+  if (pin) fanPin = true;
+  if (fanOn || ui !== 'app' || tw) return;
+  const my = ++run; fanOn = true; stage.dataset.fan = '1'; snd.tick();
+  clearTimeout(fanTimer); fanTimer = 0; clearTimeout(fanLeave); fanLeave = 0;
+  pointAt(null); S.spin = -LON[space]; S.ax = faceAx(space); sweep.fill(0); layoutFan();
+  tween('fan', 440, easeOut);
+  ORDER.forEach((_, i) => wait(170 + i * 120).then(() => { if (my === run && fanOn) ramp(400, t => { sweep[i] = t; }, easeIO, false, my); }));
+}
+async function closeFan() {
+  if (!fanOn) return;
+  const my = ++run; fanOn = false; fanPin = false; delete stage.dataset.fan; pointAt(null); dropFanFocus();
+  clearTimeout(fanTimer); fanTimer = 0; clearTimeout(fanLeave); fanLeave = 0;
+  await tween('home', 380, easeIO); if (my !== run) return;
+  sweep.fill(1);
+}
+/* 눌렀을 때: 닫혀 있으면 열어 두고, 다가가서 열린 것이면 그대로 열어 두고, 눌러서 열어 둔 것이면 닫는다 */
+function toggleFan() { if (fanOn && fanPin) closeFan(); else openFan(true); }
+function goFan(name) { snd.tick(); if (name === space) closeFan(); else enter(name); }
+/* 펼침 안에 초점이 있었으면 놓는다(접힌 단추에 초점이 남지 않게) */
+function dropFanFocus() { const a = document.activeElement; if (a && $('#fan').contains(a)) a.blur(); }
+const inBox = (r, s, x, y, pad) => x > r.left - s.left - pad && x < r.right - s.left + pad && y > r.top - s.top - pad && y < r.bottom - s.top + pad;
+/* 구와 공간 이름 가까이인지 */
+function nearOrb(x, y) { const s = stage.getBoundingClientRect(); return inBox(orbBtn.getBoundingClientRect(), s, x, y, 18) || inBox($('#here-name').getBoundingClientRect(), s, x, y, 10); }
+/* 펼친 뒤에 머물 수 있는 넓이: 자란 구와 이름 목록, 그리고 둘레 */
+function fanZone(x, y) { const s = stage.getBoundingClientRect(); return Math.hypot(x - S.cx, y - (S.top + S.r)) < S.r + 44 || inBox($('#fan').getBoundingClientRect(), s, x, y, 44); }
+function nearStep(x, y) {
+  const rail = $('.rail');
+  rail.classList.toggle('near', ui === 'app' && !fanOn && inBox(rail.getBoundingClientRect(), stage.getBoundingClientRect(), x, y, 64));
+  if (ui !== 'app' || !canHover || stage.classList.contains('still')) return;
+  if (!fanOn) {
+    if (!nearOrb(x, y)) { clearTimeout(fanTimer); fanTimer = 0; }
+    else if (!fanTimer) fanTimer = setTimeout(() => { fanTimer = 0; if (nearOrb(ptrPx.x, ptrPx.y)) openFan(); }, ptrPx.v > 1.4 ? NEAR.fast : NEAR.open);
+  } else if (!fanPin) {
+    if (fanZone(x, y)) { clearTimeout(fanLeave); fanLeave = 0; }
+    else if (!fanLeave) fanLeave = setTimeout(() => { fanLeave = 0; if (fanOn && !fanPin && !fanZone(ptrPx.x, ptrPx.y)) closeFan(); }, NEAR.close);
   }
-  const w = el('div', 'row row-plain'), wk = el('span', 'week'), top = Math.max(...d.week, 1);
-  wk.setAttribute('role', 'img'); wk.setAttribute('aria-label', '지난 7일의 하루 사용량');
-  d.week.forEach((x, k) => { const b = el('i', k === d.week.length - 1 ? 'today' : ''); b.style.setProperty('--h', Math.round(x / top * 100) + '%'); wk.appendChild(b); });
-  w.append(el('span', 'nm', '지난 7일'), wk, el('span', 'val', d.avg)); rows.appendChild(w);
-  const p = el('div', 'row row-plain'); p.append(el('span', 'nm', '요금'), el('span', 'note', d.plan), el('span', 'val', d.pay)); rows.appendChild(p);
-  stage.dataset.sub = svc; flashRoom('solio-detail'); snd.tick();
-  if (!stage.classList.contains('still')) $('#detail-back').focus({ preventScroll: true });
 }
-function closeDetail() {
-  const svc = stage.dataset.sub; if (!svc) return;
-  delete stage.dataset.sub; flashRoom('solio');
-  const b = $('button.row[data-svc="' + svc + '"]'); if (b) b.focus({ preventScroll: true });
-}
+$$('.fan-go').forEach(b => {
+  b.addEventListener('click', () => goFan(b.dataset.go));
+  b.addEventListener('pointerenter', () => pointAt(b.dataset.go));
+  b.addEventListener('pointerleave', () => pointAt(null));
+  b.addEventListener('focus', () => pointAt(b.dataset.go));
+  b.addEventListener('blur', () => pointAt(null));
+});
+/* 자판으로는 구나 이름에 초점이 오면 펼쳐진다 */
+[orbBtn, $('#here-name')].forEach(b => b.addEventListener('focus', () => { if (b.matches(':focus-visible')) openFan(true); }));
+/* 눌러서 열어 둔 것은 바깥을 누르면 닫힌다 */
+stage.addEventListener('pointerdown', e => { if (!fanOn || !fanPin) return; const s = stage.getBoundingClientRect(); if (!fanZone(e.clientX - s.left, e.clientY - s.top)) closeFan(); });
+
 /* 계정과 설정은 어느 공간에 있든 열린다. 닫으면 있던 방으로 돌아온다 */
-function openAside(name) { stage.dataset.aside = name; closeSwitch(); flashRoom(name); }
-function closeAside() { if (!stage.dataset.aside) return; delete stage.dataset.aside; flashRoom(space === 'solio' && stage.dataset.sub ? 'solio-detail' : space); }
-$$('button.row[data-svc]').forEach(b => b.addEventListener('click', () => openDetail(b.dataset.svc)));
-$('#detail-back').addEventListener('click', closeDetail);
+function openAside(name) { stage.dataset.aside = name; if (fanOn) closeFan(); else closeSwitch(); flashRoom(name); }
+function closeAside() { if (!stage.dataset.aside) return; delete stage.dataset.aside; flashRoom(roomNow()); }
 $$('[data-aside-back]').forEach(b => b.addEventListener('click', closeAside));
-$$('[data-later]').forEach(b => b.addEventListener('click', () => { $('#detail-note').textContent = '「' + b.textContent + '」는 다음 시안에서 짓습니다.'; }));
 $$('[data-foot]').forEach(b => b.addEventListener('click', () => {
   snd.tick();
   if (b.dataset.foot === 'logout') { setMode('first'); boot(); } else openAside(b.dataset.foot);
 }));
-$('#backup-go').addEventListener('click', () => {
-  const n = $('#backup-note'); n.textContent = '안전합니다. 방금 확인했고, 11월 16일에 되살려 보는 시험을 통과했습니다.'; n.classList.add('ok');
-  $('#backup-go').hidden = true; snd.tick();
-});
-
 /* ── 새 판 받기와 처음 설치. 구가 가운데에서 새로 깎인다. 깎인 만큼이 진행이고, 다 깎이면 빛이 한 바퀴 돌고 앱으로 들어간다 ── */
 function layoutForge() { const g = forgeGeom(); stage.style.setProperty('--forge-top', Math.round(g.grand ? H * (H < 620 ? .58 : .7) : g.cy + g.r + Math.max(34, H * .055)) + 'px'); }
 /* 깎인 만큼을 적는다. 웅장한 판에서는 그만큼 구가 다가온다 */
@@ -671,18 +893,21 @@ function forgeText(p, o = {}) {
 /* 다 깎였다. 글을 거두고 빛줄기가 구를 한 바퀴 돈다 */
 async function forgeDone(my) {
   setUI('none'); cut = 1; cutOnWant = 0; glintWant = 1;
+  wait(grand ? 900 : 250).then(() => { if (my === run) eyesWake(); });
+  wait(grand ? 2150 : 1050).then(() => { if (my === run) setMood('smile'); });
   if (grand) snd.boot(); else snd.lock();
   const az0 = S.az, lit0 = S.lit;
   /* 웅장한 판에서는 어둡던 구에 빛이 오르면서 천천히 한 바퀴 돈다 */
   await ramp(grand ? 2800 : 1500, t => { S.az = az0 + Math.PI * 2 * t; if (grand) S.lit = lerp(lit0, 1.1, smooth(0, .75, t)); }, easeIO, false, my);
   if (my !== run) return;
   S.az = az0; glintWant = 0;
-  if (grand) { S.lit = 1; await wait(280); }
+  if (grand) S.lit = 1;
+  await wait(280);
 }
 /* 새 판이 있을 때: 옛 결을 지우며 가운데로 오고, 받는 만큼(앞 절반)과 바꾸는 만큼(뒤 절반) 새 결이 깎인다. 끝나면 묻지 않고 솔리오로 들어간다 */
 async function forge(my) {
   forgeP = 0; layoutForge(); delete stage.dataset.forge; forgeText(0);
-  setUI('none'); snd.rise(); cut = 1; cutOnWant = 1;
+  setUI('none'); snd.rise(); cut = 1; cutOnWant = 1; eyesAsleep();
   ramp(grand ? 1500 : 1000, t => { cut = 1 - t; }, easeIO, false, my);
   await tween('forge', grand ? 2300 : 1500, easeIOQ); if (my !== run) return;
   cut = 0; setUI('forge');
@@ -696,6 +921,7 @@ async function installBoot(my) {
   forgeP = 0; layoutForge(); cut = 0; cutOn = cutOnWant = 1; forgeText(0, { ready: true });
   await wait(520); if (my !== run) return;
   snd.boot();
+  wait(1500).then(() => { if (my === run) eyesAsleep(); });
   await tween('forge', grand ? 3000 : 2400, easeOut, (t, a, b) => lerp(a, b, smooth(0, .62, t))); if (my !== run) return;
   stage.dataset.forge = 'ready'; setUI('forge');
   $('#forge-go').focus({ preventScroll: true });
@@ -720,6 +946,23 @@ $('#replay').addEventListener('click', boot);
 $('#sigbtn').addEventListener('click', () => {
   sigOn = !sigOn; $('#sigbtn').setAttribute('aria-pressed', String(sigOn)); $('#sigbtn').textContent = sigOn ? '로고 켜짐' : '로고 꺼짐';
 });
+$('#eyebtn').addEventListener('click', () => { const i = EYE_KINDS.findIndex(k => k[0] === eye.kind); setEyeKind(EYE_KINDS[(i + 1) % EYE_KINDS.length][0]); });
+$('#moodbtn').addEventListener('click', () => { const i = MOODS.findIndex(k => k[0] === eye.mood); eye.gate = 1; setMood(MOODS[(i + 1) % MOODS.length][0]); });
+/* 창 크기를 바꿔 본다. 무대를 창처럼 줄였다 늘리면 같은 화면이 그 크기에 맞춰 다시 놓인다 */
+const SIZES = [['꽉 참', 0, 0], ['보통', 1080, 700], ['좁게', 720, 760], ['세로로', 420, 760], ['아주 작게', 380, 250]];
+let sizeNo = 0, sizeTimer = 0;
+function setSize(i, quick = false) {
+  sizeNo = i; const [name, w, h] = SIZES[i], full = !w, px = (v, max) => Math.max(240, Math.min(v, max)) + 'px';
+  $('#sizebtn').textContent = '창 크기 · ' + name; clearTimeout(sizeTimer);
+  if (!document.body.classList.contains('sized')) {
+    if (full) return;
+    // 꽉 찬 데서 줄어드는 것이 보이게, 먼저 지금 크기를 적고 나서 줄인다
+    stage.style.setProperty('--sw', innerWidth + 'px'); stage.style.setProperty('--sh', innerHeight + 'px'); document.body.classList.add('sized'); void stage.offsetWidth;
+  }
+  stage.style.setProperty('--sw', full ? innerWidth + 'px' : px(w, innerWidth - 24)); stage.style.setProperty('--sh', full ? innerHeight + 'px' : px(h, innerHeight - 96));
+  if (full) sizeTimer = setTimeout(() => { document.body.classList.remove('sized'); stage.style.removeProperty('--sw'); stage.style.removeProperty('--sh'); }, quick ? 0 : 900);
+}
+$('#sizebtn').addEventListener('click', () => setSize((sizeNo + 1) % SIZES.length));
 $('#sound').addEventListener('click', () => {
   const on = !snd.on; snd.set(on);
   $('#sound').setAttribute('aria-pressed', String(on)); $('#sound').textContent = on ? '소리 켜짐' : '소리 꺼짐';
@@ -728,17 +971,24 @@ $('#sound').addEventListener('click', () => {
 let idleTimer = 0;
 const canHover = matchMedia('(hover: hover)').matches;
 function wakeMeta() { meta.classList.remove('idle'); clearTimeout(idleTimer); if (canHover) idleTimer = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('idle'); }, 4200); }
+document.addEventListener('pointermove', wakeMeta);
 stage.addEventListener('pointermove', e => {
-  const s = stage.getBoundingClientRect(); ptr.x = (e.clientX - s.left) / s.width; ptr.y = (e.clientY - s.top) / s.height; wakeMeta();
+  const s = stage.getBoundingClientRect(), x = e.clientX - s.left, y = e.clientY - s.top, now = performance.now();
+  ptrPx.v = ptrPx.t ? Math.hypot(x - ptrPx.x, y - ptrPx.y) / Math.max(1, now - ptrPx.t) : 0; ptrPx.x = x; ptrPx.y = y; ptrPx.t = now;
+  ptr.x = x / s.width; ptr.y = y / s.height; wakeMeta(); nearStep(x, y);
 });
-stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; });
+stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; ptrPx.x = ptrPx.y = -9999; ptrPx.t = 0; nearStep(-9999, -9999); });
 document.addEventListener('keydown', e => {
   wakeMeta();
   const typing = e.target instanceof HTMLInputElement;
-  if (e.key === 'Escape') { if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (ui === 'app' && stage.dataset.aside) closeAside(); else if (ui === 'app' && stage.dataset.sub) closeDetail(); else if (typing) e.target.blur(); return; }
+  if (e.key === 'Escape') { if (fanOn) { closeFan(); orbBtn.blur(); $('#here-name').blur(); } else if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (ui === 'app' && stage.dataset.aside) closeAside(); else if (ui === 'app' && $('.more.open')) { closeMores(true); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); } else if (typing) e.target.blur(); return; }
   if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((e.key === 'Enter' || e.key === ' ') && stage.dataset.boot && !(e.target instanceof HTMLButtonElement && meta.contains(e.target))) { e.preventDefault(); hurryBoot(); return; }
   if (e.key === 'Enter' && ui === 'ask' && !stage.dataset.wait && !(e.target instanceof HTMLButtonElement)) { $('.way').click(); return; }
+  if (fanOn && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    const list = $$('#fan button'), i = list.indexOf(document.activeElement);
+    e.preventDefault(); list[(i + (e.key === 'ArrowDown' ? 1 : list.length - 1) + (i < 0 && e.key === 'ArrowUp' ? 1 : 0)) % list.length].focus(); return;
+  }
   if (ui === 'switch' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
     const list = $$('.sw'), i = Math.max(0, list.indexOf(document.activeElement));
     list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length].focus(); return;
@@ -870,11 +1120,13 @@ precision mediump float;
 uniform vec2 uRes, uC;
 uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm, uCut, uCutOn;
 uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen;
+uniform vec4 uEye;
+uniform vec3 uFace, uGaze, uSweep;
 const float RHO = 0.092;
 float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
 /* 구에 새긴 자리 하나: 가는 고리와, 지금 있는 곳을 알리는 가운데 점. x는 더할 빛, y는 고리 안을 비우는 정도다.
-   가리킨 자리는 고리가 밝아지고, 들어갈 자리는 고리 안이 열린다 */
-vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2){
+   가리킨 자리는 고리가 밝아지고, 들어갈 자리는 고리 안이 열린다. sw는 고리가 그어진 만큼이다(맨 위에서 시계 방향으로 한 바퀴) */
+vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2, float sw){
   vec3 dv = n - M;
   float dd = length(dv);
   /* 화면에서 고리까지 몇 점 떨어졌는지 잰다(밖이 +). 옆으로 돌아가 납작해진 고리도 선 굵기가 같고 또렷하다 */
@@ -885,14 +1137,29 @@ vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2){
   float lift = max(hot, open);
   /* 가리킨 고리는 선이 굵어진다. 고리 둘레에 옅은 빛 번짐을 둬, 덧그린 선이 아니라 켜진 표시로 보이게 한다 */
   float lw = mix(0.5, 1.0, hot);
-  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show;
-  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show;
+  float a01 = fract(atan(dv.x, dv.y) / 6.2831853 + 1.0);
+  float drawn = step(a01, sw * 1.002);
+  float tip = exp(-abs(a01 - sw) * 34.0) * step(0.004, sw) * step(sw, 0.985);
+  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show * (drawn + tip * 1.4);
+  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show * drawn;
   float facing = 0.5 + 0.5 * dot(dv.xy / max(length(dv.xy), 0.0001), l2);
   /* 가운데 점은 구가 커지거나 돌아가도 화면에서 같은 크기의 동그란 점으로 남는다 */
   float pd = length(n.xy - M.xy) * uR / uDpr;
-  float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show;
+  float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show * smoothstep(0.86, 1.0, sw);
   float glow = hot * 0.07 * (1.0 - smoothstep(0.0, RHO, dd)) * (1.0 - open) * show;
   return vec2(ring * mix(0.44 + 0.30 * facing, 1.0, lift) + bloom + pin * 0.92 + glow, (1.0 - smoothstep(-1.2, 0.3, sd)) * open * show);
+}
+float sdBox(vec2 p, vec2 b, float r){ vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
+/* 눈 하나의 모양(안이 −). p는 눈 가운데에서 잰 자리이고 구의 반지름이 1이다. w는 굵기다(0이면 가는 틈, 1이면 통통한 알약). cz는 평소 모양의 반 폭과 반 높이다.
+   표정: 0 평소(세로로 선 알약), 1 웃음(∩), 2 잠(∪), 3 문제(–), 4 일하는 중(도는 점). 감을 때는 위아래에서 닫힌다 */
+float eyeSd(vec2 p, float open, float mood, float t, float w, vec2 cz){
+  if (mood < 0.5) { float h = mix(0.012, cz.y, open); return sdBox(p, vec2(cz.x, h), min(cz.x, h)); }
+  float sd;
+  if (mood < 1.5) { vec2 c = p - vec2(0.0, -0.060); sd = max(abs(length(c) - 0.100) - mix(0.008, 0.014, w), 0.045 - c.y); }
+  else if (mood < 2.5) { vec2 c = p - vec2(0.0, 0.060); sd = max(abs(length(c) - 0.100) - mix(0.008, 0.014, w), c.y + 0.045); }
+  else if (mood < 3.5) { float hh = mix(0.008, 0.013, w); sd = sdBox(p, vec2(0.056, hh), hh); }
+  else { float a = t * 5.2; sd = min(length(p - 0.052 * vec2(cos(a), sin(a))) - mix(0.014, 0.026, w), length(p - 0.052 * vec2(cos(a - 1.25), sin(a - 1.25))) - mix(0.008, 0.015, w)); }
+  return max(sd, abs(p.y) - mix(0.003, 0.2, open));
 }
 void main(){
   vec2 f = gl_FragCoord.xy;
@@ -981,13 +1248,61 @@ void main(){
     vec3 outC = warm * uLit * (cres * (line * 0.16 + halo * 0.03) * pulse * soft + edge);
     col = mix(outC, inC, inside);
   }
+  /* 눈. uEye는 종류(1 점, 2 빛, 3 틈), 보이는 정도, 뜬 정도, 표정이다. 얼굴(uFace)은 손이 있는 쪽을 보고, 눈은 구 겉에 붙어 얼굴과 함께 돈다.
+     점 눈은 구 겉에 뚫은 아주 작은 구멍으로 빛이 새어 나오는 것이라, 꺼지면 구멍도 보이지 않는다 */
+  float ev = uEye.y * inside;
+  if (ev > 0.001 && uEye.x > 0.5) {
+    vec3 F = normalize(uFace);
+    vec3 Rr = normalize(cross(vec3(0.0, 1.0, 0.0), F));
+    vec3 Uu = cross(F, Rr);
+    vec2 fp = vec2(dot(n, Rr), dot(n, Uu));
+    float front = smoothstep(0.10, 0.40, dot(n, F));
+    float ppx = uR / uDpr;
+    /* 구가 작게 줄면 눈을 몸에 견줘 키우고 조금 더 벌린다(아이콘만 한 크기에서도 두 눈으로 읽히게) */
+    float small = smoothstep(60.0, 14.0, ppx);
+    float k = mix(1.0, 1.85, small);
+    float g = 0.040 * k;
+    float sep = 0.220 * mix(1.0, 1.12, small);
+    /* 눈은 한가운데보다 조금 위에 둔다. 가운데나 아래에 두면 구멍이나 렌즈로 읽힌다 */
+    vec2 gz = uGaze.xy * g;
+    vec2 eL = vec2(-sep, 0.06) + gz, eR = vec2(sep, 0.06) + gz;
+    float ww = uEye.x > 2.5 ? mix(0.0, 0.8, small) : 1.0;
+    /* 평소 모양: 점 눈은 가로 셋 세로 다섯 칸에서 네 모서리가 꺼진 알약, 빛 눈은 통통한 알약, 틈 눈은 짧은 실선이다 */
+    vec2 cz = uEye.x < 1.5 ? vec2(0.050, 0.094) : (uEye.x < 2.5 ? vec2(0.040, 0.098) : vec2(0.011, 0.066));
+    /* 아이콘만 한 크기에서는 어느 눈이든 둥근 점 둘로 모은다. 세로 막대 둘은 원 안에서 멈춤 표시로 읽힌다 */
+    cz = mix(cz, vec2(0.046, 0.064), small);
+    float sd = min(eyeSd((fp - eL) / k, uEye.z, uEye.w, uGaze.z, ww, cz), eyeSd((fp - eR) / k, uEye.z, uEye.w, uGaze.z, ww, cz)) * k;
+    float solid = 1.0 - smoothstep(-0.6, 0.6, sd * ppx);
+    float e = 0.0, dim = 0.0;
+    if (uEye.x < 1.5) {
+      /* 점 눈: 칸 가운데가 눈 모양 안에 드는 점만 켠다. 점이 화면에서 뭉개질 만큼 작아지면 한 덩어리로 그린다 */
+      vec2 cc = (floor(fp / g) + 0.5) * g;
+      float cs = min(eyeSd((cc - eL) / k, uEye.z, uEye.w, uGaze.z, 1.0, cz), eyeSd((cc - eR) / k, uEye.z, uEye.w, uGaze.z, 1.0, cz)) * k;
+      float tol = uEye.w < 0.5 ? 0.0 : 0.008;
+      float on = 1.0 - smoothstep(tol - 0.003, tol + 0.003, cs);
+      float dpx = length(fp - cc) * ppx, rd = 0.27 * g * ppx;
+      float led = (1.0 - smoothstep(rd - 0.6, rd + 0.6, dpx)) + 0.20 * exp(-max(dpx - rd, 0.0) / (0.4 * rd + 0.5));
+      e = mix(solid, on * led, smoothstep(3.0, 5.0, g * ppx));
+      dim = 0.34 * (1.0 - smoothstep(-0.2 * g, 1.0 * g, sd));
+    } else if (uEye.x < 2.5) {
+      /* 빛 눈: 눈 모양이 그대로 빛난다. 안에서 비추는 유리처럼 위가 조금 더 밝다 */
+      e = 0.9 * solid * mix(0.80, 1.0, smoothstep(-0.11, 0.11, (fp.y - 0.06) / k)) + 0.20 * exp(-max(sd, 0.0) * ppx / 5.0) * (1.0 - small);
+      dim = 0.7 * (1.0 - smoothstep(0.0, 0.05 * k, sd));
+    } else {
+      /* 틈 눈: 구를 가늘게 벤 틈으로 안의 빛이 새어 나온다 */
+      e = solid + 0.34 * exp(-max(sd, 0.0) * ppx / 4.2) * (1.0 - small);
+      dim = 0.6 * (1.0 - smoothstep(0.0, 0.035 * k, sd));
+    }
+    col *= 1.0 - dim * ev * front;
+    col += warm * e * ev * front * 0.96;
+  }
   /* 새긴 자리. 구가 작게 줄면 보이지 않는다 */
   float mv = uMark * smoothstep(30.0, 84.0, uR / uDpr) * inside;
   if (mv > 0.001) {
     vec2 l2 = vec2(cos(uAz), sin(uAz));
-    vec2 a0 = place(n, uM0, uHot.x, uHere.x, uOpen.x, z, l2);
-    vec2 a1 = place(n, uM1, uHot.y, uHere.y, uOpen.y, z, l2);
-    vec2 a2 = place(n, uM2, uHot.z, uHere.z, uOpen.z, z, l2);
+    vec2 a0 = place(n, uM0, uHot.x, uHere.x, uOpen.x, z, l2, uSweep.x);
+    vec2 a1 = place(n, uM1, uHot.y, uHere.y, uOpen.y, z, l2, uSweep.y);
+    vec2 a2 = place(n, uM2, uHot.z, uHere.z, uOpen.z, z, l2, uSweep.z);
     col *= 1.0 - max(a0.y, max(a1.y, a2.y)) * mv;
     col += warm * uLit * mv * (a0.x + a1.x + a2.x);
   }
@@ -1007,7 +1322,7 @@ function initGL() {
     gl.useProgram(pr);
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uCut', 'uCutOn', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen']) U[k] = gl.getUniformLocation(pr, k);
+    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uCut', 'uCutOn', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uEye', 'uFace', 'uGaze', 'uSweep']) U[k] = gl.getUniformLocation(pr, k);
     return true;
   } catch (e) { console.warn('구 셰이더를 만들지 못했습니다.', e); gl = null; return false; }
 }
@@ -1017,16 +1332,16 @@ function resize() {
   if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
   if (gl) gl.viewport(0, 0, cw, ch);
   if (!tw) { const lit = S.lit; snap(poseName); if (poseName === 'inside') S.lit = lit; }
-  layoutSwitch();
+  layoutSwitch(); if (fanOn) layoutFan();
 }
 let frameNo = 0;
 function draw(now) {
   const t = now / 1000;
-  ptrS.x += (ptr.x - ptrS.x) * .06; ptrS.y += (ptr.y - ptrS.y) * .06;
+  ptrS.x += (ptr.x - ptrS.x) * .06; ptrS.y += (ptr.y - ptrS.y) * .06; stepEye(now);
   glintBoost += (glintWant - glintBoost) * .05; cutOn += (cutOnWant - cutOn) * .09;
   for (let i = 0; i < 3; i++) hot[i] += ((hotWant === i ? 1 : 0) - hot[i]) * .14;
   // 공간을 고르는 동안에는 가리킨 이름의 자리가(없으면 지금 있는 자리가) 한가운데에 오도록 구가 돌고 기운다
-  if (ui === 'switch' && !tw) {
+  if ((ui === 'switch' || fanOn) && !tw) {
     const to = faceWant || space, want = -LON[to], ta = faceAx(to), d = Math.atan2(Math.sin(want - S.spin), Math.cos(want - S.spin));
     const q = reduce || stage.classList.contains('still') ? 1 : .1;
     S.spin += d * q; for (let i = 0; i < 3; i++) S.ax[i] += (ta[i] - S.ax[i]) * q;
@@ -1034,6 +1349,15 @@ function draw(now) {
   const still = reduce ? 0 : 1, free = S.par * still;
   const par = free * S.r * .05;
   const cx = S.cx + (ptrS.x - .5) * par, cy = S.top + S.r + (ptrS.y - .5) * par;
+  // 손이 가까이 오면 작은 구가 조금 커져 알아챈 티를 낸다
+  nearK += ((poseName === 'home' && !tw && ui === 'app' ? smooth(250, 60, Math.hypot(ptrS.x * W - S.cx, ptrS.y * H - (S.top + S.r))) : 0) - nearK) * .14;
+  const rr = S.r * (1 + .2 * nearK * still);
+  // 얼굴은 손이 있는 쪽을 본다. 눈길이 먼저 가고 얼굴이 뒤따른다
+  if (!eye.fixed) {
+    const reach = Math.max(280, S.r * 2.6), wx = clamp((ptrS.x * W - cx) / reach, -1, 1) * .5, wy = clamp((cy - ptrS.y * H) / reach, -1, 1) * .4, q = reduce ? 1 : .1;
+    eye.gaze[0] = clamp((wx - eye.face[0]) * 7, -1, 1); eye.gaze[1] = clamp((wy - eye.face[1]) * 7, -1, 1);
+    eye.face[0] += (wx - eye.face[0]) * q; eye.face[1] += (wy - eye.face[1]) * q;
+  }
   // 손을 따라 빛줄기가 돌고 구가 조금 기운다. 자리를 내보일 때는 구가 기울지 않고 빛만 조금 손을 따른다
   const az = S.az + ((ptrS.x - .5) * -(.7 * free + .14 * S.focus + .2 * (1 - S.par) * (1 - S.focus)) + .05 * Math.sin(t * .4)) * still;
   const ax = [S.ax[0] + (ptrS.x - .5) * .24 * free, S.ax[1] - (ptrS.y - .5) * .2 * free, S.ax[2]];
@@ -1045,7 +1369,7 @@ function draw(now) {
   if (gl) {
     gl.uniform2f(U.uRes, canvas.width, canvas.height);
     gl.uniform2f(U.uC, cx * DPR, (H - cy) * DPR);
-    gl.uniform1f(U.uR, S.r * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
+    gl.uniform1f(U.uR, rr * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
     gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
     gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
     gl.uniform1f(U.uMark, S.mark); gl.uniform1f(U.uCalm, S.calm); gl.uniform1f(U.uCut, cut); gl.uniform1f(U.uCutOn, cutOn);
@@ -1053,6 +1377,10 @@ function draw(now) {
     gl.uniform3f(U.uHot, hot[0], hot[1], hot[2]);
     gl.uniform3f(U.uHere, space === ORDER[0] ? 1 : 0, space === ORDER[1] ? 1 : 0, space === ORDER[2] ? 1 : 0);
     gl.uniform3f(U.uOpen, diveTo === ORDER[0] ? S.open : 0, diveTo === ORDER[1] ? S.open : 0, diveTo === ORDER[2] ? S.open : 0);
+    gl.uniform4f(U.uEye, { dot: 1, light: 2, slit: 3, none: 0 }[eye.kind], S.eye * eye.gateS, eye.open, MOOD_NO[eye.mood]);
+    gl.uniform3f(U.uFace, eye.face[0], eye.face[1], 1);
+    gl.uniform3f(U.uGaze, eye.gaze[0], eye.gaze[1], eye.fixed ? eye.fixed.t : t % 600);
+    gl.uniform3f(U.uSweep, sweep[0], sweep[1], sweep[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   } else if (ctx2d) {
     const c = ctx2d; c.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -1077,11 +1405,22 @@ window.__orb = {
     ++run; skip = null;
     if (opt.space) { space = opt.space; applySpace(); }
     const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'], forge: ['forge', 'forge'] }[scene];
-    delete stage.dataset.sub; delete stage.dataset.aside; stage.classList.add('still'); resize(); sig.show(opt.sig);
-    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openDetail(opt.sub); if (opt.aside) stage.dataset.aside = opt.aside;
+    delete stage.dataset.aside; stage.classList.add('still'); resize(); sig.show(opt.sig);
+    /* fan은 구 곁의 펼침, sweep은 고리가 그어진 만큼, prog는 프로그램(subs, backup), near는 오브제의 이름이 펼쳐진 모습, sub는 안쪽을 펼칠 구독이다 */
+    fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); closeMores(true); nearK = 0;
+    stage.dataset.prog = opt.prog || 'subs'; $$('.obj').forEach(o => o.setAttribute('aria-current', String(o.dataset.prog === stage.dataset.prog))); $('.rail').classList.toggle('near', !!opt.near);
+    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openMore(opt.sub, true); if (opt.aside) stage.dataset.aside = opt.aside;
     cut = 1; cutOn = cutOnWant = 0; delete stage.dataset.forge;
     if (scene === 'forge') { setGrand(!!opt.grand); const p = opt.ready ? 0 : (opt.p === undefined ? .4 : opt.p); forgeP = p; layoutForge(); snap('forge'); cut = opt.failed ? 1 : p; cutOn = cutOnWant = opt.failed ? 0 : 1; if (opt.failed) S.lit = .5; if (opt.ready || opt.failed) stage.dataset.forge = opt.ready ? 'ready' : 'failed'; forgeText(p, opt); }
     pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
+    /* 눈: eye는 종류(dot, slit, light, none), mood는 표정, open은 뜬 정도, face와 gaze는 얼굴과 눈길, eyes가 false면 끈다 */
+    if (opt.eye) setEyeKind(opt.eye);
+    eyeStop();
+    eye.gate = eye.gateS = opt.eyes === false ? 0 : 1; eye.mood = opt.mood || (scene === 'forge' && !opt.failed ? 'sleep' : 'calm'); eye.open = opt.open === undefined ? 1 : opt.open; syncMoodBtn();
+    eye.fixed = { t: opt.t || 0 }; eye.face = opt.face ? [...opt.face] : [0, 0]; eye.gaze = opt.gaze ? [...opt.gaze] : [0, 0];
+    if (opt.fan) { fanOn = true; stage.dataset.fan = '1'; layoutFan(); faceWant = opt.point || null; snap('fan'); sweep.fill(opt.sweep === undefined ? 1 : opt.sweep); pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0; }
+    /* r을 주면 구를 그 반지름으로 창 한가운데에 둔다(아이콘 크기로 볼 때) */
+    if (opt.r) { S.r = opt.r; S.cx = W / 2; S.top = H / 2 - opt.r; }
     if (scene === 'switch') { layoutSwitch(); S.spin = -LON[faceWant || space]; S.ax = faceAx(faceWant || space); }
     draw(performance.now()); return { ...S, W, H };
   },
@@ -1091,6 +1430,7 @@ window.__orb = {
     if (opt.space) { space = opt.space; applySpace(); }
     if (opt.dive) diveTo = opt.dive;
     stage.classList.add('still'); resize(); sig.show(null); setUI('none'); pointAt(null);
+    ++eye.token; eye.gate = eye.gateS = 1; eye.mood = opt.mood || 'calm'; eye.open = 1; eye.fixed = { t: 0 }; eye.face = [0, 0]; eye.gaze = [0, 0];
     const all = poses(), b = all[to], a = { spin: b.dive && all[from].mark < .05 ? b.spin : 0, open: 0, ...all[from] };
     tw = null; poseName = to; hotWant = b.dive ? ORDER.indexOf(diveTo) : -1;
     for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
@@ -1099,7 +1439,7 @@ window.__orb = {
   },
   /* 점으로 된 표가 시작한 지 ms 지난 때의 모습으로 선다(검정 화면 위) */
   sig(ms) { ++run; skip = null; stage.classList.add('still'); resize(); setUI('none'); snap('inside'); S.lit = 0; draw(performance.now()); return sig.show(ms); },
-  draw: () => draw(performance.now()), state: () => ({ cut, grand, forge: stage.dataset.forge || '', ui, space, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', sw: stage.dataset.sw, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), ...S }),
+  draw: () => draw(performance.now()), size: i => setSize(i, true), state: () => ({ size: SIZES[sizeNo][0], fan: fanOn, pin: fanPin, prog: stage.dataset.prog, more: $$('.more.open').map(m => m.dataset.for), sweep: sweep.map(v => Math.round(v * 100) / 100), eyes: { kind: eye.kind, mood: eye.mood, open: Math.round(eye.open * 100) / 100, shown: Math.round(S.eye * eye.gateS * 100) / 100 }, cut, grand, forge: stage.dataset.forge || '', ui, space, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', sw: stage.dataset.sw, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), ...S }),
   /* 화면이 가려져 프레임이 멈춘 곳에서도 흐름이 끝까지 가게 민다 */
   pump() { stage.classList.remove('still'); return setInterval(() => { const now = performance.now(); stepTween(now); draw(now); sig.step(now); }, 16); },
 };
