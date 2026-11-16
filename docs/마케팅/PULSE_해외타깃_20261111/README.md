@@ -87,3 +87,7 @@
 - 메타 릴스 AI 번역: https://about.fb.com/news/2025/10/discover-reels-around-world-meta-ai-translation/ · https://about.fb.com/news/2025/11/instagram-empowers-creators-to-go-global-with-local-voice-translations-and-fonts/
 - K-뷰티 수출: https://www.newsis.com/view/NISX20260109_0003471426
 - 나머지 광고비 숫자(IAB · DMA · DAAT · IAB MENA)는 [조사 표](조사표.md)의 출처 칸.
+
+## 9. 11-17 채비 판단
+
+유호님 11-17 「냉정하게 판단해볼래」에 답한 근거(우리 실물, 상위 AI 광고 제작사 열한 곳, 해외 광고주가 제작사를 고르는 길)와 판단은 [채비 판단](채비_판단_20261117.md)에 있다. 정해진 것은 없고, 유호님이 정하시면 결정 표에 적는다.
