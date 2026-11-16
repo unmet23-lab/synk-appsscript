@@ -155,7 +155,7 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "Agua + carne =\n¿qué palabra coreana?",
+      "글": "Agua + carne =\n¿qué palabra coreana es?",
       "원문": "물 + 고기 =\n어떤 한국어 낱말일까?",
       "초": [
         1.92,
@@ -581,8 +581,8 @@
     {
       "id": "게시글.youtube.본문.3",
       "칸": "게시글",
-      "글": "Igual con 눈 (nun) ojo + 물 (mul) agua = 눈물 (nun-mul), lágrimas.",
-      "원문": "눈 + 물 = 눈물도 같다."
+      "글": "Lo mismo pasa con 눈물 (nun-mul), lágrimas: 눈 (nun) ojo + 물 (mul) agua.",
+      "원문": "눈물도 같다: 눈 + 물."
     },
     {
       "id": "게시글.youtube.고정댓글.1",

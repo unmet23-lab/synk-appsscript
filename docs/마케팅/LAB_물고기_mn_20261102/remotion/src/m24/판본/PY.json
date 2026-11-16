@@ -141,7 +141,7 @@
   "lang": "es",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "Agua + carne =\n¿qué palabra coreana?",
+  "hook": "Agua + carne =\n¿qué palabra coreana es?",
   "hookSize": 52,
   "reads": [
     "mul",
