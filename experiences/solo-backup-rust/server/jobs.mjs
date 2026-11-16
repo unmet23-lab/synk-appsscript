@@ -6,7 +6,7 @@
 // catches its own failure so one bad customer or one worker outage does not stop
 // the rest, and key changes go through the api's per-customer line (BUSY = later).
 import path from 'node:path';
-import { dayOf } from './store.mjs';
+import { dayOf, ACK_MS } from './store.mjs';
 import { judge } from './detect.mjs';
 import { reconcile } from './reconcile.mjs';
 import { LIMITS } from './server.mjs';
@@ -31,27 +31,54 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
         if (device && device.state === 'active' && fresh.purpose === 'provision') {
           const live = [...store.liveKeys(device.customer_id, 'write'), ...store.liveKeys(device.customer_id, 'read')].filter((k) => k.device_id === device.id);
           const acked = store.get('select count(*) n from keys where device_id = ? and acked_at is not null', device.id).n;
-          if (!live.length && !acked && now() - device.created_at < HOUR) store.setDevice(device.id, { state: 'abandoned', role: 'read' });
+          if (!live.length && !acked) store.setDevice(device.id, { state: 'abandoned', role: 'read' });
         }
       }));
     }
     for (const row of store.retiredKeys()) await step('retire', () => api.serial(row.customer_id, () => api.dropKey(row, 'superseded')));
   }
 
-  async function scanCustomer(customer, t) {
+  // The window is (since, to]. It starts where the last finished judgment ended
+  // (`detect_cursor`), never before the last restore (`detect_since`), at most the restore
+  // window back; it ends five minutes before this scan began (`to`: what happens while the
+  // listings run, and a little clock difference with B2, belong to the next window). The
+  // cursor moves to `to` only when the judgment finished; a judgment waiting for measurements
+  // keeps it, and after seven days of waiting it is made with none (a stolen key used while
+  // the PC stays off). Fable 5.2 설계 관문 둘(11-16).
+  async function scanCustomer(c, t) {
+    const customer = store.customerById(c.id); // the daily pass read its row hours ago
+    if (!customer || customer.state !== 'active') return;
     const prev = store.lastUsage(customer.id);
-    const since = prev ? Math.max(prev.scanned_at - HOUR, t - 2 * DAY) : t - 2 * DAY;
-    const summary = await files('prefix.scan', { prefix: customer.prefix, since }, { timeout: 1800000 });
-    const verdict = judge(summary, { baseline: customer.detect_since || 0, reported: store.reportedSince(customer.id, since), previousSnapshots: prev ? prev.visible_snapshots : null, seen: (id) => store.seen(customer.id, id), now: t });
-    store.putUsage(customer.id, dayOf(t), summary.usage, { alerts: verdict.alerts, deferred: verdict.deferred, events: summary.eventCount ?? summary.events.length, window: summary.window });
-    for (const e of verdict.fresh) store.markSeen(customer.id, e.fileId, e.kind, e.at);
-    for (const a of verdict.alerts) {
-      const row = store.addAlert({ customerId: customer.id, kind: 'repo-changed', audience: 'customer', detail: { daysLeft: a.daysLeft, reason: a.reason } });
-      if (row) {
-        mailer?.toCustomer(customer, 'repo-changed', { daysLeft: a.daysLeft }, `${dayOf(t)}:${a.reason}`);
-        mailer?.toOperator('repo-changed', { customerId: customer.id, detail: a }, `${customer.id}:${dayOf(t)}:${a.reason}`);
+    const baseline = customer.detect_since || 0;
+    const cursor = Number.isSafeInteger(customer.detect_cursor) ? customer.detect_cursor : null;
+    // Events have no window (each is judged once, `seen`). Measurements are those received
+    // since the window began.
+    const to = t - 5 * 60000;
+    const since = Math.min(to, Math.max(cursor === null ? t - 2 * DAY : cursor, Math.min(baseline, t), t - LIMITS.maxRestoreAgeMs));
+    const summary = await files('prefix.scan', { prefix: customer.prefix, since, to, from: baseline }, { timeout: 1800000 });
+    // A restore chosen while the worker scanned: this judgment was of the old baseline.
+    if ((store.customerById(customer.id)?.detect_since || 0) !== baseline) { log({ task: 'scan', code: 'BASELINE_MOVED' }); return; }
+    let reported = store.reportedSince(customer.id, since);
+    if (reported === null && cursor !== null && cursor < t - 7 * DAY) reported = { runs: 0, pruned: 0, massConfirmed: false };
+    const verdict = judge(summary, { baseline, reported, previousSnapshots: prev ? prev.visible_snapshots : null, seen: (id) => store.seen(customer.id, id), now: t });
+    const finished = !verdict.deferred.length;
+    // A hide surge mails once per window (while the cursor stays, the same window is judged
+    // again each day); a content change once per its first new event.
+    const windowKey = cursor ?? since;
+    const mailKey = (a) => (a.reason === 'content' ? `content:${verdict.fresh[0]?.fileId}` : `${windowKey}:${a.reason}`);
+    store.tx(() => {
+      store.putUsage(customer.id, dayOf(t), summary.usage, { alerts: verdict.alerts, deferred: verdict.deferred, events: summary.eventCount ?? summary.events.length, window: summary.window });
+      for (const e of verdict.fresh) store.markSeen(customer.id, e.fileId, e.kind, e.at);
+      for (const a of verdict.alerts) {
+        const row = store.addAlert({ customerId: customer.id, kind: 'repo-changed', audience: 'customer', detail: { daysLeft: a.daysLeft, reason: a.reason } });
+        if (row) {
+          mailer?.toCustomer(customer, 'repo-changed', { daysLeft: a.daysLeft }, mailKey(a));
+          mailer?.toOperator('repo-changed', { customerId: customer.id, detail: a }, `${customer.id}:${mailKey(a)}`);
+        }
       }
-    }
+      if (finished) store.setCustomer(customer.id, { detect_cursor: to });
+      else if (cursor === null) store.setCustomer(customer.id, { detect_cursor: since });
+    });
     // No run record arrived for the window: the measured rule waits (up to the app's 7-day queue); operator only.
     if (verdict.deferred.includes('no-telemetry') && store.writerOf(customer.id)) store.addAlert({ customerId: customer.id, kind: 'no-telemetry', audience: 'operator' });
     const over = LIMITS.quotaBytes * LIMITS.overFactor;
@@ -64,20 +91,39 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     if (grew > GROWTH_ALERT) mailer?.toOperator('growth', { customerId: customer.id, grewBytes: grew }, `${customer.id}:${dayOf(t)}`);
   }
 
+  // The daily key and bucket comparison (Fable 5.2 설계 관문, 11-16). It does not change the
+  // table from one listing: keys a listing caught mid-issue or mid-delete would be wrongly
+  // marked. Its only repair is deleting again keys whose row was deleted before the listing
+  // began (ids are never reused; a name without an id is a key whose B2 answer came after its
+  // row was given up). 'creating' rows are the minute tick's (expiry). A live row the listing
+  // did not show is checked again inside its customer's line with a fresh listing — no issue
+  // or delete of that customer runs there — and only then marked missing, so the customer
+  // gets a new key where one is needed (needsReadKey).
   async function reconcileKeys(t) {
     const listedFrom = now();
     const [{ keys: list }, bucket] = await Promise.all([keys('keys.list'), keys('bucket.settings')]);
     const table = store.allLiveKeys().map((r) => ({ ...r, prefix: store.customerById(r.customer_id)?.prefix }));
-    const deletedKeyIds = store.all("select key_id from keys where state = 'deleted' and key_id is not null").map((r) => r.key_id);
-    const result = reconcile({ keys: list, bucket, bucketId: cfg.bucketId, protectedKeyIds: cfg.protectedKeyIds, table, deletedKeyIds });
-    for (const name of result.orphanNames) await step('orphan', async () => { await keys('keys.deleteByName', { name }); store.keyDeleted(name, 'orphan'); });
+    const gone = store.all("select key_id, name from keys where state = 'deleted' and deleted_at < ?", listedFrom);
+    const result = reconcile({ keys: list, bucket, bucketId: cfg.bucketId, protectedKeyIds: cfg.protectedKeyIds, table,
+      deletedKeyIds: gone.filter((r) => r.key_id).map((r) => r.key_id), deletedNames: gone.filter((r) => !r.key_id).map((r) => r.name) });
     for (const keyId of result.undeleted) await step('undeleted', () => keys('keys.delete', { keyId }));
-    // A key made while the listing ran is not in it and is not missing.
-    for (const row of store.all("select * from keys where state in ('active','acked') and key_id is not null and created_at < ?", listedFrom)) {
-      if (!list.some((k) => k.keyId === row.key_id)) store.keyDeleted(row.name, 'missing');
+    for (const name of result.undeletedNames) await step('undeleted', () => keys('keys.deleteByName', { name }));
+    const byCustomer = new Map();
+    for (const name of result.suspects) { const r = store.key(name); if (r && r.created_at < listedFrom - ACK_MS) byCustomer.set(r.customer_id, [...(byCustomer.get(r.customer_id) || []), name]); }
+    let missing = 0;
+    for (const [customerId, names] of byCustomer) {
+      await step('missing', () => api.serial(customerId, async () => {
+        const { keys: again } = await keys('keys.list');
+        for (const name of names) {
+          const r = store.key(name);
+          if (!r || !['active', 'acked'].includes(r.state) || r.created_at >= now() - ACK_MS || again.some((k) => k.keyId === r.key_id)) continue;
+          store.keyDeleted(name, 'missing'); missing++;
+        }
+      }));
     }
-    if (!result.ok) operator('reconcile', result.problems, dayOf(t));
-    return result;
+    const problems = missing ? [...result.problems, { kind: 'missing-key', count: missing }] : result.problems;
+    if (problems.length) operator('reconcile', problems, dayOf(t));
+    return { ...result, ok: problems.length === 0, problems };
   }
 
   // An unconfirmed read key older than a week: the new envelope never made it.
@@ -116,14 +162,21 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     }
   }
 
+  // A daily task that fails is an operator alert (once a day per task), not only a log line.
+  const task = async (name, fn) => {
+    try { return await fn(); }
+    catch (e) { if (e?.code === 'BUSY') return null; log({ task: name, code: e?.code || e?.name || 'Error' }); operator(name, { code: e?.code || e?.name || 'Error' }, `${name}:${dayOf(t0)}`); return null; }
+  };
+  let t0 = 0;
   async function daily(t) {
-    for (const c of store.all("select * from customers where state = 'active'")) await step('scan', () => scanCustomer(c, t));
-    await step('reconcile', () => reconcileKeys(t));
-    await step('unconfirmed', () => unconfirmed(t));
-    await step('audit', () => auditFresh(t));
-    await step('silence', () => silence(t));
-    await step('prune', () => { store.pruneTelemetry(); store.pruneNonces(); });
-    if (cfg.backupDir) await step('backup', () => store.backupTo(path.join(cfg.backupDir, `workbackup-${dayOf(t)}.sqlite`)));
+    t0 = t;
+    for (const c of store.all("select * from customers where state = 'active'")) await task('scan', () => scanCustomer(c, t));
+    await task('reconcile', () => reconcileKeys(t));
+    await task('unconfirmed', () => unconfirmed(t));
+    await task('audit', () => auditFresh(t));
+    await task('silence', () => silence(t));
+    await task('prune', () => { store.pruneTelemetry(); store.pruneNonces(); });
+    if (cfg.backupDir) await task('backup', () => store.backupTo(path.join(cfg.backupDir, `workbackup-${dayOf(t)}.sqlite`)));
   }
 
   // A restore left 'preparing' (the worker was down at start, or a stop mid-request):
@@ -147,8 +200,8 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
       const kst = new Date(t + KST), day = kst.toISOString().slice(0, 10);
       const done = store.get("select v from meta where k = 'daily'")?.v;
       if (!dailyRun && kst.getUTCHours() >= cfg.dailyHourKst && done !== day) {
-        store.run("insert into meta(k, v) values ('daily', ?) on conflict(k) do update set v = excluded.v", day);
-        started = dailyRun = daily(t).finally(() => { dailyRun = null; });
+        // Recorded when the pass ends, so a stop half-way runs it again that day.
+        started = dailyRun = daily(t).then(() => { store.run("insert into meta(k, v) values ('daily', ?) on conflict(k) do update set v = excluded.v", day); }).finally(() => { dailyRun = null; });
       }
       // Only the call that started the daily pass waits for it (tests and the first start).
       return started;
@@ -165,7 +218,12 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
   let timer = null;
   return {
     tick, daily, scanCustomer, reconcileKeys, silence, expireKeys, unconfirmed, auditFresh, resume,
-    start() { void resume(); timer = setInterval(() => void tick(), 60000); timer.unref?.(); void tick(); },
+    // A database error in a tick (SQLITE_BUSY while admin.mjs writes, say) is logged; it must
+    // not end the api process as an unhandled rejection (카본 r6 B5).
+    start() {
+      const safe = (task, fn) => { try { Promise.resolve(fn()).catch((e) => log({ task, code: e?.code || e?.name || 'Error' })); } catch (e) { log({ task, code: e?.code || e?.name || 'Error' }); } };
+      safe('resume', resume); timer = setInterval(() => safe('tick', tick), 60000); timer.unref?.(); safe('tick', tick);
+    },
     stop() { clearInterval(timer); },
   };
 }

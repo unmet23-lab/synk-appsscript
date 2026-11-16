@@ -24,8 +24,15 @@ function relay(allow) {
     Utilities: {
       DigestAlgorithm: { SHA_256: 'SHA_256' }, Charset: { UTF_8: 'UTF_8' },
       base64Decode: (v) => signed(Buffer.from(v, 'base64')),
-      computeDigest: (_alg, value) => signed(crypto.createHash('sha256').update(value, 'utf8').digest()),
-      formatDate: (date) => new Date(date.getTime() + 9 * 3600000).toISOString().slice(0, 10).replaceAll('-', ''),
+      // Apps Script hashes a string as single bytes unless UTF_8 is given (카본 r6 D2).
+      computeDigest: (alg, value, charset) => {
+        if (alg !== 'SHA_256') throw new Error('algorithm');
+        return signed(crypto.createHash('sha256').update(value, typeof value === 'string' && charset !== 'UTF_8' ? 'latin1' : 'utf8').digest());
+      },
+      formatDate: (date, tz, fmt) => {
+        if (tz !== 'Asia/Seoul' || fmt !== 'yyyyMMdd') throw new Error('formatDate arguments');
+        return new Date(date.getTime() + 9 * 3600000).toISOString().slice(0, 10).replaceAll('-', '');
+      },
     },
     PropertiesService: { getScriptProperties: () => ({ getProperty: (n) => (props.has(n) ? props.get(n) : null), setProperty: (n, v) => props.set(n, String(v)), deleteProperty: (n) => props.delete(n), getProperties: () => Object.fromEntries(props) }) },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
@@ -36,24 +43,37 @@ function relay(allow) {
   return { sent, post: (body) => JSON.parse(context.doPost({ postData: { contents: body } }).text) };
 }
 
-async function throughMailer(r, to) {
+// loseFirst: the relay acts on the first request but its answer never arrives.
+async function throughMailer(r, to, { loseFirst = false } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-relay-'));
   const store = new Store(path.join(dir, 'm.sqlite'));
-  const answers = [];
-  const mailer = createMailer({ store, enabled: true, relayUrl: 'https://script.google.com/macros/s/x/exec', privateKey, operator: 'ops@example.com',
-    fetchImpl: async (_u, o) => { const a = r.post(o.body); answers.push(a); return new Response(JSON.stringify(a)); } });
-  mailer.toCustomer({ id: 'abcdefghijklmnop', email: to }, 'repo-changed', { daysLeft: 29 }, '2026-11-16:content');
-  await mailer.flush();
-  const state = store.all('select state from outbox')[0].state;
-  store.close();
-  return { answers, state };
+  try {
+    const answers = [], bodies = [];
+    let lose = loseFirst;
+    const mailer = createMailer({ store, enabled: true, relayUrl: 'https://script.google.com/macros/s/x/exec', privateKey, operator: 'ops@example.com',
+      fetchImpl: async (_u, o) => { bodies.push(o.body); const a = r.post(o.body); answers.push(a); if (lose) { lose = false; throw new Error('cut'); } return new Response(JSON.stringify(a)); } });
+    mailer.toCustomer({ id: 'abcdefghijklmnop', email: to }, 'repo-changed', { daysLeft: 29 }, '2026-11-16:content');
+    await mailer.flush();
+    if (loseFirst) await mailer.flush();
+    const state = store.all('select state from outbox')[0].state;
+    return { answers, state, bodies };
+  } finally { store.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 }
 
 test('relay: a server-signed mail to an allowed address goes once, with the relay\'s own sender', async () => {
   const r = relay(`${hash('Pilot@Example.com')},${hash('ops@example.com')}`);
-  const { answers, state } = await throughMailer(r, 'pilot@example.com');
+  const { answers, state, bodies } = await throughMailer(r, 'pilot@example.com');
   assert.equal(answers[0].status, 'sent'); assert.equal(state, 'sent');
   assert.equal(r.sent.length, 1);
+  // 카본 D4: the same signed request again does not send again.
+  const again = r.post(bodies[0]);
+  assert.equal(again.ok, true); assert.equal(again.status, 'duplicate');
+  assert.equal(r.sent.length, 1);
+  // 카본 r6 D3: the first answer lost on the way — the next flush gets 「duplicate」 and closes the row.
+  const r2 = relay(`${hash('pilot@example.com')}`);
+  const lost = await throughMailer(r2, 'pilot@example.com', { loseFirst: true });
+  assert.deepEqual(lost.answers.map((a) => a.status), ['sent', 'duplicate']);
+  assert.equal(lost.state, 'sent'); assert.equal(r2.sent.length, 1);
   assert.equal(r.sent[0].name, 'SYNK 업무 백업');
   assert.match(r.sent[0].subject, /^〔SYNK 업무 백업〕 백업이 바뀌었습니다 — 되돌릴 수 있는 날이 29일 남았습니다$/);
 });

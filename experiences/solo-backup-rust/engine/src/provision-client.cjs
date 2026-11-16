@@ -8,9 +8,10 @@
 // through the host (`secretStore` = secret.encrypt / secret.decrypt) and always written
 // whole with atomic() (4.5 「GPT 2차 검수 반영」, Fable 설계 관문 11-16):
 //   { v: 2, customerId, deviceId, token, role, repository, sub, writer, googleStepRequired,
+//     sameInstall: [deviceId…]      — this PC's earlier devices the server knows (newest first),
 //     signup,                       — a sign-up whose result was not handed back yet
 //     inflight: null | { op, at },  — a key request sent, its answer not stored yet
-//     write: null | { keyId, applicationKey, acked, waitUntil },
+//     write: null | { keyId, applicationKey, acked, waitMs, waited },
 //     read:  null | { keyId, applicationKey, acked, confirmed },
 //     jobId, needs: [] }            — what this PC must ask again ('write-key', 'read-key', 'restore')
 // Keys arrive, are stored unacknowledged in one write, and settle() acknowledges them; a
@@ -19,8 +20,11 @@
 // `needs`; a device the server dropped (unknown, abandoned, revoked, lost) is forgotten
 // here (DEVICE_GONE) and a sign-up starts over. `install.bin` keeps one random install id
 // across sign-ups so the server can drop this PC's own unfinished earlier device.
-// A write key that replaced another waits `waitMs` (the server's figure, so this PC's clock
-// does not matter): a just-deleted B2 key works a few seconds more (11-13).
+// A write key that replaced another waits `waitMs` (the server's figure) before it is used:
+// a just-deleted B2 key works a few seconds more (11-13). The wait is timed on a monotonic
+// clock from when the key arrived, so setting this PC's clock does not shorten it; after a
+// restart nothing tells how long has passed, so a key not yet marked `waited` waits it all
+// again (GPT 끝판 GA3).
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -31,6 +35,7 @@ const b2 = require('./b2.cjs');
 const SERVER = 'https://workspace.synk.im/backup-api/v1/';
 // The longest a new write key waits for the old one to stop working (the server asks 60 s).
 const MAX_WAIT_MS = 120000;
+const GRACE_MS = 60000; // a file from before `waitMs` was kept: wait the server's grace once
 const REPO = /^c\/[a-z0-9]{16}\/r$/;
 const ID12 = /^[a-z0-9]{12}$/, ID16 = /^[a-z0-9]{16}$/;
 const INSTALL = /^[A-Za-z0-9_-]{22}$/;
@@ -57,9 +62,10 @@ const keyOf = (k, extra) => ({ ...credentials(k), acked: false, ...extra });
 const LOST = { 'take-write-seat': 'write-key', 'read-key-rotate': 'read-key', 'restore-run': 'restore' };
 
 class ProvisionClient {
-  constructor({ dir, secretStore, auth, call = serverCall, base = SERVER, now = () => Date.now(), sleep = (ms) => new Promise((ok) => setTimeout(ok, ms)) }) {
-    this.dir = dir; this.secretStore = secretStore; this.auth = auth; this.call = call; this.base = base; this.now = now; this.sleep = sleep;
+  constructor({ dir, secretStore, auth, call = serverCall, base = SERVER, now = () => Date.now(), mono = () => performance.now(), sleep = (ms) => new Promise((ok) => setTimeout(ok, ms)) }) {
+    this.dir = dir; this.secretStore = secretStore; this.auth = auth; this.call = call; this.base = base; this.now = now; this.mono = mono; this.sleep = sleep;
     this.device = null; this.installId = null; this.busy = Promise.resolve();
+    this.deadlines = new Map(); // write key id → monotonic time it may be used
   }
   file(name) { return path.join(this.dir, name); }
   async read(name) {
@@ -69,7 +75,12 @@ class ProvisionClient {
   async write(name, value) { await atomic(this.file(name), await this.secretStore.encrypt(JSON.stringify(value))); }
   // One change of device.bin at a time; this.device changes only after the file did.
   lock(fn) { const run = this.busy.then(fn, fn); this.busy = run.catch(() => {}); return run; }
-  async update(change) { const next = { ...this.device, ...change }; await this.write('device.bin', next); this.device = next; return next; }
+  async update(change) {
+    if (!this.device) throw new ServerError('DEVICE_STATE');
+    const next = { ...this.device, ...change }; await this.write('device.bin', next); this.device = next; this.arm(); return next;
+  }
+  // A call that needs this device: inside the line, after settle().
+  withDevice(fn) { return this.lock(async () => { if (!this.device) throw new ServerError('DEVICE_STATE'); await this.settle(); return fn(); }); }
   needs(add = [], remove = []) { const s = new Set(this.device?.needs || []); for (const x of add) s.add(x); for (const x of remove) s.delete(x); return [...s]; }
 
   async open() {
@@ -99,26 +110,41 @@ class ProvisionClient {
     const unfinished = this.device.done === false, exp = this.device.expect;
     if (unfinished && (!exp || (exp.write && !mine(w)) || (exp.read && !mine(r)))) { await this.drop(); return; }
     await this.update({ v: 2, signup: unfinished, inflight: null, needs: [], jobId: null,
-      write: mine(w) ? { ...credentials(w), acked: false, waitUntil: Number.isSafeInteger(w.usableAt) ? Math.min(w.usableAt, this.now() + MAX_WAIT_MS) : 0 } : null,
+      // Its `usableAt` is a wall-clock time: the whole grace is waited once instead.
+      write: mine(w) ? { ...credentials(w), acked: false, waitMs: Number.isSafeInteger(w.usableAt) && w.usableAt > 0 ? GRACE_MS : 0, waited: false } : null,
       read: mine(r) ? { ...credentials(r), acked: false, confirmed: false } : null });
     for (const f of ['write-key.bin', 'read-key.bin']) await fs.rm(this.file(f), { force: true });
   }
   state() {
     const d = this.device;
-    return { connected: !!d, role: d?.role || null, deviceId: d?.deviceId || null, customerId: d?.customerId || null, repository: d?.repository || null, needs: d?.needs || [], jobId: d?.jobId || null };
+    return { connected: !!d, role: d?.role || null, deviceId: d?.deviceId || null, customerId: d?.customerId || null, repository: d?.repository || null, needs: d?.needs || [], jobId: d?.jobId || null,
+      // As of the sign-up and this PC's own requests; status() has the account's live view.
+      writer: d?.writer || null, googleStepRequired: !!d?.googleStepRequired, sameInstall: d?.sameInstall || [],
+      // A customer read key this PC holds that the envelope does not carry yet (pendingReadKey()).
+      readKeyPending: !!(d?.read?.acked && !d.read.confirmed) };
   }
 
+  // Device requests run inside the line (withDevice, lock), so a refusal can change this.device.
   async request(method, route, body, { device = true } = {}) {
     if (device && !this.device) throw new ServerError('DEVICE_STATE');
-    const r = await this.call(this.base + route, { method, body, token: device ? this.device.token : null });
-    if (!r.data?.ok) throw new ServerError(typeof r.data?.code === 'string' ? r.data.code : r.status >= 500 ? 'SERVER' : 'NETWORK', r.data || {});
+    let r;
+    // Offline, a time-out, a redirect, a cut or foreign answer: the server may or may not have acted.
+    try { r = await this.call(this.base + route, { method, body, token: device ? this.device.token : null }); }
+    catch (e) { throw new ServerError('NETWORK', { cause: typeof e?.code === 'string' ? e.code : null }); }
+    if (!r.data?.ok) {
+      const err = new ServerError(typeof r.data?.code === 'string' ? r.data.code : r.status >= 500 ? 'SERVER' : 'NETWORK', r.data || {});
+      if (device) await this.gone(err);
+      throw err;
+    }
     return r.data;
   }
-  // A device the server no longer knows or has cut: forget it here.
+  // The server refused this device's token. Unknown, abandoned, revoked, lost: forget it here
+  // (DEVICE_GONE). Moved: it reads only now — its write key and any unacknowledged key go.
   async gone(e) {
     if (e.code === 'DEVICE' || (e.code === 'DEVICE_STATE' && GONE_STATES.has(e.extra?.state))) { await this.drop(); throw new ServerError('DEVICE_GONE'); }
-    if (e.code === 'DEVICE_STATE' && e.extra?.state === 'moved') { await this.update({ role: 'read', write: null }); return; }
-    throw e;
+    // The server retired its unconfirmed read keys and a moved device cannot confirm one; what
+    // it was to ask again (a seat, a key, a restore) was for the role it no longer has.
+    if (e.code === 'DEVICE_STATE' && e.extra?.state === 'moved' && this.device) await this.update({ role: 'read', write: null, read: this.device.read?.confirmed ? this.device.read : null, needs: [], writer: null });
   }
   // Acknowledge every stored key the server has not counted yet; a key it no longer takes
   // is dropped and named in `needs`. Runs first in every call (inside the lock).
@@ -128,7 +154,8 @@ class ProvisionClient {
     if (!open.length) return;
     let acked;
     try { ({ acked } = await this.request('POST', 'keys/ack', { keyIds: open.map((k) => this.device[k].keyId) })); }
-    catch (e) { return this.gone(e); }
+    // A moved device cannot acknowledge; request() already cleared what it cannot use.
+    catch (e) { if (e.code === 'DEVICE_STATE' && e.extra?.state === 'moved') return; throw e; }
     const change = {}, lost = [];
     for (const k of open) {
       if (acked.includes(this.device[k].keyId)) change[k] = { ...this.device[k], acked: true };
@@ -137,13 +164,29 @@ class ProvisionClient {
     await this.update({ ...change, needs: this.needs(lost) });
   }
   ready() { return this.lock(() => this.settle()); }
+  // Stops a Google sign-in that waits for the browser (the request it was for fails with REAUTH).
+  cancelSignIn() { this.auth?.cancel?.(); }
+  call_(method, route, body) { return this.withDevice(() => this.request(method, route, body)); }
   // A Google sign-in bound to a server nonce for exactly this request.
   async proof(purpose, { hint } = {}) {
     const { nonce } = await this.request('POST', 'nonce', { purpose }, { device: false });
+    if (typeof nonce !== 'string' || !/^[A-Za-z0-9_-]{20,128}$/.test(nonce)) throw new ServerError('SERVER');
     const signed = await this.auth.signIn({ nonce, expectedSub: this.device?.sub, ...(hint ? { hint } : {}) });
     return { google: { idToken: signed.idToken, nonce }, sub: signed.sub };
   }
-  waitUntil(r) { return this.now() + Math.max(0, Math.min(Number.isSafeInteger(r.waitMs) ? r.waitMs : 0, MAX_WAIT_MS)); }
+  waitMsOf(r) { return Math.max(0, Math.min(Number.isSafeInteger(r.waitMs) ? r.waitMs : 0, MAX_WAIT_MS)); }
+  // The monotonic wait of this device's write key starts when it is stored (or, after a
+  // restart, when it is first seen again).
+  arm() {
+    const w = this.device?.write;
+    if (w && !this.deadlines.has(w.keyId)) this.deadlines.set(w.keyId, this.mono() + this.waitOf(w));
+  }
+  waitOf(w) { return w.waited ? 0 : Number.isSafeInteger(w.waitMs) ? w.waitMs : w.waitUntil > 0 ? GRACE_MS : 0; }
+  waitLeft(w) {
+    if (!this.waitOf(w)) return 0;
+    if (!this.deadlines.has(w.keyId)) this.deadlines.set(w.keyId, this.mono() + this.waitOf(w));
+    return Math.min(this.deadlines.get(w.keyId) - this.mono(), MAX_WAIT_MS);
+  }
   // A key request: `inflight` is stored before it is sent and cleared in the same write that
   // stores its answer, so a stop in between is known on the next open.
   async keyRequest(op, route, body, store) {
@@ -151,10 +194,11 @@ class ProvisionClient {
     let r;
     try { r = await this.request('POST', route, body); }
     catch (e) {
-      // The server answered with a refusal: nothing changed there.
-      if (e.code !== 'NETWORK' && e.code !== 'SERVER') { await this.update({ inflight: null }); return this.gone(e).then(() => { throw e; }); }
-      // No answer: it may or may not have happened — ask again later.
-      await this.update({ inflight: null, needs: this.needs([LOST[op]]) });
+      if (!this.device) throw e; // forgotten (DEVICE_GONE)
+      // No answer, or not one from our server: it may or may not have happened — ask again later.
+      if (e.code === 'NETWORK' || e.code === 'SERVER') await this.update({ inflight: null, needs: this.needs([LOST[op]]) });
+      // A refusal: nothing changed there.
+      else await this.update({ inflight: null });
       throw e;
     }
     await this.update({ inflight: null, ...store(r) });
@@ -164,19 +208,29 @@ class ProvisionClient {
 
   // Credentials for the engine's restic runs on this device (writer only, acknowledged
   // keys only). A key that replaced another waits here until it may be used.
-  writeCredentials() {
-    return this.ready().then(async () => {
-      const w = this.device?.write;
-      if (!w || !w.acked || this.device.role !== 'write') return null;
-      const wait = Math.min((w.waitUntil || 0) - this.now(), MAX_WAIT_MS);
-      if (wait > 0) await this.sleep(wait);
-      return credentials(w);
-    });
+  async writeCredentials() {
+    for (let tries = 0; tries < 3; tries++) {
+      const w = await this.ready().then(() => (this.device?.role === 'write' && this.device.write?.acked ? this.device.write : null));
+      if (!w) return null;
+      const left = this.waitLeft(w);
+      if (left <= 0) return credentials(w);
+      await this.sleep(left);
+      // The wait happened outside the line: hand it out only if it is still the current key,
+      // and remember that it waited (a restart then does not wait again).
+      const done = await this.lock(async () => {
+        const cur = this.device?.role === 'write' && this.device.write?.acked && this.device.write.keyId === w.keyId ? this.device.write : null;
+        if (!cur || this.waitLeft(cur) > 0) return null;
+        if (this.waitOf(cur)) await this.update({ write: { ...cur, waited: true } });
+        return credentials(this.device.write);
+      });
+      if (done) return done;
+    }
+    return null;
   }
   // The customer read key this device received, acknowledged and not confirmed yet (the
   // envelope still has to be published with it), or null.
   pendingReadKey() { return this.ready().then(() => { const r = this.device?.read; return r && r.acked && !r.confirmed ? credentials(r) : null; }); }
-  signupResult() { return { ...this.state(), readKey: this.device.read?.acked && !this.device.read.confirmed ? credentials(this.device.read) : null, writer: this.device.writer, googleStepRequired: this.device.googleStepRequired }; }
+  signupResult() { return { ...this.state(), readKey: this.device.read?.acked && !this.device.read.confirmed ? credentials(this.device.read) : null }; }
 
   // `hint`: the Google address Solio knows, only to pre-select the account (4.13 「로그인」).
   provision({ name, appVersion, hint }) {
@@ -192,72 +246,98 @@ class ProvisionClient {
       const r = await this.request('POST', 'provision', { google, device: { name, appVersion, installId: this.installId } }, { device: false });
       if (!REPO.test(r.customer?.repository?.prefix || '') || !ID16.test(r.customer?.id || '') || !ID12.test(r.device?.id || '')) throw new ServerError('SERVER');
       // Device, token and every key in one write — nothing can be stored half.
-      const next = { v: 2, customerId: r.customer.id, deviceId: r.device.id, token: r.device.token, role: r.device.role,
+      const next = { v: 2, customerId: r.customer.id, deviceId: r.device.id, token: r.device.token, role: r.device.role, name: String(name || ''),
         repository: { endpoint: b2.endpoint(r.customer.repository.endpoint), bucket: r.customer.repository.bucket, prefix: r.customer.repository.prefix }, sub,
-        writer: r.writer || null, googleStepRequired: !!r.lost?.googleStepRequired, signup: true, inflight: null, needs: [], jobId: null,
-        write: r.keys.write ? keyOf(r.keys.write, { waitUntil: this.waitUntil(r) }) : null,
+        writer: r.writer && ID12.test(r.writer.id || '') ? { id: r.writer.id, name: String(r.writer.name || '') } : null, googleStepRequired: !!r.lost?.googleStepRequired,
+        sameInstall: Array.isArray(r.sameInstall) ? r.sameInstall.map((x) => x?.id).filter((id) => ID12.test(id || '')).slice(0, 5) : [],
+        signup: true, inflight: null, needs: [], jobId: null,
+        write: r.keys.write ? keyOf(r.keys.write, { waitMs: this.waitMsOf(r), waited: false }) : null,
         read: r.keys.read ? keyOf(r.keys.read, { confirmed: false }) : null };
-      await this.write('device.bin', next); this.device = next;
+      await this.write('device.bin', next); this.device = next; this.arm();
       await this.settle();
       await this.update({ signup: false });
       return this.signupResult();
     });
   }
   takeWriteSeat() {
-    return this.lock(async () => {
-      await this.settle();
+    return this.withDevice(async () => {
       const { google } = await this.proof('take-write-seat');
-      const r = await this.keyRequest('take-write-seat', 'devices/take-write-seat', { google }, (a) => ({ role: 'write', write: keyOf(a.keys.write, { waitUntil: this.waitUntil(a) }), needs: this.needs([], ['write-key']) }));
+      const r = await this.keyRequest('take-write-seat', 'devices/take-write-seat', { google }, (a) => ({ role: 'write', writer: this.self(), write: keyOf(a.keys.write, { waitMs: this.waitMsOf(a), waited: false }), needs: this.needs([], ['write-key']) }));
       if (!this.device.write?.acked) throw new ServerError('KEY_GONE');
       return { previous: r.previous };
     });
   }
-  status() { return this.ready().then(() => this.request('GET', 'status')); }
-  devices() { return this.ready().then(() => this.request('GET', 'devices')); }
-  revoke(deviceId) { return this.ready().then(async () => { const { google } = await this.proof('revoke'); return this.request('POST', 'devices/revoke', { google, deviceId }); }); }
-  // From this device's app, for another (lost) device of the same account.
-  async lost(deviceId) { const { google } = await this.proof('lost'); return this.request('POST', 'lost', { google, deviceId }, { device: false }); }
-  rotateReadKey() {
+  self() { return { id: this.device.deviceId, name: this.device.name || null }; }
+  status() { return this.call_('GET', 'status'); }
+  devices() { return this.call_('GET', 'devices'); }
+  // With a device, as that device. Without one (a new PC refused with LIMIT_DEVICES, whose
+  // answer lists the devices), with the Google sign-in only — that cannot cut the active writer.
+  revoke(deviceId) {
     return this.lock(async () => {
-      await this.settle();
+      if (this.device) await this.settle();
+      const signInOnly = async () => { const { google } = await this.proof('revoke'); return this.request('POST', 'devices/revoke', { google, deviceId }, { device: false }); };
+      let r;
+      if (!this.device) r = await signInOnly();
+      else {
+        try { const { google } = await this.proof('revoke'); r = await this.request('POST', 'devices/revoke', { google, deviceId }); }
+        catch (e) { if (e.code === 'DEVICE_STATE' && e.extra?.state === 'moved') r = await signInOnly(); else throw e; }
+      }
+      if (this.device?.deviceId === deviceId) await this.drop();
+      return r;
+    });
+  }
+  // From this device's app, for another (lost) device of the same account. The server
+  // deletes every read key of the account, this device's unconfirmed one too (A4).
+  lost(deviceId) {
+    return this.lock(async () => {
+      const { google } = await this.proof('lost');
+      const other = async () => { if (this.device && this.device.deviceId !== deviceId) await this.update({ read: null, googleStepRequired: true, needs: this.needs(['read-key']) }); };
+      let r;
+      try { r = await this.request('POST', 'lost', { google, deviceId }, { device: false }); }
+      catch (e) { if (e.code === 'NETWORK' || e.code === 'SERVER') await other(); throw e; }
+      if (this.device?.deviceId === deviceId) await this.drop(); else await other();
+      return r;
+    });
+  }
+  rotateReadKey() {
+    return this.withDevice(async () => {
       const { google } = await this.proof('read-key-rotate');
-      const r = await this.keyRequest('read-key-rotate', 'read-key/rotate', { google }, (a) => ({ read: keyOf(a.keys.read, { confirmed: false }), needs: this.needs([], ['read-key']) }));
+      const r = await this.keyRequest('read-key-rotate', 'read-key/rotate', { google }, (a) => ({ read: keyOf(a.keys.read, { confirmed: false }), googleStepRequired: !!a.googleStepRequired, needs: this.needs([], ['read-key']) }));
       if (!this.device.read?.acked) throw new ServerError('KEY_GONE');
       return { readKey: credentials(this.device.read), googleStepRequired: !!r.googleStepRequired };
     });
   }
   confirmReadKey(keyId) {
-    return this.lock(async () => {
-      await this.settle();
+    return this.withDevice(async () => {
       const r = await this.request('POST', 'read-key/confirm', { keyId });
-      if (this.device.read?.keyId === keyId) await this.update({ read: { ...this.device.read, confirmed: true } });
+      // The server closes the Google step with the confirmation.
+      if (this.device.read?.keyId === keyId) await this.update({ read: { ...this.device.read, confirmed: true }, googleStepRequired: false });
       return r;
     });
   }
-  restorePlan(at) { return this.ready().then(() => this.request('POST', 'restore/plan', at === undefined ? {} : { at })); }
+  restorePlan(at) { return this.call_('POST', 'restore/plan', at === undefined ? {} : { at }); }
   restoreRun(at) {
-    return this.lock(async () => {
-      await this.settle();
+    return this.withDevice(async () => {
       const { google } = await this.proof('restore-run');
-      const r = await this.keyRequest('restore-run', 'restore/run', { google, at }, (a) => ({ role: 'write', jobId: a.jobId, needs: this.needs([], ['restore', 'write-key', 'read-key']),
-        write: keyOf(a.keys.write, { waitUntil: this.waitUntil(a) }), read: keyOf(a.keys.read, { confirmed: false }) }));
+      const r = await this.keyRequest('restore-run', 'restore/run', { google, at }, (a) => ({ role: 'write', writer: this.self(), jobId: a.jobId, needs: this.needs([], ['restore', 'write-key', 'read-key']),
+        write: keyOf(a.keys.write, { waitMs: this.waitMsOf(a), waited: false }), read: keyOf(a.keys.read, { confirmed: false }) }));
       if (!this.device.write?.acked || !this.device.read?.acked) throw new ServerError('KEY_GONE');
       return { jobId: r.jobId, readKey: credentials(this.device.read) };
     });
   }
-  restoreJob(jobId) { return this.ready().then(() => this.request('GET', `restore/job?id=${encodeURIComponent(jobId)}`)); }
+  restoreJob(jobId) { return this.call_('GET', `restore/job?id=${encodeURIComponent(jobId)}`); }
   restoreChoose(jobId, choice) {
-    return this.ready().then(async () => {
+    return this.withDevice(async () => {
       const body = { jobId, choice };
       if (choice === 'undo') body.google = (await this.proof('restore-undo')).google;
       return this.request('POST', 'restore/choose', body);
     });
   }
   // 옮겨 오기(4.6): this reading PC asks the writer to keep the snapshot it copies (7 days at most).
-  pinMove(snapshotId) { return this.ready().then(() => this.request('POST', 'move/pin', { snapshotId })); }
-  unpinMove() { return this.ready().then(() => this.request('POST', 'move/unpin', {})); }
-  telemetry(batch) { return this.ready().then(() => this.request('POST', 'telemetry', batch)); }
-  help(text, bundle) { return this.ready().then(() => this.request('POST', 'help', { text, bundle })); }
+  pinMove(snapshotId) { return this.call_('POST', 'move/pin', { snapshotId }); }
+  unpinMove() { return this.call_('POST', 'move/unpin', {}); }
+  telemetry(batch) { return this.call_('POST', 'telemetry', batch); }
+  help(text, bundle) { return this.call_('POST', 'help', { text, bundle }); }
   async drop() { for (const f of ['device.bin', 'write-key.bin', 'read-key.bin']) await fs.rm(this.file(f), { force: true }); this.device = null; }
   // This PC stops being a device of the account (uninstall, account switch). Server-side
   // revoke is a separate signed-in request; this only forgets the local secrets. The

@@ -14,15 +14,32 @@ export class RpcError extends Error {
   constructor(code, status = 500) { super(code); this.name = 'RpcError'; this.code = code; this.status = status; }
 }
 
-export function rpcClient({ url, secret, fetchImpl = fetch, timeoutMs = 30000, now = () => Date.now() }) {
+function httpFetch(url, { body, headers, timeout }) {
+  return new Promise((ok, no) => {
+    const u = new URL(url);
+    if (u.protocol !== 'http:') { no(new Error('RPC_URL')); return; }
+    const req = http.request(u, { method: 'POST', agent: false, headers: { ...headers, 'content-length': Buffer.byteLength(body) } });
+    const timer = setTimeout(() => req.destroy(new Error('TIMEOUT')), timeout);
+    req.on('response', (res) => {
+      const chunks = []; let size = 0;
+      res.on('data', (c) => { size += c.length; if (size > 64 * 1024 * 1024) req.destroy(new Error('TOO_BIG')); else chunks.push(c); });
+      res.on('end', () => { clearTimeout(timer); const text = Buffer.concat(chunks).toString('utf8'); ok({ ok: res.statusCode >= 200 && res.statusCode < 300, status: res.statusCode, json: async () => JSON.parse(text) }); });
+      res.on('error', (e) => { clearTimeout(timer); no(e); });
+    });
+    req.on('error', (e) => { clearTimeout(timer); no(e); });
+    req.end(body);
+  });
+}
+
+export function rpcClient({ url, secret, fetchImpl = null, timeoutMs = 30000, now = () => Date.now() }) {
   if (!url || !secret || secret.length < 32) throw new Error('RPC_CONFIG');
   return async function call(method, params = {}, { timeout = timeoutMs } = {}) {
     const body = JSON.stringify({ method, params });
     const ts = String(now()), id = crypto.randomBytes(16).toString('base64url');
     let res;
     try {
-      res = await fetchImpl(url, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(timeout), body,
-        headers: { 'content-type': 'application/json', 'x-wb-ts': ts, 'x-wb-id': id, 'x-wb-sig': sign(secret, ts, id, method, body) } });
+      const headers = { 'content-type': 'application/json', 'x-wb-ts': ts, 'x-wb-id': id, 'x-wb-sig': sign(secret, ts, id, method, body) };
+      res = fetchImpl ? await fetchImpl(url, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(timeout), body, headers }) : await httpFetch(url, { body, headers, timeout });
     } catch { throw new RpcError('WORKER_UNREACHABLE', 503); }
     let data = null; try { data = await res.json(); } catch {}
     if (!res.ok || !data?.ok) throw new RpcError(typeof data?.code === 'string' ? data.code.slice(0, 40) : 'WORKER_FAILED', res.status === 429 ? 429 : 503);

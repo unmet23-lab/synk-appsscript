@@ -153,7 +153,11 @@ class EnvelopeV3 {
   constructor({ root, secretStore, auth, vault, validateKey = validateReadKeyV3, now = () => Date.now() }) {
     this.dir = path.join(root, 'account-recovery-v3'); this.secretStore = secretStore; this.auth = auth; this.now = now;
     this.vault = vault || new DriveVault(auth, undefined, { marker: MARKER3, parse: parseEnvelopeV3 }); this.validateKey = validateKey; this.record = {};
+    this.line = Promise.resolve();
   }
+  // publish and recheck take turns (GPT r6 GA1): a daily recheck that began before a new
+  // envelope was published would otherwise write the old envelope back as the verified one.
+  serial(fn) { const run = this.line.then(() => fn()); this.line = run.catch(() => {}); return run; }
   async open() {
     await fs.mkdir(this.dir, { recursive: true });
     try { this.record = JSON.parse(await this.secretStore.decrypt(await fs.readFile(path.join(this.dir, 'envelope.bin')))); }
@@ -168,7 +172,8 @@ class EnvelopeV3 {
     if (this.record.subject && this.record.subject !== sub) throw failure('ACCOUNT');
     return sub;
   }
-  async publish({ repository, repositoryId, password, readKey }) {
+  publish(args) { return this.serial(() => this.publishNow(args)); }
+  async publishNow({ repository, repositoryId, password, readKey }) {
     const subject = this.subject(), repo = repositoryV3(repository), key = b2.credentials(readKey);
     const { bucketId } = await this.validateKey(repo, key);
     let pending = this.record.pending;
@@ -188,15 +193,19 @@ class EnvelopeV3 {
   // Daily: the committed envelope still exists, reads back the same repository, password and
   // read key, and the key still authorizes. A missing or different envelope marks the state
   // invalid (the caller publishes again); a network error leaves it as it was.
-  async recheck({ repositoryId, password }) {
+  recheck(args) { return this.serial(() => this.recheckNow(args)); }
+  async recheckNow({ repositoryId, password }) {
     const subject = this.subject(), v = this.record.verified;
     if (!v) throw failure('INVALID');
     const files = await this.vault.list(subject), current = files.find(f => f.id === v.fileId && f.appProperties.status === 'committed');
     try {
-      if (!current) throw failure('INVALID');
+      // The same file this PC committed (digest and generation), the same repository, password,
+      // read key and bucket — what a new PC's read() will check too.
+      if (!current || current.appProperties.digest !== v.digest) throw failure('INVALID');
       const e = await this.vault.read(current, subject);
-      if (e.repositoryId !== repositoryId || e.password !== password || e.readKey.keyId !== this.record.readKeyId) throw failure('INVALID');
-      await this.validateKey(e.repository, e.readKey);
+      if (e.generationId !== v.generationId || e.repositoryId !== repositoryId || e.password !== password || e.readKey.keyId !== this.record.readKeyId) throw failure('INVALID');
+      const { bucketId } = await this.validateKey(e.repository, e.readKey);
+      if (bucketId !== e.bucketId) throw failure('INVALID');
     } catch (error) { if (error.code !== 'NETWORK') await this.save({ ...this.record, invalid: true }); throw error; }
     await this.save({ ...this.record, verified: { ...v, verifiedAt: new Date(this.now()).toISOString() }, invalid: false });
     return this.getState();

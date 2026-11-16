@@ -20,17 +20,24 @@ const GIB = 1024 ** 3;
 
 const sha1Of = (v) => (typeof v.contentSha1 === 'string' && /^[0-9a-f]{40}$/.test(v.contentSha1) ? v.contentSha1 : null);
 
-export function summarize(versions, { customerPrefix, repoPrefix = customerPrefix + 'r/', since, now = Date.now(), journal = { hides: [] } }) {
+// The window is (since, to]: hides and snapshots made are counted only inside it (to: the
+// moment the daily scan began, so what happens while the listing runs belongs to the next
+// window — Fable 5.2 설계 관문 둘째, 11-16). usage is as listed.
+export function summarize(versions, { customerPrefix, repoPrefix = customerPrefix + 'r/', since, to = null, now = Date.now(), journal = { hides: [] } }) {
+  const end = to ?? now;
   const ourHides = new Set(journal.hides || []);
   const ourCopies = new Set(journal.copies || []);
-  const byName = new Map();
+  const byName = new Map(), order = new Map();
+  versions.forEach((v, i) => order.set(v, i));
   for (const v of versions) {
     if (v.action !== 'upload' && v.action !== 'hide') continue;
     if (typeof v.fileName !== 'string' || !v.fileName.startsWith(customerPrefix)) throw new Error('DETECT_OUTSIDE_PREFIX');
     if (!Number.isSafeInteger(v.uploadTimestamp)) throw new Error('DETECT_VERSION_INVALID');
     (byName.get(v.fileName) || byName.set(v.fileName, []).get(v.fileName)).push(v);
   }
-  for (const list of byName.values()) list.sort((a, b) => a.uploadTimestamp - b.uploadTimestamp);
+  // Oldest first. B2 lists a name's versions newest first, so two in the same millisecond
+  // (an upload and its hide) are put back in time order by their place in the listing.
+  for (const list of byName.values()) list.sort((a, b) => a.uploadTimestamp - b.uploadTimestamp || order.get(b) - order.get(a));
   const relOf = (name) => (name.startsWith(repoPrefix) ? name.slice(repoPrefix.length) : null);
   let firstKeyAt = null;
   for (const [name, list] of byName) {
@@ -41,13 +48,20 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
   const usage = { visibleBytes: 0, visibleCount: 0, hiddenBytes: 0, hiddenCount: 0, visibleSnapshots: 0 };
   const events = [];
   const hourly = new Map();
-  const window = { from: since, to: now, snapshotHides: 0, dataHiddenBytes: 0 };
+  // snapshotsAtStart · snapshotUploads: visible snapshots where the window starts and those
+  // made in it — what there was to prune when no earlier daily count exists.
+  const window = { from: since, to: end, snapshotHides: 0, dataHiddenBytes: 0, snapshotsAtStart: 0, snapshotUploads: 0 };
   for (const [name, list] of byName) {
     const last = list.at(-1), rel = relOf(name);
     for (const v of list) {
       if (v.action !== 'upload') continue;
       if (v === last) { usage.visibleBytes += v.contentLength || 0; usage.visibleCount++; if (rel?.startsWith('snapshots/')) usage.visibleSnapshots++; }
       else { usage.hiddenBytes += v.contentLength || 0; usage.hiddenCount++; }
+    }
+    if (rel?.startsWith('snapshots/')) {
+      const before = list.filter((v) => v.uploadTimestamp <= since).at(-1);
+      if (before?.action === 'upload') window.snapshotsAtStart++;
+      window.snapshotUploads += list.filter((v) => v.action === 'upload' && v.uploadTimestamp > since && v.uploadTimestamp <= end).length;
     }
     if (rel === null || rel.startsWith('locks/')) continue;
     const kind = rel === 'config' ? 'config' : rel.startsWith('keys/') ? 'keys' : 'overwrite';
@@ -65,17 +79,19 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
         uploads++; previous = v;
         continue;
       }
-      if (ourHides.has(v.fileId)) continue;
+      if (ourHides.has(v.fileId)) { previous = null; continue; }
       if (kind === 'config' || kind === 'keys') events.push({ kind, fileId: v.fileId, rel, at: v.uploadTimestamp });
       if (v.uploadTimestamp > now - WINDOW_DAYS * DAY) {
         const h = Math.floor(v.uploadTimestamp / HOUR) * HOUR;
         const slot = hourly.get(h) || { start: h, count: 0, first: v.uploadTimestamp };
         slot.count++; slot.first = Math.min(slot.first, v.uploadTimestamp); hourly.set(h, slot);
       }
-      if (v.uploadTimestamp > since && v.uploadTimestamp <= now) {
+      if (v.uploadTimestamp > since && v.uploadTimestamp <= end) {
         if (rel.startsWith('snapshots/')) window.snapshotHides++;
         if (rel.startsWith('data/') && previous) window.dataHiddenBytes += previous.contentLength || 0;
       }
+      // A second hide marker hides nothing more.
+      previous = null;
     }
   }
   events.sort((a, b) => a.at - b.at || a.fileId.localeCompare(b.fileId));
@@ -85,6 +101,9 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
 // baseline: the customer's last finished restore (events at or before it are history).
 // reported: null when no run record arrived for the window, else { pruned, massConfirmed }.
 // previousSnapshots: visible snapshots at the previous daily scan (null on the first).
+// What the devices may say they pruned is capped by what there was to prune: the listing's
+// own count of snapshots where the window starts plus those made in it (Fable 5.2 설계 관문
+// 둘째: a stored count drifts from the window). previousSnapshots is only for 「모두 사라짐」.
 export function judge(summary, { baseline = 0, reported = null, previousSnapshots = null, seen = () => false, now = Date.now() }) {
   const live = summary.events.filter((e) => e.at > baseline);
   const fresh = live.filter((e) => !seen(e.fileId));
@@ -96,6 +115,15 @@ export function judge(summary, { baseline = 0, reported = null, previousSnapshot
   }
   const w = summary.window, from = Math.max(w.from, baseline);
   const deferred = [];
+  // No earlier daily count (the first scan): the listing's own count where the window starts,
+  // so a forged prune count cannot cover snapshots hidden before the first scan (GPT r6 GB3).
+  const listed = Number.isSafeInteger(w.snapshotsAtStart) ? w.snapshotsAtStart : null;
+  if (previousSnapshots === null) previousSnapshots = listed;
+  const capSnapshots = listed ?? previousSnapshots;
+  // What the devices could have pruned: the snapshots there when the window began and the
+  // ones made in it (hourly snapshots are made and pruned inside one window — 카본 r6 B1).
+  // A forged count cannot cover hide markers beyond that (a name hidden again and again).
+  const prunable = capSnapshots === null ? null : capSnapshots + (w.snapshotUploads || 0);
   // Independent of measurements: every visible snapshot is gone. The engine's retention
   // always keeps the newest one, so zero is never normal — while a halving is (a PC off
   // over a weekend prunes a day of hourly snapshots on its first run back).
@@ -106,7 +134,7 @@ export function judge(summary, { baseline = 0, reported = null, previousSnapshot
   if (w.from >= baseline) {
     if (reported === null) { if (w.snapshotHides > 5) deferred.push('no-telemetry'); }
     else {
-      const cap = previousSnapshots === null ? reported.pruned : Math.min(reported.pruned, Math.max(0, previousSnapshots - 1));
+      const cap = prunable === null ? reported.pruned : Math.min(reported.pruned, Math.max(0, prunable - 1));
       surge = w.snapshotHides > cap + 5;
     }
   }

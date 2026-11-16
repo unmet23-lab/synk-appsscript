@@ -2,13 +2,13 @@
 // bucket, file versions) with the B2Session methods the workers call, and a fake
 // Google issuer (RSA key, JWKS, signed ID tokens).
 import crypto from 'node:crypto';
-import { EXPECTED_RULES } from '../reconcile.mjs';
 
 export class FakeB2 {
   constructor({ bucketId = 'b0b0b0b0b0b0b0b0b0b0b0b0', clock }) {
     this.bucketId = bucketId; this.clock = clock;
     this.keys = new Map(); this.versions = []; this.n = 0; this.calls = [];
-    this.bucket = { bucketId, bucketType: 'allPrivate', lifecycleRules: EXPECTED_RULES.map((r) => ({ ...r })),
+    // The approved rules written out here, not taken from EXPECTED_RULES (GPT r6 GD1).
+    this.bucket = { bucketId, bucketType: 'allPrivate', lifecycleRules: [{ fileNamePrefix: '', daysFromHidingToDeleting: 30, daysFromUploadingToHiding: null, daysFromStartingToCancelingUnfinishedLargeFiles: 1 }],
       defaultServerSideEncryption: { isClientAuthorizedToRead: true, value: { mode: 'SSE-B2', algorithm: 'AES256' } },
       replicationConfiguration: { isClientAuthorizedToRead: true, value: { asReplicationSource: null, asReplicationDestination: null } } };
     this.extraBuckets = [];
@@ -37,6 +37,7 @@ export class FakeB2 {
   async copyFile({ sourceFileId, fileName }) {
     this.calls.push(['copyFile', fileName]);
     const src = this.versions.find((v) => v.fileId === sourceFileId);
+    if (!src || src.action !== 'upload') throw Object.assign(new Error('not found'), { status: 404 });
     const v = { ...src, fileName, fileId: this.id('4_c'), uploadTimestamp: this.clock.t };
     this.versions.push(v); return { ...v };
   }

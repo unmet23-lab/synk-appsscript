@@ -5,6 +5,7 @@
 ## 지금 상태
 
 - 회사 `deploy/compose.yaml`에 서비스 셋(`wb-api` · `wb-keys` · `wb-files`)이 `workbackup` 프로필로 **꺼진 채** 들어 있다. `company-stack.sh`의 `compose up`은 프로필 없이 돌므로 이 셋을 띄우지 않는다. 회사 서비스는 이 셋에 기대지 않는다.
+- `wb-api`는 회사 edge 네트워크에 붙지 않는다. Caddy(`https`)와 `wb-api`만 있는 작은 네트워크 `wb-front`(172.30.77.8/29, Caddy .11 · api .10)로만 닿는다. 이 네트워크는 서비스가 꺼져 있어도 만들어지고 Caddy가 붙는다. 회사 HA는 회사 앱 컨테이너의 네트워크가 하나인지만 보므로 걸리지 않는다(`ha/node-agent.mjs`). 이 주소대가 회사 서버의 다른 네트워크와 겹치지 않는지는 확인 안 함이다.
 - 회사 `deploy/Caddyfile`의 `/backup-api/*` 길은 `wb-api:4210`으로 간다. 서비스가 꺼져 있는 동안 이 길은 502로 답하고, 다른 길은 전과 같다. 본문은 1MB까지 받는다(이 PC의 Caddy 2.11.7로 확인).
 - **프로필을 켜는 것은 스위치가 아니라 인프라 판이다.** 회사 HA의 `node-agent.mjs` · `node-host.py`와 재해 복구 캡처는 떠 있는 컨테이너가 정확히 company · https · spaceship 셋이길 요구한다(현장 노트 「배포·공개」의 컨테이너 집합 절). 이 셋을 띄우기 전에 그 검사들이 `wb-*`를 알도록 고치는 인프라 판이 먼저다.
 
@@ -20,7 +21,7 @@ docker compose --project-name synk-company --file deploy/compose.yaml --profile 
 
 ## 디스크의 자리
 
-서비스마다 영구 디스크(`SYNK_PERSISTENT_ROOT`, 기본 `/srv/synk`) 아래 자기 폴더 하나만 `/wb`로 붙인다. api는 B2 출입증을 보지 못하고, 두 일꾼은 서로의 출입증을 보지 못한다. 세 폴더 모두 컨테이너 사용자 `10771:10771`의 것이고 권한은 `700`이다. 비밀값 파일은 `600`이다. compose는 폴더를 만들지 않는다(`create_host_path: false`).
+서비스마다 영구 디스크(`SYNK_PERSISTENT_ROOT`, 기본 `/srv/synk`) 아래 자기 폴더 하나만 `/wb`로 붙인다. api는 B2 출입증을 보지 못하고, 두 일꾼은 서로의 출입증을 보지 못한다. 서비스마다 실행 사용자가 다르다(api `10771`, keys `10772`, files `10773`). 폴더는 그 사용자의 것이고 권한은 `700`이다. 세 서비스 모두 권한(capability)을 다 빼고 권한 올리기를 막는다. 비밀값 파일은 `600`이다. compose는 폴더를 만들지 않는다(`create_host_path: false`).
 
 | 폴더 | 안에 둘 것 |
 |---|---|
@@ -55,7 +56,7 @@ api 컨테이너 안에서 돈다. 초대 메일 주소는 셸 기록에 남지 
 docker compose --project-name synk-company --file deploy/compose.yaml exec -T wb-api node admin.mjs invites
 ```
 
-명령: `invite-add` · `invite-remove`(표준 입력) · `invites` · `customers [--email]` · `devices <손님>` · `cut-device <기기>` · `lost <기기>` · `scan <손님>` · `reconcile` · `backup <경로>` · `mail-held`.
+명령: `invite-add` · `invite-remove`(표준 입력) · `invites` · `customers [--email]` · `devices <손님>` · `cut-device <기기>` · `lost <기기>` · `scan <손님>` · `reconcile` · `backup <경로>` · `mail-held [--to]` · `key-delete <출입증 번호>`(대조가 「표에 없음」으로 알린 우리 출입증을 확인한 뒤 지운다).
 
 ## 아직 정하지 않은 것
 

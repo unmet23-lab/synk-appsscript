@@ -11,7 +11,7 @@ import { cleanBatch, cleanBundle } from './telemetry.mjs';
 import { suggest } from './detect.mjs';
 import { RpcError } from './rpc.mjs';
 
-export const LIMITS = { writers: 1, readers: 2, keyRequestsPerDay: 5, quotaBytes: 100 * 1024 ** 3, overFactor: 1.5, maxRestoreAgeMs: 29 * 86400000, plansPerDay: 20 };
+export const LIMITS = { writers: 1, readers: 2, keyRequestsPerDay: 5, quotaBytes: 100 * 1024 ** 3, overFactor: 1.5, maxRestoreAgeMs: 29 * 86400000, plansPerDay: 20, restoresPerDay: 3 };
 const DAY = 86400000;
 // The per-customer lease outlives any one key-changing request (a few worker calls).
 const LOCK_MS = 10 * 60000;
@@ -20,6 +20,8 @@ const ID16 = /^[a-z0-9]{16}$/, ID12 = /^[a-z0-9]{12}$/;
 const MOVE_PIN_MS = 7 * DAY;
 const SNAPSHOT_ID = /^[0-9a-f]{64}$/;
 const INSTALL_ID = /^[A-Za-z0-9_-]{22}$/;
+// A restore time a little ahead of the server's clock (the PC's clock runs fast) means "now".
+const SKEW_MS = 5 * 60000;
 // Nonce purposes are the request names, so a sign-in for one action cannot be spent on another.
 export const PURPOSES = ['provision', 'take-write-seat', 'revoke', 'lost', 'read-key-rotate', 'restore-run', 'restore-undo'];
 
@@ -118,14 +120,24 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       // The intent row stays 'creating' and is swept (by name) if B2 did make it.
       throw new ApiError(e.code === 'LIMIT_WORKER_DAY' ? 429 : 503, e.code === 'LIMIT_WORKER_DAY' ? 'LIMIT_KEYS_DAY' : 'SERVER');
     }
-    store.keyCreated(name, made);
+    if (!store.keyCreated(name, made)) {
+      // The row was given up while B2 made the key: nobody may get it.
+      try { await keys('keys.delete', { keyId: made.keyId }); } catch (e) { log({ task: 'keys.delete', code: e.code }); }
+      throw new ApiError(503, 'SERVER');
+    }
     return { name, keyId: made.keyId, applicationKey: made.applicationKey };
   }
   async function dropKey(row, reason) {
+    const was = store.key(row.name)?.state || row.state;
     store.keyDeleting(row.name);
-    if (row.key_id) await keys('keys.delete', { keyId: row.key_id });
-    else await keys('keys.deleteByName', { name: row.name });
+    const r = row.key_id ? await keys('keys.delete', { keyId: row.key_id }) : await keys('keys.deleteByName', { name: row.name });
     store.keyDeleted(row.name, reason);
+    // A key in use that B2 no longer had: someone else deleted it (the B2 console, a restored
+    // database). The operator looks; the customer's request still goes on.
+    if (r?.missing && ['active', 'acked'].includes(was)) {
+      store.addAlert({ customerId: row.customer_id, kind: 'key-missing', audience: 'operator', detail: { reason } });
+      mailer?.toOperator('reconcile', { problems: [{ kind: 'missing-key', count: 1 }] }, `missing:${row.name}`);
+    }
   }
   async function dropAll(rows, reason) {
     try { for (const r of rows) await dropKey(r, reason); }
@@ -142,9 +154,15 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     if (live.some((k) => k.state === 'active')) return live.some((k) => k.state === 'pending' || k.state === 'acked') ? 'unconfirmed' : 'ready';
     return live.some((k) => k.state === 'pending' || k.state === 'acked') ? 'unconfirmed' : 'missing';
   }
-  // 「확정 하나 + 미확정 하나」: a new read key retires the earlier unconfirmed ones.
-  function retireUnconfirmed(customer) {
-    for (const k of readKeys(customer)) if (['creating', 'pending', 'acked'].includes(k.state)) store.setKeyState(k.name, 'retired');
+  // 「확정 하나 + 미확정 하나」: a new read key deletes the earlier unconfirmed ones first, so
+  // B2 never holds more than two read keys of a prefix (카본 r6 C3).
+  async function retireUnconfirmed(customer) {
+    await dropAll(readKeys(customer).filter((k) => ['creating', 'pending', 'acked', 'retired'].includes(k.state)), 'superseded');
+  }
+  // C5: the first key request after a loss (the Google step open, no confirmed read key) is an
+  // incident response — once; later ones count as usual.
+  function incidentFree(customer) {
+    return !!customer.google_step && !readKeys(customer).some((k) => k.state === 'active') && !store.incidentSince(customer.id, customer.lost_at || 0);
   }
   function needsReadKey(customer) {
     const live = readKeys(customer);
@@ -166,6 +184,21 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
   }
   // A restore that is preparing, running, or finished and waiting for its choice.
   function restoreBusy(customer) { if (store.openJob(customer.id)) fail(409, 'BUSY'); }
+  // A device that leaves (revoked, lost, moved off the seat) can never confirm the read
+  // keys it was given: they are retired (jobs delete them) so status and sign-ups do not wait.
+  function retireReadKeysOf(customer, deviceId) {
+    for (const k of readKeys(customer)) if (k.device_id === deviceId && ['creating', 'pending', 'acked'].includes(k.state)) store.setKeyState(k.name, 'retired');
+  }
+  // A restore whose requester left (lost, revoked). While another active device of the account
+  // remains, the finished restore waits for that device's choice (continue or undo — 카본 r6
+  // C1). With none left, nobody could choose: it is kept as it is (as if 「계속」), so a new PC
+  // can sign up.
+  function releaseRestoreOf(customer, deviceId) {
+    const open = store.openJob(customer.id);
+    if (!open || open.device_id !== deviceId || open.state !== 'done') return;
+    if (store.devicesOf(customer.id).some((d) => d.state === 'active' && d.id !== deviceId)) return;
+    store.tx(() => { store.setJob(open.id, { state: 'continued', choice_at: now() }); store.setCustomer(customer.id, { detect_since: now() }); });
+  }
   // Old write keys first; if deleting fails nothing moves. Then the seat, then the
   // new key — a stop after any step is continued by calling the same request again.
   async function moveSeat(customer, device, reason, { keep = () => false } = {}) {
@@ -178,7 +211,13 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       // The move this pin served is over once the seat moves.
       store.setCustomer(customer.id, { move_pin: null });
     });
-    return { previous: before && before.id !== device.id ? before : null, dropped: old.length };
+    if (before && before.id !== device.id) {
+      retireReadKeysOf(customer, before.id);
+      notifyCustomer(customer, 'seat-moved', { at: now(), name: device.name, deviceId: device.id, fromId: before.id }, `${device.id}:${before.id}:${now()}`);
+    }
+    // A retry after a stop: the device this one took the seat from, as recorded.
+    const previous = before && before.id !== device.id ? before : store.get("select * from devices where moved_to = ? and state = 'moved' limit 1", device.id) || null;
+    return { previous, dropped: old.length };
   }
   // A just-deleted B2 key still works for a few seconds (11-13): a new write key is used
   // only after that, so two PCs never write at once. The app waits until usableAt. The
@@ -187,35 +226,32 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
   const waitOf = (customer) => { const at = usableAt(customer); return { usableAt: at, waitMs: at - now() }; };
 
   // ── restore jobs (run in the background; resumable because the tool re-plans)
-  // A job left 'preparing' by a restart: every write key except the ones this restore
-  // made for its requester goes before the restore runs (with the grace wait).
+  // A job left 'preparing' by a stop: the answer carrying its new keys never left (the job
+  // becomes 'running' just before the answer), so the requester has no keys for it. Every
+  // write key goes (the replacement had started), the new read key goes, and the job fails;
+  // the app asks again (restore/run), or takes the seat back.
   async function finishPreparing(job) {
     await serial(job.customer_id, async () => {
       const fresh = store.job(job.id);
       if (!fresh || fresh.state !== 'preparing') return;
       const customer = store.customerById(job.customer_id);
-      const requester = store.device(job.device_id);
-      // The requester was cut (lost, revoked, moved) while the job waited: no seat for it —
-      // the old write keys still go, and the restore does not run.
-      if (!requester || requester.state !== 'active') {
-        await dropAll(store.liveKeys(customer.id, 'write'), 'restore');
-        store.setJob(job.id, { state: 'failed', finished_at: now(), error: 'DEVICE' });
-        return;
-      }
-      await moveSeat(customer, requester, 'restore', { keep: (k) => k.device_id === job.device_id && k.purpose === 'restore' && k.created_at >= job.created_at });
-      store.setJob(job.id, { state: 'running' });
+      await dropAll([...store.liveKeys(customer.id, 'write'), ...readKeys(customer).filter((k) => k.purpose === 'restore' && k.created_at >= job.created_at && k.state !== 'active')], 'restore-interrupted');
+      store.setJob(job.id, { state: 'failed', finished_at: now(), error: 'INTERRUPTED' });
     });
-    const after = store.job(job.id);
-    return after.state === 'running' ? runJob(after) : null;
+    return null;
   }
   async function runJob(job, { resume = false } = {}) {
-    if (job.state === 'preparing') return null;
     if (running.has(job.id)) return running.get(job.id);
+    // Only a job that is running now: a finished one called again must not apply its restore
+    // a second time (and use another of the day's restores); a preparing one goes through
+    // finishPreparing.
+    if (store.job(job.id)?.state !== 'running') return null;
     const p = (async () => {
       const customer = store.customerById(job.customer_id);
       try {
-        // A just-deleted B2 key still works for a few seconds (11-13): wait before planning.
-        if (!resume && !job.undo_of && cfg.restoreGraceMs) await sleep(cfg.restoreGraceMs);
+        // A just-deleted B2 key still works for a few seconds (11-13): wait out what is left of
+        // the grace since the last write key deletion — after a restart too.
+        { const left = usableAt(customer) - now(); if (left > 0) await sleep(left); }
         if (!job.started_at) store.setJob(job.id, { started_at: now() });
         const r = await files('restore.apply', { prefix: customer.prefix, at: job.at, resume }, { timeout: 3600000 });
         const prior = (() => { try { return JSON.parse(store.job(job.id).journal || '[]'); } catch { return []; } })();
@@ -223,9 +259,17 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         store.setJob(job.id, { state: job.undo_of ? 'continued' : 'done', finished_at: now(), pre_at: fresh.pre_at ?? r.preAt, rounds: r.rounds,
           counts: JSON.stringify({ ...r.counts, remaining: r.remaining }), journal: JSON.stringify([...prior, ...r.journal]) });
         if (job.undo_of) store.setCustomer(customer.id, { detect_since: now() });
-        else notifyCustomer(customer, 'restore-done', { at: now(), to: job.at, jobId: job.id }, job.id);
+        else {
+          notifyCustomer(customer, 'restore-done', { at: now(), to: job.at, jobId: job.id }, job.id);
+          if (store.device(job.device_id)?.state !== 'active') releaseRestoreOf(customer, job.device_id);
+        }
       } catch (e) {
-        store.setJob(job.id, { state: 'failed', finished_at: now(), error: String(e.code || 'FAILED').slice(0, 40) });
+        store.tx(() => {
+          store.setJob(job.id, { state: 'failed', finished_at: now(), error: String(e.code || 'FAILED').slice(0, 40) });
+          // The undo did not finish: the restore it undid waits for its choice again (undo once
+          // more, or keep it), and backups stay paused meanwhile (카본 r6 C2).
+          if (job.undo_of && store.job(job.undo_of)?.state === 'undone') store.setJob(job.undo_of, { state: 'done', choice_at: null });
+        });
         mailer?.toOperator('job-failed', { customerId: customer.id, jobId: job.id, code: e.code || 'FAILED' }, job.id);
         log({ task: 'restore', code: e.code || 'FAILED' });
       } finally { running.delete(job.id); }
@@ -281,22 +325,29 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         }
         const giveRead = needsReadKey(customer);
         const makes = role === 'write' || giveRead;
-        // After a loss the first read key is an incident response, not counted.
-        if (makes && !(customer.google_step && giveRead && role === 'read')) checkBudget(customer);
+        // The first sign-up after a loss (the Google step still open, no confirmed read key) is
+        // an incident response: neither checked against nor counted in the day's cap.
+        const incident = giveRead && incidentFree(customer);
+        if (makes && !incident) checkBudget(customer);
         const { device, token } = store.createDevice({ customerId: customer.id, name, role, appVersion, installId: installId || null });
+        // The earlier devices of this same PC (same install id), newest first: the app keeps
+        // backing up under the same PC when its device was dropped and it signed up again.
+        const sameInstall = installId ? store.devicesOf(customer.id).filter((d) => d.install_id === installId && d.id !== device.id)
+          .sort((a, b) => b.created_at - a.created_at).slice(0, 5).map((d) => ({ id: d.id, state: d.state })) : [];
         const out = { customer: { id: customer.id, repository: repository(customer) }, device: { id: device.id, token, role }, keys: {}, ackBy: now() + ACK_MS,
-          writer: writer ? { id: writer.id, name: writer.name } : null, lost: customer.google_step ? { googleStepRequired: true } : null };
+          writer: writer ? { id: writer.id, name: writer.name } : null, lost: customer.google_step ? { googleStepRequired: true } : null, sameInstall };
         try {
           if (role === 'write') out.keys.write = keyOut(await makeKey('write', customer, device.id, 'provision'));
-          if (giveRead) { retireUnconfirmed(customer); out.keys.read = keyOut(await makeKey('read', customer, device.id, 'provision')); }
+          if (giveRead) { await retireUnconfirmed(customer); out.keys.read = keyOut(await makeKey('read', customer, device.id, 'provision')); }
         } catch (e) {
           for (const k of [...store.liveKeys(customer.id, 'write'), ...readKeys(customer)].filter((k) => k.device_id === device.id && k.state !== 'retired')) { try { await dropKey(k, 'provision-failed'); } catch {} }
           store.setDevice(device.id, { state: 'abandoned', role: 'read' });
           throw e;
         }
-        if (makes) store.addKeyRequest(customer.id, 'provision');
+        if (makes) store.addKeyRequest(customer.id, incident ? 'incident' : 'provision');
         Object.assign(out, waitOf(customer));
-        if (store.devicesOf(customer.id).length > 1) notifyCustomer(customer, 'new-device', { at: now(), name: device.name, deviceId: device.id }, device.id);
+        // C6: an abandoned earlier try of this same PC is not another device.
+        if (store.devicesOf(customer.id).filter((d) => d.state !== 'abandoned').length > 1) notifyCustomer(customer, 'new-device', { at: now(), name: device.name, deviceId: device.id }, device.id);
         return out;
       });
     },
@@ -366,7 +417,6 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         const { previous } = await moveSeat(customer, device, 'seat-moved');
         const k = await makeKey('write', customer, device.id, 'seat');
         store.addKeyRequest(customer.id, 'seat');
-        if (previous) notifyCustomer(customer, 'seat-moved', { at: now(), name: device.name, deviceId: device.id, fromId: previous.id }, `${device.id}:${now()}`);
         return { keys: { write: keyOut(k) }, ackBy: now() + ACK_MS, ...waitOf(customer), previous: previous ? { id: previous.id, name: previous.name } : null };
       });
     },
@@ -386,6 +436,8 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         if (!hasBearer(req) && tgt.role === 'write' && tgt.state === 'active') fail(403, 'DEVICE_STATE', { state: 'writer' });
         await dropAll(store.liveKeys(customer.id, 'write').filter((k) => k.device_id === target.id), 'revoked');
         if (tgt.state !== 'lost') store.setDevice(target.id, { state: 'revoked', role: 'read' });
+        retireReadKeysOf(customer, target.id);
+        releaseRestoreOf(customer, target.id);
         // A read-only PC still holds the envelope's read key and password.
         return { ok: true, suggestReadKeyRotation: tgt.state !== 'abandoned' };
       });
@@ -403,6 +455,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
           store.setDevice(target.id, { state: 'lost', role: 'read' });
           store.setCustomer(customer.id, { read_key: null, lost_at: now(), google_step: 1 });
         });
+        releaseRestoreOf(customer, target.id);
         notifyCustomer(customer, 'lost-reported', { at: now(), name: target.name, deviceId: target.id }, target.id);
         return { next: 'read-key-rotate', googleRemovalUrl: 'https://myaccount.google.com/connections' };
       });
@@ -414,11 +467,11 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       return serial(first.customer.id, async () => {
         const { device, customer } = current(first.device, ['active']);
         restoreBusy(customer);
-        const incident = !!customer.google_step && !readKeys(customer).some((k) => k.state === 'active');
+        const incident = incidentFree(customer);
         if (!incident) checkBudget(customer);
-        retireUnconfirmed(customer);
+        await retireUnconfirmed(customer);
         const k = await makeKey('read', customer, device.id, 'rotate');
-        if (!incident) store.addKeyRequest(customer.id, 'rotate');
+        store.addKeyRequest(customer.id, incident ? 'incident' : 'rotate');
         return { keys: { read: keyOut(k) }, ackBy: now() + ACK_MS, googleStepRequired: !!customer.google_step };
       });
     },
@@ -445,14 +498,18 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     'POST /v1/restore/plan': async (req, body) => {
       const { customer } = bearer(req, ['active']);
       const t = now(), oldestAt = t - LIMITS.maxRestoreAgeMs;
-      const at = body?.at;
-      if (at !== undefined && at !== null && (!Number.isSafeInteger(at) || at < oldestAt || at > t)) fail(400, 'TOO_OLD');
+      let at = body?.at;
+      if (at !== undefined && at !== null) {
+        if (!Number.isSafeInteger(at) || at > t + SKEW_MS) fail(400, 'BAD_INPUT');
+        at = Math.min(at, t);
+        if (at < oldestAt) fail(400, 'TOO_OLD');
+      }
       // The listing is cached five minutes per customer and planned at most 20 times a day:
       // the customer account's free tier caps list calls for every customer together.
       let cached = plans.get(customer.id);
       if (!cached || t - cached.at > 300000) {
         if (!limiter.take(`plan:${customer.id}`, LIMITS.plansPerDay, DAY)) fail(429, 'RATE');
-        const summary = await files('prefix.scan', { prefix: customer.prefix, since: t - DAY }, { timeout: 600000 });
+        const summary = await files('prefix.scan', { prefix: customer.prefix, since: t - DAY, from: customer.detect_since || 0 }, { timeout: 600000 });
         cached = { at: t, suggestions: suggest(summary, { baseline: customer.detect_since || 0, now: t }), plans: new Map() };
         plans.set(customer.id, cached);
       }
@@ -474,21 +531,29 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     'POST /v1/restore/run': async (req, body) => {
       let { device, customer } = bearer(req, ['active']);
       await freshFor(customer, body, 'restore-run');
-      const t = now(), at = body?.at;
-      if (!Number.isSafeInteger(at) || at > t) fail(400, 'BAD_INPUT');
+      const t = now();
+      if (!Number.isSafeInteger(body?.at) || body.at > t + SKEW_MS) fail(400, 'BAD_INPUT');
+      const at = Math.min(body.at, t);
       if (t - at > LIMITS.maxRestoreAgeMs) fail(400, 'TOO_OLD');
       return serial(customer.id, async () => {
         ({ device } = current(device, ['active']));
         restoreBusy(customer);
+        // The files worker allows three restores a day (RESTORES_PER_DAY); refuse here before any key is made.
+        if (store.restoresSince(customer.id, now() - DAY) >= LIMITS.restoresPerDay) fail(429, 'LIMIT_RESTORE_DAY');
         const job = store.createJob({ customerId: customer.id, deviceId: device.id, at, state: 'preparing' });
         notifyCustomer(customer, 'restore-requested', { at: t, to: at, deviceId: device.id, jobId: job.id }, job.id);
         let write, read;
         try {
           await moveSeat(customer, device, 'restore');
           write = await makeKey('write', customer, device.id, 'restore');
-          retireUnconfirmed(customer);
+          await retireUnconfirmed(customer);
           read = await makeKey('read', customer, device.id, 'restore');
-        } catch (e) { store.setJob(job.id, { state: 'failed', finished_at: now(), error: String(e.code || 'KEYS') }); throw e; }
+        } catch (e) {
+          // Nobody gets this request's keys: delete what it made (카본 r6 C4).
+          for (const k of [write, read].filter(Boolean)) { try { await dropKey(store.key(k.name), 'restore-failed'); } catch (x) { log({ task: 'keys.delete', code: x.code }); } }
+          store.setJob(job.id, { state: 'failed', finished_at: now(), error: String(e.code || 'KEYS') });
+          throw e;
+        }
         // Every old write key is gone: only now may the restore run (or resume after a restart).
         store.setJob(job.id, { state: 'running' });
         void runJob(store.job(job.id));
@@ -509,7 +574,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const { device, customer } = bearer(req, ['active']);
       const job = typeof body?.jobId === 'string' && ID16.test(body.jobId) ? store.job(body.jobId) : null;
       if (!job || job.customer_id !== customer.id || job.state !== 'done') fail(404, 'NOT_FOUND');
-      if (job.device_id !== device.id) fail(403, 'DEVICE_STATE', { state: 'not-requester' });
+      if (job.device_id !== device.id && store.device(job.device_id)?.state === 'active') fail(403, 'DEVICE_STATE', { state: 'not-requester' });
       // Only the latest restore, still waiting for its choice, as it is now.
       const latest = () => { current(device, ['active']); const open = store.openJob(customer.id); if (!open || open.id !== job.id || open.state !== 'done') fail(404, 'NOT_FOUND'); };
       if (body.choice === 'continue') {
@@ -562,9 +627,10 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
 
   async function handle(req, res) {
     const started = now();
+    let tooBig = false;
     const send = (status, value) => {
-      res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
-      res.end(JSON.stringify(value));
+      res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...(tooBig ? { connection: 'close' } : {}) });
+      res.end(JSON.stringify(value), () => { if (tooBig) req.destroy(); });
     };
     let route = '?';
     try {
@@ -583,7 +649,8 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         const max = pathName === '/v1/telemetry' ? 1 << 20 : 65536;
         const text = await new Promise((ok, bad) => {
           const chunks = []; let size = 0;
-          req.on('data', (c) => { size += c.length; if (size > max) { bad(new ApiError(413, 'BAD_INPUT')); req.destroy(); } else chunks.push(c); });
+          // Too big: stop reading, answer 413 with Connection: close, then close (카본 r6 C9).
+          req.on('data', (c) => { size += c.length; if (size > max) { if (!tooBig) { tooBig = true; req.pause(); bad(new ApiError(413, 'BAD_INPUT')); } } else chunks.push(c); });
           req.on('end', () => ok(Buffer.concat(chunks).toString('utf8')));
           req.on('error', () => bad(new ApiError(400, 'BAD_INPUT')));
         });
@@ -594,6 +661,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       send(200, { ok: true, ...result });
       log({ route, status: 200, ms: now() - started });
     } catch (e) {
+      if (!(e instanceof ApiError) && e?.message === 'BAD_INPUT') e = new ApiError(400, 'BAD_INPUT');
       const known = e instanceof ApiError;
       const status = known ? e.status : e instanceof RpcError ? 503 : 500;
       const code = known ? e.code : 'SERVER';
@@ -602,5 +670,19 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     }
   }
 
-  return { handle, runJob, finishPreparing, routes, makeKey, dropKey, serial, repository, server: () => http.createServer((req, res) => { void handle(req, res); }) };
+  // The operator's cut (admin.mjs cut-device, 4.5 「그 기기 출입증만 끊는 길」), in the same
+  // per-customer line as the running api (a lease in the database). Like the customer's own
+  // revoke: its write keys go, its unconfirmed read keys are retired (the minute tick deletes
+  // them) and a restore it waits on is kept as it is (GPT r6 GB2).
+  async function cutDevice(deviceId) {
+    const d = store.device(deviceId); if (!d) fail(404, 'NOT_FOUND');
+    await serial(d.customer_id, async () => {
+      const customer = store.customerById(d.customer_id);
+      await dropAll(store.liveKeys(d.customer_id, 'write').filter((k) => k.device_id === d.id), 'operator-cut');
+      if (store.device(d.id).state !== 'lost') store.setDevice(d.id, { state: 'revoked', role: 'read' });
+      retireReadKeysOf(customer, d.id);
+      releaseRestoreOf(customer, d.id);
+    });
+  }
+  return { handle, runJob, finishPreparing, routes, makeKey, dropKey, serial, repository, cutDevice, server: () => http.createServer((req, res) => { void handle(req, res); }) };
 }

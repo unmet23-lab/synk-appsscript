@@ -43,7 +43,7 @@ async function harness(t, { grace = 0 } = {}) {
     return { status: res.status, data: await res.json() };
   };
   const auth = (claims = {}) => ({ calls: [], async signIn({ nonce, expectedSub }) { this.calls.push({ nonce, expectedSub }); const sub = claims.sub || '1000001'; if (expectedSub && expectedSub !== sub) throw Object.assign(new Error('ACCOUNT'), { code: 'ACCOUNT' }); return { idToken: g.token({ nonce, ...claims }), nonce, sub, email: claims.email || 'pilot@example.com' }; } });
-  const client = async (name, claims, opts = {}) => { const c = new ProvisionClient({ dir: path.join(dir, name), secretStore, auth: auth(claims), call, now, ...opts }); await c.open(); return c; };
+  const client = async (name, claims, opts = {}) => { const c = new ProvisionClient({ dir: path.join(dir, name), secretStore, auth: auth(claims), call, now, mono: now, ...opts }); await c.open(); return c; };
   return { b2, store, api, jobs, client, clock, dir, WRITE_CAPS };
 }
 
@@ -246,13 +246,13 @@ test('GPT GB6: a write key that replaced another waits out the grace before the 
   h.store.addInvite('pilot@example.com');
   const oldPc = await h.client('old'); await oldPc.provision({ name: '옛 PC' });
   const waits = [];
-  const newPc = await h.client('new', {}, { sleep: async (ms) => { waits.push(ms); } });
+  const newPc = await h.client('new', {}, { sleep: async (ms) => { waits.push(ms); h.clock.advance(ms); } });
   await newPc.provision({ name: '새 PC' });
   await newPc.takeWriteSeat();
   assert.ok(await newPc.writeCredentials());
   assert.deepEqual(waits, [60000]);
   // The first device's key is usable at once.
-  const w0 = []; const fresh = await h.client('fresh', { sub: '1000002', email: 'other@example.com' }, { sleep: async (ms) => { w0.push(ms); } });
+  const w0 = []; const fresh = await h.client('fresh', { sub: '1000002', email: 'other@example.com' }, { sleep: async (ms) => { w0.push(ms); h.clock.advance(ms); } });
   h.store.addInvite('other@example.com');
   await fresh.provision({ name: 'PC' });
   assert.ok(await fresh.writeCredentials()); assert.deepEqual(w0, []);
@@ -270,15 +270,196 @@ test('GPT r4: files of the first version are imported — keys acknowledged agai
   await enc('device.bin', { ...old, done: true });
   await enc('write-key.bin', { keyId: fresh.keyId, applicationKey: fresh.applicationKey, customerId: d.customerId, deviceId: d.deviceId, usableAt: h.clock.t + 30000 });
   const waits = [];
-  const again = new ProvisionClient({ dir, secretStore, auth: pc.auth, call: pc.call, now: () => h.clock.t, sleep: async (ms) => { waits.push(ms); } });
+  const again = new ProvisionClient({ dir, secretStore, auth: pc.auth, call: pc.call, now: () => h.clock.t, mono: () => h.clock.t, sleep: async (ms) => { waits.push(ms); h.clock.advance(ms); } });
   await again.open();
   assert.equal(again.device.v, 2);
   assert.equal(h.store.key(fresh.name).state, 'active', 'the imported key was acknowledged');
   assert.equal((await again.writeCredentials()).keyId, fresh.keyId);
-  assert.deepEqual(waits, [30000], 'the wait of the first version carries over');
+  assert.deepEqual(waits, [60000], 'a key of the first version waits the whole grace once (its usableAt is a wall-clock time)');
   assert.equal(fsSync.existsSync(path.join(dir, 'write-key.bin')), false);
   // An unfinished sign-up of that version with its keys missing is forgotten.
   await enc('device.bin', { ...old, done: false, expect: { write: true, read: true } });
   const third = new ProvisionClient({ dir, secretStore, auth: pc.auth, call: pc.call, now: () => h.clock.t });
   assert.equal((await third.open()).connected, false);
+});
+
+test('카본 A1 · A2 · A3 · A4: transport failures are NETWORK; a cut device is forgotten on any call; no device file from nothing; a lost report clears the local read key', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  // A3: a key request on a PC with no device writes nothing.
+  const none = await h.client('none');
+  await assert.rejects(none.takeWriteSeat(), { code: 'DEVICE_STATE' });
+  assert.equal(fsSync.existsSync(path.join(h.dir, 'none', 'device.bin')), false);
+  // A1: offline with unacknowledged keys — open() still opens; the keys settle later.
+  const pc = await h.client('pc');
+  const real = pc.call;
+  pc.call = async (u, o) => { if (u.endsWith('keys/ack')) { const e = new Error('offline'); e.code = 'NETWORK'; throw e; } return real(u, o); };
+  await assert.rejects(pc.provision({ name: 'PC' }), { code: 'NETWORK' });
+  const offline = new ProvisionClient({ dir: path.join(h.dir, 'pc'), secretStore, auth: pc.auth, call: async () => { throw Object.assign(new Error('x'), { code: 'INVALID' }); } });
+  assert.equal((await offline.open()).connected, true);
+  const back = new ProvisionClient({ dir: path.join(h.dir, 'pc'), secretStore, auth: pc.auth, call: real });
+  await back.open();
+  assert.equal((await back.provision({ name: 'PC' })).role, 'write');
+  // A1: an answer that is not our server's (a captive portal, a cut body) leaves "ask again".
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' });
+  const breal = b.call;
+  b.call = async (u, o) => { if (u.endsWith('take-write-seat')) { await breal(u, o); throw Object.assign(new Error('x'), { code: 'INVALID' }); } return breal(u, o); };
+  await assert.rejects(b.takeWriteSeat(), { code: 'NETWORK' });
+  assert.deepEqual(b.state().needs, ['write-key']);
+  b.call = breal;
+  // A4: the lost report of another device from this one clears this device's unconfirmed read key.
+  await b.lost(back.device.deviceId);
+  assert.equal(await b.pendingReadKey(), null);
+  // A2: a device that was acknowledged and then cut is forgotten on its next ordinary call.
+  await assert.rejects(back.status(), { code: 'DEVICE_GONE' });
+  assert.equal(fsSync.existsSync(path.join(h.dir, 'pc', 'device.bin')), false);
+  assert.equal((await back.provision({ name: 'PC' })).connected, true, 'and signs up again');
+});
+
+test('카본 A5: a key replaced during the wait is not handed out', async (t) => {
+  const h = await harness(t, { grace: 60000 });
+  h.store.addInvite('pilot@example.com');
+  const oldPc = await h.client('old'); await oldPc.provision({ name: '옛 PC' });
+  let swap = null;
+  const waits = [];
+  const newPc = await h.client('new', {}, { sleep: async (ms) => { waits.push(ms); h.clock.advance(ms); if (swap) { const f = swap; swap = null; await f(); } } });
+  await newPc.provision({ name: '새 PC' });
+  await newPc.takeWriteSeat();
+  const first = newPc.device.write.keyId;
+  // During the wait the seat is taken again (a second take-write-seat from this PC).
+  swap = async () => { await newPc.takeWriteSeat(); };
+  const got = await newPc.writeCredentials();
+  assert.ok(got); assert.notEqual(got.keyId, first, 'the key handed out is the current one');
+  assert.equal(got.keyId, newPc.device.write.keyId);
+  assert.deepEqual(waits, [60000, 60000], 'the replacing key waited its own grace too (카본 r6 B7)');
+});
+
+test('조율 세션 부탁: a full account frees a seat with the sign-in only; state() keeps the Google step and the writer; a re-signed PC learns its earlier device', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); await a.provision({ name: 'PC-A' });
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' });
+  const c = await h.client('c'); await c.provision({ name: 'PC-C' });
+  // state() after reopening carries what the sign-up said.
+  const reopened = new ProvisionClient({ dir: path.join(h.dir, 'b'), secretStore, auth: b.auth, call: b.call });
+  const st = await reopened.open();
+  assert.equal(st.writer.id, a.device.deviceId); assert.equal(st.googleStepRequired, false); assert.deepEqual(st.sameInstall, []);
+  // A fourth PC is refused and lists the devices; it cuts a reading one with the sign-in only.
+  const d = await h.client('d');
+  const full = await d.provision({ name: 'PC-D' }).catch((e) => e);
+  assert.equal(full.code, 'LIMIT_DEVICES');
+  assert.equal(full.extra.devices.length, 3);
+  await assert.rejects(d.revoke(a.device.deviceId), { code: 'DEVICE_STATE' }, 'not the active writer');
+  const cOld = c.device.deviceId;
+  assert.equal((await d.revoke(cOld)).ok, true);
+  assert.equal((await d.provision({ name: 'PC-D' })).role, 'read');
+  // The cut PC is forgotten on its next call; signing up again names its earlier device.
+  await assert.rejects(c.status(), { code: 'DEVICE_GONE' });
+  const old = c.installId;
+  h.clock.advance(1000);
+  await assert.rejects(c.provision({ name: 'PC-C' }), { code: 'LIMIT_DEVICES' });
+  await d.revoke(b.device.deviceId);
+  const again = await c.provision({ name: 'PC-C' });
+  assert.equal(c.installId, old);
+  assert.deepEqual(again.sameInstall, [cOld], 'the revoked device of this PC');
+  assert.deepEqual(c.state().sameInstall, [cOld]);
+  // After a loss the Google step shows in state() until the new read key is confirmed.
+  await d.lost(a.device.deviceId);
+  assert.equal(d.state().googleStepRequired, true);
+  const rot = await d.rotateReadKey();
+  assert.equal(d.state().googleStepRequired, true);
+  await d.confirmReadKey(rot.readKey.keyId);
+  assert.equal(d.state().googleStepRequired, false);
+});
+
+test('GPT 끝판 GA3: setting the PC clock forward does not shorten the wait; a restart waits again until it is marked done', async (t) => {
+  const h = await harness(t, { grace: 60000 });
+  h.store.addInvite('pilot@example.com');
+  const oldPc = await h.client('old'); await oldPc.provision({ name: '옛 PC' });
+  let skew = 0; const waits = [];
+  const opts = { now: () => h.clock.t + skew, mono: () => h.clock.t, sleep: async (ms) => { waits.push(ms); h.clock.advance(ms); } };
+  const pc = await h.client('new', {}, opts);
+  await pc.provision({ name: '새 PC' });
+  await pc.takeWriteSeat();
+  skew = 120000; // the PC's clock is set two minutes ahead
+  assert.ok(await pc.writeCredentials());
+  assert.deepEqual(waits, [60000]);
+  assert.equal(pc.device.write.waited, true);
+  // Taken again, then the app restarts before using it: the new process waits the whole grace.
+  await pc.takeWriteSeat();
+  const restarted = new ProvisionClient({ dir: path.join(h.dir, 'new'), secretStore, auth: pc.auth, call: pc.call, ...opts });
+  await restarted.open();
+  h.clock.advance(30000);
+  waits.length = 0;
+  assert.ok(await restarted.writeCredentials());
+  assert.deepEqual(waits, [60000]);
+  // Marked waited, a further restart hands it out at once.
+  const third = new ProvisionClient({ dir: path.join(h.dir, 'new'), secretStore, auth: pc.auth, call: pc.call, ...opts });
+  await third.open(); waits.length = 0;
+  assert.ok(await third.writeCredentials()); assert.deepEqual(waits, []);
+});
+
+test('조율 세션 덧붙임 2 · 11 · 13: state() says a read key waits for the envelope; a waiting Google sign-in can be stopped', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc');
+  await pc.provision({ name: 'PC' });
+  assert.equal(pc.state().readKeyPending, true);
+  await pc.confirmReadKey(pc.device.read.keyId);
+  assert.equal(pc.state().readKeyPending, false);
+  let cancelled = 0;
+  pc.auth.cancel = () => { cancelled++; };
+  pc.cancelSignIn();
+  assert.equal(cancelled, 1);
+});
+
+test('카본 r6 A1 · A4: a writer moved off its seat drops its unconfirmed read key and what it was to ask again; the new writer names itself', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); await a.provision({ name: 'PC-A' });
+  assert.equal(a.state().readKeyPending, true);
+  const unconfirmed = a.device.read.keyId;
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' });
+  assert.equal(b.state().writer.id, a.device.deviceId);
+  await b.takeWriteSeat();
+  assert.deepEqual(b.state().writer, { id: b.device.deviceId, name: 'PC-B' });
+  await assert.rejects(a.confirmReadKey(unconfirmed), { code: 'DEVICE_STATE' });
+  const st = a.state();
+  assert.equal(st.role, 'read'); assert.equal(st.readKeyPending, false); assert.deepEqual(st.needs, []); assert.equal(st.writer, null);
+  assert.equal(await a.pendingReadKey(), null);
+  assert.equal(await a.writeCredentials(), null);
+});
+
+test('카본 r6 A2 · A3: cutting this very device forgets it here; a moved device cuts others with the sign-in only; a lost answer of a loss report clears the local read key', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); await a.provision({ name: 'PC-A' });
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' });
+  const c = await h.client('c'); await c.provision({ name: 'PC-C' });
+  await b.takeWriteSeat(); // a is moved now
+  await assert.rejects(a.confirmReadKey(a.device.read.keyId), { code: 'DEVICE_STATE' });
+  assert.equal((await a.revoke(c.device.deviceId)).ok, true, 'a moved device cuts a reading one with the sign-in only');
+  assert.equal(h.store.device(c.device.deviceId).state, 'revoked');
+  // b cuts itself: its device is forgotten here at once.
+  await b.revoke(b.device.deviceId);
+  assert.equal(b.state().connected, false);
+  assert.equal(await b.writeCredentials(), null);
+  // A loss report whose answer is lost: this device acts as if it happened.
+  const d = await h.client('d'); await d.provision({ name: 'PC-D' });
+  const real = d.call;
+  d.call = async (u, o) => { const r = await real(u, o); if (u.endsWith('/lost')) throw Object.assign(new Error('cut'), { code: 'ETIMEDOUT' }); return r; };
+  await assert.rejects(d.lost(a.device.deviceId), { code: 'NETWORK' });
+  assert.equal(d.state().googleStepRequired, true);
+  assert.ok(d.state().needs.includes('read-key'));
+  assert.equal(d.device.read, null);
+});
+
+test('카본 r6 A6: an empty or malformed server nonce stops before the browser opens', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc');
+  const real = pc.call;
+  pc.call = async (u, o) => (u.endsWith('/nonce') ? { status: 200, data: { ok: true, nonce: '' } } : real(u, o));
+  await assert.rejects(pc.provision({ name: 'PC' }), { code: 'SERVER' });
+  assert.equal(pc.auth.calls.length, 0);
 });

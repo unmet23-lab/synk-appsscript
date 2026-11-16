@@ -22,7 +22,8 @@ create table if not exists meta(k text primary key, v text not null);
 create table if not exists customers(
   id text primary key, sub text not null unique, email text not null unique, prefix text not null unique,
   state text not null default 'active', created_at integer not null,
-  lost_at integer, google_step integer not null default 0, read_key text, detect_since integer, move_pin text);
+  lost_at integer, google_step integer not null default 0, read_key text, detect_since integer, move_pin text,
+  detect_cursor integer);
 create table if not exists invites(email text primary key, added_at integer not null, used_at integer, customer_id text);
 create table if not exists nonces(value text primary key, purpose text not null, created_at integer not null, used_at integer);
 create table if not exists devices(
@@ -83,6 +84,7 @@ export class Store {
     try {
       if (!cols('customers').includes('move_pin')) this.db.exec('alter table customers add column move_pin text');
       if (!cols('devices').includes('install_id')) this.db.exec('alter table devices add column install_id text');
+      if (!cols('customers').includes('detect_cursor')) this.db.exec('alter table customers add column detect_cursor integer');
       const sql = this.db.prepare("select sql from sqlite_master where type = 'table' and name = 'restore_jobs'").get()?.sql || '';
       if (!sql.includes("'preparing'")) {
         this.db.exec(`alter table restore_jobs rename to restore_jobs_old;
@@ -180,7 +182,8 @@ drop table restore_jobs_old;`);
   keyCreated(name, { keyId, capabilities }) {
     // created_at becomes the moment B2 answered: the ack window starts there, and the daily
     // reconcile counts a key as missing only if it existed before the listing began.
-    this.run("update keys set key_id = ?, capabilities = ?, state = 'pending', created_at = ? where name = ? and state = 'creating'", keyId, JSON.stringify(capabilities || []), this.now(), name);
+    // 0 when the row is no longer 'creating' (given up meanwhile): the caller deletes the key.
+    return this.run("update keys set key_id = ?, capabilities = ?, state = 'pending', created_at = ? where name = ? and state = 'creating'", keyId, JSON.stringify(capabilities || []), this.now(), name).changes;
   }
   key(name) { return this.get('select * from keys where name = ?', name); }
   keyById(keyId) { return this.get('select * from keys where key_id = ?', keyId); }
@@ -188,7 +191,11 @@ drop table restore_jobs_old;`);
     return this.all("select * from keys where customer_id = ? and kind = ? and state != 'deleted' order by created_at", customerId, kind);
   }
   // The daily cap counts key-making requests, not keys (design 「여러 걸음 요청과 하루 상한」).
-  keyRequestsSince(customerId, since) { return this.get('select count(*) n from key_requests where customer_id = ? and at > ?', customerId, since).n; }
+  // An incident response (the first key request after a loss) is recorded as 'incident' and
+  // is not counted in the day's cap.
+  keyRequestsSince(customerId, since) { return this.get("select count(*) n from key_requests where customer_id = ? and at > ? and kind != 'incident'", customerId, since).n; }
+  incidentSince(customerId, since) { return !!this.get("select 1 from key_requests where customer_id = ? and kind = 'incident' and at >= ?", customerId, since); }
+  restoresSince(customerId, since) { return this.get("select count(*) n from restore_jobs where customer_id = ? and undo_of is null and created_at > ? and (state != 'failed' or started_at is not null)", customerId, since).n; }
   addKeyRequest(customerId, kind) { this.run('insert into key_requests(customer_id, kind, at) values (?, ?, ?)', customerId, kind, this.now()); }
   keyDeleting(name) { this.run("update keys set state = 'deleting' where name = ? and state != 'deleted'", name); }
   keyDeleted(name, reason) { this.run("update keys set state = 'deleted', deleted_at = ?, reason = ? where name = ?", this.now(), reason, name); }
@@ -214,8 +221,10 @@ drop table restore_jobs_old;`);
       deviceId, this.now(), env.appVersion ?? null, env.windows ?? null, env.standby ?? null);
   }
   // What the customer's devices reported for a window: null when no run record arrived at all.
+  // By the time the server received it (a run's record comes after its prune; a run of hours
+  // is covered and a device cannot move it — Fable 5.2 설계 관문 둘째).
   reportedSince(customerId, since) {
-    const rows = this.all('select data from runs where customer_id = ? and started_at > ?', customerId, since);
+    const rows = this.all('select data from runs where customer_id = ? and received_at > ?', customerId, since);
     if (!rows.length) return null;
     let pruned = 0, massConfirmed = false;
     for (const r of rows) { try { const d = JSON.parse(r.data); pruned += Number(d.prunedSnapshots) || 0; massConfirmed ||= d.massChangeConfirmed === true; } catch {} }
@@ -250,8 +259,11 @@ drop table restore_jobs_old;`);
   // Started, or finished and waiting for the customer's choice: no other restore meanwhile.
   // Only the latest job can be open — an older 'done' one behind a later restore is history.
   openJob(customerId) { const j = this.lastJob(customerId); return j && ['preparing', 'running', 'done'].includes(j.state) ? j : null; }
-  lastWriteKeyDeleted(customerId) { return this.get("select max(deleted_at) t from keys where customer_id = ? and kind = 'write' and deleted_at is not null", customerId)?.t || 0; }
-  lastJob(customerId) { return this.get('select * from restore_jobs where customer_id = ? order by created_at desc, rowid desc limit 1', customerId) || null; }
+  // A key whose B2 answer never reached us (key_id null) was never handed to anyone: deleting it
+  // starts no wait.
+  lastWriteKeyDeleted(customerId) { return this.get("select max(deleted_at) t from keys where customer_id = ? and kind = 'write' and deleted_at is not null and key_id is not null", customerId)?.t || 0; }
+  // A failed undo is not the latest job: the restore it tried to undo waits for its choice again.
+  lastJob(customerId) { return this.get("select * from restore_jobs where customer_id = ? and not (undo_of is not null and state = 'failed') order by created_at desc, rowid desc limit 1", customerId) || null; }
   jobsToResume() { return this.all("select * from restore_jobs where state in ('preparing','running')"); }
   setJob(id, fields) { this.update('restore_jobs', 'id', id, fields); }
   journalOf(customerId) {
@@ -280,7 +292,11 @@ drop table restore_jobs_old;`);
   beat() {
     const t = this.now(), row = this.get('select * from heartbeat where id = 1');
     if (!row) return this.run('insert into heartbeat(id, last_at) values (1, ?)', t);
-    if (t - row.last_at > 10 * 60000) return this.run('update heartbeat set last_at = ?, gap_start = ?, gap_end = ? where id = 1', t, row.last_at, t);
+    if (t - row.last_at > 10 * 60000) {
+      // A short stop does not replace a longer one still inside the three-day window (카본 r6 C8).
+      const keep = row.gap_end && row.gap_end > t - 3 * 86400000 && row.gap_end - row.gap_start > t - row.last_at;
+      return keep ? this.run('update heartbeat set last_at = ? where id = 1', t) : this.run('update heartbeat set last_at = ?, gap_start = ?, gap_end = ? where id = 1', t, row.last_at, t);
+    }
     this.run('update heartbeat set last_at = ? where id = 1', t);
   }
   lastGap() { const r = this.get('select gap_start, gap_end from heartbeat where id = 1'); return r?.gap_end ? { start: r.gap_start, end: r.gap_end } : null; }

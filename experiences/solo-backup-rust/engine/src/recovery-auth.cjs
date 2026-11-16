@@ -90,9 +90,9 @@ class GoogleAuth {
     const login = hint ?? (expectedSub && this.tokens?.sub === expectedSub ? this.tokens.email : undefined);
     this.controller = new AbortController();
     let flow;
-    try { flow = await this.authorizeFlow(this.client, this.openExternal, { signal: this.controller.signal, ...(nonce ? { nonce } : {}), ...(login ? { hint: login } : {}) }); }
+    try { flow = await this.authorizeFlow(this.client, this.openExternal, { signal: this.controller.signal, ...(nonce !== undefined ? { nonce } : {}), ...(login ? { hint: login } : {}) }); }
     finally { this.controller = null; }
-    if (nonce && flow.nonce !== nonce) throw failure('INVALID');
+    if (nonce !== undefined && flow.nonce !== nonce) throw failure('INVALID');
     const v = await this.exchange({ code: flow.code, code_verifier: flow.codeVerifier, redirect_uri: flow.redirect, grant_type: 'authorization_code' });
     this.validateTokens(v);
     const user = await this.check(v.id_token, { nonce: flow.nonce });

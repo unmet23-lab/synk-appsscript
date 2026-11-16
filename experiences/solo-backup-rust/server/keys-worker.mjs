@@ -98,8 +98,8 @@ export function keyHandlers({ withSession, bucketId, protectedKeyIds = [], state
 export function startKeysWorker({ env = process.env } = {}) {
   const handlers = keyHandlers({
     withSession: lazySession(secretFile('WB_KEYS_B2', { env, json: true })), bucketId: need('WB_BUCKET_ID', { env, pattern: BUCKET_ID }),
-    protectedKeyIds: (env.WB_PROTECTED_KEY_IDS || '').split(',').filter(Boolean), stateDir: need('WB_STATE_DIR', { env }),
+    protectedKeyIds: (env.WB_PROTECTED_KEY_IDS || '').split(',').map((s) => s.trim()).filter(Boolean), stateDir: need('WB_STATE_DIR', { env }),
   });
   return rpcServer({ secret: secretFile('WB_KEYS_RPC', { env }), handlers, log: (e) => console.log(JSON.stringify({ at: new Date().toISOString(), service: 'keys', ...e })) })
-    .listen(Number(env.WB_PORT || 4192), '0.0.0.0');
+    .listen(Number(env.WB_PORT || 4191), '0.0.0.0');
 }

@@ -37,7 +37,7 @@ async function harness(t, { grace = 0 } = {}) {
   const logs = [];
   const verify = createVerifier({ audiences: [g.aud], fetchImpl: g.fetchImpl, now });
   const hooks = { beforeVerify: null };
-  const api = createApi({ store, keys, files, mailer, now, log: (e) => logs.push(e),
+  const api = createApi({ store, keys, files, mailer, now, log: (e) => logs.push(e), sleep: async (ms) => { clock.advance(ms); },
     verifyGoogle: async (tok) => { if (hooks.beforeVerify) { const f = hooks.beforeVerify; hooks.beforeVerify = null; await f(); } return verify(tok); },
     config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: grace } });
   const srv = api.server(); const port = await listen(srv);
@@ -55,7 +55,7 @@ async function harness(t, { grace = 0 } = {}) {
   }
   async function provision(name = 'PC-1', claims = {}) { return call('POST', 'provision', { google: await proof('provision', claims), device: { name, appVersion: '0.7.0' } }); }
   async function ack(r) { const ids = Object.values(r.keys || {}).map((k) => k.keyId); return call('POST', 'keys/ack', { keyIds: ids }, r.device?.token || r.token); }
-  return { clock, b2, store, api, jobs, call, proof, proofDirect: proof, provision, ack, dir, g, logs, protectedKeyIds, hooks, keys, files };
+  return { clock, b2, store, api, jobs, call, proof, proofDirect: proof, provision, ack, dir, g, logs, protectedKeyIds, hooks, keys, files, port, mailer };
 }
 const dbBytes = (h) => Buffer.concat(['wb.sqlite', 'wb.sqlite-wal'].map((f) => { try { return fs.readFileSync(path.join(h.dir, f)); } catch { return Buffer.alloc(0); } }));
 
@@ -391,7 +391,9 @@ test('S1: a stop between deleting the old key and making the new one is continue
   assert.equal(h.store.writerOf(a.customer.id).id, b.device.id, 'the seat is already recorded');
   const again = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token);
   assert.equal(again.ok, true);
-  assert.equal(again.previous, null);
+  // The retry still names the PC the seat came from (as recorded with the move, 카본 C8).
+  assert.equal(again.previous.id, a.device.id);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'seat-moved'")[0].n, 1, 'told once, with the move itself');
   assert.equal([...h.b2.keys.values()].filter((k) => k.keyName.startsWith('wbw-')).length, 1);
   // The writer that lost its unacknowledged key gets a new one the same way (다시 받기).
   h.clock.advance(11 * 60000); await h.jobs.expireKeys();
@@ -485,11 +487,14 @@ test('move pin: the reading PC pins the snapshot it copies, the writer sees it, 
 });
 
 test('GPT r2 GA1: a database from the earlier version gains the new column and restore state', async (t) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-migrate-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-migrate-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const { DatabaseSync } = await import('node:sqlite');
   const old = new DatabaseSync(path.join(dir, 'wb.sqlite'));
   old.exec(`create table customers(id text primary key, sub text not null unique, email text not null unique, prefix text not null unique, state text not null default 'active', created_at integer not null, lost_at integer, google_step integer not null default 0, read_key text, detect_since integer);
 create table restore_jobs(id text primary key, customer_id text not null, device_id text not null, at integer not null, state text not null check (state in ('running','done','failed','continued','undone')), created_at integer not null, started_at integer, pre_at integer, rounds integer, finished_at integer, undo_of text, counts text, journal text, error text, choice_at integer);
+create table devices(id text primary key, customer_id text not null references customers(id), name text not null, role text not null check (role in ('write','read')), state text not null check (state in ('active','moved','revoked','lost','abandoned')), created_at integer not null, last_seen_at integer, token_hash text not null unique, app_version text, moved_to text);
+insert into customers(id, sub, email, prefix, created_at) values ('c1', 's1', 'c1@example.com', 'c/c1/', 1);
+insert into devices(id, customer_id, name, role, state, created_at, token_hash) values ('d1', 'c1', 'PC', 'write', 'active', 1, 'h1');
 insert into restore_jobs(id, customer_id, device_id, at, state, created_at) values ('j1', 'c1', 'd1', 1, 'done', 2);`);
   old.close();
   const s = new Store(path.join(dir, 'wb.sqlite'));
@@ -497,8 +502,9 @@ insert into restore_jobs(id, customer_id, device_id, at, state, created_at) valu
   assert.equal(j.state, 'preparing');
   assert.equal(s.job('j1').state, 'done');
   s.setCustomer('c1', { move_pin: null });
+  assert.equal(s.customerById('c1').detect_cursor, null, 'the old customers table gained the scan cursor');
+  assert.equal(s.device('d1').install_id, null, 'the old devices table gained install_id');
   s.close(); new Store(path.join(dir, 'wb.sqlite')).close(); // a second open changes nothing
-  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 test('GPT GA4: the per-customer line holds across processes — a second store on the same file sees the lease', async (t) => {
@@ -533,34 +539,26 @@ test('GPT GB4: a device cut while its sign-in was being checked is not brought b
   assert.equal(h.store.liveKeys(a.customer.id, 'write').filter((k) => k.device_id === b.device.id).length, 0);
 });
 
-test('GPT GB2: a restart while the write keys were being replaced finishes the replacement before restoring', async (t) => {
+test('GPT GB2 · 카본 C4: a restore stopped while its keys were being replaced ends failed — the old write keys are gone, the app asks again', async (t) => {
   const h = await harness(t);
   const a = await readyCustomer(h);
   const prefix = `c/${a.customer.id}/`; seedRepo(h, prefix); h.clock.advance(60000);
-  // The state a stop leaves: a preparing job and the old write key still alive.
+  // The state a stop leaves: a preparing job (its answer never left) and the old write key still alive.
   const job = h.store.createJob({ customerId: a.customer.id, deviceId: a.device.id, at: h.clock.t - 30000, state: 'preparing' });
   assert.equal(await h.api.runJob(job), null, 'a preparing job never restores by itself');
   assert.ok(h.b2.keys.has(a.keys.write.keyId));
   // Another restore cannot start meanwhile.
   assert.equal((await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token)).code, 'BUSY');
   await h.api.finishPreparing(job);
-  assert.equal(h.b2.keys.has(a.keys.write.keyId), false, 'the old write key is gone before the restore ran');
-  assert.equal(h.store.job(job.id).state, 'done');
-  // GPT r2 GA2: a requester cut while its job waited gets no seat back; the keys still go.
-  await h.call('POST', 'restore/choose', { jobId: job.id, choice: 'continue' }, a.device.token);
-  const b = await h.provision('PC-2'); await h.ack(b);
-  const seat = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
-  assert.equal(seat.ok, true);
-  const job2 = h.store.createJob({ customerId: a.customer.id, deviceId: a.device.id, at: h.clock.t - 1000, state: 'preparing' });
-  await h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id });
-  assert.equal(await h.api.finishPreparing(job2), null);
-  assert.equal(h.store.job(job2.id).state, 'failed');
-  assert.equal(h.store.device(a.device.id).state, 'lost', 'not brought back as the writer');
-  assert.equal(h.store.liveKeys(a.customer.id, 'write').length, 0);
-  // The start-up resume takes preparing jobs the same way.
-  assert.ok(h.store.jobsToResume().every((j) => j.id !== job.id));
+  assert.equal(h.b2.keys.has(a.keys.write.keyId), false, 'the replacement that had started is finished');
+  assert.equal(h.store.job(job.id).state, 'failed');
+  assert.ok(!h.b2.versions.some((v) => v.action === 'hide' && v.uploadTimestamp >= job.created_at), 'nothing was restored');
+  // The app asks again: a new restore runs.
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  assert.equal(run.ok, true);
+  await h.api.runJob(h.store.job(run.jobId));
+  assert.equal(h.store.job(run.jobId).state, 'done');
 });
-
 test('GPT GB3: a finished restore waiting for its choice blocks a second one; only the latest can be chosen', async (t) => {
   const h = await harness(t);
   const a = await readyCustomer(h);
@@ -587,13 +585,18 @@ test('GPT GB6: a write key that replaced another is usable only after the grace;
   const b = await h.provision('PC-2'); await h.ack(b);
   const seat = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token);
   assert.equal(seat.usableAt, h.clock.t + 60000);
-  // GPT r2 GA7: a retry soon after a stop — the old key already gone — still waits.
+  // GPT r2 GA7 · 카본 D3: a stop after the old key was deleted and before the new one was made;
+  // the retry 20 s later finds no live write key and still waits from the recorded deletion.
+  h.clock.advance(1000);
+  h.b2.failCreate = true;
+  assert.equal((await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token)).code, 'SERVER');
+  h.b2.failCreate = false;
+  const deletedAt = h.store.lastWriteKeyDeleted(a.customer.id);
+  assert.equal(h.store.liveKeys(a.customer.id, 'write').filter((k) => k.state !== 'creating').length, 0);
   h.clock.advance(20000);
-  const again = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token);
-  assert.equal(again.usableAt, h.clock.t + 60000, 'this request deleted b\'s own earlier key');
-  h.store.run("update keys set deleted_at = ? where kind = 'write' and deleted_at is not null", h.clock.t - 30000);
-  const c = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
-  assert.ok(c.usableAt >= h.clock.t + 1, 'counted from the last deletion in the table');
+  const retry = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
+  assert.equal(retry.usableAt, deletedAt + 60000);
+  assert.equal(retry.waitMs, deletedAt + 60000 - h.clock.t);
 });
 
 test('GPT GB9: every planning call counts against the day — new times cannot plan past the cap', async (t) => {
@@ -609,42 +612,57 @@ test('GPT GB9: every planning call counts against the day — new times cannot p
   assert.ok(planned < 20, `planned ${planned} times`);
 });
 
-test('GPT GB1: a key made while the reconcile listed keys is not marked missing', async (t) => {
+test('GPT GB1 · 카본 D1 · B5: keys made or deleted while the reconcile listed are left alone; an intent is the expiry\'s, not the reconcile\'s', async (t) => {
   const h = await harness(t);
   const a = await readyCustomer(h);
+  h.store.addInvite('second@example.com');
   let made = null;
   const keysDuring = async (method, params, o) => {
     const r = await h.keys(method, params, o);
-    if (method === 'keys.list' && !made) { const b = await h.provision('PC-2'); await h.ack(b); made = b; }
+    if (method === 'keys.list' && !made) {
+      made = await h.provision('PC-B', { sub: '2000002', email: 'second@example.com' }); await h.ack(made);
+      // And a key of the first customer deleted right after the listing.
+      await h.api.dropKey(h.store.keyById(a.keys.read.keyId), 'test');
+    }
     return r;
   };
   const jobs = createJobs({ store: h.store, api: h.api, keys: keysDuring, files: h.files, now: () => h.clock.t, config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds } });
-  await jobs.reconcileKeys(h.clock.t);
-  assert.ok(made);
+  const result = await jobs.reconcileKeys(h.clock.t);
+  assert.ok(Object.keys(made.keys).length >= 1, 'the second customer really got keys during the listing');
   assert.equal(h.store.all("select count(*) n from keys where state = 'deleted' and reason = 'missing'")[0].n, 0);
+  assert.ok(!result.problems.some((p) => p.kind === 'not-deleted'), 'a key deleted after the listing began is not "not deleted"');
+  // An intent still waiting for its B2 answer is not an orphan; one older than the ack window is.
+  const young = h.store.keyIntent({ kind: 'read', customerId: a.customer.id, deviceId: a.device.id, purpose: 'rotate' });
+  const k = h.b2.addKey({ keyName: young, capabilities: ['listBuckets', 'listFiles', 'readFiles'], bucketIds: [h.b2.bucketId], namePrefix: `c/${a.customer.id}/` });
+  await h.jobs.reconcileKeys(h.clock.t);
+  assert.ok(h.b2.keys.has(k.applicationKeyId), 'young intent kept');
+  h.clock.advance(11 * 60000);
+  const later = await h.jobs.reconcileKeys(h.clock.t);
+  assert.ok(h.b2.keys.has(k.applicationKeyId), 'the reconcile does not sweep intents');
+  assert.ok(!later.problems.some((p) => p.kind === 'not-in-table'));
+  await h.jobs.expireKeys();
+  assert.equal(h.b2.keys.has(k.applicationKeyId), false, 'the minute tick\'s expiry sweeps a stale intent by name');
+  assert.equal(h.store.key(young).state, 'deleted');
   // GPT r2 GA5: the time counted is when B2 answered, not when the request was written down.
   const name = h.store.keyIntent({ kind: 'read', customerId: a.customer.id, deviceId: a.device.id, purpose: 'rotate' });
   h.clock.advance(5); const listedFrom = h.clock.t; h.clock.advance(5);
   h.store.keyCreated(name, { keyId: 'fixture-late-key', capabilities: [] });
   assert.ok(h.store.key(name).created_at > listedFrom);
-  h.store.keyDeleted(name, 'test');
-  // A key that really vanished from B2 is still found.
-  h.b2.keys.delete(a.keys.read.keyId); h.clock.advance(1000);
-  await h.jobs.reconcileKeys(h.clock.t);
-  assert.equal(h.store.all("select count(*) n from keys where state = 'deleted' and reason = 'missing'")[0].n, 1);
 });
 
-test('GPT GB7: the minute tick expires unacknowledged keys while a long daily pass is still running', async (t) => {
+test('GPT GB7 · 카본 D2: the minute tick expires unacknowledged keys while a long daily pass is still running', async (t) => {
   const h = await harness(t);
-  h.store.addInvite('pilot@example.com');
-  let release;
-  const slowFiles = async (method, params, o) => { if (method === 'prefix.scan') await new Promise((ok) => { release = ok; }); return h.files(method, params, o); };
+  h.store.addInvite('pilot@example.com'); h.store.addInvite('second@example.com');
+  let release, entered;
+  const inScan = new Promise((ok) => { entered = ok; });
+  const slowFiles = async (method, params, o) => { if (method === 'prefix.scan') { entered(); await new Promise((ok) => { release = ok; }); } return h.files(method, params, o); };
   const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files: slowFiles, now: () => h.clock.t, config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds, dailyHourKst: 0 } });
   const first = await h.provision('PC-1'); await h.ack(first);
-  const daily = jobs.tick(); // starts the daily pass, which waits on the scan
-  await new Promise((ok) => setTimeout(ok, 50));
-  const b = await h.provision('PC-2'); // never acknowledged
-  assert.equal(b.ok, true);
+  const daily = jobs.tick();
+  await inScan;
+  const b = await h.provision('PC-B', { sub: '2000002', email: 'second@example.com' }); // never acknowledged
+  const pending = h.store.all("select count(*) n from keys where device_id = ? and state != 'deleted'", b.device.id)[0].n;
+  assert.ok(pending >= 1, 'the new customer has unacknowledged keys');
   h.clock.advance(11 * 60000);
   await jobs.tick();
   assert.equal(h.store.all("select count(*) n from keys where device_id = ? and state != 'deleted'", b.device.id)[0].n, 0, 'expired during the daily pass');
@@ -663,4 +681,568 @@ test('GPT GA5: the server counts an audit run only when its audit job itself suc
   h.clock.advance(86400000); runs.workflow_runs[0].updated_at = new Date(h.clock.t - 3600000).toISOString();
   await jobs.auditFresh(h.clock.t);
   assert.equal(h.store.all("select count(*) n from alerts where kind = 'audit-stale'")[0].n, 1);
+});
+
+test('카본 D5 · C6: the same PC signing up again after a lost answer replaces its unfinished device, without a new-device notice', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const installId = 'A'.repeat(22);
+  const sign = async () => h.call('POST', 'provision', { google: await h.proof('provision'), device: { name: 'PC', appVersion: '0.7.0', installId } });
+  const lost = await sign(); // its answer "never arrived": nothing acknowledged
+  const again = await sign();
+  assert.equal(again.device.role, 'write');
+  assert.equal(h.store.device(lost.device.id).state, 'abandoned');
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'new-device'")[0].n, 0);
+  assert.equal((await h.call('POST', 'provision', { google: await h.proof('provision'), device: { name: 'PC', installId: 'bad' } })).code, 'BAD_INPUT');
+  // Another PC (another install id) is a second device and does not replace anything.
+  await h.ack(again);
+  const other = await h.call('POST', 'provision', { google: await h.proof('provision'), device: { name: 'PC-2', installId: 'B'.repeat(22) } });
+  assert.equal(other.device.role, 'read');
+  assert.equal(h.store.device(again.device.id).state, 'active');
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'new-device'")[0].n, 1);
+});
+
+test('카본 C1 · C2 · 카본 r6 C1: a lost requester\'s finished restore waits for another device\'s choice; with none left it is kept, so a new PC can sign up', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  assert.equal(h.store.job(run.jobId).state, 'done');
+  // a is lost while its restore waits; b is still there, so b chooses.
+  await h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id });
+  assert.equal(h.store.job(run.jobId).state, 'done', 'b may still undo it');
+  assert.equal(h.store.key(h.store.keyById(run.keys.read.keyId).name).state, 'deleted', 'the lost report deleted every read key');
+  assert.equal((await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'continue' }, b.device.token)).state, 'continued');
+  const c = await h.provision('PC-3');
+  assert.equal(c.ok, true, 'a new PC can sign up');
+  // C2: a reading device revoked with an acknowledged, unconfirmed read key leaves none behind.
+  const rot = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, b.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [rot.keys.read.keyId] }, b.device.token);
+  await h.call('POST', 'devices/revoke', { google: await h.proof('revoke'), deviceId: b.device.id }, c.device.token);
+  assert.equal(h.store.keyById(rot.keys.read.keyId).state, 'retired');
+  // Another customer with one PC only: lost while its restore waits — nobody could choose, so it is kept.
+  h.store.addInvite('second@example.com');
+  const solo = await h.provision('Solo', { sub: '2000002', email: 'second@example.com' }); await h.ack(solo);
+  seedRepo(h, `c/${solo.customer.id}/`); h.clock.advance(60000);
+  const run2 = await h.call('POST', 'restore/run', { google: await h.proof('restore-run', { sub: '2000002', email: 'second@example.com' }), at: h.clock.t - 30000 }, solo.device.token);
+  await h.api.runJob(h.store.job(run2.jobId));
+  await h.call('POST', 'lost', { google: await h.proof('lost', { sub: '2000002', email: 'second@example.com' }), deviceId: solo.device.id });
+  assert.equal(h.store.job(run2.jobId).state, 'continued');
+  assert.equal((await h.provision('Solo-new', { sub: '2000002', email: 'second@example.com' })).ok, true);
+});
+
+test('카본 C1 · 카본 r6 C1: a requester revoked while its restore ran — the remaining device can undo it', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  await h.call('POST', 'devices/revoke', { google: await h.proof('revoke'), deviceId: a.device.id }, b.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  assert.equal(h.store.job(run.jobId).state, 'done', 'it waits for b');
+  const undo = await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'undo', google: await h.proof('restore-undo') }, b.device.token);
+  assert.equal(undo.state, 'undone');
+  await h.api.runJob(h.store.job(undo.jobId));
+  assert.equal(h.store.job(undo.jobId).state, 'continued');
+});
+
+test('카본 C5 · C7 · C9: malformed telemetry is a 400; the first sign-up after a loss is not counted; a time a little ahead is "now"', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const bad = await h.call('POST', 'telemetry', { runs: {} }, a.device.token);
+  assert.equal(bad.status, 400); assert.equal(bad.code, 'BAD_INPUT');
+  // Use up the day's key requests, then lose the only (writing) PC: the new PC still signs up.
+  for (let i = 0; i < 4; i++) assert.equal((await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token)).ok, true);
+  assert.equal((await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token)).code, 'LIMIT_KEYS_DAY');
+  await h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id });
+  const n = h.store.keyRequestsSince(a.customer.id, h.clock.t - 86400000);
+  const fresh = await h.provision('새 PC');
+  assert.equal(fresh.ok, true); assert.equal(fresh.device.role, 'write'); assert.ok(fresh.keys.read);
+  assert.equal(h.store.keyRequestsSince(a.customer.id, h.clock.t - 86400000), n, 'not counted');
+  await h.ack(fresh);
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  assert.equal((await h.call('POST', 'restore/plan', { at: h.clock.t + 100 }, fresh.device.token)).ok, true);
+  assert.equal((await h.call('POST', 'restore/plan', { at: 1.5 }, fresh.device.token)).code, 'BAD_INPUT');
+  assert.equal((await h.call('POST', 'restore/plan', { at: h.clock.t - 40 * 86400000 }, fresh.device.token)).code, 'TOO_OLD');
+});
+
+test('카본 B2 · B3: the scan window starts no earlier than the last restore, and stays open while measurements are late', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const seen = [];
+  const files = async (method, params, o) => { if (method === 'prefix.scan') seen.push(params); return h.files(method, params, o); };
+  const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files, now: () => h.clock.t, config: { bucketId: h.b2.bucketId } });
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  for (let i = 2; i <= 9; i++) h.b2.upload(base + `snapshots/s${i}`, `snap-${i}`);
+  h.clock.advance(3600000);
+  await jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  // A restore was chosen at noon; the next scan's window starts there.
+  h.clock.advance(6 * 3600000);
+  const baseline = h.clock.t; h.store.setCustomer(a.customer.id, { detect_since: baseline });
+  h.clock.advance(6 * 3600000);
+  for (let i = 2; i <= 9; i++) h.b2.hide(base + `snapshots/s${i}`); // after the baseline, no measurement yet
+  h.clock.advance(3600000);
+  await jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.ok(seen.at(-1).since >= baseline, 'the window does not start before the baseline');
+  assert.equal(seen.at(-1).from, baseline);
+  assert.ok(JSON.parse(h.store.lastUsage(a.customer.id).detect).deferred.includes('no-telemetry'));
+  const held = seen.at(-1).since;
+  // The next day the held window keeps its start, so late measurements still judge those hides.
+  h.clock.advance(86400000);
+  await jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(seen.at(-1).since, held);
+});
+
+// ── jobs.mjs 설계 관문(Fable 5.2 「고쳐서 간다」, 11-16): the reconcile reports, the scan window follows a cursor.
+const jobsWith = (h, over = {}) => createJobs({ store: h.store, api: h.api, keys: h.keys, files: h.files, mailer: over.mailer, now: () => h.clock.t, config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds }, ...over });
+
+test('jobs 관문: intent → listing → B2 answer → reconcile leaves the table as it is', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const name = h.store.keyIntent({ kind: 'read', customerId: a.customer.id, deviceId: a.device.id, purpose: 'rotate' });
+  h.clock.advance(11 * 60000);
+  let answered = null;
+  const keys = async (method, params, o) => {
+    const r = await h.keys(method, params, o);
+    if (method === 'keys.list' && !answered) {
+      answered = h.b2.addKey({ keyName: name, capabilities: ['listBuckets', 'listFiles', 'readFiles'], bucketIds: [h.b2.bucketId], namePrefix: `c/${a.customer.id}/` });
+      h.store.keyCreated(name, { keyId: answered.applicationKeyId, capabilities: [] });
+      assert.equal(h.store.ackKey(a.device.id, answered.applicationKeyId), true);
+    }
+    return r;
+  };
+  const result = await jobsWith(h, { keys }).reconcileKeys(h.clock.t);
+  assert.equal(h.store.key(name).state, 'acked');
+  assert.ok(h.b2.keys.has(answered.applicationKeyId));
+  assert.ok(!result.problems.some((p) => p.kind === 'missing-key'));
+});
+
+test('jobs 관문: a confirmed read key deleted in the B2 console is marked missing after the in-line check, and the next sign-up gets a new one', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  h.clock.advance(11 * 60000);
+  h.b2.keys.delete(a.keys.read.keyId);
+  const result = await h.jobs.reconcileKeys(h.clock.t);
+  assert.ok(result.problems.some((p) => p.kind === 'missing-key' && p.count === 1));
+  const row = h.store.keyById(a.keys.read.keyId);
+  assert.equal(row.state, 'deleted'); assert.equal(row.reason, 'missing');
+  assert.equal(h.store.keyById(a.keys.write.keyId).state, 'active', 'the write key B2 still has is untouched');
+  const b = await h.provision('PC-2');
+  assert.ok(b.keys.read, 'a new read key for the envelope');
+});
+
+test('jobs 관문: a key the first listing missed but the in-line listing shows is not changed', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  h.clock.advance(11 * 60000);
+  let first = true;
+  const keys = async (method, params, o) => {
+    const r = await h.keys(method, params, o);
+    if (method === 'keys.list' && first) { first = false; return { keys: r.keys.filter((k) => k.keyId !== a.keys.write.keyId) }; }
+    return r;
+  };
+  const result = await jobsWith(h, { keys }).reconcileKeys(h.clock.t);
+  assert.equal(h.store.keyById(a.keys.write.keyId).state, 'active');
+  assert.ok(!result.problems.some((p) => p.kind === 'missing-key'));
+});
+
+test('jobs 관문: a key B2 made after its sign-up was given up is deleted by name at the next reconcile', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const name = h.store.keyIntent({ kind: 'write', customerId: a.customer.id, deviceId: a.device.id, purpose: 'provision' });
+  h.store.keyDeleted(name, 'provision-failed'); // given up while the B2 request still ran
+  h.clock.advance(1000);
+  const late = h.b2.addKey({ keyName: name, capabilities: [...WRITE_CAPS], bucketIds: [h.b2.bucketId], namePrefix: `c/${a.customer.id}/` });
+  h.clock.advance(1000);
+  const result = await h.jobs.reconcileKeys(h.clock.t);
+  assert.ok(result.problems.some((p) => p.kind === 'not-deleted'));
+  assert.equal(h.b2.keys.has(late.applicationKeyId), false);
+  // And a key made for a row given up meanwhile is deleted at once by the request itself.
+  const row = h.store.keyIntent({ kind: 'read', customerId: a.customer.id, deviceId: a.device.id, purpose: 'rotate' });
+  h.store.keyDeleted(row, 'test');
+  assert.equal(h.store.keyCreated(row, { keyId: 'fixture', capabilities: [] }), 0);
+});
+
+test('jobs 관문: hides with no measurement wait up to seven days, then are judged as none; the cursor then moves', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  for (let i = 2; i <= 9; i++) h.b2.upload(base + `snapshots/s${i}`, `snap-${i}`);
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  const start = h.store.customerById(a.customer.id).detect_cursor;
+  assert.ok(start);
+  h.clock.advance(3600000);
+  for (let i = 2; i <= 9; i++) h.b2.hide(base + `snapshots/s${i}`);
+  const surges = () => h.store.all("select count(*) n from alerts where kind = 'repo-changed' and detail like '%hide-surge%'")[0].n;
+  for (let day = 1; day <= 6; day++) {
+    h.clock.advance(86400000);
+    await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+    assert.ok(JSON.parse(h.store.lastUsage(a.customer.id).detect).deferred.includes('no-telemetry'), `day ${day} waits`);
+    assert.equal(h.store.customerById(a.customer.id).detect_cursor, start);
+  }
+  assert.equal(surges(), 0);
+  h.clock.advance(2 * 86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(surges(), 1, 'judged as no measurement');
+  assert.equal(h.store.customerById(a.customer.id).detect_cursor, h.clock.t - 5 * 60000, 'to the end of the judged window');
+});
+
+test('jobs 관문: a prune measured a day late is capped by the count where the window starts, not yesterday\'s', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  for (let i = 2; i <= 30; i++) h.b2.upload(base + `snapshots/s${i}`, `snap-${i}`);
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(JSON.parse(h.store.lastUsage(a.customer.id).detect).deferred.length, 0);
+  h.clock.advance(3600000);
+  const pruneAt = h.clock.t;
+  for (let i = 1; i <= 20; i++) h.b2.hide(base + `snapshots/s${i}`);
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t); // no measurement yet: waits
+  assert.ok(JSON.parse(h.store.lastUsage(a.customer.id).detect).deferred.includes('no-telemetry'));
+  const runs = [{ trigger: 'hourly', startedAt: pruneAt, result: 'complete', prunedSnapshots: 20 }];
+  assert.equal((await h.call('POST', 'telemetry', { runs }, a.device.token)).stored.runs, 1);
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0, 'a normal prune, measured late, is no surge');
+  assert.equal(JSON.parse(h.store.lastUsage(a.customer.id).detect).window.snapshotsAtStart, 30, 'the cap counts from the listing where the window starts');
+});
+
+test('jobs 관문: while the cursor waits, the same data surge mails once', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  for (let i = 2; i <= 9; i++) h.b2.upload(base + `snapshots/s${i}`, `snap-${i}`);
+  for (let i = 0; i < 3; i++) h.b2.upload(base + `data/bb/big${i}`, `big-${i}`).contentLength = 1024 ** 3;
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.clock.advance(3600000);
+  for (let i = 2; i <= 9; i++) h.b2.hide(base + `snapshots/s${i}`);
+  for (let i = 0; i < 3; i++) h.b2.hide(base + `data/bb/big${i}`);
+  for (let day = 1; day <= 3; day++) { h.clock.advance(86400000); await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t); }
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 3, 'an alert row a day');
+  assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:repo-changed:%'")[0].n, 1, 'one mail');
+});
+
+test('jobs 관문: a restore chosen while the worker scanned throws that judgment away', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  const cursor = h.store.customerById(a.customer.id).detect_cursor;
+  h.clock.advance(3600000);
+  h.b2.upload(base + 'data/aa/d1', 'pack-one-CONTENT');
+  h.clock.advance(86400000);
+  const files = async (method, params, o) => {
+    const r = await h.files(method, params, o);
+    if (method === 'prefix.scan') h.store.setCustomer(a.customer.id, { detect_since: h.clock.t });
+    return r;
+  };
+  await jobsWith(h, { files }).scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+  assert.equal(h.store.all('select count(*) n from detect_seen')[0].n, 0);
+  assert.equal(h.store.customerById(a.customer.id).detect_cursor, cursor);
+});
+
+test('jobs 관문: a failure between marking events seen and alerting undoes both', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.clock.advance(3600000);
+  h.b2.upload(base + 'data/aa/d1', 'pack-one-CONTENT');
+  h.clock.advance(86400000);
+  const broken = { toCustomer() { throw new Error('disk'); }, toOperator() {} };
+  await assert.rejects(jobsWith(h, { mailer: broken }).scanCustomer(h.store.customerById(a.customer.id), h.clock.t));
+  assert.equal(h.store.all('select count(*) n from detect_seen')[0].n, 0);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 1, 'the next scan alerts');
+});
+
+test('jobs 관문: deleting a key in use that B2 no longer has tells the operator', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  h.b2.keys.delete(a.keys.write.keyId);
+  await h.api.dropKey(h.store.keyById(a.keys.write.keyId), 'test');
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'key-missing' and audience = 'operator'")[0].n, 1);
+  assert.equal(h.store.keyById(a.keys.write.keyId).state, 'deleted');
+});
+
+test('GPT r6 GB2: the operator\'s cut takes the device\'s unconfirmed read key and frees the restore it waited on', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  const rot = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, b.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [rot.keys.read.keyId] }, b.device.token);
+  await h.api.cutDevice(b.device.id);
+  assert.equal(h.store.device(b.device.id).state, 'revoked');
+  assert.equal(h.store.keyById(rot.keys.read.keyId).state, 'retired');
+  await h.jobs.expireKeys();
+  assert.equal(h.b2.keys.has(rot.keys.read.keyId), false, 'the minute tick deleted it');
+  // The writer cut while its restore waits for a choice: the account is not held.
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  await h.api.cutDevice(a.device.id);
+  assert.equal(h.store.job(run.jobId).state, 'continued');
+  assert.equal(h.store.liveKeys(a.customer.id, 'write').length, 0);
+});
+
+// ── 카본 r6 B · C(11-16)
+test('카본 r6 C2 · C6: an undo waits out the grace, is free in the worker, and when it fails the restore waits for its choice again', async (t) => {
+  const h = await harness(t, { grace: 60000 });
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.clock.advance(2 * 3600000);
+  h.b2.upload(base + 'data/aa/d1', 'pack-one-CONTENT');
+  h.clock.advance(3600000);
+  const uses = () => { try { return JSON.parse(fs.readFileSync(path.join(h.dir, 'restore-days.json'), 'utf8')).counts?.[`c/${a.customer.id}/`] || 0; } catch { return 0; } };
+  // Two restores and their undos: the undos are not counted.
+  for (let i = 0; i < 2; i++) {
+    const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 2 * 3600000 }, a.device.token);
+    await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+    await h.api.runJob(h.store.job(run.jobId));
+    // A write key deleted just now (the operator's cut of another device would do the same): the undo waits.
+    h.store.run("update keys set deleted_at = ? where kind = 'write' and key_id is not null and state = 'deleted'", h.clock.t);
+    const before = h.clock.t;
+    const undo = await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'undo', google: await h.proof('restore-undo') }, a.device.token);
+    await h.api.runJob(h.store.job(undo.jobId));
+    assert.ok(h.clock.t >= before + 60000, 'the undo waited out the grace');
+    assert.equal(h.store.job(undo.jobId).state, 'continued');
+  }
+  assert.equal(uses(), 2, 'two restores counted, the undos free');
+  // A third restore, then its undo fails: the restore waits for its choice again, backups stay paused.
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 2 * 3600000 }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  const copy = h.b2.copyFile;
+  h.b2.copyFile = async () => { throw Object.assign(new Error('boom'), { status: 503 }); };
+  const undo = await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'undo', google: await h.proof('restore-undo') }, a.device.token);
+  await h.api.runJob(h.store.job(undo.jobId));
+  h.b2.copyFile = copy;
+  // Called again, a finished job does not run again.
+  assert.equal(await h.api.runJob(h.store.job(run.jobId)), null);
+  assert.equal(h.store.job(undo.jobId).state, 'failed');
+  assert.equal(h.store.job(run.jobId).state, 'done');
+  const st = await h.call('GET', 'status', null, a.device.token);
+  assert.equal(st.restore.jobId, run.jobId); assert.equal(st.restore.awaitingChoice, true);
+  assert.equal((await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'continue' }, a.device.token)).state, 'continued');
+});
+
+test('카본 r6 C3 · C4 · C5: B2 never holds three read keys of a prefix; a restore whose read key failed leaves no write key; incident requests are free once; a fourth restore is refused before keys', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const wbr = () => [...h.b2.keys.values()].filter((k) => k.keyName.startsWith('wbr-') && k.namePrefix === `c/${a.customer.id}/`).length;
+  await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token);
+  await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token);
+  assert.equal(wbr(), 2, 'confirmed + the newest unconfirmed');
+  // C4: the write key made before a failed read key is deleted at once.
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  let n = 0;
+  const realCreate = h.b2.createKey.bind(h.b2);
+  h.b2.createKey = async (args) => { if (args.keyName.startsWith('wbr-') && ++n === 1) throw Object.assign(new Error('boom'), { status: 503 }); return realCreate(args); };
+  const failed = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  assert.equal(failed.code, 'SERVER');
+  h.b2.createKey = realCreate;
+  assert.equal(h.store.liveKeys(a.customer.id, 'write').length, 0, 'no write key left from the failed request');
+  // C5: after a loss, the first read-key request is free; the next ones count.
+  const b = await h.provision('PC-2'); await h.ack(b);
+  await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
+  await h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id });
+  const before = h.store.keyRequestsSince(a.customer.id, h.clock.t - 86400000);
+  await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, b.device.token);
+  assert.equal(h.store.keyRequestsSince(a.customer.id, h.clock.t - 86400000), before, 'the first one is free');
+  await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, b.device.token);
+  assert.equal(h.store.keyRequestsSince(a.customer.id, h.clock.t - 86400000), before + 1, 'the next one counts');
+});
+
+test('카본 r6 C5: the fourth restore of a day is refused before any key is made', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  for (let i = 0; i < 3; i++) {
+    const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+    await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+    await h.api.runJob(h.store.job(run.jobId));
+    await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'continue' }, a.device.token);
+  }
+  const made = h.b2.calls.filter((c) => c[0] === 'createKey').length;
+  assert.equal((await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token)).code, 'LIMIT_RESTORE_DAY');
+  assert.equal(h.b2.calls.filter((c) => c[0] === 'createKey').length, made);
+});
+
+test('카본 r6 C7 · C8 · C9: every seat move mails; a short stop does not hide a longer one; an oversized body gets a 413 answer', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  const take = async (d) => { await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, d.device.token); h.clock.advance(1000); };
+  await take(b); await take(a); await take(b);
+  assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:seat-moved:%'")[0].n, 3);
+  // C8
+  h.store.beat(); h.clock.advance(2 * 86400000); h.store.beat(); // a two-day stop
+  h.clock.advance(11 * 60000); h.store.beat(); // then an eleven-minute one
+  const gap = h.store.lastGap();
+  assert.ok(gap.end - gap.start >= 2 * 86400000, 'the longer stop is kept');
+  // C9
+  const res = await fetch(`http://127.0.0.1:${h.port}/backup-api/v1/keys/ack`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${a.device.token}` }, body: JSON.stringify({ keyIds: ['x'.repeat(70000)] }) });
+  assert.equal(res.status, 413);
+  assert.equal((await res.json()).code, 'BAD_INPUT');
+});
+
+test('카본 r6 B2: hides just before the cursor are not counted again the next day', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  for (let i = 2; i <= 12; i++) h.b2.upload(base + `snapshots/s${i}`, `snap-${i}`);
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  const prune = async (from, to) => {
+    const at = h.clock.t;
+    for (let i = from; i <= to; i++) h.b2.hide(base + `snapshots/s${i}`);
+    await h.call('POST', 'telemetry', { runs: [{ trigger: 'hourly', startedAt: at, result: 'complete', prunedSnapshots: to - from + 1 }] }, a.device.token);
+  };
+  h.clock.advance(23.5 * 3600000);
+  await prune(1, 8); // half an hour before the next scan
+  h.clock.advance(1800000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(JSON.parse(h.store.lastUsage(a.customer.id).detect).window.snapshotHides, 8);
+  h.clock.advance(12 * 3600000);
+  await prune(9, 9);
+  h.clock.advance(12 * 3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(JSON.parse(h.store.lastUsage(a.customer.id).detect).window.snapshotHides, 1);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+});
+
+// ── jobs.mjs 설계 관문 둘째(Fable 5.2 「고쳐서 간다」, 11-16 저녁): the window is (since, to].
+const report = async (h, a, pruned, startedAt = h.clock.t) => h.call('POST', 'telemetry', { runs: [{ trigger: 'hourly', startedAt, result: 'complete', prunedSnapshots: pruned }] }, a.device.token);
+const snapshots = (h, base, n, prefix = 's') => { for (let i = 1; i <= n; i++) h.b2.upload(base + `snapshots/${prefix}${i}`, `${prefix}-${i}`); };
+
+test('jobs 관문 둘: a prune while the listing runs belongs to the next window only — no false surge that day or the next', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.b2.hide(base + 'snapshots/s1'); snapshots(h, base, 12, 'n');
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.clock.advance(86400000);
+  // The scan begins at t; while its listing runs the PC prunes 9 of the 12 and reports it.
+  const files = async (method, params, o) => {
+    if (method === 'prefix.scan') { h.clock.advance(10 * 60000); for (let i = 1; i <= 9; i++) h.b2.hide(base + `snapshots/n${i}`); await report(h, a, 9); h.clock.advance(10 * 60000); }
+    return h.files(method, params, o);
+  };
+  const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files, mailer: undefined, now: () => h.clock.t, config: { bucketId: h.b2.bucketId } });
+  await jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(JSON.parse(h.store.lastUsage(a.customer.id).detect).window.snapshotHides, 0, 'not in this window');
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(JSON.parse(h.store.lastUsage(a.customer.id).detect).window.snapshotHides, 9, 'counted once, the next day');
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+});
+
+test('jobs 관문 둘: a data surge while the listing runs mails once', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  for (let i = 0; i < 3; i++) h.b2.upload(base + `data/bb/big${i}`, `big-${i}`).contentLength = 1024 ** 3;
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.clock.advance(86400000);
+  const files = async (method, params, o) => {
+    if (method === 'prefix.scan') { h.clock.advance(10 * 60000); for (let i = 0; i < 3; i++) h.b2.hide(base + `data/bb/big${i}`); await report(h, a, 0); h.clock.advance(10 * 60000); }
+    return h.files(method, params, o);
+  };
+  const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files, mailer: h.mailer, now: () => h.clock.t, config: { bucketId: h.b2.bucketId } });
+  await jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:repo-changed:%'")[0].n, 1);
+});
+
+test('jobs 관문 둘: after a restore brought snapshots back, the first judgment counts them as there to prune', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.b2.hide(base + 'snapshots/s1'); snapshots(h, base, 12, 'n');
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  const before = h.clock.t;
+  h.clock.advance(3600000);
+  for (let i = 1; i <= 8; i++) h.b2.hide(base + `snapshots/n${i}`);
+  await report(h, a, 8);
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t); // 4 left, quiet
+  // A restore to before that prune brings the 8 back; the customer keeps it.
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: before }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'continue' }, a.device.token);
+  h.clock.advance(3600000);
+  for (let i = 1; i <= 9; i++) h.b2.hide(base + `snapshots/n${i}`);
+  await report(h, a, 9);
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(JSON.parse(h.store.lastUsage(a.customer.id).detect).window.snapshotsAtStart, 12);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+});
+
+test('jobs 관문 둘: a customer from before the cursor (a usage row, no cursor) gets no false surge on its first judgment', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.b2.hide(base + 'snapshots/s1'); snapshots(h, base, 12, 'n');
+  h.clock.advance(3 * 86400000);
+  h.store.putUsage(a.customer.id, '2000-01-01', { visibleBytes: 0, visibleCount: 0, hiddenBytes: 0, hiddenCount: 0, visibleSnapshots: 1 }, null);
+  for (let i = 1; i <= 8; i++) h.b2.hide(base + `snapshots/n${i}`);
+  await report(h, a, 8);
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+});
+
+test('jobs 관문 둘: a run of two hours that pruned inside the window counts by when its record arrived', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.b2.hide(base + 'snapshots/s1'); snapshots(h, base, 12, 'n');
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  const cursor = h.store.customerById(a.customer.id).detect_cursor;
+  h.clock.advance(3600000);
+  for (let i = 1; i <= 8; i++) h.b2.hide(base + `snapshots/n${i}`);
+  await report(h, a, 8, cursor - 2 * 3600000); // began two hours before the window
+  await report(h, a, 0); // and a short run with nothing pruned
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+});
+
+test('jobs 관문 둘: while the cursor waits, a new overwrite mails again', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  snapshots(h, base, 9, 'n');
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.clock.advance(3600000);
+  for (let i = 1; i <= 8; i++) h.b2.hide(base + `snapshots/n${i}`); // no measurement: the cursor waits
+  h.b2.upload(base + 'data/aa/d1', 'pack-one-CONTENT');
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  h.b2.upload(base + 'index/i1', 'index-other');
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.ok(JSON.parse(h.store.lastUsage(a.customer.id).detect).deferred.includes('no-telemetry'));
+  assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:repo-changed:%content:%'")[0].n, 2);
 });

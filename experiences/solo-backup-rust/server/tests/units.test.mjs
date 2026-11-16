@@ -17,6 +17,7 @@ import { createVerifier } from '../google-token.mjs';
 import { createMailer, signRequest, SIGNED_TAG } from '../mail.mjs';
 import { cleanBatch } from '../telemetry.mjs';
 import { Store } from '../store.mjs';
+import { createJobs } from '../jobs.mjs';
 import { withSettings, secretFile } from '../config.mjs';
 import { FakeB2, fakeGoogle, clockAt, sessionOf } from './fakes.mjs';
 
@@ -75,6 +76,19 @@ test('detect: hide surge — vanished snapshots without telemetry, capped report
   assert.ok(judge(s2, { previousSnapshots: 12, reported: { pruned: 2 }, now: T0 + DAY }).alerts.length === 1);
   assert.equal(judge(s2, { previousSnapshots: 12, reported: { pruned: 10 }, now: T0 + DAY }).alerts.length, 0, 'a large but true prune (PC back after a weekend) is quiet');
   assert.equal(judge(s2, { previousSnapshots: 12, reported: { pruned: 999999 }, now: T0 + DAY }).alerts.length, 0, 'forged counts are capped at what could be pruned');
+  // 카본 r6 D1 · B1: snapshots made in the window are prunable too (a normal hourly prune is
+  // quiet), and a forged huge count is capped at what existed — hide markers beyond that (one
+  // name hidden again and again) still fire.
+  const old2 = [up('snapshots/o1', 'o1', T0 - DAY), up('snapshots/o2', 'o2', T0 - DAY)];
+  const today = [...Array(20)].map((_, i) => up(`snapshots/d${i}`, `d${i}`, T0 + i * 60000));
+  const hide21 = [old2[0], ...today].map((x) => hide(x.fileName.slice(R.length), T0 + 2 * HOUR));
+  const s21 = summarize([...old2, ...today, ...hide21], { customerPrefix: P, since: T0, now: T0 + DAY });
+  assert.equal(s21.usage.visibleSnapshots, 1);
+  assert.equal(judge(s21, { previousSnapshots: 2, reported: { pruned: 21 }, now: T0 + DAY }).alerts.length, 0, 'made and pruned in the window, as measured');
+  const markers = [...Array(12)].map((_, i) => hide('snapshots/o1', T0 + HOUR + i));
+  const sm = summarize([...old2, ...markers], { customerPrefix: P, since: T0, now: T0 + DAY });
+  assert.equal(sm.window.snapshotHides, 12);
+  assert.equal(judge(sm, { previousSnapshots: 2, reported: { pruned: 999999 }, now: T0 + DAY }).alerts.filter((a) => a.reason === 'hide-surge').length, 1, 'a forged count is capped at 2 − 1');
   assert.deepEqual(judge(s2, { previousSnapshots: 12, reported: null, now: T0 + DAY }).deferred, ['no-telemetry']);
   // Data: 1 GiB floor and the customer's own confirmation.
   const big = { ...up('data/bb/big', 'x', T0), contentLength: 2 * 1024 ** 3 };
@@ -125,8 +139,8 @@ test('rpc: signatures, clock skew and replays are refused; only codes come back'
   assert.equal((await send()).code, 'RPC_REPLAY');
 });
 
-test('keys worker: fixed capabilities and names, customer prefixes only, never deletes foreign keys, daily cap', async () => {
-  const clock = clockAt(), dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-keys-'));
+test('keys worker: fixed capabilities and names, customer prefixes only, never deletes foreign keys, daily cap', async (t) => {
+  const clock = clockAt(), dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-keys-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const b2 = new FakeB2({ clock });
   const own = b2.addKey({ keyName: 'srv', capabilities: ['writeKeys'] });
   const foreign = b2.addKey({ keyName: 'wbw-' + 'q'.repeat(20), capabilities: WRITE_CAPS, bucketIds: ['other'], namePrefix: P });
@@ -147,8 +161,8 @@ test('keys worker: fixed capabilities and names, customer prefixes only, never d
   await h['keys.create']({ kind: 'read', prefix: P, name: 'wbr-' + 'y'.repeat(20) });
 });
 
-test('files worker: plans from its own listing, records the moment before, re-plans, three restores a day', async () => {
-  const clock = clockAt(), dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-files-'));
+test('files worker: plans from its own listing, records the moment before, re-plans, three restores a day', async (t) => {
+  const clock = clockAt(), dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-files-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const b2 = new FakeB2({ clock });
   const h = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
   b2.upload(R + 'config', 'c'); b2.upload(R + 'snapshots/s1', 's1');
@@ -184,9 +198,10 @@ test('google token: alg, signature, kid refresh at most once a minute', async ()
   await assert.rejects(verify(g.token({ nonce }, { key: other })), { reason: 'signature' });
 });
 
-test('mail: held while off, signature verifies with the relay formula, statuses', async () => {
+test('mail: held while off, signature verifies with the relay formula, statuses', async (t) => {
   const clock = clockAt(), dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-mail-'));
   const store = new Store(path.join(dir, 'm.sqlite'), { now: () => clock.t });
+  t.after(() => { try { store.close(); } catch {} fs.rmSync(dir, { recursive: true, force: true }); });
   const off = createMailer({ store, enabled: false, operator: 'ops@example.com' });
   off.toCustomer({ id: 'abc', email: 'p@example.com' }, 'silent', { name: 'PC', lastSeen: clock.t }, 'x');
   assert.equal(store.all('select state from outbox')[0].state, 'held');
@@ -286,4 +301,149 @@ test('GPT GA5: the outside audit fails, never passes quietly, when its settings 
     assert.equal(r.status, 1, JSON.stringify(env));
     assert.match(r.stdout, /"ok":false/);
   }
+});
+
+test('카본 B1: with many old incidents the scan still returns the newest event, and nothing before the baseline', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-scan-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0), b2 = new FakeB2({ clock });
+  for (let i = 0; i < 1200; i++) { b2.upload(R + `data/aa/p${i}`, 'A'); clock.advance(1); b2.upload(R + `data/aa/p${i}`, 'B'); clock.advance(1); }
+  const baseline = clock.t;
+  clock.advance(HOUR); const fresh = b2.upload(R + 'config', 'c1'); b2.upload(R + 'config', 'c2');
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const all = await f['prefix.scan']({ prefix: P, since: T0 });
+  assert.equal(all.events.length, 1000); assert.equal(all.eventCount, 1201);
+  assert.equal(all.events.at(-1).rel, 'config', 'the newest event is kept');
+  const after = await f['prefix.scan']({ prefix: P, since: T0, from: baseline });
+  assert.deepEqual(after.events.map((e) => e.rel), ['config']);
+  assert.ok(fresh);
+});
+
+test('카본 B4: a continued restore keeps the moment before taken by its first listing', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-pre-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c'); b2.upload(R + 'snapshots/s1', 's1'); clock.advance(HOUR);
+  const at = clock.t - 1; b2.hide(R + 'snapshots/s1'); clock.advance(HOUR);
+  const before = Math.max(...b2.versions.map((v) => v.uploadTimestamp));
+  // The first run lists, then stops on its first change.
+  let calls = 0;
+  const failing = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' && ++calls === 1 ? async () => { throw Object.assign(new Error('stop'), { code: 'B2' }); } : o[k]) })));
+  const f1 = fileHandlers({ withSession: failing, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  await assert.rejects(f1['restore.apply']({ prefix: P, at }));
+  clock.advance(HOUR); b2.upload(R + 'snapshots/s9', 'late');
+  const f2 = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r = await f2['restore.apply']({ prefix: P, at, resume: true });
+  assert.equal(r.preAt, before);
+});
+
+test('카본 B8: an upload and its hide in the same millisecond keep their order', () => {
+  const at = T0 + HOUR;
+  // B2 lists newest first: the hide, then the upload it hid.
+  const v = [hide('snapshots/s1', at), up('snapshots/s1', 's', at)];
+  const s = summarize(v, { customerPrefix: P, since: T0, now: T0 + DAY });
+  assert.equal(s.usage.visibleSnapshots, 0);
+  assert.equal(s.usage.hiddenCount, 1);
+});
+
+test('GPT r6 GB1: an unfinished restore resumed three days later is still the same run — free, with its first moment before', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-pre3-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c'); b2.upload(R + 'snapshots/s1', 's1'); b2.upload(R + 'snapshots/s2', 's2'); clock.advance(HOUR);
+  const at = clock.t - 1; b2.hide(R + 'snapshots/s1'); b2.hide(R + 'snapshots/s2'); clock.advance(HOUR);
+  const before = Math.max(...b2.versions.map((v) => v.uploadTimestamp));
+  let calls = 0;
+  const failing = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' && ++calls === 2 ? async () => { throw Object.assign(new Error('stop'), { code: 'B2' }); } : o[k]) })));
+  const f1 = fileHandlers({ withSession: failing, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  await assert.rejects(f1['restore.apply']({ prefix: P, at })); // one copy made, then a stop
+  clock.advance(3 * DAY);
+  const f2 = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r = await f2['restore.apply']({ prefix: P, at, resume: true });
+  assert.equal(r.preAt, before, 'the moment before the first run, not after its copy');
+  const days = JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8'));
+  const today = new Date(clock.t).toISOString().slice(0, 10);
+  assert.ok(days.day !== today || !days.counts?.[P], 'the resume was not counted as a new restore');
+  // Finished, it is forgotten after two days: a later resume is a new restore.
+  clock.advance(3 * DAY);
+  await f2['restore.apply']({ prefix: P, at, resume: true });
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8')).counts[P], 1);
+});
+
+test('GPT r6 GB3: the first scan takes what there was to prune from the listing — a forged prune count does not cover hidden snapshots', () => {
+  const v = [];
+  for (let i = 0; i < 100; i++) v.push(up(`snapshots/s${i}`, `s${i}`, T0 - DAY));
+  for (let i = 0; i < 100; i++) v.push(hide(`snapshots/s${i}`, T0 + HOUR));
+  const s = summarize(v, { customerPrefix: P, since: T0, now: T0 + DAY });
+  assert.equal(s.window.snapshotsAtStart, 100);
+  assert.ok(judge(s, { reported: { pruned: 100 }, now: T0 + DAY }).alerts.some((a) => a.reason === 'hide-surge' && a.vanished));
+  // A new repository: 48 hourly snapshots made and 24 pruned in the window, as measured — quiet.
+  const w = [];
+  for (let i = 0; i < 48; i++) w.push(up(`snapshots/n${i}`, `n${i}`, T0 + i * HOUR));
+  for (let i = 0; i < 24; i++) w.push(hide(`snapshots/n${i}`, T0 + (24 + i) * HOUR + 1));
+  const fresh = summarize(w, { customerPrefix: P, since: T0 - 1, now: T0 + 2 * DAY });
+  assert.equal(fresh.window.snapshotsAtStart, 0); assert.equal(fresh.window.snapshotUploads, 48);
+  assert.equal(judge(fresh, { reported: { pruned: 24 }, now: T0 + 2 * DAY }).alerts.length, 0);
+  // More hides than measured, still on the first scan: a surge.
+  assert.ok(judge(fresh, { reported: { pruned: 10 }, now: T0 + 2 * DAY }).alerts.some((a) => a.reason === 'hide-surge'));
+});
+
+test('GPT r6 GD1 · GD2: the approved lifecycle rule is fixed here; the fake B2 refuses to copy a missing or hidden version', async () => {
+  assert.deepEqual(EXPECTED_RULES, [{ fileNamePrefix: '', daysFromHidingToDeleting: 30, daysFromUploadingToHiding: null, daysFromStartingToCancelingUnfinishedLargeFiles: 1 }]);
+  const clock = clockAt(T0), b2 = new FakeB2({ clock });
+  const shortened = { ...b2.bucket, lifecycleRules: [{ ...b2.bucket.lifecycleRules[0], daysFromHidingToDeleting: 7 }] };
+  const bucket = { bucketCount: 1, found: true, bucketType: shortened.bucketType, lifecycleRules: shortened.lifecycleRules, encryption: 'SSE-B2', replication: 0 };
+  assert.ok(reconcile({ keys: [], bucket, bucketId: b2.bucketId }).problems.some((p) => p.kind === 'lifecycle'));
+  await assert.rejects(b2.copyFile({ sourceFileId: 'missing', fileName: R + 'x' }));
+  const h = b2.hide(R + 'snapshots/s1');
+  await assert.rejects(b2.copyFile({ sourceFileId: h.fileId, fileName: R + 'snapshots/s1' }));
+  assert.equal(b2.versions.length, 1, 'a refused copy adds nothing');
+});
+
+test('카본 r6 B4: a bad time does not use a day\'s restore; a run near the 29-day edge plans with its start; a run left unfinished stays free to continue', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-b4-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 40 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c', T0); b2.upload(R + 'snapshots/s1', 's1', T0);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  await assert.rejects(f['restore.apply']({ prefix: P, at: T0 }), { code: 'TOO_OLD' });
+  assert.equal(fs.existsSync(path.join(dir, 'restore-days.json')), false, 'nothing counted');
+  // A run that begins just inside the window and stops; resumed past the edge, it still plans.
+  const at = clock.t - 29 * DAY + 60000;
+  b2.hide(R + 'snapshots/s1');
+  let calls = 0;
+  const failing = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' && ++calls === 1 ? async () => { throw Object.assign(new Error('stop'), { code: 'B2' }); } : o[k]) })));
+  await assert.rejects(fileHandlers({ withSession: failing, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at }));
+  clock.advance(2 * HOUR);
+  const r = await f['restore.apply']({ prefix: P, at, resume: true });
+  assert.equal(r.remaining, 0);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8')).counts[P], 1, 'one restore counted');
+});
+
+test('카본 r6 B6: a hide marker of our own restore clears the version it stood on', () => {
+  const v = [up('data/aa/p1', 'AAAA', T0), hide('data/aa/p1', T0 + HOUR), hide('data/aa/p1', T0 + 2 * HOUR)];
+  const s = summarize(v, { customerPrefix: P, since: T0, now: T0 + DAY, journal: { hides: [v[1].fileId] } });
+  assert.equal(s.window.dataHiddenBytes, 0, 'the second marker hides nothing more');
+});
+
+test('카본 r6 B5: a database error in a tick is logged, not an unhandled rejection', async () => {
+  const logs = [];
+  let failNext = true;
+  const store = new Proxy({}, { get: (_o, k) => (k === 'beat' ? () => { if (failNext) { failNext = false; throw Object.assign(new Error('busy'), { code: 'ERR_SQLITE_BUSY' }); } } : () => []) });
+  const jobs = createJobs({ store, api: { serial: async (_c, fn) => fn(), finishPreparing: async () => null, runJob: async () => null }, keys: async () => ({}), files: async () => ({}), log: (e) => logs.push(e), now: () => T0 });
+  const seen = [];
+  const onRej = (e) => seen.push(e);
+  process.on('unhandledRejection', onRej);
+  try { jobs.start(); await new Promise((ok) => setTimeout(ok, 50)); } finally { jobs.stop(); process.off('unhandledRejection', onRej); }
+  assert.equal(seen.length, 0);
+  assert.ok(logs.some((l) => l.code === 'ERR_SQLITE_BUSY'));
+});
+
+test('카본 r6 C5: the api\'s restore cap matches the files worker\'s', async () => {
+  const { LIMITS } = await import('../server.mjs');
+  assert.equal(LIMITS.restoresPerDay, RESTORES_PER_DAY);
+});
+
+test('jobs 관문 둘: hides after the window\'s end are not in it', () => {
+  const v = [up('snapshots/s1', 's1', T0), up('snapshots/s2', 's2', T0), hide('snapshots/s1', T0 + HOUR), hide('snapshots/s2', T0 + 3 * HOUR)];
+  const s = summarize(v, { customerPrefix: P, since: T0, to: T0 + 2 * HOUR, now: T0 + 4 * HOUR });
+  assert.equal(s.window.snapshotHides, 1);
+  assert.equal(s.window.to, T0 + 2 * HOUR);
+  assert.equal(s.usage.visibleSnapshots, 0, 'usage is as listed');
 });

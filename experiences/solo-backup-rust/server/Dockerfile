@@ -1,6 +1,7 @@
 # Work-backup provisioning server (STAGE1_DESIGN.md 4.5 「개통 서버 구현 설계」).
 # One image, three compose services: `node main.mjs api|keys|files`, each with its own
-# user, secrets and network. No npm dependencies — node:sqlite, node:crypto, node:http.
+# user, secrets and network. Every role listens on WB_PORT (4191 when unset), which the
+# health check reads too. No npm dependencies — node:sqlite, node:crypto, node:http.
 # Build context: experiences/solo-backup-rust/server. Tests, operator tools and the mail
 # relay source are not copied (top-level *.mjs only).
 FROM node:24-bookworm-slim
@@ -9,7 +10,7 @@ WORKDIR /app
 COPY *.mjs ./
 RUN set -eu; \
     mkdir -p /data /state /backups; \
-    chown 10771:10771 /data /backups; \
+    chown 10771:10771 /data /state /backups; \
     chmod 0555 /app; chmod 0444 /app/*.mjs
 USER 10771:10771
 EXPOSE 4191

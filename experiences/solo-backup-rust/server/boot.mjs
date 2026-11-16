@@ -9,6 +9,7 @@ import { createJobs } from './jobs.mjs';
 import { createMailer } from './mail.mjs';
 import { need, secretFile, BUCKET_ID } from './config.mjs';
 
+const list = (v) => (v || '').split(',').map((s) => s.trim()).filter(Boolean);
 const log = (service) => (e) => console.log(JSON.stringify({ at: new Date().toISOString(), service, ...e }));
 
 export function apiFromEnv(env = process.env) {
@@ -22,9 +23,9 @@ export function apiFromEnv(env = process.env) {
     store, keys, files, mailer, log: log('api'),
     verifyGoogle: createVerifier({ audiences: need('WB_GOOGLE_AUDIENCES', { env }).split(',').map((s) => s.trim()) }),
     config: { endpoint: need('WB_ENDPOINT', { env, pattern: /^https:\/\/s3\.[a-z]+-[a-z]+-\d{3}\.backblazeb2\.com$/ }), bucket: need('WB_BUCKET', { env, pattern: /^[a-z0-9][a-z0-9-]{4,61}[a-z0-9]$/ }),
-      trustedProxies: (env.WB_TRUSTED_PROXIES || '').split(',').filter(Boolean), minAppVersion: env.WB_MIN_APP_VERSION || '0.7.0', restoreGraceMs: Number(env.WB_RESTORE_GRACE_MS || 60000) },
+      trustedProxies: list(env.WB_TRUSTED_PROXIES), minAppVersion: env.WB_MIN_APP_VERSION || '0.7.0', restoreGraceMs: Number(env.WB_RESTORE_GRACE_MS || 60000) },
   });
   const jobs = createJobs({ store, api, keys, files, mailer, log: log('jobs'),
-    config: { bucketId: need('WB_BUCKET_ID', { env, pattern: BUCKET_ID }), protectedKeyIds: (env.WB_PROTECTED_KEY_IDS || '').split(',').filter(Boolean), backupDir: env.WB_BACKUP_DIR || null, auditRunsUrl: env.WB_AUDIT_RUNS_URL || null } });
+    config: { bucketId: need('WB_BUCKET_ID', { env, pattern: BUCKET_ID }), protectedKeyIds: list(env.WB_PROTECTED_KEY_IDS), backupDir: env.WB_BACKUP_DIR || null, auditRunsUrl: env.WB_AUDIT_RUNS_URL || null } });
   return { store, api, jobs, keys, files, mailer };
 }

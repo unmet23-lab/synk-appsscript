@@ -62,6 +62,9 @@ services:
     networks:
       edge:
         ipv4_address: 172.30.77.3
+      # Work-backup front: Caddy and wb-api only (see wb-api below).
+      wb-front:
+        ipv4_address: 172.30.77.11
     environment:
       SYNK_COMPANY_DOMAIN: ${SYNK_COMPANY_DOMAIN:?Set the approved DNS hostname}
       SYNK_TLS_EMAIL: ${SYNK_TLS_EMAIL:?Set the TLS certificate operations email}
@@ -100,12 +103,16 @@ services:
   # exactly the company, https and spaceship containers, so turning the profile on is a
   # later infrastructure release, not a switch. Each service mounts only its own folder
   # on the persistent disk: the api never sees a B2 key, the workers never see each other.
+  # Caddy joins the small wb-front network for it; that network exists even while these are off.
   wb-api:
     profiles: ["workbackup"]
     image: ${WB_IMAGE:-synk-workbackup:local}
     build:
       context: ../../../../../../experiences/solo-backup-rust/server
     command: ["node", "main.mjs", "api"]
+    user: "10771:10771"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
     init: true
     restart: unless-stopped
     stop_grace_period: 30s
@@ -120,10 +127,12 @@ services:
       WB_BACKUP_DIR: /wb/backups
       WB_KEYS_URL: http://wb-keys:4211/rpc
       WB_FILES_URL: http://wb-files:4212/rpc
-      WB_TRUSTED_PROXIES: "172.30.77.3"
+      WB_TRUSTED_PROXIES: "172.30.77.11"
     networks:
-      edge:
-        ipv4_address: 172.30.77.4
+      # Not on the company edge network: the company app never reaches the api, and the
+      # api reaches the company nothing. Only Caddy shares wb-front with it.
+      wb-front:
+        ipv4_address: 172.30.77.10
       wb-keys: {}
       wb-files: {}
     expose:
@@ -143,6 +152,9 @@ services:
     profiles: ["workbackup"]
     image: ${WB_IMAGE:-synk-workbackup:local}
     command: ["node", "main.mjs", "keys"]
+    user: "10772:10772"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
     init: true
     restart: unless-stopped
     read_only: true
@@ -172,6 +184,9 @@ services:
     profiles: ["workbackup"]
     image: ${WB_IMAGE:-synk-workbackup:local}
     command: ["node", "main.mjs", "files"]
+    user: "10773:10773"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
     init: true
     restart: unless-stopped
     read_only: true
@@ -203,6 +218,12 @@ networks:
     ipam:
       config:
         - subnet: 172.30.77.0/29
+  # Caddy and wb-api only, fixed addresses (the api trusts Caddy's forwarded address).
+  wb-front:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.77.8/29
   # Only the api reaches each worker; the workers reach B2 and nothing else of ours.
   wb-keys:
     driver: bridge

@@ -13,11 +13,15 @@ const norm = (rules) => JSON.stringify((rules || []).map((r) => Object.fromEntri
 const capsOf = { w: new Set(WRITE_CAPS), r: new Set(READ_CAPS) };
 
 // keys: [{keyId, keyName, capabilities, bucketIds, namePrefix, expirationTimestamp}]
-// table (server only): rows of the keys table that are not 'deleted', plus the deleted ones' ids.
-export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table = null, deletedKeyIds = [] }) {
+// table (server only): rows of the keys table that are not 'deleted'; deletedKeyIds and
+// deletedNames: rows deleted before the listing began (with an id, and without one).
+// It never changes the table: `undeleted` · `undeletedNames` are keys to delete again,
+// `suspects` are live rows the listing did not show (the caller checks them again).
+export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table = null, deletedKeyIds = [], deletedNames = [] }) {
   const problems = new Map();
   const add = (kind, n = 1) => problems.set(kind, (problems.get(kind) || 0) + n);
-  const orphanNames = [], undeleted = [];
+  const undeleted = [], undeletedNames = [];
+  const goneNames = new Set(deletedNames);
   const guard = new Set(protectedKeyIds);
   const byId = table ? new Map(table.filter((r) => r.key_id).map((r) => [r.key_id, r])) : null;
   const creating = table ? new Set(table.filter((r) => r.state === 'creating').map((r) => r.name)) : null;
@@ -37,16 +41,18 @@ export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table 
     if (table) {
       const row = byId.get(k.keyId);
       if (deleted.has(k.keyId)) { add('not-deleted'); undeleted.push(k.keyId); }
-      else if (!row) { if (creating.has(k.keyName)) orphanNames.push(k.keyName); else add('not-in-table'); }
+      else if (!row) {
+        // A key whose B2 answer has not been written yet: the expiry deletes it after ten minutes.
+        if (creating.has(k.keyName)) continue;
+        if (goneNames.has(k.keyName)) { add('not-deleted'); undeletedNames.push(k.keyName); }
+        else add('not-in-table');
+      }
       else if (row.prefix && row.prefix !== k.namePrefix) add('prefix-mismatch');
     }
   }
   for (const c of perPrefix.values()) if (c.w > 1 || c.r > 2) add('too-many-keys');
-  if (table) {
-    const present = new Set(keys.map((k) => k.keyId));
-    const missing = table.filter((r) => r.key_id && ['active', 'acked'].includes(r.state) && !present.has(r.key_id)).length;
-    if (missing) add('missing-key', missing);
-  }
+  const present = new Set(keys.map((k) => k.keyId));
+  const suspects = table ? table.filter((r) => r.key_id && ['active', 'acked'].includes(r.state) && !present.has(r.key_id)).map((r) => r.name) : [];
   if (!bucket || bucket.found === false) add('bucket-missing');
   else {
     if (bucket.bucketCount !== 1) add('bucket-count');
@@ -55,5 +61,5 @@ export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table 
     if (norm(bucket.lifecycleRules) !== norm(EXPECTED_RULES)) add('lifecycle');
     if (bucket.replication !== 0) add('replication');
   }
-  return { ok: problems.size === 0, problems: [...problems].map(([kind, count]) => ({ kind, count })), orphanNames, undeleted, keyCount: keys.length };
+  return { ok: problems.size === 0, problems: [...problems].map(([kind, count]) => ({ kind, count })), undeleted, undeletedNames, suspects, keyCount: keys.length };
 }

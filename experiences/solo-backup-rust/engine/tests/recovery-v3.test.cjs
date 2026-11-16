@@ -136,3 +136,55 @@ test('GoogleAuth.signIn carries the server nonce and returns the fresh ID token;
   assert.equal(opened.searchParams.get('login_hint'), 'owner@example.invalid');
   assert.equal(opened.searchParams.get('nonce'), nonce);
 });
+
+test('GPT r6 GA1: a recheck that began before a new envelope was published does not write the old one back', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'wb-env3-')); t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const d = memoryDrive();
+  let holdOnce = null;
+  const validateKey = async () => { const h = holdOnce; holdOnce = null; if (h) await h; return { bucketId }; };
+  const keeper = new EnvelopeV3({ root, secretStore, auth: d.auth, vault: new DriveVault(d.auth, d.transport, { marker: MARKER3, parse: parseEnvelopeV3 }), validateKey });
+  await keeper.open();
+  await keeper.publish({ repository, repositoryId, password, readKey: key });
+  const first = keeper.record.verified.fileId;
+  let release; holdOnce = new Promise((ok) => { release = ok; });
+  const checking = keeper.recheck({ repositoryId, password }); // waits inside validateKey
+  const key2 = { keyId: 'readonly-fixture-key2', applicationKey: 'readonly-fixture-secret2' };
+  const publishing = keeper.publish({ repository, repositoryId, password, readKey: key2 });
+  await new Promise((ok) => setTimeout(ok, 20));
+  release();
+  await checking; await publishing;
+  assert.notEqual(keeper.record.verified.fileId, first, 'the new envelope is the verified one');
+  assert.equal(keeper.record.readKeyId, key2.keyId);
+  assert.equal(keeper.getState().invalid, false);
+  assert.equal((await keeper.recheck({ repositoryId, password })).invalid, false, 'and the next recheck passes');
+});
+
+test('카본 r6 A5: the daily recheck finds a committed file changed in Drive, or a read key for another bucket', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'wb-env3-')); t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const d = memoryDrive();
+  let answer = bucketId;
+  const keeper = new EnvelopeV3({ root, secretStore, auth: d.auth, vault: new DriveVault(d.auth, d.transport, { marker: MARKER3, parse: parseEnvelopeV3 }), validateKey: async () => ({ bucketId: answer }) });
+  await keeper.open();
+  await keeper.publish({ repository, repositoryId, password, readKey: key });
+  assert.equal((await keeper.recheck({ repositoryId, password })).invalid, false);
+  answer = 'c'.repeat(24);
+  await assert.rejects(keeper.recheck({ repositoryId, password }), { code: 'INVALID' });
+  assert.equal(keeper.getState().invalid, true);
+  answer = bucketId;
+  assert.equal((await keeper.recheck({ repositoryId, password })).invalid, false);
+  d.files[0].appProperties.digest = 'f'.repeat(64);
+  await assert.rejects(keeper.recheck({ repositoryId, password }), { code: 'INVALID' });
+});
+
+test('카본 r6 A6: an empty nonce is passed on as a nonce (and must come back), not taken as none', async (t) => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'wb-auth-')); t.after(() => fs.rm(dir, { recursive: true, force: true }));
+  const client = { client_id: '123456-fixture.apps.googleusercontent.com', client_secret: 'fixture-client-public-1234', project_id: 'fixture-project' };
+  const seen = [];
+  const auth = new GoogleAuth({ dir, secretStore, client, openExternal: async () => {},
+    authorizeFlow: async (_c, _o, opts) => { seen.push(opts); return { code: 'code', nonce: 'own-nonce', codeVerifier: 'verifier', redirect: 'http://127.0.0.1/callback' }; },
+    json: async () => ({ token_type: 'Bearer', access_token: 'fixture-access-secret', expires_in: 3600, refresh_token: 'fixture-refresh-secret', id_token: 'fixture.id.token' }),
+    verify: async (_tok, _aud, { nonce }) => ({ sub: subject, email: 'fixture@example.invalid', nonce }) });
+  await auth.open();
+  await assert.rejects(auth.signIn({ nonce: '' }), { code: 'INVALID' });
+  assert.equal(seen[0].nonce, '');
+});
