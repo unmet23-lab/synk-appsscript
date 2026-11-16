@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "눈사람!",
+ "dur": 0.778,
+ "words": [
+  {
+   "text": "눈사람!",
+   "start": 0.03,
+   "end": 0.778
+  }
+ ],
+ "source": {
+  "key": "bb0be00cdbe1f7d4334a96800271c1ef",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1944,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "눈이다~! 눈을 굴려 눈사람을 다 만든 몽글이 뿌듯하게 외친다.",
+   "next": "내 친구~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 525
+ }
+}

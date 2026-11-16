@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m6",
+ "text": "눈에서... 물이 나와...",
+ "dur": 1.563,
+ "words": [
+  {
+   "text": "눈에서...",
+   "start": 0.02,
+   "end": 0.442
+  },
+  {
+   "text": "물이",
+   "start": 0.784,
+   "end": 1.025
+  },
+  {
+   "text": "나와...",
+   "start": 1.086,
+   "end": 1.563
+  }
+ ],
+ "source": {
+  "key": "2887f195bcb74e62e7410a07e625b35b",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1944,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "눈이... 물이 됐어... 몽글의 눈에서 눈물이 뚝뚝 떨어진다. 훌쩍이며 울먹이는 목소리로 말한다.",
+   "next": "눈이다...!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 547
+ }
+}

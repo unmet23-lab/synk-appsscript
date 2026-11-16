@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1944,
+  "lufs": -16
+ },
+ "made": "2026-11-16T14:34:36.061Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "눈이다~!",
+   "dur": 0.847,
+   "syllablesPerSec": 3.54,
+   "src": "m1.wav",
+   "key": "781346be112b93315cfa623f0ea82101",
+   "words": 1
+  },
+  {
+   "id": "m2",
+   "text": "눈사람!",
+   "dur": 0.778,
+   "syllablesPerSec": 3.86,
+   "src": "m2.wav",
+   "key": "bb0be00cdbe1f7d4334a96800271c1ef",
+   "words": 1
+  },
+  {
+   "id": "m3",
+   "text": "내 친구~",
+   "dur": 1.423,
+   "syllablesPerSec": 2.11,
+   "src": "m3.wav",
+   "key": "f658dcd8fbbbb4756c1e874cbdd37bae",
+   "words": 2
+  },
+  {
+   "id": "m3b",
+   "text": "봄이다...?!",
+   "dur": 0.956,
+   "syllablesPerSec": 3.14,
+   "src": "m3b.wav",
+   "key": "82e458cbb73cd8187ab63544824b82ec",
+   "words": 1
+  },
+  {
+   "id": "m4",
+   "text": "안 돼~!",
+   "dur": 0.91,
+   "syllablesPerSec": 2.2,
+   "src": "m4.wav",
+   "key": "6a6cfaa3eeb9569d909dee91cd43e43c",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "눈이... 물이 됐어...",
+   "dur": 1.368,
+   "syllablesPerSec": 4.39,
+   "src": "m5.wav",
+   "key": "f68f998157166352267ba96edab7b6c0",
+   "words": 3
+  },
+  {
+   "id": "m6",
+   "text": "눈에서... 물이 나와...",
+   "dur": 1.563,
+   "syllablesPerSec": 4.48,
+   "src": "m6.wav",
+   "key": "2887f195bcb74e62e7410a07e625b35b",
+   "words": 3
+  },
+  {
+   "id": "m7",
+   "text": "눈이다...! 다시 만들자!",
+   "dur": 1.925,
+   "syllablesPerSec": 4.16,
+   "src": "m7.wav",
+   "key": "f304eed048f50467ff55e73e8869e4f9",
+   "words": 3
+  },
+  {
+   "id": "m8",
+   "text": "다시 만났네~!",
+   "dur": 1.065,
+   "syllablesPerSec": 4.69,
+   "src": "m8.wav",
+   "key": "1922543dcc9bbf769523dba0aacbeea8",
+   "words": 2
+  }
+ ]
+}

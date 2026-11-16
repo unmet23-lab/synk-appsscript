@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "내 친구~",
+ "dur": 1.423,
+ "words": [
+  {
+   "text": "내",
+   "start": 0.24,
+   "end": 0.341
+  },
+  {
+   "text": "친구~",
+   "start": 0.482,
+   "end": 1.423
+  }
+ ],
+ "source": {
+  "key": "f658dcd8fbbbb4756c1e874cbdd37bae",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 3077,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "눈사람! 몽글이 눈사람을 꼭 안고 다정하게 속삭인다.",
+   "next": "안 돼~!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 494
+ }
+}

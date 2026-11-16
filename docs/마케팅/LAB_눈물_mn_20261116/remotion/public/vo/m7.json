@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m7",
+ "text": "눈이다...! 다시 만들자!",
+ "dur": 1.925,
+ "words": [
+  {
+   "text": "눈이다...!",
+   "start": 0.02,
+   "end": 0.424
+  },
+  {
+   "text": "다시",
+   "start": 0.969,
+   "end": 1.191
+  },
+  {
+   "text": "만들자!",
+   "start": 1.251,
+   "end": 1.925
+  }
+ ],
+ "source": {
+  "key": "f304eed048f50467ff55e73e8869e4f9",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 3077,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "눈에서... 물이 나와... 다음 겨울, 하늘에서 다시 눈이 내리자 눈물 자국이 남은 몽글이 놀라고 반가워하다가, 목도리와 당근을 보고 힘차게 다짐한다.",
+   "next": "다시 만났네~!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 501
+ }
+}
