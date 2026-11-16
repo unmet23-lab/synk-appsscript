@@ -172,6 +172,31 @@ internal static class SignalInstallerTests
                 Directory.Delete(Handoff.InstallerRoot, true);
                 Handoff.InstallerRoot = null;
             });
+            // 조용한 업데이트가 끝날 무렵 사람이 켠 앱의 요청이 사라지지 않는다(0.4.96 GPT 검수 GA1)
+            Check("a show request before the launch reveals the installer, one after the launch opens the app again at the end", delegate
+            {
+                var pending = new Queue<bool>(); int reveals = 0;
+                Func<bool> take = delegate { return pending.Count > 0 && pending.Dequeue(); };
+                var before = new ShowRequestGate(take, delegate { reveals++; });
+                pending.Enqueue(true); before.Tick();
+                Assert(reveals == 1, "A request before the launch did not reveal the installer.");
+                before.BeforeLaunch(); Assert(!before.OpenAgainAtEnd(), "A request already answered before the launch opened the app again.");
+                // 마지막 Tick과 BeforeLaunch 사이에 생긴 요청: 도착 쪽지를 쓰기 전에 받아 창을 보인다
+                reveals = 0; var edge = new ShowRequestGate(take, delegate { reveals++; });
+                pending.Enqueue(true); edge.BeforeLaunch();
+                Assert(reveals == 1 && !edge.OpenAgainAtEnd(), "A request waiting at the launch was not answered before the arrival note.");
+                // 켜기 시작한 뒤의 요청: 설치기 창만 보이면 새 앱이 숨은 채 남는다. 끝에서 앱을 한 번 더 켠다
+                reveals = 0; var after = new ShowRequestGate(take, delegate { reveals++; });
+                after.BeforeLaunch(); pending.Enqueue(true); after.Tick();
+                Assert(reveals == 0, "A request after the launch revealed only the installer window.");
+                Assert(after.OpenAgainAtEnd(), "A request after the launch was lost.");
+                // 끝나기 직전에 막 생긴 요청도 받는다
+                var late = new ShowRequestGate(take, delegate { reveals++; });
+                late.BeforeLaunch(); pending.Enqueue(true);
+                Assert(late.OpenAgainAtEnd() && pending.Count == 0, "A request at the very end was not taken.");
+                var none = new ShowRequestGate(take, delegate { reveals++; });
+                none.Tick(); none.BeforeLaunch(); Assert(!none.OpenAgainAtEnd() && reveals == 0, "No request still opened something.");
+            });
             Check("known-folder shortcut guard accepts Cloud variants but rejects symlinks, junctions and unknown reparse tags", delegate
             {
                 for(uint variant=0;variant<16;variant++)

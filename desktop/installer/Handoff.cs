@@ -207,6 +207,37 @@ namespace Synk.SignalInstaller
         }
     }
 
+    /// <summary>
+    /// 창 보이기 요청을 받는 때(0.4.96 GPT 검수 GA1). 앱을 켜기 시작하기 전에 받은 요청은 설치기 창을 보이고, 도착 쪽지도 「앞」으로 쓴다.
+    /// 켜기 시작한 뒤(도착 쪽지를 이미 썼다)에 받은 요청은 설치기 창을 보여도 새 앱이 숨은 채 켜지므로, 끝나기 직전에 앱을 한 번 더 켜서 창을 부르게 남긴다.
+    /// 세 함수는 모두 설치기 창의 스레드에서 부른다
+    /// </summary>
+    public sealed class ShowRequestGate
+    {
+        private readonly Func<bool> take;
+        private readonly Action reveal;
+        private bool launchBegun, showAfterLaunch;
+        public ShowRequestGate(Func<bool> take, Action reveal) { this.take = take; this.reveal = reveal; }
+        /// <summary>0.5초마다 부른다</summary>
+        public void Tick()
+        {
+            if (!take()) return;
+            if (launchBegun) showAfterLaunch = true; else reveal();
+        }
+        /// <summary>엔진이 앱을 켜기 바로 앞(표시를 놓은 뒤, 도착 쪽지를 쓰기 전)에 부른다. 남은 요청을 받아 창을 보인 뒤, 그 뒤의 요청은 끝으로 넘긴다</summary>
+        public void BeforeLaunch()
+        {
+            if (take()) reveal();
+            launchBegun = true;
+        }
+        /// <summary>끝나기 직전에 부른다. 앱을 한 번 더 켜야 하면 참이다</summary>
+        public bool OpenAgainAtEnd()
+        {
+            bool waiting = take();
+            return waiting || showAfterLaunch;
+        }
+    }
+
     public static class Handoff
     {
         public const int MaxBytes = 4096;

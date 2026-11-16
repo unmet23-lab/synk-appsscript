@@ -182,7 +182,6 @@ namespace Synk.SignalInstaller
             // 「바꾸는 중」 표시(장치 1): READY 뒤에 쥐고, 앱을 켜거나 창을 보이기 앞에 놓는다
             UpdatingMarker marker = null;
             Action releaseMarker = delegate { UpdatingMarker held = Interlocked.Exchange(ref marker, null); if (held != null) held.Release(); };
-            engine.BeforeLaunch = delegate(string kind, string appVersion) { releaseMarker(); arrive(kind, appVersion); };
             // 창 보이기 요청: 바꾸는 동안 사람이 켠 앱이나 둘째 설치기가 쓴다. 남은 요청은 지우고 0.5초마다 본다
             int myPid; using (Process self = Process.GetCurrentProcess()) myPid = self.Id;
             DateTime startedUtc = DateTime.UtcNow;
@@ -196,8 +195,16 @@ namespace Synk.SignalInstaller
                 window.Show();
                 try { window.Activate(); } catch (InvalidOperationException) { }
             };
+            // 앱을 켜기 시작한 뒤에 받은 요청은 끝에서 앱을 한 번 더 켜서 창을 부른다(도착 쪽지는 이미 숨음이나 최소화로 썼다, GPT 검수 GA1)
+            ShowRequestGate gate = new ShowRequestGate(delegate { return ShowRequest.Take(spec.AppId, myPid, startedUtc); }, reveal);
+            engine.BeforeLaunch = delegate(string kind, string appVersion)
+            {
+                releaseMarker();
+                try { window.Dispatcher.Invoke(new Action(gate.BeforeLaunch)); } catch (Exception) { }
+                arrive(kind, appVersion);
+            };
             System.Windows.Threading.DispatcherTimer requests = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-            requests.Tick += delegate { if (ShowRequest.Take(spec.AppId, myPid, startedUtc)) reveal(); };
+            requests.Tick += delegate { gate.Tick(); };
             requests.Start();
             // 끝내기: 보인 창은 닫고, 보이지 않은 조용한 설치기는 창 없이 끝낸다
             app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -329,8 +336,8 @@ namespace Synk.SignalInstaller
             app.Run();
             requests.Stop();
             releaseMarker();
-            // 끝나기 직전에 요청을 한 번 더 본다. 표시를 놓는 순간에 사람이 켠 앱의 요청이 버려지지 않게, 앱을 한 번 더 켜서 창을 부르게 한다
-            if (automatic != null && ShowRequest.Take(spec.AppId, myPid, startedUtc))
+            // 끝나기 직전에 요청을 한 번 더 본다. 표시를 놓는 순간이나 앱을 켜기 시작한 뒤에 사람이 켠 앱의 요청이 버려지지 않게, 앱을 한 번 더 켜서 창을 부르게 한다
+            if (automatic != null && gate.OpenAgainAtEnd())
                 try { using (Process.Start(new ProcessStartInfo(engine.InstalledExecutable()) { UseShellExecute = false })) { } } catch (Exception) { }
         }
 

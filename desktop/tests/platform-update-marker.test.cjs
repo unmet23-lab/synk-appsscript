@@ -15,6 +15,18 @@ test('a fresh marker of a live installer is seen, a stale or dead one is not',t=
   assert.deepEqual(readUpdatingMarker({localAppData,isAlive:()=>true}),{present:false,pid:null},'heartbeat stopped more than ten seconds ago');
 });
 
+// 시계를 되돌렸거나 시각이 틀어진 표시가 앱을 켤 때마다 끝내지 않는다(0.4.96 GPT 검수 GB1)
+test('a marker dated in the future is not counted, even when its content is broken',t=>{
+  const localAppData=folder(t);
+  mark(localAppData,'{broken',-60*60*1000);
+  assert.deepEqual(readUpdatingMarker({localAppData,isAlive:()=>true}),{present:false,pid:null},'an hour ahead');
+  mark(localAppData,JSON.stringify({pid:4242}),-24*60*60*1000);
+  assert.deepEqual(readUpdatingMarker({localAppData,isAlive:()=>true}),{present:false,pid:null},'a day ahead with a live number');
+  const exits=[];assert.equal(yieldToUpdatingInstaller({localAppData,exit:code=>exits.push(code),isAlive:()=>true}),false);assert.deepEqual(exits,[]);
+  mark(localAppData,JSON.stringify({pid:4242}),-1000);
+  assert.deepEqual(readUpdatingMarker({localAppData,isAlive:pid=>pid===4242}),{present:true,pid:4242},'a second of clock skew is still the live marker');
+});
+
 test('an unreadable fresh marker is read twice and then counted as present without a number',t=>{
   const localAppData=folder(t);mark(localAppData,'{"pid":');
   let reads=0;

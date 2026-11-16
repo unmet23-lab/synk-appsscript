@@ -7,19 +7,21 @@
 */
 const fs=require('node:fs'),path=require('node:path');
 const APP_ID='im.synk.platform.preview';
-const STALE_MS=10000,MAX_BYTES=4096;
+const STALE_MS=10000,FUTURE_MS=2000,MAX_BYTES=4096;
 function markerPaths(localAppData,appId=APP_ID){const folder=path.join(localAppData,'SYNK','Installer','Handoff');return {folder,marker:path.join(folder,appId+'.updating.json'),request:path.join(folder,appId+'.show-request')};}
 function processAlive(pid){try{process.kill(pid,0);return true;}catch(error){return error?.code==='EPERM';}}
 function pause(ms){try{Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,ms);}catch{}}
 /*
   표시가 있는지 본다. 파일 시각이 10초 안이고 그 번호의 설치기가 살아 있으면 있다.
-  내용을 읽다 틀리면 한 번 더 읽는다. 그래도 못 읽었는데 시각이 10초 안이면 있다고 본다(잘못 보더라도 그 틈은 10초를 넘지 않는다)
+  내용을 읽다 틀리면 한 번 더 읽는다. 그래도 못 읽었는데 시각이 10초 안이면 있다고 본다(잘못 보더라도 그 틈은 10초를 넘지 않는다).
+  시각이 지금보다 2초 넘게 미래면 없다고 본다. 시계를 되돌렸거나 시각이 틀어진 표시가 앱을 켤 때마다 끝내지 않게 한다(0.4.96 GPT 검수 GB1)
 */
 function readUpdatingMarker({localAppData,appId=APP_ID,now=Date.now,isAlive=processAlive,read=file=>fs.readFileSync(file,'utf8'),stat=file=>fs.statSync(file)}={}){
   if(typeof localAppData!=='string'||!path.isAbsolute(localAppData))return {present:false,pid:null};
   const {marker}=markerPaths(localAppData,appId);
   let info;try{info=stat(marker);}catch{return {present:false,pid:null};}
-  if(!info.isFile?.()||now()-info.mtimeMs>STALE_MS)return {present:false,pid:null};
+  const age=now()-info.mtimeMs;
+  if(!info.isFile?.()||!(age<=STALE_MS&&age>=-FUTURE_MS))return {present:false,pid:null};
   for(let attempt=0;attempt<2;attempt++){
     try{
       const text=read(marker);if(text.length>MAX_BYTES)break;
@@ -49,4 +51,4 @@ function yieldToUpdatingInstaller({localAppData,appId=APP_ID,exit,...options}={}
   exit(0);
   return true;
 }
-module.exports={STALE_MS,markerPaths,readUpdatingMarker,writeShowRequest,yieldToUpdatingInstaller};
+module.exports={STALE_MS,FUTURE_MS,markerPaths,readUpdatingMarker,writeShowRequest,yieldToUpdatingInstaller};
