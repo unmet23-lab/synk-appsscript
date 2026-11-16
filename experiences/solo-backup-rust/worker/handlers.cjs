@@ -344,6 +344,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     // 「그만두기」 while a Google sign-in waits in the browser (화면 세션 부탁 13): the waiting request ends as CANCELED.
     // It reads nothing and takes no slot, so it reaches the worker while that request holds the window.
     handle('cancelGoogle', () => { account.cancelSignIn(); recovery.auth?.cancel?.(); return null; }, { read: true });
+    // 「Google 기기 관리 열기」 · 「연결된 앱 열기」 (화면 세션 부탁): the screen names the page, the account code gives its address.
+    handle('openGoogleAccount', async (_context, kind) => { await shell.openExternal(account.googlePage(kind)); return null; }, { read: true, codes: true });
     // 「새 PC로 옮겨 오기」 (4.6 · 4.6b). Each answers with what its screen shows (공유 노트 「옮겨오기_화면자료」).
     // The old device must be one the repository has backups of (move.devices), not any name the screen sends.
     async function moveFrom(v) {

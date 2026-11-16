@@ -195,6 +195,12 @@ pub fn oauth_allowed(value: &str) -> bool {
     url::Url::parse(value).is_ok_and(|u| u.scheme()=="https" && u.host_str()==Some("accounts.google.com") && u.port().is_none()
         && u.username().is_empty() && u.password().is_none() && u.path()=="/o/oauth2/v2/auth")
 }
+/// A Google account page the window opens after a loss report (「Google 기기 관리 열기」 · 「연결된 앱 열기」, 2.4 (5)(나)):
+/// https on myaccount.google.com only, no port or user part. The worker picks the page; this keeps the browser on Google.
+pub fn account_page_allowed(value: &str) -> bool {
+    url::Url::parse(value).is_ok_and(|u| u.scheme()=="https" && u.host_str()==Some("myaccount.google.com") && u.port().is_none()
+        && u.username().is_empty() && u.password().is_none() && u.fragment().is_none())
+}
 pub fn open_directory_allowed(path: &Path, root: &Path) -> bool {
     if !path.is_absolute() || overlap(path, root) { return false; }
     let Ok(real) = fs::canonicalize(path) else { return false };
@@ -291,6 +297,11 @@ impl Drop for ProcessJob { fn drop(&mut self) { unsafe { CloseHandle(self.0); } 
     #[test] fn oauth_is_exact_origin() {
         assert!(oauth_allowed("https://accounts.google.com/o/oauth2/v2/auth?state=test"));
         for u in ["https://accounts.google.com.evil/o/oauth2/v2/auth", "https://user@accounts.google.com/o/oauth2/v2/auth", "http://accounts.google.com/o/oauth2/v2/auth", "https://accounts.google.com/o/oauth2/v2/token"] { assert!(!oauth_allowed(u)); }
+    }
+    #[test] fn account_pages_are_google_only() {
+        for u in ["https://myaccount.google.com/device-activity", "https://myaccount.google.com/connections"] { assert!(account_page_allowed(u), "{u}"); }
+        for u in ["https://myaccount.google.com.evil/connections", "http://myaccount.google.com/connections", "https://user@myaccount.google.com/connections",
+                  "https://myaccount.google.com:444/connections", "https://accounts.google.com/o/oauth2/v2/auth", "https://myaccount.google.com/x#y", "file:///C:/x"] { assert!(!account_page_allowed(u), "{u}"); }
     }
     #[test] fn two_locks_are_independent(){
         let dir=std::env::temp_dir().join(format!("swb-locks-{}",std::process::id()));let _=fs::remove_dir_all(&dir);fs::create_dir_all(&dir).unwrap();

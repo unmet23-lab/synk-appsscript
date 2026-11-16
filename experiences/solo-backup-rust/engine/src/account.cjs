@@ -26,6 +26,10 @@ const JOB = /^[A-Za-z0-9_-]{1,64}$/;
 const CODE = /^[A-Z][A-Z_]{1,31}$/;
 const NEEDS = ['write-key', 'read-key', 'restore'];
 const READ_KEY = ['ready', 'unconfirmed', 'missing'];
+// The Google account pages the screen opens after a loss report (2.4 (5)(나)): fixed here, never a page the screen names.
+// `removal` is the page the server gave with the report (reportLost), kept while the step is open.
+const GOOGLE_PAGES = { devices: 'https://myaccount.google.com/device-activity', apps: 'https://myaccount.google.com/connections' };
+const ACCOUNT_PAGE = /^https:\/\/myaccount\.google\.com\/[A-Za-z0-9/_.?=&%-]{0,500}$/;
 const RESTORE_STATES = ['preparing', 'running', 'done', 'continued', 'undone', 'failed'];
 const MESSAGES = {
   NO_GOOGLE: '이 판에서는 Google로 시작할 수 없습니다.',
@@ -65,7 +69,8 @@ function cleanInfo(v) {
   return { googleStepRequired: o.googleStepRequired === true, writer: writerOf(o.writer), readKey: READ_KEY.includes(o.readKey) ? o.readKey : null,
     restore: restoreView(o.restore), left: typeof o.left === 'string' && CODE.test(o.left) ? o.left : null,
     needs: Array.isArray(o.needs) ? NEEDS.filter((x) => x !== 'restore' && o.needs.includes(x)) : [], readKeyHeld: false,
-    deadReadKey: typeof o.deadReadKey === 'string' && /^[a-f0-9]{32}$/.test(o.deadReadKey) ? o.deadReadKey : null };
+    deadReadKey: typeof o.deadReadKey === 'string' && /^[a-f0-9]{32}$/.test(o.deadReadKey) ? o.deadReadKey : null,
+    googleRemovalUrl: typeof o.googleRemovalUrl === 'string' && ACCOUNT_PAGE.test(o.googleRemovalUrl) ? o.googleRemovalUrl : null };
 }
 
 // The server status (GET status) as the writer's engine needs it (4.5 「회차 실행기」 · 4.6 N2), for the run and the
@@ -109,7 +114,7 @@ function telemetryRun({ trigger, startedAt, result, fill = null, skipCloud = nul
   const outcome = result.outcome === 'skipped' && result.reason === 'paused' ? 'paused' : result.outcome;
   if (!['complete', 'partial', 'skipped', 'failed', 'busy', 'not-due', 'paused'].includes(outcome)) return null;
   const pause = PAUSES[skipCloud] || (result.reason === 'clock' ? 'clock' : result.reason === 'paused' ? 'user' : 'none');
-  const item = { trigger, startedAt, result: outcome, pause, durationMs: n(result.durationMs), exitCode: Number.isSafeInteger(result.exitCode) && result.exitCode >= -1 && result.exitCode <= 255 ? result.exitCode : undefined,
+  const item = { trigger, startedAt, result: outcome, pause, durationMs: n(result.durationMs), exitCode: Number.isSafeInteger(result.exitCode) && result.exitCode >= -(2 ** 31) && result.exitCode <= 2 ** 32 - 1 ?result.exitCode : undefined,
     unreadable: n(result.unreadable), peakMemory: n(Number.isSafeInteger(maxRssKb) ? maxRssKb * 1024 : null), cpuMs: n(cpuMs),
     resticStartMs: Number.isSafeInteger(result.resticStartedAt) && result.resticStartedAt >= startedAt ? result.resticStartedAt - startedAt : undefined };
   const files = { new: n(result.filesNew), changed: n(result.filesChanged), unmodified: n(result.filesUnmodified) };
@@ -184,6 +189,9 @@ class Account {
       byThisDevice: v ? v.byThisDevice : hold ? true : null, error: v?.error || null, undo: !!hold?.undo || !!v?.undo } : null;
     return { available: !!this.auth, signedIn: !!g.connected, email: g.email || null, connected: p.connected, role: p.role, deviceId: p.deviceId,
       device: this.deviceName, writer: this.info.writer?.name || null, googleStepRequired: this.info.googleStepRequired || p.googleStepRequired === true, needs,
+      // This PC's earlier devices of the account (same install, newest first): the screen says 「이 PC」 for them.
+      sameInstall: (Array.isArray(p.sameInstall) ? p.sameInstall : []).filter((id) => DEVICE.test(id || '')).slice(0, 5),
+      googleRemovalUrl: this.info.googleStepRequired ? this.info.googleRemovalUrl : null,
       readKey: this.info.readKey, readKeyPending: this.info.readKeyHeld, left: this.info.left, restore,
       envelope: e.verified ? { verifiedAt: e.verified.verifiedAt } : null, envelopeInvalid: !!e.invalid, damaged: [...this.damaged] };
   }
@@ -317,6 +325,9 @@ class Account {
       const v = await this.envelopeOf(p);
       target = { repository: v.repository, repositoryId: v.repositoryId, password: v.password };
     }
+    // The key must still be the account's: another PC's newer rotation retires an unconfirmed one on the server, and an
+    // envelope must never carry a dead key (개통 서버 readKeyAlive — the client drops it and asks for a new one).
+    if (typeof this.provision.readKeyAlive === 'function' && !(await this.provision.readKeyAlive())) { await this.note(); throw failure('READ_KEY'); }
     const published = await this.envelope.publish({ ...target, readKey });
     if (!published.verified?.verifiedAt) throw failure('ENVELOPE');
     if (e.config?.repositoryId) {
@@ -380,8 +391,16 @@ class Account {
     await this.lostKey();
     Object.assign(this.info, { googleStepRequired: true, readKey: 'missing' });
     await this.note();
-    const url = typeof r.googleRemovalUrl === 'string' && /^https:\/\/myaccount\.google\.com\//.test(r.googleRemovalUrl) ? r.googleRemovalUrl : null;
+    const url = typeof r.googleRemovalUrl === 'string' && ACCOUNT_PAGE.test(r.googleRemovalUrl) ? r.googleRemovalUrl : null;
+    if (url) { this.info.googleRemovalUrl = url; await this.keep(); }
     return { next: r.next === 'read-key-rotate' ? 'read-key-rotate' : null, googleRemovalUrl: url };
+  }
+  // 「Google 기기 관리 열기」 · 「연결된 앱 열기」 · the page the loss report gave (화면 세션 부탁): the address is this
+  // file's, the screen only names which.
+  googlePage(kind) {
+    const url = kind === 'removal' ? this.info.googleRemovalUrl || GOOGLE_PAGES.apps : Object.hasOwn(GOOGLE_PAGES, kind) ? GOOGLE_PAGES[kind] : null;
+    if (!url || !ACCOUNT_PAGE.test(url)) throw failure('BAD_INPUT');
+    return url;
   }
   // A read key already received and not confirmed is used again rather than asking for another. A PC with no backup
   // set up writes the new envelope from the old one (Fable 지적 6), so it can open the backup with it afterwards.

@@ -678,3 +678,35 @@ test('a backup leaves out what an unfinished move left; a move that fails is the
   await e.operation('move', async () => null);
   assert.equal(e.config.lastMoveError, null); assert.equal(e.config.lastError, '지난 백업 실패');
 });
+
+test('개통 서버 r7: a read key the server retired never goes into an envelope; the Google pages are this code\'s; the same PC\'s devices are named', async () => {
+  const { telemetryRun } = require('../src/account.cjs');
+  const f = await fixture();
+  await f.account.signIn();
+  // Another PC's newer rotation retired the key this PC holds: nothing is published, the screen asks for a new key.
+  f.provision.readKeyAlive = async function () { this.pending = null; this.needs = ['read-key']; return false; };
+  await assert.rejects(f.account.startProtection({ sources: [f.source] }), (e) => e.code === 'READ_KEY');
+  assert.equal(f.log.filter((x) => x[0] === 'publish').length, 0);
+  assert.equal(f.account.state().readKeyPending, false);
+  f.provision.readKeyAlive = async () => true;
+  await f.account.rotateReadKey();
+  assert.deepEqual(f.log.filter((x) => x[0] === 'publish').map((x) => x[1].readKey), [RK2]);
+  // The pages: fixed addresses on myaccount.google.com, the loss report's own while its step is open.
+  assert.equal(f.account.googlePage('devices'), 'https://myaccount.google.com/device-activity');
+  assert.equal(f.account.googlePage('apps'), 'https://myaccount.google.com/connections');
+  assert.equal(f.account.googlePage('removal'), 'https://myaccount.google.com/connections');
+  for (const bad of ['https://evil.example/', 'toString', '__proto__', undefined, 3]) assert.throws(() => f.account.googlePage(bad), (e) => e.code === 'BAD_INPUT', String(bad));
+  f.provision.lost = async () => ({ next: 'read-key-rotate', googleRemovalUrl: 'https://myaccount.google.com/connections?hl=ko' });
+  assert.equal((await f.account.reportLost(OLD)).googleRemovalUrl, 'https://myaccount.google.com/connections?hl=ko');
+  assert.equal(f.account.googlePage('removal'), 'https://myaccount.google.com/connections?hl=ko');
+  assert.equal(f.account.state().googleRemovalUrl, 'https://myaccount.google.com/connections?hl=ko');
+  f.provision.lost = async () => ({ next: 'read-key-rotate', googleRemovalUrl: 'https://evil.example/connections' });
+  assert.equal((await f.account.reportLost(OLD)).googleRemovalUrl, null, 'a page that is not Google\'s is never kept');
+  // The same PC's earlier devices, as the client gives them.
+  f.provision.state = function () { return { connected: true, role: 'write', deviceId: ME, customerId: CUSTOMER, repository: { ...REPO }, needs: [], sameInstall: [OLD, 'NOT A DEVICE'] }; };
+  assert.deepEqual(f.account.state().sameInstall, [OLD]);
+  // A Windows exit code (32 bits) is measured as it is.
+  const run = (exitCode) => telemetryRun({ trigger: 'hourly', startedAt: Date.now(), result: { outcome: 'failed', exitCode } });
+  assert.equal(run(3221225477).exitCode, 3221225477); assert.equal(run(-1).exitCode, -1);
+  assert.equal(run(2 ** 32).exitCode, undefined); assert.equal(run(-(2 ** 31) - 1).exitCode, undefined);
+});
