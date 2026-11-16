@@ -18,6 +18,8 @@ impl NativeHost {
                 match platform::try_lock(&self.root,platform::ENGINE_LOCK)?{Some(file)=>{*held=Some(file);Ok(json!(true))},None=>Ok(json!(false))}},
             "engine.unlock"=>{*self.engine.lock().unwrap()=None;Ok(json!(true))},
             "run.progress"=>Ok(backup_native::runlog::live(&self.root)),
+            // The Downloads folder wherever Windows keeps it, for 「되살린 파일」 at its default place (화면 세션 부탁 2).
+            "folders.downloads"=>{let id=&backup_native::folders::KNOWN.iter().find(|(name,_)|*name=="downloads").ok_or("FOLDERS_KNOWN")?.1;Ok(json!(backup_native::folders::known_folder(id)?))},
             // 「자동 실행 등록」 is now the four run tasks in Task Scheduler (STAGE1_DESIGN.md 4.1 · 4.2).
             "startup.read"=>Ok(json!(run_tasks_registered(&self.exe,self.test)?)),
             "startup.set"=>Ok(json!(set_run_tasks(&self.exe,first.as_bool().ok_or("HOST_REQUEST")?,self.test,self.packaged)?)),

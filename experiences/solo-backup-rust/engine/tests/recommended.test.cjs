@@ -58,5 +58,8 @@ test('native plan -> append-only backup -> fresh independent restore, original a
  for(const [n,b]of Object.entries(originals)){assert.equal(sha(await fs.readFile(path.join(root,'source',n))),sha(b));assert.equal(sha(await fs.readFile(path.join(restored,n))),sha(b));}
  await assert.rejects(fs.access(path.join(restored,'node_modules','skip.txt')));
  await assert.rejects(fs.access(path.join(restored,'[private].txt')));
+ // The window's default place: the dated folder holds it too (GPT workbackup-restoreplace GA1).
+ const d=new Date(),dated=path.join(await fs.realpath(path.join(root,'restores')),`되살린 파일 (${d.getMonth()+1}월 ${d.getDate()}일)`);
+ const named=(await fresh.restoreLatest({parent:path.join(root,'restores'),named:true})).lastRestore;assert.equal(path.dirname(named.path),dated);assert.equal(named.files,5);
  assert.equal((await e.snapshots()).length,2);await m.stop();await fresh.stop();
 });

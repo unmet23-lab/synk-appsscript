@@ -190,6 +190,16 @@ const json = s => JSON.parse(s.replace(/^\uFEFF/, ''));
 // whole binary into memory on open — the T7 preliminary saw the worker peak at
 // 134 MB largely from that (STAGE1_DESIGN.md 4.3).
 const verifiedBinaries = new Map();
+// The folder a restore goes into at the place the window chose by itself (화면 세션 부탁 2 「다운로드 › 되살린 파일 (11월
+// 13일)」): today's name on this PC's calendar, or that name with 2, 3 … when it is there already — never an existing folder.
+async function namedFolder(base, now) {
+  const d = new Date(now), name = `되살린 파일 (${d.getMonth() + 1}월 ${d.getDate()}일)`;
+  for (let i = 1; i < 100; i++) {
+    const target = path.join(base, i === 1 ? name : `${name} ${i}`);
+    try { await fs.mkdir(target); return target; } catch (e) { if (e.code !== 'EEXIST') throw e; }
+  }
+  throw new Error('되살린 파일을 놓을 새 폴더를 만들지 못했습니다.');
+}
 async function sha256File(file) {
   const hash = crypto.createHash('sha256');
   const handle = await fs.open(file, 'r');
@@ -312,7 +322,7 @@ class BackupEngine extends EventEmitter {
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
       recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, lastFill: c?.lastFill || null, missingSources: c?.missingSources || [],
       removedSources: (c?.removedSources || []).map(r => ({ path: r.path, at: r.at, until: new Date(Date.parse(r.since ?? r.at) + REMOVED_KEEP).toISOString() })),
-      lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null, nextSources: c?.nextSources || [],
+      lastRestore: c?.lastRestore || null, lastRestoreError: c?.lastRestoreError || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null, nextSources: c?.nextSources || [],
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
       lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
@@ -386,13 +396,23 @@ class BackupEngine extends EventEmitter {
     this.job = { kind, stage: '준비 중', percent: null }; this.emitState();
     try {
       const value = await fn();
-      if (this.config) { if (kind !== 'probe') this.config.lastError = null; if (this.config.warning === BUSY_WARNING) this.config.warning = null; await this.save(); }
+      // A restore says nothing about the backups (화면 세션 부탁 4): its success clears only its own failure.
+      if (this.config) {
+        if (kind === 'restore') this.config.lastRestoreError = null;
+        else { if (kind !== 'probe') this.config.lastError = null; if (this.config.warning === BUSY_WARNING) this.config.warning = null; }
+        await this.save();
+      }
       return value;
     } catch (e) {
       // Exit 11 is another process holding the repository lock — "busy, try the
       // next run", not an error (STAGE1_DESIGN.md 4.2 · review F2). The window still
       // says why nothing happened: a person-started job returns at once (review GA2).
-      if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
+      // A restore that failed is written down as such (lastRestoreError), never as the backups' failure (화면 세션 부탁 4).
+      if (this.config && kind === 'restore') {
+        const code = e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : 'RESTORE_FAILED';
+        this.config.lastRestoreError = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}) };
+        await this.save().catch(() => {});
+      } else if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
       else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
       // A word code (REPO_EXISTS, RESTORE_PENDING …) goes on with the cleaned message; the screen chooses by it.
       const error = new Error(this.clean(e.message)); error.exitCode = e.exitCode;
@@ -1252,7 +1272,8 @@ class BackupEngine extends EventEmitter {
     }
     return plans;
   }
-  async restoreLatest({ parent }) {
+  // `named`: the window chose the place (its default), so the folder is 「되살린 파일 (<날짜>)」 there.
+  async restoreLatest({ parent, named = false }) {
     return this.operation('restore', async () => {
       await this.identity();
       if (this.config.readOnly) {
@@ -1264,11 +1285,12 @@ class BackupEngine extends EventEmitter {
         }
       }
       const base = await directory(parent);
-      if ([...this.forbidden(), ...this.config.sources].some(p => overlap(base, p))) throw new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.');
+      if ([...this.forbidden(), ...this.config.sources].some(p => overlap(base, p))) throw Object.assign(new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.'), { code: 'OUTPUT_UNSAFE' });
       const latest = (await this.snapshots([VERIFIED], { host: this.hostName }))[0];
       if (!latest) throw new Error('완료된 백업이 없습니다.');
       if (latest.tags?.includes('recommended-verified-v1')) {
-        await require('./recommended.cjs').restoreWhole(this, base, latest);
+        // The window's default place holds the dated folder here too (GPT workbackup-restoreplace GA1).
+        await require('./recommended.cjs').restoreWhole(this, named ? await namedFolder(base, this.now()) : base, latest);
         return this.getState();
       }
       if (!sanePaths(latest)) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
@@ -1282,8 +1304,11 @@ class BackupEngine extends EventEmitter {
         const space = await fs.statfs(base, { bigint: true });
         const required = plans.reduce((sum, p) => sum + [...p.manifest.nodes.values(), ...p.extra].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), 0n), 16n * 1024n * 1024n);
         if (required > space.bavail * space.bsize) throw new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.');
-        target = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`);
-        await fs.mkdir(target); // Exclusive new empty directory; never restore into original paths.
+        if (named) target = await namedFolder(base, this.now());
+        else {
+          target = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`);
+          await fs.mkdir(target); // Exclusive new empty directory; never restore into original paths.
+        }
         this.stage('파일 복구 및 내용 검증 중');
         // Export authenticated contents rather than original SID/DACL metadata. Each
         // selected subtree is extracted into fresh files and verified after writing.
@@ -1316,7 +1341,7 @@ class BackupEngine extends EventEmitter {
       catch (e) {
         this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '복구 또는 검증이 끝나지 않았습니다. 전체 점검 전에는 이전 백업을 정리하지 않습니다.' };
         await this.save();
-        throw new Error(`${e.message}\n${target ? `완료되지 않은 복구 폴더: ${target}` : '복구 파일을 만들기 전에 중단했습니다.'}`);
+        throw Object.assign(new Error(`${e.message}\n${target ? `완료되지 않은 복구 폴더: ${target}` : '복구 파일을 만들기 전에 중단했습니다.'}`), { exitCode: e.exitCode, code: e.code, ...(target ? { restorePath: target } : {}) });
       }
       this.config.lastRestore = { path: target, at: new Date(this.now()).toISOString(), fromEarlier, inNone, ...(skippedAll ? { skipped: skippedAll } : {}) }; await this.save();
       return this.getState();
@@ -1389,7 +1414,7 @@ class BackupEngine extends EventEmitter {
     if (this.job || this.stopping) throw selection.issue('JOB_BUSY');
     return this.catalogFor(token).capture(revision);
   }
-  restoreSelected({ token, revision, parent }) {
+  restoreSelected({ token, revision, parent, named = false }) {
     // Synchronous preflight runs again after main's native destination picker.
     // Once captured, profile switches/TTL/credential invalidation cannot change
     // the selected paths or silently replace the pinned immutable snapshot.
@@ -1418,8 +1443,8 @@ class BackupEngine extends EventEmitter {
         }
         await selection.spaceRequired(base, capture.files, plans);
         await directory(base);
-        target = path.join(base, `선택복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(6).toString('hex')}`);
-        await fs.mkdir(target);
+        if (named) target = await namedFolder(base, this.now());
+        else { target = path.join(base, `선택복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(6).toString('hex')}`); await fs.mkdir(target); }
         marker = path.join(target, '_복구중_미완료.txt');
         await fs.writeFile(marker, '복구가 완료되지 않았습니다. 이 폴더를 완료된 복구본으로 사용하지 마세요.\n', { flag: 'wx' });
         let count = 0, bytes = 0;

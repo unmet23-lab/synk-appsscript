@@ -157,6 +157,7 @@ async function foldersAfterSetup(t) {
   const last = (await app.call('removeSource', [kept])).value;
   assert.equal(last.ok, false);
   assert.match(last.error, /하나 이상/);
+  assert.equal(last.code, 'LAST_FOLDER', 'the screen chooses by the code, not the words (화면 세션 부탁 5)');
   const unknown = (await app.call('removeSource', [path.join(root, 'elsewhere')])).value;
   assert.equal(unknown.ok, false);
   assert.equal(host.dialogs.length, 0, 'no dialog for a refused one');

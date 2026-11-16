@@ -1,7 +1,7 @@
 'use strict';
 // Handler bodies carried from the reviewed 0.5.0 Electron controller. Only the
 // native adapter and awaited startup setter differ; the backup engine is shared.
-const fs = require('node:fs/promises'), path = require('node:path');
+const fs = require('node:fs/promises'), path = require('node:path'), os = require('node:os');
 const engineRoot = process.env.SWB_ENGINE_ROOT || path.resolve(__dirname, '../engine');
 const { Profiles, appFolders } = require(path.join(engineRoot, 'src/profiles.cjs'));
 const { parseKit } = require(path.join(engineRoot, 'src/engine.cjs'));
@@ -178,11 +178,11 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     handle('removeSource', async ({ engine }, folderPath) => {
       backupReady(engine);
       if (typeof folderPath !== 'string' || !engine.config.sources.includes(folderPath)) throw new Error('뺄 폴더를 목록에서 골라 주세요.');
-      if (engine.config.sources.length < 2) throw new Error('백업할 폴더를 하나 이상 남겨 주세요.');
+      if (engine.config.sources.length < 2) throw Object.assign(new Error('백업할 폴더를 하나 이상 남겨 주세요.'), { code: 'LAST_FOLDER' });
       const answer = await dialog.showMessageBox(null, { type: 'question', message: '이 폴더를 백업에서 뺄까요?', detail: `${folderPath}\n\n이 폴더의 백업은 30일 뒤 지워집니다. 그때까지는 되살릴 수 있습니다. 폴더 안의 파일은 그대로 둡니다.`, buttons: ['취소', '빼기'], defaultId: 0, cancelId: 0 });
       if (answer.response !== 1) return state();
       await changeSources(sources => sources.filter(s => s !== folderPath)); return state();
-    }, { lock: false });
+    }, { lock: false, codes: true });
     handle('chooseTarget', async ({ engine, selection }) => { if (engine.isCloud() || engine.config?.repositoryId) throw new Error('설정한 저장소는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업을 보관할 폴더 선택'); if (picked) { profiles.assertLocalTarget(picked[0]); await engine.resetUnfinishedSetup(); selection.target = picked[0]; } return selection.target; }, { lock: false });
     handle('reuseLocalSources', ({ engine, selection }) => { if (!engine.isCloud() || engine.config) throw new Error('새 클라우드 연결에서만 폴더를 가져올 수 있습니다.'); selection.sources = [...(profiles.engines.local.config?.sources || [])]; return state(); }, { lock: false });
     handle('setup', async ({ engine, selection }) => { profiles.assertLocalTarget(selection.target); await engine.setup({ sources: selection.sources, parent: selection.target }); return state(); });
@@ -207,15 +207,26 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     handle('resumeAutomatic', async ({ engine }) => { await engine.resumeAutomatic(); profiles.tick(); return state(); });
     handle('probeRestore', ({ engine }) => { engine.assertBackupReady(); return launchJob(engine, () => engine.probeRestore()); });
     handle('checkRepository', async ({ engine }) => { if (engine.isCloud()) { const answer = await dialog.showMessageBox(window, { type: 'question', message: '클라우드에서 백업 전체를 내려받아 점검합니다.', detail: '오래 걸리고 회선을 많이 씁니다.', buttons: ['취소', '전체 점검'], defaultId: 0, cancelId: 0 }); if (answer.response !== 1) throw new Error('전체 점검을 취소했습니다.'); } return launchJob(engine, () => engine.checkRepository()); });
-    handle('restoreLatest', async ({ engine }) => {
+    // Where restored files go (화면 세션 부탁 2): `{ place: 'default' }` is 「다운로드 › 되살린 파일 (<날짜>)」 without a
+    // dialog, anything else asks for a folder as before. A place that overlaps the backed-up folders is OUTPUT_UNSAFE.
+    async function restorePlace(input, title) {
+      if (input?.place !== undefined && !['default', 'pick'].includes(input.place)) throw Object.assign(new Error('되살릴 자리를 확인하지 못했습니다.'), { code: 'BAD_INPUT' });
+      if (input?.place === 'default') {
+        const known = await host('folders.downloads', []).catch(() => null);
+        return { parent: typeof known === 'string' && path.isAbsolute(known) ? known : path.join(os.homedir(), 'Downloads'), named: true };
+      }
+      const picked = await folder(title);
+      return picked ? { parent: picked[0], named: false } : null;
+    }
+    handle('restoreLatest', async ({ engine }, input) => {
       if (engine.config?.health?.status === 'attention') {
         const answer = await dialog.showMessageBox(window, { type: 'warning', message: '백업 점검을 아직 마치지 못했습니다.', detail: '복구를 시도하고 파일 내용을 검증합니다. 일부 파일은 복구되지 않을 수 있습니다.', buttons: ['취소', '복구 시도'], defaultId: 0, cancelId: 0 });
         if (answer.response !== 1) throw new Error('복구를 취소했습니다.');
       }
-      const picked = await folder('복구한 파일을 담을 별도 폴더 선택'); if (!picked) throw new Error('복구를 취소했습니다.');
-      profiles.assertOutput(picked[0]);
-      return launchJob(engine, () => engine.restoreLatest({ parent: picked[0] }));
-    });
+      const place = await restorePlace(input, '복구한 파일을 담을 별도 폴더 선택'); if (!place) throw new Error('복구를 취소했습니다.');
+      profiles.assertOutput(place.parent);
+      return launchJob(engine, () => engine.restoreLatest(place));
+    }, { codes: true });
     function catalogInput({ engine }, input, keys, required = keys) {
       fileSelection.request(input, keys, required);
       if (!['local', 'b2'].includes(input.profile) || input.profile !== profiles.profile || engine !== profiles.engines[input.profile]) throw fileSelection.issue('CATALOG_EXPIRED');
@@ -238,14 +249,16 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       return context.engine.closeFileCatalog(input);
     }, { read: true, safeErrors: true });
     handle('restoreSelected', async (context, input) => {
-      catalogInput(context, input, ['profile', 'token', 'revision']);
+      const keys = ['profile', 'token', 'revision', 'place'], required = ['profile', 'token', 'revision'];
+      catalogInput(context, input, keys, required);
+      if (input.place !== undefined && !['default', 'pick'].includes(input.place)) throw fileSelection.issue('INVALID_REQUEST');
       context.engine.prepareSelectedRestore(input);
-      const picked = await folder('선택한 파일을 복구할 별도 폴더 선택');
-      if (!picked) return { profile: input.profile, token: input.token, canceled: true };
-      catalogInput(context, input, ['profile', 'token', 'revision']);
-      try { profiles.assertOutput(picked[0]); } catch { throw fileSelection.issue('OUTPUT_UNSAFE'); }
+      const place = await restorePlace(input, '선택한 파일을 복구할 별도 폴더 선택');
+      if (!place) return { profile: input.profile, token: input.token, canceled: true };
+      catalogInput(context, input, keys, required);
+      try { profiles.assertOutput(place.parent); } catch { throw fileSelection.issue('OUTPUT_UNSAFE'); }
       context.engine.prepareSelectedRestore(input);
-      const started = launchJob(context.engine, () => context.engine.restoreSelected({ token: input.token, revision: input.revision, parent: picked[0] }));
+      const started = launchJob(context.engine, () => context.engine.restoreSelected({ token: input.token, revision: input.revision, ...place }));
       return { profile: input.profile, token: input.token, started: true, state: started };
     }, { safeErrors: true });
     handle('openSelectedRestoreFolder', async (context, input) => {

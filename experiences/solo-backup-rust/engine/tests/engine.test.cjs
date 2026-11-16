@@ -80,6 +80,29 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
       assert.equal(digest(await fs.readFile(path.join(source, name))), digest(data));
     }
   });
+  await t.test('a restore writes its own failure and never the backups\'; the default place gets 「되살린 파일 (<날짜>)」 (화면 세션 부탁 2 · 4)', async () => {
+    const before = { lastError: engine.config.lastError, health: engine.config.health.status };
+    engine.config.lastError = '지난 백업 실패';
+    // A restore that fails is the restore's failure: the backups' failure stays as it was, and so does it after a success.
+    await assert.rejects(engine.restoreLatest({ parent: path.join(root, '없는 자리') }));
+    assert.equal(engine.config.lastError, '지난 백업 실패');
+    assert.equal(engine.config.lastRestoreError.code, 'ENOENT', 'the code the failure carried (a place that is gone)');
+    assert.ok(Number.isFinite(Date.parse(engine.config.lastRestoreError.at)));
+    assert.deepEqual(engine.getState().lastRestoreError, engine.config.lastRestoreError);
+    await assert.rejects(engine.restoreLatest({ parent: source }), (e) => e.code === 'OUTPUT_UNSAFE');
+    assert.equal(engine.config.lastRestoreError.code, 'OUTPUT_UNSAFE');
+    const place = path.join(root, '다운로드'); await fs.mkdir(place);
+    await engine.restoreLatest({ parent: place, named: true });
+    assert.equal(engine.config.lastRestoreError, null, 'a restore that worked clears only its own failure');
+    assert.equal(engine.config.lastError, '지난 백업 실패');
+    const d = new Date(clock), name = `되살린 파일 (${d.getMonth() + 1}월 ${d.getDate()}일)`;
+    assert.equal(engine.config.lastRestore.path, path.join(await fs.realpath(place), name));
+    // Again the same day: beside it, never into it.
+    await engine.restoreLatest({ parent: place, named: true });
+    assert.equal(engine.config.lastRestore.path, path.join(await fs.realpath(place), `${name} 2`));
+    assert.deepEqual((await fs.readdir(place)).sort(), [name, `${name} 2`].sort());
+    engine.config.lastError = before.lastError; await engine.save();
+  });
   const pinnedCatalog = await engine.openFileCatalog();
   const pinnedFile = engine.queryFileCatalog({ token: pinnedCatalog.token, query: '한글 문서', offset: 0 }).rows[0];
   engine.setFileSelection({ token: pinnedCatalog.token, revision: 0, action: 'add', ids: [pinnedFile.id] });

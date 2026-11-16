@@ -58,7 +58,7 @@ class Profiles extends EventEmitter {
   getState() {
     const profiles = {};
     for (const [name, e] of Object.entries(this.engines)) {
-      const s = e.getState(); profiles[name] = { configured: s.configured, mode: s.mode, readOnly: s.readOnly, automatic: s.automatic, lastBackup: s.lastBackup, lastError: s.lastError, credentialRequired: s.credentialRequired, job: s.job, pausedUntil: s.pausedUntil, nextBackupAt: s.nextBackupAt, clockHold: s.clockHold, lastProbe: s.lastProbe, lastSelectedRestore: s.lastSelectedRestore, lastSelectedRestoreError: s.lastSelectedRestoreError };
+      const s = e.getState(); profiles[name] = { configured: s.configured, mode: s.mode, readOnly: s.readOnly, automatic: s.automatic, lastBackup: s.lastBackup, lastError: s.lastError, credentialRequired: s.credentialRequired, job: s.job, pausedUntil: s.pausedUntil, nextBackupAt: s.nextBackupAt, clockHold: s.clockHold, lastProbe: s.lastProbe, lastSelectedRestore: s.lastSelectedRestore, lastSelectedRestoreError: s.lastSelectedRestoreError, lastRestoreError: s.lastRestoreError };
     }
     return { ...this.current.getState(), profile: this.profile, selection: { sources: [...this.selection.sources], target: this.selection.target }, profiles };
   }
@@ -76,7 +76,7 @@ class Profiles extends EventEmitter {
       const up = path.dirname(base); if (up === base) break;
       rest.unshift(path.basename(base)); base = up;
     }
-    if (spellings.some(s => protectedPaths.some(p => overlap(s, p)))) throw new Error('모든 작업 폴더·백업 저장소·앱 설정과 분리된 위치를 선택해 주세요.');
+    if (spellings.some(s => protectedPaths.some(p => overlap(s, p)))) throw Object.assign(new Error('모든 작업 폴더·백업 저장소·앱 설정과 분리된 위치를 선택해 주세요.'), { code: 'OUTPUT_UNSAFE' });
   }
   assertLocalTarget(parent) {
     if (this.engines.b2.config?.sources.some(p => overlap(parent, p))) throw new Error('클라우드 백업 대상 폴더 안에 로컬 저장소를 만들 수 없습니다.');
