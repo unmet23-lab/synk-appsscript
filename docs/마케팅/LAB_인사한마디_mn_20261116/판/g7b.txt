@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the NEXT frame of a stop-motion wobble in a vertical comedy short shot with a FIXED camera (needle-felt miniature diorama photo, portrait 2:3).
+
+The FIRST attached image is the previous frame. Reproduce it EXACTLY — same camera, framing, light, awning, blurred market alley, table, three red baskets of felt tangerines, same grandmother laughing and clapping, same Mongle in the same place on the left of the table, and the SAME tall column of ELEVEN tangerines on Mongle's head (same tangerines, same leaves).
+
+CHANGE ONLY: the tangerine column now curves and leans strongly to the RIGHT instead of the left (a mirror of the previous lean, each tangerine still touching the one below — nothing floats; the whole column including its top tangerine stays between 18% and 50% of the image width, clear of the grandmother), and Mongle tilts its whole body to the LEFT to keep balance, eyes huge and round in panic, mouth a small wobbly 'o', two sweat drops flying the other way. The grandmother is in the next instant of the same laugh: eyes squeezed shut, mouth wide open, hands just clapped together.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, ever.
+Exactly ONE Mongle and ONE grandmother, nobody else. Absolutely no text, letters, numbers, Hangul, logos, price tags, speech bubbles, symbols or watermarks anywhere.

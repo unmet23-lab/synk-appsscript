@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "감사합니다!",
+ "dur": 0.956,
+ "words": [
+  {
+   "text": "감사합니다!",
+   "start": 0.05,
+   "end": 0.956
+  }
+ ],
+ "source": {
+  "key": "5dd45f2f0b737cb19312ae4c5be3956f",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "흔들리는 귤 탑을 머리에 인 채 몽글이 조심조심 고개 숙여 할머니께 인사한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 502
+ }
+}

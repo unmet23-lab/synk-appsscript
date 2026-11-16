@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the two characters' poses and faces and the tangerines on the mascot's head, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, stall, basket, fruit and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm soft morning light, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look, light and the idea of a mascot sitting on a wooden counter — not its café, cups, shelves or barista).
+
+FORMAT: portrait 2:3. Camera exactly at the height of the stall table top, looking straight at the stall. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: one fruit stall in a Korean traditional market (jeontong sijang), late autumn morning.
+- TOP: a plain striped felt awning (soft orange and cream stripes) fills the top 14% of the image. Below it, the back of the stall is a plain, softly blurred warm market alley (felt shop fronts far away, out of focus) — keep the area from 14% to 48% of the image height above the LEFT half of the image calm and empty (later a tall tower of tangerines will rise there).
+- STALL TABLE: a wooden felt market table whose top surface runs across the whole image at about 62% of the image height; its front edge faces the camera.
+- On the RIGHT part of the table (from about 52% to 88% of the image width): three bright red plastic market baskets (the classic Korean red baskets), each heaped with a small pyramid of bright orange felt tangerines with tiny green felt leaves. No price cards, no signs.
+- GRANDMA (the stall owner): a felt doll of a Korean grandmother in her late sixties, sitting on a low stool BEHIND the table on the right side, visible from the waist up above the table, her head at about 38% of the image height and centred at about 72% of the image width. Short curly grey perm, a quilted padded vest in muted plum over a cream knit, a flowery apron, cloth arm sleeves (tosi). Bead-like friendly eyes, round cheeks. In THIS panel she is simply busy and ordinary: looking DOWN at the tangerines she is arranging with both hands, a plain calm neutral face — not angry, not frowning, just focused on her work.
+- MONGLE (the mascot from the SECOND attached image) sits ON the LEFT part of the table top, its scalloped hem resting on the table, the middle of the hem at about 30% of the image width and at about 62% of the image height, its body about 22% of the image width wide. It leans a little toward the tangerine baskets on the right and stares at them silently and hopefully, mouth closed, no expression of speaking.
+- Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+- FRONT: below the table top, the wooden front panel of the stall fills the image from 62% down to the bottom — plain warm wood, nothing on it.
+
+Exactly ONE Mongle and ONE grandmother, nobody else. The space directly above Mongle's head must be empty, calm, out-of-focus background.
+Absolutely no text, letters, numbers, Hangul, logos, price tags, symbols or watermarks anywhere — not on the awning, baskets, apron or background.

@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "와, 맛있어 보여요!",
+ "dur": 1.431,
+ "words": [
+  {
+   "text": "와,",
+   "start": 0.02,
+   "end": 0.101
+  },
+  {
+   "text": "맛있어",
+   "start": 0.283,
+   "end": 0.727
+  },
+  {
+   "text": "보여요!",
+   "start": 0.788,
+   "end": 1.431
+  }
+ ],
+ "source": {
+  "key": "3961a67b0447baa970a05ee4c32d4252",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1117,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 428
+ }
+}

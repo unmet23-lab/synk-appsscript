@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only the two characters' poses and faces and the tangerines change.
+
+The FIRST attached image is the previous panel and the base photo. Reproduce it EXACTLY — same camera position, framing, focus and warm light, same striped orange-and-cream felt awning, same blurred market alley, same wooden table, same red baskets of felt tangerines, same grandmother (grey curly perm, plum quilted vest, cream knit, flowery apron) in the same place, same Mongle in the same place, and the same tangerine tower on Mongle's head, still bent like a fishing rod exactly as in the first image.
+
+CHANGE ONLY: the single tangerine that flew off the top of the tower is now falling down, about one hand's width above the grandmother's grey curly perm, tilted, its tiny green felt leaf trailing upward — a split second before it lands on top of her head. Remove it from where it was in the first image (it is the same tangerine, now lower). The grandmother looks up at it with round surprised eyes and a small O-shaped mouth, both hands raised a little. Mongle watches with round surprised eyes. Keep everything between 12% and 88% of the image width.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped hem with a cream running stitch and glossy black bead eyes. Mongle has NO arms, NO legs, NO hands, ever.
+Exactly ONE Mongle and ONE grandmother. No sweat drops. Absolutely no text, letters, numbers, Hangul, logos, price tags, speech bubbles, symbols or watermarks anywhere.

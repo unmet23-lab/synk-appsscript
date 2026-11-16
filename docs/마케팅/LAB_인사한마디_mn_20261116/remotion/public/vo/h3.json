@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h3",
+ "text": "어머나! 호호호!",
+ "dur": 1.746,
+ "words": [
+  {
+   "text": "어머나!",
+   "start": 0.12,
+   "end": 0.443
+  },
+  {
+   "text": "호호호!",
+   "start": 0.848,
+   "end": 1.596
+  }
+ ],
+ "source": {
+  "key": "a4fe38421734085cc62f64b17e658151",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b",
+   "prev": "손님 머리 위 귤 탑에서 귤 하나가 튕겨 날아와 시장 할머니 머리 위에 톡 떨어졌다. 깜짝 놀랐다가 배를 잡고 웃는다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 413
+ }
+}

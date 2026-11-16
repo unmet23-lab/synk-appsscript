@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "아이고, 예뻐라! 덤이야, 덤!",
+ "dur": 2.656,
+ "words": [
+  {
+   "text": "아이고,",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "예뻐라!",
+   "start": 0.564,
+   "end": 1.047
+  },
+  {
+   "text": "덤이야,",
+   "start": 1.39,
+   "end": 1.873
+  },
+  {
+   "text": "덤!",
+   "start": 2.034,
+   "end": 2.656
+  }
+ ],
+ "source": {
+  "key": "2e280a6844903b1b0bc4c82fab59c1b7",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b",
+   "prev": "많이 파세요! 손님의 다정한 말에 기분이 좋아진 시장 할머니가 귤을 한 개 더 얹어 주며 웃는다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 374
+ }
+}

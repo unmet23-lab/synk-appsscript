@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1116,
+  "lufs": -16
+ },
+ "made": "2026-11-16T01:26:23.228Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "안녕하세요!",
+   "dur": 1.037,
+   "syllablesPerSec": 4.82,
+   "src": "m1.wav",
+   "key": "c1f1be198b21f63e8238c68a80f0257b",
+   "words": 1
+  },
+  {
+   "id": "h1",
+   "text": "어머, 어서 와요~",
+   "dur": 1.797,
+   "syllablesPerSec": 3.34,
+   "src": "h1.wav",
+   "key": "fb9100e8bbe465cd2e1cd954e24bd7b2",
+   "words": 3
+  },
+  {
+   "id": "h0",
+   "text": "자, 여기 있어요~",
+   "dur": 1.424,
+   "syllablesPerSec": 4.21,
+   "src": "h0.wav",
+   "key": "bacc75533472b67569615a1debd28045",
+   "words": 3
+  },
+  {
+   "id": "m2",
+   "text": "와, 맛있어 보여요!",
+   "dur": 1.431,
+   "syllablesPerSec": 4.89,
+   "src": "m2.wav",
+   "key": "3961a67b0447baa970a05ee4c32d4252",
+   "words": 3
+  },
+  {
+   "id": "m3",
+   "text": "많이 파세요!",
+   "dur": 0.964,
+   "syllablesPerSec": 5.19,
+   "src": "m3.wav",
+   "key": "a29fc6e3d444d68f3b1947d47f28a8ef",
+   "words": 2
+  },
+  {
+   "id": "h2",
+   "text": "아이고, 예뻐라! 덤이야, 덤!",
+   "dur": 2.656,
+   "syllablesPerSec": 3.77,
+   "src": "h2.wav",
+   "key": "2e280a6844903b1b0bc4c82fab59c1b7",
+   "words": 4
+  },
+  {
+   "id": "m5",
+   "text": "어, 어, 어어…!",
+   "dur": 1.071,
+   "syllablesPerSec": 3.73,
+   "src": "m5.wav",
+   "key": "128b792b43652cd92d1a2d3c72b929fa",
+   "words": 3
+  },
+  {
+   "id": "m4",
+   "text": "감사합니다!",
+   "dur": 0.956,
+   "syllablesPerSec": 5.23,
+   "src": "m4.wav",
+   "key": "5dd45f2f0b737cb19312ae4c5be3956f",
+   "words": 1
+  },
+  {
+   "id": "h3",
+   "text": "어머나! 호호호!",
+   "dur": 1.746,
+   "syllablesPerSec": 3.44,
+   "src": "h3.wav",
+   "key": "a4fe38421734085cc62f64b17e658151",
+   "words": 2
+  }
+ ]
+}

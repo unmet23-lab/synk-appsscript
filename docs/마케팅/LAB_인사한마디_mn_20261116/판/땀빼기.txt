@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE EDIT — one panel of a needle-felt miniature diorama comedy short shot with a FIXED camera (portrait 2:3).
+
+The FIRST attached image is the panel to edit. Reproduce it EXACTLY — identical camera, framing, focus and warm light, identical striped felt awning, blurred market alley, wooden table, red baskets of felt tangerines, identical grandmother pose, face and clothes, identical Mongle (coral felt body, glossy black bead eyes, same expression, same lean), identical tangerine tower on Mongle's head (same number of tangerines, same size, same bend).
+
+CHANGE ONLY: remove every small cream or white sweat-drop shape that floats in the air next to Mongle's head (they do not touch anything). Fill those spots with the same blurred market background that is behind them. Nothing else changes.
+
+Mongle has NO arms, NO legs, NO hands. Exactly ONE Mongle and ONE grandmother. Absolutely no text, letters, numbers, Hangul, logos, symbols or watermarks anywhere.

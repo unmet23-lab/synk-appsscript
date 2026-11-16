@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "많이 파세요!",
+ "dur": 0.964,
+ "words": [
+  {
+   "text": "많이",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "파세요!",
+   "start": 0.302,
+   "end": 0.964
+  }
+ ],
+ "source": {
+  "key": "a29fc6e3d444d68f3b1947d47f28a8ef",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1117,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 465
+ }
+}

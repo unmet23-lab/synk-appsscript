@@ -767,7 +767,9 @@ async function main(argv, 손 = {}) {
     else if (o.순간예외) console.log('  (--순간예외: 순간 규칙을 다 채웠다 — 까닭은 쓰지 않는다)');
   }
 
-  const 이름 = o.이름 || `맹검-${new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace(/[-:T]/g, '')}${o.눈 === '아르곤' ? '' : `-${o.눈}`}`;
+  // 기본 이름에 프로세스 번호를 붙인다(11-16) — 분까지만 쓰던 이름은 같은 분에 시작한 두 세션이 공용 작업본의 같은 폴더를 써서
+  // 한쪽의 결과.md · 마스코트대조.jpg를 다른 쪽이 덮었다(LAB M51 맹검-202611161153이 다른 편의 그림과 답으로 바뀜).
+  const 이름 = o.이름 || `맹검-${new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace(/[-:T]/g, '')}${o.눈 === '아르곤' ? '' : `-${o.눈}`}-p${process.pid}`;
   const 폴더 = path.join(손.작업뿌리 || 작업뿌리(), 이름);
   fs.mkdirSync(폴더, { recursive: true });
   const 기준 = 기준만들기(o.매체);

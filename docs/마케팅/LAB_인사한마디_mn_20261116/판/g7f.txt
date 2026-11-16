@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one frame of a stop-motion comedy beat in a vertical short shot with a FIXED camera (needle-felt miniature diorama photo, portrait 2:3).
+
+The FIRST attached image is the reference frame. Reproduce it EXACTLY — same camera, framing, focus and warm morning light, same striped orange-and-cream felt awning, same blurred market alley, same wooden table at the same height, same three red plastic baskets of felt tangerines on the right, same grandmother (grey curly perm, plum quilted vest, cream knit, flowery apron, arm sleeves) in the same place behind the table, same Mongle on the left part of the table. Keep everything between 12% and 88% of the image width.
+
+CHANGE ONLY: The next instant of the same laugh. The tangerine still sits on top of the grandmother's curly grey perm but now tilts the other way. The grandmother laughs even harder with her head tilted back and to the side, eyes squeezed shut, mouth wide open, both hands pressed on her apron at her belly. Mongle laughs too: eyes closed in happy arcs, mouth wide open, cheeks red, its whole body squashed a little lower. The column of TEN tangerines on Mongle's head still leans diagonally to the right (each tangerine touching the one below), swaying slightly the other way.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, ever.
+Tangerines are round orange felt balls with tiny green felt leaves; the tower on Mongle's head is a single column, each tangerine resting on the one below (they touch — nothing floats unless the brief says one is flying).
+Exactly ONE Mongle and ONE grandmother, nobody else. Absolutely no text, letters, numbers, Hangul, logos, price tags, speech bubbles, motion lines drawn as graphics, symbols or watermarks anywhere.

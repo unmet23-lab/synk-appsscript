@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e177-401e-79f1-8d7a-85b74ce6049a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one frame with the same fixed composition and the exaggerated tipping-and-gasping beat.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle teeters right as the tangerine tower bends left and the grandmother gasps."}}
+{"type":"turn.completed","usage":{"input_tokens":147882,"cached_input_tokens":126336,"cache_write_input_tokens":0,"output_tokens":1637,"reasoning_output_tokens":502}}
