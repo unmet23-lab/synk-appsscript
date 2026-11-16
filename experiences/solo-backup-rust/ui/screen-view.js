@@ -5,8 +5,10 @@
 
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
-  moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo } from './screen-model.js';
+  moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
+  moveRechoose, moveBlocked, moveStopCode, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
+import { failureText } from './state-store.js';
 
 export const h = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const pp = (w, pair) => josa(w, pair).slice(String(w).length);
@@ -131,7 +133,7 @@ function start2(s, acct, fake, now) {
   const list = picked.length ? picked.map((p) => row(h(folderName(p)), `<span class="meta">${h(p)}</span>`)).join('') : '<p class="empty">아직 고른 폴더가 없습니다.</p>';
   const r = panel(acct?.repoExists ? '이어서 지킬 폴더' : '보호 범위', picked.length ? `폴더 ${count(picked.length)}개` : '', `<div class="rows">${list}</div>
     <div class="act"><button class="lnk sm" type="button" data-act="pick"${run ? ' aria-disabled="true"' : ''}>${picked.length ? '폴더 다시 고르기' : '폴더 고르기'} ${I.rarr}</button></div>
-    <p class="foot">여러 폴더를 한 번에 고를 수 있습니다. 고른 폴더 안의 파일을 모두 암호화해 올립니다.</p>`);
+    <p class="foot">여러 폴더를 한 번에 고를 수 있습니다. 고른 폴더 안의 파일을 모두 암호화해 올립니다. 프로그램 목록과 앱 설정도 하루 한 번 함께 지킵니다. 로그인 정보와 열쇠는 담지 않습니다.</p>`);
   const hint = !picked.length ? '<span class="hint">지킬 폴더를 먼저 골라 주세요.</span>' : needStep && !ack ? '<span class="hint">Google 계정을 정리한 뒤에 누를 수 있습니다.</span>' : '';
   const l = acct?.repoExists
     ? `${kick(`${device} · 이어서 백업`)}${say('이 계정에는', '이미 백업이 있습니다.')}${then('같은 PC를 다시 깔았거나 옛 PC의 연결을 끊었다면, 그 백업에 이어서 이 PC가 매시간 올립니다. 지금까지의 판은 그대로 둡니다.')}${stepBox}${acts([{ id: 'continue', label: '이어서 백업', kind: 'main', disabled: blocked }], hint)}`
@@ -330,22 +332,30 @@ function move4() {
 /* ── 옮겨 오기 · 실제 상태(조율 세션 d32d25233 · 옮겨 오기 상태 moveState · 결과의 뿌리 folders[].roots) ── */
 // 창이 기억하는 것(app.js의 mv): devices · from · preview · first(처음 본 폴더별 수) · choices · open(폴더마다 바꾸기) · dirty(고름을 바꿈) ·
 // counting(공간 다시 세는 중) · state(moveState) · result(moveResult) · added · off(넘기기에서 뺀 폴더) · quit(결과 없이 넘김) · error
-const mvBase = (seg, extra = {}) => ({ kind: 'flow', tone: 'ok', here: '새 PC로 옮겨 오기', seg: [seg, 4], top: [{ id: 'home', label: '닫기' }], back: 'home', ...extra });
+// 걸음은 다섯이다 — 놓을 자리 · 옮겨 오기 · 확인서 · 프로그램과 설정(4b) · 넘기기
+const mvBase = (seg, extra = {}) => ({ kind: 'flow', tone: 'ok', here: '새 PC로 옮겨 오기', seg: [seg, 5], top: [{ id: 'home', label: '닫기' }], back: 'home', ...extra });
 const fromNameOf = (s, mv, acct) => moveDeviceName(mv?.from || mv?.state?.from, acct?.devices, s?.account?.sameInstall);
 /** 진행 · 확인서 · 넘기기의 옛 기기 — 미리 본 기기(mv.from)가 아니라 실제로 옮긴 기기(moveState.from)다(카본 B1) */
 const movedFromOf = (s, mv, acct) => moveDeviceName(mv?.state?.from || mv?.from, acct?.devices, s?.account?.sameInstall);
 const mvActs = { home: { id: 'home', to: 'home' }, 'move-in': { id: 'move-in', to: 'move-1' }, 'move-reload': { id: 'move-reload' }, 'move-quit': { id: 'move-quit' } };
 /** 엔진 값을 아직 읽지 않은 동안(창 기억의 칸이 undefined) — 없음(null)으로 읽어 「없습니다」나 다른 목록을 잠깐 보이지 않게 한다 */
 const mvReading = (s, seg, what, title = '옮겨 오기') => ({ ...mvBase(seg, { tone: 'run' }), acts: mvActs,
-  html: flow(`${kick(`${h(s?.device || '이 PC')} · ${title}`)}${say(what, '읽고 있습니다.')}`, panel(seg === 3 ? '옮겨 오기 확인서' : seg === 4 ? '이 PC에서 지킬 폴더' : '옮겨 올 것', '', '<p class="empty">읽는 중입니다.</p>')) });
+  html: flow(`${kick(`${h(s?.device || '이 PC')} · ${title}`)}${say(what, '읽고 있습니다.')}`, panel(seg === 3 ? '옮겨 오기 확인서' : seg === 5 ? '이 PC에서 지킬 폴더' : '옮겨 올 것', '', '<p class="empty">읽는 중입니다.</p>')) });
 
+/** 옮겨 올 PC 고르기(옛 기기가 둘 이상일 때) — 목록 초과로 막힌 PC에서도 다른 PC로 돌아갈 길이다(Fable FA1) */
+const devPickOf = (s, mv, acct, now, dis) => ((mv?.devices || []).length > 1 ? `<h3>옮겨 올 PC</h3><div class="files" role="group" aria-label="옮겨 올 PC">${mv.devices.map((d) => `<button class="fl" type="button" aria-pressed="${d.from === mv.from}" data-act="move-from" data-from="${h(d.from)}"${dis}><span class="cb" aria-hidden="true"></span><span class="nm">${h(moveDeviceName(d.from, acct?.devices, s?.account?.sameInstall))}</span><span class="vl">마지막 백업 ${h(whenKo(d.lastBackupAt, now))}</span></button>`).join('')}</div>` : '');
 /** 어디에 놓을까요 — 옛 기기 · 폴더마다 놓일 자리(접어 두고 「폴더마다 바꾸기」로 편다) · 드라이브 공간 */
 function move1Real(s, mv, acct, now) {
   const device = h(s?.device || '이 PC'), run = acct?.running || null, top = kick(`${device} · 같은 Google 계정`);
   const quit = { id: 'move-quit', label: '되살리지 않고 이 PC에서 이어서 백업', kind: 'link' };
   if (mv?.error) {
-    const l = `${top}${say('옛 PC의 백업을', '읽지 못했습니다.')}${then(h(mv.error))}${acts([{ id: 'move-reload', label: '다시 읽기', kind: 'main' }, { id: 'home', label: '돌아가기', kind: 'link' }])}`;
-    return { ...mvBase(1, { tone: 'warn' }), html: flow(l, panel('놓을 자리', '', '<p class="empty">읽지 못했습니다.</p>')), acts: mvActs };
+    // 폴더 하나가 100만 개를 넘으면 다시 읽어도 같다 — 되살리기와 이어서 백업으로 보낸다(Fable F1)
+    const blocked = moveBlocked(mv.errorCode);
+    const l = blocked
+      ? `${top}${say('옛 PC의 백업을', '지금은 옮겨 올 수 없습니다.')}${then('파일과 폴더가 100만 개를 넘는 폴더가 있어 옛 PC의 목록을 다 읽지 못했습니다. 필요한 파일은 「파일 되살리기」로 꺼낼 수 있습니다.')}${acts([{ id: 'restore', label: '파일 되살리기', kind: 'main' }, quit, { id: 'home', label: '돌아가기', kind: 'link' }])}`
+      : `${top}${say('옛 PC의 백업을', '읽지 못했습니다.')}${then(h(mv.error))}${acts([{ id: 'move-reload', label: '다시 읽기', kind: 'main' }, { id: 'home', label: '돌아가기', kind: 'link' }])}`;
+    const others = blocked ? devPickOf(s, mv, acct, now, run ? ' aria-disabled="true"' : '') : '';
+    return { ...mvBase(1, { tone: 'warn' }), html: flow(l, panel('놓을 자리', '', `<p class="empty">읽지 못했습니다.</p>${others ? `${others}<p class="foot">다른 PC의 백업은 옮겨 올 수 있을지도 모릅니다. 그 PC를 눌러 보세요.</p>` : ''}`)), acts: mvActs };
   }
   if (Array.isArray(mv?.devices) && !mv.devices.length) {
     const l = `${top}${say('이 계정에는 옮겨 올', 'PC 백업이 없습니다.')}${then('옛 PC가 아직 한 번도 백업을 마치지 않았거나, 다른 Google 계정으로 백업했을 수 있습니다.')}
@@ -359,22 +369,29 @@ function move1Real(s, mv, acct, now) {
   }
   const fromName = fromNameOf(s, mv, acct), dev = (mv.devices || []).find((d) => d.from === mv.from);
   const rows = moveRows(p, mv.choices, mv.first), vol = moveVolumes(p), kit = moveKitNote(p);
-  // 멈춘 옮겨 오기를 이을 때는 그때 고른 자리를 그대로 쓴다 — 끝난 폴더는 고름을 바꿔도 다시 받지 않는다(Fable F6)
-  const resuming = !!(mv.state?.unfinished && mv.state.from === mv.from);
+  // 멈춘 옮겨 오기를 이을 때는 그때 고른 자리를 그대로 쓴다 — 엔진도 놓기 시작한 것은 처음 고른 자리로 잇는다(Fable F6 · E9).
+  // 파일을 놓기 전에 공간이나 목록 때문에 멈췄으면 자리를 다시 고르게 한다(E9 GA1)
+  const rechoose = !!(mv.state?.from === mv.from && moveRechoose(s, mv.state));
+  const resuming = !!(mv.state?.unfinished && mv.state.from === mv.from) && !rechoose;
   const busy = !!mv.counting || !!run, blocked = vol.short.length > 0 && !mv.dirty;
+  // 미리 보기는 이번에 받을 것만 센다(E8 · E11) — 받을 것이 0이고 고름을 바꾸지 않았으면 시작해도 할 일이 없다(Fable F3)
+  // 멈춘 옮겨 오기를 이을 때는 남은 것이 0이어도 누르면 확인서를 마저 쓴다 — 막지 않는다(Fable FA3)
+  const nothing = !!rows.places && !rows.files && !mv.dirty && !resuming, hadResult = !!(mv.state?.resultAt && mv.state.from === mv.from);
   const hint = mv.counting ? '고른 자리로 공간을 다시 세고 있습니다. 폴더가 크면 몇 분 걸립니다.'
     : !rows.places ? '옮겨 올 폴더가 하나도 없습니다. 「놓을 자리」 목록에서 한 폴더 이상 「옮기지 않음」을 풀어 주세요.'
+      : nothing ? (hadResult ? '받을 파일이 없어 시작하지 않습니다. 확인서에서 앞서 옮겨 온 결과를 볼 수 있습니다.' : '받을 파일이 없어 시작하지 않습니다.')
       : blocked ? `${vol.short.map((v) => `${v.drive} 드라이브`).join(', ')}의 빈 공간이 모자랍니다. ${resuming ? '공간을 비운 뒤' : '공간을 비우거나 다른 자리를 고른 뒤'} 「공간 다시 세기」를 누르세요.`
         : mv.dirty ? '누르면 고른 자리로 공간을 한 번 더 센 뒤 시작합니다.' : '누르면 바로 시작합니다. 끝날 때까지 파일 되살리기와 다른 일은 기다립니다.';
   const last = dev?.lastBackupAt ? `마지막 백업은 ${h(whenKo(dev.lastBackupAt, now))}이고, ` : '';
   const l = `${top}${say('어디에 놓을까요?')}
-    ${then(`「${h(fromName)}」의 백업을 찾았습니다. ${last}옮겨 올 것은 <span class="num">${count(rows.files)}개 · ${h(size(rows.bytes))}</span>입니다.`)}
+    ${then(`「${h(fromName)}」의 백업을 찾았습니다. ${last}${rows.files || !rows.places ? `옮겨 올 것은 <span class="num">${count(rows.files)}개 · ${h(size(rows.bytes))}</span>입니다.` : mv.dirty ? '바꾼 자리로는 아직 세지 않았습니다.' : resuming ? '남은 파일이 없습니다. 누르면 확인서를 마저 씁니다.' : `받을 파일이 없습니다.${hadResult ? ' 앞서 옮겨 온 파일은 다시 받지 않습니다.' : ''}`}`)}
     ${notes([...(kit ? [h(kit)] : []), ...(resuming ? ['앞서 멈춘 옮겨 오기를 잇습니다. 그때 고른 자리를 그대로 씁니다.'] : []),
+      ...(rechoose ? [`${h(moveStopText(s, mv.state))} 파일을 놓기 전에 멈춰 자리를 다시 고를 수 있습니다.`] : []),
       '이미 있는 파일은 덮어쓰지 않습니다. 내용이 다르면 「(복구본)」을 붙여 나란히 둡니다.', '창을 닫아도 계속되고, 끊겨도 다시 시작하면 멈춘 곳부터 잇습니다.'])}
     ${p.suggestKeepAsIs ? '<div class="box rise i3"><b>이 PC에 같은 파일이 이미 많습니다.</b>같은 PC를 다시 깐 것이라면 되살리지 않고 이 PC에서 이어서 백업하는 편이 빠릅니다.</div>' : ''}
-    ${acts([{ id: 'move-go', label: '이 자리로 옮겨 오기', kind: 'main', disabled: !rows.places || blocked || busy }, ...(p.suggestKeepAsIs ? [quit] : [])], `<span class="hint">${h(hint)}</span>`)}`;
+    ${acts([nothing && hadResult ? { id: 'move-result', label: '확인서 보기', kind: 'main' } : { id: 'move-go', label: '이 자리로 옮겨 오기', kind: 'main', disabled: !rows.places || blocked || busy || nothing }, ...(p.suggestKeepAsIs ? [quit] : [])], `<span class="hint">${h(hint)}</span>`)}`;
   const dis = busy ? ' aria-disabled="true"' : '';
-  const devPick = (mv.devices || []).length > 1 ? `<h3>옮겨 올 PC</h3><div class="files" role="group" aria-label="옮겨 올 PC">${mv.devices.map((d) => `<button class="fl" type="button" aria-pressed="${d.from === mv.from}" data-act="move-from" data-from="${h(d.from)}"${dis}><span class="cb" aria-hidden="true"></span><span class="nm">${h(moveDeviceName(d.from, acct?.devices, s?.account?.sameInstall))}</span><span class="vl">마지막 백업 ${h(whenKo(d.lastBackupAt, now))}</span></button>`).join('')}</div>` : '';
+  const devPick = devPickOf(s, mv, acct, now, dis);
   const folderRow = (r) => {
     const where = r.place.kind === 'skip' ? '옮기지 않음' : `${placeKo(r.place)}${r.place.path ? ` · ${r.place.path}` : ''}`;
     const opts = mv.open && !resuming && r.modes.length > 1 ? `<span class="mvopt" role="group" aria-label="${h(`「${r.label}」 놓을 자리`)}">${r.modes.map((m) => `<button type="button" aria-pressed="${m.id === r.mode}" data-act="move-mode" data-folder="${h(r.original)}" data-mode="${h(m.id)}"${dis}>${h(m.label)}</button>`).join('')}</span>` : '';
@@ -385,28 +402,36 @@ function move1Real(s, mv, acct, now) {
     ${resuming ? '<p class="foot">이어 하는 동안에는 폴더마다 자리를 바꾸지 않습니다.</p>' : `<div class="act"><button class="lnk sm" type="button" data-act="move-open" aria-expanded="${!!mv.open}">${mv.open ? '접기' : '폴더마다 바꾸기'} ${I.rarr}</button></div>`}
     <h3>드라이브 공간${mv.counting ? ' · 다시 세는 중' : mv.dirty ? ' · 바꾼 자리는 아직 세지 않음' : ''}</h3>${vols}
     ${mv.counting ? '' : `<div class="act"><button class="lnk sm" type="button" data-act="move-count"${dis}>공간 다시 세기 ${I.rarr}</button></div>`}`);
-  return { ...mvBase(1), html: flow(l, r), acts: { ...mvActs, 'move-go': { id: 'move-go', flow: 'moveGo' } } };
+  return { ...mvBase(1), html: flow(l, r), acts: { ...mvActs, 'move-go': { id: 'move-go', flow: 'moveGo' }, 'move-result': { id: 'move-result', to: 'move-3' } } };
 }
 
-/** 옮겨 오고 있습니다 — 엔진 작업(move)의 퍼센트만 쓴다. 시간과 받은 양은 엔진이 주지 않아 짓지 않는다(Fable F16) */
+/** 옮겨 오고 있습니다 — 엔진 작업(move)의 퍼센트와 진행(E7 move.progress)의 받은 양 · 지금 폴더 · 속도. 남은 시간은 속도가 있을 때만 어림한다 */
 function move2Real(s, mv, acct, now) {
   const device = h(s?.device || '이 PC'), job = moveJob(s), st = mv?.state || null, run = acct?.running || null, fromName = movedFromOf(s, mv, acct);
   if (!job && mv?.state === undefined) return mvReading(s, 2, '옮겨 오기 상태를');
   const plan = mv?.preview && (!st?.from || mv.from === st.from) ? moveRows(mv.preview, mv.choices, mv.first) : null;
-  const r = panel('옮겨 올 것', `「${h(fromName)}」에서`, plan ? `<div class="rows">${plan.rows.filter((x) => x.place.kind !== 'skip').map((x) => row(h(x.label), `${count(x.files)}개`, h(size(x.bytes)))).join('')}</div><p class="foot">폴더마다 무엇을 어디에 놓았는지는 끝난 뒤 확인서에 적습니다.</p>`
+  const r = panel('옮겨 올 것', `「${h(fromName)}」에서`, plan ? `<div class="rows">${plan.rows.filter((x) => x.place.kind !== 'skip').map((x) => row(h(x.label), x.files ? `${count(x.files)}개` : '받을 것 없음', x.files ? h(size(x.bytes)) : '')).join('')}</div><p class="foot">폴더마다 무엇을 어디에 놓았는지는 끝난 뒤 확인서에 적습니다.</p>`
     : '<p class="empty">폴더마다 무엇을 어디에 놓았는지는 끝난 뒤 확인서에 적습니다.</p>');
   if (job) {
     const p = job.percent === null || job.percent === undefined || !Number.isFinite(Number(job.percent)) ? null : Math.max(0, Math.min(100, Math.round(Number(job.percent))));
+    // 받은 양은 이번에 받을 양 기준이다 — 이어받기에서는 전체가 남은 양이다(E7)
+    const g = moveProgress(s), amount = g?.total ? `<span class="num">${h(size(g.bytes || 0))} / ${h(size(g.total))}</span>` : plan ? `모두 <span class="num">${h(size(plan.bytes))}</span>` : '';
+    const at = g?.folder ? (plan?.rows.find((x) => x.original.toLowerCase() === g.folder.toLowerCase())?.label || folderName(g.folder)) : '';
+    const eta = g?.rate ? `${g.leftSec !== null ? `남은 시간 ${etaKo(g.leftSec)} · ` : ''}초당 ${h(size(g.rate))}` : '';
     const l = `${kick(`${device} · 옮겨 오는 중`)}${say('옮겨 오고 있습니다.')}
-      ${then(p === null ? '옮겨 올 목록을 폴더마다 읽고 있습니다. 폴더가 크면 몇 분 걸립니다.' : `<b class="num">${p}%</b>${plan ? ` · 모두 <span class="num">${h(size(plan.bytes))}</span>` : ''}`)}
+      ${then(p === null ? '옮겨 올 목록을 폴더마다 읽고 있습니다. 폴더가 크면 몇 분 걸립니다.' : `<b class="num">${p}%</b>${amount ? ` · ${amount}` : ''}${eta ? ` · ${eta}` : ''}`)}
       ${p === null ? '' : `<div class="bar rise i3" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100" aria-label="옮겨 오기"><i data-pct="${p}"></i></div>`}
+      ${at && p !== null ? `<p class="then rise i3">지금 받는 폴더 · ${h(at)}</p>` : ''}
       ${notes(['받은 파일은 디스크에 쓴 뒤 다시 읽어 백업과 같은지 확인하고 자리에 놓습니다.', '창을 닫아도 계속됩니다. 끊겨도 다시 시작하면 멈춘 곳부터 잇습니다.', '끝날 때까지 파일 되살리기와 다른 일은 기다립니다.'])}`;
     return { ...mvBase(2, { tone: 'run' }), html: flow(l, r), acts: mvActs };
   }
   if (st?.unfinished) {
+    // 파일을 놓기 전에 공간이나 목록 때문에 멈췄으면 같은 자리로 다시 눌러도 또 멈춘다 — 자리를 다시 고르게 한다(E9 GA1)
+    const again = moveRechoose(s, st), stuck = moveBlocked(moveStopCode(s, st));
     const l = `${kick(`${device} · 옮겨 오기 멈춤`)}${say('옮겨 오기가', '중간에 멈췄습니다.')}${then(h(moveStopText(s, st)))}
-      ${acts([{ id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', disabled: !!run }, { id: 'home', label: '돌아가기', kind: 'link' }])}`;
-    return { ...mvBase(2, { tone: 'warn' }), html: flow(l, r), acts: { ...mvActs, 'move-resume': { id: 'move-resume', flow: 'moveResume' } } };
+      ${acts([stuck ? { id: 'restore', label: '파일 되살리기', kind: 'main' } : again ? { id: 'move-in', label: '자리 다시 고르기', kind: 'main', disabled: !!run } : { id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', disabled: !!run },
+        ...(st.resultAt ? [{ id: 'move-result', label: '앞서 옮겨 온 결과 보기', kind: 'line' }] : []), { id: 'home', label: '돌아가기', kind: 'link' }])}`;
+    return { ...mvBase(2, { tone: 'warn' }), html: flow(l, r), acts: { ...mvActs, 'move-resume': { id: 'move-resume', flow: 'moveResume' }, 'move-result': { id: 'move-result', to: 'move-3' } } };
   }
   if (st?.resultAt) {
     const l = `${kick(`${device} · 옮겨 오기 끝`)}${say('옮겨 오기를', '마쳤습니다.')}${then('무엇을 어디에 놓았는지 확인서에 적었습니다.')}${acts([{ id: 'move-result', label: '확인서 보기', kind: 'main' }])}`;
@@ -427,50 +452,196 @@ function move3Real(s, mv, acct, now) {
   const t = moveTitle(res), c = res.counts || {}, groups = moveGroups(res), fromName = movedFromOf(s, mv, acct);
   // 「다시 옮겨 오기」는 실패만이 아니라 옮겨 오지 못한 것(주의 묶음)이 있으면 둔다(Fable 화면 검수 F2)
   const copy = Number(c.copy) || 0, side = Number(c.side) || 0, fail = moveLeft(res).n;
+  // 끝난 옮겨 오기를 다시 시작해도 앞선 결과는 새 결과가 적힐 때까지 남는다(E13) — 다시 시작한 것이 멈췄으면 이 확인서는 그 앞의 것이다
+  const older = !!(mv?.state?.unfinished && !moveJob(s));
+  // 프로그램을 까는 동안에는 옮겨 오기를 다시 시작하지 않는다 — 엔진이 거절하는데 그 전에 몇 분짜리 공간 세기를 돈다(Fable 4b 덧붙임)
+  const installing = !!s?.move?.reinstall?.running;
   const l = `${kick(`${device} · 옮겨 오기 끝`)}${say(h(t.main), h(t.soft))}${then(h(t.then))}
+    ${older ? `<div class="box rise i3"><b>앞서 마친 옮겨 오기의 확인서입니다.</b>그 뒤 다시 시작한 옮겨 오기는 중간에 멈춰 있습니다. ${h(moveStopText(s, mv.state))}</div>` : ''}
     ${notes([...(copy ? [`「(복구본)」 <b class="num">${count(copy)}</b>개는 이 PC에 같은 이름의 다른 파일이 있어 나란히 두었습니다.`] : []),
       ...(side ? [`<b class="num">${count(side)}</b>개는 저절로 실행되는 자리나 프로그램이 쓰는 자리의 파일이라 「따로 둔 것」에 놓았습니다. 옛 PC에 나쁜 프로그램이 있었더라도 이 PC에서 저절로 실행되지 않게 하려는 것입니다.`] : []),
-      ...(fail ? ['다시 옮겨 오면 백업을 처음부터 다시 받아 견주고, 이미 놓은 파일은 그대로 둡니다.'] : []), '옛 PC 백업은 지우지 않고 그대로 둡니다.'])}
-    ${acts([{ id: 'move-next', label: '다음 · 백업 켜기', kind: 'main', disabled: !!run }, ...(fail ? [{ id: 'move-again', label: '다시 옮겨 오기', kind: 'line', disabled: !!run }] : [])],
-      `<span class="hint">${mv.counting ? '다시 옮겨 오기 전에 빈 공간을 세고 있습니다. 폴더가 크면 몇 분 걸립니다.' : '아직 이 PC는 백업하지 않습니다. 다음 화면에서 옛 PC 연결을 끊고 이 PC로 이어서 백업합니다.'}</span>`)}`;
-  const total = Object.entries(c).filter(([k]) => k !== 'folder-skip').reduce((n, [, v]) => n + (Number(v) || 0), 0);
-  const counts = moveCounts(res).map((x) => row(h(x.label), x.key === 'fail' ? `<span class="x">${count(x.n)}개</span>` : `${count(x.n)}${x.key === 'folder-skip' ? '곳' : '개'}`)).join('');
+      ...(fail && !older ? ['다시 옮겨 오면 앞서 놓고 그대로인 파일은 다시 받지 않습니다. 못 옮긴 파일, 「(복구본)」으로 둔 파일, 견주지 못한 파일, 그 뒤 바뀐 파일은 다시 받습니다.'] : []), '옛 PC 백업은 지우지 않고 그대로 둡니다.'])}
+    ${acts([{ id: 'move-next', label: '다음 · 프로그램과 설정', kind: 'main', disabled: !!run },
+      // 다시 시작했다가 멈춘 옮겨 오기는 엔진이 멈춘 곳부터 잇는다 — 「다시」(처음부터)가 아니라 「이어서」다(카본 C6)
+      ...(older ? [{ id: 'move-resume', label: '이어서 옮겨 오기', kind: 'line', disabled: !!run || installing }] : fail ? [{ id: 'move-again', label: '다시 옮겨 오기', kind: 'line', disabled: !!run || installing }] : [])],
+      `<span class="hint">${mv.counting ? '다시 옮겨 오기 전에 빈 공간을 세고 있습니다. 폴더가 크면 몇 분 걸립니다.' : installing && (fail || older) ? '프로그램을 깔고 있어, 다 깐 뒤에 다시 옮겨 올 수 있습니다.' : '다음 화면에서 옛 PC의 프로그램을 다시 깔고 설정을 되돌립니다. 아직 이 PC는 백업하지 않습니다.'}</span>`)}`;
+  // 「그 가운데 내용은 견주지 못함」(unverified)은 OneDrive에 이미 있음의 일부라 합계에 더하지 않는다(E5)
+  const total = Object.entries(c).filter(([k]) => k !== 'folder-skip' && !COUNT_PART.has(k)).reduce((n, [, v]) => n + (Number(v) || 0), 0);
+  const counts = moveCounts(res).map((x) => row(h(x.label), x.key === 'fail' ? `<span class="x">${count(x.n)}개</span>` : `${count(x.n)}${x.key === 'folder-skip' ? '곳' : '개'}`, '', COUNT_PART.has(x.key) ? 'sub' : '')).join('');
+  // 옮겨 온 자리 열기(E6 moveOpen — 결과가 적은 자리만 연다). 지금 디스크에 없는 자리(E15 exists false)는 열 단추를 두지 않는다
+  const places = [...moveRoots(res).list, ...(res.side && side ? [{ path: res.side, label: '따로 둔 것', where: '따로 둔 자리', missing: false }] : [])];
+  const dis = run ? ' aria-disabled="true"' : '';
+  const open = places.length ? `<h3>옮겨 온 자리</h3><div class="files mvlist" role="group" aria-label="옮겨 온 자리">${places.map((x) => `<div class="fl plain mv"><span class="nm">${h(x.label)}</span><span class="vl">${x.missing ? '지금 없음' : h(x.where)}</span><span class="ds">${h(x.path)}</span>${x.missing ? '<span class="why">놓인 파일이 없어 폴더가 만들어지지 않았거나, 그 뒤 옮기거나 지웠습니다.</span>' : `<span class="mvopt"><button type="button" data-act="move-folder" data-path="${h(x.path)}" aria-label="${h(`「${x.label}」 폴더 열기`)}"${dis}>폴더 열기</button></span>`}</div>`).join('')}</div>` : '';
   const more = groups.cut ? ' 이상' : '';
   const grp = groups.list.length ? `<h3>옮기지 않은 것 · 까닭별</h3><div class="files mvlist" role="group" aria-label="옮기지 않은 것">${groups.list.map((g) => `<div class="fl plain mv"><span class="nm">${h(g.label)}</span><span class="vl">${g.tone === 'warn' ? `<span class="x">${count(g.n)}개${more}</span>` : `${count(g.n)}개${more}`}</span><span class="why">${h(g.text)}</span>${g.examples.map((p) => `<span class="ds">${h(p)}</span>`).join('')}</div>`).join('')}</div>${groups.cut ? '<p class="foot">목록이 길어 앞의 2,000개만 남겼습니다. 까닭별 수는 그 안에서 센 것입니다.</p>' : ''}` : '';
-  const r = panel('옮겨 오기 확인서', `「${h(fromName)}」 → ${device}`, `<div class="rows">${counts}${row('합계', `${count(total)}개`)}</div>${grp}${side && res.side ? `<p class="foot">따로 둔 자리 · ${h(res.side)}</p>` : ''}`);
-  return { ...mvBase(3, { tone: t.tone }), html: flow(l, r), acts: { ...mvActs, 'move-next': { id: 'move-next', to: 'move-4' }, 'move-again': { id: 'move-again', flow: 'moveAgain' } } };
+  const r = panel('옮겨 오기 확인서', `「${h(fromName)}」 → ${device}`, `<div class="rows">${counts}${row('합계', `${count(total)}개`)}</div>${grp}${open}`);
+  return { ...mvBase(3, { tone: t.tone }), html: flow(l, r), acts: { ...mvActs, 'move-next': { id: 'move-next', to: 'move-apps' }, 'move-again': { id: 'move-again', flow: 'moveAgain' }, 'move-resume': { id: 'move-resume', flow: 'moveResume' } } };
 }
 
 /** 마지막 걸음 — 지킬 폴더는 옮겨 온 결과의 실제 자리로 채우고(설계 검토 권고 1), 옛 PC의 새 판이 있으면 한 번 더 옮겨 오기를 먼저 권한다(F15) */
 function move4Real(s, mv, acct, now) {
   const device = h(s?.device || '이 PC'), st = mv?.state || null, run = acct?.running || null;
   // 옮겨 온 결과를 읽기 전에는 지킬 폴더를 채우지 않는다 — 고른 폴더로 잠깐 그린 목록을 넘기지 않게(결과 없이 넘기기는 quit)
-  if (mv?.result === undefined && !mv?.quit) return mvReading(s, 4, '옮겨 온 자리를', '마지막 걸음');
+  if (mv?.result === undefined && !mv?.quit) return mvReading(s, 5, '옮겨 온 자리를', '마지막 걸음');
   const take = moveTakeList(s, mv), res = take.result, n = take.checked.length;
   const fromName = st?.from || mv?.from ? movedFromOf(s, mv, acct) : '', old = writerName(s, acct?.devices) || fromName || '옛 PC';
   const fresh = res ? moveFresh(mv?.devices, st, res) : null;
   const needStep = !!s?.account?.googleStepRequired, ack = !!acct?.googleAck;
   // 내용이 없는 연결 같은 건너뜀은 빼고, 옮기지 못했거나 견주지 못한 것만 센다(엔진이 남긴 앞 2,000개 안에서)
   const g = res ? moveLeft(res) : null;
-  const hint = mv?.counting ? '한 번 더 옮겨 오기 전에 빈 공간을 세고 있습니다. 폴더가 크면 몇 분 걸립니다.' : !n ? '지킬 폴더를 하나 이상 고르세요.' : n > 30 ? '지킬 폴더는 30곳까지입니다. 몇 곳을 빼 주세요.'
+  // 프로그램을 까는 동안에는 넘기지 않는다 — 넘기면 첫 백업이 엔진 작업을 잡아 깐 뒤의 설정 되돌리기가 거절된다(Fable 4b D1 · 권고 1)
+  const installing = !!s?.move?.reinstall?.running, left = checksLeft(mv?.apps?.checks);
+  const hint = mv?.counting ? '한 번 더 옮겨 오기 전에 빈 공간을 세고 있습니다. 폴더가 크면 몇 분 걸립니다.' : installing ? '프로그램을 다 깐 뒤에 넘길 수 있습니다. 「프로그램과 설정」에서 진행을 볼 수 있습니다.'
+    : !n ? '지킬 폴더를 하나 이상 고르세요.' : n > 30 ? '지킬 폴더는 30곳까지입니다. 몇 곳을 빼 주세요.'
     : needStep && !ack ? 'Google에서 잃어버린 기기를 지운 뒤 「Google에서 지웠습니다」를 눌러 주세요.' : '누르면 Google 로그인을 한 번 더 합니다.';
   const l = `${kick(`${device} · 마지막 걸음`)}${say(`「${h(old)}」 연결을`, '끊고 이어서 백업합니다.')}
     ${then(`끊으면 이 PC가 같은 백업에 이어서 매시간 올립니다. 백업하는 기기는 한 번에 하나라, 「${h(old)}」${pp(old, '은/는')} 그때부터 백업하지 않습니다. 지금까지의 판은 그대로 둡니다.`)}
-    ${fresh ? `<div class="box rise i3"><b>옮겨 온 뒤 「${h(fromName)}」${pp(fromName, '이/가')} 다시 백업했습니다.</b>그 사이 바뀐 파일은 이 PC에 없습니다. 한 번 더 옮겨 오면 바뀐 파일을 받고, 이미 있는 파일과 내용이 다르면 「(복구본)」으로 나란히 둡니다.</div><div class="act rise i3"><button class="lnk sm" type="button" data-act="move-again"${run ? ' aria-disabled="true"' : ''}>한 번 더 옮겨 오기 ${I.rarr}</button></div>` : ''}
+    ${fresh ? `<div class="box rise i3"><b>옮겨 온 뒤 「${h(fromName)}」${pp(fromName, '이/가')} 다시 백업했습니다.</b>그 사이 바뀐 파일은 이 PC에 없습니다. 한 번 더 옮겨 오면 바뀐 파일을 받고, 이미 있는 파일과 내용이 다르면 「(복구본)」으로 나란히 둡니다.</div><div class="act rise i3"><button class="lnk sm" type="button" data-act="move-again"${run || installing ? ' aria-disabled="true"' : ''}>한 번 더 옮겨 오기 ${I.rarr}</button></div>` : ''}
     ${stepBoxOf(needStep, ack)}
     ${notes([...(g?.failed ? [`옮겨 오지 못한 파일(${count(g.failed)}개${g.cut ? ' 이상' : ''})은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
       ...(g?.unverified ? [`내용을 견주지 못한 파일(${count(g.unverified)}개${g.cut ? ' 이상' : ''})은 이 PC에 있던 것을 그대로 두었고, 백업의 것은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
       ...(!res && st?.unfinished ? ['옮겨 오기를 마치지 않았습니다. 옮겨 오지 않은 파일은 옛 PC 백업에 그대로 있습니다.'] : []),
-      ...(res ? ['프로그램 다시 깔기와 앱 설정 되돌리기는 다음 업데이트에서 이 자리에 열립니다.'] : [])])}
-    ${acts([{ id: 'move-take', label: '끊고 이 PC로 이어서 백업', kind: 'main', icon: 'google', disabled: !n || n > 30 || (needStep && !ack) || !!run },
+      ...(res ? ['넘기면 이 PC가 백업을 시작해 「프로그램과 설정」을 다시 열 수 없습니다. 깔 프로그램과 다시 로그인할 곳은 넘기기 전에 보세요.'] : [])])}
+    ${res ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="move-apps-open"${run ? ' aria-disabled="true"' : ''}>프로그램과 설정${installing ? ' · 까는 중' : left ? ` · 다시 로그인할 곳 ${count(left)}곳 남음` : ''} ${I.rarr}</button></div>` : ''}
+    ${acts([{ id: 'move-take', label: '끊고 이 PC로 이어서 백업', kind: 'main', icon: 'google', disabled: !n || n > 30 || (needStep && !ack) || !!run || installing },
       res ? { id: 'move-release', label: '끊지 않고 이 PC는 백업하지 않기', kind: 'link', disabled: !!run } : { id: 'home', label: '돌아가기', kind: 'link' }], `<span class="hint">${h(hint)}</span>${gcancel(acct)}`)}`;
   const dis = run ? ' aria-disabled="true"' : '';
-  const list = take.list.map((x) => `<button class="fl" type="button" role="checkbox" aria-checked="${!take.isOff(x.path)}" data-act="move-root" data-root="${h(x.path)}"${dis}><span class="cb" aria-hidden="true"></span><span class="nm">${h(x.label)}</span><span class="vl">${h(x.where)}</span><span class="ds">${h(x.path)}</span></button>`).join('');
+  // 지금 이 PC에 없는 자리(E15)는 체크하지 못하게 둔다 — 넘기기가 없는 폴더를 통째로 거절한다
+  const list = take.list.map((x) => `<button class="fl" type="button" role="checkbox" aria-checked="${!take.isOff(x.path)}" data-act="move-root" data-root="${h(x.path)}"${run || x.missing ? ' aria-disabled="true"' : ''}><span class="cb" aria-hidden="true"></span><span class="nm">${h(x.label)}</span><span class="vl">${x.missing ? '지금 없음' : h(x.where)}</span><span class="ds">${h(x.path)}</span>${x.missing ? '<span class="why">이 PC에 없는 폴더라 넣지 않았습니다. 놓인 파일이 없었거나 그 뒤 옮겼을 수 있습니다.</span>' : ''}</button>`).join('');
+  const gone = take.list.filter((x) => x.missing).length;
   const r = panel('이 PC에서 지킬 폴더', n ? `${count(n)}곳` : '', `<div class="files" role="group" aria-label="지킬 폴더">${list || '<p class="empty">아직 고른 폴더가 없습니다.</p>'}</div>
     <div class="act"><button class="lnk sm" type="button" data-act="move-add"${dis}>폴더 더하기 ${I.rarr}</button></div>
-    <p class="foot">${res ? '옮겨 온 자리를 골라 두었습니다. 「따로 둔 것」은 넣지 않았습니다.' : '고른 폴더를 이 PC에서 매시간 올립니다. 이 PC의 파일은 옛 백업으로 되살리지 않습니다.'}${take.cut ? ' 한 폴더의 파일이 여러 자리로 흩어져 목록에 없는 자리가 있습니다. 필요하면 「폴더 더하기」로 고르세요.' : ''}</p>`);
-  return { ...mvBase(4, { back: res ? 'move-3' : 'home' }), html: flow(l, r),
-    acts: { ...mvActs, 'move-take': { id: 'move-take', flow: 'moveTake', account: true, google: true }, 'move-release': { id: 'move-release', flow: 'moveRelease' }, 'move-again': { id: 'move-again', flow: 'moveAgain' }, 'google-ack': { id: 'google-ack' } } };
+    <p class="foot">${res ? '옮겨 온 자리를 골라 두었습니다. 「따로 둔 것」은 넣지 않았습니다.' : '고른 폴더를 이 PC에서 매시간 올립니다. 이 PC의 파일은 옛 백업으로 되살리지 않습니다.'}${gone ? ` 이 PC에 없는 ${count(gone)}곳은 뺐습니다.` : ''}${take.cut ? ' 한 폴더의 파일이 여러 자리로 흩어져 목록에 없는 자리가 있습니다. 필요하면 「폴더 더하기」로 고르세요.' : ''}</p>`);
+  return { ...mvBase(5, { back: res ? 'move-apps' : 'home' }), html: flow(l, r),
+    acts: { ...mvActs, 'move-take': { id: 'move-take', flow: 'moveTake', account: true, google: true, wait: 180000 }, 'move-release': { id: 'move-release', flow: 'moveRelease' }, 'move-again': { id: 'move-again', flow: 'moveAgain' }, 'google-ack': { id: 'google-ack' },
+      'move-apps-open': { id: 'move-apps-open', to: 'move-apps' } } };
+}
+
+/* ── 옮겨 오기 4b · 프로그램과 설정(엔진 reinstallList · reinstall · restoreSettings · checklist, Fable 5.2 설계 검토 D1~D18) ── */
+// 창이 기억하는 것(mv.apps): list(reinstallList, 못 읽으면 null) · listError · picks(고른 것) · open(펼친 묶음) · checks(checklist) ·
+// settings(restoreSettings, 못 하면 settingsError) · restoring · names(깐 프로그램의 이름 — 표 밖은 결과에 이름이 없다, D8)
+const MANUAL_MAX = 60;
+/** 다시 로그인할 곳 — 깔기와 상관없이 어느 상태에서도 보인다(Fable D10) */
+function checksHtml(checks, run) {
+  if (checks === undefined) return '<h3>다시 로그인할 곳</h3><p class="foot">읽는 중입니다.</p>';
+  if (!Array.isArray(checks)) return `<h3>다시 로그인할 곳</h3><p class="foot">목록을 읽지 못했습니다.</p><div class="act"><button class="lnk sm" type="button" data-act="app-checks-reload"${run ? ' aria-disabled="true"' : ''}>다시 읽기 ${I.rarr}</button></div>`;
+  // 빈 목록이면 「모두 했습니다」가 아니라 없다고 쓴다(카본 B6 — 엔진은 늘 보이는 셋을 주지만 꼴이 틀린 답을 대비한다)
+  if (!checks.length) return '<h3>다시 로그인할 곳</h3><p class="foot">다시 로그인할 곳을 찾지 못했습니다. 쓰시던 브라우저와 프로그램에 하나씩 로그인해 주세요.</p>';
+  const left = checksLeft(checks), dis = run ? ' aria-disabled="true"' : '';
+  return `<h3>다시 로그인할 곳 · ${left ? `남은 ${count(left)}곳` : '모두 했습니다'}</h3><div class="files" role="group" aria-label="다시 로그인할 곳">${checks.map((c) => `<button class="fl mv" type="button" role="checkbox" aria-checked="${!!c.done}" data-act="app-check" data-check="${h(c.id)}"${dis}><span class="cb" aria-hidden="true"></span><span class="nm">${h(c.text)}</span></button>`).join('')}</div>
+    <p class="foot">로그인 정보와 비밀번호는 옮기지 않습니다. 하나씩 로그인한 뒤 체크해 두면 이 PC에 남습니다.</p>`;
+}
+/** 프로그램 한 줄 — 고르는 단추는 이름 칸만이고, 주소와 명령은 골라 복사할 수 있는 글이다(Fable E16 — 여는 메서드는 아직 없다) */
+function appRowHtml(p, { pick, cmds, last, run }) {
+  const why = last ? `<span class="why">지난번 깔기 · ${h(last.text)}${last.why ? `. ${h(last.why)}` : ''}</span>` : '';
+  const name = h(p.name || p.id);
+  const head = pick && !p.installed
+    ? `<button class="pickb" type="button" role="checkbox" aria-checked="${!!p.on}" data-act="app-pick" data-app="${h(p.id)}"${run ? ' aria-disabled="true"' : ''}><span class="cb" aria-hidden="true"></span><span class="nm">${name}</span></button>`
+    : `<span class="nm">${name}</span>`;
+  const vl = p.installed ? '이미 깔려 있음' : p.scope === 'outside' ? h(p.publisher || '') : h(p.scopeKo);
+  const lic = p.scope === 'outside' ? (p.license ? `사용권 · ${h(p.license)}` : `사용권 주소를 읽지 못했습니다 · winget show --id ${h(p.id)} -e`) : p.license ? `사용권 · ${h(p.license)}` : '';
+  const more = cmds ? `${p.site ? `<span class="ds url">공식 · ${h(p.site)}</span>` : ''}${lic ? `<span class="ds url">${lic}</span>` : ''}<span class="ds cmd">${h(p.command || `winget install --id ${p.id} -e`)}</span>` : '';
+  return `<div class="fl plain mv app">${head}<span class="vl">${vl}</span>${more}${why}</div>`;
+}
+function moveAppsReal(s, mv, acct, now) {
+  const device = h(s?.device || '이 PC'), apps = mv?.apps || {}, phase = appsPhase(s, apps), run = acct?.running || null, job = s?.move?.reinstall || null;
+  const view = appsRows(apps.list, apps.picks), names = { ...view.names, ...(apps.names || {}) }, out = appsOutcome(job, names);
+  const lastOf = new Map((out?.rows || []).map((r) => [r.id, r]));
+  const acts0 = { ...mvActs, 'apps-go': { id: 'apps-go', flow: 'appsGo' }, 'apps-later': { id: 'apps-later', to: 'move-4' }, 'apps-next': { id: 'apps-next', to: 'move-4' },
+    'apps-reload': { id: 'apps-reload', flow: 'appsReload' }, 'apps-restore': { id: 'apps-restore', flow: 'appsRestore' } };
+  const base = mvBase(4, { back: 'move-3' }), checks = checksHtml(apps.checks, run);
+  // 넘긴 뒤에는 이 화면을 열 수 없어(첫 백업이 4b 호출을 막는다, D1 · E19) 「나중에」라 하지 않는다(카본 C4)
+  const later = { id: 'apps-later', label: '프로그램은 건너뛰고 백업 켜기', kind: 'link', disabled: !!run };
+  const top = (t = '프로그램과 설정') => kick(`${device} · ${t}`);
+  const toggle = (id, open, label, name) => `<div class="act"><button class="lnk sm" type="button" data-act="${id}" aria-expanded="${!!open}" aria-label="${h(`${name} ${open ? '접기' : '펴기'}`)}">${open ? '접기' : label} ${I.rarr}</button></div>`;
+  const manualHtml = (always) => {
+    if (!view.manual.length) return '';
+    const open = always || apps.open?.manual, shown = view.manual.slice(0, MANUAL_MAX);
+    return `<h3>직접 까실 것 · ${count(view.manual.length)}개</h3>${open ? `<div class="files mvlist" role="group" aria-label="직접 까실 것">${shown.map((m) => `<div class="fl plain mv app"><span class="nm">${h(m.name)}</span><span class="vl"></span><span class="ds url">${m.site ? `공식 · ${h(m.site)}` : '제작사 누리집에서 받으세요'}</span>${m.command ? `<span class="ds cmd">${h(m.command)}</span>` : ''}</div>`).join('')}</div>${view.manual.length > shown.length ? `<p class="foot">그 밖에 ${count(view.manual.length - shown.length)}개가 더 있습니다.</p>` : ''}` : ''}
+      ${always ? '' : toggle('app-manual', open, 'winget에 없는 프로그램 보기', '직접 까실 것')}`;
+  };
+
+  if (phase === 'running') {
+    const elevated = job.stage === 'elevated', user = job.stage === 'user';
+    // elevated는 확인 창을 기다릴 때와 깔고 있을 때를 함께 덮는다 — 누른 뒤에도 남는 글이라 두 때에 다 맞게 쓴다(Fable D2 · D3)
+    const l = `${top('프로그램 까는 중')}${say('프로그램을', '깔고 있습니다.')}
+      ${then(elevated ? '컴퓨터 전체용 프로그램을 관리자 권한으로 깝니다.' : user ? '사용자용 프로그램을 하나씩 깔고 있습니다. 설치기가 따로 창을 띄울 수 있습니다.' : '깔 준비를 하고 있습니다.')}
+      ${elevated ? '<div class="box rise i3"><b>관리자 확인 창에서 「예」를 눌러 주세요.</b>이어서 뜨는 「SYNK 업무 백업 — 프로그램 다시 깔기」 창에서 「확인」을 한 번 더 누르면 깔기 시작합니다. 이미 누르셨다면 지금 깔고 있습니다.</div>' : ''}
+      ${notes(['프로그램이 많으면 한 시간 넘게 걸릴 수 있습니다. 다 깔면 깐 프로그램의 설정을 저절로 되돌립니다.', '창을 닫으면 앱이 끝나, 남은 프로그램을 깔지 못하고 결과도 볼 수 없습니다. 끝날 때까지 창을 열어 두세요.'])}`;
+    const ran = Array.isArray(apps.ran) ? apps.ran : [];
+    const scopeOf = new Map([...view.table, ...view.others].map((p) => [p.id, p.scope]));
+    const rowState = (id) => { const machine = scopeOf.get(id) === 'machine'; return elevated ? (machine ? '관리자 권한으로 깔 차례' : '그다음 차례') : user ? (machine ? '컴퓨터 전체용 차례 지남' : '하나씩 까는 중') : '준비 중'; };
+    const list = ran.length ? `<div class="files mvlist" role="group" aria-label="까는 프로그램">${ran.map((id) => `<div class="fl plain mv"><span class="nm">${h(names[id] || id)}</span><span class="vl">${rowState(id)}</span></div>`).join('')}</div><p class="foot">줄마다의 결과는 다 깐 뒤에 적습니다.</p>` : '<p class="empty">고른 프로그램을 깔고 있습니다.</p>';
+    return { ...base, tone: 'run', html: flow(l, panel('까는 프로그램', ran.length ? `${count(ran.length)}개` : '', `${list}${checks}`)), acts: acts0 };
+  }
+  if (phase === 'restoring') {
+    const l = `${top('설정 되돌리는 중')}${say('설정을', '되돌리고 있습니다.')}${then('깐 프로그램의 설정 파일을 원래 자리에 놓습니다. 이 PC에 이미 있는 파일은 덮지 않습니다.')}`;
+    return { ...base, tone: 'run', html: flow(l, panel('되돌릴 설정', '', `<p class="empty">되돌리는 중입니다.</p>${checks}`)), acts: acts0 };
+  }
+  if (phase === 'result') {
+    const set = settingRows(apps.settings), rows = out?.rows || [];
+    const redo = (out?.reboot || set.some((a) => a.warn) || !!apps.settingsError) && { id: 'apps-restore', label: apps.settingsError ? '설정 되돌리기' : '설정 다시 되돌리기', kind: apps.settingsError ? 'main' : 'link', disabled: !!run };
+    // 설정 되돌리기가 앞의 일에 밀렸으면 그 말로 쓴다 — 새 PC는 아직 예약 백업을 하지 않는다(카본 C3)
+    const busyCode = ['BUSY', 'JOB_BUSY', 'RUN_ACTIVE'].includes(apps.settingsError);
+    const put = set.some((a) => a.restoredN > 0), aside = set.some((a) => a.asideN > 0);
+    const main = apps.settingsError ? say('설정을', '되돌리지 못했습니다.') : out?.bad ? say(`${count(out.bad)}개는`, '깔지 못했습니다.')
+      : put ? (rows.length ? say('프로그램을 깔고', '설정을 되돌렸습니다.') : say('설정을', '되돌렸습니다.'))
+        : aside ? (rows.length ? say('프로그램을 깔았습니다.', '설정은 따로 두었습니다.') : say('설정을', '따로 두었습니다.'))
+          : rows.length ? say('프로그램을 깔았습니다.', '되돌린 설정은 없습니다.') : say('되돌린 설정이', '없습니다.');
+    const l = `${top()}${main}
+      ${then(apps.settingsError ? (busyCode ? '앞의 일이 끝나지 않아 되돌리지 못했습니다. 잠시 뒤 「설정 되돌리기」를 다시 눌러 주세요.' : h(failureText(apps.settingsError))) : set.length ? `앱 ${count(set.length)}개의 설정을 살폈습니다. 앱마다 무엇을 되돌렸는지 「되돌린 설정」에 적었습니다.` : '되돌릴 앱 설정이 없었습니다.')}
+      ${notes([...(out?.reboot ? ['PC를 다시 켜면 마저 깔리는 프로그램이 있습니다. 다시 켠 뒤 「프로그램과 설정」을 열어 「설정만 되돌리기」를 누르면 그 프로그램의 설정도 되돌립니다.'] : []),
+        ...(out?.admin ? ['표준 사용자 계정이면 컴퓨터 전체용 프로그램은 관리자에게 부탁해야 합니다. 「깐 프로그램」 줄의 명령을 전해 주세요.'] : []),
+        ...(view.manual.length ? [`winget에 없는 ${count(view.manual.length)}개는 「직접 까실 것」을 보고 깔아 주세요.`] : []),
+        '로그인 정보와 비밀번호는 옮기지 않았습니다. 「다시 로그인할 곳」을 하나씩 해 주세요.'])}
+      ${acts([...(apps.settingsError && redo ? [redo] : []), { id: 'apps-next', label: '다음 · 백업 켜기', kind: apps.settingsError ? 'line' : 'main', disabled: !!run },
+        { id: 'apps-reload', label: out?.bad ? '다시 깔기' : '다른 프로그램 더 깔기', kind: 'link', disabled: !!run }, ...(!apps.settingsError && redo ? [redo] : [])])}`;
+    const prog = rows.length ? `<h3>깐 프로그램</h3><div class="files mvlist" role="group" aria-label="깐 프로그램">${rows.map((r) => `<div class="fl plain mv"><span class="nm">${h(r.name)}</span><span class="vl">${r.ok ? h(r.text) : `<span class="x">${h(r.text)}</span>`}</span>${r.why ? `<span class="why">${h(r.why)}</span>` : ''}${!r.ok && r.id ? `<span class="ds cmd">winget install --id ${h(r.id)} -e</span>` : ''}</div>`).join('')}</div>` : '';
+    const exts = (a) => (a.extensions.length ? `${a.extensions.slice(0, 5).map((x) => `<span class="ds cmd">${h(x.command)}</span>`).join('')}${a.extensions.length > 5 ? `<span class="ds">그 밖에 ${count(a.extensions.length - 5)}개</span>` : ''}` : '');
+    const setHtml = set.length ? `<h3>되돌린 설정</h3><div class="files mvlist" role="group" aria-label="되돌린 설정">${set.map((a) => `<div class="fl plain mv"><span class="nm">${h(a.name)}</span><span class="vl">${a.warn ? `<span class="x">${h(a.label)}</span>` : h(a.label)}</span>${a.lines.map((t) => `<span class="why">${h(t)}</span>`).join('')}${exts(a)}</div>`).join('')}</div>` : '';
+    return { ...base, tone: apps.settingsError || out?.bad ? 'warn' : 'ok', html: flow(l, panel('프로그램과 설정', '', `${prog}${setHtml}${manualHtml(false)}${checks}`)), acts: acts0 };
+  }
+  if (phase === 'loading' || phase === 'error') {
+    const l = phase === 'loading'
+      ? `${top()}${say('옛 PC의 프로그램 목록을', '읽고 있습니다.')}${then('이 PC에 깔린 프로그램과 견주느라 몇 분 걸릴 수 있습니다.')}${acts([later])}`
+      : `${top()}${say('옛 PC의 프로그램 목록을', '읽지 못했습니다.')}${then(h(failureText(apps.listError)))}${acts([{ id: 'apps-reload', label: '목록 다시 읽기', kind: 'main', disabled: !!run }, later])}`;
+    return { ...base, tone: phase === 'loading' ? 'run' : 'warn', html: flow(l, panel('옛 PC에서 찾은 프로그램', '', `<p class="empty">${phase === 'loading' ? '읽는 중입니다.' : '읽지 못했습니다.'}</p>${checks}`)), acts: acts0 };
+  }
+  if (phase === 'notready') {
+    // winget이 없으면 깔린 프로그램도 읽지 못해, 설정을 되돌리면 모두 「앱이 없음」으로 따로만 간다 — 설정 되돌리기도 두지 않는다(Fable D5)
+    const l = `${top()}${say('프로그램 설치 도구가', '아직 준비되지 않았습니다.')}${then(h(wingetText(apps.list.wingetStatus)))}
+      ${notes([...(view.table.length || view.others.length ? ['명령은 winget이 준비된 뒤에 PowerShell에 붙여 넣어야 돕니다. 지금은 공식 누리집에서 받아 깔 수 있습니다.'] : []),
+        '이 PC로 넘기면 이 화면을 다시 열 수 없습니다. 깔 프로그램이 있으면 넘기기 전에 하세요.'])}
+      ${acts([{ id: 'apps-reload', label: '목록 다시 읽기', kind: 'main', disabled: !!run }, later])}`;
+    const rows = view.table.length || view.others.length ? `<div class="files mvlist" role="group" aria-label="옛 PC에서 찾은 프로그램">${[...view.table, ...view.others].map((p) => appRowHtml(p, { pick: false, cmds: true, run })).join('')}</div>` : '';
+    return { ...base, tone: 'warn', html: flow(l, panel('옛 PC에서 찾은 프로그램', '', `${rows}${manualHtml(true)}${checks}`)), acts: acts0 };
+  }
+  // 고르기 — 지난 깔기가 설정 되돌리기 없이 끝났으면(모두 관리자 확인을 받지 못함 · 시간 초과 · 결과를 못 읽음) 그 까닭을 먼저 알린다(D9)
+  const n = view.ids.length, over = n > APPS_MAX;
+  const alert = out?.failedStage ? '<div class="box rise i3"><b>깔기 결과를 읽지 못했습니다.</b>깔린 것이 있는지 「목록 다시 읽기」로 확인해 주세요.</div>'
+    : out?.bad ? `<div class="box rise i3"><b>지난번에 ${count(out.bad)}개를 깔지 못했습니다.</b>${out.declined ? '관리자 확인을 받지 못한 프로그램은 다시 누르면 확인 창이 한 번 더 뜹니다. ' : ''}목록의 줄마다 까닭을 적었습니다.</div>` : '';
+  const say1 = view.empty ? say('옛 PC에서 다시 깔', '프로그램을 찾지 못했습니다.') : say('다시 깔 프로그램을', '골라 주세요.');
+  const kitless = mv?.preview && mv.preview.kitAt === null;
+  const then1 = view.empty ? (kitless ? '옛 PC의 프로그램 목록이 백업에 없습니다. 옛 PC가 이 앱으로 백업하면 하루 한 번 담깁니다.' : '프로그램 목록이 백업에 없거나, 이 앱이 다시 깔 수 있는 프로그램이 옛 PC에 없었습니다. 앱 설정은 그대로 되돌릴 수 있습니다.')
+    : '고른 프로그램을 한 번에 깔고, 깐 뒤에 그 프로그램의 설정을 되돌립니다. 로그인 정보와 비밀번호는 옮기지 않으니 끝난 뒤 다시 로그인하세요.';
+  const l = `${top()}${say1}${then(h(then1))}${alert}
+    ${view.machine ? '<div class="box rise i3"><b>관리자 확인이 한 번 뜹니다.</b>「예」를 누른 뒤 뜨는 「SYNK 업무 백업 — 프로그램 다시 깔기」 창에서 「확인」을 한 번 더 누르세요. 표준 사용자 계정이면 Windows가 관리자 계정의 이름과 비밀번호를 묻습니다.</div>' : ''}
+    ${notes([...(view.outside ? ['「그 밖에 winget이 찾은 프로그램」은 설치기가 스스로 관리자 확인을 띄울 수 있습니다. 그 창에는 그 설치기 제작사의 이름이 뜹니다.'] : []),
+      ...(view.noLicense ? [`고른 것 가운데 ${count(view.noLicense)}개는 사용권 주소를 읽지 못했습니다. 그 줄의 winget show 명령으로 계약을 볼 수 있습니다.`] : []),
+      ...(n ? ['프로그램이 많으면 한 시간 넘게 걸릴 수 있습니다. 끝날 때까지 이 창을 열어 두세요.'] : [])])}
+    ${n ? '<div class="notes rise i5"><p class="note">누르면 고른 프로그램의 사용권 계약에 동의하게 됩니다. 계약 주소는 「주소와 명령 보기」에 있습니다.</p></div>' : ''}
+    ${acts([{ id: 'apps-go', label: n ? `고른 ${count(n)}개 깔고 설정 되돌리기` : view.empty ? '설정 되돌리기' : '설정만 되돌리기', kind: 'main', disabled: !!run || over },
+      view.empty ? { ...later, label: '다음 · 백업 켜기' } : later, ...(out?.failedStage ? [{ id: 'apps-reload', label: '목록 다시 읽기', kind: 'link', disabled: !!run }] : []),
+      ...(n ? [{ id: 'apps-restore', label: '설정만 되돌리기', kind: 'link', disabled: !!run }] : [])],
+      over ? `<span class="hint">한 번에 ${count(APPS_MAX)}개까지 깔 수 있습니다. 몇 개를 빼 주세요.</span>` : '')}`;
+  const cmds = !!apps.open?.cmds, rowOf = (p) => appRowHtml(p, { pick: true, cmds, last: lastOf.get(p.id), run });
+  const table = view.table.length ? `<div class="files mvlist" role="group" aria-label="옛 PC에서 찾은 프로그램">${view.table.map(rowOf).join('')}</div>` : '';
+  const others = view.others.length ? `<h3>그 밖에 winget이 찾은 프로그램 · ${count(view.others.length)}개</h3>${apps.open?.others ? `<div class="files mvlist" role="group" aria-label="그 밖에 winget이 찾은 프로그램">${view.others.map(rowOf).join('')}</div>` : '<p class="foot">이 앱이 다시 깔기를 시험한 목록에 없는 프로그램입니다. 고르지 않았습니다.</p>'}${toggle('app-others', apps.open?.others, '펼쳐서 고르기', '그 밖에 winget이 찾은 프로그램')}` : '';
+  const meta = view.empty ? '' : `${count(view.table.length)}개${view.others.length ? ` · 그 밖에 ${count(view.others.length)}개` : ''}${n ? ` · 고름 ${count(n)}개` : ''}`;
+  // 「주소와 명령 보기」는 펼친 줄이 있을 때만 둔다(카본 B5)
+  const cmdToggle = view.table.length || (view.others.length && apps.open?.others) ? toggle('app-cmds', cmds, '주소와 명령 보기', '주소와 명령') : '';
+  const r = panel('옛 PC에서 찾은 프로그램', meta, `${table}${view.empty ? '<p class="empty">다시 깔 프로그램이 없습니다.</p>' : ''}${cmdToggle}${others}${manualHtml(false)}${checks}`);
+  return { ...base, tone: alert ? 'warn' : 'ok', html: flow(l, r), acts: acts0 };
 }
 
 /* ── 사고 되돌리기 ─────────────────────────── */
@@ -733,6 +904,7 @@ export function drawer(s, extra = {}) {
   return `<div class="dh"><h2>설정</h2><button class="tbtn" type="button" data-act="drawer-close">닫기</button></div>
     <p class="who">${h(mail(st))}${mail(st) ? ' · ' : ''}${h(st.device || '이 PC')} · <span class="num">${h(st.version || '0.7.0')}</span></p>
     ${G('지키는 것', `${folders || R('지키는 폴더', '아직 없음')}<div class="dr"><span class="nm">폴더 더하기</span><span class="vl">문서, 바탕화면 밖의 작업 폴더도 지킬 수 있습니다</span><button class="lnk sm" type="button" data-act="add">더하기</button></div>
+      ${st.moveKit?.at ? R('프로그램 목록과 앱 설정', `앱 설정 ${h(count(Number(st.moveKit.apps) || 0))}개도 함께 지킵니다. 새 PC로 옮겨 올 때 씁니다. 로그인 정보와 열쇠는 담지 않습니다`) : ''}
       ${R('쓰는 중인 파일', st.admin === false ? '표준 사용자 계정이라 그 프로그램을 닫았을 때 새로 담깁니다' : st.admin === true ? '관리자 계정이라 4시간에 한 번 따로 읽어 채웁니다' : '다른 프로그램이 쓰는 중인 파일은 그 프로그램을 닫은 뒤 첫 확인 때 담깁니다')}
       ${R('외장 드라이브 사본', '꺼짐', { id: 'external', label: '켜기' })}`)}
     ${G('되찾는 길', `${R('복구 코드', 'Google 계정에 못 들어갈 때 쓰는 종이 한 장 · 다음 업데이트에서 엽니다', { id: 'code', label: '만들기' }, true)}
@@ -787,6 +959,7 @@ export function renderScreen(id, ctx) {
     case 'move-2': return ctx.mv || !fake ? move2Real(s, ctx.mv, ctx.acct, now) : move2();
     case 'move-3': return ctx.mv || !fake ? move3Real(s, ctx.mv, ctx.acct, now) : move3();
     case 'move-4': return ctx.mv || !fake ? move4Real(s, ctx.mv, ctx.acct, now) : move4();
+    case 'move-apps': return moveAppsReal(s, ctx.mv, ctx.acct, now);
     case 'undo-1': return ctx.undo || !fake ? undo1(ctx.undo, now) : undo1Example(now);
     case 'undo-2': return ctx.undo || !fake ? undo2(ctx.undo && { ...ctx.undo, acct: ctx.acct, running: ctx.acct?.running }, now, s) : undo2Example();
     // 계정 칸이 있는 상태(실제 상태의 꼴)는 실제 갈래로 — 끝나 상태에서 빠진 작업(acct.restoreEnded)도 거기서 그린다
@@ -800,5 +973,5 @@ export function renderScreen(id, ctx) {
 }
 
 /** 앱이 그리는 화면 이름 전부(시험 · tauri-driver · 캡처가 돈다) */
-export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list'];
+export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list'];
 export { FAKE };

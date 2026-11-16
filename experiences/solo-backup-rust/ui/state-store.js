@@ -148,5 +148,13 @@ export function failureText(code) {
     NOT_FOUND: '그 요청을 찾지 못했습니다. 창을 닫았다가 다시 열어 주세요.',
     SERVER: 'SYNK 서버에 닿지 못했습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요.',
     NETWORK: 'SYNK 서버에 닿지 못했습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요.',
+    // 옮겨 오기(lastMoveError.code · moveOpen · takeWriteSeat, 조율 세션 c6ae51da6 E4 · E6 · E13 · E15)
+    MOVE_NO_SPACE: '놓을 드라이브의 빈 공간이 모자라 멈췄습니다. 공간을 비운 뒤 다시 눌러 주세요.',
+    MOVE_LIST_TOO_BIG: '파일과 폴더가 100만 개를 넘는 폴더가 있어 지금은 옮겨 올 수 없습니다. 필요한 파일은 「파일 되살리기」로 꺼내 주세요.',
+    MOVE_PROFILE: '이 PC의 사용자 폴더 자리를 확인하지 못해 멈췄습니다. PC를 다시 시작한 뒤 다시 눌러 주세요.',
+    MOVE_SNAPSHOT_GONE: '옛 PC 백업의 그 판을 찾지 못해 멈췄습니다. 옛 PC가 그사이 지난 판을 정리했을 수 있습니다.',
+    MOVE_NETWORK: '인터넷 연결이 끊겨 멈췄습니다. 연결을 확인한 뒤 다시 눌러 주세요.',
+    MOVE_GONE: '그 폴더가 지금 이 PC에 없습니다. 옮기거나 지웠을 수 있습니다.',
+    SOURCES_MISSING: '지킬 폴더 가운데 이 PC에 없는 폴더가 있습니다. 그 폴더를 빼고 다시 눌러 주세요.',
   })[code] || '마치지 못했습니다. 잠시 뒤 다시 눌러 주세요.';
 }

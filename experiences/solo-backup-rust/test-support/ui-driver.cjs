@@ -73,6 +73,12 @@ async function wd(method, url, body) {
     // 옮겨 오기의 읽기 둘(조율 세션 d32d25233 · 2c9464397) — 시작한 적 없는 시험 PC는 멈춘 옮겨 오기도 결과도 없다
     const mvOf = (m) => runAsync(`const done=arguments[arguments.length-1];Promise.resolve(window.backup.${m}&&window.backup.${m}()).then(r=>done(r?{ok:r.ok,code:r.code||null,value:r.value===undefined?'undefined':r.value}:null),()=>done(null))`);
     const mvState = await mvOf('moveState'), mvResult = await mvOf('moveResult');
+    // 4b의 체크 목록과 c6ae51da6의 새 메서드 둘 — 옮겨 온 적 없는 시험 PC는 늘 보이는 셋만 있고, 결과에 없는 자리는 열거나 적지 않는다
+    const callOf = (m, arg) => runAsync(`const done=arguments[arguments.length-1];Promise.resolve(window.backup.${m}&&window.backup.${m}(${arg})).then(r=>done(r?{ok:r.ok,code:r.code||null,err:typeof r.error==='string'&&r.error.length>0,value:r.value===undefined?'undefined':r.value}:null),()=>done(null))`);
+    const mvChecks = await callOf('moveChecklist', ''), mvOpen = await callOf('moveOpen', '{path:"C:/nope"}'), mvNext = await callOf('setNextSources', '{sources:["C:/nope"]}');
+    // 계정의 백업을 연 PC는 늘 보이는 셋을 받는다. 백업이 없는 이 시험 PC는 꾸러미를 찾을 판 목록이 없어 엔진이 글과 함께 거절한다(다리 · 계약은 지났다)
+    check('moveChecklist가 엔진에 닿는다', !!mvChecks && (mvChecks.ok === true ? Array.isArray(mvChecks.value) && ['browser', 'google-2sv', 'certificate'].every((id) => mvChecks.value.some((x) => x.id === id)) : mvChecks.err === true && mvChecks.code !== 'NO_METHOD'), JSON.stringify(mvChecks));
+    check('moveOpen · setNextSources가 결과에 없는 자리를 거절한다(BAD_INPUT)', mvOpen?.code === 'BAD_INPUT' && mvNext?.code === 'BAD_INPUT', JSON.stringify({ mvOpen, mvNext }));
     check('moveState · moveResult가 엔진에 닿는다', mvState?.ok === true && mvState.value && mvState.value.unfinished === false && mvState.value.running === false && mvResult?.ok === true && mvResult.value === null, JSON.stringify({ mvState, mvResult }));
     check('계정 칸에 열쇠 · 토큰 · 비밀번호가 없다', acc && !/token|secret|password|refresh|applicationKey|keyId/i.test(acc.text), acc ? acc.keys.join(',') : '없음');
     const env2 = await run("return {font:document.fonts.check('16px \"SUIT Variable\"'),fonts:[...document.fonts].map(f=>f.family+':'+f.status),webgl:(()=>{const c=document.createElement('canvas');return !!c.getContext('webgl')})(),w:innerWidth,h:innerHeight}");
@@ -91,7 +97,9 @@ async function wd(method, url, body) {
       try { const png = await wd('GET', `/session/${session}/screenshot`); fs.writeFileSync(path.join(out, `${screen === 'home' ? st : screen}.png`), Buffer.from(png, 'base64')); } catch { /* 숨은 창은 찍히지 않을 수 있다 */ }
     }
     // 옮겨 오기 화면 넷은 창의 옮겨 오기 기억(mv)이 있어야 엔진 갈래로 그린다
-    for (const [screen, st, key] of [['move-1', 'home-move-read', 'open'], ['move-2', 'home-move-run', 'run'], ['move-3', 'home-move-read', 'result'], ['move-4', 'home-move-read', 'fresh'], ['home', 'home-move-read', 'stopped']]) {
+    for (const [screen, st, key] of [['move-1', 'home-move-read', 'open'], ['move-2', 'home-move-run', 'run'], ['move-3', 'home-move-read', 'result'], ['move-4', 'home-move-read', 'fresh'], ['home', 'home-move-read', 'stopped'],
+      ['move-apps', 'home-move-read', 'apps-open'], ['move-apps', 'home-move-apps-elevated', 'apps-running'], ['move-apps', 'home-move-apps-done', 'apps-result'], ['move-apps', 'home-move-read', 'apps-notready'],
+      ['move-2', 'home-move-listbig', 'nospace'], ['move-3', 'home-move-read', 'gone']]) {
       const r = await run('const [id,state,now,mv,acct]=arguments;window.__wb.show(id,{state,now,still:true,mv,acct});return {screen:document.getElementById("stage").dataset.screen,text:window.__wb.text()}', [screen, STATES[st], NOW, MOVE_MV[key], MOVE_ACCT]);
       const banned = findBanned(r.text);
       report.screens.push({ screen: `${screen}:${key}`, state: st, shown: r.screen, banned });
@@ -124,7 +132,7 @@ async function wd(method, url, body) {
     // 계정의 백업을 열지 않은 PC에서는 옮겨 오기 화면을 열지 않는다(옮겨 오기 메서드는 연 뒤에만 돈다 — Fable 옮겨 오기 검토 F1)
     await run('window.__wb.open("move")');
     const moveAfter = await run('return document.getElementById("stage").dataset.screen');
-    check('계정의 백업을 열지 않은 PC에서 옮겨 오기는 첫 화면에 머문다', !/^move-[1-4]$/.test(moveAfter), moveAfter);
+    check('계정의 백업을 열지 않은 PC에서 옮겨 오기는 첫 화면에 머문다', !/^move-([1-4]|apps)$/.test(moveAfter), moveAfter);
     await run('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape"}))');
     check('Esc로 설정 서랍이 닫힌다', await run('return document.getElementById("drawer").hidden'));
     // ③ 쪽 오류(앱이 남긴 것)

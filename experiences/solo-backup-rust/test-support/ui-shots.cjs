@@ -110,6 +110,19 @@ const CASES = [
   ['home-move-quit', 'move-4', { name: 'move-4-quit', mv: 'quit', acct: 'MOVE' }],
   ['home-move-read', 'home', { name: 'home-move-stopped', mv: 'stopped', acct: 'MOVE' }], ['home-move-read', 'home', { name: 'home-move-done', mv: 'result', acct: 'MOVE' }],
   ['home-move-run', 'home', { name: 'home-move-run', mv: 'run', acct: 'MOVE' }], ['home-move-read', 'home', { name: 'home-move-read', acct: 'MOVE' }],
+  // 조율 세션 c6ae51da6의 엔진 값(E4 · E9 공간 부족으로 멈춤 · E13 다시 시작한 뒤 멈춤 · E15 없는 자리 · E10 적어 둔 고름)
+  ['home-move-nospace', 'move-2', { name: 'move-2-nospace', mv: 'nospace', acct: 'MOVE' }], ['home-move-listbig', 'move-1', { name: 'move-1-listbig', mv: 'listbig', acct: 'MOVE' }], ['home-move-nospace', 'move-1', { name: 'move-1-nospace-fresh', mv: 'nospaceFresh', acct: 'MOVE' }],
+  ['home-move-read', 'move-3', { name: 'move-3-rerun', mv: 'rerun', acct: 'MOVE' }], ['home-move-read', 'move-3', { name: 'move-3-carried', mv: 'carried', acct: 'MOVE' }], ['home-move-read', 'move-3', { name: 'move-3-gone', mv: 'gone', acct: 'MOVE' }],
+  ['home-move-read', 'move-4', { name: 'move-4-gone', mv: 'gone', acct: 'MOVE' }], ['home-move-saved', 'move-4', { name: 'move-4-saved', mv: 'saved', acct: 'MOVE' }],
+  // 옮겨 오기 4b — 프로그램과 설정(다시 깔기 · 앱 설정 되돌리기 · 다시 로그인할 곳)
+  ['home-move-read', 'move-apps', { name: 'move-apps-loading', mv: 'apps-loading', acct: 'MOVE' }], ['home-move-read', 'move-apps', { name: 'move-apps-pick', mv: 'apps-pick', acct: 'MOVE' }],
+  ['home-move-read', 'move-apps', { name: 'move-apps-open', mv: 'apps-open', acct: 'MOVE' }], ['home-move-read', 'move-apps', { name: 'move-apps-none', mv: 'apps-none', acct: 'MOVE' }],
+  ['home-move-read', 'move-apps', { name: 'move-apps-notready', mv: 'apps-notready', acct: 'MOVE' }], ['home-move-read', 'move-apps', { name: 'move-apps-empty', mv: 'apps-empty', acct: 'MOVE' }],
+  ['home-move-read', 'move-apps', { name: 'move-apps-error', mv: 'apps-error', acct: 'MOVE' }], ['home-move-apps-elevated', 'move-apps', { name: 'move-apps-elevated', mv: 'apps-running', acct: 'MOVE' }],
+  ['home-move-apps-user', 'move-apps', { name: 'move-apps-user', mv: 'apps-running', acct: 'MOVE' }], ['home-move-apps-done', 'move-apps', { name: 'move-apps-restoring', mv: 'apps-restoring', acct: 'MOVE' }],
+  ['home-move-apps-done', 'move-apps', { name: 'move-apps-result', mv: 'apps-result', acct: 'MOVE' }], ['home-move-apps-ok', 'move-apps', { name: 'move-apps-ok', mv: 'apps-ok', acct: 'MOVE' }],
+  ['home-move-apps-declined', 'move-apps', { name: 'move-apps-declined', mv: 'apps-declined', acct: 'MOVE' }], ['home-move-apps-failed', 'move-apps', { name: 'move-apps-failed', mv: 'apps-failed', acct: 'MOVE' }],
+  ['home-move-apps-done', 'move-apps', { name: 'move-apps-settings-error', mv: 'apps-settings-error', acct: 'MOVE' }], ['home-move-apps-elevated', 'move-4', { name: 'move-4-installing', mv: 'apps-running', acct: 'MOVE' }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,

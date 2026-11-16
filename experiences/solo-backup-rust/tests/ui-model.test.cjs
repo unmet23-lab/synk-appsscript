@@ -824,13 +824,14 @@ test('옮겨 오기: 놓일 자리 · 까닭 · 확인서 · 넘길 폴더(조�
   assert.deepEqual(m.moveModes(P[3]).map((x) => x.id), ['original', 'sameDrive', 'newFolder', 'skip']);
   assert.equal(m.moveModes(P[3])[0].label, '「옮겨 온 자료」 아래');
   // 동기화 폴더는 OneDrive만이 아니다(F13) · 동기화 폴더 안을 직접 고르면 공간 경고
-  assert.match(m.moveWhy(P[1], { mode: 'newFolder' }), /동기화 폴더 밖 새 폴더/);
+  assert.match(m.moveWhy(P[1], { mode: 'newFolder' }), /OneDrive 안이라, OneDrive 밖 새 폴더/); // E3 newSync
+  assert.match(m.moveWhy({ ...P[1], newSync: undefined }, { mode: 'newFolder' }), /동기화 폴더 밖 새 폴더/);
   assert.match(m.moveWhy(P[1], { mode: 'original' }), /동기화가 멈출 수 있습니다/);
   assert.match(m.moveWhy({ ...P[0], why: 'old-synced', mode: 'newFolder' }, {}), /온라인에만 있던 파일은 백업에 없으니/);
   assert.doesNotMatch(m.moveWhy({ ...P[0], why: 'new-synced' }, {}), /OneDrive 안이라/);
   // 「옮기지 않음」으로 바꿔도 처음 본 수를 쓰고 합계에서는 뺀다(F12)
   const rows = m.moveRows(MOVE_MV.open.preview, MOVE_MV.open.choices, MOVE_MV.open.first);
-  assert.equal(rows.places, 3); assert.equal(rows.files, 5310 + 420 + 1870);
+  assert.equal(rows.places, 4); assert.equal(rows.files, 5310 + 420 + 1870 + 36);
   assert.equal(rows.rows.find((r) => r.label === '사진').files, 4880);
   assert.equal(m.moveVolumes(MOVE_MV.short.preview).short.length, 1);
   assert.equal(m.moveVolumes({ volumes: [{ volume: 'C:\\', bytes: 1, free: null, enough: null }] }).short.length, 0);
@@ -930,14 +931,17 @@ test('옮겨 오기: 기본 화면 갈래와 화면 넷', async () => {
   assert.doesNotMatch(draw('move-1', read, MOVE_MV.nokit).html, /data-act="move-open"/);
   assert.match(draw('move-1', read, MOVE_MV.open).html, /data-mode="sameDrive"[^>]*>D 드라이브의 같은 자리/);
   assert.match(draw('move-2', run, MOVE_MV.run).html, /aria-valuenow="42"/);
-  assert.doesNotMatch(draw('move-2', run, MOVE_MV.run).html, /잠시 멈추기|남은 시간/);
+  assert.doesNotMatch(draw('move-2', run, MOVE_MV.run).html, /잠시 멈추기/);
+  // 받은 양 · 속도 · 남은 시간은 엔진의 진행(E7)이 있을 때만 쓴다
+  assert.match(draw('move-2', run, MOVE_MV.run).html, /7\.7GB \/ 18\.4GB<\/span> · 남은 시간 약 8분 · 초당 24MB[\s\S]*지금 받는 폴더 · 사진/);
+  assert.doesNotMatch(draw('move-2', { ...run, move: { reinstall: null, progress: null } }, MOVE_MV.run).html, /남은 시간|초당/);
   assert.match(draw('move-2', read, MOVE_MV.stopped).html, /data-act="move-resume"/);
   // 미리 본 기기가 실제로 옮긴 기기와 다르면 진행 화면은 옮긴 기기로 부르고 미리 본 계획을 쓰지 않는다(카본 B1)
   const other = draw('move-2', read, { ...MOVE_MV.stopped, from: 'OLD-DESKTOP', preview: MOVE_MV.plan.preview, first: MOVE_MV.plan.first });
   assert.match(other.html, /「작업 노트북」에서/); assert.doesNotMatch(other.html, /바탕화면/);
   const three = draw('move-3', read, MOVE_MV.result);
   assert.match(three.html, /1개는 옮겨 오지 못했습니다/); assert.doesNotMatch(three.html, /다 옮겨 왔습니다/);
-  assert.equal(three.acts['move-next'].to, 'move-4');
+  assert.equal(three.acts['move-next'].to, 'move-apps'); // 4b — 확인서 다음은 프로그램과 설정
   const four = draw('move-4', read, MOVE_MV.result);
   assert.equal((four.html.match(/data-act="move-root"/g) || []).length, 4);
   assert.doesNotMatch(four.html, /따로 둔 것<\/span><span class="ds">/);
@@ -953,4 +957,258 @@ test('옮겨 오기: 기본 화면 갈래와 화면 넷', async () => {
   // 첫 시작의 「이 PC로 옮겨 오기」는 계정의 백업을 연 뒤 연다(F1)
   const s2 = renderScreen('start-2', { state: STATES['start-read'], model: homeModel(STATES['start-read'], { now: NOW }), now: NOW, acct: {}, fake: true });
   assert.equal(s2.acts.move.flow, 'moveOpen'); assert.doesNotMatch(s2.html, /옮겨 오기는 다음 업데이트에서 열립니다/);
+});
+
+test('옮겨 오기: 조율 세션 c6ae51da6의 엔진 값(E3 · E4 · E5 · E6 · E7 · E9 · E10 · E13 · E14 · E15)을 잇는다', async () => {
+  const m = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { failureText } = await load('state-store.js');
+  const { STATES, NOW, MOVE_MV, MOVE_ACCT } = await load('engine-fixtures.js');
+  const home = (state, move) => m.homeModel(state, { now: NOW, move });
+  const draw = (id, state, mv) => renderScreen(id, { state, model: home(state, mv?.state || null), now: NOW, ui: {}, acct: { ...MOVE_ACCT }, mv, fake: true });
+  const read = STATES['home-move-read'], P = MOVE_MV.plan.preview.folders;
+  // E3 — 「따로 둔 것」은 엔진의 side로 가르고, 옛 PC의 OneDrive 폴더는 일부만 올 수 있다고 쓴다
+  assert.equal(m.movePlace({ original: 'C:\\x', mode: 'original', destination: 'C:\\Users\\a\\x', side: true }).kind, 'side');
+  assert.equal(m.movePlace({ original: 'C:\\x', mode: 'original', destination: 'C:\\Users\\a\\옮겨 온 자료\\따로 둔 것\\x', side: false }).kind, 'moved');
+  const od = P.find((f) => f.partial);
+  assert.match(m.moveWhy(od, {}), /OneDrive 안이던 폴더라 일부만 올 수 있습니다/);
+  assert.match(m.moveWhy({ ...od, partial: false, oldSync: 'other' }, {}), /Dropbox나 Google Drive 같은/);
+  assert.match(m.moveWhy({ ...od, mode: 'oneDriveGaps' }, { mode: 'oneDriveGaps' }), /같은 OneDrive 계정이라/); // 같은 계정이면 일부 경고보다 먼저
+  // E4 · E9 GA1 — 목록 초과(늘 장부 전)로 멈췄으면 자리를 다시 고르게 한다. 공간 부족은 놓기 시작한 뒤 이어 할 때도 나서
+  // 엔진이 처음 자리를 지키므로 이어서 한다(카본 A2 — begun을 받으면 그것으로 가른다). 시작 전의 실패는 이번 실패가 아니다
+  const ns = STATES['home-move-listbig'], st = MOVE_MV.nospace.state, space = STATES['home-move-nospace'], fresh = MOVE_MV.nospaceFresh.state;
+  // 목록 초과는 미리 보기부터 거절되어 자리를 다시 골라도 풀리지 않는다 — 되살리기와 이어서 백업으로 보낸다(Fable F1)
+  assert.equal(m.moveRechoose(ns, st), false); assert.equal(m.moveBlocked('MOVE_LIST_TOO_BIG'), true);
+  assert.equal(home(ns, st).actions[0].id, 'restore'); assert.equal(home(ns, st).actions[1].to, 'move-4');
+  assert.doesNotMatch(home(ns, st).sub, /이어서 옮겨 오면/);
+  assert.match(draw('move-2', ns, MOVE_MV.nospace).html, /data-act="restore"[^>]*>파일 되살리기/);
+  const big = draw('move-1', ns, MOVE_MV.listbig).html;
+  assert.match(big, /지금은 옮겨 올 수 없습니다/); assert.match(big, /data-act="restore"/); assert.match(big, /data-act="move-quit"/); assert.doesNotMatch(big, /data-act="move-reload"/);
+  assert.equal(m.moveRechoose(space, st), false); assert.equal(m.moveRechoose(space, { ...st, begun: false }), true); assert.equal(m.moveRechoose(space, { ...st, begun: true }), false);
+  assert.equal(home(space, st).actions[0].flow, 'moveResume'); assert.match(home(space, st).sub, /공간을 비운 뒤 다시 눌러 주세요/);
+  assert.equal(m.moveRechoose({ ...ns, lastMoveError: { code: 'MOVE_LIST_TOO_BIG', at: '2026-11-13T05:00:00Z' } }, st), false);
+  assert.equal(m.moveRechoose({ ...ns, lastMoveError: { ...ns.lastMoveError, code: 'MOVE_NETWORK' } }, st), false);
+  // 한 파일도 놓기 전(begun 거짓)의 공간 부족은 자리를 다시 고른다
+  assert.equal(home(space, fresh).actions[0].to, 'move-1');
+  assert.equal(home(space, fresh).actions[0].label, '자리 다시 고르기');
+  assert.match(draw('move-2', space, MOVE_MV.nospaceFresh).html, /data-act="move-in"[^>]*>자리 다시 고르기/);
+  const one = draw('move-1', space, MOVE_MV.nospaceFresh).html;
+  assert.match(one, /파일을 놓기 전에 멈춰 자리를 다시 고를 수 있습니다/); assert.match(one, /data-act="move-open"/);
+  assert.doesNotMatch(one, /앞서 멈춘 옮겨 오기를 잇습니다/);
+  for (const code of ['MOVE_NO_SPACE', 'MOVE_LIST_TOO_BIG', 'MOVE_PROFILE', 'MOVE_SNAPSHOT_GONE', 'MOVE_NETWORK', 'MOVE_GONE', 'SOURCES_MISSING']) assert.notEqual(failureText(code), failureText('UNKNOWN_X'), code);
+  assert.match(m.moveStopText({ ...ns, lastMoveError: { ...ns.lastMoveError, code: 'MOVE_NETWORK' } }, st), /인터넷 연결이 끊겨 멈췄습니다[\s\S]*멈춘 곳부터 잇습니다/);
+  // E13 — 다시 시작했다가 멈춰도 앞선 결과가 남는다. 기본 화면은 멈춤이 먼저이고, 확인서는 그 앞의 것이라고 쓴다
+  const rr = MOVE_MV.rerun;
+  assert.equal(home(read, rr.state).id, 'home-move-stopped');
+  assert.match(home(read, rr.state).sub, /앞서 옮겨 온 결과는 그대로 있습니다/);
+  assert.match(draw('move-3', read, rr).html, /앞서 마친 옮겨 오기의 확인서입니다/);
+  assert.doesNotMatch(draw('move-3', read, MOVE_MV.result).html, /앞서 마친 옮겨 오기의 확인서입니다/);
+  assert.match(draw('move-2', read, rr).html, /data-act="move-result"[^>]*>앞서 옮겨 온 결과 보기/);
+  // E5 — OneDrive에서 견주지 못한 수는 따로 센다. 줄로 보이되 합계에는 더하지 않는다(onedrive의 일부)
+  const u = { ...MOVE_MV.ok.result, complete: false, counts: { placed: 10, onedrive: 5, unverified: 2 } };
+  assert.deepEqual(m.moveLeft(u), { n: 2, failed: 0, unverified: 2, cut: false });
+  assert.match(m.moveTitle(u).soft, /2개는 내용을 견주지 못했습니다/);
+  const three = draw('move-3', read, { ...MOVE_MV.ok, result: u }).html;
+  assert.match(three, /그 가운데 내용은 견주지 못함<\/span><span class="v">2개/); assert.match(three, /합계<\/span><span class="v">15개/);
+  // E6 — 옮겨 온 자리마다 「폴더 열기」(결과가 적은 자리만). 「따로 둔 것」이 있으면 그 자리도 연다
+  const res3 = draw('move-3', read, MOVE_MV.result).html;
+  assert.match(res3, /data-act="move-folder" data-path="C:\\Users\\studio\\옮겨 온 자료\\바탕화면"/);
+  assert.match(res3, /data-act="move-folder" data-path="C:\\Users\\studio\\옮겨 온 자료\\따로 둔 것"/);
+  // E15 — 지금 없는 자리는 열 단추 없이 「지금 없음」, 넘기기에서는 체크하지 못하게 뺀다
+  const gone3 = draw('move-3', read, MOVE_MV.gone).html;
+  assert.doesNotMatch(gone3, /data-path="C:\\Users\\studio\\Pictures"/); assert.match(gone3, /사진<\/span><span class="vl">지금 없음/);
+  const take = m.moveTakeList(read, MOVE_MV.gone);
+  assert.ok(!take.checked.some((p) => /Pictures$/.test(p))); assert.equal(take.checked.length, 3);
+  const four = draw('move-4', read, MOVE_MV.gone).html;
+  assert.match(four, /role="checkbox" aria-checked="false" data-act="move-root" data-root="C:\\Users\\studio\\Pictures" aria-disabled="true"/);
+  assert.match(four, /이 PC에 없는 1곳은 뺐습니다/);
+  // 넘기기가 없다고 돌려준 자리(SOURCES_MISSING의 paths → mv.gone)도 뺀다
+  assert.ok(!m.moveTakeList(read, { ...MOVE_MV.result, gone: ['c:\\users\\studio\\documents'] }).checked.some((p) => /Documents$/.test(p)));
+  // E10 — 넘기기 고름은 엔진의 nextSources로 짐작하지 않는다(카본 A3). 옮겨 오기 전에 고른 폴더가 옮겨 온 자리와 겹쳐도 나머지를 끄지 않는다
+  const saved = m.moveTakeList(STATES['home-move-saved'], MOVE_MV.saved);
+  assert.ok(!saved.isOff('C:\\Users\\studio\\Pictures')); assert.ok(!saved.checked.includes('E:\\거래처')); assert.equal(saved.checked.length, 4);
+  // E11 — 넘겨받은 수(carried)는 다른 수의 일부라 합계에 더하지 않고, 이번에 받지 않았다고 말한다
+  const car = draw('move-3', read, MOVE_MV.carried).html;
+  assert.match(car, /합계<\/span><span class="v">12,480개/); assert.match(car, /앞선 옮겨 오기에서 확인한 11,800개는 지금도 크기와 시각이 같아/);
+  assert.doesNotMatch(car, /모두 디스크에 쓴 뒤 다시 읽어/);
+  assert.match(draw('move-3', read, MOVE_MV.result).html, /못 옮긴 파일, 「\(복구본\)」으로 둔 파일, 견주지 못한 파일, 그 뒤 바뀐 파일은 다시 받습니다/); assert.doesNotMatch(draw('move-3', read, MOVE_MV.result).html, /처음부터 다시 받아/);
+  // E8 · E11 — 미리 보기가 받을 것만 세므로 0개일 수 있다
+  const zero = { ...MOVE_MV.plan, state: MOVE_MV.result.state, preview: { ...MOVE_MV.plan.preview, folders: MOVE_MV.plan.preview.folders.map((x) => ({ ...x, files: 0, bytes: 0 })) }, first: null };
+  const z = draw('move-1', read, zero);
+  assert.match(z.html, /받을 파일이 없습니다\. 앞서 옮겨 온 파일은 다시 받지 않습니다/);
+  // 받을 것이 없으면 시작하지 않고 확인서로 보낸다. 고름을 바꿨으면 아직 세지 않았다고 쓴다(Fable F3)
+  assert.match(z.html, /data-act="move-result"[^>]*>확인서 보기/); assert.equal(z.acts['move-result'].to, 'move-3'); assert.doesNotMatch(z.html, /data-act="move-go"/);
+  assert.match(draw('move-1', read, { ...zero, dirty: true }).html, /바꾼 자리로는 아직 세지 않았습니다/);
+  assert.match(draw('move-1', read, { ...zero, state: null }).html, /data-act="move-go" aria-disabled="true"[\s\S]*받을 파일이 없어 시작하지 않습니다/);
+  // E7 — 남은 시간 어림은 속도가 있을 때만
+  assert.equal(m.etaKo(30), '1분 안'); assert.equal(m.etaKo(8 * 60), '약 8분'); assert.equal(m.etaKo(125 * 60), '약 2시간 5분'); assert.equal(m.etaKo(NaN), '');
+  assert.equal(m.moveProgress({ move: { progress: { bytes: 5, total: 10, folder: null, bytesPerSecond: null } } }).leftSec, null);
+});
+
+test('옮겨 오기 4b: 프로그램과 설정(다시 깔기 · 앱 설정 되돌리기 · 다시 로그인할 곳, Fable 5.2 설계 검토 D1~D18)', async () => {
+  const m = await load('screen-model.js');
+  const { renderScreen, SCREENS } = await load('screen-view.js');
+  const { STATES, NOW, MOVE_MV, MOVE_ACCT, MOVE_APPS } = await load('engine-fixtures.js');
+  const draw = (id, state, mv) => renderScreen(id, { state, model: m.homeModel(state, { now: NOW, move: mv?.state || null }), now: NOW, ui: {}, acct: { ...MOVE_ACCT }, mv, fake: true });
+  const read = STATES['home-move-read'];
+  assert.ok(SCREENS.includes('move-apps'));
+  // 자리 — 확인서와 넘기기 사이, 걸음은 다섯(권고 1 · 5). 확인서 단추는 둘
+  const three = draw('move-3', read, MOVE_MV.result);
+  assert.equal(three.acts['move-next'].to, 'move-apps'); assert.match(three.html, /다음 · 프로그램과 설정/); assert.doesNotMatch(three.html, /건너뛰고/);
+  assert.deepEqual(draw('move-apps', read, MOVE_MV['apps-pick']).seg, [4, 5]); assert.deepEqual(draw('move-4', read, MOVE_MV.result).seg, [5, 5]);
+  assert.equal(draw('move-4', read, MOVE_MV.result).back, 'move-apps');
+  // 고르기 — 표는 엔진의 chosen이 기본, 표 밖은 고르지 않음, 이미 깔린 것은 고르지 않는다
+  const rows = m.appsRows(MOVE_APPS.list);
+  assert.deepEqual(rows.ids, ['Git.Git', 'OpenJS.NodeJS.LTS', 'Kakao.KakaoTalk', 'Microsoft.VisualStudioCode', 'Obsidian.Obsidian', 'Anthropic.ClaudeCode']);
+  assert.equal(rows.machine, 3); assert.equal(rows.outside, 0);
+  assert.equal(m.appsRows(MOVE_APPS.list, { 'Google.Chrome': true }).ids.includes('Google.Chrome'), false);
+  const picked = m.appsRows(MOVE_APPS.list, { 'Studio.InvoiceTool': true, 'Git.Git': false });
+  assert.equal(picked.outside, 1); assert.equal(picked.noLicense, 1); assert.ok(!picked.ids.includes('Git.Git'));
+  // winget이 준비되지 않으면 아무것도 고르지 않고, 설정 되돌리기도 두지 않는다(D5)
+  assert.deepEqual(m.appsRows(MOVE_APPS.notReady('WINGET_MISSING')).ids, []);
+  const nr = draw('move-apps', read, MOVE_MV['apps-notready']);
+  assert.match(nr.html, /data-act="apps-reload"[^>]*>목록 다시 읽기/); assert.doesNotMatch(nr.html, /설정만 되돌리기|data-act="apps-go"/);
+  assert.match(m.wingetText({ reason: 'WINGET_OLD' }), /앱 설치 관리자/);
+  // 고르는 화면 — 관리자 확인 안내는 「확인」 단추와 창 제목으로(D3), 사용권 줄은 주 단추 바로 위에 고른 것이 있을 때만(D14)
+  const pick = draw('move-apps', read, MOVE_MV['apps-pick']).html;
+  assert.match(pick, /「SYNK 업무 백업 — 프로그램 다시 깔기」 창에서 「확인」을 한 번 더/); assert.doesNotMatch(pick, /「깔기」를/);
+  assert.match(pick, /사용권 계약에 동의하게 됩니다[\s\S]{0,200}data-act="apps-go"[^>]*>고른 6개 깔고 설정 되돌리기/);
+  assert.match(pick, /한 시간 넘게 걸릴 수 있습니다/);
+  const none = draw('move-apps', read, MOVE_MV['apps-none']).html;
+  assert.match(none, /설정만 되돌리기/); assert.doesNotMatch(none, /사용권 계약에 동의/);
+  const open = draw('move-apps', read, MOVE_MV['apps-open']).html;
+  assert.match(open, /사용권 주소를 읽지 못했습니다 · winget show --id Studio\.InvoiceTool -e/); assert.match(open, /「그 밖에 winget이 찾은 프로그램」은 설치기가 스스로 관리자 확인을/); assert.doesNotMatch(open, /표 밖|표에 없는/); // 카본 C9
+  assert.match(open, /<span class="ds cmd">winget install --id Git\.Git -e<\/span>/); assert.match(open, /공식 · https:\/\/whale\.naver\.com\//);
+  // 줄의 고르는 단추와 주소 글은 따로다(주소를 골라 복사할 수 있게, E16 전)
+  assert.match(open, /<button class="pickb" type="button" role="checkbox" aria-checked="false" data-act="app-pick" data-app="Kakao\.KakaoTalk">/);
+  // 깔고 있는 동안 — 확인 전과 깐 뒤를 함께 덮는 글(D2), 닫으면 생기는 일(D4), 단추 없음, 넘기기와 다시 옮겨 오기는 막는다(권고 1)
+  const el = draw('move-apps', STATES['home-move-apps-elevated'], MOVE_MV['apps-running']);
+  assert.match(el.html, /이미 누르셨다면 지금 깔고 있습니다/); assert.match(el.html, /창을 닫으면 앱이 끝나, 남은 프로그램을 깔지 못하고/);
+  assert.doesNotMatch(el.html, /창을 닫아도 계속/); assert.doesNotMatch(el.html, /data-act="apps-later"|data-act="apps-go"/);
+  assert.doesNotMatch(draw('move-apps', STATES['home-move-apps-user'], MOVE_MV['apps-running']).html, /관리자 확인 창에서/);
+  assert.match(draw('move-4', STATES['home-move-apps-elevated'], MOVE_MV['apps-running']).html, /data-act="move-take" aria-disabled="true"[\s\S]*프로그램을 다 깐 뒤에 넘길 수 있습니다/);
+  assert.match(draw('move-3', STATES['home-move-apps-elevated'], MOVE_MV.result).html, /data-act="move-again" aria-disabled="true"/);
+  // 결과 줄은 설치 목록 확인(listed)을 먼저 본다(D6) — 실패라 했어도 목록에 있으면 깔려 있음
+  assert.equal(m.appResult({ id: 'a', state: 'failed', listed: true }).ok, true);
+  assert.match(m.appResult({ id: 'a', state: 'installed', listed: false }).text, /설치 목록에 없습니다/);
+  assert.match(m.appResult({ id: 'a', state: 'installed', listed: null }).text, /확인하지 못했습니다/);
+  assert.match(m.appResult({ id: 'a', state: 'declined' }).text, /관리자 확인을 받지 못해/); // 누가 눌렀는지 말하지 않는다(D16)
+  assert.match(m.appResult({ id: 'a', state: 'timeout', listed: false }).text, /시간이 지나 끝내지 못했습니다/);
+  assert.match(m.appReason('EXIT_2'), /앞서 시작한 깔기가 아직 돌고 있을 수/); assert.match(m.appReason('WINGET_ADMIN_MISSING'), /관리자에게/);
+  assert.match(m.appReason('EXIT_-1978335189'), /0x8A15002B/); assert.match(m.appReason('EXIT_1603'), /오류 번호 1603/);
+  // 표 밖 프로그램의 결과는 이름이 없어 목록에서 들고 있던 이름을 쓴다(D8)
+  assert.equal(m.appResult({ id: 'VideoLAN.VLC', name: null, state: 'installed', scope: 'outside', listed: true }, { 'VideoLAN.VLC': 'VLC media player' }).name, 'VLC media player');
+  // 설정은 하나라도 깔렸을 때만 저절로 되돌린다(D9). 모두 확인을 받지 못했거나 결과를 못 읽으면 고르는 화면에 남아 까닭을 알린다
+  assert.equal(m.appsOutcome(STATES['home-move-apps-done'].move.reinstall).restore, true);
+  assert.equal(m.appsOutcome(STATES['home-move-apps-declined'].move.reinstall).restore, false);
+  assert.equal(m.appsOutcome(STATES['home-move-apps-failed'].move.reinstall).restore, false);
+  assert.equal(m.appsOutcome({ running: true }), null);
+  const dec = draw('move-apps', STATES['home-move-apps-declined'], MOVE_MV['apps-declined']).html;
+  assert.match(dec, /지난번에 3개를 깔지 못했습니다/); assert.match(dec, /지난번 깔기 · 관리자 확인을 받지 못해 깔지 않았습니다/);
+  assert.match(draw('move-apps', STATES['home-move-apps-failed'], MOVE_MV['apps-failed']).html, /깔기 결과를 읽지 못했습니다/);
+  // 결과 — 주 단추 하나, 밑줄 단추는 해당할 때만(「다시 깔기」 · 「설정 다시 되돌리기」)
+  const res = draw('move-apps', STATES['home-move-apps-done'], MOVE_MV['apps-result']);
+  assert.match(res.html, /1개는<br><span class="soft">깔지 못했습니다/);
+  assert.match(res.html, /data-act="apps-next"[^>]*>다음 · 백업 켜기[\s\S]*data-act="apps-reload"[^>]*>다시 깔기[\s\S]*data-act="apps-restore"[^>]*>설정 다시 되돌리기/);
+  assert.match(res.html, /실행 명령이 든 Terminal 프로필 1개\(서버 접속\)는 옮기지 않았습니다/);
+  assert.match(res.html, /열쇠로 보이는 글이 있어 옮기지 않은 것이 1개 있습니다/);
+  assert.match(res.html, /프로그램이 깔려 있지 않아 따로 둔 곳에만 두었습니다/);
+  assert.match(res.html, /AI 도구 지침 파일을 되돌렸습니다/); assert.match(res.html, /code --install-extension ms-python\.python/);
+  const ok = draw('move-apps', STATES['home-move-apps-ok'], MOVE_MV['apps-ok']).html;
+  assert.match(ok, /프로그램을 깔고<br><span class="soft">설정을 되돌렸습니다/); assert.doesNotMatch(ok, /data-act="apps-restore"/);
+  // 다 깔려도 목록으로 돌아가는 길과 직접 까실 것이 남는다(카본 C2)
+  assert.match(ok, /data-act="apps-reload"[^>]*>다른 프로그램 더 깔기/); assert.match(ok, /직접 까실 것 · 4개/);
+  const se = draw('move-apps', STATES['home-move-apps-done'], MOVE_MV['apps-settings-error']).html;
+  assert.match(se, /설정을<br><span class="soft">되돌리지 못했습니다/); assert.match(se, /data-act="apps-restore"[^>]*>설정 되돌리기/);
+  // 앱 설정 줄 — 뺀 칸 수 · 쓰지 못한 파일(D8)
+  const lines = m.settingRows([{ app: 'vscode', name: 'VS Code', restored: ['a'], kept: [], side: [], dropped: 4, droppedProfiles: [], extensions: [], failed: [{ path: 'x', code: 'MOVE_MKDIR' }], left: [] }])[0];
+  assert.ok(lines.warn); assert.ok(lines.lines.some((t) => /그 밖의 4칸은 뺐습니다/.test(t))); assert.ok(lines.lines.some((t) => /1개는 쓰지 못했습니다/.test(t)));
+  // 다시 로그인할 곳 — 어느 상태에서도 보인다(D10). 넘기기 화면에는 남은 수 한 줄
+  for (const k of ['apps-pick', 'apps-notready', 'apps-error', 'apps-loading', 'apps-result']) assert.match(draw('move-apps', read, MOVE_MV[k]).html, /다시 로그인할 곳 · 남은 7곳/, k);
+  assert.equal(m.checksLeft(MOVE_APPS.checklist), 7);
+  assert.match(draw('move-4', read, { ...MOVE_MV.result, apps: { checks: MOVE_APPS.checklist } }).html, /data-act="move-apps-open">프로그램과 설정 · 다시 로그인할 곳 7곳 남음/);
+  // 깔고 있는 동안에는 그 단추가 「까는 중」이라 말한다 — 안내 글의 「프로그램과 설정」과 이름이 같다(카본 B8 · C5)
+  assert.match(draw('move-4', STATES['home-move-apps-elevated'], MOVE_MV['apps-running']).html, /data-act="move-apps-open">프로그램과 설정 · 까는 중/);
+  // 넘기면 이 화면을 다시 열 수 없다고 미리 말한다(카본 C4)
+  assert.match(draw('move-4', read, MOVE_MV.result).html, /「프로그램과 설정」을 다시 열 수 없습니다/);
+  assert.doesNotMatch(draw('move-4', read, MOVE_MV.result).html, /다음 업데이트에서 이 자리에 열립니다/);
+  // 빈 목록 — 설정은 되돌릴 수 있다(D11: 까닭은 미리 보기의 kitAt으로만 가른다)
+  const empty = draw('move-apps', read, MOVE_MV['apps-empty']).html;
+  assert.match(empty, /프로그램을 찾지 못했습니다/); assert.match(empty, /data-act="apps-go"[^>]*>설정 되돌리기/);
+  assert.match(draw('move-apps', read, { ...MOVE_MV['apps-empty'], preview: { kitAt: null } }).html, /프로그램 목록이 백업에 없습니다/);
+  // 보호 범위 — 프로그램 목록과 앱 설정도 함께 지킨다(4.6 꾸러미)
+  const { drawer } = await load('screen-view.js');
+  assert.match(drawer({ ...STATES.home, moveKit: { at: '2026-11-13T01:00:00Z', apps: 4, tooBig: [] } }), /앱 설정 4개도 함께 지킵니다/);
+  assert.doesNotMatch(drawer(STATES.home), /앱 설정 \d+개도 함께/);
+});
+
+test('옮겨 오기 4b: 카본 검수 지적 자리(workbackup-ui-move4b-20261116 A1~C10)', async () => {
+  const m = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW, MOVE_MV, MOVE_ACCT, MOVE_APPS } = await load('engine-fixtures.js');
+  const draw = (id, state, mv) => renderScreen(id, { state, model: m.homeModel(state, { now: NOW, move: mv?.state || null }), now: NOW, ui: {}, acct: { ...MOVE_ACCT }, mv, fake: true });
+  const read = STATES['home-move-read'];
+  // A1 — 아직 정해지지 않은 진행 칸(null)을 0으로 읽지 않는다
+  const p = m.moveProgress({ move: { progress: { bytes: null, total: null, folder: null, bytesPerSecond: null } } });
+  assert.equal(p.bytes, null); assert.equal(p.total, null);
+  assert.doesNotMatch(draw('move-2', { ...STATES['home-move-run'], move: { reinstall: null, progress: { bytes: null, total: null, folder: null, bytesPerSecond: null } } }, MOVE_MV.run).html, /0B \//);
+  // A5 — 옮기지 않은 것만 있으면 「옮기지 않음」
+  assert.equal(m.settingRows([{ app: 'claude-code', name: 'Claude Code', restored: [], kept: [], side: [], left: [{ entry: 'settings', why: 'secret-looking' }] }])[0].label, '옮기지 않음');
+  assert.equal(m.settingRows([{ app: 'x', name: 'X', restored: [], kept: [], side: [], left: [] }])[0].label, '옮길 것 없음');
+  // A6 · C8 — 번호 읽는 소리에 맞는 조사
+  assert.match(m.appReason('EXIT_1603'), /1603으로 끝났습니다/); assert.match(m.appReason('EXIT_-1978335189'), /0x8A15002B로 끝났습니다/);
+  // B1 · C1 — 결과를 못 읽었으면 「목록 다시 읽기」 단추가 있다
+  assert.match(draw('move-apps', STATES['home-move-apps-failed'], MOVE_MV['apps-failed']).html, /data-act="apps-reload"[^>]*>목록 다시 읽기/);
+  // B2 · C4 — winget이 없으면 명령을 붙여 넣어도 깔린다고 하지 않는다
+  const nr = draw('move-apps', read, MOVE_MV['apps-notready']).html;
+  assert.doesNotMatch(nr, /붙여 넣어도 깔립니다/); assert.match(nr, /winget이 준비된 뒤에/); assert.match(nr, /넘기면 이 화면을 다시 열 수 없습니다/);
+  // B3 — 다시 켠 뒤의 길은 고르는 화면의 「설정만 되돌리기」이고, 그 단추가 고르는 화면에 있다
+  const rb = { ...STATES['home-move-apps-done'], move: { reinstall: { ...STATES['home-move-apps-done'].move.reinstall, results: [{ id: 'Git.Git', name: 'Git', state: 'reboot', scope: 'machine', listed: false }] }, progress: null } };
+  assert.match(draw('move-apps', rb, MOVE_MV['apps-result']).html, /「프로그램과 설정」을 열어 「설정만 되돌리기」를 누르면/);
+  assert.match(draw('move-apps', read, MOVE_MV['apps-pick']).html, /data-act="apps-restore"[^>]*>설정만 되돌리기/);
+  // B4 · C7 — 깔는 동안의 줄은 단계와 설치 범위로 가른다
+  const user = draw('move-apps', STATES['home-move-apps-user'], MOVE_MV['apps-running']).html;
+  assert.match(user, /Git<\/span><span class="vl">컴퓨터 전체용 차례 지남/); assert.match(user, /Obsidian<\/span><span class="vl">하나씩 까는 중/);
+  assert.match(draw('move-apps', STATES['home-move-apps-elevated'], MOVE_MV['apps-running']).html, /Git<\/span><span class="vl">관리자 권한으로 깔 차례/);
+  // B5 — 표의 프로그램이 없고 그 밖의 것이 접혀 있으면 「주소와 명령 보기」를 두지 않는다
+  const onlyOthers = { ...MOVE_MV['apps-pick'], apps: { ...MOVE_MV['apps-pick'].apps, list: { ...MOVE_APPS.list, table: [], machine: [], user: [] } } };
+  assert.doesNotMatch(draw('move-apps', read, onlyOthers).html, /data-act="app-cmds"/);
+  // F2 — 읽지 못한 체크 목록은 다시 읽는 단추를 둔다(「다시 열면 다시 읽습니다」라 하지 않는다)
+  const nochk = draw('move-apps', read, { ...MOVE_MV['apps-pick'], apps: { ...MOVE_MV['apps-pick'].apps, checks: null } }).html;
+  assert.match(nochk, /data-act="app-checks-reload"[^>]*>다시 읽기/); assert.doesNotMatch(nochk, /다시 열면 다시 읽습니다/);
+  // FA2 — 쓰지 못한 파일이 섞여도 되돌린 파일이 있으면 「되돌렸습니다」다
+  const mixed = { ...MOVE_MV['apps-ok'], apps: { ...MOVE_MV['apps-ok'].apps, settings: [{ app: 'git', name: 'Git', restored: ['a'], kept: [], side: [], failed: [{ path: 'b', code: 'MOVE_MKDIR' }], left: [] }] } };
+  assert.match(draw('move-apps', STATES['home-move-apps-ok'], mixed).html, /프로그램을 깔고<br><span class="soft">설정을 되돌렸습니다/);
+  // FA1 — 목록 초과로 막힌 옛 PC에서도 다른 옛 PC를 고를 수 있다
+  const two = { ...MOVE_MV.listbig, devices: [...MOVE_MV.listbig.devices, { from: 'OLD-DESKTOP', lastBackupAt: '2026-09-02T09:10:00Z' }] };
+  assert.match(draw('move-1', STATES['home-move-listbig'], two).html, /data-act="move-from" data-from="OLD-DESKTOP"/);
+  assert.match(draw('move-1', STATES['home-move-listbig'], two).html, /옮겨 올 수 있을지도 모릅니다/); // Fable -c FA1 — 「수 있」을 겹치지 않는다
+  assert.doesNotMatch(draw('move-1', STATES['home-move-listbig'], MOVE_MV.listbig).html, /data-act="move-from"/);
+  // FA3 — 멈춘 옮겨 오기를 이을 때는 남은 것이 0이어도 막지 않는다
+  const tail = { ...MOVE_MV.nokit, preview: { ...MOVE_MV.nokit.preview, folders: MOVE_MV.nokit.preview.folders.map((x) => ({ ...x, files: 0, bytes: 0 })) }, first: null };
+  const tailHtml = draw('move-1', read, tail).html;
+  assert.match(tailHtml, /남은 파일이 없습니다\. 누르면 확인서를 마저 씁니다/); assert.doesNotMatch(tailHtml, /data-act="move-go" aria-disabled="true"/);
+  // F4 — 되돌린 것이 없으면 큰 글이 「되돌렸습니다」가 아니다
+  const sideOnly = { ...MOVE_MV['apps-ok'], apps: { ...MOVE_MV['apps-ok'].apps, settings: MOVE_APPS.settings.filter((a) => a.notInstalled) } };
+  assert.match(draw('move-apps', read, sideOnly).html, /설정을<br><span class="soft">따로 두었습니다/);
+  assert.match(draw('move-apps', read, { ...MOVE_MV['apps-ok'], apps: { ...MOVE_MV['apps-ok'].apps, settings: [] } }).html, /되돌린 설정이<br><span class="soft">없습니다/);
+  // B6 — 빈 체크 목록은 「모두 했습니다」가 아니다
+  assert.match(draw('move-apps', read, { ...MOVE_MV['apps-pick'], apps: { ...MOVE_MV['apps-pick'].apps, checks: [] } }).html, /다시 로그인할 곳을 찾지 못했습니다/);
+  // B7 — 「다시 옮겨 오기」 단추가 없으면 그 안내도 없다
+  assert.doesNotMatch(draw('move-3', STATES['home-move-apps-elevated'], MOVE_MV.ok).html, /다 깐 뒤에 다시 옮겨 올 수 있습니다/);
+  // B9 — 같은 이름의 단추에 대상 이름
+  assert.match(draw('move-3', read, MOVE_MV.result).html, /aria-label="「바탕화면」 폴더 열기"/);
+  assert.match(draw('move-apps', read, MOVE_MV['apps-open']).html, /aria-label="직접 까실 것 접기"/);
+  // B10 — 「로그인 정보와 비밀번호」로 맞춘다
+  for (const k of ['apps-pick', 'apps-result']) assert.doesNotMatch(draw('move-apps', STATES['home-move-apps-done'], MOVE_MV[k]).html, /로그인과 암호|로그인 정보와 암호/, k);
+  // C3 — 설정 되돌리기가 앞의 일에 밀렸으면 예약 백업이라 하지 않는다
+  const se = draw('move-apps', STATES['home-move-apps-done'], MOVE_MV['apps-settings-error']).html;
+  assert.match(se, /앞의 일이 끝나지 않아 되돌리지 못했습니다/); assert.doesNotMatch(se, /예약 백업/);
+  // C6 — 다시 시작했다가 멈춘 옮겨 오기의 확인서는 「이어서 옮겨 오기」다
+  const rerun = draw('move-3', read, MOVE_MV.rerun);
+  assert.equal(rerun.acts['move-resume'].flow, 'moveResume'); assert.match(rerun.html, /data-act="move-resume"[^>]*>이어서 옮겨 오기/);
+  assert.doesNotMatch(rerun.html, /data-act="move-again"|처음부터 다시 받아/);
+  // C10 — 빈 목록은 패널에도 없다고 쓰고, 넘어가는 단추는 「다음 · 백업 켜기」
+  const empty = draw('move-apps', read, MOVE_MV['apps-empty']).html;
+  assert.match(empty, /<p class="empty">다시 깔 프로그램이 없습니다/); assert.match(empty, /data-act="apps-later"[^>]*>다음 · 백업 켜기/);
 });

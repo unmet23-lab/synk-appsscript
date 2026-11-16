@@ -3,7 +3,8 @@
 // 엔진에 아직 없는 기능의 단추는 「아직 준비 중」 한 줄만 띄우고 아무것도 보내지 않는다(QA 「가짜 상태로 그린 화면」).
 
 import { createStore, failureText } from './state-store.js';
-import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey } from './screen-model.js';
+import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey, moveLeft, moveRows,
+  appsRows, appsOutcome, APPS_MAX } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -31,6 +32,8 @@ let mv = null;
 // 한 번만 읽는 것 — 그리기마다 부르면 실패나 BUSY가 그리기를 다시 부르며 돈다. 다시 읽을 때 그 열쇠를 지운다
 const mvTried = new Set();
 let mvRunning = false;
+// 프로그램 깔기(창 상태 move.reinstall)가 돌고 있었는지 — 끝나면 설정 되돌리기를 저절로 부른다(appsEnded)
+let prevReinstall = false;
 // 단추가 보낸 호출 — 기다리는 동안과 보내는 동안 내내 둔다. 같은 호출이 또 오면 버린다(Fable FA1 · -c FA2)
 const runningCalls = new Set();
 function watchJobs(s) {
@@ -44,6 +47,9 @@ function watchJobs(s) {
   if (mvRunning && !moving) { mv = { ...(mv || {}), state: undefined, result: undefined }; void moveEnded(); }
   else if (!mvRunning && moving && screen === 'home' && shownId === null) screen = 'move-2';
   mvRunning = moving;
+  const ri = s.move?.reinstall || null, riRun = !!ri?.running;
+  if (prevReinstall && !riRun && ri) void appsEnded(ri);
+  prevReinstall = riRun;
   const rs = s.account?.restore || null;
   if (rs) acct = { ...acct, lastRestore: rs, restoreEnded: null };
   else if (acct.lastRestore) acct = { ...acct, restoreEnded: acct.lastRestore, lastRestore: null };
@@ -70,7 +76,7 @@ function notYet(to) {
   if (to === 'lost' && !(s?.account?.connected && acct.lostTarget)) return '분실 신고';
   if (to === 'lost-2' && !s?.account?.connected) return '분실 신고';
   // 옮겨 오기는 계정의 백업을 되살리기 전용으로 연 새 PC에서 연다. 쓰는 PC의 「옛 PC 백업에서 꺼내기」는 다음 증분이다
-  if (/^move-[1-4]$/.test(to) && !moveOpen(s)) return s?.configured && s.mode !== 'restore' ? '옛 PC 백업에서 꺼내기' : '!이 PC로 옮겨 오기는 Google로 시작해 이 계정의 백업을 연 뒤에 엽니다.';
+  if (/^move-([1-4]|apps)$/.test(to) && !moveOpen(s)) return s?.configured && s.mode !== 'restore' ? '옛 PC 백업에서 꺼내기' : '!이 PC로 옮겨 오기는 Google로 시작해 이 계정의 백업을 연 뒤에 엽니다.';
   return null;
 }
 
@@ -160,6 +166,8 @@ function focusKey(el) {
   if (el.dataset?.mode) return `${q('data-folder', el.dataset.folder || '')}${q('data-mode', el.dataset.mode)}`;
   if (el.dataset?.from) return q('data-from', el.dataset.from);
   if (el.dataset?.root) return q('data-root', el.dataset.root);
+  if (el.dataset?.app) return q('data-app', el.dataset.app);
+  if (el.dataset?.check) return q('data-check', el.dataset.check);
   if (el.dataset?.act) return q('data-act', el.dataset.act);
   return null;
 }
@@ -172,6 +180,7 @@ function go(id) {
   if (!screen.startsWith('undo-')) undo = null;
   // 결과 없이 넘기기(옮겨 오기를 그만둠)는 그 화면에서만 — 넘기기를 떠나면 옮겨 온 결과로 돌아간다
   if (mv?.quit && screen !== 'move-4') mv = { ...mv, quit: false };
+  if ((screen === 'move-apps' || screen === 'move-4') && mv?.apps?.checks === null) mvTried.delete('apps-checks');
   if (screen === 'undo-1' && !fixture && !undo?.value && !undo?.loading) void loadPlan();
   paint();
   room.focus({ preventScroll: true });
@@ -186,7 +195,12 @@ function prepare(id, s) {
   }
   if (id === 'start-2' && startStep(s) === 'read' && acct.devices === null && !acct.devicesError && !acct.devicesBusy) setTimeout(() => void loadDevices(), 0);
   if (!moveOpen(s)) return;
-  if ((id === 'home' || /^move-[1-4]$/.test(id)) && mv?.state === undefined) mvOnce('state', loadMoveState);
+  if ((id === 'home' || /^move-([1-4]|apps)$/.test(id)) && mv?.state === undefined) mvOnce('state', loadMoveState);
+  // 프로그램과 설정(4b) — 목록 뒤에 체크 목록. 넘기기 화면은 「다시 로그인할 곳 N곳 남음」에 체크 목록만 읽는다
+  if (id === 'move-apps') mvOnce('apps', openApps);
+  // 앞서 읽지 못한 체크 목록은 화면에 들어올 때 한 번 더 읽는다(Fable F2) — 열쇠는 go()가 지운다
+  if ((id === 'move-apps' || id === 'move-4') && mv?.apps?.checks === null && !store.busy) mvOnce('apps-checks', loadChecks);
+  if (id === 'move-4' && mv?.apps?.checks === undefined) mvOnce('apps-checks', loadChecks);
   if (id === 'move-1' && !moveJob(s)) mvOnce('plan', () => loadMovePlan());
   if ((id === 'move-3' || id === 'move-4') && mv?.result === undefined) mvOnce('result', loadMoveResult);
   if (id === 'move-4' && mv?.devices === undefined && !moveJob(s)) mvOnce('devices', loadMoveDevices);
@@ -285,8 +299,10 @@ async function takeOver() {
 /* ── 새 PC로 옮겨 오기(조율 세션 d32d25233 · moveState · folders[].roots) ── */
 function mvOnce(key, fn) { if (mvTried.has(key)) return; mvTried.add(key); setTimeout(() => void fn(), 0); }
 /** 읽은 옮겨 오기를 버린다 — 다시 들어오면 새로 읽는다. 엔진의 옮겨 오기 상태(state)는 남긴다 */
-function mvForget() { mv = { state: mv?.state }; for (const k of ['plan', 'result', 'devices']) mvTried.delete(k); }
+function mvForget() { mv = { state: mv?.state }; for (const k of ['plan', 'result', 'devices', 'apps', 'apps-checks']) mvTried.delete(k); }
 const mvError = (code) => (code === 'BAD_INPUT' ? '옮겨 올 PC의 백업을 다시 찾지 못했습니다. 다시 읽어 주세요.' : failureText(code));
+// 미리 보기의 실패 — 글과 함께 부호를 남긴다(목록 초과는 다시 읽어도 같아 다른 단추를 둔다, Fable F1)
+const mvFail = (code) => ({ error: mvError(code), errorCode: code || 'FAILED' });
 /** 옮겨 오기의 지금(moveState — 읽기 호출이라 창의 호출 줄을 잡지 않는다). 못 읽으면 기본 화면에 줄을 두지 않는다 */
 async function loadMoveState() {
   const r = await store.aside('moveState');
@@ -310,12 +326,12 @@ async function loadMoveDevices() {
  * 멈춘 옮겨 오기를 이으면 저장된 기기와 고름을 그대로 쓴다(Fable F6). 미리 보기는 폴더마다 목록을 읽어 몇 분 걸릴 수 있다
  */
 async function loadMovePlan(from) {
-  mv = { ...(mv || {}), error: null, preview: null, first: null, dirty: false, counting: false };
+  mv = { ...(mv || {}), error: null, errorCode: null, preview: null, first: null, dirty: false, counting: false };
   paint();
   if (mv.state === undefined) { const st = await store.aside('moveState'); mv = { ...mv, state: st.ok && st.value && typeof st.value === 'object' ? st.value : null }; }
   if (!Array.isArray(mv.devices)) {
     const d = (await untilFree()) ? await store.call('moveDevices') : { ok: false, code: 'BUSY' };
-    if (!d.ok) { mv = { ...mv, error: mvError(d.code) }; return paint(); }
+    if (!d.ok) { mv = { ...mv, ...mvFail(d.code) }; return paint(); }
     mv = { ...mv, devices: Array.isArray(d.value) ? d.value.filter((x) => x && typeof x.from === 'string') : [] };
   }
   if (!mv.devices.length) return paint();
@@ -323,12 +339,14 @@ async function loadMovePlan(from) {
   for (let i = 0; acct.devicesBusy && i < 240; i++) await new Promise((r) => setTimeout(r, 250));
   if (acct.devices === null) await loadDevices();
   const pick = from && mv.devices.some((d) => d.from === from) ? from : moveFrom(mv.devices, mv.state, acct.devices);
-  const choices = mv.state?.unfinished && mv.state.from === pick && mv.state.choices && typeof mv.state.choices === 'object' ? { ...mv.state.choices } : {};
+  // 멈췄거나 끝난 같은 옛 기기의 옮겨 오기가 있으면 그때 고른 자리로 센다 — 다시 돌릴 때 넘겨받기는 놓인 자리가 같아야 한다(E11, Fable F3)
+  const st = mv.state, same = st?.from === pick && (st.unfinished || st.resultAt) && !st.released;
+  const choices = same && st.choices && typeof st.choices === 'object' && !Array.isArray(st.choices) ? { ...st.choices } : {};
   mv = { ...mv, from: pick, choices, open: false };
   paint();
   const p = (await untilFree()) ? await store.call('movePreview', { from: pick, choices }) : { ok: false, code: 'BUSY' };
   if (mv.from !== pick) return; // 그사이 다른 기기를 골랐다
-  if (!p.ok || !p.value || typeof p.value !== 'object') { mv = { ...mv, error: mvError(p.ok ? 'FAILED' : p.code) }; return paint(); }
+  if (!p.ok || !p.value || typeof p.value !== 'object') { mv = { ...mv, ...mvFail(p.ok ? 'FAILED' : p.code) }; return paint(); }
   const first = Object.fromEntries((Array.isArray(p.value.folders) ? p.value.folders : []).map((x) => [x.original, { files: x.files, bytes: x.bytes }]));
   mv = { ...mv, preview: p.value, first };
   paint();
@@ -343,8 +361,9 @@ async function moveCount() {
   // 세는 동안 기기나 고름이 바뀌었으면 그 답은 지금 고름의 공간이 아니다 — 바꾼 것으로 남겨 다시 세게 한다(카본 A1)
   if (mv.from !== from || JSON.stringify(mv.choices || {}) !== asked) { paint(); return false; }
   if (!p.ok || !p.value) { note(mvError(p.ok ? 'FAILED' : p.code)); paint(); return false; }
+  // 미리 보기는 이번에 받을 것만 센다(E8 · E11) — 옮기는 폴더는 새로 센 수로 갈아 넣고, 「옮기지 않음」인 폴더만 처음 본 수를 둔다(Fable F3)
   const first = { ...(mv.first || {}) };
-  for (const x of Array.isArray(p.value.folders) ? p.value.folders : []) if (!first[x.original]?.files) first[x.original] = { files: x.files, bytes: x.bytes };
+  for (const x of Array.isArray(p.value.folders) ? p.value.folders : []) if ((choices[x.original]?.mode || x.mode) !== 'skip' || !first[x.original]) first[x.original] = { files: x.files, bytes: x.bytes };
   mv = { ...mv, preview: p.value, first, dirty: false };
   paint();
   return true;
@@ -361,20 +380,29 @@ async function moveStartWith(from, choices, preview = null, freshPlan = false) {
   // 미리 본 계획은 같은 기기면 남겨 진행 화면의 「옮겨 올 것」에 쓴다(Fable 화면 검수 F5)
   const plan = preview || (mv?.from === from ? mv?.preview : null) || null;
   const counted = plan ? Object.fromEntries((plan.folders || []).map((x) => [x.original, { files: x.files, bytes: x.bytes }])) : null;
+  // 같은 옛 기기면 앞선 결과는 새 결과가 적힐 때까지 남는다(E13). 다른 옛 기기면 엔진이 비운다
+  const same = mv?.state?.from === from;
   mv = { ...(mv || {}), from, preview: plan, first: plan ? (!freshPlan && mv?.first) || counted : null,
-    result: undefined, devices: undefined, added: [], off: [], quit: false, state: { ...(mv?.state || {}), from, choices: choices || {}, startedAt: new Date().toISOString(), unfinished: true, resultAt: null, released: null, complete: null } };
-  for (const k of ['result', 'plan', 'devices']) mvTried.delete(k);
+    result: undefined, devices: undefined, added: [], off: [], gone: [], quit: false, apps: undefined,
+    state: { ...(mv?.state || {}), from, choices: choices || {}, startedAt: new Date().toISOString(), unfinished: true, resultAt: same ? mv?.state?.resultAt ?? null : null, released: null, complete: same ? mv?.state?.complete ?? null : null } };
+  // 새 옮겨 오기의 프로그램 목록 · 체크 목록은 새로 읽는다(카본 A4)
+  for (const k of ['result', 'plan', 'devices', 'apps', 'apps-checks']) mvTried.delete(k);
   return go('move-2');
 }
 async function moveGo() {
   if (!mv?.preview || !mv.from) return;
   if (mv.dirty && !(await moveCount())) return;
   if (moveVolumes(mv.preview).short.length) return note('빈 공간이 모자란 드라이브가 있습니다. 공간을 비우거나 다른 자리를 고른 뒤 다시 눌러 주세요.');
+  // 받을 것이 없으면 시작하지 않는다(Fable FA4) — 멈춘 옮겨 오기를 잇는 것은 남은 것이 0이어도 확인서를 마저 쓴다
+  const resuming = mv.state?.unfinished && mv.state.from === mv.from;
+  // 뒷문장은 같은 옛 PC의 끝난 옮겨 오기가 있을 때만 — 화면의 hadResult와 같은 조건이다(Fable -c FA2)
+  const hadResult = !!(mv.state?.resultAt && mv.state.from === mv.from);
+  if (!resuming && Number(mv.preview.files) === 0 && moveRows(mv.preview, mv.choices, mv.first).places) return note(`받을 파일이 없어 시작하지 않았습니다.${hadResult ? ' 앞서 옮겨 온 파일은 고른 자리에 그대로 있습니다.' : ''}`, 9000);
   return moveStartWith(mv.from, mv.choices, mv.preview);
 }
 /**
- * 끝난 옮겨 오기를 다시 돌린다(「다시 옮겨 오기」 · 「한 번 더 옮겨 오기」). 엔진은 새 번호로 처음부터 다시 받아 옮겨 올 양만큼 빈 공간을
- * 요구하고, 시작하는 순간 앞선 결과를 지운다 — 그래서 먼저 공간을 세고, 모자라면 시작하지 않는다(Fable 화면 검수 F1)
+ * 끝난 옮겨 오기를 다시 돌린다(「다시 옮겨 오기」 · 「한 번 더 옮겨 오기」). 엔진은 새 번호로 시작하되 앞서 놓고 그대로인 파일은 넘겨받고(E11),
+ * 미리 보기는 이번에 받을 것만 센다(E8 · E11). 먼저 그 양으로 공간을 세고, 모자라면 시작하지 않는다(Fable 화면 검수 F1). 받을 것이 없으면 시작하지 않는다
  */
 async function moveAgain() {
   const from = mv?.state?.from || mv?.from, choices = mv?.state?.choices || mv?.choices || {};
@@ -385,7 +413,8 @@ async function moveAgain() {
   try { p = (await untilFree()) ? await store.call('movePreview', { from, choices }) : { ok: false, code: 'BUSY' }; } finally { mv = { ...(mv || {}), counting: false }; }
   if (!p.ok || !p.value) return note(mvError(p.ok ? 'FAILED' : p.code));
   const short = moveVolumes(p.value).short;
-  if (short.length) return note(`${short.map((v) => `${v.drive} 드라이브`).join(', ')}의 빈 공간이 모자라 다시 옮겨 오지 않았습니다. 다시 옮겨 오면 처음부터 다시 받아 견주므로 옮겨 올 양만큼 빈 공간이 있어야 합니다. 공간을 비운 뒤 다시 눌러 주세요.`, 12000);
+  if (short.length) return note(`${short.map((v) => `${v.drive} 드라이브`).join(', ')}의 빈 공간이 모자라 다시 옮겨 오지 않았습니다. 다시 받을 양만큼 빈 공간이 있어야 합니다. 공간을 비운 뒤 다시 눌러 주세요.`, 12000);
+  if (Number(p.value.files) === 0) return note(moveLeft(mv?.result).failed ? '다시 받을 수 있는 파일이 없습니다. 옮기지 못한 파일은 까닭이 그대로라 다시 옮겨 와도 놓이지 않습니다. 확인서의 까닭을 보고 고친 뒤 다시 눌러 주세요.' : '다시 받을 파일이 없습니다. 고른 자리에 모두 놓여 있습니다.', 12000);
   return moveStartWith(from, choices, p.value, true);
 }
 /** 끝난 옮겨 오기 — 상태와 결과를 다시 읽고, 진행 화면에 있었으면 확인서로 넘어간다 */
@@ -401,8 +430,14 @@ async function moveTake() {
   if (s?.account?.googleStepRequired && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
   const sources = moveTakeList(s, mv).checked;
   if (!sources.length || sources.length > 30) return;
-  const stop = (r) => (r.code === 'CANCELED' ? undefined : note(r.code === 'FAILED' ? '지킬 폴더 가운데 없거나 열 수 없는 폴더가 있어 넘기지 못했습니다. 비어 있던 폴더는 만들어지지 않았을 수 있습니다. 목록에서 의심되는 폴더의 체크를 끄고 다시 눌러 주세요.' : failureText(r.code)));
+  const stop = (r) => (r.code === 'CANCELED' ? undefined : note(failureText(r.code)));
   const t = await store.call('takeWriteSeat', { sources });
+  // 없거나 열 수 없는 폴더는 엔진이 한꺼번에 모아 준다(E15 SOURCES_MISSING · details.paths) — 목록에서 빼고 다시 누르게 한다
+  if (!t.ok && t.code === 'SOURCES_MISSING' && Array.isArray(t.details?.paths) && t.details.paths.length) {
+    const gone = t.details.paths.filter((p) => typeof p === 'string');
+    mv = { ...(mv || {}), gone: [...new Set([...(mv?.gone || []), ...gone])] }; paint();
+    return note(`이 PC에 없거나 열 수 없는 폴더 ${gone.length}곳을 목록에서 뺐습니다. 남은 폴더를 확인한 뒤 다시 눌러 주세요.`, 9000);
+  }
   if (!t.ok) return stop(t);
   const c = await store.call('continueBackup', { sources, googleStepDone: acct.googleAck === true });
   if (!c.ok) return stop(c);
@@ -423,24 +458,84 @@ async function moveRelease() {
 async function moveAdd() {
   const before = state();
   if (before?.profile !== 'b2') { const sw = await store.call('selectProfile', 'b2'); if (!sw.ok) return note(failureText(sw.code)); }
-  const had = (Array.isArray(before?.nextSources) ? before.nextSources : []).map(pathKey).sort().join('|');
+  // 고르기 전의 목록(창 기억 off · added가 바탕이다)
+  const base = moveTakeList(before, mv);
   const r = await store.call('chooseSources');
+  // 창을 닫으면 CANCELED가 온다(E14) — 답이 왔으면 손님이 고른 것이다
   if (!r.ok) return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
   const got = (Array.isArray(r.value) ? r.value : []).filter((p) => typeof p === 'string' && p);
   if (!got.length) return;
-  // 창을 닫으면 엔진은 고른 폴더를 그대로 돌려준다. 그대로면 창을 닫은 것인지 같은 것을 다시 고른 것인지 가를 수 없어, 목록에 아직 없는 것만 더한다
-  // (Fable 화면 검수 F3 — 체크를 끈 줄은 그 줄을 다시 누르면 된다). 하나라도 다르면 이번에 고른 것을 모두 합치고 체크를 켠다(카본 A2)
-  const same = got.map(pathKey).sort().join('|') === had;
-  const listed = new Set(moveTakeList(before, mv).list.map((x) => pathKey(x.path)));
-  if (same && got.every((p) => listed.has(pathKey(p)))) return;
   // 결과 없이 넘길 때는 앞서 고른 폴더도 목록에 남긴다 — 고르는 창이 설정의 고른 폴더를 새것으로 갈아 넣기 때문이다
   const keep = mv?.result && !mv?.quit ? [] : pickedSources(before);
+  // 이번에 고른 폴더는 체크를 켠다(카본 A2). 없다고 뺐던 자리도 다시 고르면 넣는다
   const gotKeys = new Set(got.map(pathKey));
-  mv = { ...(mv || {}), added: [...new Set([...(mv?.added || []), ...keep, ...got])], off: same ? mv?.off || [] : (mv?.off || []).filter((k) => !gotKeys.has(k)) };
+  mv = { ...(mv || {}), added: [...new Set([...(mv?.added || base.added), ...keep, ...got])], off: (mv?.off || base.off).filter((k) => !gotKeys.has(k)),
+    gone: (mv?.gone || []).filter((p) => !gotKeys.has(pathKey(p))) };
   paint();
 }
+/* ── 옮겨 오기 4b · 프로그램과 설정(엔진 moveReinstallList · moveReinstall · moveRestoreSettings · moveChecklist · moveCheck) ── */
+// 창 기억은 mv.apps에 둔다. 깔기의 진행과 결과는 창 상태(move.reinstall — 작업자 기억이라 앱을 다시 켜면 사라진다)에서 읽는다
+const appsOf = () => mv?.apps || {};
+function setApps(patch) { mv = { ...(mv || {}), apps: { ...appsOf(), ...patch } }; }
+/** 옛 PC의 프로그램 목록 — winget을 부르고 꾸러미를 읽어 몇 분 걸릴 수 있다. 깔고 있으면 다시 읽지 않는다(Fable D12) */
+async function loadApps() {
+  if (state()?.move?.reinstall?.running) return;
+  setApps({ list: undefined, listError: null }); paint();
+  const r = (await untilFree(120000)) ? await store.call('moveReinstallList') : { ok: false, code: 'BUSY' };
+  setApps(r.ok && r.value && typeof r.value === 'object' ? { list: r.value, listError: null } : { list: null, listError: r.code });
+  paint();
+}
+/** 다시 로그인할 곳 — 꾸러미만으로 나오므로 깔기와 상관없이 읽는다(Fable D10) */
+async function loadChecks() {
+  const r = (await untilFree(120000)) ? await store.call('moveChecklist') : { ok: false, code: 'BUSY' };
+  setApps({ checks: r.ok && Array.isArray(r.value) ? r.value.filter((x) => x && typeof x.id === 'string') : appsOf().checks ?? null });
+  paint();
+}
+/** 「프로그램과 설정」에 들어올 때 — 목록 뒤에 체크 목록(한 번에 하나씩: 둘 다 창의 호출 줄을 잡는다) */
+async function openApps() { await loadApps(); if (appsOf().checks === undefined || appsOf().checks === null) await loadChecks(); }
+/**
+ * 고른 것 깔기(moveReinstall — 곧바로 돌아오고 뒤에서 돈다). 고른 것이 없으면 설정만 되돌린다. 깔기가 끝나면 watchJobs가
+ * 설정 되돌리기를 저절로 부른다(appsEnded — 하나라도 깔렸을 때만, Fable D9)
+ */
+async function appsGo() {
+  const a = appsOf(), view = appsRows(a.list, a.picks);
+  if (a.list && a.list.wingetStatus?.ready !== true) return;
+  if (!view.ids.length) return appsRestore();
+  if (view.ids.length > APPS_MAX) return;
+  const r = await store.call('moveReinstall', { ids: view.ids });
+  if (!r.ok) return r.code === 'CANCELED' ? undefined : note(r.code === 'JOB_BUSY' ? '옮겨 오는 중이거나 프로그램을 까는 중입니다. 끝난 뒤 다시 눌러 주세요.' : failureText(r.code));
+  setApps({ ran: view.ids, names: { ...(a.names || {}), ...view.names }, settings: undefined, settingsError: null });
+  paint();
+}
+/** 깔기가 끝남 — 하나라도 깔렸으면 설정을 저절로 되돌린다. 모두 깔지 못했으면 고르는 화면에 남아 까닭을 보인다(Fable D9) */
+async function appsEnded(job) {
+  const out = appsOutcome(job, { ...appsRows(appsOf().list).names, ...(appsOf().names || {}) });
+  // 목록은 여기서 다시 읽지 않는다 — 몇 분 동안 창의 호출 줄을 잡아 설정 되돌리기가 기다린다. 「다시 깔기」가 새로 읽는다
+  if (out?.restore) await appsRestore();
+  else paint();
+}
+/** 설정 되돌리기(moveRestoreSettings — 덮지 않고, 다시 불러도 같은 내용은 되돌림으로 센다). 거절되면 단추로 물러선다(D9) */
+async function appsRestore() {
+  setApps({ restoring: true, settingsError: null }); paint();
+  let r;
+  try { r = (await untilFree(120000)) ? await store.call('moveRestoreSettings') : { ok: false, code: 'BUSY' }; } finally { setApps({ restoring: false }); }
+  setApps(r.ok && Array.isArray(r.value) ? { settings: r.value, settingsError: null } : { settings: undefined, settingsError: r.code || 'FAILED' });
+  paint();
+}
+/** 「다시 깔기」 · 「목록 다시 읽기」 — 결과를 접고 목록을 새로 읽는다 */
+async function appsReload() { setApps({ settings: undefined, settingsError: null }); mvTried.add('apps'); await openApps(); }
+/** 다시 로그인할 곳 체크 — 먼저 그려 두고, 엔진에 적지 못하면 되돌리고 알린다 */
+async function appsCheck(id) {
+  const list = appsOf().checks; if (!Array.isArray(list)) return;
+  const item = list.find((x) => x.id === id); if (!item) return;
+  const done = !item.done, flip = (v) => setApps({ checks: (appsOf().checks || []).map((x) => (x.id === id ? { ...x, done: v } : x)) });
+  flip(done); paint();
+  if (fixture) return;
+  const r = (await untilFree(120000)) ? await store.call('moveCheck', { id, done }) : { ok: false, code: 'BUSY' };
+  if (!r.ok) { flip(!done); paint(); note(`체크를 적지 못했습니다. ${failureText(r.code)}`); }
+}
 const MOVE_FLOWS = {
-  moveOpen: openMove, moveGo, moveCount, moveTake, moveRelease, moveAdd,
+  moveOpen: openMove, moveGo, moveCount, moveTake, moveRelease, moveAdd, appsGo, appsReload, appsRestore,
   moveResume: () => moveStartWith(mv?.state?.from, mv?.state?.choices),
   moveAgain,
 };
@@ -521,7 +616,9 @@ async function run(a, el) {
   // Google 안내: takeWriteSeat는 늘 브라우저를 연다. rotateReadKey는 받아 둔 열쇠가 없을 때만 열어 두 경우에 다 맞는 글을 쓴다(Fable -c FA1)
   acct = { ...acct, running: a.id, googleWait: !!a.google }; paint();
   try {
-    if (store.busy && !(await untilFree(15000))) return note(failureText('BUSY'));
+    // 넘기기처럼 몇 분짜리 목록 읽기 뒤에 이어서 해도 되는 단추는 더 기다린다(a.wait, Fable 4b D12)
+    if (store.busy && a.wait) note('앞서 읽던 목록을 다 읽은 뒤 이어서 합니다.', a.wait);
+    if (store.busy && !(await untilFree(a.wait || 15000))) return note(failureText('BUSY'));
     if (a.google) note(a.google === 'maybe' ? '브라우저가 열리면 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저에서 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
     return await send(a, el);
   } finally {
@@ -642,12 +739,27 @@ stage.addEventListener('click', (e) => {
   }
   if (id === 'move-from') { const from = el.dataset.from; if (!from || from === mv?.from) return; if (fixture) { mv = { ...mv, from }; return paint(); } return void loadMovePlan(from); }
   if (id === 'move-root') {
-    const k = pathKey(el.dataset.root), off = new Set(mv?.off || []);
+    // 넘기기 고름은 창 기억에만 둔다(카본 A3)
+    const base = moveTakeList(state(), mv), k = pathKey(el.dataset.root), off = new Set(mv?.off || base.off);
     if (off.has(k)) off.delete(k); else off.add(k);
-    mv = { ...(mv || {}), off: [...off] }; return paint();
+    mv = { ...(mv || {}), off: [...off], added: mv?.added || base.added }; return paint();
+  }
+  // 옮겨 온 자리 열기(E6 moveOpen — 결과가 적은 자리만 연다. 창의 호출 줄을 잡지 않는 읽기다)
+  if (id === 'move-folder') {
+    const path = el.dataset.path; if (!path || fixture) return;
+    return void store.aside('moveOpen', { path }).then((r) => { if (!r.ok) note(r.code === 'BAD_INPUT' ? '옮겨 온 결과에 없는 자리라 열지 않았습니다.' : failureText(r.code)); });
   }
   if (id === 'move-reload') { if (fixture) return; mvForget(); return void loadMovePlan(); }
   if (id === 'move-quit') { mv = { ...(mv || {}), quit: true }; return go('move-4'); }
+  // 프로그램과 설정(4b) — 고르기와 펼치기는 창 안에서만 바뀐다. 체크는 엔진에 적는다
+  if (id === 'app-pick') {
+    const app = el.dataset.app, row = [...appsRows(appsOf().list, appsOf().picks).table, ...appsRows(appsOf().list, appsOf().picks).others].find((p) => p.id === app);
+    if (!row) return;
+    setApps({ picks: { ...(appsOf().picks || {}), [app]: !row.on } }); return paint();
+  }
+  if (id === 'app-check') return void appsCheck(el.dataset.check);
+  if (id === 'app-checks-reload') { if (fixture) return; setApps({ checks: undefined }); paint(); return void loadChecks(); }
+  if (id === 'app-others' || id === 'app-manual' || id === 'app-cmds') { const k = id.slice(4); setApps({ open: { ...(appsOf().open || {}), [k]: !appsOf().open?.[k] } }); return paint(); }
   if (id === 'undo-pick') {
     const at = Number(el.dataset.at); if (!Number.isFinite(at)) return;
     if (fixture) { undo = { ...undo, pickAt: at }; return paint(); }

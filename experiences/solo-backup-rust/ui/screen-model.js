@@ -347,7 +347,10 @@ function baseModel(state, now, opts) {
       const step = { box: a.googleStepRequired ? GOOGLE_STEP : null, googleStep: !!a.googleStepRequired };
       if (mvs.unfinished) {
         return { ...base, ...step, id: 'home-move-stopped', tone: 'warn', stamp: '멈춤', kick: `${device} · 옮겨 오기 멈춤`, title: '옮겨 오기가 중간에 멈췄습니다.', sub: moveStopText(s, mvs),
-          actions: [{ id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', flow: 'moveResume' }, { ...RESTORE, kind: 'line' }, { id: 'move-quit', label: '그만두고 이 PC로 이어서 백업', kind: 'link', to: 'move-4' }],
+          // 파일을 놓기 전에 공간이나 목록 때문에 멈췄으면 같은 자리로는 또 멈춘다 — 자리를 다시 고르게 한다(E9 GA1)
+          actions: moveBlocked(moveStopCode(s, mvs)) ? [RESTORE, { id: 'move-quit', label: '되살리지 않고 이 PC에서 이어서 백업', kind: 'link', to: 'move-4' }]
+            : [moveRechoose(s, mvs) ? { id: 'move-in', label: '자리 다시 고르기', kind: 'main', to: 'move-1' } : { id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', flow: 'moveResume' },
+              { ...RESTORE, kind: 'line' }, { id: 'move-quit', label: '그만두고 이 PC로 이어서 백업', kind: 'link', to: 'move-4' }],
           evidence: evidence(s, now, { state: 'moved' }) };
       }
       if (mvs.resultAt && !mvs.released) {
@@ -565,8 +568,10 @@ export function movePlace(f, choice = {}) {
   if (mode === 'newFolder') return { kind: 'newFolder', path: f?.newFolder || null };
   if (mode === 'oneDriveGaps') return { kind: 'oneDrive', path: f?.newFolder || null };
   if (choice?.sameDrive && f?.sameDrive) return { kind: 'sameDrive', path: f.original, drive: letterOf(f.sameDrive) };
+  // 원래 자리 규칙이 「따로 둔 것」으로 보내는지는 엔진이 준다(E3 side — 고른 갈래와 상관없이 원래 자리 규칙의 것이다). 없으면 경로로 가른다
   const parts = lowPath(f?.destination).split('\\'), at = parts.indexOf(MOVE_BASE);
-  return { kind: at < 0 ? 'same' : parts[at + 1] === MOVE_SIDE ? 'side' : 'moved', path: f?.destination || null };
+  const side = typeof f?.side === 'boolean' ? f.side : at >= 0 && parts[at + 1] === MOVE_SIDE;
+  return { kind: side ? 'side' : at < 0 ? 'same' : 'moved', path: f?.destination || null };
 }
 const PLACE_KO = { same: '이 PC의 같은 자리', moved: '「옮겨 온 자료」 아래', side: '「따로 둔 것」 아래', newFolder: '새 폴더', oneDrive: 'OneDrive에 없는 것만 새 폴더로', skip: '옮기지 않음' };
 export function placeKo(p) { return p?.kind === 'sameDrive' ? `${p.drive} 드라이브의 같은 자리` : PLACE_KO[p?.kind] || ''; }
@@ -574,10 +579,17 @@ export function placeKo(p) { return p?.kind === 'sameDrive' ? `${p.drive} 드라
 /** 그 자리로 가는 까닭 한 줄 — 동기화 폴더는 OneDrive만이 아니다(Fable F13). 경로가 다 말하는 자리는 빈 글 */
 export function moveWhy(f, choice, place = movePlace(f, choice)) {
   if (place.kind === 'skip') return '';
-  if (f?.why === 'old-synced') return '옛 PC에서 동기화 폴더 안이던 폴더입니다. 옛 PC에서 온라인에만 있던 파일은 백업에 없으니, 같은 계정으로 그 서비스에 로그인해 받으세요.';
+  // 동기화 종류는 엔진이 준다(E3 oldSync · newSync — 'oneDrive' · 'other' · null). 옛 판의 미리 보기면 why만으로 쓴다
+  const sync = (k) => (k === 'oneDrive' ? 'OneDrive' : k === 'other' ? '동기화 폴더(Dropbox나 Google Drive 같은)' : '동기화 폴더');
+  // 같은 OneDrive 계정이면 온라인에만 있던 파일도 OneDrive에서 온다 — 「일부만」보다 이 글이 먼저다
   if (place.kind === 'oneDrive') return '같은 OneDrive 계정이라, OneDrive에 없거나 내용이 다른 파일만 새 폴더에 받습니다.';
-  if (f?.why === 'new-synced' && place.kind === 'newFolder') return '이 PC의 그 폴더가 동기화 폴더 안이라, 동기화 폴더 밖 새 폴더에 받습니다.';
-  if (f?.why === 'new-synced') return '동기화 폴더 안에 놓습니다. 옮겨 올 양이 그 서비스의 남은 공간을 넘으면 동기화가 멈출 수 있습니다.';
+  if (f?.why === 'old-synced' || f?.partial) {
+    return f?.partial || f?.oldSync === 'oneDrive'
+      ? '옛 PC에서 OneDrive 안이던 폴더라 일부만 올 수 있습니다. 온라인에만 있던 파일은 백업에 없으니, 같은 계정으로 OneDrive에 로그인해 받으세요.'
+      : `옛 PC에서 ${sync(f?.oldSync)} 안이던 폴더입니다. 온라인에만 있던 파일은 백업에 없으니, 같은 계정으로 그 서비스에 로그인해 받으세요.`;
+  }
+  if (f?.why === 'new-synced' && place.kind === 'newFolder') return `이 PC의 그 폴더가 ${sync(f?.newSync)} 안이라, ${f?.newSync === 'oneDrive' ? 'OneDrive' : '동기화 폴더'} 밖 새 폴더에 받습니다.`;
+  if (f?.why === 'new-synced') return `${sync(f?.newSync)} 안에 놓습니다. 옮겨 올 양이 그 서비스의 남은 공간을 넘으면 동기화가 멈출 수 있습니다.`;
   if (place.kind === 'side') return '이 PC에서 프로그램이 쓰는 자리라, 저절로 실행되지 않게 따로 둡니다.';
   return '';
 }
@@ -642,15 +654,57 @@ export function moveDeviceName(from, accountDevices, same = []) {
 
 /** 옮겨 오기가 멈춘 까닭 — 이번 시작 뒤에 적힌 실패만 쓴다(옛 실패를 지금 실패로 읽지 않는다, Fable F5). 부호가 없는 실패는 다시 시작을 권한다(F11) */
 export function moveStopText(s, st) {
+  const fresh = moveStopCode(s, st);
+  const kept = st?.resultAt ? ' 앞서 옮겨 온 결과는 그대로 있습니다.' : '';
+  if (!fresh || fresh === 'MOVE_FAILED') return `옛 PC의 백업은 그대로 있습니다. 이어서 옮겨 오면 멈춘 곳부터 잇습니다.${kept}`;
+  if (fresh === 'BUSY') return `다른 PC가 백업을 쓰고 있어 멈췄습니다. 잠시 뒤 이어서 옮겨 오면 멈춘 곳부터 잇습니다.${kept}`;
+  // 장부를 쓰기 전에 난 실패(공간 · 목록 초과)는 자리를 다시 고르게 한다 — 엔진은 그때 새 고름을 받는다(E9 · GPT GA1)
+  // 목록 초과는 이어서 해도 같은 오류다 — 「이어서」를 권하지 않는다(Fable F1)
+  if (moveRechoose(s, st) || moveBlocked(fresh)) return `${failureText(fresh)}${kept}`;
+  return `${failureText(fresh)} 이어서 옮겨 오면 멈춘 곳부터 잇습니다.${kept}`;
+}
+/** 이번 시작 뒤에 적힌 실패의 부호 — 옛 실패는 지금 실패가 아니다(Fable F5). 새로 시작하면 엔진이 앞선 실패 칸을 비운다(E4) */
+export function moveStopCode(s, st) {
   const e = s?.lastMoveError, started = Date.parse(st?.startedAt || '') || 0;
-  const fresh = e && typeof e === 'object' && (Date.parse(e.at || '') || 0) >= started ? e.code : null;
-  if (!fresh || fresh === 'MOVE_FAILED') return '옛 PC의 백업은 그대로 있습니다. 이어서 옮겨 오면 멈춘 곳부터 잇습니다.';
-  if (fresh === 'BUSY') return '다른 PC가 백업을 쓰고 있어 멈췄습니다. 잠시 뒤 이어서 옮겨 오면 멈춘 곳부터 잇습니다.';
-  return `${failureText(fresh)} 이어서 옮겨 오면 멈춘 곳부터 잇습니다.`;
+  return e && typeof e === 'object' && (Date.parse(e.at || '') || 0) >= started && typeof e.code === 'string' ? e.code : null;
+}
+/**
+ * 멈춘 옮겨 오기에서 자리를 다시 고를 수 있는지. 엔진은 한 파일도 놓기 전(장부가 빈) 멈춘 것만 새 고름을 받는다(E9 begun).
+ * 공간 부족은 놓기 시작한 뒤 이어 할 때도 나서(그때 엔진은 처음 고른 자리를 지킨다) begun이 거짓일 때만 푼다(카본 A2, E24 부탁).
+ * 목록 초과는 고름과 상관없이 미리 보기부터 거절되어 자리를 다시 골라도 풀리지 않는다(Fable F1) — moveBlocked로 가른다
+ */
+export function moveRechoose(s, st) {
+  if (!st?.unfinished) return false;
+  return moveStopCode(s, st) === 'MOVE_NO_SPACE' && st.begun === false;
+}
+/** 이 옛 PC의 백업은 지금 옮겨 올 수 없는지 — 폴더 하나가 100만 개를 넘으면 미리 보기도 시작도 거절된다(Fable F1, 엔진 부탁 E25) */
+export const moveBlocked = (code) => code === 'MOVE_LIST_TOO_BIG';
+/**
+ * 옮겨 오는 동안의 양 · 폴더 · 속도(E7 move.progress — 옮겨 오기가 도는 동안만 있다). 이어받기에서는 전체가 남은 양이라 「이번에 받을 양」이라 쓴다.
+ * 남은 시간은 처음 5초 뒤 엔진이 준 속도로만 어림한다(속도가 없으면 쓰지 않는다)
+ */
+export function moveProgress(s) {
+  const p = s?.move?.progress;
+  if (!p || typeof p !== 'object') return null;
+  // 아직 정해지지 않은 칸은 null로 온다 — Number(null)은 0이라 숫자만 받는다(카본 A1)
+  const n = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
+  const bytes = n(p.bytes), total = n(p.total), rate = n(p.bytesPerSecond);
+  const left = rate && total !== null && bytes !== null && total > bytes ? (total - bytes) / rate : null;
+  return { bytes, total, rate: rate || null, folder: typeof p.folder === 'string' && p.folder ? p.folder : null, leftSec: left };
+}
+/** 남은 시간 어림 — 「약 N분」 · 「약 N시간 M분」 · 1분 안 */
+export function etaKo(sec) {
+  if (!Number.isFinite(sec) || sec < 0) return '';
+  if (sec < 60) return '1분 안';
+  const m = Math.round(sec / 60);
+  return m < 60 ? `약 ${m}분` : `약 ${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ''}`;
 }
 
+// unverified는 onedrive 안의 일부다(E5) — 줄로 보이되 합계에는 더하지 않는다(PART). carried(다시 돌릴 때 앞 장부에서 넘겨받은 수, E11)도
+// placed · same · side · onedrive의 일부라 더하면 두 번 센다 — 줄로 두지 않고 확인서의 한 줄로 말한다
+export const COUNT_PART = new Set(['unverified', 'carried']);
 const COUNT_KO = [['placed', '새로 놓음'], ['same', '이미 있던 같은 파일'], ['copy', '「(복구본)」으로 나란히'], ['onedrive', 'OneDrive에 이미 있음'],
-  ['same-unverified', '같아 보이나 내용은 견주지 못함'], ['side', '「따로 둔 것」에 놓음'], ['skip', '건너뜀'], ['folder-skip', '옮기지 않은 폴더'], ['fail', '옮기지 못함']];
+  ['unverified', '그 가운데 내용은 견주지 못함'], ['same-unverified', '같아 보이나 내용은 견주지 못함'], ['side', '「따로 둔 것」에 놓음'], ['skip', '건너뜀'], ['folder-skip', '옮기지 않은 폴더'], ['fail', '옮기지 못함']];
 /** 확인서의 수 — 갈래 이름은 엔진 summary()의 것이다 */
 export function moveCounts(result) {
   const c = result?.counts || {};
@@ -711,13 +765,17 @@ export function moveLeft(result) {
   // 견주지 못한 것은 이 PC에 이미 있어 그대로 둔 파일이다 — 옮기지 못한 것과 따로 센다(Fable 화면 검수 FA1).
   // 실패와 견주지 못한 수는 counts가 정확하다 — 앞 2,000개만 남긴 목록보다 작게 세지 않는다
   const c = result?.counts || {}, warn = g.list.filter((x) => x.tone === 'warn'), unv = (x) => x.key === 'unverified' || x.key === 'od-unverified';
-  const failed = Math.max(Number(c.fail) || 0, sum(warn.filter((x) => !unv(x)))), unverified = Math.max(Number(c['same-unverified']) || 0, sum(warn.filter(unv)));
+  // OneDrive에서 견주지 못한 수는 엔진이 따로 센다(E5 counts.unverified)
+  const failed = Math.max(Number(c.fail) || 0, sum(warn.filter((x) => !unv(x)))), unverified = Math.max((Number(c['same-unverified']) || 0) + (Number(c.unverified) || 0), sum(warn.filter(unv)));
   return { n: failed + unverified, failed, unverified, cut: g.cut };
 }
 /** 확인서의 큰 글 — 「다」와 「모두 같다」는 그 말이 맞을 때만 쓴다(Fable F10) */
 export function moveTitle(result) {
   const c = result?.counts || {}, left = moveLeft(result), fail = left.failed, put = (Number(c.placed) || 0) + (Number(c.copy) || 0) + (Number(c.side) || 0);
-  const then = put ? '옮겨 놓은 파일은 모두 디스크에 쓴 뒤 다시 읽어, 백업과 한 바이트도 다르지 않은지 확인했습니다.' : '';
+  // 넘겨받은 파일(E11 carried)은 이번에 받지 않았다 — 앞선 옮겨 오기에서 놓을 때 확인했고, 지금은 크기와 시각이 같은지만 보았다
+  const carried = Number(c.carried) || 0;
+  const then = !put ? '' : carried ? `옮겨 놓은 파일은 디스크에 쓴 뒤 다시 읽어 백업과 같은지 확인했습니다. 앞선 옮겨 오기에서 확인한 ${count(carried)}개는 지금도 크기와 시각이 같아 다시 받지 않았습니다.`
+    : '옮겨 놓은 파일은 모두 디스크에 쓴 뒤 다시 읽어, 백업과 한 바이트도 다르지 않은지 확인했습니다.';
   const here = ['placed', 'copy', 'side', 'same', 'onedrive', 'same-unverified'].reduce((n, k) => n + (Number(c[k]) || 0), 0);
   if (!here) return fail ? { main: '옮겨 오지 못했습니다.', soft: '이 PC에 놓은 파일이 없습니다.', then: '옛 PC 백업은 그대로 있습니다.', tone: 'warn' }
     : { main: '옮겨 온 파일이 없습니다.', soft: '', then: '옮기지 않은 것은 옛 PC 백업에 그대로 있습니다.', tone: 'warn' };
@@ -735,7 +793,8 @@ const ROOT_KO = { place: '같은 자리', moved: '「옮겨 온 자료」 아래
 export function moveRoots(result, extra = []) {
   const all = [];
   for (const f of Array.isArray(result?.folders) ? result.folders : []) {
-    for (const r of Array.isArray(f?.roots) ? f.roots : []) if (r && typeof r.path === 'string' && r.path && r.kind !== 'side') all.push({ path: r.path, kind: r.kind, label: folderName(r.path), where: ROOT_KO[r.kind] || '' });
+    // exists(E15): 지금 디스크에 그 폴더가 있는지. 호스트가 답하지 못하면 칸이 없다(undefined — 있다고 보고 넘기기가 검사한다)
+    for (const r of Array.isArray(f?.roots) ? f.roots : []) if (r && typeof r.path === 'string' && r.path && r.kind !== 'side') all.push({ path: r.path, kind: r.kind, label: folderName(r.path), where: ROOT_KO[r.kind] || '', missing: r.exists === false });
   }
   for (const p of Array.isArray(extra) ? extra : []) if (typeof p === 'string' && p) all.push({ path: p, kind: 'added', label: folderName(p), where: '고른 폴더' });
   const seen = new Set(), list = all.filter((x) => { const k = lowPath(x.path); if (seen.has(k)) return false; seen.add(k); return true; });
@@ -747,12 +806,19 @@ export function moveRoots(result, extra = []) {
  */
 export function moveTakeList(s, mv) {
   const result = mv?.result && !mv?.quit ? mv.result : null;
-  const roots = moveRoots(result, result ? mv?.added || [] : [...pickedSources(s), ...(mv?.added || [])]);
-  const off = new Set((Array.isArray(mv?.off) ? mv.off : []).map(lowPath)), isOff = (p) => off.has(lowPath(p));
+  // 넘기기의 고름은 창 기억(off · added)에만 둔다. 엔진에 적어 둔 nextSources로 되살리는 길(E10)은 걷었다 — 적힌 고름이 이 결과의
+  // 넘기기에서 온 것인지 옮겨 오기 전에 고른 것인지 가를 값이 없어, 겹치는 폴더 하나로 짐작하면 정상 경로에서 틀린다(카본 A3)
+  const added = Array.isArray(mv?.added) ? mv.added : [], offList = Array.isArray(mv?.off) ? mv.off : [];
+  const roots = moveRoots(result, result ? added : [...pickedSources(s), ...added]);
+  // 지금 디스크에 없는 자리(E15)와 넘기기가 없다고 돌려준 자리(SOURCES_MISSING의 paths, mv.gone)는 늘 뺀다 — 넘기기가 통째로 거절된다
+  const gone = new Set((Array.isArray(mv?.gone) ? mv.gone : []).map(lowPath));
+  for (const x of roots.list) if (gone.has(lowPath(x.path))) x.missing = true;
+  const off = new Set(offList.map(lowPath)), isOff = (p) => off.has(lowPath(p)) || gone.has(lowPath(p)) || roots.list.some((x) => x.missing && lowPath(x.path) === lowPath(p));
   // 서로 포함되면 체크된 바깥 폴더만 안쪽을 가린다 — 엔진은 서로 포함되는 폴더를 받지 않는다. 체크를 끈 바깥 폴더는 안쪽을 가리지 않는다(카본 A3)
   const on = roots.list.filter((x) => !isOff(x.path));
   const list = roots.list.filter((x) => !on.some((o) => o !== x && lowPath(o.path) !== lowPath(x.path) && pathIn(x.path, o.path)));
-  return { ...roots, list, result, isOff, checked: list.filter((x) => !isOff(x.path)).map((x) => x.path) };
+  // off · added: 창이 고침을 시작할 바탕 — off는 pathKey로 둔다
+  return { ...roots, list, result, isOff, off: offList.map(lowPath), added, checked: list.filter((x) => !isOff(x.path)).map((x) => x.path) };
 }
 export const pathKey = (p) => lowPath(p);
 /** 옮겨 온 뒤 옛 PC가 다시 백업했는지 — 마지막 시작 뒤의 판이 있으면 그 사이 바뀐 파일은 이 PC에 없다(Fable F15) */
@@ -760,4 +826,111 @@ export function moveFresh(devices, st, result) {
   const d = (Array.isArray(devices) ? devices : []).find((x) => x && x.from === st?.from);
   const since = Date.parse(st?.startedAt || '') || Date.parse(result?.at || '') || 0;
   return d && since && Date.parse(d.lastBackupAt || '') > since ? d : null;
+}
+
+/* ── 옮겨 오기 4b — 프로그램 다시 깔기 · 앱 설정 되돌리기 · 다시 로그인할 곳(engine move-service.cjs의 reinstallList · reinstall ·
+   restoreSettings · checklist, 창 상태 move.reinstall). 설계 검토는 Fable 5.2 「고친 뒤 지음」(D1~D18)이다 ── */
+// 표 밖(others)은 화면에 「그 밖에 winget이 찾은 프로그램」으로 부른다 — 「표」는 엔진 말이다(카본 C9)
+const SCOPE_KO = { machine: '컴퓨터 전체', user: '사용자', outside: '그 밖' };
+/** 깔 수 있는 수(엔진 moveReinstall이 받는 1~200개) */
+export const APPS_MAX = 200;
+/**
+ * 다시 깔 목록의 줄과 고른 것. 표의 프로그램은 엔진의 chosen(새 PC에 없으면 고름)이 기본이고, 표 밖은 고르지 않음이 기본이다.
+ * 이미 깔린 것과 winget이 준비되지 않았을 때는 고르지 않는다. names는 깐 결과에 이름이 없는 표 밖 프로그램을 부를 때 쓴다(Fable D8)
+ */
+export function appsRows(list, picks = {}) {
+  const ready = list?.wingetStatus?.ready === true;
+  const on = (p, def) => (!ready || p.installed ? false : typeof picks?.[p.id] === 'boolean' ? picks[p.id] : def);
+  const table = (Array.isArray(list?.table) ? list.table : []).filter((p) => p && typeof p.id === 'string').map((p) => ({ ...p, scopeKo: SCOPE_KO[p.scope] || '', on: on(p, p.chosen === true) }));
+  const others = (Array.isArray(list?.others) ? list.others : []).filter((p) => p && typeof p.id === 'string').map((p) => ({ ...p, scope: 'outside', scopeKo: SCOPE_KO.outside, on: on(p, false) }));
+  const manual = (Array.isArray(list?.manual) ? list.manual : []).filter((p) => p && typeof p.name === 'string');
+  const chosen = [...table, ...others].filter((p) => p.on);
+  return { ready, table, others, manual, chosen, ids: chosen.map((p) => p.id), machine: chosen.filter((p) => p.scope === 'machine').length,
+    outside: chosen.filter((p) => p.scope === 'outside').length, noLicense: chosen.filter((p) => p.scope === 'outside' && !p.license).length,
+    names: Object.fromEntries([...table, ...others].map((p) => [p.id, p.name || p.id])), empty: !table.length && !others.length && !manual.length };
+}
+/** winget이 준비되지 않은 까닭(호스트 reinstall.status의 reason) — 새로 깐 Windows는 처음 몇 분 동안 그럴 수 있다(4.6b) */
+export function wingetText(st) {
+  if (st?.reason === 'WINGET_OLD') return '프로그램 설치 도구(winget)의 판이 오래되었습니다. Microsoft Store에서 「앱 설치 관리자」를 업데이트한 뒤 「목록 다시 읽기」를 누르세요.';
+  if (st?.reason === 'WINGET_START') return '프로그램 설치 도구(winget)가 아직 답하지 않습니다. 새로 깐 Windows는 처음 몇 분 동안 그럴 수 있습니다. 잠시 뒤 「목록 다시 읽기」를 누르세요.';
+  return '프로그램 설치 도구(winget)를 찾지 못했습니다. 새로 깐 Windows는 처음 몇 분 동안 그럴 수 있습니다. 잠시 뒤 「목록 다시 읽기」를 누르고, 그래도 없으면 Microsoft Store에서 「앱 설치 관리자」를 받으세요.';
+}
+/** 깔지 못한 까닭(엔진 결과의 code) — 손님이 할 일을 쓴다(Fable D7 · D15) */
+export function appReason(code) {
+  const c = String(code || '');
+  if (c === 'EXIT_2') return '앞서 시작한 깔기가 아직 돌고 있을 수 있습니다. 잠시 뒤 「다시 깔기」를 눌러 주세요.';
+  if (c === 'WINGET_ADMIN_MISSING') return '승인한 관리자 계정에 winget이 없습니다. 그 계정에서 Microsoft Store의 「앱 설치 관리자」를 받거나, 관리자에게 아래 명령으로 깔아 달라고 부탁하세요.';
+  if (c === 'WINGET_TIMEOUT') return '20분이 지나도 끝나지 않아 멈췄습니다.';
+  if (c === 'START_FAILED') return '관리자 권한으로 시작하지 못했습니다.';
+  if (c === 'REINSTALL_NEEDS_ELEVATION') return '관리자 확인이 있어야 깔리는 프로그램입니다.';
+  const n = /^EXIT_(-?\d+)$/.exec(c);
+  // 조사는 번호 읽는 소리에 맞춘다(「1603으로」 · 「0x8A15002B로」, 카본 A6)
+  if (n) { const v = Number(n[1]), num = v < 0 || v > 0xffff ? `0x${(v >>> 0).toString(16).toUpperCase()}` : String(v); return `설치 도구가 오류 번호 ${josa(num, '으로/로')} 끝났습니다.`; }
+  return '까닭을 가리지 못한 오류입니다.';
+}
+/**
+ * 깐 결과 한 줄 — 깔렸는지는 설치 목록 확인(listed — winget list --id)을 먼저 본다(Fable D6). true는 깔려 있음, false는 목록에 없음,
+ * null은 확인하지 못함이다. 「아니요」인지 창이 스스로 닫혔는지 가를 수 없어 누가 눌렀는지 말하지 않는다(D16)
+ */
+export function appResult(r, names = {}) {
+  const name = r?.name || names?.[r?.id] || r?.id || '', listed = r?.listed, st = r?.state;
+  const row = (ok, text, why = '') => ({ id: r?.id, name, ok, text, why, state: st, scope: r?.scope, listed, reboot: st === 'reboot' });
+  if (st === 'installed') return row(listed !== false, listed === false ? '깔았다고 했지만 설치 목록에 없습니다' : listed === true ? '깔았습니다' : '깔았습니다. 설치 목록에서는 확인하지 못했습니다');
+  if (st === 'already') return row(true, '이미 깔려 있었습니다');
+  if (st === 'reboot') return row(true, 'PC를 다시 켜면 마저 깔립니다');
+  if (listed === true) return row(true, '설치 도구는 끝을 알리지 못했지만 깔려 있습니다');
+  if (st === 'declined') return row(false, '관리자 확인을 받지 못해 깔지 않았습니다');
+  if (st === 'timeout') return row(false, '시간이 지나 끝내지 못했습니다');
+  return row(false, '깔지 못했습니다', appReason(r?.code));
+}
+/**
+ * 깐 결과 묶음(창 상태 move.reinstall이 끝난 것). restore: 설정을 저절로 되돌릴지 — 하나라도 깔렸을 때만이다(Fable D9).
+ * 모두 「관리자 확인을 받지 못함」이나 시간 초과면 되돌려도 설정이 따로 둔 곳에만 가므로 부르지 않고 고르는 화면에 남는다
+ */
+export function appsOutcome(job, names = {}) {
+  if (!job || job.running) return null;
+  const rows = (Array.isArray(job.results) ? job.results : []).map((r) => appResult(r, names));
+  return { rows, at: job.at || null, failedStage: job.stage === 'failed', error: job.error || null, bad: rows.filter((r) => !r.ok).length, reboot: rows.some((r) => r.reboot),
+    restore: job.stage === 'done' && rows.some((r) => ['installed', 'already', 'reboot'].includes(r.state) || r.listed === true),
+    declined: rows.some((r) => r.state === 'declined'), admin: rows.some((r) => r.why && /관리자에게/.test(r.why)) };
+}
+const LEFT_KO = { 'secret-looking': '열쇠로 보이는 글이 있어', unreadable: '읽지 못해', 'too-big': '너무 커서', 'too-many': '파일이 너무 많아' };
+/** 앱 설정 결과 한 앱 — 되돌림 · 덮지 않음 · 앱이 없어 따로만 · 뺀 칸 · 옮기지 않은 것 · 확장 명령 · 쓰지 못한 파일(4.6b · Fable D8) */
+export function settingRows(results) {
+  return (Array.isArray(results) ? results : []).filter((a) => a && typeof a.name === 'string').map((a) => {
+    const n = (x) => (Array.isArray(x) ? x.length : 0), lines = [];
+    if (n(a.restored)) lines.push(`설정 파일 ${count(n(a.restored))}개를 원래 자리에 되돌렸습니다.`);
+    if (a.instructions) lines.push('AI 도구 지침 파일을 되돌렸습니다. 다음에 그 도구를 열 때부터 읽힙니다.');
+    if (n(a.kept)) lines.push(`이 PC에 이미 있던 ${count(n(a.kept))}개는 덮지 않고, 옛 PC의 것을 따로 둔 곳에 두었습니다.`);
+    if (a.notInstalled) lines.push('프로그램이 깔려 있지 않아 따로 둔 곳에만 두었습니다. 프로그램을 깐 뒤 「설정 다시 되돌리기」를 누르세요.');
+    if (Number(a.dropped) > 0) lines.push(`옮겨도 되는 칸만 되돌리고, 그 밖의 ${count(Number(a.dropped))}칸은 뺐습니다.`);
+    if (n(a.droppedProfiles)) lines.push(`실행 명령이 든 Terminal 프로필 ${count(n(a.droppedProfiles))}개(${a.droppedProfiles.slice(0, 3).join(', ')}${n(a.droppedProfiles) > 3 ? ' 들' : ''})는 옮기지 않았습니다.`);
+    const left = new Map();
+    for (const l of Array.isArray(a.left) ? a.left : []) left.set(l?.why, (left.get(l?.why) || 0) + 1);
+    for (const [why, k] of left) lines.push(`${LEFT_KO[why] || '그 밖의 까닭으로'} 옮기지 않은 것이 ${count(k)}개 있습니다.`);
+    if (n(a.extensions)) lines.push(`확장 ${count(n(a.extensions))}개는 명령으로 다시 까세요.`);
+    if (n(a.failed)) lines.push(`${count(n(a.failed))}개는 쓰지 못했습니다. 그 자리의 폴더 권한을 확인해 주세요.`);
+    // 앱마다 실제로 한 일의 이름 — 되돌린 파일이 없고 따로만 두었으면 「되돌림」이라 하지 않는다
+    // 옮기지 않은 것(열쇠로 보임 · 읽지 못함 · 너무 큼)만 있으면 「옮길 것 없음」이 아니라 「옮기지 않음」이다(카본 A5)
+    const warn = !!(n(a.failed) || a.notInstalled);
+    const label = n(a.failed) ? '확인할 것' : a.notInstalled ? '따로 둠' : n(a.restored) ? '되돌림' : n(a.kept) || n(a.side) ? '따로 둠' : n(a.extensions) ? '명령으로'
+      : left.size || n(a.droppedProfiles) || Number(a.dropped) > 0 ? '옮기지 않음' : '옮길 것 없음';
+    // 큰 글은 이름이 아니라 실제 수로 가른다 — 쓰지 못한 파일이 섞이면 이름은 「확인할 것」이다(Fable FA2)
+    return { app: a.app, name: a.name, lines, warn, label, restoredN: n(a.restored), asideN: n(a.kept) + n(a.side) + (a.notInstalled ? 1 : 0), extensions: (a.extensions || []).filter((x) => x && typeof x.command === 'string'), failed: a.failed || [] };
+  });
+}
+/** 다시 로그인할 곳의 남은 수 */
+export const checksLeft = (list) => (Array.isArray(list) ? list.filter((x) => x && !x.done).length : 0);
+/**
+ * 「프로그램과 설정」 화면의 지금 — running(깔는 중, 창 상태) · restoring(설정 되돌리는 중) · result(설정까지 끝남 또는 되돌리기 실패) ·
+ * loading · error(목록을 읽지 못함) · notready(winget 없음) · pick(고르기, 지난 깔기의 결과가 있으면 함께)
+ */
+export function appsPhase(s, apps) {
+  if (s?.move?.reinstall?.running) return 'running';
+  if (apps?.restoring) return 'restoring';
+  if (Array.isArray(apps?.settings) || apps?.settingsError) return 'result';
+  if (apps?.list === undefined) return 'loading';
+  if (!apps.list) return 'error';
+  if (apps.list.wingetStatus?.ready !== true) return 'notready';
+  return 'pick';
 }
