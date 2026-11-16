@@ -1288,11 +1288,13 @@ class BackupEngine extends EventEmitter {
       const name = `${String(index + 1).padStart(2, '0')}-${path.win32.basename(original).replace(/[<>:"/\\|?*]/g, '_') || '드라이브'}`;
       // What it could not read: from the earlier backups that hold this folder, each listed only when needed.
       // A partial snapshot's fill comes just before it — first for the one restored from, then for each earlier one.
-      const fillEntry = f => ({ selector: f.selector, at: f.snapshot.time, cut: false, blind: f.blind, only: f.only, load: async () => {
+      // A listing too big to hold (a move's `tooBig`, 화면 세션 E25) says nothing of what is missing: as a cut list.
+      const fillEntry = f => { const entry = { selector: f.selector, at: f.snapshot.time, cut: false, blind: f.blind, only: f.only, load: async () => {
         let had;
         await this.run(['ls', '--json', '--recursive', f.selector], { consumeStdout: async stream => { had = await readList(stream, base); } });
+        if (had?.tooBig) entry.cut = true;
         return had;
-      } });
+      } }; return entry; };
       const fills = new Map();
       for (const s of [snapshot, ...earlier]) if (s.tags.includes('partial')) { const f = await this.fillFor(all, s, original); if (f) fills.set(s.id, fillEntry(f)); }
       const ownFill = fills.get(snapshot.id);
@@ -1301,6 +1303,7 @@ class BackupEngine extends EventEmitter {
         e.load = async () => {
           let had;
           await this.run(['ls', '--json', '--recursive', e.selector], { consumeStdout: async stream => { had = await readList(stream, base); } });
+          if (had?.tooBig) { e.cut = true; return had; }
           if (s.tags.includes('partial')) {
             if (listsIn(all, s).length !== 1) e.cut = true;
             else {

@@ -53,10 +53,14 @@ function underAny(dirs, name) {
  * A listing for the move (4.6): like restore-tar's readManifest, but links, special nodes, names Windows cannot hold
  * and what is under them are kept aside with a reason instead of stopping the folder; a second name that differs only
  * by case goes to `aside` (it is put in 「따로 둔 것」 under its own name, review M19). Nodes carry `mtime` (ms).
+ * 화면 세션 E25: past a million names the folder is not refused but marked `tooBig` with nothing in it — the move leaves
+ * it out (its backup stays the only copy) and the other folders still come. The listing is read to its end, so restic
+ * finishes as usual. `options.max` is for the tests (restorePlans passes its own second argument, never this).
  */
-async function readMoveList(input) {
+async function readMoveList(input, options) {
+  const max = Number.isSafeInteger(options?.max) ? options.max : MAX_NODES;
   const nodes = new Map(), aside = new Map(), skipped = [], skippedDirs = new Map(), merged = new Set(), asideDirs = new Set();
-  let bytes = 0, pending = '', snapshots = 0;
+  let bytes = 0, pending = '', snapshots = 0, tooBig = false;
   const decoder = new StringDecoder('utf8');
   function line(text) {
     if (!text.trim()) return;
@@ -67,7 +71,11 @@ async function readMoveList(input) {
     if (kind !== 'node' || typeof node.path !== 'string' || !node.path.startsWith('/')) throw new Error('복구 목록 형식을 확인하지 못했습니다.');
     const name = node.path.slice(1), lower = name.toLowerCase();
     if (!name || name.split('/').some(p => !p || p === '.' || p === '..')) throw new Error('복구 목록 형식을 확인하지 못했습니다.');
-    if (nodes.size + aside.size + skipped.length >= MAX_NODES) throw Object.assign(new Error('작업 폴더 하나당 파일 · 폴더 100만 개까지 옮겨 옵니다.'), { code: 'MOVE_LIST_TOO_BIG' });
+    if (tooBig) return;
+    if (nodes.size + aside.size + skipped.length >= max) {
+      tooBig = true; nodes.clear(); aside.clear(); skipped.length = 0; skippedDirs.clear(); merged.clear(); asideDirs.clear(); bytes = 0;
+      return;
+    }
     const above = aboveSkipped(skippedDirs, name);
     const reason = above ? above : !['file', 'dir'].includes(node.type) ? (node.type === 'symlink' ? 'link' : 'special') : !name.split('/').every(plan.safeName) ? 'name' : null;
     if (reason) { skipped.push({ name, type: node.type, reason }); if (node.type === 'dir' || node.type === 'symlink') skippedDirs.set(name, reason); return; }
@@ -93,7 +101,7 @@ async function readMoveList(input) {
   }
   pending += decoder.end(); if (pending) line(pending);
   if (snapshots !== 1) throw new Error('복구할 스냅샷 목록을 확인하지 못했습니다.');
-  return { nodes, aside, skipped, skippedDirs, skippedNames: new Set(skipped.map(s => s.name)), merged, bytes };
+  return { nodes, aside, skipped, skippedDirs, skippedNames: new Set(skipped.map(s => s.name)), merged, bytes, ...(tooBig ? { tooBig: true } : {}) };
 }
 
 /** The move ledger (4.6 「장부와 이어받기」): JSON lines, flushed every 50 lines, at folder ends and before each new
@@ -189,7 +197,7 @@ class Move {
         if (Number.isSafeInteger(r.k) && r.k > this.n) this.n = r.k;
       }
       else if (r.t === 'dir' && typeof r.path === 'string') this.dirs.set(r.path.toLowerCase(), { ok: null, path: r.path });
-      else if (r.t === 'done' && typeof r.o === 'string') { this.folderDone.add(r.o.toLowerCase()); if (r.skipped) this.folderSkips.set(r.o.toLowerCase(), { original: r.o }); }
+      else if (r.t === 'done' && typeof r.o === 'string') { this.folderDone.add(r.o.toLowerCase()); if (r.skipped) this.folderSkips.set(r.o.toLowerCase(), { original: r.o, ...(r.tooBig ? { tooBig: true } : {}) }); }
       else if (r.t === 'n' && Number.isSafeInteger(r.k) && r.k > this.n) this.n = r.k;
     }
     if (!tidy) return { lines: lines.length, removedTemp: 0 };
@@ -309,6 +317,8 @@ class Move {
     if (failure) throw failure;
     return seen;
   }
+  /** How a folder is moved: as chosen, else its default; a folder whose listing is too big is not moved (화면 세션 E25). */
+  modeOf(folder) { return folder.listing?.tooBig ? 'skip' : this.choices[folder.original]?.mode || folder.fp.mode; }
   target(folder, name, dir = false) {
     const choice = this.choices[folder.original] || {};
     return plan.destination(folder.fp, name, { old: this.old, now: this.now, mode: choice.mode || folder.fp.mode, sameDrive: !!choice.sameDrive, dir });
@@ -392,7 +402,7 @@ class Move {
     if (!old.size) return 0;
     const found = [], taken = new Set();
     for (const folder of this.folders) {
-      const mode = this.choices[folder.original]?.mode || folder.fp.mode;
+      const mode = this.modeOf(folder);
       if (mode === 'skip' || this.folderDone.has(folder.original.toLowerCase())) continue;
       const files = [...folder.listing.nodes.values(), ...folder.listing.aside.values()].filter(n => n.type === 'file').map(n => [n, () => this.place(folder, n)]);
       for (const file of folder.extra || []) files.push([{ name: file.name, type: 'file', size: file.size, mtime: Date.parse(file.backupAt) || null }, () => this.target(folder, file.name)]);
@@ -426,7 +436,7 @@ class Move {
     const folders = this.folders || await this.prepare();
     const items = [];
     const out = folders.map(f => {
-      const mode = this.choices[f.original]?.mode || f.fp.mode;
+      const mode = this.modeOf(f);
       let files = 0, bytes = 0;
       const count = (job, size) => { if (job.skip) return; files++; bytes += size; items.push({ path: job.path, size }); };
       // What this run will still write (카본 끝판 D2): not a folder an earlier run finished, each file where it really
@@ -438,8 +448,9 @@ class Move {
         }
         for (const file of f.extra || []) if (!SETTLED.has(this.done.get(fileKey(f.original, file.name))) && Number.isSafeInteger(file.size)) count(this.target(f, file.name), file.size);
       }
-      return { original: f.original, label: f.fp.label, mode, modes: f.fp.modes, why: f.fp.why, destination: f.fp.destination, newFolder: f.fp.newFolder,
-        sameDrive: f.fp.sameDrive, files, bytes, skipped: f.listing.skipped.length, backupAt: f.backupAt };
+      // 화면 세션 E25: a folder too big to list is shown with 「옮기지 않음」 as its only way.
+      return { original: f.original, label: f.fp.label, mode, modes: f.listing.tooBig ? ['skip'] : f.fp.modes, why: f.fp.why, destination: f.fp.destination, newFolder: f.fp.newFolder,
+        sameDrive: f.fp.sameDrive, files, bytes, skipped: f.listing.skipped.length, backupAt: f.backupAt, ...(f.listing.tooBig ? { tooBig: true } : {}) };
     });
     const volumes = plan.space(items);
     const free = await this.host('folders.free', [volumes.map(v => v.volume)]).catch(() => volumes.map(() => null));
@@ -457,13 +468,13 @@ class Move {
       if (view.volumes.some(v => v.enough === false)) throw Object.assign(new Error('되살릴 파일을 놓을 공간이 부족합니다. 다른 자리를 골라 주세요.'), { code: 'MOVE_NO_SPACE' });
       this.total = view.bytes;
       if (!resumed.lines) await this.ledger.write({ t: 'head', v: 1, moveId: this.moveId, from: this.from, at: new Date().toISOString(), ...(this.carried.length ? { carryFrom: this.carryFrom } : {}),
-        folders: folders.map(f => ({ original: f.original, snapshot: f.selector.split(':')[0], mode: this.choices[f.original]?.mode || f.fp.mode })) }, true);
+        folders: folders.map(f => ({ original: f.original, snapshot: f.selector.split(':')[0], mode: this.modeOf(f) })) }, true);
       // 화면 세션 E11: what was taken over goes to this ledger too, so a resume and the next run read it here.
       for (const line of this.carried.splice(0)) await this.ledger.write(line);
       for (const f of folders) {
         if (this.folderDone.has(f.original.toLowerCase())) continue;
-        const mode = this.choices[f.original]?.mode || f.fp.mode;
-        if (mode === 'skip') { await this.ledger.write({ t: 'done', o: f.original, skipped: true }, true); this.folderSkips.set(f.original.toLowerCase(), { original: f.original }); continue; }
+        const mode = this.modeOf(f), big = f.listing.tooBig ? { tooBig: true } : {};
+        if (mode === 'skip') { await this.ledger.write({ t: 'done', o: f.original, skipped: true, ...big }, true); this.folderSkips.set(f.original.toLowerCase(), { original: f.original, ...big }); continue; }
         for (const s of f.listing.skipped) await this.record(f.original, s.name, 'skip', { c: s.reason });
         await this.folder(f);
       }

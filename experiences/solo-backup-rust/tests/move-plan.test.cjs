@@ -996,6 +996,16 @@ windowsOnly('화면 세션 E8 · E11(11-16): a finished move started again fetch
   const last = await alone.run();
   assert.deepEqual(dumps, [selD + ' /proj/y.txt']);
   assert.deepEqual(last.counts, { placed: 4, same: 2, carried: 5 }, 'y.txt came again as 「이미 있음」 in the fourth run');
+  // 화면 세션 E25: a folder whose listing is too big is not moved, whatever was chosen, and never read; the others come,
+  // and the move is not complete for it (its backup stays the only copy).
+  const big = path.join(oldP, 'Big'), bigListing = await readMoveList(Readable.from([Buffer.from([{ message_type: 'snapshot' }, ...['a', 'b', 'c'].map(n => ({ message_type: 'node', path: '/' + n, type: 'file', size: 1, mtime: at }))].map(l => JSON.stringify(l)).join('\n'))]), { max: 2 });
+  const withBig = { ...engine, restorePlans: async () => [...plans, { original: big, selector: 'c'.repeat(64) + ':' + big, manifest: bigListing, backupAt: at, extra: [] }] };
+  dumps.length = 0;
+  const leftOut = await new Move({ engine: withBig, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: '6666ffff', ledgerDir, carryFrom: '5555eeee', choices: { [big]: { mode: 'original' } } }).run();
+  assert.deepEqual(dumps, [], 'nothing of it is read');
+  assert.deepEqual([leftOut.counts['folder-skip'], leftOut.complete, leftOut.items.find(i => i.result === 'folder-skip')], [1, false, { result: 'folder-skip', original: big, tooBig: true }]);
+  const bigDone = (await Ledger.read(path.join(ledgerDir, '6666ffff.jsonl'))).find(l => l.t === 'done' && l.o === big);
+  assert.deepEqual([bigDone.skipped, bigDone.tooBig], [true, true]);
 });
 
 test('화면 세션 E17 · E18 · E19 · E21 ~ E24(11-16): 「프로그램과 설정」 beside a job, its progress, its results in the state', async () => {
@@ -1066,4 +1076,28 @@ test('화면 세션 E17 · E18 · E19 · E21 ~ E24(11-16): 「프로그램과 �
   assert.deepEqual([now.reinstall, now.settings, now.checklistLeft, now.begun], [{ at: '2026-11-16T09:00:00.000Z', results: [{ id: 'Git.Git', state: 'installed' }] }, null, all.length - 1, true]);
   st.keptChecklist = async () => null;
   assert.equal((await st.status()).checklistLeft, null, 'without a kept kit the state reads no repository and says nothing');
+});
+
+test('화면 세션 E25(11-16): a folder past a million names is marked, not refused, and only it is left out', async () => {
+  const { Move } = require('../engine/src/move-restore.cjs');
+  const { placed } = require('../engine/src/move-service.cjs');
+  const lines = n => Readable.from([Buffer.from([{ message_type: 'snapshot' }, ...Array.from({ length: n }, (_, i) => ({ message_type: 'node', path: '/f' + i, type: 'file', size: 3, mtime: '2026-11-16T00:00:00Z' }))].map(l => JSON.stringify(l)).join('\n'))]);
+  // The listing is read to its end and says only that it is too big.
+  const big = await readMoveList(lines(5), { max: 3 });
+  assert.deepEqual([big.tooBig, big.nodes.size, big.aside.size, big.skipped.length, big.bytes], [true, 0, 0, 0, 0]);
+  const fits = await readMoveList(lines(3), { max: 3 });
+  assert.deepEqual([fits.tooBig, fits.nodes.size, fits.bytes], [undefined, 3, 9]);
+  // A broken line after the limit still stops the listing: the limit is not a way past the format check.
+  await assert.rejects(readMoveList(Readable.from([Buffer.from([{ message_type: 'snapshot' }, ...Array.from({ length: 4 }, (_, i) => ({ message_type: 'node', path: '/f' + i, type: 'file', size: 1 })), { message_type: 'node', path: 'relative' }].map(l => JSON.stringify(l)).join('\n'))]), { max: 3 }), /형식/);
+  // The preview: that folder has 「옮기지 않음」 as its only way and counts nothing; the other is counted as chosen.
+  const docs = 'C:\\Users\\kim\\Documents', desk = 'C:\\Users\\kim\\Desktop';
+  const [fpDocs, fpDesk] = plan.folderPlans([docs, desk], { old: OLD, now: NOW });
+  const move = new Move({ engine: null, host: async (m, a) => (m === 'folders.free' ? a[0].map(() => 1e12) : null), from: 'dev000000000', old: OLD, now: NOW, moveId: '7777aaaa', ledgerDir: 'C:\\l', choices: { [docs]: { mode: 'original' } } });
+  move.folders = [{ original: docs, selector: 'x:/d', listing: big, fp: fpDocs, extra: [] }, { original: desk, selector: 'x:/e', listing: fits, fp: fpDesk, extra: [] }];
+  const view = await move.preview();
+  assert.deepEqual(view.folders.map(f => [f.mode, f.modes, f.files, f.tooBig]), [['skip', ['skip'], 0, true], [fpDesk.mode, fpDesk.modes, 3, undefined]]);
+  assert.equal(view.files, 3);
+  // Where it lands: nowhere, and the result says why.
+  const where = placed(move.folders, { [docs]: { mode: 'original' } }, { old: OLD, now: NOW });
+  assert.deepEqual([where[0].mode, where[0].roots, where[0].tooBig, where[1].tooBig], ['skip', [], true, undefined]);
 });

@@ -60,7 +60,8 @@ function startState(before, { from, choices, now = new Date(), id = newId, start
 }
 const CODE = /^[A-Z][A-Z_]{1,31}$/;
 /** A failure's code for `lastMoveError` (화면 세션 E4). The move's own refusals carry theirs (MOVE_NO_SPACE ·
- *  MOVE_LIST_TOO_BIG); this PC's profile not read, the old device's backup gone, and a lost connection are told by
+ *  MOVE_LIST_TOO_BIG, which a move's own listing no longer raises: a folder past a million names is marked instead,
+ *  화면 세션 E25); this PC's profile not read, the old device's backup gone, and a lost connection are told by
  *  their words. The rest stays MOVE_FAILED (and a held repository BUSY) in the engine. */
 function moveCode(e) {
   if (!e || typeof e !== 'object' || CODE.test(e.code || '')) return e;
@@ -77,7 +78,8 @@ function placed(folders, choices, { old, now }) {
   const at = plan.places(now);
   return folders.map(f => {
     const choice = choices[f.original] || {};
-    const mode = choice.mode || f.fp.mode, sameDrive = !!choice.sameDrive;
+    // 화면 세션 E25: a folder too big to list is not moved, whatever was chosen.
+    const mode = f.listing?.tooBig ? 'skip' : choice.mode || f.fp.mode, sameDrive = !!choice.sameDrive;
     const back = plan.destination(f.fp, '', { old, now, mode: 'original', sameDrive, dir: true });
     const roots = []; let cut = false;
     const kind = p => (plan.within(p, at.side) ? 'side' : mode !== 'original' ? 'newFolder' : plan.within(p, at.base) ? 'moved' : 'place');
@@ -107,7 +109,7 @@ function placed(folders, choices, { old, now }) {
       // A second name differing only by case goes to 「따로 둔 것」 whatever the way (move-restore place()).
       if (f.listing?.aside?.size) add(at.side, 'side');
     }
-    return { original: f.original, mode, sameDrive, destination: back.skip ? f.fp.destination : back.path, newFolder: f.fp.newFolder, label: f.fp.label, roots, ...(cut ? { rootsCut: true } : {}) };
+    return { original: f.original, mode, sameDrive, destination: back.skip ? f.fp.destination : back.path, newFolder: f.fp.newFolder, label: f.fp.label, roots, ...(cut ? { rootsCut: true } : {}), ...(f.listing?.tooBig ? { tooBig: true } : {}) };
   });
 }
 
