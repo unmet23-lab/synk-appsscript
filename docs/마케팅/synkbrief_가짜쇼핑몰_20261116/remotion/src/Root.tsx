@@ -6,6 +6,6 @@ import { FPS } from './timeline';
 export const RemotionRoot: React.FC = () => (
   <>
     {/* 본편 하나(인스타 · 유튜브 · 틱톡 같은 영상 — 끝 말이 캡션 · DM · 고정 댓글을 가리키지 않는다) */}
-    <Composition id="b54" component={Film} durationInFrames={TOTAL} fps={FPS} width={1080} height={1920} />
+    <Composition id="b52" component={Film} durationInFrames={TOTAL} fps={FPS} width={1080} height={1920} />
   </>
 );

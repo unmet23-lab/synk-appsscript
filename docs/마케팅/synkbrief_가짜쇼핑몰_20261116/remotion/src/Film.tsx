@@ -1,11 +1,11 @@
-// synkbrief B54 「원생 명단」 본편 — 새 방향 편(재연 드라마 + 끝에 지키는 법 한 줄). 뼈대는 형식 원본 92mUc9V0eJY(AI 사기 예방 재연 숏드라마 · 39.2초)의 박자 자리.
-// 결(B50 Film.tsx의 장면 코드를 옮김 — 틀 파일은 tools/편틀 원천): 장면을 아래로 내리고 위는 같은 장면을 뒤집어 흐리게 · 위 그늘 위 큰 글자가 곧 말 ·
-// 원장 · 경찰관(방 안 사람)은 흰, 휴대폰 속 협박범의 말은 회색(11-16) · 버터는 한 곳(LINES의 butter · bi) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
-// 그린 앱 화면 칸은 없다 — 메일 · 「발신번호 표시제한」 · 송금 화면은 시작 그림에 함께 구운 글자다.
+// synkbrief B52 「가짜 쇼핑몰」 본편 — 새 방향 편(재연 드라마 + 끝에 지키는 법 한 줄). 뼈대는 형식 원본 vcIyYKZ4K-A(지역 방송 고발 쇼츠 · 73.2초)의 훅 · 반전 · 끝 자리.
+// 결(B54 Film.tsx의 장면 코드를 옮김 — 틀 파일은 tools/편틀 원천): 장면을 아래로 내리고 위는 같은 장면을 뒤집어 흐리게 · 위 그늘 위 큰 글자가 곧 말 ·
+// 동생은 흰, 언니는 회색(흠 장부 #29 — 소리를 꺼도 누가 말했는지 갈리게 회색을 더 짙게) · 버터는 한 곳(주소의 숫자 0 — LINES의 [ ] 표시) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
+// 그린 앱 화면 칸은 없다 — AI 답 · 결제 · 검색 · 주문 · 공식몰 화면은 시작 그림에 함께 구운 글자다. 두 주소 칸은 둘레를 어둡게 눌러 짚는다(Spot — 동그라미 · 형광 대신, 장부 「화면 결」 ⑥).
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from './lib/fonts';
-import { S, CUTS, LINES, VO, SOUNDS, TOTAL_S, FPS, type Crop } from './timeline';
+import { S, CUTS, LINES, VO, SOUNDS, SPOTS, TOTAL_S, FPS, BGM, type Crop } from './timeline';
 
 export const TOTAL = Math.round(TOTAL_S * FPS);
 // 마감 판: REMOTION_MASTER=1이면 컷 · 음악 · 해설 소리를 끄고 마감한 한 줄(public/master.wav — scripts/마감.sh)만 깐다. 조용한 편은 AAC를 다시 담으면 320kbps 아래로 떨어져, 섞은 소리(PCM)에서 바로 담는다(현장 노트 영상 11-04).
@@ -13,7 +13,7 @@ const MASTER = process.env.REMOTION_MASTER === '1';
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const sec = (s: number) => Math.round(s * FPS);
-const GREY = '#C4C4C4';
+const GREY = '#A3A3A3';
 const BUTTER = '#F5C445';
 const X = 84;
 const TOP = 352; // B38 컷 전수 검수 3: 고지 글 · 큰 글자를 안전선(269px) 안으로. 11-13: 위 표시(298)와 출처 줄 사이를 띄우려 340 → 352
@@ -65,8 +65,11 @@ const Shade: React.FC = () => {
   );
 };
 
+// 줄 안의 [ ] = 버터 글자(주소의 숫자 0 하나 — 그 편의 버터 한 곳)
+const rich = (l: string) => l.split(/(\[[^\]]+\])/).map((p, k) => (p.startsWith('[') ? <span key={k} style={{ color: BUTTER }}>{p.slice(1, -1)}</span> : <React.Fragment key={k}>{p}</React.Fragment>));
+
 // 큰 글자가 곧 말 — at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄만).
-const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean; bi?: number }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter, bi = 0 }) => {
+const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean; bi?: number; metaBelow?: boolean }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter, bi = 0, metaBelow }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
@@ -80,10 +83,12 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
   return (
     <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: deep ? '0 0 3px rgba(0,0,0,0.55), 0 1px 12px rgba(0,0,0,0.55)' : '0 1px 10px rgba(0,0,0,0.45)' }}>
       {/* 11-13 이해 시험: 작은 글(meta)은 줄의 from에 먼저 뜬다 — 큰 글(at)보다 앞서 「누구 · 어디」를 깔기 위해(지금까지 쓴 줄은 from = at[0]이라 그대로) */}
-      {meta ? <div style={{ ...up(0), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18, maxWidth: 820, wordBreak: 'keep-all', lineHeight: 1.3, whiteSpace: 'pre-line' }}>{meta}</div> : null}
+      {meta && !metaBelow ? <div style={{ ...up(0), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18, maxWidth: 820, wordBreak: 'keep-all', lineHeight: 1.3, whiteSpace: 'pre-line' }}>{meta}</div> : null}
       {lines.map((l, i) => (
-        <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === bi ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
+        <div key={i} style={{ ...up(i + (meta && !metaBelow ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === bi ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all', fontFeatureSettings: '"zero" 0' }}>{rich(l)}</div>
       ))}
+      {/* 끝 장면: 작은 안내 줄을 큰 글 아래에(큰 두 주소가 먼저 눈에 들게) */}
+      {meta && metaBelow ? <div style={{ ...up(lines.length), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#E6E6E6', marginTop: 26, maxWidth: 900, wordBreak: 'keep-all', lineHeight: 1.32, whiteSpace: 'pre-line' }}>{meta}</div> : null}
     </div>
   );
 };
@@ -94,7 +99,7 @@ const Label: React.FC = () => {
   const f = useCurrentFrame();
   const [c0, c1] = S.card;
   const o = interpolate(f, [sec(c0) - 4, sec(c0), sec(c1), sec(c1) + 4], [1, 0, 0, 1], clamp);
-  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{'SYNK 브리핑 · 실제 사건을 바탕으로 꾸민 장면'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{'SYNK 브리핑 · 조사 결과와 실제 사례를 바탕으로 꾸민 장면'}</div>;
 };
 
 // 미학 맹검(11-14 · 끝 장면 「셔터 소리는 나는데 찍는 순간이 화면에 없다」) → 셔터(SOUNDS의 셔터.wav)에 맞춰 화면이 한 번 하얗게 번쩍인다(0.75 → 0, 6장 = 0.25초)
@@ -105,6 +110,20 @@ const Flash: React.FC = () => {
   const a = sec(sh.t);
   if (f < a || f > a + 6) return null;
   return <AbsoluteFill style={{ background: '#fff', opacity: interpolate(f, [a, a + 1, a + 6], [0.75, 0.6, 0], clamp) }} />;
+};
+
+// 짚기 — 두 주소 칸만 남기고 둘레를 어둡게 누른다(동그라미 · 형광 대신). x · y · w · h는 최종 화면(1080×1920) 좌표, a = 누르는 짙기
+const Spot: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <>
+      {SPOTS.map((p, i) => {
+        const o = interpolate(f, [sec(p.from), sec(p.from) + 8, sec(p.to) - 6, sec(p.to)], [0, 1, 1, 0], clamp);
+        if (o <= 0) return null;
+        return <div key={i} style={{ position: 'absolute', left: p.x, top: p.y, width: p.w, height: p.h, borderRadius: 26, boxShadow: `0 0 0 2400px rgba(6,6,6,${p.a * o})`, filter: 'blur(1px)' }} />;
+      })}
+    </>
+  );
 };
 
 // 회상 들고 나기 — 들어갈 때 흰 빛 0.55 → 0(5장), 나올 때 0 → 0.45(마지막 4장)
@@ -124,21 +143,21 @@ export const Film: React.FC = () => {
           {!MASTER && c.a ? <Audio src={staticFile(c.a.src)} trimBefore={sec(c.a.start)} volume={c.a.vol ?? 1} /> : !MASTER && c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
       ))}
+      <Spot />
       <Shade />
       <Flash />
 
       {LINES.map((l, i) => {
         const next = LINES[i + 1];
         const fade = !next || next.from - l.to > 0.6 ? 8 : 3;
-        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} metaSize={l.metaSize} deep={l.deep} instant={l.instant} fade={fade} at={l.at} butter={l.butter} bi={l.bi} />;
+        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} metaSize={l.metaSize} deep={l.deep} instant={l.instant} fade={fade} at={l.at} butter={l.butter} bi={l.bi} metaBelow={l.metaBelow} />;
       })}
 
       <Label />
 
       {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
-      {/* 배경음(일레븐랩스 연주곡 — 낮은 맥박 신스 · 시계 같은 잔 타악 · 어두운 펠트 피아노, 8초 마디라 0~32초에 16~32초를 이어 48초 · 빈 마디 없음). 반전(S.reveal)에서 조금 올라오고 끝까지 간다(마지막 0.6초에 사그라짐) — 바탕에 방 소리 */}
-      {/* 11-16 최종 확인 미흡 고침(말 없는 끝 6초가 0.25초 음량 −28~−34dB로 본편보다 10dB 넘게 얇음): 「뚝」 뒤 말 없는 숨(37.4~42초)에 0.18로 받치고, 경찰관 말(42.0~43.9초) 아래에서 0.13으로 내렸다가, 그 뒤 0.24로 올려 끝을 음악으로 닫고 마지막 0.9초에 사그라진다 */}
-      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.reveal - 0.3), sec(S.reveal + 0.3), sec(37.4), sec(38.4), sec(41.8), sec(42.0), sec(43.9), sec(44.7), sec(TOTAL_S - 0.9), sec(TOTAL_S)], [0.06, 0.1, 0.1, 0.13, 0.13, 0.18, 0.18, 0.13, 0.13, 0.24, 0.24, 0], clamp)} />
+      {/* 배경음(보유곡 시티팝_147을 27초부터 47초 — 곡 안 빈 마디 26.25~27초를 피함). 볼륨 곡선은 timeline.ts BGM — 반전 뒤 잠깐 낮추되 절반보다 깊게 1초 넘게 두지 않고, 바탕에 방 소리 */}
+      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, BGM.t.map(sec), BGM.v, clamp)} />
       {/* 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
       <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
