@@ -41,7 +41,7 @@ test('스위치는 기본이 끔이고, 손님 응답은 그 값을 싣는다(�
   const sent=await f.send({contactLocale:'en'});
   const room=await f.call('/pulse/api/project');
   assert.equal(room.status,200);
-  assert.deepEqual(room.data.features,{locales:['ko'],locale:'ko',personaRequest:false,personaReal:false,myModels:false},'영어를 골랐어도 허락 전에는 한국어로 그린다');
+  assert.deepEqual(room.data.features,{locales:['ko'],locale:'ko',personaRequest:false,personaReal:false,myModels:false,marketing:false},'영어를 골랐어도 허락 전에는 한국어로 그린다');
   assert.equal(room.data.project.studio.request.answers.contactLocale,'en','고른 값은 그대로 남는다');
   // 초대 링크로 처음 열 때도 같은 값이 온다.
   f.jar.clear();const reopened=await f.call('/pulse/api/open',{body:{invite:sent.invite}});
@@ -51,7 +51,7 @@ test('스위치는 기본이 끔이고, 손님 응답은 그 값을 싣는다(�
 test('관리자만 스위치를 바꾸고, 바꿀 때마다 감사 기록이 남는다',async t=>{
   const f=await fixture(t);
   const read=await f.staff('/api/settings/pulse-features');
-  assert.equal(read.status,200);assert.deepEqual({...read.data,updatedAt:null},{publicLocales:['ko'],projectLocales:['ko'],personaRequest:false,personaReal:false,myModels:false,updatedAt:null,updatedBy:null});
+  assert.equal(read.status,200);assert.deepEqual({...read.data,updatedAt:null},{publicLocales:['ko'],projectLocales:['ko'],personaRequest:false,personaReal:false,myModels:false,marketing:false,updatedAt:null,updatedBy:null});
   assert.equal((await f.staff('/api/settings/pulse-features',{session:f.memberToken,csrf:'crew-csrf'})).status,403,'크루는 읽지도 못한다');
   assert.equal((await f.staff('/api/settings/pulse-features',{body:{projectLocales:['ko','en']},session:f.memberToken,csrf:'crew-csrf'})).status,403);
   assert.equal((await f.staff('/api/settings/pulse-features',{body:{projectLocales:['ko','en']},csrf:''})).status,403,'CSRF 없이는 못 바꾼다');
@@ -67,7 +67,7 @@ test('관리자만 스위치를 바꾸고, 바꿀 때마다 감사 기록이 남
   // 영어 시험 길: 공개 메뉴는 그대로 한국어, 영어로 고른 프로젝트만 영어로 그린다.
   await f.send({contactLocale:'en'});
   const room=await f.call('/pulse/api/project');
-  assert.deepEqual(room.data.features,{locales:['ko','en'],locale:'en',personaRequest:false,personaReal:false,myModels:false});
+  assert.deepEqual(room.data.features,{locales:['ko','en'],locale:'en',personaRequest:false,personaReal:false,myModels:false,marketing:false});
   assert.deepEqual((await f.call('/pulse/api/request')).data.features.locales,['ko']);
   assert.equal((await f.staff('/api/settings/pulse-features',{body:{publicLocales:['ko','en'],personaRequest:true,personaReal:true}})).status,200);
   assert.deepEqual((await f.call('/pulse/api/request')).data.features,{locales:['ko','en'],personaRequest:true,personaReal:true,myModels:false});

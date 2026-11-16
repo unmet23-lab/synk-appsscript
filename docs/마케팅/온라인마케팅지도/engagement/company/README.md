@@ -193,6 +193,36 @@ node "docs/마케팅/온라인마케팅지도/engagement/company/backup.mjs" "D:
 
 기존 개인용 기록장은 [기존 성장 기록장 안내](../README.md)에 남아 있습니다. 회사 프로그램으로 가져오기는 복사이며 원본을 삭제하지 않습니다.
 
+<a id="pulse-marketing"></a>
+## PULSE 고객 앱 「마케팅 성과」 리포트
+
+직원이 올린 마케팅 측정 리포트를 고객이 고객 방에서 읽는 칸의 서버 쪽입니다(2026-11-16). 설계는 [서버 설계](../../../PULSE_마케팅성과_20261116/서버_설계.md)에 있고, 화면과 주고받는 자료의 꼴은 [계약](../../../PULSE_마케팅성과_20261116/계약.md)에 있습니다. 코드는 `pulse-marketing.mjs`(저장과 꼴 검사)와 `pulse-marketing-routes.mjs`(직원 경로)입니다. 서버는 재지 않습니다. 측정은 이 PC의 브라우저에서 하고, 결과를 리포트로 올립니다.
+
+**스위치.** PULSE 손님 기능 스위치(`pulseFeatureSettings`)의 `marketing`입니다. 기본은 꺼져 있고, 관리자만 `/api/settings/pulse-features`로 바꿉니다. 공개 주소 `GET /pulse/api/features`에는 이 값이 실리지 않습니다.
+
+**칸이 보이는 규칙.** 스위치가 켜져 있고 그 프로젝트에 리포트가 한 건 이상 있을 때만, 고객 방 자료(`GET /pulse/api/project`)의 `features.marketing`이 `true`입니다. 마지막 리포트를 지우면 칸도 사라집니다. 스위치를 켠 뒤에는 리포트를 올리는 순간 그 고객에게 보이므로, 올리기 응답에 실린 프로젝트 이름과 고객 이름을 확인합니다.
+
+**고객 경로.** 둘 다 읽기이고, 프로젝트는 초대 세션(`synk_pulse_session`)에서만 정합니다. 스위치가 꺼져 있으면 404이고, 세션이 없거나 끝났으면 401입니다.
+
+| 경로 | 답 |
+|---|---|
+| `GET /pulse/api/marketing` | `{ reports: [ReportHead…] }`. 질의가 붙으면 400입니다 |
+| `GET /pulse/api/marketing/report?kind=&run=` | 리포트 한 건. `kind`와 `run`을 한 번씩만 받고, 그 밖의 질의는 400, 없는 리포트는 404입니다 |
+
+**직원 경로.** 회사 세션으로 들어옵니다. 목록은 그 프로젝트를 읽을 수 있는 직원이 봅니다. 올리기와 지우기는 담당자, 그 팀의 팀장, 관리자만 하고 `X-CSRF-Token`과 같은 출처가 있어야 합니다. 보관한 프로젝트는 목록만 보이고 쓰기는 409입니다. 시범 요청과 주소 뒤 질의는 받지 않습니다. 스위치가 꺼져 있어도 열려 있어서, 먼저 올려 두고 스위치를 켤 수 있습니다.
+
+| 경로 | 하는 일 |
+|---|---|
+| `GET /api/client-projects/<id>/marketing` | 목록. `{ projectId, project: { name, client }, visible, broken, reports }`. `broken`이 `true`면 저장된 목록을 읽지 못한 것입니다 |
+| `POST /api/client-projects/<id>/marketing/report` | 몸통 `{ report }`를 꼴 검사한 뒤 저장합니다. 감사 기록은 `pulse-marketing-report-saved`이고 덮어썼는지(`replaced`)를 남깁니다 |
+| `POST /api/client-projects/<id>/marketing/report/remove` | 몸통 `{ kind, runId }`의 리포트를 지웁니다. 감사 기록은 `pulse-marketing-report-removed`입니다 |
+
+**저장.** 범용 표 `documents`의 종류 둘을 씁니다. `pulseMarketingIndex`는 프로젝트마다 한 문서인 목록이고, `pulseMarketingReports`는 리포트 한 건마다 한 문서입니다. 프로젝트 문서 안에는 넣지 않으므로 올려도 프로젝트 판 번호가 오르지 않습니다. 한 프로젝트에 120건까지 두고, 같은 `kind`와 `runId`로 다시 올리면 덮어씁니다. 목록 문서가 깨져 있으면 읽기는 빈 목록으로 하고 쓰기는 409로 막습니다. `ai-search`와 `label-review`의 `summary`는 받은 값을 쓰지 않고 서버가 다시 셉니다.
+
+**지울 때 주의.** 지금은 프로젝트 문서를 지우는 운영 경로가 없습니다. 그런 경로를 만들면 그 프로젝트의 `pulseMarketingIndex`와 `pulseMarketingReports` 문서도 함께 지워야 합니다.
+
+시험은 `node --test "docs/마케팅/온라인마케팅지도/engagement/company/pulse-marketing.test.mjs"`입니다.
+
 ## 구현 파일과 검증
 
 | 파일 | 역할 |

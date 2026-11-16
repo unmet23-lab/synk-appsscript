@@ -59,6 +59,8 @@ const MODULES=[
   {file:'pulse-devices.mjs',scope:'*'},
   // 메일 코드로 다시 열기(판 4): 세션 없는 손님 길이라 모든 문장이 손님에게 간다.
   {file:'pulse-mail-open.mjs',scope:'*'},
+  // 마케팅 성과(11-16): 고객 방이 부르는 목록 · 리포트 읽기와 칸을 보일지 정하는 함수. 직원 경로(staffList · save · remove)와 꼴 검사(normalizeReport)는 직원 화면이라 세지 않는다.
+  {file:'pulse-marketing.mjs',scope:['visible','customerList','customerReport']},
   {file:'client-scene-requests.mjs',scope:['recordSceneReview','append']},
   {file:'request-security.mjs',scope:['rateError'],extra:['처리하지 못했습니다. 관리자에게 문의해 주세요.']},
   {file:'../../../../../tools/company-messenger/web-push-service.mjs',scope:['state','register','remove','requireLive','validatePushEndpoint'],

@@ -97,6 +97,8 @@ import { createTrialFeedback } from './trial-feedback.mjs';
 import { createTrialFeedbackRoutes } from './trial-feedback-routes.mjs';
 import { createTipSharesService } from './tip-shares.mjs';
 import { createTipShareRoutes } from './tip-share-routes.mjs';
+import { createPulseMarketing } from './pulse-marketing.mjs';
+import { createPulseMarketingRoutes } from './pulse-marketing-routes.mjs';
 import { createSocialCapacity } from './social-capacity.mjs';
 import { createSocialReplies } from './social-replies.mjs';
 import { createSocialVariantPerformanceService } from './social-variant-performance.mjs';
@@ -312,7 +314,9 @@ export function createCompanyApp(options={}) {
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
   const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,localeOf:projectLocale,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
-  const customerStateWithFeatures=token=>{const state=pulseStudio.customerState(token);return {...state,features:pulseFeatures.projectView(state.project?.studio?.request?.answers)};};
+  // 마케팅 성과(11-16, pulse-marketing.mjs): 직원이 올린 리포트를 프로젝트마다 둔다. 고객 방의 features.marketing은 스위치가 켜져 있고 그 프로젝트에 리포트가 있을 때만 참이다.
+  const pulseMarketing=createPulseMarketing({store,clientProjects,features:pulseFeatures,clock});
+  const customerStateWithFeatures=token=>{const state=pulseStudio.customerState(token);return {...state,features:{...pulseFeatures.projectView(state.project?.studio?.request?.answers),marketing:pulseMarketing.visible(state.project?.id)}};};
   const pulseAutoReplySchedule=options.pulseAutoReplySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   let pulseAutoReplyTimer=null,pulseAutoReplySoonTimer=null;
   const scanPulseAutoReplies=()=>pulseAutoReply.tick().catch(()=>{});
@@ -499,6 +503,7 @@ export function createCompanyApp(options={}) {
   const trialFeedbackRoutes=createTrialFeedbackRoutes({service:trialFeedback,body,send,session,clientAddress,isStopped:()=>stopRequested});
   // 공유한 게시물(11-16, TIP-SHARES.md): 관리자 화면과 PC 팁 장부 동기 도구가 쓰는 줄 묶음 · 단추 요청.
   const tipShareRoutes=createTipShareRoutes({service:createTipSharesService({store,clock}),body,send,session,origin,isStopped:()=>stopRequested});
+  const pulseMarketingRoutes=createPulseMarketingRoutes({service:pulseMarketing,body,send,session,origin,audit,isStopped:()=>stopRequested});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
@@ -1142,6 +1147,9 @@ export function createCompanyApp(options={}) {
         if(req.headers['x-pulse-active']==='1')renewCustomerDevice();
         return send(res,200,state);
       }
+      // 마케팅 성과(11-16): 읽기만 한다. 프로젝트는 초대 세션에서만 정하고, 스위치가 꺼져 있으면 둘 다 없는 주소다(pulse-marketing.mjs).
+      if(method==='GET'&&path==='/pulse/api/marketing')return send(res,200,pulseMarketing.customerList(customerToken,url.search));
+      if(method==='GET'&&path==='/pulse/api/marketing/report')return send(res,200,pulseMarketing.customerReport(customerToken,url.searchParams));
       const personaMedia=path.match(/^\/pulse\/api\/persona\/media\/([a-f0-9-]{36})$/);
       if(['GET','HEAD'].includes(method)&&personaMedia)return await serveStudioMedia(req,res,store.directory,pulsePersonas.customerMedia(customerToken,personaMedia[1]),()=>pulsePersonas.customerMedia(customerToken,personaMedia[1]));
       const studioMedia=path.match(/^\/pulse\/api\/studio\/media\/([a-f0-9-]{36})$/);
@@ -1182,6 +1190,7 @@ export function createCompanyApp(options={}) {
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
     if(path.startsWith('/api/trial-feedback/')&&await trialFeedbackRoutes.staffRoutes(req,res,{url,demoRequest}))return;
     if((path==='/api/tip-shares'||path.startsWith('/api/tip-shares/'))&&await tipShareRoutes(req,res,{url,demoRequest}))return;
+    if(path.startsWith('/api/client-projects/')&&/\/marketing(?:\/|$)/.test(path)&&await pulseMarketingRoutes(req,res,{url,demoRequest}))return;
     if(path==='/trial-feedback'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/trial-feedback/','Cache-Control':'no-store'});res.end();return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
@@ -1865,7 +1874,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/settings/pulse-mail'){const result=pulseMail.configure(user,input);audit(user,'pulse-mail-settings','pulse-mail',{enabled:result.enabled,requested:result.requested,relayChanged:input?.relayUrl!==undefined});return send(res,200,result);}
       if(path==='/api/settings/pulse-mail/ping'){const result=await pulseMail.ping(user);audit(user,'pulse-mail-ping','pulse-mail',{state:result.connection?.state||null,code:result.connection?.code||null});return send(res,200,result);}
       if(path==='/api/settings/pulse-auto-reply'){const result=pulseAutoReply.configure(user,input);audit(user,'pulse-auto-reply-settings','pulse-auto-reply',{enabled:result.enabled,keyChanged:input?.apiKey!==undefined,dailyUsd:result.dailyUsd,monthlyUsd:result.monthlyUsd,perProjectDaily:result.perProjectDaily});return send(res,200,result);}
-      if(path==='/api/settings/pulse-features'){const result=pulseFeatures.configure(user,input);audit(user,'pulse-features-settings','pulse-features',{publicLocales:result.publicLocales,projectLocales:result.projectLocales,personaRequest:result.personaRequest,personaReal:result.personaReal,myModels:result.myModels});return send(res,200,result);}
+      if(path==='/api/settings/pulse-features'){const result=pulseFeatures.configure(user,input);audit(user,'pulse-features-settings','pulse-features',{publicLocales:result.publicLocales,projectLocales:result.projectLocales,personaRequest:result.personaRequest,personaReal:result.personaReal,myModels:result.myModels,marketing:result.marketing});return send(res,200,result);}
       if(path==='/api/settings/pulse-capacity'){const result=pulseCapacity.configure(user,input);audit(user,'pulse-capacity-settings','pulse-capacity',{open:result.open,pausedUntil:result.pausedUntil,pauseNote:result.pauseNote,pauseNoteEn:result.pauseNoteEn});return send(res,200,result);}
       // 제작 자리 수 · 손으로 잡은 자리(운영 조각 6-B): 관리자만 · CSRF · 감사 기록(손으로 잡은 자리의 메모는 기록에 남긴다 — 직원만 보는 칸).
       if(path==='/api/settings/pulse-capacity/seats'){const result=pulseCapacity.configureSeats(user,input);audit(user,'pulse-capacity-seats','pulse-capacity',{seats:result.seats});return send(res,200,result);}
