@@ -141,7 +141,7 @@
   "lang": "si",
   "font": "'Inter Tight', 'Nirmala UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "hook": "වතුර + මස් =\nකොරියන් වචනය?",
+  "hook": "වතුර + මස් =\nකොරියානු වචනය මොකක්ද?",
   "hookSize": 47,
   "reads": [
     "mul",
@@ -161,7 +161,7 @@
   "lunchSize": 76,
   "bye": "බායි, මස්!",
   "byeSize": 56,
-  "endCard": "물고기 කෑවා!",
+  "endCard": "물고기 ඒක කෑවා!",
   "endSize": 47,
   "ask": "",
   "askSize": 36,
