@@ -4,6 +4,7 @@
 참고 그림은 왼쪽 위 「AI」 표시를 지우고(unmet23 계정은 받은 그림에 표시가 찍힌다) 긴 변 1920 JPEG로 줄여 넣는다.
 
     python -I -X utf8 웹일감.py <지시문.txt> <판 이름> [<참고 그림>…]
+    (받을 폴더를 바꾸려면 환경변수 DREAM_OUT=<폴더>/)
 """
 import base64
 import json
@@ -13,14 +14,14 @@ import sys
 import cv2
 import numpy as np
 
-EGO = "C:/Users/q1212/ego/dream-stage-20261117/job.json"
-OUT = "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/꿈무대영상-20261117/콘티/"
+EGO = os.environ.get("DREAM_JOB") or "C:/Users/q1212/ego/dream-stage-20261117/job.json"  # 작업 공간을 새로 열었으면 환경변수 DREAM_JOB=<job.json>
+OUT = os.environ.get("DREAM_OUT") or "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/꿈무대영상-20261117/콘티/"  # 다른 장면은 환경변수 DREAM_OUT=<폴더>/
 
 
 def 참고(p, k):
     im = cv2.imdecode(np.fromfile(p, np.uint8), 1)
     h0, w0 = im.shape[:2]
-    if "드리미나" in p or os.path.basename(p).startswith(("C1", "C2", "C3")):
+    if "드리미나" in p or os.path.basename(p).startswith(("C1", "C2", "C3", "R1", "R2", "R3", "R4")):
         s = w0 / 1920
         m = np.zeros(im.shape[:2], np.uint8)
         m[int(10 * s):int(70 * s), int(10 * s):int(90 * s)] = 255

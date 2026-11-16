@@ -4,6 +4,8 @@
 학생 얼굴 바꾸기에 그대로 쓴다. 대역 얼굴이 남아 있으면 Seedream이 대역 얼굴을 지켜 아바타 닮음이 0.53~0.58에 그쳤다(11-17 첫 시도).
 
     python -I -X utf8 머리흐림.py <틀 그림> <밖 그림>
+
+얼굴이 둘 넘게 잡히면 검출 점수가 가장 높은 얼굴(카메라를 보는 사람)을 흐린다. 찍힌 「고른 얼굴」 자리를 틀과 대조한다.
 """
 import os
 import sys
@@ -23,7 +25,11 @@ FD.setInputSize((small.shape[1], small.shape[0]))
 _, faces = FD.detect(small)
 if faces is None:
     raise SystemExit("얼굴을 못 찾음")
-x, y, fw, fh = [v / s for v in max(faces, key=lambda f: f[2])[:4]]
+# 주연은 카메라를 보는 사람이다. 가장 큰 얼굴이 아니라 검출 점수가 가장 높은 얼굴을 고른다.
+# (11-17 옥상 여학생용 컷 2: 앞에 선 상대역의 옆얼굴이 더 크게 잡혀 상대역 머리를 흐렸다)
+고른 = max(faces, key=lambda f: (round(float(f[14]), 2), f[2]))
+x, y, fw, fh = [v / s for v in 고른[:4]]
+print("얼굴", [(int(f[0] / s), int(f[1] / s), int(f[2] / s), round(float(f[14]), 2)) for f in faces], "→ 고른 얼굴 왼쪽 위", (int(x), int(y)))
 # 머리 전체(머리카락 · 귀 · 턱 아래 조금)를 덮는 타원
 cx, cy = x + fw / 2, y + fh * 0.42
 ax, ay = fw * 0.95, fh * 1.05
