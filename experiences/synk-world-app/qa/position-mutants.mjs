@@ -575,6 +575,13 @@ export const POSITION_MUTANTS = [
   [
     'shell',
     "셸 30일째 문장",
+    "손님 판도 학습일 답 상자의 막는 수를 본다 — 「이미 알아요」 · 응답 지우기 뒤 다음 판 끝까지 손님의 문장이 숨는다(카본 4-4d 설계 B4)",
+    "  let counts=null;try{counts=typeof coachNow.lookback==='function'?coachNow.lookback():null;}catch{return null;}\n",
+    "  let counts=null;try{counts=typeof coachNow.lookback==='function'&&!(coachNow.summary().storage.unfoldedRows>0)?coachNow.lookback():null;}catch{return null;}\n",
+  ],
+  [
+    'shell',
+    "셸 30일째 문장",
     "그 화면 언어의 줄이 없어도 줄을 싣는다",
     "  return pick&&typeof text==='string'&&text?{text,unit:pick.unit,misses:pick.misses,reviews:pick.reviews}:null;\n",
     "  return pick?{text:String(text),unit:pick.unit,misses:pick.misses,reviews:pick.reviews}:null;\n",
@@ -745,14 +752,14 @@ export const POSITION_MUTANTS = [
     'monthAnswer',
     '학습일 답 완결',
     '칸 밖의 내 답이 서 있어도 묻는다 — 내 놓침이 서버에 닿기 전에 묻는다(설계 주인 11-16 저녁 조건 5)',
-    "      if (storage?.guest !== false || (storage.unfolded || 0) > 0) return null;\n",
+    '      if (storage?.guest !== false || heldBack(storage)) return null;\n',
     "      if (storage?.guest !== false) return null;\n",
   ],
   [
     'monthAnswer',
     '학습일 답 완결',
     '물은 사이 칸 밖의 답이 서도 적는다 — 그 답이 빠진 낡은 답이 남는다(설계 주인 11-16 저녁 조건 5)',
-    "      if (storage && (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다\n",
+    '      if (storage && heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다\n',
     '',
   ],
   [
@@ -934,7 +941,7 @@ export const POSITION_MUTANTS = [
     'monthAnswer',
     '학습일 답 끝 판 카본',
     '칸 밖의 내 답이 있어도 완결되지 않은 답 뒤에 받는다 — 접히지 않은 내 답을 두고 받기를 부른다(4-4c 끝 판 카본 B1)',
-    '        if ((storage.unfolded || 0) > 0) return;\n        const current = positionOf(storage.sync?.received);\n',
+    '        if (heldBack(storage)) return;\n        const current = positionOf(storage.sync?.received);\n',
     '        const current = positionOf(storage.sync?.received);\n',
   ],
   [
@@ -956,8 +963,8 @@ export const POSITION_MUTANTS = [
     'monthAnswer',
     '학습일 답 끝 판 카본 -c',
     '닫힌 코치에 온 완결된 답을 버린다 — 새 코치의 판에 문장이 서지 않고 같은 자리에서 다시 묻는다(4-4c 끝 판 카본 -c B1 · 고치기 전의 꼴)',
-    "      if (storage && (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다\n",
-    "      if (!storage || (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다\n",
+    '      if (storage && heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다\n',
+    '      if (!storage || heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다\n',
   ],
   [
     'monthAnswer',
@@ -979,6 +986,43 @@ export const POSITION_MUTANTS = [
     '남겨 둔 앞선 자리로 늘 받는다 — 기기가 이미 그 자리에 와도 5분 막이를 깨는 받기를 부른다(4-4c 끝 판 카본 -c B1)',
     '        if (state.ahead?.key === key && aheadOf(state.ahead.at, device)) pullOnce(coach, state.ahead.at);\n',
     '        if (state.ahead?.key === key) pullOnce(coach, state.ahead.at);\n',
+  ],
+  // ── 학습일 답을 막는 수(설계 주인 11-17 — 4-4c 끝 판 Fable F4, storage.unfoldedRows) ──
+  [
+    'monthAnswer',
+    '학습일 답을 막는 수',
+    '셸이 새 칸 대신 칸 밖의 답 수를 본다 — 응답을 지우거나 「이미 알아요」를 말한 뒤 접히기 전에 옛 답의 문장을 그린다(설계 주인 11-17 · 고치기 전의 꼴)',
+    'const heldBack = storage => (Number.isInteger(storage.unfoldedRows) ? storage.unfoldedRows : (storage.unfolded ?? 0)) > 0;\n',
+    'const heldBack = storage => (storage.unfolded ?? 0) > 0;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답을 막는 수',
+    '새 칸이 정수가 아닌 엔진이면 아무것도 막지 않는다 — 칸 밖의 내 답이 서 있어도 묻고 적는다(옛 엔진과의 짝 · Fable 4-4d 설계 F5)',
+    'const heldBack = storage => (Number.isInteger(storage.unfoldedRows) ? storage.unfoldedRows : (storage.unfolded ?? 0)) > 0;\n',
+    'const heldBack = storage => (Number.isInteger(storage.unfoldedRows) ? storage.unfoldedRows : 0) > 0;\n',
+  ],
+  // 세 자리마다 되돌리기(카본 4-4d 설계 A1 · Fable F5) — 한 자리만 unfolded로 남아도 잡히게.
+  [
+    'monthAnswer',
+    '학습일 답을 막는 수',
+    '그리기 · 묻기 전 자리만 칸 밖의 답 수를 본다 — 응답을 지운 뒤 접히기 전에 옛 답의 문장을 그린다(카본 4-4d 설계 A1)',
+    '      if (storage?.guest !== false || heldBack(storage)) return null;\n',
+    '      if (storage?.guest !== false || (storage.unfolded || 0) > 0) return null;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답을 막는 수',
+    '완결되지 않은 답 뒤의 자리만 칸 밖의 답 수를 본다 — 묻는 사이 본인 말이 섰는데 앞선 자리로 받거나 다시 묻는다(카본 4-4d 설계 A1)',
+    '        if (heldBack(storage)) return;\n        const current = positionOf(storage.sync?.received);\n',
+    '        if ((storage.unfolded || 0) > 0) return;\n        const current = positionOf(storage.sync?.received);\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답을 막는 수',
+    '적기 전 자리만 칸 밖의 답 수를 본다 — 묻는 사이 응답을 지웠는데 지우기 전의 답을 적고 다시 그린다(카본 4-4d 설계 A1)',
+    '      if (storage && heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다\n',
+    '      if (storage && (storage.unfolded || 0) > 0) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다\n',
   ],
 ];
 

@@ -26,6 +26,14 @@ export const LEGACY_WAIT_MS = 4000;
 const DONE = Promise.resolve();
 // 칸(측정 요약)을 바꾸는 내 사건 — 답과 도움(아래 unfolded).
 const UNFOLDED_TYPES = new Set([EVENT_TYPES.attempted, EVENT_TYPES.helped]);
+// 서버 접기가 단위 줄을 바꾸는 내 사건 — 답 · 도움 · 본인 말 · 제외(아래 unfoldedRows — 설계 주인 11-17, 단계 4 계획 §6 「켜기 전」 F4).
+// 옮김(record.carried)은 기기에서 계열의 만남만 남기고 단위 줄 · 본인 말 줄을 바꾸지 않아 세지 않는다. 제시 · 전달 · 판 기록 · 피드백도 세지 않는다.
+const ROW_TYPES = new Set([
+  EVENT_TYPES.attempted,
+  EVENT_TYPES.helped,
+  EVENT_TYPES.stated,
+  EVENT_TYPES.excluded,
+]);
 
 // 같은 출처의 가장 위 창(지금 판의 쓰기 임대 주인 __synkAtlasHistoryLease와 같은 자리).
 export function hostScope(scope = globalThis) {
@@ -129,6 +137,15 @@ function createHost({
   const issuing = new Map(); // 사건 번호 → 「낸 것」 줄(아직 저장이 안 끝난 내 제시)
   const saving = new Map(); // 사건 번호 → 사건(아직 저장이 안 끝난 내 쓰기 — 접기 사건을 다시 지을 때, refold)
   const inflight = new Set(); // 아직 저장이 안 끝난 쓰기(stored 약속)
+  // 바탕 요약에 아직 접히지 않은 내 사건 가운데 그 종류의 수 — 저장 중인 쓰기와, 저장됐지만 요약이 아직 접지 않은 사건(손님은 다음 접기 전,
+  // 계정은 서버가 받았어도 접은 요약이 오기 전 — 기록부의 미접힘 표)을 번호로 합쳐 센다(아래 unfolded · unfoldedRows).
+  const unfoldedOf = types => {
+    const ids = new Set();
+    for (const [id, event] of saving) if (types.has(event.type)) ids.add(id);
+    for (const id of state.trail.pending())
+      if (types.has(state.trail.heldEvent(id)?.type)) ids.add(id);
+    return ids.size;
+  };
   const listeners = new Set();
   const state = {
     trail: null,
@@ -389,15 +406,11 @@ function createHost({
     // 이 호스트에서 저장 실패가 한 번이라도 났나(state.failedOnce — 판이 그 뒤 내 답 · 도움을 저장 뒤 한 번 더 세운다).
     failedOnce: () => state.failedOnce,
     pendingCount: () => pending.size + issuing.size,
-    // 바탕 요약에 아직 접히지 않은 내 답 · 도움(단계 4 계획 §21-3 M1) — 저장 중인 쓰기와, 저장됐지만 요약이 아직 접지 않은 사건(손님은 다음
-    // 접기 전, 계정은 서버가 받았어도 접은 요약이 오기 전 — 기록부의 미접힘 표)을 번호로 합쳐 센다. 제시 · 판 기록 · 본인 말은 세지 않는다.
-    unfolded() {
-      const ids = new Set();
-      for (const [id, event] of saving) if (UNFOLDED_TYPES.has(event.type)) ids.add(id);
-      for (const id of state.trail.pending())
-        if (UNFOLDED_TYPES.has(state.trail.heldEvent(id)?.type)) ids.add(id);
-      return ids.size;
-    },
+    // 바탕 요약에 아직 접히지 않은 내 답 · 도움(단계 4 계획 §21-3 M1). 제시 · 판 기록 · 본인 말은 세지 않는다.
+    unfolded: () => unfoldedOf(UNFOLDED_TYPES),
+    // 서버 접기가 단위 줄을 바꾸는 내 사건 가운데 아직 접혀 돌아오지 않은 수(설계 주인 11-17 — 4-4c 끝 판 Fable F4). 답 · 도움에 본인 말과
+    // 제외를 더한다. 제외는 거두는 대상의 종류와 상관없이 센다. 세는 법이 unfolded와 같아 늘 unfolded 이상이다. 학습일 답만 쓴다.
+    unfoldedRows: () => unfoldedOf(ROW_TYPES),
     // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이 — 기록부가 부모를 기다리는 자식까지).
     settled: () => Promise.allSettled([...inflight]).then(() => state.trail.saved()),
     retain() {

@@ -25340,6 +25340,7 @@ var VERSION = 1;
 var GEN = /^(\d{13})\.[0-9a-z]{1,16}$/;
 var finite = (value) => Number.isFinite(value);
 var plain = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var heldBack = (storage) => (Number.isInteger(storage.unfoldedRows) ? storage.unfoldedRows : storage.unfolded ?? 0) > 0;
 function positionOf(value) {
   if (!plain(value) || typeof value.edition !== "string" || !value.edition) return null;
   if (!Number.isSafeInteger(value.foldedUntil) || value.foldedUntil < 0) return null;
@@ -25537,7 +25538,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
           if (at) state.ahead = { key, at };
           return;
         }
-        if ((storage.unfolded || 0) > 0) return;
+        if (heldBack(storage)) return;
         const current2 = positionOf(storage.sync?.received);
         if (!current2) return;
         if (at && aheadOf(at, current2)) pullOnce(holder.coach, at);
@@ -25550,7 +25551,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
         missed("LOOKBACK_FAILED");
         return;
       }
-      if (storage && (storage.unfolded || 0) > 0) return;
+      if (storage && heldBack(storage)) return;
       const answer = shapeOf({ askedFrom: device, at, windows, month: keptRows(month) });
       state.kept = { key, answer };
       answers.write(owner, { revision: revision2, day, ...answer, since });
@@ -25582,7 +25583,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
       if (!line) return null;
       const storage = storageOf(coach);
-      if (storage?.guest !== false || (storage.unfolded || 0) > 0) return null;
+      if (storage?.guest !== false || heldBack(storage)) return null;
       const device = positionOf(storage.sync?.received);
       if (!device) return null;
       let day = null;

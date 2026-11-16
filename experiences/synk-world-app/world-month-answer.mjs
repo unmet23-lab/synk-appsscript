@@ -4,7 +4,8 @@
 //   값: 학습일 · 동의 판 · 물을 때의 기기 자리(askedFrom) · 서버가 셀 때의 자리(at = 답의 summaryAt) · 창 · 단위마다 id와 숫자(misses ·
 //   reviews · last). 문항 글이나 답 글은 두지 않는다. 읽기와 쓰기는 모두 try/catch로 감싸고, 읽지 못하면 서버에 다시 묻는다.
 //   보일 때는 기기가 지금 받은 요약의 자리(coach summary().storage.sync.received)와 답의 자리를 견준다(verdictOf). 캐시 값만 믿고 문장을
-//   짓지 않는다. 아직 칸에 들지 않은 답이 있으면(storage.unfolded > 0) 묻지도, 적지도, 짓지도 않는다.
+//   짓지 않는다. 서버 접기가 단위 줄을 바꾸는 내 사건(답 · 도움 · 본인 말 · 제외)이 아직 접혀 돌아오지 않았으면(storage.unfoldedRows > 0)
+//   묻지도, 적지도, 짓지도 않는다(heldBack — 설계 주인 11-17).
 //   지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 연습 기록 비우기)은 열쇠를 지우고 세대 수를 올린다. 답이 오면 적기 직전에 물을 때의 세대 수가
 //   지금과 같은지 본다 — 다른 탭에서 로그아웃했거나 같은 계정에서 동의를 끈 뒤의 늦은 답이 적히지 않게. 다른 열쇠의 물음(학습일 경계 · 새 판의
 //   코치)에 밀려난 물음과 물은 사이 학습일이 넘어간 물음의 답 · 실패도 버린다.
@@ -18,6 +19,11 @@ const VERSION = 1;
 const GEN = /^(\d{13})\.[0-9a-z]{1,16}$/;
 const finite = value => Number.isFinite(value);
 const plain = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+// 학습일 답을 막는 내 사건이 있나 — 서버 접기가 단위 줄을 바꾸는 내 사건(답 · 도움 · 본인 말 · 제외) 가운데 아직 접혀 돌아오지 않은 것
+// (코치 summary().storage.unfoldedRows — 설계 주인 11-17, 4-4c 끝 판 Fable F4). 응답을 지우거나 「이미 알아요」를 말한 뒤 그 사건이 접혀
+// 돌아오기 전에는 30일째 문장의 수와 조건이 그 사건을 모른다. 그 칸이 정수가 아니면(칸이 없는 엔진) 칸 밖의 내 답 · 도움 수(unfolded)로 본다.
+const heldBack = storage => (Number.isInteger(storage.unfoldedRows) ? storage.unfoldedRows : (storage.unfolded ?? 0)) > 0;
 
 // 자리 { edition, gen, foldedUntil } — 꼴이 아니면 null.
 export function positionOf(value) {
@@ -301,9 +307,9 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
           if (at) state.ahead = { key, at };
           return;
         }
-        // 물을 때의 자리가 아니라 지금 기기 자리와 견준다 — 묻는 사이 받기 알림이 기기를 올렸어도 그 다시 그리기는 「묻는 중」에 막혔다. 칸 밖의
-        // 내 답이 있으면 멈춘다(4-4c 끝 판 카본 B1).
-        if ((storage.unfolded || 0) > 0) return;
+        // 물을 때의 자리가 아니라 지금 기기 자리와 견준다 — 묻는 사이 받기 알림이 기기를 올렸어도 그 다시 그리기는 「묻는 중」에 막혔다. 접혀
+        // 돌아오지 않은 내 사건이 있으면 멈춘다(4-4c 끝 판 카본 B1 · 설계 주인 11-17).
+        if (heldBack(storage)) return;
         const current = positionOf(storage.sync?.received);
         if (!current) return;
         // 서버의 자리가 지금 기기보다 앞서면 그 자리로 한 번 받는다 — 받으면 기기 자리가 바뀌어 다음 그리기가 다시 묻는다.
@@ -318,12 +324,12 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
         missed('LOOKBACK_FAILED');
         return;
       }
-      if (storage && (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다
+      if (storage && heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다
       const answer = shapeOf({ askedFrom: device, at, windows, month: keptRows(month) });
       state.kept = { key, answer };
       answers.write(owner, { revision, day, ...answer, since }); // 막힌 저장소면 이 문서의 답(kept)만 남는다
-      // 열린 코치가 없으면 적기만 한다 — 다음 그리기의 코치가 이 답으로 견준다(버리면 같은 자리에서 다시 묻는다 — 카본 -c B1). 칸 밖의 내 답이
-      // 있었는지는 다음 그리기가 본다(month는 unfolded > 0이면 이 답을 쓰지 않는다).
+      // 열린 코치가 없으면 적기만 한다 — 다음 그리기의 코치가 이 답으로 견준다(버리면 같은 자리에서 다시 묻는다 — 카본 -c B1). 접혀 돌아오지
+      // 않은 내 사건이 있었는지는 다음 그리기가 본다(month는 heldBack이면 이 답을 쓰지 않는다).
       if (!storage) return;
       const current = positionOf(storage.sync?.received);
       if (samePosition(current, at)) redraw();
@@ -360,7 +366,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
       if (!line) return null;
       const storage = storageOf(coach);
-      if (storage?.guest !== false || (storage.unfolded || 0) > 0) return null;
+      if (storage?.guest !== false || heldBack(storage)) return null;
       const device = positionOf(storage.sync?.received);
       if (!device) return null; // 첫 받기 전 — 받기 알림이 다시 그린다
       let day = null;

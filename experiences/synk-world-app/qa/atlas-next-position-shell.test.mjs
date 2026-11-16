@@ -1164,7 +1164,8 @@ test('한글 열쇠 — 엔진 판은 이 화면이 이미 든 옛 코치에서�
 // 계정 · 코치가 못 셈) 줄 없이 판을 그린다. 코치의 셈 자체는 packages/atlas/test/coach/lookback.test.mjs가 본다.
 const htmlText = value =>
   String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-function monthShell({ lookback, say = null } = {}) {
+// storage: 코치 요약의 저장 칸에 덮어 얹을 값(카본 4-4d 설계 B4 — 접혀 돌아오지 않은 내 사건이 선 손님 판).
+function monthShell({ lookback, say = null, storage = null } = {}) {
   const seen = { named: null };
   const wrap = made => {
     for (const item of worldPosition.practice.pool) {
@@ -1174,7 +1175,13 @@ function monthShell({ lookback, say = null } = {}) {
         break;
       }
     }
-    return { ...made, lookback: () => lookback(seen.named) };
+    const summary = storage
+      ? () => {
+          const base = made.summary();
+          return { ...base, storage: { ...base.storage, ...storage } };
+        }
+      : made.summary;
+    return { ...made, summary, lookback: () => lookback(seen.named) };
   };
   const label = id => (id === seen.named?.unit ? seen.named.label : null);
   const planner = { ...PLANNER, say: say ?? ((why, lang) => atlas.renderReason(why, { lang, label })) };
@@ -1203,6 +1210,23 @@ test('엔진 판 — 30일째 문장: 이름이 서는 단위 하나를 골라 �
     );
     assert.ok(html.indexOf('data-position-month') < html.indexOf('wpos-counts'), '판 맨 위(머리 그림 바로 뒤)');
     assert.ok(!html.includes('zz-nameless'), '이름이 서지 않는 단위는 고르지 않는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 손님 판의 30일째 문장은 접혀 돌아오지 않은 내 사건(unfoldedRows)이 있어도 코치가 센 문장을 그린다 — 학습일 답 상자의 막는 수는 서버 길 계정만 본다(카본 4-4d 설계 B4)', async () => {
+  // 손님 코치의 lookback은 저장이 끝난 든 사건 전부를 바로 센다 — 접기를 기다리지 않는다. 그래서 「이미 알아요」 · 응답 지우기 뒤에 요약이 아직
+  // 다음 판 끝까지 접히지 않아도(unfoldedRows > 0) 문장을 숨기지 않는다.
+  const { app, seen } = monthShell({
+    lookback: named => ({ windows: {}, month: [{ unit: named.unit, misses: 3, reviews: 7, last: 1, evidence: {} }] }),
+    storage: { unfoldedRows: 2, unfolded: 1 },
+  });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    const html = app.last();
+    assert.ok(html.includes(`data-position-month data-unit="${htmlText(seen.named.unit)}" data-misses="3" data-reviews="7"`), '손님 판은 막는 수와 상관없이 코치가 센 문장을 싣는다');
   } finally {
     app.dispose();
   }

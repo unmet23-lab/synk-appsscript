@@ -99,6 +99,131 @@ test('unfolded — 계정은 서버가 받았어도 접은 요약이 오기 전�
   coach.dispose();
 });
 
+test('unfoldedRows — 서버 접기가 단위 줄을 바꾸는 내 사건(답 · 도움 · 본인 말 · 제외)을 센다. 제외 · 본인 말은 저장 중이거나 받았지만 접히기 전이면 1이고 unfolded는 0이며, 접은 요약이 오면 둘 다 0이다. 제시 · 판 기록은 세지 않는다(설계 주인 11-17 — 4-4c 끝 판 Fable F4)', async () => {
+  const items = bankOf(rng(971), { items: 8 });
+  const map = fakeMap(items);
+  // 받기만 하고 스스로 접지 않는 서버 — 접기는 시험이 부른다.
+  const server = createServer({ random: rng(972), index: indexOfMap(map), foldChance: 0 });
+  const transport = {
+    post: (events, since) => server.post(events, since),
+    get: async since => ({ summary: await server.summary(since), serverTime: server.now }),
+  };
+  const time = clock();
+  const key = keyOf('rows');
+  const coach = createCoach({
+    gameId: 'g',
+    map,
+    seed: 's',
+    dayOffset: 0,
+    host: {
+      guest: false,
+      account: 'acct-rows',
+      revision: 1,
+      key,
+      port: memoryPort(),
+      transport,
+      now: time.now,
+    },
+  });
+  await coach.ready;
+  const handle = await acquireHost(
+    { key, params: PARAMS, now: time.now, guest: false },
+    globalThis,
+  );
+  // [unfoldedRows, unfolded]
+  const counts = () => {
+    const { storage } = coach.summary();
+    return [storage.unfoldedRows, storage.unfolded];
+  };
+  const sent = async () => {
+    await handle.settled();
+    await handle.upload();
+    await settle();
+  };
+  const folded = async () => {
+    await server.fold();
+    await handle.pull({ force: true });
+    await settle();
+  };
+  const pid = coach.present(items[0]);
+  await settle();
+  assert.deepEqual(counts(), [0, 0], '띄우기만 한 제시는 세지 않는다');
+  coach.delivery(pid, { audio: 'completed' });
+  assert.deepEqual(counts(), [0, 0], '저장 중인 전달은 세지 않는다');
+  const answered = coach.answer(pid, { correct: false, assessable: true });
+  assert.deepEqual(counts(), [1, 1], '저장 중인 답은 둘 다 센다');
+  await answered.stored;
+  await sent();
+  await folded();
+  assert.deepEqual(counts(), [0, 0], '접은 요약이 왔다');
+  // 제외(셸의 「응답 지우기」) — 칸(unfolded)은 바꾸지 않지만 30일째 문장의 수를 바꾼다.
+  coach.exclude(answered.eventId);
+  assert.deepEqual(counts(), [1, 0], '저장 중인 제외는 이 칸만 센다');
+  await sent();
+  assert.equal(coach.summary().storage.unsent, 0, '서버가 받았다');
+  assert.deepEqual(counts(), [1, 0], '받았지만 아직 접지 않은 제외');
+  await folded();
+  assert.deepEqual(counts(), [0, 0], '제외를 접은 요약이 왔다');
+  // 본인 말(「이미 알아요」)도 같다.
+  coach.tell(items[1].units[0], 'known');
+  assert.deepEqual(counts(), [1, 0], '저장 중인 본인 말은 이 칸만 센다');
+  await sent();
+  assert.deepEqual(counts(), [1, 0], '받았지만 아직 접지 않은 본인 말');
+  await folded();
+  assert.deepEqual(counts(), [0, 0], '본인 말을 접은 요약이 왔다');
+  // 제시를 거두는 제외도 센다(거두는 대상과 상관없이). 판 기록은 세지 않는다.
+  const shown = coach.present(items[2]);
+  await sent();
+  await folded();
+  coach.exclude(shown);
+  assert.deepEqual(counts(), [1, 0], '제시를 거두는 제외도 센다');
+  await sent();
+  await folded();
+  assert.deepEqual(counts(), [0, 0]);
+  time.advance(60_000);
+  const set = coach.finishSet({ kind: 'short' });
+  assert.deepEqual(counts(), [0, 0], '저장 중인 판 기록은 세지 않는다');
+  await set?.folded;
+  assert.ok(set?.completionId, '판 기록을 남겼다');
+  coach.feedback(set, 'helpful');
+  assert.deepEqual(counts(), [0, 0], '저장 중인 판 응답(피드백)은 세지 않는다');
+  await sent();
+  assert.deepEqual(counts(), [0, 0], '받았지만 아직 접지 않은 판 기록 · 판 응답도 세지 않는다');
+  releaseHost(handle);
+  coach.dispose();
+});
+
+test('unfoldedRows — 손님의 제외는 저장되면 기록부가 바로 다시 접어 0이 되고, 본인 말은 다음 접기(판 끝)까지 센다(설계 주인 11-17 — 4-4c 끝 판 Fable F4)', async () => {
+  const items = bankOf(rng(981), { items: 8 });
+  const time = clock();
+  const coach = coachOn({ items, time, key: keyOf('rows-guest') });
+  await coach.ready;
+  const counts = () => {
+    const { storage } = coach.summary();
+    return [storage.unfoldedRows, storage.unfolded];
+  };
+  const pid = coach.present(items[0]);
+  const answered = coach.answer(pid, { correct: false, assessable: true });
+  await answered.stored;
+  time.advance(60_000);
+  assert.equal(await coach.finishSet({ kind: 'short' }).folded, true);
+  assert.deepEqual(counts(), [0, 0], '판 끝에 손님 요약을 접었다');
+  coach.exclude(answered.eventId);
+  assert.deepEqual(counts(), [1, 0], '저장 중인 제외는 이 칸만 센다');
+  for (let i = 0; i < 20 && counts()[0] > 0; i += 1) await settle();
+  assert.deepEqual(counts(), [0, 0], '제외는 넓게 바꾸는 사건이라 손님 기록부가 바로 다시 접는다');
+  coach.tell(items[1].units[0], 'known');
+  assert.deepEqual(counts(), [1, 0], '저장 중인 본인 말은 이 칸만 센다');
+  for (let i = 0; i < 5; i += 1) await settle();
+  assert.deepEqual(counts(), [1, 0], '저장됐지만 아직 접지 않은 본인 말');
+  const next = coach.present(items[2]);
+  await coach.answer(next, { correct: true, assessable: true }).stored;
+  time.advance(60_000);
+  assert.equal(await coach.finishSet({ kind: 'short' }).folded, true);
+  assert.deepEqual(counts(), [0, 0], '판 끝에 다시 접었다');
+  coach.dispose();
+});
+
 // 옛 기기 장부 — 계열 둘, 칸 둘(능력 a의 난도 1에 혼자 낸 첫 답 셋 · 맞힘 둘, 능력 b의 난도 2에 도움 하나).
 const ledgerOf = (items, t) => ({
   keys: { [`family:${items[0].familyKey}`]: 1, [`family:${items[2].familyKey}`]: 1 },
@@ -234,6 +359,12 @@ test('carried — 동의를 끈 계정(기기 길)은 기기 사건에서 내고
     server.summary().carried,
     null,
     '서버 길 계정은 받은 요약의 칸만 — 받은 요약이 없으면 null',
+  );
+  // 옮김은 기기에서 계열의 만남만 남기고 단위 줄 · 본인 말 줄을 바꾸지 않는다 — 접히지 않은 채 들고 있어도 학습일 답을 막지 않는다(설계 주인 11-17).
+  assert.equal(
+    server.summary().storage.unfoldedRows,
+    0,
+    '접히지 않은 옮김(record.carried)은 세지 않는다',
   );
   server.dispose();
 });

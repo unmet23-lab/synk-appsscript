@@ -703,18 +703,156 @@ test('내 놓침이 서버에 닿기 전에는 묻지 않는다 · 물은 사이
   device.close();
 });
 
+// ── 장면: 학습일 답을 막는 수(설계 주인 11-17 — 4-4c 끝 판 Fable F4, storage.unfoldedRows) ─────────────────────────────
+
+test('응답을 지우면 30일째 문장이 바로 숨고, 그 제외가 접혀 돌아오기 전에는 묻지 않는다 · 접힌 요약이 오면 한 번 묻고 새 답으로 다시 그린다(storage.unfoldedRows — 설계 주인 11-17 · 4-4c 끝 판 Fable F4)', { timeout: 60_000 }, async () => {
+  const world = worldOf();
+  const other = await deviceOf(world);
+  await study(world, other, [...MISSES, ...REVIEWS]);
+  other.close();
+  const device = await deviceOf(world);
+  await device.coach.synced();
+  // 오늘 이 기기에서 혼자 맞힌 답 — 올려서 접힌 뒤에야 문장이 선다(앞 판의 두 번은 마지막 7학습일 밖이다).
+  world.time.set(T - 2 * HOUR);
+  const pid = device.coach.present(ITEM);
+  world.time.advance(20_000);
+  const today = device.coach.answer(pid, { correct: true, assessable: true });
+  await today.stored;
+  await device.handle.settled();
+  await device.handle.upload();
+  world.time.set(T);
+  const panel = panelOf(world, device);
+  panel.render();
+  await until(() => panel.counts.shown?.length > 0);
+  assert.ok(panel.counts.shown.every(row => row.reviews === 3), '그 뒤로 세 번 모두 혼자 맞혔다');
+  const asked = device.knobs.asks;
+  // 응답 지우기 — 오늘 답을 거둔다. 칸(unfolded)은 바뀌지 않지만 30일째 문장의 수와 조건이 바뀐다.
+  device.coach.exclude(today.eventId);
+  const { storage } = device.coach.summary();
+  assert.ok(storage.unfoldedRows > 0, '접혀 돌아오지 않은 제외가 있다');
+  assert.equal(storage.unfolded, 0, '칸 밖의 답은 없다 — 학습일 답만 막힌다');
+  assert.equal(panel.render(), null, '문장이 바로 숨는다');
+  await quiet();
+  assert.equal(device.knobs.asks, asked, '제외가 접혀 돌아오기 전에는 묻지 않는다');
+  await device.handle.settled();
+  await device.handle.upload();
+  await until(() => device.knobs.asks === asked + 1 && Array.isArray(panel.counts.shown));
+  await quiet();
+  assert.deepEqual(panel.counts.shown, [], '새 답 — 오늘 답이 빠져 조건이 차지 않는다');
+  assert.equal(device.knobs.asks, asked + 1, '한 번만 다시 묻는다');
+  panel.bounded(device.knobs.asks, device.knobs.replies, '응답 지우기');
+  panel.close();
+  device.close();
+});
+
+test('「이미 알아요」를 말하면 그 단위의 30일째 문장이 바로 숨고, 그 본인 말이 접혀 돌아오기 전에는 묻지 않는다 · 접힌 요약이 오면 한 번 묻고 새 답으로 다시 그린다(storage.unfoldedRows — 설계 주인 11-17)', { timeout: 60_000 }, async () => {
+  const world = worldOf();
+  const other = await deviceOf(world);
+  await study(world, other, [...MISSES, ...REVIEWS, { at: T - 2 * HOUR, correct: true }]);
+  other.close();
+  world.time.set(T);
+  const device = await deviceOf(world);
+  await device.coach.synced();
+  const panel = panelOf(world, device);
+  panel.render();
+  await until(() => panel.counts.shown?.length > 0);
+  const before = panel.counts.shown.map(row => row.unit);
+  const unit = before[0];
+  const asked = device.knobs.asks;
+  device.coach.tell(unit, 'known');
+  const { storage } = device.coach.summary();
+  assert.ok(storage.unfoldedRows > 0, '접혀 돌아오지 않은 본인 말이 있다');
+  assert.equal(storage.unfolded, 0, '칸 밖의 답은 없다');
+  assert.equal(panel.render(), null, '문장이 바로 숨는다');
+  await quiet();
+  assert.equal(device.knobs.asks, asked, '본인 말이 접혀 돌아오기 전에는 묻지 않는다(옛 답이 와서 헛묻기를 하지 않는다)');
+  await device.handle.settled();
+  await device.handle.upload();
+  await until(() => device.knobs.asks === asked + 1 && Array.isArray(panel.counts.shown));
+  await quiet();
+  assert.ok(!panel.counts.shown.some(row => row.unit === unit), '이미 안다고 말한 단위는 고르지 않는다');
+  assert.equal(panel.counts.shown.length, before.length - 1, '나머지 단위는 그대로 선다');
+  assert.equal(device.knobs.asks, asked + 1, '한 번만 다시 묻는다');
+  panel.bounded(device.knobs.asks, device.knobs.replies, '이미 알아요');
+  panel.close();
+  device.close();
+});
+
+test('물은 사이 응답을 지우거나 「이미 알아요」를 말하면 온 답은 완결이든 아니든 적지도 · 다시 그리지도 · 받지도 · 다시 묻지도 않고, 그 사건이 접혀 기기 자리가 바뀐 뒤 한 번 묻는다(storage.unfoldedRows — 카본 4-4d 설계 A1)', { timeout: 60_000 }, async () => {
+  // 완결된 답 — 묻는 사이 제외가 섰다(칸 밖의 답은 없다 · 접혀 돌아오지 않은 제외 하나).
+  const whole = fakeAsker({ reply: (_n, b) => done(b.device) });
+  const go1 = held(whole);
+  whole.device = at(5);
+  whole.render();
+  await quiet(5);
+  whole.rows = 1;
+  go1();
+  await quiet(10);
+  assert.equal(whole.answers.read(A_ID, { revision: 1, day: 7 }), null, '그 답을 적지 않는다');
+  assert.equal(whole.redraws, 0, '다시 그리지 않는다');
+  assert.equal(whole.render(), null, '문장 없이 그린다');
+  await quiet(10);
+  assert.equal(whole.asks, 1, '접히기 전에는 다시 묻지 않는다');
+  whole.rows = 0;
+  whole.device = at(6); // 제외가 접혔다
+  assert.equal(whole.render(), null);
+  await quiet(10);
+  assert.equal(whole.asks, 2, '접힌 뒤 한 번 다시 묻는다');
+  assert.equal(whole.render()?.month.length, 1);
+  // 완결되지 않은 답 — 묻는 사이 본인 말이 섰고 기기 자리도 바뀌었다. 서버의 앞선 자리로 받지도, 그 자리에서 다시 묻지도 않는다.
+  const part = fakeAsker({ reply: n => (n === 1 ? remainAt(at(9)) : done(at(10))) });
+  const go2 = held(part);
+  part.device = at(5);
+  part.render();
+  await quiet(5);
+  part.device = at(7);
+  part.rows = 1;
+  go2();
+  await quiet(10);
+  assert.equal(part.pulls, 0, '받지 않는다');
+  assert.equal(part.asks, 1, '다시 묻지 않는다');
+  part.rows = 0;
+  part.device = at(10); // 본인 말이 접혔다
+  part.render();
+  await quiet(10);
+  assert.equal(part.asks, 2, '접힌 뒤 한 번 다시 묻는다');
+  assert.equal(part.render()?.month.length, 1);
+});
+
+test('새 칸(unfoldedRows)이 없는 엔진의 요약이면 칸 밖의 내 답 수(unfolded)로 막는다(옛 엔진과의 짝)', { timeout: 60_000 }, async () => {
+  const box = fakeAsker({ reply: () => done(at(5)) });
+  // 4-4d 전 엔진의 요약 — unfoldedRows 칸이 없다.
+  box.coach = {
+    summary: () => ({ storage: { guest: false, unfolded: box.unfolded, sync: { received: box.device } } }),
+    pull: () => Promise.resolve(false),
+  };
+  box.unfolded = 1;
+  assert.equal(box.render(), null);
+  await quiet(10);
+  assert.equal(box.asks, 0, '칸 밖의 내 답이 있으면 묻지 않는다');
+  box.unfolded = 0;
+  assert.equal(box.render(), null);
+  await quiet(10);
+  assert.equal(box.asks, 1, '접힌 뒤 한 번 묻는다');
+  assert.equal(box.render()?.month.length, 1);
+});
+
 
 // ── 장면: 설계 P1 다시 보기(-c)로 고친 셋(Fable FA1 · FA2 — 카본 A1) ─────────────────────────────
 
-// 가짜 코치 하나와 상자 하나 — 자리(device) · 학습일(day) · 동의 판(revision) · 칸 밖의 내 답 수(unfolded) · 닫힘(closed)은 시험이 바꾼다.
-// 묻기는 reply(n번째)를 돌려주고, hold가 있으면 그것이 풀릴 때까지 기다린다. 다시 그리기는 판을 다시 그린다(상자를 또 부른다). 변형이 끝없이
-// 다시 그려도 시험이 멈추도록 50번에서 끊는다.
+// 가짜 코치의 저장 칸 — 칸 밖의 내 답 · 도움 수(unfolded)와, 거기에 아직 접혀 돌아오지 않은 제외 · 본인 말 수(rows)를 더한 unfoldedRows(엔진처럼
+// 늘 unfolded 이상이다 — 설계 주인 11-17).
+const storageOfBox = box => ({ guest: false, unfolded: box.unfolded, unfoldedRows: box.unfolded + box.rows, sync: { received: box.device } });
+
+// 가짜 코치 하나와 상자 하나 — 자리(device) · 학습일(day) · 동의 판(revision) · 칸 밖의 내 답 수(unfolded) · 접혀 돌아오지 않은 제외 · 본인 말
+// 수(rows) · 닫힘(closed)은 시험이 바꾼다. 묻기는 reply(n번째)를 돌려주고, hold가 있으면 그것이 풀릴 때까지 기다린다. 다시 그리기는 판을 다시
+// 그린다(상자를 또 부른다). 변형이 끝없이 다시 그려도 시험이 멈추도록 50번에서 끊는다.
 function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {}) {
-  const box = { device: at(5), day: 7, revision: 1, unfolded: 0, closed: false, asks: 0, pulls: 0, redraws: 0, notes: [], hold: null, last: null };
+  const box = { device: at(5), day: 7, revision: 1, unfolded: 0, rows: 0, closed: false, asks: 0, pulls: 0, redraws: 0, notes: [], hold: null, last: null };
   const coach = {
     summary: () => {
       if (box.closed) throw new Error('DISPOSED'); // 닫힌 코치
-      return { storage: { guest: false, unfolded: box.unfolded, sync: { received: box.device } } };
+      return { storage: storageOfBox(box) };
     },
     pull: () => {
       box.pulls += 1;
@@ -1128,7 +1266,7 @@ test('밀려난 물음의 늦은 답과 실패는 상태를 덮지 않는다 —
 const nextCoach = box => {
   const coach = {
     pulls: 0,
-    summary: () => ({ storage: { guest: false, unfolded: box.unfolded, sync: { received: box.device } } }),
+    summary: () => ({ storage: storageOfBox(box) }),
     pull: () => {
       coach.pulls += 1;
       return Promise.resolve(false);

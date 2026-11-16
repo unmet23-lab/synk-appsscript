@@ -390,6 +390,10 @@ export function createCoach(options = {}) {
           // 바탕 요약에 아직 접히지 않은 내 답 · 도움의 수(§21-3 M1) — 저장 중인 것과, 저장됐지만 요약이 아직 접지 않은 것(계정은 서버가
           // 받았어도 접은 요약이 오기 전까지). 0보다 크면 위 칸(skills[].cells)이 아직 모르는 답이 있다. pending · unsent로는 알 수 없다.
           unfolded: state.host.unfolded(),
+          // 서버 접기가 단위 줄을 바꾸는 내 사건(답 · 도움 · 본인 말 · 제외) 가운데 아직 접혀 돌아오지 않은 수 — 0보다 크면 30일째 문장의
+          // 수와 조건이 아직 그 사건을 모른다. 학습일 답(셸)이 묻기 전 · 적기 전 · 그리기 전에 본다(설계 주인 11-17 — 4-4c 끝 판 Fable F4).
+          // 세는 법이 unfolded와 같아 늘 unfolded 이상이다.
+          unfoldedRows: state.host.unfoldedRows(),
           // 올리기 · 받기 상태. pulled — 이 문서에서 받기가 된 적 있음(첫 받기가 실패로 적혀 synced()가 그 실패를 돌려줘도 뒤의 받기가 되면 참,
           // 4-4a Fable 끝 판 F1).
           sync: state.host.syncStatus(),
