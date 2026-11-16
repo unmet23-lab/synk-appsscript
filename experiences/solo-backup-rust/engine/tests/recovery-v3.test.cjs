@@ -111,15 +111,18 @@ test('GoogleAuth.signIn carries the server nonce and returns the fresh ID token;
   const client = { client_id: '123456-fixture.apps.googleusercontent.com', client_secret: 'fixture-client-public-1234', project_id: 'fixture-project' };
   const seen = []; let posted = null;
   const auth = new GoogleAuth({ dir, secretStore, client, openExternal: async () => {},
-    authorizeFlow: async (_c, _o, opts) => { seen.push(opts.nonce); return { code: 'code', nonce: opts.nonce || 'own-nonce', codeVerifier: 'verifier', redirect: 'http://127.0.0.1/callback' }; },
+    authorizeFlow: async (_c, _o, opts) => { seen.push(opts); return { code: 'code', nonce: opts.nonce || 'own-nonce', codeVerifier: 'verifier', redirect: 'http://127.0.0.1/callback' }; },
     json: async () => ({ token_type: 'Bearer', access_token: 'fixture-access-secret', expires_in: 3600, refresh_token: 'fixture-refresh-secret', id_token: 'fixture.id.token', scope: 'https://www.googleapis.com/auth/drive.appdata' }),
     http: async (url, o) => { posted = { url, body: o.body }; return { bytes: Buffer.alloc(0), headers: {} }; },
     verify: async (_tok, _aud, { nonce }) => ({ sub: subject, email: 'fixture@example.invalid', nonce }) });
   await auth.open();
   const nonce = crypto.randomBytes(32).toString('base64url');
-  const r = await auth.signIn({ nonce });
+  const r = await auth.signIn({ nonce, hint: 'owner@example.invalid' });
   assert.deepEqual(r, { idToken: 'fixture.id.token', nonce, sub: subject, email: 'fixture@example.invalid' });
-  assert.equal(seen[0], nonce);
+  assert.equal(seen[0].nonce, nonce); assert.equal(seen[0].hint, 'owner@example.invalid');
+  // Without a hint, a sign-in that must be this account pre-selects it.
+  await auth.signIn({ nonce, expectedSub: subject });
+  assert.equal(seen[1].hint, 'fixture@example.invalid');
   await assert.rejects(auth.signIn({ nonce, expectedSub: 'other' }), { code: 'ACCOUNT' });
   assert.equal(await auth.revoke(), true);
   assert.equal(posted.url, 'https://oauth2.googleapis.com/revoke');
@@ -127,4 +130,9 @@ test('GoogleAuth.signIn carries the server nonce and returns the fresh ID token;
   assert.equal(auth.getState().connected, false);
   const { authorize } = require('../src/recovery-auth.cjs');
   await assert.rejects(authorize(client, async () => {}, { nonce: 'bad nonce', timeoutMs: 10 }), { code: 'INVALID' });
+  await assert.rejects(authorize(client, async () => {}, { hint: 'not an address', timeoutMs: 10 }), { code: 'INVALID' });
+  let opened = null;
+  await assert.rejects(authorize(client, async (u) => { opened = new URL(u); }, { nonce, hint: 'owner@example.invalid', timeoutMs: 50 }), { code: 'REAUTH' });
+  assert.equal(opened.searchParams.get('login_hint'), 'owner@example.invalid');
+  assert.equal(opened.searchParams.get('nonce'), nonce);
 });

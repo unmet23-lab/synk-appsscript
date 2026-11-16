@@ -62,9 +62,9 @@ class ProvisionClient {
     return r.data;
   }
   // A Google sign-in bound to a server nonce for exactly this request.
-  async proof(purpose) {
+  async proof(purpose, { hint } = {}) {
     const { nonce } = await this.request('POST', 'nonce', { purpose }, { device: false });
-    const signed = await this.auth.signIn({ nonce, expectedSub: this.device?.sub });
+    const signed = await this.auth.signIn({ nonce, expectedSub: this.device?.sub, ...(hint ? { hint } : {}) });
     return { google: { idToken: signed.idToken, nonce }, sub: signed.sub };
   }
   async ack(keys) {
@@ -80,10 +80,11 @@ class ProvisionClient {
     return v ? credentials(v) : null;
   }
 
-  async provision({ name, appVersion }) {
+  // `hint`: the Google address Solio knows, only to pre-select the account (4.13 「로그인」).
+  async provision({ name, appVersion, hint }) {
     // One device per PC profile; a reinstall that lost its token makes a new device.
     if (this.device) throw new ServerError('ALREADY');
-    const { google, sub } = await this.proof('provision');
+    const { google, sub } = await this.proof('provision', { hint });
     const r = await this.request('POST', 'provision', { google, device: { name, appVersion } }, { device: false });
     if (!REPO.test(r.customer?.repository?.prefix || '')) throw new ServerError('SERVER');
     // The device token is stored first: without it the keys below cannot be acknowledged.

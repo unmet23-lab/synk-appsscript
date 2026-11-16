@@ -30,9 +30,12 @@ async function verifier({ loadDiscovery = requestJson, loadKeys = request } = {}
   };
 }
 // Single-use loopback authorization. Invalid traffic never consumes the state.
-async function authorize(client, openExternal, { timeoutMs = 300000, signal, nonce: given } = {}) {
+async function authorize(client, openExternal, { timeoutMs = 300000, signal, nonce: given, hint } = {}) {
   // A provisioning-server nonce makes the ID token usable once, for one server request.
   if (given !== undefined && (typeof given !== 'string' || !/^[A-Za-z0-9_-]{20,128}$/.test(given))) throw failure('INVALID');
+  // The Google address the host already knows (Solio's SYNK ID signed in with Google) only
+  // pre-selects the account; the server still binds the customer to the token's subject.
+  if (hint !== undefined && (typeof hint !== 'string' || hint.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hint))) throw failure('INVALID');
   const state = random(), nonce = given ?? random(), codeVerifier = random();
   let settled = false, timer, resolveCode, rejectCode;
   const codeResult = new Promise((resolve, reject) => { resolveCode = resolve; rejectCode = reject; });
@@ -56,7 +59,7 @@ async function authorize(client, openExternal, { timeoutMs = 300000, signal, non
   signal?.addEventListener('abort', cancel, { once: true });
   if (signal?.aborted) cancel();
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-  url.search = new URLSearchParams({ client_id: client.client_id, redirect_uri: redirect, response_type: 'code', scope: `openid email ${SCOPE}`, access_type: 'offline', prompt: 'consent select_account', include_granted_scopes: 'false', state, nonce, code_challenge: crypto.createHash('sha256').update(codeVerifier).digest('base64url'), code_challenge_method: 'S256' }).toString();
+  url.search = new URLSearchParams({ client_id: client.client_id, redirect_uri: redirect, response_type: 'code', scope: `openid email ${SCOPE}`, access_type: 'offline', prompt: 'consent select_account', include_granted_scopes: 'false', state, nonce, code_challenge: crypto.createHash('sha256').update(codeVerifier).digest('base64url'), code_challenge_method: 'S256', ...(hint ? { login_hint: hint } : {}) }).toString();
   try { await openExternal(url.href); const code = await codeResult; return { code, nonce, codeVerifier, redirect }; }
   finally { settled = true; clearTimeout(timer); signal?.removeEventListener('abort', cancel); server.close(); server.closeAllConnections(); }
 }
@@ -80,11 +83,14 @@ class GoogleAuth {
   validateTokens(v) { if (v.token_type !== 'Bearer' || typeof v.access_token !== 'string' || !v.access_token || v.access_token.length > 8192 || !Number.isFinite(v.expires_in) || v.expires_in <= 0 || v.expires_in > 86400 || (v.scope && !v.scope.split(' ').includes(SCOPE))) throw failure('DENIED'); }
   // A browser sign-in. With a provisioning-server nonce the returned ID token is the
   // 「방금 한 Google 로그인」 for exactly one server request (STAGE1_DESIGN.md 4.5).
-  async signIn({ nonce, expectedSub } = {}) {
+  // `hint` pre-selects an account; without one, a sign-in that must be the account already
+  // connected here pre-selects that account.
+  async signIn({ nonce, expectedSub, hint } = {}) {
     if (!this.client) throw failure('INVALID');
+    const login = hint ?? (expectedSub && this.tokens?.sub === expectedSub ? this.tokens.email : undefined);
     this.controller = new AbortController();
     let flow;
-    try { flow = await this.authorizeFlow(this.client, this.openExternal, { signal: this.controller.signal, ...(nonce ? { nonce } : {}) }); }
+    try { flow = await this.authorizeFlow(this.client, this.openExternal, { signal: this.controller.signal, ...(nonce ? { nonce } : {}), ...(login ? { hint: login } : {}) }); }
     finally { this.controller = null; }
     if (nonce && flow.nonce !== nonce) throw failure('INVALID');
     const v = await this.exchange({ code: flow.code, code_verifier: flow.codeVerifier, redirect_uri: flow.redirect, grant_type: 'authorization_code' });
