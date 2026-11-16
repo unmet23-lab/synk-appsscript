@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "AI가 3주 넘게, '완료'라고 했어요.",
+ "dur": 2.056,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.352
+  },
+  {
+   "text": "3주",
+   "start": 0.411,
+   "end": 0.606
+  },
+  {
+   "text": "넘게,",
+   "start": 0.666,
+   "end": 0.919
+  },
+  {
+   "text": "'완료'라고",
+   "start": 1.076,
+   "end": 1.526
+  },
+  {
+   "text": "했어요.",
+   "start": 1.584,
+   "end": 2.056
+  }
+ ],
+ "source": {
+  "key": "e4dac32efaf7e82bddea9924f8c25f2b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "새 참고 자료를 찾아서, 회사 자료함에 쌓는 일이었는데요.",
+ "dur": 3.195,
+ "words": [
+  {
+   "text": "새",
+   "start": 0.03,
+   "end": 0.122
+  },
+  {
+   "text": "참고",
+   "start": 0.198,
+   "end": 0.428
+  },
+  {
+   "text": "자료를",
+   "start": 0.474,
+   "end": 0.735
+  },
+  {
+   "text": "찾아서,",
+   "start": 0.78,
+   "end": 1.087
+  },
+  {
+   "text": "회사",
+   "start": 1.485,
+   "end": 1.699
+  },
+  {
+   "text": "자료함에",
+   "start": 1.745,
+   "end": 2.128
+  },
+  {
+   "text": "쌓는",
+   "start": 2.174,
+   "end": 2.435
+  },
+  {
+   "text": "일이었는데요.",
+   "start": 2.48,
+   "end": 3.195
+  }
+ ],
+ "source": {
+  "key": "3fb24dace71fcdc922ac9ec8d2db81af",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

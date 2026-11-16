@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "새로 쌓인 건, 하나도 없었어요.",
+ "dur": 1.807,
+ "words": [
+  {
+   "text": "새로",
+   "start": 0.02,
+   "end": 0.182
+  },
+  {
+   "text": "쌓인",
+   "start": 0.243,
+   "end": 0.466
+  },
+  {
+   "text": "건,",
+   "start": 0.527,
+   "end": 0.689
+  },
+  {
+   "text": "하나도",
+   "start": 0.952,
+   "end": 1.175
+  },
+  {
+   "text": "없었어요.",
+   "start": 1.235,
+   "end": 1.807
+  }
+ ],
+ "source": {
+  "key": "6f2a63b1bd0acfd92ddc0c7acaf9c597",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 177
+ }
+}

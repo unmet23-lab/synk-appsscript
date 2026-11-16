@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V9",
+ "text": "'완료' 말고, 새로 늘어난 개수를 보여 달라고 하세요.",
+ "dur": 2.697,
+ "words": [
+  {
+   "text": "'완료'",
+   "start": 0.03,
+   "end": 0.236
+  },
+  {
+   "text": "말고,",
+   "start": 0.28,
+   "end": 0.514
+  },
+  {
+   "text": "새로",
+   "start": 0.881,
+   "end": 1.043
+  },
+  {
+   "text": "늘어난",
+   "start": 1.087,
+   "end": 1.351
+  },
+  {
+   "text": "개수를",
+   "start": 1.395,
+   "end": 1.733
+  },
+  {
+   "text": "보여",
+   "start": 1.777,
+   "end": 1.939
+  },
+  {
+   "text": "달라고",
+   "start": 1.982,
+   "end": 2.217
+  },
+  {
+   "text": "하세요.",
+   "start": 2.261,
+   "end": 2.697
+  }
+ ],
+ "source": {
+  "key": "37d2e2b38a7f9a44d6a97893cf312e26",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "이제는 아침 조사에서 새로 찾은 자료가 0이면, 실패로 적게 했어요.",
+ "dur": 3.228,
+ "words": [
+  {
+   "text": "이제는",
+   "start": 0.02,
+   "end": 0.269
+  },
+  {
+   "text": "아침",
+   "start": 0.322,
+   "end": 0.505
+  },
+  {
+   "text": "조사에서",
+   "start": 0.545,
+   "end": 0.885
+  },
+  {
+   "text": "새로",
+   "start": 0.938,
+   "end": 1.082
+  },
+  {
+   "text": "찾은",
+   "start": 1.121,
+   "end": 1.305
+  },
+  {
+   "text": "자료가",
+   "start": 1.345,
+   "end": 1.554
+  },
+  {
+   "text": "0이면,",
+   "start": 1.594,
+   "end": 1.986
+  },
+  {
+   "text": "실패로",
+   "start": 2.235,
+   "end": 2.511
+  },
+  {
+   "text": "적게",
+   "start": 2.55,
+   "end": 2.746
+  },
+  {
+   "text": "했어요.",
+   "start": 2.786,
+   "end": 3.228
+  }
+ ],
+ "source": {
+  "key": "676888a2864ce4986685045c29c79367",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

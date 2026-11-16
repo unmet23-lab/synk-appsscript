@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "AI가 쓰는 프로그램엔 인터넷 글을 읽는 기능이 있다고 나왔는데, 실제로는 쓸 수 없었어요.",
+ "dur": 4.702,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.377
+  },
+  {
+   "text": "쓰는",
+   "start": 0.427,
+   "end": 0.588
+  },
+  {
+   "text": "프로그램엔",
+   "start": 0.625,
+   "end": 1.155
+  },
+  {
+   "text": "인터넷",
+   "start": 1.452,
+   "end": 1.724
+  },
+  {
+   "text": "글을",
+   "start": 1.761,
+   "end": 1.934
+  },
+  {
+   "text": "읽는",
+   "start": 1.983,
+   "end": 2.156
+  },
+  {
+   "text": "기능이",
+   "start": 2.193,
+   "end": 2.415
+  },
+  {
+   "text": "있다고",
+   "start": 2.452,
+   "end": 2.662
+  },
+  {
+   "text": "나왔는데,",
+   "start": 2.699,
+   "end": 3.094
+  },
+  {
+   "text": "실제로는",
+   "start": 3.402,
+   "end": 3.823
+  },
+  {
+   "text": "쓸",
+   "start": 3.86,
+   "end": 3.946
+  },
+  {
+   "text": "수",
+   "start": 3.996,
+   "end": 4.045
+  },
+  {
+   "text": "없었어요.",
+   "start": 4.082,
+   "end": 4.702
+  }
+ ],
+ "source": {
+  "key": "b3fbcb600ae4eb76b6df5f643f5b0e8f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

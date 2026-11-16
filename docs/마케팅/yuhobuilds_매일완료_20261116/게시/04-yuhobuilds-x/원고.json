@@ -1,0 +1,13 @@
+{
+  "id": "04-yuhobuilds-x",
+  "brand": "yuhobuilds",
+  "language": "ko",
+  "audioLanguage": "ko",
+  "alteredContent": true,
+  "madeForKids": false,
+  "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음. 영상은 판 모두 최종.mp4 하나.",
+  "platform": "x",
+  "account": "@yuhobuilds",
+  "format": "video-post",
+  "caption": "AI 자동화가 3주 넘게 「완료」라고 했는데, 새로 쌓인 자료는 0개였어요.\n쓸 수 없는 기능을 두고, 예전 문서에 날짜만 새로 붙이고 있었어요.\n「완료」 말고 새로 늘어난 개수를 보여 달라고 하세요.\n자동화에 붙일 요청문은 여기 있어요.\nhttps://synk.im/prompts/#automation-done-count"
+}
