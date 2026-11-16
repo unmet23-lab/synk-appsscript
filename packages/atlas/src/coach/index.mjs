@@ -53,6 +53,10 @@ async function loadMap(options) {
 }
 
 // host.document: 틀(게임) 안 코치 — 저장소 열쇠를 스스로 짓지 않고 위 창의 셸이 연 문서 호스트를 받는다(Fable 설계 P1-3).
+// 받는 중인 받기(호스트 sync.pull의 약속) → coach.pull()이 돌려준 약속. 받는 중이면 같은 약속을 돌려준다(§21-22 — 설계 주인 조건 「받는 중이면 그
+// 약속을 같이 쓴다」). 호스트가 받는 중이 아니면 받기마다 새 약속이라 엮인 줄이 남지 않는다.
+const SHARED_PULLS = new WeakMap();
+
 // 첫 받기를 기다리는 기본 한도(synced) — 계정 클라이언트의 요청 한도(12초)를 그대로 기다리지 않는다(B4 · G4).
 export const SYNC_WAIT_MS = 4000;
 
@@ -696,6 +700,31 @@ export function createCoach(options = {}) {
         if (!state.watchers.delete(off)) return;
         off();
       };
+    },
+
+    // 지금 받기(단계 4 계획 §21-22 「설계 다시 검수로 고친 것」 — 설계 주인 11-16 밤 승인). 셸이 학습일 답의 자리보다 기기가 뒤처졌다고 볼 때
+    // 그 답의 자리마다 한 번 부른다. 받기의 5분 막이를 건너뛰는 길이지만 까닭이 있는 한 번이고, 자리마다 한 번으로 묶는 것은 셸의 몫이다.
+    // 서버 길 계정에서만 곧 받는다. 손님과 동의를 끈 계정, 준비 전이거나 닫힌 코치, 올리기 · 받기가 멈춘 코치(stopped · writesOff · switchOff)는
+    // 받지 않고 null이다. 받는 중이면 그 받기의 약속을 같이 쓴다(같은 약속을 돌려준다). 셸에 예외를 던지지 않는다 — 받기가 실패해도 false로
+    // 풀린다. 풀린 값은 받았으면 true, 못 받았으면 false다. 받은 요약은 받기 알림(watch의 receive)이 알린다.
+    pull() {
+      if (state.disposed || !state.session || state.host.guest !== false) return null;
+      try {
+        const sync = state.host.syncStatus();
+        if (sync.stopped || sync.writesOff || sync.switchOff) return null;
+        const pulling = state.host.pull({ force: true });
+        let shared = SHARED_PULLS.get(pulling);
+        if (!shared) {
+          shared = Promise.resolve(pulling).then(
+            answer => answer != null,
+            () => false,
+          );
+          if (pulling && typeof pulling === 'object') SHARED_PULLS.set(pulling, shared);
+        }
+        return shared;
+      } catch {
+        return null;
+      }
     },
 
     dispose() {

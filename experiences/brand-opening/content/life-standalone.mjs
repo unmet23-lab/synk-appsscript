@@ -7927,7 +7927,7 @@ var require_trail2 = __commonJS({
       else root.SynkTrail = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION = "trail-practice-2";
+      const VERSION2 = "trail-practice-2";
       const TYPES = ["practice.presented", "practice.helped", "practice.attempted", "practice.delivery"];
       const BASE = ["schema", "id", "scope", "at", "recordedAt", "type"];
       const FIELDS = {
@@ -8157,7 +8157,7 @@ var require_trail2 = __commonJS({
           attempts.push(attemptRow(event, p, arms.get(p.decisionId) ?? null, audio, j));
         });
         return {
-          version: VERSION,
+          version: VERSION2,
           scope: copy3(scope),
           asOf,
           recordedAsOf,
@@ -8286,14 +8286,14 @@ var require_trail2 = __commonJS({
       const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record2);
       function remember(history, summary) {
         if (!opened(history)) throw new TypeError("Trail: open the history first");
-        if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
+        if (!summary || summary.version !== VERSION2 || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history.readable) return null;
         const known = new Set(history.records.map((r) => r.itemKey));
         const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
         return { records: [...history.records, ...added].map(copy3), partial: history.partial };
       }
       function createPracticeOutcomeIndex(summary) {
-        if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+        if (!summary || summary.version !== VERSION2 || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
         const owner = key(summary.scope), cutoff = time4(summary.asOf), recordedCutoff = time4(summary.recordedAsOf ?? summary.asOf);
         const attempts = /* @__PURE__ */ new Map();
         for (const item of summary.attempts) {
@@ -8321,7 +8321,7 @@ var require_trail2 = __commonJS({
         } });
       }
       function growth(summary, history) {
-        if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+        if (!summary || summary.version !== VERSION2 || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
         if (!opened(history)) throw new TypeError("Trail: open the history first");
         const earlier = history.records, known = new Set(earlier.map((r) => r.itemKey));
         const facts = [], told = /* @__PURE__ */ new Set();
@@ -8339,7 +8339,7 @@ var require_trail2 = __commonJS({
         }
         return facts;
       }
-      return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate: validate2, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
+      return Object.freeze({ VERSION: VERSION2, TYPES, BITS, traceKeys, choiceRecord, validate: validate2, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
     });
   }
 });
@@ -8352,8 +8352,8 @@ var require_engine2 = __commonJS({
       else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
       "use strict";
-      const VERSION = "atlas-2.4.0";
-      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
+      const VERSION2 = "atlas-2.4.0";
+      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION2];
       const trail = () => {
         const module2 = getTrail();
         if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
@@ -8635,7 +8635,7 @@ var require_engine2 = __commonJS({
           setOwn(rounds, event.experienceId, (Object.hasOwn(rounds, event.experienceId) ? rounds[event.experienceId] : 0) + 1);
         }
         const state = {
-          version: VERSION,
+          version: VERSION2,
           scope: copy3(scope),
           asOf,
           recordedAsOf,
@@ -8687,7 +8687,7 @@ var require_engine2 = __commonJS({
         if (c.goal) reasons2.push(`goal.${c.goal}`);
         if (c.support) reasons2.push(`support.${c.support}`);
         if (!adapted) reasons2.push("arm.baseline");
-        if (!eligible.length) return { version: VERSION, status: "unavailable", scope: copy3(scope), experienceId, at, reasons: [...reasons2, "no.feasible.experience"], evidence, alternatives: [], selected: null };
+        if (!eligible.length) return { version: VERSION2, status: "unavailable", scope: copy3(scope), experienceId, at, reasons: [...reasons2, "no.feasible.experience"], evidence, alternatives: [], selected: null };
         const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
         const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
@@ -8823,7 +8823,7 @@ var require_engine2 = __commonJS({
         const following = levers.find((lever) => lever.follows === "support");
         evidence.push(...performanceProof);
         return {
-          version: VERSION,
+          version: VERSION2,
           status: "ready",
           scope: copy3(scope),
           experienceId,
@@ -8905,7 +8905,7 @@ var require_engine2 = __commonJS({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
-              policy: VERSION,
+              policy: VERSION2,
               evidence: decision.evidence,
               reasons: decision.reasons,
               alternatives: decision.alternatives,
@@ -8953,7 +8953,7 @@ var require_engine2 = __commonJS({
           lines: () => understand(log, scope, clock2()).lines
         };
       }
-      return Object.freeze({ VERSION, POLICIES, CONTEXT, validate: validate2, append, validationNeeds, validateIncrement, understand, decide, choice, createSession });
+      return Object.freeze({ VERSION: VERSION2, POLICIES, CONTEXT, validate: validate2, append, validationNeeds, validateIncrement, understand, decide, choice, createSession });
     });
   }
 });
@@ -9213,7 +9213,7 @@ var require_temper = __commonJS({
       else root.SynkTemper = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION = "temper-practice-2";
+      const VERSION2 = "temper-practice-2";
       const TRAIL = "trail-practice-2";
       const scopeKey = (scope) => `${scope.domain}/${scope.workspace}/${scope.subject}`;
       const taskKey = (p) => JSON.stringify([
@@ -9335,7 +9335,7 @@ var require_temper = __commonJS({
         const b = measure(left), a = measure(right), comparable = reasons2.length === 0;
         const measured = b.status === "measured" && a.status === "measured";
         return {
-          version: VERSION,
+          version: VERSION2,
           comparable,
           status: !comparable ? "not_comparable" : !measured ? "no_sample" : "measured",
           reasons: reasons2,
@@ -9397,7 +9397,7 @@ var require_temper = __commonJS({
         });
         const named = (status) => report.filter((cell) => cell.status === status).map((cell) => `${cell.dimension}=${cell.value}`);
         return {
-          version: VERSION,
+          version: VERSION2,
           arms: { baseline, candidate },
           minimum,
           tolerance,
@@ -9725,7 +9725,7 @@ var require_temper = __commonJS({
         }
         return { ok: true, rail: null };
       }
-      return Object.freeze({ VERSION, MINIMUM_PER_CELL, measure, combine, compare, groups, FOLLOWUP, followups, sealFollowups, lateHelp, carryMarks, FLIP_WINDOW, COOL_DOWN, check: check3 });
+      return Object.freeze({ VERSION: VERSION2, MINIMUM_PER_CELL, measure, combine, compare, groups, FOLLOWUP, followups, sealFollowups, lateHelp, carryMarks, FLIP_WINDOW, COOL_DOWN, check: check3 });
     });
   }
 });
@@ -9736,7 +9736,7 @@ var require_learning_ledger = __commonJS({
     "use strict";
     var Trail2 = require_trail2();
     var Temper = require_temper();
-    var VERSION = "learning-ledger-1";
+    var VERSION2 = "learning-ledger-1";
     var BITS = Trail2.BITS;
     var KEEP = 12;
     var HELP_MS = 30 * 864e5;
@@ -9752,13 +9752,13 @@ var require_learning_ledger = __commonJS({
     ]);
     var MAX_ENTRIES = 2e5;
     var own2 = (table, key) => Object.prototype.hasOwnProperty.call(table, key);
-    var plain = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+    var plain2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
     function empty2() {
-      return { version: VERSION, cutoff: null, folded: 0, keys: {}, presented: [], cells: {}, content: {}, counts: null };
+      return { version: VERSION2, cutoff: null, folded: 0, keys: {}, presented: [], cells: {}, content: {}, counts: null };
     }
     function validate2(ledger) {
-      const cellOk = (cell) => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every((h) => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === "string" && Number.isFinite(h[1])) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
-      if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.parents === void 0 || plain(ledger.parents) && Object.keys(ledger.parents).length <= MAX_ENTRIES && Object.values(ledger.parents).every((p) => Array.isArray(p) && (p.length === 2 || p.length === 3) && p.every((id, i) => i === 2 && id === null || typeof id === "string" && id.length > 0))) || !(ledger.withdrawn === void 0 || Array.isArray(ledger.withdrawn) && ledger.withdrawn.length <= MAX_ENTRIES && ledger.withdrawn.every((id) => typeof id === "string" && id.length > 0)) || !(ledger.followupsLost === void 0 || plain(ledger.followupsLost) && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24 && Number.isFinite(ledger.followupsLost.at)) || !(ledger.followupsPreserved === void 0 || typeof ledger.followupsPreserved === "boolean") || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
+      const cellOk = (cell) => plain2(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every((h) => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === "string" && Number.isFinite(h[1])) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
+      if (!plain2(ledger) || ledger.version !== VERSION2 || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain2(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain2(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain2(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain2(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.parents === void 0 || plain2(ledger.parents) && Object.keys(ledger.parents).length <= MAX_ENTRIES && Object.values(ledger.parents).every((p) => Array.isArray(p) && (p.length === 2 || p.length === 3) && p.every((id, i) => i === 2 && id === null || typeof id === "string" && id.length > 0))) || !(ledger.withdrawn === void 0 || Array.isArray(ledger.withdrawn) && ledger.withdrawn.length <= MAX_ENTRIES && ledger.withdrawn.every((id) => typeof id === "string" && id.length > 0)) || !(ledger.followupsLost === void 0 || plain2(ledger.followupsLost) && Number.isInteger(ledger.followupsLost.anchors) && ledger.followupsLost.anchors > 0 && ledger.followupsLost.anchors <= 24 && Number.isFinite(ledger.followupsLost.at)) || !(ledger.followupsPreserved === void 0 || typeof ledger.followupsPreserved === "boolean") || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
       return ledger;
     }
     var before = (ledger, traceKey, kinds) => {
@@ -9950,7 +9950,7 @@ var require_learning_ledger = __commonJS({
       if (retired.size) next.withdrawn = [...retired].sort();
       return trimParents(next);
     }
-    module.exports = { VERSION, BITS, FOLDABLE, empty: empty2, validate: validate2, before, rows: rows2, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference };
+    module.exports = { VERSION: VERSION2, BITS, FOLDABLE, empty: empty2, validate: validate2, before, rows: rows2, cellOf, contentOf, fold, plan, folded, stray, compare, reconcile, demote, reference };
   }
 });
 
@@ -10264,7 +10264,7 @@ var require_learning_pages = __commonJS({
     var THRESHOLD = 1024;
     var failure = () => Object.assign(new Error("Atlas: unreadable paged history"), { code: "STORAGE_ERROR" });
     function encodePage(rows2) {
-      const plain = JSON.stringify(rows2), strings = [], ids = /* @__PURE__ */ new Map();
+      const plain2 = JSON.stringify(rows2), strings = [], ids = /* @__PURE__ */ new Map();
       const intern = (value) => {
         if (!ids.has(value)) {
           ids.set(value, strings.length);
@@ -10273,8 +10273,8 @@ var require_learning_pages = __commonJS({
         return ids.get(value);
       };
       const pack = (value) => typeof value === "string" ? [2, intern(value)] : Array.isArray(value) ? [0, ...value.map(pack)] : value && typeof value === "object" ? [1, ...Object.entries(value).flatMap(([name, entry]) => [intern(name), pack(entry)])] : value;
-      const entries = JSON.parse(plain).map(pack), packed = JSON.stringify({ codec: 1, strings, entries });
-      return packed.length < plain.length ? packed : plain;
+      const entries = JSON.parse(plain2).map(pack), packed = JSON.stringify({ codec: 1, strings, entries });
+      return packed.length < plain2.length ? packed : plain2;
     }
     function decodePage(text2) {
       const value = JSON.parse(text2);
@@ -10371,8 +10371,8 @@ var require_learning_pages = __commonJS({
       };
       function write(data, expectedRaw) {
         const next = { paged: 1, version: 1, data: { ...data }, arrays: {} }, created = [];
-        const generation = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, staging = `${prefix}${generation}-`;
-        const writer = typeof storage.key === "function" ? `${writers}${generation}` : null;
+        const generation2 = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, staging = `${prefix}${generation2}-`;
+        const writer = typeof storage.key === "function" ? `${writers}${generation2}` : null;
         let publishedRaw = null;
         try {
           if (writer) {
@@ -10499,7 +10499,7 @@ var require_learning_sync = __commonJS({
       const pages = createPages(storage, key, ["acknowledged", "pending", "missing"]);
       let lastStoredRaw = null, exhaustedRecovery = null, era = 0;
       let state = { version: 2, accountKey, revision: revision2, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
-      let phase = "idle", code = null, message = null, stopped = false, started = false, generation = 0, running = null, timer = null, flushRequested = false;
+      let phase = "idle", code = null, message = null, stopped = false, started = false, generation2 = 0, running = null, timer = null, flushRequested = false;
       const controllers = /* @__PURE__ */ new Set();
       const whole = () => state.complete && !state.missing.length;
       const status = () => ({
@@ -10520,7 +10520,7 @@ var require_learning_sync = __commonJS({
         }
       };
       const block = (error2) => {
-        generation++;
+        generation2++;
         clearTimeout(timer);
         timer = null;
         for (const controller of controllers) controller.abort();
@@ -10604,7 +10604,7 @@ var require_learning_sync = __commonJS({
       const unsubscribe = port.subscribe((change) => {
         if (stopped || phase === "blocked" || change.kind === "import") return;
         if (change.kind === "storage-wait") {
-          generation++;
+          generation2++;
           clearTimeout(timer);
           timer = null;
           for (const controller of controllers) controller.abort();
@@ -10642,7 +10642,7 @@ var require_learning_sync = __commonJS({
           block(error2);
         }
       }
-      const active = (token) => !stopped && token === generation && canPersist();
+      const active = (token) => !stopped && token === generation2 && canPersist();
       const request = async (method, body, token) => {
         let last;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -10786,7 +10786,7 @@ var require_learning_sync = __commonJS({
           return running;
         }
         flushRequested = !pullOnly;
-        const token = generation;
+        const token = generation2;
         let continuation = false;
         phase = "syncing";
         code = null;
@@ -10857,7 +10857,7 @@ var require_learning_sync = __commonJS({
         stop() {
           if (!stopped) {
             stopped = true;
-            generation++;
+            generation2++;
             clearTimeout(timer);
             timer = null;
             unsubscribe();
@@ -10903,7 +10903,7 @@ var require_memory_sync = __commonJS({
       "PRODUCT_FORBIDDEN",
       "ACCOUNT_UNAVAILABLE"
     ]);
-    var keyOf = (entry) => `${entry.kind}\0${entry.key}`;
+    var keyOf2 = (entry) => `${entry.kind}\0${entry.key}`;
     var canonical = (value) => JSON.stringify(value, (_key, part) => object4(part) ? Object.fromEntries(Object.keys(part).sort().map((key) => [key, part[key]])) : part);
     var sameEntry = (a, b) => canonical(a) === canonical(b);
     var sameValue = (a, b) => canonical(a.value ?? null) === canonical(b.value ?? null);
@@ -10949,7 +10949,7 @@ var require_memory_sync = __commonJS({
       const durable = ["pending", "prepare", "acknowledge"].every((name) => typeof port[name] === "function");
       let serverTime = null;
       const failedLocalEdits = /* @__PURE__ */ new Set();
-      let phase = "idle", code = null, stopped = false, timer = null, running = null, again = false, pulled = false, generation = 0;
+      let phase = "idle", code = null, stopped = false, timer = null, running = null, again = false, pulled = false, generation2 = 0;
       const controllers = /* @__PURE__ */ new Set();
       const epoch = typeof port.epoch === "function" ? port.epoch() : void 0;
       const checkEpoch = () => {
@@ -10957,13 +10957,13 @@ var require_memory_sync = __commonJS({
       };
       const newer = (at, than) => than == null || Date.parse(at) > Date.parse(than);
       const contested = (entry) => {
-        const there = remote.get(keyOf(entry));
+        const there = remote.get(keyOf2(entry));
         return !!there && Date.parse(there.at) === Date.parse(entry.at) && !sameValue(there, entry);
       };
       const intents = () => durable ? port.pending() : [];
       const legacyPending = () => {
-        const owned = new Set(intents().map((item) => keyOf(item.entry)));
-        return entriesOf(port.state()).filter((entry) => !owned.has(keyOf(entry)) && instant(entry.at) && (newer(entry.at, remote.get(keyOf(entry))?.at) || contested(entry)) && refused.get(keyOf(entry)) !== entry.at);
+        const owned = new Set(intents().map((item) => keyOf2(item.entry)));
+        return entriesOf(port.state()).filter((entry) => !owned.has(keyOf2(entry)) && instant(entry.at) && (newer(entry.at, remote.get(keyOf2(entry))?.at) || contested(entry)) && refused.get(keyOf2(entry)) !== entry.at);
       };
       const pending = () => [...intents().map((item) => item.entry), ...legacyPending()];
       const status = () => {
@@ -10980,7 +10980,7 @@ var require_memory_sync = __commonJS({
         } catch {
         }
       };
-      const active = (token) => !stopped && token === generation;
+      const active = (token) => !stopped && token === generation2;
       const call = async (method, body, token) => {
         checkEpoch();
         if (!active(token)) throw failure("STOPPED", "Atlas memory sync: stopped");
@@ -11014,8 +11014,8 @@ var require_memory_sync = __commonJS({
       const accept = (entries) => {
         port.merge(stateOf(entries));
         for (const entry of entries) {
-          const previous = remote.get(keyOf(entry));
-          if (!previous || Date.parse(entry.at) >= Date.parse(previous.at)) remote.set(keyOf(entry), entry);
+          const previous = remote.get(keyOf2(entry));
+          if (!previous || Date.parse(entry.at) >= Date.parse(previous.at)) remote.set(keyOf2(entry), entry);
         }
       };
       async function cycle(token, held) {
@@ -11029,23 +11029,23 @@ var require_memory_sync = __commonJS({
           for (const item of intents().slice(0, BATCH)) {
             if (!sendable(item.entry)) throw failure("INVALID_MEMORY", "Atlas memory sync: local intent is invalid");
             const baseline = serverTime == null ? Date.parse(item.entry.at) : Date.parse(serverTime);
-            const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf(item.entry))?.at) || 0) + 1)).toISOString();
+            const at = item.assignedAt || new Date(Math.max(baseline, (Date.parse(remote.get(keyOf2(item.entry))?.at) || 0) + 1)).toISOString();
             if (!item.assignedAt && serverTime != null && Date.parse(at) > Date.parse(serverTime) + AHEAD_MS) throw failure("MEMORY_CLOCK_AHEAD", "Atlas memory sync: server memory is ahead of its clock");
             const value = port.prepare(item.id, at);
             if (value) prepared.push(value);
           }
-          const all = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
-          for (const entry of all) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+          const all = legacyPending().filter((entry) => held.get(keyOf2(entry)) !== entry.at);
+          for (const entry of all) if (!sendable(entry)) refused.set(keyOf2(entry), entry.at);
           const batch = [...prepared.map((item) => item.entry), ...all.filter(sendable)].slice(0, BATCH);
           if (!batch.length) return;
-          const sent = new Set(batch.map(keyOf));
+          const sent = new Set(batch.map(keyOf2));
           const known = serverTime;
           const response = await call("post", { revision: revision2, entries: batch }, token);
           if (!active(token)) return;
-          const returned = new Map(response.entries.map((entry) => [keyOf(entry), entry]));
-          if (returned.size !== response.entries.length || response.entries.some((entry) => !sent.has(keyOf(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
+          const returned = new Map(response.entries.map((entry) => [keyOf2(entry), entry]));
+          if (returned.size !== response.entries.length || response.entries.some((entry) => !sent.has(keyOf2(entry)))) throw failure("INVALID_RESPONSE", "Atlas memory sync: invalid acknowledgement");
           for (const item of prepared) {
-            const accepted = returned.get(keyOf(item.entry));
+            const accepted = returned.get(keyOf2(item.entry));
             if (!accepted || Date.parse(accepted.at) < Date.parse(item.entry.at)) throw failure("INVALID_RESPONSE", "Atlas memory sync: missing acknowledgement");
             if (Date.parse(accepted.at) === Date.parse(item.entry.at) && !sameEntry(accepted, item.entry)) throw failure("MEMORY_CONFLICT", "Atlas memory sync: another value has the same timestamp; local choice preserved");
             port.acknowledge(item.id, accepted);
@@ -11053,11 +11053,11 @@ var require_memory_sync = __commonJS({
           const clock2 = known ?? serverTime;
           let invalid = false;
           for (const entry of batch.slice(prepared.length)) {
-            const accepted = returned.get(keyOf(entry));
+            const accepted = returned.get(keyOf2(entry));
             if (accepted) {
               if (Date.parse(accepted.at) < Date.parse(entry.at)) invalid = true;
-              else if (Date.parse(accepted.at) === Date.parse(entry.at) && !sameValue(accepted, entry)) held.set(keyOf(entry), entry.at);
-            } else if (clock2 != null && Date.parse(entry.at) > Date.parse(clock2) + AHEAD_MS) held.set(keyOf(entry), entry.at);
+              else if (Date.parse(accepted.at) === Date.parse(entry.at) && !sameValue(accepted, entry)) held.set(keyOf2(entry), entry.at);
+            } else if (clock2 != null && Date.parse(entry.at) > Date.parse(clock2) + AHEAD_MS) held.set(keyOf2(entry), entry.at);
             else invalid = true;
           }
           accept(response.entries);
@@ -11065,8 +11065,8 @@ var require_memory_sync = __commonJS({
         }
         if (!active(token)) return;
         checkEpoch();
-        const rest = legacyPending().filter((entry) => held.get(keyOf(entry)) !== entry.at);
-        for (const entry of rest) if (!sendable(entry)) refused.set(keyOf(entry), entry.at);
+        const rest = legacyPending().filter((entry) => held.get(keyOf2(entry)) !== entry.at);
+        for (const entry of rest) if (!sendable(entry)) refused.set(keyOf2(entry), entry.at);
         if (intents().length || rest.some(sendable)) throw failure("NETWORK_ERROR", "Atlas memory sync: too many rounds; the rest waits for the next sync");
       }
       function run({ pull = false } = {}) {
@@ -11076,7 +11076,7 @@ var require_memory_sync = __commonJS({
           again = true;
           return running;
         }
-        const token = generation;
+        const token = generation2;
         phase = "syncing";
         code = null;
         publish();
@@ -11088,7 +11088,7 @@ var require_memory_sync = __commonJS({
               await cycle(token, held);
             } while (again && active(token));
             if (active(token)) {
-              const left = held.size > 0 ? legacyPending().filter((entry) => held.get(keyOf(entry)) === entry.at) : [];
+              const left = held.size > 0 ? legacyPending().filter((entry) => held.get(keyOf2(entry)) === entry.at) : [];
               code = failedLocalEdits.size ? "STORAGE_ERROR" : left.some(contested) ? "MEMORY_CONFLICT" : left.length ? "MEMORY_CLOCK_AHEAD" : null;
               phase = code === "MEMORY_CONFLICT" ? "conflict" : code ? "offline" : "synced";
               publish();
@@ -11116,13 +11116,13 @@ var require_memory_sync = __commonJS({
       const unsubscribe = port.subscribe((change) => {
         if (stopped || phase === "blocked" || change?.kind === "import") return;
         if (change?.kind === "storage-error") {
-          failedLocalEdits.add(keyOf({ kind: change.targetKind, key: change.key }));
+          failedLocalEdits.add(keyOf2({ kind: change.targetKind, key: change.key }));
           code = "STORAGE_ERROR";
           phase = "offline";
           publish();
           return;
         }
-        failedLocalEdits.delete(keyOf(change));
+        failedLocalEdits.delete(keyOf2(change));
         schedule();
       });
       return Object.freeze({
@@ -11142,7 +11142,7 @@ var require_memory_sync = __commonJS({
         stop() {
           if (!stopped) {
             stopped = true;
-            generation++;
+            generation2++;
             if (timer != null) clearTimer(timer);
             timer = null;
             unsubscribe();
@@ -11168,7 +11168,7 @@ var require_flow = __commonJS({
       } else root.SynkFlow = factory(() => root.SynkTemper);
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(getGuard) {
       "use strict";
-      const VERSION = "flow-1";
+      const VERSION2 = "flow-1";
       const KINDS = ["content", "pace", "support"];
       const OUTCOMES2 = ["success", "fail", "timeout", "skip", "void"];
       const MODES = ["auto", "fixed", "easier", "harder"];
@@ -11439,7 +11439,7 @@ var require_flow = __commonJS({
         const intro = !adaptive ? arm === "baseline" ? "baseline" : "fixed" : returning ? "returning" : condition === "tired" ? "tired" : basis;
         const settings = () => ({
           content: spec.id,
-          policy: VERSION,
+          policy: VERSION2,
           arm,
           mode,
           adaptive,
@@ -11576,7 +11576,7 @@ var require_flow = __commonJS({
             v: 2,
             content: spec.id,
             specVersion: spec.version,
-            policy: VERSION,
+            policy: VERSION2,
             at: new Date(time4(at)).toISOString(),
             estimates: Object.fromEntries(DIMENSIONS.map((d) => [d, { theta: round(estimates[d].theta, 4), n: round(estimates[d].n, 2), reversals: estimates[d].reversals }])),
             indices: Object.fromEntries(spec.knobs.map((k) => [k.id, adaptive && !locked(k) ? clamp(indices[k.id] - (todayOnly[k.id] || 0), 0, k.values.length - 1) : reached[k.id]])),
@@ -11584,7 +11584,7 @@ var require_flow = __commonJS({
           })
         };
       }
-      return Object.freeze({ VERSION, KINDS, OUTCOMES: OUTCOMES2, MODES, CONDITIONS, DIMENSIONS, ITEM, PRESENTATION, defineContent, priorFromSummary, declaredFrom, start, challenge, sigmoid, logit });
+      return Object.freeze({ VERSION: VERSION2, KINDS, OUTCOMES: OUTCOMES2, MODES, CONDITIONS, DIMENSIONS, ITEM, PRESENTATION, defineContent, priorFromSummary, declaredFrom, start, challenge, sigmoid, logit });
     });
   }
 });
@@ -11597,7 +11597,7 @@ var require_vellum_flow = __commonJS({
       else root.SynkVellumFlow = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION = "vellum-flow-1";
+      const VERSION2 = "vellum-flow-1";
       const DAY4 = 864e5;
       const STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
       const within = (value, min, max) => typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
@@ -11653,7 +11653,7 @@ var require_vellum_flow = __commonJS({
           "start.baseline": "\uC774\uBC88 \uD310\uC740 \uAE30\uBCF8 \uAD6C\uC131\uC73C\uB85C \uC9C4\uD589\uD574\uC694."
         }
       });
-      function keyOf(event) {
+      function keyOf2(event) {
         if (!event || typeof event !== "object") return null;
         if (typeof event.code === "string") return event.code === "start.default" ? null : event.code;
         if (event.because === "accepted-less-help") return "accepted-less-help";
@@ -11663,12 +11663,12 @@ var require_vellum_flow = __commonJS({
       }
       function line(event, { level = "standard", words = {} } = {}) {
         if (!Object.hasOwn(WORDS, level) || !words || typeof words !== "object") throw new TypeError("Vellum: invalid line options");
-        const key = keyOf(event);
+        const key = keyOf2(event);
         if (!key) return null;
         const text2 = Object.hasOwn(words, key) ? words[key] : WORDS[level][key];
         return typeof text2 === "string" && text2 ? { key, text: text2 } : null;
       }
-      return Object.freeze({ VERSION, STUCK, WORDS, stuckFor, supportStep, line });
+      return Object.freeze({ VERSION: VERSION2, STUCK, WORDS, stuckFor, supportStep, line });
     });
   }
 });
@@ -13022,7 +13022,7 @@ var require_temper_flow = __commonJS({
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(guard, getFlow) {
       "use strict";
       if (!guard || typeof guard.check !== "function") throw new Error("Temper: load temper.js (the guard) before using temper-flow.js");
-      const VERSION = "temper-flow-1";
+      const VERSION2 = "temper-flow-1";
       const { FLIP_WINDOW, COOL_DOWN, check: check3 } = guard;
       const seeded = (seed) => {
         let h = 2166136261;
@@ -13165,7 +13165,7 @@ var require_temper_flow = __commonJS({
         });
         const all = results.map((r) => r.adapted);
         return {
-          version: VERSION,
+          version: VERSION2,
           content: `${spec.id}@${spec.version}`,
           policy: Flow.VERSION,
           steps,
@@ -13177,7 +13177,7 @@ var require_temper_flow = __commonJS({
           note: "\uAC00\uC0C1 \uC0AC\uB78C\uC73C\uB85C \uAD6C\uD604\uACFC \uADDC\uCE59\uC744 \uD655\uC778\uD55C \uACB0\uACFC\uB2E4. \uC2E4\uC81C \uC0AC\uB78C\uC758 \uD559\uC2B5 \uD6A8\uACFC\xB7\uB9CC\uC871\xB7\uC131\uACFC\uC758 \uC99D\uAC70\uAC00 \uC544\uB2C8\uB2E4."
         };
       }
-      return Object.freeze({ VERSION, FLIP_WINDOW, COOL_DOWN, PERSONAS, check: check3, truth, simulate });
+      return Object.freeze({ VERSION: VERSION2, FLIP_WINDOW, COOL_DOWN, PERSONAS, check: check3, truth, simulate });
     });
   }
 });
@@ -13190,7 +13190,7 @@ var require_ask = __commonJS({
       else root.SynkAsk = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION = "ask-1.2";
+      const VERSION2 = "ask-1.2";
       const MAX_OPTIONS = 64;
       const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
       const DAY4 = 864e5;
@@ -13201,12 +13201,12 @@ var require_ask = __commonJS({
         if (typeof value !== "string" || !Number.isFinite(n)) throw new TypeError("Ask: invalid time");
         return n;
       };
-      const finite = (value) => typeof value === "number" && Number.isFinite(value);
+      const finite2 = (value) => typeof value === "number" && Number.isFinite(value);
       const owns = (value, key) => Object.hasOwn(value, key);
       function probabilities(q2) {
         const supplied = q2.options.filter((option) => owns(option, "p")).length;
         if (!supplied) return q2.options.map(() => 1 / q2.options.length);
-        if (supplied !== q2.options.length || q2.options.some((option) => !finite(option.p) || option.p < 0 || option.p > 1)) throw new TypeError(`Ask: invalid probabilities in ${q2.id}`);
+        if (supplied !== q2.options.length || q2.options.some((option) => !finite2(option.p) || option.p < 0 || option.p > 1)) throw new TypeError(`Ask: invalid probabilities in ${q2.id}`);
         const total = q2.options.reduce((sum, option) => sum + option.p, 0);
         if (Math.abs(total - 1) > 1e-9) throw new TypeError(`Ask: probabilities must sum to one in ${q2.id}`);
         return q2.options.map((option) => option.p / total);
@@ -13223,8 +13223,8 @@ var require_ask = __commonJS({
             options.add(option.id);
           }
           probabilities(q2);
-          if (owns(q2, "cost") && (!finite(q2.cost) || q2.cost < 0)) throw new TypeError(`Ask: invalid question cost in ${q2.id}`);
-          if (owns(q2, "responseProbability") && (!finite(q2.responseProbability) || q2.responseProbability < 0 || q2.responseProbability > 1)) throw new TypeError(`Ask: invalid response probability in ${q2.id}`);
+          if (owns(q2, "cost") && (!finite2(q2.cost) || q2.cost < 0)) throw new TypeError(`Ask: invalid question cost in ${q2.id}`);
+          if (owns(q2, "responseProbability") && (!finite2(q2.responseProbability) || q2.responseProbability < 0 || q2.responseProbability > 1)) throw new TypeError(`Ask: invalid response probability in ${q2.id}`);
         }
         return questions;
       }
@@ -13236,16 +13236,16 @@ var require_ask = __commonJS({
       }
       function decisionValue(evaluate, context) {
         const value = evaluate(context);
-        if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["utility", "loss"].includes(key)) || !owns(value, "utility") && !owns(value, "loss") || owns(value, "utility") && !finite(value.utility) || owns(value, "loss") && (!finite(value.loss) || value.loss < 0)) throw new TypeError("Ask: evaluate must return finite utility and/or nonnegative loss");
+        if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["utility", "loss"].includes(key)) || !owns(value, "utility") && !owns(value, "loss") || owns(value, "utility") && !finite2(value.utility) || owns(value, "loss") && (!finite2(value.loss) || value.loss < 0)) throw new TypeError("Ask: evaluate must return finite utility and/or nonnegative loss");
         const result = (value.utility ?? 0) - (value.loss ?? 0);
-        if (!finite(result)) throw new TypeError("Ask: nonfinite decision value");
+        if (!finite2(result)) throw new TypeError("Ask: nonfinite decision value");
         return result;
       }
       function rank({ questions, decide, answers = {}, denied = [], asked = {}, now = null, quietDays = 7, evaluate } = {}) {
         validate2(questions);
         if (typeof decide !== "function" || !answers || typeof answers !== "object" || !Array.isArray(denied) || !asked || typeof asked !== "object") throw new TypeError("Ask: invalid input");
         if (evaluate !== void 0 && typeof evaluate !== "function") throw new TypeError("Ask: evaluate must be a function");
-        if (!finite(quietDays) || quietDays < 0 || quietDays > 36500) throw new TypeError("Ask: invalid question cooldown");
+        if (!finite2(quietDays) || quietDays < 0 || quietDays > 36500) throw new TypeError("Ask: invalid question cooldown");
         const currentTime = now === null ? null : time4(now);
         const valued = typeof evaluate === "function";
         if (!valued && questions.some((q2) => owns(q2, "cost") || owns(q2, "responseProbability"))) throw new TypeError("Ask: question cost and response probability require evaluate");
@@ -13273,13 +13273,13 @@ var require_ask = __commonJS({
             if (valued && chances[index] > 0) {
               const context = { answers: scenario, question: q2, option };
               const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
-              if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
+              if (!finite2(gain)) throw new TypeError("Ask: nonfinite decision gain");
               expectedGain += chances[index] * gain;
             }
           });
           const distinct = new Set(Object.values(outcomes).map(canonical)).size;
           const cost = q2.cost ?? 0, responseProbability = q2.responseProbability ?? 1, value = responseProbability * expectedGain - cost;
-          if (valued && (!finite(expectedGain) || !finite(value))) throw new TypeError("Ask: nonfinite expected decision value");
+          if (valued && (!finite2(expectedGain) || !finite2(value))) throw new TypeError("Ask: nonfinite expected decision value");
           const skippable = impact === 0 || valued && value <= 0;
           rawImpact.set(q2.id, impact);
           result.push({
@@ -13306,12 +13306,12 @@ var require_ask = __commonJS({
       function choose({ budget = 1, usedToday = 0, ...input } = {}) {
         if (!Number.isInteger(budget) || budget < 0 || !Number.isInteger(usedToday) || usedToday < 0) throw new TypeError("Ask: invalid budget");
         const ranked = rank(input);
-        if (usedToday >= budget) return { version: VERSION, status: "none", reason: "budget", ranked };
+        if (usedToday >= budget) return { version: VERSION2, status: "none", reason: "budget", ranked };
         const valued = typeof input.evaluate === "function";
         const best = ranked.find((entry) => !entry.skippable);
-        if (!best) return { version: VERSION, status: "none", reason: valued ? "no-question-has-positive-decision-value" : "no-question-changes-the-decision", ranked };
+        if (!best) return { version: VERSION2, status: "none", reason: valued ? "no-question-has-positive-decision-value" : "no-question-changes-the-decision", ranked };
         return {
-          version: VERSION,
+          version: VERSION2,
           status: "ask",
           question: input.questions.find((q2) => q2.id === best.id),
           impact: best.impact,
@@ -13352,7 +13352,7 @@ var require_ask = __commonJS({
         };
         return choose({ ...rest, questions, decide });
       }
-      return Object.freeze({ VERSION, MAX_OPTIONS, KINDS, rank, choose, fromAtlas });
+      return Object.freeze({ VERSION: VERSION2, MAX_OPTIONS, KINDS, rank, choose, fromAtlas });
     });
   }
 });
@@ -14076,7 +14076,7 @@ var require_trail = __commonJS2({
       else root.SynkTrail = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION = "trail-practice-2";
+      const VERSION2 = "trail-practice-2";
       const TYPES = ["practice.presented", "practice.helped", "practice.attempted", "practice.delivery"];
       const BASE = ["schema", "id", "scope", "at", "recordedAt", "type"];
       const FIELDS = {
@@ -14306,7 +14306,7 @@ var require_trail = __commonJS2({
           attempts.push(attemptRow(event, p, arms.get(p.decisionId) ?? null, audio, j));
         });
         return {
-          version: VERSION,
+          version: VERSION2,
           scope: copy3(scope),
           asOf,
           recordedAsOf,
@@ -14435,14 +14435,14 @@ var require_trail = __commonJS2({
       const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record2);
       function remember(history, summary) {
         if (!opened(history)) throw new TypeError("Trail: open the history first");
-        if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
+        if (!summary || summary.version !== VERSION2 || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history.readable) return null;
         const known = new Set(history.records.map((r) => r.itemKey));
         const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
         return { records: [...history.records, ...added].map(copy3), partial: history.partial };
       }
       function createPracticeOutcomeIndex(summary) {
-        if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+        if (!summary || summary.version !== VERSION2 || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
         const owner = key(summary.scope), cutoff = time4(summary.asOf), recordedCutoff = time4(summary.recordedAsOf ?? summary.asOf);
         const attempts = /* @__PURE__ */ new Map();
         for (const item of summary.attempts) {
@@ -14470,7 +14470,7 @@ var require_trail = __commonJS2({
         } });
       }
       function growth(summary, history) {
-        if (!summary || summary.version !== VERSION || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
+        if (!summary || summary.version !== VERSION2 || !Array.isArray(summary.attempts)) throw new TypeError("Trail: use a practice summary");
         if (!opened(history)) throw new TypeError("Trail: open the history first");
         const earlier = history.records, known = new Set(earlier.map((r) => r.itemKey));
         const facts = [], told = /* @__PURE__ */ new Set();
@@ -14488,7 +14488,7 @@ var require_trail = __commonJS2({
         }
         return facts;
       }
-      return Object.freeze({ VERSION, TYPES, BITS, traceKeys, choiceRecord, validate: validate2, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
+      return Object.freeze({ VERSION: VERSION2, TYPES, BITS, traceKeys, choiceRecord, validate: validate2, checkLink, link, vouch, summarize, createIndex, createPracticeOutcomeIndex, openHistory, remember, growth });
     });
   }
 });
@@ -14499,8 +14499,8 @@ var require_engine = __commonJS2({
       else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(getTrail) {
       "use strict";
-      const VERSION = "atlas-2.4.0";
-      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION];
+      const VERSION2 = "atlas-2.4.0";
+      const POLICIES = ["atlas-1.0.0", "atlas-2.0.0", "atlas-2.1.0", "atlas-2.2.0", "atlas-2.3.0", VERSION2];
       const trail = () => {
         const module2 = getTrail();
         if (!module2 || typeof module2.validate !== "function" || typeof module2.checkLink !== "function" || typeof module2.summarize !== "function") throw new Error("Atlas: Trail practice module unavailable");
@@ -14782,7 +14782,7 @@ var require_engine = __commonJS2({
           setOwn(rounds, event.experienceId, (Object.hasOwn(rounds, event.experienceId) ? rounds[event.experienceId] : 0) + 1);
         }
         const state = {
-          version: VERSION,
+          version: VERSION2,
           scope: copy3(scope),
           asOf,
           recordedAsOf,
@@ -14834,7 +14834,7 @@ var require_engine = __commonJS2({
         if (c.goal) reasons2.push(`goal.${c.goal}`);
         if (c.support) reasons2.push(`support.${c.support}`);
         if (!adapted) reasons2.push("arm.baseline");
-        if (!eligible.length) return { version: VERSION, status: "unavailable", scope: copy3(scope), experienceId, at, reasons: [...reasons2, "no.feasible.experience"], evidence, alternatives: [], selected: null };
+        if (!eligible.length) return { version: VERSION2, status: "unavailable", scope: copy3(scope), experienceId, at, reasons: [...reasons2, "no.feasible.experience"], evidence, alternatives: [], selected: null };
         const usable = adapted ? state.lines.filter((line) => line.source === "observed" && line.usable) : [];
         const mine = [...view.completed.values()].filter((done) => done.experienceId === experienceId && view.decisions.has(done.decisionId));
         const last = mine.at(-1) ? view.decisions.get(mine.at(-1).decisionId) : null;
@@ -14970,7 +14970,7 @@ var require_engine = __commonJS2({
         const following = levers.find((lever) => lever.follows === "support");
         evidence.push(...performanceProof);
         return {
-          version: VERSION,
+          version: VERSION2,
           status: "ready",
           scope: copy3(scope),
           experienceId,
@@ -15052,7 +15052,7 @@ var require_engine = __commonJS2({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
-              policy: VERSION,
+              policy: VERSION2,
               evidence: decision.evidence,
               reasons: decision.reasons,
               alternatives: decision.alternatives,
@@ -15100,7 +15100,7 @@ var require_engine = __commonJS2({
           lines: () => understand(log, scope, clock2()).lines
         };
       }
-      return Object.freeze({ VERSION, POLICIES, CONTEXT, validate: validate2, append, validationNeeds, validateIncrement, understand, decide, choice, createSession });
+      return Object.freeze({ VERSION: VERSION2, POLICIES, CONTEXT, validate: validate2, append, validationNeeds, validateIncrement, understand, decide, choice, createSession });
     });
   }
 });
@@ -15111,21 +15111,21 @@ var require_domain = __commonJS2({
       else root.SynkAtlasDomain = factory();
     })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
       "use strict";
-      const VERSION = "core-domain-1";
+      const VERSION2 = "core-domain-1";
       const DAY4 = 864e5;
       const DOMAINS = ["LAB", "SHIFT", "PATH", "PULSE", "SYNK"];
       const SOURCES = ["declared", "observed", "inferred"];
       const own2 = (o, k) => Object.hasOwn(o, k);
-      const plain = (o) => o !== null && typeof o === "object" && !Array.isArray(o) && [Object.prototype, null].includes(Object.getPrototypeOf(o));
+      const plain2 = (o) => o !== null && typeof o === "object" && !Array.isArray(o) && [Object.prototype, null].includes(Object.getPrototypeOf(o));
       const token = (s) => typeof s === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(s) && !["__proto__", "prototype", "constructor"].includes(s);
       const fail2 = (message) => {
         throw new TypeError(`Core domain: ${message}`);
       };
       const copy3 = (value) => JSON.parse(JSON.stringify(value));
-      const canonical = (value) => JSON.stringify(value, (_key, v) => plain(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]])) : v);
+      const canonical = (value) => JSON.stringify(value, (_key, v) => plain2(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]])) : v);
       const time4 = (value) => typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : fail2("invalid time");
-      const finite = (n) => typeof n === "number" && Number.isFinite(n);
-      const keys = (value, allowed) => plain(value) && Object.keys(value).every((k) => allowed.includes(k));
+      const finite2 = (n) => typeof n === "number" && Number.isFinite(n);
+      const keys = (value, allowed) => plain2(value) && Object.keys(value).every((k) => allowed.includes(k));
       const scopeKey = (scope) => {
         if (!keys(scope, ["domain", "workspace", "subject"]) || Object.keys(scope).length !== 3 || !DOMAINS.includes(scope.domain) || !token(scope.workspace) || !token(scope.subject)) fail2("invalid scope");
         return canonical(scope);
@@ -15133,7 +15133,7 @@ var require_domain = __commonJS2({
       function validValue(field, value) {
         if (field.kind === "enum") return field.values.includes(value);
         if (field.kind === "boolean") return typeof value === "boolean";
-        return finite(value) && value >= field.range[0] && value <= field.range[1];
+        return finite2(value) && value >= field.range[0] && value <= field.range[1];
       }
       function validateContract(contract) {
         if (!keys(contract, ["id", "version", "purpose", "fields", "criteria", "objectives"]) || !token(contract.id) || !token(contract.version) || !token(contract.purpose) || !Array.isArray(contract.fields) || !contract.fields.length || contract.fields.length > 100 || !Array.isArray(contract.criteria) || contract.criteria.length > 100) fail2("invalid contract");
@@ -15142,16 +15142,16 @@ var require_domain = __commonJS2({
           if (!keys(field, ["id", "kind", "values", "range", "maxAgeDays", "minIndependent", "minAgreement", "tolerance"]) || !token(field.id) || fields.has(field.id) || !["enum", "boolean", "number"].includes(field.kind)) fail2("invalid field");
           if (field.kind === "enum" && (!Array.isArray(field.values) || field.values.length < 2 || field.values.length > 100 || new Set(field.values).size !== field.values.length || field.values.some((v) => !token(v)))) fail2("invalid enum values");
           if (field.kind !== "enum" && field.values != null) fail2("values belong to an enum");
-          if (field.kind === "number" && (!Array.isArray(field.range) || field.range.length !== 2 || !field.range.every(finite) || field.range[0] >= field.range[1] || !finite(field.range[1] - field.range[0]))) fail2("invalid numeric range");
+          if (field.kind === "number" && (!Array.isArray(field.range) || field.range.length !== 2 || !field.range.every(finite2) || field.range[0] >= field.range[1] || !finite2(field.range[1] - field.range[0]))) fail2("invalid numeric range");
           if (field.kind !== "number" && (field.range != null || field.tolerance != null)) fail2("range/tolerance belong to a number");
-          if (field.maxAgeDays != null && (!finite(field.maxAgeDays) || field.maxAgeDays <= 0 || field.maxAgeDays > 36500)) fail2("invalid evidence lifetime");
+          if (field.maxAgeDays != null && (!finite2(field.maxAgeDays) || field.maxAgeDays <= 0 || field.maxAgeDays > 36500)) fail2("invalid evidence lifetime");
           if (field.minIndependent != null && (!Number.isInteger(field.minIndependent) || field.minIndependent < 1 || field.minIndependent > 1e4)) fail2("invalid minimum evidence");
-          if (field.minAgreement != null && (!finite(field.minAgreement) || field.minAgreement <= 0.5 || field.minAgreement > 1)) fail2("invalid agreement threshold");
-          if (field.tolerance != null && (!finite(field.tolerance) || field.tolerance < 0 || field.tolerance > field.range[1] - field.range[0])) fail2("invalid numeric tolerance");
+          if (field.minAgreement != null && (!finite2(field.minAgreement) || field.minAgreement <= 0.5 || field.minAgreement > 1)) fail2("invalid agreement threshold");
+          if (field.tolerance != null && (!finite2(field.tolerance) || field.tolerance < 0 || field.tolerance > field.range[1] - field.range[0])) fail2("invalid numeric tolerance");
           fields.set(field.id, field);
         }
         for (const criterion of contract.criteria) {
-          if (!keys(criterion, ["id", "field", "feature", "weight", "required", "prefer"]) || !token(criterion.id) || criteria.has(criterion.id) || !fields.has(criterion.field) || !token(criterion.feature) || !finite(criterion.weight) || criterion.weight < 0 || criterion.required != null && typeof criterion.required !== "boolean" || !["match", "different", "at-least", "at-most"].includes(criterion.prefer || "match")) fail2("invalid criterion");
+          if (!keys(criterion, ["id", "field", "feature", "weight", "required", "prefer"]) || !token(criterion.id) || criteria.has(criterion.id) || !fields.has(criterion.field) || !token(criterion.feature) || !finite2(criterion.weight) || criterion.weight < 0 || criterion.required != null && typeof criterion.required !== "boolean" || !["match", "different", "at-least", "at-most"].includes(criterion.prefer || "match")) fail2("invalid criterion");
           if (["at-least", "at-most"].includes(criterion.prefer) && fields.get(criterion.field).kind !== "number") fail2("numeric comparison requires a number");
           criteria.add(criterion.id);
         }
@@ -15159,7 +15159,7 @@ var require_domain = __commonJS2({
           if (!Array.isArray(contract.objectives) || contract.objectives.length > 100) fail2("invalid objectives");
           const objectives = /* @__PURE__ */ new Set();
           for (const objective of contract.objectives) {
-            if (!keys(objective, ["id", "feature", "range", "weight", "prefer"]) || !token(objective.id) || objectives.has(objective.id) || !token(objective.feature) || !Array.isArray(objective.range) || objective.range.length !== 2 || !objective.range.every(finite) || objective.range[0] >= objective.range[1] || !finite(objective.range[1] - objective.range[0]) || !finite(objective.weight) || objective.weight < 0 || !["higher", "lower"].includes(objective.prefer)) fail2("invalid objective");
+            if (!keys(objective, ["id", "feature", "range", "weight", "prefer"]) || !token(objective.id) || objectives.has(objective.id) || !token(objective.feature) || !Array.isArray(objective.range) || objective.range.length !== 2 || !objective.range.every(finite2) || objective.range[0] >= objective.range[1] || !finite2(objective.range[1] - objective.range[0]) || !finite2(objective.weight) || objective.weight < 0 || !["higher", "lower"].includes(objective.prefer)) fail2("invalid objective");
             objectives.add(objective.id);
           }
         }
@@ -15296,7 +15296,7 @@ var require_domain = __commonJS2({
           result.push(base);
         }
         return {
-          version: VERSION,
+          version: VERSION2,
           contract: { id: contract.id, version: contract.version, purpose: contract.purpose },
           scope: copy3(scope),
           at,
@@ -15316,12 +15316,12 @@ var require_domain = __commonJS2({
         if (!Array.isArray(candidates) || candidates.length > 1e4) fail2("invalid candidates");
         const ids = /* @__PURE__ */ new Set(), ranked = [], excluded = [];
         for (const candidate of candidates) {
-          if (!keys(candidate, ["id", "features", "eligible", "exclusions"]) || !token(candidate.id) || ids.has(candidate.id) || !plain(candidate.features) || Object.keys(candidate.features).some((k) => !allowed.has(k)) || candidate.eligible != null && typeof candidate.eligible !== "boolean" || candidate.exclusions != null && (!Array.isArray(candidate.exclusions) || candidate.exclusions.some((r) => !token(r)))) fail2("invalid candidate");
+          if (!keys(candidate, ["id", "features", "eligible", "exclusions"]) || !token(candidate.id) || ids.has(candidate.id) || !plain2(candidate.features) || Object.keys(candidate.features).some((k) => !allowed.has(k)) || candidate.eligible != null && typeof candidate.eligible !== "boolean" || candidate.exclusions != null && (!Array.isArray(candidate.exclusions) || candidate.exclusions.some((r) => !token(r)))) fail2("invalid candidate");
           ids.add(candidate.id);
           for (const c of contract.criteria) if (own2(candidate.features, c.feature) && !validValue(specs.get(c.field), candidate.features[c.feature])) fail2("invalid candidate feature");
           for (const objective of objectives) if (own2(candidate.features, objective.feature)) {
             const value = candidate.features[objective.feature];
-            if (!finite(value) || value < objective.range[0] || value > objective.range[1]) fail2("invalid objective feature");
+            if (!finite2(value) || value < objective.range[0] || value > objective.range[1]) fail2("invalid objective feature");
           }
           if (candidate.eligible === false || candidate.exclusions?.length) {
             excluded.push({ id: candidate.id, reasons: candidate.exclusions?.length ? candidate.exclusions : ["ineligible"] });
@@ -15347,7 +15347,7 @@ var require_domain = __commonJS2({
             }
             const contribution = fit * c.weight;
             score += contribution;
-            if (!finite(score)) fail2("policy utility overflow");
+            if (!finite2(score)) fail2("policy utility overflow");
             reasons2.push({ criterion: c.id, field: c.field, value: fact.value, candidateValue: v, contribution, evidence: fact.evidence, status: fact.status });
           }
           for (const objective of objectives) {
@@ -15356,7 +15356,7 @@ var require_domain = __commonJS2({
             const fraction = (candidateValue - objective.range[0]) / (objective.range[1] - objective.range[0]);
             const contribution = (objective.prefer === "higher" ? fraction : 1 - fraction) * objective.weight;
             score += contribution;
-            if (!finite(score)) fail2("policy utility overflow");
+            if (!finite2(score)) fail2("policy utility overflow");
             policyReasons.push({ objective: objective.id, feature: objective.feature, candidateValue, contribution });
           }
           if (blocked.length) excluded.push({ id: candidate.id, reasons: blocked });
@@ -15364,7 +15364,7 @@ var require_domain = __commonJS2({
         }
         ranked.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
         return copy3({
-          version: VERSION,
+          version: VERSION2,
           contract: understanding.contract,
           scope,
           at,
@@ -15377,7 +15377,7 @@ var require_domain = __commonJS2({
           calibrated: false
         });
       }
-      return Object.freeze({ VERSION, validateContract, understand, decide });
+      return Object.freeze({ VERSION: VERSION2, validateContract, understand, decide });
     });
   }
 });
@@ -15389,7 +15389,7 @@ var require_personalization = __commonJS2({
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(Core, getDomain) {
       "use strict";
       if (!Core?.createSession) throw new TypeError("Personalization: load Core first");
-      const VERSION = "core-personalization-1";
+      const VERSION2 = "core-personalization-1";
       const OPTIONS = Object.freeze({
         goal: Object.freeze(["explore", "study", "work", "clarity", "expression", "prepare"]),
         experience: Object.freeze(["new", "familiar", "practiced"]),
@@ -15467,7 +15467,7 @@ var require_personalization = __commonJS2({
       }
       function checkProfile(profile) {
         const keys = ["version", "scope", "revision", "generation", "status", "consent", "values", "provenance", "createdAt", "updatedAt"];
-        if (!exact2(profile, keys) || keys.some((key) => !Object.hasOwn(profile, key)) || profile.version !== VERSION || !Number.isSafeInteger(profile.revision) || profile.revision < 0 || !Number.isSafeInteger(profile.generation) || profile.generation < 0 || profile.generation > 999999999 || !["new", "active", "skipped", "disabled", "deleted"].includes(profile.status) || typeof profile.consent !== "boolean" || profile.status === "active" !== profile.consent) fail2("invalid profile");
+        if (!exact2(profile, keys) || keys.some((key) => !Object.hasOwn(profile, key)) || profile.version !== VERSION2 || !Number.isSafeInteger(profile.revision) || profile.revision < 0 || !Number.isSafeInteger(profile.generation) || profile.generation < 0 || profile.generation > 999999999 || !["new", "active", "skipped", "disabled", "deleted"].includes(profile.status) || typeof profile.consent !== "boolean" || profile.status === "active" !== profile.consent) fail2("invalid profile");
         checkScope(profile.scope);
         checkValues(profile.values);
         if (Object.hasOwn(profile.values, "primaryReason") && !(profile.values.reasons || []).includes(profile.values.primaryReason)) fail2("primary reason must be one of the declared reasons");
@@ -15487,7 +15487,7 @@ var require_personalization = __commonJS2({
         checkScope(scope);
         instant(at);
         return {
-          version: VERSION,
+          version: VERSION2,
           scope: copy3(scope),
           revision: 0,
           generation: 0,
@@ -15563,8 +15563,8 @@ var require_personalization = __commonJS2({
         });
       }
       function coreScope(profile) {
-        const { scope, generation } = checkProfile(profile);
-        return { domain: scope.domain, subject: scope.personId, workspace: `p.${scope.productId}:c.${scope.contextId}:g.${generation}` };
+        const { scope, generation: generation2 } = checkProfile(profile);
+        return { domain: scope.domain, subject: scope.personId, workspace: `p.${scope.productId}:c.${scope.contextId}:g.${generation2}` };
       }
       function owned(profile, scope) {
         checkProfile(profile);
@@ -15669,7 +15669,7 @@ var require_personalization = __commonJS2({
         const returned = profile.consent ? current.events() : [];
         const basis = plan.outcomeBasis === "self_report" ? "self-reported-feedback" : Object.keys(values).length ? "self-declared" : "cold-start";
         return {
-          version: VERSION,
+          version: VERSION2,
           profile: copy3(profile),
           values,
           presentation,
@@ -15920,7 +15920,7 @@ var require_personalization = __commonJS2({
       }
       const preferences = Object.freeze({ project: projectPreferences, record: recordPreference, layers: preferenceLayers, toDomain: preferencesToDomain });
       return Object.freeze({
-        VERSION,
+        VERSION: VERSION2,
         PREFERENCE_VERSION,
         preferences,
         OPTIONS,
@@ -17430,7 +17430,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp", "--life-print-position": "world-felt/complete.webp", "--life-print-hangul": "world-felt/hangul.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
-  let screenView = null, reviewMark = null, context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null, viewPhase = null;
+  let screenView = null, reviewMark = null, context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation2 = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null, viewPhase = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Map();
   const life = learning2?.life && typeof learning2.life.createLifeTrail === "function" ? learning2.life : null;
@@ -17729,7 +17729,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     screenView = screen;
     const scroll = keepScroll && shown ? content.scrollTop : 0;
     story.stop();
-    generation++;
+    generation2++;
     rendering = true;
     show(title, html + statusLine(), { type, eyebrow, nav: "play" });
     const tutor = home.mountLifeTutor?.({ state: tutorState(), snapshot: getProgress().exportSnapshot(), lessons: LESSONS, practised: [...practised], onHint: tutorHint, onPause: () => speech.pause(), onPreparePractice: prepareTutorPractice, onPracticeSuccess: (id) => completeTutorPractice(id, home.tutor?.().tutor), onPracticeComplete: (id) => {
@@ -17753,7 +17753,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         signClip?.pause();
         signClip = null;
         shown = false;
-        generation++;
+        generation2++;
         try {
           void getProgress().flush().catch(() => {
           });
@@ -18114,9 +18114,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     cafeView = "";
     paint("\uCE74\uD398 \uBC29\uBB38 \uACB0\uACFC", cafeCompletionMarkup({ photo, print, nextLesson, lessonId: context.lessonId, state: cafeRun, adaptive: !!onNext, answers: p.lessonState(context.lessonId).answers }), { type: "life-cafe-complete", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE" });
     celebrate();
-    const ticket = generation;
+    const ticket = generation2;
     p.flush().catch(() => {
-      if (shown && ticket === generation) home.toast("\uCE74\uD398 \uAE30\uB85D\uC744 \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694. \uD654\uBA74\uC758 \uC9C4\uD589\uC740 \uADF8\uB300\uB85C\uC608\uC694.");
+      if (shown && ticket === generation2) home.toast("\uCE74\uD398 \uAE30\uB85D\uC744 \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694. \uD654\uBA74\uC758 \uC9C4\uD589\uC740 \uADF8\uB300\uB85C\uC608\uC694.");
     });
   }
   function persistStage() {
@@ -18225,9 +18225,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const packName = currentLang() === "ko" ? word : t(`life.pack.${pack2.id}`);
     paint(t("life.resultTitle"), `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word" lang="ko">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(l.type)}</span></section>${lists}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? t("life.packStamp", { pack: escape2(packName) }) : t("life.packProgress", { pack: escape2(packName), done: packState.completed, total: packState.total })}</strong><small>${t(complete ? "life.packFinished" : "life.packFill")}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>${t("life.toTown")} <span aria-hidden="true">\u2192</span></button>${quiet}</div>`, { type: "life-complete" });
     celebrate();
-    const ticket = generation;
+    const ticket = generation2;
     p.flush().catch(() => {
-      if (shown && ticket === generation) home.toast(t("life.savingProgress"));
+      if (shown && ticket === generation2) home.toast(t("life.savingProgress"));
     });
   }
   function reviewOrigin(record2, snapshot = getProgress().exportSnapshot()) {
@@ -18816,7 +18816,7 @@ function createLifeNext({
   let waiting = null;
   let unwatch = () => {
   };
-  let generation = 0;
+  let generation2 = 0;
   let disposed = false;
   const quiet = (fn) => {
     try {
@@ -18830,7 +18830,7 @@ function createLifeNext({
     }
   };
   function reset() {
-    generation += 1;
+    generation2 += 1;
     unwatch();
     unwatch = () => {
     };
@@ -18842,10 +18842,10 @@ function createLifeNext({
   }
   function attach() {
     if (made || waiting || disposed) return;
-    const at = generation;
+    const at = generation2;
     waiting = Promise.resolve().then(() => coach()).then(
       (value) => {
-        if (disposed || at !== generation) return;
+        if (disposed || at !== generation2) return;
         waiting = null;
         if (!value || typeof value.present !== "function") return abandon("LIFE_NO_COACH");
         made = value;
@@ -18856,7 +18856,7 @@ function createLifeNext({
         for (const step of work) quiet(step);
       },
       () => {
-        if (disposed || at !== generation) return;
+        if (disposed || at !== generation2) return;
         waiting = null;
         abandon("LIFE_COACH_FAILED");
       }
@@ -19172,7 +19172,7 @@ function watchLifeDue({
   let asking = null;
   let again = false;
   let phase = "checking";
-  let generation = 0;
+  let generation2 = 0;
   let disposed = false;
   let unwatch = () => {
   };
@@ -19234,7 +19234,7 @@ function watchLifeDue({
     again = false;
     unwatch = quiet(
       () => retired(made, () => {
-        if (!disposed && at === generation) attach();
+        if (!disposed && at === generation2) attach();
       })
     ) ?? (() => {
     });
@@ -19242,7 +19242,7 @@ function watchLifeDue({
     return made;
   }
   function attach() {
-    const at = ++generation;
+    const at = ++generation2;
     stop();
     unwatch();
     unwatch = () => {
@@ -19255,7 +19255,7 @@ function watchLifeDue({
     wait = every;
     quiet(() => progress2.setDueSource(source));
     opening = Promise.resolve().then(() => open()).catch(() => null).then((made) => {
-      if (disposed || at !== generation) return null;
+      if (disposed || at !== generation2) return null;
       if (!usable(made)) {
         phase = "old";
         quiet(() => progress2.setDueSource(null));
@@ -19273,10 +19273,10 @@ function watchLifeDue({
   function reask() {
     if (disposed || phase !== "old") return opening;
     if (asking) return asking;
-    const at = generation;
+    const at = generation2;
     const pending = Promise.resolve().then(() => open()).catch(() => null).then((made) => {
       if (asking === pending) asking = null;
-      if (disposed || at !== generation || phase !== "old") return null;
+      if (disposed || at !== generation2 || phase !== "old") return null;
       if (!usable(made)) return settleOld();
       return adopt(made, at);
     });
@@ -19308,7 +19308,7 @@ function watchLifeDue({
     state: () => disposed ? "disposed" : phase,
     dispose() {
       disposed = true;
-      generation += 1;
+      generation2 += 1;
       stop();
       unwatch();
       unreopen();
@@ -24926,10 +24926,10 @@ function msCoreEvidence(summary, skillId) {
   if (skill2.status !== "supported") for (const id of [...skill2.evidence || [], ...skill2.reasonEvidence || []]) ids.add(id);
   return ids;
 }
-function msMajority(rows2, keyOf, { of, min }) {
+function msMajority(rows2, keyOf2, { of, min }) {
   const groups = /* @__PURE__ */ new Map();
   rows2.forEach((row, rank) => {
-    const key = keyOf(row);
+    const key = keyOf2(row);
     if (key == null) return;
     const hit = groups.get(key) || { key, rows: [], rank, items: /* @__PURE__ */ new Set() };
     hit.rows.push(row);
@@ -25332,6 +25332,217 @@ function lifeFollowupRows({ projection, seen, snapshot = null, now = Date.now(),
 // experiences/brand-opening/life-tutor-lines.mjs
 function lifeTutorExpression(lesson2, question2) {
   return lesson2?.expressions.find((e) => e.id === question2?.expressionId)?.korean || lesson2?.title || "\uC0DD\uD65C \uD45C\uD604";
+}
+
+// experiences/synk-world-app/world-month-answer.mjs
+var PREFIX = "synk:world:month-answer:";
+var VERSION = 1;
+var GEN = /^(\d{13})\.[0-9a-z]{1,16}$/;
+var finite = (value) => Number.isFinite(value);
+var plain = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+function positionOf(value) {
+  if (!plain(value) || typeof value.edition !== "string" || !value.edition) return null;
+  if (!Number.isSafeInteger(value.foldedUntil) || value.foldedUntil < 0) return null;
+  const gen = value.gen ?? null;
+  if (gen !== null && typeof gen !== "string") return null;
+  return { edition: value.edition, gen, foldedUntil: value.foldedUntil };
+}
+var samePosition = (a, b) => Boolean(a && b) && a.edition === b.edition && (a.gen ?? null) === (b.gen ?? null) && a.foldedUntil === b.foldedUntil;
+var genTime = (gen) => {
+  const match = typeof gen === "string" ? GEN.exec(gen) : null;
+  return match ? Number(match[1]) : Number.NEGATIVE_INFINITY;
+};
+function headOrder(next, current) {
+  const a = next?.gen ?? null;
+  const b = current?.gen ?? null;
+  if (a === b) return 0;
+  return genTime(a) < genTime(b) ? -1 : 1;
+}
+function aheadOf(at, device) {
+  const order2 = headOrder(at, device);
+  return order2 > 0 || order2 === 0 && at.edition === device.edition && at.foldedUntil > device.foldedUntil;
+}
+function verdictOf(device, stored) {
+  if (samePosition(device, stored.at)) return "use";
+  if (aheadOf(stored.at, device)) return "behind";
+  return samePosition(device, stored.askedFrom) ? "behind" : "ask";
+}
+function validMonth(rows2) {
+  return Array.isArray(rows2) && rows2.length <= 64 && rows2.every(
+    (row) => plain(row) && typeof row.unit === "string" && row.unit.length <= 200 && Number.isSafeInteger(row.misses) && Number.isSafeInteger(row.reviews) && (row.last === null || finite(row.last))
+  );
+}
+var validWindows = (windows) => plain(windows) && ["monthAgo", "since", "last7"].every(
+  (name) => plain(windows[name]) && finite(windows[name].from) && finite(windows[name].to)
+);
+var generation = 0;
+var keyOf = (account) => `${PREFIX}${account}`;
+function clearMonthAnswer(storage, account) {
+  generation += 1;
+  try {
+    if (account) storage?.removeItem(keyOf(account));
+  } catch {
+  }
+}
+function createMonthAnswers({ storage = globalThis.localStorage } = {}) {
+  return {
+    generation: () => generation,
+    // 적어 둔 답 — 계정 · 동의 판 · 학습일이 맞고 꼴이 맞을 때만. 아니면 null(다시 묻는다). 늘 저장소에서 바로 읽는다(다른 탭이 덮었으면 그 값).
+    read(account, { revision: revision2, day }) {
+      let value = null;
+      try {
+        value = JSON.parse(storage?.getItem(keyOf(account)) ?? "null");
+      } catch {
+        return null;
+      }
+      if (!plain(value) || value.v !== VERSION || value.revision !== revision2 || value.day !== day) return null;
+      const askedFrom = positionOf(value.askedFrom);
+      const at = positionOf(value.at);
+      if (!askedFrom || !at || !validWindows(value.windows) || !validMonth(value.month)) return null;
+      return { askedFrom, at, windows: value.windows, month: value.month };
+    },
+    // 답을 적는다 — 물을 때의 세대 수가 지금과 같을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
+    write(account, { revision: revision2, day, askedFrom, at, windows, month, since }) {
+      if (since !== generation) return false;
+      const value = {
+        v: VERSION,
+        revision: revision2,
+        day,
+        askedFrom,
+        at,
+        windows: {
+          monthAgo: { from: windows.monthAgo.from, to: windows.monthAgo.to },
+          since: { from: windows.since.from, to: windows.since.to },
+          last7: { from: windows.last7.from, to: windows.last7.to }
+        },
+        month: month.map((row) => ({ unit: row.unit, misses: row.misses, reviews: row.reviews, last: row.last ?? null }))
+      };
+      try {
+        storage?.setItem(keyOf(account), JSON.stringify(value));
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    clear: (account) => clearMonthAnswer(storage, account)
+  };
+}
+var monthOfAnswer = (answer) => answer.month.map(
+  (row) => Object.freeze({
+    unit: row.unit,
+    misses: row.misses,
+    reviews: row.reviews,
+    last: row.last,
+    evidence: Object.freeze({ ...answer.windows, misses: row.misses, reviews: row.reviews, last: row.last })
+  })
+);
+var LOOKBACK_CODES = Object.freeze({
+  "fold-failed": "LOOKBACK_FOLD_FAILED",
+  "events-remain": "LOOKBACK_EVENTS_REMAIN",
+  rebuilding: "LOOKBACK_REBUILDING"
+});
+var lookbackCode = (reason) => LOOKBACK_CODES[reason] ?? "LOOKBACK_FAILED";
+function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive }) {
+  const state = { asking: null, tried: null, pulled: /* @__PURE__ */ new Set() };
+  const storageOf = (coach) => {
+    try {
+      return coach.summary().storage ?? null;
+    } catch {
+      return null;
+    }
+  };
+  function pullOnce(coach, at) {
+    const key = JSON.stringify([at.edition, at.gen ?? null, at.foldedUntil]);
+    if (state.pulled.has(key)) return;
+    if (state.pulled.size >= 64) state.pulled.clear();
+    state.pulled.add(key);
+    try {
+      void Promise.resolve(coach.pull?.()).catch(() => {
+      });
+    } catch {
+    }
+  }
+  function ask(coach, line, { owner, revision: revision2, day, device }) {
+    const key = `${owner}|${revision2}|${day}`;
+    if (state.asking === key) return;
+    if (state.tried?.key === key && samePosition(state.tried.from, device)) return;
+    state.asking = key;
+    const since = answers.generation();
+    const settle = () => {
+      if (state.asking === key) state.asking = null;
+    };
+    const missed = (code) => {
+      state.tried = { key, from: device };
+      try {
+        note(code);
+      } catch {
+      }
+    };
+    const reply = (got) => {
+      settle();
+      if (!alive(owner)) return;
+      const at = positionOf(got?.summaryAt);
+      if (got?.complete !== true) {
+        missed(lookbackCode(got?.reason));
+        if (at && aheadOf(at, device)) pullOnce(coach, at);
+        return;
+      }
+      const windows = got.lookback?.windows;
+      const month = got.lookback?.month;
+      if (!at || !validWindows(windows) || !validMonth(month)) {
+        missed("LOOKBACK_FAILED");
+        return;
+      }
+      const storage = storageOf(coach);
+      if (!storage || (storage.unfolded || 0) > 0) return;
+      if (!answers.write(owner, { revision: revision2, day, askedFrom: device, at, windows, month, since })) return;
+      const current = positionOf(storage.sync?.received);
+      if (samePosition(current, at)) redraw();
+      else if (current && verdictOf(current, { askedFrom: device, at }) === "behind") pullOnce(coach, at);
+    };
+    void Promise.resolve().then(() => line.ask(offsetOf())).then(reply, () => {
+      settle();
+      missed("LOOKBACK_FAILED");
+    }).catch(() => {
+    });
+  }
+  return {
+    month(coach) {
+      const owner = account();
+      if (!owner) return null;
+      let line = null;
+      try {
+        line = lineOf(coach) || null;
+      } catch {
+        line = null;
+      }
+      if (!line) return null;
+      const storage = storageOf(coach);
+      if (storage?.guest !== false || (storage.unfolded || 0) > 0) return null;
+      const device = positionOf(storage.sync?.received);
+      if (!device) return null;
+      let day = null;
+      try {
+        day = dayOf();
+      } catch {
+        return null;
+      }
+      if (day == null) return null;
+      const revision2 = line.revision;
+      const stored = answers.read(owner, { revision: revision2, day });
+      const verdict2 = stored ? verdictOf(device, stored) : "ask";
+      if (verdict2 === "use") return { month: monthOfAnswer(stored) };
+      if (verdict2 === "behind") pullOnce(coach, stored.at);
+      else ask(coach, line, { owner, revision: revision2, day, device });
+      return null;
+    },
+    // 계정이 바뀌거나 지우는 길이 돌면 묻는 중 · 상한 · 받은 자리를 비운다(새 계정은 처음부터 묻는다).
+    reset() {
+      state.asking = null;
+      state.tried = null;
+      state.pulled.clear();
+    }
+  };
 }
 
 // experiences/synk-world-app/world-learning-ui.mjs
@@ -26636,6 +26847,7 @@ function createWorldEducation({
     } catch {
       return null;
     }
+    if (!counts) counts = monthAsker.month(coachNow);
     if (!counts || typeof P.pickMonth !== "function") return null;
     const pick2 = P.pickMonth({ month: counts.month, routes, day: homePlanner.todayKey(Date.now()) });
     let text2 = null;
@@ -26647,6 +26859,22 @@ function createWorldEducation({
     return pick2 && typeof text2 === "string" && text2 ? { text: text2, unit: pick2.unit, misses: pick2.misses, reviews: pick2.reviews } : null;
   }
   let planEnds = 0, weekMet = { coach: null, key: null, met: null };
+  const monthAsker = createMonthAsker({
+    answers: createMonthAnswers({ storage: (() => {
+      try {
+        return target?.localStorage ?? null;
+      } catch {
+        return null;
+      }
+    })() }),
+    account: () => owner === "guest" ? null : owner,
+    lineOf: (coachNow) => homeNext?.lookback?.(coachNow) || null,
+    dayOf: () => homePlanner ? homePlanner.todayKey(Date.now()) : null,
+    offsetOf: () => -(/* @__PURE__ */ new Date()).getTimezoneOffset(),
+    redraw: () => redrawNext(),
+    note: (code) => homeNext?.note?.("load", { ok: false, code }),
+    alive: (account) => !stopped && getProgress()?.owner === account
+  });
   const summaryShape = (summary) => {
     let n = 0, cells = 0, sittings = 0, lapses = 0;
     for (const skill2 of summary?.skills || []) {

@@ -1,4 +1,5 @@
 import {WorldClient} from './world-client.mjs';
+import {clearMonthAnswer} from './world-month-answer.mjs';
 import {mountEnrollment} from './enrollment.mjs';
 import {mountClassroomLessons} from './classroom-lessons.mjs';
 import {mountClassroomHomework,homeworkWeek} from './classroom-homework.mjs';
@@ -59,6 +60,8 @@ function lazyAtlasNext(owner){
   retired:(coach,fn)=>made&&!disposed?made.retired(coach,fn):()=>{},
   // 이 기기의 판 기록(4-4b — 단계4_계획 §21-6 가): 입구가 연 코치(홈 · 짧은 연습)의 저장소 이름으로 연다. 입구를 받기 전이거나 닫았으면 null(그 판을 세지 못할 뿐이다).
   planLog:coach=>made&&!disposed?made.planLog?.(coach)??null:null,
+  // 30일째 문장의 돌아보기 읽기(4-4c 둘째 묶음 — 단계4_계획 §21-22): 입구가 연 코치의 판으로 묻는 줄. 입구를 받기 전이거나 닫았으면 null(문장 없이 그린다).
+  lookbackOf:coach=>made&&!disposed?made.lookbackOf?.(coach)??null:null,
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
@@ -397,7 +400,7 @@ function mountLifeLearning({owner,progress,keep}){
  const lifeNext=lifeDue?{coach:()=>lifeDue.coach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),note:(kind,outcome)=>atlasNext.note(kind,outcome),nextAt:id=>lifeDue.nextAt(id),state:()=>lifeDue.state()}:null;
  // 새 길 홈(4-3 — 단계4_계획 §20-4): 생활 판정이 있을 때만. 홈은 생활 판정의 판을 따르고(ask — 단추를 누를 때 지금 판이면 다시 묻는다), 홈 코치 ·
  // 플래너는 입구가 준다. 「내 성향」 답과 손님이 열 수 있는 게임은 지금 판의 createPlan과 같은 값이다. 꺼진 판은 null(지금 판 그대로).
- const homeNext=lifeDue?{coach:pool=>atlasNext.homeCoach(pool),planner:()=>atlasNext.homePlanner(),retired:(coach,fn)=>atlasNext.retired(coach,fn),planLog:coach=>atlasNext.planLog(coach),life:()=>lifeDue.state(),ask:()=>lifeDue.coach(),
+ const homeNext=lifeDue?{coach:pool=>atlasNext.homeCoach(pool),planner:()=>atlasNext.homePlanner(),retired:(coach,fn)=>atlasNext.retired(coach,fn),planLog:coach=>atlasNext.planLog(coach),lookback:coach=>atlasNext.lookbackOf(coach),note:(kind,outcome)=>atlasNext.note(kind,outcome),life:()=>lifeDue.state(),ask:()=>lifeDue.coach(),
   judge:(snapshot,now)=>lifeDue.judge(snapshot,now),answers:()=>life.answers,openGames:()=>operating&&!client.snapshot?guestGames():null,
   // 줄이 없는 날(다 한 날 · 상한 날)의 「다음 연습」은 생활 팩으로 · 홈 계획을 새로 그린 뒤 보고 있는 허브 포스터를 맞춘다(§20-8).
   packs:()=>life.ui?.packs?.(),painted:()=>life.ui?.syncToday?.()}:null;
@@ -932,7 +935,7 @@ const commands={
  logout:async()=>{accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
    // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.
    try{const leavingAtlas=life.owner===leaving?life.atlasNext:null;if(leavingAtlas){let timer;await Promise.race([leavingAtlas.noteLogout(),new Promise(resolve=>{timer=setTimeout(resolve,1500);})]).finally(()=>clearTimeout(timer));}}catch{/* 로그아웃을 막지 않는다 */}
-   await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+   await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
 commands.me2=openMe2;
@@ -952,7 +955,7 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();(action==='quickplay'?play:action==='profile'?profile:action==='about'?about:action==='photo'?photo:action==='town'||nav==='town'?town:wardrobe)();
  }
 },true);
-document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');
+document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{clearMonthAnswer(localStorage,client.snapshot?.accountId);if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');
  // 서버는 바뀌었는데 뒤 확인만 실패했거나 · 다른 기기가 먼저 바꿨으면(REVISION_CONFLICT) 체크 · 판 번호가 서버와 어긋난 채 남아 다시 눌러도 계속 실패했다 —
  // 계정을 한 번 다시 읽어 시트를 서버 값으로 다시 그린다(Fable 5.2 합친 끝 판 넘친 #12). 다시 읽기도 못 하면 되돌린 값 그대로. 다시 읽기가 끝날 때까지
  // 토글은 잠근다 — 먼저 풀면 옛 체크 · 판 번호로 다시 눌러 또 실패했다(카본 Fable 처리 다시 검수 A1).

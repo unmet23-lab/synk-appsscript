@@ -468,6 +468,7 @@ export function createAtlasNext({
   const coaches = new Map();
   const watchers = new Map(); // 코치 → 판을 다시 정해 닫을 때 부를 함수들(연습 화면이 안내 한 줄과 함께 닫힌다)
   const gone = new WeakMap(); // 판을 다시 정해 닫은 코치 → 그 까닭
+  const plans = new WeakMap(); // 코치 → 그 코치를 연 판(30일째 문장의 돌아보기 읽기가 그 판의 동의 판 · 나르개로 묻는다 — §21-22)
   // 코치 → 그 저장소 이름(손님 synk-atlas:guest · 올리는 길 · 기기 길 — 엔진 storeName). 기기의 판 기록(4-4b §21-6 가)의 열쇠다 — 같은 판의
   // 코치(짧은 연습 · 홈)는 같은 저장소라 같은 기록을 읽는다. 동의 판이 오르면 이름이 바뀌어 앞 판의 기록은 읽히지 않는다.
   const stores = new WeakMap();
@@ -847,6 +848,7 @@ export function createAtlasNext({
       await made.ready;
       const name = storeOf(plan, engine);
       if (name) stores.set(made, name);
+      plans.set(made, plan);
       if (plan.path === 'upload' && !(await confirmed(made, plan, at))) {
         made.dispose();
         return null;
@@ -995,6 +997,14 @@ export function createAtlasNext({
         // 이번 주 계획 새 판(4-4b) — 홈과 같은 홈 코치 · 내 위치와 같은 묶음 만남으로 짓는다(셸 world-learning-ui.mjs weekNext).
         plan: planPlanner,
       });
+    },
+    // 30일째 문장의 돌아보기 읽기(4-4c 둘째 묶음 — 단계4_계획 §21-22). 그 코치를 연 판이 올리는 길이면 그 판의 동의 판과 묻는 함수를 준다.
+    // 묻기는 그 판의 나르개(계정 감싸개를 지난다 — 계정이 바뀌면 답을 받은 뒤 던진다)로 한다. 손님 · 기기 길 · 이 입구가 연 코치가 아님 ·
+    // 판을 다시 정해 닫은 코치 · 나르개에 읽기가 없으면 null(문장 없이 그린다).
+    lookbackOf(made) {
+      const plan = made && !gone.has(made) ? plans.get(made) : null;
+      if (disposed || plan?.path !== 'upload' || typeof plan.transport?.lookback !== 'function') return null;
+      return Object.freeze({ revision: plan.revision, ask: offset => plan.transport.lookback(offset) });
     },
     // 이 기기의 판 기록(4-4b — 단계4_계획 §21-6 가): 그 코치의 저장소 이름으로 연다. 이 입구가 연 코치가 아니거나 엔진을 못 받았으면 null —
     // 계획이 이번 주에 한 판을 세지 못할 뿐이다. 저장소가 없는 입구(storage null — 시험)도 null.

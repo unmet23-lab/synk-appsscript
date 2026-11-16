@@ -29,6 +29,7 @@
     'exposures',
     'lookback',
     'watch',
+    'pull',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;

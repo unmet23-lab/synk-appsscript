@@ -5,6 +5,7 @@ import {renderPositionPage} from './world-position-page.mjs';
 import {lifeFollowupRows} from './life-followups.mjs';
 import {lessonById} from './life-content.mjs';
 import {lifeTutorExpression} from '../brand-opening/life-tutor-lines.mjs';
+import {createMonthAnswers,createMonthAsker} from './world-month-answer.mjs';
 
 // 「시간을 두고 다시 확인」 카드(11-08 프론트 검수 A2 · B6): Temper 재확인 줄(TOPIK 연습 · 생활 한국어)을 기준 답(sourceAttemptId)마다 카드 하나로
 // 묶고 창은 1 · 7 · 30일 차례로 둔다. 지금 확인할 칸이 있는 카드가 먼저, 그다음 아직 안 온 가장 가까운 날짜 차례(다 지난 카드는 뒤).
@@ -804,11 +805,13 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scope=owner==='guest'?'device':summary.storage?.guest===false?'account':null;
   return {values,exam,board,plan,cards,fresh,judged,scope,month:monthOf(coachNow,P,routes)};
  }
- // 30일째 문장(4-4c — 단계4_계획 §21-7): 손님과 동의를 끈 계정은 코치가 센다(coach.lookback). 서버 길 계정은 코치가 null을 낸다 — 서버의 돌아보기
- // 읽기(4-4c 둘째 묶음)를 잇기 전까지 문장이 없다. 고르기는 이름이 서는 단위에서(routes — 다시 확인 카드와 같은 이름), 문장은 Vellum이 짓는다(그
- // 화면 언어의 줄이 없으면 null — 문장을 비운다). 못 읽으면 문장 없이 판을 그린다.
+ // 30일째 문장(4-4c — 단계4_계획 §21-7): 손님과 동의를 끈 계정은 코치가 센다(coach.lookback). 서버 길 계정은 코치가 null을 내므로 서버의 돌아보기
+ // 읽기로 묻고 학습일 답을 쓴다(4-4c 둘째 묶음 — §21-22, monthAsker). 쓸 수 있는 답이 없으면 묻거나 받기를 한 번 부르고 문장 없이 그린다. 고르기는
+ // 이름이 서는 단위에서(routes — 다시 확인 카드와 같은 이름), 문장은 Vellum이 짓는다(그 화면 언어의 줄이 없으면 null — 문장을 비운다). 못 읽으면
+ // 문장 없이 판을 그린다.
  function monthOf(coachNow,P,routes){
   let counts=null;try{counts=typeof coachNow.lookback==='function'?coachNow.lookback():null;}catch{return null;}
+  if(!counts)counts=monthAsker.month(coachNow);
   if(!counts||typeof P.pickMonth!=='function')return null;
   const pick=P.pickMonth({month:counts.month,routes,day:homePlanner.todayKey(Date.now())});
   let text=null;try{text=pick?homePlanner.say(P.monthWhy(pick),currentLang()):null;}catch{text=null;}
@@ -819,6 +822,13 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 온 뒤에 옛 판정이 그날 내내 굳지 않게(카본 설계 검토 A8). 칸 · 숙제 · 공급은 그 만남과 지금 요약으로 그릴 때마다 짓는다(요약은 보기에서 바로 오른다).
  // 내 위치 판(nextData)은 이 만남을 쓰지 않는다 — 판을 열 때마다 새로 묻는다(21-3).
  let planEnds=0,weekMet={coach:null,key:null,met:null};
+ // 30일째 문장의 계정 길(4-4c 둘째 묶음 — 단계4_계획 §21-22): 학습일 답은 계정마다 열쇠 하나(world-month-answer.mjs). 묻기 · 받기(coach.pull) ·
+ // 다시 그리기의 상한은 그 모듈에 있다. 묻는 줄은 그 코치를 연 판(homeNext.lookback — 입구가 연 코치가 아니면 null), 다시 그리기는 열린 내 위치
+ // 판만, 완결되지 않은 답의 까닭은 계기(load)에 남긴다. 답이 오면 이 셸이 그대로이고 그 계정일 때만 적는다.
+ const monthAsker=createMonthAsker({answers:createMonthAnswers({storage:(()=>{try{return target?.localStorage??null;}catch{return null;}})()}),
+  account:()=>owner==='guest'?null:owner,lineOf:coachNow=>homeNext?.lookback?.(coachNow)||null,dayOf:()=>homePlanner?homePlanner.todayKey(Date.now()):null,
+  offsetOf:()=>-new Date().getTimezoneOffset(),redraw:()=>redrawNext(),note:code=>homeNext?.note?.('load',{ok:false,code}),
+  alive:account=>!stopped&&getProgress()?.owner===account});
  // 요약의 모양 — 능력 줄 수 · 측정 답 수 · 칸의 첫 답 수 · 단위 줄 수 · 만난 자리 수 · 놓친 자리 수. 다른 기기나 다른 탭의 답이 받기로 접혀 오면 바뀐다.
  // 묶음 만남의 열쇠에 넣는다 — 학습일 · 판 끝 · 시험 · 기록이 다 왔는가만 보면, 기록이 다 온 탭이 열린 채 다른 기기에서 한 진단이 접혀 와도 그날
  // 내내 옛 만남(시작점 · 처음 보는 문항)으로 계획을 지었다(4-4b 끝 판 카본 C2). 요약이 그대로면 다시 묻지 않는다(카본 A8).

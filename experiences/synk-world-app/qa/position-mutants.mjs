@@ -7,6 +7,8 @@
 // 잡는지 본다(4-4a 끝 판 F1 · F2 · F3와 다시 검수의 초점 · 11-16 오후의 받기 알림(§21-20) — 11-16까지 손으로 돌리던 셸 변형을 여기에 올렸다, Fable 다시 검수).
 // 두 모듈의 규칙을 더하거나 고치면 여기에 깬 변형을 함께 더한다(설계 주인이 짚은 셋 가운데 「level 조건을 뺌」이 여기 있다 — 「묶음 만남이 한
 // 문항을 다르게 냄」은 packages/atlas/tools/mutants/coach.mjs, 「숙제 연습의 층 9 거름을 뺌」은 4-4b에서 더한다).
+// 30일째 문장의 계정 길(world-month-answer.mjs — 학습일 답의 저장 · 견주기 · 묻기와 받기의 상한)도 같은 꼴로 본다 — 사본을 SYNK_MONTH_ANSWER_MODULE로
+// 넘겨 셈 시험(qa/atlas-next-month-answer.test.mjs)이 잡는지 본다(4-4c 둘째 묶음 — 설계 주인 11-16 밤 조건 3).
 // 쓰는 법: node experiences/synk-world-app/qa/position-mutants.mjs [--갈래 <갈래>]
 // 종료코드: 0 = 모든 변형을 잡음 · 1 = 살아남은 변형이 있음 · 2 = 목록 오류 또는 깨지 않은 사본이 장면 시험에 떨어짐
 import fs from 'node:fs';
@@ -30,6 +32,12 @@ const MODULES = {
     source: path.join(here, '..', 'world-lookback-next.mjs'),
     scenes: path.join(here, 'atlas-next-month.test.mjs'),
     env: 'SYNK_LOOKBACK_NEXT_MODULE',
+  },
+  // 30일째 문장의 계정 길(학습일 답 — 4-4c 둘째 묶음 §21-22). 셈 시험(묻기 · 받기 · 다시 그리기의 상한)이 진짜 엔진 코치와 리허설 서버로 돈다.
+  monthAnswer: {
+    source: path.join(here, '..', 'world-month-answer.mjs'),
+    scenes: path.join(here, 'atlas-next-month-answer.test.mjs'),
+    env: 'SYNK_MONTH_ANSWER_MODULE',
   },
   shell: {
     source: path.join(here, '..', 'world-learning-ui.mjs'),
@@ -634,6 +642,126 @@ export const POSITION_MUTANTS = [
     "다른 까닭의 새로 그리기가 열린 판 몫의 알림까지 비운다 — 열린 내 위치 판이 옛 칸에 남는다(받기 알림 설계 검토 D4)",
     "  hearHome();heard.home=false;\n",
     "  hearHome();heard.home=false;heard.panel=false;\n",
+  ],
+  [
+    'shell',
+    '셸 30일째 문장',
+    '서버 길 계정이 학습일 답으로 묻지 않는다 — 코치가 null을 내는 계정에 문장이 서지 않는다(4-4c 둘째 묶음 §21-22)',
+    '  if(!counts)counts=monthAsker.month(coachNow);\n',
+    '',
+  ],
+  [
+    'shell',
+    '셸 30일째 문장',
+    '완결되지 않은 답의 까닭을 계기에 남기지 않는다(설계 주인 11-16 저녁 조건 2)',
+    "note:code=>homeNext?.note?.('load',{ok:false,code})",
+    'note:()=>{}',
+  ],
+  // ── 30일째 문장의 계정 길 — 학습일 답(4-4c 둘째 묶음 §21-22 「설계 검토로 고친 것」 · 「설계 다시 검수로 고친 것」) ──
+  [
+    'monthAnswer',
+    '학습일 답 상한',
+    '상한 빼기 — 완결되지 않은 답 뒤에도 그릴 때마다 묻는다(설계 다시 검수 Fable FA1 · 카본 A1 · 설계 주인 11-16 밤 조건 3)',
+    '    if (state.tried?.key === key && samePosition(state.tried.from, device)) return;\n',
+    '',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 상한',
+    '상한 빼기 — 기기 자리가 그대로여도 머리 차례를 가리지 못하는 답이면 다시 묻는다(설계 주인 11-16 밤 조건 3)',
+    "  return samePosition(device, stored.askedFrom) ? 'behind' : 'ask';\n",
+    "  return 'ask';\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 상한',
+    '머리 차례로 가리기 빼기 — edition과 gen이 다르면 늘 다시 묻는다(11-16 저녁의 옛 규칙 · 설계 주인 11-16 밤 조건 3)',
+    "  if (aheadOf(stored.at, device)) return 'behind';\n",
+    "  if (stored.at.edition !== device.edition || (stored.at.gen ?? null) !== (device.gen ?? null)) return 'ask';\n  if (aheadOf(stored.at, device)) return 'behind';\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 상한',
+    '그릴 때마다 받기를 부른다 — 받기가 끊겨도 같은 자리로 거듭 부른다(설계 주인 11-16 밤 조건 1 · 3)',
+    '    if (state.pulled.has(key)) return;\n',
+    '',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 상한',
+    '쓸 수 없는 답에도 다시 그린다 — 뒤처진 답을 적고 판을 다시 그린다(설계 주인 11-16 밤 조건 3)',
+    "      if (samePosition(current, at)) redraw();\n      else if (current && verdictOf(current, { askedFrom: device, at }) === 'behind') pullOnce(coach, at);\n",
+    "      redraw();\n      if (current && verdictOf(current, { askedFrom: device, at }) === 'behind') pullOnce(coach, at);\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 상한',
+    '쓸 수 없는 답에도 다시 그린다 — 완결되지 않은 답 뒤에 판을 다시 그린다(설계 주인 11-16 밤 조건 3)',
+    '        missed(lookbackCode(got?.reason));\n',
+    '        missed(lookbackCode(got?.reason));\n        redraw();\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 견주기',
+    '자리 견주기 빼기 — 적어 둔 답을 늘 쓴다(설계 검토 GPT GA1 · GA3 · 카본 A3 · Fable P1 — 힌트 답이 문장을 숨기지 못한다)',
+    "  if (samePosition(device, stored.at)) return 'use';\n",
+    "  return 'use';\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 견주기',
+    '뒤처짐 가리기 빼기 — 물은 뒤 조금 받았지만 아직 뒤처진 기기가 다시 묻는다(설계 검토 · 설계 주인 11-16 저녁 조건 5)',
+    "  if (aheadOf(stored.at, device)) return 'behind';\n",
+    '',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 견주기',
+    '앞섬에 다시 묻기 빼기 — 물은 뒤 기기가 앞서도 옛 답을 뒤처짐으로 본다(낮에 조건을 채워도 문장이 서지 않는다)',
+    "  return samePosition(device, stored.askedFrom) ? 'behind' : 'ask';\n",
+    "  return 'behind';\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 견주기',
+    '같은 머리의 foldedUntil로 가리기 빼기 — 다른 기기의 답을 서버가 먼저 접은 답을 뒤처짐으로 보지 않는다',
+    '  return order > 0 || (order === 0 && at.edition === device.edition && at.foldedUntil > device.foldedUntil);\n',
+    '  return order > 0;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 완결',
+    '까닭 코드 빼기 — 완결되지 않은 답이 늘 LOOKBACK_FAILED로 남는다(설계 주인 11-16 저녁 조건 2 · 설계 검토 GPT GA2 · 카본 A2)',
+    "export const lookbackCode = reason => LOOKBACK_CODES[reason] ?? 'LOOKBACK_FAILED';\n",
+    "export const lookbackCode = () => 'LOOKBACK_FAILED';\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 완결',
+    '칸 밖의 내 답이 서 있어도 묻는다 — 내 놓침이 서버에 닿기 전에 묻는다(설계 주인 11-16 저녁 조건 5)',
+    "      if (storage?.guest !== false || (storage.unfolded || 0) > 0) return null;\n",
+    "      if (storage?.guest !== false) return null;\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 완결',
+    '물은 사이 칸 밖의 답이 서도 적는다 — 그 답이 빠진 낡은 답이 남는다(설계 주인 11-16 저녁 조건 5)',
+    "      if (!storage || (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다\n",
+    '      if (!storage) return;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 완결',
+    '첫 받기 전에도 묻는다 — 받은 요약의 자리가 없는데 묻는다(설계 다시 검수 · 설계 주인 11-16 밤 조건 2)',
+    "      const device = positionOf(storage.sync?.received);\n",
+    "      const device = positionOf(storage.sync?.received) ?? { edition: 'none', gen: null, foldedUntil: 0 };\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 지우기',
+    '늦은 답의 세대 수 보기 빼기 — 로그아웃 · 동의 끔 뒤에 도착한 답이 적힌다(설계 검토 카본 A4 · Fable P2)',
+    '      if (since !== generation) return false;\n',
+    '',
   ],
 ];
 

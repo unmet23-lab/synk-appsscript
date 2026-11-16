@@ -87,7 +87,7 @@ function stage() {
 // focusing: 판 글의 단추와 문서의 초점(activeElement)을 흉내 내고, 셸이 초점을 둔 자리를 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
 // paint: 판 글을 바꿔 둔다(진짜 판에서 생길 수 있는 꼴을 흉내 낸다). focusing이면 판 안의 스크롤 칸(#panel-content)도 흉내 낸다 — 판 글을 바꾸면 스크롤 자리가
 // 처음으로 가고(셸이 되돌려야 한다), 능력 줄(details)은 접힌 채로 서며, 닫힌 줄 안의 단추에는 초점이 가지 않는다(브라우저는 닫힌 details의 몸을 그리지 않는다).
-function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html, planner = PLANNER, fade = false } = {}) {
+function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html, planner = PLANNER, fade = false, nextExtra = {} } = {}) {
   const opens = [];
   const engine = {
     ...worldLearning,
@@ -289,6 +289,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     openGames: () => null,
     packs() {},
     painted() {},
+    ...nextExtra,
   };
   const education = createWorldEducation({
     home,
@@ -1230,5 +1231,92 @@ test('엔진 판 — 30일째 문장이 없으면(서버 길 계정 null · 고�
     } finally {
       app.dispose();
     }
+  }
+});
+
+// 30일째 문장의 계정 길(4-4c 둘째 묶음 — 단계4_계획 §21-22). 서버 길 계정은 코치가 null을 내므로, 셸이 그 코치를 연 판의 돌아보기 읽기
+// (homeNext.lookback)로 묻고 학습일 답을 쓴다. 묻기 · 받기 · 다시 그리기의 상한은 qa/atlas-next-month-answer.test.mjs가 진짜 엔진 코치와 리허설
+// 서버로 센다. 여기서는 셸의 배선만 본다 — 첫 그리기는 묻고 문장 없이 그린다. 같은 자리의 답이 오면 열린 판을 한 번 다시 그려 문장을 싣는다.
+// 완결되지 않은 답이면 다시 그리지 않고 까닭을 계기(load)에 남긴다. 답은 잡아 두었다가 셸이 가라앉은 뒤 푼다(첫 받기 뒤 셸이 스스로 한 번 더
+// 그리므로, 그 뒤의 그리기만 답이 부른 것이다).
+const RECEIVED = { edition: 'e-acct', gen: '1794441600000.aaaaaaaa', foldedUntil: 12 };
+function accountMonthShell(reply) {
+  let release = null;
+  const held = new Promise(resolve => {
+    release = resolve;
+  });
+  const seen = { named: null, asks: 0, offset: null, notes: [], release: () => release() };
+  const like = accountLike(() => ({ ok: true }), { sync: () => ({ pulled: true, received: RECEIVED }) });
+  const wrap = made => {
+    for (const item of worldPosition.practice.pool) {
+      const row = made.itemUnits(item).find(unit => unit.kind !== 'family' && unit.label);
+      if (row) {
+        seen.named = row;
+        break;
+      }
+    }
+    return { ...like.wrap(made), lookback: () => null, pull: () => null };
+  };
+  const label = id => (id === seen.named?.unit ? seen.named.label : null);
+  const planner = { ...PLANNER, say: (why, lang) => atlas.renderReason(why, { lang, label }) };
+  const nextExtra = {
+    lookback: () => ({
+      revision: 3,
+      ask: async offset => {
+        seen.asks += 1;
+        seen.offset = offset;
+        await held;
+        return reply(seen.named);
+      },
+    }),
+    note: (kind, outcome) => seen.notes.push([kind, outcome]),
+  };
+  return { app: shell({ owner: 'acct-month', wrap, planner, nextExtra }), seen };
+}
+const WINDOWS_ANY = { monthAgo: { from: 1, to: 2 }, since: { from: 2, to: 3 }, last7: { from: 2.5, to: 3 } };
+
+test('엔진 판 — 서버 길 계정의 30일째 문장: 첫 그리기는 묻고 문장 없이, 같은 자리의 답이 오면 열린 판을 한 번 다시 그려 그 문장을 싣는다(4-4c 둘째 묶음 — §21-22)', async () => {
+  const { app, seen } = accountMonthShell(named => ({
+    ok: true,
+    complete: true,
+    summaryAt: RECEIVED,
+    lookback: { windows: WINDOWS_ANY, month: [{ unit: named.unit, misses: 3, reviews: 7, last: 2.9 }] },
+  }));
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await until(() => seen.asks === 1, '묻는다');
+    await tick(80);
+    assert.ok(!app.last().includes('data-position-month'), '답이 오기 전 — 문장 없이');
+    const drawn = app.shown.length;
+    seen.release();
+    await until(() => app.last().includes('data-position-month'), '답이 오면 문장');
+    const text = `한 달 전에 3번 놓친 「${seen.named.label}」, 그 뒤로 7번 모두 혼자 맞혔어요.`;
+    assert.ok(app.last().includes(htmlText(text)), '학습일 답의 문장');
+    assert.equal(seen.offset, -new Date().getTimezoneOffset(), '기기의 현지 시각 − UTC(분)');
+    await tick(40);
+    assert.equal(app.shown.length, drawn + 1, '열린 판을 한 번 다시 그리고 되풀이하지 않는다');
+    assert.equal(seen.asks, 1, '한 번 묻는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 서버 길 계정의 30일째 문장: 완결되지 않은 답이면 판을 다시 그리지 않고 까닭을 계기에 남긴다(4-4c 둘째 묶음 — §21-22)', async () => {
+  const { app, seen } = accountMonthShell(() => ({ ok: true, complete: false, reason: 'rebuilding', summaryAt: RECEIVED, lookback: { windows: WINDOWS_ANY } }));
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await until(() => seen.asks === 1, '묻는다');
+    await tick(80);
+    const drawn = app.shown.length;
+    seen.release();
+    await until(() => seen.notes.length === 1, '물은 답');
+    await tick(40);
+    assert.equal(app.shown.length, drawn, '완결되지 않은 답으로는 다시 그리지 않는다');
+    assert.ok(!app.last().includes('data-position-month'));
+    assert.deepEqual(seen.notes, [['load', { ok: false, code: 'LOOKBACK_REBUILDING' }]], '까닭을 계기에');
+  } finally {
+    app.dispose();
   }
 });

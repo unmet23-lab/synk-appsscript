@@ -256,12 +256,14 @@ export function createRehearsalTrail({
   warn = message => console.warn(message),
   firstRevision = 1, // 합성 계정을 처음 만들 때의 판(서버를 켤 때 openRehearsalTrail이 켠 시각으로 준다 — 넘친 #9)
   onRevision = null, // 판을 내줄 때마다(계정을 만들 때 · 오를 때) — openRehearsalTrail이 마지막 판을 적어 다음 켤 때 그 뒤부터 시작한다(넘친 #10)
+  // 계정마다의 상태 — 시험만 준다. 판 묶음이 다른 두 서버가 같은 계정 기록을 쓰게 한다(엔진을 올린 배포의 흉내 — ability-2로 다시 짓는
+  // 장면, 단계 4 계획 §21-22 「설계 다시 검수로 고친 것」의 셈 시험).
+  accounts = new Map(),
 }) {
   const params = atlas.PARAMS;
   const memory = atlas.createMemory(params);
   const edition = atlas.foldEdition(params, index);
   const switchOn = switchOf(trailSwitch, keys);
-  const accounts = new Map();
   const issued = revision => {
     try {
       onRevision?.(revision);
