@@ -858,13 +858,21 @@ test('받기만 끊기는 동안 사다리가 받기를 거듭해도 올리기 �
   assert.equal(r.sync.status().failures, 1, '첫 끊김은 지금처럼 센다');
   for (const wait of [5_000, 15_000, 60_000, 300_000]) await r.advance(wait);
   assert.equal(r.route.gets, 5, '사다리가 네 번 더 받았다');
-  assert.equal(r.sync.status().failures, 1, '같은 끊김의 다시 받기는 올리기 물러서기를 올리지 않는다');
+  assert.equal(
+    r.sync.status().failures,
+    1,
+    '같은 끊김의 다시 받기는 올리기 물러서기를 올리지 않는다',
+  );
   assert.equal(r.sync.status().pulled, false);
   r.sync.online();
   await flush();
   assert.equal(r.sync.status().failures, 0, '다시 온라인은 물러서기를 푼다');
   assert.equal(r.route.gets, 6);
-  assert.equal(r.sync.status().failures, 0, '앞 끊김이 아직 풀리지 않았으니 다시 온라인 뒤 끊겨도 새로 세지 않는다');
+  assert.equal(
+    r.sync.status().failures,
+    0,
+    '앞 끊김이 아직 풀리지 않았으니 다시 온라인 뒤 끊겨도 새로 세지 않는다',
+  );
   r.route.getFail = null;
   await r.advance(5_000);
   assert.equal(r.sync.status().pulled, true);

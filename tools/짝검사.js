@@ -134,6 +134,14 @@ function 기본표(root = 뿌리) {
     });
   }
   표.push({
+    // 새 엔진 packages/atlas의 형식 · 복잡도(biome ci — 한 줄 한 문장 · 인지 복잡도 15). 관련 시험은 시험 파일만 돌려 이것을 못 본다 — 11-16 4-4b
+    // 커밋(ecfe3bc4a)의 엔진 시험 두 단정이 형식기 꼴과 달라 master syntax-check가 그때부터 깨졌다. 용량과 시험은 관련 시험과 CI가 본다.
+    이름: 'Atlas 패키지 형식 · 복잡도', 단계: 'verify Atlas package (format · complexity · bundle size · tests)',
+    명령: ['packages/atlas/tools/check.mjs', '--format-only'], 고침: 'npm --prefix packages/atlas run format',
+    환경: ['packages/atlas/node_modules/@biomejs/biome'],
+    결과물: [], 원천: ['packages/atlas/**'], 낡음: /atlas check\(형식만\): 걸림/,
+  });
+  표.push({
     // 고침은 이 생성기 하나로 — check-account-bundles.js --build는 포털까지 다시 만들려다 의존성 없는 워크트리에서 FAIL로 끝난다.
     이름: 'PC 계정 라이브러리 묶음', 단계: 계정단계, 명령: ['desktop/tools/build-platform-continuity.cjs', '--check'],
     고침: 'node desktop/tools/build-platform-continuity.cjs',

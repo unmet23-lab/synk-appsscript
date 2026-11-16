@@ -203,8 +203,9 @@ test('기본표 — WORLD 묶음 전부 · 스크립트·결과물·정확한 �
     // 단계가 시험 파일이면 그 파일이 있어야 한다 — 루트 tests/ · 제품 폴더(experiences/) · 회사 폴더(docs/ 아래, wide-tests가 돈다 — 11-11 PULSE 글꼴 조각).
     assert.ok(/^(?:tests|experiences|docs)\/.*\.test\.[cm]?js$/.test(줄.단계) ? fs.existsSync(path.join(REPO, 줄.단계)) : 흐름.includes(`name: ${줄.단계}`), `${줄.이름}: CI 단계 「${줄.단계}」가 워크플로에 없다`);
   }
-  // CI가 그 단계에서 실제로 부르는 명령과 같은 스크립트다(package.json → sync-atlas · check-account-bundles · build-topik4-course).
-  const 사슬 = ['package.json', 'tools/lib/atlas-copies.js', 'tools/check-account-bundles.js'].map((p) => fs.readFileSync(path.join(REPO, p), 'utf8')).join('\n');
+  // CI가 그 단계에서 실제로 부르는 명령과 같은 스크립트다(package.json → sync-atlas · check-account-bundles · build-topik4-course,
+  // packages/atlas/package.json → tools/check.mjs — 「verify Atlas package」 단계의 npm --prefix packages/atlas run check).
+  const 사슬 = ['package.json', 'tools/lib/atlas-copies.js', 'tools/check-account-bundles.js', 'packages/atlas/package.json'].map((p) => fs.readFileSync(path.join(REPO, p), 'utf8')).join('\n');
   for (const 스크립트 of 표.filter((x) => x.명령).map((x) => x.명령[0])) {
     assert.ok(사슬.includes(path.basename(스크립트)), `${스크립트}: CI 명령 사슬(package.json·atlas-copies·check-account-bundles)에 없다`);
   }

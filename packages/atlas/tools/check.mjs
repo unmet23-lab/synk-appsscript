@@ -3,6 +3,7 @@
 //   1. biome ci — 포맷터(한 줄 한 문장, 폭 100)와 린트(인지 복잡도 15 · 한 문장에 선언 하나). 고치지 않고 보기만 한다(고치기는 npm run format)
 //   2. 빌드를 임시 폴더에 내고 budget.json의 압축 용량 상한을 잰다
 //   3. 시험 — unit(의존 없이) · build · properties(줄인 씨앗 — 접기 300열 · 고르기 150명). 전체 씨앗 · 가상 학습자 · 변형은 npm run gate
+//   --format-only: 1만 돌린다 — 바로올리기의 짝 검사(tools/짝검사.js 「Atlas 패키지 형식 · 복잡도」)가 push 전에 부른다
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -39,6 +40,12 @@ async function sizes() {
 }
 
 biome();
+// 관련 시험은 시험 파일만 돌려 형식 · 복잡도를 못 본다 — 11-16 4-4b 커밋(ecfe3bc4a)의 엔진 시험 두 단정이 형식기 꼴과 달라 master
+// syntax-check가 그때부터 깨졌다. 그래서 짝 검사가 push 전에 이 단계만 돌린다.
+if (process.argv.includes('--format-only')) {
+  console.log(failures.length ? 'atlas check(형식만): 걸림' : 'atlas check(형식만): 통과');
+  process.exit(failures.length ? 1 : 0);
+}
 await sizes();
 for (const group of ['unit', 'build'])
   if (runGroup(group).status !== 0) failures.push(`시험 ${group}`);
