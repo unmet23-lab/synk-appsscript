@@ -264,3 +264,31 @@ test('a browser sign-in failure stays on the ask scene after the next render (Fa
   await settle();
   assert.equal(made.view.scenes.at(-1).ask.authFeedback, '로그인을 마치지 못했습니다. 다시 해 주세요.');
 });
+
+test('onOpenSpace says why the fresh lookup could not confirm the space instead of 「not assigned」 (0.4.95 carbon B7)', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth() };
+  const opens = [];
+  let n = 0, failCode = 'LOGIN_REQUIRED';
+  const base = companyBridge(auth, { destinations: ['/', '/pulse-app/'], opens });
+  const bridge = { ...base, resolveCompanyEntryDestinations: async request => (++n === 1 ? base.resolveCompanyEntryDestinations(request) : { ok: false, code: failCode, requestId: request.requestId }) };
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onOpenPurposeTarget: async () => ({ ok: true }) });
+  t.after(() => host.dispose());
+  await settle();
+  made.face.handle('continue-personal');
+  await settle();
+  for (const [code, said] of [['LOGIN_REQUIRED', /추가 로그인이 필요합니다/], ['ACCOUNT_MISMATCH', /다른 계정으로 로그인되어 있습니다/], ['BUSY', /배정된 공간을 다 확인하지 못했습니다/]]) {
+    failCode = code;
+    made.face.handle('open-switch');
+    await settle();
+    made.face.handle('go', 'pulse');
+    await settle();
+    const error = made.view.scenes.at(-1).switch.error;
+    assert.match(error, said, code + ': ' + error);
+    assert.doesNotMatch(error, /확인된 공간이 아닙니다|작업 공간 다시 확인|아래 단추/, code + ': ' + error);
+    made.face.handle('close-switch');
+    await settle();
+  }
+  assert.deepEqual(opens, []);
+});

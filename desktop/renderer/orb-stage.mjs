@@ -162,7 +162,7 @@ void main(){
     float t2 = dot(T, H2);
     float an2 = pow(max(1.0 - t2 * t2, 0.0), 28.0) * pole * smoothstep(-0.2, 0.4, dot(n, L2));
     float calm = mix(1.0, mix(0.16, 1.0, smoothstep(0.47, 0.69, f.y / uRes.y)), uCalm);
-    float tiny = smoothstep(60.0, 14.0, uR / uDpr);
+    float tiny = 1.0 - smoothstep(14.0, 60.0, uR / uDpr);
     vec3 inC = vec3(0.005) + warm * uLit * mix(1.0, 0.1, tiny) * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + (an2 * groove * 0.09 + rings) * calm + spec * 0.20 * side + 0.010 * max(dot(n, L), 0.0));
     float edge = (1.0 - smoothstep(0.35, 1.0, abs(px))) * tiny * (0.26 + 0.5 * cres);
     float soft = 1.0 - 0.75 * tiny;
@@ -369,10 +369,16 @@ export function createOrbStage(canvas, options = {}) {
   function wake() { if (!disposed && !paused && frameId === null && typeof win.requestAnimationFrame === 'function') frameId = win.requestAnimationFrame(frame); }
 
   if (!initGL()) useFallback(); else markMode();
+  const glCanvas = canvas;
   const onLost = event => { event.preventDefault(); useFallback(); wake(); };
-  const onRestored = () => { if (initGL()) ctx2d = null; markMode(); resize(); };
-  canvas.addEventListener('webglcontextlost', onLost);
-  canvas.addEventListener('webglcontextrestored', onRestored);
+  // 맥락 복구 알림은 원래 캔버스에 온다. 2D 새 캔버스로 바꿔 두었으면 원래 캔버스로 되돌린 뒤 WebGL을 다시 세운다(0.4.95 원천 후보 카본 B2)
+  const onRestored = () => {
+    if (canvas !== glCanvas && canvas.parentNode) { canvas.replaceWith(glCanvas); canvas = glCanvas; }
+    if (initGL()) ctx2d = null; else useFallback();
+    markMode(); resize(); wake();
+  };
+  glCanvas.addEventListener('webglcontextlost', onLost);
+  glCanvas.addEventListener('webglcontextrestored', onRestored);
   const observer = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => resize()) : null;
   observer?.observe(host);
   resize(); snap('void');
@@ -410,7 +416,7 @@ export function createOrbStage(canvas, options = {}) {
       if (disposed) return; disposed = true;
       if (frameId !== null) win.cancelAnimationFrame?.(frameId);
       finishTween(); observer?.disconnect();
-      canvas.removeEventListener('webglcontextlost', onLost); canvas.removeEventListener('webglcontextrestored', onRestored);
+      glCanvas.removeEventListener('webglcontextlost', onLost); glCanvas.removeEventListener('webglcontextrestored', onRestored);
     },
   };
 }

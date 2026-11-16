@@ -134,6 +134,9 @@ test('time words in sentences, rows and the read line', () => {
   assert.equal(whenWords(NOW + 2.5 * H, NOW, { withTime: true }), '오늘 오후 12시 30분');
   assert.equal(whenWords(NOW + 14 * H, NOW, { withTime: true }), '내일 새벽 0시');
   assert.equal(whenWords(NOW + 20 * D, NOW), '12월 6일');
+  // 이미 지난 때는 「1분 뒤」가 아니고, 1시간 안은 59분을 넘기지 않는다(0.4.95 원천 후보 카본)
+  assert.equal(whenWords(NOW - 5 * 60e3, NOW), '오늘 오전');
+  assert.equal(whenWords(NOW + 59.8 * 60e3, NOW), '59분 뒤');
   // 자정을 넘기면 「내일」이 「오늘」이 된다
   const late = new Date(2026, 10, 16, 23, 30).getTime();
   assert.equal(whenWords(late + 10 * H, late), '내일 오전');
@@ -214,7 +217,41 @@ test('Fable final: refilled or unread rows, a 5-hour limit, stale credit balance
   const r7 = solioToday({ snapshot: snap([good, login], { [good.id]: 3 }) }, NOW);
   assert.equal(r7.say, '이번 주는 Claude가 넉넉합니다.');
   assert.equal(r7.then, 'Claude 계정 1개는 구독 관리에서 확인해 주세요.');
+  // 확인할 구독이 둘 이상이어도 일부만 확인할 구독은 몇 개인지 적어 첫 줄과 어긋나지 않는다(0.4.95 원천 후보 카본)
+  const codexLogin = row({ id: 'r-codex-login', service: 'gpt', label: 'Codex', state: 'needs-login', live: null });
+  const r8 = solioToday({ snapshot: snap([good, login, codexLogin], { [good.id]: 3 }) }, NOW);
+  assert.equal(r8.say, '이번 주는 Claude가 넉넉합니다.');
+  assert.equal(r8.then, 'Claude 계정 1개와 Codex는 구독 관리에서 확인해 주세요.');
   // 읽기 전 크레딧형이 함께 있으면 「모든」이라 하지 않는다
   const unreadCredit = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'plus', state: 'unknown', live: null });
   assert.equal(solioToday({ snapshot: snap([good, unreadCredit], { [good.id]: 3 }) }, NOW).say, '이번 주는 Claude가 넉넉합니다.');
+});
+
+test('one account refilled by a passed reset does not make a known service sound new (0.4.95 carbon E1)', () => {
+  // 같은 Claude의 두 계정: 하나는 사흘 기록이 있고 넉넉하다. 다른 하나는 초기화 시각이 지나 다시 찼을 것이다
+  const good = weekly('claude', 20, NOW + 3 * D);
+  const refilled = row({ live: { readAt: NOW - 3 * H, session: { usedPercent: 40, resetsAt: NOW - H }, weekly: { usedPercent: 40, resetsAt: NOW + 3 * D } } });
+  const out = solioToday({ snapshot: snap([good, refilled], { [good.id]: 3 }) }, NOW);
+  assert.doesNotMatch(out.say + ' ' + out.then, /사흘쯤 쓰면/, 'not 「기록이 쌓이면 알려 드립니다」');
+  assert.equal(out.say, '이번 주는 Claude가 넉넉합니다.');
+  assert.doesNotMatch(out.say, /모든 구독/, 'a refilled account still keeps it out of 「모든 구독」');
+});
+
+test('the read line says reading for the first time when nothing was read yet (0.4.95 carbon E2)', () => {
+  assert.equal(readLine(null, NOW, true), '처음 읽고 있습니다.');
+  assert.equal(readLine(NOW - 60e3, NOW, true), '다시 읽고 있습니다.');
+});
+
+test('bill days are counted on the calendar, also across a daylight saving change (0.4.95 carbon E5)', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const mod = new URL('../renderer/solio-today.mjs', import.meta.url).href;
+  // 미국 동부는 2026-11-01 02:00에 서머타임이 끝난다(그날은 25시간). 10-31 10:00에서 이틀 뒤 결제일은 11월 2일이다
+  const code = `process.env.TZ = 'America/New_York';
+const { solioToday } = await import(${JSON.stringify(mod)});
+const now = new Date(2026, 9, 31, 10, 0).getTime();
+const row = { id: 'c', service: 'higgsfield', source: 'auto', label: 'Higgsfield', kind: 'credit', plan: 'plus', state: 'ok', billDay: 2, live: { readAt: now, credits: 1240 } };
+const out = solioToday({ snapshot: { ok: true, rows: [row], check: { at: now }, usage: { accounts: {} } } }, now);
+process.stdout.write(out.rows[0].when);`;
+  const when = execFileSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8' });
+  assert.equal(when, '11월 2일 결제');
 });

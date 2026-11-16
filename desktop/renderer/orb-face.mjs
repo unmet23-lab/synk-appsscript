@@ -171,7 +171,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   let lastAnnounced = null;
 
   // 솔리오 첫 화면의 자료
-  const sol = { account: undefined, snapshot: null, error: null, checking: false, rereadFailed: false, autoDone: false, busyRetried: false, authRetried: false, loading: false, rereadAfterAuth: false, authChecking: false, authChecks: 0, authTimer: null, seq: 0, timer: null, unsubscribe: null };
+  const sol = { account: undefined, snapshot: null, error: null, checking: false, rereadFailed: false, autoDone: false, busyRetried: false, authRetried: false, loading: false, rereadAfterAuth: false, authChecking: false, authChecks: 0, authTimer: null, seq: 0, run: 0, timer: null, unsubscribe: null };
   let clockTimer = null;
 
   function prefersReducedMotion() {
@@ -312,7 +312,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function placesFor(state, mode) {
     if (!look.places) return [];
     if (mode === 'portal') {
-      if (state.phase === 'workspace' && state.workspace) return ['solio', ...state.workspace.destinations.map(d => SPACE_OF_DEST[d]).filter(Boolean)];
+      // 개인 공간으로 이어 갈 수 없으면 솔리오 고리를 새기지 않는다(0.4.95 원천 후보 카본 B3)
+      if (state.phase === 'workspace' && state.workspace) return [...(state.workspace.canContinuePersonal !== false ? ['solio'] : []), ...state.workspace.destinations.map(d => SPACE_OF_DEST[d]).filter(Boolean)];
       return [];
     }
     return ['solio', ...assignedFor(state)];
@@ -779,6 +780,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       }
       if (result && result.action === 'purpose') {
         workspaceNeedsRetry = false;
+        // 배정 공간이 없다고 확인됐으니 앞에서 기억한 공간을 비운다(첫 진입과 같다, 0.4.95 원천 후보 카본 B5)
+        rememberAssigned([], context.accountKey);
         const mode = result.purposeMode === 'existing' ? 'existing' : 'onboarding';
         const moved = machine.workspaceToPurpose({ mode, returnToWorkspace: false });
         if (!moved.ok) {
@@ -1084,7 +1087,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     render();
   }
   function closeSwitch() {
-    if (!switchOpen) return;
+    // 다른 공간을 여는 동안에는 닫지 않는다. 닫으면 그 공간의 실패 글이 지금 방에 떴다(0.4.95 원천 후보 카본 D2)
+    if (!switchOpen || busyAction === 'open-space') return;
     switchOpen = false;
     feedback.switch = '';
     focus('here');
@@ -1123,7 +1127,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
 
   function go(target) {
     if (disposed || busyAction !== null) return;
-    if (clientMode() === 'portal') { void runSelectWorkspace(DEST_OF_SPACE[target]); return; }
+    if (clientMode() === 'portal') {
+      // 진입 공간 고르기의 솔리오는 「솔리오로」(개인 공간으로 이어 가기)와 같다. 배정 공간만 runSelectWorkspace로 연다(0.4.95 원천 후보 카본 B3)
+      if (target === 'solio') { if (machine.read().workspace?.canContinuePersonal !== false) void runContinuePersonal(); return; }
+      if (DEST_OF_SPACE[target]) void runSelectWorkspace(DEST_OF_SPACE[target]);
+      return;
+    }
     if (target === space) { closeSwitch(); return; }
     if (target === 'solio') { enterSpace('solio', { fromSwitch: true }); return; }
     void runOpenSpace(target);
@@ -1217,6 +1226,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const result = machine.receiveAuth(authPatch);
     if (!result.accepted) return result.state;
     if (navigationHoldActive && (result.state.phase !== 'entered' || result.accountChanged || result.bindingInvalidated || result.state.authStatus === 'signing-in')) {
+      // 들어온 채로 놓으면 붙잡아 둔 구를 도착시킨다. 그냥 끄면 구가 안쪽에 남았다(0.4.95 원천 후보 카본 B6)
+      if (result.state.phase === 'entered') releaseNavigationHold();
       navigationHoldActive = false;
     }
     if (result.accountChanged || result.bindingInvalidated || (busyAction === 'invite' && result.state.phase !== 'invite')) {
@@ -1286,6 +1297,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
   function stopSolio() {
     sol.seq += 1;
+    // 솔리오 회차. 읽기마다 오르는 seq와 달리 로그아웃 · 계정 바뀜으로 솔리오를 닫을 때만 오른다(0.4.95 원천 후보 카본 D3)
+    sol.run += 1;
     if (sol.timer !== null) { clearTimer(sol.timer); sol.timer = null; }
     if (sol.authTimer !== null) { clearTimer(sol.authTimer); sol.authTimer = null; }
     try { sol.unsubscribe?.(); } catch { /* 무시 */ }
@@ -1344,13 +1357,14 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (!subs || sol.checking) return;
     if (sol.error && sol.error !== 'SIGN_IN_REQUIRED' && !sol.snapshot) { sol.error = null; sol.busyRetried = false; render(); void loadSolio(); return; }
     if (typeof subs.check !== 'function') return;
-    const account = sol.account;
+    const account = sol.account, my = sol.run;
     sol.checking = true;
     sol.rereadFailed = false;
     render();
     let res;
     try { res = await subs.check(); } catch { res = null; }
-    if (disposed || account !== sol.account) return;
+    // 로그아웃 뒤 같은 계정으로 다시 들어온 새 회차에는 앞 회차의 늦은 답을 넣지 않는다(0.4.95 원천 후보 카본 D3)
+    if (disposed || account !== sol.account || my !== sol.run) return;
     sol.checking = false;
     if (res && res.ok !== false) {
       sol.error = null;
@@ -1375,12 +1389,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
   async function recheckAuth() {
     if (disposed || sol.authChecking || typeof options.onRetry !== 'function') return;
-    const account = sol.account;
+    const account = sol.account, my = sol.run;
     sol.authChecking = true;
     sol.authChecks += 1;
     render();
     try { await options.onRetry(); } catch { /* 결과는 호스트의 알림으로 온다 */ }
-    if (disposed || account !== sol.account) return;
+    if (disposed || account !== sol.account || my !== sol.run) return;
     sol.authChecking = false;
     render();
   }
@@ -1416,6 +1430,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         if (busyAction !== null) return true;
         clearFeedback(); machine.showAuthPanel(); render(); return true;
       case 'retry-enter': {
+        // 계정 전환처럼 다른 동작이 도는 동안에는 받지 않는다. 받으면 단계만 entering으로 넘어가고 진입은 시작되지 않았다(0.4.95 원천 후보 카본 B4)
+        if (busyAction !== null) return true;
         const retry = machine.retryEnter();
         render();
         if (retry.shouldTriggerEnter) void triggerEnter();
@@ -1511,6 +1527,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       workspaceNeedsRetry = false;
       clearFeedback();
       if (action === 'purpose') {
+        rememberAssigned([], snap.accountKey);
         const mode = purposeMode === 'existing' ? 'existing' : 'onboarding';
         const moved = snap.phase === 'workspace'
           ? machine.workspaceToPurpose({ mode, returnToWorkspace: false })

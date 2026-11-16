@@ -12,7 +12,7 @@ export const QA_GUEST_EVENT = 'synk:qa-guest-entry';
 const EASE = { io: easeIO, ioq: easeIOQ, out: easeOut };
 const NON_HOST_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'LINK', 'META', 'NOSCRIPT']);
 const FOCUSABLE = 'button:not([disabled]),input:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
-const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱ㅋ"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>';
+const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱크"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>';
 const CHEVRON = '<svg viewBox="0 0 8 5" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="M1 1l3 3 3-3"/></svg>';
 
 function markup() {
@@ -33,9 +33,9 @@ function markup() {
         <label for="portal-invite-input">초대받으셨다면</label>
         <input id="portal-invite-input" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
       </form>
-      <div class="status" role="status" aria-live="polite">
-        <p data-ask-status></p>
-        <p id="portal-invite-error" data-portal-invite-error></p>
+      <div class="status" data-ask-status-box>
+        <p role="status" aria-live="polite" data-ask-status></p>
+        <p id="portal-invite-error" role="alert" data-portal-invite-error></p>
         <div class="status-acts" data-ask-actions></div>
       </div>
     </div>
@@ -88,7 +88,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const ask = {
     unconf: $('[data-ask-unconf]'), signin: $('[data-orb-act="signin"]'), feedback: $('[data-portal-auth-feedback]'), signup: $('[data-orb-act="signup"]'),
     note: $('[data-ask-note]'), form: $('[data-portal-pane="invite"]'), input: $('#portal-invite-input'), status: $('[data-ask-status]'),
-    inviteError: $('#portal-invite-error'), actions: $('[data-ask-actions]'), ways: $('.ask-ways'),
+    inviteError: $('#portal-invite-error'), actions: $('[data-ask-actions]'), ways: $('.ask-ways'), statusBox: $('[data-ask-status-box]'),
   };
   const sw = { lead: $('[data-sw-lead]'), error: $('[data-sw-error]'), names: $('[data-sw-names]'), foot: $('[data-sw-foot]'), close: $('[data-orb-act="close-switch"]') };
   const app = {
@@ -185,6 +185,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     setText(ask.status, a.status);
     setText(ask.inviteError, a.inviteError);
     if (a.wait) stageEl.dataset.wait = a.wait; else delete stageEl.dataset.wait;
+    // 기다리는 동안 사라지는 칸과, 기다리지 않을 때 숨은 상태 묶음은 inert로 둔다. CSS가 0.35초 뒤에 숨기는 동안에도 초점과 Tab이 밟지 않게 한다(0.4.95 원천 후보 카본)
+    for (const el of [ask.ways, ask.signup, ask.form]) el.inert = Boolean(a.wait);
+    ask.statusBox.inert = !a.wait;
     renderActions(ask.actions, a.actions, s.busy, s.busyAction);
     const busy = s.busy;
     ask.signin.disabled = busy;
@@ -407,16 +410,20 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       introWait = () => { clearTimeout(t); introWait = null; resolve(); };
     });
   }
+  let introHurried = false;
   async function intro(kind, { delay = 520, ms = 2400 } = {}) {
-    motionGen++;
+    const gen = ++motionGen;
+    introHurried = false;
     sig.stop();
     stage.setSpin(0);
     stage.snap('void');
     await wait(reduced() ? Math.min(delay, 120) : delay);
-    if (disposed) return;
-    await stage.tween('rest', ms, easeOut, (t, a, b) => lerp(a, b, smooth(0, 0.62, t)));
+    // 기다리는 동안 다른 움직임이 시작됐으면 덮지 않는다. 기다리는 동안 서둘렀으면 드러나는 움직임도 짧게 한다(0.4.95 원천 후보 카본)
+    if (disposed || gen !== motionGen) return;
+    await stage.tween('rest', introHurried ? Math.min(ms, 320) : ms, easeOut, (t, a, b) => lerp(a, b, smooth(0, 0.62, t)));
   }
   function hurryIntro() {
+    introHurried = true;
     if (introWait) introWait();
     stage.hurry('rest');
   }
@@ -437,7 +444,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   async function dive(space, ms = 1250) {
     if (disposed) return;
-    motionGen++;
+    const gen = ++motionGen;
     sig.stop();
     stage.setFace(null);
     stage.setAutoFace(false);
@@ -445,6 +452,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stage.setHot(space);
     if (stage.state().mark < 0.05) stage.setSpin(-PLACE_LON[space]);
     await stage.tween('inside', ms, easeIO, (t, a) => a * (1 - smooth(0.7, 0.97, t)));
+    if (disposed || gen !== motionGen) return;
     stage.setSpace(space);
   }
   /* 점 로고가 맞춰지고 물러나며 왼쪽 위의 작은 구가 된다. 작은 구가 자리를 잡기 시작하는 순간에 돌아온다 */
@@ -527,8 +535,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const items = focusables();
       if (!items.length) { event.preventDefault(); return; }
       const first = items[0], last = items[items.length - 1], active = doc.activeElement;
-      if (event.shiftKey) { if (!root.contains(active) || active === first) { event.preventDefault(); last.focus?.({ preventScroll: true }); } }
-      else if (!root.contains(active) || active === last) { event.preventDefault(); first.focus?.({ preventScroll: true }); }
+      // 제목(heading)처럼 Tab 목록 밖에 초점이 있어도 얼굴 안에서 돈다(0.4.95 원천 후보 카본)
+      const outside = !items.includes(active);
+      if (event.shiftKey) { if (outside || active === first) { event.preventDefault(); last.focus?.({ preventScroll: true }); } }
+      else if (outside || active === last) { event.preventDefault(); first.focus?.({ preventScroll: true }); }
       return;
     }
     if (mode === 'legacy' || typing || event.ctrlKey || event.metaKey || event.altKey) return;

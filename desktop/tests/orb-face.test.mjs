@@ -972,3 +972,127 @@ test('an error that cannot be retried does not keep the member look (Fable re-re
   await settle();
   assert.deepEqual(h.view.last().switch.foot.map(f => f.action), ['settings']);
 });
+
+test('the entry chooser marks Solio only when personal is allowed, and choosing Solio continues personal (0.4.95 carbon B3)', async t => {
+  const closed = { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [], canContinuePersonal: false, canSwitchAccount: true };
+  const h = harness(t, { options: { onEnter: () => ({ ok: true, action: 'workspace', workspace: closed }) } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  assert.deepEqual(h.view.last().places, ['workspace', 'pulse']);
+  h.face.handle('go', 'solio');
+  await settle();
+  assert.ok(!h.names().includes('selectWorkspace') && !h.names().includes('continuePersonal'), 'Solio is not opened through the workspace path');
+
+  const open = { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [], canContinuePersonal: true, canSwitchAccount: true };
+  const p = harness(t, { options: { onEnter: () => ({ ok: true, action: 'workspace', workspace: open }) } });
+  await settle();
+  p.face.setState(signedIn());
+  await settle();
+  assert.deepEqual(p.view.last().places, ['solio', 'workspace', 'pulse']);
+  p.face.handle('go', 'solio');
+  await settle();
+  assert.ok(p.names().includes('continuePersonal'));
+  assert.ok(!p.names().includes('selectWorkspace'));
+  assert.equal(p.face.getState().phase, 'entered');
+  assert.equal(p.view.last().space, 'solio');
+});
+
+test('「다시 시도」 is not taken while another action runs (0.4.95 carbon B4)', async t => {
+  const h = harness(t, { options: { onEnter: () => ({ ok: false, message: '배정을 불러오지 못했어요.' }), onSwitchAccount: () => new Promise(() => {}) } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  assert.equal(h.face.getState().phase, 'enter-error');
+  const enters = h.names().filter(n => n === 'enter').length;
+  h.face.handle('switch-account');
+  await settle();
+  h.face.handle('retry-enter');
+  await settle();
+  assert.equal(h.face.getState().phase, 'enter-error', 'the phase does not move to entering with no entry started');
+  assert.equal(h.names().filter(n => n === 'enter').length, enters);
+});
+
+test('「다시 확인」 that lands in the personal space forgets the spaces remembered before (0.4.95 carbon B5)', async t => {
+  // 처음 확인은 일부만 됐다. Workspace는 확인됐고 PULSE는 확인하지 못해 공간 고르기에 「다시 확인」이 있다. 이때 Workspace를 기억한다
+  const partial = { status: 'partial', destinations: ['/'], unavailable: ['pulse'], canContinuePersonal: true };
+  const h = harness(t, { options: {
+    onEnter: () => ({ ok: true, action: 'workspace', workspace: partial }),
+    onRetryWorkspace: () => ({ ok: true, action: 'purpose', purposeMode: 'existing' }),
+  } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  assert.equal(h.face.getState().phase, 'workspace');
+  assert.ok(h.view.last().switch.actions.some(a => a.action === 'retry-workspace'));
+  // 「다시 확인」은 이제 배정이 없다고 한다. 개인 공간으로 들어가고, 앞에서 기억한 Workspace는 공간 고르기에 남지 않는다
+  h.face.handle('retry-workspace');
+  await settle();
+  assert.equal(h.view.last().space, 'solio');
+  h.face.handle('open-switch');
+  await settle();
+  assert.deepEqual(h.view.last().switch.names.map(n => n.space), ['solio'], 'the old Workspace is not listed');
+});
+
+test('a held navigation released by a sign-in notice still lands the orb (0.4.95 carbon B6)', async t => {
+  const h = harness(t, { options: { onEnter: () => ({ ok: true, destination: '/', navigationRequested: true }) } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  assert.equal(h.face.isActive(), true);
+  assert.ok(!h.view.log.some(e => e[0] === 'arrive'));
+  h.face.setState({ status: 'signing-in', accountKey: ACCOUNT, generation: 2 });
+  await settle();
+  assert.equal(h.face.isActive(), false);
+  assert.ok(h.view.log.some(e => e[0] === 'arrive'), 'the orb comes out instead of staying inside');
+});
+
+test('the space switch stays open while a space opens, so its failure is said there (0.4.95 carbon D2)', async t => {
+  const workspace = { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] };
+  let release;
+  const h = harness(t, { options: {
+    onEnter: () => ({ ok: true, action: 'workspace', workspace }),
+    onOpenSpace: () => new Promise(resolve => { release = resolve; }),
+  } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('continue-personal');
+  await settle();
+  h.face.handle('open-switch');
+  await settle();
+  h.face.handle('go', 'pulse');
+  await settle();
+  h.face.handle('close-switch');
+  await settle();
+  assert.equal(h.view.last().layer, 'switch', 'closing waits for the open to finish');
+  release({ ok: false, message: '그 공간을 열지 못했어요.' });
+  await settle();
+  assert.equal(h.view.last().layer, 'switch');
+  assert.equal(h.view.last().switch.error, '그 공간을 열지 못했습니다.');
+  assert.equal(h.view.last().space, 'solio');
+});
+
+test('a late reread answer from before signing out is not put on the new visit (0.4.95 carbon D3)', async t => {
+  const oldSnap = { ...EMPTY_SNAP(), seq: 9, rows: [{ id: 'late', service: 'claude', source: 'auto', label: 'Claude', kind: 'weekly', state: 'ok', live: { readAt: Date.now(), weekly: { usedPercent: 5, resetsAt: Date.now() + 864e5 } } }], check: { at: Date.now() } };
+  let releaseCheck;
+  const m = mainSubscriptions(EMPTY_SNAP());
+  const check = m.subscriptions.check;
+  m.subscriptions.check = () => new Promise(resolve => { releaseCheck = () => resolve(oldSnap); });
+  const h = harness(t, { options: { subscriptions: m.subscriptions } });
+  await settle();
+  both(h, m, signedIn(ACCOUNT, 1));
+  await settle(30);
+  h.face.handle('reread');
+  await settle();
+  both(h, m, { status: 'signed-out', generation: 2 });
+  await settle();
+  m.subscriptions.check = check;
+  both(h, m, signedIn(ACCOUNT, 3));
+  await settle(30);
+  assert.equal(h.view.last().room.solio.say, NONE_SAY);
+  releaseCheck();
+  await settle(30);
+  assert.equal(h.view.last().room.solio.say, NONE_SAY, 'the answer of the visit before is dropped');
+  assert.ok(!h.view.last().room.solio.rows?.some?.(r => r.name === 'Claude'), 'no row from the late answer');
+});

@@ -1870,6 +1870,13 @@ export function mountDesktopPortalHost({
         const refreshed = await executeDesktopAssignmentFlow({ accountKey, generation, openSingle: false });
         if (refreshed?.ok === false) return refreshed;
         if (!recordLive()) {
+          // 배정이 덜 확인된 까닭이 있으면 그대로 알린다. 「확인된 공간이 아닙니다」는 배정이 정말 없을 때만이다(0.4.95 원천 후보 카본 B7)
+          const status = refreshed?.workspace?.status;
+          // 호스트의 진입 화면 글은 그 화면의 단추(「작업 공간 다시 확인」)를 가리켜서, 공간 고르기에서는 이 문장들을 쓴다.
+          // 이 길은 새 얼굴만 쓰므로 아래 「확인된 공간이 아닙니다」처럼 처음부터 「-습니다」로 쓴다(faceSentence는 「필요해요」를 바꾸지 못한다)
+          if (status === 'login_required') return { ok: false, code: 'LOGIN_REQUIRED', message: '회사 작업 공간에 들어가려면 추가 로그인이 필요합니다. 로그인을 마친 뒤 다시 시도해 주세요.' };
+          if (status === 'account_mismatch') return { ok: false, code: 'ACCOUNT_MISMATCH', message: '회사 작업 공간이 다른 계정으로 로그인되어 있습니다. 계정을 확인한 뒤 다시 시도해 주세요.' };
+          if (status && status !== 'resolved') return { ok: false, code: 'ASSIGNMENT_UNCONFIRMED', message: '배정된 공간을 다 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요.' };
           return { ok: false, code: 'NOT_ASSIGNED', message: '지금 계정에 확인된 공간이 아닙니다. 잠시 뒤 다시 시도해 주세요.' };
         }
       }

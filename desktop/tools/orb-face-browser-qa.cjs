@@ -331,6 +331,31 @@ if(!process.versions.electron){
           check('8-3 when the account comes back, Solio reads and shows the subscriptions',!!back&&!back.startsWith('계정 연결')&&!back.startsWith('로그인하면'),{say:back});
           w.win.destroy();
         }
+        // 14. 0.4.95 원천 후보 카본 P2: 로고의 낭독 이름, 라이브 영역, 기다리는 동안의 inert, 제목에서 Shift+Tab, 낮은 창의 솔리오 방, 줄 없을 때 단추 자리
+        if(only('14')){
+          const w=await open();await boot(w,{subs:subsReady},{restore:signedOut});
+          const r=await until(w,s=>s.phase==='auth'&&s.ui==='ask');
+          const a=await w.js("(()=>{const p=document.getElementById('portal-entry'),box=p.querySelector('[data-ask-status-box]');return {mark:p.querySelector('.mark')?.getAttribute('aria-label')||'',boxRole:box?.getAttribute('role')||'',statusRole:p.querySelector('[data-ask-status]')?.getAttribute('role')||'',errorRole:p.querySelector('#portal-invite-error')?.getAttribute('role')||'',actsInLive:!!p.querySelector('[role=status] [data-ask-actions]'),boxInert:!!box?.inert,waysInert:!!p.querySelector('.ask-ways')?.inert};})()");
+          check('14 logo name, live regions, and inert status box while not waiting',r.ok&&a.mark==='싱크'&&a.boxRole===''&&a.statusRole==='status'&&a.errorRole==='alert'&&!a.actsInLive&&a.boxInert&&!a.waysInert,a);
+          await w.js("document.querySelector('#portal-entry [data-orb-heading]').focus()");
+          w.win.webContents.sendInputEvent({type:'keyDown',keyCode:'Tab',modifiers:['shift']});w.win.webContents.sendInputEvent({type:'keyUp',keyCode:'Tab',modifiers:['shift']});await wait(150);
+          const tr=await w.js("(()=>{const a=document.activeElement,p=document.getElementById('portal-entry');return {inside:!!a&&p.contains(a)&&a!==p.querySelector('[data-orb-heading]'),tag:a?.tagName||null,cls:String(a?.className||'')};})()");
+          check('14 Shift+Tab from the heading stays inside the face',tr.inside,tr);
+          await click(w,'[data-orb-act="signin"]');const sw=await until(w,s=>!!s.wait,{timeout:3000});
+          const b=await w.js("(()=>{const p=document.getElementById('portal-entry');return {boxInert:!!p.querySelector('[data-ask-status-box]').inert,waysInert:!!p.querySelector('.ask-ways').inert,signupInert:!!p.querySelector('.signup').inert,formInert:!!p.querySelector('[data-portal-pane=invite]').inert};})()");
+          check('14 while waiting the ask fields are inert and the status box is not',sw.ok&&b.waysInert&&b.signupInert&&b.formInert&&!b.boxInert,b);
+          w.win.destroy();
+          const w2=await open();await boot(w2,{subs:subsReady},{restore:signedIn('none')});
+          const r2=await until(w2,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});w2.win.setContentSize(960,560);await wait(700);
+          const g=await w2.js("(()=>{const r=document.querySelector('#portal-entry .room[data-room=solio]').getBoundingClientRect(),h=document.querySelector('#portal-entry .here-orb').getBoundingClientRect();return {top:Math.round(r.top),bottom:Math.round(r.bottom),hereBottom:Math.round(h.bottom),inner:innerHeight};})()");
+          check('14 at 960x560 the Solio room stays below the small orb and inside the window',r2.ok&&g.top>=g.hereBottom-1&&g.bottom<=g.inner+1,g);await capture(w2,'solio-960x560');
+          w2.win.destroy();
+          const w3=await open();await boot(w3,{subs:subsNone},{restore:signedIn('none')});
+          const r3=await until(w3,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(500);
+          const al=await w3.js("(()=>{const s=document.querySelector('#portal-entry [data-room=solio] .say').getBoundingClientRect(),b=document.querySelector('#portal-entry [data-orb-act=connect]').getBoundingClientRect();return {sayLeft:Math.round(s.left),btnLeft:Math.round(b.left),btnShown:b.width>0};})()");
+          check('14 with no rows the action button sits under the sentence',r3.ok&&al.btnShown&&Math.abs(al.btnLeft-al.sayLeft)<40,al);await capture(w3,'solio-none-button');
+          w3.win.destroy();
+        }
         // 13. 다시 켬, 로그인 복원이 3초 늦음: 그동안 구가 스스로 커지거나 묻는 화면이 비치지 않는다
         if(only('13')){
           const part='orb-qa-slow-'+Date.now();

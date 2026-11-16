@@ -12,6 +12,8 @@ const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토'];
 const pad = n => String(n).padStart(2, '0');
 const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const daysBetween = (t, now) => Math.round((dayStart(t) - dayStart(now)) / DAY_MS);
+/* now가 속한 날의 n일 뒤 0시. 24시간을 곱해 더하지 않는다. 서머타임이 끝나는 날(25시간)이 끼면 하루 앞선 날이 나왔다(0.4.95 원천 후보 카본 E5) */
+const dayAfter = (now, n) => { const d = new Date(now); return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n).getTime(); };
 const partOf = h => (h < 6 ? '새벽' : h < 12 ? '오전' : h < 18 ? '오후' : h < 21 ? '저녁' : '밤');
 const fmt = n => Math.round(Number(n) || 0).toLocaleString('ko-KR');
 
@@ -33,7 +35,8 @@ export function joinNames(list) {
    withTime이면 시각을 붙인다(「토요일 오후 2시」, 「내일 오전 9시 30분」) */
 export function whenWords(t, now, { withTime = false } = {}) {
   const ms = t - now;
-  if (ms < 3600e3) return Math.max(1, Math.round(ms / 60e3)) + '분 뒤';
+  // 이미 지난 때는 「1분 뒤」로 읽지 않고 날과 때로 적는다(줄 안의 shortWhen과 같은 기준). 1시간 안은 59분을 넘기지 않는다(0.4.95 원천 후보 카본)
+  if (ms > 0 && ms < 3600e3) return Math.min(59, Math.max(1, Math.round(ms / 60e3))) + '분 뒤';
   const d = new Date(t), days = daysBetween(t, now), h = d.getHours(), m = d.getMinutes();
   if (days >= 7) return (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
   const day = days === 0 ? '오늘' : days === 1 ? '내일' : days === 2 ? '모레' : WEEKDAY[d.getDay()] + '요일';
@@ -50,7 +53,8 @@ const spokenWhen = (t, now) => whenWords(t, now, { withTime: true });
 
 /* 읽은 때 한 줄 */
 export function readLine(checkAt, now, checking) {
-  if (checking) return '다시 읽고 있습니다.';
+  // 한 번도 읽지 않았으면 「처음 읽고 있습니다」다. 맨 위 문장과 줄 문구와 맞춘다(0.4.95 원천 후보 카본 E2)
+  if (checking) return checkAt ? '다시 읽고 있습니다.' : '처음 읽고 있습니다.';
   if (!checkAt) return '';
   const age = Math.max(0, now - checkAt);
   if (age < 2 * 60e3) return '방금 읽은 값입니다.';
@@ -80,7 +84,9 @@ function weeklyFact(snapshot, g, now) {
   if (pace) return { kind: 'pace', at: pace.at, release: pace.release };
   const best = g.best;
   if (best && (best.state === 'low' || best.state === 'out')) return { kind: 'low', left: best.left, at: best.g?.resetsAt || null };
-  const young = g.projected.length > 0 || usable.some(a => a.g.weekly.guess || !Number.isFinite(stats[a.row.id]?.rate3));
+  // 「기록이 아직 쌓이지 않았다」는 읽은 계정의 기록이 정말 모자랄 때만이다. 다른 계정이 초기화 시각을 지나 다시 찼을 것이라는 것은
+  // 기록 부족이 아니다. 그 묶음은 「모든 구독이 넉넉합니다」에서만 빠진다(allSure, 0.4.95 원천 후보 카본 E1)
+  const young = usable.some(a => a.g.weekly.guess || !Number.isFinite(stats[a.row.id]?.rate3));
   return young ? { kind: 'young' } : { kind: 'fine', reset: Math.min(...usable.map(a => a.g.weekly.resetsAt).filter(Boolean)) };
 }
 
@@ -114,7 +120,7 @@ function rowOf(snapshot, g, fact, now, checking) {
   } else {
     const a = best || g.accounts[0], b = a ? balance(a.row) : null, allot = a ? monthCredits(prices, a.row) : null;
     const bill = a?.row?.billDay ? nextBill(a.row.billDay, now) : null;
-    const billText = bill === null ? '' : (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일 결제')(new Date(dayStart(now) + bill * DAY_MS));
+    const billText = bill === null ? '' : (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일 결제')(new Date(dayAfter(now, bill)));
     if (b) {
       const pct = allot?.credits > 0 ? Math.max(0, Math.min(100, Math.floor((b.value / allot.credits) * 100))) : null;
       row.val = pct === null ? fmt(b.value) + ' 크레딧' : pct + '% 남음';
@@ -133,8 +139,8 @@ function rowOf(snapshot, g, fact, now, checking) {
 
 /* 확인할 구독 한 줄. 서비스의 계정 일부만 문제면 「Claude 계정 1개는 …」, 모두 문제면 「Codex는 …」 */
 function troubleLine(list) {
-  if (list.length === 1 && list[0].partial) return list[0].name + ' 계정 ' + list[0].count + '개는 구독 관리에서 확인해 주세요.';
-  return neun(joinNames(list.map(t => t.name))) + ' 구독 관리에서 확인해 주세요.';
+  // 계정 여럿 가운데 일부만 확인할 구독은 몇 개인지 적는다. 둘 이상이어도 그렇게 해야 첫 줄(넉넉한 구독)과 어긋나지 않는다(0.4.95 원천 후보 카본)
+  return neun(joinNames(list.map(t => (t.partial ? t.name + ' 계정 ' + t.count + '개' : t.name)))) + ' 구독 관리에서 확인해 주세요.';
 }
 
 /* 맨 위 두 줄. 차례는 설계 8절 표: 읽지 못함 · 구독 없음 · 처음 읽는 중 · 6시간 넘음 · 다 씀 · 막힘 · 부족 · 모두 넉넉 · 기록 부족 */
@@ -224,13 +230,13 @@ export function solioToday({ native = true, signedIn = true, waiting = null, aut
   }
   const creditLow = groups.filter(g => g.kind === 'credit' && g.best && g.best.state === 'low').map(g => {
     const day = g.best.row?.billDay ? nextBill(g.best.row.billDay, now) : null;
-    return { name: groupName(g), billAt: day === null ? null : dayStart(now) + day * DAY_MS };
+    return { name: groupName(g), billAt: day === null ? null : dayAfter(now, day) };
   });
   // 다시 로그인하거나 읽지 못한 계정이 하나라도 있는 구독(계정 여럿 가운데 하나여도 센다), 넉넉한 크레딧형, 직접 기록(카본 B1 · B2, Fable 최종)
   const trouble = groups.filter(g => g.login.length || g.error.length).map(g => ({ name: groupName(g), count: g.login.length + g.error.length, partial: g.usable.length + g.projected.length + g.out.length > 0 }));
   const credits = groups.map((g, i) => ({ g, line: lines[i] })).filter(({ g, line }) => g.kind === 'credit' && g.best?.state === 'ok' && !g.login.length && !g.error.length && (line.gauge !== null || / 크레딧$/.test(line.val))).map(({ g, line }) => {
     const a = g.best || g.accounts[0], b = a ? balance(a.row) : null, day = a?.row?.billDay ? nextBill(a.row.billDay, now) : null;
-    return { name: groupName(g), pct: line.gauge, value: b ? b.value : 0, billAt: day === null ? null : dayStart(now) + day * DAY_MS };
+    return { name: groupName(g), pct: line.gauge, value: b ? b.value : 0, billAt: day === null ? null : dayAfter(now, day) };
   });
   const manual = lines.filter(r => r.val === '직접 기록').length;
   // 「모든 구독이 넉넉합니다」는 보이는 묶음 모두가 주간 한도형이고 넉넉하다고 확인된 때만 쓴다

@@ -5,7 +5,7 @@
 #portal-entry{
   --void:#000000;
   --paper:#F3F1EC;
-  --dim:rgba(243,241,236,.46);
+  --dim:rgba(243,241,236,.5);
   --hair:rgba(243,241,236,.10);
   --hair-strong:rgba(243,241,236,.20);
   --ring:rgba(243,241,236,.55);
@@ -37,7 +37,7 @@
 /* 구만 있는 첫 화면에서는 어디를 눌러도 넘어간다. 맨 위 40px는 창을 옮기는 자리라 비워 둔다 */
 #portal-entry .orb-wake{position:absolute;left:0;right:0;top:var(--portal-chrome-h,40px);bottom:0;display:none;background:none;border:0;padding:0;cursor:pointer}
 #portal-entry .orb-stage[data-boot="1"] .orb-wake{display:block}
-#portal-entry .orb-wake:focus-visible{outline:none}
+#portal-entry .orb-wake:focus-visible{outline:1px solid var(--ring);outline-offset:-14px}
 
 #portal-entry .orb-layer{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -104,13 +104,15 @@
 #portal-entry .here:hover .here-name,#portal-entry .here-name:focus-visible{color:var(--paper)}
 #portal-entry .here-name:focus-visible{outline:1px solid var(--ring);outline-offset:2px}
 #portal-entry .legacy-back{display:none;margin-left:22px}
-#portal-entry .room{position:absolute;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);top:52%;transform:translateY(-50%)}
+#portal-entry .room{position:absolute;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);top:52%;transform:translateY(-50%);max-height:calc(100% - 168px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 #portal-entry .say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance;min-height:1.3em}
 #portal-entry .say .then{display:block;color:var(--dim)}
 #portal-entry .say .then:empty{display:none}
 /* 줄들은 한 격자의 열을 같이 쓴다. 한 줄의 글이 길어도 모든 줄의 열이 같이 움직인다 */
 #portal-entry .rows{margin-top:clamp(34px,8vh,84px);display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 6.2em minmax(190px,auto);column-gap:clamp(16px,2.4vw,36px)}
-#portal-entry .rows.dim .row{color:rgba(243,241,236,.32)}
+#portal-entry .rows.dim .row,#portal-entry .rows.dim .row.now{color:var(--dim)}
+#portal-entry .rows.dim .row:hover{color:var(--paper)}
+#portal-entry .rows.dim .gauge i{opacity:.5}
 #portal-entry .row{appearance:none;display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:center;padding:17px 0;margin:0;width:100%;
   background:none;border:0;border-top:1px solid var(--hair);border-radius:0;text-align:left;font:inherit;color:var(--dim);cursor:pointer;transition:color .25s ease}
 #portal-entry .row:last-child{border-bottom:1px solid var(--hair)}
@@ -133,6 +135,8 @@
 #portal-entry .room[data-room="space"] .read{justify-content:flex-start;gap:28px;margin-top:clamp(28px,5vh,48px)}
 /* 오류가 없을 때 빈 알림 칸이 남은 폭을 차지해 「다시 열기」를 오른쪽 끝으로 밀지 않게 한다(카본 A3) */
 #portal-entry .room[data-room="space"] .read span:empty{display:none}
+#portal-entry .rows[hidden] + .read{justify-content:flex-start}
+#portal-entry .rows[hidden] + .read span:empty{display:none}
 
 /* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다 */
 #portal-entry .sw-top{position:absolute;left:16px;right:16px;top:calc(var(--portal-chrome-h,40px) + clamp(14px,4vh,40px));display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}

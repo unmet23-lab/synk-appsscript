@@ -39,3 +39,62 @@ test('the static orb CSS draws from those variables', () => {
   const css = fs.readFileSync(new URL('../renderer/orb-face.css', import.meta.url), 'utf8');
   assert.match(css, /\.orb-canvas\[data-orb-mode="static"\]\{background:radial-gradient\(circle var\(--orb-sr,0px\) at var\(--orb-sx,50%\) var\(--orb-sy,50%\)/);
 });
+
+test('every smoothstep in the orb shader rises from its lower edge (0.4.95 carbon B1)', () => {
+  // GLSL에서 edge0 >= edge1인 smoothstep은 정의되지 않은 값이다. 장치에 따라 작은 구의 선이 달라진다
+  const src = fs.readFileSync(new URL('../renderer/orb-stage.mjs', import.meta.url), 'utf8');
+  const calls = [...src.matchAll(/smoothstep\((-?[\d.]+), (-?[\d.]+),/g)].map(m => [Number(m[1]), Number(m[2])]);
+  assert.ok(calls.length > 0);
+  for (const [a, b] of calls) assert.ok(a < b, 'smoothstep(' + a + ', ' + b + ', ...)');
+});
+
+/* WebGL을 흉내 내는 가짜 맥락. 셰이더와 프로그램은 늘 성공하고, 나머지 부름은 빈 값을 돌려준다 */
+function fakeGL() {
+  const fn = name => () => (/^get(Shader|Program)Parameter$/.test(name) ? true : name === 'getAttribLocation' ? 0 : name === 'getShaderInfoLog' ? '' : name === 'isContextLost' ? false : name === 'getExtension' ? null : {});
+  return new Proxy({}, { get: (_, k) => (typeof k !== 'string' ? undefined : /^[A-Z_0-9]+$/.test(k) ? 1 : fn(k)), set: () => true });
+}
+function fake2D() {
+  const self = new Proxy({}, { get: (_, k) => (typeof k !== 'string' ? undefined : () => self), set: () => true });
+  return self;
+}
+function glWorld() {
+  const frames = [], parent = { child: null };
+  const win = { devicePixelRatio: 1, requestAnimationFrame: fn => { frames.push(fn); return frames.length; }, cancelAnimationFrame() {}, performance: { now: () => 1000 }, addEventListener() {}, removeEventListener() {} };
+  const host = { getBoundingClientRect: () => ({ width: 1200, height: 800 }), addEventListener() {}, removeEventListener() {} };
+  const make = kind => {
+    const listeners = {}, attrs = { class: 'orb-canvas' };
+    const c = {
+      kind, ownerDocument: null, parentElement: host, dataset: {}, width: 0, height: 0, listeners,
+      get parentNode() { return parent.child === c ? host : null; },
+      style: { setProperty() {}, getPropertyValue: () => '' },
+      getContext: type => (kind === 'gl' ? (type === 'webgl' ? fakeGL() : null) : (type === '2d' ? fake2D() : null)),
+      getAttributeNames: () => Object.keys(attrs), getAttribute: n => attrs[n], setAttribute: (n, v) => { attrs[n] = v; },
+      addEventListener: (type, f) => { listeners[type] = f; }, removeEventListener: type => { delete listeners[type]; },
+      replaceWith: other => { parent.child = other; },
+    };
+    return c;
+  };
+  const doc = { defaultView: win, hidden: false, createElement: () => { const c = make('2d'); c.ownerDocument = doc; return c; }, addEventListener() {}, removeEventListener() {} };
+  const canvas = make('gl');
+  canvas.ownerDocument = doc;
+  parent.child = canvas;
+  return { canvas, frames, parent };
+}
+
+test('after the WebGL context comes back the orb returns to its own canvas and draws with WebGL again (0.4.95 carbon B2)', () => {
+  const { canvas, frames, parent } = glWorld();
+  const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 40 }) });
+  try {
+    assert.equal(canvas.dataset.orbMode, 'webgl');
+    canvas.listeners.webglcontextlost({ preventDefault() {} });
+    const fresh = parent.child;
+    assert.notEqual(fresh, canvas, 'a lost context moves the orb to a fresh 2D canvas');
+    assert.equal(fresh.dataset.orbMode, '2d');
+    assert.equal(typeof canvas.listeners.webglcontextrestored, 'function', 'the restore notice is still heard on the WebGL canvas');
+    canvas.listeners.webglcontextrestored();
+    assert.equal(parent.child, canvas, 'the WebGL canvas is back in its place');
+    assert.equal(canvas.dataset.orbMode, 'webgl');
+    frames.splice(0).forEach(f => f(1100));
+  } finally { stage.dispose(); }
+  assert.equal(canvas.listeners.webglcontextrestored, undefined, 'dispose removes the listeners from the WebGL canvas');
+});
