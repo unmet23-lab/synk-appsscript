@@ -3,7 +3,7 @@
 // 엔진에 아직 없는 기능의 단추는 「아직 준비 중」 한 줄만 띄우고 아무것도 보내지 않는다(QA 「가짜 상태로 그린 화면」).
 
 import { createStore, failureText } from './state-store.js';
-import { homeModel, createRestoreWatch, startStep } from './screen-model.js';
+import { homeModel, startStep, restorePlace } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -21,9 +21,7 @@ const drawerWrap = $('#drawer'), drawerPanel = $('#drawer-panel');
 
 let lastHtml = '', screen = 'home', shownId = null, out = null, fixture = null, catalog = null, ui = { pick: 'same' }, noteTimer = 0, findTimer = 0, lit = false;
 let failure = null, queued = null, closing = null, opener = null, lastDrawer = '', lastLive = '', retryTimer = 0, shownQuery = null;
-// 이 창이 지켜본 전체 되살리기가 실패했는지 — 엔진은 그 실패를 백업 실패와 같은 칸(lastError)에 적는다(Fable F2)
-const restoreWatch = createRestoreWatch();
-let prevJob = null, restoreFail = null;
+let prevJob = null;
 // 창이 기억하는 개통 걸음(엔진 상태에 없는 것) — 로그인 기다림 · 기기가 다 참(LIMIT_DEVICES의 기기 목록) · 저장소가 이미 있음(REPO_EXISTS) ·
 // Google 걸음 확인 · 계정의 기기 목록(devicesList). 되돌리기 미리 보기(restorePlan)는 undo에 둔다
 let acct = { signing: false, limit: null, repoExists: false, googleAck: false, devices: null, devicesError: null, devicesBusy: false };
@@ -32,7 +30,6 @@ let undo = null;
 const runningCalls = new Set();
 function watchJobs(s) {
   if (!s) return;
-  restoreFail = restoreWatch.see(s);
   // 예약 백업 때문에 못 연 되살리기 목록은 그 일이 끝나면 저절로 연다(Fable F5)
   if (prevJob && !s.job && screen === 'restore' && catalog?.waiting) void openCatalog();
   // 하던 일 때문에 못 읽은 기기 목록은 그 일이 끝나면 다시 읽는다(Fable F2)
@@ -97,7 +94,7 @@ function paint() {
     return;
   }
   if (screen === 'undo-3' && s?.account?.restore?.state === 'failed' && s.account.restore.jobId) acct.undoSeen = s.account.restore.jobId;
-  const model = homeModel(s, { now: now(), restoreFail: fixture ? null : restoreFail, undoSeen: acct.undoSeen || null });
+  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null });
   const id = resolve(screen, s, model);
   if (!fixture) prepare(id, s);
   out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, fake: !!fixture });
@@ -152,7 +149,7 @@ function focusKey(el) {
 }
 
 function go(id) {
-  if (id !== 'restore' && screen === 'restore') closeCatalog();
+  if (id !== 'restore' && screen === 'restore') { closeCatalog(); ui = { ...ui, confirmAll: false }; }
   screen = SCREENS.includes(id) ? id : 'home';
   if (screen === 'restore') openCatalog();
   // 되돌리기 화면을 떠나면 찾은 시각을 버린다 — 다시 들어오면 새로 찾는다(서버가 5분 동안 같은 답을 준다)
@@ -310,6 +307,12 @@ function closeCatalog() {
 /* ── 단추 ── */
 async function run(a, el) {
   if (!a) return;
+  if (a.confirmAll) {
+    ui = { ...ui, confirmAll: true }; paint();
+    $('#live').textContent = [...(room.querySelector('#confirm-all')?.childNodes || [])].map((n) => n.textContent.trim()).filter(Boolean).join(' ');
+    room.querySelector('[data-act="restore-all-go"]')?.focus({ preventScroll: true }); return;
+  }
+  if (a.call === 'restoreLatest' && ui.confirmAll) ui = { ...ui, confirmAll: false };
   if (a.pending) return soon(a.pending);
   if (a.drawer) return openDrawer(el);
   if (a.to && notYet(a.to)) return soon(notYet(a.to));
@@ -336,18 +339,33 @@ async function run(a, el) {
     paint();
   }
 }
+/** 분실 신고 뒤 Google 계정 페이지 — 주소는 엔진이 정한다(openGoogleAccount, 조율 세션 616e9dce5). 읽기 호출이라 창의 호출 줄을 잡지 않는다.
+ *  브라우저를 못 열면 넣을 주소를 한 줄로 알린다 */
+async function openGoogle(kind) {
+  if (fixture) return note('예시 화면이라 실제로 열지 않았습니다.');
+  const r = await store.aside('openGoogleAccount', kind);
+  if (r.ok) return;
+  const removal = String(state()?.account?.googleRemovalUrl || acct.lost?.url || 'myaccount.google.com/connections').replace(/^[a-z]+:\/\//i, '');
+  note(`브라우저를 열지 못했습니다. ${kind === 'devices' ? 'myaccount.google.com/device-activity' : kind === 'apps' ? 'myaccount.google.com/connections' : removal} 주소를 브라우저에 직접 넣어 주세요.`, 12000);
+}
 /** 단추 하나의 호출과 그 답의 갈래 */
 async function send(a, el) {
   if (a.flow === 'takeOver') return takeOver();
   if (a.flow === 'openRead') return openRead();
   if (a.call === 'closeWindow') { const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close(); }
   let r;
+  const where = a.call === 'restoreSelected' || a.call === 'restoreLatest' ? restorePlace(state(), ui.place, now(), ui.sentDefaultAt) : null;
+  const place = where?.mode ?? null;
+  // 기본 자리로 보낸 때를 적어 둔다 — 그 뒤의 겹침 거절만 「다운로드에는 놓을 수 없다」로 읽는다(Fable 셋째 -b FA1).
+  // 그렇게 거절된 뒤 고른 자리로 보내면 이 창에서는 고르기를 굳힌다 — 다음에 다운로드로 돌아가 같은 실패를 되풀이하지 않게(-c FA1)
+  if (where) ui = where.unsafe ? { ...ui, place: 'pick' } : { ...ui, sentDefaultAt: place === 'default' ? now() : null };
   if (a.call === 'restoreSelected') {
     if (!catalog?.token || !catalog.selection?.count) return;
-    r = await store.call('restoreSelected', { profile: catalog.profile, token: catalog.token, revision: catalog.selection.revision });
+    r = await store.call('restoreSelected', { profile: catalog.profile, token: catalog.token, revision: catalog.selection.revision, place });
     if (r.ok && r.value?.started) { catalog = null; screen = 'home'; return go('home'); }
     if (!r.ok && (r.code === 'CATALOG_EXPIRED' || r.code === 'SELECTION_STALE')) { note(failureText(r.code)); return openCatalog(); }
-  } else if (a.call === 'removeSource') r = await store.call('removeSource', el?.dataset.path ?? a.arg);
+  } else if (a.call === 'restoreLatest') r = await store.call('restoreLatest', { place });
+  else if (a.call === 'removeSource') r = await store.call('removeSource', el?.dataset.path ?? a.arg);
   // 분실 신고 뒤에는 Google 걸음을 확인받아야 봉투를 올린다(설계 2.4 (5)(나)) — 확인했을 때만 googleStepDone
   else if (a.account) {
     if (state()?.account?.googleStepRequired && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
@@ -366,6 +384,7 @@ async function send(a, el) {
   else r = await store.call(a.call);
   // 다른 일이 도는 중이라 거절된 것은 폴더가 없다는 뜻이 아니다(FA3)
   if (!r.ok && (a.call === 'openSelectedRestoreFolder' || a.call === 'openRestoreFolder') && !['BUSY', 'JOB_BUSY', 'CANCELED'].includes(r.code)) return note('되살린 폴더를 찾을 수 없습니다. 옮기거나 지웠다면 「파일 되살리기」로 다시 꺼내 주세요.');
+  if (!r.ok && r.code === 'OUTPUT_UNSAFE' && place === 'default') { ui = { ...ui, place: 'pick' }; note('다운로드가 지키는 폴더와 겹쳐 그 안에는 되살릴 수 없습니다. 놓을 자리를 고르도록 바꿨으니 다시 눌러 주세요.'); return paint(); }
   if (!r.ok && r.code === 'REPO_EXISTS') { acct = { ...acct, repoExists: true }; return paint(); }
   if (!r.ok && r.code === 'GOOGLE_STEP') acct = { ...acct, googleAck: false };
   if (!r.ok) return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
@@ -398,6 +417,10 @@ stage.addEventListener('click', (e) => {
   if (id === 'clear') return void select('clear');
   if (id === 'reopen') return void openCatalog();
   if (id === 'google-ack') { acct = { ...acct, googleAck: !acct.googleAck }; return paint(); }
+  if (id === 'place-pick' || id === 'place-default') { ui = { ...ui, place: id === 'place-pick' ? 'pick' : 'default', confirmAll: false }; return paint(); }
+  // 분실 신고 뒤의 「연결된 앱」은 신고가 준 정리 페이지(removal), 되돌리기 화면의 「연결된 앱」은 연결된 앱 페이지(apps)다(Fable 셋째 F5)
+  if (id === 'g-dev' || id === 'g-app' || id === 'g-apps') return void openGoogle(id === 'g-dev' ? 'devices' : id === 'g-app' ? 'removal' : 'apps');
+  if (id === 'restore-all-no') { ui = { ...ui, confirmAll: false }; paint(); room.querySelector('[data-act="restore-all"]')?.focus({ preventScroll: true }); return; }
   if (id === 'devices-reload') { acct = { ...acct, devicesError: null }; paint(); return void loadDevices(); }
   // Google 로그인 기다림을 끊는다 — 창의 호출 줄을 잡지 않는 길이라 기다리는 호출과 겹쳐도 간다. 기다리던 호출은 CANCELED로 조용히 끝난다
   if (id === 'google-cancel') { if (!fixture) void store.aside('cancelGoogle'); return; }

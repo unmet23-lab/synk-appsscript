@@ -85,10 +85,15 @@ test('첫 읽기가 실패하고 구독만 되면, 첫 상태가 올 때까지 �
   assert.equal(store.state.n, 9);
 });
 
-test('코드 없이 오는 거절 둘(놓을 자리 · 마지막 폴더)도 갈래를 가린다(Fable F3)', async () => {
+test('놓을 자리 · 마지막 폴더 거절은 엔진 부호로 가린다 — 글 읽기를 걷었다(조율 세션 25d66f324)', async () => {
   const { createStore } = await load();
+  const coded = { getState: async () => ({ ok: true, value: S(1) }), restoreLatest: async () => ({ ok: false, error: '모든 작업 폴더·백업 저장소·앱 설정과 분리된 위치를 선택해 주세요.', code: 'OUTPUT_UNSAFE' }), removeSource: async () => ({ ok: false, error: '백업할 폴더를 하나 이상 남겨 주세요.', code: 'LAST_FOLDER' }) };
+  const cs = createStore(coded);
+  assert.deepEqual(await cs.call('restoreLatest', { place: 'default' }), { ok: false, code: 'OUTPUT_UNSAFE' });
+  assert.deepEqual(await cs.call('removeSource', 'x'), { ok: false, code: 'LAST_FOLDER' });
+  // 부호 없는 같은 글은 더는 갈래로 읽지 않는다
   const api = { getState: async () => ({ ok: true, value: S(1) }), restoreLatest: async () => ({ ok: false, error: '모든 작업 폴더·백업 저장소·앱 설정과 분리된 위치를 선택해 주세요.' }), removeSource: async () => ({ ok: false, error: '백업할 폴더를 하나 이상 남겨 주세요.' }) };
   const store = createStore(api);
-  assert.deepEqual(await store.call('restoreLatest'), { ok: false, code: 'OUTPUT_UNSAFE' });
-  assert.deepEqual(await store.call('removeSource', 'x'), { ok: false, code: 'LAST_FOLDER' });
+  assert.deepEqual(await store.call('restoreLatest'), { ok: false, code: 'FAILED' });
+  assert.deepEqual(await store.call('removeSource', 'x'), { ok: false, code: 'FAILED' });
 });

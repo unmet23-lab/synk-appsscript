@@ -158,11 +158,39 @@ export function pickedSources(s) {
 }
 
 /** 계정의 기기 한 줄 — 역할과 상태(서버 devices · account.cjs listed) */
-export function deviceLine(d, now = Date.now()) {
+export function deviceLine(d, now = Date.now(), same = []) {
   const STATE = { moved: '옮겨짐', revoked: '끊김', lost: '분실 신고함', abandoned: '개통을 마치지 않음' };
   const role = d?.state && d.state !== 'active' ? STATE[d.state] || '쓰지 않음' : d?.role === 'write' ? '백업하는 기기' : '되살리기만 하는 기기';
   const seen = Number.isFinite(Number(d?.lastSeenAt)) && Number(d.lastSeenAt) > 0 ? `마지막 연결 ${whenKo(Number(d.lastSeenAt), now)}` : '';
-  return { name: `${String(d?.name || '').trim() || '이름 없는 기기'}${d?.current ? '(이 PC)' : ''}`, role, seen };
+  // 이 PC에 앞서 깔았던 연결(sameInstall)은 「이 PC」로 부른다 — 다시 깐 PC가 제 옛 연결을 남의 기기로 읽지 않게
+  const earlier = !d?.current && sameOf(same).includes(d?.id);
+  return { name: `${String(d?.name || '').trim() || '이름 없는 기기'}${d?.current ? '(이 PC)' : earlier ? '(이 PC · 앞서 깐 것)' : ''}`, role, seen, earlier };
+}
+/** 엔진 account.sameInstall — 기기 번호 목록만 받는다 */
+export function sameOf(v) { return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; }
+
+/**
+ * 되살린 파일을 놓을 자리. 기본은 다운로드 아래 「되살린 파일 (<날짜>)」이고 엔진이 그 폴더를 만든다(place: 'default',
+ * 같은 날 두 번째는 「… 2」 — 조율 세션 25d66f324). 지키는 폴더가 다운로드를 품거나 그 안에 있어 보이면 처음부터 고르게 한다
+ * (엔진은 겹치는 자리를 OUTPUT_UNSAFE로 거절한다). chosen은 창이 기억하는 손님의 고름('default' | 'pick' | 없음)
+ */
+export function restorePlace(s, chosen, now = Date.now(), sentDefaultAt = null) {
+  const d = new Date(now), name = `되살린 파일 (${d.getMonth() + 1}월 ${d.getDate()}일)`;
+  const guarded = downloadsGuarded(s?.sources);
+  // 복구 전용 연결은 지키는 폴더가 비어 있어, 옛 PC가 지킨 폴더와 겹쳐 엔진이 작업 안에서 거절할 수 있다(Fable 셋째 F3) —
+  // 이 창이 기본 자리로 보낸 되살리기(sentDefaultAt) 뒤에 그렇게 거절됐으면 고르기로 시작한다. 실패 칸에는 어느 자리였는지가 없어,
+  // 손님이 고른 자리의 거절을 다운로드 탓으로 읽지 않게 이 창이 보낸 때로 가린다(Fable 셋째 -b FA1)
+  const sent = Number.isFinite(sentDefaultAt) ? sentDefaultAt : null;
+  const unsafe = sent !== null && [s?.lastRestoreError, s?.lastSelectedRestoreError].some((e) => e?.code === 'OUTPUT_UNSAFE' && recentOf(e, now) && ms(e.at) >= sent - MINUTE);
+  return { mode: guarded || unsafe || chosen === 'pick' ? 'pick' : 'default', name, guarded: guarded || unsafe, unsafe };
+}
+function downloadsGuarded(sources) {
+  return (Array.isArray(sources) ? sources : []).some((p) => {
+    const t = String(p || '').replace(/[\\/]+$/, '');
+    // 드라이브 맨 위 · 사용자 폴더 전체를 지키면 다운로드도 그 안이다
+    if (/^[a-z]:$/i.test(t) || /^[a-z]:[\\/]users([\\/][^\\/]+)?$/i.test(t)) return true;
+    return t.split(/[\\/]/).some((x) => /^(downloads|다운로드)$/i.test(x));
+  });
 }
 
 /**
@@ -173,7 +201,7 @@ export function homeModel(state, opts = {}) {
   const now = opts.now ?? Date.now();
   const m = baseModel(state, now, opts);
   if (m.id === 'start' || m.id === 'home-run') return m;
-  const restored = restoreNote(state && typeof state === 'object' ? state : {}, now) || undoNote(state, m.id === 'home', opts.undoSeen);
+  const restored = restoreNote(state && typeof state === 'object' ? state : {}, now, m.id === 'home-restore-error') || undoNote(state, m.id === 'home', opts.undoSeen);
   return restored ? { ...m, restored } : m;
 }
 
@@ -188,18 +216,33 @@ function undoNote(s, running, seen) {
 
 /**
  * 하루 안에 끝난 되살리기의 결과 한 줄 — 엔진은 폴더를 저절로 열지 않으므로 여기에 「되살린 폴더 열기」를 둔다.
- * 고른 파일 되살리기는 결과(lastSelectedRestore)와 실패(lastSelectedRestoreError)를, 전체 되살리기는 결과(lastRestore)를 엔진이 남긴다.
+ * 고른 파일 되살리기는 결과(lastSelectedRestore)와 실패(lastSelectedRestoreError)를, 전체 되살리기는 결과(lastRestore)와
+ * 실패(lastRestoreError { code, at, path? }, 조율 세션 25d66f324)를 엔진이 남긴다. 실패가 기본 화면의 제목이면(skipFull) 줄로 또 쓰지 않는다.
  */
-function restoreNote(s, now) {
-  const recent = (x) => x && ms(x.at) !== null && now - ms(x.at) < 86400000 && ms(x.at) <= now + MINUTE;
+const recentOf = (x, now) => !!x && ms(x.at) !== null && now - ms(x.at) < 86400000 && ms(x.at) <= now + MINUTE;
+/** 되살리다 멈춘 폴더(엔진 lastRestoreError.path) — 그 안의 파일은 다 확인하지 못했다 */
+const leftover = (e) => (typeof e?.path === 'string' && baseName(e.path) ? ` 멈춘 폴더 「${baseName(e.path)}」의 파일은 다 확인하지 못했으니 쓰지 말고 지워 주세요.` : '');
+/** 다운로드 아래 기본 자리에 만든 폴더면 그 이름(「되살린 파일 (11월 16일) 2」)을 쓴다 — 고른 자리의 엔진 이름은 쓰지 않는다 */
+const madeIn = (r) => { const b = baseName(r?.path); return /^되살린 파일 \(\d{1,2}월 \d{1,2}일\)( \d{1,2})?$/.test(b) ? `「${b}」에 ` : ''; };
+/** 하루 안에 실패한 전체 되살리기(그 뒤에 성공한 것이 없을 때) */
+function fullRestoreError(s, now) {
+  const e = s.lastRestoreError, full = s.lastRestore;
+  return recentOf(e, now) && typeof e.code === 'string' && (!full || !(ms(full.at) > ms(e.at))) ? e : null;
+}
+function restoreNote(s, now, skipFull = false) {
+  const recent = (x) => recentOf(x, now);
   const sel = s.lastSelectedRestore, full = s.lastRestore, err = s.lastSelectedRestoreError;
   const items = [];
+  const fullErr = fullRestoreError(s, now);
+  if (fullErr && !skipFull) items.push({ at: ms(fullErr.at), bad: true, text: `${whenKo(fullErr.at, now)}에 전체를 되살리지 못했습니다. ${failureText(fullErr.code)}${leftover(fullErr)}` });
   if (recent(err) && (!sel || ms(err.at) > ms(sel.at))) items.push({ at: ms(err.at), bad: true, text: `${whenKo(err.at, now)}에 고른 파일을 되살리지 못했습니다. ${failureText(err.code)}` });
-  if (recent(sel)) items.push({ at: ms(sel.at), text: `${whenKo(sel.at, now)}에 고른 파일 ${count(sel.files)}개를 되살렸습니다.`, act: { id: 'open-selected', label: '되살린 폴더 열기', kind: 'link', call: 'openSelectedRestoreFolder', withProfile: true } });
+  if (recent(sel)) items.push({ at: ms(sel.at), text: `${whenKo(sel.at, now)}에 고른 파일 ${count(sel.files)}개를 ${madeIn(sel)}되살렸습니다.`, act: { id: 'open-selected', label: '되살린 폴더 열기', kind: 'link', call: 'openSelectedRestoreFolder', withProfile: true } });
   // 엔진은 연결점 · 링크 · 특수 파일 · Windows가 담지 못하는 이름은 만들지 않고 그 수만 센다(lastRestore.skipped, 조율 세션 74a22589a)
   const skipped = Number(full?.skipped) > 0 ? Number(full.skipped) : 0;
-  if (recent(full)) items.push({ at: ms(full.at), text: `${whenKo(full.at, now)}에 가장 최근 판 전체를 되살렸습니다.${skipped ? ` ${count(skipped)}개는 만들지 않고 건너뛰었습니다. 다른 곳을 가리키는 연결, 특수 파일, Windows에서 쓸 수 없는 이름입니다.` : ''}`, act: { id: 'open-full', label: '되살린 폴더 열기', kind: 'link', call: 'openRestoreFolder' } });
-  return items.sort((a, b) => b.at - a.at)[0] || null;
+  if (recent(full)) items.push({ at: ms(full.at), text: `${whenKo(full.at, now)}에 가장 최근 판 전체를 ${madeIn(full)}되살렸습니다.${skipped ? ` ${count(skipped)}개는 만들지 않고 건너뛰었습니다. 다른 곳을 가리키는 연결, 특수 파일, Windows에서 쓸 수 없는 이름입니다.` : ''}`, act: { id: 'open-full', label: '되살린 폴더 열기', kind: 'link', call: 'openRestoreFolder' } });
+  // 실패가 기본 화면의 제목이면, 그보다 앞선 결과 줄(같은 날 먼저 성공한 되살리기)은 띄우지 않는다 — 방금 된 것으로 읽힌다(카본 A1)
+  const after = skipFull && fullErr ? items.filter((x) => x.at > ms(fullErr.at)) : items;
+  return after.sort((a, b) => b.at - a.at)[0] || null;
 }
 
 function baseModel(state, now, opts) {
@@ -347,11 +390,14 @@ function baseModel(state, now, opts) {
       hint: backed ? '목록에서 빼면 그 폴더의 백업은 30일 뒤 지워집니다.' : null, evidence: evidence(s, now, { state: 'missing' }) };
   }
 
-  // 전체 되살리기가 실패해도 엔진은 백업 실패와 같은 칸(lastError)에 적는다 — 이 창이 지켜본 되살리기의 실패면 되살리기 말로 쓴다.
-  // 창을 다시 열면 가릴 수 없어 엔진 담당에 칸을 나눠 달라고 넘겼다
-  if (reason === 'error' && opts.restoreFail && s.lastError && s.lastError === opts.restoreFail.error) {
-    return { ...base, id: 'home-restore-failed', tone: 'warn', stamp: '주의', kick: `${device} · 되살리기를 마치지 못함`, title: '파일을 되살리지 못했습니다.',
-      sub: '원래 파일은 그대로입니다. 놓을 자리를 바꿔 다시 해 보세요.', actions: [RESTORE], evidence: evidence(s, now) };
+  // 전체 되살리기가 실패하면 엔진은 lastRestoreError를 적고, 다음 전체 점검까지 지난 판을 정리하지 않으려 점검 주의(health)도 건다
+  // (engine.cjs restoreLatest). 그 주의가 방금의 되살리기 실패에서 왔으면 「점검을 마치지 못했다」가 아니라 되살리기 말로 쓴다
+  const rErr = fullRestoreError(s, now), hAt = ms(s.health?.checkedAt);
+  if (reason === 'health' && rErr && hAt !== null && Math.abs(ms(rErr.at) - hAt) <= 10 * MINUTE) {
+    return { ...base, id: 'home-restore-error', tone: 'warn', stamp: '주의', kick: `${device} · 되살리기를 마치지 못함`, title: '파일을 되살리지 못했습니다.',
+      sub: `${failureText(rErr.code)} 원래 파일과 백업은 그대로입니다.${leftover(rErr)}`,
+      box: { title: '전체 점검을 마칠 때까지 지난 판을 지우지 않습니다', text: '되살리기를 마치지 못한 뒤라, 한 번 전체 점검을 마칠 때까지는 지난 판을 정리하지 않고 둡니다.' },
+      actions: [{ ...RESTORE, label: '다시 되살리기' }, { id: 'check', label: '전체 점검', kind: 'line', call: 'checkRepository' }], evidence: evidence(s, now) };
   }
 
   // 그 밖의 주의 상태(엔진 protection.level · reason)
@@ -418,35 +464,6 @@ function baseModel(state, now, opts) {
   return { ...base, id: 'home', tone: 'ok', stamp: '안전', kick: `${device} · 매시간 저절로 지키는 중`, title: '안전합니다.',
     sub: '매시간 저절로 확인하고, 일주일에 한 번은 파일을 실제로 되살려 원본과 같은지 봅니다.',
     actions: [RESTORE, MOVE], evidence: evidence(s, now) };
-}
-
-/**
- * 이 창이 지켜본 전체 되살리기가 실패했는지 가린다. 엔진은 실패하면 lastError를 적으며 작업이 남은 채로 한 번 알리고(save),
- * 작업을 비우며 또 알린다(engine.cjs operation). 그래서 되살리기가 시작될 때의 lastError를 잡아 두고, 끝날 때 견준다(Fable FA1).
- * 엔진이 되살리기 실패를 따로 적게 되면(조율 세션에 넘김) 이 셈은 지운다. 창을 다시 연 경우는 여기서 가릴 수 없다.
- */
-const LEAVES_ERROR = new Set(['browse', 'restore-selected']);
-export function createRestoreWatch() {
-  let running = false, before = null, carry = false, fail = null;
-  return {
-    see(s) {
-      if (!s || typeof s !== 'object') return fail;
-      const kind = s.job?.kind || null, restoring = kind === 'restore';
-      if (restoring && !running) {
-        running = true; before = s.lastError || null;
-        // 앞선 되살리기 실패가 남은 채 다시 하면, 같은 글로 또 실패해도 되살리기 실패다(엔진은 작업 시작 때 lastError를 지우지 않는다 — Fable 셋째 회차 FA1)
-        carry = !!fail && fail.error === before;
-      } else if (!restoring && running) {
-        running = false;
-        fail = s.lastError && (carry || s.lastError !== before) ? { error: s.lastError } : null;
-      }
-      // lastError를 쓰는 작업(엔진 operation)이 돌면, 그 뒤에 남은 lastError는 그 작업의 것이다(셋째 회차 FA2).
-      // 목록 열기(browse)와 고른 파일 되살리기(restore-selected)는 엔진 hold()라 lastError를 건드리지 않으니 표시를 들고 간다(넷째 회차 FA1)
-      if (kind && !restoring && !LEAVES_ERROR.has(kind)) fail = null;
-      if (!s.lastError) fail = null;
-      return fail;
-    },
-  };
 }
 
 /** 사고 되돌리기 마감 — 화면이 직접 셈한다(T + 29일) */

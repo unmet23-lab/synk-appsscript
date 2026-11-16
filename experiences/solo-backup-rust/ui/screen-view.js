@@ -4,7 +4,7 @@
 // 동적인 값(경로 · 파일 이름 · 기기 이름)은 모두 h()로 막는다. 인라인 style은 쓰지 않는다(CSP) — 너비는 data-pct를 app.js가 넣는다.
 
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
-import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources } from './screen-model.js';
+import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 
 export const h = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -60,7 +60,7 @@ export function homeScreen(m, acct = null) {
   const r = m.restored;
   const done = r ? `<p class="done${r.bad ? ' bad' : ''} rise i3"><i class="dot" aria-hidden="true"></i><span>${h(r.text)}</span>${r.act ? `<button class="lnk sm" type="button" data-act="${h(r.act.id)}">${h(r.act.label)}</button>` : ''}</p>` : '';
   // 분실 신고 뒤 Google 걸음 — 확인을 받아야 그 화면의 계정 단추(continueBackup · rotateReadKey)가 열린다
-  const ack = !!acct?.googleAck, stepAck = m.googleStep ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="google-ack" aria-pressed="${ack}">${ack ? 'Google에서 지웠습니다 · 확인함' : 'Google에서 지웠습니다'}</button></div>` : '';
+  const ack = !!acct?.googleAck, stepAck = m.googleStep ? stepAckOf(ack) : '';
   // 도는 중인 단추(acct.running)와, Google 걸음을 확인하기 전의 계정 단추는 막는다
   const actions = m.actions.map((a) => (acct?.running === a.id || (m.googleStep && !ack && a.account) ? { ...a, disabled: true } : a));
   const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${m.hint ? `<span class="hint">${h(m.hint)}</span>` : ''}${gcancel(acct)}`)}</div>`;
@@ -71,14 +71,18 @@ export function homeScreen(m, acct = null) {
 /* ── 첫 시작 ───────────────────────────────── */
 /** 기기 목록의 한 줄(서버 devices · LIMIT_DEVICES의 details.devices) */
 // 좁은 판에서도 꺾이지 않게 마지막 연결은 이름 아래 작은 글로 둔다
-const deviceRow = (d, now) => { const x = deviceLine(d, now); return row(`${h(x.name)}${x.seen ? `<span class="sr"> · </span><br><span class="meta">${h(x.seen)}</span>` : ''}`, h(x.role)); };
+const deviceRow = (d, now, same) => { const x = deviceLine(d, now, same); return row(`${h(x.name)}${x.seen ? `<span class="sr"> · </span><br><span class="meta">${h(x.seen)}</span>` : ''}`, h(x.role)); };
 /** 계정 주소 — 개통 계정(account.email), 없으면 옛 복구 연결(recovery.email) */
 const mail = (s) => s?.account?.email || s?.recovery?.email || '';
 /** Google 로그인을 기다리는 동안의 「그만두기」(cancelGoogle — 창의 호출 줄을 잡지 않는 길로 간다) */
 const gcancel = (acct) => (acct?.googleWait || acct?.signing ? '<button class="lnk sm" type="button" data-act="google-cancel">Google 로그인 그만두기</button>' : '');
+/** 분실 신고 뒤 Google 걸음에서 여는 두 페이지(openGoogleAccount 'devices' · 'removal' — 주소는 엔진이 정한다) */
+const gpages = () => `<button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 열기 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-app">연결된 앱 열기 ${I.ext}</button>`;
+/** 분실 신고 뒤 Google 걸음 확인 단추 */
+export const stepAckOf = (ack) => `<div class="act rise i3">${gpages()}<button class="lnk sm" type="button" data-act="google-ack" aria-pressed="${ack}">${ack ? 'Google에서 지웠습니다 · 확인함' : 'Google에서 지웠습니다'}</button></div>`;
 /** 분실 신고 뒤 Google 걸음 상자와 확인 단추 */
 const stepBoxOf = (needStep, ack) => (needStep ? `<div class="box rise i3"><b>${h(GOOGLE_STEP.title)}</b>${h(GOOGLE_STEP.text)}</div>
-    <div class="act rise i3"><button class="lnk sm" type="button" data-act="google-ack" aria-pressed="${ack}">${ack ? 'Google에서 지웠습니다 · 확인함' : 'Google에서 지웠습니다'}</button></div>` : '');
+    ${stepAckOf(ack)}` : '');
 /** 11월 12일 오후 2:59 */
 const atKo = (t) => `${dayKo(t).replace(/ [일월화수목금토]$/, '')} ${timeKo(t)}`;
 
@@ -86,7 +90,7 @@ const atKo = (t) => `${dayKo(t).replace(/ [일월화수목금토]$/, '')} ${time
 function start1(s, acct, now, fake) {
   const signing = !!acct?.signing, limit = Array.isArray(acct?.limit) ? acct.limit.filter((d) => !d?.state || d.state === 'active') : null;
   const full = limit ? `<div class="box rise i3"><b>이 계정에 이을 수 있는 기기가 다 찼습니다</b>백업하는 기기 하나와 되살리기만 하는 기기 둘까지 이을 수 있습니다. 쓰지 않는 기기를 끊는 길은 다음 업데이트에서 엽니다. 급하면 SYNK에 연락해 주세요.</div>
-    ${limit.length ? `<div class="rows rise i3">${limit.map((d) => deviceRow(d, now)).join('')}</div>` : ''}` : '';
+    ${limit.length ? `<div class="rows rise i3">${limit.map((d) => deviceRow(d, now, s?.account?.sameInstall)).join('')}</div>` : ''}` : '';
   const hint = signing ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저가 열리면 계정을 고르고 「계속」을 누르세요.';
   // 진단(찾아낸 작업 폴더)이 엔진에 들어오기 전에는 다음 화면에서 손님이 폴더를 고른다 — 그 흐름대로 말한다(Fable F3).
   // 상태에 계정 칸이 없는 예시 화면은 시안 A의 글 그대로
@@ -121,8 +125,8 @@ function start2(s, acct, fake, now) {
   const picked = Array.isArray(s?.selection?.sources) ? s.selection.sources : [];
   const needStep = !!s?.account?.googleStepRequired, ack = !!acct?.googleAck, run = acct?.running || null;
   const blocked = !picked.length || (needStep && !ack) || !!run;
-  const stepBox = needStep ? `<div class="box rise i3"><b>${h(GOOGLE_STEP.title)}</b>${h(GOOGLE_STEP.text)}</div>
-    <div class="act rise i3"><button class="lnk sm" type="button" data-act="google-ack" aria-pressed="${ack}">${ack ? 'Google에서 지웠습니다 · 확인함' : 'Google에서 지웠습니다'}</button></div>` : '';
+  // 보호 범위도 같은 상자와 두 페이지 단추를 쓴다(카본 셋째 B1)
+  const stepBox = stepBoxOf(needStep, ack);
   const list = picked.length ? picked.map((p) => row(h(folderName(p)), `<span class="meta">${h(p)}</span>`)).join('') : '<p class="empty">아직 고른 폴더가 없습니다.</p>';
   const r = panel(acct?.repoExists ? '이어서 지킬 폴더' : '보호 범위', picked.length ? `폴더 ${count(picked.length)}개` : '', `<div class="rows">${list}</div>
     <div class="act"><button class="lnk sm" type="button" data-act="pick"${run ? ' aria-disabled="true"' : ''}>${picked.length ? '폴더 다시 고르기' : '폴더 고르기'} ${I.rarr}</button></div>
@@ -142,7 +146,7 @@ function start2(s, acct, fake, now) {
 function startRead(s, acct, now) {
   const device = h(s?.device || '이 PC'), writer = writerName(s, acct?.devices);
   const devices = Array.isArray(acct?.devices) ? acct.devices : null;
-  const devicePanel = panel('이 계정의 기기', '', devices ? (devices.length ? `<div class="rows">${devices.map((d) => deviceRow(d, now)).join('')}</div>` : '<p class="empty">기기 목록이 비어 있습니다.</p>')
+  const devicePanel = panel('이 계정의 기기', '', devices ? (devices.length ? `<div class="rows">${devices.map((d) => deviceRow(d, now, s?.account?.sameInstall)).join('')}</div>` : '<p class="empty">기기 목록이 비어 있습니다.</p>')
     : acct?.devicesError ? `<p class="empty">기기 목록을 읽지 못했습니다. ${h(acct.devicesError)}</p><div class="act"><button class="lnk sm" type="button" data-act="devices-reload">다시 읽기 ${I.rarr}</button></div>` : '<p class="empty">기기 목록을 읽는 중입니다.</p>');
   if (acct?.take) {
     const picked = pickedSources(s), needStep = !!s?.account?.googleStepRequired, ack = !!acct?.googleAck, run = acct?.running || null;
@@ -187,15 +191,23 @@ function sub(p) {
   const parts = String(p || '').split(/[\\/]/).slice(0, -1).filter(Boolean).slice(-2);
   return parts.length ? ` › ${h(parts.join(' › '))}` : '';
 }
-function restore(s, now, cat) {
+function restore(s, now, cat, ui) {
+  const place = restorePlace(s, ui?.place, now, ui?.sentDefaultAt);
   const last = s?.lastBackup?.at;
   const total = cat?.fileCount ?? s?.lastBackup?.files;
   const sel = cat?.selection?.count || 0;
+  const placeHint = place.mode === 'default' ? `누르면 다운로드 안의 「${place.name}」 폴더에 바로 놓습니다. 같은 이름이 있으면 번호를 붙여 새로 만듭니다.`
+    : place.unsafe ? '다운로드에는 놓을 수 없어, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : place.guarded ? '다운로드도 지키는 폴더라, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : '누르면 놓을 폴더를 고르는 창이 한 번 뜹니다.';
+  // 기본 자리에는 폴더 고르는 창이 없어, 전체 되살리기는 크기와 자리를 적고 한 번 더 누르게 한다(도는 되살리기를 그만두는 길이 아직 없다)
+  const confirmAll = place.mode === 'default' && !!ui?.confirmAll;
+  const allSize = s?.lastBackup?.bytes ? ` · ${size(s.lastBackup.bytes)}` : '';
+  const confirmBox = confirmAll ? `<div class="box rise i3" id="confirm-all"><b>전체 ${total ? `${count(total)}개` : ''}${h(allSize)}를 되살릴까요?</b>다운로드 안의 「${h(place.name)}」 폴더에 놓습니다. 끝날 때까지 다른 일은 기다립니다. 원래 파일은 그대로 둡니다.</div>` : '';
   const held = (s?.missingSources?.length || s?.massHold) ? notes(['찾을 수 없는 폴더나 한꺼번에 지워지기 전의 판은 지우지 않고 붙들어 두었습니다. 그 판에서 꺼내는 길은 아직 준비 중이라, 이 목록은 가장 최근 판입니다.']) : '';
   const l = `${kick(last ? `가장 최근 판 · ${h(whenKo(last, now).replace(/^(오전|오후)/, '오늘 $1'))}` : '아직 백업이 없습니다')}${say('무엇을 되살릴까요?')}
     ${then('고른 파일은 지키는 폴더 밖의 새 폴더에 되살립니다. 원래 파일은 그대로 두고, 되살린 뒤 백업과 같은지 하나하나 확인합니다.')}${held}
-    ${acts([{ id: 'restore-sel', label: sel ? `고른 ${count(sel)}개 되살리기` : '고른 파일 되살리기', kind: 'main', disabled: !sel }, { id: 'restore-all', label: total ? `전체 ${count(total)}개 되살리기` : '전체 되살리기', kind: 'line' }],
-      '<span class="hint">누르면 놓을 폴더를 고르는 창이 한 번 뜹니다.</span>')}`;
+    ${confirmBox}${confirmAll ? acts([{ id: 'restore-all-go', label: '전체 되살리기 시작', kind: 'main' }, { id: 'restore-all-no', label: '그만두기', kind: 'link' }])
+      : acts([{ id: 'restore-sel', label: sel ? `고른 ${count(sel)}개 되살리기` : '고른 파일 되살리기', kind: 'main', disabled: !sel }, { id: 'restore-all', label: total ? `전체 ${count(total)}개 되살리기` : '전체 되살리기', kind: 'line' }],
+      `<span class="hint">${h(placeHint)}</span>`)}`;
   let list;
   if (cat?.error) list = `<p class="empty">${h(cat.error)}</p><div class="act"><button class="lnk sm" type="button" data-act="reopen">목록 다시 열기 ${I.rarr}</button></div>`;
   else if (!cat || cat.loading) list = '<p class="empty">목록을 여는 중입니다.</p>';
@@ -205,9 +217,11 @@ function restore(s, now, cat) {
   const r = panel('찾기', `${total ? `${count(total)}개 가운데 · ` : ''}${last ? `${h(whenKo(last, now))} 판` : ''}`,
     `<div class="find">${I.search}<input id="find" type="search" aria-label="파일 이름으로 찾기" placeholder="파일 이름으로 찾기" autocomplete="off" spellcheck="false" maxlength="200" value="${h(cat?.query || '')}"><em aria-live="polite">${cat?.total !== undefined ? `${count(cat.total)}개 찾음` : ''}</em></div>
     <div class="files" role="group" aria-label="찾은 파일">${list}</div>${more}
-    <div class="selbar"><span><b class="num">${count(sel)}개</b> 고름${sel ? ` · <span class="num">${h(size(cat.selection.bytes))}</span>` : ''}</span>${sel ? '<button class="lnk sm" type="button" data-act="clear">고른 것 비우기</button>' : ''}</div>`);
+    <div class="selbar"><span><b class="num">${count(sel)}개</b> 고름${sel ? ` · <span class="num">${h(size(cat.selection.bytes))}</span>` : ''}${sel ? ' <button class="lnk sm" type="button" data-act="clear">고른 것 비우기</button>' : ''}</span>
+      <span>놓을 자리 ${place.mode === 'default' ? `<b>다운로드 › ${h(place.name)}</b> <button class="lnk sm" type="button" data-act="place-pick">자리 바꾸기</button>` : `<b>누를 때 고름</b>${place.guarded ? '' : ' <button class="lnk sm" type="button" data-act="place-default">다운로드에 놓기</button>'}`}</span></div>`);
   return { kind: 'flow', tone: 'ok', here: '파일 되살리기', back: 'home', top: [{ id: 'home', label: '닫기' }], html: flow(l, r),
-    acts: { 'restore-sel': { id: 'restore-sel', call: 'restoreSelected' }, 'restore-all': { id: 'restore-all', call: 'restoreLatest' }, more: { id: 'more' }, clear: { id: 'clear' } } };
+    acts: { 'restore-sel': { id: 'restore-sel', call: 'restoreSelected' }, 'restore-all': place.mode === 'default' ? { id: 'restore-all', confirmAll: true } : { id: 'restore-all', call: 'restoreLatest' },
+      'restore-all-go': { id: 'restore-all-go', call: 'restoreLatest' }, more: { id: 'more' }, clear: { id: 'clear' } } };
 }
 
 /* ── 쓰는 중인 파일 ────────────────────────── */
@@ -338,9 +352,9 @@ function undo2Example() {
     ${acts([{ id: 'next', label: 'Google로 확인하고 되돌리기', kind: 'main', icon: 'google' }], '<span class="hint">누르면 Google 로그인을 한 번 더 합니다.</span>')}`;
   const r = panel('그 시각의 가장 최근 판', `${h(u.versionKo)} 판`, `<div class="rows">${EX.folders.map((f, i) => row(h(f.name), `${u.byFolder[i]}개`)).join('')}${row('합계', `${u.files}개 · ${u.size}`)}${row('지금 상태의 백업', '<span class="x">열 수 없음</span>', '숨겨진 묶음이 많아서')}</div>
     <h3>이 PC가 감염됐을 수 있으면</h3><p class="foot">먼저 치료한 뒤에 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요. 깨끗한 다른 PC에서 되돌리는 길은 다음 업데이트에서 엽니다.</p>
-    <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-app">연결된 앱 ${I.ext}</button></div>`);
+    <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-apps">연결된 앱 ${I.ext}</button></div>`);
   return { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [2, 3], back: 'undo-1', top: [{ id: 'back', label: '뒤로' }, { id: 'home', label: '닫기' }], html: flow(l, r),
-    acts: { next: { id: 'next', pending: '되돌리기' }, 'g-dev': { id: 'g-dev', pending: 'Google 기기 관리 열기' }, 'g-app': { id: 'g-app', pending: '연결된 앱 열기' } } };
+    acts: { next: { id: 'next', pending: '되돌리기' } } };
 }
 
 /** 서버가 고른 되돌릴 시각의 까닭(server/detect.mjs suggest) */
@@ -395,9 +409,9 @@ function undo2(undo, now) {
     : `<p class="empty">${undo?.planError ? h(undo.planError) : '계획을 세우는 중입니다.'}</p>`;
   const r = panel('그 시각으로 되돌리면', when ? `${h(when)} 기준` : '', `${body}
     <h3>이 PC가 감염됐을 수 있으면</h3><p class="foot">먼저 치료한 뒤에 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요. 깨끗한 다른 PC에서 되돌리는 길은 다음 업데이트에서 엽니다.</p>
-    <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-app">연결된 앱 ${I.ext}</button></div>`);
+    <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-apps">연결된 앱 ${I.ext}</button></div>`);
   return { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [2, 3], back: 'undo-1', top: [{ id: 'back', label: '뒤로' }, { id: 'home', label: '닫기' }], html: flow(l, r),
-    acts: { run: { id: 'run', call: 'restoreRun', arg: at, google: true, then: 'undo-3' }, 'g-dev': { id: 'g-dev', pending: 'Google 기기 관리 열기' }, 'g-app': { id: 'g-app', pending: '연결된 앱 열기' } } };
+    acts: { run: { id: 'run', call: 'restoreRun', arg: at, google: true, then: 'undo-3' } } };
 }
 
 function undo3() {
@@ -483,10 +497,10 @@ function lost1Real(s, acct) {
     acts: { next: { id: 'next', call: 'reportLost', arg: t?.id, google: true, after: 'lost' }, drawer: { id: 'drawer', drawer: true } } };
 }
 
-/** 분실 신고 2(실제 상태) — 받은 googleRemovalUrl을 글로 보이고(여는 메서드는 조율 세션에 부탁), 확인한 뒤 rotateReadKey({googleStepDone: true}) */
+/** 분실 신고 2(실제 상태) — 두 페이지를 openGoogleAccount로 열고 주소도 글로 남긴다(브라우저를 못 열 때). 확인한 뒤 rotateReadKey({googleStepDone: true}) */
 function lost2Real(s, acct, now) {
   const lost = acct?.lost || null, name = String(lost?.name || '').trim() || '잃어버린 기기', run = acct?.running || null;
-  const url = typeof lost?.url === 'string' ? lost.url.replace(/^https:\/\//, '') : '';
+  const url = String((typeof lost?.url === 'string' && lost.url) || s?.account?.googleRemovalUrl || '').replace(/^https:\/\//, '');
   const l = `${kick(`${h(s?.device || '이 PC')} · 신고 뒤 남은 걸음`)}${say('Google에서도', '그 기기를 내보내세요.')}${then('백업 연결은 끊었습니다. 그 기기에 남은 Google 로그인도 끊어야 합니다.')}
     <div class="rise i3">${steps([
       { st: 'now', h: `Google 기기 관리에서 「${h(name)}」 로그아웃`, p: '훔쳐 갔을 수 있으면 Google 비밀번호도 바꾸세요. 주소: myaccount.google.com/device-activity', lk: `<button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 열기 ${I.ext}</button>` },
@@ -495,7 +509,7 @@ function lost2Real(s, acct, now) {
     ${acts([{ id: 'next', label: '두 걸음을 마쳤습니다 · 새 복구 정보 맡기기', kind: 'main', disabled: !!run }], `<span class="hint">앱은 1번을 알 수 없어 여기서 확인을 받습니다. 누르기 전에는 새 복구 정보를 맡기지 않습니다.</span>${gcancel(acct)}`)}`;
   const r = panel('분실 신고 확인서', '', `<div class="rows">${row('신고한 기기', h(name))}${lost?.at ? row('신고한 때', h(whenKo(lost.at, now))) : ''}${row('백업 연결', '끊음')}${row('백업', '그대로')}${row('Google에서 로그아웃', '기다림')}${row('「업무 백업」 접근 지우기', '기다림')}${row('새 복구 정보', '그다음')}</div>`);
   return { kind: 'flow', tone: 'warn', here: '분실 신고', seg: [2, 2], top: [{ id: 'home', label: '닫기' }], html: flow(l, r),
-    acts: { next: { id: 'next', call: 'rotateReadKey', arg: { googleStepDone: true }, google: 'maybe', after: 'lost-done' }, 'g-dev': { id: 'g-dev', pending: 'Google 기기 관리 열기' }, 'g-app': { id: 'g-app', pending: '연결된 앱 열기' } } };
+    acts: { next: { id: 'next', call: 'rotateReadKey', arg: { googleStepDone: true }, google: 'maybe', after: 'lost-done' } } };
 }
 
 
@@ -522,7 +536,7 @@ function lost2() {
     ${acts([{ id: 'next', label: '두 걸음을 마쳤습니다 · 다시 로그인', kind: 'main' }], '<span class="hint">2번은 앱이 알아채지만 1번은 알 수 없어 여기서 확인을 받습니다. 누르기 전에는 새 복구 정보를 맡기지 않습니다.</span>')}`;
   const r = panel('분실 신고 확인서', '', `<div class="rows">${row('신고한 때', h(EX.lost.ko))}${row('신고한 곳', h(EX.newDevice))}${row('백업 연결', '끊음')}${row('전에 받은 복구 코드', '쓸 수 없음')}${row('백업', '그대로')}${row('Google에서 로그아웃', '기다림')}${row('「업무 백업」 접근 지우기', '기다림')}${row('새 복구 코드', '그다음')}</div>`);
   return { kind: 'flow', tone: 'warn', here: '분실 신고', seg: [2, 2], top: [], html: flow(l, r),
-    acts: { next: { id: 'next', to: 'home' }, 'g-dev': { id: 'g-dev', pending: 'Google 기기 관리 열기' }, 'g-app': { id: 'g-app', pending: '연결된 앱 열기' } } };
+    acts: { next: { id: 'next', to: 'home' } } };
 }
 
 /* ── 복구 코드 ─────────────────────────────── */
@@ -583,7 +597,9 @@ function myDevices(st, extra, R) {
   const role = st.account.role === 'read' ? '되살리기만 하는 기기' : '백업하는 기기';
   const list = Array.isArray(devices) ? devices.filter((d) => !d.current) : null;
   // 다른 active 기기 줄마다 「분실 신고」(reportLost — 조율 세션 c725f319c 뒤). 끊긴 · 분실 신고한 기기에는 단추가 없다
-  const rows = list ? list.map((d) => { const x = deviceLine(d, now); const can = d.state === 'active' && typeof d.id === 'string';
+  // 이 PC에 앞서 깐 연결(sameInstall)은 분실 신고하지 않는다 — 잃어버린 기기가 아니다
+  const same = sameOf(st.account.sameInstall);
+  const rows = list ? list.map((d) => { const x = deviceLine(d, now, same); const can = d.state === 'active' && typeof d.id === 'string' && !x.earlier;
     return `<div class="dr sub"><span class="nm">${h(x.name)}</span><span class="vl">${h(x.role)}${x.seen ? ` · ${h(x.seen)}` : ''}</span>${can ? `<button class="lnk sm" type="button" data-act="lost-dev" data-device="${h(d.id)}" aria-label="${h(`「${x.name}」 분실 신고`)}">분실 신고</button>` : ''}</div>`; }).join('') : '';
   return `${R('내 기기', `${me} · ${role}${list && !list.length ? ' · 이 계정에 이은 다른 기기는 없습니다' : list ? '. 잃어버린 기기가 있으면 그 줄에서 분실 신고합니다' : extra?.devicesError ? ' · 다른 기기를 읽지 못했습니다. 서랍을 다시 열면 다시 읽습니다' : ' · 다른 기기를 읽는 중입니다'}`)}${rows}`;
 }
@@ -602,7 +618,7 @@ export function renderScreen(id, ctx) {
     case 'start-1': return start1(s, ctx.acct, now, fake);
     case 'start-2': return start2(s, ctx.acct, fake, now);
     case 'start-3': return start3(s, fake);
-    case 'restore': return restore(s, now, ctx.catalog);
+    case 'restore': return restore(s, now, ctx.catalog, ctx.ui);
     case 'partial': case 'partial-std': return partial(s, now, partialMode(id, s, fake));
     case 'move-0': return move0(s, now, fake);
     case 'move-1': return move1(ctx.ui);

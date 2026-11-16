@@ -201,9 +201,8 @@ test('기본 화면: 엔진의 실제 답과 맞춘다(Fable F1 · F2 · F9 · F
   assert.doesNotMatch(homeModel({ ...base, lastRestore: { path: 'x', at: new Date(NOW - 60000).toISOString() } }, { now: NOW }).restored.text, /건너뛰었습니다/);
   const old = homeModel({ ...base, lastRestore: { path: 'x', at: new Date(NOW - 2 * 86400000).toISOString() } }, { now: NOW });
   assert.equal(old.restored, undefined);
-  const failed = { ...STATES['home-error'], lastError: '복구 폴더를 만들지 못했습니다.' };
-  assert.equal(homeModel(failed, { now: NOW, restoreFail: { error: '복구 폴더를 만들지 못했습니다.' } }).id, 'home-restore-failed');
-  assert.equal(homeModel(failed, { now: NOW }).id, 'home-error');
+  // 백업 실패(lastError)는 되살리기 실패로 읽지 않는다 — 엔진이 되살리기 실패를 lastRestoreError에 따로 적는다(조율 세션 25d66f324)
+  assert.equal(homeModel({ ...STATES['home-error'], lastError: '복구 폴더를 만들지 못했습니다.' }, { now: NOW }).id, 'home-error');
   const restoring = homeModel({ ...base, job: { kind: 'restore', stage: '복구 중', percent: 5 } }, { now: NOW });
   assert.doesNotMatch(restoring.sub, /엽니다\./);
   // F9 — 다시 로그인은 첫 시작 화면으로 보내지 않고, 복구 정보는 Google이 이어져 있지 않으면 먼저 잇는다
@@ -223,7 +222,7 @@ test('기본 화면: 엔진의 실제 답과 맞춘다(Fable F1 · F2 · F9 · F
 
 test('실패 글: 기다려도 풀리지 않는 까닭에 「잠시 뒤」라 하지 않는다(Fable F3)', async () => {
   const { failureText } = await load('state-store.js');
-  for (const code of ['OUTPUT_UNSAFE', 'NO_SPACE', 'CATALOG_TOO_LARGE', 'SELECTION_LIMIT', 'CREDENTIAL_REQUIRED', 'NO_SNAPSHOT', 'UNSAFE_MANIFEST', 'LAST_FOLDER', 'INTEGRITY_FAILED']) {
+  for (const code of ['RESTORE_FAILED', 'ENOSPC', 'EACCES', 'EPERM', 'ENOENT', 'OUTPUT_UNSAFE', 'NO_SPACE', 'CATALOG_TOO_LARGE', 'SELECTION_LIMIT', 'CREDENTIAL_REQUIRED', 'NO_SNAPSHOT', 'UNSAFE_MANIFEST', 'LAST_FOLDER', 'INTEGRITY_FAILED']) {
     assert.doesNotMatch(failureText(code), /잠시 뒤/, code);
   }
   assert.match(failureText('OUTPUT_UNSAFE'), /지키는 폴더 밖/);
@@ -242,31 +241,126 @@ test('그리기: 엔진 목록 줄의 번호 붙은 폴더 이름을 손님 말�
   assert.doesNotMatch(renderScreen('move-0', { state: STATES.home, now: NOW, fake: true }).html, /다음 업데이트에서 열립니다/);
 });
 
-test('전체 되살리기 실패 가리기: 엔진의 실제 알림 순서(작업이 남은 채 lastError를 적고, 그 뒤 작업을 비움)로 본다(Fable FA1)', async () => {
-  const { createRestoreWatch } = await load('screen-model.js');
-  const run = (states) => { const w = createRestoreWatch(); let last = null; for (const s of states) last = w.see(s); return last; };
-  const job = { kind: 'restore', stage: '복구 중', percent: null };
-  // 실패: 시작 → 단계 → save(작업 남음, lastError 적힘) → 작업 비움
-  assert.deepEqual(run([{ lastError: null }, { job, lastError: null }, { job: { ...job, stage: '내려받는 중' }, lastError: null }, { job, lastError: '복구 폴더를 만들지 못했습니다.' }, { job: null, lastError: '복구 폴더를 만들지 못했습니다.' }]), { error: '복구 폴더를 만들지 못했습니다.' });
-  // 앞서 백업 실패가 있었는데 되살리기가 성공해 지워졌으면 아무것도 아니다
-  assert.equal(run([{ lastError: '백업 실패' }, { job, lastError: '백업 실패' }, { job, lastError: null }, { job: null, lastError: null }]), null);
-  // 앞서 백업 실패가 있었고 되살리기도 실패하면 되살리기 실패다
-  assert.deepEqual(run([{ lastError: '백업 실패' }, { job, lastError: '백업 실패' }, { job, lastError: '되살리기 실패' }, { job: null, lastError: '되살리기 실패' }]), { error: '되살리기 실패' });
-  // 되살리기가 아닌 작업의 실패는 건드리지 않는다
-  assert.equal(run([{ lastError: null }, { job: { kind: 'backup' }, lastError: null }, { job: null, lastError: '백업 실패' }]), null);
-  // 실패를 알린 뒤 lastError가 지워지면(다음 백업 성공) 되살리기 실패도 내린다
-  const w = createRestoreWatch(); w.see({ job, lastError: null }); w.see({ job: null, lastError: 'X' });
-  assert.equal(w.see({ job: null, lastError: null }), null);
-  // 같은 글로 두 번 실패해도 둘째도 되살리기 실패다(Fable 셋째 회차 FA1 — 엔진은 작업 시작 때 lastError를 지우지 않는다)
-  const E = '분리된 복구 폴더를 선택해 주세요.';
-  assert.deepEqual(run([{ lastError: null }, { job, lastError: null }, { job, lastError: E }, { job: null, lastError: E }, { job, lastError: E }, { job, lastError: E }, { job: null, lastError: E }]), { error: E });
-  // 실제 화면 길: 실패 화면의 「파일 되살리기」는 목록 열기(browse)를 거친다. 목록만 보고 돌아와도, 이어서 같은 글로 또 실패해도 되살리기 실패다(넷째 회차 FA1)
-  const browse = { kind: 'browse', stage: '파일 목록 확인 중', percent: null };
-  assert.deepEqual(run([{ lastError: null }, { job, lastError: null }, { job, lastError: E }, { job: null, lastError: E }, { job: browse, lastError: E }, { job: null, lastError: E }]), { error: E });
-  assert.deepEqual(run([{ lastError: null }, { job, lastError: null }, { job, lastError: E }, { job: null, lastError: E }, { job: browse, lastError: E }, { job: null, lastError: E }, { job, lastError: E }, { job: null, lastError: E }]), { error: E });
-  assert.deepEqual(run([{ lastError: null }, { job, lastError: null }, { job: null, lastError: E }, { job: { kind: 'restore-selected' }, lastError: E }, { job: null, lastError: E }]), { error: E });
-  // 되살리기 실패 뒤 예약 백업이 같은 글로 실패하면 그것은 백업 실패다(FA2)
-  assert.equal(run([{ lastError: null }, { job, lastError: null }, { job: null, lastError: E }, { job: { kind: 'backup' }, lastError: E }, { job: null, lastError: E }]), null);
+test('셋째: 전체 되살리기 실패 칸(lastRestoreError)과 점검 주의를 되살리기 말로 쓴다(조율 세션 25d66f324)', async () => {
+  const { homeModel } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const { findBanned } = await load('banned-words.js');
+  const m = homeModel(STATES['home-restore-error'], { now: NOW });
+  assert.equal(m.id, 'home-restore-error');
+  assert.equal(m.title, '파일을 되살리지 못했습니다.');
+  assert.match(m.sub, /빈 공간과 인터넷 연결/);
+  assert.doesNotMatch(m.sub, /멈춘 폴더/, '폴더를 만들기 전의 실패에는 멈춘 폴더 말이 없다');
+  // 쓰는 도중의 실패(ENOSPC · 만든 폴더 있음)는 그 폴더를 쓰지 말라고 한다(Fable 셋째 F4 — 엔진이 실제로 적는 꼴)
+  const mid = { ...STATES['home-restore-error'], lastRestoreError: { code: 'ENOSPC', at: STATES['home-restore-error'].lastRestoreError.at, path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)' } };
+  const mm = homeModel(mid, { now: NOW });
+  assert.match(mm.sub, /빈 공간이 모자랍니다/);
+  assert.match(mm.sub, /「되살린 파일 \(11월 13일\)」의 파일은 다 확인하지 못했으니/);
+  assert.equal(m.restored, undefined, '제목이 된 실패를 줄로 또 쓰지 않는다');
+  assert.deepEqual(m.actions.map((a) => a.id), ['restore', 'check']);
+  assert.equal(m.actions[0].label, '다시 되살리기');
+  assert.doesNotMatch(renderScreen('home', { state: STATES['home-restore-error'], model: m, now: NOW }).html, /백업 점검을 마치지 못했습니다/);
+  // 카본 A1 — 같은 날 먼저 성공한 되살리기 줄을 실패 제목 아래에 띄우지 않는다. 실패 뒤의 고른 파일 되살리기는 띄운다
+  const earlierOk = { ...STATES['home-restore-error'], lastRestore: { path: 'x', at: new Date(NOW - 3 * 3600000).toISOString() }, lastSelectedRestore: { path: 'y', at: new Date(NOW - 2 * 3600000).toISOString(), files: 2 } };
+  assert.equal(homeModel(earlierOk, { now: NOW }).restored, undefined);
+  const laterSel = { ...earlierOk, lastSelectedRestore: { path: 'y', at: new Date(NOW - 60000).toISOString(), files: 2 } };
+  assert.match(homeModel(laterSel, { now: NOW }).restored.text, /고른 파일 2개를 되살렸습니다/);
+  // 점검 주의가 되살리기와 따로 걸린 것(다른 때)이면 점검 말 그대로
+  const apart = { ...STATES['home-restore-error'], health: { ...STATES['home-restore-error'].health, checkedAt: new Date(NOW - 5 * 3600000).toISOString() } };
+  assert.equal(homeModel(apart, { now: NOW }).id, 'home-health');
+  assert.match(homeModel(apart, { now: NOW }).restored.text, /전체를 되살리지 못했습니다/);
+  // 점검 주의 없이 실패만(놓을 자리 거절)이면 기본 화면에 한 줄
+  const u = homeModel(STATES['home-restore-unsafe'], { now: NOW });
+  assert.equal(u.id, 'home');
+  assert.equal(u.restored.bad, true);
+  assert.match(u.restored.text, /오후 2:21에 전체를 되살리지 못했습니다\. 지키는 폴더 밖의 자리를/);
+  assert.deepEqual(findBanned(u.restored.text), []);
+  assert.deepEqual(findBanned(m.sub), []);
+  // 그 뒤에 성공했거나 하루가 지났으면 내린다 · 백업 실패와 섞지 않는다
+  assert.match(homeModel({ ...STATES['home-restore-unsafe'], lastRestore: { path: 'x', at: new Date(NOW - 60000).toISOString() } }, { now: NOW }).restored.text, /전체를 되살렸습니다/);
+  assert.equal(homeModel({ ...STATES['home-restore-unsafe'], lastRestoreError: { code: 'OUTPUT_UNSAFE', at: new Date(NOW - 2 * 86400000).toISOString() } }, { now: NOW }).restored, undefined);
+  assert.equal(homeModel({ ...STATES.home, lastRestoreError: { code: 'NO_SPACE', at: new Date(NOW - 2 * 86400000).toISOString() }, health: STATES['home-restore-error'].health, protection: STATES['home-restore-error'].protection }, { now: NOW }).id, 'home-health');
+});
+
+test('셋째: 되살릴 자리 — 기본은 다운로드 › 되살린 파일 (날짜), 「자리 바꾸기」, 다운로드를 지키면 처음부터 고르기', async () => {
+  const { restorePlace } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  assert.deepEqual(restorePlace(STATES.home, null, NOW), { mode: 'default', name: '되살린 파일 (11월 13일)', guarded: false, unsafe: false });
+  assert.equal(restorePlace(STATES.home, 'pick', NOW).mode, 'pick');
+  for (const p of ['C:\\Users\\studio\\Downloads', 'C:\\Users\\studio\\Downloads\\견적', 'C:\\Users\\studio', 'D:\\', 'C:']) {
+    const r = restorePlace({ sources: [p] }, 'default', NOW);
+    assert.equal(r.mode, 'pick', p); assert.equal(r.guarded, true, p);
+  }
+  assert.equal(restorePlace({ sources: ['C:\\Users\\studio\\Documents'] }, null, NOW).guarded, false);
+  const cat = { token: 't', profile: 'b2', rows: [], total: 0, fileCount: 3, selection: { count: 0, bytes: 0, revision: 1 } };
+  const draw = (state, ui) => renderScreen('restore', { state, now: NOW, catalog: cat, ui }).html;
+  const d = draw(STATES.home, {});
+  assert.match(d, /놓을 자리 <b>다운로드 › 되살린 파일 \(11월 13일\)<\/b>/);
+  assert.match(d, /data-act="place-pick"/);
+  assert.doesNotMatch(d, /고르는 창이/);
+  const p = draw(STATES.home, { place: 'pick' });
+  assert.match(p, /누를 때 고름/); assert.match(p, /data-act="place-default"/); assert.match(p, /고르는 창이 한 번 뜹니다/);
+  const g = draw({ ...STATES.home, sources: ['C:\\Users\\studio\\Downloads'] }, {});
+  assert.doesNotMatch(g, /data-act="place-default"/); assert.match(g, /다운로드도 지키는 폴더라/);
+  // Fable 셋째 F1 — 기본 자리에서도 단추 아래에 자리를 쓰고, 전체 되살리기는 확인 한 걸음을 거친다
+  assert.match(d, /다운로드 안의 「되살린 파일 \(11월 13일\)」 폴더에 바로 놓습니다\. 같은 이름이 있으면 번호를/);
+  const all = renderScreen('restore', { state: STATES.home, now: NOW, catalog: cat, ui: {} });
+  assert.equal(all.acts['restore-all'].call, undefined); assert.equal(all.acts['restore-all'].confirmAll, true);
+  const sure = renderScreen('restore', { state: STATES.home, now: NOW, catalog: cat, ui: { confirmAll: true } });
+  assert.match(sure.html, /전체 3개 · 18\.4GB를 되살릴까요\?/); assert.match(sure.html, /data-act="restore-all-go"/); assert.match(sure.html, /data-act="restore-all-no"/);
+  assert.equal(sure.acts['restore-all-go'].call, 'restoreLatest');
+  assert.equal(renderScreen('restore', { state: STATES.home, now: NOW, catalog: cat, ui: { place: 'pick' } }).acts['restore-all'].call, 'restoreLatest', '고르는 창이 확인을 겸한다');
+  // Fable 셋째 F3 — 하루 안에 놓을 자리가 겹쳐 거절됐으면(복구 전용 연결처럼 지키는 폴더가 비어도) 고르기로 시작한다
+  const refused = { ...STATES['home-restore-read'], lastSelectedRestoreError: { code: 'OUTPUT_UNSAFE', at: new Date(NOW - 600000).toISOString() } };
+  const sentAt = NOW - 660000;
+  assert.deepEqual(restorePlace(refused, null, NOW, sentAt), { mode: 'pick', name: '되살린 파일 (11월 13일)', guarded: true, unsafe: true });
+  assert.equal(restorePlace({ ...refused, lastSelectedRestoreError: { code: 'OUTPUT_UNSAFE', at: new Date(NOW - 2 * 86400000).toISOString() } }, null, NOW, sentAt).mode, 'default');
+  assert.match(draw(refused, { sentDefaultAt: sentAt }), /다운로드에는 놓을 수 없어/);
+  // Fable 셋째 -b FA1 — 손님이 고른 자리의 거절(기본 자리로 보낸 적이 없거나, 그보다 앞선 거절)은 다운로드 탓으로 읽지 않는다
+  assert.equal(restorePlace(refused, null, NOW).mode, 'default');
+  assert.equal(restorePlace(refused, null, NOW, NOW - 60000).mode, 'default');
+  // 확인 상자는 새로 뜰 때 읽힌다
+  // 확인 글은 열릴 때 창이 한 번만 알린다 — 다시 그릴 때마다 읽히는 role=alert는 두지 않는다(-c FA2)
+  const box = renderScreen('restore', { state: STATES.home, now: NOW, catalog: cat, ui: { confirmAll: true } }).html;
+  assert.match(box, /<div class="box rise i3" id="confirm-all"><b>전체/); assert.doesNotMatch(box, /role="alert"/);
+});
+
+test('셋째: 결과 줄에 실제로 만든 폴더 이름(Fable 셋째 F2) · 되돌리기의 「연결된 앱」은 연결된 앱 페이지(F5)', async () => {
+  const { homeModel } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const at = new Date(NOW - 60000).toISOString();
+  assert.match(homeModel({ ...STATES.home, lastRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일) 2', at } }, { now: NOW }).restored.text, /전체를 「되살린 파일 \(11월 13일\) 2」에 되살렸습니다/);
+  assert.match(homeModel({ ...STATES.home, lastSelectedRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', at, files: 3 } }, { now: NOW }).restored.text, /고른 파일 3개를 「되살린 파일 \(11월 13일\)」에 되살렸습니다/);
+  // 손님이 고른 자리의 엔진 이름(선택복구-…)은 쓰지 않는다
+  assert.match(homeModel({ ...STATES.home, lastSelectedRestore: { path: 'E:\\보관\\선택복구-2026-11-13T05-39-00-000Z-abcdef123456', at, files: 3 } }, { now: NOW }).restored.text, /고른 파일 3개를 되살렸습니다/);
+  const u2 = renderScreen('undo-2', { state: STATES.home, now: NOW, undo: null, fake: true }).html;
+  assert.match(u2, /data-act="g-apps"/); assert.doesNotMatch(u2, /data-act="g-app"/);
+});
+
+test('셋째: Google 계정 페이지 단추(openGoogleAccount)와 같은 PC의 앞선 연결(sameInstall)', async () => {
+  const { homeModel, deviceLine } = await load('screen-model.js');
+  const { renderScreen, drawer } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (id, state, extra = {}) => renderScreen(id, { state, model: homeModel(state, { now: NOW }), now: NOW, ...extra });
+  // Google 걸음 상자가 있는 화면마다 두 페이지 단추가 있다(창이 click에서 openGoogleAccount('devices' · 'removal')로 보낸다)
+  for (const [id, st, extra] of [['home', STATES['home-lost-step']], ['lost-2', STATES['home-lost-step'], { acct: { lost: { name: '거실 PC', at: NOW } } }], ['start-2', { ...STATES['start-read'], account: { ...STATES['start-read'].account, googleStepRequired: true } }], ['start-2', STATES['start-google-step']]]) {
+    const html = draw(id, st, extra).html;
+    assert.match(html, /data-act="g-dev"/, id); assert.match(html, /data-act="g-app"/, id);
+  }
+  const lost2 = draw('lost-2', STATES['home-lost-step'], { acct: { lost: { name: '거실 PC', at: NOW } } });
+  assert.equal(lost2.acts['g-dev'], undefined, '「준비 중」 표식을 걷었다');
+  assert.match(lost2.html, /myaccount\.google\.com\/connections/, '창을 다시 열어도 상태의 정리 페이지 주소를 쓴다');
+  // 같은 PC의 앞선 연결은 「이 PC · 앞서 깐 것」이고 분실 신고 단추가 없다
+  assert.equal(deviceLine({ id: 'o'.repeat(12), name: '작업 노트북', state: 'active', role: 'read' }, NOW, ['o'.repeat(12)]).name, '작업 노트북(이 PC · 앞서 깐 것)');
+  assert.equal(deviceLine({ id: 'o'.repeat(12), name: '작업 노트북', state: 'active', role: 'read' }, NOW, []).name, '작업 노트북');
+  const st = { ...STATES['home-writekey'], account: { ...STATES['home-writekey'].account, sameInstall: ['o'.repeat(12)] } };
+  const devices = [{ id: 'd'.repeat(12), name: '작업 노트북', current: true, state: 'active', role: 'write' }, { id: 'o'.repeat(12), name: '작업 노트북', state: 'active', role: 'read' }, { id: 'x'.repeat(12), name: '거실 PC', state: 'active', role: 'read' }];
+  const dr = drawer(st, { devices, now: NOW });
+  assert.match(dr, /작업 노트북\(이 PC · 앞서 깐 것\)/);
+  assert.equal((dr.match(/data-act="lost-dev"/g) || []).length, 1);
+  assert.match(dr, /data-device="xxxxxxxxxxxx"/);
 });
 
 test('예약이 빠졌으면 다음 확인 시각을 쓰지 않는다 · 마지막 폴더 글 · 이 창의 일로 막힘(Fable FA3 · FA5 · FA6)', async () => {
@@ -325,7 +419,7 @@ test('개통: 첫 시작의 걸음, 이어서 백업 · 연결 다시 받기 · 
   const devices = [{ id: 'a'.repeat(12), name: '사무실 PC', role: 'write', state: 'active', current: false }, { id: 'b'.repeat(12), name: '새 데스크톱', role: 'read', state: 'active', current: true }];
   assert.equal(writerName({ account: { writer: null } }, devices), '사무실 PC');
   assert.equal(writerName({ account: { writer: null } }, []), null);
-  assert.deepEqual(deviceLine({ name: '옛 노트북', role: 'write', state: 'lost', lastSeenAt: Date.parse('2026-11-12T10:00:00+09:00') }, NOW), { name: '옛 노트북', role: '분실 신고함', seen: '마지막 연결 어제 오전 10:00' });
+  assert.deepEqual(deviceLine({ name: '옛 노트북', role: 'write', state: 'lost', lastSeenAt: Date.parse('2026-11-12T10:00:00+09:00') }, NOW), { name: '옛 노트북', role: '분실 신고함', seen: '마지막 연결 어제 오전 10:00', earlier: false });
   assert.equal(deviceLine({ name: '새 데스크톱', role: 'read', state: 'active', current: true }, NOW).name, '새 데스크톱(이 PC)');
   // 쓰는 자리가 다른 PC로 간 옛 PC(엔진 movedTo, def8dde6d) — 「이 PC로 다시 백업」은 takeWriteSeat
   const moved = homeModel(STATES['home-moved'], { now: NOW });

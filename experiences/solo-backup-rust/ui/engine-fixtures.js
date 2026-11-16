@@ -43,6 +43,12 @@ export const STATES = {
   'home-probe': { ...base, lastProbe: { ...base.lastProbe, result: 'failed', reason: 'size-mismatch' }, probeHold: { since: at('2026-11-13T10:02:00+09:00'), cause: 'size-mismatch' } },
   'home-error': { ...base, lastError: 'B2 저장소에 연결하지 못했습니다: restic exit 1', protection: { level: 'attention', reason: 'error', nextAction: 'protect' } },
   'home-startup': { ...base, launchAtLogin: false, protection: { level: 'partial', reason: 'startup', nextAction: 'protect' } },
+  // 전체 되살리기 실패(lastRestoreError — 조율 세션 25d66f324). 엔진은 restic 단계의 실패에 점검 주의도 건다
+  'home-restore-error': { ...base, health: { status: 'attention', checkedAt: at('2026-11-13T14:21:00+09:00'), detail: '복구 또는 검증이 끝나지 않았습니다.' }, protection: { level: 'attention', reason: 'health', nextAction: 'check' },
+    lastRestoreError: { code: 'RESTORE_FAILED', at: at('2026-11-13T14:21:00+09:00') } },
+  'home-restore-unsafe': { ...base, lastRestoreError: { code: 'OUTPUT_UNSAFE', at: at('2026-11-13T14:21:00+09:00') } },
+  // 다운로드도 지키는 PC — 되살릴 자리를 처음부터 고르게 한다
+  'home-downloads': { ...base, sources: [...SOURCES.slice(0, 3), 'C:\\Users\\studio\\Downloads'] },
   'home-restored': { ...base, lastSelectedRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 2026-11-13', at: at('2026-11-13T14:20:00+09:00'), files: 3, bytes: 6381567 } },
   start: { version: '0.7.0', configured: false, sources: [], job: null, protection: { level: 'setup', reason: 'setup', nextAction: 'setup' } },
   // 개통(account) 갈래 — 워커 state()의 account · selection 모양(engine/src/account.cjs state())
@@ -53,7 +59,9 @@ export const STATES = {
   'start-google-step': { ...first, selection: { sources: SOURCES.slice(0, 3), target: null }, account: acct({ ...signed('write'), googleStepRequired: true }) },
   'start-read': { ...first, account: acct({ ...signed('read'), writer: '작업 노트북' }) },
   'home-writekey': { ...base, account: acct({ ...signed('write'), device: base.device, needs: ['write-key'] }) },
-  'home-lost-step': { ...base, account: acct({ ...signed('write'), device: base.device, googleStepRequired: true, needs: ['read-key'] }) },
+  // 이 PC에 앞서 깔았던 연결이 계정에 남은 PC(account.sameInstall — 조율 세션 616e9dce5)
+  'home-same-install': { ...base, account: acct({ ...signed('write'), device: base.device, sameInstall: ['e'.repeat(12)] }) },
+  'home-lost-step': { ...base, account: acct({ ...signed('write'), device: base.device, googleStepRequired: true, needs: ['read-key'], googleRemovalUrl: 'https://myaccount.google.com/connections' }) },
   'home-continue': { ...base, mode: 'restore', automatic: false, nextBackupAt: null, sources: [], lastBackup: null, lastProbe: null, selection: { sources: SOURCES.slice(0, 3), target: null }, protection: { level: 'restoreOnly', reason: 'restoreOnly', nextAction: 'restore' }, account: acct({ ...signed('write'), device: base.device }) },
   // 되돌리기(account.restore — 조율 세션 c725f319c). 되돌린 시각은 11-12 오후 2:59
   'home-restore-run': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'running' }) }) },

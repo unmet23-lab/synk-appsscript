@@ -55,9 +55,6 @@ export function createStore(api, { onChange = () => {}, setTimer = setInterval, 
       if (r && r.ok === true) { const next = isState(r.value) ? r.value : isState(r.value?.state) ? r.value.state : null; if (next) { seq++; state = next; } return { ok: true, value: r.value }; }
       // 폴더 고르기 · 확인 창을 사람이 닫은 것은 실패가 아니다. 엔진 글은 갈래를 가리는 데만 읽고 화면에 옮기지 않는다
       if (r && !r.code && typeof r.error === 'string' && /취소했습니다/.test(r.error)) return { ok: false, code: 'CANCELED' };
-      // 코드 없이 오는 거절 둘(전체 되살리기의 놓을 자리 · 마지막 폴더 빼기)도 갈래만 가린다. 엔진 담당에 코드를 붙여 달라고 넘겼다
-      if (r && !r.code && typeof r.error === 'string' && /분리된 위치를 선택/.test(r.error)) return { ok: false, code: 'OUTPUT_UNSAFE' };
-      if (r && !r.code && typeof r.error === 'string' && /하나 이상 남겨/.test(r.error)) return { ok: false, code: 'LAST_FOLDER' };
       if (r && !r.code && typeof r.error === 'string' && /진행 중인 작업이 끝난 뒤/.test(r.error)) return { ok: false, code: 'JOB_BUSY' };
       // LIMIT_DEVICES는 끊을 기기 목록을 details로 함께 준다(엔진 account.cjs signIn)
       return { ok: false, code: (r && typeof r.code === 'string' && r.code) || 'FAILED', ...(r?.details && typeof r.details === 'object' ? { details: r.details } : {}) };
@@ -91,6 +88,12 @@ export function failureText(code) {
     RUN_ACTIVE: '예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.',
     OUTPUT_UNSAFE: '지키는 폴더 밖의 자리를 골라 주세요. 바탕화면이나 문서처럼 지키는 폴더 안에는 되살릴 수 없습니다.',
     NO_SPACE: '놓을 드라이브에 빈 공간이 모자랍니다. 다른 드라이브를 골라 주세요.',
+    // 전체 되살리기의 실패 칸(lastRestoreError.code — 엔진은 영문 대문자 부호면 그대로, 아니면 RESTORE_FAILED를 적는다)
+    RESTORE_FAILED: '놓을 드라이브의 빈 공간과 인터넷 연결을 확인한 뒤 다시 해 보세요.',
+    ENOSPC: '놓을 드라이브에 빈 공간이 모자랍니다. 다른 드라이브를 골라 주세요.',
+    EACCES: '놓을 자리에 파일을 쓸 수 없습니다. 다른 폴더를 골라 주세요.',
+    EPERM: '놓을 자리에 파일을 쓸 수 없습니다. 다른 폴더를 골라 주세요.',
+    ENOENT: '놓을 폴더를 찾지 못했습니다. 다른 폴더를 골라 주세요.',
     CATALOG_TOO_LARGE: '파일이 너무 많아 목록을 열 수 없습니다. 「전체 되살리기」를 써 주세요.',
     UNSAFE_MANIFEST: '안전하게 되살릴 수 없는 이름이 섞여 있어 목록을 열지 못했습니다. 「전체 되살리기」를 써 주세요.',
     SELECTION_LIMIT: '한 번에 1,000개까지 고를 수 있습니다. 찾기로 범위를 줄여 주세요.',

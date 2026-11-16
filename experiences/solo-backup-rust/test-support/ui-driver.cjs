@@ -57,6 +57,14 @@ async function wd(method, url, body) {
     // Google 로그인 그만두기(cancelGoogle — 기다리는 로그인이 없으면 아무것도 하지 않는다)가 다리와 계약을 지나 엔진에 닿는다
     const cancel = await runAsync('const done=arguments[arguments.length-1];Promise.resolve(window.backup.cancelGoogle&&window.backup.cancelGoogle()).then(r=>done(r?{ok:r.ok,code:r.code||null}:null),()=>done(null))');
     check('cancelGoogle이 엔진에 닿는다', cancel && cancel.ok === true, JSON.stringify(cancel));
+    // Google 계정 페이지(openGoogleAccount)는 엔진이 주소를 정하고, 시험 모드의 호스트는 브라우저를 열지 않는다(조율 세션 616e9dce5).
+    // 모르는 종류는 엔진이 BAD_INPUT으로 거절한다 — 브라우저가 뜨지 않는 두 답으로 다리 · 계약 · 엔진을 지나는지 본다
+    const pageOf = (kind) => runAsync(`const done=arguments[arguments.length-1];Promise.resolve(window.backup.openGoogleAccount&&window.backup.openGoogleAccount(${JSON.stringify(kind)})).then(r=>done(r?{ok:r.ok,code:r.code||null}:null),()=>done(null))`);
+    const pageOk = await pageOf('devices'), pageBad = await pageOf('elsewhere');
+    check('openGoogleAccount가 엔진에 닿고 시험 모드에서 브라우저를 열지 않는다', pageOk && pageOk.ok === false && pageOk.code !== 'BAD_INPUT' && pageBad && pageBad.code === 'BAD_INPUT', JSON.stringify({ pageOk, pageBad }));
+    // 되살릴 자리(place)가 엔진에 닿는다 — 모르는 자리는 되살리기를 시작하기 전에 BAD_INPUT으로 거절된다(조율 세션 25d66f324)
+    const place = await runAsync('const done=arguments[arguments.length-1];Promise.resolve(window.backup.restoreLatest({place:"nowhere"})).then(r=>done(r?{ok:r.ok,code:r.code||null}:null),()=>done(null))');
+    check('restoreLatest의 놓을 자리가 엔진에 닿는다', place && place.ok === false && place.code === 'BAD_INPUT', JSON.stringify(place));
     check('계정 칸에 열쇠 · 토큰 · 비밀번호가 없다', acc && !/token|secret|password|refresh|applicationKey|keyId/i.test(acc.text), acc ? acc.keys.join(',') : '없음');
     const env2 = await run("return {font:document.fonts.check('16px \"SUIT Variable\"'),fonts:[...document.fonts].map(f=>f.family+':'+f.status),webgl:(()=>{const c=document.createElement('canvas');return !!c.getContext('webgl')})(),w:innerWidth,h:innerHeight}");
     check('SUIT 글꼴이 실렸다(Tauri CSP font-src)', env2.font, env2.fonts.join(', '));

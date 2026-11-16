@@ -179,9 +179,11 @@ a { color: inherit; }
 .selbar b { font-weight: 500; color: var(--paper); }
 .empty { padding: 26px 0 10px; font: 400 14px/1.6 var(--sans); color: var(--dim); }
 /* 되살리기 결과 한 줄 — 상태 색은 점에만 */
-.done { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-top: clamp(14px, 2.2vh, 20px); max-width: 46em; font: 400 14px/1.6 var(--sans); color: var(--soft); }
-.done .dot { align-self: center; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex: none; }
-.done.bad .dot { background: var(--warn); }
+/* 되살리기 결과 한 줄 — 긴 글도 점과 한 줄에서 시작해 글 안에서 꺾인다. 걸음 목록의 .step.done에 번지지 않게 p로 좁힌다 */
+p.done { margin-top: clamp(14px, 2.2vh, 20px); max-width: 46em; font: 400 14px/1.6 var(--sans); color: var(--soft); }
+p.done .dot { display: inline-block; vertical-align: 0.15em; width: 6px; height: 6px; margin-right: 12px; border-radius: 50%; background: var(--ok); }
+p.done.bad .dot { background: var(--warn); }
+p.done .lnk { margin-left: 14px; }
 
 /* 진행 줄 */
 .bar { position: relative; height: 1px; margin-top: clamp(20px, 3.4vh, 32px); max-width: 34em; background: var(--hair-2); }

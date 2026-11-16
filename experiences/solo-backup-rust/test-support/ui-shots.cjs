@@ -56,6 +56,12 @@ const DEVICES_FULL = [
   { id: 'e'.repeat(12), name: '옛 노트북', role: 'read', state: 'active', lastSeenAt: Date.parse('2026-09-30T18:00:00+09:00') },
   { id: 'b'.repeat(12), name: '옛 데스크톱', role: 'read', state: 'revoked', lastSeenAt: Date.parse('2026-11-02T18:00:00+09:00') },
 ];
+// 이 PC에 앞서 깐 연결(sameInstall의 e…)이 남은 계정
+const DEVICES_SAME = [
+  { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', lastSeenAt: Date.parse('2026-11-13T14:39:00+09:00'), current: true },
+  { id: 'e'.repeat(12), name: '작업 노트북', role: 'read', state: 'active', lastSeenAt: Date.parse('2026-11-08T09:20:00+09:00'), current: false },
+  { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active', lastSeenAt: Date.parse('2026-11-12T21:10:00+09:00'), current: false },
+];
 const PICK = Date.parse('2026-11-12T14:59:00+09:00');
 const PLAN = { at: PICK, counts: { copy: 3412, hide: 186, unchanged: 9120 }, copyBytes: Math.round(5.6 * 1024 ** 3) };
 const UNDO = { value: { suggestions: [{ at: PICK, reason: 'before-mass-hide' }, { at: Date.parse('2026-11-04T09:12:00+09:00'), reason: 'before-overwrite' }], plan: PLAN, oldestAt: Date.parse('2026-10-15T14:40:00+09:00') }, plans: { [PICK]: PLAN }, pickAt: PICK };
@@ -85,6 +91,10 @@ const CASES = [
   ['start-read', 'start-2', { name: 'start-2-take', acct: { take: true, devices: DEVICES } }],
   ['start-signin', 'start-1', { name: 'start-1-cancel', acct: { signing: true } }],
   ['home-writekey', 'home', { name: 'home-writekey-wait', acct: { running: 'writekey', googleWait: true } }],
+  // 셋째 증분(조율 세션 25d66f324 · 616e9dce5 뒤): 전체 되살리기 실패, 놓을 자리, 같은 PC의 앞선 연결
+  ['home-restore-error', 'home'], ['home-restore-unsafe', 'home'],
+  ['home', 'restore', { name: 'restore-pick', ui: { place: 'pick' } }], ['home', 'restore', { name: 'restore-confirm', ui: { confirmAll: true } }], ['home-downloads', 'restore', { name: 'restore-guarded' }],
+  ['home-same-install', 'drawer', { name: 'drawer-same', acct: { devices: DEVICES_SAME }, scrollTo: '[data-act="lost-dev"]' }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,
@@ -124,10 +134,10 @@ const CATALOG = {
       const name = extra.name || (screen === 'home' ? stateName : screen);
       if (only && !only.includes(name)) continue;
       const before = errors.length;
-      await pg.evaluate(({ screen, state, now, catalog, acct, undo }) => {
+      await pg.evaluate(({ screen, state, now, catalog, acct, undo, ui }) => {
         if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true, acct });
-        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo });
-      }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG, acct: extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null });
+        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo, ui });
+      }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG, acct: extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null });
       // 서랍 아래쪽처럼 첫 화면 밖에 있는 줄은 그 자리로 굴려서 찍는다
       if (extra.scrollTo) await pg.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ block: 'start' }), extra.scrollTo);
       await pg.waitForTimeout(120);
