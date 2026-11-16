@@ -34,6 +34,7 @@ export const TAEO_CALL = Object.freeze({
 // 「오케이 진행해 지금 보내준 세개 다 좋다」라고 하셨다(만족 사례 장부 S54). 나머지 줄은 `태오굽기.py --차례 --실행`이 하루 몫 안에서 굽고 여기에 넣는다.
 export const TAEO_MEDIA = Object.freeze({
  'again.call.s1e01-6.yo': { video: 'media/today-taeo-6yo.mp4' },
+ 'again.review': { video: 'media/today-taeo-review.mp4' },
 });
 
 const SEE_ABOVE = '(무엇을 말할지는 위 설명을 보세요.)';

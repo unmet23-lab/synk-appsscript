@@ -73,10 +73,16 @@ ONE SINGLE CONTINUOUS SHOT, 9:16, {sec} seconds.
 WHO: the young man in @이미지 1 — the same face, hair, grey hoodie under the navy-and-cream varsity jacket, the same lunch tray in front of him.
 ACTION: at about 0.2 s he looks straight into the lens and smiles a little; from 0.5 s to {speak_end} s he speaks the Korean line below to the viewer, warmly and clearly, like a friendly senior student talking to a junior he likes; at about {t(1.4)} s he raises his eyebrows slightly; at about {t(2.4)} s he blinks; at about {t(3.2)} s he gives one small nod; at about {t(4.6)} s he tilts his head a little to his left; at about {t(5.6)} s he blinks; from {speak_end} s to {sec} s he keeps smiling and breathing, eyes on the lens, shoulders rising softly with each breath.
 CAMERA: locked-off medium close shot at eye level, no zoom, no push in; the framing stays as in @이미지 1 to the last frame.
-LOOK: soft daylight from the big windows behind him, a warm school cafeteria, students behind him keep eating and talking, softly out of focus. The light and colour stay exactly like this to the last frame. No new people, no new text.
+LOOK: soft daylight from the big windows behind him, a warm school cafeteria, students behind him keep eating and talking, softly out of focus. The light and colour stay exactly like this to the last frame. Indoors: nothing falls or drifts anywhere. No new people, no new text.
 SOUND: only his natural speaking voice saying this one Korean line, over quiet cafeteria room tone — no music, no other voices, no sound effects.
 VOICE: the same young man's voice as the speaker in @오디오 1 — the same pitch (a light, bright young tenor, as high as in @오디오 1), the same brightness and the same smile in the voice; not deeper and not flatter than @오디오 1. Do not say any words from @오디오 1.
-LINE (Korean, say exactly this, at a natural friendly pace with the same lively warmth as @오디오 1): {text}"""
+LINE (Korean, say exactly this, at a natural friendly pace with the same lively warmth as @오디오 1): {text}""" + (YO_SAY if "'요'" in text else '')
+
+
+# 11-17 7번 '요' 줄 첫 판: 「'요'까지」를 「욕까지」로 받아 적어 넣지 않았다(72크레딧). 6번 '요' 줄은 같은 말이 「요까지」로 들렸다.
+# 「요」 뒤에 닫힘을 붙이면 「욕」(욕설)으로 들리니, 따옴표 속 「요」는 열린 소리로 말하고 「까지」 앞에서 짧게 쉬라고 적는다.
+YO_SAY = """
+PRONUNCIATION: in 「'요'까지」 the quoted 요 is the polite sentence ending, named as a word. Say 요 open and light, let the vowel ring for a moment, then a very short pause, then 까지. Never close 요 into 욕 — it must not sound like 욕까지."""
 
 
 def cli(*args, check=True, timeout=3000):
