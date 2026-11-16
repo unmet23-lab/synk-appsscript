@@ -1,0 +1,52 @@
+name: workbackup build tools
+description: >-
+  What scripts/build.ps1 needs on a GitHub Windows runner (workbackup-clean-windows): the sources copied out of the
+  sparse checkout (cargo cannot list package files inside a non-cone sparse tree), the Tauri CLI and the engine
+  dependency from their lock files, the pinned restic checked against its hash, and the Rust dependency builds from
+  the cache. Sets SWB_APP and SWB_RESTIC.
+runs:
+  using: composite
+  steps:
+    - name: copy the sources out of the sparse checkout
+      shell: pwsh
+      run: |
+        $src = Join-Path $env:RUNNER_TEMP 'src'
+        New-Item -ItemType Directory -Force -Path (Join-Path $src 'experiences/solo-backup') | Out-Null
+        Copy-Item -Recurse -LiteralPath 'experiences/solo-backup-rust' -Destination (Join-Path $src 'experiences/solo-backup-rust')
+        # The window UI (its tray icon included) is all the build reads from the original app; the engine is a copy here.
+        Copy-Item -Recurse -LiteralPath 'experiences/solo-backup/ui' -Destination (Join-Path $src 'experiences/solo-backup/ui')
+        # stage-ui embeds the brand font through the repository's font tool (tools/lib/브랜드폰트.js · its SUIT file).
+        foreach ($file in 'tools/lib/브랜드폰트.js', 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2', 'docs/브랜드_폰트/SUIT/LICENSE_OFL.txt') {
+          $to = Join-Path $src $file
+          New-Item -ItemType Directory -Force -Path (Split-Path -Parent $to) | Out-Null
+          Copy-Item -LiteralPath $file -Destination $to
+        }
+        "SWB_APP=$(Join-Path $src 'experiences/solo-backup-rust')" >> $env:GITHUB_ENV
+    - name: install the Tauri CLI and the engine dependency from their lock files
+      shell: pwsh
+      run: |
+        npm ci --prefix $env:SWB_APP --ignore-scripts --no-audit --no-fund
+        if ($LASTEXITCODE -ne 0) { throw 'Tauri CLI install failed' }
+        npm ci --prefix (Join-Path $env:SWB_APP 'engine') --ignore-scripts --no-audit --no-fund
+        if ($LASTEXITCODE -ne 0) { throw 'engine dependency install failed' }
+    # The zip hash pins the official release; stage-resources checks the exe hash again.
+    - name: download the pinned restic
+      shell: pwsh
+      run: |
+        $folder = Join-Path $env:RUNNER_TEMP 'restic'
+        New-Item -ItemType Directory -Force -Path $folder | Out-Null
+        $zip = Join-Path $folder 'restic.zip'
+        Invoke-WebRequest -Uri 'https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip' -OutFile $zip -MaximumRetryCount 3 -RetryIntervalSec 5
+        if ((Get-FileHash -Algorithm SHA256 -Path $zip).Hash -ne 'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d') { throw 'restic ZIP SHA-256 mismatch' }
+        Expand-Archive -Path $zip -DestinationPath $folder
+        "SWB_RESTIC=$(Join-Path $folder 'restic_0.19.1_windows_amd64.exe')" >> $env:GITHUB_ENV
+    - name: restore the Rust dependency builds
+      uses: actions/cache@v6.1.0
+      with:
+        path: |
+          ~\.cargo\registry
+          ~\.cargo\git
+          ${{ runner.temp }}\wb-target
+          ${{ runner.temp }}\wb-inventory
+        key: workbackup-install-v2-${{ hashFiles('experiences/solo-backup-rust/src-tauri/Cargo.lock', 'experiences/solo-backup-rust/inventory/Cargo.lock') }}
+        restore-keys: workbackup-install-v2-

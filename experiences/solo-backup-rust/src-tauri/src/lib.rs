@@ -8,3 +8,4 @@ pub mod power;
 pub mod runlog;
 pub mod schedule;
 pub mod notify;
+pub mod update;

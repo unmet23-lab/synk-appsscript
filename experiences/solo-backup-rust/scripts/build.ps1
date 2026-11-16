@@ -5,7 +5,10 @@ param(
   [string]$NodePath = (Get-Command node.exe -ErrorAction Stop).Source,
   [string]$PublicOAuthClient,
   [string]$TargetDirectory,
-  [string]$Toolchain
+  [string]$Toolchain,
+  # A JSON file merged over tauri.conf.json for this build only: the clean-Windows update test builds with its own
+  # throwaway public key, a local feed and another version (workbackup-clean-windows). A release never passes one.
+  [string]$ConfigOverride
 )
 $ErrorActionPreference = 'Stop'
 $appRoot = Split-Path -Parent $PSScriptRoot
@@ -41,6 +44,22 @@ $nsis = Join-Path $outputRoot 'nsis'
 & $NodePath (Join-Path $PSScriptRoot 'nsis-template.cjs') (Join-Path $nsis 'installer.nsi')
 if ($LASTEXITCODE -ne 0) { throw 'NSIS template check failed.' }
 $bundle = @{ bundle = @{ resources = @{ ((Join-Path $outputRoot 'resources') + '\') = 'resources/' }; windows = @{ nsis = @{ template = (Join-Path $nsis 'installer.nsi'); installerHooks = (Join-Path $appRoot 'src-tauri/nsis/hooks.nsh') } } } }
+function Merge-Config($into, $from) {
+  foreach ($key in @($from.Keys)) {
+    if ($into.ContainsKey($key) -and $into[$key] -is [Collections.IDictionary] -and $from[$key] -is [Collections.IDictionary]) { Merge-Config $into[$key] $from[$key] }
+    else { $into[$key] = $from[$key] }
+  }
+}
+$override = @{}
+if ($ConfigOverride) {
+  $override = Get-Content -LiteralPath $ConfigOverride -Raw | ConvertFrom-Json -AsHashtable
+  if ($override.ContainsKey('bundle')) { throw 'ConfigOverride must not change the bundle (template, hooks, resources).' }
+  Merge-Config $bundle $override
+}
+# The version the installer and the receipt carry: tauri.conf.json's, or the override's.
+$version = (Get-Content -LiteralPath (Join-Path $appRoot 'src-tauri/tauri.conf.json') -Raw | ConvertFrom-Json).version
+if ($override.ContainsKey('version')) { $version = $override.version }
+if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Unexpected version $version." }
 $bundleConfig = Join-Path $nsis 'tauri.bundle.json'
 [IO.File]::WriteAllText($bundleConfig, ($bundle | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
 if ($Toolchain) { $env:RUSTUP_TOOLCHAIN = $Toolchain }
@@ -62,12 +81,12 @@ if ($at -lt 0 -or $text.IndexOf($marker, [StringComparison]::Ordinal) -ne $at -o
 $latin1.GetBytes('NSS').CopyTo($windowApp, $at + $marker.Length)
 [IO.File]::WriteAllBytes((Join-Path $outputRoot 'WorkBackup.exe'), $windowApp)
 Copy-Item -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'release/WorkBackupRun.exe') -Destination (Join-Path $outputRoot 'WorkBackupRun.exe')
-$built = @(Get-ChildItem -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'release/bundle/nsis') -Filter '*_0.7.0_x64-setup.exe')
-if ($built.Count -ne 1) { throw 'Expected one NSIS installer for 0.7.0.' }
-$setupName = 'SynkWorkBackup-0.7.0-setup.exe'
+$built = @(Get-ChildItem -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'release/bundle/nsis') -Filter "*_$($version)_x64-setup.exe")
+if ($built.Count -ne 1) { throw "Expected one NSIS installer for $version." }
+$setupName = "SynkWorkBackup-$version-setup.exe"
 Copy-Item -LiteralPath $built[0].FullName -Destination (Join-Path $outputRoot $setupName)
 $setupHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot $setupName) -Algorithm SHA256).Hash.ToLowerInvariant()
 $exeHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot 'WorkBackup.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
 $runHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot 'WorkBackupRun.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
-@{ version='0.7.0'; exeSha256=$exeHash; runExeSha256=$runHash; setup=$setupName; setupSha256=$setupHash; resourceManifestSha256=$resourceResult.manifestSha256; resourceFiles=$resourceResult.files } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputRoot 'build-receipt.json') -Encoding utf8
+@{ version=$version; exeSha256=$exeHash; runExeSha256=$runHash; setup=$setupName; setupSha256=$setupHash; resourceManifestSha256=$resourceResult.manifestSha256; resourceFiles=$resourceResult.files } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputRoot 'build-receipt.json') -Encoding utf8
 Write-Output "Built $outputRoot"

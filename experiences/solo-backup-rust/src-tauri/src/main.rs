@@ -1,5 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use backup_native::{notify, platform, protocol, schedule, secret, worker::Worker};
+use backup_native::{notify, platform, protocol, schedule, secret, update, worker::Worker};
 use serde_json::{json,Value};
 use std::{collections::VecDeque, fs, io::Write, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
 use tauri::{Emitter,Manager};
@@ -153,8 +153,85 @@ async fn smoke(app:tauri::AppHandle,report:PathBuf)->Result<(),String>{
     output.write_all(serde_json::to_string_pretty(&result).unwrap().as_bytes()).map_err(|_|"SMOKE_REPORT")?;Ok(())
 }
 
+fn context()->tauri::Context<tauri::Wry>{tauri::generate_context!()}
+fn epoch_ms()->u64{std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d|d.as_millis() as u64).unwrap_or(0)}
+
+/// The updater without a window (STAGE1_DESIGN.md 4.10). It takes no window lock, so it also runs while the
+/// window is open; installing takes the engine lock instead (update::install).
+fn updater_app()->Result<tauri::App,String>{
+    tauri::Builder::default().plugin(tauri_plugin_updater::Builder::new().build()).build(context()).map_err(|e|format!("APP_BUILD: {e}"))
+}
+fn updating_folder()->Result<PathBuf,&'static str>{
+    let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
+    if exe.parent().is_some_and(platform::installing){return Err("INSTALLING");}
+    platform::state_dir(false).map_err(|_|"STATE_ROOT")
+}
+/// `--update-check` (what the run executable starts once a day — the result goes to `update.json`) and
+/// `--update-install` (also what SYNK 솔리오 can start). One JSON line out. Exit 0: checked, already the
+/// newest, or the installer started and took over (its marker is in the install folder); 3: a package whose signature
+/// or signed version is wrong, nothing installed; 75: this user's backup or restore holds the engine, try
+/// later; 78: this build has no public key yet; 1: anything else (the line says which).
+fn update_mode(mode:&str)->i32{
+    let outcome=(||->Result<Value,&'static str>{
+        let root=updating_folder()?;
+        let app=updater_app().map_err(|_|"APP_BUILD")?;let handle=app.handle().clone();
+        let current=handle.package_info().version.to_string();
+        tauri::async_runtime::block_on(async{
+            if mode=="--update-check"{
+                let found=update::check(&handle).await;
+                let available=found.as_ref().ok().and_then(|u|u.as_ref()).map(|u|u.version.clone());
+                let record=update::record(&current,available.as_deref(),found.as_ref().err().copied(),epoch_ms());
+                update::write(&root,&record).map_err(|_|"UPDATE_RECORD")?;
+                found.map(|_|record)
+            }else{
+                update::install(&handle,&root,|version|println!("{}",json!({"ok":true,"installing":version}))).await.map(|()|json!({}))
+            }
+        })
+    })();
+    match outcome{
+        Ok(value)=>{println!("{}",json!({"ok":true,"result":value}));0},
+        Err("UP_TO_DATE")=>{println!("{}",json!({"ok":true,"result":{"available":null}}));0},
+        Err(code)=>{println!("{}",json!({"ok":false,"error":code}));match code{"UPDATE_SIGNATURE"=>3,"RUN_ACTIVE"=>75,"UPDATE_NOT_CONFIGURED"=>78,_=>1}}
+    }
+}
+fn update_message(code:&str)->&'static str{match code{
+    "RUN_ACTIVE"=>"지금 백업이나 복구가 진행 중입니다. 끝난 뒤 알림을 다시 눌러 주세요.",
+    "UPDATE_START"=>"관리자 확인을 받지 못해 업데이트하지 않았습니다. 이 컴퓨터의 관리자에게 업데이트를 부탁해 주세요.",
+    "UPDATE_SIGNATURE"=>"받은 파일이 SYNK가 서명한 업데이트와 달라 설치하지 않았습니다. 지금 판을 그대로 씁니다.",
+    "UPDATE_FEED"=>"업데이트를 확인하지 못했습니다. 인터넷 연결을 확인한 뒤 다시 해 주세요.",
+    "INSTALLING"=>"다른 설치나 업데이트가 이미 진행 중입니다. 끝난 뒤 다시 해 주세요.",
+    "UPDATE_STOPPED"=>"업데이트 설치기가 설치를 시작하지 않고 끝났습니다. 앱은 지금 판 그대로입니다. 잠시 뒤 다시 해 주세요.",
+    "UPDATE_UNCONFIRMED"=>"업데이트 설치가 시작됐는지 확인하지 못했습니다. 잠시 뒤 앱을 다시 열어 판을 확인해 주세요.",
+    _=>"업데이트하지 못했습니다. 잠시 뒤 다시 해 주세요.",
+}}
+/// A click on the 「업데이트 준비됨」 notice (`synk-workbackup:open?topic=update`): ask once, and update. If
+/// there is nothing to install, the person says later, or it cannot go ahead, the window opens as for any
+/// other notice (a started installer opens it itself when it is done).
+fn offer_update()->Result<(),String>{
+    let root=updating_folder()?;
+    let app=updater_app()?;let handle=app.handle().clone();
+    let say=|text:&str|{rfd::MessageDialog::new().set_title("업무 백업 업데이트").set_description(text).show();};
+    match tauri::async_runtime::block_on(update::check(&handle)){
+        Ok(Some(next))=>{
+            let version=update::version_text(&next.version).unwrap_or_default();
+            let text=format!("새 판 {version}이 나왔습니다. 지금 업데이트할까요?\n\n관리자 확인이 한 번 뜹니다. 업데이트하는 동안 자동 백업이 잠시 멈추고, 끝나면 앱이 다시 열립니다.");
+            // Cancel first, as in every dialog here: Escape or closing it is 「나중에」.
+            let answer=rfd::MessageDialog::new().set_title("업무 백업 업데이트").set_description(text).set_buttons(rfd::MessageButtons::OkCancelCustom("나중에".into(),"업데이트".into())).show();
+            if matches!(answer,rfd::MessageDialogResult::Custom(ref s) if s=="업데이트"){
+                // A started installer opens the window itself when it is done.
+                match tauri::async_runtime::block_on(update::install(&handle,&root,|_|{})){Ok(())=>return Ok(()),Err("UP_TO_DATE")=>{},Err(code)=>say(update_message(code))}
+            }
+        },
+        Ok(None)|Err("UPDATE_NOT_CONFIGURED")=>{},
+        Err(code)=>say(update_message(code)),
+    }
+    let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
+    std::process::Command::new(exe).spawn().map(|_|()).map_err(|_|"OPEN_FAILED".into())
+}
+
 fn run()->Result<(),String>{
     let args:Vec<String>=std::env::args().skip(1).collect();
+    if matches!(args.as_slice(),[one] if notify::topic_of(one)==Some("update")){return offer_update();}
     // The test, smoke and 0.5.0 preview switches exist in debug builds only (STAGE1_DESIGN.md 4.2 「알림」);
     // a release build takes nothing but --background, or one open address.
     #[cfg(debug_assertions)]
@@ -175,7 +252,15 @@ fn run()->Result<(),String>{
     // The installer opens the app itself once it is done.
     if exe.parent().is_some_and(platform::installing){return Err("INSTALLING".into());}
     let resources=if cfg!(debug_assertions){std::env::var_os("SWB_RESOURCES").map(PathBuf::from).unwrap_or(exe.parent().unwrap().join("resources"))}else{exe.parent().unwrap().join("resources")};
-    backup_native::bundle::verify(&resources,&[])?;
+    // An install that stopped part way and never reached its failure callback (the PC went off, the installer
+    // was ended) can leave this window app written and the run executable only moved aside, or files of two
+    // versions: no run starts until the installer runs again. Say that, rather than a bare code.
+    let folder=exe.parent().unwrap();
+    let moved_aside=|name:&str|folder.join(format!("{name}.old")).is_file();
+    if !cfg!(debug_assertions)&&!folder.join("WorkBackupRun.exe").is_file()&&moved_aside("WorkBackupRun.exe"){return Err("INSTALL_INCOMPLETE".into());}
+    if let Err(code)=backup_native::bundle::verify(&resources,&[]){
+        return Err(if !cfg!(debug_assertions)&&(moved_aside("WorkBackupRun.exe")||moved_aside("WorkBackup.exe")){"INSTALL_INCOMPLETE".into()}else{code});
+    }
     let (root,lock)=platform::state_root(test)?;
     if root.join("migration-incomplete").exists(){return Err("MIGRATION_INCOMPLETE".into());}
     let signal=Arc::new(platform::InstanceSignal::new(&root)?);
@@ -201,6 +286,8 @@ fn run()->Result<(),String>{
         app.manage(AppState{worker,current:current.clone(),closing:AtomicBool::new(false)});
         tauri::WebviewWindowBuilder::new(app,"main",tauri::WebviewUrl::App("index.html".into()))
             .data_directory(root.join("webview"))
+            // The screen is black (11-13 시안 A): no white flash before the web page is drawn (화면 세션 11-16).
+            .background_color(tauri::window::Color(0,0,0,255))
             .title("업무 백업").inner_size(1080.0,820.0).min_inner_size(760.0,640.0).visible(!test&&!(background&&active(&initial)))
             .on_navigation(protocol::local_url).on_new_window(|_,_|tauri::webview::NewWindowResponse::Deny).build()?;
         if !test{let focus_handle=handle.clone();std::thread::spawn(move||loop{if signal.wait(){show(&focus_handle);}});}
@@ -223,12 +310,21 @@ fn run()->Result<(),String>{
             api.prevent_close();let state=window.state::<AppState>();
             if active(&state.current.lock().unwrap()){let _=window.hide();}else{shutdown(window.app_handle().clone());}
         }
-    }).build(tauri::generate_context!()).map_err(|e|format!("APP_BUILD: {e}"))?;
+    }).build(context()).map_err(|e|format!("APP_BUILD: {e}"))?;
     app.run(|app,event|{if let tauri::RunEvent::ExitRequested{api,code,..}=event{if code.is_none(){api.prevent_exit();shutdown(app.clone());}}});
     Ok(())
 }
-fn main(){if let Err(code)=run(){
+fn main(){
+    if let [mode]=std::env::args().skip(1).collect::<Vec<_>>().as_slice(){
+        if mode=="--update-check"||mode=="--update-install"{std::process::exit(update_mode(mode));}
+    }
+    if let Err(code)=run(){
     if (code=="ALREADY_RUNNING"||code=="INSTALLING")&&!std::env::args().any(|a|a=="--test-mode"||a=="--smoke"){return;}
+    if code=="INSTALL_INCOMPLETE"{
+        eprintln!("{code}");
+        rfd::MessageDialog::new().set_title("업무 백업 설치가 끝나지 않았습니다").set_description("설치가 중간에 멈춰서 자동 백업이 돌지 않습니다. SYNK 업무 백업 설치 파일을 다시 실행해 주세요. 백업해 둔 자료와 설정은 그대로 있습니다.").show();
+        std::process::exit(1);
+    }
     eprintln!("{code}");
     if !std::env::args().any(|a|a=="--test-mode"||a=="--migration-preview") {rfd::MessageDialog::new().set_title("업무 백업을 시작하지 못했습니다").set_description(code).show();}
     std::process::exit(1);
