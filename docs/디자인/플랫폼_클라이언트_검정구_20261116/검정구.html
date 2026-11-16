@@ -937,6 +937,7 @@ $('#forge-go').addEventListener('click', async () => {
 });
 new ResizeObserver(() => layoutForge()).observe(stage);
 $('#grandbtn').addEventListener('click', () => { setGrand(!grand); if (mode !== 'update' && mode !== 'install') setMode('update'); boot(); });
+setGrand(true); /* 유호님 11-17 「웅장한 판」: 새 판 받기와 처음 설치는 웅장한 판이 기본이다. 작은 판은 지우지 않고 막대의 단추로 본다 */
 
 /* ── 시안 조작 ── */
 const meta = $('#meta');
