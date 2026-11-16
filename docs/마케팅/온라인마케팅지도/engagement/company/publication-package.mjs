@@ -6,6 +6,7 @@ import {execFile} from 'node:child_process';
 import {createRequire} from 'node:module';
 import vm from 'node:vm';
 import {validMediaSignature,STUDIO_MEDIA_LIMIT} from './studio-media.mjs';
+import {ensureLocalMedia} from './studio-media-cloud.mjs';
 
 const require=createRequire(import.meta.url),rules=require('./public/publish-rules.js');
 // Reuse the browser tool's existing pure parser. The fixed, local source never
@@ -59,6 +60,7 @@ export function createPublicationPackageService({store,studio,directory=store.di
   function location(name){if(typeof name!=='string'||!/^[-0-9a-f]{36}\.(mp4|webm)$/.test(name)||!UUID.test(name.slice(0,36)))throw fail('영상 저장 이름이 올바르지 않아요.',409);const file=resolve(root,name);if(dirname(file)!==root)throw fail('영상 파일 위치가 올바르지 않아요.',409);return file;}
   async function mediaBytes(media,expectedHash){
     const file=location(media.diskName);let info;
+    await ensureLocalMedia(directory,media.diskName);
     try{info=await lstat(file);if(!info.isFile()||info.isSymbolicLink()||info.size<=0||info.size>LIMITS.sourceBytes||info.size!==media.byteSize||dirname(await realpath(file))!==await realpath(root))throw fail('저장된 영상 파일의 크기나 위치가 바뀌었어요.',409);}
     catch(error){if(error.status)throw error;throw fail('저장된 영상 파일을 찾지 못했어요.',404);}
     const bytes=await readFile(file);

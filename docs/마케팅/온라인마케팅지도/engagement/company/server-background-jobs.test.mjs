@@ -29,12 +29,13 @@ function intervals(t) {
 function assertScheduledTimers(timers, { background = false, push = false, localInbox = true } = {}) {
   // These approved services have independent schedules. Assert their identities,
   // then verify the remaining identity/general-work/push timers separately.
-  const independent = { checkResearch: 30000, scanDeliveryChecks: 60000,
+  // 작업실 영상 클라우드(2026-11-16)는 배경 작업 스위치와 상관없이 도는 저장소 일이다(운영은 배경 작업 0). 스위치가 off이고 장부가 비었으면 스위치 파일을 읽고 하루 한 번 디스크 여유만 잰다.
+  const independent = { checkResearch: 30000, scanDeliveryChecks: 60000, tickMediaCloud: 60000,
     ...(localInbox ? { scanPublicationInbox: 5000 } : {}),
     ...(background ? { collectPublicationPerformance: 60000, scanPublicationLinks: 60000,
       scanWeeklySummary: 60000, scanAutomationHealthScheduled: 60000, scanSocialPublishing: 15000, scanPulseAutoReplies: 15000, scanPulseMail: 30000, retirePulseRequests: 21600000 } : {}),
   };
-  const named = new Set(['checkResearch', 'scanDeliveryChecks', 'scanPublicationInbox', 'collectPublicationPerformance', 'scanPublicationLinks', 'scanWeeklySummary', 'scanAutomationHealthScheduled', 'scanSocialPublishing', 'scanPulseAutoReplies', 'scanPulseMail', 'retirePulseRequests']);
+  const named = new Set(['checkResearch', 'scanDeliveryChecks', 'tickMediaCloud', 'scanPublicationInbox', 'collectPublicationPerformance', 'scanPublicationLinks', 'scanWeeklySummary', 'scanAutomationHealthScheduled', 'scanSocialPublishing', 'scanPulseAutoReplies', 'scanPulseMail', 'retirePulseRequests']);
   const actual = timers.filter(row => named.has(row.callback.name)).map(row => [row.callback.name, row.milliseconds]);
   assert.deepEqual(actual.sort(), Object.entries(independent).sort(), 'only the permitted service schedules start');
   assert.deepEqual(timers.filter(row => !named.has(row.callback.name)).map(row => row.milliseconds).sort((a,b)=>a-b),

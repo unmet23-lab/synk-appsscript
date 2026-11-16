@@ -5,6 +5,7 @@ import {resolve,dirname} from 'node:path';
 import {Readable} from 'node:stream';
 import {crc32} from 'node:zlib';
 import {clientDeliveryIdentity} from './client-closeout.mjs';
+import {ensureLocalMedia} from './studio-media-cloud.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -50,6 +51,7 @@ export function createClientDeliveryArchiveService({store,clientProjects,clock=(
   }
   async function inspect(media){
     const {root,path}=located(media);let info;
+    await ensureLocalMedia(store.directory,media.diskName);
     try{const directory=await lstat(root);info=await lstat(path);if(!directory.isDirectory()||directory.isSymbolicLink()||!info.isFile()||info.isSymbolicLink())throw fail('납품 파일 원본이 이상해요.',409);}catch(error){if(error.status)throw error;throw fail('납품 파일을 찾거나 읽지 못했어요. 「자료」에서 봐 주세요.',409);}
     if(info.size!==media.byteSize)throw fail('납품 파일 크기가 바뀌었어요. 원본을 봐 주세요.',409);
     return {path,info};

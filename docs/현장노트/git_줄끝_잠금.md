@@ -135,6 +135,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `tr -cd '\r' < <파일> | wc -c`로 센다.
 - 다시 확인: LF 파일에서 `grep -c $'\r'`이 줄 수, `tr -cd '\r' | wc -c`가 0이다(10-17 재현, CR 한 줄 + LF 한 줄 파일에서도 grep은 2, tr은 1).
 - 10-24 덧붙임(Claude): Git Bash의 awk도 줄 끝 CR을 떼고 읽는다 — `awk '/\r$/{c++}'`가 411줄 전부 CRLF인 순서 문서에서 0을 냈다(그래서 10-23 밤 「전부 LF」라고 잘못 봤다). 줄마다 줄끝을 볼 때는 `node -e`로 `split('\n')` 뒤 `endsWith('\r')`를 센다.
+- 11-16 밤 덧붙임(Claude): 거꾸로 0도 낸다. 두 줄이 모두 CRLF인 시험 파일과 CRLF 작업본(`CLOUD-OPERATIONS.md`, `server.mjs`)에서 `grep -c $'\r'`이 0을 냈다. 그 숫자를 믿고 「LF 파일」로 보아 `split('\n')`으로 줄을 끼웠더니, 끼운 줄만 LF인 섞인 파일이 되었고 `l==='<줄>'` 비교는 줄 끝 CR 때문에 늘 빗나갔다. 그래서 결과가 줄 수이든 0이든 `grep`으로 CR을 세지 않는다. 고칠 때는 파일을 읽어 `\r\n`을 `\n`으로 바꾼 뒤 고치고, 처음이 CRLF였으면 되돌려 쓴다. 같은 밤 Bash 도구의 `<<'EOF'` heredoc 안에서도 겹 역슬래시(`\\/`, `\\n`)가 하나로 줄어 정규식과 문자열이 깨졌다. 역슬래시가 든 스크립트는 쓰기 도구로 파일을 만든 뒤 돌린다.
 
 ### 파이썬이 git에 넘긴 입력 끝에 `\r`이 붙는다
 - 증상: `git update-ref --stdin`이 「extra input」으로 거절한다. `Path.write_text`로 쓴 `objects/info/alternates`에서 「object directory …? does not exist」가 난다(10-17).

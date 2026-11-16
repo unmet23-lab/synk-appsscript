@@ -1,9 +1,10 @@
 import {randomBytes,randomUUID,createHash} from 'node:crypto';
 import {createReadStream} from 'node:fs';
 import {mkdir,open,readdir,rename,statfs,unlink,stat} from 'node:fs/promises';
-import {resolve,dirname} from 'node:path';
+import {resolve,dirname,basename} from 'node:path';
 import {pipeline} from 'node:stream/promises';
 import {validMediaSignature} from './studio-media.mjs';
+import {ensureLocalMedia} from './studio-media-cloud.mjs';
 import {emptyPulseStudio} from './pulse-studio.mjs';
 import {recordSceneReview} from './client-scene-requests.mjs';
 import {CASTING_MODELS,OUTFIT_IDS,HAIR_IDS} from './public/pulse-app/casting-catalog.mjs';
@@ -488,7 +489,9 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
 }
 export async function streamDraftFile(res,{paths,file},req){
   let path,info;
-  for(path of paths){info=await stat(path).catch(()=>null);if(info)break;}
+  for(path of paths){info=await stat(path).catch(()=>null);if(info)break;
+    // studio-media 쪽은 버킷에 있으면 받아 놓는다(작업실 영상 클라우드 설계 3판 6절).
+    if(basename(dirname(path))==='studio-media'){await ensureLocalMedia(dirname(dirname(path)),basename(path)).catch(()=>{});info=await stat(path).catch(()=>null);if(info)break;}}
   if(!info)throw fail('파일을 찾지 못했어요.',404);
   res.writeHead(200,{'Content-Type':file.mimeType,'Content-Length':info.size,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Security-Policy':"default-src 'none'; sandbox"});
   if(req.method==='HEAD')return res.end();

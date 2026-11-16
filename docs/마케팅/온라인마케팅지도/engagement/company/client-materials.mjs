@@ -1,5 +1,6 @@
 import {lstatSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
+import {mediaPresent} from './studio-media-cloud.mjs';
 import {buildClientKickoff,clientKickoffSources} from './client-kickoff.mjs';
 import {clientDeliveryIdentity} from './client-closeout.mjs';
 import {visiblePreviewAssetIds} from './pulse-previews.mjs';
@@ -33,7 +34,8 @@ export function createClientMaterialsService({store,clientProjects,clock=()=>new
     if(!pattern.test(file.diskName)||!intake&&!mediaTypes.has(file.mimeType))return false;
     const root=resolve(store.directory,'studio-media'),path=resolve(root,file.diskName);
     if(dirname(path)!==root)return false;
-    try{const info=lstatSync(path);return info.isFile()&&!info.isSymbolicLink()&&info.size===file.byteSize;}catch{return false;}
+    // 로컬에 없어도 버킷에 같은 크기로 올라가 확인된 파일은 「있음」이다(받지 않는다, 작업실 영상 클라우드 설계 3판 6절).
+    try{const info=lstatSync(path);return info.isFile()&&!info.isSymbolicLink()&&info.size===file.byteSize;}catch{return mediaPresent(store.directory,file.diskName,file.byteSize)===true;}
   }
   function workspace(user,id){
     if(typeof user?.id!=='string')throw Object.assign(new Error('먼저 로그인해 주세요.'),{status:401});

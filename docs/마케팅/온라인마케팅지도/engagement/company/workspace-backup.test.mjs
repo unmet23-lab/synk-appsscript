@@ -201,3 +201,51 @@ test('a persona deleted before the retention rule (no hash record) is counted so
   const target=await backupWorkspace({destination:join(f.root,'retention-legacy'),companyDataDir:f.companyDir,media:'both'});
   assert.equal(JSON.parse(await readFile(join(target,'media-retention.json'),'utf8')).legacyDeleted,2);
 });
+
+// 작업실 영상 클라우드(2026-11-16 설계 3판): 장부가 verified인 영상은 라이브 파일을 읽지 않고 media-cloud.json에 적는다.
+test('verified cloud media are listed in media-cloud.json without reading the live file; both is lowered to manifest; copy keeps the other bodies',async t=>{
+  const f=await closedFixture(t),company=new Store(f.companyDir);
+  const evicted='91234567-1234-4234-8234-123456789abc.mp4',local='a1234567-1234-4234-8234-123456789abc.png',bytes=Buffer.from('cloud body'),sha=createHash('sha256').update(bytes).digest('hex');
+  try{
+    company.put('studioMedia','e',{diskName:evicted});company.put('studioMedia','l',{diskName:local});
+    company.put('studioMediaCloud',evicted,{diskName:evicted,state:'verified',bucket:'synk-company-media-931078180935',object:'studio-media/'+evicted,generation:'1777',bytes:bytes.length,sha256:sha,md5:createHash('md5').update(bytes).digest('base64')});
+  }finally{company.close();}
+  await mkdir(join(f.companyDir,'studio-media'),{recursive:true});await writeFile(join(f.companyDir,'studio-media',local),'local body');
+  // the evicted body is not on disk at all: a backup that read it would fail
+  for(const media of ['manifest','both']){
+    const target=await backupWorkspace({destination:join(f.root,'backups-'+media),companyDataDir:f.companyDir,media});
+    const list=JSON.parse(await readFile(join(target,'media-manifest.json'),'utf8')),cloud=JSON.parse(await readFile(join(target,'media-cloud.json'),'utf8')),integration=JSON.parse(await readFile(join(target,'integration-manifest.json'),'utf8'));
+    assert.equal(list.bytesIncluded,false,media);assert.deepEqual(list.files.map(x=>x.diskName).sort(),[evicted,local].sort());
+    assert.equal(list.files.find(x=>x.diskName===evicted).sha256,sha);
+    assert.deepEqual(cloud.files,[{diskName:evicted,sha256:sha,bytes:bytes.length,bucket:'synk-company-media-931078180935',object:'studio-media/'+evicted,generation:'1777',md5:createHash('md5').update(bytes).digest('base64')}]);
+    assert.equal(cloud.manifestSha256,createHash('sha256').update(await readFile(join(target,'media-manifest.json'))).digest('hex'));
+    assert.equal(integration.mediaCloud,'media-cloud.json');assert.equal(integration.mediaBytesIncluded,false);assert.equal(integration.mediaModeLowered,media==='both'?true:undefined);
+    await assert.rejects(access(join(target,'company','studio-media',evicted)),{code:'ENOENT'});
+    if(media==='both')await assert.rejects(access(join(target,'company','studio-media',local)),{code:'ENOENT'});
+    assert.match(await readFile(join(target,'RESTORE.txt'),'utf8'),/미디어 버킷/);
+  }
+  const copied=await backupWorkspace({destination:join(f.root,'backups-copy'),companyDataDir:f.companyDir});
+  assert.equal(await readFile(join(copied,'company','studio-media',local),'utf8'),'local body');
+  await assert.rejects(access(join(copied,'company','studio-media',evicted)),{code:'ENOENT'});await assert.rejects(access(join(copied,'media-manifest.json')),{code:'ENOENT'});
+  assert.equal(JSON.parse(await readFile(join(copied,'media-cloud.json'),'utf8')).files[0].diskName,evicted);
+});
+
+test('with no verified ledger row a listed backup writes no media-cloud.json and names none, exactly as before',async t=>{
+  const f=await closedFixture(t),company=new Store(f.companyDir),name='c1234567-1234-4234-8234-123456789abc.png';
+  try{company.put('studioMedia','p',{diskName:name});company.put('studioMediaCloud',name,{diskName:name,state:'conflict'});}finally{company.close();}
+  await mkdir(join(f.companyDir,'studio-media'),{recursive:true});await writeFile(join(f.companyDir,'studio-media',name),'local body');
+  for(const media of ['manifest','both','copy']){
+    const target=await backupWorkspace({destination:join(f.root,'plain-'+media),companyDataDir:f.companyDir,media});
+    await assert.rejects(access(join(target,'media-cloud.json')),{code:'ENOENT'},media);
+    const integration=JSON.parse(await readFile(join(target,'integration-manifest.json'),'utf8'));
+    assert.equal(Object.hasOwn(integration,'mediaCloud'),false,media);assert.equal(Object.hasOwn(integration,'mediaModeLowered'),false,media);
+    if(media!=='copy')assert.equal(integration.mediaBytesIncluded,media==='both');
+    assert.doesNotMatch(await readFile(join(target,'RESTORE.txt'),'utf8'),/미디어 버킷/);
+  }
+});
+
+test('a ledger row with a bucket or object outside the rule stops the backup before writing COMPLETE',async t=>{
+  const f=await closedFixture(t),company=new Store(f.companyDir),name='b1234567-1234-4234-8234-123456789abc.mp4';
+  try{company.put('studioMedia','x',{diskName:name});company.put('studioMediaCloud',name,{diskName:name,state:'verified',bucket:'other-bucket',object:'studio-media/'+name,generation:'1',bytes:1,sha256:'0'.repeat(64),md5:'x'});}finally{company.close();}
+  await assert.rejects(backupWorkspace({destination:join(f.root,'backups'),companyDataDir:f.companyDir,media:'manifest'}),/클라우드 장부/);
+});

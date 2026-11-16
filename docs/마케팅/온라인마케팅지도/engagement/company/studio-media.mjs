@@ -3,6 +3,7 @@ import {mkdir,open,rename,unlink,stat} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
 import {join,resolve,dirname} from 'node:path';
 import {pipeline} from 'node:stream/promises';
+import {ensureLocalMedia} from './studio-media-cloud.mjs';
 
 export const STUDIO_MEDIA_LIMIT=100*1024*1024;
 const types={'video/mp4':'mp4','video/webm':'webm','image/png':'png','image/jpeg':'jpg'};
@@ -51,8 +52,10 @@ export function mediaRange(headerValue,size){
   if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>=size||end<start)throw fail('미디어 범위를 확인해 주세요.',416);return {start,end:Math.min(end,size-1)};
 }
 export async function serveStudioMedia(req,res,storeDirectory,media,authorize=()=>{}){
-  const path=located(storeDirectory,media.diskName);let info;try{info=await stat(path);}catch{throw fail('저장된 파일을 찾지 못했어요. 파일을 다시 올려 주세요.',404);}if(!info.isFile()||!allTypes[media.mimeType])throw fail('파일을 찾지 못했어요. 새로고침해 주세요.',404);
-  authorize();
+  // 권한을 먼저 본 뒤에 버킷에서 받아 놓는다(작업실 영상 클라우드 설계 3판 5.5) — 권한 없는 요청이 받기를 일으키지 않게.
+  const path=located(storeDirectory,media.diskName);if(!allTypes[media.mimeType])throw fail('파일을 찾지 못했어요. 새로고침해 주세요.',404);authorize();
+  await ensureLocalMedia(storeDirectory,media.diskName);
+  let info;try{info=await stat(path);}catch{throw fail('저장된 파일을 찾지 못했어요. 파일을 다시 올려 주세요.',404);}if(!info.isFile())throw fail('파일을 찾지 못했어요. 새로고침해 주세요.',404);
   let range;try{range=mediaRange(req.headers.range,info.size);}catch(error){if(error.status===416){res.writeHead(416,{'Content-Range':`bytes */${info.size}`,'Cache-Control':'private, no-store'});res.end();return;}throw error;}
   const headers={'Content-Type':media.mimeType,'Content-Length':range?range.end-range.start+1:info.size,'Accept-Ranges':'bytes','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Disposition':'inline' /* 판 4 B10: 직원 원본 파일 이름을 내리지 않는다 — 화면의 download 이름(작품 · 판 이름)이 쓰이게 */,'Content-Security-Policy':"default-src 'none'; sandbox"};
   if(range)headers['Content-Range']=`bytes ${range.start}-${range.end}/${info.size}`;

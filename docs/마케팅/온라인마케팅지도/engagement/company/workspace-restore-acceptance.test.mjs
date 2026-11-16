@@ -214,6 +214,41 @@ test('a list-only server backup is accepted only after its studio media is hydra
   assert.deepEqual((await accept(broken)).issues,['MEDIA_LIST_INVALID']);
 });
 
+// 작업실 영상 클라우드(2026-11-16): 미디어 버킷에 둔 영상은 media-cloud.json에만 적힌다. 채운 뒤에는 같은 판으로 받아들이고, 목록이 이 스냅숏과 맞지 않으면 거절한다.
+test('a backup that left verified bodies in the media bucket is accepted only after hydration and with a list bound to this snapshot',async t=>{
+  const f=await fixture(t),body=Buffer.from('synthetic-media'),digest=createHash('sha256').update(body).digest('hex');
+  const store=new Store(f.companyDir);
+  try{store.put('studioMediaCloud',f.media,{diskName:f.media,state:'verified',bucket:'synk-company-media-123456789012',object:'studio-media/'+f.media,generation:'1777',bytes:body.length,sha256:digest,md5:createHash('md5').update(body).digest('base64')});}finally{store.close();}
+  const candidate=await backupWorkspace({destination:join(f.root,'cloud-candidate'),companyDataDir:f.companyDir,media:'manifest'});
+  const baseline=await backupWorkspace({destination:join(f.root,'cloud-baseline'),companyDataDir:f.companyDir,media:'both'});
+  for(const folder of [candidate,baseline]){await access(join(folder,'media-cloud.json'));await assert.rejects(access(join(folder,'company','studio-media',f.media)),{code:'ENOENT'});}
+  const accept=async candidateDirectory=>acceptWorkspaceRestore({candidateDirectory,baselineDirectory:baseline,freshnessEvidence:await f.evidence(baseline)});
+  assert.deepEqual((await accept(candidate)).issues,['REFERENCED_MEDIA_MISSING']);
+  for(const folder of [candidate,baseline]){await mkdir(join(folder,'company','studio-media'),{recursive:true});await writeFile(join(folder,'company','studio-media',f.media),body);}
+  const hydrated=await accept(candidate);assert.equal(hydrated.status,'candidate-matches-declared-baseline',JSON.stringify(hydrated));
+  const edits={
+    generation:cloud=>{cloud.files[0].generation='12a';},
+    object:cloud=>{cloud.files[0].object='studio-media/71234567-1234-4234-8234-123456789abc.mp4';},
+    bucket:cloud=>{cloud.files[0].bucket='other-bucket';},
+    digest:cloud=>{cloud.manifestSha256='0'.repeat(64);},
+    createdAt:cloud=>{cloud.createdAt='2000-01-01T00:00:00Z';},
+    sha:cloud=>{cloud.files[0].sha256='1'.repeat(64);},
+    duplicate:cloud=>{cloud.files.push({...cloud.files[0]});},
+    empty:cloud=>{cloud.files=[];},
+    schema:cloud=>{cloud.schema='wrong';},
+  };
+  for(const [mode,edit] of Object.entries(edits)){
+    const copy=await f.clone('cloud-'+mode,candidate),file=join(copy,'media-cloud.json'),cloud=JSON.parse(await readFile(file,'utf8'));edit(cloud);await writeFile(file,JSON.stringify(cloud));
+    assert.deepEqual((await accept(copy)).issues,['MEDIA_CLOUD_INVALID'],mode);
+  }
+  const unnamed=await f.clone('cloud-unnamed',candidate),integration=JSON.parse(await readFile(join(unnamed,'integration-manifest.json'),'utf8'));delete integration.mediaCloud;await writeFile(join(unnamed,'integration-manifest.json'),JSON.stringify(integration));
+  assert.deepEqual((await accept(unnamed)).issues,['MEDIA_CLOUD_INVALID']);
+  const missing=await f.clone('cloud-missing',candidate);await rm(join(missing,'media-cloud.json'));
+  assert.deepEqual((await accept(missing)).issues,['MEDIA_CLOUD_INVALID']);
+  await writeFile(join(candidate,'company','studio-media',f.media),'synthetic-MEDIA');
+  assert.deepEqual((await accept(candidate)).issues,['MEDIA_LIST_BYTES_MISMATCH']);
+});
+
 test('persona photos, revisions and tombstone hashes retain their non-vault classification during restore',async t=>{
   const f=await fixture(t),photo='71234567-1234-4234-8234-123456789abc.png',revision='81234567-1234-4234-8234-123456789abc.png',removed='91234567-1234-4234-8234-123456789abc.mp4';
   const bodies=new Map([[photo,'synthetic-persona-photo'],[revision,'synthetic-persona-revision'],[removed,'synthetic-removed-copy']]);

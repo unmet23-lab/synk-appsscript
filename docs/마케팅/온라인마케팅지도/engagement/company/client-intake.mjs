@@ -2,6 +2,7 @@ import {readdir,readFile,lstat,mkdir,open,unlink} from 'node:fs/promises';
 import {join,resolve,dirname} from 'node:path';
 import {createRequire} from 'node:module';
 import {randomUUID,createHash} from 'node:crypto';
+import {ensureLocalMedia} from './studio-media-cloud.mjs';
 const require=createRequire(import.meta.url);
 const sync=require('../../../클라이언트_발주서_20260930/receiver/sync.cjs');
 const validId=value=>typeof value==='string'&&/^p_[a-f0-9]{32}$/.test(value);
@@ -12,8 +13,9 @@ function mediaPath(directory,file){if(!/^[a-f0-9-]{36}\.intake$/.test(file.diskN
 async function verifiedBytes(path,file){const info=await lstat(path);if(!info.isFile()||info.isSymbolicLink()||info.size!==file.size||info.size>30*1024*1024)throw fail('접수 파일이 받을 때와 달라요.',409);const bytes=await readFile(path);if(bytes.length!==file.size||digest(bytes)!==file.sha256)throw fail('접수 파일이 받을 때와 달라요.',409);return bytes;}
 export async function discardIntakeFiles(receipt,directory){for(const file of receipt?.files||[])await unlink(mediaPath(directory,file)).catch(error=>{if(error.code!=='ENOENT')throw error;});}
 export async function serveIntakeFile(req,res,directory,file,authorize){
-  let bytes;try{bytes=await verifiedBytes(mediaPath(directory,file),{size:file.byteSize,sha256:file.sha256});}catch(error){if(error.code==='ENOENT')throw fail('저장한 접수 파일을 찾지 못했어요.',404);throw error;}
-  authorize();
+  // 권한을 먼저 본 뒤에 버킷에서 받아 놓는다(작업실 영상 클라우드 설계 3판 5.5).
+  const path=mediaPath(directory,file);authorize();await ensureLocalMedia(directory,file.diskName);
+  let bytes;try{bytes=await verifiedBytes(path,{size:file.byteSize,sha256:file.sha256});}catch(error){if(error.code==='ENOENT')throw fail('저장한 접수 파일을 찾지 못했어요.',404);throw error;}
   res.writeHead(200,{'Content-Type':'application/octet-stream','Content-Length':bytes.length,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin','Content-Disposition':`attachment; filename="intake-file"; filename*=UTF-8''${encodeURIComponent(file.fileName).replace(/'/g,'%27')}`,'Content-Security-Policy':"default-src 'none'; sandbox"});
   res.end(req.method==='HEAD'?undefined:bytes);
 }

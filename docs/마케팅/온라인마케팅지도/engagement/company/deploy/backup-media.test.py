@@ -434,5 +434,173 @@ class Restore(Base):
         self.assertEqual((code, out['status'], out['missing'], out['setClosed']), (1, 'incomplete', 0, False))
 
 
+# ---- Studio media cloud (2026-11-16): bodies in the media bucket are referenced, not sent ---------------------
+
+NUMBER = '931078180935'
+BACKUPS = 'synk-company-backups-' + NUMBER
+MEDIA = 'synk-company-media-' + NUMBER
+CLOUD_DEST = 'gs://' + BACKUPS + '/company/production'
+
+
+class TwoBuckets(http.server.ThreadingHTTPServer):
+    """The backup bucket and the media bucket, with the four calls the tool makes (create, metadata, media, list)."""
+    def __init__(self):
+        super().__init__(('127.0.0.1', 0), TwoBucketHandler)
+        self.objects = {}  # (bucket, name) -> (generation, bytes, timeCreated)
+        self.generation = 5000
+        self.requests = []
+
+    def add(self, bucket, name, body):
+        self.generation += 1
+        self.objects[(bucket, name)] = (self.generation, body, '2026-11-15T00:00:00.000Z')
+        return str(self.generation)
+
+
+class TwoBucketHandler(Handler):
+    def do_POST(self):
+        if not self.authorized():
+            return
+        url = urllib.parse.urlparse(self.path)
+        query = dict(urllib.parse.parse_qsl(url.query))
+        body = self.rfile.read(int(self.headers['Content-Length']))
+        parts = url.path.split('/')
+        if url.path != '/upload/storage/v1/b/' + BACKUPS + '/o' or query.get('ifGenerationMatch') != '0':
+            return self.reply(400)  # nothing is ever created in the media bucket by this tool
+        if (BACKUPS, query['name']) in self.server.objects:
+            return self.reply(412)
+        generation = self.server.add(BACKUPS, query['name'], body)
+        self.reply(200, json.dumps({'name': query['name'], 'generation': generation, 'size': str(len(body)), 'md5Hash': md5(body)}).encode())
+
+    def do_GET(self):
+        if not self.authorized():
+            return
+        url = urllib.parse.urlparse(self.path)
+        query = dict(urllib.parse.parse_qsl(url.query))
+        parts = url.path.split('/o', 1)
+        bucket = urllib.parse.unquote(parts[0][len('/storage/v1/b/'):])
+        if parts[1] == '':
+            names = sorted(n for (b, n) in self.server.objects if b == bucket and n.startswith(query['prefix']))
+            items = [{'name': n, 'generation': str(self.server.objects[(bucket, n)][0]), 'size': str(len(self.server.objects[(bucket, n)][1])),
+                      'md5Hash': md5(self.server.objects[(bucket, n)][1]), 'timeCreated': self.server.objects[(bucket, n)][2]} for n in names]
+            return self.reply(200, json.dumps({'items': items}).encode())
+        name = urllib.parse.unquote(parts[1][1:])
+        row = self.server.objects.get((bucket, name))
+        if row is None or query.get('generation') != str(row[0]):
+            return self.reply(404)
+        if query.get('alt') == 'media':
+            return self.reply(200, row[1], {'x-goog-generation': str(row[0])})
+        self.reply(200, json.dumps({'name': name, 'generation': str(row[0]), 'size': str(len(row[1])), 'md5Hash': md5(row[1])}).encode())
+
+
+class Cloud(Base):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(os.path.realpath(self.temp.name))
+        self.server = TwoBuckets()
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.endpoint = 'http://127.0.0.1:%d' % self.server.server_address[1]
+        self.volume = self.root / 'company'
+        (self.volume / 'studio-media').mkdir(parents=True)
+        self.archives = self.root / 'archives'
+        self.archives.mkdir(mode=0o700)
+        # A is in the media bucket and not on the volume at all (evicted); B is a local body.
+        self.bodies = {A: b'synthetic video body', B: b'synthetic image body!'}
+        (self.volume / 'studio-media' / B).write_bytes(self.bodies[B])
+        self.generation = self.server.add(MEDIA, 'studio-media/' + A, self.bodies[A])
+        self.snapshot = self.cloud_backup()
+
+    def cloud_backup(self, name=FIRST, rows=None, edit=None, integration=True):
+        folder = self.backup(False, name)
+        manifest_sha = sha((folder / 'media-manifest.json').read_bytes())
+        cloud = {'schema': 'synk-workspace-media-cloud/v1', 'createdAt': '2026-11-01T18:30:00.123Z', 'manifestSha256': manifest_sha,
+                 'files': rows if rows is not None else [{'diskName': A, 'sha256': sha(self.bodies[A]), 'bytes': len(self.bodies[A]), 'bucket': MEDIA,
+                                                          'object': 'studio-media/' + A, 'generation': self.generation, 'md5': md5(self.bodies[A])}]}
+        if edit:
+            edit(cloud)
+        (folder / 'media-cloud.json').write_text(json.dumps(cloud))
+        if integration:
+            data = json.loads((folder / 'integration-manifest.json').read_text())
+            data['mediaCloud'] = 'media-cloud.json'
+            (folder / 'integration-manifest.json').write_text(json.dumps(data))
+        return folder
+
+    def cloud_upload(self, snapshot=None, destination=CLOUD_DEST):
+        return self.upload(snapshot, destination)
+
+    def test_a_referenced_body_sends_no_sidecar_and_the_v2_completion_names_it(self):
+        code, out, err = self.cloud_upload()
+        self.assertEqual((code, err), (0, ''))
+        self.assertEqual((out['uploaded'], out['referenced'], out['files'], out['contents']), (1, 1, 2, 2))
+        names = sorted(n for (b, n) in self.server.objects if b == BACKUPS)
+        self.assertEqual(names, sorted([sidecar(FIRST, self.bodies[B]), 'company/production/' + FIRST + '.media-complete']))
+        closing = json.loads(self.server.objects[(BACKUPS, 'company/production/' + FIRST + '.media-complete')][1])
+        self.assertEqual(closing['schema'], 'synk-workspace-media-complete/v2')
+        self.assertEqual(closing['referenced'], [{'bucket': MEDIA, 'object': 'studio-media/' + A, 'generation': self.generation}])
+        receipt = json.loads(self.receipt(self.snapshot).read_text())
+        self.assertEqual(receipt['referenced'], [{'bucket': MEDIA, 'object': 'studio-media/' + A, 'generation': self.generation,
+                                                  'sha256': sha(self.bodies[A]), 'bytes': len(self.bodies[A]), 'md5Hash': md5(self.bodies[A])}])
+        # nothing was written to the media bucket
+        self.assertEqual([n for (b, n) in self.server.objects if b == MEDIA], ['studio-media/' + A])
+
+    def test_a_referenced_object_that_is_gone_or_different_stops_before_the_set_is_closed(self):
+        del self.server.objects[(MEDIA, 'studio-media/' + A)]
+        self.server.add(MEDIA, 'studio-media/' + A, b'other bytes of a new generation')
+        code, _, err = self.cloud_upload()
+        self.assertEqual((code, err), (1, 'SYNK_BACKUP_MEDIA MEDIA_CLOUD_MISSING\n'))
+        self.assertFalse(any(n.endswith('.media-complete') for (_, n) in self.server.objects))
+        self.assertFalse(self.receipt(self.snapshot).exists())
+
+    def test_a_media_bucket_of_another_project_is_refused(self):
+        snapshot = self.cloud_backup(SECOND, edit=lambda c: c['files'][0].update(bucket='synk-company-media-111111111111'))
+        self.assertEqual(self.cloud_upload(snapshot)[2], 'SYNK_BACKUP_MEDIA CLOUD_BUCKET_MISMATCH\n')
+        snapshot = self.cloud_backup('synk-workspace-2026-11-03T18-30-00-000Z')
+        self.assertEqual(self.upload(snapshot, DEST)[2], 'SYNK_BACKUP_MEDIA CLOUD_BUCKET_MISMATCH\n')
+
+    def test_a_cloud_list_that_does_not_match_the_manifest_is_refused(self):
+        cases = [
+            lambda c: c.update(manifestSha256='0' * 64),
+            lambda c: c['files'][0].update(extra=True),
+            lambda c: c['files'][0].update(diskName=TWIN),
+            lambda c: c['files'][0].update(sha256='1' * 64),
+            lambda c: c['files'][0].update(object='studio-media/../x.mp4'),
+            lambda c: c['files'][0].update(generation='12a'),
+            lambda c: c['files'][0].update(md5='short'),
+        ]
+        for index, edit in enumerate(cases):
+            snapshot = self.cloud_backup('synk-workspace-2026-11-%02dT18-30-00-000Z' % (10 + index), edit=edit)
+            self.assertEqual(self.cloud_upload(snapshot)[2], 'SYNK_BACKUP_MEDIA CLOUD_LIST_INVALID\n', index)
+        # the integration manifest and the file must agree
+        snapshot = self.cloud_backup('synk-workspace-2026-11-20T18-30-00-000Z', integration=False)
+        self.assertEqual(self.cloud_upload(snapshot)[2], 'SYNK_BACKUP_MEDIA CLOUD_LIST_INVALID\n')
+
+    def test_hydrate_takes_a_referenced_body_from_the_media_bucket_and_the_others_from_sidecars(self):
+        self.assertEqual(self.cloud_upload()[0], 0)
+        prepared = self.root / 'prepared'
+        prepared.mkdir()
+        code, out, err = self.run_tool('hydrate', '--snapshot', str(self.snapshot), '--source', CLOUD_DEST, '--prepared', str(prepared))
+        self.assertEqual((code, err), (0, ''))
+        for folder in (self.snapshot / 'company' / 'studio-media', prepared / 'studio-media'):
+            self.assertEqual({p.name: p.read_bytes() for p in folder.iterdir()}, self.bodies)
+        self.assertTrue(any(MEDIA in r[1] and 'alt=media' in r[1] for r in self.server.requests))
+
+    def test_verify_counts_a_referenced_body_and_reports_a_missing_one(self):
+        self.assertEqual(self.cloud_upload()[0], 0)
+        code, out, _ = self.run_tool('verify', '--snapshot', str(self.snapshot), '--source', CLOUD_DEST, '--download')
+        self.assertEqual((code, out['status'], out['missing'], out['mismatched'], out['setClosed']), (0, 'verified', 0, 0, True))
+        del self.server.objects[(MEDIA, 'studio-media/' + A)]
+        code, out, _ = self.run_tool('verify', '--snapshot', str(self.snapshot), '--source', CLOUD_DEST)
+        self.assertEqual((code, out['status'], out['missing']), (1, 'incomplete', 1))
+
+    def test_without_a_cloud_list_the_set_is_v1_exactly_as_before(self):
+        (self.volume / 'studio-media' / A).write_bytes(self.bodies[A])
+        snapshot = self.backup(False, SECOND)
+        code, out, err = self.cloud_upload(snapshot)
+        self.assertEqual((code, err), (0, ''))
+        self.assertNotIn('referenced', out)
+        closing = json.loads(self.server.objects[(BACKUPS, 'company/production/' + SECOND + '.media-complete')][1])
+        self.assertEqual(closing['schema'], 'synk-workspace-media-complete/v1')
+        self.assertNotIn('referenced', json.loads(self.receipt(snapshot).read_text()))
+
+
 if __name__ == '__main__':
     unittest.main()

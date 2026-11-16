@@ -100,8 +100,9 @@ async function snapshot(directory){
     // A server backup may list its studio media by sha256 (media-manifest.json). A list-only
     // backup passes only after backup-media.py hydrate put the bodies back; then the list
     // must name exactly the referenced files and match their bytes.
+    let list=null,listBytes=null;
     if(before.has('media-manifest.json')||manifest.mediaManifest!==undefined){
-      let list,listBytes;try{listBytes=await readFile(join(root,'media-manifest.json'));list=JSON.parse(listBytes);}catch{throw issue('MEDIA_LIST_INVALID');}
+      try{listBytes=await readFile(join(root,'media-manifest.json'));list=JSON.parse(listBytes);}catch{throw issue('MEDIA_LIST_INVALID');}
       if(!object(list)||list.schema!=='synk-workspace-media/v1'||typeof list.bytesIncluded!=='boolean'||!Array.isArray(list.files)||list.files.length!==media.length||manifest.mediaManifest!=='media-manifest.json'||manifest.mediaBytesIncluded!==list.bytesIncluded)throw issue('MEDIA_LIST_INVALID');
       const names=new Set(media);
       for(const file of list.files){if(!object(file)||!names.delete(file.diskName)||typeof file.sha256!=='string'||before.get(join('company','studio-media',file.diskName))!==file.sha256)throw issue('MEDIA_LIST_BYTES_MISMATCH');}
@@ -117,6 +118,21 @@ async function snapshot(directory){
       }
     }else if(before.has('media-retention.json')||manifest.mediaRetention!==undefined){
       throw issue('MEDIA_RETENTION_INVALID');
+    }
+    // Studio media cloud (2026-11-16): media-cloud.json names the bodies this backup left in the media bucket
+    // (backup-media.py hydrate fills them from there). Like retention it is backup metadata, not payload: its
+    // time, list hash and object generations differ between equivalent snapshots. Validate its binding to this
+    // snapshot and the hydrated bytes, then leave it out of the payload comparison.
+    if(before.has('media-cloud.json')||manifest.mediaCloud!==undefined){
+      let cloud;try{cloud=JSON.parse(await readFile(join(root,'media-cloud.json'),'utf8'));}catch{throw issue('MEDIA_CLOUD_INVALID');}
+      if(manifest.mediaCloud!=='media-cloud.json'||!object(cloud)||cloud.schema!=='synk-workspace-media-cloud/v1'||!validDate(cloud.createdAt)||!Array.isArray(cloud.files)||!cloud.files.length||(list?cloud.createdAt!==list.createdAt||cloud.manifestSha256!==sha(listBytes):cloud.manifestSha256!==null))throw issue('MEDIA_CLOUD_INVALID');
+      const names=new Set(media),listed=new Map((list?.files||[]).map(file=>[file.diskName,file])),seen=new Set();
+      for(const file of cloud.files){
+        const objectName=typeof file?.object==='string'?/^studio-media\/([0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake))(?:~[1-9][0-9]{0,3})?$/i.exec(file.object):null;
+        if(!object(file)||!names.has(file.diskName)||seen.has(file.diskName)||objectName?.[1]!==file.diskName||typeof file.bucket!=='string'||!/^synk-company-media-[0-9]{6,20}$/.test(file.bucket)||typeof file.generation!=='string'||!/^[0-9]{1,20}$/.test(file.generation)||typeof file.md5!=='string'||!file.md5||!Number.isSafeInteger(file.bytes)||file.bytes<0||typeof file.sha256!=='string'||!/^[0-9a-f]{64}$/.test(file.sha256)||(list&&listed.get(file.diskName)?.sha256!==file.sha256))throw issue('MEDIA_CLOUD_INVALID');
+        seen.add(file.diskName);
+        if(before.get(join('company','studio-media',file.diskName))!==file.sha256)throw issue('MEDIA_LIST_BYTES_MISMATCH');
+      }
     }
     return {root,before,manifest,key,company,messenger,practices,retentionValidated};
   }catch(error){company?.db.close();messenger?.db.close();throw error;}
@@ -151,7 +167,7 @@ export async function acceptWorkspaceRestore({candidateDirectory,baselineDirecto
     // the file and its manifest reference from only one side must not erase it.
     if(candidate.retentionValidated!==baseline.retentionValidated)report.issues.push('MEDIA_RETENTION_PRESENCE_DIFFERS');
     // File hashes stay in memory: no encryption-key/credential/content hashes in reports.
-    const relativeFiles=s=>new Map([...s.before].filter(([name])=>!['COMPLETE','RESTORE.txt','integration-manifest.json','media-manifest.json','media-retention.json',join('company','company.sqlite'),join('messenger','messenger.sqlite')].includes(name)&&!/\.sqlite-(wal|shm)$/i.test(name)));
+    const relativeFiles=s=>new Map([...s.before].filter(([name])=>!['COMPLETE','RESTORE.txt','integration-manifest.json','media-manifest.json','media-retention.json','media-cloud.json',join('company','company.sqlite'),join('messenger','messenger.sqlite')].includes(name)&&!/\.sqlite-(wal|shm)$/i.test(name)));
     if(!sameFiles(relativeFiles(candidate),relativeFiles(baseline)))report.issues.push('BACKUP_PAYLOAD_FILES_DIFFER');
     report.sourceFilesUnchanged=sameFiles(candidate.before,await files(candidate.root))&&sameFiles(baseline.before,await files(baseline.root));
     if(!report.sourceFilesUnchanged)report.issues.push('SOURCE_CHANGED_DURING_ACCEPTANCE');

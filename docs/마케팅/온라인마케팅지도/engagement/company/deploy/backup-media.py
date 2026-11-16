@@ -25,6 +25,14 @@
            right size and the set is closed; --download also streams each one
            and checks its sha256.
 
+Studio media cloud (2026-11-16, design 3 in the private .tmp/company-media-cloud-20261116):
+a body the server's ledger says is verified in the media bucket is listed in
+media-cloud.json beside the manifest. upload sends no sidecar for it; it reads the
+object's metadata (exact generation) and counts it as referenced when size and md5
+match, and the completion object (schema v2) and the receipt name every referenced
+object. hydrate and verify read those bodies from the media bucket. A backup with no
+media-cloud.json (or an empty one) behaves exactly as before (schema v1).
+
 The OAuth access token is one line on standard input -- never argv, environment
 or output. Failures print only `SYNK_BACKUP_MEDIA <CODE>` on stderr, exit 1.
 The upload identity may only create objects: nothing here lists, reads,
@@ -50,6 +58,14 @@ SNAPSHOT = re.compile(r'^synk-workspace-[0-9TZ-]+$')
 SHA = re.compile(r'^[0-9a-f]{64}$')
 SIDECAR = re.compile(r'^(synk-workspace-[0-9TZ-]+)\.media-([0-9a-f]{64})$')
 COMPLETE_SCHEMA = 'synk-workspace-media-complete/v1'
+COMPLETE_SCHEMA_CLOUD = 'synk-workspace-media-complete/v2'
+CLOUD = 'media-cloud.json'
+CLOUD_SCHEMA = 'synk-workspace-media-cloud/v1'
+CLOUD_BUCKET = re.compile(r'^synk-company-media-([0-9]{6,20})$')
+BACKUP_BUCKET = re.compile(r'^synk-company-backups-([0-9]{6,20})$')
+CLOUD_OBJECT = re.compile(r'^studio-media/[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)(~[1-9][0-9]{0,3})?$')
+MAX_REFERENCED = 8000
+MAX_COMPLETE = 4 << 20
 RECEIPT_SCHEMA = 'synk-backup-media-receipt/v1'
 TOKEN = re.compile(r'^[A-Za-z0-9._~+/-]+={0,2}$')
 BUCKET = re.compile(r'^[a-z0-9][a-z0-9._-]{1,61}[a-z0-9]$')
@@ -233,8 +249,68 @@ def load_manifest(snapshot_path):
     for item in files:
         previous = contents.setdefault(item['sha256'], item['bytes'])
         need(previous == item['bytes'], 'MANIFEST_INVALID')
+    cloud = load_cloud(snapshot_path, files, manifest_sha, integration)
     return {'name': name, 'bytesIncluded': manifest['bytesIncluded'], 'files': files, 'contents': contents, 'sha256': manifest_sha,
-            'createdAt': manifest['createdAt']}
+            'createdAt': manifest['createdAt'], 'cloud': cloud}
+
+
+def load_cloud(snapshot_path, files, manifest_sha, integration):
+    """diskName -> media bucket row, for bodies the server ledger said are verified (untrusted input, checked here)."""
+    listed = integration.get('mediaCloud')
+    body = None
+    if os.path.lexists(os.path.join(snapshot_path, CLOUD)):
+        snapshot = open_directory(snapshot_path)
+        try:
+            body = read_json_file(snapshot, CLOUD)
+        finally:
+            close_directory(snapshot)
+    if body is None:
+        need(listed is None, 'CLOUD_LIST_INVALID')
+        return {}
+    need(listed == CLOUD and isinstance(body, dict) and body.get('schema') == CLOUD_SCHEMA and body.get('manifestSha256') == manifest_sha, 'CLOUD_LIST_INVALID')
+    rows = body.get('files')
+    need(isinstance(rows, list) and len(rows) <= MAX_REFERENCED, 'CLOUD_LIST_INVALID')
+    by_name = {item['diskName']: item for item in files}
+    cloud = {}
+    for row in rows:
+        need(isinstance(row, dict) and set(row) == {'diskName', 'sha256', 'bytes', 'bucket', 'object', 'generation', 'md5'}, 'CLOUD_LIST_INVALID')
+        item = by_name.get(row['diskName'])
+        need(item is not None and row['diskName'] not in cloud and row['sha256'] == item['sha256'] and row['bytes'] == item['bytes'], 'CLOUD_LIST_INVALID')
+        need(isinstance(row['bucket'], str) and CLOUD_BUCKET.match(row['bucket']) and isinstance(row['object'], str) and CLOUD_OBJECT.match(row['object'])
+             and isinstance(row['generation'], str) and row['generation'].isdigit(), 'CLOUD_LIST_INVALID')
+        try:
+            need(isinstance(row['md5'], str) and len(base64.b64decode(row['md5'], validate=True)) == 16, 'CLOUD_LIST_INVALID')
+        except (ValueError, TypeError):
+            raise Failure('CLOUD_LIST_INVALID')
+        cloud[row['diskName']] = row
+    return cloud
+
+
+def cloud_bucket_matches(cloud, backup_bucket):
+    """The media bucket must belong to the same project as the backup bucket (same number in both names)."""
+    if not cloud:
+        return
+    match = BACKUP_BUCKET.match(backup_bucket)
+    need(match is not None, 'CLOUD_BUCKET_MISMATCH')
+    for row in cloud.values():
+        need(CLOUD_BUCKET.match(row['bucket']).group(1) == match.group(1), 'CLOUD_BUCKET_MISMATCH')
+
+
+def check_referenced(storage, cloud, budget):
+    """Each referenced object, read at its exact generation, has the listed size and md5. Returns the sorted reference list."""
+    refs, seen = [], set()
+    for disk_name in sorted(cloud):
+        row = cloud[disk_name]
+        budget.check()
+        meta = storage.stat(row['bucket'], row['object'], row['generation'])
+        need(meta is not None and str(meta.get('generation')) == row['generation'] and str(meta.get('size')) == str(row['bytes'])
+             and meta.get('md5Hash') == row['md5'], 'MEDIA_CLOUD_MISSING')
+        key = (row['bucket'], row['object'], row['generation'])
+        if key not in seen:
+            seen.add(key)
+            refs.append({'bucket': row['bucket'], 'object': row['object'], 'generation': row['generation'], 'sha256': row['sha256'],
+                         'bytes': row['bytes'], 'md5Hash': row['md5']})
+    return refs
 
 
 # ---- GCS JSON API over one HTTPS host ---------------------------------------------
@@ -291,6 +367,19 @@ class Storage:
             if not page:
                 return items
         raise Failure('STORAGE_LIST_TOO_LONG')
+
+    def stat(self, bucket, name, generation):
+        """One object's metadata at an exact generation; None when it is not there."""
+        path = ('/storage/v1/b/' + urllib.parse.quote(bucket, safe='') + '/o/' + urllib.parse.quote(name, safe='')
+                + '?generation=' + str(generation) + '&fields=' + urllib.parse.quote('name,generation,size,md5Hash', safe=''))
+        status, data = self.request('GET', path)
+        if status == 404:
+            return None
+        need(status == 200 and len(data) <= MAX_JSON, 'STORAGE_REQUEST_FAILED')
+        try:
+            return json.loads(data)
+        except ValueError:
+            raise Failure('STORAGE_REQUEST_FAILED')
 
     def create(self, bucket, name, reader, size):
         path = ('/upload/storage/v1/b/' + urllib.parse.quote(bucket, safe='') + '/o?uploadType=media&name='
@@ -375,7 +464,13 @@ def upload(args, token):
     summary = {'status': 'complete', 'mode': 'both' if manifest['bytesIncluded'] else 'manifest', 'files': len(manifest['files']),
                'contents': len(manifest['contents']), 'bytes': sum(manifest['contents'].values()), 'uploaded': 0, 'uploadedBytes': 0,
                '_objects': []}
-    if manifest['files']:
+    cloud = manifest['cloud']
+    if cloud:
+        need(not manifest['bytesIncluded'], 'CLOUD_WITH_BYTES')
+        cloud_bucket_matches(cloud, bucket)
+        summary['_referenced'] = check_referenced(storage, cloud, budget)
+        summary['referenced'] = len(summary['_referenced'])
+    if [item for item in manifest['files'] if item['diskName'] not in cloud]:
         # both: the snapshot's own copy, the same bytes as the archive. manifest: the live
         # volume (container-written folders either way: never follow a link).
         media = media_directory(args.snapshot if manifest['bytesIncluded'] else args.volume, manifest['bytesIncluded'])
@@ -399,6 +494,8 @@ def write_receipt(path, bucket, prefix, manifest, summary):
             'bytesIncluded': manifest['bytesIncluded'], 'bucket': bucket, 'prefix': prefix,
             'files': [{'diskName': item['diskName'], 'sha256': item['sha256'], 'bytes': item['bytes']} for item in manifest['files']],
             'objects': summary.pop('_objects'), 'complete': summary.pop('_complete')}
+    if '_referenced' in summary:
+        body['referenced'] = summary.pop('_referenced')
     data = json.dumps(body, sort_keys=True).encode()
     try:
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, 'O_NOFOLLOW', 0) | BINARY, 0o600)
@@ -428,8 +525,8 @@ def media_directory(root, in_snapshot):
 def close_set(storage, bucket, prefix, manifest, summary):
     """The last object of a backup's media set: only a run that sent every body writes it."""
     name = prefix + manifest['name'] + '.media-complete'
-    body = json.dumps({'schema': COMPLETE_SCHEMA, 'backup': manifest['name'], 'manifestSha256': manifest['sha256'],
-                       'files': summary['files'], 'contents': summary['contents'], 'bytes': summary['bytes']}, sort_keys=True).encode()
+    body = json.dumps(complete_body(manifest, summary.get('_referenced')), sort_keys=True).encode()
+    need(len(body) <= MAX_COMPLETE, 'MEDIA_CLOUD_TOO_MANY')
     reply = storage.create(bucket, name, body, len(body))
     try:
         remote_md5 = base64.b64decode(reply.get('md5Hash', ''), validate=True)
@@ -441,12 +538,24 @@ def close_set(storage, bucket, prefix, manifest, summary):
     summary['setClosed'] = True
 
 
+def complete_body(manifest, referenced):
+    """v1 without references (exactly as before); v2 names every referenced object (the PC cleanup job keeps them)."""
+    body = {'schema': COMPLETE_SCHEMA, 'backup': manifest['name'], 'manifestSha256': manifest['sha256'],
+            'files': len(manifest['files']), 'contents': len(manifest['contents']), 'bytes': sum(manifest['contents'].values())}
+    if referenced:
+        body['schema'] = COMPLETE_SCHEMA_CLOUD
+        body['referenced'] = [{'bucket': ref['bucket'], 'object': ref['object'], 'generation': ref['generation']} for ref in referenced]
+    return body
+
+
 def send_bodies(storage, bucket, prefix, manifest, media, owner, budget, summary):
-    # Every listed file must be a plain file of its listed size before anything is sent.
-    for item in manifest['files']:
+    # Bodies in the media bucket send no sidecar. A content that some other, unreferenced name also holds is still sent
+    # (from that name). Every file that is sent must be a plain file of its listed size before anything is sent.
+    local = [item for item in manifest['files'] if item['diskName'] not in manifest['cloud']]
+    for item in local:
         os.close(open_file(media, item['diskName'], item['bytes'], owner))
     sent = set()
-    for item in manifest['files']:
+    for item in local:
         sha256, size = item['sha256'], item['bytes']
         if sha256 in sent:
             continue
@@ -571,6 +680,8 @@ def placed_before(path, sha256, size):
 def hydrate(args, token):
     manifest = load_manifest(args.snapshot)
     need(not manifest['bytesIncluded'], 'BYTES_ALREADY_INCLUDED')
+    if manifest['cloud'] and not args.from_dir:
+        cloud_bucket_matches(manifest['cloud'], destination(args.source)[0])
     if args.from_dir:
         local = local_bodies(args.from_dir, manifest['contents'])
         bucket = storage = None
@@ -631,6 +742,9 @@ def release(fd, path):
 
 def hydrate_locked(args, manifest, local, storage, bucket, listed, snapshot_media, targets):
     by_sha, borrowed, kept = {}, 0, 0
+    cloud_by_sha = {}
+    for row in manifest['cloud'].values():
+        cloud_by_sha.setdefault(row['sha256'], row)
     for item in manifest['files']:
         by_sha.setdefault(item['sha256'], []).append(item)
     for sha256, items in by_sha.items():
@@ -652,6 +766,13 @@ def hydrate_locked(args, manifest, local, storage, bucket, listed, snapshot_medi
                 need(digests(fd, Budget())[0] == sha256, 'MEDIA_COPY_MISMATCH')
             finally:
                 os.close(fd)
+            source = manifest['name']
+        elif sha256 in cloud_by_sha:
+            # The body lives in the media bucket: its exact generation, checked like a sidecar.
+            row = cloud_by_sha[sha256]
+            got = fetch(storage, row['bucket'], [(manifest['name'], {'name': row['object'], 'generation': row['generation'], 'size': str(row['bytes']),
+                                                                      'md5Hash': row['md5']})], items[0]['bytes'], sha256, staging)
+            need(got is not None, 'MEDIA_CLOUD_MISSING')
             source = manifest['name']
         else:
             source = fetch(storage, bucket, rows, items[0]['bytes'], sha256, staging)
@@ -675,18 +796,42 @@ def verify(args, token):
     # The completion object must close this exact list, not just exist: its body names the list sha256 and its counts.
     closed = False
     complete = [item for item in items if item.get('name') == own + 'complete']
-    if len(complete) == 1 and str(complete[0].get('size', '')).isdigit() and int(complete[0]['size']) <= 1 << 20:
+    cloud = manifest['cloud']
+    cloud_bucket_matches(cloud, bucket)
+    referenced = []
+    if cloud:
+        try:
+            referenced = check_referenced(storage, cloud, Budget())
+        except Failure as error:
+            if str(error) != 'MEDIA_CLOUD_MISSING':
+                raise
+            referenced = None
+    if len(complete) == 1 and str(complete[0].get('size', '')).isdigit() and int(complete[0]['size']) <= MAX_COMPLETE and referenced is not None:
         chunks = []
         try:
             storage.download(bucket, complete[0], chunks.append, int(complete[0]['size']))
-            closed = json.loads(b''.join(chunks)) == {
-                'schema': COMPLETE_SCHEMA, 'backup': manifest['name'], 'manifestSha256': manifest['sha256'], 'files': len(manifest['files']),
-                'contents': len(manifest['contents']), 'bytes': sum(manifest['contents'].values())}
+            closed = json.loads(b''.join(chunks)) == complete_body(manifest, referenced)
         except (Failure, ValueError, TypeError):
             closed = False
     listed = sidecars(items, prefix)
     missing = mismatched = 0
+    cloud_contents = {row['sha256'] for row in cloud.values()}
+    local_contents = {item['sha256'] for item in manifest['files'] if item['diskName'] not in cloud}
+    if referenced is None:
+        missing += len(cloud_contents - local_contents)
+    elif args.download:
+        for ref in referenced:
+            if ref['sha256'] in local_contents:
+                continue
+            try:
+                got_sha, got_md5 = storage.download(ref['bucket'], {'name': ref['object'], 'generation': ref['generation']}, lambda block: None, ref['bytes'])
+                good = got_sha == ref['sha256'] and got_md5 == base64.b64decode(ref['md5Hash'], validate=True)
+            except (Failure, ValueError, TypeError):
+                good = False
+            mismatched += not good
     for sha256, size in manifest['contents'].items():
+        if sha256 in cloud_contents and sha256 not in local_contents:
+            continue
         rows = [row for row in listed.get(sha256, []) if row[0] == manifest['name'] and str(row[1].get('size')) == str(size)]
         if not rows:
             missing += 1

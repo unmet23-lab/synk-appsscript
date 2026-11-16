@@ -589,12 +589,14 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     return settleDeletion(personaId);
   }
   // 지울 인물 파일(살아 있는 출처 · 판 자산)의 이름 → 본문 sha256. 출처는 받을 때 잰 값, 판 자산은 지금 잰다(없는 파일은 null — 지킬 바이트가 없다).
+  // 버킷에 확인된 파일이면 장부의 sha256을 쓴다 — 비운 파일도 해시가 빠지지 않는다(작업실 영상 클라우드 설계 3판 6절). 장부는 저장소 문서라 이 모듈의 import 목록은 그대로다.
+  const cloudSha=name=>{const row=store.get('studioMediaCloud',name);return row?.state==='verified'&&SHA256.test(row.sha256||'')?row.sha256:null;};
   async function personaHashes(persona){
     const out=new Map();
     for(const source of store.all(K.sources).filter(item=>item.personaId===persona.id&&live(item)&&typeof item.diskName==='string'))
-      out.set(source.diskName,SHA256.test(source.sha256||'')?source.sha256:await fileSha(join(store.directory,'studio-media',source.diskName)));
+      out.set(source.diskName,SHA256.test(source.sha256||'')?source.sha256:cloudSha(source.diskName)??await fileSha(join(store.directory,'studio-media',source.diskName)));
     for(const revision of store.all(K.revisions).filter(item=>item.personaId===persona.id&&live(item)))
-      for(const entry of revision.assets||[])if(typeof entry?.diskName==='string'&&!out.has(entry.diskName))out.set(entry.diskName,SHA256.test(entry.sha256||'')?entry.sha256:await fileSha(join(store.directory,'studio-media',entry.diskName)));
+      for(const entry of revision.assets||[])if(typeof entry?.diskName==='string'&&!out.has(entry.diskName))out.set(entry.diskName,SHA256.test(entry.sha256||'')?entry.sha256:cloudSha(entry.diskName)??await fileSha(join(store.directory,'studio-media',entry.diskName)));
     return out;
   }
   // ① 트랜잭션의 몸통(부르는 쪽 트랜잭션 안 · 참조 확인 뒤): 관리자 삭제와 보관 기간 뒤 지우기(sweepRetention)가 함께 쓴다.
@@ -731,7 +733,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   }
 
   // 작업실 파일 하나의 본문 sha256(없는 파일은 null). 인물 판 파일 하나를 빼기 전에 server가 잰다(pulse-personas는 파일을 읽지 않는다).
-  const mediaSha=diskName=>{if(typeof diskName!=='string'||!MEDIA_NAME.test(diskName))throw fail('파일 이름을 확인해 주세요.');return fileSha(join(store.directory,'studio-media',diskName));};
+  const mediaSha=diskName=>{if(typeof diskName!=='string'||!MEDIA_NAME.test(diskName))throw fail('파일 이름을 확인해 주세요.');return cloudSha(diskName)??fileSha(join(store.directory,'studio-media',diskName));};
   return {mediaSha,enabled,projectProof,draftProof,projectState,claim,withdrawClaim,models,entryAssignment,model,asset,attach,reuse,withdrawReuse,stop,deleteRequest,
     attachedRequest,ownerFor,personaReferences,staffList,staffRead,decideClaim,workspaceAction,projectAction,personaAction,deletePersona,finishDeletion,resumeDeletions,
     retentionDue,sweepRetention};
