@@ -5,11 +5,12 @@
 // 아직 짓지 않은 것(코드 NOT_IMPLEMENTED로 분명히 던진다 — 조용히 빈 값을 주면 제품이 엔진이 돈다고 믿는다):
 //   live · today · presentation(순간 맞춤 · 오늘 컨디션 · 표시 설정 — 게임을 잇는 4-6), reset(비우기 — 「나」 4-5).
 import { openMap } from '../map/index.mjs';
-import { lookbackOf, lookbackWindows } from '../memory/lookback.mjs';
+import { lookbackWindows } from '../memory/lookback.mjs';
 import { EDITION } from '../edition.mjs';
 import { PARAMS } from '../params.mjs';
 import { firstLedgerCells } from '../record/carry.mjs';
 import { EVENT_TYPES, FEEDBACK_VALUES } from '../record/events.mjs';
+import { unitLookback } from '../record/lookback.mjs';
 import { storeName } from '../record/port.mjs';
 import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
 import { planActivities } from '../select/plan.mjs';
@@ -371,7 +372,10 @@ export function createCoach(options = {}) {
         // 옮겨 오기 전 기록(정본 §5-6 · 단계 4 계획 §21-3 A4) — 한 기기에서 처음 옮긴 장부의 칸 요약을 능력마다 따로 낸다. skills의 측정
         // 요약에는 더하지 않는다. 사건을 치우지 않는 기록부(손님 판 — 손님과 동의를 끈 계정)에서만 낸다. 계정 기기는 이틀 뒤 사건을 치우고
         // 서버가 주는 요약에는 이 칸이 없어, 이틀만 보이다 사라지는 칸이 된다(§21-10 덧붙인 물음 3 — 서버 길 계정은 4-4c). 없으면 null.
-        carried: state.host.guest ? firstLedgerCells(state.host.trail.heldEvents()) : null,
+        // 서버 길 계정은 서버 요약이 실어 준 그 칸이다(단계 4 계획 §21-22 — 서버가 접을 때 머리에 적는다).
+        carried: state.host.guest
+          ? firstLedgerCells(state.host.trail.heldEvents())
+          : state.host.trail.receivedCarried(),
         storage: {
           available: true,
           guest: state.host.guest,
@@ -535,11 +539,8 @@ export function createCoach(options = {}) {
       });
       const month = [];
       for (const [unit, rows] of state.host.trail.unitRows()) {
-        const counts = lookbackOf(rows, windows, hostParams);
-        if (!counts.pass) continue;
-        const { misses, reviews, last } = counts;
-        const evidence = Object.freeze({ ...windows, misses, reviews, last });
-        month.push(Object.freeze({ unit, misses, reviews, last, evidence }));
+        const entry = unitLookback(unit, rows, windows, hostParams); // 서버 읽기와 같은 세기(§21-22)
+        if (entry) month.push(entry);
       }
       month.sort((a, b) => (a.unit < b.unit ? -1 : a.unit > b.unit ? 1 : 0));
       return Object.freeze({ windows, month: Object.freeze(month) });

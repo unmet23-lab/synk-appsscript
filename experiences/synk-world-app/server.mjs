@@ -35,7 +35,7 @@ let speakingHost=null;
 // 엔진은 SYNK_ATLAS_DEV_OUT의 묶음(브라우저가 받는 판), 없으면 패키지 원천. 스위치는 SYNK_WORLD_ATLAS_TRAIL(기본 on · off · player-a 같은 쉼표 목록).
 // 처음 판 파일은 자료 폴더에 묶는다(town과 같은 꼴) — 저장소 폴더에 하나면 다른 자료 폴더로 함께 켠 리허설 서버가 서로의 판을 덮었다(Fable 5.2 합친 끝 판 넘친 #25).
 let trailHost=null;
-const trailRoutes=new Set(['rehearsal/trail','rehearsal/trail-clear','rehearsal/trail-account','rehearsal/trail-control','rehearsal/trail-legacy']);
+const trailRoutes=new Set(['rehearsal/trail','rehearsal/trail-clear','rehearsal/trail-lookback','rehearsal/trail-account','rehearsal/trail-control','rehearsal/trail-legacy']);
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
 const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','entry-check','blank-slice','snap-words','board-decode','korean-racing','talk-rally','subway-rush','seoul-arrival']);
 const mime={'.bin':'application/octet-stream','.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};

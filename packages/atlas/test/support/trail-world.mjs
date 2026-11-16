@@ -48,8 +48,47 @@ export function createMemoryAccount() {
         lineSeq: head.lineSeq,
         issued: structuredClone(head.issued),
         gen: head.gen ?? null,
+        carried: structuredClone(head.carried ?? { built: false, value: null, seq: 0 }),
       }),
       writeHead: async patch => Object.assign(head, structuredClone(patch)),
+      writeCarried: async value => {
+        head.lineSeq += 1;
+        head.carried = {
+          built: true,
+          value: jsonbOrder(structuredClone(value ?? null)),
+          seq: head.lineSeq,
+        };
+        return head.lineSeq;
+      },
+      ledgerEvents: async (until = Infinity) => {
+        const all = visible().filter(record => record.seq <= until);
+        const ledgers = new Set(
+          all.filter(r => r.event.type === R.EVENT_TYPES.carried).map(r => r.event.id),
+        );
+        return all
+          .filter(
+            r =>
+              r.event.type === R.EVENT_TYPES.carried ||
+              (r.event.type === R.EVENT_TYPES.excluded && ledgers.has(r.event.targetId)),
+          )
+          .map(r => structuredClone(r.event));
+      },
+      missedUnits: async (from, to) => [
+        ...new Set(
+          allRows()
+            .filter(r => r.kind === 'unit' && r.grade === 'again' && r.at >= from && r.at < to)
+            .map(r => r.unit),
+        ),
+      ],
+      unitRowsOf: async units =>
+        new Map(
+          units.map(unit => [
+            unit,
+            structuredClone(
+              allRows().filter(r => (r.kind === 'unit' || r.kind === 'say') && r.unit === unit),
+            ),
+          ]),
+        ),
       entriesAfter: async (after, limit) =>
         visible()
           .filter(record => record.seq > after)
@@ -137,6 +176,7 @@ export function createMemoryAccount() {
         issued: [],
         rows: new Map(),
         lines: new Map(),
+        carried: { built: false, value: null, seq: 0 },
       });
     },
     store: edition => port(heads.get(edition)),

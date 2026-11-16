@@ -84,6 +84,9 @@ export function applyDelta(current, delta) {
     if (line.value == null) lines[line.kind].delete(line.key);
     else lines[line.kind].set(line.key, line.value);
   }
+  // 처음 장부 칸(단계 4 계획 §21-22) — 세 갈래. 부분 답은 칸 키가 없으면 지금 칸 그대로, null이면 없앰(지었는데 없음 · 거둠), 값이면 바꿈.
+  // 통째 답은 칸 키를 늘 싣는다(설계 다시 검수 Fable P2) — 키가 없으면(칸을 모르는 서버 · 아직 안 지은 머리) 칸이 없는 것으로 둔다.
+  const carried = whole || 'carried' in delta ? (delta.carried ?? null) : (current.carried ?? null);
   return {
     edition: delta.edition,
     ...(delta.gen ? { gen: delta.gen } : {}),
@@ -92,6 +95,7 @@ export function applyDelta(current, delta) {
     issued: [...delta.issued],
     lines,
     latestAt: latestOf(lines),
+    carried,
   };
 }
 

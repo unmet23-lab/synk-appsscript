@@ -402,6 +402,9 @@ export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args
           get: since => call(`rehearsal/trail?${query(at, since)}`, {}, from),
           post: (events, since) =>
             call('rehearsal/trail', { method: 'POST', body: { revision: at, events, ...(since ? { since } : {}) } }, from),
+          // 30일째 문장의 돌아보기 읽기(단계 4 계획 §21-22) — offset = 기기의 현지 시각 − UTC(분).
+          lookback: offset =>
+            call(`rehearsal/trail-lookback?${new URLSearchParams({ revision: String(at), offset: String(offset) })}`, {}, from),
         }),
       postLegacy: events => call('rehearsal/trail-legacy', { method: 'POST', body: { revision, events } }, from),
     };

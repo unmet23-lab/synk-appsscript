@@ -44,7 +44,7 @@ test('바깥 입구는 두뇌(단계 2)를 내보낸다 — 기억 · 난도 · 
     assert.equal(typeof atlas[name], 'function', name);
   assert.deepEqual(
     { ...atlas.EDITIONS },
-    { params: 'params-1', memory: 'memory-1', ability: 'ability-1', select: 'select-1' },
+    { params: 'params-1', memory: 'memory-1', ability: 'ability-2', select: 'select-1' },
   );
   assert.ok(Object.isFrozen(atlas.PARAMS));
 });

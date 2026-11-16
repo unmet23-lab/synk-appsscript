@@ -107,6 +107,9 @@ export async function openTrail({
     heldEvents: () => record.heldEvents(),
     // 단위마다의 근거 줄 전부 — 30일째 문장(coach.lookback, 단계 4 계획 §21-7). 사건을 치우지 않는 기록부만 처음부터 다 든다.
     unitRows: () => record.unitRows(),
+    // 받은 요약의 자리 { edition, gen, foldedUntil }와 그 요약의 처음 장부 칸(단계 4 계획 §21-22) — 손님 기록부 · 받은 요약이 없으면 null.
+    received: () => record.received(),
+    receivedCarried: () => record.receivedCarried(),
     summary: () => record.summary,
     pending: () => record.pending(),
     // 호스트가 차례 안에서 일을 할 때(그 동안 기록부는 차례를 다시 청하지 않는다) · 뒤의 손님 요약 저장 · 하루 한 번 치우기(A6).

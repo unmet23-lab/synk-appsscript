@@ -1612,10 +1612,10 @@ export const COACH_MUTANTS = [
   [
     C,
     '옮겨 오기 전 기록(4-4a)',
-    '서버 길 계정에도 옮겨 오기 전 기록을 낸다(계정 기기는 이틀 뒤 사건을 치워 그 칸이 사라진다 — 계획 §21-10 덧붙인 물음 3)',
+    '서버 길 계정이 받은 요약 대신 기기 사건에서 옮겨 오기 전 기록을 짓는다(계정 기기는 이틀 뒤 사건을 치워 그 칸이 사라진다 — 계획 §21-10 덧붙인 물음 3 · §21-22)',
     'src/coach/index.mjs',
-    '        carried: state.host.guest ? firstLedgerCells(state.host.trail.heldEvents()) : null,\n',
-    '        carried: firstLedgerCells(state.host.trail.heldEvents()),\n',
+    '          : state.host.trail.receivedCarried(),\n',
+    '          : firstLedgerCells(state.host.trail.heldEvents()),\n',
   ],
   [
     C,
@@ -1864,9 +1864,9 @@ export const COACH_MUTANTS = [
   [
     C,
     '30일째 문장(4-4c)',
-    '네 조건을 못 넘은 단위도 낸다',
-    'src/coach/index.mjs',
-    '        if (!counts.pass) continue;\n',
+    '네 조건을 못 넘은 단위도 낸다(손님 코치와 서버 읽기가 같이 쓰는 unitLookback — §21-22)',
+    'src/record/lookback.mjs',
+    '  if (!counts.pass) return null;\n',
     '',
   ],
   [
@@ -1972,5 +1972,46 @@ export const COACH_MUTANTS = [
     'src/record/log.mjs',
     '  async function readTail() {\n    for (const row of await port.range(state.readKey)) {\n      accept(row);\n      state.readKey = Math.max(state.readKey, row.key);\n    }\n  }\n',
     '  async function readTail() {\n    for (const row of await port.range(state.readKey)) {\n      accept(row);\n      state.readKey = Math.max(state.readKey, row.key);\n    }\n    announceSaved();\n  }\n',
+  ],
+  // ── 4-4c 둘째 묶음(단계4_계획 §21-22) ──
+  [
+    C,
+    '받기 알림(4-4c 둘째 묶음 F1)',
+    '앞 요약 줄 지우기 실패를 저장 실패로 센다 — 덧붙이고 얹은 손님 요약이 다른 탭에 알려지지 않는다(받기 알림 다시 검수 Fable F1 · 설계 주인 11-16 저녁)',
+    'src/record/log.mjs',
+    "      try {\n        await dropRows(state.localRows, state.local?.key ?? key);\n      } catch {\n        noteSave(health, false, 'LOCAL_SUMMARY_DROP');\n      }\n",
+    '      await dropRows(state.localRows, state.local?.key ?? key);\n',
+  ],
+  [
+    C,
+    '받기 알림(4-4c 둘째 묶음 F2)',
+    '닫힘 표시로 알림을 막는다 — 놓은 뒤 끝난 손님 요약 저장 · 사건 쓰기가 다른 탭에 알려지지 않는다(받기 알림 다시 검수 Fable F2 · 설계 주인 11-16 저녁)',
+    HOST,
+    '    const channel = state.channel;\n    if (!channel) return;\n',
+    '    const channel = state.channel;\n    if (!channel || state.closed) return;\n',
+  ],
+  [
+    C,
+    '받기 알림(4-4c 둘째 묶음 F2)',
+    '채널을 닫지 않는다 — 놓은 호스트가 사슬이 끝난 뒤에도 다른 탭에 알린다(받기 알림 다시 검수 Fable F2 · 설계 주인 11-16 저녁)',
+    HOST,
+    '        .catch(() => {})\n        .finally(() => {\n          if (state.channel === channel) state.channel = null;\n          try {\n            channel?.close();\n          } catch {\n            // 이미 닫힌 채널\n          }\n        });\n',
+    '        .catch(() => {});\n',
+  ],
+  [
+    C,
+    '30일째 문장(4-4c 둘째 묶음)',
+    '받은 요약의 자리를 내지 않는다 — 셸이 학습일 답의 자리를 견주지 못한다(§21-22)',
+    SYNC,
+    '      received: trail()?.received?.() ?? null,\n',
+    '      received: null,\n',
+  ],
+  [
+    C,
+    '처음 장부 칸(4-4c 둘째 묶음)',
+    '서버 길 계정의 칸을 내지 않는다 — 받은 요약에 실린 칸이 summary().carried에 오지 않는다(§21-22)',
+    'src/coach/index.mjs',
+    '          : state.host.trail.receivedCarried(),\n',
+    '          : null,\n',
   ],
 ];

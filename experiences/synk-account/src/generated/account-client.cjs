@@ -152,6 +152,9 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
         undefined, { signal }),
       post: ({ revision, events, since = null, signal }) => request('synk-learning?view=trail', { revision, events, ...(since ? { since } : {}) }, { signal }),
       clear: ({ revision, signal }) => request('synk-learning?view=trail-clear', { revision }, { signal }),
+      // 30일째 문장의 돌아보기 읽기(단계4_계획 §21-22). offset = 기기의 현지 시각 − UTC(분, −720 ~ 840). 답은 complete · reason? · summaryAt ·
+      // lookback({ windows, month? }) — 접기가 끝까지 갔을 때만 month가 있다.
+      lookback: ({ revision, offset, signal }) => request(`synk-learning?view=trail-lookback&revision=${encodeURIComponent(revision)}&offset=${encodeURIComponent(offset)}`, undefined, { signal }),
     }),
     // Core memory (lib/atlas/memory-sync.js): chosen presentation, content memories, declined offers.
     memory: Object.freeze({

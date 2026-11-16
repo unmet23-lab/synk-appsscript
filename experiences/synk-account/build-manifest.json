@@ -2,7 +2,7 @@
   "version": 1,
   "sdk": "2.117.2",
   "sha256": {
-    "src/generated/account-client.cjs": "2a171f586325b65ce883a4a727a639b3d763f1822377e0a5fdabfa45cd7be367",
+    "src/generated/account-client.cjs": "2760def16443cd6ef4ddd7c4fed2ed3591dd24f6d08c527baa9e71a63492b6ea",
     "src/generated/wardrobe-client.cjs": "469079cbd12824fcf966ab3917081023818548f7e156a5f5cb80b3839c4c908f",
     "src/generated/wardrobe-catalog.cjs": "256735435ccba1252e2943cfc0bc21fac3f4e27244ed9e11a6de540d71736136",
     "src/generated/world-learning-host.cjs": "ad8af40c2efc5f7daaced97bb60374f6b8b0b8b0ba0e89098d11882280804960",
@@ -64,10 +64,10 @@
     "assets/InterTight-Medium.ttf": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
     "dist/wardrobe-three.js": "ca63e2e89a9a83c9c3ddb8641aeda6ab2aa2420e41210f1571887442ad60fe44",
-    "dist/app.js": "2031703bfa320e07e1ad965d51f9777037cee221cef54e78c1922520fa77eb66",
-    "dist/client.js": "9bf1f64e2ff8388073be6787b3f6d9bdbf95c3c819e96fd7b5ef944fbab6e873",
-    "dist/preview.js": "fa9a2c25ba16bfdf0bda625c14c4a7f423941dc039597bc6bb0c54ce81bf4e12",
-    "dist/platform.js": "a91a407217c48e67ffd30d0aa38ff4b638701106d0ecbf21f5023912663f49b5",
+    "dist/app.js": "974d1ab978109c28341cf9e45d962358ca33d07fa8f2b6625b95d89a6515b7e0",
+    "dist/client.js": "a9d11f149033ee533c90ce74d6beac4bd7a173bb9391a5f126d74284e6e3fe73",
+    "dist/preview.js": "f054fa93bfd8e4240df738befce85412faf31d224acc36e886ead88ee9d7cc68",
+    "dist/platform.js": "ddcf149f73ea54b5f0ebed9dd57bb5597e69ec0d0db93041e8f77b85c3bc0210",
     "dist/local-world.js": "e39af72ba5da66e4d9201269fbb060805a3441bc5dffdd8f8da721fbe5bb2085",
     "dist/teacher.js": "91254d7b3ea5fdc71776db7e9eb3642d768c7e01dfc6b96618e1b8521a7e7e0a",
     "preview.html": "74c3b9e03c44497a48c01b6ed41271389bac806eee30ff0d612eda77dbec567e"

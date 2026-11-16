@@ -640,6 +640,56 @@ test('탭 A가 옛 기록을 옮기면 같은 저장소를 연 탭 B도 옮겨 �
   b.dispose();
 });
 
+// 받기 알림 판(4-4c)부터 손님 요약 저장도 다른 탭에 알린다 — 옮기기가 요약을 다시 저장하면 그 알림이 옮기기의 알림을 대신해 위 장면만으로는
+// 옮기기 뒤의 알림이 빠져도 드러나지 않는다(4-4c gate가 놓친 변형). 요약 저장이 막힌 때는 옮기기의 알림만 남는다.
+test('탭 A가 옛 꼴 사건을 옮기는데 손님 요약 저장이 막혀도 같은 저장소를 연 탭 B가 그 사건을 꼬리로 읽는다 — 옮기기 뒤의 알림(GPT 끝 판 GB1)', async () => {
+  const time = clock();
+  const base = memoryPort();
+  let blockLocal = false;
+  const port = {
+    ...base,
+    async append(values) {
+      if (blockLocal && values.some(value => value?.kind === 'local'))
+        throw new Error('local blocked');
+      return base.append(values);
+    },
+  };
+  const key = keyOf('tab-carry-log');
+  const [topA, topB] = [topWindow(() => port), topWindow(() => port)];
+  const b = coachOn({ items: [X, Y, Z], time, key, gameId: 'b', scope: topB });
+  await b.ready;
+  const seen = await acquireHost({ key, params: PARAMS, now: time.now, guest: true }, topB);
+  for (let i = 0; i < 20; i += 1) await settle();
+  const at = new Date(time.now()).toISOString();
+  const old = {
+    schema: 1,
+    id: 'legacy-log-1',
+    scope: { domain: 'LAB', workspace: 'learning', subject: 'device' },
+    at,
+    recordedAt: at,
+    type: 'practice.presented',
+  };
+  blockLocal = true; // 옮긴 뒤 손님 요약을 다시 저장하지 못한다 — 다른 탭에 가는 글은 옮기기의 알림뿐
+  const a = coachOn({
+    items: [X, Y, Z],
+    time,
+    key,
+    gameId: 'a',
+    scope: topA,
+    legacy: async () => ({ log: [old], ledger: null }),
+  });
+  await a.ready;
+  for (let i = 0; i < 40 && !seen.trail.heldEvent(old.id) != null; i += 1) await settle();
+  assert.equal(
+    seen.trail.heldEvent(old.id) != null,
+    true,
+    '탭 B가 꼬리를 읽어 옮겨 온 옛 꼴 사건을 든다',
+  );
+  releaseHost(seen);
+  a.dispose();
+  b.dispose();
+});
+
 test('뒤에 같은 저장소를 받은 셸 코치의 계기가 걸린다 — 셸이 받을 때마다 그 셸의 것으로(Fable 5.2 D3)', async () => {
   const time = clock();
   const port = memoryPort();

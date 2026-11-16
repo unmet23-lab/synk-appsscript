@@ -200,7 +200,8 @@ test('carried — after가 없고 거두지 않은 장부 가운데 열쇠가 �
   coach.dispose();
 });
 
-test('carried — 동의를 끈 계정(기기 길)은 내고, 서버 길 계정은 내지 않는다(이틀 뒤 치우는 기록부 — §21-10 덧붙인 물음 3)', async () => {
+// 서버 길 계정은 기기 사건에서 짓지 않고 서버가 접어 요약에 실은 칸을 낸다(§21-22 — sync-received.test.mjs가 받은 요약의 칸을 본다).
+test('carried — 동의를 끈 계정(기기 길)은 기기 사건에서 내고, 서버 길 계정은 기기 사건에서 짓지 않는다(이틀 뒤 치우는 기록부 — §21-10 덧붙인 물음 3 · §21-22)', async () => {
   const { items, event } = await ledgerEvent();
   const time = clock();
   const preloaded = async () => {
@@ -229,7 +230,11 @@ test('carried — 동의를 끈 계정(기기 길)은 내고, 서버 길 계정�
     revision: 1,
   });
   await server.ready;
-  assert.equal(server.summary().carried, null, '서버 길 계정은 내지 않는다');
+  assert.equal(
+    server.summary().carried,
+    null,
+    '서버 길 계정은 받은 요약의 칸만 — 받은 요약이 없으면 null',
+  );
   server.dispose();
 });
 

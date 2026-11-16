@@ -24,6 +24,7 @@ export { openMap } from './map/index.mjs';
 export { GRADES, gradeOf, PRODUCED } from './memory/grade.mjs';
 export { createMemory } from './memory/index.mjs';
 export { lookbackOf, lookbackWindows, MONTH_FLOOR } from './memory/lookback.mjs';
+export { lookbackOfStore, unitLookback } from './record/lookback.mjs';
 export { EDITIONS, PARAMS } from './params.mjs';
 export { monthReason, PROGRESS_CODES, REASON_CODES } from './reason/index.mjs';
 export { reasonLine } from './reason/ko.mjs';

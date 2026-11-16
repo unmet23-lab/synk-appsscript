@@ -18,7 +18,7 @@ const EDITION = /^[A-Za-z0-9_.:+-]{1,200}$/;
 const GEN = /^[0-9]{13}\.[0-9a-z]{8}$/;
 const MAX_BATCH = 256;
 export const MAX_BODY = 262_144; // talk 입구의 본문 상한과 같다 — 넘으면 리허설 서버가 413
-export const TRAIL_PATHS = Object.freeze(['trail', 'trail-clear', 'trail-account', 'trail-control', 'trail-legacy']);
+export const TRAIL_PATHS = Object.freeze(['trail', 'trail-clear', 'trail-lookback', 'trail-account', 'trail-control', 'trail-legacy']);
 // 옛 꼴 사건의 범위(talk synk-server.js — 계정 · 손님 모두 같다).
 const LEGACY_SCOPE = { domain: 'LAB', workspace: 'learning', subject: 'device' };
 
@@ -88,8 +88,36 @@ function memoryAccount(atlas) {
         lineSeq: head.lineSeq,
         issued: structuredClone(head.issued),
         gen: head.gen ?? null,
+        carried: structuredClone(head.carried ?? { built: false, value: null, seq: 0 }),
       }),
       writeHead: async patch => Object.assign(head, structuredClone(patch)),
+      // 처음 장부 칸 · 30일째 문장의 두 걸음(단계 4 계획 §21-22 — talk lib/atlas-trail-store.js와 같은 뜻).
+      writeCarried: async value => {
+        head.lineSeq += 1;
+        head.carried = { built: true, value: jsonbOrder(structuredClone(value ?? null)), seq: head.lineSeq };
+        return head.lineSeq;
+      },
+      ledgerEvents: async (until = Infinity) => {
+        const all = visible().filter(record => record.seq <= until);
+        const ledgers = new Set(all.filter(r => r.event.type === T.carried).map(r => r.event.id));
+        return all
+          .filter(r => r.event.type === T.carried || (r.event.type === T.excluded && ledgers.has(r.event.targetId)))
+          .map(r => structuredClone(r.event));
+      },
+      missedUnits: async (from, to) => [
+        ...new Set(
+          allRows()
+            .filter(r => r.kind === 'unit' && r.grade === 'again' && r.at >= from && r.at < to)
+            .map(r => r.unit),
+        ),
+      ],
+      unitRowsOf: async units =>
+        new Map(
+          units.map(unit => [
+            unit,
+            structuredClone(allRows().filter(r => (r.kind === 'unit' || r.kind === 'say') && r.unit === unit)),
+          ]),
+        ),
       entriesAfter: async (after, limit) =>
         visible()
           .filter(record => record.seq > after)
@@ -165,6 +193,7 @@ function memoryAccount(atlas) {
         issued: [],
         rows: new Map(),
         lines: new Map(),
+        carried: { built: false, value: null, seq: 0 },
       });
     },
     store: edition => port(heads.get(edition)),
@@ -379,6 +408,34 @@ export function createRehearsalTrail({
     };
   }
 
+  // 30일째 문장의 돌아보기 읽기(talk lib/atlas-trail-service.js lookback과 같은 뜻 — 단계 4 계획 §21-22). 먼저 접고(같은 상한), 접기가
+  // 끝까지 갔을 때만 month를 낸다. 아니면 complete false와 까닭(fold-failed · rebuilding · events-remain). summaryAt은 그 답을 셀 때의
+  // 자리 { edition, gen, foldedUntil }이다(summaryOf와 같은 식).
+  async function lookback(entry, query) {
+    const raw = query.get('offset');
+    if (!/^(?:0|-?[1-9]\d{0,2})$/.test(raw ?? '')) fail(400, 'INVALID_OFFSET');
+    const offset = Number(raw);
+    if (offset < -720 || offset > 840) fail(400, 'INVALID_OFFSET');
+    const folded = await fold(entry);
+    const at = now();
+    const windows = atlas.lookbackWindows(at, { dayStartHour: params.dayStartHour, offset });
+    const reason = !folded.ok
+      ? 'fold-failed'
+      : folded.served !== edition
+        ? 'rebuilding'
+        : folded.done !== true
+          ? 'events-remain'
+          : null;
+    const store = folded.served && entry.store.hasHead(folded.served) ? entry.store.account.store(folded.served) : null;
+    const head = store ? await store.head() : null;
+    const summaryAt = head
+      ? { edition: folded.served, gen: head.gen ?? null, foldedUntil: Math.max(head.foldedUntil, head.floorSeq ?? 0) }
+      : null;
+    const base = { ok: true, scope: 'synk-atlas-trail', revision: entry.revision, serverTime: at, summaryAt };
+    if (reason) return { ...base, complete: false, reason, lookback: { windows } };
+    return { ...base, complete: true, lookback: { windows, month: await atlas.lookbackOfStore(store, windows, params) } };
+  }
+
   // 옛 POST(talk synk-server.js learning POST와 같은 검사 — 범위 · 번호 · 같은 번호의 다른 사건 · 다른 판에서 받은 같은 번호는 409
   // EVENT_CONFLICT, ids 없음). 받은 판을 적어 두고 견준다 — 판을 안 보면 talk의 409가 리허설에서는 통과로 보였다(Fable 5.2 끝 판 넘친 #8 ①).
   // 부모 · 차례 · 꼴 검사는 talk에만 있다(파일 머리 — 4-8 리허설 대조에서).
@@ -474,6 +531,14 @@ export function createRehearsalTrail({
       const cleared = entry.store.clear();
       bump(entry);
       return { ok: true, learning: learningOf(entry), revision: entry.revision, ...cleared };
+    }
+    // 30일째 문장의 돌아보기 읽기(talk learning?view=trail-lookback — 단계 4 계획 §21-22). GET만, 쿼리는 revision · offset 하나씩.
+    if (name === 'trail-lookback') {
+      if (method !== 'GET' || [...query.keys()].some(k => !['revision', 'offset'].includes(k) || query.getAll(k).length !== 1))
+        fail(400, 'INVALID_QUERY');
+      const revision = query.get('revision');
+      fence(entry, /^(?:0|[1-9]\d{0,9})$/.test(revision ?? '') ? Number(revision) : -1);
+      return lookback(entry, query);
     }
     if (method === 'GET') {
       if ([...query.keys()].some(k => !['revision', 'edition', 'since', 'gen'].includes(k) || query.getAll(k).length !== 1))

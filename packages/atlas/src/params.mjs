@@ -5,7 +5,7 @@
 export const EDITIONS = Object.freeze({
   params: 'params-1',
   memory: 'memory-1',
-  ability: 'ability-1',
+  ability: 'ability-2', // 2: 능력 줄에 peak(지금 streak 안의 측정 답 가운데 가장 높은 난도)을 접는다(단계 4 계획 §21-22 — 설계 주인 답 2)
   select: 'select-1',
 });
 

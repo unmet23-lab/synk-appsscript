@@ -580,6 +580,8 @@ export function createSync({
       skipped: state.skipped.size,
       failures: state.failures,
       pulled: state.pulled,
+      // 받은 요약의 자리 { edition, gen, foldedUntil }(단계 4 계획 §21-22 — 학습일 답의 견주기). 손님과 동의를 끈 계정, 첫 받기 전은 null.
+      received: trail()?.received?.() ?? null,
     }),
     close() {
       state.closed = true;

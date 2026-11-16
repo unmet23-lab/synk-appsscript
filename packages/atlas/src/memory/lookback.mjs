@@ -35,6 +35,7 @@ export function lookbackWindows(now, { dayStartHour = PARAMS.dayStartHour, offse
 
 // 문장이 말하는 조건의 하한 — 앞 창에 놓친 자리 둘 이상, 뒤 창 자리 셋 이상(§21-7). Vellum의 수 하한(COUNTS['progress.month'])과
 // 같다(시험이 맞댄다). 매개변수(PARAMS)에 두지 않는다 — 두뇌 판 묶음(foldEdition)이 바뀌어 모든 요약을 다시 접게 된다.
+// 서버 읽기의 첫 걸음(record/lookback.mjs lookbackOfStore)이 misses ≥ 1과 깨끗함에 기댄다 — 하한을 1 아래로 내리면 그 첫 걸음도 고친다(§21-22).
 export const MONTH_FLOOR = Object.freeze({ misses: 2, reviews: 3 });
 
 const SAYS = new Set(['known', 'relearn']);

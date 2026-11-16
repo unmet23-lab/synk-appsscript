@@ -20,7 +20,7 @@ import { deviceKey, EMPTY_INDEX, groupsOf } from './adapt.mjs';
 import { createClock } from './clock.mjs';
 import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, isId, parentOf } from './events.mjs';
 import { familySkillsOf, ownFoldEvents, touchesOf, WAIT } from './own.mjs';
-import { linesOfGroups, rowsOfGroup, toUnitRow } from './rows.mjs';
+import { linesOfGroups, rowsOfGroup } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
 import {
   applyDelta,
@@ -472,7 +472,13 @@ export function createRecord({
     const write = async () => {
       const [key] = await port.append([value]);
       accept({ key, value });
-      await dropRows(state.localRows, state.local?.key ?? key);
+      // 덧붙이고 얹었으면 쓴 저장이다 — 앞 요약 지우기만 실패하면 계기에만 남기고 알린다. 남은 행은 다음 저장의 지우기가 함께 지운다
+      // (지우기는 remove가 된 뒤에만 rows에서 뺀다 — 받기 알림 다시 검수 Fable F1 · 설계 주인 11-16 저녁).
+      try {
+        await dropRows(state.localRows, state.local?.key ?? key);
+      } catch {
+        noteSave(health, false, 'LOCAL_SUMMARY_DROP');
+      }
     };
     try {
       await (state.turnDepth > 0 ? write() : exclusive('summary', () => within(write)));
@@ -664,6 +670,22 @@ export function createRecord({
       };
     },
 
+    // 받은 요약의 자리(단계 4 계획 §21-22 — 학습일 답의 견주기) — 계정 기록부가 서버에서 받은 요약의 { edition, gen, foldedUntil }.
+    // 손님 기록부(손님과 동의를 끈 계정)와 아직 받은 요약이 없는 계정은 null이다. 받은 요약이 바뀐 뒤에만 바뀐다.
+    received() {
+      const summary = state.summary;
+      if (guest || !summary) return null;
+      return {
+        edition: summary.edition,
+        gen: summary.gen ?? null,
+        foldedUntil: summary.foldedUntil,
+      };
+    },
+    // 받은 요약의 처음 장부 칸(단계 4 계획 §21-22) — 서버 길 계정의 summary().carried. 손님 기록부는 null(코치가 사건에서 짓는다).
+    receivedCarried() {
+      return guest ? null : (state.summary?.carried ?? null);
+    },
+
     // 서버의 답 하나 — 받은 표지 · 누른 것 · 버린 것 · 요약을 한 기록으로 덧붙인다.
     async receive({
       accepted = [],
@@ -756,7 +778,8 @@ export function createRecord({
     heldEvents: () =>
       [...state.held.values()].sort((a, b) => a.key - b.key).map(item => item.event),
     // 단위마다의 근거 줄 전부(30일째 문장 — 단계 4 계획 §21-7). 든 사건 전부(저장이 끝난 사건 — 아직 요약에 접히지 않은 내 답 포함)를 요약
-    // 접기와 같은 어댑터 · 근거 줄(rowsOfGroup)로 짓고, 단위 줄과 본인 말 줄만 기억 접기의 꼴(toUnitRow)로 단위마다 모은다. 저장 중인 사건은
+    // 접기와 같은 어댑터 · 근거 줄(rowsOfGroup)로 짓고, 단위 줄과 본인 말 줄만 서버 저장소와 같은 근거 줄 꼴로 단위마다 모은다(세기는
+    // record/lookback.mjs의 unitLookback이 서버 읽기와 같이 한다 — §21-22). 저장 중인 사건은
     // 저장이 끝나면 든다(판 끝의 folded가 그 저장을 기다린다). 사건을 치우지 않는 기록부(손님과 동의를 끈 계정)만 처음부터 다 든다 — 계정
     // 기기는 이틀 치만 들어 코치가 부르지 않는다(서버 길은 서버의 돌아보기 읽기).
     unitRows() {
@@ -765,7 +788,7 @@ export function createRecord({
         for (const row of rowsOfGroup(group, index)) {
           if (row.kind !== 'unit' && row.kind !== 'say') continue;
           if (!byUnit.has(row.unit)) byUnit.set(row.unit, []);
-          byUnit.get(row.unit).push(toUnitRow(row));
+          byUnit.get(row.unit).push(row);
         }
       return byUnit;
     },

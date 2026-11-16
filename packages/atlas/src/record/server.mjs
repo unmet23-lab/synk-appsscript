@@ -19,6 +19,13 @@
 // floorSeq(비운 바닥 — 비우기 전 그 계정의 마지막 차례) 이하의 사건은 저장소가 어디서도 돌려주지 않는다(비우기 — 계획 §14).
 // 비우기는 교실 연결 · 첫걸음 점수가 문 사건을 남기고(선생님 쪽 기록), 접기는 바닥 위만 읽는다. 바닥은 Trail 머리(파생 값)가 아니라
 // 계정 기록(SQL engine.synk_practice_floors)이라 머리를 지우거나 옆에 다시 지어도 그대로다.
+// 4-4c 둘째 묶음(단계 4 계획 §21-22)에서 더한 포트:
+//   head()                         위 꼴에 처음 장부 칸 carried = { built, value, seq } — built 거짓이면 아직 안 지음(이 칸 전에 접힌 머리)
+//   writeCarried(value)            칸을 적는다 — 저장소가 머리의 줄 차례를 하나 올리고 그 차례를 칸의 차례(seq)로 적는다
+//   ledgerEvents(until)            [event] — 장부 사건과 그 장부를 겨눈 거둠 사건(받은 차례 순, 바닥 위, until까지)
+//   missedUnits(from, to)          [unit] — 앞 창 [from, to) 안에 놓침 줄(kind 'unit' · grade 'again')이 있는 단위(30일째 문장의 첫 걸음)
+//   unitRowsOf(units)              Map<unit, rows> — 그 단위들의 단위 줄 · 본인 말 줄 전부(둘째 걸음)
+import { firstLedgerCells } from './carry.mjs';
 import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
 import { EMPTY_INDEX, serverKey, sourcesOf } from './adapt.mjs';
 import {
@@ -215,6 +222,24 @@ function issuedAfter(issued, records, nowMs) {
     .sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1));
 }
 
+// 처음 장부 칸(단계 4 계획 §21-22 — 설계 주인 답 1 · 설계 검토로 고친 것). 머리에 적는다 — head().carried = { built, value, seq }.
+// 다시 짓는 때는 아직 안 지은 머리(이 칸 전에 접힌 머리 · 새로 만든 머리)이거나, 이번 묶음에 장부 사건이나 거둠 사건이 들었을 때다(상한으로
+// 나뉜 다음 묶음에 와도 같다). 칸은 until까지의 장부 사건과 그 장부를 겨눈 거둠 사건에서 손님과 같은 firstLedgerCells로 짓는다(장부가
+// 둘 이상이면 서버가 받은 차례로 맨 앞 하나). 값이 같으면 적지 않는다 — 줄 차례를 올리지 않는다. 짓거나 바꾸면 저장소가 머리의 줄 차례를
+// 하나 올려 그 차례를 칸의 차례로 적는다 — since가 최신인 기기도 그 칸을 받는다. 서버가 사건을 지우는 길은 비우기뿐이고 비우기는 머리째 지운다.
+async function settleCarried(store, head, until, records) {
+  const built = head.carried?.built === true;
+  const touched = (records ?? []).some(
+    record =>
+      record.event.type === EVENT_TYPES.carried || record.event.type === EVENT_TYPES.excluded,
+  );
+  if (built && !touched) return false;
+  const value = firstLedgerCells(await store.ledgerEvents(until));
+  if (built && same(head.carried.value ?? null, value ?? null)) return false;
+  await store.writeCarried(value);
+  return true;
+}
+
 // 「어디까지 접었나」 뒤의 사건 전부에서(이번 요청이 가져온 것만이 아니다) 상한만큼 접는다.
 // 표지는 접은 데까지만 올린다 — 던지면 아무것도 올리지 않는다(부르는 쪽이 세이브포인트로 되돌린다).
 export async function foldPending(
@@ -224,7 +249,11 @@ export async function foldPending(
   const head = await store.head();
   const start = Math.max(head.foldedUntil, head.floorSeq);
   const records = await store.entriesAfter(start, cap);
-  if (!records.length) return { folded: 0, until: start, changed: 0, done: true };
+  if (!records.length) {
+    // 접을 사건이 없어도 아직 안 지은 칸은 짓는다 — 이 칸 전에 접힌 계정이 새 답 없이 읽어도 칸을 받는다(§21-22).
+    await settleCarried(store, head, start, null);
+    return { folded: 0, until: start, changed: 0, done: true };
+  }
   const touched = { units: new Set(), families: new Set(), items: new Set(), skills: new Set() };
   const until = records.at(-1).seq;
   const sources = await sourcesOfBatch(store, records, until);
@@ -232,6 +261,7 @@ export async function foldPending(
   const changes = await refold(store, touched, { memory, params });
   if (changes.length) await store.writeLines(changes);
   await store.writeHead({ foldedUntil: until, issued: issuedAfter(head.issued, records, nowMs) });
+  await settleCarried(store, head, until, records);
   return {
     folded: records.length,
     until,
@@ -259,7 +289,14 @@ export async function foldAccount(account, context) {
     return { served: edition, ...(await foldPending(account.store(edition), context)) };
   if (!(await account.head(edition))) await account.create(edition, 'building', gen());
   const result = await foldPending(account.store(edition), context);
-  if (!result.done) return { served: active.edition, building: edition, ...result };
+  if (!result.done) {
+    // 짓는 동안 내주는 옛 머리는 접지 않는다 — 그 머리가 아직 안 지은 칸이면 여기서 짓는다(설계 검토로 고친 것, §21-22).
+    const old = account.store(active.edition);
+    const oldHead = await old.head();
+    if (oldHead)
+      await settleCarried(old, oldHead, Math.max(oldHead.foldedUntil, oldHead.floorSeq ?? 0), null);
+    return { served: active.edition, building: edition, ...result };
+  }
   await account.activate(edition);
   return { served: edition, swapped: true, ...result };
 }
@@ -284,6 +321,11 @@ export async function summaryOf(store, { edition, since = null }) {
     foldedUntil: Math.max(head.foldedUntil, head.floorSeq ?? 0),
     lineSeq: head.lineSeq,
     issued: head.issued,
+    // 처음 장부 칸(§21-22) — 통째 답은 지은 칸을 늘 싣고(없으면 null), 부분 답은 칸의 차례가 since보다 클 때만 싣는다. 아직 안 지은
+    // 머리(접기가 실패해 짓지 못한 채 내주는 머리)는 싣지 않는다 — 기기는 통째 답에 키가 없으면 칸이 없는 것으로 둔다.
+    ...(head.carried?.built === true && (!partial || head.carried.seq > since.seq)
+      ? { carried: head.carried.value ?? null }
+      : {}),
     lines: partial ? lines : lines.filter(line => line.value != null),
   };
 }

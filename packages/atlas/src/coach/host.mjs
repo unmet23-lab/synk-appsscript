@@ -167,11 +167,13 @@ function createHost({
     ...(turnJobs ? { jobs: turnJobs } : {}),
   });
 
-  // 다른 탭에 덧붙였다고 알린다. 닫은 뒤 늦게 끝난 쓰기는 알리지 않는다.
+  // 다른 탭에 덧붙였다고 알린다 — 채널이 열려 있는 동안만. 놓은 뒤에도 채널은 저장 사슬 끝까지 열려 있어 그 사이 끝난 쓰기(손님 요약
+  // 저장 · 사건 쓰기)는 알리고, 채널이 닫힌 뒤 늦게 끝난 쓰기는 알리지 않는다(받기 알림 다시 검수 Fable F2 · 설계 주인 11-16 저녁).
   function announce() {
-    if (state.closed) return;
+    const channel = state.channel;
+    if (!channel) return;
     try {
-      state.channel?.postMessage({ key });
+      channel.postMessage({ key });
     } catch {
       // 알림이 안 가도 다른 탭은 다음에 열 때 읽는다.
     }
@@ -415,15 +417,25 @@ function createHost({
       turn.close(); // 기다리던 청하기를 거둔다
       if (globalThis.removeEventListener) globalThis.removeEventListener('online', online);
       globalThis.document?.removeEventListener?.('visibilitychange', visible);
-      state.channel?.close();
       onClose?.();
       // 저장 중인 것(부모를 기다리는 자식까지)이 끝난 뒤 저장소 연결을 닫는다 — 열린 채 남은 연결이 뒤 판의 저장소 꼴 올리기 ·
       // 앞 판 저장소 지우기 · 비우기를 막지 않게(단계 4 §18-5-5 G3). 닫히는 사이 같은 저장소를 다시 여는 코치는 새 연결을 받는다.
+      // 다른 탭에 알리는 채널은 이 사슬 끝에 닫는다 — 손님 요약 저장이 놓은 뒤에 끝나도 알림이 간다. 사슬이 실패해도 닫는다(받기 알림
+      // 다시 검수 Fable F2 · 설계 주인 11-16 저녁). 닫힌 호스트의 refresh()는 아무것도 하지 않으므로 늦은 알림이 이 호스트를 깨우지 않는다.
+      const channel = state.channel;
       void Promise.allSettled([...inflight])
         .then(() => state.trail?.saved())
         .then(() => state.trail?.localSaved())
         .then(() => (ownsPort ? port.close?.() : null))
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => {
+          if (state.channel === channel) state.channel = null;
+          try {
+            channel?.close();
+          } catch {
+            // 이미 닫힌 채널
+          }
+        });
       return true;
     },
   };
