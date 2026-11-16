@@ -121,7 +121,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   let noWebGL = false, noCanvas = false;
   try { noWebGL = globalThis.__synkOrbNoWebGL === true || win.__synkOrbNoWebGL === true; } catch { noWebGL = false; }
   try { noCanvas = globalThis.__synkOrbNoCanvas === true || win.__synkOrbNoCanvas === true; } catch { noCanvas = false; }
-  const stage = createOrbStage($('.orb-canvas'), { getReducedMotion: reduced, getHome: homePoint, places: look.places !== false, noWebGL, noCanvas, onRender: null });
+  /* 시작 창에서 넘어올 때: 드러남이 시작 창과 같은 자세에서 이어지는 첫 장을 그리면 본체에 알린다. 본체는 그때 앱 창을 보이고 시작 창을 없앤다(1-가 구현 설계 2절) */
+  let introPainted = false, firstFrameSent = false;
+  const onRender = () => { if (!introPainted || firstFrameSent) return; firstFrameSent = true; try { void Promise.resolve(options.onFirstFrame?.()).catch(() => {}); } catch { /* 무시 */ } };
+  const stage = createOrbStage($('.orb-canvas'), { getReducedMotion: reduced, getHome: homePoint, places: look.places !== false, eyes: look.eyes !== false, noWebGL, noCanvas, onRender });
   const sig = createOrbSignature($('.orb-sig'), { getReducedMotion: reduced, getWidth: () => stageEl.getBoundingClientRect().width || win.innerWidth || 1440 });
 
   /* ── 옛 런처 가리기(지금 얼굴의 lockHostElements와 같다) ── */
@@ -411,16 +414,28 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     });
   }
   let introHurried = false;
-  async function intro(kind, { delay = 520, ms = 2400 } = {}) {
+  /* startedAt(본체가 정한 드러남 시작 시각, 밀리초)을 받으면 그만큼 지난 자리에서 이어 그린다. 시작 창이 먼저 그리던 드러남을 앱 창이 끊김 없이 잇는다 */
+  async function intro(kind, { delay = 520, ms = 2400, asleepAt = null, wakeAt = null, startedAt = null } = {}) {
     const gen = ++motionGen;
     introHurried = false;
     sig.stop();
     stage.setSpin(0);
     stage.snap('void');
-    await wait(reduced() ? Math.min(delay, 120) : delay);
+    stage.eyesOff?.();
+    const elapsed = Number.isFinite(startedAt) ? Math.max(0, Date.now() - startedAt) : 0;
+    /* 눈: 빛이 자리를 잡을 즈음 잠든 눈이 떠오르고 곧 눈을 뜬다. 시작 창에서 이미 뜬 눈이면 뜬 채로 잇는다 */
+    if (Number.isFinite(asleepAt) && Number.isFinite(wakeAt)) {
+      const at = (when, fn) => { const left = when - elapsed; if (left <= 0) fn(); else setTimeout(() => { if (!disposed && gen === motionGen) fn(); }, reduced() ? Math.min(left, 120) : left); };
+      if (elapsed >= wakeAt) stage.eyesCalm?.();
+      else { at(asleepAt, () => stage.eyesAsleep?.()); at(wakeAt, () => { void stage.eyesWake?.(); }); }
+    }
+    if (elapsed >= delay + ms) { stage.snap('rest'); introPainted = true; stage.draw?.(); return; }
+    if (elapsed < delay) await wait(reduced() ? Math.min(delay - elapsed, 120) : delay - elapsed);
     // 기다리는 동안 다른 움직임이 시작됐으면 덮지 않는다. 기다리는 동안 서둘렀으면 드러나는 움직임도 짧게 한다(0.4.95 원천 후보 카본)
     if (disposed || gen !== motionGen) return;
-    await stage.tween('rest', introHurried ? Math.min(ms, 320) : ms, easeOut, (t, a, b) => lerp(a, b, smooth(0, 0.62, t)));
+    const moving = stage.tween('rest', introHurried ? Math.min(ms, 320) : ms, easeOut, (t, a, b) => lerp(a, b, smooth(0, 0.62, t)), { elapsed: Math.max(0, elapsed - delay) });
+    introPainted = true;
+    await moving;
   }
   function hurryIntro() {
     introHurried = true;
@@ -465,6 +480,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stage.snap('home');
     stage.setLit(0);
     stage.setRadius(5);
+    stage.eyesCalm?.();
+    // 처음 들어온 때(점 로고를 다 보인 때)는 잠깐 웃는다(시안 enter)
+    if (sigKind === 'full') void stage.setMood?.('smile', 1100);
     sig.fade();
     void stage.tween('home', 700, easeOut);
   }

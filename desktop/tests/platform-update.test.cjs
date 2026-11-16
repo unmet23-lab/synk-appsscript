@@ -157,8 +157,9 @@ test('automatic installer mode is passed only when explicitly requested and peri
   const modes=[];const f=await fixture(t,{openInstaller:async(_file,options)=>modes.push(options)});await f.updater.checkForUpdate();await f.updater.downloadUpdate();await f.updater.installUpdate({automatic:true});await f.updater.completeInstall();assert.equal(modes[0].automatic,true);assert.equal(modes[0].artifact.sha256,sha(payload));assert.equal(modes[0].version,'0.4.5');
 });
 
+// 인터넷 실패(UPDATE_NETWORK_FAILED)는 확인 단계에서 글 없이 지금 판을 연다(1-가 구현 설계 5절). 실패 장면을 기다리게 하려고 피드 주소 실패(503)를 쓴다
 test('periodic checking pauses while a reopen gate waits for an error choice and resumes after current-version choice',async t=>{
-  let tick,online=true,gate;const f=await fixture(t,{setInterval:fn=>{tick=fn;return {unref(){}};},clearInterval:()=>{},request:async()=>{if(!online)throw Error('offline');return response(manifest({version:'0.4.4',buildId:'20261014.1'}));},onChange:value=>gate?.observe(value)});
+  let tick,online=true,gate;const f=await fixture(t,{setInterval:fn=>{tick=fn;return {unref(){}};},clearInterval:()=>{},request:async()=>{if(!online)return response('',{status:503});return response(manifest({version:'0.4.4',buildId:'20261014.1'}));},onChange:value=>gate?.observe(value)});
   f.updater.start();await f.updater.waitForIdle();online=false;gate=createStartupUpdateGate({updater:f.updater});await gate.start();assert.equal(gate.snapshot().state,'error');const count=f.requests.length;online=true;tick();await settled();assert.equal(f.requests.length,count);assert.equal(gate.snapshot().canOpenCurrent,true);gate.openCurrent();tick();await f.updater.waitForIdle();assert.equal(f.requests.length,count+1);
 });
 

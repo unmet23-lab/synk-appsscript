@@ -1,195 +1,217 @@
 'use strict';
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+// 시작 창 화면(renderer/startup-update.mjs) 시험. 1-가 구현 설계 8절 「시작 창 화면 시험」.
+// 가짜 DOM과 가짜 구로 돌린다. 시간은 가짜 시계로 움직인다(실제로 기다리지 않는다).
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const loaded=import('../renderer/startup-update.mjs');
-const deferred=()=>{let resolve,reject;const promise=new Promise((done,fail)=>{resolve=done;reject=fail;});return {resolve,reject,promise};};
-function create2dContext(stats={draws:0}){
-  const gradient=()=>({addColorStop(){}});
+const settle=()=>new Promise(resolve=>setImmediate(resolve));
+const IDS=['startup-update','startup-orb','startup-orb-stage','startup-say','startup-then','startup-version','startup-percent','startup-actions','startup-retry','startup-install','startup-open-current','startup-minimize','startup-maximize','startup-close','startup-title'];
+
+function fakeClock(start=1_000_000){
+  let t=start,seq=0;const timers=new Map();
   return {
-    fillStyle:'#000000',
-    strokeStyle:'#ffffff',
-    lineWidth:1,
-    globalCompositeOperation:'source-over',
-    setTransform(){},
-    fillRect(){stats.draws++;},
-    save(){},
-    restore(){},
-    beginPath(){},
-    arc(){},
-    clip(){},
-    fill(){},
-    stroke(){},
-    createRadialGradient:gradient,
+    now:()=>t,
+    setTimeout(fn,ms){const id=++seq;timers.set(id,{at:t+Math.max(0,ms||0),fn});return id;},
+    clearTimeout(id){timers.delete(id);},
+    async advance(ms){const end=t+ms;for(;;){let next=null;for(const [id,v] of timers)if(v.at<=end&&(!next||v.at<next[1].at))next=[id,v];if(!next)break;timers.delete(next[0]);t=next[1].at;next[1].fn();await settle();}t=end;await settle();},
+    pending:()=>timers.size,
   };
 }
-async function fixture({snapshot={state:'checking',currentVersion:'0.4.5',platform:'win32'},overrides={},native=true,reducedMotion=false,canvasContext=()=>null,viewport={width:560,height:440}}={}){
-  const nodes=new Map(),calls=[],rafQueue=new Map(),focused=[];let callback,rafSeq=0,motionReduced=reducedMotion;
-  const mediaListeners=new Set();
-  const makeNode=(id='',tagName='DIV')=>({
-    id,
-    tagName,
-    className:'',
-    hidden:false,
-    disabled:false,
-    textContent:'',
-    value:0,
-    width:0,
-    height:0,
-    children:[],
-    parentNode:null,
-    dataset:{},
-    attributes:{},
-    handlers:{},
-    setAttribute(key,value){this.attributes[key]=String(value);},
-    getAttribute(key){return Object.hasOwn(this.attributes,key)?this.attributes[key]:null;},
-    removeAttribute(key){delete this.attributes[key];},
-    addEventListener(type,handler){this.handlers[type]=handler;},
-    removeEventListener(type,handler){if(this.handlers[type]===handler)delete this.handlers[type];},
-    append(...items){for(const item of items){item.parentNode=this;this.children.push(item);}},
-    remove(){if(!this.parentNode)return;const idx=this.parentNode.children.indexOf(this);if(idx!==-1)this.parentNode.children.splice(idx,1);this.parentNode=null;},
-    getBoundingClientRect(){return {width:viewport.width,height:viewport.height};},
-    getContext(kind,attrs){return canvasContext(kind,attrs,this);},
-    focus(){focused.push(this.id);},
-  });
-  const element=id=>{if(!nodes.has(id))nodes.set(id,makeNode(id));return nodes.get(id);};
-  const win={
-    innerWidth:viewport.width,
-    innerHeight:viewport.height,
-    devicePixelRatio:1,
-    performance:{now:()=>1200},
-    addEventListener(){},
-    removeEventListener(){},
-    requestAnimationFrame(fn){const id=++rafSeq;rafQueue.set(id,fn);return id;},
-    cancelAnimationFrame(id){rafQueue.delete(id);},
-    matchMedia(){return {get matches(){return motionReduced;},addEventListener(_t,fn){mediaListeners.add(fn);},removeEventListener(_t,fn){mediaListeners.delete(fn);}};},
-  };
-  const document={
-    defaultView:win,
-    hidden:false,
-    getElementById:element,
-    createElement:tag=>makeNode('',String(tag||'div').toUpperCase()),
-    addEventListener(){},
-    removeEventListener(){},
-    documentElement:{dataset:{}},
-  };
-  const bridge={getStatus:async()=>snapshot,retry:async()=>{calls.push('retry');return snapshot;},openCurrent:async()=>{calls.push('current');return snapshot;},install:async()=>{calls.push('install');return snapshot;},onChanged:listener=>{callback=listener;return ()=>callback=null;},...overrides};
-  const {mountStartupUpdate}=await loaded,controller=mountStartupUpdate({bridge:native?bridge:null,document,window:win});
-  return {
-    element,
-    document,
-    calls,
-    focused,
-    controller,
-    pendingFrames:()=>rafQueue.size,
-    setReducedMotion(next){motionReduced=next;for(const fn of mediaListeners)fn();},
-    click:action=>element('startup-'+({current:'open-current'}[action]||action)).handlers.click?.(),
-    emit:value=>{snapshot=value;callback?.(value);},
-  };
+function fakeOrb(){
+  const calls=[];let pose='void',moving=false;
+  const rec=(name,...args)=>{calls.push([name,...args]);};
+  return {calls,named:name=>calls.filter(c=>c[0]===name),
+    api:{
+      snap(name){rec('snap',name);pose=name;},
+      tween(name,ms,_ease,_lit,opts){rec('tween',name,ms,opts?.elapsed||0);pose=name;return Promise.resolve();},
+      setCut(v){rec('setCut',+v.toFixed(3));},setCutOn(on){rec('setCutOn',on);},forgeAt(p){rec('forgeAt',+p.toFixed(3));},setLit(v){rec('setLit',v);},
+      setMood(m){rec('setMood',m);return Promise.resolve();},eyesAsleep(){rec('eyesAsleep');},eyesWake(){rec('eyesWake');return Promise.resolve();},
+      setPointer(){},dispose(){rec('dispose');},get pose(){return pose;},get moving(){return moving;},
+    }};
 }
-test('checking, real download progress and installation never expose a skip or retry action',async()=>{
-  const f=await fixture();await f.controller.ready;
-  assert.match(f.element('startup-title').textContent,/최신 버전을 확인/);assert.equal(f.document.documentElement.dataset.startupReady,'true');
-  assert.equal(f.element('startup-surface').dataset.visible,'false');
-  for(const state of ['checking','downloading','installing']){
-    f.emit({state,platform:'win32',currentVersion:'0.4.5',latestVersion:'0.4.6',progress:42.8,canRetry:true,canOpenCurrent:true,canInstall:true});
-    assert.equal(f.element('startup-actions').hidden,true);await f.click('retry');await f.click('current');await f.click('install');
-    assert.equal(f.element('startup-surface').dataset.visible,String(state!=='checking'));
-    if(state==='downloading'){assert.equal(f.element('startup-progress').value,42.8);assert.equal(f.element('startup-percent').textContent,'42%');assert.equal(f.element('startup-progress-wrap').hidden,false);}
-    else assert.equal(f.element('startup-progress-wrap').hidden,true);
-  }
-  assert.match(f.element('startup-description').textContent,/끝나면 저절로 열려요/);assert.deepEqual(f.calls,[]);
-});
-test('download progress is bounded and only validated versions are presented',async()=>{
-  const f=await fixture();await f.controller.ready;
-  for(const [progress,expected] of [[-10,0],[200,100],[Infinity,0],[NaN,0]]){f.emit({state:'downloading',progress,currentVersion:'<img onerror=private>',latestVersion:'<secret>'});assert.equal(f.element('startup-progress').value,expected);assert.doesNotMatch(f.element('startup-version').textContent,/private|img/);assert.doesNotMatch(f.element('startup-description').textContent,/secret/);}
-});
-test('error actions require each explicit main-process permission',async()=>{
-  const f=await fixture();await f.controller.ready;
-  f.emit({state:'error',canRetry:true,canOpenCurrent:false});assert.equal(f.element('startup-retry').hidden,false);assert.equal(f.element('startup-open-current').hidden,true);await f.click('current');await f.click('retry');assert.deepEqual(f.calls,['retry']);
-  f.emit({state:'error',canRetry:false,canOpenCurrent:true});await f.click('retry');await f.click('current');assert.deepEqual(f.calls,['retry','current']);
-  f.emit({state:'error',canRetry:'true',canOpenCurrent:1});assert.equal(f.element('startup-actions').hidden,true);
-});
-test('action reentry is blocked and a later event wins over stale responses',async()=>{
-  const pending=deferred();let retries=0;
-  const f=await fixture({snapshot:{state:'error',canRetry:true,canOpenCurrent:true},overrides:{retry:()=>{retries++;return pending.promise;}}});await f.controller.ready;
-  const action=f.click('retry');await f.click('retry');await f.click('current');assert.equal(retries,1);assert.deepEqual(f.calls,[]);
-  f.emit({state:'downloading',progress:65});pending.resolve({state:'error',canRetry:true});await action;
-  assert.equal(f.element('startup-update').dataset.state,'downloading');assert.equal(f.element('startup-percent').textContent,'65%');
-});
-test('subscription precedes initial request, ignores stale initial data and stops after disposal',async()=>{
-  const initial=deferred(),f=await fixture({overrides:{getStatus:()=>initial.promise}});
-  f.emit({state:'installing',platform:'win32'});initial.resolve({state:'checking'});await f.controller.ready;assert.equal(f.element('startup-update').dataset.state,'installing');
-  f.controller.dispose();f.emit({state:'error'});assert.equal(f.element('startup-update').dataset.state,'installing');
-});
-test('safe errors never show raw messages, paths or account fields',async()=>{
-  const f=await fixture();await f.controller.ready;
-  for(const [code,expected] of [['UPDATE_NETWORK_FAILED',/인터넷 연결/],['UPDATE_STORAGE_FAILED',/PC 저장 공간을 비운 뒤/],['UPDATE_INTEGRITY_FAILED',/온전하지 않아요/],['UPDATE_INSTALL_FAILED',/설치를 마치지/],['UPDATE_HANDOFF_TIMEOUT',/설치를 마치지/],['UPDATE_RECOVERED',/이전 버전으로 돌아왔/],['UPDATE_RECOVERY_INVALID',/되돌린 기록을 읽지 못했어요/],['UPDATE_BUILD_MISMATCH',/버전이 맞지 않아요/]]){
-    f.emit({state:'error',code,canRetry:true,canOpenCurrent:true,message:'private-auth-token',path:'C:/private',account:{display_name:'private-person'}});
-    assert.match(f.element('startup-description').textContent,expected);assert.doesNotMatch(f.element('startup-description').textContent,/private/);
-  }
-});
-test('Mac ready opens only the installer bridge and clearly explains manual replacement',async()=>{
-  const f=await fixture({snapshot:{state:'ready',platform:'darwin',canInstall:true,canOpenCurrent:true}});await f.controller.ready;
-  assert.match(f.element('startup-description').textContent,/Applications/);assert.equal(f.element('startup-install').hidden,false);assert.equal(f.element('startup-retry').hidden,true);await f.click('install');assert.deepEqual(f.calls,['install']);
-  f.emit({state:'ready',platform:'darwin',code:'UPDATE_MANUAL_INSTALL',canInstall:true,canOpenCurrent:true});assert.match(f.element('startup-title').textContent,/파일을 열었/);
-  f.emit({state:'installing',platform:'darwin'});assert.doesNotMatch(f.element('startup-description').textContent,/자동으로/);
-  f.emit({state:'ready',platform:'win32',canInstall:true});await f.click('install');assert.deepEqual(f.calls,['install']);
-});
-test('missing or failing startup capability gives a safe closed fallback',async()=>{
-  const f=await fixture({native:false});await f.controller.ready;assert.equal(f.element('startup-actions').hidden,true);assert.match(f.element('startup-description').textContent,/앱을 끈 뒤/);
-  const g=await fixture({overrides:{getStatus:async()=>{throw Error('private failure');}}});await g.controller.ready;assert.equal(g.element('startup-update').dataset.state,'error');assert.doesNotMatch(g.element('startup-description').textContent,/private/);assert.deepEqual(g.calls,[]);
-});
-test('startup orb reuses portal-orb with non-WebGL fallback, reduced motion and clean disposal',async()=>{
-  const staticView=await fixture();await staticView.controller.ready;
-  assert.equal(staticView.element('startup-orb-stage').dataset.orbMode,'static');
-  assert.equal(staticView.pendingFrames(),0);
-  staticView.controller.dispose();
+function fakeDom({reduced=false}={}){
+  const nodes=new Map(),focused=[],docListeners={};
+  const node=id=>({id,hidden:false,disabled:false,textContent:'',dataset:{},attributes:{},handlers:{},
+    setAttribute(k,v){this.attributes[k]=String(v);},getAttribute(k){return this.attributes[k]??null;},
+    addEventListener(type,fn){(this.handlers[type]=this.handlers[type]||[]).push(fn);},removeEventListener(type,fn){this.handlers[type]=(this.handlers[type]||[]).filter(f=>f!==fn);},
+    fire(type,event={}){for(const fn of this.handlers[type]||[])fn(event);},focus(){focused.push(id);for(const fn of nodes.get('startup-actions').handlers.focusin||[])fn({});}});
+  for(const id of IDS)nodes.set(id,node(id));
+  const document={getElementById:id=>nodes.get(id)||null,documentElement:{dataset:reduced?{motion:'reduced'}:{}},
+    addEventListener(type,fn){(docListeners[type]=docListeners[type]||[]).push(fn);},removeEventListener(type,fn){docListeners[type]=(docListeners[type]||[]).filter(f=>f!==fn);},
+    fire(type,e={}){for(const fn of docListeners[type]||[])fn(e);},docListeners};
+  return {document,nodes,focused,el:id=>nodes.get(id)};
+}
+async function fixture({snapshot={state:'checking',currentVersion:'0.4.95',platform:'win32'},bridge:override={},reduced=false,status=null}={}){
+  const {mountStartupUpdate}=await loaded;
+  const clock=fakeClock(),dom=fakeDom({reduced}),orb=fakeOrb(),calls=[];let push=null,pushWindow=null;
+  const bridge={
+    getStatus:async()=>{calls.push('getStatus');return status||snapshot;},
+    retry:async()=>{calls.push('retry');return {...snapshot,state:'checking'};},
+    openCurrent:async()=>{calls.push('openCurrent');return {...snapshot,canOpenCurrent:false};},
+    install:async()=>{calls.push('install');return {...snapshot,state:'ready',code:'UPDATE_MANUAL_INSTALL'};},
+    minimize:async()=>{calls.push('minimize');},toggleMaximize:async()=>{calls.push('toggleMaximize');},close:async()=>{calls.push('close');},
+    onChanged:fn=>{push=fn;return ()=>{push=null;};},onWindowState:fn=>{pushWindow=fn;return ()=>{pushWindow=null;};},
+    ...override,
+  };
+  const win={setTimeout:clock.setTimeout,clearTimeout:clock.clearTimeout,innerWidth:1440,innerHeight:940,matchMedia:()=>({matches:reduced}),addEventListener(){},removeEventListener(){}};
+  const view=mountStartupUpdate({bridge,document:dom.document,window:win,createOrb:()=>orb.api,now:clock.now});
+  await view.ready;await settle();
+  return {view,dom,orb,calls,clock,bridge,send:value=>{push?.(value);},sendWindow:value=>pushWindow?.(value)};
+}
+const visibleActions=f=>['startup-retry','startup-install','startup-open-current'].filter(id=>!f.dom.el(id).hidden);
 
-  const stats={draws:0};
-  const liveOrb=await fixture({canvasContext:kind=>kind==='2d'?create2dContext(stats):null});await liveOrb.controller.ready;
-  const stage=liveOrb.element('startup-orb-stage');
-  assert.equal(stage.dataset.orbMode,'2d');
-  assert.equal(stage.children.length,1);
-  assert.equal(stage.children[0].attributes['aria-hidden'],'true');
-  assert.ok(stats.draws>0);
-  assert.equal(liveOrb.pendingFrames(),1);
-
-  liveOrb.setReducedMotion(true);
-  assert.equal(liveOrb.pendingFrames(),0);
-  liveOrb.emit({state:'error',canRetry:true,canOpenCurrent:true});
-  assert.equal(liveOrb.focused.at(-1),'startup-retry');
-
-  liveOrb.controller.dispose();
-  assert.equal(liveOrb.pendingFrames(),0);
-  assert.equal(stage.children.length,0);
-  assert.equal(stage.dataset.orbMode,undefined);
-
-  const reducedFromStart=await fixture({reducedMotion:true,canvasContext:kind=>kind==='2d'?create2dContext():null,viewport:{width:360,height:400}});
-  await reducedFromStart.controller.ready;
-  assert.equal(reducedFromStart.element('startup-orb-stage').dataset.orbMode,'2d');
-  assert.equal(reducedFromStart.pendingFrames(),0);
-  reducedFromStart.controller.dispose();
+test('checking shows only the orb: no visible actions, screen-reader status and busy state',async()=>{
+  const f=await fixture({snapshot:{state:'checking',platform:'win32',boot:{startedAt:1_000_000-200,kind:'back'}}});
+  assert.equal(f.dom.el('startup-update').dataset.ui,undefined);
+  assert.equal(f.dom.el('startup-update').getAttribute('aria-busy'),'true');
+  assert.equal(f.dom.el('startup-say').textContent,'새 판을 확인하고 있습니다.');
+  assert.deepEqual(visibleActions(f),[]);assert.equal(f.dom.el('startup-actions').hidden,true);
+  assert.equal(f.dom.el('startup-version').textContent,'');
 });
-test('startup markup and styles keep a decorative black-screen orb in checking while preserving screen-reader status',()=>{
-  const html=fs.readFileSync(path.join(__dirname,'../renderer/startup-update.html'),'utf8');
-  const css=fs.readFileSync(path.join(__dirname,'../renderer/startup-update.css'),'utf8');
-  assert.match(html,/id="startup-orb-stage"[^>]*aria-hidden="true"/);
-  assert.doesNotMatch(html,/<button[^>]*orb|startup-steps|class="brand"/);
-  assert.match(html,/id="startup-update"[^>]*data-state="checking"[^>]*aria-labelledby="startup-title"/);
-  assert.match(html,/class="message"[^>]*aria-live="polite"/);
-  assert.match(html,/id="startup-progress-wrap"[^>]*hidden/);
-  assert.match(html,/id="startup-actions"[^>]*hidden/);
-  assert.match(css,/--bg:\s*#000000/);
-  assert.match(css,/#startup-update\[data-state="checking"\]\s+\.startup-surface\s*\{[^}]*opacity:\s*0/);
-  assert.match(css,/prefers-reduced-motion:\s*reduce/);
-  assert.match(css,/max-width:\s*420px/);
+
+test('the reveal follows the main process start time and kind, so a late window continues the same path',async()=>{
+  // 날마다 켤 때(back): 300ms 기다린 뒤 1150ms 동안 드러난다. 창이 500ms 늦게 떴으면 길의 200ms 지점에서 이어 그린다
+  const f=await fixture({snapshot:{state:'checking',platform:'win32',boot:{startedAt:1_000_000-500,kind:'back'}}});
+  assert.deepEqual(f.orb.named('tween')[0],['tween','rest',1150,200]);
+  await f.clock.advance(1000);
+  assert.ok(f.orb.named('eyesAsleep').length>=1&&f.orb.named('eyesWake').length>=1,'eyes fall asleep and wake during the reveal');
+  // 처음 켤 때(first)는 520ms 기다린 뒤 2400ms다. 이미 다 지났으면 드러난 채로 선다
+  const g=await fixture({snapshot:{state:'checking',platform:'win32',boot:{startedAt:1_000_000-9000,kind:'first'}}});
+  assert.equal(g.orb.named('tween').length,0);assert.ok(g.orb.named('snap').some(c=>c[1]==='rest'));
 });
-test('startup preload has five fixed operations without auth, raw IPC or renderer arguments',async()=>{
-  const invokes=[],events=new Map();let exposed;
+
+test('downloading enters the grand forge scene, shows the version and never moves the cut backwards',async()=>{
+  const f=await fixture();
+  f.send({state:'downloading',platform:'win32',progress:0,latestVersion:'0.4.96',currentVersion:'0.4.95'});await settle();
+  assert.equal(f.dom.el('startup-update').dataset.ui,'forge');
+  assert.ok(f.orb.named('setCutOn').some(c=>c[1]===true));assert.ok(f.orb.named('tween').some(c=>c[1]==='forge'&&c[2]===2300));
+  assert.equal(f.dom.el('startup-say').textContent,'새 판을 받고 있습니다.');assert.equal(f.dom.el('startup-version').textContent,'0.4.96');
+  f.send({state:'downloading',platform:'win32',progress:60,latestVersion:'0.4.96'});await f.clock.advance(5000);
+  const cuts=f.orb.named('forgeAt').map(c=>c[1]);assert.ok(cuts.length>0);assert.ok(Math.max(...cuts)<=0.3+1e-9,'download fills only the first half');
+  for(let i=1;i<cuts.length;i++)assert.ok(cuts[i]>=cuts[i-1],'never backwards');
+  // 받은 값이 줄어도 깎인 만큼은 뒤로 가지 않는다
+  const before=cuts.at(-1);f.send({state:'downloading',platform:'win32',progress:10,latestVersion:'0.4.96'});await f.clock.advance(500);
+  assert.ok(f.orb.named('forgeAt').every(c=>c[1]>=0)&&f.orb.named('forgeAt').at(-1)[1]>=before);
+  assert.match(f.dom.el('startup-percent').textContent,/^ · \d+%$/);assert.deepEqual(visibleActions(f),[]);
+});
+
+test('the cut follows the received value no faster than the set speed',async()=>{
+  const {FORGE_FOLLOW_PER_SECOND}=await loaded;
+  const f=await fixture();
+  f.send({state:'downloading',platform:'win32',progress:100,latestVersion:'0.4.96'});await settle();
+  await f.clock.advance(1000);
+  const p=f.orb.named('forgeAt').at(-1)?.[1]||0;assert.ok(p<=FORGE_FOLLOW_PER_SECOND*1.2+1e-6,'one second moves at most the set speed: '+p);
+});
+
+test('Windows handoff says the new version is being swapped in and offers no action',async()=>{
+  const f=await fixture();
+  f.send({state:'installing',platform:'win32',latestVersion:'0.4.96'});await settle();
+  assert.equal(f.dom.el('startup-say').textContent,'새 판으로 바꾸고 있습니다.');assert.equal(f.dom.el('startup-then').textContent,'끝나면 저절로 열립니다.');
+  assert.deepEqual(visibleActions(f),[]);
+});
+
+test('failure scenes use safe sentences chosen by code, never raw messages or paths',async()=>{
+  const {copy}=await loaded;
+  const cases={
+    UPDATE_STORAGE_FAILED:'PC 저장 공간이 모자라 새 판을 받지 못했습니다.',
+    UPDATE_INTEGRITY_FAILED:'받은 새 판이 온전하지 않아 쓰지 않았습니다.',UPDATE_INVALID_ARTIFACT:'받은 새 판이 온전하지 않아 쓰지 않았습니다.',
+    UPDATE_HANDOFF_TIMEOUT:'새 판으로 바꾸지 못했습니다.',UPDATE_OPEN_FAILED:'새 판으로 바꾸지 못했습니다.',UPDATE_RECOVERED:'새 판으로 바꾸지 못했습니다.',
+    UPDATE_BUILD_MISMATCH:'이 앱은 저절로 새 판으로 바뀌지 않습니다.',UPDATE_SIGNATURE_INVALID:'새 판을 확인하지 못했습니다.',UPDATE_HTTP_FAILED:'새 판을 확인하지 못했습니다.',
+  };
+  for(const [code,say] of Object.entries(cases))assert.equal(copy({state:'error',code}).say,say,code);
+  assert.equal(copy({state:'error',code:'UPDATE_NETWORK_FAILED',stage:'download'}).say,'새 판을 받지 못했습니다.');
+  const f=await fixture();
+  f.send({state:'error',code:'UPDATE_FAILED',message:'C:\\Users\\secret\\x.exe failed',email:'a@b.c',platform:'win32',canRetry:true,canOpenCurrent:true,currentVersion:'0.4.95'});await settle();
+  const text=f.dom.el('startup-say').textContent+f.dom.el('startup-then').textContent;
+  assert.doesNotMatch(text,/secret|a@b\.c|\\/);assert.deepEqual(visibleActions(f),['startup-retry','startup-open-current']);
+  assert.equal(f.dom.el('startup-open-current').textContent,'지금 판 열기');assert.equal(f.dom.el('startup-version').textContent,'0.4.95');
+  // 판이 맞지 않는 앱은 다시 시도하지 않고 지금 판만 연다
+  f.send({state:'error',code:'UPDATE_BUILD_MISMATCH',platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+  assert.deepEqual(visibleActions(f),['startup-open-current']);
+});
+
+test('a failure opens the current version by itself after a while unless a hand or focus reached the buttons',async()=>{
+  const {AUTO_OPEN_MS}=await loaded;
+  const f=await fixture();
+  f.send({state:'error',code:'UPDATE_HANDOFF_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+  assert.ok(f.dom.focused.length>0,'first action receives focus for screen readers');
+  await f.clock.advance(AUTO_OPEN_MS-50);assert.equal(f.calls.filter(c=>c==='openCurrent').length,0);
+  await f.clock.advance(100);assert.equal(f.calls.filter(c=>c==='openCurrent').length,1);
+  const g=await fixture();
+  g.send({state:'error',code:'UPDATE_HANDOFF_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+  g.dom.el('startup-actions').fire('pointerenter');await g.clock.advance(AUTO_OPEN_MS*2);assert.equal(g.calls.filter(c=>c==='openCurrent').length,0);
+  const h=await fixture();
+  h.send({state:'error',code:'UPDATE_HANDOFF_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+  h.dom.document.fire('keydown',{key:'Tab'});await h.clock.advance(AUTO_OPEN_MS*2);assert.equal(h.calls.filter(c=>c==='openCurrent').length,0);
+});
+
+test('Mac ready waits for the person: install file or current version, no automatic opening',async()=>{
+  const {AUTO_OPEN_MS}=await loaded;
+  const f=await fixture();
+  f.send({state:'ready',platform:'darwin',canInstall:true,canOpenCurrent:true,latestVersion:'0.4.96'});await settle();
+  assert.equal(f.dom.el('startup-say').textContent,'새 판을 받았습니다.');assert.deepEqual(visibleActions(f),['startup-install','startup-open-current']);
+  assert.ok(f.orb.named('forgeAt').some(c=>c[1]===0.5),'the orb stops half cut');
+  await f.clock.advance(AUTO_OPEN_MS*2);assert.equal(f.calls.filter(c=>c==='openCurrent').length,0);
+  f.dom.el('startup-install').fire('click');await settle();await settle();assert.equal(f.calls.filter(c=>c==='install').length,1);
+});
+
+test('action reentry is blocked while a request is pending',async()=>{
+  let release;const f=await fixture({bridge:{retry:()=>new Promise(resolve=>{release=resolve;})}});
+  f.send({state:'error',code:'UPDATE_HTTP_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+  f.dom.el('startup-retry').fire('click');f.dom.el('startup-retry').fire('click');f.dom.el('startup-open-current').fire('click');await settle();
+  assert.equal(f.dom.el('startup-retry').disabled,true);release({state:'checking',platform:'win32'});await settle();await settle();
+  assert.equal(f.dom.el('startup-update').dataset.state,'checking');
+});
+
+test('a missing or failing bridge gives a safe failure scene and the orb still appears',async()=>{
+  const f=await fixture({bridge:{getStatus:undefined}});
+  assert.equal(f.dom.el('startup-update').dataset.state,'error');assert.equal(f.dom.el('startup-say').textContent,'화면을 불러오지 못했습니다.');
+  assert.ok(f.orb.named('snap').length>0);
+  const g=await fixture({bridge:{getStatus:async()=>{throw Error('x');}}});
+  assert.equal(g.dom.el('startup-update').dataset.state,'error');
+});
+
+test('window buttons call fixed operations without arguments and follow the maximized state',async()=>{
+  const f=await fixture({snapshot:{state:'checking',platform:'win32',window:{maximized:true}}});
+  assert.equal(f.dom.el('startup-maximize').dataset.maximized,'true');
+  f.dom.el('startup-minimize').fire('click');f.dom.el('startup-maximize').fire('click');f.dom.el('startup-close').fire('click');await settle();
+  assert.deepEqual(f.calls.filter(c=>['minimize','toggleMaximize','close'].includes(c)),['minimize','toggleMaximize','close']);
+  f.sendWindow({maximized:false});assert.equal(f.dom.el('startup-maximize').dataset.maximized,'false');
+});
+
+test('dispose stops the timers, listeners and the orb',async()=>{
+  const f=await fixture();
+  f.send({state:'error',code:'UPDATE_HANDOFF_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+  f.view.dispose();assert.ok(f.orb.named('dispose').length===1);
+  const {AUTO_OPEN_MS}=await loaded;await f.clock.advance(AUTO_OPEN_MS*2);assert.equal(f.calls.filter(c=>c==='openCurrent').length,0);
+});
+
+test('markup and styles: black window, decorative orb canvas, grand lower-left text and same window buttons as the app',()=>{
+  const html=fs.readFileSync(path.join(__dirname,'../renderer/startup-update.html'),'utf8'),css=fs.readFileSync(path.join(__dirname,'../renderer/startup-update.css'),'utf8');
+  for(const id of IDS)assert.match(html,new RegExp('id="'+id+'"'),id);
+  assert.match(html,/id="startup-orb-stage"[^>]*aria-hidden="true"/);assert.doesNotMatch(html,/<progress/);
+  assert.match(css,/--void: #000000/);assert.match(css,/\.forge-in \{[^}]*left: clamp\(20px, 9\.5vw, 168px\);[^}]*bottom: clamp\(84px, 13vh, 128px\)/s);
+  assert.match(css,/\.startup-window-actions button \{[^}]*width: 44px;[^}]*height: 32px/s);assert.match(css,/-webkit-app-region: drag/);
+});
+
+test('startup preload has nine fixed operations without auth, raw IPC or renderer arguments',async()=>{
+  const vm=require('node:vm');const invokes=[],events=new Map();let exposed;
   const electron={contextBridge:{exposeInMainWorld(name,value){assert.equal(name,'synkStartupUpdate');exposed=value;}},ipcRenderer:{invoke:async(...args)=>{invokes.push(args);},on:(name,listener)=>events.set(name,listener),removeListener:(name,listener)=>{assert.equal(events.get(name),listener);events.delete(name);}}};
   const context={require:name=>{assert.equal(name,'electron');return electron;}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/startup-update-preload.cjs'),'utf8'),context);
-  assert.deepEqual(Object.keys(exposed),['getStatus','retry','openCurrent','install','onChanged']);assert.equal(Object.isFrozen(exposed),true);
-  for(const name of ['getStatus','retry','openCurrent','install'])await exposed[name]('untrusted-url','private-token');
-  assert.deepEqual(invokes,[['startup-update:status'],['startup-update:retry'],['startup-update:open-current'],['startup-update:install']]);
-  let received;const unsubscribe=exposed.onChanged(value=>received=value);events.get('startup-update:changed')({private:'event'},{state:'checking'});assert.deepEqual(received,{state:'checking'});unsubscribe();assert.equal(events.size,0);assert.throws(()=>exposed.onChanged(null),/callback/);
+  assert.deepEqual(Object.keys(exposed),['getStatus','retry','openCurrent','install','minimize','toggleMaximize','close','onChanged','onWindowState']);assert.equal(Object.isFrozen(exposed),true);
+  for(const name of ['getStatus','retry','openCurrent','install','minimize','toggleMaximize','close'])await exposed[name]('untrusted-url','private-token');
+  assert.deepEqual(invokes,[['startup-update:status'],['startup-update:retry'],['startup-update:open-current'],['startup-update:install'],['startup-update:minimize'],['startup-update:toggle-maximize'],['startup-update:close']]);
+  let received;const unsubscribe=exposed.onChanged(value=>received=value);events.get('startup-update:changed')({private:'event'},{state:'checking'});assert.deepEqual(received,{state:'checking'});unsubscribe();
+  let windowState;const off=exposed.onWindowState(value=>windowState=value);events.get('startup-update:window-state')({},{maximized:true});assert.deepEqual(windowState,{maximized:true});off();
+  assert.equal(events.size,0);assert.throws(()=>exposed.onChanged(null),/callback/);
+});
+
+test('the startup window and the app window reveal the orb on one timeline, eyes included',async()=>{
+  // 시작 창이 그리던 드러남을 앱 창이 잇는다. 두 창의 시간값이 다르면 넘기는 순간 구가 튄다(1-가 구현 설계 2절)
+  const {ORB_BOOT}=await loaded,{ORB_TIMING,ORB_LOOK}=await import('../renderer/orb-face.mjs');
+  for(const kind of ['first','back']){
+    assert.equal(ORB_BOOT[kind].delay,ORB_TIMING.introDelay[kind],kind+' delay');assert.equal(ORB_BOOT[kind].ms,ORB_TIMING.intro[kind],kind+' ms');
+    assert.equal(ORB_BOOT[kind].asleepAt,ORB_TIMING.eyesAsleep[kind],kind+' asleep');assert.equal(ORB_BOOT[kind].wakeAt,ORB_TIMING.eyesWake[kind],kind+' wake');
+  }
+  assert.equal(ORB_LOOK.eyes,true);
 });

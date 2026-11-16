@@ -6,6 +6,8 @@ function validatePatch(patch){
   if(!patch||typeof patch!=='object'||Array.isArray(patch))return false;
   return Object.keys(patch).every(key=>Object.hasOwn(DEFAULTS,key)&&(['closeToTray','launchAtLogin','startHidden'].includes(key)?typeof patch[key]==='boolean':key==='globalShortcut'?validShortcut(patch[key]):typeof patch[key]==='number'&&Number.isFinite(patch[key])&&patch[key]>=0.8&&patch[key]<=1.5));
 }
+// 로그인 때 숨은 채 시작할지만 읽는다. 시작 관문은 이 설정 모듈을 만들기 전에 돌므로 파일을 바로 읽는다(1-가 구현 설계 2절)
+function readStartHidden(directory){try{const text=fs.readFileSync(path.join(directory,'desktop-preferences.json'),'utf8');if(text.length>=4096)return false;const parsed=JSON.parse(text);return validatePatch(parsed)&&parsed.startHidden===true;}catch{return false;}}
 function createDesktopPreferences({directory,app,globalShortcut,getWindow,onAction=()=>{},onChange=()=>{},onShow=null,platform=process.platform,enabled=true,packaged=false,executable=process.execPath,name='SYNKPlatform'}){
   // Only a packaged build reads or writes Windows startup. A source run
   // (--synk-dev) would start a checkout's electron.exe at login, and before its
@@ -56,4 +58,4 @@ function createDesktopPreferences({directory,app,globalShortcut,getWindow,onActi
   function dispose(){if(registered)globalShortcut.unregister(registered);registered='';}
   return {initialize,snapshot,update,applyWindow,dispose};
 }
-module.exports={DEFAULTS,validShortcut,validatePatch,createDesktopPreferences};
+module.exports={DEFAULTS,validShortcut,validatePatch,createDesktopPreferences,readStartHidden};

@@ -19,11 +19,11 @@ test('installing startup window blocks manual close but normal application quit 
   const context={app,startupWindow,quittingRequested:false};vm.createContext(context);vm.runInContext(line,context);app.emit('before-quit');assert.equal(context.quittingRequested,true);assert.equal(nativeWindow.closable,true);startupWindow.publish({state});assert.equal(nativeWindow.closable,true,'late installing event cannot relock normal quit');startupWindow.cancelQuit();assert.equal(nativeWindow.closable,false,'cancelled quit restores manual close protection');app.emit('before-quit');nativeWindow.close();assert.equal(closes,1);
   startupWindow.publish({state:'checking'});assert.equal(nativeWindow.closable,true);startupWindow.dispose();assert.doesNotThrow(()=>startupWindow.prepareForQuit());assert.equal(handlers.size,0);
 });
-function fixture({platform='win32',check={ok:true,state:'available'},download={ok:true,state:'ready'},install={ok:true,state:'opening'},recoveryCode=null}={}){
+function fixture({platform='win32',check={ok:true,state:'available'},download={ok:true,state:'ready'},install={ok:true,state:'opening'},recoveryCode=null,hidden=false,initialError=null,earlyOpenMs=0,setTimer,clearTimer,keepDeferred=false}={}){
   let value={currentVersion:'0.4.4',latestVersion:'0.4.5',progress:0,state:'idle'},proceeds=0,cancels=0;const calls=[],changes=[];
   const updater={snapshot:()=>value,checkForUpdate:async()=>{calls.push('check');const next=typeof check==='function'?await check():check;value={...value,...next};return value;},downloadUpdate:async()=>{calls.push('download');value={...value,...download};return value;},installUpdate:async options=>{calls.push(['install',options]);value={...value,...install};return value;},start:options=>calls.push(['periodic',options]),cancelPending:()=>cancels++};
-  const gate=createStartupUpdateGate({updater,platform,recoveryCode,onChange:state=>changes.push(state),proceed:()=>proceeds++});
-  return {gate,updater,calls,changes,get proceeds(){return proceeds;},get cancels(){return cancels;},setState:next=>{value={...value,...next};gate.observe(value);}};
+  const silent=[];const gate=createStartupUpdateGate({updater,platform,recoveryCode,hidden,initialError,keepDeferred,earlyOpenMs,...(setTimer?{setTimer,clearTimer}:{}),onSilentFailure:value=>silent.push(value),onChange:state=>changes.push(state),proceed:()=>proceeds++});
+  return {gate,updater,calls,changes,silent,get proceeds(){return proceeds;},get cancels(){return cancels;},setState:next=>{value={...value,...next};gate.observe(value);}};
 }
 test('new Windows version checks, downloads and requests automatic guarded install before main initialization',async()=>{
   const f=fixture();await f.gate.start();assert.deepEqual(f.calls,['check','download',['install',{automatic:true}]]);assert.equal(f.proceeds,0);assert.equal(f.gate.snapshot().state,'installing');assert.equal(f.gate.snapshot().canOpenCurrent,false);assert.equal(f.gate.isBlocking(),true);
@@ -35,11 +35,45 @@ test('current version releases main exactly once and schedules six-hour checks w
 test('disabled development updater releases the gate without attempting a download',async()=>{
   const f=fixture({check:{ok:false,state:'disabled'}});await f.gate.start();assert.equal(f.proceeds,1);assert.equal(f.calls.some(value=>value==='download'),false);
 });
-test('offline and timeout wait for an explicit retry/current-version choice and never loop or initialize accounts',async()=>{
+test('internet failure while checking opens the current version without a failure scene and remembers it for the settings line',async()=>{
+  // 1-가 구현 설계 5절: 확인 단계의 UPDATE_NETWORK_FAILED와 UPDATE_TIMEOUT만 글 없이 지금 판을 연다
   for(const code of ['UPDATE_NETWORK_FAILED','UPDATE_TIMEOUT']){
-    const f=fixture({check:{ok:false,state:'error',code}});await f.gate.start();await settle();assert.deepEqual(f.calls,['check']);assert.equal(f.proceeds,0);assert.equal(f.gate.snapshot().canRetry,true);assert.equal(f.gate.snapshot().canOpenCurrent,true);
-    f.gate.openCurrent();assert.equal(f.proceeds,1);assert.deepEqual(f.calls,['check',['periodic',{check:false}]]);
+    const f=fixture({check:{ok:false,state:'error',code}});await f.gate.start();await settle();
+    assert.equal(f.proceeds,1);assert.deepEqual(f.calls,['check',['periodic',{check:false}]]);assert.equal(f.gate.isBlocking(),false);
+    assert.equal(f.changes.some(c=>c.state==='error'),false,'no failure scene');assert.deepEqual(f.silent.map(v=>[v.code,v.silent]),[[code,true]]);
   }
+  // 그 밖의 확인 실패(서명, 피드 주소)는 실패 장면을 보인다
+  for(const code of ['UPDATE_SIGNATURE_INVALID','UPDATE_HTTP_FAILED']){
+    const f=fixture({check:{ok:false,state:'error',code}});await f.gate.start();await settle();
+    assert.equal(f.proceeds,0);assert.equal(f.gate.snapshot().state,'error');assert.equal(f.gate.snapshot().stage,'check');assert.equal(f.gate.snapshot().canOpenCurrent,true);
+  }
+  // 받다가 인터넷이 끊기면 실패 장면을 보인다(받기 단계)
+  const g=fixture({download:{ok:false,state:'error',code:'UPDATE_NETWORK_FAILED'}});await g.gate.start();await settle();
+  assert.equal(g.proceeds,0);assert.equal(g.gate.snapshot().state,'error');assert.equal(g.gate.snapshot().stage,'download');
+});
+test('a slow check opens the current version first and leaves a later new version to the background path',async()=>{
+  let release,fire=null;const background=[];
+  const f=fixture({check:()=>new Promise(resolve=>{release=resolve;}),earlyOpenMs:4000,setTimer:(fn)=>{fire=fn;return {unref(){}};},clearTimer:()=>{}});
+  f.updater.checkInBackground=()=>{background.push('background');return Promise.resolve();};
+  const pending=f.gate.start();await settle();assert.equal(f.proceeds,0);assert.ok(fire);
+  fire();await pending;assert.equal(f.proceeds,1,'opened before the check answered');assert.equal(f.gate.isBlocking(),false);
+  release({ok:true,state:'available'});await settle();await settle();assert.deepEqual(background,['background']);
+  assert.equal(f.calls.some(c=>c==='download'),false,'the gate itself never downloads after opening');
+});
+test('hidden login start never shows a failure scene: it opens hidden and keeps the failure for the next opening',async()=>{
+  const f=fixture({hidden:true,download:{ok:false,state:'error',code:'UPDATE_STORAGE_FAILED'}});await f.gate.start();await settle();
+  assert.equal(f.proceeds,1);assert.equal(f.changes.some(c=>c.state==='error'),false);
+  assert.deepEqual(f.gate.unseenFailure(),{code:'UPDATE_STORAGE_FAILED',stage:'download',releaseId:null});assert.equal(f.silent[0].code,'UPDATE_STORAGE_FAILED');
+  // 확인 중에 사람이 창을 부르면 그 뒤로는 보이는 길이다
+  const g=fixture({hidden:true,download:{ok:false,state:'error',code:'UPDATE_STORAGE_FAILED'}});g.gate.reveal();await g.gate.start();await settle();
+  assert.equal(g.proceeds,0);assert.equal(g.gate.snapshot().state,'error');
+});
+test('a reopening with an unseen failure shows that scene first and keeps the deferred release',async()=>{
+  const seen=[];const f=fixture({initialError:{code:'UPDATE_RECOVERED',stage:'handoff'},keepDeferred:true});
+  f.updater.setStartupActive=(value,options)=>seen.push([value,options?.keepDeferred===true]);
+  // 시험의 업데이터를 바꾼 뒤 관문을 새로 만든다
+  const gate=require('../src/platform-startup-update.cjs').createStartupUpdateGate({updater:f.updater,platform:'win32',initialError:{code:'UPDATE_RECOVERED',stage:'handoff'},keepDeferred:true,earlyOpenMs:0});
+  assert.deepEqual(seen[0],[true,true]);await gate.start();assert.equal(gate.snapshot().state,'error');assert.equal(gate.snapshot().code,'UPDATE_RECOVERED');assert.deepEqual(f.calls,[]);
 });
 test('known newer version download failure is not retried automatically; duplicate explicit retries cannot start another operation',async()=>{
   let fail=true,release;const f=fixture({check:async()=>{if(!fail)await new Promise(resolve=>{release=resolve;});return {ok:true,state:'available'};},download:{ok:false,state:'error',code:'UPDATE_INTEGRITY_FAILED'}});
@@ -86,11 +120,19 @@ test('manual handoff preserves ordinary Signal installer behavior and requires n
 test('all platform reveal entry points share the pre-show gate and createWindow cannot initialize auth around it',()=>{
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8');
   for(const event of ['second-instance','activate'])assert.match(main,new RegExp("app.on\\('"+event+"',[^\\n]*requestPlatformWindow\\(\\)"));
-  assert.match(main,/function createWindow\(\)\{\s*if\(!startupAllowed\)\{startupWindow\?\.show\(\);return;\}/);
+  assert.match(main,/function createWindow\(\)\{\s*if\(!startupAllowed\)\{showStartupWindow\(\);return;\}/);
   assert.match(main,/onShow:action=>requestPlatformWindow\(action\)/);assert.match(main,/onShow:\(\)=>requestPlatformWindow\(\)/);
   const body=main.match(/function requestPlatformWindow\(action\)\{([\s\S]*?)\n\}/)[0];const calls=[];
-  const context={window:{isDestroyed:()=>false,isVisible:()=>false},mainWindowReady:true,startupAllowed:true,startupGate:null,startupWindow:{show:()=>calls.push('gate-focus')},platformUpdate:{snapshot:()=>({state:'current'})},quittingRequested:false,beginPlatformStartup:()=>calls.push('begin'),showPlatformMain:()=>calls.push('main')};
-  vm.createContext(context);vm.runInContext(body,context);context.requestPlatformWindow();assert.deepEqual(calls,['begin']);context.window.isVisible=()=>true;context.requestPlatformWindow();assert.deepEqual(calls,['begin','main']);context.mainWindowReady=false;context.requestPlatformWindow();assert.deepEqual(calls,['begin','main']);context.startupAllowed=false;context.requestPlatformWindow();assert.deepEqual(calls,['begin','main','gate-focus']);
+  const context={window:{isDestroyed:()=>false,isVisible:()=>false},mainWindowReady:true,startupAllowed:true,startupGate:null,unseenFailure:null,pendingDesktopAction:null,showStartupWindow:()=>calls.push('gate-focus'),platformUpdate:{snapshot:()=>({state:'current'}),reopenCheck:()=>calls.push('reopen-check')},quittingRequested:false,beginPlatformStartup:(...args)=>calls.push(['begin',args[2]?.initialError?.code]),showPlatformMain:()=>calls.push('main')};
+  vm.createContext(context);vm.runInContext(body,context);
+  // 다시 열 때는 시작 창 없이 앱 창을 바로 보이고, 미뤄 둔 판 목록을 비운 뒤 뒤에서 확인한다(1-가 구현 설계 2절)
+  context.requestPlatformWindow();assert.deepEqual(calls,['main','reopen-check']);
+  context.window.isVisible=()=>true;context.requestPlatformWindow();assert.deepEqual(calls,['main','reopen-check','main']);
+  context.mainWindowReady=false;context.requestPlatformWindow();assert.deepEqual(calls,['main','reopen-check','main']);
+  context.startupAllowed=false;context.requestPlatformWindow();assert.deepEqual(calls.at(-1),'gate-focus');
+  // 아직 보이지 않은 실패가 있으면 그 장면부터 보인다
+  calls.length=0;context.startupAllowed=true;context.mainWindowReady=true;context.window.isVisible=()=>false;context.unseenFailure={code:'UPDATE_STORAGE_FAILED',stage:'download'};
+  context.requestPlatformWindow();assert.deepEqual(calls,[['begin','UPDATE_STORAGE_FAILED']]);assert.equal(context.unseenFailure,null);
 });
 test('late main ready-to-show marks readiness but cannot expose the launcher while a gate blocks it',()=>{
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8'),line=main.split('\n').find(value=>value.trim().startsWith("window.once('ready-to-show'"));assert.ok(line);

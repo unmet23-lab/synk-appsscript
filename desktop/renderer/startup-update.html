@@ -3,32 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SYNK Platform 업데이트</title>
+  <title>SYNK Platform</title>
   <link rel="stylesheet" href="startup-update.css">
   <script type="module" src="startup-update.mjs"></script>
 </head>
 <body>
-  <main class="startup-root" id="startup-update" data-state="checking" aria-labelledby="startup-title" aria-busy="true">
-    <div class="startup-orb-stage" id="startup-orb-stage" aria-hidden="true"></div>
-    <div class="startup-layer">
-      <div class="startup-surface" id="startup-surface">
-        <span class="sr-only" id="startup-stage">시작 준비</span>
-        <span class="sr-only" id="startup-version" aria-hidden="true"></span>
-        <div class="message" aria-live="polite" aria-atomic="true">
-          <h1 id="startup-title">최신 버전을 확인하고 있어요</h1>
-          <p id="startup-description">잠시만 기다려 주세요. 확인이 끝나면 바로 열려요.</p>
-        </div>
-        <div class="download" id="startup-progress-wrap" hidden>
-          <div class="download-label"><span>다운로드</span><span class="percent" id="startup-percent">0%</span></div>
-          <progress id="startup-progress" max="100" value="0" aria-label="업데이트 받는 중"></progress>
-        </div>
-        <div class="actions" id="startup-actions" hidden>
-          <button class="primary" id="startup-retry" type="button" hidden>다시 시도</button>
-          <button class="primary" id="startup-install" type="button" hidden>설치 파일 열기</button>
-          <button class="secondary" id="startup-open-current" type="button" hidden>지금 버전 열기</button>
-        </div>
+  <main class="startup-root" id="startup-update" data-state="checking" data-ui="none" aria-labelledby="startup-title" aria-busy="true">
+    <div class="startup-orb-stage" id="startup-orb-stage" aria-hidden="true"><canvas class="startup-orb-canvas" id="startup-orb"></canvas></div>
+    <div class="startup-bar">
+      <div class="startup-drag" aria-hidden="true"></div>
+      <div class="startup-window-actions" role="group" aria-label="창 조절">
+        <button type="button" id="startup-minimize" aria-label="최소화"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg></button>
+        <button type="button" id="startup-maximize" data-maximized="false" aria-label="최대화"><svg class="i when-normal" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></svg><svg class="i when-maximized" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="8.5" width="10" height="10" rx="1.5"/><path d="M9 5.5h8a1.5 1.5 0 0 1 1.5 1.5v8"/></svg></button>
+        <button type="button" id="startup-close" class="window-close" aria-label="닫기"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
       </div>
     </div>
+    <section class="startup-forge" id="startup-forge" aria-label="새 판">
+      <div class="forge-in">
+        <h1 class="forge-say rise" style="--i:0" id="startup-title" aria-live="polite" aria-atomic="true"><span id="startup-say">새 판을 확인하고 있습니다.</span><span class="then" id="startup-then"></span></h1>
+        <p class="forge-ver rise" style="--i:1" id="startup-version-line"><span id="startup-version"></span><span id="startup-percent" aria-hidden="true"></span></p>
+        <p class="forge-acts rise" style="--i:2" id="startup-actions" hidden>
+          <button class="quiet" id="startup-retry" type="button" hidden>다시 시도</button>
+          <button class="quiet" id="startup-install" type="button" hidden>설치 파일 열기</button>
+          <button class="quiet" id="startup-open-current" type="button" hidden>지금 판 열기</button>
+        </p>
+      </div>
+    </section>
   </main>
 </body>
 </html>

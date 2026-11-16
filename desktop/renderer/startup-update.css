@@ -1,383 +1,191 @@
-/* 설치판 최초 시작 화면: 초기 확인 중에는 순수 검정(#000)과 단일 구체만 보이고, 실제 업데이트나 오류 시 최소 안내만 나타난다. */
+/* 시작 창: 앱 창과 같은 자리와 크기의 검정 창에 검정 구 하나만 둔다(검정 구 1-가, 유호님 11-17 「웅장한 판」).
+   확인하는 동안은 구만 보인다. 새 판을 받을 때와 실패했을 때만 구가 창보다 크게 다가오고, 글은 왼쪽 아래에 작품 설명처럼 놓인다.
+   모습과 시간값은 시안 docs/디자인/플랫폼_클라이언트_검정구_20261116/검정구.html의 웅장한 판(#stage[data-grand])을 따른다. */
 @font-face{font-family:SUIT;src:url('/assets/launcher/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap}
-@font-face{font-family:'DM Mono';src:url('/assets/launcher/DMMono.ttf') format('truetype');font-weight:500;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027,U+2190-21FF}
 
 :root {
-  --bg: #000000;
-  --ink: #ffffff;
-  --muted: #a8b2c1;
-  --subtle: #848d9c;
-  --line: rgba(255, 255, 255, 0.14);
-  --line-strong: rgba(255, 255, 255, 0.24);
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  font-family: SUIT, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color: var(--ink);
-  background: var(--bg);
+  --void: #000000;
+  --paper: #F3F1EC;
+  --dim: rgba(243, 241, 236, 0.46);
+  --ring: rgba(243, 241, 236, 0.55);
+  --sans: SUIT, 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  font-family: var(--sans);
+  color: var(--paper);
+  background: var(--void);
   color-scheme: dark;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
-html,
-body {
+html, body {
   width: 100%;
   height: 100%;
   margin: 0;
-  background: var(--bg);
+  background: var(--void);
   overflow: hidden;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
 }
 
-[hidden] {
-  display: none !important;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
 
 .startup-root {
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--bg);
+  background: var(--void);
   overflow: hidden;
 }
 
-/* 장식용 단일 구체 무대: 컨테이너 크기는 고정하고 캔버스/폴백만 합성 변환해 WebGL 재할당 없이 전환한다. */
+/* 구. 창 전체가 무대다 */
 .startup-orb-stage {
   position: fixed;
   inset: 0;
   z-index: 1;
-  background: #000000;
+  background: var(--void);
   pointer-events: none;
-  user-select: none;
   overflow: hidden;
 }
-
-.startup-orb-stage .portal-orb-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform-origin: 50% 50%;
-  transform: translate3d(0, 0, 0) scale(1);
-  opacity: 1;
-  transition: transform 540ms var(--ease), opacity 420ms var(--ease);
-  will-change: transform, opacity;
-}
-
-.startup-orb-stage:is([data-orb-mode="static"], :not([data-orb-mode]))::after {
-  content: '';
+.startup-orb-canvas {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: clamp(136px, min(64vw, 51vh), 448px);
-  height: clamp(136px, min(64vw, 51vh), 448px);
-  border-radius: 50%;
-  transform-origin: 50% 50%;
-  transform: translate3d(-50%, -50%, 0) scale(1);
-  opacity: 1;
-  transition: transform 540ms var(--ease), opacity 420ms var(--ease);
-  background: radial-gradient(circle at 34% 28%, rgba(245, 247, 252, 0.52) 0%, rgba(20, 23, 29, 0.94) 38%, #040507 78%, #dce2ec 99%, #f4f7fc 100%);
-  box-shadow: inset 0 0 0 1px rgba(236, 241, 248, 0.56);
-}
-
-#startup-update:is([data-state="downloading"], [data-state="installing"]) .startup-orb-stage .portal-orb-canvas {
-  transform: translate3d(0, -68px, 0) scale(0.58);
-}
-
-#startup-update:is([data-state="downloading"], [data-state="installing"]) .startup-orb-stage:is([data-orb-mode="static"], :not([data-orb-mode]))::after {
-  transform: translate3d(-50%, calc(-50% - 68px), 0) scale(0.58);
-}
-
-#startup-update:is([data-state="error"], [data-state="ready"]) .startup-orb-stage .portal-orb-canvas {
-  transform: translate3d(0, -98px, 0) scale(0.46);
-  opacity: 0.88;
-}
-
-#startup-update:is([data-state="error"], [data-state="ready"]) .startup-orb-stage:is([data-orb-mode="static"], :not([data-orb-mode]))::after {
-  transform: translate3d(-50%, calc(-50% - 98px), 0) scale(0.46);
-  opacity: 0.88;
-}
-
-.startup-layer {
-  position: relative;
-  z-index: 2;
+  inset: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 228px 28px 32px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
-}
-
-#startup-update[data-state="checking"] .startup-layer {
-  overflow: hidden;
-  pointer-events: none;
-}
-
-#startup-update:is([data-state="error"], [data-state="ready"]) .startup-layer {
-  padding: 184px 28px 28px;
-}
-
-.startup-surface {
-  width: 100%;
-  max-width: 392px;
-  margin-block: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  transition: opacity 360ms var(--ease) 40ms, transform 420ms var(--ease) 40ms;
-}
-
-#startup-update[data-state="checking"] .startup-surface {
-  opacity: 0;
-  transform: translate3d(0, 10px, 0);
-  pointer-events: none;
-  user-select: none;
-  transition: opacity 180ms ease, transform 220ms var(--ease);
-}
-
-.message {
-  width: 100%;
-}
-
-h1,
-p {
-  margin: 0;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-}
-
-h1 {
-  font-size: 21px;
-  font-weight: 500;
-  line-height: 1.28;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-}
-
-p {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 13.5px;
-  font-weight: 400;
-  line-height: 1.6;
-}
-
-.download {
-  width: 100%;
-  max-width: 304px;
-  margin-top: 18px;
-}
-
-.download-label {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-  font-size: 12px;
-  color: var(--subtle);
-}
-
-.percent {
-  font-family: 'DM Mono', SUIT, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 12.5px;
-  color: var(--ink);
-}
-
-progress {
   display: block;
-  width: 100%;
-  height: 3px;
-  appearance: none;
-  -webkit-appearance: none;
-  border: 0;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--line);
+}
+/* WebGL도 2D도 없을 때: 구 자리에 가는 둘레 하나를 CSS로 그린다(구가 어느 단계에서도 사라지지 않게) */
+.startup-orb-canvas[data-orb-mode="static"] {
+  background:
+    radial-gradient(circle at var(--orb-sx, 50%) var(--orb-sy, 50%), transparent calc(var(--orb-sr, 120px) - 1px), var(--orb-ring, rgba(243, 241, 236, 0.4)) var(--orb-sr, 120px), transparent calc(var(--orb-sr, 120px) + 1.4px));
 }
 
-progress::-webkit-progress-bar {
-  background: var(--line);
-  border-radius: 999px;
-}
-
-progress::-webkit-progress-value {
-  background: #ffffff;
-  border-radius: 999px;
-  transition: width 160ms linear;
-}
-
-progress::-moz-progress-bar {
-  background: #ffffff;
-  border-radius: 999px;
-}
-
-button {
-  font: inherit;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
-}
-
-button:focus-visible {
-  outline: 2px solid rgba(244, 248, 255, 0.92);
-  outline-offset: 3px;
-}
-
-.actions {
-  width: 100%;
-  margin-top: 20px;
+/* 창 단추. 앱 창의 단추(.portal-window-actions)와 같은 모양과 자리다. 맨 위 40px를 잡고 창을 옮긴다 */
+.startup-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  height: 40px;
+  padding: 0 8px 0 16px;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+.startup-drag { flex: 1 1 auto; align-self: stretch; min-width: 0; }
+.startup-window-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+.startup-window-actions button {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  transition: background-color 0.18s ease, color 0.18s ease;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+.startup-window-actions button:hover:not(:disabled),
+.startup-window-actions button:focus-visible { background: rgba(255, 255, 255, 0.12); color: #FFFFFF; }
+.startup-window-actions button.window-close:hover:not(:disabled) { background: #E5484D; color: #FFFFFF; }
+.startup-window-actions button:focus-visible { outline: 2px solid rgba(244, 248, 255, 0.92); outline-offset: -2px; }
+.startup-window-actions button:disabled { opacity: 0.38; }
+.startup-window-actions .i { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+#startup-maximize .when-maximized,
+#startup-maximize[data-maximized="true"] .when-normal { display: none; }
+#startup-maximize[data-maximized="true"] .when-maximized { display: block; }
+
+/* 새 판과 실패의 글. 구가 창을 채우므로 왼쪽 아래에 놓는다(시안 #stage[data-grand] .forge-in) */
+.startup-forge {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+}
+#startup-update[data-ui="forge"] .startup-forge { opacity: 1; visibility: visible; transition: opacity 0.9s ease 0.05s, visibility 0s; }
+.forge-in {
+  position: absolute;
+  left: clamp(20px, 9.5vw, 168px);
+  bottom: clamp(84px, 13vh, 128px);
+  max-width: min(560px, calc(100vw - 40px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  text-align: left;
+  isolation: isolate;
+}
+/* 큰 구의 결과 깎는 선이 글 뒤를 지나가도 글이 읽히게, 글 뒤만 부드럽게 어둡힌다 */
+.forge-in::before {
+  content: "";
+  position: absolute;
+  inset: -70px -160px -90px -210px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.58) 54%, rgba(0, 0, 0, 0));
+}
+.forge-say { margin: 0; font: 300 clamp(19px, 2.2vw, 29px)/1.36 var(--sans); letter-spacing: -0.012em; }
+.forge-say .then { display: block; color: var(--dim); }
+.forge-say .then:empty { display: none; }
+.forge-ver { margin: 0; font: 400 12px/1 var(--sans); letter-spacing: 0.22em; margin-right: -0.22em; color: rgba(243, 241, 236, 0.6); font-variant-numeric: tabular-nums; }
+.forge-ver:has(#startup-version:empty) { display: none; }
+.forge-acts { margin: 2px 0 0; display: flex; gap: 26px; pointer-events: auto; }
+.quiet {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(243, 241, 236, 0.34);
+  border-radius: 0;
+  margin: 0;
+  padding: 0 0 4px;
+  font: 400 13px/1.3 var(--sans);
+  color: rgba(243, 241, 236, 0.8);
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.quiet:hover:not(:disabled) { color: var(--paper); border-bottom-color: var(--paper); }
+.quiet:focus-visible { outline: 1px solid var(--ring); outline-offset: 5px; }
+.quiet:disabled { opacity: 0.5; cursor: default; }
+
+/* 차례로 떠오르기(시안 .rise) */
+.rise { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; }
+#startup-update[data-ui="forge"] .rise {
+  opacity: 1;
+  transform: none;
+  transition: opacity 1s ease, transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--i, 0) * 95ms + 140ms);
 }
 
-.actions button {
-  min-height: 42px;
-  max-width: 100%;
-  padding: 9px 18px;
-  border-radius: 999px;
-  font-size: 13.5px;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-  transition: background-color 180ms var(--ease), border-color 180ms var(--ease), color 180ms var(--ease);
-}
-
-.primary {
-  color: #08090c;
-  background: #ffffff;
-  border: 1px solid #ffffff;
-  font-weight: 600;
-}
-
-.primary:hover:not(:disabled) {
-  background: #eaeff7;
-  border-color: #eaeff7;
-}
-
-.secondary {
-  color: #eaedf4;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--line-strong);
-  font-weight: 500;
-}
-
-.secondary:hover:not(:disabled) {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.56);
-}
-
-/* 최소 창 크기(360x400)에서도 구체와 설명, 모든 행동 단추가 겹치지 않고 한 화면에 읽히고 눌리게 맞춘다. */
-@media (max-width: 420px), (max-height: 410px) {
-  #startup-update:is([data-state="downloading"], [data-state="installing"]) .startup-orb-stage .portal-orb-canvas {
-    transform: translate3d(0, -72px, 0) scale(0.52);
-  }
-
-  #startup-update:is([data-state="downloading"], [data-state="installing"]) .startup-orb-stage:is([data-orb-mode="static"], :not([data-orb-mode]))::after {
-    transform: translate3d(-50%, calc(-50% - 72px), 0) scale(0.52);
-  }
-
-  #startup-update:is([data-state="error"], [data-state="ready"]) .startup-orb-stage .portal-orb-canvas {
-    transform: translate3d(0, -112px, 0) scale(0.38);
-    opacity: 0.86;
-  }
-
-  #startup-update:is([data-state="error"], [data-state="ready"]) .startup-orb-stage:is([data-orb-mode="static"], :not([data-orb-mode]))::after {
-    transform: translate3d(-50%, calc(-50% - 112px), 0) scale(0.38);
-    opacity: 0.86;
-  }
-
-  .startup-layer {
-    padding: 190px 20px 22px;
-  }
-
-  #startup-update:is([data-state="error"], [data-state="ready"]) .startup-layer {
-    padding: 136px 20px 18px;
-  }
-
-  h1 {
-    font-size: 19px;
-  }
-
-  p {
-    margin-top: 7px;
-    font-size: 13px;
-    line-height: 1.55;
-  }
-
-  .download {
-    margin-top: 14px;
-  }
-
-  .actions {
-    margin-top: 16px;
-    gap: 8px;
-  }
-
-  .actions button {
-    min-height: 40px;
-    padding: 8px 16px;
-    font-size: 13px;
-  }
+/* 낮은 창에서는 글을 조금 위로 올린다(시안 layoutForge의 H < 620) */
+@media (max-height: 619px) {
+  .forge-in { bottom: clamp(48px, 10vh, 84px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    transition-delay: 0ms !important;
-    scroll-behavior: auto !important;
-  }
+  .startup-forge, .rise, #startup-update[data-ui="forge"] .rise, .startup-window-actions button, .quiet { transition: none !important; }
 }
-
-@media (forced-colors: active) {
-  .startup-orb-stage:is([data-orb-mode="static"], :not([data-orb-mode]))::after {
-    border: 2px solid CanvasText;
-  }
-
-  .primary,
-  .secondary {
-    border: 1px solid ButtonText;
-  }
-
-  button:focus-visible {
-    outline: 2px solid Highlight;
-  }
-}
+:root[data-motion="reduced"] .startup-forge,
+:root[data-motion="reduced"] .rise { transition: none !important; }

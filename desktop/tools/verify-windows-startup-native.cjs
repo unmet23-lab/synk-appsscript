@@ -83,7 +83,7 @@ function observe(config){
       (async()=>{try{
         await waitFor(contents,"document.documentElement.dataset.startupReady==='true'",'startup-renderer');
         const state=await contents.executeJavaScript("(async()=>({status:await synkStartupUpdate.getStatus(),title:document.title,text:document.body.innerText,desktop:typeof synkDesktop,node:typeof require,keys:Object.keys(synkStartupUpdate)}))()",true);
-        check('real startup window is isolated and checking',state.status.state==='checking'&&state.title==='SYNK Platform 업데이트'&&state.text.includes('최신 버전을 확인하고 있어요')&&state.desktop==='undefined'&&state.node==='undefined'&&state.keys.sort().join(',')==='getStatus,install,onChanged,openCurrent,retry',state);
+        check('real startup window is isolated and checking',state.status.state==='checking'&&state.title==='SYNK Platform'&&state.text.includes('새 판을 확인하고 있습니다.')&&state.desktop==='undefined'&&state.node==='undefined'&&state.keys.sort().join(',')==='close,getStatus,install,minimize,onChanged,onWindowState,openCurrent,retry,toggleMaximize',state);
         check('startup window stays hidden in QA',!created.isVisible());
         await capture(created,'startup-checking');startupReadyResolve();
       }catch(error){startupReadyReject(error);errors.push(error.stack||error.message);void finish(false);}})();

@@ -15,12 +15,16 @@ import { solioToday, solioTodayNeedsReread } from './solio-today.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
 
 /* 구 위의 자리(places)와 점 로고(signature)를 켜고 끄는 값. 하나를 false로 바꾸면 그 모양이 빠진다(설계 12절) */
-export const ORB_LOOK = Object.freeze({ places: true, signature: true });
+/* eyes: 구의 점 눈(유호님 11-17 「점눈으로 하자」, 결정 표 11-16 「구에 눈을 넣는다」). 끄면 셰이더가 눈을 그리지 않는다 */
+export const ORB_LOOK = Object.freeze({ places: true, signature: true, eyes: true });
 
 /* 움직임의 길이(ms). 시안 검정구.html의 값이다 */
 export const ORB_TIMING = Object.freeze({
   introDelay: Object.freeze({ first: 520, back: 300 }),
   intro: Object.freeze({ first: 2400, back: 1150 }),
+  /* 드러남이 시작된 때부터 잰 눈의 때. 빛이 자리를 잡을 즈음 잠든 눈이 떠오르고, 곧 눈을 뜬다(시안 boot). 시작 창(startup-update.mjs의 ORB_BOOT)과 같아야 한다 */
+  eyesAsleep: Object.freeze({ first: 2220, back: 900 }),
+  eyesWake: Object.freeze({ first: 3300, back: 1200 }),
   askWait: 1350,
   zoom: 1750,
   toAsk: 1200,
@@ -449,11 +453,17 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     void moveTo(want, ms, ease);
   }
 
+  /* 본체(PC 앱)가 드러남을 정했으면(시작 창이 먼저 그리던 드러남) 그 시각과 종류를 따른다. 없으면 이 화면이 정한다 */
+  async function bootInfo() {
+    try { const info = await options.orbBoot?.(); return info && Number.isFinite(info.startedAt) ? info : null; } catch { return null; }
+  }
   function startIntro() {
-    const kind = returning ? 'back' : 'first';
     orbTarget = 'rest';
     void queue(async gen => {
-      await view.intro(kind, { delay: ORB_TIMING.introDelay[kind], ms: ORB_TIMING.intro[kind] });
+      const info = await bootInfo();
+      if (!current(gen)) return;
+      const kind = info?.kind === 'first' || info?.kind === 'back' ? info.kind : (returning ? 'back' : 'first');
+      await view.intro(kind, { delay: ORB_TIMING.introDelay[kind], ms: ORB_TIMING.intro[kind], asleepAt: ORB_TIMING.eyesAsleep[kind], wakeAt: ORB_TIMING.eyesWake[kind], startedAt: info?.startedAt ?? null });
       if (!current(gen)) return;
       introDone = true;
       orbAt = 'rest';

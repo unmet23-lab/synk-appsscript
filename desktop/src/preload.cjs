@@ -80,6 +80,9 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   openInstaller:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:open-installer',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   launch:id=>typeof id==='string'&&['platform','world','messenger'].includes(id)?ipcRenderer.invoke('synk:launch',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   getWindowState:()=>ipcRenderer.invoke('synk:window-state'),
+  // 켜짐부터 열림까지: 구가 드러나기 시작한 때와 움직임 종류를 묻고, 첫 구를 그렸다고 알린다(인자 없음)
+  orbBoot:()=>ipcRenderer.invoke('synk:orb-boot'),
+  orbFirstFrame:()=>ipcRenderer.invoke('synk:orb-first-frame'),
   windowAction:action=>['minimize','toggle-maximize','close'].includes(action)?ipcRenderer.invoke('synk:window-action',action):Promise.resolve({ok:false,code:'INVALID_WINDOW_ACTION'}),
   authStatus:()=>ipcRenderer.invoke('synk:auth-status'),
   authSignIn:()=>ipcRenderer.invoke('synk:auth-sign-in'),

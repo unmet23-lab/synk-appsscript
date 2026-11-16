@@ -119,7 +119,7 @@ function createPlatformUpdater({enabled=false,config,currentVersion,currentBuild
   const valid=enabled&&Array.isArray(trustedKeys)&&trustedKeys.length>0&&config?.manifestUrl===MANIFEST_URL&&config?.channel==='preview'&&VERSION.test(currentVersion)&&BUILD.test(currentBuildId)&&config?.releaseId===`platform-preview-${currentVersion}`&&['win32','darwin'].includes(platform)&&['x64','arm64'].includes(arch)&&typeof cacheRoot==='string'&&path.isAbsolute(cacheRoot);
   let state=valid?'idle':'disabled',code=valid?null:'UPDATE_UNAVAILABLE',progress=0,candidate=null,readyPath=null,operation=null,controller=null,disposed=false,timer=null,started=false,handoff=false,automaticInstall=false,startupActive=false;
   let backgroundTask=null,backgroundEpoch=0;const deferredReleases=new Set();
-  function snapshot(){return {ok:state!=='error'&&state!=='disabled',state,currentVersion:typeof currentVersion==='string'?currentVersion:'',currentBuildId:typeof currentBuildId==='string'?currentBuildId:'',latestVersion:candidate?.version||null,latestBuildId:candidate?.buildId||null,progress,code,automatic:automaticInstall};}
+  function snapshot(){return {ok:state!=='error'&&state!=='disabled',state,currentVersion:typeof currentVersion==='string'?currentVersion:'',currentBuildId:typeof currentBuildId==='string'?currentBuildId:'',latestVersion:candidate?.version||null,latestBuildId:candidate?.buildId||null,progress,code,automatic:automaticInstall,releaseId:candidate?.releaseId||null};}
   function publish(next,nextCode=null){if(disposed)return;state=next;code=nextCode;try{onChange(snapshot());}catch{}}
   function errorResult(error){const nextCode=error?.updateCode||(['ENOSPC','EACCES','EPERM','EROFS','EIO'].includes(error?.code)?'UPDATE_STORAGE_FAILED':'UPDATE_NETWORK_FAILED');automaticInstall=false;publish('error',nextCode);return snapshot();}
   const busy=()=>({...snapshot(),ok:false,code:'UPDATE_BUSY'});
@@ -225,10 +225,13 @@ function createPlatformUpdater({enabled=false,config,currentVersion,currentBuild
     })().catch(error=>errorResult(error)).finally(()=>{backgroundTask=null;});
     return backgroundTask;
   }
-  function setStartupActive(value){const active=value===true;if(active&&!startupActive){backgroundEpoch++;deferredReleases.clear();}startupActive=active;}
+  // 다시 열 때 미뤄 둔 판 목록을 비운다. 다만 아직 보이지 않은 실패 장면이 있는 다시 열기(keepDeferred)는 비우지 않는다. 그 판은 실패 장면의 「다시 시도」로만 다시 건다(1-가 구현 설계 2절).
+  function setStartupActive(value,{keepDeferred=false}={}){const active=value===true;if(active&&!startupActive){backgroundEpoch++;if(!keepDeferred)deferredReleases.clear();}startupActive=active;}
+  // 다시 열 때: 미뤄 둔 판 목록을 비우고 곧바로 뒤에서 확인한다(지금 다시 여는 관문이 하던 일, LIFECYCLE 「앱 재열기는 다시 설치할 수 있다」)
+  function reopenCheck(){if(disposed||!valid||startupActive)return Promise.resolve(snapshot());setStartupActive(true);setStartupActive(false);return checkInBackground();}
   function start({check=true}={}){if(started||!valid||disposed)return;started=true;if(check)void checkForUpdate();if(checkIntervalMs>0){timer=repeat(()=>{void checkInBackground();},checkIntervalMs);timer.unref?.();}}
   function dispose(){disposed=true;backgroundEpoch++;controller?.abort();if(timer!==null)clearRepeat(timer);timer=null;}
   function deferAutomaticRelease(releaseId){if(typeof releaseId==='string'&&/^platform-preview-\d+\.\d+\.\d+$/.test(releaseId))deferredReleases.add(releaseId);}
-  return {snapshot,checkForUpdate,downloadUpdate,installUpdate,completeInstall,cancelInstall,cancelPending:()=>controller?.abort(),waitForIdle:()=>operation?.promise||Promise.resolve(snapshot()),isBusy:()=>!!operation,setStartupActive,deferAutomaticRelease,checkInBackground,needsInstallHandoff:()=>state==='opening'&&platform==='win32'&&!handoff,start,dispose};
+  return {snapshot,checkForUpdate,downloadUpdate,installUpdate,completeInstall,cancelInstall,cancelPending:()=>controller?.abort(),waitForIdle:()=>operation?.promise||Promise.resolve(snapshot()),isBusy:()=>!!operation,setStartupActive,deferAutomaticRelease,checkInBackground,reopenCheck,needsInstallHandoff:()=>state==='opening'&&platform==='win32'&&!handoff,start,dispose};
 }
 module.exports={MANIFEST_URL,MAX_MANIFEST_BYTES,MAX_INSTALLER_BYTES,SIGNATURE_CONTEXT,UPDATE_SIGNING_KEYS,compareVersion,validateManifest,signedManifestPayload,verifyManifestSignature,trustedSigningKeys,createPlatformUpdater};
