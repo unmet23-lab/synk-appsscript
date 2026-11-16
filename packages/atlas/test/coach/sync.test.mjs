@@ -11,7 +11,7 @@ import { subject } from '../support/subject.mjs';
 import { bankOf, clock, createCoach, fakeMap, memoryPort, PARAMS, STEP } from './support.mjs';
 
 const { acquireHost, releaseHost } = await subject('coach/host.mjs');
-const { createSync, cutBatch, eventBytes, failureOf, PULL_GAP_MS } =
+const { createSync, cutBatch, eventBytes, failureOf, PULL_GAP_MS, PULL_RETRY_MS } =
   await subject('coach/sync.mjs');
 const { storeName } = await subject('record/port.mjs');
 const { createHealth } = await subject('health/index.mjs');
@@ -488,10 +488,14 @@ function retryWorld() {
   };
   let summary = 's0';
   const unsent = [];
+  // 차례 — 고른 일(get · upload)은 다른 탭이 쥔 것처럼 TURN_BUSY로 밀린다(Fable FA2). 기록부 예외는 받은 답을 쓸 때 던진다.
+  const busyJobs = new Set();
+  let receiveFails = false;
   const trail = {
     summary: () => summary,
     since: () => null,
     async receive(answer) {
+      if (receiveFails) throw Object.assign(new Error('store'), { code: 'STORE_CLOSED' });
       if (typeof answer?.summary === 'string') summary = answer.summary;
     },
     unsent: limit => unsent.slice(0, limit),
@@ -525,11 +529,22 @@ function retryWorld() {
     now: () => now,
     clock: () => now,
     timers,
+    turn: (job, work) =>
+      busyJobs.has(job)
+        ? Promise.reject(Object.assign(new Error('busy'), { code: 'TURN_BUSY' }))
+        : work(),
   });
   return {
     sync,
     route,
     write: id => unsent.push({ id, type: 'answer' }),
+    busy(job, on = true) {
+      if (on) busyJobs.add(job);
+      else busyJobs.delete(job);
+    },
+    failReceive(on = true) {
+      receiveFails = on;
+    },
     waits: () => [...pending.values()].map(row => row.at - now).sort((a, b) => a - b),
     async advance(ms) {
       now += ms;
@@ -675,6 +690,145 @@ test('받기 다시 하기 — 다시 온라인(online)이면 곧 받고, 또 �
   assert.equal(r.route.gets, 4, '곧 받는다');
   assert.deepEqual(r.waits(), [5_000], '또 끊기면 5초부터');
   r.sync.close();
+});
+
+test('받기 다시 하기 — offline으로 끊긴 뒤 받기가 bad-since로 끝나면 그친다: 남은 타이머를 지우고, 화면 복귀는 5분 막이를 지키며, 올리기 성공이 다시 걸지 않는다(조건 2 · 4 — GPT GA1 · 카본 A1)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  assert.deepEqual(r.waits(), [5_000]);
+  await r.advance(1_000);
+  r.route.getFail = () => fault(400, 'INVALID_SINCE');
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 3, '화면 복귀에 곧 받는다(since 없이 한 번 더)');
+  assert.deepEqual(r.waits(), [], '남은 받기 타이머를 지운다');
+  await r.advance(1_000);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 3, '화면 복귀는 다시 5분 막이를 지킨다');
+  r.write('e1');
+  await r.sync.upload();
+  assert.deepEqual(r.waits(), [], '올리기 성공이 다시 걸지 않는다');
+  await r.advance(600_000);
+  assert.equal(r.route.gets, 3, '10분 동안 더 받지 않는다');
+  assert.equal(r.sync.status().pulled, false);
+  r.sync.close();
+});
+
+test('받기 다시 하기 — 받은 답을 기록부에 쓰다 예외가 나도(other) 그친다: 다시 걸지 않고 화면 복귀는 5분 막이를 지킨다(조건 2)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  assert.deepEqual(r.waits(), [5_000]);
+  r.route.getFail = null;
+  r.failReceive();
+  await r.advance(5_000);
+  assert.equal(r.route.gets, 2);
+  assert.equal(r.sync.status().pulled, false);
+  assert.deepEqual(r.waits(), [], '다시 걸지 않는다');
+  await r.advance(1_000);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 2, '화면 복귀는 5분 막이로 돌아간다');
+  r.sync.close();
+});
+
+test('받기 다시 하기 — 다시 온라인이 부른 받기가 차례에 밀려도 첫 칸(5초)으로 다시 걸고, 화면 복귀도 5분 막이를 건너뛴다(조건 4 — GPT GA2 · Fable FA1)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  await r.advance(5_000);
+  assert.deepEqual(r.waits(), [15_000]);
+  r.busy('get');
+  r.sync.online();
+  await flush();
+  assert.equal(r.route.gets, 2, '차례에 밀려 받지 못했다');
+  assert.deepEqual(r.waits(), [5_000], '사다리 첫 칸으로 다시 건다');
+  r.busy('get', false);
+  r.route.getFail = null;
+  await r.advance(1_000);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 3, '화면 복귀가 5분 막이를 건너뛰어 곧 받는다');
+  assert.equal(r.sync.status().pulled, true);
+  assert.deepEqual(r.waits(), []);
+  r.sync.close();
+});
+
+test('받기 다시 하기 — 사다리로 돈 받기가 차례에 밀리면 같은 칸으로 다시 건다(Fable FA2)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  await r.advance(5_000);
+  assert.deepEqual(r.waits(), [15_000]);
+  r.busy('get');
+  await r.advance(15_000);
+  assert.equal(r.route.gets, 2, '차례에 밀려 받지 못했다');
+  assert.deepEqual(r.waits(), [15_000], '같은 칸으로 다시 건다');
+  r.busy('get', false);
+  r.route.getFail = null;
+  await r.advance(15_000);
+  assert.equal(r.route.gets, 3);
+  assert.equal(r.sync.status().pulled, true);
+  assert.deepEqual(r.waits(), []);
+  r.sync.close();
+});
+
+test('받기 다시 하기 — 쓰기 막힘 동안에는 받기가 또 끊겨도 다시 걸지 않는다 · 받기는 한다(조건 5 — Fable FA2)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  assert.deepEqual(r.waits(), [5_000]);
+  r.route.postFail = () => fault(403, 'WRITES_DISABLED');
+  r.write('e1');
+  await r.sync.upload();
+  assert.ok(r.sync.status().writesOff);
+  assert.deepEqual(r.waits(), []);
+  await r.advance(1_000);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.route.gets, 2, '쓰기 막힘에도 받기는 한다');
+  assert.deepEqual(r.waits(), [], '쓰기 막힘 동안에는 다시 걸지 않는다');
+  r.sync.close();
+});
+
+test('첫 받기가 차례에 밀리면 3초 뒤 다시 받는다 — 쓰기 막힘이 와도 그대로 두고, 받기가 되거나 닫으면 지운다(Fable FA3)', async () => {
+  const r = retryWorld();
+  r.busy('get');
+  await r.sync.first();
+  assert.equal(r.route.gets, 0);
+  assert.deepEqual(r.waits(), [PULL_RETRY_MS]);
+  r.route.postFail = () => fault(403, 'WRITES_DISABLED');
+  r.write('e1');
+  await r.sync.upload();
+  assert.ok(r.sync.status().writesOff);
+  assert.deepEqual(r.waits(), [PULL_RETRY_MS], '쓰기 막힘은 첫 받기의 다시 받기를 지우지 않는다');
+  r.busy('get', false);
+  await r.advance(PULL_RETRY_MS);
+  assert.equal(r.route.gets, 1, '3초 뒤 첫 받기를 한다');
+  assert.equal(r.sync.status().pulled, true);
+  r.sync.close();
+
+  const got = retryWorld();
+  got.busy('get');
+  await got.sync.first();
+  assert.deepEqual(got.waits(), [PULL_RETRY_MS]);
+  got.busy('get', false);
+  got.sync.visible();
+  await flush();
+  assert.equal(got.route.gets, 1, '화면 복귀로 받았다');
+  assert.deepEqual(got.waits(), [], '받기가 되면 첫 받기의 다시 받기를 지운다');
+  await got.advance(PULL_RETRY_MS);
+  assert.equal(got.route.gets, 1, '같은 받기를 또 하지 않는다');
+  got.sync.close();
+
+  const shut = retryWorld();
+  shut.busy('get');
+  await shut.sync.first();
+  assert.deepEqual(shut.waits(), [PULL_RETRY_MS]);
+  shut.sync.close();
+  assert.deepEqual(shut.waits(), [], '닫으면 첫 받기의 다시 받기도 지운다');
 });
 
 test('닫힌 뒤 돌아온 POST 답은 받지 않는다 — 닫힌 호스트가 저장소에 쓰지 않는다', async () => {
