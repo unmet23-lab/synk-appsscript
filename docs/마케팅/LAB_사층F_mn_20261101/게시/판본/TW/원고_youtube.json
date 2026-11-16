@@ -1,0 +1,24 @@
+{
+  "id": "판본-TW-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "zh-Hant",
+  "audioLanguage": "zh-Hant",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "韓國電梯為什麼沒有4？👻 #學韓文",
+  "caption": "韓文的4唸 사（sa），「死」的韓文發音也是 사。所以很多大樓把4樓寫成F。\n台灣有些大樓、醫院也會跳過4樓，對吧？韓國則是直接寫成F。\n一起數：일（il）1、이（i）2、삼（sam）3、사（sa）4。跟中文的一二三四是不是很像？\n\nSYNK LAB\n#韓文 #學韓文 #韓語",
+  "pinnedComment": "你住的大樓有4樓嗎？👇",
+  "_원문": {
+    "title": "한국 엘리베이터에는 왜 4가 없을까? 👻 #學韓文",
+    "caption": "한국어로 4는 사(sa)라고 읽고, 「死」의 한국어 발음도 사다. 그래서 많은 건물이 4층을 F로 적는다.\n대만도 4층을 건너뛰는 건물 · 병원이 있잖아? 한국은 아예 F로 적는다.\n같이 세어 보자: 일 1, 이 2, 삼 3, 사 4. 중국어 一二三四와 꽤 닮지 않았어?\n\nSYNK LAB\n#韓文 #學韓文 #韓語",
+    "pinnedComment": "네가 사는 건물에는 4층이 있어? 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}
