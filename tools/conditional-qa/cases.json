@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 144,
+  "expectedCount": 145,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1156,6 +1156,14 @@
       "name": "a worktree whose registration was pruned but whose folder stays skips its gone rows; a row whose file is still there stops (11-15)",
       "group": "로컬 암호화 모듈",
       "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S145",
+      "file": "experiences/solo-backup-rust/tests/move-restore.test.cjs",
+      "name": "move: synthetic old PC → backup → new PC, every file by SHA-256, nothing replaced, resumable",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(실제 restic)",
+      "route": "windows",
       "profile": "default"
     }
   ]

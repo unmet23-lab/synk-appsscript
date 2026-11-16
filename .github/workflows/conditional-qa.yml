@@ -91,7 +91,7 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ${{ runner.temp }}\work-backup-exes
-          key: work-backup-exes-v1-${{ hashFiles('experiences/solo-backup-rust/src-tauri/**', 'experiences/solo-backup-rust/contract/**', 'experiences/solo-backup-rust/inventory/**') }}
+          key: work-backup-exes-v1-${{ hashFiles('experiences/solo-backup-rust/src-tauri/**', 'experiences/solo-backup-rust/contract/**', 'experiences/solo-backup-rust/inventory/**', 'experiences/solo-backup-rust/engine/src/move-apps.json') }}
       - name: build the work backup run executable and planner
         if: runner.os == 'Windows' && steps.work-backup-exes.outputs.cache-hit != 'true'
         run: |
@@ -99,6 +99,9 @@ jobs:
           $app = Join-Path $env:RUNNER_TEMP 'work-backup-src/experiences/solo-backup-rust'
           New-Item -ItemType Directory -Force -Path $app | Out-Null
           foreach ($part in 'src-tauri', 'contract', 'inventory') { Copy-Item -Recurse -LiteralPath "experiences/solo-backup-rust/$part" -Destination (Join-Path $app $part) }
+          # The library reads the 옮겨 오기 app table at build time (src-tauri/src/reinstall.rs include_str!, 11-16).
+          New-Item -ItemType Directory -Force -Path (Join-Path $app 'engine/src') | Out-Null
+          Copy-Item -LiteralPath 'experiences/solo-backup-rust/engine/src/move-apps.json' -Destination (Join-Path $app 'engine/src/move-apps.json')
           cargo build --locked --bin WorkBackupRun --manifest-path (Join-Path $app 'src-tauri/Cargo.toml')
           if ($LASTEXITCODE -ne 0) { throw 'WorkBackupRun build failed' }
           cargo build --locked --release --bin WorkBackupPlanner --manifest-path (Join-Path $app 'inventory/Cargo.toml')

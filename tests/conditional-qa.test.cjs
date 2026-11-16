@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 144);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 47, linux: 12, local: 85 });
+  assert.equal(check(root), 145);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 48, linux: 12, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -112,12 +112,15 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
   // 11-10 `26d6e9e72` (S135) and the 11-12–13 work backup Stage 1 fork (S129–S134) added these without registering them;
   // wide-tests skipped them on Linux and its experiences bundle stayed red. S136 is 0.5.0's Windows path-rule test, which
   // failed on Linux there (11-13) — skipped off Windows like the fork's copy (S130), and run here. S137 (11-13 `52d029ece`)
-  // put `skip:` on the next line, which the one-line scan did not see.
-  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
+  // put `skip:` on the next line, which the one-line scan did not see. S145 (11-16 `a47aec191`) is the 옮겨 오기 test
+  // with the real restic; its top-level `skip: !restic` went in unregistered and turned conditional-qa and wide-tests red.
+  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S145', 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(workflow, /npm ci --prefix experiences\/solo-backup-rust\/engine /);
   // The executables are cached only under a key of every tracked file they are built from; a miss builds them here.
-  assert.match(workflow, /path: \$\{\{ runner\.temp \}\}\\work-backup-exes\n\s+key: work-backup-exes-v\d+-\$\{\{ hashFiles\('experiences\/solo-backup-rust\/src-tauri\/\*\*', 'experiences\/solo-backup-rust\/contract\/\*\*', 'experiences\/solo-backup-rust\/inventory\/\*\*'\) \}\}\n/);
+  // The library also reads the 옮겨 오기 app table at build time (`reinstall.rs` include_str!, 11-16): key and copy carry it.
+  assert.match(workflow, /path: \$\{\{ runner\.temp \}\}\\work-backup-exes\n\s+key: work-backup-exes-v\d+-\$\{\{ hashFiles\('experiences\/solo-backup-rust\/src-tauri\/\*\*', 'experiences\/solo-backup-rust\/contract\/\*\*', 'experiences\/solo-backup-rust\/inventory\/\*\*', 'experiences\/solo-backup-rust\/engine\/src\/move-apps\.json'\) \}\}\n/);
+  assert.ok(workflow.includes("Copy-Item -LiteralPath 'experiences/solo-backup-rust/engine/src/move-apps.json'"), 'the build copy has the app table');
   assert.match(workflow, /if: runner\.os == 'Windows' && steps\.work-backup-exes\.outputs\.cache-hit != 'true'\n/);
   assert.match(workflow, /cargo build --locked --bin WorkBackupRun /);
   assert.match(workflow, /cargo build --locked --release --bin WorkBackupPlanner /);
@@ -136,7 +139,7 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
       }
     }
   }
-  assert.deepEqual(skipping.sort(), rows.slice(0, 7).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
+  assert.deepEqual(skipping.sort(), rows.slice(0, 8).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
   for (const row of rows) {
     assert.deepEqual([row.route, row.profile], ['windows', 'default'], row.id);
     const source = fs.readFileSync(path.join(root, row.file), 'utf8');
