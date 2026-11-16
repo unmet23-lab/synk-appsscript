@@ -2,7 +2,7 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-11-15T20:30:11.065Z",
+  "generatedAt": "2026-11-16T01:48:44.324Z",
   "status": "reviewed-local-records",
   "buildStatus": "complete",
   "exportPreferences": {
@@ -332,7 +332,7 @@
         "files": [
           "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -382,7 +382,7 @@
           "role": "10대 중후반을 중심으로 한 한국어 학습",
           "market": "25개국 확장 계획 · 몽골 기존 기반",
           "channelPolicy": "국가당 우선 플랫폼 2개 · 기존 몽골 추가 채널 보존",
-          "nextAction": "LAB 모든 계정에 하루 두 편 — 현지 21:00 「노래」(11-10 밤 — 퀴즈 대신) · 현지 13:00 「이야기 편」, 나라마다 그 나라 말로. 39계정을 한꺼번에 열고, 5일치를 미리 만들어 계정마다 순서를 섞어(돌림표) 예약한다. 지금: 구현 중(11-10 밤) — 코드 · 절차는 14시 게시 회차까지 물렸다. 유튜브 나라별 15채널을 첫 판 시험으로 열었다(현지 11-12부터 13:00 이야기 칸 — 첫 판은 11-11 14시 게시 회차가 건다: 「지마」 12 · 「화날때」 3). 판본이 돌림에 드는 원본은 둘(「지마」 18판본 · 「화날때」 6판본). 21:00 칸은 퀴즈에서 노래로 바뀌어(11-10 유호님) 노래가 준비될 때까지 닫아 둔다. 유튜브 남은 셋(인도 · 인도네시아 · 태국)은 판본 검수 뒤, 페이스북 · VK는 거는 길을 확인한 뒤, 틱톡 다섯 · RUTUBE · 더우인은 유호님 로그인 뒤.",
+          "nextAction": "LAB 모든 계정에 하루 두 편 — 현지 21:00 「노래」(11-10 밤 — 퀴즈 대신) · 현지 13:00 「이야기 편」, 나라마다 그 나라 말로. 39계정을 한꺼번에 열고, 5일치를 미리 만들어 계정마다 순서를 섞어(돌림표) 예약한다. 지금: 운영 중(11-16). 유튜브 나라별 15채널의 첫 판이 11-12부터 11-15까지 모두 현지 13:00에 공개됐다. 72시간 조회는 15판을 합쳐 12회이고, 새 계정은 2~3주 판정하지 않는다(LAB_하루두편_설계_20261110/검토/첫판72시간조회_20261116.md). 돌림 원본은 여섯(「지마」 「화날때」 「미안」 「사층F」 「물고기」 「형오빠」)이고, 나라 판본은 매일 22:10과 09:10에 만든다. 11-15 밤부터는 5일치 비축을 기다리지 않고, 프로필과 로그인이 된 계정을 첫 판 시험으로 연다. 나라별 유튜브의 21:00 노래 칸은 아직 닫혀 있다..",
           "legalEntity": "브랜드",
           "brand": "LAB",
           "ownedCount": 5,
@@ -493,7 +493,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -582,7 +582,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -630,10 +630,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 23:00) · 13:00 이야기 편(한국 15:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-15 공개). 틱톡 첫 판 「지마」를 걸었다(11-16)",
           "publishStatus": "매일 흐름 2/2곳 · 프로필 완성 2 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 23:00) · 13:00 이야기 편(한국 15:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-15 공개). 틱톡 첫 판 「지마」를 걸었다(11-16). 계획: 현지 21:00 노래(한국 23:00) · 13:00 이야기 편(한국 15:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -650,10 +650,10 @@
           "translationStatus": "현지어판 운영 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00)",
-          "uploadPlan": "샤오훙수 운영 중 — 하루 한 편(베이징 21:00 = 한국 22:00, 두 채널 판)",
+          "uploadPlan": "샤오훙수 운영 중 — 하루 한 편(베이징 21:00 = 한국 22:00, 두 채널 판). 더우인 첫 판 「지마」를 걸었다(한국 11-16 14:00)",
           "publishStatus": "매일 흐름 2/2곳 · 프로필 완성 1 · 미완 0 · 기록 없음 1",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "지금: 샤오훙수 운영 중 — 하루 한 편(베이징 21:00 = 한국 22:00, 두 채널 판). 계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 샤오훙수 운영 중 — 하루 한 편(베이징 21:00 = 한국 22:00, 두 채널 판). 더우인 첫 판 「지마」를 걸었다(한국 11-16 14:00). 계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -670,10 +670,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 21:00) · 13:00 이야기 편(한국 13:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개). 인스타 @synk.jp 첫 판 「미안」을 걸었다(11-16)",
           "publishStatus": "매일 흐름 2/2곳 · 프로필 완성 2 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 21:00) · 13:00 이야기 편(한국 13:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개). 인스타 @synk.jp 첫 판 「미안」을 걸었다(11-16). 계획: 현지 21:00 노래(한국 21:00) · 13:00 이야기 편(한국 13:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -690,10 +690,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 01:00 다음 날) · 13:00 이야기 편(한국 17:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "인스타 @synklab.uz 첫 판 「지마」는 웹 예약 칸이 열리면 14시 게시 회차가 건다(11-16)",
           "publishStatus": "매일 흐름 2/2곳 · 프로필 완성 2 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 01:00 다음 날) · 13:00 이야기 편(한국 17:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 인스타 @synklab.uz 첫 판 「지마」는 웹 예약 칸이 열리면 14시 게시 회차가 건다(11-16). 계획: 현지 21:00 노래(한국 01:00 다음 날) · 13:00 이야기 편(한국 17:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -730,10 +730,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개). 계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -750,10 +750,10 @@
           "translationStatus": "현지어판 운영 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 23:30) · 13:00 이야기 편(한국 15:30)",
-          "uploadPlan": "틱톡 @synklab.mm 운영 중 — 하루 한 편(양곤 20:00 = 한국 22:30, 두 채널 판)",
+          "uploadPlan": "틱톡 @synklab.mm 운영 중 — 하루 한 편(양곤 20:00 = 한국 22:30, 두 채널 판). 유튜브 나라 채널도 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개)",
           "publishStatus": "매일 흐름 2/2곳 · 프로필 완성 1 · 미완 0 · 기록 없음 1",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "지금: 틱톡 @synklab.mm 운영 중 — 하루 한 편(양곤 20:00 = 한국 22:30, 두 채널 판). 계획: 현지 21:00 노래(한국 23:30) · 13:00 이야기 편(한국 15:30), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 틱톡 @synklab.mm 운영 중 — 하루 한 편(양곤 20:00 = 한국 22:30, 두 채널 판). 유튜브 나라 채널도 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개). 계획: 현지 21:00 노래(한국 23:30) · 13:00 이야기 편(한국 15:30), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -890,10 +890,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 00:00 다음 날) · 13:00 이야기 편(한국 16:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 00:00 다음 날) · 13:00 이야기 편(한국 16:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개). 계획: 현지 21:00 노래(한국 00:00 다음 날) · 13:00 이야기 편(한국 16:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -930,10 +930,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 11:00 다음 날) · 13:00 이야기 편(한국 03:00 다음 날) — 동부 기준",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 11:00 다음 날) · 13:00 이야기 편(한국 03:00 다음 날) — 동부 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개). 계획: 현지 21:00 노래(한국 11:00 다음 날) · 13:00 이야기 편(한국 03:00 다음 날) — 동부 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -950,10 +950,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-14 공개). 계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -970,10 +970,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 00:30 다음 날) · 13:00 이야기 편(한국 16:30)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-12 공개). 페이스북 첫 판 「화날때」를 걸었다(11-16)",
           "publishStatus": "매일 흐름 2/2곳 · 프로필 완성 2 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 00:30 다음 날) · 13:00 이야기 편(한국 16:30), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-12 공개). 페이스북 첫 판 「화날때」를 걸었다(11-16). 계획: 현지 21:00 노래(한국 00:30 다음 날) · 13:00 이야기 편(한국 16:30), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -990,10 +990,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 19:00) · 13:00 이야기 편(한국 11:00) — 시드니 기준",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 19:00) · 13:00 이야기 편(한국 11:00) — 시드니 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개). 계획: 현지 21:00 노래(한국 19:00) · 13:00 이야기 편(한국 11:00) — 시드니 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -1010,10 +1010,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 09:00 다음 날) · 13:00 이야기 편(한국 01:00 다음 날)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 09:00 다음 날) · 13:00 이야기 편(한국 01:00 다음 날), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개). 계획: 현지 21:00 노래(한국 09:00 다음 날) · 13:00 이야기 편(한국 01:00 다음 날), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -1030,10 +1030,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 17:00) · 13:00 이야기 편(한국 09:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-12 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 17:00) · 13:00 이야기 편(한국 09:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-12 공개). 계획: 현지 21:00 노래(한국 17:00) · 13:00 이야기 편(한국 09:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -1050,10 +1050,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00)",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-12 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-12 공개). 계획: 현지 21:00 노래(한국 22:00) · 13:00 이야기 편(한국 14:00), 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -1070,10 +1070,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 11:00 다음 날) · 13:00 이야기 편(한국 03:00 다음 날) — 토론토 기준",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 11:00 다음 날) · 13:00 이야기 편(한국 03:00 다음 날) — 토론토 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개). 계획: 현지 21:00 노래(한국 11:00 다음 날) · 13:00 이야기 편(한국 03:00 다음 날) — 토론토 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
           "sourceLabel": "2026-09-20 대화의 국가별 2플랫폼 계획 · 수요 순위 아님"
         },
@@ -1090,10 +1090,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 12:00 다음 날) · 13:00 이야기 편(한국 04:00 다음 날) — 멕시코시티 기준",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개). 틱톡 첫 판 「화날때」를 걸었다(한국 11-17 04:00)",
           "publishStatus": "매일 흐름 2/2곳 · 프로필 완성 2 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 12:00 다음 날) · 13:00 이야기 편(한국 04:00 다음 날) — 멕시코시티 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개). 틱톡 첫 판 「화날때」를 걸었다(한국 11-17 04:00). 계획: 현지 21:00 노래(한국 12:00 다음 날) · 13:00 이야기 편(한국 04:00 다음 날) — 멕시코시티 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "스페인어권 전체로 가는 입구 · 미성년 보호 별도 조건 없음(전략 문서) · 현지 접속·연령·계정 운영 조건은 재확인 필요",
           "sourceLabel": "2026-10-02 사용자 확정 · LAB 해외 SNS 계획에 추가 · 수요 순위 아님"
         },
@@ -1110,10 +1110,10 @@
           "translationStatus": "현지화 언어 · 프로필 준비 중",
           "localReviewStatus": "역번역 세 겹 + 언어판 뜻 검사(설계 12 · 13항)",
           "contentStatus": "현지 21:00 노래(한국 09:00 다음 날) · 13:00 이야기 편(한국 01:00 다음 날) — 상파울루 기준",
-          "uploadPlan": "하루 두 편 준비 중 — 5일 비축 · 돌림표",
+          "uploadPlan": "유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개)",
           "publishStatus": "매일 흐름 1/1곳 · 프로필 완성 1 · 미완 0",
           "appStatus": "출시 계획 · 공개 출시 미확인",
-          "nextAction": "계획: 현지 21:00 노래(한국 09:00 다음 날) · 13:00 이야기 편(한국 01:00 다음 날) — 상파울루 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
+          "nextAction": "지금: 유튜브 나라 채널 운영 중 — 현지 13:00 이야기 칸에 하루 한 편(첫 판 11-13 공개). 계획: 현지 21:00 노래(한국 09:00 다음 날) · 13:00 이야기 편(한국 01:00 다음 날) — 상파울루 기준, 5일치를 계정마다 순서를 섞어 예약(설계 11-10). 계정이 매일 흐름에 들어가 있다 — 현지 시각으로 옮기고 둘째 칸을 더한다.",
           "condition": "SNS는 지금 운영 가능 · 앱 출시는 미성년 보호법(ECA Digital)에 맞는 보호자 기능 묶음 이후(전략 문서) · 현지 접속·연령·계정 운영 조건은 재확인 필요",
           "sourceLabel": "2026-11-09 사용자 확정 · 기존 Instagram·YouTube에 TikTok 추가 · 수요 순위 아님"
         }
@@ -1130,7 +1130,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -1517,7 +1517,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -2136,7 +2136,7 @@
               "pendingConfirmationCount": 9,
               "lastPublishedAt": "2026-11-12T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T04:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -2681,7 +2681,7 @@
               "pendingConfirmationCount": 6,
               "lastPublishedAt": "2026-11-12T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T04:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -3220,7 +3220,7 @@
               "pendingConfirmationCount": 7,
               "lastPublishedAt": "2026-11-12T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T04:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -3720,7 +3720,7 @@
               "pendingConfirmationCount": 4,
               "lastPublishedAt": "2026-11-12T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -4177,7 +4177,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-14T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -4651,7 +4651,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-13T12:02:09.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -4972,7 +4972,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-05T13:26:44.000Z",
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -5194,7 +5194,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:00:00.000Z",
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -5469,7 +5469,7 @@
           "loginMethod": "LinkedIn 개인 계정 로그인 → 본인/회사 관리자 페이지",
           "loginBrowser": "Ego · Profile 7",
           "loginMappingStatus": "confirmed",
-          "loginStatusLabel": "로그인 확인",
+          "loginStatusLabel": "이전 확인 기록 · 현재 미재검증",
           "loginEvidenceAt": "2026-11-13T00:00:00.000Z",
           "loginCaveat": "LinkedIn 본인 양유호 프로필 및 SYNK 관리자 화면 확인",
           "loginSourcePaths": [
@@ -5494,7 +5494,7 @@
           "countryCode": null,
           "operations": {
             "login": {
-              "state": "verified",
+              "state": "historical",
               "observedAt": "2026-11-13T00:00:00.000Z",
               "observedDateOnly": true,
               "browser": "Ego · Profile 7",
@@ -5507,7 +5507,7 @@
               "pendingConfirmationCount": 4,
               "lastPublishedAt": "2026-11-08T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -5827,7 +5827,7 @@
           "loginMethod": "Google로 계속하기",
           "loginBrowser": "Ego · Profile 5 / Profile 7",
           "loginMappingStatus": "confirmed",
-          "loginStatusLabel": "확인한 프로필에서 로그인 필요",
+          "loginStatusLabel": "이전 확인 기록 · 현재 미재검증",
           "loginEvidenceAt": "2026-11-13T00:00:00.000Z",
           "loginCaveat": "확인한 두 프로필에서 X 로그인 화면. 다른 프로필·모바일 앱의 로그인 상태까지 확인한 것은 아님",
           "loginSourcePaths": [
@@ -5852,7 +5852,7 @@
           "countryCode": null,
           "operations": {
             "login": {
-              "state": "login-required",
+              "state": "historical",
               "observedAt": "2026-11-13T00:00:00.000Z",
               "observedDateOnly": true,
               "browser": "Ego · Profile 5 / Profile 7",
@@ -5865,7 +5865,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-08T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -6090,7 +6090,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -6184,7 +6184,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -6272,7 +6272,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -6556,7 +6556,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -7038,7 +7038,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-11T12:01:03.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -7484,7 +7484,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-08T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -7915,7 +7915,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:10:00.000Z",
               "nextScheduledAt": "2026-11-16T12:10:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -8364,7 +8364,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-15T13:01:00.000Z",
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -8630,7 +8630,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -8714,7 +8714,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -8771,7 +8771,7 @@
           "loginMethod": "LinkedIn 개인 계정 로그인 → 본인/회사 관리자 페이지",
           "loginBrowser": "Ego · Profile 7",
           "loginMappingStatus": "confirmed",
-          "loginStatusLabel": "로그인 확인",
+          "loginStatusLabel": "이전 확인 기록 · 현재 미재검증",
           "loginEvidenceAt": "2026-11-13T00:00:00.000Z",
           "loginCaveat": "LinkedIn 본인 양유호 세션에서 SYNK 회사 관리자 접근 확인",
           "loginSourcePaths": [
@@ -8796,7 +8796,7 @@
           "countryCode": null,
           "operations": {
             "login": {
-              "state": "verified",
+              "state": "historical",
               "observedAt": "2026-11-13T00:00:00.000Z",
               "observedDateOnly": true,
               "browser": "Ego · Profile 7",
@@ -8809,7 +8809,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -8899,7 +8899,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -8980,7 +8980,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9061,7 +9061,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9142,7 +9142,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9223,7 +9223,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9304,7 +9304,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9385,7 +9385,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9466,7 +9466,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9548,7 +9548,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9630,7 +9630,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9712,7 +9712,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9794,7 +9794,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9876,7 +9876,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9958,7 +9958,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10040,7 +10040,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10122,7 +10122,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10204,7 +10204,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10286,7 +10286,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10378,7 +10378,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-16T06:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -10489,7 +10489,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T06:00:00.000Z",
               "nextScheduledAt": "2026-11-17T06:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -10600,7 +10600,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-16T05:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -10904,7 +10904,7 @@
           "loginMethod": "해외 창작자 사이트 문자 인증",
           "loginBrowser": "Ego · Profile 5",
           "loginMappingStatus": "confirmed",
-          "loginStatusLabel": "로그인 확인",
+          "loginStatusLabel": "이전 확인 기록 · 현재 미재검증",
           "loginEvidenceAt": "2026-11-13T00:00:00.000Z",
           "loginCaveat": "creator.rednote.com 소유자 관리 화면에서 대상 계정·노트 23개·11월 13일과 14일 예약 확인. 일반 rednote.com 공개 페이지의 로그인 요구와 구분.",
           "loginSourcePaths": [
@@ -10923,7 +10923,7 @@
           ],
           "operations": {
             "login": {
-              "state": "verified",
+              "state": "historical",
               "observedAt": "2026-11-13T00:00:00.000Z",
               "observedDateOnly": true,
               "browser": "Ego · Profile 5",
@@ -10936,7 +10936,7 @@
               "pendingConfirmationCount": 7,
               "lastPublishedAt": "2026-11-10T13:00:00.000Z",
               "nextScheduledAt": "2026-11-16T13:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -11301,7 +11301,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-14T04:00:00.000Z",
               "nextScheduledAt": "2026-11-17T04:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -11421,7 +11421,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-16T04:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -11513,7 +11513,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -11595,7 +11595,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -11675,7 +11675,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -11785,7 +11785,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-14T05:00:00.000Z",
               "nextScheduledAt": "2026-11-16T05:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -12121,7 +12121,7 @@
               "pendingConfirmationCount": 4,
               "lastPublishedAt": "2026-11-12T13:30:00.000Z",
               "nextScheduledAt": "2026-11-16T14:30:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -12448,7 +12448,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-14T06:30:00.000Z",
               "nextScheduledAt": "2026-11-16T06:30:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -12549,7 +12549,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -12631,7 +12631,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -12713,7 +12713,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -12795,7 +12795,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -12877,7 +12877,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -12959,7 +12959,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13041,7 +13041,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13121,7 +13121,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13201,7 +13201,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13283,7 +13283,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13365,7 +13365,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13446,7 +13446,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13526,7 +13526,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13627,7 +13627,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-13T07:00:00.000Z",
               "nextScheduledAt": "2026-11-16T07:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -13727,7 +13727,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13809,7 +13809,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13937,7 +13937,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-13T18:00:00.000Z",
               "nextScheduledAt": "2026-11-16T18:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14064,7 +14064,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -14145,7 +14145,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -14264,7 +14264,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-14T05:00:00.000Z",
               "nextScheduledAt": "2026-11-17T05:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14411,7 +14411,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-12T07:30:00.000Z",
               "nextScheduledAt": "2026-11-16T07:30:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14531,7 +14531,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-16T07:30:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14678,7 +14678,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-13T02:00:00.000Z",
               "nextScheduledAt": "2026-11-16T02:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14814,7 +14814,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -14894,7 +14894,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15004,7 +15004,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-12T16:00:00.000Z",
               "nextScheduledAt": "2026-11-16T16:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15063,7 +15063,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 3 · 게시 여부 확인 필요 2",
+          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 3",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -15165,11 +15165,11 @@
             },
             "publication": {
               "publishedCount": 1,
-              "scheduledCount": 3,
-              "pendingConfirmationCount": 2,
+              "scheduledCount": 2,
+              "pendingConfirmationCount": 3,
               "lastPublishedAt": "2026-11-12T00:00:00.000Z",
-              "nextScheduledAt": "2026-11-16T00:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "nextScheduledAt": "2026-11-17T00:00:00.000Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15304,7 +15304,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15385,7 +15385,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15495,7 +15495,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-12T05:00:00.000Z",
               "nextScheduledAt": "2026-11-17T05:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15660,7 +15660,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-12T18:00:00.000Z",
               "nextScheduledAt": "2026-11-16T18:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15795,7 +15795,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15905,7 +15905,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-12T19:00:00.000Z",
               "nextScheduledAt": "2026-11-17T19:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -16025,7 +16025,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-16T19:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -16115,7 +16115,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -16225,7 +16225,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-12T16:00:00.000Z",
               "nextScheduledAt": "2026-11-16T16:00:00.000Z",
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -16332,7 +16332,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-15T20:30:10.787Z",
+              "checkedAt": "2026-11-16T01:48:40.258Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -16363,7 +16363,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -16909,7 +16909,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -17198,7 +17198,7 @@
           "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
           "docs/마케팅/로그인경로_점검_20261109.md"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -17232,8 +17232,8 @@
           "id": "task-lab-daily",
           "brand": "LAB",
           "country": "LAB 39계정 · 25개국",
-          "title": "하루 두 편 업로드(현지 21:00 퀴즈 · 13:00 이야기)",
-          "state": "구현 중(11-10 밤) — 코드 · 절차는 14시 게시 회차까지 물렸다. 유튜브 나라별 15채널을 첫 판 시험으로 열었다(현지 11-12부터 13:00 이야기 칸 — 첫 판은 11-11 14시 게시 회차가 건다: 「지마」 12 · 「화날때」 3). 판본이 돌림에 드는 원본은 둘(「지마」 18판본 · 「화날때」 6판본). 21:00 칸은 퀴즈에서 노래로 바뀌어(11-10 유호님) 노래가 준비될 때까지 닫아 둔다. 유튜브 남은 셋(인도 · 인도네시아 · 태국)은 판본 검수 뒤, 페이스북 · VK는 거는 길을 확인한 뒤, 틱톡 다섯 · RUTUBE · 더우인은 유호님 로그인 뒤",
+          "title": "하루 두 편 업로드(현지 21:00 노래 · 13:00 이야기)",
+          "state": "운영 중(11-16). 유튜브 나라별 15채널의 첫 판이 11-12부터 11-15까지 모두 현지 13:00에 공개됐다. 72시간 조회는 15판을 합쳐 12회이고, 새 계정은 2~3주 판정하지 않는다(LAB_하루두편_설계_20261110/검토/첫판72시간조회_20261116.md). 돌림 원본은 여섯(「지마」 「화날때」 「미안」 「사층F」 「물고기」 「형오빠」)이고, 나라 판본은 매일 22:10과 09:10에 만든다. 11-15 밤부터는 5일치 비축을 기다리지 않고, 프로필과 로그인이 된 계정을 첫 판 시험으로 연다. 나라별 유튜브의 21:00 노래 칸은 아직 닫혀 있다.",
           "nextAction": "매일 흐름 39/39곳 · 5일 비축 · 같은 플랫폼에서 같은 원본은 20시간 안에 두 번 나가지 않게 계정마다 날짜를 어긋나게 돌린다 — 틱톡 7곳은 7편 돌림(처음 이틀은 5곳만), 유튜브 19곳은 한 원본이 흐른 24시간에 다섯 채널까지(말이 다른 판). 같은 말을 쓰는 계정 묶음(유튜브 영어 6곳 · 스페인어 2곳)은 같은 원본을 24시간 안에 둘이 받지 않고, 나라별판 파일이 달라야 한다(같은 파일은 날이 달라도 금지). 씨앗 계정 일곱(인스타 · 페북 · 틱톡 · 텔레그램 @synk.mn, 틱톡 @synklab.mm, 샤오훙수, 유튜브 @synkkorean)이 먼저 올리고 나머지는 24시간 뒤 첫 14시 점검을 넘겨 잇는다."
         },
         {
@@ -17249,8 +17249,8 @@
           "brand": "LAB",
           "country": "업로드 묶음 B",
           "title": "플랫폼 게시 · 대조 · 숫자 · 프로필",
-          "state": "유튜브 15채널 첫 판 시험 중 · 나머지 계정 열기 남음",
-          "nextAction": "걸 길은 지금 길(유호님 11-10 — 브라우저). 유튜브 나라별 15채널을 「첫판」으로 열었다(11-10 밤) — 첫 판을 예약 목록과 공개 뒤 대조로 확인하면 나머지 칸이 열린다. 다음: 유튜브 남은 셋(판본 검수 뒤) → 페이스북 셋(프로필 확인 끝 · 거는 길 확인 뒤) → VK → 프로필을 채운 나머지. 틱톡 다섯 · RUTUBE · 더우인은 유호님 로그인 뒤. 프로필 빈 칸 8곳 · 확인 전 1곳(베트남 틱톡)"
+          "state": "유튜브 15채널 운영 중 · 첫 판 시험 17곳 진행 중",
+          "nextAction": "걸 길은 지금 길(유호님 11-10 — 브라우저)이다. 유튜브 나라별 15채널은 첫 판을 공개 뒤 대조로 확인해 원장을 열었다. 11-16 예약큐 기준 첫 판 시험 17곳은 걸림 5곳(더우인, 인스타 일본, 스리랑카 페이스북, 멕시코 틱톡, 베트남 틱톡), 걸기 전 1곳(인스타 우즈베크), 판 없음 11곳이다. 판 없음 11곳은 그 나라 판본이나 거는 길이 준비되면 14시 게시 회차가 첫 판을 건다. 캄보디아 틱톡은 반쯤 만든 계정이 있는지 유호님 확인을 기다린다."
         },
         {
           "id": "task-lab-C",
@@ -17281,8 +17281,8 @@
           "brand": "LAB",
           "country": "업로드 묶음 F",
           "title": "합치기",
-          "state": "1차 끝 — 판본 재고 · 나머지 계정 남음",
-          "nextAction": "제작 절차 · LAB 장부 · 14시 게시 회차 지시문에 합쳤다. 원본 둘의 판본이 돌림에 든다. 남은 것: 남은 판본(「지마」 8 · 「화날때」 20) → 나머지 원본 셋(원본 맹검 먼저) → 나라 판본 만들기를 07 · 15시 제작 회차에 넣기 → 5일치 예약"
+          "state": "운영 중 — 판본 제작 매일 두 번(22:10 · 09:10)",
+          "nextAction": "나라 판본은 예약 작업 「LAB 나라 판본 제작」이 판본할일 차례대로 만들고, 통과한 판을 14시 게시 회차가 돌림표대로 건다. 11-16 예약큐에서 나라별 줄의 비축은 0일이고, 오늘 멕시코, 말레이시아, 필리핀, 일본, 베트남 유튜브 칸이 비었다. 유호님 11-16 「비축도 빨리 해줘 우리 계정 엄청 많잖아」에 따라 아침 곁 세션이 판본 16개를 더 만들고 있다."
         },
         {
           "id": "task-mn",
@@ -17313,7 +17313,7 @@
           "brand": "공통",
           "country": "등록 항목 89곳",
           "title": "계정별 현재 근거 확인",
-          "state": "최근 로그인 확인 5 · 로그인 필요 관측 1",
+          "state": "최근 로그인 확인 2 · 로그인 필요 관측 0",
           "nextAction": "계정별 확인 시각과 프로필 범위 참조. 오래된 기록·미확인을 로그아웃이나 계정 없음으로 해석하지 않음"
         },
         {
@@ -17360,7 +17360,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -17550,7 +17550,7 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-11-15T20:30:11.065Z",
+        "executedAt": "2026-11-16T01:48:44.324Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."

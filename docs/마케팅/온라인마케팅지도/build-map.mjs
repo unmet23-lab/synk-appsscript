@@ -184,7 +184,7 @@ const brands = brandSeed.map(brand => ({...brand,brand:brand.id,
   plannedSlots:brand.id === 'LAB' ? plannedPlatformSlots : null
 }));
 const tasks = [
-  {id:'task-lab-daily',brand:'LAB',country:`LAB ${labLedger.length}계정 · ${countries.length}개국`,title:'하루 두 편 업로드(현지 21:00 퀴즈 · 13:00 이야기)',state:uploadPlan.status,nextAction:`매일 흐름 ${labLedger.filter(row => row.dailyLine).length}/${labLedger.length}곳 · ${uploadPlan.bufferDays}일 비축 · ${uploadPlan.rotation}`},
+  {id:'task-lab-daily',brand:'LAB',country:`LAB ${labLedger.length}계정 · ${countries.length}개국`,title:'하루 두 편 업로드(현지 21:00 노래 · 13:00 이야기)',state:uploadPlan.status,nextAction:`매일 흐름 ${labLedger.filter(row => row.dailyLine).length}/${labLedger.length}곳 · ${uploadPlan.bufferDays}일 비축 · ${uploadPlan.rotation}`},
   ...uploadPlan.bundles.map(bundle => ({id:`task-lab-${bundle.id}`,brand:'LAB',country:`업로드 묶음 ${bundle.id}`,title:bundle.title,state:bundle.state,nextAction:bundle.next})),
   {id:'task-mn',brand:'LAB',country:'몽골',title:'기존 5개 채널 하루 두 편 운영',state:'운영 중 — 13:00 칸 멈춤 기준 11-20 판정',nextAction:uploadPlan.countries.MN.current},
   {id:'task-global',brand:'LAB',country:`몽골 외 ${countries.length-1}개국`,title:`확장 ${unconfirmedExpansionCount}곳 개설·생성 확인`,state:`${expansion.length}곳 확보 · ${unconfirmedExpansionCount}곳 미확인`,nextAction:`개설 미확인 자리는 실제 계정과 분리. 별도 장기 계획 ${longTermPlans.length}곳과 구분하며 즉시 가입 지시가 아님`},

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T20:30:11.065Z",
+  "generatedAt": "2026-11-16T01:48:44.324Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -19,9 +19,8 @@
     "identities": 28,
     "activeManagedChannels": 71,
     "loginStatusCounts": {
-      "historical": 65,
-      "verified": 5,
-      "login-required": 1
+      "historical": 69,
+      "verified": 2
     }
   },
   "files": [
@@ -43,7 +42,7 @@
     },
     {
       "file": "inputs/upload-plan.json",
-      "sha256": "0fc43138b275cb9937e917ba322758052ce0cd70d0a6f5b2a39eb73e038fa2fe"
+      "sha256": "be07f9299026be1a6bcc5e067a9cb8d5961e95eb669e9df4fa725be0dcdee180"
     },
     {
       "file": "../로그인경로_점검_20261109.md",
