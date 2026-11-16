@@ -364,13 +364,15 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
     }
 
     // 한 번 넘김(O2): 승인이 있고 3일이 지나지 않았을 때만, 승인 목록에 있는 것만 지울 것으로 남긴다. 승인이 넘기는 것은 20% 관문 하나다.
-    let overrode = null, notApproved = [], approval = null, approvalUsed = false;
+    // approvalResult: kept(쓰지 않고 남음) · used(옮겨 쓰고 지우기로 감) · used-invalid(옮겼지만 내용이 맞지 않아 멈춤) · not-moved(옮기지 못해 멈춤)
+    let overrode = null, notApproved = [], approval = null, approvalResult = null;
     if (!reasons.length && override) {
       try { approval = JSON.parse(fs.readFileSync(approvalPaths(stateDir, override).file, 'utf8')); } catch { approval = null; }
       if (!validApproval(approval, override, media) || !notExpired(approval, startedAt)) reasons.push('OVERRIDE_INVALID');
       else {
         const listed = new Set(approval.eligible);
         overrode = override;
+        approvalResult = 'kept';
         notApproved = eligible.filter(item => !listed.has(key(item.name, item.generation)));
         eligible = eligible.filter(item => listed.has(key(item.name, item.generation)));
       }
@@ -381,7 +383,7 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
     const runFile = path.join(stateDir, 'runs', runId + '.json');
     const reportOf = status => ({
       schema: RUN_SCHEMA, runId, bucket: media, mode: execute ? 'delete' : 'preview', status, reasons: [...reasons], startedAt: iso(startedAt),
-      overrode, approvalSha256: overrode ? approval.eligibleSha256 : null, approvalUsed,
+      overrode, approvalSha256: overrode ? approval.eligibleSha256 : null, approvalResult, approvalUsed: approvalResult === 'used' || approvalResult === 'used-invalid',
       objects: valid.length, strange, completes, latestComplete: latest ? { name: latest.name, at: iso(latest.created), schema: latest.schema } : null,
       latestIsV1: !!latest && latest.schema === SCHEMA_V1, referenced: referenced.size, unreadable: [...unreadable],
       candidates: candidates.map(item => key(item.name, item.generation)), eligible: eligible.map(item => key(item.name, item.generation)),
@@ -402,10 +404,10 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
         else if (toDelete.length && overrode) {
           const used = consumeApproval(stateDir, overrode, _rename);
           if (!used || !validApproval(used, overrode, media) || !notExpired(used, startedAt) || used.eligibleSha256 !== approval.eligibleSha256) {
-            if (used) approvalUsed = true;
+            approvalResult = used ? 'used-invalid' : 'not-moved';
             reasons.push('OVERRIDE_INVALID');
           } else {
-            approvalUsed = true;
+            approvalResult = 'used';
             const listed = new Set(used.eligible);
             toDelete = toDelete.filter(item => listed.has(key(item.name, item.generation)));
           }
@@ -453,8 +455,17 @@ function describe(report) {
   lines.push('  후보는 ' + report.candidates.length + '개이고, 처음 본 지 3일이 지나 지울 것은 ' + report.eligible.length + '개(' + Math.round(report.eligibleBytes / 1048576) + 'MiB)입니다.');
   if (report.mode === 'delete') lines.push('  지운 것 ' + report.deleted.length + '개 · 그사이 바뀌어 둔 것 ' + report.changed.length + '개 · 새 백업이 가리켜 둔 것 ' + report.keptByNewBackup.length + '개 · 실패 ' + report.failed.length + '개입니다.');
   if (report.overrode) {
-    lines.push('  20% 멈춤을 실행 ' + report.overrode + '의 승인 목록으로 ' + (report.approvalUsed ? '한 번 넘겼습니다(승인을 썼습니다).' : '넘겨 보았습니다(승인은 쓰지 않고 남아 있습니다).')
-      + (report.notApproved && report.notApproved.length ? ' 그 목록에 없던 ' + report.notApproved.length + '개는 이번에 지우지 않았습니다.' : ''));
+    // 승인이 실제로 어떻게 되었는지 그대로 말한다(카본 넷째 검수). 멈춘 실행에 「넘겼습니다」나 「남아 있습니다」를 잘못 붙이지 않는다.
+    const R = '실행 ' + report.overrode + '의 승인';
+    const said = {
+      'used': R + '으로 20% 멈춤을 한 번 넘겼습니다. 그 승인은 썼습니다.',
+      'used-invalid': R + '을 옮겼지만 내용이 맞지 않아 지우지 않고 멈췄습니다. 그 승인은 쓴 것으로 남아 다시 승인할 수 없습니다.',
+      'not-moved': R + '을 옮기지 못해 지우지 않고 멈췄습니다. 다른 실행이 먼저 썼거나 그 파일을 잡고 있는 프로그램이 있습니다.',
+    }[report.approvalResult] || (report.status === 'stopped' ? R + '으로 넘기려 했지만 다른 이유로 멈췄습니다. 승인은 쓰지 않고 남아 있습니다.'
+      : report.mode === 'preview' ? R + '으로 넘겨 보았습니다. 승인은 쓰지 않고 남아 있습니다.'
+      : R + ' 목록에 지금 지울 것이 없어 승인은 쓰지 않고 남겨 두었습니다.');
+    const outside = report.notApproved && report.notApproved.length && report.status !== 'stopped' ? ' 그 목록에 없던 ' + report.notApproved.length + '개는 이번에 지우지 않았습니다.' : '';
+    lines.push('  ' + said + outside);
   }
   for (const reason of report.reasons) lines.push('  멈춤: ' + (REASONS[reason] || reason) + '.');
   return lines.join('\n');

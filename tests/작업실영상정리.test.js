@@ -405,13 +405,16 @@ test('넘김 실행이 다른 이유로 멈추거나 지울 것이 없으면 승
     // 백업 버킷 목록 5번째 = 이 실행의 둘째 읽기(1 미리 보기, 2 20% 멈춤, 3 백업 멈춤으로 멈춘 실행, 4 이 실행의 첫 읽기)
     if (bucket === BACKUP && count === 5) s.put(BACKUP, 'company/production/synk-workspace-broken.media-complete', '{broken', { created: s.now - HOUR });
   };
-  assert.deepEqual((await go({ execute: true, override: stopped.runId, config: ENABLED })).reasons, ['COMPLETE_UNREADABLE'], '지우기 직전의 둘째 읽기에서 멈춤');
+  const unreadable = await go({ execute: true, override: stopped.runId, config: ENABLED });
+  assert.deepEqual([unreadable.reasons, unreadable.approvalResult], [['COMPLETE_UNREADABLE'], 'kept'], '지우기 직전의 둘째 읽기에서 멈춤');
+  assert.match(describe(unreadable), /다른 이유로 멈췄습니다. 승인은 쓰지 않고 남아 있습니다/);
   assert.ok(fs.existsSync(approvalFile(dir, stopped.runId)));
   s.onList = null;
   s.objects.delete(BACKUP + '\ncompany/production/synk-workspace-broken.media-complete');
   backupNow(s, [...kept, ...gone].map(n => ref(s, n)), 'd');  // 새 백업이 둘 다 가리켜 지울 것이 0개다
   const none = await go({ execute: true, override: stopped.runId, config: ENABLED });
   assert.deepEqual([none.status, none.approvalUsed, none.deleted.length], ['cleaned', false, 0]);
+  assert.match(describe(none), /지금 지울 것이 없어 승인은 쓰지 않고 남겨 두었습니다/);
   assert.ok(fs.existsSync(approvalFile(dir, stopped.runId)), '지울 것이 없으면 승인을 그대로 둔다');
   assert.equal(s.deletes, 0);
 });
@@ -434,9 +437,18 @@ test('승인을 옮기지(rename) 못하면 지우기 요청을 하나도 보내
   await approveRun(stopped.runId);
   const busy = () => { throw Object.assign(new Error('synthetic'), { code: 'EPERM' }); };
   const report = await go({ execute: true, override: stopped.runId, config: ENABLED, _rename: busy });
-  assert.deepEqual([report.status, report.reasons, report.approvalUsed], ['stopped', ['OVERRIDE_INVALID'], false]);
+  assert.deepEqual([report.status, report.reasons, report.approvalUsed, report.approvalResult], ['stopped', ['OVERRIDE_INVALID'], false, 'not-moved']);
   assert.equal(s.deletes, 0);
   assert.ok(fs.existsSync(approvalFile(dir, stopped.runId)));
+  assert.match(describe(report), /옮기지 못해 지우지 않고 멈췄습니다/);
+  assert.doesNotMatch(describe(report), /넘겼습니다|남아 있습니다/, '멈춘 실행에 넘겼다거나 남아 있다고 말하지 않는다(카본 넷째 검수)');
+  // 옮긴 뒤 내용이 맞지 않으면 쓴 것으로 남기고 멈춘다
+  const spoil = (from, to) => { fs.renameSync(from, to); fs.writeFileSync(to, '{}'); };
+  const spoiled = await go({ execute: true, override: stopped.runId, config: ENABLED, _rename: spoil });
+  assert.deepEqual([spoiled.status, spoiled.reasons, spoiled.approvalResult], ['stopped', ['OVERRIDE_INVALID'], 'used-invalid']);
+  assert.match(describe(spoiled), /쓴 것으로 남아 다시 승인할 수 없습니다/);
+  assert.doesNotMatch(describe(spoiled), /한 번 넘겼습니다/);
+  assert.equal(s.deletes, 0);
 });
 
 test('지우기 도중 끊기면 승인은 쓴 것으로 남아, 같은 실행으로 다시 넘기거나 다시 승인하지 못한다', async t => {
