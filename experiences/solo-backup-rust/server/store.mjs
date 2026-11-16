@@ -50,7 +50,7 @@ create table if not exists usage_daily(
 create table if not exists detect_seen(customer_id text not null, file_id text not null, kind text not null, at integer not null, primary key (customer_id, file_id));
 create table if not exists restore_jobs(
   id text primary key, customer_id text not null, device_id text not null, at integer not null,
-  state text not null check (state in ('running','done','failed','continued','undone')),
+  state text not null check (state in ('preparing','running','done','failed','continued','undone')),
   created_at integer not null, started_at integer, pre_at integer, rounds integer, finished_at integer, undo_of text,
   counts text, journal text, error text, choice_at integer);
 create table if not exists alerts(
@@ -61,6 +61,9 @@ create table if not exists outbox(
   state text not null check (state in ('held','pending','sent','failed','unknown')), attempts integer not null default 0, last_at integer);
 create table if not exists heartbeat(id integer primary key check (id = 1), last_at integer not null, gap_start integer, gap_end integer);
 create table if not exists help(id text primary key, device_id text not null, created_at integer not null, text text not null, bundle text not null);
+-- The per-customer line across processes: the api and an operator command (admin.mjs,
+-- a separate process in the same container) take the same lease.
+create table if not exists locks(customer_id text primary key, holder text not null, until integer not null);
 `;
 
 export class Store {
@@ -69,13 +72,38 @@ export class Store {
     this.now = now;
     this.db.exec('pragma journal_mode = wal; pragma foreign_keys = on; pragma busy_timeout = 5000;');
     this.db.exec(SCHEMA);
+    this.migrate();
     this.q = new Map();
+  }
+  // A database made by an earlier version of this file: add the later columns and widen
+  // the restore states, in one transaction, before anything reads them.
+  migrate() {
+    const cols = (t) => this.db.prepare(`pragma table_info(${t})`).all().map((c) => c.name);
+    this.db.exec('begin immediate');
+    try {
+      if (!cols('customers').includes('move_pin')) this.db.exec('alter table customers add column move_pin text');
+      const sql = this.db.prepare("select sql from sqlite_master where type = 'table' and name = 'restore_jobs'").get()?.sql || '';
+      if (!sql.includes("'preparing'")) {
+        this.db.exec(`alter table restore_jobs rename to restore_jobs_old;
+${SCHEMA.match(/create table if not exists restore_jobs\([^;]*\);/)[0]}
+insert into restore_jobs select * from restore_jobs_old;
+drop table restore_jobs_old;`);
+      }
+      this.db.exec('commit');
+    } catch (e) { try { this.db.exec('rollback'); } catch {} throw e; }
   }
   close() { this.db.close(); }
   p(sql) { let s = this.q.get(sql); if (!s) { s = this.db.prepare(sql); this.q.set(sql, s); } return s; }
   get(sql, ...a) { return this.p(sql).get(...a); }
   all(sql, ...a) { return this.p(sql).all(...a); }
   run(sql, ...a) { return this.p(sql).run(...a); }
+  // A lease, not a lock that outlives a crash: an expired holder loses it.
+  takeLock(customerId, holder, ttlMs) {
+    const t = this.now();
+    return this.run('insert into locks(customer_id, holder, until) values (?, ?, ?) on conflict(customer_id) do update set holder = excluded.holder, until = excluded.until where locks.until < ?',
+      customerId, holder, t + ttlMs, t).changes === 1;
+  }
+  releaseLock(customerId, holder) { this.run('delete from locks where customer_id = ? and holder = ?', customerId, holder); }
   tx(fn) {
     this.db.exec('begin immediate');
     try { const r = fn(); this.db.exec('commit'); return r; }
@@ -147,7 +175,9 @@ export class Store {
     return name;
   }
   keyCreated(name, { keyId, capabilities }) {
-    this.run("update keys set key_id = ?, capabilities = ?, state = 'pending' where name = ? and state = 'creating'", keyId, JSON.stringify(capabilities || []), name);
+    // created_at becomes the moment B2 answered: the ack window starts there, and the daily
+    // reconcile counts a key as missing only if it existed before the listing began.
+    this.run("update keys set key_id = ?, capabilities = ?, state = 'pending', created_at = ? where name = ? and state = 'creating'", keyId, JSON.stringify(capabilities || []), this.now(), name);
   }
   key(name) { return this.get('select * from keys where name = ?', name); }
   keyById(keyId) { return this.get('select * from keys where key_id = ?', keyId); }
@@ -160,9 +190,11 @@ export class Store {
   keyDeleting(name) { this.run("update keys set state = 'deleting' where name = ? and state != 'deleted'", name); }
   keyDeleted(name, reason) { this.run("update keys set state = 'deleted', deleted_at = ?, reason = ? where name = ?", this.now(), reason, name); }
   setKeyState(name, state) { this.run('update keys set state = ? where name = ?', state, name); }
+  // Repeating an acknowledgement whose answer was lost is still true for the same device.
   ackKey(deviceId, keyId) {
-    return this.run("update keys set state = case when kind = 'write' then 'active' else 'acked' end, acked_at = ? where key_id = ? and device_id = ? and state = 'pending'",
-      this.now(), keyId, deviceId).changes === 1;
+    if (this.run("update keys set state = case when kind = 'write' then 'active' else 'acked' end, acked_at = ? where key_id = ? and device_id = ? and state = 'pending'",
+      this.now(), keyId, deviceId).changes === 1) return true;
+    return !!this.get("select 1 from keys where key_id = ? and device_id = ? and acked_at is not null and state in ('acked','active')", keyId, deviceId);
   }
   // Unacknowledged keys older than the ack window, and intents whose B2 answer never came.
   overdueKeys() { return this.all("select * from keys where ((state = 'pending' or state = 'creating') and created_at < ?) or state = 'deleting'", this.now() - ACK_MS); }
@@ -203,15 +235,21 @@ export class Store {
   markSeen(customerId, fileId, kind, at) { this.run('insert or ignore into detect_seen(customer_id, file_id, kind, at) values (?, ?, ?, ?)', customerId, fileId, kind, at); }
 
   // ── restore jobs
-  createJob({ customerId, deviceId, at, undoOf = null }) {
+  // A restore starts 'preparing' (write keys being replaced) and becomes 'running' only
+  // once every old write key is gone; a restart resumes the replacement first.
+  createJob({ customerId, deviceId, at, undoOf = null, state = 'running' }) {
     const id = randomId(16);
-    this.run("insert into restore_jobs(id, customer_id, device_id, at, state, created_at, undo_of) values (?, ?, ?, ?, 'running', ?, ?)", id, customerId, deviceId, at, this.now(), undoOf);
+    this.run('insert into restore_jobs(id, customer_id, device_id, at, state, created_at, undo_of) values (?, ?, ?, ?, ?, ?, ?)', id, customerId, deviceId, at, state, this.now(), undoOf);
     return this.job(id);
   }
   job(id) { return this.get('select * from restore_jobs where id = ?', id) || null; }
-  runningJob(customerId) { return this.get("select * from restore_jobs where customer_id = ? and state = 'running'", customerId) || null; }
-  lastJob(customerId) { return this.get('select * from restore_jobs where customer_id = ? order by created_at desc limit 1', customerId) || null; }
-  jobsToResume() { return this.all("select * from restore_jobs where state = 'running'"); }
+  runningJob(customerId) { return this.get("select * from restore_jobs where customer_id = ? and state in ('preparing','running')", customerId) || null; }
+  // Started, or finished and waiting for the customer's choice: no other restore meanwhile.
+  // Only the latest job can be open — an older 'done' one behind a later restore is history.
+  openJob(customerId) { const j = this.lastJob(customerId); return j && ['preparing', 'running', 'done'].includes(j.state) ? j : null; }
+  lastWriteKeyDeleted(customerId) { return this.get("select max(deleted_at) t from keys where customer_id = ? and kind = 'write' and deleted_at is not null", customerId)?.t || 0; }
+  lastJob(customerId) { return this.get('select * from restore_jobs where customer_id = ? order by created_at desc, rowid desc limit 1', customerId) || null; }
+  jobsToResume() { return this.all("select * from restore_jobs where state in ('preparing','running')"); }
   setJob(id, fields) { this.update('restore_jobs', 'id', id, fields); }
   journalOf(customerId) {
     const copies = new Set(), hides = new Set();

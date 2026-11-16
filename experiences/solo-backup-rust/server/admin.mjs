@@ -24,8 +24,11 @@ try {
     // 4.5 「서버가 하루치 급증을 보면 그 기기 출입증만 끊는 길」.
     case 'cut-device': {
       const d = store.device(arg); if (!d) throw new Error('NOT_FOUND');
-      for (const k of store.liveKeys(d.customer_id, 'write').filter((k) => k.device_id === d.id)) await api.dropKey(k, 'operator-cut');
-      store.setDevice(d.id, { state: 'revoked', role: 'read' });
+      // The same per-customer line as the running api (a lease in the database).
+      await api.serial(d.customer_id, async () => {
+        for (const k of store.liveKeys(d.customer_id, 'write').filter((k) => k.device_id === d.id)) await api.dropKey(k, 'operator-cut');
+        if (store.device(d.id).state !== 'lost') store.setDevice(d.id, { state: 'revoked', role: 'read' });
+      });
       out({ cut: d.id });
       break;
     }

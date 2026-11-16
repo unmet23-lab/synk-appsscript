@@ -10,6 +10,9 @@ import { reconcile, EXPECTED_RULES } from '../reconcile.mjs';
 import { rpcClient, rpcServer } from '../rpc.mjs';
 import { keyHandlers, WRITE_CAPS, DAILY_CAP } from '../keys-worker.mjs';
 import { fileHandlers, RESTORES_PER_DAY } from '../files-worker.mjs';
+import { applyPlan } from '../restore-hidden.mjs';
+import { createRequire } from 'node:module';
+const require_ = createRequire(import.meta.url);
 import { createVerifier } from '../google-token.mjs';
 import { createMailer, signRequest, SIGNED_TAG } from '../mail.mjs';
 import { cleanBatch } from '../telemetry.mjs';
@@ -34,9 +37,21 @@ test('detect: same-size overwrite, settings and key changes are events; restore 
   const newKey = up('keys/k2', 'k2', T0 + 2 * DAY);
   const cfgHide = hide('config', T0 + 3 * DAY);
   const noSha = up('index/i1', 'i', T0, {}); const noSha2 = { ...up('index/i1', 'j', T0 + HOUR + 1), contentSha1: 'none' };
-  s = summarize([...v, ow, copyBack, newKey, cfgHide, noSha, noSha2], { customerPrefix: P, since: T0, now: T0 + 4 * DAY });
+  s = summarize([...v, ow, copyBack, newKey, cfgHide, noSha, noSha2], { customerPrefix: P, since: T0, now: T0 + 4 * DAY, journal: { copies: ['copy1'] } });
   assert.deepEqual(s.events.map((e) => [e.kind, e.fileId]), [['overwrite', ow.fileId], ['overwrite', noSha2.fileId], ['keys', newKey.fileId], ['config', cfgHide.fileId]]);
   assert.equal(s.usage.visibleSnapshots, 1);
+});
+
+test('detect (GPT GA2): A → B → our copy of A → B again is two attacks; a copy back that is not ours is a change too', () => {
+  const a = up('config', 'A', T0), b1 = up('config', 'B', T0 + HOUR);
+  const ourA = { ...up('config', 'A', T0 + 2 * HOUR), fileId: 'copyA' }, b2 = up('config', 'B', T0 + 3 * HOUR);
+  let s = summarize([a, b1, ourA, b2], { customerPrefix: P, since: T0, now: T0 + DAY, journal: { copies: ['copyA'] } });
+  assert.deepEqual(s.events.map((e) => e.fileId), [b1.fileId, b2.fileId]);
+  // The second attack is new to judge even after the first was seen.
+  assert.equal(judge(s, { seen: (id) => id === b1.fileId, now: T0 + DAY }).alerts.length, 1);
+  // Without our journal the copy back to A is itself a change of the name.
+  s = summarize([a, b1, ourA, b2], { customerPrefix: P, since: T0, now: T0 + DAY });
+  assert.deepEqual(s.events.map((e) => e.fileId), [b1.fileId, ourA.fileId, b2.fileId]);
 });
 
 test('detect: judge counts only what happened after the baseline and does not repeat a seen event', () => {
@@ -148,7 +163,8 @@ test('files worker: plans from its own listing, records the moment before, re-pl
   assert.ok(late.uploadTimestamp <= r.preAt);
   for (let i = 1; i < RESTORES_PER_DAY; i++) await h['restore.apply']({ prefix: P, at: T });
   await assert.rejects(h['restore.apply']({ prefix: P, at: T }), { code: 'LIMIT_WORKER_DAY' });
-  await h['restore.apply']({ prefix: P, at: T, resume: true });
+  // A finished run is not continued for free either (GPT r2 GA4).
+  await assert.rejects(h['restore.apply']({ prefix: P, at: T, resume: true }), { code: 'LIMIT_WORKER_DAY' });
   await assert.rejects(h['restore.plan']({ prefix: P, at: clock.t - 30 * DAY }), { code: 'TOO_OLD' });
 });
 
@@ -197,6 +213,10 @@ test('telemetry: closed words, bounds and time window', () => {
     notifications: [{ kind: 'stale' }, { kind: 'my-project' }], installs: [{ step: 'provision', ok: true }, { step: 'C:/x' }] }, { now });
   assert.equal(r.runs.length, 200); assert.equal(r.notifications.length, 1); assert.equal(r.installs.length, 1);
   assert.equal(r.dropped.items, 51 + 1 + 1);
+  // GPT GC2: the time window on its own — an old run first in a small batch is dropped.
+  const w = cleanBatch({ runs: [{ trigger: 'hourly', startedAt: now - 9 * DAY, result: 'complete' }, ...[...Array(10)].map((_, i) => ({ trigger: 'hourly', startedAt: now - i * HOUR, result: 'complete' })), { trigger: 'hourly', startedAt: now + DAY, result: 'complete' }] }, { now });
+  assert.equal(w.runs.length, 10);
+  assert.ok(w.runs.every((x) => x.startedAt >= now - 8 * DAY && x.startedAt <= now + HOUR));
 });
 
 test('settings file and secrets folder: only WB_ names, never secrets, environment wins', (t) => {
@@ -216,4 +236,54 @@ test('settings file and secrets folder: only WB_ names, never secrets, environme
   fs.writeFileSync(path.join(dir, 'secrets', 'wb-keys-rpc'), 'k'.repeat(64) + '\n');
   assert.equal(secretFile('WB_KEYS_RPC', { env: { WB_SECRETS_DIR: path.join(dir, 'secrets') } }), 'k'.repeat(64));
   assert.throws(() => secretFile('WB_FILES_RPC', { env: { WB_SECRETS_DIR: path.join(dir, 'secrets') } }), /SECRET_MISSING/);
+});
+
+test('GPT GA1: a claimed resume of a restore this worker never started still counts', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-files-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c'); clock.advance(HOUR);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  for (let i = 1; i <= RESTORES_PER_DAY; i++) await f['restore.apply']({ prefix: P, at: clock.t - i * 1000, resume: true });
+  await assert.rejects(f['restore.apply']({ prefix: P, at: clock.t - 99000, resume: true }), { code: 'LIMIT_WORKER_DAY' });
+  // A finished run is not continued for free (GPT r2 GA4); the next day counts anew.
+  await assert.rejects(f['restore.apply']({ prefix: P, at: clock.t - RESTORES_PER_DAY * 1000, resume: true }), { code: 'LIMIT_WORKER_DAY' });
+  clock.advance(DAY);
+  const at = clock.t - 1000;
+  // A run that stopped half-way (the worker answered with an error) is continued free.
+  const stop = fileHandlers({ withSession: async () => { throw Object.assign(new Error('stop'), { code: 'B2' }); }, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  await assert.rejects(stop['restore.apply']({ prefix: P, at }));
+  await f['restore.apply']({ prefix: P, at, resume: true });
+  await f['restore.apply']({ prefix: P, at: at - 1 });
+  await f['restore.apply']({ prefix: P, at: at - 2 });
+  await assert.rejects(f['restore.apply']({ prefix: P, at: at - 3 }), { code: 'LIMIT_WORKER_DAY' }, 'the stopped run counted once, its continuation not at all');
+});
+
+test('GPT GB5: after the first failure no lane starts another item, and the error carries what was done', async () => {
+  const items = [...Array(8)].map((_, i) => ({ type: 'copy', fileName: R + `data/aa/p${i}`, rel: `data/aa/p${i}`, sourceFileId: `s${i}` }));
+  const plan = { at: 1, prefix: R, counts: { copy: 8, hide: 0, unchanged: 0 }, copyBytes: 0, items };
+  const started = [];
+  const session = { async copyFile({ fileName }) { started.push(fileName); if (fileName.endsWith('p0')) { await new Promise((ok) => setTimeout(ok, 5)); throw Object.assign(new Error('boom'), { status: 503 }); } await new Promise((ok) => setTimeout(ok, 20)); return { fileId: 'n-' + fileName.slice(-2) }; } };
+  const seen = [];
+  const e = await applyPlan(session, { bucketId: 'b'.repeat(24), plan, concurrency: 4, onItem: (x) => seen.push(x) }).catch((x) => x);
+  assert.equal(e.message, 'boom');
+  assert.equal(started.length, 4, 'only the four already running');
+  assert.equal(e.journal.length, 3); assert.deepEqual(seen, e.journal);
+});
+
+test('GPT GB8: a read key with a write power is too wide', () => {
+  const k = { keyId: 'k1', keyName: 'wbr-aaaaaaaaaaaaaaaaaaaa', capabilities: ['listBuckets', 'listFiles', 'readFiles', 'writeFiles'], bucketIds: ['b'.repeat(24)], namePrefix: P, expirationTimestamp: null };
+  const r = reconcile({ keys: [k], bucket: { found: true, bucketCount: 1, bucketType: 'allPrivate', encryption: 'SSE-B2', lifecycleRules: EXPECTED_RULES, replication: 0 }, bucketId: 'b'.repeat(24) });
+  assert.deepEqual(r.problems, [{ kind: 'too-wide', count: 1 }]);
+  const w = reconcile({ keys: [{ ...k, keyName: 'wbw-aaaaaaaaaaaaaaaaaaaa' }], bucket: { found: true, bucketCount: 1, bucketType: 'allPrivate', encryption: 'SSE-B2', lifecycleRules: EXPECTED_RULES, replication: 0 }, bucketId: 'b'.repeat(24) });
+  assert.equal(w.ok, true);
+});
+
+test('GPT GA5: the outside audit fails, never passes quietly, when its settings are missing or malformed', () => {
+  const { spawnSync } = require_('node:child_process');
+  const run = (env) => spawnSync(process.execPath, [path.join(import.meta.dirname, '..', 'audit.mjs')], { env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot || '', ...env }, encoding: 'utf8', timeout: 30000 });
+  for (const env of [{}, { WB_AUDIT_KEY_ID: '0051234567890000000000001', WB_AUDIT_APP_KEY: 'x'.repeat(31), WB_AUDIT_BUCKET_ID: 'not-hex' }, { WB_AUDIT_KEY_ID: '0051234567890000000000001', WB_AUDIT_APP_KEY: 'x'.repeat(31), WB_AUDIT_BUCKET_ID: 'b'.repeat(24) }]) {
+    const r = run(env);
+    assert.equal(r.status, 1, JSON.stringify(env));
+    assert.match(r.stdout, /"ok":false/);
+  }
 });

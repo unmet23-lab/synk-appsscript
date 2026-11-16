@@ -22,6 +22,7 @@ const sha1Of = (v) => (typeof v.contentSha1 === 'string' && /^[0-9a-f]{40}$/.tes
 
 export function summarize(versions, { customerPrefix, repoPrefix = customerPrefix + 'r/', since, now = Date.now(), journal = { hides: [] } }) {
   const ourHides = new Set(journal.hides || []);
+  const ourCopies = new Set(journal.copies || []);
   const byName = new Map();
   for (const v of versions) {
     if (v.action !== 'upload' && v.action !== 'hide') continue;
@@ -50,14 +51,15 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
     }
     if (rel === null || rel.startsWith('locks/')) continue;
     const kind = rel === 'config' ? 'config' : rel.startsWith('keys/') ? 'keys' : 'overwrite';
-    const shas = new Set();
-    let uploads = 0, previous = null;
+    let uploads = 0, previous = null, previousSha;
     for (const v of list) {
       if (v.action === 'upload') {
         const s = sha1Of(v);
-        // A second content for one name; a version without a usable SHA-1 counts as different.
-        if (uploads > 0 && (s === null || !shas.has(s))) events.push({ kind, fileId: v.fileId, rel, at: v.uploadTimestamp });
-        if (s) shas.add(s);
+        // Content that differs from the version just before it (A → B → A → B is three
+        // changes, not one), except a copy our own restore made; a version without a
+        // usable SHA-1 counts as different. restic never rewrites a name with new bytes.
+        if (uploads > 0 && !ourCopies.has(v.fileId) && (s === null || s !== previousSha)) events.push({ kind, fileId: v.fileId, rel, at: v.uploadTimestamp });
+        previousSha = s;
         // A key file first uploaded more than a day after the repository's first key: our app never adds keys.
         if (uploads === 0 && kind === 'keys' && firstKeyAt !== null && v.uploadTimestamp > firstKeyAt + DAY) events.push({ kind, fileId: v.fileId, rel, at: v.uploadTimestamp });
         uploads++; previous = v;

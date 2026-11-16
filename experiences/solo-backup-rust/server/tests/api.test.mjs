@@ -18,7 +18,7 @@ import { createMailer } from '../mail.mjs';
 
 const listen = (srv) => new Promise((ok) => srv.listen(0, '127.0.0.1', () => ok(srv.address().port)));
 
-async function harness(t) {
+async function harness(t, { grace = 0 } = {}) {
   const clock = clockAt(), now = () => clock.t;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-api-'));
   const b2 = new FakeB2({ clock });
@@ -35,9 +35,11 @@ async function harness(t) {
   const store = new Store(path.join(dir, 'wb.sqlite'), { now });
   const mailer = createMailer({ store, enabled: false, operator: 'ops@example.com', now });
   const logs = [];
+  const verify = createVerifier({ audiences: [g.aud], fetchImpl: g.fetchImpl, now });
+  const hooks = { beforeVerify: null };
   const api = createApi({ store, keys, files, mailer, now, log: (e) => logs.push(e),
-    verifyGoogle: createVerifier({ audiences: [g.aud], fetchImpl: g.fetchImpl, now }),
-    config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: 0 } });
+    verifyGoogle: async (tok) => { if (hooks.beforeVerify) { const f = hooks.beforeVerify; hooks.beforeVerify = null; await f(); } return verify(tok); },
+    config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: grace } });
   const srv = api.server(); const port = await listen(srv);
   const jobs = createJobs({ store, api, keys, files, mailer, now, config: { bucketId: b2.bucketId, protectedKeyIds } });
   t.after(() => { srv.close(); keysSrv.close(); filesSrv.close(); store.close(); fs.rmSync(dir, { recursive: true, force: true }); });
@@ -53,7 +55,7 @@ async function harness(t) {
   }
   async function provision(name = 'PC-1', claims = {}) { return call('POST', 'provision', { google: await proof('provision', claims), device: { name, appVersion: '0.7.0' } }); }
   async function ack(r) { const ids = Object.values(r.keys || {}).map((k) => k.keyId); return call('POST', 'keys/ack', { keyIds: ids }, r.device?.token || r.token); }
-  return { clock, b2, store, api, jobs, call, proof, provision, ack, dir, g, logs, protectedKeyIds };
+  return { clock, b2, store, api, jobs, call, proof, proofDirect: proof, provision, ack, dir, g, logs, protectedKeyIds, hooks, keys, files };
 }
 const dbBytes = (h) => Buffer.concat(['wb.sqlite', 'wb.sqlite-wal'].map((f) => { try { return fs.readFileSync(path.join(h.dir, f)); } catch { return Buffer.alloc(0); } }));
 
@@ -235,6 +237,7 @@ test('T9 · T23 · T24: restore plan, run with key rotation, copy back, continue
   assert.deepEqual(plan.plan.counts, { copy: 2, hide: 1, unchanged: 3 });
   // The run needs a fresh sign-in, replaces the write key and starts a new read key.
   assert.equal((await h.call('POST', 'restore/run', { at: plan.suggestions[0].at }, a.device.token)).code, 'BAD_INPUT');
+  const versionsBefore = (await h.b2.listFileVersions({ prefix: base })).map((v) => v.fileId);
   const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: plan.suggestions[0].at }, a.device.token);
   assert.equal(run.ok, true);
   assert.equal(h.b2.keys.has(a.keys.write.keyId), false);
@@ -248,7 +251,10 @@ test('T9 · T23 · T24: restore plan, run with key rotation, copy back, continue
   assert.equal(latest('data/aa/d1').contentSha1, crypto.createHash('sha1').update('pack-one-content').digest('hex'));
   assert.equal(latest('snapshots/s1').action, 'upload');
   assert.equal(latest('snapshots/s2').action, 'hide');
-  assert.equal(h.b2.calls.filter((c) => c[0] === 'deleteKey' && c[1].startsWith('4_')).length, 0);
+  // GPT GC1: no file version was deleted — every version from before the run is still listed.
+  const versionsAfter = new Set(versions.map((v) => v.fileId));
+  assert.deepEqual(versionsBefore.filter((id) => !versionsAfter.has(id)), []);
+  assert.equal(h.b2.calls.filter((c) => /^delete/.test(c[0]) && c[0] !== 'deleteKey').length, 0);
   assert.equal((await h.call('GET', 'status', null, a.device.token)).restore.awaitingChoice, true);
   // The tool's own copies are not reported again as overwrites.
   h.clock.advance(86400000);
@@ -350,10 +356,12 @@ test('S5: the proof × device-state table — moved, lost and other devices are 
   assert.equal((await h.call('POST', 'devices/take-write-seat', { google: wrong }, b.device.token)).code, 'NONCE');
   // 「여기서부터 계속」 belongs to the device that asked for the restore.
   const prefix = `c/${b.customer.id}/`; seedRepo(h, prefix); h.clock.advance(60000);
+  const d = await h.provision('PC-4');
   const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, b.device.token);
   await h.api.runJob(h.store.job(run.jobId));
-  const d = await h.provision('PC-4');
   assert.equal((await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'continue' }, d.device.token)).state, 'not-requester');
+  // A finished restore waiting for its choice holds the account: no new device meanwhile.
+  assert.equal((await h.provision('PC-5')).code, 'BUSY');
 });
 
 test('S2: requests that change keys run one at a time per customer — never two writers', async (t) => {
@@ -474,4 +482,185 @@ test('move pin: the reading PC pins the snapshot it copies, the writer sees it, 
   assert.equal(seat.ok, true);
   assert.equal((await h.call('GET', 'status', null, r.device.token)).move, null);
   assert.equal((await h.call('GET', 'status', null, w.device.token)).move, null);
+});
+
+test('GPT r2 GA1: a database from the earlier version gains the new column and restore state', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-migrate-'));
+  const { DatabaseSync } = await import('node:sqlite');
+  const old = new DatabaseSync(path.join(dir, 'wb.sqlite'));
+  old.exec(`create table customers(id text primary key, sub text not null unique, email text not null unique, prefix text not null unique, state text not null default 'active', created_at integer not null, lost_at integer, google_step integer not null default 0, read_key text, detect_since integer);
+create table restore_jobs(id text primary key, customer_id text not null, device_id text not null, at integer not null, state text not null check (state in ('running','done','failed','continued','undone')), created_at integer not null, started_at integer, pre_at integer, rounds integer, finished_at integer, undo_of text, counts text, journal text, error text, choice_at integer);
+insert into restore_jobs(id, customer_id, device_id, at, state, created_at) values ('j1', 'c1', 'd1', 1, 'done', 2);`);
+  old.close();
+  const s = new Store(path.join(dir, 'wb.sqlite'));
+  const j = s.createJob({ customerId: 'c1', deviceId: 'd1', at: 3, state: 'preparing' });
+  assert.equal(j.state, 'preparing');
+  assert.equal(s.job('j1').state, 'done');
+  s.setCustomer('c1', { move_pin: null });
+  s.close(); new Store(path.join(dir, 'wb.sqlite')).close(); // a second open changes nothing
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('GPT GA4: the per-customer line holds across processes — a second store on the same file sees the lease', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const other = new Store(path.join(h.dir, 'wb.sqlite'), { now: () => h.clock.t });
+  assert.equal(other.takeLock(a.customer.id, 'admin-process', 600000), true);
+  const busy = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
+  assert.equal(busy.code, 'BUSY');
+  other.releaseLock(a.customer.id, 'admin-process');
+  assert.equal((await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token)).ok, true);
+  // A holder that died loses the lease when it runs out.
+  assert.equal(other.takeLock(a.customer.id, 'dead-process', 1000), true);
+  h.clock.advance(1001);
+  assert.equal((await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token)).ok, true);
+  other.close();
+});
+
+test('GPT GB4: a device cut while its sign-in was being checked is not brought back', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  // While b's take-write-seat waits for Google, a reports b lost.
+  h.hooks.beforeVerify = async () => {
+    const r = await h.call('POST', 'lost', { google: await h.proofDirect('lost'), deviceId: b.device.id });
+    assert.equal(r.ok, true);
+  };
+  const seat = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token);
+  assert.equal(seat.code, 'DEVICE_STATE');
+  assert.equal(h.store.device(b.device.id).state, 'lost');
+  assert.equal(h.store.writerOf(a.customer.id).id, a.device.id);
+  assert.equal(h.store.liveKeys(a.customer.id, 'write').filter((k) => k.device_id === b.device.id).length, 0);
+});
+
+test('GPT GB2: a restart while the write keys were being replaced finishes the replacement before restoring', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const prefix = `c/${a.customer.id}/`; seedRepo(h, prefix); h.clock.advance(60000);
+  // The state a stop leaves: a preparing job and the old write key still alive.
+  const job = h.store.createJob({ customerId: a.customer.id, deviceId: a.device.id, at: h.clock.t - 30000, state: 'preparing' });
+  assert.equal(await h.api.runJob(job), null, 'a preparing job never restores by itself');
+  assert.ok(h.b2.keys.has(a.keys.write.keyId));
+  // Another restore cannot start meanwhile.
+  assert.equal((await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token)).code, 'BUSY');
+  await h.api.finishPreparing(job);
+  assert.equal(h.b2.keys.has(a.keys.write.keyId), false, 'the old write key is gone before the restore ran');
+  assert.equal(h.store.job(job.id).state, 'done');
+  // GPT r2 GA2: a requester cut while its job waited gets no seat back; the keys still go.
+  await h.call('POST', 'restore/choose', { jobId: job.id, choice: 'continue' }, a.device.token);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  const seat = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
+  assert.equal(seat.ok, true);
+  const job2 = h.store.createJob({ customerId: a.customer.id, deviceId: a.device.id, at: h.clock.t - 1000, state: 'preparing' });
+  await h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id });
+  assert.equal(await h.api.finishPreparing(job2), null);
+  assert.equal(h.store.job(job2.id).state, 'failed');
+  assert.equal(h.store.device(a.device.id).state, 'lost', 'not brought back as the writer');
+  assert.equal(h.store.liveKeys(a.customer.id, 'write').length, 0);
+  // The start-up resume takes preparing jobs the same way.
+  assert.ok(h.store.jobsToResume().every((j) => j.id !== job.id));
+});
+
+test('GPT GB3: a finished restore waiting for its choice blocks a second one; only the latest can be chosen', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const prefix = `c/${a.customer.id}/`; seedRepo(h, prefix); h.clock.advance(60000);
+  const r1 = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  await h.api.runJob(h.store.job(r1.jobId));
+  assert.equal((await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 20000 }, a.device.token)).code, 'BUSY');
+  assert.equal((await h.call('POST', 'restore/choose', { jobId: r1.jobId, choice: 'continue' }, a.device.token)).state, 'continued');
+  // An older finished job cannot be undone after a later restore was continued.
+  h.clock.advance(1000);
+  const r2 = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 10000 }, a.device.token);
+  await h.api.runJob(h.store.job(r2.jobId));
+  assert.equal((await h.call('POST', 'restore/choose', { jobId: r2.jobId, choice: 'continue' }, a.device.token)).state, 'continued');
+  h.store.setJob(r1.jobId, { state: 'done' }); // as if r1 had never been chosen (an earlier version's data)
+  assert.equal((await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 5000 }, a.device.token)).ok, true, 'the stale r1 does not block either');
+  assert.equal((await h.call('POST', 'restore/choose', { jobId: r1.jobId, choice: 'undo', google: await h.proof('restore-undo') }, a.device.token)).code, 'NOT_FOUND');
+});
+
+test('GPT GB6: a write key that replaced another is usable only after the grace; the first one at once', async (t) => {
+  const h = await harness(t, { grace: 60000 });
+  h.store.addInvite('pilot@example.com');
+  const a = await h.provision('PC-1'); await h.ack(a);
+  assert.ok(!a.usableAt || a.usableAt <= h.clock.t);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  const seat = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token);
+  assert.equal(seat.usableAt, h.clock.t + 60000);
+  // GPT r2 GA7: a retry soon after a stop — the old key already gone — still waits.
+  h.clock.advance(20000);
+  const again = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token);
+  assert.equal(again.usableAt, h.clock.t + 60000, 'this request deleted b\'s own earlier key');
+  h.store.run("update keys set deleted_at = ? where kind = 'write' and deleted_at is not null", h.clock.t - 30000);
+  const c = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, a.device.token);
+  assert.ok(c.usableAt >= h.clock.t + 1, 'counted from the last deletion in the table');
+});
+
+test('GPT GB9: every planning call counts against the day — new times cannot plan past the cap', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(3600000);
+  let planned = 0, refused = null;
+  for (let i = 1; i <= 30 && !refused; i++) {
+    const r = await h.call('POST', 'restore/plan', { at: h.clock.t - i * 1000 }, a.device.token);
+    if (r.code) refused = r.code; else planned++;
+  }
+  assert.equal(refused, 'RATE');
+  assert.ok(planned < 20, `planned ${planned} times`);
+});
+
+test('GPT GB1: a key made while the reconcile listed keys is not marked missing', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  let made = null;
+  const keysDuring = async (method, params, o) => {
+    const r = await h.keys(method, params, o);
+    if (method === 'keys.list' && !made) { const b = await h.provision('PC-2'); await h.ack(b); made = b; }
+    return r;
+  };
+  const jobs = createJobs({ store: h.store, api: h.api, keys: keysDuring, files: h.files, now: () => h.clock.t, config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds } });
+  await jobs.reconcileKeys(h.clock.t);
+  assert.ok(made);
+  assert.equal(h.store.all("select count(*) n from keys where state = 'deleted' and reason = 'missing'")[0].n, 0);
+  // GPT r2 GA5: the time counted is when B2 answered, not when the request was written down.
+  const name = h.store.keyIntent({ kind: 'read', customerId: a.customer.id, deviceId: a.device.id, purpose: 'rotate' });
+  h.clock.advance(5); const listedFrom = h.clock.t; h.clock.advance(5);
+  h.store.keyCreated(name, { keyId: 'fixture-late-key', capabilities: [] });
+  assert.ok(h.store.key(name).created_at > listedFrom);
+  h.store.keyDeleted(name, 'test');
+  // A key that really vanished from B2 is still found.
+  h.b2.keys.delete(a.keys.read.keyId); h.clock.advance(1000);
+  await h.jobs.reconcileKeys(h.clock.t);
+  assert.equal(h.store.all("select count(*) n from keys where state = 'deleted' and reason = 'missing'")[0].n, 1);
+});
+
+test('GPT GB7: the minute tick expires unacknowledged keys while a long daily pass is still running', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  let release;
+  const slowFiles = async (method, params, o) => { if (method === 'prefix.scan') await new Promise((ok) => { release = ok; }); return h.files(method, params, o); };
+  const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files: slowFiles, now: () => h.clock.t, config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds, dailyHourKst: 0 } });
+  const first = await h.provision('PC-1'); await h.ack(first);
+  const daily = jobs.tick(); // starts the daily pass, which waits on the scan
+  await new Promise((ok) => setTimeout(ok, 50));
+  const b = await h.provision('PC-2'); // never acknowledged
+  assert.equal(b.ok, true);
+  h.clock.advance(11 * 60000);
+  await jobs.tick();
+  assert.equal(h.store.all("select count(*) n from keys where device_id = ? and state != 'deleted'", b.device.id)[0].n, 0, 'expired during the daily pass');
+  release(); await daily;
+});
+
+test('GPT GA5: the server counts an audit run only when its audit job itself succeeded', async (t) => {
+  const h = await harness(t);
+  const runs = { workflow_runs: [{ conclusion: 'success', updated_at: new Date(h.clock.t - 3600000).toISOString(), jobs_url: 'https://api.github.com/repos/x/y/actions/runs/1/jobs' }] };
+  let jobsAnswer = { jobs: [{ name: 'audit', conclusion: 'skipped' }] };
+  const fetchImpl = async (url) => new Response(JSON.stringify(String(url).endsWith('/jobs') ? jobsAnswer : runs));
+  const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files: h.files, now: () => h.clock.t, fetchImpl, config: { bucketId: h.b2.bucketId, auditRunsUrl: 'https://api.github.com/repos/x/y/actions/workflows/workbackup-audit.yml/runs' } });
+  await jobs.auditFresh(h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'audit-stale'")[0].n, 1, 'a skipped job is not an audit');
+  jobsAnswer = { jobs: [{ name: 'audit', conclusion: 'success' }] };
+  h.clock.advance(86400000); runs.workflow_runs[0].updated_at = new Date(h.clock.t - 3600000).toISOString();
+  await jobs.auditFresh(h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'audit-stale'")[0].n, 1);
 });

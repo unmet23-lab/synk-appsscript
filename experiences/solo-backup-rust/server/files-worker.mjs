@@ -19,34 +19,73 @@ export const MAX_ROUNDS = 4;
 const err = (code) => Object.assign(new Error(code), { code });
 const checkPrefix = (prefix) => { if (!PREFIX.test(prefix || '')) throw err('BAD_INPUT'); return prefix; };
 const checkTime = (v) => { if (!Number.isSafeInteger(v) || v < 0) throw err('BAD_INPUT'); return v; };
-const ids = (list) => (Array.isArray(list) ? list.filter((x) => typeof x === 'string' && x.length < 300).slice(0, 200000) : []);
 
+const DAY = 86400000;
+// Restores per customer per day, kept on this worker's own volume. Continuing is free
+// only for the very run this worker started (same prefix and time, in the last two
+// days); any other call — a claimed `resume` included — is a new restore and counts.
 function restoreCounter(stateDir, now) {
   const file = path.join(stateDir, 'restore-days.json');
-  return (prefix) => {
-    const day = new Date(now()).toISOString().slice(0, 10);
+  return (prefix, at, resume) => {
+    const t = now(), day = new Date(t).toISOString().slice(0, 10);
     let all = {};
     try { all = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) { if (e.code !== 'ENOENT') throw err('WORKER_STATE'); }
-    const today = all.day === day ? all.counts : {};
+    const started = Object.fromEntries(Object.entries(all.started || {}).filter(([, v]) => v && t - v.t < 2 * DAY));
+    if (resume && started[prefix]?.at === at && !started[prefix].done) return;
+    const today = all.day === day ? all.counts || {} : {};
     const n = (today[prefix] || 0) + 1;
     if (n > RESTORES_PER_DAY) throw err('LIMIT_WORKER_DAY');
     const tmp = `${file}.${process.pid}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify({ day, counts: { ...today, [prefix]: n } })); fs.renameSync(tmp, file);
+    fs.writeFileSync(tmp, JSON.stringify({ day, counts: { ...today, [prefix]: n }, started: { ...started, [prefix]: { at, t } } })); fs.renameSync(tmp, file);
+  };
+}
+// The run for (prefix, at) came back: a later `resume` of it is a new restore.
+function markFinished(stateDir, prefix, at) {
+  const file = path.join(stateDir, 'restore-days.json');
+  let all = {};
+  try { all = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) { if (e.code !== 'ENOENT') throw err('WORKER_STATE'); }
+  if (all.started?.[prefix]?.at !== at) return;
+  all.started[prefix].done = true;
+  const tmp = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(all)); fs.renameSync(tmp, file);
+}
+
+// What this worker's restores did (copies made, hide markers set), per customer, written
+// the moment each step is done. Detection reads it to tell our own copies and hides
+// from someone else's; it never takes that list from the api.
+function restoreJournal(stateDir, now) {
+  const fileOf = (prefix) => path.join(stateDir, `journal-${prefix.slice(2, 18)}.jsonl`);
+  return {
+    add(prefix, entry) {
+      const line = { t: now(), type: entry.type, ...(entry.newFileId ? { newFileId: entry.newFileId } : {}), ...(entry.hideMarkerId ? { hideMarkerId: entry.hideMarkerId } : {}) };
+      fs.appendFileSync(fileOf(prefix), JSON.stringify(line) + '\n');
+    },
+    read(prefix) {
+      const copies = [], hides = [];
+      let text = '';
+      try { text = fs.readFileSync(fileOf(prefix), 'utf8'); } catch (e) { if (e.code !== 'ENOENT') throw err('WORKER_STATE'); }
+      for (const raw of text.split('\n')) {
+        if (!raw) continue;
+        try { const e = JSON.parse(raw); if (e.newFileId) copies.push(e.newFileId); if (e.hideMarkerId) hides.push(e.hideMarkerId); } catch {}
+      }
+      return { copies, hides };
+    },
   };
 }
 
 export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date.now() }) {
   if (!BUCKET_ID.test(bucketId)) throw new Error('CONFIG_INVALID:bucketId');
   const countRestore = restoreCounter(stateDir, now);
+  const ours = restoreJournal(stateDir, now);
   const versions = (prefix) => withSession((s) => s.listFileVersions({ bucketId, prefix }));
   const plan = (list, at, repo) => {
     try { return planRestore(list, { at, now: now(), prefix: repo }); }
     catch (e) { if (/^RESTORE_/.test(e?.message || '')) throw err(e.message === 'RESTORE_TIME_TOO_OLD' ? 'TOO_OLD' : 'BAD_INPUT'); throw e; }
   };
   return {
-    async 'prefix.scan'({ prefix, since, journal }) {
+    async 'prefix.scan'({ prefix, since }) {
       checkPrefix(prefix); checkTime(since);
-      const s = summarize(await versions(prefix), { customerPrefix: prefix, since, now: now(), journal: { hides: ids(journal?.hides) } });
+      const s = summarize(await versions(prefix), { customerPrefix: prefix, since, now: now(), journal: ours.read(prefix) });
       return { ...s, events: s.events.slice(0, 1000), eventCount: s.events.length };
     },
     async 'restore.plan'({ prefix, at }) {
@@ -61,7 +100,7 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
     // the next call (done items drop out of a new plan).
     async 'restore.apply'({ prefix, at, resume = false }) {
       checkPrefix(prefix); checkTime(at);
-      if (!resume) countRestore(prefix);
+      countRestore(prefix, at, resume);
       const repo = prefix + 'r/';
       let list = await versions(repo);
       const preAt = list.reduce((m, v) => Math.max(m, v.uploadTimestamp || 0), 0);
@@ -71,11 +110,12 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
         first ||= p;
         left = p.items.length;
         if (!left) break;
-        const done = await withSession((s) => applyPlan(s, { bucketId, plan: p, now: now() }));
+        const done = await withSession((s) => applyPlan(s, { bucketId, plan: p, now: now(), onItem: (e) => ours.add(prefix, e) }));
         journal.push(...done.journal);
         list = await versions(repo);
       }
       if (rounds === MAX_ROUNDS) left = plan(list, at, repo).items.length;
+      markFinished(stateDir, prefix, at);
       return { at, preAt, rounds, remaining: left, counts: first.counts, copyBytes: first.copyBytes, journal };
     },
   };

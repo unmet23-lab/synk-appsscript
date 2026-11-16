@@ -77,7 +77,10 @@ export function planRestore(versions, { at, now = Date.now(), prefix, maxAgeMs =
 // Re-running after a stop continues: done items no longer appear in a fresh plan.
 // Items of one order step (e.g. all data/ copies) run `concurrency` at a time;
 // the next step starts only after the previous one finished, so the order holds.
-export async function applyPlan(session, { bucketId, plan, freshVersions, now = Date.now(), onStep = () => {}, concurrency = 4 }) {
+// On the first failure no lane starts another item; the ones already running finish,
+// and the error goes up carrying everything done so far (`error.journal`). Each done
+// item is also handed to `onItem` the moment it is done.
+export async function applyPlan(session, { bucketId, plan, freshVersions, now = Date.now(), onStep = () => {}, onItem = () => {}, concurrency = 4 }) {
   const fresh = freshVersions ? planRestore(freshVersions, { at: plan.at, now, prefix: plan.prefix }) : plan;
   const journal = [];
   const stepOf = (item) => `${item.type}:${rank(item.type === 'hide' ? HIDE_ORDER : RESTORE_ORDER, item.rel)}`;
@@ -90,17 +93,22 @@ export async function applyPlan(session, { bucketId, plan, freshVersions, now = 
   const one = async (item) => {
     if (item.type === 'copy') {
       const r = await session.copyFile({ sourceFileId: item.sourceFileId, fileName: item.fileName });
-      journal.push({ type: 'copy', fileName: item.fileName, sourceFileId: item.sourceFileId, newFileId: r.fileId });
+      done({ type: 'copy', fileName: item.fileName, sourceFileId: item.sourceFileId, newFileId: r.fileId });
     } else if (item.type === 'hide') {
       const r = await session.hideFile({ bucketId, fileName: item.fileName });
-      journal.push({ type: 'hide', fileName: item.fileName, hiddenFileId: item.currentFileId, hideMarkerId: r.fileId });
+      done({ type: 'hide', fileName: item.fileName, hiddenFileId: item.currentFileId, hideMarkerId: r.fileId });
     }
     onStep(journal.length, fresh.items.length);
   };
+  const done = (entry) => { journal.push(entry); onItem(entry); };
+  let failed = null;
   for (const g of groups) {
     let next = 0;
-    const lanes = Array.from({ length: Math.max(1, Math.min(concurrency, g.items.length)) }, async () => { while (next < g.items.length) await one(g.items[next++]); });
+    const lanes = Array.from({ length: Math.max(1, Math.min(concurrency, g.items.length)) }, async () => {
+      while (!failed && next < g.items.length) { try { await one(g.items[next++]); } catch (e) { failed ||= e; } }
+    });
     await Promise.all(lanes);
+    if (failed) { try { failed.journal = journal; } catch {} throw failed; }
   }
   return { plan: fresh, journal };
 }

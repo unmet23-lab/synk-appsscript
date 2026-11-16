@@ -19,7 +19,7 @@ const server = (f) => import(require('node:url').pathToFileURL(path.join(__dirna
 const encryptionKey = crypto.randomBytes(32);
 const secretStore = { encrypt(text) { const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', encryptionKey, iv); return Buffer.concat([iv, c.update(text), c.final(), c.getAuthTag()]); }, decrypt(bytes) { const d = crypto.createDecipheriv('aes-256-gcm', encryptionKey, bytes.subarray(0, 12)); d.setAuthTag(bytes.subarray(-16)); return Buffer.concat([d.update(bytes.subarray(12, -16)), d.final()]).toString(); } };
 
-async function harness(t) {
+async function harness(t, { grace = 0 } = {}) {
   const [{ FakeB2, fakeGoogle, clockAt, sessionOf }, { Store }, { createVerifier }, { keyHandlers, WRITE_CAPS }, { fileHandlers }, { createApi }, { createJobs }, { createMailer }] =
     await Promise.all(['tests/fakes.mjs', 'store.mjs', 'google-token.mjs', 'keys-worker.mjs', 'files-worker.mjs', 'server.mjs', 'jobs.mjs', 'mail.mjs'].map(server));
   const clock = clockAt(Date.now()), now = () => clock.t;
@@ -31,7 +31,7 @@ async function harness(t) {
   const store = new Store(path.join(dir, 'wb.sqlite'), { now });
   const g = fakeGoogle({ clock });
   const api = createApi({ store, keys: direct(keysFn), files: direct(filesFn), mailer: createMailer({ store }), now, verifyGoogle: createVerifier({ audiences: [g.aud], fetchImpl: g.fetchImpl, now }),
-    config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: 0 } });
+    config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: grace } });
   const srv = api.server(); await new Promise((ok) => srv.listen(0, '127.0.0.1', ok));
   t.after(async () => { srv.close(); store.close(); await fs.rm(dir, { recursive: true, force: true }); });
   const port = srv.address().port;
@@ -43,7 +43,7 @@ async function harness(t) {
     return { status: res.status, data: await res.json() };
   };
   const auth = (claims = {}) => ({ calls: [], async signIn({ nonce, expectedSub }) { this.calls.push({ nonce, expectedSub }); const sub = claims.sub || '1000001'; if (expectedSub && expectedSub !== sub) throw Object.assign(new Error('ACCOUNT'), { code: 'ACCOUNT' }); return { idToken: g.token({ nonce, ...claims }), nonce, sub, email: claims.email || 'pilot@example.com' }; } });
-  const client = async (name, claims) => { const c = new ProvisionClient({ dir: path.join(dir, name), secretStore, auth: auth(claims), call }); await c.open(); return c; };
+  const client = async (name, claims, opts = {}) => { const c = new ProvisionClient({ dir: path.join(dir, name), secretStore, auth: auth(claims), call, now, ...opts }); await c.open(); return c; };
   return { b2, store, api, jobs, client, clock, dir, WRITE_CAPS };
 }
 
@@ -139,4 +139,60 @@ test('serverCall: only the fixed https host and path, device token shape, no red
   await assert.rejects(serverCall(`${SERVER}status`), { code: 'INVALID' });
   response = { code: 502, body: '<html>bad gateway</html>' };
   await assert.rejects(serverCall(`${SERVER}status`), { code: 'NETWORK' });
+});
+
+test('GPT GA3: an acknowledgement whose answer was lost loses no key — provision again finishes the same sign-up', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc');
+  const real = pc.call; let dropped = false;
+  pc.call = async (url, o) => { const r = await real(url, o); if (url.endsWith('keys/ack') && !dropped) { dropped = true; throw Object.assign(new Error('NETWORK'), { code: 'NETWORK' }); } return r; };
+  await assert.rejects(pc.provision({ name: 'PC' }), { code: 'NETWORK' });
+  const pending = await pc.pendingReadKey();
+  assert.ok(pending, 'the read key was stored before the acknowledgement');
+  // A reopened app finishes the same sign-up: same device, same keys, nothing new made.
+  const again = new ProvisionClient({ dir: path.join(h.dir, 'pc'), secretStore, auth: pc.auth, call: real });
+  await again.open();
+  const r = await again.provision({ name: 'PC' });
+  assert.equal(r.deviceId, pc.device.deviceId); assert.equal(r.readKey.keyId, pending.keyId);
+  assert.equal(h.store.all("select count(*) n from keys where kind = 'read'")[0].n, 1);
+  await assert.rejects(again.provision({ name: 'PC' }), { code: 'ALREADY' });
+  await again.confirmReadKey(pending.keyId);
+  assert.equal(await again.pendingReadKey(), null);
+});
+
+test('GPT r2 GA3: a sign-up stopped before its keys were stored is KEY_GONE, not a finished device', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc');
+  await pc.provision({ name: 'PC' });
+  // As if the app stopped right after the device file: the key files are gone.
+  for (const f of ['write-key.bin', 'read-key.bin']) await fs.rm(path.join(h.dir, 'pc', f), { force: true });
+  const again = new ProvisionClient({ dir: path.join(h.dir, 'pc'), secretStore, auth: pc.auth, call: pc.call });
+  await again.open();
+  again.device = { ...again.device, done: false }; await again.save('device.bin', again.device);
+  await assert.rejects(again.provision({ name: 'PC' }), { code: 'KEY_GONE' });
+  // GPT r3 GA1: an unfinished device file that does not say what it expects is not finished either.
+  const { expect, ...noExpect } = again.device; again.device = noExpect; await again.save('device.bin', again.device);
+  await again.open();
+  await assert.rejects(again.provision({ name: 'PC' }), { code: 'KEY_GONE' });
+  await again.forget();
+  assert.equal((await again.provision({ name: 'PC' })).role, 'read', 'a new device of the same customer');
+});
+
+test('GPT GB6: a write key that replaced another waits out the grace before the engine gets it', async (t) => {
+  const h = await harness(t, { grace: 60000 });
+  h.store.addInvite('pilot@example.com');
+  const oldPc = await h.client('old'); await oldPc.provision({ name: '옛 PC' });
+  const waits = [];
+  const newPc = await h.client('new', {}, { sleep: async (ms) => { waits.push(ms); } });
+  await newPc.provision({ name: '새 PC' });
+  await newPc.takeWriteSeat();
+  assert.ok(await newPc.writeCredentials());
+  assert.deepEqual(waits, [60000]);
+  // The first device's key is usable at once.
+  const w0 = []; const fresh = await h.client('fresh', { sub: '1000002', email: 'other@example.com' }, { sleep: async (ms) => { w0.push(ms); } });
+  h.store.addInvite('other@example.com');
+  await fresh.provision({ name: 'PC' });
+  assert.ok(await fresh.writeCredentials()); assert.deepEqual(w0, []);
 });

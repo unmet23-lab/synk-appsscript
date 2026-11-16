@@ -41,7 +41,7 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
   async function scanCustomer(customer, t) {
     const prev = store.lastUsage(customer.id);
     const since = prev ? Math.max(prev.scanned_at - HOUR, t - 2 * DAY) : t - 2 * DAY;
-    const summary = await files('prefix.scan', { prefix: customer.prefix, since, journal: store.journalOf(customer.id) }, { timeout: 1800000 });
+    const summary = await files('prefix.scan', { prefix: customer.prefix, since }, { timeout: 1800000 });
     const verdict = judge(summary, { baseline: customer.detect_since || 0, reported: store.reportedSince(customer.id, since), previousSnapshots: prev ? prev.visible_snapshots : null, seen: (id) => store.seen(customer.id, id), now: t });
     store.putUsage(customer.id, dayOf(t), summary.usage, { alerts: verdict.alerts, deferred: verdict.deferred, events: summary.eventCount ?? summary.events.length, window: summary.window });
     for (const e of verdict.fresh) store.markSeen(customer.id, e.fileId, e.kind, e.at);
@@ -65,13 +65,15 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
   }
 
   async function reconcileKeys(t) {
+    const listedFrom = now();
     const [{ keys: list }, bucket] = await Promise.all([keys('keys.list'), keys('bucket.settings')]);
     const table = store.allLiveKeys().map((r) => ({ ...r, prefix: store.customerById(r.customer_id)?.prefix }));
     const deletedKeyIds = store.all("select key_id from keys where state = 'deleted' and key_id is not null").map((r) => r.key_id);
     const result = reconcile({ keys: list, bucket, bucketId: cfg.bucketId, protectedKeyIds: cfg.protectedKeyIds, table, deletedKeyIds });
     for (const name of result.orphanNames) await step('orphan', async () => { await keys('keys.deleteByName', { name }); store.keyDeleted(name, 'orphan'); });
     for (const keyId of result.undeleted) await step('undeleted', () => keys('keys.delete', { keyId }));
-    for (const row of store.all("select * from keys where state in ('active','acked') and key_id is not null")) {
+    // A key made while the listing ran is not in it and is not missing.
+    for (const row of store.all("select * from keys where state in ('active','acked') and key_id is not null and created_at < ?", listedFrom)) {
       if (!list.some((k) => k.keyId === row.key_id)) store.keyDeleted(row.name, 'missing');
     }
     if (!result.ok) operator('reconcile', result.problems, dayOf(t));
@@ -85,12 +87,19 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     }
   }
 
-  // The outside audit must have succeeded in the last 36 hours (GitHub public API).
+  // The outside audit must have succeeded in the last 36 hours (GitHub public API). A
+  // run counts only when its audit job ran and succeeded — a run whose job was skipped
+  // (the repository variable turned off) is not an audit.
   async function auditFresh(t) {
     if (!cfg.auditRunsUrl) return;
-    const res = await fetchImpl(cfg.auditRunsUrl, { headers: { accept: 'application/vnd.github+json', 'user-agent': 'synk-workbackup' }, signal: AbortSignal.timeout(20000) });
-    const runs = res.ok ? (await res.json()).workflow_runs || [] : [];
-    const last = runs.find((r) => r.conclusion === 'success');
+    const get = async (url) => { const res = await fetchImpl(url, { headers: { accept: 'application/vnd.github+json', 'user-agent': 'synk-workbackup' }, signal: AbortSignal.timeout(20000) }); return res.ok ? res.json() : null; };
+    const runs = ((await get(cfg.auditRunsUrl))?.workflow_runs || []).filter((r) => r.conclusion === 'success').slice(0, 3);
+    let last = null;
+    for (const r of runs) {
+      if (typeof r.jobs_url !== 'string' || !r.jobs_url.startsWith('https://api.github.com/')) continue;
+      const jobs = (await get(r.jobs_url))?.jobs || [];
+      if (jobs.some((j) => j.name === 'audit' && j.conclusion === 'success')) { last = r; break; }
+    }
     if (!last || t - Date.parse(last.updated_at) > 36 * HOUR) operator('audit-stale', { lastSuccess: last ? last.updated_at : null }, dayOf(t));
   }
 
@@ -117,25 +126,41 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     if (cfg.backupDir) await step('backup', () => store.backupTo(path.join(cfg.backupDir, `workbackup-${dayOf(t)}.sqlite`)));
   }
 
-  let ticking = false;
+  // A restore left 'preparing' (the worker was down at start, or a stop mid-request):
+  // finish replacing its write keys, then it runs. A request still inside the line
+  // answers BUSY and is left alone.
+  const preparing = (t) => { for (const job of store.all("select * from restore_jobs where state = 'preparing' and created_at < ?", t - 2 * 60000)) void step('restore-prepare', () => api.finishPreparing(job)); };
+
+  let ticking = false, dailyRun = null;
+  // The one-minute work (heartbeat, key expiry within the ten-minute ack window, mail)
+  // never waits for the daily pass, which can take long with many customers.
   async function tick() {
-    if (ticking) return;
+    if (ticking) return null;
     ticking = true;
+    let started = null;
     try {
       const t = now();
       store.beat();
       await step('expire', expireKeys);
       await step('mail', () => mailer?.flush());
+      preparing(t);
       const kst = new Date(t + KST), day = kst.toISOString().slice(0, 10);
       const done = store.get("select v from meta where k = 'daily'")?.v;
-      if (kst.getUTCHours() >= cfg.dailyHourKst && done !== day) {
+      if (!dailyRun && kst.getUTCHours() >= cfg.dailyHourKst && done !== day) {
         store.run("insert into meta(k, v) values ('daily', ?) on conflict(k) do update set v = excluded.v", day);
-        await daily(t);
+        started = dailyRun = daily(t).finally(() => { dailyRun = null; });
       }
+      // Only the call that started the daily pass waits for it (tests and the first start).
+      return started;
     } finally { ticking = false; }
   }
 
-  async function resume() { for (const job of store.jobsToResume()) void api.runJob(job, { resume: !!job.started_at }); }
+  async function resume() {
+    for (const job of store.jobsToResume()) {
+      if (job.state === 'preparing') void step('restore-prepare', () => api.finishPreparing(job));
+      else void api.runJob(job, { resume: !!job.started_at });
+    }
+  }
 
   let timer = null;
   return {

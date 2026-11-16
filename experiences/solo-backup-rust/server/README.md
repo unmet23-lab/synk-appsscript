@@ -29,7 +29,7 @@ docker compose --project-name synk-company --file deploy/compose.yaml --profile 
 | `workbackup/files` | `settings.env`, `secrets/wb-files-b2`(파일 일 출입증 JSON), `secrets/wb-files-rpc`, `state/` |
 
 - `wb-keys-rpc`는 api와 keys가, `wb-files-rpc`는 api와 files가 같은 값을 갖는다. 서로 다른 32바이트 이상의 무작위 값이다.
-- 출입증 JSON의 꼴은 `{"keyId": "…", "applicationKey": "…"}`다. 출입증 셋(개통 · 파일 일 · 서버 밖 감사)은 손님 B2 계정에 유호님 허락을 받고 `tools/b2-customer-setup.mjs`로 만든다. 감사 출입증은 이 서버에 두지 않고 GitHub Actions 비밀값으로만 둔다.
+- 출입증 JSON의 꼴은 `{"keyId": "…", "applicationKey": "…"}`다. 출입증 셋(개통 · 파일 일 · 서버 밖 감사)은 손님 B2 계정에 유호님 허락을 받고 `tools/b2-customer-setup.mjs`로 만든다. 감사 출입증은 이 서버에 두지 않고 GitHub Actions 비밀값(`WORKBACKUP_AUDIT_KEY_ID` · `WORKBACKUP_AUDIT_APP_KEY` · `WORKBACKUP_AUDIT_BUCKET_ID` · `WORKBACKUP_AUDIT_KNOWN_KEYS`)으로만 둔다. 비밀값을 넣은 뒤 저장소 변수 `WORKBACKUP_AUDIT_ENABLED`를 `1`로 두면 매일 감사가 돈다. 그 뒤로 비밀값이 빠지거나 꼴이 틀리면 감사가 실패한다.
 
 ## settings.env
 

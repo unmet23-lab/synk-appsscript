@@ -5,6 +5,7 @@
 // otherwise). Every answer carries Cache-Control: no-store because some carry key
 // secrets. Logs carry route, status and error code only — never a body or token.
 import http from 'node:http';
+import crypto from 'node:crypto';
 import { ACK_MS } from './store.mjs';
 import { cleanBatch, cleanBundle } from './telemetry.mjs';
 import { suggest } from './detect.mjs';
@@ -12,6 +13,8 @@ import { RpcError } from './rpc.mjs';
 
 export const LIMITS = { writers: 1, readers: 2, keyRequestsPerDay: 5, quotaBytes: 100 * 1024 ** 3, overFactor: 1.5, maxRestoreAgeMs: 29 * 86400000, plansPerDay: 20 };
 const DAY = 86400000;
+// The per-customer lease outlives any one key-changing request (a few worker calls).
+const LOCK_MS = 10 * 60000;
 const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,6}(?:-[a-z0-9.]{1,20})?$/;
 const ID16 = /^[a-z0-9]{16}$/, ID12 = /^[a-z0-9]{12}$/;
 const MOVE_PIN_MS = 7 * DAY;
@@ -56,11 +59,25 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
   const locks = new Set();
   const plans = new Map();
 
-  // One key-changing request per customer at a time.
+  // One key-changing request per customer at a time — in this process (the Set) and
+  // across processes (a lease row in the database, which admin.mjs also takes).
   async function serial(customerId, fn) {
     if (locks.has(customerId)) fail(409, 'BUSY');
     locks.add(customerId);
-    try { return await fn(); } finally { locks.delete(customerId); }
+    const holder = crypto.randomBytes(12).toString('base64url');
+    try {
+      if (!store.takeLock(customerId, holder, LOCK_MS)) fail(409, 'BUSY');
+      try { return await fn(); } finally { store.releaseLock(customerId, holder); }
+    } finally { locks.delete(customerId); }
+  }
+  // Inside the line: the device and customer as they are now, not as they were before a
+  // slow sign-in check — another request may have cut or moved the device meanwhile.
+  function current(device, states) {
+    const d = store.device(device.id);
+    if (!d || !states.includes(d.state)) fail(403, 'DEVICE_STATE', { state: d?.state || 'gone' });
+    const c = store.customerById(d.customer_id);
+    if (!c || c.state !== 'active') fail(403, 'DEVICE_STATE', { state: 'customer' });
+    return { device: d, customer: c };
   }
 
   // ── proofs
@@ -146,23 +163,51 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     if (!by || by.customer_id !== customer.id || by.state !== 'active' || by.role !== 'read') return null;
     return { by: { id: by.id, name: by.name }, snapshotId: pin.snapshotId, since: pin.since, until: pin.since + MOVE_PIN_MS };
   }
-  function restoreBusy(customer) { if (store.runningJob(customer.id)) fail(409, 'BUSY'); }
+  // A restore that is preparing, running, or finished and waiting for its choice.
+  function restoreBusy(customer) { if (store.openJob(customer.id)) fail(409, 'BUSY'); }
   // Old write keys first; if deleting fails nothing moves. Then the seat, then the
   // new key — a stop after any step is continued by calling the same request again.
-  async function moveSeat(customer, device, reason) {
+  async function moveSeat(customer, device, reason, { keep = () => false } = {}) {
     const before = store.writerOf(customer.id);
-    await dropAll(store.liveKeys(customer.id, 'write'), reason);
+    const old = store.liveKeys(customer.id, 'write').filter((k) => !keep(k));
+    await dropAll(old, reason);
     store.tx(() => {
       if (before && before.id !== device.id) store.setDevice(before.id, { role: 'read', state: 'moved', moved_to: device.id });
       store.setDevice(device.id, { role: 'write', state: 'active', moved_to: null });
       // The move this pin served is over once the seat moves.
       store.setCustomer(customer.id, { move_pin: null });
     });
-    return before && before.id !== device.id ? before : null;
+    return { previous: before && before.id !== device.id ? before : null, dropped: old.length };
   }
+  // A just-deleted B2 key still works for a few seconds (11-13): a new write key is used
+  // only after that, so two PCs never write at once. The app waits until usableAt. The
+  // moment comes from the keys table, so a retry after a stop still waits.
+  const usableAt = (customer) => Math.max(now(), store.lastWriteKeyDeleted(customer.id) + cfg.restoreGraceMs);
 
   // ── restore jobs (run in the background; resumable because the tool re-plans)
+  // A job left 'preparing' by a restart: every write key except the ones this restore
+  // made for its requester goes before the restore runs (with the grace wait).
+  async function finishPreparing(job) {
+    await serial(job.customer_id, async () => {
+      const fresh = store.job(job.id);
+      if (!fresh || fresh.state !== 'preparing') return;
+      const customer = store.customerById(job.customer_id);
+      const requester = store.device(job.device_id);
+      // The requester was cut (lost, revoked, moved) while the job waited: no seat for it —
+      // the old write keys still go, and the restore does not run.
+      if (!requester || requester.state !== 'active') {
+        await dropAll(store.liveKeys(customer.id, 'write'), 'restore');
+        store.setJob(job.id, { state: 'failed', finished_at: now(), error: 'DEVICE' });
+        return;
+      }
+      await moveSeat(customer, requester, 'restore', { keep: (k) => k.device_id === job.device_id && k.purpose === 'restore' && k.created_at >= job.created_at });
+      store.setJob(job.id, { state: 'running' });
+    });
+    const after = store.job(job.id);
+    return after.state === 'running' ? runJob(after) : null;
+  }
   async function runJob(job, { resume = false } = {}) {
+    if (job.state === 'preparing') return null;
     if (running.has(job.id)) return running.get(job.id);
     const p = (async () => {
       const customer = store.customerById(job.customer_id);
@@ -227,7 +272,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         // After a loss the first read key is an incident response, not counted.
         if (makes && !(customer.google_step && giveRead && role === 'read')) checkBudget(customer);
         const { device, token } = store.createDevice({ customerId: customer.id, name, role, appVersion });
-        const out = { customer: { id: customer.id, repository: repository(customer) }, device: { id: device.id, token, role }, keys: {}, ackBy: now() + ACK_MS,
+        const out = { customer: { id: customer.id, repository: repository(customer) }, device: { id: device.id, token, role }, keys: {}, ackBy: now() + ACK_MS, usableAt: usableAt(customer),
           writer: writer ? { id: writer.id, name: writer.name } : null, lost: customer.google_step ? { googleStepRequired: true } : null };
         try {
           if (role === 'write') out.keys.write = keyOut(await makeKey('write', customer, device.id, 'provision'));
@@ -247,7 +292,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const { device, customer } = bearer(req, ['active']);
       if (!Array.isArray(body?.keyIds)) fail(400, 'BAD_INPUT');
       const ids = body.keyIds.filter((x) => typeof x === 'string').slice(0, 4);
-      return serial(customer.id, async () => ({ acked: ids.filter((id) => store.ackKey(device.id, id)) }));
+      return serial(customer.id, async () => { current(device, ['active']); return { acked: ids.filter((id) => store.ackKey(device.id, id)) }; });
     },
 
     'GET /v1/status': async (req) => {
@@ -255,7 +300,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const writer = store.writerOf(customer.id);
       const usage = store.lastUsage(customer.id);
       const job = store.lastJob(customer.id);
-      const restore = job && (job.state === 'running' || job.state === 'done') ? { jobId: job.id, state: job.state, awaitingChoice: job.state === 'done', at: job.at, byThisDevice: job.device_id === device.id } : null;
+      const restore = job && ['preparing', 'running', 'done'].includes(job.state) ? { jobId: job.id, state: job.state, awaitingChoice: job.state === 'done', at: job.at, byThisDevice: job.device_id === device.id } : null;
       const moved = device.state === 'moved' ? store.device(device.moved_to) : null;
       return {
         customer: { id: customer.id, overQuota: !!usage && usage.visible_bytes > LIMITS.quotaBytes * LIMITS.overFactor, usage: usage ? { day: usage.day, visibleBytes: usage.visible_bytes, hiddenBytes: usage.hidden_bytes } : null },
@@ -276,6 +321,8 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       if (typeof body?.snapshotId !== 'string' || !SNAPSHOT_ID.test(body.snapshotId)) fail(400, 'BAD_INPUT');
       if (device.role !== 'read') fail(409, 'DEVICE_STATE', { state: 'writer' });
       return serial(customer.id, async () => {
+        const fresh = current(device, ['active']).device;
+        if (fresh.role !== 'read') fail(409, 'DEVICE_STATE', { state: 'writer' });
         store.setCustomer(customer.id, { move_pin: JSON.stringify({ by: device.id, snapshotId: body.snapshotId, since: now() }) });
         return { move: movePin(store.customerById(customer.id)) };
       });
@@ -297,33 +344,37 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
 
     // Also 「쓰기 출입증 다시 받기」 when this device already holds the seat.
     'POST /v1/devices/take-write-seat': async (req, body) => {
-      const { device, customer } = bearer(req, ['active', 'moved']);
-      await freshFor(customer, body, 'take-write-seat');
-      return serial(customer.id, async () => {
+      const first = bearer(req, ['active', 'moved']);
+      await freshFor(first.customer, body, 'take-write-seat');
+      return serial(first.customer.id, async () => {
+        const { device, customer } = current(first.device, ['active', 'moved']);
         restoreBusy(customer);
         checkBudget(customer);
-        const previous = await moveSeat(customer, device, 'seat-moved');
+        const { previous } = await moveSeat(customer, device, 'seat-moved');
         const k = await makeKey('write', customer, device.id, 'seat');
         store.addKeyRequest(customer.id, 'seat');
         if (previous) notifyCustomer(customer, 'seat-moved', { at: now(), name: device.name, deviceId: device.id, fromId: previous.id }, `${device.id}:${now()}`);
-        return { keys: { write: keyOut(k) }, ackBy: now() + ACK_MS, previous: previous ? { id: previous.id, name: previous.name } : null };
+        return { keys: { write: keyOut(k) }, ackBy: now() + ACK_MS, usableAt: usableAt(customer), previous: previous ? { id: previous.id, name: previous.name } : null };
       });
     },
 
     // Device + sign-in, or sign-in alone for a device that is not the writer (a dead PC
     // filling the device limit — the new PC has no token yet).
     'POST /v1/devices/revoke': async (req, body) => {
-      let customer;
-      if (hasBearer(req)) { customer = bearer(req, ['active']).customer; await freshFor(customer, body, 'revoke'); }
+      let customer, requester = null;
+      if (hasBearer(req)) { ({ customer, device: requester } = bearer(req, ['active'])); await freshFor(customer, body, 'revoke'); }
       else { const claims = await google(body, 'revoke'); customer = store.customerBySub(claims.sub) || fail(404, 'NOT_FOUND'); }
       const target = typeof body?.deviceId === 'string' && ID12.test(body.deviceId) ? store.device(body.deviceId) : null;
       if (!target || target.customer_id !== customer.id) fail(404, 'NOT_FOUND');
       if (!hasBearer(req) && target.role === 'write' && target.state === 'active') fail(403, 'DEVICE_STATE', { state: 'writer' });
       return serial(customer.id, async () => {
+        if (requester) current(requester, ['active']);
+        const tgt = store.device(target.id);
+        if (!hasBearer(req) && tgt.role === 'write' && tgt.state === 'active') fail(403, 'DEVICE_STATE', { state: 'writer' });
         await dropAll(store.liveKeys(customer.id, 'write').filter((k) => k.device_id === target.id), 'revoked');
-        store.setDevice(target.id, { state: 'revoked', role: 'read' });
+        if (tgt.state !== 'lost') store.setDevice(target.id, { state: 'revoked', role: 'read' });
         // A read-only PC still holds the envelope's read key and password.
-        return { ok: true, suggestReadKeyRotation: target.state !== 'abandoned' };
+        return { ok: true, suggestReadKeyRotation: tgt.state !== 'abandoned' };
       });
     },
 
@@ -345,10 +396,10 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     },
 
     'POST /v1/read-key/rotate': async (req, body) => {
-      const { device, customer: c0 } = bearer(req, ['active']);
-      await freshFor(c0, body, 'read-key-rotate');
-      return serial(c0.id, async () => {
-        const customer = store.customerById(c0.id);
+      const first = bearer(req, ['active']);
+      await freshFor(first.customer, body, 'read-key-rotate');
+      return serial(first.customer.id, async () => {
+        const { device, customer } = current(first.device, ['active']);
         restoreBusy(customer);
         const incident = !!customer.google_step && !readKeys(customer).some((k) => k.state === 'active');
         if (!incident) checkBudget(customer);
@@ -366,6 +417,9 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const row = typeof body?.keyId === 'string' ? store.keyById(body.keyId) : null;
       if (!row || row.kind !== 'read' || row.customer_id !== customer.id || row.device_id !== device.id || !['acked', 'active'].includes(row.state)) fail(404, 'NOT_FOUND');
       return serial(customer.id, async () => {
+        current(device, ['active']);
+        const fresh = store.key(row.name);
+        if (!fresh || !['acked', 'active'].includes(fresh.state)) fail(404, 'NOT_FOUND');
         store.tx(() => {
           for (const other of readKeys(customer)) if (other.name !== row.name && other.state === 'active') store.setKeyState(other.name, 'retired');
           store.setKeyState(row.name, 'active');
@@ -385,7 +439,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       let cached = plans.get(customer.id);
       if (!cached || t - cached.at > 300000) {
         if (!limiter.take(`plan:${customer.id}`, LIMITS.plansPerDay, DAY)) fail(429, 'RATE');
-        const summary = await files('prefix.scan', { prefix: customer.prefix, since: t - DAY, journal: store.journalOf(customer.id) }, { timeout: 600000 });
+        const summary = await files('prefix.scan', { prefix: customer.prefix, since: t - DAY }, { timeout: 600000 });
         cached = { at: t, suggestions: suggest(summary, { baseline: customer.detect_since || 0, now: t }), plans: new Map() };
         plans.set(customer.id, cached);
       }
@@ -393,7 +447,10 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       let plan = null;
       if (pick !== null) {
         plan = cached.plans.get(pick);
-        if (!plan) { plan = await files('restore.plan', { prefix: customer.prefix, at: pick }, { timeout: 600000 }); cached.plans.set(pick, plan); }
+        if (!plan) {
+          if (!limiter.take(`plan:${customer.id}`, LIMITS.plansPerDay, DAY)) fail(429, 'RATE');
+          plan = await files('restore.plan', { prefix: customer.prefix, at: pick }, { timeout: 600000 }); cached.plans.set(pick, plan);
+        }
       }
       return { suggestions: cached.suggestions, plan, oldestAt };
     },
@@ -402,14 +459,15 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     // requester takes the seat), a new read key starts while the old one stays until
     // the new envelope is confirmed, then the tool runs in the background.
     'POST /v1/restore/run': async (req, body) => {
-      const { device, customer } = bearer(req, ['active']);
+      let { device, customer } = bearer(req, ['active']);
       await freshFor(customer, body, 'restore-run');
       const t = now(), at = body?.at;
       if (!Number.isSafeInteger(at) || at > t) fail(400, 'BAD_INPUT');
       if (t - at > LIMITS.maxRestoreAgeMs) fail(400, 'TOO_OLD');
       return serial(customer.id, async () => {
+        ({ device } = current(device, ['active']));
         restoreBusy(customer);
-        const job = store.createJob({ customerId: customer.id, deviceId: device.id, at });
+        const job = store.createJob({ customerId: customer.id, deviceId: device.id, at, state: 'preparing' });
         notifyCustomer(customer, 'restore-requested', { at: t, to: at, deviceId: device.id, jobId: job.id }, job.id);
         let write, read;
         try {
@@ -418,9 +476,11 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
           retireUnconfirmed(customer);
           read = await makeKey('read', customer, device.id, 'restore');
         } catch (e) { store.setJob(job.id, { state: 'failed', finished_at: now(), error: String(e.code || 'KEYS') }); throw e; }
+        // Every old write key is gone: only now may the restore run (or resume after a restart).
+        store.setJob(job.id, { state: 'running' });
         void runJob(store.job(job.id));
         plans.delete(customer.id);
-        return { jobId: job.id, keys: { write: keyOut(write), read: keyOut(read) }, ackBy: now() + ACK_MS };
+        return { jobId: job.id, keys: { write: keyOut(write), read: keyOut(read) }, ackBy: now() + ACK_MS, usableAt: usableAt(customer) };
       });
     },
 
@@ -437,8 +497,11 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const job = typeof body?.jobId === 'string' && ID16.test(body.jobId) ? store.job(body.jobId) : null;
       if (!job || job.customer_id !== customer.id || job.state !== 'done') fail(404, 'NOT_FOUND');
       if (job.device_id !== device.id) fail(403, 'DEVICE_STATE', { state: 'not-requester' });
+      // Only the latest restore, still waiting for its choice, as it is now.
+      const latest = () => { current(device, ['active']); const open = store.openJob(customer.id); if (!open || open.id !== job.id || open.state !== 'done') fail(404, 'NOT_FOUND'); };
       if (body.choice === 'continue') {
         return serial(customer.id, async () => {
+          latest();
           store.tx(() => { store.setJob(job.id, { state: 'continued', choice_at: now() }); store.setCustomer(customer.id, { detect_since: now() }); });
           return { state: 'continued' };
         });
@@ -448,6 +511,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const back = job.pre_at ?? (job.started_at ? job.started_at - 1 : null);
       if (!back || now() - back > LIMITS.maxRestoreAgeMs) fail(400, 'TOO_OLD');
       return serial(customer.id, async () => {
+        latest();
         const undo = store.tx(() => {
           store.setJob(job.id, { state: 'undone', choice_at: now() });
           return store.createJob({ customerId: customer.id, deviceId: device.id, at: back, undoOf: job.id });
@@ -525,5 +589,5 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     }
   }
 
-  return { handle, runJob, routes, makeKey, dropKey, serial, repository, server: () => http.createServer((req, res) => { void handle(req, res); }) };
+  return { handle, runJob, finishPreparing, routes, makeKey, dropKey, serial, repository, server: () => http.createServer((req, res) => { void handle(req, res); }) };
 }

@@ -4,12 +4,13 @@
 // schedule with the read-only audit key, no table), so a taken-over server cannot
 // also silence the outside check. Results carry kinds and counts only — no key
 // id or bucket name — because the outside run prints to a public log.
-import { WRITE_CAPS, NAME } from './keys-worker.mjs';
+import { WRITE_CAPS, READ_CAPS, NAME } from './keys-worker.mjs';
 import { PREFIX } from './config.mjs';
 
 export const EXPECTED_RULES = [{ fileNamePrefix: '', daysFromHidingToDeleting: 30, daysFromUploadingToHiding: null, daysFromStartingToCancelingUnfinishedLargeFiles: 1 }];
 const norm = (rules) => JSON.stringify((rules || []).map((r) => Object.fromEntries(Object.entries(r).filter(([, v]) => v != null).sort())).sort());
-const caps = new Set(WRITE_CAPS);
+// A write key (wbw-) may hold the write set; a read key (wbr-) only the read set.
+const capsOf = { w: new Set(WRITE_CAPS), r: new Set(READ_CAPS) };
 
 // keys: [{keyId, keyName, capabilities, bucketIds, namePrefix, expirationTimestamp}]
 // table (server only): rows of the keys table that are not 'deleted', plus the deleted ones' ids.
@@ -31,7 +32,7 @@ export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table 
     c[k.keyName[2]]++; perPrefix.set(k.namePrefix, c);
     if (!PREFIX.test(k.namePrefix || '')) add('no-prefix');
     if (!Array.isArray(k.bucketIds) || k.bucketIds.length !== 1 || k.bucketIds[0] !== bucketId) add('wrong-bucket');
-    if (!(k.capabilities || []).every((c) => caps.has(c))) add('too-wide');
+    if (!(k.capabilities || []).every((c) => capsOf[k.keyName[2]].has(c))) add('too-wide');
     if (k.expirationTimestamp) add('expiring');
     if (table) {
       const row = byId.get(k.keyId);
