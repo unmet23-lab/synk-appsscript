@@ -43,6 +43,20 @@ fn run() -> Result<(), String> {
                     return Err("entries_range_100_to_1000000".into());
                 }
             }
+            // The move kit's program list (STAGE1_DESIGN.md 4.6 「옮겨 오기 꾸러미」): the install registry and MSIX
+            // collectors only, as one JSON line on stdout. No file scan, no report folder.
+            Some("--programs-only") => {
+                if args.next().is_some() || output.is_some() || !options.extra_roots.is_empty() {
+                    return Err("programs_only_takes_no_other_argument".into());
+                }
+                let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
+                let (mut programs, a) = work_backup_inventory::platform::registry_programs(deadline);
+                let (msix, b) = work_backup_inventory::platform::msix_programs(deadline);
+                programs.extend(msix);
+                programs.truncate(10_000);
+                println!("{}", serde_json::json!({"schema":1,"programs":programs,"collectors":[a,b]}));
+                return Ok(());
+            }
             Some("--help") => {
                 println!("WorkBackupInventory 0.1.0\nRead-only current-user work inventory. No upload or backup changes.\nNo arguments: automatically scan and create a new LocalAppData report directory.\nOptions: --root ABSOLUTE_LOCAL_PATH (repeatable) --output NEW_DIRECTORY\n         --seconds 1..300 (default 120) --max-entries 100..1000000 (default 400000)");
                 return Ok(());

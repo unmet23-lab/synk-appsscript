@@ -1,0 +1,21 @@
+# 옮겨 오기 시험용 호스트(STAGE1_DESIGN.md 4.6 · 4.6b). 화면 앱이 워커에 주는 `files.*` · `folders.*` · `reinstall.*` 호스트
+# 메서드를 Tauri 없이 표준 입출력으로 내어, Node 시험(tests/move-*.test.cjs)이 실제 Rust 코드로 옮겨 오기를 돌리게 한다.
+# 배포물에는 들어가지 않는다. 원천은 src-tauri/src의 같은 파일이다.
+[package]
+name = "work-backup-move-host"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+publish = false
+
+[[bin]]
+name = "WorkBackupMoveHost"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+fs2 = "0.4"
+url = "2"
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Cryptography", "Win32_Security_Authorization", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Memory", "Win32_System_Power", "Win32_System_SystemInformation", "Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Win32_System_Registry", "Win32_System_Com", "Win32_Storage_Packaging_Appx"] }

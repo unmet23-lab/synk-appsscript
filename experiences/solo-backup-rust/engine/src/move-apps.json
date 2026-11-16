@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "about": "STAGE1_DESIGN.md 4.6b의 고정 표. src-tauri/src/reinstall.rs가 이 파일을 실행 파일 안에 묶어, 관리자 권한으로는 scope가 machine인 id만 깐다. 범위는 2026-11-16 winget 1.29.380의 `winget show --id <ID> -e --source winget --scope machine|user`로 설치기가 있는지 확인해 정했다.",
+  "skip": [
+    "^Microsoft\\.VCRedist\\.",
+    "^Microsoft\\.VCLibs\\.",
+    "^Microsoft\\.UI\\.Xaml\\.",
+    "^Microsoft\\.WindowsAppRuntime\\.",
+    "^Microsoft\\.DotNet\\.",
+    "^Microsoft\\.WindowsSDK\\.",
+    "^Nvidia\\.PhysX$",
+    "^Microsoft\\.Edge$",
+    "^Microsoft\\.EdgeWebView2Runtime$",
+    "^Microsoft\\.OneDrive$",
+    "^Microsoft\\.AppInstaller$",
+    "^Microsoft\\.DesktopAppInstaller$"
+  ],
+  "programs": [
+    { "id": "Git.Git", "name": "Git", "scope": "machine", "names": ["git"], "site": "https://gitforwindows.org/", "license": "https://github.com/git-for-windows/build-extra/blob/HEAD/LICENSE.txt" },
+    { "id": "OpenJS.NodeJS.LTS", "name": "Node.js LTS", "scope": "machine", "names": ["node.js"], "site": "https://nodejs.org/", "license": "https://github.com/nodejs/node/blob/main/LICENSE" },
+    { "id": "Python.Python.3.13", "name": "Python 3.13", "scope": "machine", "names": ["python 3.13"], "site": "https://www.python.org/", "license": "https://docs.python.org/3/license.html" },
+    { "id": "GitHub.cli", "name": "GitHub CLI", "scope": "machine", "names": ["github cli"], "site": "https://cli.github.com/", "license": "https://github.com/cli/cli/blob/HEAD/LICENSE" },
+    { "id": "Google.Chrome", "name": "Google Chrome", "scope": "machine", "names": ["google chrome"], "site": "https://www.google.com/chrome/", "license": "https://www.google.com/chrome/terms/" },
+    { "id": "Kakao.KakaoTalk", "name": "카카오톡", "scope": "machine", "names": ["kakaotalk", "카카오톡"], "site": "https://www.kakaocorp.com/", "license": "https://www.kakao.com/policy/terms" },
+    { "id": "Zoom.Zoom", "name": "Zoom", "scope": "machine", "names": ["zoom workplace", "zoom"], "site": "https://zoom.us/", "license": "https://explore.zoom.us/en/terms/" },
+    { "id": "BlenderFoundation.Blender", "name": "Blender", "scope": "machine", "names": ["blender"], "site": "https://www.blender.org/", "license": "https://www.blender.org/about/license/" },
+    { "id": "7zip.7zip", "name": "7-Zip", "scope": "machine", "names": ["7-zip"], "site": "https://7-zip.org/download.html", "license": "https://7-zip.org/license.txt" },
+    { "id": "Bandisoft.Bandizip", "name": "반디집", "scope": "machine", "names": ["bandizip", "반디집"], "site": "https://www.bandisoft.com/bandizip/", "license": "https://www.bandisoft.com/bandizip/eula/eula.en.pdf" },
+    { "id": "Daum.PotPlayer", "name": "팟플레이어", "scope": "machine", "names": ["potplayer", "팟플레이어"], "site": "https://potplayer.tv/", "license": "https://potplayer.tv/publicRelation" },
+    { "id": "Adobe.Acrobat.Reader.64-bit", "name": "Adobe Acrobat Reader", "scope": "machine", "names": ["adobe acrobat", "adobe acrobat reader"], "site": "https://get.adobe.com/reader/", "license": "https://www.adobe.com/legal/terms.html" },
+    { "id": "Microsoft.VisualStudioCode", "name": "Visual Studio Code", "scope": "user", "names": ["microsoft visual studio code"], "site": "https://code.visualstudio.com/", "license": "https://code.visualstudio.com/license" },
+    { "id": "Anysphere.Cursor", "name": "Cursor", "scope": "user", "names": ["cursor"], "site": "https://www.cursor.com/", "license": "https://www.cursor.com/terms-of-service" },
+    { "id": "Microsoft.WindowsTerminal", "name": "Windows Terminal", "scope": "user", "names": ["windows terminal"], "site": "https://aka.ms/terminal", "license": "https://github.com/microsoft/terminal/blob/main/LICENSE" },
+    { "id": "Microsoft.PowerShell", "name": "PowerShell 7", "scope": "user", "names": ["powershell 7"], "site": "https://microsoft.com/PowerShell", "license": "https://github.com/PowerShell/PowerShell/blob/master/LICENSE.txt" },
+    { "id": "Telegram.TelegramDesktop", "name": "텔레그램", "scope": "user", "names": ["telegram desktop"], "site": "https://desktop.telegram.org/", "license": "https://raw.githubusercontent.com/telegramdesktop/tdesktop/master/LICENSE" },
+    { "id": "Obsidian.Obsidian", "name": "Obsidian", "scope": "user", "names": ["obsidian"], "site": "https://obsidian.md/", "license": "https://obsidian.md/terms" },
+    { "id": "Notion.Notion", "name": "Notion", "scope": "user", "names": ["notion"], "site": "https://www.notion.com/desktop", "license": "https://www.notion.so/Terms-Conditions-4e1c5dd3e3de45dfa4a8ed60f1a43da0" },
+    { "id": "SlackTechnologies.Slack", "name": "Slack", "scope": "user", "names": ["slack"], "site": "https://slack.com/", "license": "https://slack.com/terms-of-service/user" },
+    { "id": "Discord.Discord", "name": "Discord", "scope": "user", "names": ["discord"], "site": "https://discord.com/download", "license": "https://discord.com/terms" },
+    { "id": "Anthropic.Claude", "name": "Claude", "scope": "user", "names": ["claude"], "site": "https://claude.ai/download", "license": "https://www.anthropic.com/legal/consumer-terms" },
+    { "id": "OpenAI.ChatGPT", "name": "ChatGPT", "scope": "user", "names": ["chatgpt"], "site": "https://openai.com/chatgpt/download/", "license": "https://openai.com/policies/terms-of-use/" },
+    { "id": "Anthropic.ClaudeCode", "name": "Claude Code", "scope": "user", "names": ["claude code"], "site": "https://claude.com/product/claude-code", "license": "https://www.anthropic.com/legal/commercial-terms" },
+    { "id": "OpenAI.Codex", "name": "Codex CLI", "scope": "user", "names": ["codex cli", "codex"], "site": "https://github.com/openai/codex", "license": "https://github.com/openai/codex/blob/HEAD/LICENSE" },
+    { "id": "Ollama.Ollama", "name": "Ollama", "scope": "user", "names": ["ollama"], "site": "https://ollama.com/", "license": "https://github.com/ollama/ollama/blob/HEAD/LICENSE" },
+    { "id": "Figma.Figma", "name": "Figma", "scope": "user", "names": ["figma"], "site": "https://www.figma.com/downloads/", "license": "https://www.figma.com/tos/" }
+  ],
+  "manual": [
+    { "name": "네이버 웨일", "names": ["naver whale", "whale", "웨일"], "site": "https://whale.naver.com/" },
+    { "name": "한컴오피스", "names": ["hancom", "한컴", "한글 20"], "site": "https://www.hancom.com/" },
+    { "name": "Gemini CLI", "names": ["gemini cli"], "site": "https://github.com/google-gemini/gemini-cli", "command": "npm install -g @google/gemini-cli" }
+  ],
+  "settings": [
+    { "app": "git", "name": "Git", "program": "Git.Git", "signIn": "처음 push할 때 뜨는 브라우저 창에서 GitHub에 로그인합니다.",
+      "entries": [ { "id": "gitconfig", "base": "profile", "path": ".gitconfig", "kind": "file", "filter": "gitconfig" } ],
+      "never": [".git-credentials"] },
+    { "app": "vscode", "name": "Visual Studio Code", "program": "Microsoft.VisualStudioCode", "signIn": "왼쪽 아래 계정 단추로 설정 동기화와 GitHub에 다시 로그인합니다.",
+      "entries": [
+        { "id": "settings", "base": "roaming", "path": "Code\\User\\settings.json", "kind": "file", "filter": "vscode-settings" },
+        { "id": "keybindings", "base": "roaming", "path": "Code\\User\\keybindings.json", "kind": "file", "filter": "vscode-keys" },
+        { "id": "snippets", "base": "roaming", "path": "Code\\User\\snippets", "kind": "dir", "filter": "copy", "ext": [".json", ".code-snippets"] },
+        { "id": "extensions", "base": "profile", "path": ".vscode\\extensions\\extensions.json", "kind": "file", "filter": "extension-list", "command": "code --install-extension" }
+      ],
+      "never": ["Code\\User\\globalStorage", "Code\\User\\workspaceStorage"] },
+    { "app": "cursor", "name": "Cursor", "program": "Anysphere.Cursor", "signIn": "Cursor를 열고 계정에 다시 로그인합니다.",
+      "entries": [
+        { "id": "settings", "base": "roaming", "path": "Cursor\\User\\settings.json", "kind": "file", "filter": "vscode-settings" },
+        { "id": "keybindings", "base": "roaming", "path": "Cursor\\User\\keybindings.json", "kind": "file", "filter": "vscode-keys" },
+        { "id": "snippets", "base": "roaming", "path": "Cursor\\User\\snippets", "kind": "dir", "filter": "copy", "ext": [".json", ".code-snippets"] },
+        { "id": "extensions", "base": "profile", "path": ".cursor\\extensions\\extensions.json", "kind": "file", "filter": "extension-list", "command": "cursor --install-extension" }
+      ],
+      "never": ["Cursor\\User\\globalStorage", "Cursor\\User\\workspaceStorage"] },
+    { "app": "terminal", "name": "Windows Terminal", "program": "Microsoft.WindowsTerminal", "signIn": null,
+      "entries": [
+        { "id": "settings", "base": "local", "path": "Packages\\Microsoft.WindowsTerminal_8wekyb3d8bbwe\\LocalState\\settings.json", "kind": "file", "filter": "terminal-settings" },
+        { "id": "settings-unpackaged", "base": "local", "path": "Microsoft\\Windows Terminal\\settings.json", "kind": "file", "filter": "terminal-settings" }
+      ],
+      "never": ["Packages\\Microsoft.WindowsTerminal_8wekyb3d8bbwe\\LocalState\\state.json"] },
+    { "app": "obsidian", "name": "Obsidian", "program": "Obsidian.Obsidian", "signIn": "동기화를 쓰셨다면 설정의 「동기화」에서 다시 로그인합니다.",
+      "entries": [ { "id": "vaults", "base": "roaming", "path": "obsidian\\obsidian.json", "kind": "file", "filter": "obsidian-vaults" } ],
+      "never": [] },
+    { "app": "blender", "name": "Blender", "program": "BlenderFoundation.Blender", "signIn": null,
+      "entries": [
+        { "id": "bookmarks", "base": "roaming", "path": "Blender Foundation\\Blender\\*\\config\\bookmarks.txt", "kind": "file", "filter": "copy" }
+      ],
+      "never": ["Blender Foundation\\Blender\\*\\scripts", "Blender Foundation\\Blender\\*\\config\\userpref.blend"] },
+    { "app": "claude-code", "name": "Claude Code", "program": "Anthropic.ClaudeCode", "signIn": "터미널에서 claude를 열고 /login으로 다시 로그인합니다.",
+      "entries": [
+        { "id": "instructions", "base": "profile", "path": ".claude\\CLAUDE.md", "kind": "file", "filter": "copy", "note": "instructions" },
+        { "id": "settings", "base": "profile", "path": ".claude\\settings.json", "kind": "file", "filter": "claude-settings" }
+      ],
+      "never": [".claude\\.credentials.json", ".claude.json", ".claude\\projects", ".claude\\skills", ".claude\\agents", ".claude\\commands", ".claude\\output-styles"] },
+    { "app": "codex", "name": "Codex CLI", "program": "OpenAI.Codex", "signIn": "터미널에서 codex를 열어 다시 로그인합니다.",
+      "entries": [
+        { "id": "instructions", "base": "profile", "path": ".codex\\AGENTS.md", "kind": "file", "filter": "copy", "note": "instructions" },
+        { "id": "prompts", "base": "profile", "path": ".codex\\prompts", "kind": "dir", "filter": "side", "ext": [".md"] }
+      ],
+      "never": [".codex\\auth.json", ".codex\\sessions", ".codex\\history.jsonl", ".codex\\config.toml"] },
+    { "app": "gemini", "name": "Gemini CLI", "program": null, "signIn": "터미널에서 gemini를 열어 다시 로그인합니다.",
+      "entries": [
+        { "id": "instructions", "base": "profile", "path": ".gemini\\GEMINI.md", "kind": "file", "filter": "copy", "note": "instructions" }
+      ],
+      "never": [".gemini\\oauth_creds.json", ".gemini\\google_accounts.json", ".gemini\\settings.json"] }
+  ],
+  "signIn": [
+    { "match": ["Google.Chrome"], "text": "Chrome을 열고 동기화 계정으로 로그인합니다." },
+    { "match": ["Kakao.KakaoTalk"], "text": "카카오톡을 열고 휴대폰으로 PC 인증을 합니다." },
+    { "match": ["Telegram.TelegramDesktop"], "text": "텔레그램을 열고 휴대폰으로 로그인 확인을 합니다." },
+    { "match": ["GitHub.cli"], "text": "터미널에서 gh auth login을 합니다." },
+    { "match": ["Anthropic.Claude"], "text": "Claude 앱을 열고 다시 로그인합니다." },
+    { "match": ["OpenAI.ChatGPT"], "text": "ChatGPT 앱을 열고 다시 로그인합니다." },
+    { "match": ["Notion.Notion", "SlackTechnologies.Slack", "Discord.Discord", "Zoom.Zoom", "Figma.Figma"], "text": "업무용 앱(Notion · Slack · Discord · Zoom · Figma)에 다시 로그인합니다." }
+  ],
+  "always": [
+    { "id": "browser", "text": "쓰시던 브라우저(Chrome · Edge · 웨일)를 열고 동기화 계정으로 로그인합니다." },
+    { "id": "google-2sv", "text": "Google 계정의 2단계 인증이 켜져 있는지 확인합니다. Google 계정에 들어갈 수 있는 사람은 백업도 읽을 수 있습니다." },
+    { "id": "certificate", "text": "공동인증서는 은행이나 정부 누리집의 「인증서 복사(내보내기 · 가져오기)」로 옮깁니다." }
+  ]
+}
