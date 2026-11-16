@@ -11,18 +11,22 @@
 남기는 곳: %LOCALAPPDATA%\\synk\\pc-state\\YYYY-MM-DD.tsv (git 밖, 14일 지나면 지운다).
 한 줄의 칸: 시각 · 늦음(초, 정각 분에서 얼마나 늦게 떴나) · CPU % · 메모리 쓴 GB/전체 GB · 커밋 쓴 GB/한도 GB ·
 프로세스 수 · 스레드 수 · 핸들 수 · C: 쓰기 ms(작은 파일을 쓰고 디스크에 내리는 데 걸린 시간) · C: 여유 GB · D: 여유 GB ·
-메모리 큰 프로그램 다섯(이름 × 개수 = GB) · 커널 비페이징 풀 GB · 비페이징 풀을 가장 많이 쓴 태그 셋(태그=MB).
-마지막 두 칸은 2026-11-16에 더했다. 그날 아침 두 번의 멈춤 직전에 커밋이 1분에 24~36GB 늘었지만, 칸이 없어 누가
+메모리 큰 프로그램 다섯(이름 × 개수 = GB) · 커널 비페이징 풀 GB · 비페이징 풀을 가장 많이 쓴 태그 셋(태그=MB) ·
+NVIDIA GPU의 엔진별 사용률과 그 GPU를 많이 쓴 프로그램 셋(엔진=% / 프로그램=%, 쉬면 「-」, 못 재면 「?」).
+비페이징 칸과 태그 칸은 2026-11-16에 더했다. 그날 아침 두 번의 멈춤 직전에 커밋이 1분에 24~36GB 늘었지만, 칸이 없어 누가
 가져갔는지 바로 가리지 못했다. 같은 날 08:45에 따로 재 보니 커널 비페이징 풀이 1분 만에 20GB 넘게 불어 있었다.
 저녁에 같은 조건으로 세 번 다시 일으켜 보려 했지만 일어나지 않아 드라이버를 정하지 못했다. 그래서 다음에 또 불면
 그 순간의 태그가 남게 했다. 태그 뜻은 WinDbg 설치 폴더의 amd64\\triage\\pooltag.txt에 있다.
-11-16 앞의 파일에는 두 칸이 없고, 11-16의 줄은 09:32부터 비페이징 칸, 저녁부터 태그 칸이 붙는다.
+GPU 칸은 11-16 밤에 더했다. 그날 08:17과 09:21에 NVIDIA 그래픽 엔진이 멈췄는데(WATCHDOG 0x141), 렌더의 GPU 압축(NVENC)
+탓인지 줄로 가릴 수 없었다. Remotion의 크롬은 Intel GPU로 그리므로 이 칸에 나오지 않고, NVENC는 VideoEncode로 나온다.
+11-16 앞의 파일에는 끝 칸들이 없고, 11-16의 줄은 09:32부터 비페이징 칸, 저녁부터 태그 칸, 밤부터 GPU 칸이 붙는다.
 파이썬 표준 모듈만 쓴다(예약 작업의 파이썬에는 psutil이 없다).
 """
 import ctypes
 import datetime
 import os
 import pathlib
+import re
 import shutil
 import sys
 import time
@@ -54,6 +58,117 @@ class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
 class SYSTEM_POOLTAG(ctypes.Structure):
     _fields_ = [("Tag", ctypes.c_ubyte * 4), ("PagedAllocs", wintypes.ULONG), ("PagedFrees", wintypes.ULONG), ("PagedUsed", ctypes.c_size_t),
                 ("NonPagedAllocs", wintypes.ULONG), ("NonPagedFrees", wintypes.ULONG), ("NonPagedUsed", ctypes.c_size_t)]
+
+
+class PDH_FMT_COUNTERVALUE(ctypes.Structure):
+    _fields_ = [("CStatus", wintypes.DWORD), ("doubleValue", ctypes.c_double)]
+
+
+class PDH_FMT_COUNTERVALUE_ITEM_W(ctypes.Structure):
+    _fields_ = [("szName", ctypes.c_wchar_p), ("FmtValue", PDH_FMT_COUNTERVALUE)]
+
+
+def 커널32():
+    k = ctypes.windll.kernel32
+    k.OpenProcess.restype = wintypes.HANDLE
+    k.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    k.CloseHandle.argtypes = [wintypes.HANDLE]
+    k.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
+    return k
+
+
+def 프로세스이름(k, pid):
+    h = k.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not h:
+        return None
+    try:
+        buf = ctypes.create_unicode_buffer(1024)
+        n = wintypes.DWORD(1024)
+        return os.path.basename(buf.value) if k.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(n)) else None
+    finally:
+        k.CloseHandle(h)
+
+
+def 엔비디아luid():
+    """DirectX 어댑터 목록(레지스트리)에서 NVIDIA GPU의 LUID를 「GPU Engine」 카운터 이름 꼴(0x…_0x…)로 모은다."""
+    try:
+        import winreg
+        모음 = set()
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\DirectX") as 뿌리:
+            for i in range(winreg.QueryInfoKey(뿌리)[0]):
+                try:
+                    with winreg.OpenKey(뿌리, winreg.EnumKey(뿌리, i)) as 키:
+                        설명 = str(winreg.QueryValueEx(키, "Description")[0])
+                        luid = int(winreg.QueryValueEx(키, "AdapterLuid")[0])
+                except (OSError, ValueError, TypeError):
+                    continue
+                if "NVIDIA" in 설명.upper():
+                    모음.add(f"0x{(luid >> 32) & 0xFFFFFFFF:08x}_0x{luid & 0xFFFFFFFF:08x}")
+        return 모음
+    except (OSError, ImportError):
+        return set()
+
+
+def GPU엔진시작():
+    """GPU 엔진 사용률을 재기 시작한다(PDH 「GPU Engine」 카운터, 관리자 권한이 필요 없고 GPU를 깨우지 않는다). 못 하면 None."""
+    try:
+        pdh = ctypes.windll.pdh
+        pdh.PdhOpenQueryW.argtypes = [wintypes.LPCWSTR, ctypes.c_size_t, ctypes.POINTER(wintypes.HANDLE)]
+        pdh.PdhAddEnglishCounterW.argtypes = [wintypes.HANDLE, wintypes.LPCWSTR, ctypes.c_size_t, ctypes.POINTER(wintypes.HANDLE)]
+        pdh.PdhCollectQueryData.argtypes = [wintypes.HANDLE]
+        pdh.PdhGetFormattedCounterArrayW.argtypes = [wintypes.HANDLE, wintypes.DWORD, ctypes.POINTER(wintypes.DWORD), ctypes.POINTER(wintypes.DWORD), ctypes.c_void_p]
+        pdh.PdhCloseQuery.argtypes = [wintypes.HANDLE]
+        for f in (pdh.PdhOpenQueryW, pdh.PdhAddEnglishCounterW, pdh.PdhCollectQueryData, pdh.PdhGetFormattedCounterArrayW, pdh.PdhCloseQuery):
+            f.restype = ctypes.c_long
+        q, c = wintypes.HANDLE(), wintypes.HANDLE()
+        if pdh.PdhOpenQueryW(None, 0, ctypes.byref(q)) != 0:
+            return None
+        if pdh.PdhAddEnglishCounterW(q, "\\GPU Engine(*)\\Utilization Percentage", 0, ctypes.byref(c)) != 0 or pdh.PdhCollectQueryData(q) != 0:
+            pdh.PdhCloseQuery(q)
+            return None
+        return pdh, q, c
+    except (OSError, AttributeError):
+        return None
+
+
+def GPU엔진끝(시작, 프로그램수=3):
+    """GPU엔진시작() 뒤 그때까지의 NVIDIA GPU 사용률을 「엔진=%」(엔진 종류별 합)와 「/ 프로그램=%」로 돌려준다.
+    아무것도 0.5%를 넘지 않으면 「-」, NVIDIA GPU가 없거나 재지 못하면 「?」다."""
+    if not 시작:
+        return "?"
+    pdh, q, c = 시작
+    try:
+        luid = 엔비디아luid()
+        if not luid or pdh.PdhCollectQueryData(q) != 0:
+            return "?"
+        크기, 수 = wintypes.DWORD(0), wintypes.DWORD(0)
+        if pdh.PdhGetFormattedCounterArrayW(c, 0x200, ctypes.byref(크기), ctypes.byref(수), None) & 0xFFFFFFFF != 0x800007D2:
+            return "?"  # PDH_FMT_DOUBLE로 물어 PDH_MORE_DATA(칸 크기)를 받아야 한다
+        buf = ctypes.create_string_buffer(크기.value)
+        if pdh.PdhGetFormattedCounterArrayW(c, 0x200, ctypes.byref(크기), ctypes.byref(수), buf) != 0:
+            return "?"
+        엔진, 쓴곳 = {}, {}
+        for 칸 in (PDH_FMT_COUNTERVALUE_ITEM_W * 수.value).from_buffer(buf):
+            m = re.match(r"pid_(\d+)_luid_(0x[0-9a-f]+_0x[0-9a-f]+)_phys_\d+_eng_\d+_engtype_(.*)$", 칸.szName or "", re.I)
+            값 = 칸.FmtValue.doubleValue
+            if not m or 칸.FmtValue.CStatus > 1 or m.group(2).lower() not in luid or 값 <= 0:
+                continue
+            종류 = m.group(3).replace(" ", "_") or "?"
+            엔진[종류] = 엔진.get(종류, 0.0) + 값
+            쓴곳[int(m.group(1))] = 쓴곳.get(int(m.group(1)), 0.0) + 값
+    except (OSError, ValueError, AttributeError):
+        return "?"
+    finally:
+        pdh.PdhCloseQuery(q)
+    엔진글 = " ".join(f"{이름}={값:.0f}" for 이름, 값 in sorted(엔진.items(), key=lambda x: -x[1]) if 값 >= 0.5)
+    if not 엔진글:
+        return "-"
+    k, 합 = 커널32(), {}
+    for pid, 값 in 쓴곳.items():
+        이름 = (프로세스이름(k, pid) or f"pid{pid}").lower().removesuffix(".exe").replace(" ", "_")
+        합[이름] = 합.get(이름, 0.0) + 값
+    프로그램글 = " ".join(f"{이름}={값:.0f}" for 이름, 값 in sorted(합.items(), key=lambda x: -x[1])[:프로그램수] if 값 >= 0.5)
+    return 엔진글 + (f" / {프로그램글}" if 프로그램글 else "")
 
 
 def 큰풀태그(개수=3):
@@ -118,11 +233,7 @@ def 메모리():
 
 
 def 큰프로그램(개수=5):
-    k, ps = ctypes.windll.kernel32, ctypes.windll.psapi
-    k.OpenProcess.restype = wintypes.HANDLE
-    k.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-    k.CloseHandle.argtypes = [wintypes.HANDLE]
-    k.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR, ctypes.POINTER(wintypes.DWORD)]
+    k, ps = 커널32(), ctypes.windll.psapi
     ps.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(PROCESS_MEMORY_COUNTERS), wintypes.DWORD]
     ids = (wintypes.DWORD * 8192)()
     받은 = wintypes.DWORD()
@@ -176,13 +287,15 @@ def 한줄(자리):
     뜬때 = datetime.datetime.now()
     늦음 = 뜬때.second + 뜬때.microsecond / 1e6
     쓰기 = 쓰기시간(자리)
-    cpu = cpu사용률()
+    gpu = GPU엔진시작()
+    cpu = cpu사용률()  # 1초를 쉬며 재므로 GPU 엔진 사용률도 같은 1초로 잰다
+    gpu글 = GPU엔진끝(gpu)
     m = 메모리()
     큰 = " ".join(f"{이름}×{수}={크기:.1f}" for 이름, 수, 크기 in 큰프로그램())
     return "\t".join([
         뜬때.strftime("%Y-%m-%d %H:%M:%S"), f"{늦음:.1f}", f"{cpu:.0f}", f"{m['쓴']:.1f}/{m['전체']:.1f}", f"{m['커밋']:.1f}/{m['커밋한도']:.1f}",
         str(m["프로세스"]), str(m["스레드"]), str(m["핸들"]), f"{쓰기:.0f}", f"{여유('C:/'):.1f}", f"{여유('D:/'):.1f}", 큰,
-        f"{m['비페이징']:.1f}", 큰풀태그(),
+        f"{m['비페이징']:.1f}", 큰풀태그(), gpu글,
     ])
 
 
@@ -221,7 +334,7 @@ def 줄들(자리, 날수=3):
 
 
 def 보기(수):
-    제목 = "시각\t늦음초\tCPU%\t메모리GB\t커밋GB\t프로세스\t스레드\t핸들\tC쓰기ms\tC여유\tD여유\t메모리 큰 프로그램\t비페이징GB\t큰 비페이징 태그(MB)"
+    제목 = "시각\t늦음초\tCPU%\t메모리GB\t커밋GB\t프로세스\t스레드\t핸들\tC쓰기ms\tC여유\tD여유\t메모리 큰 프로그램\t비페이징GB\t큰 비페이징 태그(MB)\tNVIDIA 엔진%(/ 프로그램%)"
     print(제목)
     for 줄 in 줄들(폴더())[-수:]:
         print(줄)
