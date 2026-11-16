@@ -353,7 +353,10 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         const writer = store.writerOf(customer.id);
         const role = writer ? 'read' : 'write';
         if (active.length >= LIMITS.writers + LIMITS.readers || (role === 'read' && active.filter((d) => d.role === 'read').length >= LIMITS.readers)) {
-          fail(409, 'LIMIT_DEVICES', { devices: store.devicesOf(customer.id).filter((d) => d.state !== 'abandoned').map((d) => deviceView(d, null)) });
+          // Each row says whether it is an earlier device of this same PC (화면 요청 15), only when the
+          // request names its install: the screen calls that row 「이 PC · 앞서 깐 것」.
+          fail(409, 'LIMIT_DEVICES', { devices: store.devicesOf(customer.id).filter((d) => d.state !== 'abandoned')
+            .map((d) => ({ ...deviceView(d, null), ...(installId ? { sameInstall: d.install_id === installId } : {}) })) });
         }
         const giveRead = needsReadKey(customer);
         const makes = role === 'write' || giveRead;

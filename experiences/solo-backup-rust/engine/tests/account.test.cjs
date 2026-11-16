@@ -252,8 +252,10 @@ test('the account refuses what it cannot check, and no key reaches the screen', 
   await assert.rejects(none.signIn(), (e) => e.code === 'NO_GOOGLE');
   // A full account: the screen gets the devices to cut off, never their tokens.
   const full = await fixture();
-  full.provision.provision = async () => { throw Object.assign(new Error('full'), { code: 'LIMIT_DEVICES', extra: { devices: [{ id: OLD, name: '옛 노트북', role: 'read', state: 'active', createdAt: 5, token: 'wbd_secret' }] } }); };
-  await assert.rejects(full.account.signIn(), (e) => e.code === 'LIMIT_DEVICES' && !JSON.stringify(e.details).includes('wbd_secret') && e.details.devices[0].id === OLD);
+  full.provision.provision = async () => { throw Object.assign(new Error('full'), { code: 'LIMIT_DEVICES', extra: { devices: [{ id: OLD, name: '옛 노트북', role: 'read', state: 'active', createdAt: 5, token: 'wbd_secret', sameInstall: true }, { id: 'dev000000002', name: '다른 PC', role: 'read', state: 'active', createdAt: 6, sameInstall: 'yes' }] } }); };
+  await assert.rejects(full.account.signIn(), (e) => e.code === 'LIMIT_DEVICES' && !JSON.stringify(e.details).includes('wbd_secret') && e.details.devices[0].id === OLD
+    // 화면 요청 15: the server's mark of this same PC reaches the screen, and only a real true counts.
+    && e.details.devices[0].sameInstall === true && e.details.devices[1].sameInstall === false);
 });
 
 test('the server status reaches the writer: a moved seat rests the PC, a restore or the limit holds the run, a copied snapshot is pinned', async () => {

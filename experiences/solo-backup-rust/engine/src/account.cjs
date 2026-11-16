@@ -54,7 +54,10 @@ const place = (provider) => ({ endpoint: provider.endpoint, bucket: provider.buc
 const text = (v, n) => (typeof v === 'string' ? v.slice(0, n) : null);
 const ms = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : null);
 const listed = (devices) => (Array.isArray(devices) ? devices.slice(0, 50) : []).filter((d) => d && DEVICE.test(d.id || '')).map((d) => ({
-  id: d.id, name: text(d.name, 64) || '', role: d.role === 'write' ? 'write' : 'read', state: text(d.state, 16), createdAt: ms(d.createdAt), lastSeenAt: ms(d.lastSeenAt), current: d.current === true }));
+  id: d.id, name: text(d.name, 64) || '', role: d.role === 'write' ? 'write' : 'read', state: text(d.state, 16), createdAt: ms(d.createdAt), lastSeenAt: ms(d.lastSeenAt), current: d.current === true,
+  // An earlier device of this same PC: the server marks every row of a LIMIT_DEVICES list when the
+  // sign-up named its install (화면 요청 15); other lists carry no such field and get none.
+  ...('sameInstall' in d ? { sameInstall: d.sameInstall === true } : {}) }));
 // A restore as the screen gets it, from the server status (`restore`) or a job (`restore/job`).
 // `undoError`: this restore waits for its choice again because the undo chosen for it failed (with that code).
 const errorCode = (v) => (typeof v === 'string' && /^[A-Z][A-Z_]{1,39}$/.test(v) ? v : null);

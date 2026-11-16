@@ -702,6 +702,25 @@ test('GPT GA5: the server counts an audit run only when its audit job itself suc
   assert.equal(h.store.all("select count(*) n from alerts where kind = 'audit-stale'")[0].n, 1);
 });
 
+test('화면 요청 15: a full account marks the earlier devices of this same PC, only when the request names its install', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const installId = 'C'.repeat(22);
+  const sign = async (name, install) => h.call('POST', 'provision', { google: await h.proof('provision'), device: { name, appVersion: '0.7.0', ...(install ? { installId: install } : {}) } });
+  // This PC was the writer and finished its sign-up, then Windows was reinstalled (same install id kept on disk).
+  const a = await sign('PC-1', installId);
+  await h.ack(a);
+  assert.equal((await h.call('POST', 'read-key/confirm', { keyId: a.keys.read.keyId }, a.device.token)).ok, true);
+  const b = await h.provision('PC-2'); const c = await h.provision('PC-3');
+  const full = await sign('PC-1 again', installId);
+  assert.equal(full.code, 'LIMIT_DEVICES');
+  assert.deepEqual(full.devices.map((d) => [d.id, d.sameInstall]), [[a.device.id, true], [b.device.id, false], [c.device.id, false]]);
+  assert.equal(h.store.device(a.device.id).state, 'active', 'an acknowledged device of this PC is not dropped as a ghost');
+  // Another PC, and a request without an install id: no row is this PC.
+  assert.deepEqual((await sign('PC-9', 'D'.repeat(22))).devices.map((d) => d.sameInstall), [false, false, false]);
+  assert.ok((await sign('PC-9')).devices.every((d) => !('sameInstall' in d)));
+});
+
 test('카본 D5 · C6: the same PC signing up again after a lost answer replaces its unfinished device, without a new-device notice', async (t) => {
   const h = await harness(t);
   h.store.addInvite('pilot@example.com');

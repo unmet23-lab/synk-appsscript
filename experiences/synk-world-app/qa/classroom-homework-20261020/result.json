@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "date": "2026-11-16T04:10:13.310Z",
+  "date": "2026-11-16T21:03:26.357Z",
   "syntheticAccount": true,
   "syntheticClass": true,
   "syntheticStudentText": true,
@@ -734,8 +734,8 @@
     }
   },
   "captureTimes": {
-    "390": 4801,
-    "1280": 399
+    "390": 6758,
+    "1280": 610
   },
   "shots": [
     "390-week.png",
@@ -794,7 +794,7 @@
         "classId": "22222222-2222-4222-8222-222222222222",
         "week": 4,
         "kind": "reading",
-        "requestId": "09412c69-30a1-4e7e-97cd-232ad5842f1e",
+        "requestId": "619e1d74-ce9d-4dbd-95db-b6a9136fab30",
         "expectedRevision": 0,
         "contentVersion": "v1-53795e0997f6",
         "answers": "(합성)"
