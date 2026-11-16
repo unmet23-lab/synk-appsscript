@@ -1122,6 +1122,7 @@ uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm, uCut, 
 uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen;
 uniform vec4 uEye;
 uniform vec3 uFace, uGaze, uSweep;
+uniform float uTiny;
 const float RHO = 0.092;
 float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
 /* 구에 새긴 자리 하나: 가는 고리와, 지금 있는 곳을 알리는 가운데 점. x는 더할 빛, y는 고리 안을 비우는 정도다.
@@ -1258,8 +1259,8 @@ void main(){
     vec2 fp = vec2(dot(n, Rr), dot(n, Uu));
     float front = smoothstep(0.10, 0.40, dot(n, F));
     float ppx = uR / uDpr;
-    /* 구가 작게 줄면 눈을 몸에 견줘 키우고 조금 더 벌린다(아이콘만 한 크기에서도 두 눈으로 읽히게) */
-    float small = smoothstep(60.0, 14.0, ppx);
+    /* 구가 작게 줄면 눈을 몸에 견줘 키우고 조금 더 벌린다(아이콘만 한 크기에서도 두 눈으로 읽히게). uTiny는 아이콘 그림을 낼 때 그 모습을 크기와 상관없이 고르는 값이다 */
+    float small = max(smoothstep(60.0, 14.0, ppx), uTiny);
     float k = mix(1.0, 1.85, small);
     float g = 0.040 * k;
     float sep = 0.220 * mix(1.0, 1.12, small);
@@ -1282,7 +1283,7 @@ void main(){
       float on = 1.0 - smoothstep(tol - 0.003, tol + 0.003, cs);
       float dpx = length(fp - cc) * ppx, rd = 0.27 * g * ppx;
       float led = (1.0 - smoothstep(rd - 0.6, rd + 0.6, dpx)) + 0.20 * exp(-max(dpx - rd, 0.0) / (0.4 * rd + 0.5));
-      e = mix(solid, on * led, smoothstep(3.0, 5.0, g * ppx));
+      e = mix(solid, on * led, smoothstep(3.0, 5.0, g * ppx) * step(uTiny, 0.0));
       dim = 0.34 * (1.0 - smoothstep(-0.2 * g, 1.0 * g, sd));
     } else if (uEye.x < 2.5) {
       /* 빛 눈: 눈 모양이 그대로 빛난다. 안에서 비추는 유리처럼 위가 조금 더 밝다 */
@@ -1322,7 +1323,7 @@ function initGL() {
     gl.useProgram(pr);
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uCut', 'uCutOn', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uEye', 'uFace', 'uGaze', 'uSweep']) U[k] = gl.getUniformLocation(pr, k);
+    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uCut', 'uCutOn', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uEye', 'uFace', 'uGaze', 'uSweep', 'uTiny']) U[k] = gl.getUniformLocation(pr, k);
     return true;
   } catch (e) { console.warn('구 셰이더를 만들지 못했습니다.', e); gl = null; return false; }
 }
@@ -1381,6 +1382,7 @@ function draw(now) {
     gl.uniform3f(U.uFace, eye.face[0], eye.face[1], 1);
     gl.uniform3f(U.uGaze, eye.gaze[0], eye.gaze[1], eye.fixed ? eye.fixed.t : t % 600);
     gl.uniform3f(U.uSweep, sweep[0], sweep[1], sweep[2]);
+    gl.uniform1f(U.uTiny, eye.fixed && eye.fixed.tiny ? eye.fixed.tiny : 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   } else if (ctx2d) {
     const c = ctx2d; c.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -1417,7 +1419,7 @@ window.__orb = {
     if (opt.eye) setEyeKind(opt.eye);
     eyeStop();
     eye.gate = eye.gateS = opt.eyes === false ? 0 : 1; eye.mood = opt.mood || (scene === 'forge' && !opt.failed ? 'sleep' : 'calm'); eye.open = opt.open === undefined ? 1 : opt.open; syncMoodBtn();
-    eye.fixed = { t: opt.t || 0 }; eye.face = opt.face ? [...opt.face] : [0, 0]; eye.gaze = opt.gaze ? [...opt.gaze] : [0, 0];
+    eye.fixed = { t: opt.t || 0, tiny: opt.tiny || 0 }; eye.face = opt.face ? [...opt.face] : [0, 0]; eye.gaze = opt.gaze ? [...opt.gaze] : [0, 0];
     if (opt.fan) { fanOn = true; stage.dataset.fan = '1'; layoutFan(); faceWant = opt.point || null; snap('fan'); sweep.fill(opt.sweep === undefined ? 1 : opt.sweep); pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0; }
     /* r을 주면 구를 그 반지름으로 창 한가운데에 둔다(아이콘 크기로 볼 때) */
     if (opt.r) { S.r = opt.r; S.cx = W / 2; S.top = H / 2 - opt.r; }
