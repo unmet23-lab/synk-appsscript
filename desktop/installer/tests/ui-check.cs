@@ -197,6 +197,13 @@ internal static class SignalUiCheck
         a.ShowLaunchFailure(null); render(a, "auto-launch-failure");
         OrbWindow b = make(); b.BeginAutomatic(); b.ShowBlocked(new InstallFailure("지난번 설치를 되돌렸는지 아직 확인하지 못했어요.\n되돌리기 안내: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Pending\\example.txt", false, true)); render(b, "auto-blocked");
         if (!b.Topmost) throw new Exception("Blocked window must stay on top");
+
+        // 가림막(2절)과 넘김 쪽지에서 이어받는 자동 업데이트: 앱 창의 마지막 장과 같은 절반 깎인 구와 글이 떠오르지 않고 바로 놓인다
+        OrbWindow c = make(); c.BeginCurtain(0.5); render(c, "curtain");
+        if (!c.IsCurtain || c.ShowInTaskbar || c.ShowActivated || c.SayText != "새 판으로 바꾸고 있습니다." || Math.Abs(c.ShownCut - 0.5) > 1e-9) throw new Exception("Curtain must be the half-carved scene that never activates or shows in the taskbar");
+        closable(c, "curtain", false);
+        OrbWindow h = make(); h.BeginAutomatic(true, 0.5); render(h, "auto-from-note");
+        if (h.SayText != "새 판으로 바꾸고 있습니다." || Math.Abs(h.ShownCut - 0.5) > 1e-9) throw new Exception("Automatic window from a handoff note must start where the curtain is");
         foreach (string font in renderedFonts) Console.WriteLine("RENDERED FONT: " + font);
         return 0;
     }

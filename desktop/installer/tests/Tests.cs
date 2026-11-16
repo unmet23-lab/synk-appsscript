@@ -72,6 +72,65 @@ internal static class SignalInstallerTests
             var sentinelHash = Hash(sentinel);
 
             var engine = Engine(Spec);
+            // 넘김 쪽지, 도착 쪽지, 가림막 캐시(검정 구 1-가 구현 설계 2절과 6절). 시험 폴더 안의 설치기 자리로 바꿔 끼운다
+            Check("handoff note is read only when token, app process and version all match", delegate
+            {
+                Handoff.InstallerRoot = Path.Combine(Root, "handoff-installer");
+                string token = new string('a', 64), appId = "im.synk.signal.fixture.handoff";
+                Directory.CreateDirectory(Handoff.Folder);
+                Func<string, string> note = delegate(string extra) { return "{\"schemaVersion\":1,\"token\":\"" + token + "\",\"appPid\":4242,\"version\":\"0.4.97\",\"window\":131072,\"x\":10,\"y\":20,\"width\":1440,\"height\":940,\"maximized\":false,\"visibility\":\"behind\",\"quiet\":false,\"cut\":0.5,\"curtainEvent\":\"Local\\\\SYNK.Curtain.0123456789abcdef0123456789abcdef\",\"writtenAt\":\"2026-11-17T00:00:00.000Z\"" + extra + "}"; };
+                File.WriteAllText(Handoff.HandoffFile(appId), note(""));
+                HandoffNote read = Handoff.ReadHandoff(appId, token, 4242, "0.4.97");
+                Assert(read != null && read.Behind && read.HasBounds && read.Width == 1440 && read.Window == 131072 && read.CurtainEvent.EndsWith("abcdef", StringComparison.Ordinal), "A matching handoff note was not read.");
+                Assert(Handoff.ReadHandoff(appId, token, 4242, "0.4.97") != null, "Reading a handoff note must not consume it.");
+                Assert(Handoff.ReadHandoff(appId, new string('b', 64), 4242, "0.4.97") == null, "A note for another token was read.");
+                Assert(Handoff.ReadHandoff(appId, token, 4243, "0.4.97") == null, "A note for another app process was read.");
+                Assert(Handoff.ReadHandoff(appId, token, 4242, "0.4.98") == null, "A note for another version was read.");
+                Assert(Handoff.ReadHandoff(appId, token, 0, "0.4.97") != null, "The curtain (no wait pid) could not read its note.");
+                File.WriteAllText(Handoff.HandoffFile(appId), note("").Replace("behind", "sideways"));
+                Assert(Handoff.ReadHandoff(appId, token, 4242, "0.4.97") == null, "An unknown visibility was accepted.");
+                File.WriteAllText(Handoff.HandoffFile(appId), note("").Replace("SYNK.Curtain.", "Other."));
+                Assert(Handoff.ReadHandoff(appId, token, 4242, "0.4.97") == null, "A foreign event name was accepted.");
+                File.WriteAllText(Handoff.HandoffFile(appId), "{not json");
+                Assert(Handoff.ReadHandoff(appId, token, 4242, "0.4.97") == null, "A broken note was accepted.");
+                File.WriteAllText(Handoff.HandoffFile(appId), note(",\"pad\":\"" + new string('x', 5000) + "\""));
+                Assert(Handoff.ReadHandoff(appId, token, 4242, "0.4.97") == null, "An oversized note was accepted.");
+                string curtainToken;
+                Assert(Handoff.IsCurtain(new[] { "--auto-update", "--curtain", "--wait-pid=1", "--handoff-token=" + token }, out curtainToken) && curtainToken == token, "The curtain mode did not win over other arguments.");
+                Assert(Handoff.IsCurtain(new[] { "--curtain", "--handoff-token=XYZ" }, out curtainToken) && curtainToken == null, "A malformed curtain token was accepted.");
+                Assert(!Handoff.IsCurtain(new[] { "--auto-update", "--wait-pid=1", "--handoff-token=" + token }, out curtainToken), "Automatic update was taken as the curtain.");
+            });
+            Check("arrival note is written atomically and an unwritable arrival note is swallowed", delegate
+            {
+                string appId = "im.synk.signal.fixture.handoff";
+                Assert(Handoff.WriteArrival(appId, new ArrivalNote { Kind = "updated", Version = "0.4.97", X = 1, Y = 2, Width = 1440, Height = 940, Visibility = "front", Cut = 1, Lit = 0.58 }), "Arrival note was not written.");
+                string text = File.ReadAllText(Handoff.ArrivalFile(appId));
+                Assert(text.Contains("\"kind\":\"updated\"") && text.Contains("\"installerPid\":" + Process.GetCurrentProcess().Id) && text.Contains("\"writtenAt\""), "Arrival note content: " + text);
+                Assert(Directory.GetFiles(Handoff.Folder, "*.partial").Length == 0, "Arrival note left a temporary file.");
+                File.Delete(Handoff.ArrivalFile(appId));
+                Directory.CreateDirectory(Handoff.ArrivalFile(appId));
+                try { Assert(!Handoff.WriteArrival(appId, new ArrivalNote { Kind = "updated", Version = "0.4.97", Visibility = "front" }), "An unwritable arrival note reported success."); }
+                finally { Directory.Delete(Handoff.ArrivalFile(appId)); }
+                Assert(Directory.GetFiles(Handoff.Folder, "*.partial").Length == 0, "A failed arrival note left a temporary file.");
+            });
+            Check("orphan curtain caches are removed while live owners and transaction folders stay", delegate
+            {
+                string cache = Path.Combine(Handoff.InstallerRoot, "Cache");
+                Directory.CreateDirectory(cache);
+                int dead = 999999;
+                while (true) { try { using (Process.GetProcessById(dead)) { } dead--; } catch (ArgumentException) { break; } }
+                string orphan = Path.Combine(cache, "curtain-" + dead + "-" + new string('c', 32));
+                string live = Path.Combine(cache, "curtain-" + Process.GetCurrentProcess().Id + "-" + new string('d', 32));
+                string transaction = Path.Combine(cache, System.Guid.NewGuid().ToString("N"));
+                string lookalike = Path.Combine(cache, "curtain-" + dead + "-short");
+                foreach (string directory in new[] { orphan, live, transaction, lookalike }) { Directory.CreateDirectory(directory); File.WriteAllText(Path.Combine(directory, "x"), "x"); }
+                Assert(Handoff.CleanupOrphanCurtainCaches() == 1, "Expected exactly one orphan curtain cache to be removed.");
+                Assert(!Directory.Exists(orphan) && Directory.Exists(live) && Directory.Exists(transaction) && Directory.Exists(lookalike), "Curtain cache cleanup touched the wrong folders.");
+                string mine = Handoff.CreateCurtainCache();
+                Assert(Path.GetFileName(mine).StartsWith("curtain-" + Process.GetCurrentProcess().Id + "-", StringComparison.Ordinal), "Curtain cache name does not carry its owner: " + mine);
+                Directory.Delete(Handoff.InstallerRoot, true);
+                Handoff.InstallerRoot = null;
+            });
             Check("known-folder shortcut guard accepts Cloud variants but rejects symlinks, junctions and unknown reparse tags", delegate
             {
                 for(uint variant=0;variant<16;variant++)
@@ -348,6 +407,20 @@ internal static class SignalInstallerTests
                         Assert(record.Contains("\"stage\":\"relaunch\"")&&record.Contains("\"outcome\":\"rolled-back\"")&&record.Contains("Synthetic recovery launch failure"),"Recovery launch failure was not recorded: "+record);
                         File.Delete(failureRecord);if(result.RecoveryFile!=null&&File.Exists(result.RecoveryFile))File.Delete(result.RecoveryFile);
                         engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
+                    }
+                });
+                Check("a throwing arrival note hook never changes the update outcome and hears the restored version",delegate
+                {
+                    using(Process exited=exitedParent())
+                    {
+                        int launches=0;var arriving=Engine(ReadSpec());var heard=new List<string>();
+                        arriving.BeforeLaunch=delegate(string kind,string version){heard.Add(kind+" "+version);throw new IOException("Synthetic arrival note failure");};
+                        var session=sessionFor(exited);
+                        var result=Task.Run(delegate { return arriving.InstallAutomaticUpdateCore(session,Progress,delegate(Action<InstallProgress> progress) { throw new IOException("Synthetic payload failure"); },delegate(string executable,string arguments){launches++;}); }).GetAwaiter().GetResult();
+                        Assert(result.Restored&&result.Relaunched&&launches==1,"Arrival note failure changed recovery: "+result.Message);
+                        Assert(heard.Count==1&&heard[0]=="restored "+session.Version,"Arrival hook heard: "+String.Join(",",heard));
+                        if(result.RecoveryFile!=null&&File.Exists(result.RecoveryFile))File.Delete(result.RecoveryFile);
+                        if(File.Exists(failureRecord))File.Delete(failureRecord);
                     }
                 });
                 Check("an unwritable failure record never changes the update outcome",delegate

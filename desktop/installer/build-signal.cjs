@@ -31,8 +31,8 @@ const PRODUCTS = {
       asarSHA256:'dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a',executableSHA256:'f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481'}},
 };
 // 설치기 원천 파일과 글꼴. 설치기 시험(tests/test.cjs)도 이 목록을 그대로 쓴다(공개 흐름의 창 검사 목록은 platform-release.workflow.yml에 같은 차례로 적는다).
-// OrbStage.cs와 OrbWindow.cs는 Platform 새 창(검정 구 1-가 ③)이다. WORLD와 Workspace도 같이 컴파일하지만 쓰지 않는다.
-const SOURCES=['Program.cs','InstallerEngine.cs','AutoUpdateEngine.cs','BackendProcess.cs','InstallTransaction.cs','SignalWindow.cs','OrbStage.cs','OrbWindow.cs'];
+// OrbStage.cs와 OrbWindow.cs는 Platform 새 창(검정 구 1-가 ③)이고, Handoff.cs는 넘김 쪽지와 도착 쪽지, 가림막 캐시다. WORLD와 Workspace도 같이 컴파일하지만 쓰지 않는다.
+const SOURCES=['Program.cs','InstallerEngine.cs','AutoUpdateEngine.cs','BackendProcess.cs','InstallTransaction.cs','SignalWindow.cs','OrbStage.cs','OrbWindow.cs','Handoff.cs'];
 // SUIT-Regular는 공식 정적 파일이다. SYNKText-Light는 앱이 쓰는 SUIT 가변 글꼴(assets/launcher/SUIT.woff2)에서 300을 뽑은 판이라 OFL의 예약 이름을 피해 가족 이름을 바꿨다
 const FONTS=['SUIT-Medium.otf','SUIT-ExtraBold.otf','SUIT-Heavy.otf','SUIT-Regular.otf','SYNKText-Light.ttf','InterTight-Medium.ttf','InterTight-Bold.ttf','DMMono-Medium.ttf'];
 // 설치기의 구 셰이더(orb/orb.hlsl). 사용자 PC에서는 fxc를 돌릴 수 없어 컴파일한 바이트(orb/orb.ps)를 저장소에 두고 싣는다.

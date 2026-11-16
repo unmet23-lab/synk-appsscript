@@ -25,6 +25,7 @@ function fakeOrb(){
       tween(name,ms,_ease,_lit,opts){rec('tween',name,ms,opts?.elapsed||0);pose=name;return Promise.resolve();},
       setCut(v){rec('setCut',+v.toFixed(3));},setCutOn(on){rec('setCutOn',on);},forgeAt(p){rec('forgeAt',+p.toFixed(3));},setLit(v){rec('setLit',v);},
       setMood(m){rec('setMood',m);return Promise.resolve();},eyesAsleep(){rec('eyesAsleep');},eyesWake(){rec('eyesWake');return Promise.resolve();},
+      setGlint(on){rec('setGlint',on);},setAz(v){rec('setAz',+v.toFixed(3));},eyesCalm(){rec('eyesCalm');},state(){return {az:0.5};},
       setPointer(){},dispose(){rec('dispose');},get pose(){return pose;},get moving(){return moving;},
     }};
 }
@@ -214,4 +215,36 @@ test('the startup window and the app window reveal the orb on one timeline, eyes
     assert.equal(ORB_BOOT[kind].asleepAt,ORB_TIMING.eyesAsleep[kind],kind+' asleep');assert.equal(ORB_BOOT[kind].wakeAt,ORB_TIMING.eyesWake[kind],kind+' wake');
   }
   assert.equal(ORB_LOOK.eyes,true);
+});
+
+// 앱 창 위에 덮어 띄운 넘김 장면(1-가 구현 설계 2절 「보이는 업데이트」): 받기가 끝난 절반 깎인 구와 글이 바로 놓이고, 옛 결을 지우는 움직임이 없다
+test('the handoff cover starts at the half-carved orb with its text already in place',async()=>{
+  const f=await fixture({snapshot:{state:'installing',platform:'win32',currentVersion:'0.4.96',latestVersion:'0.4.97',boot:{kind:'handoff',startedAt:1_000_000}}});
+  assert.deepEqual(f.orb.calls.slice(0,4),[['forgeAt',0.5],['setCutOn',true],['snap','forge'],['eyesAsleep']]);
+  assert.equal(f.orb.named('setCut').length,0,'no erase from a fresh orb');assert.equal(f.orb.named('tween').length,0);
+  assert.equal(f.dom.el('startup-update').dataset.ui,'forge');assert.equal(f.dom.el('startup-update').dataset.instant,'true');
+  assert.equal(f.dom.el('startup-say').textContent,'새 판으로 바꾸고 있습니다.');assert.equal(f.dom.el('startup-percent').textContent,' · 50%');
+  assert.equal(f.dom.el('startup-version').textContent,'0.4.97');
+  f.view.dispose();
+});
+// 업데이트 뒤 새 앱의 첫 장면(6절, 시안 forgeDone): 설치기 창의 마지막 장에서 이어 빛이 오르며 한 바퀴 돌고, 눈을 뜨고, 잠깐 웃은 뒤 쉬는 자리로 간다
+test('after an update the start window continues from the last carved frame and turns once in light',async()=>{
+  const {ARRIVE,ARRIVE_SCENE_MS}=await loaded;
+  assert.equal(ARRIVE_SCENE_MS,4130,'main.cjs ARRIVE_SCENE_MS must match');
+  const f=await fixture({snapshot:{state:'checking',platform:'win32',currentVersion:'0.4.97',boot:{kind:'arrive',startedAt:1_000_000,cut:1,lit:0.58}}});
+  assert.deepEqual(f.orb.calls.slice(0,8),[['forgeAt',1],['setCutOn',true],['snap','forge'],['setLit',0.58],['eyesAsleep'],['setCut',1],['setCutOn',false],['setGlint',true]]);
+  assert.equal(f.orb.named('snap').some(c=>c[1]==='void'),false,'the orb never drops back to black');
+  await f.clock.advance(ARRIVE.eyesWakeAt);assert.equal(f.orb.named('eyesWake').length,1);
+  await f.clock.advance(ARRIVE.smileAt-ARRIVE.eyesWakeAt);assert.deepEqual(f.orb.named('setMood').map(c=>c[1]),['smile']);
+  await f.clock.advance(ARRIVE.turn-ARRIVE.smileAt+20);
+  const az=f.orb.named('setAz');assert.ok(az.length>50,'turns frame by frame');assert.equal(az.at(-1)[1],0.5,'ends where it began');
+  assert.deepEqual(f.orb.named('setGlint').at(-1),['setGlint',false]);assert.deepEqual(f.orb.named('setLit').at(-1),['setLit',1]);
+  assert.ok(Math.max(...f.orb.named('setLit').map(c=>c[1]))>1.05,'the light rises above full before settling');
+  await f.clock.advance(ARRIVE.hold);assert.deepEqual(f.orb.named('tween').at(-1),['tween','rest',ARRIVE.settle,0]);
+  f.view.dispose();
+});
+test('an arrival that is already over just rests',async()=>{
+  const f=await fixture({snapshot:{state:'checking',platform:'win32',currentVersion:'0.4.97',boot:{kind:'arrive',startedAt:1_000_000-10_000,cut:1,lit:0.58}}});
+  assert.deepEqual(f.orb.calls,[['setCutOn',false],['setLit',1],['snap','rest'],['eyesCalm']]);
+  f.view.dispose();
 });

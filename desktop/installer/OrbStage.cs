@@ -314,6 +314,8 @@ namespace Synk.SignalInstaller
         public bool UsesGpu { get { return gpu; } }
         public string PoseName { get { return poseName; } }
         public double Cut { get { return cut; } }
+        /// <summary>지금 빛(도착 쪽지에 마지막 장의 빛으로 적는다)</summary>
+        public double Lit { get { return S.Lit; } }
         public string Mood { get { return eyeGate > 0 ? mood : "off"; } }
         public bool Moving { get { return tween != null; } }
         /// <summary>장면이 바뀔 때마다(화면 확인용) 알린다.</summary>

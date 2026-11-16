@@ -17,6 +17,8 @@ function createWindowPlacement({directory,screen,enabled=true}){
   const file=path.join(directory,'window-placement.json');let current=null;
   if(enabled)try{const text=fs.readFileSync(file,'utf8');if(text.length<2048)current=JSON.parse(text);}catch{}
   function restore(){return fitPlacement(current,screen.getAllDisplays(),screen.getPrimaryDisplay());}
+  // 업데이트 뒤 새 앱은 도착 쪽지에 적힌 설치기 창의 자리(화면 좌표로 바꾼 것)를 쓴다. 파일에는 창이 움직일 때 지금처럼 쓴다(1-가 구현 설계 6절)
+  function adopt(bounds,{maximized=false}={}){if(!enabled||!bounds||![bounds.x,bounds.y,bounds.width,bounds.height].every(finite)||bounds.width<=0||bounds.height<=0)return false;current={x:Math.round(bounds.x),y:Math.round(bounds.y),width:Math.round(bounds.width),height:Math.round(bounds.height),maximized:maximized===true};return true;}
   function attach(window,{maximized=false}={}){
     if(!enabled)return ()=>{};let timer=null,displayTimer=null,disposed=false,pendingMaximized=maximized,lastMaximized=maximized||window.isMaximized?.()===true;
     const minimized=()=>window.isMinimized?.()===true;
@@ -49,6 +51,6 @@ function createWindowPlacement({directory,screen,enabled=true}){
     function dispose(){disposed=true;clearTimeout(timer);clearTimeout(displayTimer);for(const [event,listener]of Object.entries(listeners))window.removeListener(event,listener);for(const [event,listener]of Object.entries(displayListeners))screen.removeListener?.(event,listener);window.removeListener('closed',dispose);}
     window.once('closed',dispose);return dispose;
   }
-  return {restore,attach};
+  return {restore,attach,adopt};
 }
 module.exports={fitPlacement,createWindowPlacement};

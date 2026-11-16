@@ -73,7 +73,8 @@ namespace Synk.SignalInstaller
         readonly StackPanel actions;
         readonly DispatcherTimer ticker;
         Scene scene = Scene.Intro;
-        bool installed, automatic, allowClose, maximized, uiShown;
+        bool installed, automatic, allowClose, maximized, uiShown, curtain;
+        Grid windowBar;
         Rect restoreBounds;
         string sayText = "", thenText = "";
         // 깎인 만큼: 받은 값(target)을 보이는 값(shown)이 따라간다. 시간으로 다가가는 단계는 stageStart부터 잰다
@@ -161,6 +162,7 @@ namespace Synk.SignalInstaller
 
             // 창 단추(시작 창 .startup-window-actions). 맨 위 40px를 잡고 창을 옮긴다
             Grid bar = new Grid { Height = 40, VerticalAlignment = VerticalAlignment.Top, Background = Brushes.Transparent };
+            windowBar = bar;
             bar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             bar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             StackPanel buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
@@ -443,14 +445,100 @@ namespace Synk.SignalInstaller
                 });
             });
         }
-        /// <summary>앱이 넘겨준 자동 업데이트. 받기가 끝난 절반 깎인 구에서 이어 깎는다(받기 0~50%, 바꾸기 50~100%)</summary>
-        public void BeginAutomatic()
+        /// <summary>
+        /// 앱이 넘겨준 자동 업데이트. 받기가 끝난 절반 깎인 구에서 이어 깎는다(받기 0~50%, 바꾸기 50~100%).
+        /// 넘김 쪽지가 있으면(instant) 앱 창과 가림막이 이미 같은 글을 보이고 있으므로 글을 떠오르게 하지 않고 바로 놓는다
+        /// </summary>
+        public void BeginAutomatic(bool instant = false, double cut = 0.5)
         {
             automatic = true; scene = Scene.Automatic;
-            target = shown = 0.5;
+            cut = Math.Max(0.5, Math.Min(0.99, Double.IsNaN(cut) ? 0.5 : cut));
+            target = shown = cut;
             SetCopy("새 판으로 바꾸고 있습니다.", "끝나면 저절로 열립니다.");
-            orb.ForgeAt(0.5); orb.SetCutOn(true, true); orb.Snap("forge"); orb.EyesAsleep();
-            SetButtons(); ShowUi(); ticker.Start();
+            orb.ForgeAt(cut); orb.SetCutOn(true, true); orb.Snap("forge"); orb.EyesAsleep();
+            SetButtons();
+            if (instant) InstantUi(); else ShowUi();
+            ticker.Start();
+        }
+        /// <summary>
+        /// 가림막(2절): 앱 창의 마지막 장과 같은 구와 글을 그리기만 한다. 단추가 없고, 닫을 수 없고, 작업 표시줄에 없고, 앞으로 나서지 않는다.
+        /// 깎기를 더 나아가게 하지 않는다(설치기가 이어받는다)
+        /// </summary>
+        public void BeginCurtain(double cut)
+        {
+            curtain = true; automatic = true; scene = Scene.Automatic;
+            cut = Math.Max(0, Math.Min(1, Double.IsNaN(cut) ? 0.5 : cut));
+            target = shown = cut;
+            ShowInTaskbar = false; ShowActivated = false; Focusable = false; ResizeMode = ResizeMode.NoResize;
+            windowBar.Visibility = Visibility.Collapsed;
+            SetCopy("새 판으로 바꾸고 있습니다.", "끝나면 저절로 열립니다.");
+            orb.ForgeAt(cut); orb.SetCutOn(true, true); orb.Snap("forge"); orb.EyesAsleep();
+            SetButtons(); InstantUi();
+        }
+        public bool IsCurtain { get { return curtain; } }
+        void InstantUi()
+        {
+            uiShown = true;
+            forge.BeginAnimation(OpacityProperty, null); forge.Opacity = 1;
+            foreach (FrameworkElement element in risers) { element.BeginAnimation(OpacityProperty, null); element.Opacity = 1; ((TranslateTransform)element.RenderTransform).BeginAnimation(TranslateTransform.YProperty, null); ((TranslateTransform)element.RenderTransform).Y = 0; }
+        }
+
+        // ── 화면 화소로 놓기(넘김 쪽지의 자리)와 겹침 순서 ──
+        [DllImport("user32.dll", SetLastError = true)] static extern bool SetWindowPos(IntPtr hwnd, IntPtr insertAfter, int x, int y, int cx, int cy, uint flags);
+        [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr hwnd, out NativeRect rect);
+        [DllImport("user32.dll")] static extern bool IsWindow(IntPtr hwnd);
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")] static extern IntPtr GetWindowLongPtr(IntPtr hwnd, int index);
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] static extern IntPtr SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value);
+        const uint SWP_NOSIZE = 0x1, SWP_NOMOVE = 0x2, SWP_NOACTIVATE = 0x10, SWP_NOOWNERZORDER = 0x200;
+        const int GWL_EXSTYLE = -20; const long WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000, WS_EX_APPWINDOW = 0x40000;
+        public IntPtr Handle { get { return new WindowInteropHelper(this).Handle; } }
+        /// <summary>
+        /// 넘김 쪽지의 자리(화면 화소)에 놓는다. below가 있으면 그 창 바로 아래에 놓아 겹침 순서를 지킨다(가림막은 앱 창 아래, 설치기는 가림막 아래).
+        /// 최대화였으면 그 화면의 작업 영역으로 넓힌다. 창이 만들어진 뒤(SourceInitialized 뒤)에만 부른다
+        /// </summary>
+        public void PlacePhysical(HandoffNote note, IntPtr below)
+        {
+            IntPtr hwnd = Handle;
+            if (hwnd == IntPtr.Zero || note == null || !note.HasBounds) return;
+            uint flags = SWP_NOACTIVATE | SWP_NOOWNERZORDER;
+            bool order = below != IntPtr.Zero && IsWindow(below);
+            if (!order) flags |= 0x4; // SWP_NOZORDER
+            SetWindowPos(hwnd, order ? below : IntPtr.Zero, note.X, note.Y, note.Width, note.Height, flags);
+            if (note.Maximized && !maximized) ToggleMaximize();
+        }
+        /// <summary>겹침 순서만 바꾼다: below 창 바로 아래로</summary>
+        public void StackBelow(IntPtr below)
+        {
+            IntPtr hwnd = Handle;
+            if (hwnd == IntPtr.Zero || below == IntPtr.Zero || !IsWindow(below)) return;
+            SetWindowPos(hwnd, below, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+        }
+        /// <summary>가림막: 작업 표시줄과 Alt+Tab에 나오지 않고, 눌러도 앞으로 나서지 않는다</summary>
+        public void MakeInert()
+        {
+            IntPtr hwnd = Handle;
+            if (hwnd == IntPtr.Zero) return;
+            long style = GetWindowLongPtr(hwnd, GWL_EXSTYLE).ToInt64();
+            style = (style | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE) & ~WS_EX_APPWINDOW;
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, new IntPtr(style));
+        }
+        /// <summary>
+        /// 도착 쪽지(6절)에 적을 이 창의 자리(화면 화소), 크기 상태, 마지막 장. 최대화한 창은 되돌릴 크기를 화면 화소로 바꿔 적는다
+        /// </summary>
+        public ArrivalNote Arrival(string kind, string visibility, string appVersion)
+        {
+            ArrivalNote note = new ArrivalNote { Kind = kind, Version = appVersion, Visibility = visibility ?? "front", Maximized = maximized, Cut = Math.Max(0, Math.Min(1, shown)), Lit = orb.Lit };
+            IntPtr hwnd = Handle;
+            NativeRect rect;
+            if (!maximized && hwnd != IntPtr.Zero && GetWindowRect(hwnd, out rect)) { note.X = rect.Left; note.Y = rect.Top; note.Width = rect.Right - rect.Left; note.Height = rect.Bottom - rect.Top; }
+            else {
+                Rect dip = maximized ? restoreBounds : new Rect(Left, Top, Width, Height);
+                PresentationSource source = PresentationSource.FromVisual(this);
+                Matrix m = source != null && source.CompositionTarget != null ? source.CompositionTarget.TransformToDevice : Matrix.Identity;
+                Point a = m.Transform(dip.TopLeft), b = m.Transform(dip.BottomRight);
+                note.X = (int)Math.Round(a.X); note.Y = (int)Math.Round(a.Y); note.Width = (int)Math.Round(b.X - a.X); note.Height = (int)Math.Round(b.Y - a.Y);
+            }
+            return note;
         }
         void OnWay()
         {

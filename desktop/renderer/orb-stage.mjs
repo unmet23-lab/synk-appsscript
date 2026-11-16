@@ -535,6 +535,8 @@ export function createOrbStage(canvas, options = {}) {
     setGlint(on) { glintWant = on ? 1 : 0; wake(); },
     setLit(v) { S.lit = v; wake(); },
     setSpin(v) { S.spin = v; },
+    /* 업데이트 뒤의 첫 장면에서 빛줄기와 함께 구가 한 바퀴 돈다(시안 forgeDone의 S.az) */
+    setAz(v) { if (Number.isFinite(v)) { S.az = v; wake(); } },
     /* 점 로고가 물러나는 순간 작은 구를 한 번 크게 띄운 뒤 제자리로 줄인다(시안 enter의 S.r = 5) */
     setRadius(r) { if (r > 0) S.r = r; wake(); },
     setStill(on) { still = !!on; wake(); },

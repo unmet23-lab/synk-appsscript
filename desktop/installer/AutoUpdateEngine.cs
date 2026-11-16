@@ -114,6 +114,17 @@ namespace Synk.SignalInstaller
     public sealed partial class InstallerEngine
     {
         internal int ProcessExitGraceMilliseconds = 20000;
+        /// <summary>
+        /// 새 앱이나 되돌린 앱을 켜기 바로 앞에 부른다(도착 종류, 켜질 앱의 판 번호). 설치기가 도착 쪽지를 쓴다(1-가 구현 설계 6절).
+        /// 쪽지는 업데이트 결과를 바꾸지 않는다: 여기서 난 예외는 모두 삼킨다
+        /// </summary>
+        public Action<string, string> BeforeLaunch;
+        void Arrive(string kind, string version)
+        {
+            Action<string, string> hook = BeforeLaunch;
+            if (hook == null) return;
+            try { hook(kind, version); } catch (Exception) { }
+        }
         [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
         struct ShortcutFindData
         {
@@ -266,6 +277,7 @@ namespace Synk.SignalInstaller
                 EndTransaction(backup,"updated");
                 mutationStarted = false;
                 stage = "relaunch";
+                Arrive("updated", spec.Version);
                 try { launch(Path.Combine(session.Directory,spec.ExecutableName),""); }
                 catch (Exception launchFailure)
                 {
@@ -293,6 +305,7 @@ namespace Synk.SignalInstaller
                     if (backup != null&&mutationStarted) EndTransaction(backup,"restored");
                     // The verified previous version is settled here: failing only to open
                     // it must not turn into a recovery barrier that blocks later updates.
+                    Arrive("restored", session.Version);
                     try { launch(Path.Combine(session.Directory,spec.ExecutableName),"--synk-update-recovery="+session.Nonce); }
                     catch (Exception launchFailure)
                     {

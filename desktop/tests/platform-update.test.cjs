@@ -238,6 +238,34 @@ test('post-download tampering blocks quit and post-quit-guard tampering blocks i
   await f.updater.downloadUpdate();await f.updater.installUpdate();await fsp.writeFile(file,Buffer.alloc(payload.length));
   assert.equal((await f.updater.completeInstall()).code,'UPDATE_INTEGRITY_FAILED');assert.equal(f.installed.length,0);
 });
+test('automatic Windows install makes one handoff token before quitting, passes it to the installer, and drops it when cancelled',async t=>{
+  const events=[],tokens=[];
+  const f=await fixture(t,{prepareHandoff:async info=>{events.push('prepare');tokens.push(info);},onHandoffCancelled:info=>{events.push('cancelled:'+info.reason);},requestQuit:()=>{events.push('quit');},openInstaller:async(_file,options)=>{events.push('open');tokens.push(options.token);}});
+  await f.updater.checkForUpdate();await f.updater.downloadUpdate();
+  assert.equal((await f.updater.installUpdate({automatic:true})).state,'opening');
+  assert.deepEqual(events,['prepare','quit']);
+  assert.match(tokens[0].token,/^[a-f0-9]{64}$/);assert.equal(tokens[0].version,'0.4.5');assert.ok(tokens[0].file.endsWith('.exe'));
+  f.updater.cancelInstall();assert.deepEqual(events,['prepare','quit','cancelled:cancel']);
+  await f.updater.installUpdate({automatic:true});await f.updater.completeInstall();
+  assert.deepEqual(events.slice(3),['prepare','quit','open']);
+  assert.notEqual(tokens[1].token,tokens[0].token,'a new handoff makes a new token');assert.equal(tokens[2],tokens[1].token,'the installer gets the same token as the note');
+});
+test('a failing handoff preparation never stops the update, and manual installs make no token',async t=>{
+  const seen=[];
+  const f=await fixture(t,{prepareHandoff:async()=>{throw Error('synthetic curtain failure');},openInstaller:async(_file,options)=>{seen.push(options);}});
+  await f.updater.checkForUpdate();await f.updater.downloadUpdate();
+  assert.equal((await f.updater.installUpdate({automatic:true})).state,'opening');assert.equal(f.quits(),1);
+  assert.equal((await f.updater.completeInstall()).ok,true);assert.match(seen[0].token,/^[a-f0-9]{64}$/);
+  const prepared=[];const manual=await fixture(t,{prepareHandoff:async()=>{prepared.push(1);},openInstaller:async(_file,options)=>{seen.push(options);}});
+  await manual.updater.checkForUpdate();await manual.updater.downloadUpdate();await manual.updater.installUpdate();await manual.updater.completeInstall();
+  assert.deepEqual(prepared,[]);assert.equal('token' in seen[1],false);
+});
+test('a handoff that fails at the installer cancels the curtain',async t=>{
+  const cancelled=[];
+  const f=await fixture(t,{prepareHandoff:async()=>{},onHandoffCancelled:info=>{cancelled.push(info.reason);},openInstaller:async()=>{throw Object.assign(Error('synthetic'),{updateCode:'UPDATE_HANDOFF_TIMEOUT'});}});
+  await f.updater.checkForUpdate();await f.updater.downloadUpdate();await f.updater.installUpdate({automatic:true});
+  assert.equal((await f.updater.completeInstall()).code,'UPDATE_HANDOFF_TIMEOUT');assert.deepEqual(cancelled,['failed']);
+});
 test('a failed installer handoff remains recoverable and never reports a completed installation',async t=>{
   let broken=true,launched=0;const f=await fixture(t,{openInstaller:async()=>{if(broken)throw Error('synthetic OS failure');launched++;}});
   await f.updater.checkForUpdate();await f.updater.downloadUpdate();await f.updater.installUpdate();

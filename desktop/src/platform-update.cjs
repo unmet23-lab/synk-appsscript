@@ -1,7 +1,7 @@
 'use strict';
 
 const fs=require('node:fs'),fsp=fs.promises,path=require('node:path'),https=require('node:https');
-const {createHash,randomUUID,createPublicKey,verify:verifySignature}=require('node:crypto');
+const {createHash,randomUUID,randomBytes,createPublicKey,verify:verifySignature}=require('node:crypto');
 const MANIFEST_URL='https://synk.im/desktop/releases/preview.json';
 const MAX_MANIFEST_BYTES=64*1024,MAX_INSTALLER_BYTES=2*1024*1024*1024;
 const VERSION=/^(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})$/;
@@ -114,11 +114,13 @@ async function verifyFile(filename,artifact){
   for await(const chunk of fs.createReadStream(filename)){size+=chunk.length;if(size>artifact.bytes)fail('UPDATE_INTEGRITY_FAILED');hash.update(chunk);}
   if(size!==artifact.bytes||hash.digest('hex')!==artifact.sha256)fail('UPDATE_INTEGRITY_FAILED');
 }
-function createPlatformUpdater({enabled=false,config,currentVersion,currentBuildId=config?.buildId,platform=process.platform,arch=process.arch,cacheRoot,request=requestHttps,onChange=()=>{},requestQuit=()=>{},openInstaller=async()=>{},openDiskImage=async()=>'',setInterval:repeat=setInterval,clearInterval:clearRepeat=clearInterval,checkIntervalMs=5*60*1000,timeoutMs=10*60*1000,now=Date.now,trustedKeys=PINNED_KEYS}={}){
+function createPlatformUpdater({enabled=false,config,currentVersion,currentBuildId=config?.buildId,platform=process.platform,arch=process.arch,cacheRoot,request=requestHttps,onChange=()=>{},requestQuit=()=>{},openInstaller=async()=>{},openDiskImage=async()=>'',prepareHandoff=async()=>{},onHandoffCancelled=()=>{},setInterval:repeat=setInterval,clearInterval:clearRepeat=clearInterval,checkIntervalMs=5*60*1000,timeoutMs=10*60*1000,now=Date.now,trustedKeys=PINNED_KEYS}={}){
   // Without a pinned key nothing could be verified, so the updater stays off.
   const valid=enabled&&Array.isArray(trustedKeys)&&trustedKeys.length>0&&config?.manifestUrl===MANIFEST_URL&&config?.channel==='preview'&&VERSION.test(currentVersion)&&BUILD.test(currentBuildId)&&config?.releaseId===`platform-preview-${currentVersion}`&&['win32','darwin'].includes(platform)&&['x64','arm64'].includes(arch)&&typeof cacheRoot==='string'&&path.isAbsolute(cacheRoot);
   let state=valid?'idle':'disabled',code=valid?null:'UPDATE_UNAVAILABLE',progress=0,candidate=null,readyPath=null,operation=null,controller=null,disposed=false,timer=null,started=false,handoff=false,automaticInstall=false,startupActive=false;
-  let backgroundTask=null,backgroundEpoch=0;const deferredReleases=new Set();
+  let backgroundTask=null,backgroundEpoch=0,handoffToken=null;const deferredReleases=new Set();
+  // 가림막과 넘김 쪽지(1-가 구현 설계 2절, 6절)는 모양만 바꾼다. 앱 쪽 준비가 실패해도 넘김은 지금처럼 간다
+  function handoffCancelled(reason){const token=handoffToken;handoffToken=null;try{onHandoffCancelled({reason,token});}catch{}}
   function snapshot(){return {ok:state!=='error'&&state!=='disabled',state,currentVersion:typeof currentVersion==='string'?currentVersion:'',currentBuildId:typeof currentBuildId==='string'?currentBuildId:'',latestVersion:candidate?.version||null,latestBuildId:candidate?.buildId||null,progress,code,automatic:automaticInstall,releaseId:candidate?.releaseId||null};}
   function publish(next,nextCode=null){if(disposed)return;state=next;code=nextCode;try{onChange(snapshot());}catch{}}
   function errorResult(error){const nextCode=error?.updateCode||(['ENOSPC','EACCES','EPERM','EROFS','EIO'].includes(error?.code)?'UPDATE_STORAGE_FAILED':'UPDATE_NETWORK_FAILED');automaticInstall=false;publish('error',nextCode);return snapshot();}
@@ -196,7 +198,13 @@ function createPlatformUpdater({enabled=false,config,currentVersion,currentBuild
     if(platform==='darwin'){
       try{const error=await openDiskImage(readyPath);if(error)fail('UPDATE_OPEN_FAILED');}catch{fail('UPDATE_OPEN_FAILED');}
       publish('ready','UPDATE_MANUAL_INSTALL');
-    }else{handoff=false;try{requestQuit();}catch{fail('UPDATE_OPEN_FAILED');}}
+    }else{
+      handoff=false;
+      // 넘김 토큰은 끝내기 앞에 만들어 넘김 쪽지에 담고, 같은 토큰을 설치기의 --handoff-token으로 넘긴다
+      if(automaticInstall){handoffToken=randomBytes(32).toString('hex');try{await prepareHandoff({token:handoffToken,version:candidate.version,buildId:candidate.buildId,file:readyPath});}catch{}}
+      if(disposed)fail('UPDATE_CANCELLED');
+      try{requestQuit();}catch{handoffCancelled('failed');fail('UPDATE_OPEN_FAILED');}
+    }
     return snapshot();
   });}
   // Called only after Electron's normal close/beforeunload guards have accepted.
@@ -204,10 +212,10 @@ function createPlatformUpdater({enabled=false,config,currentVersion,currentBuild
   function completeInstall(){return run('handoff',async signal=>{
     if(state!=='opening'||platform!=='win32'||handoff||!readyPath)return {...snapshot(),ok:false,code:'UPDATE_NOT_READY'};
     try{await verifyFile(readyPath,candidate.artifact);}catch{fail('UPDATE_INTEGRITY_FAILED');}if(disposed||signal.aborted)fail('UPDATE_CANCELLED');
-    try{await openInstaller(readyPath,{automatic:automaticInstall,version:candidate.version,buildId:candidate.buildId,releaseId:candidate.releaseId,artifact:{...candidate.artifact}});}catch(error){deferredReleases.add(candidate.releaseId);fail(error?.updateCode||'UPDATE_OPEN_FAILED');}
+    try{await openInstaller(readyPath,{automatic:automaticInstall,version:candidate.version,buildId:candidate.buildId,releaseId:candidate.releaseId,artifact:{...candidate.artifact},...(automaticInstall&&handoffToken?{token:handoffToken}:{})});}catch(error){deferredReleases.add(candidate.releaseId);handoffCancelled('failed');fail(error?.updateCode||'UPDATE_OPEN_FAILED');}
     handoff=true;return snapshot();
   });}
-  function cancelInstall(){if(state==='opening'&&!handoff){if(candidate)deferredReleases.add(candidate.releaseId);backgroundEpoch++;automaticInstall=false;publish('ready','UPDATE_EXIT_CANCELLED');}}
+  function cancelInstall(){if(state==='opening'&&!handoff){if(candidate)deferredReleases.add(candidate.releaseId);backgroundEpoch++;automaticInstall=false;handoffCancelled('cancel');publish('ready','UPDATE_EXIT_CANCELLED');}}
   // One periodic owner advances check -> download -> guarded automatic quit.
   // A startup/reopen gate takes ownership synchronously before joining any
   // in-flight operation, so the two callers cannot both advance the chain.

@@ -41,3 +41,10 @@ test('duplicate or malformed CLI nonce and oversized JSON are rejected without d
 test('subsequent explicit install retry issues a fresh nonce so prior proof cannot be replayed',async t=>{
   const f=await fixture(t);const fresh=await f.recovery.prepare({targetVersion:'0.4.5',installerSHA256:'a'.repeat(64)});assert.notEqual(fresh,f.nonce);assert.equal((await f.recovery.consume(f.argv)).recovered,false);
 });
+// 넘김 토큰은 끝내기 앞에 미리 만들어 넘김 쪽지에 담는다. 되돌림 기록도 같은 토큰을 쓴다(1-가 구현 설계 6절)
+test('a handoff token made ahead becomes the recovery nonce, and a malformed one is refused',async t=>{
+  const f=await fixture(t),token='b'.repeat(64);
+  assert.equal(await f.recovery.prepare({targetVersion:'0.4.5',installerSHA256:'a'.repeat(64),nonce:token}),token);
+  assert.equal(JSON.parse(await fsp.readFile(f.pendingPath,'utf8')).nonce,token);
+  await assert.rejects(f.recovery.prepare({targetVersion:'0.4.5',installerSHA256:'a'.repeat(64),nonce:'B'.repeat(64)}));
+});

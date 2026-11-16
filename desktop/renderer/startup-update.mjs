@@ -14,6 +14,10 @@ export const ORB_BOOT = Object.freeze({
   back: Object.freeze({ delay: 300, ms: 1150, asleepAt: 900, wakeAt: 1200 }),
   first: Object.freeze({ delay: 520, ms: 2400, asleepAt: 2220, wakeAt: 3300 }),
 });
+/* 업데이트 뒤 새 앱의 첫 장면(1-가 구현 설계 6절, 시안 forgeDone의 웅장한 판). 설치기 창의 마지막 장(다 깎인 구)에서 이어, 글 없이 빛이 오르며 한 바퀴 돌고
+   0.9초에 눈을 뜨고 2.15초에 잠깐 웃는다. 한 바퀴가 끝나면 쉬는 자리로 간다. 본체는 이 시간이 지난 뒤 앱 창으로 넘긴다(main.cjs ARRIVE_SCENE_MS) */
+export const ARRIVE = Object.freeze({ turn: 2800, eyesWakeAt: 900, smileAt: 2150, hold: 280, settle: 1050 });
+export const ARRIVE_SCENE_MS = ARRIVE.turn + ARRIVE.hold + ARRIVE.settle;
 /* 실패했을 때 저절로 지금 판을 여는 시간. 사람이 단추에 손을 올리거나 초점을 옮기면 멈춘다. 남은 시간은 글로 세지 않는다(5절) */
 export const AUTO_OPEN_MS = 8000;
 /* 깎인 만큼이 받은 값을 따라가는 가장 빠른 빠르기(초당). 뒤로는 가지 않는다(3절) */
@@ -74,6 +78,7 @@ export function mountStartupUpdate({
   function boot(info) {
     if (bootStarted || !orb) return;
     bootStarted = true;
+    if (info?.kind === 'arrive') { arrive(info); return; }
     const kind = info?.kind === 'first' ? 'first' : 'back', b = ORB_BOOT[kind];
     const elapsed = Number.isFinite(info?.startedAt) ? Math.max(0, now() - info.startedAt) : 0;
     orb.snap('void');
@@ -84,9 +89,41 @@ export function mountStartupUpdate({
     later(() => { if (scene === 'boot') void orb.eyesWake?.(); }, b.wakeAt - elapsed);
   }
 
+  /* ── 업데이트 뒤의 첫 장면: 설치기 창의 마지막 장에서 이어 빛이 오르며 한 바퀴 돈다(시안 forgeDone) ── */
+  function arrive(info) {
+    const elapsed = Number.isFinite(info?.startedAt) ? Math.max(0, now() - info.startedAt) : 0;
+    if (elapsed >= ARRIVE_SCENE_MS || reduced()) { orb.setCutOn?.(false, { instant: true }); orb.setLit?.(1); orb.snap('rest'); orb.eyesCalm?.(); return; }
+    scene = 'arrive';
+    const cut0 = Number.isFinite(info?.cut) ? Math.max(0, Math.min(1, info.cut)) : 1;
+    const lit0 = Number.isFinite(info?.lit) ? Math.max(0, Math.min(1.1, info.lit)) : 0.58;
+    orb.forgeAt?.(cut0); orb.setCutOn?.(true, { instant: true }); orb.snap('forge'); orb.setLit?.(lit0); orb.eyesAsleep?.();
+    // 다 깎였다: 결을 거두고 빛줄기가 돈다
+    orb.setCut?.(1); orb.setCutOn?.(false); orb.setGlint?.(true);
+    later(() => { if (scene === 'arrive') void orb.eyesWake?.(); }, ARRIVE.eyesWakeAt - elapsed);
+    later(() => { if (scene === 'arrive') void orb.setMood?.('smile', 1100); }, ARRIVE.smileAt - elapsed);
+    const az0 = orb.state?.().az ?? 0, t0 = now() - elapsed;
+    const step = () => {
+      if (disposed || scene !== 'arrive' || !orb) return;
+      const k = Math.min(1, (now() - t0) / ARRIVE.turn);
+      orb.setAz?.(az0 + Math.PI * 2 * easeIO(k));
+      orb.setLit?.(lerp(lit0, 1.1, smooth(0, 0.75, k)));
+      if (k < 1) { later(step, 16); return; }
+      orb.setAz?.(az0); orb.setGlint?.(false); orb.setLit?.(1);
+      later(() => { if (scene === 'arrive') void orb.tween('rest', ARRIVE.settle, easeIO); }, ARRIVE.hold);
+    };
+    step();
+  }
   /* ── 새 판을 받는 동안: 옛 결을 지우며 구가 다가오고, 받는 만큼(앞 절반)과 바꾸는 만큼(뒤 절반) 새 결이 깎인다 ── */
   function enterForge() {
     if (scene === 'forge' || !orb) return;
+    // 앱 창 위에 덮어 띄운 넘김 장면(본체 boot.kind 'handoff'): 받기가 끝난 절반 깎인 구가 이미 와 있고 글도 바로 놓인다. 가림막과 설치기가 같은 장에서 잇는다
+    if (snapshot.boot?.kind === 'handoff') {
+      scene = 'forge'; bootStarted = true; shown = target = 0.5;
+      orb.forgeAt?.(0.5); orb.setCutOn?.(true, { instant: true }); orb.snap('forge'); orb.eyesAsleep?.();
+      if (nodes.root.dataset) nodes.root.dataset.instant = 'true';
+      setUi('forge');
+      return;
+    }
     scene = 'forge'; shown = 0;
     void orb.setMood?.('sleep');
     orb.setCut?.(1); orb.setCutOn?.(true);

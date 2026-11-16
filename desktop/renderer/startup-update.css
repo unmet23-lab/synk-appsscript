@@ -189,3 +189,5 @@ button { font: inherit; color: inherit; }
 }
 :root[data-motion="reduced"] .startup-forge,
 :root[data-motion="reduced"] .rise { transition: none !important; }
+/* 앱 창 위에 덮어 띄운 넘김 장면: 앱 창과 가림막 사이에서 글이 다시 떠오르지 않게 바로 놓는다(1-가 구현 설계 2절) */
+#startup-update[data-instant="true"] .startup-forge, #startup-update[data-instant="true"] .rise { transition: none !important; }

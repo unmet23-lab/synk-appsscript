@@ -14,10 +14,11 @@ function createUpdateRecovery({cacheRoot,localAppData,executablePath,asarPath,cu
   if(appId!=='im.synk.platform.preview'||![cacheRoot,localAppData,executablePath,asarPath].every(value=>typeof value==='string'&&path.isAbsolute(value)))fail();
   const pendingPath=path.join(cacheRoot,'pending-auto-update.json'),markerPath=path.join(localAppData,'SYNK','Installer','Recovery',appId+'.json');
   const same=(a,b)=>typeof a==='string'&&path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase();
-  async function prepare({targetVersion,installerSHA256}={}){
-    if(typeof targetVersion!=='string'||!/^\d+\.\d+\.\d+$/.test(targetVersion)||!HASH.test(installerSHA256||''))fail();
+  // 넘김 토큰은 끝내기 앞(opening)에 미리 만들어 넘김 쪽지에 담는다. 같은 토큰을 되돌림 기록과 --handoff-token에 쓴다(1-가 구현 설계 6절)
+  async function prepare({targetVersion,installerSHA256,nonce:given}={}){
+    if(typeof targetVersion!=='string'||!/^\d+\.\d+\.\d+$/.test(targetVersion)||!HASH.test(installerSHA256||'')||given!==undefined&&!HASH.test(given||''))fail();
     await noLinks(cacheRoot);await fsp.mkdir(cacheRoot,{recursive:true,mode:0o700});await noLinks(pendingPath);
-    const nonce=randomBytes(32).toString('hex');
+    const nonce=given||randomBytes(32).toString('hex');
     const record={schemaVersion:1,appId,nonce,targetVersion,installerSHA256,oldVersion:currentVersion,oldexeSHA:await digest(executablePath),oldasarSHA:await digest(asarPath),expectedexePath:path.resolve(executablePath),createdAt:new Date(now()).toISOString()};
     const temporary=pendingPath+'.'+nonce+'.partial';
     try{await fsp.writeFile(temporary,JSON.stringify(record),{flag:'wx',mode:0o600});await fsp.rename(temporary,pendingPath);}finally{await fsp.unlink(temporary).catch(error=>{if(error.code!=='ENOENT')throw error;});}

@@ -57,3 +57,13 @@ test('destroyed window removes screen listeners and cancels a queued display adj
   for(const event of ['move','resize','show','restore','maximize','unmaximize','close'])assert.equal(f.window.listenerCount(event),0);
   assert.deepEqual(f.calls,[]);
 });
+// 업데이트 뒤 새 앱은 도착 쪽지의 설치기 창 자리를 쓴다. 화면 밖이면 지금처럼 화면 안으로 맞춘다(1-가 구현 설계 6절)
+test('an adopted arrival place is fitted to the screen and does not overwrite the saved file until the window moves',t=>{
+  const f=fixture(t);
+  assert.equal(f.placement.adopt({x:200,y:100,width:1300,height:900},{maximized:true}),true);
+  assert.deepEqual(f.placement.restore(),{x:200,y:100,width:1300,height:900,minWidth:960,minHeight:680,maximized:true});
+  assert.equal(f.read().x,50,'the saved file is unchanged by adopting');
+  assert.equal(f.placement.adopt({x:5000,y:5000,width:1300,height:900}),true);
+  const fitted=f.placement.restore();assert.equal(fitted.x,310);assert.equal(fitted.y,70);
+  for(const bad of [null,{x:1,y:1,width:0,height:5},{x:NaN,y:0,width:10,height:10}])assert.equal(f.placement.adopt(bad),false);
+});

@@ -24,6 +24,9 @@ namespace Synk.SignalInstaller
                 InstallSpec spec;
                 using (Stream stream = assembly.GetManifestResourceStream("install.json"))
                     spec = (InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
+                // 가림막 방식: 다른 인자가 무엇이든 설치하지 않고 가림막만 그린다. 설치 엔진과 뮤텍스를 쓰지 않는다(1-가 구현 설계 2절)
+                string curtainToken;
+                if (Handoff.IsCurtain(args, out curtainToken)) return Curtain.Run(assembly, spec, curtainToken);
                 AutomaticArguments automatic = ParseAutomaticArguments(args);
                 if (automatic == null) WaitForUpdatingApplication(args, spec.ExecutableName);
                 SignalProduct product = SignalProduct.ById(spec.Product);
@@ -45,10 +48,7 @@ namespace Synk.SignalInstaller
                     try
                     {
                         cache = InstallerEngine.CreatePrivateCache();
-                        foreach (string resource in assembly.GetManifestResourceNames())
-                            if (resource.StartsWith("font."))
-                                using (Stream source = assembly.GetManifestResourceStream(resource))
-                                using (FileStream target = new FileStream(Path.Combine(cache, resource.Substring(5)), FileMode.CreateNew, FileAccess.Write)) source.CopyTo(target);
+                        ExtractFonts(assembly, cache);
                         InstallerEngine engine = new InstallerEngine(spec, delegate { return assembly.GetManifestResourceStream("backend.exe"); });
                         Application app = new Application();
                         // Platform은 검정 구 새 창으로 그린다(검정 구 1-가 ③). WORLD와 Workspace는 아래 지금 창 그대로다
@@ -127,6 +127,14 @@ namespace Synk.SignalInstaller
             finally { if (cache != null) try { Directory.Delete(cache, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
         }
 
+        internal static void ExtractFonts(Assembly assembly, string cache)
+        {
+            foreach (string resource in assembly.GetManifestResourceNames())
+                if (resource.StartsWith("font."))
+                    using (Stream source = assembly.GetManifestResourceStream(resource))
+                    using (FileStream target = new FileStream(Path.Combine(cache, resource.Substring(5)), FileMode.CreateNew, FileAccess.Write)) source.CopyTo(target);
+        }
+
         sealed class Flag { public volatile bool Value; }
 
         /// <summary>
@@ -135,9 +143,41 @@ namespace Synk.SignalInstaller
         /// </summary>
         static void RunPlatform(Application app, InstallerEngine engine, InstallSpec spec, string cache, SignalProduct product, AutomaticArguments automatic, Assembly assembly, Action release)
         {
+            // 앱이 끝낸 가림막은 캐시를 지우지 못한다. 주인 없는 가림막 캐시를 지운다(2절 가림막 8번)
+            Handoff.CleanupOrphanCurtainCaches();
             OrbWindow window = new OrbWindow(cache, spec.Version, product);
             window.SetInstalled(Directory.Exists(Environment.ExpandEnvironmentVariables(spec.InstallDirectory)));
             Action<InstallProgress> report = delegate(InstallProgress progress) { window.Dispatcher.Invoke(delegate { window.ShowProgress(progress); }); };
+            // 넘김 쪽지(6절): 앱 창의 자리와 보이는 상태, 가림막에 알릴 이벤트. 토큰, 앱 프로세스 번호, 판 번호가 모두 맞을 때만 읽는다
+            HandoffNote note = automatic != null ? Handoff.ReadHandoff(spec.AppId, automatic.Token, automatic.ParentId, spec.Version) : null;
+            IntPtr curtainWindow = note != null && note.CurtainEvent != null ? CurtainWindow.Find(assembly.Location) : IntPtr.Zero;
+            // 새 앱의 첫 창이 설치기 창의 자리와 모습을 이어받는다. 다른 창 뒤에서 넘어온 업데이트만 「뒤」로 남긴다
+            string arrivalVisibility = note != null && note.Behind ? "behind" : "front";
+            Action<string, string> arrive = delegate(string kind, string appVersion)
+            {
+                ArrivalNote arrival = null;
+                try { arrival = (ArrivalNote)window.Dispatcher.Invoke(new Func<ArrivalNote>(delegate { return window.Arrival(kind, arrivalVisibility, appVersion); })); }
+                catch (Exception) { }
+                if (arrival != null) Handoff.WriteArrival(spec.AppId, arrival);
+            };
+            engine.BeforeLaunch = arrive;
+            if (note != null)
+            {
+                // 가림막 아래에 같은 모습으로 뜬다. 앞으로 나서지 않는다. 가림막이 끝나면 그 자리가 그대로 드러난다.
+                // 가림막이 없으면(모든 창이 숨었거나 최소화) 앱 창이 기억한 자리에 지금처럼 앞으로 뜬다
+                if (note.CurtainEvent != null || note.Behind) window.ShowActivated = false;
+                window.SourceInitialized += delegate { window.PlacePhysical(note, curtainWindow); };
+            }
+            bool rendered = false, readySeen = false, curtainReleased = false;
+            Action releaseCurtain = delegate
+            {
+                if (curtainReleased || !rendered || !readySeen) return;
+                curtainReleased = true;
+                if (note == null || note.CurtainEvent == null) return;
+                try { using (EventWaitHandle done = EventWaitHandle.OpenExisting(note.CurtainEvent)) done.Set(); } catch (Exception) { }
+                if (!note.Behind) { try { window.Activate(); } catch (InvalidOperationException) { } }
+            };
+            window.ContentRendered += delegate { rendered = true; if (note != null) window.StackBelow(curtainWindow); releaseCurtain(); };
             Func<Task> handOver = async delegate
             {
                 release();
@@ -150,7 +190,7 @@ namespace Synk.SignalInstaller
                 window.Loaded += async delegate
                 {
                     if (started) return; started = true;
-                    window.BeginAutomatic();
+                    window.BeginAutomatic(note != null, note != null ? note.Cut : 0.5);
                     Flag ready = new Flag();
                     try
                     {
@@ -160,6 +200,8 @@ namespace Synk.SignalInstaller
                             {
                                 Console.WriteLine("SYNK_UPDATE_READY " + automatic.Token); Console.Out.Flush();
                                 ready.Value = true;
+                                // 첫 장을 그린 뒤 READY를 썼으면 가림막에 끝나라고 알린다(2절 가림막 6번)
+                                window.Dispatcher.BeginInvoke(new Action(delegate { readySeen = true; releaseCurtain(); }));
                                 return engine.InstallAutomaticUpdate(request, report);
                             }
                         });
@@ -190,17 +232,142 @@ namespace Synk.SignalInstaller
                     await window.FinishCut();
                 }
                 catch (Exception error) { window.ShowInstallFailure(error); return; }
+                arrive("installed", spec.Version);
                 try { engine.Launch(); }
                 catch (Exception error) { window.ShowLaunchFailure(error); return; }
                 await handOver();
             };
             window.LaunchRequested += async delegate
             {
+                // 실패 뒤 「열기」: 사람이 설치기 창을 보고 눌렀으므로 새 앱은 앞으로 연다
+                arrivalVisibility = "front";
+                arrive(automatic != null ? "updated" : "installed", spec.Version);
                 try { engine.Launch(); }
                 catch (Exception error) { window.ShowLaunchFailure(error); return; }
                 await handOver();
             };
             app.Run(window);
+        }
+
+        /// <summary>
+        /// 가림막(1-가 구현 설계 2절). 앱이 끝나며 창을 닫는 동안 화면을 지킨다. 앱 창 바로 아래에 같은 구와 같은 글을 그리고,
+        /// 첫 장을 그리면 표준 출력에 SYNK_CURTAIN_READY를 쓴다. 앱이 표준 입력으로 보내는 「cancel」이면 바로 끝나고, 「closing」이면 설치기의 알림을 기다린다.
+        /// 스스로 끝나는 상한은 둘이다: 앱 창이 닫힌 뒤 60초, 「closing」 없이 입력이 닫힌 뒤 10초.
+        /// 설치 엔진, 설치 등록, 바로가기, 설치기의 뮤텍스를 건드리지 않고, 만드는 파일은 개인 캐시뿐이다
+        /// </summary>
+        internal static class Curtain
+        {
+            internal const int AppGoneMilliseconds = 60000, InputGoneMilliseconds = 10000;
+            [DllImport("user32.dll")] static extern bool IsWindow(IntPtr hwnd);
+
+            internal static int Run(Assembly assembly, InstallSpec spec, string token)
+            {
+                string cache = null;
+                EventWaitHandle done = null;
+                try
+                {
+                    Handoff.CleanupOrphanCurtainCaches();
+                    SignalProduct product = SignalProduct.ById(spec.Product);
+                    if (product.Id != "platform" || token == null) return 2;
+                    // 쪽지를 읽지 못하면 앉을 자리를 모른다. READY를 쓰지 않고 끝나, 앱이 가림막 없이 넘긴다(2절 가림막 8번)
+                    HandoffNote note = Handoff.ReadHandoff(spec.AppId, token, 0, spec.Version);
+                    if (note == null || note.CurtainEvent == null || !note.HasBounds) return 3;
+                    bool created;
+                    done = new EventWaitHandle(false, EventResetMode.ManualReset, note.CurtainEvent, out created);
+                    cache = Handoff.CreateCurtainCache();
+                    ExtractFonts(assembly, cache);
+                    Application app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+                    OrbWindow window = new OrbWindow(cache, spec.Version, product);
+                    window.BeginCurtain(note.Cut);
+                    IntPtr appWindow = new IntPtr(note.Window);
+                    window.SourceInitialized += delegate { window.MakeInert(); window.PlacePhysical(note, appWindow); };
+                    bool announced = false, finished = false;
+                    Action finish = delegate
+                    {
+                        if (finished) return; finished = true;
+                        window.CloseNow(); app.Shutdown();
+                    };
+                    window.ContentRendered += delegate
+                    {
+                        if (announced) return; announced = true;
+                        window.StackBelow(appWindow);
+                        Console.WriteLine("SYNK_CURTAIN_READY"); Console.Out.Flush();
+                    };
+                    // 앱이 보내는 두 말. 입력이 닫히는 것만으로는 앱이 끝났는지 취소했는지 가를 수 없어 닫힘이 아니라 이 두 말로 가른다
+                    Flag closing = new Flag(), cancelled = new Flag(), inputGone = new Flag();
+                    Thread reader = new Thread(delegate()
+                    {
+                        try
+                        {
+                            string line;
+                            while ((line = Console.In.ReadLine()) != null)
+                            {
+                                line = line.Trim();
+                                if (line == "cancel") { cancelled.Value = true; break; }
+                                if (line == "closing") closing.Value = true;
+                            }
+                        }
+                        catch (Exception) { }
+                        inputGone.Value = true;
+                    }) { IsBackground = true };
+                    reader.Start();
+                    Stopwatch clock = Stopwatch.StartNew();
+                    long appGoneAt = -1, inputGoneAt = -1;
+                    System.Windows.Threading.DispatcherTimer watch = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+                    watch.Tick += delegate
+                    {
+                        long now = clock.ElapsedMilliseconds;
+                        if (cancelled.Value) { finish(); return; }
+                        try { if (done.WaitOne(0)) { finish(); return; } } catch (Exception) { finish(); return; }
+                        if (inputGone.Value && !closing.Value) { if (inputGoneAt < 0) inputGoneAt = now; else if (now - inputGoneAt > InputGoneMilliseconds) { finish(); return; } }
+                        if (!IsWindow(appWindow)) { if (appGoneAt < 0) appGoneAt = now; else if (now - appGoneAt > AppGoneMilliseconds) { finish(); return; } }
+                    };
+                    watch.Start();
+                    window.Show();
+                    app.Run();
+                    return 0;
+                }
+                catch (Exception) { return 1; }
+                finally
+                {
+                    if (done != null) done.Dispose();
+                    if (cache != null) try { Directory.Delete(cache, true); } catch (Exception) { }
+                }
+            }
+        }
+
+        /// <summary>가림막 창 찾기: 설치기와 같은 실행 파일(앱이 받은 새 판 설치 파일)로 켜진 다른 프로세스의 보이는 창</summary>
+        internal static class CurtainWindow
+        {
+            delegate bool EnumProc(IntPtr window, IntPtr parameter);
+            [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc callback, IntPtr parameter);
+            [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr window);
+            [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr window, out uint process);
+            internal static IntPtr Find(string executable)
+            {
+                try
+                {
+                    var owners = new System.Collections.Generic.HashSet<uint>();
+                    int self = Process.GetCurrentProcess().Id;
+                    foreach (Process process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(executable)))
+                        using (process)
+                        {
+                            try { if (process.Id != self && String.Equals(Path.GetFullPath(process.MainModule.FileName), Path.GetFullPath(executable), StringComparison.OrdinalIgnoreCase)) owners.Add((uint)process.Id); }
+                            catch (Exception) { }
+                        }
+                    if (owners.Count == 0) return IntPtr.Zero;
+                    IntPtr found = IntPtr.Zero;
+                    EnumWindows(delegate(IntPtr window, IntPtr parameter)
+                    {
+                        if (!IsWindowVisible(window)) return true;
+                        uint owner; GetWindowThreadProcessId(window, out owner);
+                        if (owners.Contains(owner)) { found = window; return false; }
+                        return true;
+                    }, IntPtr.Zero);
+                    return found;
+                }
+                catch (Exception) { return IntPtr.Zero; }
+            }
         }
 
         internal sealed class AutomaticArguments { internal int ParentId; internal string Token; }
