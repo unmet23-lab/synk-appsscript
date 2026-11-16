@@ -396,14 +396,18 @@ export function createOrbStage(canvas, options = {}) {
   }
   async function blink() { const k = ++eye.token; await lidTo(0, 90); if (k !== eye.token) return; await lidTo(1, 170, easeOut); }
   function eyeStop() { ++eye.token; if (eye.lid) { const l = eye.lid; eye.lid = null; l.res(); } }
+  /* 표정을 바꾸거나 눈을 뜨는 동안에는 깜빡임을 1.4초 뒤로 민다. 눈꺼풀 하나가 끝나는 장에서는 다음 걸음(약속의 뒤)보다 깜빡임 검사가 먼저 돌아,
+   * 밀려 있던 깜빡임이 토큰을 올려 막 시작한 표정 바꾸기를 지웠다(웃어야 할 때 웃지 않음, 시안 0932c18ab와 같은 고침) */
   async function setMood(m, ms = 0) {
     if (MOOD_NO[m] === undefined) return;
+    eye.nextBlink = now() + 1400;
     const k = ++eye.token;
     if (m !== eye.mood) { await lidTo(0, 110); if (k !== eye.token) return; eye.mood = m; eyesChanged(); await lidTo(1, m === 'calm' ? 260 : 190, easeOut); if (k !== eye.token) return; }
     if (ms) { await new Promise(r => win.setTimeout(r, reduced() ? Math.min(ms, 120) : ms)); if (k !== eye.token) return; void setMood('calm'); }
   }
   function eyesAsleep() { eyeStop(); eye.mood = 'sleep'; eye.open = 1; eye.gate = 1; eyesChanged(); wake(); }
   async function eyesWake() {
+    eye.nextBlink = now() + 1400;
     const k = ++eye.token; eye.gate = 1;
     await lidTo(0, 160); if (k !== eye.token) return;
     eye.mood = 'calm'; eyesChanged();
