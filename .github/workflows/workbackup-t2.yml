@@ -34,8 +34,12 @@ jobs:
             /experiences/solo-backup-rust/contract/
             /experiences/solo-backup-rust/scripts/stage-ui.cjs
             /experiences/solo-backup-rust/bridge/
+            /experiences/solo-backup-rust/ui/
             /experiences/solo-backup/ui/
             /experiences/solo-backup/assets/
+            /tools/lib/브랜드폰트.js
+            /docs/브랜드_폰트/SUIT/SUIT-Variable.woff2
+            /docs/브랜드_폰트/SUIT/LICENSE_OFL.txt
       - uses: actions/setup-node@v5
         with:
           node-version: 24
@@ -47,6 +51,12 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $src 'experiences') | Out-Null
           Copy-Item -Recurse -LiteralPath 'experiences/solo-backup-rust' -Destination (Join-Path $src 'experiences/solo-backup-rust')
           Copy-Item -Recurse -LiteralPath 'experiences/solo-backup' -Destination (Join-Path $src 'experiences/solo-backup')
+          # 창 화면 옮기기(stage-ui.cjs, 11-16)가 저장소 정본의 SUIT 글꼴과 그 지문 모듈을 읽는다 — 같은 상대 자리로 함께 꺼낸다
+          foreach ($f in @('tools/lib/브랜드폰트.js', 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2', 'docs/브랜드_폰트/SUIT/LICENSE_OFL.txt')) {
+            $to = Join-Path $src $f
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $to) | Out-Null
+            Copy-Item -LiteralPath $f -Destination $to
+          }
           "SWB_SRC=$src" >> $env:GITHUB_ENV
       - name: stage the window UI the Tauri build script reads
         shell: pwsh
