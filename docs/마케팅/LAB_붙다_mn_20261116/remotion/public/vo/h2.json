@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "비행기도 멈춰요",
+ "dur": 1.472,
+ "words": [
+  {
+   "text": "비행기도",
+   "start": 0.16,
+   "end": 0.643
+  },
+  {
+   "text": "멈춰요",
+   "start": 0.703,
+   "end": 1.472
+  }
+ ],
+ "source": {
+  "key": "63e3589840f5e4d878a4d66a7aea8b86",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1143,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "수능. 해설이 신기한 사실을 알려 주듯 살짝 놀라며 말한다. 영어 듣기 시간에는 비행기도 뜨고 내리지 않는다.",
+   "next": "엿이다!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 460
+ }
+}

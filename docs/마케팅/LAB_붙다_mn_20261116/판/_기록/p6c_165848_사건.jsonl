@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e35d-abde-7391-83ca-2ba476987cc9"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one felt-diorama image using your corridor and Mongle references, with the open door carrying Mongle along.\n\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle clings by golden yeot to the open “TOPIK 시험장” door, revealing a softly blurred felt classroom."}}
+{"type":"turn.completed","usage":{"input_tokens":45181,"cached_input_tokens":38144,"cache_write_input_tokens":0,"output_tokens":963,"reasoning_output_tokens":0}}

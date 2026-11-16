@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, building, plant, vehicle and doll is made of felted wool and fabric, soft fuzzy fibres visible, shallow depth of field like a macro photo of a stop-motion set. 
+
+FORMAT: portrait 2:3. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped). The top 24% of the image is ONLY plain background (sky or wall) — nothing important there. Keep the main action between 30% and 66% of the image height; the bottom 22% is plain ground or floor (a caption panel will cover it).
+
+YEOT (Korean taffy, appears in several panels): traditional Korean yeot — short thick sticks of golden-amber, slightly glossy, chewy taffy, each about as long as Mongle's face is wide, made of felted wool in warm honey-gold with a soft shine. They clearly look like sticks of golden candy, not stains or blobs.
+
+SCENE: the felt airport from the FIRST attached photo (same white felt airplane, grey felt taxiway, soft afternoon light, pale sky), now a close-up from the side of the front of the airplane standing completely still on the taxiway. Through the round cockpit window we clearly see MONGLE sitting as the pilot: its body puffed up, cheeks bulging, eyes squeezed shut as two curved stitched lines, holding its breath and keeping perfectly quiet. Just outside, the felt ground-crew doll in an orange vest holds one hand up in a "wait" gesture and presses one finger to its lips ("shh"). The engines are still, nothing moves. The cockpit window with Mongle is the centre of the picture, between 34% and 60% of the image height and between 25% and 75% of the width.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera; closed eyes are two short curved dark stitched lines). Mongle has NO arms, NO legs, NO hands, ever — it moves by tilting, squashing, stretching and bouncing its whole soft body; things it carries rest on its head or stick to its body.
+Exactly ONE Mongle. Absolutely no text, letters, numbers, logos, symbols, signs, speech bubbles or watermarks anywhere — no writing on the gate, buildings, planes, box, clothes or doors.

@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1151,
+  "lufs": -16
+ },
+ "made": "2026-11-16T08:05:45.393Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "붙어라…!",
+   "dur": 0.763,
+   "syllablesPerSec": 3.93,
+   "src": "m1.wav",
+   "key": "1e1f351cd74b73ec21ccecdf0b4c694d",
+   "words": 1
+  },
+  {
+   "id": "h1",
+   "text": "수능",
+   "dur": 0.679,
+   "syllablesPerSec": 2.95,
+   "src": "h1.wav",
+   "key": "473d5608dcdb8f76970067d0bac531a2",
+   "words": 1
+  },
+  {
+   "id": "h2",
+   "text": "비행기도 멈춰요",
+   "dur": 1.472,
+   "syllablesPerSec": 4.76,
+   "src": "h2.wav",
+   "key": "63e3589840f5e4d878a4d66a7aea8b86",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "엿이다!",
+   "dur": 0.617,
+   "syllablesPerSec": 4.86,
+   "src": "m2.wav",
+   "key": "d2db70f6a72421be897d9bfb6f62d44b",
+   "words": 1
+  },
+  {
+   "id": "m3",
+   "text": "붙었다…!",
+   "dur": 0.953,
+   "syllablesPerSec": 3.15,
+   "src": "m3.wav",
+   "key": "e4bfe8e905fbbc6b5e73862fed897ec5",
+   "words": 1
+  },
+  {
+   "id": "h3",
+   "text": "시험에 붙다",
+   "dur": 1.16,
+   "syllablesPerSec": 4.31,
+   "src": "h3.wav",
+   "key": "f631c7958f7880f56316c214506bf0fe",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "토픽, 붙어라!",
+   "dur": 1.164,
+   "syllablesPerSec": 4.3,
+   "src": "m4.wav",
+   "key": "dc2469c05b45350a760fe2005521f717",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "붙어라!",
+   "dur": 0.74,
+   "syllablesPerSec": 4.05,
+   "src": "m5.wav",
+   "key": "f07d447c28fd80ce69925de3b9e7166c",
+   "words": 1
+  },
+  {
+   "id": "m6",
+   "text": "붙었다!",
+   "dur": 0.775,
+   "syllablesPerSec": 3.87,
+   "src": "m6.wav",
+   "key": "9cfd85d48084fb3019abb0079d53af84",
+   "words": 1
+  }
+ ]
+}

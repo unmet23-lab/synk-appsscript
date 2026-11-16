@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "토픽, 붙어라!",
+ "dur": 1.164,
+ "words": [
+  {
+   "text": "토픽,",
+   "start": 0.02,
+   "end": 0.425
+  },
+  {
+   "text": "붙어라!",
+   "start": 0.587,
+   "end": 1.164
+  }
+ ],
+ "source": {
+  "key": "dc2469c05b45350a760fe2005521f717",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1143,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "시험에 붙다. 몽글이 머리에 엿을 이고 시험장 문으로 뛰어가 힘차게 외친다. 자기 토픽 시험에 꼭 붙고 싶다.",
+   "next": "붙어라!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 529
+ }
+}

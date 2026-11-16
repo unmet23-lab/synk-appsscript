@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5",
+ "text": "붙어라!",
+ "dur": 0.74,
+ "words": [
+  {
+   "text": "붙어라!",
+   "start": 0.07,
+   "end": 0.74
+  }
+ ],
+ "source": {
+  "key": "f07d447c28fd80ce69925de3b9e7166c",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1143,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "토픽, 붙어라! 엿을 문에 철썩 붙이고 고개 숙여 다시 한 번 씩씩하게 빈다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 500
+ }
+}
