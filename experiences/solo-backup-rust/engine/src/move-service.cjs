@@ -12,6 +12,9 @@ const plan = require('./move-plan.cjs');
 const { restoreSettings } = require('./move-settings.cjs');
 
 const STATE = 'move.json';
+/** 화면 세션 E19: the move kit the last move used, as it came from the repository; and, in a file of their own, the ids
+ *  of its 「다시 로그인할 곳」 (E17), so the state never reads the kit (GPT workbackup-move-e16e24 GA1). */
+const KIT_FILE = 'move-kit.json', KIT_IDS = 'move-kit-checklist.json';
 const newId = () => crypto.randomBytes(8).toString('hex');
 async function readJson(file) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return null; } }
 /** Each write its own temporary name (카본 끝판 E3), so two never share one. */
@@ -109,9 +112,13 @@ function placed(folders, choices, { old, now }) {
 }
 
 class MoveService {
-  constructor({ engine, host, stateDir, localDir, server = null }) {
-    Object.assign(this, { engine, host, stateDir, localDir, server });
-    this.file = path.join(stateDir, STATE); this.ledgerDir = path.join(localDir, 'migration');
+  /** `repo(fn)` runs a read of the repository when the window may (the worker: no engine job, under the engine lock);
+   *  「프로그램과 설정」 asks for it only when no kit is kept on this PC (화면 세션 E19). */
+  constructor({ engine, host, stateDir, localDir, server = null, repo = fn => fn() }) {
+    Object.assign(this, { engine, host, stateDir, localDir, server, repo });
+    this.file = path.join(stateDir, STATE); this.ledgerDir = path.join(localDir, 'migration'); this.kitFile = path.join(stateDir, KIT_FILE); this.kitIdsFile = path.join(stateDir, KIT_IDS);
+    /** 화면 세션 E18: how often the elevated side's progress is read while it runs. */
+    this.pollMs = 2000;
     this.queue = Promise.resolve();
     /** 화면 세션 E8: the old device's lists last read (`lists`), and the backups' list a moment ago. */
     this.kept = null; this.forget = null; this.recent = null; this.clock = () => Date.now();
@@ -167,7 +174,40 @@ class MoveService {
     if (loaded === undefined) loaded = await kits.loadKit(this.engine, from);
     const now = await this.host('folders.snapshot', []);
     // Without a kit the old places are unknown: the person picks; the plan then uses this PC's own layout for both.
-    return { kit: loaded?.kit || null, problems: loaded?.problems || ['no-kit'], old: loaded?.kit?.snapshot || now, now };
+    return { kit: loaded?.kit || null, problems: loaded?.problems || ['no-kit'], old: loaded?.kit?.snapshot || now, now, loaded };
+  }
+  /**
+   * 화면 세션 E19: the kit the last move used, kept on this PC, so 「프로그램과 설정」 needs no repository — also while the
+   * first backup after the handover runs. It is read back as any kit is (parseKit): a file on this PC is not trusted more
+   * than the repository. `undefined`: none kept for `from` (or one that does not read); `null`: that device had none.
+   */
+  async savedKit(from) {
+    const saved = await readJson(this.kitFile);
+    if (!saved || typeof from !== 'string' || saved.from !== from) return undefined;
+    if (saved.none === true) return null;
+    if (typeof saved.text !== 'string') return undefined;
+    const parsed = kits.parseKit(saved.text);
+    return parsed.kit ? { ...parsed, snapshotId: saved.snapshotId ?? null, at: saved.at ?? null, text: saved.text } : undefined;
+  }
+  /** Beside the kit, in their own small file, the ids of its 「다시 로그인할 곳」 (화면 세션 E17): the state counts what is
+   *  left without reading a kit of up to 32 MB each time. */
+  async saveKit(from, loaded) {
+    if (typeof from !== 'string' || loaded === undefined) return;
+    if (loaded === null) await writeJson(this.kitFile, { from, none: true });
+    else if (typeof loaded?.text === 'string') await writeJson(this.kitFile, { from, snapshotId: loaded.snapshotId ?? null, at: loaded.at ?? null, text: loaded.text });
+    else return;
+    await writeJson(this.kitIdsFile, { from, checklist: apps.checklist(loaded?.kit || null).map(i => i.id) });
+  }
+  /** The 「다시 로그인할 곳」 ids kept for `from` (their own file, never the kit); `null` when none are kept. */
+  async keptChecklist(from) {
+    const saved = await readJson(this.kitIdsFile);
+    return saved && typeof from === 'string' && saved.from === from && Array.isArray(saved.checklist) && saved.checklist.every(x => typeof x === 'string') ? saved.checklist : null;
+  }
+  /** The context 「프로그램과 설정」 works in: the kit kept on this PC, else the repository's when the window may read it. */
+  async kitContext(from) {
+    const saved = await this.savedKit(from);
+    if (saved !== undefined) return this.context(from, saved);
+    return this.repo(async () => { const ctx = await this.context(from); await this.saveKit(from, ctx.loaded); return ctx; });
   }
   /** 「자리 고르기」: each folder's default, choices, counts and the space per volume. Pins the old device's backup. */
   async preview({ from, choices = {} }) {
@@ -217,6 +257,8 @@ class MoveService {
     choices = used;
     // 화면 세션 E8: the lists the preview read a moment ago (the same backups) are taken and let go: the run keeps them.
     const lists = await this.lists(from); this.drop();
+    // 화면 세션 E19: the kit this move uses is kept on this PC for 「프로그램과 설정」.
+    await this.saveKit(from, lists.loaded);
     const ctx = await this.context(from, lists.loaded);
     // 화면 세션 E7: the progress names the folder being fetched. E11: what the last finished move placed is taken over.
     const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId, ledgerDir: this.ledgerDir, carryFrom: carryFrom ?? null, plans: lists.plans,
@@ -260,17 +302,26 @@ class MoveService {
     return list.filter(p => typeof p === 'string' && plan.safePath(p) && !seen.has(p.toLowerCase()) && seen.add(p.toLowerCase()));
   }
   /** 「옮겨 오기」의 지금 (화면 세션 E1): a move stopped part-way — the PC off, the app ended — leaves no job, no result and
-   *  no failure, so the screen reads it here (`unfinished`: started, no result yet). Whether one runs now is the window's. */
+   *  no failure, so the screen reads it here (`unfinished`: started, no result yet). Whether one runs now is the window's.
+   *  화면 세션 E17: the last installs and settings put back, and how many of 「다시 로그인할 곳」 are left (from the ids kept
+   *  beside the kit on this PC: this reads no repository and no kit; `null` without them). E24: `begun` — the move began placing files, so a
+   *  start goes on with the places it was started with (startState). */
   async status() {
     const st = await this.state();
     const when = v => (typeof v === 'string' && Number.isFinite(Date.parse(v)) ? v : null);
     const result = st.result && typeof st.result === 'object' ? st.result : null;
-    return { from: typeof st.from === 'string' ? st.from : null, choices: st.choices && typeof st.choices === 'object' && !Array.isArray(st.choices) ? st.choices : {},
-      startedAt: when(st.startedAt), unfinished: !!when(st.startedAt) && unfinishedOf({ startedAt: st.startedAt, result }), released: when(st.released), resultAt: when(result?.at), complete: result ? result.complete === true : null };
+    const ended = v => (v && typeof v === 'object' && when(v.at) && Array.isArray(v.results) ? { at: v.at, results: v.results } : null);
+    const from = typeof st.from === 'string' ? st.from : null;
+    const ids = await this.keptChecklist(from).catch(() => null);
+    const done = new Set(Array.isArray(st.checked) ? st.checked : []);
+    return { from, choices: st.choices && typeof st.choices === 'object' && !Array.isArray(st.choices) ? st.choices : {},
+      startedAt: when(st.startedAt), unfinished: !!when(st.startedAt) && unfinishedOf({ startedAt: st.startedAt, result }), released: when(st.released), resultAt: when(result?.at), complete: result ? result.complete === true : null,
+      reinstall: ended(st.reinstall), settings: ended(st.settings), checklistLeft: ids ? ids.filter(id => !done.has(id)).length : null,
+      begun: await this.begun(st.moveId) };
   }
   /** Where the last move put an old path (for Obsidian's vaults): the folder plan that holds it, in the mode it used. */
-  async mapper() {
-    const st = await this.state(); const ctx = await this.context(st.from);
+  async mapper(ctx) {
+    const st = await this.state(); ctx ??= await this.kitContext(st.from);
     const folders = st.result?.folders || [];
     return p => {
       const f = folders.find(x => plan.within(p, x.original)); if (!f) return null;
@@ -281,9 +332,12 @@ class MoveService {
   }
   /** 「다시 깔 것」: the three lists (4.6b) with what is already on this PC and whether winget is ready. */
   async reinstallList() {
-    const st = await this.state(); const ctx = await this.context(st.from);
+    const st = await this.state(); const ctx = await this.kitContext(st.from);
     const status = await this.host('reinstall.status', []).catch(() => ({ ready: false, reason: 'WINGET_MISSING' }));
-    const here = status.ready ? await this.host('reinstall.installed', []).catch(() => []) : [];
+    // 화면 세션 E22: whether this PC's list was read (`installedKnown`; null without winget): unread, the table says
+    // 「깔리지 않음」 for everything, and the screen says so.
+    let installedKnown = null;
+    const here = status.ready ? await this.host('reinstall.installed', []).then(v => { installedKnown = Array.isArray(v); return Array.isArray(v) ? v : []; }, () => { installedKnown = false; return []; }) : [];
     const list = apps.reinstallList(ctx.kit, here);
     // Names for what is outside the table: the first 50, within 60 seconds in all (카본 끝판 E6); every item has the
     // same fields, a name only where winget gave one.
@@ -294,7 +348,8 @@ class MoveService {
       const s = status.ready && i < 50 && left >= 1000 ? await this.host('reinstall.show', [p.id, left]).catch(() => null) : null;
       Object.assign(p, s?.found ? { name: s.title, publisher: s.publisher, license: s.license } : { name: null, publisher: null, license: null });
     }
-    return { wingetStatus: status, ...list };
+    // 화면 세션 E21: why a list can be empty — no move yet (`from`), no kit or one of other rules (`kitProblems`), its age.
+    return { from: typeof st.from === 'string' ? st.from : null, kitAt: ctx.kit?.createdAt || null, kitProblems: Array.isArray(ctx.problems) ? ctx.problems : [], installedKnown, wingetStatus: status, ...list };
   }
   /**
    * Installs what the person chose: the table's machine-scope ones in one elevation, then user-scope and outside-the-table
@@ -306,19 +361,33 @@ class MoveService {
     const machine = chosen.filter(id => table.get(id)?.scope === 'machine'), rest = chosen.filter(id => !machine.includes(id));
     const results = [];
     if (machine.length) {
-      onProgress({ stage: 'elevated', ids: machine });
-      const run = await this.host('reinstall.elevate', [machine]).catch(e => ({ started: false, reason: e.message || 'FAILED' }));
+      // 화면 세션 E18: until the elevated side writes its first line the person has not said yes yet (Windows' approval,
+      // then its own confirmation: `approval`); then the program being installed, and how many are left in all.
+      onProgress({ stage: 'elevated', ids: machine, approval: true, current: null, left: chosen.length });
+      let polling = true, reading = false;
+      const timer = setInterval(async () => {
+        if (reading) return; reading = true;
+        try {
+          const p = await this.host('reinstall.progress', []).catch(() => null);
+          const programs = Array.isArray(p?.programs) ? p.programs : null;
+          if (polling && programs) onProgress({ stage: 'elevated', ids: machine, approval: false, current: programs.find(x => x?.state === 'installing')?.id ?? null,
+            left: programs.filter(x => x?.state === 'waiting' || x?.state === 'installing').length + rest.length });
+        } finally { reading = false; }
+      }, this.pollMs);
+      timer.unref?.();
+      const run = await this.host('reinstall.elevate', [machine]).catch(e => ({ started: false, reason: e.message || 'FAILED' })).finally(() => { polling = false; clearInterval(timer); });
       const seen = new Map((run.progress?.programs || []).map(p => [p.id, p]));
       // 「아니요」 is declined — on the approval, or in the elevated side's own question (exit 3); a start or a run that
       // failed is failed, with its reason (카본 끝판 E5).
       const declined = (!run.started && run.reason === 'DECLINED') || (run.started && run.exitCode === 3);
-      // Waited past the limit, or the confirmation stayed open too long (exit 5): what did not end is 「timeout」.
+      // The confirmation stayed open past its limit (exit 5): nothing was installed — 「approval-timeout」 (화면 세션 E23),
+      // not the installs' own time. The whole run waited past its limit: what did not end is 「timeout」.
       // Exit 4: winget is not there for the administrator account that approved (카본 끝판 H3 · H5).
-      const late = run.started && (run.timedOut || run.exitCode === 5);
+      const approvalLate = run.started && run.exitCode === 5, late = run.started && run.timedOut;
       const DONE = ['installed', 'already', 'reboot', 'failed', 'timeout'];
       for (const id of machine) {
         const got = seen.get(id)?.state, own = seen.get(id)?.exitCode;
-        const state = declined ? 'declined' : !run.started ? 'failed' : DONE.includes(got) ? got : late ? 'timeout' : 'failed';
+        const state = declined ? 'declined' : !run.started ? 'failed' : approvalLate ? 'approval-timeout' : DONE.includes(got) ? got : late ? 'timeout' : 'failed';
         // A program that failed before the whole run went past its limit has its own winget exit code, and the run then
         // has none (마지막 끝판 카본 B2): never 「EXIT_null」.
         const code = state !== 'failed' ? null : !run.started ? run.reason || 'FAILED' : run.exitCode === 4 ? 'WINGET_ADMIN_MISSING'
@@ -326,9 +395,10 @@ class MoveService {
         results.push({ id, name: table.get(id).name, state, scope: 'machine', ...(code ? { code } : {}) });
       }
     }
-    for (const id of rest) {
-      onProgress({ stage: 'user', id });
-      const r = await this.host('reinstall.user', [id]).catch(e => ({ state: 'failed', code: e.message || 'FAILED' }));
+    for (const [i, id] of rest.entries()) {
+      onProgress({ stage: 'user', id, approval: false, current: id, left: rest.length - i });
+      // 화면 세션 E23: one past its 20 minutes is 「timeout」, as the elevated side's are.
+      const r = await this.host('reinstall.user', [id]).catch(e => (e?.message === 'WINGET_TIMEOUT' ? { state: 'timeout' } : { state: 'failed', code: e.message || 'FAILED' }));
       results.push({ id, name: table.get(id)?.name || null, state: r.state, scope: table.get(id)?.scope || 'outside', ...(r.code ? { code: r.code } : Number.isInteger(r.exitCode) && r.state === 'failed' ? { code: `EXIT_${r.exitCode}` } : {}) });
     }
     for (const r of results) if (['installed', 'already', 'reboot', 'failed', 'timeout'].includes(r.state)) r.listed = await this.host('reinstall.listed', [r.id]).catch(() => null);
@@ -337,15 +407,19 @@ class MoveService {
   }
   /** Puts the app settings back for the apps now installed (4.6b). */
   async restoreSettings() {
-    const st = await this.state(); const ctx = await this.context(st.from);
-    const here = await this.host('reinstall.installed', []).catch(() => []);
-    const results = await restoreSettings({ kit: ctx.kit, host: this.host, now: ctx.now, installed: new Set(here), moveId: st.moveId || newId(), mapPath: await this.mapper() });
+    const st = await this.state(); const ctx = await this.kitContext(st.from);
+    // 화면 세션 E22: a list that could not be read is said, never taken for 「nothing installed」 — then every app's
+    // settings would only go aside, and the result would say the apps are missing.
+    const listFailed = () => Object.assign(new Error('이 PC에 깔린 프로그램 목록을 읽지 못했습니다. 잠시 뒤 다시 눌러 주세요.'), { code: 'REINSTALL_LIST_FAILED' });
+    const here = await this.host('reinstall.installed', []).catch(() => { throw listFailed(); });
+    if (!Array.isArray(here)) throw listFailed();
+    const results = await restoreSettings({ kit: ctx.kit, host: this.host, now: ctx.now, installed: new Set(here), moveId: st.moveId || newId(), mapPath: await this.mapper(ctx) });
     await this.save({ settings: { at: new Date().toISOString(), results } });
     return results;
   }
   /** 「다시 로그인할 곳」 with what the person ticked. */
   async checklist() {
-    const st = await this.state(); const ctx = await this.context(st.from);
+    const st = await this.state(); const ctx = await this.kitContext(st.from);
     const done = new Set(st.checked || []);
     return apps.checklist(ctx.kit).map(item => ({ ...item, done: done.has(item.id) }));
   }

@@ -64,8 +64,15 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   await account.open();
   // 「새 PC로 옮겨 오기」 (STAGE1_DESIGN.md 4.6 · 4.6b) on the cloud profile's repository: the Rust host gives files.* ·
   // folders.* · reinstall.*, the account's device pins the old device's backup while it is copied (move/pin).
+  // 화면 세션 E19: 「프로그램과 설정」 reads the repository only when no kit is kept on this PC (a move from before it was
+  // kept), and then as any read does: not while an engine job runs, under the engine lock.
   const move = new MoveService({ engine: profiles.engines.b2, host, stateDir: root, localDir: workRoot || root,
-    server: { pinMove: id => account.provision.pinMove(id), unpinMove: () => account.provision.unpinMove() } });
+    server: { pinMove: id => account.provision.pinMove(id), unpinMove: () => account.provision.unpinMove() },
+    repo: async fn => {
+      if (jobsRunning()) throw Object.assign(new Error('진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'), { code: 'JOB_BUSY' });
+      if (!(await engineLock())) throw Object.assign(new Error('예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.'), { code: 'RUN_ACTIVE' });
+      try { return await fn(); } finally { engineUnlock(); }
+    } });
   // The reinstall runs beside the window's other work: it never reads the repository, so it holds no engine job and a
   // scheduled backup is not kept waiting for it (up to hours).
   let reinstallJob = null;
@@ -132,7 +139,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   }
   // `codes`: the error's code (and the details some carry, such as the device list of LIMIT_DEVICES) reach the screen.
   const CODE = /^[A-Z][A-Z_]{1,31}$/;
-  function handle(name, action, {read=false,switching=false,safeErrors=false,codes=false,lock=!read&&!switching}={}) {
+  // `job`: the handler works beside an engine job (화면 세션 E19 — 「프로그램과 설정」 while the first backup runs).
+  function handle(name, action, {read=false,switching=false,safeErrors=false,codes=false,job=false,lock=!read&&!switching}={}) {
     handlers.set(name, async (...args) => {
       if (!read && (closing || dialogBusy || recovery.busy)) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
       // The slot is taken before the first wait, so a second click cannot slip in while the
@@ -145,7 +153,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
           if (!held) return {ok:false,error:'예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.',code:'RUN_ACTIVE'};
         }
         const context = {engine:profiles.current, selection:profiles.selection};
-        if (!read && !switching && context.engine.job) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
+        if (!read && !switching && !job && context.engine.job) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
         if ((context.engine.config?.readOnly || context.engine.config?.mode === 'restore') && !contract[name].allowedReadOnly) return {ok:false,error:'복구 전용 연결입니다.',code:'READ_ONLY'};
         try { profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
         catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message),...(e.code==='RUN_ACTIVE'||(codes&&CODE.test(e.code||''))?{code:e.code}:{}),...(codes&&e.details?{details:e.details}:{})}; }
@@ -406,22 +414,40 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     }
     // A move stopped part-way is told by its state (화면 세션 E1); `running`: one runs in this window now.
     handle('moveState', async () => ({ ...await move.status(), running: cloud().job?.kind === 'move' }), { read: true });
-    handle('moveReinstallList', () => move.reinstallList(), { codes: true });
+    // 화면 세션 E19: 「프로그램과 설정」 works beside an engine job (the first backup after the handover): none of it holds
+    // the repository — the kit is kept on this PC (MoveService.kitContext).
+    handle('moveReinstallList', () => move.reinstallList(), { lock: false, job: true, codes: true });
     handle('moveReinstall', (_context, input) => {
       const v = objectInput(input);
       if (!Array.isArray(v.ids) || !v.ids.length || v.ids.length > 200 || v.ids.some(id => typeof id !== 'string' || id.length > 128)) throw moveRefused();
       if (reinstallJob?.running) throw reinstalling();
       if (cloud().job?.kind === 'move') throw Object.assign(new Error('옮겨 오는 중입니다. 끝난 뒤 다시 눌러 주세요.'), { code: 'JOB_BUSY' });
-      reinstallJob = { running: true, stage: 'start', at: new Date().toISOString(), results: null, error: null };
-      void move.reinstall({ ids: v.ids, onProgress: p => { reinstallJob = { ...reinstallJob, stage: p.stage === 'elevated' ? 'elevated' : 'user' }; push(); } })
+      reinstallJob = { running: true, stage: 'start', at: new Date().toISOString(), results: null, error: null, current: null, left: null, approval: false };
+      // 화면 세션 E18: the program being installed, how many are left, and whether the person has yet to say yes.
+      void move.reinstall({ ids: v.ids, onProgress: p => { reinstallJob = { ...reinstallJob, stage: p.stage === 'elevated' ? 'elevated' : 'user', current: typeof p.current === 'string' ? p.current : null,
+        left: Number.isSafeInteger(p.left) ? p.left : null, approval: p.approval === true }; push(); } })
         .then(results => { reinstallJob = { ...reinstallJob, running: false, stage: 'done', results }; })
         .catch(e => { reinstallJob = { ...reinstallJob, running: false, stage: 'failed', error: CODE.test(e.code || '') ? e.code : 'REINSTALL_FAILED' }; })
         .finally(() => push());
       return state();
-    }, { lock: false, codes: true });
-    handle('moveRestoreSettings', () => move.restoreSettings(), { codes: true });
-    handle('moveChecklist', () => move.checklist(), { codes: true });
-    handle('moveCheck', (_context, input) => { const v = objectInput(input); if (typeof v.id !== 'string' || v.id.length > 128 || typeof v.done !== 'boolean') throw moveRefused(); return move.check({ id: v.id, done: v.done }); }, { lock: false, codes: true });
+    }, { lock: false, job: true, codes: true });
+    handle('moveRestoreSettings', () => {
+      // Not while a move places files or programs are installed: the settings go where those land.
+      if (cloud().job?.kind === 'move') throw Object.assign(new Error('옮겨 오는 중입니다. 끝난 뒤 다시 눌러 주세요.'), { code: 'JOB_BUSY' });
+      if (reinstallJob?.running) throw reinstalling();
+      return move.restoreSettings();
+    }, { lock: false, job: true, codes: true });
+    handle('moveChecklist', () => move.checklist(), { lock: false, job: true, codes: true });
+    handle('moveCheck', (_context, input) => { const v = objectInput(input); if (typeof v.id !== 'string' || v.id.length > 128 || typeof v.done !== 'boolean') throw moveRefused(); return move.check({ id: v.id, done: v.done }); }, { lock: false, job: true, codes: true });
+    // 화면 세션 E16: a table program's official or license page. The screen names the program and the page; the address
+    // comes from the table this app carries, and the host opens only an address that table holds.
+    handle('moveOpenProgramPage', async (_context, input) => {
+      const v = objectInput(input);
+      const program = require(path.join(engineRoot, 'src/move-apps.cjs')).TABLE.programs.find(p => p.id === v.id);
+      const url = program && (v.kind === 'site' || v.kind === 'license') ? program[v.kind] : null;
+      if (typeof url !== 'string' || !url.startsWith('https://')) throw moveRefused();
+      await shell.openExternal(url); return null;
+    }, { read: true, codes: true });
     handle('moveRelease', async () => { await move.release(); return state(); }, { lock: false, codes: true });
     handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; }, { lock: false });
 

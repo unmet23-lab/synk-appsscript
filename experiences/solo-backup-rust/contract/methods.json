@@ -241,5 +241,6 @@
   "moveRestoreSettings": {"mutating":true,"timeoutMs":300000,"dialog":false,"allowedReadOnly":true},
   "moveChecklist": {"mutating":false,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
   "moveCheck": {"mutating":true,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
+  "moveOpenProgramPage": {"mutating":false,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
   "moveRelease": {"mutating":true,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true}
 }

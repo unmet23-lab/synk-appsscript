@@ -20,6 +20,23 @@ const MIN_VERSION: (u32, u32) = (1, 6);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Program { pub id: String, pub name: String, pub scope: String }
+/// A table program's official or license page (화면 세션 E16): the window opens only an address this table holds, https
+/// with no user part or port. The table is built into this program; the worker only names the program and the page.
+pub fn page_allowed(value: &str) -> bool {
+    let Ok(table) = serde_json::from_str::<Value>(TABLE) else { return false };
+    let listed = table["programs"].as_array().into_iter().flatten().any(|p| p["site"].as_str() == Some(value) || p["license"].as_str() == Some(value));
+    listed && url::Url::parse(value).is_ok_and(|u| u.scheme() == "https" && u.username().is_empty() && u.password().is_none() && u.port().is_none())
+}
+/// The number of the elevated run under way (`elevate`), for `reinstall.progress` (화면 세션 E18).
+static RUNNING: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
+/// What the elevated run under way has written so far (its `progress.json`). `null` when none runs, and before its first
+/// line: the person has not said yes yet (Windows' approval, then the confirmation). A line read half-written is `null`
+/// too; the next read has it.
+pub fn progress() -> Value {
+    let Some(number) = RUNNING.lock().ok().and_then(|n| n.clone()) else { return Value::Null };
+    own_folder().ok().map(|d| d.join("reinstall-work").join(number).join("progress.json"))
+        .and_then(|p| std::fs::read(p).ok()).and_then(|b| serde_json::from_slice::<Value>(&b).ok()).unwrap_or(Value::Null)
+}
 pub fn table() -> Vec<Program> {
     let value: Value = serde_json::from_str(TABLE).expect("embedded move-apps.json");
     value["programs"].as_array().into_iter().flatten().filter_map(|p| Some(Program { id: p["id"].as_str()?.into(), name: p["name"].as_str()?.into(), scope: p["scope"].as_str()?.into() })).collect()
@@ -397,6 +414,10 @@ pub fn elevate(ids: &[String]) -> Result<Value, String> {
     // From the folder the window app really runs from, the same one the elevated side writes its results under.
     let exe = own_folder()?.join("WorkBackupRun.exe");
     let number = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(|_| "REINSTALL_CLOCK")?.as_nanos() % 2_000_000_000).to_string();
+    // 화면 세션 E18: `reinstall.progress` reads this run's file while it runs; the number goes when this call ends.
+    struct Running; impl Drop for Running { fn drop(&mut self) { if let Ok(mut n) = RUNNING.lock() { *n = None; } } }
+    if let Ok(mut n) = RUNNING.lock() { *n = Some(number.clone()); }
+    let _running = Running;
     // The ids go on the command line: they are table ids (letters, digits, `.+_-`), so no quoting is needed.
     let (verb, file_w, params) = (wide("runas"), wide(&exe.to_string_lossy()), wide(&elevated_args(&number, ids)));
     let mut info: SHELLEXECUTEINFOW = unsafe { std::mem::zeroed() };
@@ -422,6 +443,7 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
     let id = || first.as_str().map(String::from).ok_or_else(|| "HOST_REQUEST".to_string());
     Some(match method {
         "reinstall.status" => Ok(status()),
+        "reinstall.progress" => Ok(progress()),
         "reinstall.installed" => installed().map(Value::from),
         "reinstall.show" => id().and_then(|id| show(&id, Duration::from_millis(args.get(1).and_then(Value::as_u64).unwrap_or(120_000)))),
         "reinstall.listed" => id().and_then(|id| listed(&id)).map(Value::from),
@@ -497,6 +519,13 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
         assert_eq!(answer.0, Answer::Late);
         assert!(answer.1 >= Duration::from_secs(2) && answer.1 < Duration::from_secs(10), "{:?}", answer.1);
     }
+    #[test] fn only_the_tables_pages_open() {
+        let table: Value = serde_json::from_str(TABLE).unwrap();
+        let git = table["programs"].as_array().unwrap().iter().find(|p| p["id"] == "Git.Git").unwrap();
+        assert!(page_allowed(git["site"].as_str().unwrap()) && page_allowed(git["license"].as_str().unwrap()));
+        for bad in ["https://example.com/", "https://gitforwindows.org/other", "https://user@gitforwindows.org/", "javascript:alert(1)", ""] { assert!(!page_allowed(bad), "{bad}"); }
+    }
+    #[test] fn no_progress_without_a_run() { assert_eq!(progress(), Value::Null); }
     #[test] fn the_table_is_whole() {
         let t = table();
         assert_eq!(t.len(), 27);

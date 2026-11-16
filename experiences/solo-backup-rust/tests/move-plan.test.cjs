@@ -13,8 +13,10 @@ const kitLib = require('../engine/src/move-kit.cjs');
 const { readMoveList } = require('../engine/src/move-restore.cjs');
 const { restoreSettings } = require('../engine/src/move-settings.cjs');
 /** Tests that make real files under Windows paths (`path.win32`, junctions): they mean nothing on Linux, so they skip
- *  off Windows. Each is a conditional-QA case on GitHub Windows (tools/conditional-qa/cases.json S146 ~ S151), which runs
- *  it there; a new one needs its own entry, or wide-tests stops on an unregistered skip. */
+ *  off Windows. Each is a conditional-QA case on GitHub Windows (tools/conditional-qa/cases.json S146 ~ S152), which runs
+ *  it there; a new one needs its own entry, or wide-tests stops on an unregistered skip. The entry goes in three files:
+ *  cases.json (and its `expectedCount`), tests/conditional-qa.test.cjs (the counts and `moveFiles`), and the table in
+ *  tools/conditional-qa/README.md (현장 노트 시험_화면확인, 11-16). */
 const windowsOnly = (name, fn) => test(name, { skip: process.platform !== 'win32' && 'Windows paths and junctions' }, fn);
 const { moveHost } = require('./move-host.cjs');
 
@@ -559,12 +561,13 @@ windowsOnly('카본 끝판 지적(11-16): settings put back twice, a write that 
   assert.deepEqual((await failing.reinstall({ ids: ['Git.Git'] })).map(r => [r.state, r.code]), [['failed', 'START_FAILED']]);
   const no = new MoveService({ engine: null, host: async m => m === 'reinstall.elevate' ? { started: true, exitCode: 3, progress: null } : null, stateDir: path.join(root, 's3'), localDir: path.join(root, 'l3') });
   assert.deepEqual((await no.reinstall({ ids: ['Git.Git'] })).map(r => r.state), ['declined']);
-  // H3 · H5: no winget for the approving administrator (exit 4) is a failure with its reason; a wait past the limit or a
-  // confirmation left open (exit 5) leaves what did not end as 「timeout」, what ended as it ended.
+  // H3 · H5: no winget for the approving administrator (exit 4) is a failure with its reason; a wait past the limit leaves
+  // what did not end as 「timeout」, what ended as it ended. 화면 세션 E23: a confirmation left open (exit 5) installed
+  // nothing, so it is 「approval-timeout」.
   const answer = run => new MoveService({ engine: null, host: async m => m === 'reinstall.elevate' ? run : null, stateDir: path.join(root, 's' + Math.random()), localDir: path.join(root, 'l' + Math.random()) });
   assert.deepEqual((await answer({ started: true, exitCode: 4, progress: null }).reinstall({ ids: ['Git.Git'] })).map(r => [r.state, r.code]), [['failed', 'WINGET_ADMIN_MISSING']]);
   assert.deepEqual((await answer({ started: true, exitCode: null, timedOut: true, progress: { programs: [{ id: 'Git.Git', state: 'installed' }] } }).reinstall({ ids: ['Git.Git', '7zip.7zip'] })).map(r => r.state), ['installed', 'timeout']);
-  assert.deepEqual((await answer({ started: true, exitCode: 5, progress: null }).reinstall({ ids: ['Git.Git'] })).map(r => r.state), ['timeout']);
+  assert.deepEqual((await answer({ started: true, exitCode: 5, progress: null }).reinstall({ ids: ['Git.Git'] })).map(r => r.state), ['approval-timeout']);
   // 마지막 끝판 카본 B2: a program that failed before the run went past its limit keeps its own exit code; one without any
   // is 「FAILED」, never 「EXIT_null」.
   const late = answer({ started: true, exitCode: null, timedOut: true, progress: { programs: [{ id: 'Git.Git', state: 'failed', exitCode: -1978335212 }, { id: '7zip.7zip', state: 'failed' }] } });
@@ -706,13 +709,13 @@ test('화면 세션 E1 · E2(11-16): the state of a move, and where each folder 
   // E1: a move stopped part-way is told by its state; a finished one by its result's time.
   const service = new MoveService({ engine: null, host: null, stateDir: 'C:\\state', localDir: 'C:\\local' });
   service.state = async () => ({ moveId: 'm1', from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', result: null, released: null, checked: ['x'] });
-  assert.deepEqual(await service.status(), { from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', unfinished: true, released: null, resultAt: null, complete: null });
+  assert.deepEqual(await service.status(), { from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', unfinished: true, released: null, resultAt: null, complete: null, reinstall: null, settings: null, checklistLeft: null, begun: false });
   service.state = async () => ({ from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', released: '2026-11-16T09:30:00.000Z', result: { at: '2026-11-16T09:00:00.000Z', complete: false, folders: out } });
-  assert.deepEqual(await service.status(), { from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', unfinished: false, released: '2026-11-16T09:30:00.000Z', resultAt: '2026-11-16T09:00:00.000Z', complete: false });
+  assert.deepEqual(await service.status(), { from: 'dev000000000', choices: chosen, startedAt: '2026-11-16T08:00:00.000Z', unfinished: false, released: '2026-11-16T09:30:00.000Z', resultAt: '2026-11-16T09:00:00.000Z', complete: false, reinstall: null, settings: null, checklistLeft: null, begun: false });
   service.state = async () => ({});
-  assert.deepEqual(await service.status(), { from: null, choices: {}, startedAt: null, unfinished: false, released: null, resultAt: null, complete: null });
+  assert.deepEqual(await service.status(), { from: null, choices: {}, startedAt: null, unfinished: false, released: null, resultAt: null, complete: null, reinstall: null, settings: null, checklistLeft: null, begun: false });
   service.state = async () => ({ from: 7, choices: [1], startedAt: 'yesterday', result: null });
-  assert.deepEqual(await service.status(), { from: null, choices: {}, startedAt: null, unfinished: false, released: null, resultAt: null, complete: null }, 'a damaged state says nothing');
+  assert.deepEqual(await service.status(), { from: null, choices: {}, startedAt: null, unfinished: false, released: null, resultAt: null, complete: null, reinstall: null, settings: null, checklistLeft: null, begun: false }, 'a damaged state says nothing');
   // The vault mapping keeps the same-drive choice too (E2 — Obsidian on another drive); a result from before it moved there.
   service.context = async () => ({ old: OLD, now: NOW });
   service.state = async () => ({ from: 'dev000000000', result: { folders: out } });
@@ -944,6 +947,24 @@ windowsOnly('화면 세션 E8 · E11(11-16): a finished move started again fetch
   const second = await service.start({ from: 'old' });
   assert.equal(plansRead, 2, 'the start took the lists the preview read');
   assert.equal(service.kept, null, 'and let them go');
+  // 화면 세션 E19: the kit the move used is kept on this PC — this old device had none.
+  assert.equal(await service.savedKit('old'), null);
+  const kitText = JSON.stringify({ schema: 1, kind: 'synk-move-kit', createdAt: '2026-11-16T07:00:00.000Z', snapshot: { known: { profile: { path: oldP } } }, programs: { winget: [{ id: 'Git.Git' }] } });
+  await service.saveKit('old', { kit: {}, text: kitText, snapshotId: 'a'.repeat(64), at: '2026-11-16T07:00:00.000Z' });
+  const kept = await service.savedKit('old');
+  assert.deepEqual([kept.kit.createdAt, kept.kit.programs.winget, kept.snapshotId], ['2026-11-16T07:00:00.000Z', [{ id: 'Git.Git' }], 'a'.repeat(64)]);
+  // 화면 세션 E17: the checklist ids beside it, for the state.
+  const ids = await service.keptChecklist('old');
+  assert.ok(ids.length >= 1 && ids.every(id => typeof id === 'string'), JSON.stringify(ids));
+  assert.equal(await service.keptChecklist('another'), null);
+  // GPT workbackup-move-e16e24 GA1: the ids are a small file of their own; the state reads them without the kit.
+  assert.ok(fs.statSync(service.kitIdsFile).size < 4096 && !fs.readFileSync(service.kitIdsFile, 'utf8').includes('synk-move-kit'));
+  const kitBytes = fs.readFileSync(service.kitFile); fs.rmSync(service.kitFile);
+  assert.deepEqual(await service.keptChecklist('old'), ids, 'read without the kit');
+  fs.writeFileSync(service.kitFile, kitBytes);
+  assert.equal(await service.savedKit('another'), undefined, 'another old device has none kept');
+  fs.writeFileSync(service.kitFile, JSON.stringify({ from: 'old', text: '{"schema":1,"kind":"synk-move-kit"}' }));
+  assert.equal(await service.savedKit('old'), undefined, 'one that does not read as a kit is read from the repository again');
   assert.deepEqual(dumps, [selD + ' /b.txt', selD + ' /d.txt']);
   assert.deepEqual(second.counts, { placed: 5, same: 1, carried: 4 });
   assert.equal(second.complete, true);
@@ -975,4 +996,74 @@ windowsOnly('화면 세션 E8 · E11(11-16): a finished move started again fetch
   const last = await alone.run();
   assert.deepEqual(dumps, [selD + ' /proj/y.txt']);
   assert.deepEqual(last.counts, { placed: 4, same: 2, carried: 5 }, 'y.txt came again as 「이미 있음」 in the fourth run');
+});
+
+test('화면 세션 E17 · E18 · E19 · E21 ~ E24(11-16): 「프로그램과 설정」 beside a job, its progress, its results in the state', async () => {
+  const { MoveService } = require('../engine/src/move-service.cjs');
+  const gates = [];
+  // E19: the kit kept on this PC first; the repository only without one, through the window's gate.
+  const svc = new MoveService({ engine: null, stateDir: 'C:\\state', localDir: 'C:\\local', host: async m => (m === 'folders.snapshot' ? NOW : null), repo: async fn => { gates.push('repo'); return fn(); } });
+  let kept;
+  svc.savedKit = async from => (from === 'dev000000000' ? kept : undefined);
+  svc.saveKit = async (from, loaded) => { gates.push(['save', from, loaded === null ? null : loaded?.text ?? 'none']); };
+  svc.state = async () => ({ from: 'dev000000000' });
+  const contextOf = svc.context.bind(svc);
+  svc.context = async (from, loaded) => (loaded === undefined ? { kit: { createdAt: 'repo' }, problems: [], old: OLD, now: NOW, loaded: { kit: { createdAt: 'repo' }, problems: [], text: '{"repo":1}' } } : contextOf(from, loaded));
+  assert.equal((await svc.kitContext('dev000000000')).kit.createdAt, 'repo');
+  assert.deepEqual(gates, ['repo', ['save', 'dev000000000', '{"repo":1}']], 'without a kept kit: read through the gate and kept');
+  gates.length = 0; kept = { kit: { createdAt: 'here', programs: { winget: [{ id: 'Git.Git' }] } }, problems: [] };
+  assert.equal((await svc.kitContext('dev000000000')).kit.createdAt, 'here');
+  kept = null;
+  assert.equal((await svc.kitContext('dev000000000')).kit, null);
+  assert.deepEqual(gates, [], 'a kept kit, or a kept 「none」, needs no repository');
+  const shut = new MoveService({ engine: null, stateDir: 'C:\\state', localDir: 'C:\\local', host: async () => null, repo: async () => { throw Object.assign(new Error('busy'), { code: 'JOB_BUSY' }); } });
+  shut.savedKit = async () => undefined;
+  await assert.rejects(shut.kitContext('dev000000000'), e => e.code === 'JOB_BUSY', 'no kept kit while a job runs: the window says to wait');
+
+  // E21 · E22: why a list is empty, and whether this PC's list was read.
+  kept = { kit: { createdAt: '2026-11-16T07:00:00.000Z', programs: { winget: [{ id: 'Git.Git' }] } }, problems: ['rules-old'] };
+  svc.host = async m => (m === 'folders.snapshot' ? NOW : m === 'reinstall.status' ? { ready: true } : m === 'reinstall.installed' ? ['Git.Git'] : null);
+  const view = await svc.reinstallList();
+  assert.deepEqual([view.from, view.kitAt, view.kitProblems, view.installedKnown, view.table.map(p => [p.id, p.installed])], ['dev000000000', '2026-11-16T07:00:00.000Z', ['rules-old'], true, [['Git.Git', true]]]);
+  svc.host = async m => { if (m === 'folders.snapshot') return NOW; if (m === 'reinstall.status') return { ready: true }; if (m === 'reinstall.installed') throw new Error('WINGET_FAILED'); return null; };
+  const unread = await svc.reinstallList();
+  assert.deepEqual([unread.installedKnown, unread.table.map(p => p.installed)], [false, [false]]);
+  await assert.rejects(svc.restoreSettings(), e => e.code === 'REINSTALL_LIST_FAILED', 'settings are not put back as if nothing were installed');
+  svc.host = async m => (m === 'folders.snapshot' ? NOW : m === 'reinstall.status' ? { ready: false, reason: 'WINGET_MISSING' } : m === 'reinstall.installed' ? 'not a list' : null);
+  assert.equal((await svc.reinstallList()).installedKnown, null, 'without winget nothing was asked');
+  await assert.rejects(svc.restoreSettings(), e => e.code === 'REINSTALL_LIST_FAILED');
+
+  // E18 · E23: the elevated side's progress while it runs, then each program at normal privilege.
+  const events = [];
+  const answers = [null, { schema: 1, programs: [{ id: 'Git.Git', state: 'installing' }, { id: '7zip.7zip', state: 'waiting' }] }];
+  const runner = new MoveService({ engine: null, stateDir: 'C:\\state', localDir: 'C:\\local', host: async (m, a) => {
+    if (m === 'reinstall.progress') return answers.length > 1 ? answers.shift() : answers[0];
+    if (m === 'reinstall.elevate') { await new Promise(r => setTimeout(r, 120)); return { started: true, exitCode: 0, progress: { programs: [{ id: 'Git.Git', state: 'installed' }, { id: '7zip.7zip', state: 'installed' }] } }; }
+    if (m === 'reinstall.user') { if (a[0] === 'Some.Other') throw new Error('WINGET_TIMEOUT'); return { id: a[0], state: 'installed', exitCode: 0 }; }
+    if (m === 'reinstall.listed') return true;
+    return null;
+  } });
+  runner.pollMs = 10; runner.save = async () => {};
+  const results = await runner.reinstall({ ids: ['Git.Git', '7zip.7zip', 'Obsidian.Obsidian', 'Some.Other'], onProgress: p => events.push(p) });
+  assert.deepEqual(events[0], { stage: 'elevated', ids: ['Git.Git', '7zip.7zip'], approval: true, current: null, left: 4 }, 'before its first line the person has yet to say yes');
+  const installing = events.find(e => e.stage === 'elevated' && !e.approval);
+  assert.deepEqual(installing, { stage: 'elevated', ids: ['Git.Git', '7zip.7zip'], approval: false, current: 'Git.Git', left: 4 });
+  assert.deepEqual(events.filter(e => e.stage === 'user').map(e => [e.current, e.left, e.approval]), [['Obsidian.Obsidian', 2, false], ['Some.Other', 1, false]]);
+  assert.deepEqual(results.map(r => [r.id, r.state]), [['Git.Git', 'installed'], ['7zip.7zip', 'installed'], ['Obsidian.Obsidian', 'installed'], ['Some.Other', 'timeout']], 'one past its 20 minutes is 「timeout」');
+  const after = events.length;
+  await new Promise(r => setTimeout(r, 50));
+  assert.equal(events.length, after, 'the progress is no longer read once the elevated side ended');
+
+  // E17 · E24: the state carries the last installs and settings, what is left to sign in to, and whether it began.
+  const st = new MoveService({ engine: null, stateDir: 'C:\\state', localDir: 'C:\\local', host: async () => null });
+  const apps = require('../engine/src/move-apps.cjs');
+  const kit = { programs: { winget: [{ id: 'Git.Git' }] } };
+  const all = apps.checklist(kit).map(i => i.id);
+  st.state = async () => ({ from: 'dev000000000', moveId: 'abcd1234', checked: [all[0]], reinstall: { at: '2026-11-16T09:00:00.000Z', results: [{ id: 'Git.Git', state: 'installed' }] }, settings: { at: 'never', results: [] } });
+  st.keptChecklist = async from => (from === 'dev000000000' ? all : null);
+  st.begun = async id => id === 'abcd1234';
+  const now = await st.status();
+  assert.deepEqual([now.reinstall, now.settings, now.checklistLeft, now.begun], [{ at: '2026-11-16T09:00:00.000Z', results: [{ id: 'Git.Git', state: 'installed' }] }, null, all.length - 1, true]);
+  st.keptChecklist = async () => null;
+  assert.equal((await st.status()).checklistLeft, null, 'without a kept kit the state reads no repository and says nothing');
 });

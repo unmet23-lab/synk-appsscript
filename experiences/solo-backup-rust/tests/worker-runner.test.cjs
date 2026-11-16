@@ -12,7 +12,7 @@ const { spawn } = require('node:child_process');
 const restic = process.env.SOLO_BACKUP_RESTIC;
 const pkg = path.resolve(__dirname, '..');
 
-function worker(stateDir, { mode = null, dialogs = [] } = {}) {
+function worker(stateDir, { mode = null, dialogs = [], answers = {} } = {}) {
   const env = { SYSTEMROOT: process.env.SYSTEMROOT, WINDIR: process.env.WINDIR, USERPROFILE: process.env.USERPROFILE, APPDATA: process.env.APPDATA,
     LOCALAPPDATA: process.env.LOCALAPPDATA, TEMP: process.env.TEMP, TMP: process.env.TMP, SWB_ROOT: stateDir, SWB_RESTIC: restic,
     SWB_ENGINE_ROOT: path.join(pkg, 'engine'), SWB_TEST: '1', ...(mode ? { SWB_MODE: mode } : {}) };
@@ -31,6 +31,7 @@ function worker(stateDir, { mode = null, dialogs = [] } = {}) {
         else if (m.method === 'engine.lock' || m.method === 'engine.unlock') value = true;
         else if (m.method === 'run.progress') value = null;
         else if (m.method.startsWith('dialog.')) { const d = script.shift(); ok = !!d && d.method === m.method; value = d?.value; }
+        else if (m.method in answers) value = answers[m.method](a);
         else ok = false;
         send(ok ? { callResult: m.call, ok: true, value } : { callResult: m.call, ok: false, code: 'TEST_HOST' });
       } else if (m.id && waiting.has(m.id)) { waiting.get(m.id)(m); waiting.delete(m.id); }
@@ -179,5 +180,48 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     } finally {
       holder.stdin.end('\n'); await new Promise(ok => holder.once('exit', ok));
     }
+  });
+
+  // 화면 세션 E19: 「프로그램과 설정」 works beside an engine job (the first backup after the handover is one). With the kit
+  // kept on this PC it reads no repository; without one it says to wait (JOB_BUSY) instead of reading beside the job.
+  await t.test('「프로그램과 설정」 beside a running backup: the kept kit answers, none kept says to wait (화면 세션 E19)', async t => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-e19-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const data = path.join(root, 'data'), repo = path.join(root, 'repo'), keys = path.join(root, 'keys'), state = path.join(root, 'state');
+    for (const d of [data, repo, keys, state]) fs.mkdirSync(d, { recursive: true });
+    // Enough to keep restic busy while the next request comes.
+    fs.writeFileSync(path.join(data, 'big.bin'), require('node:crypto').randomBytes(48 * 1024 * 1024));
+    fs.writeFileSync(path.join(state, 'move.json'), JSON.stringify({ from: 'old-pc', checked: [] }));
+    // The kit kept on this PC as a move leaves it: that device had none; the checklist ids in their own file.
+    fs.writeFileSync(path.join(state, 'move-kit.json'), JSON.stringify({ from: 'old-pc', none: true }));
+    fs.writeFileSync(path.join(state, 'move-kit-checklist.json'), JSON.stringify({ from: 'old-pc', checklist: require('../engine/src/move-apps.cjs').checklist(null).map(i => i.id) }));
+    const profile = { known: { profile: { path: root } }, oneDrive: [], syncRoots: [], drives: [] };
+    const app = worker(state, { answers: { 'folders.snapshot': () => profile }, dialogs: [
+      { method: 'dialog.open', value: { canceled: false, filePaths: [data] } },
+      { method: 'dialog.open', value: { canceled: false, filePaths: [repo] } },
+      { method: 'dialog.save', value: { canceled: false, filePath: path.join(keys, 'recovery.json') } }] });
+    await app.call('$boot');
+    for (const m of ['chooseSources', 'chooseTarget', 'setup', 'saveRecoveryKit']) assert.equal((await app.call(m)).value.ok, true, m);
+    const idle = async () => { for (let i = 0; i < 600; i++) { if (!(await app.call('getState')).value.value.profiles.local.job) return; await new Promise(r => setTimeout(r, 100)); } throw new Error('the backup did not end'); };
+    const running = (await app.call('backupNow')).value;
+    assert.equal(running.ok, true, JSON.stringify(running));
+    const list = (await app.call('moveChecklist')).value;
+    const state1 = (await app.call('getState')).value.value;
+    assert.ok(state1.profiles.local.job, 'the backup still ran when the list was asked');
+    assert.equal(list.ok, true, JSON.stringify(list));
+    assert.ok(list.value.length >= 1 && list.value.every(i => i.done === false), JSON.stringify(list.value));
+    const moveState = (await app.call('moveState')).value;
+    assert.equal(moveState.value.checklistLeft, list.value.length);
+    // Another kind of request still waits for the job.
+    assert.equal((await app.call('moveRelease')).value.ok, false);
+    await idle();
+    // No kit kept: the list would read the repository, which waits for the job.
+    fs.rmSync(path.join(state, 'move-kit.json'));
+    fs.appendFileSync(path.join(data, 'big.bin'), require('node:crypto').randomBytes(16 * 1024 * 1024));
+    assert.equal((await app.call('backupNow')).value.ok, true);
+    const waiting = (await app.call('moveChecklist')).value;
+    assert.deepEqual([waiting.ok, waiting.code], [false, 'JOB_BUSY'], JSON.stringify(waiting));
+    await idle();
+    await app.call('$shutdown'); assert.equal(await app.exited, 0);
   });
 });

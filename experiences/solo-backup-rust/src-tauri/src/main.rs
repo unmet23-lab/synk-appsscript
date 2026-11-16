@@ -23,7 +23,7 @@ impl NativeHost {
             // 「자동 실행 등록」 is now the four run tasks in Task Scheduler (STAGE1_DESIGN.md 4.1 · 4.2).
             "startup.read"=>Ok(json!(run_tasks_registered(&self.exe,self.test)?)),
             "startup.set"=>Ok(json!(set_run_tasks(&self.exe,first.as_bool().ok_or("HOST_REQUEST")?,self.test,self.packaged)?)),
-            "openExternal"=>{let value=first.as_str().ok_or("HOST_REQUEST")?;if self.test||!(platform::oauth_allowed(value)||platform::account_page_allowed(value)){return Err("OPEN_FORBIDDEN".into());}shell_open(value)?;Ok(Value::Null)},
+            "openExternal"=>{let value=first.as_str().ok_or("HOST_REQUEST")?;if self.test||!(platform::oauth_allowed(value)||platform::account_page_allowed(value)||backup_native::reinstall::page_allowed(value)){return Err("OPEN_FORBIDDEN".into());}shell_open(value)?;Ok(Value::Null)},
             "openPath"=>{let value=first.as_str().ok_or("HOST_REQUEST")?;if self.test||!platform::open_directory_allowed(Path::new(value),&self.root){return Err("OPEN_FORBIDDEN".into());}shell_open(value)?;Ok(Value::Null)},
             "dialog.open"|"dialog.save"|"dialog.message"=>{
                 if self.dialog_busy.swap(true,Ordering::SeqCst){return Err("DIALOG_BUSY".into());}
@@ -134,7 +134,8 @@ impl FirstBackup{
     }
 }
 fn show(app:&tauri::AppHandle){if let Some(window)=app.get_webview_window("main"){let _=window.unminimize();let _=window.show();let _=window.set_focus();}}
-fn active(value:&Value)->bool{value["profiles"].as_object().is_some_and(|p|p.values().any(|s|s["automatic"]==true||!s["job"].is_null()))}
+// 화면 세션 E20: programs being installed (다시 깔기) keep the app when its window closes, as a job does.
+fn active(value:&Value)->bool{value["profiles"].as_object().is_some_and(|p|p.values().any(|s|s["automatic"]==true||!s["job"].is_null()))||value["move"]["reinstall"]["running"]==true}
 
 async fn smoke(app:tauri::AppHandle,report:PathBuf)->Result<(),String>{
     let state=app.state::<AppState>();let worker=state.worker.clone();drop(state);

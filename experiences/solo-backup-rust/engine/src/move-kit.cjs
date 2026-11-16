@@ -213,7 +213,8 @@ async function loadKit(engine, from) {
       throw e;
     }
     const parsed = parseKit(text);
-    if (parsed.kit) return { ...parsed, snapshotId: s.id, at: s.time };
+    // `text`: the kit as it came, which this PC keeps for 「프로그램과 설정」 and reads back like any kit (화면 세션 E19).
+    if (parsed.kit) return { ...parsed, snapshotId: s.id, at: s.time, text };
   }
   return null;
 }
