@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e1c3-4f25-7602-8595-bd8e9c5f8f00"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt-diorama image, keeping the upper wall empty and the three characters clearly framed.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A warm felt factory diorama with Mongle, a Seoul coworker, and the foreman at the packing table."}}
+{"type":"turn.completed","usage":{"input_tokens":45834,"cached_input_tokens":34560,"cache_write_input_tokens":0,"output_tokens":1155,"reasoning_output_tokens":0}}

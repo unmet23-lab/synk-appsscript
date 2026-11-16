@@ -1,0 +1,6 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only the characters' poses, places and faces change.
+
+The FIRST attached image is the base photo. Reproduce it EXACTLY — same camera position, framing, focus and bright warm factory light, same plain light-grey wall, same felt conveyor belt with the same plain boxes, same grey metal shelf at the right, same long light-wood felt packing table with its plain front panel. The SEOUL COWORKER (young woman, black ponytail, mint-green vest over a white shirt) stays on the LEFT behind the table and the FOREMAN (fifties, white safety helmet, salt-and-pepper hair, thick black eyebrows, navy work jacket with one silver reflective stripe) stays on the RIGHT behind the table — same dolls, same faces, same clothes. Mongle keeps its tiny yellow felt safety helmet.
+

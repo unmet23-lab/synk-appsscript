@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only the characters' poses, places and faces change.
+
+The FIRST attached image is the base photo. Reproduce it EXACTLY — same camera position, framing, focus and bright warm factory light, same plain light-grey wall, same felt conveyor belt with the same plain boxes, same grey metal shelf at the right, same long light-wood felt packing table with its plain front panel. The SEOUL COWORKER (young woman, black ponytail, mint-green vest over a white shirt) stays on the LEFT behind the table and the FOREMAN (fifties, white safety helmet, salt-and-pepper hair, thick black eyebrows, navy work jacket with one silver reflective stripe) stays on the RIGHT behind the table — same dolls, same faces, same clothes. Mongle keeps its tiny yellow felt safety helmet.
+
+CHANGE ONLY: the bubble-wrap bundle on the table (same place) has grown into a lumpy ball about as big as Mongle, many crossing strips of brown packing tape around it; Mongle is still whirling around it on the far side — a motion-blurred coral swirl with determined eyes, a long tape strip streaming behind; small sheets of real clear bubble-wrap fly through the air. The coworker giggles behind her hand; the foreman's mouth drops open, one hand raised as if to say stop.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, ever — it moves by tilting, squashing, stretching and bouncing its whole soft body.
+Exactly ONE Mongle, ONE coworker and ONE foreman, nobody else. Absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere — no writing on the wall, boxes, tape, book, helmets or clothes.

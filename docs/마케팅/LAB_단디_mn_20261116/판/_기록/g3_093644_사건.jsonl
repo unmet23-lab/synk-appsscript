@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e1c8-f192-7690-9fdc-092f214bb81c"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to keep the fixed scene and change only the three characters’ poses and expressions.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle perks up with an “oh!” expression as the coworker beckons toward the friendly foreman, hands on his hips."}}
+{"type":"turn.completed","usage":{"input_tokens":80884,"cached_input_tokens":61952,"cache_write_input_tokens":0,"output_tokens":1073,"reasoning_output_tokens":191}}

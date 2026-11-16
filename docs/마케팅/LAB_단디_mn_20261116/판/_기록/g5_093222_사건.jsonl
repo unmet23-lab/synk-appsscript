@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e1c4-f2e2-77f0-b74f-04d0a5c6e357"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to keep the fixed scene and change only the characters’ poses and Mongle’s position.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The foreman points firmly at the box while puzzled Mongle looks up and the coworker watches with concern."}}
+{"type":"turn.completed","usage":{"input_tokens":112184,"cached_input_tokens":99584,"cache_write_input_tokens":0,"output_tokens":1414,"reasoning_output_tokens":335}}

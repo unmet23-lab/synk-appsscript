@@ -1,0 +1,21 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses and faces of the three characters, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, table, box and doll is made of felted wool and fabric, soft fuzzy fibres visible, bright but warm daytime factory light from above, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look and light — not its room, furniture or people).
+
+FORMAT: portrait 2:3. Camera at the height of the packing table top, looking straight across the table. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: the packing corner of a small, friendly Korean factory.
+- Back wall: plain light-grey felt wall with a soft texture. The top 26% of the image is ONLY this plain wall — nothing there (a label will be added there later).
+- Behind the characters, softly out of focus: a low felt conveyor belt running left to right at about 40% of the image height, carrying three plain brown felt cardboard boxes; one plain grey metal shelf at the far right edge with two plain brown boxes. Plain boxes only — no printing, no labels, no arrows.
+- PACKING TABLE: a long light-wood felt work table runs across the whole image; its top surface (where things sit) is at about 60% of the image height, its plain front panel fills the image below that down to the bottom — keep the front panel plain and empty.
+
+CHARACTERS (all three visible from the table top up; exactly these three, nobody else):
+- LEFT, between about 14% and 38% of the image width, standing behind the table: the SEOUL COWORKER — a felt doll of a friendly young Korean woman in her twenties, black hair in a neat ponytail, small black bead eyes, soft pink cheeks, a gentle smile, a mint-green work vest over a white long-sleeve shirt. Her head top at about 30% of the image height. Hands loosely together in front of her.
+- RIGHT, between about 62% and 88% of the image width, standing behind the table: the FOREMAN (banjang) — a felt doll of a sturdy Korean man in his fifties, short salt-and-pepper hair under a white safety helmet, thick black eyebrows, small black bead eyes with friendly crinkles at the corners, a navy work jacket with one silver reflective stripe across the chest. Gruff but kind: arms crossed, mouth a straight line, but the eyes are warm, NOT angry or scary. His helmet top at about 27% of the image height.
+- CENTRE: MONGLE (the mascot from the SECOND attached image) sits ON the table top in the middle (the middle of its scalloped hem at about 50% of the image width, resting on the table at about 60% of the image height), its body about 20% of the image width wide, facing the camera, wearing a tiny yellow felt safety helmet on top of its head. It looks eager and a little nervous on its first day: bright eyes, small smile, light blush. Beside it on the table, to its right: one small closed plain brown felt cardboard box and a roll of brown packing tape.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+
+Exactly ONE Mongle, ONE coworker and ONE foreman. The wall above all three must stay empty.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — no writing on the wall, boxes, tape, helmets, vest, jacket or table.
