@@ -1,13 +1,14 @@
 // LAB 몽골 M28 「배」 — 기숙사 침대에서 배가 아픈 몽글 → 룸메이트가 커다란 배(과일)를 내민다 → 고개를 젓자 「그럼 배 타러 가자!」 →
 // 진짜 보트 위에서 뱃멀미까지 → 룸메이트가 또 배를 내민다. 끝은 배(몸) · 배(과일) · 배(탈것)가 한 장면에 모이고, 꼬리표 셋이 차례로 붙는다.
 // 장면은 GPT 이미지 2.5로 구운 판(판/*.png, 지시문 판/*.txt). 같은 구도의 판을 갈아 끼워 인형극처럼 움직인다.
+// 11-17 판본 틀: 그 나라 글(위 띠 · 카드 딱지 · 꼬리표 낱말 · 말풍선 읽는 법)과 글꼴은 판본 꾸러미 p(./판본/<KEY>.json)에서 받는다. 그림 · 한국어 · 소리 · 박자 · 카메라는 그대로다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { SAY, TEXT, WORD } from './data';
+import { READ_AT, SAY } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 const C = { coral: '#C63A2B', shade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8', stitch: '#E58A73' };
-const MN = "'Inter Tight', 'SUIT', sans-serif";
 const KO = "'SUIT', 'Inter Tight', sans-serif";
 const MASTER = 0.8; // Remotion은 소리를 16비트로 더해 넘치면 자른다 — 모든 볼륨에 같은 값을 곱한다
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -80,7 +81,8 @@ const Plate: React.FC<{ t: number; children?: React.ReactNode }> = ({ t, childre
 };
 
 // 말풍선 — 한국어 크게 · 키릴 읽기 작게
-const Bubble: React.FC<{ t: number; from: number; until: number; x: number; y: number; say: { ko: string; read: string }; tail: number; size?: number }> = ({ t, from, until, x, y, say, tail, size = 78 }) => {
+const Bubble: React.FC<{ p: LocPack; t: number; from: number; until: number; x: number; y: number; say: keyof typeof SAY; tail: number; size?: number }> = ({ p, t, from, until, x, y, say: id, tail, size = 78 }) => {
+  const say = { ko: SAY[id], read: p.reads[READ_AT[id]] };
   if (t < from || t >= until) return null;
   const a = pop(t, from);
   const w = Math.min(860, 100 + say.ko.length * size * 0.8);
@@ -95,14 +97,14 @@ const Bubble: React.FC<{ t: number; from: number; until: number; x: number; y: n
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.08, color: C.shade, whiteSpace: 'pre' }}>{say.ko}</div>
-        <div style={{ fontFamily: MN, fontWeight: 700, fontSize: size * 0.62, lineHeight: 1.12, color: C.brown }}>🔊 {say.read}</div>
+        <div style={{ fontFamily: p.font, fontWeight: 700, fontSize: size * 0.62, lineHeight: 1.12, color: C.brown }}>🔊 {say.read}</div>
       </div>
     </div>
   );
 };
 
 // 꼬리표 — 「배 = 몽골어 한 낱말」, 바늘땀 실이 그 물건을 가리킨다
-const Tag: React.FC<{ t: number; at: number; x: number; y: number; to: [number, number]; mn: string; until?: number }> = ({ t, at, x, y, to, mn, until = 99 }) => {
+const Tag: React.FC<{ p: LocPack; t: number; at: number; x: number; y: number; to: [number, number]; mn: string; until?: number }> = ({ p, t, at, x, y, to, mn, until = 99 }) => {
   if (t < at || t >= until) return null;
   const a = pop(t, at, 0.24);
   const draw = interpolate(t, [at, at + 0.2], [0, 1], clamp);
@@ -116,36 +118,37 @@ const Tag: React.FC<{ t: number; at: number; x: number; y: number; to: [number, 
       </svg>
       <div style={{ position: 'absolute', left: x, top: y, transform: `translate(-50%, -50%) scale(${a}) rotate(-1.5deg)`, background: C.cream, borderRadius: 28, padding: '12px 28px', outline: `5px dashed ${C.stitch}`, outlineOffset: -11, display: 'flex', alignItems: 'baseline', gap: 14, whiteSpace: 'nowrap', boxShadow: '0 10px 24px rgba(50,20,10,0.32)' }}>
         <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 96, lineHeight: 1.05, color: C.shade }}>배</span>
-        <span style={{ fontFamily: MN, fontWeight: 800, fontSize: 66, color: C.brown }}>= {mn}</span>
+        <span style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.wordSize, color: C.brown }}>= {mn}</span>
       </div>
     </>
   );
 };
 
 // 위 띠 — 바늘땀 테 두른 천 이름표(뜻 줄)
-const Band: React.FC<{ t: number; at: number; size?: number; children: React.ReactNode }> = ({ t, at, size = 60, children }) => {
+const Band: React.FC<{ p: LocPack; t: number; at: number; size: number; children: React.ReactNode }> = ({ p, t, at, size, children }) => {
   const a = fadeIn(t, at, 0.15);
   return (
-    <div style={{ position: 'absolute', left: 70, width: 840, top: 236, background: 'rgba(255,253,248,0.98)', borderRadius: 34, outline: `5px dashed ${C.stitch}`, outlineOffset: -13, padding: '32px 36px 36px', boxSizing: 'border-box', boxShadow: '0 10px 28px rgba(60,20,10,0.28)', fontFamily: MN, fontWeight: 800, fontSize: size, lineHeight: 1.16, color: C.brown, textAlign: 'center', whiteSpace: 'pre-line', transform: `translateY(${(1 - a) * 14}px)`, opacity: a }}>
+    <div style={{ position: 'absolute', left: 70, width: 840, top: 236, background: 'rgba(255,253,248,0.98)', borderRadius: 34, outline: `5px dashed ${C.stitch}`, outlineOffset: -13, padding: '32px 36px 36px', boxSizing: 'border-box', boxShadow: '0 10px 28px rgba(60,20,10,0.28)', fontFamily: p.font, fontWeight: 800, fontSize: size, lineHeight: p.lineH, color: C.brown, textAlign: 'center', whiteSpace: 'pre-line', transform: `translateY(${(1 - a) * 14}px)`, opacity: a }}>
       {children}
     </div>
   );
 };
-const Top: React.FC<{ t: number }> = ({ t }) => {
-  if (t < T.card) return <Band t={t} at={-1}>{TEXT.hook}</Band>;
+const Top: React.FC<{ p: LocPack; t: number }> = ({ p, t }) => {
+  const b = p.bandSize;
+  if (t < T.card) return <Band p={p} t={t} at={-1} size={p.hookSize}>{p.hook}</Band>;
   if (t < T.tummy) return null; // 카드 칸은 카드 위 글이 대신한다
-  if (t < T.give) return <Band t={t} at={T.tummy}>{TEXT.belly}</Band>;
-  if (t < T.no) return <Band t={t} at={T.give}>{TEXT.pear}</Band>;
-  if (t < T.ticket) return <Band t={t} at={T.no}>{TEXT.no}</Band>;
-  if (t < T.boat) return <Band t={t} at={T.ticket}>{TEXT.boat}</Band>;
-  if (t < T.again) return <Band t={t} at={T.boat}>{TEXT.bellyAgain}</Band>;
-  if (t < T.toss) return <Band t={t} at={T.again}>{TEXT.again}</Band>;
-  if (t < T.end) return <Band t={t} at={T.toss}>{TEXT.myPear}</Band>;
-  return <Band t={t} at={T.end} size={60}>{TEXT.end}</Band>;
+  if (t < T.give) return <Band p={p} t={t} at={T.tummy} size={b}>{p.belly}</Band>;
+  if (t < T.no) return <Band p={p} t={t} at={T.give} size={b}>{p.pear}</Band>;
+  if (t < T.ticket) return <Band p={p} t={t} at={T.no} size={b}>{p.no}</Band>;
+  if (t < T.boat) return <Band p={p} t={t} at={T.ticket} size={b}>{p.boat}</Band>;
+  if (t < T.again) return <Band p={p} t={t} at={T.boat} size={b}>{p.bellyAgain}</Band>;
+  if (t < T.toss) return <Band p={p} t={t} at={T.again} size={b}>{p.again}</Band>;
+  if (t < T.end) return <Band p={p} t={t} at={T.toss} size={b}>{p.myPear}</Band>;
+  return <Band p={p} t={t} at={T.end} size={p.endSize}>{p.end}</Band>;
 };
 
 // 카드 — 2.0초에 튀어나와 1초 안에 몽글 배로 떨어진다(볼 이유 심사 「글자 판이 3초 멈춘다」)
-const Card: React.FC<{ t: number }> = ({ t }) => {
+const Card: React.FC<{ p: LocPack; t: number }> = ({ p, t }) => {
   if (t < T.card || t >= T.tummy) return null;
   const a = pop(t, T.card, 0.24);
   const fall = interpolate(t, [T.land, T.tummy - 0.03], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
@@ -160,9 +163,9 @@ const Card: React.FC<{ t: number }> = ({ t }) => {
         <Img src={staticFile('img/card.png')} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 22px 28px rgba(50,20,10,0.5))' }} />
       </div>
       <div style={{ position: 'absolute', left: 0, width: 1080, top: 560, textAlign: 'center', opacity: op }}>
-        <span style={{ display: 'inline-block', background: C.cream, borderRadius: 26, padding: '10px 30px 14px', fontFamily: MN, fontWeight: 800, fontSize: 60, color: C.brown, boxShadow: '0 10px 24px rgba(50,20,10,0.35)' }}>{TEXT.magic}</span>
+        <span style={{ display: 'inline-block', maxWidth: 760, whiteSpace: 'pre-line', background: C.cream, borderRadius: 26, padding: '10px 30px 14px', fontFamily: p.font, fontWeight: 800, fontSize: p.magicSize, color: C.brown, boxShadow: '0 10px 24px rgba(50,20,10,0.35)' }}>{p.magic}</span>
       </div>
-      <div style={{ position: 'absolute', left: 0, width: 1080, top: 1345, textAlign: 'center', fontFamily: MN, fontWeight: 800, fontSize: 76, color: C.cream, opacity: op, textShadow: '0 4px 18px rgba(40,15,8,0.75)' }}>🔊 {WORD.read}</div>
+      <div style={{ position: 'absolute', left: 0, width: 1080, top: 1345, textAlign: 'center', fontFamily: p.font, fontWeight: 800, fontSize: 76, color: C.cream, opacity: op, textShadow: '0 4px 18px rgba(40,15,8,0.75)' }}>🔊 {p.cardRead}</div>
     </>
   );
 };
@@ -225,31 +228,31 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => {
+export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
   const frame = useCurrentFrame();
   const t = frame / 30;
   const dim = t >= T.card && t < T.tummy ? interpolate(t, [T.card, T.card + 0.15, T.land, T.tummy - 0.05], [0, 1, 1, 0], clamp) : 0;
   return (
     <AbsoluteFill style={{ background: '#2B1A14' }}>
       <Plate t={t}>
-        <Tag t={t} at={T.tummy + 0.75} x={720} y={1150} to={[420, 1265]} mn={WORD.belly} until={T.give} />
-        <Tag t={t} at={T.give + 0.62} x={640} y={1390} to={[630, 1255]} mn={WORD.pear} until={T.no} />
-        <Tag t={t} at={T.ticket + 1.0} x={235} y={700} to={[430, 770]} mn={WORD.boat} until={T.boat} />
-        <Tag t={t} at={T.tag1} x={690} y={1130} to={[440, 1250]} mn={WORD.belly} />
-        <Tag t={t} at={T.tag2} x={310} y={570} to={[235, 700]} mn={WORD.pear} />
-        <Tag t={t} at={T.tag3} x={700} y={1350} to={[540, 1440]} mn={WORD.boat} />
+        <Tag p={p} t={t} at={T.tummy + 0.75} x={720} y={1150} to={[420, 1265]} mn={p.words[0]} until={T.give} />
+        <Tag p={p} t={t} at={T.give + 0.62} x={640} y={1390} to={[630, 1255]} mn={p.words[1]} until={T.no} />
+        <Tag p={p} t={t} at={T.ticket + 1.0} x={235} y={700} to={[430, 770]} mn={p.words[2]} until={T.boat} />
+        <Tag p={p} t={t} at={T.tag1} x={690} y={1130} to={[440, 1250]} mn={p.words[0]} />
+        <Tag p={p} t={t} at={T.tag2} x={310} y={570} to={[235, 700]} mn={p.words[1]} />
+        <Tag p={p} t={t} at={T.tag3} x={700} y={1350} to={[540, 1440]} mn={p.words[2]} />
       </Plate>
       {dim > 0 ? <AbsoluteFill style={{ background: `rgba(40,15,8,${0.5 * dim})` }} /> : null}
-      <Bubble t={t} from={T.tummy + 0.08} until={T.give} x={420} y={790} say={SAY.m1} tail={-1} />
-      <Bubble t={t} from={T.give + 0.05} until={T.no} x={640} y={590} say={SAY.r1} tail={1} />
-      <Bubble t={t} from={T.no + 0.02} until={T.ticket} x={340} y={730} say={SAY.m2} tail={-1} />
-      <Bubble t={t} from={T.ticket + 0.03} until={T.boat} x={600} y={510} say={SAY.r2} tail={1} size={70} />
-      <Bubble t={t} from={T.boat + 0.12} until={T.again} x={360} y={860} say={SAY.m3} tail={1} size={70} />
-      <Bubble t={t} from={T.again + 0.02} until={T.toss} x={520} y={540} say={SAY.r3} tail={1} />
-      <Bubble t={t} from={T.last} until={T.total} x={500} y={880} say={SAY.m4} tail={0} size={70} />
-      <Bubble t={t} from={T.toss + 0.08} until={T.end} x={700} y={520} say={SAY.r4} tail={0} />
-      <Top t={t} />
-      <Card t={t} />
+      <Bubble p={p} t={t} from={T.tummy + 0.08} until={T.give} x={420} y={790} say="m1" tail={-1} />
+      <Bubble p={p} t={t} from={T.give + 0.05} until={T.no} x={640} y={590} say="r1" tail={1} />
+      <Bubble p={p} t={t} from={T.no + 0.02} until={T.ticket} x={340} y={730} say="m2" tail={-1} />
+      <Bubble p={p} t={t} from={T.ticket + 0.03} until={T.boat} x={600} y={510} say="r2" tail={1} size={70} />
+      <Bubble p={p} t={t} from={T.boat + 0.12} until={T.again} x={360} y={860} say="m3" tail={1} size={70} />
+      <Bubble p={p} t={t} from={T.again + 0.02} until={T.toss} x={520} y={540} say="r3" tail={1} />
+      <Bubble p={p} t={t} from={T.last} until={T.total} x={500} y={880} say="m4" tail={0} size={70} />
+      <Bubble p={p} t={t} from={T.toss + 0.08} until={T.end} x={700} y={520} say="r4" tail={0} />
+      <Top p={p} t={t} />
+      <Card p={p} t={t} />
       <Sound />
     </AbsoluteFill>
   );
