@@ -91,6 +91,28 @@
       "원고": "게시/판본/US/원고_youtube.json",
       "AI표시": false,
       "지문": "34c6446b89f9784a36bab200a5c5e5fd839020a16a489030ae87385891d830b4"
+    },
+    {
+      "계정": "lab-br-youtube",
+      "파일": "게시/판본/BR/video.mp4",
+      "시각": "2026-11-18T13:00:00-03:00",
+      "언어": "pt-BR",
+      "돌림": true,
+      "표지": "게시/판본/BR/cover.png",
+      "원고": "게시/판본/BR/원고_youtube.json",
+      "AI표시": false,
+      "지문": "3e838ef686f6a147f62d5059af5d297b949b9f710ce6bf8f9323933b851aa520"
+    },
+    {
+      "계정": "lab-tw-youtube",
+      "파일": "게시/판본/TW/video.mp4",
+      "시각": "2026-11-18T13:00:00+08:00",
+      "언어": "zh-Hant",
+      "돌림": true,
+      "표지": "게시/판본/TW/cover.png",
+      "원고": "게시/판본/TW/원고_youtube.json",
+      "AI표시": false,
+      "지문": "b03167c2232086d1958d63afc22630e6835d3e7b7aba500ab265d0e3d9467e09"
     }
   ],
   "미룰편": [],
