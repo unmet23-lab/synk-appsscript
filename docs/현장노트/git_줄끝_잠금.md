@@ -95,6 +95,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: `git log --oneline HEAD..origin/master`가 비고, `git status`에 sparse 폴더가 지워진 것으로 나오지 않는다.
 - 11-04 덧붙임(Claude): 가지에 내 커밋이 있으면 `따라가기`도 「옮기면 가지에서 빠진다」로 멈춘다. 그때는 `git fetch origin` 뒤 `git merge --no-edit origin/master`를 그대로 쓴다 — sparse로 빠진 폴더는 빠진 채로 합쳐진다. 묶음(`world-account.bundle.mjs`) 충돌은 원천만 풀고 `node tools/build-world-account.mjs`로 다시 만든다.
 
+### 바로올리기를 `… | tail`로 부르면 도구가 멈춰도 「exit 0」이다 — 올라가지 않은 커밋을 올라간 줄로 안다 (2026-11-16 Claude)
+- 증상: `node tools/바로올리기.js … --실행 2>&1 | tail -25`가 10분을 넘겨 배경으로 넘어갔다가 「exit code 0」으로 끝났다. 출력 파일은 비어 있었고, origin에도 커밋이 없었다(고친 파일은 미커밋 그대로).
+- 원인: 파이프의 종료 코드는 마지막 `tail`의 것이다. `tail`은 끝날 때 한꺼번에 내보내므로, 배경으로 넘어간 명령의 출력도 남지 않았다. 다른 세션의 올리기 여섯이 줄을 서 있어 관련 시험이 오래 걸렸다.
+- 고침: 출력을 파일로 받고 종료 코드를 따로 적는다 — `node tools/바로올리기.js … --실행 > <폴더>/commit.log 2>&1; echo "exit $?" >> <폴더>/commit.log`를 `run_in_background`로 돌린다. 메시지가 길면 `-F <파일>`로 준다.
+- 다시 확인: `commit.log` 끝에 「올린 커밋: … · origin 확인 ✓」와 `exit 0`이 함께 있고, `git log origin/master -1 -- <고친 경로>`가 그 커밋이다.
+
 ### GitHub SSH가 같은 열쇠를 된다 안 된다 한다 — `Permission denied (publickey)`로 바로올리기 · 공개가 멈춘다 (2026-11-04 Claude)
 - **증상:** 19시 전후로 `git fetch` · `git push`가 `git@github.com: Permission denied (publickey)`로 끊겼다. 15분짜리 관련 시험을 다 돌린 바로올리기가 push에서 「push가 거절됐다」로 멈췄고, `공개.js --실행`도 같은 말로 멈췄다. 공개 도구 로그에는 `Permission denied`가 안 남고 `correct access rights`만 남기도 한다.
 - **원인:** GitHub 쪽 장애다. 상태 페이지에 18:49 KST부터 Git Operations · API · Pull Requests · Actions 사고가 올라왔다. 내가 18:44에 본 전체 표시는 아직 정상이어서 처음에는 못 잡았다 — 거절이 먼저 나타나므로 몇 분 뒤 `https://www.githubstatus.com/api/v2/incidents/unresolved.json`을 다시 본다. `ssh -v`로 보면 등록된 열쇠(`synk-laptop-2026-08-31`)를 내밀고도 거절당했고, 같은 명령을 여덟 번 치면 다섯 번 되고 세 번 거절됐다. 열쇠 · 권한 · 원격 주소는 고칠 것이 없다.
