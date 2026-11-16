@@ -648,7 +648,10 @@ test('설계 관문 셋째 7: a second run on the same prefix while one runs is 
 test('도움 요청 부호 목록: every error code the engine, the worker and the window raise is in KNOWN_ERROR_CODES (a new one is added there)', () => {
   const app = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
   const files = [];
-  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) { if (!['tests', 'test', 'node_modules'].includes(e.name)) walk(f); } else if (/\.(c|m)?js$/.test(e.name)) files.push(f); } };
+  // This UI fixture deliberately includes external installer exit codes. The
+  // application never loads it; only production emitters belong in this check.
+  const fixture = path.join(app, 'ui', 'engine-fixtures.js');
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) { if (!['tests', 'test', 'node_modules'].includes(e.name)) walk(f); } else if (f !== fixture && /\.(c|m)?js$/.test(e.name)) files.push(f); } };
   for (const d of ['engine/src', 'worker', 'ui']) {
     const before = files.length;
     assert.ok(fs.existsSync(path.join(app, d)), `${d} is where the codes are looked for (카본 끝판 F1)`);
