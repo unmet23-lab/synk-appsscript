@@ -539,15 +539,26 @@ test('설계 관문 셋째 라 · 8: every request × outcome hands out no key t
 });
 
 // ── r8a 검수(11-16 밤)
-const stopsAfter = (c, route) => { const real = c.call; c.call = async (u, o) => { const r = await real(u, o); if (u.endsWith(route)) return new Promise(() => {}); return r; }; return real; };
+// The server answers that route, then the app "stops" (the answer is never stored). `reached` settles when the
+// server has answered — a fixed wait was flaky on a busy PC (조율 세션 11-17).
+const stopsAfter = (c, route) => {
+  const real = c.call; let hit, miss; const reached = new Promise((ok, no) => { hit = ok; miss = no; });
+  c.call = async (u, o) => {
+    let r;
+    try { r = await real(u, o); } catch (e) { if (u.endsWith(route)) miss(e); throw e; } // a refused request fails the test, never hangs it
+    if (u.endsWith(route)) { hit(); return new Promise(() => {}); }
+    return r;
+  };
+  return { real, reached };
+};
 
 test('GPT r8a GA1: a cut or loss report the server took, the app stopped before storing its answer: the next open forgets this device, or the read key for another', async (t) => {
   for (const [label, run, route] of [['revoke self', (c) => c.revoke(c.device.deviceId), 'devices/revoke'], ['lost self', (c) => c.lost(c.device.deviceId), '/lost']]) {
     const h = await harness(t);
     h.store.addInvite('pilot@example.com');
     const a = await h.client('a'); const p = await a.provision({ name: 'PC-A' }); await a.confirmReadKey(p.readKey.keyId);
-    const real = stopsAfter(a, route);
-    void run(a); await new Promise((ok) => setTimeout(ok, 300)); // the process is gone before the answer is stored
+    const { real, reached } = stopsAfter(a, route);
+    void run(a); await reached; // the process is gone before the answer is stored
     assert.ok(h.store.device(a.device.deviceId).state !== 'active', `${label}: the server did it`);
     const again = new ProvisionClient({ dir: path.join(h.dir, 'a'), secretStore, auth: a.auth, call: real, now: () => h.clock.t, mono: () => h.clock.t });
     await again.open();
@@ -558,8 +569,8 @@ test('GPT r8a GA1: a cut or loss report the server took, the app stopped before 
   h.store.addInvite('pilot@example.com');
   const a = await h.client('a'); const p = await a.provision({ name: 'PC-A' }); await a.confirmReadKey(p.readKey.keyId);
   const b = await h.client('b'); await b.provision({ name: 'PC-B' });
-  const real = stopsAfter(a, '/lost');
-  void a.lost(b.device.deviceId); await new Promise((ok) => setTimeout(ok, 300));
+  const { real, reached } = stopsAfter(a, '/lost');
+  void a.lost(b.device.deviceId); await reached;
   const again = new ProvisionClient({ dir: path.join(h.dir, 'a'), secretStore, auth: a.auth, call: real, now: () => h.clock.t, mono: () => h.clock.t });
   await again.open();
   assert.equal(again.device.read, null, 'the account read keys were deleted by the report');
