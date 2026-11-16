@@ -166,11 +166,11 @@ export function normalizeReport(input){
   if(JSON.stringify(report).length>MARKETING_LIMITS.chars)throw fail('리포트가 너무 커요. JSON으로 30만 자 아래가 되게 줄여 주세요.',413);
   return report;
 }
-// ReportHead.summaryLine: 종류마다 정한 한국어 문장이다(계약.md 표).
+// ReportHead.summaryLine: 종류마다 정한 한국어 문장이다(계약.md 표). 고객 방의 틀 글과 같은 말투(해요체)로 쓴다.
 export function summaryLineOf(report){
   if(report.kind==='ai-search')return `일반 질문에 받은 답 ${report.summary.general.answered}건 가운데 ${report.subject.brand} 언급 ${report.summary.general.mentioned}건`;
-  if(report.kind==='competitor-ads')return `경쟁사 ${report.competitors.length}곳의 켜진 광고를 읽었습니다`;
-  if(report.kind==='label-review')return `${report.summary.items}편을 봤습니다. 걸림 ${report.summary.hit}건, 확인 필요 ${report.summary.check}건`;
+  if(report.kind==='competitor-ads')return `경쟁사 ${report.competitors.length}곳의 켜진 광고를 읽었어요`;
+  if(report.kind==='label-review')return `${report.summary.items}편을 봤어요. 걸림 ${report.summary.hit}건, 확인 필요 ${report.summary.check}건`;
   return report.headline;
 }
 const headOf=report=>({kind:report.kind,runId:report.runId,title:report.title,measuredAt:{from:report.measuredAt.from,to:report.measuredAt.to},summaryLine:summaryLineOf(report)});

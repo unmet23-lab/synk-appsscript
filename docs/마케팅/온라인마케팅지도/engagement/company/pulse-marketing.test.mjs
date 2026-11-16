@@ -166,6 +166,9 @@ test('요약: 받은 summary가 틀려도 cells와 items에서 다시 센다 —
   ],'engine_a의 avgMs는 (1000+5002+3000)/3을 반올림한 값이다(답 없음 칸을 빼면 2000)');
   assert.deepEqual(report.summary.topSources,[{host:'video.example',count:3},{host:'blog.example',count:2},{host:'alpha.example',count:1},{host:'zeta.example',count:1}],'브랜드 칸의 brand.example은 세지 않는다. 같은 수면 호스트 이름순');
   assert.equal(summaryLineOf(report),'일반 질문에 받은 답 3건 가운데 합성브랜드 언급 1건');
+  // 언급과 인용은 따로다: 이름 없이 출처 링크만 단 답(mentioned:false, cited:true)은 받고, 인용에만 센다.
+  const linkOnly=normalizeReport(edit(aiSearch(),r=>{Object.assign(r.cells[4],{mentioned:false,cited:true});}));
+  assert.deepEqual(linkOnly.summary.general,{total:4,answered:3,mentioned:1,cited:2});assert.equal(linkOnly.summary.byService[1].generalMentioned,0);assert.equal(linkOnly.summary.byService[1].generalCited,1);
   // topSources는 15곳까지, 칸이 없는 서비스의 avgMs는 0이다.
   const wide=normalizeReport(edit(aiSearch(),r=>{r.services.push({id:'idle',name:'안 쓴 검색',condition:''});r.cells[3].sources=Array.from({length:12},(_,i)=>`a${String(i).padStart(2,'0')}.example`);r.cells[4].sources=Array.from({length:10},(_,i)=>`b${String(i).padStart(2,'0')}.example`);}));
   const expected=[...Array.from({length:12},(_,i)=>`a${String(i).padStart(2,'0')}.example`),'b00.example','b01.example','b02.example'];
@@ -174,8 +177,8 @@ test('요약: 받은 summary가 틀려도 cells와 items에서 다시 센다 —
   assert.ok(wide.summary.topSources.every((row,i,all)=>i===0||all[i-1].count>row.count||all[i-1].count===row.count&&all[i-1].host<row.host),'건수가 많은 순, 같으면 호스트 이름순');
   const label=normalizeReport(labelReview());
   assert.deepEqual(label.summary,{items:2,hit:1,check:3,norecord:1,unread:1},'확인 필요는 편 수(2)가 아니라 판정 칸 수(3)다');
-  assert.equal(summaryLineOf(label),'2편을 봤습니다. 걸림 1건, 확인 필요 3건');
-  assert.equal(summaryLineOf(normalizeReport(competitorAds())),'경쟁사 2곳의 켜진 광고를 읽었습니다');
+  assert.equal(summaryLineOf(label),'2편을 봤어요. 걸림 1건, 확인 필요 3건');
+  assert.equal(summaryLineOf(normalizeReport(competitorAds())),'경쟁사 2곳의 켜진 광고를 읽었어요');
   assert.equal(summaryLineOf(normalizeReport(memo())),'한 문장 합성 결론');
   assert.equal(Object.hasOwn(normalizeReport(competitorAds()),'summary'),false);
 });
