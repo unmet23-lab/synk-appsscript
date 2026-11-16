@@ -9,3 +9,6 @@ pub mod runlog;
 pub mod schedule;
 pub mod notify;
 pub mod update;
+pub mod folders;
+pub mod files;
+pub mod reinstall;

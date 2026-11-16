@@ -27,6 +27,10 @@ impl NativeHost {
                 if self.dialog_busy.swap(true,Ordering::SeqCst){return Err("DIALOG_BUSY".into());}
                 let result=self.dialog(method,first);self.dialog_busy.store(false,Ordering::SeqCst);result
             },
+            // 옮겨 오기 v1 · v2 (STAGE1_DESIGN.md 4.6 · 4.6b): each module answers its own methods, None for the rest.
+            m if m.starts_with("files.")=>backup_native::files::host(m,args).unwrap_or_else(||Err("HOST_METHOD".into())),
+            m if m.starts_with("folders.")=>backup_native::folders::host(m,args).unwrap_or_else(||Err("HOST_METHOD".into())),
+            m if m.starts_with("reinstall.")=>backup_native::reinstall::host(m,args).unwrap_or_else(||Err("HOST_METHOD".into())),
             _=>Err("HOST_METHOD".into())
         }
     }
@@ -167,7 +171,9 @@ fn updating_folder()->Result<PathBuf,&'static str>{
     platform::state_dir(false).map_err(|_|"STATE_ROOT")
 }
 /// `--update-check` (what the run executable starts once a day — the result goes to `update.json`) and
-/// `--update-install` (also what SYNK 솔리오 can start). One JSON line out. Exit 0: checked, already the
+/// `--update-install` (also what SYNK 솔리오 can start). JSON lines out: `--update-check` writes one;
+/// `--update-install` writes `{"ok":true,"installing":<version>}` just before the installer is started and then one
+/// closing line, `{"ok":true,…}` or `{"ok":false,"error":<code>}` (카본 끝판 A2). Exit 0: checked, already the
 /// newest, or the installer started and took over (its marker is in the install folder); 3: a package whose signature
 /// or signed version is wrong, nothing installed; 75: this user's backup or restore holds the engine, try
 /// later; 78: this build has no public key yet; 1: anything else (the line says which).

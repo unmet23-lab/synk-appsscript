@@ -107,6 +107,8 @@ test('the hooks keep runs from starting, never overwrite a mapped executable, as
   // Both moved executables, or the install folder the RMDir removes only when empty stays (카본 끝판 D5).
   assert.ok(inOrder(macro('NSIS_HOOK_POSTUNINSTALL'), ['Delete "$INSTDIR\\.installing"', 'Delete /REBOOTOK "$INSTDIR\\WorkBackupRun.exe.old"',
     'Delete /REBOOTOK "$INSTDIR\\${MAINBINARYNAME}.exe.old"', 'RMDir "$INSTDIR"', 'DeleteRegKey HKLM "${MANUPRODUCTKEY}"']));
+  // The 「다시 깔기」 work folder goes on an uninstall, before the install folder, and stays through an update (4.6b).
+  assert.match(macro('NSIS_HOOK_POSTUNINSTALL'), /\$\{If\} \$UpdateMode <> 1\n(\s*;[^\n]*\n)*\s*RMDir \/r "\$INSTDIR\\reinstall-work"\n\s*\$\{EndIf\}\n\s*RMDir "\$INSTDIR"/);
   // One Restart Manager session over all four images: one question at most, on the first pass only, and every stop takes the
   // install's marker away itself first, so no failure window holds it (re-review c GA2 · GA3).
   assert.ok(inOrder(macro('SWB_CLOSE'), ['$(appRunning)', '$(appRunningOkKill)', '$(failedToKillApp)', 'SWB_CLOSE_PASS 1', 'SWB_CLOSE_PASS 0']));

@@ -177,6 +177,11 @@ FunctionEnd
   Delete "$INSTDIR\.installing"
   Delete /REBOOTOK "$INSTDIR\WorkBackupRun.exe.old"
   Delete /REBOOTOK "$INSTDIR\${MAINBINARYNAME}.exe.old"
+  ${If} $UpdateMode <> 1
+    ; What the administrator side of 「다시 깔기」 gave winget (4.6b). Only administrators can write the install
+    ; folder, so nobody else can have put a link there.
+    RMDir /r "$INSTDIR\reinstall-work"
+  ${EndIf}
   RMDir "$INSTDIR"
   ${If} $UpdateMode <> 1
     DeleteRegKey HKLM "${MANUPRODUCTKEY}"

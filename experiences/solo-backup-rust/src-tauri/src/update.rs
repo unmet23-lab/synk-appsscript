@@ -83,7 +83,8 @@ pub fn due(record: &Value, now_ms: u64) -> bool {
 /// returns once the installer has taken over. What returns an error is a refusal or a failure.
 /// The engine lock is taken before anything is fetched and held until the installer's own marker is in the
 /// install folder (`launch`), so no backup or restore of this user starts in between (GPT GA2).
-/// `started` is told the version just before the installer starts.
+/// `started` is told the version just before the installer is started — after the file is written, held and compared
+/// and the install folder is checked once more, so a failure before that never follows a 「started」 (카본 끝판 A2).
 pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, started: impl FnOnce(&str)) -> Result<(), &'static str> {
     let _engine = crate::platform::try_lock(root, crate::platform::ENGINE_LOCK).map_err(|_| "STATE_LOCK")?.ok_or("RUN_ACTIVE")?;
     let update = find(app, DOWNLOAD_TIMEOUT).await?.ok_or("UP_TO_DATE")?;
@@ -91,8 +92,7 @@ pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, started: impl 
     let bytes = update.download(|_, _| {}, || {}).await.map_err(|e| code(&e))?;
     let version = version_text(&update.version).ok_or("UPDATE_FEED")?;
     let folder = std::env::current_exe().ok().and_then(|exe| exe.parent().map(Path::to_path_buf)).ok_or("EXECUTABLE")?;
-    started(&version);
-    launch(&bytes, &version, &folder)
+    launch(&bytes, &version, &folder, || started(&version))
 }
 
 /// Starts the checked installer so that nothing can change it between the check and the start (GPT GA1): it is
@@ -106,9 +106,9 @@ pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, started: impl 
 /// The wait has no time limit while the installer runs (GPT -b GA1); it returns `Ok` only once the installer's marker
 /// has been seen, and every other end is an error (`hand_over`).
 #[cfg(windows)]
-fn launch(bytes: &[u8], version: &str, install_folder: &Path) -> Result<(), &'static str> {
+fn launch(bytes: &[u8], version: &str, install_folder: &Path, started: impl FnOnce()) -> Result<(), &'static str> {
     use std::{io::{Read, Write}, os::windows::ffi::OsStrExt};
-    use windows_sys::Win32::{Foundation::{CloseHandle, GetLastError, WAIT_OBJECT_0}, System::Threading::WaitForSingleObject,
+    use windows_sys::Win32::{Foundation::{CloseHandle, GetLastError, WAIT_OBJECT_0, WAIT_TIMEOUT}, System::Threading::WaitForSingleObject,
         UI::{Shell::{ShellExecuteExW, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW}, WindowsAndMessaging::SW_SHOWNORMAL}};
     let temp = std::env::temp_dir();
     // What an earlier update left (the installer ran from there): its folders go first, quietly.
@@ -134,38 +134,43 @@ fn launch(bytes: &[u8], version: &str, install_folder: &Path) -> Result<(), &'st
     info.lpVerb = verb.as_ptr(); info.lpFile = file.as_ptr(); info.lpParameters = parameters.as_ptr(); info.nShow = SW_SHOWNORMAL;
     // Another install may have started while this one downloaded; its marker is not this installer's (Fable F3).
     if crate::platform::installing(install_folder) { return Err("INSTALLING"); }
+    started();
     // Returns once the installer process exists — after the administrator prompt; a "no" there is a failure here.
     if unsafe { ShellExecuteExW(&mut info) } == 0 { let _ = unsafe { GetLastError() }; return Err("UPDATE_START"); }
     // No time limit while the installer runs (GPT -b GA1); success only when its marker has been seen (Fable F1 · F2).
-    // Shell gives no process for an exe only in odd setups (DDE, `SEE_MASK_INVOKEIDLIST`); then the marker alone is
-    // watched for ten minutes.
+    // Shell gives no process for an exe only in odd setups (DDE, `SEE_MASK_INVOKEIDLIST`), and a wait on a handle can
+    // fail outright (no SYNCHRONIZE right — 카본 끝판 A1); either way the marker alone is watched for ten minutes.
     let process = info.hProcess;
-    let outcome = if process.is_null() {
-        hand_over(|| crate::platform::installing(install_folder), None::<fn(Duration) -> bool>, Duration::from_secs(600))
-    } else {
-        let watched = hand_over(|| crate::platform::installing(install_folder),
-            Some(|wait: Duration| unsafe { WaitForSingleObject(process, wait.as_millis() as u32) } == WAIT_OBJECT_0), Duration::ZERO);
-        unsafe { CloseHandle(process); }
-        watched
-    };
+    let watch = (!process.is_null()).then_some(|wait: Duration| match unsafe { WaitForSingleObject(process, wait.as_millis() as u32) } {
+        WAIT_OBJECT_0 => Some(true),
+        WAIT_TIMEOUT => Some(false),
+        _ => None,
+    });
+    let outcome = hand_over(|| crate::platform::installing(install_folder), watch, Duration::from_secs(600));
+    if !process.is_null() { unsafe { CloseHandle(process); } }
     drop(held);
     outcome
 }
 /// The end of the hand-over to a started installer (Fable design gate F1 · F2): `Ok` only once its marker has been
 /// seen in the install folder. `ended` waits up to the time it is given for the installer process and says whether
-/// that process has ended — then it is `UPDATE_STOPPED` (a stop in .onInit, a refused downgrade, a closed message, a
-/// crash) unless the marker is there right then. With no process to wait for (`None`) only the marker is watched, for
-/// `without_process`, and its never coming is `UPDATE_UNCONFIRMED`.
+/// that process has ended (`Some(true)`) — then it is `UPDATE_STOPPED` (a stop in .onInit, a refused downgrade, a
+/// closed message, a crash) unless the marker is there right then — or is still running (`Some(false)`), or that the
+/// wait itself failed (`None`). With no process to wait for, or once a wait has failed, only the marker is watched,
+/// for `without_process` from then, and its never coming is `UPDATE_UNCONFIRMED`; a failed wait never turns into a
+/// loop with no pause and no limit (카본 끝판 A1).
 #[cfg_attr(not(windows), allow(dead_code))]
-fn hand_over(mut marker: impl FnMut() -> bool, mut ended: Option<impl FnMut(Duration) -> bool>, without_process: Duration) -> Result<(), &'static str> {
+fn hand_over(mut marker: impl FnMut() -> bool, mut ended: Option<impl FnMut(Duration) -> Option<bool>>, without_process: Duration) -> Result<(), &'static str> {
     const POLL: Duration = Duration::from_millis(250);
-    let until = std::time::Instant::now() + without_process;
+    let mut until = None;
     loop {
         if marker() { return Ok(()); }
-        match ended.as_mut() {
-            Some(ended) => if ended(POLL) { return if marker() { Ok(()) } else { Err("UPDATE_STOPPED") }; },
-            None => {
-                if std::time::Instant::now() >= until { return Err("UPDATE_UNCONFIRMED"); }
+        match ended.as_mut().map(|ended| ended(POLL)) {
+            Some(Some(true)) => return if marker() { Ok(()) } else { Err("UPDATE_STOPPED") },
+            Some(Some(false)) => {}
+            failed_or_none => {
+                if failed_or_none.is_some() { ended = None; }
+                let deadline = *until.get_or_insert_with(|| std::time::Instant::now() + without_process);
+                if std::time::Instant::now() >= deadline { return Err("UPDATE_UNCONFIRMED"); }
                 std::thread::sleep(POLL);
             }
         }
@@ -179,7 +184,7 @@ fn hold(path: &Path) -> std::io::Result<fs::File> {
     fs::OpenOptions::new().read(true).share_mode(FILE_SHARE_READ).open(path)
 }
 #[cfg(not(windows))]
-fn launch(_bytes: &[u8], _version: &str, _install_folder: &Path) -> Result<(), &'static str> { Err("UPDATE_START") }
+fn launch(_bytes: &[u8], _version: &str, _install_folder: &Path, _started: impl FnOnce()) -> Result<(), &'static str> { Err("UPDATE_START") }
 
 #[cfg(test)]
 mod tests {
@@ -218,19 +223,28 @@ mod tests {
         fs::remove_dir_all(&root).unwrap();
     }
     #[test] fn the_hand_over_succeeds_only_when_the_marker_is_seen() {
-        let never = None::<fn(Duration) -> bool>;
+        let never = None::<fn(Duration) -> Option<bool>>;
         // The marker comes while the installer runs.
         let mut polls = 0;
-        assert_eq!(hand_over(|| { polls += 1; polls > 2 }, Some(|_: Duration| false), Duration::ZERO), Ok(()));
+        assert_eq!(hand_over(|| { polls += 1; polls > 2 }, Some(|_: Duration| Some(false)), Duration::ZERO), Ok(()));
         // The installer ends without it — a stop in .onInit, a crash (Fable F2).
-        assert_eq!(hand_over(|| false, Some(|_: Duration| true), Duration::ZERO), Err("UPDATE_STOPPED"));
+        assert_eq!(hand_over(|| false, Some(|_: Duration| Some(true)), Duration::ZERO), Err("UPDATE_STOPPED"));
         // It ends just as the marker is there.
         let mut polls = 0;
-        assert_eq!(hand_over(|| { polls += 1; polls > 1 }, Some(|_: Duration| true), Duration::ZERO), Ok(()));
+        assert_eq!(hand_over(|| { polls += 1; polls > 1 }, Some(|_: Duration| Some(true)), Duration::ZERO), Ok(()));
         // No process to watch: the marker alone, and its never coming is not a success (Fable F1).
         assert_eq!(hand_over(|| false, never, Duration::ZERO), Err("UPDATE_UNCONFIRMED"));
         let mut polls = 0;
         assert_eq!(hand_over(|| { polls += 1; polls > 1 }, never, Duration::from_secs(5)), Ok(()));
+        // A wait that fails at once (카본 끝판 A1) is asked once, then the marker alone is watched with a limit — no
+        // loop without a pause; the marker coming then is still a success.
+        let mut waits = 0;
+        let started = std::time::Instant::now();
+        assert_eq!(hand_over(|| false, Some(|_: Duration| { waits += 1; None }), Duration::from_millis(600)), Err("UPDATE_UNCONFIRMED"));
+        assert_eq!(waits, 1);
+        assert!(started.elapsed() >= Duration::from_millis(500));
+        let mut polls = 0;
+        assert_eq!(hand_over(|| { polls += 1; polls > 2 }, Some(|_: Duration| None), Duration::from_secs(5)), Ok(()));
     }
 
     #[test] fn the_record_is_written_whole_and_read_back() {

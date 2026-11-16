@@ -182,7 +182,17 @@ $w = Start-Process -FilePath $app -RedirectStandardError $err -PassThru
 for ($i = 0; $i -lt 20 -and -not ((Get-Content -LiteralPath $err -Raw -ErrorAction SilentlyContinue) -match 'INSTALL_INCOMPLETE'); $i++) { Start-Sleep -Milliseconds 500 }
 $said = (Get-Content -LiteralPath $err -Raw -ErrorAction SilentlyContinue) -replace '\s+$', ''
 Expect ($said -eq 'INSTALL_INCOMPLETE' -and -not $w.HasExited) "the window app says the install did not finish ($said, still showing: $(-not $w.HasExited))"
-Expect (-not (Test-Path -LiteralPath (Join-Path $state 'ui.lock')) -or -not (Get-Process -Name WorkBackup -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $w.Id })) 'and starts nothing else'
+# The lock file stays on disk after earlier runs; what counts is whether anyone holds it, and whether the window started
+# a worker (the installed node.exe) or another copy of itself (카본 끝판 A3).
+function Held([string]$file) {
+  if (-not (Test-Path -LiteralPath $file)) { return $false }
+  $s = [IO.File]::Open($file, 'Open', 'ReadWrite', 'ReadWrite')
+  try { $s.Lock(0, 1); $s.Unlock(0, 1); $false } catch { $true } finally { $s.Close() }
+}
+$workers = @(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($dir, [StringComparison]::OrdinalIgnoreCase) })
+$others = @(Get-Process -Name WorkBackup -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $w.Id })
+$uiHeld = Held (Join-Path $state 'ui.lock')
+Expect (-not $uiHeld -and $workers.Count -eq 0 -and $others.Count -eq 0) "and starts nothing else (window lock held: $uiHeld, workers: $($workers.Count), other windows: $($others.Count))"
 Stop-Process -Id $w.Id -Force -ErrorAction SilentlyContinue
 Rename-Item -LiteralPath (Join-Path $dir 'WorkBackupRun.exe.old') -NewName 'WorkBackupRun.exe'
 
