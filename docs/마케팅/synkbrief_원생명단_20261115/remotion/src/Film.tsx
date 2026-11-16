@@ -37,9 +37,9 @@ const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; dr
 };
 
 // 내린 장면의 윗단을 흐린 거울 쪽으로 녹여 경계를 없앤다(B38 v8)
-const Lowered: React.FC<{ d?: number; children: React.ReactNode }> = ({ d = 210, children }) => {
+const Lowered: React.FC<{ d?: number; join?: boolean; children: React.ReactNode }> = ({ d = 210, join, children }) => {
   const f = useCurrentFrame();
-  const z = interpolate(f, [0, 8], [1.035, 1], { ...clamp, easing: EASE_OUT });
+  const z = join ? 1 : interpolate(f, [0, 8], [1.035, 1], { ...clamp, easing: EASE_OUT });
   return (
     <AbsoluteFill style={{ overflow: 'hidden', background: '#0b0b0b' }}>
       <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scaleY(-1)`, transformOrigin: '50% 0%', filter: 'blur(34px) brightness(0.9)' }}>{children}</div>
@@ -119,7 +119,7 @@ export const Film: React.FC = () => {
     <AbsoluteFill style={{ background: '#000' }}>
       {CUTS.map((c, i) => (
         <Sequence key={i} from={sec(c.from)} durationInFrames={sec(c.to) - sec(c.from)}>
-          <Lowered d={c.low ?? 210}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} blur={c.blur} look={c.look} /></Lowered>
+          <Lowered d={c.low ?? 210} join={c.join}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} blur={c.blur} look={c.look} /></Lowered>
           {c.look === 'past' ? <PastFlash dur={sec(c.to) - sec(c.from)} /> : null}
           {!MASTER && c.a ? <Audio src={staticFile(c.a.src)} trimBefore={sec(c.a.start)} volume={c.a.vol ?? 1} /> : !MASTER && c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
@@ -137,7 +137,8 @@ export const Film: React.FC = () => {
 
       {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
       {/* 배경음(일레븐랩스 연주곡 — 낮은 맥박 신스 · 시계 같은 잔 타악 · 어두운 펠트 피아노, 8초 마디라 0~32초에 16~32초를 이어 48초 · 빈 마디 없음). 반전(S.reveal)에서 조금 올라오고 끝까지 간다(마지막 0.6초에 사그라짐) — 바탕에 방 소리 */}
-      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.reveal - 0.3), sec(S.reveal + 0.3), sec(TOTAL_S - 0.6), sec(TOTAL_S)], [0.06, 0.1, 0.1, 0.13, 0.13, 0], clamp)} />
+      {/* 11-16 최종 확인 미흡 고침(말 없는 끝 6초가 0.25초 음량 −28~−34dB로 본편보다 10dB 넘게 얇음): 「뚝」 뒤 말 없는 숨(37.4~42초)에 0.18로 받치고, 경찰관 말(42.0~43.9초) 아래에서 0.13으로 내렸다가, 그 뒤 0.24로 올려 끝을 음악으로 닫고 마지막 0.9초에 사그라진다 */}
+      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.reveal - 0.3), sec(S.reveal + 0.3), sec(37.4), sec(38.4), sec(41.8), sec(42.0), sec(43.9), sec(44.7), sec(TOTAL_S - 0.9), sec(TOTAL_S)], [0.06, 0.1, 0.1, 0.13, 0.13, 0.18, 0.18, 0.13, 0.13, 0.24, 0.24, 0], clamp)} />
       {/* 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
       <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}

@@ -4,11 +4,13 @@
 // 컷마다 그 영상에 든 소리(대사 · 휴대폰 속 목소리 · 방 소리)를 그대로 깐다(audio). 동영상은 public/img/*.mp4(git 밖 — 제미나이 앱 동영상).
 // 받은 판(11-15 10시) — 시작 초와 자막 초는 받은 판마다 대본 정렬(.tmp/b54/정렬_*.json)로 맞췄다. V3 · V4 · V7은 협박 말을 뺀 다시 낸 판(V3r · V4r · V7r)이다.
 export type Crop = { s: number; cx: number; cy: number; ay?: number; push?: { t0: number; t1: number; to: number } };
-export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number; blur?: number; look?: 'past' | 'dim'; a?: { src: string; start: number; vol?: number } };
+// join = 앞 컷의 마지막 장에서 시작한 판을 컷 없이 잇는다(첫 장의 1.035배 내려앉음을 끈다 — 11-16 V7r → V9f)
+export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number; blur?: number; look?: 'past' | 'dim'; join?: boolean; a?: { src: string; start: number; vol?: number } };
 
 // reveal = 반전(문 종 · 경찰관) · stop = 음악을 줄이는 자리 · card = 사실 카드(위 표시를 잠깐 뺌) · end = 당부(「SYNK 브리핑」을 위 표시에 붙임)
-export const S = { hook: 0, reveal: 22.3, stop: 48.7, card: [42.5, 45.7] as [number, number], end: 45.7 };
-export const TOTAL_S = 48.7;
+// 11-16: 37.3초 컷을 없애고 핵심 장면 V7r을 9.9초 끝까지 둔 뒤 V9f를 컷 없이 이어(한 판) 뒤쪽이 1.7초씩 밀렸다 — 48.7 → 50.4초
+export const S = { hook: 0, reveal: 22.3, stop: 50.4, card: [44.2, 47.4] as [number, number], end: 47.4 };
+export const TOTAL_S = 50.4;
 export const FPS = 24;
 
 const F: Crop = { s: 1.0, cx: 540, cy: 960 };
@@ -40,21 +42,26 @@ export const CUTS: CutT[] = [
   // 11-16 최종 확인 미흡 고침(「엄지가 보내기 위에 머문 채 끝나 돈을 보낸 것으로 읽힘」): 5.2~6.8초 — 엄지가 「보내기」에서 비켜나는 6.4초 뒤까지 보인다
   { from: 20.7, to: 22.3, src: 'img/V4.mp4', start: 5.2, crop: F, audio: 1.0, drift: 0 },
   // 전 — 경찰관이 문으로 들어오며 받아 적음 · 원장은 휴대폰을 귀에 댄 채 「쉿」 · 경찰관 「신고하신—」(V6 받은 판 — 대본 정렬 3.75~5.36)
-  { from: 22.3, to: 26.1, src: 'img/V6.mp4', start: 0.35, crop: F, audio: 1.0, drift: 0.006 },
+  // 11-16 최종 확인 미흡 고침(인물튐 · 「쉿」 뒤 경찰관이 소리 내 말함): V6f — 시작 그림을 두 사람 뿌리 그림으로 다시 굽고(판/문_경찰3) 경찰관 말을 속삭임으로 다시 받음. 대본 정렬 「쉿」 1.44 · 「신고하신 원장님 맞으시죠」 3.76~5.36(옛 판과 같은 자리)
+  { from: 22.3, to: 26.1, src: 'img/V6f.mp4', start: 0.35, crop: F, audio: 1.0, drift: 0.006 },
   // 회상 1.4초 — 메일을 본 그 자리에서 몰래 누르던 손(V10 앞쪽, 빛 바랜 결). 소리는 V6 그대로 이어 「…원장님 맞으시죠?」
-  { from: 26.1, to: 27.5, src: 'img/V10.mp4', start: 0.3, crop: F, drift: 0, look: 'past', a: { src: 'img/V6.mp4', start: 4.15 } },
+  { from: 26.1, to: 27.5, src: 'img/V10.mp4', start: 0.3, crop: F, drift: 0, look: 'past', a: { src: 'img/V6f.mp4', start: 4.15 } },
   // 다시 V6 — 원장이 귀에 댔던 휴대폰을 책상 위에 내려놓음(스피커로)
   // 미학 맹검(11-15 v04 · K13 「스피커폰 장면에 전화기가 없다」) → 위 띄움(low)을 빼 화면 아래 책상 위 휴대폰이 보이게
-  { from: 27.5, to: 29.1, src: 'img/V6.mp4', start: 6.6, crop: F, audio: 1.0, drift: 0.006, low: 0 },
+  { from: 27.5, to: 29.1, src: 'img/V6f.mp4', start: 6.5, crop: F, audio: 1.0, drift: 0.006, low: 0 },
   // 핵심 장면(V7r): 스피커폰 협박범(협박3) → 원장이 경찰관을 올려다봄 → 「근데요, 지금 경찰분이 옆에서 같이 듣고 계세요」(4.56~7.76) → 뚝(8.0). 장면 심사(11-15) 「끊긴 뒤에도 휴대폰에 통화 단추」 → 8.2에서 끊고 화면이 꺼진 V9로. 미학 맹검(11-15 v04 · K13 「전화기가 없다」) → 당기기를 빼고 위 띄움 120으로 경찰관 얼굴과 책상 위 휴대폰을 함께
-  { from: 29.1, to: 37.3, src: 'img/V7.mp4', start: 0.0, crop: F, audio: 1.0, drift: 0.003, low: 120 },
+  // 11-16: 「뚝」(8.0) 뒤 9.9초 끝까지 그대로 둔다 — 원장이 숨을 내쉬고 경찰관이 펜을 멈추고 원장을 본다. 다음 V9f가 이 마지막 장에서 시작해 컷 없이 이어진다
+  //   (올리기 전 검사 11-16 「37.29초 같은 판을 잘라 키워 이어 붙임」 — 당긴 컷 대신 한 판으로). 끊긴 뒤 1.9초 동안 휴대폰 화면에 통화 단추가 남아 있다가 V9f에서 꺼진다
+  { from: 29.1, to: 39.0, src: 'img/V7.mp4', start: 0.0, crop: F, audio: 1.0, drift: 0.003, low: 120 },
   // 결 — 같은 두 사람 구도(V9): 숨을 내쉼 · 경찰관 「이제부터는 저희가 맡을게요」(3.68~5.76) · 안도의 웃음
-  { from: 37.3, to: 42.5, src: 'img/V9.mp4', start: 1.2, crop: F, audio: 1.0, drift: 0.006 },
+  // 11-16 최종 확인 미흡 고침(인물튐 — 37.3초부터 원장 · 경찰관이 다른 사람처럼 바뀜): V9f — 시작 그림을 V7r 마지막 장(9.9초)으로 바꿔 두 사람 얼굴을 V7r 그대로 이음. 대본 정렬 「이제부터는 저희가 맡을게요」 3.04~4.64
+  //   V7r 끝의 배율(1 + 9.9 × 0.003 = 1.0297) · 띄움(120) 그대로 이어 받는다. 경찰관 말 3.04~4.64 → 42.04~43.64
+  { from: 39.0, to: 44.2, src: 'img/V9f.mp4', start: 0.0, crop: { s: 1.0297, cx: 540, cy: 960 }, audio: 1.0, drift: 0.003, low: 120, join: true },
   // 사실 카드(3.2초) — 이해 시험(11-15 · 넷 모두 「사실 카드가 앞 이야기와 어떻게 이어지는지 모르겠다」 · 넷 모두 「끝이 지난 두 편과 같다(흐린 배경 카드 → 당부)」) →
   // 흐린 핵심 장면 대신 그 협박 메일 화면(V2, 어둡게) 위에 「이런 메일이 실제로 38곳에」
-  { from: 42.5, to: 45.7, src: 'img/V2.mp4', start: 6.0, crop: { s: 1.2, cx: 620, cy: 700 }, drift: 0.01, look: 'dim' },
+  { from: 44.2, to: 47.4, src: 'img/V2.mp4', start: 6.0, crop: { s: 1.2, cx: 620, cy: 700 }, drift: 0.01, look: 'dim' },
   // 끝 — V9 뒤쪽(안도의 웃음 → 경찰관이 몸을 숙여 노트북을 함께 봄) 위 당부
-  { from: 45.7, to: 48.7, src: 'img/V9.mp4', start: 6.6, crop: F, audio: 1.0, drift: 0.006 },
+  { from: 47.4, to: 50.4, src: 'img/V9f.mp4', start: 6.7, crop: F, audio: 1.0, drift: 0.006 },
 ];
 
 // 큰 글자 = 말. grey = 휴대폰 속 협박범의 말뿐이다. 방 안 사람(원장 · 경찰관)의 말은 흰(11-16 최종 확인 미흡 고침 — 경찰관 말이 협박범과 같은 회색이라 소리를 끄면 협박범 말로 읽혔다). at = 줄마다 뜨는 초. butter = 버터를 쓰는 한 줄(버터 줄 번호 bi, 없으면 첫 줄).
@@ -72,9 +79,9 @@ export const LINES: { lines: string[]; from: number; to: number; grey?: boolean;
   { lines: ['다 뿌립니다'], from: 32.72, to: 33.6, grey: true, size: 92 },
   { lines: ['근데요, 지금 경찰분이'], from: 33.66, to: 35.25, size: 88 },
   { lines: ['옆에서 같이 듣고 계세요'], from: 35.3, to: 37.05, size: 88 },
-  { lines: ['이제부터는', '저희가 맡을게요'], from: 39.78, to: 42.4, size: 96, at: [39.78, 40.98] },
-  { lines: ['AI로 업체 90여 곳을 털고', '38곳에 이런 메일을 보냈다'], from: 42.6, to: 45.6, size: 80, meta: '실제 사건 · 서울경찰청 발표 2026년 10월 26일', metaSize: 40, deep: true, at: [42.6, 43.4] },
-  { lines: ['협상도 송금도 말고', '바로 112 신고'], from: 45.85, to: 49.1, size: 104, meta: '경찰 당부', metaSize: 42, butter: true, bi: 1, at: [45.85, 46.5] },
+  { lines: ['이제부터는', '저희가 맡을게요'], from: 42.04, to: 44.1, size: 96, at: [42.04, 42.76] },
+  { lines: ['AI로 업체 90여 곳을 털고', '38곳에 이런 메일을 보냈다'], from: 44.3, to: 47.3, size: 80, meta: '실제 사건 · 서울경찰청 발표 2026년 10월 26일', metaSize: 40, deep: true, at: [44.3, 45.1] },
+  { lines: ['협상도 송금도 말고', '바로 112 신고'], from: 47.55, to: 50.8, size: 104, meta: '경찰 당부', metaSize: 42, butter: true, bi: 1, at: [47.55, 48.2] },
 ];
 
 export const VO: { id: string; t: number }[] = [];
