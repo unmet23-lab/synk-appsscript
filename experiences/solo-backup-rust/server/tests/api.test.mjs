@@ -18,7 +18,7 @@ import { createMailer } from '../mail.mjs';
 
 const listen = (srv) => new Promise((ok) => srv.listen(0, '127.0.0.1', () => ok(srv.address().port)));
 
-async function harness(t, { grace = 0 } = {}) {
+async function harness(t, { grace = 0, config = {} } = {}) {
   const clock = clockAt(), now = () => clock.t;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-api-'));
   const b2 = new FakeB2({ clock });
@@ -39,7 +39,7 @@ async function harness(t, { grace = 0 } = {}) {
   const hooks = { beforeVerify: null };
   const api = createApi({ store, keys, files, mailer, now, log: (e) => logs.push(e), sleep: async (ms) => { clock.advance(ms); },
     verifyGoogle: async (tok) => { if (hooks.beforeVerify) { const f = hooks.beforeVerify; hooks.beforeVerify = null; await f(); } return verify(tok); },
-    config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: grace } });
+    config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: grace, ...config } });
   const srv = api.server(); const port = await listen(srv);
   const jobs = createJobs({ store, api, keys, files, mailer, now, config: { bucketId: b2.bucketId, protectedKeyIds } });
   t.after(() => { srv.close(); keysSrv.close(); filesSrv.close(); store.close(); fs.rmSync(dir, { recursive: true, force: true }); });
@@ -73,7 +73,7 @@ test('T20: invite list, Google subject binding, single-use nonces and only fresh
   for (const k of made) {
     assert.deepEqual(k.bucketIds, [h.b2.bucketId]);
     assert.equal(k.namePrefix, `c/${first.customer.id}/`);
-    assert.deepEqual(k.capabilities, k.keyName.startsWith('wbw-') ? WRITE_CAPS : READ_CAPS);
+    assert.deepEqual(k.capabilities, k.keyName.startsWith('wbw-') ? ['listBuckets', 'listFiles', 'readFiles', 'writeFiles'] : ['listBuckets', 'listFiles', 'readFiles'], 'the approved set, written out (GPT r8a GE1)');
     assert.ok(!/@|pilot/i.test(k.keyName), 'key names carry no address');
   }
   // The same proof cannot be used twice, a sign-in nonce is not an action nonce and vice versa.
@@ -141,10 +141,13 @@ test('T21: one writing device — a second device only reads, the seat moves by 
   const alerts = (await h.call('GET', 'status', null, a.device.token)).alerts;
   assert.ok(alerts.some((x) => x.kind === 'new-device' && x.detail.deviceId === b.device.id));
   // Deleting the old write key fails → nothing moves and no new key is made.
+  const callsBefore = h.b2.calls.length;
   h.b2.failDelete = true;
   assert.equal((await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token)).code, 'SERVER');
   h.b2.failDelete = false;
   assert.equal(h.store.writerOf(a.customer.id).id, a.device.id);
+  assert.equal(h.b2.calls.slice(callsBefore).filter((c) => c[0] === 'createKey').length, 0, 'no new key after the failed delete (카본 r8a E3)');
+  assert.equal([...h.b2.keys.values()].filter((k) => k.keyName.startsWith('wbw-')).length, 1);
   h.b2.calls.length = 0;
   const seat = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, b.device.token);
   assert.equal(seat.ok, true);
@@ -495,6 +498,7 @@ create table restore_jobs(id text primary key, customer_id text not null, device
 create table devices(id text primary key, customer_id text not null references customers(id), name text not null, role text not null check (role in ('write','read')), state text not null check (state in ('active','moved','revoked','lost','abandoned')), created_at integer not null, last_seen_at integer, token_hash text not null unique, app_version text, moved_to text);
 insert into customers(id, sub, email, prefix, created_at) values ('c1', 's1', 'c1@example.com', 'c/c1/', 1);
 insert into devices(id, customer_id, name, role, state, created_at, token_hash) values ('d1', 'c1', 'PC', 'write', 'active', 1, 'h1');
+insert into devices(id, customer_id, name, role, state, created_at, last_seen_at, token_hash) values ('d2', 'c1', 'PC-2', 'read', 'active', 1, 7, 'h2');
 insert into restore_jobs(id, customer_id, device_id, at, state, created_at) values ('j1', 'c1', 'd1', 1, 'done', 2);`);
   old.close();
   const s = new Store(path.join(dir, 'wb.sqlite'));
@@ -504,6 +508,8 @@ insert into restore_jobs(id, customer_id, device_id, at, state, created_at) valu
   s.setCustomer('c1', { move_pin: null });
   assert.equal(s.customerById('c1').detect_cursor, null, 'the old customers table gained the scan cursor');
   assert.equal(s.device('d1').install_id, null, 'the old devices table gained install_id');
+  assert.equal(s.device('d1').first_seen_at, 1, 'a device from before counts as one that spoke (카본 r8a E4)');
+  assert.equal(s.device('d2').first_seen_at, 7);
   s.close(); new Store(path.join(dir, 'wb.sqlite')).close(); // a second open changes nothing
 });
 
@@ -1296,4 +1302,220 @@ test('GPT r7 GC1 · GC2: the last device leaving releases a finished restore who
   assert.equal(h.store.keyById(rot.keys.read.keyId).state, 'active', 'the recovered read key stays');
   assert.equal(h.store.customerById(a.customer.id).lost_at, lostAt);
   assert.equal(h.store.customerById(a.customer.id).google_step, 0);
+});
+
+// ── 카본 r7 A · B · C(11-16 밤)
+test('카본 r7 B2: the operator\'s loss report is the customer\'s, in the same line; a second one changes nothing', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const b = await h.provision('PC-2'); await h.ack(b);
+  const r = await h.api.reportLost(b.device.id);
+  assert.equal(r.next, 'read-key-rotate');
+  assert.equal(h.store.device(b.device.id).state, 'lost');
+  assert.equal(h.store.customerById(a.customer.id).google_step, 1);
+  assert.equal(h.b2.keys.has(a.keys.read.keyId), false, 'the account read key is deleted on B2');
+  const rot = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token);
+  const again = await h.api.reportLost(b.device.id);
+  assert.equal(again.alreadyLost, true);
+  assert.ok(h.b2.keys.has(rot.keys.read.keyId), 'the read key made since stays');
+  await assert.rejects(h.api.reportLost('zzzzzzzzzzzz'), { code: 'NOT_FOUND' });
+});
+
+test('카본 r7 B4: a key that seemed missing but could not be looked at again is a problem, not a pass', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  h.clock.advance(11 * 60000);
+  h.b2.keys.delete(a.keys.read.keyId);
+  let lists = 0;
+  const keys = async (method, params, o) => { if (method === 'keys.list' && ++lists === 2) throw Object.assign(new Error('down'), { code: 'NETWORK' }); return h.keys(method, params, o); };
+  const result = await jobsWith(h, { keys }).reconcileKeys(h.clock.t);
+  assert.equal(result.ok, false);
+  assert.ok(result.problems.some((p) => p.kind === 'missing-unchecked' && p.customers === 1));
+  assert.notEqual(h.store.keyById(a.keys.read.keyId).state, 'deleted', 'not marked without the second look');
+});
+
+test('카본 r7 B5: every change of a scan with more than 1,000 is marked seen', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  for (let i = 0; i < 1100; i++) h.b2.upload(base + `data/aa/q${i}`, `a${i}`.padEnd(8, '.'));
+  h.clock.advance(3600000);
+  for (let i = 0; i < 1100; i++) h.b2.upload(base + `data/aa/q${i}`, `b${i}`.padEnd(8, '.'));
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.ok(h.store.all('select count(*) n from detect_seen where customer_id = ?', a.customer.id)[0].n >= 1100);
+  const alerts = () => h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n;
+  const once = alerts();
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(alerts(), once, 'the next scan raises none of the 1,100 again (카본 r8a E5)');
+});
+
+test('카본 r7 C3: an undo that fails after the last device left keeps the restore, so a new PC can sign up', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const at = h.clock.t - 30000;
+  h.b2.upload(base + 'data/aa/d1', 'pack-two-content'); h.clock.advance(60000);
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  assert.equal(h.store.job(run.jobId).state, 'done');
+  let release; const gate = new Promise((ok) => { release = ok; });
+  const realCopy = h.b2.copyFile.bind(h.b2);
+  h.b2.copyFile = async () => { await gate; throw Object.assign(new Error('boom'), { status: 503 }); };
+  t.after(() => { h.b2.copyFile = realCopy; });
+  const undo = await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'undo', google: await h.proof('restore-undo') }, a.device.token);
+  const running = h.api.runJob(h.store.job(undo.jobId));
+  await h.api.cutDevice(a.device.id); // the only device, while the undo runs
+  release();
+  await running;
+  assert.equal(h.store.job(undo.jobId).state, 'failed');
+  assert.equal(h.store.job(run.jobId).state, 'continued', 'nobody is left to choose');
+  h.b2.copyFile = realCopy;
+  const c = await h.provision('PC-3');
+  assert.equal(c.ok, true);
+});
+
+test('카본 r7 C4: the writer taking its own seat again keeps the reading PC\'s pin', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const w = await h.provision('옛 PC'); await h.ack(w);
+  const r = await h.provision('새 PC'); await h.ack(r);
+  const snap = 'ab'.repeat(32);
+  await h.call('POST', 'move/pin', { snapshotId: snap }, r.device.token);
+  const again = await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, w.device.token);
+  assert.equal(again.ok, true);
+  assert.equal((await h.call('GET', 'status', null, w.device.token)).move.snapshotId, snap);
+  const x = await h.provision('셋째 PC'); await h.ack(x);
+  assert.equal((await h.call('POST', 'devices/take-write-seat', { google: await h.proof('take-write-seat') }, x.device.token)).ok, true);
+  assert.equal((await h.call('GET', 'status', null, r.device.token)).move.snapshotId, snap, 'a third PC taking the seat keeps it (카본 r8a E6)');
+});
+
+// ── 설계 관문 셋째(Fable 5.2 「고쳐서 간다」, 11-16 밤): one rule for a finished restore nobody can choose for.
+async function doneRestore(h, a) {
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  assert.equal(h.store.job(run.jobId).state, 'done');
+  return run.jobId;
+}
+
+test('설계 관문 셋째 3 · 4: a device whose sign-up answer never arrived cannot choose; the last real device leaving keeps the restore', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  await h.provision('ghost'); // signed up, its answer lost: it never speaks with its token
+  const jobId = await doneRestore(h, a);
+  await h.api.cutDevice(a.device.id);
+  assert.equal(h.store.job(jobId).state, 'continued');
+});
+
+test('설계 관문 셋째 3 · 4: the minute tick keeps a restore no path settled, and one whose moment before is past the 29 days', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const jobId = await doneRestore(h, a);
+  h.store.setDevice(a.device.id, { state: 'revoked', role: 'read' }); // a path that forgot to settle
+  assert.equal(h.store.job(jobId).state, 'done');
+  await h.jobs.tick();
+  assert.equal(h.store.job(jobId).state, 'continued');
+  const h2 = await harness(t);
+  const b = await readyCustomer(h2);
+  const old = await doneRestore(h2, b);
+  h2.clock.advance(30 * 86400000);
+  await h2.jobs.tick();
+  assert.equal(h2.store.job(old).state, 'continued', 'undo would be TOO_OLD');
+});
+
+test('설계 관문 셋째 5: four ways a device leaves × somebody left to choose or not', async (t) => {
+  const ways = {
+    revoke: async (h, a) => h.call('POST', 'devices/revoke', { google: await h.proof('revoke'), deviceId: a.device.id }, a.device.token),
+    lost: async (h, a) => h.call('POST', 'lost', { google: await h.proof('lost'), deviceId: a.device.id }),
+    cut: (h, a) => h.api.cutDevice(a.device.id),
+    report: (h, a) => h.api.reportLost(a.device.id),
+  };
+  for (const [way, leave] of Object.entries(ways)) for (const other of [true, false]) {
+    const h = await harness(t);
+    const a = await readyCustomer(h);
+    if (other) { const b = await h.provision('PC-2'); await h.ack(b); }
+    const jobId = await doneRestore(h, a);
+    await leave(h, a);
+    assert.notEqual(h.store.device(a.device.id).state, 'active', way);
+    assert.equal(h.store.job(jobId).state, other ? 'done' : 'continued', `${way}, ${other ? 'another device left to choose' : 'nobody left'}`);
+  }
+});
+
+// ── r8a 검수(11-16 밤)
+test('카본 r8a C1: a key deleted while the listing ran is no "not in table" problem', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const rot = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token);
+  h.clock.advance(11 * 60000);
+  let first = true;
+  const keys = async (method, params, o) => {
+    const r = await h.keys(method, params, o);
+    if (method === 'keys.list' && first) { first = false; await h.api.dropKey(h.store.keyById(rot.keys.read.keyId), 'superseded'); }
+    return r;
+  };
+  const result = await jobsWith(h, { keys }).reconcileKeys(h.clock.t);
+  assert.ok(!result.problems.some((p) => p.kind === 'not-in-table'), JSON.stringify(result.problems));
+});
+
+test('카본 r8a D1: a plan cached before a restore is not shown after it', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const at = h.clock.t - 30000;
+  h.b2.upload(base + 'data/aa/d1', 'pack-two-content'); h.clock.advance(60000);
+  let release; const gate = new Promise((ok) => { release = ok; });
+  const realCopy = h.b2.copyFile.bind(h.b2);
+  h.b2.copyFile = async (x) => { await gate; return realCopy(x); };
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  assert.equal((await h.call('POST', 'restore/plan', { at }, a.device.token)).plan.counts.copy, 1, 'planned while it runs');
+  const running = h.api.runJob(h.store.job(run.jobId));
+  release(); await running; h.b2.copyFile = realCopy;
+  assert.equal((await h.call('POST', 'restore/plan', { at }, a.device.token)).plan.counts.copy, 0, 'the files are already back');
+});
+
+test('카본 r8a D2 · D3: a non-string version or install id is refused before the sign-in; the rate key is the proxy\'s own entry', async (t) => {
+  const h = await harness(t, { config: { trustedProxies: ['127.0.0.1', '::1'] } });
+  h.store.addInvite('pilot@example.com');
+  for (const device of [{ name: 'PC', appVersion: ['0.7.0'] }, { name: 'PC', installId: ['a'.repeat(22)] }]) {
+    const r = await h.call('POST', 'provision', { google: await h.proof('provision'), device });
+    assert.equal(r.code, 'BAD_INPUT');
+  }
+  let last = null;
+  for (let i = 0; i < 31; i++) {
+    const res = await fetch(`http://127.0.0.1:${h.port}/backup-api/v1/nonce`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': `10.0.0.${i}, 203.0.113.9` }, body: JSON.stringify({ purpose: 'provision' }) });
+    last = await res.json();
+  }
+  assert.equal(last.code, 'RATE', 'a client cannot dodge the limit with its own forwarded-for entries');
+});
+
+test('GPT r8a GD1: the same time asked again after a third restore failed half-way continues it, not refused as a fourth', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const once = async (at) => {
+    const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at }, a.device.token);
+    assert.equal(run.ok, true, run.code);
+    await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+    await h.api.runJob(h.store.job(run.jobId));
+    return run.jobId;
+  };
+  for (let i = 0; i < 2; i++) {
+    const at = h.clock.t - 1000; h.b2.upload(base + 'data/aa/d1', `pack-change-${i}-x`); h.clock.advance(60000);
+    const id = await once(at);
+    await h.call('POST', 'restore/choose', { jobId: id, choice: 'continue' }, a.device.token);
+    h.clock.advance(60000);
+  }
+  const at = h.clock.t - 1000; h.b2.upload(base + 'data/aa/d1', 'pack-change-3-x'); h.b2.upload(base + 'index/i1', 'index-changed'); h.clock.advance(60000);
+  const realCopy = h.b2.copyFile.bind(h.b2); let n = 0;
+  h.b2.copyFile = async (x) => { if (++n === 2) throw Object.assign(new Error('boom'), { status: 503 }); return realCopy(x); };
+  const failed = await once(at);
+  assert.equal(h.store.job(failed).state, 'failed');
+  h.b2.copyFile = realCopy;
+  const id = await once(at);
+  assert.equal(h.store.job(id).state, 'done', 'continued in the worker, free');
 });

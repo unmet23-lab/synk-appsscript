@@ -30,7 +30,7 @@ create table if not exists devices(
   id text primary key, customer_id text not null references customers(id), name text not null,
   role text not null check (role in ('write','read')),
   state text not null check (state in ('active','moved','revoked','lost','abandoned')),
-  created_at integer not null, last_seen_at integer, token_hash text not null unique, app_version text, moved_to text, install_id text);
+  created_at integer not null, last_seen_at integer, token_hash text not null unique, app_version text, moved_to text, install_id text, first_seen_at integer);
 create unique index if not exists one_writer on devices(customer_id) where role = 'write' and state = 'active';
 create table if not exists keys(
   name text primary key, key_id text unique, kind text not null check (kind in ('write','read')),
@@ -84,6 +84,9 @@ export class Store {
     try {
       if (!cols('customers').includes('move_pin')) this.db.exec('alter table customers add column move_pin text');
       if (!cols('devices').includes('install_id')) this.db.exec('alter table devices add column install_id text');
+      // Devices from before this column did speak (or are treated so): only a new device whose
+      // sign-up answer never arrived stays without it.
+      if (!cols('devices').includes('first_seen_at')) this.db.exec('alter table devices add column first_seen_at integer; update devices set first_seen_at = coalesce(last_seen_at, created_at)');
       if (!cols('customers').includes('detect_cursor')) this.db.exec('alter table customers add column detect_cursor integer');
       const sql = this.db.prepare("select sql from sqlite_master where type = 'table' and name = 'restore_jobs'").get()?.sql || '';
       if (!sql.includes("'preparing'")) {
@@ -170,7 +173,9 @@ drop table restore_jobs_old;`);
   writerOf(customerId) { return this.get("select * from devices where customer_id = ? and role = 'write' and state = 'active'", customerId) || null; }
   activeDeviceCount(customerId) { return this.get("select count(*) n from devices where customer_id = ? and state = 'active'", customerId).n; }
   setDevice(id, fields) { this.update('devices', 'id', id, fields); }
-  touchDevice(id) { this.run('update devices set last_seen_at = ? where id = ?', this.now(), id); }
+  touchDevice(id) { const t = this.now(); this.run('update devices set last_seen_at = ?, first_seen_at = coalesce(first_seen_at, ?) where id = ?', t, t, id); }
+  // The customers with a finished restore waiting for its choice (the minute tick settles them).
+  waitingRestores() { return this.all("select distinct customer_id from restore_jobs where state = 'done'").map((r) => r.customer_id); }
 
   // ── keys. A row is written before B2 is asked, so a key made by B2 whose answer
   // was lost still has a row ('creating') that the daily reconcile can match by name.

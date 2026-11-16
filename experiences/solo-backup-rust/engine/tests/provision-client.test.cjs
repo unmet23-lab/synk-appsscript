@@ -501,3 +501,140 @@ test('GPT r7 GA1 · GA2: a seat request whose answer was lost hands out no delet
   assert.equal(reopened.state().connected, false);
   assert.equal(await reopened.writeCredentials(), null);
 });
+
+test('설계 관문 셋째 라 · 8: every request × outcome hands out no key the server deleted, names what to ask again, and forgets this device when it may be cut', async (t) => {
+  const ops = {
+    'take-write-seat': { route: 'devices/take-write-seat', run: (c) => c.takeWriteSeat() },
+    'restore-run': { route: 'restore/run', run: (c, h) => c.restoreRun(h.clock.t - 30000) },
+    'read-key-rotate': { route: 'read-key/rotate', run: (c) => c.rotateReadKey() },
+    'revoke-self': { route: 'devices/revoke', self: true, run: (c) => c.revoke(c.device.deviceId) },
+    'lost-self': { route: '/lost', self: true, run: (c) => c.lost(c.device.deviceId) },
+  };
+  for (const [op, { route, run, self }] of Object.entries(ops)) for (const outcome of ['ok', 'lost-answer', 'gone', 'moved']) {
+    const label = `${op} × ${outcome}`;
+    const h = await harness(t);
+    h.store.addInvite('pilot@example.com');
+    const a = await h.client('a'); const p = await a.provision({ name: 'PC-A' });
+    await a.confirmReadKey(p.readKey.keyId);
+    await a.rotateReadKey(); // an unconfirmed read key held too: the one the server replaces first
+    const b = await h.client('b'); await b.provision({ name: 'PC-B' }); await b.status();
+    const base = p.repository.prefix + '/';
+    h.b2.upload(base + 'config', 'c'); h.b2.upload(base + 'snapshots/s1', 's1'); h.clock.advance(60000);
+    if (outcome === 'gone') await b.revoke(a.device.deviceId);
+    if (outcome === 'moved') await b.takeWriteSeat();
+    if (outcome === 'lost-answer') { const real = a.call; a.call = async (u, o) => { const r = await real(u, o); if (u.endsWith(route)) throw Object.assign(new Error('cut'), { code: 'ETIMEDOUT' }); return r; }; }
+    const before = { w: a.device.write?.keyId, r: a.device.read?.keyId };
+    if (outcome === 'ok') await run(a, h); else await run(a, h).catch(() => {});
+    if (outcome === 'ok' && (op === 'take-write-seat' || op === 'restore-run')) assert.notEqual(a.device.write.keyId, before.w, `${label}: a new write key`);
+    if (outcome === 'ok' && op === 'read-key-rotate') assert.notEqual(a.device.read.keyId, before.r, `${label}: a new read key`);
+    const live = (id, states) => h.b2.keys.has(id) && states.includes(h.store.keyById(id)?.state);
+    const w = await a.writeCredentials().catch(() => null);
+    if (w) assert.ok(live(w.keyId, ['active']), `${label}: the write key handed out is live on the server and B2`);
+    if (a.device?.read?.acked) assert.ok(live(a.device.read.keyId, ['active', 'acked', 'pending']), `${label}: the read key held is live`);
+    const pending = await a.pendingReadKey().catch(() => null);
+    if (pending) assert.ok(live(pending.keyId, ['acked', 'pending']), `${label}: the unconfirmed read key is live`);
+    if (self && outcome !== 'moved') assert.equal(a.state().connected, false, `${label}: this device is forgotten`);
+    if (outcome === 'lost-answer' && !self) assert.ok(a.state().needs.length > 0, `${label}: what to ask again is named`);
+  }
+});
+
+// ── r8a 검수(11-16 밤)
+const stopsAfter = (c, route) => { const real = c.call; c.call = async (u, o) => { const r = await real(u, o); if (u.endsWith(route)) return new Promise(() => {}); return r; }; return real; };
+
+test('GPT r8a GA1: a cut or loss report the server took, the app stopped before storing its answer: the next open forgets this device, or the read key for another', async (t) => {
+  for (const [label, run, route] of [['revoke self', (c) => c.revoke(c.device.deviceId), 'devices/revoke'], ['lost self', (c) => c.lost(c.device.deviceId), '/lost']]) {
+    const h = await harness(t);
+    h.store.addInvite('pilot@example.com');
+    const a = await h.client('a'); const p = await a.provision({ name: 'PC-A' }); await a.confirmReadKey(p.readKey.keyId);
+    const real = stopsAfter(a, route);
+    void run(a); await new Promise((ok) => setTimeout(ok, 300)); // the process is gone before the answer is stored
+    assert.ok(h.store.device(a.device.deviceId).state !== 'active', `${label}: the server did it`);
+    const again = new ProvisionClient({ dir: path.join(h.dir, 'a'), secretStore, auth: a.auth, call: real, now: () => h.clock.t, mono: () => h.clock.t });
+    await again.open();
+    assert.equal(again.state().connected, false, `${label}: forgotten on the next open`);
+    assert.equal(await again.writeCredentials(), null);
+  }
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); const p = await a.provision({ name: 'PC-A' }); await a.confirmReadKey(p.readKey.keyId);
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' });
+  const real = stopsAfter(a, '/lost');
+  void a.lost(b.device.deviceId); await new Promise((ok) => setTimeout(ok, 300));
+  const again = new ProvisionClient({ dir: path.join(h.dir, 'a'), secretStore, auth: a.auth, call: real, now: () => h.clock.t, mono: () => h.clock.t });
+  await again.open();
+  assert.equal(again.device.read, null, 'the account read keys were deleted by the report');
+  assert.ok(again.state().needs.includes('read-key'));
+  assert.equal(again.state().googleStepRequired, true);
+});
+
+test('카본 r8a A1 · A3: status tells a device whose seat was taken — it hands out no deleted key and cuts with one sign-in', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); const p = await a.provision({ name: 'PC-A' }); await a.confirmReadKey(p.readKey.keyId);
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' }); await b.status();
+  await b.takeWriteSeat();
+  const st = await a.status();
+  assert.equal(st.device.state, 'moved');
+  assert.equal(await a.writeCredentials(), null, 'the deleted write key is not handed out');
+  assert.equal(a.state().role, 'read');
+  const signIns = a.auth.calls.length;
+  await a.revoke(a.device.deviceId);
+  assert.equal(a.auth.calls.length - signIns, 1, 'one Google sign-in, not a refused one first');
+  assert.equal(a.state().connected, false);
+  // A loss report from another PC deletes the confirmed read key: status tells this PC too.
+  const h2 = await harness(t);
+  h2.store.addInvite('pilot@example.com');
+  const c = await h2.client('c'); const pc2 = await c.provision({ name: 'PC-C' }); await c.confirmReadKey(pc2.readKey.keyId);
+  const d = await h2.client('d'); await d.provision({ name: 'PC-D' }); await d.status();
+  const x = await h2.client('x'); await x.provision({ name: 'PC-X' });
+  await d.lost(x.device.deviceId);
+  await c.status();
+  assert.equal(c.device.read, null, 'the deleted confirmed read key is dropped here');
+  assert.ok(c.state().needs.includes('read-key'));
+});
+
+test('카본 r8a A2: a restore whose answer was lost names the keys it needs, and its choice clears the restore', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc'); const p = await pc.provision({ name: 'PC' }); await pc.confirmReadKey(p.readKey.keyId);
+  const base = p.repository.prefix + '/';
+  h.b2.upload(base + 'config', 'c'); h.b2.upload(base + 'snapshots/s1', 's1');
+  h.clock.advance(3600000); const at = h.clock.t - 1;
+  h.b2.hide(base + 'snapshots/s1'); h.clock.advance(60000);
+  const real = pc.call;
+  pc.call = async (u, o) => { const r = await real(u, o); if (u.endsWith('restore/run')) throw Object.assign(new Error('cut'), { code: 'ETIMEDOUT' }); return r; };
+  await assert.rejects(pc.restoreRun(at), { code: 'NETWORK' });
+  pc.call = real;
+  assert.deepEqual([...pc.state().needs].sort(), ['read-key', 'restore', 'write-key']);
+  const job = h.store.lastJob(h.store.device(pc.device.deviceId).customer_id);
+  await h.api.runJob(h.store.job(job.id));
+  await pc.restoreChoose(job.id, 'continue');
+  assert.deepEqual([...pc.state().needs].sort(), ['read-key', 'write-key'], 'the restore is settled; the keys are still to get');
+  await pc.takeWriteSeat();
+  assert.ok(await pc.writeCredentials());
+  assert.ok(!pc.state().needs.includes('write-key'));
+});
+
+test('카본 r9 A2 · A3: a moved device that took its seat back with the answer lost is not "moved" any more; a revoke without a device stays a refusal', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const a = await h.client('a'); const p = await a.provision({ name: 'PC-A' }); await a.confirmReadKey(p.readKey.keyId);
+  const b = await h.client('b'); await b.provision({ name: 'PC-B' }); await b.status();
+  await b.takeWriteSeat();
+  await a.status();
+  assert.equal(a.state().role, 'read');
+  const real = a.call;
+  a.call = async (u, o) => { const r = await real(u, o); if (u.endsWith('take-write-seat')) throw Object.assign(new Error('cut'), { code: 'ETIMEDOUT' }); return r; };
+  await assert.rejects(a.takeWriteSeat(), { code: 'NETWORK' });
+  a.call = real;
+  await a.status();
+  assert.equal(a.state().role, 'write', 'as the server has it');
+  // The writer cuts itself with its token: one sign-in, and it goes through.
+  const signIns = a.auth.calls.length;
+  await a.revoke(a.device.deviceId);
+  assert.equal(a.auth.calls.length - signIns, 1);
+  assert.equal(h.store.device(p.deviceId).state, 'revoked');
+  // No device here and no id: the server's refusal, not a TypeError.
+  const c = await h.client('c');
+  await assert.rejects(c.revoke(undefined), (e) => e.code === 'BAD_INPUT' || e.code === 'NOT_FOUND');
+});

@@ -58,10 +58,12 @@ export function rpcServer({ secret, handlers, now = () => Date.now(), log = () =
     if (req.method !== 'POST' || req.url !== '/rpc') return reply(404, { ok: false, code: 'NOT_FOUND' });
     const chunks = []; let size = 0;
     req.on('data', (c) => { size += c.length; if (size > MAX_BODY) req.destroy(); else chunks.push(c); });
-    req.on('end', async () => {
+    req.on('end', async () => { try {
       const body = Buffer.concat(chunks).toString('utf8');
       const ts = String(req.headers['x-wb-ts'] || ''), id = String(req.headers['x-wb-id'] || ''), sig = String(req.headers['x-wb-sig'] || '');
       let msg; try { msg = JSON.parse(body); } catch { return reply(400, { ok: false, code: 'BAD_INPUT' }); }
+      // The method is a string before anything uses it (GPT r8a GC1).
+      if (!msg || typeof msg !== 'object' || Array.isArray(msg) || typeof msg.method !== 'string') return reply(400, { ok: false, code: 'BAD_INPUT' });
       const t = now();
       if (!/^\d{10,16}$/.test(ts) || Math.abs(t - Number(ts)) > SKEW_MS || !/^[A-Za-z0-9_-]{16,64}$/.test(id)) return reply(401, { ok: false, code: 'RPC_AUTH' });
       const want = Buffer.from(sign(secret, ts, id, String(msg?.method), body)), got = Buffer.from(sig);
@@ -72,10 +74,10 @@ export function rpcServer({ secret, handlers, now = () => Date.now(), log = () =
       if (!fn) return reply(404, { ok: false, code: 'NO_METHOD' });
       try { reply(200, { ok: true, result: await fn(msg.params || {}) }); }
       catch (e) {
-        const code = typeof e?.code === 'string' && /^[A-Z_]{2,40}$/.test(e.code) ? e.code : 'WORKER_FAILED';
+        const code = typeof e?.code === 'string' && /^[A-Z][A-Z0-9_]{1,40}$/.test(e.code) ? e.code : 'WORKER_FAILED';
         log({ method: msg.method, code, status: e?.status ?? null });
         reply(code === 'LIMIT_WORKER_DAY' ? 429 : 500, { ok: false, code });
       }
-    });
+    } catch { try { reply(500, { ok: false, code: 'WORKER_FAILED' }); } catch {} } });
   });
 }

@@ -17,7 +17,7 @@ const capsOf = { w: new Set(WRITE_CAPS), r: new Set(READ_CAPS) };
 // deletedNames: rows deleted before the listing began (with an id, and without one).
 // It never changes the table: `undeleted` · `undeletedNames` are keys to delete again,
 // `suspects` are live rows the listing did not show (the caller checks them again).
-export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table = null, deletedKeyIds = [], deletedNames = [] }) {
+export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table = null, deletedKeyIds = [], deletedNames = [], settlingKeyIds = [], settlingNames = [] }) {
   const problems = new Map();
   const add = (kind, n = 1) => problems.set(kind, (problems.get(kind) || 0) + n);
   const undeleted = [], undeletedNames = [];
@@ -26,9 +26,11 @@ export function reconcile({ keys, bucket, bucketId, protectedKeyIds = [], table 
   const byId = table ? new Map(table.filter((r) => r.key_id).map((r) => [r.key_id, r])) : null;
   const creating = table ? new Set(table.filter((r) => r.state === 'creating').map((r) => r.name)) : null;
   const deleted = new Set(deletedKeyIds);
+  // Deleted while the listing ran (카본 r8a C1): listed, but already out of the table.
+  const settling = new Set(settlingKeyIds), settlingName = new Set(settlingNames);
   const perPrefix = new Map();
   for (const k of keys) {
-    if (guard.has(k.keyId)) continue;
+    if (guard.has(k.keyId) || settling.has(k.keyId) || settlingName.has(k.keyName)) continue;
     const named = NAME.test(k.keyName || '');
     if (!named) { add('unknown-key'); continue; }
     // One writer and 「확정 하나 + 미확정 하나」 read keys per customer, seen without the table.

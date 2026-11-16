@@ -94,8 +94,9 @@ class ProvisionClient {
     if (v && (!ID16.test(v.customerId) || !ID12.test(v.deviceId) || !/^wbd_[A-Za-z0-9_-]{43}$/.test(v.token) || !['write', 'read'].includes(v.role) || !REPO.test(v.repository?.prefix || '') || typeof v.sub !== 'string')) throw new ServerError('DEVICE_FILE');
     this.device = v;
     if (v && v.v !== 2) await this.importOld();
-    // A request whose answer never got stored: this PC asks again for what it was getting.
-    if (this.device?.inflight) await this.update(this.lostAnswer(this.device.inflight.op));
+    // A request whose answer never got stored: this PC asks again for what it was getting. A
+    // cut or loss report of this very device that may have gone through forgets it (GPT r8a GA1).
+    if (this.device?.inflight) { if (this.device.inflight.op === 'cut-self') await this.drop(); else await this.update(this.lostAnswer(this.device.inflight.op)); }
     // Offline or refused now: the keys stay stored and the next call settles them.
     try { await this.lock(() => this.settle()); } catch (e) { if (!(e instanceof ServerError)) throw e; }
     return this.state();
@@ -192,9 +193,16 @@ class ProvisionClient {
   // rotation or a restore. Those are dropped here too, so no deleted key is handed out, and
   // what to ask again is named in `needs` (GPT r7 GA1).
   lostAnswer(op) {
-    const change = { inflight: null, needs: this.needs([LOST[op]].filter(Boolean)) };
+    // A loss report of another device: the account's read keys are deleted (as other() does).
+    if (op === 'lost-other') return { inflight: null, read: null, googleStepRequired: true, needs: this.needs(['read-key']) };
+    const add = [LOST[op]].filter(Boolean);
+    const change = { inflight: null };
     if (op === 'take-write-seat' || op === 'restore-run') change.write = null;
-    if (op === 'read-key-rotate' || op === 'restore-run') change.read = this.device.read?.confirmed ? this.device.read : null;
+    if (op === 'read-key-rotate' || op === 'restore-run') { const keep = this.device.read?.confirmed; if (this.device.read && !keep) add.push('read-key'); change.read = keep ? this.device.read : null; }
+    // A restore that may have run made this device the writer with keys it never got: after its
+    // choice it needs a write key and the restore's read key as well (카본 r8a A2).
+    if (op === 'restore-run') add.push('write-key', 'read-key');
+    change.needs = this.needs(add);
     return change;
   }
   // A key request: `inflight` is stored before it is sent and cleared in the same write that
@@ -274,11 +282,38 @@ class ProvisionClient {
       const { google } = await this.proof('take-write-seat');
       const r = await this.keyRequest('take-write-seat', 'devices/take-write-seat', { google }, (a) => ({ role: 'write', writer: this.self(), write: keyOf(a.keys.write, { waitMs: this.waitMsOf(a), waited: false }), needs: this.needs([], ['write-key']) }));
       if (!this.device.write?.acked) throw new ServerError('KEY_GONE');
+      // A PC whose seat had been taken lost its unconfirmed read key on the server then; taking
+      // the seat back does not bring it back. Asked here, so it is not handed out (설계 관문 셋째
+      // 라 시험). If the question cannot be asked now, readKeyAlive() asks before the envelope.
+      const held = this.device.read;
+      if (held?.acked && !held.confirmed) {
+        try {
+          const { acked } = await this.request('POST', 'keys/ack', { keyIds: [held.keyId] });
+          if (!(Array.isArray(acked) && acked.includes(held.keyId)) && this.device?.read?.keyId === held.keyId) await this.update({ read: null, needs: this.needs(['read-key']) });
+        } catch (e) { if (!(e instanceof ServerError)) throw e; }
+      }
       return { previous: r.previous };
     });
   }
   self() { return { id: this.device.deviceId, name: this.device.name || null }; }
-  status() { return this.call_('GET', 'status'); }
+  // What the server says of this device is kept here too: a device another PC took the seat
+  // from, or whose confirmed read key a loss report deleted, does not hand those keys out — the
+  // status call is the one a moved device keeps making (카본 r8a A1). Nothing of the server's
+  // state is kept as a mark of its own here: each answer is read as it comes (카본 r9 A2).
+  status() {
+    return this.withDevice(async () => {
+      const r = await this.request('GET', 'status');
+      const d = this.device, change = {}, moved = r?.device?.state === 'moved';
+      // Moved: it reads only now, as gone() does for a refused request.
+      if (moved && (d.role !== 'read' || d.write || (d.read && !d.read.confirmed) || d.needs?.length || d.writer)) Object.assign(change, { role: 'read', write: null, read: d.read?.confirmed ? d.read : null, needs: [], writer: null });
+      // Active on the server: the role it has there (a seat taken back whose answer was lost).
+      if (r?.device?.state === 'active' && (r.device.role === 'write' || r.device.role === 'read') && r.device.role !== d.role) change.role = r.device.role;
+      const read = 'read' in change ? change.read : d.read;
+      if (r?.lost?.googleStepRequired && read?.confirmed) Object.assign(change, { read: null, googleStepRequired: true, ...(moved ? {} : { needs: this.needs(['read-key']) }) });
+      if (Object.keys(change).length) await this.update(change);
+      return r;
+    });
+  }
   devices() { return this.call_('GET', 'devices'); }
   // With a device, as that device. Without one (a new PC refused with LIMIT_DEVICES, whose
   // answer lists the devices), with the Google sign-in only — that cannot cut the active writer.
@@ -286,13 +321,36 @@ class ProvisionClient {
     return this.lock(async () => {
       if (this.device) await this.settle();
       const signInOnly = async () => { const { google } = await this.proof('revoke'); return this.request('POST', 'devices/revoke', { google, deviceId }, { device: false }); };
+      const self = !!this.device && this.device.deviceId === deviceId;
+      // Cutting this very device is marked before it is sent: a stop before the answer is
+      // stored forgets it on the next open (GPT r8a GA1).
+      const mark = async () => { if (self && this.device) await this.update({ inflight: { op: 'cut-self', at: this.now() } }); };
       let r;
-      if (!this.device) r = await signInOnly();
-      else {
-        try { const { google } = await this.proof('revoke'); r = await this.request('POST', 'devices/revoke', { google, deviceId }); }
-        catch (e) { if (e.code === 'DEVICE_STATE' && e.extra?.state === 'moved') r = await signInOnly(); else throw e; }
+      try {
+        const { google } = await this.proof('revoke');
+        await mark();
+        if (!this.device) r = await this.request('POST', 'devices/revoke', { google, deviceId }, { device: false });
+        else {
+          try { r = await this.request('POST', 'devices/revoke', { google, deviceId }); }
+          catch (e) {
+            if (!(e.code === 'DEVICE_STATE' && e.extra?.state === 'moved')) throw e;
+            // A moved device is refused before its sign-in is used, so the same sign-in goes on
+            // without the token: one Google sign-in (카본 r8a A3), and no mark of "moved" kept here
+            // to drift from the server (카본 r9 A2). Had the server used it, a new one.
+            try { r = await this.request('POST', 'devices/revoke', { google, deviceId }, { device: false }); }
+            catch (e2) { if (e2.code !== 'NONCE') throw e2; r = await signInOnly(); }
+          }
+        }
+      } catch (e) {
+        // Cutting this very device, and the answer lost on the way: it may well be cut, so it
+        // is forgotten here, as lost() does (Fable 5.2 설계 관문 셋째 8). A refusal leaves it.
+        if (self && this.device?.deviceId === deviceId) {
+          if (e.code === 'NETWORK' || e.code === 'SERVER') await this.drop();
+          else if (this.device?.inflight?.op === 'cut-self') await this.update({ inflight: null });
+        }
+        throw e;
       }
-      if (this.device?.deviceId === deviceId) await this.drop();
+      if (self && this.device?.deviceId === deviceId) await this.drop();
       return r;
     });
   }
@@ -301,15 +359,21 @@ class ProvisionClient {
   lost(deviceId) {
     return this.lock(async () => {
       const { google } = await this.proof('lost');
-      const other = async () => { if (this.device && this.device.deviceId !== deviceId) await this.update({ read: null, googleStepRequired: true, needs: this.needs(['read-key']) }); };
+      const self = !!this.device && this.device.deviceId === deviceId;
+      const other = async () => { if (this.device && this.device.deviceId !== deviceId) await this.update({ inflight: null, read: null, googleStepRequired: true, needs: this.needs(['read-key']) }); };
+      // Marked before it is sent: a stop before the answer is stored is read on the next open as
+      // a report that went through (GPT r8a GA1).
+      if (this.device) await this.update({ inflight: { op: self ? 'cut-self' : 'lost-other', at: this.now() } });
       let r;
       try { r = await this.request('POST', 'lost', { google, deviceId }, { device: false }); }
       catch (e) {
-        if (e.code === 'NETWORK' || e.code === 'SERVER') { if (this.device?.deviceId === deviceId) await this.drop(); else await other(); }
+        if (e.code === 'NETWORK' || e.code === 'SERVER') { if (self && this.device) await this.drop(); else await other(); }
+        else if (this.device?.inflight) await this.update({ inflight: null });
         throw e;
       }
       if (this.device?.deviceId === deviceId) await this.drop();
       else if (!r.alreadyLost) await other();
+      else if (this.device?.inflight) await this.update({ inflight: null });
       return r;
     });
   }
@@ -357,7 +421,10 @@ class ProvisionClient {
     return this.withDevice(async () => {
       const body = { jobId, choice };
       if (choice === 'undo') body.google = (await this.proof('restore-undo')).google;
-      return this.request('POST', 'restore/choose', body);
+      const r = await this.request('POST', 'restore/choose', body);
+      // The restore is settled: it is no longer something to ask again (카본 r8a A2).
+      if (this.device?.needs?.includes('restore')) await this.update({ needs: this.needs([], ['restore']) });
+      return r;
     });
   }
   // 옮겨 오기(4.6): this reading PC asks the writer to keep the snapshot it copies (7 days at most).

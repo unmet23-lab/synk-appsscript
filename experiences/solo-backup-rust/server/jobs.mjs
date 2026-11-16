@@ -31,7 +31,7 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
         if (device && device.state === 'active' && fresh.purpose === 'provision') {
           const live = [...store.liveKeys(device.customer_id, 'write'), ...store.liveKeys(device.customer_id, 'read')].filter((k) => k.device_id === device.id);
           const acked = store.get('select count(*) n from keys where device_id = ? and acked_at is not null', device.id).n;
-          if (!live.length && !acked) store.setDevice(device.id, { state: 'abandoned', role: 'read' });
+          if (!live.length && !acked) { store.setDevice(device.id, { state: 'abandoned', role: 'read' }); api.settleNow?.(device.customer_id); }
         }
       }));
     }
@@ -69,6 +69,7 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     store.tx(() => {
       store.putUsage(customer.id, dayOf(t), summary.usage, { alerts: verdict.alerts, deferred: verdict.deferred, events: summary.eventCount ?? summary.events.length, window: summary.window });
       for (const e of verdict.fresh) store.markSeen(customer.id, e.fileId, e.kind, e.at);
+      for (const [id, kind, at] of summary.between || []) store.markSeen(customer.id, id, kind, at);
       for (const a of verdict.alerts) {
         const row = store.addAlert({ customerId: customer.id, kind: 'repo-changed', audience: 'customer', detail: { daysLeft: a.daysLeft, reason: a.reason } });
         if (row) {
@@ -104,24 +105,31 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     const [{ keys: list }, bucket] = await Promise.all([keys('keys.list'), keys('bucket.settings')]);
     const table = store.allLiveKeys().map((r) => ({ ...r, prefix: store.customerById(r.customer_id)?.prefix }));
     const gone = store.all("select key_id, name from keys where state = 'deleted' and deleted_at < ?", listedFrom);
+    const settling = store.all("select key_id, name from keys where state = 'deleted' and deleted_at >= ?", listedFrom);
     const result = reconcile({ keys: list, bucket, bucketId: cfg.bucketId, protectedKeyIds: cfg.protectedKeyIds, table,
+      settlingKeyIds: settling.filter((r) => r.key_id).map((r) => r.key_id), settlingNames: settling.map((r) => r.name),
       deletedKeyIds: gone.filter((r) => r.key_id).map((r) => r.key_id), deletedNames: gone.filter((r) => !r.key_id).map((r) => r.name) });
     for (const keyId of result.undeleted) await step('undeleted', () => keys('keys.delete', { keyId }));
     for (const name of result.undeletedNames) await step('undeleted', () => keys('keys.deleteByName', { name }));
     const byCustomer = new Map();
     for (const name of result.suspects) { const r = store.key(name); if (r && r.created_at < listedFrom - ACK_MS) byCustomer.set(r.customer_id, [...(byCustomer.get(r.customer_id) || []), name]); }
-    let missing = 0;
+    let missing = 0; const unchecked = [];
     for (const [customerId, names] of byCustomer) {
-      await step('missing', () => api.serial(customerId, async () => {
+      const looked = await step('missing', () => api.serial(customerId, async () => {
         const { keys: again } = await keys('keys.list');
         for (const name of names) {
           const r = store.key(name);
           if (!r || !['active', 'acked'].includes(r.state) || r.created_at >= now() - ACK_MS || again.some((k) => k.keyId === r.key_id)) continue;
           store.keyDeleted(name, 'missing'); missing++;
         }
+        return true;
       }));
+      if (!looked) unchecked.push(customerId);
     }
-    const problems = missing ? [...result.problems, { kind: 'missing-key', count: missing }] : result.problems;
+    // A key that seemed missing but could not be looked at again (the line busy, the listing
+    // failed) is a problem too: the operator hears of it instead of a pass (카본 r7 B4).
+    const problems = [...result.problems, ...(missing ? [{ kind: 'missing-key', count: missing }] : []),
+      ...(unchecked.length ? [{ kind: 'missing-unchecked', customers: unchecked.length }] : [])];
     if (problems.length) operator('reconcile', problems, dayOf(t));
     return { ...result, ok: problems.length === 0, problems };
   }
@@ -196,6 +204,9 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
       store.beat();
       await step('expire', expireKeys);
       await step('mail', () => mailer?.flush());
+      // A finished restore nobody can choose for any more is kept, within a minute, whichever
+      // path forgot to check (Fable 5.2 설계 관문 셋째 3). The first tick runs at start.
+      for (const customerId of store.waitingRestores()) await step('settle', () => api.settleRestore?.(customerId));
       preparing(t);
       const kst = new Date(t + KST), day = kst.toISOString().slice(0, 10);
       const done = store.get("select v from meta where k = 'daily'")?.v;

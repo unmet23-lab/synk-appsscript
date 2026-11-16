@@ -188,3 +188,21 @@ test('카본 r6 A6: an empty nonce is passed on as a nonce (and must come back),
   await assert.rejects(auth.signIn({ nonce: '' }), { code: 'INVALID' });
   assert.equal(seen[0].nonce, '');
 });
+
+test('카본 r7 A1: a grant Google already ended is a finished revoke; a network failure is not', async (t) => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'wb-auth-')); t.after(() => fs.rm(dir, { recursive: true, force: true }));
+  const client = { client_id: '123456-fixture.apps.googleusercontent.com', client_secret: 'fixture-client-public-1234', project_id: 'fixture-project' };
+  let fail = 'NETWORK';
+  const auth = new GoogleAuth({ dir, secretStore, client, openExternal: async () => {},
+    authorizeFlow: async (_c, _o, opts) => ({ code: 'code', nonce: opts.nonce || 'own-nonce', codeVerifier: 'verifier', redirect: 'http://127.0.0.1/callback' }),
+    json: async () => ({ token_type: 'Bearer', access_token: 'fixture-access-secret', expires_in: 3600, refresh_token: 'fixture-refresh-secret', id_token: 'fixture.id.token', scope: 'https://www.googleapis.com/auth/drive.appdata' }),
+    http: async () => { throw Object.assign(new Error('revoke failed'), { code: fail }); },
+    verify: async (_tok, _aud, { nonce }) => ({ sub: subject, email: 'fixture@example.invalid', nonce }) });
+  await auth.open();
+  await auth.signIn({ nonce: crypto.randomBytes(32).toString('base64url') });
+  await assert.rejects(auth.revoke(), { code: 'NETWORK' });
+  assert.equal(auth.getState().connected, true, 'a revoke that never reached Google keeps the grant to try again');
+  fail = 'DENIED'; // Google's 400 invalid_token
+  assert.equal(await auth.revoke(), true);
+  assert.equal(auth.getState().connected, false, 'the dead token is forgotten');
+});

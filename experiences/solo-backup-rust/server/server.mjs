@@ -189,17 +189,36 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
   function retireReadKeysOf(customer, deviceId) {
     for (const k of readKeys(customer)) if (k.device_id === deviceId && ['creating', 'pending', 'acked'].includes(k.state)) store.setKeyState(k.name, 'retired');
   }
-  // A restore whose requester left (lost, revoked). While another active device of the account
-  // remains, the finished restore waits for that device's choice (continue or undo — 카본 r6
-  // C1). With none left, nobody could choose: it is kept as it is (as if 「계속」), so a new PC
-  // can sign up.
-  function releaseRestoreOf(customer, deviceId) {
-    const open = store.openJob(customer.id);
-    if (!open || open.state !== 'done') return;
-    // Somebody can still choose (the requester or another active device): it waits. With
-    // nobody left — whoever left last, the requester or not (GPT r7 GC1) — it is kept.
-    if (store.devicesOf(customer.id).some((d) => d.state === 'active' && d.id !== deviceId)) return;
-    store.tx(() => { store.setJob(open.id, { state: 'continued', choice_at: now() }); store.setCustomer(customer.id, { detect_since: now() }); });
+  // A finished restore waits for a choice (continue or undo) while somebody can make it: an
+  // active device that has spoken with its own token since signing up (one whose sign-up answer
+  // never arrived has no token and cannot), and only while its moment before is inside the 29
+  // days (after that undo is refused as TOO_OLD). Otherwise it is kept as it is (as if 「계속」),
+  // so the account is not held and a new PC can sign up. One rule, checked at the end of every
+  // path that changes a device or a job and every minute (Fable 5.2 설계 관문 셋째 가 · 3 · 4 —
+  // r5 C1, r6 C1, r7 C1 · GC1 · C3 were each a path that forgot it). A moved device cannot
+  // choose (bearer takes active only).
+  function settleNow(customerId) {
+    const open = store.openJob(customerId);
+    if (!open || open.state !== 'done') return false;
+    const back = open.pre_at ?? (open.started_at ? open.started_at - 1 : null);
+    const undoable = !!back && now() - back <= LIMITS.maxRestoreAgeMs;
+    const chooser = store.devicesOf(customerId).some((d) => d.state === 'active' && d.first_seen_at != null);
+    if (undoable && chooser) return false;
+    store.tx(() => { store.setJob(open.id, { state: 'continued', choice_at: now() }); store.setCustomer(customerId, { detect_since: now() }); });
+    plans.delete(customerId);
+    return true;
+  }
+  const settleRestore = (customerId) => serial(customerId, async () => settleNow(customerId));
+  // A device cut off — by the customer (devices/revoke) or the operator (admin.mjs cut-device),
+  // inside the customer's line: its write keys go, its unconfirmed read keys are retired (the
+  // minute tick deletes them), a lost device stays lost (Fable 5.2 설계 관문 셋째 나 · 5).
+  async function cutOff(customer, targetId, reason) {
+    const tgt = store.device(targetId);
+    await dropAll(store.liveKeys(customer.id, 'write').filter((k) => k.device_id === targetId), reason);
+    if (tgt.state !== 'lost') store.setDevice(targetId, { state: 'revoked', role: 'read' });
+    retireReadKeysOf(customer, targetId);
+    settleNow(customer.id);
+    return tgt;
   }
   // Old write keys first; if deleting fails nothing moves. Then the seat, then the
   // new key — a stop after any step is continued by calling the same request again.
@@ -210,9 +229,12 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     store.tx(() => {
       if (before && before.id !== device.id) store.setDevice(before.id, { role: 'read', state: 'moved', moved_to: device.id });
       store.setDevice(device.id, { role: 'write', state: 'active', moved_to: null });
-      // The move this pin served is over once the seat moves.
-      store.setCustomer(customer.id, { move_pin: null });
+      // The move this pin served is over once the pinning PC takes the seat. A seat move between
+      // other PCs (a writer taking its own seat again) leaves a copy in progress kept (카본 r7 C4).
+      let pin = null; try { pin = JSON.parse(store.customerById(customer.id).move_pin || 'null'); } catch {}
+      if (pin?.by === device.id) store.setCustomer(customer.id, { move_pin: null });
     });
+    settleNow(customer.id);
     if (before && before.id !== device.id) {
       retireReadKeysOf(customer, before.id);
       notifyCustomer(customer, 'seat-moved', { at: now(), name: device.name, deviceId: device.id, fromId: before.id }, `${device.id}:${before.id}:${now()}`);
@@ -255,16 +277,16 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         // the grace since the last write key deletion — after a restart too.
         { const left = usableAt(customer) - now(); if (left > 0) await sleep(left); }
         if (!job.started_at) store.setJob(job.id, { started_at: now() });
-        const r = await files('restore.apply', { prefix: customer.prefix, at: job.at, runId: job.id, resume }, { timeout: 3600000 });
+        const r = await files('restore.apply', { prefix: customer.prefix, at: job.at, runId: job.id, undoOf: job.undo_of || null, resume }, { timeout: 3600000 });
         const prior = (() => { try { return JSON.parse(store.job(job.id).journal || '[]'); } catch { return []; } })();
         const fresh = store.job(job.id);
         store.setJob(job.id, { state: job.undo_of ? 'continued' : 'done', finished_at: now(), pre_at: fresh.pre_at ?? r.preAt, rounds: r.rounds,
           counts: JSON.stringify({ ...r.counts, remaining: r.remaining }), journal: JSON.stringify([...prior, ...r.journal]) });
         if (job.undo_of) store.setCustomer(customer.id, { detect_since: now() });
-        else {
-          notifyCustomer(customer, 'restore-done', { at: now(), to: job.at, jobId: job.id }, job.id);
-          if (store.device(job.device_id)?.state !== 'active') releaseRestoreOf(customer, job.device_id);
-        }
+        else notifyCustomer(customer, 'restore-done', { at: now(), to: job.at, jobId: job.id }, job.id);
+        // The files changed: a cached plan from before is not shown again (카본 r8a D1).
+        plans.delete(customer.id);
+        settleNow(customer.id);
       } catch (e) {
         store.tx(() => {
           store.setJob(job.id, { state: 'failed', finished_at: now(), error: String(e.code || 'FAILED').slice(0, 40) });
@@ -272,6 +294,8 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
           // more, or keep it), and backups stay paused meanwhile (카본 r6 C2).
           if (job.undo_of && store.job(job.undo_of)?.state === 'undone') store.setJob(job.undo_of, { state: 'done', choice_at: null });
         });
+        // Nobody left to choose (the last device went while the undo ran): kept (카본 r7 C3).
+        settleNow(customer.id);
         mailer?.toOperator('job-failed', { customerId: customer.id, jobId: job.id, code: e.code || 'FAILED' }, job.id);
         log({ task: 'restore', code: e.code || 'FAILED' });
       } finally { running.delete(job.id); }
@@ -293,9 +317,9 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       if (!limiter.take(`provision:${req.ip}`, 10, 3600000)) fail(429, 'RATE');
       const name = deviceName(body?.device?.name);
       const appVersion = body?.device?.appVersion;
-      if (appVersion !== undefined && !VERSION.test(appVersion)) fail(400, 'BAD_INPUT');
+      if (appVersion !== undefined && (typeof appVersion !== 'string' || !VERSION.test(appVersion))) fail(400, 'BAD_INPUT');
       const installId = body?.device?.installId;
-      if (installId !== undefined && !INSTALL_ID.test(installId)) fail(400, 'BAD_INPUT');
+      if (installId !== undefined && (typeof installId !== 'string' || !INSTALL_ID.test(installId))) fail(400, 'BAD_INPUT');
       const claims = await google(body, 'provision');
       let customer = store.customerBySub(claims.sub);
       if (!customer) {
@@ -436,10 +460,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         if (requester) current(requester, ['active']);
         const tgt = store.device(target.id);
         if (!hasBearer(req) && tgt.role === 'write' && tgt.state === 'active') fail(403, 'DEVICE_STATE', { state: 'writer' });
-        await dropAll(store.liveKeys(customer.id, 'write').filter((k) => k.device_id === target.id), 'revoked');
-        if (tgt.state !== 'lost') store.setDevice(target.id, { state: 'revoked', role: 'read' });
-        retireReadKeysOf(customer, target.id);
-        releaseRestoreOf(customer, target.id);
+        await cutOff(customer, target.id, 'revoked');
         // A read-only PC still holds the envelope's read key and password.
         return { ok: true, suggestReadKeyRotation: tgt.state !== 'abandoned' };
       });
@@ -451,19 +472,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       if (!customer) fail(404, 'NOT_FOUND');
       const target = typeof body?.deviceId === 'string' && ID12.test(body.deviceId) ? store.device(body.deviceId) : null;
       if (!target || target.customer_id !== customer.id) fail(404, 'NOT_FOUND');
-      return serial(customer.id, async () => {
-        // Already reported: the keys made since (the recovered read key) stay, and the incident
-        // time and its one free key request are not opened again (GPT r7 GC2).
-        if (store.device(target.id)?.state === 'lost') return { next: 'read-key-rotate', googleRemovalUrl: 'https://myaccount.google.com/connections', alreadyLost: true };
-        await dropAll([...store.liveKeys(customer.id, 'write').filter((k) => k.device_id === target.id), ...readKeys(customer)], 'lost');
-        store.tx(() => {
-          store.setDevice(target.id, { state: 'lost', role: 'read' });
-          store.setCustomer(customer.id, { read_key: null, lost_at: now(), google_step: 1 });
-        });
-        releaseRestoreOf(customer, target.id);
-        notifyCustomer(customer, 'lost-reported', { at: now(), name: target.name, deviceId: target.id }, target.id);
-        return { next: 'read-key-rotate', googleRemovalUrl: 'https://myaccount.google.com/connections' };
-      });
+      return serial(customer.id, () => markLost(store.customerById(customer.id), target, 'lost'));
     },
 
     'POST /v1/read-key/rotate': async (req, body) => {
@@ -544,7 +553,11 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         ({ device } = current(device, ['active']));
         restoreBusy(customer);
         // The files worker allows three restores a day (RESTORES_PER_DAY); refuse here before any key is made.
-        if (store.restoresSince(customer.id, now() - DAY) >= LIMITS.restoresPerDay) fail(429, 'LIMIT_RESTORE_DAY');
+        // The same time asked again after a run that failed half-way is its continuation, which
+        // the files worker does free: not refused here as a fourth (GPT r8a GD1).
+        const last = store.lastJob(customer.id);
+        const continuing = !!last && last.state === 'failed' && !last.undo_of && !!last.started_at && last.at === at;
+        if (!continuing && store.restoresSince(customer.id, now() - DAY) >= LIMITS.restoresPerDay) fail(429, 'LIMIT_RESTORE_DAY');
         const job = store.createJob({ customerId: customer.id, deviceId: device.id, at, state: 'preparing' });
         notifyCustomer(customer, 'restore-requested', { at: t, to: at, deviceId: device.id, jobId: job.id }, job.id);
         let write, read;
@@ -586,6 +599,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         return serial(customer.id, async () => {
           latest();
           store.tx(() => { store.setJob(job.id, { state: 'continued', choice_at: now() }); store.setCustomer(customer.id, { detect_since: now() }); });
+          plans.delete(customer.id);
           return { state: 'continued' };
         });
       }
@@ -640,7 +654,9 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     let route = '?';
     try {
       const remote = (req.socket.remoteAddress || '').replace(/^::ffff:/, '');
-      const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+      // The entry the trusted proxy itself added is the last one; earlier ones come from the
+      // client and can say anything (카본 r8a D3).
+      const forwarded = String(req.headers['x-forwarded-for'] || '').split(',').at(-1).trim();
       req.ip = cfg.trustedProxies.includes(remote) && forwarded ? forwarded : remote;
       const url = new URL(req.url, 'http://local');
       const pathName = url.pathname.replace(/^\/backup-api(?=\/)/, '');
@@ -679,15 +695,30 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
   // per-customer line as the running api (a lease in the database). Like the customer's own
   // revoke: its write keys go, its unconfirmed read keys are retired (the minute tick deletes
   // them) and a restore it waits on is kept as it is (GPT r6 GB2).
+  // A device reported lost — by the customer (POST lost) or by the operator for a customer with
+  // no other PC (admin.mjs lost, 카본 r7 B2) — inside the customer's line. Its write keys and the
+  // account's read keys go, the next read key request is free once, and a finished restore
+  // nobody is left to choose is kept. Already reported: the keys made since (the recovered read
+  // key) stay, and the incident time and its one free key request are not opened again (GPT r7 GC2).
+  async function markLost(customer, target, reason) {
+    const removal = 'https://myaccount.google.com/connections';
+    if (store.device(target.id)?.state === 'lost') return { next: 'read-key-rotate', googleRemovalUrl: removal, alreadyLost: true };
+    await dropAll([...store.liveKeys(customer.id, 'write').filter((k) => k.device_id === target.id), ...readKeys(customer)], reason);
+    store.tx(() => {
+      store.setDevice(target.id, { state: 'lost', role: 'read' });
+      store.setCustomer(customer.id, { read_key: null, lost_at: now(), google_step: 1 });
+    });
+    settleNow(customer.id);
+    notifyCustomer(customer, 'lost-reported', { at: now(), name: target.name, deviceId: target.id }, target.id);
+    return { next: 'read-key-rotate', googleRemovalUrl: removal };
+  }
+  async function reportLost(deviceId) {
+    const d = store.device(deviceId); if (!d) fail(404, 'NOT_FOUND');
+    return serial(d.customer_id, () => markLost(store.customerById(d.customer_id), store.device(d.id), 'lost-operator'));
+  }
   async function cutDevice(deviceId) {
     const d = store.device(deviceId); if (!d) fail(404, 'NOT_FOUND');
-    await serial(d.customer_id, async () => {
-      const customer = store.customerById(d.customer_id);
-      await dropAll(store.liveKeys(d.customer_id, 'write').filter((k) => k.device_id === d.id), 'operator-cut');
-      if (store.device(d.id).state !== 'lost') store.setDevice(d.id, { state: 'revoked', role: 'read' });
-      retireReadKeysOf(customer, d.id);
-      releaseRestoreOf(customer, d.id);
-    });
+    await serial(d.customer_id, () => cutOff(store.customerById(d.customer_id), d.id, 'operator-cut'));
   }
-  return { handle, runJob, finishPreparing, routes, makeKey, dropKey, serial, repository, cutDevice, server: () => http.createServer((req, res) => { void handle(req, res); }) };
+  return { handle, runJob, finishPreparing, routes, makeKey, dropKey, serial, repository, cutDevice, reportLost, settleRestore, settleNow, server: () => http.createServer((req, res) => { void handle(req, res); }) };
 }

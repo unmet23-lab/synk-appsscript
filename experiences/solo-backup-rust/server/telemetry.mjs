@@ -16,7 +16,7 @@ export const NOTICE_KINDS = new Set(['status', 'folders', 'changes', 'devices', 
 export const INSTALL_STEPS = new Set(['download', 'smartscreen', 'uac', 'install', 'first-open', 'google-signin', 'provision',
   'repository-init', 'envelope', 'schedule', 'first-backup', 'done', 'helper-register', 'migration', 'uninstall']);
 export const ERROR_CODE = /^[A-Z][A-Z0-9_]{1,40}$/;
-// The codes a help bundle may carry: those the app (engine/src, src-tauri/src) and this server raise. A
+// The codes a help bundle may carry: those the app (engine/src, worker/, ui/, src-tauri/src) and this server raise. A
 // customer or project name in the shape of a code is dropped (GPT r7 GD1). A new code is added here.
 export const KNOWN_ERROR_CODES = new Set(('ACCOUNT ALREADY ALREADY_RUNNING B2_BAD_RESPONSE BAD_INPUT BUNDLE_INTEGRITY BUNDLE_INVALID BUNDLE_MISSING '
   + 'BUNDLE_READ BUNDLE_UNSEALED BUSY CANCELED CATALOG_EXPIRED CATALOG_TOO_LARGE CREDENTIAL_REQUIRED '
@@ -42,7 +42,11 @@ export const KNOWN_ERROR_CODES = new Set(('ACCOUNT ALREADY ALREADY_RUNNING B2_BA
   + 'SERVER SNAPSHOT_GONE STATE_LOCK STATE_ROOT SUB_MISMATCH TOKEN TOO_OLD TRUNCATED_FRAME UNSAFE_MANIFEST '
   + 'UPDATE_FAILED UPDATE_FEED UPDATE_NOT_CONFIGURED UPDATE_RECORD UPDATE_SIGNATURE UPDATE_START UPDATE_STOPPED '
   + 'UPDATE_UNCONFIRMED UP_TO_DATE WINGET_EXPORT WINGET_MISSING WINGET_OLD WINGET_START WINGET_TIMEOUT WINGET_WAIT '
-  + 'WORKER_EXIT WORKER_FAILED WORKER_SPAWN WORKER_STATE WORKER_UNAVAILABLE WRITE_KEY').split(' '));
+  + 'WORKER_EXIT WORKER_FAILED WORKER_SPAWN WORKER_STATE WORKER_UNAVAILABLE WRITE_KEY '
+  // worker/, ui/ and the engine's default failure codes (조율 세션 부탁, 11-16 밤)
+  + 'DECLINED DUPLICATE_BOOT EXECUTABLE FAILED HOST_FAILED HOST_TIMEOUT INTERRUPTED INVALID_METHOD LAST_FOLDER MOVE_FAILED MOVE_NOT_IN_STREAM MOVE_WRITE_CHANGED NO_BRIDGE NO_METHOD NOT_READY PARENT_CLOSED QUOTA READ_FAILED REINSTALL_FAILED RESTORE_FAILED RESTORE_INCOMPLETE RUN_BUSY RUN_INPUT RUN_SKIP RUN_TRIGGER START_FAILED STARTUP_READ_FAILED TIMEOUT WINGET_ADMIN_MISSING '
+  // the system error names Node gives (fixed words, useful to tell a locked file from a full disk)
+  + 'EACCES EAI_AGAIN EBUSY ECONNREFUSED ECONNRESET EEXIST EISDIR EMFILE ENOENT ENOSPC ENOTDIR ENOTEMPTY ENOTFOUND EPERM EPIPE EROFS ETIMEDOUT EXDEV').split(' '));
 const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,6}(?:-[a-z0-9.]{1,20})?$/;
 const WINDOWS = /^\d{1,2}\.\d{1,2}\.\d{1,6}(?:\.\d{1,6})?$/;
 const MAX_RUNS = 200, MAX_ITEMS = 500, WEEK = 7 * 86400000, HELP_AGE = 30 * 86400000;

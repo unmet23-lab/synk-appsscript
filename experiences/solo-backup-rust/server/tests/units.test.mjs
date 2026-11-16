@@ -5,17 +5,18 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { summarize, judge, suggest, DAY, HOUR } from '../detect.mjs';
+import { summarize, judge, suggest, DAY, HOUR, WINDOW_DAYS } from '../detect.mjs';
 import { reconcile, EXPECTED_RULES } from '../reconcile.mjs';
 import { rpcClient, rpcServer } from '../rpc.mjs';
 import { keyHandlers, WRITE_CAPS, READ_CAPS, DAILY_CAP } from '../keys-worker.mjs';
 import { fileHandlers, RESTORES_PER_DAY } from '../files-worker.mjs';
 import { applyPlan } from '../restore-hidden.mjs';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 const require_ = createRequire(import.meta.url);
 import { createVerifier } from '../google-token.mjs';
 import { createMailer, signRequest, SIGNED_TAG } from '../mail.mjs';
-import { cleanBatch, cleanBundle } from '../telemetry.mjs';
+import { cleanBatch, cleanBundle, KNOWN_ERROR_CODES } from '../telemetry.mjs';
 import { Store } from '../store.mjs';
 import { createJobs } from '../jobs.mjs';
 import { withSettings, secretFile } from '../config.mjs';
@@ -69,6 +70,7 @@ test('detect: hide surge — vanished snapshots without telemetry, capped report
   const s = summarize([...snaps, ...hides], { customerPrefix: P, since: T0, now: T0 + DAY });
   assert.equal(s.window.snapshotHides, 6);
   assert.ok(judge(s, { previousSnapshots: 6, reported: { pruned: 999999 }, now: T0 + DAY }).alerts.some((a) => a.vanished));
+  assert.ok(judge(s, { previousSnapshots: 6, reported: null, now: T0 + DAY }).alerts.some((a) => a.vanished), 'without measurements too (카본 r8a F1)');
   // Without the vanish (one snapshot left of two), the measured rule decides; a forged huge count is capped.
   const many = [...Array(12)].map((_, i) => up(`snapshots/m${i}`, `m${i}`, T0));
   const hideTen = many.slice(0, 10).map((x) => hide(x.fileName.slice(R.length), T0 + HOUR));
@@ -174,7 +176,7 @@ test('files worker: plans from its own listing, records the moment before, re-pl
   clock.advance(HOUR);
   await assert.rejects(h['restore.apply']({ prefix: 'c/../', at: T }), { code: 'BAD_INPUT' });
   const r = await h['restore.apply']({ prefix: P, at: T, items: [{ type: 'copy', sourceFileId: 'x', fileName: 'elsewhere' }] });
-  assert.equal(r.preAt, Math.max(...b2.versions.slice(0, 4).map((v) => v.uploadTimestamp)));
+  assert.equal(r.preAt, Math.max(...b2.versions.slice(0, 4).map((v) => v.uploadTimestamp), clock.t - HOUR), 'the latest upload, or an hour before the run (카본 r7 B1 · 설계 관문 셋째 6)');
   assert.equal(r.remaining, 0); assert.equal(r.rounds, 1);
   assert.ok(!b2.versions.some((v) => v.fileName === 'elsewhere'), 'a plan from the caller is ignored');
   assert.ok(late.uploadTimestamp <= r.preAt);
@@ -332,16 +334,16 @@ test('카본 B4: a continued restore keeps the moment before taken by its first 
   const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
   b2.upload(R + 'config', 'c'); b2.upload(R + 'snapshots/s1', 's1'); clock.advance(HOUR);
   const at = clock.t - 1; b2.hide(R + 'snapshots/s1'); clock.advance(HOUR);
-  const before = Math.max(...b2.versions.map((v) => v.uploadTimestamp));
+  const before = Math.max(...b2.versions.map((v) => v.uploadTimestamp), clock.t - HOUR); // 카본 r7 B1 · 설계 관문 셋째 6
   // The first run lists, then stops on its first change.
   let calls = 0;
   const failing = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' && ++calls === 1 ? async () => { throw Object.assign(new Error('stop'), { code: 'B2' }); } : o[k]) })));
   const f1 = fileHandlers({ withSession: failing, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
-  await assert.rejects(f1['restore.apply']({ prefix: P, at }));
+  await assert.rejects(f1['restore.apply']({ prefix: P, at, runId: 'b4aaaaaaaaaaaaaa' }));
   clock.advance(HOUR); b2.upload(R + 'snapshots/s9', 'late');
   const f2 = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
-  const r = await f2['restore.apply']({ prefix: P, at, resume: true });
-  assert.equal(r.preAt, before);
+  const r = await f2['restore.apply']({ prefix: P, at, runId: 'b4aaaaaaaaaaaaaa', resume: true });
+  assert.equal(r.preAt, before, 'the same job continued: the late write does not move it');
 });
 
 test('카본 B8: an upload and its hide in the same millisecond keep their order', () => {
@@ -358,7 +360,7 @@ test('GPT r6 GB1: an unfinished restore resumed three days later is still the sa
   const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
   b2.upload(R + 'config', 'c'); b2.upload(R + 'snapshots/s1', 's1'); b2.upload(R + 'snapshots/s2', 's2'); clock.advance(HOUR);
   const at = clock.t - 1; b2.hide(R + 'snapshots/s1'); b2.hide(R + 'snapshots/s2'); clock.advance(HOUR);
-  const before = Math.max(...b2.versions.map((v) => v.uploadTimestamp));
+  const before = Math.max(...b2.versions.map((v) => v.uploadTimestamp), clock.t - HOUR); // 카본 r7 B1 · 설계 관문 셋째 6
   let calls = 0;
   const failing = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' && ++calls === 2 ? async () => { throw Object.assign(new Error('stop'), { code: 'B2' }); } : o[k]) })));
   const f1 = fileHandlers({ withSession: failing, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
@@ -465,7 +467,11 @@ test('GPT r7 GB1: the same run asked again after its answer was lost gets what i
   const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
   const first = await f['restore.apply']({ prefix: P, at, runId: 'abcdefghij012345' });
   clock.advance(HOUR);
+  const later = b2.upload(R + 'data/aa/p1', 'C'); // a backup after the restore
+  const calls = b2.calls.length;
   const again = await f['restore.apply']({ prefix: P, at, runId: 'abcdefghij012345' });
+  assert.equal(b2.calls.length, calls, 'nothing copied or hidden again (GPT r8a GF1)');
+  assert.equal(b2.versions.filter((v) => v.fileName === R + 'data/aa/p1').at(-1).fileId, later.fileId, 'the later backup stays the latest');
   assert.equal(again.replayed, true);
   assert.equal(again.preAt, first.preAt, 'the moment before the first run, not after its copy');
   assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8')).counts[P], 1);
@@ -494,4 +500,228 @@ test('카본 r7 D4: the fake lists names in byte order like B2', async () => {
   const b2 = new FakeB2({ clock: clockAt(T0) });
   b2.upload('c/x/r_1', 'a'); b2.upload('c/x/r/1', 'b');
   assert.deepEqual((await b2.listFileVersions({ prefix: 'c/x/' })).map((v) => v.fileName), ['c/x/r/1', 'c/x/r_1']);
+});
+
+test('카본 r7 B1: the moment before a restore stays inside the 29 days when the last backup is older', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-preat-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 40 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c', T0); b2.upload(R + 'data/aa/p1', 'A', T0);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r = await f['restore.apply']({ prefix: P, at: clock.t - HOUR, runId: 'b1aaaaaaaaaaaaaa' });
+  assert.ok(r.preAt >= clock.t - HOUR && r.preAt < clock.t, 'not the upload of forty days ago');
+  clock.advance(HOUR);
+  const undo = await f['restore.apply']({ prefix: P, at: r.preAt, runId: 'b1bbbbbbbbbbbbbb', undoOf: 'b1aaaaaaaaaaaaaa' });
+  assert.equal(undo.remaining, 0);
+  // An empty folder too.
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-preat-')); t.after(() => fs.rmSync(empty, { recursive: true, force: true }));
+  const e = fileHandlers({ withSession: sessionOf(new FakeB2({ clock })), bucketId: b2.bucketId, stateDir: empty, now: () => clock.t });
+  assert.ok((await e['restore.apply']({ prefix: P, at: clock.t - HOUR })).preAt >= clock.t - HOUR);
+});
+
+test('카본 r7 B3 · B5: a new change gets its own days left; an unseen change older than the window is no new alert', () => {
+  const now = T0 + 20 * DAY + HOUR;
+  const v = [up('data/aa/p1', 'AAAA', T0), up('data/aa/p1', 'BBBB', T0 + HOUR), up('data/aa/p2', 'CCCC', T0), up('data/aa/p2', 'DDDD', T0 + 20 * DAY)];
+  const s = summarize(v, { customerPrefix: P, since: T0, now });
+  const old = s.events.find((e) => e.at === T0 + HOUR);
+  const j = judge(s, { seen: (id) => id === old.fileId, now });
+  assert.equal(j.alerts.find((a) => a.reason === 'content').daysLeft, WINDOW_DAYS, 'the new overwrite of today, not the one of twenty days ago');
+  const later = T0 + 31 * DAY;
+  const late = judge(summarize(v.slice(0, 2), { customerPrefix: P, since: T0, now: later }), { now: later });
+  assert.ok(!late.alerts.some((a) => a.reason === 'content'), 'thirty days old: it can no longer be undone');
+});
+
+test('카본 r7 B5: with more than 1,000 changes the ones in between are named, to be marked seen', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-between-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + DAY), b2 = new FakeB2({ clock });
+  for (let i = 0; i < 1200; i++) b2.upload(R + `data/aa/q${i}`, `a${i}`.padEnd(8, '.'), T0);
+  for (let i = 0; i < 1200; i++) b2.upload(R + `data/aa/q${i}`, `b${i}`.padEnd(8, '.'), T0 + HOUR);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r = await f['prefix.scan']({ prefix: P, since: T0 });
+  assert.equal(r.eventCount, 1200); assert.equal(r.events.length, 1000); assert.equal(r.between.length, 200);
+  assert.equal(new Set([...r.events.map((e) => e.fileId), ...r.between.map(([id]) => id)]).size, 1200);
+});
+
+test('카본 r7 C5: a worker code with digits comes back as it is', async (t) => {
+  const clock = clockAt(), now = () => clock.t, secret = crypto.randomBytes(32).toString('hex');
+  const srv = rpcServer({ secret, now, handlers: { 'x.fail': async () => { throw Object.assign(new Error('x'), { code: 'B2_BAD_RESPONSE' }); } } });
+  await new Promise((ok) => srv.listen(0, '127.0.0.1', ok)); t.after(() => srv.close());
+  await assert.rejects(rpcClient({ url: `http://127.0.0.1:${srv.address().port}/rpc`, secret, now })('x.fail'), { code: 'B2_BAD_RESPONSE' });
+});
+
+// ── 설계 관문 셋째(Fable 5.2 「고쳐서 간다」, 11-16 밤): the restore ledger by run ids and the prefix's chain.
+const ledgerOf = (dir) => JSON.parse(fs.readFileSync(path.join(dir, 'restore-days.json'), 'utf8'));
+const latestSha = (b2, rel) => b2.versions.filter((v) => v.fileName === R + rel).at(-1);
+const failOn = (b2, nth) => { let calls = 0; return (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' && ++calls === nth ? async () => { throw Object.assign(new Error('stop'), { status: 503 }); } : o[k]) }))); };
+const twoFiles = (b2, clock) => {
+  b2.upload(R + 'config', 'c'); b2.upload(R + 'data/aa/p1', 'x1'); b2.upload(R + 'data/aa/p2', 'x2');
+  clock.advance(HOUR);
+  const at = clock.t - 30 * 60000;
+  b2.upload(R + 'data/aa/p1', 'y1'); b2.upload(R + 'data/aa/p2', 'y2'); clock.advance(HOUR);
+  return at;
+};
+
+test('설계 관문 셋째 1: a restore asked again after a failure, to another time, keeps the chain\'s moment before — its undo goes back to before the first run', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-chain-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  const at = twoFiles(b2, clock);
+  await assert.rejects(fileHandlers({ withSession: failOn(b2, 2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'chain00000000001' }));
+  clock.advance(10 * 60000);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r2 = await f['restore.apply']({ prefix: P, at: at + 60000, runId: 'chain00000000002' });
+  assert.equal(latestSha(b2, 'data/aa/p1').contentSha1, sha('x1'));
+  clock.advance(10 * 60000);
+  await f['restore.apply']({ prefix: P, at: r2.preAt, runId: 'chain00000000003', undoOf: 'chain00000000002' });
+  assert.equal(latestSha(b2, 'data/aa/p1').contentSha1, sha('y1'), 'back to before the first, failed run');
+  assert.equal(latestSha(b2, 'data/aa/p2').contentSha1, sha('y2'));
+  assert.equal(ledgerOf(dir).counts[P], 2, 'two restores; the undo free');
+});
+
+test('설계 관문 셋째 1: once a backup ran after a failed restore, the next restore starts a new chain — its undo keeps that backup', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-chain2-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  const at = twoFiles(b2, clock);
+  await assert.rejects(fileHandlers({ withSession: failOn(b2, 2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'chain00000000011' }));
+  clock.advance(HOUR);
+  b2.upload(R + 'snapshots/s9', 'a backup after the failure'); clock.advance(HOUR);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r2 = await f['restore.apply']({ prefix: P, at: at + 60000, runId: 'chain00000000012' });
+  assert.equal(latestSha(b2, 'snapshots/s9').action, 'hide');
+  await f['restore.apply']({ prefix: P, at: r2.preAt, runId: 'chain00000000013', undoOf: 'chain00000000012' });
+  assert.equal(latestSha(b2, 'snapshots/s9').action, 'upload', 'the backup made on top is back');
+});
+
+test('설계 관문 셋째 2: a failed undo chosen again continues free; an undo to another time than the moment before counts', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-undo-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  const at = twoFiles(b2, clock);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r = await f['restore.apply']({ prefix: P, at, runId: 'undo000000000001' });
+  clock.advance(10 * 60000);
+  await assert.rejects(fileHandlers({ withSession: failOn(b2, 2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at: r.preAt, runId: 'undo000000000002', undoOf: 'undo000000000001' }));
+  await f['restore.apply']({ prefix: P, at: r.preAt, runId: 'undo000000000003', undoOf: 'undo000000000001' });
+  assert.equal(latestSha(b2, 'data/aa/p1').contentSha1, sha('y1'));
+  assert.equal(ledgerOf(dir).counts[P], 1, 'the undo and its continuation are free');
+  // A claimed undo of a run that is not the last finished one, or to another time, counts.
+  const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-undo2-')); t.after(() => fs.rmSync(dir2, { recursive: true, force: true }));
+  const g = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir2, now: () => clock.t });
+  const r1 = await g['restore.apply']({ prefix: P, at, runId: 'undo000000000011' });
+  clock.advance(10 * 60000);
+  const bogus = await g['restore.apply']({ prefix: P, at: r1.preAt, runId: 'undo000000000012', undoOf: 'undo000000000099' });
+  assert.equal(ledgerOf(dir2).counts[P], 2, 'back to the moment before, but not the undo of that run');
+  clock.advance(10 * 60000);
+  await g['restore.apply']({ prefix: P, at: bogus.preAt - 1, runId: 'undo000000000013', undoOf: 'undo000000000012' });
+  assert.equal(ledgerOf(dir2).counts[P], 3, 'the undo of that run, but to another time');
+});
+
+test('설계 관문 셋째 6: with B2\'s clock 20 or 90 minutes behind ours, the undo still takes the restore back', async (t) => {
+  for (const lag of [20 * 60000, 90 * 60000]) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-lag-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+    const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock: { get t() { return clock.t - lag; } } });
+    b2.upload(R + 'config', 'c'); b2.upload(R + 'data/aa/p1', 'x1');
+    clock.advance(2 * HOUR); const at = clock.t - lag - 1;
+    b2.upload(R + 'data/aa/p1', 'y1'); clock.advance(3 * HOUR);
+    const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+    const r = await f['restore.apply']({ prefix: P, at, runId: 'lag0000000000001' });
+    assert.equal(latestSha(b2, 'data/aa/p1').contentSha1, sha('x1'));
+    assert.ok(r.preAt < latestSha(b2, 'data/aa/p1').uploadTimestamp, `${lag / 60000} minutes: before our own copy in B2's time`);
+    clock.advance(10 * 60000);
+    await f['restore.apply']({ prefix: P, at: r.preAt, runId: 'lag0000000000002', undoOf: 'lag0000000000001' });
+    assert.equal(latestSha(b2, 'data/aa/p1').contentSha1, sha('y1'), `${lag / 60000} minutes: undone`);
+  }
+});
+
+test('설계 관문 셋째 7: a second run on the same prefix while one runs is refused BUSY', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-busy-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  const at = twoFiles(b2, clock);
+  let release; const gate = new Promise((ok) => { release = ok; });
+  const slow = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' ? async (a) => { await gate; return o.copyFile(a); } : o[k]) })));
+  const f = fileHandlers({ withSession: slow, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const first = f['restore.apply']({ prefix: P, at, runId: 'busy000000000001' });
+  const second = f['restore.apply']({ prefix: P, at, runId: 'busy000000000002' });
+  setTimeout(release, 50); // without the refusal the second would wait for the same copies
+  await assert.rejects(second, { code: 'BUSY' });
+  assert.equal((await first).remaining, 0);
+  assert.equal(ledgerOf(dir).counts[P], 1);
+});
+
+test('도움 요청 부호 목록: every error code the engine, the worker and the window raise is in KNOWN_ERROR_CODES (a new one is added there)', () => {
+  const app = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+  const files = [];
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) { if (!['tests', 'test', 'node_modules'].includes(e.name)) walk(f); } else if (/\.(c|m)?js$/.test(e.name)) files.push(f); } };
+  for (const d of ['engine/src', 'worker', 'ui']) if (fs.existsSync(path.join(app, d))) walk(path.join(app, d));
+  assert.ok(files.length > 10, 'the app folders were read');
+  const missing = new Set();
+  const shapes = [/code:\s*'([A-Z][A-Z0-9_]{1,40})'/g, /(?:failure|err|ServerError)\(\s*'([A-Z][A-Z0-9_]{1,40})'/g];
+  for (const f of files) {
+    const text = fs.readFileSync(f, 'utf8');
+    for (const re of shapes) for (const m of text.matchAll(re)) if (!KNOWN_ERROR_CODES.has(m[1])) missing.add(`${m[1]} (${path.relative(app, f)})`);
+  }
+  assert.deepEqual([...missing], []);
+});
+
+// ── r8a 검수(11-16 밤)
+test('카본 r8a B1: snapshots made and all hidden inside the first window are "vanished"', () => {
+  const v = [up('config', 'c', T0), up('snapshots/s1', 's1', T0 + HOUR), up('snapshots/s2', 's2', T0 + 2 * HOUR), hide('snapshots/s1', T0 + 3 * HOUR), hide('snapshots/s2', T0 + 3 * HOUR)];
+  const s = summarize(v, { customerPrefix: P, since: T0 + 30 * 60000, now: T0 + DAY });
+  assert.equal(s.window.snapshotsAtStart, 0);
+  assert.ok(judge(s, { previousSnapshots: null, reported: { pruned: 2 }, now: T0 + DAY }).alerts.some((a) => a.vanished));
+});
+
+test('카본 r8a B3: a burst before the baseline does not hold back the next one after it; the hour the baseline falls in suggests just after it', () => {
+  const many = (start, n) => [...Array(n)].flatMap((_, i) => [up(`snapshots/b${start}-${i}`, `x${i}`, T0), hide(`snapshots/b${start}-${i}`, start + i)]);
+  const baseline = T0 + 14 * HOUR + 30 * 60000;
+  const s = summarize([...many(T0 + 14 * HOUR + 10 * 60000, 50), ...many(T0 + 15 * HOUR + 10 * 60000, 50)], { customerPrefix: P, since: T0, now: T0 + 16 * HOUR });
+  const c = suggest(s, { baseline, now: T0 + 16 * HOUR });
+  assert.ok(c.some((x) => x.reason === 'before-mass-hide' && x.at === T0 + 15 * HOUR + 10 * 60000 - 1000), 'the burst after the restore');
+  const s2 = summarize([...many(T0 + 14 * HOUR + 10 * 60000, 1), ...many(T0 + 14 * HOUR + 45 * 60000, 50)], { customerPrefix: P, since: T0, now: T0 + 16 * HOUR, hourlyFrom: baseline });
+  const c2 = suggest(s2, { baseline, now: T0 + 16 * HOUR });
+  assert.deepEqual(c2.filter((x) => x.reason === 'before-mass-hide').map((x) => x.at), [T0 + 14 * HOUR + 45 * 60000 - 1000], 'the burst in the baseline hour, by its own first hide');
+  // GPT r9 GA1 · 카본 r9 A1: a burst only before the baseline suggests nothing; with a new one the first candidate is the new one.
+  const s3 = summarize(many(T0 + 14 * HOUR + 10 * 60000, 50), { customerPrefix: P, since: T0, now: T0 + 16 * HOUR, hourlyFrom: baseline });
+  assert.deepEqual(suggest(s3, { baseline, now: T0 + 16 * HOUR }).filter((x) => x.reason === 'before-mass-hide'), []);
+  const s4 = summarize([...many(T0 + 14 * HOUR + 10 * 60000, 50), ...many(T0 + 15 * HOUR + 10 * 60000, 50)], { customerPrefix: P, since: T0, now: T0 + 16 * HOUR, hourlyFrom: baseline });
+  assert.equal(suggest(s4, { baseline, now: T0 + 16 * HOUR })[0].at, T0 + 15 * HOUR + 10 * 60000 - 1000, 'the default candidate is the new burst');
+});
+
+test('GPT r8a GC1: a malformed rpc message is refused and the worker keeps running', async (t) => {
+  const clock = clockAt(), now = () => clock.t, secret = crypto.randomBytes(32).toString('hex');
+  const srv = rpcServer({ secret, now, handlers: { 'x.echo': async (p) => p } });
+  await new Promise((ok) => srv.listen(0, '127.0.0.1', ok)); t.after(() => srv.close());
+  const url = `http://127.0.0.1:${srv.address().port}/rpc`;
+  for (const body of ['{"method":{"toString":null}}', '[]', 'null', '{"method":1}']) {
+    const r = await fetch(url, { method: 'POST', body, headers: { 'x-wb-ts': String(now()), 'x-wb-id': 'r'.repeat(20), 'x-wb-sig': 'bad' } });
+    assert.equal(r.status, 400, body);
+  }
+  assert.deepEqual(await rpcClient({ url, secret, now })('x.echo', { a: 1 }), { a: 1 }, 'still answering');
+});
+
+test('카본 r8a E1 · E2: the fake B2 refuses what B2 refuses — hiding a hidden or missing name, deleting a missing key', async () => {
+  const b2 = new FakeB2({ clock: clockAt(T0) });
+  await assert.rejects(b2.hideFile({ fileName: R + 'nothing' }), { status: 400 });
+  b2.upload(R + 'snapshots/s1', 's1');
+  await b2.hideFile({ fileName: R + 'snapshots/s1' });
+  await assert.rejects(b2.hideFile({ fileName: R + 'snapshots/s1' }), { status: 400 });
+  await assert.rejects(b2.deleteKey('no-such-key'), { status: 400 });
+});
+
+test('GPT r9 GA1: the files worker counts the candidate hours from the baseline it is given', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-hours-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 16 * HOUR), b2 = new FakeB2({ clock });
+  for (let i = 0; i < 50; i++) { b2.upload(R + `snapshots/o${i}`, `o${i}`, T0); b2.hide(R + `snapshots/o${i}`, T0 + 14 * HOUR + 10 * 60000 + i); }
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const before = await f['prefix.scan']({ prefix: P, since: T0, from: 0 });
+  const after = await f['prefix.scan']({ prefix: P, since: T0, from: T0 + 14 * HOUR + 30 * 60000 });
+  assert.equal(before.hourly.reduce((n, h) => n + h.count, 0), 50);
+  assert.equal(after.hourly.length, 0, 'the hides before the last restore are history');
+});
+
+test('카본 r10a A1: hides that began within a second of the baseline still give a candidate between the two', () => {
+  const many = (start, n) => [...Array(n)].flatMap((_, i) => [up(`snapshots/q${start}-${i}`, `x${i}`, T0), hide(`snapshots/q${start}-${i}`, start + i)]);
+  const baseline = T0 + 14 * HOUR + 30 * 60000;
+  const s = summarize([...many(baseline + 500, 50), ...many(T0 + 15 * HOUR + 10 * 60000, 50)], { customerPrefix: P, since: T0, now: T0 + 16 * HOUR, hourlyFrom: baseline });
+  const c = suggest(s, { baseline, now: T0 + 16 * HOUR }).filter((x) => x.reason === 'before-mass-hide');
+  assert.deepEqual(c.map((x) => x.at), [baseline + 1], 'just after the baseline, before the first hide; the next hour is the same run');
+  const s2 = summarize([...many(baseline + 1, 50), ...many(T0 + 15 * HOUR + 10 * 60000, 50)], { customerPrefix: P, since: T0, now: T0 + 16 * HOUR, hourlyFrom: baseline });
+  assert.deepEqual(suggest(s2, { baseline, now: T0 + 16 * HOUR }).filter((x) => x.reason === 'before-mass-hide').map((x) => x.at), [T0 + 15 * HOUR + 10 * 60000 - 1000], 'no room right after the baseline: the next hour is not held back');
 });

@@ -37,15 +37,12 @@ try {
       break;
     }
     // 1단계 has no phone lost-report page: a customer with no other PC asks the operator
-    // (design 「휴대폰 분실 신고 쪽」). Same effect as POST lost.
+    // (design 「휴대폰 분실 신고 쪽」). The same report as POST lost, in the same per-customer
+    // line as the running api (카본 r7 B2).
     case 'lost': {
       const d = store.device(arg); if (!d) throw new Error('NOT_FOUND');
-      const c = store.customerById(d.customer_id);
-      await api.serial(c.id, async () => {
-        for (const k of [...store.liveKeys(c.id, 'write').filter((k) => k.device_id === d.id), ...store.liveKeys(c.id, 'read')]) await api.dropKey(k, 'lost-operator');
-        store.tx(() => { store.setDevice(d.id, { state: 'lost', role: 'read' }); store.setCustomer(c.id, { read_key: null, lost_at: Date.now(), google_step: 1 }); });
-      });
-      out({ lost: d.id });
+      const r = await api.reportLost(d.id);
+      out({ lost: d.id, alreadyLost: !!r.alreadyLost });
       break;
     }
     case 'scan': { const c = store.customerById(arg); if (!c) throw new Error('NOT_FOUND'); await jobs.scanCustomer(c, Date.now()); out(store.lastUsage(arg)); break; }

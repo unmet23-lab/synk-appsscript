@@ -93,10 +93,10 @@ export async function applyPlan(session, { bucketId, plan, freshVersions, now = 
   const one = async (item) => {
     if (item.type === 'copy') {
       const r = await session.copyFile({ sourceFileId: item.sourceFileId, fileName: item.fileName });
-      done({ type: 'copy', fileName: item.fileName, sourceFileId: item.sourceFileId, newFileId: r.fileId });
+      done({ type: 'copy', fileName: item.fileName, sourceFileId: item.sourceFileId, newFileId: r.fileId, uploadTimestamp: r.uploadTimestamp });
     } else if (item.type === 'hide') {
       const r = await session.hideFile({ bucketId, fileName: item.fileName });
-      done({ type: 'hide', fileName: item.fileName, hiddenFileId: item.currentFileId, hideMarkerId: r.fileId });
+      done({ type: 'hide', fileName: item.fileName, hiddenFileId: item.currentFileId, hideMarkerId: r.fileId, uploadTimestamp: r.uploadTimestamp });
     }
     onStep(journal.length, fresh.items.length);
   };

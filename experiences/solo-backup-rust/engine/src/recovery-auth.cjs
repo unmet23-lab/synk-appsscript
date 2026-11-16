@@ -104,9 +104,13 @@ class GoogleAuth {
   async connect(expectedSub) { await this.signIn({ expectedSub }); return this.getState(); }
   // 2.4 (5)(가): a new PC after a loss revokes its own grant so Google may end the lost PC's
   // refresh token too (whether it does is measured in week 2). Then signs in again.
+  // A grant Google already ended (the customer removed the app, another PC revoked first, a
+  // test grant expired) answers 400 invalid_token: that is a finished revoke, and the dead token
+  // is forgotten here too. Only a network or server failure is a failure (카본 r7 A1).
   async revoke() {
     if (!this.tokens?.refresh) return false;
-    await this.http('https://oauth2.googleapis.com/revoke', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: this.tokens.refresh }).toString() });
+    try { await this.http('https://oauth2.googleapis.com/revoke', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: this.tokens.refresh }).toString() }); }
+    catch (e) { if (e?.code !== 'DENIED' && e?.code !== 'REAUTH') throw e; }
     await this.disconnect();
     return true;
   }

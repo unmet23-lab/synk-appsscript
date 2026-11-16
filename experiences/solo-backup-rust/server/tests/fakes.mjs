@@ -20,7 +20,13 @@ export class FakeB2 {
     return k;
   }
   async createKey(args) { this.calls.push(['createKey', args.keyName]); if (this.failCreate) throw Object.assign(new Error('boom'), { status: 503 }); return { ...this.addKey(args) }; }
-  async deleteKey(id) { this.calls.push(['deleteKey', id]); if (this.failDelete) throw Object.assign(new Error('boom'), { status: 503 }); this.keys.delete(id); return {}; }
+  async deleteKey(id) {
+    this.calls.push(['deleteKey', id]);
+    if (this.failDelete) throw Object.assign(new Error('boom'), { status: 503 });
+    // B2 answers 400 for a key that is not there (카본 r8a E2).
+    if (!this.keys.has(id)) throw Object.assign(new Error('bad_request'), { status: 400, code: 'bad_request' });
+    this.keys.delete(id); return {};
+  }
   async listKeys() { return [...this.keys.values()].map(({ applicationKey, ...k }) => ({ ...k })); }
   async listBuckets() { return { buckets: [this.bucket, ...this.extraBuckets] }; }
   upload(fileName, content, at = this.clock.t) {
@@ -33,7 +39,14 @@ export class FakeB2 {
     return this.versions.filter((v) => v.fileName.startsWith(prefix))
       .map((v, i) => ({ ...v, i })).sort((a, b) => Buffer.compare(Buffer.from(a.fileName), Buffer.from(b.fileName)) || b.uploadTimestamp - a.uploadTimestamp || b.i - a.i).map(({ i, ...v }) => v);
   }
-  async hideFile({ fileName }) { this.calls.push(['hideFile', fileName]); return { ...this.hide(fileName) }; }
+  async hideFile({ fileName }) {
+    this.calls.push(['hideFile', fileName]);
+    // B2 refuses to hide a name with no version or one already hidden (카본 r8a E1).
+    const latest = this.versions.filter((v) => v.fileName === fileName).reduce((m, v) => (!m || v.uploadTimestamp >= m.uploadTimestamp ? v : m), null);
+    if (!latest) throw Object.assign(new Error('no_such_file'), { status: 400, code: 'no_such_file' });
+    if (latest.action === 'hide') throw Object.assign(new Error('already_hidden'), { status: 400, code: 'already_hidden' });
+    return { ...this.hide(fileName) };
+  }
   async copyFile({ sourceFileId, fileName }) {
     this.calls.push(['copyFile', fileName]);
     const src = this.versions.find((v) => v.fileId === sourceFileId);

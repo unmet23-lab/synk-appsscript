@@ -23,7 +23,9 @@ const sha1Of = (v) => (typeof v.contentSha1 === 'string' && /^[0-9a-f]{40}$/.tes
 // The window is (since, to]: hides and snapshots made are counted only inside it (to: the
 // moment the daily scan began, so what happens while the listing runs belongs to the next
 // window — Fable 5.2 설계 관문 둘째, 11-16). usage is as listed.
-export function summarize(versions, { customerPrefix, repoPrefix = customerPrefix + 'r/', since, to = null, now = Date.now(), journal = { hides: [] } }) {
+// `hourlyFrom`: the baseline — the hours for 「이 시각으로 되돌리기」 candidates count only the hides
+// after it, so a burst before the last restore suggests nothing (GPT r9 GA1 · 카본 r9 A1).
+export function summarize(versions, { customerPrefix, repoPrefix = customerPrefix + 'r/', since, to = null, now = Date.now(), journal = { hides: [] }, hourlyFrom = 0 }) {
   const end = to ?? now;
   const ourHides = new Set(journal.hides || []);
   const ourCopies = new Set(journal.copies || []);
@@ -81,7 +83,7 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
       }
       if (ourHides.has(v.fileId)) { previous = null; continue; }
       if (kind === 'config' || kind === 'keys') events.push({ kind, fileId: v.fileId, rel, at: v.uploadTimestamp });
-      if (v.uploadTimestamp > now - WINDOW_DAYS * DAY) {
+      if (v.uploadTimestamp > now - WINDOW_DAYS * DAY && v.uploadTimestamp > hourlyFrom) {
         const h = Math.floor(v.uploadTimestamp / HOUR) * HOUR;
         const slot = hourly.get(h) || { start: h, count: 0, first: v.uploadTimestamp };
         slot.count++; slot.first = Math.min(slot.first, v.uploadTimestamp); hourly.set(h, slot);
@@ -106,12 +108,12 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
 // 둘째: a stored count drifts from the window). previousSnapshots is only for 「모두 사라짐」.
 export function judge(summary, { baseline = 0, reported = null, previousSnapshots = null, seen = () => false, now = Date.now() }) {
   const live = summary.events.filter((e) => e.at > baseline);
-  const fresh = live.filter((e) => !seen(e.fileId));
+  const fresh = live.filter((e) => !seen(e.fileId) && now - e.at < WINDOW_DAYS * DAY);
   const alerts = [];
   const daysLeft = (at) => Math.max(0, WINDOW_DAYS - Math.floor((now - at) / DAY));
   if (fresh.length) {
     const kinds = {}; for (const e of fresh) kinds[e.kind] = (kinds[e.kind] || 0) + 1;
-    alerts.push({ kind: 'repo-changed', reason: 'content', kinds, daysLeft: daysLeft(live[0].at) });
+    alerts.push({ kind: 'repo-changed', reason: 'content', kinds, daysLeft: daysLeft(fresh[0].at) });
   }
   const w = summary.window, from = Math.max(w.from, baseline);
   const deferred = [];
@@ -127,7 +129,9 @@ export function judge(summary, { baseline = 0, reported = null, previousSnapshot
   // Independent of measurements: every visible snapshot is gone. The engine's retention
   // always keeps the newest one, so zero is never normal — while a halving is (a PC off
   // over a weekend prunes a day of hourly snapshots on its first run back).
-  const vanished = previousSnapshots !== null && previousSnapshots >= 1 && summary.usage.visibleSnapshots === 0;
+  // A first window counts too: snapshots made in it after the last restore, all hidden by its
+  // end, with none there when it began (카본 r8a B1).
+  const vanished = summary.usage.visibleSnapshots === 0 && ((previousSnapshots !== null && previousSnapshots >= 1) || (w.from >= baseline && (w.snapshotUploads || 0) >= 1));
   // Measured: more snapshot hides than the devices said they made. A device token can
   // send any number, so the accepted count is capped by what was there to prune.
   let surge = false;
@@ -159,8 +163,15 @@ export function suggest(summary, { baseline = 0, now = Date.now() } = {}) {
   const byStart = new Map(hours.map((h) => [h.start, h]));
   const bursts = [];
   for (const h of hours) {
-    if (h.count < threshold || byStart.get(h.start - HOUR)?.count >= threshold) continue; // only the first hour of a run
-    bursts.push({ at: h.first - 1000, reason: 'before-mass-hide' });
+    // Only the first hour of a run — of a run after the baseline: an hour whose hides began
+    // before it does not hold back the next one (카본 r8a B3).
+    // A candidate lies strictly between the baseline and the hour's first hide: a second before
+    // it, or just after the baseline when the hides began within a second of it. An hour that
+    // could give none does not hold back the next one (카본 r10a A1).
+    const can = (x) => x && x.count >= threshold && x.first > oldest + 1;
+    const prev = byStart.get(h.start - HOUR);
+    if (!can(h) || can(prev)) continue;
+    bursts.push({ at: Math.max(h.first - 1000, oldest + 1), reason: 'before-mass-hide' });
   }
   out.push(...bursts);
   const seenAt = new Set();
