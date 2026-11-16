@@ -468,3 +468,30 @@ test('낡은 잠금 치우기는 lock.reclaim 폴더를 잡은 한 실행만 한
   release();
   assert.equal(fs.existsSync(lock), false);
 });
+
+test('잠금은 다 쓰인 채로만 나타나고, 낡은 빈 잠금을 여럿이 한꺼번에 치워도 하나만 잡는다(GPT 셋째 검수)', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-gc-race-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const lock = path.join(dir, 'lock'), old = new Date(Date.now() - 5 * HOUR);
+  fs.writeFileSync(lock, '');  // 낡은 빈 잠금(쓰다 죽은 옛 실행)
+  fs.utimesSync(lock, old, old);
+  const child = [
+    'const { _takeLock } = require(' + JSON.stringify(TOOL) + ');',
+    'let release = null;',
+    'try { release = _takeLock(' + JSON.stringify(dir) + '); } catch (e) { console.log(e.code); process.exit(0); }',
+    'console.log("got " + require("fs").readFileSync(' + JSON.stringify(lock) + ', "utf8").length);',
+    'setTimeout(() => release(), 1500);',
+  ].join('\n');
+  const runs = await Promise.all([...Array(8)].map(() => new Promise(resolve => {
+    const p = spawn(process.execPath, ['-e', child], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let out = '';
+    p.stdout.on('data', d => { out += d; });
+    p.on('close', () => resolve(out.trim()));
+  })));
+  const got = runs.filter(line => line.startsWith('got '));
+  assert.equal(got.length, 1, '한꺼번에 잡은 실행은 하나뿐이다: ' + runs.join(' | '));
+  assert.ok(Number(got[0].slice(4)) > 10, '잡은 잠금은 내용이 다 쓰여 있다');
+  assert.ok(runs.every(line => line.startsWith('got ') || line === 'BUSY'), runs.join(' | '));
+  assert.deepEqual(fs.readdirSync(dir).filter(name => name.endsWith('.new') || name === 'lock.reclaim'), [], '임시 파일과 치우기 폴더가 남지 않는다');
+  assert.equal(fs.existsSync(lock), false, '잡은 실행이 끝나면 잠금이 풀린다');
+});

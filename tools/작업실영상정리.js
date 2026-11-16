@@ -176,10 +176,15 @@ function alive(pid) {
 function takeLock(stateDir) {
   fs.mkdirSync(stateDir, { recursive: true });
   const file = path.join(stateDir, 'lock'), reclaim = path.join(stateDir, 'lock.reclaim');
-  const mine = JSON.stringify({ pid: process.pid, token: crypto.randomBytes(8).toString('hex'), at: new Date().toISOString() });
+  const token = crypto.randomBytes(8).toString('hex');
+  const mine = JSON.stringify({ pid: process.pid, token, at: new Date().toISOString() });
   for (let attempt = 0; attempt < 2; attempt++) {
+    // 잠금은 내용을 다 쓴 임시 파일을 하드 링크로 한 번에 놓는다. 링크는 잠금이 이미 있으면 실패하고, 잠금은 늘 다 쓰인 채로만 나타난다.
+    // 그래서 빈 잠금이 낡은 빈 잠금과 같아 보여 지워지는 일이 없다(GPT 셋째 검수). 잠금마다 토큰이 달라 내용이 낡은 잠금과 같아질 수도 없다.
+    const temporary = path.join(stateDir, '.lock-' + process.pid + '-' + token + '.new');
+    fs.writeFileSync(temporary, mine, { flag: 'wx', mode: 0o600 });
     try {
-      fs.writeFileSync(file, mine, { flag: 'wx', mode: 0o600 });
+      fs.linkSync(temporary, file);
       return () => { try { if (fs.readFileSync(file, 'utf8') === mine) fs.unlinkSync(file); } catch {} };
     } catch (error) {
       if (error.code !== 'EEXIST') throw error;
@@ -207,7 +212,7 @@ function takeLock(stateDir) {
         if (now !== null && now !== text) throw new Failure('BUSY', 3);
         if (now !== null) fs.unlinkSync(file);
       } finally { try { fs.rmdirSync(reclaim); } catch {} }
-    }
+    } finally { try { fs.unlinkSync(temporary); } catch {} }
   }
   throw new Failure('BUSY', 3);
 }
