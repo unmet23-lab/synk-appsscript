@@ -726,13 +726,14 @@ test('화면 세션 E3 · E4 · E6 · E9 · E10 · E13 · E15(11-16): starting a
   const t0 = new Date('2026-11-16T08:00:00.000Z'), t1 = new Date('2026-11-16T09:00:00.000Z');
   const A = { 'D:\\Projects': { mode: 'original', sameDrive: true } }, Bc = { 'D:\\Projects': { mode: 'newFolder' } };
   const first = startState({}, { from: 'dev1', choices: A, now: t0, id: () => 'm1' });
-  assert.deepEqual(first, { moveId: 'm1', from: 'dev1', choices: A, startedAt: t0.toISOString(), released: null });
+  assert.deepEqual(first, { moveId: 'm1', from: 'dev1', choices: A, startedAt: t0.toISOString(), released: null, carryFrom: null });
   // E9: an unfinished move goes on with the places it started with, whatever the screen sends (a writer's new folders too).
   assert.deepEqual(startState(first, { from: 'dev1', choices: Bc, now: t1, id: () => 'm2' }), { moveId: 'm1', from: 'dev1', choices: A, startedAt: t1.toISOString(), released: null });
-  // E13: a finished one starts again under a new number and its result stays until the new one is written.
+  // E13: a finished one starts again under a new number and its result stays until the new one is written. E11: it takes
+  // over what the finished one placed.
   const finished = { ...first, result: { at: '2026-11-16T08:30:00.000Z', complete: true } };
   const again = startState(finished, { from: 'dev1', choices: Bc, now: t1, id: () => 'm2' });
-  assert.deepEqual(again, { moveId: 'm2', from: 'dev1', choices: Bc, startedAt: t1.toISOString(), released: null });
+  assert.deepEqual(again, { moveId: 'm2', from: 'dev1', choices: Bc, startedAt: t1.toISOString(), released: null, carryFrom: 'm1' });
   const second = { ...finished, ...again };
   assert.deepEqual([unfinishedOf(second), unfinishedOf(finished), unfinishedOf({}), unfinishedOf(first)], [true, false, false, true]);
   assert.equal(startState(second, { from: 'dev1', choices: A, now: t1, id: () => 'm3' }).moveId, 'm2', 'the second run resumes');
@@ -742,7 +743,7 @@ test('화면 세션 E3 · E4 · E6 · E9 · E10 · E13 · E15(11-16): starting a
   assert.deepEqual([await ledgers.begun(undefined), await ledgers.begun('../x'), await ledgers.begun('0123456789abcdef')], [false, false, false], 'no ledger: nothing placed');
   // Another old device: its result and what was done for it go.
   assert.deepEqual(startState(finished, { from: 'dev2', choices: Bc, now: t1, id: () => 'm4' }),
-    { moveId: 'm4', from: 'dev2', choices: Bc, startedAt: t1.toISOString(), released: null, checked: [], reinstall: null, settings: null, result: null });
+    { moveId: 'm4', from: 'dev2', choices: Bc, startedAt: t1.toISOString(), released: null, checked: [], reinstall: null, settings: null, result: null, carryFrom: null });
   const service = new MoveService({ engine: null, host: null, stateDir: 'C:\\state', localDir: 'C:\\local' });
   service.state = async () => second;
   assert.deepEqual([(await service.status()).unfinished, (await service.status()).resultAt], [true, '2026-11-16T08:30:00.000Z']);
@@ -800,4 +801,178 @@ test('화면 세션 E5(11-16): an OneDrive file whose content could not be check
   assert.equal(sum.complete, false);
   move.final.delete('a');
   assert.deepEqual([move.summary().counts.unverified, move.summary().complete], [undefined, true]);
+});
+
+test('화면 세션 E11(11-16): what a finished move started again takes over, and what it fetches again', async () => {
+  const { Move } = require('../engine/src/move-restore.cjs');
+  const docs = 'C:\\Users\\kim\\Documents', T = n => 'C:\\Users\\lee\\Documents\\' + n, backupAt = '2026-11-15T00:00:00.000Z';
+  const names = ['a.txt', 'b.txt', 'c.txt', 'd.txt', 'e.txt', 'f.txt', 'g.txt', 'h.txt', 'i.txt', 'j.txt', 'k.txt', 'l.txt', 'm.txt', 'n.txt'];
+  const size = n => names.indexOf(n) + 1, time = n => size(n) * 1000;
+  const listing = { nodes: new Map(names.map(name => [name, { name, type: 'file', size: size(name), mtime: time(name) }])), aside: new Map(), skipped: [] };
+  const f = (n, r, extra = {}) => ({ t: 'f', o: docs, n, r, p: T(n), s: size(n), h: 'a'.repeat(64), m: time(n), b: time(n), ...extra });
+  const lines = [
+    f('a.txt', 'placed', { p: T('A.TXT') }), // taken over (Windows compares the path by case)
+    f('b.txt', 'placed'), // touched since: another time on the disk
+    f('c.txt', 'same-unverified'), // its content was never checked
+    f('d.txt', 'onedrive', { u: true }), // 「내용 확인 못 함」
+    f('e.txt', 'placed', { b: 4999 }), // the backup holds another version now
+    f('f.txt', 'copy', { p: T('f (복구본).txt') }), // a copy beside is not where this run puts it
+    f('g.txt', 'placed', { p: 'C:\\Users\\lee\\옮겨 온 자료\\문서\\g.txt' }), // it went to another place then
+    f('h.txt', 'placed'), // gone from the disk
+    f('i.txt', 'placed'), // this run has its own result for it already
+    f('j.txt', 'same'), // another size on the disk
+    f('k.txt', 'same'), // its time on the disk 1.5 seconds off (FAT keeps two): taken over
+    f('l.txt', 'placed'), { t: 'f', o: docs, n: 'l.txt', r: 'fail', c: 'MOVE_BUSY' }, // the last line counts
+    { t: 'f', o: docs, n: 'm.txt', r: 'fail', c: 'MOVE_BUSY' }, f('m.txt', 'placed'),
+    f('n.txt', 'placed', { m: undefined, b: undefined }), // a ledger from before the times were written
+    { t: 'f', o: docs, n: 'old.pst', r: 'placed', p: T('old.pst'), s: 20, m: Date.parse(backupAt), b: Date.parse(backupAt) } // from an earlier backup
+  ];
+  const disk = new Map(names.map(n => [T(n).toLowerCase(), { kind: 'file', size: size(n), mtimeMs: time(n), placeholder: false }]));
+  disk.set(T('b.txt').toLowerCase(), { kind: 'file', size: 2, mtimeMs: 99000, placeholder: false });
+  disk.delete(T('h.txt').toLowerCase());
+  disk.set(T('j.txt').toLowerCase(), { kind: 'file', size: 99, mtimeMs: time('j.txt'), placeholder: false });
+  disk.set(T('k.txt').toLowerCase(), { kind: 'file', size: 11, mtimeMs: 12500, placeholder: false });
+  disk.set(T('old.pst').toLowerCase(), { kind: 'file', size: 20, mtimeMs: Date.parse(backupAt), placeholder: false });
+  const probed = [];
+  const host = async (m, a) => { if (m !== 'files.probe') throw new Error(m); probed.push(...a[0]); return a[0].map(p => disk.get(p.toLowerCase()) || { kind: 'missing' }); };
+  const make = (opts = {}) => {
+    const move = new Move({ engine: null, host, from: 'dev000000000', old: OLD, now: NOW, moveId: '2222bbbb', ledgerDir: 'C:\\l', carryFrom: '1111aaaa', ...opts });
+    move.folders = [{ original: docs, selector: 'x:/d', listing, fp: plan.folderPlans([docs], { old: OLD, now: NOW })[0], extra: [{ name: 'old.pst', size: 20, backupAt }] }];
+    move.readCarry = async () => lines;
+    return move;
+  };
+  const move = make();
+  assert.equal(move.place(move.folders[0], listing.nodes.get('a.txt')).path, T('a.txt'));
+  move.done.set(docs.toLowerCase() + '\u0000i.txt', 'fail'); // as a resume of this run reads it from its own ledger
+  assert.equal(await move.carryOver(), 4);
+  assert.deepEqual(probed, ['A.TXT', 'b.txt', 'h.txt', 'j.txt', 'k.txt', 'm.txt', 'old.pst'].map(T), 'only what can be taken over is looked at');
+  assert.deepEqual(move.carried.map(l => [l.n, l.r, l.carried, l.m]), [['a.txt', 'placed', true, 1000], ['k.txt', 'same', true, 12500], ['m.txt', 'placed', true, 13000], ['old.pst', 'placed', true, Date.parse(backupAt)]]);
+  assert.deepEqual(move.summary().counts, { placed: 3, same: 1, carried: 4 });
+  assert.ok(move.startedFolders.has(docs.toLowerCase()), 'the folder goes by the resume: only what is left is fetched');
+  // Nothing to take over from: the same move, a number that is not one, a folder not moved now, another way, no host.
+  assert.equal(await make({ carryFrom: '2222bbbb' }).carryOver(), 0);
+  assert.equal(await make({ carryFrom: '../x' }).carryOver(), 0);
+  assert.equal(await make({ choices: { [docs]: { mode: 'skip' } } }).carryOver(), 0);
+  assert.equal(await make({ choices: { [docs]: { mode: 'newFolder' } } }).carryOver(), 0);
+  assert.equal(await make({ host: async () => { throw new Error('offline'); } }).carryOver(), 0);
+});
+
+test('화면 세션 E8(11-16): the old device\'s lists are kept a few minutes under the numbers of its backups', async () => {
+  const { MoveService } = require('../engine/src/move-service.cjs');
+  let list = [{ id: 'a'.repeat(64), hostname: 'dev000000000', time: '2026-11-15T00:00:00.000Z', tags: ['complete-structure-checked'] }];
+  const asked = { snapshots: 0, kits: 0, plans: 0 };
+  const engine = { stateDir: 'C:\\state', snapshots: async (tags = []) => { if (tags.length) { asked.kits++; return []; } asked.snapshots++; return list; }, restorePlans: async () => { asked.plans++; return []; } };
+  const service = new MoveService({ engine, stateDir: 'C:\\state', localDir: 'C:\\local',
+    host: async (m, a) => (m === 'folders.snapshot' ? NOW : m === 'folders.free' ? a[0].map(() => 1e12) : m === 'files.probe' ? a[0].map(() => ({ kind: 'missing' })) : null) });
+  service.state = async () => ({});
+  let at = 0; service.clock = () => at;
+  const count = () => [asked.snapshots, asked.kits, asked.plans];
+  await service.preview({ from: 'dev000000000' });
+  await service.preview({ from: 'dev000000000', choices: { 'D:\\Projects': { mode: 'newFolder' } } });
+  assert.deepEqual(count(), [1, 1, 1], 'another way a moment later reads nothing again');
+  assert.equal((await service.devices()).length, 1);
+  assert.deepEqual(count(), [1, 1, 1], 'the request names the device and reads its lists with the one backups list');
+  at += 60000; await service.preview({ from: 'dev000000000' });
+  assert.deepEqual(count(), [2, 1, 1], 'a minute later only the backups list is read');
+  list = [...list, { id: 'c'.repeat(64), hostname: 'other', time: '2026-11-16T00:00:00.000Z', tags: [] }];
+  at += 60000; await service.preview({ from: 'dev000000000' });
+  assert.deepEqual(count(), [3, 1, 1], "another device's backup changes nothing here");
+  list = [...list, { id: 'b'.repeat(64), hostname: 'dev000000000', time: '2026-11-16T01:00:00.000Z', tags: [] }];
+  at += 60000; await service.preview({ from: 'dev000000000' });
+  assert.deepEqual(count(), [4, 2, 2], 'a new backup of this device reads its lists again');
+  at += 10 * 60000; await service.preview({ from: 'dev000000000' });
+  assert.deepEqual(count(), [5, 3, 3], 'so does the time passing');
+  at += 1000; await service.preview({ from: 'other' }); await service.preview({ from: 'dev000000000' });
+  assert.deepEqual(count(), [5, 5, 5], 'one old device is kept at a time');
+  // GPT workbackup-move-e8e11 GA1: what is kept goes when its time is up, and its timer with it (a timer that fired still
+  // holds its callback, so the callback names nothing kept); a start lets both go too.
+  const times = [0, 1e9]; service.clock = () => (times.length ? times.shift() : 1e9);
+  service.keep({ from: 'x', ids: '', at: null, loaded: null }, []);
+  await new Promise(r => setTimeout(r, 20));
+  assert.deepEqual([service.kept, service.forget], [null, null]);
+  service.clock = () => 0; service.keep({ from: 'x', ids: '', at: null, loaded: null }, []);
+  service.drop();
+  assert.deepEqual([service.kept, service.forget], [null, null]);
+});
+
+windowsOnly('화면 세션 E8 · E11(11-16): a finished move started again fetches only what changed; the preview and the start count and take the same', async t => {
+  const { Move, Ledger } = require('../engine/src/move-restore.cjs');
+  const { MoveService } = require('../engine/src/move-service.cjs');
+  const tar = require(require.resolve('tar-stream', { paths: [require('node:path').join(__dirname, '..', 'engine')] }));
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'swb-e11-')));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const oldP = path.join(root, 'old', 'Users', '김'), newP = path.join(root, 'new', 'Users', '이');
+  fs.mkdirSync(path.join(newP, 'Desktop'), { recursive: true });
+  const at = '2026-11-16T00:00:00Z', desk = path.join(oldP, 'Desktop'), selD = 'f'.repeat(64) + ':' + desk, selE = 'e'.repeat(64) + ':' + desk;
+  const files = { 'a.txt': 'A', 'b.txt': 'BB', 'd.txt': 'DDDD', 'proj/x.txt': 'X', 'proj/y.txt': 'YY' };
+  const listing = await readMoveList(Readable.from([Buffer.from([{ message_type: 'snapshot' }, { message_type: 'node', path: '/proj', type: 'dir', size: 0, mtime: at },
+    ...Object.entries(files).map(([n, c]) => ({ message_type: 'node', path: '/' + n, type: 'file', size: Buffer.byteLength(c), mtime: at }))].map(l => JSON.stringify(l)).join('\n'))]));
+  const plans = [{ original: desk, selector: selD, manifest: listing, backupAt: at, extra: [{ name: 'big.pst', size: 5, selector: selE, backupAt: at }] }];
+  const dumps = []; let plansRead = 0;
+  const engine = { stateDir: path.join(root, 'state'), snapshots: async () => [], restorePlans: async () => { plansRead++; return plans; },
+    run: async (args, { consumeStdout }) => {
+      dumps.push(args.slice(1, 3).join(' '));
+      if (args[1] === selE) return consumeStdout(Readable.from([Buffer.from('EXTRA')]));
+      const sub = args[1] === selD ? '' : args[1].startsWith(selD + '/') ? args[1].slice(selD.length + 1) : null;
+      if (sub === null) throw new Error('unexpected ' + args.join(' '));
+      if (!args.includes('--archive')) return consumeStdout(Readable.from([Buffer.from(files[args[2].slice(1)])]));
+      const pack = tar.pack();
+      if (!sub) pack.entry({ name: 'proj/', type: 'directory' });
+      for (const [n, c] of Object.entries(files)) if (!sub || n.startsWith(sub + '/')) pack.entry({ name: sub ? n.slice(sub.length + 1) : n, size: Buffer.byteLength(c) }, c);
+      pack.finalize(); return consumeStdout(pack);
+    } };
+  const host = moveHost({ snapshot: snap(newP) }); t.after(() => host.close());
+  const ledgerDir = path.join(root, 'state', 'migration'), day = Date.parse(at);
+  // The first move places everything and writes each file's two times: the disk's and the backup's.
+  const first = await new Move({ engine, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: '1111aaaa', ledgerDir }).run();
+  assert.deepEqual(first.counts, { placed: 6 });
+  assert.deepEqual(dumps, [selD + ' /', selE + ' /big.pst']);
+  assert.ok((await Ledger.read(path.join(ledgerDir, '1111aaaa.jsonl'))).filter(l => l.t === 'f').every(l => l.m === day && l.b === day));
+  // Since then one file was touched and one deleted.
+  const later = new Date(day + 3600000);
+  fs.utimesSync(path.join(newP, 'Desktop', 'b.txt'), later, later);
+  fs.rmSync(path.join(newP, 'Desktop', 'd.txt'));
+  const service = new MoveService({ engine, host, stateDir: path.join(root, 'svc'), localDir: path.join(root, 'state') });
+  service.context = async () => ({ kit: null, problems: ['no-kit'], old: snap(oldP), now: snap(newP) });
+  await service.save({ moveId: '1111aaaa', from: 'old', choices: {}, startedAt: '2026-11-16T08:00:00.000Z', result: { moveId: '1111aaaa', at: '2026-11-16T08:30:00.000Z', complete: true } });
+  // The preview counts what a start would fetch: the touched and the deleted file, not what is taken over.
+  const view = await service.preview({ from: 'old' });
+  assert.deepEqual([view.files, view.bytes], [2, 6]);
+  assert.equal(plansRead, 2, 'the preview read the lists');
+  // The start takes the lists the preview read (E8) and fetches the two files one by one; nothing else is read.
+  dumps.length = 0;
+  const second = await service.start({ from: 'old' });
+  assert.equal(plansRead, 2, 'the start took the lists the preview read');
+  assert.equal(service.kept, null, 'and let them go');
+  assert.deepEqual(dumps, [selD + ' /b.txt', selD + ' /d.txt']);
+  assert.deepEqual(second.counts, { placed: 5, same: 1, carried: 4 });
+  assert.equal(second.complete, true);
+  assert.equal(fs.readFileSync(path.join(newP, 'Desktop', 'd.txt'), 'utf8'), 'DDDD');
+  const lines = await Ledger.read(path.join(ledgerDir, second.moveId + '.jsonl'));
+  assert.equal(lines.find(l => l.t === 'head').carryFrom, '1111aaaa');
+  assert.deepEqual(lines.filter(l => l.t === 'f' && l.carried).map(l => l.n).sort(), ['a.txt', 'big.pst', 'proj/x.txt', 'proj/y.txt']);
+  // The touched file is 「이미 있음」 with its own time on the disk, so the next run takes it over too.
+  assert.ok(Math.abs(lines.find(l => l.t === 'f' && l.n === 'b.txt').m - later.getTime()) < 2000);
+  // A resume of the second run reads what it took over from its own ledger.
+  const reread = new Move({ engine, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: second.moveId, ledgerDir });
+  await reread.resume({ tidy: false });
+  assert.equal(reread.summary().counts.carried, 4);
+  // Started once more: everything is taken over from the second run, nothing is fetched.
+  dumps.length = 0;
+  const third = await service.start({ from: 'old' });
+  assert.deepEqual(dumps, []);
+  assert.deepEqual(third.counts, { placed: 5, same: 1, carried: 6 });
+  assert.equal(plansRead, 3, 'no preview before it: the start read the lists itself');
+  // A top folder with a file left beside more in place: the folder's stream while it is small, the file alone when that
+  // costs less than the folder's bytes.
+  const touch = (n, ms) => fs.utimesSync(path.join(newP, 'Desktop', ...n.split('/')), new Date(ms), new Date(ms));
+  touch('proj/y.txt', day + 7200000); dumps.length = 0;
+  await new Move({ engine, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: '4444dddd', ledgerDir, carryFrom: third.moveId }).run();
+  assert.deepEqual(dumps, [selD + '/proj /']);
+  touch('proj/y.txt', day + 10800000); dumps.length = 0;
+  const alone = new Move({ engine, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: '5555eeee', ledgerDir, carryFrom: '4444dddd' });
+  alone.singleBytes = 1;
+  const last = await alone.run();
+  assert.deepEqual(dumps, [selD + ' /proj/y.txt']);
+  assert.deepEqual(last.counts, { placed: 4, same: 2, carried: 5 }, 'y.txt came again as 「이미 있음」 in the fourth run');
 });

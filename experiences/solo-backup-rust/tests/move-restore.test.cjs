@@ -164,6 +164,31 @@ test('move: synthetic old PC → backup → new PC, every file by SHA-256, nothi
     assert.equal(again.complete, false);
   });
 
+  await t.test('a finished move started again takes over what is in place and fetches only what changed since (화면 세션 E11)', async () => {
+    const before = walk(newProfile).length;
+    const fetched = []; const counting = Object.create(engine);
+    counting.run = (args, options) => { if (args[0] === 'dump') fetched.push(args.slice(1, 3).join(' ')); return engine.run(args, options); };
+    // One file the last run found in place was touched since: it comes through the stream again and is 「이미 있음」.
+    const memo = where(path.join(desk, '바탕 메모.txt')), later = new Date(Date.now() + 3600000);
+    fs.utimesSync(long(memo), later, later);
+    const again = await new Move({ engine: counting, host, from, old, now, moveId: '6666aaaa', ledgerDir, carryFrom: '2222cccc' }).run();
+    assert.equal(walk(newProfile).length, before);
+    const lines = await Ledger.read(path.join(ledgerDir, '6666aaaa.jsonl'));
+    assert.equal(lines.find(l => l.t === 'head').carryFrom, '2222cccc');
+    const files = lines.filter(l => l.t === 'f');
+    assert.equal(again.counts.carried, files.filter(l => l.carried).length);
+    assert.ok(again.counts.carried >= 7, JSON.stringify(again.counts));
+    assert.deepEqual(files.filter(l => l.n === '바탕 메모.txt').map(l => [l.r, !!l.carried]), [['same', false]]);
+    // The copy beside (「(복구본)」) is not where the file goes: it is fetched and found the same again.
+    assert.deepEqual(files.filter(l => l.n === '한글 문서.txt').map(l => [l.r, !!l.carried]), [['same', false]]);
+    // Nothing new placed; what was put aside is still put aside, so the move is still not complete.
+    assert.ok(!again.counts.copy && !again.counts.placed && again.counts.side === 2 && again.complete === false, JSON.stringify(again.counts));
+    // Only Desktop (its one file touched) came whole. Documents fetched what was left; .claude and Projects nothing.
+    const whole = name => fetched.some(f => f.endsWith('/' + name + ' /'));
+    assert.deepEqual(['Documents', 'Desktop', '.claude', 'Projects'].map(whole), [false, true, false, false], fetched.join(' | '));
+    assert.ok(!fetched.some(f => /\.claude|Projects/.test(f)), fetched.join(' | '));
+  });
+
   await t.test('the move kit goes into the backup and comes back checked (4.6 「옮겨 오기 꾸러미」)', async () => {
     const kits = require('../engine/src/move-kit.cjs');
     write(path.join(oldProfile, '.gitconfig'), Buffer.from('[user]\n\tname = 김\n'));

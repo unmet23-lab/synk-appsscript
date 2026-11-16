@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 151,
+  "expectedCount": 152,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1210,6 +1210,14 @@
       "id": "S151",
       "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
       "name": "카본 끝판 지적(11-16): the kit leaves out only the file that is too big, and counts only the files an entry takes (B2 · B8)",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S152",
+      "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
+      "name": "화면 세션 E8 · E11(11-16): a finished move started again fetches only what changed; the preview and the start count and take the same",
       "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
       "route": "windows",
       "profile": "default"

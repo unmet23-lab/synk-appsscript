@@ -20,6 +20,13 @@ const HIDDEN_NAMES = new Set(['desktop.ini', 'thumbs.db']);
 /** Results that mean the file is on this PC (or in OneDrive) and need not be fetched again on resume. */
 const SETTLED = new Set(['placed', 'same', 'same-unverified', 'copy', 'side', 'onedrive']);
 const FILE_ROUND = 200;
+/** 화면 세션 E11: the results of a finished move a new run of it takes over without fetching the file again (carryOver). */
+const CARRY = new Set(['placed', 'same', 'side', 'onedrive']);
+/** How far the time on the disk may be from the one written down: FAT keeps two seconds. */
+const CARRY_TIME_MS = 2000;
+/** What one file fetched on its own is reckoned to cost (a restic start and its index), in the bytes a folder stream
+ *  would carry in that time: a top folder with few files left is fetched file by file when that is less (folder). */
+const SINGLE_BYTES = 256 * 1024 * 1024;
 const idOk = id => typeof id === 'string' && /^[0-9a-f]{8,32}$/.test(id);
 const tempRe = id => new RegExp(`^~synk-${id}-(\\d{1,9})\\.part$`);
 /** A file of a folder in the ledger: the folder as Windows compares it, the name exactly (GPT GB3: `A.txt` and the
@@ -137,9 +144,12 @@ const zeroEnding = () => {
  * snapshot, `now` this PC's. `choices[original] = { mode, sameDrive }` overrides a folder's default.
  */
 class Move {
-  constructor({ engine, host, from, old, now, choices = {}, moveId, ledgerDir, onProgress = () => {} }) {
+  constructor({ engine, host, from, old, now, choices = {}, moveId, ledgerDir, onProgress = () => {}, carryFrom = null, plans = null }) {
     if (!idOk(moveId)) throw new Error('옮겨 오기 번호가 올바르지 않습니다.');
-    Object.assign(this, { engine, host, from, old, now, choices, moveId, onProgress });
+    // `carryFrom`: the finished move this one takes over from (화면 세션 E11). `plans`: the old device's lists, already
+    // read (화면 세션 E8).
+    Object.assign(this, { engine, host, from, old, now, choices, moveId, onProgress, carryFrom, plans });
+    this.carried = []; this.singleBytes = SINGLE_BYTES;
     this.ledger = new Ledger(path.join(ledgerDir, `${moveId}.jsonl`));
     this.final = new Map(); this.folderSkips = new Map(); this.dirs = new Map(); this.n = 0; this.done = new Map(); this.folderDone = new Set();
     /** Folders an earlier run of this move wrote results for (카본 끝판 D1: this run's own skip lines do not count). */
@@ -155,9 +165,12 @@ class Move {
     for (const { result, item } of this.final.values()) add(result, item);
     for (const item of this.folderSkips.values()) add('folder-skip', item);
     // 화면 세션 E5: an OneDrive file whose content could not be checked is counted on its own too (`unverified`, a part
-    // of `onedrive`), so a move that is not complete only for them says why.
-    const unverified = [...this.final.values()].filter(v => v.result === 'onedrive' && v.item.u).length;
+    // of `onedrive`), so a move that is not complete only for them says why. 화면 세션 E11: so are the files taken over
+    // from the last move (`carried`, a part of the results they had there).
+    let unverified = 0, carried = 0;
+    for (const v of this.final.values()) { if (v.result === 'onedrive' && v.item.u) unverified++; if (v.item.carried) carried++; }
     if (unverified) counts.unverified = unverified;
+    if (carried) counts.carried = carried;
     return { counts, items, removedTemp, complete: !unverified && !UNFINISHED.some(r => counts[r]) };
   }
   async record(original, name, result, extra = {}) {
@@ -165,9 +178,10 @@ class Move {
     this.done.set(k, result); this.final.set(k, { result, item: { original, name, ...extra } });
     await this.ledger.write({ t: 'f', o: original, n: name, r: result, ...extra });
   }
-  /** Reads an earlier ledger of this move and deletes the temporary files it left in the folders it wrote into. */
-  async resume() {
-    const lines = await Ledger.repair(this.ledger.file);
+  /** Reads an earlier ledger of this move and deletes the temporary files it left in the folders it wrote into.
+   *  `tidy: false` (the preview) only reads: nothing is cut or deleted. */
+  async resume({ tidy = true } = {}) {
+    const lines = tidy ? await Ledger.repair(this.ledger.file) : await Ledger.read(this.ledger.file);
     for (const r of lines) {
       if (r.t === 'f' && typeof r.o === 'string' && typeof r.n === 'string' && typeof r.r === 'string') {
         const k = fileKey(r.o, r.n), { t: _t, o: _o, n: _n, r: result, ...extra } = r;
@@ -178,6 +192,7 @@ class Move {
       else if (r.t === 'done' && typeof r.o === 'string') { this.folderDone.add(r.o.toLowerCase()); if (r.skipped) this.folderSkips.set(r.o.toLowerCase(), { original: r.o }); }
       else if (r.t === 'n' && Number.isSafeInteger(r.k) && r.k > this.n) this.n = r.k;
     }
+    if (!tidy) return { lines: lines.length, removedTemp: 0 };
     let left = 0; const re = tempRe(this.moveId);
     for (const { path: dir } of this.dirs.values()) {
       let names; try { names = await fs.readdir(dir); } catch { continue; }
@@ -231,7 +246,7 @@ class Move {
       const expect = { size, mtimeMs: Math.round(mtime ?? Date.now()), sha256, hidden: HIDDEN_NAMES.has(path.basename(target.path).toLowerCase()) };
       if (check) {
         const seen = await this.host('files.compare', [{ path: check, ...expect }]);
-        if (seen?.match === 'verified' || seen?.match === 'unverified') { await drop(); return this.record(original, name, 'onedrive', { p: check, s: size, h: sha256, ...(seen.match === 'unverified' ? { u: true } : {}) }); }
+        if (seen?.match === 'verified' || seen?.match === 'unverified') { await drop(); return this.record(original, name, 'onedrive', { p: check, s: size, h: sha256, ...(seen.match === 'unverified' ? { u: true } : this.times(await this.diskTime(check), mtime)) }); }
       }
       let placed;
       try { placed = await this.host('files.place', [{ temp, target: target.path, ...expect }]); }
@@ -248,8 +263,18 @@ class Move {
       }
       // Put aside is put aside, also when the same content was already there (카본 끝판 D6).
       const result = target.side ? (['placed', 'copy', 'same', 'same-unverified'].includes(placed.result) ? 'side' : placed.result) : placed.result;
-      return this.record(original, name, result, { p: placed.path, s: size, h: sha256 });
+      // 화면 세션 E11: the time on the disk of a file left where it goes, so a later run can take it over: the backup's
+      // for one placed now, the disk's for one found there with the same content. None for a copy beside.
+      const m = placed.result === 'placed' ? expect.mtimeMs : placed.result === 'same' ? await this.diskTime(placed.path) : null;
+      return this.record(original, name, result, { p: placed.path, s: size, h: sha256, ...this.times(m, mtime) });
     } catch (e) { await drop(); return this.record(original, name, 'fail', { c: code(e), p: target.path }); }
+  }
+  /** The ledger's two times (화면 세션 E11): `m` the disk's, `b` the backup's. Both or neither. */
+  times(m, b) { return Number.isFinite(m) && Number.isFinite(b) ? { m, b } : {}; }
+  async diskTime(p) {
+    const seen = await this.host('files.probe', [[p]]).catch(() => null);
+    const s = Array.isArray(seen) ? seen[0] : null;
+    return s?.kind === 'file' && Number.isFinite(s.mtimeMs) ? s.mtimeMs : null;
   }
   /** Extracts one tar stream whose entries are `prefix` + their name inside the folder, writing what `wants(name)`
    *  says and checking the stream against the listing like restore-tar's extractVerified. */
@@ -302,13 +327,23 @@ class Move {
     if (!this.startedFolders.has(original.toLowerCase())) await this.engine.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, '', wanted) });
     else {
       // Resume (review M20): the top folders that still have files each as their own stream — by their exact names, so
-      // `Src` and `src` are two (카본 끝판 D3) — and the loose files one by one.
-      const tops = new Set(); const loose = [];
-      for (const n of left) { const parts = n.name.split('/'); if (parts.length === 1) loose.push(n); else tops.add(parts[0]); }
+      // `Src` and `src` are two (카본 끝판 D3) — and the loose files one by one. 화면 세션 E11: a top folder with few
+      // files left beside much in place (a finished move started again) gives them one by one, when that costs less
+      // than all its bytes again.
+      const tops = new Map(); const loose = [];
+      for (const n of left) {
+        const parts = n.name.split('/');
+        if (parts.length === 1) loose.push(n); else { if (!tops.has(parts[0])) tops.set(parts[0], { left: [], bytes: 0 }); tops.get(parts[0]).left.push(n); }
+      }
+      for (const n of files()) { const t = n.name.includes('/') && tops.get(n.name.split('/')[0]); if (t) t.bytes += n.size; }
+      const one = async n => { await this.single(folder, selector, n, wanted(n.name, n)); this.onProgress({ bytes: this.bytes, total: this.total }); };
       if (loose.length > FILE_ROUND) await this.engine.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, '', wanted) });
       else {
-        for (const top of tops) await this.engine.run(['dump', `${selector}/${top}`, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, top, wanted) });
-        for (const n of loose) { await this.single(folder, selector, n, wanted(n.name, n)); this.onProgress({ bytes: this.bytes, total: this.total }); }
+        for (const [top, t] of tops) {
+          if (t.left.length <= FILE_ROUND && t.left.length * this.singleBytes < t.bytes) for (const n of t.left) await one(n);
+          else await this.engine.run(['dump', `${selector}/${top}`, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, top, wanted) });
+        }
+        for (const n of loose) await one(n);
       }
       // Folders no stream above went through (empty ones, ones whose files were all placed) are made as well.
       for (const n of [...listing.nodes.values(), ...listing.aside.values()]) if (n.type === 'dir') { const job = wanted(n.name, n); if (job && !job.skip) await this.ensureDir(job.path); }
@@ -334,10 +369,57 @@ class Move {
   /** Lists the old device's folders, chooses their defaults and checks the space per volume. */
   async prepare() {
     const base = path.join(this.engine.stateDir, 'move-check');
-    const plans = await this.engine.restorePlans(null, { base, host: this.from, readList: readMoveList });
+    const plans = this.plans || await this.engine.restorePlans(null, { base, host: this.from, readList: readMoveList });
+    this.plans = plans;
     const fps = plan.folderPlans(plans.map(p => p.original), { old: this.old, now: this.now });
     this.folders = plans.map((p, i) => ({ ...p, listing: p.manifest, fp: fps[i] }));
     return this.folders;
+  }
+  /** The last finished move's ledger (화면 세션 E11). */
+  readCarry() { return Ledger.read(path.join(path.dirname(this.ledger.file), `${this.carryFrom}.jsonl`)); }
+  /**
+   * 화면 세션 E11: a finished move started again takes over what the last one placed instead of fetching it again. A file
+   * is taken over only when the last run left it where this run puts it (or found it in OneDrive with its content
+   * checked, never one 「내용 확인 못 함」), this run's backup lists it with the size and time the last one had, and it is
+   * on this PC now with the size and time the last run saw. A file changed since, a folder going elsewhere now, a copy
+   * beside (「(복구본)」) and what the last run could not finish are fetched again. Returns how many; their lines go to
+   * the ledger after its head (run). After prepare (and resume), before preview.
+   */
+  async carryOver() {
+    if (!idOk(this.carryFrom) || this.carryFrom === this.moveId || !this.folders) return 0;
+    const old = new Map();
+    for (const r of await this.readCarry().catch(() => [])) if (r?.t === 'f' && typeof r.o === 'string' && typeof r.n === 'string') old.set(fileKey(r.o, r.n), r);
+    if (!old.size) return 0;
+    const found = [], taken = new Set();
+    for (const folder of this.folders) {
+      const mode = this.choices[folder.original]?.mode || folder.fp.mode;
+      if (mode === 'skip' || this.folderDone.has(folder.original.toLowerCase())) continue;
+      const files = [...folder.listing.nodes.values(), ...folder.listing.aside.values()].filter(n => n.type === 'file').map(n => [n, () => this.place(folder, n)]);
+      for (const file of folder.extra || []) files.push([{ name: file.name, type: 'file', size: file.size, mtime: Date.parse(file.backupAt) || null }, () => this.target(folder, file.name)]);
+      for (const [node, where] of files) {
+        const k = fileKey(folder.original, node.name), r = old.get(k);
+        if (!r || taken.has(k) || this.done.has(k) || !CARRY.has(r.r) || r.u || typeof r.p !== 'string' || r.s !== node.size
+          || !Number.isFinite(r.m) || !Number.isFinite(r.b) || r.b !== node.mtime) continue;
+        const job = where();
+        const at = job.skip ? null : r.r === 'onedrive' ? job.check : job.path;
+        if (typeof at === 'string' && at.toLowerCase() === r.p.toLowerCase()) { taken.add(k); found.push({ folder, node, r, k }); }
+      }
+    }
+    if (!found.length) return 0;
+    const seen = await plan.probeAll(this.host, found.map(f => f.r.p)).catch(() => null);
+    if (!Array.isArray(seen) || seen.length !== found.length) return 0;
+    let n = 0;
+    for (const [i, { folder, node, r, k }] of found.entries()) {
+      const s = seen[i];
+      if (s?.kind !== 'file' || s.size !== r.s || !Number.isFinite(s.mtimeMs) || Math.abs(s.mtimeMs - r.m) >= CARRY_TIME_MS) continue;
+      const extra = { p: r.p, s: r.s, ...(typeof r.h === 'string' ? { h: r.h } : {}), m: s.mtimeMs, b: r.b, carried: true };
+      this.done.set(k, r.r); this.final.set(k, { result: r.r, item: { original: folder.original, name: node.name, ...extra } });
+      // Its folder goes by the resume's way: only what is left is fetched.
+      this.startedFolders.add(folder.original.toLowerCase());
+      this.carried.push({ t: 'f', o: folder.original, n: node.name, r: r.r, ...extra });
+      n++;
+    }
+    return n;
   }
   /** The plan the 「자리 고르기」 screen shows: each folder's default, counts, bytes and the space per volume. */
   async preview() {
@@ -370,11 +452,14 @@ class Move {
     await this.ledger.open();
     try {
       const folders = this.folders || await this.prepare();
+      await this.carryOver();
       const view = await this.preview();
       if (view.volumes.some(v => v.enough === false)) throw Object.assign(new Error('되살릴 파일을 놓을 공간이 부족합니다. 다른 자리를 골라 주세요.'), { code: 'MOVE_NO_SPACE' });
       this.total = view.bytes;
-      if (!resumed.lines) await this.ledger.write({ t: 'head', v: 1, moveId: this.moveId, from: this.from, at: new Date().toISOString(),
+      if (!resumed.lines) await this.ledger.write({ t: 'head', v: 1, moveId: this.moveId, from: this.from, at: new Date().toISOString(), ...(this.carried.length ? { carryFrom: this.carryFrom } : {}),
         folders: folders.map(f => ({ original: f.original, snapshot: f.selector.split(':')[0], mode: this.choices[f.original]?.mode || f.fp.mode })) }, true);
+      // 화면 세션 E11: what was taken over goes to this ledger too, so a resume and the next run read it here.
+      for (const line of this.carried.splice(0)) await this.ledger.write(line);
       for (const f of folders) {
         if (this.folderDone.has(f.original.toLowerCase())) continue;
         const mode = this.choices[f.original]?.mode || f.fp.mode;
@@ -389,4 +474,4 @@ class Move {
   }
 }
 
-module.exports = { Move, readMoveList, Ledger, HIDDEN_NAMES, UNFINISHED };
+module.exports = { Move, readMoveList, Ledger, HIDDEN_NAMES, UNFINISHED, CARRY };

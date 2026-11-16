@@ -28,6 +28,9 @@ async function writeJson(file, value) { await fs.mkdir(path.dirname(file), { rec
  * has no root, a skipped folder none at all. At most ROOTS roots (`rootsCut` then).
  */
 const ROOTS = 32;
+/** 화면 세션 E8: how long an old device's lists are kept for the 「자리 고르기」 screen, and its backups' list for the
+ *  request that named it a moment ago. */
+const LIST_TTL = 10 * 60000, SNAPSHOTS_TTL = 5000;
 /** A move started and not finished since (화면 세션 E1 · E13): no result, or a result older than the start — a finished
  *  move started again keeps the last result until the new one is written. */
 const unfinishedOf = st => {
@@ -40,7 +43,8 @@ const unfinishedOf = st => {
  * (화면 세션 E9 — also after this PC took the write seat, 4.6 「넘겨받은 뒤에도 그 장부로 이어서 끝낼 수 있다」). One
  * that stopped before writing anything (no space where it was to go, GPT workbackup-move4b GA1) takes the new places; a
  * finished one starts again under a new number and keeps its last result until
- * the new one is written (E13). Another old device: its last result, ticks, installs and settings do not carry over
+ * the new one is written (E13), and takes over what the last one placed (`carryFrom`, 화면 세션 E11; a resume keeps the
+ * one it started with). Another old device: its last result, ticks, installs and settings do not carry over
  * (카본 끝판 E4). The start holds the old device's backup again (pinMove), so a release from before no longer stands
  * (마지막 끝판 카본 B1).
  */
@@ -48,7 +52,8 @@ function startState(before, { from, choices, now = new Date(), id = newId, start
   const resume = !!before.moveId && before.from === from && unfinishedOf(before);
   const kept = resume && started && before.choices && typeof before.choices === 'object' && !Array.isArray(before.choices) ? before.choices : choices;
   const other = before.from !== undefined && before.from !== from ? { checked: [], reinstall: null, settings: null, result: null } : {};
-  return { moveId: resume ? before.moveId : id(), from, choices: kept, startedAt: now.toISOString(), released: null, ...other };
+  const carry = resume ? {} : { carryFrom: before.from === from && typeof before.moveId === 'string' ? before.moveId : null };
+  return { moveId: resume ? before.moveId : id(), from, choices: kept, startedAt: now.toISOString(), released: null, ...other, ...carry };
 }
 const CODE = /^[A-Z][A-Z_]{1,31}$/;
 /** A failure's code for `lastMoveError` (화면 세션 E4). The move's own refusals carry theirs (MOVE_NO_SPACE ·
@@ -108,6 +113,8 @@ class MoveService {
     Object.assign(this, { engine, host, stateDir, localDir, server });
     this.file = path.join(stateDir, STATE); this.ledgerDir = path.join(localDir, 'migration');
     this.queue = Promise.resolve();
+    /** 화면 세션 E8: the old device's lists last read (`lists`), and the backups' list a moment ago. */
+    this.kept = null; this.forget = null; this.recent = null; this.clock = () => Date.now();
   }
   async state() { return (await readJson(this.file)) || {}; }
   /** Read, change and write the state one at a time (카본 끝판 E3): two ticks in a row, or a tick while a step saves,
@@ -120,22 +127,62 @@ class MoveService {
   save(patch) { return this.update(() => patch); }
   /** The old devices with backups in this repository (restic host names), newest first. */
   async devices() {
-    const all = await this.engine.snapshots();
+    const all = await this.snapshots();
     const by = new Map();
     for (const s of all) if (s.tags?.includes('complete-structure-checked') && !by.has(s.hostname)) by.set(s.hostname, { from: s.hostname, lastBackupAt: s.time });
     return [...by.values()];
   }
-  async context(from) {
-    const loaded = await kits.loadKit(this.engine, from);
+  /** The repository's backups. A request names its old device (devices) and then reads its lists (lists) within moments:
+   *  the one list serves both (화면 세션 E8). */
+  async snapshots() {
+    const r = this.recent;
+    if (r && this.clock() - r.at < SNAPSHOTS_TTL) return r.list;
+    const list = await this.engine.snapshots();
+    this.recent = { at: this.clock(), list };
+    return list;
+  }
+  /**
+   * 화면 세션 E8: an old device's lists (its folders' listings and its move kit), kept a few minutes under the numbers of
+   * its backups, so changing a way on 「자리 고르기」 does not read them from the cloud again. A backup added or forgotten
+   * since, another old device, or the time passing reads them again. `plans` is null until a Move read them (keep).
+   */
+  async lists(from) {
+    const ids = (await this.snapshots()).filter(s => s.hostname === from).map(s => s.id).sort().join(' ');
+    const k = this.kept;
+    if (k && k.from === from && k.ids === ids && this.clock() - k.at < LIST_TTL) return k;
+    this.drop();
+    return { from, ids, at: null, loaded: await kits.loadKit(this.engine, from), plans: null };
+  }
+  /** A folder's listing can hold a million names: what is kept is let go when its time is up, also with no request after. */
+  keep(lists, plans) {
+    this.drop();
+    this.kept = { ...lists, at: lists.at ?? this.clock(), plans };
+    this.forget = setTimeout(() => this.drop(), Math.max(0, this.kept.at + LIST_TTL - this.clock()));
+    this.forget.unref?.();
+  }
+  /** Lets the kept lists go, and their timer with them: a timer, also one that has fired, holds what its callback names
+   *  (GPT workbackup-move-e8e11 GA1), so the callback names none. */
+  drop() { clearTimeout(this.forget); this.forget = null; this.kept = null; }
+  async context(from, loaded) {
+    if (loaded === undefined) loaded = await kits.loadKit(this.engine, from);
     const now = await this.host('folders.snapshot', []);
     // Without a kit the old places are unknown: the person picks; the plan then uses this PC's own layout for both.
     return { kit: loaded?.kit || null, problems: loaded?.problems || ['no-kit'], old: loaded?.kit?.snapshot || now, now };
   }
   /** 「자리 고르기」: each folder's default, choices, counts and the space per volume. Pins the old device's backup. */
   async preview({ from, choices = {} }) {
-    const ctx = await this.context(from);
-    const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId: (await this.state()).moveId || newId(), ledgerDir: this.ledgerDir });
+    const lists = await this.lists(from);
+    const ctx = await this.context(from, lists.loaded);
+    // Counted as a start would go (startState): an unfinished move of this old device only for what it has left; a new
+    // one without what it takes over from the last finished one (화면 세션 E11), so the space asked is the space needed.
+    const st = await this.state();
+    const resume = typeof st.moveId === 'string' && st.from === from && unfinishedOf(st);
+    const carryFrom = resume ? st.carryFrom ?? null : st.from === from ? st.moveId ?? null : null;
+    const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId: resume ? st.moveId : newId(), ledgerDir: this.ledgerDir, carryFrom, plans: lists.plans });
+    if (resume) await move.resume({ tidy: false });
     const folders = await move.prepare();
+    this.keep(lists, move.plans);
+    await move.carryOver();
     const view = await move.preview();
     const latest = folders.map(f => f.selector.split(':')[0]).find(Boolean);
     if (this.server && latest) await this.server.pinMove(latest).catch(() => {});
@@ -166,11 +213,13 @@ class MoveService {
   async run({ from, choices, onProgress }) {
     // An unfinished run of the same old device goes on under its number. A finished one (complete or not) starts
     // again under a new number, so the files it could not place are tried again (startState).
-    const { moveId, choices: used } = await this.update(async before => startState(before, { from, choices, started: await this.begun(before.moveId) }));
+    const { moveId, choices: used, carryFrom } = await this.update(async before => startState(before, { from, choices, started: await this.begun(before.moveId) }));
     choices = used;
-    const ctx = await this.context(from);
-    // 화면 세션 E7: the progress names the folder being fetched.
-    const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId, ledgerDir: this.ledgerDir,
+    // 화면 세션 E8: the lists the preview read a moment ago (the same backups) are taken and let go: the run keeps them.
+    const lists = await this.lists(from); this.drop();
+    const ctx = await this.context(from, lists.loaded);
+    // 화면 세션 E7: the progress names the folder being fetched. E11: what the last finished move placed is taken over.
+    const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId, ledgerDir: this.ledgerDir, carryFrom: carryFrom ?? null, plans: lists.plans,
       onProgress: p => onProgress({ percent: p.total ? Math.min(99, Math.floor(p.bytes / p.total * 100)) : null, bytes: p.bytes, total: p.total, folder: move.current ?? null }) });
     // The old device keeps the backup the move reads, also when the move starts or resumes without a preview (카본 끝판 E7).
     const prepared = await move.prepare();
@@ -182,14 +231,14 @@ class MoveService {
     await this.save({ result: saved });
     return saved;
   }
-  /** The last move's result. Each root says whether it is a folder on this PC now (화면 세션 E15): an empty folder, or
-   *  one whose files could not be placed, is not there, and a seat taken with it would be refused. Without the host's
-   *  answer the roots say nothing about it. */
   /** Whether a move's ledger has lines: it began placing files (a space refusal stops it before the first line). */
   async begun(moveId) {
     if (typeof moveId !== 'string' || !/^[0-9a-f]{8,32}$/.test(moveId)) return false;
     try { return (await fs.stat(path.join(this.ledgerDir, `${moveId}.jsonl`))).size > 0; } catch { return false; }
   }
+  /** The last move's result. Each root says whether it is a folder on this PC now (화면 세션 E15): an empty folder, or
+   *  one whose files could not be placed, is not there, and a seat taken with it would be refused. Without the host's
+   *  answer the roots say nothing about it. */
   async result() {
     const r = (await this.state()).result || null;
     const all = (r?.folders || []).flatMap(f => (Array.isArray(f.roots) ? f.roots : []).map(x => x.path));

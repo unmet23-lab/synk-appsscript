@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 151);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 54, linux: 12, local: 85 });
+  assert.equal(check(root), 152);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 55, linux: 12, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -116,7 +116,7 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
   // with the real restic; its top-level `skip: !restic` went in unregistered and turned conditional-qa and wide-tests red.
   // S146–S151 are the 옮겨 오기 Windows-file tests (`windowsOnly('…'`, a top-level test that skips off Windows): as
   // subtests of one test (11-16 `079c05b673`) their skips still counted as unregistered in wide-tests.
-  const moveFiles = ['S146', 'S147', 'S148', 'S149', 'S150', 'S151'];
+  const moveFiles = ['S146', 'S147', 'S148', 'S149', 'S150', 'S151', 'S152'];
   const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S145', ...moveFiles, 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(workflow, /npm ci --prefix experiences\/solo-backup-rust\/engine /);
