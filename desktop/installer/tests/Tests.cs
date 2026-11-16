@@ -134,6 +134,39 @@ internal static class SignalInstallerTests
                 File.Delete(Handoff.TimingFile(timingApp)); Directory.CreateDirectory(Handoff.TimingFile(timingApp));
                 Assert(!Handoff.WriteStageTiming(timingApp, new StageTiming { Kind = "update" }), "An unwritable stage timing reported success.");
                 Directory.Delete(Handoff.TimingFile(timingApp));
+                // 「바꾸는 중」 표시(장치 1): 자기 번호를 적고, 박동으로 시각을 고치고, 놓을 때 지운다. 남의 표시는 지우지 않는다
+                string markerApp = "im.synk.signal.fixture.marker";
+                UpdatingMarker heldMarker = UpdatingMarker.Hold(markerApp, "platform");
+                Assert(heldMarker != null && File.Exists(Handoff.MarkerFile(markerApp)) && UpdatingMarker.ReadPid(markerApp) == Process.GetCurrentProcess().Id, "Updating marker was not written with this process.");
+                File.SetLastWriteTimeUtc(Handoff.MarkerFile(markerApp), DateTime.UtcNow.AddSeconds(-30));
+                Thread.Sleep(UpdatingMarker.BeatMilliseconds + 600);
+                Assert(DateTime.UtcNow - File.GetLastWriteTimeUtc(Handoff.MarkerFile(markerApp)) < TimeSpan.FromSeconds(5), "Heartbeat did not refresh the marker time.");
+                heldMarker.Release();
+                Assert(!File.Exists(Handoff.MarkerFile(markerApp)), "Released marker was not removed.");
+                Thread.Sleep(UpdatingMarker.BeatMilliseconds + 300);
+                Assert(!File.Exists(Handoff.MarkerFile(markerApp)), "A heartbeat recreated a released marker.");
+                UpdatingMarker other = UpdatingMarker.Hold(markerApp, "platform");
+                File.WriteAllText(Handoff.MarkerFile(markerApp), "{\"pid\":1,\"product\":\"platform\"}");
+                other.Release();
+                Assert(File.Exists(Handoff.MarkerFile(markerApp)), "A marker of another installer was removed.");
+                File.Delete(Handoff.MarkerFile(markerApp));
+                // 지우지 못하면 시각을 10초보다 앞으로 고친다(앱은 낡은 표시로 본다)
+                UpdatingMarker locked = UpdatingMarker.Hold(markerApp, "platform");
+                using (new FileStream(Handoff.MarkerFile(markerApp), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    var releasing = Stopwatch.StartNew(); locked.Release();
+                    Assert(releasing.ElapsedMilliseconds >= 900, "Release did not retry deleting a held marker.");
+                    Assert(DateTime.UtcNow - File.GetLastWriteTimeUtc(Handoff.MarkerFile(markerApp)) > TimeSpan.FromSeconds(10), "An undeletable marker was not made stale.");
+                }
+                File.Delete(Handoff.MarkerFile(markerApp));
+                // 창 보이기 요청: 자기 번호이거나, 번호 칸이 빈 채 자기가 시작한 뒤에 생긴 요청만 받는다
+                DateTime since = DateTime.UtcNow; int me = Process.GetCurrentProcess().Id;
+                Assert(ShowRequest.Write(markerApp, 0) && ShowRequest.Take(markerApp, me, since) && !File.Exists(ShowRequest.File(markerApp)), "An empty-number request after the start was not taken.");
+                Assert(ShowRequest.Write(markerApp, me + 1) && !ShowRequest.Take(markerApp, me, since) && File.Exists(ShowRequest.File(markerApp)), "A request for another installer was taken.");
+                Assert(ShowRequest.Write(markerApp, me) && ShowRequest.Take(markerApp, me, since), "A request for this installer was not taken.");
+                Assert(ShowRequest.Write(markerApp, 0), "Request was not written."); File.SetLastWriteTimeUtc(ShowRequest.File(markerApp), since.AddMinutes(-5));
+                Assert(!ShowRequest.Take(markerApp, me, since), "A leftover empty-number request from before the start was taken.");
+                ShowRequest.Clear(markerApp); Assert(!File.Exists(ShowRequest.File(markerApp)), "Clear left the request.");
                 string mine = Handoff.CreateCurtainCache();
                 Assert(Path.GetFileName(mine).StartsWith("curtain-" + Process.GetCurrentProcess().Id + "-", StringComparison.Ordinal), "Curtain cache name does not carry its owner: " + mine);
                 Directory.Delete(Handoff.InstallerRoot, true);
@@ -546,6 +579,8 @@ internal static class SignalInstallerTests
                     using(var key=hive.CreateSubKey(AppModelKey()))
                     { key.SetValue("DisplayName","fixture previous registration");key.SetValue("FixtureInteger",42,RegistryValueKind.DWord); }
                     RunAutomaticFixture((string)Fixture["autoFailure"],false);
+                    // 조용한 업데이트: 넘김 쪽지가 「조용히」이면 창을 보이지 않고 되돌린 쓰던 앱을 켜며, 그 앱이 숨은 채 켜지도록 도착 쪽지에 숨음을 적는다
+                    RunAutomaticFixture((string)Fixture["autoFailure"],false,true);
                     engine.VerifyInstalled(); VerifyRegistrationAndShortcuts();
                     using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
                     using(var key=hive.OpenSubKey(AppModelKey()))
@@ -624,7 +659,7 @@ internal static class SignalInstallerTests
         using (var stream = File.OpenRead(FixtureJson))
             return (InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
     }
-    private static void RunAutomaticFixture(string wrapper,bool success)
+    private static void RunAutomaticFixture(string wrapper,bool success,bool quiet=false)
     {
         Assert(IsInside(wrapper,Root),"Automatic wrapper escaped fixture root.");
         string nonce=System.Guid.NewGuid().ToString("N")+System.Guid.NewGuid().ToString("N"),hold=Path.Combine(Root,"auto-parent-"+nonce),launched=Path.Combine(Spec.InstallDirectory,"fixture-launched");
@@ -632,9 +667,16 @@ internal static class SignalInstallerTests
         using(var parent=Process.Start(new ProcessStartInfo(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName),"--hold \""+hold+"\""){UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden}))
         {
             WaitFor(delegate{return File.Exists(Path.Combine(hold,"ready"));},"Automatic parent did not become ready.");
+            string handoffFolder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Handoff");
+            string note=Path.Combine(handoffFolder,Spec.AppId+".handoff.json"),arrival=Path.Combine(handoffFolder,Spec.AppId+".arrival.json"),updating=Path.Combine(handoffFolder,Spec.AppId+".updating.json");
+            if(File.Exists(arrival))File.Delete(arrival);
+            if(quiet){Directory.CreateDirectory(handoffFolder);File.WriteAllText(note,"{\"schemaVersion\":1,\"token\":\""+nonce+"\",\"appPid\":"+parent.Id+",\"version\":\"0.0.2\",\"window\":0,\"x\":100,\"y\":100,\"width\":1440,\"height\":940,\"maximized\":false,\"visibility\":\"hidden\",\"quiet\":true,\"cut\":0.5,\"curtainEvent\":null,\"writtenAt\":\"2026-11-17T00:00:00.000Z\"}");}
             var start=new ProcessStartInfo(wrapper,"--auto-update --wait-pid="+parent.Id+" --handoff-token="+nonce){UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden,RedirectStandardOutput=true,RedirectStandardError=true};
             using(var child=Process.Start(start))
             {
+                bool sawWindow=false;var watching=true;
+                var watcher=new Thread(delegate(){while(watching){try{child.Refresh();if(!child.HasExited&&child.MainWindowHandle!=IntPtr.Zero)sawWindow=true;}catch(Exception){}Thread.Sleep(40);}}){IsBackground=true};
+                watcher.Start();
                 try
                 {
                     var ready=child.StandardOutput.ReadLineAsync();
@@ -644,7 +686,10 @@ internal static class SignalInstallerTests
                     Assert(parent.WaitForExit(5000),"Parent did not exit normally.");
                     string arguments=null;
                     WaitFor(delegate{try { if(!File.Exists(launched))return false;arguments=File.ReadAllText(launched);return true; }catch(IOException){return false;}},"Automatic installer did not finish its fixture launch receipt.",30000);
-                    if(success) { Assert(arguments=="","Successful update used a startup bypass.");Assert(child.WaitForExit(10000),"Successful installer did not close itself.");Assert(child.ExitCode==0,"Successful installer failed."); }
+                    if(success) { Assert(arguments=="","Successful update used a startup bypass.");Assert(child.WaitForExit(10000),"Successful installer did not close itself.");Assert(child.ExitCode==0,"Successful installer failed.");
+                        Assert(!File.Exists(updating),"The updating marker was left after the update.");
+                        if(quiet){watching=false;Assert(!sawWindow,"Quiet update showed an installer window.");string text=File.ReadAllText(arrival);Assert(text.Contains("\"visibility\":\"hidden\"")&&text.Contains("\"kind\":\"updated\"")&&text.Contains("\"x\":100"),"Quiet arrival note: "+text);}
+                        else Assert(sawWindow,"Visible update never showed its window."); }
                     else
                     {
                         Assert(arguments=="--synk-update-recovery="+nonce,"Restored app did not receive its exact one-use nonce.");
@@ -656,10 +701,15 @@ internal static class SignalInstallerTests
                         File.Delete(marker);
                         Assert(child.WaitForExit(10000),"Restored installer did not close itself and release the retry mutex.");
                         Assert(child.ExitCode==0,"Restored installer failed to close normally.");
+                        Assert(!File.Exists(updating),"The updating marker was left after the restore.");
+                        if(quiet){watching=false;Assert(!sawWindow,"Quiet restore showed an installer window.");string text=File.ReadAllText(arrival);Assert(text.Contains("\"visibility\":\"hidden\"")&&text.Contains("\"kind\":\"restored\"")&&text.Contains("\"version\":\"0.0.1\""),"Quiet restore arrival note: "+text);}
+                        else Assert(sawWindow,"Visible restore never showed its window.");
                     }
                 }
                 finally
                 {
+                    watching=false;
+                    if(File.Exists(note))File.Delete(note);if(File.Exists(arrival))File.Delete(arrival);
                     if(!parent.HasExited){File.WriteAllText(Path.Combine(hold,"stop"),"normal fixture cleanup");parent.WaitForExit(5000);}
                     if(!child.HasExited){child.CloseMainWindow();child.WaitForExit(5000);}
                 }

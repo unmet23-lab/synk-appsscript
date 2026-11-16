@@ -201,7 +201,13 @@ function createPlatformUpdater({enabled=false,config,currentVersion,currentBuild
     }else{
       handoff=false;
       // 넘김 토큰은 끝내기 앞에 만들어 넘김 쪽지에 담고, 같은 토큰을 설치기의 --handoff-token으로 넘긴다
-      if(automaticInstall){handoffToken=randomBytes(32).toString('hex');try{await prepareHandoff({token:handoffToken,version:candidate.version,buildId:candidate.buildId,file:readyPath});}catch{}}
+      if(automaticInstall){
+        const token=randomBytes(32).toString('hex');handoffToken=token;
+        try{await prepareHandoff({token,version:candidate.version,buildId:candidate.buildId,file:readyPath});}catch{}
+        // 기다리는 동안 끝내기가 취소됐거나(초안 물음에서 돌아감) 다른 넘김이 시작됐으면 끝내기를 부르지 않는다. 방금 띄운 가림막은 앱 쪽이 거둔다
+        if(disposed)fail('UPDATE_CANCELLED');
+        if(state!=='opening'||handoffToken!==token)return snapshot();
+      }
       if(disposed)fail('UPDATE_CANCELLED');
       try{requestQuit();}catch{handoffCancelled('failed');fail('UPDATE_OPEN_FAILED');}
     }

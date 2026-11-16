@@ -260,6 +260,17 @@ test('a failing handoff preparation never stops the update, and manual installs 
   await manual.updater.checkForUpdate();await manual.updater.downloadUpdate();await manual.updater.installUpdate();await manual.updater.completeInstall();
   assert.deepEqual(prepared,[]);assert.equal('token' in seen[1],false);
 });
+test('a quit cancelled while the handoff is being prepared never quits the app afterwards',async t=>{
+  const gate=deferred();let prepared=0;
+  const f=await fixture(t,{prepareHandoff:async()=>{prepared++;await gate.promise;}});
+  await f.updater.checkForUpdate();await f.updater.downloadUpdate();
+  const installing=f.updater.installUpdate({automatic:true});for(let i=0;i<400&&!prepared;i++)await new Promise(resolve=>setTimeout(resolve,5));
+  assert.equal(prepared,1);assert.equal(f.updater.snapshot().state,'opening');
+  f.updater.cancelInstall();assert.equal(f.updater.snapshot().state,'ready');
+  gate.resolve();const result=await installing;
+  assert.equal(f.quits(),0,'the draft question kept the app, so it must not quit after the curtain appears');assert.equal(result.state,'ready');
+  assert.equal(f.updater.needsInstallHandoff(),false);
+});
 test('a handoff that fails at the installer cancels the curtain',async t=>{
   const cancelled=[];
   const f=await fixture(t,{prepareHandoff:async()=>{},onHandoffCancelled:info=>{cancelled.push(info.reason);},openInstaller:async()=>{throw Object.assign(Error('synthetic'),{updateCode:'UPDATE_HANDOFF_TIMEOUT'});}});

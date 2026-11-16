@@ -5,7 +5,7 @@ const {createPlatformTray}=require('../src/platform-tray.cjs');
 const {installDraftExitGuard}=require('../src/draft-exit.cjs');
 
 function cancellable(){return {defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};}
-function fixture({enabled=true,failure=null,draft='작성 중인 메모',onShow=null,preventQuit=false}={}){
+function fixture({enabled=true,failure=null,draft='작성 중인 메모',onShow=null,preventQuit=false,revealForQuit}={}){
   const app=new EventEmitter(),trays=[],dialogs=[];
   if(preventQuit)app.on('will-quit',event=>event.preventDefault());
   let window,created=0,choice=0,quitCalls=0;
@@ -36,7 +36,7 @@ function fixture({enabled=true,failure=null,draft='작성 중인 메모',onShow=
     return window;
   };
   makeWindow();
-  const controller=createPlatformTray({app,Tray,Menu:{buildFromTemplate:template=>template},icon:'platform.ico',productName:'SYNK 플랫폼',getWindow:()=>window,createWindow:()=>{makeWindow();controller.attachWindow(window);},enabled,onShow});
+  const controller=createPlatformTray({app,Tray,Menu:{buildFromTemplate:template=>template},icon:'platform.ico',productName:'SYNK 플랫폼',getWindow:()=>window,createWindow:()=>{makeWindow();controller.attachWindow(window);},enabled,onShow,...(revealForQuit?{revealForQuit}:{})});
   controller.attachWindow(window);
   return {app,controller,trays,dialogs,get window(){return window;},get created(){return created;},get quitCalls(){return quitCalls;},choose:value=>{choice=value;},forgetWindow:()=>{window=null;}};
 }
@@ -137,4 +137,12 @@ for(const value of [false,undefined,'true'])test('renderer X keeps its draft con
 
 test('renderer minimize keeps its native action regardless of an unsaved draft',async()=>{
   const f=rendererFixture(false);await f.action('minimize');assert.deepEqual(f.calls,['minimize']);assert.equal(f.prompts.length,0);
+});
+
+// 조용한 업데이트(1-가 구현 설계 2절): 쓰다 만 초안이 없음을 확인한 끝내기는 숨은 창을 보이지 않는다
+test('a quiet update quit keeps the hidden tray window hidden',()=>{
+  const f=fixture({draft:null,revealForQuit:()=>false}),window=f.window;window.close();
+  assert.equal(window.visible,false);
+  f.app.quit();
+  assert.equal(window.calls.show,0,'the hidden window must not flash while a quiet update quits');assert.equal(window.destroyed,true);
 });

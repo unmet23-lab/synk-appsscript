@@ -1,5 +1,5 @@
 'use strict';
-const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification}=require('electron');
+const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification,systemPreferences}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity,sourceScope}=require('./catalog.cjs');
 const {safeEntry,assertSender,trustedEntry,worldNotificationAllowed,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
@@ -40,6 +40,7 @@ const {createStartupUpdateGate}=require('./platform-startup-update.cjs');
 const {createStartupUpdateWindow}=require('./platform-startup-window.cjs');
 const {launchWindowsUpdate,writeHandoffNote,removeHandoffNote,launchCurtain,consumeArrivalNote,curtainEventName,windowHandle}=require('./platform-update-handoff.cjs');
 const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
+const {yieldToUpdatingInstaller}=require('./platform-update-marker.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 const {createLocalServerGate}=require('./local-server-owner.cjs');
@@ -79,7 +80,9 @@ let orbBoot=null,startupHandoff=null,unseenFailure=null;
 // 앱에서 설치기로 넘길 때(2절 가림막, 6절 쪽지): curtain은 띄운 가림막의 손잡이, handoffCover는 앱 창 위에 덮어 띄운 업데이트 장면이다.
 // arrivalShow는 업데이트 뒤 새 앱이 도착 쪽지에서 받은 보이는 상태(behind, minimized, hidden)다
 // arrivalBoot는 도착 쪽지의 마지막 장이다. 시작 관문이 드러남 값을 비우므로 따로 두었다가 시작 창을 띄울 때 넘긴다
-let curtain=null,handoffCover=null,arrivalShow=null,arrivalBoot=null;
+// handoffGen은 넘김을 거둘 때마다 는다. 기다림 뒤에 그 넘김이 아직 살아 있는지 본다
+// quietQuit는 조용한 업데이트로 끝나는 중이라는 뜻이다(트레이가 끝낼 때 숨은 창을 보이지 않는다)
+let curtain=null,handoffCover=null,arrivalShow=null,arrivalBoot=null,handoffGen=0,quietQuit=false,draftAskSeq=0;
 // 시작 창이 그리는 업데이트 뒤의 첫 장면 길이(renderer/startup-update.mjs의 ARRIVE_SCENE_MS). 이 시간이 지난 뒤 앱 창으로 넘긴다
 const ARRIVE_SCENE_MS=4130;
 let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,suiteDeviceId=null,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
@@ -184,14 +187,20 @@ app.on('will-quit',event=>{
     event.preventDefault();
     // 마지막 창이 닫혔다. 가림막은 이제 설치기의 알림을 기다린다(앱이 끝나며 입력이 닫혀도 끝나지 않는다)
     curtain?.closing();
-    void platformUpdate.completeInstall().then(result=>{
+    // 넘김 준비(덮는 창, 가림막)를 기다리는 동안 사람이 끝내면, 설치 작업이 끝나기를 기다린 뒤 넘긴다(그 사이에는 넘김이 바쁘다고 돌아온다)
+    void Promise.resolve(platformUpdate.isBusy()?platformUpdate.waitForIdle():null).then(()=>platformUpdate.completeInstall()).then(result=>{
       if(result.ok&&!platformUpdate.needsInstallHandoff())app.quit();
-      else{endHandoff();quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();if(startupGate?.isBlocking())showStartupWindow();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
+      else{quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();if(startupGate?.isBlocking())showStartupWindow();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}
+        // 다시 만든 창이 보인 뒤에 가림막을 거둔다(2절 가림막 7번). 그 사이 화면이 비지 않는다
+        endHandoffWhenShown();}
     });return;
   }
   startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();companyEntry?.dispose();companyDestinations?.dispose();pulseApp?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
 });
-if(!app.requestSingleInstanceLock())app.quit();
+// 장치 1(1-가 구현 설계 2절): 설치기가 이 앱을 바꾸는 중이면 창과 서비스를 만들기 전에 설치기에 창을 보이라고 청하고 끝난다. 옛 실행 파일이 켜져 바꾸기를 막지 않게 한다
+const yielded=runtime.clientId==='platform'&&packaged&&!smoke&&process.platform==='win32'&&typeof process.env.LOCALAPPDATA==='string'&&yieldToUpdatingInstaller({localAppData:process.env.LOCALAPPDATA,exit:code=>app.exit(code)});
+if(yielded){/* 설치기에 넘겼다. app.exit(0)이 끝낸다 */}
+else if(!app.requestSingleInstanceLock())app.quit();
 else {
   app.on('second-instance',(_event,argv)=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
   app.on('window-all-closed',()=>{if(process.platform!=='darwin'&&(!platformTray?.isActive()||platformTray.isQuitting()||desktopPreferences?.snapshot().preferences.closeToTray===false))app.quit();});
@@ -204,7 +213,7 @@ else {
       const cacheRoot=path.join(app.getPath('userData'),'PlatformUpdates');
       platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{sendDesktop('synk:update-changed',state);startupGate?.observe(state);if(unseenFailure?.stage==='check'&&['current','available','downloading','ready'].includes(state.state))unseenFailure=null;},
         requestQuit:()=>setImmediate(()=>app.quit()),openDiskImage:file=>shell.openPath(file),
-        prepareHandoff:info=>prepareUpdateHandoff(info),onHandoffCancelled:()=>endHandoff(),
+        prepareHandoff:info=>prepareUpdateHandoff(info),onHandoffCancelled:info=>{if(info?.reason!=='failed')endHandoff();},
         openInstaller:async(file,options)=>{const nonce=options.automatic?await updateRecovery.prepare({targetVersion:options.version,installerSHA256:options.artifact.sha256,...(options.token?{nonce:options.token}:{})}):null;await launchWindowsUpdate({spawn,file,pid:process.pid,automatic:options.automatic,nonce});}});
       // 시작 창도 앱 창이 기억한 자리를 쓴다. 그래서 창 자리를 시작 관문 앞에서 읽는다
       windowPlacement=createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
@@ -242,6 +251,8 @@ function showPlatformMain(){
 // 다시 열 때(트레이, 두 번째 실행, 단축키)는 숨어 있던 앱 창을 바로 보인다. 시작 창을 띄우지 않고, 미뤄 둔 판 목록을 비운 뒤 곧바로 뒤에서 확인한다.
 // 다만 숨은 채 시작한 길에서 아직 보이지 않은 실패 장면이 있으면 그 장면을 먼저 보이고, 그 판은 목록에서 비우지 않는다(1-가 구현 설계 2절)
 function requestPlatformWindow(action){
+  // 사람이 부른 열기는 늘 앞으로 띄운다. 도착 쪽지의 「뒤」는 업데이트 뒤 저절로 보일 때만 쓴다
+  arrivalShow=null;
   if(action)pendingDesktopAction=action;
   if(!startupAllowed||startupGate?.isBlocking()){showStartupWindow();return;}
   if(window&&!window.isDestroyed()&&(!mainWindowReady||window.isVisible())){if(mainWindowReady)showPlatformMain();return;}
@@ -256,6 +267,7 @@ function showStartupWindow(){
   startupGate.reveal?.();
   if(!startupWindow){
     const arriving=arrivalBoot;arrivalBoot=null;
+    // 도착 장면은 시작 창이 처음 보일 때 시작한다(그 시각부터 잰다)
     orbBoot=orbBoot||(arriving?{...arriving,startedAt:Date.now()}:null)||{startedAt:Date.now(),kind:fs.existsSync(path.join(app.getPath('userData'),'auth-session.enc'))?'back':'first'};
     startupWindow=createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot:app.getAppPath(),gate:startupGate,placement:()=>windowPlacement?.restore()||null,boot:()=>orbBoot,icon:path.join(app.getAppPath(),'assets',process.platform==='win32'?'platform.ico':'platform.png'),
       onBridgeLost:()=>startupGate?.cancelInstall(),onClose:()=>{if(!quittingRequested){quittingRequested=true;app.quit();}}});
@@ -264,9 +276,13 @@ function showStartupWindow(){
   startupWindow.show({inactive:arrivalShow==='behind'});
 }
 /* 관문이 풀리면 앱 창을 시작 창과 같은 자리에 숨긴 채 만든다. 얼굴이 첫 구를 그렸다고 알리면(또는 ready-to-show 뒤 3초) 앱 창을 보이고, 다음 장에 시작 창을 없앤다 */
-function handoffToMain(){
-  // 업데이트 뒤의 첫 장면(한 바퀴)이 도는 동안은 넘기지 않는다. 끝나면 쉬는 구 그대로 앱 창이 잇는다
-  if(orbBoot?.kind==='arrive'&&startupWindow?.isVisible()){const left=orbBoot.startedAt+ARRIVE_SCENE_MS-Date.now();if(left>0){setTimeout(handoffToMain,left);return;}}
+function handoffToMain({waitedForStart=false}={}){
+  // 업데이트 뒤의 첫 장면(한 바퀴)이 도는 동안은 넘기지 않는다. 끝나면 쉬는 구 그대로 앱 창이 잇는다.
+  // 확인이 시작 창보다 먼저 끝났으면 시작 창이 보일 때까지(3초까지) 기다린 뒤 장면을 돈다. 움직임 줄이기에서는 장면이 없어 기다리지 않는다
+  if(orbBoot?.kind==='arrive'&&!prefersReducedMotion()){
+    if(startupWindow&&!startupWindow.isVisible()&&!waitedForStart){void Promise.race([startupWindow.whenShown(),new Promise(resolve=>setTimeout(resolve,3000))]).then(()=>handoffToMain({waitedForStart:true}));return;}
+    if(startupWindow?.isVisible()){const left=orbBoot.startedAt+ARRIVE_SCENE_MS-Date.now();if(left>0){setTimeout(()=>handoffToMain({waitedForStart:true}),left);return;}}
+  }
   startupAllowed=true;
   const from=startupWindow?.isVisible()?startupWindow.bounds():null;
   if(!from){startupWindow?.dispose();startupWindow=null;showPlatformMain();return;}
@@ -293,12 +309,17 @@ async function prepareUpdateHandoff({token,version,file}={}){
     const localAppData=process.env.LOCALAPPDATA;
     if(process.platform!=='win32'||!localAppData||smoke)return;
     endHandoff();
+    const gen=handoffGen;
     const main=window&&!window.isDestroyed()?window:null;
     const shown=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.isVisible()&&!w.isMinimized());
     const note={localAppData,token,appPid:process.pid,version,cut:0.5};
     if(!shown.length){
+      // 모든 창이 숨었거나 최소화: 주 창 하나뿐이고 쓰다 만 초안이 없으면 조용히 바꾼다. 그 밖에는 설치기 창이 앱 창이 기억한 자리에 앞으로 뜬다
+      const others=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w!==main);
+      const quiet=!!main&&others.length===0&&!(await draftsUnsaved(main));
+      if(gen!==handoffGen)return;
       const at=windowPlacement?.restore();
-      writeHandoffNote({...note,bounds:at?screen.dipToScreenRect(null,at):null,maximized:at?.maximized===true,visibility:main?.isMinimized()?'minimized':'hidden'});
+      if(writeHandoffNote({...note,bounds:at?screen.dipToScreenRect(null,at):null,maximized:at?.maximized===true,visibility:main?.isMinimized()?'minimized':'hidden',quiet}))quietQuit=quiet;
       return;
     }
     const front=!!BrowserWindow.getFocusedWindow();
@@ -310,18 +331,45 @@ async function prepareUpdateHandoff({token,version,file}={}){
       handoffCover=createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot:app.getAppPath(),gate,placement:()=>at,boot:()=>({kind:'handoff',startedAt:Date.now()}),icon:path.join(app.getAppPath(),'assets','platform.ico'),onClose:()=>{}});
       handoffCover.show({fade:true});
       await Promise.race([handoffCover.whenShown(),new Promise(resolve=>setTimeout(resolve,2000))]);
+      if(gen!==handoffGen)return;
       target=handoffCover.browserWindow();
     }
     else target=main&&main.isVisible()&&!main.isMinimized()?main:shown[0];
     if(!target||target.isDestroyed())return;
     const curtainEvent=curtainEventName();
-    const written=writeHandoffNote({...note,window:windowHandle(target.getNativeWindowHandle()),bounds:screen.dipToScreenRect(target,target.getNormalBounds()),maximized:target.isMaximized(),visibility:front?'front':'behind',curtainEvent});
+    // 가림막의 60초는 주 창이 닫힌 뒤부터 잰다. 덮는 창은 먼저 닫히고 주 창은 초안 물음에 머물 수 있다(검수 P2-3)
+    const watch=main&&main.isVisible()&&!main.isMinimized()?main:target;
+    const written=writeHandoffNote({...note,window:windowHandle(target.getNativeWindowHandle()),watchWindow:windowHandle(watch.getNativeWindowHandle()),bounds:screen.dipToScreenRect(target,target.getNormalBounds()),maximized:target.isMaximized(),visibility:front?'front':'behind',curtainEvent});
     if(!written||quittingRequested&&!platformUpdate?.needsInstallHandoff())return;
-    curtain=await launchCurtain({spawn,file,token});
+    const launched=await launchCurtain({spawn,file,token});
+    // 가림막을 기다리는 동안 넘김이 거둬졌으면(끝내기 취소, 넘김 실패) 방금 띄운 가림막을 바로 거둔다(검수 P2-1)
+    if(gen!==handoffGen){launched?.cancel();return;}
+    curtain=launched;
   }catch{}
 }
+/* 다시 만든 창이 보이면(또는 8초가 지나면) 가림막을 거둔다. 그 사이에 새 넘김이 시작됐으면 건드리지 않는다 */
+function endHandoffWhenShown(){
+  const gen=handoffGen,started=Date.now();
+  const visible=()=>{const shown=startupWindow?.browserWindow?.()||(window&&!window.isDestroyed()?window:null);return !!shown&&shown.isVisible();};
+  const tick=()=>{if(gen!==handoffGen)return;if(visible()||Date.now()-started>8000)endHandoff();else setTimeout(tick,50);};
+  tick();
+}
+function prefersReducedMotion(){try{return systemPreferences?.getAnimationSettings?.().prefersReducedMotion===true;}catch{return false;}}
 /* 넘김이 취소되거나 실패했다: 가림막을 끝내고, 덮은 장면을 거두고, 쪽지를 지운다 */
+/* 주 창 화면에 쓰다 만 초안이 있는지 묻는다. 0.7초 안에 답이 없거나 묻지 못하면 「있음」이다(조용히 가지 않는다) */
+function draftsUnsaved(win,timeoutMs=700){
+  return new Promise(resolve=>{
+    if(!win||win.isDestroyed()||win.webContents.isLoading?.()){resolve(true);return;}
+    const id=++draftAskSeq;let timer=null,done=false;
+    const finish=value=>{if(done)return;done=true;clearTimeout(timer);ipcMain.removeListener('synk:draft-answer',listener);resolve(value);};
+    const listener=(event,answerId,unsaved)=>{if(win.isDestroyed()||event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame||answerId!==id)return;finish(unsaved!==false);};
+    ipcMain.on('synk:draft-answer',listener);
+    timer=setTimeout(()=>finish(true),timeoutMs);
+    try{win.webContents.send('synk:draft-check',id);}catch{finish(true);}
+  });
+}
 function endHandoff(){
+  handoffGen++;quietQuit=false;
   const lifted=curtain;curtain=null;lifted?.cancel();
   const cover=handoffCover;handoffCover=null;cover?.dispose();
   if(process.platform==='win32'&&process.env.LOCALAPPDATA)removeHandoffNote({localAppData:process.env.LOCALAPPDATA});
@@ -330,7 +378,7 @@ function beginPlatformStartup(recoveryCode=null,recoveryReleaseId=null,{hidden=f
   if(startupGate?.isBlocking()){showStartupWindow();return Promise.resolve();}
   startupAllowed=false;startupGate?.dispose();startupWindow?.dispose();startupWindow=null;orbBoot=null;
   startupGate=createStartupUpdateGate({updater:platformUpdate,platform:process.platform,recoveryCode,recoveryReleaseId,initialError,hidden,keepDeferred:!!initialError,
-    onSilentFailure:failure=>{if(!failure.silent)unseenFailure=failure;},onChange:state=>startupWindow?.publish(state),proceed:handoffToMain});
+    onSilentFailure:failure=>{if(!failure.silent)unseenFailure=failure;},onChange:state=>startupWindow?.publish(state),proceed:()=>handoffToMain()});
   if(!hidden&&(platformUpdate.snapshot().state!=='disabled'||recoveryCode||initialError))showStartupWindow();
   return startupGate.start();
 }
@@ -346,7 +394,7 @@ function initializeMain(){
     draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
     draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
   }
-  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>{if(!startupAllowed)pendingDesktopAction=action;else sendDesktop('synk:desktop-action',action);}});
+  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),revealForQuit:()=>!quietQuit,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>{if(!startupAllowed)pendingDesktopAction=action;else sendDesktop('synk:desktop-action',action);}});
   createWindow();
 }
 function createWindow(){
@@ -523,7 +571,7 @@ function createWindow(){
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
-  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(process.argv.includes('--synk-autostart')&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden)window.show();});
+  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(process.argv.includes('--synk-autostart')&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;window.showInactive();}else window.show();}});
   if(smoke) {
     const timer=setTimeout(()=>{process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:'TIMEOUT'})+'\n');app.exit(1);},20000);
     contents.once('did-finish-load',async()=>{

@@ -52,6 +52,13 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   downloadUpdate:()=>ipcRenderer.invoke('synk:download-update'),
   installUpdate:()=>ipcRenderer.invoke('synk:install-update'),
   onUpdateChanged:callback=>subscribe('synk:update-changed',callback),
+  // 조용한 업데이트(1-가 구현 설계 2절): 본체가 쓰다 만 초안이 있는지 물으면 화면의 판단(참, 거짓)만 돌려준다. 답하지 못하면 「있음」이다
+  answerDraftCheck:callback=>{
+    if(typeof callback!=='function')throw new TypeError('A callback is required');
+    const listener=(_event,id)=>{let unsaved=true;try{unsaved=callback()!==false;}catch{unsaved=true;}if(Number.isSafeInteger(id))ipcRenderer.send('synk:draft-answer',id,unsaved);};
+    ipcRenderer.on('synk:draft-check',listener);
+    return ()=>ipcRenderer.removeListener('synk:draft-check',listener);
+  },
   getDesktopPreferences:()=>ipcRenderer.invoke('synk:desktop-preferences'),
   careNotifications:Object.freeze({
     status:()=>ipcRenderer.invoke('synk:care-notifications-status'),

@@ -39,12 +39,13 @@ function curtainEventName(){return 'Local\\SYNK.Curtain.'+randomBytes(16).toStri
 function windowHandle(buffer){try{if(!Buffer.isBuffer(buffer)||buffer.length<4)return 0;const value=buffer.length>=8?Number(buffer.readBigUInt64LE(0)):buffer.readUInt32LE(0);return Number.isSafeInteger(value)&&value>0?value:0;}catch{return 0;}}
 /* 앱은 새 쪽지를 쓰기 전에 옛 쪽지를 지우고, 넘김이 취소되거나 실패하면 쪽지를 지운다(6절) */
 function removeHandoffNote({localAppData,appId=APP_ID}={}){try{fs.rmSync(handoffPaths(localAppData,appId).handoff,{force:true});return true;}catch{return false;}}
-function writeHandoffNote({localAppData,appId=APP_ID,token,appPid,version,window=0,bounds,maximized=false,visibility,quiet=false,cut=0.5,curtainEvent=null,now=Date.now}={}){
+/* window는 가림막을 그 바로 아래에 놓을 창, watchWindow는 닫히면 가림막의 60초 상한이 돌기 시작하는 창이다(덮는 창을 쓰면 둘이 다르다. 덮는 창은 먼저 닫히고 주 창은 초안 물음에 머물 수 있다) */
+function writeHandoffNote({localAppData,appId=APP_ID,token,appPid,version,window=0,watchWindow=window,bounds,maximized=false,visibility,quiet=false,cut=0.5,curtainEvent=null,now=Date.now}={}){
   try{
     if(typeof localAppData!=='string'||!path.isAbsolute(localAppData)||!/^[a-f0-9]{64}$/.test(token||'')||!Number.isSafeInteger(appPid)||appPid<=0||!/^\d+\.\d+\.\d+$/.test(version||'')||!VISIBILITY.has(visibility))return false;
     if(curtainEvent!==null&&!/^Local\\SYNK\.Curtain\.[a-f0-9]{32}$/.test(curtainEvent))return false;
     const paths=handoffPaths(localAppData,appId);removeHandoffNote({localAppData,appId});
-    const note={schemaVersion:1,token,appPid,version,window:Number.isSafeInteger(window)&&window>0?window:0,x:int(bounds?.x),y:int(bounds?.y),width:int(bounds?.width),height:int(bounds?.height),maximized:maximized===true,visibility,quiet:quiet===true,cut:Math.max(0,Math.min(1,Number.isFinite(cut)?cut:0.5)),curtainEvent,writtenAt:new Date(now()).toISOString()};
+    const note={schemaVersion:1,token,appPid,version,window:Number.isSafeInteger(window)&&window>0?window:0,watchWindow:Number.isSafeInteger(watchWindow)&&watchWindow>0?watchWindow:0,x:int(bounds?.x),y:int(bounds?.y),width:int(bounds?.width),height:int(bounds?.height),maximized:maximized===true,visibility,quiet:quiet===true,cut:Math.max(0,Math.min(1,Number.isFinite(cut)?cut:0.5)),curtainEvent,writtenAt:new Date(now()).toISOString()};
     const text=JSON.stringify(note);if(Buffer.byteLength(text)>MAX_NOTE_BYTES)return false;
     fs.mkdirSync(paths.folder,{recursive:true});
     const temporary=paths.handoff+'.'+randomBytes(8).toString('hex')+'.partial';
@@ -54,10 +55,11 @@ function writeHandoffNote({localAppData,appId=APP_ID,token,appPid,version,window
 }
 /*
   가림막을 켠다. 받은 새 판 설치 파일을 --curtain으로 켜고, 첫 장을 그렸다는 SYNK_CURTAIN_READY를 기다린다.
-  timeoutMs(1.5초) 안에 오지 않으면 그 프로세스를 끝내고 null로 돌아온다(가림막 없이 지금처럼 넘긴다, 2절 가림막 8번).
+  timeoutMs(3초) 안에 오지 않으면 그 프로세스를 끝내고 null로 돌아온다(가림막 없이 지금처럼 넘긴다, 2절 가림막 8번).
+  설계의 첫 값은 1.5초였다. 시험 설치기로 재니 한가할 때 0.63~1.01초, CPU가 96%로 바쁠 때 2.4~2.65초여서 3초로 올렸다(7절 둘째 조각).
   돌려주는 손잡이: cancel()은 끝내기가 취소됐을 때, closing()은 마지막 창이 닫혀 will-quit에 들어설 때 보낸다.
 */
-function launchCurtain({spawn,file,token,timeoutMs=1500,setTimer=setTimeout,clearTimer=clearTimeout}={}){
+function launchCurtain({spawn,file,token,timeoutMs=3000,setTimer=setTimeout,clearTimer=clearTimeout}={}){
   if(typeof spawn!=='function'||typeof file!=='string'||!/^[a-f0-9]{64}$/.test(token||''))return Promise.resolve(null);
   return new Promise(resolve=>{
     let child,timer=null,finished=false,buffer='';

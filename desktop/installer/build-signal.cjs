@@ -40,18 +40,29 @@ const FONTS=['SUIT-Medium.otf','SUIT-ExtraBold.otf','SUIT-Heavy.otf','SUIT-Regul
 const SHADER='orb/orb.ps';
 function findFxc(){
   const kits=path.join(process.env['ProgramFiles(x86)']||'C:\\Program Files (x86)','Windows Kits','10','bin');
-  try{for(const version of fs.readdirSync(kits).filter(name=>/^10\./.test(name)).sort().reverse()){const fxc=path.join(kits,version,'x64','fxc.exe');if(fs.existsSync(fxc))return fxc;}}catch{}
+  try{for(const version of fs.readdirSync(kits).filter(name=>/^10\./.test(name)).sort().reverse()){const fxc=path.join(kits,version,'x64','fxc.exe');if(fs.existsSync(fxc))return {fxc,version};}}catch{}
   return null;
 }
+/*
+  셰이더 바이트(orb.ps)는 저장소에 둔다. 곁 파일 orb.ps.json에 그 바이트를 만든 원본(orb.hlsl)의 해시와 fxc 판을 적는다.
+  원본이나 바이트가 곁 파일과 다르면 어느 PC에서나 멈춘다(원본을 고치고 다시 컴파일하지 않은 때). fxc가 있고 판이 같으면 다시 컴파일해 바이트까지 견준다.
+  판이 다른 fxc(공개 CI 러너 따위)는 같은 원본에서도 바이트가 다를 수 있어 견주지 않고 보고에만 적는다
+*/
 function checkShader(){
-  const committed=path.join(ROOT,SHADER),fxc=findFxc();
+  const committed=path.join(ROOT,SHADER),source=path.join(ROOT,'orb','orb.hlsl'),recordFile=path.join(ROOT,SHADER+'.json'),found=findFxc();
   assert(fs.existsSync(committed),'Missing compiled orb shader '+SHADER);
-  if(!fxc)return {sha256:crypto.createHash('sha256').update(fs.readFileSync(committed)).digest('hex'),recompiled:false};
+  assert(fs.existsSync(recordFile),'Missing '+SHADER+'.json (the hlsl hash and fxc version that made '+SHADER+')');
+  const record=JSON.parse(fs.readFileSync(recordFile,'utf8')),hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  const sha256=hash(committed);
+  assert(hash(source)===record.hlslSHA256,'orb/orb.ps is stale: orb/orb.hlsl changed. Recompile with fxc /nologo /T ps_3_0 /E main /O3 and update '+SHADER+'.json');
+  assert(sha256===record.psSHA256,SHADER+' does not match '+SHADER+'.json');
+  if(!found)return {sha256,recompiled:false,fxc:null,recordedFxc:record.fxc};
+  if(found.version!==record.fxc)return {sha256,recompiled:false,fxc:found.version,recordedFxc:record.fxc};
   const temporary=path.join(require('node:os').tmpdir(),'synk-orb-'+process.pid+'.ps');
-  try{command(fxc,['/nologo','/T','ps_3_0','/E','main','/O3','/Fo',temporary,path.join(ROOT,'orb','orb.hlsl')]);
+  try{command(found.fxc,['/nologo','/T','ps_3_0','/E','main','/O3','/Fo',temporary,source]);
     assert(Buffer.compare(fs.readFileSync(temporary),fs.readFileSync(committed))===0,'orb/orb.ps is stale: recompile orb/orb.hlsl with fxc /T ps_3_0 /E main /O3');}
   finally{try{fs.unlinkSync(temporary);}catch{}}
-  return {sha256:crypto.createHash('sha256').update(fs.readFileSync(committed)).digest('hex'),recompiled:true};
+  return {sha256,recompiled:true,fxc:found.version,recordedFxc:record.fxc};
 }
 async function inventory(directory,relative='') { const list=[]; for(const item of fs.readdirSync(path.join(directory,relative),{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))) { const member=path.posix.join(relative,item.name); if(item.isDirectory()) list.push(...await inventory(directory,member)); else { assert(item.isFile(),'Only regular payload files allowed'); const file=path.join(directory,member); list.push({path:member,bytes:fs.statSync(file).size,sha256:await sha(file)}); } } return list; }
 async function main() {

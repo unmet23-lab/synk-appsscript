@@ -7,6 +7,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Synk.SignalInstaller
 {
@@ -24,6 +25,8 @@ namespace Synk.SignalInstaller
         [DataMember(Name = "version")] public string Version;
         /// <summary>가림막을 그 아래에 놓을 앱 창의 핸들. 0이면 없다(보이는 창이 없던 때)</summary>
         [DataMember(Name = "window")] public long Window;
+        /// <summary>닫히면 가림막의 60초 상한이 돌기 시작하는 창(주 창). 0이면 Window를 쓴다. 덮는 창은 먼저 닫히고 주 창은 초안 물음에 머물 수 있다</summary>
+        [DataMember(Name = "watchWindow")] public long WatchWindow;
         [DataMember(Name = "x")] public int X;
         [DataMember(Name = "y")] public int Y;
         [DataMember(Name = "width")] public int Width;
@@ -83,6 +86,127 @@ namespace Synk.SignalInstaller
         [DataMember(Name = "ms")] public long Ms;
     }
 
+    /// <summary>
+    /// 「바꾸는 중」 표시(1-가 구현 설계 2절 장치 1). READY 뒤 앱이 꺼지기를 기다릴 때부터 앱을 켜도 되는 때까지 Handoff\<appId>.updating.json을 쥔다.
+    /// 그 사이 사람이 켠 앱은 이 표시를 보고 창 없이 요청만 남기고 끝난다. 박동은 내용을 다시 쓰지 않고 2초마다 파일 시각만 고친다.
+    /// 쓰거나 고치다 난 실패는 모두 삼킨다(표시를 쓰지 못하면 장치 1만 꺼지고 장치 2와 3은 그대로 돈다)
+    /// </summary>
+    public sealed class UpdatingMarker
+    {
+        public const int BeatMilliseconds = 2000, StaleMilliseconds = 10000;
+        readonly string file; readonly int pid; readonly object gate = new object();
+        System.Threading.Timer beat; bool released;
+        UpdatingMarker(string file, int pid) { this.file = file; this.pid = pid; }
+        public string File { get { return file; } }
+
+        /// <summary>표시를 쓰고 박동을 시작한다. 쓰지 못하면 null이다</summary>
+        public static UpdatingMarker Hold(string appId, string product)
+        {
+            string temporary = null;
+            try
+            {
+                int pid; using (Process self = Process.GetCurrentProcess()) pid = self.Id;
+                string file = Handoff.MarkerFile(appId);
+                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                temporary = file + "." + Guid.NewGuid().ToString("N") + ".partial";
+                string text = "{\"pid\":" + pid + ",\"product\":\"" + Regex.Replace(product ?? "", "[^a-z]", "") + "\",\"at\":\"" + DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture) + "\"}";
+                using (FileStream stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { byte[] bytes = Encoding.UTF8.GetBytes(text); stream.Write(bytes, 0, bytes.Length); stream.Flush(true); }
+                if (System.IO.File.Exists(file)) System.IO.File.Replace(temporary, file, null, true); else System.IO.File.Move(temporary, file);
+                temporary = null;
+                UpdatingMarker marker = new UpdatingMarker(file, pid);
+                marker.beat = new System.Threading.Timer(marker.Beat, null, BeatMilliseconds, BeatMilliseconds);
+                return marker;
+            }
+            catch (Exception) { return null; }
+            finally { if (temporary != null) try { System.IO.File.Delete(temporary); } catch (Exception) { } }
+        }
+        /// <summary>표시에 적힌 설치기 번호(둘째 설치기가 창 보이기 요청에 적는다). 없거나 못 읽으면 0</summary>
+        public static int ReadPid(string appId)
+        {
+            try { Match m = Regex.Match(ReadShared(Handoff.MarkerFile(appId)), "\"pid\":(\\d{1,10})"); int value; return m.Success && Int32.TryParse(m.Groups[1].Value, out value) ? value : 0; }
+            catch (Exception) { return 0; }
+        }
+        internal static string ReadShared(string path)
+        {
+            using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8)) { char[] buffer = new char[Handoff.MaxBytes]; int count = reader.Read(buffer, 0, buffer.Length); return new string(buffer, 0, count); }
+        }
+        // 박동은 파일을 만들지 않는다. 파일이 없거나 남의 표시면 박동을 그만둔다. 타이머의 예외로 설치기가 죽지 않게 모두 삼킨다
+        void Beat(object state)
+        {
+            lock (gate)
+            {
+                if (released) return;
+                try { if (!Owned()) { StopBeat(); return; } System.IO.File.SetLastWriteTimeUtc(file, DateTime.UtcNow); }
+                catch (Exception) { }
+            }
+        }
+        void StopBeat() { try { if (beat != null) beat.Dispose(); } catch (Exception) { } beat = null; }
+        // 자기 프로세스 번호가 담긴 표시에만 박동하고 지운다. 보이는 방식은 새 앱을 기다리기 전에 뮤텍스를 놓으므로 다음 설치기가 같은 이름의 표시를 쓸 수 있다
+        bool Owned()
+        {
+            if (!System.IO.File.Exists(file)) return false;
+            return Regex.IsMatch(ReadShared(file), "\"pid\":" + pid + "[,}]");
+        }
+        /// <summary>
+        /// 놓는다(앱을 켜거나 창을 보이기 앞). 박동을 멈추고 돌던 박동이 끝난 것을 확인한 뒤 지우고, 없어진 것을 확인한다.
+        /// 지우지 못하면 0.2초 간격으로 다섯 번 다시 지우고, 그래도 남으면 파일 시각을 10초보다 앞으로 고친다. 그것도 못 하면 시각이 10초를 넘길 때까지 기다린다.
+        /// 앱은 10초 넘은 표시를 낡은 것으로 보므로, 어느 길이든 설치기가 켠 앱은 표시를 보지 않는다
+        /// </summary>
+        public void Release()
+        {
+            lock (gate) { if (released) return; released = true; StopBeat(); }
+            try { if (!Owned()) return; } catch (Exception) { }
+            for (int attempt = 0; attempt < 6; attempt++)
+            {
+                try { System.IO.File.Delete(file); } catch (Exception) { }
+                if (!System.IO.File.Exists(file)) return;
+                if (attempt < 5) Thread.Sleep(200);
+            }
+            try { System.IO.File.SetLastWriteTimeUtc(file, DateTime.UtcNow.AddSeconds(-30)); return; } catch (Exception) { }
+            try { TimeSpan age = DateTime.UtcNow - System.IO.File.GetLastWriteTimeUtc(file), wait = TimeSpan.FromMilliseconds(StaleMilliseconds + 1000) - age; if (wait > TimeSpan.Zero) Thread.Sleep(wait); } catch (Exception) { }
+        }
+    }
+
+    /// <summary>
+    /// 창 보이기 요청(Handoff\<appId>.show-request). 바꾸는 동안 사람이 켠 앱이나 둘째 설치기가 쓰고, 도는 설치기가 0.5초마다 보고 창을 보인다.
+    /// 자기 번호가 담긴 요청이나, 번호 칸이 빈 채 자기가 시작한 뒤에 생긴 요청만 받는다
+    /// </summary>
+    public static class ShowRequest
+    {
+        public static string File(string appId) { return Path.Combine(Handoff.Folder, appId + ".show-request"); }
+        public static void Clear(string appId) { try { System.IO.File.Delete(File(appId)); } catch (Exception) { } }
+        public static bool Take(string appId, int pid, DateTime sinceUtc)
+        {
+            try
+            {
+                string path = File(appId);
+                if (!System.IO.File.Exists(path)) return false;
+                string text = UpdatingMarker.ReadShared(path);
+                Match m = Regex.Match(text, "\"pid\":(\\d{1,10}|null)");
+                bool mine = m.Success && (m.Groups[1].Value == pid.ToString(System.Globalization.CultureInfo.InvariantCulture) || (m.Groups[1].Value == "null" && System.IO.File.GetLastWriteTimeUtc(path) >= sinceUtc.AddSeconds(-1)));
+                if (!mine) return false;
+                System.IO.File.Delete(path);
+                return true;
+            }
+            catch (Exception) { return false; }
+        }
+        public static bool Write(string appId, int pid)
+        {
+            for (int attempt = 0; attempt < 6; attempt++)
+            {
+                try
+                {
+                    Directory.CreateDirectory(Handoff.Folder);
+                    System.IO.File.WriteAllText(File(appId), "{\"pid\":" + (pid > 0 ? pid.ToString(System.Globalization.CultureInfo.InvariantCulture) : "null") + ",\"at\":\"" + DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture) + "\"}");
+                    return true;
+                }
+                catch (Exception) { if (attempt < 5) Thread.Sleep(200); }
+            }
+            return false;
+        }
+    }
+
     public static class Handoff
     {
         public const int MaxBytes = 4096;
@@ -99,6 +223,7 @@ namespace Synk.SignalInstaller
         public static string Folder { get { return Path.Combine(Root, "Handoff"); } }
         public static string HandoffFile(string appId) { return Path.Combine(Folder, appId + ".handoff.json"); }
         public static string ArrivalFile(string appId) { return Path.Combine(Folder, appId + ".arrival.json"); }
+        public static string MarkerFile(string appId) { return Path.Combine(Folder, appId + ".updating.json"); }
 
         /// <summary>
         /// 넘김 쪽지를 읽는다. 시각으로는 버리지 않는다. 앱 프로세스 번호(--wait-pid), 판 번호, 넘김 토큰이 모두 맞을 때만 돌려준다.

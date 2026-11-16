@@ -12,11 +12,16 @@ test('handoff note carries the window, place, visibility, scene and curtain even
   fs.mkdirSync(handoffPaths(localAppData).folder,{recursive:true});fs.writeFileSync(handoffPaths(localAppData).handoff,'{"old":true}');
   assert.equal(writeHandoffNote({localAppData,token:TOKEN,appPid:4242,version:'0.4.97',window:131072,bounds:{x:10.4,y:-20,width:1440,height:940},maximized:true,visibility:'behind',cut:0.5,curtainEvent:event,now:()=>Date.parse('2026-11-17T00:00:00Z')}),true);
   const note=JSON.parse(fs.readFileSync(handoffPaths(localAppData).handoff,'utf8'));
-  assert.deepEqual(note,{schemaVersion:1,token:TOKEN,appPid:4242,version:'0.4.97',window:131072,x:10,y:-20,width:1440,height:940,maximized:true,visibility:'behind',quiet:false,cut:0.5,curtainEvent:event,writtenAt:'2026-11-17T00:00:00.000Z'});
+  assert.deepEqual(note,{schemaVersion:1,token:TOKEN,appPid:4242,version:'0.4.97',window:131072,watchWindow:131072,x:10,y:-20,width:1440,height:940,maximized:true,visibility:'behind',quiet:false,cut:0.5,curtainEvent:event,writtenAt:'2026-11-17T00:00:00.000Z'});
   assert.deepEqual(fs.readdirSync(handoffPaths(localAppData).folder).filter(name=>name.endsWith('.partial')),[]);
   assert.equal(removeHandoffNote({localAppData}),true);assert.equal(fs.existsSync(handoffPaths(localAppData).handoff),false);
 });
 
+test('the curtain watches the main window when the cover window is a different one',t=>{
+  const localAppData=folder(t);
+  assert.equal(writeHandoffNote({localAppData,token:TOKEN,appPid:4242,version:'0.4.97',window:11,watchWindow:22,visibility:'front',curtainEvent:curtainEventName()}),true);
+  const note=JSON.parse(fs.readFileSync(handoffPaths(localAppData).handoff,'utf8'));assert.equal(note.window,11);assert.equal(note.watchWindow,22);
+});
 test('a handoff note with a bad token, process, version, visibility or event is never written',t=>{
   const localAppData=folder(t),base={localAppData,token:TOKEN,appPid:4242,version:'0.4.97',visibility:'front'};
   for(const bad of [{token:'x'},{appPid:0},{version:'0.4'},{visibility:'sideways'},{curtainEvent:'Global\\SYNK.Curtain.'+'0'.repeat(32)},{localAppData:'relative'}])
@@ -55,7 +60,7 @@ test('the curtain is kept after its first frame and hears cancel and closing on 
 test('a curtain that does not draw in time, exits, speaks wrongly or cannot start is ended and the update goes on without it',async()=>{
   const timers=[];const slow=fakeChild();
   const waiting=launchCurtain({spawn:()=>slow,file:'x.exe',token:TOKEN,setTimer:(fn,ms)=>{timers.push(ms);setImmediate(fn);return 1;},clearTimer:()=>{}});
-  assert.equal(await waiting,null);assert.equal(slow.killed,true);assert.deepEqual(timers,[1500]);
+  assert.equal(await waiting,null);assert.equal(slow.killed,true);assert.deepEqual(timers,[3000]);
   assert.equal(await launchCurtain({spawn:()=>fakeChild({exitEarly:true}),file:'x.exe',token:TOKEN}),null);
   const wrong=fakeChild({lines:['SYNK_UPDATE_READY x\n']});assert.equal(await launchCurtain({spawn:()=>wrong,file:'x.exe',token:TOKEN}),null);assert.equal(wrong.killed,true);
   assert.equal(await launchCurtain({spawn:()=>{throw Error('no such file');},file:'x.exe',token:TOKEN}),null);

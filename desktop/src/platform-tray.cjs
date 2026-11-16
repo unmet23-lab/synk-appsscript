@@ -1,7 +1,7 @@
 'use strict';
 
 const TRAY_APPS=Object.freeze({world:'SYNK WORLD',messenger:'SYNK Workspace',teacher:'SYNK Workspace · 내 수업',path:'SYNK PATH',pulse:'SYNK PULSE',partners:'SYNK Partners',care:'SYNK 플레저',fortune:'SYNK 무료 운세'});
-function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null}){
+function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null,revealForQuit=()=>true}){
   let tray=null,quitting=false,shortcuts=[];
   const bindings=new Map();
   function isActive(){return !!tray&&!tray.isDestroyed();}
@@ -13,7 +13,8 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     window.show();window.focus();
   }
   function cancelQuit(){quitting=false;}
-  const beforeQuit=()=>{quitting=true;const window=getWindow();if(window&&!window.isDestroyed()&&!window.isVisible())show({forQuit:true});};
+  // 끝낼 때 숨은 창을 보여 초안 보호가 물을 자리를 만든다. 조용한 업데이트(초안이 없음을 확인함)에서는 보이지 않는다(1-가 구현 설계 2절)
+  const beforeQuit=()=>{quitting=true;if(!revealForQuit())return;const window=getWindow();if(window&&!window.isDestroyed()&&!window.isVisible())show({forQuit:true});};
   function attachWindow(window){
     if(!isActive()||bindings.has(window))return;
     const close=event=>{

@@ -42,6 +42,8 @@ namespace Synk.SignalInstaller
                         try { created = mutex.WaitOne(10000); }
                         catch (AbandonedMutexException) { created = true; }
                     }
+                    // Platform: 도는 설치기(조용히 도는 것 포함)에 창을 보이라고 청하고 끝난다(5절 「설치 화면이 이미 열려 있음」). 청하지 못하면 지금처럼 알린다
+                    if (!created && product.Id == "platform" && ShowRequest.Write(spec.AppId, UpdatingMarker.ReadPid(spec.AppId))) return 0;
                     if (!created) { MessageBox.Show("이미 " + product.ShortName + " 설치 화면이 열려 있어요.", product.WindowTitle); return 1; }
                     bool released = false;
                     Action release = delegate { if (released) return; released = true; mutex.ReleaseMutex(); };
@@ -163,16 +165,44 @@ namespace Synk.SignalInstaller
             // 넘김 쪽지(6절): 앱 창의 자리와 보이는 상태, 가림막에 알릴 이벤트. 토큰, 앱 프로세스 번호, 판 번호가 모두 맞을 때만 읽는다
             HandoffNote note = automatic != null ? Handoff.ReadHandoff(spec.AppId, automatic.Token, automatic.ParentId, spec.Version) : null;
             IntPtr curtainWindow = note != null && note.CurtainEvent != null ? CurtainWindow.Find(assembly.Location) : IntPtr.Zero;
-            // 새 앱의 첫 창이 설치기 창의 자리와 모습을 이어받는다. 다른 창 뒤에서 넘어온 업데이트만 「뒤」로 남긴다
-            string arrivalVisibility = note != null && note.Behind ? "behind" : "front";
+            // 조용한 업데이트(2절): 앱의 모든 창이 숨었거나 최소화였고 쓰다 만 초안이 없었다. 창을 만들되 보이지 않고, 사람이 알아야 할 끝에서만 보인다
+            bool quiet = note != null && note.Quiet;
+            bool revealed = !quiet;
+            // 새 앱의 첫 창이 설치기 창의 자리와 모습을 이어받는다. 다른 창 뒤에서 넘어온 업데이트는 「뒤」, 조용히 바꾼 업데이트는 숨음이나 최소화로 남긴다
+            string arrivalVisibility = note == null ? "front" : quiet ? note.Visibility : note.Behind ? "behind" : "front";
             Action<string, string> arrive = delegate(string kind, string appVersion)
             {
                 ArrivalNote arrival = null;
                 try { arrival = (ArrivalNote)window.Dispatcher.Invoke(new Func<ArrivalNote>(delegate { return window.Arrival(kind, arrivalVisibility, appVersion); })); }
                 catch (Exception) { }
+                // 창을 보이지 않은 조용한 설치기는 쪽지의 자리를 그대로 넘긴다
+                if (arrival != null && !revealed && note != null && note.HasBounds) { arrival.X = note.X; arrival.Y = note.Y; arrival.Width = note.Width; arrival.Height = note.Height; arrival.Maximized = note.Maximized; }
                 if (arrival != null) Handoff.WriteArrival(spec.AppId, arrival);
             };
-            engine.BeforeLaunch = arrive;
+            // 「바꾸는 중」 표시(장치 1): READY 뒤에 쥐고, 앱을 켜거나 창을 보이기 앞에 놓는다
+            UpdatingMarker marker = null;
+            Action releaseMarker = delegate { UpdatingMarker held = Interlocked.Exchange(ref marker, null); if (held != null) held.Release(); };
+            engine.BeforeLaunch = delegate(string kind, string appVersion) { releaseMarker(); arrive(kind, appVersion); };
+            // 창 보이기 요청: 바꾸는 동안 사람이 켠 앱이나 둘째 설치기가 쓴다. 남은 요청은 지우고 0.5초마다 본다
+            int myPid; using (Process self = Process.GetCurrentProcess()) myPid = self.Id;
+            DateTime startedUtc = DateTime.UtcNow;
+            ShowRequest.Clear(spec.AppId);
+            Action reveal = delegate
+            {
+                arrivalVisibility = "front";
+                if (revealed) { try { if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal; window.Activate(); } catch (InvalidOperationException) { } return; }
+                revealed = true;
+                window.ShowActivated = true;
+                window.Show();
+                try { window.Activate(); } catch (InvalidOperationException) { }
+            };
+            System.Windows.Threading.DispatcherTimer requests = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            requests.Tick += delegate { if (ShowRequest.Take(spec.AppId, myPid, startedUtc)) reveal(); };
+            requests.Start();
+            // 끝내기: 보인 창은 닫고, 보이지 않은 조용한 설치기는 창 없이 끝낸다
+            app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            window.Closed += delegate { app.Shutdown(); };
+            Action finish = delegate { if (revealed) window.CloseNow(); else app.Shutdown(); };
             if (note != null)
             {
                 // 가림막 아래에 같은 모습으로 뜬다. 앞으로 나서지 않는다. 가림막이 끝나면 그 자리가 그대로 드러난다.
@@ -193,8 +223,9 @@ namespace Synk.SignalInstaller
             Func<Task> handOver = async delegate
             {
                 release();
-                await AppWindow.WaitAsync(engine.InstalledExecutable(), 20000);
-                window.CloseNow();
+                // 조용한 업데이트에서는 새 앱도 숨은 채 켜지므로 그 창을 기다리지 않는다
+                if (revealed) await AppWindow.WaitAsync(engine.InstalledExecutable(), 20000);
+                finish();
             };
             // 「쓰던 판 열기」가 다시 켤 쓰던 판(되돌린 뒤 켜지 못한 때만 있다)
             AutomaticUpdateSession kept = null, restored = null; string restoredStatus = null;
@@ -210,7 +241,7 @@ namespace Synk.SignalInstaller
             if (automatic != null)
             {
                 bool started = false;
-                window.Loaded += async delegate
+                Func<Task> automaticWork = async delegate
                 {
                     if (started) return; started = true;
                     window.BeginAutomatic(note != null, note != null ? note.Cut : 0.5);
@@ -225,21 +256,24 @@ namespace Synk.SignalInstaller
                                 Console.WriteLine("SYNK_UPDATE_READY " + automatic.Token); Console.Out.Flush();
                                 ready.Value = true;
                                 kept = request;
+                                marker = UpdatingMarker.Hold(spec.AppId, product.Id);
                                 // 첫 장을 그린 뒤 READY를 썼으면 가림막에 끝나라고 알린다(2절 가림막 6번)
                                 window.Dispatcher.BeginInvoke(new Action(delegate { readySeen = true; releaseCurtain(); }));
                                 return engine.InstallAutomaticUpdate(request, report);
                             }
                         });
-                        if (result.Updated && result.Relaunched) { timed("update"); await window.FinishCut(); await handOver(); }
+                        // 엔진이 끝 상태에 이르렀다. 표시는 어느 끝에서도 쥐지 않는다(사람을 기다리는 끝에서도 창을 보이기 전에 놓는다)
+                        releaseMarker();
+                        if (result.Updated && result.Relaunched) { timed("update"); if (revealed) await window.FinishCut(); await handOver(); }
                         // 끝났는데 새 앱을 켜지 못했다: 「열기」를 두고 잠시 뒤 한 번 더 켜 본다
-                        else if (result.Updated) { timed("update"); window.ShowLaunchFailure(null); openAgainLater(); }
+                        else if (result.Updated) { timed("update"); reveal(); window.ShowLaunchFailure(null); openAgainLater(); }
                         // 장치 2: 사람이 켠 앱이 이미 앞에 있다. 알릴 것이 없어 창을 닫는다(보이는 업데이트에서도 닫는다)
-                        else if (result.UserAppRunning) { release(); window.CloseNow(); }
-                        // 되돌려 켠 쓰던 앱이 실패 장면을 보인다. 그 앱의 창이 보인 뒤 닫는다
+                        else if (result.UserAppRunning) { release(); finish(); }
+                        // 되돌려 켠 쓰던 앱이 실패 장면을 보인다. 그 앱의 창이 보인 뒤 닫는다(조용히 바꾼 때는 쓰던 앱이 숨은 채 있다가 다음에 열 때 보인다)
                         else if (result.Restored && result.Relaunched) await handOver();
                         // 되돌렸는데 쓰던 앱을 켜지 못했다: 「쓰던 판 열기」를 두고 잠시 뒤 한 번 더 켜 본다
-                        else if (result.Restored && kept != null && result.RestoredStatus != null) { restored = kept; restoredStatus = result.RestoredStatus; window.ShowRestoredLaunchFailure(); openAgainLater(); }
-                        else window.ShowAutomaticResult(result);
+                        else if (result.Restored && kept != null && result.RestoredStatus != null) { restored = kept; restoredStatus = result.RestoredStatus; reveal(); window.ShowRestoredLaunchFailure(); openAgainLater(); }
+                        else { reveal(); window.ShowAutomaticResult(result); }
                     }
                     catch (Exception error)
                     {
@@ -248,10 +282,14 @@ namespace Synk.SignalInstaller
                         engine.RecordUpdateFailure(null, "before-update", "unchanged", error, null);
                         InstallFailure blocked = error as InstallFailure;
                         // READY 전: 앱이 실패를 받아 창을 다시 만든다. 막힌 상태만 안내를 맨 위에 남기고 나머지는 닫는다(2절 가림막 7번)
-                        if (!ready.Value) { if (blocked != null && !blocked.CanRetry) window.ShowBlocked(error); else window.CloseNow(); }
-                        else window.ShowAutomaticError(error);
+                        releaseMarker();
+                        if (!ready.Value) { if (blocked != null && !blocked.CanRetry) { reveal(); window.ShowBlocked(error); } else finish(); }
+                        else { reveal(); window.ShowAutomaticError(error); }
                     }
                 };
+                // 보이는 방식은 창이 뜬 뒤에, 조용한 방식은 창 없이 바로 일을 시작한다
+                if (quiet) window.Dispatcher.BeginInvoke(new Action(async delegate { await automaticWork(); }));
+                else window.Loaded += async delegate { await automaticWork(); };
             }
             else window.Loaded += delegate { window.SetReady(); };
             window.InstallRequested += async delegate
@@ -287,7 +325,13 @@ namespace Synk.SignalInstaller
                 catch (Exception error) { window.ShowLaunchFailure(error); return; }
                 await handOver();
             };
-            app.Run(window);
+            if (revealed) window.Show();
+            app.Run();
+            requests.Stop();
+            releaseMarker();
+            // 끝나기 직전에 요청을 한 번 더 본다. 표시를 놓는 순간에 사람이 켠 앱의 요청이 버려지지 않게, 앱을 한 번 더 켜서 창을 부르게 한다
+            if (automatic != null && ShowRequest.Take(spec.AppId, myPid, startedUtc))
+                try { using (Process.Start(new ProcessStartInfo(engine.InstalledExecutable()) { UseShellExecute = false })) { } } catch (Exception) { }
         }
 
         /// <summary>
@@ -323,7 +367,7 @@ namespace Synk.SignalInstaller
                     Application app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
                     OrbWindow window = new OrbWindow(cache, spec.Version, product);
                     window.BeginCurtain(note.Cut);
-                    IntPtr appWindow = new IntPtr(note.Window);
+                    IntPtr appWindow = new IntPtr(note.Window), watchWindow = new IntPtr(note.WatchWindow != 0 ? note.WatchWindow : note.Window);
                     window.SourceInitialized += delegate { window.MakeInert(); window.PlacePhysical(note, appWindow); };
                     bool announced = false, finished = false;
                     Action finish = delegate
@@ -364,7 +408,7 @@ namespace Synk.SignalInstaller
                         if (cancelled.Value) { finish(); return; }
                         try { if (done.WaitOne(0)) { finish(); return; } } catch (Exception) { finish(); return; }
                         if (inputGone.Value && !closing.Value) { if (inputGoneAt < 0) inputGoneAt = now; else if (now - inputGoneAt > InputGoneMilliseconds) { finish(); return; } }
-                        if (!IsWindow(appWindow)) { if (appGoneAt < 0) appGoneAt = now; else if (now - appGoneAt > AppGoneMilliseconds) { finish(); return; } }
+                        if (!IsWindow(watchWindow)) { if (appGoneAt < 0) appGoneAt = now; else if (now - appGoneAt > AppGoneMilliseconds) { finish(); return; } }
                     };
                     watch.Start();
                     window.Show();
