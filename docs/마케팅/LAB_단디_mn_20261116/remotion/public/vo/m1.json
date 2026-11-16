@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "단디!",
+ "dur": 0.701,
+ "words": [
+  {
+   "text": "단디!",
+   "start": 0.03,
+   "end": 0.701
+  }
+ ],
+ "source": {
+  "key": "e61ba8b50ffc4e51d3b996edd346cf66",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1616,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "상자를 뽁뽁이로 거대한 공처럼 꽁꽁 싸 놓은 신입이 뿌듯하게 가슴을 펴고 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

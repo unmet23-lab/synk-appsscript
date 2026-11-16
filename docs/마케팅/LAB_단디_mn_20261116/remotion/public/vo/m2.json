@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "없어…",
+ "dur": 1.078,
+ "words": [
+  {
+   "text": "없어…",
+   "start": 0.03,
+   "end": 1.078
+  }
+ ],
+ "source": {
+  "key": "fc8ca3aafd62dbd84f58717fc6cacaa0",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1624,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "사전을 다 넘겼는데 빈 쪽만 나오자 신입이 힘이 쭉 빠져 울먹이며 작게 말한다.",
+   "next": "꼼꼼히 해~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 471
+ }
+}

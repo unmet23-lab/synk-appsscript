@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "너무 단디 했네~",
+ "dur": 1.261,
+ "words": [
+  {
+   "text": "너무",
+   "start": 0.13,
+   "end": 0.352
+  },
+  {
+   "text": "단디",
+   "start": 0.413,
+   "end": 0.697
+  },
+  {
+   "text": "했네~",
+   "start": 0.92,
+   "end": 1.261
+  }
+ ],
+ "source": {
+  "key": "5d069448220a1a13add365ceeab1ac96",
+  "voice": {
+   "id": "tc_66d000ee0742c43c93a0ada1",
+   "name": "도현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1625,
+   "lufs": -16,
+   "voiceId": "tc_66d000ee0742c43c93a0ada1",
+   "prev": "신입이 작은 상자를 뽁뽁이로 거대한 공처럼 싸 놓은 것을 본 반장님이 진땀을 흘리다가 허허 웃으며 엄지를 든다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 132
+ }
+}

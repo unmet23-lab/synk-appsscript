@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s2",
+ "text": "꼼꼼히 해~",
+ "dur": 1.007,
+ "words": [
+  {
+   "text": "꼼꼼히",
+   "start": 0.05,
+   "end": 0.574
+  },
+  {
+   "text": "해~",
+   "start": 0.655,
+   "end": 1.007
+  }
+ ],
+ "source": {
+  "key": "68a2b40fc1af2f5f0be1fca5f3e06279",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1615,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 398
+ }
+}

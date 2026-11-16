@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m0",
+ "text": "단디…? 단디…?",
+ "dur": 1.381,
+ "words": [
+  {
+   "text": "단디…?",
+   "start": 0.03,
+   "end": 0.412
+  },
+  {
+   "text": "단디…?",
+   "start": 0.694,
+   "end": 1.381
+  }
+ ],
+ "source": {
+  "key": "bceeb3bdd2da388731a742df283bba12",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1623,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "처음 듣는 말에 당황한 신입이 두꺼운 사전을 허둥지둥 넘기며 혼잣말로 중얼거린다.",
+   "next": "없어…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 280
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "단디 해래이!",
+ "dur": 0.877,
+ "words": [
+  {
+   "text": "단디",
+   "start": 0.02,
+   "end": 0.325
+  },
+  {
+   "text": "해래이!",
+   "start": 0.386,
+   "end": 0.877
+  }
+ ],
+ "source": {
+  "key": "cf0bfb4ae4b175e48a927ee3760358fe",
+  "voice": {
+   "id": "tc_66d000ee0742c43c93a0ada1",
+   "name": "도현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1614,
+   "lufs": -16,
+   "voiceId": "tc_66d000ee0742c43c93a0ada1",
+   "prev": "반장님이 상자를 손가락으로 톡톡 가리키며 짧고 단호하게 말한다. 혼내는 게 아니라 챙겨 주는 말투다.",
+   "next": "꼼꼼히 해~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

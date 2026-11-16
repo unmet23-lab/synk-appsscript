@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_65a8c7e1915a6295614f775b",
+  "name": "미선"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1621,
+  "lufs": -16
+ },
+ "made": "2026-11-16T02:30:36.441Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "서울 말~",
+   "dur": 0.975,
+   "syllablesPerSec": 3.08,
+   "src": "h1.wav",
+   "key": "22d1f39a0e77d983df210f6577ea3ba4",
+   "words": 2
+  },
+  {
+   "id": "h2",
+   "text": "경상도 말!",
+   "dur": 0.741,
+   "syllablesPerSec": 5.4,
+   "src": "h2.wav",
+   "key": "2a410741d8c27ccef1425b1b31c27d0a",
+   "words": 2
+  },
+  {
+   "id": "b1",
+   "text": "퍼뜩 온나!",
+   "dur": 0.831,
+   "syllablesPerSec": 4.81,
+   "src": "b1.wav",
+   "key": "5eefaa41f5ac4d669f3535107511ef9d",
+   "words": 2
+  },
+  {
+   "id": "s1",
+   "text": "빨리 와~",
+   "dur": 0.838,
+   "syllablesPerSec": 3.58,
+   "src": "s1.wav",
+   "key": "119659db68fdbf735c6cc54039277853",
+   "words": 2
+  },
+  {
+   "id": "b2",
+   "text": "단디 해래이!",
+   "dur": 0.877,
+   "syllablesPerSec": 5.7,
+   "src": "b2.wav",
+   "key": "cf0bfb4ae4b175e48a927ee3760358fe",
+   "words": 2
+  },
+  {
+   "id": "m0",
+   "text": "단디…? 단디…?",
+   "dur": 1.381,
+   "syllablesPerSec": 2.9,
+   "src": "m0.wav",
+   "key": "bceeb3bdd2da388731a742df283bba12",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "없어…",
+   "dur": 1.078,
+   "syllablesPerSec": 1.86,
+   "src": "m2.wav",
+   "key": "fc8ca3aafd62dbd84f58717fc6cacaa0",
+   "words": 1
+  },
+  {
+   "id": "s2",
+   "text": "꼼꼼히 해~",
+   "dur": 1.007,
+   "syllablesPerSec": 3.97,
+   "src": "s2.wav",
+   "key": "68a2b40fc1af2f5f0be1fca5f3e06279",
+   "words": 2
+  },
+  {
+   "id": "m1",
+   "text": "단디!",
+   "dur": 0.701,
+   "syllablesPerSec": 2.85,
+   "src": "m1.wav",
+   "key": "e61ba8b50ffc4e51d3b996edd346cf66",
+   "words": 1
+  },
+  {
+   "id": "b3",
+   "text": "너무 단디 했네~",
+   "dur": 1.261,
+   "syllablesPerSec": 4.76,
+   "src": "b3.wav",
+   "key": "5d069448220a1a13add365ceeab1ac96",
+   "words": 3
+  }
+ ]
+}

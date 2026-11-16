@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "경상도 말!",
+ "dur": 0.741,
+ "words": [
+  {
+   "text": "경상도",
+   "start": 0.02,
+   "end": 0.445
+  },
+  {
+   "text": "말!",
+   "start": 0.498,
+   "end": 0.741
+  }
+ ],
+ "source": {
+  "key": "2a410741d8c27ccef1425b1b31c27d0a",
+  "voice": {
+   "id": "tc_66d000ee0742c43c93a0ada1",
+   "name": "도현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1622,
+   "lufs": -16,
+   "voiceId": "tc_66d000ee0742c43c93a0ada1",
+   "prev": "경상도 반장님이 가슴을 툭 치며 우렁차고 자신 있게 자기 말씨를 소개한다. 무뚝뚝하지만 다정하다.",
+   "next": "퍼뜩 온나!"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

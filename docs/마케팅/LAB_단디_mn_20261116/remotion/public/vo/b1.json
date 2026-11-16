@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "퍼뜩 온나!",
+ "dur": 0.831,
+ "words": [
+  {
+   "text": "퍼뜩",
+   "start": 0.02,
+   "end": 0.366
+  },
+  {
+   "text": "온나!",
+   "start": 0.467,
+   "end": 0.831
+  }
+ ],
+ "source": {
+  "key": "5eefaa41f5ac4d669f3535107511ef9d",
+  "voice": {
+   "id": "tc_66d000ee0742c43c93a0ada1",
+   "name": "도현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1612,
+   "lufs": -16,
+   "voiceId": "tc_66d000ee0742c43c93a0ada1",
+   "prev": "경상도 공장 반장님이 포장대 건너편의 신입을 손짓으로 부르며 크게 외친다. 무뚝뚝하지만 다정하다.",
+   "next": "빨리 와~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}
