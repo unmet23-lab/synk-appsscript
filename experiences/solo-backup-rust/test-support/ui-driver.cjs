@@ -54,6 +54,9 @@ async function wd(method, url, body) {
     // 개통 상태(engine/src/account.cjs state()) — 화면이 읽는 칸이 오고, 열쇠 · 토큰 · 비밀번호 칸은 없다
     const acc = await runAsync('const done=arguments[arguments.length-1];window.backup.getState().then(r=>{const a=r.value&&r.value.account;done(a?{keys:Object.keys(a),available:a.available,connected:a.connected,text:JSON.stringify(a)}:null)},()=>done(null))');
     check('상태에 계정 칸이 온다(account)', acc && typeof acc.available === 'boolean' && typeof acc.connected === 'boolean', acc ? acc.keys.join(',') : '없음');
+    // Google 로그인 그만두기(cancelGoogle — 기다리는 로그인이 없으면 아무것도 하지 않는다)가 다리와 계약을 지나 엔진에 닿는다
+    const cancel = await runAsync('const done=arguments[arguments.length-1];Promise.resolve(window.backup.cancelGoogle&&window.backup.cancelGoogle()).then(r=>done(r?{ok:r.ok,code:r.code||null}:null),()=>done(null))');
+    check('cancelGoogle이 엔진에 닿는다', cancel && cancel.ok === true, JSON.stringify(cancel));
     check('계정 칸에 열쇠 · 토큰 · 비밀번호가 없다', acc && !/token|secret|password|refresh|applicationKey|keyId/i.test(acc.text), acc ? acc.keys.join(',') : '없음');
     const env2 = await run("return {font:document.fonts.check('16px \"SUIT Variable\"'),fonts:[...document.fonts].map(f=>f.family+':'+f.status),webgl:(()=>{const c=document.createElement('canvas');return !!c.getContext('webgl')})(),w:innerWidth,h:innerHeight}");
     check('SUIT 글꼴이 실렸다(Tauri CSP font-src)', env2.font, env2.fonts.join(', '));

@@ -65,13 +65,22 @@ export function createStore(api, { onChange = () => {}, setTimer = setInterval, 
     finally { busy = null; emit(); }
   }
 
+  /** 창의 호출 줄(busy)을 잡지 않는 읽기 호출 — 기다리는 Google 로그인을 끊는 cancelGoogle 같은 것만 쓴다(조율 세션 c725f319c 부탁 13) */
+  async function aside(method, ...args) {
+    if (!api || typeof api[method] !== 'function') return { ok: false, code: 'NO_METHOD' };
+    try {
+      const r = await api[method](...args);
+      return r && r.ok === true ? { ok: true, value: r.value } : { ok: false, code: (r && typeof r.code === 'string' && r.code) || 'FAILED' };
+    } catch { return { ok: false, code: 'FAILED' }; }
+  }
+
   function stop() {
     stopped = true;
     if (poll) { clearTimer(poll); poll = null; }
     if (typeof cleanup === 'function') { try { cleanup(); } catch { /* 이미 끊김 */ } }
   }
 
-  return { start, refresh, call, stop, get state() { return state; }, get busy() { return busy; } };
+  return { start, refresh, call, aside, stop, get state() { return state; }, get busy() { return busy; } };
 }
 
 /** 오류 code → 손님 말(엔진 글을 옮기지 않는다). 기다려도 풀리지 않는 일에는 「잠시 뒤」라 하지 않고 할 일을 쓴다 */
@@ -117,9 +126,10 @@ export function failureText(code) {
     REPO_EXISTS: '이 계정에는 이미 백업이 있습니다.',
     LIMIT_DEVICES: '이 계정에 이을 수 있는 기기가 다 찼습니다.',
     LIMIT_KEYS_DAY: '오늘 연결을 새로 받을 수 있는 횟수를 다 썼습니다. 내일 다시 눌러 주세요.',
+    READ_KEY: '이 계정의 백업을 읽을 권한을 새로 받아야 합니다. 분실 신고 뒤라면 Google 계정을 정리했다고 확인한 뒤 다시 눌러 주세요.',
     MOVED: '백업하는 자리가 다른 PC로 옮겨져 이 PC는 백업을 쉽니다. 「이 PC로 다시 백업」을 누르면 이어서 합니다.',
     OVER_QUOTA: '백업 용량을 넘어 새 백업을 쉽니다. 지키는 폴더를 줄여 주세요.',
-    RESTORE_PENDING: '되돌리기를 마칠 때까지 백업을 쉽니다. 되돌리기를 마치는 화면은 다음 업데이트에서 열립니다. 급하면 SYNK에 연락해 주세요.',
+    RESTORE_PENDING: '되돌리기를 마칠 때까지 백업을 쉽니다. 기본 화면의 「확인하러 가기」에서 이어서 고르세요.',
     NOT_INVITED: '이 Google 계정은 아직 시범 손님으로 등록되지 않았습니다. SYNK에 연락해 주세요.',
     SUB_MISMATCH: '이 백업을 시작한 Google 계정으로 로그인해 주세요.',
     ACCOUNT: '이 백업을 시작한 Google 계정으로 로그인해 주세요.',

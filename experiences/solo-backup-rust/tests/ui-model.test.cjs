@@ -27,6 +27,10 @@ test('표기: 오전 · 오후 시각, 요일 붙은 날짜, 크기, 개수', as
   assert.equal(f.count(12480), '12,480');
   assert.equal(f.josa('Outlook', '이/가'), 'Outlook이');
   assert.equal(f.josa('문서', '이/가'), '문서가');
+  // 대문자 약어는 글자 이름으로 읽는다(「거실 PC를」 · 「IBM을」)
+  assert.equal(f.josa('거실 PC', '을/를'), '거실 PC를');
+  assert.equal(f.josa('IBM', '을/를'), 'IBM을');
+  assert.equal(f.josa('LG', '으로/로'), 'LG로');
   assert.equal(f.placesKo(4), '네 곳');
   assert.equal(f.josa('사무실', '으로/로'), '사무실로');
   assert.equal(f.josa('PC 1', '으로/로'), 'PC 1로');
@@ -288,12 +292,24 @@ test('개통: 첫 시작의 걸음, 이어서 백업 · 연결 다시 받기 · 
   const opened = { ...STATES.home, mode: 'restore', protection: { level: 'restoreOnly', reason: 'restoreOnly' }, account: STATES['start-write'].account };
   const m1 = homeModel(opened, { now: NOW });
   assert.equal(m1.id, 'home-continue');
-  assert.ok(m1.actions[0].pending, '폴더가 비면 이어서 백업을 부르지 않는다');
+  // 폴더가 비면 이어서 백업을 부르지 않고 폴더 고르기부터(복구 전용 연결에서도 chooseSources가 된다 — c725f319c 부탁 12)
+  assert.equal(m1.actions[0].call, 'chooseSources');
+  assert.ok(!m1.actions.some((a) => a.call === 'continueBackup'));
   const m2 = homeModel({ ...opened, selection: { sources: ['C:\\Users\\studio\\Documents'] } }, { now: NOW });
   assert.equal(m2.actions[0].call, 'continueBackup');
   assert.equal(m2.actions[0].account, true);
-  // 읽기 기기의 복구 전용 연결은 지금 그대로 되살리기만
-  assert.equal(homeModel({ ...opened, account: STATES['start-read'].account }, { now: NOW }).id, 'home-restore-only');
+  // 연 뒤에 고른 폴더(nextSources)도 고른 것으로 센다
+  assert.equal(homeModel({ ...opened, nextSources: ['D:\\Projects'] }, { now: NOW }).actions[0].call, 'continueBackup');
+  // 읽기 기기의 복구 전용 연결: 폴더를 고르면 「이 PC에서 이어서 백업」(takeOver 차례)
+  const readOpened = { ...opened, account: STATES['start-read'].account };
+  assert.equal(homeModel(readOpened, { now: NOW }).id, 'home-restore-read');
+  assert.equal(homeModel(readOpened, { now: NOW }).actions[1].call, 'chooseSources');
+  assert.equal(homeModel({ ...readOpened, nextSources: ['D:\\Projects'] }, { now: NOW }).actions[1].flow, 'takeOver');
+  // 되돌리기 멈춤(account.restore.hold) — 확인하러 가기
+  const held = homeModel({ ...STATES.home, account: { ...STATES['home-writekey'].account, needs: [], restore: { hold: true, jobId: 'j1', state: 'done', awaitingChoice: true, at: NOW - 86400000, byThisDevice: true, error: null, undo: false } } }, { now: NOW });
+  assert.equal(held.id, 'home-restore-hold');
+  assert.equal(held.title, '되돌린 백업을 확인할 차례입니다.');
+  assert.equal(held.actions[0].to, 'undo-3');
   const wk = homeModel(STATES['home-writekey'], { now: NOW });
   assert.equal(wk.id, 'home-writekey');
   assert.equal(wk.actions[0].call, 'takeWriteSeat');
@@ -349,7 +365,8 @@ test('개통: 첫 시작 · 보호 범위 · 다른 PC가 쓰는 계정 · 되�
   // 다른 PC가 쓰는 계정: 옮겨 오기 · 이어서 백업은 아직 잇지 않는다(Fable 지적 1)
   const read = draw('start-2', STATES['start-read']);
   assert.match(read.html, /「작업 노트북」이 하고 있습니다/);
-  assert.ok(read.acts.move.pending && read.acts.take.pending);
+  assert.ok(read.acts.move.pending, '옮겨 오기는 옮겨 오기 메서드 뒤에 잇는다');
+  assert.equal(read.acts.take.id, 'take', '이 PC에서 이어서 백업은 c725f319c 뒤에 잇는다');
   // 상태에 계정이 없는 예시 화면은 지금의 예시 그대로
   assert.match(draw('start-2', STATES.start).html, /찾아낸 작업 폴더/);
   // 되돌리기 미리 보기 — 서버 답(suggestions · plan)으로 그리고, 실행은 아직 잇지 않는다(Fable 지적 4 · 5)
@@ -365,7 +382,9 @@ test('개통: 첫 시작 · 보호 범위 · 다른 PC가 쓰는 계정 · 되�
   const u2 = draw('undo-2', STATES.home, { undo: { value, plans, pickAt: at } });
   assert.match(u2.html, /3,412개/);
   assert.match(u2.html, /5GB/);
-  assert.ok(u2.acts.run.pending, '되돌리기 실행은 엔진 부탁 7 · 8 뒤에 잇는다');
+  assert.equal(u2.acts.run.call, 'restoreRun', '되돌리기 실행은 c725f319c 뒤에 잇는다');
+  assert.equal(u2.acts.run.arg, at);
+  assert.equal(u2.acts.run.google, true);
   // 예시 화면(창이 아무것도 묻지 않은 예시 모드)은 지금의 예시 그대로
   assert.match(draw('undo-1', STATES.home).html, /class="bars"/);
   // 카본 A4 — 받침 있는 숫자로 끝나는 시각 뒤 조사
@@ -427,4 +446,187 @@ test('개통: 호출 응답의 details와 상태를 품은 답, 오류 부호 �
   for (const code of ['NO_GOOGLE', 'NOT_WRITER', 'REPO_EXISTS', 'GOOGLE_STEP', 'LIMIT_DEVICES', 'RESTORE_PENDING', 'NOT_INVITED', 'SUB_MISMATCH', 'DEVICE_GONE', 'RATE', 'TOO_OLD', 'SERVER', 'NETWORK']) {
     assert.notEqual(failureText(code), failureText('UNKNOWN_CODE'), code);
   }
+});
+
+// 둘째 증분(조율 세션 c725f319c — 덧붙임 2의 7 · 8 · 10 · 11 · 12 · 13)
+test('개통 둘째: 되돌리기 진행 · 고르기 · 실패 · 취소 중, 분실 신고, 이어서 백업, Google 로그인 그만두기', async () => {
+  const { renderScreen, drawer } = await load('screen-view.js');
+  const { homeModel } = await load('screen-model.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (id, state, extra = {}) => renderScreen(id, { state, model: homeModel(state, { now: NOW }), now: NOW, fake: true, ...extra });
+  // 기본 화면의 되돌리기 멈춤 갈래
+  assert.equal(homeModel(STATES['home-restore-run'], { now: NOW }).title, '백업을 되돌리는 중입니다.');
+  // 엔진은 실패 때 멈춤을 푼다(hold:false) — 기본 화면은 그대로 돌고, 다시 할 수 있는 끊김은 한 줄로 알린다(Fable 둘째 F4)
+  const fm = homeModel(STATES['home-restore-failed'], { now: NOW });
+  assert.match(fm.restored.text, /중간에 끊겼습니다/);
+  assert.equal(fm.restored.act.to, 'undo-3');
+  // 멈춤이 남은 실패는 기본 화면의 갈래로
+  assert.equal(homeModel({ ...STATES['home-restore-failed'], account: { ...STATES['home-restore-failed'].account, restore: { ...STATES['home-restore-failed'].account.restore, hold: true } } }, { now: NOW }).title, '되돌리기가 중간에 멈췄습니다.');
+  assert.equal(homeModel(STATES['home-restore-undo'], { now: NOW }).title, '되돌리기를 취소하는 중입니다.');
+  // undo-3: 고르기 — 계속 · 취소는 작업 번호와 함께, 취소는 Google 확인
+  const choose = draw('undo-3', STATES['home-restore-choose']);
+  assert.match(choose.html, /11월 12일 오후 2:59로/);
+  assert.deepEqual(choose.acts.go.args, ['job-1', 'continue']);
+  assert.deepEqual(choose.acts.cancel.args, ['job-1', 'undo']);
+  assert.equal(choose.acts.cancel.google, true);
+  assert.doesNotMatch(choose.html, /복구 코드/, '아직 없는 복구 코드를 약속하지 않는다');
+  // 다른 기기가 요청한 되돌리기는 이 PC에서 고르지 않는다
+  const other = draw('undo-3', { ...STATES['home-restore-choose'], account: { ...STATES['home-restore-choose'].account, restore: { ...STATES['home-restore-choose'].account.restore, byThisDevice: false } } });
+  assert.match(other.html, /다른 기기가/);
+  assert.equal(other.acts.go, undefined);
+  // 실패: 끊긴 것(INTERRUPTED)은 같은 시각으로 다시
+  const failed = draw('undo-3', STATES['home-restore-failed']);
+  assert.equal(failed.acts.retry.call, 'restoreRun');
+  assert.equal(failed.acts.retry.arg, Date.parse('2026-11-12T14:59:00+09:00'));
+  const failedOther = draw('undo-3', { ...STATES['home-restore-failed'], account: { ...STATES['home-restore-failed'].account, restore: { ...STATES['home-restore-failed'].account.restore, error: 'KEYS' } } });
+  assert.doesNotMatch(failedOther.html, /data-act="retry"/);
+  assert.match(failedOther.html, /SYNK에 연락/);
+  // 진행 중 · 취소 중에는 고르는 단추가 없다
+  assert.doesNotMatch(draw('undo-3', STATES['home-restore-run']).html, /data-act="go"/);
+  assert.match(draw('undo-3', STATES['home-restore-undo']).html, /취소하는 중입니다/);
+  // 예시 화면(계정 칸 없음)은 지금의 예시 그대로
+  assert.match(draw('undo-3', STATES.home).html, /새 복구 코드 만들기/);
+  // 분실 신고: 서랍의 다른 active 기기 줄마다 단추, 끊긴 기기에는 없다
+  const devices = [{ id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', current: true }, { id: 'b'.repeat(12), name: '옛 데스크톱', role: 'read', state: 'revoked' }, { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active' }];
+  const dr = drawer(STATES['home-lost-step'], { devices, now: NOW });
+  assert.match(dr, /data-act="lost-dev" data-device="dddddddddddd"/);
+  assert.doesNotMatch(dr, /data-device="bbbbbbbbbbbb"/);
+  assert.doesNotMatch(dr, /data-device="aaaaaaaaaaaa"/, '이 PC는 분실 신고하지 않는다');
+  const l1 = draw('lost', STATES['home-lost-step'], { acct: { lostTarget: { id: 'd'.repeat(12), name: '거실 PC' } } });
+  assert.match(l1.html, /「거실 PC」를/);
+  assert.equal(l1.acts.next.call, 'reportLost');
+  assert.equal(l1.acts.next.arg, 'd'.repeat(12));
+  const l2 = draw('lost-2', STATES['home-lost-step'], { acct: { lost: { name: '거실 PC', at: NOW - 300000, url: 'https://myaccount.google.com/connections' } } });
+  assert.match(l2.html, /myaccount\.google\.com\/device-activity/);
+  assert.equal(l2.acts.next.call, 'rotateReadKey');
+  assert.deepEqual(l2.acts.next.arg, { googleStepDone: true });
+  // 다른 PC가 쓰는 계정의 「이 PC에서 이어서 백업」 — 폴더를 고르기 전에는 막힌다
+  const take = draw('start-2', STATES['start-read'], { acct: { take: true } });
+  assert.match(take.html, /data-act="take-go" aria-disabled="true"/);
+  assert.equal(take.acts['take-go'].flow, 'takeOver');
+  const takeReady = draw('start-2', { ...STATES['start-read'], selection: { sources: ['D:\\Projects'], target: null } }, { acct: { take: true } });
+  assert.doesNotMatch(takeReady.html, /data-act="take-go" aria-disabled/);
+  assert.match(takeReady.html, /「작업 노트북」은 그때부터 백업하지 않습니다/);
+  // 기본 화면(복구 전용 · 읽기 역할)도 같은 차례로 잇는다
+  assert.equal(homeModel(STATES['home-restore-read'], { now: NOW }).actions[1].flow, 'takeOver');
+  // Google 로그인 그만두기 — 기다리는 동안만
+  assert.match(draw('start-1', STATES['start-signin'], { acct: { signing: true } }).html, /data-act="google-cancel"/);
+  assert.doesNotMatch(draw('start-1', STATES['start-signin']).html, /data-act="google-cancel"/);
+  assert.match(draw('home', STATES['home-writekey'], { acct: { running: 'writekey', googleWait: true } }).html, /data-act="google-cancel"/);
+});
+
+test('개통 둘째: 창의 호출 줄을 잡지 않는 cancelGoogle, READ_KEY 글', async () => {
+  const { createStore, failureText } = await load('state-store.js');
+  let release;
+  const api = { getState: async () => ({ ok: true, value: { version: '0.7.0' } }),
+    signInGoogle: () => new Promise((r) => { release = r; }),
+    cancelGoogle: async () => { release({ ok: false, error: 'Google 로그인을 그만두었습니다.', code: 'CANCELED' }); return { ok: true, value: null }; } };
+  const store = createStore(api);
+  const waiting = store.call('signInGoogle', {});
+  assert.equal(store.busy, 'signInGoogle');
+  assert.deepEqual(await store.aside('cancelGoogle'), { ok: true, value: null }, '기다리는 호출이 있어도 BUSY로 튕기지 않는다');
+  assert.deepEqual(await waiting, { ok: false, code: 'CANCELED' });
+  assert.match(failureText('READ_KEY'), /권한을 새로 받아야/);
+});
+
+test('개통 둘째: 카본 지적 자리(workbackup-ui-acct2-20261116)', async () => {
+  const { renderScreen, drawer } = await load('screen-view.js');
+  const { homeModel } = await load('screen-model.js');
+  const { failureText } = await load('state-store.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (id, state, extra = {}) => renderScreen(id, { state, model: homeModel(state, { now: NOW }), now: NOW, fake: true, ...extra });
+  // A1 — 분실 신고 뒤의 복구 전용 · 읽기 PC도 「복구 정보 다시 맡기기」가 먼저 온다
+  const lostRead = { ...STATES['home-restore-read'], account: { ...STATES['home-restore-read'].account, googleStepRequired: true } };
+  assert.equal(homeModel(lostRead, { now: NOW }).id, 'home-readkey');
+  assert.equal(homeModel(lostRead, { now: NOW }).actions[0].call, 'rotateReadKey');
+  // A2 — 읽기 역할 복구 전용 화면도 폴더를 다시 고른다
+  assert.ok(homeModel(STATES['home-restore-read'], { now: NOW }).actions.some((a) => a.id === 'pick' && a.call === 'chooseSources'));
+  // A4 — 되돌리기 고르기 화면이 열렸으니 「다음 업데이트」라 하지 않는다
+  assert.doesNotMatch(failureText('RESTORE_PENDING'), /다음 업데이트/);
+  // A5 — 다른 기기가 요청한 되돌리기는 이 PC에서 고른다고 하지 않는다
+  const otherRun = { ...STATES['home-restore-run'], account: { ...STATES['home-restore-run'].account, restore: { ...STATES['home-restore-run'].account.restore, byThisDevice: false } } };
+  assert.match(draw('undo-3', otherRun).html, /고르기는 그 기기에서/);
+  assert.doesNotMatch(homeModel(otherRun, { now: NOW }).sub, /이 창에서 고를 수 있습니다/);
+  // A6 — 취소 작업의 실패에 되돌리기를 다시 걸지 않는다
+  const undoFailed = { ...STATES['home-restore-failed'], account: { ...STATES['home-restore-failed'].account, restore: { ...STATES['home-restore-failed'].account.restore, undo: true } } };
+  assert.doesNotMatch(draw('undo-3', undoFailed).html, /data-act="retry"/);
+  assert.match(draw('undo-3', undoFailed).html, /되돌리기 취소가/);
+  assert.equal(homeModel({ ...undoFailed, account: { ...undoFailed.account, restore: { ...undoFailed.account.restore, hold: true } } }, { now: NOW }).title, '되돌리기 취소가 중간에 멈췄습니다.');
+  assert.equal(homeModel(undoFailed, { now: NOW }).restored, undefined, '취소 작업의 끊김에는 되돌리기를 다시 권하지 않는다');
+  // A7 — 작업이 없으면 확인서를 그리지 않는다
+  const none = draw('undo-3', { ...STATES.home, account: { ...STATES['home-writekey'].account, needs: [], restore: null } });
+  assert.doesNotMatch(none.html, /요청한 곳/);
+  // A8 · B2 · B7 — 서랍
+  const plain = drawer(STATES.home);
+  assert.doesNotMatch(plain, /data-act="lost"/, '계정에 잇지 않은 PC에는 준비 중 단추를 두지 않는다');
+  assert.doesNotMatch(plain, /다음 업데이트에서 엽니다\)/);
+  assert.doesNotMatch(drawer(STATES['home-lost-step'], { devices: [], now: NOW }), /미리 보기까지/);
+  assert.doesNotMatch(drawer(STATES['home-lost-step'], { devices: [], now: NOW }), /aria-label="사고가 났을 때 되돌리기 되돌리기"/);
+  // B1 · A3 — 1번은 기기 관리 주소, 2번은 서버가 준 연결된 앱 주소
+  const l2 = draw('lost-2', STATES['home-lost-step'], { acct: { lost: { name: '거실 PC', at: NOW, url: 'https://myaccount.google.com/connections' } } }).html;
+  assert.match(l2, /device-activity[\s\S]*connections/);
+  // B3 — 다른 PC가 쓰는 계정 화면에 설정과 「파일만 되살리기」
+  const read = draw('start-2', STATES['start-read']);
+  assert.equal(read.acts.open.flow, 'openRead', '파일만 되살리기 — 분실 뒤에는 새 출입증부터(Fable 둘째 F2)');
+  assert.match(draw('start-2', { ...STATES['start-read'], account: { ...STATES['start-read'].account, googleStepRequired: true } }).html, /data-act="open" aria-disabled="true"/);
+  assert.match(draw('start-2', { ...STATES['start-read'], account: { ...STATES['start-read'].account, googleStepRequired: true } }).html, /data-act="google-ack"/);
+  assert.ok(read.top.some((t) => t.id === 'drawer'));
+  // B4 — Google 걸음 상자는 두 걸음을 다 말한다
+  assert.match(homeModel(STATES['home-lost-step'], { now: NOW }).box.text, /로그아웃[\s\S]*접근을 지운/);
+  // B5 · B6 — 같은 단추 이름, 갈래에 맞는 확인서
+  const choose = draw('undo-3', STATES['home-restore-choose']).html;
+  assert.doesNotMatch(choose, /파일 꺼내기/);
+  assert.match(draw('undo-3', STATES['home-restore-undo']).html, /취소가 끝날 때까지 멈춤/);
+  assert.match(draw('undo-3', STATES['home-restore-run']).html, /되돌릴 시각/);
+});
+
+test('개통 둘째: Fable 지적 자리(workbackup-ui-acct2-20261116)', async () => {
+  const { renderScreen, drawer } = await load('screen-view.js');
+  const { homeModel } = await load('screen-model.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (id, state, extra = {}) => renderScreen(id, { state, model: homeModel(state, { now: NOW }), now: NOW, fake: true, ...extra });
+  const withRestore = (base, v) => ({ ...base, account: { ...base.account, restore: { ...base.account.restore, ...v } } });
+  // F1 — 복구 전용 PC의 서랍은 되돌리기를 연다고 하지 않는다
+  assert.match(drawer(STATES['home-restore-read'], { devices: [], now: NOW }), /사고가 났을 때 되돌리기[\s\S]*다음 업데이트/);
+  assert.doesNotMatch(draw('start-2', STATES['start-read']).html, /사고를 되돌릴 때/);
+  // F3 — 복구 전용 PC의 복구 정보 갈래는 백업이 돈다고 하지 않는다
+  const lostRead = { ...STATES['home-restore-read'], account: { ...STATES['home-restore-read'].account, googleStepRequired: true } };
+  assert.doesNotMatch(homeModel(lostRead, { now: NOW }).sub, /매시간 돕니다/);
+  // F5 — 취소 작업이 실패해 원래 작업이 undo 표시로 돌아와도 고르기를 보인다
+  const chooseUndo = withRestore(STATES['home-restore-choose'], { undo: true });
+  assert.equal(draw('undo-3', chooseUndo).acts.go.call, 'restoreChoose');
+  assert.equal(homeModel(chooseUndo, { now: NOW }).title, '되돌린 백업을 확인할 차례입니다.');
+  // F6 — 답을 잃은 되돌리기(번호 · 상태 없음)는 「답을 받지 못했습니다」
+  const lostAnswer = { ...STATES.home, account: { ...STATES['home-writekey'].account, needs: ['restore'], restore: { hold: true, jobId: null, state: null, awaitingChoice: false, at: null, byThisDevice: true, error: null, undo: false } } };
+  assert.equal(homeModel(lostAnswer, { now: NOW }).id, 'home-restore-wait');
+  // F7 — 창이 지켜본 작업이 끝나 상태에서 빠지면 끝났다고 알린다
+  const ended = draw('undo-3', { ...STATES.home, account: { ...STATES['home-writekey'].account, needs: [], restore: null } }, { acct: { restoreEnded: { undo: true } } });
+  assert.match(ended.html, /되돌리기 취소를[\s\S]*마쳤습니다/);
+});
+
+test('개통 둘째: Fable 다시 검수 지적 자리(workbackup-ui-acct2-20261116b)', async () => {
+  const { renderScreen } = await load('screen-view.js');
+  const { homeModel } = await load('screen-model.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (id, state, extra = {}) => renderScreen(id, { state, model: homeModel(state, { now: NOW }), now: NOW, fake: true, ...extra });
+  const withRestore = (base, v) => ({ ...base, account: { ...base.account, restore: { ...base.account.restore, ...v } } });
+  // FA1 — 분실 뒤 「파일만 되살리기」는 브라우저를 열 수 있어 안내 표시를 단다
+  const stepRead = { ...STATES['start-read'], account: { ...STATES['start-read'].account, googleStepRequired: true } };
+  assert.equal(draw('start-2', stepRead).acts.open.google, 'maybe');
+  assert.equal(draw('start-2', STATES['start-read']).acts.open.google, undefined);
+  // FA2 — 취소가 실패해 고르기로 돌아온 작업의 확인서는 「고를 때까지 멈춤」
+  const html = draw('undo-3', withRestore(STATES['home-restore-choose'], { undo: true })).html;
+  assert.match(html, /고를 때까지 멈춤/);
+  assert.doesNotMatch(html, /취소가 끝날 때까지 멈춤/);
+  // FA3 — 확인하러 간 끊긴 되돌리기는 다시 띄우지 않는다
+  assert.ok(homeModel(STATES['home-restore-failed'], { now: NOW }).restored);
+  assert.equal(homeModel(STATES['home-restore-failed'], { now: NOW, undoSeen: 'job-1' }).restored, undefined);
+  // FA4 — 백업이 돌지 않는 갈래에는 「백업은 다시 돕니다」를 붙이지 않는다
+  const offFailed = { ...STATES['home-off'], account: STATES['home-restore-failed'].account };
+  const om = homeModel(offFailed, { now: NOW });
+  assert.match(om.restored.text, /끊겼습니다/);
+  assert.doesNotMatch(om.restored.text, /다시 돕니다/);
+  assert.doesNotMatch(draw('undo-3', STATES['home-restore-failed']).html, /백업은 다시 돕니다/);
+  assert.doesNotMatch(draw('undo-3', offFailed).html, /쉬지 않음/, '자동 백업이 꺼진 PC에 백업이 돈다고 하지 않는다');
+  assert.match(draw('undo-3', offFailed).html, /되돌리기로 멈추지 않음/);
 });

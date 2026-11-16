@@ -24,6 +24,7 @@ const base = {
 const acct = (v = {}) => ({ available: true, signedIn: false, email: null, connected: false, role: null, deviceId: null, device: '새 데스크톱', writer: null,
   googleStepRequired: false, needs: [], envelope: null, envelopeInvalid: false, damaged: [], ...v });
 const signed = (role) => ({ signedIn: true, email: 'studio@example.com', connected: true, role, deviceId: 'd'.repeat(12) });
+const restoreOf = (v) => ({ hold: true, jobId: 'job-1', state: null, awaitingChoice: false, at: Date.parse('2026-11-12T14:59:00+09:00'), byThisDevice: true, error: null, undo: false, ...v });
 const first = { version: '0.7.0', configured: false, mode: 'backup', profile: 'b2', device: '새 데스크톱', sources: [], selection: { sources: [], target: null }, job: null,
   protection: { level: 'setup', reason: 'setup', nextAction: 'setup' } };
 
@@ -54,5 +55,11 @@ export const STATES = {
   'home-writekey': { ...base, account: acct({ ...signed('write'), device: base.device, needs: ['write-key'] }) },
   'home-lost-step': { ...base, account: acct({ ...signed('write'), device: base.device, googleStepRequired: true, needs: ['read-key'] }) },
   'home-continue': { ...base, mode: 'restore', automatic: false, nextBackupAt: null, sources: [], lastBackup: null, lastProbe: null, selection: { sources: SOURCES.slice(0, 3), target: null }, protection: { level: 'restoreOnly', reason: 'restoreOnly', nextAction: 'restore' }, account: acct({ ...signed('write'), device: base.device }) },
+  // 되돌리기(account.restore — 조율 세션 c725f319c). 되돌린 시각은 11-12 오후 2:59
+  'home-restore-run': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'running' }) }) },
+  'home-restore-choose': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'done', awaitingChoice: true }) }) },
+  'home-restore-failed': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'failed', error: 'INTERRUPTED', hold: false }) }) },
+  'home-restore-undo': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'running', undo: true, jobId: 'job-undo-2' }) }) },
+  'home-restore-read': { ...base, mode: 'restore', automatic: false, nextBackupAt: null, sources: [], lastBackup: null, lastProbe: null, nextSources: [SOURCES[0], SOURCES[3]], protection: { level: 'restoreOnly', reason: 'restoreOnly', nextAction: 'restore' }, account: acct({ ...signed('read'), writer: '작업 노트북' }) },
   'home-restore-wait': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, needs: ['restore'] }) },
 };

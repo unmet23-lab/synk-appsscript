@@ -75,7 +75,16 @@ const CASES = [
   ['start-google-step', 'start-2', { name: 'start-2-google' }], ['start-write-picked', 'start-2', { name: 'start-2-again', acct: { repoExists: true } }],
   ['start-read', 'start-2', { name: 'start-2-read', acct: { devices: DEVICES } }],
   ['home', 'undo-1', { name: 'undo-1-plan', undo: 'UNDO' }], ['home', 'undo-2', { name: 'undo-2-plan', undo: 'UNDO' }],
-  ['home-lost-step', 'drawer', { name: 'drawer-devices', acct: { devices: DEVICES_HOME }, scrollTo: '[data-act="lost"]' }],
+  ['home-lost-step', 'drawer', { name: 'drawer-devices', acct: { devices: DEVICES_HOME }, scrollTo: '[data-act="lost-dev"]' }],
+  // 둘째 증분(조율 세션 c725f319c 뒤): 되돌리기 진행 · 고르기 · 실패 · 취소 중, 분실 신고 둘, 이어서 백업, Google 로그인 그만두기
+  ['home-restore-run', 'home'], ['home-restore-choose', 'home'], ['home-restore-failed', 'home'], ['home-restore-read', 'home'],
+  ['home-restore-run', 'undo-3', { name: 'undo-3-run' }], ['home-restore-choose', 'undo-3', { name: 'undo-3-choose' }],
+  ['home-restore-failed', 'undo-3', { name: 'undo-3-failed' }], ['home-restore-undo', 'undo-3', { name: 'undo-3-undo' }],
+  ['home-lost-step', 'lost', { name: 'lost-real', acct: { lostTarget: { id: 'd'.repeat(12), name: '거실 PC' } } }],
+  ['home-lost-step', 'lost-2', { name: 'lost-2-real', acct: { lost: { name: '거실 PC', at: Date.parse('2026-11-13T14:35:00+09:00'), url: 'https://myaccount.google.com/connections', next: 'read-key-rotate' } } }],
+  ['start-read', 'start-2', { name: 'start-2-take', acct: { take: true, devices: DEVICES } }],
+  ['start-signin', 'start-1', { name: 'start-1-cancel', acct: { signing: true } }],
+  ['home-writekey', 'home', { name: 'home-writekey-wait', acct: { running: 'writekey', googleWait: true } }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,

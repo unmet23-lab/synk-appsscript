@@ -38,6 +38,9 @@ function watchJobs(s) {
   // 하던 일 때문에 못 읽은 기기 목록은 그 일이 끝나면 다시 읽는다(Fable F2)
   if (prevJob && !s.job && acct.devicesError) { acct = { ...acct, devicesError: null }; if (!drawerWrap.hidden || screen === 'home') void loadDevices(); }
   prevJob = s.job?.kind || null;
+  const rs = s.account?.restore || null;
+  if (rs) acct = { ...acct, lastRestore: rs, restoreEnded: null };
+  else if (acct.lastRestore) acct = { ...acct, restoreEnded: acct.lastRestore, lastRestore: null };
 }
 // 상태 읽기가 실패하면 그 까닭을 첫 화면에 쓴다. 호출이 끝나면 밀려 있던 찾기를 잇는다(늦게 친 글이 버려지지 않게)
 const store = createStore(window.backup, { onChange: (x) => { failure = x.failure; if (!fixture) watchJobs(x.state); paint(); if (!x.busy && queued) setTimeout(flushQuery, 0); } });
@@ -48,7 +51,7 @@ const now = () => (fixture ? fixture.now : Date.now());
 
 /** 엔진에 아직 없는 기능의 화면 — 실제 상태에서는 열지 않고 「준비 중」 한 줄만 띄운다 */
 const SOON = { 'move-1': '이 PC로 옮겨 오기', 'move-2': '이 PC로 옮겨 오기', 'move-3': '이 PC로 옮겨 오기', 'move-4': '이 PC로 옮겨 오기',
-  'undo-3': '사고 되돌리기', lost: '분실 신고', 'lost-2': '분실 신고', code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
+  code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
 const soon = (what) => note(`${josa(what, '은/는')} 아직 준비 중입니다. 다음 업데이트에서 열립니다.`);
 
 /** 실제 상태에서 아직 열 수 없는 화면이면 그 이름, 열 수 있으면 null — 되돌리기 미리 보기는 계정에 이은 PC에서만 연다 */
@@ -56,7 +59,11 @@ function notYet(to) {
   if (fixture || !to) return null;
   if (SOON[to]) return SOON[to];
   const s = state();
-  if ((to === 'undo-1' || to === 'undo-2') && !(s?.account?.connected && s?.configured)) return '사고 되돌리기';
+  // 복구 전용 연결에서는 엔진이 되돌리기 실행을 받지 않는다(OTHER_BACKUP — Fable 둘째 F1, 조율 세션에 부탁)
+  if ((to === 'undo-1' || to === 'undo-2') && !(s?.account?.connected && s?.configured && s?.mode !== 'restore')) return '사고 되돌리기';
+  if (to === 'undo-3' && !s?.account?.restore) return '사고 되돌리기';
+  if (to === 'lost' && !(s?.account?.connected && acct.lostTarget)) return '분실 신고';
+  if (to === 'lost-2' && !s?.account?.connected) return '분실 신고';
   return null;
 }
 
@@ -89,7 +96,8 @@ function paint() {
     if (lastHtml !== html) { room.innerHTML = html; lastHtml = html; }
     return;
   }
-  const model = homeModel(s, { now: now(), restoreFail: fixture ? null : restoreFail });
+  if (screen === 'undo-3' && s?.account?.restore?.state === 'failed' && s.account.restore.jobId) acct.undoSeen = s.account.restore.jobId;
+  const model = homeModel(s, { now: now(), restoreFail: fixture ? null : restoreFail, undoSeen: acct.undoSeen || null });
   const id = resolve(screen, s, model);
   if (!fixture) prepare(id, s);
   out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, fake: !!fixture });
@@ -211,6 +219,43 @@ async function loadPlan(at) {
   paint();
 }
 
+/**
+ * 다른 PC가 쓰는 계정을 이 PC에서 이어서 백업한다(조율 세션 c725f319c 부탁 12): 계정의 백업을 열고(openAccountBackup —
+ * 열기 전에 고른 폴더를 설정에 옮겨 적는다) → 쓰는 자리를 이 PC로(takeWriteSeat — 폴더를 먼저 검사한다) → 예약과 첫 백업(continueBackup).
+ * 분실 신고 뒤 받은 출입증이 없으면(READ_KEY) Google 걸음을 확인한 경우에만 rotateReadKey로 먼저 받는다.
+ * 중간에 멈추면 기본 화면(복구 전용 · 읽기 역할)의 같은 단추로 잇는다.
+ */
+/** 다른 PC가 쓰는 계정을 이 PC에서 되살리기만 하는 연결로 연다. 분실 신고 뒤(Google 걸음)에는 확인한 뒤 새 읽기 출입증부터 받는다(Fable 둘째 F2) */
+async function openRead() {
+  const s = state(), step = !!s?.account?.googleStepRequired;
+  if (step && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
+  if (step) { const k = await store.call('rotateReadKey', { googleStepDone: true }); if (!k.ok) return k.code === 'CANCELED' ? undefined : note(failureText(k.code)); }
+  const r = await store.call('openAccountBackup');
+  if (!r.ok) { if (r.code === 'READ_KEY') void store.refresh(); return r.code === 'CANCELED' ? undefined : note(failureText(r.code)); }
+  acct = { ...acct, googleAck: false };
+  return go('home');
+}
+async function takeOver() {
+  const s = state();
+  if (s?.account?.googleStepRequired && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
+  const stop = (r) => (r.code === 'CANCELED' ? undefined : note(failureText(r.code)));
+  if (!s?.configured) {
+    let r = await store.call('openAccountBackup');
+    if (!r.ok && r.code === 'READ_KEY' && acct.googleAck) {
+      const k = await store.call('rotateReadKey', { googleStepDone: true });
+      if (!k.ok) return stop(k);
+      r = await store.call('openAccountBackup');
+    }
+    if (!r.ok) { if (r.code === 'READ_KEY') void store.refresh(); return stop(r); }
+  }
+  const t = await store.call('takeWriteSeat', {});
+  if (!t.ok) return stop(t);
+  const c = await store.call('continueBackup', { googleStepDone: acct.googleAck === true });
+  if (!c.ok) return stop(c);
+  acct = { ...acct, take: false, googleAck: false };
+  return go('home');
+}
+
 /* ── 파일 되살리기 목록(엔진 openFileCatalog · queryFileCatalog · setFileSelection) ── */
 async function openCatalog() {
   const s = state(); if (fixture || !s) return;
@@ -269,29 +314,32 @@ async function run(a, el) {
   if (a.drawer) return openDrawer(el);
   if (a.to && notYet(a.to)) return soon(notYet(a.to));
   if (a.to) return go(a.to);
-  if (!a.call) return;
+  if (!a.call && !a.flow) return;
   if (fixture) return note('예시 화면이라 실제로 보내지 않았습니다.');
   if (a.signin) return signIn();
   // 같은 호출이 이미 기다리거나 도는 중이면 버린다 — 두 번 눌러 폴더 고르기 창이 다시 뜨지 않게(프로필 바꾸기를 먼저 보내는 단추도 같다).
   // 다른 호출(기기 목록 읽기 · 시각 찾기)이 잡고 있을 때만 잠깐 기다렸다 보낸다
-  if (runningCalls.has(a.call)) return;
-  runningCalls.add(a.call);
+  const key = a.call || a.flow;
+  if (runningCalls.has(key)) return;
+  runningCalls.add(key);
   // 도는 동안 그 단추를 막는다 — 창 상태(acct.running)에 두어 화면을 다시 그려도 막힌 채 나온다(Fable FA2).
   // Google 안내: takeWriteSeat는 늘 브라우저를 연다. rotateReadKey는 받아 둔 열쇠가 없을 때만 열어 두 경우에 다 맞는 글을 쓴다(Fable -c FA1)
-  acct = { ...acct, running: a.id }; paint();
+  acct = { ...acct, running: a.id, googleWait: !!a.google }; paint();
   try {
     if (store.busy && !(await untilFree(15000))) return note(failureText('BUSY'));
     if (a.google) note(a.google === 'maybe' ? '브라우저가 열리면 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저에서 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
     return await send(a, el);
   } finally {
-    runningCalls.delete(a.call);
-    acct = { ...acct, running: null };
+    runningCalls.delete(key);
+    acct = { ...acct, running: null, googleWait: false };
     if (a.google && /^브라우저(에서|가 열리면) Google/.test(noteBar.textContent)) noteBar.classList.remove('on');
     paint();
   }
 }
 /** 단추 하나의 호출과 그 답의 갈래 */
 async function send(a, el) {
+  if (a.flow === 'takeOver') return takeOver();
+  if (a.flow === 'openRead') return openRead();
   if (a.call === 'closeWindow') { const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close(); }
   let r;
   if (a.call === 'restoreSelected') {
@@ -306,13 +354,14 @@ async function send(a, el) {
     r = await store.call(a.call, { googleStepDone: acct.googleAck === true });
     // Google 걸음 확인은 그 한 번의 호출에만 쓴다 — 성공하면 비워, 같은 창에서 다시 걸음이 생기면 다시 확인받는다(카본 A3)
     if (r.ok) acct = { ...acct, googleAck: false };
-  } else if (a.b2) {
+  } else if (a.onAccountProfile) {
     // 보호 범위의 폴더는 b2 프로필에 고른다 — 새로 깐 PC의 지금 프로필은 local이다(profiles.cjs)
     if (state()?.profile !== 'b2') { const sw = await store.call('selectProfile', 'b2'); if (!sw.ok) return note(failureText(sw.code)); }
     r = await store.call(a.call);
     if (r.ok) void store.refresh();
   }
   else if (a.withProfile) r = await store.call(a.call, { profile: state()?.profile });
+  else if (a.args) r = await store.call(a.call, ...a.args);
   else if (a.arg !== undefined) r = await store.call(a.call, a.arg);
   else r = await store.call(a.call);
   // 다른 일이 도는 중이라 거절된 것은 폴더가 없다는 뜻이 아니다(FA3)
@@ -321,6 +370,10 @@ async function send(a, el) {
   if (!r.ok && r.code === 'GOOGLE_STEP') acct = { ...acct, googleAck: false };
   if (!r.ok) return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
   if (a.call === 'startProtection' || a.call === 'continueBackup') { acct = { ...acct, repoExists: false, googleAck: false }; return go('home'); }
+  // 분실 신고 → 남은 걸음 화면 · 새 복구 정보를 맡긴 뒤 → 기본 화면
+  if (a.after === 'lost') { acct = { ...acct, lost: { name: acct.lostTarget?.name || '', at: Date.now(), url: r.value?.googleRemovalUrl || null, next: r.value?.next || null }, lostTarget: null, devices: null }; return go('lost-2'); }
+  if (a.after === 'lost-done') { acct = { ...acct, lost: null, googleAck: false }; note('새 복구 정보를 맡겼습니다.'); return go('home'); }
+  if (a.call === 'restoreChoose' && a.args?.[1] === 'continue') { note('여기서부터 이어서 매시간 백업합니다.'); return go('home'); }
   if (a.call === 'restoreLatest' && store.state?.job) { catalog = null; screen = 'home'; return go('home'); }
   if (a.then) go(a.then);
 }
@@ -346,6 +399,16 @@ stage.addEventListener('click', (e) => {
   if (id === 'reopen') return void openCatalog();
   if (id === 'google-ack') { acct = { ...acct, googleAck: !acct.googleAck }; return paint(); }
   if (id === 'devices-reload') { acct = { ...acct, devicesError: null }; paint(); return void loadDevices(); }
+  // Google 로그인 기다림을 끊는다 — 창의 호출 줄을 잡지 않는 길이라 기다리는 호출과 겹쳐도 간다. 기다리던 호출은 CANCELED로 조용히 끝난다
+  if (id === 'google-cancel') { if (!fixture) void store.aside('cancelGoogle'); return; }
+  if (id === 'take') { acct = { ...acct, take: true }; return paint(); }
+  if (id === 'take-back') { acct = { ...acct, take: false, googleAck: false }; return paint(); }
+  if (id === 'lost-dev') {
+    const d = (acct.devices || []).find((x) => x && x.id === el.dataset.device);
+    if (!d) return;
+    acct = { ...acct, lostTarget: { id: d.id, name: d.name || '' } };
+    closeDrawer(); return go('lost');
+  }
   if (id === 'replan') return void loadPlan();
   if (id === 'undo-pick') {
     const at = Number(el.dataset.at); if (!Number.isFinite(at)) return;

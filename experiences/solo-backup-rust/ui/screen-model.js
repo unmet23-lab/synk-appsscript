@@ -140,7 +140,7 @@ export function startStep(s) {
 
 /** 분실 신고 뒤 Google 걸음(설계 2.4 (5)(나) — 건너뛸 수 없다). 엔진이 googleStepRequired로 알리고, 손님이 확인해야 봉투를 올린다 */
 export const GOOGLE_STEP = Object.freeze({ title: '먼저 Google 계정을 정리해 주세요',
-  text: '잃어버린 기기를 신고한 뒤라, Google 계정에서 그 기기의 접근을 지운 다음에 새 복구 정보를 맡깁니다. 지웠으면 「Google에서 지웠습니다」를 누르세요.' });
+  text: '잃어버린 기기를 신고한 뒤라, Google 기기 관리에서 그 기기를 로그아웃하고 연결된 앱에서 「업무 백업」 접근을 지운 다음에 새 복구 정보를 맡깁니다. 두 걸음을 마쳤으면 「Google에서 지웠습니다」를 누르세요.' });
 
 /** 이 계정을 백업하는 기기의 이름 — 상태의 writer, 없으면 기기 목록에서 찾는다(창을 다시 열면 writer가 빈다 · Fable 개통 설계 12) */
 export function writerName(s, devices) {
@@ -148,6 +148,13 @@ export function writerName(s, devices) {
   if (typeof w === 'string' && w.trim()) return w.trim();
   const d = Array.isArray(devices) ? devices.find((x) => x && x.role === 'write' && x.state === 'active' && !x.current) : null;
   return d && typeof d.name === 'string' && d.name.trim() ? d.name.trim() : null;
+}
+
+/** 지킬 폴더로 고른 것 — 연 뒤에는 엔진 설정(nextSources), 열기 전에는 창의 고르기(selection) */
+export function pickedSources(s) {
+  const next = Array.isArray(s?.nextSources) ? s.nextSources : [];
+  if (next.length) return next;
+  return Array.isArray(s?.selection?.sources) ? s.selection.sources : [];
 }
 
 /** 계정의 기기 한 줄 — 역할과 상태(서버 devices · account.cjs listed) */
@@ -166,8 +173,17 @@ export function homeModel(state, opts = {}) {
   const now = opts.now ?? Date.now();
   const m = baseModel(state, now, opts);
   if (m.id === 'start' || m.id === 'home-run') return m;
-  const restored = restoreNote(state && typeof state === 'object' ? state : {}, now);
+  const restored = restoreNote(state && typeof state === 'object' ? state : {}, now) || undoNote(state, m.id === 'home', opts.undoSeen);
   return restored ? { ...m, restored } : m;
+}
+
+/** 멈춤이 풀린 채 끊긴 사고 되돌리기(엔진은 실패 때 멈춤을 푼다 · Fable F4) — 같은 시각으로 다시 할 수 있을 때만 한 줄로 */
+function undoNote(s, running, seen) {
+  const r = s?.account?.restore;
+  if (!r || r.hold || r.state !== 'failed' || r.undo || r.byThisDevice === false || r.error !== 'INTERRUPTED') return null;
+  // 확인하러 간 작업은 이 창에서 다시 띄우지 않는다 — 엔진은 실패를 다음 되돌리기까지 들고 있다(Fable 둘째 -b FA3)
+  if (seen && r.jobId && seen === r.jobId) return null;
+  return { bad: true, text: `사고 되돌리기가 중간에 끊겼습니다.${running ? ' 백업은 다시 돕니다.' : ''}`, act: { id: 'undo-3', label: '확인하러 가기', kind: 'link', to: 'undo-3' } };
 }
 
 /**
@@ -218,18 +234,39 @@ function baseModel(state, now, opts) {
       evidence: s.configured ? { ...evidence(s, now), run: { label: `${name} · ${stageWord(s.job)}`, percent } } : null };
   }
 
+  // 새 복구 정보를 맡길 차례(read-key · 되돌리기가 남긴 단계 · 분실 신고 뒤 Google 걸음) — 복구 전용 연결에서도 rotateReadKey가 된다(카본 A1)
+  const needs0 = Array.isArray(s.account?.needs) ? s.account.needs : [];
+  if (s.configured && s.account?.connected && !s.account?.restore?.hold && (needs0.includes('read-key') || s.account.left || s.account.googleStepRequired)) {
+    return { ...base, id: 'home-readkey', tone: 'warn', stamp: '주의', kick: `${device} · 확인이 필요합니다`, title: '새 복구 정보를 맡기는 걸음이 남았습니다.',
+      sub: s.mode === 'restore' ? '맡겨 두어야 이 PC와 다른 PC에서 이 계정의 백업을 열 수 있습니다. 이 PC는 파일을 되살리기만 하는 연결입니다.'
+        : '맡겨 두어야 이 PC를 잃어도 다른 PC에서 백업을 열 수 있습니다. 백업은 그대로 매시간 돕니다.',
+      box: s.account.googleStepRequired || s.account.left === 'GOOGLE_STEP' ? GOOGLE_STEP : null, googleStep: !!s.account.googleStepRequired || s.account.left === 'GOOGLE_STEP',
+      actions: [{ id: 'readkey', label: '복구 정보 다시 맡기기', kind: 'main', call: 'rotateReadKey', account: true, google: 'maybe' }, { ...RESTORE, kind: 'line' }],
+      evidence: evidence(s, now) };
+  }
   // 되살리기만 하는 연결은 쓰기 단추(폴더 다시 고르기 · 빼기 · 지금 백업)를 하나도 두지 않는다 — 엔진 순서(protection.cjs)와 같이 앞에서 가른다
   if (p.level === 'restoreOnly' || s.readOnly || s.mode === 'restore') {
     // 「이어서 백업」이 계정의 백업을 연 뒤 멈춘 PC(REPO_EXISTS → continueBackup 실패 · Fable 개통 설계 2): 이 PC가 쓰는 기기면 다시 잇는다.
     // 고른 폴더는 작업자 기억에만 있어 창을 다시 열면 비고, 연 뒤에는 폴더를 다시 고를 길이 엔진에 없다(엔진 부탁 12)
     const a = s.account;
+    // 연 뒤에 고른 폴더는 엔진 설정(nextSources)에 남는다(조율 세션 c725f319c · 부탁 12). 열기 전에 고른 것(selection)도 함께 본다
+    const picked = pickedSources(s);
     if (s.mode === 'restore' && a?.connected && a.role === 'write') {
-      const picked = Array.isArray(s.selection?.sources) ? s.selection.sources.length : 0;
       return { ...base, id: 'home-continue', tone: 'setup', kick: `${device} · 이어서 백업할 차례`, title: '이 계정의 백업을 열어 두었습니다.',
-        sub: picked ? '「이어서 백업」을 누르면 이 PC가 그 백업에 이어서 매시간 올립니다. 지금까지의 판은 그대로 둡니다.'
-          : '이어서 지킬 폴더를 다시 고르는 길은 다음 업데이트에서 열립니다. 그때까지는 파일 되살리기만 쓸 수 있습니다.',
+        sub: picked.length ? '「이어서 백업」을 누르면 이 PC가 그 백업에 이어서 매시간 올립니다. 지금까지의 판은 그대로 둡니다.' : '이어서 지킬 폴더를 먼저 고르세요. 고른 뒤 「이어서 백업」을 누르면 이 PC가 그 백업에 이어서 매시간 올립니다.',
         box: a.googleStepRequired ? GOOGLE_STEP : null, googleStep: !!a.googleStepRequired,
-        actions: [picked ? { id: 'continue', label: '이어서 백업', kind: 'main', call: 'continueBackup', account: true } : { id: 'continue', label: '이어서 백업', kind: 'main', pending: '이어서 지킬 폴더 고르기' }, { ...RESTORE, kind: 'line' }],
+        actions: [picked.length ? { id: 'continue', label: '이어서 백업', kind: 'main', call: 'continueBackup', account: true } : { id: 'pick', label: '지킬 폴더 고르기', kind: 'main', call: 'chooseSources', onAccountProfile: true },
+          ...(picked.length ? [{ id: 'pick', label: '폴더 다시 고르기', kind: 'link', call: 'chooseSources', onAccountProfile: true }] : []), { ...RESTORE, kind: 'line' }],
+        evidence: evidence(s, now, { state: 'moved' }) };
+    }
+    // 다른 PC가 쓰는 계정의 백업을 연 PC(옮겨 오기의 앞 걸음, 또는 「이 PC에서 이어서 백업」이 쓰는 자리를 옮기기 전에 멈춘 PC)
+    if (s.mode === 'restore' && a?.connected && a.role === 'read') {
+      const writer = writerName(s);
+      return { ...base, id: 'home-restore-read', tone: 'moved', stamp: '옮김', kick: `${device} · 되살리기만 하는 연결`, title: '이 PC는 파일을 되살리기만 합니다.',
+        sub: `이 계정의 백업은 ${writer ? `「${writer}」${josa(writer, '이/가').slice(writer.length)}` : '다른 PC가'} 하고 있습니다. 이 PC에서 이어서 백업하면 그 PC는 그때부터 백업하지 않습니다.`,
+        box: a.googleStepRequired ? GOOGLE_STEP : null, googleStep: !!a.googleStepRequired,
+        actions: [RESTORE, picked.length ? { id: 'take-go', label: '이 PC에서 이어서 백업', kind: 'line', flow: 'takeOver', account: true, google: true } : { id: 'pick', label: '이 PC에서 백업할 폴더 고르기', kind: 'line', call: 'chooseSources', onAccountProfile: true },
+          ...(picked.length ? [{ id: 'pick', label: '폴더 다시 고르기', kind: 'link', call: 'chooseSources', onAccountProfile: true }] : [])],
         evidence: evidence(s, now, { state: 'moved' }) };
     }
     return { ...base, id: 'home-restore-only', tone: 'moved', stamp: '옮김', kick: `${device} · 되살리기만 하는 연결`, title: '이 PC는 파일을 되살리기만 합니다.',
@@ -238,23 +275,29 @@ function baseModel(state, now, opts) {
 
   // 계정이 서버에 다시 물어야 할 것(account.needs) — 'restore'는 되돌리기 요청의 답을 못 받아 백업이 쉬는 중이다(멈춤 표시가 남는다)
   const needs = Array.isArray(s.account?.needs) ? s.account.needs : [];
-  if (needs.includes('restore')) {
+  const rs = s.account?.restore;
+  // 답을 잃은 되돌리기(작업 번호도 상태도 아직 없음)는 「답을 받지 못했습니다」가 먼저다(Fable F6)
+  if (needs.includes('restore') && !rs?.jobId && !rs?.state) {
     return { ...base, id: 'home-restore-wait', tone: 'warn', stamp: '멈춤', kick: `${device} · 백업을 쉬는 중`, title: '되돌리기 요청의 답을 받지 못했습니다.',
-      sub: '요청이 SYNK 서버에 닿았는지 알 수 없어, 되돌리기를 마칠 때까지 백업을 쉽니다. 이어서 고르는 화면은 다음 업데이트에서 열립니다. 급하면 SYNK에 연락해 주세요.',
+      sub: '요청이 SYNK 서버에 닿았는지 알 수 없어, 되돌리기를 마칠 때까지 백업을 쉽니다. 서버에서 작업을 찾으면 이 창에서 이어서 고를 수 있습니다. 급하면 SYNK에 연락해 주세요.',
       actions: s.lastBackup ? [{ ...RESTORE, kind: 'line' }] : [], evidence: evidence(s, now, { next: null }) };
+  }
+  if (rs?.hold) {
+    // 고르기를 먼저 본다 — 취소 작업이 서버에서 실패하면 엔진이 원래 작업을 undo 표시로 다시 잡는다(Fable F5)
+    const failed = rs.state === 'failed', choose = rs.awaitingChoice && rs.byThisDevice !== false;
+    return { ...base, id: 'home-restore-hold', tone: failed ? 'bad' : 'warn', stamp: '멈춤', kick: `${device} · 백업을 쉬는 중`,
+      title: failed ? (rs.undo ? '되돌리기 취소가 중간에 멈췄습니다.' : '되돌리기가 중간에 멈췄습니다.') : choose ? '되돌린 백업을 확인할 차례입니다.' : rs.undo ? '되돌리기를 취소하는 중입니다.' : rs.awaitingChoice ? '다른 기기가 되돌린 백업을 확인하는 중입니다.' : '백업을 되돌리는 중입니다.',
+      sub: failed ? '되돌리기를 마칠 때까지 백업을 쉽니다. 확인하러 가서 다시 시도해 주세요.'
+        : choose ? '되돌린 판에서 필요한 파일을 꺼내 본 뒤 「여기서부터 계속」이나 「되돌리기 취소」를 고르면 백업이 다시 돕니다.'
+        : rs.awaitingChoice || rs.byThisDevice === false ? '되돌리기를 요청한 기기에서 고르면 이 PC도 다시 백업합니다.' : 'SYNK 서버가 끝내면 이 창에서 고를 수 있습니다. 창을 닫아도 됩니다.',
+      actions: [{ id: 'undo-3', label: '확인하러 가기', kind: 'main', to: 'undo-3' }, ...(s.lastBackup ? [{ ...RESTORE, kind: 'line' }] : [])],
+      evidence: evidence(s, now, { next: null }) };
   }
   if (s.account?.connected && needs.includes('write-key')) {
     return { ...base, id: 'home-writekey', tone: 'warn', stamp: '주의', kick: `${device} · 확인이 필요합니다`, title: '이 PC가 백업할 준비가 끝나지 않았습니다.',
       sub: '백업 연결을 새로 받으면 바로 이어서 합니다.', hint: '누르면 Google 로그인을 한 번 더 합니다.',
       actions: [{ id: 'writekey', label: '연결 다시 받기', kind: 'main', call: 'takeWriteSeat', arg: {}, google: true }, ...(s.lastBackup ? [{ ...RESTORE, kind: 'line' }] : [])],
       evidence: evidence(s, now, { next: null }) };
-  }
-  if (s.configured && s.account?.connected && needs.includes('read-key')) {
-    return { ...base, id: 'home-readkey', tone: 'warn', stamp: '주의', kick: `${device} · 확인이 필요합니다`, title: '새 복구 정보를 맡기는 걸음이 남았습니다.',
-      sub: '맡겨 두어야 이 PC를 잃어도 다른 PC에서 백업을 열 수 있습니다. 백업은 그대로 매시간 돕니다.',
-      box: s.account.googleStepRequired ? GOOGLE_STEP : null, googleStep: !!s.account.googleStepRequired,
-      actions: [{ id: 'readkey', label: '복구 정보 다시 맡기기', kind: 'main', call: 'rotateReadKey', account: true, google: 'maybe' }, { ...RESTORE, kind: 'line' }],
-      evidence: evidence(s, now) };
   }
 
   // 연결이 끊기면 아무것도 올리지 못한다 — 폴더 · 경고보다 먼저(엔진 protection.cjs도 credential이 맨 앞)
