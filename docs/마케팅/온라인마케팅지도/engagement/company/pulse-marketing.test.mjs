@@ -3,6 +3,7 @@
 // 견본은 모두 이 파일에서 지은 합성 자료다. 보관함의 실제 자료를 옮기지 않는다. node_modules 없이 돈다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
@@ -360,6 +361,20 @@ test('고객 방 자료: 리포트가 없으면 features.marketing이 false, 한
   // 스위치 감사 기록에도 marketing 값이 실린다.
   assert.deepEqual(f.audits('pulse-features-settings').map(row=>row.marketing),[true,false,true]);
   const settings=await f.staff(f.admin,'/api/settings/pulse-features');assert.equal(settings.data.marketing,true);
+});
+
+// ── 6-b. 화면 모듈의 정적 허용 목록 ──
+// server.mjs는 「마케팅 성과」를 기능 파일 셋(pulse-marketing.mjs, pulse-marketing-routes.mjs, public/pulse-app/marketing-view.mjs)이 다 있을 때만 켜고,
+// 꺼진 서버에서는 화면 모듈을 /pulse-app/ 허용 목록에서 지운다. 이 저장소에는 셋이 다 있으므로 모듈이 실제로 나와야 한다.
+// 지우는 줄은 pulseMarketing 조건이 붙은 그 한 줄뿐이어야 한다. 조건이 빠지면 칸을 열 때 모듈이 404가 되고, 다른 모듈을 지우면 고객 앱이 깨진다(11-16 화면 최종 검수의 지적).
+test('화면 모듈: 기능 파일이 있으면 /pulse-app/marketing-view.mjs가 그대로 나오고, 허용 목록에서 지우는 줄은 꺼졌을 때의 그 한 줄뿐이다',async t=>{
+  const f=await server(t);
+  const got=await fetch(f.base+'/pulse-app/marketing-view.mjs');
+  assert.equal(got.status,200);assert.match(got.headers.get('content-type')||'',/^text\/javascript/);
+  assert.ok(Buffer.from(await got.arrayBuffer()).equals(readFileSync(new URL('./public/pulse-app/marketing-view.mjs',import.meta.url))),'저장소의 파일 바이트 그대로 나온다');
+  const source=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
+  const removals=source.split(/\r?\n/).filter(line=>/delete\s+files\s*\[/.test(line)&&line.includes('pulse-app')).map(line=>line.trim());
+  assert.deepEqual(removals,["if(!pulseMarketing)delete files['/pulse-app/marketing-view.mjs'];"]);
 });
 
 // ── 7. 직원 경로 ──
