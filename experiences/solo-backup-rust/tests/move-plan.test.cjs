@@ -12,10 +12,10 @@ const apps = require('../engine/src/move-apps.cjs');
 const kitLib = require('../engine/src/move-kit.cjs');
 const { readMoveList } = require('../engine/src/move-restore.cjs');
 const { restoreSettings } = require('../engine/src/move-settings.cjs');
-/** Tests that make real files under Windows paths (`path.win32`, junctions): they mean nothing on Linux, so they are
- *  subtests of one top-level test at the end of this file, skipped off Windows, and need no conditional-QA entry. */
-const onWindows = [];
-const windowsOnly = (name, fn) => onWindows.push([name, fn]);
+/** Tests that make real files under Windows paths (`path.win32`, junctions): they mean nothing on Linux, so they skip
+ *  off Windows. Each is a conditional-QA case on GitHub Windows (tools/conditional-qa/cases.json S146 ~ S151), which runs
+ *  it there; a new one needs its own entry, or wide-tests stops on an unregistered skip. */
+const windowsOnly = (name, fn) => test(name, { skip: process.platform !== 'win32' && 'Windows paths and junctions' }, fn);
 const { moveHost } = require('./move-host.cjs');
 
 const snap = (profile, extra = {}) => {
@@ -610,8 +610,4 @@ test('GPT 2차 -g 지적(11-16): the kit search passes over a snapshot without t
   assert.equal(found.snapshotId, 'b'.repeat(64));
   await assert.rejects(kitLib.loadKit(engine([fail('Fatal: repository does not exist: unable to open config file: no such file or directory'), kit]), 'old'), /unable to open config file/);
   await assert.rejects(kitLib.loadKit(engine([new Error('백업 엔진의 출력이 중단되었습니다.'), kit]), 'old'), /중단/);
-});
-
-test('Windows files: the move kit, a move through the host, junctions (subtests run on Windows only)', async t => {
-  for (const [name, fn] of onWindows) await t.test(name, { skip: process.platform !== 'win32' && 'Windows paths and junctions' }, fn);
 });

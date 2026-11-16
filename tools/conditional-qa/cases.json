@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 145,
+  "expectedCount": 151,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1163,6 +1163,54 @@
       "file": "experiences/solo-backup-rust/tests/move-restore.test.cjs",
       "name": "move: synthetic old PC → backup → new PC, every file by SHA-256, nothing replaced, resumable",
       "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S146",
+      "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
+      "name": "move kit: built from a profile, read back as untrusted input, settings put back without replacing (M15)",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S147",
+      "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
+      "name": "GPT 2차 지적(11-16): two names differing by case, a resumed move keeps the first run's results, an unchecked OneDrive file (GB3 · GB4 · GB5)",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S148",
+      "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
+      "name": "GPT 2차 지적(11-16): the kit never reads through a junction in the profile (GA4)",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S149",
+      "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
+      "name": "카본 끝판 지적(11-16): settings put back twice, a write that fails, many ticks at once, a start that failed (E1 · E2 · E3 · E5)",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S150",
+      "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
+      "name": "카본 끝판 지적(11-16): the first run takes a folder whole, top folders differing by case on resume, the space for earlier-backup files (D1 · D2 · D3)",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S151",
+      "file": "experiences/solo-backup-rust/tests/move-plan.test.cjs",
+      "name": "카본 끝판 지적(11-16): the kit leaves out only the file that is too big, and counts only the files an entry takes (B2 · B8)",
+      "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
       "route": "windows",
       "profile": "default"
     }
