@@ -92,8 +92,9 @@ def main():
             dst = 낼 / g / f"{oid}.mp3"
             key = f"{g}/{oid}"
             old = 기록["clips"].get(key)
-            # 받은 파일이 그대로면 다시 재지 않는다
-            if old and old.get("srcBytes") == src.stat().st_size and dst.exists():
+            # 받은 파일이 그대로면 다시 재지 않는다. 크기만 보면 같은 글을 다른 목소리로 다시 구운 줄을 놓친다
+            # (11-16 조교 목소리 교체 때 g4/o07의 Rosa 판과 Kyung 판이 둘 다 52,287바이트라 옛 소리가 남았다) — 받은 파일이 게임 파일보다 새것이어도 다시 맞춘다.
+            if old and old.get("srcBytes") == src.stat().st_size and dst.exists() and src.stat().st_mtime <= dst.stat().st_mtime:
                 continue
             lufs, peak = 맞추기(src, dst)
             segs, _ = model.transcribe(str(dst), language="ko", beam_size=5, vad_filter=False)
