@@ -224,6 +224,7 @@ test('a failed first drawer read is not an error: the drawer tries again later a
   f.run('tipSharesBadge()');await tick();await tick();
   assert.equal(f.run('tipShares.error'),'','a quiet read from the drawer does not leave an error behind');
   assert.equal(f.run('tipShares.readFailed'),true);
+  assert.equal(f.run('tipSharesFresh()'),'','nothing was ever received, so the head does not say it could not read again');
   f.run('tipSharesBadge()');await tick();await tick();
   assert.equal(f.calls.filter(c=>c[0]==='/api/tip-shares').length,1,'the drawer waits before the next try');
   f.run('tipShares.triedAt=Date.now()-130000');f.run('tipSharesBadge()');await tick();await tick();

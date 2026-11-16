@@ -192,7 +192,8 @@ function tipSharesBody(){
 
 function tipSharesFresh(){
   const data=tipShares.data;
-  if(!data?.receivedAt)return tipShares.readFailed?'<span class="ts-fresh is-stale">다시 읽지 못했어요</span>':'';
+  // 한 번도 받지 못했으면(서랍의 첫 읽기 실패) 「다시」라고 하지 않는다. 받은 장부가 아직 비었을 때만 이 글을 보인다.
+  if(!data?.receivedAt)return data&&tipShares.readFailed?'<span class="ts-fresh is-stale">다시 읽지 못했어요</span>':'';
   const stale=tipStale(data);
   const failed=tipShares.readFailed?' · 다시 읽지 못했어요':'';
   return `<span class="ts-fresh${stale||failed?' is-stale':''}" title="${escape(tipTime(data.receivedAt))}에 받은 장부">${stale?`${escape(tipAgo(data.receivedAt))}에 받은 장부예요`:`장부 ${escape(tipTime(data.receivedAt).replace(/^\d+월 \d+일 /,''))} 기준`}${failed}</span>`;
