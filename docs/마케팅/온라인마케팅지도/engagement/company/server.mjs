@@ -89,7 +89,6 @@ import { createSocialInboxRecovery } from './social-inbox-recovery.mjs';
 import { createSocialAiCopy } from './social-ai-copy.mjs';
 import { createSocialRecovery } from './social-recovery.mjs';
 import { createSocialTracking } from './social-tracking.mjs';
-import { createSocialInquiries } from './social-inquiries.mjs';
 import { createSocialWorkflowsService } from './social-workflows.mjs';
 import { createSocialReview } from './social-review.mjs';
 import { createSocialPublicRoutes } from './social-public-routes.mjs';
@@ -129,8 +128,6 @@ import { createCustomerIdentity, customerIdentityConfig } from './customer-ident
 import { createEntryDestinations } from './entry-destinations.mjs';
 import { createCustomerComputerDraft } from './customer-computer-draft.mjs';
 import { createCustomerRoutes } from './customer-routes.mjs';
-import { createAiMarketStore } from './ai-market-store.mjs';
-import { createAiMarketRoutes } from './ai-market-routes.mjs';
 import { createTeachingService, teachingServiceConfig } from './teaching-service.mjs';
 
 // This service also loads Domain. Wait until the interpretation runtime has
@@ -192,10 +189,6 @@ export function createCompanyApp(options={}) {
   if(![true,false,'0','1'].includes(webPushSetting))throw new Error('SYNK_COMPANY_WEB_PUSH_ENABLED는 0 또는 1이어야 합니다.');
   const webPushEnabled=webPushSetting===true||webPushSetting==='1';
   if(webPushEnabled&&originUrl.protocol!=='https:')throw new Error('기기 알림에는 HTTPS 회사 주소가 필요합니다.');
-  // AI 마켓은 2026-11-11 기각·얼림(결정 표). 기본은 꺼짐 — 끄면 화면·API를 열지 않고 ai_market_ 표도 만들지 않는다. 코드와 이미 있는 자료는 지우지 않는다.
-  const aiMarketSetting=options.aiMarketEnabled??process.env.SYNK_AI_MARKET_ENABLED??'0';
-  if(![true,false,'0','1'].includes(aiMarketSetting))throw new Error('SYNK_AI_MARKET_ENABLED는 0 또는 1이어야 합니다.');
-  const aiMarketEnabled=aiMarketSetting===true||aiMarketSetting==='1';
   if(!isLocalHost(host)&&originUrl.protocol!=='https:')throw new Error('크루용 서버에는 HTTPS 회사 주소가 필요합니다.');
   if(originUrl.pathname!=='/'||originUrl.search||originUrl.hash||originUrl.username)throw new Error('회사 주소에는 경로를 넣지 마세요.');
   const platformUrl=resolvePlatformUrl(options.platformUrl===undefined?process.env.SYNK_PLATFORM_URL:options.platformUrl,{origin});
@@ -427,7 +420,6 @@ export function createCompanyApp(options={}) {
   const socialAi=createSocialAiCopy({store,clock,...options.socialAiOptions});
   const socialRecovery=createSocialRecovery({store,publishing:socialPublishing,marketing:socialMarketing,clock});
   const socialTracking=createSocialTracking({store,publishing:socialPublishing,clock,origin,...options.socialTrackingOptions});
-  const socialInquiries=createSocialInquiries({store,tracking:socialTracking,clock});
   const trialFeedback=createTrialFeedback({store,clock,...options.trialFeedbackOptions});
   const socialCapacity=createSocialCapacity({store,publishing:socialPublishing,provider:socialProvider,clock});
   const socialCopyInsights=createSocialVariantPerformanceService({store,publishing:socialPublishing,performance:postPerformance,tracking:socialTracking,validatePostInput:socialMarketing.validatePostInput,clock});
@@ -465,7 +457,6 @@ export function createCompanyApp(options={}) {
     socialExtrasRunning=true;
     socialExtras=Promise.resolve().then(async()=>{
       socialAi.prune();
-      socialInquiries.maintain();
       socialCapacity.prune();
       const jobs=[];
       if(!socialSourceRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialSourceRuntime.lastAttemptAt)>=60000){
@@ -493,8 +484,8 @@ export function createCompanyApp(options={}) {
     currentRun:channelId=>store.latestIn('runs','channelId',[channelId],'startedAt',5).find(r=>['queued','running'].includes(r.status)),
     record:externalObservations.record});
   const socialSimpleSources=user=>{const channels=visibleChannels(user).map(c=>safeChannel(c,user)),schedule=store.get('settings','company');return {channels,collection:collectionHealth(channels,{at:clock(),hourKst:schedule.hourKst,hoursKst:schedule.hoursKst,enabled:schedule.enabled}),performance:postPerformance.observations(user).entries};};
-  const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
-  const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
+  const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
+  const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const trialFeedbackRoutes=createTrialFeedbackRoutes({service:trialFeedback,body,send,session,clientAddress,isStopped:()=>stopRequested});
   // 공유한 게시물(11-16, TIP-SHARES.md): 관리자 화면과 PC 팁 장부 동기 도구가 쓰는 줄 묶음 · 단추 요청.
   const tipShareRoutes=createTipShareRoutes({service:createTipSharesService({store,clock}),body,send,session,origin,isStopped:()=>stopRequested});
@@ -566,7 +557,6 @@ export function createCompanyApp(options={}) {
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
   const entryDestinations=createEntryDestinations({origin,customerIdentity,customerConfig,synkIdentity,pulseWorkspaces,readStaffSession:rawSession,
     fetch:options.synkEntryIdentityFetch,now:options.synkCustomerIdentityNow,body,send:writeResponse,stopping:()=>stopRequested,clientAddress});
-  const aiMarketRoutes=aiMarketEnabled?createAiMarketRoutes({identity:customerIdentity,market:createAiMarketStore({store,now:clock}),origin,send,body,stopping:()=>stopRequested,clientAddress}):null;
   // PULSE 내 모델 회원 경로(판 4, /api/customer/pulse/*): 고객 SYNK ID 세션만, 스위치 myModels가 꺼져 있으면 모두 404.
   const pulseMemberRoutes=createPulseMemberRoutes({identity:customerIdentity,workspaces:pulseWorkspaces,origin,send,body,stopping:()=>stopRequested,clientAddress,enabled:()=>pulseFeatures.read().myModels,serveMedia:(req,res,media,authorize)=>serveStudioMedia(req,res,store.directory,media,authorize)});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
@@ -652,6 +642,12 @@ export function createCompanyApp(options={}) {
   function pulseDeviceCookie(res,raw,device){setPulseCookie(res,'synk_pulse_device',raw,Math.max(0,Math.floor((Date.parse(device.auth.expiresAt)-Date.parse(clock()))/1000)));}
   // 네 종류를 전부 읽어 지우던 것을 SQLite 조건 삭제로 바꿨다(10-20). 지우는 대상은 같다: 보관 기한이 지난 행, 8일 지난 관측, 게시물이 없는 관측.
   function purgeExpired(at=clock()){const cutoff=new Date(Date.parse(at)-HYPE_RETENTION_MS).toISOString();store.transaction(()=>{for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])store.removeWhere(kind,"json_extract(body,'$.expiresAt') IS NOT NULL AND julianday(json_extract(body,'$.expiresAt'))<=julianday(?)",at);store.removeWhere('hypeObservations',"julianday(json_extract(body,'$.checkedAt')) IS NULL OR julianday(json_extract(body,'$.checkedAt'))<=julianday(?)",cutoff);store.removeWhere('hypeObservations',"IFNULL(json_extract(body,'$.postId'),'') NOT IN (SELECT id FROM documents WHERE kind='posts')");});}
+  // 수집 기록(runs)은 30분마다 채널 수만큼 쌓인다. 끝난 기록 가운데 시작 시각(startedAt)이 14일보다 오래된 것만 지운다. 대기 중이거나 수집 중인 기록은 남긴다(11-15 검수 P1). 화면은 최근 100건만 읽는다.
+  // 지우는 시작 시각은 서버가 Date.toISOString()으로 쓰는 모양(YYYY-MM-DDTHH:MM:SS.sssZ) 그대로인 실제 달력 시각뿐이다(11-15 재검수 P1). SQLite julianday()는 없는 날짜와 시각을 뒤로 넘겨 읽는다. 평년 2월 29일은 3월 1일로, 4월 31일은 5월 1일로, 24시는 다음 날 0시로 읽는다.
+  // 그래서 julianday()로 읽은 숫자를 strftime()으로 같은 모양의 글자로 다시 쓰고, 그 글자가 원래 값과 똑같을 때만 지운다. strftime()에 원래 글자를 바로 넣으면 읽은 칸을 고치지 않고 그대로 쓸 수 있어서(예: 24시) 반드시 숫자를 거친다.
+  // 이 모양이 아닌 시작 시각은 오래돼도 남긴다. 밀리초가 없는 값, 시간대가 붙은 값, T 대신 띄어쓰기를 쓴 값, 소문자 z로 끝나는 값, 숫자, 빈 값, 없는 값이 여기에 든다.
+  const RUN_RETENTION_MS=14*86400000;let lastMaintenanceAt=0;
+  function maintainCollectionRecords(at=clock()){const time=Date.parse(at);if(!Number.isFinite(time)||time-lastMaintenanceAt<3600000)return;lastMaintenanceAt=time;purgeExpired(at);store.removeWhere('runs',"IFNULL(json_extract(body,'$.status'),'') NOT IN ('queued','running') AND strftime('%Y-%m-%dT%H:%M:%fZ',julianday(json_extract(body,'$.startedAt')))=json_extract(body,'$.startedAt') AND julianday(json_extract(body,'$.startedAt'))<julianday(?)",new Date(time-RUN_RETENTION_MS).toISOString());}
   // Reads enforce retention immediately; scheduledTick owns physical expiry cleanup.
   function records(channels){const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&!p.unavailableAt&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
   function selectRecords(source,channels){const ids=new Set(channels.map(c=>c.id)),posts=source.posts.filter(p=>ids.has(p.channelId)),postIds=new Set(posts.map(p=>p.id));return{version:source.version,posts,snapshots:source.snapshots.filter(s=>postIds.has(s.postId)),channelSnapshots:source.channelSnapshots.filter(s=>ids.has(s.channelId))};}
@@ -850,8 +846,8 @@ export function createCompanyApp(options={}) {
   }
   async function scheduledTick(at=clock()){
     if(stopRequested||!channelCollectionEnabled)return;
-    // 기존 BG 설정의 만료 정리만 유지한다. 작업실 예약을 켜는 것으로 자료 삭제를 새로 시작하지 않는다.
-    if(backgroundJobsEnabled)purgeExpired(at);const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
+    // 보관 정리(만료 자료와 끝난 수집 기록 지우기)는 배경 작업(BG=1)이 켜졌을 때만 돈다. 작업실 예약만 켠 서버(BG=0, 작업실 예약=1)는 예약 회차에서 자료를 지우지 않는다. 일반 원천의 purgeExpired 관문과 같다(11-15 검수 P1).
+    if(backgroundJobsEnabled){try{maintainCollectionRecords(at);}catch{}}const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
     if(backgroundJobsEnabled&&(options.schedule!==false||options.dailyTrendsCollector||options.dailyTrendsFetch))dailyTrends.tick(at).catch(()=>{});
     const settings=store.get('settings','company');if(!settings.enabled)return;
     for(const c of store.all('channels')){
@@ -1154,7 +1150,6 @@ export function createCompanyApp(options={}) {
     if(await socialPublicRoutes(req,res,{url}))return;
     // Keep unrelated requests on their existing shutdown admission order.
     if(path.startsWith('/trial-feedback/')&&await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
-    if(aiMarketRoutes&&(path==='/api/customer/ai-market'||path.startsWith('/api/customer/ai-market/'))&&await aiMarketRoutes(req,res,url))return;
     if((path==='/api/customer/pulse'||path.startsWith('/api/customer/pulse/'))&&await pulseMemberRoutes(req,res,url))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
@@ -2141,12 +2136,6 @@ export function createCompanyApp(options={}) {
     // Existing teacher CSS has these fixed absolute image paths. No directory
     // traversal, model, data file or wider assets directory is exposed.
     for(const file of ['wide-coral.webp','slab-cream-long.webp','chip-blush-long.webp','badge-cream.webp'])files['/assets/'+file]=['../../../../../experiences/teacher-world/assets/'+file,'image/webp'];
-    if(aiMarketEnabled){
-      if(path==='/ai-market'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/ai-market/'});return res.end();}
-      files['/ai-market/']=['../../../../../experiences/ai-market/index.html','text/html; charset=utf-8'];
-      for(const file of ['app.mjs','style.css'])files['/ai-market/'+file]=['../../../../../experiences/ai-market/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
-      files['/ai-market/assets/SUIT-Variable.woff2']=['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'];
-    }
     if(path==='/consultation'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/consultation/'});return res.end();}
     files['/consultation/']=['public/customer-computer.html','text/html; charset=utf-8'];
     for(const file of ['customer-computer.js','customer-computer-state.mjs','customer-computer-view.mjs','customer-computer.css'])files['/consultation/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
@@ -2283,7 +2272,7 @@ export function createCompanyApp(options={}) {
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(channelCollectionEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
-        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries.maintain();trialFeedback.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
+        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{trialFeedback.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
         // Registered-post observation follows the workroom opt-in while broad
         // background collection can remain paused.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}
@@ -2303,7 +2292,7 @@ export function createCompanyApp(options={}) {
     return startTask;
   }
   async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  return {server,store,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;
