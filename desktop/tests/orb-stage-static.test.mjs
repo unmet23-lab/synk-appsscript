@@ -98,3 +98,17 @@ test('after the WebGL context comes back the orb returns to its own canvas and d
   } finally { stage.dispose(); }
   assert.equal(canvas.listeners.webglcontextrestored, undefined, 'dispose removes the listeners from the WebGL canvas');
 });
+
+test('a device that takes over 200 ms a frame, even at rest, draws less finely; a normal resting device does not (0.4.95 Fable F5)', () => {
+  for (const [gap, lowered] of [[250, true], [33.4, false], [70, true]]) {
+    const { canvas, frames } = glWorld();
+    const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 40 }) });
+    try {
+      const before = canvas.width;
+      assert.equal(before, 2400, 'starts at twice the screen dots');
+      let t = 1000;
+      for (let i = 0; i < 64 && frames.length; i++) { t += gap; frames.shift()(t); }
+      assert.equal(canvas.width < before, lowered, 'gap ' + gap + ' ms: width ' + canvas.width);
+    } finally { stage.dispose(); }
+  }
+});

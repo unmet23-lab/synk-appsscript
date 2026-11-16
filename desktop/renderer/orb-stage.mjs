@@ -348,7 +348,7 @@ export function createOrbStage(canvas, options = {}) {
     options.onRender?.(S);
   }
 
-  /* 움직임이 없고 손도 가만히 있으면 초당 30장으로 줄인다. 창이 가려지면 멈춘다. 60장 평균이 24ms를 넘으면 촘촘함을 한 단 낮춘다 */
+  /* 움직임이 없고 손도 가만히 있으면 초당 30장으로 줄인다. 창이 가려지면 멈춘다. 60장 가운데 40장 넘게 느리면(움직일 때 24ms, 멈춰 있을 때 50ms 넘음) 촘촘함을 한 단 낮춘다 */
   function idle() { return !tw && Math.abs(ptr.x - ptrS.x) < 0.001 && Math.abs(ptr.y - ptrS.y) < 0.001 && Math.abs(glintWant - glintBoost) < 0.01 && !autoFace && hot.every((h, i) => Math.abs(h - (hotWant === i ? 1 : 0)) < 0.01); }
   function frame(t) {
     frameId = null;
@@ -356,9 +356,10 @@ export function createOrbStage(canvas, options = {}) {
     const gap = t - lastDraw;
     const resting = idle();
     if (resting && gap < 32) { frameId = win.requestAnimationFrame(frame); return; }
-    // 멈춰 있어 일부러 늦춘 장면(초당 30장)은 느린 장면으로 세지 않는다. 세면 장치와 상관없이 배율이 내려간다(카본 B3)
-    if (!resting && lastDraw && gap > 0 && gap < 200) {
-      sampled++; if (gap > 24) slowFrames++;
+    // 멈춰 있어 일부러 늦춘 장면(초당 30장, 약 33ms 간격)은 50ms를 넘을 때만 느린 장면으로 센다. 24ms로 세면 장치와 상관없이 배율이 내려갔다(카본 B3).
+    // 200ms를 넘는 장면도 센다. 그래픽 가속이 없는 장치가 한 번도 세어지지 않았다. 창이 가려졌다 돌아온 첫 장은 resume()이 lastDraw를 0으로 돌려 세지 않는다(0.4.95 원천 후보 Fable F5)
+    if (lastDraw && gap > 0) {
+      sampled++; if (gap > (resting ? 50 : 24)) slowFrames++;
       if (sampled >= 60) { if (slowFrames > 40 && dprCap > 1) { dprCap = dprCap > 1.5 ? 1.5 : 1; resize(); } sampled = 0; slowFrames = 0; }
     }
     lastDraw = t;

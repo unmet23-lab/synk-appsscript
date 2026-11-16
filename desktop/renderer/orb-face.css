@@ -195,6 +195,8 @@ html[data-orb-client="legacy"] #portal-entry .orb-layer{padding:0}
 html[data-orb-client="legacy"] #portal-entry .here{top:6px}
 html[data-orb-client="legacy"] #portal-entry .legacy-back{display:inline-block}
 html[data-orb-client="legacy"] #portal-entry .room{display:none}
+/* 임시 옛 화면에서 로그인 전 SYNK ID 줄(「로그인하지 않음 · 로그인」)은 숨긴다. 들어온 회원이 토큰 갱신 중이어도 그 줄이 뜨고, 새 얼굴이 계정 연결을 맡는다(0.4.95 원천 후보 Fable F2) */
+html[data-orb-client="legacy"] .setting-row:has(#settings-login[data-signed-in="false"]){display:none}
 html[data-orb-client="legacy"] #portal-entry .orb-stage[data-ui="app"] [data-layer="app"] .rise{transition-delay:0s}
 /* 옛 메뉴로 라이브러리나 플레저에 가지 못하게 옛 제목 줄과 아래 상태 줄을 숨긴다 */
 html[data-orb-client="legacy"] .launcher{padding-top:56px}

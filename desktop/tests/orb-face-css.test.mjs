@@ -23,3 +23,10 @@ test('the Solio room scrolls instead of overflowing, and a lone action sits unde
   assert.match(css, /#portal-entry \.room\{[^}]*max-height:calc\(100% - 168px\);overflow-y:auto/);
   assert.match(css, /#portal-entry \.rows\[hidden\] \+ \.read\{justify-content:flex-start\}/);
 });
+
+test('the old screen shown under the new face hides the signed-out SYNK ID row, and its sign-in button rechecks the saved sign-in (0.4.95 Fable F2)', () => {
+  assert.match(css, /html\[data-orb-client="legacy"\] \.setting-row:has\(#settings-login\[data-signed-in="false"\]\)\{display:none\}/);
+  const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
+  assert.match(launcher, /if\(portalHost\?\.isClientShown\?\.\(\)\)\{if\(bridge\)void refreshAuth\(\{reload:true\}\);return;\}/);
+  assert.match(launcher, /\$\('settings-login'\)\.dataset\.signedIn=String\(!!signedIn\)/);
+});

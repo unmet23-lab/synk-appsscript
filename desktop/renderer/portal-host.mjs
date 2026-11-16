@@ -1882,11 +1882,16 @@ export function mountDesktopPortalHost({
       }
       const opened = await openVerifiedCompanyDestination(dest, accountKey, generation);
       if (opened.ok === true) return { ok: true, destination: opened.destination || dest };
-      return {
-        ok: false,
-        code: opened.code || 'HANDOFF_UNAVAILABLE',
-        message: opened.message || desktopOpenDestinationErrorMessage(opened.code),
-      };
+      // 진입 화면 글은 그 화면의 단추(「작업 공간 다시 확인」, 「개인 화면으로 계속」)를 가리킨다. 공간 고르기에는 그 단추가 없어
+      // 까닭이 분명한 글(예시 화면, 바쁨, 정리 중, 보관함)만 그대로 두고 나머지는 공간 고르기용 문장으로 바꾼다(0.4.95 원천 후보 Fable F3)
+      const code = opened.code || 'HANDOFF_UNAVAILABLE';
+      const keep = ['PULSE_APP_DEMO_ACTIVE', 'PULSE_APP_BUSY', 'BUSY', 'PULSE_APP_STORAGE_UNAVAILABLE', 'SUITE_UNAVAILABLE'];
+      let message = '그 공간을 열지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
+      if (keep.includes(code)) message = opened.message || desktopOpenDestinationErrorMessage(code);
+      else if (code === 'ACCOUNT_MISMATCH') message = '회사 작업 공간이 다른 계정으로 로그인되어 있습니다. 계정을 확인한 뒤 다시 시도해 주세요.';
+      else if (code === 'ACCOUNT_CHANGED') message = '계정 연결이 바뀌었습니다. 잠시 뒤 다시 시도해 주세요.';
+      else if (/LOGIN_REQUIRED$/i.test(code)) message = '회사 작업 공간에 들어가려면 추가 로그인이 필요합니다. 로그인을 마친 뒤 다시 시도해 주세요.';
+      return { ok: false, code, message };
     },
 
     async onContinuePersonal(context) {

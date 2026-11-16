@@ -1096,3 +1096,10 @@ test('a late reread answer from before signing out is not put on the new visit (
   assert.equal(h.view.last().room.solio.say, NONE_SAY, 'the answer of the visit before is dropped');
   assert.ok(!h.view.last().room.solio.rows?.some?.(r => r.name === 'Claude'), 'no row from the late answer');
 });
+
+test('host sentences ending in 「해요」 or 「달라요」 also take the 「-습니다」 voice (0.4.95 Fable F3)', () => {
+  assert.equal(faceSentence('회사 작업 공간에 들어가려면 추가 로그인이 필요해요.'), '회사 작업 공간에 들어가려면 추가 로그인이 필요합니다.');
+  assert.equal(faceSentence('열린 작업 공간의 계정과 현재 로그인한 계정이 달라요. 계정을 맞춘 뒤 다시 확인해 주세요.'), '열린 작업 공간의 계정과 현재 로그인한 계정이 다릅니다. 계정을 맞춘 뒤 다시 확인해 주세요.');
+  assert.equal(faceSentence('지금은 확인 못해요.'), '지금은 확인 못합니다.');
+  assert.equal(faceSentence('다시 시도해 주세요.'), '다시 시도해 주세요.');
+});

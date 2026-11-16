@@ -292,3 +292,29 @@ test('onOpenSpace says why the fresh lookup could not confirm the space instead 
   }
   assert.deepEqual(opens, []);
 });
+
+test('a space that fails to open is said in switch words, never pointing at the entry screen buttons (0.4.95 Fable F3)', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth() };
+  let openCode = 'HANDOFF_TIMEOUT';
+  const base = companyBridge(auth, { destinations: ['/', '/pulse-app/'] });
+  const bridge = { ...base, openAssignedCompanyDestination: async request => ({ ok: false, code: openCode, requestId: request.requestId }) };
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onOpenPurposeTarget: async () => ({ ok: true }) });
+  t.after(() => host.dispose());
+  await settle();
+  made.face.handle('continue-personal');
+  await settle();
+  for (const [code, said] of [['HANDOFF_TIMEOUT', /^그 공간을 열지 못했습니다\. 잠시 뒤 다시 시도해 주세요\.$/], ['HANDOFF_UNAVAILABLE', /^그 공간을 열지 못했습니다/], ['ACCOUNT_MISMATCH', /다른 계정으로 로그인되어 있습니다/], ['PULSE_APP_BUSY', /다른 작업을 처리하고 있습니다/]]) {
+    openCode = code;
+    made.face.handle('open-switch');
+    await settle();
+    made.face.handle('go', 'pulse');
+    await settle();
+    const error = made.view.scenes.at(-1).switch.error;
+    assert.match(error, said, code + ': ' + error);
+    assert.doesNotMatch(error, /다시 확인을 누른|아래 단추|개인 화면으로 계속|[아어]요\./, code + ': ' + error);
+    made.face.handle('close-switch');
+    await settle();
+  }
+});
