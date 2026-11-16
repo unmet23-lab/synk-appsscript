@@ -264,7 +264,7 @@ function run(inp, scName, opts = {}) {
   let v23Rooms = L.stages.v23 ? (opts.labFill ? L.stages.v23.rooms : L.stages.v23.startRooms) : 0; let v23Run = 0; let v23AddFrom = null; const v23AddMonths = []; // 4실 직영: 지금 연 실 수
   let hostRooms = L.stages.host.rooms; let hostRun = 0; let hostAddFrom = null; let hostFullRun = 0; const hostAddMonths = []; // hostFullRun: 교실을 다 빌린 뒤 정원 85%를 넘긴 달 수
   let foundingPaid = { 1.5: false, 2.5: false };
-  const admissionsHist = []; const admValueHist = [];
+  const admissionsHist = []; const admValueHist = []; const settleHist = []; let settleStart = null; // [11-16] 정착 묶음 구매자 이력과 첫 입학생 달
   let cash = CO ? 0 : F.ownCashKRW; let grantBal = 0; let krFixedPrev = 0;
   let stopFrom = null; let stopRun = 0; const stopR = opts.stopRule ? C.stopRule : null; // 멈춤 규칙(현금이 모자라면 교실 운영을 현지 기관에 넘김)
   // 개원 관문: 2027-06 점검에서 수요 증거가 모자라면 SYNK반을 열지 않고 준비 첫 달부터 C안으로 간다(비품·채용 전에 정한다)
@@ -525,7 +525,16 @@ function run(inp, scName, opts = {}) {
     const partnerShare = m >= sc.partnerUnivFrom ? sc.partnerUnivShare : 0;
     const commissionPer = (1 - P.transfer.d4Share) * P.prices.univCommissionKRW + P.transfer.d4Share * (P.prices.univCommissionD4KRW ?? P.prices.univCommissionKRW); // [페이블 4차] 학위(D-2)와 어학연수(D-4) 수수료를 나눠 섞는다
     path_.commissionKRW = lagged * partnerShare * commissionPer;
-    path_.settlementKRW = lagged * P.settlementUptake * (P.prices.settlementKRW - P.prices.settlementCostKRW); // 제휴사 실비를 뺀 몫
+    // [11-16 유호님 「직원을 배치해서 직접 운영」] settlementStaff가 있으면 정착 묶음을 SYNK 정착 매니저가 맡는다 — 값을 다 매출로 세고, 매니저 · 모임 비용을 원화 비용에 더한다
+    const SS = P.settlementStaff; const settleBuyers = lagged * P.settlementUptake;
+    settleHist.push(settleBuyers);
+    path_.settlementKRW = settleBuyers * (P.prices.settlementKRW - (SS ? 0 : P.prices.settlementCostKRW)); // 옛 판은 제휴사 실비를 뺀 몫
+    if (SS && settleBuyers > 0 && !settleStart) settleStart = m;
+    const settle12 = settleHist.slice(-12).reduce((a, b) => a + b, 0);
+    const settle6 = settleHist.slice(-6).reduce((a, b) => a + b, 0); // [11-16 카본] 한 학기 상한도 본다 — 첫 입국 학기에 반일 한 명만 두지 않게
+    const settleNeed = SS ? Math.max(settle12 / SS.capPerYear, SS.capPerTerm ? settle6 / SS.capPerTerm : 0) : 0;
+    path_.settleFte = SS && settleStart ? Math.max(SS.minFte, Math.ceil(settleNeed / SS.unit - 1e-9) * SS.unit) : 0;
+    path_.settleCostKRW = SS && settleStart ? path_.settleFte * SS.monthlyKRW + (SS.communityMonthlyKRW || 0) + settleBuyers * (SS.perPersonKRW || 0) : 0;
     // ③ 어학연수(D-4)로 간 학생이 한국 안에서 대학(D-2)으로 옮길 때 진학 지원을 다시 산다
     const T = P.transfer;
     const tN = i >= T.lagMonths ? admissionsHist[i - T.lagMonths] * (1 - P.visaFailRate) * T.d4Share * T.uptake[scName] : 0;
@@ -561,7 +570,7 @@ function run(inp, scName, opts = {}) {
     const pathMnProfit0 = pathMnRev0 - path_.costMNT;
     path_.remitMNT = !hasMnCorp && pathMnProfit0 > 0 ? remitRate * pathMnProfit0 : 0; // [아르곤 코드 검수 10-18]
     path_.costMNT += path_.remitMNT;
-    path_.costKRW = path_.univMarketingKRW * P.univMarketingCostRate + (!CO && m >= P.koreaTripsFrom && [3, 9].includes(mo) ? P.koreaTripKRW * (P.koreaTripsPerYear / 2) : 0);
+    path_.costKRW = path_.univMarketingKRW * P.univMarketingCostRate + (!CO && m >= P.koreaTripsFrom && [3, 9].includes(mo) ? P.koreaTripKRW * (P.koreaTripsPerYear / 2) : 0) + path_.settleCostKRW;
     path_.revenueKRW = toKRW(path_.planMNT + path_.admissionMNT + path_.campMNT + path_.singlesMNT) + path_.commissionKRW + path_.settlementKRW + path_.careerKRW + path_.transferKRW + path_.onlineKRW + path_.univMarketingKRW + path_.travelKRW;
     path_.profitKRW = path_.revenueKRW - toKRW(path_.costMNT) - path_.costKRW;
 
@@ -927,7 +936,7 @@ function unitEconomics(inp, scName, res, y = 2029) {
   const one = (priceMNT, cacMNT) => {
     const adm = priceMNT * sc.priceRealization * priceM * admFactor / fx;
     const commission = visaKeep * sc.partnerUnivShare * ((1 - P.transfer.d4Share) * P.prices.univCommissionKRW + P.transfer.d4Share * (P.prices.univCommissionD4KRW ?? P.prices.univCommissionKRW));
-    const settlement = visaKeep * P.settlementUptake * (P.prices.settlementKRW - P.prices.settlementCostKRW);
+    const settlement = visaKeep * P.settlementUptake * (P.prices.settlementKRW - (P.settlementStaff ? (P.settlementStaff.monthlyKRW + (P.settlementStaff.communityMonthlyKRW || 0)) * 12 / P.settlementStaff.capPerYear + (P.settlementStaff.perPersonKRW || 0) : P.prices.settlementCostKRW)); // [11-16] 직접 운영이면 정원을 채웠을 때의 1명당 매니저 · 모임 몫(13.2만 원)과 직접비(10만 원)를 뺀다
     const tP = visaKeep * T.d4Share * T.uptake[scName];
     const transfer = tP * T.priceKRW * sc.priceRealization;
     const revenue = adm + commission + settlement + transfer;
