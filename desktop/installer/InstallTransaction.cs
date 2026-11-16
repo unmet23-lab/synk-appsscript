@@ -50,6 +50,8 @@ namespace Synk.SignalInstaller
             try
             {
                 backup=BackupPrevious(new AutomaticUpdateSession { Directory=directory },progress);
+                // 장치 2(1-가 구현 설계 2절): 백업하는 동안 앱이 켜졌으면 표시를 쓰기 전에 다시 시도할 수 있는 실패로 끝내고 백업 사본을 치운다
+                if(!ApplicationsClosed(ProcessExitGraceMilliseconds)){TryCleanupBackupPayload(backup);throw FailureKind.Tag(new InvalidOperationException(Short+"가 켜져 있어요.\n작업을 저장하고 "+Short+"를 닫은 뒤 다시 설치해 주세요."),FailureKind.AppRunning);}
                 BeginTransaction(backup);started=true;
                 string result=InstallPayload(progress,deadline);
                 EndTransaction(backup,"installed");TryCleanupBackupPayload(backup);return result;

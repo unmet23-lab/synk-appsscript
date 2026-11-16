@@ -195,6 +195,12 @@ internal static class SignalUiCheck
         a.ShowAutomaticResult(new AutomaticUpdateResult { Restored = true, Relaunched = false, Message = "업데이트를 마치지 못해 이전 버전으로 두었어요." }); render(a, "auto-restored-not-opened");
         a.ShowAutomaticResult(new AutomaticUpdateResult { Message = "설치가 끝나지 않았어요. 되돌릴 원본: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Cache\\example" }); render(a, "auto-recovery-required");
         a.ShowLaunchFailure(null); render(a, "auto-launch-failure");
+        // 되돌린 뒤 쓰던 앱을 켜지 못함(5절): 「쓰던 판 열기」 하나. 누르거나 호스트가 잠시 뒤 대신 누르면 여는 요청을 보낸다
+        a.ShowRestoredLaunchFailure(); render(a, "auto-restored-open");
+        if (a.SayText != "새 판으로 바꾸지 못했습니다." || a.ThenText != "쓰던 판은 그대로입니다.") throw new Exception("Restored launch failure copy changed");
+        int before = launches; a.OpenAgain(); if (launches != before + 1) throw new Exception("OpenAgain did not request a launch");
+        a.OpenAgain(); if (launches != before + 1) throw new Exception("OpenAgain must not press twice while opening");
+        a.ShowRestoredLaunchFailure(); press(a, "쓰던 판 열기"); if (launches != before + 2) throw new Exception("Open previous button did not request a launch");
         OrbWindow b = make(); b.BeginAutomatic(); b.ShowBlocked(new InstallFailure("지난번 설치를 되돌렸는지 아직 확인하지 못했어요.\n되돌리기 안내: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Pending\\example.txt", false, true)); render(b, "auto-blocked");
         if (!b.Topmost) throw new Exception("Blocked window must stay on top");
 

@@ -37,7 +37,11 @@ namespace Synk.SignalInstaller
     public sealed class AutomaticUpdateResult
     {
         public bool Updated, Restored, Relaunched;
+        /// <summary>백업 뒤 다시 보니 사람이 켠 앱이 켜져 있어 파일을 바꾸기 전에 끝냈다(1-가 구현 설계 2절 장치 2). 되돌림 표시를 쓰지 않았고 쓰던 앱도 다시 켜지 않았다</summary>
+        public bool UserAppRunning;
         public string Message, RecoveryFile;
+        /// <summary>되돌린 결과(rolled-back 또는 unchanged). 「쓰던 판 열기」가 되돌림 표시를 새로 쓸 때 쓴다</summary>
+        public string RestoredStatus;
     }
 
     [DataContract]
@@ -264,6 +268,15 @@ namespace Synk.SignalInstaller
                 Preflight();
                 stage = "backup";
                 backup = BackupPrevious(session, progress);
+                // 장치 2(1-가 구현 설계 2절): 백업하는 동안 사람이 앱을 켰으면 파일을 바꾸기 전에 끝낸다. 장치 1로 켜진 앱은 여유 시간 안에 스스로 끝나므로 그만큼 기다린다
+                stage = "second-check";
+                if (!ApplicationsClosed(ProcessExitGraceMilliseconds))
+                {
+                    TryCleanupBackupPayload(backup);
+                    var running = FailureKind.Tag(new InvalidOperationException("업데이트하는 동안 SYNK가 다시 켜져 바꾸지 않았어요.\n쓰던 판은 그대로예요. 다음 확인 때 다시 받아요."), FailureKind.AppRunning);
+                    RecordUpdateFailure(session.Version, stage, "unchanged", running, null);
+                    return new AutomaticUpdateResult { UserAppRunning = true, Message = running.Message };
+                }
                 BeginTransaction(backup);
                 mutationStarted = true;
                 stage = "install";
@@ -311,10 +324,10 @@ namespace Synk.SignalInstaller
                     {
                         RecordUpdateFailure(session.Version,"relaunch",mutationStarted?"rolled-back":"unchanged",launchFailure,failure);
                         if (backup != null) TryCleanupBackupPayload(backup);
-                        return new AutomaticUpdateResult { Restored=true, Relaunched=false, RecoveryFile=marker, Message="업데이트를 마치지 못해 이전 버전으로 두었어요. 앱을 다시 열어 주세요.\n"+failure.Message };
+                        return new AutomaticUpdateResult { Restored=true, Relaunched=false, RecoveryFile=marker, RestoredStatus=mutationStarted?"rolled-back":"unchanged", Message="업데이트를 마치지 못해 이전 버전으로 두었어요. 앱을 다시 열어 주세요.\n"+failure.Message };
                     }
                     if (backup != null) TryCleanupBackupPayload(backup);
-                    return new AutomaticUpdateResult { Restored=true, Relaunched=true, RecoveryFile=marker, Message="업데이트를 마치지 못해 이전 버전을 다시 열었어요. 앱에서 다시 해 볼 수 있어요.\n"+failure.Message };
+                    return new AutomaticUpdateResult { Restored=true, Relaunched=true, RecoveryFile=marker, RestoredStatus=mutationStarted?"rolled-back":"unchanged", Message="업데이트를 마치지 못해 이전 버전을 다시 열었어요. 앱에서 다시 해 볼 수 있어요.\n"+failure.Message };
                 }
                 catch (Exception recoveryFailure)
                 {
@@ -364,7 +377,8 @@ namespace Synk.SignalInstaller
         void RestorePrevious(UpdateBackup backup, Action<InstallProgress> progress)
         {
             if (backup == null || activeTransaction!=backup.Directory) throw new IOException("되돌릴 파일 위치가 맞지 않아요.");
-            if (ApplicationProcessCount()!=0) throw new IOException("앱이 켜져 있어 되돌릴 파일을 남겨 뒀어요. 앱을 닫아 주세요.");
+            // 장치 3(1-가 구현 설계 2절): 파일을 바꾸는 중에 켜진 앱이 장치 1로 스스로 끝나는 사이를 기다린 뒤에만 거절한다
+            if (!ApplicationsClosed(ProcessExitGraceMilliseconds)) throw new IOException("앱이 켜져 있어 되돌릴 파일을 남겨 뒀어요. 앱을 닫아 주세요.");
             RejectReparsePoints(backup.OriginalDirectory);RejectReparsePoints(backup.Directory);
             foreach (var file in backup.Files) if (HashFile(Inside(Path.Combine(backup.Directory,"application"),file.RelativePath))!=file.SHA256) throw new IOException("되돌릴 원본을 확인하지 못했어요.");
             progress(new InstallProgress(InstallStage.Restoring, "이전 버전으로 되돌려요","앱 파일과 설치 정보를 되돌려요.",null));
@@ -420,6 +434,25 @@ namespace Synk.SignalInstaller
         {
             for(var clock=Stopwatch.StartNew();clock.ElapsedMilliseconds<milliseconds;Thread.Sleep(100))
                 if(ApplicationProcessCount()==0)return;
+        }
+        /// <summary>앱 프로세스가 없으면 바로 참이다. 있으면 여유 시간만큼 기다린 뒤 다시 본다</summary>
+        internal bool ApplicationsClosed(int milliseconds)
+        {
+            if (ApplicationProcessCount()==0) return true;
+            WaitForApplicationProcesses(milliseconds);
+            return ApplicationProcessCount()==0;
+        }
+        /// <summary>
+        /// 「쓰던 판 열기」와 「한 번 더 켜 본다」(5절 설치기 표): 되돌린 쓰던 판을 다시 켠다. 옛 판 해시를 다시 맞추고, 되돌림 표시를 새로 써서
+        /// 쓰던 앱이 실패 장면을 보이게 한다. 실패하면 예외를 던진다(창이 「쓰던 판 열기」를 남긴다)
+        /// </summary>
+        public void RelaunchPrevious(AutomaticUpdateSession session, string status)
+        {
+            if (session == null || (status != "rolled-back" && status != "unchanged")) throw new InvalidOperationException("쓰던 판을 다시 열 정보가 없어요.");
+            VerifyPrevious(session);
+            WriteRecoveryMarker(session, status);
+            Arrive("restored", session.Version);
+            StartVerifiedProcess(Path.Combine(session.Directory, spec.ExecutableName), "--synk-update-recovery=" + session.Nonce, session.ExecutableSHA256);
         }
         // Diagnostics name only this session's copies, the ones that blocked the update.
         List<string> RunningApplicationProcesses()

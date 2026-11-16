@@ -52,6 +52,8 @@ namespace Synk.SignalInstaller
                         InstallerEngine engine = new InstallerEngine(spec, delegate { return assembly.GetManifestResourceStream("backend.exe"); });
                         Application app = new Application();
                         // Platform은 검정 구 새 창으로 그린다(검정 구 1-가 ③). WORLD와 Workspace는 아래 지금 창 그대로다
+                        // 설치기 창이 작업 표시줄에서 앱과 같은 단추로 묶이게 앱의 AppUserModelID를 쓴다(1-가 구현 설계 2절 「창의 종류와 닫기」)
+                        if (product.Id == "platform") { try { SetCurrentProcessExplicitAppUserModelID(spec.AppId); } catch (Exception) { } }
                         if (product.Id == "platform") { RunPlatform(app, engine, spec, cache, product, automatic, assembly, release); return 0; }
                         SignalWindow window = new SignalWindow(cache, spec.Version, product);
                         window.SetInstalled(Directory.Exists(Environment.ExpandEnvironmentVariables(spec.InstallDirectory)));
@@ -127,6 +129,8 @@ namespace Synk.SignalInstaller
             finally { if (cache != null) try { Directory.Delete(cache, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
         }
 
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)] static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
+
         internal static void ExtractFonts(Assembly assembly, string cache)
         {
             foreach (string resource in assembly.GetManifestResourceNames())
@@ -147,7 +151,15 @@ namespace Synk.SignalInstaller
             Handoff.CleanupOrphanCurtainCaches();
             OrbWindow window = new OrbWindow(cache, spec.Version, product);
             window.SetInstalled(Directory.Exists(Environment.ExpandEnvironmentVariables(spec.InstallDirectory)));
-            Action<InstallProgress> report = delegate(InstallProgress progress) { window.Dispatcher.Invoke(delegate { window.ShowProgress(progress); }); };
+            // 성공한 설치와 업데이트의 단계 시각(3절). 설치기가 일을 시작한 때부터 잰다
+            Stopwatch workClock = new Stopwatch();
+            StageTiming timing = new StageTiming { Version = spec.Version };
+            Action<InstallProgress> report = delegate(InstallProgress progress)
+            {
+                try { string name = progress.Stage.ToString(); lock (timing) if (!timing.Stages.Exists(mark => mark.Stage == name)) timing.Stages.Add(new StageMark { Stage = name, Ms = workClock.ElapsedMilliseconds }); } catch (Exception) { }
+                window.Dispatcher.Invoke(delegate { window.ShowProgress(progress); });
+            };
+            Action<string> timed = delegate(string kind) { try { timing.Kind = kind; timing.TotalMs = workClock.ElapsedMilliseconds; Handoff.WriteStageTiming(spec.AppId, timing); } catch (Exception) { } };
             // 넘김 쪽지(6절): 앱 창의 자리와 보이는 상태, 가림막에 알릴 이벤트. 토큰, 앱 프로세스 번호, 판 번호가 모두 맞을 때만 읽는다
             HandoffNote note = automatic != null ? Handoff.ReadHandoff(spec.AppId, automatic.Token, automatic.ParentId, spec.Version) : null;
             IntPtr curtainWindow = note != null && note.CurtainEvent != null ? CurtainWindow.Find(assembly.Location) : IntPtr.Zero;
@@ -184,6 +196,17 @@ namespace Synk.SignalInstaller
                 await AppWindow.WaitAsync(engine.InstalledExecutable(), 20000);
                 window.CloseNow();
             };
+            // 「쓰던 판 열기」가 다시 켤 쓰던 판(되돌린 뒤 켜지 못한 때만 있다)
+            AutomaticUpdateSession kept = null, restored = null; string restoredStatus = null;
+            // 「잠시 뒤 한 번 더 켜 본다」(5절 설치기 표): 한 번만, 사람이 이미 누르지 않았을 때만
+            bool againScheduled = false;
+            Action openAgainLater = delegate
+            {
+                if (againScheduled) return; againScheduled = true;
+                System.Windows.Threading.DispatcherTimer again = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(OpenAgainMilliseconds) };
+                again.Tick += delegate { again.Stop(); window.OpenAgain(); };
+                again.Start();
+            };
             if (automatic != null)
             {
                 bool started = false;
@@ -191,6 +214,7 @@ namespace Synk.SignalInstaller
                 {
                     if (started) return; started = true;
                     window.BeginAutomatic(note != null, note != null ? note.Cut : 0.5);
+                    workClock.Start();
                     Flag ready = new Flag();
                     try
                     {
@@ -200,15 +224,21 @@ namespace Synk.SignalInstaller
                             {
                                 Console.WriteLine("SYNK_UPDATE_READY " + automatic.Token); Console.Out.Flush();
                                 ready.Value = true;
+                                kept = request;
                                 // 첫 장을 그린 뒤 READY를 썼으면 가림막에 끝나라고 알린다(2절 가림막 6번)
                                 window.Dispatcher.BeginInvoke(new Action(delegate { readySeen = true; releaseCurtain(); }));
                                 return engine.InstallAutomaticUpdate(request, report);
                             }
                         });
-                        if (result.Updated && result.Relaunched) { await window.FinishCut(); await handOver(); }
-                        else if (result.Updated) window.ShowLaunchFailure(null);
+                        if (result.Updated && result.Relaunched) { timed("update"); await window.FinishCut(); await handOver(); }
+                        // 끝났는데 새 앱을 켜지 못했다: 「열기」를 두고 잠시 뒤 한 번 더 켜 본다
+                        else if (result.Updated) { timed("update"); window.ShowLaunchFailure(null); openAgainLater(); }
+                        // 장치 2: 사람이 켠 앱이 이미 앞에 있다. 알릴 것이 없어 창을 닫는다(보이는 업데이트에서도 닫는다)
+                        else if (result.UserAppRunning) { release(); window.CloseNow(); }
                         // 되돌려 켠 쓰던 앱이 실패 장면을 보인다. 그 앱의 창이 보인 뒤 닫는다
                         else if (result.Restored && result.Relaunched) await handOver();
+                        // 되돌렸는데 쓰던 앱을 켜지 못했다: 「쓰던 판 열기」를 두고 잠시 뒤 한 번 더 켜 본다
+                        else if (result.Restored && kept != null && result.RestoredStatus != null) { restored = kept; restoredStatus = result.RestoredStatus; window.ShowRestoredLaunchFailure(); openAgainLater(); }
                         else window.ShowAutomaticResult(result);
                     }
                     catch (Exception error)
@@ -226,9 +256,12 @@ namespace Synk.SignalInstaller
             else window.Loaded += delegate { window.SetReady(); };
             window.InstallRequested += async delegate
             {
+                bool reinstall = Directory.Exists(Environment.ExpandEnvironmentVariables(spec.InstallDirectory));
+                workClock.Restart(); lock (timing) timing.Stages.Clear();
                 try
                 {
                     await Task.Run(delegate { engine.Install(report); });
+                    timed(reinstall ? "reinstall" : "install");
                     await window.FinishCut();
                 }
                 catch (Exception error) { window.ShowInstallFailure(error); return; }
@@ -241,6 +274,14 @@ namespace Synk.SignalInstaller
             {
                 // 실패 뒤 「열기」: 사람이 설치기 창을 보고 눌렀으므로 새 앱은 앞으로 연다
                 arrivalVisibility = "front";
+                if (restored != null)
+                {
+                    // 쓰던 판 열기: 옛 판 해시를 다시 맞추고 되돌림 표시를 새로 써서 쓰던 앱이 실패 장면을 보이게 한다(도착 쪽지는 엔진이 쓴다)
+                    try { AutomaticUpdateSession again = restored; string status = restoredStatus; await Task.Run(delegate { engine.RelaunchPrevious(again, status); }); }
+                    catch (Exception) { window.ShowRestoredLaunchFailure(); return; }
+                    await handOver();
+                    return;
+                }
                 arrive(automatic != null ? "updated" : "installed", spec.Version);
                 try { engine.Launch(); }
                 catch (Exception error) { window.ShowLaunchFailure(error); return; }
@@ -255,6 +296,9 @@ namespace Synk.SignalInstaller
         /// 스스로 끝나는 상한은 둘이다: 앱 창이 닫힌 뒤 60초, 「closing」 없이 입력이 닫힌 뒤 10초.
         /// 설치 엔진, 설치 등록, 바로가기, 설치기의 뮤텍스를 건드리지 않고, 만드는 파일은 개인 캐시뿐이다
         /// </summary>
+        /// <summary>앱을 켜지 못한 뒤 한 번 더 켜 보기까지(Claude가 정한 값: 실패 문장 두 줄을 읽을 틈)</summary>
+        internal const int OpenAgainMilliseconds = 3000;
+
         internal static class Curtain
         {
             internal const int AppGoneMilliseconds = 60000, InputGoneMilliseconds = 10000;

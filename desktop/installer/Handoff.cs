@@ -64,6 +64,25 @@ namespace Synk.SignalInstaller
         [DataMember(Name = "writtenAt")] public string WrittenAt;
     }
 
+    /// <summary>성공한 설치와 업데이트의 단계 시각(1-가 구현 설계 3절). 몇 판 뒤 이 값으로 단계 몫을 다시 맞춘다</summary>
+    [DataContract]
+    public sealed class StageTiming
+    {
+        [DataMember(Name = "at")] public string At;
+        /// <summary>install(처음 설치), reinstall(다시 설치), update(자동 업데이트)</summary>
+        [DataMember(Name = "kind")] public string Kind;
+        [DataMember(Name = "version")] public string Version;
+        /// <summary>단계 이름과 시작 시각(설치기가 일을 시작한 때부터 밀리초). 같은 단계가 다시 오면 처음 온 때만 적는다</summary>
+        [DataMember(Name = "stages")] public System.Collections.Generic.List<StageMark> Stages = new System.Collections.Generic.List<StageMark>();
+        [DataMember(Name = "totalMs")] public long TotalMs;
+    }
+    [DataContract]
+    public sealed class StageMark
+    {
+        [DataMember(Name = "stage")] public string Stage;
+        [DataMember(Name = "ms")] public long Ms;
+    }
+
     public static class Handoff
     {
         public const int MaxBytes = 4096;
@@ -129,6 +148,41 @@ namespace Synk.SignalInstaller
                     if (buffer.Length > MaxBytes) return false;
                     using (FileStream stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { buffer.WriteTo(stream); stream.Flush(true); }
                 }
+                if (File.Exists(file)) File.Replace(temporary, file, null, true); else File.Move(temporary, file);
+                temporary = null;
+                return true;
+            }
+            catch (Exception) { return false; }
+            finally { if (temporary != null) try { File.Delete(temporary); } catch (Exception) { } }
+        }
+
+        public static string TimingFile(string appId) { return Path.Combine(Root, "Timings", appId + ".json"); }
+        /// <summary>
+        /// 성공한 설치의 단계 시각을 최근 20회까지 남긴다. 쪽지처럼 결과를 바꾸지 않는다: 쓰다 난 실패는 모두 삼키고 false를 돌려준다(6절)
+        /// </summary>
+        public static bool WriteStageTiming(string appId, StageTiming timing)
+        {
+            string temporary = null;
+            try
+            {
+                if (!AppIdPattern.IsMatch(appId ?? "") || timing == null) return false;
+                if (String.IsNullOrEmpty(timing.At)) timing.At = DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+                string file = TimingFile(appId);
+                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                var serializer = new DataContractJsonSerializer(typeof(System.Collections.Generic.List<StageTiming>));
+                var rows = new System.Collections.Generic.List<StageTiming>();
+                try
+                {
+                    FileInfo info = new FileInfo(file);
+                    if (info.Exists && info.Length < 256 * 1024)
+                        using (FileStream stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                            rows = (System.Collections.Generic.List<StageTiming>)serializer.ReadObject(stream) ?? rows;
+                }
+                catch (Exception) { rows = new System.Collections.Generic.List<StageTiming>(); }
+                rows.Add(timing);
+                while (rows.Count > 20) rows.RemoveAt(0);
+                temporary = file + "." + Guid.NewGuid().ToString("N") + ".partial";
+                using (FileStream stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { serializer.WriteObject(stream, rows); stream.Flush(true); }
                 if (File.Exists(file)) File.Replace(temporary, file, null, true); else File.Move(temporary, file);
                 temporary = null;
                 return true;

@@ -126,6 +126,14 @@ internal static class SignalInstallerTests
                 foreach (string directory in new[] { orphan, live, transaction, lookalike }) { Directory.CreateDirectory(directory); File.WriteAllText(Path.Combine(directory, "x"), "x"); }
                 Assert(Handoff.CleanupOrphanCurtainCaches() == 1, "Expected exactly one orphan curtain cache to be removed.");
                 Assert(!Directory.Exists(orphan) && Directory.Exists(live) && Directory.Exists(transaction) && Directory.Exists(lookalike), "Curtain cache cleanup touched the wrong folders.");
+                // 성공한 설치의 단계 시각: 최근 20회만 남기고, 쓰지 못해도 삼킨다(1-가 구현 설계 3절)
+                string timingApp = "im.synk.signal.fixture.timing";
+                for (int i = 0; i < 21; i++) Assert(Handoff.WriteStageTiming(timingApp, new StageTiming { Kind = "update", Version = "0.0." + i, TotalMs = i, Stages = { new StageMark { Stage = "BackingUp", Ms = i } } }), "Stage timing was not written.");
+                string timings = File.ReadAllText(Handoff.TimingFile(timingApp));
+                Assert(!timings.Contains("\"0.0.0\"") && timings.Contains("\"0.0.20\"") && timings.Contains("\"stage\":\"BackingUp\""), "Stage timing kept the wrong runs: " + timings);
+                File.Delete(Handoff.TimingFile(timingApp)); Directory.CreateDirectory(Handoff.TimingFile(timingApp));
+                Assert(!Handoff.WriteStageTiming(timingApp, new StageTiming { Kind = "update" }), "An unwritable stage timing reported success.");
+                Directory.Delete(Handoff.TimingFile(timingApp));
                 string mine = Handoff.CreateCurtainCache();
                 Assert(Path.GetFileName(mine).StartsWith("curtain-" + Process.GetCurrentProcess().Id + "-", StringComparison.Ordinal), "Curtain cache name does not carry its owner: " + mine);
                 Directory.Delete(Handoff.InstallerRoot, true);
@@ -421,6 +429,96 @@ internal static class SignalInstallerTests
                         Assert(heard.Count==1&&heard[0]=="restored "+session.Version,"Arrival hook heard: "+String.Join(",",heard));
                         if(result.RecoveryFile!=null&&File.Exists(result.RecoveryFile))File.Delete(result.RecoveryFile);
                         if(File.Exists(failureRecord))File.Delete(failureRecord);
+                    }
+                });
+                // 장치 2(1-가 구현 설계 2절): 백업하는 동안 사람이 앱을 켰으면 파일을 바꾸기 전에 끝낸다. 여유 시간 안에 꺼지면 그대로 간다
+                Func<string,int,Action<InstallProgress>> startDuringBackup=delegate(string name,int stopAfter)
+                {
+                    bool started=false;
+                    return delegate(InstallProgress p)
+                    {
+                        Progress(p);
+                        if(p.Stage!=InstallStage.BackingUp||started)return;started=true;
+                        holdingProcess(name).Dispose();
+                        if(stopAfter>=0){string stop=Path.Combine(Root,name,"stop");new Thread(delegate(){Thread.Sleep(stopAfter);File.WriteAllText(stop,"stop");}){IsBackground=true}.Start();}
+                    };
+                };
+                Action<string> releaseHeld=delegate(string name){string folder=Path.Combine(Root,name);if(Directory.Exists(folder))File.WriteAllText(Path.Combine(folder,"stop"),"stop");Thread.Sleep(300);};
+                Check("an app opened during backup ends the automatic update unchanged, without a rollback barrier or relaunch",delegate
+                {
+                    using(Process exited=exitedParent())
+                    {
+                        int launches=0,installs=0;var checking=Engine(ReadSpec());checking.ProcessExitGraceMilliseconds=400;
+                        try
+                        {
+                            var result=Task.Run(delegate { return checking.InstallAutomaticUpdateCore(sessionFor(exited),startDuringBackup("second-check-stay",-1),delegate(Action<InstallProgress> progress){installs++;return "";},delegate(string executable,string arguments){launches++;}); }).GetAwaiter().GetResult();
+                            Assert(result.UserAppRunning&&!result.Updated&&!result.Restored&&!result.Relaunched&&launches==0&&installs==0,"Second check did not stop before changing files: "+result.Message);
+                            string pending=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Pending",Spec.Guid+".txt");
+                            Assert(!File.Exists(pending),"Second check left a rollback barrier.");
+                            string record=File.ReadAllText(failureRecord);
+                            Assert(record.Contains("\"stage\":\"second-check\"")&&record.Contains("\"outcome\":\"unchanged\""),"Second check was not recorded as unchanged: "+record);
+                        }
+                        finally { releaseHeld("second-check-stay"); if(File.Exists(failureRecord))File.Delete(failureRecord); }
+                        engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
+                    }
+                });
+                Check("an app that quits within the grace time lets the update go on",delegate
+                {
+                    using(Process exited=exitedParent())
+                    {
+                        int launches=0;var checking=Engine(ReadSpec());checking.ProcessExitGraceMilliseconds=4000;
+                        try
+                        {
+                            var result=Task.Run(delegate { return checking.InstallAutomaticUpdateCore(sessionFor(exited),startDuringBackup("second-check-leave",300),delegate(Action<InstallProgress> progress) { throw new IOException("Synthetic payload failure"); },delegate(string executable,string arguments){launches++;}); }).GetAwaiter().GetResult();
+                            Assert(!result.UserAppRunning&&result.Restored&&result.Relaunched&&launches==1&&result.RestoredStatus=="rolled-back","An app that quit in time still stopped the update: "+result.Message);
+                            if(result.RecoveryFile!=null&&File.Exists(result.RecoveryFile))File.Delete(result.RecoveryFile);
+                        }
+                        finally { releaseHeld("second-check-leave"); if(File.Exists(failureRecord))File.Delete(failureRecord); }
+                        engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
+                    }
+                });
+                // 장치 3: 파일을 바꾸는 중에 켜진 앱이 스스로 끝나는 사이를 기다린 뒤 되돌린다(전에는 바로 거절해 막힌 상태가 됐다)
+                Check("restore waits for an app that quits within the grace time instead of blocking recovery",delegate
+                {
+                    using(Process exited=exitedParent())
+                    {
+                        int launches=0;var restoring=Engine(ReadSpec());restoring.ProcessExitGraceMilliseconds=4000;
+                        try
+                        {
+                            var result=Task.Run(delegate { return restoring.InstallAutomaticUpdateCore(sessionFor(exited),Progress,delegate(Action<InstallProgress> progress)
+                            {
+                                holdingProcess("restore-wait").Dispose();
+                                string stop=Path.Combine(Root,"restore-wait","stop");new Thread(delegate(){Thread.Sleep(500);File.WriteAllText(stop,"stop");}){IsBackground=true}.Start();
+                                throw new IOException("Synthetic payload failure while the app was opened");
+                            },delegate(string executable,string arguments){launches++;}); }).GetAwaiter().GetResult();
+                            Assert(result.Restored&&result.Relaunched&&launches==1,"Restore did not wait for the app: "+result.Message);
+                            if(result.RecoveryFile!=null&&File.Exists(result.RecoveryFile))File.Delete(result.RecoveryFile);
+                        }
+                        finally { releaseHeld("restore-wait"); if(File.Exists(failureRecord))File.Delete(failureRecord); }
+                        string pending=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Pending",Spec.Guid+".txt");
+                        Assert(!File.Exists(pending),"A waited restore left the recovery barrier.");
+                        engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
+                    }
+                });
+                // 「쓰던 판 열기」: 되돌린 뒤 켜지 못한 쓰던 판을 옛 판 해시를 다시 맞추고 되돌림 표시를 새로 써서 켠다
+                Check("open the previous version again rewrites the recovery marker and starts the verified old executable",delegate
+                {
+                    using(Process exited=exitedParent())
+                    {
+                        var reopening=Engine(ReadSpec());var session=sessionFor(exited);var heard=new List<string>();
+                        reopening.BeforeLaunch=delegate(string kind,string version){heard.Add(kind);};
+                        var result=Task.Run(delegate { return reopening.InstallAutomaticUpdateCore(session,Progress,delegate(Action<InstallProgress> progress) { throw new IOException("Synthetic payload failure"); },delegate(string executable,string arguments){throw new IOException("Synthetic recovery launch failure");}); }).GetAwaiter().GetResult();
+                        Assert(result.Restored&&!result.Relaunched&&result.RestoredStatus=="rolled-back","Restored launch failure was not reported: "+result.Message);
+                        File.Delete(result.RecoveryFile);
+                        string launched=Path.Combine(Spec.InstallDirectory,"fixture-launched");if(File.Exists(launched))File.Delete(launched);
+                        reopening.RelaunchPrevious(session,result.RestoredStatus);
+                        for(var clock=Stopwatch.StartNew();!File.Exists(launched)&&clock.ElapsedMilliseconds<5000;Thread.Sleep(40)){}
+                        Assert(File.Exists(launched)&&File.ReadAllText(launched)=="--synk-update-recovery="+session.Nonce,"Previous version was not opened with its recovery nonce.");
+                        Assert(File.Exists(result.RecoveryFile)&&File.ReadAllText(result.RecoveryFile).Contains(session.Nonce),"Recovery marker was not written again.");
+                        Assert(heard.Count==2&&heard[1]=="restored","Arrival note hook was not called before reopening: "+String.Join(",",heard));
+                        ExpectFailure(delegate { reopening.RelaunchPrevious(session,"updated"); });
+                        File.Delete(result.RecoveryFile);File.Delete(launched);if(File.Exists(failureRecord))File.Delete(failureRecord);
+                        engine.VerifyInstalled();
                     }
                 });
                 Check("an unwritable failure record never changes the update outcome",delegate

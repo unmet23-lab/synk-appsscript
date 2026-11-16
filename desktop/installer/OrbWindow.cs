@@ -689,10 +689,26 @@ namespace Synk.SignalInstaller
             scene = Scene.LaunchFailure; ticker.Stop();
             SetCopy(automatic ? "새 판으로 바꿨습니다." : "설치했습니다.", "앱을 열지 못했습니다.");
             detail.Text = error == null ? "" : error.Message; detailBox.Visibility = error == null ? Visibility.Collapsed : Visibility.Visible; Layout();
-            openApp.IsEnabled = true; ((TextBlock)openApp.Content).Text = "열기";
+            openApp.IsEnabled = true; ((TextBlock)openApp.Content).Text = "열기"; AutomationProperties.SetName(openApp, "열기");
             orb.SetCutOn(false, false); orb.EyesWake();
             SetButtons(); ShowUi(); openApp.Focus();
         }
+        /// <summary>
+        /// 되돌린 뒤 쓰던 앱을 켜지 못했다(5절 설치기 표). 「쓰던 판 열기」 하나를 두고, 호스트가 잠시 뒤 한 번 더 켜 본다
+        /// </summary>
+        public void ShowRestoredLaunchFailure()
+        {
+            if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action(ShowRestoredLaunchFailure)); return; }
+            scene = Scene.LaunchFailure; ticker.Stop(); timedStage = false;
+            SetCopy("새 판으로 바꾸지 못했습니다.", "쓰던 판은 그대로입니다.");
+            detail.Text = ""; detailBox.Visibility = Visibility.Collapsed; Layout();
+            openApp.IsEnabled = true; ((TextBlock)openApp.Content).Text = "쓰던 판 열기"; AutomationProperties.SetName(openApp, "쓰던 판 열기");
+            orb.SetCutOn(false, false); orb.FadeLit(0.5, 900); orb.EyesWake();
+            if (orb.PoseName != "forge") orb.Tween("forge", 1500, OrbStage.EaseIO, delegate(double t, double a2, double b2) { return OrbStage.Lerp(a2, 0.5, OrbStage.Smooth(0, 0.8, t)); }, null);
+            SetButtons(); ShowUi(); openApp.Focus();
+        }
+        /// <summary>「잠시 뒤 한 번 더 켜 본다」: 사람이 이미 누르지 않았으면 여는 단추를 대신 누른다</summary>
+        public void OpenAgain() { if (scene == Scene.LaunchFailure && openApp.IsEnabled) OnOpen(); }
         /// <summary>자동 업데이트가 끝 상태에 이르렀는데 사람이 알아야 할 것이 남았다(5절 설치기 표의 자동 업데이트 줄)</summary>
         public void ShowAutomaticResult(AutomaticUpdateResult result)
         {
