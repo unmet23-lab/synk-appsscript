@@ -277,6 +277,7 @@ def load_cloud(snapshot_path, files, manifest_sha, integration):
         item = by_name.get(row['diskName'])
         need(item is not None and row['diskName'] not in cloud and row['sha256'] == item['sha256'] and row['bytes'] == item['bytes'], 'CLOUD_LIST_INVALID')
         need(isinstance(row['bucket'], str) and CLOUD_BUCKET.match(row['bucket']) and isinstance(row['object'], str) and CLOUD_OBJECT.match(row['object'])
+             and row['object'].split('/', 1)[1].split('~', 1)[0] == row['diskName']
              and isinstance(row['generation'], str) and row['generation'].isdigit(), 'CLOUD_LIST_INVALID')
         try:
             need(isinstance(row['md5'], str) and len(base64.b64decode(row['md5'], validate=True)) == 16, 'CLOUD_LIST_INVALID')
@@ -296,20 +297,32 @@ def cloud_bucket_matches(cloud, backup_bucket):
         need(CLOUD_BUCKET.match(row['bucket']).group(1) == match.group(1), 'CLOUD_BUCKET_MISMATCH')
 
 
-def check_referenced(storage, cloud, budget):
-    """Each referenced object, read at its exact generation, has the listed size and md5. Returns the sorted reference list."""
+def reference_list(cloud):
+    """The sorted, de-duplicated reference list a backup of this list writes (no network): what its completion object names."""
     refs, seen = [], set()
     for disk_name in sorted(cloud):
         row = cloud[disk_name]
-        budget.check()
-        meta = storage.stat(row['bucket'], row['object'], row['generation'])
-        need(meta is not None and str(meta.get('generation')) == row['generation'] and str(meta.get('size')) == str(row['bytes'])
-             and meta.get('md5Hash') == row['md5'], 'MEDIA_CLOUD_MISSING')
         key = (row['bucket'], row['object'], row['generation'])
         if key not in seen:
             seen.add(key)
             refs.append({'bucket': row['bucket'], 'object': row['object'], 'generation': row['generation'], 'sha256': row['sha256'],
                          'bytes': row['bytes'], 'md5Hash': row['md5']})
+    return refs
+
+
+def reference_present(storage, ref):
+    """The referenced object, read at its exact generation, has the listed size and md5."""
+    meta = storage.stat(ref['bucket'], ref['object'], ref['generation'])
+    return (meta is not None and str(meta.get('generation')) == ref['generation'] and str(meta.get('size')) == str(ref['bytes'])
+            and meta.get('md5Hash') == ref['md5Hash'])
+
+
+def check_referenced(storage, cloud, budget):
+    """Each referenced object, read at its exact generation, has the listed size and md5. Returns the sorted reference list."""
+    refs = reference_list(cloud)
+    for ref in refs:
+        budget.check()
+        need(reference_present(storage, ref), 'MEDIA_CLOUD_MISSING')
     return refs
 
 
@@ -743,8 +756,9 @@ def release(fd, path):
 def hydrate_locked(args, manifest, local, storage, bucket, listed, snapshot_media, targets):
     by_sha, borrowed, kept = {}, 0, 0
     cloud_by_sha = {}
-    for row in manifest['cloud'].values():
-        cloud_by_sha.setdefault(row['sha256'], row)
+    for disk_name in sorted(manifest['cloud']):
+        row = manifest['cloud'][disk_name]
+        cloud_by_sha.setdefault(row['sha256'], []).append(row)
     for item in manifest['files']:
         by_sha.setdefault(item['sha256'], []).append(item)
     for sha256, items in by_sha.items():
@@ -767,15 +781,19 @@ def hydrate_locked(args, manifest, local, storage, bucket, listed, snapshot_medi
             finally:
                 os.close(fd)
             source = manifest['name']
-        elif sha256 in cloud_by_sha:
-            # The body lives in the media bucket: its exact generation, checked like a sidecar.
-            row = cloud_by_sha[sha256]
-            got = fetch(storage, row['bucket'], [(manifest['name'], {'name': row['object'], 'generation': row['generation'], 'size': str(row['bytes']),
-                                                                      'md5Hash': row['md5']})], items[0]['bytes'], sha256, staging)
-            need(got is not None, 'MEDIA_CLOUD_MISSING')
-            source = manifest['name']
         else:
-            source = fetch(storage, bucket, rows, items[0]['bytes'], sha256, staging)
+            # A body in the media bucket is read at its exact generation, checked like a sidecar. Every media bucket object that
+            # holds this content is tried, then the sidecars (this backup's first), so one damaged copy does not stop the restore (카본 끝 판 A3).
+            source, clouds = None, cloud_by_sha.get(sha256, [])
+            for row in clouds:
+                got = fetch(storage, row['bucket'], [(manifest['name'], {'name': row['object'], 'generation': row['generation'], 'size': str(row['bytes']),
+                                                                          'md5Hash': row['md5']})], items[0]['bytes'], sha256, staging)
+                if got is not None:
+                    source = manifest['name']
+                    break
+            if source is None and rows:
+                source = fetch(storage, bucket, rows, items[0]['bytes'], sha256, staging)
+            need(source is not None, 'MEDIA_CLOUD_MISSING' if clouds else 'MEDIA_OFFSITE_MISSING')
         need(source is not None, 'MEDIA_OFFSITE_MISSING')
         borrowed += source != manifest['name']
         try:
@@ -798,15 +816,10 @@ def verify(args, token):
     complete = [item for item in items if item.get('name') == own + 'complete']
     cloud = manifest['cloud']
     cloud_bucket_matches(cloud, bucket)
-    referenced = []
-    if cloud:
-        try:
-            referenced = check_referenced(storage, cloud, Budget())
-        except Failure as error:
-            if str(error) != 'MEDIA_CLOUD_MISSING':
-                raise
-            referenced = None
-    if len(complete) == 1 and str(complete[0].get('size', '')).isdigit() and int(complete[0]['size']) <= MAX_COMPLETE and referenced is not None:
+    # The completion object names the reference list taken from the ledger rows (카본 끝 판 A4): it is compared without the network, and each
+    # referenced object is then checked on its own, so one lost object counts once and the others are still read.
+    referenced = reference_list(cloud)
+    if len(complete) == 1 and str(complete[0].get('size', '')).isdigit() and int(complete[0]['size']) <= MAX_COMPLETE:
         chunks = []
         try:
             storage.download(bucket, complete[0], chunks.append, int(complete[0]['size']))
@@ -817,12 +830,11 @@ def verify(args, token):
     missing = mismatched = 0
     cloud_contents = {row['sha256'] for row in cloud.values()}
     local_contents = {item['sha256'] for item in manifest['files'] if item['diskName'] not in cloud}
-    if referenced is None:
-        missing += len(cloud_contents - local_contents)
-    elif args.download:
-        for ref in referenced:
-            if ref['sha256'] in local_contents:
-                continue
+    for ref in referenced:
+        if not reference_present(storage, ref):
+            missing += 1
+            continue
+        if args.download:  # every referenced object, also one whose content another name sends as a sidecar (카본 끝 판 A3)
             try:
                 got_sha, got_md5 = storage.download(ref['bucket'], {'name': ref['object'], 'generation': ref['generation']}, lambda block: None, ref['bytes'])
                 good = got_sha == ref['sha256'] and got_md5 == base64.b64decode(ref['md5Hash'], validate=True)
