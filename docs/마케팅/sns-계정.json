@@ -116,7 +116,7 @@
         "노래": "미정"
       },
       "postRoute": "douyin-creator",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "unknown",
       "metricsRoute": "screen-only",
       "metricsState": "missing",
@@ -166,7 +166,7 @@
         "노래": "미정"
       },
       "postRoute": "instagram-web",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
