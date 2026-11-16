@@ -175,6 +175,16 @@ a { color: inherit; }
 .fl .ds { grid-column: 2 / -1; font: 400 13px/1.35 var(--sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fl.plain { grid-template-columns: minmax(0, 1fr) auto; }
 .fl.plain .ds { grid-column: 1 / -1; }
+/* 옮겨 오기 — 폴더 줄은 자리 경로를 잘라 숨기지 않고, 까닭 한 줄과 자리 고르기(펼쳤을 때)를 그 아래에 둔다 */
+.fl.mv .ds { white-space: normal; overflow-wrap: anywhere; }
+.fl .why { grid-column: 1 / -1; font: 400 13px/1.5 var(--sans); color: var(--dim); }
+.fl[aria-pressed="true"] .cb { border-color: var(--paper); background: radial-gradient(circle, var(--paper) 0 3px, transparent 3.5px); }
+.mvopt { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 16px; padding-top: 6px; }
+.mvopt button { appearance: none; margin: 0; padding: 2px 0 3px; background: none; border: 0; border-bottom: 1px solid transparent; border-radius: 0; font: 400 13px/1.4 var(--sans); color: var(--dim); cursor: pointer; }
+.mvopt button:hover { color: var(--paper); }
+.mvopt button[aria-pressed="true"] { color: var(--paper); border-bottom-color: var(--paper); }
+.mvopt button:focus-visible { outline: 1px solid var(--ring); outline-offset: 3px; }
+.mvopt button[aria-disabled="true"] { opacity: .5; cursor: default; }
 .selbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; padding-top: 14px; font: 400 13px/1.5 var(--sans); color: var(--dim); }
 .selbar b { font-weight: 500; color: var(--paper); }
 .empty { padding: 26px 0 10px; font: 400 14px/1.6 var(--sans); color: var(--dim); }

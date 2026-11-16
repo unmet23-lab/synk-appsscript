@@ -99,6 +99,17 @@ const CASES = [
   ['home-restore-ended', 'home'], ['home-restore-undofail', 'home'], ['home-restore-read-hold', 'home'],
   ['home-restore-undofail', 'undo-3', { name: 'undo-3-undofail' }], ['home-restore-read-hold', 'undo-3', { name: 'undo-3-readonly' }], ['home-restore-ended', 'undo-3', { name: 'undo-3-ended' }],
   ['home-restore-read', 'undo-2', { name: 'undo-2-readonly', undo: 'UNDO' }],
+  // 옮겨 오기를 엔진에 이음(조율 세션 d32d25233 · moveState · folders[].roots) — mv는 창의 옮겨 오기 기억(engine-fixtures MOVE_MV)
+  ['home-move-read', 'move-1', { name: 'move-1-plan', mv: 'plan', acct: 'MOVE' }], ['home-move-read', 'move-1', { name: 'move-1-open', mv: 'open', acct: 'MOVE' }],
+  ['home-move-read', 'move-1', { name: 'move-1-short', mv: 'short', acct: 'MOVE' }], ['home-move-read', 'move-1', { name: 'move-1-nokit', mv: 'nokit', acct: 'MOVE' }],
+  ['home-move-read', 'move-1', { name: 'move-1-loading', mv: 'loading', acct: 'MOVE' }], ['home-move-read', 'move-1', { name: 'move-1-empty', mv: 'empty', acct: 'MOVE' }],
+  ['home-move-run', 'move-2', { name: 'move-2-run', mv: 'run', acct: 'MOVE' }], ['home-move-reading', 'move-2', { name: 'move-2-reading', mv: 'reading', acct: 'MOVE' }],
+  ['home-move-read', 'move-2', { name: 'move-2-stopped', mv: 'stopped', acct: 'MOVE' }],
+  ['home-move-read', 'move-3', { name: 'move-3-result', mv: 'result', acct: 'MOVE' }], ['home-move-read', 'move-3', { name: 'move-3-ok', mv: 'ok', acct: 'MOVE' }],
+  ['home-move-read', 'move-4', { name: 'move-4-result', mv: 'result', acct: 'MOVE' }], ['home-move-read', 'move-4', { name: 'move-4-fresh', mv: 'fresh', acct: 'MOVE' }],
+  ['home-move-quit', 'move-4', { name: 'move-4-quit', mv: 'quit', acct: 'MOVE' }],
+  ['home-move-read', 'home', { name: 'home-move-stopped', mv: 'stopped', acct: 'MOVE' }], ['home-move-read', 'home', { name: 'home-move-done', mv: 'result', acct: 'MOVE' }],
+  ['home-move-run', 'home', { name: 'home-move-run', mv: 'run', acct: 'MOVE' }], ['home-move-read', 'home', { name: 'home-move-read', acct: 'MOVE' }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,
@@ -115,7 +126,7 @@ const CATALOG = {
 
 (async () => {
   if (!fs.existsSync(path.join(DIST, 'index.html'))) throw new Error('dist/가 없습니다. 먼저 node scripts/stage-ui.cjs');
-  const { STATES, NOW } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
+  const { STATES, NOW, MOVE_MV, MOVE_ACCT } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
   const { findBanned } = await import(pathToFileURL(path.join(APP, 'ui/banned-words.js')).href);
   fs.mkdirSync(out, { recursive: true });
   const server = await serve();
@@ -138,10 +149,10 @@ const CATALOG = {
       const name = extra.name || (screen === 'home' ? stateName : screen);
       if (only && !only.includes(name)) continue;
       const before = errors.length;
-      await pg.evaluate(({ screen, state, now, catalog, acct, undo, ui }) => {
+      await pg.evaluate(({ screen, state, now, catalog, acct, undo, ui, mv }) => {
         if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true, acct });
-        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo, ui });
-      }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG, acct: extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null });
+        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo, ui, mv });
+      }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG, acct: extra.acct === 'MOVE' ? MOVE_ACCT : extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null, mv: extra.mv ? MOVE_MV[extra.mv] : null });
       // 서랍 아래쪽처럼 첫 화면 밖에 있는 줄은 그 자리로 굴려서 찍는다
       if (extra.scrollTo) await pg.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ block: 'start' }), extra.scrollTo);
       await pg.waitForTimeout(120);

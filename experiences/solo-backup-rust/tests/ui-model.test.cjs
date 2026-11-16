@@ -397,8 +397,10 @@ test('개통: 첫 시작의 걸음, 이어서 백업 · 연결 다시 받기 · 
   // 읽기 기기의 복구 전용 연결: 폴더를 고르면 「이 PC에서 이어서 백업」(takeOver 차례)
   const readOpened = { ...opened, account: STATES['start-read'].account };
   assert.equal(homeModel(readOpened, { now: NOW }).id, 'home-restore-read');
-  assert.equal(homeModel(readOpened, { now: NOW }).actions[1].call, 'chooseSources');
-  assert.equal(homeModel({ ...readOpened, nextSources: ['D:\\Projects'] }, { now: NOW }).actions[1].flow, 'takeOver');
+  // 둘째 단추는 「이 PC로 옮겨 오기」(d32d25233 뒤), 그다음이 이어서 백업의 차례다
+  assert.equal(homeModel(readOpened, { now: NOW }).actions[1].to, 'move-1');
+  assert.equal(homeModel(readOpened, { now: NOW }).actions[2].call, 'chooseSources');
+  assert.equal(homeModel({ ...readOpened, nextSources: ['D:\\Projects'] }, { now: NOW }).actions[2].flow, 'takeOver');
   // 되돌리기 멈춤(account.restore.hold) — 확인하러 가기
   const held = homeModel({ ...STATES.home, account: { ...STATES['home-writekey'].account, needs: [], restore: { hold: true, jobId: 'j1', state: 'done', awaitingChoice: true, at: NOW - 86400000, byThisDevice: true, error: null, undo: false } } }, { now: NOW });
   assert.equal(held.id, 'home-restore-hold');
@@ -456,10 +458,10 @@ test('개통: 첫 시작 · 보호 범위 · 다른 PC가 쓰는 계정 · 되�
   const again = draw('start-2', STATES['start-write-picked'], { acct: { repoExists: true } });
   assert.match(again.html, /이미 백업이 있습니다/);
   assert.equal(again.acts.continue.call, 'continueBackup');
-  // 다른 PC가 쓰는 계정: 옮겨 오기 · 이어서 백업은 아직 잇지 않는다(Fable 지적 1)
+  // 다른 PC가 쓰는 계정: 옮겨 오기는 계정의 백업을 연 뒤 연다(d32d25233 뒤 · Fable 옮겨 오기 검토 F1)
   const read = draw('start-2', STATES['start-read']);
   assert.match(read.html, /「작업 노트북」이 하고 있습니다/);
-  assert.ok(read.acts.move.pending, '옮겨 오기는 옮겨 오기 메서드 뒤에 잇는다');
+  assert.equal(read.acts.move.flow, 'moveOpen', '옮겨 오기는 계정의 백업을 연 뒤 연다');
   assert.equal(read.acts.take.id, 'take', '이 PC에서 이어서 백업은 c725f319c 뒤에 잇는다');
   // 상태에 계정이 없는 예시 화면은 지금의 예시 그대로
   assert.match(draw('start-2', STATES.start).html, /찾아낸 작업 폴더/);
@@ -602,7 +604,7 @@ test('개통 둘째: 되돌리기 진행 · 고르기 · 실패 · 취소 중, �
   assert.doesNotMatch(takeReady.html, /data-act="take-go" aria-disabled/);
   assert.match(takeReady.html, /「작업 노트북」은 그때부터 백업하지 않습니다/);
   // 기본 화면(복구 전용 · 읽기 역할)도 같은 차례로 잇는다
-  assert.equal(homeModel(STATES['home-restore-read'], { now: NOW }).actions[1].flow, 'takeOver');
+  assert.equal(homeModel(STATES['home-restore-read'], { now: NOW }).actions[2].flow, 'takeOver');
   // Google 로그인 그만두기 — 기다리는 동안만
   assert.match(draw('start-1', STATES['start-signin'], { acct: { signing: true } }).html, /data-act="google-cancel"/);
   assert.doesNotMatch(draw('start-1', STATES['start-signin']).html, /data-act="google-cancel"/);
@@ -806,4 +808,149 @@ test('되돌리기 셋: Fable 지적 자리(workbackup-ui-undo3-20261116)', asyn
   const leftover = { ...STATES['home-restore-read-hold'], account: { ...STATES['home-restore-read-hold'].account, restore: { ...STATES['home-restore-read-hold'].account.restore, hold: false, awaitingChoice: false, state: 'continued' } } };
   const lo = draw('undo-3', leftover);
   assert.doesNotMatch(lo.html, /다시 매시간 백업합니다/); assert.equal(lo.acts.home.call, 'restoreSeen');
+});
+
+test('옮겨 오기: 놓일 자리 · 까닭 · 확인서 · 넘길 폴더(조율 세션 d32d25233 · moveState · roots)', async () => {
+  const m = await load('screen-model.js');
+  const { MOVE_MV } = await load('engine-fixtures.js');
+  const P = MOVE_MV.plan.preview.folders;
+  // 갈래는 why가 아니라 실제 자리로(Fable F3) — 다른 드라이브 폴더의 기본은 「옮겨 온 자료」 아래, 같은 드라이브를 고르면 옛 경로
+  assert.equal(m.movePlace(P[0]).kind, 'same');
+  assert.equal(m.movePlace(P[3]).kind, 'moved');
+  assert.deepEqual(m.movePlace(P[3], { mode: 'original', sameDrive: true }), { kind: 'sameDrive', path: 'D:\\Projects', drive: 'D' });
+  assert.equal(m.movePlace({ original: 'C:\\x', mode: 'original', destination: 'C:\\Users\\a\\옮겨 온 자료\\따로 둔 것\\x' }).kind, 'side');
+  assert.equal(m.movePlace(P[1]).kind, 'newFolder');
+  assert.equal(m.movePlace(P[0], { mode: 'skip' }).kind, 'skip');
+  assert.deepEqual(m.moveModes(P[3]).map((x) => x.id), ['original', 'sameDrive', 'newFolder', 'skip']);
+  assert.equal(m.moveModes(P[3])[0].label, '「옮겨 온 자료」 아래');
+  // 동기화 폴더는 OneDrive만이 아니다(F13) · 동기화 폴더 안을 직접 고르면 공간 경고
+  assert.match(m.moveWhy(P[1], { mode: 'newFolder' }), /동기화 폴더 밖 새 폴더/);
+  assert.match(m.moveWhy(P[1], { mode: 'original' }), /동기화가 멈출 수 있습니다/);
+  assert.match(m.moveWhy({ ...P[0], why: 'old-synced', mode: 'newFolder' }, {}), /온라인에만 있던 파일은 백업에 없으니/);
+  assert.doesNotMatch(m.moveWhy({ ...P[0], why: 'new-synced' }, {}), /OneDrive 안이라/);
+  // 「옮기지 않음」으로 바꿔도 처음 본 수를 쓰고 합계에서는 뺀다(F12)
+  const rows = m.moveRows(MOVE_MV.open.preview, MOVE_MV.open.choices, MOVE_MV.open.first);
+  assert.equal(rows.places, 3); assert.equal(rows.files, 5310 + 420 + 1870);
+  assert.equal(rows.rows.find((r) => r.label === '사진').files, 4880);
+  assert.equal(m.moveVolumes(MOVE_MV.short.preview).short.length, 1);
+  assert.equal(m.moveVolumes({ volumes: [{ volume: 'C:\\', bytes: 1, free: null, enough: null }] }).short.length, 0);
+  // 자리 정보 — 없음은 kitAt으로, 앱 쪽 문제만 있으면 말하지 않는다(F14)
+  assert.match(m.moveKitNote({ kitAt: null, kitProblems: ['size'] }), /자리 정보가 백업에 없어/);
+  assert.match(m.moveKitNote({ kitAt: 'x', kitProblems: ['known:documents'] }), /일부를 읽지 못했습니다/);
+  assert.equal(m.moveKitNote({ kitAt: 'x', kitProblems: ['app', 'file:obsidian'] }), null);
+  // 옛 기기 — 이어 하기면 저장된 기기, 아니면 지금 백업하는 기기, 없으면 가장 새 판(F6 · F18)
+  const devs = [{ from: 'a'.repeat(12), lastBackupAt: '2026-11-13T05:00:00Z' }, { from: 'b'.repeat(12), lastBackupAt: '2026-11-01T05:00:00Z' }];
+  const acc = [{ id: 'b'.repeat(12), role: 'write', state: 'active', name: '옛 노트북' }];
+  assert.equal(m.moveFrom(devs, { from: 'a'.repeat(12), unfinished: true }, acc), 'a'.repeat(12));
+  // 끝났거나 「끊지 않기」를 고른 옮겨 오기의 기기는 기본이 아니다(카본 A5)
+  assert.equal(m.moveFrom(devs, { from: 'a'.repeat(12), unfinished: false, resultAt: 'x' }, acc), 'b'.repeat(12));
+  assert.equal(m.moveFrom(devs, null, acc), 'b'.repeat(12));
+  assert.equal(m.moveFrom(devs, { from: 'gone' }, []), 'a'.repeat(12));
+  assert.equal(m.moveDeviceName('b'.repeat(12), acc), '옛 노트북');
+  assert.equal(m.moveDeviceName('c'.repeat(12), acc), '이름을 알 수 없는 PC');
+  assert.equal(m.moveDeviceName('DESKTOP-OLD1', acc), 'DESKTOP-OLD1');
+  // 멈춘 까닭 — 이번 시작 전의 실패는 쓰지 않는다(F5) · 부호 없는 실패는 다시 시작을 권한다(F11)
+  const st = { startedAt: '2026-11-13T05:10:00Z' };
+  assert.match(m.moveStopText({ lastMoveError: { code: 'ENOSPC', at: '2026-11-13T05:00:00Z' } }, st), /^옛 PC의 백업은 그대로 있습니다/);
+  assert.match(m.moveStopText({ lastMoveError: { code: 'ENOSPC', at: '2026-11-13T05:20:00Z' } }, st), /빈 공간/);
+  assert.match(m.moveStopText({ lastMoveError: { code: 'MOVE_FAILED', at: '2026-11-13T05:20:00Z' } }, st), /멈춘 곳부터 잇습니다/);
+  // 까닭 부호 — Windows 오류 번호가 붙은 호스트 부호도 가른다
+  assert.equal(m.moveReason('MOVE_OPEN:5'), 'denied'); assert.equal(m.moveReason('MOVE_RENAME:32'), 'busy');
+  assert.equal(m.moveReason('MOVE_SKIP_LINK'), 'link'); assert.equal(m.moveReason('link'), 'link'); assert.equal(m.moveReason('ENOSPC'), 'space');
+  assert.equal(m.moveReason('MOVE_NOT_IN_STREAM'), 'stream'); assert.equal(m.moveReason('WHAT'), 'other');
+  // 확인서 — 까닭별로 묶고 주의를 앞에(F9) · 「다」와 「모두 같다」는 맞을 때만(F10)
+  const res = MOVE_MV.result.result, g = m.moveGroups(res);
+  assert.deepEqual(g.list.map((x) => [x.key, x.n, x.tone]), [['fail:busy', 1, 'warn'], ['skip:link', 4, 'info']]);
+  assert.equal(g.cut, false);
+  assert.ok(m.moveGroups({ items: [{ result: 'onedrive', u: true, p: 'x' }, { result: 'same-unverified', p: 'y' }] }).list.every((x) => x.tone === 'warn'));
+  assert.deepEqual([m.moveTitle(res).main, m.moveTitle(res).soft], ['옮겨 왔습니다.', '1개는 옮겨 오지 못했습니다.']);
+  assert.equal(m.moveTitle(MOVE_MV.ok.result).main, '다 옮겨 왔습니다.');
+  assert.match(m.moveTitle({ counts: { placed: 3, skip: 4 }, complete: false }).soft, /옛 PC 백업에 그대로/);
+  assert.equal(m.moveTitle({ counts: { same: 3 }, complete: true }).then, '');
+  // 이 PC에 놓거나 확인한 파일이 없으면 「옮겨 왔습니다」라고 하지 않는다(카본 A7)
+  assert.equal(m.moveTitle({ counts: { fail: 10 }, complete: false }).main, '옮겨 오지 못했습니다.');
+  // 폴더를 만들지 못해 건너뛴 것도 옮겨 오지 못한 것이다 — 큰 글 · 넘기기가 같은 수를 쓴다(Fable 화면 검수 F2)
+  const blockedDir = { counts: { placed: 10, skip: 500 }, complete: false, items: Array.from({ length: 500 }, (_, i) => ({ result: 'skip', original: 'C:\\U\\D', name: `f${i}`, c: 'MOVE_MKDIR:5' })) };
+  assert.deepEqual([m.moveTitle(blockedDir).soft, m.moveTitle(blockedDir).tone], ['500개는 옮겨 오지 못했습니다.', 'warn']);
+  assert.equal(m.moveLeft(blockedDir).n, 500);
+  assert.equal(m.moveLeft({ counts: { skip: 4 }, items: [{ result: 'skip', c: 'link' }] }).n, 0);
+  // 이 PC에 이미 있어 그대로 둔 파일(견주지 못함)은 「옮겨 오지 못했습니다」로 세지 않는다(Fable 화면 검수 FA1)
+  const unv = { counts: { same: 300, 'same-unverified': 5 }, complete: false, items: Array.from({ length: 5 }, () => ({ result: 'same-unverified', p: 'x' })) };
+  assert.deepEqual([m.moveTitle(unv).soft, m.moveLeft(unv).failed, m.moveLeft(unv).unverified], ['5개는 내용을 견주지 못했습니다.', 0, 5]);
+  assert.equal(m.moveTitle({ counts: { skip: 4 }, complete: false }).main, '옮겨 온 파일이 없습니다.');
+  assert.deepEqual(m.moveCounts(res).map((x) => x.key), ['placed', 'same', 'copy', 'side', 'skip', 'fail']);
+  // 넘길 폴더 — 실제 뿌리에서 「따로 둔 것」을 빼고, 서로 포함되면 바깥 것만(엔진 validateSources), 더한 폴더도 같은 규칙
+  const roots = m.moveRoots({ folders: [{ roots: [{ path: 'C:\\U\\Documents', kind: 'place' }, { path: 'C:\\U\\Documents\\a', kind: 'moved' }, { path: 'C:\\U\\옮겨 온 자료\\따로 둔 것', kind: 'side' }] }, { rootsCut: true, roots: [] }] }, ['c:\\u\\documents\\', 'D:\\Work']);
+  assert.deepEqual(roots.list.map((x) => x.path), ['C:\\U\\Documents', 'C:\\U\\Documents\\a', 'D:\\Work']); assert.equal(roots.cut, true);
+  // 체크된 바깥 폴더만 안쪽을 가린다 — 바깥을 끄면 안쪽이 다시 보이고 넘길 목록에 든다(카본 A3)
+  const nest = { result: { folders: [{ roots: [{ path: 'C:\\U\\Documents', kind: 'place' }] }] }, added: ['C:\\U\\Documents\\Work'] };
+  assert.deepEqual(m.moveTakeList({}, nest).checked, ['C:\\U\\Documents']);
+  assert.deepEqual(m.moveTakeList({}, { ...nest, off: ['c:\\u\\documents'] }).checked, ['C:\\U\\Documents\\Work']);
+  assert.equal(m.moveTakeList({}, { ...nest, off: ['c:\\u\\documents'] }).list.length, 2);
+  const take = m.moveTakeList({}, { ...MOVE_MV.result, off: ['c:\\users\\studio\\pictures'] });
+  assert.equal(take.list.length, 4); assert.equal(take.checked.length, 3); assert.ok(take.isOff('C:\\Users\\studio\\Pictures'));
+  assert.deepEqual(m.moveTakeList({ nextSources: ['C:\\A'] }, { quit: true, result: res, added: ['D:\\B'] }).checked, ['C:\\A', 'D:\\B']);
+  // 옛 PC의 새 판 — 마지막 시작 뒤에 판이 있으면 한 번 더 옮겨 오기를 권한다(F15)
+  assert.equal(m.moveFresh(MOVE_MV.result.devices, MOVE_MV.result.state, res), null);
+  assert.ok(m.moveFresh(MOVE_MV.fresh.devices, MOVE_MV.fresh.state, res));
+});
+
+test('옮겨 오기: 기본 화면 갈래와 화면 넷', async () => {
+  const { homeModel, moveJob } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW, MOVE_MV, MOVE_ACCT } = await load('engine-fixtures.js');
+  const home = (state, move) => homeModel(state, { now: NOW, move });
+  const read = STATES['home-move-read'];
+  // 기본 화면 — 멈춤 → 이어서, 끝났고 「끊지 않기」를 고르지 않음 → 넘기기, 고르면 → 되살리기만 하는 연결(설계 검토 권고 3)
+  assert.equal(home(read, MOVE_MV.stopped.state).id, 'home-move-stopped');
+  assert.equal(home(read, MOVE_MV.stopped.state).actions[0].flow, 'moveResume');
+  assert.equal(home(read, MOVE_MV.result.state).id, 'home-move-done');
+  assert.equal(home(read, { ...MOVE_MV.result.state, released: '2026-11-13T05:50:00Z' }).id, 'home-restore-read');
+  assert.equal(home(read, null).id, 'home-restore-read');
+  assert.ok(home(read, null).actions.some((a) => a.to === 'move-1'));
+  // 쓰는 PC가 되면(mode backup) 옮겨 오기 줄을 두지 않는다
+  assert.equal(home({ ...STATES.home, account: { ...STATES['home-writekey'].account, needs: [] } }, MOVE_MV.result.state).id, 'home');
+  // 도는 옮겨 오기 — 계정 프로필(b2)의 작업만 본다(F5)
+  const run = STATES['home-move-run'];
+  assert.equal(home(run, MOVE_MV.run.state).id, 'home-run');
+  assert.equal(home(run, null).actions[0].to, 'move-2');
+  assert.equal(home(run, null).progress.stage, '옮겨 오는 중');
+  assert.equal(home(STATES['home-move-reading'], null).progress.stage, '옮겨 올 목록 읽는 중');
+  assert.equal(moveJob({ profile: 'local', job: { kind: 'move' }, profiles: { b2: { job: null } } }), null);
+  assert.ok(moveJob({ profile: 'local', job: null, profiles: { b2: { job: { kind: 'move' } } } }));
+  // 지금 프로필이 로컬이어도 계정 프로필의 옮겨 오기는 기본 화면에서 도는 작업이다(카본 A4)
+  assert.equal(home({ ...read, profile: 'local', job: null, profiles: { b2: { job: { kind: 'move', stage: '옮겨 오는 중', percent: 5 } } } }, null).id, 'home-run');
+  // 화면 넷 — 예시 기억(mv)이 있으면 엔진 갈래로 그린다
+  const draw = (id, state, mv) => renderScreen(id, { state, model: home(state, mv?.state || null), now: NOW, ui: {}, acct: { ...MOVE_ACCT }, mv, fake: true });
+  const one = draw('move-1', read, MOVE_MV.plan);
+  assert.match(one.html, /「작업 노트북」의 백업을 찾았습니다/); assert.equal(one.acts['move-go'].flow, 'moveGo');
+  assert.doesNotMatch(one.html, /약 <b class="num">\d+분/); // 시간 숫자는 짓지 않는다(F16)
+  assert.match(draw('move-1', read, MOVE_MV.short).html, /data-act="move-go" aria-disabled="true"/);
+  assert.match(draw('move-1', read, MOVE_MV.nokit).html, /앞서 멈춘 옮겨 오기를 잇습니다/);
+  assert.doesNotMatch(draw('move-1', read, MOVE_MV.nokit).html, /data-act="move-open"/);
+  assert.match(draw('move-1', read, MOVE_MV.open).html, /data-mode="sameDrive"[^>]*>D 드라이브의 같은 자리/);
+  assert.match(draw('move-2', run, MOVE_MV.run).html, /aria-valuenow="42"/);
+  assert.doesNotMatch(draw('move-2', run, MOVE_MV.run).html, /잠시 멈추기|남은 시간/);
+  assert.match(draw('move-2', read, MOVE_MV.stopped).html, /data-act="move-resume"/);
+  // 미리 본 기기가 실제로 옮긴 기기와 다르면 진행 화면은 옮긴 기기로 부르고 미리 본 계획을 쓰지 않는다(카본 B1)
+  const other = draw('move-2', read, { ...MOVE_MV.stopped, from: 'OLD-DESKTOP', preview: MOVE_MV.plan.preview, first: MOVE_MV.plan.first });
+  assert.match(other.html, /「작업 노트북」에서/); assert.doesNotMatch(other.html, /바탕화면/);
+  const three = draw('move-3', read, MOVE_MV.result);
+  assert.match(three.html, /1개는 옮겨 오지 못했습니다/); assert.doesNotMatch(three.html, /다 옮겨 왔습니다/);
+  assert.equal(three.acts['move-next'].to, 'move-4');
+  const four = draw('move-4', read, MOVE_MV.result);
+  assert.equal((four.html.match(/data-act="move-root"/g) || []).length, 4);
+  assert.doesNotMatch(four.html, /따로 둔 것<\/span><span class="ds">/);
+  assert.match(four.html, /옮겨 오지 못한 파일\(1개\)은/);
+  assert.doesNotMatch(four.html, /한 번 더 옮겨 오기/);
+  assert.match(draw('move-4', read, MOVE_MV.fresh).html, /한 번 더 옮겨 오기/);
+  assert.equal(four.acts['move-take'].flow, 'moveTake'); assert.equal(four.acts['move-release'].flow, 'moveRelease');
+  assert.match(draw('move-4', STATES['home-move-quit'], MOVE_MV.quit).html, /data-act="home"[^>]*>돌아가기/);
+  // 읽기 전(undefined)은 「읽는 중」 — 결과를 읽기 전에 고른 폴더로 넘기기 목록을 채우지 않는다
+  assert.match(draw('move-3', read, { state: MOVE_MV.result.state }).html, /확인서를[\s\S]*읽고 있습니다/);
+  assert.doesNotMatch(draw('move-4', STATES['home-move-quit'], { state: MOVE_MV.result.state }).html, /data-act="move-take"/);
+  assert.match(draw('move-2', read, {}).html, /옮겨 오기 상태를[\s\S]*읽고 있습니다/);
+  // 첫 시작의 「이 PC로 옮겨 오기」는 계정의 백업을 연 뒤 연다(F1)
+  const s2 = renderScreen('start-2', { state: STATES['start-read'], model: homeModel(STATES['start-read'], { now: NOW }), now: NOW, acct: {}, fake: true });
+  assert.equal(s2.acts.move.flow, 'moveOpen'); assert.doesNotMatch(s2.html, /옮겨 오기는 다음 업데이트에서 열립니다/);
 });

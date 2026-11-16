@@ -3,7 +3,7 @@
 // 엔진에 아직 없는 기능의 단추는 「아직 준비 중」 한 줄만 띄우고 아무것도 보내지 않는다(QA 「가짜 상태로 그린 화면」).
 
 import { createStore, failureText } from './state-store.js';
-import { homeModel, startStep, restorePlace, afterUndo } from './screen-model.js';
+import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -26,6 +26,11 @@ let prevJob = null;
 // Google 걸음 확인 · 계정의 기기 목록(devicesList). 되돌리기 미리 보기(restorePlan)는 undo에 둔다
 let acct = { signing: false, limit: null, repoExists: false, googleAck: false, devices: null, devicesError: null, devicesBusy: false };
 let undo = null;
+// 창이 기억하는 옮겨 오기(엔진 moveState · moveDevices · movePreview · moveResult와 손님의 고름). 엔진 값을 아직 안 읽은 칸은 undefined다
+let mv = null;
+// 한 번만 읽는 것 — 그리기마다 부르면 실패나 BUSY가 그리기를 다시 부르며 돈다. 다시 읽을 때 그 열쇠를 지운다
+const mvTried = new Set();
+let mvRunning = false;
 // 단추가 보낸 호출 — 기다리는 동안과 보내는 동안 내내 둔다. 같은 호출이 또 오면 버린다(Fable FA1 · -c FA2)
 const runningCalls = new Set();
 function watchJobs(s) {
@@ -35,6 +40,10 @@ function watchJobs(s) {
   // 하던 일 때문에 못 읽은 기기 목록은 그 일이 끝나면 다시 읽는다(Fable F2)
   if (prevJob && !s.job && acct.devicesError) { acct = { ...acct, devicesError: null }; if (!drawerWrap.hidden || screen === 'home') void loadDevices(); }
   prevJob = s.job?.kind || null;
+  const moving = !!moveJob(s);
+  if (mvRunning && !moving) { mv = { ...(mv || {}), state: undefined, result: undefined }; void moveEnded(); }
+  else if (!mvRunning && moving && screen === 'home' && shownId === null) screen = 'move-2';
+  mvRunning = moving;
   const rs = s.account?.restore || null;
   if (rs) acct = { ...acct, lastRestore: rs, restoreEnded: null };
   else if (acct.lastRestore) acct = { ...acct, restoreEnded: acct.lastRestore, lastRestore: null };
@@ -47,8 +56,7 @@ const state = () => (fixture ? fixture.state : store.state);
 const now = () => (fixture ? fixture.now : Date.now());
 
 /** 엔진에 아직 없는 기능의 화면 — 실제 상태에서는 열지 않고 「준비 중」 한 줄만 띄운다 */
-const SOON = { 'move-1': '이 PC로 옮겨 오기', 'move-2': '이 PC로 옮겨 오기', 'move-3': '이 PC로 옮겨 오기', 'move-4': '이 PC로 옮겨 오기',
-  code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
+const SOON = { code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
 const soon = (what) => note(what.startsWith('!') ? what.slice(1) : `${josa(what, '은/는')} 아직 준비 중입니다. 다음 업데이트에서 열립니다.`);
 
 /** 실제 상태에서 아직 열 수 없는 화면이면 그 이름, 열 수 있으면 null — 되돌리기 미리 보기는 계정에 이은 PC에서만 연다 */
@@ -61,6 +69,8 @@ function notYet(to) {
   if (to === 'undo-3' && !s?.account?.restore) return '사고 되돌리기';
   if (to === 'lost' && !(s?.account?.connected && acct.lostTarget)) return '분실 신고';
   if (to === 'lost-2' && !s?.account?.connected) return '분실 신고';
+  // 옮겨 오기는 계정의 백업을 되살리기 전용으로 연 새 PC에서 연다. 쓰는 PC의 「옛 PC 백업에서 꺼내기」는 다음 증분이다
+  if (/^move-[1-4]$/.test(to) && !moveOpen(s)) return s?.configured && s.mode !== 'restore' ? '옛 PC 백업에서 꺼내기' : '!이 PC로 옮겨 오기는 Google로 시작해 이 계정의 백업을 연 뒤에 엽니다.';
   return null;
 }
 
@@ -71,6 +81,8 @@ function note(text, holdMs = 4200) {
 
 /** 기본 화면이 첫 시작 · 첫 백업일 때는 그 화면으로 */
 function resolve(id, s, model) {
+  // 옮겨 오기가 도는 동안의 「어디에 놓을까요」는 진행 화면이다 — 도는 동안에는 미리 보기를 읽지 않는다
+  if (id === 'move-1' && !fixture && moveJob(s)) return 'move-2';
   if (id !== 'home') return id;
   if (s?.job?.kind === 'protect') return 'start-3';
   if (model.id === 'start') return startStep(s) === 'signin' ? 'start-1' : 'start-2';
@@ -94,10 +106,10 @@ function paint() {
     return;
   }
   if (screen === 'undo-3' && s?.account?.restore?.state === 'failed' && s.account.restore.jobId) acct.undoSeen = s.account.restore.jobId;
-  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null });
+  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null });
   const id = resolve(screen, s, model);
   if (!fixture) prepare(id, s);
-  out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, fake: !!fixture });
+  out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, mv, fake: !!fixture });
   stage.dataset.tone = out.tone; stage.dataset.kind = out.kind; stage.dataset.screen = id;
   orb.setBusy(!!s.job);
   hereS.textContent = out.here || '';
@@ -110,13 +122,13 @@ function paint() {
   const key = inRoom ? focusKey(active) : null;
   const caret = active?.id === 'find' ? [active.selectionStart, active.selectionEnd] : null;
   const typed = active?.id === 'find' ? active.value : null;
-  const sameList = id === 'restore' && (catalog?.query ?? null) === shownQuery;
-  const filesTop = sameList ? room.querySelector('.files')?.scrollTop ?? 0 : 0, roomTop = room.scrollTop;
+  const sameList = id === 'restore' ? (catalog?.query ?? null) === shownQuery : !fresh;
+  const filesTop = sameList ? [...room.querySelectorAll('.files')].map((e) => e.scrollTop) : [], roomTop = room.scrollTop;
   shownQuery = id === 'restore' ? (catalog?.query ?? null) : null;
   if (fresh) { stage.classList.remove('shown'); room.scrollTop = 0; }
   if (lastHtml !== out.html) {
     room.innerHTML = out.html; lastHtml = out.html; fillBars(room, fresh);
-    if (!fresh) { const files = room.querySelector('.files'); if (files) files.scrollTop = filesTop; room.scrollTop = roomTop; }
+    if (!fresh) { room.querySelectorAll('.files').forEach((e, i) => { e.scrollTop = filesTop[i] || 0; }); room.scrollTop = roomTop; }
   }
   if (key) { const el = room.querySelector(key); if (el) { if (typed !== null) el.value = typed; el.focus({ preventScroll: true }); if (caret) el.setSelectionRange(...caret); } }
   const live = out.kind === 'home' ? `${model.kick}. ${model.title}` : out.here || '';
@@ -144,6 +156,10 @@ function focusKey(el) {
   if (el.dataset?.file) return q('data-file', el.dataset.file);
   if (el.dataset?.pick) return q('data-pick', el.dataset.pick);
   if (el.dataset?.path) return q('data-path', el.dataset.path); // 서랍의 폴더 「빼기」는 같은 data-act가 여럿이다
+  // 옮겨 오기의 자리 고르기 · 옛 PC · 지킬 폴더도 같은 data-act가 여럿이다
+  if (el.dataset?.mode) return `${q('data-folder', el.dataset.folder || '')}${q('data-mode', el.dataset.mode)}`;
+  if (el.dataset?.from) return q('data-from', el.dataset.from);
+  if (el.dataset?.root) return q('data-root', el.dataset.root);
   if (el.dataset?.act) return q('data-act', el.dataset.act);
   return null;
 }
@@ -154,6 +170,8 @@ function go(id) {
   if (screen === 'restore') openCatalog();
   // 되돌리기 화면을 떠나면 찾은 시각을 버린다 — 다시 들어오면 새로 찾는다(서버가 5분 동안 같은 답을 준다)
   if (!screen.startsWith('undo-')) undo = null;
+  // 결과 없이 넘기기(옮겨 오기를 그만둠)는 그 화면에서만 — 넘기기를 떠나면 옮겨 온 결과로 돌아간다
+  if (mv?.quit && screen !== 'move-4') mv = { ...mv, quit: false };
   if (screen === 'undo-1' && !fixture && !undo?.value && !undo?.loading) void loadPlan();
   paint();
   room.focus({ preventScroll: true });
@@ -167,6 +185,12 @@ function prepare(id, s) {
     acct.switchTried = true; setTimeout(() => void store.call('selectProfile', 'b2'), 0);
   }
   if (id === 'start-2' && startStep(s) === 'read' && acct.devices === null && !acct.devicesError && !acct.devicesBusy) setTimeout(() => void loadDevices(), 0);
+  if (!moveOpen(s)) return;
+  if ((id === 'home' || /^move-[1-4]$/.test(id)) && mv?.state === undefined) mvOnce('state', loadMoveState);
+  if (id === 'move-1' && !moveJob(s)) mvOnce('plan', () => loadMovePlan());
+  if ((id === 'move-3' || id === 'move-4') && mv?.result === undefined) mvOnce('result', loadMoveResult);
+  if (id === 'move-4' && mv?.devices === undefined && !moveJob(s)) mvOnce('devices', loadMoveDevices);
+  if (/^move-[1-4]$/.test(id) && acct.devices === null && !acct.devicesError && !acct.devicesBusy) mvOnce('names', loadDevices);
 }
 /** 다른 호출(단추 · 목록 읽기)이 끝날 때까지 기다린다 — 창의 호출은 한 번에 하나라 겹치면 BUSY로 튕긴다(카본 A1) */
 async function untilFree(limitMs = 60000) {
@@ -222,16 +246,21 @@ async function loadPlan(at) {
  * 분실 신고 뒤 받은 출입증이 없으면(READ_KEY) Google 걸음을 확인한 경우에만 rotateReadKey로 먼저 받는다.
  * 중간에 멈추면 기본 화면(복구 전용 · 읽기 역할)의 같은 단추로 잇는다.
  */
-/** 다른 PC가 쓰는 계정을 이 PC에서 되살리기만 하는 연결로 연다. 분실 신고 뒤(Google 걸음)에는 확인한 뒤 새 읽기 출입증부터 받는다(Fable 둘째 F2) */
-async function openRead() {
+/** 다른 PC가 쓰는 계정을 이 PC에서 되살리기만 하는 연결로 연다. 분실 신고 뒤(Google 걸음)에는 확인한 뒤 새 읽기 출입증부터 받는다(Fable 둘째 F2).
+ *  이미 열었으면 그대로 둔다. 연 뒤 참 */
+async function openAccount() {
   const s = state(), step = !!s?.account?.googleStepRequired;
-  if (step && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
-  if (step) { const k = await store.call('rotateReadKey', { googleStepDone: true }); if (!k.ok) return k.code === 'CANCELED' ? undefined : note(failureText(k.code)); }
+  if (s?.configured) return true;
+  if (step && !acct.googleAck) { note(failureText('GOOGLE_STEP')); return false; }
+  if (step) { const k = await store.call('rotateReadKey', { googleStepDone: true }); if (!k.ok) { if (k.code !== 'CANCELED') note(failureText(k.code)); return false; } }
   const r = await store.call('openAccountBackup');
-  if (!r.ok) { if (r.code === 'READ_KEY') void store.refresh(); return r.code === 'CANCELED' ? undefined : note(failureText(r.code)); }
+  if (!r.ok) { if (r.code === 'READ_KEY') void store.refresh(); if (r.code !== 'CANCELED') note(failureText(r.code)); return false; }
   acct = { ...acct, googleAck: false };
-  return go('home');
+  return true;
 }
+async function openRead() { if (await openAccount()) go('home'); }
+/** 첫 시작의 「이 PC로 옮겨 오기」 — 옮겨 오기 메서드는 계정의 백업을 연 뒤에만 돈다(Fable 옮겨 오기 검토 F1) */
+async function openMove() { if (!(await openAccount())) return; mvForget(); go('move-1'); }
 async function takeOver() {
   const s = state();
   if (s?.account?.googleStepRequired && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
@@ -252,6 +281,169 @@ async function takeOver() {
   acct = { ...acct, take: false, googleAck: false };
   return go('home');
 }
+
+/* ── 새 PC로 옮겨 오기(조율 세션 d32d25233 · moveState · folders[].roots) ── */
+function mvOnce(key, fn) { if (mvTried.has(key)) return; mvTried.add(key); setTimeout(() => void fn(), 0); }
+/** 읽은 옮겨 오기를 버린다 — 다시 들어오면 새로 읽는다. 엔진의 옮겨 오기 상태(state)는 남긴다 */
+function mvForget() { mv = { state: mv?.state }; for (const k of ['plan', 'result', 'devices']) mvTried.delete(k); }
+const mvError = (code) => (code === 'BAD_INPUT' ? '옮겨 올 PC의 백업을 다시 찾지 못했습니다. 다시 읽어 주세요.' : failureText(code));
+/** 옮겨 오기의 지금(moveState — 읽기 호출이라 창의 호출 줄을 잡지 않는다). 못 읽으면 기본 화면에 줄을 두지 않는다 */
+async function loadMoveState() {
+  const r = await store.aside('moveState');
+  mv = { ...(mv || {}), state: r.ok && r.value && typeof r.value === 'object' ? r.value : null };
+  paint();
+}
+async function loadMoveResult() {
+  mv = { ...(mv || {}), loading: true }; paint();
+  const r = await store.aside('moveResult');
+  mv = { ...mv, loading: false, result: r.ok && r.value && typeof r.value === 'object' ? r.value : null };
+  paint();
+}
+/** 넘기기 직전에 옛 PC의 새 판을 본다(Fable F15) — 못 읽으면 권하지 않을 뿐이다 */
+async function loadMoveDevices() {
+  const d = (await untilFree()) ? await store.call('moveDevices') : { ok: false, code: 'BUSY' };
+  mv = { ...(mv || {}), devices: d.ok && Array.isArray(d.value) ? d.value : mv?.devices ?? null };
+  paint();
+}
+/**
+ * 「어디에 놓을까요」 — 옛 기기를 고르고(moveDevices · 기기 이름은 devicesList) 그 기기의 미리 보기(movePreview)를 읽는다.
+ * 멈춘 옮겨 오기를 이으면 저장된 기기와 고름을 그대로 쓴다(Fable F6). 미리 보기는 폴더마다 목록을 읽어 몇 분 걸릴 수 있다
+ */
+async function loadMovePlan(from) {
+  mv = { ...(mv || {}), error: null, preview: null, first: null, dirty: false, counting: false };
+  paint();
+  if (mv.state === undefined) { const st = await store.aside('moveState'); mv = { ...mv, state: st.ok && st.value && typeof st.value === 'object' ? st.value : null }; }
+  if (!Array.isArray(mv.devices)) {
+    const d = (await untilFree()) ? await store.call('moveDevices') : { ok: false, code: 'BUSY' };
+    if (!d.ok) { mv = { ...mv, error: mvError(d.code) }; return paint(); }
+    mv = { ...mv, devices: Array.isArray(d.value) ? d.value.filter((x) => x && typeof x.from === 'string') : [] };
+  }
+  if (!mv.devices.length) return paint();
+  // 기기 이름(devicesList)을 읽는 중이면 끝을 기다린다 — 지금 백업하는 기기를 먼저 고르기 때문이다(Fable F18)
+  for (let i = 0; acct.devicesBusy && i < 240; i++) await new Promise((r) => setTimeout(r, 250));
+  if (acct.devices === null) await loadDevices();
+  const pick = from && mv.devices.some((d) => d.from === from) ? from : moveFrom(mv.devices, mv.state, acct.devices);
+  const choices = mv.state?.unfinished && mv.state.from === pick && mv.state.choices && typeof mv.state.choices === 'object' ? { ...mv.state.choices } : {};
+  mv = { ...mv, from: pick, choices, open: false };
+  paint();
+  const p = (await untilFree()) ? await store.call('movePreview', { from: pick, choices }) : { ok: false, code: 'BUSY' };
+  if (mv.from !== pick) return; // 그사이 다른 기기를 골랐다
+  if (!p.ok || !p.value || typeof p.value !== 'object') { mv = { ...mv, error: mvError(p.ok ? 'FAILED' : p.code) }; return paint(); }
+  const first = Object.fromEntries((Array.isArray(p.value.folders) ? p.value.folders : []).map((x) => [x.original, { files: x.files, bytes: x.bytes }]));
+  mv = { ...mv, preview: p.value, first };
+  paint();
+}
+/** 바꾼 고름으로 공간을 다시 센다 — 처음 본 폴더별 수는 그대로 두고, 그때 0이던 폴더만 채운다 */
+async function moveCount() {
+  if (!mv?.preview || !mv.from) return false;
+  const from = mv.from, choices = mv.choices || {}, asked = JSON.stringify(choices);
+  mv = { ...mv, counting: true }; paint();
+  const p = (await untilFree()) ? await store.call('movePreview', { from, choices }) : { ok: false, code: 'BUSY' };
+  mv = { ...mv, counting: false };
+  // 세는 동안 기기나 고름이 바뀌었으면 그 답은 지금 고름의 공간이 아니다 — 바꾼 것으로 남겨 다시 세게 한다(카본 A1)
+  if (mv.from !== from || JSON.stringify(mv.choices || {}) !== asked) { paint(); return false; }
+  if (!p.ok || !p.value) { note(mvError(p.ok ? 'FAILED' : p.code)); paint(); return false; }
+  const first = { ...(mv.first || {}) };
+  for (const x of Array.isArray(p.value.folders) ? p.value.folders : []) if (!first[x.original]?.files) first[x.original] = { files: x.files, bytes: x.bytes };
+  mv = { ...mv, preview: p.value, first, dirty: false };
+  paint();
+  return true;
+}
+/** 시작 — 같은 옛 기기의 끝나지 않은 옮겨 오기는 엔진이 멈춘 곳부터 잇는다 */
+async function moveStartWith(from, choices, preview = null, freshPlan = false) {
+  if (!from) { mvForget(); return go('move-1'); }
+  const r = await store.call('moveStart', { from, choices: choices || {} });
+  if (!r.ok) {
+    if (r.code === 'BAD_INPUT') { mvForget(); note('옮겨 올 PC를 다시 골라 주세요.'); return go('move-1'); }
+    return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
+  }
+  // 옛 기기 목록도 버린다 — 넘기기 화면이 옮겨 오는 동안 옛 PC가 다시 백업했는지 새로 읽어야 한다(Fable F15)
+  // 미리 본 계획은 같은 기기면 남겨 진행 화면의 「옮겨 올 것」에 쓴다(Fable 화면 검수 F5)
+  const plan = preview || (mv?.from === from ? mv?.preview : null) || null;
+  const counted = plan ? Object.fromEntries((plan.folders || []).map((x) => [x.original, { files: x.files, bytes: x.bytes }])) : null;
+  mv = { ...(mv || {}), from, preview: plan, first: plan ? (!freshPlan && mv?.first) || counted : null,
+    result: undefined, devices: undefined, added: [], off: [], quit: false, state: { ...(mv?.state || {}), from, choices: choices || {}, startedAt: new Date().toISOString(), unfinished: true, resultAt: null, released: null, complete: null } };
+  for (const k of ['result', 'plan', 'devices']) mvTried.delete(k);
+  return go('move-2');
+}
+async function moveGo() {
+  if (!mv?.preview || !mv.from) return;
+  if (mv.dirty && !(await moveCount())) return;
+  if (moveVolumes(mv.preview).short.length) return note('빈 공간이 모자란 드라이브가 있습니다. 공간을 비우거나 다른 자리를 고른 뒤 다시 눌러 주세요.');
+  return moveStartWith(mv.from, mv.choices, mv.preview);
+}
+/**
+ * 끝난 옮겨 오기를 다시 돌린다(「다시 옮겨 오기」 · 「한 번 더 옮겨 오기」). 엔진은 새 번호로 처음부터 다시 받아 옮겨 올 양만큼 빈 공간을
+ * 요구하고, 시작하는 순간 앞선 결과를 지운다 — 그래서 먼저 공간을 세고, 모자라면 시작하지 않는다(Fable 화면 검수 F1)
+ */
+async function moveAgain() {
+  const from = mv?.state?.from || mv?.from, choices = mv?.state?.choices || mv?.choices || {};
+  if (!from) { mvForget(); return go('move-1'); }
+  // 세는 동안(몇 분일 수 있다) 확인서 · 넘기기 화면이 그 사실을 말한다(Fable 화면 검수 FA2)
+  mv = { ...(mv || {}), counting: true }; paint();
+  let p;
+  try { p = (await untilFree()) ? await store.call('movePreview', { from, choices }) : { ok: false, code: 'BUSY' }; } finally { mv = { ...(mv || {}), counting: false }; }
+  if (!p.ok || !p.value) return note(mvError(p.ok ? 'FAILED' : p.code));
+  const short = moveVolumes(p.value).short;
+  if (short.length) return note(`${short.map((v) => `${v.drive} 드라이브`).join(', ')}의 빈 공간이 모자라 다시 옮겨 오지 않았습니다. 다시 옮겨 오면 처음부터 다시 받아 견주므로 옮겨 올 양만큼 빈 공간이 있어야 합니다. 공간을 비운 뒤 다시 눌러 주세요.`, 12000);
+  return moveStartWith(from, choices, p.value, true);
+}
+/** 끝난 옮겨 오기 — 상태와 결과를 다시 읽고, 진행 화면에 있었으면 확인서로 넘어간다 */
+async function moveEnded() {
+  const st = await store.aside('moveState'), res = await store.aside('moveResult');
+  mv = { ...(mv || {}), state: st.ok && st.value && typeof st.value === 'object' ? st.value : null, result: res.ok && res.value && typeof res.value === 'object' ? res.value : null };
+  if (screen === 'move-2' && mv.state?.resultAt && !mv.state.unfinished) return go('move-3');
+  paint();
+}
+/** 넘기기 — 쓰는 자리를 이 PC로(takeWriteSeat — 폴더를 먼저 검사한다) → 예약과 첫 백업(continueBackup). 고른 폴더를 둘 다에 준다(설계 검토 권고 1) */
+async function moveTake() {
+  const s = state();
+  if (s?.account?.googleStepRequired && !acct.googleAck) return note(failureText('GOOGLE_STEP'));
+  const sources = moveTakeList(s, mv).checked;
+  if (!sources.length || sources.length > 30) return;
+  const stop = (r) => (r.code === 'CANCELED' ? undefined : note(r.code === 'FAILED' ? '지킬 폴더 가운데 없거나 열 수 없는 폴더가 있어 넘기지 못했습니다. 비어 있던 폴더는 만들어지지 않았을 수 있습니다. 목록에서 의심되는 폴더의 체크를 끄고 다시 눌러 주세요.' : failureText(r.code)));
+  const t = await store.call('takeWriteSeat', { sources });
+  if (!t.ok) return stop(t);
+  const c = await store.call('continueBackup', { sources, googleStepDone: acct.googleAck === true });
+  if (!c.ok) return stop(c);
+  acct = { ...acct, googleAck: false }; mv = null; mvTried.clear();
+  note('이 PC가 이어서 매시간 백업합니다.');
+  return go('home');
+}
+/** 「끊지 않고 이 PC는 백업하지 않기」 — 실패하면 그 자리에 남는다(Fable F17) */
+async function moveRelease() {
+  const r = await store.call('moveRelease');
+  if (!r.ok) return r.code === 'CANCELED' ? undefined : note(`${failureText(r.code)} 다시 눌러 주세요.`);
+  mv = { state: { ...(mv?.state || {}), released: new Date().toISOString() } };
+  for (const k of ['plan', 'result', 'devices']) mvTried.delete(k);
+  note('옛 PC가 계속 백업합니다. 이 PC는 파일을 되살리기만 합니다.');
+  return go('home');
+}
+/** 지킬 폴더 더하기 — 폴더 고르는 창(chooseSources)은 고른 것을 설정(nextSources)에 갈아 넣으므로, 화면 목록은 창이 따로 합쳐 둔다 */
+async function moveAdd() {
+  const before = state();
+  if (before?.profile !== 'b2') { const sw = await store.call('selectProfile', 'b2'); if (!sw.ok) return note(failureText(sw.code)); }
+  const had = (Array.isArray(before?.nextSources) ? before.nextSources : []).map(pathKey).sort().join('|');
+  const r = await store.call('chooseSources');
+  if (!r.ok) return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
+  const got = (Array.isArray(r.value) ? r.value : []).filter((p) => typeof p === 'string' && p);
+  if (!got.length) return;
+  // 창을 닫으면 엔진은 고른 폴더를 그대로 돌려준다. 그대로면 창을 닫은 것인지 같은 것을 다시 고른 것인지 가를 수 없어, 목록에 아직 없는 것만 더한다
+  // (Fable 화면 검수 F3 — 체크를 끈 줄은 그 줄을 다시 누르면 된다). 하나라도 다르면 이번에 고른 것을 모두 합치고 체크를 켠다(카본 A2)
+  const same = got.map(pathKey).sort().join('|') === had;
+  const listed = new Set(moveTakeList(before, mv).list.map((x) => pathKey(x.path)));
+  if (same && got.every((p) => listed.has(pathKey(p)))) return;
+  // 결과 없이 넘길 때는 앞서 고른 폴더도 목록에 남긴다 — 고르는 창이 설정의 고른 폴더를 새것으로 갈아 넣기 때문이다
+  const keep = mv?.result && !mv?.quit ? [] : pickedSources(before);
+  const gotKeys = new Set(got.map(pathKey));
+  mv = { ...(mv || {}), added: [...new Set([...(mv?.added || []), ...keep, ...got])], off: same ? mv?.off || [] : (mv?.off || []).filter((k) => !gotKeys.has(k)) };
+  paint();
+}
+const MOVE_FLOWS = {
+  moveOpen: openMove, moveGo, moveCount, moveTake, moveRelease, moveAdd,
+  moveResume: () => moveStartWith(mv?.state?.from, mv?.state?.choices),
+  moveAgain,
+};
 
 /* ── 파일 되살리기 목록(엔진 openFileCatalog · queryFileCatalog · setFileSelection) ── */
 async function openCatalog() {
@@ -352,6 +544,7 @@ async function openGoogle(kind) {
 async function send(a, el) {
   if (a.flow === 'takeOver') return takeOver();
   if (a.flow === 'openRead') return openRead();
+  if (a.flow && MOVE_FLOWS[a.flow]) return MOVE_FLOWS[a.flow]();
   if (a.call === 'closeWindow') { const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close(); }
   let r;
   const where = a.call === 'restoreSelected' || a.call === 'restoreLatest' ? restorePlace(state(), ui.place, now(), ui.sentDefaultAt) : null;
@@ -408,6 +601,7 @@ const GLOBAL = {
   home: { to: 'home' }, drawer: { drawer: true }, 'drawer-close': {}, restore: { to: 'restore' },
   add: { call: 'addSources' }, drop: { call: 'removeSource' }, 'auto-on': { call: 'setAutomatic', arg: true }, 'auto-off': { call: 'setAutomatic', arg: false },
   code: { to: 'code' }, lost: { to: 'lost' }, 'undo-1': { to: 'undo-1' }, partial: { to: 'partial' }, 'partial-std': { to: 'partial-std' }, 'move-0': { to: 'move-0' }, 'mass-list': { to: 'mass-list' },
+  'move-count': { flow: 'moveCount' }, 'move-add': { flow: 'moveAdd' },
   external: { pending: '외장 드라이브 사본' }, tray: { pending: '트레이 아이콘' }, telemetry: { pending: '시범 측정 내용 보기' }, help: { pending: '도움 요청' },
 };
 
@@ -440,6 +634,20 @@ stage.addEventListener('click', (e) => {
     closeDrawer(); return go('lost');
   }
   if (id === 'replan') return void loadPlan();
+  // 옮겨 오기 — 창 안에서만 바뀌는 고름(엔진에 보내지 않는다). 공간은 「공간 다시 세기」나 시작할 때 다시 센다(Fable F12)
+  if (id === 'move-open') { mv = { ...(mv || {}), open: !mv?.open }; return paint(); }
+  if (id === 'move-mode') {
+    const folder = el.dataset.folder, m = el.dataset.mode; if (!folder || !m) return;
+    mv = { ...(mv || {}), choices: { ...(mv?.choices || {}), [folder]: m === 'sameDrive' ? { mode: 'original', sameDrive: true } : { mode: m } }, dirty: true }; return paint();
+  }
+  if (id === 'move-from') { const from = el.dataset.from; if (!from || from === mv?.from) return; if (fixture) { mv = { ...mv, from }; return paint(); } return void loadMovePlan(from); }
+  if (id === 'move-root') {
+    const k = pathKey(el.dataset.root), off = new Set(mv?.off || []);
+    if (off.has(k)) off.delete(k); else off.add(k);
+    mv = { ...(mv || {}), off: [...off] }; return paint();
+  }
+  if (id === 'move-reload') { if (fixture) return; mvForget(); return void loadMovePlan(); }
+  if (id === 'move-quit') { mv = { ...(mv || {}), quit: true }; return go('move-4'); }
   if (id === 'undo-pick') {
     const at = Number(el.dataset.at); if (!Number.isFinite(at)) return;
     if (fixture) { undo = { ...undo, pickAt: at }; return paint(); }
@@ -501,7 +709,7 @@ const TOPICS = { status: 'home', changes: 'home', restore: 'restore', signin: 'h
 export function openTopic(topic) {
   const to = TOPICS[topic]; if (!to) return false;
   if (to === 'drawer') { go('home'); openDrawer(); return true; }
-  if (to === 'move') { if (state()?.configured) go('move-0'); else if (fixture) go('move-1'); else { go('home'); soon(SOON['move-1']); } return true; }
+  if (to === 'move') { const s = state(); if (moveOpen(s)) go(moveJob(s) ? 'move-2' : 'move-1'); else if (s?.configured) go('move-0'); else if (fixture) go('move-1'); else go('home'); return true; }
   closeDrawer(); go(to); return true;
 }
 try { window.__TAURI__?.event?.listen?.('backup:open', (e) => { const t = e && typeof e.payload === 'object' ? e.payload?.topic : e?.payload; if (typeof t === 'string') openTopic(t); }); } catch { /* 알림이 없는 판 */ }
@@ -513,6 +721,7 @@ window.__wb = Object.freeze({
     if (opt.state) fixture = { state: opt.state, now: opt.now ?? Date.now() }; else if (opt.live) fixture = null;
     catalog = opt.catalog ?? null; ui = { pick: 'same', ...(opt.ui || {}) };
     acct = { signing: false, limit: null, repoExists: false, googleAck: false, devices: null, devicesError: null, devicesBusy: false, ...(opt.acct || {}) }; undo = opt.undo ?? null;
+    mv = opt.mv ?? null; mvTried.clear();
     closeDrawer(); screen = SCREENS.includes(id) ? id : 'home'; shownId = null; paint();
     if (opt.drawer) openDrawer();
     stage.classList.toggle('still', !!opt.still);

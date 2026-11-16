@@ -70,12 +70,16 @@ async function wd(method, url, body) {
     const seenOf = (arg) => runAsync(`const done=arguments[arguments.length-1];Promise.resolve(window.backup.restoreSeen&&window.backup.restoreSeen(${arg})).then(r=>done(r?{ok:r.ok,code:r.code||null,state:!!(r.value&&r.value.account)}:null),()=>done(null))`);
     const seenOk = await seenOf('"job-none"'), seenBad = await seenOf('42');
     check('restoreSeen이 엔진에 닿는다', seenOk && seenOk.ok === true && seenOk.state && seenBad && seenBad.code === 'BAD_INPUT', JSON.stringify({ seenOk, seenBad }));
+    // 옮겨 오기의 읽기 둘(조율 세션 d32d25233 · 2c9464397) — 시작한 적 없는 시험 PC는 멈춘 옮겨 오기도 결과도 없다
+    const mvOf = (m) => runAsync(`const done=arguments[arguments.length-1];Promise.resolve(window.backup.${m}&&window.backup.${m}()).then(r=>done(r?{ok:r.ok,code:r.code||null,value:r.value===undefined?'undefined':r.value}:null),()=>done(null))`);
+    const mvState = await mvOf('moveState'), mvResult = await mvOf('moveResult');
+    check('moveState · moveResult가 엔진에 닿는다', mvState?.ok === true && mvState.value && mvState.value.unfinished === false && mvState.value.running === false && mvResult?.ok === true && mvResult.value === null, JSON.stringify({ mvState, mvResult }));
     check('계정 칸에 열쇠 · 토큰 · 비밀번호가 없다', acc && !/token|secret|password|refresh|applicationKey|keyId/i.test(acc.text), acc ? acc.keys.join(',') : '없음');
     const env2 = await run("return {font:document.fonts.check('16px \"SUIT Variable\"'),fonts:[...document.fonts].map(f=>f.family+':'+f.status),webgl:(()=>{const c=document.createElement('canvas');return !!c.getContext('webgl')})(),w:innerWidth,h:innerHeight}");
     check('SUIT 글꼴이 실렸다(Tauri CSP font-src)', env2.font, env2.fonts.join(', '));
     check('WebGL이 켜진다(구)', env2.webgl);
     // ② 모든 화면 × 예시 상태 — 화면 글 검사
-    const { STATES, NOW } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
+    const { STATES, NOW, MOVE_MV, MOVE_ACCT } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
     const { findBanned } = await import(pathToFileURL(path.join(APP, 'ui/banned-words.js')).href);
     const names = await run('return window.__wb.screens');
     const cases = [...Object.keys(STATES).map((k) => ['home', k]), ...names.filter((n) => n !== 'home').map((n) => [n, n.startsWith('partial') ? 'home-partial' : n === 'start-1' ? 'start' : 'home'])];
@@ -86,7 +90,14 @@ async function wd(method, url, body) {
       if (banned.length) check(`화면 글 검사 ${screen}(${st})`, false, banned.join(', '));
       try { const png = await wd('GET', `/session/${session}/screenshot`); fs.writeFileSync(path.join(out, `${screen === 'home' ? st : screen}.png`), Buffer.from(png, 'base64')); } catch { /* 숨은 창은 찍히지 않을 수 있다 */ }
     }
-    check(`화면 글 검사 ${cases.length}장`, report.screens.every((x) => !x.banned.length), `걸림 ${report.screens.filter((x) => x.banned.length).length}장`);
+    // 옮겨 오기 화면 넷은 창의 옮겨 오기 기억(mv)이 있어야 엔진 갈래로 그린다
+    for (const [screen, st, key] of [['move-1', 'home-move-read', 'open'], ['move-2', 'home-move-run', 'run'], ['move-3', 'home-move-read', 'result'], ['move-4', 'home-move-read', 'fresh'], ['home', 'home-move-read', 'stopped']]) {
+      const r = await run('const [id,state,now,mv,acct]=arguments;window.__wb.show(id,{state,now,still:true,mv,acct});return {screen:document.getElementById("stage").dataset.screen,text:window.__wb.text()}', [screen, STATES[st], NOW, MOVE_MV[key], MOVE_ACCT]);
+      const banned = findBanned(r.text);
+      report.screens.push({ screen: `${screen}:${key}`, state: st, shown: r.screen, banned });
+      if (banned.length) check(`화면 글 검사 ${screen}:${key}`, false, banned.join(', '));
+    }
+    check(`화면 글 검사 ${report.screens.length}장`, report.screens.every((x) => !x.banned.length), `걸림 ${report.screens.filter((x) => x.banned.length).length}장`);
     // ⑥ 단추: 예시 상태에서 「파일 되살리기」로 넘어갔다 돌아오기
     await run('const [state,now]=arguments;window.__wb.show("home",{state,now,still:true})', [STATES.home, NOW]);
     await run('document.querySelector(\'#room [data-act="restore"]\').click()');
@@ -110,6 +121,10 @@ async function wd(method, url, body) {
     const undoAfter = await run('return {screen:document.getElementById("stage").dataset.screen,note:document.getElementById("note").textContent}');
     check('계정에 잇지 않은 PC에서 되돌리기는 열지 않는다', undoAfter.screen !== 'undo-1' && /Google 계정으로 시작한 PC에서 엽니다/.test(undoAfter.note), JSON.stringify(undoAfter));
     if (liveScreen === 'start-1') check('첫 시작에 「Google로 시작」 단추가 있다', await run('return !!document.querySelector(\'#room [data-act="google"]\')'));
+    // 계정의 백업을 열지 않은 PC에서는 옮겨 오기 화면을 열지 않는다(옮겨 오기 메서드는 연 뒤에만 돈다 — Fable 옮겨 오기 검토 F1)
+    await run('window.__wb.open("move")');
+    const moveAfter = await run('return document.getElementById("stage").dataset.screen');
+    check('계정의 백업을 열지 않은 PC에서 옮겨 오기는 첫 화면에 머문다', !/^move-[1-4]$/.test(moveAfter), moveAfter);
     await run('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape"}))');
     check('Esc로 설정 서랍이 닫힌다', await run('return document.getElementById("drawer").hidden'));
     // ③ 쪽 오류(앱이 남긴 것)
