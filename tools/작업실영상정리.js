@@ -3,8 +3,8 @@
 /**
  * 작업실 영상 정리 — 회사 미디어 버킷에서 30일 안의 어느 백업도 가리키지 않는 영상 객체를 고른다
  * (2026-11-17, 작업실 영상 클라우드 A1c · 11-16 유호님 「클라우드로 옮기기」).
- * 설계는 저장소 밖 .tmp/company-media-cloud-20261116/설계.md 5.7 · 16 · 17절에 있고, 운영 기록은
- * docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md 「작업실 영상 클라우드」 절에 있다.
+ * 설계는 저장소 밖 .tmp/company-media-cloud-20261116/설계.md 5.7 · 16 · 17 · 18절과 설계검토-a1c-Fable.md(잠금 L4 · 넘김 O2)에 있고,
+ * 운영 기록은 docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md 「작업실 영상 클라우드」 절에 있다.
  *
  * 서버는 버킷에서 아무것도 지우지 않는다. 지우는 것은 이 도구 하나다. 근거는 백업 버킷의 완료 객체
  * (<스냅숏>.media-complete, deploy/backup-media.py가 백업마다 쓰고 버킷 수명 규칙으로 30일 뒤 사라진다)다.
@@ -18,8 +18,7 @@
  * 아래 가운데 하나라도 걸리면 아무것도 지우지 않고 멈춘다(끝 코드 3).
  *   - 정기 백업 자리(기본 company/production/)의 가장 최근 완료 객체가 48시간보다 오래되었다(백업이 멈춘 것이다).
  *   - 완료 객체를 하나라도 읽지 못했거나 꼴이 틀렸다.
- *   - 지울 것이 객체의 20%를 넘는다. 유호님이 그 실행의 목록을 보신 뒤 --한번넘김 <실행 ID>로 한 번만 넘긴다.
- *     넘김은 20% 하나로만 멈춘 가장 최근 실행이어야 하고, 그 실행의 목록에 있는 것만 지운다.
+ *   - 지울 것이 객체의 20%를 넘는다.
  * 목록을 끝까지 읽지 못하면 실패로 끝난다(끝 코드 1).
  * 시각은 GCS 응답의 Date와 객체의 timeCreated로 잰다. PC 시계는 쓰지 않는다.
  * 백업 버킷에는 목록과 읽기만 한다. 미디어 버킷에는 목록, gc/runs/ 기록 한 장 새로 만들기, 그리고 지우기 실행일 때
@@ -27,23 +26,39 @@
  * 기본은 미리 보기다. 지우려면 설정 파일의 "지우기": true와 --실행이 함께 있어야 한다. 데이터를 지우는 운영 변경이라
  * 첫 미리 보기 목록을 유호님께 보여 드리고 승인을 받은 뒤에 켠다.
  *
+ * 20%에 걸려 멈춘 실행 R은 한 번 쓰는 승인으로만 넘긴다(Fable 설계 검토 O2).
+ *   1. 유호님이 R의 목록을 보시고 승인하시면 `--승인 R`이 approvals/R.json(R의 목록을 옮겨 적은 것)을 만든다.
+ *      R은 20% 하나로만 멈춘 실행이어야 한다. 이미 쓴 승인(approvals/used/)이나 무효가 된 승인(approvals/void/)의 R은 다시 승인하지 못한다.
+ *   2. `--한번넘김 R --실행`은 모든 관문을 지난 뒤, 지우기 직전에 approvals/R.json을 approvals/used/R.json으로 옮긴다(rename).
+ *      rename은 한 번만 성공하므로, 잠금이 뚫려도 승인은 한 번만 쓰인다. 옮긴 실행만 그 내용을 읽어 다시 검사하고,
+ *      승인 목록과 지금 모든 규칙을 채운 것이 겹치는 것만 지운다. 승인이 넘기는 것은 20% 관문 하나다.
+ *   3. 승인은 R이 멈춘 GCS 시각에서 3일이 지나면 무효다. 늦게 승인해도 만료는 늘지 않는다.
+ *   4. 지울 것이 0개이거나 다른 이유로 멈춘 실행은 승인을 쓰지 않는다. 미리 보기(`--한번넘김 R`만)는 승인을 읽기만 한다.
+ *   5. 어느 지우기 실행이든 지우기에 들어가면, 쓰지 않은 다른 승인은 모두 approvals/void/로 옮겨 무효로 한다.
+ *   예전 판(O1)의 「R이 가장 최근에 멈춘 실행인가」는 보지 않는다. 승인이 따로 있고 3일 뒤 죽기 때문이다.
+ *   지우기 실행은 runs/를 읽지 않는다. runs/를 읽는 것은 `--승인`의 R 한 장뿐이다.
+ *
  * 설정과 상태는 공용 작업본의 .tmp/company-media-cloud-gc/에 둔다(프로젝트 번호와 후보 목록은 공개 저장소에 두지 않는다).
  *   config.json  {"projectNumber":"<번호>","tokenCommand":["<프로그램>","<인수>",…],"지우기":false}
  *                backupPrefix(기본 "company/production/")로 정기 백업 자리를 바꿀 수 있다.
- *   state.json   후보를 처음 본 시각(GCS 시각)
- *   runs/<실행 ID>.json  실행마다 남기는 기록(후보와 지운 것의 이름까지)
- *   lock         한 번에 하나만 돈다(낡은 잠금 치우기는 lock.reclaim 폴더를 잡은 실행만 한다)
- * 미디어 버킷의 gc/runs/<실행 ID>.json에는 멈추지 않고 끝난 실행만 숫자로 남긴다. 서버의 하루 대조가 이 기록이
- * 7일 넘게 없으면 경보(MEDIA_CLEANUP_STALE)를 올리므로, 계속 멈추는 것도 7일 안에 드러난다.
+ *   state.json   후보를 처음 본 시각(GCS 시각)과 버킷 이름. 마지막으로 적은 지 7일이 넘었으면 시계를 모두 다시 시작한다.
+ *   runs/<실행 ID>.json  실행마다 남기는 기록(후보와 지운 것의 이름까지). 사람이 보는 장부다.
+ *   approvals/   승인(위 1~5)
+ * 한 번에 하나만 돈다. 잠금은 운영체제가 쥐는 이름 하나다(Windows 이름 있는 파이프, Linux 추상 소켓). 프로세스가 끝나거나 죽으면
+ * 운영체제가 바로 놓으므로 「낡은 잠금」이 없다. 이름은 상태 폴더의 진짜 경로에서 만든다. `--승인`도 같은 잠금을 잡는다.
+ * 미디어 버킷의 gc/runs/<실행 ID>.json에는 멈추지도 실패하지도 않은 실행만 숫자로 남긴다. 지우기를 켠 뒤에는 지우기 실행만 남기고,
+ * 미리 보기는 남기지 않는다(손으로 돌린 미리 보기가 서버의 7일 경보 MEDIA_CLEANUP_STALE 시계를 되돌리지 않게).
  *
  * 쓰는 법
  *   node tools/작업실영상정리.js [--json]                      미리 보기
  *   node tools/작업실영상정리.js --실행                        지우기(설정의 "지우기": true일 때만)
- *   node tools/작업실영상정리.js --한번넘김 <실행 ID> [--실행]  20%에 걸려 멈춘 그 실행의 후보를 한 번만 넘긴다
- *   시험용: --설정 <파일> --상태 <폴더> --끝점 http://127.0.0.1:<포트> --토큰-stdin
+ *   node tools/작업실영상정리.js --승인 <실행 ID>              20%에 걸려 멈춘 그 실행의 목록을 승인한다(유호님 승인 뒤)
+ *   node tools/작업실영상정리.js --한번넘김 <실행 ID> [--실행] 그 승인으로 한 번만 넘긴다
+ *   시험용: --설정 <파일> --상태 <폴더> --끝점 http://127.0.0.1:<포트> --토큰-stdin(--상태는 시험 끝점과 함께만 받는다)
  * 끝 코드: 0 정상 · 3 멈춤 · 1 실패 · 2 쓰는 법이 틀림
  */
 const fs = require('fs');
+const net = require('net');
 const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
@@ -52,27 +67,30 @@ const { 공용작업본 } = require('./lib/공용작업본.js');
 const DAY = 86400000;
 const HOUR = 3600000;
 const RULES = Object.freeze({
-  createdMs: 3 * DAY, seenMs: 3 * DAY, backupStaleMs: 48 * HOUR, maxShare: 0.2,
-  maxComplete: 4 << 20, maxReferenced: 8000, maxPages: 1000, maxJson: 32 << 20, timeoutMs: 60000, lockStaleMs: 2 * HOUR,
+  createdMs: 3 * DAY, seenMs: 3 * DAY, backupStaleMs: 48 * HOUR, maxShare: 0.2, approvalMs: 3 * DAY, stateFreshMs: 7 * DAY,
+  maxComplete: 4 << 20, maxReferenced: 8000, maxPages: 1000, maxJson: 32 << 20, timeoutMs: 60000,
 });
 // 지울 수 있는 이름은 UUID 꼴(8-4-4-4-12)만이다(GPT GA3). 서버는 randomUUID로 이름을 짓는다.
 const OBJECT = /^studio-media\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)(?:~[1-9][0-9]{0,3})?$/;
 // 완료 객체의 가리킴은 서버와 backup-media.py가 받는 넓은 꼴로 읽는다. 이 꼴 밖의 가리킴이 있으면 그 완료 객체를 못 읽은 것으로 보고 멈춘다.
 const REFERENCE = /^studio-media\/[0-9a-f-]{36}\.(?:mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)(?:~[1-9][0-9]{0,3})?$/;
+const KEY = new RegExp('^' + OBJECT.source.slice(1, -1) + '#[0-9]{1,20}$');
 const MEDIA_BUCKET = /^synk-company-media-[0-9]{6,20}$/;
 const GENERATION = /^[0-9]{1,20}$/;
 const PROJECT = /^[0-9]{6,20}$/;
+const RUN_ID = /^[0-9TZ]+-[0-9a-f]{6}$/;
 const COMPLETE = /\.media-complete$/;
 const SCHEMA_V1 = 'synk-workspace-media-complete/v1';
 const SCHEMA_V2 = 'synk-workspace-media-complete/v2';
 const RUN_SCHEMA = 'synk-media-cloud-gc-run/v1';
 const STATE_SCHEMA = 'synk-media-cloud-gc-state/v1';
+const APPROVAL_SCHEMA = 'synk-media-cloud-gc-approval/v1';
 const LIVE_ENDPOINT = 'https://storage.googleapis.com';
 const REASONS = Object.freeze({
   COMPLETE_UNREADABLE: '완료 객체를 읽지 못했거나 꼴이 틀렸습니다',
   BACKUP_STALE: '정기 백업의 가장 최근 완료 객체가 48시간보다 오래되었습니다(백업이 멈춘 것 같습니다)',
-  TOO_MANY: '지울 것이 객체의 20%를 넘습니다(목록을 보신 뒤 --한번넘김 <실행 ID>로 한 번만 넘깁니다)',
-  OVERRIDE_INVALID: '--한번넘김에 준 실행이 20% 하나로만 멈춘 가장 최근 실행이 아니거나, 그 뒤에 지우기 실행이 이미 진행되었습니다',
+  TOO_MANY: '지울 것이 객체의 20%를 넘습니다(목록을 보신 뒤 --승인 <실행 ID>로 승인하고 --한번넘김 <실행 ID>로 한 번만 넘깁니다)',
+  OVERRIDE_INVALID: '--한번넘김에 준 실행의 승인이 없거나, 이미 썼거나, 무효가 되었거나, 그 실행이 멈춘 지 3일이 지났습니다',
 });
 
 class Failure extends Error {
@@ -80,6 +98,7 @@ class Failure extends Error {
 }
 const key = (name, generation) => name + '#' + generation;
 const iso = ms => new Date(ms).toISOString();
+const sha = text => crypto.createHash('sha256').update(text).digest('hex');
 
 async function readLimited(res, limit) {
   const declared = Number(res.headers.get('content-length'));
@@ -167,54 +186,31 @@ function writeJson(file, value) {
   fs.renameSync(temporary, file);
 }
 
-function alive(pid) {
-  try { process.kill(pid, 0); return true; } catch (error) { return error.code === 'EPERM'; }
+/** 잠금 이름: 상태 폴더의 진짜 경로(연결을 풀고, Windows에서는 소문자로)를 해시한다. 같은 폴더를 다른 철자로 불러도 같은 잠금이다. */
+function lockName(stateDir) {
+  let real;
+  try { fs.mkdirSync(stateDir, { recursive: true }); real = fs.realpathSync.native(stateDir); } catch { throw new Failure('LOCK_FAILED'); }
+  if (process.platform === 'win32') real = real.toLowerCase();
+  const id = sha(real).slice(0, 32);
+  if (process.platform === 'win32') return '\\\\.\\pipe\\synk-media-gc-' + id;
+  if (process.platform === 'linux') return '\0synk-media-gc-' + id;
+  throw new Failure('LOCK_UNSUPPORTED', 2);
 }
 
-/** 한 번에 하나만 돈다. 잠금을 잡은 프로세스가 이 PC에서 살아 있으면 나이와 상관없이 기다리고, 내 잠금일 때만 푼다(GPT GA2).
- *  죽은 프로세스가 남긴 잠금은 치운다. 내용을 못 읽는 잠금(쓰는 도중이거나 깨짐)은 2시간이 지난 뒤에만 치운다. */
-function takeLock(stateDir) {
-  fs.mkdirSync(stateDir, { recursive: true });
-  const file = path.join(stateDir, 'lock'), reclaim = path.join(stateDir, 'lock.reclaim');
-  const token = crypto.randomBytes(8).toString('hex');
-  const mine = JSON.stringify({ pid: process.pid, token, at: new Date().toISOString() });
-  for (let attempt = 0; attempt < 2; attempt++) {
-    // 잠금은 내용을 다 쓴 임시 파일을 하드 링크로 한 번에 놓는다. 링크는 잠금이 이미 있으면 실패하고, 잠금은 늘 다 쓰인 채로만 나타난다.
-    // 그래서 빈 잠금이 낡은 빈 잠금과 같아 보여 지워지는 일이 없다(GPT 셋째 검수). 잠금마다 토큰이 달라 내용이 낡은 잠금과 같아질 수도 없다.
-    const temporary = path.join(stateDir, '.lock-' + process.pid + '-' + token + '.new');
-    fs.writeFileSync(temporary, mine, { flag: 'wx', mode: 0o600 });
-    try {
-      fs.linkSync(temporary, file);
-      return () => { try { if (fs.readFileSync(file, 'utf8') === mine) fs.unlinkSync(file); } catch {} };
-    } catch (error) {
-      if (error.code !== 'EEXIST') throw error;
-      let text = null, holder = null;
-      try { text = fs.readFileSync(file, 'utf8'); holder = JSON.parse(text); } catch {}
-      if (holder && Number.isInteger(holder.pid) && holder.pid > 0) {
-        if (alive(holder.pid)) throw new Failure('BUSY', 3);
-      } else {
-        let old = false;
-        try { old = Date.now() - fs.statSync(file).mtimeMs > RULES.lockStaleMs; } catch {}
-        if (!old) throw new Failure('BUSY', 3);
-      }
-      // 낡은 잠금은 lock.reclaim 폴더(만들기가 원자적이다)를 잡은 한 실행만 치운다. 치우는 동안 다른 실행은 잠금을 지우지도 새로 잡지도 못한다
-      // (잠금이 있는 한 wx 만들기는 실패하고, 지우기는 이 폴더를 잡아야 한다 — GPT 다시 검수 GA3). 치우기는 잠깐이면 끝나므로, 2시간 넘게 남은
-      // 폴더는 치우던 실행이 죽은 것이다. 그때는 저절로 지우지 않고 LOCK_RECLAIM_STUCK으로 멈춘다(도는 실행이 없는지 본 뒤 손으로 지운다).
-      try { fs.mkdirSync(reclaim); } catch (e) {
-        if (e.code !== 'EEXIST') throw e;
-        let stuck = false;
-        try { stuck = Date.now() - fs.statSync(reclaim).mtimeMs > RULES.lockStaleMs; } catch {}
-        throw new Failure(stuck ? 'LOCK_RECLAIM_STUCK' : 'BUSY', 3);
-      }
-      try {
-        let now = null;
-        try { now = fs.readFileSync(file, 'utf8'); } catch (e) { if (e.code !== 'ENOENT') throw e; }
-        if (now !== null && now !== text) throw new Failure('BUSY', 3);
-        if (now !== null) fs.unlinkSync(file);
-      } finally { try { fs.rmdirSync(reclaim); } catch {} }
-    } finally { try { fs.unlinkSync(temporary); } catch {} }
-  }
-  throw new Failure('BUSY', 3);
+/** 한 번에 하나만 돈다(Fable 설계 검토 L4). 운영체제가 이름 하나를 한 프로세스에게만 주고, 프로세스가 끝나거나 죽으면 바로 놓는다.
+ *  listening을 받았을 때만 진행한다. EADDRINUSE는 BUSY, 그 밖의 모든 오류는 LOCK_FAILED다. 풀 때는 닫힘을 기다린다. */
+async function takeLock(stateDir) {
+  const name = lockName(stateDir);
+  const server = net.createServer(socket => socket.destroy());
+  await new Promise((resolve, reject) => {
+    const onError = error => { server.removeListener('listening', onListening); reject(new Failure(error && error.code === 'EADDRINUSE' ? 'BUSY' : 'LOCK_FAILED', error && error.code === 'EADDRINUSE' ? 3 : 1)); };
+    const onListening = () => { server.removeListener('error', onError); resolve(); };
+    server.once('error', onError);
+    server.once('listening', onListening);
+    server.listen(name);
+  });
+  let closing = null;
+  return () => closing || (closing = new Promise(resolve => server.close(() => resolve())));
 }
 
 function validReference(ref) {
@@ -222,24 +218,78 @@ function validReference(ref) {
     && typeof ref.object === 'string' && REFERENCE.test(ref.object) && typeof ref.generation === 'string' && GENERATION.test(ref.generation);
 }
 
-function runsOf(stateDir) {
-  const dir = path.join(stateDir, 'runs');
+const approvalPaths = (stateDir, runId) => {
+  const dir = path.join(stateDir, 'approvals');
+  return { dir, file: path.join(dir, runId + '.json'), used: path.join(dir, 'used', runId + '.json'), voided: path.join(dir, 'void', runId + '.json') };
+};
+function validApproval(body, runId, media) {
+  return !!body && typeof body === 'object' && body.schema === APPROVAL_SCHEMA && body.runId === runId && body.bucket === media
+    && typeof body.stoppedAt === 'string' && Number.isFinite(Date.parse(body.stoppedAt))
+    && Array.isArray(body.eligible) && body.eligible.length > 0 && body.eligible.every(item => typeof item === 'string' && KEY.test(item))
+    && body.eligibleSha256 === sha(JSON.stringify(body.eligible));
+}
+/** 승인은 R이 멈춘 GCS 시각에서 3일까지 쓴다(Fable 설계 검토 O2 · 만료 기준). */
+const notExpired = (body, now) => { const at = Date.parse(body.stoppedAt); return at <= now && now - at <= RULES.approvalMs; };
+/** 승인 쓰기: rename이 먼저고 읽기가 나중이다. rename이 성공한 실행만 내용을 읽는다. 어떤 이유든 rename이 실패하면 null이다. */
+function consumeApproval(stateDir, runId, rename = fs.renameSync) {
+  const p = approvalPaths(stateDir, runId);
+  try { fs.mkdirSync(path.dirname(p.used), { recursive: true }); rename(p.file, p.used); } catch { return null; }
+  try { return JSON.parse(fs.readFileSync(p.used, 'utf8')); } catch { return {}; }  // 옮겼지만 못 읽으면 쓴 것으로 남기고 무효로 본다
+}
+/** 지우기에 들어가는 실행은 쓰지 않은 다른 승인을 모두 무효로 옮긴다(Fable 설계 검토 O2 8번). 못 옮겨도 해는 없다. */
+function voidApprovals(stateDir) {
+  const dir = path.join(stateDir, 'approvals');
   let names = [];
-  try { names = fs.readdirSync(dir).filter(name => /^[0-9TZ]+-[0-9a-f]{6}\.json$/.test(name)).sort(); } catch {}
-  // 실행 순서는 기록의 seq로 정한다(같은 초에 둔 실행도 순서가 갈린다). seq는 잠금 안에서 앞 기록의 가장 큰 값에 1을 더한다.
-  return names.map(name => readJson(path.join(dir, name), null)).filter(Boolean).sort((a, b) => (a.seq || 0) - (b.seq || 0));
+  try { names = fs.readdirSync(dir).filter(name => /^[0-9TZ]+-[0-9a-f]{6}\.json$/.test(name)); } catch { return; }
+  try { fs.mkdirSync(path.join(dir, 'void'), { recursive: true }); } catch { return; }
+  for (const name of names) { try { fs.renameSync(path.join(dir, name), path.join(dir, 'void', name)); } catch {} }
 }
 
-async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute = false, override = null, fetchImpl = fetch }) {
+function bucketsOf(config) {
   if (!config || typeof config !== 'object' || typeof config.projectNumber !== 'string' || !PROJECT.test(config.projectNumber)) throw new Failure('CONFIG_INVALID', 2);
+  return { media: 'synk-company-media-' + config.projectNumber, backup: 'synk-company-backups-' + config.projectNumber };
+}
+
+/** `--승인 R`: R이 20% 하나로만 멈춘 실행이면 그 목록을 approvals/R.json으로 옮겨 적는다. 네트워크를 쓰지 않는다. */
+async function approve({ config, stateDir, runId }) {
+  const { media } = bucketsOf(config);
+  if (typeof runId !== 'string' || !RUN_ID.test(runId)) throw new Failure('APPROVAL_SOURCE_INVALID', 2);
+  const release = await takeLock(stateDir);
+  try {
+    const p = approvalPaths(stateDir, runId);
+    if (fs.existsSync(p.used)) throw new Failure('APPROVAL_ALREADY_USED', 2);
+    if (fs.existsSync(p.voided)) throw new Failure('APPROVAL_VOID', 2);
+    let stopped = null;
+    try { stopped = JSON.parse(fs.readFileSync(path.join(stateDir, 'runs', runId + '.json'), 'utf8')); } catch {}
+    const ok = !!stopped && stopped.schema === RUN_SCHEMA && stopped.runId === runId && stopped.bucket === media && stopped.status === 'stopped'
+      && Array.isArray(stopped.reasons) && stopped.reasons.length === 1 && stopped.reasons[0] === 'TOO_MANY'
+      && typeof stopped.startedAt === 'string' && Number.isFinite(Date.parse(stopped.startedAt))
+      && Array.isArray(stopped.eligible) && stopped.eligible.length > 0 && stopped.eligible.every(item => typeof item === 'string' && KEY.test(item));
+    if (!ok) throw new Failure('APPROVAL_SOURCE_INVALID', 2);
+    const expiresAt = iso(Date.parse(stopped.startedAt) + RULES.approvalMs);
+    if (fs.existsSync(p.file)) return { status: 'already-approved', runId, eligible: stopped.eligible.length, expiresAt };
+    const body = { schema: APPROVAL_SCHEMA, runId, bucket: media, stoppedAt: stopped.startedAt, eligible: stopped.eligible,
+      eligibleSha256: sha(JSON.stringify(stopped.eligible)), approvedAt: new Date().toISOString() };  // approvedAt은 기록용(PC 시각)이고 판단에 쓰지 않는다
+    // 반쯤 쓰인 승인이 보이지 않게 다 쓴 임시 파일을 하드 링크로 놓는다(이미 있으면 실패).
+    fs.mkdirSync(p.dir, { recursive: true });
+    const temporary = path.join(p.dir, '.' + runId + '-' + process.pid + '.new');
+    fs.writeFileSync(temporary, JSON.stringify(body, null, 2) + '\n', { flag: 'wx', mode: 0o600 });
+    try { fs.linkSync(temporary, p.file); } catch (error) {
+      if (error.code === 'EEXIST') return { status: 'already-approved', runId, eligible: stopped.eligible.length, expiresAt };
+      throw new Failure('APPROVAL_WRITE_FAILED');
+    } finally { try { fs.unlinkSync(temporary); } catch {} }
+    return { status: 'approved', runId, eligible: stopped.eligible.length, expiresAt };
+  } finally { await release(); }
+}
+
+async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute = false, override = null, fetchImpl = fetch, _rename = fs.renameSync }) {
+  const { media, backup } = bucketsOf(config);
   const backupPrefix = config.backupPrefix === undefined ? 'company/production/' : config.backupPrefix;
   if (typeof backupPrefix !== 'string' || !/^[a-z0-9-]+(\/[a-z0-9-]+)*\/$/.test(backupPrefix)) throw new Failure('CONFIG_INVALID', 2);
   if (execute && config['지우기'] !== true) throw new Failure('DELETE_NOT_ENABLED', 2);
-  if (override !== null && !/^[0-9TZ]+-[0-9a-f]{6}$/.test(override)) throw new Failure('OVERRIDE_INVALID', 2);
+  if (override !== null && !RUN_ID.test(override)) throw new Failure('OVERRIDE_INVALID', 2);
   if (typeof token !== 'string' || !/^[A-Za-z0-9._~+/=-]{10,4096}$/.test(token)) throw new Failure('TOKEN_INVALID', 2);
-  const media = 'synk-company-media-' + config.projectNumber;
-  const backup = 'synk-company-backups-' + config.projectNumber;
-  const release = takeLock(stateDir);
+  const release = await takeLock(stateDir);
   try {
     const gcs = storage({ token, endpoint, media, backup, fetchImpl });
     const objects = await gcs.list(media, 'studio-media/');
@@ -287,45 +337,43 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
     const candidates = valid.filter(item => startedAt - item.created > RULES.createdMs && !referenced.has(key(item.name, item.generation)));
 
     // 처음 본 시각은 멈추지 않은 회차에서만 적는다. 멈춘 회차의 후보는 근거가 모자라 시계를 시작하지 않는다.
+    // 값은 「있던 값 아니면 지금」뿐이라 어떤 경우에도 앞당겨지지 않는다. 마지막으로 적은 지 7일이 넘었으면 모두 다시 시작한다(Fable P3 7).
     const stateFile = path.join(stateDir, 'state.json');
     const state = readJson(stateFile, { schema: STATE_SCHEMA, firstSeen: {} });
     if (!state || state.schema !== STATE_SCHEMA || !state.firstSeen || typeof state.firstSeen !== 'object') throw new Failure('STATE_UNREADABLE');
+    if (state.bucket !== undefined && state.bucket !== media) throw new Failure('STATE_BUCKET_MISMATCH', 2);
     let eligible = [];
     if (!reasons.length) {
+      const updated = Date.parse(state.updatedAt || '');
+      const prior = Number.isFinite(updated) && updated <= startedAt && startedAt - updated <= RULES.stateFreshMs ? state.firstSeen : {};
       const firstSeen = {};
       for (const item of candidates) {
-        const k = key(item.name, item.generation);
-        firstSeen[k] = Number.isFinite(Date.parse(state.firstSeen[k] || '')) ? state.firstSeen[k] : iso(startedAt);
+        const k = key(item.name, item.generation), was = Date.parse(prior[k] || '');
+        firstSeen[k] = Number.isFinite(was) && was <= startedAt ? prior[k] : iso(startedAt);
       }
-      writeJson(stateFile, { schema: STATE_SCHEMA, updatedAt: iso(startedAt), firstSeen });
+      writeJson(stateFile, { schema: STATE_SCHEMA, bucket: media, updatedAt: iso(startedAt), firstSeen });
       eligible = candidates.filter(item => startedAt - Date.parse(firstSeen[key(item.name, item.generation)]) >= RULES.seenMs);
     }
 
-    // 한 번 넘김(카본 A1 · A2): 주면 비율과 상관없이 늘 검사하고, 그 실행의 목록에 있는 것만 지운다(목록 밖의 것은 다음 실행이 보통 규칙으로 본다).
-    //   넘길 수 있는 실행은 20% 하나로만 멈춘 가장 최근 실행이다. 그 뒤에 다시 20%로 멈춘 실행이 있으면 그 새 실행으로 넘긴다.
-    //   그 실행 뒤에 멈추지 않고 진행된 지우기 실행(지우는 중 · 지움 · 실패)이 하나라도 있으면, 그 넘김을 썼든 안 썼든 다시 쓰지 못한다(GPT 다시 검수 GA1 · GA2).
-    //   미리 보기로 넘겨 본 것과 멈춘 지우기 실행은 쓴 것으로 치지 않는다.
-    let overrode = null, notApproved = [];
+    // 한 번 넘김(O2): 승인이 있고 3일이 지나지 않았을 때만, 승인 목록에 있는 것만 지울 것으로 남긴다. 승인이 넘기는 것은 20% 관문 하나다.
+    let overrode = null, notApproved = [], approval = null, approvalUsed = false;
     if (!reasons.length && override) {
-      const runs = runsOf(stateDir), at = runs.findIndex(r => r.runId === override), stopped = at >= 0 ? runs[at] : null, later = at >= 0 ? runs.slice(at + 1) : [];
-      const tooMany = r => r.status === 'stopped' && Array.isArray(r.reasons) && r.reasons.includes('TOO_MANY');
-      const allowed = !!stopped && stopped.status === 'stopped' && Array.isArray(stopped.reasons) && stopped.reasons.length === 1 && stopped.reasons[0] === 'TOO_MANY'
-        && !later.some(tooMany) && !later.some(r => r.mode === 'delete' && r.status !== 'stopped');
-      if (allowed) {
-        const listed = new Set(Array.isArray(stopped.eligible) ? stopped.eligible : []);
+      try { approval = JSON.parse(fs.readFileSync(approvalPaths(stateDir, override).file, 'utf8')); } catch { approval = null; }
+      if (!validApproval(approval, override, media) || !notExpired(approval, startedAt)) reasons.push('OVERRIDE_INVALID');
+      else {
+        const listed = new Set(approval.eligible);
         overrode = override;
         notApproved = eligible.filter(item => !listed.has(key(item.name, item.generation)));
         eligible = eligible.filter(item => listed.has(key(item.name, item.generation)));
-      } else reasons.push('OVERRIDE_INVALID');
+      }
     } else if (!reasons.length && eligible.length > RULES.maxShare * valid.length) reasons.push('TOO_MANY');
 
     const deleted = [], changed = [], failed = [];
     let kept = [];
-    const earlier = runsOf(stateDir);
-    const seq = earlier.length ? (earlier[earlier.length - 1].seq || 0) + 1 : 1;
     const runFile = path.join(stateDir, 'runs', runId + '.json');
     const reportOf = status => ({
-      schema: RUN_SCHEMA, runId, seq, mode: execute ? 'delete' : 'preview', status, reasons: [...reasons], startedAt: iso(startedAt), overrode,
+      schema: RUN_SCHEMA, runId, bucket: media, mode: execute ? 'delete' : 'preview', status, reasons: [...reasons], startedAt: iso(startedAt),
+      overrode, approvalSha256: overrode ? approval.eligibleSha256 : null, approvalUsed,
       objects: valid.length, strange, completes, latestComplete: latest ? { name: latest.name, at: iso(latest.created), schema: latest.schema } : null,
       latestIsV1: !!latest && latest.schema === SCHEMA_V1, referenced: referenced.size, unreadable: [...unreadable],
       candidates: candidates.map(item => key(item.name, item.generation)), eligible: eligible.map(item => key(item.name, item.generation)),
@@ -339,19 +387,34 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
       if (unreadable.length) reasons.push('COMPLETE_UNREADABLE');
       else {
         kept = eligible.filter(item => referenced.has(key(item.name, item.generation)));
-        // 지우기 전에 이 실행을 「지우는 중」으로 남기고, 지울 때마다 고쳐 쓴다. 도중에 끊겨도 한 번 넘김을 쓴 것과 지운 것이 남는다(GPT GA1).
-        writeJson(runFile, reportOf('deleting'));
-        try {
-          for (const item of eligible) {
-            if (referenced.has(key(item.name, item.generation))) continue;
-            const result = await gcs.remove(item.name, item.generation);
-            (result === 'deleted' ? deleted : result === 'changed' ? changed : failed).push(key(item.name, item.generation));
-            writeJson(runFile, reportOf('deleting'));
+        let toDelete = eligible.filter(item => !referenced.has(key(item.name, item.generation)));
+        // 승인은 모든 관문을 지난 뒤, 지울 것이 있을 때만, 「지우는 중」 기록 바로 앞에서 쓴다.
+        if (toDelete.length && overrode) {
+          const used = consumeApproval(stateDir, overrode, _rename);
+          if (!used || !validApproval(used, overrode, media) || !notExpired(used, startedAt) || used.eligibleSha256 !== approval.eligibleSha256) {
+            if (used) approvalUsed = true;
+            reasons.push('OVERRIDE_INVALID');
+          } else {
+            approvalUsed = true;
+            const listed = new Set(used.eligible);
+            toDelete = toDelete.filter(item => listed.has(key(item.name, item.generation)));
           }
-        } catch (error) {
-          const report = reportOf('failed');
-          writeJson(runFile, report);
-          throw Object.assign(error, { report });
+        }
+        if (!reasons.length && toDelete.length) {
+          voidApprovals(stateDir);
+          // 지우기 전에 이 실행을 「지우는 중」으로 남기고, 지울 때마다 고쳐 쓴다. 도중에 끊겨도 지운 것이 남는다(GPT GA1).
+          writeJson(runFile, reportOf('deleting'));
+          try {
+            for (const item of toDelete) {
+              const result = await gcs.remove(item.name, item.generation);
+              (result === 'deleted' ? deleted : result === 'changed' ? changed : failed).push(key(item.name, item.generation));
+              writeJson(runFile, reportOf('deleting'));
+            }
+          } catch (error) {
+            const report = reportOf('failed');
+            writeJson(runFile, report);
+            throw Object.assign(error, { report });
+          }
         }
       }
     }
@@ -359,14 +422,16 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
     const status = reasons.length ? 'stopped' : failed.length ? 'failed' : execute ? 'cleaned' : 'previewed';
     const report = reportOf(status);
     writeJson(runFile, report);
-    // gc/runs/에는 멈추지도 실패하지도 않은 실행만 남긴다. 지우기가 계속 실패하면 7일 뒤 서버가 경보를 올린다(GPT GA4).
-    if (status === 'previewed' || status === 'cleaned') {
-      await gcs.record('gc/runs/' + runId + '.json', { schema: RUN_SCHEMA, runId, mode: report.mode, status, startedAt: report.startedAt,
-        objects: valid.length, candidates: candidates.length, eligible: eligible.length, deleted: deleted.length });
+    // gc/runs/에는 멈추지도 실패하지도 않은 실행만 남긴다. 지우기를 켠 뒤에는 미리 보기를 남기지 않는다(Fable P2 3). 서버의 7일 경보가 그 기록을 본다.
+    if (status === 'cleaned' || (status === 'previewed' && config['지우기'] !== true)) {
+      try {
+        await gcs.record('gc/runs/' + runId + '.json', { schema: RUN_SCHEMA, runId, mode: report.mode, status, startedAt: report.startedAt,
+          objects: valid.length, candidates: candidates.length, eligible: eligible.length, deleted: deleted.length });
+      } catch (error) { throw Object.assign(error, { report }); }  // 기록 올리기가 실패해도 무엇을 지웠는지는 보인다(Fable P2 5)
     }
     if (failed.length) throw Object.assign(new Failure('DELETE_FAILED'), { report });
     return report;
-  } finally { release(); }
+  } finally { await release(); }
 }
 
 function describe(report) {
@@ -378,27 +443,33 @@ function describe(report) {
   if (report.latestIsV1) lines.push('  가장 최근 완료 객체가 v1입니다. 그 백업은 미디어 버킷의 영상을 가리키지 않았습니다(가리킨 영상이 없으면 정상입니다).');
   lines.push('  후보는 ' + report.candidates.length + '개이고, 처음 본 지 3일이 지나 지울 것은 ' + report.eligible.length + '개(' + Math.round(report.eligibleBytes / 1048576) + 'MiB)입니다.');
   if (report.mode === 'delete') lines.push('  지운 것 ' + report.deleted.length + '개 · 그사이 바뀌어 둔 것 ' + report.changed.length + '개 · 새 백업이 가리켜 둔 것 ' + report.keptByNewBackup.length + '개 · 실패 ' + report.failed.length + '개입니다.');
-  if (report.overrode) lines.push('  20% 멈춤을 실행 ' + report.overrode + '의 목록으로 한 번 넘겼습니다.' + (report.notApproved && report.notApproved.length ? ' 그 목록에 없던 ' + report.notApproved.length + '개는 이번에 지우지 않았습니다.' : ''));
+  if (report.overrode) {
+    lines.push('  20% 멈춤을 실행 ' + report.overrode + '의 승인 목록으로 ' + (report.approvalUsed ? '한 번 넘겼습니다(승인을 썼습니다).' : '넘겨 보았습니다(승인은 쓰지 않고 남아 있습니다).')
+      + (report.notApproved && report.notApproved.length ? ' 그 목록에 없던 ' + report.notApproved.length + '개는 이번에 지우지 않았습니다.' : ''));
+  }
   for (const reason of report.reasons) lines.push('  멈춤: ' + (REASONS[reason] || reason) + '.');
   return lines.join('\n');
 }
 
 function args(argv) {
-  const out = { json: false, execute: false, override: null, config: null, state: null, endpoint: LIVE_ENDPOINT, tokenStdin: false };
+  const out = { json: false, execute: false, override: null, approve: null, config: null, state: null, endpoint: LIVE_ENDPOINT, tokenStdin: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const value = () => { if (i + 1 >= argv.length) throw new Failure('USAGE', 2); return argv[++i]; };
     if (a === '--json') out.json = true;
     else if (a === '--실행') out.execute = true;
     else if (a === '--한번넘김') out.override = value();
+    else if (a === '--승인') out.approve = value();
     else if (a === '--설정') out.config = value();
     else if (a === '--상태') out.state = value();
     else if (a === '--끝점') out.endpoint = value();
     else if (a === '--토큰-stdin') out.tokenStdin = true;
     else throw new Failure('USAGE', 2);
   }
-  // 실제 GCS 말고는 이 PC 안의 시험 서버만 받는다.
+  // 실제 GCS 말고는 이 PC 안의 시험 서버만 받는다. 상태 폴더는 시험 서버와 함께만 바꿀 수 있다(Fable P3 6).
   if (out.endpoint !== LIVE_ENDPOINT && !/^http:\/\/127\.0\.0\.1:[0-9]{1,5}$/.test(out.endpoint)) throw new Failure('USAGE', 2);
+  if (out.state !== null && out.endpoint === LIVE_ENDPOINT) throw new Failure('USAGE', 2);
+  if (out.approve !== null && (out.execute || out.override !== null)) throw new Failure('USAGE', 2);
   return out;
 }
 
@@ -414,7 +485,7 @@ function tokenFrom(config, stdin) {
 async function main(argv = process.argv.slice(2)) {
   let options;
   try { options = args(argv); } catch {
-    process.stderr.write('쓰는 법: node tools/작업실영상정리.js [--json] [--실행] [--한번넘김 <실행 ID>] [--설정 <파일>] [--상태 <폴더>]\n');
+    process.stderr.write('쓰는 법: node tools/작업실영상정리.js [--json] [--실행] [--승인 <실행 ID>] [--한번넘김 <실행 ID>] [--설정 <파일>]\n');
     return 2;
   }
   const home = path.join(공용작업본(path.resolve(__dirname, '..')), '.tmp', 'company-media-cloud-gc');
@@ -423,6 +494,13 @@ async function main(argv = process.argv.slice(2)) {
   try {
     const config = readJson(configFile, null);
     if (!config) throw new Failure('CONFIG_MISSING', 2);
+    if (options.approve !== null) {
+      const result = await approve({ config, stateDir, runId: options.approve });
+      process.stdout.write(options.json ? JSON.stringify(result) + '\n'
+        : (result.status === 'approved' ? '승인했습니다' : '이미 승인되어 있습니다') + ': 실행 ' + result.runId + '의 목록 ' + result.eligible + '개. 이 승인은 '
+          + result.expiresAt + '(그 실행이 멈춘 GCS 시각에서 3일)까지 --한번넘김 ' + result.runId + ' --실행으로 한 번만 쓸 수 있습니다.\n');
+      return 0;
+    }
     const token = tokenFrom(config, options.tokenStdin);
     const report = await run({ config, stateDir, endpoint: options.endpoint, token, execute: options.execute, override: options.override });
     process.stdout.write(options.json ? JSON.stringify(report) + '\n' : describe(report) + '\n');
@@ -435,5 +513,5 @@ async function main(argv = process.argv.slice(2)) {
   }
 }
 
-module.exports = { run, describe, RULES, OBJECT, _storage: storage, _takeLock: takeLock };
+module.exports = { run, approve, describe, RULES, OBJECT, _storage: storage, _takeLock: takeLock, _consumeApproval: consumeApproval };
 if (require.main === module) main().then(code => { process.exitCode = code; });
