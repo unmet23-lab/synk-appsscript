@@ -203,12 +203,15 @@ function downloadsGuarded(sources) {
 export function homeModel(state, opts = {}) {
   const now = opts.now ?? Date.now();
   const m = baseModel(state, now, opts);
-  if (m.id === 'start' || m.id === 'home-run') return m;
+  if (m.id === 'start') return m;
+  // 넘긴 뒤 「프로그램과 설정」 한 줄 — 첫 백업이 도는 동안에도 둔다(E19). 되살리기 결과 줄이 있으면 그것이 먼저다
+  const apps = movedAppsNote(state, opts.move, opts.checks, now);
+  if (m.id === 'home-run') return apps ? { ...m, restored: apps } : m;
   const st = state && typeof state === 'object' ? state : {};
   const note = restoreNote(st, now, m.id === 'home-restore-error'), ended = endedNote(st, now, m.id === 'home' || m.id === 'home-partial');
   // 되살리기 결과 줄과 끝난 되돌리기 줄이 함께 있으면 더 새것을 쓴다
   const restored = (note && ended ? (ended.at >= note.at ? ended : note) : note || ended) || undoNote(state, m.id === 'home', opts.undoSeen);
-  return restored ? { ...m, restored } : m;
+  return restored ? { ...m, restored } : apps ? { ...m, restored: apps } : m;
 }
 
 /**
@@ -855,6 +858,8 @@ export function wingetText(st) {
   if (st?.reason === 'WINGET_START') return '프로그램 설치 도구(winget)가 아직 답하지 않습니다. 새로 깐 Windows는 처음 몇 분 동안 그럴 수 있습니다. 잠시 뒤 「목록 다시 읽기」를 누르세요.';
   return '프로그램 설치 도구(winget)를 찾지 못했습니다. 새로 깐 Windows는 처음 몇 분 동안 그럴 수 있습니다. 잠시 뒤 「목록 다시 읽기」를 누르고, 그래도 없으면 Microsoft Store에서 「앱 설치 관리자」를 받으세요.';
 }
+/** 다시 로그인할 곳의 남은 수 */
+export const checksLeft = (list) => (Array.isArray(list) ? list.filter((x) => x && !x.done).length : 0);
 /** 깔지 못한 까닭(엔진 결과의 code) — 손님이 할 일을 쓴다(Fable D7 · D15) */
 export function appReason(code) {
   const c = String(code || '');
@@ -880,7 +885,9 @@ export function appResult(r, names = {}) {
   if (st === 'reboot') return row(true, 'PC를 다시 켜면 마저 깔립니다');
   if (listed === true) return row(true, '설치 도구는 끝을 알리지 못했지만 깔려 있습니다');
   if (st === 'declined') return row(false, '관리자 확인을 받지 못해 깔지 않았습니다');
-  if (st === 'timeout') return row(false, '시간이 지나 끝내지 못했습니다');
+  // 확인 창이 10분 안에 눌리지 않아 닫혔다 — 아무것도 깔지 않았다(E23 approval-timeout)
+  if (st === 'approval-timeout') return row(false, '확인 창이 닫혀 깔지 않았습니다', '확인 창을 10분 안에 누르지 않아 닫혔습니다. 다시 깔면 확인 창이 다시 뜹니다.');
+  if (st === 'timeout') return row(false, '시간이 지나 끝내지 못했습니다', '설치가 정해진 시간을 넘겨 멈췄습니다. 잠시 뒤 다시 깔아 보세요.');
   return row(false, '깔지 못했습니다', appReason(r?.code));
 }
 /**
@@ -892,7 +899,57 @@ export function appsOutcome(job, names = {}) {
   const rows = (Array.isArray(job.results) ? job.results : []).map((r) => appResult(r, names));
   return { rows, at: job.at || null, failedStage: job.stage === 'failed', error: job.error || null, bad: rows.filter((r) => !r.ok).length, reboot: rows.some((r) => r.reboot),
     restore: job.stage === 'done' && rows.some((r) => ['installed', 'already', 'reboot'].includes(r.state) || r.listed === true),
-    declined: rows.some((r) => r.state === 'declined'), admin: rows.some((r) => r.why && /관리자에게/.test(r.why)) };
+    declined: rows.some((r) => r.state === 'declined' || r.state === 'approval-timeout'), admin: rows.some((r) => r.why && /관리자에게/.test(r.why)) };
+}
+/**
+ * 지난 깔기 — 이 창이 지켜본 것(창 상태 move.reinstall)이 먼저다. 앱을 다시 켜 작업자 기억이 비면 엔진이 적은 마지막 결과
+ * (moveState.reinstall { at, results }, E17)를 쓴다. saved: 엔진에 적힌 것(at은 끝난 때다)
+ */
+export function appsJob(s, st) {
+  const live = s?.move?.reinstall;
+  if (live) return live;
+  const r = st?.reinstall;
+  return r && typeof r === 'object' && Array.isArray(r.results) ? { running: false, stage: 'done', at: r.at || null, results: r.results, error: null, saved: true } : null;
+}
+/**
+ * 되돌린 설정 — 이 창이 되돌린 것이 먼저고, 없으면 엔진이 적은 마지막 결과(moveState.settings, E17)다. 「다른 프로그램 더 깔기」로
+ * 다시 고르러 왔거나(fresh) 이 창에서 새로 깐 뒤라면 앞선 결과를 쓰지 않는다. 엔진에 적힌 깔기가 그 설정보다 뒤면(깐 뒤 되돌리기 전에
+ * 앱이 끝남) 그 설정은 지난 깔기의 것이 아니다
+ */
+export function appsSettings(apps, st, job) {
+  if (Array.isArray(apps?.settings)) return { list: apps.settings, at: null, saved: false };
+  if (apps?.fresh || apps?.settingsError || (job && !job.saved)) return null;
+  const set = st?.settings;
+  if (!set || typeof set !== 'object' || !Array.isArray(set.results)) return null;
+  if (job?.saved && (Date.parse(job.at || '') || 0) > (Date.parse(set.at || '') || 0)) return null;
+  return { list: set.results, at: set.at || null, saved: true };
+}
+/** 지난 깔기 뒤 설정을 아직 되돌리지 않았는지 — 하나라도 깔렸는데 그 뒤에 적힌 설정 결과가 없다(앱이 그 사이에 끝났다) */
+export function appsUnrestored(apps, st, job) {
+  return !!(job?.saved && appsOutcome(job)?.restore && !Array.isArray(apps?.settings) && !appsSettings({ ...apps, fresh: false }, st, job));
+}
+/**
+ * 옮겨 온 뒤 넘긴 PC — 이 PC가 백업하고(복구 전용이 아님) 옮겨 온 결과가 있다. 엔진이 첫 백업 중에도 「프로그램과 설정」을 받으므로(E19)
+ * 넘긴 뒤에도 그 화면을 연다. left: 다시 로그인할 곳의 남은 수(창이 읽은 체크 목록, 없으면 엔진의 checklistLeft — E17)
+ */
+export const movedHere = (s, st) => !!(s?.configured && s.mode !== 'restore' && typeof st?.from === 'string' && st.from && st.resultAt && !st.released);
+export function movedApps(s, st, checks) {
+  if (!movedHere(s, st)) return null;
+  const left = Array.isArray(checks) ? checksLeft(checks) : Number.isSafeInteger(st.checklistLeft) && st.checklistLeft > 0 ? st.checklistLeft : 0;
+  return { left, installing: !!s?.move?.reinstall?.running };
+}
+/**
+ * 넘긴 뒤 기본 화면의 한 줄 — 깔고 있거나 다시 로그인할 곳이 남았을 때만 둔다. 쓰지 않는 항목은 체크할 까닭이 없어, 옮겨 온 지
+ * 두 주가 지나면 「다시 로그인할 곳」 줄은 거둔다. 설정 서랍의 줄은 남는다(Fable F6)
+ */
+export const MOVED_NOTE_DAYS = 14;
+export function movedAppsNote(s, st, checks, now = Date.now()) {
+  const a = movedApps(s, st, checks);
+  if (!a) return null;
+  const act = (label) => ({ id: 'move-apps-home', label, kind: 'link', to: 'move-apps' });
+  if (a.installing) return { text: '옛 PC의 프로그램을 깔고 있습니다.', act: act('진행 보기') };
+  const at = Date.parse(st?.resultAt || ''), old = Number.isFinite(at) && now - at > MOVED_NOTE_DAYS * 86400000;
+  return a.left && !old ? { text: `옮겨 온 뒤 다시 로그인할 곳이 ${count(a.left)}곳 남았습니다.`, act: act('프로그램과 설정') } : null;
 }
 const LEFT_KO = { 'secret-looking': '열쇠로 보이는 글이 있어', unreadable: '읽지 못해', 'too-big': '너무 커서', 'too-many': '파일이 너무 많아' };
 /** 앱 설정 결과 한 앱 — 되돌림 · 덮지 않음 · 앱이 없어 따로만 · 뺀 칸 · 옮기지 않은 것 · 확장 명령 · 쓰지 못한 파일(4.6b · Fable D8) */
@@ -919,16 +976,14 @@ export function settingRows(results) {
     return { app: a.app, name: a.name, lines, warn, label, restoredN: n(a.restored), asideN: n(a.kept) + n(a.side) + (a.notInstalled ? 1 : 0), extensions: (a.extensions || []).filter((x) => x && typeof x.command === 'string'), failed: a.failed || [] };
   });
 }
-/** 다시 로그인할 곳의 남은 수 */
-export const checksLeft = (list) => (Array.isArray(list) ? list.filter((x) => x && !x.done).length : 0);
 /**
  * 「프로그램과 설정」 화면의 지금 — running(깔는 중, 창 상태) · restoring(설정 되돌리는 중) · result(설정까지 끝남 또는 되돌리기 실패) ·
  * loading · error(목록을 읽지 못함) · notready(winget 없음) · pick(고르기, 지난 깔기의 결과가 있으면 함께)
  */
-export function appsPhase(s, apps) {
+export function appsPhase(s, apps, st = null) {
   if (s?.move?.reinstall?.running) return 'running';
   if (apps?.restoring) return 'restoring';
-  if (Array.isArray(apps?.settings) || apps?.settingsError) return 'result';
+  if (apps?.settingsError || appsSettings(apps, st, appsJob(s, st))) return 'result';
   if (apps?.list === undefined) return 'loading';
   if (!apps.list) return 'error';
   if (apps.list.wingetStatus?.ready !== true) return 'notready';

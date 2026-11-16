@@ -195,10 +195,13 @@ export const MOVE_APPS = (() => {
     { name: '세무 회계 프로그램', site: null },
   ];
   const ids = (scope) => table.filter((p) => p.chosen && p.scope === scope).map((p) => p.id);
-  const list = { wingetStatus: { ready: true, version: 'v1.12.340' }, table, others, manual, machine: ids('machine'), user: ids('user') };
-  // winget이 준비되지 않았으면 이 PC에 깔린 것을 읽지 못해 표는 모두 「깔 것」으로 온다
-  const notReady = (reason) => ({ ...list, wingetStatus: { ready: false, reason }, table: table.map((p) => ({ ...p, installed: false, chosen: true })), others: others.map((p) => ({ ...p, name: null, publisher: null, license: null })) });
-  const job = (stage, extra = {}) => ({ running: !['done', 'failed'].includes(stage), stage, at: at('2026-11-13T14:44:00+09:00'), results: null, error: null, ...extra });
+  // from · kitAt · kitProblems · installedKnown(E21): 옮겨 온 옛 PC, 꾸러미를 만든 때, 꾸러미를 읽으며 걸린 것, 이 PC의 목록을 읽었는지
+  const OLD = 'OLD-LAPTOP', kitAt = at('2026-11-13T13:02:00+09:00');
+  const list = { from: OLD, kitAt, kitProblems: [], installedKnown: true, wingetStatus: { ready: true, version: 'v1.12.340' }, table, others, manual, machine: ids('machine'), user: ids('user') };
+  // winget이 준비되지 않았으면 이 PC에 깔린 것을 읽지 못해 표는 모두 「깔 것」으로 온다(installedKnown은 null)
+  const notReady = (reason) => ({ ...list, installedKnown: null, wingetStatus: { ready: false, reason }, table: table.map((p) => ({ ...p, installed: false, chosen: true })), others: others.map((p) => ({ ...p, name: null, publisher: null, license: null })) });
+  // 창 상태 move.reinstall — current · left · approval(E18): 지금 까는 ID, 지금 것을 포함한 남은 수, 관리자 쪽이 아직 「확인」을 받지 못함
+  const job = (stage, extra = {}) => ({ running: !['done', 'failed'].includes(stage), stage, at: at('2026-11-13T14:44:00+09:00'), results: null, error: null, current: null, left: null, approval: false, ...extra });
   const results = [
     { id: 'Git.Git', name: 'Git', state: 'installed', scope: 'machine', listed: true },
     { id: 'OpenJS.NodeJS.LTS', name: 'Node.js LTS', state: 'installed', scope: 'machine', listed: true },
@@ -234,11 +237,16 @@ export const MOVE_APPS = (() => {
     { id: 'certificate', text: '공동인증서는 은행이나 정부 누리집의 「인증서 복사(내보내기 · 가져오기)」로 옮깁니다.', done: false },
   ];
   const always = checklist.slice(-3).map((c) => ({ ...c, done: false }));
-  const empty = { wingetStatus: { ready: true, version: 'v1.12.340' }, table: [], others: [], manual: [], machine: [], user: [] };
+  const empty = { from: OLD, kitAt, kitProblems: [], installedKnown: true, wingetStatus: { ready: true, version: 'v1.12.340' }, table: [], others: [], manual: [], machine: [], user: [] };
+  // 확인 창 10분 초과(E23 approval-timeout — 아무것도 깔지 않았다)와 사용자용 20분 초과(timeout)
+  const late = results.map((r) => (r.scope === 'machine' ? { id: r.id, name: r.name, state: 'approval-timeout', scope: 'machine' } : r.id === 'Anthropic.ClaudeCode' ? { id: r.id, name: r.name, state: 'timeout', scope: 'user', listed: false } : r));
   // 창 상태 — 깔기의 진행과 결과는 작업자 기억(move.reinstall)이다
   const read = STATES['home-move-read'], withJob = (j) => ({ ...read, move: { reinstall: j, progress: null } });
-  STATES['home-move-apps-elevated'] = withJob(job('elevated'));
-  STATES['home-move-apps-user'] = withJob(job('user'));
+  // 관리자 확인을 기다림(approval) · 확인 뒤 컴퓨터 전체용을 깔고 있음 · 사용자용을 하나씩(지금 Obsidian, 이것까지 2개)
+  STATES['home-move-apps-approval'] = withJob(job('elevated', { approval: true, left: 6 }));
+  STATES['home-move-apps-elevated'] = withJob(job('elevated', { current: 'OpenJS.NodeJS.LTS', left: 5 }));
+  STATES['home-move-apps-user'] = withJob(job('user', { current: 'Obsidian.Obsidian', left: 2 }));
+  STATES['home-move-apps-late'] = withJob(job('done', { results: late }));
   STATES['home-move-apps-done'] = withJob(job('done', { results }));
   STATES['home-move-apps-ok'] = withJob(job('done', { results: ok }));
   // 컴퓨터 전체 몫만 고르고 관리자 확인을 받지 못함 — 하나도 깔리지 않아 설정은 저절로 되돌리지 않는다(Fable D9)
@@ -263,6 +271,29 @@ export const MOVE_APPS = (() => {
     'apps-declined': apps({ ran: list.machine }),
     'apps-failed': apps({ ran }),
     'apps-settings-error': apps({ ran, settingsError: 'RUN_ACTIVE' }),
+    // 꾸러미 없음 · 규칙 판이 달라 앱 설정을 쓰지 않음 · 이 PC에 깔린 목록을 읽지 못함(E21)
+    'apps-nokit': apps({ list: { ...empty, kitAt: null, kitProblems: ['no-kit'] }, checks: always }),
+    'apps-rulesold': apps({ list: { ...list, kitProblems: ['rules-old'] } }),
+    'apps-unknown': apps({ list: { ...list, installedKnown: false, table: table.map((p) => ({ ...p, installed: false, chosen: true })) } }),
+    'apps-late': apps({ ran }),
   });
-  return { list, notReady, empty, job, results, ok, declined, settings, okSettings, checklist, always };
+  // 앱을 다시 켠 뒤 — 작업자 기억(move.reinstall)은 비고, 엔진이 적은 마지막 결과(moveState.reinstall · settings, E17)만 남았다
+  const ended = MOVE_MV.result.state, did = at('2026-11-13T14:38:00+09:00'), put = at('2026-11-13T14:39:00+09:00');
+  const savedState = { ...ended, checklistLeft: checklist.filter((c) => !c.done).length, begun: true, reinstall: { at: did, results }, settings: { at: put, results: settings } };
+  Object.assign(MOVE_MV, {
+    'apps-saved': { ...base, state: savedState, apps: { list, checks: checklist } },
+    // 깐 뒤 설정을 되돌리기 전에 앱이 끝남 — 적힌 깔기가 적힌 설정보다 뒤다
+    'apps-unrestored': { ...base, state: { ...savedState, settings: { at: at('2026-11-13T14:20:00+09:00'), results: okSettings } }, apps: { list, checks: checklist } },
+  });
+  // 넘긴 뒤(이 PC가 백업한다) — 「프로그램과 설정」을 기본 화면과 설정 서랍에서 연다(E19). 첫 백업 중에 둔 꾸러미가 없으면 목록을 못 읽는다
+  const handedState = { ...ended, checklistLeft: checklist.filter((c) => !c.done).length, begun: true, reinstall: null, settings: null };
+  STATES['home-handed-run'] = { ...STATES['home-run'], job: { kind: 'backup', stage: '첫 백업 · 작업 파일 백업 중', percent: 12, scheduled: false } };
+  STATES['home-handed-installing'] = { ...STATES.home, move: { reinstall: job('user', { current: 'Obsidian.Obsidian', left: 2 }), progress: null } };
+  Object.assign(MOVE_MV, {
+    handed: { state: handedState },
+    'apps-handed': { state: handedState, apps: { list, checks: checklist } },
+    'apps-handed-busy': { state: handedState, apps: { list: null, listError: 'JOB_BUSY', checks: null } },
+    'apps-handed-done': { state: { ...handedState, checklistLeft: 0 }, apps: { list, checks: checklist.map((c) => ({ ...c, done: true })) } },
+  });
+  return { list, notReady, empty, job, results, ok, declined, late, settings, okSettings, checklist, always };
 })();

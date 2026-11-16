@@ -4,7 +4,7 @@
 
 import { createStore, failureText } from './state-store.js';
 import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey, moveLeft, moveRows,
-  appsRows, appsOutcome, APPS_MAX } from './screen-model.js';
+  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -42,6 +42,9 @@ function watchJobs(s) {
   if (prevJob && !s.job && screen === 'restore' && catalog?.waiting) void openCatalog();
   // 하던 일 때문에 못 읽은 기기 목록은 그 일이 끝나면 다시 읽는다(Fable F2)
   if (prevJob && !s.job && acct.devicesError) { acct = { ...acct, devicesError: null }; if (!drawerWrap.hidden || screen === 'home') void loadDevices(); }
+  // 넘긴 뒤 첫 백업 때문에 못 읽은 「프로그램과 설정」은 그 일이 끝나면 다시 읽는다 — 이 PC에 둔 꾸러미가 없으면 엔진이 저장소를 읽는다(E19)
+  if (prevJob && !s.job && screen === 'move-apps' && ['JOB_BUSY', 'RUN_ACTIVE'].includes(mv?.apps?.listError)) void openApps();
+  else if (prevJob && !s.job && (screen === 'move-apps' || screen === 'move-4') && mv?.apps?.checks === null) void loadChecks();
   prevJob = s.job?.kind || null;
   const moving = !!moveJob(s);
   if (mvRunning && !moving) { mv = { ...(mv || {}), state: undefined, result: undefined }; void moveEnded(); }
@@ -76,6 +79,7 @@ function notYet(to) {
   if (to === 'lost' && !(s?.account?.connected && acct.lostTarget)) return '분실 신고';
   if (to === 'lost-2' && !s?.account?.connected) return '분실 신고';
   // 옮겨 오기는 계정의 백업을 되살리기 전용으로 연 새 PC에서 연다. 쓰는 PC의 「옛 PC 백업에서 꺼내기」는 다음 증분이다
+  if (to === 'move-apps' && movedHere(s, mv?.state)) return null;
   if (/^move-([1-4]|apps)$/.test(to) && !moveOpen(s)) return s?.configured && s.mode !== 'restore' ? '옛 PC 백업에서 꺼내기' : '!이 PC로 옮겨 오기는 Google로 시작해 이 계정의 백업을 연 뒤에 엽니다.';
   return null;
 }
@@ -112,7 +116,7 @@ function paint() {
     return;
   }
   if (screen === 'undo-3' && s?.account?.restore?.state === 'failed' && s.account.restore.jobId) acct.undoSeen = s.account.restore.jobId;
-  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null });
+  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null, checks: mv?.apps?.checks });
   const id = resolve(screen, s, model);
   if (!fixture) prepare(id, s);
   out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, mv, fake: !!fixture });
@@ -145,7 +149,7 @@ function paint() {
     if (!lit) { lit = true; orb.lightUp(); }
   }
   if (!drawerWrap.hidden) {
-    const d = drawer(s, { devices: acct.devices, devicesError: acct.devicesError, now: now() });
+    const d = drawer(s, { devices: acct.devices, devicesError: acct.devicesError, now: now(), moved: movedApps(s, mv?.state, mv?.apps?.checks) });
     if (d !== lastDrawer) {
       // 기기 목록이 늦게 와 서랍을 다시 그려도 키보드 포커스를 그 단추에 둔다(카본 A7)
       const a = document.activeElement, k = a && drawerPanel.contains(a) && a !== drawerPanel ? focusKey(a) : null;
@@ -166,7 +170,9 @@ function focusKey(el) {
   if (el.dataset?.mode) return `${q('data-folder', el.dataset.folder || '')}${q('data-mode', el.dataset.mode)}`;
   if (el.dataset?.from) return q('data-from', el.dataset.from);
   if (el.dataset?.root) return q('data-root', el.dataset.root);
-  if (el.dataset?.app) return q('data-app', el.dataset.app);
+  // 같은 줄의 고르는 단추와 페이지 단추는 data-app이 같다 — 페이지 단추는 종류까지, 고르는 단추는 data-act까지 본다(Fable F2)
+  if (el.dataset?.app && el.dataset.kind) return `${q('data-app', el.dataset.app)}${q('data-kind', el.dataset.kind)}`;
+  if (el.dataset?.app) return `${q('data-act', el.dataset.act || '')}${q('data-app', el.dataset.app)}`;
   if (el.dataset?.check) return q('data-check', el.dataset.check);
   if (el.dataset?.act) return q('data-act', el.dataset.act);
   return null;
@@ -181,12 +187,18 @@ function go(id) {
   // 결과 없이 넘기기(옮겨 오기를 그만둠)는 그 화면에서만 — 넘기기를 떠나면 옮겨 온 결과로 돌아간다
   if (mv?.quit && screen !== 'move-4') mv = { ...mv, quit: false };
   if ((screen === 'move-apps' || screen === 'move-4') && mv?.apps?.checks === null) mvTried.delete('apps-checks');
+  // 하던 일 때문에 못 읽은 목록은 그 일이 끝난 뒤 들어오면 다시 읽는다(Fable F3 — 일이 끝나는 순간 다른 화면에 있었으면 다시 읽지 않았다)
+  if (screen === 'move-apps' && ['JOB_BUSY', 'RUN_ACTIVE'].includes(mv?.apps?.listError) && !state()?.job) mvTried.delete('apps');
+  // 넘긴 PC에서 옮겨 오기 상태를 못 읽었으면 기본 화면에 올 때 한 번 더 읽는다(Fable FA3)
+  if (screen === 'home' && mv?.stateFailed && !fixture && backingPC(state())) { mv = { ...mv, state: undefined, stateFailed: false }; mvTried.delete('state'); }
   if (screen === 'undo-1' && !fixture && !undo?.value && !undo?.loading) void loadPlan();
   paint();
   room.focus({ preventScroll: true });
 }
 
 /* ── 개통(engine/src/account.cjs) ── */
+/** 이 PC가 계정의 백업을 하는 연결인지 — 넘긴 PC가 그렇다 */
+const backingPC = (s) => !!(s?.configured && s.mode !== 'restore' && s.account?.connected);
 /** 그 화면이 엔진에서 먼저 읽을 것 — 보호 범위는 b2 프로필의 고른 폴더를, 다른 PC가 쓰는 계정은 기기 목록을 */
 function prepare(id, s) {
   // 한 번만 시도한다 — 그리기마다 부르면 실패나 BUSY가 그리기를 다시 부르며 돈다
@@ -194,6 +206,16 @@ function prepare(id, s) {
     acct.switchTried = true; setTimeout(() => void store.call('selectProfile', 'b2'), 0);
   }
   if (id === 'start-2' && startStep(s) === 'read' && acct.devices === null && !acct.devicesError && !acct.devicesBusy) setTimeout(() => void loadDevices(), 0);
+  // 넘긴 PC(이 PC가 계정의 백업을 하는 연결) — 옮겨 온 결과가 있으면 「프로그램과 설정」을 연다(E19). 기본 화면 줄과 서랍 줄을 그리려고
+  // moveState를 한 번 읽고, 그 화면에서는 목록과 체크 목록을 읽는다(Fable F1 — 앞서는 복구 전용 PC가 아니면 여기서 돌아가 읽지 않았다)
+  if (backingPC(s)) {
+    if ((id === 'home' || id === 'move-apps') && mv?.state === undefined) mvOnce('state', loadMoveState);
+    if (id === 'move-apps' && movedHere(s, mv?.state)) {
+      mvOnce('apps', openApps);
+      if (mv?.apps?.checks === null && !store.busy) mvOnce('apps-checks', loadChecks);
+    }
+    return;
+  }
   if (!moveOpen(s)) return;
   if ((id === 'home' || /^move-([1-4]|apps)$/.test(id)) && mv?.state === undefined) mvOnce('state', loadMoveState);
   // 프로그램과 설정(4b) — 목록 뒤에 체크 목록. 넘기기 화면은 「다시 로그인할 곳 N곳 남음」에 체크 목록만 읽는다
@@ -304,9 +326,14 @@ const mvError = (code) => (code === 'BAD_INPUT' ? '옮겨 올 PC의 백업을 �
 // 미리 보기의 실패 — 글과 함께 부호를 남긴다(목록 초과는 다시 읽어도 같아 다른 단추를 둔다, Fable F1)
 const mvFail = (code) => ({ error: mvError(code), errorCode: code || 'FAILED' });
 /** 옮겨 오기의 지금(moveState — 읽기 호출이라 창의 호출 줄을 잡지 않는다). 못 읽으면 기본 화면에 줄을 두지 않는다 */
+// 옮겨 오기 상태 읽기의 순번 — 겹친 읽기에서 늦게 온 앞선 답(특히 실패)이 나중 답을 덮지 않게 마지막 읽기의 답만 받는다(Fable -d FA1)
+let moveStateSeq = 0;
 async function loadMoveState() {
+  const my = ++moveStateSeq;
   const r = await store.aside('moveState');
-  mv = { ...(mv || {}), state: r.ok && r.value && typeof r.value === 'object' ? r.value : null };
+  if (my !== moveStateSeq) return;
+  // 못 읽었으면 stateFailed — 넘긴 PC는 서랍을 열 때와 기본 화면에 올 때 한 번 더 읽는다(Fable FA3)
+  mv = { ...(mv || {}), state: r.ok && r.value && typeof r.value === 'object' ? r.value : null, stateFailed: !r.ok };
   paint();
 }
 async function loadMoveResult() {
@@ -441,7 +468,11 @@ async function moveTake() {
   if (!t.ok) return stop(t);
   const c = await store.call('continueBackup', { sources, googleStepDone: acct.googleAck === true });
   if (!c.ok) return stop(c);
-  acct = { ...acct, googleAck: false }; mv = null; mvTried.clear();
+  const keep = mv?.apps || null;
+  // 옮겨 오기 상태는 넘긴 뒤 다시 읽는다(state: undefined) — 기본 화면 줄과 서랍 줄이 그것으로 그려진다(Fable F1)
+  acct = { ...acct, googleAck: false }; mv = keep ? { apps: keep, state: undefined } : { state: undefined }; mvTried.clear();
+  if (keep?.list) mvTried.add('apps');
+  if (Array.isArray(keep?.checks)) mvTried.add('apps-checks');
   note('이 PC가 이어서 매시간 백업합니다.');
   return go('home');
 }
@@ -511,6 +542,8 @@ async function appsGo() {
 async function appsEnded(job) {
   const out = appsOutcome(job, { ...appsRows(appsOf().list).names, ...(appsOf().names || {}) });
   // 목록은 여기서 다시 읽지 않는다 — 몇 분 동안 창의 호출 줄을 잡아 설정 되돌리기가 기다린다. 「다시 깔기」가 새로 읽는다
+  // 옛 PC의 앱이 다른 판이면 엔진이 앱 설정을 쓰지 않으므로 부르지 않고 결과로 간다(카본 A1 · E21 rules-old)
+  if (out?.restore && (appsOf().list?.kitProblems || []).includes('rules-old')) { setApps({ settings: [], settingsError: null }); return paint(); }
   if (out?.restore) await appsRestore();
   else paint();
 }
@@ -523,7 +556,7 @@ async function appsRestore() {
   paint();
 }
 /** 「다시 깔기」 · 「목록 다시 읽기」 — 결과를 접고 목록을 새로 읽는다 */
-async function appsReload() { setApps({ settings: undefined, settingsError: null }); mvTried.add('apps'); await openApps(); }
+async function appsReload() { setApps({ settings: undefined, settingsError: null, fresh: true }); mvTried.add('apps'); await openApps(); }
 /** 다시 로그인할 곳 체크 — 먼저 그려 두고, 엔진에 적지 못하면 되돌리고 알린다 */
 async function appsCheck(id) {
   const list = appsOf().checks; if (!Array.isArray(list)) return;
@@ -697,7 +730,7 @@ async function send(a, el) {
 const GLOBAL = {
   home: { to: 'home' }, drawer: { drawer: true }, 'drawer-close': {}, restore: { to: 'restore' },
   add: { call: 'addSources' }, drop: { call: 'removeSource' }, 'auto-on': { call: 'setAutomatic', arg: true }, 'auto-off': { call: 'setAutomatic', arg: false },
-  code: { to: 'code' }, lost: { to: 'lost' }, 'undo-1': { to: 'undo-1' }, partial: { to: 'partial' }, 'partial-std': { to: 'partial-std' }, 'move-0': { to: 'move-0' }, 'mass-list': { to: 'mass-list' },
+  code: { to: 'code' }, lost: { to: 'lost' }, 'undo-1': { to: 'undo-1' }, 'move-apps': { to: 'move-apps' }, partial: { to: 'partial' }, 'partial-std': { to: 'partial-std' }, 'move-0': { to: 'move-0' }, 'mass-list': { to: 'mass-list' },
   'move-count': { flow: 'moveCount' }, 'move-add': { flow: 'moveAdd' },
   external: { pending: '외장 드라이브 사본' }, tray: { pending: '트레이 아이콘' }, telemetry: { pending: '시범 측정 내용 보기' }, help: { pending: '도움 요청' },
 };
@@ -758,6 +791,10 @@ stage.addEventListener('click', (e) => {
     setApps({ picks: { ...(appsOf().picks || {}), [app]: !row.on } }); return paint();
   }
   if (id === 'app-check') return void appsCheck(el.dataset.check);
+  if (id === 'app-page') {
+    const app = el.dataset.app, kind = el.dataset.kind; if (!app || !['site', 'license'].includes(kind) || fixture) return;
+    return void store.aside('moveOpenProgramPage', { id: app, kind }).then((r) => { if (!r.ok) note('브라우저를 열지 못했습니다. 위에 적힌 주소를 골라 복사해 주세요.', 7000); });
+  }
   if (id === 'app-checks-reload') { if (fixture) return; setApps({ checks: undefined }); paint(); return void loadChecks(); }
   if (id === 'app-others' || id === 'app-manual' || id === 'app-cmds') { const k = id.slice(4); setApps({ open: { ...(appsOf().open || {}), [k]: !appsOf().open?.[k] } }); return paint(); }
   if (id === 'undo-pick') {
@@ -787,7 +824,11 @@ room.addEventListener('input', (e) => {
 const behind = () => [$('header.top'), room];
 function openDrawer(from) {
   opener = from || (document.activeElement !== document.body ? document.activeElement : null);
-  lastDrawer = drawer(state(), { devices: acct.devices, devicesError: acct.devicesError, now: now() });
+  // 못 읽었으면 「읽는 중」(undefined)으로 되돌리고 다시 읽는다. 읽는 중이면 앞의 읽기를 기다린다 — 다시 읽는 사이에 서랍을 닫았다 열어도
+  // 읽기가 겹치지 않는다(Fable -c FA2 · -d FA1)
+  if (!fixture && backingPC(state()) && mv?.stateFailed) { mv = { ...mv, state: undefined, stateFailed: false }; mvTried.delete('state'); }
+  if (!fixture && backingPC(state()) && mv?.state === undefined) mvOnce('state', loadMoveState);
+  lastDrawer = drawer(state(), { devices: acct.devices, devicesError: acct.devicesError, now: now(), moved: movedApps(state(), mv?.state, mv?.apps?.checks) });
   drawerPanel.innerHTML = lastDrawer; drawerWrap.hidden = false;
   if (!fixture && state()?.account?.connected) { acct = { ...acct, devicesError: null }; void loadDevices(); }
   for (const el of behind()) if (el) el.inert = true;

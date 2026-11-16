@@ -123,6 +123,14 @@ const CASES = [
   ['home-move-apps-done', 'move-apps', { name: 'move-apps-result', mv: 'apps-result', acct: 'MOVE' }], ['home-move-apps-ok', 'move-apps', { name: 'move-apps-ok', mv: 'apps-ok', acct: 'MOVE' }],
   ['home-move-apps-declined', 'move-apps', { name: 'move-apps-declined', mv: 'apps-declined', acct: 'MOVE' }], ['home-move-apps-failed', 'move-apps', { name: 'move-apps-failed', mv: 'apps-failed', acct: 'MOVE' }],
   ['home-move-apps-done', 'move-apps', { name: 'move-apps-settings-error', mv: 'apps-settings-error', acct: 'MOVE' }], ['home-move-apps-elevated', 'move-4', { name: 'move-4-installing', mv: 'apps-running', acct: 'MOVE' }],
+  // 4b 엔진 판(E16~E24 · e244f42e4) — 확인 기다림, 확인 창 시간 초과, 앱을 다시 켠 뒤의 결과, 꾸러미 사정, 넘긴 뒤의 화면 · 기본 화면 · 서랍
+  ['home-move-apps-approval', 'move-apps', { name: 'move-apps-approval', mv: 'apps-running', acct: 'MOVE' }], ['home-move-apps-late', 'move-apps', { name: 'move-apps-late', mv: 'apps-late', acct: 'MOVE' }],
+  ['home-move-read', 'move-apps', { name: 'move-apps-saved', mv: 'apps-saved', acct: 'MOVE' }], ['home-move-read', 'move-apps', { name: 'move-apps-unrestored', mv: 'apps-unrestored', acct: 'MOVE' }],
+  ['home-move-read', 'move-apps', { name: 'move-apps-nokit', mv: 'apps-nokit', acct: 'MOVE' }], ['home-move-read', 'move-apps', { name: 'move-apps-rulesold', mv: 'apps-rulesold', acct: 'MOVE' }],
+  ['home-move-read', 'move-apps', { name: 'move-apps-unknown', mv: 'apps-unknown', acct: 'MOVE' }], ['home', 'move-apps', { name: 'move-apps-handed', mv: 'apps-handed', acct: 'MOVE' }],
+  ['home-handed-run', 'move-apps', { name: 'move-apps-handed-busy', mv: 'apps-handed-busy', acct: 'MOVE' }], ['home', 'home', { name: 'home-handed', mv: 'handed' }],
+  ['home-handed-installing', 'home', { name: 'home-handed-installing', mv: 'handed' }], ['home-handed-run', 'home', { name: 'home-handed-run', mv: 'handed' }],
+  ['home', 'drawer', { name: 'drawer-handed', mv: 'handed', scrollTo: '[data-act="move-apps"]' }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,
@@ -163,7 +171,7 @@ const CATALOG = {
       if (only && !only.includes(name)) continue;
       const before = errors.length;
       await pg.evaluate(({ screen, state, now, catalog, acct, undo, ui, mv }) => {
-        if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true, acct });
+        if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true, acct, mv });
         else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo, ui, mv });
       }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG, acct: extra.acct === 'MOVE' ? MOVE_ACCT : extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null, mv: extra.mv ? MOVE_MV[extra.mv] : null });
       // 서랍 아래쪽처럼 첫 화면 밖에 있는 줄은 그 자리로 굴려서 찍는다

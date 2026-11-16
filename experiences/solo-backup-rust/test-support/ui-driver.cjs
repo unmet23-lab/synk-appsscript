@@ -79,7 +79,13 @@ async function wd(method, url, body) {
     // 계정의 백업을 연 PC는 늘 보이는 셋을 받는다. 백업이 없는 이 시험 PC는 꾸러미를 찾을 판 목록이 없어 엔진이 글과 함께 거절한다(다리 · 계약은 지났다)
     check('moveChecklist가 엔진에 닿는다', !!mvChecks && (mvChecks.ok === true ? Array.isArray(mvChecks.value) && ['browser', 'google-2sv', 'certificate'].every((id) => mvChecks.value.some((x) => x.id === id)) : mvChecks.err === true && mvChecks.code !== 'NO_METHOD'), JSON.stringify(mvChecks));
     check('moveOpen · setNextSources가 결과에 없는 자리를 거절한다(BAD_INPUT)', mvOpen?.code === 'BAD_INPUT' && mvNext?.code === 'BAD_INPUT', JSON.stringify({ mvOpen, mvNext }));
-    check('moveState · moveResult가 엔진에 닿는다', mvState?.ok === true && mvState.value && mvState.value.unfinished === false && mvState.value.running === false && mvResult?.ok === true && mvResult.value === null, JSON.stringify({ mvState, mvResult }));
+    // E16(e244f42e4) — 표의 공식 · 사용권 페이지. 표에 없는 ID는 BAD_INPUT, 표의 ID는 시험 모드의 호스트가 열지 않는다(브라우저를 띄우지 않는다)
+    const pgBad = await callOf('moveOpenProgramPage', '{id:"Nope.Nope",kind:"site"}'), pgGit = await callOf('moveOpenProgramPage', '{id:"Git.Git",kind:"site"}');
+    check('moveOpenProgramPage가 엔진에 닿고 시험 모드에서 브라우저를 열지 않는다', pgBad?.code === 'BAD_INPUT' && !!pgGit && pgGit.ok === false && pgGit.code !== 'NO_METHOD' && pgGit.code !== 'BAD_INPUT', JSON.stringify({ pgBad, pgGit }));
+    // E17 · E24 — moveState에 깔기 · 설정 결과, 다시 로그인할 곳의 남은 수, begun이 실린다(옮겨 온 적 없는 PC는 비었다)
+    const mvs = mvState?.value || {};
+    check('moveState · moveResult가 엔진에 닿는다', mvState?.ok === true && mvState.value && mvs.unfinished === false && mvs.running === false && mvResult?.ok === true && mvResult.value === null
+      && mvs.reinstall === null && mvs.settings === null && mvs.checklistLeft === null && typeof mvs.begun === 'boolean', JSON.stringify({ mvState, mvResult }));
     check('계정 칸에 열쇠 · 토큰 · 비밀번호가 없다', acc && !/token|secret|password|refresh|applicationKey|keyId/i.test(acc.text), acc ? acc.keys.join(',') : '없음');
     const env2 = await run("return {font:document.fonts.check('16px \"SUIT Variable\"'),fonts:[...document.fonts].map(f=>f.family+':'+f.status),webgl:(()=>{const c=document.createElement('canvas');return !!c.getContext('webgl')})(),w:innerWidth,h:innerHeight}");
     check('SUIT 글꼴이 실렸다(Tauri CSP font-src)', env2.font, env2.fonts.join(', '));
