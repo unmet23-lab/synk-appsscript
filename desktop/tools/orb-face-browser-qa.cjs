@@ -112,7 +112,9 @@ if(!process.versions.electron){
         await click(w,'[data-orb-act="signin"]');await wait(200);await w.js('window.__orbFixture.setAuth('+JSON.stringify(signedIn('none'))+')');
         const e=await until(w,s=>s.phase==='entered');const a2=await orbAt();
         check('static orb stays while entering',e.ok&&a2.mode==='static'&&a2.r>0,{state:e.state,orb:a2});
-        const a=await until(w,s=>s.mode==='app'&&s.ui==='app');await wait(400);const a3=await orbAt();
+        const a=await until(w,s=>s.mode==='app'&&s.ui==='app');
+        // 솔리오가 뜬 뒤 점 로고가 물러나야 작은 구가 된다. 바쁜 PC에서는 0.4초를 넘길 수 있어 4초까지 본다(11-17 CPU 100%에서 두 번 걸림)
+        let a3=await orbAt();for(const t=Date.now();!(a3.r>0&&a3.r<a1.r)&&Date.now()-t<4000;){await wait(100);a3=await orbAt();}
         check('static orb reaches Solio as the small orb',a.ok&&a3.mode==='static'&&a3.r>0&&a3.r<a1.r,{state:a.state,orb:a3});await capture(w,'static-solio');
         w.win.destroy();
       }else if(mode==='nowebgl'){
