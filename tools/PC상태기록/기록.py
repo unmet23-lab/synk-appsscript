@@ -11,7 +11,10 @@
 남기는 곳: %LOCALAPPDATA%\\synk\\pc-state\\YYYY-MM-DD.tsv (git 밖, 14일 지나면 지운다).
 한 줄의 칸: 시각 · 늦음(초, 정각 분에서 얼마나 늦게 떴나) · CPU % · 메모리 쓴 GB/전체 GB · 커밋 쓴 GB/한도 GB ·
 프로세스 수 · 스레드 수 · 핸들 수 · C: 쓰기 ms(작은 파일을 쓰고 디스크에 내리는 데 걸린 시간) · C: 여유 GB · D: 여유 GB ·
-메모리 큰 프로그램 다섯(이름 × 개수 = GB).
+메모리 큰 프로그램 다섯(이름 × 개수 = GB) · 커널 비페이징 풀 GB.
+마지막 칸은 2026-11-16에 더했다. 그날 아침 두 번의 멈춤에서는 커밋이 1분에 24~36GB 늘었는데 큰 프로그램 다섯은 오히려
+줄었다. 메모리를 가져간 것이 프로그램이 아니라 커널 풀이었다. 이 칸이 없어 그 사실을 다른 표본으로 따로 재야 했다.
+11-16 앞의 파일에는 이 칸이 없다.
 파이썬 표준 모듈만 쓴다(예약 작업의 파이썬에는 psutil이 없다).
 """
 import ctypes
@@ -77,7 +80,8 @@ def 메모리():
     p.cb = ctypes.sizeof(p)
     ctypes.windll.psapi.GetPerformanceInfo(ctypes.byref(p), p.cb)
     return {"쓴": gb(m.ullTotalPhys - m.ullAvailPhys), "전체": gb(m.ullTotalPhys), "커밋": gb(p.CommitTotal * p.PageSize),
-            "커밋한도": gb(p.CommitLimit * p.PageSize), "프로세스": p.ProcessCount, "스레드": p.ThreadCount, "핸들": p.HandleCount}
+            "커밋한도": gb(p.CommitLimit * p.PageSize), "프로세스": p.ProcessCount, "스레드": p.ThreadCount, "핸들": p.HandleCount,
+            "비페이징": gb(p.KernelNonpaged * p.PageSize)}
 
 
 def 큰프로그램(개수=5):
@@ -145,6 +149,7 @@ def 한줄(자리):
     return "\t".join([
         뜬때.strftime("%Y-%m-%d %H:%M:%S"), f"{늦음:.1f}", f"{cpu:.0f}", f"{m['쓴']:.1f}/{m['전체']:.1f}", f"{m['커밋']:.1f}/{m['커밋한도']:.1f}",
         str(m["프로세스"]), str(m["스레드"]), str(m["핸들"]), f"{쓰기:.0f}", f"{여유('C:/'):.1f}", f"{여유('D:/'):.1f}", 큰,
+        f"{m['비페이징']:.1f}",
     ])
 
 
@@ -183,7 +188,7 @@ def 줄들(자리, 날수=3):
 
 
 def 보기(수):
-    제목 = "시각\t늦음초\tCPU%\t메모리GB\t커밋GB\t프로세스\t스레드\t핸들\tC쓰기ms\tC여유\tD여유\t메모리 큰 프로그램"
+    제목 = "시각\t늦음초\tCPU%\t메모리GB\t커밋GB\t프로세스\t스레드\t핸들\tC쓰기ms\tC여유\tD여유\t메모리 큰 프로그램\t비페이징GB"
     print(제목)
     for 줄 in 줄들(폴더())[-수:]:
         print(줄)
