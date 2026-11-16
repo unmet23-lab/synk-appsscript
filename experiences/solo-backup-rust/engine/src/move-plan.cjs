@@ -21,16 +21,19 @@ const units = s => { let n = 0; for (const c of s) n += c.codePointAt(0) > 0xfff
 /** One Windows name: no forbidden or control character, no trailing dot or space, no device name, at most 255 units. */
 function safeName(name) {
   if (typeof name !== 'string' || !name || units(name) > NAME_UNITS || /[<>:"/\\|?*\x00-\x1f]/.test(name) || /[. ]$/.test(name)) return false;
-  const stem = name.split('.')[0].toUpperCase();
+  // Windows drops the spaces before the first dot too, so 「NUL .txt」 is the device (카본 끝판 C5).
+  const stem = name.split('.')[0].replace(/ +$/, '').toUpperCase();
   return !/^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[0-9¹²³]|LPT[0-9¹²³])$/.test(stem);
 }
-/** A plain absolute local-drive path made of safe names. */
-const safePath = p => typeof p === 'string' && /^[A-Za-z]:\\/.test(p) && !p.includes('/') && units(p) <= PATH_UNITS && p.slice(3).split('\\').filter(Boolean).every(safeName);
+/** A plain absolute local-drive path made of safe names: a drive's root, or names with one backslash between them and
+ *  none at the end (카본 끝판 C6). */
+const safePath = p => typeof p === 'string' && /^[A-Za-z]:\\/.test(p) && !p.includes('/') && units(p) <= PATH_UNITS && (p.length === 3 || p.slice(3).split('\\').every(safeName));
 const drive = p => /^[A-Za-z]:/.test(p) ? p[0].toUpperCase() : null;
 
 function known(snap, name) { const k = snap?.known?.[name]; return k && typeof k.path === 'string' ? k : null; }
 function syncRoots(snap) { return [...(snap?.oneDrive || []).map(r => r.path), ...(snap?.syncRoots || [])].filter(p => typeof p === 'string'); }
-const inSync = (p, snap) => syncRoots(snap).some(r => within(p, r));
+/** `p` is under a sync root, or under a known folder the snapshot says is synced — one rule for both PCs (카본 끝판 C9). */
+const inSync = (p, snap) => syncRoots(snap).some(r => within(p, r)) || SIX.some(n => known(snap, n)?.synced && within(p, known(snap, n).path));
 function oneDriveOf(p, snap) { return (snap?.oneDrive || []).filter(r => typeof r.path === 'string' && within(p, r.path)).sort((a, b) => b.path.length - a.path.length)[0] || null; }
 /** The longest of the six known folders on `snap` that holds `p`. */
 function knownOf(p, snap) {
@@ -50,10 +53,14 @@ const join = (root, relative) => relative ? path.join(root, relative) : root;
  * Only under the six known folders (but the documents folder's PowerShell folders) and under the profile's plain
  * folders does it go back in place. The rest of the profile (AppData, dot folders, files right in the profile) goes to
  * 「따로 둔 것」; elsewhere on the old system drive to `옮겨 온 자료\C 드라이브`; another drive to
- * `옮겨 온 자료\<X> 드라이브` unless the person picked the same drive (`sameDrive`).
+ * `옮겨 온 자료\<X> 드라이브` unless the person picked the same drive (`sameDrive`). `dir`: `p` is a folder — a folder
+ * right in the profile (`Projects`, `Dropbox`) goes back in place, a file there does not (카본 끝판 C1).
  */
-function routeOriginal(p, { old, now, sameDrive = false }) {
+function routeOriginal(p, { old, now, sameDrive = false, dir = false }) {
   const at = places(now);
+  return onNewPc(routeOld(p, { old, now, sameDrive, dir, at }), { now, at, dir });
+}
+function routeOld(p, { old, now, sameDrive, dir, at }) {
   const k = knownOf(p, old);
   if (k) {
     const r = rel(p, k.path), first = r.split('\\')[0].toLowerCase();
@@ -64,20 +71,50 @@ function routeOriginal(p, { old, now, sameDrive = false }) {
   const oldProfile = known(old, 'profile')?.path;
   if (oldProfile && within(p, oldProfile)) {
     const r = rel(p, oldProfile), parts = r.split('\\'), first = parts[0].toLowerCase();
-    if (!r) return { path: at.side, side: true, reason: 'profile' };
-    if (parts.length === 1 || first.startsWith('.') || first === 'appdata') return { path: join(at.side, r), side: true, reason: 'profile' };
+    if (!r) return dir ? { path: at.profile, side: false } : { path: at.side, side: true, reason: 'profile' };
+    if ((parts.length === 1 && !dir) || first.startsWith('.') || first === 'appdata') return { path: join(at.side, r), side: true, reason: 'profile' };
     return { path: join(at.profile, r), side: false };
   }
-  const letter = drive(p), rest = p.slice(3);
-  if (letter && letter === drive(oldProfile || '')) return { path: join(path.join(at.base, `${letter} 드라이브`), rest), side: false };
+  const letter = drive(p);
+  // Not on a drive letter (a network place): kept apart under its own name, never 「null 드라이브」 (카본 끝판 C7).
+  if (!letter) return { path: join(path.join(at.base, OTHER_PLACE), otherRest(p)), side: false };
+  const rest = p.slice(3);
+  if (letter === drive(oldProfile || '')) return { path: join(path.join(at.base, `${letter} 드라이브`), rest), side: false };
   const fixed = (now?.drives || []).some(d => String(d.letter).toUpperCase() === letter);
   if (sameDrive && fixed && letter !== drive(at.profile)) return { path: p, side: false };
   return { path: join(path.join(at.base, `${letter} 드라이브`), rest), side: false };
 }
+const OTHER_PLACE = '다른 자리';
+/** `\\server\share\a` or `\\?\UNC\server\share\a` → `server\share\a` (names only; what is not a safe name stops the
+ *  path at `destination`). */
+const otherRest = p => String(p).replace(/^\\\\[?.]\\(?:UNC\\)?/i, '').replace(/^\\+/, '').replace(/:/g, '');
+/**
+ * The same rule, read on the new PC (카본 끝판 C2): where a path lands is never the new PC's PowerShell folders, AppData,
+ * a dot folder or a file right in its profile — whatever the old PC's layout was (one PC with OneDrive's 문서 and
+ * the other without, a documents folder moved to another drive).
+ */
+function onNewPc(out, { now, at, dir }) {
+  if (out.side || within(out.path, at.base)) return out;
+  const docs = known(now, 'documents')?.path;
+  const inDocs = docs ? rel(out.path, docs) : null;
+  if (inDocs && DOCUMENT_SIDE.has(inDocs.split('\\')[0].toLowerCase())) return { path: join(path.join(at.side, LABEL.documents), inDocs), side: true, reason: 'autorun' };
+  const r = rel(out.path, at.profile);
+  if (r) {
+    const parts = r.split('\\'), first = parts[0].toLowerCase();
+    if ((parts.length === 1 && !dir) || first.startsWith('.') || first === 'appdata') return { path: join(at.side, r), side: true, reason: 'profile' };
+  }
+  return out;
+}
 /** The folder name a backed-up folder gets under 「OneDrive 밖 새 폴더」. */
 function folderLabel(original, old) {
   for (const name of SIX) { const k = known(old, name); if (k && key(k.path) === key(original)) return LABEL[name]; }
-  return path.basename(original.replace(/\\+$/, '')) || `${drive(original)} 드라이브`;
+  return path.basename(original.replace(/\\+$/, '')) || (drive(original) ? `${drive(original)} 드라이브` : OTHER_PLACE);
+}
+/** `name` with ` (n)` after it, the name cut at a whole character so it stays within 255 units (카본 끝판 C8). */
+function numbered(base, n) {
+  const tail = ` (${n})`; let head = [...base];
+  while (head.length && units(head.join('') + tail) > NAME_UNITS) head.pop();
+  return head.join('').replace(/[. ]+$/, '') + tail;
 }
 /** Unique labels for all backed-up folders (a second 「문서」 becomes 「문서 (2)」), never one already given — also not
  *  when a folder is itself called 「foo (2)」 (GPT GA5) — and never 「따로 둔 것」. */
@@ -85,7 +122,7 @@ function labels(sources, old) {
   const used = new Set([SIDE.toLowerCase()]);
   return sources.map(original => {
     const base = folderLabel(original, old); let name = base;
-    for (let n = 2; used.has(name.toLowerCase()); n++) name = `${base} (${n})`;
+    for (let n = 2; used.has(name.toLowerCase()); n++) name = numbered(base, n);
     used.add(name.toLowerCase());
     return name;
   });
@@ -97,8 +134,8 @@ function labels(sources, old) {
 function folderPlans(sources, { old, now, base = null }) {
   const at = places(now), names = labels(sources, old);
   return sources.map((original, i) => {
-    const route = routeOriginal(original, { old, now });
-    const oldSynced = inSync(original, old) || SIX.some(n => known(old, n)?.synced && within(original, known(old, n).path));
+    const route = routeOriginal(original, { old, now, dir: true });
+    const oldSynced = inSync(original, old);
     const oldDrive = oneDriveOf(original, old);
     const newSynced = !route.side && inSync(route.path, now);
     const newDrive = route.side ? null : oneDriveOf(route.path, now);
@@ -109,7 +146,11 @@ function folderPlans(sources, { old, now, base = null }) {
     else if (!oldSynced) { mode = 'newFolder'; why = 'new-synced'; }
     else if (oldDrive && sameAccount) { mode = 'oneDriveGaps'; why = 'same-onedrive'; }
     else { mode = 'newFolder'; why = 'old-synced'; }
-    const otherDrive = drive(original) !== drive(known(old, 'profile')?.path || '') && (now?.drives || []).some(d => String(d.letter).toUpperCase() === drive(original));
+    // 「같은 드라이브에 그대로」 only where routeOriginal would honour it (카본 끝판 C3): not a known folder, not in the old
+    // profile, not the old or the new system drive, and a fixed drive here.
+    const oldProfile = known(old, 'profile')?.path || '', letter = drive(original);
+    const otherDrive = !!letter && !knownOf(original, old) && !(oldProfile && within(original, oldProfile)) && letter !== drive(oldProfile) && letter !== drive(at.profile)
+      && (now?.drives || []).some(d => String(d.letter).toUpperCase() === letter);
     return { original, label: names[i], mode, why, destination: route.path, side: route.side, newFolder, oldSynced, newSynced, sameAccount,
       modes: ['original', 'newFolder', ...(oldDrive && sameAccount ? ['oneDriveGaps'] : []), 'skip'],
       sameDrive: otherDrive ? (now.drives.find(d => String(d.letter).toUpperCase() === drive(original)) || null) : null };
@@ -120,12 +161,12 @@ function folderPlans(sources, { old, now, base = null }) {
  * chosen `mode`: `{ path, side, check }` — `check` is the OneDrive place compared first in 'oneDriveGaps' mode —
  * or `{ skip }` with the reason ('name' · 'long').
  */
-function destination(plan, relative, { old, now, mode = plan.mode, sameDrive = false }) {
+function destination(plan, relative, { old, now, mode = plan.mode, sameDrive = false, dir = false }) {
   const parts = relative ? relative.split('/') : [];
   if (parts.some(part => !safeName(part))) return { skip: 'name' };
   const original = parts.length ? path.join(plan.original, ...parts) : plan.original;
   let out;
-  if (mode === 'original') out = routeOriginal(original, { old, now, sameDrive });
+  if (mode === 'original') out = routeOriginal(original, { old, now, sameDrive, dir: dir || !parts.length });
   else if (mode === 'newFolder' || mode === 'oneDriveGaps') out = { path: parts.length ? path.join(plan.newFolder, ...parts) : plan.newFolder, side: false };
   else return { skip: 'chosen' };
   if (mode === 'oneDriveGaps') out.check = routeOriginal(original, { old, now }).path;
@@ -144,13 +185,19 @@ function space(items) {
 }
 
 /**
- * `files.probe` in parts. The host answers at most PROBE_PART paths a call, so each answer stays well under the
- * 128 KiB frame the native side may send the worker (protocol.rs MAX_REQUEST — a bigger one stops the worker).
+ * `files.probe` in parts. The host answers at most PROBE_PART paths a call (its answer carries no paths, so it stays
+ * well under the 128 KiB frame the native side may send the worker — protocol.rs MAX_REQUEST), and a call's paths stay
+ * under PROBE_BYTES, well inside the 2 MiB frame the worker may send (MAX_RESPONSE), even for very long paths (카본 끝판 C4).
  */
-const PROBE_PART = 500;
+const PROBE_PART = 500, PROBE_BYTES = 1024 * 1024;
 async function probeAll(host, paths) {
   const out = [];
-  for (let i = 0; i < paths.length; i += PROBE_PART) out.push(...await host('files.probe', [paths.slice(i, i + PROBE_PART)]));
+  for (let i = 0; i < paths.length;) {
+    let j = i, bytes = 0;
+    while (j < paths.length && j - i < PROBE_PART && (j === i || bytes + Buffer.byteLength(JSON.stringify(paths[j])) + 1 <= PROBE_BYTES)) bytes += Buffer.byteLength(JSON.stringify(paths[j++])) + 1;
+    out.push(...await host('files.probe', [paths.slice(i, j)]));
+    i = j;
+  }
   return out;
 }
-module.exports = { PROBE_PART, probeAll, SIX, LABEL, MOVE_BASE, SIDE, safeName, safePath, within, rel, places, routeOriginal, folderPlans, destination, labels, space, inSync, oneDriveOf };
+module.exports = { PROBE_PART, PROBE_BYTES, probeAll, SIX, LABEL, MOVE_BASE, SIDE, safeName, safePath, within, rel, places, routeOriginal, folderPlans, destination, labels, space, inSync, oneDriveOf };

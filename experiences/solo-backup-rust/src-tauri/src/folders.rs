@@ -48,11 +48,13 @@ fn reg_string(key: &Key, name: &str) -> Option<String> {
 pub struct OneDriveRoot { pub kind: String, pub path: PathBuf, pub email_sha256: Option<String> }
 /// OneDrive's folders on this PC: its environment variables, then each account in the registry
 /// (`HKCU\Software\Microsoft\OneDrive\Accounts\<kind>` — `UserFolder`, `UserEmail`). The mail is kept only as SHA-256.
+/// The OneDrive account's mail as the kit carries it: SHA-256 of the trimmed, lower-case mail — never the mail.
+pub fn email_hash(mail: &str) -> String { format!("{:x}", Sha256::digest(mail.trim().to_lowercase().as_bytes())) }
 pub fn onedrive_roots() -> Vec<OneDriveRoot> {
     let mut roots: Vec<OneDriveRoot> = Vec::new();
     let mut add = |kind: &str, path: PathBuf, email: Option<String>| {
         if !path.is_absolute() { return; }
-        let email_sha256 = email.map(|m| format!("{:x}", Sha256::digest(m.trim().to_lowercase().as_bytes())));
+        let email_sha256 = email.map(|m| email_hash(&m));
         match roots.iter_mut().find(|r| key(&r.path) == key(&path)) {
             Some(found) => { if found.email_sha256.is_none() { found.email_sha256 = email_sha256; } if found.kind == "environment" { found.kind = kind.into(); } }
             None => roots.push(OneDriveRoot { kind: kind.into(), path, email_sha256 }),
@@ -74,12 +76,38 @@ pub fn onedrive_roots() -> Vec<OneDriveRoot> {
     roots
 }
 pub fn in_onedrive(path: &Path, roots: &[OneDriveRoot]) -> bool { roots.iter().any(|r| inside(path, &r.path)) }
-/// Other sync clients' folders (review M18): every root in Windows' cloud-files sync root list
+/// The signed-in user's SID from the process token (as schedule.rs, which this module's test hosts do not build).
+fn current_sid() -> Option<String> {
+    use windows_sys::Win32::{Security::{GetTokenInformation, TokenUser, TOKEN_QUERY, TOKEN_USER, Authorization::ConvertSidToStringSidW}, System::Threading::{GetCurrentProcess, OpenProcessToken}};
+    unsafe {
+        let mut token: HANDLE = ptr::null_mut();
+        if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) == 0 { return None; }
+        let mut size = 0u32;
+        GetTokenInformation(token, TokenUser, ptr::null_mut(), 0, &mut size);
+        let mut buffer = vec![0u8; size as usize];
+        let ok = GetTokenInformation(token, TokenUser, buffer.as_mut_ptr() as *mut _, size, &mut size) != 0;
+        CloseHandle(token);
+        if !ok { return None; }
+        let user = &*(buffer.as_ptr() as *const TOKEN_USER);
+        let mut text: *mut u16 = ptr::null_mut();
+        if ConvertSidToStringSidW(user.User.Sid, &mut text) == 0 { return None; }
+        let len = (0..).take_while(|&i| *text.add(i) != 0).count();
+        let sid = String::from_utf16_lossy(std::slice::from_raw_parts(text, len));
+        LocalFree(text as *mut _);
+        Some(sid)
+    }
+}
+/// Other sync clients' folders (review M18): this user's roots in Windows' cloud-files sync root list
 /// (`HKLM\…\Explorer\SyncRootManager\*\UserSyncRoots`, which OneDrive, Dropbox, Google Drive, iCloud and Box use) and
 /// the folders in Dropbox's `info.json`. They are treated like OneDrive, without the same-account comparison.
 pub fn sync_roots() -> Vec<PathBuf> {
     let mut roots: Vec<PathBuf> = Vec::new();
     let mut add = |path: PathBuf| if path.is_absolute() && !roots.iter().any(|r| key(r) == key(&path)) { roots.push(path); };
+    // The list is the whole machine's: each value is named by a user's SID. Only this user's roots count — another
+    // account's folders are neither this person's sync folders nor theirs to carry in a kit (카본 끝판 G1). Without the
+    // SID, only roots inside this user's profile are taken.
+    let sid = current_sid();
+    let profile = known_folder(&FOLDERID_Profile).ok();
     if let Some(manager) = open_key(HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager") {
         for index in 0..256u32 {
             let mut name = vec![0u16; 512]; let mut len = name.len() as u32;
@@ -89,13 +117,18 @@ pub fn sync_roots() -> Vec<PathBuf> {
                 let (mut vname, mut vlen) = (vec![0u16; 256], 256u32);
                 let mut data = vec![0u16; 1024]; let mut bytes = (data.len() * 2) as u32; let mut kind = 0u32;
                 if unsafe { RegEnumValueW(users.0, value, vname.as_mut_ptr(), &mut vlen, ptr::null(), &mut kind, data.as_mut_ptr() as *mut u8, &mut bytes) } != 0 { break; }
-                if kind == REG_SZ { let units = (bytes as usize / 2).min(data.len()); let text = String::from_utf16_lossy(&data[..units]); add(PathBuf::from(text.trim_end_matches('\0'))); }
+                if kind != REG_SZ { continue; }
+                let owner = String::from_utf16_lossy(&vname[..(vlen as usize).min(vname.len())]);
+                let units = (bytes as usize / 2).min(data.len()); let path = PathBuf::from(String::from_utf16_lossy(&data[..units]).trim_end_matches('\0'));
+                let mine = match (&sid, &profile) { (Some(sid), _) => owner.eq_ignore_ascii_case(sid), (None, Some(profile)) => inside(&path, profile), (None, None) => false };
+                if mine { add(path); }
             }
         }
     }
-    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-        let info = PathBuf::from(local).join(r"Dropbox\info.json");
-        if let Ok(text) = std::fs::read_to_string(info) { if let Ok(value) = serde_json::from_str::<Value>(&text) {
+    // Dropbox keeps `info.json` in Local or in Roaming, by how it was installed (카본 끝판 G2).
+    for base in ["LOCALAPPDATA", "APPDATA"] {
+        let Some(dir) = std::env::var_os(base) else { continue };
+        if let Ok(text) = std::fs::read_to_string(PathBuf::from(dir).join(r"Dropbox\info.json")) { if let Ok(value) = serde_json::from_str::<Value>(&text) {
             for kind in ["personal", "business"] { if let Some(path) = value[kind]["path"].as_str() { add(PathBuf::from(path)); } }
         } }
     }
@@ -112,8 +145,10 @@ pub fn fixed_drives() -> Vec<Drive> {
         if unsafe { GetDriveTypeW(root.as_ptr()) } != 3 { return None; } // DRIVE_FIXED
         let (mut label, mut fs) = (vec![0u16; 261], vec![0u16; 261]);
         let ok = unsafe { GetVolumeInformationW(root.as_ptr(), label.as_mut_ptr(), 261, ptr::null_mut(), ptr::null_mut(), ptr::null_mut(), fs.as_mut_ptr(), 261) } != 0;
+        // A volume Windows cannot read (locked by BitLocker, not formatted) is no place to put files (카본 끝판 G3).
+        if !ok { return None; }
         let text = |v: &[u16]| String::from_utf16_lossy(&v[..v.iter().position(|&c| c == 0).unwrap_or(0)]);
-        Some(Drive { letter, label: if ok { text(&label) } else { String::new() }, file_system: if ok { text(&fs) } else { String::new() } })
+        Some(Drive { letter, label: text(&label), file_system: text(&fs) })
     }).collect()
 }
 /// Bytes this user may still write on the volume that holds `path` (the deepest existing folder above it).
@@ -121,7 +156,11 @@ pub fn free_bytes(path: &Path) -> Result<u64, String> {
     let mut cursor = Some(path);
     while let Some(dir) = cursor { if dir.is_dir() { break; } cursor = dir.parent(); }
     let dir = cursor.ok_or("FOLDERS_FREE")?;
-    let text: Vec<u16> = dir.as_os_str().encode_wide().chain([0]).collect();
+    // A folder deeper than the old 260-unit limit is asked through its drive's root (카본 끝판 G5): the call takes no
+    // long path, and the drive's root gives the same volume unless a volume is mounted further down.
+    let units = dir.as_os_str().encode_wide().count();
+    let asked: PathBuf = if units < 248 { dir.to_path_buf() } else { dir.components().take(2).collect() };
+    let text: Vec<u16> = asked.as_os_str().encode_wide().chain([0]).collect();
     let mut free = 0u64;
     if unsafe { GetDiskFreeSpaceExW(text.as_ptr(), &mut free, ptr::null_mut(), ptr::null_mut()) } == 0 { return Err(format!("FOLDERS_FREE:{}", unsafe { GetLastError() })); }
     Ok(free)
@@ -158,8 +197,10 @@ pub fn check_place(text: &str) -> Value {
     if !fixed(&path, &fixed_drives()) { return json!({"ok":false,"reason":"NOT_FIXED"}); }
     if in_onedrive(&path, &onedrive_roots()) { return json!({"ok":false,"reason":"IN_ONEDRIVE"}); }
     if sync_roots().iter().any(|r| inside(&path, r)) { return json!({"ok":false,"reason":"IN_SYNC_FOLDER"}); }
-    if let Err(code) = crate::files::chain(&path) { return json!({"ok":false,"reason":if code == "MOVE_SKIP_LINK" { "LINK_ABOVE" } else { "FILE_ABOVE" }}); }
+    // A protected place is said as one before the disk is looked at; of what the look finds, only a file above is
+    // 「FILE_ABOVE」, any other code goes as it is (카본 끝판 G4).
     if crate::files::protected(&path) { return json!({"ok":false,"reason":"PROTECTED"}); }
+    if let Err(code) = crate::files::chain(&path) { return json!({"ok":false,"reason":match code.as_str() { "MOVE_SKIP_LINK" => "LINK_ABOVE".to_string(), "MOVE_SKIP_FILE" => "FILE_ABOVE".to_string(), _ => code }}); }
     match free_bytes(&path) { Ok(free) => json!({"ok":true,"free":free}), Err(code) => json!({"ok":false,"reason":code}) }
 }
 /// The host methods the worker calls (`folders.*`). `None`: not a method of this module.
@@ -185,6 +226,15 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
         // The mail is never in the snapshot, only its hash.
         assert!(!snap.to_string().contains('@'));
         assert!(free_bytes(&profile).unwrap() > 0);
+    }
+    #[test] fn the_mail_goes_only_as_its_hash() {
+        // 카본 끝판 G6: checked with a made-up mail, so a PC without OneDrive checks it too.
+        let hash = email_hash("  Kim.Lee@Example.COM ");
+        assert_eq!(hash, email_hash("kim.lee@example.com"));
+        assert!(hash.len() == 64 && hash.bytes().all(|b| b.is_ascii_hexdigit()) && !hash.contains('@'));
+        assert_ne!(hash, email_hash("kim.lee@example.org"));
+        // Only this user's sync roots: the SID is read from the token.
+        assert!(current_sid().is_some_and(|s| s.starts_with("S-1-")));
     }
     #[test] fn onedrive_membership_is_by_folder_boundary() {
         let roots = vec![OneDriveRoot { kind: "Personal".into(), path: PathBuf::from(r"C:\Users\a\OneDrive"), email_sha256: None }];

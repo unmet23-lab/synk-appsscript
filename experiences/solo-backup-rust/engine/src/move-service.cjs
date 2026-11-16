@@ -14,15 +14,24 @@ const { restoreSettings } = require('./move-settings.cjs');
 const STATE = 'move.json';
 const newId = () => crypto.randomBytes(8).toString('hex');
 async function readJson(file) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return null; } }
-async function writeJson(file, value) { await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = `${file}.${process.pid}.tmp`; await fs.writeFile(tmp, JSON.stringify(value, null, 2)); await fs.rename(tmp, file); }
+/** Each write its own temporary name (카본 끝판 E3), so two never share one. */
+async function writeJson(file, value) { await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = `${file}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`; await fs.writeFile(tmp, JSON.stringify(value, null, 2)); await fs.rename(tmp, file); }
 
 class MoveService {
   constructor({ engine, host, stateDir, localDir, server = null }) {
     Object.assign(this, { engine, host, stateDir, localDir, server });
     this.file = path.join(stateDir, STATE); this.ledgerDir = path.join(localDir, 'migration');
+    this.queue = Promise.resolve();
   }
   async state() { return (await readJson(this.file)) || {}; }
-  async save(patch) { const next = { ...(await this.state()), ...patch }; await writeJson(this.file, next); return next; }
+  /** Read, change and write the state one at a time (카본 끝판 E3): two ticks in a row, or a tick while a step saves,
+   *  never lose one another's change. `change(state)` returns the fields to set. */
+  update(change) {
+    const run = this.queue.then(async () => { const st = await this.state(); const next = { ...st, ...await change(st) }; await writeJson(this.file, next); return next; });
+    this.queue = run.catch(() => {});
+    return run;
+  }
+  save(patch) { return this.update(() => patch); }
   /** The old devices with backups in this repository (restic host names), newest first. */
   async devices() {
     const all = await this.engine.snapshots();
@@ -57,12 +66,21 @@ class MoveService {
   }
   /** Runs (or resumes) the move under the engine's operation, so the window shows its stage and percent. */
   async start({ from, choices = {}, onProgress = () => {} }) {
-    const before = await this.state();
-    const moveId = before.moveId && before.from === from && !before.result ? before.moveId : newId();
-    await this.save({ moveId, from, choices, startedAt: new Date().toISOString(), result: null });
+    // An unfinished run of the same old device goes on under its number. A finished one (complete or not) starts
+    // again under a new number, so the files it could not place are tried again.
+    const { moveId } = await this.update(before => {
+      const moveId = before.moveId && before.from === from && !before.result ? before.moveId : newId();
+      // Another old device: what the person ticked, installed and put back for the last one does not carry over (카본 끝판 E4).
+      const fresh = before.from !== undefined && before.from !== from ? { checked: [], reinstall: null, settings: null, released: null } : {};
+      return { moveId, from, choices, startedAt: new Date().toISOString(), result: null, ...fresh };
+    });
     const ctx = await this.context(from);
     const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId, ledgerDir: this.ledgerDir,
       onProgress: p => onProgress({ percent: p.total ? Math.min(99, Math.floor(p.bytes / p.total * 100)) : null, bytes: p.bytes, total: p.total }) });
+    // The old device keeps the backup the move reads, also when the move starts or resumes without a preview (카본 끝판 E7).
+    const prepared = await move.prepare();
+    const latest = prepared.map(f => f.selector.split(':')[0]).find(Boolean);
+    if (this.server && latest) await this.server.pinMove(latest).catch(() => {});
     const result = await move.run();
     const folders = (move.folders || []).map(f => ({ original: f.original, mode: choices[f.original]?.mode || f.fp.mode, destination: f.fp.destination, newFolder: f.fp.newFolder, label: f.fp.label }));
     const saved = { at: new Date().toISOString(), counts: result.counts, complete: result.complete, removedTemp: result.removedTemp, items: result.items.slice(0, 2000), folders, side: plan.places(ctx.now).side };
@@ -87,7 +105,15 @@ class MoveService {
     const status = await this.host('reinstall.status', []).catch(() => ({ ready: false, reason: 'WINGET_MISSING' }));
     const here = status.ready ? await this.host('reinstall.installed', []).catch(() => []) : [];
     const list = apps.reinstallList(ctx.kit, here);
-    for (const p of list.others.slice(0, 50)) { const s = status.ready ? await this.host('reinstall.show', [p.id]).catch(() => null) : null; Object.assign(p, s?.found ? { name: s.title, publisher: s.publisher, license: s.license } : { name: null }); }
+    // Names for what is outside the table: the first 50, within 60 seconds in all (카본 끝판 E6); every item has the
+    // same fields, a name only where winget gave one.
+    // The time left goes to each call as its own limit, so the last one also ends by then (GPT 2차 -g GB2).
+    const until = Date.now() + 60000;
+    for (const [i, p] of list.others.entries()) {
+      const left = until - Date.now();
+      const s = status.ready && i < 50 && left >= 1000 ? await this.host('reinstall.show', [p.id, left]).catch(() => null) : null;
+      Object.assign(p, s?.found ? { name: s.title, publisher: s.publisher, license: s.license } : { name: null, publisher: null, license: null });
+    }
     return { wingetStatus: status, ...list };
   }
   /**
@@ -101,14 +127,26 @@ class MoveService {
     const results = [];
     if (machine.length) {
       onProgress({ stage: 'elevated', ids: machine });
-      const run = await this.host('reinstall.elevate', [machine]).catch(e => ({ started: false, reason: e.message }));
+      const run = await this.host('reinstall.elevate', [machine]).catch(e => ({ started: false, reason: e.message || 'FAILED' }));
       const states = new Map((run.progress?.programs || []).map(p => [p.id, p.state]));
-      for (const id of machine) results.push({ id, name: table.get(id).name, state: run.started ? (states.get(id) || 'failed') : 'declined', scope: 'machine' });
+      // 「아니요」 is declined — on the approval, or in the elevated side's own question (exit 3); a start or a run that
+      // failed is failed, with its reason (카본 끝판 E5).
+      const declined = (!run.started && run.reason === 'DECLINED') || (run.started && run.exitCode === 3);
+      // Waited past the limit, or the confirmation stayed open too long (exit 5): what did not end is 「timeout」.
+      // Exit 4: winget is not there for the administrator account that approved (카본 끝판 H3 · H5).
+      const late = run.started && (run.timedOut || run.exitCode === 5);
+      const DONE = ['installed', 'already', 'reboot', 'failed', 'timeout'];
+      for (const id of machine) {
+        const got = states.get(id);
+        const state = declined ? 'declined' : !run.started ? 'failed' : DONE.includes(got) ? got : late ? 'timeout' : 'failed';
+        const code = state !== 'failed' ? null : !run.started ? run.reason || 'FAILED' : run.exitCode === 4 ? 'WINGET_ADMIN_MISSING' : `EXIT_${run.exitCode}`;
+        results.push({ id, name: table.get(id).name, state, scope: 'machine', ...(code ? { code } : {}) });
+      }
     }
     for (const id of rest) {
       onProgress({ stage: 'user', id });
-      const r = await this.host('reinstall.user', [id]).catch(e => ({ state: 'failed', code: e.message }));
-      results.push({ id, name: table.get(id)?.name || null, state: r.state, scope: table.get(id)?.scope || 'outside' });
+      const r = await this.host('reinstall.user', [id]).catch(e => ({ state: 'failed', code: e.message || 'FAILED' }));
+      results.push({ id, name: table.get(id)?.name || null, state: r.state, scope: table.get(id)?.scope || 'outside', ...(r.code ? { code: r.code } : Number.isInteger(r.exitCode) && r.state === 'failed' ? { code: `EXIT_${r.exitCode}` } : {}) });
     }
     for (const r of results) if (['installed', 'already', 'reboot', 'failed', 'timeout'].includes(r.state)) r.listed = await this.host('reinstall.listed', [r.id]).catch(() => null);
     await this.save({ reinstall: { at: new Date().toISOString(), results } });
@@ -130,12 +168,11 @@ class MoveService {
   }
   async check({ id, done }) {
     if (typeof id !== 'string' || id.length > 128 || typeof done !== 'boolean') throw new Error('MOVE_REQUEST');
-    const st = await this.state(); const set = new Set(st.checked || []);
-    if (done) set.add(id); else set.delete(id);
-    await this.save({ checked: [...set] });
-    return [...set];
+    const next = await this.update(st => { const set = new Set(st.checked || []); if (done) set.add(id); else set.delete(id); return { checked: [...set] }; });
+    return next.checked;
   }
-  /** The person said no to 「옛 PC 연결 끊기」, or gave up: the old device's backup is no longer held for the move. */
-  async release() { if (this.server) await this.server.unpinMove().catch(() => {}); return this.save({ released: new Date().toISOString() }); }
+  /** The person said no to 「옛 PC 연결 끊기」, or gave up: the old device's backup is no longer held for the move. When
+   *  the server could not be told, nothing is marked: the screen says so and the person tries again (카본 끝판 E7). */
+  async release() { if (this.server) await this.server.unpinMove(); return this.save({ released: new Date().toISOString() }); }
 }
 module.exports = { MoveService };

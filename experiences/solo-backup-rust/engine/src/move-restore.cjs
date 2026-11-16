@@ -28,11 +28,19 @@ const fileKey = (original, name) => original.toLowerCase() + '\u0000' + name;
 /** What leaves the old device's backup the only copy of something: the move is not 「complete」 then (4.6). */
 const UNFINISHED = ['fail', 'skip', 'side', 'same-unverified', 'folder-skip'];
 
-/** Skips under a skipped folder carry its reason. */
+/** Skips under a skipped folder carry its reason. The names are compared exactly (카본 끝판 D7): a skipped link `Docs`
+ *  is not the real folder `docs` the backup also holds. */
 function aboveSkipped(skippedDirs, name) {
-  const parts = name.toLowerCase().split('/');
+  const parts = name.split('/');
   for (let i = 1; i < parts.length; i++) { const r = skippedDirs.get(parts.slice(0, i).join('/')); if (r) return r; }
   return null;
+}
+/** Whether `name` is under one of `dirs` (exact names). */
+function underAny(dirs, name) {
+  if (!dirs.size) return false;
+  const parts = name.split('/');
+  for (let i = 1; i < parts.length; i++) if (dirs.has(parts.slice(0, i).join('/'))) return true;
+  return false;
 }
 /**
  * A listing for the move (4.6): like restore-tar's readManifest, but links, special nodes, names Windows cannot hold
@@ -40,7 +48,7 @@ function aboveSkipped(skippedDirs, name) {
  * by case goes to `aside` (it is put in 「따로 둔 것」 under its own name, review M19). Nodes carry `mtime` (ms).
  */
 async function readMoveList(input) {
-  const nodes = new Map(), aside = new Map(), skipped = [], skippedDirs = new Map(), merged = new Set();
+  const nodes = new Map(), aside = new Map(), skipped = [], skippedDirs = new Map(), merged = new Set(), asideDirs = new Set();
   let bytes = 0, pending = '', snapshots = 0;
   const decoder = new StringDecoder('utf8');
   function line(text) {
@@ -55,14 +63,19 @@ async function readMoveList(input) {
     if (nodes.size + aside.size + skipped.length >= MAX_NODES) throw new Error('작업 폴더 하나당 파일 · 폴더 100만 개까지 옮겨 옵니다.');
     const above = aboveSkipped(skippedDirs, name);
     const reason = above ? above : !['file', 'dir'].includes(node.type) ? (node.type === 'symlink' ? 'link' : 'special') : !name.split('/').every(plan.safeName) ? 'name' : null;
-    if (reason) { skipped.push({ name, type: node.type, reason }); if (node.type === 'dir' || node.type === 'symlink') skippedDirs.set(lower, reason); return; }
+    if (reason) { skipped.push({ name, type: node.type, reason }); if (node.type === 'dir' || node.type === 'symlink') skippedDirs.set(name, reason); return; }
     const size = node.type === 'dir' ? 0 : node.size;
     if (!Number.isSafeInteger(size) || size < 0 || !Number.isSafeInteger(bytes + size)) throw new Error('복구 목록의 파일 크기를 확인하지 못했습니다.');
     const mtime = Date.parse(node.mtime);
     const entry = { name, type: node.type, size, mtime: Number.isFinite(mtime) ? mtime : null };
-    // A folder that differs only by case merges into the first (Windows has one folder for both).
-    if (nodes.has(lower)) { if (node.type === 'file') aside.set(name, entry); else merged.add(name); }
-    else nodes.set(lower, entry);
+    // A folder that differs only by case merges into the first folder (Windows has one folder for both). A second name
+    // that is a file, or a folder whose first name is a file (`BUILD` the file, then `build/` — 카본 끝판 D7), goes
+    // aside with all that is under it.
+    const first = nodes.get(lower);
+    if (underAny(asideDirs, name)) aside.set(name, entry);
+    else if (!first) nodes.set(lower, entry);
+    else if (node.type === 'dir' && first.type === 'dir') merged.add(name);
+    else { aside.set(name, entry); if (node.type === 'dir') asideDirs.add(name); }
     bytes += size;
   }
   for await (const chunk of input) {
@@ -80,11 +93,25 @@ async function readMoveList(input) {
  *  folder is written into. */
 class Ledger {
   constructor(file) { this.file = file; this.handle = null; this.unsynced = 0; }
-  static async read(file) {
-    let text; try { text = await fs.readFile(file, 'utf8'); } catch (e) { if (e.code === 'ENOENT') return []; throw e; }
-    const out = [];
-    for (const lineText of text.split('\n')) { if (!lineText.trim()) continue; try { out.push(JSON.parse(lineText)); } catch { break; } }
-    return out;
+  /** The ledger's whole lines, and the byte where they end: what follows (a line cut when the PC stopped) is not one. */
+  static async scan(file) {
+    let buf; try { buf = await fs.readFile(file); } catch (e) { if (e.code === 'ENOENT') return { lines: [], end: 0, size: 0 }; throw e; }
+    const lines = []; let pos = 0, end = 0;
+    while (pos < buf.length) {
+      const nl = buf.indexOf(10, pos); if (nl < 0) break;
+      const text = buf.toString('utf8', pos, nl);
+      if (text.trim()) { try { lines.push(JSON.parse(text)); } catch { break; } }
+      pos = nl + 1; end = pos;
+    }
+    return { lines, end, size: buf.length };
+  }
+  static async read(file) { return (await Ledger.scan(file)).lines; }
+  /** Cuts a broken tail off before new lines are added (카본 끝판 D4): otherwise the first new line joins the cut one and
+   *  every line after it is lost on the next read. */
+  static async repair(file) {
+    const { lines, end, size } = await Ledger.scan(file);
+    if (end < size) await fs.truncate(file, end);
+    return lines;
   }
   async open() { await fs.mkdir(path.dirname(this.file), { recursive: true }); this.handle = await fs.open(this.file, 'a'); }
   async write(record, sync = false) {
@@ -115,6 +142,8 @@ class Move {
     Object.assign(this, { engine, host, from, old, now, choices, moveId, onProgress });
     this.ledger = new Ledger(path.join(ledgerDir, `${moveId}.jsonl`));
     this.final = new Map(); this.folderSkips = new Map(); this.dirs = new Map(); this.n = 0; this.done = new Map(); this.folderDone = new Set();
+    /** Folders an earlier run of this move wrote results for (카본 끝판 D1: this run's own skip lines do not count). */
+    this.startedFolders = new Set();
     this.bytes = 0; this.total = 0;
   }
   /** Counts and items from each file's last result, the earlier runs' included (GPT GB4: an interrupted move that resumes
@@ -135,11 +164,11 @@ class Move {
   }
   /** Reads an earlier ledger of this move and deletes the temporary files it left in the folders it wrote into. */
   async resume() {
-    const lines = await Ledger.read(this.ledger.file);
+    const lines = await Ledger.repair(this.ledger.file);
     for (const r of lines) {
       if (r.t === 'f' && typeof r.o === 'string' && typeof r.n === 'string' && typeof r.r === 'string') {
         const k = fileKey(r.o, r.n), { t: _t, o: _o, n: _n, r: result, ...extra } = r;
-        this.done.set(k, result); this.final.set(k, { result, item: { original: r.o, name: r.n, ...extra } });
+        this.done.set(k, result); this.final.set(k, { result, item: { original: r.o, name: r.n, ...extra } }); this.startedFolders.add(r.o.toLowerCase());
         if (Number.isSafeInteger(r.k) && r.k > this.n) this.n = r.k;
       }
       else if (r.t === 'dir' && typeof r.path === 'string') this.dirs.set(r.path.toLowerCase(), { ok: null, path: r.path });
@@ -175,16 +204,22 @@ class Move {
       if (k % 50 === 0) await this.ledger.write({ t: 'n', k });
       try { handle = await fs.open(temp, 'wx', 0o600); } catch (e) { failed = code(e); temp = null; }
     }
-    for await (const chunk of stream) {
-      written += chunk.length;
-      if (written > size) throw new Error('복구 파일 크기가 기록을 넘습니다.');
-      hash.update(chunk); this.bytes += chunk.length;
-      if (handle && !failed) { try { await handle.write(chunk); } catch (e) { failed = code(e); } }
+    const drop = async () => { if (temp) await this.host('files.discard', [temp]).catch(() => {}); };
+    try {
+      for await (const chunk of stream) {
+        written += chunk.length;
+        if (written > size) throw new Error('복구 파일 크기가 기록을 넘습니다.');
+        hash.update(chunk); this.bytes += chunk.length;
+        if (handle && !failed) { try { await handle.write(chunk); } catch (e) { failed = code(e); } }
+      }
+      if (written !== size) throw new Error('복구 파일 크기가 기록과 다릅니다.');
+    } catch (e) {
+      // A stream cut short stops the folder; the open file is closed and its temporary name taken away first (카본 끝판 D5).
+      if (handle) await handle.close().catch(() => {});
+      await drop(); throw e;
     }
-    if (written !== size) throw new Error('복구 파일 크기가 기록과 다릅니다.');
     if (handle) await handle.close().catch(e => { failed ||= code(e); });
     const sha256 = hash.digest('hex');
-    const drop = async () => { if (temp) await this.host('files.discard', [temp]).catch(() => {}); };
     if (failed) { await drop(); return this.record(original, name, ready.ok ? 'fail' : 'skip', { c: failed, p: target.path }); }
     try {
       // What reached the disk is what came from the backup.
@@ -204,9 +239,12 @@ class Move {
         const sideReady = await this.ensureDir(sideDir); if (!sideReady.ok) throw new Error(sideReady.skip);
         const k = ++this.n, sideTemp = path.join(sideDir, `~synk-${this.moveId}-${k}.part`);
         await fs.copyFile(temp, sideTemp, require('node:fs').constants.COPYFILE_EXCL); await drop();
+        // From here the side copy is the temporary file a failure takes away (카본 끝판 D5).
+        temp = sideTemp; await fs.utimes(temp, at, at);
         placed = await this.host('files.place', [{ temp: sideTemp, target: path.join(sideDir, path.basename(target.path)), ...expect }]); placed.result = 'side';
       }
-      const result = target.side ? (placed.result === 'placed' || placed.result === 'copy' ? 'side' : placed.result) : placed.result;
+      // Put aside is put aside, also when the same content was already there (카본 끝판 D6).
+      const result = target.side ? (['placed', 'copy', 'same', 'same-unverified'].includes(placed.result) ? 'side' : placed.result) : placed.result;
       return this.record(original, name, result, { p: placed.path, s: size, h: sha256 });
     } catch (e) { await drop(); return this.record(original, name, 'fail', { c: code(e), p: target.path }); }
   }
@@ -243,36 +281,33 @@ class Move {
     if (failure) throw failure;
     return seen;
   }
-  target(folder, name) {
+  target(folder, name, dir = false) {
     const choice = this.choices[folder.original] || {};
-    return plan.destination(folder.fp, name, { old: this.old, now: this.now, mode: choice.mode || folder.fp.mode, sameDrive: !!choice.sameDrive });
+    return plan.destination(folder.fp, name, { old: this.old, now: this.now, mode: choice.mode || folder.fp.mode, sameDrive: !!choice.sameDrive, dir });
+  }
+  /** Where one listed node goes: a second name differing only by case to 「따로 둔 것」 (review M19), the rest by the plan. */
+  place(folder, node) {
+    if (folder.listing.aside.get(node.name) === node) return { path: path.join(plan.places(this.now).side, '대소문자만 다른 이름', folder.fp.label, ...node.name.split('/')), side: true };
+    return this.target(folder, node.name, node.type === 'dir');
   }
   async folder(folder) {
     const { original, selector, listing, extra } = folder;
-    const wanted = (name, node) => {
-      if (SETTLED.has(this.done.get(fileKey(original, name)))) return null;
-      if (listing.aside.get(name) === node) {
-        // The second of two names differing only by case (review M19).
-        return { path: path.join(plan.places(this.now).side, '대소문자만 다른 이름', folder.fp.label, ...name.split('/')), side: true };
-      }
-      return this.target(folder, name);
-    };
-    const remaining = () => [...listing.nodes.values(), ...listing.aside.values()].filter(n => n.type === 'file' && !SETTLED.has(this.done.get(fileKey(original, n.name))));
-    const started = [...this.done.keys()].some(k => k.startsWith(original.toLowerCase() + '\u0000'));
-    const left = remaining();
-    if (!started || !left.length) {
-      if (left.length || !started) await this.engine.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, '', wanted) });
-    } else {
-      // Resume (review M20): the top folders that still have files each as their own stream, the loose files one by one.
-      const tops = new Map(); const loose = [];
-      for (const n of left) { const parts = n.name.split('/'); if (parts.length === 1) loose.push(n); else { const t = parts[0]; tops.set(t.toLowerCase(), t); } }
+    const wanted = (name, node) => SETTLED.has(this.done.get(fileKey(original, name))) ? null : this.place(folder, node);
+    const files = () => [...listing.nodes.values(), ...listing.aside.values()].filter(n => n.type === 'file');
+    const left = files().filter(n => !SETTLED.has(this.done.get(fileKey(original, n.name))));
+    if (!this.startedFolders.has(original.toLowerCase())) await this.engine.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, '', wanted) });
+    else {
+      // Resume (review M20): the top folders that still have files each as their own stream — by their exact names, so
+      // `Src` and `src` are two (카본 끝판 D3) — and the loose files one by one.
+      const tops = new Set(); const loose = [];
+      for (const n of left) { const parts = n.name.split('/'); if (parts.length === 1) loose.push(n); else tops.add(parts[0]); }
       if (loose.length > FILE_ROUND) await this.engine.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, '', wanted) });
       else {
-        for (const top of tops.values()) await this.engine.run(['dump', `${selector}/${top}`, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, top, wanted) });
-        for (const n of loose) await this.single(folder, selector, n, wanted(n.name, n));
-        // Folders no stream above went through (empty ones, ones whose files were all placed) are made as well.
-        for (const n of listing.nodes.values()) if (n.type === 'dir') { const job = wanted(n.name, n); if (job && !job.skip) await this.ensureDir(job.path); }
+        for (const top of tops) await this.engine.run(['dump', `${selector}/${top}`, '/', '--archive', 'tar'], { consumeStdout: s => this.extract(s, folder, listing, top, wanted) });
+        for (const n of loose) { await this.single(folder, selector, n, wanted(n.name, n)); this.onProgress({ bytes: this.bytes, total: this.total }); }
       }
+      // Folders no stream above went through (empty ones, ones whose files were all placed) are made as well.
+      for (const n of [...listing.nodes.values(), ...listing.aside.values()]) if (n.type === 'dir') { const job = wanted(n.name, n); if (job && !job.skip) await this.ensureDir(job.path); }
     }
     for (const file of extra || []) {
       // What this backup could not read, from an earlier one (4.2 「지금 상태」). Its time: that backup's.
@@ -281,7 +316,10 @@ class Move {
       if (job.skip) { await this.record(original, file.name, 'skip', { c: job.skip }); continue; }
       const node = { name: file.name, type: 'file', size: file.size, mtime: Date.parse(file.backupAt) || null };
       await this.engine.run(['dump', file.selector, '/' + file.name], { consumeStdout: s => this.writeFile(s, { original, name: file.name, size: node.size, mtime: node.mtime, target: job, check: job.check }) });
+      this.onProgress({ bytes: this.bytes, total: this.total });
     }
+    // Every listed file has a result before the folder counts as done (카본 끝판 D3): one no stream carried is a failure.
+    for (const n of files()) if (!this.done.has(fileKey(original, n.name))) await this.record(original, n.name, 'fail', { c: 'MOVE_NOT_IN_STREAM' });
     await this.ledger.write({ t: 'done', o: original }, true);
   }
   async single(folder, selector, node, job) {
@@ -304,10 +342,15 @@ class Move {
     const out = folders.map(f => {
       const mode = this.choices[f.original]?.mode || f.fp.mode;
       let files = 0, bytes = 0;
-      for (const n of [...f.listing.nodes.values(), ...f.listing.aside.values()]) {
-        if (n.type !== 'file' || mode === 'skip' || SETTLED.has(this.done.get(fileKey(f.original, n.name)))) continue;
-        const job = this.target(f, n.name); if (job.skip) continue;
-        files++; bytes += n.size; items.push({ path: job.path, size: n.size });
+      const count = (job, size) => { if (job.skip) return; files++; bytes += size; items.push({ path: job.path, size }); };
+      // What this run will still write (카본 끝판 D2): not a folder an earlier run finished, each file where it really
+      // goes (a second case name to 「따로 둔 것」), and the files taken from an earlier backup as well.
+      if (mode !== 'skip' && !this.folderDone.has(f.original.toLowerCase())) {
+        for (const n of [...f.listing.nodes.values(), ...f.listing.aside.values()]) {
+          if (n.type !== 'file' || SETTLED.has(this.done.get(fileKey(f.original, n.name)))) continue;
+          count(this.place(f, n), n.size);
+        }
+        for (const file of f.extra || []) if (!SETTLED.has(this.done.get(fileKey(f.original, file.name))) && Number.isSafeInteger(file.size)) count(this.target(f, file.name), file.size);
       }
       return { original: f.original, label: f.fp.label, mode, modes: f.fp.modes, why: f.fp.why, destination: f.fp.destination, newFolder: f.fp.newFolder,
         sameDrive: f.fp.sameDrive, files, bytes, skipped: f.listing.skipped.length, backupAt: f.backupAt };

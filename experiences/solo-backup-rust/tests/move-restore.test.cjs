@@ -88,7 +88,8 @@ test('move: synthetic old PC → backup → new PC, every file by SHA-256, nothi
     const r = p => p.slice(oldProfile.length + 1);
     if (original.startsWith(path.join(docs, 'PowerShell'))) return path.join(newProfile, '옮겨 온 자료', '따로 둔 것', '문서', original.slice(docs.length + 1));
     if (original.startsWith(dot)) return path.join(newProfile, '옮겨 온 자료', '따로 둔 것', r(original));
-    if (original.startsWith(projects)) return path.join(newProfile, '옮겨 온 자료', 'C 드라이브', original.slice(3));
+    // The old system drive is whatever drive the temporary folder is on (C: here, D: on the Windows CI runner).
+    if (original.startsWith(projects)) return path.join(newProfile, '옮겨 온 자료', `${projects[0].toUpperCase()} 드라이브`, original.slice(3));
     return path.join(newProfile, r(original));
   };
 
@@ -153,11 +154,14 @@ test('move: synthetic old PC → backup → new PC, every file by SHA-256, nothi
     assert.match(attrib.slice(0, 12), /H/);
   });
 
-  await t.test('moving again changes nothing: every file is 「이미 있음」, no new copy', async () => {
+  await t.test('moving again changes nothing: every file is 「이미 있음」 or, put aside, still 「따로 둠」; no new copy', async () => {
     const before = walk(newProfile).length;
     const again = await new Move({ engine, host, from, old, now, moveId: '2222cccc', ledgerDir }).run();
     assert.equal(walk(newProfile).length, before);
-    assert.ok(!again.counts.copy && !again.counts.placed && again.counts.same >= 9, JSON.stringify(again.counts));
+    // A file put aside is not in its place, also when its copy aside is already there (카본 끝판 D6): the move stays
+    // not complete, so the old device's backup is kept.
+    assert.ok(!again.counts.copy && !again.counts.placed && again.counts.same >= 7 && again.counts.side === 2, JSON.stringify(again.counts));
+    assert.equal(again.complete, false);
   });
 
   await t.test('the move kit goes into the backup and comes back checked (4.6 「옮겨 오기 꾸러미」)', async () => {

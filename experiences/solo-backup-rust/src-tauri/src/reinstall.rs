@@ -47,11 +47,47 @@ pub fn find_winget() -> Result<PathBuf, String> {
         let mut path = vec![0u16; len as usize];
         if len == 0 || unsafe { GetPackagePathByFullName(*name, &mut len, path.as_mut_ptr()) } != 0 { continue; }
         let folder = PathBuf::from(String::from_utf16_lossy(&path[..path.iter().position(|&c| c == 0).unwrap_or(path.len())]));
-        let exe = folder.join("winget.exe");
-        if !crate::folders::inside(&exe, &program_files) || crate::files::chain(&folder).is_err() { continue; }
-        if crate::files::info(&exe).ok().flatten().is_some_and(|i| i.kind == crate::files::Kind::File) { return Ok(exe); }
+        if let Some(exe) = winget_in(&folder, &program_files) { return Ok(exe); }
     }
     Err("WINGET_MISSING".into())
+}
+/// `winget.exe` in one App Installer package folder: under `%ProgramFiles%\WindowsApps`, no link on the way, a file.
+/// `WindowsApps` itself opens only for administrators and packaged apps (`MOVE_OPEN:5` for the window app at normal
+/// privilege, found 11-16 while checking 카본 끝판 H3 — before, winget was never found there). Then the way is checked
+/// down to `Program Files`: below it only TrustedInstaller can make anything, and winget.exe itself is still opened
+/// without following a link.
+fn winget_in(folder: &Path, apps: &Path) -> Option<PathBuf> {
+    let exe = folder.join("winget.exe");
+    if !crate::folders::inside(&exe, apps) { return None; }
+    match crate::files::chain(folder) {
+        Ok(()) => {}
+        Err(code) if code == "MOVE_OPEN:5" => { crate::files::chain(apps.parent()?).ok()?; }
+        Err(_) => return None,
+    }
+    crate::files::info(&exe).ok().flatten().is_some_and(|i| i.kind == crate::files::Kind::File && !i.placeholder).then_some(exe)
+}
+/// The elevated side under an administrator account App Installer was never registered for (카본 끝판 H3 — a separate
+/// administrator a standard user's approval names, who never signed in to the desktop): the package API finds nothing for
+/// that account, so App Installer's own folders are looked at directly, the newest first, each one administrators-only.
+/// (`WindowsApps` lists only for administrators and packaged apps, so this way is open to the elevated side alone.)
+fn find_winget_elevated() -> Result<PathBuf, String> { find_winget().or_else(|_| winget_from_folders()) }
+fn winget_from_folders() -> Result<PathBuf, String> {
+    let program_files = crate::folders::known_folder(&windows_sys::Win32::UI::Shell::FOLDERID_ProgramFiles)?.join("WindowsApps");
+    let names: Vec<String> = std::fs::read_dir(&program_files).map_err(|_| "WINGET_MISSING")?.flatten().map(|e| e.file_name().to_string_lossy().into_owned()).collect();
+    app_installer_folders(&names, if cfg!(target_arch = "aarch64") { "arm64" } else { "x64" }).into_iter()
+        .find_map(|name| { let folder = program_files.join(name); if admin_only(&folder).unwrap_or(false) { winget_in(&folder, &program_files) } else { None } })
+        .ok_or_else(|| "WINGET_MISSING".into())
+}
+/// App Installer's package folders among `names` for this machine's architecture, the newest version first.
+fn app_installer_folders(names: &[String], arch: &str) -> Vec<String> {
+    let suffix = format!("_{arch}__8wekyb3d8bbwe");
+    let mut found: Vec<(Vec<u32>, String)> = names.iter().filter_map(|name| {
+        let lower = name.to_lowercase();
+        let version = lower.strip_prefix("microsoft.desktopappinstaller_")?.strip_suffix(&suffix)?.split('.').map(|p| p.parse().ok()).collect::<Option<Vec<u32>>>()?;
+        Some((version, name.clone()))
+    }).collect();
+    found.sort_by(|a, b| b.0.cmp(&a.0));
+    found.into_iter().map(|(_, name)| name).collect()
 }
 fn version_of(text: &str) -> Option<(u32, u32)> {
     let v = text.trim().trim_start_matches('v'); let mut parts = v.split('.');
@@ -116,9 +152,14 @@ pub fn admin_only(dir: &Path) -> Result<bool, String> {
         let mut ace: *mut core::ffi::c_void = ptr::null_mut();
         if unsafe { GetAce(dacl, index, &mut ace) } == 0 { return Ok(false); }
         let header = unsafe { &*(ace as *const ACE_HEADER) };
-        if header.AceType != 0 { continue; } // ACCESS_ALLOWED_ACE_TYPE only; deny entries narrow rights
+        // A deny entry (plain, object, callback) only narrows rights. Every other entry has its rights right after the
+        // header; one that gives no write right is fine (App Installer's folder gives read through a conditional entry).
+        // An allow entry of another kind (callback, object, conditional) that gives a write right is one this check
+        // cannot read, so the folder does not count as administrators-only (카본 끝판 H2).
+        if matches!(header.AceType, 1 | 6 | 10 | 12) { continue; }
         let allowed = unsafe { &*(ace as *const ACCESS_ALLOWED_ACE) };
         if allowed.Mask & WRITE == 0 { continue; }
+        if header.AceType != 0 { return Ok(false); }
         let sid = unsafe { (ace as *mut u8).add(8) } as PSID;
         if !sid_text(sid).is_some_and(|s| TRUSTED.contains(&s.as_str())) { return Ok(false); }
     }
@@ -185,25 +226,75 @@ pub fn parse_ids(ids: &[String]) -> Result<Vec<Program>, String> {
     }
     Ok(out)
 }
-fn confirm(programs: &[Program]) -> bool {
-    use windows_sys::Win32::UI::WindowsAndMessaging::{MessageBoxW, IDOK, MB_ICONQUESTION, MB_OKCANCEL, MB_SETFOREGROUND, MB_TOPMOST};
+/// What the person answered in the confirmation: yes, no, or nothing within `limit` (GPT 2차 -g GB1: the window is
+/// closed then, so the elevated side ends and lets the next request run).
+#[derive(Debug, PartialEq, Eq)]
+enum Answer { Yes, No, Late }
+fn confirm(programs: &[Program], limit: Duration) -> Answer {
+    use std::sync::{atomic::{AtomicBool, Ordering}, Arc};
+    use windows_sys::Win32::{System::Threading::GetCurrentThreadId, UI::WindowsAndMessaging::{EnumThreadWindows, MessageBoxW, PostMessageW, IDOK, MB_ICONQUESTION, MB_OKCANCEL, MB_SETFOREGROUND, MB_TOPMOST, WM_CLOSE}};
     let list: Vec<String> = programs.iter().map(|p| format!("· {}", p.name)).collect();
     let text = wide(&format!("SYNK 업무 백업이 아래 프로그램 {}개를 이 PC에 깝니다. 각 프로그램의 사용권 계약에 동의하게 됩니다.\n\n{}\n\n깔려면 「확인」을 누르세요.", programs.len(), list.join("\n")));
-    unsafe { MessageBoxW(ptr::null_mut(), text.as_ptr(), wide("SYNK 업무 백업 — 프로그램 다시 깔기").as_ptr(), MB_OKCANCEL | MB_ICONQUESTION | MB_TOPMOST | MB_SETFOREGROUND) == IDOK }
+    let (answered, late) = (Arc::new(AtomicBool::new(false)), Arc::new(AtomicBool::new(false)));
+    let thread = unsafe { GetCurrentThreadId() };
+    let (a, l) = (answered.clone(), late.clone());
+    let watch = std::thread::spawn(move || {
+        let start = Instant::now();
+        while !a.load(Ordering::SeqCst) {
+            if start.elapsed() >= limit {
+                l.store(true, Ordering::SeqCst);
+                // Closes this thread's message box: 「취소」 as far as the box is concerned.
+                unsafe extern "system" fn close(hwnd: HWND, _: LPARAM) -> BOOL { unsafe { PostMessageW(hwnd, WM_CLOSE, 0, 0) }; 1 }
+                unsafe { EnumThreadWindows(thread, Some(close), 0) };
+                std::thread::sleep(Duration::from_secs(1));
+                continue;
+            }
+            std::thread::sleep(Duration::from_millis(500));
+        }
+    });
+    let yes = unsafe { MessageBoxW(ptr::null_mut(), text.as_ptr(), wide("SYNK 업무 백업 — 프로그램 다시 깔기").as_ptr(), MB_OKCANCEL | MB_ICONQUESTION | MB_TOPMOST | MB_SETFOREGROUND) == IDOK };
+    answered.store(true, Ordering::SeqCst); let _ = watch.join();
+    if late.load(Ordering::SeqCst) { Answer::Late } else if yes { Answer::Yes } else { Answer::No }
 }
+/// The folder this program really runs from (카본 끝판 H2): the final path of its own file, links and junctions resolved,
+/// so a junction the person made to the install folder (and swapped while the confirmation is open) never decides
+/// where the administrators-only work folder is.
+pub fn own_folder() -> Result<PathBuf, String> {
+    use std::os::windows::io::AsRawHandle;
+    use windows_sys::Win32::Storage::FileSystem::GetFinalPathNameByHandleW;
+    let file = std::fs::File::open(std::env::current_exe().map_err(|_| "REINSTALL_EXE")?).map_err(|_| "REINSTALL_EXE")?;
+    let mut buffer = vec![0u16; 32_768];
+    let len = unsafe { GetFinalPathNameByHandleW(file.as_raw_handle() as _, buffer.as_mut_ptr(), buffer.len() as u32, 0) } as usize;
+    if len == 0 || len >= buffer.len() { return Err("REINSTALL_EXE".into()); }
+    let text = String::from_utf16_lossy(&buffer[..len]);
+    // `\\?\C:\…` only: a network or device path is not where this program is installed.
+    let local = text.strip_prefix(r"\\?\").filter(|t| t.as_bytes().get(1) == Some(&b':')).ok_or("REINSTALL_EXE")?;
+    let path = PathBuf::from(local);
+    let dir = path.parent().ok_or("REINSTALL_EXE")?.to_path_buf();
+    crate::files::chain(&dir).map_err(|_| "REINSTALL_EXE")?;
+    Ok(dir)
+}
+/// How long the confirmation may stay open: past it, an 「확인」 starts nothing (카본 끝판 H5 — the window app has
+/// stopped waiting by then).
+const CONFIRM_LIMIT: Duration = Duration::from_secs(10 * 60);
 /// `WorkBackupRun.exe --reinstall <number> <id>…`, started elevated by the window app; `args` is what follows
-/// `--reinstall`. Exit 0: all done; 1: some failed; 2: refused (number, ids, folder or winget); 3: the person said no;
-/// 77: not elevated.
+/// `--reinstall`. Exit 0: all done; 1: some failed; 2: refused (number, ids, folder, or another run going); 3: the person
+/// said no; 4: no winget for this administrator account; 5: the confirmation stayed open too long; 77: not elevated.
 pub fn elevated_main(args: &[String]) -> i32 {
+    use windows_sys::Win32::System::Threading::CreateMutexW;
     let Some((number, ids)) = args.split_first() else { return 2 };
     if number.is_empty() || number.len() > 10 || !number.bytes().all(|b| b.is_ascii_digit()) { return 2; }
     if !crate::platform::elevated() { return 77; }
-    let Ok(exe) = std::env::current_exe() else { return 2 };
-    let Some(dir) = exe.parent() else { return 2 };
-    if !admin_only(dir).unwrap_or(false) { return 2; }
+    let Ok(dir) = own_folder() else { return 2 };
+    if !admin_only(&dir).unwrap_or(false) { return 2; }
     let Ok(programs) = parse_ids(ids) else { return 2 };
-    let Ok(winget) = find_winget() else { return 2 };
-    if !confirm(&programs) { return 3; }
+    // One elevated run at a time: a second one would clear the first one's work folder (카본 끝판 H5).
+    let mutex = unsafe { CreateMutexW(ptr::null(), 1, wide(r"Global\SynkWorkBackupReinstall").as_ptr()) };
+    if mutex.is_null() || unsafe { GetLastError() } == ERROR_ALREADY_EXISTS { if !mutex.is_null() { unsafe { CloseHandle(mutex) }; } return 2; }
+    struct Held(HANDLE); impl Drop for Held { fn drop(&mut self) { unsafe { CloseHandle(self.0) }; } }
+    let _held = Held(mutex);
+    let Ok(winget) = find_winget_elevated() else { return 4 };
+    match confirm(&programs, CONFIRM_LIMIT) { Answer::Yes => {}, Answer::No => return 3, Answer::Late => return 5 }
     let root = dir.join("reinstall-work");
     let _ = std::fs::remove_dir_all(&root);
     let work = root.join(number);
@@ -222,22 +313,33 @@ pub fn status() -> Value {
 }
 /// The ids `winget export --source winget` finds on this PC (normal privilege).
 pub fn installed() -> Result<Vec<String>, String> {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    static NEXT: AtomicU64 = AtomicU64::new(0);
     let winget = find_winget()?;
-    let dir = std::env::temp_dir().join(format!("swb-winget-{}-{}", std::process::id(), Instant::now().elapsed().as_nanos()));
-    std::fs::create_dir_all(&dir).map_err(|_| "WINGET_EXPORT")?;
+    // A folder of its own for each call, made new (카본 끝판 H4): two calls never share one, and no file an earlier
+    // call left is read as this one's answer.
+    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_nanos()).unwrap_or(0);
+    let dir = std::env::temp_dir().join(format!("swb-winget-{}-{stamp}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed)));
+    std::fs::create_dir(&dir).map_err(|_| "WINGET_EXPORT")?;
     let file = dir.join("export.json");
     let result = run(&winget, &["export", "--source", "winget", "--disable-interactivity", "--accept-source-agreements", "-o", &file.to_string_lossy()], None, None, Duration::from_secs(180));
     let text = std::fs::read(&file); let _ = std::fs::remove_dir_all(&dir);
-    result?;
-    let value: Value = serde_json::from_slice(&text.map_err(|_| "WINGET_EXPORT")?).map_err(|_| "WINGET_EXPORT")?;
+    let (code, _) = result?;
+    // No file and a clean exit: nothing of winget's on this PC. No file after a failure: the failure.
+    let text = match text { Ok(text) => text, Err(_) if code == 0 => return Ok(Vec::new()), Err(_) => return Err(format!("WINGET_EXPORT:{code}")) };
+    let value: Value = serde_json::from_slice(&text).map_err(|_| "WINGET_EXPORT")?;
     let ids = value["Sources"].as_array().into_iter().flatten().flat_map(|s| s["Packages"].as_array().into_iter().flatten()).filter_map(|p| p["PackageIdentifier"].as_str().filter(|id| valid_id(id)).map(String::from));
     Ok(capped(ids))
 }
 /// Host answers go back to the worker in one frame of at most 128 KiB (protocol.rs MAX_REQUEST); a list stops well before.
 const MAX_ANSWER: usize = 96 * 1024;
+/// The table's ids go first (카본 끝판 I1): when the list is cut, a table program this PC has is never the one left out
+/// (it would then show as 「not installed」 and be chosen again).
 fn capped(ids: impl Iterator<Item = String>) -> Vec<String> {
+    let in_table: BTreeSet<String> = table().into_iter().map(|p| p.id).collect();
+    let (first, rest): (Vec<String>, Vec<String>) = ids.partition(|id| in_table.contains(id));
     let (mut out, mut seen, mut bytes) = (Vec::new(), std::collections::HashSet::new(), 0usize);
-    for id in ids {
+    for id in first.into_iter().chain(rest) {
         if !seen.insert(id.clone()) { continue; }
         bytes += id.len() + 3;
         if bytes > MAX_ANSWER { break; }
@@ -246,14 +348,25 @@ fn capped(ids: impl Iterator<Item = String>) -> Vec<String> {
     out
 }
 /// `winget show` for a program outside the table: its name, publisher and version as winget gives them (review M15).
-pub fn show(id: &str) -> Result<Value, String> {
+/// `limit`: how long this one call may take — the caller's time left (GPT 2차 -g GB2), at most 120 seconds.
+pub fn show(id: &str, limit: Duration) -> Result<Value, String> {
     if !valid_id(id) { return Err("HOST_REQUEST".into()); }
-    let (code, text) = run(&find_winget()?, &["show", "--id", id, "--exact", "--source", "winget", "--disable-interactivity", "--accept-source-agreements"], None, None, Duration::from_secs(120))?;
+    let limit = limit.clamp(Duration::from_secs(1), Duration::from_secs(120));
+    let (code, text) = run(&find_winget()?, &["show", "--id", id, "--exact", "--source", "winget", "--disable-interactivity", "--accept-source-agreements"], None, None, limit)?;
     if code != 0 { return Ok(json!({"found":false})); }
+    Ok(show_value(id, &text))
+}
+/// `winget show`'s text read without leaning on its words (카본 끝판 H1): winget may print in the display language, so
+/// the package is found by the line that ends with `[<id>]` and its name is what stands before that, after the first
+/// word (「Found」 or its translation). The other fields are read where winget prints them in English, else null.
+fn show_value(id: &str, text: &str) -> Value {
     let short = |v: &str| v.trim().chars().take(512).collect::<String>();
-    let field = |label: &str| text.lines().find_map(|l| l.trim().strip_prefix(label).map(short));
-    let found = text.lines().find_map(|l| l.trim().strip_prefix("Found ").map(short));
-    Ok(json!({"found":found.is_some(),"title":found,"publisher":field("Publisher:"),"version":field("Version:"),"license":field("License Url:"),"homepage":field("Homepage:")}))
+    let field = |label: &str| text.lines().find_map(|l| l.trim().strip_prefix(label).map(short)).filter(|v| !v.is_empty());
+    let tail = format!("[{id}]");
+    let found = text.lines().map(str::trim).find(|l| l.to_lowercase().ends_with(&tail.to_lowercase()))
+        .map(|l| { let head = l[..l.len() - tail.len()].trim(); short(head.split_once(char::is_whitespace).map_or("", |(_, name)| name)) })
+        .filter(|name| !name.is_empty());
+    json!({"found":found.is_some(),"title":found,"publisher":field("Publisher:"),"version":field("Version:"),"license":field("License Url:"),"homepage":field("Homepage:")})
 }
 /// Whether one id is installed (`winget list --id <id> -e`) — the check after an install (review M17).
 pub fn listed(id: &str) -> Result<bool, String> {
@@ -278,7 +391,8 @@ pub fn elevate(ids: &[String]) -> Result<Value, String> {
     use windows_sys::Win32::{System::Threading::{GetExitCodeProcess, WaitForSingleObject}, UI::{Shell::{ShellExecuteExW, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW}, WindowsAndMessaging::SW_SHOWNORMAL}};
     let machine: Vec<String> = table().into_iter().filter(|p| p.scope == "machine").map(|p| p.id).collect();
     if ids.is_empty() || ids.len() > 64 || ids.iter().any(|id| !machine.contains(id)) { return Err("REINSTALL_NOT_IN_TABLE".into()); }
-    let exe = std::env::current_exe().map_err(|_| "REINSTALL_EXE")?.parent().ok_or("REINSTALL_EXE")?.join("WorkBackupRun.exe");
+    // From the folder the window app really runs from, the same one the elevated side writes its results under.
+    let exe = own_folder()?.join("WorkBackupRun.exe");
     let number = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(|_| "REINSTALL_CLOCK")?.as_nanos() % 2_000_000_000).to_string();
     // The ids go on the command line: they are table ids (letters, digits, `.+_-`), so no quoting is needed.
     let (verb, file_w, params) = (wide("runas"), wide(&exe.to_string_lossy()), wide(&elevated_args(&number, ids)));
@@ -286,11 +400,16 @@ pub fn elevate(ids: &[String]) -> Result<Value, String> {
     info.cbSize = std::mem::size_of::<SHELLEXECUTEINFOW>() as u32; info.fMask = SEE_MASK_NOCLOSEPROCESS;
     info.lpVerb = verb.as_ptr(); info.lpFile = file_w.as_ptr(); info.lpParameters = params.as_ptr(); info.nShow = SW_SHOWNORMAL;
     let started = unsafe { ShellExecuteExW(&mut info) } != 0 && !info.hProcess.is_null();
-    if !started { return Ok(json!({"started":false,"reason":"DECLINED_OR_FAILED"})); }
-    unsafe { WaitForSingleObject(info.hProcess, (ALL + Duration::from_secs(600)).as_millis() as u32) };
-    let mut code = 0u32; unsafe { GetExitCodeProcess(info.hProcess, &mut code); CloseHandle(info.hProcess); }
+    // 「아니요」 on the administrator approval is error 1223; anything else is a start that failed (카본 끝판 E5).
+    if !started { let reason = if unsafe { GetLastError() } == ERROR_CANCELLED { "DECLINED" } else { "START_FAILED" }; return Ok(json!({"started":false,"reason":reason})); }
+    // The whole wait: the confirmation's limit, the installs' and ten minutes to spare. Past it, the run is reported as
+    // timed out — never with Windows' 「still running」 259 as its exit code (카본 끝판 H5).
+    let waited = unsafe { WaitForSingleObject(info.hProcess, (CONFIRM_LIMIT + ALL + Duration::from_secs(600)).as_millis() as u32) };
+    let mut code = 0u32;
+    let finished = waited == WAIT_OBJECT_0 && unsafe { GetExitCodeProcess(info.hProcess, &mut code) } != 0 && code != STILL_ACTIVE as u32;
+    unsafe { CloseHandle(info.hProcess) };
     let progress = exe.parent().map(|d| d.join("reinstall-work").join(&number).join("progress.json")).and_then(|p| std::fs::read(p).ok()).and_then(|b| serde_json::from_slice::<Value>(&b).ok());
-    Ok(json!({"started":true,"exitCode":code,"progress":progress}))
+    Ok(if finished { json!({"started":true,"exitCode":code,"progress":progress}) } else { json!({"started":true,"exitCode":null,"timedOut":true,"progress":progress}) })
 }
 /// `--reinstall <number> <id> <id> …` — what `elevate` hands the elevated process.
 fn elevated_args(number: &str, ids: &[String]) -> String { std::iter::once(format!("--reinstall {number}")).chain(ids.iter().cloned()).collect::<Vec<_>>().join(" ") }
@@ -301,7 +420,7 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
     Some(match method {
         "reinstall.status" => Ok(status()),
         "reinstall.installed" => installed().map(Value::from),
-        "reinstall.show" => id().and_then(|id| show(&id)),
+        "reinstall.show" => id().and_then(|id| show(&id, Duration::from_millis(args.get(1).and_then(Value::as_u64).unwrap_or(120_000)))),
         "reinstall.listed" => id().and_then(|id| listed(&id)).map(Value::from),
         "reinstall.user" => id().and_then(|id| install_user(&id)),
         "reinstall.elevate" => first.as_array().ok_or_else(|| "HOST_REQUEST".to_string())
@@ -316,6 +435,54 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
     fn base(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("swb-reinstall-{name}-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir); fs::create_dir_all(&dir).unwrap(); dir
+    }
+    #[test] fn show_reads_any_language() {
+        // 카본 끝판 H1: found by the `[id]` line, whatever word winget prints before the name.
+        let en = "Found Git [Git.Git]\nVersion: 2.56.0.4\nPublisher: The Git Development Community\nLicense Url: https://x/LICENSE\n";
+        let v = show_value("Git.Git", en);
+        assert_eq!((v["found"].as_bool(), v["title"].as_str(), v["publisher"].as_str(), v["version"].as_str()), (Some(true), Some("Git"), Some("The Git Development Community"), Some("2.56.0.4")));
+        let ko = "찾음 Git for Windows [Git.Git]\n버전: 2.56.0.4\n게시자: 누군가\n";
+        let v = show_value("Git.Git", ko);
+        assert_eq!((v["found"].as_bool(), v["title"].as_str()), (Some(true), Some("Git for Windows")));
+        assert!(v["publisher"].is_null() && v["version"].is_null());
+        assert_eq!(show_value("Git.Git", "No package found matching input criteria.")["found"], false);
+        assert_eq!(show_value("Git.Git", "Found Other [Other.Pkg]")["found"], false, "another id is not this one");
+    }
+    #[test] fn the_elevated_side_finds_its_real_folder_and_winget() {
+        // 카본 끝판 H2 · H3: the folder from the program file's final path; winget also from App Installer's own folders.
+        let dir = own_folder().unwrap();
+        let real = std::fs::canonicalize(std::env::current_exe().unwrap().parent().unwrap()).unwrap();
+        assert_eq!(crate::platform::key_path(&dir), crate::platform::key_path(Path::new(real.to_str().unwrap().trim_start_matches(r"\\?\"))));
+        // App Installer's folders, the newest first, only this architecture (the listing itself is open to administrators).
+        let names: Vec<String> = ["Microsoft.DesktopAppInstaller_1.28.240.0_x64__8wekyb3d8bbwe", "Microsoft.DesktopAppInstaller_1.29.380.0_x64__8wekyb3d8bbwe",
+            "Microsoft.DesktopAppInstaller_1.29.380.0_arm64__8wekyb3d8bbwe", "Microsoft.DesktopAppInstaller_1.29.380.0_neutral_~_8wekyb3d8bbwe", "Other_1.0_x64__8wekyb3d8bbwe"].map(String::from).to_vec();
+        assert_eq!(app_installer_folders(&names, "x64"), ["Microsoft.DesktopAppInstaller_1.29.380.0_x64__8wekyb3d8bbwe", "Microsoft.DesktopAppInstaller_1.28.240.0_x64__8wekyb3d8bbwe"]);
+        // Only where App Installer is registered (GPT 2차 -g GB3); there it must be found, a PC without it gives WINGET_MISSING.
+        if !app_installer_registered() { assert_eq!(find_winget_elevated().unwrap_err(), "WINGET_MISSING"); return; }
+        if crate::platform::elevated() { assert!(winget_from_folders().is_ok()); } else { assert!(find_winget_elevated().is_ok(), "the package way first"); }
+        // App Installer's own folder counts as administrators-only although it gives read through a conditional entry.
+        assert!(admin_only(find_winget().unwrap().parent().unwrap()).unwrap());
+    }
+    // GPT 2차 -g GB1: a confirmation nobody answers closes itself at its limit. The message box is shown on a desktop of
+    // its own that nobody sees, so the test runs anywhere without a window on the screen.
+    #[test] fn the_confirmation_closes_itself_at_its_limit() {
+        #[link(name = "user32")] extern "system" {
+            fn CreateDesktopW(name: *const u16, device: *const u16, mode: *const core::ffi::c_void, flags: u32, access: u32, attributes: *const core::ffi::c_void) -> HANDLE;
+            fn SetThreadDesktop(desktop: HANDLE) -> BOOL;
+            fn CloseDesktop(desktop: HANDLE) -> BOOL;
+        }
+        let answer = std::thread::spawn(|| {
+            let desktop = unsafe { CreateDesktopW(wide(&format!("swb-confirm-{}", std::process::id())).as_ptr(), ptr::null(), ptr::null(), 0, 0x1000_0000, ptr::null()) };
+            assert!(!desktop.is_null() && unsafe { SetThreadDesktop(desktop) } != 0, "a desktop of its own");
+            let programs: Vec<Program> = table().into_iter().filter(|p| p.scope == "machine").take(1).collect();
+            let started = Instant::now();
+            let answer = confirm(&programs, Duration::from_secs(2));
+            let took = started.elapsed();
+            unsafe { CloseDesktop(desktop) };
+            (answer, took)
+        }).join().unwrap();
+        assert_eq!(answer.0, Answer::Late);
+        assert!(answer.1 >= Duration::from_secs(2) && answer.1 < Duration::from_secs(10), "{:?}", answer.1);
     }
     #[test] fn the_table_is_whole() {
         let t = table();
@@ -366,6 +533,12 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
         assert!(!work.join("temp").exists(), "temporary folders are removed after");
         let _ = fs::remove_dir_all(&dir);
     }
+    fn app_installer_registered() -> bool {
+        use windows_sys::Win32::Storage::Packaging::Appx::GetPackagesByPackageFamily;
+        let family = wide(FAMILY); let (mut count, mut length) = (0u32, 0u32);
+        unsafe { GetPackagesByPackageFamily(family.as_ptr(), &mut count, ptr::null_mut(), &mut length, ptr::null_mut()) };
+        count > 0
+    }
     #[test] fn winget_comes_from_its_package_folder() {
         match find_winget() {
             Ok(path) => {
@@ -373,7 +546,9 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
                 assert!(text.contains(r"\windowsapps\microsoft.desktopappinstaller_") && !text.contains(r"\appdata\"), "{text}");
                 assert!(status()["version"].as_str().is_some());
             }
-            Err(code) => assert_eq!(code, "WINGET_MISSING"),
+            // Only a PC without App Installer may have no winget: where the package is registered, it is found (the old
+            // check took 「WINGET_MISSING」 as fine and so missed that the window app never found it).
+            Err(code) => { assert_eq!(code, "WINGET_MISSING"); assert!(!app_installer_registered(), "App Installer is registered but winget was not found"); }
         }
     }
     #[test] fn folder_rights() {
@@ -387,6 +562,7 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
         let list = capped(many.chain(std::iter::once("Git.Git".to_string())));
         assert!(serde_json::to_vec(&list).unwrap().len() < 128 * 1024);
         assert!(list.len() > 500);
+        assert_eq!(list.first().map(String::as_str), Some("Git.Git"), "a table id after the cut is kept, first");
         assert_eq!(capped(["Git.Git".to_string(), "Git.Git".to_string(), "7zip.7zip".to_string()].into_iter()), vec!["Git.Git", "7zip.7zip"]);
     }
 }

@@ -17,8 +17,16 @@ function rustHost(exe) {
     const reply = JSON.parse(line); const w = waiting.get(reply.id); if (!w) return; waiting.delete(reply.id);
     if (reply.ok) w.resolve(reply.value); else w.reject(new Error(reply.code));
   });
-  const call = (method, args) => new Promise((resolve, reject) => { const id = ++next; waiting.set(id, { resolve, reject }); child.stdin.write(JSON.stringify({ id, method, args }) + '\n'); });
-  call.close = () => new Promise(ok => { child.once('exit', ok); child.stdin.end(); });
+  // A host that cannot start or stops ends every call still waiting, so a test fails instead of hanging (카본 끝판 I2).
+  let gone = null;
+  const fail = e => { gone ||= e; for (const w of waiting.values()) w.reject(gone); waiting.clear(); };
+  child.once('error', e => fail(new Error(`TEST_HOST_START: ${e.message}`)));
+  child.once('exit', code => fail(new Error(`TEST_HOST_EXIT: ${code}`)));
+  const call = (method, args) => new Promise((resolve, reject) => {
+    if (gone) return reject(gone);
+    const id = ++next; waiting.set(id, { resolve, reject }); child.stdin.write(JSON.stringify({ id, method, args }) + '\n');
+  });
+  call.close = () => new Promise(ok => { if (child.exitCode !== null || child.signalCode !== null || gone) return ok(); child.once('exit', ok); child.stdin.end(); });
   call.real = true;
   return call;
 }
@@ -75,12 +83,21 @@ function standIn({ snapshot }) {
         throw new Error('MOVE_COPY_NAMES');
       }
       case 'files.discard': { if (!tempName(path.basename(first))) throw new Error('MOVE_REQUEST'); const c = await chain(path.dirname(first)); if (c !== 'ok') throw new Error(c); if (await kind(first) !== 'file') return false; await fs.unlink(first); return true; }
-      case 'files.compare': { const k = await kind(first.path); if (k === 'missing') return { match: 'missing' }; return { match: await same(first.path, first) ? 'verified' : 'different' }; }
+      // Like files.rs: a link or file above the place makes it 「different」, never read through (카본 끝판 I3).
+      case 'files.compare': { if (await chain(path.dirname(first.path)) !== 'ok') return { match: 'different' }; const k = await kind(first.path); if (k === 'missing') return { match: 'missing' }; return { match: await same(first.path, first) ? 'verified' : 'different' }; }
       default: throw new Error('HOST_METHOD');
     }
   };
-  call.close = async () => {}; call.real = false;
-  return call;
+  // The window app's frame limits (src-tauri/src/protocol.rs), as the Rust test host keeps them (카본 끝판 E9): what the
+  // worker sends at most 2 MiB, what goes back to it at most 128 KiB.
+  const framed = async (method, args = []) => {
+    if (Buffer.byteLength(JSON.stringify({ id: 0, method, args })) + 1 > 2 * 1024 * 1024) throw new Error('HOST_FRAME_TOO_LARGE');
+    const value = await call(method, args);
+    if (Buffer.byteLength(JSON.stringify({ id: 0, ok: true, value: value ?? null })) + 1 > 131072) throw new Error('HOST_ANSWER_TOO_LARGE');
+    return value;
+  };
+  framed.close = async () => {}; framed.real = false;
+  return framed;
 }
 /** The host for a test: the real one when built, else the stand-in. `snapshot` is this PC as the stand-in reports it. */
 function moveHost({ snapshot }) {

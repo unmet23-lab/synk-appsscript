@@ -15,19 +15,34 @@ async function putFile(ctx, target, bytes, mtimeMs = Date.now()) {
   const dir = path.dirname(target);
   const ready = await ctx.host('files.mkdirs', [dir]).catch(e => ({ ok: false, skip: e.message }));
   if (!ready?.ok) return { skip: ready?.skip || 'MOVE_MKDIR' };
-  // Its own number range (900000000 +), so it never meets a file the move itself is writing under the same move id.
-  const temp = path.join(dir, `~synk-${ctx.moveId}-${900000000 + ++ctx.n}.part`);
-  await fs.writeFile(temp, bytes, { flag: 'wx', mode: 0o600 });
-  const at = mtimeMs / 1000; await fs.utimes(temp, at, at);
-  const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
-  try { return await ctx.host('files.place', [{ temp, target, size: bytes.length, mtimeMs: Math.round(mtimeMs), sha256 }]); }
-  catch (e) { await ctx.host('files.discard', [temp]).catch(() => {}); return { skip: e.message }; }
+  let temp = null;
+  try {
+    // Its own number range (900000000 +), so it never meets a file the move itself is writing under the same move id,
+    // and a random number in it, so a temporary file an earlier run left never blocks this one (카본 끝판 E1).
+    for (let tries = 0; !temp; tries++) {
+      const name = path.join(dir, `~synk-${ctx.moveId}-${900000000 + crypto.randomInt(1, 100000000)}.part`);
+      try { await fs.writeFile(name, bytes, { flag: 'wx', mode: 0o600 }); temp = name; }
+      catch (e) { if (e.code === 'EEXIST' && tries < 4) continue; if (e.code !== 'EEXIST') temp = name; throw e; }
+    }
+    const at = mtimeMs / 1000; await fs.utimes(temp, at, at);
+    const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
+    return await ctx.host('files.place', [{ temp, target, size: bytes.length, mtimeMs: Math.round(mtimeMs), sha256 }]);
+  } catch (e) {
+    // One file that cannot be written is written down; the other settings go on.
+    if (temp) await ctx.host('files.discard', [temp]).catch(() => {});
+    return { skip: e.code || e.message || 'FAILED' };
+  }
 }
+/** A folder name from the kit for the table's `*` (a version folder): one plain name (카본 끝판 E8). */
+const oneName = v => typeof v === 'string' && v !== '' && plan.safeName(v) && !v.startsWith('.');
+/** A file's place under the table entry's base, or null when the kit's names would leave it (카본 끝판 E8). */
 function where(now, entry, file) {
   const base = now.known?.[entry.base]?.path; if (!base) return null;
-  const rel = entry.path.replace('*', file.version || '*');
-  if (rel.includes('*')) return null;
-  return file.rel ? path.join(base, rel, file.rel) : path.join(base, rel);
+  if (entry.path.includes('*') && !oneName(file.version)) return null;
+  if (file.rel && (typeof file.rel !== 'string' || !file.rel.split('\\').every(plan.safeName))) return null;
+  const rel = entry.path.replace('*', file.version || '');
+  const target = file.rel ? path.join(base, rel, file.rel) : path.join(base, rel);
+  return plan.within(target, path.join(base, rel)) ? target : null;
 }
 /**
  * Puts the kit's app settings back. `installed` is the set of winget ids now on this PC; `mapPath(oldPath)` gives where
@@ -35,7 +50,7 @@ function where(now, entry, file) {
  */
 async function restoreSettings({ kit, host, now, installed = new Set(), moveId, mapPath = () => null }) {
   if (!/^[0-9a-f]{8,32}$/.test(moveId)) throw new Error('옮겨 오기 번호가 올바르지 않습니다.');
-  const ctx = { host, moveId, n: 0 };
+  const ctx = { host, moveId };
   const side = path.join(plan.places(now).side, '앱 설정');
   const out = [];
   const names = new Set([...(kit?.apps || []).map(a => a.app), ...(kit?.left || []).map(l => l.app)]);
@@ -50,6 +65,7 @@ async function restoreSettings({ kit, host, now, installed = new Set(), moveId, 
       const entry = setting.entries.find(e => e.id === file.entry); if (!entry) continue;
       const target = where(now, entry, file); if (!target) continue;
       const sideTarget = path.join(side, setting.name, entry.path.replace('*', file.version || ''), ...(file.rel ? [file.rel] : []));
+      if (!plan.within(sideTarget, path.join(side, setting.name))) continue;
       const aside = async bytes => { const put = await putFile(ctx, sideTarget, bytes, file.mtime ?? Date.now()); if (put.skip) { result.failed.push({ path: sideTarget, code: put.skip }); return null; } return put.path; };
       result.dropped += file.dropped || 0; result.droppedProfiles.push(...(file.droppedProfiles || []));
       if (entry.filter === 'extension-list') { const f = apps.filtered(entry, file.data); result.extensions.push(...(f?.list || []).map(id => ({ id, command: `${entry.command} ${id}` }))); continue; }
@@ -59,7 +75,7 @@ async function restoreSettings({ kit, host, now, installed = new Set(), moveId, 
         const value = (() => { try { return apps.parseJsonc(file.data.toString('utf8')); } catch { return null; } })();
         const olds = Object.values(value?.vaults || {}).map(v => v?.path).filter(p => typeof p === 'string');
         const mapped = olds.map(p => [p, mapPath(p)]).filter(([, q]) => q);
-        const probe = await plan.probeAll(host, mapped.map(([, q]) => q));
+        const probe = await plan.probeAll(host, mapped.map(([, q]) => q)).catch(() => []);
         const there = new Map(mapped.filter((_, i) => probe[i]?.kind === 'dir'));
         context = { mapPath: p => there.get(p) || null };
       }
@@ -69,7 +85,15 @@ async function restoreSettings({ kit, host, now, installed = new Set(), moveId, 
       if (f.side) { const p = await aside(f.bytes); if (p) result.side.push(p); continue; }
       if (!f.bytes) continue;
       if (!ready) { result.notInstalled = true; const p = await aside(f.bytes); if (p) result.side.push(p); continue; }
-      const [seen] = await host('files.probe', [[target]]);
+      const [seen] = await host('files.probe', [[target]]).catch(e => [{ kind: 'error', code: e.message }]);
+      if (seen?.kind === 'error') { result.failed.push({ path: target, code: seen.code || 'FAILED' }); continue; }
+      if (seen?.kind === 'file') {
+        // The same content is there already — put back by an earlier run of this step (카본 끝판 E2): it counts as put
+        // back, and no second copy goes aside.
+        const sha256 = crypto.createHash('sha256').update(f.bytes).digest('hex');
+        const same = await host('files.compare', [{ path: target, size: f.bytes.length, mtimeMs: Date.now(), sha256 }]).catch(() => null);
+        if (same?.match === 'verified') { result.restored.push(target); if (entry.note === 'instructions') result.instructions = true; continue; }
+      }
       if (seen?.kind !== 'missing') { result.kept.push(target); const p = await aside(f.bytes); if (p) result.side.push(p); continue; } // 새 PC에 이미 있어 덮지 않았습니다
       const placed = await putFile(ctx, target, f.bytes);
       if (placed.skip) { result.failed.push({ path: target, code: placed.skip }); continue; }

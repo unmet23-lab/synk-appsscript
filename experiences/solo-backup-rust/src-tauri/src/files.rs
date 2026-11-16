@@ -37,8 +37,9 @@ pub enum Placed { Placed(PathBuf), Same(PathBuf, bool), Copy(PathBuf) }
 pub enum Match { Different, Verified, Unverified }
 
 fn safe_name(name: &str) -> bool {
-    // Windows device names, with any extension (`nul.txt`), including COM¹–³ / LPT¹–³.
-    let stem: Vec<char> = name.split('.').next().unwrap_or("").to_uppercase().chars().collect();
+    // Windows device names, with any extension (`nul.txt`), including COM¹–³ / LPT¹–³. Windows drops the spaces before
+    // the first dot too, so `NUL .txt` is the device (카본 끝판 F4).
+    let stem: Vec<char> = name.split('.').next().unwrap_or("").trim_end_matches(' ').to_uppercase().chars().collect();
     let text: String = stem.iter().collect();
     let numbered = stem.len() == 4 && (text.starts_with("COM") || text.starts_with("LPT")) && matches!(stem[3], '0'..='9' | '¹' | '²' | '³');
     let reserved = matches!(text.as_str(), "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$") || numbered;
@@ -96,7 +97,10 @@ fn info_of(handle: &Handle) -> Result<Info, String> {
     if !ok { return Err(format!("MOVE_INFO:{}", unsafe { GetLastError() })); }
     let reparse = tag.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT != 0;
     let kind = if reparse && !kept_tag(tag.ReparseTag) { Kind::Link } else if standard.Directory != 0 { Kind::Dir } else { Kind::File };
-    let placeholder = tag.FileAttributes & (FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS | FILE_ATTRIBUTE_RECALL_ON_OPEN | FILE_ATTRIBUTE_OFFLINE) != 0;
+    // A deduplicated file (Windows Server's Data Deduplication) counts as one whose content is not read here: through a
+    // no-follow handle only its stub would be read, so its hash would mean nothing (카본 끝판 F1).
+    let placeholder = tag.FileAttributes & (FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS | FILE_ATTRIBUTE_RECALL_ON_OPEN | FILE_ATTRIBUTE_OFFLINE) != 0
+        || (reparse && tag.ReparseTag == 0x8000_0013);
     // FILETIME (100 ns since 1601) → milliseconds since 1970.
     let mtime_ms = (basic.LastWriteTime - 116_444_736_000_000_000) / 10_000;
     Ok(Info { kind, size: standard.EndOfFile.max(0) as u64, mtime_ms, placeholder })
@@ -157,7 +161,8 @@ pub fn sha256(path: &Path) -> Result<String, String> {
 /// same size and time make it only 「내용 확인 안 함」. A file that cannot be read counts as different.
 pub fn same(path: &Path, found: &Info, expect: &Expect) -> Match {
     if found.kind != Kind::File || found.size != expect.size { return Match::Different; }
-    if found.placeholder { return if (found.mtime_ms - expect.mtime_ms).abs() < SAME_TIME_MS { Match::Unverified } else { Match::Different }; }
+    // `abs_diff`: any two times from a request, also far ones, without overflow (카본 끝판 F5).
+    if found.placeholder { return if found.mtime_ms.abs_diff(expect.mtime_ms) < SAME_TIME_MS as u64 { Match::Unverified } else { Match::Different }; }
     match sha256(path) { Ok(hash) if hash == expect.sha256 => Match::Verified, _ => Match::Different }
 }
 /// `이름 (복구본).확장자`, then `이름 (복구본 2).확장자` … A name without an extension (or a dot file such as
@@ -165,13 +170,20 @@ pub fn same(path: &Path, found: &Info, expect: &Expect) -> Match {
 pub fn copy_name(target: &Path, n: u32) -> Option<PathBuf> {
     let name = target.file_name()?.to_str()?;
     let mark = if n <= 1 { "(복구본)".to_string() } else { format!("(복구본 {n})") };
-    let (stem, ext) = match name.rfind('.') { Some(i) if i > 0 => (&name[..i], &name[i..]), _ => (name, "") };
-    let mut stem: Vec<char> = stem.chars().collect();
-    let units = |s: &[char]| s.iter().map(|c| c.len_utf16()).sum::<usize>() + 1 + mark.encode_utf16().count() + ext.encode_utf16().count();
-    while units(&stem) > 255 { stem.pop()?; }
-    let stem: String = stem.into_iter().collect::<String>().trim_end_matches(['.', ' ']).to_string();
-    if stem.is_empty() { return None; }
-    Some(target.with_file_name(format!("{stem} {mark}{ext}")))
+    let fit = |stem: &str, ext: &str| -> Option<PathBuf> {
+        let mut stem: Vec<char> = stem.chars().collect();
+        let units = |s: &[char]| s.iter().map(|c| c.len_utf16()).sum::<usize>() + 1 + mark.encode_utf16().count() + ext.encode_utf16().count();
+        while units(&stem) > 255 { stem.pop()?; }
+        let stem: String = stem.into_iter().collect::<String>().trim_end_matches(['.', ' ']).to_string();
+        if stem.is_empty() { return None; }
+        Some(target.with_file_name(format!("{stem} {mark}{ext}")))
+    };
+    match name.rfind('.') {
+        // What follows the last dot is so long that nothing of the name before it would stay (`1. 긴 제목…`): then it is
+        // no extension, and the whole name is shortened at its end (카본 끝판 F3).
+        Some(i) if i > 0 => fit(&name[..i], &name[i..]).or_else(|| fit(name, "")),
+        _ => fit(name, ""),
+    }
 }
 /// The engine's temporary name: `~synk-<move id, 8–32 hex>-<n>.part`.
 pub fn temp_name(name: &str) -> bool {
@@ -207,9 +219,17 @@ fn checked_temp(temp: &Path, target: &Path) -> Result<Info, String> {
     if found.kind != Kind::File || found.placeholder { return Err("MOVE_REQUEST".into()); }
     Ok(found)
 }
+/// Deletes the engine's temporary file. One the antivirus, indexer or sync client still holds (32 · 33 · 5) is tried
+/// again for about ten seconds, like a rename (카본 끝판 F2).
 fn delete_temp(temp: &Path) -> Result<(), String> {
-    if unsafe { DeleteFileW(long(temp).as_ptr()) } == 0 { return Err(format!("MOVE_DELETE:{}", unsafe { GetLastError() })); }
-    Ok(())
+    for _ in 0..BUSY_TRIES {
+        if unsafe { DeleteFileW(long(temp).as_ptr()) } != 0 { return Ok(()); }
+        match unsafe { GetLastError() } {
+            ERROR_SHARING_VIOLATION | ERROR_LOCK_VIOLATION | ERROR_ACCESS_DENIED => std::thread::sleep(BUSY_WAIT),
+            code => return Err(format!("MOVE_DELETE:{code}")),
+        }
+    }
+    Err("MOVE_BUSY".into())
 }
 /// Gives the engine's temporary file `temp` the name `target` in the same folder, or, when `target` is taken by
 /// another content, the first free 「(복구본 N)」 name. Never replaces a file. When `target` or an earlier
@@ -318,6 +338,14 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
         let shortened = copy_name(&Path::new(r"C:\a").join(&long_name), 2).unwrap();
         let last = shortened.file_name().unwrap().to_str().unwrap();
         assert!(last.encode_utf16().count() <= 255 && last.ends_with(" (복구본 2).txt"), "{last}");
+        // 카본 끝판 F3 · F4 · F5: a long 「extension」 is no extension, `NUL .txt` is the device, far times do not overflow.
+        let numbered = format!("1. {}", "가".repeat(247));
+        let copy = copy_name(&Path::new(r"C:\a").join(&numbered), 1).unwrap();
+        let copy = copy.file_name().unwrap().to_str().unwrap();
+        assert!(copy.starts_with("1. 가") && copy.ends_with(" (복구본)") && copy.encode_utf16().count() <= 255, "{copy}");
+        for bad in [r"C:\a\NUL .txt", r"C:\a\con  .log", r"C:\a\COM1 .x"] { assert!(checked(bad).is_err(), "{bad}"); }
+        let far = Info { kind: Kind::File, size: 1, mtime_ms: i64::MAX, placeholder: true };
+        assert_eq!(same(Path::new(r"C:\none"), &far, &Expect { size: 1, mtime_ms: i64::MIN, sha256: String::new(), hidden: false }), Match::Different);
         assert!(temp_name("~synk-0123abcd-1.part") && temp_name("~synk-0123456789abcdef0123456789abcdef-999999999.part"));
         for bad in ["~synk-0123ABCD-1.part", "~synk-0123abc-1.part", "~synk-0123abcd-.part", "~synk-0123abcd-1.tmp", "보고서.hwp", "~synk-0123abcd-1.part.exe"] { assert!(!temp_name(bad), "{bad}"); }
     }

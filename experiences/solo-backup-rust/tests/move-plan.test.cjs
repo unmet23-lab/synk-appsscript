@@ -12,6 +12,10 @@ const apps = require('../engine/src/move-apps.cjs');
 const kitLib = require('../engine/src/move-kit.cjs');
 const { readMoveList } = require('../engine/src/move-restore.cjs');
 const { restoreSettings } = require('../engine/src/move-settings.cjs');
+/** Tests that make real files under Windows paths (`path.win32`, junctions): they mean nothing on Linux, so they are
+ *  subtests of one top-level test at the end of this file, skipped off Windows, and need no conditional-QA entry. */
+const onWindows = [];
+const windowsOnly = (name, fn) => onWindows.push([name, fn]);
 const { moveHost } = require('./move-host.cjs');
 
 const snap = (profile, extra = {}) => {
@@ -151,10 +155,11 @@ test('다시 깔 것 and 다시 로그인할 곳 from a kit', () => {
   assert.deepEqual(list.others.map(p => [p.id, p.chosen]), [['Some.Other', false]], 'runtimes dropped, bad ids dropped, others not chosen');
   assert.deepEqual(list.manual.map(m => [m.name, m.site]), [['네이버 웨일', 'https://whale.naver.com/'], ['한컴오피스', 'https://www.hancom.com/'], ['어떤 사내 도구', null]]);
   const check = apps.checklist(kit).map(c => c.id);
-  assert.deepEqual(check, ['app:git', 'app:claude-code', 'program:Kakao.KakaoTalk', 'browser', 'google-2sv', 'certificate']);
+  // Obsidian came in by its installed name, not by winget: it is on the checklist too (카본 끝판 A8).
+  assert.deepEqual(check, ['app:git', 'app:obsidian', 'app:claude-code', 'program:Kakao.KakaoTalk', 'browser', 'google-2sv', 'certificate']);
 });
 
-test('move kit: built from a profile, read back as untrusted input, settings put back without replacing (M15)', async t => {
+windowsOnly('move kit: built from a profile, read back as untrusted input, settings put back without replacing (M15)', async t => {
   const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'swb-kit-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const oldP = path.join(root, 'old'), newP = path.join(root, 'new');
@@ -174,7 +179,8 @@ test('move kit: built from a profile, read back as untrusted input, settings put
   w(path.join(oldP, 'AppData', 'Local', 'Packages', 'Microsoft.WindowsTerminal_8wekyb3d8bbwe', 'LocalState', 'settings.json'),
     JSON.stringify({ theme: 'dark', profiles: { list: [{ name: '내 셸', commandline: 'cmd /k set TOKEN=x' }, { name: 'PS', source: 'Windows.Terminal.PowershellCore' }] } }));
   w(path.join(oldP, '.codex', 'AGENTS.md'), '# 지침\nOPENAI_API_KEY=sk-proj-' + 'b'.repeat(40));
-  const host = moveHost({ snapshot: snap(oldP) });
+  // Closed at the end: the real Rust host (SWB_MOVE_HOST) is a process that would keep the test from ending.
+  const host = moveHost({ snapshot: snap(oldP) }); t.after(() => host.close());
   const fakeHost = (m, a) => m === 'reinstall.installed' ? Promise.resolve(['Git.Git', 'Anthropic.ClaudeCode', 'BlenderFoundation.Blender', 'bad;id']) : host(m, a);
   const text = await kitLib.buildKit({ host: fakeHost });
   // What the kit's files hold, decoded: no credential file, no secret value, no key-shaped text.
@@ -194,16 +200,20 @@ test('move kit: built from a profile, read back as untrusted input, settings put
   assert.ok(!text.includes(Buffer.from('$env:OPENAI_API_KEY').toString('base64').slice(0, 20)), 'a PowerShell profile is not in the kit (its secrets cannot be told by name)');
   // Tampered parts are left out: a file outside the entry, a changed byte, an unknown app.
   const raw = JSON.parse(text);
-  raw.apps.find(a => a.app === 'claude-code').files.push({ entry: 'instructions', rel: '..\\..\\evil.ps1', size: 1, sha256: 'x', data: 'eA==' });
+  // The way out is in a folder entry, whose files may have a path below it, with its size and hash right (카본 끝판 J1:
+  // a wrong hash alone would leave the file out too, so the path check would go untested).
+  const x = Buffer.from('x'), xHash = require('node:crypto').createHash('sha256').update(x).digest('hex');
+  raw.apps.find(a => a.app === 'vscode').files.push({ entry: 'snippets', rel: '..\\..\\evil.json', size: 1, sha256: xHash, data: x.toString('base64') });
   raw.apps.find(a => a.app === 'git').files[0].data = Buffer.from('[user]\n\tname = 남\n').toString('base64');
   raw.apps.push({ app: 'evil', files: [] });
   const checked = kitLib.parseKit(JSON.stringify(raw));
-  assert.deepEqual(checked.problems.sort(), ['app', 'file:claude-code', 'file:git']);
+  assert.deepEqual(checked.problems.sort(), ['app', 'file:git', 'file:vscode']);
   assert.ok(!checked.kit.apps.some(a => a.app === 'git'));
+  assert.ok(!checked.kit.apps.find(a => a.app === 'vscode').files.some(f => f.rel.includes('..')), 'the file outside the entry is not kept');
   // Put back on a new PC where VS Code already has its own settings.
   w(path.join(newP, 'AppData', 'Roaming', 'Code', 'User', 'settings.json'), '{"editor.fontSize": 20}');
   fs.mkdirSync(path.join(newP, 'Documents', 'vault'), { recursive: true });
-  const now = snap(newP); const host2 = moveHost({ snapshot: now });
+  const now = snap(newP); const host2 = moveHost({ snapshot: now }); t.after(() => host2.close());
   const results = await restoreSettings({ kit, host: host2, now, moveId: 'a1b2c3d4', installed: new Set(['Git.Git', 'Anthropic.ClaudeCode', 'Microsoft.VisualStudioCode', 'Obsidian.Obsidian', 'Microsoft.WindowsTerminal']),
     mapPath: p => p === path.join(oldP, 'Documents', 'vault') ? path.join(newP, 'Documents', 'vault') : null });
   const by = Object.fromEntries(results.map(r => [r.app, r]));
@@ -248,13 +258,16 @@ test('다시 깔기 차례: machine-scope table programs in one elevation, the r
   assert.deepEqual(calls.filter(c => c[0] !== 'reinstall.listed'), [['reinstall.elevate', ['Git.Git', '7zip.7zip']], ['reinstall.user', 'Obsidian.Obsidian'], ['reinstall.user', 'Some.Other']]);
   assert.deepEqual(results.map(r => [r.id, r.state, r.scope, r.listed]), [['Git.Git', 'installed', 'machine', true], ['7zip.7zip', 'failed', 'machine', false], ['Obsidian.Obsidian', 'installed', 'user', true], ['Some.Other', 'installed', 'outside', true]]);
   // The person said no to the administrator prompt: nothing ran elevated, the rest still goes.
-  const declined = new MoveService({ engine: null, host: async (m, a) => m === 'reinstall.elevate' ? { started: false, reason: 'DECLINED_OR_FAILED' } : host(m, a), stateDir: path.join(root, 's2'), localDir: path.join(root, 'l2') });
+  const declined = new MoveService({ engine: null, host: async (m, a) => m === 'reinstall.elevate' ? { started: false, reason: 'DECLINED' } : host(m, a), stateDir: path.join(root, 's2'), localDir: path.join(root, 'l2') });
   assert.deepEqual((await declined.reinstall({ ids: ['Git.Git'] })).map(r => r.state), ['declined']);
   // 「다시 깔 것」 as the screen gets it: winget's state apart from the outside-the-table list (the two used to share a name).
+  const shows = [];
   const listing = new MoveService({ engine: null, stateDir: path.join(root, 's3'), localDir: path.join(root, 'l3'),
-    host: async (m, a) => m === 'reinstall.status' ? { ready: true, version: 'v1.29.380' } : m === 'reinstall.installed' ? ['7zip.7zip'] : m === 'reinstall.show' ? { found: true, title: 'Some Other', publisher: 'Someone', license: 'MIT' } : host(m, a) });
+    host: async (m, a) => m === 'reinstall.status' ? { ready: true, version: 'v1.29.380' } : m === 'reinstall.installed' ? ['7zip.7zip'] : m === 'reinstall.show' ? (shows.push(a), { found: true, title: 'Some Other', publisher: 'Someone', license: 'MIT' }) : host(m, a) });
   listing.context = async () => ({ kit: { programs: { winget: [{ id: 'Git.Git' }, { id: '7zip.7zip' }, { id: 'Some.Other' }], installed: [] } } });
   const view = await listing.reinstallList();
+  // GPT 2차 -g GB2: each call gets the time left of the 60 seconds as its own limit.
+  assert.ok(shows.length === 1 && shows[0][1] > 0 && shows[0][1] <= 60000, JSON.stringify(shows));
   assert.deepEqual(view.wingetStatus, { ready: true, version: 'v1.29.380' });
   assert.deepEqual(view.table.map(p => [p.id, p.installed, p.chosen]), [['Git.Git', false, true], ['7zip.7zip', true, false]]);
   assert.deepEqual(view.others.map(p => [p.id, p.name, p.publisher]), [['Some.Other', 'Some Other', 'Someone']]);
@@ -306,7 +319,7 @@ test('GPT 2차 지적(11-16): settings filters and redaction, folder names, the 
   assert.equal((await readMoveList(Readable.from([Buffer.from(lines)]))).nodes.size, 1);
 });
 
-test('GPT 2차 지적(11-16): two names differing by case, a resumed move keeps the first run\'s results, an unchecked OneDrive file (GB3 · GB4 · GB5)', async t => {
+windowsOnly('GPT 2차 지적(11-16): two names differing by case, a resumed move keeps the first run\'s results, an unchecked OneDrive file (GB3 · GB4 · GB5)', async t => {
   const { Move } = require('../engine/src/move-restore.cjs');
   const { moveHost } = require('./move-host.cjs');
   const tar = require(require.resolve('tar-stream', { paths: [require('node:path').join(__dirname, '..', 'engine')] }));
@@ -364,28 +377,241 @@ test('GPT 2차 지적(11-16): two names differing by case, a resumed move keeps 
   await m.ledger.close(); await n.ledger.close();
 });
 
-test('GPT 2차 지적(11-16): the kit never reads through a junction in the profile (GA4)', async t => {
+windowsOnly('GPT 2차 지적(11-16): the kit never reads through a junction in the profile (GA4)', async t => {
   const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'swb-kitlink-')));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const oldP = path.join(root, 'old'), outside = path.join(root, 'outside');
   const w = (p, text) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, text); };
-  w(path.join(outside, 'skills', 'stolen', 'SKILL.md'), 'OUTSIDE_SKILL');
+  w(path.join(outside, 'prompts', 'stolen.md'), 'OUTSIDE_PROMPT');
+  w(path.join(outside, 'snips', 'stolen.json'), '{"OUTSIDE_SNIP":1}');
   w(path.join(outside, 'User', 'settings.json'), '{"editor.fontSize": 99, "x": "OUTSIDE_SETTINGS"}');
   w(path.join(oldP, '.claude', 'CLAUDE.md'), '# 지침');
-  // .claude\skills itself, and the folder above a file entry (Code\User), point elsewhere.
-  fs.symlinkSync(path.join(outside, 'skills'), path.join(oldP, '.claude', 'skills'), 'junction');
+  // A folder entry itself (.codex\prompts), a folder inside a folder entry (Cursor snippets\linked) and the folder above a
+  // file entry (Code\User) point elsewhere — all entries the table collects (카본 끝판 K1: .claude\skills no longer is one).
+  fs.mkdirSync(path.join(oldP, '.codex'), { recursive: true });
+  fs.symlinkSync(path.join(outside, 'prompts'), path.join(oldP, '.codex', 'prompts'), 'junction');
+  w(path.join(oldP, 'AppData', 'Roaming', 'Cursor', 'User', 'snippets', 'own.json'), '{}');
+  fs.symlinkSync(path.join(outside, 'snips'), path.join(oldP, 'AppData', 'Roaming', 'Cursor', 'User', 'snippets', 'linked'), 'junction');
   fs.mkdirSync(path.join(oldP, 'AppData', 'Roaming', 'Code'), { recursive: true });
   fs.symlinkSync(path.join(outside, 'User'), path.join(oldP, 'AppData', 'Roaming', 'Code', 'User'), 'junction');
   const { apps: collected } = await kitLib.collectApps(snap(oldP));
   const text = JSON.stringify(collected);
-  assert.ok(!text.includes(Buffer.from('OUTSIDE_SKILL').toString('base64')) && !text.includes(Buffer.from('{"editor.fontSize": 99').toString('base64').slice(0, 16)), 'nothing from where a junction points');
-  assert.deepEqual(collected.map(a => a.app), ['claude-code']);
-  assert.deepEqual(collected[0].files.map(f => f.entry), ['instructions']);
-  assert.equal(await kitLib.linkFree(oldP, path.join(oldP, '.claude', 'skills', 'stolen')), false);
+  for (const s of ['OUTSIDE_PROMPT', '{"OUTSIDE_SNIP":1}']) assert.ok(!text.includes(Buffer.from(s).toString('base64')), s);
+  assert.ok(!text.includes(Buffer.from('{"editor.fontSize": 99').toString('base64').slice(0, 16)), 'nothing from where a junction points');
+  assert.deepEqual(collected.map(a => a.app), ['cursor', 'claude-code']);
+  assert.deepEqual(collected[0].files.map(f => [f.entry, f.rel]), [['snippets', 'own.json']]);
+  assert.deepEqual(collected[1].files.map(f => f.entry), ['instructions']);
+  assert.equal(await kitLib.linkFree(oldP, path.join(oldP, '.codex', 'prompts', 'stolen.md')), false);
   assert.equal(await kitLib.linkFree(oldP, path.join(oldP, '.claude', 'CLAUDE.md')), true);
   // Fable D9: a `never` path with `*` matches any version folder.
   const blender = apps.TABLE.settings.find(s => s.app === 'blender');
   assert.ok(kitLib.never(blender, 'C:\\R', 'C:\\R\\Blender Foundation\\Blender\\4.5\\scripts\\addons\\x.py'));
   assert.ok(kitLib.never(blender, 'C:\\R', 'C:\\R\\Blender Foundation\\Blender\\4.5\\config\\userpref.blend'));
   assert.ok(!kitLib.never(blender, 'C:\\R', 'C:\\R\\Blender Foundation\\Blender\\4.5\\config\\bookmarks.txt'));
+});
+
+test('카본 끝판 지적(11-16): key-shaped text, git values, Windows Terminal, the 다시 깔 것 match, places on both PCs, names, the listing, the ledger, the kit', async t => {
+  // A1: plain English after 「basic」 or 「bearer」 is not a key; a real credential still is.
+  for (const s of ['basic configuration', 'Use basic instructions here.', 'basic error-handling', 'Bearer authentication-scheme']) assert.equal(apps.looksSecret(s), false, s);
+  for (const s of ['Authorization: Basic dXNlcjpwYXNz', 'Authorization: Bearer abcdefghijklmnop', 'Bearer eyJhbGciOiJIUzI1NiJ9abc', 'Basic YWxhZGRpbjpvcGVuc2VzYW1l']) assert.equal(apps.looksSecret(s), true, s);
+  // A2: 「Notion Calendar」 and 「TortoiseGit」 are not table programs, and stay in the list of what winget does not have.
+  const re = apps.reinstallList({ programs: { winget: [], installed: [{ name: 'Notion Calendar' }, { name: 'TortoiseGit 2.15' }, { name: 'Git' }] } }, []);
+  assert.deepEqual(re.table.map(p => p.id), ['Git.Git']);
+  assert.deepEqual(re.manual.map(m => m.name), ['Notion Calendar', 'TortoiseGit 2.15']);
+  // A3: a quoted value keeps its 「#」, a header the filter cannot read ends the section, a line that goes on is not carried.
+  const git = apps.gitconfig('[user]\n\tname = "Alice #1"\n[sec "a\\"b"]\n\tname = evil\n[user\n\temail = evil@x\n[core]\n\tautocrlf = true \\\n\teol = lf ; comment\n');
+  assert.equal(git.bytes.toString(), '[user]\n\tname = "Alice #1"\n[core]\n\teol = lf\n');
+  // A5 · A6 · A7 · A9: Windows Terminal.
+  const PS = '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}';
+  const wt = JSON.parse(apps.terminalSettings(JSON.stringify({
+    profiles: { defaults: { fontSize: 11, unfocusedAppearance: { backgroundImage: '\\\\host\\share\\x.png', opacity: 50 } },
+      list: [{ guid: PS, name: 'Windows PowerShell', commandline: '%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', fontSize: 12 },
+        { guid: '{aaaa}', name: 'Ubuntu', source: 'Windows.Terminal.Wsl', unfocusedAppearance: { pixelShaderPath: 'C:\\s.hlsl', colorScheme: 'One' } }] },
+    actions: [{ command: { action: 'newTab', commandline: 'calc' }, id: 'User.newTab.1' }, { command: 'copy', id: 'User.copy.1' }],
+    keybindings: [{ id: 'User.newTab.1', keys: 'ctrl+t' }, { id: 'User.copy.1', keys: 'ctrl+c' }, { id: 'Terminal.PasteFromClipboard', keys: 'ctrl+v' }],
+    defaultProfile: PS })).bytes.toString());
+  assert.deepEqual(wt.keybindings.map(k => k.id), ['User.copy.1', 'Terminal.PasteFromClipboard'], 'no key left on the dropped newTab');
+  assert.deepEqual(wt.profiles.defaults, { fontSize: 11, unfocusedAppearance: { opacity: 50 } });
+  assert.deepEqual(wt.profiles.list.map(p => [p.guid, p.fontSize ?? null, p.unfocusedAppearance ?? null, 'commandline' in p]), [[PS, 12, null, false], ['{aaaa}', null, { colorScheme: 'One' }, false]]);
+  assert.equal(wt.defaultProfile, PS);
+  assert.equal(apps.terminalSettings('{}'), null);
+  assert.equal(apps.terminalSettings(JSON.stringify({ $schema: 'x', actions: [{ command: 'wt' }], profiles: { list: [{ name: 'mine', commandline: 'cmd' }] } })), null);
+  assert.equal(apps.claudeSettings(JSON.stringify({ permissions: { allow: ['Bash'], deny: [] } })), null);
+  // C1: folders right in the profile go back in place, a file there still aside; a sync folder there is not filled.
+  const withDropbox = snap('C:\\Users\\lee', { syncRoots: ['C:\\Users\\lee\\Dropbox'] });
+  assert.deepEqual(plan.folderPlans(['C:\\Users\\kim\\Projects', 'C:\\Users\\kim\\Dropbox'], { old: OLD, now: withDropbox }).map(f => [f.destination, f.side, f.mode]),
+    [['C:\\Users\\lee\\Projects', false, 'original'], ['C:\\Users\\lee\\Dropbox', false, 'newFolder']]);
+  assert.equal(plan.routeOriginal('C:\\Users\\kim\\notes.txt', { old: OLD, now: NOW }).side, true);
+  // C2: the new PC's own PowerShell folders, whatever the old PC's layout.
+  const kfm = snap('C:\\Users\\kim', { known: { documents: { path: 'C:\\Users\\kim\\OneDrive\\문서', oneDrive: true, synced: true } } });
+  assert.deepEqual(plan.routeOriginal('C:\\Users\\kim\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1', { old: kfm, now: NOW }),
+    { path: 'C:\\Users\\lee\\옮겨 온 자료\\따로 둔 것\\문서\\PowerShell\\Microsoft.PowerShell_profile.ps1', side: true, reason: 'autorun' });
+  const dDocs = snap('C:\\Users\\lee', { known: { documents: { path: 'D:\\Documents', oneDrive: false, synced: false } }, drives: [{ letter: 'C' }, { letter: 'D' }] });
+  assert.equal(plan.routeOriginal('D:\\Documents\\WindowsPowerShell\\Modules\\m.psm1', { old: OLD, now: dDocs, sameDrive: true }).side, true);
+  // C3: 「같은 드라이브에 그대로」 is offered only where it does something.
+  const dOld = snap('C:\\Users\\kim', { known: { documents: { path: 'D:\\Documents', oneDrive: false, synced: false } } });
+  assert.deepEqual(plan.folderPlans(['D:\\Documents', 'D:\\Projects'], { old: dOld, now: NOW }).map(f => !!f.sameDrive), [false, true]);
+  // C4: very long paths go in more parts, each under the byte limit.
+  const long = 'C:\\' + Array.from({ length: 60 }, () => '가'.repeat(200)).join('\\');
+  const parts = [];
+  await plan.probeAll(async (m, [ps]) => { parts.push(Buffer.byteLength(JSON.stringify(ps))); return ps.map(() => ({ kind: 'missing' })); }, Array.from({ length: 100 }, (_, i) => long + i));
+  assert.ok(parts.length > 1 && parts.every(n => n <= plan.PROBE_BYTES + 2), JSON.stringify(parts));
+  // C5 · C6 · C7 · C8 · C9: device names, paths, network places, long labels, synced known folders.
+  for (const bad of ['NUL .txt', 'con  .log', 'COM1 .x']) assert.ok(!plan.safeName(bad), bad);
+  assert.ok(!plan.safePath('C:\\a\\\\b') && !plan.safePath('C:\\a\\') && plan.safePath('D:\\') && plan.safePath('C:\\a\\b'));
+  assert.equal(plan.routeOriginal('\\\\server\\share\\docs\\a.txt', { old: OLD, now: NOW }).path, 'C:\\Users\\lee\\옮겨 온 자료\\다른 자리\\server\\share\\docs\\a.txt');
+  const longName = '가'.repeat(254), named = plan.labels(['C:\\a\\' + longName, 'D:\\' + longName], OLD);
+  assert.ok(named[1].endsWith(' (2)') && named[1].length <= 255 && plan.safeName(named[1]), named[1].length);
+  assert.ok(plan.inSync('C:\\Users\\lee\\Documents\\a', snap('C:\\Users\\lee', { known: { documents: { path: 'C:\\Users\\lee\\Documents', oneDrive: true, synced: true } } })));
+  // D7: a folder whose first name is a file goes aside with what is under it; a skipped link `Docs` is not the folder `docs`.
+  const at = '2026-11-16T00:00:00Z';
+  const list = await readMoveList(Readable.from([Buffer.from([{ message_type: 'snapshot' },
+    { path: '/BUILD', type: 'file', size: 1 }, { path: '/build', type: 'dir', size: 0 }, { path: '/build/app.exe', type: 'file', size: 2 },
+    { path: '/Docs', type: 'symlink', size: 0 }, { path: '/docs', type: 'dir', size: 0 }, { path: '/docs/a.txt', type: 'file', size: 3 }]
+    .map(n => JSON.stringify(n.message_type ? n : { message_type: 'node', mtime: at, ...n })).join('\n'))]));
+  assert.deepEqual([...list.aside.keys()], ['build', 'build/app.exe']);
+  assert.ok(list.nodes.has('docs/a.txt'));
+  assert.deepEqual(list.skipped.map(s => s.name), ['Docs']);
+  // D4: a ledger line cut when the PC stopped is cut off before new lines are added.
+  const { Ledger } = require('../engine/src/move-restore.cjs');
+  const native = require('node:path');
+  const dir = fs.mkdtempSync(native.join(os.tmpdir(), 'swb-ledger-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const file = native.join(dir, 'm.jsonl');
+  fs.writeFileSync(file, '{"t":"head"}\n{"t":"f","o":"C:\\\\x","n":"a","r":"placed"}\n{"t":"f","o":');
+  assert.equal((await Ledger.repair(file)).length, 2);
+  const ledger = new Ledger(file); await ledger.open(); await ledger.write({ t: 'end' }, true); await ledger.close();
+  assert.deepEqual((await Ledger.read(file)).map(r => r.t), ['head', 'f', 'end']);
+  // B3 · B4 · B7: the kit as untrusted input.
+  const parsed = kitLib.parseKit(JSON.stringify({ schema: 1, kind: 'synk-move-kit', rules: apps.RULES,
+    snapshot: { known: { profile: { path: 'C:\\Users\\kim' }, documents: { path: 'C:\\Users/kim/../../Windows' }, desktop: { path: 'C:\\Users\\kim\\Desktop:x' } }, drives: [{ letter: ['C'] }, { letter: 'D' }] },
+    programs: { installed: [{ name: '' }, { name: ' ' }, { name: 'Git', source: 'registry' }] } }));
+  assert.ok(parsed.problems.includes('known:documents') && parsed.problems.includes('known:desktop'), parsed.problems.join());
+  assert.deepEqual(parsed.kit.snapshot.drives.map(d => d.letter), ['D']);
+  assert.deepEqual(parsed.kit.programs.installed, [{ name: 'Git', version: '', publisher: '', source: 'registry' }]);
+  // B6: an empty list from a skipped run is no list to carry on.
+  const host = async m => m === 'folders.snapshot' ? { known: { profile: { path: 'C:\\nowhere-swb\\kim' } } } : null;
+  assert.equal(JSON.parse(await kitLib.buildKit({ host, metered: true, previous: { programs: { winget: [], wingetStatus: 'skipped' } } })).programs.wingetStatus, 'skipped');
+  assert.equal(JSON.parse(await kitLib.buildKit({ host, metered: true, previous: { programs: { winget: [{ id: 'Git.Git' }], wingetStatus: 'ok' } } })).programs.wingetStatus, 'skipped-previous');
+});
+
+windowsOnly('카본 끝판 지적(11-16): settings put back twice, a write that fails, many ticks at once, a start that failed (E1 · E2 · E3 · E5)', async t => {
+  const { MoveService } = require('../engine/src/move-service.cjs');
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'swb-carbon-e-')));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const newP = path.join(root, 'new'); fs.mkdirSync(newP, { recursive: true });
+  const data = Buffer.from('[user]\n\tname = 김\n');
+  const kit = { apps: [{ app: 'git', files: [{ entry: 'gitconfig', version: null, rel: '', data, mtime: 1 }] }], left: [] };
+  const host = moveHost({ snapshot: snap(newP) }); t.after(() => host.close());
+  // E2: the same step twice — the file put back the first time counts as put back, no copy goes aside.
+  const first = await restoreSettings({ kit, host, now: snap(newP), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
+  const again = await restoreSettings({ kit, host, now: snap(newP), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
+  assert.deepEqual([first[0].restored, again[0].restored, again[0].kept, again[0].side], [[path.join(newP, '.gitconfig')], [path.join(newP, '.gitconfig')], [], []]);
+  // E1: one file that cannot be written is written down; nothing throws, and no temporary file blocks a later run.
+  const noDir = (m, a) => m === 'files.mkdirs' ? Promise.resolve({ ok: true }) : host(m, a);
+  const failed = await restoreSettings({ kit, host: noDir, now: snap(path.join(root, 'not-there')), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
+  assert.equal(failed[0].failed.length, 1); assert.equal(failed[0].failed[0].code, 'ENOENT');
+  // E3: ticks at once all land.
+  const service = new MoveService({ engine: null, host, stateDir: path.join(root, 'state'), localDir: path.join(root, 'local') });
+  await Promise.all(['a', 'b', 'c', 'd', 'e'].map(id => service.check({ id, done: true })));
+  assert.deepEqual((await service.state()).checked.sort(), ['a', 'b', 'c', 'd', 'e']);
+  // E5: an elevated start that failed is 「failed」 with its reason; 「아니요」 in the elevated side's question is declined.
+  const failing = new MoveService({ engine: null, host: async m => m === 'reinstall.elevate' ? { started: false, reason: 'START_FAILED' } : null, stateDir: path.join(root, 's2'), localDir: path.join(root, 'l2') });
+  assert.deepEqual((await failing.reinstall({ ids: ['Git.Git'] })).map(r => [r.state, r.code]), [['failed', 'START_FAILED']]);
+  const no = new MoveService({ engine: null, host: async m => m === 'reinstall.elevate' ? { started: true, exitCode: 3, progress: null } : null, stateDir: path.join(root, 's3'), localDir: path.join(root, 'l3') });
+  assert.deepEqual((await no.reinstall({ ids: ['Git.Git'] })).map(r => r.state), ['declined']);
+  // H3 · H5: no winget for the approving administrator (exit 4) is a failure with its reason; a wait past the limit or a
+  // confirmation left open (exit 5) leaves what did not end as 「timeout」, what ended as it ended.
+  const answer = run => new MoveService({ engine: null, host: async m => m === 'reinstall.elevate' ? run : null, stateDir: path.join(root, 's' + Math.random()), localDir: path.join(root, 'l' + Math.random()) });
+  assert.deepEqual((await answer({ started: true, exitCode: 4, progress: null }).reinstall({ ids: ['Git.Git'] })).map(r => [r.state, r.code]), [['failed', 'WINGET_ADMIN_MISSING']]);
+  assert.deepEqual((await answer({ started: true, exitCode: null, timedOut: true, progress: { programs: [{ id: 'Git.Git', state: 'installed' }] } }).reinstall({ ids: ['Git.Git', '7zip.7zip'] })).map(r => r.state), ['installed', 'timeout']);
+  assert.deepEqual((await answer({ started: true, exitCode: 5, progress: null }).reinstall({ ids: ['Git.Git'] })).map(r => r.state), ['timeout']);
+});
+
+windowsOnly('카본 끝판 지적(11-16): the first run takes a folder whole, top folders differing by case on resume, the space for earlier-backup files (D1 · D2 · D3)', async t => {
+  const { Move } = require('../engine/src/move-restore.cjs');
+  const tar = require(require.resolve('tar-stream', { paths: [require('node:path').join(__dirname, '..', 'engine')] }));
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'swb-carbon-d-')));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const oldP = path.join(root, 'old', 'Users', '김'), newP = path.join(root, 'new', 'Users', '이');
+  fs.mkdirSync(path.join(newP, 'Documents'), { recursive: true }); fs.mkdirSync(path.join(newP, 'Desktop'), { recursive: true });
+  const at = '2026-11-16T00:00:00Z';
+  // Documents: an empty folder and a link only. Desktop: `Src/a.txt` and `src/b.txt`.
+  const docs = path.join(oldP, 'Documents'), desk = path.join(oldP, 'Desktop');
+  const nodes = { [docs]: [['empty', 'dir'], ['link', 'symlink']], [desk]: [['Src', 'dir'], ['Src/a.txt', 'file', 'A'], ['src', 'dir'], ['src/b.txt', 'file', 'B']] };
+  const listing = list => readMoveList(Readable.from([Buffer.from([{ message_type: 'snapshot' }, ...list.map(([n, type, c]) => ({ message_type: 'node', path: '/' + n, type, size: c ? Buffer.byteLength(c) : 0, mtime: at }))].map(l => JSON.stringify(l)).join('\n'))]));
+  const sel = o => 'f'.repeat(64) + ':' + o;
+  const plans = [{ original: docs, selector: sel(docs), manifest: await listing(nodes[docs]), backupAt: at, extra: [] },
+    { original: desk, selector: sel(desk), manifest: await listing(nodes[desk]), backupAt: at, extra: [{ name: 'big.pst', size: 5, selector: 'e'.repeat(64) + ':' + desk, backupAt: at }] }];
+  const dumps = [];
+  const engine = { stateDir: path.join(root, 'state'), restorePlans: async () => plans,
+    run: async (args, { consumeStdout }) => {
+      dumps.push(args.slice(0, 2).join(' '));
+      if (args[1].startsWith('e'.repeat(64))) return consumeStdout(Readable.from([Buffer.from('EXTRA')]));
+      const [original, sub] = (() => { for (const o of [docs, desk]) { if (args[1] === sel(o)) return [o, '']; if (args[1].startsWith(sel(o) + '/')) return [o, args[1].slice(sel(o).length + 1)]; } return [null]; })();
+      if (!original) throw new Error('unexpected ' + args.join(' '));
+      const pack = tar.pack();
+      for (const [n, type, c] of nodes[original]) {
+        if (sub && !n.startsWith(sub + '/')) continue;
+        const name = sub ? n.slice(sub.length + 1) : n;
+        if (type === 'dir') pack.entry({ name: name + '/', type: 'directory' });
+        else if (type === 'symlink') pack.entry({ name, type: 'symlink', linkname: 'elsewhere' });
+        else pack.entry({ name, size: Buffer.byteLength(c) }, c);
+      }
+      pack.finalize(); return consumeStdout(pack);
+    } };
+  const host = moveHost({ snapshot: snap(newP) }); t.after(() => host.close());
+  const ledgerDir = path.join(root, 'state', 'migration');
+  // D2: the 「자리 고르기」 count takes in the file from an earlier backup.
+  const view = await new Move({ engine, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: '1111aaaa', ledgerDir }).preview();
+  assert.deepEqual(view.folders.map(f => [f.files, f.bytes]), [[0, 0], [3, 7]]);
+  // D1: the first run takes Documents whole (its link's skip line does not make it a resume) and makes the empty folder.
+  const first = new Move({ engine, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: '2222bbbb', ledgerDir });
+  await first.run();
+  assert.ok(fs.statSync(path.join(newP, 'Documents', 'empty')).isDirectory());
+  assert.ok(dumps.includes('dump ' + sel(docs)));
+  // D3: a resumed Desktop takes `Src` and `src` each by its own name; every listed file has a result.
+  // GPT 2차 -g GC1: the first run's files are taken away, so what is there after the resume is the resume's own work.
+  dumps.length = 0;
+  fs.rmSync(path.join(newP, 'Desktop', 'Src'), { recursive: true, force: true });
+  assert.ok(!fs.existsSync(path.join(newP, 'Desktop', 'src', 'b.txt')));
+  const resumed = new Move({ engine, host, from: 'old', old: snap(oldP), now: snap(newP), moveId: '3333cccc', ledgerDir });
+  await resumed.ledger.open(); await resumed.record(desk, 'none.txt', 'fail', { c: 'X' }); await resumed.ledger.close();
+  const out = await resumed.run();
+  assert.ok(dumps.includes('dump ' + sel(desk) + '/Src') && dumps.includes('dump ' + sel(desk) + '/src'), dumps.join(' | '));
+  assert.equal(fs.readFileSync(path.join(newP, 'Desktop', 'Src', 'a.txt'), 'utf8'), 'A');
+  assert.equal(fs.readFileSync(path.join(newP, 'Desktop', 'src', 'b.txt'), 'utf8'), 'B');
+  assert.ok(!out.items.some(i => i.original === desk && ['fail', 'skip'].includes(i.result) && i.name !== 'none.txt'), JSON.stringify(out.items));
+  assert.equal(out.counts.placed, 2, JSON.stringify(out.counts));
+});
+
+windowsOnly('카본 끝판 지적(11-16): the kit leaves out only the file that is too big, and counts only the files an entry takes (B2 · B8)', async t => {
+  const root = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'swb-carbon-b-')));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const w = (p, text) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, text); };
+  const user = path.join(root, 'AppData', 'Roaming', 'Code', 'User');
+  w(path.join(user, 'settings.json'), JSON.stringify({ 'editor.fontSize': 14, pad: 'a'.repeat(kitLib.LIMIT.file + 10) }));
+  w(path.join(user, 'keybindings.json'), JSON.stringify([{ key: 'ctrl+k', command: 'editor.action.formatDocument' }]));
+  for (let i = 0; i < kitLib.LIMIT.dirFiles; i++) w(path.join(user, 'snippets', `s${String(i).padStart(3, '0')}.json`), '{}');
+  w(path.join(user, 'snippets', 'zz-notes.txt'), 'not a snippet');
+  const { apps: got, left } = await kitLib.collectApps(snap(root));
+  const vscode = got.find(a => a.app === 'vscode');
+  assert.ok(vscode, 'the app stays');
+  assert.deepEqual([...new Set(vscode.files.map(f => f.entry))].sort(), ['keybindings', 'snippets']);
+  assert.equal(vscode.files.filter(f => f.entry === 'snippets').length, kitLib.LIMIT.dirFiles);
+  assert.deepEqual(left.filter(l => l.app === 'vscode').map(l => [l.entry, l.why]), [['settings', 'too-big']]);
+});
+
+test('GPT 2차 -g 지적(11-16): the kit search passes over a snapshot without the kit, never over a repository failure (GA1)', async () => {
+  const kit = JSON.stringify({ schema: 1, kind: 'synk-move-kit', rules: apps.RULES, createdAt: '2026-11-16T00:00:00Z', snapshot: { known: { profile: { path: 'C:\\Users\\kim' } } } });
+  const fail = message => Object.assign(new Error(message), { exitCode: 1 });
+  const engine = answers => ({ snapshots: async () => [{ id: 'a'.repeat(64), hostname: 'old', time: '2' }, { id: 'b'.repeat(64), hostname: 'old', time: '1' }],
+    run: async (args, { consumeStdout }) => { const a = answers.shift(); if (a instanceof Error) throw a; return consumeStdout(Readable.from([Buffer.from(a)])); } });
+  const found = await kitLib.loadKit(engine([fail('Fatal: cannot dump file: path "\\workbackup-move-kit.json" not found in snapshot'), kit]), 'old');
+  assert.equal(found.snapshotId, 'b'.repeat(64));
+  await assert.rejects(kitLib.loadKit(engine([fail('Fatal: repository does not exist: unable to open config file: no such file or directory'), kit]), 'old'), /unable to open config file/);
+  await assert.rejects(kitLib.loadKit(engine([new Error('백업 엔진의 출력이 중단되었습니다.'), kit]), 'old'), /중단/);
+});
+
+test('Windows files: the move kit, a move through the host, junctions (subtests run on Windows only)', async t => {
+  for (const [name, fn] of onWindows) await t.test(name, { skip: process.platform !== 'win32' && 'Windows paths and junctions' }, fn);
 });

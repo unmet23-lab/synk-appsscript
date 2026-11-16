@@ -35,7 +35,7 @@ const risky = name => String(name).split('.').some(part => RISKY.test(part) || R
  *  trailing commas are taken out only outside strings (GPT GA1: `",}"` stays as it is). */
 function parseJsonc(text) {
   let out = '', i = 0, inString = false;
-  const s = String(text).replace(/^﻿/, '');
+  const s = String(text).replace(/^\uFEFF/, '');
   while (i < s.length) {
     const c = s[i], d = s[i + 1];
     if (inString) { out += c; if (c === '\\') { out += d ?? ''; i += 2; continue; } if (c === '"') inString = false; i++; continue; }
@@ -68,7 +68,13 @@ const SECRET_SHAPES = [
   /\bsk-[A-Za-z0-9_-]{16,}/, /\bgh[pousr]_[A-Za-z0-9]{20,}/, /\bgithub_pat_[A-Za-z0-9_]{20,}/, /\bglpat-[A-Za-z0-9_-]{20,}/,
   /\bAKIA[0-9A-Z]{16}\b/, /\bAIza[0-9A-Za-z_-]{30,}/, /\bxox[abposr]-[A-Za-z0-9-]{10,}/, /\bhf_[A-Za-z0-9]{20,}/, /\bnpm_[A-Za-z0-9]{30,}/,
   /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/, /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
-  /[a-z][a-z0-9+.-]*:\/\/[^\s/:@]+:[^\s/@]+@/i, /\b(?:bearer|basic)\s+[A-Za-z0-9._~+\/=-]{12,}/i,
+  /[a-z][a-z0-9+.-]*:\/\/[^\s/:@]+:[^\s/@]+@/i,
+  // An Authorization value, and a bearer or basic credential: a run that is not a plain word (카본 끝판 A1 — 「basic
+  // configuration」 and 「Bearer authentication」 are English, not keys), i.e. it has a capital, digit, `+` or `/` after
+  // its first character.
+  /\bauthorization["']?\s*[:=]\s*["']?[A-Za-z]+\s+[^\s"']{8,}/i,
+  /\b(?:[Bb]earer|BEARER)\s+(?=[A-Za-z0-9._~+\/-]{16,}=*(?![A-Za-z0-9._~+\/=-]))[A-Za-z0-9._~+\/-][a-z._~-]*[A-Z0-9+\/]/,
+  /\b(?:[Bb]asic|BASIC)\s+(?=[A-Za-z0-9+\/]{12,}={0,2}(?![A-Za-z0-9._~+\/=-]))[A-Za-z0-9+\/][a-z]*[A-Z0-9+\/]/,
 ];
 const looksSecret = text => SECRET_SHAPES.some(re => re.test(text));
 /** The kit's rule version: a kit made with older rules carries originals, so a new PC does not put its app files anywhere. */
@@ -77,22 +83,40 @@ const RULES = 2;
 // ---- Filters (4.6b 고정 표): what goes back in place. Each returns { bytes, dropped } or null (nothing to put back).
 const GIT_KEEP = new Set(['user.name', 'user.email', 'init.defaultbranch', 'core.autocrlf', 'core.eol', 'core.longpaths', 'core.quotepath',
   'pull.rebase', 'pull.ff', 'push.default', 'push.autosetupremote', 'fetch.prune', 'merge.conflictstyle', 'color.ui', 'credential.helper']);
+/** One git config value as git reads it (카본 끝판 A3): quotes and `\"` · `\\` escapes, a comment only outside quotes,
+ *  outer white space dropped. null for what this filter does not carry: an open quote, a line that goes on (`\` at
+ *  the end), another escape or a control character. */
+function gitValue(raw) {
+  let out = '', pending = '', quoted = false;
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (c === '\\') { const d = raw[i + 1]; if (d !== '"' && d !== '\\') return null; out += pending + d; pending = ''; i++; continue; }
+    if (c === '"') { quoted = !quoted; out += pending; pending = ''; continue; }
+    if (!quoted && (c === '#' || c === ';')) break;
+    if (!quoted && (c === ' ' || c === '\t')) { if (out) pending += c; continue; }
+    out += pending + c; pending = '';
+  }
+  return quoted || /[\x00-\x1f\x7f]/.test(out) ? null : out;
+}
+const gitQuote = v => /^\s|\s$|[#;"\\]/.test(v) ? `"${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : v;
 function gitconfig(text) {
   let section = null, sub = false, dropped = 0; const kept = new Map();
   for (const raw of String(text).split(/\r?\n/)) {
     const line = raw.replace(/^\s+/, '');
     if (!line || line.startsWith('#') || line.startsWith(';')) continue;
-    const h = /^\[\s*([A-Za-z0-9.-]+)(?:\s+"[^"]*")?\s*\]/.exec(line);
-    if (h) { section = h[1].toLowerCase(); sub = /\[\s*[A-Za-z0-9.-]+\s+"/.test(line); continue; }
+    const h = /^\[\s*([A-Za-z0-9.-]+)(\s+"(?:[^"\\]|\\.)*")?\s*\]/.exec(line);
+    if (h) { section = h[1].toLowerCase(); sub = !!h[2]; continue; }
+    // A header this filter cannot read ends the section before it: what follows never counts as that section.
+    if (line.startsWith('[')) { section = null; dropped++; continue; }
     const kv = /^([A-Za-z][A-Za-z0-9-]*)\s*(?:=\s*(.*))?$/.exec(line);
     if (!kv || !section) { dropped++; continue; }
-    const name = `${section}.${kv[1].toLowerCase()}`, value = (kv[2] ?? 'true').replace(/\s+[#;].*$/, '').trim();
-    const ok = !sub && GIT_KEEP.has(name) && (name !== 'credential.helper' || /^(?:manager|manager-core)$/.test(value)) && !/[`$|;&]/.test(value);
+    const name = `${section}.${kv[1].toLowerCase()}`, value = kv[2] === undefined ? 'true' : gitValue(kv[2]);
+    const ok = value !== null && !sub && GIT_KEEP.has(name) && (name !== 'credential.helper' || /^(?:manager|manager-core)$/.test(value)) && !/[`$|;&]/.test(value);
     if (ok) kept.set(name, value); else dropped++;
   }
   if (!kept.size) return null;
   const bySection = new Map();
-  for (const [name, value] of kept) { const [s, k] = name.split('.'); if (!bySection.has(s)) bySection.set(s, []); bySection.get(s).push(`\t${k} = ${value}`); }
+  for (const [name, value] of kept) { const [s, k] = name.split('.'); if (!bySection.has(s)) bySection.set(s, []); bySection.get(s).push(`\t${k} = ${gitQuote(value)}`); }
   const out = [...bySection].map(([s, lines]) => `[${s}]\n${lines.join('\n')}`).join('\n') + '\n';
   return { bytes: Buffer.from(out), dropped };
 }
@@ -123,10 +147,26 @@ const WT_LOOK = new Set(['font', 'fontFace', 'fontSize', 'fontWeight', 'colorSch
   'scrollbarState', 'antialiasingMode', 'historySize', 'snapOnInput', 'altGrAliasing', 'closeOnExit', 'intenseTextStyle', 'adjustIndistinguishableColors', 'bellStyle',
   'suppressApplicationTitle', 'tabColor', 'unfocusedAppearance', 'hidden', 'name', 'guid', 'source']);
 const WT_ACTION_RISK = new Set(['sendinput', 'wt', 'newtab', 'splitpane', 'newwindow', 'multipleactions', 'openwindowsterminal']);
-const look = profile => Object.fromEntries(Object.entries(profile).filter(([k]) => WT_LOOK.has(k)));
+/** Windows Terminal's two built-in profiles (Windows PowerShell, Command Prompt): its own defaults give their command,
+ *  so their look comes back like a `source` profile's (카본 끝판 A9). */
+const WT_BUILT_IN = new Set(['{61c54bbd-c2c6-5271-96e7-009a87ff44bf}', '{0caa0dad-35be-5f56-a8ff-afceeeaa6101}']);
+const WT_IDENTITY = ['name', 'guid', 'source', 'hidden'];
+/** A profile's look; its `unfocusedAppearance` is filtered the same way (카본 끝판 A6 — no image or shader path inside). */
+const look = profile => Object.fromEntries(Object.entries(profile).filter(([k]) => WT_LOOK.has(k)).map(([k, v]) => k === 'unfocusedAppearance'
+  ? [k, isObject(v) ? Object.fromEntries(Object.entries(v).filter(([n]) => WT_LOOK.has(n) && n !== 'unfocusedAppearance' && !WT_IDENTITY.includes(n))) : null]
+  : [k, v]).filter(([k, v]) => !(k === 'unfocusedAppearance' && (!v || !Object.keys(v).length))));
 function terminalSettings(text) {
   const value = parseJsonc(text); if (!isObject(value)) return null;
   const out = {}; let dropped = 0; const droppedProfiles = [];
+  const actionOk = a => {
+    if (!isObject(a)) return false;
+    const c = a.command, action = typeof c === 'string' ? c : isObject(c) ? c.action : undefined;
+    return typeof action === 'string' && !WT_ACTION_RISK.has(action.toLowerCase()) && !JSON.stringify(a).includes('commandline');
+  };
+  // A key bound by id (Windows Terminal 1.19 +) comes back only for an action that comes back, or one of Windows
+  // Terminal's own (`Terminal.…`): a key left on a dropped action would take the key away from its default (카본 끝판 A5).
+  const keptIds = new Set((Array.isArray(value.actions) ? value.actions : []).filter(actionOk).map(a => a.id).filter(id => typeof id === 'string'));
+  const boundOk = a => isObject(a) && a.command === undefined && typeof a.id === 'string' && a.keys !== undefined && (keptIds.has(a.id) || /^Terminal\.[A-Za-z0-9.]+$/.test(a.id));
   for (const [k, v] of Object.entries(value)) {
     if (WT_TOP.has(k)) { out[k] = v; continue; }
     if (k === 'profiles') {
@@ -134,26 +174,25 @@ function terminalSettings(text) {
       const kept = [];
       for (const p of list) {
         if (!isObject(p)) continue;
-        // Only Windows' own profiles (`source`) come back, with their look; one with a command of its own does not.
-        if (typeof p.source === 'string' && p.commandline === undefined) kept.push(look(p)); else { droppedProfiles.push(String(p.name || p.guid || '?')); dropped++; }
+        // Only Windows' own profiles (`source`, or the two built in) come back, with their look; one with a command
+        // of its own does not.
+        if ((typeof p.source === 'string' && p.commandline === undefined) || WT_BUILT_IN.has(String(p.guid).toLowerCase())) kept.push(look(p)); else { droppedProfiles.push(String(p.name || p.guid || '?')); dropped++; }
       }
-      out.profiles = { ...(isObject(v) && isObject(v.defaults) ? { defaults: Object.fromEntries(Object.entries(look(v.defaults)).filter(([n]) => !['name', 'guid', 'source', 'hidden'].includes(n))) } : {}), list: kept };
+      const defaults = isObject(v) && isObject(v.defaults) ? Object.fromEntries(Object.entries(look(v.defaults)).filter(([n]) => !WT_IDENTITY.includes(n))) : {};
+      if (kept.length || Object.keys(defaults).length) out.profiles = { ...(Object.keys(defaults).length ? { defaults } : {}), list: kept };
       continue;
     }
     if (k === 'actions' || k === 'keybindings') {
       const list = Array.isArray(v) ? v : [];
-      const kept = list.filter(a => {
-        if (!isObject(a)) return false;
-        const c = a.command, action = typeof c === 'string' ? c : isObject(c) ? c.action : undefined;
-        if (c === undefined && typeof a.id === 'string' && a.keys !== undefined) return true; // a key bound to a kept action id
-        return typeof action === 'string' && !WT_ACTION_RISK.has(action.toLowerCase()) && !JSON.stringify(a).includes('commandline');
-      });
-      dropped += list.length - kept.length; out[k] = kept; continue;
+      const kept = list.filter(a => boundOk(a) || actionOk(a));
+      dropped += list.length - kept.length; if (kept.length) out[k] = kept; continue;
     }
     if (k === 'defaultProfile') { out.defaultProfile = v; continue; }
     dropped++;
   }
-  if (out.defaultProfile && !(out.profiles?.list || []).some(p => p.guid === out.defaultProfile)) delete out.defaultProfile;
+  if (out.defaultProfile && !(out.profiles?.list || []).some(p => String(p.guid).toLowerCase() === String(out.defaultProfile).toLowerCase())) delete out.defaultProfile;
+  // Nothing of the person's own left (카본 끝판 A7): no file to put back.
+  if (!Object.keys(out).some(k => k !== '$schema')) return null;
   return { bytes: Buffer.from(JSON.stringify(out, null, 2)), dropped, droppedProfiles };
 }
 const CLAUDE_KEEP = new Set(['model', 'theme', 'outputStyle', 'language', 'alwaysThinkingEnabled', 'cleanupPeriodDays', 'includeCoAuthoredBy', 'spinnerTipsEnabled']);
@@ -162,7 +201,11 @@ function claudeSettings(text) {
   const out = {}; let dropped = 0;
   for (const [k, v] of Object.entries(value)) {
     if (CLAUDE_KEEP.has(k) && typeof v !== 'object') out[k] = v;
-    else if (k === 'permissions' && isObject(v) && Array.isArray(v.deny)) { out.permissions = { deny: v.deny.filter(x => typeof x === 'string') }; dropped += Object.keys(v).length - 1; }
+    else if (k === 'permissions' && isObject(v) && Array.isArray(v.deny)) {
+      const deny = v.deny.filter(x => typeof x === 'string');
+      if (deny.length) out.permissions = { deny }; // an empty list is nothing to put back (카본 끝판 A7)
+      dropped += Object.keys(v).length - 1;
+    }
     else dropped++;
   }
   return Object.keys(out).length ? { bytes: Buffer.from(JSON.stringify(out, null, 2)), dropped } : null;
@@ -249,7 +292,9 @@ function reinstallList(kit, installedHere = []) {
     if (found) table.push({ id: p.id, name: p.name, scope: p.scope, site: p.site, license: p.license, installed: here.has(p.id), chosen: !here.has(p.id), command: `winget install --id ${p.id} -e` });
   }
   for (const id of wingetIds) if (!TABLE.programs.some(p => p.id === id)) others.push({ id, installed: here.has(id), chosen: false, command: `winget install --id ${id} -e` });
-  const matched = n => TABLE.programs.some(p => p.names.some(m => n.includes(m)));
+  // The same match as the table's (카본 끝판 A2): 「Notion Calendar」 or 「TortoiseGit」 is not a table program, so it stays
+  // in the list of what winget does not have instead of falling out of every list.
+  const matched = n => TABLE.programs.some(p => p.names.some(m => nameFits(n, m)));
   for (const m of TABLE.manual) if (names.some(n => m.names.some(x => n.includes(x)))) manual.push({ name: m.name, site: m.site, ...(m.command ? { command: m.command } : {}) });
   const unlisted = [...new Set((old.installed || []).filter(p => p?.name && !matched(String(p.name).toLowerCase()) && !TABLE.manual.some(m => m.names.some(x => String(p.name).toLowerCase().includes(x)))).map(p => `${p.name}`))].slice(0, 300);
   for (const name of unlisted) manual.push({ name, site: null });
@@ -257,7 +302,10 @@ function reinstallList(kit, installedHere = []) {
 }
 /** The 「다시 로그인할 곳」 checklist: the table apps and programs the old PC had, then the three that always show. */
 function checklist(kit) {
-  const ids = new Set((kit?.programs?.winget || []).map(p => p?.id));
+  // A table program found by its installed name counts as well, as it does for 「다시 깔 것」 (카본 끝판 A8).
+  const names = (kit?.programs?.installed || []).map(p => String(p?.name || '').toLowerCase()).filter(Boolean);
+  const ids = new Set([...(kit?.programs?.winget || []).map(p => p?.id),
+    ...TABLE.programs.filter(p => names.some(n => p.names.some(m => nameFits(n, m)))).map(p => p.id)]);
   const apps = new Set((kit?.apps || []).map(a => a.app));
   const out = [];
   for (const s of TABLE.settings) if (s.signIn && (apps.has(s.app) || ids.has(s.program))) out.push({ id: `app:${s.app}`, text: `${s.name}: ${s.signIn}` });
