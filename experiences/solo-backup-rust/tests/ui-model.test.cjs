@@ -1363,12 +1363,12 @@ test('옮겨 오기 E25(조율 세션 178555524): 100만 개 넘는 폴더는 �
   assert.equal(t.main, '옮겨 왔습니다.'); assert.equal(t.soft, '「사진」 폴더는 너무 커서 옮기지 않았습니다.'); assert.equal(t.tone, 'warn');
   const three = draw('move-3', read, res).html;
   // 폴더는 「곳」으로 센다
-  assert.match(three, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(three, /그 폴더는 옛 PC의 백업에 그대로 있습니다/);
+  assert.match(three, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(three, /옛 PC의 백업에는 그대로 있지만, 지금은 이 앱으로 꺼낼 수 없습니다/);
   assert.match(three, /<span class="ds">C:\\Users\\studio\\Pictures<\/span>/);
   assert.doesNotMatch(three, /data-act="move-again"/); assert.doesNotMatch(three, /파일 되살리기로/);
   // 넘기기 — 그 폴더는 지킬 폴더에 없고(엔진이 roots []를 준다), 옛 PC의 백업에 남는다고 쓴다
   const four = draw('move-4', read, res).html;
-  assert.match(four, /「사진」 폴더는 너무 커서 옮기지 않았습니다\. 「작업 노트북」의 백업에는 그대로 있습니다/);
+  assert.match(four, /「사진」 폴더는 너무 커서 옮기지 않았습니다\. 「작업 노트북」의 백업에는 그대로 있지만, 지금은 이 앱으로 꺼낼 수 없습니다\./);
   assert.doesNotMatch(four, /data-root="C:\\Users\\studio\\Pictures"/);
   // Fable F1 — 항목이 2,000개를 넘어 폴더 항목이 잘려도 묶음은 결과의 폴더 목록으로 만든다(「이상」을 붙이지 않는다)
   const cut = { ...res, result: { ...res.result, items: Array.from({ length: 2000 }, (_, i) => ({ original: 'C:\\Users\\studio\\Documents', name: `f${i}`, result: 'side', p: `x${i}` })) } };
@@ -1380,9 +1380,46 @@ test('옮겨 오기 E25(조율 세션 178555524): 100만 개 넘는 폴더는 �
   const cutMixed = { ...cut, result: { ...cut.result, items: cut.result.items.map((x, i) => (i < 5 ? { ...x, result: 'fail', c: 'MOVE_BUSY' } : x)) } };
   assert.match(draw('move-3', read, cutMixed).html, /앞의 2,000개만 남겼습니다\. 파일 수는 그 안에서 센 것입니다/);
   assert.match(cut3, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(cut3, /<span class="ds">C:\\Users\\studio\\Pictures<\/span>/);
-  // Fable F5 — 확인 없이도 참인 조건문을 붙인다(그 폴더를 「파일 되살리기」로 꺼낼 수 있는지는 확인되지 않았다)
-  assert.match(four, /옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요/); assert.match(three, /정리하기 전에 그 폴더를 직접 옮겨 두세요/);
-  assert.match(one, /정리하기 전에 그 폴더를 직접 옮겨 두세요/);
+  // Fable F5 — 옛 PC를 쓸 수 있을 때의 조건문을 붙인다(그 폴더는 「파일 되살리기」로 꺼낼 수 없다 — 이 PC의 최신 판만 열고 20만 개까지, E26)
+  assert.match(four, /옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요/); assert.match(three, /정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요/);
+  assert.match(one, /정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요/);
+  // E26 — 옛 PC의 판에는 남지만 「파일 되살리기」는 이 PC의 최신 판만 연다. 네 자리 모두 지금은 꺼낼 수 없다고 함께 밝힌다
+  for (const html of [one, three, four]) { assert.match(html, /지금은 이 앱으로 꺼낼 수 없습니다/); assert.doesNotMatch(html, /파일 되살리기로/); }
+  // Fable E26 F2 — 놓을 자리에서 그 말은 위 상자에 한 번만 나온다(폴더 줄은 까닭만)
+  assert.equal(m.TOO_BIG_WHY, '파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못합니다.');
+  assert.equal(one.split('지금은 이 앱으로 꺼낼 수 없습니다').length - 1, 1);
+  // Fable E26 F1 — 넘기기 전 기본 화면도 그 폴더를 밝히고 지금은 꺼낼 수 없다고 쓴다. 결과를 아직 안 읽었으면 결과로 보내는 글만 쓴다
+  const homeDone = (result) => m.homeModel(read, { now: NOW, move: res.state, result });
+  assert.equal(homeDone(res.result).id, 'home-move-done');
+  assert.equal(homeDone(res.result).sub, '「사진」 폴더는 너무 커서 옮기지 않았습니다. 옛 PC의 백업에는 그대로 있지만, 지금은 이 앱으로 꺼낼 수 없습니다. 결과를 본 뒤 이 PC로 이어서 백업하세요.');
+  assert.equal(homeDone(null).sub, '옮긴 것과 옮기지 않은 것을 결과에서 본 뒤 이 PC로 이어서 백업하세요.');
+  // Opus -b 1 — 큰 폴더와 옮기지 못한 파일이 섞이면 둘 다 말한다(확인서의 큰 글과 같은 셈)
+  const mixed = { ...res.result, counts: { ...res.result.counts, fail: 1 }, items: [...res.result.items, { original: 'C:\\Users\\studio\\Documents', name: 'a.txt', result: 'fail', c: 'MOVE_BUSY' }] };
+  assert.equal(m.moveLeft(mixed).failed, 1); assert.equal(m.moveLeft(mixed).big, 1);
+  assert.equal(homeDone(mixed).sub, '1개는 옮겨 오지 못했습니다. 「사진」 폴더는 너무 커서 옮기지 않았습니다. 옛 PC의 백업에는 그대로 있지만, 지금은 이 앱으로 꺼낼 수 없습니다. 결과를 본 뒤 이 PC로 이어서 백업하세요.');
+  // Opus -b 2 — 연결 건너뜀만 남은 흔한 결과(complete 거짓)는 확인서처럼 못했다고 단정하지 않는다
+  const linksOnly = { ...res.result, items: res.result.items.filter((x) => x.result !== 'folder-skip'), folders: res.result.folders.map((x) => ({ ...x, tooBig: undefined })) };
+  assert.equal(m.moveLeft(linksOnly).n, 0); assert.equal(m.moveLeft(linksOnly).big, 0); assert.equal(m.moveTitle(linksOnly).tone, 'ok');
+  assert.equal(homeDone(linksOnly).sub, '옮긴 것과 옮기지 않은 것을 결과에서 본 뒤 이 PC로 이어서 백업하세요.');
+  assert.equal(homeDone(linksOnly).title, '옮겨 왔습니다.'); assert.equal(homeDone(null).title, '옮겨 왔습니다.');
+  // Opus -c 참고 — 놓은 파일 없이 실패만 있으면 제목도 확인서처럼 「옮겨 오지 못했습니다.」
+  const noneHere = { ...linksOnly, counts: { fail: 2, skip: 4 }, items: [0, 1].map((i) => ({ original: 'C:\\Users\\studio\\Documents', name: `f${i}.txt`, result: 'fail', c: 'MOVE_BUSY' })) };
+  assert.equal(m.moveTitle(noneHere).main, '옮겨 오지 못했습니다.');
+  // Opus -d 1 — 제목이 「옮겨 오지 못했습니다.」이면 아래 글은 「N개는」으로 대조하지 않고 확인서처럼 잇는다
+  assert.equal(homeDone(noneHere).title, '옮겨 오지 못했습니다.'); assert.equal(homeDone(noneHere).sub, '이 PC에 놓은 파일이 없습니다. 결과를 본 뒤 이 PC로 이어서 백업하세요.');
+  // Opus -d 2 — 시험 자료의 경로가 진짜 경로로 읽힌다
+  assert.equal(noneHere.items[0].original, ['C:', 'Users', 'studio', 'Documents'].join(String.fromCharCode(92)));
+  // 모든 폴더가 너무 커서 놓은 파일이 없으면 제목은 「옮겨 온 파일이 없습니다.」, 글은 큰 폴더를 말한다
+  const allBigRes = { ...res.result, counts: { 'folder-skip': res.result.folders.length }, items: [], folders: res.result.folders.map((x) => ({ ...x, mode: 'skip', roots: [], tooBig: true })) };
+  assert.equal(homeDone(allBigRes).title, '옮겨 온 파일이 없습니다.');
+  // Opus -e 참고 — 놓은 파일도 실패도 큰 폴더도 없으면 「옮긴 것과」로 잇지 않는다
+  // 놓은 파일이 0인 결과답게 항목은 연결 건너뜀 넷만 두고 놓은 자리는 비운다(Opus -f 참고)
+  const nothing = { ...linksOnly, counts: { skip: 4 }, items: linksOnly.items.filter((x) => x.result === 'skip'), folders: linksOnly.folders.map((x) => ({ ...x, roots: [] })) };
+  assert.equal(nothing.items.length, 4); assert.ok(nothing.folders.every((x) => x.roots.length === 0));
+  assert.equal(m.moveTitle(nothing).main, '옮겨 온 파일이 없습니다.'); assert.equal(m.moveLeft(nothing).n, 0); assert.equal(m.moveLeft(nothing).big, 0);
+  assert.equal(homeDone(nothing).title, '옮겨 온 파일이 없습니다.'); assert.equal(homeDone(nothing).sub, '옮기지 않은 까닭을 결과에서 본 뒤 이 PC로 이어서 백업하세요.');
+  assert.match(homeDone(allBigRes).sub, /^「[^」]+」 등 폴더 \d+곳은 너무 커서 옮기지 않았습니다\. 옛 PC의 백업에는 그대로 있지만, 지금은 이 앱으로 꺼낼 수 없습니다\. 결과를 본 뒤 이 PC로 이어서 백업하세요\.$/);
+  for (const r of [res.result, null]) assert.doesNotMatch(homeDone(r).sub, /옛 PC 백업에 그대로 있습니다/);
   // Fable F3 — 예시의 공간과 합계가 남은 폴더의 합이다
   assert.equal(big.preview.volumes[0].bytes, big.preview.bytes); assert.equal(big.preview.files, rows.files);
   // 폴더 묶음의 주어 말 — 셋 이상이어도 「외 2곳 폴더는」처럼 단위가 겹치지 않는다(카본 A1)

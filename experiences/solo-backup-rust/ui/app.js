@@ -116,7 +116,7 @@ function paint() {
     return;
   }
   if (screen === 'undo-3' && s?.account?.restore?.state === 'failed' && s.account.restore.jobId) acct.undoSeen = s.account.restore.jobId;
-  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null, checks: mv?.apps?.checks });
+  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null, result: mv?.result || null, checks: mv?.apps?.checks });
   const id = resolve(screen, s, model);
   if (!fixture) prepare(id, s);
   out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, mv, fake: !!fixture });

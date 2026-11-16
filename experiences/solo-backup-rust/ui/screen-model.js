@@ -356,9 +356,10 @@ function baseModel(state, now, opts) {
           evidence: evidence(s, now, { state: 'moved' }) };
       }
       if (mvs.resultAt && !mvs.released) {
-        return { ...base, ...step, id: 'home-move-done', tone: 'moved', stamp: '옮김', kick: `${device} · 옮겨 오기 끝`, title: '옮겨 왔습니다.',
-          sub: mvs.complete === true ? '이 PC로 이어서 백업하면 옛 PC는 그때부터 백업하지 않습니다. 그때까지 이 PC는 파일을 되살리기만 합니다.'
-            : '옮겨 오지 못한 것은 옛 PC 백업에 그대로 있습니다. 결과를 본 뒤 이 PC로 이어서 백업하세요.',
+        // 결과를 읽어 두었으면 제목도 확인서의 큰 글과 같게 쓴다 — 놓은 파일 없이 실패만 있으면 「옮겨 오지 못했습니다.」(Opus -c 참고)
+        const title = opts?.result && mvs.complete !== true ? moveTitle(opts.result).main : '옮겨 왔습니다.';
+        return { ...base, ...step, id: 'home-move-done', tone: 'moved', stamp: '옮김', kick: `${device} · 옮겨 오기 끝`, title,
+          sub: mvs.complete === true ? '이 PC로 이어서 백업하면 옛 PC는 그때부터 백업하지 않습니다. 그때까지 이 PC는 파일을 되살리기만 합니다.' : moveDoneLeftText(opts?.result),
           actions: [{ id: 'move-next', label: '이 PC로 이어서 백업', kind: 'main', to: 'move-4' }, { id: 'move-result', label: '결과 보기', kind: 'line', to: 'move-3' }, { ...RESTORE, kind: 'link' }],
           evidence: evidence(s, now, { state: 'moved' }) };
       }
@@ -615,7 +616,11 @@ export const modeId = (c) => (c?.sameDrive ? 'sameDrive' : c?.mode || null);
  * 「어디에 놓을까요」의 폴더 줄과 합계. 수와 크기는 처음 본 미리 보기의 것(first)을 쓴다 — 「옮기지 않음」으로 바꾸면 미리 보기가 0을 주고,
  * 고름을 바꿀 때마다 미리 보기를 다시 부르지 않기 때문이다(Fable F12)
  */
-export const TOO_BIG_WHY = '파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못합니다. 옛 PC의 백업에는 그대로 있습니다.';
+// 너무 커서 옮기지 않은 폴더는 옛 PC의 판에 남지만, 「파일 되살리기」는 이 PC의 최신 판만 열고 20만 개까지라 지금은 꺼낼 길이 없다(E26)
+export const tooBigKept = (from) => `${from ? `「${from}」` : '옛 PC'}의 백업에는 그대로 있지만, 지금은 이 앱으로 꺼낼 수 없습니다.`;
+export const TOO_BIG_MOVE_FIRST = '옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요.';
+// 폴더 줄에는 까닭만 둔다 — 백업에 남는다는 말과 지금은 꺼낼 수 없다는 말은 위 상자 한 곳에 둔다(Fable E26 F2)
+export const TOO_BIG_WHY = '파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못합니다.';
 export function moveRows(preview, choices = {}, first = null) {
   const folders = Array.isArray(preview?.folders) ? preview.folders : [];
   const rows = folders.map((f) => {
@@ -626,6 +631,27 @@ export function moveRows(preview, choices = {}, first = null) {
   });
   const moving = rows.filter((r) => r.place.kind !== 'skip');
   return { rows, files: moving.reduce((n, r) => n + r.files, 0), bytes: moving.reduce((n, r) => n + r.bytes, 0), places: moving.length, big: rows.filter((r) => r.tooBig) };
+}
+/**
+ * 끝났고 complete가 아닌 옮겨 오기의 기본 화면 글(Fable E26 F1). 「옛 PC 백업에 그대로 있습니다」만 쓰면 바로 옆의 「파일 되살리기」로
+ * 꺼낼 수 있다고 읽히는데, 너무 커서 옮기지 않은 폴더는 지금 이 앱으로 꺼낼 수 없다(E26).
+ * 확인서의 큰 글(moveTitle)과 같은 셈(moveLeft)으로 남은 것을 모두 말한다 — 실패와 큰 폴더가 섞여도 하나만 말하지 않는다(Opus -b 1).
+ * complete는 연결 건너뜀이나 복구본만 있어도 거짓이라, 남은 것이 없거나 결과를 아직 안 읽었으면(창을 다시 켬) 못했다고 단정하지 않는다(Opus -b 2)
+ */
+export function moveDoneLeftText(result) {
+  const next = '결과를 본 뒤 이 PC로 이어서 백업하세요.', neutral = '옮긴 것과 옮기지 않은 것을 결과에서 본 뒤 이 PC로 이어서 백업하세요.';
+  if (!result) return neutral;
+  const left = moveLeft(result), title = moveTitle(result), more = left.cut ? ' 이상은' : '는', parts = [];
+  // 놓은 파일이 하나도 없으면 제목(「옮겨 오지 못했습니다.」)이 이미 그렇게 말한다 — 「N개는」으로 대조하지 않고
+  // 확인서처럼 「이 PC에 놓은 파일이 없습니다.」로 잇는다(Opus -d 1)
+  if (title.none) { if (title.soft) parts.push(title.soft); } else {
+    if (left.failed) parts.push(`${count(left.failed)}개${more} 옮겨 오지 못했습니다.`);
+    if (left.unverified) parts.push(`${count(left.unverified)}개${more} 내용을 견주지 못했습니다.`);
+  }
+  if (left.big) parts.push(`${josa(folderSubjectKo(moveBigFolders(result)), '은/는')} 너무 커서 옮기지 않았습니다. ${tooBigKept()}`);
+  if (parts.length) return `${parts.join(' ')} ${next}`;
+  // 놓은 파일도 실패도 큰 폴더도 없으면 제목이 「옮겨 온 파일이 없습니다.」다 — 「옮긴 것과」로 잇지 않는다(Opus -e 참고)
+  return title.none ? '옮기지 않은 까닭을 결과에서 본 뒤 이 PC로 이어서 백업하세요.' : neutral;
 }
 /** 옮겨 온 결과에서 너무 커서 옮기지 않은 폴더(E25 — 결과 folders[]의 tooBig) */
 export function moveBigFolders(result) {
@@ -745,7 +771,7 @@ const WHY = {
   other: { label: '그 밖의 까닭', text: '까닭을 가리지 못한 오류로 놓지 못했습니다.', tone: 'warn' },
   unverified: { label: '같아 보이나 내용은 견주지 못함', text: '이 PC에 크기와 시각이 같은 파일이 있어 그대로 두었지만, 내용까지 견주지는 못했습니다.', tone: 'warn' },
   'od-unverified': { label: 'OneDrive에서 내용을 견주지 못함', text: 'OneDrive에 같은 이름의 파일이 있지만 온라인 전용이라 내용을 견주지 못했습니다.', tone: 'warn' },
-  toobig: { label: '너무 커서 옮기지 않은 폴더', text: '파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못했습니다. 그 폴더는 옛 PC의 백업에 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요.', tone: 'warn' },
+  toobig: { label: '너무 커서 옮기지 않은 폴더', text: `파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못했습니다. ${tooBigKept()} ${TOO_BIG_MOVE_FIRST}`, tone: 'warn' },
 };
 const WHY_CODE = [[/^(link|MOVE_SKIP_LINK|LINK_ABOVE)$/, 'link'], [/^special$/, 'special'], [/^chosen$/, 'chosen'], [/^(name|MOVE_PATH)$/, 'name'], [/^(long|ENAMETOOLONG)$/, 'long'],
   [/^MOVE_PROTECTED$/, 'protected'], [/^(MOVE_SKIP_FILE|FILE_ABOVE|EEXIST)$/, 'blocked'], [/^(MOVE_BUSY|EBUSY)$/, 'busy'],
@@ -801,8 +827,8 @@ export function moveTitle(result) {
   const then = !put ? '' : carried ? `옮겨 놓은 파일은 디스크에 쓴 뒤 다시 읽어 백업과 같은지 확인했습니다. 앞선 옮겨 오기에서 확인한 ${count(carried)}개는 지금도 크기와 시각이 같아 다시 받지 않았습니다.`
     : '옮겨 놓은 파일은 모두 디스크에 쓴 뒤 다시 읽어, 백업과 한 바이트도 다르지 않은지 확인했습니다.';
   const here = ['placed', 'copy', 'side', 'same', 'onedrive', 'same-unverified'].reduce((n, k) => n + (Number(c[k]) || 0), 0);
-  if (!here) return fail ? { main: '옮겨 오지 못했습니다.', soft: '이 PC에 놓은 파일이 없습니다.', then: '옛 PC 백업은 그대로 있습니다.', tone: 'warn' }
-    : { main: '옮겨 온 파일이 없습니다.', soft: '', then: '옮기지 않은 것은 옛 PC 백업에 그대로 있습니다.', tone: 'warn' };
+  if (!here) return fail ? { main: '옮겨 오지 못했습니다.', soft: '이 PC에 놓은 파일이 없습니다.', then: '옛 PC 백업은 그대로 있습니다.', tone: 'warn', none: true }
+    : { main: '옮겨 온 파일이 없습니다.', soft: '', then: '옮기지 않은 것은 옛 PC 백업에 그대로 있습니다.', tone: 'warn', none: true };
   if (fail) return { main: '옮겨 왔습니다.', soft: `${count(fail)}개${left.cut ? ' 이상은' : '는'} 옮겨 오지 못했습니다.`, then, tone: 'warn' };
   if (left.unverified) return { main: '옮겨 왔습니다.', soft: `${count(left.unverified)}개${left.cut ? ' 이상은' : '는'} 내용을 견주지 못했습니다.`, then, tone: 'warn' };
   // 너무 커서 옮기지 않은 폴더(E25) — 나머지는 다 왔어도 「다 옮겨 왔습니다」가 아니다

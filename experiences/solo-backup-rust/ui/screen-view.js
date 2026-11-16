@@ -6,7 +6,7 @@
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
-  moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
+  moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, TOO_BIG_MOVE_FIRST, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
   appsJob, appsSettings, appsUnrestored, movedHere } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
@@ -385,7 +385,7 @@ function move1Real(s, mv, acct, now) {
     ${notes([...(kit ? [h(kit)] : []), ...(resuming ? ['앞서 멈춘 옮겨 오기를 잇습니다. 그때 고른 자리를 그대로 씁니다.'] : []),
       ...(rechoose ? [`${h(moveStopText(s, mv.state))} 파일을 놓기 전에 멈춰 자리를 다시 고를 수 있습니다.`] : []),
       '이미 있는 파일은 덮어쓰지 않습니다. 내용이 다르면 「(복구본)」을 붙여 나란히 둡니다.', '창을 닫아도 계속되고, 끊겨도 다시 시작하면 멈춘 곳부터 잇습니다.'])}
-    ${rows.big.length ? `<div class="box rise i3"><b>${h(josa(folderSubjectKo(rows.big), '은/는'))} 옮겨 오지 못합니다.</b>${rows.big.length === rows.rows.length ? '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않습니다. 옮겨 올 수 있는 폴더가 없습니다.' : '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다.'} 옛 PC의 백업에는 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요.</div>` : ''}
+    ${rows.big.length ? `<div class="box rise i3"><b>${h(josa(folderSubjectKo(rows.big), '은/는'))} 옮겨 오지 못합니다.</b>${rows.big.length === rows.rows.length ? '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않습니다. 옮겨 올 수 있는 폴더가 없습니다.' : '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다.'} ${h(tooBigKept())} ${h(TOO_BIG_MOVE_FIRST)}</div>` : ''}
     ${p.suggestKeepAsIs ? '<div class="box rise i3"><b>이 PC에 같은 파일이 이미 많습니다.</b>같은 PC를 다시 깐 것이라면 되살리지 않고 이 PC에서 이어서 백업하는 편이 빠릅니다.</div>' : ''}
     ${acts([nothing && hadResult ? { id: 'move-result', label: '확인서 보기', kind: 'main' } : { id: 'move-go', label: '이 자리로 옮겨 오기', kind: 'main', disabled: !rows.places || blocked || busy || nothing }, ...(p.suggestKeepAsIs ? [quit] : [])], `<span class="hint">${h(hint)}</span>`)}`;
   const dis = busy ? ' aria-disabled="true"' : '';
@@ -499,7 +499,7 @@ function move4Real(s, mv, acct, now) {
     ${stepBoxOf(needStep, ack)}
     ${notes([...(g?.failed ? [`옮겨 오지 못한 파일(${count(g.failed)}개${g.cut ? ' 이상' : ''})은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
       ...(g?.unverified ? [`내용을 견주지 못한 파일(${count(g.unverified)}개${g.cut ? ' 이상' : ''})은 이 PC에 있던 것을 그대로 두었고, 백업의 것은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
-      ...(g?.big ? [`${h(josa(folderSubjectKo(moveBigFolders(res)), '은/는'))} 너무 커서 옮기지 않았습니다. 「${h(fromName)}」의 백업에는 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 직접 옮겨 두세요.`] : []),
+      ...(g?.big ? [`${h(josa(folderSubjectKo(moveBigFolders(res)), '은/는'))} 너무 커서 옮기지 않았습니다. ${h(tooBigKept(fromName))} ${h(TOO_BIG_MOVE_FIRST)}`] : []),
       ...(!res && st?.unfinished ? ['옮겨 오기를 마치지 않았습니다. 옮겨 오지 않은 파일은 옛 PC 백업에 그대로 있습니다.'] : []),
       ...(res ? ['넘긴 뒤에도 「설정」의 「프로그램과 설정」에서 프로그램을 깔고 다시 로그인할 곳을 볼 수 있습니다.'] : [])])}
     ${res ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="move-apps-open"${run ? ' aria-disabled="true"' : ''}>프로그램과 설정${installing ? ' · 까는 중' : left ? ` · 다시 로그인할 곳 ${count(left)}곳 남음` : ''} ${I.rarr}</button></div>` : ''}
