@@ -690,8 +690,8 @@ export const POSITION_MUTANTS = [
     'monthAnswer',
     '학습일 답 상한',
     '쓸 수 없는 답에도 다시 그린다 — 뒤처진 답을 적고 판을 다시 그린다(설계 주인 11-16 밤 조건 3)',
-    "      if (samePosition(current, at)) redraw();\n      else if (current && verdictOf(current, { askedFrom: device, at }) === 'behind') pullOnce(coach, at);\n",
-    "      redraw();\n      if (current && verdictOf(current, { askedFrom: device, at }) === 'behind') pullOnce(coach, at);\n",
+    '      if (samePosition(current, at)) redraw();\n      else if (current) {\n',
+    '      redraw();\n      if (current) {\n',
   ],
   [
     'monthAnswer',
@@ -761,6 +761,51 @@ export const POSITION_MUTANTS = [
     '학습일 답 지우기',
     '늦은 답의 세대 수 보기 빼기 — 로그아웃 · 동의 끔 뒤에 도착한 답이 적힌다(설계 검토 카본 A4 · Fable P2)',
     '      if (since !== generation) return false;\n',
+    '',
+  ],
+  // ── 설계 P1 다시 보기(-c)로 고친 셋(Fable FA1 · FA2 · 카본 A1) ──
+  [
+    'monthAnswer',
+    '학습일 답 다시 보기',
+    '이 문서가 든 답을 쓰지 않는다 — 막힌 저장소에서 완결된 답 뒤에도 그릴 때마다 묻는다(Fable 다시 보기 FA1)',
+    '      const stored = answers.read(owner, { revision, day }) ?? keptFor(`${owner}|${revision}|${day}`);\n',
+    '      const stored = answers.read(owner, { revision, day });\n',
+  ],
+  // `if (!storage)` 줄만 빼는 변형은 아래 try가 TypeError를 잡아 같은 false를 돌려주는 같은 꼴이라 살아남았다(11-16 밤). 되돌아갈 수 있는
+  // 회귀는 고치기 전처럼 없는 저장소를 건너뛰고 참을 돌려주는 꼴이다.
+  [
+    'monthAnswer',
+    '학습일 답 다시 보기',
+    '저장소가 없어도 적었다고 한다 — 없는 저장소를 건너뛰고 참을 돌려준다(Fable 다시 보기 FA1 · 고치기 전의 꼴)',
+    '      if (!storage) return false;\n      const value = { v: VERSION, revision, day, ...shapeOf({ askedFrom, at, windows, month }) };\n      try {\n        storage.setItem(keyOf(account), JSON.stringify(value));\n',
+    '      const value = { v: VERSION, revision, day, ...shapeOf({ askedFrom, at, windows, month }) };\n      try {\n        storage?.setItem(keyOf(account), JSON.stringify(value));\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 다시 보기',
+    '묻는 사이 앞선 기기가 다시 묻지 않는다 — 문장이 다음 그리기까지 서지 않는다(Fable 다시 보기 FA2)',
+    "        else if (verdict === 'ask') ask(coach, line, { owner, revision, day, device: current });\n",
+    '',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 다시 보기',
+    '계정 · 세대가 바뀌어도 상자를 비우지 않는다 — 앞 세대의 상한과 받은 자리가 다시 들어온 계정을 막는다(카본 다시 보기 A1)',
+    '    reset();\n    state.owner = owner;\n',
+    '    state.owner = owner;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 다시 보기',
+    '로그아웃으로 끊긴 물음을 실패로 적는다 — 다른 계정의 계기와 상한을 덮는다(카본 다시 보기 A1)',
+    "        if (alive(owner)) missed('LOOKBACK_FAILED');\n",
+    "        missed('LOOKBACK_FAILED');\n",
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 다시 보기',
+    '물은 사이 지우는 길이 돌아도 답을 든다 — 늦은 답으로 다시 그린다(카본 다시 보기 A1)',
+    '      if (since !== answers.generation()) return; // 물은 사이 지우는 길이 돌았다 — 늦은 답은 들지도 적지도 않는다\n',
     '',
   ],
 ];

@@ -25375,6 +25375,16 @@ function validMonth(rows2) {
 var validWindows = (windows) => plain(windows) && ["monthAgo", "since", "last7"].every(
   (name) => plain(windows[name]) && finite(windows[name].from) && finite(windows[name].to)
 );
+var shapeOf = ({ askedFrom, at, windows, month }) => ({
+  askedFrom,
+  at,
+  windows: {
+    monthAgo: { from: windows.monthAgo.from, to: windows.monthAgo.to },
+    since: { from: windows.since.from, to: windows.since.to },
+    last7: { from: windows.last7.from, to: windows.last7.to }
+  },
+  month: month.map((row) => ({ unit: row.unit, misses: row.misses, reviews: row.reviews, last: row.last ?? null }))
+});
 var generation = 0;
 var keyOf = (account) => `${PREFIX}${account}`;
 function clearMonthAnswer(storage, account) {
@@ -25401,24 +25411,13 @@ function createMonthAnswers({ storage = globalThis.localStorage } = {}) {
       if (!askedFrom || !at || !validWindows(value.windows) || !validMonth(value.month)) return null;
       return { askedFrom, at, windows: value.windows, month: value.month };
     },
-    // 답을 적는다 — 물을 때의 세대 수가 지금과 같을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
+    // 답을 적는다 — 물을 때의 세대 수가 지금과 같고 저장소가 있을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
     write(account, { revision: revision2, day, askedFrom, at, windows, month, since }) {
       if (since !== generation) return false;
-      const value = {
-        v: VERSION,
-        revision: revision2,
-        day,
-        askedFrom,
-        at,
-        windows: {
-          monthAgo: { from: windows.monthAgo.from, to: windows.monthAgo.to },
-          since: { from: windows.since.from, to: windows.since.to },
-          last7: { from: windows.last7.from, to: windows.last7.to }
-        },
-        month: month.map((row) => ({ unit: row.unit, misses: row.misses, reviews: row.reviews, last: row.last ?? null }))
-      };
+      if (!storage) return false;
+      const value = { v: VERSION, revision: revision2, day, ...shapeOf({ askedFrom, at, windows, month }) };
       try {
-        storage?.setItem(keyOf(account), JSON.stringify(value));
+        storage.setItem(keyOf(account), JSON.stringify(value));
         return true;
       } catch {
         return false;
@@ -25443,7 +25442,21 @@ var LOOKBACK_CODES = Object.freeze({
 });
 var lookbackCode = (reason) => LOOKBACK_CODES[reason] ?? "LOOKBACK_FAILED";
 function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive }) {
-  const state = { asking: null, tried: null, pulled: /* @__PURE__ */ new Set() };
+  const state = { owner: null, generation: null, asking: null, tried: null, pulled: /* @__PURE__ */ new Set(), kept: null };
+  const reset = () => {
+    state.asking = null;
+    state.tried = null;
+    state.pulled.clear();
+    state.kept = null;
+  };
+  const follow = (owner) => {
+    const now = answers.generation();
+    if (state.owner === owner && state.generation === now) return;
+    reset();
+    state.owner = owner;
+    state.generation = now;
+  };
+  const keptFor = (key) => state.kept?.key === key ? state.kept.answer : null;
   const storageOf = (coach) => {
     try {
       return coach.summary().storage ?? null;
@@ -25464,12 +25477,13 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
   }
   function ask(coach, line, { owner, revision: revision2, day, device }) {
     const key = `${owner}|${revision2}|${day}`;
-    if (state.asking === key) return;
+    if (state.asking?.key === key) return;
     if (state.tried?.key === key && samePosition(state.tried.from, device)) return;
-    state.asking = key;
+    const token = {};
+    state.asking = { key, token };
     const since = answers.generation();
     const settle = () => {
-      if (state.asking === key) state.asking = null;
+      if (state.asking?.token === token) state.asking = null;
     };
     const missed = (code) => {
       state.tried = { key, from: device };
@@ -25495,14 +25509,21 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
       const storage = storageOf(coach);
       if (!storage || (storage.unfolded || 0) > 0) return;
-      if (!answers.write(owner, { revision: revision2, day, askedFrom: device, at, windows, month, since })) return;
+      if (since !== answers.generation()) return;
+      const answer = shapeOf({ askedFrom: device, at, windows, month });
+      state.kept = { key, answer };
+      answers.write(owner, { revision: revision2, day, ...answer, since });
       const current = positionOf(storage.sync?.received);
       if (samePosition(current, at)) redraw();
-      else if (current && verdictOf(current, { askedFrom: device, at }) === "behind") pullOnce(coach, at);
+      else if (current) {
+        const verdict2 = verdictOf(current, answer);
+        if (verdict2 === "behind") pullOnce(coach, at);
+        else if (verdict2 === "ask") ask(coach, line, { owner, revision: revision2, day, device: current });
+      }
     };
     void Promise.resolve().then(() => line.ask(offsetOf())).then(reply, () => {
       settle();
-      missed("LOOKBACK_FAILED");
+      if (alive(owner)) missed("LOOKBACK_FAILED");
     }).catch(() => {
     });
   }
@@ -25510,6 +25531,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     month(coach) {
       const owner = account();
       if (!owner) return null;
+      follow(owner);
       let line = null;
       try {
         line = lineOf(coach) || null;
@@ -25529,19 +25551,15 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
       if (day == null) return null;
       const revision2 = line.revision;
-      const stored = answers.read(owner, { revision: revision2, day });
+      const stored = answers.read(owner, { revision: revision2, day }) ?? keptFor(`${owner}|${revision2}|${day}`);
       const verdict2 = stored ? verdictOf(device, stored) : "ask";
       if (verdict2 === "use") return { month: monthOfAnswer(stored) };
       if (verdict2 === "behind") pullOnce(coach, stored.at);
       else ask(coach, line, { owner, revision: revision2, day, device });
       return null;
     },
-    // 계정이 바뀌거나 지우는 길이 돌면 묻는 중 · 상한 · 받은 자리를 비운다(새 계정은 처음부터 묻는다).
-    reset() {
-      state.asking = null;
-      state.tried = null;
-      state.pulled.clear();
-    }
+    // 묻는 중 · 상한 · 받은 자리 · 이 문서의 답을 비운다. 계정이나 세대 수가 바뀌면 month()가 스스로 부른다.
+    reset
   };
 }
 

@@ -115,7 +115,7 @@ test('학습일 답 — 지우는 길(로그아웃 · 동의 끔 · 계정 바�
   assert.equal(storage.map.size, 0);
 });
 
-test('학습일 답 — 저장소가 막혀도 던지지 않는다(읽기는 null — 서버에 다시 묻는다)', () => {
+test('학습일 답 — 저장소가 막히거나 없어도 던지지 않는다(읽기는 null — 서버에 다시 묻는다) · 없으면 적었다고 하지 않는다', () => {
   const broken = {
     getItem() {
       throw new Error('blocked');
@@ -131,6 +131,15 @@ test('학습일 답 — 저장소가 막혀도 던지지 않는다(읽기는 nul
   assert.equal(answers.read('acct', { revision: 1, day: 'd' }), null);
   assert.equal(answers.write('acct', { revision: 1, day: 'd', askedFrom: at(1), at: at(1), windows: WINDOWS, month: [], since: answers.generation() }), false);
   assert.doesNotThrow(() => answers.clear('acct'));
+  // 저장소가 없으면(localStorage가 없는 환경) 적었다고 하지 않는다 — 적은 답을 다음 그리기가 다시 읽으리라 믿지 않게(Fable 다시 보기 FA1).
+  const none = createMonthAnswers({ storage: null });
+  assert.equal(none.read('acct', { revision: 1, day: 'd' }), null);
+  assert.equal(
+    none.write('acct', { revision: 1, day: 'd', askedFrom: at(1), at: at(1), windows: WINDOWS, month: [], since: none.generation() }),
+    false,
+    '저장소가 없으면 적었다고 하지 않는다',
+  );
+  assert.doesNotThrow(() => none.clear('acct'));
 });
 
 // ── 장면 바탕 ───────────────────────────────────────────────────────────────────────────
@@ -161,6 +170,10 @@ async function until(check, ms = 8000) {
 async function quiet(rounds = 40) {
   for (let i = 0; i < rounds; i += 1) await tick();
 }
+// 퓨즈 — 상한이 빠진 변형은 묻기 · 받기 · 다시 그리기를 마이크로태스크만으로 끝없이 되풀이한다. 그러면 시험의 시간 제한(타이머)이 서지 않아
+// 변형 실행기가 10분을 기다린 뒤에야 끊었다(11-16 밤 실측 — 「기기 자리가 그대로여도 다시 묻는다」 변형). 한 장면에서 이 수를 넘으면 묻기는
+// 던지고, 받기는 부르지 않고, 그리기는 문장 없이 돌아온다. 그러면 고리가 끊기고 셈(bounded)이 바로 떨어진다. 바른 길은 이 수에 닿지 않는다.
+const FUSE = 40;
 
 // 리허설 서버 하나(합성 계정 하나) — use(engine, cap)는 같은 계정 기록으로 판 묶음 · 접기 상한이 다른 서버를 켠다(엔진을 올린 배포의 흉내).
 function worldOf() {
@@ -225,6 +238,7 @@ async function deviceOf(world) {
   const handle = await acquireHost({ key, params: atlas.PARAMS, now: world.time.now, guest: false }, globalThis);
   const ask = async offset => {
     knobs.asks += 1;
+    if (knobs.asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
     if (knobs.lookbackHold) await knobs.lookbackHold;
     const got = await base.lookback(offset);
     knobs.replies.push(got);
@@ -292,6 +306,7 @@ function panelOf(world, first, { storage = memoryStorage() } = {}) {
     summary: () => device.coach.summary(),
     pull: () => {
       counts.pulls += 1;
+      if (counts.pulls > FUSE) return null; // 퓨즈 — 셈은 bounded가 본다
       return device.coach.pull();
     },
   });
@@ -301,6 +316,7 @@ function panelOf(world, first, { storage = memoryStorage() } = {}) {
   }
   function render() {
     counts.renders += 1;
+    if (counts.renders > FUSE * 5) return null; // 퓨즈 — 다시 그리기의 고리를 끊는다(묻기가 다시 그렸으면 wasted로 센다)
     track();
     const got = asker.month(view());
     counts.shown = got ? got.month : null;
@@ -477,6 +493,7 @@ async function deviceOfHeld(world, held) {
       revision,
       ask: async offset => {
         knobs.asks += 1;
+        if (knobs.asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
         const got = await base.lookback(offset);
         knobs.replies.push(got);
         return got;
@@ -517,7 +534,7 @@ test('뒤처진 기기 — 답의 자리로 받기를 한 번 부르고, 받기�
   device.close();
 });
 
-test('머리 차례를 가리지 못하는 답(gen 없는 옛 머리끼리 판 묶음만 다르다) — 기기 자리가 그대로면 다시 묻지 않고 그 자리로 한 번 받는다', async () => {
+test('머리 차례를 가리지 못하는 답(gen 없는 옛 머리끼리 판 묶음만 다르다) — 기기 자리가 그대로면 다시 묻지 않고 그 자리로 한 번 받는다', { timeout: 60_000 }, async () => {
   const storage = memoryStorage();
   const answers = createMonthAnswers({ storage });
   const device = { edition: 'e-old', gen: null, foldedUntil: 5 };
@@ -529,6 +546,7 @@ test('머리 차례를 가리지 못하는 답(gen 없는 옛 머리끼리 판 �
     summary: () => ({ storage: { guest: false, unfolded: 0, sync: { received: device } } }),
     pull: () => {
       pulls += 1;
+      if (pulls > FUSE) return null; // 퓨즈
       return Promise.resolve(false);
     },
   };
@@ -539,6 +557,7 @@ test('머리 차례를 가리지 못하는 답(gen 없는 옛 머리끼리 판 �
       revision: 1,
       ask: async () => {
         asks += 1;
+        if (asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
         return { complete: true, summaryAt: there, lookback: { windows: WINDOWS, month: [] } };
       },
     }),
@@ -655,3 +674,159 @@ test('내 놓침이 서버에 닿기 전에는 묻지 않는다 · 물은 사이
   device.close();
 });
 
+
+// ── 장면: 설계 P1 다시 보기(-c)로 고친 셋(Fable FA1 · FA2 — 카본 A1) ─────────────────────────────
+
+// 가짜 코치 하나와 상자 하나 — 자리(device)는 시험이 바꾼다. 묻기는 reply(n번째)를 돌려주고, hold가 있으면 그것이 풀릴 때까지 기다린다. 다시
+// 그리기는 판을 다시 그린다(상자를 또 부른다). 변형이 끝없이 다시 그려도 시험이 멈추도록 50번에서 끊는다.
+function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {}) {
+  const box = { device: at(5), asks: 0, pulls: 0, redraws: 0, notes: [], hold: null, last: null };
+  const coach = {
+    summary: () => ({ storage: { guest: false, unfolded: 0, sync: { received: box.device } } }),
+    pull: () => {
+      box.pulls += 1;
+      if (box.pulls > FUSE) return null; // 퓨즈
+      return Promise.resolve(false);
+    },
+  };
+  const answers = createMonthAnswers({ storage });
+  const asker = createMonthAsker({
+    answers,
+    account: () => A_ID,
+    lineOf: () => ({
+      revision: 1,
+      ask: async () => {
+        box.asks += 1;
+        if (box.asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
+        const n = box.asks;
+        if (box.hold) await box.hold;
+        return reply(n, box);
+      },
+    }),
+    dayOf: () => 7,
+    offsetOf: () => OFFSET,
+    redraw: () => {
+      box.redraws += 1;
+      if (box.redraws <= 50) box.last = asker.month(coach);
+    },
+    note: code => box.notes.push(code),
+    alive: live,
+  });
+  box.render = () => {
+    box.last = asker.month(coach);
+    return box.last;
+  };
+  box.answers = answers;
+  return box;
+}
+const done = (summaryAt, month = [{ unit: 'u0', misses: 2, reviews: 3, last: 2.9 }]) => ({
+  complete: true,
+  summaryAt,
+  lookback: { windows: WINDOWS, month },
+});
+const held = box => {
+  let release = null;
+  box.hold = new Promise(resolve => {
+    release = resolve;
+  });
+  return () => {
+    box.hold = null;
+    release();
+  };
+};
+
+test('저장소가 막혀도(없음 · 읽기가 던짐 · 쓰기가 말없이 버림 · 쓰기가 던짐) 완결된 답 뒤에는 다시 묻지 않고, 이 문서가 든 답으로 문장을 그린다(Fable 다시 보기 FA1)', { timeout: 60_000 }, async () => {
+  const blocked = {
+    없음: null,
+    '읽기가 던짐': {
+      getItem() {
+        throw new Error('blocked');
+      },
+      setItem() {},
+      removeItem() {},
+    },
+    '쓰기가 말없이 버림': { getItem: () => null, setItem() {}, removeItem() {} },
+    '쓰기가 던짐': {
+      getItem: () => null,
+      setItem() {
+        throw new Error('quota');
+      },
+      removeItem() {},
+    },
+  };
+  for (const [name, storage] of Object.entries(blocked)) {
+    const box = fakeAsker({ storage, reply: (_n, b) => done(b.device) });
+    assert.equal(box.render(), null, `${name} — 처음은 묻는다`);
+    await quiet(10);
+    for (let i = 0; i < 5; i += 1) box.render();
+    await quiet(10);
+    assert.equal(box.asks, 1, `${name} — 묻기 ${box.asks} ≤ 기기 자리가 바뀐 수 0 + 1`);
+    assert.equal(box.redraws, 1, `${name} — 같은 자리의 답으로 한 번 다시 그린다`);
+    assert.equal(box.render()?.month.length, 1, `${name} — 이 문서가 든 답으로 문장을 그린다`);
+  }
+  const answers = createMonthAnswers({ storage: null });
+  assert.equal(
+    answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since: answers.generation() }),
+    false,
+    '저장소가 없으면 적었다고 하지 않는다',
+  );
+});
+
+test('묻는 사이 기기 자리가 답의 자리를 지나 앞서면 그 자리에서 한 번 다시 묻는다 — 묻기 ≤ 기기 자리가 바뀐 수 + 1(Fable 다시 보기 FA2)', { timeout: 60_000 }, async () => {
+  const box = fakeAsker({ reply: n => (n === 1 ? done(at(7)) : done(at(9), [{ unit: 'u9', misses: 2, reviews: 3, last: 2.9 }])) });
+  const release = held(box);
+  box.device = at(5);
+  assert.equal(box.render(), null);
+  await quiet(5);
+  box.device = at(9); // 묻는 사이 올리기 답이 기기 자리를 올렸다(서버는 앞 자리에서 셌다)
+  release();
+  await quiet(20);
+  assert.equal(box.asks, 2, '그 자리에서 한 번 다시 묻는다');
+  assert.equal(box.render()?.month[0].unit, 'u9', '앞선 자리의 답으로 문장을 그린다');
+  await quiet(10);
+  assert.equal(box.asks, 2, '되풀이하지 않는다');
+});
+
+test('로그아웃으로 끊긴 물음은 실패로 적지 않고, 다시 들어온 같은 계정은 처음부터 묻고 받는다 · 물은 사이 지우는 길이 돌면 그 답은 들지도 다시 그리지도 않는다(카본 다시 보기 A1)', { timeout: 60_000 }, async () => {
+  // 끊긴 물음 — 감싸개가 ACCOUNT_CHANGED로 던진다. 계기에 남기지 않고 상한도 세우지 않는다.
+  let live = true;
+  const cut = fakeAsker({ reply: () => Promise.reject(Object.assign(new Error('ACCOUNT_CHANGED'), { code: 'ACCOUNT_CHANGED' })), live: () => live });
+  const release = held(cut);
+  cut.render();
+  await quiet(5);
+  live = false;
+  cut.answers.clear(A_ID); // 로그아웃 — 세대 수가 오른다
+  release();
+  await quiet(10);
+  assert.deepEqual(cut.notes, [], '끊긴 물음은 계기에 남기지 않는다');
+  live = true; // 같은 계정으로 다시 들어온다
+  cut.render();
+  await quiet(10);
+  assert.equal(cut.asks, 2, '다시 들어온 같은 계정은 처음부터 묻는다');
+  // 물은 사이 지우는 길 — 완결된 같은 자리 답이 와도 들지도 적지도 다시 그리지도 않는다. 다음 그리기가 다시 묻는다.
+  const late = fakeAsker({ reply: (_n, b) => done(b.device) });
+  const go = held(late);
+  late.render();
+  await quiet(5);
+  late.answers.clear(A_ID);
+  go();
+  await quiet(10);
+  assert.equal(late.redraws, 0, '늦은 답으로 다시 그리지 않는다');
+  assert.equal(late.answers.read(A_ID, { revision: 1, day: 7 }), null, '늦은 답을 적지 않는다');
+  assert.equal(late.render(), null, '늦은 답을 쓰지 않는다 — 다시 묻는다');
+  await quiet(10);
+  assert.equal(late.asks, 2);
+  // 받은 자리 — 지우는 길 뒤에는 같은 자리로 다시 한 번 받는다(앞 세대의 받은 자리가 막지 않는다).
+  const behind = fakeAsker({ reply: () => done(at(9)) });
+  behind.device = at(5);
+  behind.render();
+  await quiet(10);
+  behind.render();
+  assert.equal(behind.pulls, 1, '뒤처진 동안 받기는 한 번');
+  behind.answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(9), windows: WINDOWS, month: [], since: behind.answers.generation() });
+  behind.answers.clear(A_ID);
+  behind.answers.write(A_ID, { revision: 1, day: 7, askedFrom: at(5), at: at(9), windows: WINDOWS, month: [], since: behind.answers.generation() });
+  behind.render();
+  await quiet(10);
+  assert.equal(behind.pulls, 2, '지우는 길 뒤에는 같은 자리로 다시 받는다');
+});

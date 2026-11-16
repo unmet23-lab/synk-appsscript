@@ -78,6 +78,18 @@ const validWindows = windows =>
     name => plain(windows[name]) && finite(windows[name].from) && finite(windows[name].to),
   );
 
+// 답의 꼴 — 저장소에 적는 값과 이 문서가 들고 있는 답(createMonthAsker의 kept)이 같은 꼴이다(단위 id와 숫자만, 문항 글이나 근거 글은 두지 않는다).
+const shapeOf = ({ askedFrom, at, windows, month }) => ({
+  askedFrom,
+  at,
+  windows: {
+    monthAgo: { from: windows.monthAgo.from, to: windows.monthAgo.to },
+    since: { from: windows.since.from, to: windows.since.to },
+    last7: { from: windows.last7.from, to: windows.last7.to },
+  },
+  month: month.map(row => ({ unit: row.unit, misses: row.misses, reviews: row.reviews, last: row.last ?? null })),
+});
+
 // 세대 수 — 이 문서의 모든 저장소가 함께 쓴다(로그아웃 · 동의 끔은 셸의 다른 자리에서 clearMonthAnswer로 지운다).
 let generation = 0;
 const keyOf = account => `${PREFIX}${account}`;
@@ -110,24 +122,13 @@ export function createMonthAnswers({ storage = globalThis.localStorage } = {}) {
       if (!askedFrom || !at || !validWindows(value.windows) || !validMonth(value.month)) return null;
       return { askedFrom, at, windows: value.windows, month: value.month };
     },
-    // 답을 적는다 — 물을 때의 세대 수가 지금과 같을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
+    // 답을 적는다 — 물을 때의 세대 수가 지금과 같고 저장소가 있을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
     write(account, { revision, day, askedFrom, at, windows, month, since }) {
       if (since !== generation) return false;
-      const value = {
-        v: VERSION,
-        revision,
-        day,
-        askedFrom,
-        at,
-        windows: {
-          monthAgo: { from: windows.monthAgo.from, to: windows.monthAgo.to },
-          since: { from: windows.since.from, to: windows.since.to },
-          last7: { from: windows.last7.from, to: windows.last7.to },
-        },
-        month: month.map(row => ({ unit: row.unit, misses: row.misses, reviews: row.reviews, last: row.last ?? null })),
-      };
+      if (!storage) return false;
+      const value = { v: VERSION, revision, day, ...shapeOf({ askedFrom, at, windows, month }) };
       try {
-        storage?.setItem(keyOf(account), JSON.stringify(value));
+        storage.setItem(keyOf(account), JSON.stringify(value));
         return true;
       } catch {
         return false;
@@ -165,7 +166,27 @@ export const lookbackCode = reason => LOOKBACK_CODES[reason] ?? 'LOOKBACK_FAILED
 //   dayOf     지금 학습일 열쇠 · offsetOf 기기의 현지 시각 − UTC(분)
 //   redraw    열린 판을 다시 그린다 · note 계기 코드를 남긴다 · alive(account) 답이 왔을 때 아직 그 계정 · 문서인가
 export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive }) {
-  const state = { asking: null, tried: null, pulled: new Set() };
+  // asking 묻는 중인 열쇠 · tried 완결되지 않았거나 실패한 물음의 열쇠와 기기 자리 · pulled 받기를 부른 답의 자리 · kept 이 문서가 들고 있는 답.
+  // owner · generation — 상자가 지금 따르는 계정과 세대 수(바뀌면 위의 넷을 비운다).
+  const state = { owner: null, generation: null, asking: null, tried: null, pulled: new Set(), kept: null };
+  const reset = () => {
+    state.asking = null;
+    state.tried = null;
+    state.pulled.clear();
+    state.kept = null;
+  };
+  // 계정이 바뀌었거나 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 세대 수를 올렸으면 상자를 비운다 — 앞 계정 · 앞 세대의 상한과 받은 자리가 다시
+  // 들어온 같은 계정의 물음과 받기를 막지 않게(카본 다시 보기 A1).
+  const follow = owner => {
+    const now = answers.generation();
+    if (state.owner === owner && state.generation === now) return;
+    reset();
+    state.owner = owner;
+    state.generation = now;
+  };
+  // 이 문서가 들고 있는 답 — 저장소가 막혀(없음 · 읽기가 던짐 · 쓰기가 말없이 버림 · 쓰기가 던짐) 적은 답이 다시 읽히지 않아도, 같은 계정 · 동의 판
+  // · 학습일 · 세대 안에서는 이 답으로 견준다. 그래야 완결된 답 뒤의 상한이 저장소에 기대지 않는다(Fable 다시 보기 FA1).
+  const keptFor = key => (state.kept?.key === key ? state.kept.answer : null);
   const storageOf = coach => {
     try {
       return coach.summary().storage ?? null;
@@ -191,12 +212,14 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
   // 묻지 않는다(상한). 답이 오면 적기 직전에 그 계정 · 문서가 그대로인지와 아직 칸에 들지 않은 답이 없는지 본다.
   function ask(coach, line, { owner, revision, day, device }) {
     const key = `${owner}|${revision}|${day}`;
-    if (state.asking === key) return;
+    if (state.asking?.key === key) return;
     if (state.tried?.key === key && samePosition(state.tried.from, device)) return;
-    state.asking = key;
+    // 물음마다 표지 — 비운 뒤 다시 물었을 때 앞 물음의 늦은 답이 새 물음의 「묻는 중」을 지우지 않게.
+    const token = {};
+    state.asking = { key, token };
     const since = answers.generation();
     const settle = () => {
-      if (state.asking === key) state.asking = null;
+      if (state.asking?.token === token) state.asking = null;
     };
     const missed = code => {
       state.tried = { key, from: device };
@@ -224,16 +247,25 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
       const storage = storageOf(coach);
       if (!storage || (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다
-      if (!answers.write(owner, { revision, day, askedFrom: device, at, windows, month, since })) return;
+      if (since !== answers.generation()) return; // 물은 사이 지우는 길이 돌았다 — 늦은 답은 들지도 적지도 않는다
+      const answer = shapeOf({ askedFrom: device, at, windows, month });
+      state.kept = { key, answer };
+      answers.write(owner, { revision, day, ...answer, since }); // 막힌 저장소면 이 문서의 답(kept)만 남는다
       const current = positionOf(storage.sync?.received);
       if (samePosition(current, at)) redraw();
-      else if (current && verdictOf(current, { askedFrom: device, at }) === 'behind') pullOnce(coach, at);
+      else if (current) {
+        const verdict = verdictOf(current, answer);
+        if (verdict === 'behind') pullOnce(coach, at);
+        // 묻는 사이 기기가 답의 자리를 지나 앞섰다 — 그 자리에서 한 번 다시 묻는다. 물은 뒤 기기 자리가 바뀐 수로 묶인다(Fable 다시 보기 FA2).
+        else if (verdict === 'ask') ask(coach, line, { owner, revision, day, device: current });
+      }
     };
     void Promise.resolve()
       .then(() => line.ask(offsetOf()))
       .then(reply, () => {
         settle();
-        missed('LOOKBACK_FAILED');
+        // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED)은 실패로 적지 않는다 — 다른 계정의 계기와 상한을 덮지 않게(카본 다시 보기 A1).
+        if (alive(owner)) missed('LOOKBACK_FAILED');
       })
       .catch(() => {
         // 다시 그리기 · 받기의 예외는 묻기를 막지 않는다
@@ -244,6 +276,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     month(coach) {
       const owner = account();
       if (!owner) return null;
+      follow(owner);
       let line = null;
       try {
         line = lineOf(coach) || null;
@@ -263,18 +296,14 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
       if (day == null) return null;
       const revision = line.revision;
-      const stored = answers.read(owner, { revision, day });
+      const stored = answers.read(owner, { revision, day }) ?? keptFor(`${owner}|${revision}|${day}`);
       const verdict = stored ? verdictOf(device, stored) : 'ask';
       if (verdict === 'use') return { month: monthOfAnswer(stored) };
       if (verdict === 'behind') pullOnce(coach, stored.at);
       else ask(coach, line, { owner, revision, day, device });
       return null;
     },
-    // 계정이 바뀌거나 지우는 길이 돌면 묻는 중 · 상한 · 받은 자리를 비운다(새 계정은 처음부터 묻는다).
-    reset() {
-      state.asking = null;
-      state.tried = null;
-      state.pulled.clear();
-    },
+    // 묻는 중 · 상한 · 받은 자리 · 이 문서의 답을 비운다. 계정이나 세대 수가 바뀌면 month()가 스스로 부른다.
+    reset,
   };
 }
