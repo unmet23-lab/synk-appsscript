@@ -3,7 +3,7 @@
 // 엔진에 아직 없는 기능의 단추는 「아직 준비 중」 한 줄만 띄우고 아무것도 보내지 않는다(QA 「가짜 상태로 그린 화면」).
 
 import { createStore, failureText } from './state-store.js';
-import { homeModel, startStep, restorePlace } from './screen-model.js';
+import { homeModel, startStep, restorePlace, afterUndo } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -49,15 +49,15 @@ const now = () => (fixture ? fixture.now : Date.now());
 /** 엔진에 아직 없는 기능의 화면 — 실제 상태에서는 열지 않고 「준비 중」 한 줄만 띄운다 */
 const SOON = { 'move-1': '이 PC로 옮겨 오기', 'move-2': '이 PC로 옮겨 오기', 'move-3': '이 PC로 옮겨 오기', 'move-4': '이 PC로 옮겨 오기',
   code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
-const soon = (what) => note(`${josa(what, '은/는')} 아직 준비 중입니다. 다음 업데이트에서 열립니다.`);
+const soon = (what) => note(what.startsWith('!') ? what.slice(1) : `${josa(what, '은/는')} 아직 준비 중입니다. 다음 업데이트에서 열립니다.`);
 
 /** 실제 상태에서 아직 열 수 없는 화면이면 그 이름, 열 수 있으면 null — 되돌리기 미리 보기는 계정에 이은 PC에서만 연다 */
 function notYet(to) {
   if (fixture || !to) return null;
   if (SOON[to]) return SOON[to];
   const s = state();
-  // 복구 전용 연결에서는 엔진이 되돌리기 실행을 받지 않는다(OTHER_BACKUP — Fable 둘째 F1, 조율 세션에 부탁)
-  if ((to === 'undo-1' || to === 'undo-2') && !(s?.account?.connected && s?.configured && s?.mode !== 'restore')) return '사고 되돌리기';
+  // 복구 전용 연결도 되돌리기를 부른다(조율 세션 57c3d17e6) — 계정에 이어 백업을 연 PC면 연다
+  if ((to === 'undo-1' || to === 'undo-2') && !(s?.account?.connected && s?.configured)) return '!사고 되돌리기는 Google 계정으로 시작한 PC에서 엽니다.';
   if (to === 'undo-3' && !s?.account?.restore) return '사고 되돌리기';
   if (to === 'lost' && !(s?.account?.connected && acct.lostTarget)) return '분실 신고';
   if (to === 'lost-2' && !s?.account?.connected) return '분실 신고';
@@ -392,7 +392,14 @@ async function send(a, el) {
   // 분실 신고 → 남은 걸음 화면 · 새 복구 정보를 맡긴 뒤 → 기본 화면
   if (a.after === 'lost') { acct = { ...acct, lost: { name: acct.lostTarget?.name || '', at: Date.now(), url: r.value?.googleRemovalUrl || null, next: r.value?.next || null }, lostTarget: null, devices: null }; return go('lost-2'); }
   if (a.after === 'lost-done') { acct = { ...acct, lost: null, googleAck: false }; note('새 복구 정보를 맡겼습니다.'); return go('home'); }
-  if (a.call === 'restoreChoose' && a.args?.[1] === 'continue') { note('여기서부터 이어서 매시간 백업합니다.'); return go('home'); }
+  if (a.call === 'restoreChoose' && a.args?.[1] === 'continue') {
+    const after = afterUndo(state());
+    note(`되돌린 판에서 이어 갑니다.${after.text ? ` ${after.text}` : ''}`, 9000);
+    // 이 PC가 다시 백업하면 알렸으니 기본 화면에 같은 줄을 또 띄우지 않는다(엔진 restoreEnded → restoreSeen).
+    // 백업이 저절로 돌지 않는 끝(되살리기만 하는 PC 등)은 기본 화면 줄로 「확인」까지 남긴다(Fable F3)
+    if (after.backing && typeof a.args[0] === 'string') void store.call('restoreSeen', a.args[0]);
+    return go('home');
+  }
   if (a.call === 'restoreLatest' && store.state?.job) { catalog = null; screen = 'home'; return go('home'); }
   if (a.then) go(a.then);
 }

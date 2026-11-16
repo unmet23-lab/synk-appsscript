@@ -95,6 +95,10 @@ const CASES = [
   ['home-restore-error', 'home'], ['home-restore-unsafe', 'home'],
   ['home', 'restore', { name: 'restore-pick', ui: { place: 'pick' } }], ['home', 'restore', { name: 'restore-confirm', ui: { confirmAll: true } }], ['home-downloads', 'restore', { name: 'restore-guarded' }],
   ['home-same-install', 'drawer', { name: 'drawer-same', acct: { devices: DEVICES_SAME }, scrollTo: '[data-act="lost-dev"]' }],
+  // 되돌리기 셋(조율 세션 57c3d17e6 뒤): 끝난 결과 · 취소 실패 부호 · 복구 전용 PC의 되돌리기
+  ['home-restore-ended', 'home'], ['home-restore-undofail', 'home'], ['home-restore-read-hold', 'home'],
+  ['home-restore-undofail', 'undo-3', { name: 'undo-3-undofail' }], ['home-restore-read-hold', 'undo-3', { name: 'undo-3-readonly' }], ['home-restore-ended', 'undo-3', { name: 'undo-3-ended' }],
+  ['home-restore-read', 'undo-2', { name: 'undo-2-readonly', undo: 'UNDO' }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,

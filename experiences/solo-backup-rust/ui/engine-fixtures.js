@@ -69,5 +69,10 @@ export const STATES = {
   'home-restore-failed': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'failed', error: 'INTERRUPTED', hold: false }) }) },
   'home-restore-undo': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'running', undo: true, jobId: 'job-undo-2' }) }) },
   'home-restore-read': { ...base, mode: 'restore', automatic: false, nextBackupAt: null, sources: [], lastBackup: null, lastProbe: null, nextSources: [SOURCES[0], SOURCES[3]], protection: { level: 'restoreOnly', reason: 'restoreOnly', nextAction: 'restore' }, account: acct({ ...signed('read'), writer: '작업 노트북' }) },
+  // 되돌리기 셋(조율 세션 57c3d17e6): 끝난 결과 · 취소 실패 부호 · 복구 전용 PC의 되돌리기
+  'home-restore-ended': { ...base, account: acct({ ...signed('write'), device: base.device, restore: null, restoreEnded: { jobId: 'job-1', result: 'continued', at: Date.parse('2026-11-13T11:20:00+09:00') } }) },
+  'home-restore-undofail': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'done', awaitingChoice: true, undoError: 'FAILED' }) }) },
+  'home-restore-read-hold': { ...base, device: '새 데스크톱', mode: 'restore', automatic: false, nextBackupAt: null, sources: [], lastBackup: null, lastProbe: null, protection: { level: 'restoreOnly', reason: 'restoreOnly', nextAction: 'restore' },
+    account: acct({ ...signed('write'), device: '새 데스크톱', restore: restoreOf({ state: 'done', awaitingChoice: true }) }) },
   'home-restore-wait': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, needs: ['restore'] }) },
 };

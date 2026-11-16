@@ -201,8 +201,39 @@ export function homeModel(state, opts = {}) {
   const now = opts.now ?? Date.now();
   const m = baseModel(state, now, opts);
   if (m.id === 'start' || m.id === 'home-run') return m;
-  const restored = restoreNote(state && typeof state === 'object' ? state : {}, now, m.id === 'home-restore-error') || undoNote(state, m.id === 'home', opts.undoSeen);
+  const st = state && typeof state === 'object' ? state : {};
+  const note = restoreNote(st, now, m.id === 'home-restore-error'), ended = endedNote(st, now, m.id === 'home' || m.id === 'home-partial');
+  // 되살리기 결과 줄과 끝난 되돌리기 줄이 함께 있으면 더 새것을 쓴다
+  const restored = (note && ended ? (ended.at >= note.at ? ended : note) : note || ended) || undoNote(state, m.id === 'home', opts.undoSeen);
   return restored ? { ...m, restored } : m;
+}
+
+/**
+ * 되돌리기가 끝난 뒤 이 PC의 백업이 어떤지 — 되돌리기를 요청한 기기가 쓰는 자리를 가져가므로(서버 2.5 · 조율 세션 57c3d17e6),
+ * 다른 PC가 맡았거나 되살리기만 하는 PC면 「다시 매시간 백업합니다」라고 하지 않는다. 단추 이름은 그 PC 화면의 것이다(카본 A2 · A3 · A5)
+ */
+export function afterUndo(s) {
+  const a = s?.account || {};
+  if (s?.mode === 'restore') {
+    // 되살리기만 하는 PC가 쓰는 자리를 쥐었으면(되돌리기 요청으로 옮겨 옴) 어느 PC도 백업하지 않는다
+    return a.role === 'write' ? { backing: false, text: '지금은 어느 PC도 백업하지 않습니다. 이 PC에서 「이어서 백업」을 누르거나, 옛 PC에서 「이 PC로 다시 백업」을 누르세요.' }
+      : { backing: false, text: '' };
+  }
+  if (s?.movedTo || a.role === 'read') return { backing: false, text: '이 계정의 백업은 다른 PC가 맡고 있습니다. 이 PC에서 다시 백업하려면 「이 PC로 다시 백업」을 누르세요.' };
+  if (s?.automatic === false) return { backing: false, text: '자동 백업이 꺼져 있습니다. 켜면 다시 매시간 백업합니다.' };
+  return { backing: true, text: '이 PC는 다시 매시간 백업합니다.' };
+}
+
+/** 끝난 사고 되돌리기(엔진 account.restoreEnded { jobId, result: 'continued' | 'undone', at } — 일주일까지 · 조율 세션 57c3d17e6) */
+function endedNote(s, now, running = false) {
+  const e = s.account?.restoreEnded;
+  if (!e || typeof e.jobId !== 'string' || !['continued', 'undone'].includes(e.result) || ms(e.at) === null) return null;
+  // 새 되돌리기가 열려 있으면 앞선 끝 줄을 띄우지 않는다(카본 A3)
+  if (s.account?.restore?.hold) return null;
+  // 이 PC가 맡은 백업이어도 지금 도는 갈래(안전 · 부분 판)가 아니면 「다시 매시간 백업합니다」를 붙이지 않는다(Fable F4)
+  const a = afterUndo(s), after = a.backing && !running ? '' : a.text;
+  const text = `${whenKo(e.at, now)}에 ${e.result === 'undone' ? '되돌리기 취소를 마쳤습니다. 되돌리기 전으로 돌아갔습니다.' : '사고 되돌리기를 마쳤습니다.'}${after ? ` ${after}` : ''}`;
+  return { at: ms(e.at), text, act: { id: 'restore-seen', label: '확인', kind: 'link', call: 'restoreSeen', arg: e.jobId } };
 }
 
 /** 멈춤이 풀린 채 끊긴 사고 되돌리기(엔진은 실패 때 멈춤을 푼다 · Fable F4) — 같은 시각으로 다시 할 수 있을 때만 한 줄로 */
@@ -288,7 +319,8 @@ function baseModel(state, now, opts) {
       evidence: evidence(s, now) };
   }
   // 되살리기만 하는 연결은 쓰기 단추(폴더 다시 고르기 · 빼기 · 지금 백업)를 하나도 두지 않는다 — 엔진 순서(protection.cjs)와 같이 앞에서 가른다
-  if (p.level === 'restoreOnly' || s.readOnly || s.mode === 'restore') {
+  const undoOpen = !!s.account?.restore?.hold || (needs0.includes('restore') && !s.account?.restore?.jobId && !s.account?.restore?.state);
+  if ((p.level === 'restoreOnly' || s.readOnly || s.mode === 'restore') && !undoOpen) {
     // 「이어서 백업」이 계정의 백업을 연 뒤 멈춘 PC(REPO_EXISTS → continueBackup 실패 · Fable 개통 설계 2): 이 PC가 쓰는 기기면 다시 잇는다.
     // 고른 폴더는 작업자 기억에만 있어 창을 다시 열면 비고, 연 뒤에는 폴더를 다시 고를 길이 엔진에 없다(엔진 부탁 12)
     const a = s.account;
@@ -328,13 +360,22 @@ function baseModel(state, now, opts) {
   if (rs?.hold) {
     // 고르기를 먼저 본다 — 취소 작업이 서버에서 실패하면 엔진이 원래 작업을 undo 표시로 다시 잡는다(Fable F5)
     const failed = rs.state === 'failed', choose = rs.awaitingChoice && rs.byThisDevice !== false;
-    return { ...base, id: 'home-restore-hold', tone: failed ? 'bad' : 'warn', stamp: '멈춤', kick: `${device} · 백업을 쉬는 중`,
-      title: failed ? (rs.undo ? '되돌리기 취소가 중간에 멈췄습니다.' : '되돌리기가 중간에 멈췄습니다.') : choose ? '되돌린 백업을 확인할 차례입니다.' : rs.undo ? '되돌리기를 취소하는 중입니다.' : rs.awaitingChoice ? '다른 기기가 되돌린 백업을 확인하는 중입니다.' : '백업을 되돌리는 중입니다.',
-      sub: failed ? '되돌리기를 마칠 때까지 백업을 쉽니다. 확인하러 가서 다시 시도해 주세요.'
-        : choose ? '되돌린 판에서 필요한 파일을 꺼내 본 뒤 「여기서부터 계속」이나 「되돌리기 취소」를 고르면 백업이 다시 돕니다.'
-        : rs.awaitingChoice || rs.byThisDevice === false ? '되돌리기를 요청한 기기에서 고르면 이 PC도 다시 백업합니다.' : 'SYNK 서버가 끝내면 이 창에서 고를 수 있습니다. 창을 닫아도 됩니다.',
-      actions: [{ id: 'undo-3', label: '확인하러 가기', kind: 'main', to: 'undo-3' }, ...(s.lastBackup ? [{ ...RESTORE, kind: 'line' }] : [])],
-      evidence: evidence(s, now, { next: null }) };
+    // 복구 전용 연결(되살리기만 하는 PC)은 고른 뒤에도 백업하지 않는다 — 「백업이 다시 돕니다」라고 하지 않는다(조율 세션 57c3d17e6)
+    const ro = s.mode === 'restore';
+    // 「되돌리기 취소」가 실패해 원래 작업이 다시 고르기를 기다리면 그 까닭(undoError)을 고를 때까지 보인다
+    const undoFailed = choose && rs.undoError;
+    return { ...base, id: 'home-restore-hold', tone: failed || undoFailed ? 'bad' : 'warn', stamp: '멈춤', kick: `${device} · ${ro ? '되돌리기를 확인하는 중' : '백업을 쉬는 중'}`,
+      title: failed ? (rs.undo ? '되돌리기 취소가 중간에 멈췄습니다.' : '되돌리기가 중간에 멈췄습니다.') : undoFailed ? '되돌리기 취소를 마치지 못했습니다.' : choose ? '되돌린 백업을 확인할 차례입니다.' : rs.undo ? '되돌리기를 취소하는 중입니다.' : rs.awaitingChoice ? '다른 기기가 되돌린 백업을 확인하는 중입니다.' : '백업을 되돌리는 중입니다.',
+      sub: failed ? (ro ? '되돌리기를 마치지 못했습니다. 확인하러 가서 다시 시도해 주세요.' : '되돌리기를 마칠 때까지 백업을 쉽니다. 확인하러 가서 다시 시도해 주세요.')
+        : undoFailed ? 'SYNK 서버가 취소를 끝내지 못해 되돌린 상태 그대로입니다. 「여기서부터 계속」이나 「되돌리기 취소」를 다시 골라 주세요. 또 실패하면 SYNK에 연락해 주세요.'
+        : choose ? (ro ? '되돌린 판에서 필요한 파일을 꺼내 본 뒤 「여기서부터 계속」이나 「되돌리기 취소」를 고르세요. 어느 쪽을 골라도 백업은 저절로 다시 돌지 않습니다.'
+          : '되돌린 판에서 필요한 파일을 꺼내 본 뒤 「여기서부터 계속」이나 「되돌리기 취소」를 고르면 백업이 다시 돕니다.')
+        : rs.awaitingChoice || rs.byThisDevice === false ? (ro ? '되돌리기를 요청한 기기에서 고를 때까지 기다립니다. 그동안 파일 되살리기는 쓸 수 있습니다.'
+          : '되돌리기를 요청한 기기에서 고릅니다. 그 기기가 이 계정의 백업을 맡게 되므로, 이 PC에서 다시 백업하려면 고른 뒤 「이 PC로 다시 백업」을 누르세요.')
+        : rs.undo ? `취소가 끝나면 되돌리기 전으로 돌아갑니다. 창을 닫아도 됩니다.${ro ? ' 끝나도 백업은 저절로 다시 돌지 않습니다. 끝난 뒤 이 PC에서 「이어서 백업」을 누르거나 옛 PC에서 「이 PC로 다시 백업」을 누르세요.' : ''}`
+        : 'SYNK 서버가 끝내면 이 창에서 고를 수 있습니다. 창을 닫아도 됩니다.',
+      actions: [{ id: 'undo-3', label: '확인하러 가기', kind: 'main', to: 'undo-3' }, ...(s.lastBackup || ro ? [{ ...RESTORE, kind: 'line' }] : [])],
+      evidence: ro ? evidence(s, now, { state: 'moved' }) : evidence(s, now, { next: null }) };
   }
   if (s.account?.connected && needs.includes('write-key')) {
     return { ...base, id: 'home-writekey', tone: 'warn', stamp: '주의', kick: `${device} · 확인이 필요합니다`, title: '이 PC가 백업할 준비가 끝나지 않았습니다.',

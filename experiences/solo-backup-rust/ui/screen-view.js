@@ -4,7 +4,7 @@
 // 동적인 값(경로 · 파일 이름 · 기기 이름)은 모두 h()로 막는다. 인라인 style은 쓰지 않는다(CSP) — 너비는 data-pct를 app.js가 넣는다.
 
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
-import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf } from './screen-model.js';
+import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 
 export const h = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -351,7 +351,7 @@ function undo2Example() {
     ])}</div>
     ${acts([{ id: 'next', label: 'Google로 확인하고 되돌리기', kind: 'main', icon: 'google' }], '<span class="hint">누르면 Google 로그인을 한 번 더 합니다.</span>')}`;
   const r = panel('그 시각의 가장 최근 판', `${h(u.versionKo)} 판`, `<div class="rows">${EX.folders.map((f, i) => row(h(f.name), `${u.byFolder[i]}개`)).join('')}${row('합계', `${u.files}개 · ${u.size}`)}${row('지금 상태의 백업', '<span class="x">열 수 없음</span>', '숨겨진 묶음이 많아서')}</div>
-    <h3>이 PC가 감염됐을 수 있으면</h3><p class="foot">먼저 치료한 뒤에 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요. 깨끗한 다른 PC에서 되돌리는 길은 다음 업데이트에서 엽니다.</p>
+    <h3>이 PC가 감염됐을 수 있으면</h3><p class="foot">먼저 치료한 뒤에 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요. 깨끗한 다른 PC에서 되돌리려면, 그 PC에서 같은 Google 계정으로 시작해 「이 PC에서 파일만 되살리기」로 이은 뒤 설정의 「사고가 났을 때 되돌리기」를 누르세요.</p>
     <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-apps">연결된 앱 ${I.ext}</button></div>`);
   return { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [2, 3], back: 'undo-1', top: [{ id: 'back', label: '뒤로' }, { id: 'home', label: '닫기' }], html: flow(l, r),
     acts: { next: { id: 'next', pending: '되돌리기' } } };
@@ -392,23 +392,25 @@ function undo1(undo, now) {
 }
 
 /** 사고 되돌리기 2(실제 상태) — 고른 시각의 계획(plan: counts{copy, hide, unchanged} · copyBytes). 실행은 엔진 부탁 7 · 8 뒤에 잇는다 */
-function undo2(undo, now) {
+function undo2(undo, now, s = null) {
+  const ro = s?.mode === 'restore';
   const plan = undo?.plans?.[undo?.pickAt] || (Number(undo?.value?.plan?.at) === Number(undo?.pickAt) ? undo.value.plan : null);
   const at = Number(undo?.pickAt ?? plan?.at);
   const when = Number.isFinite(at) ? atKo(at) : '';
   const c = plan?.counts || {};
   const l = `${kick('미리 보기')}${say(when ? `${h(when)}${pp(when, '으로/로')}` : '고른 시각으로', '되돌립니다.')}${then('클라우드 백업만 그 시각으로 되돌리고, 이 PC의 파일은 그대로 둡니다.')}
     <div class="rise i3">${steps([
-      { h: '이 계정의 모든 기기 연결을 새 것으로 바꿉니다', p: '이 PC만 새 연결을 받습니다. 누가 연결 열쇠를 가져갔을 수도 있어서입니다.' },
+      { h: '이 계정의 모든 기기 연결을 새 것으로 바꿉니다', p: ro ? '이 PC만 새 연결을 받고, 이 계정의 백업 자리도 이 PC로 옮겨져 옛 PC는 백업을 쉽니다. 누가 연결 열쇠를 가져갔을 수도 있어서입니다.' : '이 PC만 새 연결을 받습니다. 누가 연결 열쇠를 가져갔을 수도 있어서입니다.' },
       { h: '그 시각의 백업을 다시 보이게 합니다', p: '지우는 것은 없습니다. 그 시각 뒤에 올라온 묶음은 숨겨 두었다가 「되돌리기 취소」로 다시 보이게 할 수 있습니다.' },
-      { h: '되돌린 결과를 확인할 때까지 자동 백업과 정리를 멈춥니다', p: '되돌린 뒤 「여기서부터 계속」과 「되돌리기 취소」 가운데 하나를 고르면 다시 돕니다. 요청과 실행은 이 계정의 모든 기기와 메일로 알립니다.' },
+      ro ? { h: '되돌린 결과를 확인할 때까지 정리를 멈춥니다', p: `이 PC는 되살리기만 하는 연결이라, 「여기서부터 계속」과 「되돌리기 취소」 어느 쪽을 골라도 백업은 저절로 다시 돌지 않습니다. 고른 뒤 이 PC에서 「이어서 백업」을 누르거나 옛 PC에서 「이 PC로 다시 백업」을 누르세요. 요청과 실행은 이 계정의 모든 기기와 메일로 알립니다.` }
+        : { h: '되돌린 결과를 확인할 때까지 자동 백업과 정리를 멈춥니다', p: '되돌린 뒤 「여기서부터 계속」과 「되돌리기 취소」 가운데 하나를 고르면 다시 돕니다. 요청과 실행은 이 계정의 모든 기기와 메일로 알립니다.' },
     ])}</div>
     ${acts([{ id: 'run', label: 'Google로 확인하고 되돌리기', kind: 'main', icon: 'google', disabled: !plan || !Number.isFinite(at) || !!undo?.running }], `<span class="hint">누르면 Google 로그인을 한 번 더 합니다.</span>${gcancel(undo?.acct)}`)}`;
   const body = plan ? `<div class="rows">${row('다시 보이게 할 묶음', `${count(c.copy ?? 0)}개`, h(size(plan.copyBytes ?? 0)))}${row('숨길 묶음', `${count(c.hide ?? 0)}개`, '그 시각 뒤에 올라온 것')}${row('그대로인 묶음', `${count(c.unchanged ?? 0)}개`)}</div>
     <p class="foot">묶음은 백업을 나눠 올린 조각이라 파일 수와 다릅니다. 되돌린 뒤에는 「파일 되살리기」로 그 시각의 파일을 꺼내 확인합니다.</p>`
     : `<p class="empty">${undo?.planError ? h(undo.planError) : '계획을 세우는 중입니다.'}</p>`;
   const r = panel('그 시각으로 되돌리면', when ? `${h(when)} 기준` : '', `${body}
-    <h3>이 PC가 감염됐을 수 있으면</h3><p class="foot">먼저 치료한 뒤에 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요. 깨끗한 다른 PC에서 되돌리는 길은 다음 업데이트에서 엽니다.</p>
+    <h3>이 PC가 감염됐을 수 있으면</h3><p class="foot">먼저 치료한 뒤에 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요. 깨끗한 다른 PC에서 되돌리려면, 그 PC에서 같은 Google 계정으로 시작해 「이 PC에서 파일만 되살리기」로 이은 뒤 설정의 「사고가 났을 때 되돌리기」를 누르세요.</p>
     <div class="act"><button class="lnk sm" type="button" data-act="g-dev">Google 기기 관리 ${I.ext}</button><button class="lnk sm" type="button" data-act="g-apps">연결된 앱 ${I.ext}</button></div>`);
   return { kind: 'flow', tone: 'bad', here: '사고가 났을 때 되돌리기', seg: [2, 3], back: 'undo-1', top: [{ id: 'back', label: '뒤로' }, { id: 'home', label: '닫기' }], html: flow(l, r),
     acts: { run: { id: 'run', call: 'restoreRun', arg: at, google: true, then: 'undo-3' } } };
@@ -437,12 +439,19 @@ function undo3Real(s, acct, now) {
   const choosing = !!r?.awaitingChoice && r?.byThisDevice !== false;
   // 멈춤이 풀린 뒤에는 되돌리기 때문에 쉬지 않는다는 것만 말한다 — 자동 백업이 꺼졌거나 쉬는 PC도 있다(Fable 둘째 -c FA1)
   const pause = !r?.hold ? '되돌리기로 멈추지 않음' : r.state === 'failed' ? '되돌리기를 마칠 때까지 멈춤' : choosing ? '고를 때까지 멈춤' : r.undo ? '취소가 끝날 때까지 멈춤' : r.awaitingChoice ? '요청한 기기가 고를 때까지 멈춤' : '되돌리기가 끝나고 고를 때까지 멈춤';
-  const sheet = (extra = []) => panel('되돌리기 확인서', '', `<div class="rows">${[[done ? '되돌린 시각' : '되돌릴 시각', when || '서버에서 읽는 중'], ['요청한 곳', r?.byThisDevice === false ? '다른 기기' : '이 PC'], ['이 PC의 파일', '그대로'], ['자동 백업', pause], ...extra].map(([k, v]) => row(h(k), h(v))).join('')}</div>`);
+  // 복구 전용 연결(되살리기만 하는 PC)은 되돌린 뒤에도 백업하지 않는다(조율 세션 57c3d17e6)
+  const ro = s?.mode === 'restore';
+  const sheet = (extra = []) => panel('되돌리기 확인서', '', `<div class="rows">${[[done ? '되돌린 시각' : '되돌릴 시각', when || '서버에서 읽는 중'], ['요청한 곳', r?.byThisDevice === false ? '다른 기기' : '이 PC'], ['이 PC의 파일', '그대로'], ['자동 백업', ro ? '이 PC는 되살리기만 함' : pause], ...extra].map(([k, v]) => row(h(k), h(v))).join('')}</div>`);
   const left = s?.account?.left ? notes(['새 복구 정보를 맡기는 걸음이 남았습니다. 고른 뒤 기본 화면의 「복구 정보 다시 맡기기」로 마칩니다.']) : '';
-  if (!r && acct?.restoreEnded) {
-    const e = acct.restoreEnded;
-    const l = `${kick('되돌리기 · 끝')}${say(e.undo ? '되돌리기 취소를' : '되돌리기를', '마쳤습니다.')}${then(e.undo ? '되돌리기 직전으로 다시 돌렸습니다. 이 PC는 다시 매시간 백업합니다.' : '이 PC는 다시 매시간 백업합니다.')}${acts([{ id: 'home', label: '돌아가기', kind: 'main' }])}`;
-    return { ...base, tone: 'ok', html: flow(l, panel('되돌리기 확인서', '', `<div class="rows">${row('자동 백업', '다시 돎')}${row('이 PC의 파일', '그대로')}</div>`)), acts: { home: { id: 'home', to: 'home' } } };
+  const ended = !r && (s?.account?.restoreEnded ? { undo: s.account.restoreEnded.result === 'undone', jobId: s.account.restoreEnded.jobId, known: true } : acct?.restoreEnded ? (acct.restoreEnded.undo ? { undo: true, known: true } : { known: false }) : null);
+  if (ended) {
+    const e = ended;
+    const now2 = afterUndo(s);
+    const after = `${!e.known ? '' : e.undo ? '되돌리기 직전으로 다시 돌렸습니다.' : '되돌린 판에서 이어 갑니다.'}${now2.text ? ` ${now2.text}` : ''}`.trim();
+    const l = `${kick('되돌리기 · 끝')}${!e.known ? say('되돌리기가', '끝났습니다.') : say(e.undo ? '되돌리기 취소를' : '되돌리기를', '마쳤습니다.')}${after ? then(after) : ''}${acts([{ id: 'home', label: '돌아가기', kind: 'main' }])}`;
+    // 「돌아가기」가 엔진에 알렸다고 하면(restoreSeen) 기본 화면에 다시 띄우지 않는다
+    return { ...base, tone: 'ok', html: flow(l, panel('되돌리기 확인서', '', `<div class="rows">${row('자동 백업', ro ? '이 PC는 되살리기만 함' : now2.backing ? '다시 돎' : '돌지 않음')}${row('이 PC의 파일', '그대로')}</div>`)),
+      acts: { home: e.jobId ? { id: 'home', call: 'restoreSeen', arg: e.jobId, then: 'home' } : { id: 'home', to: 'home' } } };
   }
   if (!r) {
     const l = `${kick('사고가 났을 때 되돌리기')}${say('되돌리는 중인', '작업이 없습니다.')}${then('되돌리기는 설정의 「사고가 났을 때 되돌리기」에서 시작합니다.')}${acts([{ id: 'home', label: '돌아가기', kind: 'line' }])}`;
@@ -459,22 +468,27 @@ function undo3Real(s, acct, now) {
   }
   if (r.awaitingChoice && r.byThisDevice !== false) {
     const run = acct?.running || null;
-    const l = `${kick('되돌렸습니다 · 자동 백업 멈춤')}${say(when ? `${h(when)}${pp(when, '으로/로')}` : '고른 시각으로', '되돌렸습니다.')}${then('자동 백업과 정리를 멈춰 두었습니다. 먼저 필요한 파일을 새 폴더로 꺼내 확인하세요.')}
-      ${notes(['<b>파일 되살리기</b>는 되돌린 판에서 필요한 파일을 새 폴더로 꺼냅니다. 이 PC의 파일은 건드리지 않습니다.', '<b>여기서부터 계속</b>은 이 PC의 지금 파일로 다시 매시간 백업합니다. 지키는 폴더에 망가진 파일이 남아 있으면, 꺼낸 파일로 바꿔 놓은 뒤에 누르세요.', '<b>되돌리기 취소</b>는 되돌리기 직전으로 다시 돌립니다. 누르면 Google 로그인을 한 번 더 하고, 끝날 때까지 백업을 쉽니다.'])}${left}
+    const undoFail = r.undoError ? '<div class="box rise i3"><b>되돌리기 취소를 마치지 못했습니다</b>SYNK 서버가 취소를 끝내지 못해 되돌린 상태 그대로입니다. 다시 골라 주세요. 또 실패하면 SYNK에 연락해 주세요.</div>' : '';
+    const goNote = ro ? '<b>여기서부터 계속</b>은 되돌린 판을 이 계정의 백업으로 둡니다. 이 PC는 되살리기만 하는 연결이라 백업하지 않고, 옛 PC도 백업을 쉽니다. 고른 뒤 이 PC에서 「이어서 백업」을 누르거나, 옛 PC에서 「이 PC로 다시 백업」을 누르세요.'
+      : '<b>여기서부터 계속</b>은 이 PC의 지금 파일로 다시 매시간 백업합니다. 지키는 폴더에 망가진 파일이 남아 있으면, 꺼낸 파일로 바꿔 놓은 뒤에 누르세요.';
+    const l = `${kick(ro ? '되돌렸습니다 · 고를 차례' : '되돌렸습니다 · 자동 백업 멈춤')}${say(when ? `${h(when)}${pp(when, '으로/로')}` : '고른 시각으로', '되돌렸습니다.')}${then(ro ? '먼저 필요한 파일을 새 폴더로 꺼내 확인하세요. 고를 때까지 지난 판을 정리하지 않습니다.' : '자동 백업과 정리를 멈춰 두었습니다. 먼저 필요한 파일을 새 폴더로 꺼내 확인하세요.')}${undoFail}
+      ${notes(['<b>파일 되살리기</b>는 되돌린 판에서 필요한 파일을 새 폴더로 꺼냅니다. 이 PC의 파일은 건드리지 않습니다.', goNote, ro ? '<b>되돌리기 취소</b>는 되돌리기 직전으로 다시 돌립니다. 누르면 Google 로그인을 한 번 더 합니다. 취소가 끝나도 백업은 저절로 다시 돌지 않으니, 위와 같이 「이어서 백업」이나 「이 PC로 다시 백업」을 누르세요.'
+        : '<b>되돌리기 취소</b>는 되돌리기 직전으로 다시 돌립니다. 누르면 Google 로그인을 한 번 더 하고, 끝날 때까지 백업을 쉽니다.'])}${left}
       ${acts([{ id: 'out', label: '파일 되살리기', kind: 'main' }, { id: 'go', label: '여기서부터 계속', kind: 'line', disabled: !!run }, { id: 'cancel', label: '되돌리기 취소', kind: 'link', disabled: !!run }], gcancel(acct))}`;
     return { ...base, html: flow(l, sheet([['기기 연결', '새로 바꿈 · 이 PC만'], ['알림', '모든 기기 · 메일']])),
       acts: { out: { id: 'out', to: 'restore' }, go: { id: 'go', call: 'restoreChoose', args: [r.jobId, 'continue'] }, cancel: { id: 'cancel', call: 'restoreChoose', args: [r.jobId, 'undo'], google: true } } };
   }
   if (r.awaitingChoice) {
-    const l = `${kick('되돌리기 · 다른 기기')}${say('다른 기기가', '백업을 되돌렸습니다.')}${then('고르기는 되돌리기를 요청한 기기에서 합니다. 그 기기에서 고르면 이 PC도 다시 백업합니다. 그동안 파일 되살리기는 쓸 수 있습니다.')}${acts([{ id: 'out', label: '파일 되살리기', kind: 'main' }])}`;
+    const l = `${kick('되돌리기 · 다른 기기')}${say('다른 기기가', '백업을 되돌렸습니다.')}${then(ro ? '고르기는 되돌리기를 요청한 기기에서 합니다. 그동안 파일 되살리기는 쓸 수 있습니다.' : '고르기는 되돌리기를 요청한 기기에서 합니다. 그 기기가 이 계정의 백업을 맡게 되므로, 이 PC에서 다시 백업하려면 고른 뒤 「이 PC로 다시 백업」을 누르세요. 그동안 파일 되살리기는 쓸 수 있습니다.')}${acts([{ id: 'out', label: '파일 되살리기', kind: 'main' }])}`;
     return { ...base, html: flow(l, sheet()), acts: { out: { id: 'out', to: 'restore' } } };
   }
   if (!r.hold && (r.state === 'continued' || r.state === 'undone')) {
-    const l = `${kick('되돌리기 · 끝')}${say('되돌리기를', '마쳤습니다.')}${then(r.state === 'undone' ? '되돌리기를 취소하고 그 직전으로 다시 돌렸습니다. 이 PC는 다시 매시간 백업합니다.' : '이 PC의 지금 파일로 다시 매시간 백업합니다.')}${left}${acts([{ id: 'home', label: '돌아가기', kind: 'main' }])}`;
-    return { ...base, tone: 'ok', html: flow(l, sheet()), acts: { home: { id: 'home', to: 'home' } } };
+    const now3 = afterUndo(s);
+    const l = `${kick('되돌리기 · 끝')}${say(r.state === 'undone' ? '되돌리기 취소를' : '되돌리기를', '마쳤습니다.')}${then(`${r.state === 'undone' ? '되돌리기 직전으로 다시 돌렸습니다.' : '되돌린 판에서 이어 갑니다.'}${now3.text ? ` ${now3.text}` : ''}`)}${left}${acts([{ id: 'home', label: '돌아가기', kind: 'main' }])}`;
+    return { ...base, tone: 'ok', html: flow(l, sheet()), acts: { home: r.jobId ? { id: 'home', call: 'restoreSeen', arg: r.jobId, then: 'home' } : { id: 'home', to: 'home' } } };
   }
   const l = r.undo
-    ? `${kick('되돌리기 취소 · 진행 중')}${say('되돌리기를', '취소하는 중입니다.')}${then('되돌리기 직전으로 다시 돌리고 있습니다. 끝날 때까지 백업을 쉽니다. 창을 닫아도 됩니다.')}`
+    ? `${kick('되돌리기 취소 · 진행 중')}${say('되돌리기를', '취소하는 중입니다.')}${then(ro ? '되돌리기 직전으로 다시 돌리고 있습니다. 끝나도 백업은 저절로 다시 돌지 않습니다. 끝난 뒤 이 PC에서 「이어서 백업」을 누르거나 옛 PC에서 「이 PC로 다시 백업」을 누르세요. 창을 닫아도 됩니다.' : '되돌리기 직전으로 다시 돌리고 있습니다. 끝날 때까지 백업을 쉽니다. 창을 닫아도 됩니다.')}`
     : `${kick('되돌리기 · 진행 중')}${say(when ? `${h(when)}${pp(when, '으로/로')}` : '고른 시각으로', '되돌리는 중입니다.')}${then(r.byThisDevice === false ? 'SYNK 서버가 그 시각의 백업을 다시 보이게 하고 있습니다. 다른 기기가 요청한 되돌리기라, 고르기는 그 기기에서 합니다. 그동안 이 PC도 백업을 쉽니다.' : 'SYNK 서버가 그 시각의 백업을 다시 보이게 하고 있습니다. 끝나면 이 화면에서 고릅니다. 창을 닫아도 됩니다.')}`;
   return { ...base, html: flow(`${l}${left}${acts([{ id: 'out', label: '파일 되살리기', kind: 'line' }])}`, sheet()), acts: { out: { id: 'out', to: 'restore' } } };
 }
@@ -576,7 +590,7 @@ export function drawer(s, extra = {}) {
       ${R('외장 드라이브 사본', '꺼짐', { id: 'external', label: '켜기' })}`)}
     ${G('되찾는 길', `${R('복구 코드', 'Google 계정에 못 들어갈 때 쓰는 종이 한 장 · 다음 업데이트에서 엽니다', { id: 'code', label: '만들기' }, true)}
       ${myDevices(st, extra, R)}
-      ${R('사고가 났을 때 되돌리기', st.account?.connected && st.configured && st.mode !== 'restore' ? '29일 안이면 그 시각으로 되돌립니다' : '29일 안이면 그 시각으로 되돌립니다 · 다음 업데이트에서 엽니다', { id: 'undo-1', label: '되돌리기' })}`)}
+      ${R('사고가 났을 때 되돌리기', st.account?.connected && st.configured ? '29일 안이면 그 시각으로 되돌립니다' : '29일 안이면 그 시각으로 되돌립니다 · 계정으로 시작한 PC에서 엽니다', { id: 'undo-1', label: '되돌리기' })}`)}
     ${G('이 앱', `${R('매시간 자동 백업', automatic ? '켜짐 · 창을 닫아도 매시간 뒤에서 조용히 돕니다' : '꺼짐', { id: automatic ? 'auto-off' : 'auto-on', label: automatic ? '끄기' : '켜기' })}
       ${R('트레이 아이콘', '알림 영역의 아이콘이 없어도 백업은 매시간 돕니다', { id: 'tray', label: '켜고 끄기' })}
       ${R('시범 측정', '백업, 알림, 설치 결과 숫자를 보냅니다. 파일 이름, 경로, 내용은 보내지 않습니다', { id: 'telemetry', label: '보내는 내용 보기' })}
@@ -626,7 +640,7 @@ export function renderScreen(id, ctx) {
     case 'move-3': return move3();
     case 'move-4': return move4();
     case 'undo-1': return ctx.undo || !fake ? undo1(ctx.undo, now) : undo1Example(now);
-    case 'undo-2': return ctx.undo || !fake ? undo2(ctx.undo && { ...ctx.undo, acct: ctx.acct, running: ctx.acct?.running }, now) : undo2Example();
+    case 'undo-2': return ctx.undo || !fake ? undo2(ctx.undo && { ...ctx.undo, acct: ctx.acct, running: ctx.acct?.running }, now, s) : undo2Example();
     // 계정 칸이 있는 상태(실제 상태의 꼴)는 실제 갈래로 — 끝나 상태에서 빠진 작업(acct.restoreEnded)도 거기서 그린다
     case 'undo-3': return s?.account || !fake ? undo3Real(s, ctx.acct, now) : undo3();
     case 'lost': return ctx.acct?.lostTarget ? lost1Real(s, ctx.acct) : lost1();

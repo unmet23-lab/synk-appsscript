@@ -65,6 +65,11 @@ async function wd(method, url, body) {
     // 되살릴 자리(place)가 엔진에 닿는다 — 모르는 자리는 되살리기를 시작하기 전에 BAD_INPUT으로 거절된다(조율 세션 25d66f324)
     const place = await runAsync('const done=arguments[arguments.length-1];Promise.resolve(window.backup.restoreLatest({place:"nowhere"})).then(r=>done(r?{ok:r.ok,code:r.code||null}:null),()=>done(null))');
     check('restoreLatest의 놓을 자리가 엔진에 닿는다', place && place.ok === false && place.code === 'BAD_INPUT', JSON.stringify(place));
+    // 끝난 되돌리기를 알렸다고 하는 restoreSeen(조율 세션 57c3d17e6)도 다리와 계약을 지나 엔진에 닿는다 —
+    // 끝난 결과가 없는 작업 번호는 아무것도 지우지 않고 상태를 돌려주고, 꼴이 틀린 값은 BAD_INPUT으로 거절된다
+    const seenOf = (arg) => runAsync(`const done=arguments[arguments.length-1];Promise.resolve(window.backup.restoreSeen&&window.backup.restoreSeen(${arg})).then(r=>done(r?{ok:r.ok,code:r.code||null,state:!!(r.value&&r.value.account)}:null),()=>done(null))`);
+    const seenOk = await seenOf('"job-none"'), seenBad = await seenOf('42');
+    check('restoreSeen이 엔진에 닿는다', seenOk && seenOk.ok === true && seenOk.state && seenBad && seenBad.code === 'BAD_INPUT', JSON.stringify({ seenOk, seenBad }));
     check('계정 칸에 열쇠 · 토큰 · 비밀번호가 없다', acc && !/token|secret|password|refresh|applicationKey|keyId/i.test(acc.text), acc ? acc.keys.join(',') : '없음');
     const env2 = await run("return {font:document.fonts.check('16px \"SUIT Variable\"'),fonts:[...document.fonts].map(f=>f.family+':'+f.status),webgl:(()=>{const c=document.createElement('canvas');return !!c.getContext('webgl')})(),w:innerWidth,h:innerHeight}");
     check('SUIT 글꼴이 실렸다(Tauri CSP font-src)', env2.font, env2.fonts.join(', '));
@@ -103,7 +108,7 @@ async function wd(method, url, body) {
     // 계정에 잇지 않은 PC에서는 「사고가 났을 때 되돌리기」도 서버에 묻지 않고 「준비 중」 한 줄만
     await run('document.querySelector(\'.drawer [data-act="undo-1"]\').click()');
     const undoAfter = await run('return {screen:document.getElementById("stage").dataset.screen,note:document.getElementById("note").textContent}');
-    check('계정에 잇지 않은 PC에서 되돌리기는 열지 않는다', undoAfter.screen !== 'undo-1' && /준비 중/.test(undoAfter.note), JSON.stringify(undoAfter));
+    check('계정에 잇지 않은 PC에서 되돌리기는 열지 않는다', undoAfter.screen !== 'undo-1' && /Google 계정으로 시작한 PC에서 엽니다/.test(undoAfter.note), JSON.stringify(undoAfter));
     if (liveScreen === 'start-1') check('첫 시작에 「Google로 시작」 단추가 있다', await run('return !!document.querySelector(\'#room [data-act="google"]\')'));
     await run('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape"}))');
     check('Esc로 설정 서랍이 닫힌다', await run('return document.getElementById("drawer").hidden'));
