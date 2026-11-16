@@ -113,6 +113,11 @@ export function soon(t, now) {
   return day === 0 ? hm(t) : day === 1 ? `내일 ${hm(t)}` : day > 1 && day < 7 ? `${DAY[d.getDay()]} ${hm(t)}` : `${d.getMonth() + 1}/${d.getDate()} ${hm(t)}`;
 }
 const stamp = (t, now) => { const d = new Date(t), n = new Date(now); return d.toDateString() === n.toDateString() ? hm(t) : `${d.getMonth() + 1}/${d.getDate()} ${hm(t)}`; };
+// Claude 로그인 기한(11-16): Claude 로그인은 4주쯤 지나면 끝나 다시 로그인해야 한다. 공식 프로그램이 알려 준 기한이 7일 안이면 미리 알린다.
+// 기한이 지난 뒤에도 받아 둔 토큰이 남은 몇 시간은 읽힐 수 있어 「곧 끊겨요」로 말한다.
+const LOGIN_SOON_MS = 7 * DAY_MS;
+const loginSoon = (row, now) => row?.source === 'auto' && row.state === 'ok' && num(row.loginUntil) !== null && row.loginUntil - now <= LOGIN_SOON_MS;
+const loginWhen = (t, now) => (new Date(t).toDateString() === new Date(now).toDateString() ? `오늘 ${hm(t)}` : soon(t, now));
 export function money(amount, currency) {
   if (amount === null || amount === undefined) return '';
   return currency === 'USD' ? `$${Number(amount).toLocaleString('en-US', { maximumFractionDigits: 2 })}` : `₩${Math.round(Number(amount)).toLocaleString('ko-KR')}`;
@@ -406,13 +411,18 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
 
   /* 한눈에 보기 */
-  // 손볼 계정(다시 로그인·못 읽음)만 계정마다 한 줄로. 넷 이상이면 셋만 보이고 나머지는 계정 관리로.
+  // 손볼 계정(다시 로그인·못 읽음·로그인 기한이 7일 안)만 계정마다 한 줄로. 넷 이상이면 셋만 보이고 나머지는 계정 관리로.
   function fixBand(groups, now) {
-    const items = groups.flatMap(g => [...g.login, ...g.error].map(a => ({ ...a, label: g.label })));
+    const items = [
+      ...groups.flatMap(g => [...g.login, ...g.error].map(a => ({ ...a, label: g.label }))),
+      ...groups.flatMap(g => g.accounts.filter(a => loginSoon(a.row, now)).sort((a, b) => a.row.loginUntil - b.row.loginUntil).map(a => ({ ...a, label: g.label, state: 'expiring' }))),
+    ];
     if (!items.length) return '';
     const line = a => a.state === 'login'
       ? `<div class="ms-fix-row"><i class="ms-dot" data-state="login" aria-hidden="true"></i><span>다시 로그인 필요 · <b>${esc(a.name)}</b>(${esc(a.label)})</span><button type="button" class="ms-button ms-button-small" data-subs="relogin" data-id="${esc(a.row.id)}">${reloginLabel(a.row)}</button></div>`
-      : `<div class="ms-fix-row"><i class="ms-dot" data-state="error" aria-hidden="true"></i><span>읽지 못함 · <b>${esc(a.name)}</b>(${esc(a.label)})${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}</span><button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button></div>`;
+      : a.state === 'expiring'
+        ? `<div class="ms-fix-row"><i class="ms-dot" data-state="low" aria-hidden="true"></i><span>${a.row.loginUntil > now ? `로그인 기한 ${esc(loginWhen(a.row.loginUntil, now))}` : '로그인 기한 지남 · 곧 끊겨요'} · <b>${esc(a.name)}</b>(${esc(a.label)})</span><button type="button" class="ms-button ms-button-small" data-subs="relogin" data-id="${esc(a.row.id)}">미리 다시 로그인</button></div>`
+        : `<div class="ms-fix-row"><i class="ms-dot" data-state="error" aria-hidden="true"></i><span>읽지 못함 · <b>${esc(a.name)}</b>(${esc(a.label)})${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}</span><button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button></div>`;
     const shown = items.length > 3 ? items.slice(0, 2) : items;
     return `<div class="ms-fix">${shown.map(line).join('')}${items.length > shown.length ? `<div class="ms-fix-row"><i class="ms-dot" aria-hidden="true"></i><span>손볼 계정이 ${items.length - shown.length}개 더 있어요</span><button type="button" class="ms-button ms-button-small" data-subs="manage">계정 관리에서 모두 보기</button></div>` : ''}</div>`;
   }
@@ -849,14 +859,14 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // Gemini 요금제를 아직 고르지 않은 줄(11-02 — agy는 등급을 알려 주지 않는다): 고르면 무엇을 알게 되는지 한 줄.
     // Pro는 공식 요금을 확인하지 못해 「공식 요금」을 약속하지 않는다(11-02 아르곤 C4).
     const pickPlan = planChoice(row) && !row.plan ? '<p class="ms-soft">요금제를 「요금·결제일」에서 고르면 매달 딸려 오는 Flow · API 크레딧과 공식 요금(확인한 요금제만)을 알려 드려요.</p>' : '';
-    const facts = [awayFact || (row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : ''), `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, pickPlan, yearly, passFact(row, now), flowFact(row, now), apiFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
+    const facts = [awayFact || (row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : ''), loginFact(row, now), `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, pickPlan, yearly, passFact(row, now), flowFact(row, now), apiFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
     // API 크레딧은 받을 수 있는 요금제(Claude Max — 등급 모름 포함 · GPT Pro 세 등급 · Gemini Pro · Ultra)에만 — Claude Free·Pro·Enterprise · GPT Plus·Business ·
     // Gemini Plus · 가족 공유는 받지 못하거나 금액을 모른다(공식). 이미 넣은 값이 있으면 고치거나 비울 수 있게 둔다.
     // Flow 크레딧(Gemini 11-02)은 요금제를 고르기 전에도 넣을 수 있게 Gemini 줄에 늘 둔다(Fable 설계 검토 P2-2 — 한 달 양은 요금제를 골라야 안다).
     const claude = auto && row.service === 'claude', passOpen = ui.passEditing === row.id, apiOpen = ui.apiEditing === row.id, flowable = planChoice(row), flowOpen = ui.flowEditing === row.id;
     const apiable = auto && API_CREDIT_SERVICES.includes(row.service) && (apiCreditPlan(row) || num(row.apiCredit) !== null);
     const buttons = [
-      auto ? `<button type="button" class="ms-button ms-button-small${row.state === 'needs-login' ? ' ms-button-primary' : ''}" data-subs="relogin" data-id="${esc(row.id)}">${reloginLabel(row)}</button>` : '',
+      auto ? `<button type="button" class="ms-button ms-button-small${row.state === 'needs-login' || loginSoon(row, now) ? ' ms-button-primary' : ''}" data-subs="relogin" data-id="${esc(row.id)}">${reloginLabel(row)}</button>` : '',
       !auto && row.kind === 'weekly' ? usedButton(row, now) : '',
       `<button type="button" class="ms-button ms-button-small" data-subs="edit" data-id="${esc(row.id)}" aria-expanded="${editing}">${auto ? '요금·결제일' : '고치기'}</button>`,
       claude ? `<button type="button" class="ms-button ms-button-small" data-subs="pass-edit" data-id="${esc(row.id)}" aria-expanded="${passOpen}">초기화권</button>` : '',
@@ -865,6 +875,15 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       apiable ? `<button type="button" class="ms-button ms-button-small" data-subs="api-edit" data-id="${esc(row.id)}" aria-expanded="${apiOpen}">API 크레딧</button>` : '',
       `<button type="button" class="ms-button ms-button-small${armed ? ' ms-button-danger' : ''}" data-subs="remove" data-id="${esc(row.id)}">${armed ? '한 번 더 누르면 지워요' : '지우기'}</button>`].join('');
     return `<div class="ms-mpanel">${facts}<div class="ms-inline">${buttons}</div>${editing ? editForm(row, now) : ''}${claude && passOpen ? passForm(row, now) : ''}${flowable && flowOpen ? flowForm(row, now) : ''}${apiable && apiOpen ? apiForm(row, now) : ''}</div>`;
+  }
+  // 로그인 기한(Claude 11-16): 읽히는 줄에만 기한을 적는다. 7일 안이면 미리 다시 로그인하는 길을, 지났으면 곧 끊긴다고 말한다.
+  function loginFact(row, now) {
+    if (row.source !== 'auto' || row.state !== 'ok' || num(row.loginUntil) === null) return '';
+    if (row.loginUntil <= now) return '<p class="ms-warn-text">로그인 기한이 지나 곧 끊겨요. 「다시 로그인」을 눌러 주세요.</p>';
+    const when = esc(loginWhen(row.loginUntil, now));
+    return loginSoon(row, now)
+      ? `<p class="ms-warn-text">로그인 기한 ${when} · 그 전에 「다시 로그인」을 누르면 끊기지 않아요.</p>`
+      : `<p class="ms-soft">로그인 기한 ${when} · 기한 7일 전부터 알려 드려요.</p>`;
   }
   // 다시 차는 때: 시각을 넣지 않아 그날 23:59로 둔 값은 날짜만, 넣은 시각이면 날짜와 시각(Flow 프로필의 「오후 9:29」).
   const refillWhen = t => { const d = new Date(t); return d.getHours() === 23 && d.getMinutes() === 59 ? md(t) : `${md(t)} ${hm(t)}`; };
@@ -1148,7 +1167,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       const last = login && ['done', 'error'].includes(login.stage) ? `<p class="${login.stage === 'done' ? 'ms-ok-text' : 'ms-warn-text'}">${esc(login.message)}</p>` : '';
       loginBody = `${last}<p>이미 이 PC에서 ${esc(info.tool)}에 로그인해 쓰고 있다면 그 계정을 바로 가져올 수 있어요. ${signedOut ? `지금은 이 PC의 ${esc(info.tool)}에 로그인된 계정이 없어요. 「${esc(info.label)} 로그인」을 누르면 바로 로그인 화면이 나와요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : switching ? `다른 Google 계정으로 바꾸려면 「${esc(info.label)} 로그인」을 눌러 열린 검은 창(agy)에서 <code>/logout</code> → <code>/login</code> 순서로 쳐요. 계정마다 줄이 따로 생기고, 지금 로그인되지 않은 계정은 마지막으로 읽은 값으로 남아요.` : info.single ? `처음이라면 「${esc(info.label)} 로그인」을 눌러요.` : '다른 계정은 「새 계정 연결」로 하나씩 더해요.'}</p>
         ${info.email ? `<label class="ms-field" for="ms-email">연결할 이메일 (선택)<input id="ms-email" type="email" autocomplete="email" value="${esc(ui.email)}" placeholder="name@example.com"><small>로그인 화면에 미리 채워져요. 다만 브라우저에 다른 Claude 계정이 이미 로그인돼 있으면 그 계정으로 연결되니, 먼저 브라우저(claude.ai)에서 연결할 계정으로 바꿔 두세요.</small></label>` : ''}
-        <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button><button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>${info.single ? `${esc(info.label)} 로그인` : '새 계정 연결'}</button></div>
+        <div class="ms-inline"><button type="button" class="ms-button" data-subs="existing" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>이 PC의 기존 로그인 쓰기</button><button type="button" class="ms-button ms-button-primary" data-subs="login" data-service="${key}" ${busy || otherLogin ? 'disabled' : ''}>${info.single ? `${esc(info.label)} 로그인` : ui.relogin && rowById(ui.relogin)?.service === key ? '다시 로그인' : '새 계정 연결'}</button></div>
         ${otherLogin ? '<p class="ms-soft">다른 서비스의 로그인이 진행 중이에요. 끝난 뒤 이어서 해 주세요.</p>' : ''}`;
     }
     const loginState = !installed ? 'wait' : login?.stage === 'done' ? 'done' : 'now';

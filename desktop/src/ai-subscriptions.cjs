@@ -98,6 +98,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       keyId:source==='auto'&&known?.apiKey&&/^[0-9a-f]{16}$/.test(row.keyId||'')?row.keyId:null,
       keyHint:source==='auto'&&known?.apiKey?cleanText(row.keyHint,8)||null:null,
       live:row.live&&typeof row.live==='object'?row.live:null,
+      // 로그인 기한(Claude 11-16): 공식 프로그램이 알려 준 이 로그인의 끝 시각. 지나면 다시 로그인해야 한다. 화면은 7일 전부터 알린다.
+      loginUntil:source==='auto'?clampNumber(row.loginUntil,0,9e15):null,
       state,awayReason:state==='elsewhere'&&row.awayReason==='none'?'none':null,stateMessage:cleanText(row.stateMessage,200),stateAt:clampNumber(row.stateAt,0,9e15),
     };
   }
@@ -150,6 +152,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     // Claude Max 등급(max_5x·max_20x)을 알던 줄에 이번 읽기만 등급 없이 「max」가 오면(설정 파일을 그 순간 못 읽음) 알던 등급을 지킨다.
     // 덮으면 기록에 무게가 다른 읽기가 섞여 사용량 막대가 부푼다(Fable 2차 검수 P1-4). 다른 요금제로 바뀐 것은 그대로 따른다.
     if(result.plan){const plan=cleanText(result.plan,40);if(!(providerPolicy(row.service)?.preservePlan?.(row.plan,plan)))row.plan=plan;}
+    // 로그인 기한은 공식 프로그램이 알려 준 읽기에서만 바꾼다(결과에 칸이 없으면 알던 기한을 그대로 둔다).
+    if(Object.hasOwn(result,'loginUntil'))row.loginUntil=clampNumber(result.loginUntil,0,9e15);
     if(result.state!=='ok'||!result.live)return;
     row.live=result.live;
     const weekly=result.live.weekly;
@@ -212,8 +216,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const mine=row=>row.source==='auto'&&row.service===service;
     const same=b.rows.find(row=>mine(row)&&(email&&String(row.email||'').toLowerCase()===email||!email&&row.folder===folder&&(spec.folders||!row.email)))
       ||(!spec.folders?b.rows.find(row=>mine(row)&&!row.email)||(!email?b.rows.find(mine):null):null);
-    if(same){if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;}if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';if(info.plan)same.plan=info.plan;persist();return same;}
-    const row=normalizeRow({id:'r-'+randomId(),service,source:'auto',label:spec.label,kind:spec.kind,folder,email:info.email,plan:info.plan});
+    if(same){if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;}if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';if(info.plan)same.plan=info.plan;if(Object.hasOwn(info,'loginUntil'))same.loginUntil=clampNumber(info.loginUntil,0,9e15);persist();return same;}
+    const row=normalizeRow({id:'r-'+randomId(),service,source:'auto',label:spec.label,kind:spec.kind,folder,email:info.email,plan:info.plan,loginUntil:info.loginUntil});
     b.rows.push(row);persist();return row;
   }
   // 계정 폴더를 지운다. Higgsfield는 홈을 이 폴더로 바꿔 브라우저를 열어 Windows가 INetCache(숨김·시스템, Content.IE5 junction)를 만든다.

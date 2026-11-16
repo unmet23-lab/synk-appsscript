@@ -1968,7 +1968,8 @@
 - 증상: 11-16 저녁 솔리오 → AI 구독 관리의 자동 연결 16줄 가운데 7줄이 끊겨 있었다. Claude 10계정 가운데 6계정이 「Claude 로그인이 풀렸어요」였고, Typecast 1줄이 「저장한 Typecast API 키를 찾지 못했어요」였다. GPT 3 · Gemini 1 · Higgsfield 1과 나머지 Claude 4계정은 정상이었다.
 - 원인 ①(Claude 6계정): 끊긴 계정 폴더의 `.credentials.json`은 토큰이 비어 있고 `loginEnded: "time_limit"`이 적혀 있다. 같은 파일의 `refreshTokenExpiresAt`이 모두 지나 있었다(11-14 03:01부터 11-16 05:06까지). Claude Code 2.1.323은 서버가 「Refresh token expired」로 답하면 토큰을 비우고 이 표시를 남긴다. 토큰을 갱신해도 이 기한은 늘지 않고(코드가 옛 기한과 새 기한 가운데 이른 쪽을 남긴다), 새로 로그인할 때만 새 기한을 받는다. 끊긴 6계정은 모두 10-17 · 10-18에 솔리오로 처음 연결한 계정이고, 11-01 뒤에 연결한 계정은 아직 살아 있다. 기한은 로그인 뒤 대략 4주였지만 계정마다 하루 이틀씩 달라 정확한 길이는 확인하지 못했다.
 - 원인 ②(Typecast): 이 PC의 Windows는 11-07 02:25에 새로 설치됐다. Typecast 키는 10-17에 옛 Windows의 DPAPI(Electron safeStorage)로 암호화해 둔 `key.bin`이라 새 Windows가 풀지 못한다. 마지막 정상 읽기는 11-06 12:03이고, 11-07 저녁 첫 실행부터 계속 실패했다. Claude · GPT 자격 파일은 평문이라 새 Windows에서도 계속 읽혔다. 같은 날의 Codex 샌드박스 사례와 원인이 같다(이 파일 「Codex 데스크톱 앱」 절).
-- 고침: Claude는 끊긴 줄에서 다시 연결해 새로 로그인해야 한다. 공식 `claude auth status --json`이 `loginExpiresAt`으로 남은 기한을 알려 주므로, 자격 파일을 열지 않고도 기한을 읽을 수 있다. Typecast는 API 키를 다시 넣어야 한다. 솔리오가 기한이 다가오는 계정을 미리 알리는 일은 아직 하지 않았다.
+- 고침: Claude는 끊긴 줄에서 다시 연결해 새로 로그인해야 한다. 공식 `claude auth status --json`이 `loginExpiresAt`으로 남은 기한을 알려 주므로, 자격 파일을 열지 않고도 기한을 읽을 수 있다. Typecast는 API 키를 다시 넣어야 한다. 11-16 같은 날 솔리오가 이 기한을 줄에 저장하고, 7일 전부터 「미리 다시 로그인」을 띄우고, 끝난 줄은 「로그인 기한이 끝났어요」로 말하게 고쳤다(`claude-login-limit-20261116`). 전에는 잘 읽히는 계정으로 다시 로그인하면 「이미 연결된 계정」으로 막혀 기한 전에 갱신할 수 없었다. 이제 그 계정 메일을 넣고 시작한 로그인은 그 줄을 새 폴더로 옮긴다.
+- 무기한으로 잇는 길은 없다: `claude setup-token`이 1년짜리 토큰을 주지만 권한이 `user:inference`뿐이다. Claude Code의 사용량 읽기(`/api/oauth/usage`)는 `user:profile` 권한이 있어야 돌아서 솔리오가 그 토큰으로는 사용량을 읽지 못한다(2.1.323 코드에서 확인).
 - 다시 확인: 계정 폴더마다 `CLAUDE_CONFIG_DIR=<계정 폴더> claude auth status --json`을 돌려 `loggedIn`과 `loginExpiresAt`을 본다. 계정판 파일은 `%APPDATA%\SYNK Desktop\im.synk.platform.preview\AiSubscriptions\board.json`에 있다.
 
 ## OpenAI 실시간 음성(GPT-Live · Realtime)

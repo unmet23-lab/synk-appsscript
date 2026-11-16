@@ -1620,3 +1620,53 @@ test('Gemini review fixes: an unknown monthly amount never reads as "1개", fami
   assert.match(el.innerHTML,/<strong class="ms-num">매달 \$10<\/strong><small>Pro 계정 1개 · 매달 쌓이고 받은 달마다 12개월 뒤 사라져요/);
   board.dispose();
 });
+
+test('a Claude login nearing its time limit is flagged a week ahead with a way to sign in again early',async()=>{
+  // 11-16: Claude 로그인은 4주쯤 뒤 끝난다. 본체가 공식 auth status에서 읽은 기한(loginUntil)이 7일 안이면 손볼 것 띠와 ⋯에 미리 알린다.
+  prepare();
+  const {createSubscriptionsBoard}=await import('../renderer/subscriptions.mjs');
+  const now=Date.now();
+  const live=extra=>({readAt:now,weekly:{usedPercent:10,resetsAt:now+2*864e5},...extra});
+  const soon=row({id:'c-soon',email:'soon@example.com',plan:'max_20x',loginUntil:now+3*864e5,live:live()});
+  const later=row({id:'c-later',email:'later@example.com',plan:'max_20x',loginUntil:now+20*864e5,live:live()});
+  const past=row({id:'c-past',email:'past@example.com',plan:'max_20x',loginUntil:now-3600e3,live:live()});
+  const ended=row({id:'c-ended',email:'ended@example.com',plan:'max_20x',state:'needs-login',stateMessage:'Claude 로그인 기한이 끝났어요. Claude는 한 번 로그인하면 4주쯤 쓸 수 있어요. 다시 로그인해 주세요.',loginUntil:now-864e5,live:live({readAt:now-2*864e5})});
+  const snapshot={ok:true,tools:{claude:{installed:true,version:'2.1.323'}},rows:[soon,later,ended],settings:{usdKrw:1400},check:{at:now,total:3,ok:2},login:null,checking:false};
+  const logins=[];
+  const bridge={subscriptions:{snapshot:async()=>snapshot,check:async()=>snapshot,onChanged:()=>()=>{},save:async()=>snapshot,help:async()=>({ok:true}),login:async(service,options)=>{logins.push([service,options]);return {ok:true,id:'l-1'};}}};
+  const board=createSubscriptionsBoard({bridge});
+  const el=fakeContainer(),{click}=driver(el);
+  board.render(el,{signedIn:true,native:true});
+  await tick();
+  // 한눈에: 끝난 계정은 「다시 로그인 필요」, 7일 안인 계정은 기한과 「미리 다시 로그인」, 먼 계정은 띠에 없다.
+  assert.match(el.innerHTML,/다시 로그인 필요 · <b>ended<\/b>\(Claude\)/);
+  assert.match(el.innerHTML,/<i class="ms-dot" data-state="low" aria-hidden="true"><\/i><span>로그인 기한 [^·<]+ · <b>soon<\/b>\(Claude\)<\/span><button type="button" class="ms-button ms-button-small" data-subs="relogin" data-id="c-soon">미리 다시 로그인<\/button>/);
+  assert.doesNotMatch(el.innerHTML,/<b>later<\/b>\(Claude\)/);
+  // 계정 관리 ⋯: 7일 안이면 경고와 앞세운 단추, 멀면 흐리게 기한만, 끝난 계정은 끝났다는 말만(기한 줄을 겹쳐 쓰지 않는다).
+  await click({subs:'manage'});
+  await click({subs:'menu',id:'c-soon'});
+  assert.match(el.innerHTML,/<p class="ms-warn-text">로그인 기한 [^<]+ · 그 전에 「다시 로그인」을 누르면 끊기지 않아요\.<\/p>/);
+  assert.match(el.innerHTML,/ms-button-primary" data-subs="relogin" data-id="c-soon">다시 로그인<\/button>/);
+  await click({subs:'menu',id:'c-later'});
+  assert.match(el.innerHTML,/<p class="ms-soft">로그인 기한 \d{1,2}\/\d{1,2} \d\d:\d\d · 기한 7일 전부터 알려 드려요\.<\/p>/);
+  assert.doesNotMatch(el.innerHTML,/ms-button-primary" data-subs="relogin" data-id="c-later"/);
+  await click({subs:'menu',id:'c-ended'});
+  assert.match(el.innerHTML,/<p class="ms-warn-text">Claude 로그인 기한이 끝났어요\./);
+  assert.doesNotMatch(el.innerHTML,/<p class="ms-(soft|warn-text)">로그인 기한/);
+  // 미리 다시 로그인: 그 계정 메일을 채운 안내가 「다시 로그인」 단추로 열리고, 누르면 그 메일로 로그인한다.
+  await click({subs:'relogin',id:'c-soon'});
+  assert.match(el.innerHTML,/data-subs="login" data-service="claude" >다시 로그인<\/button>/);
+  await click({subs:'login',service:'claude'});
+  assert.deepEqual(logins,[['claude',{email:'soon@example.com'}]]);
+  board.dispose();
+  // 기한이 지났는데 아직 읽히는 줄(받아 둔 토큰이 남은 몇 시간)은 곧 끊긴다고 말한다.
+  const snap2={...snapshot,rows:[past],check:{at:now,total:1,ok:1}};
+  const board2=createSubscriptionsBoard({bridge:{subscriptions:{...bridge.subscriptions,snapshot:async()=>snap2,check:async()=>snap2}}});
+  const el2=fakeContainer(),d2=driver(el2);
+  board2.render(el2,{signedIn:true,native:true});
+  await tick();
+  assert.match(el2.innerHTML,/<span>로그인 기한 지남 · 곧 끊겨요 · <b>past<\/b>\(Claude\)<\/span>/);
+  await d2.click({subs:'manage'});await d2.click({subs:'menu',id:'c-past'});
+  assert.match(el2.innerHTML,/<p class="ms-warn-text">로그인 기한이 지나 곧 끊겨요\. 「다시 로그인」을 눌러 주세요\.<\/p>/);
+  board2.dispose();
+});

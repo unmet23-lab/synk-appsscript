@@ -317,6 +317,46 @@ test('a sign-in approved in the browser with a different account is reported, no
   const snap=await f.service.snapshot();assert.equal(snap.rows.filter(r=>r.email==='member@example.com').length,1);
 });
 
+test('a Claude login keeps its official time limit, says plainly when it ends, and can be renewed before it ends',async()=>{
+  // 11-16 이 PC: Claude Code 로그인은 4주쯤 뒤 서버가 끝내고(loginEnded time_limit), 공식 auth status가 loginExpiresAt으로 기한을 알려 준다.
+  const f=fakeSystem({claudeLoggedIn:false});
+  const first='2026-11-29T15:56:43.000Z',second='2026-12-27T03:00:00.000Z';
+  const auth=until=>JSON.stringify({loggedIn:true,email:f.state.claudeEmail,subscriptionType:'max',loginExpiresAt:until});
+  const login=async email=>{
+    const started=await f.service.startLogin('claude',{email});assert.equal(started.ok,true);
+    const folder=f.calls.filter(c=>c.argv.includes('login')).at(-1).options.env.CLAUDE_CONFIG_DIR;
+    await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));
+    f.service.submitCode(started.id,'abcDEF123456#state');
+    for(let i=0;i<40&&!['done','error'].includes(f.changes.at(-1)?.login?.stage);i++)await new Promise(r=>setTimeout(r,5));
+    return {folder,last:f.changes.at(-1).login};
+  };
+  f.state.claudeAuthOverride=auth(first);
+  const one=await login('member@example.com');assert.equal(one.last.stage,'done');
+  let row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'ok');assert.equal(row.loginUntil,Date.parse(first));
+  // auth status를 못 읽은 회차는 알던 기한을 지우지 않는다.
+  f.state.claudeAuthOverride='garbled';
+  row=(await f.service.check()).rows.find(r=>r.service==='claude');
+  assert.equal(row.state,'ok');assert.equal(row.loginUntil,Date.parse(first));
+  // 기한 전에 그 계정 메일로 다시 로그인하면 「이미 연결된 계정」으로 막지 않고 그 줄을 새 폴더로 옮겨 새 기한을 받는다.
+  f.state.claudeAuthOverride=auth(second);
+  const two=await login('member@example.com');
+  assert.equal(two.last.stage,'done');assert.notEqual(two.folder,one.folder);
+  let rows=(await f.service.check()).rows.filter(r=>r.service==='claude');
+  assert.equal(rows.length,1);assert.equal(rows[0].loginUntil,Date.parse(second));
+  assert.equal(fs.existsSync(one.folder),false);assert.ok(fs.existsSync(two.folder));
+  // 메일 없이 「새 계정 연결」로 들어왔다가 같은 계정이 붙으면 예전처럼 겹쳐 넣지 않고 알린다.
+  const three=await login(undefined);
+  assert.equal(three.last.stage,'error');assert.match(three.last.message,/이미 연결된 member@example.com/);
+  assert.equal(fs.existsSync(three.folder),false);
+  // 기한이 끝나면 /usage가 그렇게 말하고(Claude Code 2.1.323 실제 글), 줄은 「로그인 기한이 끝났어요」로 다시 로그인을 부른다.
+  f.state.claudeUsageOverride='Failed to authenticate: this login reached its time limit and cannot be renewed. Run `claude auth login` to sign in again, or use `claude setup-token` and set CLAUDE_CODE_OAUTH_TOKEN for unattended jobs\n';
+  f.state.claudeAuthOverride=JSON.stringify({loggedIn:false,authMethod:'none',loginExpiresAt:null});
+  rows=(await f.service.check()).rows.filter(r=>r.service==='claude');
+  assert.equal(rows[0].state,'needs-login');assert.match(rows[0].stateMessage,/^Claude 로그인 기한이 끝났어요\./);
+  assert.equal(rows[0].loginUntil,Date.parse(second));
+});
+
 test('Gemini reads the Antigravity quota from the app data folder and signs in through a console window',async t=>{
   const f=fakeSystem({geminiLoggedIn:false});
   t.mock.timers.enable({apis:['setTimeout']});
