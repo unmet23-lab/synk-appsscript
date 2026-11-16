@@ -25450,12 +25450,14 @@ var LOOKBACK_CODES = Object.freeze({
 });
 var lookbackCode = (reason) => LOOKBACK_CODES[reason] ?? "LOOKBACK_FAILED";
 function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive }) {
-  const state = { owner: null, generation: null, asking: null, tried: null, pulled: /* @__PURE__ */ new Set(), kept: null };
+  const state = { owner: null, generation: null, asking: null, tried: null, pulled: /* @__PURE__ */ new Set(), kept: null, coach: null, ahead: null };
   const reset = () => {
     state.asking = null;
     state.tried = null;
     state.pulled.clear();
     state.kept = null;
+    state.coach = null;
+    state.ahead = null;
   };
   const follow = (owner) => {
     const now = answers.generation();
@@ -25471,6 +25473,19 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     } catch {
       return null;
     }
+  };
+  const holderOf = (asked, askedLine) => {
+    const own2 = storageOf(asked);
+    const last = state.coach;
+    if (own2 || !last || last === asked) return { coach: asked, line: askedLine, storage: own2 };
+    let line = null;
+    try {
+      line = lineOf(last) || null;
+    } catch {
+      line = null;
+    }
+    const storage = line?.revision === askedLine.revision ? storageOf(last) : null;
+    return storage ? { coach: last, line, storage } : { coach: asked, line: askedLine, storage: null };
   };
   function pullOnce(coach, at) {
     const key = JSON.stringify([at.edition, at.gen ?? null, at.foldedUntil]);
@@ -25513,14 +25528,20 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     const reply = (got) => {
       if (!settle() || !still()) return;
       const at = positionOf(got?.summaryAt);
+      if (state.ahead?.key === key) state.ahead = null;
+      const holder = holderOf(coach, line);
+      const storage = holder.storage;
       if (got?.complete !== true) {
         missed(lookbackCode(got?.reason));
-        const storage2 = storageOf(coach);
-        if (!storage2 || (storage2.unfolded || 0) > 0) return;
-        const current2 = positionOf(storage2.sync?.received);
+        if (!storage) {
+          if (at) state.ahead = { key, at };
+          return;
+        }
+        if ((storage.unfolded || 0) > 0) return;
+        const current2 = positionOf(storage.sync?.received);
         if (!current2) return;
-        if (at && aheadOf(at, current2)) pullOnce(coach, at);
-        else if (!samePosition(current2, device)) ask(coach, line, { owner, revision: revision2, day, device: current2 });
+        if (at && aheadOf(at, current2)) pullOnce(holder.coach, at);
+        else if (!samePosition(current2, device)) ask(holder.coach, holder.line, { owner, revision: revision2, day, device: current2 });
         return;
       }
       const windows = got.lookback?.windows;
@@ -25529,17 +25550,17 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
         missed("LOOKBACK_FAILED");
         return;
       }
-      const storage = storageOf(coach);
-      if (!storage || (storage.unfolded || 0) > 0) return;
+      if (storage && (storage.unfolded || 0) > 0) return;
       const answer = shapeOf({ askedFrom: device, at, windows, month: keptRows(month) });
       state.kept = { key, answer };
       answers.write(owner, { revision: revision2, day, ...answer, since });
+      if (!storage) return;
       const current = positionOf(storage.sync?.received);
       if (samePosition(current, at)) redraw();
       else if (current) {
         const verdict2 = verdictOf(current, answer);
-        if (verdict2 === "behind") pullOnce(coach, at);
-        else if (verdict2 === "ask") ask(coach, line, { owner, revision: revision2, day, device: current });
+        if (verdict2 === "behind") pullOnce(holder.coach, at);
+        else if (verdict2 === "ask") ask(holder.coach, holder.line, { owner, revision: revision2, day, device: current });
       }
     };
     void Promise.resolve().then(() => line.ask(offsetOf())).then(reply, () => {
@@ -25552,6 +25573,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       const owner = account();
       if (!owner) return null;
       follow(owner);
+      state.coach = coach;
       let line = null;
       try {
         line = lineOf(coach) || null;
@@ -25571,11 +25593,15 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
       if (day == null) return null;
       const revision2 = line.revision;
-      const stored = fresherOf(keptFor(`${owner}|${revision2}|${day}`), answers.read(owner, { revision: revision2, day }));
+      const key = `${owner}|${revision2}|${day}`;
+      const stored = fresherOf(keptFor(key), answers.read(owner, { revision: revision2, day }));
       const verdict2 = stored ? verdictOf(device, stored) : "ask";
       if (verdict2 === "use") return { month: monthOfAnswer(stored) };
       if (verdict2 === "behind") pullOnce(coach, stored.at);
-      else ask(coach, line, { owner, revision: revision2, day, device });
+      else {
+        if (state.ahead?.key === key && aheadOf(state.ahead.at, device)) pullOnce(coach, state.ahead.at);
+        ask(coach, line, { owner, revision: revision2, day, device });
+      }
       return null;
     },
     // 묻는 중 · 상한 · 받은 자리 · 이 문서의 답을 비운다. 계정이나 세대 수가 바뀌면 month()가 스스로 부른다.

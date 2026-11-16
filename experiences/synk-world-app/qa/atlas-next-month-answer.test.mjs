@@ -1122,6 +1122,137 @@ test('밀려난 물음의 늦은 답과 실패는 상태를 덮지 않는다 —
   assert.deepEqual(old.notes, ['LOOKBACK_FAILED'], '밀려난 물음의 실패는 계기에 남기지 않는다');
 });
 
+// ── 장면: 끝 판 다시 보기(카본 -c 끝판)로 고친 하나 ──────────────────────────────────────────────
+
+// 같은 판의 새 코치 — 셸이 묻는 사이 판을 다시 정해 앞 코치를 닫고 같은 동의 판으로 연 코치의 흉내다. 받기 수는 이 코치가 따로 센다.
+const nextCoach = box => {
+  const coach = {
+    pulls: 0,
+    summary: () => ({ storage: { guest: false, unfolded: box.unfolded, sync: { received: box.device } } }),
+    pull: () => {
+      coach.pulls += 1;
+      return Promise.resolve(false);
+    },
+  };
+  return coach;
+};
+
+test('묻는 사이 앞 코치가 닫히고 같은 판의 새 코치가 열리면 답을 새 코치로 들인다 — 완결되지 않은 답의 앞선 자리는 새 코치가 한 번 받고, 완결된 답은 새 코치의 판에 문장을 세운다 · 열린 코치가 없으면 완결된 답을 적어 두고 다음 그리기가 쓴다(4-4c 끝 판 카본 -c B1)', { timeout: 60_000 }, async () => {
+  // ① 완결되지 않은 답(서버 자리 9 · 기기 자리 5) — 새 코치를 묻는 중에 그렸다. 닫힌 앞 코치가 아니라 새 코치로 그 자리를 한 번 받는다.
+  const drawn = fakeAsker({ reply: n => (n === 1 ? remainAt(at(9)) : done(at(9))) });
+  const go1 = held(drawn);
+  drawn.device = at(5);
+  assert.equal(drawn.render(), null);
+  await quiet(5);
+  drawn.closed = true; // 판을 다시 정해 앞 코치를 닫았다
+  const drawnNext = nextCoach(drawn);
+  drawn.coach = drawnNext;
+  assert.equal(drawn.render(), null, '새 코치의 그리기 — 묻는 중이라 묻지 않는다');
+  await quiet(5);
+  go1();
+  await quiet(10);
+  assert.equal(drawn.pulls, 0, '닫힌 앞 코치로 받지 않는다');
+  assert.equal(drawnNext.pulls, 1, '열린 새 코치가 서버의 자리(9)로 한 번 받는다');
+  assert.equal(drawn.asks, 1, '기기 자리가 그대로면 다시 묻지 않는다');
+  assert.deepEqual(drawn.notes, ['LOOKBACK_EVENTS_REMAIN']);
+  drawn.device = at(9); // 받아서 기기가 그 자리에 왔다
+  drawn.render();
+  await quiet(10);
+  assert.equal(drawn.asks, 2, '기기 자리가 바뀌었다 — 한 번 다시 묻는다');
+  assert.equal(drawn.render()?.month.length, 1, '새 코치의 판에 문장이 선다');
+  // ①의 다른 차례 — 답이 왔을 때 새 코치를 아직 그리지 않았다. 서버의 자리를 남겨 두고, 새 코치의 첫 그리기가 그 자리로 한 번 받는다.
+  const later = fakeAsker({ reply: n => (n === 1 ? remainAt(at(9)) : done(at(9))) });
+  const go2 = held(later);
+  later.device = at(5);
+  later.render();
+  await quiet(5);
+  later.closed = true;
+  go2();
+  await quiet(10);
+  assert.equal(later.pulls, 0, '닫힌 앞 코치로 받지 않는다');
+  const laterNext = nextCoach(later);
+  later.coach = laterNext;
+  assert.equal(later.render(), null, '판을 다시 정한 뒤의 첫 그리기 — 기기 자리(5)는 그대로다');
+  await quiet(10);
+  assert.equal(laterNext.pulls, 1, '새 코치가 남겨 둔 서버의 자리(9)로 한 번 받는다');
+  assert.equal(later.asks, 1, '기기 자리가 그대로면 다시 묻지 않는다');
+  for (let i = 0; i < 3; i += 1) later.render();
+  await quiet(10);
+  assert.equal(laterNext.pulls, 1, '같은 자리로 다시 받지 않는다');
+  assert.equal(later.asks, 1);
+  // 새 코치를 그리기 전에 다른 탭의 받기로 기기가 이미 서버의 자리에 왔다 — 받지 않고(5분 막이를 깨지 않는다) 그 자리에서 한 번 다시 묻는다.
+  const caught = fakeAsker({ reply: n => (n === 1 ? remainAt(at(9)) : done(at(9))) });
+  const go3 = held(caught);
+  caught.device = at(5);
+  caught.render();
+  await quiet(5);
+  caught.closed = true;
+  go3();
+  await quiet(10);
+  const caughtNext = nextCoach(caught);
+  caught.coach = caughtNext;
+  caught.device = at(9);
+  caught.render();
+  await quiet(10);
+  assert.equal(caughtNext.pulls, 0, '기기가 이미 그 자리에 왔으면 받지 않는다');
+  assert.equal(caught.asks, 2, '기기 자리가 바뀌었다 — 새 코치로 한 번 다시 묻는다');
+  assert.equal(caught.render()?.month.length, 1);
+  // ② 완결된 답 — 새 코치를 묻는 중에 그렸다. 답을 새 코치로 들여 판을 한 번 다시 그리고, 같은 자리에서 다시 묻지 않는다.
+  const whole = fakeAsker({ reply: () => done(at(5)) });
+  const go4 = held(whole);
+  whole.device = at(5);
+  whole.render();
+  await quiet(5);
+  whole.closed = true;
+  const wholeNext = nextCoach(whole);
+  whole.coach = wholeNext;
+  assert.equal(whole.render(), null, '새 코치의 그리기 — 묻는 중이라 묻지 않는다');
+  await quiet(5);
+  go4();
+  await quiet(10);
+  assert.equal(whole.redraws, 1, '답을 새 코치로 들여 판을 한 번 다시 그린다');
+  assert.equal(whole.last?.month.length, 1, '새 코치의 판에 문장이 선다');
+  for (let i = 0; i < 3; i += 1) whole.render();
+  await quiet(10);
+  assert.equal(whole.asks, 1, '같은 자리에서 다시 묻지 않는다');
+  assert.equal(whole.pulls + wholeNext.pulls, 0);
+  // ②의 다른 차례 — 답이 왔을 때 열린 코치가 없다. 답을 적어 두기만 하고(다시 그리지 않는다), 새 코치의 첫 그리기가 그 답으로 문장을 세운다.
+  const stored = fakeAsker({ reply: () => done(at(5)) });
+  const go5 = held(stored);
+  stored.device = at(5);
+  stored.render();
+  await quiet(5);
+  stored.closed = true;
+  go5();
+  await quiet(10);
+  assert.equal(stored.redraws, 0, '열린 코치가 없으면 다시 그리지 않는다');
+  assert.ok(stored.answers.read(A_ID, { revision: 1, day: 7 }), '답을 적어 두었다');
+  stored.coach = nextCoach(stored);
+  assert.equal(stored.render()?.month.length, 1, '적어 둔 답으로 새 코치의 판에 문장이 선다');
+  await quiet(10);
+  assert.equal(stored.asks, 1, '같은 자리에서 다시 묻지 않는다');
+  // 열린 코치가 없을 때 온 답은 칸 밖의 내 답이 섰어도 적어 둔다. 다음 그리기는 그 답이 접힐 때까지 쓰지도 묻지도 않고, 접혀 자리가 바뀌면 한 번 묻는다.
+  const mine = fakeAsker({ reply: (_n, b) => done(b.device) });
+  const go6 = held(mine);
+  mine.device = at(5);
+  mine.render();
+  await quiet(5);
+  mine.closed = true;
+  mine.unfolded = 1;
+  go6();
+  await quiet(10);
+  mine.coach = nextCoach(mine);
+  assert.equal(mine.render(), null, '칸 밖의 내 답이 있으면 적어 둔 답을 쓰지 않는다');
+  await quiet(10);
+  assert.equal(mine.asks, 1, '칸 밖의 내 답이 있으면 묻지 않는다');
+  mine.unfolded = 0;
+  mine.device = at(6); // 내 답이 접혔다
+  mine.render();
+  await quiet(10);
+  assert.equal(mine.asks, 2, '접혀 자리가 바뀐 뒤 한 번 다시 묻는다');
+  assert.equal(mine.render()?.month.length, 1);
+});
+
 // 셸은 node에서 못 올려 글이 유일한 지킴이다(atlas-next-off.test.mjs와 같은 길). 변형 실행기는 깬 사본을 SYNK_APP_SHELL_SOURCE로 넘긴다.
 const SHELL_SOURCE = process.env.SYNK_APP_SHELL_SOURCE ?? new URL('../app-shell.mjs', import.meta.url);
 test('셸 — 로그아웃과 동의 바꾸기(바꾼 뒤 · 실패한 뒤)에서 학습일 답을 지운다(글 지킴이 — 설계 §21-22 변형 「로그아웃 때 지우기 빼기」 · 4-4c 끝 판 Fable F3)', () => {
