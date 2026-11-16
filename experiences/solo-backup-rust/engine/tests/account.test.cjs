@@ -515,6 +515,12 @@ test('복구 전용 연결 PC의 되돌리기: the request takes the seat on the
   f.provision.jobs.job3 = { id: 'job3', state: 'running', at };
   await f.account.refresh();
   assert.equal(e.config.serverRestore.jobId, 'job3'); assert.deepEqual(f.account.state().needs, ['read-key']);
+  // The client names a write key too after such a lost answer (개통 서버 r8a): a reading PC never asks for one.
+  f.provision.needs = ['restore', 'write-key', 'read-key'];
+  assert.deepEqual(f.account.state().needs, ['read-key']);
+  f.account.info.needs = ['write-key', 'read-key'];
+  assert.deepEqual(f.account.state().needs, ['read-key']);
+  f.provision.needs = []; f.account.info.needs = [];
 
   // A backup this PC writes under another device's number is still not restored from here, before any sign-in.
   const w = await fixture();

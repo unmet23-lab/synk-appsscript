@@ -206,7 +206,12 @@ class Account {
     const hold = this.engine.config?.serverRestore || null;
     // `needs`: what this PC must ask the server again — 'write-key' (takeWriteSeat), 'read-key' (rotateReadKey),
     // 'restore' (a restore request whose answer was lost and whose job the window has not found yet).
-    const needs = [...new Set([...(Array.isArray(p.needs) ? p.needs : []).filter((x) => NEEDS.includes(x) && (x !== 'restore' || (hold && !hold.jobId))), ...this.info.needs])];
+    // A restore-only connection never asks for a write key: a restore it asked moved the write seat to it on the server
+    // and the client then names one (개통 서버 r8a), but this PC only reads — 「쓰기 출입증 다시 받기」 here would make it
+    // the writing PC. It takes the seat only through 「이 PC에서 이어서 백업」.
+    const reader = this.engine.config?.mode === 'restore' && b2.customerRepository(this.engine.config.provider?.prefix);
+    const needs = [...new Set([...(Array.isArray(p.needs) ? p.needs : []).filter((x) => NEEDS.includes(x) && (x !== 'restore' || (hold && !hold.jobId))), ...this.info.needs])]
+      .filter((x) => !(reader && x === 'write-key'));
     // `restore`: the restore that holds this PC or that the server last reported. A job the hold names but the window
     // has not read yet shows its number only.
     const held = !!hold || this.engine.accountHold === 'restore';
