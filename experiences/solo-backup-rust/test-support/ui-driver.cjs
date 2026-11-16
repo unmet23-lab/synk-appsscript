@@ -82,6 +82,10 @@ async function wd(method, url, body) {
     // E16(e244f42e4) — 표의 공식 · 사용권 페이지. 표에 없는 ID는 BAD_INPUT, 표의 ID는 시험 모드의 호스트가 열지 않는다(브라우저를 띄우지 않는다)
     const pgBad = await callOf('moveOpenProgramPage', '{id:"Nope.Nope",kind:"site"}'), pgGit = await callOf('moveOpenProgramPage', '{id:"Git.Git",kind:"site"}');
     check('moveOpenProgramPage가 엔진에 닿고 시험 모드에서 브라우저를 열지 않는다', pgBad?.code === 'BAD_INPUT' && !!pgGit && pgGit.ok === false && pgGit.code !== 'NO_METHOD' && pgGit.code !== 'BAD_INPUT', JSON.stringify({ pgBad, pgGit }));
+    // 옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc) — 새 메서드가 다리와 계약을 지나 엔진에 닿는다. folder 없는 한 층 읽기는 거절되고,
+    // 판이 없는 이 시험 PC에서 고른 폴더는 엔진의 글로 거절된다(NO_METHOD · BAD_INPUT이 아니다)
+    const obNo = await callOf('browseBackupFolder', '{profile:"local"}'), obOne = await callOf('browseBackupFolder', '{profile:"local",from:"ffffffffffff",folder:"C:/nope"}');
+    check('browseBackupFolder가 엔진에 닿고 folder 없는 요청을 거절한다', !!obNo && obNo.ok === false && ['INVALID_REQUEST', 'BAD_INPUT'].includes(obNo.code) && !!obOne && obOne.ok === false && !['NO_METHOD', 'BAD_INPUT'].includes(obOne.code), JSON.stringify({ obNo, obOne }));
     // E17 · E24 — moveState에 깔기 · 설정 결과, 다시 로그인할 곳의 남은 수, begun이 실린다(옮겨 온 적 없는 PC는 비었다)
     const mvs = mvState?.value || {};
     check('moveState · moveResult가 엔진에 닿는다', mvState?.ok === true && mvState.value && mvs.unfinished === false && mvs.running === false && mvResult?.ok === true && mvResult.value === null

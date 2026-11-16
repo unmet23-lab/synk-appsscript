@@ -6,7 +6,7 @@
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
-  moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, TOO_BIG_MOVE_FIRST, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
+  moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, TOO_BIG_MOVE_FIRST, tooBigMoveFirst, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
   appsJob, appsSettings, appsUnrestored, movedHere } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
@@ -195,7 +195,8 @@ function sub(p) {
   const parts = String(p || '').split(/[\\/]/).slice(0, -1).filter(Boolean).slice(-2);
   return parts.length ? ` › ${h(parts.join(' › '))}` : '';
 }
-function restore(s, now, cat, ui) {
+function restore(s, now, cat, ui, mv, acct) {
+  if (cat?.req) return restoreScoped(s, now, cat, ui, mv, acct);
   const place = restorePlace(s, ui?.place, now, ui?.sentDefaultAt);
   const last = s?.lastBackup?.at;
   const total = cat?.fileCount ?? s?.lastBackup?.files;
@@ -207,8 +208,10 @@ function restore(s, now, cat, ui) {
   const allSize = s?.lastBackup?.bytes ? ` · ${size(s.lastBackup.bytes)}` : '';
   const confirmBox = confirmAll ? `<div class="box rise i3" id="confirm-all"><b>전체 ${total ? `${count(total)}개` : ''}${h(allSize)}를 되살릴까요?</b>다운로드 안의 「${h(place.name)}」 폴더에 놓습니다. 끝날 때까지 다른 일은 기다립니다. 원래 파일은 그대로 둡니다.</div>` : '';
   const held = (s?.missingSources?.length || s?.massHold) ? notes(['찾을 수 없는 폴더나 한꺼번에 지워지기 전의 판은 지우지 않고 붙들어 두었습니다. 그 판에서 꺼내는 길은 아직 준비 중이라, 이 목록은 가장 최근 판입니다.']) : '';
+  // 옮겨 온 PC — 옛 PC의 판에서 꺼내는 길(조율 세션 793e0d6dc). 이 목록은 이 PC의 판이다
+  const oldLink = mv?.state?.from ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="old-start">옛 PC 백업에서 꺼내기 ${I.rarr}</button></div>` : '';
   const l = `${kick(last ? `가장 최근 판 · ${h(whenKo(last, now).replace(/^(오전|오후)/, '오늘 $1'))}` : '아직 백업이 없습니다')}${say('무엇을 되살릴까요?')}
-    ${then('고른 파일은 지키는 폴더 밖의 새 폴더에 되살립니다. 원래 파일은 그대로 두고, 되살린 뒤 백업과 같은지 하나하나 확인합니다.')}${held}
+    ${then('고른 파일은 지키는 폴더 밖의 새 폴더에 되살립니다. 원래 파일은 그대로 두고, 되살린 뒤 백업과 같은지 하나하나 확인합니다.')}${held}${oldLink}
     ${confirmBox}${confirmAll ? acts([{ id: 'restore-all-go', label: '전체 되살리기 시작', kind: 'main' }, { id: 'restore-all-no', label: '그만두기', kind: 'link' }])
       : acts([{ id: 'restore-sel', label: sel ? `고른 ${count(sel)}개 되살리기` : '고른 파일 되살리기', kind: 'main', disabled: !sel }, { id: 'restore-all', label: total ? `전체 ${count(total)}개 되살리기` : '전체 되살리기', kind: 'line' }],
       `<span class="hint">${h(placeHint)}</span>`)}`;
@@ -226,6 +229,99 @@ function restore(s, now, cat, ui) {
   return { kind: 'flow', tone: 'ok', here: '파일 되살리기', back: 'home', top: [{ id: 'home', label: '닫기' }], html: flow(l, r),
     acts: { 'restore-sel': { id: 'restore-sel', call: 'restoreSelected' }, 'restore-all': place.mode === 'default' ? { id: 'restore-all', confirmAll: true } : { id: 'restore-all', call: 'restoreLatest' },
       'restore-all-go': { id: 'restore-all-go', call: 'restoreLatest' }, more: { id: 'more' }, clear: { id: 'clear' } } };
+}
+
+/**
+ * 옛 PC 판의 범위로 연 목록(openFileCatalog의 from · folder · sub, 조율 세션 793e0d6dc). 받는 곳은 늘 새 폴더라 고른 파일만 꺼낸다 —
+ * 「전체 되살리기」(restoreLatest)는 이 PC의 판을 통째로 되살리는 길이라 두지 않는다. cat.req = 창이 연 범위({ fromName, label, sub })
+ */
+function restoreScoped(s, now, cat, ui, mv, acct) {
+  const place = restorePlace(s, ui?.place, now, ui?.sentDefaultAt), req = cat.req, where = oldWhere(req.label, req.sub);
+  // 옛 기기 이름은 그릴 때 정한다 — 기기 목록이 늦게 와도 맞는 이름이 된다(카본 A1)
+  const fromName = moveDeviceName(req.from, acct?.devices, s?.account?.sameInstall);
+  const sel = cat.selection?.count || 0, total = cat.fileCount;
+  const placeHint = place.mode === 'default' ? `누르면 다운로드 안의 「${place.name}」 폴더에 바로 놓습니다. 같은 이름이 있으면 번호를 붙여 새로 만듭니다.`
+    : place.unsafe ? '다운로드에는 놓을 수 없어, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : place.guarded ? '다운로드도 지키는 폴더라, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : '누르면 놓을 폴더를 고르는 창이 한 번 뜹니다.';
+  const at = cat.snapshotAt ? ` · ${h(whenKo(cat.snapshotAt, now))} 판` : '';
+  // 받기는 옛 PC가 백업하던 폴더 모두와 겹치는 자리(그 안, 그 폴더들이 든 위 폴더)에 놓지 않는다(engine.cjs restoreSelected — capture의
+  // plans 전체, paths.cjs overlap · Opus 대체 검수 F4, -b FA1). 결과를 읽어 두었으면 그 폴더 이름을 적는다
+  const olds = oldFolders(mv?.result).map((f) => f.label), oldNames = olds.length > 4 ? `${olds.slice(0, 3).join(' · ')} 등 ${count(olds.length)}곳` : olds.join(' · ');
+  const notHere = `옛 PC가 백업하던 폴더${oldNames ? `(${oldNames})` : ''}와 그 안, 그 폴더들이 든 위 폴더에는 놓을 수 없습니다.`;
+  // 한 번에 1,000개까지 고른다(restore-select.cjs LIMITS.selected). 찾은 것이 그 안이면 모두 고르는 단추를 둔다(Opus 대체 검수 F2)
+  // 모두 고르기는 이미 고른 것과의 합집합이라(restore-select.cjs) 화면이 미리 셀 수 없다 — 찾은 것이 1,000개 이하면 단추를 늘 두고,
+  // 합이 넘으면 엔진의 SELECTION_LIMIT를 app.js가 그 까닭으로 알린다(Opus -c FA1)
+  const found = cat.total ?? 0;
+  const allBtn = cat.token && found > 0 && found <= 1000 ? `<button class="lnk sm" type="button" data-act="old-all">찾은 ${count(found)}개 모두 고르기</button>` : '';
+  const tooMany = cat.token && found > 1000 ? '<p class="foot">찾은 파일이 1,000개를 넘어 모두 고를 수는 없습니다. 찾기나 안쪽 폴더로 범위를 줄여 주세요.</p>' : '';
+  const l = `${kick(`${h(oldWho(fromName))} 백업${at}`)}${say('무엇을 꺼낼까요?', `${h(where)} 안의 파일입니다.`)}
+    ${then('고른 파일은 새 폴더에 꺼냅니다. 옛 PC의 백업은 그대로 두고, 꺼낸 뒤 백업과 같은지 하나하나 확인합니다.')}
+    <div class="act rise i3"><button class="lnk sm" type="button" data-act="old-back">다른 폴더 고르기 ${I.rarr}</button></div>
+    ${acts([{ id: 'restore-sel', label: sel ? `고른 ${count(sel)}개 꺼내기` : '고른 파일 꺼내기', kind: 'main', disabled: !sel }], `<span class="hint">${h(placeHint)} ${h(notHere)}</span>`)}`;
+  let list;
+  // 판이 바뀌어 고른 자리가 없으면 처음부터 고르는 단추를 둔다(카본 A5). 목록이 너무 크면 왼쪽의 「다른 폴더 고르기」로 안쪽을 고른다
+  if (cat.error) list = `<p class="empty">${h((cat.errorCode && oldFailText(cat.errorCode, fromName, { open: true })) || cat.error)}</p><div class="act">${cat.errorCode === 'INVALID_REQUEST' ? `<button class="lnk sm" type="button" data-act="old-top">처음부터 고르기 ${I.rarr}</button>` : ['CATALOG_TOO_LARGE', 'UNSAFE_MANIFEST'].includes(cat.errorCode) ? '' : `<button class="lnk sm" type="button" data-act="reopen">목록 다시 열기 ${I.rarr}</button>`}</div>`;
+  else if (cat.loading) list = '<p class="empty">목록을 여는 중입니다. 폴더가 크면 몇 분 걸립니다.</p>';
+  else if (!cat.rows?.length) list = `<p class="empty">${cat.query ? `「${h(cat.query)}」${pp(cat.query, '이/가')} 든 파일이 없습니다.` : '이 폴더에는 꺼낼 파일이 없습니다.'}</p>`;
+  else list = cat.rows.map((f) => `<button class="fl" type="button" role="checkbox" aria-checked="${!!f.selected}" data-file="${h(f.id)}"><span class="cb" aria-hidden="true"></span><span class="nm">${h(f.name)}</span><span class="vl">${h(size(f.size))}${f.mtime ? ` · ${h(dayKo(f.mtime).replace(/ [일월화수목금토]$/, ''))}` : ''}</span><span class="ds">${h([req.label, ...String(f.path || '').split('/').filter(Boolean).slice(0, -1)].join(' › '))}</span></button>`).join('');
+  const more = cat.total > (cat.offset || 0) + (cat.rows?.length || 0) ? `<div class="act"><button class="lnk sm" type="button" data-act="more">더 보기 · ${count(cat.total - (cat.offset || 0) - cat.rows.length)}개 ${I.rarr}</button></div>` : '';
+  const r = panel('찾기', `${total ? `${count(total)}개 가운데 · ` : ''}${h(where)}`,
+    `<div class="find">${I.search}<input id="find" type="search" aria-label="파일 이름으로 찾기" placeholder="파일 이름으로 찾기" autocomplete="off" spellcheck="false" maxlength="200" value="${h(cat.query || '')}"${cat.token ? '' : ' disabled'}><em aria-live="polite">${cat.total !== undefined ? `${count(cat.total)}개 찾음` : ''}</em></div>
+    <div class="files" role="group" aria-label="찾은 파일">${list}</div>${more}${tooMany}
+    <div class="selbar"><span><b class="num">${count(sel)}개</b> 고름${sel ? ` · <span class="num">${h(size(cat.selection.bytes))}</span>` : ''}${sel ? ' <button class="lnk sm" type="button" data-act="clear">고른 것 비우기</button>' : ''}${allBtn ? ` ${allBtn}` : ''}</span>
+      <span>놓을 자리 ${place.mode === 'default' ? `<b>다운로드 › ${h(place.name)}</b> <button class="lnk sm" type="button" data-act="place-pick">자리 바꾸기</button>` : `<b>누를 때 고름</b>${place.guarded ? '' : ' <button class="lnk sm" type="button" data-act="place-default">다운로드에 놓기</button>'}`}</span></div>`);
+  return { kind: 'flow', tone: 'ok', here: '옛 PC 백업에서 꺼내기', back: 'restore-old', top: [{ id: 'home', label: '닫기' }], html: flow(l, r),
+    acts: { 'restore-sel': { id: 'restore-sel', call: 'restoreSelected' }, more: { id: 'more' }, clear: { id: 'clear' }, home: { id: 'home', to: 'home' } } };
+}
+
+/**
+ * 옛 PC 백업에서 꺼내기 — 폴더 고르기(조율 세션 793e0d6dc, 설계 4.6). 옮겨 온 결과의 폴더 가운데 하나를 고르고, 큰 폴더는 browseBackupFolder로
+ * 바로 아래 폴더를 한 층씩 보여 안쪽 폴더를 고르게 한다. 고른 범위로 목록을 연다(「이 폴더 열기」 → restoreScoped).
+ * old = 창이 기억하는 고름 { from, folder, label, sub, level(엔진 값 · 읽는 중 undefined · 실패 null), error, code }
+ */
+function restoreOld(s, mv, acct, old, now) {
+  const fromName = movedFromOf(s, mv, acct), run = acct?.running || null;
+  // 옛 PC 판의 거절 글은 옛 기기 이름으로 그릴 때 만든다(카본 A1)
+  const errText = old?.code ? oldFailText(old.code, fromName) || old.error : old?.error;
+  const base = { kind: 'flow', tone: 'ok', here: '옛 PC 백업에서 꺼내기', back: 'home', top: [{ id: 'home', label: '닫기' }], acts: { home: { id: 'home', to: 'home' } } };
+  if (!old?.folder) {
+    const res = mv?.result;
+    if (res === undefined) return { ...base, tone: 'run', html: flow(`${kick(`${h(oldWho(fromName))} 백업`)}${say('폴더 목록을', '읽고 있습니다.')}`, panel('꺼낼 폴더', '', '<p class="empty">읽는 중입니다.</p>')) };
+    const list = oldFolders(res);
+    const l = `${kick(`${h(oldWho(fromName))} 백업`)}${say('어느 폴더에서', '꺼낼까요?')}
+      ${then('옮겨 올 때 고른 폴더 가운데 하나를 고르세요. 큰 폴더는 안쪽 폴더를 골라 그 부분만 엽니다. 꺼낸 파일은 새 폴더에 놓고, 옛 PC의 백업은 그대로 둡니다.')}
+      ${acts([{ id: 'home', label: '돌아가기', kind: 'line' }])}`;
+    const body = list.length ? `<div class="files mvlist" role="group" aria-label="꺼낼 폴더">${list.map((f) => `<button class="fl plain mv" type="button" data-act="old-folder" data-folder="${h(f.original)}"${run ? ' aria-disabled="true"' : ''}><span class="nm">${h(f.label)}</span><span class="vl">${f.tooBig ? '<span class="x">너무 커서 옮기지 않음</span>' : f.skip ? '옮기지 않음' : '옮겨 옴'}</span><span class="ds">${h(f.original)}</span></button>`).join('')}</div>`
+      : `<p class="empty">${res ? '옮겨 온 결과에 폴더가 없습니다.' : '고를 폴더 목록이 없습니다. 옮겨 오기를 마친 뒤에 열 수 있습니다.'}</p>${res ? '' : `<div class="act"><button class="lnk sm" type="button" data-act="old-reload">다시 읽기 ${I.rarr}</button></div>`}`;
+    return { ...base, html: flow(l, panel('꺼낼 폴더', list.length ? `${count(list.length)}곳` : '', body)) };
+  }
+  const where = oldWhere(old.label, old.sub), lv = old.level;
+  const at = lv?.snapshotAt ? ` · ${h(whenKo(lv.snapshotAt, now))} 판` : '';
+  const noSplit = old.code === 'CATALOG_TOO_LARGE';
+  // 뺀 이름이 있는데 고를 안쪽 폴더가 없으면 이 층에서 꺼낼 것이 없다(Opus -c FA3)
+  const deadEnd = !!lv?.leftOut && !lv.folders?.length;
+  const l = `${kick(`${h(oldWho(fromName))} 백업${at}`)}${say(h(where), noSplit || deadEnd ? '이 앱으로는 꺼낼 수 없습니다.' : '어디까지 열까요?')}
+    ${then(noSplit ? h(OLD_NO_SPLIT_THEN) : deadEnd ? h(['Windows에 둘 수 없는 이름의 폴더가 있어 이 층에서는 꺼낼 수 있는 것이 없습니다.',
+      ...(lv.files ? [`바로 안의 파일 ${count(lv.files)}개도 꺼낼 수 없습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 직접 옮겨 두세요.`] : []),
+      old.sub ? '「한 칸 위로」로 돌아가 다른 폴더를 골라 주세요.' : '「다른 폴더 고르기」로 돌아가 주세요.'].join(' '))
+      : lv?.leftOut ? h(['Windows에 둘 수 없는 이름의 폴더가 있어 이 층은 통째로 열 수 없습니다.',
+      ...(lv.files ? [`바로 안의 파일 ${count(lv.files)}개는 이 앱으로 꺼낼 수 없습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 직접 옮겨 두세요.`] : []),
+      ...(lv.folders?.length ? ['「안쪽 폴더」 목록에서 안쪽 폴더를 골라 그 부분만 여세요.'] : [])].join(' ')) : '이 폴더를 열면 안의 파일을 모두 목록에 올립니다. 파일이 아주 많으면 열리지 않으니, 그때는 「안쪽 폴더」 목록에서 안쪽 폴더를 골라 그 부분만 여세요.')}
+    ${acts([{ id: 'old-open', label: '이 폴더 열기', kind: 'main', disabled: !lv || !!run || noSplit || !!lv?.leftOut }, { id: 'old-up', label: old.sub ? '한 칸 위로' : '다른 폴더 고르기', kind: 'line', disabled: !!run }])}`;
+  let body;
+  // 나눌 수 없는 층은 왼쪽 글이 까닭과 할 일을 말한다 — 오른쪽에 같은 글을 되풀이하지 않는다
+  if (noSplit) body = '<p class="empty">바로 안의 파일이 너무 많아 안쪽 목록을 읽지 못했습니다.</p>';
+  else if (errText) body = `<p class="empty">${h(errText)}</p>${noSplit ? '' : `<div class="act"><button class="lnk sm" type="button" data-act="${old.code === 'INVALID_REQUEST' ? 'old-top' : 'old-reload'}">${old.code === 'INVALID_REQUEST' ? '처음부터 고르기' : '다시 읽기'} ${I.rarr}</button></div>`}`;
+  else if (!lv) body = '<p class="empty">안쪽 폴더를 읽고 있습니다. 폴더가 크면 몇 분 걸립니다.</p>';
+  else {
+    const dirs = lv.folders || [];
+    const rows = dirs.map((name) => `<button class="fl plain mv" type="button" data-act="old-in" data-name="${h(name)}"${run ? ' aria-disabled="true"' : ''}><span class="nm">${h(name)}</span><span class="vl">안쪽 보기</span></button>`).join('');
+    body = `${dirs.length ? `<div class="files mvlist" role="group" aria-label="안쪽 폴더">${rows}</div>` : '<p class="empty">안쪽 폴더가 없습니다.</p>'}
+      ${notes([`바로 안의 파일은 <b class="num">${count(lv.files || 0)}</b>개입니다.`,
+        ...(lv.cut ? ['안쪽 폴더가 많아 이름 순으로 앞 2,000곳만 보입니다.'] : []),
+        ...(lv.leftOut ? [`Windows에 둘 수 없는 이름의 폴더 ${count(lv.leftOut)}곳은 열 수 없어 뺐습니다.`] : [])])}`;
+  }
+  return { ...base, back: 'restore-old', html: flow(l, panel('안쪽 폴더', lv?.folders ? `${count(lv.folders.length)}곳${lv.cut ? ' 이상' : ''}` : '', body)),
+    acts: { ...base.acts, 'old-open': { id: 'old-open' }, 'old-up': { id: 'old-up' } } };
 }
 
 /* ── 쓰는 중인 파일 ────────────────────────── */
@@ -385,7 +481,7 @@ function move1Real(s, mv, acct, now) {
     ${notes([...(kit ? [h(kit)] : []), ...(resuming ? ['앞서 멈춘 옮겨 오기를 잇습니다. 그때 고른 자리를 그대로 씁니다.'] : []),
       ...(rechoose ? [`${h(moveStopText(s, mv.state))} 파일을 놓기 전에 멈춰 자리를 다시 고를 수 있습니다.`] : []),
       '이미 있는 파일은 덮어쓰지 않습니다. 내용이 다르면 「(복구본)」을 붙여 나란히 둡니다.', '창을 닫아도 계속되고, 끊겨도 다시 시작하면 멈춘 곳부터 잇습니다.'])}
-    ${rows.big.length ? `<div class="box rise i3"><b>${h(josa(folderSubjectKo(rows.big), '은/는'))} 옮겨 오지 못합니다.</b>${rows.big.length === rows.rows.length ? '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않습니다. 옮겨 올 수 있는 폴더가 없습니다.' : '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다.'} ${h(tooBigKept())} ${h(TOO_BIG_MOVE_FIRST)}</div>` : ''}
+    ${rows.big.length ? `<div class="box rise i3"><b>${h(josa(folderSubjectKo(rows.big), '은/는'))} 옮겨 오지 못합니다.</b>${rows.big.length === rows.rows.length ? '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않습니다. 옮겨 올 수 있는 폴더가 없습니다.' : '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다.'} 옛 PC의 백업에는 그대로 있고, 옮겨 온 뒤 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 꺼낼 수 있습니다. ${h(TOO_BIG_MOVE_FIRST)}</div>` : ''}
     ${p.suggestKeepAsIs ? '<div class="box rise i3"><b>이 PC에 같은 파일이 이미 많습니다.</b>같은 PC를 다시 깐 것이라면 되살리지 않고 이 PC에서 이어서 백업하는 편이 빠릅니다.</div>' : ''}
     ${acts([nothing && hadResult ? { id: 'move-result', label: '확인서 보기', kind: 'main' } : { id: 'move-go', label: '이 자리로 옮겨 오기', kind: 'main', disabled: !rows.places || blocked || busy || nothing }, ...(p.suggestKeepAsIs ? [quit] : [])], `<span class="hint">${h(hint)}</span>`)}`;
   const dis = busy ? ' aria-disabled="true"' : '';
@@ -462,7 +558,8 @@ function move3Real(s, mv, acct, now) {
       ...(fail && !older ? ['다시 옮겨 오면 앞서 놓고 그대로인 파일은 다시 받지 않습니다. 못 옮긴 파일, 「(복구본)」으로 둔 파일, 견주지 못한 파일, 그 뒤 바뀐 파일은 다시 받습니다.'] : []), '옛 PC 백업은 지우지 않고 그대로 둡니다.'])}
     ${acts([{ id: 'move-next', label: '다음 · 프로그램과 설정', kind: 'main', disabled: !!run },
       // 다시 시작했다가 멈춘 옮겨 오기는 엔진이 멈춘 곳부터 잇는다 — 「다시」(처음부터)가 아니라 「이어서」다(카본 C6)
-      ...(older ? [{ id: 'move-resume', label: '이어서 옮겨 오기', kind: 'line', disabled: !!run || installing }] : fail ? [{ id: 'move-again', label: '다시 옮겨 오기', kind: 'line', disabled: !!run || installing }] : [])],
+      ...(older ? [{ id: 'move-resume', label: '이어서 옮겨 오기', kind: 'line', disabled: !!run || installing }] : fail ? [{ id: 'move-again', label: '다시 옮겨 오기', kind: 'line', disabled: !!run || installing }] : []),
+      ...(moveBigFolders(res).length ? [{ id: 'old-start', label: '옛 PC 백업에서 꺼내기', kind: 'link', disabled: !!run }] : [])],
       `<span class="hint">${mv.counting ? '다시 옮겨 오기 전에 빈 공간을 세고 있습니다. 폴더가 크면 몇 분 걸립니다.' : installing && (fail || older) ? '프로그램을 깔고 있어, 다 깐 뒤에 다시 옮겨 올 수 있습니다.' : '다음 화면에서 옛 PC의 프로그램을 다시 깔고 설정을 되돌립니다. 아직 이 PC는 백업하지 않습니다.'}</span>`)}`;
   // 「그 가운데 내용은 견주지 못함」(unverified)은 OneDrive에 이미 있음의 일부라 합계에 더하지 않는다(E5)
   const total = Object.entries(c).filter(([k]) => k !== 'folder-skip' && !COUNT_PART.has(k)).reduce((n, [, v]) => n + (Number(v) || 0), 0);
@@ -499,9 +596,10 @@ function move4Real(s, mv, acct, now) {
     ${stepBoxOf(needStep, ack)}
     ${notes([...(g?.failed ? [`옮겨 오지 못한 파일(${count(g.failed)}개${g.cut ? ' 이상' : ''})은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
       ...(g?.unverified ? [`내용을 견주지 못한 파일(${count(g.unverified)}개${g.cut ? ' 이상' : ''})은 이 PC에 있던 것을 그대로 두었고, 백업의 것은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
-      ...(g?.big ? [`${h(josa(folderSubjectKo(moveBigFolders(res)), '은/는'))} 너무 커서 옮기지 않았습니다. ${h(tooBigKept(fromName))} ${h(TOO_BIG_MOVE_FIRST)}`] : []),
+      ...(g?.big ? [`${h(josa(folderSubjectKo(moveBigFolders(res)), '은/는'))} 너무 커서 옮기지 않았습니다. ${h(tooBigKept(fromName))} 넘긴 뒤에도 「파일 되살리기」 화면의 「옛 PC 백업에서 꺼내기」 단추로 다시 들어올 수 있습니다. ${h(tooBigMoveFirst(fromName))}`] : []),
       ...(!res && st?.unfinished ? ['옮겨 오기를 마치지 않았습니다. 옮겨 오지 않은 파일은 옛 PC 백업에 그대로 있습니다.'] : []),
       ...(res ? ['넘긴 뒤에도 「설정」의 「프로그램과 설정」에서 프로그램을 깔고 다시 로그인할 곳을 볼 수 있습니다.'] : [])])}
+    ${g?.big ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="old-start"${run ? ' aria-disabled="true"' : ''}>옛 PC 백업에서 꺼내기 ${I.rarr}</button></div>` : ''}
     ${res ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="move-apps-open"${run ? ' aria-disabled="true"' : ''}>프로그램과 설정${installing ? ' · 까는 중' : left ? ` · 다시 로그인할 곳 ${count(left)}곳 남음` : ''} ${I.rarr}</button></div>` : ''}
     ${acts([{ id: 'move-take', label: '끊고 이 PC로 이어서 백업', kind: 'main', icon: 'google', disabled: !n || n > 30 || (needStep && !ack) || !!run },
       res ? { id: 'move-release', label: '끊지 않고 이 PC는 백업하지 않기', kind: 'link', disabled: !!run } : { id: 'home', label: '돌아가기', kind: 'link' }], `<span class="hint">${h(hint)}</span>${gcancel(acct)}`)}`;
@@ -992,7 +1090,8 @@ export function renderScreen(id, ctx) {
     case 'start-1': return start1(s, ctx.acct, now, fake);
     case 'start-2': return start2(s, ctx.acct, fake, now);
     case 'start-3': return start3(s, fake);
-    case 'restore': return restore(s, now, ctx.catalog, ctx.ui);
+    case 'restore': return restore(s, now, ctx.catalog, ctx.ui, ctx.mv, ctx.acct);
+    case 'restore-old': return restoreOld(s, ctx.mv, ctx.acct, ctx.old, now);
     case 'partial': case 'partial-std': return partial(s, now, partialMode(id, s, fake));
     case 'move-0': return move0(s, now, fake);
     // 실제 상태(또는 창의 옮겨 오기 기억 mv가 있는 예시)는 엔진에 잇는 갈래로, 기억 없는 예시 상태는 시안 그대로 그린다
@@ -1014,5 +1113,5 @@ export function renderScreen(id, ctx) {
 }
 
 /** 앱이 그리는 화면 이름 전부(시험 · tauri-driver · 캡처가 돈다) */
-export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list'];
+export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'restore-old', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list'];
 export { FAKE };

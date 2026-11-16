@@ -77,6 +77,36 @@ export const STATES = {
   'home-restore-wait': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, needs: ['restore'] }) },
 };
 
+// 옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc — browseBackupFolder · openFileCatalog의 from · folder · sub). 창이 기억하는 고름(app.js의 old)과
+// 그 범위로 연 목록(catalog.req). 옛 기기는 MOVE_MV의 작업 노트북(f×12)이고, 사진 폴더는 100만 개를 넘어 옮기지 않았다(toobigResult)
+export const { OLD_PC, OLD_CATALOG } = (() => {
+  const from = 'f'.repeat(12), PIC = 'C:\\Users\\studio\\Pictures', snapshotAt = '2026-11-13T14:02:00+09:00';
+  const level = { profile: 'b2', from, folder: PIC, sub: '', snapshotAt, folders: ['2023', '2024', '2025', '카메라 원본'], files: 12 };
+  const OLD_PC = {
+    root: { from, folder: null, label: null, sub: '' },
+    reading: { from, folder: PIC, label: '사진', sub: '', level: undefined, error: null, code: null },
+    browse: { from, folder: PIC, label: '사진', sub: '', level, error: null, code: null },
+    deep: { from, folder: PIC, label: '사진', sub: '2024', level: { ...level, sub: '2024', folders: ['01월', '02월', '03월', '04월', '05월', '06월', '07월', '08월', '09월', '10월', '11월', '여행'], files: 3, leftOut: 1 }, error: null, code: null },
+    // 바로 안에 파일만 20만 개 넘게 둔 층 — 나눌 수 없다(browseBackupFolder의 CATALOG_TOO_LARGE)
+    noSplit: { from, folder: PIC, label: '사진', sub: '카메라 원본', level: null, code: 'CATALOG_TOO_LARGE', error: '' },
+    stale: { from, folder: PIC, label: '사진', sub: '2024/여행', level: null, code: 'INVALID_REQUEST', error: '백업의 폴더가 바뀌어 고른 자리를 찾지 못했습니다. 처음부터 다시 골라 주세요.' },
+  };
+  // 창이 연 범위 — 옛 기기 이름은 화면이 그릴 때 계정의 기기 목록에서 정한다(MOVE_ACCT)
+  const req = { from, folder: PIC, label: '사진', sub: '2024/여행' };
+  const OLD_CATALOG = {
+    ok: { profile: 'b2', token: 't', from, snapshotAt, scope: [{ source: '03-Pictures', folder: PIC, sub: '2024/여행' }], fileCount: 1842, totalBytes: 9663676416, query: '', offset: 0, total: 1842, loading: false, req,
+      selection: { revision: 2, count: 2, bytes: 10485760 },
+      rows: [
+        { id: '1', name: 'IMG_2041.jpg', source: '03-Pictures', path: '/2024/여행/제주/IMG_2041.jpg', size: 5242880, mtime: '2024-07-21T10:00:00+09:00', selected: true },
+        { id: '2', name: 'IMG_2042.jpg', source: '03-Pictures', path: '/2024/여행/제주/IMG_2042.jpg', size: 5242880, mtime: '2024-07-21T10:01:00+09:00', selected: true },
+        { id: '3', name: '일정표.xlsx', source: '03-Pictures', path: '/2024/여행/일정표.xlsx', size: 31744, mtime: '2024-07-02T10:00:00+09:00', selected: false },
+      ] },
+    tooLarge: { loading: false, req: { ...req, sub: '2024' }, rows: [], errorCode: 'CATALOG_TOO_LARGE', error: '이 폴더는 파일이 너무 많아 한 번에 열 수 없습니다. 「다른 폴더 고르기」에서 안쪽 폴더를 골라 나눠 열어 주세요.' },
+  };
+  OLD_PC.noSplit.error = '이 폴더는 이 앱으로는 꺼낼 수 없습니다. 바로 안에 파일이 너무 많아 안쪽 폴더로 나눠 열 수 없습니다. 옛 PC의 백업에는 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요.';
+  return { OLD_PC, OLD_CATALOG };
+})();
+
 // 새 PC로 옮겨 오기(조율 세션 d32d25233 · moveState · folders[].roots) — 새 데스크톱이 같은 계정의 백업을 되살리기 전용으로 열고
 // 작업 노트북의 백업을 옮겨 온다. 꼴은 engine/src/move-service.cjs · move-restore.cjs의 것이다
 export const { MOVE_ACCT, MOVE_MV } = (() => {

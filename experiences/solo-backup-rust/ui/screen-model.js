@@ -360,7 +360,8 @@ function baseModel(state, now, opts) {
         const title = opts?.result && mvs.complete !== true ? moveTitle(opts.result).main : '옮겨 왔습니다.';
         return { ...base, ...step, id: 'home-move-done', tone: 'moved', stamp: '옮김', kick: `${device} · 옮겨 오기 끝`, title,
           sub: mvs.complete === true ? '이 PC로 이어서 백업하면 옛 PC는 그때부터 백업하지 않습니다. 그때까지 이 PC는 파일을 되살리기만 합니다.' : moveDoneLeftText(opts?.result),
-          actions: [{ id: 'move-next', label: '이 PC로 이어서 백업', kind: 'main', to: 'move-4' }, { id: 'move-result', label: '결과 보기', kind: 'line', to: 'move-3' }, { ...RESTORE, kind: 'link' }],
+          actions: [{ id: 'move-next', label: '이 PC로 이어서 백업', kind: 'main', to: 'move-4' }, { id: 'move-result', label: '결과 보기', kind: 'line', to: 'move-3' },
+            ...(moveBigFolders(opts?.result).length ? [{ id: 'old-start', label: '옛 PC 백업에서 꺼내기', kind: 'link' }] : []), { ...RESTORE, kind: 'link' }],
           evidence: evidence(s, now, { state: 'moved' }) };
       }
     }
@@ -616,9 +617,19 @@ export const modeId = (c) => (c?.sameDrive ? 'sameDrive' : c?.mode || null);
  * 「어디에 놓을까요」의 폴더 줄과 합계. 수와 크기는 처음 본 미리 보기의 것(first)을 쓴다 — 「옮기지 않음」으로 바꾸면 미리 보기가 0을 주고,
  * 고름을 바꿀 때마다 미리 보기를 다시 부르지 않기 때문이다(Fable F12)
  */
-// 너무 커서 옮기지 않은 폴더는 옛 PC의 판에 남지만, 「파일 되살리기」는 이 PC의 최신 판만 열고 20만 개까지라 지금은 꺼낼 길이 없다(E26)
-export const tooBigKept = (from) => `${from ? `「${from}」` : '옛 PC'}의 백업에는 그대로 있지만, 지금은 이 앱으로 꺼낼 수 없습니다.`;
-export const TOO_BIG_MOVE_FIRST = '옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요.';
+// 너무 커서 옮기지 않은 폴더는 옛 PC의 판에 남는다. 「옛 PC 백업에서 꺼내기」(조율 세션 793e0d6dc — openFileCatalog의 from · folder · sub와
+// browseBackupFolder)로 안쪽 폴더를 골라 그 부분만 새 폴더에 꺼낸다
+// 꺼내는 길은 파일을 골라 받는 것뿐이고 한 번에 1,000개까지다(restore-select.cjs LIMITS.selected) — 폴더째 되찾는 길은 아직 없다(Opus 대체 검수 F2)
+export const tooBigKept = (from) => `${from ? `「${from}」` : '옛 PC'}의 백업에는 그대로 있습니다. 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 새 폴더에 꺼낼 수 있습니다.`;
+// 같은 단락에서 옛 기기를 이름으로 불렀으면 이 문장도 그 이름으로 부른다(Opus -b FA3)
+export const tooBigMoveFirst = (from) => `폴더를 통째로 꺼내는 길은 아직 없습니다. ${from ? `「${from}」${josa(from, '을/를').slice(String(from).length)}` : '옛 PC를'} 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요.`;
+export const TOO_BIG_MOVE_FIRST = tooBigMoveFirst();
+/** 옛 기기를 부르는 말 — 계정의 기기 목록에 이름이 없으면 「옛 PC」(「이름을 알 수 없는 PC」를 머리줄에 쓰지 않는다, Opus 대체 검수 F5) */
+export const oldWho = (name) => (name && name !== '이름을 알 수 없는 PC' ? `「${name}」` : '옛 PC');
+// 바로 안에 파일만 20만 개 넘게 둔 층은 나눌 수 없어 그 길로도 열리지 않는다(browseBackupFolder의 CATALOG_TOO_LARGE)
+// 화면은 제목이 「이 앱으로는 꺼낼 수 없습니다」라 설명(OLD_NO_SPLIT_THEN)에서 그 말을 되풀이하지 않는다
+export const OLD_NO_SPLIT_THEN = '바로 안에 파일이 너무 많아 안쪽 폴더로 나눠 열 수 없습니다. 옛 PC의 백업에는 그대로 있습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요.';
+export const OLD_NO_SPLIT = `이 폴더는 이 앱으로는 꺼낼 수 없습니다. ${OLD_NO_SPLIT_THEN}`;
 // 폴더 줄에는 까닭만 둔다 — 백업에 남는다는 말과 지금은 꺼낼 수 없다는 말은 위 상자 한 곳에 둔다(Fable E26 F2)
 export const TOO_BIG_WHY = '파일과 폴더가 100만 개를 넘는 폴더라 옮겨 오지 못합니다.';
 export function moveRows(preview, choices = {}, first = null) {
@@ -648,10 +659,33 @@ export function moveDoneLeftText(result) {
     if (left.failed) parts.push(`${count(left.failed)}개${more} 옮겨 오지 못했습니다.`);
     if (left.unverified) parts.push(`${count(left.unverified)}개${more} 내용을 견주지 못했습니다.`);
   }
-  if (left.big) parts.push(`${josa(folderSubjectKo(moveBigFolders(result)), '은/는')} 너무 커서 옮기지 않았습니다. ${tooBigKept()}`);
+  if (left.big) parts.push(`${josa(folderSubjectKo(moveBigFolders(result)), '은/는')} 너무 커서 옮기지 않았습니다. ${tooBigKept()} ${TOO_BIG_MOVE_FIRST}`);
   if (parts.length) return `${parts.join(' ')} ${next}`;
   // 놓은 파일도 실패도 큰 폴더도 없으면 제목이 「옮겨 온 파일이 없습니다.」다 — 「옮긴 것과」로 잇지 않는다(Opus -e 참고)
   return title.none ? '옮기지 않은 까닭을 결과에서 본 뒤 이 PC로 이어서 백업하세요.' : neutral;
+}
+/* ── 옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc, 설계 4.6) ── */
+/** 첫 목록 — 옮겨 온 결과의 폴더. 너무 커서 옮기지 않은 폴더를 앞에 둔다(그 폴더를 꺼내려고 오는 길이 가장 많다) */
+export function oldFolders(result) {
+  // 손님이 놓을 자리에서 「옮기지 않음」으로 고른 폴더도 결과에 mode skip · roots []로 남는다 — 「옮겨 옴」이 아니다(Opus 대체 검수 F1)
+  const list = (Array.isArray(result?.folders) ? result.folders : []).filter((f) => f && typeof f.original === 'string' && f.original)
+    .map((f) => ({ original: f.original, label: f.label || folderName(f.original), tooBig: f.tooBig === true, skip: f.tooBig !== true && f.mode === 'skip' }));
+  return [...list.filter((f) => f.tooBig), ...list.filter((f) => f.skip), ...list.filter((f) => !f.tooBig && !f.skip)];
+}
+/** 고른 자리 — 「사진 › 2024 › 여행」(sub는 엔진처럼 / 로 잇는다) */
+export function oldWhere(label, sub) {
+  return `「${[label, ...String(sub || '').split('/').filter(Boolean)].join(' › ')}」`;
+}
+/** 한 칸 위 — 「2024/여행」 → 「2024」, 「2024」 → 「」 */
+export function oldUp(sub) { return String(sub || '').split('/').filter(Boolean).slice(0, -1).join('/'); }
+/** 옛 PC 판을 읽다 거절된 글. open은 목록 열기(openFileCatalog), 아니면 한 층 읽기(browseBackupFolder). 모르는 부호는 null(창의 공통 글) */
+export function oldFailText(code, fromName, { open = false } = {}) {
+  if (code === 'UNSAFE_MANIFEST' && open) return '이 폴더 안에 Windows에 둘 수 없는 이름이 있어 한 번에 열 수 없습니다. 「다른 폴더 고르기」에서 안쪽 폴더를 골라 나눠 열어 주세요.';
+  if (code === 'CATALOG_TOO_LARGE') return open ? '이 폴더는 파일이 너무 많아 한 번에 열 수 없습니다. 「다른 폴더 고르기」에서 안쪽 폴더를 골라 나눠 열어 주세요.' : OLD_NO_SPLIT;
+  if (code === 'INVALID_REQUEST') return '백업의 폴더가 바뀌어 고른 자리를 찾지 못했습니다. 처음부터 다시 골라 주세요.';
+  if (code === 'NO_SNAPSHOT') return `${oldWho(fromName)}의 확인된 백업이 없어 꺼낼 수 없습니다.`;
+  if (code === 'OPERATION_FAILED') return '옛 PC의 백업을 읽지 못했습니다. 잠시 뒤 다시 눌러 주세요.';
+  return null;
 }
 /** 옮겨 온 결과에서 너무 커서 옮기지 않은 폴더(E25 — 결과 folders[]의 tooBig) */
 export function moveBigFolders(result) {

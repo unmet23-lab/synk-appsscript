@@ -4,7 +4,7 @@
 
 import { createStore, failureText } from './state-store.js';
 import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey, moveLeft, moveRows,
-  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps } from './screen-model.js';
+  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -32,6 +32,9 @@ let mv = null;
 // 한 번만 읽는 것 — 그리기마다 부르면 실패나 BUSY가 그리기를 다시 부르며 돈다. 다시 읽을 때 그 열쇠를 지운다
 const mvTried = new Set();
 let mvRunning = false;
+// 옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc) — 고르는 중인 옛 PC 판의 자리 { from, folder, label, sub, level, error, code }와,
+// 목록을 그 범위로 열 때의 요청(catalogScope { from, fromName, folder, label, sub }). 늦게 온 층 읽기는 oldSeq로 버린다
+let old = null, catalogScope = null, oldSeq = 0;
 // 프로그램 깔기(창 상태 move.reinstall)가 돌고 있었는지 — 끝나면 설정 되돌리기를 저절로 부른다(appsEnded)
 let prevReinstall = false;
 // 단추가 보낸 호출 — 기다리는 동안과 보내는 동안 내내 둔다. 같은 호출이 또 오면 버린다(Fable FA1 · -c FA2)
@@ -119,7 +122,7 @@ function paint() {
   const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null, result: mv?.result || null, checks: mv?.apps?.checks });
   const id = resolve(screen, s, model);
   if (!fixture) prepare(id, s);
-  out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, mv, fake: !!fixture });
+  out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, mv, old, fake: !!fixture });
   stage.dataset.tone = out.tone; stage.dataset.kind = out.kind; stage.dataset.screen = id;
   orb.setBusy(!!s.job);
   hereS.textContent = out.here || '';
@@ -169,6 +172,8 @@ function focusKey(el) {
   // 옮겨 오기의 자리 고르기 · 옛 PC · 지킬 폴더도 같은 data-act가 여럿이다
   if (el.dataset?.mode) return `${q('data-folder', el.dataset.folder || '')}${q('data-mode', el.dataset.mode)}`;
   if (el.dataset?.from) return q('data-from', el.dataset.from);
+  if (el.dataset?.name) return q('data-name', el.dataset.name);
+  if (el.dataset?.folder) return `${q('data-act', el.dataset.act || '')}${q('data-folder', el.dataset.folder)}`;
   if (el.dataset?.root) return q('data-root', el.dataset.root);
   // 같은 줄의 고르는 단추와 페이지 단추는 data-app이 같다 — 페이지 단추는 종류까지, 고르는 단추는 data-act까지 본다(Fable F2)
   if (el.dataset?.app && el.dataset.kind) return `${q('data-app', el.dataset.app)}${q('data-kind', el.dataset.kind)}`;
@@ -178,8 +183,14 @@ function focusKey(el) {
   return null;
 }
 
-function go(id) {
+function go(id, scope = null) {
   if (id !== 'restore' && screen === 'restore') { closeCatalog(); ui = { ...ui, confirmAll: false }; }
+  // 목록을 옛 PC 판의 범위로 여는 것은 「이 폴더 열기」로 들어올 때뿐이다 — 다른 길로 「파일 되살리기」에 오면 이 PC의 판을 연다
+  if (id !== 'restore' || screen !== 'restore') catalogScope = id === 'restore' ? scope : null;
+  // 옛 PC 판의 고름은 그 두 화면 사이에서만 지킨다
+  if (id !== 'restore' && id !== 'restore-old') { old = null; oldSeq++; }
+  // 옛 기기 이름을 못 읽었으면 이 두 화면에 올 때 한 번 더 읽는다(Opus 대체 검수 F5)
+  if ((id === 'restore' || id === 'restore-old') && acct.devicesError && !acct.devicesBusy) { acct = { ...acct, devicesError: null, devices: null }; mvTried.delete('names'); }
   screen = SCREENS.includes(id) ? id : 'home';
   if (screen === 'restore') openCatalog();
   // 되돌리기 화면을 떠나면 찾은 시각을 버린다 — 다시 들어오면 새로 찾는다(서버가 5분 동안 같은 답을 준다)
@@ -208,6 +219,9 @@ function prepare(id, s) {
   if (id === 'start-2' && startStep(s) === 'read' && acct.devices === null && !acct.devicesError && !acct.devicesBusy) setTimeout(() => void loadDevices(), 0);
   // 넘긴 PC(이 PC가 계정의 백업을 하는 연결) — 옮겨 온 결과가 있으면 「프로그램과 설정」을 연다(E19). 기본 화면 줄과 서랍 줄을 그리려고
   // moveState를 한 번 읽고, 그 화면에서는 목록과 체크 목록을 읽는다(Fable F1 — 앞서는 복구 전용 PC가 아니면 여기서 돌아가 읽지 않았다)
+  if (id === 'restore-old' && !old?.folder && mv?.result === undefined) mvOnce('result', loadMoveResult);
+  // 옛 기기 이름(「작업 노트북」)은 계정의 기기 목록에서 온다 — 기본 화면이나 「파일 되살리기」로 들어오면 아직 안 읽었을 수 있다(카본 A1)
+  if ((id === 'restore-old' || (id === 'restore' && mv?.state?.from)) && acct.devices === null && !acct.devicesError && !acct.devicesBusy) mvOnce('names', loadDevices);
   if (backingPC(s)) {
     if ((id === 'home' || id === 'move-apps') && mv?.state === undefined) mvOnce('state', loadMoveState);
     if (id === 'move-apps' && movedHere(s, mv?.state)) {
@@ -576,22 +590,24 @@ const MOVE_FLOWS = {
 /* ── 파일 되살리기 목록(엔진 openFileCatalog · queryFileCatalog · setFileSelection) ── */
 async function openCatalog() {
   const s = state(); if (fixture || !s) return;
-  catalog = { loading: true, query: '', rows: [] }; queued = null; paint();
+  const req = catalogScope;
+  catalog = { loading: true, query: '', rows: [], req }; queued = null; paint();
   if (closing) await closing;
-  if (screen !== 'restore') return;
-  const opened = await store.call('openFileCatalog', { profile: s.profile });
-  if (screen !== 'restore') {
+  if (screen !== 'restore' || catalogScope !== req) return;
+  const opened = await store.call('openFileCatalog', { profile: s.profile, ...(req ? { from: req.from, folder: req.folder, ...(req.sub ? { sub: req.sub } : {}) } : {}) });
+  if (screen !== 'restore' || catalogScope !== req) {
     if (opened.ok && opened.value?.token) void store.call('closeFileCatalog', { profile: opened.value.profile ?? s.profile, token: opened.value.token });
     return;
   }
   if (!opened.ok) {
     const waiting = ['RUN_ACTIVE', 'JOB_BUSY', 'BUSY'].includes(opened.code);
-    catalog = { loading: false, waiting, error: waiting ? '예약 백업이나 하던 일이 끝나면 저절로 엽니다.' : failureText(opened.code), rows: [] };
+    // 옛 PC 판의 거절 글은 그릴 때 옛 기기 이름으로 만든다(카본 A1) — 여기는 공통 글
+    catalog = { loading: false, waiting, req, errorCode: opened.code, error: waiting ? '예약 백업이나 하던 일이 끝나면 저절로 엽니다.' : failureText(opened.code), rows: [] };
     clearTimeout(retryTimer);
     if (waiting) retryTimer = setTimeout(() => { if (screen === 'restore' && catalog?.waiting) void openCatalog(); }, 15000);
     paint(); return;
   }
-  catalog = { ...opened.value, query: '', rows: [], offset: 0, loading: false };
+  catalog = { ...opened.value, req, query: '', rows: [], offset: 0, loading: false };
   await query('', 0, false);
 }
 async function query(q, offset, append) {
@@ -613,11 +629,56 @@ function flushQuery() {
 }
 async function select(action, ids) {
   if (!catalog?.token) return;
-  const r = await store.call('setFileSelection', { profile: catalog.profile, token: catalog.token, revision: catalog.selection.revision, action, ...(ids ? { ids } : {}) });
-  if (!r.ok) { if (r.code === 'SELECTION_STALE' || r.code === 'CATALOG_EXPIRED') return openCatalog(); return note(failureText(r.code)); }
+  const r = await store.call('setFileSelection', { profile: catalog.profile, token: catalog.token, revision: catalog.selection.revision, action, ...(ids ? { ids } : {}), ...(action === 'all' ? { query: catalog.query || '' } : {}) });
+  if (!r.ok) {
+    if (r.code === 'SELECTION_STALE' || r.code === 'CATALOG_EXPIRED') return openCatalog();
+    // 모두 고르기는 이미 고른 것에 더한다 — 합이 1,000개를 넘은 까닭을 그대로 쓴다(Opus -b FA4)
+    if (action === 'all' && r.code === 'SELECTION_LIMIT') return note('이미 고른 파일과 합치면 1,000개를 넘습니다. 「고른 것 비우기」 뒤 다시 눌러 주세요.', 7000);
+    return note(failureText(r.code));
+  }
+  if (action === 'all') { catalog = { ...catalog, ...r.value }; return void query(catalog.query || '', 0, false); }
   const picked = new Set(ids || []);
   catalog = { ...catalog, ...r.value, rows: catalog.rows.map((f) => (action === 'clear' ? { ...f, selected: false } : picked.has(f.id) ? { ...f, selected: action === 'add' } : f)) };
   paint();
+}
+/* ── 옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc — browseBackupFolder · openFileCatalog의 from · folder · sub) ── */
+/** 들어오기 — 옮겨 온 PC의 옛 기기(moveState.from). 너무 커서 옮기지 않은 폴더가 하나뿐이면 그 폴더부터 연다 */
+function oldStart(folder) {
+  const from = mv?.state?.from;
+  if (!from) return note('옮겨 온 옛 PC를 아직 읽지 못했습니다. 잠시 뒤 다시 눌러 주세요.');
+  const big = moveBigFolders(mv?.result), list = oldFolders(mv?.result);
+  const f = folder ? list.find((x) => x.original === folder) : big.length === 1 ? list.find((x) => x.original === big[0].original) : null;
+  old = { from, folder: f?.original || null, label: f?.label || null, sub: '' };
+  go('restore-old');
+  if (old.folder) void oldLoad();
+}
+/** 한 층 읽기 — 늦게 온 답(다른 폴더로 옮긴 뒤)은 버린다 */
+async function oldLoad() {
+  if (!state() || !old?.folder) return;
+  const my = ++oldSeq; old = { ...old, level: undefined, error: null, code: null }; paint();
+  if (fixture) return;
+  // 「파일 되살리기」에서 들어오면 그 화면이 연 이 PC의 목록 열기가 호출 줄을 쥐고 있다 — 2분까지 기다린다(Opus 대체 검수 F6)
+  if (store.busy && !(await untilFree(120000))) { if (my === oldSeq && old) { old = { ...old, level: null, error: '앞서 열던 목록을 정리하느라 아직 읽지 못했습니다. 「다시 읽기」를 눌러 주세요.', code: 'BUSY' }; paint(); } return; }
+  // 기다리는 사이 다른 층이나 화면으로 갔으면 부르지 않는다(카본 A4)
+  if (my !== oldSeq || !old?.folder) return;
+  const s = state(), ask = { from: old.from, folder: old.folder, sub: old.sub };
+  const r = await store.call('browseBackupFolder', { profile: s.profile, from: ask.from, folder: ask.folder, ...(ask.sub ? { sub: ask.sub } : {}) });
+  if (my !== oldSeq || !old) return;
+  // 옛 PC 판의 거절 글은 그릴 때 옛 기기 이름으로 만든다(oldFailText) — 여기는 그 밖의 부호의 공통 글만 둔다(카본 A1)
+  old = r.ok && r.value && typeof r.value === 'object' ? { ...old, level: r.value } : { ...old, level: null, code: r.code, error: failureText(r.code) };
+  paint();
+}
+/** 고른 범위로 목록을 연다 — 「파일 되살리기」 화면이 그 범위로 그린다 */
+function oldOpen() {
+  if (!old?.folder || !old.level) return;
+  go('restore', { from: old.from, folder: old.folder, label: old.label, sub: old.sub || '' });
+}
+/** 첫 목록(폴더 고르기)으로 — 판이 바뀌어 고른 자리를 못 찾았을 때도(카본 A5) */
+function oldTop() {
+  if (!old && !catalog?.req) return;
+  oldSeq++; old = { from: old?.from || catalog.req.from, folder: null, label: null, sub: '' };
+  if (screen === 'restore-old') return paint();
+  go('restore-old');
 }
 function closeCatalog() {
   const c = catalog; catalog = null; queued = null; clearTimeout(retryTimer);
@@ -743,10 +804,27 @@ stage.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]'); if (!el || el.getAttribute('aria-disabled') === 'true') return;
   const id = el.dataset.act;
   if (id === 'drawer-close') return closeDrawer();
+  // 옛 PC 백업에서 꺼내기의 안쪽 층은 「뒤로」가 한 칸 위다(화면의 back 값과 맞춘다, 카본 A2)
+  if (id === 'back' && screen === 'restore-old' && old?.folder) { if (old.sub) { old = { ...old, sub: oldUp(old.sub) }; return void oldLoad(); } return oldTop(); }
   if (id === 'back') return go(out?.back || 'home');
   if (id === 'more' && catalog) return void query(catalog.query, (catalog.offset || 0) + catalog.rows.length, true);
   if (id === 'clear') return void select('clear');
   if (id === 'reopen') return void openCatalog();
+  // 옛 PC 백업에서 꺼내기 — 고르기는 창 안에서, 한 층 읽기와 목록 열기는 엔진에
+  if (id === 'old-start') return oldStart(el.dataset.folder);
+  if (id === 'old-folder') { const f = oldFolders(mv?.result).find((x) => x.original === el.dataset.folder); if (!f || !old) return; old = { ...old, folder: f.original, label: f.label, sub: '' }; return void oldLoad(); }
+  if (id === 'old-in') { const n = el.dataset.name; if (!n || !old?.folder) return; old = { ...old, sub: old.sub ? `${old.sub}/${n}` : n }; return void oldLoad(); }
+  if (id === 'old-up') { if (!old) return; if (old.sub) { old = { ...old, sub: oldUp(old.sub) }; return void oldLoad(); } oldSeq++; old = { from: old.from, folder: null, label: null, sub: '' }; return paint(); }
+  if (id === 'old-top') return oldTop();
+  if (id === 'old-reload') { if (old?.folder) return void oldLoad(); if (fixture) return; mvTried.delete('result'); mv = { ...(mv || {}), result: undefined }; return paint(); }
+  if (id === 'old-open') return oldOpen();
+  if (id === 'old-all') { if (fixture) return note('예시 화면이라 실제로 보내지 않았습니다.'); return void select('all'); }
+  if (id === 'old-back') {
+    // 판이 바뀌어 목록을 못 열었으면 고르던 층도 낡았다 — 처음부터(카본 A5)
+    if (catalog?.errorCode === 'INVALID_REQUEST') return oldTop();
+    if (!old && catalog?.req) old = { from: catalog.req.from, folder: catalog.req.folder, label: catalog.req.label, sub: catalog.req.sub };
+    go('restore-old'); if (old?.folder && old.level === undefined) void oldLoad(); return;
+  }
   if (id === 'google-ack') { acct = { ...acct, googleAck: !acct.googleAck }; return paint(); }
   if (id === 'place-pick' || id === 'place-default') { ui = { ...ui, place: id === 'place-pick' ? 'pick' : 'default', confirmAll: false }; return paint(); }
   // 분실 신고 뒤의 「연결된 앱」은 신고가 준 정리 페이지(removal), 되돌리기 화면의 「연결된 앱」은 연결된 앱 페이지(apps)다(Fable 셋째 F5)
@@ -863,6 +941,7 @@ export function openTopic(topic) {
   const to = TOPICS[topic]; if (!to) return false;
   if (to === 'drawer') { go('home'); openDrawer(); return true; }
   if (to === 'move') { const s = state(); if (moveOpen(s)) go(moveJob(s) ? 'move-2' : 'move-1'); else if (s?.configured) go('move-0'); else if (fixture) go('move-1'); else go('home'); return true; }
+  if (to === 'restore' && screen === 'restore' && catalogScope) go('home');
   closeDrawer(); go(to); return true;
 }
 try { window.__TAURI__?.event?.listen?.('backup:open', (e) => { const t = e && typeof e.payload === 'object' ? e.payload?.topic : e?.payload; if (typeof t === 'string') openTopic(t); }); } catch { /* 알림이 없는 판 */ }
@@ -874,7 +953,7 @@ window.__wb = Object.freeze({
     if (opt.state) fixture = { state: opt.state, now: opt.now ?? Date.now() }; else if (opt.live) fixture = null;
     catalog = opt.catalog ?? null; ui = { pick: 'same', ...(opt.ui || {}) };
     acct = { signing: false, limit: null, repoExists: false, googleAck: false, devices: null, devicesError: null, devicesBusy: false, ...(opt.acct || {}) }; undo = opt.undo ?? null;
-    mv = opt.mv ?? null; mvTried.clear();
+    mv = opt.mv ?? null; mvTried.clear(); old = opt.old ?? null; catalogScope = null;
     closeDrawer(); screen = SCREENS.includes(id) ? id : 'home'; shownId = null; paint();
     if (opt.drawer) openDrawer();
     stage.classList.toggle('still', !!opt.still);

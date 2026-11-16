@@ -132,6 +132,12 @@ const CASES = [
   ['home-handed-run', 'move-apps', { name: 'move-apps-handed-busy', mv: 'apps-handed-busy', acct: 'MOVE' }], ['home', 'home', { name: 'home-handed', mv: 'handed' }],
   ['home-handed-installing', 'home', { name: 'home-handed-installing', mv: 'handed' }], ['home-handed-run', 'home', { name: 'home-handed-run', mv: 'handed' }],
   ['home', 'drawer', { name: 'drawer-handed', mv: 'handed', scrollTo: '[data-act="move-apps"]' }],
+  // 옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc)
+  ['home-move-read', 'restore-old', { name: 'restore-old-root', mv: 'toobigResult', acct: 'MOVE', old: 'root' }], ['home-move-read', 'restore-old', { name: 'restore-old-reading', mv: 'toobigResult', acct: 'MOVE', old: 'reading' }],
+  ['home-move-read', 'restore-old', { name: 'restore-old-browse', mv: 'toobigResult', acct: 'MOVE', old: 'browse' }], ['home-move-read', 'restore-old', { name: 'restore-old-deep', mv: 'toobigResult', acct: 'MOVE', old: 'deep' }],
+  ['home-move-read', 'restore-old', { name: 'restore-old-nosplit', mv: 'toobigResult', acct: 'MOVE', old: 'noSplit' }], ['home-move-read', 'restore-old', { name: 'restore-old-stale', mv: 'toobigResult', acct: 'MOVE', old: 'stale' }],
+  ['home-move-read', 'restore', { name: 'restore-old-catalog', mv: 'toobigResult', acct: 'MOVE', catalog: 'ok' }], ['home-move-read', 'restore', { name: 'restore-old-toolarge', mv: 'toobigResult', acct: 'MOVE', catalog: 'tooLarge' }],
+  ['home', 'restore', { name: 'restore-moved', mv: 'handed', acct: 'MOVE' }],
 ];
 const CATALOG = {
   profile: 'b2', token: 't', fileCount: 12480, totalBytes: 19756849561, query: '견적', offset: 0, total: 5, loading: false,
@@ -148,7 +154,7 @@ const CATALOG = {
 
 (async () => {
   if (!fs.existsSync(path.join(DIST, 'index.html'))) throw new Error('dist/가 없습니다. 먼저 node scripts/stage-ui.cjs');
-  const { STATES, NOW, MOVE_MV, MOVE_ACCT } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
+  const { STATES, NOW, MOVE_MV, MOVE_ACCT, OLD_PC, OLD_CATALOG } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
   const { findBanned } = await import(pathToFileURL(path.join(APP, 'ui/banned-words.js')).href);
   fs.mkdirSync(out, { recursive: true });
   const server = await serve();
@@ -171,10 +177,10 @@ const CATALOG = {
       const name = extra.name || (screen === 'home' ? stateName : screen);
       if (only && !only.includes(name)) continue;
       const before = errors.length;
-      await pg.evaluate(({ screen, state, now, catalog, acct, undo, ui, mv }) => {
+      await pg.evaluate(({ screen, state, now, catalog, acct, undo, ui, mv, old }) => {
         if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true, acct, mv });
-        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo, ui, mv });
-      }, { screen, state: STATES[stateName], now: NOW, catalog: CATALOG, acct: extra.acct === 'MOVE' ? MOVE_ACCT : extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null, mv: extra.mv ? MOVE_MV[extra.mv] : null });
+        else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo, ui, mv, old });
+      }, { screen, state: STATES[stateName], now: NOW, catalog: extra.catalog ? OLD_CATALOG[extra.catalog] : CATALOG, acct: extra.acct === 'MOVE' ? MOVE_ACCT : extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null, mv: extra.mv ? MOVE_MV[extra.mv] : null, old: extra.old ? OLD_PC[extra.old] : null });
       // 서랍 아래쪽처럼 첫 화면 밖에 있는 줄은 그 자리로 굴려서 찍는다
       if (extra.scrollTo) await pg.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ block: 'start' }), extra.scrollTo);
       await pg.waitForTimeout(120);
