@@ -36,7 +36,7 @@ test('첫 기다림 글: 글은 영어 사전과 같은 문장이고, index.html
   const loadingAt=index.indexOf('프로젝트를 확인하고 있어요.</div></main>'),bootAt=index.indexOf('<script src="./boot-locale.js"></script>');
   assert.ok(loadingAt>0&&bootAt>loadingAt,'확인 중 글을 담은 <main>이 닫힌 뒤에 붙는다(그 글을 파싱 시점에 바로 찾는다 — 아르곤 B1)');
   assert.match(read('sw.js'),/FILES\.push\(BASE\+'boot-locale\.js'\);/);
-  assert.match(readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),/'brand-desk-view\.mjs','boot-locale\.js'\]\)files\['\/pulse-app\/'\+file\]=\['public\/pulse-app\/'\+file,'text\/javascript; charset=utf-8'\]/);
+  assert.match(readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),/'brand-desk-view\.mjs','boot-locale\.js'\](?:\.filter\([^)]*\))?\)files\['\/pulse-app\/'\+file\]=\['public\/pulse-app\/'\+file,'text\/javascript; charset=utf-8'\]/);
 });
 
 test('첫 기다림 글의 언어: 고른 것 → 마지막으로 정한 언어 → 링크 → 브라우저(한국어가 없으면 영어) → 한국어, 한국어면 손대지 않는다',()=>{

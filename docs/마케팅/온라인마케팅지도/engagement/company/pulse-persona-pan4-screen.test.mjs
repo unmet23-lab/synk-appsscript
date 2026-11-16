@@ -241,7 +241,7 @@ test('묶음: 손님 오프라인 목록에 내 모델 모듈(직원 브랜드 �
   assert.match(sw,/FILES\.push\(BASE\+'my-models\.mjs'\);/);assert.doesNotMatch(sw,/'brand-desk-view\.mjs'/);
   assert.match(sw,/const CACHE = 'synk-pulse-shell-v68-marketing-20261116';/);
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
-  assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs','boot-locale\.js'\]\)files\['\/pulse-app\/'\+file\]/);
+  assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs','boot-locale\.js'\](?:\.filter\([^)]*\))?\)files\['\/pulse-app\/'\+file\]/);
 });
 
 test('직원 브랜드 데스크 할 일: 삭제 요청인데 남은 참조가 없으면 「정리한 뒤」가 아니라 「정리 끝」 글(만료 · 삭제 운영 시험 P3)',async()=>{
