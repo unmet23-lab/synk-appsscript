@@ -200,6 +200,11 @@ async function namedFolder(base, now) {
   }
   throw new Error('되살린 파일을 놓을 새 폴더를 만들지 못했습니다.');
 }
+// Jobs whose failure is written apart from the backups' (lastError): a restore's, and 「새 PC로 옮겨 오기」's (4.6).
+const OWN_ERROR = { restore: 'lastRestoreError', move: 'lastMoveError' };
+// 옮겨 오기 writes into a temporary file beside its final name (move-restore.cjs): one left by a move that stopped is
+// never backed up (4.6 — the next move removes it).
+const MOVE_TEMP = '~synk-*.part';
 async function sha256File(file) {
   const hash = crypto.createHash('sha256');
   const handle = await fs.open(file, 'r');
@@ -322,7 +327,7 @@ class BackupEngine extends EventEmitter {
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
       recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, lastFill: c?.lastFill || null, missingSources: c?.missingSources || [],
       removedSources: (c?.removedSources || []).map(r => ({ path: r.path, at: r.at, until: new Date(Date.parse(r.since ?? r.at) + REMOVED_KEEP).toISOString() })),
-      lastRestore: c?.lastRestore || null, lastRestoreError: c?.lastRestoreError || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null, nextSources: c?.nextSources || [],
+      lastRestore: c?.lastRestore || null, lastRestoreError: c?.lastRestoreError || null, lastMoveError: c?.lastMoveError || null, moveKit: c?.moveKit || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null, nextSources: c?.nextSources || [],
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
       lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
@@ -396,9 +401,9 @@ class BackupEngine extends EventEmitter {
     this.job = { kind, stage: '준비 중', percent: null }; this.emitState();
     try {
       const value = await fn();
-      // A restore says nothing about the backups (화면 세션 부탁 4): its success clears only its own failure.
+      // A restore or a move says nothing about the backups (화면 세션 부탁 4): its success clears only its own failure.
       if (this.config) {
-        if (kind === 'restore') this.config.lastRestoreError = null;
+        if (OWN_ERROR[kind]) this.config[OWN_ERROR[kind]] = null;
         else { if (kind !== 'probe') this.config.lastError = null; if (this.config.warning === BUSY_WARNING) this.config.warning = null; }
         await this.save();
       }
@@ -408,9 +413,9 @@ class BackupEngine extends EventEmitter {
       // next run", not an error (STAGE1_DESIGN.md 4.2 · review F2). The window still
       // says why nothing happened: a person-started job returns at once (review GA2).
       // A restore that failed is written down as such (lastRestoreError), never as the backups' failure (화면 세션 부탁 4).
-      if (this.config && kind === 'restore') {
-        const code = e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : 'RESTORE_FAILED';
-        this.config.lastRestoreError = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}) };
+      if (this.config && OWN_ERROR[kind]) {
+        const code = e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : kind === 'move' ? 'MOVE_FAILED' : 'RESTORE_FAILED';
+        this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}) };
         await this.save().catch(() => {});
       } else if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
       else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
@@ -821,7 +826,7 @@ class BackupEngine extends EventEmitter {
       // as a partial one (4.2 「완료본 · 부분 판 · 채움 판」); without a list it stays pending and goes as before.
       const unreadable = []; let partial = false, cut = false;
       try {
-        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
+        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
           { onErrorItem: item => { if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true; } });
       } catch (e) {
         if (e.exitCode !== 3 || !unreadable.length) throw e;
@@ -1024,7 +1029,7 @@ class BackupEngine extends EventEmitter {
     // Each path ends in NUL, the last one too: restic 0.19.1 refuses a list without the trailing zero byte (exit 1).
     await fs.writeFile(listFile, targets.map(t => t + '\0').join(''), { flag: 'wx' });
     try {
-      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--files-from-raw', listFile, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
+      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, '--files-from-raw', listFile, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
         { onErrorItem: item => { if (item !== null && failedAt.length < UNREADABLE_MAX) failedAt.push(item); else failedCut = true; } });
     } catch (e) { if (e.exitCode !== 3) throw e; }
     finally { await fs.rm(listFile, { force: true }).catch(() => {}); }
@@ -1134,6 +1139,9 @@ class BackupEngine extends EventEmitter {
     // 옮겨 오기 원본: the snapshot a reading PC is copying stays until the server's time for it ends (4.6 「move/pin」).
     const pinned = this.config.movePin && Date.parse(this.config.movePin.until) > now ? own.find(s => s.id === this.config.movePin.snapshotId) : null;
     if (pinned) hold(pinned);
+    // 옮겨 오기 꾸러미 (4.6): this device's newest one stays, the older ones go like other snapshots after a day.
+    const kit = own.find(s => s.tags.includes('movekit'));
+    if (kit) keep.add(kit.id);
     // While the complete place is itself a partial snapshot (no backup has read everything yet), the listed partial
     // snapshots before it stay too: a file only they hold — one the later ones could not read — is in no other. This
     // is the vault whose first backups were partial under the previous version (GPT workbackup-missing GA1); a

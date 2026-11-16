@@ -226,5 +226,15 @@
   "restoreRun": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
   "restoreJob": {"mutating":false,"timeoutMs":60000,"dialog":false,"allowedReadOnly":true},
   "restoreChoose": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
-  "cancelGoogle": {"mutating":false,"timeoutMs":10000,"dialog":false,"allowedReadOnly":true}
+  "cancelGoogle": {"mutating":false,"timeoutMs":10000,"dialog":false,"allowedReadOnly":true},
+  "moveDevices": {"mutating":false,"timeoutMs":120000,"dialog":false,"allowedReadOnly":true},
+  "movePreview": {"mutating":false,"timeoutMs":1800000,"dialog":false,"allowedReadOnly":true},
+  "moveStart": {"mutating":true,"timeoutMs":0,"dialog":false,"allowedReadOnly":true},
+  "moveResult": {"mutating":false,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
+  "moveReinstallList": {"mutating":false,"timeoutMs":900000,"dialog":false,"allowedReadOnly":true},
+  "moveReinstall": {"mutating":true,"timeoutMs":0,"dialog":false,"allowedReadOnly":true},
+  "moveRestoreSettings": {"mutating":true,"timeoutMs":300000,"dialog":false,"allowedReadOnly":true},
+  "moveChecklist": {"mutating":false,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
+  "moveCheck": {"mutating":true,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
+  "moveRelease": {"mutating":true,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true}
 }

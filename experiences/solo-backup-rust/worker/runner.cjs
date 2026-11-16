@@ -11,13 +11,40 @@ const engineRoot = process.env.SWB_ENGINE_ROOT || path.resolve(__dirname, '../en
 const { Profiles, appFolders } = require(path.join(engineRoot, 'src/profiles.cjs'));
 const { ProvisionClient } = require(path.join(engineRoot, 'src/provision-client.cjs'));
 const { applyStatus, telemetryRun, APP_VERSION } = require(path.join(engineRoot, 'src/account.cjs'));
+const kits = require(path.join(engineRoot, 'src/move-kit.cjs'));
 
 const SKIP = new Set(['battery', 'saver', 'metered']);
 const TRIGGERS = new Set(['hourly', 'logon', 'wake', 'unlock', 'manual', 'test']);
 
 // The provisioning server's measurement queue (서버API.md 「측정 받는 꼴」): runs not sent yet, 7 days and 200 at most.
 const QUEUE = 'telemetry-queue.json', WEEK = 7 * 86400000, QUEUE_MAX = 200, SERVER_MS = 20000;
+// 옮겨 오기 꾸러미 (4.6): once a day; the last one's program list stays beside it for a day winget cannot answer.
+const KIT_DAY = 86400000, KIT_LAST = 'movekit-last.json';
 const bounded = (promise, ms) => Promise.race([promise, new Promise((_, no) => { const t = setTimeout(() => no(Object.assign(new Error('TIMEOUT'), { code: 'NETWORK' })), ms); t.unref?.(); })]);
+
+// The daily 옮겨 오기 꾸러미 (4.6 「옮겨 오기 꾸러미」): after a cloud backup that ran, where this PC's folders are, its
+// programs and the 4.6b settings files go into the repository as this device's own small snapshot (tag movekit —
+// cleanup keeps the newest). A run that rested, a moved seat, a restore and a test run make none, and a kit that
+// fails is not the run's failure: the next run tries again. `dir` is the local folder that keeps the last program list.
+async function dailyKit({ engine, host, dir, resticPath, result, now = Date.now() }) {
+  const c = engine?.config;
+  if (!c?.repositoryId || c.mode !== 'backup' || c.readOnly || c.movedTo || c.serverRestore || engine.accountHold || !['complete', 'partial'].includes(result?.outcome)) return false;
+  if (now - (Date.parse(c.moveKit?.at) || 0) < KIT_DAY) return false;
+  const last = path.join(dir, KIT_LAST);
+  let previous = null;
+  try { const v = JSON.parse(await fs.readFile(last, 'utf8')); if (Array.isArray(v?.programs?.winget)) previous = { programs: { winget: v.programs.winget } }; } catch { /* none yet */ }
+  const inventory = path.join(path.dirname(resticPath), 'WorkBackupInventory.exe');
+  const inventoryExe = await fs.access(inventory).then(() => inventory, () => null);
+  const text = await kits.buildKit({ host, inventoryExe, previous, now: new Date(now) });
+  await kits.storeKit(engine, text, { host: engine.hostName });
+  const kit = JSON.parse(text);
+  // The screen's 「앱 설정 N개」 line (4.6 검토 M16): how many apps' settings the kit carries, and which were too big.
+  engine.config.moveKit = { at: kit.createdAt, apps: kit.apps.length, tooBig: kit.tooBig.slice(0, 50) };
+  await engine.save();
+  const tmp = `${last}.${process.pid}.tmp`;
+  await fs.writeFile(tmp, JSON.stringify({ createdAt: kit.createdAt, programs: { winget: kit.programs.winget } })); await fs.rename(tmp, last);
+  return true;
+}
 
 // `server` and `restic`: a test's stand-ins for the provisioning client (null: none) and the restic runs.
 async function createRunner({ host, root, workRoot = null, resticPath, publish = () => {}, server: given, restic = null, serverMs = SERVER_MS }) {
@@ -84,6 +111,7 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
         // scheduler never forces.
         const results = await profiles.runOnce({ skipCloud, force: trigger === 'manual' });
         if (ownCloud(server) && results.b2) measured = { trigger, startedAt, result: results.b2, skipCloud, cpu, fill: null };
+        if (trigger !== 'test') await dailyKit({ engine: profiles.engines.b2, host, dir: workRoot || root, resticPath, result: results.b2 }).catch(() => {});
         // When each profile last backed up — a partial snapshot counts — as a time only: the run executable judges
         // 「사흘 넘게」 from it (2.2).
         for (const [name, engine] of Object.entries(profiles.engines)) {
@@ -118,4 +146,4 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
     stop() { if (!stopped) { closing = true; stopped = profiles.stop().then(() => report().catch(() => {})); } return stopped; }
   };
 }
-module.exports = { createRunner };
+module.exports = { createRunner, dailyKit };

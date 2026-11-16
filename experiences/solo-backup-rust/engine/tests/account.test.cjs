@@ -621,3 +621,60 @@ test('a read key kept here before a loss is never published or opened with; a ne
   assert.equal(h.log.filter((x) => x[0] === 'rotate').length, 1);
   assert.deepEqual(h.log.filter((x) => x[0] === 'publish').map((x) => x[1].readKey), [RK2]);
 });
+
+test('옮겨 오기 꾸러미 once a day after a cloud backup that ran: this device\'s own small snapshot, the newest one kept (4.6)', async () => {
+  const { dailyKit } = require('../../worker/runner.cjs');
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const e = f.engine, profile = path.join(f.root, 'profile'); await fs.mkdir(profile);
+  const host = async (m) => {
+    if (m === 'folders.snapshot') return { known: { profile: { path: profile }, roaming: { path: profile }, local: { path: profile } }, drives: [] };
+    if (m === 'reinstall.installed') return ['Git.Git', 'not an id!'];
+    throw new Error('HOST_METHOD');
+  };
+  const kit = (result, now) => dailyKit({ engine: e, host, dir: f.root, resticPath: path.join(f.root, 'restic.exe'), result, ...(now ? { now } : {}) });
+  const stored = () => f.repo.calls.filter((c) => c.args[0] === 'backup' && c.args.includes('--stdin'));
+  assert.equal(await kit({ outcome: 'skipped', reason: 'paused' }), false, 'a run that rested makes none');
+  assert.equal(await kit({ outcome: 'complete' }), true);
+  const args = stored()[0].args;
+  assert.equal(args[args.indexOf('--host') + 1], ME, 'this device\'s own snapshot, so cleanup can keep its newest');
+  assert.ok(args[args.indexOf('--tag') + 1].split(',').includes('movekit'));
+  assert.equal(e.config.moveKit.apps, 0); assert.ok(Number.isFinite(Date.parse(e.config.moveKit.at)));
+  assert.deepEqual(e.getState().moveKit, e.config.moveKit);
+  assert.deepEqual(JSON.parse(await fs.readFile(path.join(f.root, 'movekit-last.json'), 'utf8')).programs.winget, [{ id: 'Git.Git' }]);
+  // Once a day only; a moved seat or a restore makes none either.
+  assert.equal(await kit({ outcome: 'complete' }), false);
+  e.config.movedTo = { device: '새 노트북', at: new Date().toISOString() };
+  assert.equal(await kit({ outcome: 'complete' }, Date.now() + 2 * 86400000), false);
+  delete e.config.movedTo; e.config.serverRestore = { since: new Date().toISOString() };
+  assert.equal(await kit({ outcome: 'complete' }, Date.now() + 2 * 86400000), false);
+  delete e.config.serverRestore;
+  assert.equal(await kit({ outcome: 'partial' }, Date.now() + 2 * 86400000), true);
+  assert.equal(stored().length, 2);
+
+  // Cleanup keeps this device's newest kit and lets an older one go after a day; another device's is never touched.
+  const now = Date.now(), day = 86400000, vault = `vault:${e.config.vaultId}`;
+  const snap = (c, ago, h, tags = [VERIFIED]) => ({ id: c.repeat(64), time: new Date(now - ago).toISOString(), hostname: h, tags: [APP, vault, ...tags], paths: [f.source] });
+  e.config.health = { status: 'ok', checkedAt: new Date(now - 1000).toISOString() };
+  e.config.lastBackup = { id: 'd'.repeat(64), at: new Date(now).toISOString() };
+  e.snapshots = async () => [snap('d', 0, ME), snap('7', 2 * day, ME, ['movekit']), snap('6', 3 * day, ME, ['movekit']), snap('5', 3 * day, OLD, ['movekit'])];
+  f.repo.calls.length = 0;
+  await e.retain();
+  assert.deepEqual(f.repo.calls.filter((c) => c.args[0] === 'forget').flatMap((c) => c.args.slice(1)), ['6'.repeat(64)]);
+});
+
+test('a backup leaves out what an unfinished move left; a move that fails is the move\'s failure, not the backups\' (4.6)', async () => {
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const e = f.engine;
+  await e.backupNow().catch(() => {});
+  const backup = f.repo.calls.find((c) => c.args[0] === 'backup' && !c.args.includes('--stdin'));
+  assert.ok(backup, 'a backup ran');
+  assert.equal(backup.args[backup.args.indexOf('--exclude') + 1], '~synk-*.part');
+  e.config.lastError = '지난 백업 실패';
+  await assert.rejects(e.operation('move', async () => { throw Object.assign(new Error('gone'), { code: 'MOVE_KIT_SIZE' }); }));
+  assert.equal(e.config.lastError, '지난 백업 실패');
+  assert.equal(e.config.lastMoveError.code, 'MOVE_KIT_SIZE');
+  await e.operation('move', async () => null);
+  assert.equal(e.config.lastMoveError, null); assert.equal(e.config.lastError, '지난 백업 실패');
+});

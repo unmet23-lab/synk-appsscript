@@ -15,7 +15,8 @@ async function stage({node,restic,output,client,inventoryBin}) {
   if(!inventoryBin)throw Error('inventoryBin directory required');
   for(const name of ['WorkBackupInventory.exe','WorkBackupPlanner.exe'])await put(name,await fs.readFile(path.join(inventoryBin,name)));
   await tree(path.join(self,'worker'),'worker');await tree(path.join(self,'contract'),'contract');
-  for(const name of await fs.readdir(path.join(engine,'src'))){if(!name.endsWith('.cjs')||['main.cjs','preload.cjs','startup.cjs'].includes(name))continue;await put('engine/src/'+name,await fs.readFile(path.join(engine,'src',name)));}
+  // The engine's data files go too: 옮겨 오기's app table (move-apps.json) is read by the window and the run (4.6b).
+  for(const name of await fs.readdir(path.join(engine,'src'))){if(!/\.(cjs|json)$/.test(name)||['main.cjs','preload.cjs','startup.cjs'].includes(name))continue;await put('engine/src/'+name,await fs.readFile(path.join(engine,'src',name)));}
   for(const name of ['package.json','package-lock.json','THIRD_PARTY_NOTICES.txt'])await put('engine/'+name,await fs.readFile(path.join(engine,name)));
   await tree(path.join(engine,'node_modules'),'engine/node_modules');
   if(client&&client!=='--none'){const value=JSON.parse(await fs.readFile(client,'utf8'));const {clientConfig}=require(path.join(engine,'src/recovery-auth.cjs'));const publicClient=clientConfig(value);await put('recovery-client.json',Buffer.from(JSON.stringify({installed:publicClient})));}

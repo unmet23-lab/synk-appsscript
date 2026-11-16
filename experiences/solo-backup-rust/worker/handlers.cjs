@@ -11,8 +11,26 @@ const { protection } = require(path.join(engineRoot, 'src/protection.cjs'));
 const fileSelection = require(path.join(engineRoot, 'src/restore-select.cjs'));
 const { RecommendedBackup } = require(path.join(engineRoot, 'src/recommended.cjs'));
 const { Account, APP_VERSION } = require(path.join(engineRoot, 'src/account.cjs'));
+const { MoveService } = require(path.join(engineRoot, 'src/move-service.cjs'));
 const contract = require('../contract/methods.json');
 
+// 「새 PC로 옮겨 오기」의 입력 (4.6): what each folder's place may be, as the screen sends it.
+const moveRefused = () => Object.assign(new Error('옮겨 올 내용을 확인하지 못했습니다.'), { code: 'BAD_INPUT' });
+const MODES = ['original', 'newFolder', 'oneDriveGaps', 'skip'];
+function moveChoices(v) {
+  if (v.choices === undefined) return {};
+  if (!v.choices || typeof v.choices !== 'object' || Array.isArray(v.choices) || Object.keys(v.choices).length > 30) throw moveRefused();
+  return Object.fromEntries(Object.entries(v.choices).map(([folder, c]) => {
+    if (folder.length > 1024 || !c || typeof c !== 'object' || !MODES.includes(c.mode) || (c.sameDrive !== undefined && typeof c.sameDrive !== 'boolean')) throw moveRefused();
+    return [folder, { mode: c.mode, ...(c.sameDrive ? { sameDrive: true } : {}) }];
+  }));
+}
+// 「옛 PC 백업에서 꺼내기」 (검토 M2): a PC that already writes takes old files out only into new folders — never into the
+// places it backs up — whatever the screen chose, for every folder of the old backup (a folder left out stays left out).
+function writerChoices(choices) {
+  const kept = Object.fromEntries(Object.entries(choices).map(([folder, c]) => [folder, c.mode === 'skip' ? c : { mode: 'newFolder' }]));
+  return new Proxy(kept, { get: (t, k) => (typeof k === 'string' && /^[A-Za-z]:[\\/]/.test(k) ? (Object.hasOwn(t, k) ? t[k] : { mode: 'newFolder' }) : t[k]) });
+}
 async function createApplication({ host, root, workRoot = null, resticPath, clientPath, publish, testMode = false }) {
   let closing = false, dialogBusy = false, launchAtLogin = false;
   const window = null, handlers = new Map();
@@ -44,6 +62,13 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   // 「Google로 시작」 · 「보호 시작」 (STAGE1_DESIGN.md 2.1 · 4.5): the provisioning server, envelope v3, the cloud profile.
   const account = new Account({root, secretStore, client, openExternal: googleOnly, engine: profiles.engines.b2, appVersion: APP_VERSION});
   await account.open();
+  // 「새 PC로 옮겨 오기」 (STAGE1_DESIGN.md 4.6 · 4.6b) on the cloud profile's repository: the Rust host gives files.* ·
+  // folders.* · reinstall.*, the account's device pins the old device's backup while it is copied (move/pin).
+  const move = new MoveService({ engine: profiles.engines.b2, host, stateDir: root, localDir: workRoot || root,
+    server: { pinMove: id => account.provision.pinMove(id), unpinMove: () => account.provision.unpinMove() } });
+  // The reinstall runs beside the window's other work: it never reads the repository, so it holds no engine job and a
+  // scheduled backup is not kept waiting for it (up to hours).
+  let reinstallJob = null;
   launchAtLogin = await host('startup.read', []);
   const recommended = new RecommendedBackup({root:path.join(root,'recommended'),workRoot:workRoot?path.join(workRoot,'recommended'):null,resticPath,secretStore,
     plannerPath:path.join(path.dirname(resticPath),'WorkBackupPlanner.exe'),inventoryPath:path.join(path.dirname(resticPath),'WorkBackupInventory.exe'),
@@ -59,7 +84,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     }});
   await recommended.open();recommended.onChange=()=>push();
   function state() {
-    const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state()};
+    const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(),
+      move:{ reinstall: reinstallJob ? { ...reinstallJob } : null }};
     withRun(value);
     return {...value, protection:protection(value,{startupRegistered:launchAtLogin})};
   }
@@ -318,6 +344,45 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     // 「그만두기」 while a Google sign-in waits in the browser (화면 세션 부탁 13): the waiting request ends as CANCELED.
     // It reads nothing and takes no slot, so it reaches the worker while that request holds the window.
     handle('cancelGoogle', () => { account.cancelSignIn(); recovery.auth?.cancel?.(); return null; }, { read: true });
+    // 「새 PC로 옮겨 오기」 (4.6 · 4.6b). Each answers with what its screen shows (공유 노트 「옮겨오기_화면자료」).
+    // The old device must be one the repository has backups of (move.devices), not any name the screen sends.
+    async function moveFrom(v) {
+      if (typeof v.from !== 'string' || !(await move.devices()).some(d => d.from === v.from)) throw Object.assign(new Error('옮겨 올 PC를 다시 골라 주세요.'), { code: 'BAD_INPUT' });
+      return v.from;
+    }
+    handle('moveDevices', () => move.devices(), { codes: true });
+    // The places a move uses: on a PC that already writes, new folders only — the preview shows what the move does
+    // (GPT workbackup-movewire GA1).
+    const placesOf = v => (cloud().config?.mode === 'backup' ? writerChoices(moveChoices(v)) : moveChoices(v));
+    // One old device at a time: a reinstall for one and a move of another would write each other's state (GPT GA2).
+    const reinstalling = () => Object.assign(new Error('프로그램을 까는 중입니다. 끝난 뒤 다시 눌러 주세요.'), { code: 'JOB_BUSY' });
+    handle('movePreview', async (_context, input) => { const v = objectInput(input); const from = await moveFrom(v); return move.preview({ from, choices: placesOf(v) }); }, { codes: true });
+    handle('moveStart', async (_context, input) => {
+      const v = objectInput(input), engine = cloud();
+      if (reinstallJob?.running) throw reinstalling();
+      const from = await moveFrom(v), choices = placesOf(v);
+      // Again after the wait: this request holds the window's slot (dialogBusy), so none should have started meanwhile.
+      if (reinstallJob?.running) throw reinstalling();
+      return launchJob(engine, () => engine.operation('move', () => move.start({ from, choices, onProgress: p => engine.stage('옮겨 오는 중', Number.isFinite(p.percent) ? p.percent : null) })));
+    }, { codes: true });
+    handle('moveResult', () => move.result(), { read: true });
+    handle('moveReinstallList', () => move.reinstallList(), { codes: true });
+    handle('moveReinstall', (_context, input) => {
+      const v = objectInput(input);
+      if (!Array.isArray(v.ids) || !v.ids.length || v.ids.length > 200 || v.ids.some(id => typeof id !== 'string' || id.length > 128)) throw moveRefused();
+      if (reinstallJob?.running) throw reinstalling();
+      if (cloud().job?.kind === 'move') throw Object.assign(new Error('옮겨 오는 중입니다. 끝난 뒤 다시 눌러 주세요.'), { code: 'JOB_BUSY' });
+      reinstallJob = { running: true, stage: 'start', at: new Date().toISOString(), results: null, error: null };
+      void move.reinstall({ ids: v.ids, onProgress: p => { reinstallJob = { ...reinstallJob, stage: p.stage === 'elevated' ? 'elevated' : 'user' }; push(); } })
+        .then(results => { reinstallJob = { ...reinstallJob, running: false, stage: 'done', results }; })
+        .catch(e => { reinstallJob = { ...reinstallJob, running: false, stage: 'failed', error: CODE.test(e.code || '') ? e.code : 'REINSTALL_FAILED' }; })
+        .finally(() => push());
+      return state();
+    }, { lock: false, codes: true });
+    handle('moveRestoreSettings', () => move.restoreSettings(), { codes: true });
+    handle('moveChecklist', () => move.checklist(), { codes: true });
+    handle('moveCheck', (_context, input) => { const v = objectInput(input); if (typeof v.id !== 'string' || v.id.length > 128 || typeof v.done !== 'boolean') throw moveRefused(); return move.check({ id: v.id, done: v.done }); }, { lock: false, codes: true });
+    handle('moveRelease', async () => { await move.release(); return state(); }, { lock: false, codes: true });
     handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; }, { lock: false });
 
   profiles.on('state',push); recovery.on('state',push);
@@ -373,4 +438,4 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     active:()=>profiles.active()||!!recommended.engine?.config?.automatic||recommended.busy, busy:()=>profiles.busy()||recommended.busy
   };
 }
-module.exports={createApplication};
+module.exports={createApplication,moveInput:{moveChoices,writerChoices}};

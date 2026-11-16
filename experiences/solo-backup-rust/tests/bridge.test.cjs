@@ -36,7 +36,9 @@ test('bridge, worker and native method contract preserves all existing app actio
   const original=[...fs.readFileSync(path.resolve(root,'../solo-backup/src/preload.cjs'),'utf8').matchAll(/call\('([^']+)'\)/g)].map(m=>m[1]).sort();
   // The account's requests (STAGE1_DESIGN.md 2.1 · 4.5): 「Google로 시작」 · 「보호 시작」 and the provisioning server's.
   const account=['signInGoogle','startProtection','continueBackup','openAccountBackup','devicesList','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restorePlan','restoreRun','restoreJob','restoreChoose','cancelGoogle'];
-  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account].sort();
+  // 「새 PC로 옮겨 오기」 (4.6 · 4.6b): done on a PC that does not write, so every one is allowed restore-only.
+  const move=['moveDevices','movePreview','moveStart','moveResult','moveReinstallList','moveReinstall','moveRestoreSettings','moveChecklist','moveCheck','moveRelease'];
+  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
   for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials','addSources','removeSource'])assert.equal(contract[name].allowedReadOnly,false);
@@ -50,4 +52,6 @@ test('bridge, worker and native method contract preserves all existing app actio
   assert.equal(contract.chooseSources.allowedReadOnly,true);
   // The account code decides what a restore-only PC may do (it takes the write seat from there).
   for(const name of account)assert.equal(contract[name].allowedReadOnly,true,name);
+  for(const name of move)assert.deepEqual([contract[name].allowedReadOnly,contract[name].dialog],[true,false],name);
+  for(const name of ['moveStart','moveReinstall'])assert.equal(contract[name].timeoutMs,0,name);
 });

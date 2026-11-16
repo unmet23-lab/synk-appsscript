@@ -13,7 +13,9 @@ function host(method,args){
   if(terminating||pending.size>=8)return Promise.reject(new Error('HOST_BUSY'));
   const call=++nextCall;
   return new Promise((resolve,reject)=>{
-    const timeout=method.startsWith('dialog.')?0:method.startsWith('secret.')?30000:10000;
+    // 「새 PC로 옮겨 오기」's host calls take longer (4.6 · 4.6b): placing a large file compares it by SHA-256, the
+    // elevated reinstall waits for each machine-wide program (20 min each, 2 h in all, plus its own margin).
+    const timeout=method.startsWith('dialog.')?0:method.startsWith('secret.')?30000:method.startsWith('files.')?1800000:method.startsWith('folders.')?60000:method.startsWith('reinstall.')?10800000:10000;
     const timer=timeout?setTimeout(()=>{pending.delete(call);reject(new Error('HOST_TIMEOUT'));},timeout):null;
     pending.set(call,{resolve,reject,timer});send({call,method,args});
   });

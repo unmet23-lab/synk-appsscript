@@ -20,6 +20,9 @@
 //! failed, 77 not elevated. `--vss-helper` is that task's fixed action. `--uninstall` also takes every user's helper
 //! task, shadow copies, links and folders away. A run whose partial snapshot left out files another program held asks
 //! the helper for shadow copy links and has the worker fill them (`$fill`) before it ends.
+//!
+//! 「새 PC로 옮겨 오기」의 다시 깔기 (4.6b, `reinstall.rs`): the window app starts `--reinstall <number> <id>…` elevated
+//! (one administrator approval) for the table's machine-wide programs; its exit code is `reinstall::elevated_main`'s.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 // The binary root looks beside itself for modules; the helper lives in its own folder (`src/bin/run/`).
 // Outside src/bin: the Tauri bundler takes every file and folder there for a program of its own (11-16 CI).
@@ -114,12 +117,17 @@ fn resources() -> Result<PathBuf, String> {
     Ok(if cfg!(debug_assertions) { std::env::var_os("SWB_RESOURCES").map(PathBuf::from).unwrap_or(beside) } else { beside })
 }
 
-/// The worker's only host calls in run mode are the DPAPI secret store.
+/// The worker's host calls in run mode: the DPAPI secret store, and for the daily 옮겨 오기 꾸러미 (4.6) where this PC's
+/// folders are and the programs winget knows — reading only. Nothing here installs (`reinstall.user` · `.elevate` are
+/// the window app's).
 fn host(method: &str, args: Value) -> Result<Value, String> {
-    let first = args.as_array().and_then(|a| a.first()).and_then(Value::as_str).ok_or("HOST_REQUEST")?;
+    let list = args.as_array().cloned().unwrap_or_default();
+    let first = || list.first().and_then(Value::as_str).ok_or_else(|| "HOST_REQUEST".to_string());
     match method {
-        "secret.encrypt" => Ok(json!(secret::encrypt(first)?)),
-        "secret.decrypt" => { let value = secret::decrypt(first)?; Ok(json!(value.as_str())) }
+        "secret.encrypt" => Ok(json!(secret::encrypt(first()?)?)),
+        "secret.decrypt" => { let value = secret::decrypt(first()?)?; Ok(json!(value.as_str())) }
+        "folders.snapshot" => backup_native::folders::host(method, &list).unwrap_or_else(|| Err("HOST_METHOD".into())),
+        "reinstall.installed" => backup_native::reinstall::host(method, &list).unwrap_or_else(|| Err("HOST_METHOD".into())),
         _ => Err("HOST_METHOD".into()),
     }
 }
@@ -271,6 +279,8 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
 fn run() -> i32 {
     let (clock, started) = (Instant::now(), epoch_ms());
     let argv: Vec<String> = std::env::args().skip(1).collect();
+    // The elevated reinstall the window app asked for: everything after the flag is reinstall's (a number, then ids).
+    if argv.first().map(String::as_str) == Some("--reinstall") { return backup_native::reinstall::elevated_main(&argv[1..]); }
     if let [mode] = argv.as_slice() {
         if ["--install", "--uninstall", "--open-app", "--register-helper"].contains(&mode.as_str()) { return machine(mode); }
         // The helper task's action; nothing while an install or uninstall replaces this folder's files.
