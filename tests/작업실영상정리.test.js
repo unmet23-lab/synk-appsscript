@@ -428,3 +428,43 @@ test('넘김은 20%로 멈춘 가장 최근 실행만 받고, 아무것도 지�
   assert.deepEqual([cleaned.status, cleaned.deleted.length], ['cleaned', 2]);
   assert.equal(s.deletes, 2);
 });
+
+test('넘김 뒤에 보통 지우기가 진행되었으면 그 넘김은 무효다(GPT 다시 검수 GA1 · GA2)', async t => {
+  const { s, go } = await setup(t);
+  const old = { created: T0 - 10 * DAY };
+  const kept = [object(10), object(11), object(12)], gone = [object(1), object(2)];
+  for (const name of [...kept, ...gone]) s.put(MEDIA, name, 'body ' + name, old);
+  backupNow(s, kept.map(n => ref(s, n)), 'a');
+  await go();
+  s.now = T0 + 3 * DAY;
+  backupNow(s, kept.map(n => ref(s, n)), 'b');
+  const stopped = await go({ execute: true, config: ENABLED });
+  assert.deepEqual(stopped.reasons, ['TOO_MANY']);
+  const more = [...Array(10)].map((_, i) => object(40 + i));
+  for (const name of more) s.put(MEDIA, name, 'more', old);
+  backupNow(s, [...kept, ...more].map(n => ref(s, n)), 'c');
+  s.deleteHook = name => (name === gone[1] ? 500 : undefined);  // 하나는 지우고 하나는 실패한 보통 지우기
+  await assert.rejects(go({ execute: true, config: ENABLED }), error => error.code === 'DELETE_FAILED' && error.report.overrode === null && error.report.deleted.length === 1);
+  s.deleteHook = null;
+  const again = await go({ execute: true, override: stopped.runId, config: ENABLED });
+  assert.deepEqual([again.status, again.reasons], ['stopped', ['OVERRIDE_INVALID']]);
+});
+
+test('낡은 잠금 치우기는 lock.reclaim 폴더를 잡은 한 실행만 한다(GPT 다시 검수 GA3)', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-gc-reclaim-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const lock = path.join(dir, 'lock'), reclaim = path.join(dir, 'lock.reclaim'), old = new Date(Date.now() - 5 * HOUR);
+  const dead = spawnSync(process.execPath, ['-e', '0']).pid;
+  fs.writeFileSync(lock, JSON.stringify({ pid: dead, token: 'gone' }));
+  fs.mkdirSync(reclaim);
+  assert.throws(() => _takeLock(dir), error => error.code === 'BUSY', '다른 실행이 치우는 중이면 기다린다');
+  assert.equal(JSON.parse(fs.readFileSync(lock, 'utf8')).token, 'gone', '치우는 중인 잠금은 건드리지 않는다');
+  fs.utimesSync(reclaim, old, old);
+  assert.throws(() => _takeLock(dir), error => error.code === 'LOCK_RECLAIM_STUCK', '2시간 넘게 남은 치우기 폴더는 저절로 지우지 않는다');
+  fs.rmdirSync(reclaim);
+  const release = _takeLock(dir);
+  assert.equal(fs.existsSync(reclaim), false, '치운 뒤에는 치우기 폴더를 지운다');
+  assert.equal(JSON.parse(fs.readFileSync(lock, 'utf8')).pid, process.pid);
+  release();
+  assert.equal(fs.existsSync(lock), false);
+});

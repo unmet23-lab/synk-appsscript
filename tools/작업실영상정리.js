@@ -32,7 +32,7 @@
  *                backupPrefix(기본 "company/production/")로 정기 백업 자리를 바꿀 수 있다.
  *   state.json   후보를 처음 본 시각(GCS 시각)
  *   runs/<실행 ID>.json  실행마다 남기는 기록(후보와 지운 것의 이름까지)
- *   lock         한 번에 하나만 돈다
+ *   lock         한 번에 하나만 돈다(낡은 잠금 치우기는 lock.reclaim 폴더를 잡은 실행만 한다)
  * 미디어 버킷의 gc/runs/<실행 ID>.json에는 멈추지 않고 끝난 실행만 숫자로 남긴다. 서버의 하루 대조가 이 기록이
  * 7일 넘게 없으면 경보(MEDIA_CLEANUP_STALE)를 올리므로, 계속 멈추는 것도 7일 안에 드러난다.
  *
@@ -72,7 +72,7 @@ const REASONS = Object.freeze({
   COMPLETE_UNREADABLE: '완료 객체를 읽지 못했거나 꼴이 틀렸습니다',
   BACKUP_STALE: '정기 백업의 가장 최근 완료 객체가 48시간보다 오래되었습니다(백업이 멈춘 것 같습니다)',
   TOO_MANY: '지울 것이 객체의 20%를 넘습니다(목록을 보신 뒤 --한번넘김 <실행 ID>로 한 번만 넘깁니다)',
-  OVERRIDE_INVALID: '--한번넘김에 준 실행이 20% 하나로만 멈춘 가장 최근 실행이 아니거나, 그 넘김으로 이미 지웠습니다',
+  OVERRIDE_INVALID: '--한번넘김에 준 실행이 20% 하나로만 멈춘 가장 최근 실행이 아니거나, 그 뒤에 지우기 실행이 이미 진행되었습니다',
 });
 
 class Failure extends Error {
@@ -175,7 +175,7 @@ function alive(pid) {
  *  죽은 프로세스가 남긴 잠금은 치운다. 내용을 못 읽는 잠금(쓰는 도중이거나 깨짐)은 2시간이 지난 뒤에만 치운다. */
 function takeLock(stateDir) {
   fs.mkdirSync(stateDir, { recursive: true });
-  const file = path.join(stateDir, 'lock');
+  const file = path.join(stateDir, 'lock'), reclaim = path.join(stateDir, 'lock.reclaim');
   const mine = JSON.stringify({ pid: process.pid, token: crypto.randomBytes(8).toString('hex'), at: new Date().toISOString() });
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -192,8 +192,21 @@ function takeLock(stateDir) {
         try { old = Date.now() - fs.statSync(file).mtimeMs > RULES.lockStaleMs; } catch {}
         if (!old) throw new Failure('BUSY', 3);
       }
-      // 치우기 직전에 같은 잠금인지 한 번 더 본다. 그사이 다른 실행이 새로 잡았으면 기다린다.
-      try { if (fs.readFileSync(file, 'utf8') !== text) throw new Failure('BUSY', 3); fs.unlinkSync(file); } catch (e) { if (e instanceof Failure) throw e; }
+      // 낡은 잠금은 lock.reclaim 폴더(만들기가 원자적이다)를 잡은 한 실행만 치운다. 치우는 동안 다른 실행은 잠금을 지우지도 새로 잡지도 못한다
+      // (잠금이 있는 한 wx 만들기는 실패하고, 지우기는 이 폴더를 잡아야 한다 — GPT 다시 검수 GA3). 치우기는 잠깐이면 끝나므로, 2시간 넘게 남은
+      // 폴더는 치우던 실행이 죽은 것이다. 그때는 저절로 지우지 않고 LOCK_RECLAIM_STUCK으로 멈춘다(도는 실행이 없는지 본 뒤 손으로 지운다).
+      try { fs.mkdirSync(reclaim); } catch (e) {
+        if (e.code !== 'EEXIST') throw e;
+        let stuck = false;
+        try { stuck = Date.now() - fs.statSync(reclaim).mtimeMs > RULES.lockStaleMs; } catch {}
+        throw new Failure(stuck ? 'LOCK_RECLAIM_STUCK' : 'BUSY', 3);
+      }
+      try {
+        let now = null;
+        try { now = fs.readFileSync(file, 'utf8'); } catch (e) { if (e.code !== 'ENOENT') throw e; }
+        if (now !== null && now !== text) throw new Failure('BUSY', 3);
+        if (now !== null) fs.unlinkSync(file);
+      } finally { try { fs.rmdirSync(reclaim); } catch {} }
     }
   }
   throw new Failure('BUSY', 3);
@@ -285,13 +298,14 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
 
     // 한 번 넘김(카본 A1 · A2): 주면 비율과 상관없이 늘 검사하고, 그 실행의 목록에 있는 것만 지운다(목록 밖의 것은 다음 실행이 보통 규칙으로 본다).
     //   넘길 수 있는 실행은 20% 하나로만 멈춘 가장 최근 실행이다. 그 뒤에 다시 20%로 멈춘 실행이 있으면 그 새 실행으로 넘긴다.
-    //   그 넘김으로 지우기가 진행된 적(지우는 중 · 지움 · 실패)이 있으면 다시 쓰지 못한다. 미리 보기로 넘겨 본 것과 멈춘 지우기 실행은 쓴 것으로 치지 않는다.
+    //   그 실행 뒤에 멈추지 않고 진행된 지우기 실행(지우는 중 · 지움 · 실패)이 하나라도 있으면, 그 넘김을 썼든 안 썼든 다시 쓰지 못한다(GPT 다시 검수 GA1 · GA2).
+    //   미리 보기로 넘겨 본 것과 멈춘 지우기 실행은 쓴 것으로 치지 않는다.
     let overrode = null, notApproved = [];
     if (!reasons.length && override) {
       const runs = runsOf(stateDir), at = runs.findIndex(r => r.runId === override), stopped = at >= 0 ? runs[at] : null, later = at >= 0 ? runs.slice(at + 1) : [];
       const tooMany = r => r.status === 'stopped' && Array.isArray(r.reasons) && r.reasons.includes('TOO_MANY');
       const allowed = !!stopped && stopped.status === 'stopped' && Array.isArray(stopped.reasons) && stopped.reasons.length === 1 && stopped.reasons[0] === 'TOO_MANY'
-        && !later.some(tooMany) && !later.some(r => r.mode === 'delete' && r.overrode === override && r.status !== 'stopped');
+        && !later.some(tooMany) && !later.some(r => r.mode === 'delete' && r.status !== 'stopped');
       if (allowed) {
         const listed = new Set(Array.isArray(stopped.eligible) ? stopped.eligible : []);
         overrode = override;
