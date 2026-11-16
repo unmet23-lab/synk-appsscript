@@ -129,6 +129,8 @@ function observe(config){
       await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),s=p?.querySelector('.orb-stage');return !!p&&p.dataset.portalState==='entered'&&p.dataset.orbClient==='app'&&s?.dataset.ui==='app';})()",'orb-solio');
       const entered=await run("(async()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher'),auth=await window.synkDesktop.authStatus();return {portalState:p?.dataset.portalState,portalActive:p?.dataset.portalActive,orbClient:p?.dataset.orbClient,say:(p?.querySelector('[data-say]')?.textContent||'').trim(),launcherInert:Boolean(l?.inert),auth:{configured:auth.configured,signedIn:auth.signedIn}};})()");
       check('orb QA guest path reaches the Solio first screen and keeps the account signed out',entered.portalState==='entered'&&entered.portalActive==='false'&&entered.orbClient==='app'&&entered.say==='로그인하면 구독별 남은 양이 여기에 보입니다.'&&entered.launcherInert&&entered.auth.configured===true&&entered.auth.signedIn===false,entered);
+      // 방이 다 드러난 뒤 찍는다. 곧바로 찍으면 도착 움직임 도중이라 문장이 아직 보이지 않았다(0.4.95 대역 빌드 캡처)
+      await waitFor(contents,"(()=>{const s=document.querySelector('#portal-entry .orb-stage'),say=document.querySelector('#portal-entry [data-layer=app] [data-say]');return !!s&&!!say&&s.classList.contains('settled')&&getComputedStyle(say).opacity==='1';})()",'orb-solio-shown');
       await capture(created,'platform-orb-solio');
       // 작은 구 → 공간 고르기 → 「설정」 → 옛 설정 보기(legacy)의 업데이트 확인. 내려받기 보기는 새 얼굴에서 갈 길이 없어 뺀다
       await clickVisible('#portal-entry .here-orb','orb small orb visible and unobscured');
