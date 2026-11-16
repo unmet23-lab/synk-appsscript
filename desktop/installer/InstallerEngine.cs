@@ -139,15 +139,15 @@ namespace Synk.SignalInstaller
         public string Preflight()
         {
             CheckPendingTransaction();
-            if (!Environment.Is64BitOperatingSystem) throw new InvalidOperationException("64비트 Windows에서만 설치할 수 있어요.");
-            if (ApplicationProcessCount() != 0) throw new InvalidOperationException(Short + "가 켜져 있어요.\n작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
+            if (!Environment.Is64BitOperatingSystem) throw FailureKind.Tag(new InvalidOperationException("64비트 Windows에서만 설치할 수 있어요."), FailureKind.NotX64);
+            if (ApplicationProcessCount() != 0) throw FailureKind.Tag(new InvalidOperationException(Short + "가 켜져 있어요.\n작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요."), FailureKind.AppRunning);
             if (!String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, RegistryKey, "InstallLocation")) ||
                 !String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, UninstallKey, "UninstallString")))
-                throw new InvalidOperationException("모든 Windows 계정용 " + Short + "가 이미 설치돼 있어요. 그 설치를 지운 뒤 지금 계정용으로 설치해 주세요.");
+                throw FailureKind.Tag(new InvalidOperationException("모든 Windows 계정용 " + Short + "가 이미 설치돼 있어요. 그 설치를 지운 뒤 지금 계정용으로 설치해 주세요."), FailureKind.AllUsers);
             Version existing, incoming;
             string current = ReadRegistry(RegistryHive.CurrentUser, UninstallKey, "DisplayVersion");
             if (Version.TryParse(current, out existing) && Version.TryParse(spec.Version, out incoming) && existing > incoming)
-                throw new InvalidOperationException("이미 더 새 버전이 설치돼 있어요. synk.im에서 최신 설치 파일을 받아 주세요.");
+                throw FailureKind.Tag(new InvalidOperationException("이미 더 새 버전이 설치돼 있어요. synk.im에서 최신 설치 파일을 받아 주세요."), FailureKind.Newer);
             string directory = ResolveDirectory();
             RejectReparsePoints(directory);
             foreach (InstallFile item in spec.Files)
@@ -162,7 +162,7 @@ namespace Synk.SignalInstaller
             long required = spec.MinFreeBytes > 0 ? spec.MinFreeBytes : 3L * 1024 * 1024 * 1024;
             foreach (string drive in new HashSet<string>(new [] { root, System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)), System.IO.Path.GetPathRoot(System.IO.Path.GetTempPath()) }, StringComparer.OrdinalIgnoreCase))
                 if (new DriveInfo(drive).AvailableFreeSpace < required)
-                    throw new IOException("설치할 공간이 모자라요. 드라이브에서 약 " + Math.Ceiling(required / (1024.0 * 1024 * 1024)).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " GB를 비워 주세요.");
+                    throw FailureKind.Tag(new IOException("설치할 공간이 모자라요. 드라이브에서 약 " + Math.Ceiling(required / (1024.0 * 1024 * 1024)).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " GB를 비워 주세요."), FailureKind.Space);
             return directory;
         }
 
@@ -185,7 +185,7 @@ namespace Synk.SignalInstaller
                 using (Stream source = backendFactory())
                 using (FileStream target = new FileStream(backend, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 {
-                    if (source == null) throw new IOException("설치 파일이 없어요. synk.im에서 다시 받아 주세요.");
+                    if (source == null) throw FailureKind.Tag(new IOException("설치 파일이 없어요. synk.im에서 다시 받아 주세요."), FailureKind.Damaged);
                     byte[] buffer = new byte[1024*1024];
                     long written = 0;
                     int count, last = -1;
@@ -201,11 +201,11 @@ namespace Synk.SignalInstaller
                 using (FileStream held = new FileStream(backend, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     if (held.Length != spec.BackendBytes || !String.Equals(HashFile(backend), spec.BackendSHA256, StringComparison.OrdinalIgnoreCase))
-                        throw new IOException("설치 파일이 온전하지 않아요. synk.im에서 다시 받아 주세요.");
+                        throw FailureKind.Tag(new IOException("설치 파일이 온전하지 않아요. synk.im에서 다시 받아 주세요."), FailureKind.Damaged);
                     Preflight();
                     progress(new InstallProgress(InstallStage.Installing, Short + "를 설치해요", "잠시만 기다려 주세요. 설치하는 동안에는 창을 닫을 수 없어요.", null));
                     int exitCode=BackendProcess.Run(backend,cache,deadline,delegate { progress(new InstallProgress(InstallStage.Stopping, "설치를 멈춰요","설치 제한 시간을 넘겼어요. 설치를 멈춘 뒤 이전 상태를 확인해요.",null)); });
-                    if (exitCode == 20) throw new InvalidOperationException(Short + "가 켜져 있거나, 켜져 있는지 확인하지 못했어요. " + Short + "를 닫고 다시 해 주세요.");
+                    if (exitCode == 20) throw FailureKind.Tag(new InvalidOperationException(Short + "가 켜져 있거나, 켜져 있는지 확인하지 못했어요. " + Short + "를 닫고 다시 해 주세요."), FailureKind.AppRunning);
                     if (exitCode != 0) throw new IOException("설치를 마치지 못했어요. 다시 해 주세요. (코드 " + exitCode + ")");
                 }
                 return VerifyInstalled(progress);
@@ -267,6 +267,9 @@ namespace Synk.SignalInstaller
                 if (shell != null) Marshal.FinalReleaseComObject(shell);
             }
         }
+
+        /// <summary>설치된 앱 실행 파일의 경로(새 앱의 창을 기다릴 때 쓴다)</summary>
+        public string InstalledExecutable() { return System.IO.Path.Combine(verifiedDirectory ?? ResolveDirectory(), spec.ExecutableName); }
 
         public void Launch()
         {

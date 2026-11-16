@@ -15,6 +15,26 @@ namespace Synk.SignalInstaller
         { CanRetry=canRetry; BackendStopped=backendStopped; }
     }
 
+    /// <summary>
+    /// 엔진의 실패 종류(검정 구 1-가 5절). 엔진 문장은 세 제품이 같이 쓰므로 바꾸지 않고, 던지는 자리에서 예외의 Data에 종류만 붙인다.
+    /// Platform 새 창은 이 값으로 문장을 고른다. 시험(Tests.cs)이 엔진 문장을 Message.Contains로 맞추는 것은 그대로 둔다.
+    /// </summary>
+    public static class FailureKind
+    {
+        public const string Key = "synk.failure-kind";
+        public const string NotX64 = "not-x64", AppRunning = "app-running", AllUsers = "all-users", Newer = "newer", Space = "space", Damaged = "damaged",
+            Timeout = "timeout", AppStillRunning = "app-still-running", Restored = "restored";
+        public static T Tag<T>(T error, string kind) where T : Exception { try { error.Data[Key] = kind; } catch (Exception) { } return error; }
+        public static string Of(Exception error)
+        {
+            for (Exception item = error; item != null; item = item.InnerException) {
+                try { string kind = item.Data[Key] as string; if (kind != null) return kind; } catch (Exception) { }
+            }
+            return null;
+        }
+        public static void Copy(Exception from, Exception to) { string kind = Of(from); if (kind != null) Tag(to, kind); }
+    }
+
     // The verified NSIS and every descendant belong to this job before the
     // first instruction runs. No PID-name killing or breakaway is permitted.
     internal static class BackendProcess

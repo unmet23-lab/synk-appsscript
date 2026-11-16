@@ -30,6 +30,29 @@ const PRODUCTS = {
     pin:{url:null,source:'resources/clients/messenger.exe in SYNK-Platform-Preview-0.4.3-win-x64.exe',bytes:132289127,sha256:'ec84d50e4c48b8834434a60f941fa703ad96d63c85922d3f82fcb06d758b2cff',
       asarSHA256:'dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a',executableSHA256:'f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481'}},
 };
+// 설치기 원천 파일과 글꼴. 설치기 시험(tests/test.cjs)도 이 목록을 그대로 쓴다(공개 흐름의 창 검사 목록은 platform-release.workflow.yml에 같은 차례로 적는다).
+// OrbStage.cs와 OrbWindow.cs는 Platform 새 창(검정 구 1-가 ③)이다. WORLD와 Workspace도 같이 컴파일하지만 쓰지 않는다.
+const SOURCES=['Program.cs','InstallerEngine.cs','AutoUpdateEngine.cs','BackendProcess.cs','InstallTransaction.cs','SignalWindow.cs','OrbStage.cs','OrbWindow.cs'];
+// SUIT-Regular는 공식 정적 파일이다. SYNKText-Light는 앱이 쓰는 SUIT 가변 글꼴(assets/launcher/SUIT.woff2)에서 300을 뽑은 판이라 OFL의 예약 이름을 피해 가족 이름을 바꿨다
+const FONTS=['SUIT-Medium.otf','SUIT-ExtraBold.otf','SUIT-Heavy.otf','SUIT-Regular.otf','SYNKText-Light.ttf','InterTight-Medium.ttf','InterTight-Bold.ttf','DMMono-Medium.ttf'];
+// 설치기의 구 셰이더(orb/orb.hlsl). 사용자 PC에서는 fxc를 돌릴 수 없어 컴파일한 바이트(orb/orb.ps)를 저장소에 두고 싣는다.
+// fxc가 있는 빌드 PC에서는 다시 컴파일해 같은지 본다(1-가 구현 설계 1절). 없으면 저장소의 바이트를 그대로 쓴다
+const SHADER='orb/orb.ps';
+function findFxc(){
+  const kits=path.join(process.env['ProgramFiles(x86)']||'C:\\Program Files (x86)','Windows Kits','10','bin');
+  try{for(const version of fs.readdirSync(kits).filter(name=>/^10\./.test(name)).sort().reverse()){const fxc=path.join(kits,version,'x64','fxc.exe');if(fs.existsSync(fxc))return fxc;}}catch{}
+  return null;
+}
+function checkShader(){
+  const committed=path.join(ROOT,SHADER),fxc=findFxc();
+  assert(fs.existsSync(committed),'Missing compiled orb shader '+SHADER);
+  if(!fxc)return {sha256:crypto.createHash('sha256').update(fs.readFileSync(committed)).digest('hex'),recompiled:false};
+  const temporary=path.join(require('node:os').tmpdir(),'synk-orb-'+process.pid+'.ps');
+  try{command(fxc,['/nologo','/T','ps_3_0','/E','main','/O3','/Fo',temporary,path.join(ROOT,'orb','orb.hlsl')]);
+    assert(Buffer.compare(fs.readFileSync(temporary),fs.readFileSync(committed))===0,'orb/orb.ps is stale: recompile orb/orb.hlsl with fxc /T ps_3_0 /E main /O3');}
+  finally{try{fs.unlinkSync(temporary);}catch{}}
+  return {sha256:crypto.createHash('sha256').update(fs.readFileSync(committed)).digest('hex'),recompiled:true};
+}
 async function inventory(directory,relative='') { const list=[]; for(const item of fs.readdirSync(path.join(directory,relative),{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))) { const member=path.posix.join(relative,item.name); if(item.isDirectory()) list.push(...await inventory(directory,member)); else { assert(item.isFile(),'Only regular payload files allowed'); const file=path.join(directory,member); list.push({path:member,bytes:fs.statSync(file).size,sha256:await sha(file)}); } } return list; }
 async function main() {
   assert(process.platform==='win32'&&process.arch==='x64','Windows x64 build required');
@@ -88,7 +111,9 @@ async function main() {
   json(path.join(output,'install.json'),spec); json(path.join(output,'backend-config.json'),config);
   const target=path.join(output,product.output);
   const framework=path.join(process.env.WINDIR,'Microsoft.NET/Framework64/v4.0.30319');
-  const resources=['SUIT-Medium.otf','SUIT-ExtraBold.otf','SUIT-Heavy.otf','InterTight-Medium.ttf','InterTight-Bold.ttf','DMMono-Medium.ttf'].map(file=>'/resource:'+path.join(fonts,file)+',font.'+file);
+  const resources=FONTS.map(file=>'/resource:'+path.join(fonts,file)+',font.'+file);
+  const shader=checkShader();
+  resources.push('/resource:'+path.join(ROOT,SHADER)+',shader.orb.ps');
   // 왼쪽 포스터 바탕(art/make-poster.mjs로 만든 그림). 창이 자기 어셈블리에서 읽는다.
   resources.push('/resource:'+path.join(ROOT,'art',product.poster)+',art.'+product.poster);
   const assembly=path.join(output,'AssemblyInfo.cs');
@@ -96,12 +121,12 @@ async function main() {
   const licenses=['SUIT-LICENSE.txt','InterTight-LICENSE.txt','DMMono-LICENSE.txt'].map(file=>'/resource:'+path.join(fonts,file)+',license.'+file);
   command(path.join(framework,'csc.exe'),['/nologo','/target:winexe','/platform:x64','/optimize+','/out:'+target,'/win32manifest:'+path.join(ROOT,'app.manifest'),'/win32icon:'+icon,
     '/r:System.Core.dll','/r:System.Runtime.Serialization.dll','/r:System.Xaml.dll',...['PresentationFramework.dll','PresentationCore.dll','WindowsBase.dll'].map(file=>'/r:'+path.join(framework,'WPF',file)),
-    '/resource:'+path.join(output,'install.json')+',install.json','/resource:'+backend+',backend.exe',...resources,...licenses,...['Program.cs','InstallerEngine.cs','AutoUpdateEngine.cs','BackendProcess.cs','InstallTransaction.cs','SignalWindow.cs'].map(file=>path.join(ROOT,file)),assembly]);
+    '/resource:'+path.join(output,'install.json')+',install.json','/resource:'+backend+',backend.exe',...resources,...licenses,...SOURCES.map(file=>path.join(ROOT,file)),assembly]);
   assert(JSON.stringify(await inventory(payload))===JSON.stringify(files),'Builder modified public app payload');
-  const report={ok:true,builtAt:new Date().toISOString(),product:id,appVersion:spec.version,installerRevision:product.revision,baseline:pin,installer:{file:path.basename(target),bytes:fs.statSync(target).size,sha256:await sha(target)},backend:{bytes:spec.backendBytes,sha256:spec.backendSHA256},appPayloadUnchanged:true,payloadFiles:files.length,nsisGUID:guid,unsignedPreview:true,requiresDotNetFramework:'4.8',sources:await inventory(ROOT).then(list=>list.filter(item=>!item.path.startsWith('dist/')))};
+  const report={ok:true,builtAt:new Date().toISOString(),product:id,appVersion:spec.version,installerRevision:product.revision,baseline:pin,installer:{file:path.basename(target),bytes:fs.statSync(target).size,sha256:await sha(target)},backend:{bytes:spec.backendBytes,sha256:spec.backendSHA256},appPayloadUnchanged:true,orbShader:shader,payloadFiles:files.length,nsisGUID:guid,unsignedPreview:true,requiresDotNetFramework:'4.8',sources:await inventory(ROOT).then(list=>list.filter(item=>!item.path.startsWith('dist/')))};
   json(path.join(output,product.report),report);
   fs.writeFileSync(path.join(output,product.sums),report.installer.sha256+'  '+path.basename(target)+'\n');
   console.log(JSON.stringify({...report,sources:report.sources.length}));
 }
 if(require.main===module) main().catch(error=>{console.error(error.stack||error);process.exitCode=1;});
-module.exports={inventory,sha,PRODUCTS,pin:PRODUCTS.platform.pin};
+module.exports={inventory,sha,PRODUCTS,pin:PRODUCTS.platform.pin,SOURCES,FONTS,SHADER,checkShader};

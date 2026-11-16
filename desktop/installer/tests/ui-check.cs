@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Synk.SignalInstaller;
@@ -26,6 +27,8 @@ internal static class SignalUiCheck
             Directory.CreateDirectory(output);
             Application app = new Application();
             SignalProduct product = SignalProduct.ById(args.Length > 2 ? args[2] : "platform");
+            // Platform은 검정 구 새 창이다(검정 구 1-가 ③). WORLD와 Workspace는 아래 지금 창 그대로 검사한다
+            if (product.Id == "platform") return PlatformCheck(fonts, output, product);
             string version = "0.4.11";
             string folder = product.Id == "world" ? "SYNKWorldPreview" : product.Id == "messenger" ? "SYNKMessengerPreview" : "SYNKPlatformPreview";
             SignalWindow window = new SignalWindow(fonts, version, product);
@@ -105,6 +108,120 @@ internal static class SignalUiCheck
             Console.Error.WriteLine(error.ToString());
             return 1;
         }
+    }
+
+    // ── Platform 새 창(OrbWindow): 5절 설치기 표의 장면을 100%, 150%, 200%에서 그린다 ──
+    // RenderTargetBitmap은 GPU 효과를 찍지 못하므로 구는 같은 셈의 CPU 판으로 그린다(OrbStage.ForceCpu). 창은 화면에 띄우지 않는다.
+    const double PW = 1440, PH = 940;
+    private static int PlatformCheck(string fonts, string output, SignalProduct product)
+    {
+        OrbStage.ForceCpu = true;
+        int installs = 0, launches = 0;
+        Func<OrbWindow> make = delegate {
+            OrbWindow made = new OrbWindow(fonts, "0.4.96", product);
+            made.Width = PW; made.Height = PH;
+            made.InstallRequested += delegate { installs++; };
+            made.LaunchRequested += delegate { launches++; };
+            return made;
+        };
+        HashSet<string> renderedFonts = new HashSet<string>();
+        Action<OrbWindow, string> render = delegate(OrbWindow window, string state) {
+            FrameworkElement surface = (FrameworkElement)window.Content;
+            window.Settle();
+            foreach (double scale in new double[] { 1, 1.5, 2 }) {
+                surface.Measure(new Size(PW, PH)); surface.Arrange(new Rect(0, 0, PW, PH)); surface.UpdateLayout();
+                window.Relayout(); window.Settle();
+                window.Orb.CpuScale = scale; window.Orb.RenderCpuNow();
+                surface.UpdateLayout();
+                RenderTargetBitmap bitmap = new RenderTargetBitmap((int)(PW * scale), (int)(PH * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+                bitmap.Render(surface);
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                using (FileStream file = File.Create(Path.Combine(output, "ui-platform-" + state + "-" + (int)(scale * 100) + ".png"))) encoder.Save(file);
+            }
+            CollectPlatformFonts(surface, renderedFonts);
+            Console.WriteLine("PASS: " + state + " · " + window.SayText + " / " + window.ThenText + " · " + window.Orb.Describe());
+        };
+        MethodInfo click = typeof(ButtonBase).GetMethod("OnClick", BindingFlags.NonPublic | BindingFlags.Instance);
+        Action<OrbWindow, string> press = delegate(OrbWindow window, string name) {
+            Button button = FindButton((DependencyObject)window.Content, name);
+            if (button == null || button.Visibility != Visibility.Visible) throw new Exception("Button missing: " + name + " in " + window.SceneName);
+            click.Invoke(button, null);
+        };
+        Action<OrbWindow, string, bool> closable = delegate(OrbWindow window, string state, bool expected) {
+            Button close = FindButton((DependencyObject)window.Content, "창 닫기");
+            if (close == null || close.IsEnabled != expected) throw new Exception("Unexpected window close state in " + state);
+        };
+
+        // 처음 설치: 매끈한 구와 「설치」 하나. 누르면 깎이고 닫기가 꺼진다
+        OrbWindow w = make(); w.SetInstalled(false); w.SetReady(); render(w, "ready"); closable(w, "ready", true);
+        if (w.SayText != "SYNK를 이 PC에 설치합니다." || w.ThenText != "끝나면 바로 열립니다.") throw new Exception("Ready copy changed");
+        press(w, "설치"); if (installs != 1) throw new Exception("InstallRequested not emitted");
+        closable(w, "installing", false);
+        w.ShowProgress(new InstallProgress(InstallStage.BackingUp, "", "", 0));
+        w.ShowProgress(new InstallProgress(InstallStage.Preparing, "", "", 100));
+        w.ShowProgress(new InstallProgress(InstallStage.Installing, "", "", null)); render(w, "install");
+        // 깎인 만큼은 어떤 단계 순서에서도 뒤로 가지 않는다(3절)
+        double last = w.ShownCut;
+        foreach (InstallProgress step in new[] { new InstallProgress(InstallStage.Preparing, "", "", 10), new InstallProgress(InstallStage.BackingUp, "", "", 0), new InstallProgress(InstallStage.Verifying, "", "", 50), new InstallProgress(InstallStage.Installing, "", "", null), new InstallProgress(InstallStage.Verifying, "", "", 100) }) {
+            w.ShowProgress(step); w.Settle();
+            if (w.ShownCut + 1e-9 < last) throw new Exception("Cut went backwards at " + step.Stage);
+            last = w.ShownCut;
+        }
+        if (last < 0.98) throw new Exception("Verified install should be nearly carved: " + last);
+        w.FinishCut(); w.Settle(); if (w.ShownCut < 0.999) throw new Exception("FinishCut must reach 100%");
+        Console.WriteLine("PASS: carving never goes backwards and finishes at 100%");
+        w.ShowInstallFailure(FailureKind.Tag(new InvalidOperationException("SYNK가 켜져 있어요."), FailureKind.AppRunning)); render(w, "failure-running"); closable(w, "failure", true);
+        press(w, "다시 시도"); if (installs != 2) throw new Exception("Retry did not request installation");
+        w.ShowInstallFailure(FailureKind.Tag(new InstallFailure("설치 제한 시간(10분)을 넘겼어요. 설치를 멈췄어요.", true, true), FailureKind.Timeout)); render(w, "failure-timeout");
+        w.ShowInstallFailure(new InstallFailure("설치가 끝나지 않았어요. 앱 파일이 일부 바뀌었을 수 있어 다시 설치하지 못하게 막았어요.\n되돌릴 원본: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Cache\\example", false, true)); render(w, "recovery-required");
+        if (FindButton((DependencyObject)w.Content, "다시 시도").Visibility == Visibility.Visible) throw new Exception("Unsafe recovery exposed retry");
+        w.ShowLaunchFailure(new IOException("SYNK 실행 파일을 확인하지 못했어요.")); render(w, "launch-failure");
+        press(w, "열기"); if (launches != 1) throw new Exception("LaunchRequested not emitted");
+
+        // 다시 설치
+        OrbWindow r = make(); r.SetInstalled(true); r.SetReady(); render(r, "reinstall");
+        if (r.SayText != "SYNK를 같은 자리에 다시 설치합니다.") throw new Exception("Reinstall copy changed");
+        press(r, "다시 설치");
+        r.ShowProgress(new InstallProgress(InstallStage.Restoring, "", "", null)); render(r, "restoring"); closable(r, "restoring", false);
+
+        // 자동 업데이트: 절반 깎인 구에서 이어 깎는다. 실패마다 5절의 줄
+        OrbWindow a = make(); a.BeginAutomatic(); render(a, "auto-50"); closable(a, "automatic", false);
+        a.ShowProgress(new InstallProgress(InstallStage.WaitingForApp, "", "", null));
+        a.ShowProgress(new InstallProgress(InstallStage.BackingUp, "", "", 100));
+        a.ShowProgress(new InstallProgress(InstallStage.Installing, "", "", null)); render(a, "auto-replacing");
+        if (a.ShownCut < 0.9) throw new Exception("Automatic replacing should be past 90%: " + a.ShownCut);
+        a.ShowAutomaticError(FailureKind.Tag(new InvalidOperationException("SYNK가 아직 켜져 있어요."), FailureKind.AppStillRunning)); render(a, "auto-still-running");
+        a.ShowAutomaticResult(new AutomaticUpdateResult { Restored = true, Relaunched = false, Message = "업데이트를 마치지 못해 이전 버전으로 두었어요." }); render(a, "auto-restored-not-opened");
+        a.ShowAutomaticResult(new AutomaticUpdateResult { Message = "설치가 끝나지 않았어요. 되돌릴 원본: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Cache\\example" }); render(a, "auto-recovery-required");
+        a.ShowLaunchFailure(null); render(a, "auto-launch-failure");
+        OrbWindow b = make(); b.BeginAutomatic(); b.ShowBlocked(new InstallFailure("지난번 설치를 되돌렸는지 아직 확인하지 못했어요.\n되돌리기 안내: C:\\Users\\example\\AppData\\Local\\SYNK\\Installer\\Pending\\example.txt", false, true)); render(b, "auto-blocked");
+        if (!b.Topmost) throw new Exception("Blocked window must stay on top");
+        foreach (string font in renderedFonts) Console.WriteLine("RENDERED FONT: " + font);
+        return 0;
+    }
+
+    private static void CollectPlatformFonts(DependencyObject element, HashSet<string> fonts)
+    {
+        Visual visual = element as Visual;
+        if (visual != null) CollectPlatformDrawingFonts(VisualTreeHelper.GetDrawing(visual), fonts);
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+            CollectPlatformFonts(VisualTreeHelper.GetChild(element, i), fonts);
+    }
+
+    private static void CollectPlatformDrawingFonts(Drawing drawing, HashSet<string> fonts)
+    {
+        GlyphRunDrawing run = drawing as GlyphRunDrawing;
+        if (run != null) {
+            GlyphTypeface glyph = run.GlyphRun.GlyphTypeface;
+            string file = Path.GetFileName(glyph.FontUri.LocalPath).ToLowerInvariant();
+            // 새 창은 시작 창과 같은 세 굵기만 쓴다(300 SYNK Text, 400 SUIT Regular, 500 SUIT Medium)
+            if (file != "synktext-light.ttf" && file != "suit-regular.otf" && file != "suit-medium.otf")
+                throw new Exception("Unexpected font fallback in Platform window: " + glyph.FontUri);
+            fonts.Add(file + " / " + glyph.Weight.ToOpenTypeWeight());
+        }
+        DrawingGroup group = drawing as DrawingGroup;
+        if (group != null) foreach (Drawing child in group.Children) CollectPlatformDrawingFonts(child, fonts);
     }
 
     private static Button FindButton(DependencyObject root, string name)

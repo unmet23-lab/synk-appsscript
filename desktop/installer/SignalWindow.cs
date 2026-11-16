@@ -891,7 +891,7 @@ namespace Synk.SignalInstaller
             return style;
         }
 
-        private static bool InsideButton(DependencyObject element)
+        internal static bool InsideButton(DependencyObject element)
         {
             while (element != null) {
                 if (element is ButtonBase) return true;
@@ -901,13 +901,13 @@ namespace Synk.SignalInstaller
             return false;
         }
 
-        private static void Announce(UIElement element)
+        internal static void Announce(UIElement element)
         {
             AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(element);
             if (peer != null) peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
-        private static Brush Solid(string value)
+        internal static Brush Solid(string value)
         {
             SolidColorBrush brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(value));
             brush.Freeze();
@@ -936,7 +936,7 @@ namespace Synk.SignalInstaller
             }
         }
 
-        private static GlyphTypeface Face(FontFamily family, int weight)
+        internal static GlyphTypeface Face(FontFamily family, int weight)
         {
             foreach (Typeface face in family.GetTypefaces()) {
                 GlyphTypeface glyph;
@@ -946,7 +946,7 @@ namespace Synk.SignalInstaller
             throw new InvalidOperationException("설치 화면 브랜드 글꼴 굵기가 없어요: " + family.Source + " " + weight + ".");
         }
 
-        private static IList<FontFamily> ReadFontFamilies(string directory)
+        internal static IList<FontFamily> ReadFontFamilies(string directory)
         {
             if (String.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
                 throw new InvalidOperationException("설치 화면 브랜드 글꼴 폴더가 없어요.");
@@ -960,7 +960,7 @@ namespace Synk.SignalInstaller
             return result;
         }
 
-        private static FontFamily RequireFont(IList<FontFamily> families, string name, params int[] weights)
+        internal static FontFamily RequireFont(IList<FontFamily> families, string name, params int[] weights)
         {
             foreach (FontFamily family in families) {
                 bool named = false;

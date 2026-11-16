@@ -65,7 +65,9 @@ namespace Synk.SignalInstaller
                     EndTransaction(backup,"restored");TryCleanupBackupPayload(backup);
                 }
                 catch(Exception recoveryError) { throw RecoveryRequired(backup,recoveryError); }
-                throw new InstallFailure(error.Message+"\n"+(backup.DirectoryExisted?"이전 앱 파일·설치 등록·바로가기를 되돌렸어요.":"덜 설치된 파일·설치 등록·바로가기를 지웠어요.")+" 계정과 앱 기록은 그대로예요. 다시 해 보거나 닫아도 돼요.",true,true);
+                // 되돌린 뒤의 실패: 원래 종류(시간 초과, 앱이 켜짐 따위)가 있으면 지키고, 없으면 「되돌림」으로 붙인다(Platform 새 창이 문장을 고른다)
+                string kind=FailureKind.Of(error)??(failure!=null&&failure.Message.StartsWith("설치 제한 시간",StringComparison.Ordinal)?FailureKind.Timeout:FailureKind.Restored);
+                throw FailureKind.Tag(new InstallFailure(error.Message+"\n"+(backup.DirectoryExisted?"이전 앱 파일·설치 등록·바로가기를 되돌렸어요.":"덜 설치된 파일·설치 등록·바로가기를 지웠어요.")+" 계정과 앱 기록은 그대로예요. 다시 해 보거나 닫아도 돼요.",true,true),kind);
             }
         }
     }

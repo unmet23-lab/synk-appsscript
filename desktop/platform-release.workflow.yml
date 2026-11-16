@@ -154,7 +154,7 @@ jobs:
           foreach ($product in @('platform', 'world', 'messenger')) {
             $compile += '/resource:' + (Join-Path $source "art/poster-$product.png") + ",art.poster-$product.png"
           }
-          $compile += @('InstallerEngine.cs', 'AutoUpdateEngine.cs', 'BackendProcess.cs', 'InstallTransaction.cs', 'SignalWindow.cs', 'tests/ui-check.cs' | ForEach-Object { Join-Path $source $_ })
+          $compile += @('InstallerEngine.cs', 'AutoUpdateEngine.cs', 'BackendProcess.cs', 'InstallTransaction.cs', 'SignalWindow.cs', 'OrbStage.cs', 'OrbWindow.cs', 'tests/ui-check.cs' | ForEach-Object { Join-Path $source $_ })
           & (Join-Path $framework 'csc.exe') @compile
           if ($LASTEXITCODE -ne 0) { throw 'Installer UI checker compilation failed' }
           foreach ($product in @('platform', 'world', 'messenger')) {

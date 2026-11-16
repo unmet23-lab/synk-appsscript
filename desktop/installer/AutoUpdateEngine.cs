@@ -240,7 +240,7 @@ namespace Synk.SignalInstaller
             if (session == null || session.Used || session.Parent == null) throw new InvalidOperationException("자동 업데이트는 한 번에 하나만 할 수 있어요.");
             session.Used = true;
             progress(new InstallProgress(InstallStage.WaitingForApp, "앱을 닫는 중", "저장할 작업이 있는지 보고 앱이 꺼지기를 기다려요.", null));
-            if (!session.Parent.WaitForExit(60000)) throw new InvalidOperationException("SYNK가 아직 켜져 있어요.\n작업을 저장하고 앱을 끈 뒤 다시 해 주세요.");
+            if (!session.Parent.WaitForExit(60000)) throw FailureKind.Tag(new InvalidOperationException("SYNK가 아직 켜져 있어요.\n작업을 저장하고 앱을 끈 뒤 다시 해 주세요."), FailureKind.AppStillRunning);
             UpdateBackup backup = null;
             bool mutationStarted = false;
             string stage = "waiting-for-processes";
@@ -326,7 +326,7 @@ namespace Synk.SignalInstaller
             long bytes = files.Sum(item => item.Bytes), reserve = spec.MinFreeBytes > 0 ? spec.MinFreeBytes : 3L*1024*1024*1024;
             long required = checked(reserve + bytes + spec.BackendBytes + 16L*1024*1024);
             foreach (string drive in new HashSet<string>(new [] { Path.GetPathRoot(session.Directory),Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)),Path.GetPathRoot(Path.GetTempPath()) },StringComparer.OrdinalIgnoreCase))
-                if (new DriveInfo(drive).AvailableFreeSpace < required) throw new IOException("업데이트하고 되돌릴 공간이 모자라요. 지금 앱을 다시 열게요.");
+                if (new DriveInfo(drive).AvailableFreeSpace < required) throw FailureKind.Tag(new IOException("업데이트하고 되돌릴 공간이 모자라요. 지금 앱을 다시 열게요."), FailureKind.Space);
             var backup = new UpdateBackup { Directory=CreatePrivateCache(), OriginalDirectory=session.Directory, DirectoryExisted=existed, State="preparing", Files=files, Registry=new List<RegistrySnapshot>(), Shortcuts=new List<ShortcutSnapshot>() };
             using (var hive = Microsoft.Win32.RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
                 foreach (string key in new [] { RegistryKey,UninstallKey,"Software\\Classes\\AppUserModelId\\"+spec.AppId }) backup.Registry.Add(ReadRegistryTree(hive,key));

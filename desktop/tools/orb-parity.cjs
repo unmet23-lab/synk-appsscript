@@ -3,11 +3,14 @@
 // 시안(docs/디자인/플랫폼_클라이언트_검정구_20261116/검정구.html)이 장면마다 넘긴 셰이더 값을 그대로 받아,
 // PC 앱의 셰이더(desktop/renderer/orb-stage.mjs의 ORB_SHADER)로 같은 값을 그린 뒤 두 그림을 화소마다 견준다.
 // --speed를 주면 웅장한 판의 새 판 받기 장면을 그 창 크기로 이어 그려 한 장에 걸리는 시간을 잰다.
+// --installer-cpu=<orb-render.exe>를 주면 Windows 설치기의 CPU 판(desktop/installer/tests/orb-render.cs)으로 같은 값을 그려 시안과 견준다.
+//   설치기 GPU 판은 화면에 창을 띄워야 찍히므로 여기서 보지 않는다. 판을 낼 때 desktop/installer/tests/orb-preview.cs로 이 PC에서 본다.
 //
 // 쓰기(desktop 폴더에서):
 //   node_modules\.bin\electron tools/orb-parity.cjs --scale=1.5 --w=1440 --h=940 --out=<폴더> [--speed] [--frames=240]
 // 결과: <폴더>/parity.json, 장면마다 시안.png · pc.png
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, nativeImage } = require('electron');
+const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -124,10 +127,9 @@ app.whenReady().then(async () => {
   const result = { scale, W, H, scenes: {}, speed: null };
   for (const s of SCENES) {
     const css = '#meta{display:none!important}#forge,#ask,#app,#switch,.layer{visibility:hidden!important}';
-    await a.webContents.executeJavaScript(`(()=>{window.__freeze=false;let st=document.getElementById('__t');if(!st){st=document.createElement('style');st.id='__t';document.head.appendChild(st);}st.textContent=${JSON.stringify(css)};${s.at};return 1;})()`);
+    await a.webContents.executeJavaScript(`(()=>{window.__freeze=false;let st=document.getElementById('__t');if(!st){st=document.createElement('style');st.id='__t';document.head.appendChild(st);}st.textContent=${JSON.stringify(css)};window.__uni={};${s.at};return 1;})()`);
+    // 장면을 세운 뒤 시안이 쉬면 그리기를 멈춘다(장면 하나 건너 값을 받지 못했다). 값을 장면 앞에서 비우고, 마지막으로 그린 장의 값을 쓴다
     await wait(900);
-    await a.webContents.executeJavaScript('window.__uni={};window.__freeze=false;1');
-    await wait(120);
     const uni = await a.webContents.executeJavaScript('window.__freeze=true;JSON.stringify(window.__uni)');
     await wait(200);
     const ia = await a.webContents.capturePage();
@@ -141,7 +143,14 @@ app.whenReady().then(async () => {
     fs.writeFileSync(path.join(out, s.name + '-pc.png'), ib.toPNG());
     // 설치기 판(GPU, CPU)을 같은 값으로 그릴 때 쓴다(--installer)
     fs.writeFileSync(path.join(out, s.name + '.uni.json'), uni);
-    result.scenes[s.name] = { ...compare(ia, ib), uR: u.uR?.[0], uCut: u.uCut?.[0], uEye: u.uEye };
+    const installer = arg('installer-cpu', '');
+    let installerCpu;
+    if (installer) {
+      const size = ia.getSize(), png = path.join(out, s.name + '-installer-cpu.png');
+      const run = spawnSync(installer, [path.join(out, s.name + '.uni.json'), png, String(size.width), String(size.height)], { encoding: 'utf8', timeout: 120000 });
+      installerCpu = run.status === 0 ? { ...compare(ia, nativeImage.createFromPath(png)), ...JSON.parse(run.stdout.trim()) } : { error: (run.stderr || String(run.error)).slice(0, 400) };
+    }
+    result.scenes[s.name] = { ...compare(ia, ib), uR: u.uR?.[0], uCut: u.uCut?.[0], uEye: u.uEye, ...(installerCpu ? { installerCpu } : {}) };
     console.log(s.name, JSON.stringify(result.scenes[s.name]));
   }
   if (flag('speed')) {
