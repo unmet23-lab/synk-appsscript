@@ -454,36 +454,27 @@ test('계정의 기록이 다 오면(첫 받기 · 뒤의 받기) 묶음 만남�
   }
 });
 
-test('서버 길 계정의 기록이 다 오기 전에 그린 홈은 받기가 되면 스스로 다시 그린다 — 학생이 화면을 건드리지 않아도 시작점이 풀린다(4-4b 끝 판 카본 C1)', async () => {
-  let pulled = false;
-  const app = shell({
-    fast: true,
-    wrap: made => ({
-      ...made,
-      summary() {
-        const summary = made.summary();
-        return { ...summary, storage: { ...summary.storage, guest: false, sync: { ...summary.storage.sync, pulled } } };
-      },
-    }),
-  });
+test('서버 길 계정의 기록이 다 오기 전에 그린 홈은 받기 알림(receive)으로 다시 그린다 — 다시 보기 타이머 없이, 학생이 화면을 건드리지 않아도 시작점이 풀린다(4-4b 끝 판 카본 C1 · §21-20)', async () => {
+  const sync = { pulled: false };
+  const { counted, wrap, emit } = accountWrap(sync);
+  const app = shell({ fast: true, wrap });
   try {
     app.education.refresh();
     await until(() => engineHome(app), '엔진 판의 이번 주 계획');
     assert.ok(!app.plan().examPlan.notes.includes('start'), '기록 일부면 시작점으로 단정하지 않는다');
-    // 내 위치 판을 열지 않았다 — 판의 첫 받기 답(nextSync)이 없어도 엔진의 pulled로 「기록이 다 왔는가」가 풀린다.
-    // 받기를 기다리는 간격은 2초부터 두 배씩, 60초에서 멈춘다(내 위치 판의 watchPulled와 같다 — 창의 시계가 받은 값).
-    await until(() => app.waits.filter(ms => ms >= 2000).length >= 7, '받기 기다림이 60초 칸까지 간다');
-    assert.deepEqual(app.waits.filter(ms => ms >= 2000).slice(0, 7), [2000, 4000, 8000, 16000, 32000, 60000, 60000]);
-    // 다시 연결되면 홈의 받기 기다림도 처음 값(2초)으로 돌아가고(카본 C1 — 내 위치 판의 hurryPullWatch와 같다), 깨어난 홈 코치를 1초부터 지켜본다(GPT GA1).
+    assert.equal(counted.listeners.size, 1, '홈 코치 하나에 한 번 듣는다');
+    // 알림이 오기 전에는 아무것도 다시 보지 않는다 — 셸이 거는 타이머가 없다(설계 주인 11-16 오후 조건 4).
     const mark = app.waits.length;
-    app.fire('online');
-    assert.deepEqual(app.waits.slice(mark, mark + 2), [2000, 1000], '다시 연결되면 받기 기다림은 2초로, 깨어난 지켜보기는 1초부터');
-    pulled = true;
-    await until(() => app.plan().examPlan.notes.includes('start'), '받기가 되면 홈이 스스로 다시 그린다');
+    await tick(150);
+    assert.deepEqual(app.waits.slice(mark), [], '다시 보기 타이머가 없다');
+    sync.pulled = true;
+    emit('receive');
+    await until(() => app.plan().examPlan.notes.includes('start'), '받기 알림으로 홈이 다시 그려진다');
     assert.ok(app.plan().today.items.some(row => row.kind === 'check'), '점검 칸에 짧은 진단');
   } finally {
     app.dispose();
   }
+  assert.equal(counted.listeners.size, 0, '문서를 닫으면 듣기를 되돌린다');
 });
 
 test('다른 기기의 답이 받기로 접혀 오면(요약이 바뀌면) 묶음 만남을 다시 묻는다 — 기록이 다 온 탭이 열린 채여도 옛 만남에 굳지 않는다(4-4b 끝 판 카본 C2)', async () => {
@@ -519,9 +510,10 @@ test('다른 기기의 답이 받기로 접혀 오면(요약이 바뀌면) 묶�
   }
 });
 
-// 서버 길 계정처럼 보이는 홈 코치 — storage.sync를 시험이 바꾼다. weekAsked는 이번 주 계획(weekNext)이 물은 묶음 만남만 센다.
+// 서버 길 계정처럼 보이는 홈 코치 — storage.sync를 시험이 바꾼다. weekAsked는 이번 주 계획(weekNext)이 물은 묶음 만남만 센다. 받기 알림
+// (coach.watch)은 시험이 emit으로 낸다 — 진짜 코치는 요약이 바뀐 뒤에 알리므로(§21-20 조건 2), 시험도 요약을 바꾼 뒤에 낸다.
 function accountWrap(sync, extra = {}) {
-  const counted = { weekAsked: 0, shift: null, met: null };
+  const counted = { weekAsked: 0, shift: null, met: null, listeners: new Set() };
   const wrap = made => ({
     ...made,
     summary() {
@@ -534,63 +526,109 @@ function accountWrap(sync, extra = {}) {
       const out = made.exposures(items);
       return counted.met ? counted.met(out) : out;
     },
+    watch(listener) {
+      counted.listeners.add(listener);
+      return () => counted.listeners.delete(listener);
+    },
     ...extra,
   });
-  return { counted, wrap };
+  const emit = kind => {
+    for (const listener of [...counted.listeners]) listener({ kind });
+  };
+  return { counted, wrap, emit };
 }
 const OTHER_DEVICE = { id: 'ko.reading.detail', theta: 0, n: 3, streak: 1, level: 1, peak: 1, cells: [{ difficulty: 1, independent: 3, correct: 2, helped: 0, lastAt: Date.UTC(2026, 10, 16) }] };
 
-test('첫 받기를 마친 탭이 깨어난 뒤(초점) 받기로 다른 기기의 답이 접혀 오면 홈이 스스로 다시 그린다 — 다음 조작을 기다리지 않는다(4-4b 다시 검수 GPT GA1)', async () => {
-  const { counted, wrap } = accountWrap({ pulled: true });
+test('받기가 언제 되든(끊긴 뒤 사다리의 300초 칸이어도) 그 받기가 접어 온 다른 기기의 답은 receive 알림으로 홈을 다시 그린다 — 깨어난 때와 상관없다(§21-20 시험 1 · 4-4b 다시 검수 GPT GA1)', async () => {
+  // 셸에는 시간 창이 없다 — 받기가 몇 초 뒤에 되든 엔진이 요약을 바꾼 뒤 알리고, 셸은 그 알림으로 그린다. 사다리의 칸(5 · 15 · 60 · 300초)은
+  // 엔진 시험(packages/atlas/test/coach/sync.test.mjs)이 보고, 받기가 알리는지는 packages/atlas/test/coach/watch.test.mjs가 본다.
+  const { counted, wrap, emit } = accountWrap({ pulled: true });
   const app = shell({ wrap });
   try {
     app.education.refresh();
     await until(() => engineHome(app), '엔진 판의 이번 주 계획');
     const before = counted.weekAsked;
-    // 초점이 돌아온 순간의 새로 그리기는 받기보다 먼저 돈다 — 받기는 그 뒤에 끝나 다른 기기의 답을 접어 온다.
-    app.fire('focus');
-    assert.equal(counted.weekAsked, before, '초점의 새로 그리기 때는 요약이 그대로라 다시 묻지 않는다');
-    await tick(100);
+    await tick(50);
+    assert.equal(counted.weekAsked, before, '알림 전에는 다시 묻지 않는다');
     counted.shift = OTHER_DEVICE;
-    await until(() => counted.weekAsked > before, '받기가 접어 온 답으로 홈이 다시 그려진다', 6000);
+    emit('receive');
+    assert.equal(counted.weekAsked, before, '알림을 받은 자리에서는 그리지 않는다(다음 틱)');
+    await until(() => counted.weekAsked > before, '받기 알림으로 홈이 다시 그려진다');
   } finally {
     app.dispose();
   }
 });
 
-test('깨어난 뒤 지켜보기를 마칠 때 묶음 만남을 한 번 다시 묻는다 — 건너뛰기만 한 판의 만남은 요약 모양에 비치지 않는다(4-4b 다시 검수 Fable FA1)', async () => {
-  const { counted, wrap } = accountWrap({ pulled: true });
-  const app = shell({ wrap, fast: true });
+test('같은 브라우저의 다른 창에서 쓴 답은 refresh 알림으로 이 창의 홈에 닿는다 — 이 창은 누르지 않는다(초점 · 화면 복귀 없이, §21-20 시험 2)', async () => {
+  const { counted, wrap, emit } = accountWrap({ pulled: true });
+  const app = shell({ wrap });
   try {
     app.education.refresh();
     await until(() => engineHome(app), '엔진 판의 이번 주 계획');
     const before = counted.weekAsked;
-    // 다른 기기에서 건너뛰기만 한 판 — 채점된 답이 없어 요약 모양은 그대로이고 만남만 바뀐다.
-    counted.met = out => out.map(row => ({ ...row, seen: true }));
-    app.fire('visibilitychange');
-    await until(() => counted.weekAsked > before, '지켜보기를 마치며 다시 묻는다');
-    assert.ok(app.waits.includes(1000), '깨어나면 1초부터 지켜본다');
-    assert.equal(app.plan().examPlan != null, true);
+    counted.shift = OTHER_DEVICE;
+    emit('refresh');
+    await until(() => counted.weekAsked > before, 'refresh 알림으로 홈이 다시 그려진다');
   } finally {
     app.dispose();
   }
 });
 
-test('서버 길 계정의 홈은 올리기 막힘(writesOff)이 풀릴 때도 스스로 다시 그린다 — 받기가 되어도 기록이 다 온 것은 막힘이 풀린 뒤다(4-4b 다시 검수 Fable FA3)', async () => {
+test('다른 창에서 건너뛰기만 한 판의 만남도 이 창의 이번 주 계획 묶음 만남에 비친다 — 요약 모양이 그대로여도 알림이 만남을 버린다(§21-20 시험 3 · Fable FA1)', async () => {
+  const { counted, wrap, emit } = accountWrap({ pulled: true });
+  const app = shell({ wrap });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    const before = counted.weekAsked;
+    // 채점된 답이 없어 요약 모양은 그대로이고 만남만 바뀐다 — 알림이 없으면 그대로 굳는다.
+    counted.met = out => out.map(row => ({ ...row, seen: true }));
+    app.education.refresh();
+    assert.equal(counted.weekAsked, before, '알림 없이 다시 그리면 요약 모양이 그대로라 묻지 않는다');
+    emit('refresh');
+    await until(() => counted.weekAsked > before, '알림이 묶음 만남을 버려 다시 묻는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('올리기 막힘(writesOff)이 풀려 올린 답의 receive 알림으로 홈이 기록이 다 온 판으로 다시 그려진다 — 막힘 동안은 다시 그리지 않는다(§21-20 시험 4 · Fable FA3)', async () => {
   const sync = { pulled: true, writesOff: true };
-  const { wrap } = accountWrap(sync);
+  const { wrap, emit } = accountWrap(sync);
   const app = shell({ wrap, fast: true });
   try {
     app.education.refresh();
     await until(() => engineHome(app), '엔진 판의 이번 주 계획');
     assert.ok(!app.plan().examPlan.notes.includes('start'), '올리기가 막힌 동안은 기록 일부다');
-    // 막힘이 그대로인 동안은 기다리기만 한다 — 받기(pulled)만 보고 기다릴 때마다 홈을 다시 그리지 않는다.
     await tick(100);
     const quiet = app.drawn();
     await tick(300);
-    assert.equal(app.drawn(), quiet, '막힘이 풀리기 전에는 홈을 다시 그리지 않는다');
+    assert.equal(app.drawn(), quiet, '알림 없이는 다시 그리지 않는다');
     sync.writesOff = false;
-    await until(() => app.plan().examPlan.notes.includes('start'), '막힘이 풀리면 홈이 스스로 다시 그린다');
+    emit('receive');
+    await until(() => app.plan().examPlan.notes.includes('start'), '막힘이 풀려 올린 답의 알림으로 다시 그린다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('잇달아 온 알림은 다음 틱에 한 번만 그린다 — 받은 자리에서는 그리지 않는다(§21-20 조건 3)', async () => {
+  const { counted, wrap, emit } = accountWrap({ pulled: true });
+  const app = shell({ wrap });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    await tick(30);
+    const drawn = app.drawn();
+    const asked = counted.weekAsked;
+    counted.shift = OTHER_DEVICE;
+    emit('receive');
+    emit('refresh');
+    emit('receive');
+    assert.equal(app.drawn(), drawn, '받은 자리에서는 그리지 않는다');
+    await tick(40);
+    assert.equal(app.drawn(), drawn + 1, '한 번만 그린다');
+    assert.equal(counted.weekAsked, asked + 1, '묶음 만남도 한 번만 묻는다');
   } finally {
     app.dispose();
   }

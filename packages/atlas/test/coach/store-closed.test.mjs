@@ -1,7 +1,8 @@
 // 계정 저장소가 닫힌 뒤 · 물러서는 중의 올리기(Fable 5.2 끝 판 F2 · F5 · 넘친 #3 · #14 — 단계 4 계획 §18-5-2 · §18-5-5).
 //   다른 탭이 판이 오른 저장소를 열어 이 판 저장소의 연결이 닫히면(포트의 onClosed) 호스트가 셸에 알린다(kind store) · 저장이 실패하기
 //   시작하면 받기를 한 번 강제해 서버의 판 울타리 답을 받는다 · 제품이 준 포트는 호스트가 닫지 않는다 · 물러서는 중에 답이 이어져도
-//   걸린 다시 보내기 기한을 미루지 않는다 · 쓰기 막힘(WRITES_DISABLED)은 긴 간격으로 다시 보내 본다.
+//   걸린 다시 보내기 기한을 미루지 않는다 · 쓰기 막힘(WRITES_DISABLED)은 긴 간격으로 다시 보내 본다 · 막힘이 풀려 올린 답을 받으면 receive를
+//   알린다(단계 4 계획 §21-20 시험 4 · Fable FA3 — 셸의 받기 알림이 이 알림으로 홈을 다시 그린다).
 // 규칙마다 tools/mutants/coach.mjs에 깬 변형이 있다.
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -211,6 +212,7 @@ function syncOn({ fail, now, clock, get = async () => ({ summary: null, serverTi
   const acked = new Set();
   const posts = [];
   const notes = [];
+  const told = [];
   const trail = {
     refresh: async () => {},
     saved: async () => {},
@@ -235,14 +237,14 @@ function syncOn({ fail, now, clock, get = async () => ({ summary: null, serverTi
       get,
     }),
     note: () => {},
-    tell: () => {},
+    tell: kind => told.push({ kind, acked: [...acked] }),
     announce: () => {},
     onAccount: detail => notes.push(detail.kind),
     writesRetryMs: 300_000,
     ...(now ? { now } : {}),
     ...(clock ? { clock } : {}),
   });
-  return { sync, posts, notes, acked };
+  return { sync, posts, notes, acked, told };
 }
 const flush = async () => {
   for (let i = 0; i < 50; i += 1) await Promise.resolve();
@@ -412,4 +414,28 @@ test('쓰기 막힘(WRITES_DISABLED)은 긴 간격으로 다시 보내 본다 �
   await flush();
   assert.ok(acked.has('e1'), '문이 열리면 같은 동기가 올린다');
   assert.equal(sync.status().writesOff, false);
+});
+
+test('쓰기 막힘이 풀려 올린 답을 기록부에 받으면 receive를 한 번 알린다 — 막힌 동안은 알리지 않는다(단계 4 계획 §21-20 시험 4 · Fable FA3)', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let shut = 1;
+  const { sync, acked, told } = syncOn({
+    fail: () => (shut-- > 0 ? fault(403, 'WRITES_DISABLED') : null),
+  });
+  const receives = () => told.filter(row => row.kind === 'receive');
+  sync.schedule();
+  t.mock.timers.tick(1_500);
+  await flush();
+  assert.equal(sync.status().writesOff, true);
+  assert.deepEqual(receives(), [], '막힌 동안은 받은 답이 없어 알리지 않는다');
+  t.mock.timers.tick(300_000); // 쓰기 막힘을 푼다 — 그때 거는 1.5초 모으기는 다음 틱에
+  await flush();
+  t.mock.timers.tick(1_500);
+  await flush();
+  assert.ok(acked.has('e1'), '문이 열려 올렸다');
+  assert.deepEqual(
+    receives(),
+    [{ kind: 'receive', acked: ['e1'] }],
+    '올린 답을 기록부에 받은 뒤 한 번 알린다',
+  );
 });

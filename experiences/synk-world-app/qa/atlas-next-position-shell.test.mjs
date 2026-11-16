@@ -80,11 +80,13 @@ function stage() {
 
 // 셸 하나 — 새 길 홈 입구(homeNext)를 넘긴 학습 화면. 홈 코치는 열 때마다 새로 짓는다(판을 다시 정하면 새 코치).
 // open: 홈 코치를 짓는 길(기본 손님 홈 코치). timers: 셸이 target으로 받는 시계(setTimeout · clearTimeout — 가짜 시계). panels: 홈처럼 판 자원을
-// 다룬다(판을 바꾸거나 닫으면 그 판의 자원을 dispose — home.mjs disposePanelContent). 창(online)과 문서(visibilitychange)의 알림은 fire로 낸다.
+// 다룬다(판을 바꾸거나 닫으면 그 판의 자원을 dispose — home.mjs disposePanelContent, 판을 닫으면 진짜 홈처럼 다음 마이크로태스크에 education.refresh를
+// 부른다 — home.mjs closePanel). 창(online)과 문서(visibilitychange)의 알림은 fire로 내고, 셸이 단 듣기 수는 listening으로, 홈을 그린 횟수
+// (updateStudy)는 studied로 본다.
 // focusing: 판 글의 단추와 문서의 초점(activeElement)을 흉내 내고, 셸이 초점을 둔 자리를 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
 // paint: 판 글을 바꿔 둔다(진짜 판에서 생길 수 있는 꼴을 흉내 낸다). focusing이면 판 안의 스크롤 칸(#panel-content)도 흉내 낸다 — 판 글을 바꾸면 스크롤 자리가
 // 처음으로 가고(셸이 되돌려야 한다), 능력 줄(details)은 접힌 채로 서며, 닫힌 줄 안의 단추에는 초점이 가지 않는다(브라우저는 닫힌 details의 몸을 그리지 않는다).
-function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html } = {}) {
+function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html, planner = PLANNER } = {}) {
   const opens = [];
   const engine = {
     ...worldLearning,
@@ -187,6 +189,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
   const listen = (scope, type, fn) => heard.set(`${scope}:${type}`, [...(heard.get(`${scope}:${type}`) ?? []), fn]);
   const unlisten = (scope, type, fn) => heard.set(`${scope}:${type}`, (heard.get(`${scope}:${type}`) ?? []).filter(row => row !== fn));
   let resource = null;
+  let studied = 0;
   const disposeResource = () => {
     const was = resource;
     resource = null;
@@ -234,12 +237,15 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     hangulReading: () => reading,
   };
   const home = {
-    updateStudy() {},
+    updateStudy() {
+      studied += 1;
+    },
     toast: text => toasts.push(text),
     closePanel() {
       if (!panels) return;
       disposeResource();
       shown.push('');
+      queueMicrotask(() => education.refresh());
     },
     attachPanelResource(value) {
       if (!panels || value === resource) return;
@@ -261,7 +267,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
       coaches.push(made);
       return made;
     },
-    planner: async () => PLANNER,
+    planner: async () => planner,
     retired(made, fn) {
       const entry = { made, fn, gone: false };
       retirees.push(entry);
@@ -297,8 +303,11 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     coaches,
     last: () => shown.at(-1) ?? '',
     box: () => box,
-    // 판을 닫는다(홈의 닫기 — panels일 때만 판 자원을 dispose).
+    // 판을 닫는다(홈의 닫기 — panels일 때만 판 자원을 dispose하고 홈을 새로 그린다).
     closePanel: () => home.closePanel(),
+    // 홈을 그린 횟수(drawHome의 updateStudy) · 셸이 창과 문서에 단 그 알림의 듣기 수.
+    studied: () => studied,
+    listening: type => ['window', 'document'].reduce((n, scope) => n + (heard.get(`${scope}:${type}`)?.length ?? 0), 0),
     // 초점(focusing일 때만) — 판 안의 단추(몇 번째), 판 머리, 판 밖, 다시 그린 판에는 없는 단추에 둔다.
     focused,
     focusOn(name, value = '', index = 0) {
@@ -414,9 +423,11 @@ test('엔진 판 — 확인 중에서 엔진 판으로 다시 그리고, 홈 코
 });
 
 // 서버 길 계정처럼 보이는 홈 코치 — 요약의 기록부가 서버 길(guest false)이고, 첫 받기 답(synced)을 시험이 차례로 준다(함수면 늘 그 답 — 진짜
-// 엔진은 첫 받기 결과를 그 문서 동안 그대로 돌려준다). sync: 요약의 storage.sync(올리기 · 받기 상태 — pulled 등)를 시험이 준다.
+// 엔진은 첫 받기 결과를 그 문서 동안 그대로 돌려준다). sync: 요약의 storage.sync(올리기 · 받기 상태 — pulled 등)를 시험이 준다. 받기 알림(coach.watch)은
+// 시험이 emit으로 낸다 — 진짜 코치는 기록부와 요약이 바뀐 뒤에 알리므로(§21-20 조건 2), 시험도 sync를 바꾼 뒤에 낸다.
 function accountLike(answers, { sync = () => ({}) } = {}) {
   const calls = [];
+  const listeners = new Set();
   const wrap = made => ({
     ...made,
     summary() {
@@ -428,8 +439,44 @@ function accountLike(answers, { sync = () => ({}) } = {}) {
       await tick(5);
       return typeof answers === 'function' ? answers() : (answers.shift() ?? { ok: true });
     },
+    watch(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
   });
-  return { wrap, calls };
+  const emit = kind => {
+    for (const listener of [...listeners]) listener({ kind });
+  };
+  return { wrap, calls, listeners, emit };
+}
+
+// 받기 알림을 시험이 내는 손님 홈 코치 — 진짜 코치의 watch 대신 코치마다 듣는 함수 묶음을 든다(sets — 판을 다시 정하면 새 코치의 묶음이 뒤에 선다).
+// emit(kind, 몇 번째 코치)으로 낸다(기본 마지막 코치). listeners는 마지막 코치의 묶음이다.
+function heardLike(more = () => ({})) {
+  const sets = [];
+  const wrap = made => {
+    const listeners = new Set();
+    sets.push(listeners);
+    return {
+      ...made,
+      watch(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      ...more(made),
+    };
+  };
+  const emit = (kind, at = -1) => {
+    for (const listener of [...(sets.at(at) ?? [])]) listener({ kind });
+  };
+  return {
+    wrap,
+    sets,
+    emit,
+    get listeners() {
+      return sets.at(-1) ?? new Set();
+    },
+  };
 }
 
 test('엔진 판 — 서버 길 계정의 첫 받기가 시간 초과로 답해도, 받기가 끝나면 같은 코치로 기록이 다 온 판을 다시 그린다(GPT 끝 판 GB1)', async () => {
@@ -449,7 +496,7 @@ test('엔진 판 — 서버 길 계정의 첫 받기가 시간 초과로 답해�
   }
 });
 
-test('엔진 판 — 첫 받기가 실패로 끝나면 기록 일부로 그리고, 뒤에 받기가 되면(synced는 처음 실패 그대로 · storage.sync.pulled만 참) 열린 판이 그 칸을 다시 보고 기록이 다 온 판으로 한 번 다시 그린다(GPT 끝 판 GB1 · Fable 끝 판 F1)', async () => {
+test('엔진 판 — 첫 받기가 실패로 끝나면 기록 일부로 그리고, 뒤의 받기가 요약을 바꾼 뒤 알리면(receive — synced는 처음 실패 그대로) 열린 판을 기록이 다 온 판으로 한 번 다시 그린다(GPT 끝 판 GB1 · Fable 끝 판 F1 · §21-20)', async () => {
   let pulled = false;
   const failure = { ok: false, kind: 'offline', code: 'NETWORK' };
   const sync = accountLike(() => failure, { sync: () => ({ pulled }) });
@@ -460,19 +507,23 @@ test('엔진 판 — 첫 받기가 실패로 끝나면 기록 일부로 그리�
     assert.match(app.last(), /data-complete="false"/, '실패면 기록 일부');
     await tick(50);
     assert.equal(sync.calls.length, 1, '실패 뒤 저절로 되풀이해 묻지 않는다');
-    // 뒤의 받기가 됐다 — 진짜 엔진은 synced()에 처음 실패를 그대로 돌려주고 pulled만 세운다.
+    assert.equal(sync.listeners.size, 1, '홈 코치 하나에 한 번 듣는다 — 내 위치 판이 따로 듣지 않는다');
+    // 뒤의 받기가 됐다 — 진짜 엔진은 synced()에 처음 실패를 그대로 돌려주고, pulled를 세운 뒤 receive를 알린다(조건 2).
     pulled = true;
-    await until(() => /data-complete="true"/.test(app.last()), '뒤의 받기가 된 뒤 기록이 다 온 판', 8000);
     const drawn = app.shown.length;
-    await tick(2500);
-    assert.equal(app.shown.length, drawn, '다시 그리기가 되풀이되지 않는다(그 코치에서는 그 뒤로 보지 않는다)');
+    sync.emit('receive');
+    assert.equal(app.shown.length, drawn, '알림을 받은 자리에서는 그리지 않는다(다음 틱)');
+    await until(() => /data-complete="true"/.test(app.last()), '받기 알림으로 기록이 다 온 판');
+    await tick(60);
+    assert.equal(app.shown.length, drawn + 1, '판을 한 번 다시 그리고 되풀이하지 않는다');
     assert.ok(sync.calls.every(wait => wait === null), '실패 답은 늦게 기다리지 않는다(시간 초과만)');
   } finally {
     app.dispose();
   }
+  assert.equal(sync.listeners.size, 0, '문서를 닫으면 듣기를 되돌린다');
 });
 
-test('엔진 판 — 첫 받기가 실패로 끝난 뒤 판을 닫으면 pulled를 그만 보고(닫힌 판을 다시 그리지 않는다), 다시 열면 그 칸을 읽어 기록이 다 온 판으로 그린다(Fable 끝 판 F1)', async () => {
+test('엔진 판 — 첫 받기가 실패로 끝난 뒤 판을 닫으면, 받기 알림이 와도 닫힌 판은 다시 그리지 않고 홈만 새로 그린다. 다시 열면 그 칸을 읽어 기록이 다 온 판으로 그린다(Fable 끝 판 F1 · §21-20)', async () => {
   let pulled = false;
   const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }), { sync: () => ({ pulled }) });
   const app = shell({ wrap: sync.wrap });
@@ -481,8 +532,12 @@ test('엔진 판 — 첫 받기가 실패로 끝난 뒤 판을 닫으면 pulled�
     await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '기록 일부 판');
     // 판을 닫는다(다른 판을 엶) — 받기가 되어도 닫힌 판을 다시 그리지 않는다.
     app.shown.push('<div data-other-panel></div>');
+    await tick(20);
+    const studied = app.studied();
     pulled = true;
-    await tick(2600);
+    sync.emit('receive');
+    await until(() => app.studied() > studied, '받기 알림으로 홈을 새로 그린다');
+    await tick(30);
     assert.equal(app.last(), '<div data-other-panel></div>', '닫힌 판은 다시 그리지 않는다');
     // 다시 열면 그 칸을 읽어 기록이 다 온 판으로 그린다.
     await app.education.position();
@@ -492,7 +547,7 @@ test('엔진 판 — 첫 받기가 실패로 끝난 뒤 판을 닫으면 pulled�
   }
 });
 
-// 가짜 시계 — 셸이 target으로 받는 다시 보기 타이머만 센다. advance는 때가 된 타이머를 부른다.
+// 가짜 시계 — 셸이 target으로 받는 타이머(받기 알림의 다음 틱 · 계획 기다림)만 센다. advance는 때가 된 타이머를 부른다.
 function fakeClock() {
   let now = 0;
   let seq = 0;
@@ -518,50 +573,64 @@ function fakeClock() {
   };
 }
 
-test('엔진 판 — 첫 받기가 실패로 끝난 뒤 pulled를 다시 보는 타이머: 2초부터 두 배씩, 다시 연결 · 화면이 다시 보이면 2초로 되돌리고, 판이나 문서가 닫히면 남은 타이머가 없다(설계 주인 11-16 조건 1 · 2 · 4)', async () => {
+test('엔진 판 — 받기 알림 판에는 다시 보기 타이머가 없다: 첫 받기가 실패해도 셸은 타이머를 걸지 않고 online · visibilitychange를 듣지 않는다(다시 연결 · 화면 복귀의 받기는 엔진 호스트가 한다). 잇달아 온 알림은 다음 틱 타이머 하나로 묶고, 그 전에 홈을 새로 그렸으면 타이머가 또 그리지 않으며, 판이나 문서를 닫으면 남은 타이머 · 듣기가 없다(설계 주인 11-16 오후 조건 3 · 4)', async () => {
   const clock = fakeClock();
-  const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }));
+  let pulled = false;
+  const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }), { sync: () => ({ pulled }) });
   const app = shell({ wrap: sync.wrap, timers: clock, panels: true });
   try {
     await app.education.position();
     await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '기록 일부 판');
-    await until(() => clock.waits().length === 1, '다시 보기 타이머');
-    assert.deepEqual(clock.waits(), [2000]);
-    clock.advance(2000);
-    assert.deepEqual(clock.waits(), [4000], '받기가 아직이면 두 배');
-    clock.advance(4000);
-    assert.deepEqual(clock.waits(), [8000]);
+    await tick(20);
+    assert.deepEqual(clock.waits(), [], '실패 뒤 셸이 거는 다시 보기 타이머가 없다');
+    assert.equal(app.listening('online') + app.listening('visibilitychange'), 0, '셸은 다시 연결 · 화면 복귀를 듣지 않는다');
+    const quiet = { shown: app.shown.length, studied: app.studied() };
     app.hide();
     app.fire('visibilitychange');
-    assert.deepEqual(clock.waits(), [8000], '화면이 숨겨질 때는 되돌리지 않는다');
     app.show();
-    app.fire('online');
-    assert.deepEqual(clock.waits(), [2000], '다시 연결되면 2초로 되돌린다(코치가 그때 받는다)');
-    clock.advance(2000);
-    assert.deepEqual(clock.waits(), [4000]);
     app.fire('visibilitychange');
-    assert.deepEqual(clock.waits(), [2000], '화면이 다시 보이면 2초로 되돌린다');
-    for (const next of [4000, 8000, 16000, 32000, 60000, 60000]) {
-      clock.advance(clock.waits()[0]);
-      assert.deepEqual(clock.waits(), [next], '두 배씩 늘되 60초에서 멈춘다');
-    }
+    app.fire('online');
+    assert.deepEqual({ shown: app.shown.length, studied: app.studied(), waits: clock.waits() }, { ...quiet, waits: [] }, '다시 연결 · 화면 복귀에 셸은 아무것도 하지 않는다');
+    // 알림 둘 — 다음 틱 타이머 하나.
+    pulled = true;
+    sync.emit('receive');
+    sync.emit('refresh');
+    assert.deepEqual(clock.waits(), [0], '잇달아 온 알림은 다음 틱 타이머 하나로 묶는다');
+    const drawn = app.shown.length;
+    clock.advance(0);
+    assert.equal(app.shown.length, drawn + 1, '그 타이머가 판을 한 번 다시 그린다');
+    assert.match(app.last(), /data-complete="true"/);
+    assert.deepEqual(clock.waits(), []);
+    // 알림 뒤 타이머가 돌기 전에 홈을 새로 그렸다(초점 등) — 그 그리기가 알림을 다 비췄으니 타이머는 또 그리지 않는다.
+    sync.emit('receive');
+    app.education.refresh();
+    const after = { shown: app.shown.length, studied: app.studied() };
+    clock.advance(0);
+    assert.deepEqual({ shown: app.shown.length, studied: app.studied() }, after, '새로 그린 뒤의 타이머는 그리지 않는다');
+    // 알림이 와 타이머가 걸린 채 판을 닫는다 — 타이머가 먼저 돌아도 닫힌 판은 그리지 않는다.
+    sync.emit('receive');
     app.closePanel();
-    assert.deepEqual(clock.waits(), [], '판을 닫으면 남은 타이머가 없다');
-    // 다시 열면 다시 본다. 문서를 닫으면 그친다.
+    clock.advance(0);
+    await tick(0);
+    assert.equal(app.last(), '', '닫힌 판은 다시 그리지 않는다');
+    // 다시 열면 같은 코치를 그대로 듣는다. 문서를 닫으면 타이머와 듣기가 남지 않는다.
     await app.education.position();
-    await until(() => clock.waits().length === 1, '다시 연 판의 다시 보기');
+    await until(() => /data-position-next="engine"/.test(app.last()), '다시 연 판');
+    assert.equal(sync.listeners.size, 1, '다시 연 판에서도 듣는 곳은 하나');
+    sync.emit('receive');
+    assert.deepEqual(clock.waits(), [0]);
     app.education.dispose();
     assert.deepEqual(clock.waits(), [], '문서를 닫으면 남은 타이머가 없다');
+    assert.equal(sync.listeners.size, 0, '문서를 닫으면 듣기를 되돌린다');
   } finally {
     app.dispose();
   }
 });
 
-test('엔진 판 — 첫 받기를 늦게 기다리는 사이 판을 닫으면, 그 늦은 답이 실패로 와도 pulled 다시 보기를 시작하지 않고(남은 타이머 0), 다시 열면 그 판이 다시 묻고 다시 본다(설계 주인 11-16 조건 1 · GPT 다시 검수 GA1 · 카본 A1)', async () => {
+test('엔진 판 — 첫 받기를 늦게 기다리는 사이 판을 닫으면, 그 늦은 답이 와도 닫힌 판을 그리지 않고 타이머를 남기지 않는다. 다시 열면 그 답으로 기록이 다 온 판을 그린다(설계 주인 11-16 조건 1 · GPT 다시 검수 GA1 · 카본 A1)', async () => {
   const clock = fakeClock();
   let late = null;
-  // 첫 물음은 시간 초과로 답해 판을 기록 일부로 그리게 하고, 늦게 기다리는 둘째 물음(SYNC_LATE_MS)은 손으로 푼다. 그 뒤 물음은 곧 실패로 답한다
-  // (진짜 엔진은 첫 실패를 그 문서 동안 그대로 돌려준다).
+  // 첫 물음은 시간 초과로 답해 판을 기록 일부로 그리게 하고, 늦게 기다리는 둘째 물음(SYNC_LATE_MS)은 손으로 푼다.
   const sync = accountLike(() => {
     const asked = sync.calls.length;
     if (asked === 1) return { ok: false, kind: 'timeout', code: 'PULL_TIMEOUT' };
@@ -577,63 +646,43 @@ test('엔진 판 — 첫 받기를 늦게 기다리는 사이 판을 닫으면, 
     await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()) && late, '기록 일부 판과 늦게 묻는 첫 받기');
     assert.deepEqual(sync.calls, [null, 60000], '시간 초과면 늦게 한 번 더 기다린다');
     app.closePanel();
-    late({ ok: false, kind: 'offline', code: 'NETWORK' });
+    late({ ok: true });
     await tick(20);
-    assert.deepEqual(clock.waits(), [], '닫힌 판에 온 늦은 실패 답으로는 다시 보기 타이머를 만들지 않는다');
+    assert.equal(app.last(), '', '닫힌 판에 온 늦은 답으로는 판을 그리지 않는다');
+    assert.deepEqual(clock.waits(), [], '타이머를 남기지 않는다');
     await app.education.position();
-    await until(() => clock.waits().length === 1, '다시 연 판의 다시 보기');
-    assert.deepEqual(clock.waits(), [2000]);
-    assert.match(app.last(), /data-complete="false"/, '다시 연 판은 기록 일부');
+    await until(() => /data-position-next="engine"[^>]*data-complete="true"/.test(app.last()), '다시 연 판은 그 된 답으로 기록이 다 온 판');
+    assert.equal(sync.calls.length, 2, '된 답을 든 코치에는 다시 묻지 않는다');
   } finally {
     app.dispose();
   }
 });
 
-test('엔진 판 — 올리기 · 받기가 멈췄으면(stopped · writesOff · switchOff) pulled를 다시 보지 않고, 보는 중에 멈추면 그친다. 첫 받기가 된 판 · 손님 판에서는 시작하지 않는다(설계 주인 11-16 조건 1)', async () => {
-  const failure = () => ({ ok: false, kind: 'offline', code: 'NETWORK' });
-  for (const stop of [{ stopped: 'account' }, { writesOff: true }, { switchOff: true }]) {
+test('엔진 판 — 화면에 듣는 곳은 홈 코치 하나다: 내 위치 판이 열려 있어도 알림 하나에 홈 한 번 · 판 한 번만 그리고, 첫 받기가 된 계정 판 · 손님 판에도 알림 전에 셸이 거는 타이머가 없다(설계 주인 11-16 오후 조건 3 · 4)', async () => {
+  for (const [label, make] of [
+    ['계정', () => accountLike(() => ({ ok: true }))],
+    ['손님', () => heardLike()],
+  ]) {
     const clock = fakeClock();
-    const sync = accountLike(failure, { sync: () => stop });
-    const app = shell({ wrap: sync.wrap, timers: clock, panels: true });
+    const heard = make();
+    const app = shell({ wrap: heard.wrap, timers: clock, panels: true });
     try {
       await app.education.position();
-      await until(() => /data-position-next="engine"/.test(app.last()) && sync.calls.length > 0, '엔진 판과 첫 받기');
+      await until(() => /data-position-next="engine"[^>]*data-complete="true"/.test(app.last()), `${label} — 기록이 다 온 판`);
       await tick(20);
-      assert.deepEqual(clock.waits(), [], JSON.stringify(stop));
+      assert.deepEqual(clock.waits(), [], `${label} — 알림 전에는 타이머가 없다`);
+      assert.equal(heard.listeners.size, 1, `${label} — 듣는 곳은 하나`);
+      const at = { shown: app.shown.length, studied: app.studied() };
+      heard.emit('refresh');
+      clock.advance(0);
+      assert.deepEqual({ shown: app.shown.length - at.shown, studied: app.studied() - at.studied }, { shown: 1, studied: 1 }, `${label} — 홈 한 번 · 판 한 번`);
     } finally {
       app.dispose();
     }
   }
-  // 보는 중에 올리기 · 받기가 멈춘다 — 다음에 볼 때 그친다.
-  let state = {};
-  const clock = fakeClock();
-  const halting = accountLike(failure, { sync: () => state });
-  const app = shell({ wrap: halting.wrap, timers: clock, panels: true });
-  try {
-    await app.education.position();
-    await until(() => clock.waits().length === 1, '다시 보기 타이머');
-    state = { stopped: 'auth' };
-    clock.advance(2000);
-    assert.deepEqual(clock.waits(), [], '멈추면 그친다');
-  } finally {
-    app.dispose();
-  }
-  // 첫 받기가 된 판과 손님 판.
-  for (const wrap of [accountLike(() => ({ ok: true })).wrap, made => made]) {
-    const quiet = fakeClock();
-    const done = shell({ wrap, timers: quiet, panels: true });
-    try {
-      await done.education.position();
-      await until(() => /data-position-next="engine"[^>]*data-complete="true"/.test(done.last()), '기록이 다 온 판');
-      await tick(20);
-      assert.deepEqual(quiet.waits(), []);
-    } finally {
-      done.dispose();
-    }
-  }
 });
 
-test('엔진 판 — pulled로 다시 그릴 때 펴 둔 능력 줄을 다시 펴고, 스크롤 자리와 판 안의 초점(그 줄 안의 단추)을 지킨다(설계 주인 11-16 조건 3 · Fable 다시 검수)', async () => {
+test('엔진 판 — 받기 알림으로 다시 그릴 때 펴 둔 능력 줄을 다시 펴고, 스크롤 자리와 판 안의 초점(그 줄 안의 단추)을 지킨다(설계 주인 11-16 조건 3 · Fable 다시 검수 · §21-20)', async () => {
   let pulled = false;
   const clock = fakeClock();
   const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }), { sync: () => ({ pulled }) });
@@ -641,14 +690,14 @@ test('엔진 판 — pulled로 다시 그릴 때 펴 둔 능력 줄을 다시 �
   try {
     await app.education.position();
     await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '기록 일부 판');
-    await until(() => clock.waits().length === 1, '다시 보기 타이머');
     app.openRow('ko.reading.detail');
     app.focusOn('data-position-practice', 'ko.reading.detail');
     app.content.scrollTop = 420;
     app.focused.splice(0);
     pulled = true;
-    clock.advance(2000);
-    assert.match(app.last(), /data-complete="true"/, 'pulled로 다시 그렸다');
+    sync.emit('receive');
+    clock.advance(0);
+    assert.match(app.last(), /data-complete="true"/, '받기 알림으로 다시 그렸다');
     assert.deepEqual(app.openRows(), ['ko.reading.detail'], '펴 둔 능력 줄을 다시 편다');
     assert.equal(app.content.scrollTop, 420, '스크롤 자리를 지킨다');
     assert.deepEqual(app.focused, ['data-position-practice=ko.reading.detail#0'], '초점이 펴 둔 줄 안의 같은 단추로 돌아온다');
@@ -734,7 +783,8 @@ test('엔진 판 — 진짜 계정 길 코치: 앞 문서가 요약을 받아 �
   try {
     await app.education.position();
     await until(() => /data-position-next="engine"[^>]*data-complete="false"/.test(app.last()), '첫 받기가 끊겨 기록 일부');
-    // 다시 연결 — 코치가 받기를 다시 하고 같은 요약을 받는다(제품에서는 호스트의 online · 화면 복귀 받기).
+    // 다시 연결 — 코치가 받기를 다시 하고 같은 요약을 받는다(제품에서는 호스트의 online · 화면 복귀 받기). 요약이 그대로여도 처음 된 받기는 한 번
+    // 알린다(receive) — 셸은 진짜 코치의 그 알림으로 다시 그린다(§21-20).
     offline = false;
     const handle = await acquireHost({ key, params: PARAMS, guest: false });
     await handle.pull({ force: true });
@@ -766,17 +816,24 @@ test('엔진 판 — 첫 받기를 묻는 메서드(synced)가 없는 코치에�
   }
 });
 
-test('엔진 판 — 판을 다시 정하면(retired) 확인 중으로 다시 그리고, 새 코치가 서면 엔진 판으로 다시 그린다(닫힌 코치를 읽지 않는다)', async () => {
-  const app = shell();
+test('엔진 판 — 판을 다시 정하면(retired) 확인 중으로 다시 그리고, 새 코치가 서면 엔진 판으로 다시 그린다(닫힌 코치를 읽지 않는다) · 받기 알림은 옛 코치에서 되돌리고 새 코치에 건다(§21-20)', async () => {
+  const heard = heardLike();
+  const app = shell({ wrap: heard.wrap });
   try {
     await app.education.position();
     await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
     const first = app.coaches[0];
+    assert.deepEqual(heard.sets.map(set => set.size), [1]);
     app.retire(first);
     assert.match(app.last(), /data-position-next="checking"/, '곧바로 확인 중');
     first.dispose();
     await until(() => /data-position-next="engine"/.test(app.last()), '새 코치의 엔진 판');
     assert.equal(app.coaches.length, 2, '판을 다시 정해 새 코치를 열었다');
+    assert.deepEqual(heard.sets.map(set => set.size), [0, 1], '옛 코치의 듣기를 되돌리고 새 코치에 건다');
+    await tick(20);
+    const drawn = app.shown.length;
+    heard.emit('refresh');
+    await until(() => app.shown.length > drawn, '새 코치의 알림으로 다시 그린다');
   } finally {
     app.dispose();
   }
@@ -867,6 +924,42 @@ test('엔진 판의 짧은 진단 — 도중에 그만두면 판을 기록 없�
   } finally {
     app.dispose();
   }
+});
+
+test('엔진 판의 짧은 진단 — 판이 열린 동안 온 받기 알림 셋은 그 자리에서 그리지 않고, 판을 닫으며 그리는 한 번에 다 비친다 — 알림이 그리기를 늘리지 않고 진단을 멈추지 않는다(§21-20 시험 5 · 조건 3)', async () => {
+  const runs = [];
+  for (const notify of [false, true]) {
+    const heard = heardLike();
+    const app = shell({ wrap: heard.wrap });
+    try {
+      await app.education.position();
+      await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+      await app.education.position({ start: true });
+      await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+      await tick(20);
+      const open = { shown: app.shown.length, studied: app.studied() };
+      if (notify) {
+        heard.emit('receive');
+        heard.emit('refresh');
+        heard.emit('receive');
+      }
+      await tick(30);
+      assert.deepEqual({ shown: app.shown.length, studied: app.studied() }, open, '판이 열린 동안은 홈도 판도 그리지 않는다');
+      assert.equal(await answerItems(app, 1), 1, '진단은 그대로 이어진다(셸이 판 자원을 건드리지 않는다)');
+      assert.match(app.box().html, /data-position-run/, '아직 문항이 남았다');
+      const before = { shown: app.shown.length, studied: app.studied() };
+      app.box().press('data-position-stop');
+      await until(
+        () => /data-position-next="engine"[^>]*data-unfolded="false"[^>]*data-catching="false"/.test(app.last()),
+        '판을 닫고 접힌 칸으로 다시 그린 내 위치',
+      );
+      await tick(40);
+      runs.push({ shown: app.shown.length - before.shown, studied: app.studied() - before.studied });
+    } finally {
+      app.dispose();
+    }
+  }
+  assert.deepEqual(runs[1], runs[0], '판을 닫으며 그리는 만큼에서 알림 셋이 한 번도 더하지 않는다');
 });
 
 test('엔진 판의 짧은 진단 — 끝 화면이 답의 저장을 기다리는 사이 판이 닫히면 판을 기록 없이 닫고 끝 화면을 그리지 않는다(Fable 끝 판 F2)', async () => {
@@ -1001,5 +1094,80 @@ test('한글 열쇠 — 엔진 판은 이 화면이 이미 든 옛 코치에서�
   } finally {
     app.dispose();
     globals.restore();
+  }
+});
+
+// 30일째 문장(4-4c — 단계4_계획 §21-7). 코치(손님 · 동의를 끈 계정 — coach.lookback)가 낸 단위마다의 수에서 셸이 이름이 서는 단위 하나를 골라
+// (다시 확인 카드와 같은 이름 길 — unitRoutes) 엔진의 Vellum 문장으로 판 맨 위에 한 줄을 싣는다. 문장이 없으면(그 화면 언어의 줄이 없음 · 서버 길
+// 계정 · 코치가 못 셈) 줄 없이 판을 그린다. 코치의 셈 자체는 packages/atlas/test/coach/lookback.test.mjs가 본다.
+const htmlText = value =>
+  String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+function monthShell({ lookback, say = null } = {}) {
+  const seen = { named: null };
+  const wrap = made => {
+    for (const item of worldPosition.practice.pool) {
+      const row = made.itemUnits(item).find(unit => unit.kind !== 'family' && unit.label);
+      if (row) {
+        seen.named = row;
+        break;
+      }
+    }
+    return { ...made, lookback: () => lookback(seen.named) };
+  };
+  const label = id => (id === seen.named?.unit ? seen.named.label : null);
+  const planner = { ...PLANNER, say: say ?? ((why, lang) => atlas.renderReason(why, { lang, label })) };
+  return { app: shell({ wrap, planner }), seen };
+}
+
+test('엔진 판 — 30일째 문장: 이름이 서는 단위 하나를 골라 판 맨 위에 엔진의 문장으로 한 줄을 싣는다(4-4c — 21-7)', async () => {
+  const { app, seen } = monthShell({
+    lookback: named => ({
+      windows: {},
+      month: [
+        // 이름이 서지 않는 단위 — 수가 커도 고르지 않는다(카본 설계 검토 A11)
+        { unit: 'ko.word.zz-nameless', misses: 9, reviews: 9, last: 1, evidence: {} },
+        { unit: named.unit, misses: 3, reviews: 7, last: 1, evidence: {} },
+      ],
+    }),
+  });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    const html = app.last();
+    const text = `한 달 전에 3번 놓친 「${seen.named.label}」, 그 뒤로 7번 모두 혼자 맞혔어요.`;
+    assert.ok(
+      html.includes(`<p class="wpos-month" data-position-month data-unit="${htmlText(seen.named.unit)}" data-misses="3" data-reviews="7">${htmlText(text)}</p>`),
+      '고른 단위의 문장 한 줄',
+    );
+    assert.ok(html.indexOf('data-position-month') < html.indexOf('wpos-counts'), '판 맨 위(머리 그림 바로 뒤)');
+    assert.ok(!html.includes('zz-nameless'), '이름이 서지 않는 단위는 고르지 않는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 30일째 문장이 없으면(서버 길 계정 null · 고를 단위 없음 · 그 화면 언어의 줄 없음 · 코치가 못 셈) 줄 없이 판을 그린다', async () => {
+  const cases = [
+    ['서버 길 계정(코치가 null)', { lookback: () => null }],
+    ['고를 단위 없음', { lookback: () => ({ windows: {}, month: [] }) }],
+    ['그 화면 언어의 줄 없음', { lookback: named => ({ windows: {}, month: [{ unit: named.unit, misses: 3, reviews: 7 }] }), say: () => null }],
+    [
+      '코치가 못 셈',
+      {
+        lookback: () => {
+          throw new Error('closed');
+        },
+      },
+    ],
+  ];
+  for (const [name, options] of cases) {
+    const { app } = monthShell(options);
+    try {
+      await app.education.position();
+      await until(() => /data-position-next="engine"/.test(app.last()), `엔진 판(${name})`);
+      assert.ok(!app.last().includes('data-position-month'), name);
+    } finally {
+      app.dispose();
+    }
   }
 });

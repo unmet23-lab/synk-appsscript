@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 4-4b 이번 주 계획 새 판의 변형 시험(Atlas 재설계 단계4_계획 §21-11 「변형」). 계획 셈의 읽개 갈래(world-exam-plan.mjs), 새 계획 모듈
-// (world-plan-next.mjs — 읽개 · 시작점 · 기기 판 기록), 셸의 배선(world-learning-ui.mjs — 묶음 만남 다시 묻기 · 판 기록)의 규칙을 하나씩 일부러 깬
+// (world-plan-next.mjs — 읽개 · 시작점 · 기기 판 기록), 셸의 배선(world-learning-ui.mjs — 묶음 만남 다시 묻기 · 판 기록 · 받기 알림)의 규칙을 하나씩 일부러 깬
 // 사본을 같은 폴더에 만들어 장면 시험이 잡는지 본다. 홈 계획(world-today.mjs)의 4-4b 변형은 qa/today-mutants.mjs에 있다. 원본은 건드리지 않는다.
 // 사본은 점으로 시작하는 이름(서버가 내지 않는다)이고 끝나면 지운다. 장면 시험은 갈래마다 정한 환경 변수가 가리키는 사본을 받는다. 깨지 않은
 // 사본이 먼저 통과해야 그 갈래의 변형을 돌린다(사본을 못 받아 모든 변형이 「잡음」이 되는 일을 막는다). 4-4b의 계획 규칙을 더하거나 고치면 여기에
@@ -22,7 +22,6 @@ export const PLAN_SOURCES = Object.freeze({
 const KEY = "  const key=[homePlanner.todayKey(now),planEnds,info.type,complete,summaryShape(summary)].join('|');\n";
 const START = ' const start=reader?complete&&reader.start?.(skills.map(skill=>skill.id))===true:';
 const HOMEWORK = ' const homework=skills.filter(reader?weakNext:weakOf).map(skill=>{';
-const START_HOME_PULL = "  if(summary.storage?.guest===false&&!complete&&!sync.stopped&&!sync.switchOff)watchHomePulled(coachNow);\n";
 const WAIT_OPEN = "if(homePhase()==='checking'&&examChosen()){const panel=home.openPanel?.()??'';await settledHome();check();if(!quiet&&(home.openPanel?.()??'')!==panel)return 'skipped';}}";
 const MET = '      if (!wanted.has(item?.skillId) || quiet(() => skip(item)) === true) continue;\n';
 
@@ -71,9 +70,6 @@ export const PLAN_MUTANTS = [
   ['shell', '목표 시험을 바꿔도 묶음 만남을 다시 묻지 않는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,complete,summaryShape(summary)].join('|');\n"],
   ['shell', '기록이 다 와도 묶음 만남을 다시 묻지 않는다 — 기록 일부일 때의 판정이 그날 내내 굳는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,info.type,summaryShape(summary)].join('|');\n"],
   ['shell', '다른 기기의 답이 접혀 와도(요약이 바뀌어도) 묶음 만남을 다시 묻지 않는다 — 기록이 다 온 탭이 그날 내내 옛 만남으로 계획을 짓는다(4-4b 끝 판 카본 C2)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,info.type,complete].join('|');\n"],
-  ['shell', '서버 길 계정의 기록이 다 오기 전에 그린 홈이 받기를 기다리지 않는다 — 학생이 화면을 건드리기 전까지 시작점이 풀리지 않는다(카본 C1)', START_HOME_PULL, ''],
-  ['shell', '홈의 받기 기다림 — 60초 상한을 뺀다(카본 C1 · 내 위치 판의 watchPulled와 같은 상한)', 'watchHomePulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2))', 'watchHomePulled(coachNow,wait*2)'],
-  ['shell', '홈의 받기 기다림이 받기가 되어도 홈을 다시 그리지 않는다(카본 C1)', "   if(state==='complete')refresh();\n", "   if(state==='complete'){}\n"],
   ['shell', '다시 그릴 때마다 묶음 만남을 묻는다 — 홈이 그릴 때마다 풀 전체를 훑는다', '  if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice])};\n', '  weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice])};\n'],
   ['shell', '판 기록을 열지 않고 계획을 짓는다 — 이번 주에 한 판을 세지 못한다', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:homeNext?.planLog?.(coachNow)??null,', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:null,'],
   ['shell', '진단이 낼 문항이 있어도 홈에 알리지 않는다 — 점검 칸이 빈다', '  return examPlan?{examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready}}:null;\n', '  return examPlan?{examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready:false}}:null;\n'],
@@ -91,17 +87,17 @@ export const PLAN_MUTANTS = [
   ['shell', '판이 서도 기다림을 깨우지 않는다 — 판이 선 뒤에도 한도(8초)까지 기다린다(Fable F1)', '  wakePlanWaits();\n', ''],
   // wakePlanWaits의 「닫혔는가」(!stopped) 확인을 빼는 변형은 두지 않는다 — 닫히면 판 상태(homePhase)가 지금 판('old')이라 기다림이 이미 풀린다
   // (같은 동작 변형 · 4-4b 다시 검수 카본 A1). 확인은 그 규칙에 기대지 않으려고 둔 것이다. settledHome 타이머의 unref는 프로세스 종료만 바꿔 장면으로 못 본다.
-  ['shell', '홈의 받기 기다림 — 다시 연결되어도 처음 값(2초)으로 되돌리지 않는다(카본 C1 · 내 위치 판의 hurryPullWatch와 같은 규칙)', "  if(homePull.coach&&homePull.timer&&homePull.wait>PULL_WATCH_MS){const homeCoachNow=homePull.coach;stopHomePull();watchHomePulled(homeCoachNow,PULL_WATCH_MS);}\n", ""],
-  ['shell', '올리기가 막힌 동안은 홈의 받기 기다림을 걸지 않는다 — 막힘이 풀려도 홈이 스스로 다시 그리지 않는다(4-4b 다시 검수 Fable FA3)', START_HOME_PULL, "  if(summary.storage?.guest===false&&!complete&&!sync.stopped&&!sync.writesOff&&!sync.switchOff)watchHomePulled(coachNow);\n"],
-  ['shell', '홈의 받기 기다림이 받기(pulled)만 보고 기록이 다 왔다고 본다 — 막힘이 그대로인 동안 기다릴 때마다 홈을 다시 그린다(Fable FA3)', "  return homePlanner?.plan?.recordsComplete?.(storage,synced)===true?'complete':'wait';\n", "  return sync.pulled===true?'complete':'wait';\n"],
-  ['shell', '초점이 돌아와도 홈 코치를 지켜보지 않는다 — 깨어난 뒤의 받기로 다른 기기의 답이 와도 다음 조작까지 옛 계획이다(4-4b 다시 검수 GPT GA1)', "const onFocus=()=>{refresh();watchHomeWake();};", "const onFocus=()=>{refresh();};"],
-  ['shell', '다시 연결되어도 홈 코치를 지켜보지 않는다(GPT GA1)', "const onOnline=()=>{hurryPullWatch();watchHomeWake();}", "const onOnline=()=>{hurryPullWatch();}"],
-  ['shell', '화면이 다시 보여도 홈 코치를 지켜보지 않는다(GPT GA1)', "if(target.document?.visibilityState!=='hidden'){hurryPullWatch();watchHomeWake();}", "if(target.document?.visibilityState!=='hidden'){hurryPullWatch();}"],
-  ['shell', '지켜보다 요약 모양이 바뀌어도 홈을 다시 그리지 않는다(GPT GA1)', "    if(now!==shape){refresh();return;}\n", "    if(now!==shape)return;\n"],
-  ['shell', '지켜보기를 마칠 때 묶음 만남을 다시 묻지 않는다 — 건너뛰기만 한 판의 만남을 그날 내내 못 본다(4-4b 다시 검수 Fable FA1)', "    if(weekMet.coach===coachNow){weekMet={coach:null,key:null,met:null};refresh();}\n", ""],
   ['shell', '확인 중에 학생이 누른 계획 열기가 기다린 사이 학생이 연 다른 판을 덮는다(4-4b 다시 검수 Fable FA2)', WAIT_OPEN, "if(homePhase()==='checking'&&examChosen()){await settledHome();check();}}"],
   ['shell', '문서가 닫혀도 계획 열기의 기다림을 깨우지 않는다 — 판을 기다리던 열기가 8초 한도까지 매달린다(4-4b 다시 검수 카본 A1)', "dispose(){stopped=true;wakePlanWaits();", "dispose(){stopped=true;"],
   ['shell', '짧은 연습을 도중에 닫을 때 판 기록을 적지 않는다', 'try{session.stop();}catch{}counted(session.results());queueMicrotask(()=>refresh());};', 'try{session.stop();}catch{}queueMicrotask(()=>refresh());};'],
+  // ── 받기 알림(§21-20 — hearHome · heardHome · drawHeard). 열린 판 · 묶기 · 코치 바꾸기의 변형은 qa/position-mutants.mjs 「셸 받기 알림」에 있다 ──
+  ['shell', "받기 알림을 듣지 않는다 — 기록이 다 오기 전에 그린 홈이 받기가 되어도 학생이 화면을 건드리기 전까지 다시 그리지 않는다(§21-20 · 카본 C1)", "  hearHome();heard.due=false;\n", "  heard.due=false;\n"],
+  ['shell', "알림을 받아도 홈을 다시 그리지 않는다(§21-20 · 카본 C1)", "  refresh();\n  if(engineOpen)redrawNext();\n", "  if(engineOpen)redrawNext();\n"],
+  ['shell', "받기(receive) 알림을 넘긴다 — 다른 기기의 답 · 막힘이 풀려 올린 답이 홈에 닿지 않는다(§21-20 시험 1 · 4 · GPT GA1 · Fable FA3)", "off:coachNow.watch(()=>heardHome(coachNow))", "off:coachNow.watch(note=>{if(note?.kind==='refresh')heardHome(coachNow);})"],
+  ['shell', "다른 탭(refresh) 알림을 넘긴다 — 같은 브라우저의 다른 창에서 쓴 답이 이 창의 홈에 닿지 않는다(§21-20 시험 2 · 3)", "off:coachNow.watch(()=>heardHome(coachNow))", "off:coachNow.watch(note=>{if(note?.kind==='receive')heardHome(coachNow);})"],
+  ['shell', "알림을 받은 자리에서 바로 그린다 — 잇달아 온 알림을 묶지 않는다(§21-20 조건 3)", "  heard.due=true;\n  if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);\n", "  heard.due=true;\n  drawHeard();\n"],
+  ['shell', "알림이 묶음 만남을 버리지 않는다 — 다른 창에서 건너뛰기만 한 판의 만남을 그날 내내 못 본다(§21-20 시험 3 · Fable FA1)", "  if(weekMet.coach===coachNow)weekMet={coach:null,key:null,met:null};\n", ""],
+  ['shell', "문서를 닫아도 받기 알림의 듣기를 되돌리지 않는다(§21-20 조건 1)", "wakePlanWaits();stopHearing();homeWatch?.dispose();", "wakePlanWaits();homeWatch?.dispose();"],
 ];
 
 // 없는 갈래 이름이면 아무 변형도 돌리지 않고 0으로 끝나던 것을 멈춘다(4-4b 끝 판 GPT GB1).

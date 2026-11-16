@@ -32,6 +32,8 @@ const DESIGN_METHODS = [
   'guestRecords',
   'itemUnits',
   'exposures',
+  'lookback', // 30일째 문장의 수(단계 4 계획 §21-7 — 설계 주인 승인 21-10의 13)
+  'watch', // 받기 알림(단계 4 계획 §21-20 — 설계 주인 11-16 오후 승인)
 ];
 
 test('모듈 자리 여섯은 채울 단계와 함께 있다(설계 §11)', async () => {

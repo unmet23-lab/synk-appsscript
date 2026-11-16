@@ -76,10 +76,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const SYNC_LATE_MS=60000;
  // 새 길 진단 끝 화면이 기기 기록부(손님 · 동의를 끈 계정)의 다시 접기(finishSet의 folded)를 기다리는 한도 — 접기는 기기 안이라 짧다(Fable 끝 판 F3).
  const FOLD_WAIT_MS=4000;
- // 첫 받기가 실패로 끝난 뒤 storage.sync.pulled(뒤의 받기가 됨)를 다시 보는 간격 — 처음 값에서 두 배씩, 가장 길게(Fable 끝 판 F1 · 홈 판 감시의 settle과 같은 꼴).
- const PULL_WATCH_MS=2000,PULL_WATCH_MOST=60000;
- let pullWatch={coach:null,timer:null,wait:PULL_WATCH_MS,done:null};
- // 다시 보기 타이머 — target의 시계(창의 setTimeout · clearTimeout, 시험은 가짜 시계)를 쓴다. 없으면 전역 시계.
+ // 받기 알림(§21-20 — hearHome): 듣는 코치 · 되돌림 · 그릴 것이 있나(미룬 알림) · 다음 틱 타이머.
+ let heard={coach:null,off:null,due:false,timer:null};
+ // 타이머 — target의 시계(창의 setTimeout · clearTimeout, 시험은 가짜 시계)를 쓴다. 없으면 전역 시계.
  const watchClock={set:(fn,ms)=>typeof target.setTimeout==='function'?target.setTimeout(fn,ms):setTimeout(fn,ms),clear:id=>{if(id==null)return;if(typeof target.clearTimeout==='function')target.clearTimeout(id);else clearTimeout(id);}};
  // 새 길 홈이 확인 중일 때 연 이번 주 계획이 판이 서기를 기다리는 한도와 기다리는 쪽(4-4b 끝 판 Fable F1 — openPlan · settledHome).
  const PLAN_WAIT_MS=8000;const planWaits=new Set();
@@ -343,6 +342,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(stopped||refreshing)return current;
   if(drawHome()&&homeNext){try{homeNext.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}}
   wakePlanWaits();
+  // 받기 알림(§21-20): 지금 홈 코치에 듣기를 맞추고, 이 그리기가 미룬 알림을 다 비췄으니 비운다(판을 닫으며 부르는 refresh가 그 한 번이다).
+  hearHome();heard.due=false;
   // 새 길 「내 위치」가 확인 중 판이면 판이 섰는지 다시 본다(§21-2 — 생활 판정이 서면 셸이 홈을 다시 그린다). 엔진 판은 판 감시가 알릴 때만 다시 그린다.
   try{if(homeNext&&panelNode('[data-position-next="checking"]'))redrawNext();}catch{/* the next open draws it */}
   return current;
@@ -700,7 +701,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 서버 길 계정의 「기록이 다 왔는가」(21-3 A3)가 읽는 첫 받기 답 — 홈 코치마다 묻는다(코치 synced — 한도 4초, 손님 · 기기 길은 곧 답한다).
  // 된 답(ok)만 그 코치 동안 든다. 시간 초과면 받기가 끝날 때까지 한 번 더 길게(SYNC_LATE_MS) 기다린다 — 받기가 4초를 넘겨 끝나도 판이 「기록 일부」와
- // 닫힌 진단에 굳지 않게(GPT 끝 판 GB1). 실패면 다음에 판을 그릴 때 다시 묻고, 뒤의 받기는 storage.sync.pulled로 본다(watchPulled — Fable 끝 판 F1).
+ // 닫힌 진단에 굳지 않게(GPT 끝 판 GB1). 실패면 다음에 판을 그릴 때 다시 묻고, 뒤의 받기는 받기 알림(receive — hearHome, §21-20)으로 본다(Fable 끝 판 F1).
  // 판은 답이 된 답으로 바뀔 때만 다시 그린다(되풀이해 묻지 않는다).
  function syncedNext(coachNow,wait=null){
   if(!coachNow||typeof coachNow.synced!=='function')return Promise.resolve(null);
@@ -711,60 +712,46 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    nextSync.value=value;nextSync.asking=null;
    if(value?.ok===true)redrawNext();
    else if(value?.kind==='timeout'&&wait==null)void syncedNext(coachNow,SYNC_LATE_MS);
-   else watchPulled(coachNow);
    return value;
   });
   nextSync={coach:coachNow,value:same?nextSync.value:null,asking};
   return asking;
  }
- // 첫 받기가 실패로 끝났으면(오프라인 · since가 맞지 않음 · 저장소 예외 — 늦게 기다린 것도 끝나지 않았으면) 엔진은 synced()에 그 실패를 그 문서
- // 동안 돌려주고, 뒤의 받기가 되면 summary().storage.sync.pulled만 참이 된다(Fable 끝 판 F1 · 설계 주인 11-16). 셸은 호스트 알림을 듣지 않으므로
- // 열린 판에서 그 칸을 PULL_WATCH_MS부터 두 배씩(PULL_WATCH_MOST까지) 다시 보고, 참이 되면 판을 한 번 다시 그린다(recordsComplete가 pulled를
- // 읽는다 — 홈 판 감시의 settle과 같은 꼴). 멈출 때(설계 주인 11-16 조건 1): pulled가 서면 그 코치에서는 그 뒤로 보지 않는다. 판이 닫히면(판 자원의
- // dispose) · 문서가 닫히면 그친다. 올리기 · 받기가 멈추면(stopped · writesOff · switchOff — 기록이 다 올 수 없다) 그친다. 손님 · 동의를 끈 계정의
- // 판과 첫 받기가 된 판에서는 시작하지 않는다. 다시 연결되거나 화면이 다시 보이면 간격을 처음 값으로 되돌린다(조건 2 — 코치가 그때 받는다).
- // 열린 판의 받기 상태 — 'wait'(다시 볼 까닭이 있다) · 'pulled'(받기가 됐다) · null(손님 · 기록부를 못 읽음 · 올리기나 받기가 멈춤).
- function pullState(coachNow){
-  let storage=null;try{storage=coachNow.summary()?.storage??null;}catch{return null;}
-  if(!storage||storage.guest===true)return null;
-  const sync=storage.sync??{};
-  if(sync.stopped||sync.writesOff||sync.switchOff)return null;
-  return sync.pulled===true?'pulled':'wait';
+ // 받기 알림을 듣는다(설계 주인 11-16 오후 — 단계4_계획 §21-20). 엔진의 호스트 알림 가운데 문서 밖의 답이 들어왔다는 두 가지(receive — 받기 ·
+ // 첫 받기 · 올리기 답, refresh — 다른 탭의 쓰기 · 다른 저장소에서 옮겨 옴)를 홈 코치의 watch 하나로 듣는다. 홈과 내 위치 판이 같은 알림에 겹쳐
+ // 두 번 그리지 않게 화면에 듣는 곳은 하나다. 11-16 새벽의 다시 보기 셋(내 위치 판의 pulled 다시 보기 · 홈의 받기 기다림 · 깨어난 뒤 30초
+ // 지켜보기)을 이것으로 바꿨다 — 다시 보기는 같은 자리에서 P1이 두 회차 이어졌고 빈틈 셋이 남았다(§21-18). 엔진의 받기 사다리와 다시 받기는
+ // 그대로다(알림은 받기가 실제로 돌아야 난다).
+ // 알림을 받은 자리에서는 이번 주 계획의 묶음 만남만 버린다(건너뛰기만 한 판의 만남은 요약 모양에 비치지 않는다 — Fable FA1). 그리기는 다음 틱으로
+ // 미뤄 잇달아 온 알림을 한 번으로 묶는다. 진단 · 짧은 연습 · 시험 형식 · 마을 확인 판이 열려 있으면 그리지 않고 미뤄 둔다 — 그 판들은 닫힐 때
+ // 홈을 새로 그리고(판의 stop이 부르는 refresh), 그 한 번이 미룬 알림을 다 비춘다(refresh가 미룬 것을 비운다). 판 자원(attachPanelResource)은
+ // 판마다 하나라 여기서 붙이지 않는다 — 붙이면 그 판의 stop이 닫혀 연습이 멈춘다. 홈 코치가 바뀌면 옛 코치의 듣기를 되돌리고 새 코치에 건다
+ // (refresh가 맞춘다). 문서가 닫히면 되돌린다.
+ const SESSION_PANELS=Object.freeze(['[data-position-stage]','[data-practice-stage]','[data-mock-stage]','[data-town-stage]']);
+ const sessionPanel=()=>SESSION_PANELS.some(selector=>panelNode(selector));
+ function hearHome(){
+  const coachNow=!stopped&&homePhase()==='engine'?homeWatch?.coach?.()??null:null;
+  if(heard.coach===coachNow)return;
+  try{heard.off?.();}catch{/* 닫힌 코치 */}
+  heard={...heard,coach:null,off:null};
+  if(!coachNow||typeof coachNow.watch!=='function')return;
+  try{heard={...heard,coach:coachNow,off:coachNow.watch(()=>heardHome(coachNow))};}catch{/* 닫힌 코치 — 다음 refresh가 다시 건다 */}
  }
- function stopPullWatch(){
-  watchClock.clear(pullWatch.timer);
-  pullWatch={coach:null,timer:null,wait:PULL_WATCH_MS,done:pullWatch.done};
+ function heardHome(coachNow){
+  if(stopped||heard.coach!==coachNow)return;
+  if(weekMet.coach===coachNow)weekMet={coach:null,key:null,met:null};
+  heard.due=true;
+  if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);
  }
- function watchPulled(coachNow,wait=PULL_WATCH_MS){
-  if(!coachNow||stopped||pullWatch.done===coachNow||pullWatch.coach===coachNow&&pullWatch.timer)return;
-  // 판이 닫힌 뒤에 온 첫 받기 답(판을 그린 코치가 아니거나 내 위치 새 판이 없음)으로는 시작하지 않는다 — 다시 열면 그 판이 다시 묻는다(GPT 다시 검수 GA1).
-  if(nextSync.coach!==coachNow||!panelNode('[data-position-next]'))return;
-  const state=pullState(coachNow);
-  if(!state)return;
-  if(state==='pulled'){stopPullWatch();pullWatch.done=coachNow;redrawNext();return;}
-  watchClock.clear(pullWatch.timer);
-  const timer=watchClock.set(()=>{
-   if(pullWatch.timer!==timer)return;
-   pullWatch.timer=null;
-   if(stopped||nextSync.coach!==coachNow||!panelNode('[data-position-next]')){stopPullWatch();return;}
-   const now=pullState(coachNow);
-   if(now==='wait'){pullWatch.coach=null;watchPulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2));return;}
-   stopPullWatch();
-   if(now==='pulled'){pullWatch.done=coachNow;redrawNext();}
-  },wait);
-  timer?.unref?.();
-  pullWatch={coach:coachNow,timer,wait,done:pullWatch.done};
+ function drawHeard(){
+  heard.timer=null;
+  if(stopped||!heard.due||sessionPanel())return;
+  // 열린 내 위치 판(엔진 판)도 같은 알림으로 한 번 — 확인 중 판은 refresh가 이미 다시 그린다. refresh가 미룬 것을 비운다.
+  const engineOpen=Boolean(panelNode('[data-position-next="engine"]'));
+  refresh();
+  if(engineOpen)redrawNext();
  }
- // 다시 연결(online) · 화면이 다시 보임(visibilitychange) — 보고 있으면 간격을 처음 값으로 되돌린다(설계 주인 11-16 조건 2).
- function hurryPullWatch(){
-  // 홈의 받기 기다림도 처음 값으로(카본 C1).
-  if(homePull.coach&&homePull.timer&&homePull.wait>PULL_WATCH_MS){const homeCoachNow=homePull.coach;stopHomePull();watchHomePulled(homeCoachNow,PULL_WATCH_MS);}
-  const coachNow=pullWatch.coach;
-  if(!coachNow||!pullWatch.timer||pullWatch.wait<=PULL_WATCH_MS)return;
-  watchClock.clear(pullWatch.timer);
-  pullWatch={...pullWatch,coach:null,timer:null};
-  watchPulled(coachNow,PULL_WATCH_MS);
- }
+ function stopHearing(){watchClock.clear(heard.timer);try{heard.off?.();}catch{/* 닫힌 코치 */}heard={coach:null,off:null,due:false,timer:null};}
  const nextViewOf=()=>nextView||=homePlanner?.position?.createView?.({t,has:hasString,formatDate})||null;
  // 확인 중 판 — 판을 아직 못 정했거나(플래너를 받기 전 · 생활 판정이 확인 중) 홈 코치의 요약이 자리를 잡기 전. 줄 없이 「기록 확인 중」(21-2).
  const nextChecking=()=>`<div class="wpos life-heading" data-position-next="checking" tabindex="-1" aria-busy="true"><div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape(t('position.title'))}</strong><p class="life-poster-sub">${escape(t('homeTutor.checking'))}</p></div></div>`;
@@ -790,7 +777,17 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const cards=P.recheckCards({due:coachNow.due(),units:summary.units,routes,capped:current?.today?.capped===true,audioAvailable,lifeOpen});
   // 어디 기록인지 한 줄: 손님은 이 기기, 서버 길 계정은 계정. 동의를 끈 계정(기기에만 두는 계정 기록)은 맞는 글이 없어 두지 않는다(글은 리디자인).
   const scope=owner==='guest'?'device':summary.storage?.guest===false?'account':null;
-  return {values,exam,board,plan,cards,fresh,judged,scope};
+  return {values,exam,board,plan,cards,fresh,judged,scope,month:monthOf(coachNow,P,routes)};
+ }
+ // 30일째 문장(4-4c — 단계4_계획 §21-7): 손님과 동의를 끈 계정은 코치가 센다(coach.lookback). 서버 길 계정은 코치가 null을 낸다 — 서버의 돌아보기
+ // 읽기(4-4c 둘째 묶음)를 잇기 전까지 문장이 없다. 고르기는 이름이 서는 단위에서(routes — 다시 확인 카드와 같은 이름), 문장은 Vellum이 짓는다(그
+ // 화면 언어의 줄이 없으면 null — 문장을 비운다). 못 읽으면 문장 없이 판을 그린다.
+ function monthOf(coachNow,P,routes){
+  let counts=null;try{counts=typeof coachNow.lookback==='function'?coachNow.lookback():null;}catch{return null;}
+  if(!counts||typeof P.pickMonth!=='function')return null;
+  const pick=P.pickMonth({month:counts.month,routes,day:homePlanner.todayKey(Date.now())});
+  let text=null;try{text=pick?homePlanner.say(P.monthWhy(pick),currentLang()):null;}catch{text=null;}
+  return pick&&typeof text==='string'&&text?{text,unit:pick.unit,misses:pick.misses,reviews:pick.reviews}:null;
  }
  // 새 길의 이번 주 계획(4-4b — 단계4_계획 §21-6): 시험을 고른 학생만, 홈 코치가 자리를 잡은 엔진 판에서. 묶음 만남(진단 풀 + 짧은 연습 풀)은 학습일 ·
  // 판 끝 · 목표 시험 · 기록이 다 온 상태가 바뀔 때만 다시 묻는다 — 홈이 다시 그릴 때마다 풀 전체를 훑지 않게, 그러나 시험을 바꾸거나 계정의 첫 받기가
@@ -802,65 +799,6 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 내내 옛 만남(시작점 · 처음 보는 문항)으로 계획을 지었다(4-4b 끝 판 카본 C2). 요약이 그대로면 다시 묻지 않는다(카본 A8).
  const summaryShape=summary=>{let n=0,cells=0,sittings=0,lapses=0;for(const skill of summary?.skills||[]){n+=skill.n||0;for(const cell of skill.cells||[])cells+=(cell.independent||0)+(cell.helped||0);}
   for(const unit of summary?.units||[]){sittings+=unit.sittings||0;lapses+=unit.lapses||0;}return [summary?.skills?.length||0,n,cells,summary?.units?.length||0,sittings,lapses].join('.');};
- // 서버 길 계정의 기록이 다 오기 전에 그린 홈(4-4b 끝 판 카본 C1): 셸은 호스트 알림을 듣지 않으므로, 받기가 되면(storage.sync.pulled) 홈을 한 번 다시
- // 그린다 — 계획의 「기록이 다 왔는가」(시작점 · 점검 칸)가 그때 풀린다. 내 위치 판의 watchPulled와 같은 간격(2초부터 두 배씩, 60초까지)이고, 홈 코치가
- // 바뀌거나 올리기 · 받기가 멈추면 그친다.
- let homePull={coach:null,timer:null,wait:PULL_WATCH_MS};
- function stopHomePull(){watchClock.clear(homePull.timer);homePull={coach:null,timer:null,wait:PULL_WATCH_MS};}
- function watchHomePulled(coachNow,wait=PULL_WATCH_MS){
-  if(stopped||!coachNow||homePull.coach===coachNow&&homePull.timer)return;
-  watchClock.clear(homePull.timer);
-  const timer=watchClock.set(()=>{
-   if(homePull.timer!==timer)return;
-   stopHomePull();
-   if(stopped||homeWatch?.coach?.()!==coachNow)return;
-   const state=homeRecordsState(coachNow);
-   if(state==='complete')refresh();
-   else if(state==='wait')watchHomePulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2));
-  },wait);
-  timer?.unref?.();
-  homePull={coach:coachNow,timer,wait};
- }
- // 홈의 받기 기다림이 보는 상태 — 'complete'(기록이 다 왔다) · 'wait'(받기나 올리기 막힘이 풀리기를 기다린다) · null(손님 · 멈춤 · 스위치 꺼짐 · 못 읽음).
- // 「기록이 다 왔는가」가 참이 될 때까지 본다 — 받기가 됐어도 올리기 막힘(writesOff)이 풀려야 참이라, 받기만 보면 막힘이 풀릴 때 홈을 다시 그리지
- // 않았다(4-4b 다시 검수 Fable FA3).
- function homeRecordsState(coachNow){
-  let storage=null;try{storage=coachNow.summary()?.storage??null;}catch{return null;}
-  if(!storage||storage.guest!==false)return null;
-  const sync=storage.sync??{};
-  if(sync.stopped||sync.switchOff)return null;
-  const synced=nextSync.coach===coachNow?nextSync.value:null;
-  return homePlanner?.plan?.recordsComplete?.(storage,synced)===true?'complete':'wait';
- }
- // 깨어난 뒤의 받기(4-4b 다시 검수 GPT GA1 · Fable FA1): 셸은 호스트 알림을 듣지 않으므로, 초점 · 화면 복귀 · 다시 연결 뒤 엔진의 받기(5분 막이)로
- // 다른 기기의 답이 접혀 와도 홈은 다음 조작까지 옛 계획으로 남았다(초점의 새로 그리기가 받기보다 먼저 돈다). 깨어나면 홈 코치의 요약 모양을 1초부터
- // 두 배씩 30초까지 지켜보다 바뀌면 다시 그린다. 모양은 채점된 답만 비춘다(건너뛰기만 한 판의 만남은 못 본다) — 그래서 지켜보기를 마칠 때 이번 주
- // 계획의 묶음 만남을 한 번 다시 묻게 하고 다시 그린다. 새로 깨어나면 처음부터 다시 지켜본다. 이번 주 계획을 그 코치로 지은 홈만 지켜본다 — 시험을
- // 고르지 않은 학생에게는 굳을 만남이 없다(내 위치 판의 받기 기다림과 타이머를 섞지 않는다).
- const WAKE_WATCH_MS=1000,WAKE_WATCH_MOST=30000;
- let wakeWatch={timer:null};
- function stopWakeWatch(){watchClock.clear(wakeWatch.timer);wakeWatch={timer:null};}
- function watchHomeWake(){
-  stopWakeWatch();
-  const coachNow=!stopped&&homePhase()==='engine'?homeWatch?.coach?.()??null:null;
-  if(!coachNow||typeof coachNow.summary!=='function'||weekMet.coach!==coachNow)return;
-  let shape;try{shape=summaryShape(coachNow.summary());}catch{return;}
-  const arm=(wait,spent)=>{
-   const timer=watchClock.set(()=>{
-    if(wakeWatch.timer!==timer)return;
-    wakeWatch={timer:null};
-    if(stopped||homeWatch?.coach?.()!==coachNow)return;
-    let now;try{now=summaryShape(coachNow.summary());}catch{return;}
-    if(now!==shape){refresh();return;}
-    const next=spent+wait;
-    if(next<WAKE_WATCH_MOST){arm(Math.min(wait*2,WAKE_WATCH_MOST-next),next);return;}
-    if(weekMet.coach===coachNow){weekMet={coach:null,key:null,met:null};refresh();}
-   },wait);
-   timer?.unref?.();
-   wakeWatch={timer};
-  };
-  arm(WAKE_WATCH_MS,0);
- }
  function weekNext(coachNow,values,now){
   const N=homePlanner?.plan,P=homePlanner?.position;
   const info=position?.exam?.examInfo?.(values)||null;
@@ -868,8 +806,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const exam=examOf(values),audioAvailable=values?.audio!=='off',listening=item=>item.audioRequired??item.modality==='listening';
   const summary=coachNow.summary(),diagnostic=position.items,practice=position.practice.pool;
   const synced=nextSync.coach===coachNow?nextSync.value:null;
-  const complete=N.recordsComplete(summary.storage,synced),sync=summary.storage?.sync??{};
-  if(summary.storage?.guest===false&&!complete&&!sync.stopped&&!sync.switchOff)watchHomePulled(coachNow);
+  const complete=N.recordsComplete(summary.storage,synced);
   const key=[homePlanner.todayKey(now),planEnds,info.type,complete,summaryShape(summary)].join('|');
   if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice])};
   const metDiag=weekMet.met.slice(0,diagnostic.length),metPractice=weekMet.met.slice(diagnostic.length);
@@ -944,11 +881,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scroller=keepScroll?panelNode('[data-position-next]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-position-next]')):null,openRows=keepScroll?openRowsOf(panelNode('[data-position-next]')):[];
   if(!data){home.showPanel(t('position.title'),nextChecking(),PANEL);panelNode('[data-position-next]')?.focus?.({preventScroll:true});return;}
   const two=topik2Domains(),exams=studentExam(data.values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
-  home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0}),PANEL);
+  home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0,month:data.month}),PANEL);
   const root=panelNode('[data-position-next]');
   if(keepScroll){reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
-  // 판이 닫히면(다른 판을 열거나 닫음) 첫 받기 뒤의 받기를 다시 보는 것을 그친다(설계 주인 11-16 조건 1 — 남은 타이머가 없게).
-  home.attachPanelResource?.({dispose:stopPullWatch});
   // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(GPT 끝 판 GB1).
   void syncedNext(coachNow);
   root?.querySelector?.('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnosticNext(coachNow,data);}catch(error){failed(error);}},{once:true});
@@ -1564,9 +1499,7 @@ async function townSend(coachNow,{wait=true}={}){
   homeWatch=planner.watchHomePlan({open:openHome,retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped){refresh();redrawNext();}}});
   refresh();redrawNext();
  },()=>{if(stopped)return;homeFailed=true;refresh();redrawNext();});
- const onFocus=()=>{refresh();watchHomeWake();};target.addEventListener?.('focus',onFocus);
- const onOnline=()=>{hurryPullWatch();watchHomeWake();},onVisible=()=>{if(target.document?.visibilityState!=='hidden'){hurryPullWatch();watchHomeWake();}};
- target.addEventListener?.('online',onOnline);target.document?.addEventListener?.('visibilitychange',onVisible);
+ const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
  // 배우기 판의 「이번 주 계획」 줄(life-ui.mjs moreRows): 시험을 고른 사람에게만. print는 그 판의 인화지 그림.
  function planRow(print=()=>''){
   const plan=current?.examPlan;if(!plan)return '';
@@ -1578,5 +1511,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopPullWatch();stopHomePull();stopWakeWatch();target.removeEventListener?.('online',onOnline);target.document?.removeEventListener?.('visibilitychange',onVisible);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

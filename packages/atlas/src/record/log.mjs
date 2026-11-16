@@ -20,7 +20,7 @@ import { deviceKey, EMPTY_INDEX, groupsOf } from './adapt.mjs';
 import { createClock } from './clock.mjs';
 import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, isId, parentOf } from './events.mjs';
 import { familySkillsOf, ownFoldEvents, touchesOf, WAIT } from './own.mjs';
-import { linesOfGroups } from './rows.mjs';
+import { linesOfGroups, rowsOfGroup, toUnitRow } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
 import {
   applyDelta,
@@ -740,6 +740,20 @@ export function createRecord({
     heldEvent: id => state.held.get(id)?.event ?? null,
     heldEvents: () =>
       [...state.held.values()].sort((a, b) => a.key - b.key).map(item => item.event),
+    // 단위마다의 근거 줄 전부(30일째 문장 — 단계 4 계획 §21-7). 든 사건 전부(저장이 끝난 사건 — 아직 요약에 접히지 않은 내 답 포함)를 요약
+    // 접기와 같은 어댑터 · 근거 줄(rowsOfGroup)로 짓고, 단위 줄과 본인 말 줄만 기억 접기의 꼴(toUnitRow)로 단위마다 모은다. 저장 중인 사건은
+    // 저장이 끝나면 든다(판 끝의 folded가 그 저장을 기다린다). 사건을 치우지 않는 기록부(손님과 동의를 끈 계정)만 처음부터 다 든다 — 계정
+    // 기기는 이틀 치만 들어 코치가 부르지 않는다(서버 길은 서버의 돌아보기 읽기).
+    unitRows() {
+      const byUnit = new Map();
+      for (const group of groupsOf([...state.held.values()].map(entryOf)).values())
+        for (const row of rowsOfGroup(group, index)) {
+          if (row.kind !== 'unit' && row.kind !== 'say') continue;
+          if (!byUnit.has(row.unit)) byUnit.set(row.unit, []);
+          byUnit.get(row.unit).push(toUnitRow(row));
+        }
+      return byUnit;
+    },
     acked: id => state.acks.get(id),
 
     // 오래되고 서버가 접은 사건 · 지난 표지 기록을 치운다. 답이 아직 안 달린 제시와 얹을 사건의 부모는 둔다.

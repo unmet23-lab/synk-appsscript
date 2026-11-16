@@ -26,6 +26,8 @@ const COUNTS = Object.freeze({
   'unit.due': Object.freeze({ days: 0 }),
   'skill.up': Object.freeze({ streak: 1 }),
   'pace.breather': Object.freeze({ misses: 1 }),
+  // 30일째 문장은 말하는 조건의 하한 아래면 짓지 않는다 — memory/lookback.mjs의 MONTH_FLOOR와 같다(시험이 맞댄다, 단계 4 §21-7).
+  'progress.month': Object.freeze({ misses: 2, reviews: 3 }),
 });
 const counted = why => {
   const need = own(COUNTS, why.code);

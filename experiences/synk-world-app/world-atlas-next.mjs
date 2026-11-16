@@ -9,6 +9,7 @@ import { buildPositionNext, examSkills, recheckCards, unitRoutes, unseenFamilies
 import { createDiagnosticNextSession, selectDiagnosticNext, withheldItem } from './world-diagnostic-next.mjs';
 import { createPositionNextView } from './world-position-next-view.mjs';
 import { buildPlanNext, createPlanLog, planBoard, planReader, planStart, recordsComplete } from './world-plan-next.mjs';
+import { monthWhy, pickMonth } from './world-lookback-next.mjs';
 import { lifeReviewCandidate } from './world-account.bundle.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
@@ -26,6 +27,9 @@ export const positionPlanner = Object.freeze({
   createDiagnosticNextSession,
   createView: createPositionNextView,
   lifeReview: lifeReviewCandidate,
+  // 30일째 문장(4-4c — 단계4_계획 §21-7): 코치(손님 · 동의를 끈 계정)나 서버 읽기가 낸 단위마다의 수에서 이름이 서는 단위 하나를 고르고 이유를 짓는다.
+  pickMonth,
+  monthWhy,
 });
 // 이번 주 계획 새 판(4-4b — 단계4_계획 §21-6): 능력 읽개 · 시작점 · 기기 판 기록으로 지금 판의 buildExamPlan을 새 칸으로 읽는다. 홈 코치 하나로
 // 짓는다(내 위치와 같은 코치 · 같은 묶음 만남 — 셸 world-learning-ui.mjs weekNext).

@@ -23,8 +23,9 @@ export { createHealth, HEALTH_VERSION } from './health/index.mjs';
 export { openMap } from './map/index.mjs';
 export { GRADES, gradeOf, PRODUCED } from './memory/grade.mjs';
 export { createMemory } from './memory/index.mjs';
+export { lookbackOf, lookbackWindows, MONTH_FLOOR } from './memory/lookback.mjs';
 export { EDITIONS, PARAMS } from './params.mjs';
-export { REASON_CODES } from './reason/index.mjs';
+export { monthReason, PROGRESS_CODES, REASON_CODES } from './reason/index.mjs';
 export { reasonLine } from './reason/ko.mjs';
 export {
   applyDelta,

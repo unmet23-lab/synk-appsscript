@@ -27,6 +27,8 @@
     'guestRecords',
     'itemUnits',
     'exposures',
+    'lookback',
+    'watch',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;

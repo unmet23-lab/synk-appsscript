@@ -5,6 +5,7 @@
 // 아직 짓지 않은 것(코드 NOT_IMPLEMENTED로 분명히 던진다 — 조용히 빈 값을 주면 제품이 엔진이 돈다고 믿는다):
 //   live · today · presentation(순간 맞춤 · 오늘 컨디션 · 표시 설정 — 게임을 잇는 4-6), reset(비우기 — 「나」 4-5).
 import { openMap } from '../map/index.mjs';
+import { lookbackOf, lookbackWindows } from '../memory/lookback.mjs';
 import { EDITION } from '../edition.mjs';
 import { PARAMS } from '../params.mjs';
 import { firstLedgerCells } from '../record/carry.mjs';
@@ -111,7 +112,15 @@ export function createCoach(options = {}) {
   const params = options.params ?? PARAMS;
   const dayOffset = options.dayOffset ?? -new Date().getTimezoneOffset();
   const scope = options.scope ?? globalThis; // 시험만 준다(틀 흉내)
-  const state = { map: null, host: null, claim: null, session: null, disposed: false };
+  // watchers: watch가 건 듣는 함수의 되돌림들 — 코치를 닫으면 모두 부른다(§21-20 조건 1).
+  const state = {
+    map: null,
+    host: null,
+    claim: null,
+    session: null,
+    disposed: false,
+    watchers: new Set(),
+  };
   const label = id => options.label?.(id) ?? state.map?.unit(id)?.label ?? null;
   // 틀이 여럿일 때 같은 날 같은 것에는 같은 말 — Vellum에 하루 열쇠를 넘긴다(Fable 설계 P2-5 ⑥).
   const say = (why, extra = {}) =>
@@ -509,6 +518,33 @@ export function createCoach(options = {}) {
       });
     },
 
+    // 30일째 문장의 수(단계 4 계획 §21-7 — 설계 주인 승인 21-10의 9 · 13). 사건을 치우지 않는 기록부(손님과 동의를 끈 계정)에서만 센다.
+    // 서버 길 계정은 null이다 — 기기에 이틀 치만 있어 처음부터 세지 못하므로, 제품이 서버의 돌아보기 읽기로 묻는다. 내는 것은
+    // { windows, month }이고, month는 네 조건을 넘은 단위마다 { unit, misses, reviews, last, evidence }(단위 이름 차례)다. 이름이 서는
+    // 단위 거르기와 하나 고르기는 제품이 서버 읽기와 같은 함수로 한다 — 코치가 하나를 골라 내면 그 단위의 이름이 서지 않을 때 조건을
+    // 채운 다른 단위가 있어도 문장이 사라진다(카본 설계 검토 A11). 기록부의 든 사건 전부(저장이 끝난 사건 — 아직 요약에 접히지 않은 내 답
+    // 포함)를 읽는다(카본 설계 검토 A3). 저장 중인 답은 저장이 끝나면 든다.
+    lookback({ now } = {}) {
+      live();
+      if (!state.host.guest) return null;
+      const hostParams = state.host.params ?? params;
+      const at = Number.isFinite(now) ? now : state.host.now();
+      const windows = lookbackWindows(at, {
+        dayStartHour: hostParams.dayStartHour,
+        offset: dayOffset,
+      });
+      const month = [];
+      for (const [unit, rows] of state.host.trail.unitRows()) {
+        const counts = lookbackOf(rows, windows, hostParams);
+        if (!counts.pass) continue;
+        const { misses, reviews, last } = counts;
+        const evidence = Object.freeze({ ...windows, misses, reviews, last });
+        month.push(Object.freeze({ unit, misses, reviews, last, evidence }));
+      }
+      month.sort((a, b) => (a.unit < b.unit ? -1 : a.unit > b.unit ? 1 : 0));
+      return Object.freeze({ windows, month: Object.freeze(month) });
+    },
+
     // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).
     // 마침 사건에는 그 판의 번호(setId — 제시의 setId와 같은 값)를 싣는다(단계 5 판 비교, Fable 설계 P2-1 라 · 기록 1c412a995).
     // folded: 그 판의 쓰기가 다 저장된 뒤 손님 요약을 다시 접고 풀린다 — 그 뒤의 summary() 칸에 방금 푼 답이 든다(P2-3, 계정은 서버가 접는다).
@@ -640,9 +676,30 @@ export function createCoach(options = {}) {
       return live().tell(unit, kind).event;
     },
 
+    // 받기 알림(단계 4 계획 §21-20 — 설계 주인 11-16 오후 승인. 11-16 새벽에 고른 「셸이 다시 보기」를 바꾼 것이다). 문서 밖의 답이 이
+    // 기록부에 들어왔다는 호스트 알림 두 가지만 넘긴다. receive는 받기 · 첫 받기 · 올리기 답을 기록부에 받았을 때, refresh는 다른 탭이 썼거나
+    // 다른 저장소에서 사건을 옮겨 왔을 때 난다. 넘기는 것은 { kind } 하나다(사건 번호나 다른 칸은 넘기지 않는다). 알림은 기록부와 요약이
+    // 바뀐 뒤에 나므로, 듣는 함수 안에서 summary()를 부르면 새 값이다(storage.sync.pulled 포함). 같은 문서 안의 일(written · failed)과 셸이
+    // 따로 듣는 일(account · offline)은 넘기지 않는다. 되돌림 함수는 여러 번 불러도 되고, 코치를 닫으면 듣는 함수가 저절로 빠진다.
+    watch(listener) {
+      live();
+      if (typeof listener !== 'function')
+        throw new TypeError('Atlas coach: watch는 듣는 함수를 받는다');
+      const off = state.host.subscribe(event => {
+        if (event?.kind === 'receive' || event?.kind === 'refresh') listener({ kind: event.kind });
+      });
+      state.watchers.add(off);
+      return () => {
+        if (!state.watchers.delete(off)) return;
+        off();
+      };
+    },
+
     dispose() {
       if (state.disposed) return;
       state.disposed = true;
+      for (const off of state.watchers) off();
+      state.watchers.clear();
       state.session?.dispose();
       if (state.host) releaseHost(state.host, state.claim);
       scope.removeEventListener?.('pagehide', coach.dispose);

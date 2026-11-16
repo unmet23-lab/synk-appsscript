@@ -27,4 +27,6 @@ export const COACH_METHODS = Object.freeze([
   'guestRecords', // 손님 → 계정 옮기기(단계 4 계획 §18-5-3 — 경계 표지 · 다섯 걸음)
   'itemUnits', // 지도 문항의 단위(단계 4 계획 §19-3 — 생활 복습 → 생활 단위, 제품이 단위를 짓지 않는다)
   'exposures', // 묶음 만남 — 여러 문항의 exposure()를 한 번에(단계 4 계획 §21-3 — 판을 여는 진단 · 시작점 고르기)
+  'lookback', // 30일째 문장의 수 — 손님과 동의를 끈 계정(단계 4 계획 §21-7, 서버 길 계정은 null)
+  'watch', // 받기 알림 — 문서 밖의 답이 들어왔다(receive · refresh만, 단계 4 계획 §21-20)
 ]);

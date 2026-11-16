@@ -4,7 +4,7 @@
 // qa/atlas-next-diagnostic.test.mjs)이 잡는지 본다. 원본은 건드리지 않는다. 사본은 점으로 시작하는 이름(서버가 내지 않는다)이고 끝나면 지운다.
 // 장면 시험은 SYNK_POSITION_NEXT_MODULE · SYNK_DIAGNOSTIC_NEXT_MODULE이 가리키는 사본을 받는다. 깨지 않은 사본이 먼저 통과해야 변형을 돌린다.
 // 셸(world-learning-ui.mjs)의 새 판 배선도 같은 꼴로 본다 — 사본을 SYNK_LEARNING_UI_MODULE로 넘겨 셸 장면 시험(qa/atlas-next-position-shell.test.mjs)이
-// 잡는지 본다(4-4a 끝 판 F1 · F2 · F3와 다시 검수의 다시 보기 · 초점 — 11-16까지 손으로 돌리던 셸 변형을 여기에 올렸다, Fable 다시 검수).
+// 잡는지 본다(4-4a 끝 판 F1 · F2 · F3와 다시 검수의 초점 · 11-16 오후의 받기 알림(§21-20) — 11-16까지 손으로 돌리던 셸 변형을 여기에 올렸다, Fable 다시 검수).
 // 두 모듈의 규칙을 더하거나 고치면 여기에 깬 변형을 함께 더한다(설계 주인이 짚은 셋 가운데 「level 조건을 뺌」이 여기 있다 — 「묶음 만남이 한
 // 문항을 다르게 냄」은 packages/atlas/tools/mutants/coach.mjs, 「숙제 연습의 층 9 거름을 뺌」은 4-4b에서 더한다).
 // 쓰는 법: node experiences/synk-world-app/qa/position-mutants.mjs [--갈래 <갈래>]
@@ -25,6 +25,11 @@ const MODULES = {
     source: path.join(here, '..', 'world-diagnostic-next.mjs'),
     scenes: path.join(here, 'atlas-next-diagnostic.test.mjs'),
     env: 'SYNK_DIAGNOSTIC_NEXT_MODULE',
+  },
+  lookback: {
+    source: path.join(here, '..', 'world-lookback-next.mjs'),
+    scenes: path.join(here, 'atlas-next-month.test.mjs'),
+    env: 'SYNK_LOOKBACK_NEXT_MODULE',
   },
   shell: {
     source: path.join(here, '..', 'world-learning-ui.mjs'),
@@ -429,48 +434,6 @@ export const POSITION_MUTANTS = [
   ],
   [
     'shell',
-    "셸 다시 보기",
-    "F1 셸 — 첫 받기가 실패로 끝나면 pulled를 보지 않는다",
-    "   else watchPulled(coachNow);\n",
-    "",
-  ],
-  [
-    'shell',
-    "셸 다시 보기",
-    "F1 셸 — pulled로 다시 그린 뒤에도 그 코치를 다시 본다(다시 그리기가 되풀이된다)",
-    "if(!coachNow||stopped||pullWatch.done===coachNow||pullWatch.coach===coachNow&&pullWatch.timer)return;",
-    "if(!coachNow||stopped||pullWatch.coach===coachNow&&pullWatch.timer)return;",
-  ],
-  [
-    'shell',
-    "셸 다시 보기",
-    "F1 셸 — 판을 닫아도 다시 보기를 그치지 않는다(설계 주인 11-16 조건 1 · 4의 변형)",
-    "  home.attachPanelResource?.({dispose:stopPullWatch});\n",
-    "",
-  ],
-  [
-    'shell',
-    "셸 다시 보기",
-    "F1 셸 — 다시 연결되어도 간격을 되돌리지 않는다(설계 주인 11-16 조건 2 · 4의 변형)",
-    "const onOnline=()=>{hurryPullWatch();watchHomeWake();},",
-    "const onOnline=()=>{watchHomeWake();},",
-  ],
-  [
-    'shell',
-    "셸 다시 보기",
-    "F1 셸 — 올리기 · 받기가 멈춰도 다시 본다(조건 1)",
-    "  if(sync.stopped||sync.writesOff||sync.switchOff)return null;",
-    "",
-  ],
-  [
-    'shell',
-    "셸 다시 보기",
-    "F1 셸 — 문서를 닫아도 다시 보기를 그치지 않는다(조건 1)",
-    "dispose(){stopped=true;wakePlanWaits();stopPullWatch();",
-    "dispose(){stopped=true;wakePlanWaits();",
-  ],
-  [
-    'shell',
     "셸 초점",
     "초점 — 다시 그리기 전에 판 안의 초점을 읽지 않는다(설계 주인 11-16 조건 3)",
     ",focusKey=keepScroll?nextFocusOf(panelNode('[data-position-next]')):null,",
@@ -527,13 +490,6 @@ export const POSITION_MUTANTS = [
   ],
   [
     'shell',
-    "셸 다시 보기",
-    "다시 보기 — 닫힌 판에 온 첫 받기 답에도 다시 보기를 시작한다(GPT 다시 검수 GA1)",
-    "if(nextSync.coach!==coachNow||!panelNode('[data-position-next]'))return;",
-    "",
-  ],
-  [
-    'shell',
     "셸 초점",
     "초점 — 펴 둔 능력 줄을 다시 펴지 않는다(닫힌 줄 안의 단추로 초점이 가지 않는다 — Fable 다시 검수)",
     "reopenRows(root,openRows);",
@@ -547,25 +503,116 @@ export const POSITION_MUTANTS = [
     "refocusNext(root,focusKey);}",
   ],
   [
-    'shell',
-    "셸 다시 보기",
-    "다시 보기 — 60초 상한을 뺀다(Fable 다시 검수)",
-    "watchPulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2))",
-    "watchPulled(coachNow,wait*2)",
+    'lookback',
+    "30일째 문장 고르기",
+    "이름이 서지 않는 단위도 고른다(21-4 · 카본 설계 검토 A11)",
+    "    .filter(entry => typeof entry.label === 'string' && entry.label.trim());\n",
+    "",
+  ],
+  [
+    'lookback',
+    "30일째 문장 고르기",
+    "합이 아니라 놓친 자리 수만 본다",
+    "      b.row.misses + b.row.reviews - (a.row.misses + a.row.reviews) ||\n",
+    "      b.row.misses - a.row.misses ||\n",
+  ],
+  [
+    'lookback',
+    "30일째 문장 고르기",
+    "합이 같을 때 해시를 보지 않는다 — 날이 바뀌어도 늘 같은 단위다",
+    "      hash(`${day}|${a.row.unit}`) - hash(`${day}|${b.row.unit}`) ||\n",
+    "",
+  ],
+  [
+    'lookback',
+    "30일째 문장 고르기",
+    "해시에 날짜 열쇠를 넣지 않는다",
+    "hash(`${day}|${a.row.unit}`) - hash(`${day}|${b.row.unit}`)",
+    "hash(a.row.unit) - hash(b.row.unit)",
+  ],
+  [
+    'lookback',
+    "30일째 문장 고르기",
+    "수가 깨진 줄(정수 아님 · 음수)도 고른다",
+    "    .filter(row => typeof row?.unit === 'string' && count(row.misses) !== null && count(row.reviews) !== null)\n",
+    "    .filter(row => typeof row?.unit === 'string')\n",
   ],
   [
     'shell',
-    "셸 다시 보기",
-    "다시 보기 — 숨겨진 화면의 visibilitychange에도 간격을 되돌린다(Fable 다시 검수)",
-    "if(target.document?.visibilityState!=='hidden'){hurryPullWatch();watchHomeWake();}",
-    "{hurryPullWatch();watchHomeWake();}",
+    "셸 30일째 문장",
+    "내 위치 판에 30일째 문장을 넘기지 않는다",
+    "scope,month:monthOf(coachNow,P,routes)};",
+    "scope};",
   ],
   [
     'shell',
-    "셸 다시 보기",
-    "깨어날 때 지켜보기 — 이번 주 계획이 없는 홈(시험을 고르지 않은 학생)도 지켜본다 · 내 위치 판의 받기 기다림에 타이머가 섞인다(4-4b 다시 검수 GPT GA1)",
-    "typeof coachNow.summary!=='function'||weekMet.coach!==coachNow)return;",
-    "typeof coachNow.summary!=='function')return;",
+    "셸 30일째 문장",
+    "고르기 없이 코치가 낸 첫 줄을 쓴다 — 이름이 서지 않는 단위로 문장이 사라진다(카본 설계 검토 A11)",
+    "  const pick=P.pickMonth({month:counts.month,routes,day:homePlanner.todayKey(Date.now())});\n",
+    "  const pick=counts.month[0]??null;\n",
+  ],
+  [
+    'shell',
+    "셸 30일째 문장",
+    "코치가 셈에서 던지면 내 위치 판을 못 그린다",
+    "  let counts=null;try{counts=typeof coachNow.lookback==='function'?coachNow.lookback():null;}catch{return null;}\n",
+    "  const counts=typeof coachNow.lookback==='function'?coachNow.lookback():null;\n",
+  ],
+  [
+    'shell',
+    "셸 30일째 문장",
+    "그 화면 언어의 줄이 없어도 줄을 싣는다",
+    "  return pick&&typeof text==='string'&&text?{text,unit:pick.unit,misses:pick.misses,reviews:pick.reviews}:null;\n",
+    "  return pick?{text:String(text),unit:pick.unit,misses:pick.misses,reviews:pick.reviews}:null;\n",
+  ],
+  [
+    'shell',
+    "셸 받기 알림",
+    "알림마다 다음 틱 타이머를 건다 — 잇달아 온 알림을 하나로 묶지 않는다(§21-20 조건 3)",
+    "  if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);\n",
+    "  heard.timer=watchClock.set(drawHeard,0);\n",
+  ],
+  [
+    'shell',
+    "셸 받기 알림",
+    "판이 열린 동안에도 바로 그린다 — 진단 · 연습 판 아래의 홈이 그 자리에서 다시 그려진다(§21-20 시험 5 · 조건 3)",
+    "  if(stopped||!heard.due||sessionPanel())return;\n",
+    "  if(stopped||!heard.due)return;\n",
+  ],
+  [
+    'shell',
+    "셸 받기 알림",
+    "새로 그려도 미룬 알림을 비우지 않는다 — 그 뒤 타이머가 같은 알림으로 또 그린다(§21-20 조건 3)",
+    "  hearHome();heard.due=false;\n",
+    "  hearHome();\n",
+  ],
+  [
+    'shell',
+    "셸 받기 알림",
+    "홈 코치가 바뀌어도 옛 코치를 듣는다 — 판을 다시 정한 뒤의 알림이 닿지 않는다(§21-20)",
+    "  if(heard.coach===coachNow)return;\n",
+    "  if(heard.coach)return;\n",
+  ],
+  [
+    'shell',
+    "셸 받기 알림",
+    "코치를 바꿀 때 옛 코치의 듣기를 되돌리지 않는다(§21-20 조건 1)",
+    "  try{heard.off?.();}catch{/* 닫힌 코치 */}\n  heard={...heard,coach:null,off:null};\n",
+    "  heard={...heard,coach:null,off:null};\n",
+  ],
+  [
+    'shell',
+    "셸 받기 알림",
+    "알림으로 열린 내 위치 판을 다시 그리지 않는다 — 기록 일부 판이 받기 뒤에도 그대로다(§21-20 · Fable 끝 판 F1)",
+    "  if(engineOpen)redrawNext();\n",
+    "",
+  ],
+  [
+    'shell',
+    "셸 받기 알림",
+    "닫힌 판에도 다시 그린다 — 늦게 온 첫 받기 답이 닫은 내 위치 판을 다시 연다(GPT 다시 검수 GA1 · 카본 A1)",
+    "try{if(panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true});}",
+    "try{showNext({keepScroll:true,fresh:true});}",
   ],
 ];
 

@@ -492,3 +492,34 @@ test('수 칸이 비었거나 음수 · 정수가 아니면 문장을 짓지 않
     );
   }
 });
+
+// 30일째 문장(단계 4 계획 §21-7) — 진도의 사실이라 고르기의 이유(REASON_CODES)와 따로 둔다. 한국어만 있고 영어 · 몽골어는 세 겹 대조 뒤에
+// 들인다(언어는 물러서지 않는다). 말하는 조건의 하한(memory/lookback.mjs의 MONTH_FLOOR) 아래의 수나 이름 없는 단위로는 짓지 않는다.
+test('progress.month — 한국어 문장 · 영어 · 몽골어는 null · 하한 아래와 이름 없는 단위는 짓지 않는다', async () => {
+  const { MONTH_FLOOR } = await subject('memory/lookback.mjs');
+  const { monthReason, PROGRESS_CODES, REASON_CODES: codes } = await subject('reason/index.mjs');
+  assert.equal(PROGRESS_CODES.month, 'progress.month');
+  assert.ok(!Object.values(codes).includes('progress.month'), '고르기의 이유 종류가 아니다');
+  const row = { unit: 'ko.grammar.seyo', misses: 3, reviews: 7, last: 1, evidence: { misses: 3 } };
+  const why = monthReason(row);
+  assert.deepEqual(why, {
+    code: 'progress.month',
+    slots: { unit: 'ko.grammar.seyo', misses: 3, reviews: 7 },
+    evidence: { misses: 3 },
+  });
+  const names = labelOf({ 'ko.grammar.seyo': '-(으)세요' });
+  assert.equal(
+    render(why, { label: names }),
+    '한 달 전에 3번 놓친 「-(으)세요」, 그 뒤로 7번 모두 혼자 맞혔어요.',
+  );
+  assert.equal(render(why, { label: names, lang: 'en' }), null, '영어 줄은 아직 없다');
+  assert.equal(render(why, { label: names, lang: 'mn' }), null, '몽골어 줄은 아직 없다');
+  assert.equal(render(why, { label: labelOf({}) }), null, '이름 없는 단위로는 짓지 않는다');
+  // 하한은 MONTH_FLOOR와 같다 — 그 수면 짓고, 하나라도 모자라면 짓지 않는다.
+  const at = (misses, reviews) =>
+    render(monthReason({ unit: 'ko.grammar.seyo', misses, reviews }), { label: names });
+  assert.ok(at(MONTH_FLOOR.misses, MONTH_FLOOR.reviews), '하한 그대로면 짓는다');
+  assert.equal(at(MONTH_FLOOR.misses - 1, MONTH_FLOOR.reviews), null, '놓친 자리가 모자라다');
+  assert.equal(at(MONTH_FLOOR.misses, MONTH_FLOOR.reviews - 1), null, '뒤 창 자리가 모자라다');
+  assert.equal(at(Number.NaN, 5), null);
+});

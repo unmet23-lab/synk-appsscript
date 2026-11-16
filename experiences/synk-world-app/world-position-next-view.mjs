@@ -149,7 +149,9 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
   // 판 한 장. board: buildPositionNext · plan: selectDiagnosticNext · cards: recheckCards · exams: 고를 수 있는 시험(둘 이상일 때 위에 고르기) ·
   // practice(skillId): 「이 항목 연습하기」를 달 수 있나 · scope: 'account' | 'device' | null · diagnosed: 이 문서에서 진단을 한 번 했나 · writing: 쓰기 줄 단추.
   // 시험 형식 연습 · 예상 급수 · 놓친 곳 카드는 새 길에서 숨긴다(21-10의 4 · 5 — 4-4d · 4-6).
-  function board({ board, plan = null, cards = [], exams = null, practice = null, scope = null, diagnosed = false, writing = false } = {}) {
+  // month: 30일째 문장(4-4c — 21-7) { text, unit, misses, reviews } — 셸이 Vellum으로 지은 문장(그 화면 언어의 줄이 없으면 셸이 null을 넘긴다).
+  // 판 맨 위(머리 그림 바로 뒤)에 한 줄로 싣는다. 모양은 리디자인이 정한다 — 여기서는 글 한 줄과 수를 data-*로만.
+  function board({ board, plan = null, cards = [], exams = null, practice = null, scope = null, diagnosed = false, writing = false, month = null } = {}) {
     if (!board || !Array.isArray(board.skills)) throw TypeError('WORLD position next view needs the position board');
     const exam = board.exam === 'topik2' ? 'topik2' : 'topik1';
     const summary = summaryOf(board);
@@ -169,7 +171,11 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
       : '';
     // 다시 확인 카드는 있으면 진단 앞에, 없으면 판 끝에 한 줄(지금 판과 같은 자리).
     const recheck = cardsBlock(cards);
-    return `<div class="wpos life-heading" data-position-next="engine" data-exam="${exam}" data-complete="${flag(board.complete)}" data-unfolded="${flag(board.unfolded)}" data-catching="${flag(board.catching)}" tabindex="-1">${poster(t('position.title'), summary)}${examSwitch}<ul class="wpos-counts" aria-label="${escape(summary)}">${counts}</ul><p class="wpos-intro">${escape(t('position.intro'))}</p>${incomplete}${attentionBlock(board, practice)}${cards.length ? recheck : ''}${diagnosticBlock(board, plan, diagnosed)}${groups(board, practice)}${writingBlock(board, writing)}${carriedBlock(board)}${cards.length ? '' : recheck}${scopeLine}</div>`;
+    const monthLine =
+      typeof month?.text === 'string' && month.text
+        ? `<p class="wpos-month" data-position-month data-unit="${escape(month.unit)}" data-misses="${count(month.misses)}" data-reviews="${count(month.reviews)}">${escape(month.text)}</p>`
+        : '';
+    return `<div class="wpos life-heading" data-position-next="engine" data-exam="${exam}" data-complete="${flag(board.complete)}" data-unfolded="${flag(board.unfolded)}" data-catching="${flag(board.catching)}" tabindex="-1">${poster(t('position.title'), summary)}${monthLine}${examSwitch}<ul class="wpos-counts" aria-label="${escape(summary)}">${counts}</ul><p class="wpos-intro">${escape(t('position.intro'))}</p>${incomplete}${attentionBlock(board, practice)}${cards.length ? recheck : ''}${diagnosticBlock(board, plan, diagnosed)}${groups(board, practice)}${writingBlock(board, writing)}${carriedBlock(board)}${cards.length ? '' : recheck}${scopeLine}</div>`;
   }
 
   return Object.freeze({ board });
