@@ -916,3 +916,26 @@ test('설계 관문 넷째 3: a B2 call checks before every attempt, so a retry 
   await assert.rejects(s.hideFile({ bucketId: 'b', fileName: 'n' }, { beforeAttempt }), { code: 'TOO_OLD' });
   assert.equal(fetches, 1);
 });
+
+// ── 둘째 끝판 검수(11-16 밤)
+test('설계 관문 둘 · 카본 끝판2 C1: a large data hide alerts without waiting for measurements; only the device confirming stops it', () => {
+  const summary = { events: [], usage: { visibleBytes: 1024 ** 3, visibleSnapshots: 3 }, window: { from: T0, to: T0 + DAY, snapshotHides: 0, dataHiddenBytes: 3 * 1024 ** 3, snapshotsAtStart: 3, snapshotUploads: 0 } };
+  assert.equal(judge(summary, { baseline: 0, reported: null, previousSnapshots: 3, now: T0 + DAY }).alerts[0]?.reason, 'hide-surge');
+  assert.deepEqual(judge(summary, { baseline: 0, reported: { runs: 1, pruned: 0, massConfirmed: true }, previousSnapshots: 3, now: T0 + DAY }).alerts, []);
+});
+
+test('카본 끝판2 C3: an undo that finished here but whose answer was lost, asked again by a new job, answers what it did — free, nothing changed again', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-undo-replay-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  const at = twoFiles(b2, clock);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r1 = await f['restore.apply']({ prefix: P, at, runId: 'c3bbbbbbbbbbbbb1' });
+  clock.advance(10 * 60000);
+  await f['restore.apply']({ prefix: P, at: r1.preAt, runId: 'c3bbbbbbbbbbbbb2', undoOf: 'c3bbbbbbbbbbbbb1' });
+  const versions = b2.versions.length;
+  clock.advance(60000);
+  const again = await f['restore.apply']({ prefix: P, at: r1.preAt, runId: 'c3bbbbbbbbbbbbb3', undoOf: 'c3bbbbbbbbbbbbb1' });
+  assert.equal(again.replayed, true);
+  assert.equal(b2.versions.length, versions, 'nothing copied or hidden again');
+  assert.equal(ledgerOf(dir).counts[P], 1, 'one restore; its undo free, once');
+});

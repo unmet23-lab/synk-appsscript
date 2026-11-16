@@ -60,7 +60,10 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     if ((store.customerById(customer.id)?.detect_since || 0) !== baseline) { log({ task: 'scan', code: 'BASELINE_MOVED' }); return; }
     let reported = store.reportedSince(customer.id, since, to);
     if (reported === null && cursor !== null && cursor < t - 7 * DAY) reported = { runs: 0, pruned: 0, massConfirmed: false };
-    const verdict = judge(summary, { baseline, reported, previousSnapshots: prev ? prev.visible_snapshots : null, seen: (id) => store.seen(customer.id, id), now: t });
+    // The snapshots counted at the last scan stand for 「there were some」 only when that scan came
+    // after the last restore: a restore to a time with none is not 「모두 사라짐」 (카본 끝판2 C2).
+    const previousSnapshots = prev && prev.scanned_at > baseline ? prev.visible_snapshots : null;
+    const verdict = judge(summary, { baseline, reported, previousSnapshots, seen: (id) => store.seen(customer.id, id), now: t });
     const finished = !verdict.deferred.length;
     // A hide surge mails once per window (while the cursor stays, the same window is judged
     // again each day); a content change once per its first new event.
@@ -164,8 +167,12 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     if (gap && gap.end > t - 2 * HOUR) return;
     for (const d of store.all("select * from devices where state = 'active' and role = 'write' and last_seen_at < ?", t - 3 * DAY)) {
       const customer = store.customerById(d.customer_id);
-      if (!customer) continue;
-      const key = mailer?.toCustomer(customer, 'silent', { name: d.name, lastSeen: d.last_seen_at }, `${d.id}:${d.last_seen_at}`);
+      if (!customer || customer.state !== 'active') continue;
+      // One notice per silence: the mail already queued for it means it was told (the mailer's
+      // queue answers its key either way, and the alert would come back every day — 카본 끝판2 C4).
+      const unique = `${d.id}:${d.last_seen_at}`;
+      if (store.all('select 1 from outbox where key = ?', `wb:silent:${customer.id}:${unique}`).length) continue;
+      const key = mailer?.toCustomer(customer, 'silent', { name: d.name, lastSeen: d.last_seen_at }, unique);
       if (key) store.addAlert({ customerId: customer.id, kind: 'silent', audience: 'customer', detail: { deviceId: d.id } });
     }
   }

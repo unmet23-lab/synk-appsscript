@@ -373,12 +373,18 @@ test('S2: requests that change keys run one at a time per customer — never two
   const a = await readyCustomer(h);
   const b = await h.provision('PC-2');
   const [p1, p2] = [await h.proof('take-write-seat'), await h.proof('take-write-seat')];
-  const [r1, r2] = await Promise.all([
-    h.call('POST', 'devices/take-write-seat', { google: p1 }, a.device.token),
-    h.call('POST', 'devices/take-write-seat', { google: p2 }, b.device.token),
-  ]);
-  assert.deepEqual([r1.ok, r2.ok].sort(), [false, true]);
-  assert.equal((r1.ok ? r2 : r1).code, 'BUSY');
+  // The second request is sent while the first holds the customer's line: from inside the first
+  // one's key making, so the two surely overlap (GPT 끝판2 GE1).
+  const realCreate = h.b2.createKey.bind(h.b2);
+  let r2 = null;
+  h.b2.createKey = async (args) => {
+    if (!r2) { r2 = 'sent'; r2 = await h.call('POST', 'devices/take-write-seat', { google: p2 }, a.device.token); }
+    return realCreate(args);
+  };
+  const r1 = await h.call('POST', 'devices/take-write-seat', { google: p1 }, b.device.token);
+  h.b2.createKey = realCreate;
+  assert.equal(r1.ok, true, r1.code);
+  assert.equal(r2.code, 'BUSY');
   const writers = [...h.b2.keys.values()].filter((k) => k.keyName.startsWith('wbw-'));
   assert.equal(writers.length, 1);
   assert.equal(h.store.all("select count(*) n from devices where role = 'write' and state = 'active'")[0].n, 1);
@@ -474,10 +480,15 @@ test('move pin: the reading PC pins the snapshot it copies, the writer sees it, 
   assert.deepEqual({ by: ws.move.by.name, snapshotId: ws.move.snapshotId, mine: ws.move.byThisDevice }, { by: '새 PC', snapshotId: snap, mine: false });
   // Only the pinning device can unpin.
   assert.equal((await h.call('POST', 'move/unpin', {}, w.device.token)).unpinned, false);
+  assert.equal((await h.call('GET', 'status', null, w.device.token)).move.snapshotId, snap, 'the pin stays (카본 끝판2 E5)');
   // Pinning again replaces the pin.
   const snap2 = 'cd'.repeat(32);
   await h.call('POST', 'move/pin', { snapshotId: snap2 }, r.device.token);
   assert.equal((await h.call('GET', 'status', null, w.device.token)).move.snapshotId, snap2);
+  // The pinning device releases it.
+  assert.equal((await h.call('POST', 'move/unpin', {}, r.device.token)).unpinned, true);
+  assert.equal((await h.call('GET', 'status', null, w.device.token)).move, null);
+  await h.call('POST', 'move/pin', { snapshotId: snap2 }, r.device.token);
   // Seven days end a pin nobody released.
   h.clock.advance(7 * 24 * 3600 * 1000 + 1);
   assert.equal((await h.call('GET', 'status', null, w.device.token)).move, null);
@@ -702,11 +713,12 @@ test('카본 D5 · C6: the same PC signing up again after a lost answer replaces
   assert.equal(h.store.device(lost.device.id).state, 'abandoned');
   assert.equal(h.store.all("select count(*) n from alerts where kind = 'new-device'")[0].n, 0);
   assert.equal((await h.call('POST', 'provision', { google: await h.proof('provision'), device: { name: 'PC', installId: 'bad' } })).code, 'BAD_INPUT');
-  // Another PC (another install id) is a second device and does not replace anything.
-  await h.ack(again);
+  // Another PC (another install id) is a second device and does not replace anything — even
+  // while this one's answer is still unacknowledged (카본 끝판2 E4).
   const other = await h.call('POST', 'provision', { google: await h.proof('provision'), device: { name: 'PC-2', installId: 'B'.repeat(22) } });
   assert.equal(other.device.role, 'read');
   assert.equal(h.store.device(again.device.id).state, 'active');
+  await h.ack(again);
   assert.equal(h.store.all("select count(*) n from alerts where kind = 'new-device'")[0].n, 1);
 });
 
@@ -868,10 +880,19 @@ test('jobs 관문: a key B2 made after its sign-up was given up is deleted by na
   const result = await h.jobs.reconcileKeys(h.clock.t);
   assert.ok(result.problems.some((p) => p.kind === 'not-deleted'));
   assert.equal(h.b2.keys.has(late.applicationKeyId), false);
-  // And a key made for a row given up meanwhile is deleted at once by the request itself.
+  // And a key made for a row given up meanwhile is deleted at once by the request itself
+  // (through the request, not only the store's answer — 카본 끝판2 E3).
   const row = h.store.keyIntent({ kind: 'read', customerId: a.customer.id, deviceId: a.device.id, purpose: 'rotate' });
   h.store.keyDeleted(row, 'test');
   assert.equal(h.store.keyCreated(row, { keyId: 'fixture', capabilities: [] }), 0);
+  const realCreate = h.b2.createKey.bind(h.b2);
+  let made = null;
+  h.b2.createKey = async (args) => { h.store.keyDeleted(args.keyName, 'test'); made = await realCreate(args); return made; };
+  const rot = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token);
+  h.b2.createKey = realCreate;
+  assert.equal(rot.code, 'SERVER');
+  assert.ok(made);
+  assert.equal(h.b2.keys.has(made.applicationKeyId), false, 'the request deleted the key it could not hand out');
 });
 
 test('jobs 관문: hides with no measurement wait up to seven days, then are judged as none; the cursor then moves', async (t) => {
@@ -1489,12 +1510,13 @@ test('카본 r8a D2 · D3: a non-string version or install id is refused before 
     assert.equal(r.code, 'BAD_INPUT');
   }
   assert.equal((await h.call('POST', 'provision', { google: p, device: { name: 'PC' } })).ok, true, 'the refusals did not use the sign-in (카본 끝판 E1)');
-  let last = null;
-  for (let i = 0; i < 31; i++) {
-    const res = await fetch(`http://127.0.0.1:${h.port}/backup-api/v1/nonce`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': `10.0.0.${i}, 203.0.113.9` }, body: JSON.stringify({ purpose: 'provision' }) });
-    last = await res.json();
-  }
-  assert.equal(last.code, 'RATE', 'a client cannot dodge the limit with its own forwarded-for entries');
+  const nonce = async (xff) => (await fetch(`http://127.0.0.1:${h.port}/backup-api/v1/nonce`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': xff }, body: JSON.stringify({ purpose: 'provision' }) })).json();
+  const codes = [];
+  for (let i = 0; i < 31; i++) codes.push((await nonce(`10.0.0.${i}, 203.0.113.9`)).code ?? 'ok');
+  assert.deepEqual(codes.slice(0, 30).filter((c) => c !== 'ok'), [], 'the first thirty pass (카본 끝판2 E2)');
+  assert.equal(codes[30], 'RATE', 'a client cannot dodge the limit with its own forwarded-for entries');
+  // Another client behind the same proxy is its own key: the key is the proxy's entry, not the proxy's address.
+  assert.equal((await nonce('203.0.113.10')).ok, true);
 });
 
 test('GPT r8a GD1: the same time asked again after a third restore failed half-way continues it, not refused as a fourth', async (t) => {
@@ -1607,4 +1629,51 @@ test('카본 r13 A1: a same-time request after a failed restore with a backup on
   assert.equal(h.store.job(id).state, 'done');
   assert.equal(h.store.job(id).continues, null, 'the worker took it as a new restore');
   assert.equal(h.store.restoresSince(a.customer.id, h.clock.t - 86400000), 2);
+});
+
+test('GPT 끝판2 GD1: an unconfirmed read key whose delete failed is deleted again before a new one is made', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h); // A: the confirmed read key
+  const rot = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token);
+  assert.equal(rot.ok, true, rot.code);
+  await h.call('POST', 'keys/ack', { keyIds: [rot.keys.read.keyId] }, a.device.token); // B: acknowledged, not confirmed
+  h.b2.failDelete = true;
+  assert.equal((await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token)).code, 'SERVER');
+  h.b2.failDelete = false;
+  const again = await h.call('POST', 'read-key/rotate', { google: await h.proof('read-key-rotate') }, a.device.token);
+  assert.equal(again.ok, true, again.code);
+  assert.equal(h.b2.keys.has(rot.keys.read.keyId), false, 'B is deleted this time');
+  assert.equal([...h.b2.keys.values()].filter((k) => k.keyName.startsWith('wbr-')).length, 2, 'the confirmed one and the new one');
+});
+
+// ── 둘째 끝판 검수(11-16 밤)
+test('카본 끝판2 C2: after a restore to a time before any snapshot, 「모두 사라짐」 does not count the snapshots measured before the restore', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`);
+  h.clock.advance(3600000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.lastUsage(a.customer.id).visible_snapshots, 1);
+  h.clock.advance(3600000);
+  h.b2.hide(base + 'snapshots/s1'); // what the restore did
+  h.clock.advance(60000);
+  h.store.setCustomer(a.customer.id, { detect_since: h.clock.t }); // the restore was kept
+  h.clock.advance(86400000);
+  await h.jobs.scanCustomer(h.store.customerById(a.customer.id), h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'repo-changed'")[0].n, 0);
+});
+
+test('카본 끝판2 C4: one silence notice per silence, not one a day; none for a customer who is not active', async (t) => {
+  const h = await harness(t);
+  await readyCustomer(h);
+  h.store.addInvite('second@example.com');
+  const c2 = await h.provision('PC-B', { sub: '2000002', email: 'second@example.com' }); await h.ack(c2);
+  h.store.setCustomer(c2.customer.id, { state: 'suspended' });
+  h.clock.advance(3 * 86400000 + 60000);
+  h.store.beat(); h.jobs.silence(h.clock.t);
+  for (let i = 0; i < 170; i++) { h.clock.advance(9 * 60000); h.store.beat(); } // a day, the server up all along
+  h.jobs.silence(h.clock.t);
+  assert.equal(h.store.all("select count(*) n from alerts where kind = 'silent'")[0].n, 1);
+  assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:silent:%'")[0].n, 1);
+  assert.equal(h.store.all("select count(*) n from outbox where key like ?", `wb:silent:${c2.customer.id}:%`)[0].n, 0);
 });

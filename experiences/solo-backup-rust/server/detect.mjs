@@ -144,6 +144,10 @@ export function judge(summary, { baseline = 0, reported = null, previousSnapshot
       surge = w.snapshotHides > cap + 5;
     }
   }
+  // A large data hide does not wait for measurements (unlike a snapshot one): with none it is
+  // not confirmed. It is the backstop when measurements can be forged or never come, and half
+  // the data hidden is worth a mail even if the device's word is only late (설계 관문 둘; 카본
+  // 끝판2 C1 was weighed against this and not taken).
   const dataSurge = w.from >= baseline && !(reported?.massConfirmed) && w.dataHiddenBytes >= GIB && w.dataHiddenBytes > 0.5 * (summary.usage.visibleBytes + w.dataHiddenBytes);
   if (vanished || surge || dataSurge) alerts.push({ kind: 'repo-changed', reason: 'hide-surge', vanished, snapshotHides: w.snapshotHides, reportedPruned: reported?.pruned ?? null, dataHiddenBytes: w.dataHiddenBytes, daysLeft: daysLeft(from) });
   return { alerts, fresh, deferred };

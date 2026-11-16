@@ -155,9 +155,10 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
     return live.some((k) => k.state === 'pending' || k.state === 'acked') ? 'unconfirmed' : 'missing';
   }
   // 「확정 하나 + 미확정 하나」: a new read key deletes the earlier unconfirmed ones first, so
-  // B2 never holds more than two read keys of a prefix (카본 r6 C3).
+  // B2 never holds more than two read keys of a prefix (카본 r6 C3). A key whose delete failed
+  // before ('deleting') is deleted again first, or a retry would make a third (GPT 끝판2 GD1).
   async function retireUnconfirmed(customer) {
-    await dropAll(readKeys(customer).filter((k) => ['creating', 'pending', 'acked', 'retired'].includes(k.state)), 'superseded');
+    await dropAll(readKeys(customer).filter((k) => ['creating', 'pending', 'acked', 'retired', 'deleting'].includes(k.state)), 'superseded');
   }
   // C5: the first key request after a loss (the Google step open, no confirmed read key) is an
   // incident response — once; later ones count as usual.

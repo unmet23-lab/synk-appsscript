@@ -51,9 +51,14 @@ function restoreLedger(stateDir, now) {
   const save = (all) => { const tmp = `${file}.${process.pid}.tmp`; fs.writeFileSync(tmp, JSON.stringify(all)); fs.renameSync(tmp, file); };
   const ids = (run) => run?.runIds || (run?.runId ? [run.runId] : []);
   return {
-    replay(prefix, at, runId) {
+    replay(prefix, at, runId, undoOf = null) {
       const run = load().started[prefix];
-      return runId && run?.done && run.result && run.at === at && ids(run).includes(runId) ? run.result : null;
+      if (!run?.done || !run.result || run.at !== at) return null;
+      if (runId && ids(run).includes(runId)) return run.result;
+      // The undo of the same restore, finished here but its answer lost, asked again by a new
+      // job: what it did, not a second (counted) restore (카본 끝판2 C3).
+      if (undoOf && run.undo && run.undoOf === undoOf) return run.result;
+      return null;
     },
     // `unchanged(p)`: nothing but this worker's own copies and hides came after time p.
     peek(prefix, at, runId = null, undoOf = null, unchanged = () => true) {
@@ -67,7 +72,7 @@ function restoreLedger(stateDir, now) {
       if (run?.done && !run.undo && undoOf && ids(run).includes(undoOf) && Number.isSafeInteger(run.preAt) && run.preAt === at) return { free: true, undo: true, t0: t };
       return { free: false, t0: t };
     },
-    take(prefix, at, { free, undo, t0 }, runId = null) {
+    take(prefix, at, { free, undo, t0 }, runId = null, undoOf = null) {
       const t = now(), day = new Date(t).toISOString().slice(0, 10), all = load(t);
       let counts = all.day === day ? all.counts || {} : {};
       const run = all.started[prefix];
@@ -80,7 +85,7 @@ function restoreLedger(stateDir, now) {
         // A new run over an unfinished one (asked again after a failure, by a new id or to
         // another time): the chain's moment before goes on, checked in apply (Fable 1).
         const chain = run && !run.done && Number.isSafeInteger(run.preAt) ? { preAt: run.preAt, preBase: run.preBase ?? 0 } : {};
-        next = { at, t: t0, runIds: runId ? [runId] : [], ...(undo ? { undo: true } : {}), ...chain };
+        next = { at, t: t0, runIds: runId ? [runId] : [], ...(undo ? { undo: true, undoOf } : {}), ...chain };
       }
       delete next.runId;
       save({ day, counts, started: { ...all.started, [prefix]: next } });
@@ -174,7 +179,7 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
       if (applying.has(prefix)) throw err('BUSY');
       applying.add(prefix);
       try {
-        const replay = ledger.replay(prefix, at, runId);
+        const replay = ledger.replay(prefix, at, runId, undoOf);
         if (replay) return { ...replay, journal: [], replayed: true };
         // Whatever the run's start, nothing is changed once B2 may have deleted what `at` needs
         // (GPT 끝판 GC1 · 카본 끝판 C2): checked before the listing, after it (a listing can take
@@ -189,7 +194,7 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
         const unchanged = (p) => !list.some((v) => (v.uploadTimestamp || 0) > p && !own.has(v.fileId));
         const run = ledger.peek(prefix, at, runId, undoOf, unchanged);
         plan(list, at, repo, run.t0); // a bad time is refused before the day's count is used
-        const rec = ledger.take(prefix, at, run, runId);
+        const rec = ledger.take(prefix, at, run, runId, undoOf);
         // The moment before belongs to the chain. The same run (same id) keeps it as it was
         // taken — a write a just-deleted key made meanwhile does not move it. A run over it by a
         // new id keeps it only while nothing but this worker's copies and hides came after it:
