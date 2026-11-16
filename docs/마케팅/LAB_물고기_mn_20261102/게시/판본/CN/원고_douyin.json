@@ -1,0 +1,17 @@
+{
+  "id": "판본-CN-douyin",
+  "brand": "LAB",
+  "platform": "douyin",
+  "language": "zh-Hans",
+  "audioLanguage": "zh-Hans",
+  "alteredContent": false,
+  "caption": "韩语很爱把小词拼成新词：물（mul）水 + 고기（go-gi）肉 = 물고기（mul-go-gi），鱼。\n去三亚潜水？你看到的全都是 물고기（mul-go-gi）。\n同样的拼法：눈（nun）眼睛 + 물（mul）水 = 눈물（nun-mul），眼泪。\n눈（雪）+ 사람（人）= 什么？评论区猜猜看👇\n\nSYNK LAB\n#学韩语 #韩语学习 #韩语单词",
+  "_원문": {
+    "caption": "한국어는 작은 낱말을 붙여 새 낱말을 만드는 걸 좋아한다: 물 + 고기 = 물고기, 물고기.\n싼야에 잠수하러 가? 네가 보는 건 다 물고기다.\n같은 방법으로: 눈 + 물 = 눈물, 눈물.\n눈(하늘에서 내리는 눈) + 사람 = 무엇? 댓글로 맞혀 봐👇\n\nSYNK LAB\n#学韩语 #韩语学习 #韩语单词"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

@@ -129,24 +129,24 @@
   "lang": "id",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "boss": "",
-  "scene": "",
+  "boss": "Bos",
+  "scene": "Tabrakan sama bos,\nkopinya tumpah…",
   "sceneSize": 40,
-  "level": "",
+  "level": "Level {n}",
   "reads": [
-    "",
-    "",
-    ""
+    "mi-an",
+    "mi-an-hae-yo",
+    "joe-song-ham-ni-da"
   ],
   "means": [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    ""
+    "Sori!",
+    "Maaf ya.",
+    "Mohon maaf, Pak.",
+    "MAAF SEBESAR-BESARNYA!!!",
+    "Tapi bentar…",
+    "Kok aku\nminta maaf?",
+    "Bos yang\nnabrak aku!",
+    "Gajiku juga\nharus naik dong!"
   ],
   "meanSizes": [
     56,
@@ -159,23 +159,41 @@
     52
   ],
   "tags": [
-    "",
-    "",
-    "",
+    "cuma ke teman",
+    "sopan",
+    "ke guru & bos ✓",
     "",
     "",
     "",
     "",
     ""
   ],
-  "endCard": "",
+  "endCard": "Kopi kena bos?\n→ 죄송합니다.",
   "endSize": 44,
-  "ask": "",
+  "ask": "죄송합니다 buat siapa aja?",
   "askSize": 36,
   "coverAt": 1.8,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1.0
+  "helloSec": 1,
+  "_원문": {
+    "boss": "사장님",
+    "scene": "사장님이랑 부딪쳤다,\n커피가 쏟아졌다…",
+    "level": "{n}단계",
+    "means.0": "미안!",
+    "means.1": "미안해요.",
+    "means.2": "죄송합니다, 사장님.",
+    "means.3": "정말 정말 죄송합니다!!!",
+    "means.4": "근데 잠깐…",
+    "means.5": "왜 내가\n사과해?",
+    "means.6": "사장님이\n나를 박았잖아!",
+    "means.7": "내 월급도\n올려 줘야지!",
+    "tags.0": "친구한테만",
+    "tags.1": "공손",
+    "tags.2": "선생님 · 사장님께 ✓",
+    "endCard": "사장님한테 커피가 튀었다?\n→ 죄송합니다.",
+    "ask": "죄송합니다는 누구한테 써?"
+  }
 }

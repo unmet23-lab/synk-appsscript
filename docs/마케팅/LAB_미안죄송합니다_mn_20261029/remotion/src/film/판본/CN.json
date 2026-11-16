@@ -127,26 +127,26 @@
     }
   },
   "lang": "zh-Hans",
-  "font": "'Inter Tight', 'Microsoft YaHei', 'SUIT', sans-serif",
+  "font": "'Microsoft YaHei', 'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.2,
-  "boss": "",
-  "scene": "",
+  "boss": "老板",
+  "scene": "跟老板撞上，咖啡洒了！",
   "sceneSize": 40,
-  "level": "",
+  "level": "等级{n}",
   "reads": [
-    "",
-    "",
-    ""
+    "mi-an",
+    "mi-an-hae-yo",
+    "joe-song-ham-ni-da"
   ],
   "means": [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    ""
+    "对不起啦～",
+    "不好意思。",
+    "非常抱歉。",
+    "真的真的非常抱歉！！！",
+    "不过……",
+    "我干嘛道歉？",
+    "明明是你撞的我！",
+    "时薪当然也得给我涨！"
   ],
   "meanSizes": [
     56,
@@ -159,23 +159,41 @@
     52
   ],
   "tags": [
-    "",
-    "",
-    "",
+    "只对朋友说",
+    "有礼貌",
+    "对老师、老板✓",
     "",
     "",
     "",
     "",
     ""
   ],
-  "endCard": "",
+  "endCard": "咖啡洒到老板身上？\n→ 죄송합니다.",
   "endSize": 44,
-  "ask": "",
+  "ask": "你会对谁说 죄송합니다？",
   "askSize": 36,
   "coverAt": 1.8,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1.0
+  "helloSec": 1,
+  "_원문": {
+    "boss": "사장님",
+    "scene": "사장님이랑 부딪쳤다, 커피가 쏟아졌다!",
+    "level": "{n}단계",
+    "means.0": "미안해~.",
+    "means.1": "미안해요.",
+    "means.2": "대단히 죄송합니다.",
+    "means.3": "정말 정말 대단히 죄송합니다!!!",
+    "means.4": "근데……",
+    "means.5": "내가 왜 사과해?",
+    "means.6": "분명히 네가 나를 박았잖아!",
+    "means.7": "시급도 당연히 올려 줘야지!",
+    "tags.0": "친구에게만 하는 말",
+    "tags.1": "공손",
+    "tags.2": "선생님 · 사장님께 ✓",
+    "endCard": "사장님한테 커피를 쏟았다?\n→ 죄송합니다.",
+    "ask": "너는 누구한테 죄송합니다라고 해?"
+  }
 }
