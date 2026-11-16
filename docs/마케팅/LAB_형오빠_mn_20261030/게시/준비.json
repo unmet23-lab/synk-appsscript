@@ -97,6 +97,17 @@
       "원고": "게시/판본/NZ/원고_youtube.json",
       "AI표시": false,
       "지문": "398625f570e57af2080adc0c3cac87bf319caaa3d66c2a11b9d50ea897030bf0"
+    },
+    {
+      "계정": "lab-ph-youtube",
+      "파일": "게시/판본/PH/video.mp4",
+      "시각": "2026-11-21T13:00:00+08:00",
+      "언어": "fil",
+      "돌림": true,
+      "표지": "게시/판본/PH/cover.png",
+      "원고": "게시/판본/PH/원고_youtube.json",
+      "AI표시": false,
+      "지문": "8637790ac172e89ebae48680645e10dba61b6124a4d7a2e11934da20979212f6"
     }
   ],
   "미룰편": [],

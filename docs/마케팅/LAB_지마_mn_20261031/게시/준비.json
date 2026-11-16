@@ -249,6 +249,116 @@
       "원고": "게시/판본/UZ/원고_instagram.json",
       "AI표시": false,
       "지문": "de1e15962e97333de65df1e797e0870bc637d01063e4c832fc4fd9e6502f5eb8"
+    },
+    {
+      "계정": "lab-ru-vk",
+      "파일": "게시/판본/RU/video.mp4",
+      "시각": "2026-11-17T13:00:00+03:00",
+      "언어": "ru",
+      "돌림": true,
+      "표지": "게시/판본/RU/cover.png",
+      "원고": "게시/판본/RU/원고_vk.json",
+      "AI표시": false,
+      "지문": "a68d5df08744b45bbe09ee7434ee4bcb7228ae17de7f384dbc1d053e1af5b0e8"
+    },
+    {
+      "계정": "lab-ru-rutube",
+      "파일": "게시/판본/RU/video.mp4",
+      "시각": "2026-11-17T13:00:00+03:00",
+      "언어": "ru",
+      "돌림": true,
+      "표지": "게시/판본/RU/cover.png",
+      "원고": "게시/판본/RU/원고_rutube.json",
+      "AI표시": false,
+      "지문": "a68d5df08744b45bbe09ee7434ee4bcb7228ae17de7f384dbc1d053e1af5b0e8"
+    },
+    {
+      "계정": "lab-np-facebook",
+      "파일": "게시/판본/NP/video.mp4",
+      "시각": "2026-11-17T13:00:00+05:45",
+      "언어": "ne",
+      "돌림": true,
+      "표지": "게시/판본/NP/cover.png",
+      "원고": "게시/판본/NP/원고_facebook.json",
+      "AI표시": false,
+      "지문": "e442265386b9c01f0719ca304b8572e41a7c91f67bfa9823ee4fff6fcf3a4c61"
+    },
+    {
+      "계정": "lab-in-youtube",
+      "파일": "게시/판본/IN/video.mp4",
+      "시각": "2026-11-17T13:00:00+05:30",
+      "언어": "hi",
+      "돌림": true,
+      "표지": "게시/판본/IN/cover.png",
+      "원고": "게시/판본/IN/원고_youtube.json",
+      "AI표시": false,
+      "지문": "015f1aadc91e9abfa062ee3730f973c91fcb801b59a1dbe32f6d2f8e86df4c59"
+    },
+    {
+      "계정": "lab-id-youtube",
+      "파일": "게시/판본/ID/video.mp4",
+      "시각": "2026-11-17T13:00:00+07:00",
+      "언어": "id",
+      "돌림": true,
+      "표지": "게시/판본/ID/cover.png",
+      "원고": "게시/판본/ID/원고_youtube.json",
+      "AI표시": false,
+      "지문": "d2905e1631c89c4b68806d670c43516abf7a5c5ec638aaf9e27dc82f54098351"
+    },
+    {
+      "계정": "lab-th-youtube",
+      "파일": "게시/판본/TH/video.mp4",
+      "시각": "2026-11-17T13:00:00+07:00",
+      "언어": "th",
+      "돌림": true,
+      "표지": "게시/판본/TH/cover.png",
+      "원고": "게시/판본/TH/원고_youtube.json",
+      "AI표시": false,
+      "지문": "3dc1380f97e0b0b88dbec0aa78c2ebe61262fede6e165714f0bf6e758ed16500"
+    },
+    {
+      "계정": "lab-kz-tiktok",
+      "파일": "게시/판본/KZ/video.mp4",
+      "시각": "2026-11-17T13:00:00+05:00",
+      "언어": "kk",
+      "돌림": true,
+      "표지": "게시/판본/KZ/cover.png",
+      "원고": "게시/판본/KZ/원고_tiktok.json",
+      "AI표시": false,
+      "지문": "1ba53d6eb57ed8b9668a16b7bd943fd41e0f0b8a5cfb82d9f293ede22ba98e3f"
+    },
+    {
+      "계정": "lab-kh-facebook",
+      "파일": "게시/판본/KH/video.mp4",
+      "시각": "2026-11-18T13:00:00+07:00",
+      "언어": "km",
+      "돌림": true,
+      "표지": "게시/판본/KH/cover.png",
+      "원고": "게시/판본/KH/원고_facebook.json",
+      "AI표시": false,
+      "지문": "04bed91b9e72e5309147e3c8ff3c555b9220977ba2854acc9b6611d25c59f9f3"
+    },
+    {
+      "계정": "lab-th-tiktok",
+      "파일": "게시/판본/TH/video.mp4",
+      "시각": "2026-11-18T13:00:00+07:00",
+      "언어": "th",
+      "돌림": true,
+      "표지": "게시/판본/TH/cover.png",
+      "원고": "게시/판본/TH/원고_tiktok.json",
+      "AI표시": false,
+      "지문": "3dc1380f97e0b0b88dbec0aa78c2ebe61262fede6e165714f0bf6e758ed16500"
+    },
+    {
+      "계정": "lab-id-tiktok",
+      "파일": "게시/판본/ID/video.mp4",
+      "시각": "2026-11-19T13:00:00+07:00",
+      "언어": "id",
+      "돌림": true,
+      "표지": "게시/판본/ID/cover.png",
+      "원고": "게시/판본/ID/원고_tiktok.json",
+      "AI표시": false,
+      "지문": "d2905e1631c89c4b68806d670c43516abf7a5c5ec638aaf9e27dc82f54098351"
     }
   ],
   "미룰편": [],
