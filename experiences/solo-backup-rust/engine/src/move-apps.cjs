@@ -73,8 +73,10 @@ const SECRET_SHAPES = [
   // configuration」 and 「Bearer authentication」 are English, not keys), i.e. it has a capital, digit, `+` or `/` after
   // its first character.
   /\bauthorization["']?\s*[:=]\s*["']?[A-Za-z]+\s+[^\s"']{8,}/i,
-  /\b(?:[Bb]earer|BEARER)\s+(?=[A-Za-z0-9._~+\/-]{16,}=*(?![A-Za-z0-9._~+\/=-]))[A-Za-z0-9._~+\/-][a-z._~-]*[A-Z0-9+\/]/,
-  /\b(?:[Bb]asic|BASIC)\s+(?=[A-Za-z0-9+\/]{12,}={0,2}(?![A-Za-z0-9._~+\/=-]))[A-Za-z0-9+\/][a-z]*[A-Z0-9+\/]/,
+  // No end boundary, and only no letter or digit just before (마지막 끝판 카본 A1): a period or an emphasis mark around a
+  // credential (`_Basic …_`, `… YWRt=.`) must not hide it.
+  /(?<![A-Za-z0-9])(?:[Bb]earer|BEARER)\s+(?=[A-Za-z0-9._~+\/-]{16,})[A-Za-z0-9._~+\/-][a-z._~-]*[A-Z0-9+\/]/,
+  /(?<![A-Za-z0-9])(?:[Bb]asic|BASIC)\s+(?=[A-Za-z0-9+\/]{12,})[A-Za-z0-9+\/][a-z]*[A-Z0-9+\/]/,
 ];
 const looksSecret = text => SECRET_SHAPES.some(re => re.test(text));
 /** The kit's rule version: a kit made with older rules carries originals, so a new PC does not put its app files anywhere. */
@@ -99,9 +101,22 @@ function gitValue(raw) {
   return quoted || /[\x00-\x1f\x7f]/.test(out) ? null : out;
 }
 const gitQuote = v => /^\s|\s$|[#;"\\]/.test(v) ? `"${v.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : v;
+/** How one line of a value ends, as git reads it: whether it goes on to the next line (a `\` that ends the line outside
+ *  a comment) and whether a quote is still open there. The next line goes on in that quote (GPT 다시 검수 -j GA1). */
+function gitLine(raw, quoted = false) {
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (c === '\\') { if (i === raw.length - 1) return { goesOn: true, quoted }; i++; continue; }
+    if (c === '"') quoted = !quoted;
+    else if (!quoted && (c === '#' || c === ';')) return { goesOn: false, quoted };
+  }
+  return { goesOn: false, quoted };
+}
 function gitconfig(text) {
-  let section = null, sub = false, dropped = 0; const kept = new Map();
+  let section = null, sub = false, dropped = 0, goesOn = null; const kept = new Map();
   for (const raw of String(text).split(/\r?\n/)) {
+    // The lines a value goes on to belong to that value (dropped with it), never a setting of their own (마지막 끝판 카본 C1).
+    if (goesOn) { const l = gitLine(raw, goesOn.quoted); goesOn = l.goesOn ? l : null; continue; }
     const line = raw.replace(/^\s+/, '');
     if (!line || line.startsWith('#') || line.startsWith(';')) continue;
     const h = /^\[\s*([A-Za-z0-9.-]+)(\s+"(?:[^"\\]|\\.)*")?\s*\]/.exec(line);
@@ -109,6 +124,8 @@ function gitconfig(text) {
     // A header this filter cannot read ends the section before it: what follows never counts as that section.
     if (line.startsWith('[')) { section = null; dropped++; continue; }
     const kv = /^([A-Za-z][A-Za-z0-9-]*)\s*(?:=\s*(.*))?$/.exec(line);
+    const first = kv?.[2] !== undefined ? gitLine(kv[2]) : null;
+    if (first?.goesOn) { goesOn = first; dropped++; continue; }
     if (!kv || !section) { dropped++; continue; }
     const name = `${section}.${kv[1].toLowerCase()}`, value = kv[2] === undefined ? 'true' : gitValue(kv[2]);
     const ok = value !== null && !sub && GIT_KEEP.has(name) && (name !== 'credential.helper' || /^(?:manager|manager-core)$/.test(value)) && !/[`$|;&]/.test(value);

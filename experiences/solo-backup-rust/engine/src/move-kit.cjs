@@ -132,7 +132,7 @@ async function buildKit({ host, inventoryExe = null, previous = null, metered = 
   let installed = [];
   if (inventoryExe) {
     const text = await run(inventoryExe, ['--programs-only'], 90000);
-    try { installed = (JSON.parse(text).programs || []).map(p => ({ name: String(p.name || '').slice(0, 256), version: String(p.version || '').slice(0, 64), publisher: String(p.publisher || '').slice(0, 256), source: String(p.source || '').slice(0, 64) })).filter(p => p.name).slice(0, 10000); } catch {}
+    try { installed = (JSON.parse(text).programs || []).map(p => ({ name: String(p.name || '').slice(0, 256), version: String(p.version || '').slice(0, 64), publisher: String(p.publisher || '').slice(0, 256), source: String(p.source || '').slice(0, 64) })).filter(p => p.name.trim()).slice(0, 10000); } catch {}
   }
   const { apps: collected, tooBig, left } = await collectApps(snapshot);
   const kit = { schema: 1, rules: apps.RULES, kind: 'synk-move-kit', createdAt: now.toISOString(), snapshot, uploadBytesPerSecond: Number.isFinite(uploadBytesPerSecond) ? uploadBytesPerSecond : null,
@@ -168,7 +168,7 @@ function parseKit(text) {
     winget: (Array.isArray(raw.programs?.winget) ? raw.programs.winget : []).filter(p => apps.validId(p?.id)).slice(0, 2000).map(p => ({ id: p.id })),
     wingetStatus: String(raw.programs?.wingetStatus || '').slice(0, 32),
     // The same fields the old PC wrote, a name never empty (카본 끝판 B3).
-    installed: (Array.isArray(raw.programs?.installed) ? raw.programs.installed : []).filter(p => typeof p?.name === 'string' && p.name.trim()).slice(0, 10000)
+    installed: (Array.isArray(raw.programs?.installed) ? raw.programs.installed : []).filter(p => typeof p?.name === 'string' && p.name.slice(0, 256).trim()).slice(0, 10000)
       .map(p => ({ name: p.name.slice(0, 256), version: String(p.version || '').slice(0, 64), publisher: String(p.publisher || '').slice(0, 256), source: String(p.source || '').slice(0, 64) }))
   };
   const kept = [];

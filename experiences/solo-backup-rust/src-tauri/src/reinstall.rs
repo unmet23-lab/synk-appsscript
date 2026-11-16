@@ -362,9 +362,12 @@ pub fn show(id: &str, limit: Duration) -> Result<Value, String> {
 fn show_value(id: &str, text: &str) -> Value {
     let short = |v: &str| v.trim().chars().take(512).collect::<String>();
     let field = |label: &str| text.lines().find_map(|l| l.trim().strip_prefix(label).map(short)).filter(|v| !v.is_empty());
+    // The id is ASCII (`valid_id`): the tail is compared byte for byte without case, so a letter whose lower case is
+    // shorter (K, the Kelvin sign) can never put the cut inside a character (마지막 끝판 카본 B4).
     let tail = format!("[{id}]");
-    let found = text.lines().map(str::trim).find(|l| l.to_lowercase().ends_with(&tail.to_lowercase()))
-        .map(|l| { let head = l[..l.len() - tail.len()].trim(); short(head.split_once(char::is_whitespace).map_or("", |(_, name)| name)) })
+    let cut = |l: &str| l.len().checked_sub(tail.len()).filter(|&at| l.is_char_boundary(at) && l[at..].eq_ignore_ascii_case(&tail));
+    let found = text.lines().map(str::trim).find_map(|l| cut(l).map(|at| &l[..at]))
+        .map(|head| short(head.trim().split_once(char::is_whitespace).map_or("", |(_, name)| name)))
         .filter(|name| !name.is_empty());
     json!({"found":found.is_some(),"title":found,"publisher":field("Publisher:"),"version":field("Version:"),"license":field("License Url:"),"homepage":field("Homepage:")})
 }
@@ -447,6 +450,11 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
         assert!(v["publisher"].is_null() && v["version"].is_null());
         assert_eq!(show_value("Git.Git", "No package found matching input criteria.")["found"], false);
         assert_eq!(show_value("Git.Git", "Found Other [Other.Pkg]")["found"], false, "another id is not this one");
+        // 마지막 끝판 카본 B4: the tail without case, byte for byte. The Kelvin sign's lower case is 「k」, one byte for three:
+        // it is not the id's K, and the cut never lands inside it.
+        assert_eq!(show_value("Git.Git", "Found Git [git.git]")["title"], "Git");
+        assert_eq!(show_value("Kitware.CMake", "Found CMake [\u{212A}itware.CMake]")["found"], false);
+        assert_eq!(show_value("Kitware.CMake", "Found \u{212A} [Kitware.CMake]")["title"], "\u{212A}");
     }
     #[test] fn the_elevated_side_finds_its_real_folder_and_winget() {
         // 카본 끝판 H2 · H3: the folder from the program file's final path; winget also from App Installer's own folders.
@@ -458,7 +466,12 @@ pub fn host(method: &str, args: &[Value]) -> Option<Result<Value, String>> {
             "Microsoft.DesktopAppInstaller_1.29.380.0_arm64__8wekyb3d8bbwe", "Microsoft.DesktopAppInstaller_1.29.380.0_neutral_~_8wekyb3d8bbwe", "Other_1.0_x64__8wekyb3d8bbwe"].map(String::from).to_vec();
         assert_eq!(app_installer_folders(&names, "x64"), ["Microsoft.DesktopAppInstaller_1.29.380.0_x64__8wekyb3d8bbwe", "Microsoft.DesktopAppInstaller_1.28.240.0_x64__8wekyb3d8bbwe"]);
         // Only where App Installer is registered (GPT 2차 -g GB3); there it must be found, a PC without it gives WINGET_MISSING.
-        if !app_installer_registered() { assert_eq!(find_winget_elevated().unwrap_err(), "WINGET_MISSING"); return; }
+        // Not registered for this account: at normal privilege winget is missing; an administrator still finds it in App
+        // Installer's folders when another account has it, which is the way H3 is for (마지막 끝판 카본 B5).
+        if !app_installer_registered() {
+            if crate::platform::elevated() { assert_eq!(find_winget_elevated().ok(), winget_from_folders().ok()); } else { assert_eq!(find_winget_elevated().unwrap_err(), "WINGET_MISSING"); }
+            return;
+        }
         if crate::platform::elevated() { assert!(winget_from_folders().is_ok()); } else { assert!(find_winget_elevated().is_ok(), "the package way first"); }
         // App Installer's own folder counts as administrators-only although it gives read through a conditional entry.
         assert!(admin_only(find_winget().unwrap().parent().unwrap()).unwrap());

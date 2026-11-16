@@ -268,6 +268,17 @@ test('다시 깔기 차례: machine-scope table programs in one elevation, the r
   const view = await listing.reinstallList();
   // GPT 2차 -g GB2: each call gets the time left of the 60 seconds as its own limit.
   assert.ok(shows.length === 1 && shows[0][1] > 0 && shows[0][1] <= 60000, JSON.stringify(shows));
+  // 마지막 끝판 카본 C2: with a clock where each call takes 25 seconds, the limits shrink (60, 35, 10 seconds) and the
+  // fourth is not asked once less than a second is left; it is still listed, without a name.
+  let clock = 1_000_000; t.mock.method(Date, 'now', () => clock);
+  const timed = [];
+  const slow = new MoveService({ engine: null, stateDir: path.join(root, 's5'), localDir: path.join(root, 'l5'),
+    host: async (m, a) => m === 'reinstall.status' ? { ready: true } : m === 'reinstall.installed' ? [] : m === 'reinstall.show' ? (timed.push(a[1]), clock += 25000, { found: true, title: a[0] }) : host(m, a) });
+  slow.context = async () => ({ kit: { programs: { winget: ['A.One', 'B.Two', 'C.Three', 'D.Four'].map(id => ({ id })), installed: [] } } });
+  const slowView = await slow.reinstallList();
+  t.mock.restoreAll();
+  assert.deepEqual(timed, [60000, 35000, 10000]);
+  assert.deepEqual(slowView.others.map(p => [p.id, p.name]), [['A.One', 'A.One'], ['B.Two', 'B.Two'], ['C.Three', 'C.Three'], ['D.Four', null]]);
   assert.deepEqual(view.wingetStatus, { ready: true, version: 'v1.29.380' });
   assert.deepEqual(view.table.map(p => [p.id, p.installed, p.chosen]), [['Git.Git', false, true], ['7zip.7zip', true, false]]);
   assert.deepEqual(view.others.map(p => [p.id, p.name, p.publisher]), [['Some.Other', 'Some Other', 'Someone']]);
@@ -414,13 +425,23 @@ test('카본 끝판 지적(11-16): key-shaped text, git values, Windows Terminal
   // A1: plain English after 「basic」 or 「bearer」 is not a key; a real credential still is.
   for (const s of ['basic configuration', 'Use basic instructions here.', 'basic error-handling', 'Bearer authentication-scheme']) assert.equal(apps.looksSecret(s), false, s);
   for (const s of ['Authorization: Basic dXNlcjpwYXNz', 'Authorization: Bearer abcdefghijklmnop', 'Bearer eyJhbGciOiJIUzI1NiJ9abc', 'Basic YWxhZGRpbjpvcGVuc2VzYW1l']) assert.equal(apps.looksSecret(s), true, s);
+  // 마지막 끝판 카본 A1: a period or an emphasis mark around a credential does not hide it; a word that only ends in
+  // 「basic」 is not the scheme.
+  for (const s of ['Use Basic dXNlcjpwYXNzMTIz.', '_Basic dXNlcjpwYXNzMTIz_', 'Use Bearer YWRtaW46cGFzc3dvcmQ=.', '*Bearer YWRtaW46cGFzc3dvcmQ*']) assert.equal(apps.looksSecret(s), true, s);
+  for (const s of ['basic information.', 'Bearer tokens are issued by the server.', 'mybasic XYZ1234567890123']) assert.equal(apps.looksSecret(s), false, s);
   // A2: 「Notion Calendar」 and 「TortoiseGit」 are not table programs, and stay in the list of what winget does not have.
   const re = apps.reinstallList({ programs: { winget: [], installed: [{ name: 'Notion Calendar' }, { name: 'TortoiseGit 2.15' }, { name: 'Git' }] } }, []);
   assert.deepEqual(re.table.map(p => p.id), ['Git.Git']);
   assert.deepEqual(re.manual.map(m => m.name), ['Notion Calendar', 'TortoiseGit 2.15']);
   // A3: a quoted value keeps its 「#」, a header the filter cannot read ends the section, a line that goes on is not carried.
-  const git = apps.gitconfig('[user]\n\tname = "Alice #1"\n[sec "a\\"b"]\n\tname = evil\n[user\n\temail = evil@x\n[core]\n\tautocrlf = true \\\n\teol = lf ; comment\n');
-  assert.equal(git.bytes.toString(), '[user]\n\tname = "Alice #1"\n[core]\n\teol = lf\n');
+  // 마지막 끝판 카본 C1: the line a value goes on to (`\` at the end) is that value, dropped with it — 「eol = crlf」 is
+  // not a setting of its own, and 「[user]」 is not a header, so the email after it is not user.email. A `\` inside a
+  // comment does not go on.
+  const git = apps.gitconfig('[user]\n\tname = "Alice #1"\n[sec "a\\"b"]\n\tname = evil\n[user\n\temail = evil@x\n[core]\n\tautocrlf = true \\\n\teol = crlf\n\tlongpaths = true ; not \\\n\tquotepath = false ; comment\n\tpager = x \\\n[user]\n\temail = evil@x\n');
+  assert.equal(git.bytes.toString(), '[user]\n\tname = "Alice #1"\n[core]\n\tlongpaths = true\n\tquotepath = false\n');
+  // GPT 다시 검수 -j GA1: the line a value goes on to keeps the quote open from the line before — the quote closes on
+  // it, the comment after has a `\` that does not go on, and the email after is a setting (`git config` reads it so).
+  assert.equal(apps.gitconfig('[user]\n\tname = "Alice\\\n Smith" # comment \\\n\temail = alice@example.test\n').bytes.toString(), '[user]\n\temail = alice@example.test\n');
   // A5 · A6 · A7 · A9: Windows Terminal.
   const PS = '{61c54bbd-c2c6-5271-96e7-009a87ff44bf}';
   const wt = JSON.parse(apps.terminalSettings(JSON.stringify({
@@ -484,7 +505,7 @@ test('카본 끝판 지적(11-16): key-shaped text, git values, Windows Terminal
   // B3 · B4 · B7: the kit as untrusted input.
   const parsed = kitLib.parseKit(JSON.stringify({ schema: 1, kind: 'synk-move-kit', rules: apps.RULES,
     snapshot: { known: { profile: { path: 'C:\\Users\\kim' }, documents: { path: 'C:\\Users/kim/../../Windows' }, desktop: { path: 'C:\\Users\\kim\\Desktop:x' } }, drives: [{ letter: ['C'] }, { letter: 'D' }] },
-    programs: { installed: [{ name: '' }, { name: ' ' }, { name: 'Git', source: 'registry' }] } }));
+    programs: { installed: [{ name: '' }, { name: ' ' }, { name: ' '.repeat(256) + 'x' }, { name: 'Git', source: 'registry' }] } }));
   assert.ok(parsed.problems.includes('known:documents') && parsed.problems.includes('known:desktop'), parsed.problems.join());
   assert.deepEqual(parsed.kit.snapshot.drives.map(d => d.letter), ['D']);
   assert.deepEqual(parsed.kit.programs.installed, [{ name: 'Git', version: '', publisher: '', source: 'registry' }]);
@@ -506,10 +527,29 @@ windowsOnly('카본 끝판 지적(11-16): settings put back twice, a write that 
   const first = await restoreSettings({ kit, host, now: snap(newP), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
   const again = await restoreSettings({ kit, host, now: snap(newP), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
   assert.deepEqual([first[0].restored, again[0].restored, again[0].kept, again[0].side], [[path.join(newP, '.gitconfig')], [path.join(newP, '.gitconfig')], [], []]);
+  // 마지막 끝판 카본 B3: a profile the new PC's filter leaves out (the kit came with it) is named on both runs, also
+  // when the second finds the same content already there.
+  const wt = Buffer.from(JSON.stringify({ profiles: { list: [{ source: 'Windows.Terminal.Wsl', name: 'Ubuntu' }, { name: '내 셸', commandline: 'cmd.exe /k x' }] } }));
+  const wtKit = { apps: [{ app: 'terminal', files: [{ entry: 'settings', version: null, rel: '', data: wt, mtime: 1 }] }], left: [] };
+  const wtRuns = [];
+  for (let i = 0; i < 2; i++) wtRuns.push((await restoreSettings({ kit: wtKit, host, now: snap(newP), installed: new Set(['Microsoft.WindowsTerminal']), moveId: 'abcd1234' }))[0]);
+  assert.deepEqual(wtRuns.map(r => [r.restored.length, r.side.length, r.droppedProfiles]), [[1, 0, ['내 셸']], [1, 0, ['내 셸']]]);
   // E1: one file that cannot be written is written down; nothing throws, and no temporary file blocks a later run.
   const noDir = (m, a) => m === 'files.mkdirs' ? Promise.resolve({ ok: true }) : host(m, a);
   const failed = await restoreSettings({ kit, host: noDir, now: snap(path.join(root, 'not-there')), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
   assert.equal(failed[0].failed.length, 1); assert.equal(failed[0].failed[0].code, 'ENOENT');
+  // 마지막 끝판 카본 C3: a run whose place fails after its temporary file was written leaves none behind; a temporary file
+  // an earlier run left, with the very name the next run draws first, does not block that run and stays as it is.
+  fs.rmSync(path.join(newP, '.gitconfig'));
+  const breaking = (m, a) => m === 'files.place' ? Promise.reject(new Error('TEST_PLACE')) : host(m, a);
+  const broke = await restoreSettings({ kit, host: breaking, now: snap(newP), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
+  assert.deepEqual([broke[0].failed.map(f => f.code), fs.readdirSync(newP).filter(n => n.endsWith('.part'))], [['TEST_PLACE'], []]);
+  const leftover = path.join(newP, '~synk-abcd1234-900000001.part'); fs.writeFileSync(leftover, 'earlier');
+  const draws = [1, 2]; t.mock.method(require('node:crypto'), 'randomInt', () => draws.shift() ?? 3);
+  const after = await restoreSettings({ kit, host, now: snap(newP), installed: new Set(['Git.Git']), moveId: 'abcd1234' });
+  t.mock.restoreAll();
+  assert.deepEqual([after[0].restored, after[0].failed, draws, fs.readFileSync(leftover, 'utf8')], [[path.join(newP, '.gitconfig')], [], [], 'earlier']);
+  fs.rmSync(leftover);
   // E3: ticks at once all land.
   const service = new MoveService({ engine: null, host, stateDir: path.join(root, 'state'), localDir: path.join(root, 'local') });
   await Promise.all(['a', 'b', 'c', 'd', 'e'].map(id => service.check({ id, done: true })));
@@ -525,6 +565,17 @@ windowsOnly('카본 끝판 지적(11-16): settings put back twice, a write that 
   assert.deepEqual((await answer({ started: true, exitCode: 4, progress: null }).reinstall({ ids: ['Git.Git'] })).map(r => [r.state, r.code]), [['failed', 'WINGET_ADMIN_MISSING']]);
   assert.deepEqual((await answer({ started: true, exitCode: null, timedOut: true, progress: { programs: [{ id: 'Git.Git', state: 'installed' }] } }).reinstall({ ids: ['Git.Git', '7zip.7zip'] })).map(r => r.state), ['installed', 'timeout']);
   assert.deepEqual((await answer({ started: true, exitCode: 5, progress: null }).reinstall({ ids: ['Git.Git'] })).map(r => r.state), ['timeout']);
+  // 마지막 끝판 카본 B2: a program that failed before the run went past its limit keeps its own exit code; one without any
+  // is 「FAILED」, never 「EXIT_null」.
+  const late = answer({ started: true, exitCode: null, timedOut: true, progress: { programs: [{ id: 'Git.Git', state: 'failed', exitCode: -1978335212 }, { id: '7zip.7zip', state: 'failed' }] } });
+  assert.deepEqual((await late.reinstall({ ids: ['Git.Git', '7zip.7zip'] })).map(r => [r.state, r.code]), [['failed', 'EXIT_-1978335212'], ['failed', 'FAILED']]);
+  // 마지막 끝판 카본 B1: starting again for the same old device holds its backup again, so a release from before is gone
+  // (the state changes before the kit is read; the kit read here fails).
+  const resumed = new MoveService({ engine: { snapshots: async () => { throw new Error('TEST_OFFLINE'); } }, host, stateDir: path.join(root, 's4'), localDir: path.join(root, 'l4') });
+  await resumed.save({ from: 'old', moveId: 'abcd1234', result: { complete: false }, released: '2026-11-16T00:00:00.000Z', checked: ['a'] });
+  await assert.rejects(resumed.start({ from: 'old' }), /TEST_OFFLINE/);
+  const st = await resumed.state();
+  assert.deepEqual([st.released, st.checked, st.from], [null, ['a'], 'old'], 'the same old device keeps what was ticked');
 });
 
 windowsOnly('카본 끝판 지적(11-16): the first run takes a folder whole, top folders differing by case on resume, the space for earlier-backup files (D1 · D2 · D3)', async t => {

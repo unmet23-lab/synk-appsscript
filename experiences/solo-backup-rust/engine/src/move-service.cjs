@@ -71,8 +71,10 @@ class MoveService {
     const { moveId } = await this.update(before => {
       const moveId = before.moveId && before.from === from && !before.result ? before.moveId : newId();
       // Another old device: what the person ticked, installed and put back for the last one does not carry over (카본 끝판 E4).
-      const fresh = before.from !== undefined && before.from !== from ? { checked: [], reinstall: null, settings: null, released: null } : {};
-      return { moveId, from, choices, startedAt: new Date().toISOString(), result: null, ...fresh };
+      const fresh = before.from !== undefined && before.from !== from ? { checked: [], reinstall: null, settings: null } : {};
+      // The start holds the old device's backup again (pinMove below), so a release from before — the same old device
+      // given up, or 「옛 PC 연결 끊기」 refused — no longer stands (마지막 끝판 카본 B1).
+      return { moveId, from, choices, startedAt: new Date().toISOString(), result: null, released: null, ...fresh };
     });
     const ctx = await this.context(from);
     const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId, ledgerDir: this.ledgerDir,
@@ -128,7 +130,7 @@ class MoveService {
     if (machine.length) {
       onProgress({ stage: 'elevated', ids: machine });
       const run = await this.host('reinstall.elevate', [machine]).catch(e => ({ started: false, reason: e.message || 'FAILED' }));
-      const states = new Map((run.progress?.programs || []).map(p => [p.id, p.state]));
+      const seen = new Map((run.progress?.programs || []).map(p => [p.id, p]));
       // 「아니요」 is declined — on the approval, or in the elevated side's own question (exit 3); a start or a run that
       // failed is failed, with its reason (카본 끝판 E5).
       const declined = (!run.started && run.reason === 'DECLINED') || (run.started && run.exitCode === 3);
@@ -137,9 +139,12 @@ class MoveService {
       const late = run.started && (run.timedOut || run.exitCode === 5);
       const DONE = ['installed', 'already', 'reboot', 'failed', 'timeout'];
       for (const id of machine) {
-        const got = states.get(id);
+        const got = seen.get(id)?.state, own = seen.get(id)?.exitCode;
         const state = declined ? 'declined' : !run.started ? 'failed' : DONE.includes(got) ? got : late ? 'timeout' : 'failed';
-        const code = state !== 'failed' ? null : !run.started ? run.reason || 'FAILED' : run.exitCode === 4 ? 'WINGET_ADMIN_MISSING' : `EXIT_${run.exitCode}`;
+        // A program that failed before the whole run went past its limit has its own winget exit code, and the run then
+        // has none (마지막 끝판 카본 B2): never 「EXIT_null」.
+        const code = state !== 'failed' ? null : !run.started ? run.reason || 'FAILED' : run.exitCode === 4 ? 'WINGET_ADMIN_MISSING'
+          : Number.isInteger(own) ? `EXIT_${own}` : Number.isInteger(run.exitCode) ? `EXIT_${run.exitCode}` : 'FAILED';
         results.push({ id, name: table.get(id).name, state, scope: 'machine', ...(code ? { code } : {}) });
       }
     }

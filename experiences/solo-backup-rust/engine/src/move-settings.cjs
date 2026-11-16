@@ -92,7 +92,8 @@ async function restoreSettings({ kit, host, now, installed = new Set(), moveId, 
         // back, and no second copy goes aside.
         const sha256 = crypto.createHash('sha256').update(f.bytes).digest('hex');
         const same = await host('files.compare', [{ path: target, size: f.bytes.length, mtimeMs: Date.now(), sha256 }]).catch(() => null);
-        if (same?.match === 'verified') { result.restored.push(target); if (entry.note === 'instructions') result.instructions = true; continue; }
+        // The profiles left out are said again, as on the first run (마지막 끝판 카본 B3).
+        if (same?.match === 'verified') { result.restored.push(target); if (f.droppedProfiles) result.droppedProfiles.push(...f.droppedProfiles); if (entry.note === 'instructions') result.instructions = true; continue; }
       }
       if (seen?.kind !== 'missing') { result.kept.push(target); const p = await aside(f.bytes); if (p) result.side.push(p); continue; } // 새 PC에 이미 있어 덮지 않았습니다
       const placed = await putFile(ctx, target, f.bytes);
