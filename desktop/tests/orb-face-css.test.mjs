@@ -30,3 +30,7 @@ test('the old screen shown under the new face hides the signed-out SYNK ID row, 
   assert.match(launcher, /if\(portalHost\?\.isClientShown\?\.\(\)\)\{if\(bridge\)void refreshAuth\(\{reload:true\}\);return;\}/);
   assert.match(launcher, /\$\('settings-login'\)\.dataset\.signedIn=String\(!!signedIn\)/);
 });
+
+test('a toast moves to the top while the space switch is open, so it never covers the switch foot (0.4.95 first build, Mac arm64)', () => {
+  assert.match(css, /html\[data-orb-client\]:has\(#portal-entry \.orb-stage\[data-ui="switch"\]\) #toast\{bottom:auto;top:28px\}/);
+});
