@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s6",
+ "text": "이거, 선물이야!",
+ "dur": 0.936,
+ "words": [
+  {
+   "text": "이거,",
+   "start": 0.02,
+   "end": 0.181
+  },
+  {
+   "text": "선물이야!",
+   "start": 0.261,
+   "end": 0.936
+  }
+ ],
+ "source": {
+  "key": "4dce9e2546cc7f4d9f8ca56ecc0ba011",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1119,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 513
+ }
+}

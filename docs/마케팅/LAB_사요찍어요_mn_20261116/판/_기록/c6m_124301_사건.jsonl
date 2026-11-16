@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e273-c939-7132-9ad1-dc850abaa640"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to keep the camera and props fixed while changing Mongle’s lean and Jiwoo’s reaction.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle leans eagerly toward Jiwoo, balancing a tilted pastry on its head."}}
+{"type":"turn.completed","usage":{"input_tokens":122219,"cached_input_tokens":104064,"cache_write_input_tokens":0,"output_tokens":1316,"reasoning_output_tokens":118}}

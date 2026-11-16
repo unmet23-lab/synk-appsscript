@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1119,
+  "lufs": -16
+ },
+ "made": "2026-11-16T04:11:48.373Z",
+ "lines": [
+  {
+   "id": "s1",
+   "text": "붕어빵 사자!",
+   "dur": 1.114,
+   "syllablesPerSec": 4.49,
+   "src": "s1.wav",
+   "key": "6f548e3e71e47d6823d5ec53c3882ca2",
+   "words": 2
+  },
+  {
+   "id": "s2",
+   "text": "사진도 사자!",
+   "dur": 0.939,
+   "syllablesPerSec": 5.32,
+   "src": "s2.wav",
+   "key": "a883f50a956e98fdb0158a19036799b5",
+   "words": 2
+  },
+  {
+   "id": "j3",
+   "text": "사진을 사?",
+   "dur": 0.65,
+   "syllablesPerSec": 6.15,
+   "src": "j3.wav",
+   "key": "9c4f27105574b672110928acd5e907bc",
+   "words": 2
+  },
+  {
+   "id": "s4",
+   "text": "아, 찍자!",
+   "dur": 0.965,
+   "syllablesPerSec": 3.11,
+   "src": "s4.wav",
+   "key": "ab92743b598807b275a43c833e6069c9",
+   "words": 2
+  },
+  {
+   "id": "j5",
+   "text": "와, 잘 나왔다!",
+   "dur": 1.47,
+   "syllablesPerSec": 3.4,
+   "src": "j5.wav",
+   "key": "e641f6232fe8001d30ffa4bc3918e877",
+   "words": 3
+  },
+  {
+   "id": "s6",
+   "text": "이거, 선물이야!",
+   "dur": 0.936,
+   "syllablesPerSec": 6.41,
+   "src": "s6.wav",
+   "key": "4dce9e2546cc7f4d9f8ca56ecc0ba011",
+   "words": 2
+  },
+  {
+   "id": "s7",
+   "text": "자, 사!",
+   "dur": 0.811,
+   "syllablesPerSec": 2.47,
+   "src": "s7.wav",
+   "key": "c9fb871dbada7a3b30ee254cf5a84149",
+   "words": 2
+  },
+  {
+   "id": "j8",
+   "text": "...돈 내라고?",
+   "dur": 0.805,
+   "syllablesPerSec": 4.97,
+   "src": "j8.wav",
+   "key": "8592038530c2930448e3a0ff4d4b5a6c",
+   "words": 2
+  },
+  {
+   "id": "s9",
+   "text": "아니, 받아!",
+   "dur": 0.857,
+   "syllablesPerSec": 4.67,
+   "src": "s9.wav",
+   "key": "f10bdb3b94e68229c51a56a3406dab0b",
+   "words": 2
+  },
+  {
+   "id": "j11",
+   "text": "너도 받아~!",
+   "dur": 0.811,
+   "syllablesPerSec": 4.93,
+   "src": "j11.wav",
+   "key": "9bac31ee54b77657d8c9ca77d98a0d47",
+   "words": 2
+  }
+ ]
+}

@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "j8",
+ "text": "...돈 내라고?",
+ "dur": 0.805,
+ "words": [
+  {
+   "text": "...돈",
+   "start": 0.02,
+   "end": 0.222
+  },
+  {
+   "text": "내라고?",
+   "start": 0.303,
+   "end": 0.805
+  }
+ ],
+ "source": {
+  "key": "8592038530c2930448e3a0ff4d4b5a6c",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 30,
+   "lufs": -16,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24",
+   "prev": "자, 사! 친구가 어리둥절해서 지갑을 꺼내며 되묻는다.",
+   "next": "아니, 받아!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 479
+ }
+}

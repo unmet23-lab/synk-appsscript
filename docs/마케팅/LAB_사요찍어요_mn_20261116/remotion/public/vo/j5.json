@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "j5",
+ "text": "와, 잘 나왔다!",
+ "dur": 1.47,
+ "words": [
+  {
+   "text": "와,",
+   "start": 0.02,
+   "end": 0.12
+  },
+  {
+   "text": "잘",
+   "start": 0.563,
+   "end": 0.724
+  },
+  {
+   "text": "나왔다!",
+   "start": 0.784,
+   "end": 1.47
+  }
+ ],
+ "source": {
+  "key": "e641f6232fe8001d30ffa4bc3918e877",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 31,
+   "lufs": -16,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 433
+ }
+}

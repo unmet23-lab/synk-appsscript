@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e259-2c4e-7c73-9e28-3bd902ce20e0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to keep the fixed scene and props consistent while changing the poses and expressions.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Flustered Mongle sways as Jiwoo catches the pastry and smiles with relief."}}
+{"type":"turn.completed","usage":{"input_tokens":122332,"cached_input_tokens":100224,"cache_write_input_tokens":0,"output_tokens":1529,"reasoning_output_tokens":314}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e283-6028-7fb2-b528-8dd2de5ede7c"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the fixed framing and prop positions, changing only the poses and expressions for the coin-on-head moment.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Jiwoo playfully places a felt coin on delighted Mongle’s head while chewing her pastry."}}
+{"type":"turn.completed","usage":{"input_tokens":48755,"cached_input_tokens":39936,"cache_write_input_tokens":0,"output_tokens":960,"reasoning_output_tokens":0}}

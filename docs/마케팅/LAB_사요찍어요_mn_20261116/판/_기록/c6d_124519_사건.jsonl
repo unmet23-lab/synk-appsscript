@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e275-9e6b-76c1-bc45-f287fbe9e8c2"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create one panel, keeping the camera, setting, and props fixed while changing the characters’ poses and expressions.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle happily bows to offer its head-balanced pastry as Jiwoo leans back in surprise."}}
+{"type":"turn.completed","usage":{"input_tokens":122704,"cached_input_tokens":100608,"cache_write_input_tokens":0,"output_tokens":1572,"reasoning_output_tokens":274}}

@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "j3",
+ "text": "사진을 사?",
+ "dur": 0.65,
+ "words": [
+  {
+   "text": "사진을",
+   "start": 0.03,
+   "end": 0.357
+  },
+  {
+   "text": "사?",
+   "start": 0.418,
+   "end": 0.65
+  }
+ ],
+ "source": {
+  "key": "9c4f27105574b672110928acd5e907bc",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 33,
+   "lufs": -16,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 440
+ }
+}
