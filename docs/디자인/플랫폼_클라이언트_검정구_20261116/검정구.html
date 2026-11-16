@@ -47,12 +47,23 @@ button,input{font:inherit;color:inherit}
 
 .layer{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-#stage[data-ui="ask"] #ask,#stage[data-ui="app"] #app,#stage[data-ui="switch"] #switch{opacity:1;visibility:visible;transition:opacity .9s ease .05s,visibility 0s}
+#stage[data-ui="ask"] #ask,#stage[data-ui="app"] #app,#stage[data-ui="switch"] #switch,#stage[data-ui="forge"] #forge{opacity:1;visibility:visible;transition:opacity .9s ease .05s,visibility 0s}
 .rise{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
-#stage[data-ui="ask"] #ask .rise,#stage[data-ui="app"] #app .rise,#stage[data-ui="switch"] #switch .rise{
+#stage[data-ui="ask"] #ask .rise,#stage[data-ui="app"] #app .rise,#stage[data-ui="switch"] #switch .rise,#stage[data-ui="forge"] #forge .rise{
   opacity:var(--o,1);transform:none;transition:opacity 1s ease,transform 1.2s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*95ms + 140ms)}
 /* 다 떠오른 뒤에는 손에 바로 반응한다 */
 #stage.settled .layer .rise{transition:opacity .3s ease,transform .3s ease;transition-delay:0s}
+/* 새 판을 받거나 처음 설치하는 동안. 구가 가운데에서 새로 깎이고, 그 아래에 한 문장과 판 번호만 둔다 */
+.forge-in{position:absolute;left:16px;right:16px;top:var(--forge-top,70%);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.forge-say{margin:0;font:300 clamp(19px,2.2vw,29px)/1.36 var(--sans);letter-spacing:-.012em}
+.forge-say .then{display:block;color:var(--dim)}
+.forge-ver{font:400 12px/1 var(--sans);letter-spacing:.22em;margin-right:-.22em;color:rgba(243,241,236,.6);font-variant-numeric:tabular-nums}
+#forge-go{display:none;flex:none;width:220px;margin-top:6px}
+#stage[data-forge="ready"] #forge-go{display:inline-flex}
+.forge-acts{margin:2px 0 0;display:none;gap:26px}
+#stage[data-forge="failed"] .forge-acts{display:flex}
+/* 웅장한 판: 구가 창을 채우므로 글은 왼쪽 아래에 작품 설명처럼 둔다. 깎는 날이 가운데를 가로질러 내려와 가운데 글과 겹치기 때문이다 */
+#stage[data-grand] .forge-in{left:clamp(20px,9.5vw,168px);right:auto;top:auto;bottom:clamp(84px,13vh,128px);align-items:flex-start;text-align:left;isolation:isolate} /* 큰 구의 결과 깎는 선이 글 뒤를 지나가도 글이 읽히게, 글 뒤만 부드럽게 어둡힌다 */ #stage[data-grand] .forge-in::before{content:"";position:absolute;inset:-70px -160px -90px -210px;z-index:-1;pointer-events:none;background:radial-gradient(closest-side,rgba(0,0,0,.84),rgba(0,0,0,.58) 54%,rgba(0,0,0,0))}
 /* 화면 확인용: 움직임 없이 끝 모습으로 선다 */
 #stage.still,#stage.still *{transition:none !important}
 
@@ -203,8 +214,9 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
   .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   .row-plain > :last-child{grid-column:2;grid-row:1}
   /* 좁은 창에서는 줄이 다 들어가지 않으므로 방 안에서 스크롤한다 */
-  .room{top:clamp(84px,13vh,128px);transform:none;bottom:calc(62px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
+  .room{top:clamp(84px,13vh,128px);transform:none;bottom:calc(78px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
   .rows{margin-top:28px}
+  .sw-foot{bottom:calc(84px + env(safe-area-inset-bottom,0px))} /* 좁은 창에서는 시안 막대가 두 줄이라 그 위로 올린다 */
   #meta{gap:2px 6px;padding:5px 10px;font-size:11px}
   #meta .tag{display:none}
   #meta button{padding:6px 7px}
@@ -288,6 +300,15 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
     </div>
   </section>
 
+  <section id="forge" class="layer" aria-label="새 판 받기">
+    <div class="forge-in">
+      <p class="forge-say rise" style="--i:0" id="forge-say" role="status" aria-live="polite"></p>
+      <span class="forge-ver rise" style="--i:1"><span id="forge-ver">0.4.95</span><span id="forge-pct" aria-hidden="true"></span></span>
+      <button class="way way-main rise" style="--i:2" id="forge-go" type="button">설치</button>
+      <p class="forge-acts rise" style="--i:2"><button class="quiet" type="button">다시 시도</button><button class="quiet" type="button">지금 판 열기</button></p>
+    </div>
+  </section>
+
   <section id="switch" class="layer" aria-label="공간 고르기">
     <div class="sw-names">
       <button class="sw rise" style="--i:1" type="button" data-go="workspace"><span class="sw-n">WORKSPACE</span><span class="sw-d">팀이 함께 일하는 곳</span><span class="sw-now">지금 여기</span></button>
@@ -303,9 +324,12 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
     <div class="grp" role="group" aria-label="켜는 상황">
       <button type="button" data-mode="first" aria-pressed="true">처음 켤 때</button>
       <button type="button" data-mode="back" aria-pressed="false">다시 켤 때</button>
+      <button type="button" data-mode="update" aria-pressed="false">새 판이 있을 때</button>
+      <button type="button" data-mode="install" aria-pressed="false">처음 설치할 때</button>
     </div>
     <button type="button" id="replay">처음부터</button>
     <button type="button" id="sigbtn" aria-pressed="true">로고 켜짐</button>
+    <button type="button" id="grandbtn" aria-pressed="false">웅장한 판 꺼짐</button>
     <button type="button" id="sound" aria-pressed="false">소리 꺼짐</button>
   </nav>
 </div>
@@ -316,7 +340,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const stage = $('#stage'), canvas = $('#orb'), wake = $('#wake'), orbBtn = $('#orb-btn');
-const layers = { ask: $('#ask'), app: $('#app'), switch: $('#switch') };
+const layers = { ask: $('#ask'), app: $('#app'), switch: $('#switch'), forge: $('#forge') };
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rad = d => d * Math.PI / 180, lerp = (a, b, t) => a + (b - a) * t;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -328,6 +352,8 @@ const easeIOQ = t => t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 
 let W = 1, H = 1, DPR = 1;
 let mode = 'first', space = 'solio', ui = 'none';
 let run = 0, tw = null, poseName = 'void', glintBoost = 0, glintWant = 0;
+/* 새 판을 깎는 정도. cut은 깎인 만큼(0~1), cutOn은 그 장면이 켜진 정도다 */
+let cut = 1, cutOn = 0, cutOnWant = 0, grand = false, forgeP = 0;
 /* az와 lz는 빛이 오는 쪽(화면에서의 각도, 보는 쪽으로 기운 정도), ax는 구를 깎은 축, spin은 그 축을 따라 구를 돌린 각이다.
    mark는 새긴 자리가 보이는 정도, par는 손을 따라 기우는 정도, calm은 글이 놓일 자리의 결을 가라앉히는 정도, open은 들어갈 자리가 열린 정도다 */
 const S = { cx: 0, top: 0, r: 1, az: 0, lz: .5, lit: 0, focus: 0, ax: [.28, .52, .81], spin: 0, mark: 0, par: 1, calm: 0, open: 0 };
@@ -362,15 +388,22 @@ function swGeom() {
   const wide = W >= 760 && H >= 470, r = wide ? Math.min(H * .2, W * .19) : Math.min(H * .13, W * .23);
   return { wide, r, cy: wide ? H * .4 : r + Math.max(64, H * .09) };
 }
+/* 새 판을 받는 동안 구가 서는 자리. 아래에 글이 놓이므로 가운데보다 조금 위다 */
+function forgeGeom(p = forgeP) {
+  if (grand) return { grand: true, r: Math.min(H * lerp(.5, .62, p), W * .78), cy: H * .64 };
+  const low = H < 620, r = Math.min(H * (low ? .2 : .24), W * .3);
+  return { r, cy: H * (low ? .34 : .405) };
+}
 function poses() {
   const r0 = Math.min(H * .21, W * .3);
   const rAsk = Math.max(H * 1.9, W * 1.25);
   const b = orbBtn.getBoundingClientRect(), s = stage.getBoundingClientRect();
   const hx = b.left - s.left + b.width / 2, hy = b.top - s.top + b.height / 2, hr = 13;
-  const g = swGeom(), rIn = Math.hypot(W, H) * .56 / RHO;
+  const g = swGeom(), fg = forgeGeom(), rIn = Math.hypot(W, H) * .56 / RHO;
   return {
     void:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(-50), lz: .5, lit: 0, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
     rest:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: .5, lit: 1, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
+    forge:  { cx: W / 2, top: fg.cy - fg.r, r: fg.r, az: rad(128), lz: grand ? .42 : .5, lit: grand ? .58 : 1, focus: 0, ax: AX.rest, mark: 0, par: grand ? .16 : .35, calm: grand ? .85 : 0 },
     ask:    { cx: W / 2, top: H * .25, r: rAsk, az: rad(150), lz: -.3, lit: 1, focus: 1, ax: AX.top, mark: 0, par: 0, calm: 1 },
     /* 들어갈 자리가 보는 쪽을 똑바로 향하고 그 고리가 창보다 커진 때다. 거기까지 가는 길은 mix가 자리를 따라가며 잡는다 */
     inside: { cx: W / 2, top: H / 2 - rIn, r: rIn, az: rad(150), lit: 0, focus: 1, ax: faceAx(diveTo), spin: -LON[diveTo], mark: 1, par: 0, calm: 0, dive: true },
@@ -432,7 +465,7 @@ function hurryBoot() {
 }
 function setUI(next) {
   ui = next; stage.dataset.ui = next;
-  if (next === 'ask' || next === 'app' || next === 'switch') delete stage.dataset.boot;
+  if (next === 'ask' || next === 'app' || next === 'switch' || next === 'forge') delete stage.dataset.boot;
   for (const k in layers) layers[k].inert = k !== next;
   if (next !== 'ask') { delete stage.dataset.wait; glintWant = 0; }
   stage.classList.remove('settled'); clearTimeout(settleTimer);
@@ -450,14 +483,16 @@ async function boot() {
   const my = ++run;
   stage.classList.remove('still');
   sig.stop(); pointAt(null); S.spin = 0;
-  delete stage.dataset.sub; delete stage.dataset.aside; setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = ''; $('#ask-note').textContent = '';
+  cut = 1; cutOn = cutOnWant = 0; delete stage.dataset.forge; delete stage.dataset.sub; delete stage.dataset.aside; setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = ''; $('#ask-note').textContent = '';
   hurry = false; stage.dataset.boot = '1';
+  if (mode === 'install') { delete stage.dataset.boot; return installBoot(my); }
   // 다시 켤 때는 날마다 보는 장면이라 짧게 간다(켜서 솔리오까지 3초 남짓).
-  await wait(mode === 'back' ? 300 : 520); if (my !== run) return;
+  await wait(mode !== 'first' ? 300 : 520); if (my !== run) return;
   snd.boot();
-  await tween('rest', mode === 'back' ? 1150 : 2400, easeOut, (t, a, b) => lerp(a, b, smooth(0, .62, t))); if (my !== run) return;
+  await tween('rest', mode !== 'first' ? 1150 : 2400, easeOut, (t, a, b) => lerp(a, b, smooth(0, .62, t))); if (my !== run) return;
   setUI('rest');
-  if (!hurry) await waitSkippable(mode === 'back' ? 220 : 1350); if (my !== run) return;
+  if (!hurry) await waitSkippable(mode !== 'first' ? 220 : 1350); if (my !== run) return;
+  if (mode === 'update') return forge(my);
   if (mode === 'back') return enter('solio', my, 1050);
   setUI('none'); snd.rise();
   await tween('ask', 1750, easeIOQ); if (my !== run) return;
@@ -465,7 +500,7 @@ async function boot() {
 }
 /* 구가 그 공간의 자리를 보는 쪽으로 돌리면서, 그 고리 안으로 들어간다. 들어온 순간 점이 맞춰져 synk 표가 된다 */
 async function enter(next, my = ++run, ms = 1250) {
-  const quick = ui === 'switch' || (mode === 'back' && ui === 'rest');
+  const quick = ui === 'switch' || mode === 'update' || (mode === 'back' && ui === 'rest');
   setUI('none'); snd.dive(); sig.stop(); pointAt(null);
   diveTo = next; hotWant = ORDER.indexOf(next);
   if (S.mark < .05) S.spin = -LON[next];   // 자리가 아직 안 보일 때는 도는 것을 보일 까닭이 없다
@@ -612,6 +647,71 @@ $('#backup-go').addEventListener('click', () => {
   $('#backup-go').hidden = true; snd.tick();
 });
 
+/* ── 새 판 받기와 처음 설치. 구가 가운데에서 새로 깎인다. 깎인 만큼이 진행이고, 다 깎이면 빛이 한 바퀴 돌고 앱으로 들어간다 ── */
+function layoutForge() { const g = forgeGeom(); stage.style.setProperty('--forge-top', Math.round(g.grand ? H * (H < 620 ? .58 : .7) : g.cy + g.r + Math.max(34, H * .055)) + 'px'); }
+/* 깎인 만큼을 적는다. 웅장한 판에서는 그만큼 구가 다가온다 */
+function forgeAt(p, o) { cut = p; forgeP = p; if (grand && !tw) { const g = forgeGeom(p); S.r = g.r; S.top = g.cy - g.r; } forgeText(p, o); }
+function setGrand(on) { grand = on; if (on) stage.dataset.grand = '1'; else delete stage.dataset.grand; const b = $('#grandbtn'); b.setAttribute('aria-pressed', String(on)); b.textContent = on ? '웅장한 판 켜짐' : '웅장한 판 꺼짐'; }
+/* 값 하나를 ms 동안 0에서 1로 올린다. 다른 흐름이 시작되면(my가 달라지면) 멈춘다. keep이면 움직임 줄이기에서도 줄이지 않는다(진행 표시라서) */
+const ramp = (ms, fn, ease = t => t, keep = false, my = run) => new Promise(res => {
+  const t0 = performance.now(), d = reduce && !keep ? Math.min(ms, 220) : ms;
+  const id = setInterval(() => { if (my !== run) { clearInterval(id); return res(); } const t = Math.min(1, (performance.now() - t0) / d); fn(ease(t)); if (t >= 1) { clearInterval(id); res(); } }, 16);
+});
+function forgeText(p, o = {}) {
+  let a, b;
+  if (o.failed) { a = '새 판으로 바꾸지 못했습니다.'; b = '쓰던 판은 그대로입니다. 잠시 뒤 그대로 엽니다.'; }
+  else if (o.ready) { a = 'SYNK를 이 PC에 설치합니다.'; b = '끝나면 바로 열립니다.'; }
+  else if (o.install) { a = '설치하고 있습니다.'; b = '끝나면 바로 열립니다.'; }
+  else if (p < .5) { a = '새 판을 받고 있습니다.'; b = ''; }
+  else { a = '새 판으로 바꾸고 있습니다.'; b = '끝나면 저절로 열립니다.'; }
+  const say = $('#forge-say');
+  if (say.dataset.now !== a + b) { say.dataset.now = a + b; say.textContent = a; if (b) say.appendChild(el('span', 'then', b)); }
+  $('#forge-pct').textContent = o.ready || o.failed ? '' : ' · ' + Math.round(p * 100) + '%';
+}
+/* 다 깎였다. 글을 거두고 빛줄기가 구를 한 바퀴 돈다 */
+async function forgeDone(my) {
+  setUI('none'); cut = 1; cutOnWant = 0; glintWant = 1;
+  if (grand) snd.boot(); else snd.lock();
+  const az0 = S.az, lit0 = S.lit;
+  /* 웅장한 판에서는 어둡던 구에 빛이 오르면서 천천히 한 바퀴 돈다 */
+  await ramp(grand ? 2800 : 1500, t => { S.az = az0 + Math.PI * 2 * t; if (grand) S.lit = lerp(lit0, 1.1, smooth(0, .75, t)); }, easeIO, false, my);
+  if (my !== run) return;
+  S.az = az0; glintWant = 0;
+  if (grand) { S.lit = 1; await wait(280); }
+}
+/* 새 판이 있을 때: 옛 결을 지우며 가운데로 오고, 받는 만큼(앞 절반)과 바꾸는 만큼(뒤 절반) 새 결이 깎인다. 끝나면 묻지 않고 솔리오로 들어간다 */
+async function forge(my) {
+  forgeP = 0; layoutForge(); delete stage.dataset.forge; forgeText(0);
+  setUI('none'); snd.rise(); cut = 1; cutOnWant = 1;
+  ramp(grand ? 1500 : 1000, t => { cut = 1 - t; }, easeIO, false, my);
+  await tween('forge', grand ? 2300 : 1500, easeIOQ); if (my !== run) return;
+  cut = 0; setUI('forge');
+  await ramp(4200, t => forgeAt(.5 * t), t => t, true, my); if (my !== run) return;
+  await ramp(4800, t => forgeAt(.5 + .5 * t), t => t, true, my); if (my !== run) return;
+  await forgeDone(my); if (my !== run) return;
+  return enter('solio', my, 1050);
+}
+/* 처음 설치할 때: 아직 깎지 않은 매끈한 구가 드러나고 「설치」 하나만 묻는다. 누르면 구가 깎이고, 끝나면 그대로 로그인을 묻는 자리로 이어진다 */
+async function installBoot(my) {
+  forgeP = 0; layoutForge(); cut = 0; cutOn = cutOnWant = 1; forgeText(0, { ready: true });
+  await wait(520); if (my !== run) return;
+  snd.boot();
+  await tween('forge', grand ? 3000 : 2400, easeOut, (t, a, b) => lerp(a, b, smooth(0, .62, t))); if (my !== run) return;
+  stage.dataset.forge = 'ready'; setUI('forge');
+  $('#forge-go').focus({ preventScroll: true });
+}
+$('#forge-go').addEventListener('click', async () => {
+  if (stage.dataset.forge !== 'ready') return;
+  const my = ++run; snd.tick(); delete stage.dataset.forge;
+  await ramp(7200, t => forgeAt(t, { install: true }), t => t, true, my); if (my !== run) return;
+  await forgeDone(my); if (my !== run) return;
+  snd.rise();
+  await tween('ask', 1750, easeIOQ); if (my !== run) return;
+  setUI('ask');
+});
+new ResizeObserver(() => layoutForge()).observe(stage);
+$('#grandbtn').addEventListener('click', () => { setGrand(!grand); if (mode !== 'update' && mode !== 'install') setMode('update'); boot(); });
+
 /* ── 시안 조작 ── */
 const meta = $('#meta');
 function setMode(m) { mode = m; $$('[data-mode]', meta).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m))); }
@@ -643,6 +743,7 @@ document.addEventListener('keydown', e => {
     const list = $$('.sw'), i = Math.max(0, list.indexOf(document.activeElement));
     list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length].focus(); return;
   }
+  if (e.key === 'Enter' && ui === 'forge' && stage.dataset.forge === 'ready' && !(e.target instanceof HTMLButtonElement)) { $('#forge-go').click(); return; }
   if (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ') boot();
 });
 
@@ -767,7 +868,7 @@ precision highp float;
 precision mediump float;
 #endif
 uniform vec2 uRes, uC;
-uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm;
+uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm, uCut, uCutOn;
 uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen;
 const float RHO = 0.092;
 float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
@@ -835,6 +936,10 @@ void main(){
     float v1 = smoothstep(2.4, 6.0, sp * z) * cap;
     float v2 = smoothstep(2.4, 6.0, sp / 5.0 * z) * cap;
     float v3 = smoothstep(2.4, 6.0, sp / 25.0 * z) * cap;
+    /* 새 판을 깎는 동안: 축의 꼭지에서부터 결이 깎여 나간다. 아직 깎지 않은 곳은 매끈하다. 보이는 면이 꼭 다 깎이는 때가 끝이다 */
+    float eTh = uCut * (1.5708 + acos(clamp(A.z, -1.0, 1.0)) + 0.05);
+    float cutM = mix(1.0, 1.0 - smoothstep(eTh - 0.014, eTh + 0.004, th), uCutOn);
+    v1 *= cutM; v2 *= cutM; v3 *= cutM;
     float s1 = sin(2.0 * N1 * th), s2 = sin(10.0 * N1 * th), s3 = sin(50.0 * N1 * th);
     /* 사인 물결을 날 선 홈 모양으로 세운다. 크게 보일수록 홈의 턱을 더 세워, 구가 창을 채울 만큼 커져도 흐릿하지 않게 한다 */
     float e1 = clamp(7.5 / max(sp * z, 0.001), 0.06, 0.265), e2 = clamp(7.5 / max(sp / 5.0 * z, 0.001), 0.06, 0.265);
@@ -843,7 +948,7 @@ void main(){
     /* 축이 지나는 점에서는 빛줄기를 거둬 한 점으로 뾰족하게 모이지 않게 한다 */
     float pole = smoothstep(mix(0.03, 0.12, uMark), mix(0.30, 0.58, uMark), tl);
     float tdh = dot(T, H);
-    float an = pow(max(1.0 - tdh * tdh, 0.0), mix(44.0, 110.0, uFocus)) * pole;
+    float an = pow(max(1.0 - tdh * tdh, 0.0), mix(44.0, 110.0, uFocus)) * pole * mix(0.07, 1.0, cutM);
     float side = smoothstep(-0.28, 0.32, dot(n, L));
     float groove = 0.60 + 0.40 * (0.70 * w1 * v1 * (1.0 - 0.7 * v2) + 0.42 * w2 * v2 * (1.0 - 0.5 * v3) + 0.30 * w3 * v3);
     float spec = pow(max(dot(nn, H), 0.0), 30.0);
@@ -852,7 +957,7 @@ void main(){
     vec3 L2 = normalize(vec3(-L.x * 0.7 + 0.35, -L.y * 0.5 - 0.3, 0.6));
     vec3 H2 = normalize(L2 + V);
     float t2 = dot(T, H2);
-    float an2 = pow(max(1.0 - t2 * t2, 0.0), 28.0) * pole * smoothstep(-0.2, 0.4, dot(n, L2));
+    float an2 = pow(max(1.0 - t2 * t2, 0.0), 28.0) * pole * smoothstep(-0.2, 0.4, dot(n, L2)) * mix(0.12, 1.0, cutM);
     /* 글이 놓일 아래쪽은 결을 가라앉혀, 단추와 글이 줄무늬 위에서 탁해지지 않게 한다 */
     float calm = mix(1.0, mix(0.16, 1.0, smoothstep(0.47, 0.69, f.y / uRes.y)), uCalm);
     /* 작게 줄었을 때는 속의 빛을 줄이고 둘레를 가늘게 다 둘러, 얼룩이 아니라 구로 읽히게 한다 */
@@ -862,6 +967,17 @@ void main(){
     float edge = (1.0 - smoothstep(0.35, 1.0, abs(px))) * tiny * (0.26 + 0.5 * cres);
     float soft = 1.0 - 0.75 * tiny;
     inC += warm * uLit * (cres * (pow(1.0 - z, 5.0) * 0.14 + line * 0.16) * pulse * soft + edge);
+    /* 아직 깎지 않은 면은 넓고 흐린 빛 하나만 받는다 */
+    inC += warm * uLit * (1.0 - cutM) * pow(max(dot(n, H), 0.0), 9.0) * 0.085 * side;
+    /* 깎는 자리: 날이 닿은 가는 선과, 보는 쪽으로 내려오는 날 끝의 불티 하나 */
+    float live = uCutOn * step(0.004, uCut) * step(uCut, 0.996);
+    float dpx = (th - eTh) * uR / uDpr;
+    float seam = exp(-dpx * dpx / 1.5) * smoothstep(0.0, 0.3, z);
+    vec3 E1 = normalize(V - A * dot(V, A));
+    vec3 P = A * cos(eTh) + E1 * sin(eTh);
+    float dP = length(n - P) * uR / uDpr;
+    float tool = (exp(-dP * dP / 12.0) + 0.20 * exp(-dP / 22.0)) * smoothstep(-0.03, 0.08, P.z);
+    inC += warm * live * (seam * (0.09 + 0.28 * side) + tool * 0.95);
     vec3 outC = warm * uLit * (cres * (line * 0.16 + halo * 0.03) * pulse * soft + edge);
     col = mix(outC, inC, inside);
   }
@@ -891,7 +1007,7 @@ function initGL() {
     gl.useProgram(pr);
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen']) U[k] = gl.getUniformLocation(pr, k);
+    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uCut', 'uCutOn', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen']) U[k] = gl.getUniformLocation(pr, k);
     return true;
   } catch (e) { console.warn('구 셰이더를 만들지 못했습니다.', e); gl = null; return false; }
 }
@@ -907,7 +1023,7 @@ let frameNo = 0;
 function draw(now) {
   const t = now / 1000;
   ptrS.x += (ptr.x - ptrS.x) * .06; ptrS.y += (ptr.y - ptrS.y) * .06;
-  glintBoost += (glintWant - glintBoost) * .05;
+  glintBoost += (glintWant - glintBoost) * .05; cutOn += (cutOnWant - cutOn) * .09;
   for (let i = 0; i < 3; i++) hot[i] += ((hotWant === i ? 1 : 0) - hot[i]) * .14;
   // 공간을 고르는 동안에는 가리킨 이름의 자리가(없으면 지금 있는 자리가) 한가운데에 오도록 구가 돌고 기운다
   if (ui === 'switch' && !tw) {
@@ -932,7 +1048,7 @@ function draw(now) {
     gl.uniform1f(U.uR, S.r * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
     gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
     gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
-    gl.uniform1f(U.uMark, S.mark); gl.uniform1f(U.uCalm, S.calm);
+    gl.uniform1f(U.uMark, S.mark); gl.uniform1f(U.uCalm, S.calm); gl.uniform1f(U.uCut, cut); gl.uniform1f(U.uCutOn, cutOn);
     gl.uniform3f(U.uM0, mk[0][0], mk[0][1], mk[0][2]); gl.uniform3f(U.uM1, mk[1][0], mk[1][1], mk[1][2]); gl.uniform3f(U.uM2, mk[2][0], mk[2][1], mk[2][2]);
     gl.uniform3f(U.uHot, hot[0], hot[1], hot[2]);
     gl.uniform3f(U.uHere, space === ORDER[0] ? 1 : 0, space === ORDER[1] ? 1 : 0, space === ORDER[2] ? 1 : 0);
@@ -960,9 +1076,11 @@ window.__orb = {
   at(scene, opt = {}) {
     ++run; skip = null;
     if (opt.space) { space = opt.space; applySpace(); }
-    const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'] }[scene];
+    const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'], forge: ['forge', 'forge'] }[scene];
     delete stage.dataset.sub; delete stage.dataset.aside; stage.classList.add('still'); resize(); sig.show(opt.sig);
     faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openDetail(opt.sub); if (opt.aside) stage.dataset.aside = opt.aside;
+    cut = 1; cutOn = cutOnWant = 0; delete stage.dataset.forge;
+    if (scene === 'forge') { setGrand(!!opt.grand); const p = opt.ready ? 0 : (opt.p === undefined ? .4 : opt.p); forgeP = p; layoutForge(); snap('forge'); cut = opt.failed ? 1 : p; cutOn = cutOnWant = opt.failed ? 0 : 1; if (opt.failed) S.lit = .5; if (opt.ready || opt.failed) stage.dataset.forge = opt.ready ? 'ready' : 'failed'; forgeText(p, opt); }
     pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
     if (scene === 'switch') { layoutSwitch(); S.spin = -LON[faceWant || space]; S.ax = faceAx(faceWant || space); }
     draw(performance.now()); return { ...S, W, H };
@@ -981,7 +1099,7 @@ window.__orb = {
   },
   /* 점으로 된 표가 시작한 지 ms 지난 때의 모습으로 선다(검정 화면 위) */
   sig(ms) { ++run; skip = null; stage.classList.add('still'); resize(); setUI('none'); snap('inside'); S.lit = 0; draw(performance.now()); return sig.show(ms); },
-  draw: () => draw(performance.now()), state: () => ({ ui, space, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', sw: stage.dataset.sw, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), ...S }),
+  draw: () => draw(performance.now()), state: () => ({ cut, grand, forge: stage.dataset.forge || '', ui, space, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', sw: stage.dataset.sw, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), ...S }),
   /* 화면이 가려져 프레임이 멈춘 곳에서도 흐름이 끝까지 가게 민다 */
   pump() { stage.classList.remove('still'); return setInterval(() => { const now = performance.now(); stepTween(now); draw(now); sig.step(now); }, 16); },
 };
