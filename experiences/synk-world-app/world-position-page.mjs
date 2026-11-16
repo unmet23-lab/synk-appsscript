@@ -159,11 +159,13 @@ function renderStory(card,{t,has,formatDate,practice,skillName,skill=null}){
  const tokens=marks.length?`<span class="wpv-marks" aria-hidden="true">${more?`<b>+${more}</b>`:''}${marks.map(row=>`<i data-verdict="${row.verdict}"></i>`).join('')}</span>`:'';
  let route=null;try{route=practice?.(id)||null;}catch{route=null;}
  const button=route?`<button class="wpv-go" type="button" data-position-practice="${esc(id)}">${esc(route.route==='game'&&route.gameId&&has(`plan.game.${route.gameId}`)?t(`plan.game.${route.gameId}`):t('position.practice.start'))} <span aria-hidden="true">→</span></button>`:'';
+ // 흰 알약은 감싸는 칸(wpv-go-bar)에 둔다. 글이 긴 언어에서 알약이 휴대폰 첫 화면 아래로 밀리면 그 칸이 화면 아래에 붙어 따라온다(life-ui.css).
+ const goBar=button?`<div class="wpv-go-bar">${button}</div>`:'';
  return `<section class="wpv-story" data-position-missed="${esc(id)}" aria-labelledby="wpv-story-title">`
   +`<p class="wpv-kicker"><span>${esc(t('position.missed.title'))}</span><span>${esc(exam)} · ${esc(domain)}</span></p>`
   +`<p class="wpv-skill"><strong>${esc(name)}</strong>${tokens}${line?`<small>${esc(count)}</small>`:''}</p>`
   +`<h3 class="wpv-headline" id="wpv-story-title"${headline.length>24?' data-long':''}>${esc(headline)}</h3>${notice}`
-  +`${missRow||rows?`<ol class="wmis-again wpv-steps" aria-label="${esc(t('position.missed.again'))}">${missRow}${rows}</ol>`:''}${button}</section>`;
+  +`${missRow||rows?`<ol class="wmis-again wpv-steps" aria-label="${esc(t('position.missed.again'))}">${missRow}${rows}</ol>`:''}${goBar}</section>`;
 }
 
 // ── 항목 지도 ──

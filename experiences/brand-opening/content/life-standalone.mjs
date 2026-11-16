@@ -25281,7 +25281,8 @@ function renderStory(card, { t: t3, has, formatDate: formatDate3, practice, skil
     route = null;
   }
   const button = route ? `<button class="wpv-go" type="button" data-position-practice="${esc2(id)}">${esc2(route.route === "game" && route.gameId && has(`plan.game.${route.gameId}`) ? t3(`plan.game.${route.gameId}`) : t3("position.practice.start"))} <span aria-hidden="true">\u2192</span></button>` : "";
-  return `<section class="wpv-story" data-position-missed="${esc2(id)}" aria-labelledby="wpv-story-title"><p class="wpv-kicker"><span>${esc2(t3("position.missed.title"))}</span><span>${esc2(exam)} \xB7 ${esc2(domain)}</span></p><p class="wpv-skill"><strong>${esc2(name)}</strong>${tokens}${line ? `<small>${esc2(count)}</small>` : ""}</p><h3 class="wpv-headline" id="wpv-story-title"${headline.length > 24 ? " data-long" : ""}>${esc2(headline)}</h3>${notice}${missRow || rows2 ? `<ol class="wmis-again wpv-steps" aria-label="${esc2(t3("position.missed.again"))}">${missRow}${rows2}</ol>` : ""}${button}</section>`;
+  const goBar = button ? `<div class="wpv-go-bar">${button}</div>` : "";
+  return `<section class="wpv-story" data-position-missed="${esc2(id)}" aria-labelledby="wpv-story-title"><p class="wpv-kicker"><span>${esc2(t3("position.missed.title"))}</span><span>${esc2(exam)} \xB7 ${esc2(domain)}</span></p><p class="wpv-skill"><strong>${esc2(name)}</strong>${tokens}${line ? `<small>${esc2(count)}</small>` : ""}</p><h3 class="wpv-headline" id="wpv-story-title"${headline.length > 24 ? " data-long" : ""}>${esc2(headline)}</h3>${notice}${missRow || rows2 ? `<ol class="wmis-again wpv-steps" aria-label="${esc2(t3("position.missed.again"))}">${missRow}${rows2}</ol>` : ""}${goBar}</section>`;
 }
 function renderMap(map, { t: t3, exam, skillName, missedId }) {
   if (!map || !Array.isArray(map.skills)) return "";

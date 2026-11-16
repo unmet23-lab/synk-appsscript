@@ -59,6 +59,8 @@ test('볼로르: 놓친 곳 이야기가 판 맨 위에 서고, 그 안내문을
  assert.match(story,/<blockquote lang="ko">음식은 가지고 들어갈 수 없습니다\. 물은 괜찮습니다\.<\/blockquote>/);assert.match(story,/<span lang="ko">하늘 수영장<\/span>/);
  // 주 단추 하나(옛 판과 같은 자리 data-position-practice)
  assert.equal((html.match(/class="wpv-go"/g)||[]).length,1);assert.match(story,/<button class="wpv-go" type="button" data-position-practice="ko\.reading\.negation">/);
+ // 흰 알약은 이야기 끝의 감싸는 칸 안에 있다 — 글이 긴 언어에서 그 칸이 화면 아래에 붙어 따라온다(다음 판 P3)
+ assert.match(story,/<div class="wpv-go-bar"><button class="wpv-go"[^]*?<\/button><\/div>$/);
  // 급수 · 합격 · 「약점」 말 없음
  assert.doesNotMatch(text(html),/약점|합격|급 근처|점수/);
 });
