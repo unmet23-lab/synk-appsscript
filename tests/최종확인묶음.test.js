@@ -53,6 +53,13 @@ test('묶음 자료와 독립 검수 지시문을 만들고, 지시문에는 컷
   assert.match(prompt, /\{\{원고/, '부르는 쪽이 채울 칸이 남아 있다');
   assert.match(prompt, /평소 속도로 한 번 볼 때 알아채나/);
   assert.doesNotMatch(prompt, /\{\{\{/);
+  // 말 시각 절(11-16 흠 장부 「소리」) — VAD가 있는 PC는 사인파에서 말이 안 잡혔다고, 없는 CI는 못 쟀다고 한 줄을 낸다
+  assert.match(prompt, /## 말 시각\(기계가 잰 것/);
+  assert.match(prompt, /말이 잡히지 않았다|말 시각을 못 쟀다/);
+  // 말 시각이 없으면 지어낸 받아쓰기 줄을 거를 수 없어 대사 줄 크기도 짚지 않는다고 적는다(GPT 검수 GA2)
+  if (/말 시각을 못 쟀다/.test(prompt)) assert.match(prompt, /대사 줄 크기도 짚지 않았다/);
+  const fc = JSON.parse(fs.readFileSync(path.join(out, '최종본검사.json'), 'utf8'));
+  assert.ok(fc.알림.some((n) => n.항목 === '말'), '최종본 검사를 「기본,말」로 불렀다');
 });
 
 test('없는 파일은 끝 코드 2와 오류 한 줄', { skip: 없음 }, () => {

@@ -6,8 +6,9 @@
 #   보는데, SNS 두 브랜드 편은 옛 컷표이거나 컷표가 없고 편집에서 판을 잘라 키운 것은 컷표에 안 나온다. 그래서 최종 영상 하나만 보고 잰다 —
 #   올리기 전 검사 ⑳이 부르고(재연 · 진행자 편), 혼자 불러도 된다.
 #
-#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소,조용,멈춤[,흐름]] [--컷초 3.9,5.87,…]
+#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소,조용,멈춤[,흐름][,말]] [--컷초 3.9,5.87,…]
 #   「흐름」은 기본 항목이 아니다. 영상 마감 관문(tools/영상관문판.py)이 붙여 부른다. 맞춘 자료가 애니 공모전 한 편뿐이라 SNS 올리기 전 검사에는 아직 넣지 않았다.
+#   「말」도 기본 항목이 아니다(알림만 낸다). 최종 확인 묶음이 「--항목 기본,말」로 부르고, 만드는 세션은 렌더 뒤 「--항목 말」로 표를 본다(제작 절차 「순서」 2).
 #
 # 잰 것(결과 「걸림」의 항목 이름 — 올리기 전 검사가 이 이름으로 등급을 매긴다):
 #   굳음      컷마다 사람움직임.py(카메라를 걷어 낸 사람 자리 움직임, 480×270 장당 px)의 「사람」 값 — 0.12 아래(점검표 26 문턱)이고 사람 자리를
@@ -34,6 +35,19 @@
 #             최종 확인 전에 나간 옛 편 가운데 셋째줄그대로(0.08에서 1.80초, 0.1에서 2.33초)와 옛사진복원(1.87초)만 문턱 따라 갈린다.
 #             그림 한 장을 천천히 당기는 「거의 그대로」(윈도우깨짐다시 22.1~25.7초)는 장마다 0.9~2.0씩 바뀌어 재지 못한다 — 카메라를 걷어 낸 차이로도
 #             통과한 편(지적147 2.12초)과 갈리지 않았다
+#   말(알림만 · 11-16 흠 장부 「소리」) 말 시각으로 말 없는 자리 표와 마지막 말 뒤 꼬리를 낸다. 걸림은 내지 않는다.
+#             어떻게: silero VAD v6(faster-whisper에 든 모델 · onnxruntime)이 32ms 칸마다 말 확률을 낸다. 0.5 위면 말로 들어가고 0.35 아래면 나오며,
+#             0.3초보다 짧은 쉼은 잇는다. 알림 「말」에 말 크기(말 구간 전력 평균) · 말 없는 자리(1초 넘음 — 시작 · 끝 · 길이 · 그 자리 dB · 말보다 몇 dB
+#             작은가) · 첫 말 · 마지막 말 뒤 꼬리를 적는다. VAD를 못 쓰면(패키지 없음 · 실패 · SYNK_말시각=끔) 알림에 까닭 한 줄만 적는다(못잼에 넣지 않아 끝 코드는 그대로).
+#             왜 VAD인가: 정답이 있는 yuhobuilds 네 편(Remotion에 놓은 목소리 줄 자리)에서 재현 0.955~0.987 · 정밀 0.967~0.992이고, 1초 넘는 말 없는 자리를
+#             모두 찾으며 경계는 0.12초 안이다. 받아쓰기(large-v3-turbo) 낱말 시각은 빈 자리 끝을 0.5초쯤 이르게 잡고(정밀 0.89~0.96), 한 편에 불러오기
+#             18초 + 8~25초가 들며, 음악만 있는 편에서는 지어내기 고리로 몇 분씩 돈다(base도 269초). VAD는 불러오기 4초 · 돌리기 0.3초다.
+#             한계: 이 사이로 하는 작은 말은 놓친다(필라테스예약 「되돌려 놔」 24.1~25.7초 −30dB, 말 확률 0.001 — 받아쓰기는 받았다).
+#             걸림이 없는 까닭(맞춘 자료 두 브랜드 최종본 38개 · 만족 사례 12개): 최종 확인이 짚은 말 없는 자리(윈도우깨짐다시 2.98초 · 반짝73 1.82초 ·
+#             없는판결 6.46초)보다 통과한 편의 자리가 길거나 깊다(지적147 3.11초 · 영상통화연인 4.23초에 말보다 14.8dB 작음 · 메일비서 8.16초). 짧고 깊은
+#             빈 소리(필라테스예약 13.95~16.42초 13.2dB)도 영상통화연인이 더 길고 깊다. 마지막 말 뒤 꼬리는 게시 편 목소리되풀이(4.51초 · 14.9dB)가 걸린 두 편
+#             (없는판결 4.34초 16.2dB · 원생명단 6.8초 12.4dB) 사이에 든다. 그 자리의 화면 변화(이웃 장 차이)를 더해도 갈리지 않았다(흠 장부 설계
+#             「소리 흠을 말 시각으로 재며 본 것」). 그래서 숫자는 최종 확인 독립 검수자와 만드는 세션의 눈에 맡긴다.
 #   흐름(11-16, 컷 안의 탈것과 배경 움직임 — 셋 다 끝 코드를 바꾸지 않는 「확인」이다)
 #             왜: 11-15 서울로 「다리가 기억하는 것」 시험에서 카본 영상 심사와 Fable 마감 관문이 유호님이 짚으신 움직임 흠을 하나도 못 봤다. 카본은 1초에 한 장쯤,
 #             Fable은 8장 띠로 보기 때문이다(docs/마케팅/PULSE_AI모델_캐스팅_20260930/검수방식_시험_완성영상_카본과Fable_20261115.md). 그래서 기계가 잰다.
@@ -101,6 +115,12 @@ FROZEN_DIFF = 0.08     # 화면멈춤: 이웃 장(긴 변 192 · 24fps 회색) �
                        # 잔잔한 채팅 화면은 가운데 값 0.11(가장 작은 장 0.05)이라 0.05~0.12 어디서도 판정이 같다
 FROZEN_SEC = 2.0       # 같은 장이 이만큼 넘게 이어지면 걸림(제작 절차 「큰 흠」의 「2초 넘게 멈춘 화면」)
 FROZEN_END = 0.6       # 끝에서 이만큼 안에 끝나는 멈춤은 끝 화면이라 뺀다(tools/정지구간.js와 같은 값)
+SPEECH_TH = 0.5        # 말: silero VAD(faster-whisper에 든 v6) 32ms 칸의 말 확률이 이 위면 말로 들어가고, 0.15 낮은 값 아래로 내려가면 나온다
+SPEECH_JOIN = 0.3      # 이보다 짧은 쉼은 한 말로 잇는다
+SPEECH_GAP = 1.0       # 「말 없는 자리」 표에 적는 가장 짧은 빈 자리(초)
+LINE_QUIET_DB = 13.0   # 작은 줄: 받아쓰기 줄 하나가 그 편 줄 크기 가운데 값보다 이만큼 넘게 작다(최종 확인 묶음이 짚는다 — 이 도구 걸림이 아니다).
+                       # 묶음과 같은 셈으로 50편을 재니 필라테스예약 「되돌려 놔」 15.5dB만 넘고 나머지는 11.2dB(무료체험 「됐다」) 아래다 — 12~15 어디서도 같다
+LINE_MIN_SEC = 0.3     # 이보다 짧은 받아쓰기 구간은 줄 크기에서 뺀다
 SOFT = {"조용구간", "화면멈춤", "흐름갈림", "멈췄다감", "제자리바퀴"}     # 끝 코드를 바꾸지 않는 걸림 — 검사이력에도 등급 「확인」으로 남는다
 DEFAULT_ITEMS = "굳음,같은판,되풀이,끝,화소,조용,멈춤"
 # 흐름(컷 안 탈것 · 배경 움직임) — 값은 모두 「화면 너비 1000 기준 px/s」다
@@ -659,6 +679,111 @@ def frozen_runs(dd, fps, th=FROZEN_DIFF):
     return sorted(out, key=lambda r: r[0] - r[1])
 
 
+def speech_runs(probs, hop=0.032, th=SPEECH_TH, join=SPEECH_JOIN, min_speech=0.1):
+    """말 확률 줄(칸 hop초) → 말 구간 [(시작초, 끝초)] 시간 순. 확률이 th 위면 들어가고 th−0.15 아래로 내려가면 나온다.
+    join초보다 짧은 쉼은 한 말로 잇고, min_speech초보다 짧은 조각은 버린다"""
+    out_th = th - 0.15
+    runs, on, s = [], False, 0
+    for i, p in enumerate(probs):
+        if not on and p >= th:
+            on, s = True, i
+        elif on and p < out_th:
+            runs.append([s * hop, i * hop])
+            on = False
+    if on:
+        runs.append([s * hop, len(probs) * hop])
+    merged = []
+    for a, b in runs:
+        if merged and a - merged[-1][1] < join:
+            merged[-1][1] = b
+        else:
+            merged.append([a, b])
+    return [(round(a, 2), round(b, 2)) for a, b in merged if b - a >= min_speech]
+
+
+def _power_db(db, a, b):
+    """0.25초 칸 dB 줄에서 a~b초 칸들의 전력 평균 dB(칸이 없으면 None)"""
+    seg = np.asarray(db[max(0, int(math.floor(a * 4))): max(int(math.floor(a * 4)) + 1, int(math.ceil(b * 4)))], np.float64)
+    return round(10 * math.log10(float(np.mean(10 ** (seg / 10))) + 1e-12), 1) if len(seg) else None
+
+
+def speech_table(runs, db, dur, gap=SPEECH_GAP):
+    """말 구간 · 0.25초 칸 dB → {말dB, 말없는자리, 첫말초, 꼬리}. 말dB는 말 구간 길이로 무게를 준 전력 평균이고, 「말보다」는 그 자리가
+    말보다 몇 dB 작은가다. 말 없는 자리는 gap초 넘는 말 사이(시간 순), 꼬리는 마지막 말 끝부터 영상 끝까지다. 말이 없으면 None"""
+    lv_of = [(b - a, _power_db(db, a, b)) for a, b in runs]
+    lv_of = [(w_, v) for w_, v in lv_of if v is not None and w_ > 0]
+    if not runs or not lv_of:
+        return None
+    w = np.array([w_ for w_, _ in lv_of], np.float64)
+    lv = np.array([v for _, v in lv_of], np.float64)
+    speech = round(10 * math.log10(float(np.sum(w * 10 ** (lv / 10)) / w.sum()) + 1e-12), 1)
+
+    def row(a, b):
+        d = _power_db(db, a, b) if b - a >= 0.25 else None
+        return {"초": round(a, 2), "끝초": round(b, 2), "길이초": round(b - a, 2), "dB": d, "말보다": round(speech - d, 1) if d is not None else None}
+
+    gaps = [row(runs[i][1], runs[i + 1][0]) for i in range(len(runs) - 1) if runs[i + 1][0] - runs[i][1] > gap]
+    return {"말dB": speech, "말없는자리": gaps, "첫말초": runs[0][0], "꼬리": row(runs[-1][1], max(dur, runs[-1][1]))}
+
+
+def line_db(x, a, b, sr=16000):
+    """16kHz 소리의 a~b초 전력 평균 dB(표본이 모자라면 None)"""
+    seg = np.asarray(x[int(a * sr): int(b * sr)], np.float64)
+    return round(10 * math.log10(float(np.mean(seg * seg)) + 1e-12), 1) if len(seg) >= 16 else None
+
+
+def quiet_lines(rows, th=LINE_QUIET_DB, span=None):
+    """받아쓰기 줄 [{초, 끝초, dB, …}] → (줄 크기 가운데 dB, 그보다 th dB 넘게 작은 줄 — 「가운데보다」를 붙여 작은 순).
+    LINE_MIN_SEC보다 짧은 줄과 dB가 없는 줄은 빼고, span(VAD 첫 말초, 마지막 말 끝초)이 있으면 그 0.5초 밖 줄도 뺀다 — 받아쓰기는 말 없는
+    끝 · 음악에서 「감사합니다」 같은 줄을 지어낸다(없는판결 60.0~62.0초). 남은 줄이 셋보다 적으면 (None, [])다(대사 한 줄만 작음 — 흠 장부 「소리」 · 11-16).
+    받아쓰기가 있어야 잰다: VAD는 이 사이로 하는 작은 말을 놓친다(머리말 「말」). 부르는 쪽은 줄 끝을 소리 길이로 잘라 dB를 잰다"""
+    lo, hi = (span[0] - 0.5, span[1] + 0.5) if span else (-math.inf, math.inf)
+    use = [r for r in rows if r.get("dB") is not None and r["끝초"] - r["초"] >= LINE_MIN_SEC and r["끝초"] >= lo and r["초"] <= hi]
+    if len(use) < 3:
+        return None, []
+    med = round(float(np.median([r["dB"] for r in use])), 1)
+    low = [{**r, "가운데보다": round(med - r["dB"], 1)} for r in use if med - r["dB"] > th]
+    return med, sorted(low, key=lambda r: r["dB"])
+
+
+def speech_text(n):
+    """알림 「말」 → 사람이 읽는 줄(--json 없이 부를 때 — 만드는 세션이 「--항목 말」로 표를 본다). 「말」을 재지 않았으면 빈 목록"""
+    if not n:
+        return []
+    if n.get("못잼"):
+        return [f"[말 · 못 잼] {n['못잼']}"]
+    if n.get("말dB") is None:
+        return ["[말] 말이 잡히지 않았다(말 없는 영상이거나 음악 · 노래만)"]
+    out = [f"[말] 말 크기 {n['말dB']}dB · 첫 말 {n['첫말초']}초 · 말 없는 자리(1초 넘음) {len(n['말없는자리'])}곳"]
+    for g in n["말없는자리"]:
+        lv = f" · 말보다 {g['말보다']}dB 작음" if g.get("말보다") is not None else ""
+        out.append(f"[말 없는 자리] {g['초']}~{g['끝초']}초 {g['길이초']}초{lv}")
+    c = n.get("꼬리")
+    if c:
+        lv = f" · 말보다 {c['말보다']}dB 작음" if c.get("말보다") is not None else ""
+        out.append(f"[마지막 말 뒤 꼬리] {c['초']}~{c['끝초']}초 {c['길이초']}초{lv}")
+    return out
+
+
+def vad_probs(path):
+    """영상 소리 → (32ms 칸마다 말 확률, None). silero VAD v6(faster-whisper에 든 모델 · onnxruntime)이다.
+    패키지 · 모델이 없거나 실패하면 (None, 까닭) — 부르는 쪽은 그 항목만 건너뛴다(끝 코드와 다른 항목은 그대로)"""
+    if os.environ.get("SYNK_말시각") == "끔":
+        return None, "SYNK_말시각=끔"
+    try:
+        from faster_whisper.vad import get_vad_model
+    except Exception as e:  # noqa: BLE001 — 패키지가 없는 PC · CI
+        return None, f"faster-whisper VAD를 못 불렀다({type(e).__name__}: {e})"[:200]
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-vn", "-ac", "1", "-ar", "16000", "-f", "f32le", "-"], capture_output=True).stdout
+    x = np.frombuffer(raw, np.float32)
+    if len(x) < 512:
+        return None, "소리 줄기 없음"
+    try:
+        return np.asarray(get_vad_model()(np.pad(x, (0, 512 - len(x) % 512))), np.float32).ravel(), None
+    except Exception as e:  # noqa: BLE001
+        return None, f"VAD 실패({type(e).__name__}: {e})"[:200]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="최종본 검사 — 굳음 · 같은 판 · 되풀이 · 끝 · 화소 · 조용 · 멈춤 (+ 흐름: 관문이 붙여 부른다)")
     ap.add_argument("mp4")
@@ -667,6 +792,8 @@ def main(argv=None):
     ap.add_argument("--컷초", default="", help="흐름만 쓴다: 컷이 바뀌는 초(쉼표) — 천 닦기 같은 전환은 장 차이로 못 찾아 컷표 경계를 더한다")
     o = ap.parse_args(argv)
     want = set(o.항목.split(","))
+    if "기본" in want:     # 「기본,말」 — 기본 항목에 더해 부른다(최종 확인 묶음)
+        want |= set(DEFAULT_ITEMS.split(","))
     try:
         w, h, src_fps, dur = probe(o.mp4)
     except Exception as e:  # noqa: BLE001 — 끝 코드 2로 알린다
@@ -823,6 +950,24 @@ def main(argv=None):
 
     guard("멈춤", _frozen)
 
+    def _speech():
+        """말 시각(silero VAD) — 말 없는 자리 표와 마지막 말 뒤 꼬리를 「알림」에 낸다. 걸림은 내지 않는다(걸릴 편과 지나갈 편을 가르는 문턱이
+        없었다 — 머리말 「말」). VAD를 못 쓰면 이 항목만 「알림」 한 줄로 건너뛴다(못잼에 넣지 않는다 — 끝 코드가 바뀌지 않게)"""
+        if "말" not in want:
+            return
+        try:
+            probs, why = vad_probs(o.mp4)
+            db = audio() if probs is not None else None
+            if probs is None or db is None:
+                notes.append({"항목": "말", "못잼": why or "소리를 못 풀었다"})
+                return
+            table = speech_table(speech_runs(probs), db, dur)
+            notes.append({"항목": "말", "모델": "silero VAD v6", **(table or {"말dB": None, "말없는자리": [], "첫말초": None, "꼬리": None})})
+        except Exception as e:  # noqa: BLE001 — 말 시각이 깨져도 끝 코드 · 다른 항목은 그대로(guard에 맡기면 못잼에 들어 끝 코드가 2가 된다)
+            notes.append({"항목": "말", "못잼": f"{type(e).__name__}: {e}"[:200]})
+
+    guard("말", _speech)
+
     def _flow():
         if "흐름" in want:
             fsegs = segs
@@ -869,6 +1014,8 @@ def main(argv=None):
             print(f"  [못 잼 · {x['항목']}] {x['오류']}")
         if not hits and not failed:
             print("  걸림 없음")
+        for line in speech_text(next((x for x in notes if x.get("항목") == "말"), None)):
+            print(f"  {line}")
     hard = [x for x in hits if x["항목"] not in SOFT]
     code = 1 if hard else (2 if failed else 0)
     _검사이력(시작=o.mp4, 눈="최종본검사", 단계="편집", 결과="걸림" if hard else ("못 잼" if failed else ("확인" if hits else "통과")), 끝코드=code,

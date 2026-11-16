@@ -171,6 +171,114 @@ test('화면멈춤 — 가운데 2.5초 같은 장은 걸리고(끝 코드 0 · 
   assert.ok(!lastJson(off.stdout).걸림.some((x) => x.항목 === '화면멈춤'));
 });
 
+// ── 말(11-16 흠 장부 「소리」) — silero VAD 말 시각으로 말 없는 자리 표 · 마지막 말 뒤 꼬리를 「알림」에 낸다. 걸림은 내지 않는다 ──
+// 실측 고정 자료(tests/fixtures/말시각_실측.json): 공용 작업본 최종본 아홉 편의 VAD 말 확률(32ms)과 0.25초 칸 dB.
+// 정답이 있는 편(yuhobuilds Remotion VO 놓은 자리)에서 말 없는 자리와 마지막 말 끝이 0.15초 안에 맞는다. 그리고 최종 확인이 짚은 자리보다
+// 통과한 편의 자리가 더 길거나 깊어(길이 · 크기 · 꼬리 모두) 걸림 문턱을 두지 않았다는 것을 숫자로 묶어 둔다.
+const 말자료 = () => {
+  const fixture = path.join(__dirname, 'fixtures', '말시각_실측.json');
+  const code = [
+    'import importlib.util, json, sys',
+    'spec = importlib.util.spec_from_file_location("최종본검사", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+    'd = json.load(open(sys.argv[2], encoding="utf-8"))["영상"]',
+    'print(json.dumps({k: m.speech_table(m.speech_runs(v["probs"]), v["db"], v["길이"]) for k, v in d.items()}, ensure_ascii=False))',
+  ].join('\n');
+  const r = spawnSync(py, ['-I', '-X', 'utf8', '-c', code, tool, fixture], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout.trim().split(/\r?\n/).pop());
+};
+const 가장긴 = (t) => t.말없는자리.reduce((x, r) => (r.길이초 > x.길이초 ? r : x), { 길이초: 0 });
+
+test('말 실측 — 정답 편에서 말 없는 자리 · 마지막 말 끝이 0.15초 안에 맞는다', { skip: 그림라이브러리 ? false : 'numpy · cv2 없음' }, () => {
+  const t = 말자료();
+  const near = (rows, a, b) => rows.some((r) => Math.abs(r.초 - a) <= 0.15 && Math.abs(r.끝초 - b) <= 0.15);
+  const w = t.yuhobuilds_윈도우깨짐다시_20261115;
+  assert.ok(near(w.말없는자리, 2.79, 5.72) && near(w.말없는자리, 10.0, 12.52), JSON.stringify(w.말없는자리));
+  assert.ok(Math.abs(w.꼬리.초 - 42.77) <= 0.15, `마지막 말 끝 ${w.꼬리.초}`);
+  assert.ok(near(t.yuhobuilds_반짝73_20261115.말없는자리, 9.54, 11.32));
+  const j = t.yuhobuilds_지적147_20261113;
+  assert.ok(near(j.말없는자리, 3.51, 5.72) && near(j.말없는자리, 13.64, 15.72) && near(j.말없는자리, 29.52, 32.56), JSON.stringify(j.말없는자리));
+  // 꼬리: 해설 뒤 4.4초(없는판결) · 끝 6초(원생명단)
+  assert.ok(Math.abs(t.synkbrief_없는판결_20261111.꼬리.길이초 - 4.34) <= 0.15 && Math.abs(t.synkbrief_원생명단_20261115.꼬리.길이초 - 6.8) <= 0.15);
+});
+
+test('말 실측 — 통과한 편의 말 없는 자리 · 꼬리가 걸린 편보다 길거나 깊어 걸림 문턱이 없다', { skip: 그림라이브러리 ? false : 'numpy · cv2 없음' }, () => {
+  const t = 말자료();
+  // 말 없이 배경음만: 걸린 편의 가장 긴 자리(윈도우깨짐다시 2.98초 · 반짝73 1.82초)보다 통과한 지적147(3.11초) · 영상통화연인(4.23초)이 길다
+  const 걸린 = Math.max(가장긴(t.yuhobuilds_윈도우깨짐다시_20261115).길이초, 가장긴(t.yuhobuilds_반짝73_20261115).길이초);
+  assert.ok(가장긴(t.yuhobuilds_지적147_20261113).길이초 > 걸린 && 가장긴(t.synkbrief_영상통화연인_20261113).길이초 > 걸린);
+  // 짧고 깊은 빈 소리: 필라테스예약 13.95~16.42초(말보다 13.2dB 작음)보다 통과한 영상통화연인 13.95~18.18초가 길고 깊다
+  const p = t.synkbrief_필라테스예약_20261113.말없는자리.find((r) => Math.abs(r.초 - 13.95) <= 0.15);
+  const v = t.synkbrief_영상통화연인_20261113.말없는자리.find((r) => Math.abs(r.초 - 13.95) <= 0.15);
+  assert.ok(p && v && v.길이초 > p.길이초 && v.말보다 > p.말보다, JSON.stringify({ p, v }));
+  // 꼬리: 게시 편 목소리되풀이(4.51초 · 말보다 14.9dB 작음)가 걸린 두 편(없는판결 4.34초 16.2dB · 원생명단 6.8초 12.4dB) 사이에 든다 — 길이 · 크기 어느 문턱도 가르지 못한다
+  const [a, b, c] = [t.synkbrief_없는판결_20261111.꼬리, t.synkbrief_원생명단_20261115.꼬리, t.yuhobuilds_목소리되풀이_20261103.꼬리];
+  assert.ok(c.길이초 > a.길이초 && c.길이초 < b.길이초 && c.말보다 < a.말보다 && c.말보다 > b.말보다, JSON.stringify({ a, b, c }));
+});
+
+test('말 — 기본 항목이 아니고 걸림을 내지 않으며, VAD를 못 쓰면 알림 한 줄로 건너뛴다(끝 코드 0 · 못잼 없음)', { skip: 없음 }, (t) => {
+  const video = synthetic(t);
+  assert.doesNotMatch(fs.readFileSync(tool, 'utf8'), /DEFAULT_ITEMS = "[^"]*말/);
+  const env = { ...process.env, SYNK_검사이력: '끔', SYNK_말시각: '끔' };
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '말', '--json'], { encoding: 'utf8', timeout: 300000, env });
+  assert.equal(r.status, 0, r.stderr);
+  const j = lastJson(r.stdout);
+  assert.deepEqual(j.걸림, []);
+  assert.equal(j.못잼, undefined);
+  assert.deepEqual(j.알림.filter((n) => n.항목 === '말'), [{ 항목: '말', 못잼: 'SYNK_말시각=끔' }]);
+  // --json 없이 부르면(만드는 세션이 표를 보는 길) 말 줄도 찍는다(GPT 검수 GA1)
+  const txt = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '말'], { encoding: 'utf8', timeout: 300000, env });
+  assert.equal(txt.status, 0, txt.stderr);
+  assert.match(txt.stdout, /걸림 없음/);
+  assert.ok(txt.stdout.includes('[말 · 못 잼] SYNK_말시각=끔'), txt.stdout);
+  // 「기본,말」은 기본 항목에 말을 더한다(최종 확인 묶음이 이렇게 부른다) — 끝소리가 같이 걸린다
+  const b = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '기본,말', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...env, SYNK_MOTION_PY: path.join(os.tmpdir(), '없는_사람움직임.py') } });
+  const bj = lastJson(b.stdout);
+  assert.ok(bj.걸림.some((h) => h.항목 === '끝소리') && bj.알림.some((n) => n.항목 === '말'), JSON.stringify(bj).slice(0, 400));
+});
+
+// 작은 줄(대사 한 줄만 작음) — 최종 확인 묶음이 받아쓰기 줄마다 크기를 재서 quiet_lines로 짚는다. 고정 자료(tests/fixtures/말줄크기_실측.json):
+// 공용 작업본 최종본 50편을 묶음과 같은 셈(받아쓰기 낱말 시각 없음 · 줄 끝을 소리 길이로 자름 · VAD 말 범위)으로 잰 줄 크기.
+// 필라테스예약 「되돌려 놔」(15.5dB 작음)만 걸리고 나머지는 11.2dB(무료체험 「됐다」) 아래다. 문턱 12~15dB에서 같다.
+// 말 범위 거름이 없으면 받아쓰기가 말 없는 끝에서 지어낸 줄(없는판결 60.0초 「감사합니다.」 · 목소리되풀이 30.0초)이 걸린다.
+test('작은 줄 실측 — 필라테스예약 24.1~26.1초 「되돌려 놔」만 걸리고 49편은 지나간다(문턱 12~15dB에서 같음), 말 범위 밖 지어낸 줄은 뺀다', { skip: 그림라이브러리 ? false : 'numpy · cv2 없음' }, () => {
+  const fixture = path.join(__dirname, 'fixtures', '말줄크기_실측.json');
+  const code = [
+    'import importlib.util, json, sys',
+    'spec = importlib.util.spec_from_file_location("최종본검사", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+    'd = json.load(open(sys.argv[2], encoding="utf-8"))["영상"]',
+    'rows = lambda v: [{"초": a, "끝초": b, "dB": x} for a, b, x, _ in v["줄"]]',
+    'span = lambda v: tuple(v["말범위"]) if v["말범위"] else None',
+    'out = {th: {k: m.quiet_lines(rows(v), float(th), span(v))[1] for k, v in d.items()} for th in ("12", "13", "14", "15")}',
+    'out["범위없이"] = {k: m.quiet_lines(rows(v))[1] for k, v in d.items()}',
+    'print(json.dumps(out, ensure_ascii=False))',
+  ].join('\n');
+  const r = spawnSync(py, ['-I', '-X', 'utf8', '-c', code, tool, fixture], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(r.status, 0, r.stderr);
+  const { 범위없이, ...got } = JSON.parse(r.stdout.trim().split(/\r?\n/).pop());
+  const 걸린 = (all) => Object.entries(all).filter(([, low]) => low.length);
+  for (const [th, all] of Object.entries(got)) {
+    const hit = 걸린(all);
+    assert.deepEqual(hit.map(([k]) => k), ['synkbrief_필라테스예약_20261113'], `${th}dB`);
+    const [only] = hit[0][1];
+    assert.deepEqual([only.초, only.끝초], [24.1, 26.1]);
+    assert.ok(only.가운데보다 > 15 && only.가운데보다 < 16, JSON.stringify(only));
+  }
+  assert.deepEqual(걸린(범위없이).map(([k]) => k).sort((a, b) => a.localeCompare(b, 'ko')),
+    ['synkbrief_없는판결_20261111', 'synkbrief_필라테스예약_20261113', 'yuhobuilds_목소리되풀이_20261103'], '말 범위 거름이 없으면 지어낸 끝 줄이 걸린다');
+  assert.match(fs.readFileSync(tool, 'utf8'), /LINE_QUIET_DB = 13\.0/);
+});
+
+// faster-whisper(VAD 모델)가 있는 PC에서만: 사인파는 말이 아니다 — 말이 잡히지 않는다고 낸다
+const VAD있음 = spawnSync(py, ['-I', '-X', 'utf8', '-c', 'from faster_whisper.vad import get_vad_model'], { encoding: 'utf8', timeout: 120000 }).status === 0;
+test('말 — VAD가 있으면 사인파 영상에서 말이 잡히지 않는다', { skip: 없음 || (VAD있음 ? false : 'faster-whisper 없음') }, (t) => {
+  const video = synthetic(t);
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '말', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });
+  assert.equal(r.status, 0, r.stderr);
+  const n = lastJson(r.stdout).알림.find((x) => x.항목 === '말');
+  assert.ok(n && !n.못잼 && n.말dB === null && n.꼬리 === null, JSON.stringify(n));
+});
+
 // ── 흐름(11-16 — 컷 안 탈것 · 배경 움직임, 영상 마감 관문이 「--항목 흐름」으로 부른다) ──
 // 합성 영상(tests/_흐름합성.js): 고정된 무늬 바탕(640×360, 24fps) 위에 무늬 네모(차) · 무늬 원판(바퀴)을 움직인다. 셋 다 끝 코드를 바꾸지 않는 「확인」이다.
 // 실제 편 대조(서울로 「다리가 기억하는 것」, 화면 너비 1000 기준 px/s):

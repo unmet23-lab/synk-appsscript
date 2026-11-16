@@ -7,7 +7,7 @@
 11-15 유호님 「예약으로 바꿔」 — 최종 확인을 예약 작업(synk-sns-final-check)이 하므로 묶음 도구를 저장소에 둔다.
 
 만드는 것(--out 폴더):
-  최종본검사.json      tools/최종본검사.py 결과(사람 굳음 · 같은 판 · 되풀이 · 끝 소리 · 끝 화소)
+  최종본검사.json      tools/최종본검사.py 결과(사람 굳음 · 같은 판 · 되풀이 · 끝 소리 · 끝 화소 · 조용 · 멈춤, 그리고 알림 「말」 — 말 없는 자리 표 · 마지막 말 뒤 꼬리)
   sheet_N.jpg         0.5초마다 한 장(60장씩)
   m8_NN.jpg           1/8초 띠(한 장에 8초)
   cuts_N.jpg          컷 경계 앞 · 뒤 장
@@ -96,7 +96,7 @@ try:
 except Exception:
     FONT = ImageFont.load_default()
 
-info = {'컷': [], '멈춤': [], '최종본검사': None, '받아쓰기': [], '음량': '', '1초dB': [], '튐': [], '얼굴': [], 'sheets': 0, 'm8': 0, 'cuts': 0, 'z': []}
+info = {'컷': [], '멈춤': [], '최종본검사': None, '받아쓰기': [], '받아쓰기줄': [], '줄가운데': None, '작은줄': [], '줄문턱': None, '줄범위없음': False, '음량': '', '1초dB': [], '튐': [], '얼굴': [], 'sheets': 0, 'm8': 0, 'cuts': 0, 'z': []}
 
 
 def extract(sub, fps, w, h):
@@ -129,7 +129,8 @@ def sheet(files, step, out, cols, t0=0.0, lines=None, labels=None):
 # 0) 최종본 검사(도구가 따로 잰다)
 def step_final_check():
     # 최종본 검사가 편 폴더 게시/검사이력.jsonl에 남기는 줄의 단계 — 최종 확인에서 잡혔는지 장부가 가른다(흠 장부 설계 1단계)
-    r = run([sys.executable, '-I', '-X', 'utf8', FINAL_CHECK, MP4, '--json'], cwd=REPO, timeout=1800, env={**os.environ, 'SYNK_검사단계': '최종 확인'})
+    # 「기본,말」: 기본 항목에 말 시각(말 없는 자리 표 · 마지막 말 뒤 꼬리 — 알림만)을 더한다(11-16 흠 장부 「소리」)
+    r = run([sys.executable, '-I', '-X', 'utf8', FINAL_CHECK, MP4, '--json', '--항목', '기본,말'], cwd=REPO, timeout=1800, env={**os.environ, 'SYNK_검사단계': '최종 확인'})
     lines = [ln for ln in r.stdout.splitlines() if ln.startswith('{')]
     j = json.loads(lines[-1]) if lines else {'오류': (r.stderr or '')[-300:]}
     json.dump(j, open(os.path.join(OUT, '최종본검사.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
@@ -424,6 +425,7 @@ def step_stt():
         for s in segs:
             line = f'{s.start:6.2f}-{s.end:6.2f}  {s.text.strip()}'
             info['받아쓰기'].append(f'{s.start:.2f}-{s.end:.2f} {s.text.strip()}')
+            info['받아쓰기줄'].append({'초': round(s.start, 2), '끝초': round(s.end, 2), '글': s.text.strip()})
             f.write(line + '\n')
     say(f'받아쓰기 {len(info["받아쓰기"])}줄 → stt.txt')
 
@@ -431,13 +433,75 @@ def step_stt():
 guard('받아쓰기', step_stt)
 
 
+# 10-1) 대사 줄 크기(11-16 흠 장부 「소리」) — 받아쓰기 줄마다 크기를 재서 그 편 가운데 값보다 13dB(최종본검사 LINE_QUIET_DB) 넘게 작은 줄을 기계 검사 칸에 짚는다.
+# 이 단계와 같은 셈으로 50편을 재니 필라테스예약 「되돌려 놔」(15.5dB 작음)만 걸리고 두 브랜드 최종본 · 만족 사례는 11.2dB 아래다.
+# VAD가 이 사이로 하는 작은 말을 놓쳐 받아쓰기로 잰다. 받아쓰기가 말 없는 끝 · 음악에서 지어낸 줄(없는판결 60.0~62.0초 「감사합니다.」)은 VAD 말 범위 밖이라 뺀다.
+def step_lines():
+    rows = info['받아쓰기줄']
+    if not rows:
+        return
+    import importlib.util
+    import wave
+    spec = importlib.util.spec_from_file_location('최종본검사', FINAL_CHECK)
+    fc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fc)
+    with wave.open(os.path.join(OUT, 'mix16.wav')) as w:
+        x = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
+    alen = len(x) / 16000
+    for r in rows:   # 받아쓰기는 30초 창 끝을 넘어 소리 밖에도 줄을 낸다(LAB 30초 영상의 30.0~59.98초) — 소리 길이로 자른다
+        r['끝초'] = round(min(r['끝초'], alen), 2)
+        r['dB'] = fc.line_db(x, r['초'], r['끝초']) if r['끝초'] > r['초'] else None
+    n = next((v for v in ((info['최종본검사'] or {}).get('알림') or []) if v.get('항목') == '말' and v.get('첫말초') is not None and v.get('꼬리')), None)
+    info['줄문턱'] = fc.LINE_QUIET_DB
+    if not n:   # 말 범위가 없으면 지어낸 끝 줄을 거를 수 없다(거름 없이 50편을 재면 없는판결 · 목소리되풀이의 지어낸 줄이 걸린다 — GPT 검수 GA2) — 짚지 않는다
+        info['줄가운데'], info['작은줄'], info['줄범위없음'] = fc.quiet_lines(rows)[0], [], True
+        say('대사 줄 크기: 말 시각(VAD)이 없어 지어낸 줄을 거를 수 없으니 작은 줄을 짚지 않는다')
+        return
+    med, low = fc.quiet_lines(rows, span=(n['첫말초'], n['꼬리']['초']))
+    info['줄가운데'], info['작은줄'] = med, low
+    say(f'대사 줄 크기: 가운데 {med}dB · {fc.LINE_QUIET_DB:g}dB 넘게 작은 줄', ' · '.join(f"{r['초']}~{r['끝초']} {r['가운데보다']}dB" for r in low) or '없음')
+
+
+guard('대사 줄 크기', step_lines)
+
+
 # 11) 맥락 없는 독립 검수 지시문(11-13 B47 · 윈도우깨짐 검수 지시문을 틀로)
+def speech_lines(fc):
+    """최종본 검사 알림 「말」(silero VAD 말 시각) → 지시문 줄. 말 없는 자리(1초 넘음)와 마지막 말 뒤 꼬리를 숫자로 붙인다(11-16 흠 장부 「소리」 —
+    말 없는 자리 · 꼬리는 걸릴 편과 지나갈 편을 가르는 문턱이 없어 검수자 눈에 맡긴다. 흠 장부 설계 「소리 흠을 말 시각으로 재며 본 것」)"""
+    n = next((x for x in (fc.get('알림') or []) if x.get('항목') == '말'), None)
+    if not n:
+        return ['- (말 시각을 재지 않았다 — 대사 줄 크기도 짚지 않았다)']
+    if n.get('못잼'):
+        return [f"- 말 시각을 못 쟀다({n['못잼']}) — 받아쓰기와 1초 음량으로 본다. 지어낸 받아쓰기 줄을 거를 수 없어 대사 줄 크기도 짚지 않았다"]
+    if n.get('말dB') is None:
+        return ['- 말이 잡히지 않았다(말 없는 영상이거나 노래 · 음악만)']
+
+    def where(r):
+        lv = f" · 그 자리 {r['dB']}dB(말보다 {r['말보다']}dB 작음)" if r.get('dB') is not None else ''
+        return f"{r['초']}~{r['끝초']}초 {r['길이초']}초{lv}"
+
+    out = [f"- 말 크기 {n['말dB']}dB(말 구간 전력 평균) · 첫 말 {n['첫말초']}초"]
+    gaps = n.get('말없는자리') or []
+    out.append('- 말 없는 자리(1초 넘음): ' + (' / '.join(where(r) for r in gaps) if gaps else '없음'))
+    if n.get('꼬리'):
+        out.append(f"- 마지막 말 뒤 꼬리: {where(n['꼬리'])}")
+    if info['줄가운데'] is not None:
+        low = ' · '.join(f"{r['초']}~{r['끝초']}초 「{r['글']}」 {r['가운데보다']}dB 작음" for r in info['작은줄'])
+        out.append(f"- 대사 줄 크기(받아쓰기 줄마다): 가운데 {info['줄가운데']}dB · {info['줄문턱']:g}dB 넘게 작은 줄 {low or '없음'}")
+    out.append('- 말 시각은 silero VAD다. 속삭임 · 이 사이로 하는 작은 말은 놓칠 수 있으니, 말 없는 자리 안에 받아쓰기 말이 있으면 그 줄은 작게 들리는 말이다.')
+    out.append('- 말 없는 자리마다 그 동안 화면에서 새로 일어나는 것이 있는지, 마지막 말 뒤 꼬리가 끝 화면 없이 늘어지는지 본다(길이만으로는 흠이 아니다 — 통과한 편에도 3초 자리가 있다).')
+    return out
+
+
 def step_prompt():
     fc = info['최종본검사'] or {}
     machine = [f"- {h.get('초')}초: {h.get('항목')} — {json.dumps(h.get('값'), ensure_ascii=False)}" for h in (fc.get('걸림') or [])]
     machine += [f'- {x}~{y}초: 같은 장이 이어짐(멈춘 화면 · 느린 재생 의심)' for x, y in info['멈춤']]
     if info['튐']:
         machine.append('- 소리 튐(10ms가 앞뒤보다 20dB 큼): ' + ' '.join(f'{x}초' for x in info['튐']))
+    machine += [f"- {r['초']}~{r['끝초']}초: 대사 한 줄만 작다 — 「{r['글']}」이 다른 줄 가운데({info['줄가운데']}dB)보다 {r['가운데보다']}dB 작다(받아쓰기 줄 크기)"
+                for r in info['작은줄']]
     m8 = info['m8']
     m8_note = ', '.join(f'{k:02d}={k * 8}~{min((k + 1) * 8, DUR):.0f}' for k in range(m8))
     files = [
@@ -449,6 +513,9 @@ def step_prompt():
         f"- z/f_<초>.jpg — 컷마다 가운데 한 장, 원화질의 절반({len(info['z'])}장)",
     ]
     stt = ' / '.join(info['받아쓰기']) or '(받아쓰기 없음)'
+    speech = speech_lines(fc)
+    for ln in speech[:3]:
+        say('말 시각', ln)
     text = f"""답 첫 줄에 지금 돌고 있는 모델 이름(정확한 모델 ID)을 적어 주세요. 그다음 한국어로 답합니다.
 
 당신은 SNS 세로 영상({DUR:.1f}초, {W}x{H}, 인스타 릴스 · 유튜브 쇼츠 · 틱톡용)을 공개 전에 처음 보는 독립 검수자입니다. 만든 사람의 의도나 앞선 검수 결과는 모릅니다. 아래 자료만 보고 「처음 보는 시청자가 무엇을 보고 · 듣고 · 오해하는지」와 「눈에 걸리는 제작 실수」를 찾아 주세요. 파일은 읽기만 하고 아무것도 고치거나 만들지 마세요. {{{{영상 성격 — 예: 사람이 나오는 AI 재연 영상(위 작은 글 「재연 · 인물 · 상황은 각색」) / 화면 캡처와 진행자가 나오는 설명 영상}}}}
@@ -464,6 +531,9 @@ def step_prompt():
 {stt}
 1초 음량 dB(0초부터): {' '.join(str(x) for x in info['1초dB']) or '(못 잼)'}
 {info['음량'] or ''}
+
+## 말 시각(기계가 잰 것 — 판단은 당신 몫)
+{chr(10).join(speech)}
 
 ## 기계 검사가 짚은 것(판단은 당신 몫)
 {chr(10).join(machine) or '- 없음'}
