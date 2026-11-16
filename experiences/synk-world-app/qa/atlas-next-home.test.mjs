@@ -64,8 +64,8 @@ test('첫날 — 목표 없음 · 「여행」 · 「시험」 · 체험이 남�
    assert.equal(plan.selected.lessonId,'greetings-expressions','바람길 · 시험 형식 연습이 아니라 첫 레슨(바뀌는 장면 — 시험 학생의 첫 줄)');
    assert.equal(plan.today.items[0].why.code,'unit.new');
    assert.match(plan.reason,/처음 만나요/);
-   assert.ok(!plan.candidates.some(candidate=>['game','mock','position'].includes(candidate.route)),'게임 · 시험 형식 · 진단은 4-3 후보가 아니다');
-   assert.equal(plan.examPlan,null,'이번 주 계획은 4-4');
+   assert.ok(!plan.candidates.some(candidate=>['game','mock','position'].includes(candidate.route)),'게임 · 시험 형식은 후보가 아니고, 짧은 진단은 이번 주 계획(셸의 week)이 있을 때만이다(4-4b — qa/atlas-next-plan.test.mjs)');
+   assert.equal(plan.examPlan,null,'이번 주 계획은 셸이 넘긴 week로만 싣는다 — 넘기지 않은 이 장면에는 없다(4-4b가 뒤집은 단정은 qa/atlas-next-plan.test.mjs가 본다)');
    assert.equal(plan.today.firstDay,true);
   }
  coach.dispose();

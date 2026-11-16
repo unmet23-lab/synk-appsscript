@@ -8,6 +8,7 @@ import { createWorldTodayPlan, todayKey, watchHomePlan } from './world-today.mjs
 import { buildPositionNext, examSkills, recheckCards, unitRoutes, unseenFamilies } from './world-position-next.mjs';
 import { createDiagnosticNextSession, selectDiagnosticNext, withheldItem } from './world-diagnostic-next.mjs';
 import { createPositionNextView } from './world-position-next-view.mjs';
+import { buildPlanNext, createPlanLog, planBoard, planReader, planStart, recordsComplete } from './world-plan-next.mjs';
 import { lifeReviewCandidate } from './world-account.bundle.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
@@ -26,6 +27,9 @@ export const positionPlanner = Object.freeze({
   createView: createPositionNextView,
   lifeReview: lifeReviewCandidate,
 });
+// 이번 주 계획 새 판(4-4b — 단계4_계획 §21-6): 능력 읽개 · 시작점 · 기기 판 기록으로 지금 판의 buildExamPlan을 새 칸으로 읽는다. 홈 코치 하나로
+// 짓는다(내 위치와 같은 코치 · 같은 묶음 만남 — 셸 world-learning-ui.mjs weekNext).
+export const planPlanner = Object.freeze({ planBoard, planReader, planStart, buildPlanNext, recordsComplete });
 // 지금 판 코치(atlas/game-learning.js)가 손님 기록을 두는 자리 — { version, epoch, events, ledger, … }.
 export const LEGACY_KEY = 'synk.atlas.learning.v1.device';
 // 「새 길 간 적 있음」 · 「스위치 꺼짐」 표지 — 계정마다 하나, 판과 무관한 자리(§18-5-5 B4 · R15). 값 { went?: true, off?: true, path?, revision? }
@@ -457,6 +461,9 @@ export function createAtlasNext({
   const coaches = new Map();
   const watchers = new Map(); // 코치 → 판을 다시 정해 닫을 때 부를 함수들(연습 화면이 안내 한 줄과 함께 닫힌다)
   const gone = new WeakMap(); // 판을 다시 정해 닫은 코치 → 그 까닭
+  // 코치 → 그 저장소 이름(손님 synk-atlas:guest · 올리는 길 · 기기 길 — 엔진 storeName). 기기의 판 기록(4-4b §21-6 가)의 열쇠다 — 같은 판의
+  // 코치(짧은 연습 · 홈)는 같은 저장소라 같은 기록을 읽는다. 동의 판이 오르면 이름이 바뀌어 앞 판의 기록은 읽히지 않는다.
+  const stores = new WeakMap();
   let disposed = false;
   let generation = 0; // 판을 다시 정할 때마다 오른다 — 앞 판에서 열기 시작한 코치는 돌려주지 않는다
   let decided = null; // 계정의 판(약속) — 다시 정하면 비운다
@@ -804,11 +811,23 @@ export function createAtlasNext({
     return true;
   }
 
+  // 그 판의 저장소 이름(엔진 storeName — 호스트가 여는 이름과 같다). 엔진을 못 받았으면 null(판 기록을 열지 않을 뿐이다).
+  function storeOf(plan, engine) {
+    if (typeof engine?.storeName !== 'function') return null;
+    try {
+      if (plan.path === 'guest') return engine.storeName({});
+      if (plan.path === 'device') return plan.key ?? null;
+      return engine.storeName({ account: owner, revision: plan.revision });
+    } catch {
+      return null;
+    }
+  }
+
   // 입구 받기 · 코치 만들기 · 준비 — 어디서 실패해도 계기에 원인을 남기고 null(셸은 지금 판으로 간다).
   async function open(banks, plan, at, gameId) {
     let made = null;
     try {
-      const { coach } = await entry();
+      const { coach, engine } = await entry();
       made = coach({
         gameId,
         banks,
@@ -819,6 +838,8 @@ export function createAtlasNext({
         label,
       });
       await made.ready;
+      const name = storeOf(plan, engine);
+      if (name) stores.set(made, name);
       if (plan.path === 'upload' && !(await confirmed(made, plan, at))) {
         made.dispose();
         return null;
@@ -964,7 +985,15 @@ export function createAtlasNext({
         say: (why, language = lang()) => render(why, { lang: language, label }),
         // 내 위치 새 판(4-4a) — 홈과 같은 판 셋 · 같은 홈 코치로 그린다(셸 world-learning-ui.mjs openPosition).
         position: positionPlanner,
+        // 이번 주 계획 새 판(4-4b) — 홈과 같은 홈 코치 · 내 위치와 같은 묶음 만남으로 짓는다(셸 world-learning-ui.mjs weekNext).
+        plan: planPlanner,
       });
+    },
+    // 이 기기의 판 기록(4-4b — 단계4_계획 §21-6 가): 그 코치의 저장소 이름으로 연다. 이 입구가 연 코치가 아니거나 엔진을 못 받았으면 null —
+    // 계획이 이번 주에 한 판을 세지 못할 뿐이다. 저장소가 없는 입구(storage null — 시험)도 null.
+    planLog(made) {
+      const name = made ? stores.get(made) : null;
+      return name && store ? createPlanLog({ storage: store, store: name }) : null;
     },
     // 지금 판을 준 뒤 새 길이 될 수 있을 때(판이 풀림 · 지금 판 뒤 새 길 코치를 줌) 부를 함수 — 생활 · 홈이 판을 다시 묻는다(§19-3 7 — 까닭을
     // 세지 않는다, 계정 · 손님 모두). retired(새 길 → 다시 정함)의 짝이다. 돌려준 함수로 끊는다.

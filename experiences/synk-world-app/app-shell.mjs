@@ -19,7 +19,7 @@ import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../syn
 import {play as playSound,getPref} from '../brand-opening/world-sound.mjs'
 import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 // 화면 언어(10-19 1판): 계정 연결·로그인 안내·저장 확인·오류는 고른 언어로. 첫 문장 놀이·타운·노래 화면은 2판까지 한국어다.
-import {t,tMessage,currentLang,hasString} from '../brand-opening/world-lang.mjs';
+import {t,tMessage,currentLang,hasString,situationName} from '../brand-opening/world-lang.mjs';
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
 import {createSeoulEntry,seoulText} from './seoul-entry.mjs';
 const $=s=>document.querySelector(s);
@@ -46,7 +46,7 @@ function lazyAtlasNext(owner){
  // 리허설 나르개의 401은 그 나르개를 만든 로그인의 세대에서만 로그인으로 보낸다 — 로그아웃 뒤 같은 합성 계정으로 다시 들어온 새 로그인을 앞 로그인의
  // 늦은 401이 로그인 화면으로 돌리지 않게(Fable 5.2 합친 끝 판 넘친 #26 — 계정 번호만 견주면 같은 계정의 새 세션을 못 가렸다).
  const trailOf=m=>{if(owner==='guest')return null;if(operating)return()=>account.prepareAtlasTrail();const generation=client.generation;return m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if(client.generation===generation&&(client.snapshot?.accountId||'guest')===owner)client.expire?.();}});};
- const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;throw error;});
+ const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{if(String(id).startsWith('sit-'))return situationName(id);const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;throw error;});
  return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
   // 생활 화면의 코치(4-2 — 은행 world-life, 단계4_계획 §19-1 ①). 지금 판이면 null.
   async lifeCoach(){if(disposed)return null;const entry=await load();return disposed?null:entry.lifeCoach();},
@@ -57,6 +57,8 @@ function lazyAtlasNext(owner){
   reopened(fn){if(disposed||typeof fn!=='function')return()=>{};reopeners.add(fn);return()=>reopeners.delete(fn);},
   note:(kind,outcome)=>{if(disposed)return;if(made)made.note(kind,outcome);else if(early.length<50)early.push([kind,outcome]);},
   retired:(coach,fn)=>made&&!disposed?made.retired(coach,fn):()=>{},
+  // 이 기기의 판 기록(4-4b — 단계4_계획 §21-6 가): 입구가 연 코치(홈 · 짧은 연습)의 저장소 이름으로 연다. 입구를 받기 전이거나 닫았으면 null(그 판을 세지 못할 뿐이다).
+  planLog:coach=>made&&!disposed?made.planLog?.(coach)??null:null,
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
@@ -395,7 +397,7 @@ function mountLifeLearning({owner,progress,keep}){
  const lifeNext=lifeDue?{coach:()=>lifeDue.coach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),note:(kind,outcome)=>atlasNext.note(kind,outcome),nextAt:id=>lifeDue.nextAt(id),state:()=>lifeDue.state()}:null;
  // 새 길 홈(4-3 — 단계4_계획 §20-4): 생활 판정이 있을 때만. 홈은 생활 판정의 판을 따르고(ask — 단추를 누를 때 지금 판이면 다시 묻는다), 홈 코치 ·
  // 플래너는 입구가 준다. 「내 성향」 답과 손님이 열 수 있는 게임은 지금 판의 createPlan과 같은 값이다. 꺼진 판은 null(지금 판 그대로).
- const homeNext=lifeDue?{coach:pool=>atlasNext.homeCoach(pool),planner:()=>atlasNext.homePlanner(),retired:(coach,fn)=>atlasNext.retired(coach,fn),life:()=>lifeDue.state(),ask:()=>lifeDue.coach(),
+ const homeNext=lifeDue?{coach:pool=>atlasNext.homeCoach(pool),planner:()=>atlasNext.homePlanner(),retired:(coach,fn)=>atlasNext.retired(coach,fn),planLog:coach=>atlasNext.planLog(coach),life:()=>lifeDue.state(),ask:()=>lifeDue.coach(),
   judge:(snapshot,now)=>lifeDue.judge(snapshot,now),answers:()=>life.answers,openGames:()=>operating&&!client.snapshot?guestGames():null,
   // 줄이 없는 날(다 한 날 · 상한 날)의 「다음 연습」은 생활 팩으로 · 홈 계획을 새로 그린 뒤 보고 있는 허브 포스터를 맞춘다(§20-8).
   packs:()=>life.ui?.packs?.(),painted:()=>life.ui?.syncToday?.()}:null;

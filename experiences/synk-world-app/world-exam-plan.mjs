@@ -9,6 +9,8 @@
 //   남은 날 수로 다그치지 않고, 「D-n」·연속 기록을 만들지 않는다.
 // - 계획은 따로 저장하지 않는다. 같은 선언값·기록·날짜면 늘 같은 계획이다(두 번째 기록을 만들지 않는다). 실행은 Trail 그대로다.
 // 지금은 WORLD 한 제품만 쓰므로 제품 폴더에 둔다(docs/아틀라스_설계.md#common-capability-promotion). 화면 글은 없다(코드만 돌려준다).
+// Atlas 새 길(재설계 단계 4-4b — docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §21-6)은 같은 셈에 능력 읽개(reader)를 넘겨 새 칸으로
+// 읽는다(world-plan-next.mjs가 짓는다). 읽개를 넘기지 않으면 지금 판 그대로다 — 고치기 전 함수와 깊이 같은지 qa/world-exam-plan-reader.test.mjs가 본다.
 
 const DAY=86400000,KST=9*3600000;
 export const EXAM_PLAN_POLICY=Object.freeze({version:'world-exam-plan-2',
@@ -147,6 +149,16 @@ function domainNeeds(summary,domains,prefix){
  for(const domain of domains)needs[domain]=complete?skills.filter(skill=>skill.domain===domain&&weakOf(skill)).length:0;
  return {needs,skills,complete};
 }
+// 새 길(4-4b)의 같은 꼴 — 칸이 연습 중이고 아직 혼자 해냄이 아닌 난도 칸에 놓친 수나 도움받은 수가 있는 능력이 다시 볼 항목이다(내 위치
+// 「먼저 볼 항목」과 같은 뜻 — 단계4 §21-3 · 카본 A5). 기록이 다 왔는가는 읽개의 판정(§21-3 — 손님 · 동의를 끈 계정은 바탕 요약, 서버 길 계정은 받기까지)이다.
+const weakNext=skill=>skill.cell==='practicing'&&(skill.missed||0)+(skill.helped||0)>0;
+function readerNeeds(reader,domains,prefix){
+ const match=skill=>{const rule=prefix instanceof RegExp?prefix:prefix?.[skill?.domain];return rule instanceof RegExp&&rule.test(skill?.id||'');};
+ const skills=(Array.isArray(reader?.skills)?reader.skills:[]).filter(match);
+ const complete=reader?.complete===true,needs={};
+ for(const domain of domains)needs[domain]=complete?skills.filter(skill=>skill.domain===domain&&weakNext(skill)).length:0;
+ return {needs,skills,complete};
+}
 // 남은 횟수 나누기: 연습할 거리가 있는 영역마다 먼저 한 번씩(잘하는 영역도 아주 빼지 않는다 · 학습기준 §7-3), 남는 횟수는 다시 볼
 // 항목이 많은 영역에 더 준다(큰 나머지 순). 횟수가 영역 수보다 적으면 더 필요한 영역부터 한 번씩. needs[영역]이 null이면 닫힌 영역이다.
 // first: 횟수가 영역 수보다 적어도 필요와 상관없이 먼저 한 번을 받는 영역(TOPIK II 쓰기 — 아래 buildExamPlan).
@@ -195,21 +207,24 @@ export function examEvidenceSkills(events=[]){
 }
 // examSkills: examEvidenceSkills 결과(Set · 배열). 주면 그 안의 항목 근거만 시작점으로 센다(생활 거울만 있는 항목은 빼고).
 // 안 주면(사건 기록을 못 읽은 호출) 예전처럼 요약의 모든 근거로 본다.
-export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,available={},classwork=[],audioAvailable=true,lastCheckAt=null,speakingNeeds=null,examSkills=null}={}){
+// reader: 새 길(4-4b)의 능력 읽개 { complete, topik2, skills:[{id,domain,cell,missed,helped,answered,lastAt}], start(ids) → true · false · null } —
+// 주면 summary · examSkills를 읽지 않는다(한 문서에 두 판을 섞지 않는다 — §6). doneScope: 'device'면 done이 이 기기에서 센 수라는 표지를 싣는다
+// (새 길의 이번 주에 한 횟수는 이 기기의 판 기록이다 — 화면이 계정 전체의 수로 읽지 않게, 검토 D5).
+export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,available={},classwork=[],audioAvailable=true,lastCheckAt=null,speakingNeeds=null,examSkills=null,reader=null,doneScope=null}={}){
  if(!planRecord(exam))return null;
  const week=examWeek(now),{phase,weeks}=examPhase(exam.date,now),policy=EXAM_PLAN_POLICY;
  const pace=exam.weeklyMinutes&&policy.weekly[exam.weeklyMinutes]||policy.fallback;
  const topik2=exam.type==='topik2',domains=topik2?['listening','reading','writing']:['listening','reading'];
  // TOPIK II: 영역마다 TOPIK II 문항(검수 통과 은행 문항)이 있으면 그 지도(ko2.*)의 항목을, 아직 없으면 TOPIK I 항목을 읽는다
  // (듣기·읽기 필요는 같은 뜻 — 문항이 생기기 전까지의 다리, 10-21 ④). Core 요약에 TOPIK II 지도가 없으면 모두 TOPIK I. 쓰기는 늘 TOPIK II.
- const ko2=planRecord(summary)&&Array.isArray(summary.skills)&&summary.skills.some(skill=>/^ko2\./.test(skill?.id||''));
+ const ko2=reader?reader.topik2===true:planRecord(summary)&&Array.isArray(summary.skills)&&summary.skills.some(skill=>/^ko2\./.test(skill?.id||''));
  const two=domain=>topik2&&ko2&&(domain==='writing'||available.topik2?.[domain]===true);
  const MAPS={topik1:{listening:/^ko\.listening\.[a-z]+$/,reading:/^ko\.reading\.[a-z]+$/,writing:/^$/},topik2:{listening:/^ko2\.listening\.[a-z]+$/,reading:/^ko2\.reading\.[a-z]+$/,writing:/^ko2\.writing\.[a-z]+$/}};
  const prefix=Object.fromEntries(domains.map(domain=>[domain,MAPS[two(domain)?'topik2':'topik1'][domain]]));
- const {needs,skills,complete}=domainNeeds(summary,domains,prefix);
+ const {needs,skills,complete}=reader?readerNeeds(reader,domains,prefix):domainNeeds(summary,domains,prefix);
  // 도달 파악의 바탕: 듣기·읽기 모두 TOPIK II면 'topik2', 하나라도 TOPIK I로 세면 'topik1'(화면이 「TOPIK II 문항이 생기기 전까지 TOPIK I로 세요」).
  const basis=topik2&&ko2&&two('listening')&&two('reading')?'topik2':'topik1';
- const observed=skills.filter(skill=>(skill.n||0)>0||skill.status!=='unseen');
+ const observed=skills.filter(skill=>reader?skill.cell!=='notyet':(skill.n||0)>0||skill.status!=='unseen');
  const practice=planRecord(available.practice)?available.practice:planRecord(available.reading)?available.reading:{};
  const supply={practice,listening:planRecord(available.listening)?available.listening:{}};
  const domainOf=id=>String(id||'').split('.')[1];
@@ -226,8 +241,8 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
  // 다시 확인: 기록이 하나도 없으면 짧은 진단부터(시작점), 아니면 단계마다 정한 주기. 이번 주에 이미 했으면 그 한 번을 이번 주
  // 계획에 그대로 둔다(시작점 진단을 마치면 「기록 없음」이 풀려 계획이 「1/0」으로 바뀌고 한 것이 세어지지 않던 것을 막는다).
  // 시작점 진단 뒤 바로 다음 주에 또 확인하지 않게, 지난 확인과의 간격이 그 주 단계의 주기 이상일 때만 주기 주로 친다.
- const startSkills=examSkills instanceof Set?examSkills:Array.isArray(examSkills)?new Set(examSkills):null;
- const start=complete&&!(startSkills?observed.filter(skill=>startSkills.has(skill.id)):observed).length;
+ const startSkills=reader?null:examSkills instanceof Set?examSkills:Array.isArray(examSkills)?new Set(examSkills):null;
+ const start=reader?complete&&reader.start?.(skills.map(skill=>skill.id))===true:complete&&!(startSkills?observed.filter(skill=>startSkills.has(skill.id)):observed).length;
  const cycle=at=>policy.recheckEvery[examPhase(exam.date,at).phase]||4,lastWeek=planTime(lastCheckAt)?examWeek(lastCheckAt).start:null;
  const spaced=(at,prev)=>prev===null||at-prev>=cycle(at)*7*DAY;
  const recheck=did.recheck>0||recheckFresh>0&&(start||recheckWeek(exam.date,week.start)&&spaced(week.start,lastWeek))?1:0;
@@ -260,14 +275,16 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
  // 쓰기(TOPIK II)는 그 항목을 겨누는 쓰기 과제(available.writing의 skillIds)만 — 다른 과제를 그 항목 연습인 척 내지 않는다.
  // 같은 우선순위면 지금 낼 새 문항이 있는 항목을 먼저 둔다(모자란 항목은 뒤에서 모자람을 알린다).
  const writingFor=id=>(Array.isArray(available.writing)?available.writing:[]).filter(row=>Array.isArray(row?.skillIds)&&row.skillIds.includes(id)&&typeof row.routeId==='string').map(row=>row.routeId);
- const homework=skills.filter(weakOf).map(skill=>{
+ const homework=skills.filter(reader?weakNext:weakOf).map(skill=>{
   // fresh: 그 항목의 짧은 연습 새 문항 수(읽기·듣기) · activities: 듣기 게임 후보 또는 그 항목을 겨누는 쓰기 과제.
   const fresh=skill.domain==='writing'?0:practice[skill.id]||0,games=skill.domain==='listening'?supply.listening[skill.id]||[]:skill.domain==='writing'?writingFor(skill.id):[];
-  return {skillId:skill.id,domain:skill.domain,status:skill.status,priority:skill.priority??0,fresh,activities:[...games],
+  // 새 길의 숙제 상태(§21-6): 아직 혼자 해냄이 아닌 난도 칸에 놓친 답이 있으면 missed, 도움받은 첫 만남만 있으면 상태 없음(null — 두뇌가 숙제
+  // 문장을 짓지 않고 목표 수에만 센다). 줄 세울 값은 놓친 수와 도움받은 수의 합이고, 같으면 마지막 때가 늦은 차례다(내 위치 먼저 볼 항목과 같은 차례).
+  return {skillId:skill.id,domain:skill.domain,status:reader?(skill.missed>0?'missed':null):skill.status,priority:reader?(skill.missed||0)+(skill.helped||0):skill.priority??0,...(reader?{lastAt:skill.lastAt??null}:{}),fresh,activities:[...games],
    shortage:skill.domain==='reading'?fresh===0:skill.domain==='writing'?games.length===0:fresh===0&&games.length===0||!audioAvailable,
    // 듣기 숙제가 막힌 까닭: 소리를 끈 날(audio)이면 문항이 남아 있어도 못 하는 것이라 「모자라요」가 아니다(화면이 까닭대로 쓴다).
    ...(skill.domain==='listening'&&!audioAvailable?{blocked:'audio'}:{})};
- }).sort((a,b)=>b.priority-a.priority||Number(a.shortage)-Number(b.shortage)||a.skillId.localeCompare(b.skillId)).slice(0,3).map(({priority,...row})=>row);
+ }).sort((a,b)=>b.priority-a.priority||Number(a.shortage)-Number(b.shortage)||(reader?(b.lastAt??-1)-(a.lastAt??-1):0)||a.skillId.localeCompare(b.skillId)).slice(0,3).map(({priority,lastAt,...row})=>row);
  // 다음 연습의 초점: 기록이 없으면 짧은 진단(시작점)부터, 아니면 남은 횟수가 가장 많은 영역(같으면 더 필요한 영역).
  // 그 영역의 첫 숙제 항목도 함께 넘긴다.
  const rank=row=>start&&row.area==='recheck'?1:0,needOf=area=>area==='speaking'?speakingNeed??0:needs[area]??0;
@@ -289,17 +306,17 @@ export function buildExamPlan({exam,summary=null,now=Date.now(),done=null,availa
  if(phase==='past')notes.push('past');
  if(!exam.date)notes.push('no-date');
  if(homework.some(row=>row.shortage))notes.push('shortage');
- const confirmed=skills.filter(skill=>skill.status==='recent-independent').length;
- const evidence=skills.reduce((n,skill)=>n+(skill.n||0),0);
+ const confirmed=skills.filter(skill=>reader?skill.cell==='independent':skill.status==='recent-independent').length;
+ const evidence=skills.reduce((n,skill)=>n+(reader?skill.answered||0:skill.n||0),0);
  // 영역별 진행(10-21 ④): 「확인한 학습 항목 수」만 — 기록으로 칸이 정해진 항목 / 그 영역의 항목. 점수·합격 준비도가 아니다.
  // 쓰기는 자동 판정이 없어(평가할 수 없는 답만 남는다) 세지 않는다.
  const progress=Object.fromEntries(domains.filter(domain=>domain!=='writing').map(domain=>{const rows=skills.filter(skill=>skill.domain===domain);
-  return [domain,{total:rows.length,checked:rows.filter(skill=>skill.status!=='unseen').length,basis:two(domain)?'topik2':'topik1'}];}));
+  return [domain,{total:rows.length,checked:rows.filter(skill=>reader?skill.cell!=='notyet':skill.status!=='unseen').length,basis:two(domain)?'topik2':'topik1'}];}));
  const sessions=Math.max(total,areas.reduce((n,row)=>n+row.planned,0));
  // 말하기가 열렸으면 그 한 줄(계획 판의 말하기 칸): 이번 주에 아직 안 해 본 유형 수 / 열 수 있는 유형 수. 점수·숙달이 아니다.
  const speaking=speakingOpen?{speaking:{untried:speakingNeed,total:speakingList.length}}:{};
  return {policy:policy.version,exam:{...exam},week,phase,weeksLeft:weeks,sessions:{total:sessions,minutes:pace.minutes},areas,homework,next:next?{area:next.area,skillId:focus?.skillId||null}:null,goals,checks,
-  reach:{confirmed,observed:observed.length,total:skills.filter(skill=>skill.domain!=='writing').length,evidence,basis},progress,...speaking,notes:[...new Set(notes)],
+  reach:{confirmed,observed:observed.length,total:skills.filter(skill=>skill.domain!=='writing').length,evidence,basis},progress,...speaking,notes:[...new Set(notes)],...(doneScope==='device'?{doneScope}:{}),
   learningEffectClaim:false,abilityClaim:false,grade:null,passClaim:false};
 }
 // 후보에 붙일 계획 토큰: 영역(읽기 짧은 연습=읽기, 듣기 게임=듣기, 짧은 진단=다시 확인, 생활 레슨=생활, 말하기 연습=말하기)과 그 후보가 다루는 항목.

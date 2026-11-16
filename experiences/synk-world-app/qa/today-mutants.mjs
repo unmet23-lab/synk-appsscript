@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 4-3 홈 세 줄(world-today.mjs)의 변형 시험(Atlas 재설계 단계4_계획 §20-10 「변형」). 홈 쪽 층의 규칙을 하나씩 일부러 깬 사본을 같은 폴더에
-// 만들어 장면 시험(qa/atlas-next-home.test.mjs)이 잡는지 본다. 원본은 건드리지 않는다. 사본은 점으로 시작하는 이름(서버가 내지 않는다)이고
+// 만들어 장면 시험(qa/atlas-next-home.test.mjs · 4-4b의 qa/atlas-next-plan.test.mjs)이 잡는지 본다. 원본은 건드리지 않는다. 사본은 점으로 시작하는 이름(서버가 내지 않는다)이고
 // 끝나면 지운다. 장면 시험은 SYNK_TODAY_MODULE이 가리키는 사본을 받는다. 깨지 않은 사본이 먼저 통과해야 변형을 돌린다(사본을 못 받아
 // 모든 변형이 「잡음」이 되는 일을 막는다). 홈 쪽 층의 규칙을 더하거나 고치면 여기에 깬 변형을 함께 더한다.
 // 쓰는 법: node experiences/synk-world-app/qa/today-mutants.mjs [--갈래 <갈래>]
@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const source = path.join(here, '..', 'world-today.mjs');
-const scenes = path.join(here, 'atlas-next-home.test.mjs');
+const scenes = [path.join(here, 'atlas-next-home.test.mjs'), path.join(here, 'atlas-next-plan.test.mjs')];
 
 // 변형 하나 = [갈래, 이름, 바꿀 글, 바꾼 글]. 바꿀 글은 원본에 꼭 한 번 있어야 한다.
 export const TODAY_MUTANTS = [
@@ -46,8 +46,9 @@ export const TODAY_MUTANTS = [
   [
     '빈 날',
     '상한 날의 복습 칸 활동이 걸려도 조건에 걸린 날로 센다 — 풀려도 줄이 아닌데 조건을 바꾸라고 한다(Fable 엔진급 끝 판 F5)',
-    "  const blocked = activities.some(act => act.blocked && !(capped && act.kind === 'again' && !act.open.resume));\n",
-    '  const blocked = activities.some(act => act.blocked);\n',
+    // 4-4b에서 소리를 끈 날의 듣기 숙제(dry — 카본 A10)가 같은 줄에 들어왔다. 이 변형은 상한 날의 거름만 뺀다.
+    "    act => act.blocked && !dry.has(act.plan.id) && !(capped && act.kind === 'again' && !act.open.resume),\n",
+    '    act => act.blocked && !dry.has(act.plan.id),\n',
   ],
   [
     '빈 날',
@@ -191,10 +192,107 @@ export const TODAY_MUTANTS = [
     "    if (!settled(quiet(() => coach.summary()))) {\n      settle();\n      return 'checking';\n    }\n",
     '',
   ],
+  // 4-4b 이번 주 계획(단계4_계획 §21-6) — 숙제 연습 · 점검 칸 · 이번 주 계획 싣기. 설계 주인이 짚은 「숙제 연습의 층 9 거름을 뺌」이 첫 줄이다.
+  [
+    "숙제 연습 줄",
+    "맨 앞 층이 9(낼 것 없음)여도 숙제 연습 줄을 세운다 — 숙제 문장만 있고 낼 문항이 없는 줄(설계 주인 11-15)",
+    "  if (act.role === 'homework') return entry.none ? null : entry.why;\n",
+    "  if (act.role === 'homework') return entry.why;\n",
+  ],
+  [
+    "숙제 연습 줄",
+    "숙제 연습을 층으로 가른다 — 층 3 · 4의 상태 없는 숙제가 홈에 서지 않는다(카본 A9)",
+    "  if (act.role === 'homework') return entry.none ? null : entry.why;\n",
+    "  if (act.role === 'homework') return entry.none || entry.tier > 2 ? null : entry.why;\n",
+  ],
+  [
+    "숙제 연습 줄",
+    "상한 날에는 숙제 연습 줄을 세우지 않는다 — 상한은 복습만 미룬다(20-3)",
+    "  if (act.role === 'homework') return entry.none ? null : entry.why;\n",
+    "  if (act.role === 'homework') return entry.none || capped ? null : entry.why;\n",
+  ],
+  [
+    "숙제 연습 후보",
+    "돌아온 단위가 든 문항을 빼지 않는다 — 그 단위는 복습 칸의 짧은 연습이 맡는다(검토 D3)",
+    "        quiet(() => fresh(item)) === true &&\n        !returned(item.itemKey),\n",
+    "        quiet(() => fresh(item)) === true,\n",
+  ],
+  [
+    "숙제 연습 후보",
+    "처음 보는 문항이 아닌 것도 넘긴다",
+    "        quiet(() => fresh(item)) === true &&\n        !returned(item.itemKey),\n",
+    "        !returned(item.itemKey),\n",
+  ],
+  [
+    "숙제 목표",
+    "상태 없는 숙제를 놓친 답으로 넘긴다 — 사실이 아닌 숙제 문장을 짓는다(§21-6)",
+    "    const goal = { kind: 'homework', skill: skillId, ...(typeof row.status === 'string' ? { status: row.status } : {}) };\n",
+    "    const goal = { kind: 'homework', skill: skillId, status: row.status ?? 'missed' };\n",
+  ],
+  [
+    "숙제 연습 칸",
+    "숙제 연습을 복습 칸에 세운다",
+    "      activity('new', open, { goals: [goal] }, items.map(item => ({ itemKey: item.itemKey })), settings, 'homework'),\n",
+    "      activity('again', open, { goals: [goal] }, items.map(item => ({ itemKey: item.itemKey })), settings, 'homework'),\n",
+  ],
+  [
+    "숙제 연습 잠김",
+    "소리를 끈 날 듣기 숙제를 잠그지 않고 뺀다",
+    "    if (typeof skillId !== 'string' || !['listening', 'reading'].includes(row.domain)) continue;\n",
+    "    if (typeof skillId !== 'string' || !['listening', 'reading'].includes(row.domain) || (settings.audioAvailable === false && row.domain === 'listening')) continue;\n",
+  ],
+  [
+    "소리 끈 날",
+    "소리를 끈 날의 듣기 숙제를 한 번 더 셈하지 않는다 — 새 단위 한도에 막힌 날을 조건에 걸린 날로 적는다(카본 A10)",
+    "      if (Array.isArray(again) && again[0]?.none) dry.add(act.plan.id);\n",
+    "",
+  ],
+  [
+    "소리 끈 날",
+    "한 번 더 셈한 결과와 상관없이 조건에서 뺀다 — 소리를 켜면 낼 것이 있는 날을 다 한 날로 적는다",
+    "      if (Array.isArray(again) && again[0]?.none) dry.add(act.plan.id);\n",
+    "      dry.add(act.plan.id);\n",
+  ],
+  [
+    "점검 칸",
+    "진단이 낼 문항이 없어도 짧은 진단 줄을 세운다",
+    "  if (!area || !(area.remaining > 0) || week.diagnostic?.ready !== true) return null;\n",
+    "  if (!area || !(area.remaining > 0)) return null;\n",
+  ],
+  [
+    "점검 칸",
+    "이번 주 다시 확인을 마쳐도 짧은 진단 줄을 세운다",
+    "  if (!area || !(area.remaining > 0) || week.diagnostic?.ready !== true) return null;\n",
+    "  if (!area || week.diagnostic?.ready !== true) return null;\n",
+  ],
+  [
+    "점검 칸",
+    "시작점이어도 다시 확인 문장을 쓴다",
+    "  const start = Array.isArray(plan.notes) && plan.notes.includes('start');\n",
+    "  const start = false;\n",
+  ],
+  [
+    "점검 칸",
+    "후보 없이 넘긴 짧은 진단을 낼 것 없음으로 보고 줄에서 뺀다",
+    "  if (act.role === 'check') return entry.why;\n",
+    "",
+  ],
+  [
+    "이번 주 계획",
+    "확인 중에도 이번 주 계획을 싣는다",
+    "    examPlan: live ? (week?.examPlan ?? null) : null,\n",
+    "    examPlan: week?.examPlan ?? null,\n",
+  ],
+  [
+    "이번 주 계획",
+    "홈 계획이 이번 주 계획을 싣지 않는다 — 계획 입구 · 알림이 읽을 계획이 없다",
+    "    examPlan: live ? (week?.examPlan ?? null) : null,\n",
+    "    examPlan: null,\n",
+  ],
 ];
 
 function run(copy) {
-  const result = spawnSync(process.execPath, ['--test', scenes], {
+  const result = spawnSync(process.execPath, ['--test', ...scenes], {
     env: { ...process.env, SYNK_TODAY_MODULE: copy },
     encoding: 'utf8',
   });

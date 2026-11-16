@@ -1651,3 +1651,17 @@ export default {
  'speaking.rp.selfNow':{ko:'지금은 자동 대답을 쓸 수 없어요. 예시 문장과 견줘 보고 다음 말로 가요.',en:'Automatic replies aren’t available right now. Compare with the sample sentence, then go to the next line.',mn:'Одоогоор автомат хариулт ашиглах боломжгүй. Жишээ өгүүлбэртэй харьцуулаад ажилтны дараагийн үгийг сонсоорой.'},
  'speaking.rp.textHelp':{ko:'글로 본 차례는 「도움을 받아」로 남아요.',en:'Turns where you showed the text are saved as “with help”.',mn:'Бичвэрээр харсан ээлжийг «тусламжтайгаар» гэж хадгална.'}
 };
+// 생활 상황 이름(Atlas 재설계 단계 4-4b — docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §21-6): 「내 성향」에서 관심을 고른 학생의 레슨 이유
+// (goal.match — 「더 배우고 싶다고 알려 준 「주문」이에요」)가 이 이름을 쓴다. 한국어는 Strata 지도의 label_ko를 옮긴 것이다(같은지 시험이 본다 —
+// qa/atlas-next-plan.test.mjs). 영어 · 몽골어는 그 문장이 화면에 나갈 때 현지어 세 겹 대조를 거쳐 들인다(리디자인 화면 글 묶음 — §21-12). 그전까지
+// 이름 함수는 한국어 화면에서만 이 이름을 준다(Vellum은 언어를 물러서지 않으므로 영어 · 몽골어에서는 관심 문장을 짓지 않는다). 그래서 세 언어가
+// 다 있어야 하는 1판 표(위의 기본 내보내기) 밖에 둔다.
+export const SITUATIONS_KO=Object.freeze({
+ 'sit-people-greeting':'안부',
+ 'sit-travel-order':'주문',
+ 'sit-travel-shopping':'쇼핑',
+ 'sit-travel-directions':'길 묻기',
+ 'sit-travel-transport':'교통',
+ 'sit-people-messenger':'영상통화·메신저',
+ 'sit-career-schedule':'일정 조율',
+});

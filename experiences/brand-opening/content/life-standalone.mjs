@@ -23059,6 +23059,17 @@ function domainNeeds(summary, domains, prefix) {
   for (const domain of domains) needs[domain] = complete ? skills.filter((skill2) => skill2.domain === domain && weakOf(skill2)).length : 0;
   return { needs, skills, complete };
 }
+var weakNext = (skill2) => skill2.cell === "practicing" && (skill2.missed || 0) + (skill2.helped || 0) > 0;
+function readerNeeds(reader, domains, prefix) {
+  const match = (skill2) => {
+    const rule = prefix instanceof RegExp ? prefix : prefix?.[skill2?.domain];
+    return rule instanceof RegExp && rule.test(skill2?.id || "");
+  };
+  const skills = (Array.isArray(reader?.skills) ? reader.skills : []).filter(match);
+  const complete = reader?.complete === true, needs = {};
+  for (const domain of domains) needs[domain] = complete ? skills.filter((skill2) => skill2.domain === domain && weakNext(skill2)).length : 0;
+  return { needs, skills, complete };
+}
 function split(total, needs, boost = {}, first = []) {
   const open = Object.keys(needs).filter((key) => needs[key] != null), out = Object.fromEntries(Object.keys(needs).map((key) => [key, 0]));
   if (total <= 0 || !open.length) return out;
@@ -23095,18 +23106,18 @@ function examEvidenceSkills(events = []) {
   }
   return skills;
 }
-function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, available = {}, classwork = [], audioAvailable = true, lastCheckAt = null, speakingNeeds = null, examSkills = null } = {}) {
+function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, available = {}, classwork = [], audioAvailable = true, lastCheckAt = null, speakingNeeds = null, examSkills = null, reader = null, doneScope = null } = {}) {
   if (!planRecord(exam)) return null;
   const week = examWeek(now), { phase, weeks } = examPhase(exam.date, now), policy = EXAM_PLAN_POLICY;
   const pace = exam.weeklyMinutes && policy.weekly[exam.weeklyMinutes] || policy.fallback;
   const topik2 = exam.type === "topik2", domains = topik2 ? ["listening", "reading", "writing"] : ["listening", "reading"];
-  const ko2 = planRecord(summary) && Array.isArray(summary.skills) && summary.skills.some((skill2) => /^ko2\./.test(skill2?.id || ""));
+  const ko2 = reader ? reader.topik2 === true : planRecord(summary) && Array.isArray(summary.skills) && summary.skills.some((skill2) => /^ko2\./.test(skill2?.id || ""));
   const two2 = (domain) => topik2 && ko2 && (domain === "writing" || available.topik2?.[domain] === true);
   const MAPS = { topik1: { listening: /^ko\.listening\.[a-z]+$/, reading: /^ko\.reading\.[a-z]+$/, writing: /^$/ }, topik2: { listening: /^ko2\.listening\.[a-z]+$/, reading: /^ko2\.reading\.[a-z]+$/, writing: /^ko2\.writing\.[a-z]+$/ } };
   const prefix = Object.fromEntries(domains.map((domain) => [domain, MAPS[two2(domain) ? "topik2" : "topik1"][domain]]));
-  const { needs, skills, complete } = domainNeeds(summary, domains, prefix);
+  const { needs, skills, complete } = reader ? readerNeeds(reader, domains, prefix) : domainNeeds(summary, domains, prefix);
   const basis = topik2 && ko2 && two2("listening") && two2("reading") ? "topik2" : "topik1";
-  const observed = skills.filter((skill2) => (skill2.n || 0) > 0 || skill2.status !== "unseen");
+  const observed = skills.filter((skill2) => reader ? skill2.cell !== "notyet" : (skill2.n || 0) > 0 || skill2.status !== "unseen");
   const practice = planRecord(available.practice) ? available.practice : planRecord(available.reading) ? available.reading : {};
   const supply = { practice, listening: planRecord(available.listening) ? available.listening : {} };
   const domainOf = (id) => String(id || "").split(".")[1];
@@ -23122,8 +23133,8 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   const classCount = (kind) => tasks.filter((row) => row.kind === kind).length, classDone = (kind) => tasks.filter((row) => row.kind === kind && row.done).length;
   const did = { listening: 0, reading: 0, writing: 0, recheck: 0, life: 0, ...planRecord(done) ? done : {} };
   for (const kind of ["reading", "writing"]) did[kind] = (did[kind] || 0) + classDone(kind);
-  const startSkills = examSkills instanceof Set ? examSkills : Array.isArray(examSkills) ? new Set(examSkills) : null;
-  const start = complete && !(startSkills ? observed.filter((skill2) => startSkills.has(skill2.id)) : observed).length;
+  const startSkills = reader ? null : examSkills instanceof Set ? examSkills : Array.isArray(examSkills) ? new Set(examSkills) : null;
+  const start = reader ? complete && reader.start?.(skills.map((skill2) => skill2.id)) === true : complete && !(startSkills ? observed.filter((skill2) => startSkills.has(skill2.id)) : observed).length;
   const cycle = (at) => policy.recheckEvery[examPhase(exam.date, at).phase] || 4, lastWeek = planTime(lastCheckAt) ? examWeek(lastCheckAt).start : null;
   const spaced = (at, prev) => prev === null || at - prev >= cycle(at) * 7 * DAY3;
   const recheck = did.recheck > 0 || recheckFresh > 0 && (start || recheckWeek(exam.date, week.start) && spaced(week.start, lastWeek)) ? 1 : 0;
@@ -23150,20 +23161,21 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
     classwork: tasks.filter((row) => row.kind === area).map((row) => ({ kind: row.kind, done: !!row.done, ...row.title ? { title: String(row.title) } : {} }))
   })).filter((row) => row.planned > 0 || row.done > 0);
   const writingFor = (id) => (Array.isArray(available.writing) ? available.writing : []).filter((row) => Array.isArray(row?.skillIds) && row.skillIds.includes(id) && typeof row.routeId === "string").map((row) => row.routeId);
-  const homework = skills.filter(weakOf).map((skill2) => {
+  const homework = skills.filter(reader ? weakNext : weakOf).map((skill2) => {
     const fresh = skill2.domain === "writing" ? 0 : practice[skill2.id] || 0, games = skill2.domain === "listening" ? supply.listening[skill2.id] || [] : skill2.domain === "writing" ? writingFor(skill2.id) : [];
     return {
       skillId: skill2.id,
       domain: skill2.domain,
-      status: skill2.status,
-      priority: skill2.priority ?? 0,
+      status: reader ? skill2.missed > 0 ? "missed" : null : skill2.status,
+      priority: reader ? (skill2.missed || 0) + (skill2.helped || 0) : skill2.priority ?? 0,
+      ...reader ? { lastAt: skill2.lastAt ?? null } : {},
       fresh,
       activities: [...games],
       shortage: skill2.domain === "reading" ? fresh === 0 : skill2.domain === "writing" ? games.length === 0 : fresh === 0 && games.length === 0 || !audioAvailable,
       // 듣기 숙제가 막힌 까닭: 소리를 끈 날(audio)이면 문항이 남아 있어도 못 하는 것이라 「모자라요」가 아니다(화면이 까닭대로 쓴다).
       ...skill2.domain === "listening" && !audioAvailable ? { blocked: "audio" } : {}
     };
-  }).sort((a, b) => b.priority - a.priority || Number(a.shortage) - Number(b.shortage) || a.skillId.localeCompare(b.skillId)).slice(0, 3).map(({ priority, ...row }) => row);
+  }).sort((a, b) => b.priority - a.priority || Number(a.shortage) - Number(b.shortage) || (reader ? (b.lastAt ?? -1) - (a.lastAt ?? -1) : 0) || a.skillId.localeCompare(b.skillId)).slice(0, 3).map(({ priority, lastAt, ...row }) => row);
   const rank = (row) => start && row.area === "recheck" ? 1 : 0, needOf = (area) => area === "speaking" ? speakingNeed ?? 0 : needs[area] ?? 0;
   const next = areas.filter((row) => row.remaining > 0).sort((a, b) => rank(b) - rank(a) || b.remaining - a.remaining || needOf(b.area) - needOf(a.area) || a.area.localeCompare(b.area))[0] || null;
   const focus = next ? homework.find((row) => row.domain === next.area && !row.shortage) || null : null;
@@ -23187,11 +23199,11 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
   if (phase === "past") notes.push("past");
   if (!exam.date) notes.push("no-date");
   if (homework.some((row) => row.shortage)) notes.push("shortage");
-  const confirmed = skills.filter((skill2) => skill2.status === "recent-independent").length;
-  const evidence = skills.reduce((n, skill2) => n + (skill2.n || 0), 0);
+  const confirmed = skills.filter((skill2) => reader ? skill2.cell === "independent" : skill2.status === "recent-independent").length;
+  const evidence = skills.reduce((n, skill2) => n + (reader ? skill2.answered || 0 : skill2.n || 0), 0);
   const progress2 = Object.fromEntries(domains.filter((domain) => domain !== "writing").map((domain) => {
     const rows2 = skills.filter((skill2) => skill2.domain === domain);
-    return [domain, { total: rows2.length, checked: rows2.filter((skill2) => skill2.status !== "unseen").length, basis: two2(domain) ? "topik2" : "topik1" }];
+    return [domain, { total: rows2.length, checked: rows2.filter((skill2) => reader ? skill2.cell !== "notyet" : skill2.status !== "unseen").length, basis: two2(domain) ? "topik2" : "topik1" }];
   }));
   const sessions = Math.max(total, areas.reduce((n, row) => n + row.planned, 0));
   const speaking = speakingOpen ? { speaking: { untried: speakingNeed, total: speakingList.length } } : {};
@@ -23211,6 +23223,7 @@ function buildExamPlan({ exam, summary = null, now = Date.now(), done = null, av
     progress: progress2,
     ...speaking,
     notes: [...new Set(notes)],
+    ...doneScope === "device" ? { doneScope } : {},
     learningEffectClaim: false,
     abilityClaim: false,
     grade: null,
@@ -25963,6 +25976,14 @@ function createWorldEducation({
       openGames = null;
     }
     const lang = currentLang2(), coachNow = phase === "engine" ? homeWatch.coach() : null;
+    let week = null;
+    if (coachNow) {
+      try {
+        week = weekNext(coachNow, values, now);
+      } catch {
+        week = null;
+      }
+    }
     const plan = homePlanner.createWorldTodayPlan({
       coach: coachNow,
       progress: progress2,
@@ -25976,7 +25997,8 @@ function createWorldEducation({
       labels: (id) => skillLabel(id),
       opened: opened.kinds,
       lang,
-      say: (why) => homePlanner.say(why, lang)
+      say: (why) => homePlanner.say(why, lang),
+      week
     });
     homeWatch.redrawAt(plan.today.redrawAt);
     return plan;
@@ -26591,6 +26613,84 @@ function createWorldEducation({
     const scope = owner === "guest" ? "device" : summary.storage?.guest === false ? "account" : null;
     return { values, exam, board, plan, cards, fresh, judged, scope };
   }
+  let planEnds = 0, weekMet = { coach: null, key: null, met: null };
+  function weekNext(coachNow, values, now) {
+    const N = homePlanner?.plan, P = homePlanner?.position;
+    const info = position?.exam?.examInfo?.(values) || null;
+    if (!N || !P || !coachNow || !info || typeof coachNow.exposures !== "function") return null;
+    const exam = examOf(values), audioAvailable = values?.audio !== "off", listening = (item) => item.audioRequired ?? item.modality === "listening";
+    const summary = coachNow.summary(), diagnostic = position.items, practice = position.practice.pool;
+    const synced = nextSync.coach === coachNow ? nextSync.value : null;
+    const key = [homePlanner.todayKey(now), planEnds, info.type, N.recordsComplete(summary.storage, synced)].join("|");
+    if (weekMet.coach !== coachNow || weekMet.key !== key) weekMet = { coach: coachNow, key, met: coachNow.exposures([...diagnostic, ...practice]) };
+    const metDiag = weekMet.met.slice(0, diagnostic.length), metPractice = weekMet.met.slice(diagnostic.length);
+    const at = new Map(practice.map((item, i) => [item, i])), seenOf = (item) => {
+      const row = metPractice[at.get(item)];
+      return row ? row.seen : null;
+    };
+    const fresh = /* @__PURE__ */ new Set();
+    practice.forEach((item, i) => {
+      if (metPractice[i]?.seen === false && (audioAvailable || !listening(item))) fresh.add(item.skillId);
+    });
+    const pools2 = [{ items: diagnostic, exposures: metDiag }, { items: practice, exposures: metPractice }], skip = (item) => P.withheldItem(item);
+    const unseen = P.unseenFamilies(pools2, skip), prefer = (id) => fresh.has(id);
+    const board = P.buildPositionNext({ exam, skills: P.examSkills(engine.SKILLS, exam), summary, prefer, synced, unseen });
+    const diag = P.selectDiagnosticNext({ position: board, items: diagnostic, exposures: metDiag, audioAvailable });
+    const reader = N.planReader({ board: N.planBoard({ nodes: engine.SKILLS, summary, prefer, synced, unseen }), nodes: engine.SKILLS, start: (ids) => N.planStart({ ids, pools: pools2, skip }) });
+    const writingAvailable = info.type === "topik2" ? writingList().map((row) => ({ id: row.id, routeId: row.route, skillIds: (Array.isArray(row.targets) ? row.targets : []).filter((id) => typeof id === "string") })) : [];
+    let writingTimes = [];
+    if (info.type === "topik2" && typeof writingPractice?.attempts === "function") {
+      try {
+        const times = writingPractice.attempts();
+        writingTimes = Array.isArray(times) ? times : [];
+      } catch {
+        writingTimes = [];
+      }
+    }
+    const speaking = ["topik1", "topik2"].includes(info.type) && speakingChosen() ? speakingThisWeek(now, []) : null;
+    let progress2 = null;
+    try {
+      progress2 = getProgress().exportSnapshot();
+    } catch {
+      progress2 = null;
+    }
+    const ready = diag.status === "ready" && diag.items.length > 0;
+    const examPlan = N.buildPlanNext({
+      examPlan: position.exam,
+      info,
+      reader,
+      log: homeNext?.planLog?.(coachNow) ?? null,
+      progress: progress2,
+      now,
+      classwork: classworkRows(),
+      audioAvailable,
+      available: {
+        practice: position.practice.practiceSupply({ pool: practiceFor(values), seen: seenOf, audioAvailable }),
+        listening: {},
+        recheck: ready ? diag.items.length : 0,
+        life: true,
+        writing: writingAvailable,
+        topik2: topik2Domains(),
+        ...speaking ? { speaking: speaking.list } : {}
+      },
+      writingTimes,
+      speaking
+    });
+    return examPlan ? { examPlan, fresh: (item) => seenOf(item) === false, diagnostic: { ready } } : null;
+  }
+  function planOnce(coachNow, area) {
+    let done = false;
+    return (results) => {
+      if (done) return;
+      done = true;
+      planEnds += 1;
+      if (!(Array.isArray(results) ? results : []).some((row) => row && !row.skipped && (row.verdict === "correct" || row.verdict === "incorrect"))) return;
+      try {
+        homeNext?.planLog?.(coachNow)?.record(area, Date.now());
+      } catch {
+      }
+    };
+  }
   function openRowsOf(root) {
     try {
       return [...root?.querySelectorAll?.("details[data-skill]") || []].filter((el) => el.open === true).map((el) => el.getAttribute("data-skill"));
@@ -26754,6 +26854,7 @@ function createWorldEducation({
     const P = homePlanner?.position;
     if (!P || data?.plan?.status !== "ready" || !data.plan.items.length) return;
     const session = P.createDiagnosticNextSession({ coach: coachNow, items: data.plan.items.map((row) => row.item), plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
+    const counted = planOnce(coachNow, "recheck");
     let clip = null, playing = false, notice = "", ended = false, finishing = false, unwatch = () => {
     };
     const silence = () => {
@@ -26777,6 +26878,7 @@ function createWorldEducation({
         set = null;
       }
       if (session.results().length) diagnosed = true;
+      counted(session.results());
       queueMicrotask(() => refresh());
       if (set?.folded) Promise.resolve(set.folded).then(() => redrawNext(), () => {
       });
@@ -26832,6 +26934,7 @@ function createWorldEducation({
         await session.settled();
       } catch {
       }
+      counted(session.results());
       if (!finishing || !box.isConnected) {
         try {
           session.finish({ record: false });
@@ -27628,6 +27731,7 @@ function createWorldEducation({
     }
     const count = practiceLength(), skill2 = { id: skillId, label: skillLabel(skillId) };
     const session = atlasNext.createPracticeNextSession({ coach: next2, pool, setPool: all, length: count, audioAvailable, more, lang: currentLang2(), plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
+    const counted = planOnce(next2, listening ? "listening" : "reading");
     let ended = false, notice = "", unwatch = () => {
     }, finishing = false, changedWhileFinishing = false;
     const player = soundPlayer({ session, url: audioUrl, onChange: (state) => {
@@ -27644,6 +27748,7 @@ function createWorldEducation({
         session.stop();
       } catch {
       }
+      counted(session.results());
       queueMicrotask(() => refresh());
     };
     home.showPanel(t2(listening ? "practice.title.listening" : "practice.title"), '<div class="wpos-stage" data-practice-stage></div>', { ...PANEL, eyebrow: "PRACTICE" });
@@ -27700,6 +27805,7 @@ function createWorldEducation({
         results = await session.settled();
       } catch {
       }
+      counted(results);
       if (!box.isConnected) return;
       if (changedWhileFinishing) {
         unwatch();
@@ -30001,13 +30107,13 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const homework = (plan.homework || []).map((row) => {
       const name = bridgeName(row.skillId) + skillName({ id: row.skillId }), games = row.activities || [];
       const action = row.shortage ? `<small class="wplan-shortage">${posEscape(t3(row.blocked === "audio" ? "practice.audioOff" : "plan.homework.shortage"))}</small>` : row.domain !== "writing" && row.fresh > 0 ? `<button class="quiet-button" type="button" data-plan-practice="${posEscape(row.skillId)}">${posEscape(t3("plan.homework.reading", { n: Math.min(row.fresh, practiceCount) }))} <span aria-hidden="true">\u2192</span></button>` : row.domain === "writing" ? `<button class="quiet-button" type="button" data-plan-writing="${posEscape(games[0])}">${posEscape(writingName(games[0]) || t3("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : `<button class="quiet-button" type="button" data-plan-game="${posEscape(gameOf(games[0]))}">${posEscape(has(`plan.game.${gameOf(games[0])}`) ? t3(`plan.game.${gameOf(games[0])}`) : gameOf(games[0]))} <span aria-hidden="true">\u2192</span></button>`;
-      return `<li data-skill="${posEscape(row.skillId)}"><span class="wpos-attention-copy"><strong>${posEscape(name)}</strong><small>${posEscape(t3(`position.level.${row.status}`))}</small></span>${action}</li>`;
+      return `<li data-skill="${posEscape(row.skillId)}"><span class="wpos-attention-copy"><strong>${posEscape(name)}</strong>${row.status && has(`position.level.${row.status}`) ? `<small>${posEscape(t3(`position.level.${row.status}`))}</small>` : ""}</span>${action}</li>`;
     }).join("");
     const thisWeek = (plan.checks || [])[0]?.weekStart === plan.week?.start ? (plan.checks || [])[0] : null;
     const checks = (plan.checks || []).map((row) => `<li${row.done ? " data-done" : ""}><span>${posEscape(row.weekStart === plan.week?.start ? t3("plan.checks.thisWeek") : t3("plan.checks.week", { date: day(new Date(row.weekStart).toISOString()) }))}</span>${row.done ? `<small>${posEscape(t3("plan.checks.done"))}</small>` : ""}</li>`).join("");
     const reach = plan.reach || { confirmed: 0, total: 0, evidence: 0 };
     const bridged = exam.type !== "topik2" ? [] : plan.progress ? ["listening", "reading"].filter((area2) => plan.progress[area2]?.basis === "topik1") : reach.basis === "topik1" ? ["listening", "reading"] : [];
-    return `<div class="wpos wplan life-heading" data-plan-board tabindex="-1">${poster(plan.sessions?.total > 0 ? t3("plan.week.word", { n: plan.sessions.total }) : t3("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t3("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p>${plan.sessions?.minutes > 0 ? `<h3>${posEscape(t3("plan.week.length", { minutes: plan.sessions.minutes }))}</h3>` : ""}<ul class="wplan-areas">${(plan.areas || []).filter((row) => row.planned > 0).map(area).join("")}</ul>${(plan.areas || []).some((row) => !(row.planned > 0)) ? `<p class="wplan-extra-label">${posEscape(t3("plan.area.extraTitle"))}</p><ul class="wplan-areas" data-extra>${(plan.areas || []).filter((row) => !(row.planned > 0)).map(area).join("")}</ul>` : ""}<p class="wpos-note">${posEscape(t3("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t3("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t3("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t3("plan.week.writingLater"))}</p>` : ""}${notes.has("speaking-audio-off") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingAudioOff"))}</p>` : ""}${notes.has("speaking-unavailable") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingLater"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t3("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t3("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t3("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t3("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t3("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t3("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.speaking ? `<section class="wplan-next" data-plan-speaking-section><p class="life-section-label">SPEAKING</p><h3>${posEscape(t3("speaking.title"))}</h3><p class="wpos-note">${posEscape(plan.speaking.untried > 0 ? t3("plan.speaking.note", { n: plan.speaking.untried }) : t3("plan.speaking.noteAll"))}</p><button class="quiet-button" type="button" data-plan-speaking>${posEscape(t3("plan.speaking.open"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t3("mock.title"))}</h3><p class="wpos-note">${posEscape(t3("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t3("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t3(`plan.area.${area2}`))}${bridged.includes(area2) ? ` \xB7 ${posEscape(t3("goal.exam.type.topik1"))}` : ""} \xB7 ${posEscape(t3("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t3("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t3("plan.reach.note"))}</p>${bridged.length ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t3(bridged.length > 1 ? "plan.reach.topik1Basis" : bridged[0] === "listening" ? "plan.reach.topik1Basis.listening" : "plan.reach.topik1Basis.reading"))}</p>` : ""}</section>${notes.has("no-date") ? `<p class="wpos-note wplan-date-note">${posEscape(t3("plan.week.noDate"))}</p>` : ""}<button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.change"))}</button></div>`;
+    return `<div class="wpos wplan life-heading" data-plan-board${plan.doneScope === "device" ? ' data-plan-scope="device"' : ""} tabindex="-1">${poster(plan.sessions?.total > 0 ? t3("plan.week.word", { n: plan.sessions.total }) : t3("plan.week.title"), head, { print: "plan", label: "MY PLAN" })}` + (notes.has("past") ? `<section class="wpos-diagnostic" data-plan-past><p class="wpos-intro">${posEscape(t3("goal.exam.past"))}</p><button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.setGoal"))}</button></section>` : "") + `<section class="wplan-week"><p class="life-section-label">THIS WEEK</p>${plan.sessions?.minutes > 0 ? `<h3>${posEscape(t3("plan.week.length", { minutes: plan.sessions.minutes }))}</h3>` : ""}<ul class="wplan-areas">${(plan.areas || []).filter((row) => row.planned > 0).map(area).join("")}</ul>${(plan.areas || []).some((row) => !(row.planned > 0)) ? `<p class="wplan-extra-label">${posEscape(t3("plan.area.extraTitle"))}</p><ul class="wplan-areas" data-extra>${(plan.areas || []).filter((row) => !(row.planned > 0)).map(area).join("")}</ul>` : ""}<p class="wpos-note">${posEscape(t3("plan.week.rest"))}</p>${notes.has("audio-off") ? `<p class="wpos-note">${posEscape(t3("plan.week.audioOff"))}</p>` : ""}${notes.has("reading-unavailable") ? `<p class="wpos-note" data-plan-reading-later>${posEscape(t3("plan.week.readingLater"))}</p>` : ""}${notes.has("writing-unavailable") ? `<p class="wpos-note">${posEscape(t3("plan.week.writingLater"))}</p>` : ""}${notes.has("speaking-audio-off") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingAudioOff"))}</p>` : ""}${notes.has("speaking-unavailable") ? `<p class="wpos-note" data-plan-speaking-later>${posEscape(t3("plan.week.speakingLater"))}</p>` : ""}</section>` + (next ? `<section class="wplan-next"><p class="life-section-label">NOW</p><h3>${nextTitle}</h3>${reason ? `<p class="wpos-note">${posEscape(reason)}</p>` : ""}<button class="felt-button" type="button" data-plan-next>${posEscape(t3("plan.week.start"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (homework ? `<section class="wpos-attention wplan-homework"><p class="life-section-label">HOMEWORK</p><h3>${posEscape(t3("plan.homework.title"))}</h3><p class="wpos-note">${posEscape(t3("plan.homework.note"))}</p><ul>${homework}</ul></section>` : "") + (checks ? `<section class="wplan-checks"><p class="life-section-label">CHECK</p><h3>${posEscape(t3("plan.checks.title"))}</h3><ul>${checks}</ul><p class="wpos-note">${posEscape(t3("plan.checks.note"))}</p>${thisWeek && !thisWeek.done && next?.route !== "position" ? `<button class="quiet-button" type="button" data-plan-recheck>${posEscape(t3("position.diagnostic.start"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "") + (plan.speaking ? `<section class="wplan-next" data-plan-speaking-section><p class="life-section-label">SPEAKING</p><h3>${posEscape(t3("speaking.title"))}</h3><p class="wpos-note">${posEscape(plan.speaking.untried > 0 ? t3("plan.speaking.note", { n: plan.speaking.untried }) : t3("plan.speaking.noteAll"))}</p><button class="quiet-button" type="button" data-plan-speaking>${posEscape(t3("plan.speaking.open"))} <span aria-hidden="true">\u2192</span></button></section>` : "") + (plan.mock?.status === "ready" ? `<section class="wplan-next" data-plan-mock-section><p class="life-section-label">EXAM FORM</p><h3>${posEscape(t3("mock.title"))}</h3><p class="wpos-note">${posEscape(t3("mock.planNote", { minutes: plan.mock.minutes, n: plan.mock.total }))}</p><button class="quiet-button" type="button" data-plan-mock>${posEscape(t3("mock.open", { minutes: plan.mock.minutes }))} <span aria-hidden="true">\u2192</span></button></section>` : "") + `<section class="wplan-reach"><p class="life-section-label">SO FAR</p>${["listening", "reading"].filter((area2) => plan.progress?.[area2]).map((area2) => `<p class="wpos-progress" data-plan-progress="${area2}"><span>${posEscape(t3(`plan.area.${area2}`))}${bridged.includes(area2) ? ` \xB7 ${posEscape(t3("goal.exam.type.topik1"))}` : ""} \xB7 ${posEscape(t3("position.progress", { checked: plan.progress[area2].checked, total: plan.progress[area2].total }))}</span><span class="wpos-bar" aria-hidden="true"><i style="width:${posFill(plan.progress[area2].checked, plan.progress[area2].total)}%"></i></span></p>`).join("")}<p class="wpos-intro">${posEscape(t3("plan.reach.line", { confirmed: reach.confirmed, total: reach.total, evidence: reach.evidence }))}</p><p class="wpos-note">${posEscape(t3("plan.reach.note"))}</p>${bridged.length ? `<p class="wpos-note" data-plan-reach-basis>${posEscape(t3(bridged.length > 1 ? "plan.reach.topik1Basis" : bridged[0] === "listening" ? "plan.reach.topik1Basis.listening" : "plan.reach.topik1Basis.reading"))}</p>` : ""}</section>${notes.has("no-date") ? `<p class="wpos-note wplan-date-note">${posEscape(t3("plan.week.noDate"))}</p>` : ""}<button class="quiet-button" type="button" data-view="study">${posEscape(t3("plan.week.change"))}</button></div>`;
   }
   return Object.freeze({
     skillName,

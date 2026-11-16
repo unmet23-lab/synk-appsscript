@@ -82,7 +82,7 @@ test('꺼진 판의 알림 입력(셸 원문) — 판정 없이 진도의 dueAt 
 // 새 길 표지: 입구(world-atlas-next) · 연습 판(world-practice-next) · 홈 세 줄(world-today — 4-3, 설계 주인 11-15) · 내 위치 새 판(world-position-next ·
 // world-position-next-view · world-diagnostic-next — 4-4a) · 엔진(/atlas/… — 서버가 내는 절대 주소 · packages/atlas 원천).
 // 지금 판 엔진(저장소의 atlas/ — ../../atlas/game-browser.js 등)은 4-2 앞부터 첫 화면 묶음에 있다.
-const NEXT_PATH=specifier=>/world-atlas-next|world-practice-next|world-today|world-position-next|world-diagnostic-next/.test(specifier)||specifier.startsWith('/atlas/')||/(^|\/)packages\/atlas\//.test(specifier);
+const NEXT_PATH=specifier=>/world-atlas-next|world-practice-next|world-today|world-position-next|world-diagnostic-next|world-plan-next/.test(specifier)||specifier.startsWith('/atlas/')||/(^|\/)packages\/atlas\//.test(specifier);
 function importsOf(source){
  const found=[],stack=[parse(source)];
  while(stack.length){
@@ -109,7 +109,7 @@ test('첫 화면 · 생활 묶음에 실리는 모듈은 새 길을 부르지 �
  for(const bundle of ['world-account.bundle.mjs','../brand-opening/content/life-standalone.mjs']){
   const text=read(bundle);
   assert.ok(text.length>100000,`${bundle}을 읽었다`);
-  for(const marker of ['world-atlas-next','world-practice-next','world-today','world-position-next','world-diagnostic-next','indexedDB','/atlas/'])assert.ok(!text.includes(marker),`${bundle}에 「${marker}」 글이 없다`);
+  for(const marker of ['world-atlas-next','world-practice-next','world-today','world-position-next','world-diagnostic-next','world-plan-next','indexedDB','/atlas/'])assert.ok(!text.includes(marker),`${bundle}에 「${marker}」 글이 없다`);
  }
 });
 
@@ -132,9 +132,22 @@ test('내 위치 새 판 모듈(world-position-next · world-diagnostic-next · 
   for(const [dir,names] of dirs)for(const file of names.filter(file=>file.endsWith('.mjs')&&!file.endsWith('.bundle.mjs'))){
    if(importsOf(read(dir+file)).some(row=>row.specifier===`./${name}.mjs`||row.specifier.endsWith(`/${name}.mjs`)))takers.push(dir+file);
   }
-  assert.deepEqual(takers,['world-atlas-next.mjs'],name);
+  // 4-4b의 이번 주 계획 모듈(world-plan-next)도 칸 계약(world-position-next)을 받는다 — 그 모듈도 입구만 받으므로(아래 4-4b 시험) 새 길 묶음 안이다.
+  assert.deepEqual(takers,name==='world-position-next'?['world-atlas-next.mjs','world-plan-next.mjs']:['world-atlas-next.mjs'],name);
  }
  assert.match(read('world-atlas-next.mjs'),/position: positionPlanner,/,'홈 플래너에 실어 넘긴다');
+});
+// 4-4b 이번 주 계획 새 판(능력 읽개 · 시작점 · 기기 판 기록)도 입구만 정적으로 받는다 — 셸은 입구가 준 홈 플래너의 plan으로만 닿는다(단계4_계획 §21-6).
+test('이번 주 계획 새 판 모듈(world-plan-next)은 입구만 받는다(4-4b)',()=>{
+ const dirs=[['',fs.readdirSync(new URL('../',import.meta.url))],['../brand-opening/',fs.readdirSync(new URL('../../brand-opening/',import.meta.url))]];
+ const takers=[];
+ for(const [dir,names] of dirs)for(const file of names.filter(file=>file.endsWith('.mjs')&&!file.endsWith('.bundle.mjs'))){
+  if(importsOf(read(dir+file)).some(row=>row.specifier==='./world-plan-next.mjs'||row.specifier.endsWith('/world-plan-next.mjs')))takers.push(dir+file);
+ }
+ assert.deepEqual(takers,['world-atlas-next.mjs']);
+ assert.match(read('world-atlas-next.mjs'),/plan: planPlanner,/,'홈 플래너에 실어 넘긴다');
+ // 지금 판의 시험 계획(world-exam-plan.mjs)은 꺼진 판 묶음에 실린다 — 새 길 읽개가 그 파일에서 새 길 모듈을 부르면 안 된다.
+ assert.deepEqual(importsOf(read('world-exam-plan.mjs')).map(row=>row.specifier),[],'world-exam-plan.mjs는 아무것도 부르지 않는다');
 });
 // world-life-next.mjs(새 길의 판 겉 · 판정)는 world-learning-map.mjs가 정적으로 받아 꺼진 판의 계정 묶음 · 생활 단독 묶음에도 실린다 — 맨 위에서
 // 아무것도 돌지 않아야 한다(import · 상수 · 함수 선언뿐). 맨 위에 부름 · 읽기 · 바꾸기가 들면 라이브 첫 화면에서 바로 돈다(Fable 5.2 합친 끝 판 넘친 #28).
@@ -261,6 +274,34 @@ test('꺼진 판의 내 위치: 지금 판 판(data-position-board)으로 열고
   await education.position();
   assert.match(shown.at(-1)??'',/data-position-board[\s=>]/,'지금 판 판');
   assert.ok(shown.every(html=>!html.includes('data-position-next')),'새 길 판을 그리지 않는다');
+  assert.deepEqual(touched,{idb:0,atlas:0},'IndexedDB · /atlas/를 건드리지 않는다');
+  education.dispose();
+ }finally{
+  if(idb)Object.defineProperty(globalThis,'indexedDB',idb);else delete globalThis.indexedDB;
+  globalThis.fetch=fetch;
+ }
+});
+
+test('꺼진 판의 이번 주 계획: 지금 판 계획(기기 표지 없음)으로 열고, IndexedDB · /atlas/ 요청이 없다(4-4b — 단계4_계획 §21-11)',async()=>{
+ const touched={idb:0,atlas:0};
+ const idb=Object.getOwnPropertyDescriptor(globalThis,'indexedDB');
+ const fetch=globalThis.fetch;
+ Object.defineProperty(globalThis,'indexedDB',{configurable:true,get(){touched.idb+=1;return undefined;}});
+ globalThis.fetch=async(url,...rest)=>{if(String(url).includes('/atlas/'))touched.atlas+=1;return fetch(url,...rest);};
+ try{
+  const values=new Map(),storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
+  const shown=[];
+  const exam={audio:'off',reasons:['exam'],primaryReason:'exam',examType:'topik1',targetGrade:2,examDate:'2027-04-18',weeklyMinutes:120};
+  const progress={owner:'guest',learningProfile:()=>({profile:{status:'active',revision:1,consent:true}}),learningProfileValues:()=>exam,
+   status:()=>({phase:'synced',rejected:false,scoped:false,message:''}),exportSnapshot:()=>({}),flush:async()=>{},hangulReading:()=>({answer:'reads'})};
+  const home={updateStudy(){},toast(){},closePanel(){},attachPanelResource(){},showPanel:(title,html)=>shown.push(String(html))};
+  const target={localStorage:storage,addEventListener(){},removeEventListener(){},setTimeout,document:{querySelector:()=>null}};
+  // atlasNext · homeNext를 넘기지 않는다 — 셸이 기능 꺼짐에서 넘기는 값(null)과 같다.
+  const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:input=>({selected:null,reason:'',examPlan:input.examPlan??null}),launchGame(){},startLesson(){},startReview(){},position:worldPosition,target});
+  assert.equal(await education.plan(),'shown','지금 판 계획이 연다');
+  assert.match(shown.at(-1)??'',/data-plan-board/);
+  assert.doesNotMatch(shown.at(-1)??'',/data-plan-scope/,'지금 판 계획은 계정 기록(Trail)으로 센다 — 기기 표지가 없다');
+  assert.equal(education.metrics().plan.examPlan.doneScope,undefined);
   assert.deepEqual(touched,{idb:0,atlas:0},'IndexedDB · /atlas/를 건드리지 않는다');
   education.dispose();
  }finally{

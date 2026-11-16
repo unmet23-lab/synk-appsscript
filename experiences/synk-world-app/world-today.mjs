@@ -4,7 +4,8 @@
 // 홈의 추천은 드라마 「오늘」 한 장과 같은 세 줄(복습 again · 오늘 공부 new · 점검 check)이다. 엔진의 plan()이 낸 차례를 바꾸지 않고
 // 활동마다 칸 하나를 정해, 칸마다 맨 앞 활동 하나만 줄로 세운다(§20-2). 줄의 글은 그 활동의 기록에서만 나온다(설계 주인 판단 3).
 // 4-3에서 넘기는 활동은 다섯이다 — 하던 것 · 생활 복습 하나 · 다음 생활 레슨 하나 · 한글 먼저 · 짧은 연습(돌아온 단위가 든 문항만). 게임과
-// 시험 형식 연습은 엔진에 옮기기 전이라 후보가 아니고(점검 칸이 빈다), 이번 주 계획은 4-4에서 새 요약으로 다시 짓는다(§20-7).
+// 시험 형식 연습은 엔진에 옮기기 전이라 후보가 아니다. 4-4b에서 시험을 고른 학생의 이번 주 계획(world-plan-next.mjs — 새 칸으로 지음)이
+// 들어온다 — 숙제 연습(오늘 공부 칸)과 짧은 진단(점검 칸)이 활동이 되고, 계획은 examPlan에 실린다(§21-6 · §20-7).
 import { LESSONS, PACKS } from './life-content.mjs';
 import {
   answersOf,
@@ -80,7 +81,7 @@ const itemsOf = targets =>
     .filter(target => typeof target?.itemKey === 'string')
     .map(target => ({ itemKey: target.itemKey }));
 
-function activity(kind, open, facts, candidates, settings) {
+function activity(kind, open, facts, candidates, settings, role = null) {
   const blocked = blockedBy(open, settings);
   return {
     kind,
@@ -89,6 +90,9 @@ function activity(kind, open, facts, candidates, settings) {
     plan: blocked
       ? { id: open.id, candidates: [], facts: { locked: true } }
       : { id: open.id, candidates, facts },
+    // 이번 주 계획이 넘긴 활동(4-4b) — homework(숙제 연습) · check(점검 칸의 짧은 진단). 잠근 숙제 연습은 풀었을 때의 몫을 함께 든다(A10).
+    ...(role ? { role } : {}),
+    ...(role === 'homework' && blocked ? { unlocked: { id: open.id, candidates, facts } } : {}),
   };
 }
 
@@ -147,6 +151,71 @@ function practiceActivities({ pool, dueUnits, itemUnits, settings, labels, lengt
     });
 }
 
+// 숙제 연습(§21-6 · 검토 D3) — 이번 주 계획의 숙제 항목마다 하나(오늘 공부 칸). 후보는 그 항목의 처음 보는 짧은 연습 문항 가운데 돌아온 단위가
+// 든 문항을 뺀 것이다 — 그 단위는 복습 칸의 짧은 연습이 맡는다(다음 레슨과 같은 거름, 20-13). 목표는 숙제 하나 { kind: homework, skill, status? }다 —
+// 상태(missed)가 있을 때만 두뇌가 숙제 문장을 짓고, 도움받은 첫 만남만 있는 능력은 목표 수에만 센다. 쓰기 숙제는 짧은 연습이 없어 넘기지 않는다.
+// 소리를 끈 날 듣기 숙제는 빼지 않고 잠근다(짧은 연습과 같은 거름 — blockedBy). fresh(item): 그 문항을 처음 보는가(묶음 만남의 seen === false).
+export const HOMEWORK_PREFIX = 'world.homework.';
+function homeworkActivities({ homework, pool, fresh, dueUnits, itemUnits, settings, labels, length }) {
+  if (!Array.isArray(homework) || !Array.isArray(pool) || typeof fresh !== 'function') return [];
+  const returned = key =>
+    Boolean(dueUnits?.size) &&
+    typeof itemUnits === 'function' &&
+    (quiet(() => itemUnits(key)) ?? []).some(row => dueUnits.has(row?.unit));
+  const out = [];
+  for (const row of homework) {
+    const skillId = row?.skillId;
+    if (typeof skillId !== 'string' || !['listening', 'reading'].includes(row.domain)) continue;
+    const listening = row.domain === 'listening';
+    const items = pool.filter(
+      item =>
+        item?.skillId === skillId &&
+        typeof item.itemKey === 'string' &&
+        quiet(() => fresh(item)) === true &&
+        !returned(item.itemKey),
+    );
+    const name = quiet(() => labels?.(skillId)) || skillId;
+    const open = {
+      id: `${HOMEWORK_PREFIX}${skillId}`,
+      label: `${listening ? '듣기' : '읽기'} 짧은 연습 · ${name}`,
+      route: 'practice',
+      skillId,
+      minutes: Math.max(2, Math.ceil(length * (listening ? 0.8 : 0.5))),
+      minutesEstimated: true,
+      supports: [...PRACTICE_SUPPORTS],
+      audioRequired: listening,
+      modality: listening ? 'listening' : 'reading',
+      targets: [],
+    };
+    const goal = { kind: 'homework', skill: skillId, ...(typeof row.status === 'string' ? { status: row.status } : {}) };
+    out.push(
+      activity('new', open, { goals: [goal] }, items.map(item => ({ itemKey: item.itemKey })), settings, 'homework'),
+    );
+  }
+  return out;
+}
+
+// 점검 칸의 짧은 진단(§21-6 · 20-2) — 이번 주 계획에 아직 하지 않은 다시 확인(시작점 포함)이 있고 진단이 낼 문항이 있을 때만이다. 진단은 문항
+// 차례를 제품이 정하므로(§21-5) 후보 없이 넘기고, 이유는 두뇌의 설명 사실(host.start · host.recheck)이다. 여는 길은 내 위치의 짧은 진단이다.
+const CHECK_OPEN = Object.freeze({
+  id: 'world.position.check',
+  label: '짧은 진단',
+  route: 'position',
+  minutes: 5,
+  minutesEstimated: true,
+  targets: Object.freeze([]),
+  goals: Object.freeze(['exam', 'prepare']),
+  audioRequired: false,
+  modality: 'reading',
+});
+function checkActivity(week, settings) {
+  const plan = week?.examPlan;
+  const area = Array.isArray(plan?.areas) ? plan.areas.find(row => row?.area === 'recheck') : null;
+  if (!area || !(area.remaining > 0) || week.diagnostic?.ready !== true) return null;
+  const start = Array.isArray(plan.notes) && plan.notes.includes('start');
+  return activity('check', { ...CHECK_OPEN, targets: [], goals: [...CHECK_OPEN.goals] }, { describe: start ? 'start' : 'recheck' }, [], settings, 'check');
+}
+
 // 홈 계획에 넘길 활동(§20-2 표). engine: 엔진 판정이 선 때만 엔진에 기대는 활동(생활 복습 · 짧은 연습)을 넘긴다 — 확인 중에는 제품 사실로
 // 말할 수 있는 활동(하던 것 · 한글 먼저 · 다음 레슨)만이다(설계 검토 H8 · H12).
 //   snapshot — 생활 진도 exportSnapshot() · life — 진도 요약(summary(PACKS, LESSONS) — nextLesson) · judged — 생활 판정(lifeDue)
@@ -165,6 +234,8 @@ export function todayActivities({
   dueUnits = null,
   itemUnits = null,
   engine = false,
+  // 이번 주 계획(4-4b) — { examPlan(world-plan-next buildPlanNext), fresh(item), diagnostic: { ready } }. 시험을 고르지 않았거나 확인 중이면 null.
+  week = null,
 } = {}) {
   const values = settings ?? {};
   const normalized = worldLearningSettings(values);
@@ -238,6 +309,23 @@ export function todayActivities({
         length: Number.isInteger(practiceLength) && practiceLength > 0 ? practiceLength : 5,
       }),
     );
+  // 이번 주 계획(4-4b): 숙제 연습(오늘 공부)과 점검 칸의 짧은 진단 — 엔진 판정이 선 때만(계획은 새 칸으로 짓는다).
+  if (engine && week?.examPlan) {
+    out.push(
+      ...homeworkActivities({
+        homework: week.examPlan.homework,
+        pool,
+        fresh: week.fresh,
+        dueUnits,
+        itemUnits,
+        settings: normalized,
+        labels,
+        length: Number.isInteger(practiceLength) && practiceLength > 0 ? practiceLength : 5,
+      }),
+    );
+    const check = checkActivity(week, normalized);
+    if (check) out.push(check);
+  }
   return out;
 }
 
@@ -286,6 +374,11 @@ function rowWhy(entry, act, { capped, say }) {
   const open = act.open;
   if (entry.locked) return null;
   if (open.resume || open.id === HANGUL_ID) return entry.why;
+  // 점검 칸의 짧은 진단은 제품이 차례를 정한다 — 후보 없이 넘겨 none이어도 줄이다(다음 레슨과 같다). 이유는 설명 사실의 문장이다.
+  if (act.role === 'check') return entry.why;
+  // 숙제 연습은 낼 후보가 있을 때만 줄이다(none도 locked도 아님 — 층이나 숙제 문장으로 가르지 않는다, 카본 설계 검토 A9). 상한 날에도 줄이다 —
+  // 상한은 복습만 미룬다(20-3). 맨 앞 층이 9인데 두뇌가 숙제 문장을 내는 날(진단 직후 새 단위 한도 — 21-5)은 줄이 서지 않는다.
+  if (act.role === 'homework') return entry.none ? null : entry.why;
   if (open.route === 'lesson') {
     // 다음 레슨은 채우기여도 줄이다. 맨 앞 줄이 새것일 때만 엔진의 문장이고, 그 밖에는 기록을 말하지 않는 다음 레슨 문장이다 —
     // 돌아온 단위는 복습 줄이 맡는다(설계 검토 H21).
@@ -351,6 +444,7 @@ export function createWorldTodayPlan({
   opened = new Set(),
   lang = 'ko',
   say = () => null,
+  week = null,
 } = {}) {
   // 생활 판정이 아직 확인 중이면 홈도 확인 중이다 — 홈 코치가 섰어도 엔진에 기대는 줄을 그리지 않는다(설계 검토 H12).
   const engine = Boolean(coach) && typeof coach.plan === 'function' && judged?.state === 'engine';
@@ -372,6 +466,7 @@ export function createWorldTodayPlan({
     dueUnits,
     itemUnits: engine ? key => coach.itemUnits(key) : null,
     engine,
+    week: engine ? week : null,
   });
   // 엔진 판에서 plan()이 실패하면(가정한 장애) 확인 중 판으로 내려 제품 사실 줄만 그린다 — 빈 목록으로 읽으면 다음 레슨이 남았는데 다 한 날이
   // 된다(Fable 엔진급 끝 판 F3).
@@ -384,7 +479,18 @@ export function createWorldTodayPlan({
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;
   // 조건에 걸린 날(blocked)은 걸린 활동이 풀리면 줄이 되는 때다. 상한 날의 복습 칸 활동(하던 것 밖)은 풀려도 줄이 아니라 그날의 까닭은 상한이다.
   // 판(status) · 이유 · 빈 날 코드는 한 차례(확인 중 → 조건 → 상한 → 다 한 날)로 정한다(Fable 엔진급 끝 판 F5).
-  const blocked = activities.some(act => act.blocked && !(capped && act.kind === 'again' && !act.open.resume));
+  // 소리를 끈 날의 듣기 숙제 연습(카본 설계 검토 A10): 두뇌는 잠근 활동에 층을 셈하지 않으므로, 조건에 걸린 날로 세기 전에 그 활동만 풀어 한 번
+  // 더 셈한다(plan은 보기만 읽는다). 소리를 켜도 낼 것이 없으면(새 단위 한도에 막힘) 조건에 걸린 날이 아니라 낼 것이 없는 날이다.
+  const dry = new Set();
+  if (live)
+    for (const act of activities) {
+      if (act.role !== 'homework' || act.blocked !== 'audio.unavailable' || !act.unlocked) continue;
+      const again = quiet(() => coach.plan([act.unlocked], { lang }));
+      if (Array.isArray(again) && again[0]?.none) dry.add(act.plan.id);
+    }
+  const blocked = activities.some(
+    act => act.blocked && !dry.has(act.plan.id) && !(capped && act.kind === 'again' && !act.open.resume),
+  );
   const firstDay =
     !Object.values(snapshot.lessons ?? {}).some(run => Number.isFinite(run?.completedAt)) &&
     !Object.keys(snapshot.reviews ?? {}).length;
@@ -402,7 +508,8 @@ export function createWorldTodayPlan({
     reason: selected ? selected.why.text : status === 'unavailable' ? NO_FIT : '',
     resume: selected?.open?.resume ? selected.open : null,
     candidates: activities.map(act => act.open),
-    examPlan: null,
+    // 이번 주 계획(4-4b) — 엔진 판이고 시험을 고른 학생만. 확인 중이면 싣지 않는다(새 칸이 자리를 잡기 전이다).
+    examPlan: live ? (week?.examPlan ?? null) : null,
     today: {
       items: rows,
       minutes: rows.reduce((sum, row) => sum + (Number.isFinite(row.minutes) ? row.minutes : 0), 0),

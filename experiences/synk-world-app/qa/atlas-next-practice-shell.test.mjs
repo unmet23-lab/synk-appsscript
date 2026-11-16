@@ -5,7 +5,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createWorldEducation} from '../world-learning-ui.mjs';
+import {pathToFileURL} from 'node:url';
+// 변형 시험(qa/plan-mutants.mjs)은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
+const {createWorldEducation}=await import(process.env.SYNK_LEARNING_UI_MODULE?pathToFileURL(process.env.SYNK_LEARNING_UI_MODULE).href:'../world-learning-ui.mjs');
 import {worldPosition} from '../world-position-kit.mjs';
 import {worldLearning} from '../world-learning-map.mjs';
 
@@ -40,18 +42,20 @@ function fakeSession({views=[],ending={kind:'done'},fresh=3}={}){
 }
 
 // 손님 셸 하나 — 판을 열 때마다 셸이 넘긴 값(opened)을 남기고, 다음 가짜 판(sessions의 앞)을 준다.
-function world(sessions,{retired=null,toasts=[]}={}){
+// homeNext: 새 길 홈 입구(4-4b 판 기록을 보는 시험만 — 플래너는 없어 홈은 지금 판이다).
+function world(sessions,{retired=null,toasts=[],homeNext=null}={}){
  const opened=[];
- let box=null;
+ let box=null,resource=null;
  const values=new Map();
  const progress={owner:'guest',learningProfile:()=>({profile:{status:'active',revision:1,consent:true}}),learningProfileValues:()=>({audio:'on'}),
   status:()=>({phase:'synced',rejected:false,scoped:false,message:''}),exportSnapshot:()=>({}),flush:async()=>{},hangulReading:()=>({answer:'reads'})};
- const home={updateStudy(){},toast:message=>toasts.push(message),closePanel(){},attachPanelResource(){},showPanel:(title,html)=>{if(/data-practice-stage/.test(html))box=stage();}};
+ const home={updateStudy(){},toast:message=>toasts.push(message),closePanel(){},attachPanelResource(value){resource=value;},showPanel:(title,html)=>{if(/data-practice-stage/.test(html))box=stage();}};
  const target={localStorage:{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)},
   addEventListener(){},removeEventListener(){},setTimeout,document:{querySelector:selector=>/data-practice-stage/.test(selector)?box:null}};
  const atlasNext={practiceCoach:async()=>({}),createPracticeNextSession:options=>{opened.push(options);const next=sessions.shift();return typeof next?.settled==='function'?next:fakeSession(next);},...(retired?{retired}:{})};
- const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:()=>({selected:null,reason:''}),launchGame(){},startLesson(){},startReview(){},position:worldPosition,target,atlasNext});
- return {education,opened,toasts,box:()=>box};
+ const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:()=>({selected:null,reason:''}),launchGame(){},startLesson(){},startReview(){},position:worldPosition,target,atlasNext,...(homeNext?{homeNext}:{})});
+ // close: 홈이 판을 닫는다 — 판 글을 문서에서 떼고 판 자원을 dispose한다(home.mjs disposePanelContent). 떼지 않으면 닫은 뒤 이어 온 판 끝이 그린다.
+ return {education,opened,toasts,box:()=>box,close:()=>{if(box)box.isConnected=false;resource?.dispose?.();}};
 }
 
 // 셸의 일(판 열기 · 판 끝)은 비동기다 — 조건이 설 때까지 틱을 넘긴다(한도 안에서).
@@ -115,4 +119,42 @@ test('판 끝이 답 저장을 기다리는 사이 판이 바뀌면 끝 화면 �
  const plain=world([{...fakeSession(),freshLeft:()=>{throw Object.assign(Error('DISPOSED'),{code:'DISPOSED'});}}]);
  await plain.education.practice(skillId);
  await until(()=>done(plain)); // freshLeft가 던져도(닫힌 코치) 끝 화면이 선다 — 남은 수는 모름(null)으로 그린다
+});
+
+test('새 길 짧은 연습이 끝나면 이 기기의 판 기록에 그 영역(읽기 · 듣기)을 적는다 — 채점된 첫 답이 있을 때만, 한 판에 한 번(4-4b 단계4_계획 §21-6 가)',async()=>{
+ const pool=worldPosition.practice.pool;
+ const reading=pool.find(item=>item.skillId.startsWith('ko.reading.')).skillId,listening=pool.find(item=>item.skillId.startsWith('ko.listening.')).skillId;
+ const graded=[{verdict:'correct',skipped:false},{verdict:'incorrect',skipped:false}],skipped=[{verdict:null,skipped:true}];
+ const ended=rows=>({...fakeSession(),results:()=>rows,settled:async()=>rows});
+ for(const [skillId,rows,expected] of [[reading,graded,['reading']],[listening,graded,['listening']],[reading,skipped,[]],[reading,[],[]]]){
+  const logged=[],coaches=[];
+  const homeNext={planner:async()=>null,life:()=>'old',ask:async()=>{},judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){},
+   planLog:made=>{coaches.push(made);return {record:area=>{logged.push(area);return true;}};}};
+  const w=world([ended(rows)],{homeNext});
+  await w.education.practice(skillId);
+  await until(()=>done(w));
+  await new Promise(resolve=>setTimeout(resolve,0));
+  w.close(); // 끝 화면 뒤에 판을 닫아도(판 자원의 dispose) 같은 판을 다시 세지 않는다
+  assert.deepEqual(logged,expected,`${skillId} · ${rows.length ? (rows[0].skipped ? '건너뜀만' : '채점된 답') : '답 없음'}`);
+  if(expected.length)assert.equal(coaches.length,1,'판 기록은 그 판의 코치(입구가 연 짧은 연습 코치)로 연다');
+ }
+});
+
+test('새 길 짧은 연습을 도중에 닫아도(판 자원의 dispose) 채점된 첫 답이 있으면 한 판으로 적는다 — 닫기를 두 번 받아도 한 번(4-4b)',async()=>{
+ const pool=worldPosition.practice.pool,item=pool.find(row=>row.skillId.startsWith('ko.reading.'));
+ const view={item,index:0,total:5,upTo:true,heard:false,why:null,stubborn:false,targetLabel:null};
+ for(const [rows,expected] of [[[{verdict:'incorrect',skipped:false}],['reading']],[[],[]]]){
+  const logged=[];
+  const homeNext={planner:async()=>null,life:()=>'old',ask:async()=>{},judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){},
+   planLog:()=>({record:area=>{logged.push(area);return true;}})};
+  // 가짜 판을 펼쳐 복사하지 않는다 — 지금 문항(current) 게터가 복사 때의 빈 값으로 굳어 셸이 바로 판 끝으로 간다.
+  const running=Object.assign(fakeSession({views:[view]}),{results:()=>rows,settled:async()=>rows});
+  const w=world([running],{homeNext});
+  await w.education.practice(item.skillId);
+  await until(()=>Boolean(w.box()?.html.includes('data-practice-run')));
+  assert.doesNotMatch(w.box().html,/data-practice-done/,'문항이 떠 있다(판이 아직 끝나지 않았다)');
+  w.close();
+  w.close();
+  assert.deepEqual(logged,expected,rows.length?'답이 있는 판':'답 없이 닫은 판은 세지 않는다');
+ }
 });
