@@ -58,15 +58,18 @@ function fakeProvision(log, { role = 'write', readKey = RK, writer = null, googl
     async rotateReadKey() { log.push(['rotate']); this.pending = RK2; return { readKey: RK2, googleStepRequired: false }; },
     async restorePlan(at) { return { suggestions: [], plan: null, oldestAt: at ?? 0 }; },
     async restoreRun(at) { log.push(['restoreRun', at, this.hold?.()]); if (this.restoreError) throw this.restoreError; this.write = WK2; this.pending = RK2; return { jobId: 'job1', readKey: RK2 }; },
-    async restoreJob() { return { state: 'done' }; },
-    async restoreChoose(jobId, choice) { log.push(['choose', jobId, choice]); return { ok: true }; },
+    async restoreJob(id) { return this.jobs?.[id] ?? { id, state: 'done' }; },
+    async restoreChoose(jobId, choice) { log.push(['choose', jobId, choice]); return this.chooseAnswer ?? { ok: true }; },
+    async status() { return this.statusValue ?? { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' }; },
+    // As the real client: the server removes every read key of the account, the one kept here stays (GPT ui2 GA1).
+    async lost() { log.push(['lost']); return { next: 'other' }; },
   };
 }
 function fakeEnvelope(log, found = null) {
   return {
     v: null, async open() {},
     getState() { return { verified: this.v, pending: false, invalid: false }; },
-    async publish(x) { log.push(['publish', x]); this.v = { verifiedAt: '2026-11-16T03:00:00.000Z', repositoryId: x.repositoryId }; return this.getState(); },
+    async publish(x) { log.push(['publish', x]); this.v = { verifiedAt: '2026-11-16T03:00:00.000Z', repositoryId: x.repositoryId }; if (found) found = { ...x }; return this.getState(); },
     async discover() { return found ? [{ fileId: 'file1', createdAt: '2026-11-10T00:00:00.000Z', customer: CUSTOMER }] : []; },
     async read(fileId) { log.push(['read', fileId]); return found; },
   };
@@ -113,7 +116,10 @@ test('Google로 시작 → 보호 시작: repository made at the server prefix, 
   assert.equal(f.engine.hasRecovery(), true, 'the envelope is the first recovery');
   const s = f.account.state();
   assert.equal(s.role, 'write'); assert.equal(s.device, '작업 노트북'); assert.deepEqual(s.needs, []);
-  f.provision.needs = ['read-key', 'token', 'restore']; assert.deepEqual(f.account.state().needs, ['read-key', 'restore'], 'only the words the screen knows'); f.provision.needs = []; assert.deepEqual(s.envelope, { verifiedAt: '2026-11-16T03:00:00.000Z' });
+  f.provision.needs = ['read-key', 'token', 'restore']; assert.deepEqual(f.account.state().needs, ['read-key'], 'only the words the screen knows');
+  // 'restore' (an answer that was lost) only while the hold has not found its job.
+  f.engine.config.serverRestore = { since: new Date().toISOString() }; assert.deepEqual(f.account.state().needs, ['read-key', 'restore']);
+  f.engine.config.serverRestore.jobId = 'job1'; assert.deepEqual(f.account.state().needs, ['read-key']); delete f.engine.config.serverRestore; f.provision.needs = []; assert.deepEqual(s.envelope, { verifiedAt: '2026-11-16T03:00:00.000Z' });
   assert.deepEqual(secretsIn(s, f), []); assert.deepEqual(secretsIn(f.engine.getState(), f), []);
   // Again after it is done: nothing is made twice, and a stopped start goes on.
   await f.account.signIn();
@@ -396,4 +402,222 @@ test('a run that rests asks no fill and writes none; a late status answer change
   assert.equal(answered, true);
   await r.stop();
   assert.equal(JSON.parse(await fs.readFile(path.join(root, 'cloud-vault', 'settings.json'), 'utf8')).movedTo, undefined);
+});
+
+test('되돌리기 상태: the hold keeps its job, an undo keeps it on the new job, and it goes when the server no longer has it open (화면 부탁 7 · 8)', async () => {
+  const { applyStatus } = require('../src/account.cjs');
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  const e = f.engine; e.config.automatic = true;
+  const at = Date.now() - 60000;
+  assert.deepEqual(await f.account.restoreRun(at), { jobId: 'job1' });
+  assert.deepEqual(e.config.serverRestore.jobId, 'job1');
+  assert.deepEqual(f.account.state().restore, { hold: true, jobId: 'job1', state: 'running', awaitingChoice: false, at, byThisDevice: true, error: null, undo: false });
+  // Closed and opened again: the settings keep the hold and its number, the view keeps what the server said.
+  const reopened = new Account({ root: f.root, secretStore, engine: f.make(), appVersion: '0.7.0', make: { auth: () => ({ async open() {}, getState: () => ({ available: true, connected: true, email: null }) }), provision: () => f.provision, envelope: () => f.envelope } });
+  await reopened.engine.open(); await reopened.open();
+  assert.equal(reopened.state().restore.jobId, 'job1'); assert.equal(reopened.state().restore.hold, true); assert.equal(reopened.state().restore.state, 'running');
+  // The status that shows it waiting for the choice keeps the hold; the runs rest.
+  assert.deepEqual(await applyStatus(e, { device: { state: 'active' }, restore: { jobId: 'job1', state: 'done', awaitingChoice: true, at, byThisDevice: true } }, ME), {});
+  assert.equal(e.config.serverRestore.jobId, 'job1');
+  assert.deepEqual(await e.runOnce({ force: true }), { outcome: 'skipped', reason: 'restore' });
+  // 「되돌리기 취소」: the server's new job holds this PC until it ends, and its number is the state's.
+  f.provision.chooseAnswer = { ok: true, state: 'undone', jobId: 'job2' };
+  assert.deepEqual(await f.account.restoreChoose('job1', 'undo'), { ok: true, jobId: 'job2' });
+  assert.deepEqual(e.config.serverRestore, { since: e.config.serverRestore.since, jobId: 'job2', undo: true });
+  assert.equal(f.account.state().restore.jobId, 'job2'); assert.equal(f.account.state().restore.undo, true);
+  assert.deepEqual(await e.runOnce({ force: true }), { outcome: 'skipped', reason: 'restore' });
+  assert.throws(() => e.assertBackupReady(), (x) => x.code === 'RESTORE_PENDING');
+  await applyStatus(e, { device: { state: 'active' }, restore: { jobId: 'job2', state: 'running', byThisDevice: true } }, ME);
+  assert.equal(e.config.serverRestore.jobId, 'job2');
+  // A status without the restore field says nothing about it.
+  await applyStatus(e, { device: { state: 'active' } }, ME);
+  assert.equal(e.config.serverRestore.jobId, 'job2');
+  // The undo ended: no restore open any more, the hold goes and the runs go on.
+  assert.deepEqual(await applyStatus(e, { device: { state: 'active' }, restore: null }, ME), { released: 'job2' });
+  assert.equal(e.config.serverRestore, undefined);
+  assert.notDeepEqual(await e.runOnce({ force: true }), { outcome: 'skipped', reason: 'restore' });
+
+  // A failed restore: the window's look lets the hold go and keeps how it ended for the screen.
+  f.provision.chooseAnswer = null;
+  await f.account.restoreRun(at);
+  f.provision.jobs = { job1: { id: 'job1', state: 'failed', at, error: 'INTERRUPTED', awaitingChoice: false } };
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.equal(e.config.serverRestore, undefined);
+  assert.deepEqual(f.account.state().restore, { hold: false, jobId: 'job1', state: 'failed', awaitingChoice: false, at, byThisDevice: null, error: 'INTERRUPTED', undo: false });
+  await f.account.refresh();
+  assert.equal(f.account.state().restore.error, 'INTERRUPTED', 'a failure stays until another restore');
+
+  // An answer that never came: the hold has no number; the status finds the job, the keys it brought are asked for again.
+  f.provision.restoreError = Object.assign(new Error('offline'), { code: 'NETWORK' });
+  f.provision.needs = ['restore'];
+  await assert.rejects(f.account.restoreRun(at), (x) => x.code === 'NETWORK');
+  assert.equal(e.config.serverRestore.jobId, undefined);
+  assert.deepEqual(f.account.state().needs, ['restore']);
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job4', state: 'running', at, byThisDevice: true }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.equal(e.config.serverRestore.jobId, 'job4');
+  assert.deepEqual(f.account.state().needs, ['write-key', 'read-key'], 'the restore is found; its keys are asked for again');
+  assert.equal(f.account.state().restore.state, 'running');
+  // Another device's restore holds the runs, and a hold of this PC whose job is not open goes.
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job5', state: 'running', at, byThisDevice: false }, lost: null, readKey: 'ready' };
+  await f.account.refresh();
+  assert.equal(e.config.serverRestore, undefined); assert.equal(e.accountHold, 'restore');
+  assert.equal(f.account.state().restore.byThisDevice, false);
+  assert.equal(f.account.holding(), true);
+});
+
+test('the Google step and the read key the server reports stay after the window opens again (화면 부탁 11)', async () => {
+  const f = await fixture();
+  await f.account.signIn();
+  // A loss reported from another device since: the server says so, this window did not know.
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: { googleStepRequired: true }, readKey: 'unconfirmed' };
+  assert.equal(f.account.state().googleStepRequired, false);
+  await assert.rejects(f.account.startProtection({ sources: [f.source] }), (e) => e.code === 'GOOGLE_STEP');
+  assert.equal(f.log.filter((x) => x[0] === 'publish').length, 0, 'the envelope waits for the step');
+  const again = async () => { const a = new Account({ root: f.root, secretStore, engine: f.engine, appVersion: '0.7.0', make: { auth: () => ({ async open() {}, getState: () => ({ available: true, connected: true, email: null }) }), provision: () => f.provision, envelope: () => f.envelope } }); await a.open(); return a; };
+  let a = await again();
+  assert.equal(a.state().googleStepRequired, true);
+  // The loss took every read key of the account, the one received here too (GPT ui2 GA1).
+  assert.equal(a.state().readKeyPending, false, 'the key kept here went with the loss');
+  await assert.rejects(a.startProtection({ sources: [f.source], googleStepDone: true }), (e) => e.code === 'READ_KEY');
+  await assert.rejects(a.continueBackup({ sources: [f.source], googleStepDone: true }), (e) => e.code === 'READ_KEY', 'no recovery is marked without an envelope');
+  assert.equal(f.engine.hasRecovery(), false);
+  await a.rotateReadKey({ googleStepDone: true });
+  assert.deepEqual(f.log.filter((x) => x[0] === 'publish').map((x) => x[1].readKey), [RK2]);
+  assert.equal(f.engine.hasRecovery(), true);
+  // A restore whose envelope step waits: `left` and the pending key stay.
+  a.info.googleStepRequired = true;
+  const r = await a.restoreRun(Date.now() - 1000);
+  assert.deepEqual(r, { jobId: 'job1', left: 'GOOGLE_STEP' });
+  a = await again();
+  assert.equal(a.state().left, 'GOOGLE_STEP'); assert.equal(a.state().readKeyPending, true);
+  // The server's later word clears the step; the window's look then finishes what the restore left.
+  f.provision.statusValue = { device: { state: 'active' }, restore: { jobId: 'job1', state: 'running', byThisDevice: true }, lost: null, readKey: 'unconfirmed' };
+  await a.refresh();
+  assert.equal(a.state().googleStepRequired, false); assert.equal(a.state().left, null); assert.equal(a.state().readKeyPending, false);
+  assert.deepEqual(f.log.at(-1), ['confirm', RK2.keyId]);
+  assert.equal((await again()).state().left, null);
+});
+
+test('after a loss report a PC opens the backup with the read key it received since (화면 부탁 10)', async () => {
+  const envelope = { repository: { ...REPO }, repositoryId: ID, password: OTHER_PASSWORD, readKey: RK };
+  const snapshots = [{ id: 'b'.repeat(64), time: '2026-11-15T00:00:00.000Z', hostname: OLD, tags: [APP, `vault:${customerVault(PREFIX)}`, VERIFIED] }];
+  // A reading PC with nothing set up: every read key went with the report.
+  const f = await fixture({ repo: restic({ password: OTHER_PASSWORD, snapshots }), provision: { role: 'read', readKey: null }, envelope });
+  await f.account.signIn();
+  assert.deepEqual(await f.account.reportLost(OLD), { next: null, googleRemovalUrl: null });
+  assert.equal(f.account.state().googleStepRequired, true); assert.equal(f.account.state().readKey, 'missing');
+  // The server says so too: no read key, the Google step to do.
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: { googleStepRequired: true }, readKey: 'missing' };
+  await assert.rejects(f.account.openBackup(), (e) => e.code === 'READ_KEY', 'the dead key in the envelope is not tried');
+  // A new key another PC received and has not put in the envelope yet is not this PC's: still not openable.
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: { googleStepRequired: true }, readKey: 'unconfirmed' };
+  await assert.rejects(f.account.openBackup(), (e) => e.code === 'READ_KEY');
+  await assert.rejects(f.account.rotateReadKey(), (e) => e.code === 'GOOGLE_STEP');
+  assert.equal(f.engine.config, null);
+  // The step done: the new envelope is written from the old one with the new key, without setting this PC up.
+  await f.account.rotateReadKey({ googleStepDone: true });
+  assert.deepEqual(f.log.filter((x) => x[0] === 'publish').at(-1)[1], { repository: REPO, repositoryId: ID, password: OTHER_PASSWORD, readKey: RK2 });
+  assert.deepEqual(f.log.at(-1), ['confirm', RK2.keyId]);
+  assert.equal(f.engine.config, null);
+  assert.equal(f.account.state().readKey, 'ready');
+  // A window that remembers 「missing」 asks the server again before it refuses.
+  f.provision.statusValue = null; f.account.info.readKey = 'missing';
+  await f.account.openBackup();
+  assert.deepEqual(f.engine.cloudCredentials, RK2);
+
+  // A PC that holds the new key but whose envelope step is not done yet opens with that key, not the dead one.
+  const g = await fixture({ repo: restic({ password: OTHER_PASSWORD, snapshots }), provision: { role: 'read', readKey: null }, envelope });
+  await g.account.signIn();
+  g.provision.pending = RK2;
+  await g.account.openBackup();
+  assert.deepEqual(g.engine.cloudCredentials, RK2);
+});
+
+test('a reading PC chooses its folders before it takes the seat; a folder that cannot be backed up keeps the old PC writing (화면 부탁 12)', async () => {
+  const repo = restic({ password: OTHER_PASSWORD, snapshots: [{ id: 'b'.repeat(64), time: '2026-11-15T00:00:00.000Z', hostname: OLD, tags: [APP, `vault:${customerVault(PREFIX)}`, VERIFIED] }] });
+  const f = await fixture({ repo, provision: { role: 'read', readKey: null }, envelope: { repository: { ...REPO }, repositoryId: ID, password: OTHER_PASSWORD, readKey: RK } });
+  await f.account.signIn(); await f.account.openBackup();
+  await assert.rejects(f.engine.chooseNextSources([path.join(f.root, 'not-there')]));
+  await f.engine.chooseNextSources([f.source]);
+  assert.deepEqual(f.engine.getState().nextSources, [await fs.realpath(f.source)]);
+  const reopened = f.make(); await reopened.open(); assert.deepEqual(reopened.config.nextSources, [await fs.realpath(f.source)]);
+  // A folder that is gone is found before the seat moves.
+  await assert.rejects(f.account.takeWriteSeat({ sources: [path.join(f.root, 'gone')] }));
+  assert.equal(f.log.filter((x) => x[0] === 'takeWriteSeat').length, 0, 'the old PC keeps writing');
+  assert.equal(f.engine.config.mode, 'restore');
+  // The chosen folders are the ones it backs up.
+  await f.account.takeWriteSeat({});
+  assert.equal(f.engine.config.mode, 'backup'); assert.deepEqual(f.engine.config.sources, [await fs.realpath(f.source)]);
+  assert.equal(f.engine.config.nextSources, undefined);
+  // Only a restore-only connection to the account's backup keeps folders for later.
+  await assert.rejects(f.engine.chooseNextSources([f.source]), /복구 전용/);
+});
+
+test('「그만두기」 ends a Google sign-in that waits; a sign-in that fails on its own keeps its code (화면 부탁 13)', async () => {
+  const f = await fixture();
+  let stop = null;
+  f.account.auth.cancel = () => stop?.();
+  f.provision.provision = () => new Promise((_ok, no) => { stop = () => no(Object.assign(new Error('closed'), { code: 'REAUTH' })); });
+  const waiting = f.account.signIn();
+  await new Promise((ok) => setImmediate(ok));
+  f.account.cancelSignIn();
+  await assert.rejects(waiting, (e) => e.code === 'CANCELED');
+  f.provision.provision = async () => { throw Object.assign(new Error('closed'), { code: 'REAUTH' }); };
+  await assert.rejects(f.account.signIn(), (e) => e.code === 'REAUTH', 'a stale cancel does not rename the next failure');
+  // A restore whose sign-in is stopped started nothing: its hold goes.
+  const g = await fixture();
+  await g.account.signIn(); await g.account.startProtection({ sources: [g.source] });
+  g.account.auth.cancel = () => stop?.();
+  let reached; const asked = new Promise((ok) => { reached = ok; });
+  g.provision.restoreRun = () => new Promise((_ok, no) => { stop = () => no(Object.assign(new Error('closed'), { code: 'REAUTH' })); reached(); });
+  const run = g.account.restoreRun(Date.now() - 1000);
+  await asked;
+  g.account.cancelSignIn();
+  await assert.rejects(run, (e) => e.code === 'CANCELED');
+  assert.equal(g.engine.config.serverRestore, undefined);
+});
+
+test('a read key kept here before a loss is never published or opened with; a new one is asked for (GPT ui2 GA1)', async () => {
+  const envelope = { repository: { ...REPO }, repositoryId: ID, password: OTHER_PASSWORD, readKey: RK };
+  const snapshots = [{ id: 'b'.repeat(64), time: '2026-11-15T00:00:00.000Z', hostname: OLD, tags: [APP, `vault:${customerVault(PREFIX)}`, VERIFIED] }];
+  // This PC received the read key RK and has not put it in an envelope yet when it reports the old PC lost.
+  const f = await fixture({ repo: restic({ password: OTHER_PASSWORD, snapshots }), provision: { role: 'read', readKey: RK }, envelope });
+  await f.account.signIn();
+  assert.equal(f.account.state().readKeyPending, true);
+  await f.account.reportLost(OLD);
+  assert.equal(f.account.state().readKeyPending, false, 'the kept key went with the report');
+  f.provision.statusValue = { device: { state: 'active' }, restore: null, lost: { googleStepRequired: true }, readKey: 'missing' };
+  await assert.rejects(f.account.openBackup(), (e) => e.code === 'READ_KEY');
+  assert.equal(f.engine.config, null, 'not opened with the dead key');
+  await f.account.rotateReadKey({ googleStepDone: true });
+  assert.equal(f.log.filter((x) => x[0] === 'rotate').length, 1, 'a new key is asked for');
+  assert.deepEqual(f.log.filter((x) => x[0] === 'publish').map((x) => x[1].readKey), [RK2], 'the dead key never goes into an envelope');
+  assert.deepEqual(f.log.at(-1), ['confirm', RK2.keyId]);
+
+  // A loss reported from another PC, heard from the server: the key kept here is not used either.
+  const g = await fixture({ repo: restic({ password: OTHER_PASSWORD, snapshots }), provision: { role: 'read', readKey: RK }, envelope: { ...envelope } });
+  await g.account.signIn();
+  g.provision.statusValue = { device: { state: 'active' }, restore: null, lost: { googleStepRequired: true }, readKey: 'unconfirmed' };
+  await g.account.refresh();
+  assert.equal(g.account.state().googleStepRequired, true); assert.equal(g.account.state().readKeyPending, false);
+  // Kept across a new window.
+  const again = new Account({ root: g.root, secretStore, engine: g.engine, appVersion: '0.7.0', make: { auth: () => ({ async open() {}, getState: () => ({ available: true, connected: true, email: null }) }), provision: () => g.provision, envelope: () => g.envelope } });
+  await again.open();
+  assert.equal(again.state().readKeyPending, false);
+  await again.rotateReadKey({ googleStepDone: true });
+  assert.deepEqual(g.log.filter((x) => x[0] === 'publish').map((x) => x[1].readKey), [RK2]);
+  // A key received after the loss is the one that goes in: the next status with the step still open does not drop it.
+  const h = await fixture({ repo: restic({ password: OTHER_PASSWORD, snapshots }), provision: { role: 'read', readKey: null }, envelope: { ...envelope } });
+  await h.account.signIn();
+  h.provision.rotateReadKey = async function () { h.log.push(['rotate']); this.pending = RK2; return { readKey: RK2, googleStepRequired: true }; };
+  await assert.rejects(h.account.rotateReadKey(), (e) => e.code === 'GOOGLE_STEP');
+  h.provision.statusValue = { device: { state: 'active' }, restore: null, lost: { googleStepRequired: true }, readKey: 'unconfirmed' };
+  await h.account.refresh();
+  assert.equal(h.account.state().readKeyPending, true);
+  await h.account.rotateReadKey({ googleStepDone: true });
+  assert.equal(h.log.filter((x) => x[0] === 'rotate').length, 1);
+  assert.deepEqual(h.log.filter((x) => x[0] === 'publish').map((x) => x[1].readKey), [RK2]);
 });

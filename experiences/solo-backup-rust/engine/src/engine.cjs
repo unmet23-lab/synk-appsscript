@@ -255,7 +255,8 @@ class BackupEngine extends EventEmitter {
       const c = this.config;
       if (c.schema !== 1 || !['backup', 'restore'].includes(c.mode) || !/^[a-f0-9-]{36}$/.test(c.vaultId) || !Array.isArray(c.sources) || (c.repositoryId !== null && !isId(c.repositoryId))
         || (c.removedSources != null && !(Array.isArray(c.removedSources) && c.removedSources.every(removedEntry))) || (c.host != null && !DEVICE.test(c.host))
-        || (c.serverRestore != null && !(c.serverRestore && typeof c.serverRestore.since === 'string'))
+        || (c.serverRestore != null && !(c.serverRestore && typeof c.serverRestore.since === 'string' && (c.serverRestore.jobId === undefined || /^[A-Za-z0-9_-]{1,64}$/.test(c.serverRestore.jobId)) && (c.serverRestore.undo === undefined || typeof c.serverRestore.undo === 'boolean')))
+        || (c.nextSources != null && !(c.mode === 'restore' && Array.isArray(c.nextSources) && c.nextSources.length <= 30 && c.nextSources.every(p => typeof p === 'string')))
         || (c.movedTo != null && !(c.movedTo && typeof c.movedTo.device === 'string' && c.movedTo.device.length <= 64 && typeof c.movedTo.at === 'string'))
         || (c.movePin != null && !(c.movePin && isId(c.movePin.snapshotId) && typeof c.movePin.until === 'string'))) throw new Error('설정 형식이 올바르지 않습니다.');
       normalizeProtection(c);
@@ -311,7 +312,7 @@ class BackupEngine extends EventEmitter {
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
       recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, lastFill: c?.lastFill || null, missingSources: c?.missingSources || [],
       removedSources: (c?.removedSources || []).map(r => ({ path: r.path, at: r.at, until: new Date(Date.parse(r.since ?? r.at) + REMOVED_KEEP).toISOString() })),
-      lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null,
+      lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null, nextSources: c?.nextSources || [],
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
       lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
@@ -640,6 +641,7 @@ class BackupEngine extends EventEmitter {
       if (info.id !== c.repositoryId) throw new Error('다른 저장소의 키입니다.');
       await this.storeCredential(this.secret, key); this.cloudCredentials = key;
       Object.assign(c, { mode: 'backup', readOnly: false, host, sources: checked, automatic: false, lastBackup: null, lastPartial: null, lastFill: null, health: null, warning: null, retryAfter: null });
+      delete c.nextSources;
       await this.save(); return this.getState();
     });
   }
@@ -650,13 +652,27 @@ class BackupEngine extends EventEmitter {
     this.config.remoteRecovery = { repositoryId: this.config.repositoryId, verifiedAt, envelope: 3 };
     await this.save(); return this.getState();
   }
-  // A server restore (4.5 `restore/run`) is written down before it is asked for and cleared after the customer chose:
-  // until then no backup or clean-up runs here (the server is putting hidden files back).
-  async holdForServerRestore() {
+  // A server restore (4.5 `restore/run`) is written down before it is asked for and kept with its job's number until
+  // the restore is no longer open (the choice, an undo that ended, a failure): until then no backup or clean-up runs
+  // here (the server is putting hidden files back). An undo is a new job under the same hold.
+  async holdForServerRestore({ jobId, undo } = {}) {
     if (!this.config?.repositoryId) throw new Error('백업 준비를 먼저 완료해 주세요.');
-    this.config.serverRestore = { since: new Date(this.now()).toISOString() };
+    if (jobId !== undefined && (typeof jobId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(jobId))) throw new Error('되돌리기 작업 번호가 올바르지 않습니다.');
+    const since = this.config.serverRestore?.since || new Date(this.now()).toISOString();
+    this.config.serverRestore = { since, ...(jobId ? { jobId } : {}), ...(undo ? { undo: true } : {}) };
     await this.save(); return this.getState();
   }
+  // A restore-only connection to the account's backup chooses the folders this PC backs up once it takes the write
+  // seat (화면 세션 부탁 12): checked here, kept in the settings, used by becomeWriter.
+  async chooseNextSources(sources) {
+    const c = this.config;
+    if (!this.isCloud() || c?.mode !== 'restore' || !b2.customerRepository(c.provider?.prefix)) throw new Error('계정의 백업을 연 복구 전용 연결에서만 고를 수 있습니다.');
+    if (this.job || this.stopping) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
+    c.nextSources = await validateSources(sources, this.forbidden());
+    await this.save(); return this.getState();
+  }
+  // The folders as a setup would take them, without changing anything (the seat is taken only after this passes).
+  checkSources(sources) { return validateSources(sources, this.forbidden()); }
   // The account's write seat went to another PC (4.6 다시 확인 N2): this PC rests and says so until it takes the seat
   // back (「이 PC로 다시 백업」). Written from the server status, by the run and the window.
   async markMoved({ device, at }) {

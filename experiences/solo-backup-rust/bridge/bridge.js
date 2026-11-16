@@ -20,7 +20,7 @@
     'signInGoogle', 'startProtection', 'continueBackup',
     'openAccountBackup', 'devicesList', 'takeWriteSeat', 'revokeDevice',
     'reportLost', 'rotateReadKey', 'restorePlan', 'restoreRun',
-    'restoreJob', 'restoreChoose'
+    'restoreJob', 'restoreChoose', 'cancelGoogle'
   ];
 
   const failure = () => ({ ok: false, error: SAFE_ERROR });

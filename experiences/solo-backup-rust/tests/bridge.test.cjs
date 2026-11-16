@@ -35,7 +35,7 @@ test('bridge, worker and native method contract preserves all existing app actio
   const contract=require('../contract/methods.json');const api=load({});
   const original=[...fs.readFileSync(path.resolve(root,'../solo-backup/src/preload.cjs'),'utf8').matchAll(/call\('([^']+)'\)/g)].map(m=>m[1]).sort();
   // The account's requests (STAGE1_DESIGN.md 2.1 · 4.5): 「Google로 시작」 · 「보호 시작」 and the provisioning server's.
-  const account=['signInGoogle','startProtection','continueBackup','openAccountBackup','devicesList','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restorePlan','restoreRun','restoreJob','restoreChoose'];
+  const account=['signInGoogle','startProtection','continueBackup','openAccountBackup','devicesList','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restorePlan','restoreRun','restoreJob','restoreChoose','cancelGoogle'];
   const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
@@ -43,7 +43,11 @@ test('bridge, worker and native method contract preserves all existing app actio
   for(const name of ['restoreLatest','restoreSelected','openFileCatalog'])assert.equal(contract[name].allowedReadOnly,true);
   // A Google sign-in opens the browser (dialog) and waits for the person, so it has no time limit.
   for(const name of ['signInGoogle','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restoreRun','restoreChoose'])assert.deepEqual([contract[name].dialog,contract[name].timeoutMs],[true,0],name);
-  for(const name of ['devicesList','restorePlan','restoreJob'])assert.equal(contract[name].mutating,false,name);
+  for(const name of ['devicesList','restorePlan','restoreJob','cancelGoogle'])assert.equal(contract[name].mutating,false,name);
+  // 「그만두기」 must reach the worker while a sign-in waits: no dialog, a short limit.
+  assert.deepEqual([contract.cancelGoogle.dialog,contract.cancelGoogle.timeoutMs],[false,10000]);
+  // A restore-only connection to the account's backup chooses the folders it will back up (the action decides).
+  assert.equal(contract.chooseSources.allowedReadOnly,true);
   // The account code decides what a restore-only PC may do (it takes the write seat from there).
   for(const name of account)assert.equal(contract[name].allowedReadOnly,true,name);
 });

@@ -149,7 +149,19 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       const picked=await folder('복구한 추천 자료를 담을 별도 드라이브');if(!picked)return state();profiles.assertOutput(picked[0]);void recommended.restore(picked[0]).catch(()=>push());return state();
     },{switching:true});
     handle('selectProfile', (_context, name) => { profiles.select(name); return state(); }, { switching: true });
-    handle('chooseSources', async ({ engine, selection }) => { if (engine.config?.repositoryId || (engine.isCloud() && engine.config)) throw new Error('설정한 작업 폴더는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업할 작업 폴더 선택', true); if (picked) { await engine.resetUnfinishedSetup(); selection.sources = picked; } return [...selection.sources]; }, { lock: false });
+    // A restore-only connection to the account's backup chooses the folders it backs up once it takes the seat (화면
+    // 세션 부탁 12): the dialog first, then the engine lock for the settings it writes.
+    handle('chooseSources', async ({ engine, selection }) => {
+      if (engine.isCloud() && engine.config?.mode === 'restore') {
+        const picked = await folder('이 PC에서 백업할 작업 폴더 선택', true);
+        if (picked) {
+          if (!await engineLock()) throw Object.assign(new Error('예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.'), { code: 'RUN_ACTIVE' });
+          try { await profiles.engines.b2.chooseNextSources(picked); } finally { engineUnlock(); }
+        }
+        return [...(profiles.engines.b2.config?.nextSources || [])];
+      }
+      if (engine.config?.repositoryId || (engine.isCloud() && engine.config)) throw new Error('설정한 작업 폴더는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업할 작업 폴더 선택', true); if (picked) { await engine.resetUnfinishedSetup(); selection.sources = picked; } return [...selection.sources];
+    }, { lock: false });
     // Folders after setup (STAGE1_DESIGN.md 4.2 「폴더 더하기 · 빼기」): the dialog first, and only then the engine lock
     // for the change — a scheduled run is not held up while a dialog is open. Taking one out says its backups go in 30 days.
     async function changeSources(next) {
@@ -265,7 +277,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     // The account's requests. Each answers with the window's state unless it has a value of its own.
     const cloud = () => profiles.engines.b2;
     const objectInput = input => input && typeof input === 'object' && !Array.isArray(input) ? input : {};
-    const sourcesOf = input => Array.isArray(input.sources) ? input.sources : [...profiles.selections.b2.sources];
+    const sourcesOf = input => Array.isArray(input.sources) ? input.sources : cloud().config?.mode === 'restore' && cloud().config.nextSources?.length ? [...cloud().config.nextSources] : [...profiles.selections.b2.sources];
     function protect() { const engine = cloud(); return launchJob(engine, () => engine.protectNow({ registerStartup: async () => setStartup(true) })); }
     handle('signInGoogle', async (_context, input) => { await account.signIn({ hint: objectInput(input).hint }); return state(); }, { lock: false, codes: true });
     // 「보호 시작」: the repository and the envelope here, then the schedule and the first backup as a job.
@@ -274,7 +286,13 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       await account.startProtection({ sources: sourcesOf(v), googleStepDone: v.googleStepDone === true }); return protect();
     }, { codes: true });
     handle('continueBackup', async (_context, input) => { const v = objectInput(input); profiles.select('b2'); await account.continueBackup({ sources: sourcesOf(v), googleStepDone: v.googleStepDone === true }); return protect(); }, { codes: true });
-    handle('openAccountBackup', async () => { profiles.select('b2'); await account.openBackup(); return state(); }, { codes: true });
+    // Folders chosen before the backup was opened go into its settings too, so they outlast the window (화면 세션 부탁 12).
+    handle('openAccountBackup', async () => {
+      profiles.select('b2'); await account.openBackup();
+      const picked = [...profiles.selections.b2.sources];
+      if (picked.length) { try { await cloud().chooseNextSources(picked); } catch { /* the screen chooses them again */ } }
+      return state();
+    }, { codes: true });
     handle('devicesList', () => account.devices(), { lock: false, codes: true });
     handle('takeWriteSeat', async (_context, input) => { const v = objectInput(input); const r = await account.takeWriteSeat({ sources: sourcesOf(v) }); return { previous: r.previous, state: state() }; }, { codes: true });
     handle('revokeDevice', (_context, deviceId) => account.revokeDevice(deviceId), { lock: false, codes: true });
@@ -284,6 +302,9 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     handle('restoreRun', async (_context, at) => { const r = await account.restoreRun(at); return { jobId: r.jobId, ...(r.left ? { left: r.left } : {}), state: state() }; }, { codes: true });
     handle('restoreJob', (_context, jobId) => account.restoreJob(jobId), { lock: false, codes: true });
     handle('restoreChoose', async (_context, jobId, choice) => { await account.restoreChoose(jobId, choice); return state(); }, { codes: true });
+    // 「그만두기」 while a Google sign-in waits in the browser (화면 세션 부탁 13): the waiting request ends as CANCELED.
+    // It reads nothing and takes no slot, so it reaches the worker while that request holds the window.
+    handle('cancelGoogle', () => { account.cancelSignIn(); recovery.auth?.cancel?.(); return null; }, { read: true });
     handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; }, { lock: false });
 
   profiles.on('state',push); recovery.on('state',push);
@@ -300,7 +321,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   // engine's settings (moved, pins), so it runs under the engine lock like the recovery check.
   let accountAt = 0, recheckAt = 0;
   async function accountTick() {
-    if (closing || dialogBusy || Date.now() - accountAt < 3600000) return;
+    // Each minute while a restore holds this PC, so the hold goes soon after the restore ends.
+    if (closing || dialogBusy || Date.now() - accountAt < (account.holding() ? 60000 : 3600000)) return;
     let held = false;
     try {
       held = await engineLock(); if (!held) return;

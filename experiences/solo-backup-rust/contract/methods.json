@@ -73,7 +73,7 @@
     "mutating": true,
     "timeoutMs": 0,
     "dialog": true,
-    "allowedReadOnly": false
+    "allowedReadOnly": true
   },
   "chooseTarget": {
     "mutating": true,
@@ -225,5 +225,6 @@
   "restorePlan": {"mutating":false,"timeoutMs":120000,"dialog":false,"allowedReadOnly":true},
   "restoreRun": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
   "restoreJob": {"mutating":false,"timeoutMs":60000,"dialog":false,"allowedReadOnly":true},
-  "restoreChoose": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true}
+  "restoreChoose": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "cancelGoogle": {"mutating":false,"timeoutMs":10000,"dialog":false,"allowedReadOnly":true}
 }
