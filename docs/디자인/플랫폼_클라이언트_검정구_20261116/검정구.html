@@ -594,7 +594,7 @@ function stepEye(now) {
 async function blink() { const k = ++eye.token; await lidTo(0, 90); if (k !== eye.token) return; await lidTo(1, 170, easeOut); }
 /* 표정을 바꾼다. 눈을 감았다 뜨는 사이에 바뀐다. ms를 주면 그 뒤 평소로 돌아온다 */
 async function setMood(m, ms = 0) {
-  const k = ++eye.token;
+  const k = ++eye.token; eye.nextBlink = performance.now() + 1400;   // 표정을 바꾸는 동안에는 깜빡이지 않는다(밀려 있던 깜빡임이 표정 바꾸기를 지우지 않게)
   if (m !== eye.mood) { await lidTo(0, 110); if (k !== eye.token) return; eye.mood = m; syncMoodBtn(); await lidTo(1, m === 'calm' ? 260 : 190, easeOut); if (k !== eye.token) return; }
   if (ms) { await wait(ms); if (k !== eye.token) return; setMood('calm'); }
 }
@@ -603,7 +603,7 @@ function eyeStop() { ++eye.token; if (eye.lid) { const l = eye.lid; eye.lid = nu
 function eyesAsleep() { eyeStop(); eye.mood = 'sleep'; eye.open = 1; eye.gate = 1; syncMoodBtn(); }
 /* 눈을 뜬다 */
 async function eyesWake() {
-  const k = ++eye.token; eye.gate = 1;
+  const k = ++eye.token; eye.gate = 1; eye.nextBlink = performance.now() + 1400;
   await lidTo(0, 160); if (k !== eye.token) return;
   eye.mood = 'calm'; syncMoodBtn();
   await lidTo(1, 460, easeOut); if (k !== eye.token) return;
