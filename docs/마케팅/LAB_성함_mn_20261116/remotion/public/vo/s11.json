@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s11",
+ "text": "...김철수 님?",
+ "dur": 0.91,
+ "words": [
+  {
+   "text": "...김철수",
+   "start": 0.05,
+   "end": 0.574
+  },
+  {
+   "text": "님?",
+   "start": 0.675,
+   "end": 0.91
+  }
+ ],
+ "source": {
+  "key": "afa241583f8d0af716be0346355b3c32",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 376
+ }
+}

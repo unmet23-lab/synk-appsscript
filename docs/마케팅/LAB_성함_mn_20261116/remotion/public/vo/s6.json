@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s6",
+ "text": "근데...",
+ "dur": 0.864,
+ "words": [
+  {
+   "text": "근데...",
+   "start": 0.2,
+   "end": 0.864
+  }
+ ],
+ "source": {
+  "key": "7702ed65f0f68ab61b8983b8bfd731a2",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "김철수예요. 알바생이 무언가 장난스러운 생각이 떠올라 멈칫한다.",
+   "next": "철수야~ 맛있어?"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 436
+ }
+}

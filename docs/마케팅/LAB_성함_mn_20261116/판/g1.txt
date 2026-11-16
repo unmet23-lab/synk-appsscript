@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses and faces, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, counter and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cozy indoor light, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo, and use the SAME cozy felt café from it (pendant lamps, warm wooden shelves with little felt cups and plants, a coffee machine) — but NOT its barista doll, NOT its spilled cup.
+
+FORMAT: portrait 2:3. Camera at the height of the countertop, looking straight across the counter.
+
+SET: the cozy felt neighbourhood café. The top 26% of the image is ONLY the softly blurred café back wall with two warm pendant lamps — nothing important there. A long warm-oak café counter runs across the whole image; its countertop surface is at about 60% of the image height, and its thick wooden front panel fills the lower part of the image down to the bottom (the lower 38% of the image is mostly that plain wooden front panel — keep it plain). A small felt espresso machine and a stack of little white felt cups sit on the back shelf behind the counter on the RIGHT side, softly out of focus.
+
+GRANDFATHER (felt doll, the customer): stands on the LEFT at the counter, seen from the chest up behind the countertop, his body between about 5% and 38% of the image width, his head between about 27% and 46% of the image height. Big round felt head, glossy black bead eyes with no white sclera, thick round dark-brown FELT glasses (soft felt rims, not wire), bushy white felt eyebrows and a big soft white felt moustache, rosy felt cheeks, a brown tweed felt flat cap, a beige felt cardigan over a light-blue shirt. Expression: curious and a little puzzled — eyebrows raised, small closed mouth under the moustache, head tilted slightly. He faces right toward the mascot. His felt hands rest on the countertop.
+
+MONGLE (the mascot from the SECOND attached image), the café's part-time barista: stands upright ON the countertop on the RIGHT side, the middle of its scalloped hem at about 70% of the image width, its hem sitting on the countertop, its body about 22% of the image width wide. It wears a tiny dark-green felt barista apron tied around its middle (a plain apron, no badge, no writing). Shown in three-quarter view turned toward the grandfather (facing left), standing straight and cheerful like a friendly shop helper, small open smile, a light blush.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. Mongle has NO arms, NO legs, NO hands — never.
+
+The countertop between them is EMPTY (no cup yet). Leave clear empty space around Mongle and between the two dolls. Exactly ONE Mongle, exactly ONE grandfather, nobody else.
+Absolutely no text, letters, numbers, logos, symbols, menu boards with writing, price tags or watermarks anywhere.

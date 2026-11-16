@@ -1,0 +1,10 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only the poses and faces change.
+
+The FIRST attached image is the base photo. Reproduce it EXACTLY — same camera position, framing, focus and warm light, same café back wall, two pendant lamps, wooden shelves with little white cups and potted plants, the blue espresso machine on the right, same warm-oak counter at the same height with its plain wooden front panel, same grandfather doll on the left (same size and place, same brown tweed flat cap, thick round dark-brown felt glasses, bushy white eyebrows and big white moustache, beige cardigan over a light-blue shirt), and the single coral Mongle with its dark-green felt apron standing on the countertop at the SAME spot (the middle of its scalloped hem stays at the same point on the countertop).
+CUP: the same white felt coffee cup on its small white saucer stands on the countertop right in front of the grandfather (keep it the same cup, same place).
+CHANGE ONLY: THE GRANDFATHER does a spit-take: a burst of fine brown coffee droplets sprays out of his mouth over the countertop toward the middle of the counter, the cup tilted away from his lips in his hands, eyes squeezed shut, cheeks puffed, his flat cap knocked slightly back. MONGLE, still leaning toward him, blinks in surprise with round eyes. A few small brown coffee drops land on the countertop.
+
+The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, ever — it bows, leans or sways by tilting its whole soft body. Keep its dark-green felt apron.
+Exactly ONE Mongle and ONE grandfather. Absolutely no text, letters, numbers, logos, symbols, motion lines, speech bubbles or watermarks anywhere.

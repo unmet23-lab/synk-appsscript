@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s5",
+ "text": "커피 나왔어요~",
+ "dur": 1.464,
+ "words": [
+  {
+   "text": "커피",
+   "start": 0.02,
+   "end": 0.262
+  },
+  {
+   "text": "나왔어요~",
+   "start": 0.322,
+   "end": 1.464
+  }
+ ],
+ "source": {
+  "key": "d21ec8090938e8c8b4f79b09d8416e13",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 464
+ }
+}

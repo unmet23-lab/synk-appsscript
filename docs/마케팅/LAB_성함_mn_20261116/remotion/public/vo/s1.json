@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "이름이 뭐야?",
+ "dur": 0.846,
+ "words": [
+  {
+   "text": "이름이",
+   "start": 0.02,
+   "end": 0.278
+  },
+  {
+   "text": "뭐야?",
+   "start": 0.334,
+   "end": 0.846
+  }
+ ],
+ "source": {
+  "key": "51c28be2ce67823acf3cd8be19afd590",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 309
+ }
+}

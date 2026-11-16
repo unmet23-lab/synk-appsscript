@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e1c6-04a4-7ef1-9f35-b02471b68c5a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the café framing fixed and make the coffee spray large and unmistakable, with Mongle recoiling in place.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Grandfather unleashes a dramatic coffee spit-take as startled Mongle leans back in the warm felt café."}}
+{"type":"turn.completed","usage":{"input_tokens":118868,"cached_input_tokens":108672,"cache_write_input_tokens":0,"output_tokens":1531,"reasoning_output_tokens":349}}

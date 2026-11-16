@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h12",
+ "text": "허허, 그래~",
+ "dur": 0.978,
+ "words": [
+  {
+   "text": "허허,",
+   "start": 0.01,
+   "end": 0.252
+  },
+  {
+   "text": "그래~",
+   "start": 0.515,
+   "end": 0.978
+  }
+ ],
+ "source": {
+  "key": "9471a7b6e39882c9c4c9f2a816bdb3a5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1116,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}
