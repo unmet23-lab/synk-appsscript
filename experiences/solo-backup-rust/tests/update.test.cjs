@@ -3,7 +3,7 @@
 // The updater itself — a package installed only when its signature and signed version are right — runs on a clean
 // runner (workbackup-clean-windows `update`, test-support/clean-update.ps1).
 const test = require('node:test'), assert = require('node:assert/strict');
-const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
+const crypto = require('node:crypto'), fs = require('node:fs'), os = require('node:os'), path = require('node:path');
 const { feed, trustedComment } = require('../scripts/update-feed.cjs');
 const data = require('../test-support/clean-data.cjs');
 
@@ -17,7 +17,11 @@ test('the release checks one https feed beside the PC app\'s, binds each package
   assert.equal(updater.requireSignedVersion, true);
   assert.equal(updater.windows.installMode, 'passive');
   for (const key of ['dangerousInsecureTransportProtocol', 'dangerousAcceptInvalidCerts', 'dangerousAcceptInvalidHostnames', 'allowDowngrades']) assert.equal(updater[key], undefined, key);
-  assert.equal(typeof updater.pubkey, 'string');
+  // The operating key the updater checks and the recovery key tried next (11-16 유호님 「추천대로 만들어」), both made once on
+  // the signing PC (scripts/update-keys.cjs make). Replacing one strands every installed copy, so their ids are pinned here.
+  const keys = require('../scripts/update-keys.cjs');
+  assert.equal(keys.publicKey(updater.pubkey).id, 'a906d76e18dc50e4');
+  assert.equal(keys.publicKey(config.plugins.synkUpdate.recoveryPubkey).id, '6afbfdd8e4d59f4d');
   // The installer is signed on the signing PC after the build, never by the build (no private key in CI).
   assert.equal(config.bundle.createUpdaterArtifacts, undefined);
   assert.equal(config.bundle.windows.allowDowngrades, false);
@@ -32,7 +36,45 @@ test('the window app takes the update switches alone, and the release still take
   assert.match(main, /let switches:&\[&str\]=if cfg!\(debug_assertions\)\{&\["--background","--test-mode","--smoke"\]\}else\{&\["--background"\]\};/);
   // The notice's click asks first (cancel is the first button), and installing holds the engine lock.
   assert.match(main, /OkCancelCustom\("나중에"\.into\(\),"업데이트"\.into\(\)\)/);
-  assert.match(read('src-tauri/src/update.rs'), /let _engine = crate::platform::try_lock\(root, crate::platform::ENGINE_LOCK\)[^\n]+\.ok_or\("RUN_ACTIVE"\)\?;\n\s+let update = find/);
+  assert.match(read('src-tauri/src/update.rs'), /let _engine = crate::platform::try_lock\(root, crate::platform::ENGINE_LOCK\)[^\n]+\.ok_or\("RUN_ACTIVE"\)\?;\n\s+let mut update = find\(app, DOWNLOAD_TIMEOUT, None\)/);
+  // Only a signature the operating key does not verify is checked again, and only against the built-in recovery key.
+  assert.match(read('src-tauri/src/update.rs'), /Err\(Error::Minisign\(_\)\) if recovery_key\(app\.config\(\)\.plugins\.0\.get\("synkUpdate"\)\)\.is_some\(\) => \{/);
+});
+
+// A minisign key pair and signature made with Node alone, the way `tauri signer sign` makes them (prehashed 「ED」).
+function minisign() {
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519'), id = crypto.randomBytes(8);
+  const raw = Buffer.from(publicKey.export({ format: 'jwk' }).x, 'base64url');
+  const pub = Buffer.from(`untrusted comment: minisign public key\n${Buffer.concat([Buffer.from('Ed'), id, raw]).toString('base64')}\n`).toString('base64');
+  const sign = (file, version) => {
+    const value = crypto.sign(null, crypto.createHash('blake2b512').update(fs.readFileSync(file)).digest(), privateKey);
+    const comment = `timestamp:1794788230\tfile:${path.basename(file)}\tversion:${version}`;
+    const global = crypto.sign(null, Buffer.concat([value, Buffer.from(comment)]), privateKey);
+    return Buffer.from(`untrusted comment: signature from tauri secret key\n${Buffer.concat([Buffer.from('ED'), id, value]).toString('base64')}\ntrusted comment: ${comment}\n${global.toString('base64')}\n`).toString('base64');
+  };
+  return { pub, sign };
+}
+
+test('a signature counts only when a built-in key verifies the file and the version it names', () => {
+  const keys = require('../scripts/update-keys.cjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-keys-'));
+  try {
+    const file = path.join(dir, 'SynkWorkBackup-0.7.2-setup.exe');
+    fs.writeFileSync(file, crypto.randomBytes(50000));
+    const operating = minisign(), recovery = minisign(), stranger = minisign();
+    const builtIn = [{ role: 'operating', pub: operating.pub }, { role: 'recovery', pub: recovery.pub }];
+    assert.equal(keys.whichKey(file, operating.sign(file, '0.7.2'), builtIn).role, 'operating');
+    const byRecovery = keys.whichKey(file, recovery.sign(file, '0.7.2'), builtIn);
+    assert.equal(byRecovery.role, 'recovery');
+    assert.equal(byRecovery.comment.version, '0.7.2');
+    assert.equal(keys.whichKey(file, stranger.sign(file, '0.7.2'), builtIn), null);
+    // The trusted comment is covered: a version changed after signing fails the global signature.
+    const forged = Buffer.from(Buffer.from(recovery.sign(file, '0.7.2'), 'base64').toString().replace('version:0.7.2', 'version:0.7.3')).toString('base64');
+    assert.equal(keys.whichKey(file, forged, builtIn), null);
+    const signed = operating.sign(file, '0.7.2');
+    fs.appendFileSync(file, 'x');
+    assert.equal(keys.whichKey(file, signed, builtIn), null);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 function signature({ version, file }) {

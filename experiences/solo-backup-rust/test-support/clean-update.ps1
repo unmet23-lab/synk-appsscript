@@ -1,17 +1,21 @@
 # The updater, end to end, on a clean Windows runner (STAGE1_DESIGN.md 4.10 · T19). PowerShell 7.
-# Two builds of these sources made for this test only — 0.7.0 and 0.7.1, both with a throwaway public key made in this
-# run, a feed on 127.0.0.1 and plain HTTP allowed (the release build has none of that) — and that key's private half.
+# Three builds of these sources made for this test only — 0.7.0, 0.7.1 and 0.7.2, each with the throwaway operating and
+# recovery public keys made in this run, a feed on 127.0.0.1 and plain HTTP allowed (the release build has none of that)
+# — and those keys' private halves.
 # 0.7.0 is installed silently, the runner's administrator sets up a local profile and registers its four runs, then
 # the installed window app checks and installs against feeds this script serves:
 #   no feed → a check fails and says so in update.json · the installed version announced → nothing to do · a package
 #   whose bytes were changed · one signed with another key · 0.7.0's package announced as 0.7.1 · one signed without a
 #   version → each refused (exit 3) with nothing installed · this user's engine lock held → refused (exit 75) ·
-#   the real 0.7.1 → installed in place: its files, the four runs and the user state stay, the next check finds nothing.
+#   the real 0.7.1 → installed in place: its files, the four runs and the user state stay, the next check finds nothing ·
+#   0.7.2 signed with the recovery key (a third throwaway key, built into all three as the recovery key) → accepted
+#   once the operating key's check fails, and installed in place.
 # Then the window app's notice for an install that stopped part way, and the uninstaller after the update.
 # Synthetic only; the key is thrown away with the runner. Never run it on a person's PC: it installs and uninstalls.
 param(
   [Parameter(Mandatory = $true)][string]$SetupA,
   [Parameter(Mandatory = $true)][string]$SetupB,
+  [Parameter(Mandatory = $true)][string]$SetupC,
   [Parameter(Mandatory = $true)][string]$ReceiptB,
   [Parameter(Mandatory = $true)][string]$Keys,
   [Parameter(Mandatory = $true)][string]$Tauri,
@@ -173,6 +177,25 @@ Expect ($lost.Count -eq 0) "the user state stays as it was ($($stateBefore.Count
 Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'the updated run executable backs up the same profile'
 $r = Update '--update-check' 'check-after'
 Expect ($r.Code -eq 0 -and $null -eq (Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw | ConvertFrom-Json).available) "after the update nothing newer is announced ($($script:results['check-after'].out))"
+
+# 4b. The day the operating key is lost: 0.7.2 signed with the recovery key. The updater's own check (the operating key)
+#     refuses it, and the check made again with the recovery key built into the app accepts it (4.10 「열쇠 보관」).
+$recovered = Join-Path $feed 'SynkWorkBackup-0.7.2-setup.exe'
+Copy-Item -LiteralPath $SetupC -Destination $recovered
+Feed '0.7.2' 'SynkWorkBackup-0.7.2-setup.exe' (Sign $recovered (Join-Path $Keys 'recovery.key') '0.7.2')
+$clock = [Diagnostics.Stopwatch]::StartNew()
+$r = Update '--update-install' 'install-recovery'
+Expect ($r.Code -eq 0 -and ($r.Lines | Where-Object { $_.installing -eq '0.7.2' })) "a package signed with the recovery key: accepted ($($script:results['install-recovery'].out))"
+$steady = 0
+while ($clock.Elapsed.TotalMinutes -lt 10 -and $steady -lt 10) {
+  Start-Sleep -Seconds 1
+  if ((Version) -eq '0.7.2' -and -not (Test-Path -LiteralPath (Join-Path $dir '.installing'))) { $steady++ } else { $steady = 0 }
+}
+$script:results['recoverySeconds'] = [math]::Round($clock.Elapsed.TotalSeconds, 1)
+Expect ((Version) -eq '0.7.2') "0.7.2 installed in place from the recovery key's package ($(Version), $($script:results['recoverySeconds']) s)"
+Expect (@(RunTasks).Count -eq 4) "the four runs stay after the second update ($(@(RunTasks).Count))"
+Get-Process -Name WorkBackup -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Sleep -Seconds 2
 
 # 5. An install that stopped part way: the run executable only moved aside. The window app says so (it stays on its
 #    message until closed) instead of starting.

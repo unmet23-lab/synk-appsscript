@@ -1,6 +1,7 @@
-//! Updates (STAGE1_DESIGN.md 4.10): the Tauri updater, checked against the public key built into the
-//! app (tauri.conf.json `plugins.updater.pubkey`) and bound to the version each package was signed for
-//! (`requireSignedVersion`). The package is the NSIS installer itself; installing it asks the
+//! Updates (STAGE1_DESIGN.md 4.10): the Tauri updater, checked against the operating key built into the
+//! app (tauri.conf.json `plugins.updater.pubkey`), or else the recovery key (`plugins.synkUpdate.recoveryPubkey`),
+//! and bound to the version each package was signed for (`requireSignedVersion`). The keys are made and kept by
+//! `scripts/update-keys.cjs`. The package is the NSIS installer itself; installing it asks the
 //! administrator prompt once, and the installer refuses to go down a version (`allowDowngrades` off).
 //!
 //! The window app runs this headless (`WorkBackup.exe --update-check` · `--update-install`, and a
@@ -42,14 +43,22 @@ pub fn configured<R: Runtime>(app: &AppHandle<R>) -> bool {
     app.config().plugins.0.get("updater").and_then(|u| u.get("pubkey")).and_then(Value::as_str).is_some_and(|k| !k.trim().is_empty())
 }
 
-async fn find<R: Runtime>(app: &AppHandle<R>, timeout: Duration) -> Result<Option<Update>, &'static str> {
+/// The recovery key's public half (tauri.conf.json `plugins.synkUpdate.recoveryPubkey`). A package signed with it is
+/// accepted when the operating key's check fails — for the day the operating key is lost (4.10 「열쇠 보관」, the PC
+/// app's shape). The updater itself trusts one key, so the check is made again with this one.
+pub fn recovery_key(section: Option<&Value>) -> Option<String> {
+    section.and_then(|u| u.get("recoveryPubkey")).and_then(Value::as_str).map(str::trim).filter(|k| !k.is_empty()).map(str::to_owned)
+}
+
+async fn find<R: Runtime>(app: &AppHandle<R>, timeout: Duration, key: Option<&str>) -> Result<Option<Update>, &'static str> {
     if !configured(app) { return Err("UPDATE_NOT_CONFIGURED"); }
-    let updater = app.updater_builder().timeout(timeout).build().map_err(|e| code(&e))?;
+    let builder = app.updater_builder().timeout(timeout);
+    let updater = match key { Some(key) => builder.pubkey(key), None => builder }.build().map_err(|e| code(&e))?;
     updater.check().await.map_err(|e| code(&e))
 }
 
 /// Asks the feed whether a newer version is there. `Ok(None)`: this is the newest.
-pub async fn check<R: Runtime>(app: &AppHandle<R>) -> Result<Option<Update>, &'static str> { find(app, CHECK_TIMEOUT).await }
+pub async fn check<R: Runtime>(app: &AppHandle<R>) -> Result<Option<Update>, &'static str> { find(app, CHECK_TIMEOUT, None).await }
 
 /// What `update.json` says after a check.
 pub fn record(current: &str, available: Option<&str>, error: Option<&str>, now_ms: u64) -> Value {
@@ -87,9 +96,19 @@ pub fn due(record: &Value, now_ms: u64) -> bool {
 /// and the install folder is checked once more, so a failure before that never follows a 「started」 (카본 끝판 A2).
 pub async fn install<R: Runtime>(app: &AppHandle<R>, root: &Path, started: impl FnOnce(&str)) -> Result<(), &'static str> {
     let _engine = crate::platform::try_lock(root, crate::platform::ENGINE_LOCK).map_err(|_| "STATE_LOCK")?.ok_or("RUN_ACTIVE")?;
-    let update = find(app, DOWNLOAD_TIMEOUT).await?.ok_or("UP_TO_DATE")?;
+    let mut update = find(app, DOWNLOAD_TIMEOUT, None).await?.ok_or("UP_TO_DATE")?;
     // The plugin's download checks the signature and the signed version; its own install is not used (launch).
-    let bytes = update.download(|_, _| {}, || {}).await.map_err(|e| code(&e))?;
+    // A signature the operating key does not verify is checked once more against the recovery key; any other refusal
+    // (a wrong or missing signed version included) stays a refusal.
+    let bytes = match update.download(|_, _| {}, || {}).await {
+        Ok(bytes) => bytes,
+        Err(Error::Minisign(_)) if recovery_key(app.config().plugins.0.get("synkUpdate")).is_some() => {
+            let key = recovery_key(app.config().plugins.0.get("synkUpdate")).unwrap_or_default();
+            update = find(app, DOWNLOAD_TIMEOUT, Some(&key)).await?.ok_or("UP_TO_DATE")?;
+            update.download(|_, _| {}, || {}).await.map_err(|e| code(&e))?
+        }
+        Err(e) => return Err(code(&e)),
+    };
     let version = version_text(&update.version).ok_or("UPDATE_FEED")?;
     let folder = std::env::current_exe().ok().and_then(|exe| exe.parent().map(Path::to_path_buf)).ok_or("EXECUTABLE")?;
     launch(&bytes, &version, &folder, || started(&version))
@@ -222,6 +241,13 @@ mod tests {
         drop(held);
         fs::remove_dir_all(&root).unwrap();
     }
+    #[test] fn the_recovery_key_is_read_only_when_it_is_there() {
+        assert_eq!(recovery_key(Some(&json!({"recoveryPubkey": " abc "}))).as_deref(), Some("abc"));
+        assert_eq!(recovery_key(Some(&json!({"recoveryPubkey": ""}))), None);
+        assert_eq!(recovery_key(Some(&json!({"other": "abc"}))), None);
+        assert_eq!(recovery_key(None), None);
+    }
+
     #[test] fn the_hand_over_succeeds_only_when_the_marker_is_seen() {
         let never = None::<fn(Duration) -> Option<bool>>;
         // The marker comes while the installer runs.

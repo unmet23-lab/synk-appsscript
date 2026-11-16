@@ -4,8 +4,9 @@ name: workbackup-clean-windows
 # build: 배포 판과 NSIS 설치기를 이 원천에서 한 번 빌드한다.
 # install: 컴퓨터 전체 설치기(4.2 「컴퓨터 전체 설치」) — 조용히 설치, 파일 · 권한 · 등록 · 바로 가기 · 작업 폴더, 표준 사용자 등록,
 #   다시 설치, 지우기(test-support/installer-check.ps1).
-# update: 이 실행에서 만든 버리는 시험 열쇠로 0.7.0과 0.7.1을 빌드해, 서명이 맞는 묶음만 깔리고 틀린 묶음 · 다른 열쇠 · 판 번호가
-#   안 맞는 묶음은 거절되며 갱신 뒤 회차 작업과 사용자 상태가 남는지 본다(test-support/clean-update.ps1). 실제 서명 열쇠는 쓰지 않는다.
+# update: 이 실행에서 만든 버리는 시험 열쇠(운영 · 비상 · 엉뚱한 열쇠)로 0.7.0 · 0.7.1 · 0.7.2를 빌드해, 서명이 맞는 묶음만 깔리고
+#   틀린 묶음 · 다른 열쇠 · 판 번호가 안 맞는 묶음은 거절되며 갱신 뒤 회차 작업과 사용자 상태가 남는지 본다. 0.7.2는 비상 열쇠로
+#   서명해, 운영 열쇠의 확인이 실패한 뒤 비상 열쇠로 다시 확인해 까는지 본다(test-support/clean-update.ps1). 실제 서명 열쇠는 쓰지 않는다.
 # backup → restore: 실행기 1에서 관리자와 표준 사용자가 합성 자료 D0를 백업하고(잠긴 파일의 부분 판, 표준 사용자는 섀도 복사본 없음),
 #   다른 깨끗한 실행기 2가 복구 키로 되살려 해시를 전수 대조한다(clean-backup.ps1 · clean-restore.ps1). 복구 키는 CI 씨앗 비밀값으로
 #   봉해 하루만 넘긴다. 저장소 이름과 비밀값을 쓰는 갈래는 이 저장소에서만 돈다. 포크의 PR은 이 작업 흐름을 띄우지 않는다
@@ -143,19 +144,21 @@ jobs:
           $keys = Join-Path $env:RUNNER_TEMP 'keys'
           New-Item -ItemType Directory -Force -Path $keys | Out-Null
           $tauri = Join-Path $env:SWB_APP 'node_modules/@tauri-apps/cli/tauri.js'
-          foreach ($name in 'good', 'wrong') {
+          foreach ($name in 'good', 'recovery', 'wrong') {
             node $tauri signer generate --ci -p clean-test -w (Join-Path $keys "$name.key") | Out-Null
             if ($LASTEXITCODE -ne 0) { throw "key $name not made" }
           }
           $pub = (Get-Content -LiteralPath (Join-Path $keys 'good.key.pub') -Raw).Trim()
-          foreach ($version in '0.7.0', '0.7.1') {
-            @{ version = $version; plugins = @{ updater = @{ pubkey = $pub; endpoints = @("http://127.0.0.1:$($env:SWB_FEED_PORT)/workbackup.json"); dangerousInsecureTransportProtocol = $true } } } |
+          $recovery = (Get-Content -LiteralPath (Join-Path $keys 'recovery.key.pub') -Raw).Trim()
+          # The release build's own keys are replaced by this run's throwaway ones, the recovery key included (4.10).
+          foreach ($version in '0.7.0', '0.7.1', '0.7.2') {
+            @{ version = $version; plugins = @{ updater = @{ pubkey = $pub; endpoints = @("http://127.0.0.1:$($env:SWB_FEED_PORT)/workbackup.json"); dangerousInsecureTransportProtocol = $true }; synkUpdate = @{ recoveryPubkey = $recovery } } } |
               ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP "override-$version.json") -Encoding utf8
           }
-      - name: build 0.7.0 and 0.7.1 for the test
+      - name: build 0.7.0, 0.7.1 and 0.7.2 for the test
         shell: pwsh
         run: |
-          foreach ($version in '0.7.0', '0.7.1') {
+          foreach ($version in '0.7.0', '0.7.1', '0.7.2') {
             & (Join-Path $env:SWB_APP 'scripts/build.ps1') -ResticPath $env:SWB_RESTIC -OutputDirectory (Join-Path $env:RUNNER_TEMP "wb-$version") `
               -InventoryBinDirectory (Join-Path $env:RUNNER_TEMP 'wb-inventory/release') -TargetDirectory (Join-Path $env:RUNNER_TEMP 'wb-target') `
               -ConfigOverride (Join-Path $env:RUNNER_TEMP "override-$version.json")
@@ -169,7 +172,8 @@ jobs:
         run: |
           $a = @(Get-ChildItem -LiteralPath (Join-Path $env:RUNNER_TEMP 'wb-0.7.0') -Filter '*-setup.exe')[0].FullName
           $b = @(Get-ChildItem -LiteralPath (Join-Path $env:RUNNER_TEMP 'wb-0.7.1') -Filter '*-setup.exe')[0].FullName
-          & (Join-Path $env:SWB_APP 'test-support/clean-update.ps1') -SetupA $a -SetupB $b -ReceiptB (Join-Path $env:RUNNER_TEMP 'wb-0.7.1/build-receipt.json') `
+          $c = @(Get-ChildItem -LiteralPath (Join-Path $env:RUNNER_TEMP 'wb-0.7.2') -Filter '*-setup.exe')[0].FullName
+          & (Join-Path $env:SWB_APP 'test-support/clean-update.ps1') -SetupA $a -SetupB $b -SetupC $c -ReceiptB (Join-Path $env:RUNNER_TEMP 'wb-0.7.1/build-receipt.json') `
             -Keys (Join-Path $env:RUNNER_TEMP 'keys') -Tauri (Join-Path $env:SWB_APP 'node_modules/@tauri-apps/cli/tauri.js') `
             -Probe (Join-Path $env:RUNNER_TEMP 'wb-out/schedule_probe.exe') -Work (Join-Path $env:RUNNER_TEMP 'update-check') -Port ([int]$env:SWB_FEED_PORT)
       - uses: actions/upload-artifact@v4

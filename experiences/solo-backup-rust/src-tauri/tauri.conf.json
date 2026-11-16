@@ -15,11 +15,12 @@
   "plugins": {
     "deep-link": { "desktop": { "schemes": ["synk-workbackup"] } },
     "updater": {
-      "pubkey": "",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU0NTBEQzE4NkVENzA2QTkKUldTcEJ0ZHVHTnhRNU1TSjllZTBJZFRyNlZIVE1IR1l2YiswcFdFdEFNSXMvc3luaEJPZVpnb3MK",
       "endpoints": ["https://synk.im/desktop/releases/workbackup.json"],
       "requireSignedVersion": true,
       "windows": { "installMode": "passive" }
-    }
+    },
+    "synkUpdate": { "recoveryPubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDREOUZENUU0RDhGREZCNkEKUldScSsvM1k1TldmVGRhdkk3QWJ2eHhKT3VlbFlJczZhOHN4bFBSUXY5ZmFjb2svQnkwUE9rcmcK" }
   },
   "bundle": {
     "active": true,
