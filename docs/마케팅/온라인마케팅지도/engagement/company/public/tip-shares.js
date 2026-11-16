@@ -1,7 +1,7 @@
 'use strict';
 // 공유한 게시물(2026-11-16): 텔레그램으로 공유한 게시물의 판단(시안 · 기록 · 기각)과 진행을 보고, 나온 시안을 「적용해」 · 「버림」으로 고른다.
 // 관리자만 쓴다. 자료는 /api/tip-shares 한 벌이고, 고른 것은 PC가 장부의 상태 칸에 옮긴다(누른 뒤 90초쯤은 되돌릴 수 있다).
-const tipShares={userId:null,data:null,loading:false,queued:false,error:'',busy:new Set(),loadedAt:0,request:0,filter:'all',open:new Set(),openCards:new Set(),focus:'',badgeTried:false,painted:'',triedAt:0,readFailed:false};
+const tipShares={userId:null,data:null,loading:false,queued:false,error:'',busy:new Set(),loadedAt:0,request:0,filter:'all',open:new Set(),openCards:new Set(),focus:'',painted:'',triedAt:0,readFailed:false};
 // 화면이 보이는 동안 이만큼 지나면 조용히 다시 읽는다. 서랍의 수도 이보다 오래됐으면 다시 읽는다.
 const TIP_REFRESH_MS=60000;
 // 어긋남 글은 이만큼 지나면 내린다.
@@ -14,7 +14,7 @@ const TIP_STALE_MS=30*60000;
 function tipSharesIdentity(){
   const id=state.user?.id||null;
   if(tipShares.userId===id)return;
-  Object.assign(tipShares,{userId:id,data:null,loading:false,queued:false,error:'',loadedAt:0,filter:'all',focus:'',badgeTried:false,painted:'',triedAt:0,readFailed:false});
+  Object.assign(tipShares,{userId:id,data:null,loading:false,queued:false,error:'',loadedAt:0,filter:'all',focus:'',painted:'',triedAt:0,readFailed:false});
   tipShares.busy=new Set();tipShares.open=new Set();tipShares.openCards=new Set();tipShares.request++;
 }
 function tipSharesAllowed(){return Boolean(state.user)&&isAdmin()&&!(typeof isDemoMode==='function'&&isDemoMode());}
@@ -67,7 +67,8 @@ async function tipSharesLoad({quiet=false}={}){
     tipShares.data=data;tipShares.error='';tipShares.loadedAt=Date.now();tipShares.readFailed=false;
   }catch(error){
     if(request!==tipShares.request||user!==tipShares.userId)return;
-    if(!quiet||!tipShares.data)tipShares.error=error.message||'공유한 게시물을 불러오지 못했어요.';
+    // 조용한 읽기(서랍의 수, 주기 읽기)의 실패는 오류로 굳히지 않는다. 받은 것이 없는 채로 이 화면을 보고 있을 때만 오류를 보인다.
+    if(!quiet||!tipShares.data&&state.tab==='tips')tipShares.error=error.message||'공유한 게시물을 불러오지 못했어요.';
     else tipShares.readFailed=true;
   }finally{
     if(request===tipShares.request){tipShares.loading=false;tipSharesPaint();}
@@ -96,8 +97,9 @@ async function tipSharesMutate(path,body,row,nextFocus){
 function tipSharesBadge(){
   tipSharesIdentity();
   if(!tipSharesAllowed())return '';
-  const old=tipShares.data?Date.now()-Math.max(tipShares.loadedAt,tipShares.triedAt)>2*TIP_REFRESH_MS:!tipShares.badgeTried;
-  if(old&&!tipShares.loading&&!tipShares.queued&&!tipShares.error){tipShares.badgeTried=true;tipShares.queued=true;queueMicrotask(()=>{tipShares.queued=false;void tipSharesLoad({quiet:true});});}
+  // 받은 것도 시도한 것도 2분보다 오래됐으면 다시 읽는다(처음에는 둘 다 0이라 바로 읽는다). 실패한 뒤에도 2분 뒤 다시 읽는다.
+  const old=Date.now()-Math.max(tipShares.loadedAt,tipShares.triedAt)>2*TIP_REFRESH_MS;
+  if(old&&!tipShares.loading&&!tipShares.queued){tipShares.queued=true;queueMicrotask(()=>{tipShares.queued=false;void tipSharesLoad({quiet:true});});}
   const count=tipShares.data?.waiting||0;
   return `<span class="ts-drawer-badge" data-tip-badge>${tipBadgeInner(count)}</span>`;
 }
@@ -140,8 +142,9 @@ function tipRowItem(row){
   const decided=!row.pending&&row.decision&&sameWay?`<span class="ts-row-when">${escape(tipDate(row.decision.requestedAt))}에 ${escape(tipChoiceLabel(row.decision.to))} 정했어요</span>`:'';
   const conflict=!row.pending&&row.decision?.outcome==='conflict'&&!sameWay&&Date.now()-Date.parse(row.decision.requestedAt)<TIP_CONFLICT_SHOW_MS?'<span class="ts-row-when is-warn">장부가 먼저 바뀌어 옮기지 않았어요</span>':'';
   const noId=!row.pending&&!conflict&&row.stage==='시안 나옴'&&row.status==='새로'&&!row.postId?'<span class="ts-row-when is-warn">게시물 번호가 없어 여기서는 고를 수 없어요</span>':'';
-  const noteLabel=row.stage==='보류'?'멈춘 까닭':row.verdict==='기각'?'사유':'가져올 것';
-  const noteText=row.stage==='보류'&&row.stageNote?row.stageNote:row.note;
+  const holdNote=row.stage==='보류'&&row.stageNote?row.stageNote:'';
+  const noteLabel=holdNote?'멈춘 까닭':row.verdict==='기각'?'사유':'가져올 것';
+  const noteText=holdNote||row.note;
   const open=tipShares.open.has(tipRowKey(row));
   const draft=row.draft?.url?tipLink(row.draft.url,'시안 보기'):'';
   const place=!row.draft?.url&&row.draft?.text?`<p class="ts-row-note ts-row-place"><span>시안이 있는 곳</span> ${escape(row.draft.text)}</p>`:'';
@@ -189,7 +192,8 @@ function tipSharesBody(){
 
 function tipSharesFresh(){
   const data=tipShares.data;
-  if(!data?.receivedAt)return tipShares.readFailed?'<span class="ts-fresh is-stale">다시 읽지 못했어요</span>':'';
+  // 한 번도 받지 못했으면(서랍의 첫 읽기 실패) 「다시」라고 하지 않는다. 받은 장부가 아직 비었을 때만 이 글을 보인다.
+  if(!data?.receivedAt)return data&&tipShares.readFailed?'<span class="ts-fresh is-stale">다시 읽지 못했어요</span>':'';
   const stale=tipStale(data);
   const failed=tipShares.readFailed?' · 다시 읽지 못했어요':'';
   return `<span class="ts-fresh${stale||failed?' is-stale':''}" title="${escape(tipTime(data.receivedAt))}에 받은 장부">${stale?`${escape(tipAgo(data.receivedAt))}에 받은 장부예요`:`장부 ${escape(tipTime(data.receivedAt).replace(/^\d+월 \d+일 /,''))} 기준`}${failed}</span>`;

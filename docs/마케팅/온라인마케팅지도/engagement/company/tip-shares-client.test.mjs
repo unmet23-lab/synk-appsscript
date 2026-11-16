@@ -109,6 +109,10 @@ test('the list shows verdict, stage, the 보류 reason, the 기각 reason and th
   const body=f.run('tipSharesBody()');
   assert.match(body,/<span>사유<\/span> 우리와 맞지 않음/);
   assert.match(body,/<span>멈춘 까닭<\/span> 유호님 차례: 채널 이름 정하기/);
+  // 보류 까닭이 비어 있는 줄은 가져올 것을 「멈춘 까닭」으로 보이지 않는다.
+  const bare=fixture({api:async()=>data([row({row:61,stage:'보류',stageNote:'',note:'채운 단추 하나에만',decidable:false})])});await bare.run('tipSharesLoad()');
+  const bareBody=bare.run('tipSharesBody()');
+  assert.match(bareBody,/<span>가져올 것<\/span> 채운 단추 하나에만/);assert.equal(bareBody.includes('멈춘 까닭'),false);
   assert.match(body,/11월 16일에 적용하기로 정했어요/,'18:30 UTC on the 15th is the 16th in Korea');
   assert.match(body,/<span class="ts-verdict is-wait">판단 중<\/span>/);
   assert.match(body,/data-tip-filter="기각"[^>]*>기각<span class="ts-filter-count">1<\/span>/);
@@ -211,6 +215,31 @@ test('a failing quiet read is marked, keeps the minute between tries and does no
   const empty=fixture({api:async()=>{if(first){first=false;return {ready:false,generatedAt:null,receivedAt:null,canDecide:false,waiting:0,rows:[]};}throw new Error('서버 오류');}});
   await empty.run('tipSharesLoad()');await empty.run('tipSharesLoad({quiet:true})');
   assert.match(empty.run('tipSharesFresh()'),/다시 읽지 못했어요/);
+});
+
+test('a failed first drawer read is not an error: the drawer tries again later and the page still loads on its own',async()=>{
+  let n=0;
+  const failOnce=async()=>{n++;if(n===1)throw new Error('서버 오류');return data();};
+  const f=fixture({api:failOnce,tab:'home'});
+  f.run('tipSharesBadge()');await tick();await tick();
+  assert.equal(f.run('tipShares.error'),'','a quiet read from the drawer does not leave an error behind');
+  assert.equal(f.run('tipShares.readFailed'),true);
+  assert.equal(f.run('tipSharesFresh()'),'','nothing was ever received, so the head does not say it could not read again');
+  f.run('tipSharesBadge()');await tick();await tick();
+  assert.equal(f.calls.filter(c=>c[0]==='/api/tip-shares').length,1,'the drawer waits before the next try');
+  f.run('tipShares.triedAt=Date.now()-130000');f.run('tipSharesBadge()');await tick();await tick();
+  assert.equal(f.calls.filter(c=>c[0]==='/api/tip-shares').length,2,'the drawer tries again later');
+  assert.match(f.run('tipSharesBadge()'),/nav-badge/);
+  n=0;
+  const g=fixture({api:failOnce,tab:'home'});
+  g.run('tipSharesBadge()');await tick();await tick();
+  g.run("state.tab='tips'");g.run('tipSharesPage()');await tick();await tick();
+  assert.equal(g.calls.filter(c=>c[0]==='/api/tip-shares').length,2,'opening the page reads again instead of showing the drawer failure');
+  assert.equal(g.run('tipSharesBody()').includes('role="alert"'),false);
+  // 받은 것이 없는 채로 이 화면에서 조용한 읽기가 실패하면 다시 불러오기 단추를 보인다.
+  const h=fixture({api:async()=>{throw new Error('서버 오류');}});
+  await h.run('tipSharesLoad({quiet:true})');
+  assert.match(h.run('tipSharesBody()'),/role="alert"><p>서버 오류<\/p><button[^>]*data-tip-action="refresh"/);
 });
 
 test('no snapshot yet, a stale snapshot and a failed read each say so',async()=>{
