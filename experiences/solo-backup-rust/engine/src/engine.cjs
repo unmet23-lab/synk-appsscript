@@ -404,6 +404,8 @@ class BackupEngine extends EventEmitter {
   async operation(kind, fn, note = {}) {
     if (this.job || this.stopping) throw new Error('진행 중인 작업이 끝난 뒤 다시 눌러 주세요.');
     if (this.config && !['protect', 'probe'].includes(kind)) this.config.protectRun = null;
+    // A move started again says nothing of the last one's failure while it runs (화면 세션 E4); a new failure is written below.
+    if (kind === 'move' && this.config?.lastMoveError) this.config.lastMoveError = null;
     this.job = { kind, stage: '준비 중', percent: null }; this.emitState();
     try {
       const value = await fn();
@@ -709,7 +711,14 @@ class BackupEngine extends EventEmitter {
     await this.save(); return this.getState();
   }
   // The folders as a setup would take them, without changing anything (the seat is taken only after this passes).
-  checkSources(sources) { return validateSources(sources, this.forbidden()); }
+  // 화면 세션 E15: folders that are not there (an empty folder a move did not make, one moved away since) are named
+  // together, so the screen leaves them out and tries again.
+  async checkSources(sources) {
+    const missing = [];
+    for (const source of Array.isArray(sources) ? sources.slice(0, 30) : []) { try { await fs.readdir(await directory(source)); } catch { missing.push(source); } }
+    if (missing.length) throw Object.assign(new Error('없거나 열 수 없는 폴더가 있습니다. 그 폴더를 빼고 다시 골라 주세요.'), { code: 'SOURCES_MISSING', details: { paths: missing.map(p => String(p).slice(0, 1024)) } });
+    return validateSources(sources, this.forbidden());
+  }
   // The account's write seat went to another PC (4.6 다시 확인 N2): this PC rests and says so until it takes the seat
   // back (「이 PC로 다시 백업」). Written from the server status, by the run and the window.
   async markMoved({ device, at }) {

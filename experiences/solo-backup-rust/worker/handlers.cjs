@@ -69,6 +69,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   // The reinstall runs beside the window's other work: it never reads the repository, so it holds no engine job and a
   // scheduled backup is not kept waiting for it (up to hours).
   let reinstallJob = null;
+  let moveProgress = null;
   launchAtLogin = await host('startup.read', []);
   const recommended = new RecommendedBackup({root:path.join(root,'recommended'),workRoot:workRoot?path.join(workRoot,'recommended'):null,resticPath,secretStore,
     plannerPath:path.join(path.dirname(resticPath),'WorkBackupPlanner.exe'),inventoryPath:path.join(path.dirname(resticPath),'WorkBackupInventory.exe'),
@@ -85,7 +86,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   await recommended.open();recommended.onChange=()=>push();
   function state() {
     const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(),
-      move:{ reinstall: reinstallJob ? { ...reinstallJob } : null }};
+      move:{ reinstall: reinstallJob ? { ...reinstallJob } : null, progress: moveProgress && cloud().job?.kind === 'move' ? { bytes: moveProgress.bytes, total: moveProgress.total, folder: moveProgress.folder, bytesPerSecond: moveProgress.bytesPerSecond } : null }};
     withRun(value);
     return {...value, protection:protection(value,{startupRegistered:launchAtLogin})};
   }
@@ -180,14 +181,16 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     handle('chooseSources', async ({ engine, selection }) => {
       if (engine.isCloud() && engine.config?.mode === 'restore') {
         const picked = await folder('이 PC에서 백업할 작업 폴더 선택', true);
-        if (picked) {
+        // 화면 세션 E14: the dialog closed without a folder is not 「the same folders again」.
+        if (!picked) throw Object.assign(new Error('폴더를 고르지 않았습니다.'), { code: 'CANCELED' });
+        {
           if (!await engineLock()) throw Object.assign(new Error('예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.'), { code: 'RUN_ACTIVE' });
           try { await profiles.engines.b2.chooseNextSources(picked); } finally { engineUnlock(); }
         }
         return [...(profiles.engines.b2.config?.nextSources || [])];
       }
       if (engine.config?.repositoryId || (engine.isCloud() && engine.config)) throw new Error('설정한 작업 폴더는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업할 작업 폴더 선택', true); if (picked) { await engine.resetUnfinishedSetup(); selection.sources = picked; } return [...selection.sources];
-    }, { lock: false });
+    }, { lock: false, codes: true });
     // Folders after setup (STAGE1_DESIGN.md 4.2 「폴더 더하기 · 빼기」): the dialog first, and only then the engine lock
     // for the change — a scheduled run is not held up while a dialog is open. Taking one out says its backups go in 30 days.
     async function changeSources(next) {
@@ -367,9 +370,40 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       const from = await moveFrom(v), choices = placesOf(v);
       // Again after the wait: this request holds the window's slot (dialogBusy), so none should have started meanwhile.
       if (reinstallJob?.running) throw reinstalling();
-      return launchJob(engine, () => engine.operation('move', () => move.start({ from, choices, onProgress: p => engine.stage('옮겨 오는 중', Number.isFinite(p.percent) ? p.percent : null) })));
+      moveProgress = null;
+      return launchJob(engine, () => engine.operation('move', () => move.start({ from, choices, onProgress: p => { trackMove(p); engine.stage('옮겨 오는 중', Number.isFinite(p.percent) ? p.percent : null); } })));
+    }, { codes: true });
+    // 화면 세션 E6: only a place the last move's result names opens (its side folder, a new folder, a root).
+    handle('moveOpen', async (_context, input) => {
+      const v = objectInput(input);
+      if (typeof v.path !== 'string' || v.path.length > 1024) throw moveRefused();
+      const target = (await move.places()).find(p => p.toLowerCase() === v.path.toLowerCase());
+      if (!target) throw Object.assign(new Error('옮겨 온 결과에 없는 자리입니다.'), { code: 'BAD_INPUT' });
+      try { await require(path.join(engineRoot, 'src/paths.cjs')).directory(target); }
+      catch { throw Object.assign(new Error('그 폴더가 지금 없습니다.'), { code: 'MOVE_GONE' }); }
+      await host('openPath', [target]); return null;
+    }, { read: true, codes: true });
+    // 화면 세션 E10: a restore-only connection keeps the folders it will back up once it takes the seat, by path — the
+    // places the last move put files (not 「따로 둔 것」) or folders already kept; no dialog.
+    handle('setNextSources', async (_context, input) => {
+      const v = objectInput(input);
+      if (!Array.isArray(v.sources) || !v.sources.length || v.sources.length > 30 || v.sources.some(p => typeof p !== 'string' || p.length > 1024)) throw moveRefused();
+      const allowed = [...await move.places({ keep: true }), ...(profiles.engines.b2.config?.nextSources || [])];
+      const picked = v.sources.map(p => allowed.find(a => a.toLowerCase() === p.toLowerCase()));
+      if (picked.some(p => !p)) throw Object.assign(new Error('옮겨 온 자리나 이미 고른 폴더만 적을 수 있습니다.'), { code: 'BAD_INPUT' });
+      await profiles.engines.b2.chooseNextSources([...new Set(picked)]);
+      return [...(profiles.engines.b2.config?.nextSources || [])];
     }, { codes: true });
     handle('moveResult', () => move.result(), { read: true });
+    // 화면 세션 E7: the move's bytes, total and folder as they come, and a speed over at least five seconds (no time is
+    // guessed here: the screen says what it can from these).
+    function trackMove(p) {
+      const now = Date.now(), prev = moveProgress;
+      let rate = prev?.bytesPerSecond ?? null, mark = prev?.mark || { t: now, bytes: p.bytes || 0 };
+      if (now - mark.t >= 5000) { const r = Math.max(0, ((p.bytes || 0) - mark.bytes) / ((now - mark.t) / 1000)); rate = rate == null ? r : rate * 0.6 + r * 0.4; mark = { t: now, bytes: p.bytes || 0 }; }
+      moveProgress = { bytes: Number.isSafeInteger(p.bytes) ? p.bytes : null, total: Number.isSafeInteger(p.total) ? p.total : null, folder: typeof p.folder === 'string' ? p.folder : null,
+        bytesPerSecond: rate == null ? null : Math.round(rate), mark };
+    }
     // A move stopped part-way is told by its state (화면 세션 E1); `running`: one runs in this window now.
     handle('moveState', async () => ({ ...await move.status(), running: cloud().job?.kind === 'move' }), { read: true });
     handle('moveReinstallList', () => move.reinstallList(), { codes: true });

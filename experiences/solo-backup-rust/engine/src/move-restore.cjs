@@ -60,7 +60,7 @@ async function readMoveList(input) {
     if (kind !== 'node' || typeof node.path !== 'string' || !node.path.startsWith('/')) throw new Error('복구 목록 형식을 확인하지 못했습니다.');
     const name = node.path.slice(1), lower = name.toLowerCase();
     if (!name || name.split('/').some(p => !p || p === '.' || p === '..')) throw new Error('복구 목록 형식을 확인하지 못했습니다.');
-    if (nodes.size + aside.size + skipped.length >= MAX_NODES) throw new Error('작업 폴더 하나당 파일 · 폴더 100만 개까지 옮겨 옵니다.');
+    if (nodes.size + aside.size + skipped.length >= MAX_NODES) throw Object.assign(new Error('작업 폴더 하나당 파일 · 폴더 100만 개까지 옮겨 옵니다.'), { code: 'MOVE_LIST_TOO_BIG' });
     const above = aboveSkipped(skippedDirs, name);
     const reason = above ? above : !['file', 'dir'].includes(node.type) ? (node.type === 'symlink' ? 'link' : 'special') : !name.split('/').every(plan.safeName) ? 'name' : null;
     if (reason) { skipped.push({ name, type: node.type, reason }); if (node.type === 'dir' || node.type === 'symlink') skippedDirs.set(name, reason); return; }
@@ -154,7 +154,10 @@ class Move {
     const add = (result, item) => { counts[result] = (counts[result] || 0) + 1; if (!['placed', 'same'].includes(result) && items.length < 5000) items.push({ result, ...item }); };
     for (const { result, item } of this.final.values()) add(result, item);
     for (const item of this.folderSkips.values()) add('folder-skip', item);
-    const unverified = [...this.final.values()].some(v => v.result === 'onedrive' && v.item.u);
+    // 화면 세션 E5: an OneDrive file whose content could not be checked is counted on its own too (`unverified`, a part
+    // of `onedrive`), so a move that is not complete only for them says why.
+    const unverified = [...this.final.values()].filter(v => v.result === 'onedrive' && v.item.u).length;
+    if (unverified) counts.unverified = unverified;
     return { counts, items, removedTemp, complete: !unverified && !UNFINISHED.some(r => counts[r]) };
   }
   async record(original, name, result, extra = {}) {
@@ -292,6 +295,7 @@ class Move {
   }
   async folder(folder) {
     const { original, selector, listing, extra } = folder;
+    this.current = original; // 화면 세션 E7: the folder the progress names
     const wanted = (name, node) => SETTLED.has(this.done.get(fileKey(original, name))) ? null : this.place(folder, node);
     const files = () => [...listing.nodes.values(), ...listing.aside.values()].filter(n => n.type === 'file');
     const left = files().filter(n => !SETTLED.has(this.done.get(fileKey(original, n.name))));
@@ -367,7 +371,7 @@ class Move {
     try {
       const folders = this.folders || await this.prepare();
       const view = await this.preview();
-      if (view.volumes.some(v => v.enough === false)) throw new Error('되살릴 파일을 놓을 공간이 부족합니다. 다른 자리를 골라 주세요.');
+      if (view.volumes.some(v => v.enough === false)) throw Object.assign(new Error('되살릴 파일을 놓을 공간이 부족합니다. 다른 자리를 골라 주세요.'), { code: 'MOVE_NO_SPACE' });
       this.total = view.bytes;
       if (!resumed.lines) await this.ledger.write({ t: 'head', v: 1, moveId: this.moveId, from: this.from, at: new Date().toISOString(),
         folders: folders.map(f => ({ original: f.original, snapshot: f.selector.split(':')[0], mode: this.choices[f.original]?.mode || f.fp.mode })) }, true);

@@ -28,6 +28,43 @@ async function writeJson(file, value) { await fs.mkdir(path.dirname(file), { rec
  * has no root, a skipped folder none at all. At most ROOTS roots (`rootsCut` then).
  */
 const ROOTS = 32;
+/** A move started and not finished since (화면 세션 E1 · E13): no result, or a result older than the start — a finished
+ *  move started again keeps the last result until the new one is written. */
+const unfinishedOf = st => {
+  const started = Date.parse(st?.startedAt);
+  return Number.isFinite(started) && !(Date.parse(st?.result?.at) >= started);
+};
+/**
+ * What a start writes into the state (pure, for the tests): an unfinished move of the same old device goes on under its
+ * number, and once it has begun placing files (`started`: its ledger has lines) with the places it was started with
+ * (화면 세션 E9 — also after this PC took the write seat, 4.6 「넘겨받은 뒤에도 그 장부로 이어서 끝낼 수 있다」). One
+ * that stopped before writing anything (no space where it was to go, GPT workbackup-move4b GA1) takes the new places; a
+ * finished one starts again under a new number and keeps its last result until
+ * the new one is written (E13). Another old device: its last result, ticks, installs and settings do not carry over
+ * (카본 끝판 E4). The start holds the old device's backup again (pinMove), so a release from before no longer stands
+ * (마지막 끝판 카본 B1).
+ */
+function startState(before, { from, choices, now = new Date(), id = newId, started = true }) {
+  const resume = !!before.moveId && before.from === from && unfinishedOf(before);
+  const kept = resume && started && before.choices && typeof before.choices === 'object' && !Array.isArray(before.choices) ? before.choices : choices;
+  const other = before.from !== undefined && before.from !== from ? { checked: [], reinstall: null, settings: null, result: null } : {};
+  return { moveId: resume ? before.moveId : id(), from, choices: kept, startedAt: now.toISOString(), released: null, ...other };
+}
+const CODE = /^[A-Z][A-Z_]{1,31}$/;
+/** A failure's code for `lastMoveError` (화면 세션 E4). The move's own refusals carry theirs (MOVE_NO_SPACE ·
+ *  MOVE_LIST_TOO_BIG); this PC's profile not read, the old device's backup gone, and a lost connection are told by
+ *  their words. The rest stays MOVE_FAILED (and a held repository BUSY) in the engine. */
+function moveCode(e) {
+  if (!e || typeof e !== 'object' || CODE.test(e.code || '')) return e;
+  const text = String(e.message || '');
+  const code = /사용자 폴더를 확인하지 못했습니다/.test(text) ? 'MOVE_PROFILE'
+    : /no matching ID|snapshot .{0,80}not found|unable to load snapshot|could not find snapshot/i.test(text) ? 'MOVE_SNAPSHOT_GONE'
+    : /dial tcp|connection (?:reset|refused)|i\/o timeout|no such host|TLS handshake|network is unreachable|connectex/i.test(text) ? 'MOVE_NETWORK' : null;
+  if (code) e.code = code;
+  return e;
+}
+/** The sync a place is in (화면 세션 E3): 'oneDrive', another sync folder ('other' — Dropbox, Google Drive …), or null. */
+const syncOf = (p, snap) => (typeof p !== 'string' ? null : plan.oneDriveOf(p, snap) ? 'oneDrive' : plan.inSync(p, snap) ? 'other' : null);
 function placed(folders, choices, { old, now }) {
   const at = plan.places(now);
   return folders.map(f => {
@@ -103,6 +140,15 @@ class MoveService {
     const latest = folders.map(f => f.selector.split(':')[0]).find(Boolean);
     if (this.server && latest) await this.server.pinMove(latest).catch(() => {});
     const sameLooking = await this.sameLooking(move, folders);
+    // 화면 세션 E3: where each folder goes (its roots and their kinds) and the syncs on both PCs. A folder the old PC
+    // kept in OneDrive may come partly: online-only files were not in its backup (`partial`).
+    const where = new Map(placed(folders, choices, ctx).map((p, i) => [folders[i].original, { p, fp: folders[i].fp }]));
+    view.folders = view.folders.map(v => {
+      const w = where.get(v.original); if (!w) return v;
+      const oldSync = syncOf(v.original, ctx.old);
+      return { ...v, side: !!w.fp.side, sameAccount: !!w.fp.sameAccount, oldSync, newSync: w.fp.side ? null : syncOf(w.fp.destination, ctx.now), partial: oldSync === 'oneDrive',
+        roots: w.p.roots, ...(w.p.rootsCut ? { rootsCut: true } : {}) };
+    });
     return { from, kitAt: ctx.kit?.createdAt || null, kitProblems: ctx.problems, suggestKeepAsIs: sameLooking > 0.5, ...view };
   }
   /** Share of files a probe finds with the backup's size and time (「같은 PC를 다시 깐 경우」, 4.6) — an estimate only. */
@@ -115,30 +161,55 @@ class MoveService {
   }
   /** Runs (or resumes) the move under the engine's operation, so the window shows its stage and percent. */
   async start({ from, choices = {}, onProgress = () => {} }) {
+    try { return await this.run({ from, choices, onProgress }); } catch (e) { throw moveCode(e); }
+  }
+  async run({ from, choices, onProgress }) {
     // An unfinished run of the same old device goes on under its number. A finished one (complete or not) starts
-    // again under a new number, so the files it could not place are tried again.
-    const { moveId } = await this.update(before => {
-      const moveId = before.moveId && before.from === from && !before.result ? before.moveId : newId();
-      // Another old device: what the person ticked, installed and put back for the last one does not carry over (카본 끝판 E4).
-      const fresh = before.from !== undefined && before.from !== from ? { checked: [], reinstall: null, settings: null } : {};
-      // The start holds the old device's backup again (pinMove below), so a release from before — the same old device
-      // given up, or 「옛 PC 연결 끊기」 refused — no longer stands (마지막 끝판 카본 B1).
-      return { moveId, from, choices, startedAt: new Date().toISOString(), result: null, released: null, ...fresh };
-    });
+    // again under a new number, so the files it could not place are tried again (startState).
+    const { moveId, choices: used } = await this.update(async before => startState(before, { from, choices, started: await this.begun(before.moveId) }));
+    choices = used;
     const ctx = await this.context(from);
+    // 화면 세션 E7: the progress names the folder being fetched.
     const move = new Move({ engine: this.engine, host: this.host, from, old: ctx.old, now: ctx.now, choices, moveId, ledgerDir: this.ledgerDir,
-      onProgress: p => onProgress({ percent: p.total ? Math.min(99, Math.floor(p.bytes / p.total * 100)) : null, bytes: p.bytes, total: p.total }) });
+      onProgress: p => onProgress({ percent: p.total ? Math.min(99, Math.floor(p.bytes / p.total * 100)) : null, bytes: p.bytes, total: p.total, folder: move.current ?? null }) });
     // The old device keeps the backup the move reads, also when the move starts or resumes without a preview (카본 끝판 E7).
     const prepared = await move.prepare();
     const latest = prepared.map(f => f.selector.split(':')[0]).find(Boolean);
     if (this.server && latest) await this.server.pinMove(latest).catch(() => {});
     const result = await move.run();
     const folders = placed(move.folders || [], choices, ctx);
-    const saved = { at: new Date().toISOString(), counts: result.counts, complete: result.complete, removedTemp: result.removedTemp, items: result.items.slice(0, 2000), folders, side: plan.places(ctx.now).side };
+    const saved = { moveId, at: new Date().toISOString(), counts: result.counts, complete: result.complete, removedTemp: result.removedTemp, items: result.items.slice(0, 2000), folders, side: plan.places(ctx.now).side };
     await this.save({ result: saved });
     return saved;
   }
-  async result() { return (await this.state()).result || null; }
+  /** The last move's result. Each root says whether it is a folder on this PC now (화면 세션 E15): an empty folder, or
+   *  one whose files could not be placed, is not there, and a seat taken with it would be refused. Without the host's
+   *  answer the roots say nothing about it. */
+  /** Whether a move's ledger has lines: it began placing files (a space refusal stops it before the first line). */
+  async begun(moveId) {
+    if (typeof moveId !== 'string' || !/^[0-9a-f]{8,32}$/.test(moveId)) return false;
+    try { return (await fs.stat(path.join(this.ledgerDir, `${moveId}.jsonl`))).size > 0; } catch { return false; }
+  }
+  async result() {
+    const r = (await this.state()).result || null;
+    const all = (r?.folders || []).flatMap(f => (Array.isArray(f.roots) ? f.roots : []).map(x => x.path));
+    if (!all.length) return r;
+    const seen = await plan.probeAll(this.host, all).catch(() => null);
+    if (!Array.isArray(seen) || seen.length !== all.length) return r;
+    let i = 0;
+    return { ...r, folders: r.folders.map(f => ({ ...f, roots: (Array.isArray(f.roots) ? f.roots : []).map(x => ({ ...x, exists: seen[i++]?.kind === 'dir' })) })) };
+  }
+  /** The places the last move's result names (화면 세션 E6 · E10): its side folder, the new folders and every root —
+   *  `keep`: only those a backup may take (no 「따로 둔 것」). */
+  async places({ keep = false } = {}) {
+    const r = (await this.state()).result;
+    if (!r || typeof r !== 'object') return [];
+    const list = keep
+      ? (r.folders || []).flatMap(f => (Array.isArray(f.roots) ? f.roots : []).filter(x => x.kind !== 'side').map(x => x.path))
+      : [r.side, ...(r.folders || []).flatMap(f => [f.newFolder, ...(Array.isArray(f.roots) ? f.roots : []).map(x => x.path)])];
+    const seen = new Set();
+    return list.filter(p => typeof p === 'string' && plan.safePath(p) && !seen.has(p.toLowerCase()) && seen.add(p.toLowerCase()));
+  }
   /** 「옮겨 오기」의 지금 (화면 세션 E1): a move stopped part-way — the PC off, the app ended — leaves no job, no result and
    *  no failure, so the screen reads it here (`unfinished`: started, no result yet). Whether one runs now is the window's. */
   async status() {
@@ -146,7 +217,7 @@ class MoveService {
     const when = v => (typeof v === 'string' && Number.isFinite(Date.parse(v)) ? v : null);
     const result = st.result && typeof st.result === 'object' ? st.result : null;
     return { from: typeof st.from === 'string' ? st.from : null, choices: st.choices && typeof st.choices === 'object' && !Array.isArray(st.choices) ? st.choices : {},
-      startedAt: when(st.startedAt), unfinished: !!when(st.startedAt) && !result, released: when(st.released), resultAt: when(result?.at), complete: result ? result.complete === true : null };
+      startedAt: when(st.startedAt), unfinished: !!when(st.startedAt) && unfinishedOf({ startedAt: st.startedAt, result }), released: when(st.released), resultAt: when(result?.at), complete: result ? result.complete === true : null };
   }
   /** Where the last move put an old path (for Obsidian's vaults): the folder plan that holds it, in the mode it used. */
   async mapper() {
@@ -238,4 +309,4 @@ class MoveService {
    *  the server could not be told, nothing is marked: the screen says so and the person tries again (카본 끝판 E7). */
   async release() { if (this.server) await this.server.unpinMove(); return this.save({ released: new Date().toISOString() }); }
 }
-module.exports = { MoveService, placed };
+module.exports = { MoveService, placed, startState, moveCode, unfinishedOf };

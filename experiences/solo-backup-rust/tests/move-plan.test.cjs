@@ -720,3 +720,84 @@ test('화면 세션 E1 · E2(11-16): the state of a move, and where each folder 
   service.state = async () => ({ from: 'dev000000000', result: { folders: out.map(({ sameDrive, ...rest }) => rest) } });
   assert.equal((await service.mapper())('D:\\Projects\\vault\\a.md'), 'C:\\Users\\lee\\옮겨 온 자료\\D 드라이브\\Projects\\vault\\a.md');
 });
+
+test('화면 세션 E3 · E4 · E6 · E9 · E10 · E13 · E15(11-16): starting again, failure codes, the preview kinds, roots on the disk, the places to open and keep', async () => {
+  const { MoveService, startState, moveCode, unfinishedOf } = require('../engine/src/move-service.cjs');
+  const t0 = new Date('2026-11-16T08:00:00.000Z'), t1 = new Date('2026-11-16T09:00:00.000Z');
+  const A = { 'D:\\Projects': { mode: 'original', sameDrive: true } }, Bc = { 'D:\\Projects': { mode: 'newFolder' } };
+  const first = startState({}, { from: 'dev1', choices: A, now: t0, id: () => 'm1' });
+  assert.deepEqual(first, { moveId: 'm1', from: 'dev1', choices: A, startedAt: t0.toISOString(), released: null });
+  // E9: an unfinished move goes on with the places it started with, whatever the screen sends (a writer's new folders too).
+  assert.deepEqual(startState(first, { from: 'dev1', choices: Bc, now: t1, id: () => 'm2' }), { moveId: 'm1', from: 'dev1', choices: A, startedAt: t1.toISOString(), released: null });
+  // E13: a finished one starts again under a new number and its result stays until the new one is written.
+  const finished = { ...first, result: { at: '2026-11-16T08:30:00.000Z', complete: true } };
+  const again = startState(finished, { from: 'dev1', choices: Bc, now: t1, id: () => 'm2' });
+  assert.deepEqual(again, { moveId: 'm2', from: 'dev1', choices: Bc, startedAt: t1.toISOString(), released: null });
+  const second = { ...finished, ...again };
+  assert.deepEqual([unfinishedOf(second), unfinishedOf(finished), unfinishedOf({}), unfinishedOf(first)], [true, false, false, true]);
+  assert.equal(startState(second, { from: 'dev1', choices: A, now: t1, id: () => 'm3' }).moveId, 'm2', 'the second run resumes');
+  // One that stopped before placing anything (no space where it was to go) takes the new places (GPT workbackup-move4b GA1).
+  assert.deepEqual(startState(first, { from: 'dev1', choices: Bc, now: t1, id: () => 'm2', started: false }), { moveId: 'm1', from: 'dev1', choices: Bc, startedAt: t1.toISOString(), released: null });
+  const ledgers = new MoveService({ engine: null, host: null, stateDir: 'C:/state', localDir: 'C:/local' });
+  assert.deepEqual([await ledgers.begun(undefined), await ledgers.begun('../x'), await ledgers.begun('0123456789abcdef')], [false, false, false], 'no ledger: nothing placed');
+  // Another old device: its result and what was done for it go.
+  assert.deepEqual(startState(finished, { from: 'dev2', choices: Bc, now: t1, id: () => 'm4' }),
+    { moveId: 'm4', from: 'dev2', choices: Bc, startedAt: t1.toISOString(), released: null, checked: [], reinstall: null, settings: null, result: null });
+  const service = new MoveService({ engine: null, host: null, stateDir: 'C:\\state', localDir: 'C:\\local' });
+  service.state = async () => second;
+  assert.deepEqual([(await service.status()).unfinished, (await service.status()).resultAt], [true, '2026-11-16T08:30:00.000Z']);
+
+  // E4: failure codes.
+  const codeOf = (message, code) => moveCode(Object.assign(new Error(message), code ? { code } : {})).code;
+  assert.equal(codeOf('이 PC의 사용자 폴더를 확인하지 못했습니다.'), 'MOVE_PROFILE');
+  assert.equal(codeOf('백업 저장소에 접근하지 못했거나 점검 중 오류가 발생했습니다.\nFatal: no matching ID found for prefix "abcd1234"'), 'MOVE_SNAPSHOT_GONE');
+  assert.equal(codeOf('백업 저장소에 접근하지 못했거나 점검 중 오류가 발생했습니다.\nGet "https://s3.example/x": dial tcp: lookup s3.example: no such host'), 'MOVE_NETWORK');
+  assert.equal(codeOf('되살릴 파일을 놓을 공간이 부족합니다.', 'MOVE_NO_SPACE'), 'MOVE_NO_SPACE');
+  assert.equal(codeOf('복구 데이터의 끝이 잘렸습니다.'), undefined, 'the rest stays MOVE_FAILED in the engine');
+
+  // E15 · E6 · E10: the result's roots say whether they are on the disk; the places to open, and to keep.
+  const side = 'C:\\Users\\lee\\옮겨 온 자료\\따로 둔 것';
+  const result = { at: '2026-11-16T08:30:00.000Z', side, folders: [{ original: 'C:\\Users\\kim', newFolder: 'C:\\Users\\lee\\옮겨 온 자료\\kim',
+    roots: [{ path: 'C:\\Users\\lee', kind: 'place' }, { path: 'D:\\Docs', kind: 'place' }, { path: side, kind: 'side' }, { path: 'relative\\x', kind: 'moved' }] }] };
+  const asked = [];
+  const disk = new MoveService({ engine: null, stateDir: 'C:\\state', localDir: 'C:\\local',
+    host: async (m, a) => { asked.push(m); return a[0].map(x => ({ kind: x === 'D:\\Docs' ? 'missing' : 'dir' })); } });
+  disk.state = async () => ({ result });
+  assert.deepEqual((await disk.result()).folders[0].roots.map(x => x.exists), [true, false, true, true]);
+  assert.deepEqual(asked, ['files.probe']);
+  disk.host = async () => { throw new Error('offline'); };
+  assert.equal((await disk.result()).folders[0].roots[0].exists, undefined, 'without the host the roots say nothing');
+  assert.deepEqual(await disk.places(), [side, 'C:\\Users\\lee\\옮겨 온 자료\\kim', 'C:\\Users\\lee', 'D:\\Docs'], 'only plain local paths, once each');
+  assert.deepEqual(await disk.places({ keep: true }), ['C:\\Users\\lee', 'D:\\Docs'], 'never 「따로 둔 것」');
+  disk.state = async () => ({});
+  assert.deepEqual(await disk.places(), []);
+
+  // E3: the preview says where each folder goes and in which sync, and that a folder OneDrive kept may come partly.
+  const sha = 'b'.repeat(64);
+  const here = snap('C:\\Users\\lee', { known: { documents: { path: 'C:\\Users\\lee\\OneDrive\\문서', oneDrive: true, synced: true } }, oneDrive: [{ path: 'C:\\Users\\lee\\OneDrive', emailSha256: sha }], drives: [{ letter: 'C' }, { letter: 'D' }] });
+  const listing = (...names) => ({ nodes: new Map(names.map(([name, type = 'file']) => [name.toLowerCase(), { name, type, size: type === 'file' ? 5 : 0, mtime: 1 }])), aside: new Map(), skipped: [] });
+  const plans = [{ original: 'C:\\Users\\lee\\OneDrive\\문서', selector: 'aaaaaaaa:/a', manifest: listing(['a.txt']), backupAt: '2026-11-15T00:00:00.000Z', extra: [] },
+    { original: 'D:\\Projects', selector: 'aaaaaaaa:/b', manifest: listing(['src', 'dir'], ['src/a.js']), backupAt: '2026-11-15T00:00:00.000Z', extra: [] }];
+  const preview = new MoveService({ engine: { stateDir: 'C:\\state', snapshots: async () => [], restorePlans: async () => plans }, stateDir: 'C:\\state', localDir: 'C:\\local',
+    host: async (m, a) => (m === 'folders.snapshot' ? here : m === 'folders.free' ? a[0].map(() => 1e12) : m === 'files.probe' ? a[0].map(() => ({ kind: 'missing' })) : null) });
+  preview.state = async () => ({});
+  const view = await preview.preview({ from: 'dev000000000', choices: A });
+  const [od, projects] = view.folders;
+  assert.deepEqual([od.mode, od.oldSync, od.newSync, od.partial, od.sameAccount, od.side], ['oneDriveGaps', 'oneDrive', 'oneDrive', true, true, false]);
+  assert.deepEqual(od.roots, [{ path: 'C:\\Users\\lee\\OneDrive\\문서', kind: 'oneDrive' }, { path: 'C:\\Users\\lee\\옮겨 온 자료\\문서', kind: 'newFolder' }]);
+  assert.deepEqual([projects.mode, projects.oldSync, projects.newSync, projects.partial], ['original', null, null, false]);
+  assert.deepEqual(projects.roots, [{ path: 'D:\\Projects', kind: 'place' }], 'the same place on the other drive, as chosen');
+});
+
+test('화면 세션 E5(11-16): an OneDrive file whose content could not be checked is counted on its own', () => {
+  const { Move } = require('../engine/src/move-restore.cjs');
+  const move = new Move({ engine: null, host: null, from: 'dev000000000', old: null, now: null, moveId: 'abcdef12', ledgerDir: 'C:\\l' });
+  move.final.set('a', { result: 'onedrive', item: { original: 'x', name: 'a', u: true } });
+  move.final.set('b', { result: 'onedrive', item: { original: 'x', name: 'b' } });
+  move.final.set('c', { result: 'placed', item: { original: 'x', name: 'c' } });
+  const sum = move.summary();
+  assert.deepEqual(sum.counts, { onedrive: 2, placed: 1, unverified: 1 });
+  assert.equal(sum.complete, false);
+  move.final.delete('a');
+  assert.deepEqual([move.summary().counts.unverified, move.summary().complete], [undefined, true]);
+});

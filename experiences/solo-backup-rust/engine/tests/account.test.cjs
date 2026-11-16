@@ -998,3 +998,15 @@ test('되살리기 실패 칸의 부호와 기본 자리 표시(화면 세션 �
   assert.deepEqual([f.engine.getState().lastRestoreError.code, f.engine.getState().lastRestoreError.named], ['OUTPUT_UNSAFE', true]);
   const again = f.make(); await again.open(); assert.equal(again.getState().lastRestoreError.named, true, 'kept in the settings');
 });
+
+test('넘길 폴더가 없으면 어느 폴더인지 함께 거절한다(화면 세션 E15)', async () => {
+  const repo = restic({ password: OTHER_PASSWORD, snapshots: [{ id: 'b'.repeat(64), time: '2026-11-15T00:00:00.000Z', hostname: OLD, tags: [APP, `vault:${customerVault(PREFIX)}`, VERIFIED] }] });
+  const f = await fixture({ repo, provision: { role: 'read', readKey: null, writer: { id: OLD, name: '옛 노트북' } }, envelope: { repository: { ...REPO }, repositoryId: ID, password: OTHER_PASSWORD, readKey: RK } });
+  await f.account.signIn(); await f.account.openBackup();
+  const gone = path.join(f.root, '빈 폴더였던 자리'), other = path.join(f.root, '옮겨 온 다른 자리');
+  await assert.rejects(f.account.takeWriteSeat({ sources: [f.source, gone, other] }), (e) => e.code === 'SOURCES_MISSING' && JSON.stringify(e.details) === JSON.stringify({ paths: [gone, other] }));
+  assert.equal(f.log.some((x) => x[0] === 'takeWriteSeat'), false, 'the old PC keeps its seat');
+  assert.equal(f.engine.config.mode, 'restore');
+  // The rest are checked as before (one folder inside another).
+  await assert.rejects(f.account.takeWriteSeat({ sources: [f.root, f.source] }), (e) => e.code !== 'SOURCES_MISSING');
+});
