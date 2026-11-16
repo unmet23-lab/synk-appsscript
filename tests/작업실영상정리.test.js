@@ -515,10 +515,13 @@ test('보통 지우기가 지우기에 들어가면 쓰지 않은 승인은 무�
   const busy = () => { throw Object.assign(new Error('synthetic'), { code: 'EPERM' }); };
   const blocked = await go({ execute: true, config: ENABLED, _rename: busy });
   assert.deepEqual([blocked.status, blocked.reasons], ['stopped', ['APPROVAL_VOID_FAILED']], '다른 승인을 무효로 옮기지 못하면 지우지 않는다(GPT 넷째 검수)');
+  assert.deepEqual(blocked.voidFailed, { name: stopped.runId + '.json', code: 'EPERM' }, '어느 파일을 무슨 오류로 못 옮겼는지 남긴다(Fable 재확인)');
+  assert.match(describe(blocked), /무효로 옮기지 못했습니다\(EPERM\)/);
   assert.equal(s.deletes, 0);
   assert.ok(fs.existsSync(approvalFile(dir, stopped.runId)));
   const normal = await go({ execute: true, config: ENABLED });
-  assert.deepEqual([normal.status, normal.overrode, normal.deleted.length], ['cleaned', null, 2]);
+  assert.deepEqual([normal.status, normal.overrode, normal.deleted.length, normal.voidedApprovals], ['cleaned', null, 2, [stopped.runId]]);
+  assert.match(describe(normal), /다른 승인 1개\(.+\)를 무효로 옮겼습니다/);
   assert.ok(fs.existsSync(approvalFile(dir, stopped.runId, 'void')));
   assert.deepEqual((await go({ execute: true, override: stopped.runId, config: ENABLED })).reasons, ['OVERRIDE_INVALID']);
   await assert.rejects(approveRun(stopped.runId), error => error.code === 'APPROVAL_VOID');
@@ -622,4 +625,15 @@ test('명령줄: 토큰은 stdin으로만 받고 출력에 나오지 않으며, 
   const stopped = await cli(base, TOKEN + '\n');
   assert.equal(stopped.code, 3);
   assert.match(stopped.out, /멈춤: 정기 백업의 가장 최근 완료 객체가 48시간보다 오래되었습니다/);
+});
+
+test('이 PC 시각으로 이미 만료된 실행은 승인하지 않는다(Fable 재확인)', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-gc-expired-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const runId = '20200101T000000Z-abcdef';
+  fs.mkdirSync(path.join(dir, 'runs'));
+  fs.writeFileSync(path.join(dir, 'runs', runId + '.json'), JSON.stringify({ schema: 'synk-media-cloud-gc-run/v1', runId, bucket: MEDIA, status: 'stopped',
+    reasons: ['TOO_MANY'], startedAt: '2020-01-01T00:00:00.000Z', eligible: [object(1) + '#1001'] }));
+  await assert.rejects(approve({ config: CONFIG, stateDir: dir, runId }), error => error.code === 'APPROVAL_EXPIRED');
+  assert.equal(fs.existsSync(path.join(dir, 'approvals')), false);
 });

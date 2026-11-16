@@ -240,17 +240,19 @@ function consumeApproval(stateDir, runId, rename = fs.renameSync) {
 }
 /** 지우기에 들어가는 실행은 쓰지 않은 다른 승인(except 말고)을 모두 무효로 옮긴다(Fable 설계 검토 O2 8번).
  *  하나라도 못 옮기면 false다. 그때는 지우지 않는다(GPT 넷째 검수 — 남은 승인이 나중에 다시 쓰이지 않게). */
+//  돌려주는 값: { ok, moved: [옮긴 실행 ID], failed: { name, code } | null }. 무엇을 옮겼고 무엇을 무슨 오류로 못 옮겼는지 보고에 적는다(Fable 재확인 P2 둘).
 function voidApprovals(stateDir, except, rename = fs.renameSync) {
-  const dir = path.join(stateDir, 'approvals');
+  const dir = path.join(stateDir, 'approvals'), moved = [];
   let names;
   try { names = fs.readdirSync(dir).filter(name => /^[0-9TZ]+-[0-9a-f]{6}\.json$/.test(name) && name !== except + '.json'); }
-  catch (error) { return error.code === 'ENOENT'; }
-  if (!names.length) return true;
-  try { fs.mkdirSync(path.join(dir, 'void'), { recursive: true }); } catch { return false; }
+  catch (error) { return { ok: error.code === 'ENOENT', moved, failed: error.code === 'ENOENT' ? null : { name: 'approvals/', code: error.code || 'UNKNOWN' } }; }
+  if (!names.length) return { ok: true, moved, failed: null };
+  try { fs.mkdirSync(path.join(dir, 'void'), { recursive: true }); } catch (error) { return { ok: false, moved, failed: { name: 'approvals/void/', code: error.code || 'UNKNOWN' } }; }
   for (const name of names) {
-    try { rename(path.join(dir, name), path.join(dir, 'void', name)); } catch (error) { if (error.code !== 'ENOENT') return false; }  // 이미 없으면 된 것이다
+    try { rename(path.join(dir, name), path.join(dir, 'void', name)); moved.push(name.slice(0, -5)); }
+    catch (error) { if (error.code !== 'ENOENT') return { ok: false, moved, failed: { name, code: error.code || 'UNKNOWN' } }; }  // 이미 없으면 된 것이다
   }
-  return true;
+  return { ok: true, moved, failed: null };
 }
 
 function bucketsOf(config) {
@@ -275,6 +277,8 @@ async function approve({ config, stateDir, runId }) {
       && Array.isArray(stopped.eligible) && stopped.eligible.length > 0 && stopped.eligible.every(item => typeof item === 'string' && KEY.test(item));
     if (!ok) throw new Failure('APPROVAL_SOURCE_INVALID', 2);
     const expiresAt = iso(Date.parse(stopped.startedAt) + RULES.approvalMs);
+    // 쓸 때는 GCS 시각으로 다시 잰다. 여기서는 이 PC 시각으로 이미 지난 것만 거절해, 지난 날짜로 「쓸 수 있다」고 말하지 않게 한다(Fable 재확인 P3).
+    if (Date.now() > Date.parse(expiresAt)) throw new Failure('APPROVAL_EXPIRED', 2);
     if (fs.existsSync(p.file)) return { status: 'already-approved', runId, eligible: stopped.eligible.length, expiresAt };
     const body = { schema: APPROVAL_SCHEMA, runId, bucket: media, stoppedAt: stopped.startedAt, eligible: stopped.eligible,
       eligibleSha256: sha(JSON.stringify(stopped.eligible)), approvedAt: new Date().toISOString() };  // approvedAt은 기록용(PC 시각)이고 판단에 쓰지 않는다
@@ -365,7 +369,7 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
 
     // 한 번 넘김(O2): 승인이 있고 3일이 지나지 않았을 때만, 승인 목록에 있는 것만 지울 것으로 남긴다. 승인이 넘기는 것은 20% 관문 하나다.
     // approvalResult: kept(쓰지 않고 남음) · used(옮겨 쓰고 지우기로 감) · used-invalid(옮겼지만 내용이 맞지 않아 멈춤) · not-moved(옮기지 못해 멈춤)
-    let overrode = null, notApproved = [], approval = null, approvalResult = null;
+    let overrode = null, notApproved = [], approval = null, approvalResult = null, voided = [], voidFailed = null;
     if (!reasons.length && override) {
       try { approval = JSON.parse(fs.readFileSync(approvalPaths(stateDir, override).file, 'utf8')); } catch { approval = null; }
       if (!validApproval(approval, override, media) || !notExpired(approval, startedAt)) reasons.push('OVERRIDE_INVALID');
@@ -389,7 +393,7 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
       candidates: candidates.map(item => key(item.name, item.generation)), eligible: eligible.map(item => key(item.name, item.generation)),
       eligibleBytes: eligible.reduce((sum, item) => sum + item.size, 0), keptByNewBackup: kept.map(item => key(item.name, item.generation)),
       notApproved: notApproved.map(item => key(item.name, item.generation)),
-      deleted: [...deleted], changed: [...changed], failed: [...failed],
+      deleted: [...deleted], changed: [...changed], failed: [...failed], voidedApprovals: [...voided], voidFailed,
     });
     if (execute && !reasons.length && eligible.length) {
       // 지우기 직전에 이 실행이 시작된 뒤 생긴 완료 객체를 한 번 더 읽고, 새로 가리킨 객체는 지우지 않는다.
@@ -400,7 +404,10 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
         let toDelete = eligible.filter(item => !referenced.has(key(item.name, item.generation)));
         // 지우기에 들어가기 전에 쓰지 않은 다른 승인을 모두 무효로 옮긴다. 다 옮기지 못하면 승인도 쓰지 않고 멈춘다.
         // 그다음 이 실행의 승인은 모든 관문을 지난 뒤, 지울 것이 있을 때만, 「지우는 중」 기록 바로 앞에서 쓴다.
-        if (toDelete.length && !voidApprovals(stateDir, overrode, _rename)) reasons.push('APPROVAL_VOID_FAILED');
+        const voiding = toDelete.length ? voidApprovals(stateDir, overrode, _rename) : { ok: true, moved: [], failed: null };
+        voided = voiding.moved;
+        voidFailed = voiding.failed;
+        if (!voiding.ok) reasons.push('APPROVAL_VOID_FAILED');
         else if (toDelete.length && overrode) {
           const used = consumeApproval(stateDir, overrode, _rename);
           if (!used || !validApproval(used, overrode, media) || !notExpired(used, startedAt) || used.eligibleSha256 !== approval.eligibleSha256) {
@@ -467,6 +474,8 @@ function describe(report) {
     const outside = report.notApproved && report.notApproved.length && report.status !== 'stopped' ? ' 그 목록에 없던 ' + report.notApproved.length + '개는 이번에 지우지 않았습니다.' : '';
     lines.push('  ' + said + outside);
   }
+  if (report.voidedApprovals && report.voidedApprovals.length) lines.push('  쓰지 않은 다른 승인 ' + report.voidedApprovals.length + '개(' + report.voidedApprovals.join(', ') + ')를 무효로 옮겼습니다. 그 실행들은 다시 승인할 수 없습니다.');
+  if (report.voidFailed) lines.push('  승인 파일 ' + report.voidFailed.name + '을(를) 무효로 옮기지 못했습니다(' + report.voidFailed.code + ').');
   for (const reason of report.reasons) lines.push('  멈춤: ' + (REASONS[reason] || reason) + '.');
   return lines.join('\n');
 }
