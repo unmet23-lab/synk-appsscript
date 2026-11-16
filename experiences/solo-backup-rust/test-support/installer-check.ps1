@@ -31,6 +31,10 @@ function Expect($ok, [string]$what) { if ($ok) { "ok: $what" } else { $script:ba
 function Run([string]$file, [string[]]$arguments) { (Start-Process -FilePath $file -ArgumentList $arguments -Wait -PassThru -NoNewWindow).ExitCode }
 function Service() { $s = New-Object -ComObject Schedule.Service; $s.Connect(); $s }
 function FolderExists() { try { $null = (Service).GetFolder($folderPath); $true } catch { $false } }
+# The helper's task folder and its own data folder (4.2 「도우미」 — the run executable's --register-helper makes both).
+$helperFolder = '\SYNK 업무 백업 도우미'
+$helperData = Join-Path $env:ProgramData 'SynkWorkBackup'
+function HelperExists() { try { $null = (Service).GetFolder($helperFolder); $true } catch { $false } }
 function RunTasks() {
   # Every task in the product folder and the root whose action starts this install's run executable.
   $service = Service
@@ -73,6 +77,10 @@ $wrong = @($manifest.files.PSObject.Properties | Where-Object {
 })
 Expect ($wrong.Count -eq 0) "every staged resource is installed unchanged ($(@($manifest.files.PSObject.Properties).Count) files, $($wrong.Count) wrong)"
 Expect (-not (Test-Path -LiteralPath (Join-Path $dir '.installing'))) 'the installing marker is gone after the install'
+# The install asks for the helper and goes on whatever it says; a runner's desktop account may not be the one that ran
+# the install (then no helper, by design). Either way the installer itself never makes the helper's data folder.
+$helperAfterInstall = HelperExists
+"note: helper task folder after the install: $helperAfterInstall, its data folder: $(Test-Path -LiteralPath $helperData)"
 # Only administrators, SYSTEM and TrustedInstaller may change the installed files (the helper relies on it, 4.2 「도우미」).
 # Write data · append · extended attributes · attributes · delete · change permission · take ownership, and generic write · all.
 $writeRights = 0x500D0116
@@ -257,6 +265,7 @@ Expect ((Run $uninstaller @('/S', "_?=$dir")) -eq 0) 'silent uninstall exits 0'
 Expect (Gone $ownHeld) 'the uninstaller closed the running process from its files'
 Expect (@(RunTasks).Count -eq 0) 'every run task of this install is gone, the standard user''s included'
 Expect (-not (FolderExists)) 'the run-task folder is gone'
+Expect (-not (HelperExists) -and -not (Test-Path -LiteralPath $helperData)) 'the helper task folder and its data folder are gone'
 Expect (-not (Test-Path -LiteralPath $startMenu)) 'Start menu shortcut gone'
 Expect (-not (Test-Path -LiteralPath $uninstallKey)) 'uninstall entry gone'
 Expect (-not (Test-Path -LiteralPath $locationKey)) 'recorded install location gone'

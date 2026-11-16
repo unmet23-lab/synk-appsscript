@@ -123,6 +123,14 @@ AllowSkipFiles off
   ${If} $0 <> 0
     DetailPrint "SYNK: --install exit $0"
   ${EndIf}
+  ; The helper task for the desktop's account (4.2 「도우미」). It never stops the install: when that account is not
+  ; the one that confirmed the administrator prompt, or the folder is not ours, it says so and exits 0, and a failure
+  ; is only written down — that account is then kept by the partial-backup rule. The helper makes its own
+  ; %ProgramData%\SynkWorkBackup with no inherited rights; the installer does not create it.
+  ExecWait '"$INSTDIR\WorkBackupRun.exe" --register-helper' $0
+  ${If} $0 <> 0
+    DetailPrint "SYNK: --register-helper exit $0"
+  ${EndIf}
   Delete /REBOOTOK "$INSTDIR\WorkBackupRun.exe.old"
   Delete /REBOOTOK "$INSTDIR\${MAINBINARYNAME}.exe.old"
   Delete "$INSTDIR\.installing"

@@ -78,7 +78,10 @@ test('the hooks keep runs from starting, never overwrite a mapped executable, as
   // Install: marker, then everything closed (an install never asks), then both executables moved aside before the template writes the new ones (review GA3).
   assert.ok(inOrder(macro('NSIS_HOOK_PREINSTALL'), ['SWB_MARK_INSTALLING', 'SWB_CLOSE\n', 'SWB_SET_ASIDE "WorkBackupRun.exe"', 'SWB_SET_ASIDE "${MAINBINARYNAME}.exe"']));
   assert.match(macro('SWB_SET_ASIDE name'), /Rename "\$INSTDIR\\\$\{name\}" "\$INSTDIR\\\$\{name\}\.old"/);
-  assert.ok(inOrder(macro('NSIS_HOOK_POSTINSTALL'), ['ExecWait \'"$INSTDIR\\WorkBackupRun.exe" --install\' $0', 'Delete /REBOOTOK "$INSTDIR\\WorkBackupRun.exe.old"',
+  // The helper is asked for after the machine setup and never stops the install: its exit is only written down (4.2 「도우미」).
+  assert.match(macro('NSIS_HOOK_POSTINSTALL'), /ExecWait '"\$INSTDIR\\WorkBackupRun\.exe" --register-helper' \$0\n\s*\$\{If\} \$0 <> 0\n\s*DetailPrint "SYNK: --register-helper exit \$0"\n\s*\$\{EndIf\}\n/);
+  assert.doesNotMatch(hooks, /ProgramData|\$APPDATA\\\.\.\\SynkWorkBackup|CreateDirectory[^\n]*SynkWorkBackup/i, 'the installer never makes the helper\'s data folder');
+  assert.ok(inOrder(macro('NSIS_HOOK_POSTINSTALL'), ['ExecWait \'"$INSTDIR\\WorkBackupRun.exe" --install\' $0', 'ExecWait \'"$INSTDIR\\WorkBackupRun.exe" --register-helper\' $0','Delete /REBOOTOK "$INSTDIR\\WorkBackupRun.exe.old"',
     'Delete /REBOOTOK "$INSTDIR\\${MAINBINARYNAME}.exe.old"', 'Delete "$INSTDIR\\.installing"']));
   // A stopped install puts the moved executables back, drops a moved copy whose new file was written, and lets runs start again (re-review GA1 · GA3).
   const failed = block(hooks, 'Function .onInstFailed\n', 'FunctionEnd');
