@@ -189,7 +189,7 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": false,
-        "글자크기": 66,
+        "글자크기": 60,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -260,7 +260,7 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": false,
-        "글자크기": 66,
+        "글자크기": 60,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -383,7 +383,7 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": false,
-        "글자크기": 66,
+        "글자크기": 60,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -581,7 +581,7 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": false,
-        "글자크기": 66,
+        "글자크기": 60,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -601,7 +601,7 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": false,
-        "글자크기": 66,
+        "글자크기": 60,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -621,7 +621,7 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": false,
-        "글자크기": 66,
+        "글자크기": 60,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -659,8 +659,8 @@
     {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
-      "글": "Barriga, pera E barco: em coreano é tudo «배» 😵 #learnkorean",
-      "원문": "배(몸), 배(과일), 그리고 배(탈것): 한국어로는 전부 «배» 😵 #learnkorean"
+      "글": "Barriga, pera E barco: em coreano é tudo “배” 😵 #learnkorean",
+      "원문": "배(몸), 배(과일), 그리고 배(탈것): 한국어로는 전부 “배” 😵 #learnkorean"
     },
     {
       "id": "게시글.youtube.본문.1",

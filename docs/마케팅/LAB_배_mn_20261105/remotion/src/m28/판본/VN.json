@@ -182,16 +182,16 @@
   "boat": "Vậy đi thuyền nha!",
   "bellyAgain": "Đau bụng quá…",
   "again": "Lại lê nữa?!",
-  "myPear": "Lê của tui!",
+  "myPear": "Quả lê của tui!",
   "bandSize": 60,
-  "end": "Tiếng Việt: 3 từ —\ntiếng Hàn: chỉ một “배”",
+  "end": "Tiếng Việt: 3 từ —\ntiếng Hàn: chỉ một từ “배”",
   "endSize": 60,
   "words": [
     "bụng",
     "lê",
     "thuyền"
   ],
-  "wordSize": 66,
+  "wordSize": 51,
   "reads": [
     "bae-ga a-pa-yo",
     "bae jul-ge",
@@ -218,7 +218,7 @@
     "bellyAgain": "배 너무 아파…",
     "again": "또 배(과일)?!",
     "myPear": "내 배(과일)!",
-    "end": "베트남어: 낱말 3개 —\n한국어: “배” 하나뿐",
+    "end": "베트남어: 낱말 3개 —\n한국어: 낱말 하나 “배”뿐",
     "words.0": "배(몸)",
     "words.1": "배(과일)",
     "words.2": "배(탈것)"

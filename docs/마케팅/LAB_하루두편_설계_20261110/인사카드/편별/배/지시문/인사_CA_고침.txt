@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the camera, the sky-blue felt backdrop, the wooden tabletop, the light, and all the characters looking exactly the same: the coral-red ghost-shaped mascot sitting on the moose's head between the antlers with its queasy face (squeezed eyes, wavy mouth, light-blue sweat drop, greenish cheeks), the brown moose lying on the tabletop with its big happy face, eyes rolled up toward the mascot, holding up the round golden pear on its raised front hoof. Change only these three things:
+
+1. The felt lettering: keep every letter exactly as it is (Bae, / 캐나다! / kae-na-da — same letters, same shapes, same colors, same three lines; the SECOND attached image is the lettering artwork and the letters must still match it) but make the whole lettering block a little smaller, about 90% of its current size, centered horizontally. Its top edge stays at the same height.
+
+2. Make the whole group (the moose with the mascot on its head and the pear on its hoof) about 12% smaller and move it toward the center of the image, so there is a clear margin of empty backdrop and tabletop — at least 9% of the image width — between the group and both the left and right edges of the image. Same poses; the moose still lies on the tabletop.
+
+3. Only ONE small red felt maple leaf: keep the leaf on the tip of the moose's right antler (on the right side of the image) and remove the leaf from the left antler.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. Nothing else is added.
+
+Style: real handmade needle-felt and felt-applique craft photographed with a macro lens, tidy short fuzz, soft natural daylight.

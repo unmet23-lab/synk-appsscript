@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the camera, the sky-blue felt backdrop, the wooden tabletop, the light, and both characters looking exactly the same: the coral-red ghost-shaped mascot with its pink gill headband and its queasy face (half-closed eyes, wavy mouth, light-blue sweat drop, greenish cheeks), leaning back away from the pear, and the pink axolotl with its big happy face holding the round golden pear up toward the mascot. Change only these two things:
+
+1. The felt lettering: keep every letter exactly as it is (¡Bae, / 멕시코! / mek-si-ko — same letters, same shapes, same colors, same three lines; the SECOND attached image is the lettering artwork and the letters must still match it) but make the whole lettering block smaller, about 86% of its current size, centered horizontally, so there is a clear band of plain sky-blue felt on its left and right. Its top edge stays at the same height.
+
+2. Move the two characters (and the pear) together toward the center and make them about 10% smaller, so that the mascot's left gills and the axolotl's right gills and tail both have a clear margin of empty backdrop — at least 9% of the image width — from the left and right edges of the image. Same poses, side by side on the tabletop, the pear still held up between them.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. Nothing else is added.
+
+Style: real handmade needle-felt and felt-applique craft photographed with a macro lens, tidy short fuzz, soft natural daylight.

@@ -227,7 +227,7 @@
     {
       "id": "pear",
       "칸": "뜻",
-      "글": "Nah, buah pir!",
+      "글": "Nah, buah pear!",
       "원문": "자, 배(과일)!",
       "초": [
         5.1,
@@ -248,7 +248,7 @@
     {
       "id": "words.pear1",
       "칸": "뜻",
-      "글": "pir",
+      "글": "pear",
       "원문": "배(과일)",
       "초": [
         5.72,
@@ -473,7 +473,7 @@
     {
       "id": "again",
       "칸": "진행",
-      "글": "Pir lagi?!",
+      "글": "Pear lagi?!",
       "원문": "또 배(과일)?!",
       "초": [
         11.8,
@@ -525,7 +525,7 @@
     {
       "id": "myPear",
       "칸": "뜻",
-      "글": "Pir aku!",
+      "글": "Pear aku!",
       "원문": "내 배(과일)!",
       "초": [
         13,
@@ -546,7 +546,7 @@
     {
       "id": "end",
       "칸": "끝",
-      "글": "Dalam BM: 3 perkataan,\nbahasa Korea: “배” je",
+      "글": "BM: 3 perkataan,\nBahasa Korea: “배” je",
       "원문": "말레이어: 낱말 3개,\n한국어: “배” 하나뿐",
       "초": [
         14.3,
@@ -588,7 +588,7 @@
     {
       "id": "words.pear2",
       "칸": "뜻",
-      "글": "pir",
+      "글": "pear",
       "원문": "배(과일)",
       "초": [
         14.8,
@@ -659,13 +659,13 @@
     {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
-      "글": "Perut, pir DAN bot — dalam bahasa Korea semuanya «배» 😵 #learnkorean",
-      "원문": "배(몸), 배(과일), 그리고 배(탈것) — 한국어로는 전부 «배» 😵 #learnkorean"
+      "글": "Perut, pear dan bot — dalam bahasa Korea semuanya “배” 😵 #learnkorean",
+      "원문": "배(몸), 배(과일), 그리고 배(탈것) — 한국어로는 전부 “배” 😵 #learnkorean"
     },
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "Dalam bahasa Melayu ada tiga perkataan berbeza: perut, pir dan bot. Dalam bahasa Korea cuma satu: 배 (bae).",
+      "글": "Dalam bahasa Melayu ada tiga perkataan berbeza: perut, pear dan bot. Dalam bahasa Korea cuma satu: 배 (bae).",
       "원문": "말레이어에는 서로 다른 세 낱말이 있다: 배(몸), 배(과일), 배(탈것). 한국어로는 하나뿐이다: 배."
     },
     {
@@ -677,7 +677,7 @@
     {
       "id": "게시글.youtube.본문.3",
       "칸": "게시글",
-      "글": "배 줄게 (bae jul-ge) — Nah, aku bagi buah pir.",
+      "글": "배 줄게 (bae jul-ge) — Nah, aku bagi buah pear.",
       "원문": "배 줄게 — 자, 배(과일) 줄게."
     },
     {
@@ -689,8 +689,8 @@
     {
       "id": "게시글.youtube.고정댓글.1",
       "칸": "게시글",
-      "글": "Korang tahu lagi perkataan Korea yang ada banyak maksud? Komen kat bawah 👇",
-      "원문": "뜻이 많은 한국어 낱말을 또 알아? 아래에 댓글 달아 줘 👇"
+      "글": "Korang tahu perkataan Korea lain yang ada banyak maksud? Komen kat bawah 👇",
+      "원문": "뜻이 많은 다른 한국어 낱말 알아? 아래에 댓글 달아 줘 👇"
     }
   ],
   "원천": {
