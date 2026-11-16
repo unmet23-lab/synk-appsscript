@@ -26646,12 +26646,71 @@ function createWorldEducation({
       if (homePull.timer !== timer) return;
       stopHomePull();
       if (stopped || homeWatch?.coach?.() !== coachNow) return;
-      const state = pullState(coachNow);
-      if (state === "pulled") refresh();
+      const state = homeRecordsState(coachNow);
+      if (state === "complete") refresh();
       else if (state === "wait") watchHomePulled(coachNow, Math.min(PULL_WATCH_MOST, wait * 2));
     }, wait);
     timer?.unref?.();
     homePull = { coach: coachNow, timer, wait };
+  }
+  function homeRecordsState(coachNow) {
+    let storage = null;
+    try {
+      storage = coachNow.summary()?.storage ?? null;
+    } catch {
+      return null;
+    }
+    if (!storage || storage.guest !== false) return null;
+    const sync = storage.sync ?? {};
+    if (sync.stopped || sync.switchOff) return null;
+    const synced = nextSync.coach === coachNow ? nextSync.value : null;
+    return homePlanner?.plan?.recordsComplete?.(storage, synced) === true ? "complete" : "wait";
+  }
+  const WAKE_WATCH_MS = 1e3, WAKE_WATCH_MOST = 3e4;
+  let wakeWatch = { timer: null };
+  function stopWakeWatch() {
+    watchClock.clear(wakeWatch.timer);
+    wakeWatch = { timer: null };
+  }
+  function watchHomeWake() {
+    stopWakeWatch();
+    const coachNow = !stopped && homePhase() === "engine" ? homeWatch?.coach?.() ?? null : null;
+    if (!coachNow || typeof coachNow.summary !== "function" || weekMet.coach !== coachNow) return;
+    let shape;
+    try {
+      shape = summaryShape(coachNow.summary());
+    } catch {
+      return;
+    }
+    const arm = (wait, spent) => {
+      const timer = watchClock.set(() => {
+        if (wakeWatch.timer !== timer) return;
+        wakeWatch = { timer: null };
+        if (stopped || homeWatch?.coach?.() !== coachNow) return;
+        let now;
+        try {
+          now = summaryShape(coachNow.summary());
+        } catch {
+          return;
+        }
+        if (now !== shape) {
+          refresh();
+          return;
+        }
+        const next2 = spent + wait;
+        if (next2 < WAKE_WATCH_MOST) {
+          arm(Math.min(wait * 2, WAKE_WATCH_MOST - next2), next2);
+          return;
+        }
+        if (weekMet.coach === coachNow) {
+          weekMet = { coach: null, key: null, met: null };
+          refresh();
+        }
+      }, wait);
+      timer?.unref?.();
+      wakeWatch = { timer };
+    };
+    arm(WAKE_WATCH_MS, 0);
   }
   function weekNext(coachNow, values, now) {
     const N = homePlanner?.plan, P = homePlanner?.position;
@@ -26661,7 +26720,7 @@ function createWorldEducation({
     const summary = coachNow.summary(), diagnostic = position.items, practice = position.practice.pool;
     const synced = nextSync.coach === coachNow ? nextSync.value : null;
     const complete = N.recordsComplete(summary.storage, synced), sync = summary.storage?.sync ?? {};
-    if (summary.storage?.guest === false && !complete && sync.pulled !== true && !sync.stopped && !sync.writesOff && !sync.switchOff) watchHomePulled(coachNow);
+    if (summary.storage?.guest === false && !complete && !sync.stopped && !sync.switchOff) watchHomePulled(coachNow);
     const key = [homePlanner.todayKey(now), planEnds, info.type, complete, summaryShape(summary)].join("|");
     if (weekMet.coach !== coachNow || weekMet.key !== key) weekMet = { coach: coachNow, key, met: coachNow.exposures([...diagnostic, ...practice]) };
     const metDiag = weekMet.met.slice(0, diagnostic.length), metPractice = weekMet.met.slice(diagnostic.length);
@@ -28129,7 +28188,7 @@ function createWorldEducation({
     }
   };
   function wakePlanWaits() {
-    if (homePhase() === "checking") return;
+    if (!stopped && homePhase() === "checking") return;
     for (const done of [...planWaits]) done();
   }
   function settledHome() {
@@ -28143,6 +28202,7 @@ function createWorldEducation({
       };
       planWaits.add(done);
       timer = watchClock.set(done, PLAN_WAIT_MS);
+      timer?.unref?.();
     });
   }
   async function openPlan({ keepScroll = false, quiet = false } = {}) {
@@ -28161,8 +28221,10 @@ function createWorldEducation({
       }
       check3();
       if (homePhase() === "checking" && examChosen()) {
+        const panel = home.openPanel?.() ?? "";
         await settledHome();
         check3();
+        if (!quiet && (home.openPanel?.() ?? "") !== panel) return "skipped";
       }
     }
     if (ticket !== planOpen || quiet && home.openPanel?.()) return "skipped";
@@ -28271,10 +28333,19 @@ function createWorldEducation({
     refresh();
     redrawNext();
   });
-  const onFocus = () => refresh();
+  const onFocus = () => {
+    refresh();
+    watchHomeWake();
+  };
   target.addEventListener?.("focus", onFocus);
-  const onOnline = () => hurryPullWatch(), onVisible = () => {
-    if (target.document?.visibilityState !== "hidden") hurryPullWatch();
+  const onOnline = () => {
+    hurryPullWatch();
+    watchHomeWake();
+  }, onVisible = () => {
+    if (target.document?.visibilityState !== "hidden") {
+      hurryPullWatch();
+      watchHomeWake();
+    }
   };
   target.addEventListener?.("online", onOnline);
   target.document?.addEventListener?.("visibilitychange", onVisible);
@@ -28309,6 +28380,7 @@ function createWorldEducation({
     wakePlanWaits();
     stopPullWatch();
     stopHomePull();
+    stopWakeWatch();
     target.removeEventListener?.("online", onOnline);
     target.document?.removeEventListener?.("visibilitychange", onVisible);
     homeWatch?.dispose();

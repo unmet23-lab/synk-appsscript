@@ -452,8 +452,8 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 다시 보기",
     "F1 셸 — 다시 연결되어도 간격을 되돌리지 않는다(설계 주인 11-16 조건 2 · 4의 변형)",
-    "const onOnline=()=>hurryPullWatch(),",
-    "const onOnline=()=>{},",
+    "const onOnline=()=>{hurryPullWatch();watchHomeWake();},",
+    "const onOnline=()=>{watchHomeWake();},",
   ],
   [
     'shell',
@@ -557,8 +557,15 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 다시 보기",
     "다시 보기 — 숨겨진 화면의 visibilitychange에도 간격을 되돌린다(Fable 다시 검수)",
-    "if(target.document?.visibilityState!=='hidden')hurryPullWatch();",
-    "hurryPullWatch();",
+    "if(target.document?.visibilityState!=='hidden'){hurryPullWatch();watchHomeWake();}",
+    "{hurryPullWatch();watchHomeWake();}",
+  ],
+  [
+    'shell',
+    "셸 다시 보기",
+    "깨어날 때 지켜보기 — 이번 주 계획이 없는 홈(시험을 고르지 않은 학생)도 지켜본다 · 내 위치 판의 받기 기다림에 타이머가 섞인다(4-4b 다시 검수 GPT GA1)",
+    "typeof coachNow.summary!=='function'||weekMet.coach!==coachNow)return;",
+    "typeof coachNow.summary!=='function')return;",
   ],
 ];
 

@@ -100,12 +100,16 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
   };
   const shown = [];
   const coaches = [];
+  let drawn = 0;
   let box = null;
   const storage = new Map();
+  // 창 · 문서의 듣는 함수 — 시험이 초점 · 화면 복귀 · 다시 연결을 일으킨다(fire).
+  const listeners = [];
+  const listen = (type, fn) => listeners.push({ type, fn });
   const document = {
     visibilityState: 'visible',
     activeElement: null,
-    addEventListener() {},
+    addEventListener: listen,
     removeEventListener() {},
     querySelector(selector) {
       const html = shown.at(-1) ?? '';
@@ -120,7 +124,7 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
   const target = {
     localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, String(value)), removeItem: key => storage.delete(key) },
     document,
-    addEventListener() {},
+    addEventListener: listen,
     removeEventListener() {},
     setTimeout: fast
       ? (fn, ms) => {
@@ -129,7 +133,7 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
         }
       : setTimeout,
   };
-  const state = { values };
+  const state = { values, panel: null };
   const progress = {
     owner: 'guest',
     learningProfile: () => ({ profile: { status: 'active', revision: 1, consent: true } }),
@@ -141,13 +145,15 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
     hangulReading: () => ({ answer: 'reads' }),
   };
   const home = {
-    updateStudy() {},
+    updateStudy() {
+      drawn += 1;
+    },
     toast(text) {
       toasts.push(String(text));
     },
     closePanel() {},
     attachPanelResource() {},
-    openPanel: () => null,
+    openPanel: () => state.panel,
     showPanel(title, html) {
       shown.push(String(html));
       if (/data-position-stage/.test(html)) box = stage();
@@ -191,6 +197,10 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
     last: () => shown.at(-1) ?? '',
     toasts,
     waits,
+    drawn: () => drawn,
+    fire(type) {
+      for (const row of listeners.filter(entry => entry.type === type)) row.fn({ type });
+    },
     box: () => box,
     plan: () => education.metrics().plan,
     dispose() {
@@ -464,6 +474,10 @@ test('서버 길 계정의 기록이 다 오기 전에 그린 홈은 받기가 �
     // 받기를 기다리는 간격은 2초부터 두 배씩, 60초에서 멈춘다(내 위치 판의 watchPulled와 같다 — 창의 시계가 받은 값).
     await until(() => app.waits.filter(ms => ms >= 2000).length >= 7, '받기 기다림이 60초 칸까지 간다');
     assert.deepEqual(app.waits.filter(ms => ms >= 2000).slice(0, 7), [2000, 4000, 8000, 16000, 32000, 60000, 60000]);
+    // 다시 연결되면 홈의 받기 기다림도 처음 값(2초)으로 돌아가고(카본 C1 — 내 위치 판의 hurryPullWatch와 같다), 깨어난 홈 코치를 1초부터 지켜본다(GPT GA1).
+    const mark = app.waits.length;
+    app.fire('online');
+    assert.deepEqual(app.waits.slice(mark, mark + 2), [2000, 1000], '다시 연결되면 받기 기다림은 2초로, 깨어난 지켜보기는 1초부터');
     pulled = true;
     await until(() => app.plan().examPlan.notes.includes('start'), '받기가 되면 홈이 스스로 다시 그린다');
     assert.ok(app.plan().today.items.some(row => row.kind === 'check'), '점검 칸에 짧은 진단');
@@ -503,6 +517,113 @@ test('다른 기기의 답이 받기로 접혀 오면(요약이 바뀌면) 묶�
   } finally {
     app.dispose();
   }
+});
+
+// 서버 길 계정처럼 보이는 홈 코치 — storage.sync를 시험이 바꾼다. weekAsked는 이번 주 계획(weekNext)이 물은 묶음 만남만 센다.
+function accountWrap(sync, extra = {}) {
+  const counted = { weekAsked: 0, shift: null, met: null };
+  const wrap = made => ({
+    ...made,
+    summary() {
+      const summary = made.summary();
+      const skills = counted.shift ? [...summary.skills, counted.shift] : summary.skills;
+      return { ...summary, skills, storage: { ...summary.storage, guest: false, sync: { ...summary.storage.sync, ...sync } } };
+    },
+    exposures(items) {
+      if (/weekNext/.test(new Error().stack ?? '')) counted.weekAsked += 1;
+      const out = made.exposures(items);
+      return counted.met ? counted.met(out) : out;
+    },
+    ...extra,
+  });
+  return { counted, wrap };
+}
+const OTHER_DEVICE = { id: 'ko.reading.detail', theta: 0, n: 3, streak: 1, level: 1, peak: 1, cells: [{ difficulty: 1, independent: 3, correct: 2, helped: 0, lastAt: Date.UTC(2026, 10, 16) }] };
+
+test('첫 받기를 마친 탭이 깨어난 뒤(초점) 받기로 다른 기기의 답이 접혀 오면 홈이 스스로 다시 그린다 — 다음 조작을 기다리지 않는다(4-4b 다시 검수 GPT GA1)', async () => {
+  const { counted, wrap } = accountWrap({ pulled: true });
+  const app = shell({ wrap });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    const before = counted.weekAsked;
+    // 초점이 돌아온 순간의 새로 그리기는 받기보다 먼저 돈다 — 받기는 그 뒤에 끝나 다른 기기의 답을 접어 온다.
+    app.fire('focus');
+    assert.equal(counted.weekAsked, before, '초점의 새로 그리기 때는 요약이 그대로라 다시 묻지 않는다');
+    await tick(100);
+    counted.shift = OTHER_DEVICE;
+    await until(() => counted.weekAsked > before, '받기가 접어 온 답으로 홈이 다시 그려진다', 6000);
+  } finally {
+    app.dispose();
+  }
+});
+
+test('깨어난 뒤 지켜보기를 마칠 때 묶음 만남을 한 번 다시 묻는다 — 건너뛰기만 한 판의 만남은 요약 모양에 비치지 않는다(4-4b 다시 검수 Fable FA1)', async () => {
+  const { counted, wrap } = accountWrap({ pulled: true });
+  const app = shell({ wrap, fast: true });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    const before = counted.weekAsked;
+    // 다른 기기에서 건너뛰기만 한 판 — 채점된 답이 없어 요약 모양은 그대로이고 만남만 바뀐다.
+    counted.met = out => out.map(row => ({ ...row, seen: true }));
+    app.fire('visibilitychange');
+    await until(() => counted.weekAsked > before, '지켜보기를 마치며 다시 묻는다');
+    assert.ok(app.waits.includes(1000), '깨어나면 1초부터 지켜본다');
+    assert.equal(app.plan().examPlan != null, true);
+  } finally {
+    app.dispose();
+  }
+});
+
+test('서버 길 계정의 홈은 올리기 막힘(writesOff)이 풀릴 때도 스스로 다시 그린다 — 받기가 되어도 기록이 다 온 것은 막힘이 풀린 뒤다(4-4b 다시 검수 Fable FA3)', async () => {
+  const sync = { pulled: true, writesOff: true };
+  const { wrap } = accountWrap(sync);
+  const app = shell({ wrap, fast: true });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    assert.ok(!app.plan().examPlan.notes.includes('start'), '올리기가 막힌 동안은 기록 일부다');
+    // 막힘이 그대로인 동안은 기다리기만 한다 — 받기(pulled)만 보고 기다릴 때마다 홈을 다시 그리지 않는다.
+    await tick(100);
+    const quiet = app.drawn();
+    await tick(300);
+    assert.equal(app.drawn(), quiet, '막힘이 풀리기 전에는 홈을 다시 그리지 않는다');
+    sync.writesOff = false;
+    await until(() => app.plan().examPlan.notes.includes('start'), '막힘이 풀리면 홈이 스스로 다시 그린다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('확인 중에 학생이 누른 계획 열기는 기다린 사이 다른 판을 열었으면 덮지 않는다(4-4b 다시 검수 Fable FA2)', async () => {
+  let release = null;
+  const app = shell({ planner: () => new Promise(resolve => (release = () => resolve(PLANNER))) });
+  try {
+    const opening = app.education.plan();
+    await tick(20);
+    app.state.panel = 'life-review';
+    release();
+    assert.equal(await opening, 'skipped', '그사이 연 판을 덮지 않는다');
+    assert.ok(!app.shown.some(html => /data-plan-board/.test(html)), '계획 판을 그리지 않는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('확인 중에 연 계획 열기가 판을 기다리는 사이 문서가 닫히면 기다림이 곧 풀린다 — 8초 한도까지 매달리지 않는다(4-4b 다시 검수 카본 A1)', async () => {
+  const app = shell({ planner: () => new Promise(() => {}) });
+  const opening = app.education.plan().then(
+    value => ({ value }),
+    error => ({ error }),
+  );
+  await tick(20);
+  const started = Date.now();
+  app.dispose();
+  const settled = await Promise.race([opening, tick(2000).then(() => 'hung')]);
+  assert.notEqual(settled, 'hung', '닫으면 기다림이 곧 풀린다');
+  assert.ok(Date.now() - started < 1000);
+  assert.ok(!app.shown.some(html => html.includes('world-study-form') || /data-plan-board/.test(html)), '닫힌 뒤에는 아무 판도 열지 않는다');
 });
 
 // 앱(app-shell.mjs)의 배선 — 셸은 판 기록을 홈 입구(homeNext.planLog)로만 연다. 앱이 그 칸을 넘기지 않으면 시험 틀(위 shell())만 기록이 서고

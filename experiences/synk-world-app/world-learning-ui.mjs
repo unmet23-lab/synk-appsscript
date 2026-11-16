@@ -814,12 +814,52 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    if(homePull.timer!==timer)return;
    stopHomePull();
    if(stopped||homeWatch?.coach?.()!==coachNow)return;
-   const state=pullState(coachNow);
-   if(state==='pulled')refresh();
+   const state=homeRecordsState(coachNow);
+   if(state==='complete')refresh();
    else if(state==='wait')watchHomePulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2));
   },wait);
   timer?.unref?.();
   homePull={coach:coachNow,timer,wait};
+ }
+ // 홈의 받기 기다림이 보는 상태 — 'complete'(기록이 다 왔다) · 'wait'(받기나 올리기 막힘이 풀리기를 기다린다) · null(손님 · 멈춤 · 스위치 꺼짐 · 못 읽음).
+ // 「기록이 다 왔는가」가 참이 될 때까지 본다 — 받기가 됐어도 올리기 막힘(writesOff)이 풀려야 참이라, 받기만 보면 막힘이 풀릴 때 홈을 다시 그리지
+ // 않았다(4-4b 다시 검수 Fable FA3).
+ function homeRecordsState(coachNow){
+  let storage=null;try{storage=coachNow.summary()?.storage??null;}catch{return null;}
+  if(!storage||storage.guest!==false)return null;
+  const sync=storage.sync??{};
+  if(sync.stopped||sync.switchOff)return null;
+  const synced=nextSync.coach===coachNow?nextSync.value:null;
+  return homePlanner?.plan?.recordsComplete?.(storage,synced)===true?'complete':'wait';
+ }
+ // 깨어난 뒤의 받기(4-4b 다시 검수 GPT GA1 · Fable FA1): 셸은 호스트 알림을 듣지 않으므로, 초점 · 화면 복귀 · 다시 연결 뒤 엔진의 받기(5분 막이)로
+ // 다른 기기의 답이 접혀 와도 홈은 다음 조작까지 옛 계획으로 남았다(초점의 새로 그리기가 받기보다 먼저 돈다). 깨어나면 홈 코치의 요약 모양을 1초부터
+ // 두 배씩 30초까지 지켜보다 바뀌면 다시 그린다. 모양은 채점된 답만 비춘다(건너뛰기만 한 판의 만남은 못 본다) — 그래서 지켜보기를 마칠 때 이번 주
+ // 계획의 묶음 만남을 한 번 다시 묻게 하고 다시 그린다. 새로 깨어나면 처음부터 다시 지켜본다. 이번 주 계획을 그 코치로 지은 홈만 지켜본다 — 시험을
+ // 고르지 않은 학생에게는 굳을 만남이 없다(내 위치 판의 받기 기다림과 타이머를 섞지 않는다).
+ const WAKE_WATCH_MS=1000,WAKE_WATCH_MOST=30000;
+ let wakeWatch={timer:null};
+ function stopWakeWatch(){watchClock.clear(wakeWatch.timer);wakeWatch={timer:null};}
+ function watchHomeWake(){
+  stopWakeWatch();
+  const coachNow=!stopped&&homePhase()==='engine'?homeWatch?.coach?.()??null:null;
+  if(!coachNow||typeof coachNow.summary!=='function'||weekMet.coach!==coachNow)return;
+  let shape;try{shape=summaryShape(coachNow.summary());}catch{return;}
+  const arm=(wait,spent)=>{
+   const timer=watchClock.set(()=>{
+    if(wakeWatch.timer!==timer)return;
+    wakeWatch={timer:null};
+    if(stopped||homeWatch?.coach?.()!==coachNow)return;
+    let now;try{now=summaryShape(coachNow.summary());}catch{return;}
+    if(now!==shape){refresh();return;}
+    const next=spent+wait;
+    if(next<WAKE_WATCH_MOST){arm(Math.min(wait*2,WAKE_WATCH_MOST-next),next);return;}
+    if(weekMet.coach===coachNow){weekMet={coach:null,key:null,met:null};refresh();}
+   },wait);
+   timer?.unref?.();
+   wakeWatch={timer};
+  };
+  arm(WAKE_WATCH_MS,0);
  }
  function weekNext(coachNow,values,now){
   const N=homePlanner?.plan,P=homePlanner?.position;
@@ -829,7 +869,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const summary=coachNow.summary(),diagnostic=position.items,practice=position.practice.pool;
   const synced=nextSync.coach===coachNow?nextSync.value:null;
   const complete=N.recordsComplete(summary.storage,synced),sync=summary.storage?.sync??{};
-  if(summary.storage?.guest===false&&!complete&&sync.pulled!==true&&!sync.stopped&&!sync.writesOff&&!sync.switchOff)watchHomePulled(coachNow);
+  if(summary.storage?.guest===false&&!complete&&!sync.stopped&&!sync.switchOff)watchHomePulled(coachNow);
   const key=[homePlanner.todayKey(now),planEnds,info.type,complete,summaryShape(summary)].join('|');
   if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice])};
   const metDiag=weekMet.met.slice(0,diagnostic.length),metPractice=weekMet.met.slice(diagnostic.length);
@@ -1478,16 +1518,18 @@ async function townSend(coachNow,{wait=true}={}){
  // 학생을 「계획 없는 학생」으로 보고 목표 창을 열었다 — 주소의 ?exam= 바로가기, 알림의 「이번 주 연습」, 확인 중으로 돌아간 사이의 계획 단추(4-4b 끝 판
  // Fable F1). 그래서 시험을 고른 학생이면 판이 설 때까지(엔진 · 지금 판) 한도 안에서 기다리고, 넘기면 목표 창 대신 「확인 중」이다.
  const examChosen=()=>{try{return Boolean(position?.exam?.examInfo?.(settingsFor(getProgress().learningProfileValues())));}catch{return false;}};
- function wakePlanWaits(){if(homePhase()==='checking')return;for(const done of [...planWaits])done();}
+ // 판이 서거나(엔진 · 지금 판) 문서가 닫히면 기다림을 모두 깨운다 — 닫히면 판 상태가 지금 판이 되지만, 그 규칙에 기대지 않고 닫힘을 먼저 본다(4-4b 다시 검수 카본 A1).
+ function wakePlanWaits(){if(!stopped&&homePhase()==='checking')return;for(const done of [...planWaits])done();}
  function settledHome(){
   if(homePhase()!=='checking')return Promise.resolve();
-  return new Promise(resolve=>{let timer=null;const done=()=>{watchClock.clear(timer);planWaits.delete(done);resolve();};planWaits.add(done);timer=watchClock.set(done,PLAN_WAIT_MS);});
+  return new Promise(resolve=>{let timer=null;const done=()=>{watchClock.clear(timer);planWaits.delete(done);resolve();};planWaits.add(done);timer=watchClock.set(done,PLAN_WAIT_MS);timer?.unref?.();});
  }
  async function openPlan({keepScroll=false,quiet=false}={}){
   if(keepScroll&&openPosition.pending)return 'skipped';
   check();const ticket=++planOpen;
   if(!keepScroll){try{await prepare();}catch{/* the plan shows what this device has */}check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}check();
-   if(homePhase()==='checking'&&examChosen()){await settledHome();check();}}
+   // 기다린 사이 학생이 다른 판을 열었으면 덮지 않는다 — 기다림이 8초까지 길어서 학생이 누른 열기도 본다(4-4b 다시 검수 Fable FA2).
+   if(homePhase()==='checking'&&examChosen()){const panel=home.openPanel?.()??'';await settledHome();check();if(!quiet&&(home.openPanel?.()??'')!==panel)return 'skipped';}}
   if(ticket!==planOpen||quiet&&home.openPanel?.())return 'skipped';
   const plan=refresh(),examPlan=plan?.examPlan;
   // 한도를 넘겨도 확인 중이면 계획이 없는 것이 아니라 아직 모르는 것이다 — 목표 창을 열지 않는다(학생이 누른 열기에만 한 줄 알린다).
@@ -1522,8 +1564,8 @@ async function townSend(coachNow,{wait=true}={}){
   homeWatch=planner.watchHomePlan({open:openHome,retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped){refresh();redrawNext();}}});
   refresh();redrawNext();
  },()=>{if(stopped)return;homeFailed=true;refresh();redrawNext();});
- const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
- const onOnline=()=>hurryPullWatch(),onVisible=()=>{if(target.document?.visibilityState!=='hidden')hurryPullWatch();};
+ const onFocus=()=>{refresh();watchHomeWake();};target.addEventListener?.('focus',onFocus);
+ const onOnline=()=>{hurryPullWatch();watchHomeWake();},onVisible=()=>{if(target.document?.visibilityState!=='hidden'){hurryPullWatch();watchHomeWake();}};
  target.addEventListener?.('online',onOnline);target.document?.addEventListener?.('visibilitychange',onVisible);
  // 배우기 판의 「이번 주 계획」 줄(life-ui.mjs moreRows): 시험을 고른 사람에게만. print는 그 판의 인화지 그림.
  function planRow(print=()=>''){
@@ -1536,5 +1578,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopPullWatch();stopHomePull();target.removeEventListener?.('online',onOnline);target.document?.removeEventListener?.('visibilitychange',onVisible);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopPullWatch();stopHomePull();stopWakeWatch();target.removeEventListener?.('online',onOnline);target.document?.removeEventListener?.('visibilitychange',onVisible);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }
