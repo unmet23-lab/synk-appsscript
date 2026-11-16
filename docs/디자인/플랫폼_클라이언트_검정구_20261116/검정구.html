@@ -78,9 +78,17 @@ button,input{font:inherit;color:inherit}
 .invite input:hover{border-bottom-color:rgba(243,241,236,.6)}
 .invite input:focus{border-bottom-color:var(--paper)}
 /* 기다리는 동안에는 고를 것을 치우고 한 줄만 남긴다 */
-.status{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);margin:0;font:400 15px/1.5 var(--sans);color:rgba(243,241,236,.72);text-align:center;opacity:0;pointer-events:none;transition:opacity .5s ease}
-#stage[data-wait="1"] .ask-ways,#stage[data-wait="1"] #ask .invite{opacity:0;--o:0;pointer-events:none;transition:opacity .35s ease;transition-delay:0s}
-#stage[data-wait="1"] .status{opacity:1;transition-delay:.25s}
+.status{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:20px;opacity:0;pointer-events:none;transition:opacity .5s ease}
+.status p{margin:0;font:400 15px/1.5 var(--sans);color:rgba(243,241,236,.72);text-align:center}
+/* 조용한 글 단추. 기다릴 때는 취소, 오류에서는 다시 시도 하나만 보인다 */
+.quiet{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;margin:0;padding:0 0 4px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer;transition:color .25s ease,border-color .25s ease}
+.quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
+.quiet:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+.status .quiet{display:none}
+#stage[data-wait="1"] #ask-cancel,#stage[data-wait="error"] #ask-retry{display:inline-block}
+.signup{margin-top:20px}
+#stage[data-wait] .ask-ways,#stage[data-wait] #signup,#stage[data-wait] #ask .invite{opacity:0;--o:0;pointer-events:none;transition:opacity .35s ease;transition-delay:0s}
+#stage[data-wait] .status{opacity:1;pointer-events:auto;transition-delay:.25s}
 
 /* 들어온 뒤. 왼쪽 위의 구가 이 앱의 하나뿐인 조작 자리다 */
 /* 구의 왼쪽 끝을 본문의 왼쪽 줄에 맞춘다(구 반지름 11px, 단추 44px) */
@@ -181,14 +189,14 @@ button,input{font:inherit;color:inherit}
     <div class="ask-in">
       <svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱ㅋ"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>
       <div class="ask-ways">
-        <button class="way way-main rise" style="--i:1" type="button" data-way="google"><svg viewBox="0 0 18 18" aria-hidden="true"><path fill="currentColor" d="M17.1 9.2c0-.6-.05-1.1-.17-1.64H9v3.18h4.65a4 4 0 0 1-1.88 2.78l2.86 2.21c1.71-1.58 2.47-3.9 2.47-6.53ZM9 17.4c2.28 0 4.2-.75 5.6-2.04l-2.86-2.21c-.76.53-1.78.9-2.74.9-2.1 0-3.88-1.41-4.52-3.36l-2.94 2.27A8.4 8.4 0 0 0 9 17.4ZM4.48 10.69a5.04 5.04 0 0 1 0-3.38L1.54 5.04a8.4 8.4 0 0 0 0 7.92l2.94-2.27ZM9 3.95c1.38 0 2.33.6 2.86 1.1l2.09-2.04A8.07 8.07 0 0 0 9 1.1a8.4 8.4 0 0 0-7.46 4.44l2.94 2.27C5.12 5.36 6.9 3.95 9 3.95Z"/></svg>Google로 계속</button>
-        <button class="way rise" style="--i:2" type="button" data-way="email"><svg viewBox="0 0 18 18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" d="M2.2 4.4h13.6v9.2H2.2zM2.6 4.8 9 10l6.4-5.2"/></svg>이메일로 계속</button>
+        <button class="way way-main rise" style="--i:1" type="button" data-way="signin">로그인</button>
       </div>
+      <button id="signup" class="quiet signup rise" style="--i:2" type="button">처음이라면 가입하기</button>
       <form id="invite" class="invite rise" style="--i:4" autocomplete="off" novalidate>
         <label for="code">초대받으셨다면</label>
         <input id="code" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
       </form>
-      <p id="ask-status" class="status" role="status" aria-live="polite"></p>
+      <div class="status" role="status" aria-live="polite"><p id="ask-status"></p><button id="ask-cancel" class="quiet" type="button">취소</button><button id="ask-retry" class="quiet" type="button">다시 시도</button></div>
     </div>
   </section>
 
@@ -436,6 +444,9 @@ function placeUnder(e) {
   return null;
 }
 function askWait(text) { stage.dataset.wait = '1'; $('#ask-status').textContent = text; glintWant = 1; }
+function askError(text) { stage.dataset.wait = 'error'; $('#ask-status').textContent = text; glintWant = 0; }
+/* 기다림이나 오류에서 묻는 화면으로 돌아간다 */
+function askBack() { ++run; delete stage.dataset.wait; glintWant = 0; $('#ask-status').textContent = ''; }
 
 wake.addEventListener('click', hurryBoot);
 $$('.way').forEach(b => b.addEventListener('click', async () => {
@@ -444,18 +455,27 @@ $$('.way').forEach(b => b.addEventListener('click', async () => {
   await wait(1900); if (my !== run) return;
   enter('solio');
 }));
+$('#signup').addEventListener('click', async () => {
+  const my = ++run; snd.tick();
+  askWait('브라우저에서 가입을 마치면 이 창으로 돌아옵니다.');
+  await wait(1900); if (my !== run) return;
+  enter('solio');
+});
+$('#ask-cancel').addEventListener('click', askBack);
+$('#ask-retry').addEventListener('click', () => { askBack(); $('#code').value = ''; $('#code').focus(); });
 $('#invite').addEventListener('submit', async e => {
   e.preventDefault();
   const v = $('#code').value.trim(); if (!v) return;
   const my = ++run; snd.tick(); $('#code').blur();
   askWait('초대를 확인하고 있습니다.');
   await wait(1100); if (my !== run) return;
+  if (/^x/i.test(v)) return askError('이 초대코드를 확인하지 못했습니다. 받은 코드를 다시 붙여 넣어 주세요.');
   enter(/^p/i.test(v) ? 'pulse' : 'workspace');
 });
 document.addEventListener('paste', e => {
-  if (ui !== 'ask' || stage.dataset.wait || e.target === $('#code')) return;
+  if (ui !== 'ask' || stage.dataset.wait === '1' || e.target === $('#code')) return;
   const text = (e.clipboardData && e.clipboardData.getData('text') || '').trim(); if (!text) return;
-  e.preventDefault(); $('#code').value = text.slice(0, 200); $('#invite').requestSubmit();
+  e.preventDefault(); if (stage.dataset.wait) askBack(); $('#code').value = text.slice(0, 200); $('#invite').requestSubmit();
 });
 orbBtn.addEventListener('click', openSwitch);
 $('#here-name').addEventListener('click', openSwitch);
@@ -504,7 +524,7 @@ stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; });
 document.addEventListener('keydown', e => {
   wakeMeta();
   const typing = e.target instanceof HTMLInputElement;
-  if (e.key === 'Escape') { if (ui === 'switch') closeSwitch(); else if (typing) e.target.blur(); return; }
+  if (e.key === 'Escape') { if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (typing) e.target.blur(); return; }
   if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((e.key === 'Enter' || e.key === ' ') && stage.dataset.boot && !(e.target instanceof HTMLButtonElement && meta.contains(e.target))) { e.preventDefault(); hurryBoot(); return; }
   if (e.key === 'Enter' && ui === 'ask' && !stage.dataset.wait && !(e.target instanceof HTMLButtonElement)) { $('.way').click(); return; }
@@ -831,7 +851,7 @@ window.__orb = {
     if (opt.space) { space = opt.space; applySpace(); }
     const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'] }[scene];
     stage.classList.add('still'); resize(); sig.show(opt.sig);
-    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; }
+    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error);
     pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
     if (scene === 'switch') { layoutSwitch(); S.spin = -LON[faceWant || space]; S.ax = faceAx(faceWant || space); }
     draw(performance.now()); return { ...S, W, H };
