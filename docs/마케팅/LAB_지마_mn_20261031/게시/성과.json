@@ -94,6 +94,17 @@
         }
       },
       {
+        "계정": "lab-vn-tiktok",
+        "채널": "틱톡 @synklab.vn",
+        "주소": "https://www.tiktok.com/@synklab.vn/video/7708376050073488661?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-11-16T06:00:00.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-tiktok",
         "채널": "틱톡 @synk.mn",
         "주소": "https://www.tiktok.com/@synk.mn/video/7703272268155063560?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
@@ -211,7 +222,26 @@
         "게시": "2026-11-15T06:00:06.000Z",
         "훅": null,
         "역할": "육성",
-        "시점": {},
+        "시점": {
+          "24시간": {
+            "관측": "2026-11-16T06:00:39.486Z",
+            "지표": {
+              "views": 0,
+              "likes": 0,
+              "comments": 0
+            },
+            "평소대비": {
+              "배수": null,
+              "중앙값": null,
+              "편수": 0,
+              "기준": "앞선 편 같은 나이"
+            },
+            "위치": {},
+            "판정": "자료 부족",
+            "다음": null,
+            "까닭": "네 숫자(초반 유지·평균 시청·보내기와 저장·맞춤 도구 유입)가 아직 없다"
+          }
+        },
         "화면필요": []
       },
       {
