@@ -103,6 +103,48 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     assert.deepEqual((await fs.readdir(place)).sort(), [name, `${name} 2`].sort());
     engine.config.lastError = before.lastError; await engine.save();
   });
+  await t.test('a running 「지금 상태」 restore stops when asked: restic ends by itself mid-stream and leaves no lock, the restore says stopped, the health stays (화면 세션 요청 16 · 카본 끝판 A3)', async () => {
+    // Its own backup of 32 MB, so restic is still sending when the stop comes: that much cannot sit in the pipe.
+    const big = path.join(root, '큰 자료'); await fs.mkdir(big);
+    const bytes = 32 * 1024 * 1024; await fs.writeFile(path.join(big, 'big.bin'), crypto.randomBytes(bytes));
+    const stopper = new BackupEngine({ stateDir: path.join(root, 'stop-state'), resticPath, secretStore }); await stopper.open();
+    await fs.mkdir(path.join(root, 'stop-repo'));
+    await stopper.setup({ sources: [big], parent: path.join(root, 'stop-repo') });
+    await stopper.saveRecoveryKit(path.join(keys, 'stop-kit.json'));
+    await stopper.backupNow();
+    const before = { lastError: stopper.config.lastError, health: stopper.config.health.status, lastRestore: stopper.config.lastRestore };
+    // Stopped when the first part of the tar stream arrives, while restic is still writing the rest.
+    let answer, child, stoppedAt;
+    stopper.run = function (args, options) {
+      if (args[0] === 'dump' && options?.consumeStdout && !answer) {
+        const consume = options.consumeStdout;
+        options = { ...options, consumeStdout: (stream) => { stream.once('data', () => { child = this.child; stoppedAt = Date.now(); answer = this.cancelRestore(); }); return consume(stream); } };
+      }
+      return Object.getPrototypeOf(this).run.call(this, args, options);
+    };
+    const place = path.join(root, '그만둘 자리'); await fs.mkdir(place);
+    try { await assert.rejects(stopper.restoreLatest({ parent: place }), (e) => e.code === 'CANCELED' && /그만두었습니다/.test(e.message)); }
+    finally { delete stopper.run; }
+    const settled = Date.now();
+    assert.deepEqual(answer, { stopping: true });
+    // restic ended on its own once its pipe was closed: well inside the 5 seconds, and not by a kill.
+    assert.ok(child, 'restic was running when the stop came');
+    assert.ok(settled - stoppedAt < 4500, `ended ${settled - stoppedAt} ms after the stop`);
+    assert.equal(child.signalCode, null, 'not killed');
+    const failed = stopper.config.lastRestoreError;
+    assert.equal(failed.code, 'CANCELED');
+    assert.ok(failed.path.startsWith(await fs.realpath(place)), 'the folder it made is named');
+    // It stopped mid-stream: no whole copy of the file is there.
+    const made = await files(failed.path);
+    for (const p of made) assert.ok((await fs.stat(p)).size < bytes, `${p} is not whole`);
+    assert.deepEqual([stopper.config.lastError, stopper.config.health.status, stopper.config.lastRestore], [before.lastError, before.health, before.lastRestore]);
+    assert.equal(stopper.job, null); assert.equal(stopper.child, null);
+    // restic removed its own lock: nothing is left for the next backup or check to wait on.
+    assert.equal((await stopper.run(['list', 'locks'], { timeoutMs: 60000 })).trim(), '');
+    await stopper.checkRepository();
+    assert.deepEqual(stopper.cancelRestore(), { stopping: false });
+    await stopper.stop?.();
+  });
   const pinnedCatalog = await engine.openFileCatalog();
   const pinnedFile = engine.queryFileCatalog({ token: pinnedCatalog.token, query: '한글 문서', offset: 0 }).rows[0];
   engine.setFileSelection({ token: pinnedCatalog.token, revision: 0, action: 'add', ids: [pinnedFile.id] });

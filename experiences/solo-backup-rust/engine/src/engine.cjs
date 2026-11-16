@@ -421,21 +421,26 @@ class BackupEngine extends EventEmitter {
       // next run", not an error (STAGE1_DESIGN.md 4.2 · review F2). The window still
       // says why nothing happened: a person-started job returns at once (review GA2).
       // A restore that failed is written down as such (lastRestoreError), never as the backups' failure (화면 세션 부탁 4).
+      const cancelled = !!(OWN_ERROR[kind] && this.job?.cancelled);
+      // Failing now: a stop that comes while this is written can no longer change it (카본 끝판 A2).
+      if (this.job) this.job.final = true;
       if (this.config && OWN_ERROR[kind]) {
-        const code = e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : kind === 'move' ? 'MOVE_FAILED' : 'RESTORE_FAILED';
+        const code = cancelled ? 'CANCELED' : e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : kind === 'move' ? 'MOVE_FAILED' : 'RESTORE_FAILED';
         this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}), ...(note.named === true ? { named: true } : {}) };
         await this.save().catch(() => {});
       } else if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
       else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
       // A word code (REPO_EXISTS, RESTORE_PENDING …) goes on with the cleaned message; the screen chooses by it.
-      const error = new Error(this.clean(e.message)); error.exitCode = e.exitCode;
+      const error = new Error(cancelled ? '되살리기를 그만두었습니다. 만들다 만 폴더는 그대로 두었습니다.' : this.clean(e.message)); error.exitCode = e.exitCode;
       if (typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code)) error.code = e.code;
+      if (cancelled) error.code = 'CANCELED';
       throw error;
     } finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
   }
   clean(message) { return b2.redact(message, [this.secret, this.cloudCredentials?.keyId, this.cloudCredentials?.applicationKey, this.connection?.credentials.keyId, this.connection?.credentials.applicationKey, ...this.transientSecrets]); }
   async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly, onErrorItem = null, stdinText = null } = {}) {
     if (this.stopping && !this.job) throw new Error('앱을 종료하고 있습니다. 이전 정상 백업은 유지됩니다.');
+    if (this.job?.cancelled) throw Object.assign(new Error('되살리기를 그만두었습니다. 만들다 만 폴더는 그대로 두었습니다.'), { code: 'CANCELED' });
     const { env, args: providerArgs } = b2.childOptions(provider, credentials, this.workDir || this.stateDir, process.env, password);
     if (readOnly) {
       const permitted = ['snapshots', 'ls', 'dump'].includes(args[0]) || (args[0] === 'cat' && ['config', 'lock'].includes(args[1])) || (args[0] === 'list' && args[1] === 'locks');
@@ -1385,11 +1390,17 @@ class BackupEngine extends EventEmitter {
             ...(extra.length ? { fromEarlier: extra.map(f => ({ path: f.name, backupAt: f.backupAt })) } : {}),
             ...(folders.length ? { foldersFromEarlier: folders } : {}), ...(notFound.length ? { inNoBackup: notFound } : {}), ...(cut ? { listCut: true } : {}) });
         }
+        this.restoreFinal();
         await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify(mapping, null, 2), { flag: 'wx' });
       }
       catch (e) {
-        this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '복구 또는 검증이 끝나지 않았습니다. 전체 점검 전에는 이전 백업을 정리하지 않습니다.' };
-        await this.save();
+        // Stopped by the person (cancelRestore): nothing is wrong with the backups, so their health stays. Failing or
+        // stopped, it can no longer be stopped while this is written (카본 끝판 A2).
+        const stopped = !!this.job?.cancelled; if (this.job) this.job.final = true;
+        if (!stopped) {
+          this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '복구 또는 검증이 끝나지 않았습니다. 전체 점검 전에는 이전 백업을 정리하지 않습니다.' };
+          await this.save();
+        }
         throw Object.assign(new Error(`${e.message}\n${target ? `완료되지 않은 복구 폴더: ${target}` : '복구 파일을 만들기 전에 중단했습니다.'}`), { exitCode: e.exitCode, code: e.code, ...(target ? { restorePath: target } : {}) });
       }
       this.config.lastRestore = { path: target, at: new Date(this.now()).toISOString(), fromEarlier, inNone, ...(skippedAll ? { skipped: skippedAll } : {}) }; await this.save();
@@ -1596,6 +1607,7 @@ class BackupEngine extends EventEmitter {
           if (file.mtime) await fs.utimes(destination, new Date(file.mtime), new Date(file.mtime));
           count++; bytes += written.bytes;
         }
+        this.restoreFinal();
         const mapping = capture.files.map(f => ({ source: plans[f.sourceIndex].label, path: f.path, bytes: f.size }));
         await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify({ snapshotAt: snapshot.time, ...(capture.from ? { from: capture.from } : {}), files: mapping }, null, 2), { flag: 'wx' });
         await fs.unlink(marker);
@@ -1606,7 +1618,8 @@ class BackupEngine extends EventEmitter {
         this.stage(`선택한 파일 ${count}개 복구 확인 완료`, 100);
         return this.getState();
       } catch (e) {
-        const error = selection.safeError(e, 'RESTORE_INCOMPLETE');
+        const error = this.job?.cancelled ? selection.issue('CANCELED') : selection.safeError(e, 'RESTORE_INCOMPLETE');
+        if (this.job) this.job.final = true; // failing: a late stop cannot rename it (카본 끝판 A2)
         this.config.lastSelectedRestore = previous;
         if (marker) await fs.writeFile(marker, '복구가 완료되지 않았습니다. 이전 완료 결과는 유지됩니다.\n', { flag: 'wx' }).catch(() => {});
         this.config.lastSelectedRestoreError = { code: error.code, message: error.message, at: new Date(this.now()).toISOString(), ...(target ? { path: target } : {}), ...(named === true ? { named: true } : {}) };
@@ -1614,6 +1627,34 @@ class BackupEngine extends EventEmitter {
         await this.save().catch(() => {}); throw error;
       }
     });
+  }
+  /**
+   * 화면 세션 요청 16: stops a running 「지금 상태」 or selected restore. The restic read running now ends the way a failed
+   * consumer ends it — its output pipe closed, so restic exits and removes its own lock; killed only if it is still there
+   * 5 seconds later — and no further restic read starts (run). What was made so far stays as it is, and the restore's own
+   * failure record says CANCELED with that folder (lastRestoreError · lastSelectedRestoreError), never the backups'
+   * failure, an integrity failure or the health. Nothing to stop — no restore, or one already in its last step or
+   * failing (`job.final`) — `{ stopping: false }`.
+   */
+  cancelRestore() {
+    const job = this.job;
+    if (!job || !['restore', 'restore-selected'].includes(job.kind) || job.final) return { stopping: false };
+    job.cancelled = true; job.stage = '되살리기를 그만두는 중'; job.percent = null; this.emitState();
+    const child = this.child;
+    if (child) {
+      // With an error: a pipe closed without one can leave the reader (the tar extraction) waiting for an end that never
+      // comes, even after restic has gone (seen with real restic, 11-17).
+      child.stdout?.destroy(Object.assign(new Error('되살리기를 그만두었습니다.'), { code: 'CANCELED' }));
+      const force = setTimeout(() => { if (child.exitCode === null && child.signalCode === null) child.kill(); }, 5000); force.unref?.();
+    }
+    return { stopping: true };
+  }
+  /** A restore past its last read, about to write what makes it finished (GPT GA1): told to stop, it stops here; from
+   *  here on it can no longer be stopped (cancelRestore answers `{ stopping: false }`). No await between the two, so a
+   *  stop cannot slip in between. */
+  restoreFinal() {
+    if (this.job?.cancelled) throw Object.assign(new Error('되살리기를 그만두었습니다. 만들다 만 폴더는 그대로 두었습니다.'), { code: 'CANCELED' });
+    if (this.job) this.job.final = true;
   }
   async tick() {
     if (this.stopping || this.job || !this.secret || !this.config?.automatic || this.config.mode !== 'backup' || this.config.readOnly) return;

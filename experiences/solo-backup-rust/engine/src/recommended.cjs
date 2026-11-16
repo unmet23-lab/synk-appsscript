@@ -103,9 +103,14 @@ async function restoreWhole(engine,parent,snapshot){
     const space=await fs.statfs(parent,{bigint:true}),free=space.bavail*space.bsize,total=space.blocks*space.bsize;
     const allocation=[...manifest.nodes.values()].reduce((n,e)=>n+((BigInt(e.size)+space.bsize-1n)/space.bsize+1n)*space.bsize,0n);
     if(free<allocation*12n/10n+64n*1024n*1024n||free-allocation<total/10n)throw Error('복구 후 여유 공간 10%를 유지할 수 있는 다른 드라이브가 필요합니다.');
-    const target=path.join(parent,`추천복구-${crypto.randomUUID()}`);await fs.mkdir(target);engine.stage('새 폴더로 복구하고 모든 파일 내용 검증 중');
+    const target=path.join(parent,`추천복구-${crypto.randomUUID()}`);await fs.mkdir(target);
+    // The folder made so far goes with any failure or stop, as 「지금 상태」 restore's does (카본 끝판 A1 · GPT GA1).
+    try{
+    engine.stage('새 폴더로 복구하고 모든 파일 내용 검증 중');
     let proof;await engine.run(['dump',snapshot.id,'/','--archive','tar'],{consumeStdout:async stream=>{proof=await extractVerified(stream,target,manifest);}});
+    engine.restoreFinal?.();
     const receipt={...proof,path:target,snapshotId:snapshot.id,at:new Date(engine.now()).toISOString(),verification:'all-file-SHA256-against-authenticated-stream',applicationConsistent:false};await fs.writeFile(path.join(target,'업무복구-확인.json'),JSON.stringify(receipt,null,2),{flag:'wx'});engine.config.lastRestore=receipt;await engine.save();return receipt;
+    }catch(e){if(e&&typeof e==='object'&&!e.restorePath)e.restorePath=target;throw e;}
 }
 class RecommendedBackup {
   constructor({root,workRoot=null,resticPath,secretStore,plannerPath,inventoryPath,protectedPaths=[],cloudContext,registerStartup,scan=native}){Object.assign(this,{root:path.resolve(root),workRoot:workRoot?path.resolve(workRoot):null,resticPath,secretStore,plannerPath,inventoryPath,protectedPaths,cloudContext,registerStartup,scan});this.busy=false;this.error=null;this.preview=null;this.engine=null;this.closing=false;this.onChange=()=>{};}

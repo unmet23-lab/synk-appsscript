@@ -40,7 +40,9 @@ test('bridge, worker and native method contract preserves all existing app actio
   const move=['moveDevices','movePreview','moveStart','moveResult','moveState','moveOpen','setNextSources','moveReinstallList','moveReinstall','moveRestoreSettings','moveChecklist','moveCheck','moveOpenProgramPage','moveRelease'];
   // 「옛 PC 백업에서 꺼내기」 (4.6 · 화면 세션 E26): the folders right inside a part of an old device's backup.
   const oldBackup=['browseBackupFolder'];
-  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup].sort();
+  // 화면 세션 요청 16: 「그만두기」 on a running restore.
+  const stop=['cancelRestore'];
+  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup,...stop].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
   for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials','addSources','removeSource'])assert.equal(contract[name].allowedReadOnly,false);
@@ -50,6 +52,8 @@ test('bridge, worker and native method contract preserves all existing app actio
   for(const name of ['devicesList','restorePlan','restoreJob','restoreSeen','cancelGoogle','openGoogleAccount'])assert.equal(contract[name].mutating,false,name);
   // 「그만두기」 must reach the worker while a sign-in waits: no dialog, a short limit.
   assert.deepEqual([contract.cancelGoogle.dialog,contract.cancelGoogle.timeoutMs],[false,10000]);
+  // 「그만두기」 on a restore reaches the worker while the restore runs, on a restore-only connection too.
+  assert.deepEqual([contract.cancelRestore.dialog,contract.cancelRestore.timeoutMs,contract.cancelRestore.allowedReadOnly],[false,10000,true]);
   // A restore-only connection to the account's backup chooses the folders it will back up (the action decides).
   assert.equal(contract.chooseSources.allowedReadOnly,true);
   // The account code decides what a restore-only PC may do (it takes the write seat from there).

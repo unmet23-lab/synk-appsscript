@@ -167,3 +167,73 @@ test('another device\'s backup, a folder or a folder inside it, and one level of
   fake.ls = () => ({ id: oldId, nodes: [node('/a/b')] }); await assert.rejects(engine.browseBackupFolder({ from: 'old-pc', folder: 'D:\\big' }), code('UNSAFE_MANIFEST'));
   fake.ls = () => ({ id: 'e'.repeat(64), nodes: [] }); await assert.rejects(engine.browseBackupFolder({ from: 'old-pc', folder: 'D:\\big' }), code('UNSAFE_MANIFEST'));
 });
+test('a selected restore told to stop stops before its next file, keeps what it made, and is no integrity failure (화면 세션 요청 16)', async () => {
+  const f = await fixture(), { engine, fake, events, root } = f;
+  fake.nodes.push({ message_type: 'node', path: '/둘째.txt', type: 'file', size: 3 });
+  assert.deepEqual(engine.cancelRestore(), { stopping: false }, 'nothing running');
+  engine.job = { kind: 'backup' }; assert.deepEqual(engine.cancelRestore(), { stopping: false }, 'a backup is not stopped'); assert.equal(engine.job.cancelled, undefined); engine.job = null;
+  const args = await f.selected();
+  let answer, seen;
+  fake.afterDump = async () => { if (!answer) { answer = engine.cancelRestore(); seen = engine.getState().job; } };
+  await assert.rejects(engine.restoreSelected(args), code('CANCELED'));
+  assert.deepEqual(answer, { stopping: true });
+  assert.deepEqual([seen.kind, seen.cancelled, seen.stage], ['restore-selected', true, '되살리기를 그만두는 중']);
+  assert.equal(events.filter(e => e.args[0] === 'dump').length, 1, 'no restic read after the stop');
+  const failed = engine.config.lastSelectedRestoreError;
+  assert.equal(failed.code, 'CANCELED');
+  // What it made stays, marked unfinished; the last finished result, the backups' error and the health are as they were.
+  assert.deepEqual((await fs.readdir(failed.path)).sort(), ['01-original-work', '_복구중_미완료.txt']);
+  assert.deepEqual(await fs.readdir(path.join(failed.path, '01-original-work')), ['둘째.txt'], 'the first in name order, and only it');
+  assert.equal(engine.config.lastSelectedRestore.path, 'old-selected');
+  assert.equal(engine.config.health.status, 'ok');
+  assert.equal(engine.config.lastError, 'prior backup error');
+  assert.equal(engine.job, null);
+  assert.deepEqual(engine.cancelRestore(), { stopping: false }, 'and nothing left to stop');
+});
+test('a stop that comes after the last file still stops it; once it is writing its result, it cannot be stopped (GPT GA1 · 화면 세션 요청 16)', async () => {
+  const f = await fixture(), { engine, fake } = f, args = await f.selected();
+  let answer;
+  // The only file is read; the stop comes before the result is written.
+  fake.afterDump = async () => { answer = engine.cancelRestore(); };
+  await assert.rejects(engine.restoreSelected(args), code('CANCELED'));
+  assert.deepEqual(answer, { stopping: true });
+  const failed = engine.config.lastSelectedRestoreError;
+  assert.equal(failed.code, 'CANCELED');
+  assert.ok((await fs.readdir(failed.path)).includes('_복구중_미완료.txt'), 'still marked unfinished');
+  assert.ok(!(await fs.readdir(failed.path)).includes('복구경로.json'));
+  assert.equal(engine.config.lastSelectedRestore.path, 'old-selected');
+  // In its last step a restore says it can no longer be stopped, and nothing is marked.
+  engine.job = { kind: 'restore-selected' }; engine.restoreFinal();
+  assert.deepEqual(engine.cancelRestore(), { stopping: false }); assert.equal(engine.job.cancelled, undefined);
+  engine.job = { kind: 'restore', cancelled: true }; assert.throws(() => engine.restoreFinal(), e => e.code === 'CANCELED'); assert.equal(engine.job.final, undefined);
+  engine.job = null;
+});
+test('a stop while a failing restore writes its failure changes nothing; a recommended restore names its folder when stopped (카본 끝판 A1 · A2 · GPT GA1)', async () => {
+  const f = await fixture(), { engine, fake } = f, args = await f.selected();
+  // The read fails; the stop comes while the failure is being written.
+  fake.fail = 'dump';
+  let armed = false, answer;
+  const run = engine.run, save = engine.save;
+  engine.run = async function (a, o) { try { return await run.call(this, a, o); } catch (e) { if (a[0] === 'dump') armed = true; throw e; } };
+  engine.save = async function () { if (armed && !answer) answer = this.cancelRestore(); return save.call(this); };
+  await assert.rejects(engine.restoreSelected(args), code('RESTORE_INCOMPLETE'));
+  assert.deepEqual(answer, { stopping: false });
+  assert.equal(engine.config.lastSelectedRestoreError.code, 'RESTORE_INCOMPLETE');
+  // The same for a 「지금 상태」 restore's own failure record (operation).
+  answer = undefined; armed = true;
+  await assert.rejects(engine.operation('restore', async () => { throw Object.assign(new Error('disk full'), { code: 'NO_SPACE' }); }), e => e.code === 'NO_SPACE');
+  assert.deepEqual(answer, { stopping: false });
+  assert.equal(engine.config.lastRestoreError.code, 'NO_SPACE');
+  engine.run = run; engine.save = save;
+  // A recommended whole restore stopped while it reads: the folder it made is named, like 「지금 상태」's.
+  const { restoreWhole, VERIFIED: RECOMMENDED } = require('../src/recommended.cjs');
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'recommended-stop-')), out = path.join(base, 'out'); await fs.mkdir(out);
+  const listing = [{ message_type: 'snapshot' }, { message_type: 'node', path: '/a.txt', type: 'file', size: 3 }].map(x => JSON.stringify(x)).join('\n');
+  const stub = { config: { sources: [] }, forbidden: () => [], identity: async () => {}, assertNoRemoteMaintenance: async () => {}, stage() {}, now: () => Date.now(), save: async () => {},
+    run: async (a, o) => { if (a[0] === 'ls') { await o.consumeStdout(Readable.from([Buffer.from(listing)])); return ''; } throw Object.assign(new Error('stopped'), { code: 'CANCELED' }); } };
+  const stopped = await restoreWhole(stub, out, { id: 'c'.repeat(64), tags: [RECOMMENDED], paths: [path.join(base, 'src')] }).then(() => null, e => e);
+  assert.equal(stopped?.code, 'CANCELED');
+  assert.equal(path.dirname(stopped.restorePath), await fs.realpath(out));
+  assert.match(path.basename(stopped.restorePath), /^추천복구-/);
+  assert.ok((await fs.stat(stopped.restorePath)).isDirectory());
+});

@@ -305,6 +305,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       const started = launchJob(context.engine, () => context.engine.restoreSelected({ token: input.token, revision: input.revision, ...place }));
       return { profile: input.profile, token: input.token, started: true, state: started };
     }, { safeErrors: true });
+    // 화면 세션 요청 16: 「그만두기」 on a running restore. It works beside the job, so it takes no slot or lock.
+    handle('cancelRestore', ({ engine }) => engine.cancelRestore(), { read: true });
     handle('openSelectedRestoreFolder', async (context, input) => {
       catalogInput(context, input, ['profile']);
       const target = context.engine.config?.lastSelectedRestore?.path;

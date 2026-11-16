@@ -26,7 +26,8 @@ const MESSAGES = Object.freeze({
   NO_SPACE: '복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.',
   INTEGRITY_FAILED: '파일 목록이나 복구한 내용의 크기·검증 결과가 일치하지 않습니다. 복구는 완료되지 않았습니다.',
   OPERATION_FAILED: '파일 목록을 읽지 못했습니다. 연결 상태를 확인한 뒤 다시 열어 주세요.',
-  RESTORE_INCOMPLETE: '선택 복구가 끝나지 않았습니다. 미완료 폴더와 이전 복구 결과를 유지합니다.'
+  RESTORE_INCOMPLETE: '선택 복구가 끝나지 않았습니다. 미완료 폴더와 이전 복구 결과를 유지합니다.',
+  CANCELED: '되살리기를 그만두었습니다. 만들다 만 폴더는 그대로 두었습니다.'
 });
 class CatalogError extends Error { constructor(code) { super(MESSAGES[code] || MESSAGES.OPERATION_FAILED); this.code = Object.hasOwn(MESSAGES, code) ? code : 'OPERATION_FAILED'; } }
 const issue = code => new CatalogError(code);
