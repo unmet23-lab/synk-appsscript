@@ -185,9 +185,9 @@
       "acquisitionMethod": "user-added-account-from-existing-synk.mn-login",
       "loginVerifiedAt": "2026-11-16",
       "egoProfile": "Profile 17",
-      "egoProfileNote": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 새로 만들고 유호님이 로그인하셨다 — 프로필 편집 화면에서 synklab.uz · SYNK LAB Uzbekistan 확인. Profile 5의 인스타 웹은 여러 계정이 섞여 전환할 때마다 비밀번호가 들었다(11-12 · 11-15).",
+      "egoProfileNote": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 만들고 유호님이 로그인하셨다. 개인 계정이라 웹 「Schedule content」가 없어 11-16 05:13 크리에이터로 바꿨지만 18:50까지도 칸이 없었다. 저녁에 유호님 「응, 연결해」로 Business Suite 「synk.mn」 포트폴리오에 인스타 프로필로 넣고(유호님 인스타 로그인 · 양유호 계정 전체 액세스) 자산 ID를 아래에 적었으나, 페이스북 페이지 없는 인스타 전용 자산이라 「게시물 만들기」는 세로 9:16 영상을 받지 않고(4:5~16:9만) 릴스 작성 창은 「요청을 처리할 수 없습니다」였다. 그래서 거는 길은 인스타 웹 그대로 두고, 14시 게시 회차가 칸이 보일 때만 건다.",
       "publisher": "manual-only",
-      "connection": "web-owner-login-verified-api-not-verified",
+      "connection": "web-owner-login-verified-business-suite-portfolio-synk.mn-2026-11-16",
       "profileStatus": "name-bio-link-in-bio-avatar-owner-profile-verified-2026-11-16",
       "publicProfileComplete": true,
       "publicBioVerifiedAt": "2026-11-16",
@@ -219,7 +219,9 @@
       "metricsRoute": "server",
       "metricsState": "missing",
       "profileCheckedAt": "2026-11-16",
-      "profileCheckNote": "2026-11-16 ego Profile 17에서 소개 끝에 synk.im/lab/ 줄을 더해 저장하고 편집 칸과 다른 계정(Profile 5)으로 연 공개 프로필 머리에서 다시 읽었다(공개 머리는 「synk... more」로 접혀 보인다). 인스타 웹은 링크 칸을 못 바꿔(「모바일에서만」) 소개 글에 주소를 둔다 — 누를 수 있는 링크 칸은 앱에서 할 일로 남는다(externalWebsiteLinkStatus). Business Suite 포트폴리오에 이 계정이 없어 거는 길은 인스타 웹 「Schedule content」다(postRoute instagram-web)"
+      "profileCheckNote": "2026-11-16 ego Profile 17에서 소개 끝에 synk.im/lab/ 줄을 더해 저장하고 편집 칸과 다른 계정(Profile 5)으로 연 공개 프로필 머리에서 다시 읽었다(공개 머리는 「synk... more」로 접혀 보인다). 인스타 웹은 링크 칸을 못 바꿔(「모바일에서만」) 소개 글에 주소를 둔다 — 누를 수 있는 링크 칸은 앱에서 할 일로 남는다(externalWebsiteLinkStatus). Business Suite 포트폴리오에 이 계정이 없어 거는 길은 인스타 웹 「Schedule content」다(postRoute instagram-web)",
+      "businessSuiteBusinessId": "1057004986835568",
+      "businessSuiteAssetId": "17841430359387312"
     },
     "lab-mx-youtube": {
       "brand": "LAB",
