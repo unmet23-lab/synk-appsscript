@@ -1,0 +1,86 @@
+{
+  "_설명": "LAB 몽골 M44 「눈 + 물 = 눈물?」 칸 지시문 원천(11-16 곁 세션 lab-mn-21). 장면 하나(D 게르 마을) — 칸마다 기준 판 gD를 첫 참고로, 몽글 정본을 둘째로 넣어 바꿀 것만 바꾼다(계절이 바뀌는 칸도 같은 마을 · 같은 카메라). 눈사람이 다시 나오는 칸은 d1을 셋째 참고로 넣어 같은 눈사람으로. 지시문 파일은 scratchpad 칸쓰기.js가 이 파일에서 찍는다. 11-16 장면 심사 v1(「첫 2.5초가 멈춰 있다 · 웅덩이의 숯 눈 둘이 얼굴처럼 보인다 · 눈물이 실처럼 이어져 굳어 보인다 · 처음부터 울상이라 우는 순간이 변화가 아니다」)로 d3b(녹는 순간 — 당근 퐁당) · d4n(멍한 얼굴, 숯 눈을 떨어뜨림) · d5n(눈물 방울)을 새로 굽는다. 장면 심사 v2 「녹는 순간이 잘렸다 · 눈사람과 나뭇가지 팔이 한 번에 사라진다 · 2~4초가 멈췄다 · 첫 칸 몽글 눈가에 이미 물방울이 있다」로 v3은 d3m(녹는 중) → d3b(퐁당) → d4a(남은 것 — 팔 · 눈 · 당근 · 목도리) → d4b(목도리를 몸으로 밂) → d5v(울음 방울)로 잇는다. d4a는 d3b를, d4b는 d4a를, d5v는 d4b를 첫 참고로 굽는다. 이해 시험 v1 볼 이유 「끝 포옹이 3.9초 포옹과 같고 여운이 없다 — 기뻐서 흘린 눈물이 눈송이로 얼어 떨어지는 반전」으로 끝 칸 d8(기쁨의 눈물이 눈송이로)을 d7 기준으로 굽는다.",
+  "장면": {
+    "D": {
+      "머리": "IMAGE BRIEF — one panel of a vertical short shot with a FIXED camera (a needle-felt miniature diorama photo, portrait 2:3). From panel to panel only Mongle, the snowman, the snow, the light and the season change.\n\nThe FIRST attached image is the base photo. Reproduce it EXACTLY — same camera position, framing and focus, the same small Mongolian countryside village: the same round white felt GER with its red wooden door decorated with orange-and-blue patterns, the same low wooden fence, the same gentle low hills, the same soft sky in the top 24% of the image with nothing in it. Mongle stays LEFT of centre in the foreground (between about 18% and 46% of the image width) unless this panel says otherwise.",
+      "꼬리": "The SECOND attached image is the mascot reference — use it ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands, ever — it moves by tilting, squashing, stretching, sliding and bouncing its whole soft body. Mongle stands on the ground with a soft shadow.\nExactly ONE Mongle, nobody else (the snowman is a snowman, not a person). Nothing floats in the air except falling snowflakes when the panel says it snows. Absolutely no text, letters, numbers, logos, symbols, speech bubbles or watermarks anywhere."
+    }
+  },
+  "칸": [
+    {
+      "이름": "d1",
+      "장면": "D",
+      "바꿈": "on the empty snow at the RIGHT (between about 54% and 82% of the image width) now stands a freshly built felt SNOWMAN about as tall as Mongle: two round soft white felt snowballs (a big one below, a smaller head on top), two small black bead coal eyes, a short orange felt carrot nose, a TEAL knitted wool scarf with short fringes wrapped round its neck, two thin brown twig arms. Mongle stands next to it, proud and happy, eyes closed in happy arcs, light blush. Light white felt snowflakes keep falling. Winter, soft morning light, thick white snow everywhere as in the base photo."
+    },
+    {
+      "이름": "d2",
+      "장면": "D",
+      "바꿈": "the same snowman from the THIRD attached image (same two snowballs, black bead coal eyes, orange carrot nose, TEAL fringed scarf, brown twig arms) stands at the RIGHT. Mongle has slid over and hugs the snowman — Mongle's soft body presses lovingly against the snowman's side, both look happy, the snowman's twig arm rests on Mongle's head. Light snowflakes falling. Winter, thick white snow as in the base photo."
+    },
+    {
+      "이름": "d3",
+      "장면": "D",
+      "바꿈": "SPRING has come to the SAME village (same camera, same ger, fence and hills): bright warm sunlight, the sky a clear spring blue, most of the snow has MELTED into wet patches showing soft green felt grass and a few tiny yellow felt flowers; no snow is falling. The same snowman from the THIRD attached image stands at the RIGHT but it is MELTING — shrunk to half its size, slumping and sagging, its head tilted and sliding, clear water dripping down it and pooling at its base, its TEAL scarf drooping, the carrot nose pointing down. Mongle stares at it in shock, bead eyes wide, a sweat drop on its side."
+    },
+    {
+      "이름": "d4",
+      "장면": "D",
+      "바꿈": "SPRING in the SAME village (same camera, same ger, fence and hills, bright spring sunlight, soft green felt grass, a few tiny yellow felt flowers, no snow left, no snow falling). The snowman is completely GONE — where it stood at the RIGHT there is only a shallow clear water PUDDLE on the grass, and lying in the puddle: the short orange felt carrot, the TEAL fringed knitted scarf (the same as in the THIRD attached image) and two small black bead coal eyes. Mongle stands at the edge of the puddle (move Mongle a little toward the centre, between about 30% and 56% of the image width), looking down at the puddle, sad and quiet, its bead eyes glistening."
+    },
+    {
+      "이름": "d5",
+      "장면": "D",
+      "바꿈": "the same spring scene as the THIRD attached image — the clear water puddle on the grass with the orange carrot, the TEAL fringed scarf and two black bead coal eyes lying in it. Mongle stands at the edge of the puddle (between about 30% and 56% of the image width) and CRIES: big clear round tear drops well up and roll down from its two black bead eyes (the tears clearly come out of its EYES), two tears dropping from its body into the puddle making tiny ripples; Mongle's body droops sadly. Bright spring light."
+    },
+    {
+      "이름": "d6",
+      "장면": "D",
+      "바꿈": "the NEXT WINTER in the SAME village (same camera, same ger, fence and hills): thick soft white felt snow covers everything again exactly like the base photo, and white felt snowflakes are falling again. Where the puddle was (at the RIGHT), the TEAL fringed knitted scarf and the orange felt carrot (the same as in the THIRD attached image) lie neatly on top of the fresh snow. Mongle stands LEFT of centre and looks up at the falling snow, its face still wet with two little tear tracks, but its bead eyes are bright and a small surprised happy smile is starting."
+    },
+    {
+      "이름": "d7",
+      "장면": "D",
+      "바꿈": "winter again in the SAME village with thick white snow and gentle falling snowflakes, exactly like the base photo. At the RIGHT stands the SNOWMAN again — built anew and looking the same as in the THIRD attached image (two white felt snowballs, black bead coal eyes, orange carrot nose, the same TEAL fringed scarf, brown twig arms). Mongle hugs it with a huge happy smile, eyes closed in happy arcs, light blush; the snowman's twig arm rests on Mongle."
+    },
+    {
+      "이름": "d3b",
+      "장면": "D",
+      "바꿈": "SPRING in the SAME village (same camera, same ger, fence and hills, bright spring sunlight, soft green felt grass, a few tiny yellow felt flowers, a few last wet snow patches, no snow falling). The snowman (the same one as in the THIRD attached image) has melted almost completely at the RIGHT — only a small slumped lump of wet snow is left in a big shallow clear puddle on the grass. At THIS very moment its orange carrot nose is dropping into the puddle with a small splash (a crown of clear water droplets jumping up around the carrot), the TEAL fringed scarf is sliding off the lump into the water, one black coal eye is rolling off. Mongle is caught lunging toward it from the left in shock — its soft body stretched and leaning far forward toward the puddle, bead eyes wide open, a small open mouth."
+    },
+    {
+      "이름": "d4n",
+      "장면": "D",
+      "바꿈": "SPRING in the SAME village (same camera, same ger, fence and hills, bright spring sunlight, soft green felt grass, a few tiny yellow felt flowers, a few last wet snow patches, no snow falling). The snowman is completely GONE — where it stood at the RIGHT there is only a shallow clear water PUDDLE on the grass. In the puddle: the orange carrot floats near the far edge, the TEAL fringed scarf (the same as in the THIRD attached image) lies half in the water, and the two black coal eyes lie FAR APART from each other (one near the scarf at the back edge, one near the carrot) — they must NOT look like a face. Mongle stands at the left edge of the puddle (between about 26% and 52% of the image width), looking down at it, frozen and dazed — bead eyes wide and blank, NO tears yet, NO frown, its body still and stiff. Nothing floats in the air."
+    },
+    {
+      "이름": "d5n",
+      "장면": "D",
+      "바꿈": "exactly the same spring moment, camera and framing as the FIRST attached image (the same puddle with the floating carrot, the teal scarf half in the water and the two coal eyes far apart). ONLY Mongle changes: Mongle now CRIES — its bead eyes squeezed into sad curved arcs, its body drooping and trembling. Separate big round clear tear DROPS (individual drops, NOT continuous streams or threads) well up at its two eyes; two drops are falling through the air from its eyes toward the puddle, and where one has just landed a small ring of ripples spreads on the water. The tears clearly come out of its EYES. (The falling tear drops are the only things in the air.)"
+    },
+    {
+      "이름": "d3m",
+      "장면": "D",
+      "바꿈": "SPRING in the SAME village (same camera, same ger, fence and hills, bright spring sunlight, soft green felt grass, a few tiny yellow felt flowers, a few last wet snow patches on the grass and hills exactly as in the base photo, no snow falling). The snowman (the same one as in the THIRD attached image: two white felt snowballs, black coal eyes, orange carrot nose, TEAL fringed scarf, brown twig arms) is MELTING right now in the warm sun at the RIGHT: it has shrunk and sags, its head is sliding sideways off its body, clear water streams down its sides into a growing puddle, the carrot nose tilts down, the scarf loosens. Mongle stands beside it on the left and stares in shock: bead eyes wide, a small round open 'o' mouth. NO tears and NO sweat drops on Mongle."
+    },
+    {
+      "이름": "d4a",
+      "장면": "D",
+      "바꿈": "exactly the same spring moment, camera, framing, puddle, flowers and wet snow patches as the FIRST attached image, a second later: the last lump of snow has melted away completely. In the shallow clear puddle where the snowman stood (at the RIGHT) lie its remains, close together where its head was so they are clearly a melted snowman: the orange carrot nose, the TEAL fringed knitted scarf, the two brown twig arms and the two black coal eyes near the carrot. No snow is left of its body. Mongle has pulled back from its lunge and stands frozen at the left edge of the puddle, staring down at the remains — bead eyes wide and blank, a small round open 'o' mouth, its body stiff. NO tears and NO sweat drops."
+    },
+    {
+      "이름": "d4b",
+      "장면": "D",
+      "바꿈": "exactly the same spring moment, camera, framing, puddle and remains as the FIRST attached image (carrot, TEAL scarf, two twig arms and two coal eyes in the puddle). ONLY Mongle changes: Mongle leans down over the puddle and gently nudges the wet TEAL scarf with the front edge of its soft body, as if trying to wake its friend — its body bent forward and stretched toward the scarf, bead eyes glistening and starting to water, its mouth a small trembling line. No drops in the air yet."
+    },
+    {
+      "이름": "d5v",
+      "장면": "D",
+      "바꿈": "exactly the same spring moment, camera, framing, puddle and remains as the FIRST attached image (carrot, TEAL scarf, two twig arms and two coal eyes in the puddle). ONLY Mongle changes: Mongle has straightened up a little at the edge of the puddle and CRIES — its bead eyes squeezed into sad curved arcs, its mouth a wobbly open crying shape, its body trembling. Separate big round clear tear DROPS (individual drops, NOT continuous streams or threads) come out of its two eyes; two drops are falling through the air toward the puddle and a small ring of ripples spreads where one has landed. The tears clearly come out of its EYES."
+    },
+    {
+      "이름": "d8",
+      "장면": "D",
+      "바꿈": "exactly the same winter moment, camera and framing as the FIRST attached image (Mongle hugging the new snowman with the TEAL scarf, carrot nose and twig arms, at the RIGHT; thick snow, gentle snowfall). ONLY this changes: Mongle cries HAPPY tears while hugging — eyes closed in happy arcs, a big smile, light blush — and its happy tear drops are FREEZING in the icy winter air: right below its eyes the clear tear drops turn into tiny sparkling white felt SNOWFLAKES that drift down past its cheeks to join the falling snow. The snowman's twig arm still rests on Mongle. (The falling snowflakes and the freezing tear drops are the only things in the air.)"
+    }
+  ]
+}

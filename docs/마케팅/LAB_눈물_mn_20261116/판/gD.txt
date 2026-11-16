@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical short shot with a FIXED camera. Later panels will reuse this exact photo and only change Mongle, the snowman, the snow and the season, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, ger, fence, snow and doll is made of felted wool and fabric, soft fuzzy fibres visible, soft winter morning light, shallow depth of field like a macro photo of a stop-motion set. Match the felt material and photographic look of the FIRST attached photo (use it ONLY for the felt look — not its room, furniture or people).
+
+FORMAT: portrait 2:3. Camera at the eye level of a small mascot, looking straight ahead. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET: a small snowy Mongolian countryside village in winter. In the back, one round white felt GER with a red wooden door decorated with simple orange-and-blue patterns, a low wooden fence, a soft pale-blue sky with gentle low hills. The top 24% of the image is only the soft sky — nothing there (a label will be added there later). The ground is thick soft white felt snow. Light snowflakes (small white felt dots) are falling.
+MONGLE (the mascot from the SECOND attached image) stands in the snow LEFT of centre (between about 18% and 46% of the image width), its body about 28% of the image width, looking up happily at the falling snow, light blush. The RIGHT half of the foreground (between about 52% and 84% of the image width) is EMPTY snow — something will be built there later.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera, no eyebrows). Mongle has NO arms, NO legs, NO hands — never. Mongle stands on the snow (its hem sinks a little into the snow, with a soft shadow) — it does not float.
+
+Exactly ONE Mongle and nobody else. Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere.
