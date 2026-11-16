@@ -1509,7 +1509,13 @@ emotion.cmd`가 남아 있다.
 - 다시 확인: 최종 mp4를 `ebur128=peak=true`로 재고, 사건 소리(얼음 「탁」·잔 「톡」)의 어택이 컷 시각 ±0.1초 안인지 본다.
 - 10-19 텐센트 HunyuanVideo-Foley XL(`C:/SYNK-LoRA/tools/hunyuan-foley/`)도 같은 작업 JSON으로 돈다(`소리만들기.py`, 구간당 25~43초, VRAM 최대 11.4GB, 48kHz 모노, 글만 넣는 작업은 못 함). 깔 때 막힌 것: transformers 5판에는 코드가 쓰는 `find_pruneable_heads_and_indices`가 없어 **`transformers>=4.50,<5`**(4.57), 그러면 huggingface_hub가 0.36으로 내려가 diffusers 0.41이 `resolve_revision`을 못 찾으니 **`diffusers<0.36`**, 실행 파일이 pandas를 부른다. 보조 모델 SigLIP2·CLAP은 실행 중에 허브에서 받으려 해서 `enc/`에 직접 받고 `model_utils.py`의 경로를 로컬로 바꿨다. CLAP 저장소의 config.json은 전체 모델(`clap`)이라 `ClapTextModelWithProjection`이 `vocab_size` 없음으로 죽는다 → `config=ClapTextConfig.from_pretrained(경로)`를 넘긴다. GPU를 남이 쓰고 있으면 `GPU비면_돌리기.sh`(1분마다 보고 6GB 아래면 시작)로 걸어 둔다.
 
-- 10-28 더한 것(CTS 공모, Claude): **MMAudio 체크포인트는 CC-BY-NC 4.0(비상업)**이다(`src/README.md` 「License」 — 코드만 MIT, 학습 자료 권리도 「상업 이용 보장 안 함」). 저작권을 넘기거나 상업 이용 등급을 보증해야 하는 공모 · 광고(예: CTS 동의서 제5조 ②)에는 쓰지 않고, 상업 이용이 되는 녹음 모음(Fairlight · Sonniss GDC) 소리를 화면 사건 프레임에 맞춰 놓는다. HunyuanVideo-Foley도 쓰기 전에 그 판의 라이선스를 먼저 본다.
+- 10-28 더한 것(CTS 공모, Claude): **MMAudio 체크포인트는 CC-BY-NC 4.0(비상업)**이다(`src/README.md` 「License」 — 코드만 MIT, 학습 자료 권리도 「상업 이용 보장 안 함」). 저작권을 넘기거나 상업 이용 등급을 보증해야 하는 공모 · 광고(예: CTS 동의서 제5조 ②)에는 쓰지 않고, 상업 이용이 되는 녹음 모음 소리를 화면 사건 프레임에 맞춰 놓는다. 다만 Fairlight는 DaVinci Resolve에서 만들고 마친 작품에만 쓸 수 있다(11-16 고침, 아래 「Fairlight 효과음은 …」 절). ffmpeg · Remotion으로 마감하는 편은 Sonniss GDC만 쓴다. HunyuanVideo-Foley도 쓰기 전에 그 판의 라이선스를 먼저 본다.
+
+### Fairlight 효과음은 DaVinci Resolve에서 만들고 마친 작품에만 쓸 수 있다 — ffmpeg로 마감한 공모 숏츠에 일곱 개를 넣을 뻔했다 (2026-11-16 Claude · YOUTH UP 숏츠)
+- 증상: 11-16 YOUTH UP 숏츠 효과음 18개 가운데 7개(학교종 셋, 차 지나감, 아이 발소리 둘, 거리 바탕)를 `synk-vendor/sound-library/fairlight`에서 잘라 썼다. 편집과 믹스는 ffmpeg · numpy 스크립트다. 공모 규정은 「본인 창작이거나 상업 이용이 되는 소스」만 받는다.
+- 원인: Blackmagic Fairlight Sound Library 이용 약관 1.2항이 쓰임을 「projects created and finished using DaVinci Resolve」로 묶고, 1.4항이 그 밖의 쓰임을 막는다(원문 https://www.blackmagicdesign.com/support/modal/download-with-terms-start/bmd-sound-library). 소리만 꺼내 써서 로컬 모음에는 라이선스 파일이 없고, 위 10-28 줄과 제작 규칙 효과음 표가 Fairlight를 조건 없이 「상업 이용이 되는 모음」으로 적었다.
+- 고침: 그 편은 일곱 개를 Sonniss GDC 2026 소리로 바꿨다(Sonniss Readme는 상업 이용과 영상 삽입을 출처 표기 없이 허락하고, 소리만 따로 파는 것과 AI 학습을 막는다). 10-28 줄과 제작 규칙 표에 조건을 적었다.
+- 다시 확인: 공모 · 광고 · 납품 편의 소리 표(`_표.json` 같은 것)에서 원본 경로가 `fairlight/`인 줄을 찾고, 그 편을 Resolve에서 마감하지 않았다면 바꾼다. 이미 낸 편에 Fairlight 소리가 들어갔는지는 확인 안 함.
 
 ### H3 구간 살펴보기의 「화면 밀림」은 사람이 옮겨 가도 커진다 — 사람 밖 띠와 얼굴 판을 따로 잰다 (2026-10-21)
 - 증상: 10-21 지유 미소 판 컷 1(`컷1_세트2미소_s42.mp4`, 정면 얼굴이 화면 가운데를 크게 차지)을 `synk-vendor/…/영상_H3/구간_살펴보기.py`로 보니 1.75초 밀림 −23px, 2.25초부터 −52px로 나와 「카메라가 밀린다」로 읽고 구간을 1.7초 앞에서 끊으려 했다.
