@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "천 나누기 오십은... 이십!",
+ "dur": 2.15,
+ "words": [
+  {
+   "text": "천",
+   "start": 0.2,
+   "end": 0.361
+  },
+  {
+   "text": "나누기",
+   "start": 0.421,
+   "end": 0.763
+  },
+  {
+   "text": "오십은...",
+   "start": 0.863,
+   "end": 1.365
+  },
+  {
+   "text": "이십!",
+   "start": 1.466,
+   "end": 2.149
+  }
+ ],
+ "source": {
+  "key": "608eb378372dea77b50274eac856f3d1",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1959,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "부동산 창에 붙은 1000/50을 본 몽글이 계산기를 꾹꾹 누르더니, 답을 찾았다며 신이 나서 외친다.",
+   "next": "보증금 천에, 월세 오십이요~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 505
+ }
+}

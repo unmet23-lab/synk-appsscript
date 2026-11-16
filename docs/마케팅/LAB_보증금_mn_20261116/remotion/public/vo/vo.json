@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1959,
+  "lufs": -16
+ },
+ "made": "2026-11-16T13:49:03.408Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "천 나누기 오십은... 이십!",
+   "dur": 2.15,
+   "syllablesPerSec": 4.19,
+   "src": "m1.wav",
+   "key": "608eb378372dea77b50274eac856f3d1",
+   "words": 4
+  },
+  {
+   "id": "a1",
+   "text": "아니요~ 보증금 천에, 월세 오십이요~",
+   "dur": 3.966,
+   "syllablesPerSec": 3.53,
+   "src": "a1.wav",
+   "key": "23a4ba3dc11012dc891a4cadc44c096e",
+   "words": 5
+  },
+  {
+   "id": "m2",
+   "text": "천... 천만 원?!",
+   "dur": 1.359,
+   "syllablesPerSec": 2.94,
+   "src": "m2.wav",
+   "key": "225b680a656610015a40c8173407aeaf",
+   "words": 3
+  },
+  {
+   "id": "m3",
+   "text": "보증금 없는 데는요...?",
+   "dur": 1.532,
+   "syllablesPerSec": 5.22,
+   "src": "m3.wav",
+   "key": "f5d3318b6b5e540fdaa172f082d0c4ea",
+   "words": 3
+  },
+  {
+   "id": "a2",
+   "text": "있죠~ 고시원!",
+   "dur": 1.237,
+   "syllablesPerSec": 4.04,
+   "src": "a2.wav",
+   "key": "e7f5c0651db1f488462c17fa186bdbd6",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "우와~!",
+   "dur": 0.498,
+   "syllablesPerSec": 4.02,
+   "src": "m4.wav",
+   "key": "87bc16f0b925586929f8fff86cc218af",
+   "words": 1
+  },
+  {
+   "id": "a3",
+   "text": "딱 맞네~!",
+   "dur": 0.916,
+   "syllablesPerSec": 3.28,
+   "src": "a3.wav",
+   "key": "4b6bd8b7486a95356f3f7a7649327d55",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "...아늑하네요~",
+   "dur": 1.003,
+   "syllablesPerSec": 4.99,
+   "src": "m5.wav",
+   "key": "3d56e72cc64d9df0fba3552057c9f3d4",
+   "words": 1
+  },
+  {
+   "id": "a4",
+   "text": "월세는 오십이요~",
+   "dur": 1.357,
+   "syllablesPerSec": 5.16,
+   "src": "a4.wav",
+   "key": "e4cfb878a6e86b6b6129ae7001abf207",
+   "words": 2
+  },
+  {
+   "id": "m6",
+   "text": "...똑같잖아요~",
+   "dur": 1.098,
+   "syllablesPerSec": 4.55,
+   "src": "m6.wav",
+   "key": "bfe3e98fbb2ccfca549c9d379245deae",
+   "words": 1
+  }
+ ]
+}

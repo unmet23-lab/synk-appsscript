@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5",
+ "text": "...아늑하네요~",
+ "dur": 1.003,
+ "words": [
+  {
+   "text": "...아늑하네요~",
+   "start": 0.02,
+   "end": 1.003
+  }
+ ],
+ "source": {
+  "key": "3d56e72cc64d9df0fba3552057c9f3d4",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 4099,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "딱 맞네~! 방에 꽉 끼어 볼이 눌린 몽글이 한 박 쉬고, 애써 웃으며 체념한 듯 말한다.",
+   "next": "월세는 오십이요~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 559
+ }
+}

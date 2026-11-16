@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "보증금 없는 데는요...?",
+ "dur": 1.532,
+ "words": [
+  {
+   "text": "보증금",
+   "start": 0.18,
+   "end": 0.645
+  },
+  {
+   "text": "없는",
+   "start": 0.706,
+   "end": 0.929
+  },
+  {
+   "text": "데는요...?",
+   "start": 1.01,
+   "end": 1.532
+  }
+ ],
+ "source": {
+  "key": "f5d3318b6b5e540fdaa172f082d0c4ea",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1959,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "처, 천만 원?! 녹아내렸다가 다시 일어난 몽글이 간절하고 조심스럽게 묻는다.",
+   "next": "있죠~ 고시원!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 481
+ }
+}

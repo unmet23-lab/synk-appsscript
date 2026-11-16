@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "천... 천만 원?!",
+ "dur": 1.359,
+ "words": [
+  {
+   "text": "천...",
+   "start": 0.02,
+   "end": 0.302
+  },
+  {
+   "text": "천만",
+   "start": 0.684,
+   "end": 1.046
+  },
+  {
+   "text": "원?!",
+   "start": 1.106,
+   "end": 1.359
+  }
+ ],
+ "source": {
+  "key": "225b680a656610015a40c8173407aeaf",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 4099,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "보증금 천에, 월세 오십이요~ 책상 위에 돈다발 탑이 쌓이자 깜짝 놀란 몽글이 말을 더듬으며 소리친다.",
+   "next": "보증금 없는 데는요...?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 536
+ }
+}

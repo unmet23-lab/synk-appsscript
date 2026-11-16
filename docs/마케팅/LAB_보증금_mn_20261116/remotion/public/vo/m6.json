@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m6",
+ "text": "...똑같잖아요~",
+ "dur": 1.098,
+ "words": [
+  {
+   "text": "...똑같잖아요~",
+   "start": 0.02,
+   "end": 1.098
+  }
+ ],
+ "source": {
+  "key": "bfe3e98fbb2ccfca549c9d379245deae",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1959,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "월세는 오십이요~ 아까 그 집과 월세가 똑같다는 말에 바닥에 녹아 퍼진 몽글이 힘없이, 울먹이며 중얼거린다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 504
+ }
+}
