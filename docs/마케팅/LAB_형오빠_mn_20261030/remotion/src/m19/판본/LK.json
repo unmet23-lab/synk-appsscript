@@ -140,39 +140,39 @@
   "lang": "si",
   "font": "'Inter Tight', 'Nirmala UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "hook": "",
+  "hook": "අයියා, අක්කා\nකොරියන් වලින්?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "එකම අයියා,\nනම් දෙකක්!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "අයියා",
+  "colB": "අක්කා",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "කොල්ලෝ අයියාට කියන වචනය",
+    "කෙල්ලෝ අයියාට කියන වචනය",
+    "කොල්ලෝ අක්කාට කියන වචනය",
+    "කෙල්ලෝ අක්කාට කියන වචනය"
   ],
-  "meanSize": 50,
+  "meanSize": 44,
   "meanLineH": 1.45,
   "meanOneLine": false,
-  "revealMeanSize": 50,
+  "revealMeanSize": 44,
   "why": [
-    "",
-    ""
+    "කෙල්ලන්ට “형” බෑ!",
+    "කොල්ලන්ට “언니” බෑ!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "ඔයා කොල්ලෙක් නම්",
+  "rowF": "ඔයා කෙල්ලෙක් නම්",
   "rowSize": 64,
-  "end": "",
+  "end": "කියන කෙනා අනුවයි!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 남자 형제(아이야), 손위 여자 형제(악까)\n한국어로?",
+    "reveal": "같은 손위 남자 형제,\n이름 둘!",
+    "colA": "손위 남자 형제(아이야)",
+    "colB": "손위 여자 형제(악까)",
+    "means.0": "남자애들이 손위 남자 형제에게 하는 말",
+    "means.1": "여자애들이 손위 남자 형제에게 하는 말",
+    "means.2": "남자애들이 손위 여자 형제에게 하는 말",
+    "means.3": "여자애들이 손위 여자 형제에게 하는 말",
+    "why.0": "여자애에게 「형」은 안 돼!",
+    "why.1": "남자애에게 「언니」는 안 돼!",
+    "rowM": "네가 남자애라면",
+    "rowF": "네가 여자애라면",
+    "end": "말하는 사람에 따라서야!"
+  }
 }

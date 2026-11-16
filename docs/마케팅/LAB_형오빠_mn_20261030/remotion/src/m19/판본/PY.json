@@ -140,39 +140,39 @@
   "lang": "es",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "",
+  "hook": "En coreano,\n¿cómo llamás al hermano?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "Mismo hermano,\n¡dos palabras!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
-  "headSize": 52,
+  "colA": "Hermano mayor",
+  "colB": "Hermana mayor",
+  "headSize": 42,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "Un chico a su hermano mayor",
+    "Una chica a su hermano mayor",
+    "Un chico a su hermana mayor",
+    "Una chica a su hermana mayor"
   ],
   "meanSize": 50,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "¡Una chica no dice “형”!",
+    "¡Un chico no dice “언니”!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "Lo dice un chico",
+  "rowF": "Lo dice una chica",
   "rowSize": 64,
-  "end": "",
+  "end": "¡Depende de quién hable!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 10.88,
@@ -182,6 +182,19 @@
   "helloVo": "오빠, 파라과이!",
   "helloSec": 1.55,
   "_원문": {
-    "hello": "오빠(여자가 손위 남자 형제를 부르는 말)"
+    "hello": "오빠(여자가 손위 남자 형제를 부르는 말)",
+    "hook": "한국어로,\n형제를 어떻게 불러?",
+    "reveal": "같은 손위 남자 형제,\n낱말은 둘!",
+    "colA": "손위 남자 형제",
+    "colB": "손위 여자 형제",
+    "means.0": "남자아이가 손위 남자 형제에게",
+    "means.1": "여자아이가 손위 남자 형제에게",
+    "means.2": "남자아이가 손위 여자 형제에게",
+    "means.3": "여자아이가 손위 여자 형제에게",
+    "why.0": "여자아이는 「형」이라고 안 해!",
+    "why.1": "남자아이는 「언니」라고 안 해!",
+    "rowM": "남자아이가 하는 말",
+    "rowF": "여자아이가 하는 말",
+    "end": "누가 말하느냐에 달렸어!"
   }
 }

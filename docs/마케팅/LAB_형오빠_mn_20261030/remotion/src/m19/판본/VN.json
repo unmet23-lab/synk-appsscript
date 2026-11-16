@@ -140,39 +140,39 @@
   "lang": "vi",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "",
+  "hook": "Anh trai, chị gái\ntiếng Hàn gọi sao?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "Một anh trai,\nhai cách gọi!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "Anh trai",
+  "colB": "Chị gái",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "Bạn nam gọi anh trai thế này",
+    "Bạn nữ gọi anh trai thế này",
+    "Bạn nam gọi chị gái thế này",
+    "Bạn nữ gọi chị gái thế này"
   ],
   "meanSize": 50,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "Bạn nữ không gọi “형”!",
+    "Bạn nam không gọi “언니”!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "Bạn nam gọi",
+  "rowF": "Bạn nữ gọi",
   "rowSize": 64,
-  "end": "",
+  "end": "Tùy vào người gọi!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 남자 형제, 손위 여자 형제를\n한국어로 어떻게 불러?",
+    "reveal": "손위 남자 형제 한 명,\n부르는 법 둘!",
+    "colA": "손위 남자 형제",
+    "colB": "손위 여자 형제",
+    "means.0": "남자는 손위 남자 형제를 이렇게 부른다",
+    "means.1": "여자는 손위 남자 형제를 이렇게 부른다",
+    "means.2": "남자는 손위 여자 형제를 이렇게 부른다",
+    "means.3": "여자는 손위 여자 형제를 이렇게 부른다",
+    "why.0": "여자는 「형」이라고 안 불러!",
+    "why.1": "남자는 「언니」라고 안 불러!",
+    "rowM": "남자가 부르는 말",
+    "rowF": "여자가 부르는 말",
+    "end": "부르는 사람에 따라!"
+  }
 }

@@ -140,39 +140,39 @@
   "lang": "ms",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "",
+  "hook": "Abang dan kakak\ndalam bahasa Korea?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "Seorang abang,\ndua panggilan!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "Abang",
+  "colB": "Kakak",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "Lelaki panggil abang begini",
+    "Perempuan panggil abang begini",
+    "Lelaki panggil kakak begini",
+    "Perempuan panggil kakak begini"
   ],
   "meanSize": 50,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "Perempuan tak panggil “형”!",
+    "Lelaki tak panggil “언니”!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "Kalau awak lelaki",
+  "rowF": "Kalau awak perempuan",
   "rowSize": 64,
-  "end": "",
+  "end": "Tengok siapa yang panggil!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 남자 형제(아방)와 손위 여자 형제(카깍),\n한국어로?",
+    "reveal": "손위 남자 형제 한 명,\n부르는 말 둘!",
+    "colA": "손위 남자 형제(아방)",
+    "colB": "손위 여자 형제(카깍)",
+    "means.0": "남자는 손위 남자 형제를 이렇게 불러",
+    "means.1": "여자는 손위 남자 형제를 이렇게 불러",
+    "means.2": "남자는 손위 여자 형제를 이렇게 불러",
+    "means.3": "여자는 손위 여자 형제를 이렇게 불러",
+    "why.0": "여자는 「형」이라고 안 해!",
+    "why.1": "남자는 「언니」라고 안 해!",
+    "rowM": "남자가 부르는 말",
+    "rowF": "여자가 부르는 말",
+    "end": "누가 부르는지 봐야 해!"
+  }
 }

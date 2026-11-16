@@ -140,39 +140,39 @@
   "lang": "ja",
   "font": "'Inter Tight', 'Yu Gothic', 'SUIT', sans-serif",
   "lineH": 1.2,
-  "hook": "",
+  "hook": "兄と姉、\n韓国語では？",
   "hookSize": 76,
-  "reveal": "",
+  "reveal": "同じ兄でも\n呼び方2つ！",
   "revealSize": 80,
-  "colA": "",
-  "colB": "",
+  "colA": "お兄ちゃん",
+  "colB": "お姉ちゃん",
   "headSize": 56,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "男子が兄を呼ぶ言葉",
+    "女子が兄を呼ぶ言葉",
+    "男子が姉を呼ぶ言葉",
+    "女子が姉を呼ぶ言葉"
   ],
   "meanSize": 60,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 60,
   "why": [
-    "",
-    ""
+    "형は男子が使う！",
+    "언니は女子が使う"
   ],
   "whySize": 58,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "男子が呼ぶと",
+  "rowF": "女子が呼ぶと",
   "rowSize": 74,
-  "end": "",
+  "end": "呼ぶ人で変わる！",
   "endSize": 76,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 남자 형제와 손위 여자 형제,\n한국어로는?",
+    "reveal": "같은 손위 남자 형제인데도\n부르는 법이 둘!",
+    "colA": "손위 남자 형제(오니짱)",
+    "colB": "손위 여자 형제(오네짱)",
+    "means.0": "남자가 손위 남자 형제를 부르는 말",
+    "means.1": "여자가 손위 남자 형제를 부르는 말",
+    "means.2": "남자가 손위 여자 형제를 부르는 말",
+    "means.3": "여자가 손위 여자 형제를 부르는 말",
+    "why.0": "형은 남자가 쓴다!",
+    "why.1": "언니는 여자가 쓴다",
+    "rowM": "남자가 부르면",
+    "rowF": "여자가 부르면",
+    "end": "부르는 사람에 따라 바뀐다!"
+  }
 }

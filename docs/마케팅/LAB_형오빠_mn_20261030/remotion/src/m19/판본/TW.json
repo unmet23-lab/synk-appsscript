@@ -140,39 +140,39 @@
   "lang": "zh-Hant",
   "font": "'Inter Tight', 'Microsoft JhengHei', 'SUIT', sans-serif",
   "lineH": 1.2,
-  "hook": "",
+  "hook": "哥哥、姊姊\n韓文怎麼叫？",
   "hookSize": 76,
-  "reveal": "",
+  "reveal": "同一個哥哥，\n兩種叫法！",
   "revealSize": 80,
-  "colA": "",
-  "colB": "",
+  "colA": "哥哥",
+  "colB": "姊姊",
   "headSize": 56,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "男生這樣叫哥哥",
+    "女生這樣叫哥哥",
+    "男生這樣叫姊姊",
+    "女生這樣叫姊姊"
   ],
   "meanSize": 60,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 60,
   "why": [
-    "",
-    ""
+    "女生不能叫「형」！",
+    "男生不能叫「언니」！"
   ],
   "whySize": 58,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "如果你是男生",
+  "rowF": "如果你是女生",
   "rowSize": 74,
-  "end": "",
+  "end": "要看是誰在叫！",
   "endSize": 76,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 남자 형제, 손위 여자 형제를\n한국어로 어떻게 불러?",
+    "reveal": "같은 손위 남자 형제 한 명,\n부르는 법 두 가지!",
+    "colA": "손위 남자 형제(거거)",
+    "colB": "손위 여자 형제(제제)",
+    "means.0": "남자는 손위 남자 형제를 이렇게 불러",
+    "means.1": "여자는 손위 남자 형제를 이렇게 불러",
+    "means.2": "남자는 손위 여자 형제를 이렇게 불러",
+    "means.3": "여자는 손위 여자 형제를 이렇게 불러",
+    "why.0": "여자는 「형」이라고 부르면 안 돼!",
+    "why.1": "남자는 「언니」라고 부르면 안 돼!",
+    "rowM": "네가 남자라면",
+    "rowF": "네가 여자라면",
+    "end": "누가 부르는지 봐야 해!"
+  }
 }
