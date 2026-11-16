@@ -11,7 +11,9 @@
  * 옛 묶음은 칸을 300px로 줄여 40px 글자가 11px로 보였고(실제 폰에선 14px 남짓), 0~3초도 2초 간격이라 첫 장면을 거의 못 봤다.
  *
  *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse>
- *       [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더 또는 영상>,<…>] [--틀 퀴즈]
+ *       [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더 또는 영상>,<…>] [--틀 퀴즈]
+ *   --컷을 안 주면(11-17 자동 칸) ffmpeg 장면 바뀜으로 칸을 찾아, 아래 기본 장면이 빠뜨린 짧은 칸마다 그 칸 가운데 한 장을 더 찍는다.
+ *   --컷 끔은 기본 장면만(11-16까지의 꼴). 자세한 까닭은 아래 addCutShots 머리.
  *   --틀 퀴즈(11-10): 퀴즈 칸 편 — 9번을 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 묻는다(--지난에 그 계정의 지난 퀴즈 영상 둘을 준다).
  *
  * 만드는 것: <밖>/정지컷_01.jpg …(한 장에 휴대폰 크기 칸 넷) · <밖>/지난1_<편>.jpg · 지난2_<편>.jpg(같은 계정의 지난 두 편, 작게) ·
@@ -73,6 +75,7 @@ function readSpeech(file) {
 }
 
 function 장면안내(cuts) {
+  if (cuts === '자동') return '0~3초는 0.5초마다, 그 뒤는 2초마다 찍고, 그 사이에 잠깐 지나가는 짧은 칸은 칸마다 한 장(그 칸의 가운데 장면)을 더 넣었다. 마지막 칸은 끝 장면이다. 각 칸 왼쪽 위 숫자가 영상의 초다 — 숫자 사이가 좁은 칸은 그만큼 잠깐 지나간다.';
   return cuts
     ? '컷이 바뀔 때마다 한 장(그 컷의 가운데 장면), 각 칸 왼쪽 위 숫자는 그 컷이 화면에 나오는 초(시작-끝)다 — 짧은 컷은 그만큼 잠깐 지나간다.'
     : '0~3초는 0.5초마다, 그 뒤는 2초마다, 마지막 칸은 끝 장면이다. 각 칸 왼쪽 위 숫자가 영상의 초다.';
@@ -190,6 +193,48 @@ function cutShots(starts, end) {
   });
 }
 
+// 자동 칸(11-17, 유호님 「검수에서 지적된것들이 다음번에는 실수 안하게 반영 되고있어?」 — LAB 교훈 L01). 「짧은 칸이 많은 편은 처음부터
+// --컷」이 이해 시험 기록에 11-01 · 11-02(둘) · 11-07 · 11-16(셋) 일곱 번 다시 적혔다: 사람이 칸 초를 세어 넘기는 일에 기대면 매번 잊는다.
+// --컷을 안 주면 ffmpeg 장면 바뀜(scene)으로 칸 경계를 찾아, 기본 장면(0.5초 · 2초 간격)이 안쪽에 하나도 없는 칸마다 그 칸 가운데 한 장을
+// 더 찍는다. 칸 첫 장은 쓰지 않는다 — M51 「인사 한마디」는 시험 장면이 칸 첫 장이라 0.05초 늦게 뜬 말풍선이 빠졌다. --컷 끔은 예전 그대로.
+// 문턱은 0.1부터 — 11-17 M55 「단디」 최종본에서 0.25는 경계 7곳만 찾아 기록이 「놓쳤다」고 적은 0.5~0.6초 칸(10.8~11.3 · 11.3~11.9초)을
+// 못 찾았고, 0.12는 14곳으로 그 칸을 찾았다. 움직임이 큰 실사 영상은 0.1에서 경계가 넘치니, 경계상한을 넘으면 0.25로 한 번 물러난다
+const 자동칸 = { 문턱들: [0.1, 0.25], 최소: 0.25, 앞: 0.1, 뒤: 0.05, 경계상한: 60 };
+
+// ffmpeg showinfo 출력(stderr) → 칸 경계 초(커지는 순 · 0.05초 안에 붙은 것은 하나로). 0초 근처와 끝 근처는 뺀다
+function sceneTimes(text, duration) {
+  const out = [];
+  for (const m of String(text || '').matchAll(/pts_time:\s*([0-9]+(?:\.[0-9]+)?)/g)) {
+    const t = Number(m[1]);
+    if (!(t > 0.05) || !(t < duration - 0.05)) continue;
+    if (out.length && t - out[out.length - 1] < 0.05) continue;
+    out.push(Math.round(t * 1000) / 1000);
+  }
+  return out.sort((a, b) => a - b);
+}
+
+function detectCuts(video, duration, 문턱 = 자동칸.문턱들[0]) {
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', video, '-an', '-vf', `select='gt(scene,${문턱})',showinfo`, '-f', 'null', '-'],
+    { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) throw new Error('ffmpeg 장면 바뀜 실패: ' + String(r.stderr || '').trim().split('\n').slice(-1).join(' '));
+  return sceneTimes(r.stderr, duration);
+}
+
+// 기본 장면 + 칸 경계 → 기본 장면이 안쪽(첫 0.1초 · 끝 0.05초를 뺀 곳)에 하나도 없는 칸(0.25초 넘는 칸)마다 가운데 한 장을 더한 장면 목록
+function addCutShots(base, bounds, duration, opt = 자동칸) {
+  const 점 = [0, ...bounds.filter((t) => t > 0 && t < duration), duration];
+  const more = [];
+  for (let i = 0; i + 1 < 점.length; i += 1) {
+    const s = 점[i];
+    const e = 점[i + 1];
+    if (e - s < opt.최소) continue;
+    if (base.some((b) => b.at > s + opt.앞 && b.at < e - opt.뒤)) continue;
+    const at = Math.round(((s + e) / 2) * 100) / 100;
+    more.push({ at, label: `${at.toFixed(1)}s`, 칸: [s, e] });
+  }
+  return { shots: [...base, ...more].sort((a, b) => a.at - b.at), more: more.length };
+}
+
 function ffmpeg(args, what) {
   const r = spawnSync('ffmpeg', ['-y', '-v', 'error', ...args], { encoding: 'utf8', windowsHide: true });
   if (r.status !== 0) throw new Error(`ffmpeg 실패(${what}): ` + String(r.stderr || '').trim().split('\n').slice(-2).join(' '));
@@ -266,7 +311,7 @@ function main(argv) {
   }
   const video = args._[0];
   if (!video || !args['말'] || !args['브랜드']) {
-    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더|영상>,…] [--틀 퀴즈]');
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더|영상>,…] [--틀 퀴즈]');
     return 2;
   }
   const who = 시청자[args['브랜드']];
@@ -277,8 +322,36 @@ function main(argv) {
   for (const f of fs.readdirSync(out)) if (/^(정지컷_|지난\d)/.test(f) && /\.jpg$/.test(f)) fs.rmSync(path.join(out, f)); // 같은 폴더로 다시 돌릴 때 옛 장면을 섞지 않는다
   const src = path.resolve(video);
   const info = probe(src);
-  const cuts = args['컷'] !== undefined;
-  const shots = cuts ? cutShots(parseCuts(args['컷'], info.duration), info.duration) : shotTimes(info.duration);
+  const 컷끔 = args['컷'] === '끔';
+  const 컷줌 = args['컷'] !== undefined && !컷끔;
+  let shots = 컷줌 ? cutShots(parseCuts(args['컷'], info.duration), info.duration) : shotTimes(info.duration);
+  let 자동글 = '';
+  let 자동더함 = 0;
+  if (!컷줌 && !컷끔) {
+    // 자동 칸 — 실패해도 예전 장면으로 시험한다(끝 코드는 그대로)
+    try {
+      let bounds = null;
+      let 문턱 = null;
+      let 넘친 = 0;
+      for (const t of 자동칸.문턱들) {
+        const b = detectCuts(src, info.duration, t);
+        if (b.length <= 자동칸.경계상한) { bounds = b; 문턱 = t; break; }
+        넘친 = b.length;
+      }
+      if (!bounds) 자동글 = `  자동 칸: 장면 바뀜이 ${넘친}곳 넘게 잡혀(움직임이 큰 영상) 더하지 않았다. 짧은 칸이 있으면 --컷 <칸 시작 초,…>을 준다`;
+      else {
+        const r = addCutShots(shots, bounds, info.duration);
+        shots = r.shots;
+        자동더함 = r.more;
+        자동글 = `  자동 칸: 장면 바뀜 ${bounds.length}곳(문턱 ${문턱}) · 기본 장면이 못 덮은 칸 ${r.more}곳을 그 칸 가운데로 더 찍었다(--컷 끔으로 끈다 — LAB 교훈 L01)`;
+        // 낮은 문턱이 넘쳐 높은 문턱으로 물러났으면, 그 문턱은 0.5초 남짓한 칸을 놓친다(11-17 M55 실측) — 짧은 칸이 있는 편이면 손으로 준다(Fable 5.2 P3-2)
+        if (문턱 !== 자동칸.문턱들[0]) 자동글 += `\n  자동 칸: 문턱 ${자동칸.문턱들[0]}에서 경계가 ${넘친}곳으로 넘쳐 ${문턱}로 물러났다 — 이 문턱은 0.5초 남짓한 칸을 놓칠 수 있으니, 짧은 칸이 있는 편이면 --컷 <칸 시작 초,…>을 준다`;
+      }
+    } catch (e) {
+      자동글 = `  자동 칸: 장면 바뀜을 못 읽어 기본 장면만 찍었다 — ${String(e.message || e).slice(0, 160)}`;
+    }
+  }
+  const cuts = 컷줌 ? true : (자동더함 ? '자동' : false);
   const sheets = makeSheets(src, shots, info.landscape ? 가로칸 : 세로칸, (k) => path.join(out, `정지컷_${String(k).padStart(2, '0')}.jpg`));
 
   const want = args['지난'] === undefined ? '자동' : String(args['지난']);
@@ -301,6 +374,7 @@ function main(argv) {
   fs.writeFileSync(path.join(out, '질문.md'), buildPrompt({ brand: args['브랜드'], sheets, speech, cuts, previous, 틀: args['틀'] || null }));
   fs.writeFileSync(path.join(out, '볼이유_질문.md'), buildWorthPrompt({ brand: args['브랜드'], sheets, speech, cuts }));
   console.log(`재료: ${out} · 장면 ${shots.length}칸 / 그림 ${sheets.length}장 · 지난 편 ${previous.length ? previous.map((p) => p.name).join(' · ') : '없음'}`);
+  if (자동글) console.log(자동글);
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);
   for (const 줄 of 다음글(args['브랜드'])) console.log(줄);
   return 0;
@@ -335,4 +409,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
-module.exports = { srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };
+module.exports = { srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, sceneTimes, addCutShots, detectCuts, 자동칸, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };

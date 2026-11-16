@@ -2623,7 +2623,7 @@ def _흠시작(seq_path):
         p = subprocess.run(["node", str(장부), "시작", str(Path(seq_path).resolve())], capture_output=True, text=True, encoding="utf-8", timeout=제한,
                            stdin=subprocess.DEVNULL, creationflags=0x08000000 if os.name == "nt" else 0)
         글 = (p.stdout or "").strip() if p.returncode == 0 else ""
-        if 글.startswith("[흠 장부]"):
+        if 글.startswith(("[흠 장부]", "[LAB 교훈]")):   # LAB 편은 「[LAB 교훈]」 줄만 뜰 수 있다(11-17 · Fable 5.2 P1-2)
             print(글)
     except BaseException:   # noqa: BLE001 — 장부는 검사 결과를 바꾸지 않는다
         pass

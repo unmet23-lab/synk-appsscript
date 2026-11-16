@@ -597,7 +597,8 @@ function 흠시작글(편) {
     const r = spawnSync(process.execPath, [path.join(__dirname, '흠장부.js'), '시작', path.resolve(편)],
       { encoding: 'utf8', timeout: 제한, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 20 });
     const 글 = r.status === 0 && typeof r.stdout === 'string' ? r.stdout.trim() : '';
-    return 글.startsWith('[흠 장부]') ? 글 : '';
+    // LAB 편은 흠 장부 줄 없이 「[LAB 교훈]」 줄만 뜰 수 있다(11-17 LAB 교훈 표 — Fable 5.2 P1-2: 「[흠 장부]」만 받으면 통째로 버렸다)
+    return /^\[(?:흠 장부|LAB 교훈)\]/.test(글) ? 글 : '';
   } catch { return ''; }
 }
 

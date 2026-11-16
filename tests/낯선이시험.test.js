@@ -173,3 +173,73 @@ test('지난 편 — 같은 계정 판에 영상이 있는 편 가운데 이 편
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// 11-17 자동 칸 — LAB 교훈 L01(「짧은 칸이 많은 편은 처음부터 --컷」이 이해 시험 기록에 일곱 번 다시 적혔다)
+const { sceneTimes, addCutShots, 자동칸 } = require('../tools/낯선이시험.js');
+const { spawnSync } = require('node:child_process');
+
+test('자동 칸 — showinfo 출력에서 칸 경계 초만 읽고, 0초 · 끝 근처와 0.05초 안에 붙은 경계는 하나로 친다', () => {
+  const err = [
+    '[Parsed_showinfo_1 @ 0x1] n:   0 pts:   1001 pts_time:0.0417  duration: 1 fmt:yuv420p',
+    '[Parsed_showinfo_1 @ 0x1] n:   1 pts:  26400 pts_time:1.1 duration: 1',
+    '[Parsed_showinfo_1 @ 0x1] n:   2 pts:  26500 pts_time:1.12 duration: 1',
+    '[Parsed_showinfo_1 @ 0x1] n:   3 pts: 259200 pts_time:10.8 duration: 1',
+    '[Parsed_showinfo_1 @ 0x1] n:   4 pts: 402000 pts_time:16.78 duration: 1',
+  ].join('\n');
+  assert.deepEqual(sceneTimes(err, 16.8), [1.1, 10.8]);
+  assert.deepEqual(sceneTimes('', 10), []);
+});
+
+test('자동 칸 — 기본 장면이 안쪽에 하나도 없는 칸만 그 칸 가운데로 더 찍고, 칸 첫 0.1초에 걸친 장면은 그 칸을 덮은 것으로 치지 않는다', () => {
+  // 11-17 M55 「단디」: 10.8~11.3 · 11.3~11.9초 칸을 2초 간격 장면(10 · 12초)이 못 봤다(기록 「제 실수 — v7부터 칸 바뀌는 초로 찍음」)
+  const base = shotTimes(16.8);
+  const r = addCutShots(base, [10.8, 11.3, 11.9], 16.8);
+  assert.equal(r.more, 2);
+  const 더한 = r.shots.filter((s) => s.칸);
+  assert.deepEqual(더한.map((s) => s.at), [11.05, 11.6]);
+  assert.deepEqual(더한.map((s) => s.label), ['11.1s', '11.6s']);
+  assert.deepEqual(r.shots.map((s) => s.at), [...r.shots.map((s) => s.at)].sort((a, b) => a - b), '장면은 초 순서');
+  // 칸이 4.0초에서 시작하고 기본 장면이 마침 4.0초(칸 첫 장)에 있으면 그 칸은 안 보인 것이다 — M51 「인사 한마디」의 0.05초 늦은 말풍선
+  const r2 = addCutShots([{ at: 4, label: '4s' }], [4, 4.6], 10);
+  assert.ok(r2.shots.some((s) => s.칸 && s.칸[0] === 4 && s.at === 4.3), '칸 첫 장만 있는 칸에 가운데 한 장');
+  // 0.25초보다 짧은 칸(깜빡임 · 전환)은 더하지 않는다
+  assert.equal(addCutShots([], [5, 5.2], 10).shots.filter((s) => s.칸 && s.칸[0] === 5).length, 0);
+  // 경계가 없으면 기본 장면 그대로
+  assert.deepEqual(addCutShots(base, [], 16.8).shots, [...base].sort((a, b) => a.at - b.at));
+  assert.ok(Array.isArray(자동칸.문턱들) && 자동칸.문턱들[0] < 자동칸.문턱들[1], '낮은 문턱부터, 넘치면 높은 문턱으로');
+});
+
+test('자동 칸 — 질문 안내는 더한 칸이 있을 때만 「짧은 칸은 칸마다 한 장」을 말한다', () => {
+  const auto = buildPrompt({ brand: 'lab-mn', sheets: ['C:/a/정지컷_01.jpg'], speech: 'C:/a/말.txt', cuts: '자동' });
+  assert.match(auto, /짧은 칸은 칸마다 한 장/);
+  const plain = buildPrompt({ brand: 'lab-mn', sheets: ['C:/a/정지컷_01.jpg'], speech: 'C:/a/말.txt', cuts: false });
+  assert.doesNotMatch(plain, /짧은 칸은 칸마다 한 장/);
+  assert.match(buildWorthPrompt({ brand: 'lab-mn', sheets: ['C:/a/정지컷_01.jpg'], speech: 'C:/a/말.txt', cuts: '자동' }), /짧은 칸은 칸마다 한 장/);
+});
+
+test('자동 칸 — 실제 ffmpeg로 0.5초 칸이 있는 영상을 만들면 그 칸이 장면에 들고, --컷 끔은 예전 장면 그대로다', { skip: spawnSync('ffmpeg', ['-version']).status !== 0 && 'ffmpeg 없음' }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '자동칸-'));
+  try {
+    const v = path.join(dir, 'v.mp4');
+    // 0~4.2초 검정 · 4.2~4.7초 흰색(0.5초 칸 — 기본 장면 4 · 6초 사이) · 4.7~7초 검정
+    const r = spawnSync('ffmpeg', ['-y', '-v', 'error', '-f', 'lavfi', '-i', 'color=c=black:s=180x320:d=4.2:r=24', '-f', 'lavfi', '-i', 'color=c=white:s=180x320:d=0.5:r=24',
+      '-f', 'lavfi', '-i', 'color=c=black:s=180x320:d=2.3:r=24', '-filter_complex', '[0][1][2]concat=n=3:v=1:a=0', '-pix_fmt', 'yuv420p', v], { encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    const 말 = path.join(dir, '말.txt');
+    fs.writeFileSync(말, '0.0s  (말 없음)\n');
+    const run = (extra) => spawnSync(process.execPath, [path.join(__dirname, '..', 'tools', '낯선이시험.js'), v, '--말', 말, '--브랜드', 'lab-mn', '--밖', path.join(dir, `out${extra.length}`), '--지난', '없음', ...extra], { encoding: 'utf8' });
+    const auto = run([]);
+    assert.equal(auto.status, 0, auto.stderr);
+    assert.match(auto.stdout, /자동 칸: 장면 바뀜 2곳\(문턱 0\.1\) · 기본 장면이 못 덮은 칸 1곳/);
+    assert.match(fs.readFileSync(path.join(dir, 'out0', '질문.md'), 'utf8'), /짧은 칸은 칸마다 한 장/);
+    const off = run(['--컷', '끔']);
+    assert.equal(off.status, 0, off.stderr);
+    assert.doesNotMatch(off.stdout, /자동 칸/);
+    assert.doesNotMatch(fs.readFileSync(path.join(dir, 'out2', '질문.md'), 'utf8'), /짧은 칸은 칸마다 한 장/);
+    const auto칸 = Number(/장면 (\d+)칸/.exec(auto.stdout)[1]);
+    const off칸 = Number(/장면 (\d+)칸/.exec(off.stdout)[1]);
+    assert.equal(auto칸, off칸 + 1);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

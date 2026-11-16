@@ -645,7 +645,13 @@ function 시작(입력, { 폴더 = '', 최근 = 20, 상한 = 시작상한 } = {}
     const g = 길이름 ? { 길: 길이름, 근거: '길 이름' } : 시작길(s, 편들);
     if (!g.길) return { 줄: [], 까닭: g.까닭 };
     const r = 시작줄들(편들.filter((p) => p.길 === g.길), 기준, { 최근, 상한, 뿌리, 길: g.길 });
-    return { 길: g.길, 근거: g.근거, ...(g.편 ? { 편: g.편 } : {}), 편수: r.편수, 줄: r.줄, ...(r.넘김줄.length ? { 넘김줄: r.넘김줄 } : {}) };
+    // LAB은 최종 확인을 거치지 않아 위 줄이 비기 쉽다 — 이해 시험 · 판본 회차에서 떨어진 까닭은 LAB 교훈 표가 받는다(11-17).
+    // 표 자리는 이 도구의 저장소(시험은 SYNK_LAB_LESSON_DIR). 못 읽으면 붙이지 않는다
+    let LAB교훈 = null;
+    if (g.길 === 'LAB') {
+      try { LAB교훈 = require('./lib/LAB교훈.js').시작(process.env.SYNK_LAB_LESSON_DIR ? path.resolve(process.env.SYNK_LAB_LESSON_DIR) : REPO, '원본', { 상한: 8 }); } catch { LAB교훈 = null; }
+    }
+    return { 길: g.길, 근거: g.근거, ...(g.편 ? { 편: g.편 } : {}), 편수: r.편수, 줄: r.줄, ...(r.넘김줄.length ? { 넘김줄: r.넘김줄 } : {}), ...(LAB교훈 ? { LAB교훈 } : {}) };
   } catch (e) {
     return { 줄: [], 까닭: `장부를 못 읽음 — ${String(e && e.message || e).slice(0, 200)}` };
   }
@@ -653,6 +659,13 @@ function 시작(입력, { 폴더 = '', 최근 = 20, 상한 = 시작상한 } = {}
 
 // 시작 결과 → 사람이 읽는 글. 낼 것이 없으면 빈 글
 function 시작글(r) {
+  const 장부글 = 흠시작글(r);
+  let 교훈글 = '';
+  if (r && r.LAB교훈) { try { 교훈글 = require('./lib/LAB교훈.js').시작글(r.LAB교훈); } catch { 교훈글 = ''; } }
+  return [장부글, 교훈글].filter(Boolean).join('\n');
+}
+
+function 흠시작글(r) {
   const 못잡음 = r && Array.isArray(r.줄) ? r.줄 : [];
   const 넘김 = r && Array.isArray(r.넘김줄) ? r.넘김줄 : [];
   if (!못잡음.length && !넘김.length) return '';
