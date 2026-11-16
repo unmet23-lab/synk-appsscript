@@ -556,6 +556,7 @@ export function watchHomePlan({
   let disposed = false;
   let unwatch = () => {};
   let settleTimer = null;
+  let offSettle = null; // 자리를 잡기를 기다리는 동안 건 받기 알림의 되돌림(D7)
   let retryTimer = null;
   let redrawTimer = null;
   let settleWait = every;
@@ -575,7 +576,12 @@ export function watchHomePlan({
     unwatch = () => {};
     coach = null;
     opening = null;
+    stopSettle();
+  }
+  function stopSettle() {
     settleTimer = clear(settleTimer);
+    if (typeof offSettle === 'function') quiet(offSettle);
+    offSettle = null;
   }
   function attach() {
     if (disposed || coach || opening || retryTimer) return;
@@ -608,11 +614,30 @@ export function watchHomePlan({
       });
   }
   function settle() {
-    if (settleTimer || disposed || !coach) return;
+    if (settleTimer || offSettle || disposed || !coach) return;
+    // 받기 알림 — 요약이 자리를 잡기를 받기 알림으로 기다린다. 첫 받기 · 받기 사다리의 늦은 칸에서 자리를 잡으면 곧 다시 그린다(받기 알림 설계 검토
+    // D7 — 단계 4 계획 §21-20). 알림을 걸면 타이머를 두지 않는다 — 타이머를 남기면 길이 다시 둘이 된다(설계 주인 11-16 저녁 조건 4). 자리를 잡으면
+    // 듣기를 그치고, 그 뒤의 알림은 셸이 듣는다(hearHome). 받기 알림이 없는 코치만 타이머로 기다린다(3초부터 두 배씩, 60초까지).
+    const made = coach;
+    const at = generation;
+    offSettle = quiet(() =>
+      typeof made.watch === 'function'
+        ? made.watch(() => {
+            if (disposed || at !== generation || coach !== made) return;
+            if (!settled(quiet(() => made.summary()))) return;
+            stopSettle();
+            settleWait = every;
+            changed();
+          })
+        : null,
+    );
+    if (typeof offSettle === 'function') return;
+    offSettle = null;
     settleTimer = timers.setTimeout(() => {
       settleTimer = null;
       if (disposed || !coach) return;
       if (settled(quiet(() => coach.summary()))) {
+        stopSettle();
         settleWait = every;
         changed();
       } else {

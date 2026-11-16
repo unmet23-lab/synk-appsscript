@@ -686,6 +686,8 @@ export function createCoach(options = {}) {
       if (typeof listener !== 'function')
         throw new TypeError('Atlas coach: watch는 듣는 함수를 받는다');
       const off = state.host.subscribe(event => {
+        // 이 알림을 돌리는 사이 되돌렸거나 코치를 닫았으면 부르지 않는다 — 호스트는 듣는 함수 목록의 사본을 돈다(엔진 묶음 GPT GA1 · 카본 A1).
+        if (!state.watchers.has(off)) return;
         if (event?.kind === 'receive' || event?.kind === 'refresh') listener({ kind: event.kind });
       });
       state.watchers.add(off);

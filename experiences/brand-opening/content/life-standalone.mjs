@@ -25404,7 +25404,7 @@ function createWorldEducation({
   let nextView = null, nextSync = { coach: null, value: null, asking: null }, redrawingNext = false;
   const SYNC_LATE_MS = 6e4;
   const FOLD_WAIT_MS = 4e3;
-  let heard = { coach: null, off: null, due: false, timer: null };
+  let heard = { coach: null, off: null, home: false, panel: false, timer: null };
   const watchClock = { set: (fn, ms) => typeof target.setTimeout === "function" ? target.setTimeout(fn, ms) : setTimeout(fn, ms), clear: (id) => {
     if (id == null) return;
     if (typeof target.clearTimeout === "function") target.clearTimeout(id);
@@ -25837,7 +25837,7 @@ function createWorldEducation({
     }
     wakePlanWaits();
     hearHome();
-    heard.due = false;
+    heard.home = false;
     try {
       if (homeNext && panelNode('[data-position-next="checking"]')) redrawNext();
     } catch {
@@ -26522,7 +26522,20 @@ function createWorldEducation({
     return asking;
   }
   const SESSION_PANELS = Object.freeze(["[data-position-stage]", "[data-practice-stage]", "[data-mock-stage]", "[data-town-stage]"]);
-  const sessionPanel = () => SESSION_PANELS.some((selector) => panelNode(selector));
+  const LIFE_SESSIONS = /* @__PURE__ */ new Set(["life-cafe", "life-cafe-complete", "life-lesson", "life-story", "life-question", "life-complete", "life-review", "life-review-complete"]);
+  const panelKind = () => {
+    try {
+      return home.openPanel?.() ?? null;
+    } catch {
+      return null;
+    }
+  };
+  const panelOpen = () => panelKind() !== "";
+  const sessionPanel = () => {
+    const kind = panelKind();
+    if (kind === "") return false;
+    return LIFE_SESSIONS.has(kind) || SESSION_PANELS.some((selector) => panelNode(selector));
+  };
   function hearHome() {
     const coachNow = !stopped && homePhase() === "engine" ? homeWatch?.coach?.() ?? null : null;
     if (heard.coach === coachNow) return;
@@ -26534,21 +26547,34 @@ function createWorldEducation({
     if (!coachNow || typeof coachNow.watch !== "function") return;
     try {
       heard = { ...heard, coach: coachNow, off: coachNow.watch(() => heardHome(coachNow)) };
-    } catch {
+    } catch (error2) {
+      if (error2 instanceof TypeError && !homeFailed) {
+        homeFailed = true;
+        queueMicrotask(() => {
+          if (!stopped) {
+            refresh();
+            redrawNext();
+          }
+        });
+      }
     }
   }
   function heardHome(coachNow) {
     if (stopped || heard.coach !== coachNow) return;
     if (weekMet.coach === coachNow) weekMet = { coach: null, key: null, met: null };
-    heard.due = true;
+    heard.home = true;
+    heard.panel = true;
     if (heard.timer == null) heard.timer = watchClock.set(drawHeard, 0);
   }
   function drawHeard() {
     heard.timer = null;
-    if (stopped || !heard.due || sessionPanel()) return;
-    const engineOpen = Boolean(panelNode('[data-position-next="engine"]'));
-    refresh();
-    if (engineOpen) redrawNext();
+    if (stopped || !heard.home && !heard.panel || sessionPanel()) return;
+    const open2 = panelOpen(), engineOpen = open2 && Boolean(panelNode('[data-position-next="engine"]')), planOpen2 = open2 && Boolean(panelNode("[data-plan-board]"));
+    if (planOpen2 && heard.panel) void openPlan({ keepScroll: true }).catch(() => {
+    });
+    if (heard.home) refresh();
+    if (engineOpen && heard.panel) redrawNext();
+    heard.panel = false;
   }
   function stopHearing() {
     watchClock.clear(heard.timer);
@@ -26556,7 +26582,7 @@ function createWorldEducation({
       heard.off?.();
     } catch {
     }
-    heard = { coach: null, off: null, due: false, timer: null };
+    heard = { coach: null, off: null, home: false, panel: false, timer: null };
   }
   const nextViewOf = () => nextView ||= homePlanner?.position?.createView?.({ t: t2, has: hasString2, formatDate: formatDate2 }) || null;
   const nextChecking = () => `<div class="wpos life-heading" data-position-next="checking" tabindex="-1" aria-busy="true"><div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape3(t2("position.title"))}</strong><p class="life-poster-sub">${escape3(t2("homeTutor.checking"))}</p></div></div>`;
@@ -26778,6 +26804,7 @@ function createWorldEducation({
     }
     const two2 = topik2Domains(), exams = studentExam(data.values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
     home.showPanel(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.fresh.has(id), scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0, month: data.month }), PANEL);
+    heard.panel = false;
     const root = panelNode("[data-position-next]");
     if (keepScroll) {
       reopenRows(root, openRows);
@@ -26833,7 +26860,7 @@ function createWorldEducation({
     if (redrawingNext || stopped || openPosition.pending) return;
     redrawingNext = true;
     try {
-      if (panelNode("[data-position-next]")) showNext({ keepScroll: true, fresh: true });
+      if (panelOpen() && panelNode("[data-position-next]")) showNext({ keepScroll: true, fresh: true });
     } catch {
     } finally {
       redrawingNext = false;
@@ -28151,6 +28178,7 @@ function createWorldEducation({
     }
     const scroller = keepScroll ? panelNode("[data-plan-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
     home.showPanel(t2("plan.week.title"), view.renderExamPlan({ plan: examPlan, next: plan.selected, reason: tMessage2(plan.reason || ""), count: practiceLength() }), { type: "life-position", eyebrow: "MY WEEK", nav: "packs" });
+    heard.panel = false;
     const root = panelNode("[data-plan-board]");
     if (keepScroll) {
       const node = root?.closest?.("#panel-content");

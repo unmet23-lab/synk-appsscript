@@ -295,6 +295,18 @@ export const TODAY_MUTANTS = [
     "    examPlan: live ? (week?.examPlan ?? null) : null,\n",
     "    examPlan: null,\n",
   ],
+  [
+    '판 셋',
+    "판 감시가 받은 코치의 받기 알림을 듣지 않는다 — 요약이 자리를 잡아도 타이머(3초부터 60초)까지 확인 중이다(받기 알림 설계 검토 D7)",
+    "    offSettle = quiet(() =>\n      typeof made.watch === 'function'\n        ? made.watch(() => {\n            if (disposed || at !== generation || coach !== made) return;\n            if (!settled(quiet(() => made.summary()))) return;\n            stopSettle();\n            settleWait = every;\n            changed();\n          })\n        : null,\n    );\n",
+    "",
+  ],
+  [
+    '판 셋',
+    "받기 알림을 걸어도 타이머를 남긴다 — 자리를 잡기를 기다리는 길이 다시 둘이 된다(받기 알림 설계 검토 D7 · 설계 주인 조건 4)",
+    "    if (typeof offSettle === 'function') return;\n",
+    "",
+  ],
 ];
 
 // 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 두면 node가 「겹쳐 부른 시험」으로 보고 파일을 하나도

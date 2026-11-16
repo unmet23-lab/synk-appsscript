@@ -634,6 +634,76 @@ test('잇달아 온 알림은 다음 틱에 한 번만 그린다 — 받은 자�
   }
 });
 
+test('열린 이번 주 계획 판도 받기 알림으로 한 번 다시 그린다 — 판 뒤의 홈만 그리지 않는다(받기 알림 설계 검토 D3)', async () => {
+  const { counted, wrap, emit } = accountWrap({ pulled: true });
+  const app = shell({ wrap });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    assert.equal(await app.education.plan(), 'shown');
+    await tick(30);
+    const boards = () => app.shown.filter(html => /data-plan-board/.test(html)).length;
+    const before = boards();
+    counted.shift = OTHER_DEVICE;
+    emit('receive');
+    await until(() => boards() > before, '열린 계획 판을 다시 그린다');
+    await tick(40);
+    assert.equal(boards(), before + 1, '한 번만 그린다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('생활 레슨 · 복습 · 카페 판이 열린 동안 온 알림은 그 자리에서 홈과 묶음 만남을 다시 짓지 않는다 — 판을 닫으며 그리는 한 번에 비친다(받기 알림 설계 검토 D8)', async () => {
+  const { counted, wrap, emit } = accountWrap({ pulled: true });
+  const app = shell({ wrap });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    await tick(30);
+    counted.shift = OTHER_DEVICE;
+    for (const kind of ['life-question', 'life-review', 'life-cafe']) {
+      app.state.panel = kind;
+      const at = { drawn: app.drawn(), asked: counted.weekAsked };
+      emit('receive');
+      await tick(30);
+      assert.deepEqual({ drawn: app.drawn(), asked: counted.weekAsked }, at, `${kind} 판이 열린 동안은 다시 짓지 않는다`);
+    }
+    // 판을 닫는다 — 홈의 closePanel이 다음 마이크로태스크에 부르는 새로 그리기가 미룬 알림을 비춘다.
+    app.state.panel = '';
+    const asked = counted.weekAsked;
+    app.education.refresh();
+    assert.equal(counted.weekAsked, asked + 1, '닫으며 그리는 한 번에 묶음 만남을 다시 묻는다');
+    const drawn = app.drawn();
+    await tick(40);
+    assert.equal(app.drawn(), drawn, '그 뒤 미룬 알림으로 또 그리지 않는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('받기 알림을 걸지 못하는 엔진 판이면(입구의 겉에는 watch가 있으나 실린 판에 없음 — 엔진만 앞 판으로 되돌린 때) 이 문서는 지금 판으로 내린다(받기 알림 설계 검토 D5)', async () => {
+  const { wrap } = accountWrap(
+    { pulled: true },
+    {
+      watch() {
+        throw new TypeError('real[name] is not a function');
+      },
+    },
+  );
+  const app = shell({ wrap });
+  try {
+    app.education.refresh();
+    // 홈 코치가 서고 판이 확인 중을 벗어난 뒤에 본다 — 확인 중에는 새 길이든 지금 판이든 같다.
+    await until(() => app.coaches.length > 0 && app.plan() && app.plan().today?.state !== 'checking', '판이 선다');
+    await tick(30);
+    assert.notEqual(app.plan()?.today?.state, 'engine', '새 길 홈이 아니다 — 지금 판으로 내렸다');
+    assert.ok(app.opens.length > 0, '지금 판이 옛 코치를 연다');
+  } finally {
+    app.dispose();
+  }
+});
+
 test('확인 중에 학생이 누른 계획 열기는 기다린 사이 다른 판을 열었으면 덮지 않는다(4-4b 다시 검수 Fable FA2)', async () => {
   let release = null;
   const app = shell({ planner: () => new Promise(resolve => (release = () => resolve(PLANNER))) });

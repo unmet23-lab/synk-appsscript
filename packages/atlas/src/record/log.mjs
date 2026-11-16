@@ -394,6 +394,8 @@ export function createRecord({
   tag = randomTag(),
   // 차례 밖에서 시작된 손님 요약 저장이 청하는 차례(호스트의 turn — (job, work) => 약속). 없으면 그대로 쓴다.
   exclusive = (_job, work) => work(),
+  // 손님 요약 저장 묶음이 끝났다 — 호스트가 다른 탭에 알린다(받기 알림 설계 검토 D2 · 설계 주인 11-16 저녁). 호스트는 손님 · 동의를 끈 기록부에만 준다.
+  onLocalSaved = null,
 }) {
   const state = createState(guest, now);
   const edition = () => foldEdition(params, index);
@@ -440,14 +442,27 @@ export function createRecord({
       return state.saving;
     }
     state.saving = (async () => {
+      // 이 묶음에서 쓴 요약 수 — 하나라도 쓰였으면 묶음이 끝난 뒤 한 번 알린다. 쓰기 · 받기 · 앞 요약 지우기가 다 끝난 뒤다. 건너뛴 저장(차례를
+      // 못 얻음 · 실패 · 이미 쓴 요약)은 세지 않는다(설계 주인 11-16 저녁 조건 1). 받는 탭은 꼬리만 다시 읽고 다시 접지 않으므로 되알리지 않는다.
+      let wrote = 0;
       do {
         state.dirty = false;
         if (!(await saveOnce())) break;
+        wrote += 1;
       } while (state.dirty);
+      if (wrote > 0) announceSaved();
     })().finally(() => {
       state.saving = null;
     });
     return state.saving;
+  }
+
+  function announceSaved() {
+    try {
+      onLocalSaved?.();
+    } catch {
+      // 알림이 던져도 저장은 그대로다 — 다른 탭은 다음 알림 · 다음 열기에 읽는다.
+    }
   }
 
   async function saveOnce() {

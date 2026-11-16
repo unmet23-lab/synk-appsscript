@@ -330,6 +330,9 @@ function createHost({
         health: healthNow,
         now,
         exclusive: turn,
+        // 손님 · 동의를 끈 기록부의 요약 저장이 끝나면 다른 탭에 알린다 — 다른 탭은 꼬리를 다시 읽어 접힌 요약을 받는다(받기 알림 설계 검토 D2 ·
+        // 설계 주인 11-16 저녁 조건 2). 계정 기록부의 길은 그대로다.
+        ...(guest ? { onLocalSaved: () => announce() } : {}),
       });
       state.channel = channelOf(key, () => void refresh());
       if (globalThis.addEventListener) globalThis.addEventListener('online', online);

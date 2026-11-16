@@ -781,4 +781,12 @@ export const RECORD_MUTANTS = [
     '    else if (\n      event.type === EVENT_TYPES.presented &&\n      event.measure?.familyKey &&\n      event.measure?.skillId\n    )\n      add(event.measure.familyKey, [event.measure.skillId]);\n',
     '',
   ],
+  [
+    R,
+    '받기 알림(4-4c watch)',
+    '저장한 요약마다 다른 탭에 알린다 — 한 저장 묶음에서 두 번 쓰면 두 번 알린다(받기 알림 설계 검토 D2 · 설계 주인 조건 1)',
+    LOG,
+    '      if (wrote > 0) announceSaved();\n',
+    '      for (let i = 0; i < wrote; i += 1) announceSaved();\n',
+  ],
 ];

@@ -91,13 +91,16 @@ export const PLAN_MUTANTS = [
   ['shell', '문서가 닫혀도 계획 열기의 기다림을 깨우지 않는다 — 판을 기다리던 열기가 8초 한도까지 매달린다(4-4b 다시 검수 카본 A1)', "dispose(){stopped=true;wakePlanWaits();", "dispose(){stopped=true;"],
   ['shell', '짧은 연습을 도중에 닫을 때 판 기록을 적지 않는다', 'try{session.stop();}catch{}counted(session.results());queueMicrotask(()=>refresh());};', 'try{session.stop();}catch{}queueMicrotask(()=>refresh());};'],
   // ── 받기 알림(§21-20 — hearHome · heardHome · drawHeard). 열린 판 · 묶기 · 코치 바꾸기의 변형은 qa/position-mutants.mjs 「셸 받기 알림」에 있다 ──
-  ['shell', "받기 알림을 듣지 않는다 — 기록이 다 오기 전에 그린 홈이 받기가 되어도 학생이 화면을 건드리기 전까지 다시 그리지 않는다(§21-20 · 카본 C1)", "  hearHome();heard.due=false;\n", "  heard.due=false;\n"],
-  ['shell', "알림을 받아도 홈을 다시 그리지 않는다(§21-20 · 카본 C1)", "  refresh();\n  if(engineOpen)redrawNext();\n", "  if(engineOpen)redrawNext();\n"],
+  ['shell', "받기 알림을 듣지 않는다 — 기록이 다 오기 전에 그린 홈이 받기가 되어도 학생이 화면을 건드리기 전까지 다시 그리지 않는다(§21-20 · 카본 C1)", "  hearHome();heard.home=false;\n", "  heard.home=false;\n"],
+  ['shell', "알림을 받아도 홈을 다시 그리지 않는다(§21-20 · 카본 C1)", "  if(heard.home)refresh();\n", ""],
   ['shell', "받기(receive) 알림을 넘긴다 — 다른 기기의 답 · 막힘이 풀려 올린 답이 홈에 닿지 않는다(§21-20 시험 1 · 4 · GPT GA1 · Fable FA3)", "off:coachNow.watch(()=>heardHome(coachNow))", "off:coachNow.watch(note=>{if(note?.kind==='refresh')heardHome(coachNow);})"],
   ['shell', "다른 탭(refresh) 알림을 넘긴다 — 같은 브라우저의 다른 창에서 쓴 답이 이 창의 홈에 닿지 않는다(§21-20 시험 2 · 3)", "off:coachNow.watch(()=>heardHome(coachNow))", "off:coachNow.watch(note=>{if(note?.kind==='receive')heardHome(coachNow);})"],
-  ['shell', "알림을 받은 자리에서 바로 그린다 — 잇달아 온 알림을 묶지 않는다(§21-20 조건 3)", "  heard.due=true;\n  if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);\n", "  heard.due=true;\n  drawHeard();\n"],
+  ['shell', "알림을 받은 자리에서 바로 그린다 — 잇달아 온 알림을 묶지 않는다(§21-20 조건 3)", "  heard.home=true;heard.panel=true;\n  if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);\n", "  heard.home=true;heard.panel=true;\n  drawHeard();\n"],
   ['shell', "알림이 묶음 만남을 버리지 않는다 — 다른 창에서 건너뛰기만 한 판의 만남을 그날 내내 못 본다(§21-20 시험 3 · Fable FA1)", "  if(weekMet.coach===coachNow)weekMet={coach:null,key:null,met:null};\n", ""],
   ['shell', "문서를 닫아도 받기 알림의 듣기를 되돌리지 않는다(§21-20 조건 1)", "wakePlanWaits();stopHearing();homeWatch?.dispose();", "wakePlanWaits();homeWatch?.dispose();"],
+  ['shell', "열린 이번 주 계획 판을 알림으로 다시 그리지 않는다 — 판 뒤의 홈만 새로 그려 학생이 보는 판은 옛 계획이다(받기 알림 설계 검토 D3)", "  if(planOpen&&heard.panel)void openPlan({keepScroll:true}).catch(()=>{});\n", ""],
+  ['shell', "받기 알림을 걸지 못하는 엔진 판에서도 새 길 홈을 그대로 둔다 — 다른 기기의 답을 놓친다(받기 알림 설계 검토 D5)", "   if(error instanceof TypeError&&!homeFailed){homeFailed=true;queueMicrotask(()=>{if(!stopped){refresh();redrawNext();}});}\n", ""],
+  ['shell', "생활 레슨 · 복습 · 카페 판이 열린 동안에도 알림마다 홈과 묶음 만남을 다시 짓는다(받기 알림 설계 검토 D8)", "return LIFE_SESSIONS.has(kind)||SESSION_PANELS.some(selector=>panelNode(selector));", "return SESSION_PANELS.some(selector=>panelNode(selector));"],
 ];
 
 // 없는 갈래 이름이면 아무 변형도 돌리지 않고 0으로 끝나던 것을 멈춘다(4-4b 끝 판 GPT GB1).

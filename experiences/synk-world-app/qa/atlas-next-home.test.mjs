@@ -453,6 +453,23 @@ test('판 셋 — reopen은 홈 코치를 내려놓고 다음 물음에서 새�
  watch.dispose();watch.reopen();assert.equal(opens,2,'닫은 뒤에는 열지 않는다');
 });
 
+test('판 셋 — 요약이 자리를 잡기를 기다리는 동안은 받기 알림만 듣고 타이머를 두지 않는다 · 자리를 잡은 알림에 곧 다시 그리고 듣기를 그친다(받기 알림 설계 검토 D7 · 설계 주인 11-16 저녁 조건 4)',async()=>{
+ let changes=0,settled=false;const timers=fakeTimers();const listeners=new Set();
+ const made={plan:()=>[],summary:()=>({storage:{base:settled,waiting:false}}),watch:fn=>{listeners.add(fn);return()=>listeners.delete(fn);}};
+ const watch=watchHomePlan({open:async()=>made,lifeState:()=>'engine',onChange:()=>{changes+=1;},timers});
+ assert.equal(watch.phase(),'checking');await tick();assert.equal(changes,1,'코치가 서면 다시 그린다');
+ assert.equal(watch.phase(),'checking','요약이 자리를 잡기 전');assert.equal(listeners.size,1,'받은 코치의 받기 알림을 듣는다');
+ assert.equal(timers.list.length,0,'받기 알림을 건 뒤에는 남은 타이머가 없다 — 길이 하나다');
+ for(const fn of [...listeners])fn({kind:'receive'});
+ assert.equal(changes,1,'자리를 잡지 않은 알림으로는 다시 그리지 않는다');assert.equal(timers.list.length,0);
+ settled=true;for(const fn of [...listeners])fn({kind:'receive'});
+ assert.equal(changes,2,'자리를 잡은 알림에 곧 다시 그린다');assert.equal(listeners.size,0,'자리를 잡으면 듣기를 그친다 — 그 뒤는 셸이 듣는다');
+ assert.equal(watch.phase(),'engine');assert.equal(listeners.size,0,'자리를 잡은 코치에는 다시 걸지 않는다');
+ settled=false;assert.equal(watch.phase(),'checking');assert.equal(listeners.size,1,'다시 기다리면 다시 듣는다');assert.equal(timers.list.length,0);
+ watch.reopen();assert.equal(listeners.size,0,'코치를 내려놓으면 듣기를 되돌린다');
+ watch.dispose();
+});
+
 test('다시 그리는 때 — 걸어 둔 때는 하나뿐이고 닫으면 지운다(설계 검토 H22)',()=>{
  let changes=0;const timers=fakeTimers();
  const watch=watchHomePlan({open:async()=>null,lifeState:()=>'old',onChange:()=>{changes+=1;},timers});

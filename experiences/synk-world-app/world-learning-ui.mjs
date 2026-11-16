@@ -76,8 +76,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  const SYNC_LATE_MS=60000;
  // 새 길 진단 끝 화면이 기기 기록부(손님 · 동의를 끈 계정)의 다시 접기(finishSet의 folded)를 기다리는 한도 — 접기는 기기 안이라 짧다(Fable 끝 판 F3).
  const FOLD_WAIT_MS=4000;
- // 받기 알림(§21-20 — hearHome): 듣는 코치 · 되돌림 · 그릴 것이 있나(미룬 알림) · 다음 틱 타이머.
- let heard={coach:null,off:null,due:false,timer:null};
+ // 받기 알림(§21-20 — hearHome): 듣는 코치 · 되돌림 · 미룬 알림 둘(홈 몫 · 열린 판 몫 — 설계 검토 D4) · 다음 틱 타이머.
+ let heard={coach:null,off:null,home:false,panel:false,timer:null};
  // 타이머 — target의 시계(창의 setTimeout · clearTimeout, 시험은 가짜 시계)를 쓴다. 없으면 전역 시계.
  const watchClock={set:(fn,ms)=>typeof target.setTimeout==='function'?target.setTimeout(fn,ms):setTimeout(fn,ms),clear:id=>{if(id==null)return;if(typeof target.clearTimeout==='function')target.clearTimeout(id);else clearTimeout(id);}};
  // 새 길 홈이 확인 중일 때 연 이번 주 계획이 판이 서기를 기다리는 한도와 기다리는 쪽(4-4b 끝 판 Fable F1 — openPlan · settledHome).
@@ -342,8 +342,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(stopped||refreshing)return current;
   if(drawHome()&&homeNext){try{homeNext.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}}
   wakePlanWaits();
-  // 받기 알림(§21-20): 지금 홈 코치에 듣기를 맞추고, 이 그리기가 미룬 알림을 다 비췄으니 비운다(판을 닫으며 부르는 refresh가 그 한 번이다).
-  hearHome();heard.due=false;
+  // 받기 알림(§21-20): 지금 홈 코치에 듣기를 맞추고, 이 그리기가 홈 몫의 미룬 알림을 비췄으니 비운다(판을 닫으며 부르는 refresh가 그 한 번이다).
+  // 열린 판 몫은 판을 그릴 때 비운다(설계 검토 D4).
+  hearHome();heard.home=false;
   // 새 길 「내 위치」가 확인 중 판이면 판이 섰는지 다시 본다(§21-2 — 생활 판정이 서면 셸이 홈을 다시 그린다). 엔진 판은 판 감시가 알릴 때만 다시 그린다.
   try{if(homeNext&&panelNode('[data-position-next="checking"]'))redrawNext();}catch{/* the next open draws it */}
   return current;
@@ -723,35 +724,51 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 지켜보기)을 이것으로 바꿨다 — 다시 보기는 같은 자리에서 P1이 두 회차 이어졌고 빈틈 셋이 남았다(§21-18). 엔진의 받기 사다리와 다시 받기는
  // 그대로다(알림은 받기가 실제로 돌아야 난다).
  // 알림을 받은 자리에서는 이번 주 계획의 묶음 만남만 버린다(건너뛰기만 한 판의 만남은 요약 모양에 비치지 않는다 — Fable FA1). 그리기는 다음 틱으로
- // 미뤄 잇달아 온 알림을 한 번으로 묶는다. 진단 · 짧은 연습 · 시험 형식 · 마을 확인 판이 열려 있으면 그리지 않고 미뤄 둔다 — 그 판들은 닫힐 때
- // 홈을 새로 그리고(판의 stop이 부르는 refresh), 그 한 번이 미룬 알림을 다 비춘다(refresh가 미룬 것을 비운다). 판 자원(attachPanelResource)은
- // 판마다 하나라 여기서 붙이지 않는다 — 붙이면 그 판의 stop이 닫혀 연습이 멈춘다. 홈 코치가 바뀌면 옛 코치의 듣기를 되돌리고 새 코치에 건다
- // (refresh가 맞춘다). 문서가 닫히면 되돌린다.
+ // 미뤄 잇달아 온 알림을 한 번으로 묶는다. 미룬 것은 둘로 든다 — 홈 몫(refresh가 그리면 비운다)과 열린 판 몫(내 위치 엔진 판 · 이번 주 계획 판을
+ // 그리면 비운다). 그 사이 다른 까닭의 refresh가 홈만 그렸어도 열린 판은 타이머가 그린다(설계 검토 D4). 진단 · 짧은 연습 · 시험 형식 · 마을 확인
+ // 판과 생활 레슨 · 복습 · 카페 판이 열려 있으면 그리지 않고 미뤄 둔다 — 그 판들은 닫힐 때 홈을 새로 그리고(판의 stop이 부르는 refresh, 홈의
+ // closePanel이 다음 마이크로태스크에 부르는 refresh), 그 한 번이 홈 몫을 비춘다. 판 자원(attachPanelResource)은 판마다 하나라 여기서 붙이지
+ // 않는다 — 붙이면 그 판의 stop이 닫혀 연습이 멈춘다. 홈 코치가 바뀌면 옛 코치의 듣기를 되돌리고 새 코치에 건다(refresh가 맞춘다). 문서가
+ // 닫히면 되돌린다.
  const SESSION_PANELS=Object.freeze(['[data-position-stage]','[data-practice-stage]','[data-mock-stage]','[data-town-stage]']);
- const sessionPanel=()=>SESSION_PANELS.some(selector=>panelNode(selector));
+ // 같은 호스트에 답을 쓰는 생활 판(life-ui.mjs의 판 종류) — 답마다 올리기 답의 receive가 와도 판 뒤의 홈과 묶음 만남을 다시 짓지 않는다(설계 검토 D8).
+ const LIFE_SESSIONS=new Set(['life-cafe','life-cafe-complete','life-lesson','life-story','life-question','life-complete','life-review','life-review-complete']);
+ // 열린 판의 종류(home.mjs openPanel) — 판을 닫으면 곧 빈 값이 된다. 닫으며 흐려지는 동안(160ms)에는 판 조각이 DOM에 남으므로 판 종류로도 본다
+ // (설계 검토 D1). 판 종류를 모르는 홈이면(null) 조각만 본다.
+ const panelKind=()=>{try{return home.openPanel?.()??null;}catch{return null;}};
+ const panelOpen=()=>panelKind()!=='';
+ const sessionPanel=()=>{const kind=panelKind();if(kind==='')return false;return LIFE_SESSIONS.has(kind)||SESSION_PANELS.some(selector=>panelNode(selector));};
  function hearHome(){
   const coachNow=!stopped&&homePhase()==='engine'?homeWatch?.coach?.()??null:null;
   if(heard.coach===coachNow)return;
   try{heard.off?.();}catch{/* 닫힌 코치 */}
   heard={...heard,coach:null,off:null};
   if(!coachNow||typeof coachNow.watch!=='function')return;
-  try{heard={...heard,coach:coachNow,off:coachNow.watch(()=>heardHome(coachNow))};}catch{/* 닫힌 코치 — 다음 refresh가 다시 건다 */}
+  try{heard={...heard,coach:coachNow,off:coachNow.watch(()=>heardHome(coachNow))};}
+  catch(error){
+   // 입구의 겉은 메서드 이름마다 함수를 짓는다 — 실린 엔진 판에 watch가 없으면(엔진만 앞 판으로 되돌린 때) 부를 때 TypeError다. 받기 알림 없이는
+   // 새 길 홈이 다른 기기의 답을 놓치므로 이 문서는 지금 판으로 내린다(설계 검토 D5). 닫힌 코치(DISPOSED)면 다음 refresh가 다시 건다.
+   if(error instanceof TypeError&&!homeFailed){homeFailed=true;queueMicrotask(()=>{if(!stopped){refresh();redrawNext();}});}
+  }
  }
  function heardHome(coachNow){
   if(stopped||heard.coach!==coachNow)return;
   if(weekMet.coach===coachNow)weekMet={coach:null,key:null,met:null};
-  heard.due=true;
+  heard.home=true;heard.panel=true;
   if(heard.timer==null)heard.timer=watchClock.set(drawHeard,0);
  }
  function drawHeard(){
   heard.timer=null;
-  if(stopped||!heard.due||sessionPanel())return;
-  // 열린 내 위치 판(엔진 판)도 같은 알림으로 한 번 — 확인 중 판은 refresh가 이미 다시 그린다. refresh가 미룬 것을 비운다.
-  const engineOpen=Boolean(panelNode('[data-position-next="engine"]'));
-  refresh();
-  if(engineOpen)redrawNext();
+  if(stopped||!heard.home&&!heard.panel||sessionPanel())return;
+  // 닫으며 흐려지는 판은 열린 판이 아니다 — 다시 그리면 닫은 판이 다시 열린다(설계 검토 D1).
+  const open=panelOpen(),engineOpen=open&&Boolean(panelNode('[data-position-next="engine"]')),planOpen=open&&Boolean(panelNode('[data-plan-board]'));
+  // 열린 이번 주 계획 판은 계획 열기가 홈까지 새로 그린다(설계 검토 D3). 아니면 홈만 — 확인 중 내 위치 판은 refresh가 다시 그린다.
+  if(planOpen&&heard.panel)void openPlan({keepScroll:true}).catch(()=>{});
+  if(heard.home)refresh();
+  if(engineOpen&&heard.panel)redrawNext();
+  heard.panel=false;
  }
- function stopHearing(){watchClock.clear(heard.timer);try{heard.off?.();}catch{/* 닫힌 코치 */}heard={coach:null,off:null,due:false,timer:null};}
+ function stopHearing(){watchClock.clear(heard.timer);try{heard.off?.();}catch{/* 닫힌 코치 */}heard={coach:null,off:null,home:false,panel:false,timer:null};}
  const nextViewOf=()=>nextView||=homePlanner?.position?.createView?.({t,has:hasString,formatDate})||null;
  // 확인 중 판 — 판을 아직 못 정했거나(플래너를 받기 전 · 생활 판정이 확인 중) 홈 코치의 요약이 자리를 잡기 전. 줄 없이 「기록 확인 중」(21-2).
  const nextChecking=()=>`<div class="wpos life-heading" data-position-next="checking" tabindex="-1" aria-busy="true"><div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="position" aria-hidden="true"><i></i></span><small class="life-poster-label">MY POSITION</small><strong class="life-poster-word">${escape(t('position.title'))}</strong><p class="life-poster-sub">${escape(t('homeTutor.checking'))}</p></div></div>`;
@@ -881,7 +898,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scroller=keepScroll?panelNode('[data-position-next]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0,focusKey=keepScroll?nextFocusOf(panelNode('[data-position-next]')):null,openRows=keepScroll?openRowsOf(panelNode('[data-position-next]')):[];
   if(!data){home.showPanel(t('position.title'),nextChecking(),PANEL);panelNode('[data-position-next]')?.focus?.({preventScroll:true});return;}
   const two=topik2Domains(),exams=studentExam(data.values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
-  home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0,month:data.month}),PANEL);
+  home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0,month:data.month}),PANEL);heard.panel=false;
   const root=panelNode('[data-position-next]');
   if(keepScroll){reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
   // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(GPT 끝 판 GB1).
@@ -894,11 +911,12 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(start&&data.plan.status==='ready'&&data.plan.items.length)startDiagnosticNext(coachNow,data);
  }
  // 열린 새 길 판을 다시 그린다 — 판이 다시 정해짐(retired → 확인 중) · 홈 코치가 섬 · 첫 받기 답이 옴 · 플래너가 옴(21-2). 진단 중(판 대신 문항 판)이거나
- // 내 위치를 여는 중이면 두고, 다시 그리는 동안 refresh가 이것을 또 부르지 않게 막는다.
+ // 내 위치를 여는 중이면 두고, 다시 그리는 동안 refresh가 이것을 또 부르지 않게 막는다. 닫으며 흐려지는 판(판 종류가 빈 값)은 다시 그리지 않는다 —
+ // 닫은 판이 다시 열린다(설계 검토 D1).
  function redrawNext(){
   if(redrawingNext||stopped||openPosition.pending)return;
   redrawingNext=true;
-  try{if(panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true});}catch{/* the next open draws it */}finally{redrawingNext=false;}
+  try{if(panelOpen()&&panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true});}catch{/* the next open draws it */}finally{redrawingNext=false;}
  }
  // 다시 확인 카드 열기(21-4): 생활 단위는 생활 판정이 그 단위로 낸 복습을, 짧은 연습 단위는 그 단위가 든 문항만 후보로 넘긴 새 판 짧은 연습을 연다.
  function openRecheck(unit,data){
@@ -1471,7 +1489,7 @@ async function townSend(coachNow,{wait=true}={}){
   if(!examPlan&&homePhase()==='checking'&&examChosen()){if(!keepScroll&&!quiet)home.toast(t('home.today.checking'));return 'skipped';}
   if(!examPlan||!view){if(!keepScroll&&!quiet)open();return 'missing';}
   const scroller=keepScroll?panelNode('[data-plan-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
-  home.showPanel(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||''),count:practiceLength()}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});
+  home.showPanel(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||''),count:practiceLength()}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});heard.panel=false;
   const root=panelNode('[data-plan-board]');if(keepScroll){const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}else root?.focus?.({preventScroll:true});
   root?.querySelector('[data-plan-next]')?.addEventListener('click',()=>{try{check();if(plan.selected)void Promise.resolve(launch(plan.selected)).catch(failed);}catch(error){failed(error);}});
   root?.querySelectorAll('[data-plan-practice]').forEach(button=>button.addEventListener('click',()=>{try{check();void Promise.resolve(startPractice(button.dataset.planPractice)).catch(failed);}catch(error){failed(error);}}));

@@ -82,11 +82,12 @@ function stage() {
 // open: 홈 코치를 짓는 길(기본 손님 홈 코치). timers: 셸이 target으로 받는 시계(setTimeout · clearTimeout — 가짜 시계). panels: 홈처럼 판 자원을
 // 다룬다(판을 바꾸거나 닫으면 그 판의 자원을 dispose — home.mjs disposePanelContent, 판을 닫으면 진짜 홈처럼 다음 마이크로태스크에 education.refresh를
 // 부른다 — home.mjs closePanel). 창(online)과 문서(visibilitychange)의 알림은 fire로 내고, 셸이 단 듣기 수는 listening으로, 홈을 그린 횟수
-// (updateStudy)는 studied로 본다.
+// (updateStudy)는 studied로 본다. 열린 판의 종류(openPanel)는 판을 보이면 그 종류, panels로 닫으면 빈 값이다. fade: 진짜 홈처럼 닫으며 흐려지는
+// 동안(160ms) 판 조각을 남긴다 — 판 종류만 곧 빈 값이 되고, endFade가 조각을 지운다(받기 알림 설계 검토 D1).
 // focusing: 판 글의 단추와 문서의 초점(activeElement)을 흉내 내고, 셸이 초점을 둔 자리를 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
 // paint: 판 글을 바꿔 둔다(진짜 판에서 생길 수 있는 꼴을 흉내 낸다). focusing이면 판 안의 스크롤 칸(#panel-content)도 흉내 낸다 — 판 글을 바꾸면 스크롤 자리가
 // 처음으로 가고(셸이 되돌려야 한다), 능력 줄(details)은 접힌 채로 서며, 닫힌 줄 안의 단추에는 초점이 가지 않는다(브라우저는 닫힌 details의 몸을 그리지 않는다).
-function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html, planner = PLANNER } = {}) {
+function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html, planner = PLANNER, fade = false } = {}) {
   const opens = [];
   const engine = {
     ...worldLearning,
@@ -190,6 +191,8 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
   const unlisten = (scope, type, fn) => heard.set(`${scope}:${type}`, (heard.get(`${scope}:${type}`) ?? []).filter(row => row !== fn));
   let resource = null;
   let studied = 0;
+  let kind = '';
+  let fading = false;
   const disposeResource = () => {
     const was = resource;
     resource = null;
@@ -244,7 +247,9 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     closePanel() {
       if (!panels) return;
       disposeResource();
-      shown.push('');
+      kind = '';
+      if (fade) fading = true;
+      else shown.push('');
       queueMicrotask(() => education.refresh());
     },
     attachPanelResource(value) {
@@ -253,9 +258,11 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
       resource = value;
       was?.dispose?.();
     },
-    openPanel: () => 'life-position',
-    showPanel(title, html) {
+    openPanel: () => kind,
+    showPanel(title, html, options = {}) {
       if (panels) disposeResource();
+      fading = false;
+      kind = options?.type || 'life-position';
       shown.push(String(paint(String(html))));
       if (focusing) content.scrollTop = 0;
       if (/data-position-stage/.test(html)) box = stage();
@@ -307,6 +314,12 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     closePanel: () => home.closePanel(),
     // 홈을 그린 횟수(drawHome의 updateStudy) · 셸이 창과 문서에 단 그 알림의 듣기 수.
     studied: () => studied,
+    // 흐려지던 판의 조각을 지운다(fade일 때 — 홈의 닫기 타이머가 끝난 때).
+    endFade() {
+      if (!fading) return;
+      fading = false;
+      shown.push('');
+    },
     listening: type => ['window', 'document'].reduce((n, scope) => n + (heard.get(`${scope}:${type}`)?.length ?? 0), 0),
     // 초점(focusing일 때만) — 판 안의 단추(몇 번째), 판 머리, 판 밖, 다시 그린 판에는 없는 단추에 둔다.
     focused,
@@ -573,7 +586,7 @@ function fakeClock() {
   };
 }
 
-test('엔진 판 — 받기 알림 판에는 다시 보기 타이머가 없다: 첫 받기가 실패해도 셸은 타이머를 걸지 않고 online · visibilitychange를 듣지 않는다(다시 연결 · 화면 복귀의 받기는 엔진 호스트가 한다). 잇달아 온 알림은 다음 틱 타이머 하나로 묶고, 그 전에 홈을 새로 그렸으면 타이머가 또 그리지 않으며, 판이나 문서를 닫으면 남은 타이머 · 듣기가 없다(설계 주인 11-16 오후 조건 3 · 4)', async () => {
+test('엔진 판 — 받기 알림 판에는 다시 보기 타이머가 없다: 첫 받기가 실패해도 셸은 타이머를 걸지 않고 online · visibilitychange를 듣지 않는다(다시 연결 · 화면 복귀의 받기는 엔진 호스트가 한다). 잇달아 온 알림은 다음 틱 타이머 하나로 묶고, 그 전에 홈을 새로 그렸으면 타이머는 홈을 또 그리지 않고 열린 판만 한 번 그리며(설계 검토 D4), 판이나 문서를 닫으면 남은 타이머 · 듣기가 없다(설계 주인 11-16 오후 조건 3 · 4)', async () => {
   const clock = fakeClock();
   let pulled = false;
   const sync = accountLike(() => ({ ok: false, kind: 'offline', code: 'NETWORK' }), { sync: () => ({ pulled }) });
@@ -601,12 +614,17 @@ test('엔진 판 — 받기 알림 판에는 다시 보기 타이머가 없다: 
     assert.equal(app.shown.length, drawn + 1, '그 타이머가 판을 한 번 다시 그린다');
     assert.match(app.last(), /data-complete="true"/);
     assert.deepEqual(clock.waits(), []);
-    // 알림 뒤 타이머가 돌기 전에 홈을 새로 그렸다(초점 등) — 그 그리기가 알림을 다 비췄으니 타이머는 또 그리지 않는다.
+    // 알림 뒤 타이머가 돌기 전에 홈을 새로 그렸다(초점 등) — 그 그리기가 홈 몫을 비췄으니 홈은 또 그리지 않는다. 열린 판은 그 그리기가 다시 그리지
+    // 않으므로 타이머가 한 번 그린다(설계 검토 D4).
     sync.emit('receive');
     app.education.refresh();
     const after = { shown: app.shown.length, studied: app.studied() };
     clock.advance(0);
-    assert.deepEqual({ shown: app.shown.length, studied: app.studied() }, after, '새로 그린 뒤의 타이머는 그리지 않는다');
+    assert.deepEqual(
+      { shown: app.shown.length, studied: app.studied() },
+      { shown: after.shown + 1, studied: after.studied },
+      '새로 그린 뒤의 타이머는 홈을 또 그리지 않고 열린 판만 한 번 그린다',
+    );
     // 알림이 와 타이머가 걸린 채 판을 닫는다 — 타이머가 먼저 돌아도 닫힌 판은 그리지 않는다.
     sync.emit('receive');
     app.closePanel();
@@ -622,6 +640,49 @@ test('엔진 판 — 받기 알림 판에는 다시 보기 타이머가 없다: 
     app.education.dispose();
     assert.deepEqual(clock.waits(), [], '문서를 닫으면 남은 타이머가 없다');
     assert.equal(sync.listeners.size, 0, '문서를 닫으면 듣기를 되돌린다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 판을 닫으며 흐려지는 동안(조각이 남은 160ms) 온 알림은 닫은 판을 다시 열지 않고 홈만 새로 그린다(받기 알림 설계 검토 D1)', async () => {
+  const clock = fakeClock();
+  const heard = heardLike();
+  const app = shell({ wrap: heard.wrap, timers: clock, panels: true, fade: true });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await tick(20);
+    const drawn = app.shown.length;
+    app.closePanel();
+    await tick(0); // 닫기의 새로 그리기
+    const studied = app.studied();
+    heard.emit('receive');
+    clock.advance(0);
+    assert.equal(app.shown.length, drawn, '흐려지는 판을 다시 그리지 않는다 — 닫은 판이 다시 열리지 않는다');
+    assert.equal(app.studied(), studied + 1, '홈은 새로 그린다');
+    app.endFade();
+    assert.equal(app.last(), '');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판의 짧은 진단 — 판을 닫으며 흐려지는 동안 온 알림은 남은 진단 판 조각을 열린 판으로 보지 않고 홈을 새로 그린다 — 미룬 알림이 남지 않는다(받기 알림 설계 검토 D1)', async () => {
+  const clock = fakeClock();
+  const heard = heardLike();
+  const app = shell({ wrap: heard.wrap, timers: clock, panels: true, fade: true });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await app.education.position({ start: true });
+    await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+    app.closePanel();
+    await tick(0); // 닫기의 새로 그리기
+    const studied = app.studied();
+    heard.emit('receive');
+    clock.advance(0);
+    assert.equal(app.studied(), studied + 1, '흐려지는 진단 판 조각을 열린 판으로 보지 않는다 — 홈을 그린다');
   } finally {
     app.dispose();
   }

@@ -408,3 +408,59 @@ test('계정 두 기록부 · 한 포트: 받은 표지가 있는 사건은 어�
       assert.equal(acked.has(event.id), false, `${tab.name}: 받은 ${event.id}가 대기열에`);
   }
 });
+
+test('손님 요약 저장 묶음이 끝나면 호스트 고리(onLocalSaved)를 한 번 부른다 — 저장하는 사이 다시 접어 두 번 써도 한 번이고 다 쓴 뒤이며, 저장이 실패하거나 차례를 못 얻어 건너뛰면 부르지 않는다(받기 알림 설계 검토 D2 · 설계 주인 11-16 저녁 조건 1 · 3)', async () => {
+  // 한 묶음에서 두 번 쓴다 — 첫 저장이 차례를 기다리는 사이 다시 접는다(dirty).
+  {
+    const port = memoryPort();
+    const append = port.append.bind(port);
+    let localWrites = 0;
+    port.append = async values => {
+      const keys = await append(values);
+      localWrites += values.filter(value => value.kind === 'local').length;
+      return keys;
+    };
+    let release = null;
+    const gate = new Promise(resolve => {
+      release = resolve;
+    });
+    const calls = [];
+    const record = await guest(port, {
+      exclusive: (_job, work) => gate.then(work),
+      onLocalSaved: () => calls.push(localWrites),
+    });
+    await practise(record, items[3]);
+    await record.refold(); // 열 때 건 첫 저장이 차례를 기다리는 사이 새로 접는다
+    release();
+    await record.localSaved();
+    assert.equal(localWrites, 2, '한 저장 묶음에서 요약을 두 번 썼다');
+    assert.deepEqual(calls, [2], '알림은 묶음이 끝난 뒤 한 번 — 두 번째 쓰기까지 끝난 뒤다');
+  }
+  // 저장이 실패하면 알리지 않는다.
+  {
+    const port = memoryPort();
+    let calls = 0;
+    const record = await guest(port, { onLocalSaved: () => (calls += 1) });
+    await record.localSaved();
+    const opened = calls;
+    await practise(record, items[6]);
+    port.failNext(Object.assign(new Error('quota'), { name: 'QuotaExceededError' }));
+    await record.refold();
+    await record.localSaved();
+    port.heal();
+    assert.equal(opened, 1, '열 때 저장한 요약은 알린다');
+    assert.equal(calls, opened, '저장이 실패하면 알리지 않는다');
+  }
+  // 차례를 못 얻어 건너뛰면 알리지 않는다.
+  {
+    const port = memoryPort();
+    let calls = 0;
+    const busy = () =>
+      Promise.reject(Object.assign(new Error('busy'), { code: 'TURN_BUSY', job: 'summary' }));
+    const record = await guest(port, { exclusive: busy, onLocalSaved: () => (calls += 1) });
+    await practise(record, items[7]);
+    await record.refold();
+    await record.localSaved();
+    assert.equal(calls, 0, '차례를 못 얻은 저장은 알리지 않는다');
+  }
+});
