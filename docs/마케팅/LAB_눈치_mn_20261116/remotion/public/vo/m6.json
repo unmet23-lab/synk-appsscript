@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m6",
+ "text": "눈치...?",
+ "dur": 0.636,
+ "words": [
+  {
+   "text": "눈치...?",
+   "start": 0.02,
+   "end": 0.636
+  }
+ ],
+ "source": {
+  "key": "7c6fd9f407ae958b7c13eb7656fa9954",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1947,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "눈치 좀...! 몽글이 고개를 갸웃하며 처음 듣는 말을 천천히 따라 한다.",
+   "next": "허허, 만두 하나 더!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

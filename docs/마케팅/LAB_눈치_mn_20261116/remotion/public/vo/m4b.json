@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4b",
+ "text": "냠!",
+ "dur": 0.509,
+ "words": [
+  {
+   "text": "냠!",
+   "start": 0.02,
+   "end": 0.509
+  }
+ ],
+ "source": {
+  "key": "fe1067e0cab3feee15519edd412e0c7a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1947,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "그럼 제가! 몽글이 몸을 쭉 늘여 마지막 만두를 한입에 먹으며 신나게 짧게 소리 낸다.",
+   "next": "눈치 좀...!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 427
+ }
+}

@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t1",
+ "text": "자~ 다들 많이 먹었지?",
+ "dur": 1.824,
+ "words": [
+  {
+   "text": "자~",
+   "start": 0.02,
+   "end": 0.603
+  },
+  {
+   "text": "다들",
+   "start": 0.764,
+   "end": 0.965
+  },
+  {
+   "text": "많이",
+   "start": 1.025,
+   "end": 1.206
+  },
+  {
+   "text": "먹었지?",
+   "start": 1.267,
+   "end": 1.824
+  }
+ ],
+ "source": {
+  "key": "86b3949b9aaf6b12f16f1ac2f79eba37",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1947,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

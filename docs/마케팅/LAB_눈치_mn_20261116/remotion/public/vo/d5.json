@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "d5",
+ "text": "눈치 좀 봐...!",
+ "dur": 1.138,
+ "words": [
+  {
+   "text": "눈치",
+   "start": 0.02,
+   "end": 0.322
+  },
+  {
+   "text": "좀",
+   "start": 0.382,
+   "end": 0.503
+  },
+  {
+   "text": "봐...!",
+   "start": 0.564,
+   "end": 1.138
+  }
+ ],
+ "source": {
+  "key": "de4eaf68895efe9f85bbdf5e7c4a7097",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1947,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 410
+ }
+}

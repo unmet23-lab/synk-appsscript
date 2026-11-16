@@ -1,0 +1,137 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1947,
+  "lufs": -16
+ },
+ "made": "2026-11-16T09:55:20.290Z",
+ "lines": [
+  {
+   "id": "t1",
+   "text": "자~ 다들 많이 먹었지?",
+   "dur": 1.824,
+   "syllablesPerSec": 4.39,
+   "src": "t1.wav",
+   "key": "86b3949b9aaf6b12f16f1ac2f79eba37",
+   "words": 4
+  },
+  {
+   "id": "d2",
+   "text": "아유~ 배불러요~",
+   "dur": 1.593,
+   "syllablesPerSec": 3.77,
+   "src": "d2.wav",
+   "key": "7decaf0d8a4b087cc66a7be53350857b",
+   "words": 2
+  },
+  {
+   "id": "s3",
+   "text": "저도요~",
+   "dur": 0.819,
+   "syllablesPerSec": 3.66,
+   "src": "s3.wav",
+   "key": "dde768026321f0582f906cf91ac53f4b",
+   "words": 1
+  },
+  {
+   "id": "m4",
+   "text": "그럼 제가!",
+   "dur": 0.985,
+   "syllablesPerSec": 4.06,
+   "src": "m4.wav",
+   "key": "0ef1cf318693816d06c339621e851d11",
+   "words": 2
+  },
+  {
+   "id": "m4b",
+   "text": "냠!",
+   "dur": 0.509,
+   "syllablesPerSec": 1.96,
+   "src": "m4b.wav",
+   "key": "fe1067e0cab3feee15519edd412e0c7a",
+   "words": 1
+  },
+  {
+   "id": "d5",
+   "text": "눈치 좀 봐...!",
+   "dur": 1.138,
+   "syllablesPerSec": 3.51,
+   "src": "d5.wav",
+   "key": "fa85cee78c2691f8d09ba6b9404a9613",
+   "words": 3
+  },
+  {
+   "id": "m6",
+   "text": "눈치...?",
+   "dur": 0.636,
+   "syllablesPerSec": 3.14,
+   "src": "m6.wav",
+   "key": "7c6fd9f407ae958b7c13eb7656fa9954",
+   "words": 1
+  },
+  {
+   "id": "t7",
+   "text": "여기 만두 한 접시 더!",
+   "dur": 1.282,
+   "syllablesPerSec": 6.24,
+   "src": "t7.wav",
+   "key": "55a54fc921da1002118eeb3b8788ca54",
+   "words": 5
+  },
+  {
+   "id": "m8",
+   "text": "저... 배불러요~",
+   "dur": 1.252,
+   "syllablesPerSec": 3.99,
+   "src": "m8.wav",
+   "key": "fc8d56ab133ea98fae075d005d7b66c5",
+   "words": 2
+  },
+  {
+   "id": "t9",
+   "text": "오~ 눈치 있네~",
+   "dur": 1.28,
+   "syllablesPerSec": 3.91,
+   "src": "t9.wav",
+   "key": "2766e21b3e57495120f89cb53e10f5a9",
+   "words": 3
+  },
+  {
+   "id": "t10",
+   "text": "그래? 그럼 내가!",
+   "dur": 1.294,
+   "syllablesPerSec": 4.64,
+   "src": "t10.wav",
+   "key": "4ff9dcded757e4028e57eee0e95580d0",
+   "words": 3
+  },
+  {
+   "id": "t11",
+   "src": "t11.wav",
+   "text": "냠!",
+   "dur": 0.432,
+   "words": 1,
+   "syllablesPerSec": 2.31
+  },
+  {
+   "id": "m11",
+   "text": "눈치... 어려워요~",
+   "dur": 1.367,
+   "syllablesPerSec": 4.39,
+   "src": "m11.wav",
+   "key": "29848c571c384d891ed8bd50701536d3",
+   "words": 2
+  }
+ ]
+}

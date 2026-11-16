@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m8",
+ "text": "저... 배불러요~",
+ "dur": 1.252,
+ "words": [
+  {
+   "text": "저...",
+   "start": 0.02,
+   "end": 0.162
+  },
+  {
+   "text": "배불러요~",
+   "start": 0.384,
+   "end": 1.252
+  }
+ ],
+ "source": {
+  "key": "fc8d56ab133ea98fae075d005d7b66c5",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1947,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "허허, 만두 하나 더! 얼마 뒤 다시 만두 하나가 남자 모두가 몽글을 쳐다본다. 몽글이 눈을 피하며 쑥스럽게 사양한다.",
+   "next": "오~ 눈치 있네~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 455
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m11",
+ "text": "눈치... 어려워요~",
+ "dur": 1.367,
+ "words": [
+  {
+   "text": "눈치...",
+   "start": 0.02,
+   "end": 0.405
+  },
+  {
+   "text": "어려워요~",
+   "start": 0.465,
+   "end": 1.367
+  }
+ ],
+ "source": {
+  "key": "59188a99cfa3277f59605613f6b52914",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1947,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "그래? 그럼 내가! 만두를 뺏긴 몽글이 납작하게 주저앉아 허탈하게 중얼거린다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 463
+ }
+}

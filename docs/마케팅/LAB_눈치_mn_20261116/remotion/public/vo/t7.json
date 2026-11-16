@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t7",
+ "text": "여기 만두 한 접시 더!",
+ "dur": 1.282,
+ "words": [
+  {
+   "text": "여기",
+   "start": 0.03,
+   "end": 0.233
+  },
+  {
+   "text": "만두",
+   "start": 0.294,
+   "end": 0.517
+  },
+  {
+   "text": "한",
+   "start": 0.578,
+   "end": 0.639
+  },
+  {
+   "text": "접시",
+   "start": 0.7,
+   "end": 0.903
+  },
+  {
+   "text": "더!",
+   "start": 0.963,
+   "end": 1.282
+  }
+ ],
+ "source": {
+  "key": "08fbf74472ee7f75793edd47ab37d19d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1947,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 137
+ }
+}
