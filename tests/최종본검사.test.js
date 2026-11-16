@@ -269,14 +269,16 @@ test('작은 줄 실측 — 필라테스예약 24.1~26.1초 「되돌려 놔」�
   assert.match(fs.readFileSync(tool, 'utf8'), /LINE_QUIET_DB = 13\.0/);
 });
 
-// faster-whisper(VAD 모델)가 있는 PC에서만: 사인파는 말이 아니다 — 말이 잡히지 않는다고 낸다
+// faster-whisper(VAD 모델)가 있는 PC에서는 사인파가 말이 아니라고 낸다. 없는 PC(CI)에서는 그 항목만 「못 잼」으로 적고 끝 코드는 0이다.
+// 건너뛰지 않고 두 길을 나눠 보는 까닭: 등록부(tools/conditional-qa/cases.json)에 없는 조건부 제외는 syntax-check를 빨갛게 한다(11-16 970d2a219).
 const VAD있음 = spawnSync(py, ['-I', '-X', 'utf8', '-c', 'from faster_whisper.vad import get_vad_model'], { encoding: 'utf8', timeout: 120000 }).status === 0;
-test('말 — VAD가 있으면 사인파 영상에서 말이 잡히지 않는다', { skip: 없음 || (VAD있음 ? false : 'faster-whisper 없음') }, (t) => {
+test('말 — VAD가 있으면 사인파 영상에서 말이 잡히지 않고, 없으면 그 항목만 못 잼으로 적는다', { skip: 없음 }, (t) => {
   const video = synthetic(t);
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '말', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });
   assert.equal(r.status, 0, r.stderr);
   const n = lastJson(r.stdout).알림.find((x) => x.항목 === '말');
-  assert.ok(n && !n.못잼 && n.말dB === null && n.꼬리 === null, JSON.stringify(n));
+  if (VAD있음) assert.ok(n && !n.못잼 && n.말dB === null && n.꼬리 === null, JSON.stringify(n));
+  else assert.ok(n && /faster-whisper VAD를 못 불렀다/.test(n.못잼 || ''), JSON.stringify(n));
 });
 
 // ── 흐름(11-16 — 컷 안 탈것 · 배경 움직임, 영상 마감 관문이 「--항목 흐름」으로 부른다) ──
