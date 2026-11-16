@@ -2,6 +2,16 @@
   "version": 1,
   "ranges": [
     {
+      "cases": [
+        "S095"
+      ],
+      "exactCases": true,
+      "from": "33a6a15ca6e3ba33506b884bdd6efe15f99daa15",
+      "fixedBy": "becf4464aaeddf6e4d5b648e15b8b43ef8c8c186",
+      "cause": "아이폰의 초기 안내가 비어 있지 않으면 최종 계정 상태도 받았다고 판단했다. 상태 응답을 1.5초 늦춰 같은 실패를 재현했고, 고친 시험은 최종 상태 문구를 기다려 통과했다",
+      "evidence": "tools/conditional-qa/README.md#iphone-push-status-race-20261117"
+    },
+    {
       "cases": ["S009"],
       "exactCases": true,
       "from": "ec0da40a2bf417071911992d662556bd858226b4",
