@@ -146,6 +146,18 @@ function slotOf(prep) {
   return first ? kstDate(Date.parse(first)) : null;
 }
 
+// 검사 기록의 sha256과 지금 파일 내용이 같은지(기록에 지문이 없으면 false). 같은 파일은 한 번만 읽는다.
+const contentMemo = new Map();
+function sameContent(file, sha256) {
+  if (!hasInspectionHash(sha256)) return false;
+  if (!contentMemo.has(file)) {
+    let digest = null;
+    try { digest = require('node:crypto').createHash('sha256').update(fs.readFileSync(file)).digest('hex'); } catch { /* 못 읽으면 다름 */ }
+    contentMemo.set(file, digest);
+  }
+  return contentMemo.get(file) === String(sha256).toLowerCase();
+}
+
 // 올리기 전 검사 기록과 지금 영상이 같은지. 검사 기록의 경로는 그 편이 든 저장소 기준이다.
 function checkOf(prep, needsBooking) {
   const record = prep.검사;
@@ -158,7 +170,10 @@ function checkOf(prep, needsBooking) {
     if (shared !== repo && !fs.existsSync(file)) file = path.join(shared, f.경로);
     let stat;
     try { stat = fs.statSync(file, { throwIfNoEntry: false }); } catch { return { result, stale: true }; }
-    if (stat && (stat.size !== f.바이트 || new Date(stat.mtimeMs).toISOString() !== f.수정)) return { result, stale: true };
+    if (stat && stat.size !== f.바이트) return { result, stale: true };
+    // 수정 시각만 다르면 내용 지문으로 다시 본다 — 워크트리와 공용 작업본 사이에 영상을 옮기면 mtimeMs가 1ms 어긋나
+    // 같은 영상이 「검사 뒤 영상 바뀜」으로 떴다(11-16 「지마」 · 「붙다」). 지문이 없는 옛 기록은 전처럼 수정 시각만 본다.
+    if (stat && new Date(stat.mtimeMs).toISOString() !== f.수정 && !sameContent(file, f.sha256)) return { result, stale: true };
     if (!VIDEO.test(f.경로)) continue;
     if (needsBooking && (!stat || !hasInspectionHash(f.sha256))) return { result, stale: true };
     if (Array.isArray(f.오디오비트레이트)) {

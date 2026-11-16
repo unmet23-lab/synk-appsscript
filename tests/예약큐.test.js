@@ -57,6 +57,25 @@ test('예약 큐는 옛 영상의 오디오 실측을 재검사로 표시하고 
   assert.deepEqual(Object.fromEntries(fixes.map(f => [f.folder, f.check])), { old: '다시 검사', low: '고칠 것', changed: '다시 검사' });
 });
 
+test('수정 시각만 1ms 어긋난 같은 영상은 지문이 맞으면 「검사 뒤 영상 바뀜」이 아니다 — 지문이 다르거나 없으면 전처럼 다시 검사(11-16 「지마」 · 「붙다」)', t => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-지문-')), base = path.join(repo, 'docs', '마케팅');
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const real = require('node:crypto').createHash('sha256').update('test').digest('hex');
+  for (const [name, sha256] of [['moved', real], ['moved-changed', '2'.repeat(64)], ['moved-legacy', null]]) {
+    const nameOnDisk = name + '.mp4';
+    fs.writeFileSync(path.join(repo, nameOnDisk), 'test');
+    const stat = fs.statSync(path.join(repo, nameOnDisk));
+    // 워크트리에서 검사하고 공용 작업본으로 옮긴 영상 — 내용과 크기는 같고 수정 시각만 1ms 다르다
+    const file = { 경로: nameOnDisk, 바이트: stat.size, 수정: new Date(stat.mtimeMs + 1).toISOString(),
+      ...(sha256 && { sha256, 오디오비트레이트: [{ channels: 2, actualBps: 333421 }] }) };
+    편(name, { ...판('synkbrief', '2026-11-06'), 검사: { 결과: '확인할 것', 파일: [file] } }, null, base);
+  }
+  const result = 돌리기(base, '--오늘', '2026-11-05', '--json');
+  assert.equal(result.status, 0, result.stderr);
+  const fixes = JSON.parse(result.stdout).fix;
+  assert.deepEqual(Object.fromEntries(fixes.map(f => [f.folder, f.check])), { 'moved-changed': '다시 검사', 'moved-legacy': '다시 검사' });
+});
+
 const 판 = (brand, slot, 역할) => ({ 브랜드: brand, 슬롯: slot, 성격: '상시', 역할, 제목: `${brand} ${slot}`,
   판: [{ 계정: `${brand.toLowerCase()}-youtube`, 시각: `${slot}T21:00+09:00` }] });
 // 10-21~22에 만든 옛 편처럼 준비.json에 「역할」이 남아 있다 — 넷 안의 값 · 없음 · 넷 밖의 값. 10-23부터 세지 않고 편 줄에 보이기만 한다.
