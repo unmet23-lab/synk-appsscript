@@ -8,6 +8,24 @@ async function verify(assets){
   const results=[];
   for(const id of ['platform','world','messenger']){
     const bytes=fs.readFileSync(path.join(assets,id+'.icns')),frames=[];
+    if(id==='platform'){
+      // 검정 구(점 눈, 결정 표 11-17)는 원이라 둥근 사각형 칸을 깎지 않는다. 원판이 824 칸에 꼭 맞고 가운데에 있는지,
+      // 그리고 각 장이 tools/icons.cjs가 승인된 그림(sources.json의 platform 줄)에서 만드는 것과 화소까지 같은지 본다.
+      const {orbMacFrame,ORB_DIR}=require('./icons.cjs'),root=path.resolve(__dirname,'../..');
+      for(const frame of chunks(bytes)){
+        const size={ic08:256,ic09:512,ic10:1024}[frame.type];assert(size,'Unexpected frame '+frame.type);
+        const {data,info}=await sharp(frame.bytes).ensureAlpha().raw().toBuffer({resolveWithObject:true});assert(info.width===size&&info.height===size&&info.channels===4,'Wrong frame dimensions');
+        // 줄일 때 생기는 아주 옅은 가장자리(알파 8 이하)는 원판의 경계로 세지 않는다
+        let x1=size,y1=size,x2=-1,y2=-1;for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(data[(y*size+x)*4+3]>8){x1=Math.min(x1,x);y1=Math.min(y1,y);x2=Math.max(x2,x);y2=Math.max(y2,y);}
+        const inset=100*size/1024,alpha=(x,y)=>data[(y*size+x)*4+3];
+        assert(Math.abs(x1-inset)<=2&&Math.abs(y1-inset)<=2&&Math.abs(x1+x2-(size-1))<=1&&Math.abs(y1+y2-(size-1))<=1,'Orb disc not centered in the 824/1024 tile');
+        assert(alpha(Math.round(inset),Math.round(inset))===0&&alpha(size/2,size/2)===255,'Orb corners must stay transparent');
+        const expected=await sharp(await orbMacFrame(fs.readFileSync(path.join(root,ORB_DIR,'synk-'+size+'.png')),size)).ensureAlpha().raw().toBuffer();
+        let maxDelta=0;for(let i=0;i<data.length;i++)maxDelta=Math.max(maxDelta,Math.abs(data[i]-expected[i]));assert(maxDelta===0,'Orb frame differs from its approved source '+size);
+        frames.push({type:frame.type,size,bounds:[x1,y1,x2,y2],maxRGBADelta:maxDelta});
+      }
+      assert(frames.length===3,'Missing ICNS sizes');results.push({id,sha256:sha(bytes),bytes:bytes.length,windowsICO:sha(fs.readFileSync(path.join(assets,id+'.ico'))),frames});continue;
+    }
     for(const frame of chunks(bytes)){
       const size={ic08:256,ic09:512,ic10:1024}[frame.type];assert(size,'Unexpected frame '+frame.type);
       const {data,info}=await sharp(frame.bytes).ensureAlpha().raw().toBuffer({resolveWithObject:true});assert(info.width===size&&info.height===size&&info.channels===4,'Wrong frame dimensions');

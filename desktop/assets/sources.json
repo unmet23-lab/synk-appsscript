@@ -1,18 +1,31 @@
 {
-  "version": 2,
-  "transformation": "Approved existing assets; proportion preserved, centered on white; no recoloring or redrawing.",
+  "version": 3,
+  "transformation": "world and messenger: approved existing assets; proportion preserved, centered on white; no recoloring or redrawing. platform: the black orb with dot eyes (decision 11-17), packed from hand-drawn transparent PNGs without redrawing.",
   "mac": {
     "canvas": 1024,
     "tile": 824,
     "inset": 100,
     "radius": 185,
     "exterior": "transparent",
-    "composition": "Existing Windows composition proportionally scaled into the tile; marks unchanged.",
+    "composition": "world and messenger: existing Windows composition proportionally scaled into the rounded tile; marks unchanged. platform: see its input row.",
     "inputs": [
       {
         "id": "platform",
-        "file": "platform.png",
-        "sha256": "bdaa6a7071c0ec6a8b3b7aa711ada93d3e2e947b6adc52a2cb7aebae80d4a5fe"
+        "composition": "Transparent orb; its opaque disc is scaled to the 824 tile centered in the frame; no rounded-rect mask.",
+        "files": [
+          {
+            "file": "synk-256.png",
+            "sha256": "95dd1d25f1d920e872cc731d7a8208b4b5fb6a3e61038df63143c2ffcb0ac65e"
+          },
+          {
+            "file": "synk-512.png",
+            "sha256": "d80df1ad2caf9ef220d207db8750301a57d3c4ecc38d16e78cbde3692e812f5c"
+          },
+          {
+            "file": "synk-1024.png",
+            "sha256": "2bf867c4767dbc48d0cfd65b5b682ac4e2adbb521a4b64210bf75440059fc780"
+          }
+        ]
       },
       {
         "id": "world",
@@ -29,8 +42,51 @@
   "sources": [
     {
       "id": "platform",
-      "source": "experiences/synk-account/assets/synk-logo.svg",
-      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+      "source": "docs/디자인/플랫폼_클라이언트_검정구_20261116/아이콘",
+      "generator": "docs/디자인/플랫폼_클라이언트_검정구_20261116/아이콘만들기.cjs",
+      "windows": "platform.ico packs the hand-drawn transparent PNGs 16-256 unchanged; platform.png is synk-1024-둥근점.png (round-dot eyes survive OS downscaling).",
+      "files": [
+        {
+          "file": "synk-16.png",
+          "sha256": "5ad29e28a662c3d4784a54e501ecd99dfc98d68a02d1f1df4ecfada6f0d15eca"
+        },
+        {
+          "file": "synk-24.png",
+          "sha256": "c8f7ec904874dcb0589a9954bfa4a648c7084896d26f69925bce5f80e039091c"
+        },
+        {
+          "file": "synk-32.png",
+          "sha256": "7561977eace4e56ea04165168fa1bd0742d20f7efbb20482a16be6101f28977e"
+        },
+        {
+          "file": "synk-48.png",
+          "sha256": "09092a219b2c0e24649f6e4edba2e9838c81c0683acfb0b77f31d2c48faaec09"
+        },
+        {
+          "file": "synk-64.png",
+          "sha256": "f331d1f61fc0d281618cc4d41c7eae93951c4dd62188b805445e849473929649"
+        },
+        {
+          "file": "synk-128.png",
+          "sha256": "777b12cbdbb46cdd0e6ea5a921703e351b238d3b4ee12638a710d95f8720e784"
+        },
+        {
+          "file": "synk-256.png",
+          "sha256": "95dd1d25f1d920e872cc731d7a8208b4b5fb6a3e61038df63143c2ffcb0ac65e"
+        },
+        {
+          "file": "synk-512.png",
+          "sha256": "d80df1ad2caf9ef220d207db8750301a57d3c4ecc38d16e78cbde3692e812f5c"
+        },
+        {
+          "file": "synk-1024.png",
+          "sha256": "2bf867c4767dbc48d0cfd65b5b682ac4e2adbb521a4b64210bf75440059fc780"
+        },
+        {
+          "file": "synk-1024-둥근점.png",
+          "sha256": "65cc5c3f1f16d4be0f41a7544225d30ce068800064b70b538852753c1c03ec29"
+        }
+      ]
     },
     {
       "id": "world",

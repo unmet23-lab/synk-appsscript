@@ -305,7 +305,7 @@ function createWindow(){
   protocolRegistered=true;
   const isPlatform=runtime.clientId==='platform';
   const placement=isPlatform?windowPlacement.restore():null;
-  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,...(placement?{x:placement.x,y:placement.y,width:placement.width,height:placement.height,minWidth:placement.minWidth,minHeight:placement.minHeight}:{}),title:current.productName,icon:path.join(app.getAppPath(),'assets',runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#000000':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
+  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,...(placement?{x:placement.x,y:placement.y,width:placement.width,height:placement.height,minWidth:placement.minWidth,minHeight:placement.minHeight}:{}),title:current.productName,icon:path.join(app.getAppPath(),'assets',isPlatform&&process.platform==='win32'?'platform.ico':runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#000000':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
   Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{label:current.productName,submenu:[{role:'about'},{role:'quit'}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]):null);
   const contents=window.webContents;
   contents.on('did-finish-load',sendTeachingView);
