@@ -1055,6 +1055,7 @@
         "표지": "게시/판본/MM/cover.png",
         "글": "게시/판본/MM/글.json",
         "원고": {
+          "tiktok": "게시/판본/MM/원고_tiktok.json",
           "youtube": "게시/판본/MM/원고_youtube.json"
         },
         "검수": {
