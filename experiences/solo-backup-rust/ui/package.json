@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "업무 백업 0.7.0 화면 원천. scripts/stage-ui.cjs가 dist/로 옮긴다. 이 폴더의 .js는 ES 모듈이고 시험(tests/ui-*.test.cjs)도 같은 파일을 읽는다."
+}

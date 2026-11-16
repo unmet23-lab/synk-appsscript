@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>업무 백업 · 시안 C 검정</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../../docs/브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+
+/* 짜임: 창 전체가 무대이고 물건은 구 하나다. 글은 구가 비켜 준 자리에만 놓는다. 스크롤과 메뉴는 없다. */
+:root{
+  color-scheme:dark;
+  --void:#000000;                       /* 바탕. 구의 안쪽이기도 하다 */
+  --paper:#F3F1EC;                      /* 글. 구에 닿는 빛과 같은 온도의 흰색 */
+  --dim:rgba(243,241,236,.46);          /* 둘째 줄, 덜 급한 것 */
+  --hair:rgba(243,241,236,.10);         /* 1px 선 */
+  --hair-strong:rgba(243,241,236,.20);
+  --ring:rgba(243,241,236,.55);         /* 자판 초점 */
+  --pit:#0C0C0B;                         /* 단추와 입력 칸의 바닥. 뒤의 결이 비치지 않게 막는다 */
+  --meta-bg:rgba(10,10,10,.84);         /* 시안 조작 막대(디자인의 일부가 아니다) */
+  /* 한글과 영문이 한 문장에 섞이므로 한 서체(SUIT)로 통일한다 */
+  --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --display:300 clamp(25px,min(3.5vw,5.6vh),54px)/1.3 var(--sans);
+  --choice:300 clamp(22px,2.3vw,34px)/1.2 var(--sans);
+  --body:400 16px/1.25 var(--sans);
+  --small:400 13px/1.3 var(--sans);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word}
+button,input{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+#stage{position:relative;height:100%;min-height:420px;overflow:hidden;background:var(--void);user-select:none;-webkit-user-select:none;cursor:default}
+#orb{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* 점으로 된 synk 표가 뜨는 자리. 구 안으로 들어온 순간에만 그린다 */
+#sig{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;pointer-events:none}
+/* 제목 줄 없는 창에서 맨 위 40px를 잡고 창을 옮긴다(브라우저에서는 아무 일도 없다) */
+#stage::before{content:"";position:absolute;left:0;right:0;top:0;height:40px;z-index:1;pointer-events:none;-webkit-app-region:drag}
+.here,.back,#meta{-webkit-app-region:no-drag}
+
+/* 구만 있는 첫 화면에서는 어디를 눌러도 넘어간다 */
+#wake{position:absolute;inset:0;display:none;background:none;border:0;padding:0;cursor:pointer}
+#stage[data-boot="1"] #wake{display:block}
+#wake:focus-visible{outline:none}
+
+.layer{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#stage[data-ui="ask"] #ask,#stage[data-ui="app"] #app,#stage[data-ui="switch"] #switch{opacity:1;visibility:visible;transition:opacity .9s ease .05s,visibility 0s}
+.rise{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
+#stage[data-ui="ask"] #ask .rise,#stage[data-ui="app"] #app .rise,#stage[data-ui="switch"] #switch .rise{
+  opacity:var(--o,1);transform:none;transition:opacity 1s ease,transform 1.2s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*95ms + 140ms)}
+/* 다 떠오른 뒤에는 손에 바로 반응한다 */
+#stage.settled .layer .rise{transition:opacity .3s ease,transform .3s ease;transition-delay:0s}
+/* 화면 확인용: 움직임 없이 끝 모습으로 선다 */
+#stage.still,#stage.still *{transition:none !important}
+
+/* 로그인 방식을 묻는 자리 */
+.ask-in{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);width:min(520px,100% - 32px);display:flex;flex-direction:column;align-items:center}
+.mark{width:58px;height:auto;fill:var(--paper);margin-bottom:clamp(26px,4.6vh,44px);--o:.92}
+.ask-ways{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;width:100%;transition:opacity .35s ease}
+/* 누르는 것은 누르는 것처럼 보이게: 먼저 권하는 길은 채우고, 다른 길은 선으로 둔다 */
+.way{appearance:none;flex:1 1 220px;max-width:254px;height:54px;margin:0;padding:0 22px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font:500 16px/1 var(--sans);letter-spacing:0;color:var(--paper);cursor:pointer;transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+.way svg{width:18px;height:18px;flex:none}
+.way:hover{border-color:var(--paper);background:#1A1A19}
+.way-main{background:var(--paper);border-color:var(--paper);color:var(--void)}
+.way-main:hover{background:#FFFFFF;border-color:#FFFFFF}
+.way:focus-visible,.sw:focus-visible,.back:focus-visible,#orb-btn:focus-visible,.reread:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+.invite{margin-top:clamp(26px,4.8vh,46px);width:min(520px,100%);display:flex;flex-direction:column;align-items:center;gap:12px}
+.invite label{font:400 14px/1.3 var(--sans);color:rgba(243,241,236,.78)}
+/* 글을 넣는 칸은 누르는 단추와 모양을 달리한다: 테두리 없이 밑줄 한 줄 */
+.invite input{width:min(300px,88%);height:42px;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;outline:0;padding:0 6px;
+  font:400 15px/1 var(--sans);letter-spacing:.02em;text-align:center;color:var(--paper);user-select:text;-webkit-user-select:text;transition:border-color .3s ease}
+.invite input::placeholder{color:rgba(243,241,236,.46)}
+.invite input:hover{border-bottom-color:rgba(243,241,236,.6)}
+.invite input:focus{border-bottom-color:var(--paper)}
+/* 기다리는 동안에는 고를 것을 치우고 한 줄만 남긴다 */
+.status{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);margin:0;font:400 15px/1.5 var(--sans);color:rgba(243,241,236,.72);text-align:center;opacity:0;pointer-events:none;transition:opacity .5s ease}
+#stage[data-wait="1"] .ask-ways,#stage[data-wait="1"] #ask .invite{opacity:0;--o:0;pointer-events:none;transition:opacity .35s ease;transition-delay:0s}
+#stage[data-wait="1"] .status{opacity:1;transition-delay:.25s}
+
+/* 들어온 뒤. 왼쪽 위의 구가 이 앱의 하나뿐인 조작 자리다 */
+/* 구의 왼쪽 끝을 본문의 왼쪽 줄에 맞춘다(구 반지름 11px, 단추 44px) */
+.here{position:absolute;z-index:2;left:calc(clamp(20px,9.5vw,168px) - 9px);top:clamp(12px,3.4vh,38px);display:flex;align-items:center;gap:6px}
+#orb-btn{width:44px;height:44px;border-radius:50%;background:none;border:0;padding:0;cursor:pointer}
+#orb-btn:focus-visible{outline-offset:1px}
+/* 이름도 누르는 자리다. 작은 꺾쇠로 열린다는 것을 알린다 */
+#here-name{appearance:none;background:none;border:0;margin:0;padding:10px 8px 10px 0;display:inline-flex;align-items:center;gap:9px;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7);cursor:pointer;border-radius:2px;transition:color .25s ease}
+#here-name svg{width:8px;height:5px;flex:none;opacity:.7}
+.here:hover #here-name,#here-name:focus-visible{color:var(--paper)}
+#here-name:focus-visible{outline:1px solid var(--ring);outline-offset:2px}
+.room{position:absolute;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);top:52%;transform:translateY(-50%);display:none}
+#stage[data-space="solio"] .room[data-room="solio"],#stage[data-space="workspace"] .room[data-room="workspace"],#stage[data-space="pulse"] .room[data-room="pulse"]{display:block}
+.say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
+.say .then{display:block;color:var(--dim)}
+.rows{margin-top:clamp(34px,8vh,84px);display:grid}
+.row{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 6.2em minmax(190px,auto);align-items:center;column-gap:clamp(16px,2.4vw,36px);
+  padding:17px 0;border-top:1px solid var(--hair);color:var(--dim)}
+.row:last-child{border-bottom:1px solid var(--hair)}
+.row.now,.row:hover{color:var(--paper)}
+.row{transition:color .25s ease}
+.read{margin:16px 0 0;display:flex;align-items:center;justify-content:space-between;gap:14px;font:var(--small);color:var(--dim)}
+.reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0}
+.reread:hover{border-bottom-color:var(--paper)}
+.rows.again .gauge i{animation:fill .9s cubic-bezier(.2,.7,.2,1) both}
+@keyframes fill{from{width:0}}
+.nm{font:var(--body)}
+.gauge{position:relative;height:1px;background:rgba(243,241,236,.15)}
+/* 급한 줄만 밝다. 넉넉한 줄의 긴 선이 급한 줄의 짧은 선보다 튀지 않게 한다 */
+.gauge i{position:absolute;left:0;top:0;height:1px;width:var(--v);background:rgba(243,241,236,.38);transition:background-color .25s ease}
+.row.now .gauge i,.row:hover .gauge i{background:var(--paper)}
+.gauge i::after{content:"";position:absolute;right:0;top:-4px;width:1px;height:9px;background:inherit}
+.val{font:var(--body);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.when{font:var(--small);font-variant-numeric:tabular-nums;text-align:right;color:var(--dim);white-space:nowrap}
+
+/* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다.
+   이름은 구 아래에 가만히 있고, 이름을 가리키면 구가 지구본처럼 돌아 그 자리가 앞에 온다 */
+/* 이름 셋은 밝기가 같다. 지금 있는 곳은 이름 앞의 점(구 위 고리 가운데의 점과 같은 것)과 「지금 여기」로 알린다 */
+.sw-names{position:absolute;left:16px;right:16px;top:66%;display:flex;flex-wrap:wrap;justify-content:center;gap:6px clamp(8px,2.4vw,36px)}
+.sw{appearance:none;background:none;border:0;margin:0;padding:10px 12px;width:min(248px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;color:var(--paper);cursor:pointer;border-radius:2px}
+.sw-n{position:relative;font:400 clamp(17px,1.5vw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;padding-bottom:8px}
+/* 밑줄은 글자 폭에 맞춘다(마지막 글자 뒤의 자간만큼은 긋지 않는다) */
+.sw-n::after{content:"";position:absolute;left:0;right:.2em;bottom:0;height:1px;background:var(--paper);opacity:0;transition:opacity .3s ease}
+.sw-d,.sw-now{font:400 14px/1.4 var(--sans);color:var(--dim);transition:color .3s ease}
+.sw-now{display:none}
+.sw[aria-current="true"] .sw-n::before{content:"";position:absolute;left:-18px;top:calc((100% - 8px) / 2 - 3px);width:6px;height:6px;border-radius:50%;background:var(--paper)}
+.sw[aria-current="true"] .sw-d{display:none}
+.sw[aria-current="true"] .sw-now{display:block}
+.sw:hover .sw-n::after,.sw:focus-visible .sw-n::after,.sw.hot .sw-n::after{opacity:1}
+.sw:hover .sw-d,.sw:focus-visible .sw-d,.sw.hot .sw-d{color:rgba(243,241,236,.84)}
+/* 구가 떠난 왼쪽 위 자리에 돌아가는 길을 둔다 */
+.back{appearance:none;position:absolute;left:clamp(20px,9.5vw,168px);top:calc(clamp(12px,3.4vh,38px) + 9px);height:26px;margin:0;padding:0;background:none;border:0;border-radius:2px;
+  display:inline-flex;align-items:center;gap:10px;font:400 13px/1 var(--sans);color:rgba(243,241,236,.7);cursor:pointer;transition:color .25s ease}
+.back kbd{font:400 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+@media (hover:none),(max-width:640px){.back kbd{display:none}}
+.back:hover{color:var(--paper)}
+
+/* 시안 조작 막대 */
+#meta{position:absolute;z-index:5;left:0;right:0;margin-inline:auto;width:fit-content;bottom:calc(14px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px);
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 12px;padding:6px 14px;
+  background:var(--meta-bg);border:1px solid rgba(243,241,236,.12);border-radius:18px;font:400 12px/1 var(--sans);color:rgba(243,241,236,.62);transition:opacity .5s ease}
+#meta.idle{opacity:0;pointer-events:none}
+#meta .tag{letter-spacing:.04em;color:rgba(243,241,236,.38);padding-right:2px}
+#meta .grp{display:flex;align-items:center;gap:2px}
+#meta button{appearance:none;background:none;border:0;border-radius:999px;padding:7px 9px;cursor:pointer;white-space:nowrap}
+#meta button:hover{color:var(--paper)}
+#meta button[aria-pressed="true"]{color:var(--paper);background:rgba(243,241,236,.11)}
+#meta button:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
+
+@media (max-width:640px){
+  .row{grid-template-columns:minmax(0,1fr) auto;row-gap:10px;padding:14px 0}
+  .gauge{grid-column:1 / -1;grid-row:2}
+  .when{grid-column:1 / -1;grid-row:3;text-align:left}
+  .room{top:clamp(84px,13vh,128px);transform:none}
+  .rows{margin-top:28px}
+  #meta{gap:2px 6px;padding:5px 10px;font-size:11px}
+  #meta .tag{display:none}
+  #meta button{padding:6px 7px}
+}
+@media (max-height:620px) and (min-width:641px){
+  .room{top:47%}
+  .rows{margin-top:22px}
+  .row{padding:10px 0}
+  #meta{bottom:8px;padding:3px 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .layer,.rise,.way,.sw,#meta{transition-duration:.01s !important;transition-delay:0s !important}
+}
+
+/* ── 시안 C: 엔진 창(백업·복구) ── */
+:root{--ok:#9FD3A8;--warn:#E9C27A;--bad:#F08A6C}
+.here-sub{font:400 12px/1 var(--sans);letter-spacing:.04em;color:var(--dim);margin-left:2px}
+.set{appearance:none;position:absolute;z-index:2;right:clamp(20px,9.5vw,168px);top:calc(clamp(12px,3.4vh,38px) + 9px);height:26px;margin:0;padding:0;background:none;border:0;
+  font:400 13px/1 var(--sans);color:rgba(243,241,236,.7);cursor:pointer;transition:color .25s ease}
+.set:hover{color:var(--paper)}
+.room.bk{top:50%}
+/* 둘째 줄은 설명이 길어 제목보다 작게 둔다(가는 제목 + 회색 둘째 줄) */
+.bk .say .then{margin-top:.55em;font-size:.56em;line-height:1.55;letter-spacing:-.01em;max-width:30em}
+.st{display:none}
+#stage[data-st="home"] .st[data-st="home"],#stage[data-st="home-run"] .st[data-st="home-run"],#stage[data-st="home-mass"] .st[data-st="home-mass"]{display:block}
+.kick{margin:0 0 clamp(14px,2.4vh,22px);display:flex;align-items:center;gap:10px;font:400 14px/1.3 var(--sans);color:rgba(243,241,236,.72)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--paper);flex:none}
+.st[data-tone="ok"] .dot{background:var(--ok)}
+.st[data-tone="run"] .dot{background:var(--paper);animation:blink 1.6s ease-in-out infinite}
+.st[data-tone="bad"] .dot{background:var(--bad)}
+@keyframes blink{50%{opacity:.25}}
+.bk .rows{margin-top:clamp(30px,6.4vh,64px)}
+.bk .row{grid-template-columns:minmax(110px,168px) minmax(0,1fr) auto;color:var(--dim)}
+.bk .row .val{text-align:left;color:var(--paper)}
+.bk .row.now .when .x{color:var(--bad);font-weight:400}
+.bk .row.g .gv{display:grid;grid-template-columns:minmax(0,1fr) 4.2em;align-items:center;column-gap:clamp(16px,2.4vw,36px)}
+.bk .row.g .gv .val{text-align:right}
+.bk .row.g .gauge i{background:var(--paper)}
+.act{margin-top:clamp(30px,5.6vh,54px);display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px}
+.pill{appearance:none;height:48px;margin:0;padding:0 26px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);
+  font:500 15px/1 var(--sans);color:var(--paper);cursor:pointer;transition:background-color .25s ease,border-color .25s ease}
+.pill:hover{border-color:var(--paper);background:#1A1A19}
+.pill-main{background:var(--paper);border-color:var(--paper);color:var(--void)}
+.pill-main:hover{background:#fff;border-color:#fff}
+.lnk{display:inline-flex;align-items:center;gap:12px;padding:0 0 5px;border-bottom:1px solid rgba(243,241,236,.4);font:400 15px/1 var(--sans);color:var(--paper);text-decoration:none}
+.lnk:hover{border-bottom-color:var(--paper)}
+.la{width:30px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.hint{flex-basis:100%;font:var(--small);color:var(--dim)}
+.pill:focus-visible,.lnk:focus-visible,.set:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+#meta [data-mode],#meta #sigbtn,#meta #sound{display:none}
+@media (max-height:860px) and (min-width:641px){
+  .say{font-size:clamp(25px,min(3.2vw,5vh),44px)}
+  .bk .rows{margin-top:clamp(22px,4.4vh,40px)}
+  .bk .row{padding:14px 0}
+  .act{margin-top:clamp(22px,4vh,36px)}
+}
+@media (max-width:640px){
+  .bk .row{grid-template-columns:minmax(0,1fr) auto}
+  .bk .row .when{grid-column:1 / -1;grid-row:2;text-align:left}
+  .bk .row.g .gv{grid-column:2}
+  .set{right:16px}
+}
+</style>
+</head>
+<body>
+<div id="stage" data-ui="none" data-space="solio">
+  <canvas id="orb" aria-hidden="true"></canvas>
+  <canvas id="sig" aria-hidden="true"></canvas>
+  <button id="wake" type="button" aria-label="시작하기"></button>
+
+  <section id="ask" class="layer" aria-label="로그인 방법">
+    <div class="ask-in">
+      <svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱ㅋ"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>
+      <div class="ask-ways">
+        <button class="way way-main rise" style="--i:1" type="button" data-way="google"><svg viewBox="0 0 18 18" aria-hidden="true"><path fill="currentColor" d="M17.1 9.2c0-.6-.05-1.1-.17-1.64H9v3.18h4.65a4 4 0 0 1-1.88 2.78l2.86 2.21c1.71-1.58 2.47-3.9 2.47-6.53ZM9 17.4c2.28 0 4.2-.75 5.6-2.04l-2.86-2.21c-.76.53-1.78.9-2.74.9-2.1 0-3.88-1.41-4.52-3.36l-2.94 2.27A8.4 8.4 0 0 0 9 17.4ZM4.48 10.69a5.04 5.04 0 0 1 0-3.38L1.54 5.04a8.4 8.4 0 0 0 0 7.92l2.94-2.27ZM9 3.95c1.38 0 2.33.6 2.86 1.1l2.09-2.04A8.07 8.07 0 0 0 9 1.1a8.4 8.4 0 0 0-7.46 4.44l2.94 2.27C5.12 5.36 6.9 3.95 9 3.95Z"/></svg>Google로 계속</button>
+        <button class="way rise" style="--i:2" type="button" data-way="email"><svg viewBox="0 0 18 18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" d="M2.2 4.4h13.6v9.2H2.2zM2.6 4.8 9 10l6.4-5.2"/></svg>이메일로 계속</button>
+      </div>
+      <form id="invite" class="invite rise" style="--i:4" autocomplete="off" novalidate>
+        <label for="code">초대받으셨다면</label>
+        <input id="code" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
+      </form>
+      <p id="ask-status" class="status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="app" class="layer" aria-label="앱">
+    <button class="set" type="button">설정</button>
+    <div class="here">
+      <button id="orb-btn" type="button" aria-label="다른 공간으로 가기"></button>
+      <button id="here-name" type="button" aria-label="다른 공간으로 가기"><span id="here-text">SOLIO</span><span class="here-sub">백업·복구</span></button>
+    </div>
+
+    <div class="room bk" data-room="solio">
+      <div class="st" data-st="home" data-tone="ok">
+        <p class="kick rise" style="--i:0"><i class="dot" aria-hidden="true"></i>작업 노트북 · 매시간 저절로 지키는 중</p>
+        <p class="say rise" style="--i:1">안전합니다.<span class="then">매시간 저절로 확인하고, 일주일에 한 번은 파일을 실제로 되살려 원본과 같은지 봅니다.</span></p>
+        <div class="rows" role="list"><div style="--i:3" class="rise row " role="listitem"><span class="nm">마지막 확인</span><span class="val">오후 2:02</span><span class="when">다음은 오후 3:02 무렵</span></div><div style="--i:4" class="rise row " role="listitem"><span class="nm">지키는 폴더</span><span class="val">네 곳 · 12,480개</span><span class="when">18.4GB</span></div><div style="--i:5" class="rise row " role="listitem"><span class="nm">되살려 본 날</span><span class="val">11월 10일 화</span><span class="when">무작위 23개 모두 원본과 같음</span></div></div>
+        <div class="act rise" style="--i:6"><button class="pill pill-main" type="button">파일 되살리기</button><a class="lnk" href="#move">새 PC로 옮겨 오기 <svg class="la" viewBox="0 0 44 16" aria-hidden="true"><path d="M1 8h41M35 1l7 7-7 7"/></svg></a></div>
+      </div>
+      <div class="st" data-st="home-run" data-tone="run">
+        <p class="kick rise" style="--i:0"><i class="dot" aria-hidden="true"></i>작업 노트북 · 예약 백업 도는 중</p>
+        <p class="say rise" style="--i:1">지금 백업하고 있습니다.<span class="then">창을 닫아도 계속됩니다. 끝나기 전까지 가장 최근 판은 오늘 오후 2:02 판입니다.</span></p>
+        <div class="rows" role="list"><div style="--i:3" class="rise row g" role="listitem"><span class="nm">예약 백업</span><span class="gv"><span class="gauge" aria-hidden="true"><i style="--v:62%"></i></span><span class="val">62%</span></span><span class="when">올리는 중 · 133MB / 214MB</span></div><div style="--i:4" class="rise row " role="listitem"><span class="nm">바뀐 파일</span><span class="val">38개</span><span class="when">오후 3:02에 시작</span></div><div style="--i:5" class="rise row " role="listitem"><span class="nm">다음 확인</span><span class="val">오후 4:02 무렵</span><span class="when"></span></div></div>
+        <div class="act rise" style="--i:6"><button class="pill pill-main" type="button">파일 되살리기</button><a class="lnk" href="#move">새 PC로 옮겨 오기 <svg class="la" viewBox="0 0 44 16" aria-hidden="true"><path d="M1 8h41M35 1l7 7-7 7"/></svg></a><span class="hint">파일 되살리기는 지금 누르면 예약 백업이 끝나는 대로 이어서 엽니다.</span></div>
+      </div>
+      <div class="st" data-st="home-mass" data-tone="bad">
+        <p class="kick rise" style="--i:0"><i class="dot" aria-hidden="true"></i>작업 노트북 · 확인이 필요합니다</p>
+        <p class="say rise" style="--i:1">많은 파일이 한꺼번에 지워졌습니다.<span class="then">오늘 오전 11시 무렵 「문서」에서 3,980개가 사라졌습니다. 확인하기 전까지 이전 판을 지우지 않습니다.</span></p>
+        <div class="rows" role="list"><div style="--i:3" class="rise row now" role="listitem"><span class="nm">문서</span><span class="val">1,330개</span><span class="when"><b class="x">−3,980</b></span></div><div style="--i:4" class="rise row " role="listitem"><span class="nm">네 곳 합계</span><span class="val">8,500개 · 12.3GB</span><span class="when"></span></div><div style="--i:5" class="rise row " role="listitem"><span class="nm">지우기 전 판</span><span class="val">12,480개</span><span class="when">붙들어 둠</span></div></div>
+        <div class="act rise" style="--i:6"><button class="pill pill-main" type="button">지워지기 전으로 되살리기</button><button class="pill" type="button">내가 한 일이 맞음</button><a class="lnk" href="#home-mass">지워진 3,980개 보기 <svg class="la" viewBox="0 0 44 16" aria-hidden="true"><path d="M1 8h41M35 1l7 7-7 7"/></svg></a></div>
+      </div>
+    </div>
+
+    <div class="room" data-room="workspace">
+      <p class="say rise" style="--i:1">Workspace<span class="then">바깥 창 없이 이 창 안에서 열립니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
+    </div>
+    <div class="room" data-room="pulse">
+      <p class="say rise" style="--i:1">PULSE<span class="then">바깥 창 없이 이 창 안에서 열립니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
+    </div>
+  </section>
+
+  <section id="switch" class="layer" aria-label="공간 고르기">
+    <div class="sw-names">
+      <button class="sw rise" style="--i:1" type="button" data-go="workspace"><span class="sw-n">WORKSPACE</span><span class="sw-d">팀이 함께 일하는 곳</span><span class="sw-now">지금 여기</span></button>
+      <button class="sw rise" style="--i:0" type="button" data-go="solio"><span class="sw-n">SOLIO</span><span class="sw-d">혼자 하는 사업의 도구</span><span class="sw-now">지금 여기</span></button>
+      <button class="sw rise" style="--i:2" type="button" data-go="pulse"><span class="sw-n">PULSE</span><span class="sw-d">고객과 함께 만드는 곳</span><span class="sw-now">지금 여기</span></button>
+    </div>
+    <button id="sw-close" class="back rise" style="--i:3" type="button">돌아가기<kbd>Esc</kbd></button>
+  </section>
+
+  <nav id="meta" aria-label="시안 조작">
+    <span class="tag">시안</span>
+    <div class="grp" role="group" aria-label="켜는 상황">
+      <button type="button" data-mode="first" aria-pressed="true">처음 켤 때</button>
+      <button type="button" data-mode="back" aria-pressed="false">다시 켤 때</button>
+    </div>
+    <div class="grp" role="group" aria-label="화면"><button type="button" data-st="home" aria-pressed="true">안전함</button><button type="button" data-st="home-run" aria-pressed="false">도는 중</button><button type="button" data-st="home-mass" aria-pressed="false">한꺼번에 지워짐</button></div>
+    <button type="button" id="replay">창 다시 열기</button>
+    <button type="button" id="sigbtn" aria-pressed="true">로고 켜짐</button>
+    <button type="button" id="sound" aria-pressed="false">소리 꺼짐</button>
+  </nav>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const stage = $('#stage'), canvas = $('#orb'), wake = $('#wake'), orbBtn = $('#orb-btn');
+const layers = { ask: $('#ask'), app: $('#app'), switch: $('#switch') };
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rad = d => d * Math.PI / 180, lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeIOQ = t => t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+
+let W = 1, H = 1, DPR = 1;
+let mode = 'first', space = 'solio', ui = 'none';
+let run = 0, tw = null, poseName = 'void', glintBoost = 0, glintWant = 0;
+/* az와 lz는 빛이 오는 쪽(화면에서의 각도, 보는 쪽으로 기운 정도), ax는 구를 깎은 축, spin은 그 축을 따라 구를 돌린 각이다.
+   mark는 새긴 자리가 보이는 정도, par는 손을 따라 기우는 정도, calm은 글이 놓일 자리의 결을 가라앉히는 정도, open은 들어갈 자리가 열린 정도다 */
+const S = { cx: 0, top: 0, r: 1, az: 0, lz: .5, lit: 0, focus: 0, ax: [.28, .52, .81], spin: 0, mark: 0, par: 1, calm: 0, open: 0 };
+const ptr = { x: .5, y: .5 }, ptrS = { x: .5, y: .5 };
+let diveTo = 'solio', hotWant = -1, faceWant = null, sigOn = true, busy = 0, busyWant = 0;
+const hot = [0, 0, 0], markXY = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+
+/* ── 구 위의 자리. 공간 하나가 구에 새긴 고리 하나다. 지도의 도시처럼 경도와 위도가 저마다 달라, 구가 돌고 기울어야 그 자리가 앞에 온다 ── */
+const ORDER = ['solio', 'workspace', 'pulse'];
+const LON = { solio: 0, workspace: rad(-48), pulse: rad(44) };
+const CL = { solio: rad(75), workspace: rad(58), pulse: rad(92) };   // 축에서 자리까지의 각(작을수록 위쪽)
+const RHO = .092;   // 고리의 크기(구 반지름을 1로 본 값). 셰이더의 RHO와 같아야 한다
+/* 그 자리가 보는 쪽을 똑바로 향하는 축. 지구본처럼 거의 선 축을 자리의 높이만큼 기울인다 */
+const faceAx = name => [0, Math.sin(CL[name]), Math.cos(CL[name])];
+/* 축이 a이고 spin만큼 돌린 구에서, 그 자리가 보는 쪽 좌표로 어디에 오는지 낸다.
+   경도 0은 축에서 보는 쪽 아래로 내려오는 줄이다 */
+function placeDir(a, spin, name) {
+  const n = Math.hypot(a[0], a[1], a[2]) || 1, A = [a[0] / n, a[1] / n, a[2] / n], d = A[2] - A[1];
+  let z = [-d * A[0], -1 - d * A[1], 1 - d * A[2]];
+  const zn = Math.hypot(z[0], z[1], z[2]) || 1; z = [z[0] / zn, z[1] / zn, z[2] / zn];
+  const x = [A[1] * z[2] - A[2] * z[1], A[2] * z[0] - A[0] * z[2], A[0] * z[1] - A[1] * z[0]];
+  const l = LON[name] + spin, c = Math.cos(CL[name]), s = Math.sin(CL[name]), cl = Math.cos(l), sl = Math.sin(l);
+  return [c * A[0] + s * (cl * z[0] + sl * x[0]), c * A[1] + s * (cl * z[1] + sl * x[1]), c * A[2] + s * (cl * z[2] + sl * x[2])];
+}
+/* 어떤 자세 s에서 그 자리가 화면의 어디에 찍히는지 */
+function placeXY(s, name) { const m = placeDir(s.ax, s.spin, name); return [s.cx + s.r * m[0], s.top + s.r - s.r * m[1]]; }
+
+/* ── 구가 서는 자리. top은 구의 맨 윗점, r은 반지름(화면 px) ── */
+/* 깎은 축의 방향 둘: 쉴 때와 로그인을 물을 때. 자리를 내보이거나 들어갈 때는 faceAx를 쓴다 */
+const AX = { rest: [.28, .52, .81], top: [0, .972, .235] };
+function swGeom() {
+  const wide = W >= 760 && H >= 470, r = wide ? Math.min(H * .2, W * .19) : Math.min(H * .13, W * .23);
+  return { wide, r, cy: wide ? H * .4 : r + Math.max(64, H * .09) };
+}
+function poses() {
+  const r0 = Math.min(H * .21, W * .3);
+  const rAsk = Math.max(H * 1.9, W * 1.25);
+  const b = orbBtn.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  const hx = b.left - s.left + b.width / 2, hy = b.top - s.top + b.height / 2, hr = 13;
+  const g = swGeom(), rIn = Math.hypot(W, H) * .56 / RHO;
+  return {
+    void:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(-50), lz: .5, lit: 0, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
+    rest:   { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: .5, lit: 1, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
+    ask:    { cx: W / 2, top: H * .25, r: rAsk, az: rad(150), lz: -.3, lit: 1, focus: 1, ax: AX.top, mark: 0, par: 0, calm: 1 },
+    /* 들어갈 자리가 보는 쪽을 똑바로 향하고 그 고리가 창보다 커진 때다. 거기까지 가는 길은 mix가 자리를 따라가며 잡는다 */
+    inside: { cx: W / 2, top: H / 2 - rIn, r: rIn, az: rad(150), lit: 0, focus: 1, ax: faceAx(diveTo), spin: -LON[diveTo], mark: 1, par: 0, calm: 0, dive: true },
+    home:   { cx: hx, top: hy - hr, r: hr, az: rad(135), lz: .5, lit: 1, focus: 0, ax: AX.rest, mark: 0, par: 1, calm: 0 },
+    /* 공간을 고를 때는 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 이름을 가리키면 그 자리가 앞으로 돌아온다 */
+    sw:     { cx: W / 2, top: g.cy - g.r, r: g.r, az: rad(140), lz: .45, lit: 1, focus: 0, ax: faceAx(faceWant || space), spin: -LON[faceWant || space], mark: 1, par: 0, calm: 0 },
+  };
+}
+function snap(name) {
+  const p = poses()[name];
+  for (const k in p) if (k !== 'dive') S[k] = Array.isArray(p[k]) ? [...p[k]] : p[k];
+  S.open = name === 'inside' ? 1 : 0; poseName = name; tw = null;
+}
+function tween(name, ms, ease = easeIO, litCurve = null) {
+  if (tw) tw.res();
+  poseName = name;
+  const from = { ...S, ax: [...S.ax] }, to = poses()[name];
+  // 도는 각은 가까운 쪽으로 돈다
+  if (to.spin !== undefined) from.spin = to.spin + Math.atan2(Math.sin(S.spin - to.spin), Math.cos(S.spin - to.spin));
+  return new Promise(res => { tw = { from, p0: placeXY(S, diveTo), name, t0: performance.now(), ms: reduce ? Math.min(ms, 220) : ms, ease, litCurve, res }; });
+}
+/* 자세 a에서 b로 가는 길의 한순간(t는 0~1)을 S에 적는다 */
+function mix(a, b, t, o) {
+  const e = o.ease(t), dive = !!b.dive, eo = dive ? smooth(0, .62, t) : e;
+  S.r = Math.exp(lerp(Math.log(a.r), Math.log(b.r), e));
+  S.az = lerp(a.az, b.az, eo); S.focus = lerp(a.focus, b.focus, eo);
+  S.mark = lerp(a.mark, b.mark, eo); S.par = lerp(a.par, b.par, eo); S.calm = lerp(a.calm, b.calm, eo);
+  if (b.lz !== undefined) S.lz = lerp(a.lz, b.lz, eo);
+  S.ax = [lerp(a.ax[0], b.ax[0], eo), lerp(a.ax[1], b.ax[1], eo), lerp(a.ax[2], b.ax[2], eo)];
+  if (b.spin !== undefined) S.spin = lerp(a.spin, b.spin, eo);
+  S.lit = o.litCurve ? o.litCurve(t, a.lit, b.lit) : lerp(a.lit, b.lit, e);
+  if (dive) {
+    /* 들어갈 자리가 화면 한가운데로 오도록 구를 옮긴다. 구는 그 자리를 보는 쪽으로 돌리면서 커지고, 고리 안이 열린다 */
+    const m = placeDir(S.ax, S.spin, diveTo), ep = smooth(0, .7, t);
+    S.cx = lerp(o.p0[0], W / 2, ep) - S.r * m[0];
+    S.top = lerp(o.p0[1], H / 2, ep) + S.r * m[1] - S.r;
+    S.open = smooth(.3, .8, t);
+  } else {
+    S.cx = lerp(a.cx, b.cx, e); S.top = lerp(a.top, b.top, e); S.open = lerp(a.open, 0, e);
+  }
+}
+function stepTween(now) {
+  if (!tw) return;
+  const t = clamp((now - tw.t0) / tw.ms, 0, 1);
+  mix(tw.from, poses()[tw.name], t, tw);
+  if (t >= 1) { const r = tw.res; tw = null; r(); }
+}
+const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 120) : ms));
+let skip = null;
+const waitSkippable = ms => new Promise(r => { const id = setTimeout(done, ms); function done() { clearTimeout(id); skip = null; r(); } skip = done; });
+
+/* ── 화면 층 ── */
+let settleTimer = 0, hurry = false;
+/* 구가 드러나는 동안 누르면 기다림을 줄이고 바로 다음으로 간다 */
+function hurryBoot() {
+  hurry = true;
+  if (skip) skip();
+  else if (tw && tw.name === 'rest') tw.ms = Math.min(tw.ms, performance.now() - tw.t0 + 320);
+}
+function setUI(next) {
+  ui = next; stage.dataset.ui = next;
+  if (next === 'ask' || next === 'app' || next === 'switch') delete stage.dataset.boot;
+  for (const k in layers) layers[k].inert = k !== next;
+  if (next !== 'ask') { delete stage.dataset.wait; glintWant = 0; }
+  stage.classList.remove('settled'); clearTimeout(settleTimer);
+  if (layers[next]) settleTimer = setTimeout(() => stage.classList.add('settled'), 1900);
+}
+function applySpace() {
+  stage.dataset.space = space;
+  
+  $$('.sw').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === space)));
+}
+
+/* ── 흐름 ── */
+async function boot() {
+  const my = ++run;
+  stage.classList.remove('still');
+  sig.stop(); pointAt(null); S.spin = 0;
+  setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = '';
+  hurry = false; stage.dataset.boot = '1';
+  // 다시 켤 때는 날마다 보는 장면이라 짧게 간다(켜서 솔리오까지 3초 남짓).
+  await wait(mode === 'back' ? 300 : 520); if (my !== run) return;
+  snd.boot();
+  await tween('rest', mode === 'back' ? 1150 : 2400, easeOut, (t, a, b) => lerp(a, b, smooth(0, .62, t))); if (my !== run) return;
+  setUI('rest');
+  if (!hurry) await waitSkippable(mode === 'back' ? 220 : 1350); if (my !== run) return;
+  if (mode === 'back') return enter('solio', my, 1050);
+  setUI('none'); snd.rise();
+  await tween('ask', 1750, easeIOQ); if (my !== run) return;
+  setUI('ask');
+}
+/* 구가 그 공간의 자리를 보는 쪽으로 돌리면서, 그 고리 안으로 들어간다. 들어온 순간 점이 맞춰져 synk 표가 된다 */
+async function enter(next, my = ++run, ms = 1250) {
+  const quick = ui === 'switch';
+  setUI('none'); snd.dive(); sig.stop(); pointAt(null);
+  diveTo = next; hotWant = ORDER.indexOf(next);
+  if (S.mark < .05) S.spin = -LON[next];   // 자리가 아직 안 보일 때는 도는 것을 보일 까닭이 없다
+  await tween('inside', ms, easeIO, (t, a) => a * (1 - smooth(.7, .97, t))); if (my !== run) return;
+  space = next; applySpace();
+  if (sigOn) { snd.lock(); await sig.play(quick); if (my !== run) return; }
+  hotWant = -1;
+  snap('home'); S.lit = 0; S.r = 5;
+  setUI('app'); sig.fade();
+  await tween('home', 700, easeOut);
+}
+async function openSwitch() {
+  const my = ++run; setUI('none'); snd.tick();
+  pointAt(null); S.spin = -LON[space]; layoutSwitch();
+  await tween('sw', 760, easeIO); if (my !== run) return;
+  setUI('switch');
+}
+/* 가리킨 공간의 고리와 이름을 밝힌다. 이름을 가리킨 것이면(turn) 구가 돌아 그 자리가 앞에 온다.
+   구 위의 고리를 가리킨 것이면 밝히기만 한다(돌리면 고리가 손 밑에서 달아난다) */
+function pointAt(name, turn = true) {
+  if (name && ui !== 'switch') return;
+  hotWant = name ? ORDER.indexOf(name) : -1;
+  if (turn) faceWant = name;
+  $$('.sw').forEach(b => b.classList.toggle('hot', b.dataset.go === name));
+}
+async function closeSwitch() {
+  const my = ++run; setUI('none'); pointAt(null);
+  await tween('home', 620, easeIO); if (my !== run) return;
+  setUI('app');
+}
+function go(name) { snd.tick(); if (name === space) closeSwitch(); else enter(name); }
+/* 이름 줄을 구 바로 아래에 둔다 */
+function layoutSwitch() {
+  const g = swGeom();
+  $('.sw-names').style.top = Math.round(g.cy + g.r + (g.wide ? Math.max(40, H * .075) : 22)) + 'px';
+}
+/* 구에 새긴 고리를 바로 눌러도 그 공간으로 간다 */
+function placeUnder(e) {
+  const s = stage.getBoundingClientRect(), x = e.clientX - s.left, y = e.clientY - s.top, reach = RHO * S.r + 12;
+  for (let i = 0; i < 3; i++) if (markXY[i][2] > .15 && Math.hypot(x - markXY[i][0], y - markXY[i][1]) < reach) return ORDER[i];
+  return null;
+}
+function askWait(text) { stage.dataset.wait = '1'; $('#ask-status').textContent = text; glintWant = 1; }
+
+wake.addEventListener('click', hurryBoot);
+$$('.way').forEach(b => b.addEventListener('click', async () => {
+  const my = ++run; snd.tick();
+  askWait('브라우저에서 로그인을 마치면 이 창으로 돌아옵니다.');
+  await wait(1900); if (my !== run) return;
+  enter('solio');
+}));
+$('#invite').addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = $('#code').value.trim(); if (!v) return;
+  const my = ++run; snd.tick(); $('#code').blur();
+  askWait('초대를 확인하고 있습니다.');
+  await wait(1100); if (my !== run) return;
+  enter(/^p/i.test(v) ? 'pulse' : 'workspace');
+});
+document.addEventListener('paste', e => {
+  if (ui !== 'ask' || stage.dataset.wait || e.target === $('#code')) return;
+  const text = (e.clipboardData && e.clipboardData.getData('text') || '').trim(); if (!text) return;
+  e.preventDefault(); $('#code').value = text.slice(0, 200); $('#invite').requestSubmit();
+});
+
+$('#reread') && $('#reread').addEventListener('click', () => {
+  const rows = $('.rows'); rows.classList.remove('again'); void rows.offsetWidth; rows.classList.add('again');
+  $('#read-when').textContent = '방금 다시 읽었습니다.'; snd.tick();
+});
+$$('.sw').forEach(b => {
+  b.addEventListener('click', () => go(b.dataset.go));
+  b.addEventListener('pointerenter', () => pointAt(b.dataset.go));
+  b.addEventListener('pointerleave', () => pointAt(null));
+  b.addEventListener('focus', () => pointAt(b.dataset.go));
+  b.addEventListener('blur', () => pointAt(null));
+});
+layers.switch.addEventListener('pointermove', e => {
+  if (ui !== 'switch' || e.target.closest('.sw,.back')) return;
+  const name = placeUnder(e); layers.switch.style.cursor = name ? 'pointer' : '';
+  if ((name ? ORDER.indexOf(name) : -1) !== hotWant) pointAt(name, false);
+});
+layers.switch.addEventListener('click', e => {
+  if (ui !== 'switch' || e.target.closest('.sw,.back')) return;
+  const name = placeUnder(e); if (name) go(name); else closeSwitch();
+});
+$('#sw-close').addEventListener('click', closeSwitch);
+
+/* ── 시안 조작 ── */
+const meta = $('#meta');
+function setMode(m) { mode = m; $$('[data-mode]', meta).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m))); }
+$$('[data-mode]', meta).forEach(b => b.addEventListener('click', () => { setMode(b.dataset.mode); boot(); }));
+
+function showState(id) {
+  if (!['home', 'home-run', 'home-mass'].includes(id)) id = 'home';
+  stage.dataset.st = id; busyWant = id === 'home-run' ? 1 : 0;
+  $$('#meta [data-st]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.st === id)));
+}
+async function openEngine() {
+  const my = ++run;
+  stage.classList.remove('still');
+  setUI('none'); snap('home'); S.lit = 0;
+  await wait(260); if (my !== run) return;
+  setUI('app');
+  await tween('home', 900, easeOut);
+}
+$$('#meta [data-st]').forEach(b => b.addEventListener('click', () => { history.replaceState(null, '', '#' + b.dataset.st); showState(b.dataset.st); openEngine(); }));
+$('#replay').addEventListener('click', openEngine);
+$('#sigbtn').addEventListener('click', () => {
+  sigOn = !sigOn; $('#sigbtn').setAttribute('aria-pressed', String(sigOn)); $('#sigbtn').textContent = sigOn ? '로고 켜짐' : '로고 꺼짐';
+});
+$('#sound').addEventListener('click', () => {
+  const on = !snd.on; snd.set(on);
+  $('#sound').setAttribute('aria-pressed', String(on)); $('#sound').textContent = on ? '소리 켜짐' : '소리 꺼짐';
+  if (on) snd.tick();
+});
+let idleTimer = 0;
+const canHover = matchMedia('(hover: hover)').matches;
+function wakeMeta() { meta.classList.remove('idle'); clearTimeout(idleTimer); if (canHover) idleTimer = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('idle'); }, 4200); }
+stage.addEventListener('pointermove', e => {
+  const s = stage.getBoundingClientRect(); ptr.x = (e.clientX - s.left) / s.width; ptr.y = (e.clientY - s.top) / s.height; wakeMeta();
+});
+stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; });
+document.addEventListener('keydown', e => {
+  wakeMeta();
+  const typing = e.target instanceof HTMLInputElement;
+  if (e.key === 'Escape') { if (ui === 'switch') closeSwitch(); else if (typing) e.target.blur(); return; }
+  if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+  if ((e.key === 'Enter' || e.key === ' ') && stage.dataset.boot && !(e.target instanceof HTMLButtonElement && meta.contains(e.target))) { e.preventDefault(); hurryBoot(); return; }
+  if (e.key === 'Enter' && ui === 'ask' && !stage.dataset.wait && !(e.target instanceof HTMLButtonElement)) { $('.way').click(); return; }
+  if (ui === 'switch' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+    const list = $$('.sw'), i = Math.max(0, list.indexOf(document.activeElement));
+    list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length].focus(); return;
+  }
+  if (e.key === 'r' || e.key === 'R' || e.key === 'ㄱ') openEngine();
+});
+
+/* ── 소리(꺼진 채로 시작). 낮은 두 음과 숨소리만 쓴다 ── */
+const snd = (() => {
+  let ac = null, out = null, on = false;
+  function ctx() {
+    if (!ac) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ac = new C(); out = ac.createGain(); out.gain.value = .5; out.connect(ac.destination); }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  function tone(f, delay, a, h, r, g, f2) {
+    const c = on && ctx(); if (!c) return;
+    const at = c.currentTime + delay, o = c.createOscillator(), v = c.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f, at); if (f2) o.frequency.exponentialRampToValueAtTime(f2, at + a + h + r);
+    v.gain.setValueAtTime(.0001, at); v.gain.exponentialRampToValueAtTime(g, at + a); v.gain.setValueAtTime(g, at + a + h); v.gain.exponentialRampToValueAtTime(.0001, at + a + h + r);
+    o.connect(v); v.connect(out); o.start(at); o.stop(at + a + h + r + .05);
+  }
+  function air(delay, dur, g, f0, f1) {
+    const c = on && ctx(); if (!c) return;
+    const at = c.currentTime + delay, n = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(), lp = c.createBiquadFilter(), v = c.createGain();
+    src.buffer = buf; lp.type = 'lowpass'; lp.Q.value = .7; lp.frequency.setValueAtTime(f0, at); lp.frequency.exponentialRampToValueAtTime(f1, at + dur * .6); lp.frequency.exponentialRampToValueAtTime(f0, at + dur);
+    v.gain.setValueAtTime(.0001, at); v.gain.exponentialRampToValueAtTime(g, at + dur * .5); v.gain.exponentialRampToValueAtTime(.0001, at + dur);
+    src.connect(lp); lp.connect(v); v.connect(out); src.start(at); src.stop(at + dur + .05);
+  }
+  return {
+    get on() { return on; }, set(v) { on = v; if (v) ctx(); },
+    boot() { tone(55, 0, 1.5, .5, 3, .22); tone(82.41, .3, 1.7, .2, 2.8, .09); tone(164.81, 1, 1.1, .1, 2.4, .02); },
+    rise() { tone(61.74, 0, .9, .2, 1.8, .14); air(0, 1.8, .012, 180, 700); },
+    dive() { tone(73.42, 0, .25, .2, 1.3, .2, 36.71); air(0, 1.4, .02, 160, 1100); },
+    lock() { air(0, .46, .011, 1400, 4200); tone(1318.5, .45, .004, 0, .2, .018); },
+    tick() { tone(660, 0, .006, 0, .11, .025); },
+  };
+})();
+
+/* ── 점으로 된 synk 표. 구 안으로 들어온 순간, 줄마다 어긋나 있던 점이 제자리에 맞춰졌다가 물러난다 ── */
+const sig = (() => {
+  const cv = $('#sig'), c = cv.getContext('2d');
+  const glyphs = ['M35.8 57.9 25.9 58.5Q25.5 56.6 23.8 55.3Q22.1 53.9 19.3 53.9Q16.7 53.9 15.0 55.0Q13.3 56.0 13.3 57.8Q13.3 59.2 14.4 60.2Q15.5 61.2 18.2 61.8L25.4 63.2Q31.1 64.3 33.9 66.9Q36.7 69.5 36.7 73.8Q36.7 77.7 34.5 80.6Q32.2 83.5 28.3 85.1Q24.4 86.8 19.3 86.8Q11.5 86.8 6.8 83.5Q2.2 80.2 1.4 74.6L12.1 74.1Q12.6 76.5 14.5 77.7Q16.3 78.9 19.3 78.9Q22.1 78.9 23.9 77.8Q25.7 76.7 25.7 75.0Q25.7 72.0 20.6 71.0L13.8 69.6Q8.1 68.5 5.3 65.6Q2.5 62.8 2.5 58.4Q2.5 54.6 4.5 51.9Q6.6 49.2 10.4 47.7Q14.1 46.2 19.1 46.2Q26.6 46.2 30.8 49.3Q35.1 52.5 35.8 57.9Z M44.0 100.7Q41.9 100.7 40.1 100.4Q38.3 100.1 37.1 99.6L39.6 91.5L39.9 91.6Q42.7 92.4 44.6 91.9Q46.6 91.5 47.6 88.8L48.2 87.1L34.1 46.7H45.6L53.7 75.6H54.1L62.3 46.7H73.8L58.6 90.3Q57.5 93.4 55.6 95.8Q53.7 98.1 50.9 99.4Q48.0 100.7 44.0 100.7Z M84.0 63.3V86.0H73.1V46.7H83.8V53.7H84.2Q85.5 50.2 88.4 48.2Q91.4 46.2 95.7 46.2Q99.8 46.2 102.9 48.0Q105.9 49.8 107.6 53.1Q109.3 56.4 109.3 61.0V86.0H98.4V62.9Q98.4 59.4 96.6 57.3Q94.7 55.2 91.4 55.2Q89.2 55.2 87.6 56.2Q85.9 57.2 84.9 59.0Q84.0 60.8 84.0 63.3Z', 'M117.3046875 86.0V33.6171875H126.55078125V62.48046875H127.21875L141.31640625 46.6953125H152.14453125L136.91339111328125 63.68389129638672L153.0234375 86.0H141.94921875L129.9180908203125 69.20931243896484L126.55078125 72.82667541503906V86.0Z'];   // 워드마크의 s · y · n과 k(desktop/assets/launcher/synk.svg의 글자 모양)
+  /* 글자 넷(s · y · n · k)을 따로 뜬다: [그림, 왼쪽 끝, 오른쪽 끝, 뒤에 비울 칸 수].
+     통째로 뜨면 s와 y는 붙고 n과 k는 벌어져서, 글자마다 왼쪽 끝을 칸에 맞추고 사이를 한두 칸으로 고르게 둔다 */
+  const LET = [...glyphs[0].split(/(?=M)/).map(d => d.trim()).filter(Boolean), glyphs[1]].map((d, i) => [d, [1.4, 34.1, 73.1, 117.3][i], [36.7, 73.8, 109.3, 153.03][i], [1, 1, 2, 0][i]]);
+  const BASE = 86, XH = 39.3, ASC = 52.4, DESC = 14.7, FADE = 320, STEP = 66;   // 글자가 앉는 줄, 소문자 높이, 그 줄 위아래로 뻗는 길이
+  const rnd = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+  let dots = [], k = 1, pitch = 5, dotR = 1.8, gx = 0, gy = 0, gc = 56, gr = 25, cw = 0, ch = 0, key = '', phase = 'off', t0 = 0, tuneMs = 460, holdMs = 400, done = null, timer = 0, seed = 1;
+  /* 글자 모양을 전광판처럼 고른 간격, 같은 크기의 점으로 뜬다. 칸의 절반 넘게 글자에 든 칸만 켠다(반쯤 걸친 작은 점은 흐려 보인다) */
+  function build() {
+    const want = clamp(W * .21, 184, 330), dpr = Math.min(window.devicePixelRatio || 1, 3), id = Math.round(want) + '/' + dpr;
+    if (id === key) return; key = id;
+    // 소문자 높이가 꼭 14칸(좁은 창에서는 11칸)이 되게 칸 크기를 잡아, 글자마다 높이와 획 굵기가 같게 한다
+    const unit = XH / (want < 230 ? 11 : 14), up = Math.ceil(ASC / unit - .2), rows = up + Math.ceil(DESC / unit - .2);
+    const spans = LET.map(l => Math.ceil((l[2] - l[1]) / unit - .15)), cols = spans.reduce((a, b) => a + b, 0) + LET.reduce((a, l) => a + l[3], 0);
+    pitch = want / cols; dotR = pitch * .37; cw = Math.ceil(want + pitch * 16); ch = Math.ceil((rows + 10) * pitch);
+    cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
+    const at = [1 / 6, .5, 5 / 6], cells = [];
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    let col0 = 0;
+    LET.forEach(([d, x0, , gap], li) => {
+      const p = new Path2D(d);
+      for (let row = 0; row < rows; row++) for (let col = 0; col < spans[li]; col++) {
+        let n = 0;
+        for (const sy of at) for (const sx of at) if (c.isPointInPath(p, x0 + (col + sx) * unit, BASE + (row - up + sy) * unit)) n++;
+        if (n >= 5) cells.push([col0 + col, row]);
+      }
+      col0 += spans[li] + gap;
+    });
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const top = Math.min(...cells.map(q => q[1])), bot = Math.max(...cells.map(q => q[1]));
+    gx = (cw - cols * pitch) / 2; gy = (ch - (bot - top + 1) * pitch) / 2 - top * pitch; gc = cols; gr = rows;
+    dots = cells.sort((a, b) => a[1] - b[1] || a[0] - b[0]).map(([col, row], i) => ({ x: gx + (col + .5) * pitch, y: gy + (row + .5) * pitch, row, i }));
+  }
+  /* 시작한 지 ms 지난 때의 모습. 맞춰지는 동안에는 몇 줄씩 묶여 옆으로 밀리고, 점이 듬성듬성 빠지고, 낟알이 떠돈다.
+     밀리는 폭도 점 간격의 배수라 점은 늘 전광판의 칸 위에 있다 */
+  function paint(ms, alpha) {
+    c.clearRect(0, 0, cw, ch);
+    const tune = tuneMs ? clamp(ms / tuneMs, 0, 1) : 1, on = tune >= 1, no = Math.floor(ms / STEP) + seed;
+    const amp = on ? 0 : 6 * Math.pow(1 - tune, 1.7), keep = on ? 1 : .38 + .62 * tune * tune, band = 2 + Math.floor(rnd(no, 5.3) * 3);
+    const a = (on ? 1 : .55 + .4 * tune) * alpha;
+    c.fillStyle = '#F3F1EC'; c.globalAlpha = a; c.beginPath();
+    for (const d of dots) {
+      if (!on && rnd(d.i * .731, no) > keep) continue;
+      const g = Math.floor(d.row / band), dx = on ? 0 : Math.round((rnd(g * 3.1, no * 7.3) - .5) * 2 * amp * (rnd(g, no * 1.9) > .35 ? 1 : .15)) * pitch;
+      c.moveTo(d.x + dx + dotR, d.y); c.arc(d.x + dx, d.y, dotR, 0, 6.2832);
+    }
+    c.fill();
+    if (!on) {
+      c.globalAlpha = a * .5; c.beginPath();
+      for (let i = 0, n = Math.round(36 * (1 - tune)); i < n; i++) {
+        const x = gx + (Math.floor(rnd(i, no * 3.3) * (gc + 14)) - 7 + .5) * pitch, y = gy + (Math.floor(rnd(i * 1.7, no * 5.1) * (gr + 6)) - 3 + .5) * pitch;
+        c.moveTo(x + dotR, y); c.arc(x, y, dotR, 0, 6.2832);
+      }
+      c.fill();
+    }
+  }
+  function finish() { clearTimeout(timer); if (done) { const d = done; done = null; d(); } }
+  return {
+    /* 맞춰지고 잠깐 머문 뒤에 끝난다. 공간을 옮길 때(quick)는 더 짧게 간다 */
+    play(quick) {
+      build(); seed = (seed * 7 + 3) % 97; tuneMs = reduce ? 0 : quick ? 320 : 460; holdMs = reduce ? 260 : quick ? 240 : 400;
+      t0 = performance.now(); phase = 'in';
+      return new Promise(res => { done = res; timer = setTimeout(finish, tuneMs + holdMs + 120); });
+    },
+    fade() { if (phase === 'in') { phase = 'out'; t0 = performance.now(); } },
+    stop() { phase = 'off'; if (cw) c.clearRect(0, 0, cw, ch); finish(); },
+    step(now) {
+      if (phase === 'in') { paint(now - t0, 1); if (now - t0 >= tuneMs + holdMs) finish(); }
+      else if (phase === 'out') { const q = clamp((now - t0) / FADE, 0, 1); paint(tuneMs + holdMs, 1 - q); if (q >= 1) { phase = 'off'; c.clearRect(0, 0, cw, ch); } }
+    },
+    /* 화면 확인용: 그 순간의 모습으로 선다. ms를 안 주면 지운다 */
+    show(ms) { phase = 'off'; finish(); key = ''; build(); tuneMs = 460; if (ms === undefined || ms === null) c.clearRect(0, 0, cw, ch); else paint(ms, 1); return dots.length; },
+  };
+})();
+
+/* ── 그리기 ── */
+const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 uRes, uC;
+uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm;
+uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen;
+const float RHO = 0.092;
+float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+/* 구에 새긴 자리 하나: 가는 고리와, 지금 있는 곳을 알리는 가운데 점. x는 더할 빛, y는 고리 안을 비우는 정도다.
+   가리킨 자리는 고리가 밝아지고, 들어갈 자리는 고리 안이 열린다 */
+vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2){
+  vec3 dv = n - M;
+  float dd = length(dv);
+  /* 화면에서 고리까지 몇 점 떨어졌는지 잰다(밖이 +). 옆으로 돌아가 납작해진 고리도 선 굵기가 같고 또렷하다 */
+  float zz = max(z, 0.06);
+  vec2 gr = vec2(dv.x - dv.z * n.x / zz, dv.y - dv.z * n.y / zz) / max(dd, 0.0001);
+  float sd = (dd - RHO) / max(length(gr), 0.05) * uR / uDpr;
+  float show = smoothstep(0.02, 0.2, M.z);   /* 뒤로 넘어간 자리는 보이지 않는다 */
+  float lift = max(hot, open);
+  /* 가리킨 고리는 선이 굵어진다. 고리 둘레에 옅은 빛 번짐을 둬, 덧그린 선이 아니라 켜진 표시로 보이게 한다 */
+  float lw = mix(0.5, 1.0, hot);
+  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show;
+  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show;
+  float facing = 0.5 + 0.5 * dot(dv.xy / max(length(dv.xy), 0.0001), l2);
+  /* 가운데 점은 구가 커지거나 돌아가도 화면에서 같은 크기의 동그란 점으로 남는다 */
+  float pd = length(n.xy - M.xy) * uR / uDpr;
+  float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show;
+  float glow = hot * 0.07 * (1.0 - smoothstep(0.0, RHO, dd)) * (1.0 - open) * show;
+  return vec2(ring * mix(0.44 + 0.30 * facing, 1.0, lift) + bloom + pin * 0.92 + glow, (1.0 - smoothstep(-1.2, 0.3, sd)) * open * show);
+}
+void main(){
+  vec2 f = gl_FragCoord.xy;
+  vec2 q = f - uC;
+  float dist = length(q);
+  float px = (dist - uR) / uDpr;
+  float inside = 1.0 - smoothstep(-0.7, 0.7, px);
+  vec2 dir = q / max(dist, 0.001);
+  float d = min(dist / uR, 1.0);
+  float z = sqrt(max(0.0, 1.0 - d * d));
+  vec3 n = vec3(dir * d, z);
+  vec3 warm = vec3(1.0, 0.982, 0.955);
+  float line = exp(-abs(px) / 1.1);
+  float halo = exp(-max(px, 0.0) / (0.045 * uR / uDpr + 5.0));
+  vec2 Ld = normalize(mix(vec2(cos(uAz), sin(uAz)), vec2(-0.22, 1.0), uFocus));
+  float mu = dot(dir, Ld);
+  float cres = smoothstep(-0.5, 1.0, mu); cres *= cres;
+  cres *= mix(1.0, pow(max(mu, 0.0), 7.0), uFocus);
+  float pulse = 1.0 + 0.5 * uGb;
+  vec3 col;
+  if (px > 0.4 * uR / uDpr + 48.0) {
+    /* 구에서 먼 자리는 셈하지 않는다. 구가 작게 남아 있는 동안 화면 대부분이 여기다 */
+    col = vec3(0.0);
+  } else {
+    /* 결을 깎은 구: 축을 둘러 가는 가는 홈이 빛을 한 줄로 모은다 */
+    float N1 = 110.0;
+    float h = sqrt(max(1.0 - uLz * uLz, 0.0));
+    vec3 L = vec3(cos(uAz) * h, sin(uAz) * h, uLz);
+    vec3 V = vec3(0.0, 0.0, 1.0);
+    vec3 H = normalize(L + V);
+    vec3 A = normalize(uAxis);
+    float th = acos(clamp(dot(n, A), -1.0, 1.0));
+    vec3 T = cross(A, n);
+    float tl = length(T);
+    T /= max(tl, 0.0001);
+    vec3 B = cross(n, T);
+    /* 홈 사이가 화면 점 몇 개인지로 보일지 정한다. 너무 촘촘해 물결무늬가 낄 결은 그리지 않는다 */
+    float sp = 3.14159265 / N1 * uR;
+    /* 축이 지나는 점 둘레는 결을 거둬 매끈한 꼭지로 둔다(선반으로 깎은 물건의 한가운데처럼). 홈이 한 점에 뭉쳐 물결무늬가 끼지 않는다 */
+    float cap = smoothstep(7.0, 24.0, tl * uR / uDpr);
+    float v1 = smoothstep(2.4, 6.0, sp * z) * cap;
+    float v2 = smoothstep(2.4, 6.0, sp / 5.0 * z) * cap;
+    float v3 = smoothstep(2.4, 6.0, sp / 25.0 * z) * cap;
+    float s1 = sin(2.0 * N1 * th), s2 = sin(10.0 * N1 * th), s3 = sin(50.0 * N1 * th);
+    /* 사인 물결을 날 선 홈 모양으로 세운다. 크게 보일수록 홈의 턱을 더 세워, 구가 창을 채울 만큼 커져도 흐릿하지 않게 한다 */
+    float e1 = clamp(7.5 / max(sp * z, 0.001), 0.06, 0.265), e2 = clamp(7.5 / max(sp / 5.0 * z, 0.001), 0.06, 0.265);
+    float w1 = s1 / sqrt(s1 * s1 + e1 * e1), w2 = s2 / sqrt(s2 * s2 + e2 * e2), w3 = s3 / sqrt(s3 * s3 + 0.12);
+    vec3 nn = normalize(n + B * (0.22 * w1 * v1 + 0.10 * w2 * v2 + 0.05 * w3 * v3));
+    /* 축이 지나는 점에서는 빛줄기를 거둬 한 점으로 뾰족하게 모이지 않게 한다 */
+    float pole = smoothstep(mix(0.03, 0.12, uMark), mix(0.30, 0.58, uMark), tl);
+    float tdh = dot(T, H);
+    float an = pow(max(1.0 - tdh * tdh, 0.0), mix(44.0, 110.0, uFocus)) * pole;
+    float side = smoothstep(-0.28, 0.32, dot(n, L));
+    float groove = 0.60 + 0.40 * (0.70 * w1 * v1 * (1.0 - 0.7 * v2) + 0.42 * w2 * v2 * (1.0 - 0.5 * v3) + 0.30 * w3 * v3);
+    float spec = pow(max(dot(nn, H), 0.0), 30.0);
+    float amb = 0.5 + 0.5 * dot(nn, normalize(vec3(-0.25, 0.7, 0.66)));
+    float rings = ((0.5 + 0.5 * w1) * v1 * 0.036 + (0.5 + 0.5 * w2) * v2 * 0.016 + (0.5 + 0.5 * w3) * v3 * 0.010) * amb;
+    vec3 L2 = normalize(vec3(-L.x * 0.7 + 0.35, -L.y * 0.5 - 0.3, 0.6));
+    vec3 H2 = normalize(L2 + V);
+    float t2 = dot(T, H2);
+    float an2 = pow(max(1.0 - t2 * t2, 0.0), 28.0) * pole * smoothstep(-0.2, 0.4, dot(n, L2));
+    /* 글이 놓일 아래쪽은 결을 가라앉혀, 단추와 글이 줄무늬 위에서 탁해지지 않게 한다 */
+    float calm = mix(1.0, mix(0.16, 1.0, smoothstep(0.47, 0.69, f.y / uRes.y)), uCalm);
+    /* 작게 줄었을 때는 속의 빛을 줄이고 둘레를 가늘게 다 둘러, 얼룩이 아니라 구로 읽히게 한다 */
+    float tiny = smoothstep(60.0, 14.0, uR / uDpr);
+    vec3 inC = vec3(0.005) + warm * uLit * mix(1.0, 0.1, tiny) * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + (an2 * groove * 0.09 + rings) * calm + spec * 0.20 * side + 0.010 * max(dot(n, L), 0.0));
+    /* 작을 때의 둘레선은 번지지 않게 또렷이 긋고, 빛 오는 쪽을 더 밝게 한다 */
+    float edge = (1.0 - smoothstep(0.35, 1.0, abs(px))) * tiny * (0.26 + 0.5 * cres);
+    float soft = 1.0 - 0.75 * tiny;
+    inC += warm * uLit * (cres * (pow(1.0 - z, 5.0) * 0.14 + line * 0.16) * pulse * soft + edge);
+    vec3 outC = warm * uLit * (cres * (line * 0.16 + halo * 0.03) * pulse * soft + edge);
+    col = mix(outC, inC, inside);
+  }
+  /* 새긴 자리. 구가 작게 줄면 보이지 않는다 */
+  float mv = uMark * smoothstep(30.0, 84.0, uR / uDpr) * inside;
+  if (mv > 0.001) {
+    vec2 l2 = vec2(cos(uAz), sin(uAz));
+    vec2 a0 = place(n, uM0, uHot.x, uHere.x, uOpen.x, z, l2);
+    vec2 a1 = place(n, uM1, uHot.y, uHere.y, uOpen.y, z, l2);
+    vec2 a2 = place(n, uM2, uHot.z, uHere.z, uOpen.z, z, l2);
+    col *= 1.0 - max(a0.y, max(a1.y, a2.y)) * mv;
+    col += warm * uLit * mv * (a0.x + a1.x + a2.x);
+  }
+  /* 어두운 번짐이 계단으로 끊기지 않게 낟알을 얹는다 */
+  float g = ign(f + uSeed * 7.31) + ign(f.yx + 17.0 + uSeed * 3.17) - 1.0;
+  col += g * 2.8 / 255.0;
+  gl_FragColor = vec4(max(col, 0.0), 1.0);
+}`;
+let gl = null, U = null, ctx2d = null;
+function initGL() {
+  try { gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' }); } catch (e) { gl = null; }
+  if (!gl) return false;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || 'shader'); return s; };
+  try {
+    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error('link');
+    gl.useProgram(pr);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen']) U[k] = gl.getUniformLocation(pr, k);
+    return true;
+  } catch (e) { console.warn('구 셰이더를 만들지 못했습니다.', e); gl = null; return false; }
+}
+function resize() {
+  const s = stage.getBoundingClientRect(); W = Math.max(1, s.width); H = Math.max(1, s.height); DPR = Math.min(Math.max(window.devicePixelRatio || 1, 2), Math.sqrt(7e6 / (W * H)));
+  const cw = Math.round(W * DPR), ch = Math.round(H * DPR);
+  if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
+  if (gl) gl.viewport(0, 0, cw, ch);
+  if (!tw) { const lit = S.lit; snap(poseName); if (poseName === 'inside') S.lit = lit; }
+  layoutSwitch();
+}
+let frameNo = 0;
+function draw(now) {
+  const t = now / 1000;
+  ptrS.x += (ptr.x - ptrS.x) * .06; ptrS.y += (ptr.y - ptrS.y) * .06;
+  glintBoost += (glintWant - glintBoost) * .05;
+  for (let i = 0; i < 3; i++) hot[i] += ((hotWant === i ? 1 : 0) - hot[i]) * .14;
+  // 공간을 고르는 동안에는 가리킨 이름의 자리가(없으면 지금 있는 자리가) 한가운데에 오도록 구가 돌고 기운다
+  if (ui === 'switch' && !tw) {
+    const to = faceWant || space, want = -LON[to], ta = faceAx(to), d = Math.atan2(Math.sin(want - S.spin), Math.cos(want - S.spin));
+    const q = reduce || stage.classList.contains('still') ? 1 : .1;
+    S.spin += d * q; for (let i = 0; i < 3; i++) S.ax[i] += (ta[i] - S.ax[i]) * q;
+  }
+  const still = reduce ? 0 : 1, free = S.par * still;
+  const par = free * S.r * .05;
+  const cx = S.cx + (ptrS.x - .5) * par, cy = S.top + S.r + (ptrS.y - .5) * par;
+  // 손을 따라 빛줄기가 돌고 구가 조금 기운다. 자리를 내보일 때는 구가 기울지 않고 빛만 조금 손을 따른다
+  busy += (busyWant - busy) * .04;
+  const az = S.az + busy * t * 1.4 + ((ptrS.x - .5) * -(.7 * free + .14 * S.focus + .2 * (1 - S.par) * (1 - S.focus)) + .05 * Math.sin(t * .4)) * still;
+  const ax = [S.ax[0] + (ptrS.x - .5) * .24 * free, S.ax[1] - (ptrS.y - .5) * .2 * free, S.ax[2]];
+  const mk = ORDER.map(name => placeDir(ax, S.spin, name));
+  mk.forEach((m, i) => { markXY[i] = [cx + S.r * m[0], cy - S.r * m[1], m[2]]; });
+  const lit = S.lit * (1 + .03 * Math.sin(t * .9) * still);
+  const gb = glintBoost * (1.2 + .8 * Math.sin(t * 3.1));
+  if (still) frameNo = (frameNo + 1) % 64;
+  if (gl) {
+    gl.uniform2f(U.uRes, canvas.width, canvas.height);
+    gl.uniform2f(U.uC, cx * DPR, (H - cy) * DPR);
+    gl.uniform1f(U.uR, S.r * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
+    gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
+    gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
+    gl.uniform1f(U.uMark, S.mark); gl.uniform1f(U.uCalm, S.calm);
+    gl.uniform3f(U.uM0, mk[0][0], mk[0][1], mk[0][2]); gl.uniform3f(U.uM1, mk[1][0], mk[1][1], mk[1][2]); gl.uniform3f(U.uM2, mk[2][0], mk[2][1], mk[2][2]);
+    gl.uniform3f(U.uHot, hot[0], hot[1], hot[2]);
+    gl.uniform3f(U.uHere, space === ORDER[0] ? 1 : 0, space === ORDER[1] ? 1 : 0, space === ORDER[2] ? 1 : 0);
+    gl.uniform3f(U.uOpen, diveTo === ORDER[0] ? S.open : 0, diveTo === ORDER[1] ? S.open : 0, diveTo === ORDER[2] ? S.open : 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  } else if (ctx2d) {
+    const c = ctx2d; c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+    c.beginPath(); c.arc(cx, cy, S.r, 0, Math.PI * 2); c.fillStyle = '#030303'; c.fill();
+    c.lineWidth = 1.4; c.strokeStyle = 'rgba(243,241,236,' + (.6 * S.lit).toFixed(3) + ')'; c.beginPath(); c.arc(cx, cy, S.r, -az - 1.1, -az + 1.1); c.stroke();
+  }
+}
+function frame(now) { stepTween(now); draw(now); sig.step(now); requestAnimationFrame(frame); }
+
+if (!initGL()) ctx2d = canvas.getContext('2d');
+canvas.addEventListener('webglcontextlost', e => e.preventDefault());
+canvas.addEventListener('webglcontextrestored', () => { initGL(); resize(); });
+new ResizeObserver(resize).observe(stage);
+resize(); setMode('first'); applySpace(); wakeMeta(); showState(location.hash.slice(1));
+requestAnimationFrame(frame);
+if (!/[?&]still\b/.test(location.search)) openEngine();
+
+/* 화면 확인용. 움직임을 기다리지 않고 한 장면에 바로 선다 */
+window.__orb = {
+  at(scene, opt = {}) {
+    ++run; skip = null;
+    if (opt.space) { space = opt.space; applySpace(); }
+    const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'] }[scene];
+    stage.classList.add('still'); resize(); sig.show(opt.sig);
+    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; }
+    pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
+    if (scene === 'switch') { layoutSwitch(); S.spin = -LON[faceWant || space]; S.ax = faceAx(faceWant || space); }
+    draw(performance.now()); return { ...S, W, H };
+  },
+  /* 두 자리 사이의 한순간(t는 0~1)을 그린다. inside로 갈 때는 opt.dive에 들어갈 공간을 적는다 */
+  mid(from, to, t, opt = {}) {
+    ++run; skip = null;
+    if (opt.space) { space = opt.space; applySpace(); }
+    if (opt.dive) diveTo = opt.dive;
+    stage.classList.add('still'); resize(); sig.show(null); setUI('none'); pointAt(null);
+    const all = poses(), b = all[to], a = { spin: b.dive && all[from].mark < .05 ? b.spin : 0, open: 0, ...all[from] };
+    tw = null; poseName = to; hotWant = b.dive ? ORDER.indexOf(diveTo) : -1;
+    for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
+    mix(a, b, t, { ease: opt.ease || easeIO, p0: placeXY(a, diveTo), litCurve: opt.lit !== undefined ? () => opt.lit : b.dive ? (tt, aa) => aa * (1 - smooth(.7, .97, tt)) : null });
+    draw(performance.now()); return { ...S };
+  },
+  /* 점으로 된 표가 시작한 지 ms 지난 때의 모습으로 선다(검정 화면 위) */
+  sig(ms) { ++run; skip = null; stage.classList.add('still'); resize(); setUI('none'); snap('inside'); S.lit = 0; draw(performance.now()); return sig.show(ms); },
+  draw: () => draw(performance.now()), state: () => ({ ui, space, mode, poseName, moving: !!tw, wait: stage.dataset.wait || '', sw: stage.dataset.sw, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), ...S }),
+  /* 화면이 가려져 프레임이 멈춘 곳에서도 흐름이 끝까지 가게 민다 */
+  st: showState,
+  pump() { stage.classList.remove('still'); return setInterval(() => { const now = performance.now(); stepTween(now); draw(now); sig.step(now); }, 16); },
+};
+if (/[?&]still\b/.test(location.search)) window.__orb.at('app', { space: 'solio' });
+})();
+</script>
+</body>
+</html>

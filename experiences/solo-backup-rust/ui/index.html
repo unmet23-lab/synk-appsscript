@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' ipc: http://ipc.localhost; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>업무 백업</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<script src="bridge.js"></script>
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div id="stage" data-tone="ok" data-kind="home">
+  <canvas id="orb" aria-hidden="true"></canvas>
+  <header class="top">
+    <div class="here">
+      <button id="orb-btn" type="button" aria-label="처음 화면으로"></button>
+      <p class="here-t"><span class="here-n">SOLIO</span><span class="here-s" id="here-s">백업·복구</span><span class="seg" id="seg" aria-hidden="true"></span><span class="sr" id="seg-sr"></span></p>
+    </div>
+    <nav class="top-r" id="top-r" aria-label="창"></nav>
+  </header>
+  <main id="room" class="room" tabindex="-1" aria-live="polite"></main>
+  <p id="note" class="note-bar" role="status" aria-live="polite"></p>
+  <div id="drawer" class="drawer-wrap" hidden>
+    <div class="drawer-dim" id="drawer-dim"></div>
+    <aside class="drawer" aria-label="설정" id="drawer-panel" tabindex="-1"></aside>
+  </div>
+</div>
+</body>
+</html>
