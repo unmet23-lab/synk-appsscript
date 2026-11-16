@@ -212,5 +212,18 @@
     "timeoutMs": 1800000,
     "dialog": false,
     "allowedReadOnly": true
-  }
+  },
+  "signInGoogle": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "startProtection": {"mutating":true,"timeoutMs":0,"dialog":false,"allowedReadOnly":true},
+  "continueBackup": {"mutating":true,"timeoutMs":0,"dialog":false,"allowedReadOnly":true},
+  "openAccountBackup": {"mutating":true,"timeoutMs":300000,"dialog":false,"allowedReadOnly":true},
+  "devicesList": {"mutating":false,"timeoutMs":60000,"dialog":false,"allowedReadOnly":true},
+  "takeWriteSeat": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "revokeDevice": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "reportLost": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "rotateReadKey": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "restorePlan": {"mutating":false,"timeoutMs":120000,"dialog":false,"allowedReadOnly":true},
+  "restoreRun": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "restoreJob": {"mutating":false,"timeoutMs":60000,"dialog":false,"allowedReadOnly":true},
+  "restoreChoose": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true}
 }

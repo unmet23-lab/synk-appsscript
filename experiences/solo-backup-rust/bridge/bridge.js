@@ -16,7 +16,11 @@
     'protectNow', 'pauseAutomatic', 'resumeAutomatic', 'probeRestore',
     'openFileCatalog', 'queryFileCatalog', 'setFileSelection',
     'closeFileCatalog', 'restoreSelected', 'openSelectedRestoreFolder',
-    'importRecoveryKit', 'setLaunchAtLogin', 'openRestoreFolder'
+    'importRecoveryKit', 'setLaunchAtLogin', 'openRestoreFolder',
+    'signInGoogle', 'startProtection', 'continueBackup',
+    'openAccountBackup', 'devicesList', 'takeWriteSeat', 'revokeDevice',
+    'reportLost', 'rotateReadKey', 'restorePlan', 'restoreRun',
+    'restoreJob', 'restoreChoose'
   ];
 
   const failure = () => ({ ok: false, error: SAFE_ERROR });

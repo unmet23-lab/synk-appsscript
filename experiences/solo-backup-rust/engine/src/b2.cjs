@@ -12,10 +12,15 @@ function endpoint(value) {
   if (!match || !HOST.test(match[1])) throw new Error('B2의 HTTPS S3 Endpoint만 연결할 수 있습니다.');
   return `https://${match[1]}`;
 }
+// The provisioning server's customer repository (STAGE1_DESIGN.md 4.5 「봉투 v3의 꼴」).
+const CUSTOMER_REPO = /^c\/[a-z0-9]{16}\/r$/;
+const customerRepository = prefix => typeof prefix === 'string' && CUSTOMER_REPO.test(prefix);
 function provider({ endpoint: address, bucket, prefix }, vaultId) {
   const base = endpoint(address);
   if (typeof bucket !== 'string' || !/^[a-z0-9][a-z0-9-]{4,61}[a-z0-9]$/.test(bucket)) throw new Error('B2 버킷 이름은 영문 소문자·숫자·하이픈 6~63자로 입력해 주세요.');
-  if (!UUID.test(vaultId) || prefix !== `work-backup/${vaultId}`) throw new Error('클라우드 백업 경로를 확인할 수 없습니다.');
+  // 0.6's operator bucket (work-backup/<vault>) or the customer repository the server gave (c/<customer>/r).
+  const legacy = UUID.test(vaultId) && prefix === `work-backup/${vaultId}`;
+  if (!legacy && !(UUID.test(vaultId) && customerRepository(prefix))) throw new Error('클라우드 백업 경로를 확인할 수 없습니다.');
   return { type: 'b2', endpoint: base, bucket, prefix };
 }
 function repository(value, vaultId) {
@@ -69,7 +74,7 @@ async function probeBucket(p, key, { now = Date.now() } = {}) {
       headers: { host, 'x-amz-date': stamp, 'x-amz-content-sha256': digest, authorization: `AWS4-HMAC-SHA256 Credential=${c.keyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}` }
     }, response => {
       response.resume();
-      if (response.statusCode !== 200) return reject(new Error(response.statusCode === 401 || response.statusCode === 403 ? 'B2 연결 키의 권한·만료·사용 한도를 확인해 주세요. 버킷 전체 Read and Write 권한이 필요합니다.' : response.statusCode === 404 ? 'B2 버킷을 찾지 못했습니다. 버킷 이름과 Endpoint를 확인해 주세요.' : `B2 연결 확인에 실패했습니다 (HTTP ${response.statusCode}). 잠시 뒤 다시 시도해 주세요.`));
+      if (response.statusCode !== 200) return reject(new Error(response.statusCode === 401 || response.statusCode === 403 ? 'B2 연결 키의 권한·만료·사용 한도를 확인해 주세요. 이 백업 자리의 읽기·쓰기 권한이 필요합니다.' : response.statusCode === 404 ? 'B2 버킷을 찾지 못했습니다. 버킷 이름과 Endpoint를 확인해 주세요.' : `B2 연결 확인에 실패했습니다 (HTTP ${response.statusCode}). 잠시 뒤 다시 시도해 주세요.`));
       const serverTime = Date.parse(response.headers.date || '');
       if (!Number.isFinite(serverTime) || Math.abs(serverTime - now) > 300000) return reject(new Error('PC 시간과 B2 서버 시간이 맞지 않습니다. Windows 날짜·시간을 자동으로 맞춘 뒤 다시 시도해 주세요.'));
       resolve({ serverTime });
@@ -83,4 +88,4 @@ async function probeBucket(p, key, { now = Date.now() } = {}) {
     req.end();
   });
 }
-module.exports = { endpoint, provider, repository, credentials, redact, childOptions, probeBucket };
+module.exports = { endpoint, provider, repository, credentials, redact, childOptions, probeBucket, customerRepository };

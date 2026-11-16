@@ -34,9 +34,16 @@ test('failed status subscription rejects so existing app activates polling fallb
 test('bridge, worker and native method contract preserves all existing app actions',()=>{
   const contract=require('../contract/methods.json');const api=load({});
   const original=[...fs.readFileSync(path.resolve(root,'../solo-backup/src/preload.cjs'),'utf8').matchAll(/call\('([^']+)'\)/g)].map(m=>m[1]).sort();
-  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource'].sort();
+  // The account's requests (STAGE1_DESIGN.md 2.1 · 4.5): 「Google로 시작」 · 「보호 시작」 and the provisioning server's.
+  const account=['signInGoogle','startProtection','continueBackup','openAccountBackup','devicesList','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restorePlan','restoreRun','restoreJob','restoreChoose'];
+  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
   for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials','addSources','removeSource'])assert.equal(contract[name].allowedReadOnly,false);
   for(const name of ['restoreLatest','restoreSelected','openFileCatalog'])assert.equal(contract[name].allowedReadOnly,true);
+  // A Google sign-in opens the browser (dialog) and waits for the person, so it has no time limit.
+  for(const name of ['signInGoogle','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restoreRun','restoreChoose'])assert.deepEqual([contract[name].dialog,contract[name].timeoutMs],[true,0],name);
+  for(const name of ['devicesList','restorePlan','restoreJob'])assert.equal(contract[name].mutating,false,name);
+  // The account code decides what a restore-only PC may do (it takes the write seat from there).
+  for(const name of account)assert.equal(contract[name].allowedReadOnly,true,name);
 });

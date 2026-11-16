@@ -308,6 +308,14 @@
 - **토큰마다 할 수 있는 일:** 기기 토큰은 측정 보내기 · 상태 읽기와 출입증을 새로 만들지 않는 몇 가지(받았다는 알림 · 확정 · 되돌리기 계획 · 「여기서부터 계속」 · 도움 요청 · 내 기기 목록)까지다 — 정확한 표는 [구현 설계](#server-build)의 「API와 권한 표」. 새 출입증 발급 · 기기 끊기 · 되돌리기는 서버 nonce가 맞는 **방금 한 Google 로그인**을 요구한다.
 - **서버 주소는 실행 파일에 박는다.** 사용자가 쓸 수 있는 파일에서 읽으면 바꿔치기한 주소로 ID 토큰이 간다.
 - **손님 읽기 출입증은 손님당 하나**다. 둘째 기기는 봉투에서 받는다. 서버가 새로 만드는 때는 분실 신고 · 되돌리기 뒤뿐이고, 그때 봉투 · 복구 코드를 바꾼다(2.4). 지금 `recovery-vault.cjs`의 읽기 출입증 접두사 규칙(`work-backup/<보관함>`)은 새 접두사를 거절하므로 같이 고친다.
+- **먼저 만든 것(11-16 — 앱 쪽 잇기, 조율 세션):** 창 앱의 「Google로 시작」(`signInGoogle`)이 개통 클라이언트의 `provision`을 부르고, 「보호 시작」(`startProtection`)이 손님 저장소를 만든 뒤 봉투를 올리고 다시 받아 확인하고 나서야 읽기 출입증을 확정한다. 그다음 예약 등록과 첫 백업은 지금의 `protectNow` 그대로다. 차례는 새 파일 `engine/src/account.cjs`가 맡는다.
+  - 손님 저장소는 서버가 준 접두사 `c/<손님 번호>/r`을 그대로 쓴다. 판의 꼬리표 `vault:`는 그 접두사에서 만든 값이라 한 손님의 기기가 모두 같다. 새 PC가 봉투로 열어도 옛 PC의 판을 같은 꼬리표로 찾는다. 기기는 restic 호스트 이름(기기 번호)으로 가른다.
+  - 판 고르기의 「이 기기」 조건을 되살려 보기 · 전체 되살리기 · 파일 목록 · 고른 파일 되살리기에도 넣었다(정리 · 채움 · `restorePlans`에는 있었다). 0.6 판의 저장소는 호스트가 보관함 번호라 동작이 같다.
+  - 손님 저장소가 이미 있으면 만들지 않는다. 이 계정의 것이 아닌 비밀번호로 먼저 물어 「비밀번호가 틀림」(restic 종료 12)이면 `REPO_EXISTS`로 멈춘다. 그러면 「이어서 백업」(`continueBackup`)이 봉투로 열고 이 PC의 기기 번호로 이어 쓴다.
+  - 쓰지 않는 PC(`role: read`)는 `openAccountBackup`으로 봉투에서 읽기 전용으로 연다. 그때 호스트는 가장 새 온전 판을 만든 기기다. 「옛 PC 연결 끊기 — 예」나 「이 PC로 다시 백업」(`takeWriteSeat`)은 그 연결을 이 PC의 백업으로 바꾼다.
+  - 되돌리기(`restoreRun`)는 요청 전에 설정에 멈춤 표시를 쓰고, 손님이 고른 뒤(`restoreChoose`) 지운다. 그동안 회차와 「지금 백업」은 쉰다. 서버가 거절한 요청은 아무것도 시작하지 않았으므로 표시를 바로 지운다. 답을 못 받은 요청은 표시를 남긴다.
+  - 화면에는 열쇠 · 토큰 · 비밀번호가 가지 않는다. 상태의 `account`에는 로그인 여부, 역할, 기기 번호, 이 PC 이름, 쓰는 기기 이름, 봉투 확인 시각만 있다. 오류는 부호(`REPO_EXISTS` · `NOT_WRITER` · `GOOGLE_STEP` · `LIMIT_DEVICES` 등)와 함께 가고, `LIMIT_DEVICES`는 끊을 기기 목록을 `details`로 함께 보낸다.
+  - 아직: 회차의 상태 읽기(옮겨짐 · 고르기 기다림 · 용량 초과 · 읽기 출입증 미확정)와 측정 보내기, 봉투 매일 재확인, 정리가 `status.move.snapshotId`를 지키는 것은 다음 증분이다.
 
 #### 제한
 
@@ -1018,8 +1026,9 @@ Fable 5.2(`claude-fable-5-2`) 24건. 원문은 Git 밖 공유 노트 `옮겨오�
 새로 만드는 것:
 
 - `experiences/solo-backup-rust/engine/` — 갈라 온 엔진(src · tests · package.json · lock · 고지문). 고침: 호스트 = 기기 번호와 판 고르기 다섯 자리(`retain` · `probeBody` · `restoreLatest` · `openFileCatalog` · 증명 · 대량 변경)의 「이 기기」 조건, 온전 · 부분 · 채움 판과 정리 규칙, 사라진 폴더 건너뛰기 · 폴더 더하기 · 빼기(`paths.cjs` · `handlers.cjs`), 종료 11 「바쁨」 분류, 점검 주기, `--exclude-cloud-files`, 대량 변경 멈춤, 증명 v2(`proof.cjs`), 옮겨 오기(`migrate.cjs` — 덮지 않는 이름 바꾸기는 호스트 호출), 연결점 · 특수 이름 건너뛰기(`restore-tar.cjs`), 봉투 v3 · 읽기 출입증 규칙(`recovery-vault.cjs`), 서버 nonce(`recovery-auth.cjs`), 개통 통신(`provision-client.cjs`), 측정(`telemetry.cjs`), `b2.cjs` 경로 · 문구.
+- `experiences/solo-backup-rust/engine/src/account.cjs` — 「Google로 시작」 · 「보호 시작」과 계정 요청의 차례(개통 클라이언트 · 봉투 v3 · 엔진을 잇는다, 4.5).
 - `experiences/solo-backup-rust/ui/` — 화면 원천(11-13에 정한 시안 A 「확인서」로 새로 짬).
-- `src-tauri/src/bin/run.rs`(`WorkBackupRun.exe`), `schedule.rs`(작업 스케줄러 COM), `helper.rs`(섀도 복사본 · 확인 · 정리), `power.rs`(배터리 · 절전 · 종량 · 대기 방식), `notify.rs`(토스트 · 기록 읽기), `folders.rs`(알려진 폴더 · OneDrive), `runlog.rs`(회차 기록 · 진행 파일 · 측정 프록시), `files.rs`(덮지 않는 이름 바꾸기 · 연결점을 따라가지 않는 열기).
+- `src-tauri/src/bin/run.rs`(`WorkBackupRun.exe`), `schedule.rs`(작업 스케줄러 COM), `run_helper.rs`(섀도 복사본 · 확인 · 정리 — `src/bin` 밖에 둔다. Tauri 묶기가 그 아래 폴더를 실행 파일로 본다), `power.rs`(배터리 · 절전 · 종량 · 대기 방식), `notify.rs`(토스트 · 기록 읽기), `folders.rs`(알려진 폴더 · OneDrive), `runlog.rs`(회차 기록 · 진행 파일 · 측정 프록시), `files.rs`(덮지 않는 이름 바꾸기 · 연결점을 따라가지 않는 열기).
 - `src-tauri/nsis/hooks.nsh` — 설치기 훅(보통 권한으로 앱 열기 · 도우미 등록).
 - `experiences/solo-backup-rust/server/` — 개통 서버(`main.mjs` · `boot.mjs` · `server.mjs` · `b2-native.mjs` · `google-token.mjs` · `store.mjs` · `keys-worker.mjs` · `files-worker.mjs` · `rpc.mjs` · `restore-hidden.mjs` · `detect.mjs` · `reconcile.mjs` · `jobs.mjs` · `mail.mjs` · `telemetry.mjs` · `admin.mjs` · `audit.mjs` · `config.mjs` · `Dockerfile` · `README.md` · `mail-relay/` · 시험). 실측 도구 `server/tools/`(11-12 있음).
 - `test-support/` — 합성 자료 D0 · D1 · D2, 파일 잠그기, tauri-driver 화면 시험.

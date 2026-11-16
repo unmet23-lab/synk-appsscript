@@ -10,7 +10,7 @@ async function fixture() {
   for (const dir of ['repo', 'source', 'output']) await fs.mkdir(path.join(root, dir));
   const snapshotId = 'a'.repeat(64), repositoryId = 'b'.repeat(64), vaultId = crypto.randomUUID(), events = [];
   let now = Date.now();
-  const fake = { nodes: [{ message_type: 'node', path: '/한글 [1].txt', type: 'file', size: 3 }], content: Buffer.from('abc'), snapshots: [{ id: snapshotId, time: new Date(now).toISOString(), paths: ['C:\\original-work'], tags: [APP, 'vault:' + vaultId, VERIFIED] }], locks: [], lockExclusive: true, afterDump: null, fail: null };
+  const fake = { nodes: [{ message_type: 'node', path: '/한글 [1].txt', type: 'file', size: 3 }], content: Buffer.from('abc'), snapshots: [{ id: snapshotId, time: new Date(now).toISOString(), hostname: vaultId, paths: ['C:\\original-work'], tags: [APP, 'vault:' + vaultId, VERIFIED] }], locks: [], lockExclusive: true, afterDump: null, fail: null };
   const runner = async (args, opts) => {
     events.push({ args, readOnly: opts.providerArgs.includes('--no-lock') });
     if (fake.fail === args[0]) throw new Error('PRIVATE_PATH private-query remote-stderr');
@@ -93,4 +93,15 @@ test('completion persistence failure restores previous result and recreates inco
   assert.equal(f.engine.config.lastSelectedRestore.path, 'old-selected');
   assert.ok((await fs.readdir(f.engine.config.lastSelectedRestoreError.path)).includes('_복구중_미완료.txt'));
   assert.equal(JSON.parse(await fs.readFile(path.join(f.engine.stateDir, 'settings.json'), 'utf8')).lastSelectedRestore.path, 'old-selected');
+});
+test('browse and selected restore read this device\'s backups only (STAGE1_DESIGN.md 4.6 「호스트 = 이 기기」)', async () => {
+  const f = await fixture(), { engine, fake } = f;
+  // A newer complete backup of another device in the same repository is not this one's.
+  fake.snapshots = [{ ...fake.snapshots[0], id: 'e'.repeat(64), time: new Date(Date.now() + 60000).toISOString(), hostname: 'otherdevice01' }, ...fake.snapshots];
+  const catalog = await engine.openFileCatalog();
+  assert.equal(engine.fileCatalog.snapshotId, 'a'.repeat(64));
+  assert.ok(catalog.token);
+  // With only the other device's backup there is nothing of this one to browse.
+  fake.snapshots = fake.snapshots.slice(0, 1);
+  await assert.rejects(engine.openFileCatalog(), code('NO_SNAPSHOT'));
 });

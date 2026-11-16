@@ -203,6 +203,18 @@ async function verifyRestic(file) {
   if (await sha256File(file) !== RESTIC_SHA256) throw new Error('백업 엔진 파일 검증에 실패했습니다. 배포본을 다시 받아 주세요.');
   verifiedBinaries.set(key, true);
 }
+// A customer repository of the provisioning server (c/<customer>/r, STAGE1_DESIGN.md 4.5) is shared by every device of
+// that customer, so its vault tag is made from the repository itself: a new PC that opens it from the account envelope
+// finds the old PC's backups under the same tag, and the restic host name — the device number — tells the devices
+// apart (4.6 「호스트 = 이 기기」). The shape is a version-4 UUID, like the random vault of a repository made here.
+function customerVault(prefix) {
+  const h = crypto.createHash('sha256').update(`solo-work-backup-vault\0${prefix}`).digest('hex');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${'89ab'[parseInt(h[16], 16) & 3]}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+}
+// The device number the provisioning server gives (12 lowercase letters and digits).
+const DEVICE = /^[a-z0-9]{12}$/;
+// Restic's exit codes for a repository that is not there and for a wrong password (0.17+).
+const NO_REPOSITORY = 10, WRONG_PASSWORD = 12;
 function parseKit(text) {
   if (typeof text !== 'string' || Buffer.byteLength(text) > 65536) throw new Error('복구 키 파일을 읽을 수 없습니다.');
   const kit = json(text);
@@ -242,12 +254,15 @@ class BackupEngine extends EventEmitter {
     if (this.config) {
       const c = this.config;
       if (c.schema !== 1 || !['backup', 'restore'].includes(c.mode) || !/^[a-f0-9-]{36}$/.test(c.vaultId) || !Array.isArray(c.sources) || (c.repositoryId !== null && !isId(c.repositoryId))
-        || (c.removedSources != null && !(Array.isArray(c.removedSources) && c.removedSources.every(removedEntry)))) throw new Error('설정 형식이 올바르지 않습니다.');
+        || (c.removedSources != null && !(Array.isArray(c.removedSources) && c.removedSources.every(removedEntry))) || (c.host != null && !DEVICE.test(c.host))
+        || (c.serverRestore != null && !(c.serverRestore && typeof c.serverRestore.since === 'string'))) throw new Error('설정 형식이 올바르지 않습니다.');
       normalizeProtection(c);
       if ((c.provider?.type || 'local') !== this.providerType) throw new Error('백업 프로필과 저장소 종류가 다릅니다.');
       if (this.isCloud()) {
         c.provider = b2.provider(c.provider, c.vaultId);
         if (c.repository !== b2.repository(c.provider, c.vaultId)) throw new Error('클라우드 저장소 경로가 일치하지 않습니다.');
+        // A customer repository's vault is its own (customerVault) and its backups carry a device number.
+        if (b2.customerRepository(c.provider.prefix) && (c.vaultId !== customerVault(c.provider.prefix) || !c.host)) throw new Error('클라우드 저장소 경로가 일치하지 않습니다.');
       } else if (!path.isAbsolute(c.repository)) throw new Error('백업 폴더 경로가 올바르지 않습니다.');
       this.settingsKey = stamp;
       try {
@@ -301,6 +316,9 @@ class BackupEngine extends EventEmitter {
       warning: c?.warning || null, job: this.job ? { ...this.job } : null };
   }
   isCloud() { return this.providerType === 'b2'; }
+  // The restic host name of this engine's backups: the device number on a customer repository, the vault elsewhere (as
+  // 0.5.0 – 0.6 wrote). A restore-only connection to a customer repository names the device it reads.
+  get hostName() { return this.config?.host || this.config?.vaultId; }
   hasRecovery() { return !!(this.config?.recoverySaved || (this.config?.remoteRecovery?.repositoryId === this.config?.repositoryId && this.config?.remoteRecovery?.verifiedAt)); }
   recoveryKit() {
     if (!this.isCloud() || !this.config?.repositoryId || !this.secret) throw new Error('클라우드 백업을 연결한 뒤 복구 정보를 보관해 주세요.');
@@ -373,7 +391,10 @@ class BackupEngine extends EventEmitter {
       // says why nothing happened: a person-started job returns at once (review GA2).
       if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
       else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
-      const error = new Error(this.clean(e.message)); error.exitCode = e.exitCode; throw error;
+      // A word code (REPO_EXISTS, RESTORE_PENDING …) goes on with the cleaned message; the screen chooses by it.
+      const error = new Error(this.clean(e.message)); error.exitCode = e.exitCode;
+      if (typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code)) error.code = e.code;
+      throw error;
     } finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
   }
   clean(message) { return b2.redact(message, [this.secret, this.cloudCredentials?.keyId, this.cloudCredentials?.applicationKey, this.connection?.credentials.keyId, this.connection?.credentials.applicationKey, ...this.transientSecrets]); }
@@ -439,10 +460,10 @@ class BackupEngine extends EventEmitter {
     if (info.id !== this.config.repositoryId) throw new Error('다른 저장소가 연결되어 있습니다. 원래 백업 드라이브를 연결해 주세요.');
     return info;
   }
-  async snapshots(tags = []) {
+  async snapshots(tags = [], { host } = {}) {
     const list = json(await this.run(['snapshots', '--json', '--tag', [APP, `vault:${this.config.vaultId}`, ...tags].join(',')], { timeoutMs: 60000 }));
     if (!Array.isArray(list) || list.some(s => !isId(s.id) || !Number.isFinite(Date.parse(s.time)))) throw new Error('백업 목록의 형식을 확인하지 못했습니다.');
-    return list.filter(s => s.tags?.includes(APP) && s.tags.includes(`vault:${this.config.vaultId}`) && tags.every(t => s.tags.includes(t))).sort((a, b) => Date.parse(b.time) - Date.parse(a.time) || b.id.localeCompare(a.id));
+    return list.filter(s => s.tags?.includes(APP) && s.tags.includes(`vault:${this.config.vaultId}`) && tags.every(t => s.tags.includes(t)) && (host === undefined || s.hostname === host)).sort((a, b) => Date.parse(b.time) - Date.parse(a.time) || b.id.localeCompare(a.id));
   }
   async setup({ sources, parent }) {
     return this.operation('setup', async () => {
@@ -472,27 +493,40 @@ class BackupEngine extends EventEmitter {
       return this.getState();
     });
   }
-  async setupCloud({ sources, endpoint, bucket, credentials }) {
+  // `repository` + `host`: the customer repository and device number the provisioning server gave (STAGE1_DESIGN.md
+  // 4.5, 「보호 시작」). The prefix is used as given, the vault comes from it, and an account whose repository is
+  // already there is never made again: it fails REPO_EXISTS and is opened from the account envelope instead (2.3).
+  async setupCloud({ sources, endpoint, bucket, credentials, repository = null, host = null }) {
     return this.operation('setup', async () => {
       this.transientSecrets = [credentials?.keyId, credentials?.applicationKey];
       if (!this.isCloud()) throw new Error('클라우드 프로필에서 연결해 주세요.');
       if (this.config?.repositoryId) throw new Error('이 프로필에는 이미 저장소가 연결되어 있습니다.');
+      if (repository !== null) {
+        if (!repository || typeof repository !== 'object' || !b2.customerRepository(repository.prefix) || !DEVICE.test(host || '')) throw new Error('개통된 백업 자리를 확인할 수 없습니다.');
+        endpoint = repository.endpoint; bucket = repository.bucket;
+      }
       const saved = this.config && this.cloudCredentials ? { ...this.config.provider, credentials: this.cloudCredentials } : this.connection;
       const canReuse = !credentials?.keyId && !credentials?.applicationKey && saved && b2.endpoint(endpoint) === saved.endpoint && bucket === saved.bucket;
       const next = b2.credentials(canReuse ? saved.credentials : credentials);
       if (!this.config) {
         const checked = await validateSources(sources, this.forbidden());
-        const vaultId = crypto.randomUUID();
-        const provider = b2.provider({ endpoint, bucket, prefix: `work-backup/${vaultId}` }, vaultId);
+        const vaultId = repository ? customerVault(repository.prefix) : crypto.randomUUID();
+        const provider = b2.provider({ endpoint, bucket, prefix: repository ? repository.prefix : `work-backup/${vaultId}` }, vaultId);
         await this.probe(provider, next, { now: this.now() });
+        if (repository) {
+          // Asked with a password that is not this account's: a repository that answers 「wrong password」 is there.
+          try { await this.run(['cat', 'config'], { repository: b2.repository(provider, vaultId), provider, password: crypto.randomBytes(32).toString('base64url'), credentials: next, timeoutMs: 60000 }); throw Object.assign(new Error('이 계정에는 이미 백업이 있습니다.'), { code: 'REPO_EXISTS' }); }
+          catch (e) { if (e.code === 'REPO_EXISTS' || e.exitCode === WRONG_PASSWORD) throw Object.assign(new Error('이 계정에는 이미 백업이 있습니다.'), { code: 'REPO_EXISTS' }); if (e.exitCode !== NO_REPOSITORY) throw e; }
+        }
         const password = crypto.randomBytes(32).toString('base64url');
         await this.storeCredential(password, next);
         this.secret = password; this.cloudCredentials = next;
-        this.config = { schema: 1, mode: 'backup', provider, vaultId, repository: b2.repository(provider, vaultId), repositoryId: null, sources: checked, automatic: false, recoverySaved: false, lastBackup: null, health: null, lastError: null, warning: null };
+        this.config = { schema: 1, mode: 'backup', provider, vaultId, ...(repository ? { host } : {}), repository: b2.repository(provider, vaultId), repositoryId: null, sources: checked, automatic: false, recoverySaved: false, lastBackup: null, health: null, lastError: null, warning: null };
         await this.save();
       } else {
         if (!this.secret) throw new Error('초기화 암호를 열지 못했습니다. 원래 Windows 계정으로 다시 실행해 주세요.');
         if (b2.endpoint(endpoint) !== this.config.provider.endpoint || bucket !== this.config.provider.bucket) throw new Error('이전 초기화의 버킷·Endpoint로 다시 시도해 주세요.');
+        if ((repository?.prefix ?? null) !== (b2.customerRepository(this.config.provider.prefix) ? this.config.provider.prefix : null) || (repository && host !== this.config.host)) throw new Error('이전 초기화의 백업 자리로 다시 시도해 주세요.');
         await this.probe(this.config.provider, next, { now: this.now() });
       }
       await validateSources(this.config.sources, this.forbidden());
@@ -500,7 +534,7 @@ class BackupEngine extends EventEmitter {
       let info;
       try { info = json(await this.run(['cat', 'config'], { credentials: next, timeoutMs: 60000 })); }
       catch (e) {
-        if (e.exitCode !== 10) throw e; // Never turn denied/offline/wrong password into init.
+        if (e.exitCode !== NO_REPOSITORY) throw e; // Never turn denied/offline/wrong password into init.
         await this.run(['init'], { credentials: next, timeoutMs: 120000 });
         info = json(await this.run(['cat', 'config'], { credentials: next, timeoutMs: 60000 }));
       }
@@ -556,12 +590,72 @@ class BackupEngine extends EventEmitter {
       if (!Array.isArray(list)) throw new Error('백업 목록을 읽지 못했습니다.');
       const latest = list.filter(s => isId(s.id) && s.tags?.includes(VERIFIED) && s.tags.includes(APP) && s.tags.includes(`vault:${kit.vaultId}`)).sort((a,b) => Date.parse(b.time) - Date.parse(a.time))[0];
       if (!latest) throw new Error('완료된 백업이 없습니다. 원래 PC에서 백업을 완료해 주세요.');
+      // A customer repository's kit reads the device whose backup is newest (its vault is the repository's own).
+      const customer = this.isCloud() && b2.customerRepository(kit.provider.prefix);
+      if (customer && (kit.vaultId !== customerVault(kit.provider.prefix) || !DEVICE.test(latest.hostname || ''))) throw new Error('복구 키에 기록된 저장소와 선택한 저장소가 다릅니다.');
       await this.storeCredential(kit.password, credentials);
       this.secret = kit.password; this.cloudCredentials = this.isCloud() ? b2.credentials(credentials) : null;
-      this.config = { schema: 1, mode: 'restore', readOnly, ...(this.isCloud() ? { provider: kit.provider } : {}), vaultId: kit.vaultId, repository: target, repositoryId: info.id, sources: [], automatic: false, recoverySaved: true, lastBackup: { id: latest.id, at: latest.time, files: latest.summary?.total_files_processed || 0, bytes: latest.summary?.total_bytes_processed || 0 }, health: null, warning: '복구 전용 연결입니다. 이 저장소의 백업을 지우거나 자동 백업하지 않습니다.' };
+      this.config = { schema: 1, mode: 'restore', readOnly, ...(this.isCloud() ? { provider: kit.provider } : {}), vaultId: kit.vaultId, ...(customer ? { host: latest.hostname } : {}), repository: target, repositoryId: info.id, sources: [], automatic: false, recoverySaved: true, lastBackup: { id: latest.id, at: latest.time, files: latest.summary?.total_files_processed || 0, bytes: latest.summary?.total_bytes_processed || 0 }, health: null, warning: '복구 전용 연결입니다. 이 저장소의 백업을 지우거나 자동 백업하지 않습니다.' };
       await this.save(); return this.getState();
     });
   }
+  // A new PC opens the customer repository from the account envelope (v3) with the customer read key: restore only,
+  // reading the device whose complete backup is newest, until this PC takes the write seat (becomeWriter).
+  async importRepository({ repository, repositoryId, password, credentials }) {
+    return this.operation('import', async () => {
+      if (!this.isCloud()) throw new Error('클라우드 프로필에서 연결해 주세요.');
+      if (this.config) throw new Error('기존 설정을 덮어쓸 수 없습니다.');
+      if (!repository || typeof repository !== 'object' || !b2.customerRepository(repository.prefix) || !isId(repositoryId) || typeof password !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(password)) throw new Error('계정의 백업 정보를 확인할 수 없습니다.');
+      const key = b2.credentials(credentials);
+      this.transientSecrets = [password, key.keyId, key.applicationKey];
+      const vaultId = customerVault(repository.prefix);
+      const provider = b2.provider({ endpoint: repository.endpoint, bucket: repository.bucket, prefix: repository.prefix }, vaultId), target = b2.repository(provider, vaultId);
+      const options = { repository: target, password, provider, credentials: key, timeoutMs: 60000, readOnly: true };
+      const info = json(await this.run(['cat', 'config'], options));
+      if (info.id !== repositoryId) throw new Error('계정에 적힌 저장소와 연결한 저장소가 다릅니다.');
+      const list = json(await this.run(['snapshots', '--json', '--tag', `${APP},vault:${vaultId},${VERIFIED}`], options));
+      if (!Array.isArray(list)) throw new Error('백업 목록을 읽지 못했습니다.');
+      const latest = list.filter(s => isId(s.id) && DEVICE.test(s.hostname || '') && s.tags?.includes(VERIFIED) && s.tags.includes(APP) && s.tags.includes(`vault:${vaultId}`) && Number.isFinite(Date.parse(s.time))).sort((a, b) => Date.parse(b.time) - Date.parse(a.time))[0];
+      if (!latest) throw new Error('완료된 백업이 없습니다. 원래 PC에서 백업을 완료해 주세요.');
+      await this.storeCredential(password, key);
+      this.secret = password; this.cloudCredentials = key;
+      this.config = { schema: 1, mode: 'restore', readOnly: true, provider, vaultId, host: latest.hostname, repository: target, repositoryId: info.id, sources: [], automatic: false, recoverySaved: true, lastBackup: { id: latest.id, at: latest.time, files: latest.summary?.total_files_processed || 0, bytes: latest.summary?.total_bytes_processed || 0 }, health: null, warning: '복구 전용 연결입니다. 이 저장소의 백업을 지우거나 자동 백업하지 않습니다.' };
+      await this.save(); return this.getState();
+    });
+  }
+  // This PC took the write seat (STAGE1_DESIGN.md 4.6): the restore-only connection to the customer repository becomes
+  // this device's backup of it. Its own backups carry its own device number; the old device's stay as they are.
+  async becomeWriter({ sources, credentials, host }) {
+    return this.operation('setup', async () => {
+      const c = this.config;
+      if (!this.isCloud() || !c?.repositoryId || c.mode !== 'restore' || !b2.customerRepository(c.provider?.prefix) || !this.secret) throw new Error('계정의 백업을 먼저 열어 주세요.');
+      if (!DEVICE.test(host || '')) throw new Error('이 PC의 기기 번호를 확인할 수 없습니다.');
+      const key = b2.credentials(credentials);
+      this.transientSecrets = [key.keyId, key.applicationKey];
+      const checked = await validateSources(sources, this.forbidden());
+      await this.probe(c.provider, key, { now: this.now() });
+      const info = json(await this.run(['cat', 'config'], { credentials: key, timeoutMs: 60000 }));
+      if (info.id !== c.repositoryId) throw new Error('다른 저장소의 키입니다.');
+      await this.storeCredential(this.secret, key); this.cloudCredentials = key;
+      Object.assign(c, { mode: 'backup', readOnly: false, host, sources: checked, automatic: false, lastBackup: null, lastPartial: null, lastFill: null, health: null, warning: null, retryAfter: null });
+      await this.save(); return this.getState();
+    });
+  }
+  // The account envelope (v3) holding this repository was published and read back: it is this backup's recovery
+  // (2.1 「첫 복구 수단은 자동으로 만들어지는 봉투」).
+  async markEnvelope({ verifiedAt }) {
+    if (!this.config?.repositoryId || typeof verifiedAt !== 'string' || !Number.isFinite(Date.parse(verifiedAt))) throw new Error('봉투 확인 시각이 올바르지 않습니다.');
+    this.config.remoteRecovery = { repositoryId: this.config.repositoryId, verifiedAt, envelope: 3 };
+    await this.save(); return this.getState();
+  }
+  // A server restore (4.5 `restore/run`) is written down before it is asked for and cleared after the customer chose:
+  // until then no backup or clean-up runs here (the server is putting hidden files back).
+  async holdForServerRestore() {
+    if (!this.config?.repositoryId) throw new Error('백업 준비를 먼저 완료해 주세요.');
+    this.config.serverRestore = { since: new Date(this.now()).toISOString() };
+    await this.save(); return this.getState();
+  }
+  async releaseServerRestore() { if (this.config?.serverRestore) { delete this.config.serverRestore; await this.save(); } return this.getState(); }
   async setAutomatic(enabled) {
     if (this.job) throw new Error('진행 중인 작업이 끝난 뒤 변경해 주세요.');
     if (typeof enabled !== 'boolean' || this.config?.mode !== 'backup' || !this.config.repositoryId) throw new Error('자동 백업을 설정할 수 없습니다.');
@@ -572,6 +666,7 @@ class BackupEngine extends EventEmitter {
   }
   assertBackupReady() {
     if (this.config?.mode !== 'backup' || this.config.readOnly || !this.config.repositoryId) throw new Error('백업용 연결을 먼저 준비해 주세요. 복구 전용 연결에서는 실행할 수 없습니다.');
+    if (this.config.serverRestore) throw Object.assign(new Error('되돌리기가 끝날 때까지 백업을 쉽니다.'), { code: 'RESTORE_PENDING' });
     if (!this.secret) throw new Error('저장된 인증 정보를 다시 연결해 주세요.');
     if (!this.hasRecovery()) throw new Error('복구 키를 먼저 저장한 뒤 백업을 시작해 주세요.');
   }
@@ -664,7 +759,7 @@ class BackupEngine extends EventEmitter {
       // as a partial one (4.2 「완료본 · 부분 판 · 채움 판」); without a list it stays pending and goes as before.
       const unreadable = []; let partial = false, cut = false;
       try {
-        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
+        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
           { onErrorItem: item => { if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true; } });
       } catch (e) {
         if (e.exitCode !== 3 || !unreadable.length) throw e;
@@ -676,7 +771,7 @@ class BackupEngine extends EventEmitter {
         // The list goes in first, as this run's meta snapshot; only then is the snapshot marked partial — so a partial
         // snapshot always has its list, and one left without (a run that died in between) stays pending (4.2 「순서」).
         this.stage('읽지 못한 파일 목록 저장 중');
-        await this.run(['backup', '--stdin', '--stdin-filename', 'workbackup-unreadable.json', '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},meta`],
+        await this.run(['backup', '--stdin', '--stdin-filename', 'workbackup-unreadable.json', '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},meta`],
           { stdinText: JSON.stringify({ v: 1, unreadable, cut }) });
         const metas = await this.snapshots([runTag, 'meta']);
         if (metas.length !== 1) throw new Error('읽지 못한 파일 목록을 확인하지 못했습니다. 이전 정상 백업은 유지됩니다.');
@@ -842,7 +937,7 @@ class BackupEngine extends EventEmitter {
     if (!links.length) { await attempt({ id: null, outcome: 'no-link' }); return { outcome: 'skipped', reason: 'no-link' }; }
     await this.identity();
     const all = await this.snapshots();
-    const s = all.find(x => x.id === p.id && x.hostname === this.config.vaultId && x.tags.includes('partial'));
+    const s = all.find(x => x.id === p.id && x.hostname === this.hostName && x.tags.includes('partial'));
     const lists = s ? listsIn(all, s) : [];
     if (lists.length !== 1 || !runOf(s)) { await attempt({ id: null, outcome: 'no-list' }); return { outcome: 'skipped', reason: 'no-list' }; }
     const list = await this.cachedList(lists[0]);
@@ -865,7 +960,7 @@ class BackupEngine extends EventEmitter {
     // Each path ends in NUL, the last one too: restic 0.19.1 refuses a list without the trailing zero byte (exit 1).
     await fs.writeFile(listFile, targets.map(t => t + '\0').join(''), { flag: 'wx' });
     try {
-      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--files-from-raw', listFile, '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
+      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--files-from-raw', listFile, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`],
         { onErrorItem: item => { if (item !== null && failedAt.length < UNREADABLE_MAX) failedAt.push(item); else failedCut = true; } });
     } catch (e) { if (e.exitCode !== 3) throw e; }
     finally { await fs.rm(listFile, { force: true }).catch(() => {}); }
@@ -876,7 +971,7 @@ class BackupEngine extends EventEmitter {
     const failed = [...new Set(failedAt.map(back).filter(Boolean))];
     const info = { v: 1, fills: runOf(s), roots, asked, failed, cut: failedCut || failedAt.some(item => !back(item)) };
     // The meta goes in first; only then is it marked fill — a fill without its meta stays pending and goes after 24 h.
-    await this.run(['backup', '--stdin', '--stdin-filename', 'workbackup-fill.json', '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},meta`],
+    await this.run(['backup', '--stdin', '--stdin-filename', 'workbackup-fill.json', '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},meta`],
       { stdinText: JSON.stringify(info) });
     const metas = await this.snapshots([runTag, 'meta']);
     if (metas.length !== 1) throw new Error('채움 백업 기록을 확인하지 못했습니다.');
@@ -913,7 +1008,7 @@ class BackupEngine extends EventEmitter {
     const result = (value) => ({ at: new Date(this.now()).toISOString(), snapshotId, files: 0, bytes: 0, ...value });
     try {
       this.stage('작은 파일 복구 확인용 목록 읽는 중');
-      const snapshots = await this.snapshots([VERIFIED]);
+      const snapshots = await this.snapshots([VERIFIED], { host: this.hostName });
       // A failed sample is deterministic for this immutable snapshot. Recheck
       // that same sample; a different healthy file cannot clear its hold.
       const held = this.config.probeHold;
@@ -953,7 +1048,7 @@ class BackupEngine extends EventEmitter {
     }
     const all = await this.snapshots(); // Tag edits change IDs, so enumerate immediately before exact-ID deletion.
     // A recommended-backup snapshot is not this one's to keep or forget, as restoreLatest does not mix it in (끝판 카본 A2).
-    const mine = s => s.hostname === this.config.vaultId && !s.tags.includes('recommended-verified-v1');
+    const mine = s => s.hostname === this.hostName && !s.tags.includes('recommended-verified-v1');
     const verified = all.filter(s => s.tags.includes(VERIFIED) && !s.tags.includes('recommended-verified-v1'));
     const latest = verified[0];
     if (!latest || latest.id !== this.config.lastBackup?.id) throw new Error('가장 최근 백업 번호가 바뀌었습니다.');
@@ -1051,7 +1146,7 @@ class BackupEngine extends EventEmitter {
    *  the complete one's), and what that one could not read from its fill and the earlier ones (gatherEarlier). `host`
    *  is whose backups — a move names the old device, and its `latest` is that device's newest complete one; `readList`
    *  reads one listing. */
-  async restorePlans(latest, { base, host = this.config.vaultId, readList = readManifest } = {}) {
+  async restorePlans(latest, { base, host = this.hostName, readList = readManifest } = {}) {
     latest ??= (await this.snapshots([VERIFIED])).find(s => s.hostname === host && !s.tags.includes('recommended-verified-v1'));
     if (!latest || !sanePaths(latest)) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
     const all = (await this.snapshots()).filter(s => s.hostname === host && !s.tags.includes('recommended-verified-v1'));
@@ -1122,7 +1217,7 @@ class BackupEngine extends EventEmitter {
       }
       const base = await directory(parent);
       if ([...this.forbidden(), ...this.config.sources].some(p => overlap(base, p))) throw new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.');
-      const latest = (await this.snapshots([VERIFIED]))[0];
+      const latest = (await this.snapshots([VERIFIED], { host: this.hostName }))[0];
       if (!latest) throw new Error('완료된 백업이 없습니다.');
       if (latest.tags?.includes('recommended-verified-v1')) {
         await require('./recommended.cjs').restoreWhole(this, base, latest);
@@ -1223,7 +1318,7 @@ class BackupEngine extends EventEmitter {
       this.discardCatalog();
       try {
         await this.assertNoRemoteMaintenance(); await this.identity();
-        const snapshot = (await this.snapshots([VERIFIED]))[0];
+        const snapshot = (await this.snapshots([VERIFIED], { host: this.hostName }))[0];
         if (!snapshot) throw selection.issue('NO_SNAPSHOT');
         const plans = selection.sourcePlans(snapshot), manifests = [], meter = selection.budget();
         for (const plan of plans) manifests.push(await this.readFileManifest(plan, snapshot.id, meter));
@@ -1261,7 +1356,7 @@ class BackupEngine extends EventEmitter {
         if ([...this.forbidden(), ...this.config.sources, ...capture.plans.map(p => p.original)].some(p => overlap(base, p))) throw selection.issue('OUTPUT_UNSAFE');
         if (this.config.repositoryId !== capture.repositoryId || this.config.vaultId !== capture.vaultId) throw selection.issue('REPOSITORY_CHANGED');
         await this.assertNoRemoteMaintenance(); await this.identity();
-        const snapshot = (await this.snapshots([VERIFIED])).find(s => s.id === capture.snapshotId);
+        const snapshot = (await this.snapshots([VERIFIED], { host: this.hostName })).find(s => s.id === capture.snapshotId);
         if (!snapshot) throw selection.issue('SNAPSHOT_GONE');
         const plans = selection.sourcePlans(snapshot);
         if (JSON.stringify(plans) !== JSON.stringify(capture.plans)) throw selection.issue('INTEGRITY_FAILED');
@@ -1338,6 +1433,7 @@ class BackupEngine extends EventEmitter {
     if (!c?.repositoryId) return { outcome: 'skipped', reason: 'not-configured' };
     if (c.mode !== 'backup' || c.readOnly) return { outcome: 'skipped', reason: 'read-only' };
     if (!this.secret) return { outcome: 'skipped', reason: 'credential' };
+    if (c.serverRestore) return { outcome: 'skipped', reason: 'restore' };
     if (!c.automatic && !force) return { outcome: 'skipped', reason: 'off' };
     if (this.job || this.stopping) return { outcome: 'busy', reason: 'job' };
     if (skipCloud && this.isCloud() && !force) return { outcome: 'skipped', reason: String(skipCloud).slice(0, 40) };
@@ -1379,4 +1475,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };
+module.exports = { BackupEngine, customerVault, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };

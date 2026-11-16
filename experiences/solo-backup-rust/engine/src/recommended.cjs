@@ -68,7 +68,7 @@ class RecommendedEngine extends BackupEngine {
     return this.operation('backup',async()=>{
       this.assertBackupReady();await this.identity();
       const excluded=path.join(this.stateDir,'excluded.txt');await atomic(excluded,plan.exclusions.map(e=>exclusionPattern(e.path)).join('\n')+'\n');
-      const args=['backup','--json','--exclude-cloud-files','--iexclude-file',excluded,'--host',this.config.vaultId,'--tag',`${APP},vault:${this.config.vaultId}`];
+      const args=['backup','--json','--exclude-cloud-files','--iexclude-file',excluded,'--host',this.hostName,'--tag',`${APP},vault:${this.config.vaultId}`];
       this.stage('추가 저장 용량 확인 중');
       const dry=await this.run([...args,'--dry-run','--',...plan.sources]);
       const summary=dry.trim().split('\n').map(s=>{try{return JSON.parse(s);}catch{return null;}}).findLast(s=>s?.message_type==='summary');

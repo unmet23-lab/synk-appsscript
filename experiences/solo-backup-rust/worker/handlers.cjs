@@ -10,6 +10,7 @@ const { clientConfig } = require(path.join(engineRoot, 'src/recovery-auth.cjs'))
 const { protection } = require(path.join(engineRoot, 'src/protection.cjs'));
 const fileSelection = require(path.join(engineRoot, 'src/restore-select.cjs'));
 const { RecommendedBackup } = require(path.join(engineRoot, 'src/recommended.cjs'));
+const { Account } = require(path.join(engineRoot, 'src/account.cjs'));
 const contract = require('../contract/methods.json');
 
 async function createApplication({ host, root, workRoot = null, resticPath, clientPath, publish, testMode = false }) {
@@ -37,9 +38,12 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     showSaveDialog: (_window, options) => host('dialog.save', [options]),
     showMessageBox: (_window, options) => host('dialog.message', [options])
   };
-  const recovery = new RecoveryService({root, secretStore, engine: profiles.engines.b2, client,
-    openExternal: url => { const u = new URL(url); if (u.origin !== 'https://accounts.google.com' || u.pathname !== '/o/oauth2/v2/auth') throw new Error('허용되지 않은 로그인 주소입니다.'); return shell.openExternal(url); }});
+  const googleOnly = url => { const u = new URL(url); if (u.origin !== 'https://accounts.google.com' || u.pathname !== '/o/oauth2/v2/auth') throw new Error('허용되지 않은 로그인 주소입니다.'); return shell.openExternal(url); };
+  const recovery = new RecoveryService({root, secretStore, engine: profiles.engines.b2, client, openExternal: googleOnly});
   await recovery.open();
+  // 「Google로 시작」 · 「보호 시작」 (STAGE1_DESIGN.md 2.1 · 4.5): the provisioning server, envelope v3, the cloud profile.
+  const account = new Account({root, secretStore, client, openExternal: googleOnly, engine: profiles.engines.b2, appVersion: '0.7.0'});
+  await account.open();
   launchAtLogin = await host('startup.read', []);
   const recommended = new RecommendedBackup({root:path.join(root,'recommended'),workRoot:workRoot?path.join(workRoot,'recommended'):null,resticPath,secretStore,
     plannerPath:path.join(path.dirname(resticPath),'WorkBackupPlanner.exe'),inventoryPath:path.join(path.dirname(resticPath),'WorkBackupInventory.exe'),
@@ -55,7 +59,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     }});
   await recommended.open();recommended.onChange=()=>push();
   function state() {
-    const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), launchAtLogin,recommended:recommended.state()};
+    const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state()};
     withRun(value);
     return {...value, protection:protection(value,{startupRegistered:launchAtLogin})};
   }
@@ -99,7 +103,9 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     if (closing || engine.stopping || engine.job) throw new Error('진행 중인 작업이 끝난 뒤 다시 눌러 주세요.');
     void action().catch(() => push()); return state();
   }
-  function handle(name, action, {read=false,switching=false,safeErrors=false,lock=!read&&!switching}={}) {
+  // `codes`: the error's code (and the details some carry, such as the device list of LIMIT_DEVICES) reach the screen.
+  const CODE = /^[A-Z][A-Z_]{1,31}$/;
+  function handle(name, action, {read=false,switching=false,safeErrors=false,codes=false,lock=!read&&!switching}={}) {
     handlers.set(name, async (...args) => {
       if (!read && (closing || dialogBusy || recovery.busy)) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
       // The slot is taken before the first wait, so a second click cannot slip in while the
@@ -115,7 +121,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
         if (!read && !switching && context.engine.job) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
         if ((context.engine.config?.readOnly || context.engine.config?.mode === 'restore') && !contract[name].allowedReadOnly) return {ok:false,error:'복구 전용 연결입니다.',code:'READ_ONLY'};
         try { profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
-        catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message),...(e.code==='RUN_ACTIVE'?{code:'RUN_ACTIVE'}:{})}; }
+        catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message),...(e.code==='RUN_ACTIVE'||(codes&&CODE.test(e.code||''))?{code:e.code}:{}),...(codes&&e.details?{details:e.details}:{})}; }
       } finally { if (claimed) dialogBusy=false; if (held) engineUnlock(); }
     });
   }
@@ -256,6 +262,28 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       await setStartup(enabled);
       return state();
     }, { lock: false });
+    // The account's requests. Each answers with the window's state unless it has a value of its own.
+    const cloud = () => profiles.engines.b2;
+    const objectInput = input => input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+    const sourcesOf = input => Array.isArray(input.sources) ? input.sources : [...profiles.selections.b2.sources];
+    function protect() { const engine = cloud(); return launchJob(engine, () => engine.protectNow({ registerStartup: async () => setStartup(true) })); }
+    handle('signInGoogle', async (_context, input) => { await account.signIn({ hint: objectInput(input).hint }); return state(); }, { lock: false, codes: true });
+    // 「보호 시작」: the repository and the envelope here, then the schedule and the first backup as a job.
+    handle('startProtection', async (_context, input) => {
+      const v = objectInput(input); profiles.select('b2');
+      await account.startProtection({ sources: sourcesOf(v), googleStepDone: v.googleStepDone === true }); return protect();
+    }, { codes: true });
+    handle('continueBackup', async (_context, input) => { const v = objectInput(input); profiles.select('b2'); await account.continueBackup({ sources: sourcesOf(v), googleStepDone: v.googleStepDone === true }); return protect(); }, { codes: true });
+    handle('openAccountBackup', async () => { profiles.select('b2'); await account.openBackup(); return state(); }, { codes: true });
+    handle('devicesList', () => account.devices(), { lock: false, codes: true });
+    handle('takeWriteSeat', async (_context, input) => { const v = objectInput(input); const r = await account.takeWriteSeat({ sources: sourcesOf(v) }); return { previous: r.previous, state: state() }; }, { codes: true });
+    handle('revokeDevice', (_context, deviceId) => account.revokeDevice(deviceId), { lock: false, codes: true });
+    handle('reportLost', (_context, deviceId) => account.reportLost(deviceId), { lock: false, codes: true });
+    handle('rotateReadKey', async (_context, input) => { await account.rotateReadKey({ googleStepDone: objectInput(input).googleStepDone === true }); return state(); }, { codes: true });
+    handle('restorePlan', (_context, at) => account.restorePlan(at), { lock: false, codes: true });
+    handle('restoreRun', async (_context, at) => { const r = await account.restoreRun(at); return { jobId: r.jobId, ...(r.left ? { left: r.left } : {}), state: state() }; }, { codes: true });
+    handle('restoreJob', (_context, jobId) => account.restoreJob(jobId), { lock: false, codes: true });
+    handle('restoreChoose', async (_context, jobId, choice) => { await account.restoreChoose(jobId, choice); return state(); }, { codes: true });
     handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; }, { lock: false });
 
   profiles.on('state',push); recovery.on('state',push);
