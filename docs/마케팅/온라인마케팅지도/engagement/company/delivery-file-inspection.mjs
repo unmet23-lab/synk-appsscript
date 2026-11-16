@@ -5,6 +5,7 @@ import {resolve,dirname} from 'node:path';
 import {spawn} from 'node:child_process';
 import vm from 'node:vm';
 import {STUDIO_MEDIA_LIMIT,validMediaSignature} from './studio-media.mjs';
+import {ensureLocalMedia} from './studio-media-cloud.mjs';
 import {DELIVERY_SUBTITLE_LIMIT} from './client-delivery-media.mjs';
 
 // Only the fixed, local parser is evaluated. Uploaded subtitle text is data.
@@ -83,6 +84,7 @@ export function createDeliveryFileInspector({directory,ffprobe=process.env.SYNK_
     if(dirname(path)!==root)return {error:outcome('corrupt','invalid_path','저장된 파일 경로를 확인해 주세요.')};
     let handle,retained=false;
     try{
+      await ensureLocalMedia(directory,media.diskName);
       const rootInfo=await lstat(root),info=await lstat(path,{bigint:true});
       if(!rootInfo.isDirectory()||rootInfo.isSymbolicLink()||!info.isFile()||info.isSymbolicLink()||dirname(await realpath(path))!==await realpath(root))return {error:outcome('corrupt','invalid_path','저장된 파일 경로가 변경되었습니다.')};
       if(info.size!==BigInt(media.byteSize)||info.size<1n||info.size>BigInt(limit))return {error:outcome('corrupt','size_changed','저장된 파일 크기가 변경되었습니다. 다시 올려 주세요.')};
