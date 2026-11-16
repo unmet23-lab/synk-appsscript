@@ -25,7 +25,7 @@ function fixture(reviewCode = 0) {
       if (args[1] === 'review') { reviews.push(args[2]); return { code: reviewCode, stdout: '' }; }
       return { code: 0, stdout: args[0].includes('커밋') ? '{"결과":"완료"}' : '[]' };
     } };
-  return { writes, deleted, reviews, notifications,
+  return { writes, deleted, reviews, notifications, ctx,
     run: rows => mod.exports.사후({ 글: JSON.stringify({ 줄: rows }) }, { 줄: [{ row: 7, 게시물ID: 'fixture-a' }, { row: 8, 게시물ID: 'fixture-b' }] }, ctx) };
 }
 
@@ -80,6 +80,16 @@ test('판단은 장부 「언제」 옛 값으로 짝지어 쓰고, 적용안 �
   assert.match(t.notifications[0], /→ 기각\n   사유: 이미 쓰는 GSAP/);
   assert.match(t.notifications[0], /→ 시안 · AI 작업 방식\n   이유: 검수 묶음/);
   assert.match(t.notifications[0], /시안은 다음 카드 적용 회차/);
+});
+
+test('텔레그램은 카드 커밋보다 먼저 보낸다(커밋이 오래 걸려도 판단 알림이 늦지 않게)', async () => {
+  const t = fixture();
+  const order = [];
+  const 알림 = t.notifications.push.bind(t.notifications);
+  t.notifications.push = (x) => { order.push('알림'); return 알림(x); };
+  t.ctx.실행 = ((실행) => (exe, args) => { if (args[0]?.includes('커밋')) order.push('커밋'); return 실행(exe, args); })(t.ctx.실행);
+  await t.run([{ row: 7, 게시물ID: 'fixture-a', 종류: '기타', 판단: '기각', 사유: '잘못 보낸 링크' }]);
+  assert.deepEqual(order, ['알림', '커밋']);
 });
 
 test('판단 값이 세 갈래가 아니면 기록하지 않고 다음 실행에 남긴다', async () => {

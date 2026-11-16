@@ -1741,6 +1741,7 @@
 - 고침: `config.yaml`에 `compression.threshold_tokens: 50000`, `protect_first_n: 0`, `idle_compact_after_seconds: 1800`을 두고, `auxiliary.compression`을 `provider: anthropic` · `model: claude-haiku-5-5` · `reasoning_effort: low`로 했다. 줄끝이 섞인 파일이라 그 줄만 바꾸는 스크립트로 고쳤고, 원래 판은 `%LOCALAPPDATA%/hermes/backups/synk-tip-판단세갈래-20261116/`에 있다. 받기 스킬 3.0에서 화면 보기를 뺐다. 압축이 시스템 프롬프트를 다시 세우므로(`Compaction rebuilt a drifted system prompt`) `/new` 없이도 다음 압축부터 새 지침이 닿는다. 공식 `hermes gateway restart`는 내린 뒤 못 올려서(10-28 항목과 같다) `Start-ScheduledTask SYNK_Hermes_Gateway_Recovery`로 바로 띄웠다(02:13:49 시작, 02:14:08 polling healthy).
 - 다시 확인: 다음 공유의 `agent.log`에서 `API call #` 줄의 in 값이 5만 안쪽인지, `Auxiliary compression: using anthropic (claude-haiku-5-5)`가 찍히는지, `vision_analyze`가 없는지 본다.
 - 11-16 02:52 첫 공유(카드뉴스 일곱 장)로 잰 값: 첫 호출은 옛 대화 그대로 in=143,727이었다. 다시 켠 직후라 「not anchored on real usage」로 미리 압축을 건너뛰었기 때문이고, 한 번뿐이다. 그 뒤 Haiku 압축(57초)이 대화를 약 2만 9천 토큰으로 줄였고, 다음 호출은 in=42,002~44,174였다(바꾸기 전 12만~16만). 그런데 헤르메스가 스킬을 다시 읽지 않고 기억대로 그림 일곱 장을 `vision_analyze`로 열었다. 압축은 시스템 프롬프트만 다시 세우고 스킬 본문은 다시 읽히지 않는다. 그래서 개인 대화 지침(`tools/hermes-synk/install.cjs`의 `CHANNEL_PROMPT`와 `config.yaml`의 같은 줄)에 「받을 때마다 skill_view로 다시 읽고, 그림 파일은 열지 않는다」를 넣고 게이트웨이를 다시 켰다(02:57). 그 뒤 공유의 `vision_analyze` 여부는 확인 안 함.
+- 판단 쪽 첫 회차(11-16 12:06, 구독, 생각 깊이 high, 지도 · 장면 판 지시문)는 세 줄에 추정 1.37달러였다(10-22 뒤 크레딧 회차 평균 5.8달러). 이 회차에서 카드 커밋(`참고카드_커밋.js` → 바로올리기의 관련 시험)이 명령 한도 10분을 다 써서 텔레그램이 12:20에야 갔고 「커밋 결과를 읽지 못함」이 붙었다(커밋 `8358b065a`는 origin에 올라가 있었다). 그래서 실행기가 텔레그램을 카드 커밋보다 먼저 보내게 바꿨다.
 
 ## Codex 예약
 
