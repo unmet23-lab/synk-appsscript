@@ -174,6 +174,8 @@ async function quiet(rounds = 40) {
 // 변형 실행기가 10분을 기다린 뒤에야 끊었다(11-16 밤 실측 — 「기기 자리가 그대로여도 다시 묻는다」 변형). 한 장면에서 이 수를 넘으면 묻기는
 // 던지고, 받기는 부르지 않고, 그리기는 문장 없이 돌아온다. 그러면 고리가 끊기고 셈(bounded)이 바로 떨어진다. 바른 길은 이 수에 닿지 않는다.
 const FUSE = 40;
+// 답이 왔을 때의 기기 자리(답 → 자리) — 셈이 받을 수 있는 자리(그때 서버가 기기보다 앞섰거나 머리 차례를 가리지 못한 답)만 세게(끝 판 카본 A1).
+const SEEN_AT = new WeakMap();
 
 // 리허설 서버 하나(합성 계정 하나) — use(engine, cap)는 같은 계정 기록으로 판 묶음 · 접기 상한이 다른 서버를 켠다(엔진을 올린 배포의 흉내).
 function worldOf() {
@@ -241,6 +243,7 @@ async function deviceOf(world) {
     if (knobs.asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
     if (knobs.lookbackHold) await knobs.lookbackHold;
     const got = await base.lookback(offset);
+    if (got && typeof got === 'object') SEEN_AT.set(got, positionOf(coach.summary().storage.sync?.received));
     knobs.replies.push(got);
     return got;
   };
@@ -284,9 +287,11 @@ async function practise(world, device, count) {
 // 내 위치 판 — 셸처럼 판을 그릴 때마다 묻기 · 받기 상자(createMonthAsker)를 부르고, 받기 알림(watch)이 오면 다시 그린다. 묻기가 다시 그리면
 // 그 판이 쓸 수 있는 답을 그렸는지 센다. 기기 자리는 그릴 때마다 적어 바뀐 수를 센다. 상자 하나를 기기 여럿이 이어 쓸 수 있다(같은 문서).
 function panelOf(world, first, { storage = memoryStorage() } = {}) {
-  const counts = { renders: 0, redraws: 0, wasted: 0, pulls: 0, positions: [], notes: [], shown: null };
+  // pulledAt — 받기를 어느 답의 자리로 불렀는지(자리 → 수). 총횟수만 견주면 자리 A로 두 번 · B로 0번도 지나간다(끝 판 GPT GA2).
+  const counts = { renders: 0, redraws: 0, wasted: 0, pulls: 0, pulledAt: new Map(), positions: [], notes: [], shown: null };
   let device = first;
   let off = null;
+  let rendering = false;
   const answers = createMonthAnswers({ storage });
   const asker = createMonthAsker({
     answers,
@@ -306,6 +311,12 @@ function panelOf(world, first, { storage = memoryStorage() } = {}) {
     summary: () => device.coach.summary(),
     pull: () => {
       counts.pulls += 1;
+      // 이 받기의 답 자리 — 판을 그리는 중(month)이면 적어 둔 답의 자리, 아니면 방금 온 답의 자리(받기는 그 둘에서만 부른다).
+      const place = rendering
+        ? positionOf(answers.read(A_ID, { revision: device.revision, day: dayOf(world.time.now()) })?.at)
+        : positionOf(device.knobs.replies.at(-1)?.summaryAt);
+      const key = JSON.stringify(place);
+      counts.pulledAt.set(key, (counts.pulledAt.get(key) ?? 0) + 1);
       if (counts.pulls > FUSE) return null; // 퓨즈 — 셈은 bounded가 본다
       return device.coach.pull();
     },
@@ -318,7 +329,13 @@ function panelOf(world, first, { storage = memoryStorage() } = {}) {
     counts.renders += 1;
     if (counts.renders > FUSE * 5) return null; // 퓨즈 — 다시 그리기의 고리를 끊는다(묻기가 다시 그렸으면 wasted로 센다)
     track();
-    const got = asker.month(view());
+    rendering = true;
+    let got = null;
+    try {
+      got = asker.month(view());
+    } finally {
+      rendering = false;
+    }
     counts.shown = got ? got.month : null;
     return got;
   }
@@ -334,13 +351,24 @@ function panelOf(world, first, { storage = memoryStorage() } = {}) {
     answers,
     use: attach,
     close: () => off?.(),
-    // 상한 — 묻기 ≤ 기기 자리가 바뀐 수 + 1 · 받기 ≤ 답의 자리마다 1 · 묻기가 다시 그린 판은 모두 쓸 수 있는 답(설계 주인 조건 2 · 3).
+    // 상한 — 묻기 ≤ 기기 자리가 바뀐 수 + 1 · 받기 ≤ 받을 수 있는 답의 자리마다 1 · 묻기가 다시 그린 판은 모두 쓸 수 있는 답(설계 주인 조건 2 · 3).
+    //   받을 수 있는 자리 — 답이 왔을 때 서버가 기기보다 앞섰거나 머리 차례를 가리지 못한 답의 자리다. 같은 자리 · 기기가 앞선 답으로는 받지
+    //   않는다(설계 §21-22 「뒤처진 기기의 받기」 — 끝 판 카본 A1). 그런 답만 오는 장면은 받기가 0이어야 지나간다.
     bounded(asks, replies, label) {
       track();
       const changes = Math.max(counts.positions.length - 1, 0);
       assert.ok(asks <= changes + 1, `${label}: 묻기 ${asks} ≤ 기기 자리가 바뀐 수 ${changes} + 1`);
-      const places = new Set(replies.map(got => JSON.stringify(positionOf(got?.summaryAt))).filter(key => key !== 'null'));
-      assert.ok(counts.pulls <= places.size, `${label}: 받기 ${counts.pulls} ≤ 답의 자리 ${places.size}`);
+      const behind = new Set();
+      for (const got of replies) {
+        const place = positionOf(got?.summaryAt);
+        const seen = got && typeof got === 'object' ? (SEEN_AT.get(got) ?? null) : null;
+        if (place && !(seen && (samePosition(place, seen) || aheadOf(seen, place)))) behind.add(JSON.stringify(place));
+      }
+      assert.ok(counts.pulls <= behind.size, `${label}: 받기 ${counts.pulls} ≤ 받을 수 있는 답의 자리 ${behind.size}`);
+      for (const [place, n] of counts.pulledAt) {
+        assert.ok(n <= 1, `${label}: 답의 자리 ${place}로 받기 ${n} ≤ 1`);
+        assert.ok(behind.has(place), `${label}: 받기의 자리 ${place}는 기기보다 앞섰던 답의 자리`);
+      }
       assert.equal(counts.wasted, 0, `${label}: 쓸 수 없는 답으로 다시 그리지 않는다`);
     },
   };
@@ -495,6 +523,7 @@ async function deviceOfHeld(world, held) {
         knobs.asks += 1;
         if (knobs.asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
         const got = await base.lookback(offset);
+        if (got && typeof got === 'object') SEEN_AT.set(got, positionOf(coach.summary().storage.sync?.received));
         knobs.replies.push(got);
         return got;
       },
@@ -707,13 +736,15 @@ function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {})
     offsetOf: () => OFFSET,
     redraw: () => {
       box.redraws += 1;
-      if (box.redraws <= 50) box.last = asker.month(coach);
+      if (box.redraws <= 50) box.last = asker.month(box.coach);
     },
     note: code => box.notes.push(code),
     alive: live,
   });
+  // 코치 — 장면이 지우는 길 뒤 새 코치로 바꿔 끼울 수 있다(셸이 동의를 바꾼 뒤 새 코치를 여는 흉내).
+  box.coach = coach;
   box.render = () => {
-    box.last = asker.month(coach);
+    box.last = asker.month(box.coach);
     return box.last;
   };
   box.answers = answers;
@@ -829,4 +860,115 @@ test('로그아웃으로 끊긴 물음은 실패로 적지 않고, 다시 들어
   behind.render();
   await quiet(10);
   assert.equal(behind.pulls, 2, '지우는 길 뒤에는 같은 자리로 다시 받는다');
+});
+
+// ── 장면: 끝 판 검수(GPT)로 고친 둘 ──────────────────────────────────────────────────────
+
+test('쓰기만 막히고(용량 초과) 저장소에 앞 답이 남아도 이 문서가 든 새 답으로 견준다 · 다른 탭이 더 새 답을 적었으면 그것으로 견준다(4-4c 끝 판 GPT GB1)', { timeout: 60_000 }, async () => {
+  const storage = memoryStorage();
+  const seed = createMonthAnswers({ storage });
+  // 같은 학습일의 앞 답(자리 10)이 저장소에 있다 — 기기(자리 11)보다 뒤다. 그 뒤로 쓰기만 던진다(읽기는 된다).
+  seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(9), at: at(10), windows: WINDOWS, month: [], since: seed.generation() });
+  const write = storage.setItem;
+  storage.setItem = () => {
+    throw new Error('quota');
+  };
+  const box = fakeAsker({ storage, reply: (_n, b) => done(b.device) });
+  box.device = at(11);
+  assert.equal(box.render(), null, '저장소의 앞 답은 기기보다 뒤 — 묻는다');
+  await quiet(10);
+  for (let i = 0; i < 5; i += 1) box.render();
+  await quiet(10);
+  assert.equal(box.asks, 1, `묻기 ${box.asks} ≤ 기기 자리가 바뀐 수 0 + 1 — 저장소의 앞 답으로 다시 묻지 않는다`);
+  assert.equal(box.redraws, 1, '같은 자리의 답으로 한 번 다시 그린다');
+  assert.equal(box.render()?.month.length, 1, '이 문서가 든 새 답(자리 11)으로 문장을 그린다');
+  // 다른 탭이 더 새 답(자리 12)을 적었다 — 저장소 것이 앞서면 그것으로 견주고 묻지 않는다.
+  storage.setItem = write;
+  seed.write(A_ID, { revision: 1, day: 7, askedFrom: at(11), at: at(12), windows: WINDOWS, month: [], since: seed.generation() });
+  box.device = at(12);
+  assert.deepEqual(box.render()?.month, [], '저장소의 더 새 답으로 문장을 그린다');
+  await quiet(10);
+  assert.equal(box.asks, 1, '더 새 답이 있으니 묻지 않는다');
+});
+
+test('지우는 길 전에 물은 답은 완결되지 않았거나 실패했어도 새 세대의 받은 자리 · 상한 · 계기를 건드리지 않는다 · 멈춘 문서에 온 답도 그렇다(4-4c 끝 판 GPT GB2)', { timeout: 60_000 }, async () => {
+  // GPT의 재현 — 앞 물음을 붙잡은 채 지우고 새 코치로 묻는다. 앞 물음의 다시 짓는 중 답(자리 11)이 먼저, 새 물음의 완결된 답(자리 11)이 뒤에 온다.
+  const rebuilding = { complete: false, reason: 'rebuilding', summaryAt: at(11), lookback: { windows: WINDOWS } };
+  const box = fakeAsker({ reply: n => (n === 1 ? rebuilding : done(at(11))) });
+  let secondPulls = 0;
+  const second = {
+    summary: box.coach.summary,
+    pull: () => {
+      secondPulls += 1;
+      return Promise.resolve(false);
+    },
+  };
+  const release = held(box);
+  box.device = at(5);
+  box.render();
+  await quiet(5);
+  box.answers.clear(A_ID); // 동의 바꿈 — 세대 수가 오른다(계정은 그대로)
+  box.coach = second;
+  box.render(); // 새 세대 — 상자를 비우고 새 코치로 다시 묻는다
+  await quiet(5);
+  release();
+  await quiet(20);
+  assert.equal(box.asks, 2);
+  assert.equal(box.pulls, 0, '앞 세대의 답으로 앞 코치를 받게 하지 않는다');
+  assert.equal(secondPulls, 1, '새 코치는 그 답의 자리로 한 번 받는다(앞 세대 답이 받은 자리를 먼저 채우지 않는다)');
+  assert.deepEqual(box.notes, [], '앞 세대의 완결되지 않은 답은 계기에 남기지 않는다');
+  // 앞 세대 물음의 실패 — 지운 뒤 실패로 끝나도 계기와 상한을 세우지 않는다. 새 세대는 같은 기기 자리에서 다시 묻는다.
+  const network = () => Promise.reject(Object.assign(new Error('NETWORK'), { code: 'NETWORK' }));
+  const failing = fakeAsker({ reply: n => (n === 1 ? network() : done(at(5))) });
+  const go = held(failing);
+  failing.render();
+  await quiet(5);
+  failing.answers.clear(A_ID);
+  go();
+  await quiet(10);
+  assert.deepEqual(failing.notes, [], '앞 세대의 실패는 계기에 남기지 않는다');
+  assert.equal(failing.render(), null, '새 세대 — 같은 기기 자리에서 다시 묻는다');
+  await quiet(10);
+  assert.equal(failing.asks, 2, '앞 세대의 실패가 상한을 세우지 않는다');
+  // 멈춘 문서(alive가 거짓 — 지우는 길 없이) — 온 답은 완결이든 실패든 들지도 적지도 다시 그리지도 않고 계기에도 남기지 않는다.
+  let live = true;
+  const stop = fakeAsker({ reply: n => (n === 1 ? done(at(5)) : network()), live: () => live });
+  const go2 = held(stop);
+  stop.render();
+  await quiet(5);
+  live = false;
+  go2();
+  await quiet(10);
+  assert.equal(stop.redraws, 0, '멈춘 문서에 온 완결된 답으로 다시 그리지 않는다');
+  assert.equal(stop.answers.read(A_ID, { revision: 1, day: 7 }), null, '그 답을 적지도 않는다');
+  stop.render(); // 시험만의 부름 — 멈춘 채 한 번 더 묻게 해 실패 길을 본다
+  await quiet(10);
+  assert.equal(stop.asks, 2);
+  assert.deepEqual(stop.notes, [], '멈춘 문서의 실패는 계기에 남기지 않는다');
+});
+
+test('완결되지 않은 답이라도 서버의 자리가 기기보다 앞서면 그 자리로 한 번 받고, 기기 자리가 바뀌기 전에는 다시 묻지도 받지도 않는다 · 받아서 자리가 바뀌면 한 번 다시 묻는다 · 같은 자리의 미완결 답으로는 받지 않는다(4-4c 끝 판 카본 A2)', { timeout: 60_000 }, async () => {
+  // 상한에 걸려 사건이 남은 답(events-remain) — 서버는 자리 9까지 접었고 기기는 자리 5다.
+  const remain = { complete: false, reason: 'events-remain', summaryAt: at(9), lookback: { windows: WINDOWS } };
+  const box = fakeAsker({ reply: n => (n === 1 ? remain : done(at(9))) });
+  box.device = at(5);
+  assert.equal(box.render(), null);
+  await quiet(10);
+  assert.equal(box.pulls, 1, '서버의 자리(9)가 기기(5)보다 앞선다 — 그 자리로 한 번 받는다');
+  assert.deepEqual(box.notes, ['LOOKBACK_EVENTS_REMAIN'], '완결되지 않은 까닭을 계기에 남긴다');
+  for (let i = 0; i < 4; i += 1) box.render();
+  await quiet(10);
+  assert.equal(box.asks, 1, '기기 자리가 그대로면 다시 묻지 않는다');
+  assert.equal(box.pulls, 1, '같은 자리로 다시 받지 않는다');
+  box.device = at(9); // 받아서 기기가 그 자리에 왔다
+  assert.equal(box.render(), null, '기기 자리가 바뀌었다 — 한 번 다시 묻는다');
+  await quiet(10);
+  assert.equal(box.asks, 2);
+  assert.equal(box.render()?.month.length, 1, '완결된 답으로 문장을 그린다');
+  // 서버의 자리가 기기와 같은 미완결 답(다시 짓는 동안 내주는 옛 머리)으로는 받지 않는다
+  const same = fakeAsker({ reply: () => ({ complete: false, reason: 'rebuilding', summaryAt: at(5), lookback: { windows: WINDOWS } }) });
+  same.render();
+  await quiet(10);
+  assert.equal(same.pulls, 0, '같은 자리의 완결되지 않은 답으로는 받지 않는다');
+  assert.deepEqual(same.notes, ['LOOKBACK_REBUILDING']);
 });

@@ -125,8 +125,10 @@ function lcg(seed) {
   };
 }
 const gradeOf = roll => (roll < 0.4 ? 'again' : roll < 0.5 ? 'hard' : 'good');
-function randomRow(random, unit) {
-  const at = NOW - Math.floor(random() * 45 * DAY);
+// 임의의 줄 하나 — before 앞(45일 안)의 시각에 둔다.
+function randomRow(random, unit, before = NOW) {
+  const start = NOW - 45 * DAY;
+  const at = start + Math.floor(random() * (before - start));
   const roll = random();
   if (roll < 0.06) return say(unit, at, random() < 0.5 ? 'known' : 'relearn');
   return answer(unit, at, gradeOf(roll));
@@ -137,12 +139,21 @@ const passing = unit => [
   answer(unit, windows.monthAgo.from + 3 * DAY, 'again'),
   ...[5, 3, 1].map(d => answer(unit, NOW - d * DAY, 'good')),
 ];
+// 늘 뒤 창까지 잡음 줄을 두면 뒤 창에 놓침이 거의 늘 들어, 씨앗 60개 가운데 55개가 조건을 넘는 단위 0개였다. 그래서 첫 걸음이 단위를
+// 빠뜨리는지와 낸 것의 차례를 거의 보지 못했다(4-4c 끝 판 카본 C2). 이제 절반의 단위는 잡음을 뒤 창 앞에만 두고, 단위 차례도 씨앗마다
+// 섞는다(저장소가 단위 이름 차례가 아닌 차례로 돌려줘도 낸 것이 단위 이름 차례인지).
 function randomRows(seed) {
   const random = lcg(seed);
   const rows = [];
-  for (const unit of ['u0', 'u1', 'u2', 'u3', 'u4', 'u5']) {
+  const units = ['u0', 'u1', 'u2', 'u3', 'u4', 'u5'];
+  for (let i = units.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [units[i], units[j]] = [units[j], units[i]];
+  }
+  for (const unit of units) {
+    const before = random() < 0.5 ? windows.since.from : NOW;
     const count = 4 + Math.floor(random() * 30);
-    for (let i = 0; i < count; i += 1) rows.push(randomRow(random, unit));
+    for (let i = 0; i < count; i += 1) rows.push(randomRow(random, unit, before));
     if (random() < 0.5) rows.push(...passing(unit));
   }
   return rows;
@@ -154,6 +165,24 @@ test('lookbackOfStore = 모든 단위를 처음부터 센 것 — 임의의 줄(
     const month = await lookbackOfStore(storeOf(rows), windows, PARAMS);
     assert.deepEqual(month, everyUnit(rows), `씨앗 ${seed}`);
   }
+});
+
+// 위 임의 시험은 씨앗 60개 가운데 55개에서 조건을 넘는 단위가 0개, 5개에서 1개라 낸 것의 차례를 견줄 일이 없었다 — lookbackOfStore의
+// 정렬을 빼도 지나갔다(4-4c 끝 판 카본 C2 · 변형으로 확인). 그래서 차례는 여기서 따로 본다.
+test('낸 것은 단위 이름 차례다 — 저장소가 다른 차례(talk는 시각 색인 차례)로 단위를 돌려줘도(4-4c 끝 판 카본 C2)', async () => {
+  const rows = [...passing('w2'), ...passing('w0'), ...passing('w1')];
+  const store = storeOf(rows);
+  assert.deepEqual(
+    await store.missedUnits(windows.monthAgo.from, windows.monthAgo.to),
+    ['w2', 'w0', 'w1'],
+    '저장소는 쌓인 차례로 돌려준다',
+  );
+  const month = await lookbackOfStore(store, windows, PARAMS);
+  assert.deepEqual(
+    month.map(entry => entry.unit),
+    ['w0', 'w1', 'w2'],
+  );
+  assert.deepEqual(month, everyUnit(rows));
 });
 
 test('메모리 저장소(리허설 서버 · talk와 같은 포트)에서도 같다 — 접은 근거 줄로 센다', async () => {

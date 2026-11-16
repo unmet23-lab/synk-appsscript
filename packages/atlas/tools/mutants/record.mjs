@@ -841,6 +841,14 @@ export const RECORD_MUTANTS = [
   [
     R,
     '30일째 문장(4-4c 둘째 묶음)',
+    '단위 이름 차례로 늘어세우지 않는다 — 저장소가 돌려준 차례(talk는 시각 색인 차례)로 낸다(끝 판 카본 C2)',
+    'src/record/lookback.mjs',
+    '  return month.sort(byUnit);\n',
+    '  return month;\n',
+  ],
+  [
+    R,
+    '30일째 문장(4-4c 둘째 묶음)',
     '첫 걸음을 뒤 창에서 찾는다 — 앞 창에 놓친 단위를 빠뜨린다(§21-22)',
     'src/record/lookback.mjs',
     '  const units = await store.missedUnits(windows.monthAgo.from, windows.monthAgo.to);\n',

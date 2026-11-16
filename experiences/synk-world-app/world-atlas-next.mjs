@@ -681,6 +681,15 @@ export function createAtlasNext({
     return Object.freeze({
       get: async since => (await ready()).get(since),
       post: async (events, since) => (await ready()).post(events, since),
+      // 30일째 문장의 돌아보기 읽기(§21-22)도 같은 길로 잇는다 — 오프라인으로 연 뒤 다시 닿으면 그 판의 나르개로 묻는다. 이것이 없으면 다시 닿아
+      // 받기가 이어져도 lookbackOf가 그 코치 내내 null이었다(4-4c 끝 판 GPT GA1). 다시 읽은 계정의 나르개에 읽기가 없으면(옛 계정
+      // 클라이언트) 그 실패로 던진다 — 셸은 같은 기기 자리에서 다시 묻지 않는다.
+      lookback: async offset => {
+        const to = await ready();
+        if (typeof to.lookback !== 'function')
+          throw Object.assign(new Error('LOOKBACK_UNAVAILABLE'), { code: 'LOOKBACK_UNAVAILABLE' });
+        return to.lookback(offset);
+      },
     });
   }
   // 표지로 연 올리는 길이 계정을 다시 읽어 그 판 그대로였다 — 줄을 채우고 미확인을 푼다(옛 POST · 옮기기 물음이 이 줄을 쓴다).

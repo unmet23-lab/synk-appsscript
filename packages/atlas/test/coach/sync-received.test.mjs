@@ -161,3 +161,80 @@ test('summary().carried — 서버 길 계정은 서버가 접어 요약에 실�
     coach.dispose();
   }
 });
+
+test('summary().carried — 닫고 같은 저장소로 다시 열어도 받은 칸이 되살아나고, 칸 키가 없는 부분 답 뒤에도 그대로다(4-4c 끝 판 카본 B3)', async () => {
+  const items = bankOf(rng(2231), { items: 4 });
+  const map = fakeMap(items);
+  const server = createServer({ random: rng(2232), index: indexOfMap(map) });
+  const time = clock();
+  const key = keyOf('carried-reopen');
+  const port = memoryPort();
+  const open = () =>
+    createCoach({
+      gameId: 'carried-reopen',
+      map,
+      seed: 's',
+      dayOffset: 0,
+      host: {
+        guest: false,
+        account: 'acct-carried-reopen',
+        revision: 1,
+        key,
+        port,
+        transport: routeOf(server),
+        now: time.now,
+      },
+    });
+  const atMs = server.now - 60_000;
+  const ledger = createEvent(
+    'record.carried',
+    {
+      families: { [items[0].familyKey]: 1 },
+      items: {},
+      after: null,
+      cells: [
+        {
+          skillId: items[0].skillId,
+          difficulty: 1,
+          independent: 2,
+          correct: 2,
+          helped: 0,
+          lastAt: null,
+        },
+      ],
+    },
+    { id: eventId(atMs, 1, 'ledger01'), atMs, revision: 1 },
+  );
+  server.server.append([ledger], server.now);
+  await server.fold();
+  const cells = firstLedgerCells([ledger]);
+  const first = open();
+  await first.ready;
+  let handle = await acquireHost({ key, params: PARAMS, now: time.now, guest: false });
+  try {
+    await handle.pull({ force: true });
+    await until(() => first.summary().carried != null, '받은 요약의 칸');
+  } finally {
+    releaseHost(handle);
+    first.dispose();
+  }
+  const again = open();
+  await again.ready;
+  try {
+    assert.deepEqual(
+      again.summary().carried,
+      cells,
+      '다시 연 코치가 저장소의 요약에서 칸을 되살린다',
+    );
+    handle = await acquireHost({ key, params: PARAMS, now: time.now, guest: false });
+    try {
+      await handle.pull({ force: true }); // 서버는 그대로다 — since가 최신이라 칸 키가 없는 부분 답
+      await settle();
+      assert.deepEqual(again.summary().carried, cells, '칸 키가 없는 부분 답 뒤에도 칸 그대로');
+    } finally {
+      releaseHost(handle);
+    }
+  } finally {
+    again.dispose();
+  }
+});

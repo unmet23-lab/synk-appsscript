@@ -768,7 +768,7 @@ export const POSITION_MUTANTS = [
     'monthAnswer',
     '학습일 답 다시 보기',
     '이 문서가 든 답을 쓰지 않는다 — 막힌 저장소에서 완결된 답 뒤에도 그릴 때마다 묻는다(Fable 다시 보기 FA1)',
-    '      const stored = answers.read(owner, { revision, day }) ?? keptFor(`${owner}|${revision}|${day}`);\n',
+    '      const stored = fresherOf(keptFor(`${owner}|${revision}|${day}`), answers.read(owner, { revision, day }));\n',
     '      const stored = answers.read(owner, { revision, day });\n',
   ],
   // `if (!storage)` 줄만 빼는 변형은 아래 try가 TypeError를 잡아 같은 false를 돌려주는 같은 꼴이라 살아남았다(11-16 밤). 되돌아갈 수 있는
@@ -797,16 +797,67 @@ export const POSITION_MUTANTS = [
   [
     'monthAnswer',
     '학습일 답 다시 보기',
-    '로그아웃으로 끊긴 물음을 실패로 적는다 — 다른 계정의 계기와 상한을 덮는다(카본 다시 보기 A1)',
-    "        if (alive(owner)) missed('LOOKBACK_FAILED');\n",
-    "        missed('LOOKBACK_FAILED');\n",
+    '끊긴 물음 · 멈춘 문서의 실패를 적는다 — 다른 계정 · 멈춘 문서의 계기와 상한을 덮는다(카본 다시 보기 A1 · 끝 판 GPT GB2)',
+    "        if (alive(owner) && since === answers.generation()) missed('LOOKBACK_FAILED');\n",
+    "        if (since === answers.generation()) missed('LOOKBACK_FAILED');\n",
   ],
   [
     'monthAnswer',
     '학습일 답 다시 보기',
-    '물은 사이 지우는 길이 돌아도 답을 든다 — 늦은 답으로 다시 그린다(카본 다시 보기 A1)',
-    '      if (since !== answers.generation()) return; // 물은 사이 지우는 길이 돌았다 — 늦은 답은 들지도 적지도 않는다\n',
+    '물은 사이 지우는 길이 돌아도 늦은 답을 든다 — 완결된 답으로 다시 그리고, 완결되지 않은 답이 새 세대의 받은 자리를 채운다(카본 다시 보기 A1 · 끝 판 GPT GB2)',
+    '      if (!alive(owner) || since !== answers.generation()) return;\n',
+    '      if (!alive(owner)) return;\n',
+  ],
+  // ── 끝 판 검수(GPT)로 고친 둘(GB1 · GB2) ──
+  [
+    'monthAnswer',
+    '학습일 답 끝 판',
+    '저장소의 앞 답을 먼저 본다 — 쓰기만 막혀(용량 초과) 앞 답이 남으면 같은 자리에서 묻기와 다시 그리기가 끝없이 돈다(끝 판 GPT GB1 · 고치기 전의 꼴)',
+    '      const stored = fresherOf(keptFor(`${owner}|${revision}|${day}`), answers.read(owner, { revision, day }));\n',
+    '      const stored = answers.read(owner, { revision, day }) ?? keptFor(`${owner}|${revision}|${day}`);\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판',
+    '저장소의 더 새 답을 버린다 — 다른 탭이 적은 더 새 답 대신 이 문서의 앞 답으로 견주어 다시 묻는다(끝 판 GPT GB1)',
+    '  return aheadOf(stored.at, kept.at) ? stored : kept;\n',
+    '  return kept;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판',
+    '멈춘 문서에 온 답을 든다 — 계정 · 문서가 바뀐 뒤 온 늦은 답을 적고 다시 그린다(끝 판 GPT GB2)',
+    '      if (!alive(owner) || since !== answers.generation()) return;\n',
+    '      if (since !== answers.generation()) return;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판',
+    '물은 사이 지우는 길이 돈 물음의 실패를 적는다 — 앞 세대의 실패가 새 세대의 계기를 덮는다(끝 판 GPT GB2)',
+    "        if (alive(owner) && since === answers.generation()) missed('LOOKBACK_FAILED');\n",
+    "        if (alive(owner)) missed('LOOKBACK_FAILED');\n",
+  ],
+  // ── 끝 판 검수(카본)로 더한 셋(A1 · A2) ──
+  [
+    'monthAnswer',
+    '학습일 답 끝 판',
+    '완결되지 않은 답의 앞선 자리로 받지 않는다 — 상한에 걸린 계정의 기기가 그 자리를 다음 5분 받기까지 기다린다(끝 판 카본 A2)',
+    '        if (at && aheadOf(at, device)) pullOnce(coach, at);\n',
     '',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판',
+    '완결되지 않은 답이면 자리를 가리지 않고 받는다 — 같은 자리 · 기기가 앞선 답으로도 5분 막이를 깬다(끝 판 카본 A1 · A2)',
+    '        if (at && aheadOf(at, device)) pullOnce(coach, at);\n',
+    '        if (at) pullOnce(coach, at);\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판',
+    '같은 자리의 완결된 답 뒤에도 받는다 — 쓸 수 있는 답을 그린 뒤 5분 막이를 깨는 받기를 부른다(끝 판 카본 A1)',
+    '      if (samePosition(current, at)) redraw();\n',
+    '      if (samePosition(current, at)) {\n        redraw();\n        pullOnce(coach, at);\n      }\n',
   ],
 ];
 

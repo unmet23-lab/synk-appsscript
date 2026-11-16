@@ -30,6 +30,9 @@ export const samePosition = (a, b) =>
   Boolean(a && b) && a.edition === b.edition && (a.gen ?? null) === (b.gen ?? null) && a.foldedUntil === b.foldedUntil;
 
 // 머리 차례 — 엔진 record/summary.mjs headOrder와 같은 규칙(gen에 든 머리 만든 서버 시각이 큰 쪽이 새 머리, gen이 없거나 꼴이 아니면 가장 작다).
+// 시각이 같고 gen이 다르면(같은 밀리초에 지은 머리 · 꼴이 아닌 gen끼리) 앞에 준 쪽(next)을 새 머리로 본다 — 엔진도 받은 머리를 새것으로
+// 얹으므로(log.mjs newer · summary.mjs fitOf), 셸이 그 답을 뒤처짐으로 보고 한 번 받으면 기기가 그 머리로 와 같은 자리가 된다. 셸만 다르게
+// 가리면 기기는 새 머리를 얹는데 셸은 다시 묻는 어긋남이 생긴다(4-4c 끝 판 카본 B2 — 안함의 까닭).
 const genTime = gen => {
   const match = typeof gen === 'string' ? GEN.exec(gen) : null;
   return match ? Number(match[1]) : Number.NEGATIVE_INFINITY;
@@ -55,6 +58,14 @@ export function verdictOf(device, stored) {
   if (samePosition(device, stored.at)) return 'use';
   if (aheadOf(stored.at, device)) return 'behind';
   return samePosition(device, stored.askedFrom) ? 'behind' : 'ask';
+}
+
+// 이 문서가 든 답(kept)과 저장소의 답 가운데 견줄 답 — 저장소 것이 이 문서 것보다 앞설 때만(다른 탭이 더 새 답을 적었다) 저장소 것이다. 쓰기만
+// 막혀(용량 초과 따위) 저장소에 앞 답이 남았으면 이 문서의 새 답으로 견준다. 앞 답으로 견주면 같은 자리에서 묻기와 다시 그리기가 끝없이 돈다
+// (4-4c 끝 판 GPT GB1).
+function fresherOf(kept, stored) {
+  if (!kept || !stored) return kept ?? stored;
+  return aheadOf(stored.at, kept.at) ? stored : kept;
 }
 
 function validMonth(rows) {
@@ -231,7 +242,10 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     };
     const reply = got => {
       settle();
-      if (!alive(owner)) return;
+      // 그 계정 · 문서가 아니거나 물은 사이 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 돌았으면, 늦은 답은 완결이든 아니든 들지도 적지도 다시
+      // 그리지도 않고 상한 · 받은 자리도 건드리지 않는다 — 앞 세대 답이 새 세대의 tried · pulled를 채우면 지금 코치가 꼭 해야 할 받기를
+      // 건너뛴다(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2).
+      if (!alive(owner) || since !== answers.generation()) return;
       const at = positionOf(got?.summaryAt);
       if (got?.complete !== true) {
         missed(lookbackCode(got?.reason));
@@ -247,7 +261,6 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
       const storage = storageOf(coach);
       if (!storage || (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다
-      if (since !== answers.generation()) return; // 물은 사이 지우는 길이 돌았다 — 늦은 답은 들지도 적지도 않는다
       const answer = shapeOf({ askedFrom: device, at, windows, month });
       state.kept = { key, answer };
       answers.write(owner, { revision, day, ...answer, since }); // 막힌 저장소면 이 문서의 답(kept)만 남는다
@@ -264,8 +277,9 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       .then(() => line.ask(offsetOf()))
       .then(reply, () => {
         settle();
-        // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED)은 실패로 적지 않는다 — 다른 계정의 계기와 상한을 덮지 않게(카본 다시 보기 A1).
-        if (alive(owner)) missed('LOOKBACK_FAILED');
+        // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED)과 물은 사이 지우는 길이 돈 물음은 실패로 적지 않는다 — 다른 계정 · 새
+        // 세대의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2).
+        if (alive(owner) && since === answers.generation()) missed('LOOKBACK_FAILED');
       })
       .catch(() => {
         // 다시 그리기 · 받기의 예외는 묻기를 막지 않는다
@@ -296,7 +310,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
       if (day == null) return null;
       const revision = line.revision;
-      const stored = answers.read(owner, { revision, day }) ?? keptFor(`${owner}|${revision}|${day}`);
+      const stored = fresherOf(keptFor(`${owner}|${revision}|${day}`), answers.read(owner, { revision, day }));
       const verdict = stored ? verdictOf(device, stored) : 'ask';
       if (verdict === 'use') return { month: monthOfAnswer(stored) };
       if (verdict === 'behind') pullOnce(coach, stored.at);

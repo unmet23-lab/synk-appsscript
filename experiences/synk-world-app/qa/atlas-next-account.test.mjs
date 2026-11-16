@@ -26,12 +26,14 @@ function memoryStorage(entries=[]){
 const markOf=(storage,owner)=>JSON.parse(storage.getItem(NEXT_MARK+owner)??'{}');
 
 // 가짜 계정 길 — 셸의 trail()처럼 부를 때마다 지금 값을 돌려준다. get(since, revision)은 state.get이 정한다.
-function accountLine({enabled=true,revision=1,learningSync=true,get=async()=>({summary:null,serverTime:0})}={}){
- const state={enabled,revision,learningSync,get,reads:0,gets:[],legacy:[]};
+// lookback(offset, revision)을 주면 나르개에 30일째 문장의 돌아보기 읽기가 있다(계정 클라이언트 trail.lookback — §21-22).
+function accountLine({enabled=true,revision=1,learningSync=true,get=async()=>({summary:null,serverTime:0}),lookback=null}={}){
+ const state={enabled,revision,learningSync,get,lookback,reads:0,gets:[],lookbacks:[],legacy:[]};
  state.trail=async()=>{
   state.reads+=1;
   return {learning:{enabled:state.enabled,revision:state.revision},learningSync:state.learningSync,
-   transport:at=>({get:since=>{state.gets.push({at,since});return state.get(since,at);},post:async()=>({accepted:[],clamped:[],summary:null,serverTime:0})}),
+   transport:at=>({get:since=>{state.gets.push({at,since});return state.get(since,at);},post:async()=>({accepted:[],clamped:[],summary:null,serverTime:0}),
+    ...(state.lookback?{lookback:offset=>{state.lookbacks.push({at,offset});return state.lookback(offset,at);}}:{})}),
    postLegacy:async events=>{state.legacy.push(events);return {ok:true};}};
  };
  return state;
@@ -168,6 +170,42 @@ test('새 길에 다녀간 계정이 오프라인으로 다시 열면(계정 읽
  let shape=false;const odd=createAtlasNext({owner:'acct-f1b',storage:memoryStorage(),trail:async()=>shape?real():({learning:null}),load:fakeLoader().load,health:recorder()});
  assert.equal(await odd.practiceCoach(POOL),null,'꼴에 안 맞는 계정 줄은 이번 연습만 지금 판');
  shape=true;assert.ok(await odd.practiceCoach(POOL),'다음 연습에서 다시 읽는다(ACCOUNT_UNREAD를 붙들지 않는다)');odd.dispose();
+});
+
+test('30일째 문장의 돌아보기 읽기(lookbackOf) — 오프라인으로 다시 연 올리는 길도 다시 닿으면 표지의 판 나르개로 묻는다 · 다시 읽은 나르개에 읽기가 없으면 그 실패 · 바로 읽힌 길은 그 판으로, 읽기가 없으면 null(4-4c 끝 판 GPT GA1)',async()=>{
+ const storage=memoryStorage([[NEXT_MARK+'acct-ga1',JSON.stringify({went:true,path:'upload',revision:5})]]);
+ const line=accountLine({revision:5,lookback:async(offset,at)=>({ok:true,complete:true,offset,at})});const real=line.trail;let down=true;
+ line.trail=async()=>{if(down)throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});return real();};
+ const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
+ const next=createAtlasNext({owner:'acct-ga1',storage,trail:()=>line.trail(),load,health:recorder()});
+ const coach=await next.practiceCoach(POOL);
+ assert.equal(coach,opened[0],'오프라인이어도 새 길');
+ const reader=next.lookbackOf(coach);
+ assert.ok(reader,'오프라인으로 연 올리는 길에도 돌아보기 읽기를 준다');
+ assert.equal(reader.revision,5,'표지의 판으로');
+ await assert.rejects(reader.ask(540),{code:'NETWORK'},'못 닿으면 그 실패(셸은 같은 기기 자리에서 다시 묻지 않는다)');
+ down=false;
+ assert.deepEqual(await reader.ask(540),{ok:true,complete:true,offset:540,at:5},'다시 닿으면 표지의 판 나르개로 묻는다');
+ assert.deepEqual(line.lookbacks,[{at:5,offset:540}]);
+ assert.ok(next.lookbackOf(coach),'다시 닿은 뒤에도 그대로 준다');
+ next.dispose();
+ // 다시 읽은 계정 클라이언트에 읽기가 없으면(옛 판) 그 실패로 — 읽기를 지어내지 않는다
+ const s2=memoryStorage([[NEXT_MARK+'acct-ga1b',JSON.stringify({went:true,path:'upload',revision:5})]]);
+ const l2=accountLine({revision:5});let off2=true;
+ const n2=createAtlasNext({owner:'acct-ga1b',storage:s2,trail:async()=>{if(off2)throw fail(0,'NETWORK',{retryable:true});return l2.trail();},load:fakeLoader().load,health:recorder()});
+ const c2=await n2.practiceCoach(POOL);
+ off2=false;
+ await assert.rejects(n2.lookbackOf(c2).ask(540),{code:'LOOKBACK_UNAVAILABLE'});
+ n2.dispose();
+ // 바로 읽힌 올리는 길 — 나르개에 읽기가 있으면 그 판으로 묻고, 없으면 null(문장 없이 그린다)
+ const l3=accountLine({revision:3,lookback:async(offset,at)=>({offset,at})});
+ const n3=createAtlasNext({owner:'acct-ga1c',storage:memoryStorage(),trail:()=>l3.trail(),load:fakeLoader().load,health:recorder()});
+ assert.deepEqual(await n3.lookbackOf(await n3.practiceCoach(POOL)).ask(-60),{offset:-60,at:3});
+ n3.dispose();
+ const l4=accountLine({revision:3});
+ const n4=createAtlasNext({owner:'acct-ga1d',storage:memoryStorage(),trail:()=>l4.trail(),load:fakeLoader().load,health:recorder()});
+ assert.equal(n4.lookbackOf(await n4.practiceCoach(POOL)),null,'읽기가 없는 나르개면 null');
+ n4.dispose();
 });
 
 test('셸 알림 — 그 밖(426 등)은 계정을 다시 읽어 그대로면 코치를 두고 달라졌으면 닫는다, 저장소 닫힘(store)은 닫는다, 셸이 동의를 바꾸면 다시 정한다(넘친 #7 · F5 · #18)',async()=>{

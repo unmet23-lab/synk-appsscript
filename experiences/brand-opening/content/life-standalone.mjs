@@ -25367,6 +25367,10 @@ function verdictOf(device, stored) {
   if (aheadOf(stored.at, device)) return "behind";
   return samePosition(device, stored.askedFrom) ? "behind" : "ask";
 }
+function fresherOf(kept, stored) {
+  if (!kept || !stored) return kept ?? stored;
+  return aheadOf(stored.at, kept.at) ? stored : kept;
+}
 function validMonth(rows2) {
   return Array.isArray(rows2) && rows2.length <= 64 && rows2.every(
     (row) => plain(row) && typeof row.unit === "string" && row.unit.length <= 200 && Number.isSafeInteger(row.misses) && Number.isSafeInteger(row.reviews) && (row.last === null || finite(row.last))
@@ -25494,7 +25498,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     };
     const reply = (got) => {
       settle();
-      if (!alive(owner)) return;
+      if (!alive(owner) || since !== answers.generation()) return;
       const at = positionOf(got?.summaryAt);
       if (got?.complete !== true) {
         missed(lookbackCode(got?.reason));
@@ -25509,7 +25513,6 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
       const storage = storageOf(coach);
       if (!storage || (storage.unfolded || 0) > 0) return;
-      if (since !== answers.generation()) return;
       const answer = shapeOf({ askedFrom: device, at, windows, month });
       state.kept = { key, answer };
       answers.write(owner, { revision: revision2, day, ...answer, since });
@@ -25523,7 +25526,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     };
     void Promise.resolve().then(() => line.ask(offsetOf())).then(reply, () => {
       settle();
-      if (alive(owner)) missed("LOOKBACK_FAILED");
+      if (alive(owner) && since === answers.generation()) missed("LOOKBACK_FAILED");
     }).catch(() => {
     });
   }
@@ -25551,7 +25554,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
       if (day == null) return null;
       const revision2 = line.revision;
-      const stored = answers.read(owner, { revision: revision2, day }) ?? keptFor(`${owner}|${revision2}|${day}`);
+      const stored = fresherOf(keptFor(`${owner}|${revision2}|${day}`), answers.read(owner, { revision: revision2, day }));
       const verdict2 = stored ? verdictOf(device, stored) : "ask";
       if (verdict2 === "use") return { month: monthOfAnswer(stored) };
       if (verdict2 === "behind") pullOnce(coach, stored.at);

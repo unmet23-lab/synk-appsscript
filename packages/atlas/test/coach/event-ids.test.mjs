@@ -679,7 +679,8 @@ test('탭 A가 옛 꼴 사건을 옮기는데 손님 요약 저장이 막혀도 
     legacy: async () => ({ log: [old], ledger: null }),
   });
   await a.ready;
-  for (let i = 0; i < 40 && !seen.trail.heldEvent(old.id) != null; i += 1) await settle();
+  // 탭 B가 그 사건을 들 때까지만 기다린다(`!x != null`은 늘 참이라 40번을 다 돌던 것 — 4-4c 끝 판 카본 B4).
+  for (let i = 0; i < 40 && seen.trail.heldEvent(old.id) == null; i += 1) await settle();
   assert.equal(
     seen.trail.heldEvent(old.id) != null,
     true,

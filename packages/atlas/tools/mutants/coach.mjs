@@ -2014,6 +2014,14 @@ export const COACH_MUTANTS = [
     '          : state.host.trail.receivedCarried(),\n',
     '          : null,\n',
   ],
+  [
+    C,
+    '처음 장부 칸(4-4c 둘째 묶음)',
+    '저장소에서 요약을 되살릴 때 칸을 버린다 — 닫고 다시 연 코치가 받은 칸을 잃고, 칸 키가 없는 부분 답 뒤로도 영영 null이다(끝 판 카본 B3)',
+    'src/record/summary.mjs',
+    '  packed && {\n    ...packed,\n',
+    '  packed && {\n    ...packed,\n    carried: null,\n',
+  ],
   // ── 지금 받기 coach.pull()(단계4_계획 §21-22 「설계 다시 검수로 고친 것」 — 설계 주인 11-16 밤 조건 1의 지킬 것 다섯) ──
   [
     C,
@@ -2031,13 +2039,23 @@ export const COACH_MUTANTS = [
     '        if (sync.stopped || sync.writesOff || sync.switchOff) return null;\n',
     '        if (sync.stopped || sync.switchOff) return null;\n',
   ],
+  // 가드 줄 전체를 지우는 변형은 writesOff 시험이 먼저 잡아, stopped · switchOff를 따로 보는 시험이 깨져도 살아남지 않았다 — 하나씩
+  // 뺀다(4-4c 끝 판 카본 C1).
   [
     C,
     '지금 받기(4-4c 둘째 묶음)',
-    '멈춘 코치에도 약속을 낸다 — 받지 않는 코치가 null이 아니다(설계 주인 11-16 밤 조건 1)',
+    '멈춘 코치(stopped)에도 약속을 낸다 — 받지 않는 코치가 null이 아니다(설계 주인 11-16 밤 조건 1 · 끝 판 카본 C1)',
     'src/coach/index.mjs',
     '        if (sync.stopped || sync.writesOff || sync.switchOff) return null;\n',
-    '',
+    '        if (sync.writesOff || sync.switchOff) return null;\n',
+  ],
+  [
+    C,
+    '지금 받기(4-4c 둘째 묶음)',
+    '스위치가 꺼진 코치(switchOff)에도 약속을 낸다(설계 주인 11-16 밤 조건 1 · 끝 판 카본 C1)',
+    'src/coach/index.mjs',
+    '        if (sync.stopped || sync.writesOff || sync.switchOff) return null;\n',
+    '        if (sync.stopped || sync.writesOff) return null;\n',
   ],
   [
     C,
