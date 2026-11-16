@@ -678,10 +678,10 @@ function createPopupWireHarness({ stepTimeoutMs = 25, totalTimeoutMs = 100, poll
       documentId: deliverBind.documentId,
       phase: 'deliver',
     });
-    await tick();
-
-    const offers = posted.filter(row => row.message.type === 'offer').map(row => row.message);
-    assert.equal(offers.length - offerCount, 2);
+    // PC가 바쁘면 두 번째 제안이 한 차례 늦게 온다 — 고정 횟수 대신 올 때까지(최대 2초) 기다린 뒤 정확히 둘인지 본다(Fable 0.4.94 다시 검수 P2).
+    const offerTotal = () => posted.filter(row => row.message.type === 'offer').length - offerCount;
+    for (const end = Date.now() + 2000; offerTotal() < 2 && Date.now() < end;) await tick();
+    assert.equal(offerTotal(), 2);
     return { classifyBind, deliverBind };
   }
 
@@ -2706,6 +2706,7 @@ test('enter-error retry moves focus from the hidden retry button onto the portal
   dom.root.querySelector('[data-portal-action="orb"]').click();
   for (let n = 0; n < 6; n++) await tick();
   assert.equal(host.getState().phase, 'enter-error');
+  await new Promise(resolve => setTimeout(resolve, 5));
   assert.equal(orbStatus.textContent, '');
   const retry = dom.root.querySelector('[data-portal-action="retry-enter"]');
   assert.equal(retry.hidden, false);
@@ -2719,5 +2720,9 @@ test('enter-error retry moves focus from the hidden retry button onto the portal
   assert.notEqual(dom.doc.activeElement, retry);
   assert.equal(dom.doc.activeElement, dom.root);
   assert.equal(dom.root.querySelector('[data-portal-pane="welcome"]').hidden, false);
+  // 상태 줄은 구 구역 밖(포털 뿌리 바로 아래)에 있고, 글은 같은 렌더가 아니라 다음 차례에 들어간다.
+  assert.equal(orbStatus.parentElement, dom.root);
+  assert.equal(orbStatus.textContent, '');
+  await new Promise(resolve => setTimeout(resolve, 5));
   assert.equal(orbStatus.textContent, '계정에 연결된 작업 공간을 불러오고 있어요.');
 });

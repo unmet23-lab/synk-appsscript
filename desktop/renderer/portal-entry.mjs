@@ -112,7 +112,6 @@ function buildPortalMarkup() {
     <div class="portal-stage" data-portal-stage>
       <section class="portal-welcome" data-portal-pane="welcome" aria-label="SYNK">
         <button type="button" class="circle-portal" data-portal-action="orb" aria-label="SYNK 시작"></button>
-        <p class="portal-orb-status" data-portal-orb-status role="status" aria-live="polite"></p>
       </section>
 
       <section class="portal-interior" data-portal-interior hidden aria-labelledby="portal-heading">
@@ -286,6 +285,7 @@ function buildPortalMarkup() {
         </div>
       </section>
     </div>
+    <p class="portal-orb-status" data-portal-orb-status role="status" aria-live="polite"></p>
   `;
 }
 
@@ -305,6 +305,7 @@ export function mountPortalEntry(root, options = {}) {
   const welcomeSection = root.querySelector('[data-portal-pane="welcome"]');
   const orbButton = root.querySelector('[data-portal-action="orb"]');
   const orbStatusEl = root.querySelector('[data-portal-orb-status]');
+  let orbStatusTimer = null;
   const interiorSection = root.querySelector('[data-portal-interior]');
   const headNav = root.querySelector('[data-portal-head-nav]');
   const backWelcomeBtn = root.querySelector('[data-portal-action="back-welcome"]');
@@ -729,6 +730,29 @@ export function mountPortalEntry(root, options = {}) {
 
   const SIGNED_IN_ZOOM_PORTAL = 0.55;
 
+  // 낭독기용 상태 줄은 포털 뿌리 바로 아래에 늘 있어 구 구역을 숨기거나 풀어도 접근성 트리에 남는다. 글은 같은 렌더에서 넣지 않고
+  // 다음 차례에 넣어, 방금 보인 포털에서도 낭독기가 바뀐 글을 놓치지 않게 한다(Fable 0.4.94 다시 검수 P3).
+  function setOrbStatus(text) {
+    if (!orbStatusEl) return;
+    if (orbStatusTimer !== null) {
+      win?.clearTimeout?.(orbStatusTimer);
+      orbStatusTimer = null;
+    }
+    if (!text) {
+      if (orbStatusEl.textContent) orbStatusEl.textContent = '';
+      return;
+    }
+    if (orbStatusEl.textContent === text) return;
+    if (typeof win?.setTimeout !== 'function') {
+      orbStatusEl.textContent = text;
+      return;
+    }
+    orbStatusTimer = win.setTimeout(() => {
+      orbStatusTimer = null;
+      if (!disposed) orbStatusEl.textContent = text;
+    }, 0);
+  }
+
   function render() {
     if (disposed) return;
     const state = machine.read();
@@ -774,7 +798,7 @@ export function mountPortalEntry(root, options = {}) {
     }
 
     if (!effectiveActive) {
-      if (orbStatusEl) orbStatusEl.textContent = '';
+      setOrbStatus('');
       stopZoomAnimation();
       releaseOrb();
       restoreHostElements();
@@ -795,16 +819,13 @@ export function mountPortalEntry(root, options = {}) {
     welcomeSection.hidden = !showOrbScene;
     interiorSection.hidden = showOrbScene;
     // 구를 유지하는 동안 화면에는 글을 띄우지 않고, 숨긴 내부 구역의 상태 글 대신 낭독기에만 같은 뜻을 알린다(Fable 0.4.94 원천 검수).
-    if (orbStatusEl) {
-      const orbStatus = phase === 'checking'
-        ? '저장된 로그인 정보를 확인하고 있어요.'
-        : phase === 'entering'
-          ? '계정에 연결된 작업 공간을 불러오고 있어요.'
-          : holdingExitOrb
-            ? '작업 공간을 여는 중이에요.'
-            : '';
-      if (orbStatusEl.textContent !== orbStatus) orbStatusEl.textContent = orbStatus;
-    }
+    setOrbStatus(phase === 'checking'
+      ? '저장된 로그인 정보를 확인하고 있어요.'
+      : phase === 'entering'
+        ? '계정에 연결된 작업 공간을 불러오고 있어요.'
+        : holdingExitOrb
+          ? '작업 공간을 여는 중이에요.'
+          : '');
     root.dataset.portalMode = phase === 'purpose' || phase === 'workspace' ? 'purpose' : 'default';
 
     if (showOrbScene) {
@@ -2338,6 +2359,10 @@ export function mountPortalEntry(root, options = {}) {
       if (disposed) return;
       const hadBusyInvite = busyAction === 'invite';
       disposed = true;
+      if (orbStatusTimer !== null) {
+        win?.clearTimeout?.(orbStatusTimer);
+        orbStatusTimer = null;
+      }
       navigationHoldActive = false;
       workspaceNeedsRetry = false;
       asyncSeq += 1;
