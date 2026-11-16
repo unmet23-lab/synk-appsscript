@@ -1818,13 +1818,24 @@ export const COACH_MUTANTS = [
     '    clearPullRetry(); // 올리기 · 받기가 멈추면(stopped · writesOff · switchOff) 다시 받기도 그친다(설계 주인 11-16 조건 5)\n',
     '    clearPullRetry(); // 올리기 · 받기가 멈추면(stopped · writesOff · switchOff) 다시 받기도 그친다(설계 주인 11-16 조건 5)\n    clearFirstRetry();\n',
   ],
+  // 「받기가 되어도 첫 받기의 차례 다시 받기를 지우지 않는다」(endPullRetry의 clearFirstRetry를 뺌)는 4-4b 끝 판 GC1 고침 뒤 같은 동작 변형이다 —
+  // 받기가 끝나는 자리(된 답 · offline 밖 실패 · 받은 답을 쓰다 난 예외)는 모두 그 받기를 시작할 때 이미 3초 타이머를 지웠고, 받는 동안에는 다른
+  // 받기가 서지 않아(state.pulling) 타이머가 다시 걸리지 않는다. 그래서 빼고, 시작할 때 지우는 줄을 아래 변형이 지킨다.
   [
     C,
     '받기 다시 하기(4-4a)',
-    '받기가 되어도 첫 받기의 차례 다시 받기를 지우지 않는다(3초 뒤 같은 받기를 또 한다)',
+    '실제로 받을 때 첫 받기의 차례 다시 받기를 지우지 않는다(다시 온라인 뒤 끊기면 3초 타이머가 사다리 첫 칸보다 먼저 받는다 — GPT GC1)',
     SYNC,
-    '    clearPullRetry();\n    clearFirstRetry();\n  }\n',
-    '    clearPullRetry();\n  }\n',
+    '    clearFirstRetry();\n    const before = state.lastPull;\n',
+    '    const before = state.lastPull;\n',
+  ],
+  [
+    C,
+    '받기 다시 하기(4-4a)',
+    '같은 끊김을 다시 받다 또 끊길 때마다 올리기 물러서기를 올린다(GET만 끊기는 동안 첫 쓰기가 300초 뒤에 올라간다 — Fable F3)',
+    SYNC,
+    '      if (!state.pullDropped) state.failures += 1;\n',
+    '      state.failures += 1;\n',
   ],
   [
     C,

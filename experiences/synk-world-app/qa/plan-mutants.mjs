@@ -19,7 +19,7 @@ export const PLAN_SOURCES = Object.freeze({
   shell: { file: 'world-learning-ui.mjs', env: 'SYNK_LEARNING_UI_MODULE', scenes: ['atlas-next-plan-shell.test.mjs', 'atlas-next-practice-shell.test.mjs'] },
 });
 
-const KEY = "  const key=[homePlanner.todayKey(now),planEnds,info.type,N.recordsComplete(summary.storage,synced)].join('|');\n";
+const KEY = "  const key=[homePlanner.todayKey(now),planEnds,info.type,complete,summaryShape(summary)].join('|');\n";
 const START = ' const start=reader?complete&&reader.start?.(skills.map(skill=>skill.id))===true:';
 const HOMEWORK = ' const homework=skills.filter(reader?weakNext:weakOf).map(skill=>{';
 const MET = '      if (!wanted.has(item?.skillId) || quiet(() => skip(item)) === true) continue;\n';
@@ -65,9 +65,13 @@ export const PLAN_MUTANTS = [
   ['next', '말하기를 고른 학생의 시험 정보에 말하기를 붙이지 않는다', '    exam: speaking ? { ...info, speaking: true } : info,\n', '    exam: info,\n'],
   ['next', '계획에 「이 기기에서 센 수」 표지를 넘기지 않는다', "    doneScope: 'device',\n", ''],
   // ── 셸의 배선(world-learning-ui.mjs — weekNext · planOnce) ──
-  ['shell', '판이 끝나도 묶음 만남을 다시 묻지 않는다 — 진단 뒤에도 시작점이 그날 그대로다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),info.type,N.recordsComplete(summary.storage,synced)].join('|');\n"],
-  ['shell', '목표 시험을 바꿔도 묶음 만남을 다시 묻지 않는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,N.recordsComplete(summary.storage,synced)].join('|');\n"],
-  ['shell', '기록이 다 와도 묶음 만남을 다시 묻지 않는다 — 기록 일부일 때의 판정이 그날 내내 굳는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,info.type].join('|');\n"],
+  ['shell', '판이 끝나도 묶음 만남을 다시 묻지 않는다 — 진단 뒤에도 시작점이 그날 그대로다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),info.type,complete,summaryShape(summary)].join('|');\n"],
+  ['shell', '목표 시험을 바꿔도 묶음 만남을 다시 묻지 않는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,complete,summaryShape(summary)].join('|');\n"],
+  ['shell', '기록이 다 와도 묶음 만남을 다시 묻지 않는다 — 기록 일부일 때의 판정이 그날 내내 굳는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,info.type,summaryShape(summary)].join('|');\n"],
+  ['shell', '다른 기기의 답이 접혀 와도(요약이 바뀌어도) 묶음 만남을 다시 묻지 않는다 — 기록이 다 온 탭이 그날 내내 옛 만남으로 계획을 짓는다(4-4b 끝 판 카본 C2)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,info.type,complete].join('|');\n"],
+  ['shell', '서버 길 계정의 기록이 다 오기 전에 그린 홈이 받기를 기다리지 않는다 — 학생이 화면을 건드리기 전까지 시작점이 풀리지 않는다(카본 C1)', "  if(summary.storage?.guest===false&&!complete&&sync.pulled!==true&&!sync.stopped&&!sync.writesOff&&!sync.switchOff)watchHomePulled(coachNow);\n", ''],
+  ['shell', '홈의 받기 기다림 — 60초 상한을 뺀다(카본 C1 · 내 위치 판의 watchPulled와 같은 상한)', 'watchHomePulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2))', 'watchHomePulled(coachNow,wait*2)'],
+  ['shell', '홈의 받기 기다림이 받기가 되어도 홈을 다시 그리지 않는다(카본 C1)', "   if(state==='pulled')refresh();\n", "   if(state==='pulled'){}\n"],
   ['shell', '다시 그릴 때마다 묶음 만남을 묻는다 — 홈이 그릴 때마다 풀 전체를 훑는다', '  if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice])};\n', '  weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice])};\n'],
   ['shell', '판 기록을 열지 않고 계획을 짓는다 — 이번 주에 한 판을 세지 못한다', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:homeNext?.planLog?.(coachNow)??null,', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:null,'],
   ['shell', '진단이 낼 문항이 있어도 홈에 알리지 않는다 — 점검 칸이 빈다', '  return examPlan?{examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready}}:null;\n', '  return examPlan?{examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready:false}}:null;\n'],
@@ -80,22 +84,41 @@ export const PLAN_MUTANTS = [
   ['shell', '진단을 그만둘 때 판 기록을 적지 않는다', 'if(session.results().length)diagnosed=true;counted(session.results());', 'if(session.results().length)diagnosed=true;'],
   ['shell', '짧은 연습의 영역을 늘 읽기로 적는다', "  const counted=planOnce(next,listening?'listening':'reading'); // 이번 주 계획의 영역(4-4b)\n", "  const counted=planOnce(next,'reading'); // 이번 주 계획의 영역(4-4b)\n"],
   ['shell', '짧은 연습 판 끝에 판 기록을 적지 않는다', '   counted(results);\n   if(!box.isConnected)return;\n', '   if(!box.isConnected)return;\n'],
+  ['shell', '확인 중에 연 이번 주 계획이 판이 서기를 기다리지 않는다 — 시험을 저장한 학생의 바로가기가 계획을 못 연다(4-4b 끝 판 Fable F1)', "if(homePhase()==='checking'&&examChosen()){await settledHome();check();}}", '}'],
+  ['shell', '한도를 넘겨도 확인 중이면 목표 창을 연다 — 계획을 모르는 학생을 계획 없는 학생으로 본다(Fable F1)', "  if(!examPlan&&homePhase()==='checking'&&examChosen()){if(!keepScroll&&!quiet)home.toast(t('home.today.checking'));return 'skipped';}\n", ''],
+  ['shell', '판이 서도 기다림을 깨우지 않는다 — 판이 선 뒤에도 한도(8초)까지 기다린다(Fable F1)', '  wakePlanWaits();\n', ''],
   ['shell', '짧은 연습을 도중에 닫을 때 판 기록을 적지 않는다', 'try{session.stop();}catch{}counted(session.results());queueMicrotask(()=>refresh());};', 'try{session.stop();}catch{}queueMicrotask(()=>refresh());};'],
 ];
 
+// 없는 갈래 이름이면 아무 변형도 돌리지 않고 0으로 끝나던 것을 멈춘다(4-4b 끝 판 GPT GB1).
 const at = process.argv.indexOf('--갈래');
 const only = at >= 0 ? process.argv[at + 1] : null;
+if (at >= 0 && !Object.hasOwn(PLAN_SOURCES, only ?? '')) {
+  console.log(`없는 갈래다: ${only ?? '(빈 값)'} — ${Object.keys(PLAN_SOURCES).join(' · ')} 가운데 하나를 준다`);
+  process.exit(2);
+}
+// 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 두면 node가 「겹쳐 부른 시험」으로 보고 파일을 하나도
+// 돌리지 않은 채 0으로 끝나, 깨지 않은 사본의 확인은 통과하고 모든 변형이 살아남은 것으로 보인다(4-4b 끝 판 GPT GB2 — position-mutants와 같은 고침).
+// 통과는 종료 코드 0이면서 통과한 시험이 하나 이상일 때다.
 function run(source, copy) {
-  const result = spawnSync(process.execPath, ['--test', ...source.scenes.map(name => path.join(here, name))], {
-    env: { ...process.env, [source.env]: copy },
+  const env = { ...process.env, [source.env]: copy };
+  delete env.NODE_TEST_CONTEXT;
+  const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...source.scenes.map(name => path.join(here, name))], {
+    env,
     encoding: 'utf8',
   });
-  return result.status === 0;
+  return result.status === 0 && /^# pass [1-9]/m.test(result.stdout ?? '');
 }
 
 let survived = 0;
 let broken = 0;
 let ran = 0;
+// 목록의 갈래 오타(PLAN_SOURCES에 없는 갈래)는 건너뛰지 않고 목록 오류로 센다(4-4b 끝 판 카본 B2).
+for (const [branch, name] of PLAN_MUTANTS)
+  if (!Object.hasOwn(PLAN_SOURCES, branch)) {
+    console.log(`목록 오류 · ${branch} · ${name} — 없는 갈래다`);
+    broken += 1;
+  }
 for (const [kind, source] of Object.entries(PLAN_SOURCES)) {
   if (only && kind !== only) continue;
   const file = path.join(here, '..', source.file);
@@ -135,4 +158,8 @@ for (const [kind, source] of Object.entries(PLAN_SOURCES)) {
   }
 }
 console.log(`변형 ${ran} · 살아남음 ${survived} · 목록 오류 ${broken}`);
+if (!ran && !broken) {
+  console.log('돌린 변형이 없다 — 목록이나 갈래를 확인한다');
+  process.exit(2);
+}
 process.exit(broken ? 2 : survived ? 1 : 0);

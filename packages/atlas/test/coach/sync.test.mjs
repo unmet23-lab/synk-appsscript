@@ -831,6 +831,51 @@ test('첫 받기가 차례에 밀리면 3초 뒤 다시 받는다 — 쓰기 막
   assert.deepEqual(shut.waits(), [], '닫으면 첫 받기의 다시 받기도 지운다');
 });
 
+test('첫 받기의 3초 다시 받기는 실제로 받으면 지운다 — 다시 온라인이 부른 받기가 끊기면 사다리 첫 칸(5초)만 남는다(4-4b 끝 판 GPT GC1)', async () => {
+  const r = retryWorld();
+  r.busy('get');
+  await r.sync.first();
+  assert.deepEqual(r.waits(), [PULL_RETRY_MS]);
+  r.busy('get', false);
+  r.route.getFail = net;
+  await r.advance(1_000);
+  r.sync.online();
+  await flush();
+  assert.equal(r.route.gets, 1, '다시 온라인이 곧 받았다');
+  assert.deepEqual(r.waits(), [5_000], '3초 다시 받기는 지우고 사다리 첫 칸만 남는다');
+  await r.advance(PULL_RETRY_MS - 1_000);
+  assert.equal(r.route.gets, 1, '3초 타이머가 사다리보다 먼저 받지 않는다');
+  await r.advance(5_000 - (PULL_RETRY_MS - 1_000));
+  assert.equal(r.route.gets, 2, '사다리 첫 칸에 받는다');
+  assert.deepEqual(r.waits(), [15_000], '또 끊기면 둘째 칸이다');
+  r.sync.close();
+});
+
+test('받기만 끊기는 동안 사다리가 받기를 거듭해도 올리기 물러서기는 끊김 하나에 한 번만 오른다(4-4b 끝 판 Fable F3)', async () => {
+  const r = retryWorld();
+  r.route.getFail = net;
+  await r.sync.first();
+  assert.equal(r.sync.status().failures, 1, '첫 끊김은 지금처럼 센다');
+  for (const wait of [5_000, 15_000, 60_000, 300_000]) await r.advance(wait);
+  assert.equal(r.route.gets, 5, '사다리가 네 번 더 받았다');
+  assert.equal(r.sync.status().failures, 1, '같은 끊김의 다시 받기는 올리기 물러서기를 올리지 않는다');
+  assert.equal(r.sync.status().pulled, false);
+  r.sync.online();
+  await flush();
+  assert.equal(r.sync.status().failures, 0, '다시 온라인은 물러서기를 푼다');
+  assert.equal(r.route.gets, 6);
+  assert.equal(r.sync.status().failures, 0, '앞 끊김이 아직 풀리지 않았으니 다시 온라인 뒤 끊겨도 새로 세지 않는다');
+  r.route.getFail = null;
+  await r.advance(5_000);
+  assert.equal(r.sync.status().pulled, true);
+  r.route.getFail = net;
+  await r.advance(PULL_GAP_MS);
+  r.sync.visible();
+  await flush();
+  assert.equal(r.sync.status().failures, 1, '받기가 된 뒤의 새 끊김은 다시 한 번 센다');
+  r.sync.close();
+});
+
 test('닫힌 뒤 돌아온 POST 답은 받지 않는다 — 닫힌 호스트가 저장소에 쓰지 않는다', async () => {
   const w = world(91);
   const key = keyOf('closed');

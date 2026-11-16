@@ -81,6 +81,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  let pullWatch={coach:null,timer:null,wait:PULL_WATCH_MS,done:null};
  // 다시 보기 타이머 — target의 시계(창의 setTimeout · clearTimeout, 시험은 가짜 시계)를 쓴다. 없으면 전역 시계.
  const watchClock={set:(fn,ms)=>typeof target.setTimeout==='function'?target.setTimeout(fn,ms):setTimeout(fn,ms),clear:id=>{if(id==null)return;if(typeof target.clearTimeout==='function')target.clearTimeout(id);else clearTimeout(id);}};
+ // 새 길 홈이 확인 중일 때 연 이번 주 계획이 판이 서기를 기다리는 한도와 기다리는 쪽(4-4b 끝 판 Fable F1 — openPlan · settledHome).
+ const PLAN_WAIT_MS=8000;const planWaits=new Set();
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
  const view=position?position.createView({t,has:hasString,formatDate,lang:currentLang}):null;
@@ -340,6 +342,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  function refresh(){
   if(stopped||refreshing)return current;
   if(drawHome()&&homeNext){try{homeNext.painted?.();}catch{/* 허브는 다음에 열 때 맞춘다 */}}
+  wakePlanWaits();
   // 새 길 「내 위치」가 확인 중 판이면 판이 섰는지 다시 본다(§21-2 — 생활 판정이 서면 셸이 홈을 다시 그린다). 엔진 판은 판 감시가 알릴 때만 다시 그린다.
   try{if(homeNext&&panelNode('[data-position-next="checking"]'))redrawNext();}catch{/* the next open draws it */}
   return current;
@@ -754,6 +757,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 다시 연결(online) · 화면이 다시 보임(visibilitychange) — 보고 있으면 간격을 처음 값으로 되돌린다(설계 주인 11-16 조건 2).
  function hurryPullWatch(){
+  // 홈의 받기 기다림도 처음 값으로(카본 C1).
+  if(homePull.coach&&homePull.timer&&homePull.wait>PULL_WATCH_MS){const homeCoachNow=homePull.coach;stopHomePull();watchHomePulled(homeCoachNow,PULL_WATCH_MS);}
   const coachNow=pullWatch.coach;
   if(!coachNow||!pullWatch.timer||pullWatch.wait<=PULL_WATCH_MS)return;
   watchClock.clear(pullWatch.timer);
@@ -792,6 +797,30 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 온 뒤에 옛 판정이 그날 내내 굳지 않게(카본 설계 검토 A8). 칸 · 숙제 · 공급은 그 만남과 지금 요약으로 그릴 때마다 짓는다(요약은 보기에서 바로 오른다).
  // 내 위치 판(nextData)은 이 만남을 쓰지 않는다 — 판을 열 때마다 새로 묻는다(21-3).
  let planEnds=0,weekMet={coach:null,key:null,met:null};
+ // 요약의 모양 — 능력 줄 수 · 측정 답 수 · 칸의 첫 답 수 · 단위 줄 수 · 만난 자리 수 · 놓친 자리 수. 다른 기기나 다른 탭의 답이 받기로 접혀 오면 바뀐다.
+ // 묶음 만남의 열쇠에 넣는다 — 학습일 · 판 끝 · 시험 · 기록이 다 왔는가만 보면, 기록이 다 온 탭이 열린 채 다른 기기에서 한 진단이 접혀 와도 그날
+ // 내내 옛 만남(시작점 · 처음 보는 문항)으로 계획을 지었다(4-4b 끝 판 카본 C2). 요약이 그대로면 다시 묻지 않는다(카본 A8).
+ const summaryShape=summary=>{let n=0,cells=0,sittings=0,lapses=0;for(const skill of summary?.skills||[]){n+=skill.n||0;for(const cell of skill.cells||[])cells+=(cell.independent||0)+(cell.helped||0);}
+  for(const unit of summary?.units||[]){sittings+=unit.sittings||0;lapses+=unit.lapses||0;}return [summary?.skills?.length||0,n,cells,summary?.units?.length||0,sittings,lapses].join('.');};
+ // 서버 길 계정의 기록이 다 오기 전에 그린 홈(4-4b 끝 판 카본 C1): 셸은 호스트 알림을 듣지 않으므로, 받기가 되면(storage.sync.pulled) 홈을 한 번 다시
+ // 그린다 — 계획의 「기록이 다 왔는가」(시작점 · 점검 칸)가 그때 풀린다. 내 위치 판의 watchPulled와 같은 간격(2초부터 두 배씩, 60초까지)이고, 홈 코치가
+ // 바뀌거나 올리기 · 받기가 멈추면 그친다.
+ let homePull={coach:null,timer:null,wait:PULL_WATCH_MS};
+ function stopHomePull(){watchClock.clear(homePull.timer);homePull={coach:null,timer:null,wait:PULL_WATCH_MS};}
+ function watchHomePulled(coachNow,wait=PULL_WATCH_MS){
+  if(stopped||!coachNow||homePull.coach===coachNow&&homePull.timer)return;
+  watchClock.clear(homePull.timer);
+  const timer=watchClock.set(()=>{
+   if(homePull.timer!==timer)return;
+   stopHomePull();
+   if(stopped||homeWatch?.coach?.()!==coachNow)return;
+   const state=pullState(coachNow);
+   if(state==='pulled')refresh();
+   else if(state==='wait')watchHomePulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2));
+  },wait);
+  timer?.unref?.();
+  homePull={coach:coachNow,timer,wait};
+ }
  function weekNext(coachNow,values,now){
   const N=homePlanner?.plan,P=homePlanner?.position;
   const info=position?.exam?.examInfo?.(values)||null;
@@ -799,7 +828,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const exam=examOf(values),audioAvailable=values?.audio!=='off',listening=item=>item.audioRequired??item.modality==='listening';
   const summary=coachNow.summary(),diagnostic=position.items,practice=position.practice.pool;
   const synced=nextSync.coach===coachNow?nextSync.value:null;
-  const key=[homePlanner.todayKey(now),planEnds,info.type,N.recordsComplete(summary.storage,synced)].join('|');
+  const complete=N.recordsComplete(summary.storage,synced),sync=summary.storage?.sync??{};
+  if(summary.storage?.guest===false&&!complete&&sync.pulled!==true&&!sync.stopped&&!sync.writesOff&&!sync.switchOff)watchHomePulled(coachNow);
+  const key=[homePlanner.todayKey(now),planEnds,info.type,complete,summaryShape(summary)].join('|');
   if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice])};
   const metDiag=weekMet.met.slice(0,diagnostic.length),metPractice=weekMet.met.slice(diagnostic.length);
   const at=new Map(practice.map((item,i)=>[item,i])),seenOf=item=>{const row=metPractice[at.get(item)];return row?row.seen:null;};
@@ -1443,12 +1474,24 @@ async function townSend(coachNow,{wait=true}={}){
  // quiet: 학생이 누르지 않은 열기(주소 바로가기·저장 뒤) — 기다리는 사이 학생이 다른 판을 열었으면 덮지 않고, 계획이 없어도 목표 창을 열지 않는다.
  // 돌려주는 값: 'shown' · 'skipped'(뒤에 다른 열기가 왔거나 quiet인데 다른 판이 열려 있음) · 'missing'(시험 계획이 없음).
  let planOpen=0;
+ // 새 길 홈이 확인 중이면(홈 코치 · 플래너가 서기 전) 홈 계획에 이번 주 계획이 실리지 않는다(world-today — 엔진 판일 때만). 그대로 읽으면 시험을 저장한
+ // 학생을 「계획 없는 학생」으로 보고 목표 창을 열었다 — 주소의 ?exam= 바로가기, 알림의 「이번 주 연습」, 확인 중으로 돌아간 사이의 계획 단추(4-4b 끝 판
+ // Fable F1). 그래서 시험을 고른 학생이면 판이 설 때까지(엔진 · 지금 판) 한도 안에서 기다리고, 넘기면 목표 창 대신 「확인 중」이다.
+ const examChosen=()=>{try{return Boolean(position?.exam?.examInfo?.(settingsFor(getProgress().learningProfileValues())));}catch{return false;}};
+ function wakePlanWaits(){if(homePhase()==='checking')return;for(const done of [...planWaits])done();}
+ function settledHome(){
+  if(homePhase()!=='checking')return Promise.resolve();
+  return new Promise(resolve=>{let timer=null;const done=()=>{watchClock.clear(timer);planWaits.delete(done);resolve();};planWaits.add(done);timer=watchClock.set(done,PLAN_WAIT_MS);});
+ }
  async function openPlan({keepScroll=false,quiet=false}={}){
   if(keepScroll&&openPosition.pending)return 'skipped';
   check();const ticket=++planOpen;
-  if(!keepScroll){try{await prepare();}catch{/* the plan shows what this device has */}check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}check();}
+  if(!keepScroll){try{await prepare();}catch{/* the plan shows what this device has */}check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}check();
+   if(homePhase()==='checking'&&examChosen()){await settledHome();check();}}
   if(ticket!==planOpen||quiet&&home.openPanel?.())return 'skipped';
   const plan=refresh(),examPlan=plan?.examPlan;
+  // 한도를 넘겨도 확인 중이면 계획이 없는 것이 아니라 아직 모르는 것이다 — 목표 창을 열지 않는다(학생이 누른 열기에만 한 줄 알린다).
+  if(!examPlan&&homePhase()==='checking'&&examChosen()){if(!keepScroll&&!quiet)home.toast(t('home.today.checking'));return 'skipped';}
   if(!examPlan||!view){if(!keepScroll&&!quiet)open();return 'missing';}
   const scroller=keepScroll?panelNode('[data-plan-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
   home.showPanel(t('plan.week.title'),view.renderExamPlan({plan:examPlan,next:plan.selected,reason:tMessage(plan.reason||''),count:practiceLength()}),{type:'life-position',eyebrow:'MY WEEK',nav:'packs'});
@@ -1493,5 +1536,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;stopPullWatch();target.removeEventListener?.('online',onOnline);target.document?.removeEventListener?.('visibilitychange',onVisible);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopPullWatch();stopHomePull();target.removeEventListener?.('online',onOnline);target.document?.removeEventListener?.('visibilitychange',onVisible);homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

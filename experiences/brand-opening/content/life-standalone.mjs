@@ -25411,6 +25411,8 @@ function createWorldEducation({
     if (typeof target.clearTimeout === "function") target.clearTimeout(id);
     else clearTimeout(id);
   } };
+  const PLAN_WAIT_MS = 8e3;
+  const planWaits = /* @__PURE__ */ new Set();
   const owner = getProgress().owner;
   const empty2 = engine.engine.createGame({ gameId: "world-home-empty", storage: null, historyComplete: false }).summary();
   const view = position ? position.createView({ t: t2, has: hasString2, formatDate: formatDate2, lang: currentLang2 }) : null;
@@ -25834,6 +25836,7 @@ function createWorldEducation({
       } catch {
       }
     }
+    wakePlanWaits();
     try {
       if (homeNext && panelNode('[data-position-next="checking"]')) redrawNext();
     } catch {
@@ -26569,6 +26572,11 @@ function createWorldEducation({
     pullWatch = { coach: coachNow, timer, wait, done: pullWatch.done };
   }
   function hurryPullWatch() {
+    if (homePull.coach && homePull.timer && homePull.wait > PULL_WATCH_MS) {
+      const homeCoachNow = homePull.coach;
+      stopHomePull();
+      watchHomePulled(homeCoachNow, PULL_WATCH_MS);
+    }
     const coachNow = pullWatch.coach;
     if (!coachNow || !pullWatch.timer || pullWatch.wait <= PULL_WATCH_MS) return;
     watchClock.clear(pullWatch.timer);
@@ -26614,6 +26622,37 @@ function createWorldEducation({
     return { values, exam, board, plan, cards, fresh, judged, scope };
   }
   let planEnds = 0, weekMet = { coach: null, key: null, met: null };
+  const summaryShape = (summary) => {
+    let n = 0, cells = 0, sittings = 0, lapses = 0;
+    for (const skill2 of summary?.skills || []) {
+      n += skill2.n || 0;
+      for (const cell of skill2.cells || []) cells += (cell.independent || 0) + (cell.helped || 0);
+    }
+    for (const unit of summary?.units || []) {
+      sittings += unit.sittings || 0;
+      lapses += unit.lapses || 0;
+    }
+    return [summary?.skills?.length || 0, n, cells, summary?.units?.length || 0, sittings, lapses].join(".");
+  };
+  let homePull = { coach: null, timer: null, wait: PULL_WATCH_MS };
+  function stopHomePull() {
+    watchClock.clear(homePull.timer);
+    homePull = { coach: null, timer: null, wait: PULL_WATCH_MS };
+  }
+  function watchHomePulled(coachNow, wait = PULL_WATCH_MS) {
+    if (stopped || !coachNow || homePull.coach === coachNow && homePull.timer) return;
+    watchClock.clear(homePull.timer);
+    const timer = watchClock.set(() => {
+      if (homePull.timer !== timer) return;
+      stopHomePull();
+      if (stopped || homeWatch?.coach?.() !== coachNow) return;
+      const state = pullState(coachNow);
+      if (state === "pulled") refresh();
+      else if (state === "wait") watchHomePulled(coachNow, Math.min(PULL_WATCH_MOST, wait * 2));
+    }, wait);
+    timer?.unref?.();
+    homePull = { coach: coachNow, timer, wait };
+  }
   function weekNext(coachNow, values, now) {
     const N = homePlanner?.plan, P = homePlanner?.position;
     const info = position?.exam?.examInfo?.(values) || null;
@@ -26621,7 +26660,9 @@ function createWorldEducation({
     const exam = examOf(values), audioAvailable = values?.audio !== "off", listening = (item) => item.audioRequired ?? item.modality === "listening";
     const summary = coachNow.summary(), diagnostic = position.items, practice = position.practice.pool;
     const synced = nextSync.coach === coachNow ? nextSync.value : null;
-    const key = [homePlanner.todayKey(now), planEnds, info.type, N.recordsComplete(summary.storage, synced)].join("|");
+    const complete = N.recordsComplete(summary.storage, synced), sync = summary.storage?.sync ?? {};
+    if (summary.storage?.guest === false && !complete && sync.pulled !== true && !sync.stopped && !sync.writesOff && !sync.switchOff) watchHomePulled(coachNow);
+    const key = [homePlanner.todayKey(now), planEnds, info.type, complete, summaryShape(summary)].join("|");
     if (weekMet.coach !== coachNow || weekMet.key !== key) weekMet = { coach: coachNow, key, met: coachNow.exposures([...diagnostic, ...practice]) };
     const metDiag = weekMet.met.slice(0, diagnostic.length), metPractice = weekMet.met.slice(diagnostic.length);
     const at = new Map(practice.map((item, i) => [item, i])), seenOf = (item) => {
@@ -28080,6 +28121,30 @@ function createWorldEducation({
     startSection();
   }
   let planOpen = 0;
+  const examChosen = () => {
+    try {
+      return Boolean(position?.exam?.examInfo?.(settingsFor(getProgress().learningProfileValues())));
+    } catch {
+      return false;
+    }
+  };
+  function wakePlanWaits() {
+    if (homePhase() === "checking") return;
+    for (const done of [...planWaits]) done();
+  }
+  function settledHome() {
+    if (homePhase() !== "checking") return Promise.resolve();
+    return new Promise((resolve) => {
+      let timer = null;
+      const done = () => {
+        watchClock.clear(timer);
+        planWaits.delete(done);
+        resolve();
+      };
+      planWaits.add(done);
+      timer = watchClock.set(done, PLAN_WAIT_MS);
+    });
+  }
   async function openPlan({ keepScroll = false, quiet = false } = {}) {
     if (keepScroll && openPosition.pending) return "skipped";
     check3();
@@ -28095,9 +28160,17 @@ function createWorldEducation({
       } catch {
       }
       check3();
+      if (homePhase() === "checking" && examChosen()) {
+        await settledHome();
+        check3();
+      }
     }
     if (ticket !== planOpen || quiet && home.openPanel?.()) return "skipped";
     const plan = refresh(), examPlan = plan?.examPlan;
+    if (!examPlan && homePhase() === "checking" && examChosen()) {
+      if (!keepScroll && !quiet) home.toast(t2("home.today.checking"));
+      return "skipped";
+    }
     if (!examPlan || !view) {
       if (!keepScroll && !quiet) open();
       return "missing";
@@ -28233,7 +28306,9 @@ function createWorldEducation({
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
   }, metrics: () => ({ owner, plan: current }), today: () => current?.today ? { ...current.today, selected: current.selected, selectedKind: current.selectedKind, reason: current.reason } : null, dispose() {
     stopped = true;
+    wakePlanWaits();
     stopPullWatch();
+    stopHomePull();
     target.removeEventListener?.("online", onOnline);
     target.document?.removeEventListener?.("visibilitychange", onVisible);
     homeWatch?.dispose();

@@ -386,7 +386,9 @@ export function createSync({
   // 받기 실패 — 닫힌 뒤 돌아온 실패는 getRound가 여기 오기 전에 거른다(닫을 때 첫 받기는 이미 CLOSED로 풀렸다).
   async function getFailed(kind, error) {
     if (kind === 'offline') {
-      state.failures += 1;
+      // 올리기 물러서기(failures)는 끊김 하나에 한 번만 올린다 — 같은 끊김을 사다리 · 화면 복귀로 다시 받다 또 끊긴 것까지 세면, GET만 끊기고
+      // POST는 되는 동안 몇 분 만에 첫 쓰기의 올리기가 300초 뒤로 밀렸다(4-4b 끝 판 Fable F3 — 사다리 전에는 한 번이었다).
+      if (!state.pullDropped) state.failures += 1;
       // 받기만의 실패 수 — 이 문서에서 받기가 아직이면 그 사다리로 다시 건다(설계 주인 11-16 — offline에서만, 다른 갈래는 멈추거나 셸이 맡는다).
       state.pullMisses += 1;
       state.pullDropped = true;
@@ -500,6 +502,9 @@ export function createSync({
     // 이 문서에서 받기가 아직 안 됐고 앞 받기가 offline으로 끊겼으면 5분 막이를 건너뛴다 — 화면이 다시 보이면 곧 받는다(설계 주인 11-16 (가)).
     const retrying = !state.pulled && state.pullDropped;
     if (!force && !retrying && gap >= 0 && gap < PULL_GAP_MS) return Promise.resolve(null);
+    // 실제로 받으면 첫 받기의 차례 다시 받기(3초)를 지운다 — 이 받기가 또 차례에 밀리면 아래에서 다시 걸고, 끊기면 사다리가 맡는다. 남겨 두면
+    // 다시 온라인이 부른 받기가 끊긴 뒤 3초 타이머가 사다리 첫 칸(5초)보다 먼저 받아, 또 끊기면 첫 칸을 건너뛰었다(4-4b 끝 판 GPT GC1).
+    clearFirstRetry();
     const before = state.lastPull;
     state.lastPull = clock();
     // 차례를 못 얻어(다른 탭이 쥠) 받지 못했으면 받은 것으로 치지 않는다 — 첫 받기는 잠시 뒤 다시(카본 끝 판 D).

@@ -466,8 +466,8 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 다시 보기",
     "F1 셸 — 문서를 닫아도 다시 보기를 그치지 않는다(조건 1)",
-    "dispose(){stopped=true;stopPullWatch();",
-    "dispose(){stopped=true;",
+    "dispose(){stopped=true;wakePlanWaits();stopPullWatch();",
+    "dispose(){stopped=true;wakePlanWaits();",
   ],
   [
     'shell',
@@ -550,8 +550,8 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 다시 보기",
     "다시 보기 — 60초 상한을 뺀다(Fable 다시 검수)",
-    "Math.min(PULL_WATCH_MOST,wait*2)",
-    "wait*2",
+    "watchPulled(coachNow,Math.min(PULL_WATCH_MOST,wait*2))",
+    "watchPulled(coachNow,wait*2)",
   ],
   [
     'shell',
@@ -576,8 +576,14 @@ function run(target, copy) {
   return result.status === 0 && /\./.test(result.stdout ?? '');
 }
 
+// 없는 갈래 이름이면 아무 변형도 돌리지 않고 0으로 끝나던 것을 멈춘다(4-4b 끝 판 GPT GB1 — plan · today 실행기와 같은 고침).
 const at = process.argv.indexOf('--갈래');
 const only = at >= 0 ? process.argv[at + 1] : null;
+const BRANCHES = [...new Set(POSITION_MUTANTS.map(([, branch]) => branch))];
+if (at >= 0 && !BRANCHES.includes(only)) {
+  console.log(`없는 갈래다: ${only ?? '(빈 값)'} — ${BRANCHES.join(' · ')} 가운데 하나를 준다`);
+  process.exit(2);
+}
 const originals = Object.fromEntries(
   Object.entries(MODULES).map(([name, { source }]) => [name, fs.readFileSync(source, 'utf8').replace(/\r\n/g, '\n')]),
 );

@@ -254,6 +254,12 @@ export const TODAY_MUTANTS = [
     "      dry.add(act.plan.id);\n",
   ],
   [
+    "소리 끈 날",
+    "다시 셈을 소리 조건에만 한다 — 시간 조건에 걸린 낼 것 없는 숙제를 조건에 걸린 날로 적는다(4-4b 끝 판 Fable F2)",
+    "      if (act.role !== 'homework' || !act.blocked || !act.unlocked) continue;\n",
+    "      if (act.role !== 'homework' || act.blocked !== 'audio.unavailable' || !act.unlocked) continue;\n",
+  ],
+  [
     "점검 칸",
     "진단이 낼 문항이 없어도 짧은 진단 줄을 세운다",
     "  if (!area || !(area.remaining > 0) || week.diagnostic?.ready !== true) return null;\n",
@@ -291,17 +297,28 @@ export const TODAY_MUTANTS = [
   ],
 ];
 
+// 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 두면 node가 「겹쳐 부른 시험」으로 보고 파일을 하나도
+// 돌리지 않은 채 0으로 끝나, 깨지 않은 사본의 확인은 통과하고 모든 변형이 살아남은 것으로 보인다(4-4b 끝 판 GPT GB2 — position-mutants와 같은 고침).
+// 통과는 종료 코드 0이면서 통과한 시험이 하나 이상일 때다.
 function run(copy) {
-  const result = spawnSync(process.execPath, ['--test', ...scenes], {
-    env: { ...process.env, SYNK_TODAY_MODULE: copy },
+  const env = { ...process.env, SYNK_TODAY_MODULE: copy };
+  delete env.NODE_TEST_CONTEXT;
+  const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...scenes], {
+    env,
     encoding: 'utf8',
   });
-  return result.status === 0;
+  return result.status === 0 && /^# pass [1-9]/m.test(result.stdout ?? '');
 }
 
 const original = fs.readFileSync(source, 'utf8').replace(/\r\n/g, '\n');
+// 없는 갈래 이름이면 아무 변형도 돌리지 않고 0으로 끝나던 것을 멈춘다(4-4b 끝 판 GPT GB1).
 const at = process.argv.indexOf('--갈래');
 const only = at >= 0 ? process.argv[at + 1] : null;
+const BRANCHES = [...new Set(TODAY_MUTANTS.map(([branch]) => branch))];
+if (at >= 0 && !BRANCHES.includes(only)) {
+  console.log(`없는 갈래다: ${only ?? '(빈 값)'} — ${BRANCHES.join(' · ')} 가운데 하나를 준다`);
+  process.exit(2);
+}
 const copyOf = tag => path.join(here, '..', `.mutant-world-today-${process.pid}-${tag}.mjs`);
 
 const plain = copyOf('plain');
@@ -340,4 +357,8 @@ for (const [index, [branch, name, from, to]] of TODAY_MUTANTS.entries()) {
   }
 }
 console.log(`변형 ${ran} · 살아남음 ${survived} · 목록 오류 ${broken}`);
+if (!ran && !broken) {
+  console.log('돌린 변형이 없다 — 목록이나 갈래를 확인한다');
+  process.exit(2);
+}
 process.exit(broken ? 2 : survived ? 1 : 0);

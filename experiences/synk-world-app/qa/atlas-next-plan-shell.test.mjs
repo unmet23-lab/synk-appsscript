@@ -83,8 +83,11 @@ function stage() {
 
 // 셸 하나 — 새 길 홈 입구(homeNext)를 넘긴 학습 화면. values: 학습 목표 값(시험 정보). planLog(made): 입구의 판 기록(시험은 기기 저장소 하나).
 // wrap: 홈 코치에 얹을 것(묶음 만남을 세거나 기록부를 계정처럼 보이게).
-function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, planLog = null } = {}) {
+// planner: 입구가 플래너를 주는 때(끝내 주지 않으면 홈이 확인 중에 머문다). fast: 창의 시계를 30ms로 줄인다(기다림 한도를 넘기는 장면).
+function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, planLog = null, planner = async () => PLANNER, fast = false } = {}) {
   const opens = [];
+  const toasts = [];
+  const waits = [];
   const engine = {
     ...worldLearning,
     engine: {
@@ -119,7 +122,12 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
     document,
     addEventListener() {},
     removeEventListener() {},
-    setTimeout,
+    setTimeout: fast
+      ? (fn, ms) => {
+          waits.push(ms);
+          return setTimeout(fn, Math.min(ms, 30));
+        }
+      : setTimeout,
   };
   const state = { values };
   const progress = {
@@ -134,7 +142,9 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
   };
   const home = {
     updateStudy() {},
-    toast() {},
+    toast(text) {
+      toasts.push(String(text));
+    },
     closePanel() {},
     attachPanelResource() {},
     openPanel: () => null,
@@ -149,7 +159,7 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
       coaches.push(made);
       return made;
     },
-    planner: async () => PLANNER,
+    planner,
     retired: () => () => {},
     life: () => 'engine',
     ask: async () => {},
@@ -179,6 +189,8 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
     coaches,
     state,
     last: () => shown.at(-1) ?? '',
+    toasts,
+    waits,
     box: () => box,
     plan: () => education.metrics().plan,
     dispose() {
@@ -260,6 +272,40 @@ test('시험을 고르지 않은 학생은 새 길 홈에도 이번 주 계획�
   }
 });
 
+test('새 길 홈이 확인 중일 때 연 이번 주 계획은 판이 설 때까지 기다린다 — 시험을 저장한 학생에게 목표 창을 열지 않는다(4-4b 끝 판 Fable F1)', async () => {
+  const form = html => html.includes('world-study-form');
+  // 문서를 연 직후의 ?exam= 바로가기 — 홈은 아직 확인 중이다.
+  const link = shell();
+  try {
+    assert.notEqual(link.plan()?.today?.state, 'engine', '막 연 셸의 홈은 아직 엔진 판이 아니다');
+    const started = Date.now();
+    assert.equal(await link.education.examLink('topik1'), true);
+    assert.match(link.last(), /data-plan-board/, '판이 선 뒤 이번 주 계획을 연다');
+    assert.ok(Date.now() - started < 4000, '판이 서면 곧 연다 — 한도(8초)까지 기다리지 않는다');
+    assert.ok(!link.shown.some(form), '목표 창을 열지 않는다');
+  } finally {
+    link.dispose();
+  }
+  // 알림의 「이번 주 연습」(app-shell.mjs openReminder 'plan' — education.plan())도 같다.
+  const reminder = shell();
+  try {
+    assert.equal(await reminder.education.plan(), 'shown');
+    assert.ok(!reminder.shown.some(form));
+  } finally {
+    reminder.dispose();
+  }
+  // 판이 한도 안에 서지 않으면(플래너를 끝내 못 받음 — 확인 중에 머묾) 목표 창 대신 확인 중이라고만 알린다.
+  const stuck = shell({ planner: () => new Promise(() => {}), fast: true });
+  try {
+    assert.equal(await stuck.education.plan(), 'skipped');
+    assert.ok(stuck.toasts.includes('오늘 할 공부를 확인하고 있어요'), '학생이 누른 열기에는 확인 중이라고 알린다');
+    assert.equal(await stuck.education.examLink('topik1'), false, '바로가기도 목표 창을 열지 않는다');
+    assert.ok(!stuck.shown.some(form), '목표 창을 열지 않는다');
+  } finally {
+    stuck.dispose();
+  }
+});
+
 test('새 길 짧은 진단이 끝나면 이 기기의 판 기록에 다시 확인을 적고, 계획이 묶음 만남을 다시 물어 시작점이 풀린다(§21-6 가 · 카본 A8)', async () => {
   const logs = new Map();
   const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
@@ -333,6 +379,39 @@ test('새 길 짧은 진단을 도중에 그만두면 채점된 첫 답이 있�
   }
 });
 
+test('답 없이 끝난 판도 판 끝이다 — 요약이 그대로여도 이번 주 계획이 묶음 만남을 다시 묻는다(띄우기만 한 문항 · 카본 A8 · 4-4b 끝 판 카본 C2 뒤)', async () => {
+  // 이번 주 계획(weekNext)이 물은 것만 센다 — 내 위치 판(nextData)도 같은 풀로 묻는다.
+  let weekAsked = 0;
+  const app = shell({
+    wrap: made => ({
+      ...made,
+      exposures(items) {
+        if (/weekNext/.test(new Error().stack ?? '')) weekAsked += 1;
+        return made.exposures(items);
+      },
+    }),
+  });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await app.education.position({ start: true });
+    await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+    const shape = JSON.stringify(app.coaches.at(-1).summary().skills);
+    app.education.refresh();
+    const before = weekAsked;
+    app.box().press('data-position-stop');
+    app.box().press('data-position-stop');
+    await tick(20);
+    assert.equal(JSON.stringify(app.coaches.at(-1).summary().skills), shape, '답이 없으니 요약의 능력 줄은 그대로다');
+    app.education.refresh();
+    assert.ok(weekAsked > before, '판이 끝났으니 다시 묻는다 — 띄우기만 한 문항은 이제 처음 보는 문항이 아니다');
+  } finally {
+    app.dispose();
+  }
+});
+
 test('계정의 기록이 다 오면(첫 받기 · 뒤의 받기) 묶음 만남을 다시 묻는다 — 기록 일부일 때의 판정이 그날 내내 굳지 않는다(카본 A8)', async () => {
   let pulled = false;
   const asked = [];
@@ -360,6 +439,67 @@ test('계정의 기록이 다 오면(첫 받기 · 뒤의 받기) 묶음 만남�
     app.education.refresh();
     assert.equal(asked.length, before + 1, '받기가 되어 기록이 다 오면 다시 묻는다');
     assert.ok(app.plan().examPlan.notes.includes('start'), '기록이 다 온 새 학생은 시작점');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('서버 길 계정의 기록이 다 오기 전에 그린 홈은 받기가 되면 스스로 다시 그린다 — 학생이 화면을 건드리지 않아도 시작점이 풀린다(4-4b 끝 판 카본 C1)', async () => {
+  let pulled = false;
+  const app = shell({
+    fast: true,
+    wrap: made => ({
+      ...made,
+      summary() {
+        const summary = made.summary();
+        return { ...summary, storage: { ...summary.storage, guest: false, sync: { ...summary.storage.sync, pulled } } };
+      },
+    }),
+  });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    assert.ok(!app.plan().examPlan.notes.includes('start'), '기록 일부면 시작점으로 단정하지 않는다');
+    // 내 위치 판을 열지 않았다 — 판의 첫 받기 답(nextSync)이 없어도 엔진의 pulled로 「기록이 다 왔는가」가 풀린다.
+    // 받기를 기다리는 간격은 2초부터 두 배씩, 60초에서 멈춘다(내 위치 판의 watchPulled와 같다 — 창의 시계가 받은 값).
+    await until(() => app.waits.filter(ms => ms >= 2000).length >= 7, '받기 기다림이 60초 칸까지 간다');
+    assert.deepEqual(app.waits.filter(ms => ms >= 2000).slice(0, 7), [2000, 4000, 8000, 16000, 32000, 60000, 60000]);
+    pulled = true;
+    await until(() => app.plan().examPlan.notes.includes('start'), '받기가 되면 홈이 스스로 다시 그린다');
+    assert.ok(app.plan().today.items.some(row => row.kind === 'check'), '점검 칸에 짧은 진단');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('다른 기기의 답이 받기로 접혀 오면(요약이 바뀌면) 묶음 만남을 다시 묻는다 — 기록이 다 온 탭이 열린 채여도 옛 만남에 굳지 않는다(4-4b 끝 판 카본 C2)', async () => {
+  let elsewhere = null;
+  const asked = [];
+  const app = shell({
+    wrap: made => ({
+      ...made,
+      summary() {
+        const summary = made.summary();
+        return elsewhere ? { ...summary, skills: [...summary.skills, elsewhere] } : summary;
+      },
+      exposures(items) {
+        asked.push(items.length);
+        return made.exposures(items);
+      },
+    }),
+  });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    const before = asked.length;
+    app.education.refresh();
+    assert.equal(asked.length, before, '요약이 그대로면 다시 묻지 않는다(카본 A8)');
+    // 다른 기기에서 읽기 문항 셋을 혼자 풀어 그 답이 받기로 접혀 왔다.
+    elsewhere = { id: 'ko.reading.detail', theta: 0, n: 3, streak: 1, level: 1, peak: 1, cells: [{ difficulty: 1, independent: 3, correct: 2, helped: 0, lastAt: Date.now() }] };
+    app.education.refresh();
+    assert.equal(asked.length, before + 1, '요약이 바뀌면 다시 묻는다');
+    app.education.refresh();
+    assert.equal(asked.length, before + 1, '바뀐 요약이 그대로면 또 묻지 않는다');
   } finally {
     app.dispose();
   }

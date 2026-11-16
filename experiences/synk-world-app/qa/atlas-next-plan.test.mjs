@@ -514,6 +514,25 @@ test('소리를 끈 날의 듣기 숙제 — 소리를 켠 사실로 한 번 더
   }
 });
 
+test('시간 조건에 걸린 숙제 연습도 풀어서 한 번 더 셈한다 — 낼 문항이 없으면 조건에 걸린 날이 아니라 다 한 날이다(4-4b 끝 판 Fable F2)', async () => {
+  const s = await homeworkStudent();
+  const id = `${HOMEWORK_PREFIX}ko.reading.detail`;
+  // 그 능력의 처음 보는 문항을 뺀 풀 — 푼 문항만 남아 숙제 연습이 낼 것이 없다.
+  const spent = PRACTICE.filter(item => item.skillId !== 'ko.reading.detail' || s.used.includes(item));
+  const settings = { ...s.settings, minutes: 2 };
+  const week = weekOf({ coach: s.coach, settings, now: s.time.t });
+  assert.ok(week.examPlan.homework.some(row => row.skillId === 'ko.reading.detail' && row.status === 'missed'));
+  for (const [pool, code, status] of [[PRACTICE, 'blocked', 'unavailable'], [spent, 'done', 'empty']]) {
+    const plan = homePlan({ coach: s.coach, progress: s.progress, now: s.time.t, settings, week, pool });
+    const act = plan.candidates.find(open => open.id === id);
+    assert.ok(act, '숙제 연습 활동은 넘긴다');
+    assert.ok(!plan.today.items.some(row => row.activityId === id), '시간 조건에 걸린 줄은 서지 않는다');
+    assert.equal(plan.today.empty?.code, code, pool === spent ? '시간을 풀어도 낼 문항이 없으면 조건에 걸린 날이 아니다' : '시간을 풀면 낼 것이 있으니 조건에 걸린 날');
+    assert.equal(plan.status, status);
+  }
+  s.coach.dispose();
+});
+
 // ── 점검 칸의 짧은 진단(§21-6 · 20-2 · 설계 주인 11-16 알림 3) ──
 
 test('점검 칸은 이번 주 계획에 남은 다시 확인이 있고 진단이 낼 문항이 있을 때만 짧은 진단 줄이다 — 시작점이면 시작점 문장, 아니면 다시 확인 문장', async () => {

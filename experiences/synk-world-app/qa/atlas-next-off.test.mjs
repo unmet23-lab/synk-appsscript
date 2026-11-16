@@ -133,7 +133,8 @@ test('내 위치 새 판 모듈(world-position-next · world-diagnostic-next · 
    if(importsOf(read(dir+file)).some(row=>row.specifier===`./${name}.mjs`||row.specifier.endsWith(`/${name}.mjs`)))takers.push(dir+file);
   }
   // 4-4b의 이번 주 계획 모듈(world-plan-next)도 칸 계약(world-position-next)을 받는다 — 그 모듈도 입구만 받으므로(아래 4-4b 시험) 새 길 묶음 안이다.
-  assert.deepEqual(takers,name==='world-position-next'?['world-atlas-next.mjs','world-plan-next.mjs']:['world-atlas-next.mjs'],name);
+  // 폴더를 읽는 차례는 파일 시스템마다 다르다(NTFS는 이름 순, CI의 ext4는 아니다) — 정렬한 뒤 견준다(4-4b 끝 판 카본 A1).
+  assert.deepEqual(takers.sort(),name==='world-position-next'?['world-atlas-next.mjs','world-plan-next.mjs']:['world-atlas-next.mjs'],name);
  }
  assert.match(read('world-atlas-next.mjs'),/position: positionPlanner,/,'홈 플래너에 실어 넘긴다');
 });

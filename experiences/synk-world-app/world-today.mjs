@@ -479,12 +479,14 @@ export function createWorldTodayPlan({
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;
   // 조건에 걸린 날(blocked)은 걸린 활동이 풀리면 줄이 되는 때다. 상한 날의 복습 칸 활동(하던 것 밖)은 풀려도 줄이 아니라 그날의 까닭은 상한이다.
   // 판(status) · 이유 · 빈 날 코드는 한 차례(확인 중 → 조건 → 상한 → 다 한 날)로 정한다(Fable 엔진급 끝 판 F5).
-  // 소리를 끈 날의 듣기 숙제 연습(카본 설계 검토 A10): 두뇌는 잠근 활동에 층을 셈하지 않으므로, 조건에 걸린 날로 세기 전에 그 활동만 풀어 한 번
-  // 더 셈한다(plan은 보기만 읽는다). 소리를 켜도 낼 것이 없으면(새 단위 한도에 막힘) 조건에 걸린 날이 아니라 낼 것이 없는 날이다.
+  // 조건에 걸린 숙제 연습(카본 설계 검토 A10 · 4-4b 끝 판 Fable F2): 두뇌는 잠근 활동에 층을 셈하지 않으므로, 조건에 걸린 날로 세기 전에 그
+  // 활동만 풀어 한 번 더 셈한다(plan은 보기만 읽는다). 조건을 풀어도 낼 것이 없으면(처음 보는 문항이 없음 · 새 단위 한도에 막힘) 조건에 걸린 날이
+  // 아니라 낼 것이 없는 날이다. 소리만이 아니라 시간 · 도움 방식 조건도 같다 — 소리만 보던 판은 3 · 5분 설정에서 낼 문항이 없는 숙제를 「시간이나
+  // 소리 설정을 바꿔 볼 수 있어요」로 셌는데, 시간을 바꿔도 줄은 서지 않았다.
   const dry = new Set();
   if (live)
     for (const act of activities) {
-      if (act.role !== 'homework' || act.blocked !== 'audio.unavailable' || !act.unlocked) continue;
+      if (act.role !== 'homework' || !act.blocked || !act.unlocked) continue;
       const again = quiet(() => coach.plan([act.unlocked], { lang }));
       if (Array.isArray(again) && again[0]?.none) dry.add(act.plan.id);
     }
