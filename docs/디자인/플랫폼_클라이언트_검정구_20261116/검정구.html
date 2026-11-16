@@ -87,6 +87,10 @@ button,input{font:inherit;color:inherit}
 .status .quiet{display:none}
 #stage[data-wait="1"] #ask-cancel,#stage[data-wait="error"] #ask-retry{display:inline-block}
 .signup{margin-top:20px}
+/* 가입을 누른 뒤의 한 줄. 가입은 브라우저에서 하고 이 창은 그대로 있다 */
+.ask-note{margin:14px 0 0;min-height:1.5em;font:var(--small);color:rgba(243,241,236,.72);text-align:center;transition:opacity .35s ease}
+.ask-note:empty{opacity:0}
+#stage[data-wait] .ask-note{opacity:0}
 #stage[data-wait] .ask-ways,#stage[data-wait] #signup,#stage[data-wait] #ask .invite{opacity:0;--o:0;pointer-events:none;transition:opacity .35s ease;transition-delay:0s}
 #stage[data-wait] .status{opacity:1;pointer-events:auto;transition-delay:.25s}
 
@@ -232,6 +236,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
         <button class="way way-main rise" style="--i:1" type="button" data-way="signin">로그인</button>
       </div>
       <button id="signup" class="quiet signup rise" style="--i:2" type="button">처음이라면 가입하기</button>
+      <p class="ask-note" id="ask-note" role="status" aria-live="polite"></p>
       <form id="invite" class="invite rise" style="--i:4" autocomplete="off" novalidate>
         <label for="code">초대받으셨다면</label>
         <input id="code" name="code" type="text" placeholder="여기에 코드를 붙여 넣으세요" spellcheck="false" autocapitalize="off" autocorrect="off" maxlength="200">
@@ -445,7 +450,7 @@ async function boot() {
   const my = ++run;
   stage.classList.remove('still');
   sig.stop(); pointAt(null); S.spin = 0;
-  delete stage.dataset.sub; delete stage.dataset.aside; setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = '';
+  delete stage.dataset.sub; delete stage.dataset.aside; setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = ''; $('#ask-note').textContent = '';
   hurry = false; stage.dataset.boot = '1';
   // 다시 켤 때는 날마다 보는 장면이라 짧게 간다(켜서 솔리오까지 3초 남짓).
   await wait(mode === 'back' ? 300 : 520); if (my !== run) return;
@@ -460,7 +465,7 @@ async function boot() {
 }
 /* 구가 그 공간의 자리를 보는 쪽으로 돌리면서, 그 고리 안으로 들어간다. 들어온 순간 점이 맞춰져 synk 표가 된다 */
 async function enter(next, my = ++run, ms = 1250) {
-  const quick = ui === 'switch';
+  const quick = ui === 'switch' || (mode === 'back' && ui === 'rest');
   setUI('none'); snd.dive(); sig.stop(); pointAt(null);
   diveTo = next; hotWant = ORDER.indexOf(next);
   if (S.mark < .05) S.spin = -LON[next];   // 자리가 아직 안 보일 때는 도는 것을 보일 까닭이 없다
@@ -515,14 +520,11 @@ $$('.way').forEach(b => b.addEventListener('click', async () => {
   await wait(1900); if (my !== run) return;
   enter('solio');
 }));
-$('#signup').addEventListener('click', async () => {
-  const my = ++run; snd.tick();
-  askWait('브라우저에서 가입을 마치면 이 창으로 돌아옵니다.');
-  await wait(1900); if (my !== run) return;
-  enter('solio');
+$('#signup').addEventListener('click', () => {
+  snd.tick(); $('#ask-note').textContent = '브라우저에서 가입한 뒤 「로그인」을 눌러 주세요.';
 });
 $('#ask-cancel').addEventListener('click', askBack);
-$('#ask-retry').addEventListener('click', () => { askBack(); $('#code').value = ''; $('#code').focus(); });
+$('#ask-retry').addEventListener('click', () => { askBack(); $('#code').focus(); $('#code').select(); });
 $('#invite').addEventListener('submit', async e => {
   e.preventDefault();
   const v = $('#code').value.trim(); if (!v) return;
@@ -960,7 +962,7 @@ window.__orb = {
     if (opt.space) { space = opt.space; applySpace(); }
     const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'] }[scene];
     delete stage.dataset.sub; delete stage.dataset.aside; stage.classList.add('still'); resize(); sig.show(opt.sig);
-    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); if (opt.sub) openDetail(opt.sub); if (opt.aside) stage.dataset.aside = opt.aside;
+    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openDetail(opt.sub); if (opt.aside) stage.dataset.aside = opt.aside;
     pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
     if (scene === 'switch') { layoutSwitch(); S.spin = -LON[faceWant || space]; S.ax = faceAx(faceWant || space); }
     draw(performance.now()); return { ...S, W, H };
