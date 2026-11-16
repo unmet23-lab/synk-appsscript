@@ -1034,7 +1034,7 @@ test('GPT 작성은 외부 Claude 응답 필요, 한도 실패 원문만 대체 
   execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', 폴더], { encoding: 'utf8' });
   const report = fs.readFileSync(path.join(폴더, '보고.md'), 'utf8');
   assert.match(report, /GPT 0건\(반영 0\) · Claude 1건\(반영 0\)/); assert.match(report, /필수 검수: GPT · Claude/);
-  assert.match(report, /Claude A 읽음/); assert.match(report, /Claude: P0 0·P1 0·P2 1/); assert.doesNotMatch(report, /아르곤 0건/);
+  assert.match(report, /Claude A 읽음/); assert.match(report, /Claude: P0 0·P1 0·P2 1/); assert.doesNotMatch(report, /(?:카본|아르곤) 0건/);
   // Claude 백엔드(정책 판 2)는 GPT 하나 — GPT가 한도로 막힌 실패 원문이 있을 때만 아르곤이 대신한다
   const other = await api.준비하기({ 이름: 'blocked', 폴더: path.join(r.뿌리, 'blocked'), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
   await api.GPT보내기(other.폴더, other.목록, { call: async () => { throw new Error('GPT 한도(quota) — You have hit your usage limit'); }, 몫: 몫충분 });
@@ -1057,7 +1057,7 @@ test('정책 판 2·5: Claude 백엔드는 GPT 하나 — 막히면 아르곤 �
   const s = api.집계하기(a.목록, [], api.지적표읽기(a.폴더), api.결과들읽기(a.폴더, a.목록, 'GPT'));
   assert.equal(s.한줄, 'GPT 0건(반영 0)'); assert.equal(s.배포조건충족, true);
   execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', a.폴더], { encoding: 'utf8' });
-  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도·로그인으로 막히면 아르곤 → Fable\)/);
+  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도·로그인으로 막히면 카본 → Fable\)/);
   // 아르곤만으로는 안 된다 — GPT가 막힌 증거가 없으면 대신이 아니다
   const b = await 준비('argon-only');
   await api.아르곤보내기(b.폴더, b.목록, { call: 답하기(), 몫: 몫충분 });
@@ -1192,7 +1192,7 @@ test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 
   // fable.md 2단계는 두 검수자의 지적표를 다 가리킨다
   const { 페이블하기 } = await tool();
   const 페 = fs.readFileSync(await 페이블하기(폴더, { 시험: false, 캡처: false }), 'utf8');
-  assert.match(페, /아르곤\(Gemini 4 Carbon\)과 GPT\(다른 회사 모델\)이 먼저 본 뒤/);
+  assert.match(페, /카본\(Gemini 4 Carbon\)과 GPT\(다른 회사 모델\)이 먼저 본 뒤/);
   assert.match(페, /아르곤지적표\.md`와 `.*GPT지적표\.md`를 읽고/);
 });
 
@@ -2065,7 +2065,7 @@ test('그록 대체(정책 판 6 · 11-08): 백엔드는 GPT·아르곤이 둘 �
   assert.equal(v.사유, ''); assert.equal(v.집계.배포조건충족, true, v.집계.조건.join(' / ')); assert.equal(v.집계.그록대신, true);
   assert.equal(v.집계.한줄, '아르곤 막힘(한도·로그인) · GPT 막힘(한도·로그인) · 그록 0건(반영 0)');
   execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', a.폴더], { encoding: 'utf8' });
-  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도·로그인으로 막히면 아르곤 → 그록 → Fable/);
+  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도·로그인으로 막히면 카본 → 그록 → Fable/);
   // ② 그록도 막히면 Fable이 대신한다(Fable 증명이 최종)
   const c = await 준비('k-all');
   await GPT아르곤막기(api, c);
@@ -2217,4 +2217,31 @@ test('그록 대체는 화면·GPT 작성·옛 판에 들지 않는다(11-08): �
   assert.deepEqual(증명.다시검수자들(o.목록.정책, [{ 출처: '그록' }]), ['GPT']);
   assert.deepEqual(증명.다시검수자들(증명.정책만들기({ 종류: '백엔드' }, []), [{ 출처: '그록' }]), ['GPT']);
   assert.throws(() => 증명.정책만들기({ 종류: '백엔드' }, [], { 판: 8 }), /정책 판/);
+});
+
+test('보이는 이름(11-16): 화면 · md 글은 카본으로 바꾸고, 지적표 키 · 파일 이름 · JSON은 옛 이름 그대로 둔다', async t => {
+  const api = await tool();
+  assert.equal(api.보이는이름('아르곤 0건 · GPT·아르곤 · 카본(아르곤)이 GPT 자리를 대신'), '카본 0건 · GPT·카본 · 카본이 GPT 자리를 대신');
+  assert.equal(api.보이는이름('`x/아르곤지적표.md` · tools/아르곤웹.js'), '`x/아르곤지적표.md` · tools/아르곤웹.js');
+  // 인용 · 코드 · 경로는 원문 그대로 둔다(GPT 검수 GA1) — 이름만 바꾼다
+  assert.equal(api.보이는이름("인용 「x.출처 === '아르곤'」 · `아르곤보내기()` · C:\\검수\\아르곤-a\\보고.md · tmp/아르곤/a · 아르곤 1건"),
+    "인용 「x.출처 === '아르곤'」 · `아르곤보내기()` · C:\\검수\\아르곤-a\\보고.md · tmp/아르곤/a · 카본 1건");
+  const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'carbon-name', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  await api.GPT보내기(폴더, 목록, { call: async () => { throw new Error('GPT 한도(quota) — You have hit your usage limit'); }, 몫: 몫충분 });
+  await api.아르곤보내기(폴더, 목록, { call: 답하기([지적하나('a.js:1', 'P2')]), 몫: 몫충분 });
+  const 옛말 = /아르곤(?!지적표|웹)/;
+  const 집계 = spawnSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', 폴더], { encoding: 'utf8' });
+  assert.match(집계.stdout, /카본/); assert.doesNotMatch(집계.stdout + 집계.stderr, 옛말);
+  const 보고 = fs.readFileSync(path.join(폴더, '보고.md'), 'utf8');
+  assert.match(보고, /카본 1건/); assert.doesNotMatch(보고, 옛말);
+  assert.match(fs.readFileSync(path.join(폴더, '아르곤지적표.md'), 'utf8'), /^# 카본 지적과 Claude의 처리/);
+  assert.doesNotMatch(fs.readFileSync(path.join(폴더, '지적표.md'), 'utf8'), 옛말);
+  // 기록 안의 키는 옛 이름 그대로다 — 봉인 · 판정이 이 키로 읽는다
+  assert.ok(api.지적표읽기(폴더).지적.some(x => x.출처 === '아르곤'));
+  assert.deepEqual(api.검수확인(폴더).사유, []);
+  // 맨 위에서 잡는 오류 글도 바꾼다(첫 줄만 — 스택의 함수 이름과 경로는 그대로)
+  const 틀림 = spawnSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '검수받기', 폴더], { encoding: 'utf8' });
+  const 첫줄 = 틀림.stderr.split(/\r?\n/)[0];
+  assert.match(첫줄, /--검수자 Claude\|GPT\|카본/); assert.doesNotMatch(첫줄, 옛말);
 });

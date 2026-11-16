@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // TOPIK 문항 AI 2중 검수(교원 검수 대체, 2026-10-20 결정). 1차 Claude Opus(Message Batches · 기준 프롬프트 캐시),
-// 2차 아르곤(Google AI 구독 · 영어·몽골어 해설 역번역), 엇갈리면 Opus가 두 의견을 놓고 판정한다.
+// 2차 카본(Google AI 구독 · 영어·몽골어 해설 역번역), 엇갈리면 Opus가 두 의견을 놓고 판정한다.
+// (카본은 gemini-4-carbon high다. 11-11 전 이름은 아르곤이라 결과 파일 · 상태의 키(argon)는 그대로이고, 화면과 보고서 글만 카본으로 쓴다 — 11-16)
 // 새 LLM 실행기가 아니다 — 부르는 통로는 tools/lib/클로드키.js(일괄·한 건)와 tools/lib/제미나이구독호출.js 그대로다.
 //
 //   node tools/topik-review.mjs 준비 <이름> [--새 [<묶음…>]] [--새표본 N] [--기존 [<출처…>]] [--출처마다 N] [--표본 N] [--미판정]   검수 묶음(output/topik-review/<이름>/)
@@ -9,7 +10,7 @@
 //   node tools/topik-review.mjs 준비 <이름> --드라마 [<줄 id…>] [--미판정]   드라마 말하기 대사 칸 명세(drama-spec-r1 — 목록이 없으면 대본의 학생 줄 + 처음 보는 대사 전부),
 //                                                                반영은 대본 검수:'passed'·검수지문과 experiences/drama/review/spec-review.json
 //   node tools/topik-review.mjs 클로드 <이름> [--보내기|--받기]   1차: 블라인드 풀이 + 기준 검수 일괄(반값)
-//   node tools/topik-review.mjs 아르곤 <이름> [--묶음 4]           2차: 독립 검수 + 해설 역번역(하나씩 차례로)
+//   node tools/topik-review.mjs 카본 <이름> [--묶음 4]             2차: 독립 검수 + 해설 역번역(하나씩 차례로, 옛 명령 이름도 받는다)
 //   node tools/topik-review.mjs 판정 <이름> [--보내기 [--줄 <id…>]]  두 검수 합치기 · 엇갈린 문항은 Opus 판정(--줄이면 그 줄만)
 //   node tools/topik-review.mjs 반영 <이름>                         새 문항 review 줄·reviewStatus, 기존 문항 existing-verdicts.json
 //   node tools/topik-review.mjs 보고 <이름>                         판정 수·쓴 비용·1,000문항 어림(report.md)
@@ -685,11 +686,11 @@ export async function runArgon(packet, dir, { groupSize = 4, call, log = console
     const seconds = Math.round((Date.now() - started) / 1000);
     let parsed = null;
     if (!error) { try { parsed = JSON.parse(record.text); } catch { error = '답이 JSON이 아니다'; } }
-    if (parsed && (parsed.seen || []).includes('truncated')) error = '아르곤이 목록 끝을 못 봤다(잘림)';
+    if (parsed && (parsed.seen || []).includes('truncated')) error = '카본이 목록 끝을 못 봤다(잘림)';
     state.calls.push({ refs: group.map(u => u.ref), seconds, marker, error, at: new Date().toISOString(), selectedModel: record?.selectedModel ?? null });
     if (!error) for (const row of parsed.items || []) if (group.some(u => u.ref === row.ref)) state.results[row.ref] = row;
     const missing = group.filter(u => !state.results[u.ref]).map(u => u.ref);
-    log(`아르곤 ${group.map(u => u.ref).join(',')} · ${seconds}초${error ? ` · 실패: ${error}` : missing.length ? ` · 빠짐 ${missing.join(',')}` : ''}`);
+    log(`카본 ${group.map(u => u.ref).join(',')} · ${seconds}초${error ? ` · 실패: ${error}` : missing.length ? ` · 빠짐 ${missing.join(',')}` : ''}`);
     writeJson(outFile, state);
   }
   return state;
@@ -894,7 +895,7 @@ async function main([command, name, ...argv]) {
     const { exceptionCommand } = await import('./lib/topik-review-atlas-20261028.mjs');
     console.log(JSON.stringify(await exceptionCommand(command, name, argv))); return 0;
   }
-  if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 14).join('\n')); return 2; }
+  if (!command || !name) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 15).join('\n')); return 2; }
   const 클로드 = require('./lib/클로드키.js');
   if (command === '준비') {
     const packet = await prepare(name, { newFiles: list(argv, '--새'), existingSources: list(argv, '--기존'), sample: num(argv, '--표본'), perSource: num(argv, '--출처마다'), newSample: num(argv, '--새표본'), writingFile: list(argv, '--쓰기')?.[0] || null, onlyIds: list(argv, '--문항'), onlyUnjudged: argv.includes('--미판정'), teaIds: list(argv, '--찻집'), dramaIds: list(argv, '--드라마'), campus: argv.includes('--캠퍼스') });
@@ -970,13 +971,13 @@ async function main([command, name, ...argv]) {
       `- 판정: 통과 ${count('pass')} · 고침 ${count('fix')} · 뺌 ${count('drop')} · 엇갈림(판정 전) ${count('split')} · 미완 ${count('incomplete')}`,
       `- Claude 일괄 추정 $${(total?.추정USD || 0).toFixed(4)} + 판정 $${judgeUsd.toFixed(4)} = $${usd.toFixed(4)} → 1,000문항 어림 $${(usd / n * 1000).toFixed(2)}`,
       total ? `- 토큰 합계: 입력 ${total.usage.input_tokens} · 캐시 쓰기 ${total.usage.cache_creation_input_tokens} · 캐시 읽기 ${total.usage.cache_read_input_tokens} · 출력 ${total.usage.output_tokens}` : '- Claude 결과 없음',
-      `- 아르곤 호출 ${argon?.calls.length || 0}회 · ${Math.round(argonSeconds / 60)}분(구독, 추가 비용 없음)`, '', '| ref | 문항 | 결과 | Claude | 아르곤 | 메모 |', '|---|---|---|---|---|---|',
+      `- 카본 호출 ${argon?.calls.length || 0}회 · ${Math.round(argonSeconds / 60)}분(구독, 추가 비용 없음)`, '', '| ref | 문항 | 결과 | Claude | 카본 | 메모 |', '|---|---|---|---|---|---|',
       ...packet.units.map(u => { const m = merged[u.ref]; return `| ${u.ref} | ${u.id || u.key} | ${m.outcome} | ${m.claude.verdict ?? '-'} | ${m.argon.verdict ?? '-'} | ${String(m.judge?.reason || m.claude.notes || '').replace(/\|/g, '/').slice(0, 140)} |`; })];
     // 드라마 대사는 줄마다 통과 · 못 넘음의 까닭과 고칠 점을 남긴다(두 검수자 · 판정 · 시험 말 가운데 막은 것).
     if (dramaPacket) for (const u of packet.units) {
-      const m = merged[u.ref], blocked = [...(m.claude.probes || []).map(p => ({ ...p, by: 'Claude' })), ...(m.argon.probes || []).map(p => ({ ...p, by: '아르곤' }))].filter(p => dramaBlocking(u).includes(p.problem));
+      const m = merged[u.ref], blocked = [...(m.claude.probes || []).map(p => ({ ...p, by: 'Claude' })), ...(m.argon.probes || []).map(p => ({ ...p, by: '카본' }))].filter(p => dramaBlocking(u).includes(p.problem));
       const fixes = [...new Set([...(m.judge?.fixes || []), ...(m.claude.fixes || []), ...(m.argon.fixes || [])])];
-      lines.push('', `## ${u.id} · ${u.role === 'scene' ? '장면' : '처음 보는'} · ${m.outcome}`, '', `- 대사: ${u.view.모범_대사}`, `- Claude(${m.claude.verdict ?? '-'}): ${m.claude.notes}`, `- 아르곤(${m.argon.verdict ?? '-'}): ${m.argon.notes}`,
+      lines.push('', `## ${u.id} · ${u.role === 'scene' ? '장면' : '처음 보는'} · ${m.outcome}`, '', `- 대사: ${u.view.모범_대사}`, `- Claude(${m.claude.verdict ?? '-'}): ${m.claude.notes}`, `- 카본(${m.argon.verdict ?? '-'}): ${m.argon.notes}`,
         ...(m.judge ? [`- 판정(${m.judge.verdict}): ${m.judge.reason}`] : []),
         ...(blocked.length ? [`- 막은 시험 말: ${blocked.map(p => `${p.by} 「${p.say}」(${p.expect === 'pass' ? '맞는 말' : `노트 줄 말 · ${p.kind}`}) → ${p.got}`).join(' · ')}`] : []),
         ...(fixes.length ? ['- 고칠 점:', ...fixes.map(f => `  - ${f}`)] : []));

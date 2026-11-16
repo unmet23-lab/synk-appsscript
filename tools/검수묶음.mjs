@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // 화면·백엔드 검수 묶음(2026-10-21). docs/AI_운영원칙.md 「검수 판정표」의 GPT(백엔드 — 2026-10-24부터 하나, 막히면 아르곤, 정책 판 6부터 그다음 그록) · 아르곤(화면 1차) → Fable 검수에 넘길 자료를 한 명령으로 묶고,
-// 받은 답을 입력 SHA·끝 표식·읽은 항목으로 대조해 지적표·Fable 요약·「아르곤 N건(반영 M) · GPT N건(반영 M) · Fable N건(반영 M)」 집계를 만든다.
+// 받은 답을 입력 SHA·끝 표식·읽은 항목으로 대조해 지적표·Fable 요약·「카본 N건(반영 M) · GPT N건(반영 M) · Fable N건(반영 M)」 집계를 만든다.
 // 새 LLM 실행기가 아니다 — 아르곤은 tools/lib/제미나이구독호출.js의 부르기를, GPT는 공식 Codex CLI(`codex exec`, 주간 몫이 넉넉한 Pro 계정)를 묶음마다 한 번 부르고
 // (되풀이·다른 모델로 대체 없음, 다시 보내기는 사람이 --다시로), Fable은 5.2(claude-fable-5-2)로만 — Agent model: fable(이 PC의 Claude 설정이 「fable」 별칭을 claude-fable-5-2로 묶는다, 11-13)이나 세션 모델이 5.2인 세션에서 model을 비운 Agent에 fable.md를 주고, 답 기록의 model 칸이 claude-fable-5-2가 아니면 쓰지 않는다(유호님 11-11 · 11-13 — 운영 원칙 「한도」대로 넘긴 claude-opus-5-5 답만 예외). 틀은 tools/topik-review.mjs를 본떴다.
 //
 //   node tools/검수묶음.mjs 준비 <이름> --종류 화면|백엔드 --바탕 <커밋> [<경로…>] [준비 옵션]   아르곤 묶음·전후 캡처·시험 TAP·Fable 요약
 //   node tools/검수묶음.mjs 카본 <이름> [--수준 high|medium] [--묶음 A …] [--다시]         묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
-//     (11-11부터 Gemini 검수자의 보이는 이름은 「카본」(gemini-4-carbon high) — 명령 「아르곤」 · --검수자 아르곤도 같고, 정책 · 지적표 · 기록의 키는 옛 이름 「아르곤」 그대로다)
+//     (11-11부터 Gemini 검수자의 보이는 이름은 「카본」(gemini-4-carbon high)이다. 옛 이름의 명령과 --검수자 값도 같게 받는다. 정책 · 지적표 · 기록의 키와 파일 이름은
+//      옛 이름(아르곤지적표.md의 앞 이름) 그대로이고, 화면과 md로 나가는 글만 보이는이름()이 카본으로 바꾼다 — 11-16)
 //   node tools/검수묶음.mjs GPT <이름> [--수준 high|xhigh…] [--묶음 A …] [--다시]          백엔드 2차 검수(2026-10-24 GPT 하나 — 막히면 아르곤 → 그록 → Fable, 판 5까지 묶음은 아르곤 → Fable) — 아르곤과 같은 묶음·같은 대조
 //     (모델 gpt-6-astra · 추론 high — 11-15부터, 그 전에는 sol · max. --수준은 추론만. 환경변수 SYNK_GPT_REVIEW_MODEL=gpt-…가 있으면 그 모델 — 도구는 이 값을 지우지 않아 셸에 남은 동안 GPT 검수마다 적용되고,
 //      계정·보내기·완료 안내와 결과의 「모델설정」에 적힌다. 모델 이름 꼴이 아니면 계정도 읽지 않고 멈춘다.
@@ -86,6 +87,13 @@ const sha = b => crypto.createHash('sha256').update(b).digest('hex');
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
 const writeJson = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); const tmp = `${file}.${process.pid}.tmp`; fs.writeFileSync(tmp, JSON.stringify(value, null, 2) + '\n'); fs.renameSync(tmp, file); };
 const 글쓰기 = (file, text) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, text); };
+// 11-11부터 Gemini 검수자의 보이는 이름은 「카본」이다. 정책 · 지적표 · 결과 · 봉인의 키와 파일 이름(아르곤지적표.md, 아르곤웹)은 옛 이름 그대로 두고,
+// 사람이 읽는 글이 나가는 자리(md 파일, 화면 출력, 배포 · 공개 도구의 검수 사유)에서만 이 함수로 바꾼다(11-16). JSON 출력과 기록에는 쓰지 않는다.
+// 백틱 코드, 「」 인용, 경로 토큰(/ 나 \가 든 낱말)은 원문 그대로 둔다 — 지적표의 인용 코드와 실제 경로가 바뀌면 안 된다(GPT 검수 GA1, 11-16).
+const 이름보호 = /(`[^`\n]*`|「[^」\n]*」|[^\s`「」()]*[\\/][^\s`「」()]*)/;
+export const 보이는이름 = 글 => String(글).split(이름보호)
+  .map((조각, i) => (i % 2 ? 조각 : 조각.replace(/카본\(아르곤\)/g, '카본').replace(/아르곤(?!지적표|웹)/g, '카본'))).join('');
+const md쓰기 = (file, text) => 글쓰기(file, 보이는이름(text));
 const 바이트 = s => Buffer.byteLength(s, 'utf8');
 const 슬래시 = p => p.split(path.sep).join('/');
 const 줄임 = (s, n) => (s.length > n ? `${s.slice(0, Math.floor(n / 2))} …(${s.length - n}자 줄임)… ${s.slice(-Math.floor(n / 2))}` : s);
@@ -1439,14 +1447,14 @@ function 지적표글(표, { 출처 = null } = {}) {
 }
 function 지적표쓰기(폴더, 표) {
   writeJson(path.join(폴더, '지적표.json'), 표);
-  글쓰기(path.join(폴더, '지적표.md'), `# 지적표 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표)}\n`);
-  글쓰기(path.join(폴더, '아르곤지적표.md'), `# 아르곤 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: '아르곤' })}\n`);
+  md쓰기(path.join(폴더, '지적표.md'), `# 지적표 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표)}\n`);
+  md쓰기(path.join(폴더, '아르곤지적표.md'), `# 아르곤 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: '아르곤' })}\n`);
   // GPT 결과가 하나라도 있으면 0건이어도 쓴다 — fable.md 2단계가 이 파일을 가리킨다(아르곤 검수 A1)
   const G결과있음 = fs.existsSync(폴더) && fs.readdirSync(폴더).some(f => /^GPT-[^.]+\.json$/.test(f));
-  if (G결과있음 || 표.지적.some(x => x.출처 === 'GPT') || fs.existsSync(path.join(폴더, 'GPT지적표.md'))) 글쓰기(path.join(폴더, 'GPT지적표.md'), `# GPT 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: 'GPT' })}\n`);
+  if (G결과있음 || 표.지적.some(x => x.출처 === 'GPT') || fs.existsSync(path.join(폴더, 'GPT지적표.md'))) md쓰기(path.join(폴더, 'GPT지적표.md'), `# GPT 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: 'GPT' })}\n`);
   // 그록도 같다 — 판 6 백엔드에서 GPT·아르곤 대신 본 그록 지적을 fable.md 2단계가 가리킨다(2026-11-08)
   const K결과있음 = fs.existsSync(폴더) && fs.readdirSync(폴더).some(f => /^그록-[^.]+\.json$/.test(f));
-  if (K결과있음 || 표.지적.some(x => x.출처 === '그록') || fs.existsSync(path.join(폴더, '그록지적표.md'))) 글쓰기(path.join(폴더, '그록지적표.md'), `# 그록 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: '그록' })}\n`);
+  if (K결과있음 || 표.지적.some(x => x.출처 === '그록') || fs.existsSync(path.join(폴더, '그록지적표.md'))) md쓰기(path.join(폴더, '그록지적표.md'), `# 그록 지적과 Claude의 처리 — ${표.이름 || path.basename(폴더)}\n\n${지적표글(표, { 출처: '그록' })}\n`);
 }
 
 // ── Fable ──────────────────────────────────────────────────────────
@@ -1536,7 +1544,7 @@ function 페이블쓰기(폴더, 목록, 지금) {
     '```',
     `자료 끝 표식: ${지금.증명?.표식 || ''}`,
   ];
-  글쓰기(path.join(폴더, 'fable.md'), 줄.join('\n') + '\n');
+  md쓰기(path.join(폴더, 'fable.md'), 줄.join('\n') + '\n');
   if (!fs.existsSync(path.join(폴더, '아르곤지적표.md'))) 지적표쓰기(폴더, 표);
   return path.join(폴더, 'fable.md');
 }
@@ -2159,7 +2167,7 @@ function 다시페이블쓰기(폴더, 목록) {
     ' "seen":["묶음의 [항목 번호]를 모두"],"coverage":{"reviewed":"읽은 범위","limitations":"","complete":true,"missing":[]},"endMarker":"묶음 맨 끝 「자료 끝 표식:」 뒤의 글"}',
     '```',
   ];
-  글쓰기(path.join(폴더, 'fable.md'), 줄.join('\n') + '\n');
+  md쓰기(path.join(폴더, 'fable.md'), 줄.join('\n') + '\n');
 }
 // ── 합침 고리(2026-11-12) ───────────────────────────────────────────
 // 다시 <새 이름> --앞 <앞 이름> --합침만: 앞 검수 뒤 이 세션의 고침 없이 origin/master에 먼저 오른 커밋을 합쳐 바이트만 바뀐 판을
@@ -2643,70 +2651,72 @@ const 쓰는법 = () => {
 };
 
 async function main(argv) {
+  // 사람이 읽는 출력은 보이는이름()으로 거른다 — JSON 출력(배포판정준비 · 배포판정받기 · 확인)은 키 그대로 둔다(11-16)
+  const 찍기 = (...a) => console.log(...a.map(보이는이름)), 틀림 = (...a) => console.error(...a.map(보이는이름));
   let o;
-  try { o = 인자읽기(argv); } catch (e) { console.error(e.message); console.log(쓰는법()); return 2; }
+  try { o = 인자읽기(argv); } catch (e) { 틀림(e.message); 찍기(쓰는법()); return 2; }
   if (/^gpt$/i.test(o.명령 || '')) o.명령 = 'GPT';
   // 11-11부터 Gemini 검수자는 보이는 이름이 「카본」(gemini-4-carbon high) — 기록 · 정책 안의 키는 옛 이름 「아르곤」 그대로라 여기서 바꿔 받는다.
   if (o.명령 === '카본') o.명령 = '아르곤';
   if (o.검수자 === '카본') o.검수자 = '아르곤';
-  if (!o.명령 || !o.이름 || !['준비', '다시', '아르곤', 'GPT', '그록', '처리', '페이블', '페이블받기', '검수받기', '대체승인', '배포판정준비', '배포판정받기', '확인', '집계'].includes(o.명령)) { console.log(쓰는법()); return 2; }
-  const 알리기 = m => console.error(`… ${m}`);
+  if (!o.명령 || !o.이름 || !['준비', '다시', '아르곤', 'GPT', '그록', '처리', '페이블', '페이블받기', '검수받기', '대체승인', '배포판정준비', '배포판정받기', '확인', '집계'].includes(o.명령)) { 찍기(쓰는법()); return 2; }
+  const 알리기 = m => 틀림(`… ${m}`);
   if (o.명령 === '준비') {
     const { 폴더, 목록 } = await 준비하기(o, { 알리기 });
-    console.log(`${폴더}`);
-    console.log(`${목록.종류} 검수 · 바탕 ${목록.바탕.커밋.slice(0, 9)} → ${목록.끝 === '작업본' ? '작업본' : 목록.끝.커밋.slice(0, 9)} · 파일 ${목록.파일.length}개(뺌 ${목록.파일.filter(f => f.뺀까닭).length})`);
-    for (const b of 목록.묶음) console.log(`  묶음 ${b.이름}: ${Math.round(b.바이트 / 1024)}KB · 항목 ${b.항목.length}개 · ${b.갈래} · sha ${b.sha256.slice(0, 12)} · 끝 표식 ${b.표식}${b.바이트 > 목록.최대바이트 ? ` · 주의: ${목록.최대바이트}바이트를 넘었다(파일 목록이 길다)` : ''}`);
-    if (목록.시험) console.log(`  시험: ${시험한줄(목록.시험)}`);
-    if (목록.화면) console.log(`  캡처: ${목록.화면.장들.length}장 · 차이 ${목록.화면.차이들.filter(x => !x.같음).length}곳 · 못 연 화면 ${목록.화면.못연.length}${목록.화면.못끼움.length ? ` · 「전」에 못 끼운 바뀐 화면 파일 ${목록.화면.못끼움.length}개(주소 연결 확인: ${목록.화면.못끼움.slice(0, 3).join(', ')})` : ''}${목록.화면.헷갈림.length ? ` · 헷갈린 주소 ${목록.화면.헷갈림.length}(--주소뿌리)` : ''}`);
+    찍기(`${폴더}`);
+    찍기(`${목록.종류} 검수 · 바탕 ${목록.바탕.커밋.slice(0, 9)} → ${목록.끝 === '작업본' ? '작업본' : 목록.끝.커밋.slice(0, 9)} · 파일 ${목록.파일.length}개(뺌 ${목록.파일.filter(f => f.뺀까닭).length})`);
+    for (const b of 목록.묶음) 찍기(`  묶음 ${b.이름}: ${Math.round(b.바이트 / 1024)}KB · 항목 ${b.항목.length}개 · ${b.갈래} · sha ${b.sha256.slice(0, 12)} · 끝 표식 ${b.표식}${b.바이트 > 목록.최대바이트 ? ` · 주의: ${목록.최대바이트}바이트를 넘었다(파일 목록이 길다)` : ''}`);
+    if (목록.시험) 찍기(`  시험: ${시험한줄(목록.시험)}`);
+    if (목록.화면) 찍기(`  캡처: ${목록.화면.장들.length}장 · 차이 ${목록.화면.차이들.filter(x => !x.같음).length}곳 · 못 연 화면 ${목록.화면.못연.length}${목록.화면.못끼움.length ? ` · 「전」에 못 끼운 바뀐 화면 파일 ${목록.화면.못끼움.length}개(주소 연결 확인: ${목록.화면.못끼움.slice(0, 3).join(', ')})` : ''}${목록.화면.헷갈림.length ? ` · 헷갈린 주소 ${목록.화면.헷갈림.length}(--주소뿌리)` : ''}`);
     const 앞 = 목록.화면?.전앞판;
-    if (앞) console.log(`  「전」 = 지금 공개본: 배포 후보가 아는 파일 ${앞.앞판 + 앞.새}개 가운데 ${앞.끼움.length}개를 앞판(새 파일은 404)으로 끼움${앞.끼움.length ? '' : ' — 주소 연결 확인(공개 트리를 이 PC 서버로 띄워 --화면 <이름>=<주소>로 준다)'}${앞.뿌리찾기 ? ` · 저장소 경로 요청의 후보 뿌리 ${앞.뿌리찾기.뿌리 == null ? `못 정함 — 그 요청은 바탕 판${앞.뿌리찾기.동률.length ? `(동률 ${앞.뿌리찾기.동률.slice(0, 4).join('·')})` : ''}` : 앞.뿌리찾기.뿌리 || '(저장소 맨 위)'}` : ''}`);
-    if (!목록.배경) console.log('  배경 글 없음 — 무엇을 왜 바꿨는지·글자가 동작에 엮인 곳을 --배경 <파일>로 주면 지적이 정확해진다');
-    if (!목록.정책.사용자지정) console.log(`  Fable 요약: ${path.join(폴더, 'fable.md')}`);
+    if (앞) 찍기(`  「전」 = 지금 공개본: 배포 후보가 아는 파일 ${앞.앞판 + 앞.새}개 가운데 ${앞.끼움.length}개를 앞판(새 파일은 404)으로 끼움${앞.끼움.length ? '' : ' — 주소 연결 확인(공개 트리를 이 PC 서버로 띄워 --화면 <이름>=<주소>로 준다)'}${앞.뿌리찾기 ? ` · 저장소 경로 요청의 후보 뿌리 ${앞.뿌리찾기.뿌리 == null ? `못 정함 — 그 요청은 바탕 판${앞.뿌리찾기.동률.length ? `(동률 ${앞.뿌리찾기.동률.slice(0, 4).join('·')})` : ''}` : 앞.뿌리찾기.뿌리 || '(저장소 맨 위)'}` : ''}`);
+    if (!목록.배경) 찍기('  배경 글 없음 — 무엇을 왜 바꿨는지·글자가 동작에 엮인 곳을 --배경 <파일>로 주면 지적이 정확해진다');
+    if (!목록.정책.사용자지정) 찍기(`  Fable 요약: ${path.join(폴더, 'fable.md')}`);
     if (목록.정책.사용자지정) {
-      console.log(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
+      찍기(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
     } else if (직접승인화면정책(목록.정책)) {
-      console.log(`다음: node tools/검수묶음.mjs 카본 ${목록.이름} · ${필수글(목록.정책)} (직접 승인한 GPT 구현만 허용; 일반 화면 검수·배포 조건 유지)`);
+      찍기(`다음: node tools/검수묶음.mjs 카본 ${목록.이름} · ${필수글(목록.정책)} (직접 승인한 GPT 구현만 허용; 일반 화면 검수·배포 조건 유지)`);
     } else if (목록.정책.담당예외?.taskId === 'topik-writing-semantic-20261028') {
-      console.log(`다음: node tools/검수묶음.mjs 카본 ${목록.이름} (${필수글(목록.정책)})`);
+      찍기(`다음: node tools/검수묶음.mjs 카본 ${목록.이름} (${필수글(목록.정책)})`);
     } else if (목록.정책.작성자 === 'GPT') {
-      console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름} · Claude도 같은 묶음을 검수한 뒤 검수받기로 가져온다 (필수 GPT+Claude · 묶음 ${목록.묶음.length}개${GPT자리대체정책(목록.정책) ? ` · GPT가 한도·로그인(주간 문턱 포함)으로 막히면 카본 ${목록.이름}이 GPT 자리를 대신하고, Claude 자리는 대신 없음` : ''})`);
+      찍기(`다음: node tools/검수묶음.mjs GPT ${목록.이름} · Claude도 같은 묶음을 검수한 뒤 검수받기로 가져온다 (필수 GPT+Claude · 묶음 ${목록.묶음.length}개${GPT자리대체정책(목록.정책) ? ` · GPT가 한도·로그인(주간 문턱 포함)으로 막히면 카본 ${목록.이름}이 GPT 자리를 대신하고, Claude 자리는 대신 없음` : ''})`);
     } else if (대체순서(목록.정책)?.[0] === 'GPT') {
-      console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름}   (묶음 ${목록.묶음.length}개를 하나씩 · ${대체안내(대체순서(목록.정책), 목록.이름)}${그록대체정책(목록.정책) ? ' — 그록이 대신 보면 그록 P2도 처리를 적는다' : ''})`);
+      찍기(`다음: node tools/검수묶음.mjs GPT ${목록.이름}   (묶음 ${목록.묶음.length}개를 하나씩 · ${대체안내(대체순서(목록.정책), 목록.이름)}${그록대체정책(목록.정책) ? ' — 그록이 대신 보면 그록 P2도 처리를 적는다' : ''})`);
     } else {
       const 순서 = 대체순서(목록.정책);
-      console.log(`다음: node tools/검수묶음.mjs 카본 ${목록.이름}   (수준 ${기본수준[목록.종류]} · 묶음 ${목록.묶음.length}개를 하나씩${순서?.includes('그록') ? ` · ${대체안내(순서, 목록.이름)} — 그록이 대신 보면 그록 P2도 처리를 적는다` : ''})`);
+      찍기(`다음: node tools/검수묶음.mjs 카본 ${목록.이름}   (수준 ${기본수준[목록.종류]} · 묶음 ${목록.묶음.length}개를 하나씩${순서?.includes('그록') ? ` · ${대체안내(순서, 목록.이름)} — 그록이 대신 보면 그록 P2도 처리를 적는다` : ''})`);
     }
     return 0;
   }
   if (o.명령 === '다시') {
-    if (o.남은.length) { console.error(`다시에는 경로를 주지 않는다(앞 검수의 범위를 잇는다): ${o.남은.join(' ')}`); return 2; }
+    if (o.남은.length) { 틀림(`다시에는 경로를 주지 않는다(앞 검수의 범위를 잇는다): ${o.남은.join(' ')}`); return 2; }
     const { 폴더, 목록 } = await 다시하기(o, { 알리기 });
     if (목록.갈래 === '합침') {
       const h = 목록.합침;
-      console.log(`${폴더}`);
-      console.log(`합침 고리 · 앞 ${목록.앞.이름} → ${목록.이름} · 검수자 없음(기계 대조) · 모양 「${h.모양}」 · origin ${h.origin.slice(0, 9)} · 바탕 ${h.바탕.slice(0, 9)}${h.나르개 ? ` · 검수한 고침을 실은 커밋 ${h.나르개.slice(0, 9)}` : ''} · 바뀐 파일 ${목록.바뀐경로.소스.length}개${목록.바뀐경로.후보.length ? ` · 배포 후보 ${목록.바뀐경로.후보.length}개` : ''}`);
-      console.log(`  합친 origin 커밋 ${h.커밋들.length}개(이 작업본 올림 장부와 견줌 — 바로올리기 밖으로 올린 자기 커밋이 섞였으면 이 고리를 쓰지 않고 --함께올림으로 다시 검수한다):`);
-      for (const c of h.커밋들.slice(0, 30)) console.log(`    ${c.커밋.slice(0, 10)} ${c.커밋 === h.나르개 ? '(검수한 고침) ' : ''}${c.제목.slice(0, 110)}`);
-      if (h.커밋들.length > 30) console.log(`    … ${h.커밋들.length - 30}개 더 — 묶음.json 합침.커밋들`);
-      console.log(`다음: node tools/검수묶음.mjs 확인 ${목록.이름} → 배포·공개는 --검수 ${목록.이름}`);
+      찍기(`${폴더}`);
+      찍기(`합침 고리 · 앞 ${목록.앞.이름} → ${목록.이름} · 검수자 없음(기계 대조) · 모양 「${h.모양}」 · origin ${h.origin.slice(0, 9)} · 바탕 ${h.바탕.slice(0, 9)}${h.나르개 ? ` · 검수한 고침을 실은 커밋 ${h.나르개.slice(0, 9)}` : ''} · 바뀐 파일 ${목록.바뀐경로.소스.length}개${목록.바뀐경로.후보.length ? ` · 배포 후보 ${목록.바뀐경로.후보.length}개` : ''}`);
+      찍기(`  합친 origin 커밋 ${h.커밋들.length}개(이 작업본 올림 장부와 견줌 — 바로올리기 밖으로 올린 자기 커밋이 섞였으면 이 고리를 쓰지 않고 --함께올림으로 다시 검수한다):`);
+      for (const c of h.커밋들.slice(0, 30)) 찍기(`    ${c.커밋.slice(0, 10)} ${c.커밋 === h.나르개 ? '(검수한 고침) ' : ''}${c.제목.slice(0, 110)}`);
+      if (h.커밋들.length > 30) 찍기(`    … ${h.커밋들.length - 30}개 더 — 묶음.json 합침.커밋들`);
+      찍기(`다음: node tools/검수묶음.mjs 확인 ${목록.이름} → 배포·공개는 --검수 ${목록.이름}`);
       return 0;
     }
     const b = 목록.묶음[0];
-    console.log(`${폴더}`);
-    console.log(`다시 검수 · 앞 ${목록.앞.이름} → ${목록.이름} · 바뀐 파일 ${목록.바뀐경로.소스.length}개${목록.바뀐경로.후보.length ? ` · 배포 후보 ${목록.바뀐경로.후보.length}개` : ''} · 다시 볼 지적 ${목록.대상.length}건${목록.대상.length ? `(${목록.대상.map(t => `${t.아이디}=${t.출처} ${t.번호}`).join(' · ')})` : '(새 P0·P1만 본다)'} · 다시 검수자 ${목록.검수자들.join('·')}`);
-    console.log(`  묶음 ${b.이름}: ${Math.round(b.바이트 / 1024)}KB · 항목 ${b.항목.length}개 · sha ${b.sha256.slice(0, 12)} · 끝 표식 ${b.표식}`);
-    if (목록.경고) console.log(`  주의: ${목록.경고}`);
-    if (끝판정책(목록.정책) && !목록.검수자들.includes('Claude')) console.log(`  이 사슬의 마지막 판은 Claude까지 본다 — 고칠 것이 끝나면 다시 <새 이름> --앞 ${목록.이름} --끝판`);
+    찍기(`${폴더}`);
+    찍기(`다시 검수 · 앞 ${목록.앞.이름} → ${목록.이름} · 바뀐 파일 ${목록.바뀐경로.소스.length}개${목록.바뀐경로.후보.length ? ` · 배포 후보 ${목록.바뀐경로.후보.length}개` : ''} · 다시 볼 지적 ${목록.대상.length}건${목록.대상.length ? `(${목록.대상.map(t => `${t.아이디}=${t.출처} ${t.번호}`).join(' · ')})` : '(새 P0·P1만 본다)'} · 다시 검수자 ${목록.검수자들.join('·')}`);
+    찍기(`  묶음 ${b.이름}: ${Math.round(b.바이트 / 1024)}KB · 항목 ${b.항목.length}개 · sha ${b.sha256.slice(0, 12)} · 끝 표식 ${b.표식}`);
+    if (목록.경고) 찍기(`  주의: ${목록.경고}`);
+    if (끝판정책(목록.정책) && !목록.검수자들.includes('Claude')) 찍기(`  이 사슬의 마지막 판은 Claude까지 본다 — 고칠 것이 끝나면 다시 <새 이름> --앞 ${목록.이름} --끝판`);
     const 할것 = 목록.검수자들.map(w => (w === 'Fable' ? `Fable 5.2(Agent model: fable — 설정이 claude-fable-5-2로 묶음 — 또는 세션 모델이 claude-fable-5-2인 세션에서 model을 비운 Agent, 답 기록의 model 칸이 claude-fable-5-2가 아니면 버림 — 운영 원칙 「한도」대로 넘긴 claude-opus-5-5 답만 예외)에 「${path.join(폴더, 'fable.md')}을 읽고 그대로 검수하라」 → node tools/검수묶음.mjs 페이블받기 ${목록.이름}`
       : w === 'Claude' ? `Claude가 ${b.파일}을 검수해 node tools/검수묶음.mjs 검수받기 ${목록.이름} <답 파일> --검수자 Claude --묶음 ${b.이름}` : `node tools/검수묶음.mjs ${w} ${목록.이름}`));
-    console.log(`다음: ${할것.join(' · ')} → 새 지적은 처리 ${목록.이름} … → 집계 ${목록.이름} → 배포·공개는 --검수 ${목록.이름}`);
+    찍기(`다음: ${할것.join(' · ')} → 새 지적은 처리 ${목록.이름} … → 집계 ${목록.이름} → 배포·공개는 --검수 ${목록.이름}`);
     return 0;
   }
   const 폴더 = 폴더찾기(o.이름, o.폴더);
-  if (!fs.existsSync(path.join(폴더, '묶음.json'))) { console.error(`묶음이 없다: ${폴더}`); return 2; }
+  if (!fs.existsSync(path.join(폴더, '묶음.json'))) { 틀림(`묶음이 없다: ${폴더}`); return 2; }
   const 목록 = readJson(path.join(폴더, '묶음.json'));
   if (o.사용자지정) throw new Error('--사용자지정은 준비에서만 받는다');
-  if (목록.갈래 === '합침' && !['확인', '집계'].includes(o.명령)) { console.error(`${목록.이름}은 합침 고리다 — 검수자를 부르지 않는 기계 대조라 ${o.명령}을 하지 않는다(확인 · 집계만). 고침이 있으면 다시 <새 이름> --앞 ${목록.이름}`); return 2; }
+  if (목록.갈래 === '합침' && !['확인', '집계'].includes(o.명령)) { 틀림(`${목록.이름}은 합침 고리다 — 검수자를 부르지 않는 기계 대조라 ${o.명령}을 하지 않는다(확인 · 집계만). 고침이 있으면 다시 <새 이름> --앞 ${목록.이름}`); return 2; }
   if (o.명령 === '배포판정준비') { console.log(JSON.stringify(배포판정준비(폴더), null, 2)); return 0; }
   if (o.명령 === '배포판정받기') {
     if (o.남은.length !== 1) throw new Error('배포판정받기 <이름> <지정 최종 검수자 답 JSON>');
@@ -2715,32 +2725,32 @@ async function main(argv) {
   if (o.명령 === '확인') { const r = 검수확인(폴더, { 저장소: o.저장소 }); console.log(JSON.stringify(r, null, 2)); return r.통과 ? 0 : 1; }
   if (o.명령 === '대체승인') {
     const r = 대체승인하기(폴더, { 사용자승인: o.사용자승인, GPT막힘: o.GPT막힘 });
-    console.log(`이번 Workspace 작업만 GPT → 카본 · Claude 필수 유지 · 입력 ${r.reviewInputHash} · 승인 ${r.receiptSha256}`); return 0;
+    찍기(`이번 Workspace 작업만 GPT → 카본 · Claude 필수 유지 · 입력 ${r.reviewInputHash} · 승인 ${r.receiptSha256}`); return 0;
   }
   if (o.명령 === '검수받기') {
     if (!o.남은[0] || !o.검수자 || o.묶음?.length !== 1) throw new Error('검수받기 <이름> <답파일> --검수자 Claude|GPT|아르곤(다시 검수 묶음은 Fable도) --묶음 A');
     const r = 검수받기(폴더, o.검수자, o.묶음[0], fs.readFileSync(path.resolve(o.남은[0]), 'utf8'));
-    console.log(`${o.검수자} ${r.묶음} 읽음 · 지적 ${r.답.findings.length}건`); return 0;
+    찍기(`${o.검수자} ${r.묶음} 읽음 · 지적 ${r.답.findings.length}건`); return 0;
   }
   if (o.명령 === '아르곤') {
     const { 부르기 } = require('./lib/제미나이구독호출.js');
     await 아르곤보내기(폴더, 목록, { 수준: o.수준 || 기본수준[목록.종류], 고른: o.묶음 || null, 다시: Boolean(o.다시), call: 부르기, 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록);
-    console.log(`카본 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '아르곤').length}건 → ${path.join(폴더, '지적표.md')}`);
+    찍기(`카본 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '아르곤').length}건 → ${path.join(폴더, '지적표.md')}`);
     const 생략 = 목록.정책?.페이블생략 && 목록.갈래 !== '델타';
     if (목록.정책?.사용자지정) {
-      console.log(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
+      찍기(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
       return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
     }
-    console.log(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} A1=반영 "A2=재현안됨:<이유>" … → ${목록.종류 === '백엔드' || 목록.갈래 === '델타' || 생략 ? '집계' : '페이블'} ${목록.이름}${생략 ? ` (Fable 생략 — 아르곤 P0·P1을 고쳤으면 다시 <새 이름> --앞 ${목록.이름}로 아르곤·Fable이 고친 diff를 본다)` : ''}`);
+    찍기(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} A1=반영 "A2=재현안됨:<이유>" … → ${목록.종류 === '백엔드' || 목록.갈래 === '델타' || 생략 ? '집계' : '페이블'} ${목록.이름}${생략 ? ` (Fable 생략 — 아르곤 P0·P1을 고쳤으면 다시 <새 이름> --앞 ${목록.이름}로 아르곤·Fable이 고친 diff를 본다)` : ''}`);
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
   }
   if (o.명령 === '그록') {
     if (목록.정책?.사용자지정) throw new Error('사용자지정 검수는 봉인한 검수자만 본다 — 그록을 더하지 않는다');
     await 그록보내기(폴더, 목록, { 수준: o.수준 || null, 고른: o.묶음 || null, 다시: Boolean(o.다시), call: 그록부르기, 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록, '그록');
-    console.log(`그록 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '그록').length}건 → ${path.join(폴더, '지적표.md')}`);
-    console.log(그록대체정책(목록.정책)
+    찍기(`그록 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '그록').length}건 → ${path.join(폴더, '지적표.md')}`);
+    찍기(그록대체정책(목록.정책)
       ? `그록은 GPT·아르곤이 둘 다 한도·로그인으로 막혔을 때만 대신한다(정책 판 6, 11-08) — 대신 본 사슬은 P2도 처리를 적는다: 처리 ${목록.이름} KA1=반영 "KA2=후속:<이유>" … → 집계 ${목록.이름}. 막힌 증거 없이 더 본 그록은 P0·P1만 처리하면 닫힌다`
       : `이 묶음에서 그록은 필수 · 대체 순서 밖이다(${목록.종류 === '화면' ? '화면' : 목록.정책?.작성자 === 'GPT' ? 'GPT 작성' : `정책 판 ${목록.정책?.판 ?? '?'}`}) — 재현되는 지적만 처리 ${목록.이름} KA1=반영 … 하고, 배포 조건은 ${목록.정책 ? 필수글(목록.정책) : '운영 원칙의 검수자 차례'}대로 채운다`);
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
@@ -2748,7 +2758,7 @@ async function main(argv) {
   if (o.명령 === 'GPT') {
     // 모델·추론은 GPT검수설정 한 곳에서 — 계정·보내기·완료 안내와 결과가 같은 값을 적는다. --수준이나 환경 모델이 틀리면 계정도 읽지 않고 멈춘다.
     let 설정;
-    try { 검수자들.GPT.수준검사(o.수준 || null); 설정 = GPT검수설정(o.수준 || null); } catch (e) { console.error(e.message); return 2; }
+    try { 검수자들.GPT.수준검사(o.수준 || null); 설정 = GPT검수설정(o.수준 || null); } catch (e) { 틀림(e.message); return 2; }
     const 계정들 = await GPT계정들읽기();
     const 계정 = GPT계정가리기(계정들);
     알리기(`GPT 계정: ${계정들.map(a => `${계정말(a)} ${a.요금제 || '?'} 주간 ${a.주간사용 ?? '?'}%`).join(' · ')} → ${계정 ? 계정말(계정) : `없음(주간 ${GPT주간한계}% 아래인 Pro 계정 없음 — 막힘으로 적는다)`} · 모델 ${GPT설정글(설정)}`);
@@ -2757,32 +2767,32 @@ async function main(argv) {
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록, 'GPT');
     // 시간 초과 자동 대체로 부른 묶음은 이번 모델 글과 따로 보인다 — 기본 모델 글만 보고 기본 모델로 읽었다고 적지 않게(11-15)
     const 자동대체 = 이번자동대체(결과들읽기(폴더, 목록, 'GPT'), 보낸때, o.묶음);
-    console.log(`GPT ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === 'GPT').length}건 · 이번 모델 ${GPT설정글(설정)}${자동대체.length ? ` · 시간 초과 자동 대체 ${자동대체.join(', ')}` : ''} → ${path.join(폴더, '지적표.md')}`);
+    찍기(`GPT ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === 'GPT').length}건 · 이번 모델 ${GPT설정글(설정)}${자동대체.length ? ` · 시간 초과 자동 대체 ${자동대체.join(', ')}` : ''} → ${path.join(폴더, '지적표.md')}`);
     if (목록.정책?.사용자지정) {
-      console.log(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
+      찍기(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
       return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
     }
-    console.log(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} GA1=반영 "GA2=재현안됨:<이유>" … → 집계 ${목록.이름}${목록.갈래 === '델타' ? '' : ` — 고친 뒤에는 다시 <새 이름> --앞 ${목록.이름}로 고친 diff만 다시 본다`}`);
+    찍기(`다음: 재현되는 지적만 고치고 node tools/검수묶음.mjs 처리 ${목록.이름} GA1=반영 "GA2=재현안됨:<이유>" … → 집계 ${목록.이름}${목록.갈래 === '델타' ? '' : ` — 고친 뒤에는 다시 <새 이름> --앞 ${목록.이름}로 고친 diff만 다시 본다`}`);
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
   }
   if (o.명령 === '처리') {
-    if (!o.남은.length) { console.error('처리할 지적을 준다: <번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] … 또는 <번호>=재확인'); return 2; }
+    if (!o.남은.length) { 틀림('처리할 지적을 준다: <번호>=<반영|일부|안함|재현안됨|후속>[:<이유>] … 또는 <번호>=재확인'); return 2; }
     let 미정 = 0;
     const 바뀜 = 지적표고치기(폴더, 표 => { const b = 처리하기(표, o.남은); 미정 = 표.지적.filter(x => !x.처리).length; return b; });
-    console.log(`처리 ${바뀜.join(', ')} · 미정 ${미정}건 → ${path.join(폴더, '지적표.md')}`);
+    찍기(`처리 ${바뀜.join(', ')} · 미정 ${미정}건 → ${path.join(폴더, '지적표.md')}`);
     return 0;
   }
   if (o.명령 === '페이블') {
     const 파일 = await 페이블하기(폴더, { 시험: !o.시험안함, 시험결과: o.시험결과, 캡처: !o.캡처안함, 알리기 });
-    console.log(파일);
-    console.log(`다음: Fable 5.2(Agent model: fable — 설정이 claude-fable-5-2로 묶음 — 또는 세션 모델이 claude-fable-5-2인 세션에서 model을 비운 Agent, 답 첫 줄 · 하위 에이전트 기록의 model 칸으로 확인)에 「${파일}을 읽고 그대로 검수하라」를 주고, 답을 받으면 node tools/검수묶음.mjs 페이블받기 ${목록.이름}`);
+    찍기(파일);
+    찍기(`다음: Fable 5.2(Agent model: fable — 설정이 claude-fable-5-2로 묶음 — 또는 세션 모델이 claude-fable-5-2인 세션에서 model을 비운 Agent, 답 첫 줄 · 하위 에이전트 기록의 model 칸으로 확인)에 「${파일}을 읽고 그대로 검수하라」를 주고, 답을 받으면 node tools/검수묶음.mjs 페이블받기 ${목록.이름}`);
     return 0;
   }
   if (o.명령 === '페이블받기') {
     const 답파일 = o.남은[0] ? path.resolve(o.남은[0]) : path.join(폴더, 목록.갈래 === '델타' ? `Fable-답-${목록.묶음[0].이름}.json` : '페이블-답.json');
     const 더함 = 페이블받기(폴더, fs.readFileSync(답파일, 'utf8'), { 새로: Boolean(o.새로) });
     const 페건 = 지적표읽기(폴더).지적.filter(x => x.출처 === 'Fable').length;
-    console.log(`Fable 지적 ${더함.length}건 더함(${더함.join(', ') || '없음'}) · Fable ${페건}건 → ${path.join(폴더, '지적표.md')}`);
+    찍기(`Fable 지적 ${더함.length}건 더함(${더함.join(', ') || '없음'}) · Fable ${페건}건 → ${path.join(폴더, '지적표.md')}`);
     return 0;
   }
   if (o.명령 === '집계' && 목록.갈래 === '합침') {
@@ -2792,9 +2802,9 @@ async function main(argv) {
       `- 사슬 ${(확인.증명?.사슬 || [목록.이름]).join(' → ')}`,
       `- 배포 조건(사슬 끝 = 최종 바이트): ${확인.통과 ? '충족' : `미충족 — ${확인.사유.join(' / ')}`}`, '',
       '## 합친 origin 커밋', '', ...h.커밋들.map(c => `- ${c.커밋.slice(0, 10)}${c.커밋 === h.나르개 ? ' (검수한 고침)' : ''} ${칸(c.제목)}`), ''].join('\n');
-    글쓰기(path.join(폴더, '보고.md'), 글);
-    console.log(글.split('\n').slice(2, 5).join('\n'));
-    console.log(`→ ${path.join(폴더, '보고.md')}`);
+    md쓰기(path.join(폴더, '보고.md'), 글);
+    찍기(글.split('\n').slice(2, 5).join('\n'));
+    찍기(`→ ${path.join(폴더, '보고.md')}`);
     return 확인.통과 ? 0 : 1;
   }
   if (o.명령 === '집계') {
@@ -2805,18 +2815,18 @@ async function main(argv) {
     const 확인 = 검수확인(폴더, { 저장소: o.저장소 });
     s.조건 = 확인.사유; s.배포조건충족 = 확인.통과; s.다시 = 확인.다시 || null; s.사슬 = 확인.증명?.사슬 || null; s.검수대체 = 확인.증명?.검수대체 || [];
     const 글 = 집계글(목록, 결과들, 표, s);
-    글쓰기(path.join(폴더, '보고.md'), 글);
+    md쓰기(path.join(폴더, '보고.md'), 글);
     // 첫 덩이(한 줄 집계·묶음·셈·배포 조건)만 — 제목 다음부터 첫 빈 줄까지
     const 줄들 = 글.split('\n').slice(2);
-    console.log(줄들.slice(0, 줄들.indexOf('') < 0 ? 줄들.length : 줄들.indexOf('')).join('\n'));
-    console.log(`→ ${path.join(폴더, '보고.md')}`);
+    찍기(줄들.slice(0, 줄들.indexOf('') < 0 ? 줄들.length : 줄들.indexOf('')).join('\n'));
+    찍기(`→ ${path.join(폴더, '보고.md')}`);
     const 시험말 = 끝판시험말(목록, 확인);
-    if (시험말) console.log(시험말);
+    if (시험말) 찍기(시험말);
     return s.배포조건충족 ? 0 : 1;
   }
   return 2;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main(process.argv.slice(2)).then(code => { process.exitCode = code; }, error => { console.error(error.stack || error.message); process.exitCode = 2; });
+  main(process.argv.slice(2)).then(code => { process.exitCode = code; }, error => { const 말 = 보이는이름(error.message || ''); console.error(error.stack ? error.stack.replace(error.message, 말) : 말); process.exitCode = 2; });
 }

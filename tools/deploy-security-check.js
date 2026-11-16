@@ -255,9 +255,9 @@ async function 검수반영({ root = ROOT, 검수, deployment, description }) {
   if (!검수 || !deployment || !description) throw new Error('--push에는 --검수·--deployment <기존ID>·--description이 모두 필요하다');
   if (!/^[A-Za-z0-9_-]+$/.test(deployment)) throw new Error('기존 deployment ID 꼴이 올바르지 않다');
   const 자료 = 배포후보읽기(root);
-  const { 검수확인 } = await import(require('url').pathToFileURL(path.join(__dirname, '검수묶음.mjs')).href);
+  const { 검수확인, 보이는이름 } = await import(require('url').pathToFileURL(path.join(__dirname, '검수묶음.mjs')).href);
   const 증거 = await 검수확인(검수, { 저장소: root });
-  if (!증거.통과) throw new Error(`배포 전 검수: ${(증거.사유 || []).join(' / ')}`);
+  if (!증거.통과) throw new Error(`배포 전 검수: ${보이는이름((증거.사유 || []).join(' / '))}`);
   if (증거.증명?.정책?.종류 !== '백엔드') throw new Error('Apps Script에는 백엔드 검수 정책이 필요하다');
   const 사슬 = Array.isArray(증거.증명?.사슬) ? 증거.증명.사슬 : null, 끝이름 = 사슬 ? 사슬.at(-1) : path.basename(String(검수));
   if (!같은후보(증거.증명?.배포후보, 자료.후보)) throw new Error(`검수한 Apps Script 후보${사슬 ? `(사슬 끝 ${끝이름})` : ''}와 현재 배포 파일·설정이 다르다 — 바뀐 부분만 다시 검수한다: node tools/deploy-security-check.js --후보 <새 폴더> → node tools/검수묶음.mjs 다시 <새 이름> --앞 ${끝이름} --배포후보 <새 폴더> → --검수 <새 이름>`);
