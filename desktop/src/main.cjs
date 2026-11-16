@@ -305,7 +305,7 @@ function createWindow(){
   protocolRegistered=true;
   const isPlatform=runtime.clientId==='platform';
   const placement=isPlatform?windowPlacement.restore():null;
-  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,...(placement?{x:placement.x,y:placement.y,width:placement.width,height:placement.height,minWidth:placement.minWidth,minHeight:placement.minHeight}:{}),title:current.productName,icon:path.join(app.getAppPath(),'assets',runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#08090C':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
+  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,...(placement?{x:placement.x,y:placement.y,width:placement.width,height:placement.height,minWidth:placement.minWidth,minHeight:placement.minHeight}:{}),title:current.productName,icon:path.join(app.getAppPath(),'assets',runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#000000':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
   Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{label:current.productName,submenu:[{role:'about'},{role:'quit'}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]):null);
   const contents=window.webContents;
   contents.on('did-finish-load',sendTeachingView);
@@ -351,7 +351,7 @@ function createWindow(){
   // (CANCELLED before its token left main, HANDOFF_UNCONFIRMED after), or null when nothing matched.
   const cancelCompanyEntry=input=>{const company=companyEntry.cancel(input),lookup=companyDestinations.cancel(input),pulse=companyAnswerFromPulse(pulseApp.cancelInvite(input));return company??lookup??pulse??null;};
   const handlers={
-    'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available(),...(runtime.clientId==='world'?{worldRoutes:WORLD_ROUTE_NAMES}:{})}),
+    'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available(),qaGuestEntry:smoke||globalThis.__synkNativeQAGuestEntry===true,...(runtime.clientId==='world'?{worldRoutes:WORLD_ROUTE_NAMES}:{})}),
     'synk:desktop-preferences':()=>desktopSnapshot(),
     'synk:care-notifications-status':()=>isPlatform?careNotifications.status():{ok:false,code:'LAUNCHER_ONLY'},
     'synk:care-notifications-configure':configureCareNotifications,

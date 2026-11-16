@@ -1,0 +1,416 @@
+// SYNK 플랫폼 PC 클라이언트의 검정 구(「구 가」, 2026-11-16 유호님 확정). 시안 docs/디자인/플랫폼_클라이언트_검정구_20261116/검정구.html의
+// 셰이더 · 자세 · 움직임을 그대로 옮겼다. 화면 글이나 단계는 모른다. 얼굴(orb-face-view.mjs)이 자세를 부르고, 이 파일은 그린다.
+// 셈만 하는 부분(자리 좌표, 자세, 곡선)은 DOM 없이 내보내 Node 시험에 쓴다(desktop/tests/orb-stage-geometry.test.mjs).
+
+export const rad = d => d * Math.PI / 180;
+export const lerp = (a, b, t) => a + (b - a) * t;
+export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+export const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+export const easeOut = t => 1 - Math.pow(1 - t, 3);
+export const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+export const easeIOQ = t => t < .5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+
+/* ── 구 위의 자리. 공간 하나가 구에 새긴 고리 하나다. 지도의 도시처럼 경도와 위도가 저마다 달라, 구가 돌고 기울어야 그 자리가 앞에 온다 ── */
+export const ORB_PLACES = Object.freeze(['solio', 'workspace', 'pulse']);
+export const PLACE_LON = Object.freeze({ solio: 0, workspace: rad(-48), pulse: rad(44) });
+export const PLACE_CL = Object.freeze({ solio: rad(75), workspace: rad(58), pulse: rad(92) }); // 축에서 자리까지의 각(작을수록 위쪽)
+export const RHO = 0.092; // 고리의 크기(구 반지름을 1로 본 값). 셰이더의 RHO와 같아야 한다
+export const AXIS = Object.freeze({ rest: Object.freeze([0.28, 0.52, 0.81]), top: Object.freeze([0, 0.972, 0.235]) });
+
+/* 그 자리가 보는 쪽을 똑바로 향하는 축. 지구본처럼 거의 선 축을 자리의 높이만큼 기울인다 */
+export const faceAx = name => [0, Math.sin(PLACE_CL[name]), Math.cos(PLACE_CL[name])];
+
+/* 축이 a이고 spin만큼 돌린 구에서, 그 자리가 보는 쪽 좌표로 어디에 오는지 낸다. 경도 0은 축에서 보는 쪽 아래로 내려오는 줄이다 */
+export function placeDir(a, spin, name) {
+  const n = Math.hypot(a[0], a[1], a[2]) || 1, A = [a[0] / n, a[1] / n, a[2] / n], d = A[2] - A[1];
+  let z = [-d * A[0], -1 - d * A[1], 1 - d * A[2]];
+  const zn = Math.hypot(z[0], z[1], z[2]) || 1; z = [z[0] / zn, z[1] / zn, z[2] / zn];
+  const x = [A[1] * z[2] - A[2] * z[1], A[2] * z[0] - A[0] * z[2], A[0] * z[1] - A[1] * z[0]];
+  const l = PLACE_LON[name] + spin, c = Math.cos(PLACE_CL[name]), s = Math.sin(PLACE_CL[name]), cl = Math.cos(l), sl = Math.sin(l);
+  return [c * A[0] + s * (cl * z[0] + sl * x[0]), c * A[1] + s * (cl * z[1] + sl * x[1]), c * A[2] + s * (cl * z[2] + sl * x[2])];
+}
+/* 어떤 자세 s에서 그 자리가 화면의 어디에 찍히는지 */
+export function placeXY(s, name) { const m = placeDir(s.ax, s.spin, name); return [s.cx + s.r * m[0], s.top + s.r - s.r * m[1]]; }
+
+/* 공간 고르기에서 구가 서는 자리 */
+export function switchGeom(W, H) {
+  const wide = W >= 760 && H >= 470, r = wide ? Math.min(H * 0.2, W * 0.19) : Math.min(H * 0.13, W * 0.23);
+  return { wide, r, cy: wide ? H * 0.4 : r + Math.max(64, H * 0.09) };
+}
+
+/* 구가 서는 자리 여섯. top은 구의 맨 윗점, r은 반지름(화면 px).
+   home은 왼쪽 위의 작은 구 자리(얼굴이 그 단추의 가운데를 알려 준다), dive와 face는 들어갈 공간과 앞에 둘 공간이다 */
+export function orbPoses({ W, H, home = { x: 40, y: 40 }, dive = 'solio', face = 'solio' }) {
+  const r0 = Math.min(H * 0.21, W * 0.3);
+  const rAsk = Math.max(H * 1.9, W * 1.25);
+  const g = switchGeom(W, H), rIn = Math.hypot(W, H) * 0.56 / RHO, hr = 13;
+  return {
+    void: { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(-50), lz: 0.5, lit: 0, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0 },
+    rest: { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: 0.5, lit: 1, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0 },
+    ask: { cx: W / 2, top: H * 0.25, r: rAsk, az: rad(150), lz: -0.3, lit: 1, focus: 1, ax: AXIS.top, mark: 0, par: 0, calm: 1 },
+    /* 들어갈 자리가 보는 쪽을 똑바로 향하고 그 고리가 창보다 커진 때다. 거기까지 가는 길은 mixPose가 자리를 따라가며 잡는다 */
+    inside: { cx: W / 2, top: H / 2 - rIn, r: rIn, az: rad(150), lit: 0, focus: 1, ax: faceAx(dive), spin: -PLACE_LON[dive], mark: 1, par: 0, calm: 0, dive: true },
+    home: { cx: home.x, top: home.y - hr, r: hr, az: rad(135), lz: 0.5, lit: 1, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0 },
+    /* 공간을 고를 때는 구가 가운데로 와서 지금 있는 자리를 앞에 보인다 */
+    sw: { cx: W / 2, top: g.cy - g.r, r: g.r, az: rad(140), lz: 0.45, lit: 1, focus: 0, ax: faceAx(face), spin: -PLACE_LON[face], mark: 1, par: 0, calm: 0 },
+  };
+}
+
+/* 자세 a에서 b로 가는 길의 한순간(t는 0~1)을 S에 적는다. o.ease, o.litCurve, o.p0(들어갈 자리의 처음 화면 좌표), o.W, o.H, o.dive */
+export function mixPose(S, a, b, t, o) {
+  const e = o.ease(t), dive = !!b.dive, eo = dive ? smooth(0, 0.62, t) : e;
+  S.r = Math.exp(lerp(Math.log(a.r), Math.log(b.r), e));
+  S.az = lerp(a.az, b.az, eo); S.focus = lerp(a.focus, b.focus, eo);
+  S.mark = lerp(a.mark, b.mark, eo); S.par = lerp(a.par, b.par, eo); S.calm = lerp(a.calm, b.calm, eo);
+  if (b.lz !== undefined) S.lz = lerp(a.lz, b.lz, eo);
+  S.ax = [lerp(a.ax[0], b.ax[0], eo), lerp(a.ax[1], b.ax[1], eo), lerp(a.ax[2], b.ax[2], eo)];
+  if (b.spin !== undefined) S.spin = lerp(a.spin, b.spin, eo);
+  S.lit = o.litCurve ? o.litCurve(t, a.lit, b.lit) : lerp(a.lit, b.lit, e);
+  if (dive) {
+    /* 들어갈 자리가 화면 한가운데로 오도록 구를 옮긴다. 구는 그 자리를 보는 쪽으로 돌리면서 커지고, 고리 안이 열린다 */
+    const m = placeDir(S.ax, S.spin, o.dive), ep = smooth(0, 0.7, t);
+    S.cx = lerp(o.p0[0], o.W / 2, ep) - S.r * m[0];
+    S.top = lerp(o.p0[1], o.H / 2, ep) + S.r * m[1] - S.r;
+    S.open = smooth(0.3, 0.8, t);
+  } else {
+    S.cx = lerp(a.cx, b.cx, e); S.top = lerp(a.top, b.top, e); S.open = lerp(a.open || 0, 0, e);
+  }
+  return S;
+}
+
+const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 uRes, uC;
+uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm;
+uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen, uVis;
+const float RHO = 0.092;
+float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2){
+  vec3 dv = n - M;
+  float dd = length(dv);
+  float zz = max(z, 0.06);
+  vec2 gr = vec2(dv.x - dv.z * n.x / zz, dv.y - dv.z * n.y / zz) / max(dd, 0.0001);
+  float sd = (dd - RHO) / max(length(gr), 0.05) * uR / uDpr;
+  float show = smoothstep(0.02, 0.2, M.z);
+  float lift = max(hot, open);
+  float lw = mix(0.5, 1.0, hot);
+  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show;
+  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show;
+  float facing = 0.5 + 0.5 * dot(dv.xy / max(length(dv.xy), 0.0001), l2);
+  float pd = length(n.xy - M.xy) * uR / uDpr;
+  float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show;
+  float glow = hot * 0.07 * (1.0 - smoothstep(0.0, RHO, dd)) * (1.0 - open) * show;
+  return vec2(ring * mix(0.44 + 0.30 * facing, 1.0, lift) + bloom + pin * 0.92 + glow, (1.0 - smoothstep(-1.2, 0.3, sd)) * open * show);
+}
+void main(){
+  vec2 f = gl_FragCoord.xy;
+  vec2 q = f - uC;
+  float dist = length(q);
+  float px = (dist - uR) / uDpr;
+  float inside = 1.0 - smoothstep(-0.7, 0.7, px);
+  vec2 dir = q / max(dist, 0.001);
+  float d = min(dist / uR, 1.0);
+  float z = sqrt(max(0.0, 1.0 - d * d));
+  vec3 n = vec3(dir * d, z);
+  vec3 warm = vec3(1.0, 0.982, 0.955);
+  float line = exp(-abs(px) / 1.1);
+  float halo = exp(-max(px, 0.0) / (0.045 * uR / uDpr + 5.0));
+  vec2 Ld = normalize(mix(vec2(cos(uAz), sin(uAz)), vec2(-0.22, 1.0), uFocus));
+  float mu = dot(dir, Ld);
+  float cres = smoothstep(-0.5, 1.0, mu); cres *= cres;
+  cres *= mix(1.0, pow(max(mu, 0.0), 7.0), uFocus);
+  float pulse = 1.0 + 0.5 * uGb;
+  vec3 col;
+  if (px > 0.4 * uR / uDpr + 48.0) {
+    col = vec3(0.0);
+  } else {
+    float N1 = 110.0;
+    float h = sqrt(max(1.0 - uLz * uLz, 0.0));
+    vec3 L = vec3(cos(uAz) * h, sin(uAz) * h, uLz);
+    vec3 V = vec3(0.0, 0.0, 1.0);
+    vec3 H = normalize(L + V);
+    vec3 A = normalize(uAxis);
+    float th = acos(clamp(dot(n, A), -1.0, 1.0));
+    vec3 T = cross(A, n);
+    float tl = length(T);
+    T /= max(tl, 0.0001);
+    vec3 B = cross(n, T);
+    float sp = 3.14159265 / N1 * uR;
+    float cap = smoothstep(7.0, 24.0, tl * uR / uDpr);
+    float v1 = smoothstep(2.4, 6.0, sp * z) * cap;
+    float v2 = smoothstep(2.4, 6.0, sp / 5.0 * z) * cap;
+    float v3 = smoothstep(2.4, 6.0, sp / 25.0 * z) * cap;
+    float s1 = sin(2.0 * N1 * th), s2 = sin(10.0 * N1 * th), s3 = sin(50.0 * N1 * th);
+    float e1 = clamp(7.5 / max(sp * z, 0.001), 0.06, 0.265), e2 = clamp(7.5 / max(sp / 5.0 * z, 0.001), 0.06, 0.265);
+    float w1 = s1 / sqrt(s1 * s1 + e1 * e1), w2 = s2 / sqrt(s2 * s2 + e2 * e2), w3 = s3 / sqrt(s3 * s3 + 0.12);
+    vec3 nn = normalize(n + B * (0.22 * w1 * v1 + 0.10 * w2 * v2 + 0.05 * w3 * v3));
+    float pole = smoothstep(mix(0.03, 0.12, uMark), mix(0.30, 0.58, uMark), tl);
+    float tdh = dot(T, H);
+    float an = pow(max(1.0 - tdh * tdh, 0.0), mix(44.0, 110.0, uFocus)) * pole;
+    float side = smoothstep(-0.28, 0.32, dot(n, L));
+    float groove = 0.60 + 0.40 * (0.70 * w1 * v1 * (1.0 - 0.7 * v2) + 0.42 * w2 * v2 * (1.0 - 0.5 * v3) + 0.30 * w3 * v3);
+    float spec = pow(max(dot(nn, H), 0.0), 30.0);
+    float amb = 0.5 + 0.5 * dot(nn, normalize(vec3(-0.25, 0.7, 0.66)));
+    float rings = ((0.5 + 0.5 * w1) * v1 * 0.036 + (0.5 + 0.5 * w2) * v2 * 0.016 + (0.5 + 0.5 * w3) * v3 * 0.010) * amb;
+    vec3 L2 = normalize(vec3(-L.x * 0.7 + 0.35, -L.y * 0.5 - 0.3, 0.6));
+    vec3 H2 = normalize(L2 + V);
+    float t2 = dot(T, H2);
+    float an2 = pow(max(1.0 - t2 * t2, 0.0), 28.0) * pole * smoothstep(-0.2, 0.4, dot(n, L2));
+    float calm = mix(1.0, mix(0.16, 1.0, smoothstep(0.47, 0.69, f.y / uRes.y)), uCalm);
+    float tiny = smoothstep(60.0, 14.0, uR / uDpr);
+    vec3 inC = vec3(0.005) + warm * uLit * mix(1.0, 0.1, tiny) * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + (an2 * groove * 0.09 + rings) * calm + spec * 0.20 * side + 0.010 * max(dot(n, L), 0.0));
+    float edge = (1.0 - smoothstep(0.35, 1.0, abs(px))) * tiny * (0.26 + 0.5 * cres);
+    float soft = 1.0 - 0.75 * tiny;
+    inC += warm * uLit * (cres * (pow(1.0 - z, 5.0) * 0.14 + line * 0.16) * pulse * soft + edge);
+    vec3 outC = warm * uLit * (cres * (line * 0.16 + halo * 0.03) * pulse * soft + edge);
+    col = mix(outC, inC, inside);
+  }
+  float mv = uMark * smoothstep(30.0, 84.0, uR / uDpr) * inside;
+  if (mv > 0.001) {
+    vec2 l2 = vec2(cos(uAz), sin(uAz));
+    vec2 a0 = place(n, uM0, uHot.x, uHere.x, uOpen.x, z, l2) * uVis.x;
+    vec2 a1 = place(n, uM1, uHot.y, uHere.y, uOpen.y, z, l2) * uVis.y;
+    vec2 a2 = place(n, uM2, uHot.z, uHere.z, uOpen.z, z, l2) * uVis.z;
+    col *= 1.0 - max(a0.y, max(a1.y, a2.y)) * mv;
+    col += warm * uLit * mv * (a0.x + a1.x + a2.x);
+  }
+  float g = ign(f + uSeed * 7.31) + ign(f.yx + 17.0 + uSeed * 3.17) - 1.0;
+  col += g * 2.8 / 255.0;
+  gl_FragColor = vec4(max(col, 0.0), 1.0);
+}`;
+const UNIFORMS = ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uVis'];
+
+/* 캔버스 하나에 구를 그린다. 브라우저에서만 부른다.
+   options: getReducedMotion() · getHome() → 작은 구의 가운데(무대 좌표) · noWebGL(시험용으로 2D 대체를 고른다)
+   · noCanvas(시험용으로 WebGL과 2D를 모두 끈다 — 정적 구) · onRender(state)(시험용) */
+export function createOrbStage(canvas, options = {}) {
+  const win = canvas.ownerDocument?.defaultView || globalThis;
+  const doc = canvas.ownerDocument || globalThis.document;
+  const host = canvas.parentElement || canvas;
+  const reduced = () => { try { return options.getReducedMotion?.() === true; } catch { return false; } };
+  const now = () => (win.performance?.now ? win.performance.now() : Date.now());
+  let W = 1, H = 1, DPR = 1, dprCap = 2, gl = null, U = null, ctx2d = null, frameId = null, disposed = false, paused = false;
+  let tw = null, poseName = 'void', dive = 'solio', face = null, space = 'solio', autoFace = false, still = false;
+  let visible = { solio: false, workspace: false, pulse: false };
+  let hotWant = -1, glintWant = 0, glintBoost = 0, frameNo = 0, lastDraw = 0, slowFrames = 0, sampled = 0;
+  const S = { cx: 0, top: 0, r: 1, az: 0, lz: 0.5, lit: 0, focus: 0, ax: [...AXIS.rest], spin: 0, mark: 0, par: 1, calm: 0, open: 0 };
+  const ptr = { x: 0.5, y: 0.5 }, ptrS = { x: 0.5, y: 0.5 };
+  const hot = [0, 0, 0], markXY = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+
+  const poses = () => orbPoses({ W, H, home: options.getHome?.() || { x: 40, y: 40 }, dive, face: face || space });
+  function snap(name) {
+    const p = poses()[name];
+    for (const k in p) if (k !== 'dive') S[k] = Array.isArray(p[k]) ? [...p[k]] : p[k];
+    S.open = name === 'inside' ? 1 : 0; poseName = name;
+    if (tw) { const r = tw.res; tw = null; r(); }
+    wake();
+  }
+  function tween(name, ms, ease = easeIO, litCurve = null) {
+    if (tw) { const r = tw.res; tw = null; r(); }
+    poseName = name;
+    const from = { ...S, ax: [...S.ax] }, to = poses()[name];
+    if (to.spin !== undefined) from.spin = to.spin + Math.atan2(Math.sin(S.spin - to.spin), Math.cos(S.spin - to.spin));
+    const length = reduced() ? Math.min(ms, 220) : ms;
+    wake();
+    return new Promise(res => { tw = { from, p0: placeXY(S, dive), name, t0: now(), ms: length, ease, litCurve, res }; if (paused || doc?.hidden) finishTween(); });
+  }
+  function finishTween() { if (!tw) return; mixPose(S, tw.from, poses()[tw.name], 1, { ...tw, W, H, dive }); const r = tw.res; tw = null; r(); }
+  function stepTween(t) {
+    if (!tw) return;
+    const k = clamp((t - tw.t0) / tw.ms, 0, 1);
+    mixPose(S, tw.from, poses()[tw.name], k, { ...tw, W, H, dive });
+    if (k >= 1) { const r = tw.res; tw = null; r(); }
+  }
+  /* 구가 드러나는 동안 누르면 남은 시간을 줄인다 */
+  function hurry(name) { if (tw && tw.name === name) tw.ms = Math.min(tw.ms, now() - tw.t0 + 320); }
+
+  function initGL() {
+    if (options.noWebGL || options.noCanvas) return false;
+    try { gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' }); } catch { gl = null; }
+    if (!gl) return false;
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || 'shader'); return s; };
+    try {
+      const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
+      if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error('link');
+      gl.useProgram(pr);
+      const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      U = {}; for (const k of UNIFORMS) U[k] = gl.getUniformLocation(pr, k);
+      return true;
+    } catch { gl = null; return false; }
+  }
+  function useFallback() {
+    gl = null; U = null;
+    if (options.noCanvas) { ctx2d = null; markMode(); return; }
+    try { ctx2d = canvas.getContext('2d'); } catch { ctx2d = null; }
+    // WebGL 맥락을 이미 받은 캔버스는 2D 맥락을 주지 않는다(장치를 잃었거나 셰이더를 못 만든 때). 같은 자리에 새 캔버스를 두고 거기에 그린다(Fable 최종)
+    if (!ctx2d && doc?.createElement && canvas.parentNode) {
+      const fresh = doc.createElement('canvas');
+      for (const name of canvas.getAttributeNames?.() || []) if (name !== 'width' && name !== 'height') fresh.setAttribute(name, canvas.getAttribute(name));
+      canvas.replaceWith(fresh);
+      canvas = fresh;
+      try { ctx2d = canvas.getContext('2d'); } catch { ctx2d = null; }
+      // 새 캔버스는 그림 크기가 기본값(300×150)이다. 곧바로 창에 맞추고 한 장 그린다(Fable 다시 검수)
+      resize();
+    }
+    markMode();
+  }
+  /* 지금 어느 길로 그리는지 캔버스에 적는다. WebGL도 2D도 없으면 「static」이고, CSS가 그 자리에 정적 구를 그린다.
+   * 지금 얼굴(portal-entry)의 정적 구처럼 어느 단계에서도 구가 사라지지 않게 한다(11-16 토큰 세션 전달) */
+  let staticAt = '';
+  function markMode() {
+    const mode = gl ? 'webgl' : ctx2d ? '2d' : 'static';
+    try { if (canvas.dataset && canvas.dataset.orbMode !== mode) canvas.dataset.orbMode = mode; } catch { /* 무시 */ }
+    if (mode !== 'static') staticAt = '';
+  }
+  function drawStatic(cx, cy, r, lit) {
+    const key = Math.round(cx) + ',' + Math.round(cy) + ',' + Math.round(r) + ',' + lit.toFixed(2);
+    if (key === staticAt || !canvas.style?.setProperty) return;
+    staticAt = key;
+    canvas.style.setProperty('--orb-sx', Math.round(cx) + 'px');
+    canvas.style.setProperty('--orb-sy', Math.round(cy) + 'px');
+    canvas.style.setProperty('--orb-sr', Math.max(0, Math.round(r)) + 'px');
+    canvas.style.setProperty('--orb-ring', 'rgba(243,241,236,' + (0.45 * Math.min(1, Math.max(0, lit))).toFixed(3) + ')');
+  }
+
+  function resize() {
+    if (disposed) return;
+    const s = host.getBoundingClientRect();
+    W = Math.max(1, s.width); H = Math.max(1, s.height);
+    // 가는 결이 물결무늬로 깨지지 않게 화면 점보다 촘촘하게 그린다(시안 그대로). 느린 장치에서는 dprCap이 한 단씩 내려간다
+    DPR = Math.min(Math.max(win.devicePixelRatio || 1, dprCap), Math.sqrt(7e6 / (W * H)));
+    const cw = Math.round(W * DPR), ch = Math.round(H * DPR);
+    const changed = canvas.width !== cw || canvas.height !== ch;
+    if (changed) { canvas.width = cw; canvas.height = ch; }
+    if (gl) gl.viewport(0, 0, cw, ch);
+    if (!tw) { const lit = S.lit; snap(poseName); if (poseName === 'inside') S.lit = lit; }
+    // 크기를 바꾸면 캔버스가 지워진다. 다음 장을 기다리지 않고 그 자리에서 한 장 그린다(Fable 최종)
+    if (changed && !paused) draw(now());
+    wake();
+  }
+
+  function draw(t) {
+    const sec = t / 1000, motion = reduced() || still ? 0 : 1;
+    ptrS.x += (ptr.x - ptrS.x) * 0.06; ptrS.y += (ptr.y - ptrS.y) * 0.06;
+    glintBoost += (glintWant - glintBoost) * 0.05;
+    for (let i = 0; i < 3; i++) hot[i] += ((hotWant === i ? 1 : 0) - hot[i]) * 0.14;
+    // 공간을 고르는 동안에는 가리킨 이름의 자리가(없으면 지금 있는 자리가) 한가운데에 오도록 구가 돌고 기운다
+    if (autoFace && !tw) {
+      const to = face || space, want = -PLACE_LON[to], ta = faceAx(to), d = Math.atan2(Math.sin(want - S.spin), Math.cos(want - S.spin));
+      const q = motion ? 0.1 : 1;
+      S.spin += d * q; for (let i = 0; i < 3; i++) S.ax[i] += (ta[i] - S.ax[i]) * q;
+    }
+    const free = S.par * motion, par = free * S.r * 0.05;
+    const cx = S.cx + (ptrS.x - 0.5) * par, cy = S.top + S.r + (ptrS.y - 0.5) * par;
+    const az = S.az + ((ptrS.x - 0.5) * -(0.7 * free + 0.14 * S.focus + 0.2 * (1 - S.par) * (1 - S.focus)) + 0.05 * Math.sin(sec * 0.4)) * motion;
+    const ax = [S.ax[0] + (ptrS.x - 0.5) * 0.24 * free, S.ax[1] - (ptrS.y - 0.5) * 0.2 * free, S.ax[2]];
+    const mk = ORB_PLACES.map(name => placeDir(ax, S.spin, name));
+    mk.forEach((m, i) => { markXY[i] = [cx + S.r * m[0], cy - S.r * m[1], visible[ORB_PLACES[i]] ? m[2] : -1]; });
+    const lit = S.lit * (1 + 0.03 * Math.sin(sec * 0.9) * motion);
+    const gb = glintBoost * (1.2 + 0.8 * Math.sin(sec * 3.1)) * (motion ? 1 : 0.6);
+    if (motion) frameNo = (frameNo + 1) % 64;
+    const mark = options.places === false ? 0 : S.mark;
+    if (gl) {
+      gl.uniform2f(U.uRes, canvas.width, canvas.height);
+      gl.uniform2f(U.uC, cx * DPR, (H - cy) * DPR);
+      gl.uniform1f(U.uR, S.r * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
+      gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
+      gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
+      gl.uniform1f(U.uMark, mark); gl.uniform1f(U.uCalm, S.calm);
+      gl.uniform3f(U.uM0, ...mk[0]); gl.uniform3f(U.uM1, ...mk[1]); gl.uniform3f(U.uM2, ...mk[2]);
+      gl.uniform3f(U.uHot, hot[0], hot[1], hot[2]);
+      gl.uniform3f(U.uHere, ...ORB_PLACES.map(n => (n === space ? 1 : 0)));
+      gl.uniform3f(U.uOpen, ...ORB_PLACES.map(n => (n === dive ? S.open : 0)));
+      gl.uniform3f(U.uVis, ...ORB_PLACES.map(n => (visible[n] || (n === dive && S.open > 0) ? 1 : 0)));
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    } else if (ctx2d) {
+      // WebGL이 없을 때: 검정 원과 빛 오는 쪽의 가는 호. 자리는 화면 원으로 그린다
+      const c = ctx2d; c.setTransform(DPR, 0, 0, DPR, 0, 0);
+      c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
+      c.beginPath(); c.arc(cx, cy, S.r, 0, Math.PI * 2); c.fillStyle = '#030303'; c.fill();
+      c.lineWidth = 1.4; c.strokeStyle = 'rgba(243,241,236,' + (0.6 * S.lit).toFixed(3) + ')'; c.beginPath(); c.arc(cx, cy, S.r, -az - 1.1, -az + 1.1); c.stroke();
+      if (mark > 0.05 && S.r > 30) {
+        markXY.forEach((m, i) => {
+          if (m[2] < 0.15) return;
+          c.lineWidth = hot[i] > 0.5 ? 1.6 : 1; c.strokeStyle = 'rgba(243,241,236,' + (0.5 * mark * S.lit + 0.4 * hot[i]).toFixed(3) + ')';
+          c.beginPath(); c.arc(m[0], m[1], RHO * S.r * Math.max(0.3, m[2]), 0, Math.PI * 2); c.stroke();
+          if (ORB_PLACES[i] === space) { c.fillStyle = 'rgba(243,241,236,.9)'; c.beginPath(); c.arc(m[0], m[1], 2.6, 0, Math.PI * 2); c.fill(); }
+        });
+      }
+    } else {
+      drawStatic(cx, cy, S.r, S.lit);
+    }
+    options.onRender?.(S);
+  }
+
+  /* 움직임이 없고 손도 가만히 있으면 초당 30장으로 줄인다. 창이 가려지면 멈춘다. 60장 평균이 24ms를 넘으면 촘촘함을 한 단 낮춘다 */
+  function idle() { return !tw && Math.abs(ptr.x - ptrS.x) < 0.001 && Math.abs(ptr.y - ptrS.y) < 0.001 && Math.abs(glintWant - glintBoost) < 0.01 && !autoFace && hot.every((h, i) => Math.abs(h - (hotWant === i ? 1 : 0)) < 0.01); }
+  function frame(t) {
+    frameId = null;
+    if (disposed || paused) return;
+    const gap = t - lastDraw;
+    const resting = idle();
+    if (resting && gap < 32) { frameId = win.requestAnimationFrame(frame); return; }
+    // 멈춰 있어 일부러 늦춘 장면(초당 30장)은 느린 장면으로 세지 않는다. 세면 장치와 상관없이 배율이 내려간다(카본 B3)
+    if (!resting && lastDraw && gap > 0 && gap < 200) {
+      sampled++; if (gap > 24) slowFrames++;
+      if (sampled >= 60) { if (slowFrames > 40 && dprCap > 1) { dprCap = dprCap > 1.5 ? 1.5 : 1; resize(); } sampled = 0; slowFrames = 0; }
+    }
+    lastDraw = t;
+    stepTween(t); draw(t);
+    // 이 장 안에서 resize()가 이미 다음 장을 걸었으면 또 걸지 않는다(고리가 둘로 도는 것을 막는다, Fable 최종)
+    if (frameId === null) frameId = win.requestAnimationFrame(frame);
+  }
+  function wake() { if (!disposed && !paused && frameId === null && typeof win.requestAnimationFrame === 'function') frameId = win.requestAnimationFrame(frame); }
+
+  if (!initGL()) useFallback(); else markMode();
+  const onLost = event => { event.preventDefault(); useFallback(); wake(); };
+  const onRestored = () => { if (initGL()) ctx2d = null; markMode(); resize(); };
+  canvas.addEventListener('webglcontextlost', onLost);
+  canvas.addEventListener('webglcontextrestored', onRestored);
+  const observer = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => resize()) : null;
+  observer?.observe(host);
+  resize(); snap('void');
+
+  return {
+    snap, tween, hurry, resize,
+    get pose() { return poseName; },
+    get moving() { return !!tw; },
+    get webgl() { return !!gl; },
+    setDive(name) { if (PLACE_LON[name] !== undefined) dive = name; },
+    setSpace(name) { if (PLACE_LON[name] !== undefined) { space = name; wake(); } },
+    setFace(name) { face = PLACE_LON[name] !== undefined ? name : null; wake(); },
+    setAutoFace(on) { autoFace = !!on; wake(); },
+    setVisiblePlaces(list) { visible = Object.fromEntries(ORB_PLACES.map(n => [n, Array.isArray(list) && list.includes(n)])); wake(); },
+    setHot(name) { hotWant = name ? ORB_PLACES.indexOf(name) : -1; wake(); },
+    setGlint(on) { glintWant = on ? 1 : 0; wake(); },
+    setLit(v) { S.lit = v; wake(); },
+    setSpin(v) { S.spin = v; },
+    /* 점 로고가 물러나는 순간 작은 구를 한 번 크게 띄운 뒤 제자리로 줄인다(시안 enter의 S.r = 5) */
+    setRadius(r) { if (r > 0) S.r = r; wake(); },
+    setStill(on) { still = !!on; wake(); },
+    setPointer(x, y) { ptr.x = clamp(x, 0, 1); ptr.y = clamp(y, 0, 1); wake(); },
+    /* 구에 새긴 고리 가운데 (x, y) 아래에 있는 공간 */
+    placeUnder(x, y) {
+      const reach = RHO * S.r + 12;
+      for (let i = 0; i < 3; i++) if (markXY[i][2] > 0.15 && Math.hypot(x - markXY[i][0], y - markXY[i][1]) < reach) return ORB_PLACES[i];
+      return null;
+    },
+    state: () => ({ ...S, ax: [...S.ax], W, H, pose: poseName, moving: !!tw, webgl: !!gl, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)) }),
+    draw: () => draw(now()),
+    pause() { paused = true; if (frameId !== null) { win.cancelAnimationFrame?.(frameId); frameId = null; } finishTween(); },
+    resume() { if (!paused) return; paused = false; lastDraw = 0; wake(); },
+    finish: finishTween,
+    dispose() {
+      if (disposed) return; disposed = true;
+      if (frameId !== null) win.cancelAnimationFrame?.(frameId);
+      finishTween(); observer?.disconnect();
+      canvas.removeEventListener('webglcontextlost', onLost); canvas.removeEventListener('webglcontextrestored', onRestored);
+    },
+  };
+}

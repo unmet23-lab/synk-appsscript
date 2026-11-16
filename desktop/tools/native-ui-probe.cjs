@@ -5,7 +5,12 @@ const fs=require('node:fs'),path=require('node:path');
 async function probeNativeUI(contents,artifacts){
   const original=await contents.executeJavaScript("localStorage.getItem('synk-launcher-view-v1')");
   const checks=await contents.executeJavaScript(`(async()=>{
-    const checks=[],q=s=>document.querySelector(s),check=(name,ok)=>checks.push({name,ok:!!ok});
+    const checks=[],q=s=>document.querySelector(s),check=(name,ok)=>checks.push({name,ok:!!ok}),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    // 검정 구 얼굴(PC 클라이언트 1단계): 개발 점검 실행에서만 열리는 검사 실행 길로 들어온 뒤의 화면까지 간 다음, 가린 옛 런처를 그대로 점검한다
+    for(let i=0;i<240&&q('#portal-entry')?.dataset.portalState!=='auth';i++)await wait(50);
+    q('#portal-entry')?.dispatchEvent(new CustomEvent('synk:qa-guest-entry'));
+    for(let i=0;i<240&&document.documentElement.dataset.orbClient!=='app';i++)await wait(50);
+    check('orb-qa-guest-entry',document.documentElement.dataset.orbClient==='app'&&q('#portal-entry')?.dataset.portalState==='entered');
     const environment=await window.synkDesktop.getEnvironment(),development=environment.mode==='development'&&environment.clientId==='platform'&&environment.nativeShell===true;
     // Source development exposes the catalogue for review. Teacher shares the
     // Workspace card; this does not grant product data or an account session.
@@ -24,7 +29,8 @@ async function probeNativeUI(contents,artifacts){
     const before=q('#favorite').getAttribute('aria-pressed');q('#favorite').click();check('public-world-favorite-persisted',q('#favorite').getAttribute('aria-pressed')!==before&&JSON.parse(localStorage.getItem('synk-launcher-view-v1')).favorites.includes('world')===(before!=='true'));q('#favorite').click();
     q('[data-game="racing"]').click();check('public-content-dialog',q('#content-dialog').open&&q('#content-title').textContent==='한국어 레이싱');q('#content-go-world').click();check('content-dialog-return',!q('#content-dialog').open&&q('#breadcrumb-app').textContent==='SYNK WORLD');
     q('#account-button').click();check('account-dialog',q('#account-dialog').open&&!!q('#account-state').textContent);q('#account-dialog .dialog-close').click();check('account-dialog-close',!q('#account-dialog').open);
-    document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));check('command-menu-keyboard-shortcut',q('#command-dialog').open&&document.activeElement===q('#command-input'));q('#command-dialog').close();await document.fonts.ready;check('fonts-loaded',document.fonts.status==='loaded');
+    // 새 얼굴이 보이는 동안 Ctrl+K 명령 메뉴는 닫힌 길이다(가린 화면을 열지 않는다)
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));check('command-menu-closed-behind-orb',!q('#command-dialog').open);if(q('#command-dialog').open)q('#command-dialog').close();await document.fonts.ready;check('fonts-loaded',document.fonts.status==='loaded');
     const rejected=await window.synkDesktop.windowAction('arbitrary-command');check('window-action-allowlist',rejected.code==='INVALID_WINDOW_ACTION');
     const desktop=await window.synkDesktop.getDesktopPreferences();check('desktop-preferences-ipc-ready',desktop.ok===true&&typeof desktop.preferences.closeToTray==='boolean'&&typeof desktop.preferences.zoomFactor==='number'&&desktop.capabilities.globalShortcut===false);
     const recovery=await window.synkDesktop.draftRecoveryStatus(null);check('smoke-draft-recovery-disabled',recovery.ok===true&&recovery.enabled===false);

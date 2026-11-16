@@ -117,7 +117,7 @@ export function normalizeDesktopPortalAuth(snapshot, { hasBridge = true, reduced
       accountKey: null,
       onboarding: { purpose: 'none' },
       errorMessage: !hasBridge
-        ? '브라우저 미리보기에서는 로그인 연결을 확인하지 않아요. 둘러보기로 화면을 살펴볼 수 있어요.'
+        ? '브라우저 미리보기에서는 로그인 연결을 확인하지 않아요.'
         : (snapshot?.error?.message || '로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.'),
       retryable: false,
       ...motionField,
@@ -735,6 +735,9 @@ export function mountDesktopPortalHost({
   onEnsureEnteredView,
   onActiveChange,
   companyBoundaries: customBoundaries = null,
+  // 얼굴 공장(PC 클라이언트 1단계). 받지 않으면 지금 얼굴을 쓴다. faceOptions는 PC 쪽 옵션이고 호스트의 콜백을 덮지 못한다
+  mountFace = mountPortalEntry,
+  faceOptions = {},
 } = {}) {
   if (!root) {
     return {
@@ -744,6 +747,8 @@ export function mountDesktopPortalHost({
       syncReducedMotion() {},
       openPurposePicker: () => false,
       closePurposePicker: () => Promise.resolve(false),
+      clientMode: () => 'off',
+      isClientShown: () => false,
       dispose() {},
     };
   }
@@ -1231,6 +1236,8 @@ export function mountDesktopPortalHost({
 
   function showAuthFeedback(message) {
     if (disposed || !message) return;
+    // 새 얼굴(PC 클라이언트 1단계)은 알림 글을 장면 값으로 그린다. 칸에 직접 쓰면 다음 그리기에서 지워지므로 얼굴에 넘긴다
+    if (typeof portal?.showAuthFeedback === 'function') { portal.showAuthFeedback(message); return; }
     const feedbackEl = root.querySelector('[data-portal-auth-feedback], #portal-auth-feedback');
     if (!feedbackEl) return;
     feedbackEl.textContent = message;
@@ -1487,7 +1494,7 @@ export function mountDesktopPortalHost({
     };
   }
 
-  async function executeDesktopAssignmentFlow({ accountKey, generation }) {
+  async function executeDesktopAssignmentFlow({ accountKey, generation, openSingle = true }) {
     const liveAuth = await readLiveAuth();
     if (hasAccountDiverged(liveAuth, accountKey)) {
       return {
@@ -1670,11 +1677,12 @@ export function mountDesktopPortalHost({
         return { ok: true, action: 'purpose', purposeMode };
       }
 
-      if (parsedResult.destinations.length === 1) {
+      if (parsedResult.destinations.length === 1 && openSingle !== false) {
         const singleDest = parsedResult.destinations[0];
         const opened = await openVerifiedCompanyDestination(singleDest, accountKey, generation);
         if (opened.ok === true) {
-          return { ok: true };
+          // 새 얼굴은 이 값으로 구가 들어갈 자리를 정한다. 지금 얼굴은 모르는 칸을 읽지 않는다
+          return { ok: true, destination: opened.destination || singleDest, destinations: [singleDest] };
         }
         if (opened.code === 'ACCOUNT_CHANGED') {
           return opened;
@@ -1708,7 +1716,8 @@ export function mountDesktopPortalHost({
     };
   }
 
-  portal = mountPortalEntry(root, {
+  portal = mountFace(root, {
+    ...(faceOptions && typeof faceOptions === 'object' ? faceOptions : {}),
     hostElements,
     initialState: {
       status: initialNormalized.status,
@@ -1809,6 +1818,68 @@ export function mountDesktopPortalHost({
         context?.accountKey,
         context?.generation,
       );
+    },
+
+    // 새 얼굴(PC 클라이언트 1단계): 고르기 화면 없이 솔리오로 간다. 온보딩이 남은 계정이면 not-asked를 남긴다(설계 7절)
+    async onEnterDefault(context) {
+      const liveAuth = await readLiveAuth();
+      const fence = buildAuthFence(liveAuth, context?.accountKey, context?.generation);
+      if (
+        !fence
+        || !matchesAuthFence(liveAuth, fence, {
+          requireAccountGeneration: Boolean(fence.accountGeneration),
+        })
+      ) {
+        return {
+          ok: false,
+          code: 'ACCOUNT_CHANGED',
+          message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+        };
+      }
+      if (context?.purposeMode !== 'existing') {
+        const completed = await settleEnteringPurposeIfNeeded('not-asked', context.accountKey, fence);
+        if (completed.ok === false) return completed;
+      }
+      const navigated = await onOpenPurposeTarget?.('solio', context);
+      if (navigated?.ok === false) {
+        return {
+          ok: false,
+          code: navigated.code || 'PURPOSE_LAUNCH_FAILED',
+          message: navigated.message || '솔리오를 열지 못했어요. 다시 시도해 주세요.',
+        };
+      }
+      verifiedAssignmentRecord = null;
+      return { ok: true };
+    },
+
+    // 새 얼굴: 들어온 뒤 공간 고르기에서 배정된 공간을 다시 연다. 새 네트워크 길 없이 지금의 배정 조회와 열기만 쓴다(설계 4 · 14절)
+    async onOpenSpace(destination, context) {
+      const dest = normalizePortalWorkspaceDestination(destination);
+      if (!dest) {
+        return { ok: false, code: 'INVALID_INPUT', message: '선택한 작업 공간을 찾지 못했어요. 다시 선택해 주세요.' };
+      }
+      const accountKey = context?.accountKey;
+      const generation = context?.generation ?? null;
+      const recordLive = () => Boolean(
+        verifiedAssignmentRecord
+        && verifiedAssignmentRecord.destinations.includes(dest)
+        && verifiedAssignmentRecord.fence?.accountKey === accountKey,
+      );
+      if (!recordLive()) {
+        // 확인 기록이 만료됐으면 배정을 한 번 다시 조회한다. 이때는 열지 않는다
+        const refreshed = await executeDesktopAssignmentFlow({ accountKey, generation, openSingle: false });
+        if (refreshed?.ok === false) return refreshed;
+        if (!recordLive()) {
+          return { ok: false, code: 'NOT_ASSIGNED', message: '지금 계정에 확인된 공간이 아닙니다. 잠시 뒤 다시 시도해 주세요.' };
+        }
+      }
+      const opened = await openVerifiedCompanyDestination(dest, accountKey, generation);
+      if (opened.ok === true) return { ok: true, destination: opened.destination || dest };
+      return {
+        ok: false,
+        code: opened.code || 'HANDOFF_UNAVAILABLE',
+        message: opened.message || desktopOpenDestinationErrorMessage(opened.code),
+      };
     },
 
     async onContinuePersonal(context) {
@@ -2496,6 +2567,9 @@ export function mountDesktopPortalHost({
     syncReducedMotion,
     openPurposePicker: trigger => portal.openPurposePicker(trigger),
     closePurposePicker: () => portal.closePurposePicker(),
+    // 새 얼굴의 모습('portal' · 'app' · 'legacy' · 'off'). 얼굴이 모르면 'off'와 false다
+    clientMode: () => (typeof portal.clientMode === 'function' ? portal.clientMode() : 'off'),
+    isClientShown: () => (typeof portal.isClientShown === 'function' ? portal.isClientShown() === true : false),
     dispose,
   };
 }

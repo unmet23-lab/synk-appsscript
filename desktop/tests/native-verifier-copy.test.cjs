@@ -13,6 +13,7 @@ function expectations(source){
 test('Windows native verifier waits only for screen copy the renderer still has',()=>{
   const expected=expectations(verifier);
   assert.ok(expected.length>=8,'verifier copy expectations were not found: '+JSON.stringify(expected));
-  for(const text of ['SYNK Platform 업데이트','브라우저에서 가입한 뒤','지금 v',' · 시험판','최신 버전이에요.'])assert.ok(expected.includes(text),text);
+  // 검정 구 얼굴(PC 클라이언트 1단계)의 묻는 화면과 솔리오 첫 화면 글도 기다린다
+  for(const text of ['SYNK Platform 업데이트','브라우저에서 가입한 뒤','처음이라면 가입하기','로그인하면 구독별 남은 양이 여기에 보입니다.','지금 v',' · 시험판','최신 버전이에요.'])assert.ok(expected.includes(text),text);
   assert.deepEqual(expected.filter(text=>!renderer.includes(text)),[],'화면 글을 바꿨다면 검증 도구와 공개 CI 사본의 기대 글도 같은 판에서 맞춰 주세요');
 });

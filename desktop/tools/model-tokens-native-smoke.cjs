@@ -101,14 +101,21 @@ if (!process.versions.electron) {
       const member = (id, appIds, generation = 1) => `window.__synkFixture.switchAccount({configured:true,status:'signed-in',signedIn:true,sessionGeneration:${generation},account:{synk_user_id:'synthetic-insight-${id}',display_name:'합성 ${id}'},learningSync:true,library:{status:'ready',appIds:${JSON.stringify(appIds)}}})`;
       await window.loadURL('synk-desktop://platform/index.html');
       for (let attempt = 0; attempt < 200; attempt++) { const state = await run('document.documentElement.dataset.ready'); if (state === 'true') break; if (state === 'error' || attempt === 199) throw Error('Renderer not ready'); await pause(30); }
-      // 첫 화면의 환영 포털을 실제 사람처럼 넘긴다: 구 → 둘러보기 → 솔리오(현장 노트 시험_화면확인 「새 포털이 활성화된 PC 설치 검사에서 …」).
-      const portalState = () => run("document.getElementById('portal-entry')?.dataset.portalActive==='true'?document.getElementById('portal-entry').dataset.portalState:'off'");
-      const until = async (want, ms = 4000) => { for (let i = 0; i < ms / 50; i++) { if ((await portalState()) === want) return true; await pause(50); } return false; };
+      // 검정 구 얼굴(PC 클라이언트 1단계)을 실제 사람처럼 넘긴다: 합성 로그인 → 솔리오 첫 화면 → 구독 줄을 눌러 옛 AI 구독 관리 판(맨 위 56px 띠 아래).
+      // 배정 다리가 없는 합성 회원은 공간 고르기에 「다시 확인」과 함께 서므로 「솔리오로」를 누른다(1단계_구현설계.md 14절).
+      const orb = async () => JSON.parse(await run("JSON.stringify({phase:document.getElementById('portal-entry')?.dataset.portalState,mode:document.documentElement.dataset.orbClient||'off',ui:document.querySelector('#portal-entry .orb-stage')?.dataset.ui||null,auth:document.getElementById('portal-entry')?.dataset.portalAuthStatus})"));
       const passPortal = async () => {
-        if ((await portalState()) === 'off') return false;
-        await click('#portal-entry [data-portal-action="orb"]'); await until('auth'); await pause(700);
-        await click('#portal-entry [data-portal-action="browse"]'); await until('purpose'); await pause(700);
-        await click('#portal-entry [data-portal-purpose="solio"]'); await until('off', 6000);
+        let o = await orb();
+        if (o.mode === 'off' || o.mode === 'legacy') return false;
+        if (o.auth !== 'signed-in') { await run(member('A', ['messenger'])); await pause(200); }
+        for (let i = 0; i < 240; i++) {
+          o = await orb();
+          if (o.mode === 'app' && o.ui === 'app') break;
+          if (o.phase === 'workspace' && o.ui === 'switch') await run("document.querySelector('#portal-entry [data-portal-action=\"continue-personal\"]')?.click()");
+          await pause(50);
+        }
+        await click('#portal-entry button.row[data-svc], #portal-entry [data-orb-act="connect"]');
+        for (let i = 0; i < 120 && (await orb()).mode !== 'legacy'; i++) await pause(50);
         await settle(); return true;
       };
       for (let i = 0; i < 40 && !(await run("document.getElementById('portal-entry')?.dataset.portalActive==='true'")); i++) await pause(50);
@@ -126,7 +133,8 @@ if (!process.versions.electron) {
           // 로그인 뒤 앱이 홈을 다시 그리는 사이에 누르면 솔리오가 안 열린다 — 열릴 때까지 다시 누른다.
           await passPortal();
           for (let i = 0; i < 10 && (await run('document.documentElement.dataset.view')) !== 'solio'; i++) { await click('.nav-links [data-view=solio]'); await pause(200); await settle(); }
-          await click("#solio-panel .primary[data-solio-section=subscriptions]"); await pause(300); await settle();
+          // 새 얼굴에서는 구독 줄이 옛 구독 관리 판을 바로 연다. 판이 이미 보이면 솔리오 홈의 단추를 다시 찾지 않는다
+          if (await run("(()=>{const s=document.getElementById('solio-subscriptions');return !s||s.hidden||s.closest('[hidden]')!==null;})()")) { await click("#solio-panel .primary[data-solio-section=subscriptions]"); await pause(300); await settle(); }
           await run("window.__synkTokens.set('off')"); await pause(60); await settle();
           let info = await measure();
           check('tokens-off-' + tag, clean(info) && /모델별 토큰 켜기/.test(info.text), { ...info, shot: shoot ? await capture('tokens-off-' + tag) : null });

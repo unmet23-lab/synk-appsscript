@@ -29,6 +29,8 @@ function observe(config){
   async function capture(window,name){await window.webContents.executeJavaScript('document.fonts.ready.then(()=>true)',true);await sleep(250);const file=path.join(config.out,name+'.png');for(let attempt=0;;attempt++){try{window.webContents.invalidate();await window.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await sleep(150);fs.writeFileSync(file,(await window.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true})).toPNG());break;}catch(error){if(attempt>=2||!String(error.message).includes('UnknownVizError'))throw error;await sleep(150);}}screenshots.push(file);}
   const deny=name=>(...args)=>{forbidden.push({operation:name});throw Error('QA_FORBIDDEN_'+name);};
   // These substitutions are installed before src/main.cjs evaluates any imports.
+  // 검정 구 얼굴의 검사 실행 길(1단계_구현설계.md 11절). 이 값은 본체 프로세스에 심은 때만 참이 되고 보통 사용자는 켤 수 없다.
+  globalThis.__synkNativeQAGuestEntry=true;
   require(app.getAppPath()+'/src/program-root.cjs').resolveProgramRoot=()=>config.programs;
   require('node:child_process').spawn=deny('child_process.spawn');
   require('node:child_process').exec=deny('child_process.exec');
@@ -105,48 +107,48 @@ function observe(config){
         const probe=await run(`(()=>{const node=document.querySelector(${JSON.stringify(selector)});if(!node)return {ok:false,reason:'missing'};const style=getComputedStyle(node),rect=node.getBoundingClientRect();const visible=!node.hidden&&!node.disabled&&!node.closest('[hidden],[inert],[aria-hidden="true"]')&&style.display!=='none'&&style.visibility==='visible'&&style.pointerEvents!=='none'&&Number(style.opacity)>0&&rect.width>0&&rect.height>0&&rect.left>=0&&rect.top>=0&&rect.right<=window.innerWidth&&rect.bottom<=window.innerHeight;const x=rect.left+rect.width/2,y=rect.top+rect.height/2,hit=visible?document.elementFromPoint(x,y):null,unobscured=Boolean(hit&&(hit===node||node.contains(hit))),ok=visible&&unobscured;if(ok)node.click();return {ok,visible,unobscured,disabled:Boolean(node.disabled),rect:{left:Math.round(rect.left),top:Math.round(rect.top),width:Math.round(rect.width),height:Math.round(rect.height),right:Math.round(rect.right),bottom:Math.round(rect.bottom)},viewport:{width:window.innerWidth,height:window.innerHeight},point:{x:Math.round(x),y:Math.round(y)},hit:hit?{tag:hit.tagName,id:hit.id||null,className:String(hit.className||'')}:null};})()`);
         check(name,probe?.ok===true,probe);
       };
-      await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher');return !!p&&!p.hidden&&p.dataset.portalActive==='true'&&p.dataset.portalState==='welcome'&&p.dataset.portalAuthStatus==='signed-out'&&!!l&&l.inert===true;})()",'portal-welcome');
-      const welcome=await run("(()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher');return {portalState:p?.dataset.portalState,portalActive:p?.dataset.portalActive,portalAuthStatus:p?.dataset.portalAuthStatus,portalHidden:Boolean(p?.hidden),docPortalActive:document.documentElement.dataset.portalActive,launcherInert:Boolean(l?.inert),launcherInertAttr:Boolean(l?.hasAttribute('inert'))};})()");
-      check('portal starts at welcome with launcher inert',welcome.portalState==='welcome'&&welcome.portalActive==='true'&&welcome.portalAuthStatus==='signed-out'&&!welcome.portalHidden&&welcome.docPortalActive==='true'&&welcome.launcherInert&&welcome.launcherInertAttr,welcome);
-      await clickVisible('#portal-entry [data-portal-action="orb"]','portal welcome orb visible and unobscured');
-      await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),pane=p?.querySelector('[data-portal-pane=auth]');return !!p&&p.dataset.portalState==='auth'&&!!pane&&!pane.hidden;})()",'portal-auth');
-      const authPane=await run("(()=>{const p=document.getElementById('portal-entry'),pane=p?.querySelector('[data-portal-pane=auth]'),l=document.querySelector('.launcher');return {portalState:p?.dataset.portalState,portalActive:p?.dataset.portalActive,paneHidden:!pane||pane.hidden,launcherInert:Boolean(l?.inert)};})()");
-      check('portal orb opens auth while launcher stays inert',authPane.portalState==='auth'&&authPane.portalActive==='true'&&!authPane.paneHidden&&authPane.launcherInert,authPane);
-      await clickVisible('#portal-entry [data-portal-action="browse"]','portal auth browse visible and unobscured');
-      await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),pane=p?.querySelector('[data-portal-pane=purpose]');return !!p&&p.dataset.portalState==='purpose'&&!!pane&&!pane.hidden;})()",'portal-purpose');
-      const purposePane=await run("(()=>{const p=document.getElementById('portal-entry'),pane=p?.querySelector('[data-portal-pane=purpose]'),l=document.querySelector('.launcher');return {portalState:p?.dataset.portalState,purposeOrigin:p?.dataset.portalPurposeOrigin,portalActive:p?.dataset.portalActive,paneHidden:!pane||pane.hidden,launcherInert:Boolean(l?.inert)};})()");
-      check('portal browse opens purpose picker while launcher stays inert',purposePane.portalState==='purpose'&&purposePane.purposeOrigin==='browse'&&purposePane.portalActive==='true'&&!purposePane.paneHidden&&purposePane.launcherInert,purposePane);
-      await clickVisible('#portal-entry [data-portal-purpose="solio"]','portal purpose solio visible and unobscured');
-      await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher'),s=document.getElementById('view-solio');return !!p&&p.dataset.portalState==='entered'&&p.hidden&&document.documentElement.dataset.view==='solio'&&!!s&&!s.hidden&&!!l&&!l.inert;})()",'portal-entered-solio');
-      const entered=await run("(async()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher'),s=document.getElementById('view-solio'),auth=await window.synkDesktop.authStatus();return {portalState:p?.dataset.portalState,portalActive:p?.dataset.portalActive,portalHidden:Boolean(p?.hidden),docPortalActive:document.documentElement.dataset.portalActive,view:document.documentElement.dataset.view,solioHidden:Boolean(s?.hidden),launcherInert:Boolean(l?.inert),launcherInertAttr:Boolean(l?.hasAttribute('inert')),launcherAriaHidden:l?.getAttribute('aria-hidden')??null,auth};})()");
-      check('portal solio entry unlocks launcher on solio view and keeps account signed out',entered.portalState==='entered'&&entered.portalActive==='false'&&entered.portalHidden&&entered.docPortalActive==='false'&&entered.view==='solio'&&!entered.solioHidden&&!entered.launcherInert&&!entered.launcherInertAttr&&entered.launcherAriaHidden===null&&entered.auth.configured===true&&entered.auth.signedIn===false&&entered.auth.status==='signed-out',entered);
+      // 검정 구 얼굴(PC 클라이언트 1단계, 1단계_구현설계.md 15절): 구만 보이고, 누르지 않아도 묻는 화면으로 커지고, 검사 실행 길로 솔리오까지 간다.
+      await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher');return !!p&&!p.hidden&&p.dataset.portalActive==='true'&&p.dataset.portalState==='welcome'&&p.dataset.portalAuthStatus==='signed-out'&&p.dataset.orbClient==='portal'&&!!l&&l.inert===true;})()",'orb-welcome');
+      const welcome=await run("(()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher'),c=p?.querySelector('.orb-canvas')?.getBoundingClientRect();return {portalState:p?.dataset.portalState,portalActive:p?.dataset.portalActive,orbClient:p?.dataset.orbClient,portalHidden:Boolean(p?.hidden),docPortalActive:document.documentElement.dataset.portalActive,launcherInert:Boolean(l?.inert),launcherInertAttr:Boolean(l?.hasAttribute('inert')),canvasCovers:!!c&&c.width>=innerWidth-1&&c.height>=innerHeight-1};})()");
+      check('orb starts alone at welcome with launcher inert',welcome.portalState==='welcome'&&welcome.portalActive==='true'&&welcome.orbClient==='portal'&&!welcome.portalHidden&&welcome.docPortalActive==='true'&&welcome.launcherInert&&welcome.launcherInertAttr&&welcome.canvasCovers,welcome);
+      // 누르지 않는다. 복원 결과(로그아웃)가 나온 뒤 1.35초 기다림을 지나 스스로 커지는 것까지가 검사다
+      await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),s=p?.querySelector('.orb-stage');return !!p&&p.dataset.portalState==='auth'&&s?.dataset.ui==='ask';})()",'orb-auth');
       for(const width of [1280,1024]){
-        created.setSize(width,800);await sleep(180);
-        const buttons=await run("(()=>Object.fromEntries(['account-button','signup-button'].map(id=>{const node=document.getElementById(id),rect=node.getBoundingClientRect();return [id,{text:node.innerText,visible:!node.hidden&&rect.width>0&&rect.height>0&&rect.left>=0&&rect.right<=innerWidth,disabled:node.disabled}]})))()");
-        check('login and signup visible at '+width,buttons['account-button'].visible&&buttons['account-button'].text.includes('로그인')&&buttons['signup-button'].visible&&!buttons['signup-button'].disabled&&buttons['signup-button'].text==='회원가입',buttons);
-        await capture(created,'platform-home-'+width);
+        created.setSize(width,800);await sleep(420);
+        const ask=await run("(()=>Object.fromEntries([['signin','[data-orb-act=signin]'],['signup','[data-orb-act=signup]'],['code','#portal-invite-input']].map(([name,selector])=>{const node=document.querySelector('#portal-entry '+selector),rect=node.getBoundingClientRect(),hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);return [name,{text:node.innerText||node.placeholder,visible:!node.hidden&&getComputedStyle(node).visibility==='visible'&&rect.width>0&&rect.height>0&&rect.left>=0&&rect.right<=innerWidth,unobscured:Boolean(hit&&(hit===node||node.contains(hit)))}];})))()");
+        check('orb ask shows sign-in, sign-up and the code field at '+width,ask.signin.visible&&ask.signin.unobscured&&ask.signin.text==='로그인'&&ask.signup.visible&&ask.signup.unobscured&&ask.signup.text==='처음이라면 가입하기'&&ask.code.visible&&ask.code.unobscured,ask);
+        await capture(created,'platform-orb-ask-'+width);
       }
-      await run("document.getElementById('signup-button').click()");
-      await waitFor(contents,"document.getElementById('account-dialog').open&&!document.getElementById('sign-up').disabled",'signup-dialog');
-      check('header signup opens only the fixed URL through native IPC',opened.length===1&&opened[0].kind==='external'&&opened[0].url==='https://synk.im/id/?view=signup');
-      await run("document.getElementById('sign-up').click()");
-      await waitFor(contents,"!document.getElementById('sign-up').disabled",'dialog-signup-complete');
-      check('account dialog signup uses the same fixed URL',opened.length===2&&opened.every(item=>item.kind==='external'&&item.url==='https://synk.im/id/?view=signup'));
-      const account=await run("(async()=>({auth:await synkDesktop.authStatus(),help:document.getElementById('signup-help').innerText,signIn:document.getElementById('sign-in').innerText}))()");
-      check('signup keeps native session signed out and login separate',account.auth.signedIn===false&&account.help.includes('브라우저에서 가입한 뒤')&&account.signIn==='로그인');
-      await capture(created,'platform-signup-dialog');await run("document.getElementById('account-dialog').close()");
-      for(const view of ['downloads','settings']){
-        await run("document.querySelector('[data-view="+view+"]').click()");
-        await waitFor(contents,"document.documentElement.dataset.view==='"+view+"'",view);
+      await clickVisible('#portal-entry [data-orb-act="signup"]','orb sign-up visible and unobscured');
+      await waitFor(contents,"(document.querySelector('#portal-entry [data-ask-note]')?.textContent||'').includes('브라우저에서 가입한 뒤')",'orb-signup-note');
+      check('orb sign-up opens only the fixed URL through native IPC',opened.length===1&&opened[0].kind==='external'&&opened[0].url==='https://synk.im/id/?view=signup',opened);
+      const signedOut=await run("(async()=>({auth:await synkDesktop.authStatus(),note:document.querySelector('#portal-entry [data-ask-note]').innerText,phase:document.getElementById('portal-entry').dataset.portalState}))()");
+      check('orb sign-up keeps the native session signed out and stays on the ask scene',signedOut.auth.signedIn===false&&signedOut.note==='브라우저에서 가입한 뒤 「로그인」을 눌러 주세요.'&&signedOut.phase==='auth',signedOut);
+      // 검사 실행 길: 본체에 심은 값(__synkNativeQAGuestEntry)으로만 열린다
+      await run("document.getElementById('portal-entry').dispatchEvent(new CustomEvent('synk:qa-guest-entry'));true");
+      await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry'),s=p?.querySelector('.orb-stage');return !!p&&p.dataset.portalState==='entered'&&p.dataset.orbClient==='app'&&s?.dataset.ui==='app';})()",'orb-solio');
+      const entered=await run("(async()=>{const p=document.getElementById('portal-entry'),l=document.querySelector('.launcher'),auth=await window.synkDesktop.authStatus();return {portalState:p?.dataset.portalState,portalActive:p?.dataset.portalActive,orbClient:p?.dataset.orbClient,say:(p?.querySelector('[data-say]')?.textContent||'').trim(),launcherInert:Boolean(l?.inert),auth:{configured:auth.configured,signedIn:auth.signedIn}};})()");
+      check('orb QA guest path reaches the Solio first screen and keeps the account signed out',entered.portalState==='entered'&&entered.portalActive==='false'&&entered.orbClient==='app'&&entered.say==='로그인하면 구독별 남은 양이 여기에 보입니다.'&&entered.launcherInert&&entered.auth.configured===true&&entered.auth.signedIn===false,entered);
+      await capture(created,'platform-orb-solio');
+      // 작은 구 → 공간 고르기 → 「설정」 → 옛 설정 보기(legacy)의 업데이트 확인. 내려받기 보기는 새 얼굴에서 갈 길이 없어 뺀다
+      await clickVisible('#portal-entry .here-orb','orb small orb visible and unobscured');
+      await waitFor(contents,"document.querySelector('#portal-entry .orb-stage')?.dataset.ui==='switch'",'orb-switch');
+      await clickVisible('#portal-entry [data-foot="settings"]','orb switch settings visible and unobscured');
+      await waitFor(contents,"document.documentElement.dataset.orbClient==='legacy'&&document.documentElement.dataset.view==='settings'",'orb-legacy-settings');
+      // 임시 옛 화면에서는 옛 런처의 잠금이 풀려 마우스와 자판으로 눌려야 한다(Fable 최종). 프로그램 클릭은 잠긴 요소에도 통하므로 따로 본다
+      const unlocked=await run("(()=>{const l=document.querySelector('.launcher'),back=document.querySelector('#portal-entry .legacy-back'),r=back?.getBoundingClientRect();return {launcherInert:Boolean(l?.inert),launcherInertAttr:Boolean(l?.hasAttribute('inert')),launcherAriaHidden:l?.getAttribute('aria-hidden')??null,backVisible:!!back&&!back.hidden&&!!r&&r.width>0&&r.height>0};})()");
+      check('orb legacy view unlocks the old launcher and shows 「돌아가기」',!unlocked.launcherInert&&!unlocked.launcherInertAttr&&unlocked.launcherAriaHidden===null&&unlocked.backVisible,unlocked);
+      for(const view of ['settings']){
         const prefix='platform-update-'+view;
-        await run("document.getElementById('"+prefix+"-check').click()");
+        await run("document.getElementById('"+prefix+"-check').scrollIntoView({block:'center'});true");await sleep(120);
+        await clickVisible('#'+prefix+'-check',view+' manual update check visible and unobscured');
         await waitFor(contents,"document.getElementById('"+prefix+"').dataset.updateState==='current'&&!document.getElementById('"+prefix+"-check').disabled",view+'-update-current');
         const ui=await run("(()=>({version:document.getElementById('"+prefix+"-version').innerText,status:document.getElementById('"+prefix+"-status').innerText,downloadHidden:document.getElementById('"+prefix+"-download').hidden,installHidden:document.getElementById('"+prefix+"-install').hidden,rootHidden:document.getElementById('"+prefix+"').hidden}))()");
         check(view+' manual update displays the current candidate',!ui.rootHidden&&ui.version==='지금 v'+config.version+' · 시험판'&&ui.status.startsWith('최신 버전이에요.')&&ui.status.includes('쓰는 동안에도')&&ui.downloadHidden&&ui.installHidden,ui);
         await capture(created,'platform-update-'+view);
       }
       const events=await run('window.__qaUpdateOff();window.__qaUpdateStates');
-      check('manual checks emit real checking and current events',events.join(',')==='checking,current,checking,current'&&feedRequests===3,{events,feedRequests});
+      check('manual checks emit real checking and current events',events.join(',')==='checking,current'&&feedRequests===2,{events,feedRequests});
       check('only one main window opened',mainCount===1);
       check('no account, remote assets, child process, or installer operation',requests.length===0&&providerRequests.length===0&&forbidden.length===0);
       check('all native QA windows remained hidden',!BrowserWindow.getAllWindows().some(window=>window.isVisible()));
