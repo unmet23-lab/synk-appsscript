@@ -93,7 +93,7 @@ test('one failing write in error handling does not stop later collections',async
   assert.ok(calls.includes('second'),'the queue keeps running after a rejected job');
 });
 
-for(const backgroundJobsEnabled of [false,true])test(backgroundJobsEnabled?'the existing background cleanup expires records but never removes old collection runs':'production collection schedules do not newly activate physical retention cleanup',async t=>{
+for(const backgroundJobsEnabled of [false,true])test(backgroundJobsEnabled?'background cleanup expires records and old terminal collection runs while preserving queued runs':'production collection schedules do not newly activate physical retention cleanup',async t=>{
   const old='2026-10-01T00:00:00.000Z',recent='2026-10-19T00:00:00.000Z';
   const f=await appFixture(t,{backgroundJobsEnabled,collector:async c=>collected(c),seed:store=>{
     store.put('posts','expired',{id:'expired',channelId:'x',source:'api:youtube',expiresAt:'2026-10-19T00:00:00.000Z'});
@@ -113,10 +113,12 @@ for(const backgroundJobsEnabled of [false,true])test(backgroundJobsEnabled?'the 
   assert.deepEqual(ids('snapshots'),backgroundJobsEnabled?[]:['expired-snapshot']);
   assert.deepEqual(ids('channelSnapshots'),backgroundJobsEnabled?[]:['expired-channel']);
   assert.deepEqual(ids('hypeObservations'),backgroundJobsEnabled?['fresh']:['fresh','orphan','stale']);
-  assert.deepEqual(ids('runs'),['invalid-time','new-success','old-queued','old-success']);
+  assert.deepEqual(ids('runs'),backgroundJobsEnabled?['invalid-time','new-success','old-queued']:['invalid-time','new-success','old-queued','old-success']);
   f.app.store.put('runs','older',{id:'older',channelId:'x',status:'error',startedAt:old});
   f.setClock('2026-10-20T00:30:00.000Z');await f.tick();assert.ok(ids('runs').includes('older'));
-  f.setClock('2026-10-21T01:06:00.000Z');await f.tick();assert.ok(ids('runs').includes('older'),'elapsed time does not authorize collection history deletion');
+  f.setClock('2026-10-21T01:06:00.000Z');await f.tick();
+  assert.equal(ids('runs').includes('older'),!backgroundJobsEnabled,'only the explicit background-job setting authorizes terminal-run retention cleanup');
+  assert.ok(ids('runs').includes('old-queued'),'queued work remains even beyond the retention window');
   if(!backgroundJobsEnabled){
     assert.deepEqual(ids('posts'),['expired','kept']);
     assert.deepEqual(ids('snapshots'),['expired-snapshot']);
