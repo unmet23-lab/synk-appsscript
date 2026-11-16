@@ -19,6 +19,7 @@ const VERSION = /^\d{1,4}\.\d{1,4}\.\d{1,6}(?:-[a-z0-9.]{1,20})?$/;
 const ID16 = /^[a-z0-9]{16}$/, ID12 = /^[a-z0-9]{12}$/;
 const MOVE_PIN_MS = 7 * DAY;
 const SNAPSHOT_ID = /^[0-9a-f]{64}$/;
+const INSTALL_ID = /^[A-Za-z0-9_-]{22}$/;
 // Nonce purposes are the request names, so a sign-in for one action cannot be spent on another.
 export const PURPOSES = ['provision', 'take-write-seat', 'revoke', 'lost', 'read-key-rotate', 'restore-run', 'restore-undo'];
 
@@ -183,6 +184,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
   // only after that, so two PCs never write at once. The app waits until usableAt. The
   // moment comes from the keys table, so a retry after a stop still waits.
   const usableAt = (customer) => Math.max(now(), store.lastWriteKeyDeleted(customer.id) + cfg.restoreGraceMs);
+  const waitOf = (customer) => { const at = usableAt(customer); return { usableAt: at, waitMs: at - now() }; };
 
   // ── restore jobs (run in the background; resumable because the tool re-plans)
   // A job left 'preparing' by a restart: every write key except the ones this restore
@@ -246,6 +248,8 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       const name = deviceName(body?.device?.name);
       const appVersion = body?.device?.appVersion;
       if (appVersion !== undefined && !VERSION.test(appVersion)) fail(400, 'BAD_INPUT');
+      const installId = body?.device?.installId;
+      if (installId !== undefined && !INSTALL_ID.test(installId)) fail(400, 'BAD_INPUT');
       const claims = await google(body, 'provision');
       let customer = store.customerBySub(claims.sub);
       if (!customer) {
@@ -261,6 +265,14 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       return serial(customer.id, async () => {
         restoreBusy(customer);
         customer = store.customerById(customer.id);
+        // The same PC signing up again after a lost answer (Fable 설계 관문 A): its earlier
+        // device never acknowledged a key, so it is dropped with its keys and frees the seat.
+        if (installId) {
+          for (const ghost of store.devicesOf(customer.id).filter((d) => d.state === 'active' && d.install_id === installId && store.deviceNeverAcked(d.id))) {
+            await dropAll([...store.liveKeys(customer.id, 'write'), ...readKeys(customer)].filter((k) => k.device_id === ghost.id), 'replaced');
+            store.setDevice(ghost.id, { state: 'abandoned', role: 'read' });
+          }
+        }
         const active = store.devicesOf(customer.id).filter((d) => d.state === 'active');
         const writer = store.writerOf(customer.id);
         const role = writer ? 'read' : 'write';
@@ -271,8 +283,8 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         const makes = role === 'write' || giveRead;
         // After a loss the first read key is an incident response, not counted.
         if (makes && !(customer.google_step && giveRead && role === 'read')) checkBudget(customer);
-        const { device, token } = store.createDevice({ customerId: customer.id, name, role, appVersion });
-        const out = { customer: { id: customer.id, repository: repository(customer) }, device: { id: device.id, token, role }, keys: {}, ackBy: now() + ACK_MS, usableAt: usableAt(customer),
+        const { device, token } = store.createDevice({ customerId: customer.id, name, role, appVersion, installId: installId || null });
+        const out = { customer: { id: customer.id, repository: repository(customer) }, device: { id: device.id, token, role }, keys: {}, ackBy: now() + ACK_MS,
           writer: writer ? { id: writer.id, name: writer.name } : null, lost: customer.google_step ? { googleStepRequired: true } : null };
         try {
           if (role === 'write') out.keys.write = keyOut(await makeKey('write', customer, device.id, 'provision'));
@@ -283,6 +295,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
           throw e;
         }
         if (makes) store.addKeyRequest(customer.id, 'provision');
+        Object.assign(out, waitOf(customer));
         if (store.devicesOf(customer.id).length > 1) notifyCustomer(customer, 'new-device', { at: now(), name: device.name, deviceId: device.id }, device.id);
         return out;
       });
@@ -354,7 +367,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         const k = await makeKey('write', customer, device.id, 'seat');
         store.addKeyRequest(customer.id, 'seat');
         if (previous) notifyCustomer(customer, 'seat-moved', { at: now(), name: device.name, deviceId: device.id, fromId: previous.id }, `${device.id}:${now()}`);
-        return { keys: { write: keyOut(k) }, ackBy: now() + ACK_MS, usableAt: usableAt(customer), previous: previous ? { id: previous.id, name: previous.name } : null };
+        return { keys: { write: keyOut(k) }, ackBy: now() + ACK_MS, ...waitOf(customer), previous: previous ? { id: previous.id, name: previous.name } : null };
       });
     },
 
@@ -480,7 +493,7 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         store.setJob(job.id, { state: 'running' });
         void runJob(store.job(job.id));
         plans.delete(customer.id);
-        return { jobId: job.id, keys: { write: keyOut(write), read: keyOut(read) }, ackBy: now() + ACK_MS, usableAt: usableAt(customer) };
+        return { jobId: job.id, keys: { write: keyOut(write), read: keyOut(read) }, ackBy: now() + ACK_MS, ...waitOf(customer) };
       });
     },
 

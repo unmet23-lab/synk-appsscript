@@ -29,7 +29,7 @@ create table if not exists devices(
   id text primary key, customer_id text not null references customers(id), name text not null,
   role text not null check (role in ('write','read')),
   state text not null check (state in ('active','moved','revoked','lost','abandoned')),
-  created_at integer not null, last_seen_at integer, token_hash text not null unique, app_version text, moved_to text);
+  created_at integer not null, last_seen_at integer, token_hash text not null unique, app_version text, moved_to text, install_id text);
 create unique index if not exists one_writer on devices(customer_id) where role = 'write' and state = 'active';
 create table if not exists keys(
   name text primary key, key_id text unique, kind text not null check (kind in ('write','read')),
@@ -82,6 +82,7 @@ export class Store {
     this.db.exec('begin immediate');
     try {
       if (!cols('customers').includes('move_pin')) this.db.exec('alter table customers add column move_pin text');
+      if (!cols('devices').includes('install_id')) this.db.exec('alter table devices add column install_id text');
       const sql = this.db.prepare("select sql from sqlite_master where type = 'table' and name = 'restore_jobs'").get()?.sql || '';
       if (!sql.includes("'preparing'")) {
         this.db.exec(`alter table restore_jobs rename to restore_jobs_old;
@@ -150,12 +151,14 @@ drop table restore_jobs_old;`);
   setCustomer(id, fields) { this.update('customers', 'id', id, fields); }
 
   // ── devices
-  createDevice({ customerId, name, role, appVersion }) {
+  createDevice({ customerId, name, role, appVersion, installId = null }) {
     const id = randomId(12), token = 'wbd_' + crypto.randomBytes(32).toString('base64url');
-    this.run('insert into devices(id, customer_id, name, role, state, created_at, last_seen_at, token_hash, app_version) values (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      id, customerId, name, role, 'active', this.now(), this.now(), tokenHash(token), appVersion || null);
+    this.run('insert into devices(id, customer_id, name, role, state, created_at, last_seen_at, token_hash, app_version, install_id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      id, customerId, name, role, 'active', this.now(), this.now(), tokenHash(token), appVersion || null, installId);
     return { device: this.device(id), token };
   }
+  // A device that never acknowledged any key it was given.
+  deviceNeverAcked(id) { return !this.get('select 1 from keys where device_id = ? and acked_at is not null', id); }
   device(id) { return this.get('select * from devices where id = ?', id); }
   deviceByToken(token) {
     if (typeof token !== 'string' || !/^wbd_[A-Za-z0-9_-]{43}$/.test(token)) return null;

@@ -161,23 +161,84 @@ test('GPT GA3: an acknowledgement whose answer was lost loses no key — provisi
   assert.equal(await again.pendingReadKey(), null);
 });
 
-test('GPT r2 GA3: a sign-up stopped before its keys were stored is KEY_GONE, not a finished device', async (t) => {
+// Stop points of a sign-up (Fable 설계 관문 11-16). `lose(url)` makes the server do the work
+// and the answer vanish, as a dropped connection does.
+const losing = (pc, match) => { const real = pc.call; let n = 0; pc.call = async (url, o) => { const r = await real(url, o); if (match(url) && n++ === 0) throw Object.assign(new Error('NETWORK'), { code: 'NETWORK' }); return r; }; return real; };
+
+test('stop: the provision answer is lost — signing up again on the same PC replaces the unfinished device and takes the seat', async (t) => {
   const h = await harness(t);
   h.store.addInvite('pilot@example.com');
   const pc = await h.client('pc');
-  await pc.provision({ name: 'PC' });
-  // As if the app stopped right after the device file: the key files are gone.
-  for (const f of ['write-key.bin', 'read-key.bin']) await fs.rm(path.join(h.dir, 'pc', f), { force: true });
-  const again = new ProvisionClient({ dir: path.join(h.dir, 'pc'), secretStore, auth: pc.auth, call: pc.call });
+  losing(pc, (u) => u.endsWith('/provision'));
+  await assert.rejects(pc.provision({ name: 'PC' }), { code: 'NETWORK' });
+  assert.equal(pc.device, null);
+  const r = await pc.provision({ name: 'PC' });
+  assert.equal(r.role, 'write', 'the ghost device from the lost answer does not hold the seat');
+  assert.ok(r.readKey);
+  assert.equal(h.store.all("select count(*) n from devices where state = 'abandoned'")[0].n, 1);
+  assert.equal(h.store.liveKeys(r.customerId, 'write').length, 1);
+});
+
+test('stop: after the device file, before the acknowledgement — the next open finishes it; past ten minutes it starts over', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc');
+  losing(pc, (u) => u.endsWith('keys/ack'));
+  await assert.rejects(pc.provision({ name: 'PC' }), { code: 'NETWORK' });
+  // Within ten minutes: a reopened app settles the keys and hands back the sign-up result.
+  const again = new ProvisionClient({ dir: path.join(h.dir, 'pc'), secretStore, auth: pc.auth, call: pc.call, now: () => h.clock.t });
   await again.open();
-  again.device = { ...again.device, done: false }; await again.save('device.bin', again.device);
-  await assert.rejects(again.provision({ name: 'PC' }), { code: 'KEY_GONE' });
-  // GPT r3 GA1: an unfinished device file that does not say what it expects is not finished either.
-  const { expect, ...noExpect } = again.device; again.device = noExpect; await again.save('device.bin', again.device);
-  await again.open();
-  await assert.rejects(again.provision({ name: 'PC' }), { code: 'KEY_GONE' });
-  await again.forget();
-  assert.equal((await again.provision({ name: 'PC' })).role, 'read', 'a new device of the same customer');
+  assert.ok(again.device.write.acked && again.device.read.acked);
+  const r = await again.provision({ name: 'PC' });
+  assert.equal(r.role, 'write'); assert.ok(r.readKey);
+  await assert.rejects(again.provision({ name: 'PC' }), { code: 'ALREADY' });
+
+  // Past ten minutes on another PC: the server dropped the device; this PC starts over.
+  const pc2 = await h.client('pc2', { sub: '1000009', email: 'second@example.com' });
+  h.store.addInvite('second@example.com');
+  const net = () => Object.assign(new Error('NETWORK'), { code: 'NETWORK' });
+  const real2 = pc2.call; pc2.call = async (u, o) => { if (u.endsWith('keys/ack')) throw net(); return real2(u, o); };
+  await assert.rejects(pc2.provision({ name: 'PC' }), { code: 'NETWORK' });
+  h.clock.advance(11 * 60000); await h.jobs.expireKeys();
+  pc2.call = real2;
+  const late = new ProvisionClient({ dir: path.join(h.dir, 'pc2'), secretStore, auth: pc2.auth, call: real2, now: () => h.clock.t });
+  assert.equal((await late.open()).connected, false, 'the dropped device is forgotten here');
+  assert.equal((await late.provision({ name: 'PC' })).role, 'write');
+});
+
+test('stop: a key the server no longer takes is dropped and named; the rest of the sign-up stands', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc');
+  const real = pc.call;
+  pc.call = async (u, o) => { if (u.endsWith('keys/ack')) return real(u, { ...o, body: { keyIds: o.body.keyIds.slice(0, 1) } }); return real(u, o); };
+  const r = await pc.provision({ name: 'PC' });
+  assert.equal(r.readKey, null);
+  assert.deepEqual(pc.state().needs, ['read-key']);
+  assert.ok(await pc.writeCredentials());
+});
+
+test('stop: a seat-move answer that never came is known on the next open', async (t) => {
+  const h = await harness(t);
+  h.store.addInvite('pilot@example.com');
+  const oldPc = await h.client('old'); await oldPc.provision({ name: '옛 PC' });
+  const newPc = await h.client('new'); await newPc.provision({ name: '새 PC' });
+  losing(newPc, (u) => u.endsWith('take-write-seat'));
+  await assert.rejects(newPc.takeWriteSeat(), { code: 'NETWORK' });
+  assert.deepEqual(newPc.state().needs, ['write-key']);
+  const again = new ProvisionClient({ dir: path.join(h.dir, 'new'), secretStore, auth: newPc.auth, call: newPc.call });
+  assert.deepEqual((await again.open()).needs, ['write-key']);
+  await again.takeWriteSeat();
+  assert.deepEqual(again.state().needs, []);
+  assert.ok(await again.writeCredentials());
+  // An answer lost after the request was written down but before it went out (the app died).
+  await again.update({ inflight: { op: 'read-key-rotate', at: 1 } });
+  const third = new ProvisionClient({ dir: path.join(h.dir, 'new'), secretStore, auth: newPc.auth, call: newPc.call });
+  assert.deepEqual((await third.open()).needs, ['read-key']);
+  // A half-written device file from an atomic() stop is cleaned away.
+  fsSync.writeFileSync(path.join(h.dir, 'new', 'device.bin.dead.tmp'), 'x');
+  await third.open();
+  assert.equal(fsSync.existsSync(path.join(h.dir, 'new', 'device.bin.dead.tmp')), false);
 });
 
 test('GPT GB6: a write key that replaced another waits out the grace before the engine gets it', async (t) => {
@@ -195,4 +256,29 @@ test('GPT GB6: a write key that replaced another waits out the grace before the 
   h.store.addInvite('other@example.com');
   await fresh.provision({ name: 'PC' });
   assert.ok(await fresh.writeCredentials()); assert.deepEqual(w0, []);
+});
+
+test('GPT r4: files of the first version are imported — keys acknowledged again, the wait kept; an unfinished sign-up without its keys starts over', async (t) => {
+  const h = await harness(t, { grace: 60000 });
+  h.store.addInvite('pilot@example.com');
+  const pc = await h.client('pc'); await pc.provision({ name: 'PC' });
+  const dir = path.join(h.dir, 'pc'), d = pc.device;
+  const enc = async (name, v) => fs.writeFile(path.join(dir, name), await secretStore.encrypt(JSON.stringify(v)));
+  // The first version's files: a finished device and a write key stored but never acknowledged.
+  const fresh = await h.api.makeKey('write', h.store.customerById(d.customerId), d.deviceId, 'seat');
+  const { v, write, read, signup, inflight, needs, jobId, ...old } = d;
+  await enc('device.bin', { ...old, done: true });
+  await enc('write-key.bin', { keyId: fresh.keyId, applicationKey: fresh.applicationKey, customerId: d.customerId, deviceId: d.deviceId, usableAt: h.clock.t + 30000 });
+  const waits = [];
+  const again = new ProvisionClient({ dir, secretStore, auth: pc.auth, call: pc.call, now: () => h.clock.t, sleep: async (ms) => { waits.push(ms); } });
+  await again.open();
+  assert.equal(again.device.v, 2);
+  assert.equal(h.store.key(fresh.name).state, 'active', 'the imported key was acknowledged');
+  assert.equal((await again.writeCredentials()).keyId, fresh.keyId);
+  assert.deepEqual(waits, [30000], 'the wait of the first version carries over');
+  assert.equal(fsSync.existsSync(path.join(dir, 'write-key.bin')), false);
+  // An unfinished sign-up of that version with its keys missing is forgotten.
+  await enc('device.bin', { ...old, done: false, expect: { write: true, read: true } });
+  const third = new ProvisionClient({ dir, secretStore, auth: pc.auth, call: pc.call, now: () => h.clock.t });
+  assert.equal((await third.open()).connected, false);
 });
