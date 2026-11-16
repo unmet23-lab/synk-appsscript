@@ -2,7 +2,7 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-11-16T05:29:27.884Z",
+  "generatedAt": "2026-11-16T10:51:42.410Z",
   "status": "reviewed-local-records",
   "buildStatus": "complete",
   "exportPreferences": {
@@ -332,7 +332,7 @@
         "files": [
           "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -493,7 +493,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -582,7 +582,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -1130,7 +1130,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -1194,7 +1194,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-public-verified",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 26 · 예약 기록 5 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 26 · 예약 기록 6 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_관용구퀴즈4_간_20261020",
@@ -1474,6 +1474,15 @@
               "url": null,
               "jobId": "16e75ca385a32dedb52d5b429d13cdcfb5a80a2e67dcc813b2abf3c0cfa90b83",
               "source": "docs/마케팅/LAB_보고싶어_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_전기장판_20261116",
+              "state": "승인 대기",
+              "at": "2026-11-21T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": "7df9cc3c2d0be72b93dd30628b5620191b1fd04d846ff7312cc79ab503b7ce97",
+              "source": "docs/마케팅/LAB_전기장판_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "PULSE",
@@ -1513,11 +1522,11 @@
             },
             "publication": {
               "publishedCount": 26,
-              "scheduledCount": 5,
+              "scheduledCount": 6,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -1799,6 +1808,15 @@
                   "url": null,
                   "jobId": "16e75ca385a32dedb52d5b429d13cdcfb5a80a2e67dcc813b2abf3c0cfa90b83",
                   "source": "docs/마케팅/LAB_보고싶어_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_전기장판_20261116",
+                  "state": "승인 대기",
+                  "at": "2026-11-21T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": "7df9cc3c2d0be72b93dd30628b5620191b1fd04d846ff7312cc79ab503b7ce97",
+                  "source": "docs/마케팅/LAB_전기장판_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -1841,7 +1859,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-editor-verified",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 17 · 예약 기록 1 · 게시 여부 확인 필요 10",
+          "publishStatus": "게시 확인 17 · 예약 기록 5 · 게시 여부 확인 필요 10",
           "publicationEvidence": [
             {
               "episode": "LAB_관용구퀴즈4_간_20261020",
@@ -2094,6 +2112,42 @@
               "url": null,
               "jobId": null,
               "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_먹어요_mn_20261115",
+              "state": "예약됨",
+              "at": "2026-11-17T04:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_먹어요_mn_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_인사한마디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-17T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_성함_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-18T04:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_성함_mn_20261116/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_단디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-18T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -2132,11 +2186,11 @@
             },
             "publication": {
               "publishedCount": 17,
-              "scheduledCount": 1,
+              "scheduledCount": 5,
               "pendingConfirmationCount": 10,
               "lastPublishedAt": "2026-11-12T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -2391,6 +2445,42 @@
                   "url": null,
                   "jobId": null,
                   "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_먹어요_mn_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-17T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_먹어요_mn_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_인사한마디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-17T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_성함_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-18T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_성함_mn_20261116/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_단디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-18T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -2433,7 +2523,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-public-verified",
           "priority": "기존 추가 채널 유지",
-          "publishStatus": "게시 확인 15 · 예약 기록 1 · 게시 여부 확인 필요 7",
+          "publishStatus": "게시 확인 15 · 예약 기록 5 · 게시 여부 확인 필요 7",
           "publicationEvidence": [
             {
               "episode": "LAB_채팅줄임말_mn_20261024",
@@ -2641,6 +2731,42 @@
               "url": "https://www.tiktok.com/@synk.mn",
               "jobId": null,
               "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_먹어요_mn_20261115",
+              "state": "예약됨",
+              "at": "2026-11-17T04:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synk.mn/video/7708637182277307656",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_먹어요_mn_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_인사한마디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-17T12:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synk.mn/video/7708638253498256648",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_성함_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-18T04:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synk.mn/video/7708638526681697543",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_성함_mn_20261116/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_단디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-18T12:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synk.mn/video/7708638792126647559",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -2677,11 +2803,11 @@
             },
             "publication": {
               "publishedCount": 15,
-              "scheduledCount": 1,
+              "scheduledCount": 5,
               "pendingConfirmationCount": 7,
               "lastPublishedAt": "2026-11-12T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -2891,6 +3017,42 @@
                   "url": "https://www.tiktok.com/@synk.mn",
                   "jobId": null,
                   "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_먹어요_mn_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-17T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synk.mn/video/7708637182277307656",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_먹어요_mn_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_인사한마디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-17T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synk.mn/video/7708638253498256648",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_성함_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-18T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synk.mn/video/7708638526681697543",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_성함_mn_20261116/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_단디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-18T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synk.mn/video/7708638792126647559",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -2934,7 +3096,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-public-verified",
           "priority": "기존 추가 채널 유지",
-          "publishStatus": "게시 확인 18 · 예약 기록 1 · 게시 여부 확인 필요 8",
+          "publishStatus": "게시 확인 18 · 예약 기록 5 · 게시 여부 확인 필요 8",
           "publicationEvidence": [
             {
               "episode": "LAB_관용구퀴즈4_간_20261020",
@@ -3178,6 +3340,42 @@
               "url": null,
               "jobId": null,
               "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_먹어요_mn_20261115",
+              "state": "예약됨",
+              "at": "2026-11-17T04:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_먹어요_mn_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_인사한마디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-17T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_성함_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-18T04:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_성함_mn_20261116/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_단디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-18T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -3216,11 +3414,11 @@
             },
             "publication": {
               "publishedCount": 18,
-              "scheduledCount": 1,
+              "scheduledCount": 5,
               "pendingConfirmationCount": 8,
               "lastPublishedAt": "2026-11-12T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -3466,6 +3664,42 @@
                   "url": null,
                   "jobId": null,
                   "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_먹어요_mn_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-17T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_먹어요_mn_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_인사한마디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-17T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_성함_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-18T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_성함_mn_20261116/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_단디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-18T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -3508,7 +3742,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-settings-verified",
           "priority": "기존 추가 채널 유지",
-          "publishStatus": "게시 확인 14 · 예약 기록 1 · 게시 여부 확인 필요 4",
+          "publishStatus": "게시 확인 16 · 예약 기록 3 · 게시 여부 확인 필요 2",
           "publicationEvidence": [
             {
               "episode": "LAB_그래자_mn_20261027",
@@ -3656,19 +3890,19 @@
             },
             {
               "episode": "LAB_물개_mn_20261111",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-14T12:00:00.000Z",
               "observedAt": null,
-              "url": null,
+              "url": "https://t.me/synkmn/22",
               "jobId": null,
               "source": "docs/마케팅/LAB_물개_mn_20261111/게시/게시결과.json"
             },
             {
               "episode": "LAB_이름뜻_mn_20261113",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T12:00:00.000Z",
               "observedAt": null,
-              "url": null,
+              "url": "https://t.me/synkmn/23",
               "jobId": null,
               "source": "docs/마케팅/LAB_이름뜻_mn_20261113/게시/게시결과.json"
             },
@@ -3680,6 +3914,24 @@
               "url": null,
               "jobId": null,
               "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_인사한마디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-17T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_단디_mn_20261116",
+              "state": "예약됨",
+              "at": "2026-11-18T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -3715,12 +3967,12 @@
               "scope": "현재 세션 전체 재검증 안 함"
             },
             "publication": {
-              "publishedCount": 14,
-              "scheduledCount": 1,
-              "pendingConfirmationCount": 4,
-              "lastPublishedAt": "2026-11-12T12:00:00.000Z",
+              "publishedCount": 16,
+              "scheduledCount": 3,
+              "pendingConfirmationCount": 2,
+              "lastPublishedAt": "2026-11-15T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -3870,19 +4122,19 @@
                 },
                 {
                   "episode": "LAB_물개_mn_20261111",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-14T12:00:00.000Z",
                   "observedAt": null,
-                  "url": null,
+                  "url": "https://t.me/synkmn/22",
                   "jobId": null,
                   "source": "docs/마케팅/LAB_물개_mn_20261111/게시/게시결과.json"
                 },
                 {
                   "episode": "LAB_이름뜻_mn_20261113",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T12:00:00.000Z",
                   "observedAt": null,
-                  "url": null,
+                  "url": "https://t.me/synkmn/23",
                   "jobId": null,
                   "source": "docs/마케팅/LAB_이름뜻_mn_20261113/게시/게시결과.json"
                 },
@@ -3894,6 +4146,24 @@
                   "url": null,
                   "jobId": null,
                   "source": "docs/마케팅/LAB_아이고_mn_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_인사한마디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-17T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_인사한마디_mn_20261116/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_단디_mn_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-18T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_단디_mn_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -4186,7 +4456,7 @@
               "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-14T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -4678,7 +4948,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-13T12:02:09.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -5008,7 +5278,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-05T13:26:44.000Z",
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -5230,7 +5500,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:00:00.000Z",
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -5371,7 +5641,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-profile-verified",
           "priority": "기존 운영 분류",
-          "publishStatus": "게시 확인 7 · 예약 기록 3 · 게시 여부 확인 필요 4",
+          "publishStatus": "게시 확인 7 · 예약 기록 5 · 게시 여부 확인 필요 4",
           "publicationEvidence": [
             {
               "episode": "yuhobuilds_목소리깨짐숫자_20261029",
@@ -5498,6 +5768,24 @@
               "url": null,
               "jobId": null,
               "source": "docs/마케팅/yuhobuilds_윈도우깨짐다시_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_반짝73_20261115",
+              "state": "예약됨",
+              "at": "2026-11-19T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_반짝73_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_매일완료_20261116",
+              "state": "예약됨",
+              "at": "2026-11-20T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_매일완료_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "LAB · SHIFT · PULSE · PATH",
@@ -5539,11 +5827,11 @@
             },
             "publication": {
               "publishedCount": 7,
-              "scheduledCount": 3,
+              "scheduledCount": 5,
               "pendingConfirmationCount": 4,
               "lastPublishedAt": "2026-11-08T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -5672,6 +5960,24 @@
                   "url": null,
                   "jobId": null,
                   "source": "docs/마케팅/yuhobuilds_윈도우깨짐다시_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_반짝73_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-19T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_반짝73_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_매일완료_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-20T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_매일완료_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -5720,7 +6026,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-public-verified",
           "priority": "기존 운영 분류",
-          "publishStatus": "게시 확인 9 · 예약 기록 4 · 게시 여부 확인 필요 2",
+          "publishStatus": "게시 확인 9 · 예약 기록 6 · 게시 여부 확인 필요 2",
           "publicationEvidence": [
             {
               "episode": "yuhobuilds_목소리깨짐숫자_20261029",
@@ -5856,6 +6162,24 @@
               "url": null,
               "jobId": null,
               "source": "docs/마케팅/yuhobuilds_지적147_20261113/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_반짝73_20261115",
+              "state": "예약됨",
+              "at": "2026-11-20T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_반짝73_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_매일완료_20261116",
+              "state": "예약됨",
+              "at": "2026-11-21T12:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_매일완료_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "LAB · SHIFT · PULSE · PATH",
@@ -5897,11 +6221,11 @@
             },
             "publication": {
               "publishedCount": 9,
-              "scheduledCount": 4,
+              "scheduledCount": 6,
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-08T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -6039,6 +6363,24 @@
                   "url": null,
                   "jobId": null,
                   "source": "docs/마케팅/yuhobuilds_지적147_20261113/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_반짝73_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-20T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_반짝73_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_매일완료_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-21T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_매일완료_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -6126,7 +6468,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -6220,7 +6562,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -6308,7 +6650,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -6601,7 +6943,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -7101,7 +7443,7 @@
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-11T12:01:03.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -7353,7 +7695,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-public-verified",
           "priority": "기존 운영 분류",
-          "publishStatus": "게시 확인 12 · 예약 기록 4 · 게시 여부 확인 필요 2",
+          "publishStatus": "게시 확인 12 · 예약 기록 5 · 게시 여부 확인 필요 2",
           "publicationEvidence": [
             {
               "episode": "synkbrief_빈방채우기_20261027",
@@ -7509,6 +7851,15 @@
               "source": "docs/마케팅/synkbrief_무료체험_20261114/게시/게시결과.json"
             },
             {
+              "episode": "synkbrief_원생명단_20261115",
+              "state": "예약됨",
+              "at": "2026-11-19T12:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synkbrief/video/7708640024505355538",
+              "jobId": null,
+              "source": "docs/마케팅/synkbrief_원생명단_20261115/게시/게시결과.json"
+            },
+            {
               "episode": "synkbrief_필라테스예약_20261113",
               "state": "예약됨",
               "at": "2026-11-20T12:00:00.000Z",
@@ -7552,11 +7903,11 @@
             },
             "publication": {
               "publishedCount": 12,
-              "scheduledCount": 4,
+              "scheduledCount": 5,
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-08T12:00:00.000Z",
               "nextScheduledAt": "2026-11-16T12:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -7714,6 +8065,15 @@
                   "source": "docs/마케팅/synkbrief_무료체험_20261114/게시/게시결과.json"
                 },
                 {
+                  "episode": "synkbrief_원생명단_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-19T12:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synkbrief/video/7708640024505355538",
+                  "jobId": null,
+                  "source": "docs/마케팅/synkbrief_원생명단_20261115/게시/게시결과.json"
+                },
+                {
                   "episode": "synkbrief_필라테스예약_20261113",
                   "state": "예약됨",
                   "at": "2026-11-20T12:00:00.000Z",
@@ -7766,7 +8126,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-public-verified",
           "priority": "기존 운영 분류",
-          "publishStatus": "게시 확인 16 · 예약 기록 4 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 16 · 예약 기록 5 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "synkbrief_AI음식사진_20261020",
@@ -7940,6 +8300,15 @@
               "source": "docs/마케팅/synkbrief_무료체험_20261114/게시/게시결과.json"
             },
             {
+              "episode": "synkbrief_원생명단_20261115",
+              "state": "예약됨",
+              "at": "2026-11-19T12:10:00.000Z",
+              "observedAt": null,
+              "url": "https://blog.naver.com/synkshift",
+              "jobId": null,
+              "source": "docs/마케팅/synkbrief_원생명단_20261115/게시/게시결과.json"
+            },
+            {
               "episode": "synkbrief_영상통화연인_20261113",
               "state": "예약됨",
               "at": "2026-11-20T12:10:00.000Z",
@@ -7983,11 +8352,11 @@
             },
             "publication": {
               "publishedCount": 16,
-              "scheduledCount": 4,
+              "scheduledCount": 5,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T12:10:00.000Z",
               "nextScheduledAt": "2026-11-16T12:10:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -8163,6 +8532,15 @@
                   "source": "docs/마케팅/synkbrief_무료체험_20261114/게시/게시결과.json"
                 },
                 {
+                  "episode": "synkbrief_원생명단_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-19T12:10:00.000Z",
+                  "observedAt": null,
+                  "url": "https://blog.naver.com/synkshift",
+                  "jobId": null,
+                  "source": "docs/마케팅/synkbrief_원생명단_20261115/게시/게시결과.json"
+                },
+                {
                   "episode": "synkbrief_영상통화연인_20261113",
                   "state": "예약됨",
                   "at": "2026-11-20T12:10:00.000Z",
@@ -8215,7 +8593,7 @@
           "setupStatus": "기존 계정 기록",
           "profileStatusCode": "v6-saved-public-verified",
           "priority": "기존 운영 분류",
-          "publishStatus": "게시 확인 18 · 예약 기록 0 · 게시 여부 확인 필요 2",
+          "publishStatus": "게시 확인 18 · 예약 기록 5 · 게시 여부 확인 필요 2",
           "publicationEvidence": [
             {
               "episode": "yuhobuilds_1일1업로드_첫날_20261020",
@@ -8396,6 +8774,51 @@
               "url": null,
               "jobId": null,
               "source": "docs/마케팅/yuhobuilds_떨어뜨린영상_20261111/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_한도인수인계_20261113",
+              "state": "예약됨",
+              "at": "2026-11-16T12:30:00.000Z",
+              "observedAt": null,
+              "url": "https://yuhobuilds.tistory.com/25",
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_한도인수인계_20261113/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_결제40만원_20261113",
+              "state": "예약됨",
+              "at": "2026-11-17T12:30:00.000Z",
+              "observedAt": null,
+              "url": "https://yuhobuilds.tistory.com/26",
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_결제40만원_20261113/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_윈도우깨짐다시_20261115",
+              "state": "예약됨",
+              "at": "2026-11-18T12:30:00.000Z",
+              "observedAt": null,
+              "url": "https://yuhobuilds.tistory.com/27",
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_윈도우깨짐다시_20261115/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_지적147_20261113",
+              "state": "예약됨",
+              "at": "2026-11-19T12:30:00.000Z",
+              "observedAt": null,
+              "url": "https://yuhobuilds.tistory.com/28",
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_지적147_20261113/게시/게시결과.json"
+            },
+            {
+              "episode": "yuhobuilds_매일완료_20261116",
+              "state": "예약됨",
+              "at": "2026-11-20T12:30:00.000Z",
+              "observedAt": null,
+              "url": "https://yuhobuilds.tistory.com/29",
+              "jobId": null,
+              "source": "docs/마케팅/yuhobuilds_매일완료_20261116/게시/게시결과.json"
             }
           ],
           "sharedLabel": "SHIFT",
@@ -8432,11 +8855,11 @@
             },
             "publication": {
               "publishedCount": 18,
-              "scheduledCount": 0,
+              "scheduledCount": 5,
               "pendingConfirmationCount": 2,
               "lastPublishedAt": "2026-11-15T13:01:00.000Z",
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-16T12:30:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -8619,6 +9042,51 @@
                   "url": null,
                   "jobId": null,
                   "source": "docs/마케팅/yuhobuilds_떨어뜨린영상_20261111/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_한도인수인계_20261113",
+                  "state": "예약됨",
+                  "at": "2026-11-16T12:30:00.000Z",
+                  "observedAt": null,
+                  "url": "https://yuhobuilds.tistory.com/25",
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_한도인수인계_20261113/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_결제40만원_20261113",
+                  "state": "예약됨",
+                  "at": "2026-11-17T12:30:00.000Z",
+                  "observedAt": null,
+                  "url": "https://yuhobuilds.tistory.com/26",
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_결제40만원_20261113/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_윈도우깨짐다시_20261115",
+                  "state": "예약됨",
+                  "at": "2026-11-18T12:30:00.000Z",
+                  "observedAt": null,
+                  "url": "https://yuhobuilds.tistory.com/27",
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_윈도우깨짐다시_20261115/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_지적147_20261113",
+                  "state": "예약됨",
+                  "at": "2026-11-19T12:30:00.000Z",
+                  "observedAt": null,
+                  "url": "https://yuhobuilds.tistory.com/28",
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_지적147_20261113/게시/게시결과.json"
+                },
+                {
+                  "episode": "yuhobuilds_매일완료_20261116",
+                  "state": "예약됨",
+                  "at": "2026-11-20T12:30:00.000Z",
+                  "observedAt": null,
+                  "url": "https://yuhobuilds.tistory.com/29",
+                  "jobId": null,
+                  "source": "docs/마케팅/yuhobuilds_매일완료_20261116/게시/게시결과.json"
                 }
               ]
             },
@@ -8702,7 +9170,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -8786,7 +9254,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -8881,7 +9349,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -8971,7 +9439,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9052,7 +9520,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9133,7 +9601,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9214,7 +9682,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9295,7 +9763,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9376,7 +9844,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9457,7 +9925,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9538,7 +10006,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9620,7 +10088,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9702,7 +10170,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9784,7 +10252,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9866,7 +10334,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -9948,7 +10416,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10030,7 +10498,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10112,7 +10580,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10194,7 +10662,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10276,7 +10744,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10358,7 +10826,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -10389,7 +10857,7 @@
           "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
           "profileStatusCode": "created-name-handle-bio-publicly-verified-2026-09-20; initial-delayed-display-resolved; avatar-verified-20260921; external-links-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 0 · 예약 기록 0 · 게시 여부 확인 필요 1",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -10446,11 +10914,11 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 1,
-              "pendingConfirmationCount": 0,
+              "scheduledCount": 0,
+              "pendingConfirmationCount": 1,
               "lastPublishedAt": null,
-              "nextScheduledAt": "2026-11-16T06:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": null,
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -10570,7 +11038,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-15T06:00:00.000Z",
               "nextScheduledAt": "2026-11-17T06:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -10629,7 +11097,7 @@
           "avatarStatus": "approved-lab-logo-visible-in-account-icon-after-reload",
           "profileStatusCode": "name-and-full-bio-owner-profile-verified-avatar-account-icon-verified-after-reload",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 0 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 1 · 예약 기록 1 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -10639,6 +11107,15 @@
               "url": "https://www.douyin.com/user/39504393074",
               "jobId": null,
               "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_화날때_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-17T05:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_화날때_mn_20261031/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -10686,11 +11163,11 @@
             },
             "publication": {
               "publishedCount": 1,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-16T05:00:00.000Z",
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-17T05:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -10702,6 +11179,15 @@
                   "url": "https://www.douyin.com/user/39504393074",
                   "jobId": null,
                   "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_화날때_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-17T05:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_화날때_mn_20261031/게시/게시결과.json"
                 }
               ]
             },
@@ -11026,7 +11512,7 @@
               "pendingConfirmationCount": 7,
               "lastPublishedAt": "2026-11-10T13:00:00.000Z",
               "nextScheduledAt": "2026-11-16T13:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -11400,7 +11886,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-14T04:00:00.000Z",
               "nextScheduledAt": "2026-11-17T04:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -11468,7 +11954,7 @@
           "avatarStatus": "approved-lab-logo-owner-profile-verified",
           "profileStatusCode": "name-bio-link-in-bio-avatar-owner-profile-verified-2026-11-16",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 0 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 1 · 예약 기록 3 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_미안죄송합니다_mn_20261029",
@@ -11478,6 +11964,33 @@
               "url": "https://www.instagram.com/synk.jp/reel/Dfyct6DvtMk/",
               "jobId": null,
               "source": "docs/마케팅/LAB_미안죄송합니다_mn_20261029/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-17T04:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_물고기_mn_20261102",
+              "state": "예약됨",
+              "at": "2026-11-18T04:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_물고기_mn_20261102/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_화날때_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-19T04:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_화날때_mn_20261031/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -11525,11 +12038,11 @@
             },
             "publication": {
               "publishedCount": 1,
-              "scheduledCount": 0,
+              "scheduledCount": 3,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-16T04:00:00.000Z",
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-17T04:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -11541,6 +12054,33 @@
                   "url": "https://www.instagram.com/synk.jp/reel/Dfyct6DvtMk/",
                   "jobId": null,
                   "source": "docs/마케팅/LAB_미안죄송합니다_mn_20261029/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-17T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_물고기_mn_20261102",
+                  "state": "예약됨",
+                  "at": "2026-11-18T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_물고기_mn_20261102/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_화날때_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-19T04:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_화날때_mn_20261031/게시/게시결과.json"
                 }
               ]
             },
@@ -11570,8 +12110,18 @@
           "avatarStatus": "approved-lab-logo-owner-profile-verified",
           "profileStatusCode": "name-bio-link-in-bio-avatar-owner-profile-verified-2026-11-16",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-18T08:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": "341a5022fecda8958908907ac54744fe07081682044acab00ba39f9370d1784d",
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -11591,12 +12141,12 @@
           "loginMappingStatus": "confirmed",
           "loginStatusLabel": "로그인 확인",
           "loginEvidenceAt": "2026-11-16T00:00:00.000Z",
-          "loginCaveat": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 새로 만들고 유호님이 로그인하셨다 — 프로필 편집 화면에서 synklab.uz · SYNK LAB Uzbekistan 확인. Profile 5의 인스타 웹은 여러 계정이 섞여 전환할 때마다 비밀번호가 들었다(11-12 · 11-15).",
+          "loginCaveat": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 만들고 유호님이 로그인하셨다. 개인 계정이라 인스타 웹 「Schedule content」가 없어 05:13 크리에이터로 바꿨지만 18:50까지도 칸이 없었고, Business Suite 「synk.mn」 포트폴리오에 넣은 인스타 전용 자산은 세로 릴스를 예약하지 못했다(게시물 만들기 4:5~16:9만). 19:37 유호님 「작업실에 잇자」로 작업실 게시 권한을 연결했다 — Profile 7의 인스타는 1101yuh라 Profile 17에서 작업실에 로그인해(유호님) synklab.uz로 동의했고, 자동 게시는 19:40에 켰다. 그래서 거는 길은 작업실(인스타 API)이다 — tools/작업실예약.js로 등록하고 검토 링크를 승인한다.",
           "loginSourcePaths": [
             "docs/_ops/로그인복구_GPT인계_20261107.md",
             "docs/마케팅/로그인경로_점검_20261109.md"
           ],
-          "loginSessionStatus": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 새로 만들고 유호님이 로그인하셨다 — 프로필 편집 화면에서 synklab.uz · SYNK LAB Uzbekistan 확인. Profile 5의 인스타 웹은 여러 계정이 섞여 전환할 때마다 비밀번호가 들었다(11-12 · 11-15).",
+          "loginSessionStatus": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 만들고 유호님이 로그인하셨다. 개인 계정이라 인스타 웹 「Schedule content」가 없어 05:13 크리에이터로 바꿨지만 18:50까지도 칸이 없었고, Business Suite 「synk.mn」 포트폴리오에 넣은 인스타 전용 자산은 세로 릴스를 예약하지 못했다(게시물 만들기 4:5~16:9만). 19:37 유호님 「작업실에 잇자」로 작업실 게시 권한을 연결했다 — Profile 7의 인스타는 1101yuh라 Profile 17에서 작업실에 로그인해(유호님) synklab.uz로 동의했고, 자동 게시는 19:40에 켰다. 그래서 거는 길은 작업실(인스타 API)이다 — tools/작업실예약.js로 등록하고 검토 링크를 승인한다.",
           "business": "LAB",
           "secondaryBusinesses": [],
           "contentTrack": "LAB",
@@ -11613,18 +12163,28 @@
               "observedDateOnly": true,
               "browser": "Ego · Profile 17",
               "method": "기존 Instagram 세션 → 대상 핸들로 계정 전환",
-              "scope": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 새로 만들고 유호님이 로그인하셨다 — 프로필 편집 화면에서 synklab.uz · SYNK LAB Uzbekistan 확인. Profile 5의 인스타 웹은 여러 계정이 섞여 전환할 때마다 비밀번호가 들었다(11-12 · 11-15)."
+              "scope": "2026-11-16 ego 「IG synklab.uz」(Profile 17)를 이 계정 하나만 쓰려고 만들고 유호님이 로그인하셨다. 개인 계정이라 인스타 웹 「Schedule content」가 없어 05:13 크리에이터로 바꿨지만 18:50까지도 칸이 없었고, Business Suite 「synk.mn」 포트폴리오에 넣은 인스타 전용 자산은 세로 릴스를 예약하지 못했다(게시물 만들기 4:5~16:9만). 19:37 유호님 「작업실에 잇자」로 작업실 게시 권한을 연결했다 — Profile 7의 인스타는 1101yuh라 Profile 17에서 작업실에 로그인해(유호님) synklab.uz로 동의했고, 자동 게시는 19:40에 켰다. 그래서 거는 길은 작업실(인스타 API)이다 — tools/작업실예약.js로 등록하고 검토 링크를 승인한다."
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-18T08:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-18T08:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": "341a5022fecda8958908907ac54744fe07081682044acab00ba39f9370d1784d",
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -11703,7 +12263,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -11783,7 +12343,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -11814,7 +12374,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 2",
+          "publishStatus": "게시 확인 3 · 예약 기록 2 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -11827,7 +12387,7 @@
             },
             {
               "episode": "LAB_화날때_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T05:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/jps3pOFkaus",
@@ -11836,7 +12396,7 @@
             },
             {
               "episode": "LAB_미안죄송합니다_mn_20261029",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-16T05:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/sENM8empSJ4",
@@ -11906,12 +12466,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
+              "publishedCount": 3,
               "scheduledCount": 2,
-              "pendingConfirmationCount": 2,
-              "lastPublishedAt": "2026-11-14T05:00:00.000Z",
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-16T05:00:00.000Z",
               "nextScheduledAt": "2026-11-17T05:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -11926,7 +12486,7 @@
                 },
                 {
                   "episode": "LAB_화날때_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T05:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/jps3pOFkaus",
@@ -11935,7 +12495,7 @@
                 },
                 {
                   "episode": "LAB_미안죄송합니다_mn_20261029",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-16T05:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/sENM8empSJ4",
@@ -12265,7 +12825,7 @@
               "pendingConfirmationCount": 4,
               "lastPublishedAt": "2026-11-12T13:30:00.000Z",
               "nextScheduledAt": "2026-11-16T14:30:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -12522,7 +13082,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 1 · 예약 기록 1 · 게시 여부 확인 필요 1",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -12597,11 +13157,11 @@
             },
             "publication": {
               "publishedCount": 1,
-              "scheduledCount": 2,
-              "pendingConfirmationCount": 0,
+              "scheduledCount": 1,
+              "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-14T06:30:00.000Z",
-              "nextScheduledAt": "2026-11-16T06:30:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-18T06:30:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -12660,8 +13220,18 @@
           "avatarStatus": null,
           "profileStatusCode": "name-bio-link-avatar-saved-and-reread-2026-11-15",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-18T06:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synklab.th/video/7708639421091859719",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -12707,14 +13277,24 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-18T06:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-18T06:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synklab.th/video/7708639421091859719",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -12803,7 +13383,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-17T06:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -12844,8 +13424,18 @@
           "avatarStatus": null,
           "profileStatusCode": "name-bio-link-verified; avatar-lab-logo-saved-and-publicly-reread-2026-11-15",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-19T06:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synklab.id/video/7708639745600933138",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -12891,14 +13481,24 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-19T06:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-19T06:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synklab.id/video/7708639745600933138",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -12987,7 +13587,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-17T06:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -13028,8 +13628,18 @@
           "avatarStatus": "approved-lab-logo-saved-no-post",
           "profileStatusCode": "name-description-logo-cover-short-url-verified",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-17T10:00:00.000Z",
+              "observedAt": null,
+              "url": "https://vk.ru/clip-243082040_456239018",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -13075,14 +13685,24 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-17T10:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-17T10:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://vk.ru/clip-243082040_456239018",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -13110,8 +13730,18 @@
           "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
           "profileStatusCode": "created-2026-09-20; name-full-bio-and-description-lab-link-publicly-verified-2026-09-21; avatar-verified-20260921; cover-custom-handle-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-17T10:00:00.000Z",
+              "observedAt": null,
+              "url": "https://rutube.ru/video/a8ea98cb3466a8dc813e221072f1514a/",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -13157,14 +13787,24 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-17T10:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-17T10:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://rutube.ru/video/a8ea98cb3466a8dc813e221072f1514a/",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -13253,7 +13893,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-17T07:30:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -13343,7 +13983,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13423,7 +14063,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13454,8 +14094,18 @@
           "avatarStatus": null,
           "profileStatusCode": "name-bio-link-avatar-saved-and-reread-2026-11-15",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-17T08:00:00.000Z",
+              "observedAt": null,
+              "url": "https://www.tiktok.com/@synklab.kz/video/7708639117822725384",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -13501,14 +14151,24 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-17T08:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-17T08:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://www.tiktok.com/@synklab.kz/video/7708639117822725384",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -13536,8 +14196,18 @@
           "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
           "profileStatusCode": "created-name-bio-website-and-vanity-handle-publicly-verified-2026-09-21; avatar-verified-20260921; cover-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-17T07:15:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -13583,14 +14253,24 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-17T07:15:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-17T07:15:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -13668,7 +14348,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13748,7 +14428,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13779,7 +14459,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 1 · 예약 기록 1 · 게시 여부 확인 필요 1",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -13854,11 +14534,11 @@
             },
             "publication": {
               "publishedCount": 1,
-              "scheduledCount": 2,
-              "pendingConfirmationCount": 0,
+              "scheduledCount": 1,
+              "pendingConfirmationCount": 1,
               "lastPublishedAt": "2026-11-13T07:00:00.000Z",
-              "nextScheduledAt": "2026-11-16T07:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-18T07:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -13967,7 +14647,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -13998,8 +14678,18 @@
           "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
           "profileStatusCode": "created-name-bio-website-publicly-verified-2026-09-20; avatar-verified-20260921; vanity-handle-cover-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시·예약 기록 미확인",
-          "publicationEvidence": null,
+          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publicationEvidence": [
+            {
+              "episode": "LAB_지마_mn_20261031",
+              "state": "예약됨",
+              "at": "2026-11-18T06:00:00.000Z",
+              "observedAt": null,
+              "url": null,
+              "jobId": null,
+              "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+            }
+          ],
           "sharedLabel": "",
           "channelRole": "현지 한국어 학습 콘텐츠",
           "nextAction": "커버·링크 등 남은 프로필 작업과 학습 콘텐츠 준비",
@@ -14045,14 +14735,24 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 0,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
-              "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": "2026-11-18T06:00:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
-              "receipts": []
+              "receipts": [
+                {
+                  "episode": "LAB_지마_mn_20261031",
+                  "state": "예약됨",
+                  "at": "2026-11-18T06:00:00.000Z",
+                  "observedAt": null,
+                  "url": null,
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_지마_mn_20261031/게시/게시결과.json"
+                }
+              ]
             },
             "collection": {
               "state": "unknown",
@@ -14080,7 +14780,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 3 · 게시 여부 확인 필요 1",
+          "publishStatus": "게시 확인 2 · 예약 기록 3 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_화날때_mn_20261031",
@@ -14093,7 +14793,7 @@
             },
             {
               "episode": "LAB_사층F_mn_20261101",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T18:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/y6YBGwHYARE",
@@ -14172,12 +14872,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
+              "publishedCount": 2,
               "scheduledCount": 3,
-              "pendingConfirmationCount": 1,
-              "lastPublishedAt": "2026-11-13T18:00:00.000Z",
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-15T18:00:00.000Z",
               "nextScheduledAt": "2026-11-16T18:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14192,7 +14892,7 @@
                 },
                 {
                   "episode": "LAB_사층F_mn_20261101",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T18:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/y6YBGwHYARE",
@@ -14304,7 +15004,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -14385,7 +15085,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -14513,7 +15213,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": "2026-11-14T05:00:00.000Z",
               "nextScheduledAt": "2026-11-17T05:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14590,7 +15290,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 1",
+          "publishStatus": "게시 확인 2 · 예약 기록 1 · 게시 여부 확인 필요 1",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -14603,7 +15303,7 @@
             },
             {
               "episode": "LAB_화날때_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T07:30:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/6WHeBE8reWw",
@@ -14673,12 +15373,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
-              "scheduledCount": 2,
+              "publishedCount": 2,
+              "scheduledCount": 1,
               "pendingConfirmationCount": 1,
-              "lastPublishedAt": "2026-11-12T07:30:00.000Z",
-              "nextScheduledAt": "2026-11-16T07:30:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "lastPublishedAt": "2026-11-15T07:30:00.000Z",
+              "nextScheduledAt": "2026-11-17T07:30:00.000Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14693,7 +15393,7 @@
                 },
                 {
                   "episode": "LAB_화날때_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T07:30:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/6WHeBE8reWw",
@@ -14746,7 +15446,7 @@
           "avatarStatus": "approved-kkamong-v4-profile-verified-20260921",
           "profileStatusCode": "created-name-bio-website-publicly-verified-2026-09-20; avatar-verified-20260921; vanity-handle-cover-not-set; separate-content-post-not-created; automatic-photo-activity-not-fully-audited",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 0 · 예약 기록 1 · 게시 여부 확인 필요 0",
+          "publishStatus": "게시 확인 0 · 예약 기록 0 · 게시 여부 확인 필요 1",
           "publicationEvidence": [
             {
               "episode": "LAB_화날때_mn_20261031",
@@ -14803,11 +15503,11 @@
             },
             "publication": {
               "publishedCount": 0,
-              "scheduledCount": 1,
-              "pendingConfirmationCount": 0,
+              "scheduledCount": 0,
+              "pendingConfirmationCount": 1,
               "lastPublishedAt": null,
-              "nextScheduledAt": "2026-11-16T07:30:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "nextScheduledAt": null,
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14848,7 +15548,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 3",
+          "publishStatus": "게시 확인 4 · 예약 기록 2 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -14861,7 +15561,7 @@
             },
             {
               "episode": "LAB_물고기_mn_20261102",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-14T02:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/VjWfo0QOmQE",
@@ -14870,7 +15570,7 @@
             },
             {
               "episode": "LAB_미안죄송합니다_mn_20261029",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T02:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/7Plf27VSnjY",
@@ -14879,7 +15579,7 @@
             },
             {
               "episode": "LAB_화날때_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-16T02:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/Ia3tXbTZsJI",
@@ -14949,12 +15649,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
+              "publishedCount": 4,
               "scheduledCount": 2,
-              "pendingConfirmationCount": 3,
-              "lastPublishedAt": "2026-11-13T02:00:00.000Z",
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-16T02:00:00.000Z",
               "nextScheduledAt": "2026-11-17T02:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -14969,7 +15669,7 @@
                 },
                 {
                   "episode": "LAB_물고기_mn_20261102",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-14T02:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/VjWfo0QOmQE",
@@ -14978,7 +15678,7 @@
                 },
                 {
                   "episode": "LAB_미안죄송합니다_mn_20261029",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T02:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/7Plf27VSnjY",
@@ -14987,7 +15687,7 @@
                 },
                 {
                   "episode": "LAB_화날때_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-16T02:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/Ia3tXbTZsJI",
@@ -15090,7 +15790,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15170,7 +15870,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15201,7 +15901,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 1 · 게시 여부 확인 필요 1",
+          "publishStatus": "게시 확인 2 · 예약 기록 2 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -15214,7 +15914,7 @@
             },
             {
               "episode": "LAB_화날때_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-14T16:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/bEpAikEmXJ0",
@@ -15229,6 +15929,15 @@
               "url": "https://youtube.com/shorts/Z4iq35A0cZc",
               "jobId": null,
               "source": "docs/마케팅/LAB_미안죄송합니다_mn_20261029/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_물고기_mn_20261102",
+              "state": "예약됨",
+              "at": "2026-11-17T16:00:00.000Z",
+              "observedAt": null,
+              "url": "https://youtube.com/shorts/bsMwQTIQLn8",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_물고기_mn_20261102/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -15275,12 +15984,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
-              "scheduledCount": 1,
-              "pendingConfirmationCount": 1,
-              "lastPublishedAt": "2026-11-12T16:00:00.000Z",
+              "publishedCount": 2,
+              "scheduledCount": 2,
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-14T16:00:00.000Z",
               "nextScheduledAt": "2026-11-16T16:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15295,7 +16004,7 @@
                 },
                 {
                   "episode": "LAB_화날때_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-14T16:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/bEpAikEmXJ0",
@@ -15310,6 +16019,15 @@
                   "url": "https://youtube.com/shorts/Z4iq35A0cZc",
                   "jobId": null,
                   "source": "docs/마케팅/LAB_미안죄송합니다_mn_20261029/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_물고기_mn_20261102",
+                  "state": "예약됨",
+                  "at": "2026-11-17T16:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://youtube.com/shorts/bsMwQTIQLn8",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_물고기_mn_20261102/게시/게시결과.json"
                 }
               ]
             },
@@ -15339,7 +16057,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 3",
+          "publishStatus": "게시 확인 4 · 예약 기록 2 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -15352,7 +16070,7 @@
             },
             {
               "episode": "LAB_미안죄송합니다_mn_20261029",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-14T00:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/QG7ip795jys",
@@ -15361,7 +16079,7 @@
             },
             {
               "episode": "LAB_화날때_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T00:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/VnWw3BZjgKA",
@@ -15370,7 +16088,7 @@
             },
             {
               "episode": "LAB_물고기_mn_20261102",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-16T00:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/iD7TBDRfANk",
@@ -15440,12 +16158,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
+              "publishedCount": 4,
               "scheduledCount": 2,
-              "pendingConfirmationCount": 3,
-              "lastPublishedAt": "2026-11-12T00:00:00.000Z",
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-16T00:00:00.000Z",
               "nextScheduledAt": "2026-11-17T00:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15460,7 +16178,7 @@
                 },
                 {
                   "episode": "LAB_미안죄송합니다_mn_20261029",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-14T00:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/QG7ip795jys",
@@ -15469,7 +16187,7 @@
                 },
                 {
                   "episode": "LAB_화날때_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T00:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/VnWw3BZjgKA",
@@ -15478,7 +16196,7 @@
                 },
                 {
                   "episode": "LAB_물고기_mn_20261102",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-16T00:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/iD7TBDRfANk",
@@ -15580,7 +16298,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15661,7 +16379,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -15692,7 +16410,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 2 · 게시 여부 확인 필요 1",
+          "publishStatus": "게시 확인 2 · 예약 기록 2 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -15705,7 +16423,7 @@
             },
             {
               "episode": "LAB_화날때_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T05:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/UMWNzRBYhxg",
@@ -15775,12 +16493,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
+              "publishedCount": 2,
               "scheduledCount": 2,
-              "pendingConfirmationCount": 1,
-              "lastPublishedAt": "2026-11-12T05:00:00.000Z",
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-15T05:00:00.000Z",
               "nextScheduledAt": "2026-11-17T05:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15795,7 +16513,7 @@
                 },
                 {
                   "episode": "LAB_화날때_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T05:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/UMWNzRBYhxg",
@@ -15848,7 +16566,7 @@
           "avatarStatus": null,
           "profileStatusCode": "localized-name-bio-banner-kkamong-open-eyes-profile-publicly-verified-2026-09-20",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 3 · 게시 여부 확인 필요 2",
+          "publishStatus": "게시 확인 3 · 예약 기록 3 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_화날때_mn_20261031",
@@ -15861,7 +16579,7 @@
             },
             {
               "episode": "LAB_사층F_mn_20261101",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-14T18:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/f1TQf97sxSo",
@@ -15870,7 +16588,7 @@
             },
             {
               "episode": "LAB_지마_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T18:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/t1vLfUwXD4g",
@@ -15949,12 +16667,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
+              "publishedCount": 3,
               "scheduledCount": 3,
-              "pendingConfirmationCount": 2,
-              "lastPublishedAt": "2026-11-12T18:00:00.000Z",
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-15T18:00:00.000Z",
               "nextScheduledAt": "2026-11-16T18:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -15969,7 +16687,7 @@
                 },
                 {
                   "episode": "LAB_사층F_mn_20261101",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-14T18:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/f1TQf97sxSo",
@@ -15978,7 +16696,7 @@
                 },
                 {
                   "episode": "LAB_지마_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T18:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/t1vLfUwXD4g",
@@ -16089,7 +16807,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -16120,7 +16838,7 @@
           "avatarStatus": "historical-upload-current-state-unverified",
           "profileStatusCode": "created-current-studio-preparation-unverified-browser-blocked-2026-10-02",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 1 · 게시 여부 확인 필요 1",
+          "publishStatus": "게시 확인 2 · 예약 기록 2 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_화날때_mn_20261031",
@@ -16133,7 +16851,7 @@
             },
             {
               "episode": "LAB_지마_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-14T19:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/yVOb2sbvsmE",
@@ -16148,6 +16866,15 @@
               "url": "https://youtube.com/shorts/VbVZpi88RfU",
               "jobId": null,
               "source": "docs/마케팅/LAB_미안죄송합니다_mn_20261029/게시/게시결과.json"
+            },
+            {
+              "episode": "LAB_물고기_mn_20261102",
+              "state": "예약됨",
+              "at": "2026-11-18T19:00:00.000Z",
+              "observedAt": null,
+              "url": "https://youtube.com/shorts/Yiq3ed5e1K4",
+              "jobId": null,
+              "source": "docs/마케팅/LAB_물고기_mn_20261102/게시/게시결과.json"
             }
           ],
           "sharedLabel": "",
@@ -16194,12 +16921,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
-              "scheduledCount": 1,
-              "pendingConfirmationCount": 1,
-              "lastPublishedAt": "2026-11-12T19:00:00.000Z",
+              "publishedCount": 2,
+              "scheduledCount": 2,
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-14T19:00:00.000Z",
               "nextScheduledAt": "2026-11-17T19:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -16214,7 +16941,7 @@
                 },
                 {
                   "episode": "LAB_지마_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-14T19:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/yVOb2sbvsmE",
@@ -16229,6 +16956,15 @@
                   "url": "https://youtube.com/shorts/VbVZpi88RfU",
                   "jobId": null,
                   "source": "docs/마케팅/LAB_미안죄송합니다_mn_20261029/게시/게시결과.json"
+                },
+                {
+                  "episode": "LAB_물고기_mn_20261102",
+                  "state": "예약됨",
+                  "at": "2026-11-18T19:00:00.000Z",
+                  "observedAt": null,
+                  "url": "https://youtube.com/shorts/Yiq3ed5e1K4",
+                  "jobId": null,
+                  "source": "docs/마케팅/LAB_물고기_mn_20261102/게시/게시결과.json"
                 }
               ]
             },
@@ -16319,7 +17055,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": "2026-11-16T19:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -16409,7 +17145,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -16440,7 +17176,7 @@
           "avatarStatus": "published-approved-mongle-avatar-publicly-verified",
           "profileStatusCode": "complete-all-profile-fields-publicly-verified-2026-10-02",
           "priority": "우선 플랫폼",
-          "publishStatus": "게시 확인 1 · 예약 기록 3 · 게시 여부 확인 필요 1",
+          "publishStatus": "게시 확인 2 · 예약 기록 3 · 게시 여부 확인 필요 0",
           "publicationEvidence": [
             {
               "episode": "LAB_지마_mn_20261031",
@@ -16453,7 +17189,7 @@
             },
             {
               "episode": "LAB_화날때_mn_20261031",
-              "state": "예약됨",
+              "state": "게시됨",
               "at": "2026-11-15T16:00:00.000Z",
               "observedAt": null,
               "url": "https://youtube.com/shorts/9Ao-cr31EZ0",
@@ -16532,12 +17268,12 @@
               "scope": "계정 원장의 로그인 확인 기록"
             },
             "publication": {
-              "publishedCount": 1,
+              "publishedCount": 2,
               "scheduledCount": 3,
-              "pendingConfirmationCount": 1,
-              "lastPublishedAt": "2026-11-12T16:00:00.000Z",
+              "pendingConfirmationCount": 0,
+              "lastPublishedAt": "2026-11-15T16:00:00.000Z",
               "nextScheduledAt": "2026-11-16T16:00:00.000Z",
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": [
@@ -16552,7 +17288,7 @@
                 },
                 {
                   "episode": "LAB_화날때_mn_20261031",
-                  "state": "예약됨",
+                  "state": "게시됨",
                   "at": "2026-11-15T16:00:00.000Z",
                   "observedAt": null,
                   "url": "https://youtube.com/shorts/9Ao-cr31EZ0",
@@ -16662,7 +17398,7 @@
               "pendingConfirmationCount": 0,
               "lastPublishedAt": null,
               "nextScheduledAt": null,
-              "checkedAt": "2026-11-16T05:29:27.770Z",
+              "checkedAt": "2026-11-16T10:51:41.977Z",
               "basis": "최근 게시장부 근거 최대 60개와 예약 전체 · 실제 전체 게시물 수 아님",
               "omittedPublishedCount": 0,
               "receipts": []
@@ -16693,7 +17429,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -17239,7 +17975,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -17528,7 +18264,7 @@
           "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
           "docs/마케팅/로그인경로_점검_20261109.md"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -17690,7 +18426,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -17880,7 +18616,7 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-11-16T05:29:27.884Z",
+        "executedAt": "2026-11-16T10:51:42.410Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
