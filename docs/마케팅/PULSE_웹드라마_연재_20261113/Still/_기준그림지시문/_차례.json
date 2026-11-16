@@ -1,7 +1,7 @@
 {
  "이름": "「Still」 시리즈 공통 얼굴 기준 그림 — 세 화가 같은 얼굴을 쓴다",
  "엔진": "Seedream 5.5 (드리미나 울트라 · 2K) — 컷표 「엔진.그림」",
- "경로기준": "Still 폴더. 이안 사진만 저장소 .tmp의 절대 경로(git 밖, 얼굴 사진이라 옮기지 않는다)",
+ "경로기준": "Still 폴더. 지호(유호님) 얼굴 사진만 고정 얼굴 세트의 절대 경로(git 밖 synk-vendor, 얼굴 사진이라 저장소에 옮기지 않는다)",
  "둘자리": "_기준그림/ — 고른 한 장을 여기에 두고, 각 편 ref/에 아래 「편에서쓰는이름」으로 옮긴다. 이 폴더는 .gitignore에 있어 공개 저장소에 올라가지 않는다(11-15에 더함)",
  "굽는순서": [
   "지호_맨얼굴",
@@ -18,28 +18,28 @@
    "참고": [
     {
      "자리": "[IMG1]",
-     "그림": "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/still-ian-20261114/refs/1_hero.jpg",
-     "쓰임": "이안 얼굴(정면 가까이)"
+     "그림": "C:/Users/q1212/Documents/synk-vendor/korea-run-montage-20261021/참조_유호/1_B정면.jpg",
+     "쓰임": "유호님 확정 B(정면)"
     },
     {
      "자리": "[IMG2]",
-     "그림": "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/still-ian-20261114/refs/2_front.jpg",
-     "쓰임": "이안 얼굴(정면 전신)"
+     "그림": "C:/Users/q1212/Documents/synk-vendor/korea-run-montage-20261021/참조_유호/2_C정면.jpg",
+     "쓰임": "유호님 확정 C(정면)"
     },
     {
      "자리": "[IMG3]",
-     "그림": "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/still-ian-20261114/refs/3_left.jpg",
-     "쓰임": "이안 옆얼굴"
+     "그림": "C:/Users/q1212/Documents/synk-vendor/korea-run-montage-20261021/참조_유호/3_실제_pro02.jpg",
+     "쓰임": "유호님 실제 사진(짧은 머리 — 머리는 따르지 않는다)"
     },
     {
      "자리": "[IMG4]",
-     "그림": "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/still-ian-20261114/refs/4_right.jpg",
-     "쓰임": "이안 옆얼굴(반대쪽)"
+     "그림": "C:/Users/q1212/Documents/synk-vendor/korea-run-montage-20261021/참조_유호/4_실제_V181.jpg",
+     "쓰임": "유호님 실제 사진(콘로우)"
     },
     {
      "자리": "[IMG5]",
-     "그림": "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/still-ian-20261114/refs/5_smile.jpg",
-     "쓰임": "이안 웃는 얼굴"
+     "그림": "C:/Users/q1212/Documents/synk-vendor/korea-run-montage-20261021/참조_유호/5_실제_V204.jpg",
+     "쓰임": "유호님 실제 사진(콘로우)"
     }
    ],
    "둘자리": "_기준그림/지호_맨얼굴.png",
@@ -60,8 +60,8 @@
     },
     {
      "자리": "[IMG2]",
-     "그림": "C:/Users/q1212/Documents/SYNK-appsscript/.tmp/still-ian-20261114/refs/1_hero.jpg",
-     "쓰임": "같은 사람 확인용"
+     "그림": "C:/Users/q1212/Documents/synk-vendor/korea-run-montage-20261021/참조_유호/1_B정면.jpg",
+     "쓰임": "같은 사람 확인용(유호님 확정 B)"
     }
    ],
    "메모": "11-14 이안 시험에서 6MB PNG를 올린 판이 「견적 불가」로 막혔다 — [IMG1]은 JPEG(품질 95)로 옮겨 올린다(.tmp/still-ian-20261114/칠입히기.py)",
@@ -78,5 +78,6 @@
    "메모": "옷은 화마다 달라서 맨 회색 티셔츠로 얼굴과 머리만 정한다. 각 편 인물_로지 판의 첫 참고로 쓴다",
    "둘자리": "_기준그림/로지_얼굴.png"
   }
- ]
+ ],
+ "지호": "11-17 유호님 「상관없어 나한테 맞춰」로 지호는 유호님이 맡는다(이안에서 바꿈). 얼굴은 고정 얼굴 세트(확정 B · C와 실제 사진 셋)로만 잡고 생김새는 글로 쓰지 않는다 — 실제얼굴 문서와 장부 S24"
 }
