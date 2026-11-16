@@ -163,6 +163,8 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
     if(!entryIsCurrent(row,entry)||!sessionAllowed(row)||store.get('users',row.userId)?.role!=='admin')throw denied();
     if(response.status===401||response.status===403)throw denied();
     if(!response.ok||data?.ok!==true||data.page!==query.page||data.pageSize!==25||!Number.isSafeInteger(data.total)||data.total<0||!Array.isArray(data.rows)||data.rows.length>25)throw unavailable();
+    const expectedRows=Math.min(25,Math.max(0,data.total-(query.page-1)*25));
+    if(data.rows.length!==expectedRows)throw unavailable();
     const rows=data.rows.map(item=>{
       if(!item||typeof item.id!=='string'||typeof item.name!=='string'||typeof item.loginId!=='string'||!['active','disabled','deletion-requested'].includes(item.status)||typeof item.createdAt!=='string')throw unavailable();
       return {id:item.id,name:item.name,loginId:item.loginId,status:item.status,createdAt:item.createdAt};

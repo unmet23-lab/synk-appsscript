@@ -89,16 +89,11 @@ import { createSocialInboxRecovery } from './social-inbox-recovery.mjs';
 import { createSocialAiCopy } from './social-ai-copy.mjs';
 import { createSocialRecovery } from './social-recovery.mjs';
 import { createSocialTracking } from './social-tracking.mjs';
-import { createSocialInquiries } from './social-inquiries.mjs';
 import { createSocialWorkflowsService } from './social-workflows.mjs';
 import { createSocialReview } from './social-review.mjs';
 import { createSocialPublicRoutes } from './social-public-routes.mjs';
 import { createTrialFeedback } from './trial-feedback.mjs';
 import { createTrialFeedbackRoutes } from './trial-feedback-routes.mjs';
-import { createTipSharesService } from './tip-shares.mjs';
-import { createTipShareRoutes } from './tip-share-routes.mjs';
-import { createPulseMarketing } from './pulse-marketing.mjs';
-import { createPulseMarketingRoutes } from './pulse-marketing-routes.mjs';
 import { createSocialCapacity } from './social-capacity.mjs';
 import { createSocialReplies } from './social-replies.mjs';
 import { createSocialVariantPerformanceService } from './social-variant-performance.mjs';
@@ -132,13 +127,24 @@ import { createCustomerIdentity, customerIdentityConfig } from './customer-ident
 import { createEntryDestinations } from './entry-destinations.mjs';
 import { createCustomerComputerDraft } from './customer-computer-draft.mjs';
 import { createCustomerRoutes } from './customer-routes.mjs';
-import { createAiMarketStore } from './ai-market-store.mjs';
-import { createAiMarketRoutes } from './ai-market-routes.mjs';
 import { createTeachingService, teachingServiceConfig } from './teaching-service.mjs';
 
 // This service also loads Domain. Wait until the interpretation runtime has
 // observed its source through the static service dependency before sharing it.
 const { createPracticeSyncService } = await import('./workroom-practice-sync-service.mjs');
+
+import {loadOptionalFeature} from './optional-feature-modules.mjs';
+const socialInquiriesModules=await loadOptionalFeature('socialInquiriesModules',[{file:'./social-inquiries.mjs',exports:['createSocialInquiries']}]);
+const createSocialInquiries=socialInquiriesModules?.[0].createSocialInquiries;
+const tipShareModules=await loadOptionalFeature('tipShareModules',[{file:'./tip-shares.mjs',exports:['createTipSharesService']},{file:'./tip-share-routes.mjs',exports:['createTipShareRoutes']},{file:'./public/tip-shares.js',kind:'asset'},{file:'./public/tip-shares.css',kind:'asset'}]);
+const createTipSharesService=tipShareModules?.[0].createTipSharesService;
+const createTipShareRoutes=tipShareModules?.[1].createTipShareRoutes;
+const aiMarketModules=await loadOptionalFeature('aiMarketModules',[{file:'./ai-market-store.mjs',exports:['createAiMarketStore']},{file:'./ai-market-routes.mjs',exports:['createAiMarketRoutes']},{file:'../../../../../experiences/ai-market/index.html',kind:'asset'},{file:'../../../../../experiences/ai-market/app.mjs',kind:'asset'},{file:'../../../../../experiences/ai-market/style.css',kind:'asset'}]);
+const createAiMarketStore=aiMarketModules?.[0].createAiMarketStore;
+const createAiMarketRoutes=aiMarketModules?.[1].createAiMarketRoutes;
+const pulseMarketingModules=await loadOptionalFeature('pulseMarketingModules',[{file:'./pulse-marketing.mjs',exports:['createPulseMarketing']},{file:'./pulse-marketing-routes.mjs',exports:['createPulseMarketingRoutes']},{file:'./public/pulse-app/marketing-view.mjs',kind:'asset'}]);
+const createPulseMarketing=pulseMarketingModules?.[0].createPulseMarketing;
+const createPulseMarketingRoutes=pulseMarketingModules?.[1].createPulseMarketingRoutes;
 
 const here=dirname(fileURLToPath(import.meta.url));
 const metricKeys=['views','likes','comments','shares','saves','reach'];
@@ -199,6 +205,7 @@ export function createCompanyApp(options={}) {
   const aiMarketSetting=options.aiMarketEnabled??process.env.SYNK_AI_MARKET_ENABLED??'0';
   if(![true,false,'0','1'].includes(aiMarketSetting))throw new Error('SYNK_AI_MARKET_ENABLED는 0 또는 1이어야 합니다.');
   const aiMarketEnabled=aiMarketSetting===true||aiMarketSetting==='1';
+  if(aiMarketEnabled&&!aiMarketModules)throw new Error('AI 마켓 기능 파일이 설치되지 않았습니다.');
   if(!isLocalHost(host)&&originUrl.protocol!=='https:')throw new Error('크루용 서버에는 HTTPS 회사 주소가 필요합니다.');
   if(originUrl.pathname!=='/'||originUrl.search||originUrl.hash||originUrl.username)throw new Error('회사 주소에는 경로를 넣지 마세요.');
   const platformUrl=resolvePlatformUrl(options.platformUrl===undefined?process.env.SYNK_PLATFORM_URL:options.platformUrl,{origin});
@@ -315,8 +322,8 @@ export function createCompanyApp(options={}) {
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
   const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,localeOf:projectLocale,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
   // 마케팅 성과(11-16, pulse-marketing.mjs): 직원이 올린 리포트를 프로젝트마다 둔다. 고객 방의 features.marketing은 스위치가 켜져 있고 그 프로젝트에 리포트가 있을 때만 참이다.
-  const pulseMarketing=createPulseMarketing({store,clientProjects,features:pulseFeatures,clock});
-  const customerStateWithFeatures=token=>{const state=pulseStudio.customerState(token);return {...state,features:{...pulseFeatures.projectView(state.project?.studio?.request?.answers),marketing:pulseMarketing.visible(state.project?.id)}};};
+  const pulseMarketing=pulseMarketingModules?createPulseMarketing({store,clientProjects,features:pulseFeatures,clock}):null;
+  const customerStateWithFeatures=token=>{const state=pulseStudio.customerState(token);return {...state,features:{...pulseFeatures.projectView(state.project?.studio?.request?.answers),...(pulseMarketing?{marketing:pulseMarketing.visible(state.project?.id)}:{})}};};
   const pulseAutoReplySchedule=options.pulseAutoReplySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   let pulseAutoReplyTimer=null,pulseAutoReplySoonTimer=null;
   const scanPulseAutoReplies=()=>pulseAutoReply.tick().catch(()=>{});
@@ -432,7 +439,7 @@ export function createCompanyApp(options={}) {
   const socialAi=createSocialAiCopy({store,clock,...options.socialAiOptions});
   const socialRecovery=createSocialRecovery({store,publishing:socialPublishing,marketing:socialMarketing,clock});
   const socialTracking=createSocialTracking({store,publishing:socialPublishing,clock,origin,...options.socialTrackingOptions});
-  const socialInquiries=createSocialInquiries({store,tracking:socialTracking,clock});
+  const socialInquiries=socialInquiriesModules?createSocialInquiries({store,tracking:socialTracking,clock}):null;
   const trialFeedback=createTrialFeedback({store,clock,...options.trialFeedbackOptions});
   const socialCapacity=createSocialCapacity({store,publishing:socialPublishing,provider:socialProvider,clock});
   const socialCopyInsights=createSocialVariantPerformanceService({store,publishing:socialPublishing,performance:postPerformance,tracking:socialTracking,validatePostInput:socialMarketing.validatePostInput,clock});
@@ -470,7 +477,7 @@ export function createCompanyApp(options={}) {
     socialExtrasRunning=true;
     socialExtras=Promise.resolve().then(async()=>{
       socialAi.prune();
-      socialInquiries.maintain();
+      socialInquiries?.maintain();
       socialCapacity.prune();
       const jobs=[];
       if(!socialSourceRuntime.lastAttemptAt||Date.parse(clock())-Date.parse(socialSourceRuntime.lastAttemptAt)>=60000){
@@ -502,8 +509,8 @@ export function createCompanyApp(options={}) {
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const trialFeedbackRoutes=createTrialFeedbackRoutes({service:trialFeedback,body,send,session,clientAddress,isStopped:()=>stopRequested});
   // 공유한 게시물(11-16, TIP-SHARES.md): 관리자 화면과 PC 팁 장부 동기 도구가 쓰는 줄 묶음 · 단추 요청.
-  const tipShareRoutes=createTipShareRoutes({service:createTipSharesService({store,clock}),body,send,session,origin,isStopped:()=>stopRequested});
-  const pulseMarketingRoutes=createPulseMarketingRoutes({service:pulseMarketing,body,send,session,origin,audit,isStopped:()=>stopRequested});
+  const tipShareRoutes=tipShareModules?createTipShareRoutes({service:createTipSharesService({store,clock}),body,send,session,origin,isStopped:()=>stopRequested}):null;
+  const pulseMarketingRoutes=pulseMarketing?createPulseMarketingRoutes({service:pulseMarketing,body,send,session,origin,audit,isStopped:()=>stopRequested}):null;
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
@@ -658,6 +665,12 @@ export function createCompanyApp(options={}) {
   }
   function pulseDeviceCookie(res,raw,device){setPulseCookie(res,'synk_pulse_device',raw,Math.max(0,Math.floor((Date.parse(device.auth.expiresAt)-Date.parse(clock()))/1000)));}
   // 네 종류를 전부 읽어 지우던 것을 SQLite 조건 삭제로 바꿨다(10-20). 지우는 대상은 같다: 보관 기한이 지난 행, 8일 지난 관측, 게시물이 없는 관측.
+  // 수집 기록(runs)은 30분마다 채널 수만큼 쌓인다. 끝난 기록 가운데 시작 시각(startedAt)이 14일보다 오래된 것만 지운다. 대기 중이거나 수집 중인 기록은 남긴다(11-15 검수 P1). 화면은 최근 100건만 읽는다.
+  // 지우는 시작 시각은 서버가 Date.toISOString()으로 쓰는 모양(YYYY-MM-DDTHH:MM:SS.sssZ) 그대로인 실제 달력 시각뿐이다(11-15 재검수 P1). SQLite julianday()는 없는 날짜와 시각을 뒤로 넘겨 읽는다. 평년 2월 29일은 3월 1일로, 4월 31일은 5월 1일로, 24시는 다음 날 0시로 읽는다.
+  // 그래서 julianday()로 읽은 숫자를 strftime()으로 같은 모양의 글자로 다시 쓰고, 그 글자가 원래 값과 똑같을 때만 지운다. strftime()에 원래 글자를 바로 넣으면 읽은 칸을 고치지 않고 그대로 쓸 수 있어서(예: 24시) 반드시 숫자를 거친다.
+  // 이 모양이 아닌 시작 시각은 오래돼도 남긴다. 밀리초가 없는 값, 시간대가 붙은 값, T 대신 띄어쓰기를 쓴 값, 소문자 z로 끝나는 값, 숫자, 빈 값, 없는 값이 여기에 든다.
+  const RUN_RETENTION_MS=14*86400000;let lastMaintenanceAt=0;
+  function maintainCollectionRecords(at=clock()){const time=Date.parse(at);if(!Number.isFinite(time)||time-lastMaintenanceAt<3600000)return;purgeExpired(at);store.removeWhere('runs',"json_extract(body,'$.status') IN ('success','partial','error','cancelled','interrupted') AND strftime('%Y-%m-%dT%H:%M:%fZ',julianday(json_extract(body,'$.startedAt')))=json_extract(body,'$.startedAt') AND julianday(json_extract(body,'$.startedAt'))<julianday(?)",new Date(time-RUN_RETENTION_MS).toISOString());lastMaintenanceAt=time;}
   function purgeExpired(at=clock()){const cutoff=new Date(Date.parse(at)-HYPE_RETENTION_MS).toISOString();store.transaction(()=>{for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])store.removeWhere(kind,"json_extract(body,'$.expiresAt') IS NOT NULL AND julianday(json_extract(body,'$.expiresAt'))<=julianday(?)",at);store.removeWhere('hypeObservations',"julianday(json_extract(body,'$.checkedAt')) IS NULL OR julianday(json_extract(body,'$.checkedAt'))<=julianday(?)",cutoff);store.removeWhere('hypeObservations',"IFNULL(json_extract(body,'$.postId'),'') NOT IN (SELECT id FROM documents WHERE kind='posts')");});}
   // Reads enforce retention immediately; scheduledTick owns physical expiry cleanup.
   function records(channels){const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&!p.unavailableAt&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
@@ -857,8 +870,8 @@ export function createCompanyApp(options={}) {
   }
   async function scheduledTick(at=clock()){
     if(stopRequested||!channelCollectionEnabled)return;
-    // 기존 BG 설정의 만료 정리만 유지한다. 작업실 예약을 켜는 것으로 자료 삭제를 새로 시작하지 않는다.
-    if(backgroundJobsEnabled)purgeExpired(at);const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
+    // 보관 정리(만료 자료와 끝난 수집 기록 지우기)는 배경 작업(BG=1)이 켜졌을 때만 돈다. 작업실 예약만 켠 서버(BG=0, 작업실 예약=1)는 예약 회차에서 자료를 지우지 않는다. 일반 원천의 purgeExpired 관문과 같다(11-15 검수 P1).
+    if(backgroundJobsEnabled){try{maintainCollectionRecords(at);}catch{console.error('SYNK_COMPANY_RUN_MAINTENANCE_FAILED');}}const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
     if(backgroundJobsEnabled&&(options.schedule!==false||options.dailyTrendsCollector||options.dailyTrendsFetch))dailyTrends.tick(at).catch(()=>{});
     const settings=store.get('settings','company');if(!settings.enabled)return;
     for(const c of store.all('channels')){
@@ -1148,8 +1161,8 @@ export function createCompanyApp(options={}) {
         return send(res,200,state);
       }
       // 마케팅 성과(11-16): 읽기만 한다. 프로젝트는 초대 세션에서만 정하고, 스위치가 꺼져 있으면 둘 다 없는 주소다(pulse-marketing.mjs).
-      if(method==='GET'&&path==='/pulse/api/marketing')return send(res,200,pulseMarketing.customerList(customerToken,url.search));
-      if(method==='GET'&&path==='/pulse/api/marketing/report')return send(res,200,pulseMarketing.customerReport(customerToken,url.searchParams));
+      if(pulseMarketing&&method==='GET'&&path==='/pulse/api/marketing')return send(res,200,pulseMarketing.customerList(customerToken,url.search));
+      if(pulseMarketing&&method==='GET'&&path==='/pulse/api/marketing/report')return send(res,200,pulseMarketing.customerReport(customerToken,url.searchParams));
       const personaMedia=path.match(/^\/pulse\/api\/persona\/media\/([a-f0-9-]{36})$/);
       if(['GET','HEAD'].includes(method)&&personaMedia)return await serveStudioMedia(req,res,store.directory,pulsePersonas.customerMedia(customerToken,personaMedia[1]),()=>pulsePersonas.customerMedia(customerToken,personaMedia[1]));
       const studioMedia=path.match(/^\/pulse\/api\/studio\/media\/([a-f0-9-]{36})$/);
@@ -1187,10 +1200,11 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&companyWorkRoute&&!companyWorkRoute[2])return send(res,200,companyWork.workspace(user,companyWorkRoute[1]));
     if(method==='GET'&&path==='/api/workspace-access'){if(!user)throw httpError('먼저 로그인해 주세요.',401);return send(res,200,workspaceProfiles.catalog(user));}
     if(method==='GET'&&path==='/api/workspace-invites'){if(!user)throw httpError('먼저 로그인해 주세요.',401);return send(res,200,{invites:workspaceProfiles.list(user)});}
+    if(!socialInquiries&&(path==='/api/social/inquiries'||path.startsWith('/api/social/inquiries/')))throw httpError('요청을 찾을 수 없습니다.',404);
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
     if(path.startsWith('/api/trial-feedback/')&&await trialFeedbackRoutes.staffRoutes(req,res,{url,demoRequest}))return;
-    if((path==='/api/tip-shares'||path.startsWith('/api/tip-shares/'))&&await tipShareRoutes(req,res,{url,demoRequest}))return;
-    if(path.startsWith('/api/client-projects/')&&/\/marketing(?:\/|$)/.test(path)&&await pulseMarketingRoutes(req,res,{url,demoRequest}))return;
+    if(tipShareRoutes&&(path==='/api/tip-shares'||path.startsWith('/api/tip-shares/'))&&await tipShareRoutes(req,res,{url,demoRequest}))return;
+    if(pulseMarketingRoutes&&path.startsWith('/api/client-projects/')&&/\/marketing(?:\/|$)/.test(path)&&await pulseMarketingRoutes(req,res,{url,demoRequest}))return;
     if(path==='/trial-feedback'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/trial-feedback/','Cache-Control':'no-store'});res.end();return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
@@ -2152,7 +2166,7 @@ export function createCompanyApp(options={}) {
       throw httpError('요청을 찾을 수 없습니다.',404);
     }
     const files={'/automation-health.js':['public/automation-health.js','text/javascript; charset=utf-8'],'/automation-health.css':['public/automation-health.css','text/css; charset=utf-8'],'/weekly-summary.js':['public/weekly-summary.js','text/javascript; charset=utf-8'],'/weekly-summary.css':['public/weekly-summary.css','text/css; charset=utf-8'],'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
-    Object.assign(files,{'/tip-shares.js':['public/tip-shares.js','text/javascript; charset=utf-8'],'/tip-shares.css':['public/tip-shares.css','text/css; charset=utf-8']});
+    if(tipShareRoutes)Object.assign(files,{'/tip-shares.js':['public/tip-shares.js','text/javascript; charset=utf-8'],'/tip-shares.css':['public/tip-shares.css','text/css; charset=utf-8']});
     Object.assign(files,{'/admin-workspace.js':['public/admin-workspace.js','text/javascript; charset=utf-8'],'/admin-workspace.css':['public/admin-workspace.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/signal.css':['public/signal.css','text/css; charset=utf-8'],'/member-organization.js':['public/member-organization.js','text/javascript; charset=utf-8'],'/member-organization.css':['public/member-organization.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
@@ -2195,7 +2209,7 @@ export function createCompanyApp(options={}) {
     files['/entry/']=['public/entry/index.html','text/html; charset=utf-8'];
     files['/entry/entry.mjs']=['public/entry/entry.mjs','text/javascript; charset=utf-8'];
     files['/entry/entry.css']=['public/entry/entry.css','text/css; charset=utf-8'];
-    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','marketing-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs','ledger-view.mjs','persona-view.mjs','my-models.mjs','brand-desk-view.mjs','boot-locale.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','marketing-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs','ledger-view.mjs','persona-view.mjs','my-models.mjs','brand-desk-view.mjs','boot-locale.js'].filter(file=>file!=='marketing-view.mjs'||pulseMarketing))files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
     // 의뢰 흐름(2026-11-04) 스타일 · 그림. 영상 둘은 mp4라 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
     for(const file of ['slate.css','slate-screens.css','slate-legacy.css','film.css','film-legacy.css','staff.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     // 시사실 판(2026-11-05) 그림 · 영상. 쇼릴 mp4 둘은 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
@@ -2308,7 +2322,7 @@ export function createCompanyApp(options={}) {
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(channelCollectionEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
-        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries.maintain();trialFeedback.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
+        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries?.maintain();trialFeedback.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
         // Registered-post observation follows the workroom opt-in while broad
         // background collection can remain paused.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}

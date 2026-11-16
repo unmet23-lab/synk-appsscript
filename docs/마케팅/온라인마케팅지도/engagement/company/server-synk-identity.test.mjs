@@ -521,7 +521,7 @@ test('admin member directory pages local members, merges only verified identitie
   const validPage={ok:true,pageSize:25,page:1,total:1,rows:[validRow]};
   mockResponse=()=>Response.json(validPage);
   assert.equal((await post(c,global,query)).status,200);
-  for(const invalid of [{page:2},{total:26,rows:Array(26).fill(validRow)},{rows:[{...validRow,status:'bogus'}]}]){
+  for(const invalid of [{page:2},{total:26,rows:Array(26).fill(validRow)},{total:0},{total:2},{total:1,rows:[]},{rows:[{...validRow,status:'bogus'}]}]){
     mockResponse=()=>Response.json({...validPage,...invalid});
     assert.equal((await post(c,global,query)).status,503);
   }
