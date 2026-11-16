@@ -1,0 +1,41 @@
+name: workbackup-audit
+
+# 업무 백업 손님 B2 계정의 서버 밖 감사(experiences/solo-backup-rust/STAGE1_DESIGN.md 「개통 서버 구현 설계」
+# 매일 대조). 읽기만 하는 감사 출입증(listKeys · 버킷 설정 읽기)으로 출입증 목록과 버킷 설정을 보고, 개통 서버와
+# 같은 판정 함수(server/reconcile.mjs)로 어긋남을 찾는다. 서버가 털려도 이 감사는 서버의 DB · 출입증과 따로다.
+# 로그는 공개다 — 감사 도구는 개수와 어긋난 종류만 찍고 출입증 번호 · 버킷 이름을 찍지 않는다. 어긋나면 이 실행이
+# 실패하고 GitHub가 저장소 주인에게 메일을 보낸다. 비밀값이 아직 없으면 그렇게 적고 성공으로 끝난다.
+on:
+  schedule:
+    - cron: '41 20 * * *' # 매일 05:41 KST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workbackup-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /experiences/solo-backup-rust/server/
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: outside audit
+        env:
+          WB_AUDIT_KEY_ID: ${{ secrets.WORKBACKUP_AUDIT_KEY_ID }}
+          WB_AUDIT_APP_KEY: ${{ secrets.WORKBACKUP_AUDIT_APP_KEY }}
+          WB_AUDIT_BUCKET_ID: ${{ secrets.WORKBACKUP_AUDIT_BUCKET_ID }}
+          WB_AUDIT_KNOWN_KEYS: ${{ secrets.WORKBACKUP_AUDIT_KNOWN_KEYS }}
+        run: node experiences/solo-backup-rust/server/audit.mjs

@@ -75,11 +75,19 @@ export function planRestore(versions, { at, now = Date.now(), prefix, maxAgeMs =
 // bucket (no deleteFiles needed). Before acting it re-reads the listing and
 // re-plans, so a change between preview and run cannot be overwritten blindly.
 // Re-running after a stop continues: done items no longer appear in a fresh plan.
-export async function applyPlan(session, { bucketId, plan, freshVersions, now = Date.now(), onStep = () => {} }) {
+// Items of one order step (e.g. all data/ copies) run `concurrency` at a time;
+// the next step starts only after the previous one finished, so the order holds.
+export async function applyPlan(session, { bucketId, plan, freshVersions, now = Date.now(), onStep = () => {}, concurrency = 4 }) {
   const fresh = freshVersions ? planRestore(freshVersions, { at: plan.at, now, prefix: plan.prefix }) : plan;
   const journal = [];
+  const stepOf = (item) => `${item.type}:${rank(item.type === 'hide' ? HIDE_ORDER : RESTORE_ORDER, item.rel)}`;
+  const groups = [];
   for (const item of fresh.items) {
     if (!item.fileName.startsWith(fresh.prefix)) throw new Error('RESTORE_OUTSIDE_PREFIX');
+    if (!groups.length || groups.at(-1).key !== stepOf(item)) groups.push({ key: stepOf(item), items: [] });
+    groups.at(-1).items.push(item);
+  }
+  const one = async (item) => {
     if (item.type === 'copy') {
       const r = await session.copyFile({ sourceFileId: item.sourceFileId, fileName: item.fileName });
       journal.push({ type: 'copy', fileName: item.fileName, sourceFileId: item.sourceFileId, newFileId: r.fileId });
@@ -88,6 +96,11 @@ export async function applyPlan(session, { bucketId, plan, freshVersions, now = 
       journal.push({ type: 'hide', fileName: item.fileName, hiddenFileId: item.currentFileId, hideMarkerId: r.fileId });
     }
     onStep(journal.length, fresh.items.length);
+  };
+  for (const g of groups) {
+    let next = 0;
+    const lanes = Array.from({ length: Math.max(1, Math.min(concurrency, g.items.length)) }, async () => { while (next < g.items.length) await one(g.items[next++]); });
+    await Promise.all(lanes);
   }
   return { plan: fresh, journal };
 }
