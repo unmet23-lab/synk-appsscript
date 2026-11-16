@@ -146,7 +146,7 @@ button,input{font:inherit;color:inherit}
 #stage[data-fan] #here-name,#stage[data-fan] .rail{opacity:0;pointer-events:none}
 #stage[data-fan] .room{opacity:.14}
 /* 방은 위에서부터 놓는다. 줄이 펼쳐져 길어져도 손 밑의 줄이 움직이지 않는다 */
-.room{position:absolute;left:clamp(20px,9.5cqw,168px);right:clamp(20px,9.5cqw,168px);top:clamp(92px,21cqh,196px);max-height:calc(100% - clamp(92px,21cqh,196px) - 70px);overflow-y:auto;scrollbar-width:none;display:none;transition:opacity .3s ease;-webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
+.room{position:absolute;left:clamp(20px,9.5cqw,168px);right:clamp(20px,9.5cqw,168px);top:clamp(92px,21cqh,196px);max-height:calc(100% - clamp(92px,21cqh,196px) - 70px);overflow-y:auto;scrollbar-width:none;display:none;padding-bottom:34px;transition:opacity .3s ease;-webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
 #stage[data-space="solio"] .room[data-room="solio"],#stage[data-space="workspace"] .room[data-room="workspace"],#stage[data-space="pulse"] .room[data-room="pulse"]{display:block}
 .say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
 .say .then{display:block;color:var(--dim)}
@@ -193,6 +193,14 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 /* 안쪽으로 들어가면 첫 화면이 물러나고 같은 짜임(한 문장과 줄)의 방이 뜬다 */
 #stage[data-space="solio"][data-prog="backup"] .room[data-room="solio"]{display:none}
 #stage[data-space="solio"][data-prog="backup"] .room[data-room="solio-backup"]{display:block}
+#stage[data-space="solio"][data-prog="visits"] .room[data-room="solio"]{display:none}
+#stage[data-space="solio"][data-prog="visits"] .room[data-room="solio-visits"]{display:block}
+/* 방문자 분석: 줄의 가운데 칸은 선이 아니라 풀어 쓴 숫자다. 아직 재지 못한 줄은 흐리게 둔다 */
+.rows.vis{grid-template-columns:minmax(118px,172px) minmax(0,1fr) 6.2em minmax(150px,auto)}
+.mid{min-width:0;font:var(--small);color:var(--dim);transition:color .25s ease}
+.row.now .mid,button.row:hover .mid,button.row.opened .mid{color:rgba(243,241,236,.84)}
+.row.unread .val{color:var(--dim)}
+.more-in .row .mid{color:var(--dim)}
 #stage[data-aside][data-space] .room[data-room]{display:none}
 #stage[data-aside="account"][data-space] .room[data-room="account"],#stage[data-aside="settings"][data-space] .room[data-room="settings"]{display:block}
 .room.enter > *{animation:up .55s cubic-bezier(.2,.7,.2,1) both}
@@ -257,10 +265,11 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
   .row{grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:10px;padding:14px 0}
   .gauge{grid-column:1 / -1;grid-row:2}
   .when{grid-column:1 / -1;grid-row:3;text-align:left}
+  .mid{grid-column:1 / -1;grid-row:2}
   .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   .row-plain > :last-child{grid-column:2;grid-row:1}
   /* 좁은 창에서는 줄이 다 들어가지 않으므로 방 안에서 스크롤한다 */
-  .room{top:clamp(84px,13cqh,128px);max-height:none;bottom:calc(78px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5cqw,168px) - 6px);right:calc(clamp(20px,9.5cqw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
+  .room{top:clamp(84px,13cqh,128px);max-height:none;bottom:calc(78px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5cqw,168px) - 6px);right:calc(clamp(20px,9.5cqw,168px) - 6px);padding:0 6px 36px;overflow-y:auto;scrollbar-width:none}
   .rows{margin-top:28px}
   .sw-foot{bottom:calc(84px + env(safe-area-inset-bottom,0px))} /* 좁은 창에서는 시안 막대가 두 줄이라 그 위로 올린다 */
   /* 좁은 창에서는 자란 구와 이름이 본문 위에 놓이므로 본문을 더 가라앉힌다 */
@@ -290,7 +299,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 @container stage (max-height:340px){
   .rail,.rows,.read,.up,#here-name{display:none}
   .here{left:12px;top:8px}
-  .room{left:24px;right:24px;top:62px;bottom:14px;max-height:none;padding:0}
+  .room{left:24px;right:24px;top:62px;bottom:14px;max-height:none;padding:0 0 34px}
   .say{font-size:clamp(17px,5.4cqw,22px);line-height:1.36}
 }
 /* 창 크기를 바꿔 보는 시안: 무대를 창처럼 줄였다 늘린다 */
@@ -331,6 +340,7 @@ body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:tran
       <nav class="rail" aria-label="이 공간의 프로그램">
         <button class="obj" type="button" data-prog="subs" aria-current="true" style="--k:0"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg><span class="obj-n">구독</span></button>
         <button class="obj" type="button" data-prog="backup" aria-current="false" style="--k:1"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="10" cy="10" r="2.9" fill="none" stroke="currentColor" stroke-width="1.1"/></svg><span class="obj-n">백업<small>준비 중</small></span></button>
+        <button class="obj" type="button" data-prog="visits" aria-current="false" style="--k:2"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="14.7" cy="5.3" r="1.9" fill="currentColor"/></svg><span class="obj-n">방문자 분석</span></button>
       </nav>
     </div>
     <div id="fan" class="fan" role="group" aria-label="갈 수 있는 공간과 계정">
@@ -354,6 +364,11 @@ body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:tran
     <div class="room" data-room="solio-backup">
       <p class="say">백업은 준비하고 있습니다.<span class="then">이 PC의 작업 폴더를 지키고, 잃어버려도 되살리는 프로그램입니다.</span></p>
       <div class="rows"><div class="row row-plain"><span class="nm">상태</span><span class="note">준비 중입니다. 열리면 이 자리에서 바로 켭니다.</span><span></span></div></div>
+    </div>
+    <div class="room" data-room="solio-visits">
+      <p class="say" id="vis-say"></p>
+      <div class="rows vis" id="vis-rows" role="group" aria-label="synk.im 방문자 분석"></div>
+      <p class="read"><span id="vis-when"></span><span id="vis-scope"></span></p>
     </div>
     <div class="room" data-room="account">
       <button class="quiet up" type="button" data-aside-back>돌아가기</button>
@@ -406,6 +421,7 @@ body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:tran
   <button type="button" id="moodbtn">표정 · 평소</button>
   <button type="button" id="grandbtn" aria-pressed="false">웅장한 판 꺼짐</button>
   <button type="button" id="sizebtn">창 크기 · 꽉 참</button>
+  <button type="button" id="visbtn">방문 숫자 · 있음</button>
   <button type="button" id="sound" aria-pressed="false">소리 꺼짐</button>
 </nav>
 
@@ -735,7 +751,7 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 /* 방이 바뀔 때 안의 것들이 차례로 떠오른다 */
 function flashRoom(name) { const r = $('.room[data-room="' + name + '"]'); r.classList.remove('enter'); void r.offsetWidth; r.classList.add('enter'); }
 /* 지금 보이는 방 */
-function roomNow() { return stage.dataset.aside || (space === 'solio' ? (stage.dataset.prog === 'backup' ? 'solio-backup' : 'solio') : space); }
+function roomNow() { return stage.dataset.aside || (space === 'solio' ? ({ backup: 'solio-backup', visits: 'solio-visits' }[stage.dataset.prog] || 'solio') : space); }
 /* 줄마다 안쪽을 미리 지어 둔다: 그 구독의 결론 한 문장, 계정마다 남은 양, 지난 7일, 요금과 할 수 있는 일 */
 function buildMore() {
   $$('button.row[data-svc]').forEach(b => {
@@ -770,7 +786,7 @@ function openMore(svc, pin = false) {
   if (pin) rows[i].classList.add('pin');
   setMore(rows[i], true);
 }
-function closeMores(all = false) { $$('button.row[data-svc]').forEach(b => { if (all || !b.classList.contains('pin')) setMore(b, false); }); }
+function closeMores(all = false) { $$('button.row[data-svc], button.row[data-vis]').forEach(b => { if (all || !b.classList.contains('pin')) setMore(b, false); }); }
 /* 다가가서 잠깐 머물러야 열리고, 벗어나서 잠깐 지나야 닫힌다. 스치기만 해서는 아무것도 움직이지 않는다 */
 const NEAR = { open: 150, fast: 260, row: 120, prog: 180, close: 400 };
 let moreTimer = 0, moreLeave = 0;
@@ -788,15 +804,111 @@ $$('button.row[data-svc]').forEach(b => {
 }
 $$('[data-later]').forEach(b => b.addEventListener('click', () => { b.closest('.more-in').querySelector('.more-note').textContent = '「' + b.textContent + '」는 다음 시안에서 짓습니다.'; }));
 
+/* ── 방문자 분석. synk.im이 일을 하고 있는지를 한 문장과 다섯 줄로 본다. 숫자는 보기이고, 이 PC가 하루에 한 번 모은 요약에서 온다.
+      full은 숫자가 쌓인 뒤, early는 막 모으기 시작한 때다. 아직 재지 못한 줄은 「측정 전」과 까닭을 사실대로 말한다 ── */
+const VIS = {
+  full: {
+    say: '지난 7일 동안 사람이 23번 들어왔고, 문의를 1번 눌렀습니다.', then: '검색과 AI 답변으로는 아직 거의 오지 않습니다.',
+    when: '11월 24일 06:10에 모았습니다. 하루에 한 번 모읍니다.', scope: '세는 쪽 15 · 아직 세지 않는 쪽 5',
+    rows: [
+      { key: 'from', nm: '어디서 왔나', mid: 'SNS 12 · 직접 7 · 검색 3 · 다른 사이트 1 · AI 답변 0', val: '23번', when: '그 앞 7일 18번', now: 1, more: [
+        ['say', '인스타그램에서 가장 많이 왔습니다. 같은 사람이 여러 번 오면 여러 번으로 셉니다.'],
+        ['row', '들어온 곳', '인스타그램 9 · 유튜브 3 · 구글 2 · 네이버 1', '', ''],
+        ['row', '처음 연 쪽', '홈 14 · LAB 5 · PULSE 3', '', ''],
+        ['week', '날마다', [2, 5, 3, 1, 4, 2, 6], '하루 평균 3번'],
+        ['row', '홈에서 고른 사업', 'LAB 6 · PULSE 3 · PATH 2 · SHIFT 1', '12번', ''],
+      ] },
+      { key: 'pages', nm: '어디를 봤나', mid: '홈 19 · LAB 12 · PULSE 10', val: '41쪽', when: '사람 한 번에 1.8쪽', more: [
+        ['say', '홈에서는 절반이 끝까지 내려 보고, PULSE에서는 대부분 절반 앞에서 나갑니다.'],
+        ['row', '홈', '머문 시간 30초~1분 · 끝까지 내림 48%', '19쪽', '여기서 나감 37%'],
+        ['row', 'LAB', '머문 시간 1~3분 · 끝까지 내림 31%', '12쪽', '여기서 나감 42%'],
+        ['row', 'PULSE', '머문 시간 10~30초 · 끝까지 내림 12%', '10쪽', '여기서 나감 70%'],
+        ['note', '떠날 때의 기록이 5개 안 되는 쪽은 비율을 보이지 않습니다. 4초 안에 나간 방문은 세지 않습니다.'],
+      ] },
+      { key: 'acts', nm: '문의와 앱 받기', mid: '문의 1 · 앱 받기 2', val: '3번', when: '사람 방문의 13%', more: [
+        ['say', '인스타그램에서 온 사람이 문의 메일을 한 번 눌렀습니다.'],
+        ['row', '문의', '메일 1 · 주소 복사 0 · 양식 0 · 광고 의뢰 0', '1번', '인스타그램에서 1'],
+        ['row', '앱 받기', 'Windows 2 · Mac 0', '2번', '직접 들어와서 2'],
+        ['note', '누른 수입니다. 실제로 접수된 문의의 수는 여기서 세지 않습니다.'],
+      ] },
+      { key: 'search', nm: '검색에 나오나', mid: '구글 지난 28일 · 312번 보임 · 평균 18번째', val: '9번 눌림', when: '그 앞 28일 5번', more: [
+        ['say', '구글에서는 「한국어 상황극」으로 가장 많이 보였습니다. 네이버는 아직 등록 전입니다.'],
+        ['row', '많이 보인 검색어', '한국어 상황극 88 · topik 연습 게임 61 · synk 40', '', ''],
+        ['row', '많이 보인 쪽', 'LAB 170 · 홈 96 · PULSE 31', '', ''],
+        ['row', '네이버', '서치어드바이저에 등록하면 등록 상태가 보입니다. 숫자는 네이버가 내보내지 않습니다.', '등록 전', ''],
+      ] },
+      { key: 'ai', nm: 'AI에게 물으면', mid: '일반 질문 24개 가운데 Claude 0 · Gemini 1', val: '1번 나옴', when: '지난 회차 0번', more: [
+        ['say', 'AI가 SYNK를 말한 답은 한 번이고, AI 답변을 보고 들어온 사람은 아직 없습니다.'],
+        ['row', 'synk.im을 출처로 단 답', '일반 질문 0 · SYNK를 묻는 질문 6개 가운데 4', '', ''],
+        ['row', 'AI 답변에서 온 방문', '지난 7일', '0번', ''],
+        ['note', '11월 23일 회차입니다. 공식 API로 물은 값이라 AI 앱 화면과 다를 수 있습니다. 구글과 네이버의 AI 요약에서 온 방문은 검색으로 잡힙니다.'],
+      ] },
+    ],
+  },
+  early: {
+    say: '방문 기록을 11월 17일부터 모으기 시작했습니다.', then: '숫자는 하루가 지나면 이 자리에 보입니다.',
+    when: '아직 모은 적이 없습니다. 하루에 한 번 모읍니다.', scope: '세는 쪽 15 · 아직 세지 않는 쪽 5',
+    rows: [
+      { key: 'from', nm: '어디서 왔나', mid: '기록이 하루 넘게 쌓이면 보입니다.', val: '측정 전', when: '', unread: 1, more: [['note', '지금까지는 홈 첫 화면에서 고른 사업만 세고 있었습니다. 11월 17일부터 사이트 전체에서 들어온 곳을 셉니다.']] },
+      { key: 'pages', nm: '어디를 봤나', mid: '기록이 하루 넘게 쌓이면 보입니다.', val: '측정 전', when: '', unread: 1, more: [['note', '쪽마다 머문 시간과 내려 본 정도는 떠날 때의 기록이 5개 넘게 쌓인 쪽부터 보입니다.']] },
+      { key: 'acts', nm: '문의와 앱 받기', mid: '기록이 하루 넘게 쌓이면 보입니다.', val: '측정 전', when: '', unread: 1, more: [['note', '문의 메일, 문의 양식, 광고 의뢰, 앱 받기 단추를 누른 수를 셉니다.']] },
+      { key: 'search', nm: '검색에 나오나', mid: '구글 서치콘솔을 아직 잇지 않았습니다.', val: '측정 전', when: '', unread: 1, more: [['note', '구글은 읽기 전용 계정을 이으면 보입니다. 네이버는 서치어드바이저에 등록한 뒤 등록 상태만 보입니다.']] },
+      { key: 'ai', nm: 'AI에게 물으면', mid: '11월 16일에 111번 물어 SYNK가 나온 답은 0번이었습니다.', val: '0번 나옴', when: '첫 정기 회차 전', now: 1, more: [['note', '11월 16일 값은 AI 앱 화면에서 직접 물은 기준선입니다. 정기 회차는 주 1회 공식 API로 묻고, 두 값은 재는 길이 달라 나란히 견주지 않습니다.']] },
+    ],
+  },
+};
+let visState = 'full', visTimer = 0;
+function openVis(b, pin = false) {
+  const rows = $$('button.row[data-vis]'), i = rows.indexOf(b); if (i < 0) return;
+  rows.forEach((r, k) => { if (k > i && !r.classList.contains('pin')) setMore(r, false); });
+  if (pin) b.classList.add('pin');
+  setMore(b, true);
+}
+function buildVis(state) {
+  visState = state; const d = VIS[state], box = $('#vis-rows'); box.textContent = '';
+  const say = $('#vis-say'); say.textContent = d.say; say.appendChild(el('span', 'then', d.then));
+  $('#vis-when').textContent = d.when; $('#vis-scope').textContent = d.scope;
+  $('#visbtn').textContent = '방문 숫자 · ' + (state === 'full' ? '있음' : '측정 전');
+  for (const r of d.rows) {
+    const b = el('button', 'row' + (r.now ? ' now' : '') + (r.unread ? ' unread' : '')); b.type = 'button'; b.dataset.vis = r.key; b.setAttribute('aria-expanded', 'false');
+    b.append(el('span', 'nm', r.nm), el('span', 'mid', r.mid), el('span', 'val', r.val), el('span', 'when', r.when));
+    const m = el('div', 'more'), inn = el('div', 'more-in'); m.dataset.for = 'vis-' + r.key; let j = 0;
+    const put = n => { n.style.setProperty('--j', j++); inn.appendChild(n); };
+    for (const [kind, a, c, v, w] of r.more) {
+      if (kind === 'say') put(el('p', 'more-say', a));
+      else if (kind === 'note') put(el('p', 'more-note', a));
+      else if (kind === 'week') {
+        const row = el('div', 'row sub row-plain'), wk = el('span', 'week'), top = Math.max(...c, 1);
+        wk.setAttribute('role', 'img'); wk.setAttribute('aria-label', '지난 7일의 하루 방문 수');
+        c.forEach((x, k) => { const i = el('i', k === c.length - 1 ? 'today' : ''); i.style.setProperty('--h', Math.round(x / top * 100) + '%'); wk.appendChild(i); });
+        row.append(el('span', 'nm', a), wk, el('span', 'val', v)); put(row);
+      } else { const row = el('div', 'row sub'); row.append(el('span', 'nm', a), el('span', 'mid', c), el('span', 'val', v), el('span', 'when', w)); put(row); }
+    }
+    m.appendChild(inn); box.append(b, m);
+    b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(visTimer); visTimer = setTimeout(() => openVis(b), NEAR.row); });
+    b.addEventListener('pointerleave', () => clearTimeout(visTimer));
+    b.addEventListener('focus', () => { if (b.matches(':focus-visible')) openVis(b); });
+    b.addEventListener('click', () => { if (b.classList.contains('pin')) setMore(b, false); else openVis(b, true); snd.tick(); });
+  }
+}
+buildVis('full');
+{
+  const box = $('#vis-rows'); let leave = 0;
+  box.addEventListener('pointerenter', () => clearTimeout(leave));
+  box.addEventListener('pointerleave', () => { clearTimeout(visTimer); clearTimeout(leave); leave = setTimeout(() => closeMores(), NEAR.close); });
+}
+$('#visbtn').addEventListener('click', () => { buildVis(visState === 'full' ? 'early' : 'full'); if (stage.dataset.prog === 'visits' && !stage.dataset.aside) flashRoom('solio-visits'); });
+
 /* ── 이 공간의 프로그램. 구 옆에 작은 오브제로 놓인다. 다가가면 이름이 펼쳐지고, 그 위에 잠깐 머물면 그 프로그램이 열린다 ── */
-let progTimer = 0;
+let progTimer = 0, railSince = -1e9;   // railSince: 오브제의 이름이 펼쳐지기 시작한 때
+const railSettle = 620;               // 이름 셋이 다 펼쳐지는 데 걸리는 시간
 function showProg(name) {
   if (stage.dataset.prog === name && !stage.dataset.aside) return;
   stage.dataset.prog = name; $$('.obj').forEach(o => o.setAttribute('aria-current', String(o.dataset.prog === name)));
   delete stage.dataset.aside; closeMores(true); flashRoom(roomNow()); snd.tick();
 }
 $$('.obj').forEach(o => {
-  o.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(progTimer); progTimer = setTimeout(() => showProg(o.dataset.prog), NEAR.prog); });
+  o.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(progTimer); progTimer = setTimeout(() => showProg(o.dataset.prog), Math.max(NEAR.prog, railSince + railSettle - performance.now())); });
   o.addEventListener('pointerleave', () => clearTimeout(progTimer));
   o.addEventListener('click', () => showProg(o.dataset.prog));
   o.addEventListener('focus', () => { if (o.matches(':focus-visible')) showProg(o.dataset.prog); });
@@ -838,8 +950,9 @@ function nearOrb(x, y) { const s = stage.getBoundingClientRect(); return inBox(o
 /* 펼친 뒤에 머물 수 있는 넓이: 자란 구와 이름 목록, 그리고 둘레 */
 function fanZone(x, y) { const s = stage.getBoundingClientRect(); return Math.hypot(x - S.cx, y - (S.top + S.r)) < S.r + 44 || inBox($('#fan').getBoundingClientRect(), s, x, y, 44); }
 function nearStep(x, y) {
-  const rail = $('.rail');
+  const rail = $('.rail'), wasNear = rail.classList.contains('near');
   rail.classList.toggle('near', ui === 'app' && !fanOn && inBox(rail.getBoundingClientRect(), stage.getBoundingClientRect(), x, y, 64));
+  if (!wasNear && rail.classList.contains('near')) railSince = performance.now();
   if (ui !== 'app' || !canHover || stage.classList.contains('still')) return;
   if (!fanOn) {
     if (!nearOrb(x, y)) { clearTimeout(fanTimer); fanTimer = 0; }
@@ -1409,10 +1522,11 @@ window.__orb = {
     if (opt.space) { space = opt.space; applySpace(); }
     const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'], forge: ['forge', 'forge'] }[scene];
     delete stage.dataset.aside; stage.classList.add('still'); resize(); sig.show(opt.sig);
-    /* fan은 구 곁의 펼침, sweep은 고리가 그어진 만큼, prog는 프로그램(subs, backup), near는 오브제의 이름이 펼쳐진 모습, sub는 안쪽을 펼칠 구독이다 */
+    /* fan은 구 곁의 펼침, sweep은 고리가 그어진 만큼, prog는 프로그램(subs, backup, visits), near는 오브제의 이름이 펼쳐진 모습, sub는 안쪽을 펼칠 구독이다.
+       vis는 방문자 분석의 숫자 상태(full, early), visRow는 안쪽을 펼칠 줄(from, pages, acts, search, ai)이다 */
     fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); closeMores(true); nearK = 0;
     stage.dataset.prog = opt.prog || 'subs'; $$('.obj').forEach(o => o.setAttribute('aria-current', String(o.dataset.prog === stage.dataset.prog))); $('.rail').classList.toggle('near', !!opt.near);
-    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openMore(opt.sub, true); if (opt.aside) stage.dataset.aside = opt.aside;
+    if (opt.vis) buildVis(opt.vis); faceWant = null; snap(map[0]); setUI(map[1]); if (opt.visRow) { const vb = $('button.row[data-vis="' + opt.visRow + '"]'); if (vb) openVis(vb, true); } if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openMore(opt.sub, true); if (opt.aside) stage.dataset.aside = opt.aside;
     cut = 1; cutOn = cutOnWant = 0; delete stage.dataset.forge;
     if (scene === 'forge') { setGrand(!!opt.grand); const p = opt.ready ? 0 : (opt.p === undefined ? .4 : opt.p); forgeP = p; layoutForge(); snap('forge'); cut = opt.failed ? 1 : p; cutOn = cutOnWant = opt.failed ? 0 : 1; if (opt.failed) S.lit = .5; if (opt.ready || opt.failed) stage.dataset.forge = opt.ready ? 'ready' : 'failed'; forgeText(p, opt); }
     pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
