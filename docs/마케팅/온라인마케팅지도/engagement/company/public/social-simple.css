@@ -180,6 +180,19 @@
 :root .synk-workspace .sw-simple .ss-acc-n.is-zero{color:var(--ss-ink-4)}
 :root .synk-workspace .sw-simple .ss-acc-last{font-family:var(--ss-latin);font-variant-numeric:tabular-nums;color:var(--ss-ink-3);text-align:right}
 :root .synk-workspace .sw-simple .ss-acc-fix{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;color:var(--ss-coral-ink)}
+/* 직접 자동 게시 켜기 · 끄기(11-16) — 켜기 줄은 계정 줄 아래 한 줄, 끄기는 게시 칸의 칩 밑 작은 글자. 끄기는 줄 안에서 한 번 더 묻는다. */
+:root .synk-workspace .sw-simple .ss-acc-direct{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;line-height:1.45;color:var(--ss-ink-2)}
+:root .synk-workspace .sw-simple .ss-acc-direct.is-confirm{color:var(--ss-coral-ink)}
+:root .synk-workspace .sw-simple .ss-acc-direct-text{display:flex;align-items:flex-start;gap:6px;flex:1 1 260px;min-width:0}
+:root .synk-workspace .sw-simple .ss-acc-direct-text .ss-dot{margin-top:6px}
+:root .synk-workspace .sw-simple .ss-acc-direct-actions{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+:root .synk-workspace .sw-simple .ss-btn.ss-btn-sm{min-height:34px;padding:0 12px;font-size:13px}
+:root .synk-workspace .sw-simple :is(.ss-acc-direct,.ss-acc-pub-stack) :is(.ss-btn,.ss-link):disabled{opacity:.55;cursor:default}
+:root .synk-workspace .sw-simple .ss-acc-direct-note{flex-basis:100%;color:var(--ss-green-ink)}
+:root .synk-workspace .sw-simple .ss-acc-direct-note.is-error{color:var(--ss-coral-ink)}
+:root .synk-workspace .sw-simple .ss-acc-pub-stack{display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+:root .synk-workspace .sw-simple .ss-acc-off{font-size:12px;font-weight:var(--w-label);color:var(--ss-ink-3)}
+:root .synk-workspace .sw-simple .ss-acc.is-focus{box-shadow:inset 3px 0 0 var(--ss-butter);background:var(--ss-butter-wash);padding-left:12px}
 
 /* 맥락 메뉴 「오늘」의 내 차례 배지 — 솔리드 화이트 고대비 */
 :root .synk-workspace .nav-item .nav-count.social-turn{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:auto;padding:0 6px;border-radius:6px;background:#FFFFFF;color:#08090C;font:650 11.5px/1 'SNS Latin','Inter Tight',system-ui,sans-serif}

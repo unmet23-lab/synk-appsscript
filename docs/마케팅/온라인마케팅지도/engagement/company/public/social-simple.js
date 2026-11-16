@@ -582,13 +582,36 @@ function ssCollectionProgress(row){
   const metrics=fields.map(k=>ssEsc(SS_COLLECTION_METRICS[k])+' '+ssEsc(SS_COLLECTION_ROUTES[sources[k]]||'미확인')).join(' / ');
   return `<div class="channel-collection-note ss-collection-progress"><strong>${ssEsc(title)}</strong><span>${ssEsc(row.message||'')}</span><small>${metrics}</small>${when}</div>`;
 }
-function ssAccRow(a,today='',progress=a.collectionProgress){
-  const td=typeof today==='string'?today:'',ext=a?.externalCollection||null;
-  const pub=a.publish==='자동 게시'?`<span class="ss-st green ss-acc-pub">${ssDot()}자동 게시</span>`:a.publish==='앱에서 직접'?`<span class="ss-st butter ss-acc-pub">${ssDot()}앱에서 직접</span>`:'<span class="ss-st ss-acc-pub">안 켬</span>';
+// 직접 자동 게시 켜기 · 끄기(11-16). 서버 a.direct는 직접 게시를 지원하는 계정에만 오는 provider.settings 값이다(옛 카드 snswDirectAccount와 같은 근거).
+// 단추는 그 계정을 관리할 수 있는 사람(canConfigure)에게만 보이고, 누르면 옛 카드와 같은 POST /api/social/provider/connect · disconnect를 부른다.
+// 켜기는 서버가 게시 권한을 다시 확인한 뒤에만 켜진다. 끄기는 예약 게시가 멈추는 일이라 줄 안에서 한 번 더 묻는다.
+// ui = {can, busy:채널ID, confirm:채널ID, note:{channelId,tone,message}, highlight:채널ID}
+function ssDirectConnectUrl(url){const s=typeof url==='string'?url:'';return /^\/api\/oauth\/[a-z]+\/start\?[^"'<>\s]*publishing=1/.test(s)?s:'';}
+function ssAccDirect(a,ui={}){
+  const d=a?.direct;if(!ui.can||!d||d.canConfigure!==true||!a.channelId)return {off:'',line:''};
+  const id=ssEsc(a.channelId),mine=ui.busy===a.channelId,dis=ui.busy?' disabled':'',note=ui.note?.channelId===a.channelId?ui.note:null;
+  const noteHtml=note?`<span class="ss-acc-direct-note${note.tone==='error'?' is-error':''}" role="${note.tone==='error'?'alert':'status'}">${ssEsc(note.message||'')}</span>`:'';
+  if(d.enabled!==true){
+    // ready(서버): 게시 권한은 확인됐고 켜기만 남았다. 아니면 권한 연결 길(없으면 옛 카드처럼 채널 화면)을 함께 둔다. 켜기는 어느 쪽이든 서버가 권한을 다시 확인한다.
+    const ready=d.ready===true||d.connected===true,connectUrl=ready?'':ssDirectConnectUrl(d.connectUrl);
+    const text=ready?'게시 권한은 연결돼 있어요. 자동 게시를 켜야 승인된 예약이 이 계정에 자동으로 올라가요.':'자동 게시가 꺼져 있어요. 게시 권한을 연결한 뒤 자동 게시를 켜야 승인된 예약이 자동으로 올라가요.';
+    const link=ready?'':connectUrl?`<a class="ss-link" href="${ssEsc(connectUrl)}">게시 권한 연결</a>`:'<a class="ss-link" href="/?tab=channels">플랫폼 앱 연결 준비 확인</a>';
+    return {off:'',line:`<div class="ss-acc-direct"><span class="ss-acc-direct-text">${ssDot('butter')}<span>${ssEsc(text)}</span></span><span class="ss-acc-direct-actions">${link}<button class="ss-btn ss-btn-sm" type="button" data-ss-action="direct-connect" data-value="${id}"${dis}>${mine?'권한 확인하는 중…':'권한 확인 후 자동 게시 켜기'}</button></span>${noteHtml}</div>`};
+  }
+  const off=`<button class="ss-link ss-acc-off" type="button" data-ss-action="direct-off" data-value="${id}"${dis}>자동 게시 끄기</button>`;
+  if(ui.confirm===a.channelId)return {off,line:`<div class="ss-acc-direct is-confirm"><span class="ss-acc-direct-text">${ssDot('coral')}<span>${ssEsc('자동 게시를 끄면 승인된 예약이 이 계정에 자동으로 올라가지 않아요. 댓글과 채널 조회 연결은 그대로예요.')}</span></span><span class="ss-acc-direct-actions"><button class="ss-btn ss-btn-sm" type="button" data-ss-action="direct-disconnect" data-value="${id}"${dis}>${mine?'끄는 중…':'자동 게시 끄기'}</button><button class="ss-link" type="button" data-ss-action="direct-keep" data-value="${id}"${dis}>그대로 두기</button></span>${noteHtml}</div>`};
+  return {off,line:note?`<div class="ss-acc-direct">${noteHtml}</div>`:''};
+}
+function ssAccRow(a,today='',progress=a.collectionProgress,ui={}){
+  const td=typeof today==='string'?today:'',ext=a?.externalCollection||null,direct=ssAccDirect(a,ui);
+  // 자동 게시를 켜 두었는데 게시 권한이 끊긴 계정은 「안 켬」이 아니라 「권한 확인 필요」로 보인다(아래 줄에 「게시 권한 다시 연결」이 뜬다).
+  const [tone,label]=a.publish==='자동 게시'?['green','자동 게시']:a.direct?.enabled===true&&a.direct.connected!==true?['coral','권한 확인 필요']:a.publish==='앱에서 직접'?['butter','앱에서 직접']:['','안 켬'];
+  const chip=cls=>`<span class="ss-st${tone?' '+tone:''}${cls}">${tone?ssDot():''}${ssEsc(label)}</span>`;
+  const pub=direct.off?`<span class="ss-acc-pub ss-acc-pub-stack">${chip('')}${direct.off}</span>`:chip(' ss-acc-pub');
   const col=a.collect==='수집 중'?`<span class="ss-st ss-acc-col">${ssDot('green')}정기 API 수집 중</span>`:a.collect==='수집 멈춤'?`<span class="ss-st ss-acc-col">${ssDot()}정기 API 수집 멈춤</span>`:ext?`<span class="ss-acc-col ss-acc-col-stack"><span class="ss-st butter">${ssDot()}플랫폼에서 확인한 통계</span><small class="ss-acc-col-sub">정기 API 수집 안 함</small></span>`:'<span class="ss-st ss-acc-col">정기 API 수집 안 함</span>';
   const extLine=ssAccExt(ext,a.collect,td)+`<div class="ss-progress-slot" data-ss-progress="${ssEsc(a.channelId||'')}"${progress?'':' hidden'}>${ssCollectionProgress(progress)}</div>`;
   const fix=a.fix?`<div class="ss-acc-fix">${ssDot('coral')}<span>${ssEsc(a.fix.message||'연결을 다시 확인해야 해요')}</span>${a.fix.kind==='publish'&&a.fix.connectUrl?`<a class="ss-link" href="${ssEsc(a.fix.connectUrl)}">게시 권한 다시 연결</a>`:`<button class="ss-link" type="button" data-ss-action="reconnect" data-value="${ssEsc(a.channelId)}">다시 연결</button>`}</div>`:'';
-  return `<div class="ss-acc"><div class="ss-acc-name">${ssPf(a.platform)}<b>${ssEsc(a.handle||'이름 없음')}</b><span>${ssEsc(a.name||'')}</span></div>${pub}${col}<span class="ss-acc-n${a.posts30?'':' is-zero'}">${ssEsc(`${ssN(a.posts30)}편 · ${typeof a.views30==='number'?`${ssN(a.views30)}회`:'조회 미측정'}`)}</span><span class="ss-acc-last">${a.lastPost?ssEsc(ssMdShort(a.lastPost)):'—'}</span>${extLine}${fix}</div>`;
+  return `<div class="ss-acc${ui.highlight&&ui.highlight===a.channelId?' is-focus':''}" data-ss-channel="${ssEsc(a.channelId||'')}"><div class="ss-acc-name">${ssPf(a.platform)}<b>${ssEsc(a.handle||'이름 없음')}</b><span>${ssEsc(a.name||'')}</span></div>${pub}${col}<span class="ss-acc-n${a.posts30?'':' is-zero'}">${ssEsc(`${ssN(a.posts30)}편 · ${typeof a.views30==='number'?`${ssN(a.views30)}회`:'조회 미측정'}`)}</span><span class="ss-acc-last">${a.lastPost?ssEsc(ssMdShort(a.lastPost)):'—'}</span>${extLine}${fix}${direct.line}</div>`;
 }
 function ssAccounts(D,options={}){
   // views30은 「최근 30일 게시물의 지금까지 누적 조회」다. 서버가 숫자를 못 받은 계정은 null — 0으로 더하지 않고 몇 곳이 빠졌는지 밝힌다.
@@ -598,7 +621,7 @@ function ssAccounts(D,options={}){
   const viewsText=countryViews===null?'— (조회 수를 아직 못 받았어요)':`${ssN(countryViews)}회${missing?`(${missing}곳은 조회 수 미측정이라 뺌)`:''}`;
   const head='<div class="ss-acc-head"><span>계정</span><span>게시</span><span>수집</span><span title="최근 30일에 올린 게시물 수 · 그 게시물들의 지금까지 누적 조회(기간 동안 늘어난 조회가 아님)">30일 게시 · 누적 조회</span><span class="is-r">마지막</span></div>';
   const brandOrder=[...new Set(['유호','브리핑','LAB','SHIFT','PULSE','PATH','SYNK','회사',...A.filter(a=>!a.country).map(a=>a.brand||'회사')])];
-  const renderRow=a=>ssAccRow(a,D.today,options.progress?.get(a.channelId)??(options.collectionSnapshot?null:a.collectionProgress));
+  const renderRow=a=>ssAccRow(a,D.today,options.progress?.get(a.channelId)??(options.collectionSnapshot?null:a.collectionProgress),options.direct||{});
   const blocks=brandOrder.map(b=>{
     const list=A.filter(a=>(a.brand||'회사')===b&&!a.country).sort(order),extra=b==='LAB'?country:[];
     if(!list.length&&!extra.length)return '';
@@ -625,7 +648,8 @@ function ssPage(view,D,options={}){
 
 // ── 상태와 불러오기 ── (시험은 이 줄 앞까지만 잘라 읽는다)
 const ssPerfBlank=()=>({days:30,metric:'views',target:'',status:'idle',error:'',current:null,previous:null,range:null,key:'',request:0,loadedAt:0});
-const snsSimple={identity:'',request:0,loading:false,attempted:false,attemptedAt:0,data:null,error:'',brand:'전체',sort:'recent',open:new Set(),perf:ssPerfBlank()};
+const ssDirectBlank=()=>({busy:'',confirm:'',note:null,highlight:'',focus:''});
+const snsSimple={identity:'',request:0,loading:false,attempted:false,attemptedAt:0,data:null,error:'',brand:'전체',sort:'recent',open:new Set(),perf:ssPerfBlank(),direct:ssDirectBlank()};
 const SS_STALE_MS=5*60000;
 const ssProgressBlank = () => ({items:new Map(),worker:null,posting:false,reading:false,readAt:0,snapshot:false,seq:0,timer:0,notice:''});
 let ssProgress = ssProgressBlank();
@@ -703,7 +727,35 @@ function ssShowProgress(D){
 globalThis.document?.addEventListener?.('visibilitychange',()=>{
   if(!document.hidden&&ssProgressPanel())ssLaterProgress(ssProgress,0);
 });
-function snsSimpleIdentity(){const key=typeof snswIdentityKey==='function'?snswIdentityKey():'';if(snsSimple.identity!==key){if(ssProgress.timer)clearTimeout(ssProgress.timer);ssProgress=ssProgressBlank();Object.assign(snsSimple,{identity:key,request:snsSimple.request+1,loading:false,attempted:false,attemptedAt:0,data:null,error:'',brand:'전체',sort:'recent',open:new Set(),perf:{...ssPerfBlank(),request:snsSimple.perf.request+1}});}}
+function snsSimpleIdentity(){const key=typeof snswIdentityKey==='function'?snswIdentityKey():'';if(snsSimple.identity!==key){if(ssProgress.timer)clearTimeout(ssProgress.timer);ssProgress=ssProgressBlank();Object.assign(snsSimple,{identity:key,request:snsSimple.request+1,loading:false,attempted:false,attemptedAt:0,data:null,error:'',brand:'전체',sort:'recent',open:new Set(),perf:{...ssPerfBlank(),request:snsSimple.perf.request+1},direct:ssDirectBlank()});}}
+// 직접 자동 게시 켜기 · 끄기 — 옛 카드(snswAction 'direct-connect' · 'disconnect')와 같은 서버 호출이고 같은 조건에서만 부른다.
+// 끝나면 간편판 자료를 다시 읽어 줄의 상태를 서버 값으로 바꾼다. 결과 글은 누른 계정 줄 안에 남긴다(접힌 나라별 계정에서도 보이게).
+function ssCanDirect(){return !!state.user&&state.user.role!=='viewer'&&!(typeof isDemoMode==='function'&&isDemoMode());}
+async function ssDirectSet(action,channelId){
+  const S=snsSimple,on=action==='direct-connect',d=(S.data?.accounts||[]).find(a=>a.channelId===channelId)?.direct;
+  if(S.direct.busy||!ssCanDirect()||!d||d.canConfigure!==true||(on?d.enabled===true:d.enabled!==true||S.direct.confirm!==channelId))return;
+  const identity=S.identity;let note=null;
+  S.direct={...S.direct,busy:channelId,note:null};snswRender();
+  try{
+    await api('/api/social/provider/'+(on?'connect':'disconnect'),{channelId});
+    if(identity!==S.identity)return;
+    note={channelId,tone:'ok',message:on?'게시 권한을 확인하고 이 계정의 자동 게시를 켰어요.':'이 계정의 자동 게시를 껐어요. 댓글과 채널 조회 연결은 그대로예요.'};
+    S.direct={...S.direct,confirm:'',note,highlight:''};
+    await snsSimpleLoad();
+  }catch(error){if(identity===S.identity)note={channelId,tone:'error',message:error.message||(on?'자동 게시를 켜지 못했어요. 잠시 뒤 다시 눌러 주세요.':'자동 게시를 끄지 못했어요. 잠시 뒤 다시 눌러 주세요.')};}
+  finally{if(identity===S.identity){S.direct={...S.direct,busy:'',confirm:note?.tone==='error'?S.direct.confirm:'',note};snswRender();}}
+}
+// 게시 권한 연결(OAuth)에서 돌아오면 app.js가 그 계정을 알려 준다. 계정 화면이 그려진 뒤 그 줄을 펼쳐 보이고 켜기 단추에 초점을 둔다.
+function snsSimpleFocus(channelId){snsSimpleIdentity();const id=String(channelId||'');snsSimple.direct={...snsSimple.direct,focus:id,highlight:id};}
+function ssFocusRow(){
+  const id=snsSimple.direct.focus;if(!id||!snsSimple.data)return;
+  const row=[...document.querySelectorAll('.sw-simple [data-ss-channel]')].find(el=>el.dataset.ssChannel===id);
+  snsSimple.direct={...snsSimple.direct,focus:''};if(!row)return;
+  const fold=row.closest('details');if(fold)fold.open=true;
+  // 부드러운 스크롤은 첫 화면의 뒤이은 그리기에 끊겨(11-16 확인: 70px에서 멈춤) 바로 옮긴다.
+  row.scrollIntoView?.({block:'center'});
+  row.querySelector('[data-ss-action="direct-connect"]')?.focus?.({preventScroll:true});
+}
 async function snsSimpleLoad(){
   snsSimpleIdentity();const identity=snsSimple.identity,request=++snsSimple.request;
   Object.assign(snsSimple,{loading:true,attempted:true,attemptedAt:Date.now(),error:''});
@@ -732,12 +784,15 @@ function ssPerfEnsure(){
 function snsSimpleEnsure(){if(!state.user)return;snsSimpleIdentity();if(snsSimple.loading)return;if(!snsSimple.attempted||Date.now()-snsSimple.attemptedAt>SS_STALE_MS)void snsSimpleLoad();}
 function snsSimpleRender(view){
   snsSimpleIdentity();const D=snsSimple.data;
+  // 계정 화면을 떠나면 줄 안의 끄기 확인 · 결과 글 · 강조를 지운다(누르는 중인 요청은 그대로 둔다).
+  if(view!=='accounts'&&(snsSimple.direct.highlight||snsSimple.direct.confirm||snsSimple.direct.note))snsSimple.direct={...snsSimple.direct,highlight:'',confirm:'',note:null};
   // 나라 지도(11-11)는 자기 자료(/marketing-map.json)로 그린다 — 간편판 자료가 없거나 늦어도 지도는 그대로 연다.
   if(view==='map')return `<section class="sw-simple" data-sw-view="map" aria-label="SNS·마케팅 · 나라 지도">${ssTabs(view,D)}${typeof marketingMapRender==='function'?marketingMapRender():''}</section>`;
   const error=snsSimple.error?`<div class="ss-alert" role="alert">${ssEsc(snsSimple.error)}<button class="ss-link" type="button" data-ss-action="reload"${snsSimple.loading?' disabled':''}>다시 불러오기</button></div>`:'';
   if(view==='results'&&D&&state.user)ssPerfEnsure();
   if(view==='accounts'&&D&&state.user)ssShowProgress(D);
-  const body=D?ssPage(view,D,{canCollect:view==='accounts'&&ssCanCollect(),posting:ssProgress.posting,progress:ssProgress.items,collectionSnapshot:ssProgress.snapshot,brand:snsSimple.brand,sort:snsSimple.sort,open:snsSimple.open,perf:view==='results'?snsSimple.perf:null}):`<div class="ss-empty" role="status"><h2>${snsSimple.error?'불러오지 못했어요':'불러오고 있어요'}</h2><p>${snsSimple.error?'잠시 뒤 다시 불러와 주세요.':'예약·수집·성과를 모으고 있어요.'}</p></div>`;
+  if(view==='accounts'&&D&&snsSimple.direct.focus&&typeof requestAnimationFrame==='function')requestAnimationFrame(ssFocusRow);
+  const body=D?ssPage(view,D,{canCollect:view==='accounts'&&ssCanCollect(),posting:ssProgress.posting,progress:ssProgress.items,collectionSnapshot:ssProgress.snapshot,direct:{...snsSimple.direct,can:view==='accounts'&&ssCanDirect()},brand:snsSimple.brand,sort:snsSimple.sort,open:snsSimple.open,perf:view==='results'?snsSimple.perf:null}):`<div class="ss-empty" role="status"><h2>${snsSimple.error?'불러오지 못했어요':'불러오고 있어요'}</h2><p>${snsSimple.error?'잠시 뒤 다시 불러와 주세요.':'예약·수집·성과를 모으고 있어요.'}</p></div>`;
   ssWideSoon();
   return `<section class="sw-simple" data-sw-view="${ssEsc(view)}" aria-label="SNS·마케팅" aria-busy="${snsSimple.loading}">${ssTabs(view,D)}${error}${body}</section>`;
 }
@@ -752,6 +807,8 @@ document.addEventListener('click',event=>{
   const target=event.target.closest?.('.sw-simple [data-ss-action]');if(!target||target.disabled)return;
   const action=target.dataset.ssAction,value=target.dataset.value||'';
   if(action==='collect-all'){void ssCollectAll();return;}
+  if(action==='direct-connect'||action==='direct-disconnect'){void ssDirectSet(action,value);return;}
+  if(action==='direct-off'||action==='direct-keep'){if(!snsSimple.direct.busy){snsSimple.direct={...snsSimple.direct,confirm:action==='direct-off'?value:'',note:null};snswRender();}return;}
   if(action==='brand'){snsSimple.brand=value;snswRender();return;}
   if(action==='sort'){snsSimple.sort=value==='best'?'best':'recent';snswRender();return;}
   if(action==='detail'){snsSimple.open.has(value)?snsSimple.open.delete(value):snsSimple.open.add(value);snswRender();document.querySelector(`.sw-simple [data-ss-action="detail"][data-value="${CSS.escape(value)}"]`)?.focus?.({preventScroll:true});return;}

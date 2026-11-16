@@ -238,11 +238,15 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},c
     const collect=['success','partial','collecting'].includes(now)||waiting?'수집 중':now==='unsupported'||(!item&&c.status==='not-connected')?'수집 안 함':'수집 멈춤';
     let connectUrl=null;try{const u=new URL(row?.connectUrl||'','https://workspace.invalid');if(u.origin==='https://workspace.invalid'&&u.pathname==='/api/oauth/'+c.platform+'/start'&&u.searchParams.get('channelId')===c.id&&u.searchParams.get('publishing')==='1')connectUrl=u.pathname+u.search;}catch{}
     const fix=item&&['reconnect','connect'].includes(item.action)?{kind:'collect',message:item.label||'수집 연결을 다시 해야 해요'}:row?.supported&&row.enabled&&!row.connected?{kind:'publish',message:'게시 권한을 다시 연결해야 해요',connectUrl}:null;
+    // 직접 자동 게시를 켜고 끄는 단추의 근거(11-16). 옛 카드(snswDirectAccount)가 보던 provider.settings 줄과 같은 값이고, 직접 게시를 지원하는 계정에만 준다.
+    // ready = 게시 권한은 확인됐고 켜기만 남았다. 메타 · 유튜브 판정(issue)은 「켜지 않음(NOT_CONFIGURED)」을 권한 검사 뒤 마지막에 보므로,
+    // 켜기 전 계정은 권한이 있어도 connected가 거짓이고 그 코드만 남는다.
+    const direct=row?.supported===true?{canConfigure:row.canConfigure===true,enabled:row.enabled===true,connected:row.connected===true,ready:row.connected===true||row.errorCode==='NOT_CONFIGURED',connectUrl}:null;
     const brand=brandOf(c),name=String(c.displayName||'');
     const known=mine.filter(p=>typeof p.views==='number'&&Number.isFinite(p.views));
     return {channelId:c.id,accountId:c.accountId,business:c.business,contentTrack:c.contentTrack,platform:c.platform,handle:atHandle(c.platform,c.handle),name:name==='유호'&&brand!=='유호'?'':name,brand,country:countryOf(c),publish,collect,externalCollection:c.externalCollection||null,collectionProgress:c.collectionProgress||null,posts30:mine.length,
       views30:known.length?known.reduce((s,p)=>s+p.views,0):null,views30Basis:'최근 30일에 게시한 콘텐츠의 최신 누적 조회수 · 해당 기간 발생 조회수 아님',views30Known:known.length,views30Eligible:mine.length,
-      lastPost:last?kstDay(Date.parse(last)):null,fix};
+      lastPost:last?kstDay(Date.parse(last)):null,fix,direct};
   });
 
   const digestAge=digest?Math.max(0,Math.round((nowMs-Date.parse(digest.generatedAt))/60000)):null;
