@@ -15,6 +15,11 @@
 //! root folder (the user's name in the task name keeps users apart there). Registration never needs administrator rights. The installer makes the
 //! folder (`prepare_folder`) and the uninstaller removes every user's tasks of that
 //! installation (`remove_installation`), both as an administrator (4.2 「컴퓨터 전체 설치」).
+//!
+//! The helper task (4.2 「도우미」) lives apart, in `\SYNK 업무 백업 도우미`, a folder only administrators change: one task
+//! per account that approved the install itself, run with the highest privileges, no trigger, the fixed action
+//! `WorkBackupRun.exe --vss-helper` (no `$(Arg)`), its permission administrators and SYSTEM full and that account
+//! read and run only. That account's runs start it (`run_helper`); nothing else does.
 use std::{mem::ManuallyDrop, path::Path};
 use windows::core::BSTR;
 use windows::Win32::Foundation::{RPC_E_CHANGED_MODE, VARIANT_TRUE};
@@ -41,7 +46,7 @@ pub fn user_label(name: &str) -> String {
 /// The account's SID goes into the name as a short tag, so two accounts that share a user
 /// name (or a process that inherited another account's USERNAME) never share a task (review GA4).
 pub fn task_name(user: &str, sid: &str, trigger: Trigger) -> String { format!("회차 - {} - {} · {}", user_label(user), trigger.label(), sid_tag(sid)) }
-fn sid_tag(sid: &str) -> String { use sha2::{Digest, Sha256}; format!("{:x}", Sha256::digest(sid.as_bytes()))[..6].to_string() }
+pub fn sid_tag(sid: &str) -> String { use sha2::{Digest, Sha256}; format!("{:x}", Sha256::digest(sid.as_bytes()))[..6].to_string() }
 
 /// The text of the first `<tag>` element, unescaped (review C2: compare values, not escaped text).
 fn element(xml: &str, tag: &str) -> Option<String> {
@@ -292,6 +297,95 @@ impl Var {
 }
 impl Drop for Var { fn drop(&mut self) { unsafe { let _ = VariantClear(&mut self.0); } } }
 
+/// The helper task's folder, name and argument (4.2 「도우미」).
+pub const HELPER_FOLDER: &str = "\\SYNK 업무 백업 도우미";
+pub const HELPER_ARG: &str = "--vss-helper";
+/// Administrators and SYSTEM full; signed-in users may read it to find their task, and add nothing to it.
+const HELPER_FOLDER_SDDL: &str = "D:(A;;FA;;;BA)(A;;FA;;;SY)(A;;GR;;;AU)";
+const HELPER_FOLDER_OWNED_SDDL: &str = "O:BAD:(A;;FA;;;BA)(A;;FA;;;SY)(A;;GR;;;AU)";
+pub fn helper_task_name(user: &str, sid: &str) -> String { format!("도우미 - {} · {}", user_label(user), sid_tag(sid)) }
+/// The task's own permission: administrators and SYSTEM full, the account read and run only.
+fn helper_task_sddl(sid: &str) -> String { format!("D:(A;;FA;;;BA)(A;;FA;;;SY)(A;;GRGX;;;{sid})") }
+/// The helper task XML: that account, highest privileges, an interactive token (it runs only while the account is
+/// signed in — its run starts it), no trigger, one instance, 8 hours at most (the helper keeps the links 6 hours
+/// at most for a run that does not end).
+pub fn helper_task_xml(exe: &Path, sid: &str) -> Result<String, String> {
+    let exe = exe.to_str().ok_or("SCHEDULE_PATH")?.trim_start_matches(r"\\?\");
+    if !Path::new(exe).is_absolute() || exe.contains(['"', '\r', '\n']) { return Err("SCHEDULE_PATH".into()); }
+    if !sid.starts_with("S-1-") || !sid.bytes().all(|b| b.is_ascii_digit() || b == b'-' || b == b'S') { return Err("SCHEDULE_USER".into()); }
+    Ok(format!(concat!(
+        "<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">",
+        "<RegistrationInfo><Author>SYNK 업무 백업</Author><Description>업무 백업 도우미 — 섀도 복사본 만들기 · 연결 · 지우기만</Description></RegistrationInfo>",
+        "<Triggers />",
+        "<Principals><Principal id=\"Author\"><UserId>{user}</UserId><LogonType>InteractiveToken</LogonType><RunLevel>HighestAvailable</RunLevel></Principal></Principals>",
+        "<Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>",
+        "<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><AllowHardTerminate>true</AllowHardTerminate><StartWhenAvailable>false</StartWhenAvailable>",
+        "<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable><IdleSettings><StopOnIdleEnd>false</StopOnIdleEnd><RestartOnIdle>false</RestartOnIdle></IdleSettings>",
+        "<AllowStartOnDemand>true</AllowStartOnDemand><Enabled>true</Enabled><Hidden>false</Hidden><RunOnlyIfIdle>false</RunOnlyIfIdle><WakeToRun>false</WakeToRun>",
+        "<ExecutionTimeLimit>PT8H</ExecutionTimeLimit><Priority>7</Priority></Settings>",
+        "<Actions Context=\"Author\"><Exec><Command>{command}</Command><Arguments>{arg}</Arguments></Exec></Actions></Task>"),
+        user = escape(sid), command = escape(exe), arg = HELPER_ARG))
+}
+/// Whether a task definition is this account's helper as `helper_task_xml` makes it: the command is `exe`, the
+/// argument the fixed one, the run level the highest.
+fn helper_matches(xml: &str, exe: &Path) -> bool {
+    let command = element(xml, "Command").unwrap_or_default();
+    let same = |a: &Path, b: &Path| crate::platform::key_path(a) == crate::platform::key_path(b);
+    same(Path::new(command.trim().trim_matches('"')), exe) && element(xml, "Arguments").is_some_and(|a| a.trim() == HELPER_ARG)
+        && element(xml, "RunLevel").as_deref() == Some("HighestAvailable")
+}
+/// The installer, as an administrator, for the account that approved it (`helper::register` checks that): makes
+/// the helper folder (or checks the installer's own one), sets its owner and permission, and registers the task.
+/// A folder a standard user made first under that name is never used (SCHEDULE_HELPER_FOLDER_NOT_OURS — no helper).
+pub fn register_helper(exe: &Path, user: &str, sid: &str) -> Result<String, String> {
+    let _com = Com::init()?;
+    let service = service()?;
+    let place = match folder(&service, HELPER_FOLDER) {
+        Some(existing) if !trusted(&existing) => return Err("SCHEDULE_HELPER_FOLDER_NOT_OURS".into()),
+        Some(existing) => existing,
+        None => {
+            let root = folder(&service, ROOT).ok_or("SCHEDULE_FOLDER")?;
+            let sddl = Var::text(HELPER_FOLDER_SDDL);
+            unsafe { root.CreateFolder(&BSTR::from(HELPER_FOLDER.trim_start_matches('\\')), &sddl.0) }.map_err(|e| format!("SCHEDULE_HELPER_FOLDER_CREATE:{:#x}", e.code().0))?
+        }
+    };
+    unsafe { place.SetSecurityDescriptor(&BSTR::from(HELPER_FOLDER_OWNED_SDDL), 0) }.map_err(|e| format!("SCHEDULE_HELPER_FOLDER_ACL:{:#x}", e.code().0))?;
+    let read = unsafe { place.GetSecurityDescriptor(OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION) }.map(|s| s.to_string()).map_err(|e| format!("SCHEDULE_HELPER_FOLDER_READ:{:#x}", e.code().0))?;
+    if !owned_by_administrators(&read) { return Err(format!("SCHEDULE_HELPER_FOLDER_OWNER:{read}")); }
+    let name = helper_task_name(user, sid);
+    if task(&place, &name).is_some_and(|t| !owned(&t, sid)) { return Err("SCHEDULE_FOREIGN".into()); }
+    let xml = helper_task_xml(exe, sid)?;
+    let security = Var::text(&helper_task_sddl(sid));
+    unsafe { place.RegisterTask(&BSTR::from(name.as_str()), &BSTR::from(xml), TASK_CREATE_OR_UPDATE.0, &VARIANT::default(), &VARIANT::default(), TASK_LOGON_INTERACTIVE_TOKEN, &security.0) }
+        .map_err(|e| format!("SCHEDULE_HELPER_REGISTER:{:#x}", e.code().0))?;
+    if helper_task(&service, exe, user, sid).is_none() { return Err("SCHEDULE_HELPER_CHECK".into()); }
+    Ok(read)
+}
+/// This account's helper task, when it is in the installer's helper folder, runs as this account, is enabled and
+/// starts `exe --vss-helper` with the highest privileges.
+fn helper_task(service: &ITaskService, exe: &Path, user: &str, sid: &str) -> Option<IRegisteredTask> {
+    let place = folder(service, HELPER_FOLDER).filter(trusted)?;
+    let task = task(&place, &helper_task_name(user, sid))?;
+    let enabled = unsafe { task.Enabled() }.is_ok_and(|v| v == VARIANT_TRUE);
+    let xml = unsafe { task.Xml() }.map(|x| x.to_string()).unwrap_or_default();
+    (owned(&task, sid) && enabled && helper_matches(&xml, exe)).then_some(task)
+}
+/// Whether this account has a helper (a standard user, or an account another one approved the install for, has none).
+pub fn helper_ready(exe: &Path, user: &str, sid: &str) -> bool {
+    Com::init().ok().and_then(|_com| service().ok().and_then(|s| helper_task(&s, exe, user, sid))).is_some()
+}
+/// A run, at normal privilege: starts this account's helper task once (a second start while one runs is ignored).
+pub fn run_helper(exe: &Path, user: &str, sid: &str) -> Result<(), String> {
+    let _com = Com::init()?;
+    let service = service()?;
+    let task = helper_task(&service, exe, user, sid).ok_or("SCHEDULE_HELPER_MISSING")?;
+    unsafe { task.Run(&VARIANT::default()) }.map(|_| ()).map_err(|e| format!("SCHEDULE_HELPER_RUN:{:#x}", e.code().0))
+}
+/// Whether `name` is a helper-task name as `helper_task_name` makes it.
+pub fn is_helper_task_name(name: &str) -> bool {
+    name.strip_prefix("도우미 - ").and_then(|rest| rest.rsplit_once(" · ")).is_some_and(|(account, tag)| !account.trim().is_empty() && tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)))
+}
+
 /// Whether `name` is a run-task name as `task_name` makes it: 「회차 - <account> - <trigger> · <6 hex>」.
 pub fn is_run_task_name(name: &str) -> bool {
     let Some(rest) = name.strip_prefix("회차 - ") else { return false };
@@ -327,7 +421,7 @@ pub fn prepare_folder() -> Result<String, String> {
 /// folder, and whether the folder itself went.
 #[derive(Debug, Default, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Removal { pub removed: usize, pub others: usize, pub failed: usize, pub folder_removed: bool, pub folder_not_ours: bool }
+pub struct Removal { pub removed: usize, pub others: usize, pub failed: usize, pub folder_removed: bool, pub folder_not_ours: bool, pub helpers_removed: usize, pub helper_folder_removed: bool }
 
 /// The uninstaller, as an administrator: every user's run tasks that start `exe` (this
 /// installation's run executable) with `--run <trigger>` — in the product folder and in the root,
@@ -360,6 +454,29 @@ pub fn remove_installation(exe: &Path) -> Result<Removal, String> {
             let _ = unsafe { task.Stop(0) };
             match unsafe { place.DeleteTask(&BSTR::from(name.as_str()), 0) } { Ok(()) => out.removed += 1, Err(_) => out.failed += 1 }
         }
+    }
+    // Every account's helper task of this installation (4.2 「도우미」), then its folder once empty. One a standard
+    // user's folder holds was never used (`helper_task`) and is left to them.
+    if let Some(place) = folder(&service, HELPER_FOLDER).filter(trusted) {
+        if let Some((tasks, count)) = unsafe { place.GetTasks(TASK_ENUM_HIDDEN.0) }.ok().and_then(|t| unsafe { t.Count() }.ok().map(|n| (t, n))) {
+            let mut ours = Vec::new();
+            for i in 1..=count {
+                let Some((task, name)) = unsafe { tasks.get_Item(&Var::number(i).0) }.ok()
+                    .and_then(|task| unsafe { task.Name() }.ok().map(|n| (task, n.to_string()))) else { out.failed += 1; continue };
+                if !is_helper_task_name(&name) { continue; }
+                match unsafe { task.Xml() } { Ok(xml) if helper_matches(&xml.to_string(), exe) => ours.push((name, task)), Ok(_) => {}, Err(_) => out.failed += 1 }
+            }
+            for (name, task) in ours {
+                let _ = unsafe { task.Stop(0) };
+                match unsafe { place.DeleteTask(&BSTR::from(name.as_str()), 0) } { Ok(()) => out.helpers_removed += 1, Err(_) => out.failed += 1 }
+            }
+            let left = unsafe { place.GetTasks(TASK_ENUM_HIDDEN.0).and_then(|t| t.Count()) }.unwrap_or(1);
+            let folders = unsafe { place.GetFolders(0).and_then(|f| f.Count()) }.unwrap_or(1);
+            if left == 0 && folders == 0 {
+                let deleted = folder(&service, ROOT).is_some_and(|root| unsafe { root.DeleteFolder(&BSTR::from(HELPER_FOLDER.trim_start_matches('\\')), 0) }.is_ok());
+                if deleted { out.helper_folder_removed = true } else { out.failed += 1 }
+            }
+        } else { out.failed += 1; }
     }
     if let Some(place) = folder(&service, FOLDER).filter(trusted) {
         let tasks = unsafe { place.GetTasks(TASK_ENUM_HIDDEN.0).and_then(|t| t.Count()) }.unwrap_or(1);
@@ -484,6 +601,30 @@ pub fn local_now() -> String {
         assert!(task_xml(Trigger::Hourly, exe, SID, "2026-11-12 22:00").is_err(), "time format");
         let amp = task_xml(Trigger::Hourly, Path::new(r"C:\A & B\run.exe"), SID, "2026-11-12T22:00:00").unwrap();
         assert!(amp.contains(r"<Command>C:\A &amp; B\run.exe</Command>"));
+    }
+    #[test] fn the_helper_task_is_fixed_and_highest() {
+        let exe = Path::new(r"C:\Program Files\SYNK WorkBackup\WorkBackupRun.exe");
+        let xml = helper_task_xml(exe, SID).unwrap();
+        assert!(xml.contains("<Triggers />"), "no trigger: only this account's run starts it");
+        assert_eq!(element(&xml, "RunLevel").as_deref(), Some("HighestAvailable"));
+        assert_eq!(element(&xml, "LogonType").as_deref(), Some("InteractiveToken"));
+        assert_eq!(element(&xml, "UserId").as_deref(), Some(SID));
+        assert_eq!(element(&xml, "Arguments").as_deref(), Some("--vss-helper"));
+        assert_eq!(element(&xml, "ExecutionTimeLimit").as_deref(), Some("PT8H"));
+        assert_eq!(element(&xml, "MultipleInstancesPolicy").as_deref(), Some("IgnoreNew"));
+        assert!(!xml.contains("$(Arg"), "no argument substitution");
+        assert!(helper_matches(&xml, exe));
+        assert!(helper_matches(&xml, Path::new(r"c:\program files\synk workbackup\workbackuprun.exe")));
+        assert!(!helper_matches(&xml, Path::new(r"C:\Other\WorkBackupRun.exe")), "another installation");
+        assert!(!helper_matches(&xml.replace("HighestAvailable", "LeastPrivilege"), exe), "not elevated: not the helper");
+        assert!(!helper_matches(&xml.replace("--vss-helper", "--vss-helper --x"), exe));
+        assert!(!action_starts(&xml, exe), "never taken for a run task");
+        assert!(helper_task_xml(Path::new("run.exe"), SID).is_err() && helper_task_xml(exe, "DOMAIN\\x").is_err());
+        assert_eq!(helper_task_sddl(SID), format!("D:(A;;FA;;;BA)(A;;FA;;;SY)(A;;GRGX;;;{SID})"));
+        let name = helper_task_name("홍길동", SID);
+        assert!(name.starts_with("도우미 - 홍길동 · ") && is_helper_task_name(&name), "{name}");
+        assert!(!is_helper_task_name(&task_name("홍길동", SID, Trigger::Hourly)) && !is_run_task_name(&name));
+        assert!(!is_helper_task_name("도우미 -  · abcdef") && !is_helper_task_name("도우미 - x · ABCDEF"));
     }
     #[test] fn sid_and_time_of_this_process() {
         let sid = current_sid().unwrap();

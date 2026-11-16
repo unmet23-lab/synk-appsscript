@@ -14,7 +14,15 @@
 //! installation (both: one JSON line out; exit 0 done, 1 failed, 77 not elevated), `--open-app`
 //! opens the window app as the person at the desktop at the end of an install. While the
 //! installer's marker is in this folder, a run ends at once with exit 0 (`platform::installing`).
+//!
+//! The helper (4.2 「도우미」, `helper.rs`): `--register-helper` (the installer, elevated) makes the helper task for the
+//! account that approved the install — one JSON line out; exit 0 done (also when that account gets no helper), 1
+//! failed, 77 not elevated. `--vss-helper` is that task's fixed action. `--uninstall` also takes every user's helper
+//! task, shadow copies, links and folders away. A run whose partial snapshot left out files another program held asks
+//! the helper for shadow copy links and has the worker fill them (`$fill`) before it ends.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// The binary root looks beside itself for modules; the helper lives in its own folder (`src/bin/run/`).
+#[path = "run/helper.rs"] mod helper;
 use backup_native::{bundle, notify, platform, power, runlog, schedule, secret, worker::Worker};
 use serde_json::{json, Map, Value};
 use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Instant, SystemTime, UNIX_EPOCH}};
@@ -58,12 +66,20 @@ fn machine(mode: &str) -> i32 {
         };
     }
     if !platform::elevated() { println!("{}", json!({ "ok": false, "error": "NOT_ELEVATED" })); return 77; }
+    if mode == "--register-helper" {
+        let (code, value) = match std::env::current_exe() { Ok(exe) => helper::register(&exe), Err(_) => (1, json!({ "ok": false, "error": "EXECUTABLE" })) };
+        println!("{value}");
+        return code;
+    }
     let result = if mode == "--install" {
         schedule::prepare_folder().map(|security| (true, json!({ "ok": true, "folder": schedule::FOLDER, "security": security })))
     } else {
-        // What could not be removed is counted and the rest still goes; the uninstaller logs a failure.
+        // What could not be removed is counted and the rest still goes; the uninstaller logs a failure. The helper's
+        // shadow copies go first, while its tasks are still there to stop.
+        let helpers = helper::remove_all();
+        let helpers_ok = helpers["failed"].as_u64() == Some(0);
         std::env::current_exe().map_err(|_| "EXECUTABLE".to_string()).and_then(|exe| schedule::remove_installation(&exe))
-            .map(|removal| (removal.failed == 0, json!({ "ok": removal.failed == 0, "removal": removal })))
+            .map(|removal| { let ok = removal.failed == 0 && helpers_ok; (ok, json!({ "ok": ok, "removal": removal, "helper": helpers })) })
     };
     match result {
         Ok((ok, value)) => { println!("{value}"); if ok { 0 } else { 1 } }
@@ -139,6 +155,18 @@ fn record_profiles(result: &Value, started: u64, line: &mut Value) -> &'static s
     overall
 }
 
+/// Per-profile fill fields copied into runs.jsonl (4.2 채움 판): counts and reasons, no path.
+const FILL_FIELDS: [&str; 9] = ["outcome", "reason", "exitCode", "asked", "failed", "left", "cut", "durationMs", "dataAdded"];
+fn record_fills(result: &Value, line: &mut Value) {
+    let Some(all) = result["profiles"].as_object() else { return };
+    for (name, entry) in all.iter().filter(|(name, _)| profile_name(name)) {
+        if !line["profiles"][name].is_object() { continue; }
+        let mut kept = Map::new();
+        for field in FILL_FIELDS { let v = &entry[field]; if !v.is_null() { kept.insert(field.into(), if v.is_string() { short(v) } else { v.clone() }); } }
+        line["profiles"][name]["fill"] = Value::Object(kept);
+    }
+}
+
 /// What this run can judge of 2.2 from its profile records, for the profiles that back up on their own
 /// (`automatic`): the first backup — one of them has a backup — and 「사흘 넘게」. Off, read-only and paused
 /// are the person's choice and are not judged; a profile that never backed up has no age to judge. The first
@@ -156,7 +184,9 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
     if watched.iter().any(|p| p["lastBackupMs"].is_u64()) { found.push(notify::first_backup()); }
     // 「몇 파일만 못 지킴」: a partial snapshot this run kept (its count is there only when its list was saved). A run
     // that backed up every profile it watches completely has it resolved.
-    if watched.iter().any(|p| p["outcome"] == "partial" && p["unreadable"].is_u64()) { found.push(notify::partial()); }
+    // A fill that read every file the partial snapshot could not leaves nothing to tell (4.2 채움 판).
+    let filled = |p: &Value| p["fill"]["outcome"] == "fill" && p["fill"]["left"] == 0 && p["fill"]["cut"] != true;
+    if watched.iter().any(|p| p["outcome"] == "partial" && p["unreadable"].is_u64() && !filled(p)) { found.push(notify::partial()); }
     // 「폴더를 찾을 수 없음」: a folder this run did not find, whether the others were backed up or none was there.
     if watched.iter().any(|p| p["missing"].as_u64().is_some_and(|n| n > 0)) { found.push(notify::missing()); }
     let backed_up = |p: &Value| p["outcome"] == "complete" || (p["outcome"] == "partial" && p["unreadable"].is_u64());
@@ -208,15 +238,31 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
         worker.call("$boot", json!([]), 120_000).await?;
         let ready = clock.elapsed().as_millis() as u64;
         let value = worker.call("$run", json!([{"trigger": args.trigger, "skipCloud": skip}]), 0).await?;
+        // 4.2 step 9: a partial snapshot left out files another program held. The helper's shadow copy links let the
+        // worker read them again into a fill; with none (a test run, an account without a helper, a refused volume)
+        // the fill still counts as tried, so the next one waits its 4 hours. A failed fill is not a failed run: the
+        // backup is already saved.
+        let volumes = helper::fill_volumes(&value);
+        let mut fill = None;
+        if !volumes.is_empty() {
+            let asked = if args.test { helper::Asked::without("test") } else { helper::ask(root, &volumes) };
+            let filled = worker.call("$fill", json!([{"links": asked.links_json()}]), 0).await;
+            helper::finish(root);
+            fill = Some((volumes, asked, filled));
+        }
         let _ = worker.stop().await;
-        Ok::<_, String>((ready, value))
+        Ok::<_, String>((ready, value, fill))
     });
     // A failed call leaves no worker running behind the record (review C2).
     if result.is_err() { worker.terminate(); }
     if let Some(usage) = worker.usage() { line["job"] = json!(usage); }
-    let (ready, value) = result.map_err(|code| failure.lock().unwrap().clone().unwrap_or(code))?;
+    let (ready, value, fill) = result.map_err(|code| failure.lock().unwrap().clone().unwrap_or(code))?;
     line["workerReadyMs"] = json!(ready);
     let overall = record_profiles(&value, started, line);
+    if let Some((volumes, asked, filled)) = fill {
+        line["helper"] = asked.record(&volumes);
+        match filled { Ok(result) => record_fills(&result, line), Err(code) => line["fillError"] = json!(code) }
+    }
     line["outcome"] = json!(overall);
     Ok(if overall == "failed" { 2 } else { 0 })
 }
@@ -224,7 +270,14 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
 fn run() -> i32 {
     let (clock, started) = (Instant::now(), epoch_ms());
     let argv: Vec<String> = std::env::args().skip(1).collect();
-    if let [mode] = argv.as_slice() { if ["--install", "--uninstall", "--open-app"].contains(&mode.as_str()) { return machine(mode); } }
+    if let [mode] = argv.as_slice() {
+        if ["--install", "--uninstall", "--open-app", "--register-helper"].contains(&mode.as_str()) { return machine(mode); }
+        // The helper task's action; nothing while an install or uninstall replaces this folder's files.
+        if mode == schedule::HELPER_ARG {
+            if std::env::current_exe().ok().and_then(|exe| exe.parent().map(platform::installing)).unwrap_or(false) { return 0; }
+            return helper::serve();
+        }
+    }
     let Ok(args) = parse(&argv) else { return 64 };
     // An install or uninstall is replacing this folder's files: end before holding any of them (review GA3).
     if std::env::current_exe().ok().and_then(|exe| exe.parent().map(platform::installing)).unwrap_or(false) { return 0; }
@@ -375,6 +428,26 @@ fn main() { std::process::exit(run()); }
         assert!(found.is_empty() && judged == ["stale"], "never backed up: judged, and nothing to show");
         assert_eq!(problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now).1, ["partial", "missing", "stale"]);
         assert_eq!(problems(&Value::Null, now), (vec![], vec![]));
+    }
+    #[test] fn fills_are_recorded_without_paths_and_a_full_one_is_not_told() {
+        let mut line = json!({});
+        record_profiles(&json!({"profiles": {"local": {"outcome": "partial", "unreadable": 2, "fill": ["C:"], "automatic": true, "lastBackupMs": 5}}}), 0, &mut line);
+        assert!(line["profiles"]["local"].get("fill").is_none(), "the run result's drive list is not kept as is");
+        record_fills(&json!({"profiles": {"local": {"outcome": "fill", "asked": 2, "failed": 0, "left": 0, "durationMs": 900, "root": "C:\\ProgramData\\x"}, "b2": {"outcome": "skipped"}}}), &mut line);
+        assert_eq!(line["profiles"]["local"]["fill"], json!({"outcome": "fill", "asked": 2, "failed": 0, "left": 0, "durationMs": 900}));
+        assert!(line["profiles"].get("b2").is_none(), "only profiles this run recorded");
+        assert!(!line.to_string().contains("ProgramData"));
+        let partial = ("partial", notify::partial().body);
+        let (found, judged) = problems(&line["profiles"], 10);
+        assert!(!found.iter().any(|n| n.problem == partial.0), "every left-out file was filled");
+        assert_eq!(judged, ["partial", "missing", "stale"]);
+        line["profiles"]["local"]["fill"]["cut"] = json!(true);
+        assert!(problems(&line["profiles"], 10).0.iter().any(|n| n.problem == partial.0), "a cut list is never taken as all filled");
+        line["profiles"]["local"]["fill"]["cut"] = Value::Null;
+        line["profiles"]["local"]["fill"]["left"] = json!(1);
+        assert!(problems(&line["profiles"], 10).0.iter().any(|n| n.problem == partial.0), "one still left out is told");
+        line["profiles"]["local"]["fill"] = json!({"outcome": "skipped", "reason": "no-link"});
+        assert!(problems(&line["profiles"], 10).0.iter().any(|n| n.problem == partial.0));
     }
     #[test] fn progress_is_only_kind_stage_percent() {
         let value = json!({"profiles": {"local": {"kind": "backup", "stage": "작업 파일 백업 중", "percent": 42.5, "sources": ["C:\\x"]}, "b2": null}});

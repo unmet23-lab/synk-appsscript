@@ -48,6 +48,23 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
         return { trigger, skipCloud, profiles: results, worker: { maxRssKb: process.resourceUsage().maxRSS } };
       } finally { running = false; }
     },
+    // The fill after a partial run (4.2 「도우미」): the run executable passes the links the helper made to each drive's
+    // shadow copy — none when it could not — and each profile whose newest partial snapshot is due fills from them.
+    // A profile not due is left out; one whose fill fails says so without a message (paths stay in the worker).
+    async fillOnce(input) {
+      if (!input || typeof input !== 'object' || Array.isArray(input) || !Array.isArray(input.links)) throw Error('FILL_INPUT');
+      if (running || closing) throw Error('RUN_BUSY');
+      running = true;
+      try {
+        const results = {};
+        for (const [name, engine] of Object.entries(profiles.engines)) {
+          if (!engine.fillDue()) continue;
+          try { results[name] = await engine.fillNow({ links: input.links }); }
+          catch (e) { results[name] = { outcome: 'failed', reason: e.message === 'FILL_INPUT' ? 'input' : 'fill' }; }
+        }
+        return { profiles: results };
+      } finally { running = false; }
+    },
     // Every caller waits for the same stop, so a second $shutdown cannot exit before the first has saved (review E1).
     stop() { if (!stopped) { closing = true; stopped = profiles.stop(); } return stopped; }
   };

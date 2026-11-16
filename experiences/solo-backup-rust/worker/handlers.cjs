@@ -188,10 +188,10 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     handle('pauseAutomatic', async ({ engine }, minutes) => { await engine.pauseAutomatic(minutes); return state(); });
     handle('resumeAutomatic', async ({ engine }) => { await engine.resumeAutomatic(); profiles.tick(); return state(); });
     handle('probeRestore', ({ engine }) => { engine.assertBackupReady(); return launchJob(engine, () => engine.probeRestore()); });
-    handle('checkRepository', async ({ engine }) => { if (engine.isCloud()) { const answer = await dialog.showMessageBox(window, { type: 'question', message: '클라우드의 전체 데이터를 내려받아 점검합니다.', detail: 'B2 다운로드 사용량이 늘어나며 무료 한도를 넘으면 요금이 발생할 수 있습니다.', buttons: ['취소', '전체 점검'], defaultId: 0, cancelId: 0 }); if (answer.response !== 1) throw new Error('전체 점검을 취소했습니다.'); } return launchJob(engine, () => engine.checkRepository()); });
+    handle('checkRepository', async ({ engine }) => { if (engine.isCloud()) { const answer = await dialog.showMessageBox(window, { type: 'question', message: '클라우드에서 백업 전체를 내려받아 점검합니다.', detail: '오래 걸리고 회선을 많이 씁니다.', buttons: ['취소', '전체 점검'], defaultId: 0, cancelId: 0 }); if (answer.response !== 1) throw new Error('전체 점검을 취소했습니다.'); } return launchJob(engine, () => engine.checkRepository()); });
     handle('restoreLatest', async ({ engine }) => {
       if (engine.config?.health?.status === 'attention') {
-        const answer = await dialog.showMessageBox(window, { type: 'warning', message: '저장소 점검이 완료되지 않았습니다.', detail: '복구를 시도하고 파일 내용을 검증합니다. 일부 파일은 복구되지 않을 수 있습니다.', buttons: ['취소', '복구 시도'], defaultId: 0, cancelId: 0 });
+        const answer = await dialog.showMessageBox(window, { type: 'warning', message: '백업 점검을 아직 마치지 못했습니다.', detail: '복구를 시도하고 파일 내용을 검증합니다. 일부 파일은 복구되지 않을 수 있습니다.', buttons: ['취소', '복구 시도'], defaultId: 0, cancelId: 0 });
         if (answer.response !== 1) throw new Error('복구를 취소했습니다.');
       }
       const picked = await folder('복구한 파일을 담을 별도 폴더 선택'); if (!picked) throw new Error('복구를 취소했습니다.');
@@ -247,7 +247,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     handle('importRecoveryKit', async ({ engine }, credentials) => {
       const text = await readKit();
       if (parseKit(text).type !== engine.providerType) throw new Error('복구 키와 맞는 로컬·클라우드 탭을 선택해 주세요.');
-      const repo = engine.isCloud() ? null : await folder('work-backup-으로 시작하는 실제 백업 저장소 선택'); if (!engine.isCloud() && !repo) throw new Error('연결을 취소했습니다.');
+      const repo = engine.isCloud() ? null : await folder('백업 폴더 고르기(이름이 work-backup-으로 시작합니다)'); if (!engine.isCloud() && !repo) throw new Error('연결을 취소했습니다.');
       if (repo) profiles.assertLocalTarget(repo[0]);
       await engine.importRecoveryKit({ text, repository: repo?.[0], credentials }); return state();
     });

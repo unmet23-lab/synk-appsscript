@@ -126,9 +126,35 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   assert.equal(gone.profiles.local.missing, 1);
   assert.deepEqual(gone.notify, [{ problem: 'missing', shown: true }]);
 
+  // A file another program holds: the run keeps a partial snapshot and asks for a fill of that drive (4.2 step 9).
+  // A test run never wakes the helper, so the fill counts as tried without links; the record keeps drive letters and
+  // reasons only. The next run within 4 hours does not ask again.
+  const held = path.join(data, '열린 장부.xlsx'), volume = held.slice(0, 2).toUpperCase();
+  fs.writeFileSync(held, 'held while the run reads');
+  const holder = spawn('powershell.exe', ['-NoProfile', '-Command', `$f=[IO.File]::Open('${held.replaceAll("'", "''")}','Open','ReadWrite','None'); 'held'; [Console]::In.ReadLine() | Out-Null; $f.Close()`], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+  await new Promise(ok => holder.stdout.once('data', ok));
+  try {
+    assert.equal(await runExe(['--run', 'manual', '--test-mode'], env), 0);
+    const part = lines(state)[9];
+    assert.equal(part.outcome, 'partial', JSON.stringify(part));
+    assert.equal(part.profiles.local.unreadable, 1);
+    assert.equal(typeof part.helper.waitMs, 'number');
+    assert.deepEqual({ ...part.helper, waitMs: 0 }, { asked: [volume], linked: [], error: 'test', waitMs: 0 });
+    assert.deepEqual(part.profiles.local.fill, { outcome: 'skipped', reason: 'no-link' });
+    assert.ok(part.notify?.some(n => n.problem === 'partial'), 'still told: nothing was filled');
+    assert.ok(!fs.existsSync(path.join(state, 'vss-request.json')), 'a test run writes no request');
+    assert.equal(await runExe(['--run', 'manual', '--test-mode'], env), 0);
+    const again = lines(state)[10];
+    assert.equal(again.profiles.local.outcome, 'partial');
+    assert.equal(again.helper, undefined, 'no fill asked within the 4 hours');
+    assert.equal(again.profiles.local.fill, undefined);
+  } finally {
+    holder.stdin.end('\n'); await new Promise(ok => holder.once('exit', ok));
+  }
+
   const text = fs.readFileSync(path.join(state, 'runs.jsonl'), 'utf8');
   for (const p of [root, data, repo, keys, os.homedir()]) {
     for (const form of [p, p.replaceAll(path.sep, '/')]) assert.ok(!text.includes(JSON.stringify(form).slice(1, -1)) && !text.includes(form), 'no path in runs.jsonl');
   }
-  for (const name of ['보고서.txt', 'recovery.json', 'spare', path.basename(root)]) assert.ok(!text.includes(name), 'no file or folder name in runs.jsonl');
+  for (const name of ['보고서.txt', '열린 장부.xlsx', 'recovery.json', 'spare', path.basename(root)]) assert.ok(!text.includes(name), 'no file or folder name in runs.jsonl');
 });

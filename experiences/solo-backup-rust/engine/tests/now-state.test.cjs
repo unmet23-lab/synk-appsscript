@@ -4,10 +4,10 @@
 // real-restic run is in engine.test.cjs.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { gatherEarlier, restoreBases } = require('../src/engine.cjs');
+const { gatherEarlier, restoreBases, lockedVolumes } = require('../src/engine.cjs');
 
 /** A listing as readManifest gives it: lower-cased keys, `name` as recorded. */
-const listing = entries => ({ nodes: new Map(entries.map(([name, type, size = 0]) => [name.toLowerCase(), { name, type, size }])) });
+const listing = (entries, left = []) => ({ nodes: new Map(entries.map(([name, type, size = 0]) => [name.toLowerCase(), { name, type, size }])), skipped: { count: left.length, list: left.map(([name, kind]) => ({ name, kind })), cut: false } });
 const earlier = (selector, entries, blind = [], cut = false) => ({ selector, at: `${selector}-time`, had: listing(entries), blind: new Set(blind.map(p => p.toLowerCase())), cut });
 const names = extra => extra.map(e => `${e.name}@${e.selector}`).sort();
 
@@ -15,6 +15,23 @@ test('a file it could not read comes from the newest earlier backup that has it'
   const r = await gatherEarlier(['mail.pst'], listing([['report.txt', 'file', 3]]), [earlier('P1', [['mail.pst', 'file', 9]]), earlier('C', [['mail.pst', 'file', 7]])]);
   assert.deepEqual(r.extra, [{ selector: 'P1', name: 'mail.pst', size: 9, backupAt: 'P1-time' }]);
   assert.deepEqual([r.notFound, r.folders], [[], []]);
+});
+
+test('what an earlier backup left out where it is looked for is said, not taken for 「in no backup」 (GPT workbackup-fill GA2)', async () => {
+  const P1 = { ...earlier('P1', []), had: listing([['sub', 'dir'], ['sub/a.txt', 'file', 1]], [['sub/link', 'link'], ['other/far', 'link'], ['shortcut', 'link']]) };
+  const r = await gatherEarlier(['sub', 'shortcut'], listing([]), [P1]);
+  assert.deepEqual(names(r.extra), ['sub/a.txt@P1']);
+  assert.deepEqual(r.skipped, [{ name: 'sub/link', kind: 'link' }, { name: 'shortcut', kind: 'link' }], 'only where it was looked for');
+  assert.deepEqual(r.notFound, [], 'a link is left out, not in no backup');
+  // A name a newer earlier backup gives back as a file is restored, not left out, though an older one holds a link there.
+  const P0 = { ...earlier('P0', []), had: listing([['sub', 'dir'], ['sub/x', 'file', 1]]), blind: new Set(['sub/y']) };
+  const C = { ...earlier('C', []), had: listing([['sub', 'dir'], ['sub/y', 'file', 2]], [['sub/x', 'link']]) };
+  const both = await gatherEarlier(['sub'], listing([]), [P0, C]);
+  assert.deepEqual(names(both.extra), ['sub/x@P0', 'sub/y@C']);
+  assert.deepEqual(both.skipped, [], 'sub/x came back from P0');
+  // One the newest backup itself has is its own, not counted again.
+  const mine = await gatherEarlier(['sub'], listing([['sub/link', 'file', 1]]), [P1]);
+  assert.deepEqual(mine.skipped, []);
 });
 
 test('an earlier partial one that could not read it either passes it on to an older one', async () => {
@@ -107,4 +124,22 @@ test('a folder taken away comes from its newest backup — a partial one newer t
   const P1 = snap('P1', 2, ['D:\\A', 'E:\\B'], ['partial']);
   const C2 = snap('C2', 3, ['D:\\A'], ['complete-structure-checked']);
   assert.deepEqual(bases(await restoreBases(C2, [C2, C1], [P1], lists({}))), ['D:\\A<-C2', 'E:\\B<-P1']);
+});
+
+test('a fill is asked only for the drives a file another program holds is on (4.2 step 8 · 9)', async t => {
+  const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-locked-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const free = path.join(root, 'free.txt'); fs.writeFileSync(free, 'readable again');
+  // Free again, gone, a folder, not a drive path: none needs a shadow copy (the next backup takes what is free again).
+  assert.deepEqual(await lockedVolumes([free, path.join(root, 'gone.txt'), root, 'relative\\x', null, 7]), []);
+  if (process.platform !== 'win32') return;
+  // Held without sharing (Windows sharing violation 32 — EBUSY in Node): its drive is asked for, once.
+  const held = path.join(root, 'held.pst'); fs.writeFileSync(held, 'held');
+  const { spawn } = require('node:child_process');
+  const holder = spawn('powershell.exe', ['-NoProfile', '-Command', "$f=[IO.File]::Open('" + held + "','Open','ReadWrite','None'); 'held'; [Console]::In.ReadLine() | Out-Null; $f.Close()"], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+  await new Promise(ok => holder.stdout.once('data', ok));
+  try { assert.deepEqual(await lockedVolumes([free, held, held]), [held.slice(0, 2).toUpperCase()]); }
+  finally { holder.stdin.end('\n'); await new Promise(ok => holder.once('exit', ok)); }
+  assert.deepEqual(await lockedVolumes([held]), [], 'closed again: no copy needed');
 });

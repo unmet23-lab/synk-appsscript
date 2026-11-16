@@ -4,7 +4,7 @@
 const {StringDecoder}=require('node:string_decoder');
 const contract=require('../contract/methods.json');
 const MAX_IN=131072,MAX_OUT=2*1024*1024;
-const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,ran=false,runWork=Promise.resolve(),shutdownIds=null,booting=false,stopping=false,terminating=false;
+const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,ran=false,filled=false,runWork=Promise.resolve(),shutdownIds=null,booting=false,stopping=false,terminating=false;
 function send(value){const text=JSON.stringify({v:1,...value});if(Buffer.byteLength(text)+1>MAX_OUT)fatal('PAYLOAD_TOO_LARGE');else process.stdout.write(text+'\n');}
 function fatal(code){if(terminating)return;terminating=true;stopping=true;process.stdout.write(JSON.stringify({v:1,fatal:code})+'\n',()=>process.exit(1));setTimeout(()=>process.exit(1),1000).unref();}
 function host(method,args){
@@ -36,6 +36,12 @@ async function message(value){
     if(!runner||ran)throw Error('NOT_READY');ran=true;
     // A $shutdown that arrives meanwhile waits for this answer, then stops (review E1).
     const work=runner.runOnce(value.args[0]);runWork=work.catch(()=>{});
+    const result=await work;send({id:value.id,ok:true,value:result});return;
+  }
+  if(value.method==='$fill'){
+    // After the run, at most once: what the helper's shadow copy links let the partial snapshots fill (4.2 「도우미」).
+    if(!runner||!ran||filled)throw Error('NOT_READY');filled=true;
+    const work=runner.fillOnce(value.args[0]);runWork=work.catch(()=>{});
     const result=await work;send({id:value.id,ok:true,value:result});return;
   }
   if(value.method==='$shutdown'&&runner){

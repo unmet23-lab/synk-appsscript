@@ -48,8 +48,21 @@ test('preflight counts each hardlink filename and rejects unsupported nodes befo
   const encode = rows => Readable.from([Buffer.from(rows.map(r => JSON.stringify(r)).join('\n'))]);
   const rows = [{ message_type: 'snapshot' }, ...['one', 'two'].map(name => ({ message_type: 'node', path: '/' + name, type: 'file', size: 1024, inode: 42 }))];
   const result = await readManifest(encode(rows), root); assert.equal(result.bytes, 2048); assert.equal(result.nodes.size, 2);
-  await assert.rejects(readManifest(encode([...rows, { message_type: 'node', path: '/link', type: 'symlink' }]), root), /연결·특수/);
+  // A link, a special node and a name Windows cannot hold are left out and counted (1단계 설계 4.6), not a stop.
+  const left = await readManifest(encode([...rows, { message_type: 'node', path: '/link', type: 'symlink' }, { message_type: 'node', path: '/pipe', type: 'fifo' },
+    { message_type: 'node', path: '/끝이 점.', type: 'dir' }, { message_type: 'node', path: '/끝이 점./안.txt', type: 'file', size: 3 }]), root);
+  assert.equal(left.nodes.size, 2); assert.equal(left.bytes, 2048);
+  assert.deepEqual(left.skipped, { count: 4, cut: false, list: [{ name: 'link', kind: 'link' }, { name: 'pipe', kind: 'special' }, { name: '끝이 점.', kind: 'name' }, { name: '끝이 점./안.txt', kind: 'name' }] });
+  // A listing that is no path at all still stops before any write.
+  await assert.rejects(readManifest(encode([...rows, { message_type: 'node', path: '/a/../b', type: 'file', size: 1 }]), root), /복구 목록 형식/);
   assert.deepEqual(await fs.readdir(root), []);
+});
+test('a link in the archive is drained, never made, and the files beside it are restored (4.6)', async () => {
+  const root = await fixture();
+  const good = [{ name: 'file.txt', data: 'good' }];
+  await extractVerified(Readable.from([await archive([{ name: 'My Music', type: 'symlink', linkname: '../../outside' }, ...good])]), root, manifest(good));
+  assert.deepEqual(await fs.readdir(root), ['file.txt']);
+  assert.equal(await fs.readFile(path.join(root, 'file.txt'), 'utf8'), 'good');
 });
 test('existing files are never overwritten', async () => {
   const root = await fixture(); await fs.writeFile(path.join(root, 'file.txt'), 'original');

@@ -20,16 +20,36 @@ function entryPath(root, name) {
   return target;
 }
 const key = name => name.replace(/\/$/, '').toLowerCase();
+/** How many left-out paths a listing keeps by name (the count goes on). */
+const SKIP_LIST_MAX = 1000;
+/** Why a path is left out of a restore (1단계 설계 4.6 「연결점 · 특수 이름은 건너뛰고 센다」): 'name' when a part ends in a
+ *  dot or a space, is a reserved device name or has a character Windows forbids — Windows cannot hold it as named — and
+ *  null when it can. A name that is no path at all (an empty part, . or ..) is a broken listing and throws. */
+function nameIssue(name) {
+  if (typeof name !== 'string') throw new Error('복구 파일 이름이 올바르지 않습니다.');
+  const clean = name.replace(/\/$/, '');
+  if (clean === '.') return null;
+  const parts = clean.split('/');
+  if (parts.some(p => !p || p === '.' || p === '..')) throw new Error('복구 목록 형식을 확인하지 못했습니다.');
+  return parts.some(p => /[<>:"\\|?*\x00-\x1f]/.test(p) || /[. ]$/.test(p) || /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])(?:\.|$)/i.test(p)) ? 'name' : null;
+}
 async function readManifest(input, root) {
-  const nodes = new Map(); let bytes = 0, pending = '', snapshots = 0;
+  const nodes = new Map(), skipped = { count: 0, list: [], cut: false }; let bytes = 0, pending = '', snapshots = 0;
   const decoder = new StringDecoder('utf8');
   function line(text) {
     if (!text.trim()) return;
     const node = JSON.parse(text);
     if (node.message_type === 'snapshot') { snapshots++; return; }
     if (node.message_type !== 'node' || typeof node.path !== 'string' || !node.path.startsWith('/')) throw new Error('복구 목록 형식을 확인하지 못했습니다.');
-    const name = node.path.slice(1); entryPath(root, name);
-    if (!['file', 'dir'].includes(node.type)) throw new Error(`이 시험판에서 복구하지 못하는 연결·특수 파일이 있습니다: ${node.path}`);
+    const name = node.path.slice(1), issue = nameIssue(name);
+    // A link (Windows' own 「My Music」 junctions in every Documents folder are links to restic), a special node, or a name
+    // Windows cannot hold is left out and counted, not a reason to restore nothing (4.6). The backup keeps them as links.
+    if (issue || !['file', 'dir'].includes(node.type)) {
+      skipped.count++;
+      if (skipped.list.length < SKIP_LIST_MAX) skipped.list.push({ name, kind: issue ? 'name' : node.type === 'symlink' ? 'link' : 'special' }); else skipped.cut = true;
+      return;
+    }
+    entryPath(root, name);
     const size = node.type === 'dir' ? 0 : node.size;
     if (!Number.isSafeInteger(size) || size < 0 || !Number.isSafeInteger(bytes + size)) throw new Error('복구 목록의 파일 크기를 확인하지 못했습니다.');
     if (nodes.has(key(name))) throw new Error('같은 이름의 복구 파일이 중복됩니다.');
@@ -44,7 +64,7 @@ async function readManifest(input, root) {
   }
   pending += decoder.end(); if (pending) line(pending);
   if (snapshots !== 1) throw new Error('복구할 스냅샷 목록을 확인하지 못했습니다.');
-  return { nodes, bytes };
+  return { nodes, bytes, skipped };
 }
 async function hashFile(file) { const h = crypto.createHash('sha256'); for await (const chunk of createReadStream(file)) h.update(chunk); return h.digest('hex'); }
 async function extractVerified(input, destination, manifest) {
@@ -65,7 +85,9 @@ async function extractVerified(input, destination, manifest) {
   extract.on('entry', (header, stream, next) => {
     stream.on('error', () => {});
     active = (async () => {
-      if (!['file', 'directory'].includes(header.type)) throw new Error('연결 파일·특수 파일은 이 시험판에서 복구하지 않습니다.');
+      // What the listing left out is left out here too, never made: no link is created, and a name Windows cannot hold
+      // is not written. Every file and folder the listing has must still arrive (the count below).
+      if (!['file', 'directory'].includes(header.type) || nameIssue(header.name)) { for await (const _ of stream) {} return; }
       const target = entryPath(root, header.name);
       if (!target) { if (header.type !== 'directory' || header.size !== 0) throw new Error('복구 루트 형식이 잘못되었습니다.'); for await (const _ of stream) {} return; }
       const identity = key(header.name), expected = manifest.nodes.get(identity);
@@ -93,4 +115,4 @@ async function extractVerified(input, destination, manifest) {
   if (seen.size !== manifest.nodes.size || total !== manifest.bytes) throw new Error('복구에서 빠진 파일·폴더가 있습니다. 완료되지 않았습니다.');
   return { files: count, bytes: total };
 }
-module.exports = { extractVerified, readManifest, entryPath };
+module.exports = { extractVerified, readManifest, entryPath, nameIssue };

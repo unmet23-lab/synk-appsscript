@@ -18,7 +18,8 @@ const secretStore = {
 async function files(root) { const result = []; for (const entry of await fs.readdir(root, { withFileTypes: true })) { const p = path.join(root, entry.name); if (entry.isDirectory()) result.push(...await files(p)); else result.push(p); } return result; }
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
-test('real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention', { skip: !resticPath, timeout: process.env.SOLO_BACKUP_SLOW_TEST === '1' ? 900000 : 300000 }, async t => {
+test('real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention', { skip: !resticPath, timeout: process.env.SOLO_BACKUP_SLOW_TEST === '1' ? 1800000 : 480000 }, async t => {
+  // The two fill tests (4.2) add about a sixth: 19 min on a busy PC (11-16), so the slow limit is 30 min.
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'solo-backup-functional-'));
   const source = path.join(root, '작업 자료'); const target = path.join(root, '백업'); const keys = path.join(root, '별도 복구키'); const restore = path.join(root, '복구 결과');
   await Promise.all([source, target, keys, restore].map(p => fs.mkdir(p)));
@@ -171,11 +172,12 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     const before = await fs.readdir(restore);
     engine.run = async function(args, options) {
       if (args[0] === 'ls') return options.consumeStdout(require('node:stream').Readable.from([
-        Buffer.from(JSON.stringify({ message_type: 'snapshot' }) + '\n' + JSON.stringify({ message_type: 'node', path: '/unsupported-link', type: 'symlink' }) + '\n')
+        Buffer.from(JSON.stringify({ message_type: 'snapshot' }) + '\n' + JSON.stringify({ message_type: 'node', path: '/a/../escape', type: 'file', size: 1 }) + '\n')
       ]));
       return run.call(this, args, options);
     };
-    await assert.rejects(engine.restoreLatest({ parent: restore }), /연결·특수 파일/);
+    // A listing that is no path at all (a link is left out and counted now — 4.6) still fails before anything is written.
+    await assert.rejects(engine.restoreLatest({ parent: restore }), /복구 목록 형식/);
     assert.equal(engine.config.health.status, 'attention'); await assert.rejects(engine.retain(), /정리할 수 없습니다/);
     assert.deepEqual(await fs.readdir(restore), before);
     engine.run = run;
@@ -360,6 +362,98 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     assert.equal(only.backupAt, engine.config.lastPartial.at, 'a folder only the partial backup holds comes from it');
     assert.equal(await fs.readFile(path.join(engine.config.lastRestore.path, only.restoredFolder, 'only-here.txt'), 'utf8'), 'only in the partial backup');
     assert.equal(mapping.length, 3);
+    await engine.backupNow();
+    assert.equal(engine.config.lastPartial, null);
+  });
+  await t.test('a fill reads what a partial one could not, through the link root the helper made; 「지금 상태」 takes it from there and retain keeps it (4.2 채움 판)', async () => {
+    const before = engine.config.lastBackup;
+    const held = path.join(source, 'binary.dat'), volume = held.slice(0, 2).toUpperCase();
+    const now = crypto.randomBytes(30000); // what the held file holds when the partial backup cannot read it
+    await fs.writeFile(held, now);
+    const holder = spawn('powershell.exe', ['-NoProfile', '-Command', `$f=[IO.File]::Open('${held}','Open','ReadWrite','None'); 'held'; [Console]::In.ReadLine() | Out-Null; $f.Close()`], { stdio: ['pipe', 'pipe', 'inherit'] });
+    await new Promise((resolve) => holder.stdout.once('data', resolve));
+    // The helper's shadow copy link, as a plain folder: the same path under a link root (T5 measured the real one, 11-15).
+    const linkRoot = path.join(root, 'snap-T'), mirrored = linkRoot + held.slice(2);
+    let fill, filled;
+    try {
+      await engine.backupNow();
+      assert.equal(engine.config.lastPartial.unreadable, 1);
+      assert.deepEqual(engine.config.lastPartial.volumes, [volume], 'the drive a fill asks the helper for');
+      assert.deepEqual(engine.fillDue(), [volume]);
+      // A scheduled run's result asks the run executable for the fill; that run made another partial snapshot (the
+      // file is still held), which is now the newest, and the fill is for it.
+      assert.deepEqual((await engine.runOnce({ force: true })).fill, [volume], 'the run result asks for a fill of that drive');
+      assert.deepEqual(engine.fillDue(), [volume]);
+      await assert.rejects(engine.fillNow({ links: [{ volume, root: '..\\snap' }] }), /FILL_INPUT/, 'a link root must be an absolute path');
+      await fs.mkdir(path.dirname(mirrored), { recursive: true }); await fs.writeFile(mirrored, now);
+      const r = await engine.fillNow({ links: [{ volume, root: linkRoot }] });
+      assert.equal(r.outcome, 'fill'); assert.equal(r.asked, 1); assert.equal(r.failed, 0);
+      assert.equal(engine.config.lastFill.partial, engine.config.lastPartial.id);
+      assert.equal(engine.fillDue(), null, 'this partial one is filled');
+      assert.equal(engine.config.warning, null, 'nothing is left out any more');
+      const [partial] = await engine.snapshots(['partial']);
+      const run = partial.tags.find((tag) => tag.startsWith('run:')).slice(4);
+      const fills = await engine.snapshots(['fill', `fills:${run}`]);
+      assert.equal(fills.length, 1); fill = fills[0];
+      const fillRun = fill.tags.find((tag) => tag.startsWith('run:'));
+      const metas = await engine.snapshots([fillRun, 'meta']);
+      assert.equal(metas.length, 1, 'its meta, saved before it was marked fill');
+      const info = JSON.parse(await engine.run(['dump', metas[0].id, '/workbackup-fill.json']));
+      assert.deepEqual(info.asked, [held]); assert.deepEqual(info.failed, []); assert.equal(info.fills, run);
+      assert.deepEqual(info.roots, [{ from: linkRoot, to: volume }]);
+      await engine.restoreLatest({ parent: restore });
+      // An hour on the file is still held: another partial snapshot, not filled within the 4 hours (GPT workbackup-fill GA1).
+      filled = partial.id;
+      clock += 3600000;
+      await engine.backupNow();
+      assert.notEqual(engine.config.lastPartial.id, filled, 'a newer partial one');
+      assert.equal(engine.fillDue(), null, 'not within the 4 hours');
+    } finally {
+      holder.stdin.end('\n'); await new Promise((resolve) => holder.once('exit', resolve));
+      content['binary.dat'] = await fs.readFile(held);
+    }
+    const mapping = JSON.parse(await fs.readFile(path.join(engine.config.lastRestore.path, '복구경로.json'), 'utf8'));
+    const entry = mapping.find(m => m.original === engine.config.sources[0]);
+    assert.deepEqual(entry.fromEarlier, [{ path: 'binary.dat', backupAt: fill.time }], 'from the fill, not the older complete backup');
+    assert.equal(digest(await fs.readFile(path.join(engine.config.lastRestore.path, entry.restoredFolder, 'binary.dat'))), digest(now), 'the content the shadow copy had');
+    assert.equal(engine.config.lastBackup.id, before.id, 'a fill does not take the complete one\'s place');
+    // A day on, the cleanup keeps the newest partial one, its fill and the fill's meta.
+    clock += 2 * DAY;
+    await engine.retain();
+    const kept = await engine.snapshots();
+    assert.ok(kept.some(s => s.id === fill.id), 'the fill stays with the partial one it fills');
+    assert.ok(kept.some(s => s.tags.includes('meta') && s.tags.includes(fill.tags.find((tag) => tag.startsWith('run:')))), 'and its meta');
+    assert.ok(kept.some(s => s.id === engine.config.lastPartial.id));
+    // The older partial snapshot the fill is for stays too: a restore reaches the fill only through it (GPT GA1 — else
+    // the newer partial one's restore took the file from the complete backup's older content).
+    assert.ok(kept.some(s => s.id === filled), 'the partial one the fill is for');
+    await engine.restoreLatest({ parent: restore });
+    const again = JSON.parse(await fs.readFile(path.join(engine.config.lastRestore.path, '복구경로.json'), 'utf8')).find(m => m.original === engine.config.sources[0]);
+    assert.deepEqual(again.fromEarlier, [{ path: 'binary.dat', backupAt: fill.time }], 'still from the fill after the cleanup');
+    assert.equal(digest(await fs.readFile(path.join(engine.config.lastRestore.path, again.restoredFolder, 'binary.dat'))), digest(now));
+    // A complete backup ends it: the next cleanup lets the fill go after its day.
+    await engine.backupNow();
+    assert.equal(engine.config.lastPartial, null);
+    assert.equal(engine.fillDue(), null);
+  });
+  await t.test('a fill attempt without links still counts, so the next waits its 4 hours (4.2 「채움의 비용」)', async () => {
+    const held = path.join(source, 'binary.dat'), volume = held.slice(0, 2).toUpperCase();
+    // Changed, then held: restic must read it again and cannot (an unchanged held file is not opened — 4.2).
+    await fs.writeFile(held, crypto.randomBytes(1000));
+    const holder = spawn('powershell.exe', ['-NoProfile', '-Command', `$f=[IO.File]::Open('${held}','Open','ReadWrite','None'); 'held'; [Console]::In.ReadLine() | Out-Null; $f.Close()`], { stdio: ['pipe', 'pipe', 'inherit'] });
+    await new Promise((resolve) => holder.stdout.once('data', resolve));
+    try {
+      await engine.backupNow();
+      assert.deepEqual(engine.fillDue(), [volume]);
+      const r = await engine.fillNow({ links: [] });
+      assert.deepEqual(r, { outcome: 'skipped', reason: 'no-link' });
+      assert.equal(engine.config.lastFill.outcome, 'no-link');
+      clock += 3600000;
+      await engine.backupNow();
+      assert.equal(engine.fillDue(), null, 'a new partial one an hour later waits for the 4 hours');
+      clock += 3 * 3600000 + 60000;
+      assert.deepEqual(engine.fillDue(), [volume], 'then it is due');
+    } finally { holder.stdin.end('\n'); await new Promise((resolve) => holder.once('exit', resolve)); content['binary.dat'] = await fs.readFile(held); }
     await engine.backupNow();
     assert.equal(engine.config.lastPartial, null);
   });

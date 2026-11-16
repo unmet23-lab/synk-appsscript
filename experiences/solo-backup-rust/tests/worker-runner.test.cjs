@@ -42,7 +42,7 @@ function worker(stateDir, { mode = null, dialogs = [] } = {}) {
   return { call, exited, frames, child };
 }
 
-test('run mode: one $run per boot, person-started run is forced, app methods are refused', { skip: !restic, timeout: 300000 }, async t => {
+test('run mode: one $run per boot, person-started run is forced, app methods are refused', { skip: !restic, timeout: 1200000 }, async t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-runner-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const data = path.join(root, 'data'), repo = path.join(root, 'repo'), keys = path.join(root, 'keys'), state = path.join(root, 'state');
@@ -116,4 +116,68 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     assert.equal(await r4.exited, 1, JSON.stringify(input));
     assert.ok(r4.frames.some(f => f.fatal === 'WORKER_FAILED'), JSON.stringify(input));
   }
+
+  // Registered with this test (S132) — a top-level test that skips off Windows must be in the conditional QA list (11-15 precedent).
+  await t.test('$fill comes after the run, once; a partial run with no links is an attempt and the next waits (4.2 채움 판)', { skip: process.platform !== 'win32' }, async t => {
+    // Four worker boots and three backups: 259 s on a busy PC (11-16), so the limit has room.
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-fill-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const data = path.join(root, 'data'), repo = path.join(root, 'repo'), keys = path.join(root, 'keys'), state = path.join(root, 'state');
+    for (const d of [data, repo, keys, state]) fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(data, '보고서.txt'), 'stage 1 fill');
+    const held = path.join(data, '열린 장부.xlsx');
+    fs.writeFileSync(held, 'held while the run reads');
+    const app = worker(state, { dialogs: [
+      { method: 'dialog.open', value: { canceled: false, filePaths: [data] } },
+      { method: 'dialog.open', value: { canceled: false, filePaths: [repo] } },
+      { method: 'dialog.save', value: { canceled: false, filePath: path.join(keys, 'recovery.json') } }] });
+    await app.call('$boot');
+    for (const m of ['chooseSources', 'chooseTarget', 'setup', 'saveRecoveryKit']) assert.equal((await app.call(m)).value.ok, true, m);
+    await app.call('$shutdown'); assert.equal(await app.exited, 0);
+
+    // $fill before $run closes the worker.
+    const early = worker(state, { mode: 'run' });
+    await early.call('$boot');
+    early.call('$fill', [{ links: [] }]);
+    assert.equal(await early.exited, 1);
+    assert.ok(early.frames.some(fr => fr.fatal === 'WORKER_FAILED'));
+
+    // Another program holds a file open, so the run makes a partial snapshot and asks for a fill of that drive.
+    const volume = held.slice(0, 2).toUpperCase();
+    const holder = spawn('powershell.exe', ['-NoProfile', '-Command', `$f=[IO.File]::Open('${held}','Open','ReadWrite','None'); 'held'; [Console]::In.ReadLine() | Out-Null; $f.Close()`], { stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+    await new Promise(ok => holder.stdout.once('data', ok));
+    try {
+      const r1 = worker(state, { mode: 'run' });
+      await r1.call('$boot');
+      const run = (await r1.call('$run', [{ trigger: 'manual' }])).value;
+      assert.equal(run.profiles.local.outcome, 'partial');
+      assert.deepEqual(run.profiles.local.fill, [volume], 'the drive the run executable asks the helper for');
+      // The helper made no link: still an attempt, said without a path.
+      const none = (await r1.call('$fill', [{ links: [] }])).value;
+      assert.deepEqual(none, { profiles: { local: { outcome: 'skipped', reason: 'no-link' } } });
+      assert.ok(!JSON.stringify(none).includes(path.basename(root)), 'no path in the fill result');
+      // A second $fill in the same boot closes the worker.
+      r1.call('$fill', [{ links: [] }]);
+      assert.equal(await r1.exited, 1);
+
+      // The next run is partial again, but its fill waits the 4 hours: nothing is due, and no profile is listed.
+      const r2 = worker(state, { mode: 'run' });
+      await r2.call('$boot');
+      const again = (await r2.call('$run', [{ trigger: 'manual' }])).value.profiles.local;
+      assert.equal(again.outcome, 'partial');
+      assert.equal(again.fill, undefined, 'no fill is asked within the 4 hours, so the run executable does not wake the helper');
+      assert.deepEqual((await r2.call('$fill', [{ links: [{ volume, root: path.join(root, 'snap') }] }])).value, { profiles: {} });
+      await r2.call('$shutdown'); assert.equal(await r2.exited, 0);
+
+      // A malformed fill input (links not a list) closes the worker, like a malformed run input.
+      const r3 = worker(state, { mode: 'run' });
+      await r3.call('$boot');
+      await r3.call('$run', [{ trigger: 'manual' }]);
+      r3.call('$fill', [{ links: 'C:\\snap' }]);
+      assert.equal(await r3.exited, 1);
+      assert.ok(r3.frames.some(fr => fr.fatal === 'WORKER_FAILED'));
+    } finally {
+      holder.stdin.end('\n'); await new Promise(ok => holder.once('exit', ok));
+    }
+  });
 });
