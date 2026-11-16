@@ -11,10 +11,15 @@ const ORIGIN='https://workspace.example.test';
 function fixture(t){
   const directory=mkdtempSync(join(tmpdir(),'synk-tips-')),store=new Store(directory);
   let now=Date.parse('2026-11-16T05:00:00.000Z');
-  const service=createTipSharesService({store,clock:()=>new Date(now).toISOString()});
+  // 시험에서는 서버 토큰 표 대신 끝난 세션(로그아웃 · 만료)을 dead에 적는다.
+  const dead=new Set();
+  const raw=createTipSharesService({store,clock:()=>new Date(now).toISOString(),sessionAlive:hash=>!dead.has(hash)});
+  const ctxOf=user=>({session:`s-${user?.id||'none'}`,expiresAt:new Date(now+7*24*3600000).toISOString()});
+  const service={...raw,workspace:(user,ctx)=>raw.workspace(user,ctx??ctxOf(user))};
+  for(const name of ['decide','cancel','sync','snapshot'])service[name]=(user,input,ctx)=>raw[name](user,input,ctx??ctxOf(user));
   const admin=store.createUser({email:'admin@example.test',name:'Admin',role:'admin'}),robot=store.createUser({email:'robot@example.test',name:'Automation',role:'admin'}),member=store.createUser({email:'member@example.test',name:'Member',role:'member'});
   t.after(()=>{store.close();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));rmSync(directory,{recursive:true,force:true});});
-  return {store,service,admin,robot,member,advance:ms=>{now+=ms;},iso:()=>new Date(now).toISOString()};
+  return {store,service,admin,robot,member,dead,advance:ms=>{now+=ms;},iso:()=>new Date(now).toISOString()};
 }
 const row=(overrides={})=>({row:52,postId:'DfoqrQ7yf3k',sharedAt:'2026-11-16 10:12',url:'https://www.instagram.com/reel/DfoqrQ7yf3k/',summary:'포인트 색 하나로 사이트가 살아나는 전후',kind:'디자인 참고',target:'홈페이지',verdict:'시안',note:'채운 단추 하나에만 포인트 색',status:'새로',stage:'시안 나옴',stageNote:'',draft:{url:'https://claude.ai/artifact/abc'},...overrides});
 // 자료는 자동화 계정(robot)이 올리고, 고르기는 사람 관리자(admin)가 한다.
@@ -126,31 +131,29 @@ test('requests on rows that left 새로 are cleared, unclaimed ones too, and row
   assert.equal(f.store.get(TIP_SHARE_KINDS.decision,'60').outcome,'applied');
 });
 
-test('accounts kept in the earlier snapshot.pushers field stay blocked and move to the separate list',t=>{
+test('lists that earlier versions kept by account no longer block that account (the founder account the PC tool shares)',t=>{
   const f=fixture(t);
   snapshot(f,[row()]);
-  // 앞 판 꼴: 목록이 스냅숏 안에 있고 따로 둔 목록은 없다.
+  // 11-17 운영 꼴: 앞 판이 PC 도구의 계정(유호님이 로그인하시는 계정)을 계정 목록과 스냅숏 안 칸에 올렸다.
   const old=f.store.get(TIP_SHARE_KINDS.snapshot,'snapshot');
-  f.store.remove(TIP_SHARE_KINDS.snapshot,'pushers');f.store.put(TIP_SHARE_KINDS.snapshot,'snapshot',{...old,pushers:[f.robot.id]});
-  assert.equal(f.service.workspace(f.robot).canDecide,false);
-  assert.throws(()=>f.service.decide(f.robot,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'}),{code:'SYNK_TIP_PUSHER'});
-  // 다른 계정이 판을 올려 스냅숏의 옛 칸이 없어져도 robot은 계속 막힌다.
-  const other=f.store.createUser({email:'other@example.test',name:'Other',role:'admin'});
-  f.service.snapshot(other,{version:1,generatedAt:f.iso(),rows:[row()],results:[]});
-  assert.equal(Object.hasOwn(f.store.get(TIP_SHARE_KINDS.snapshot,'snapshot'),'pushers'),false);
-  assert.deepEqual(f.store.get(TIP_SHARE_KINDS.snapshot,'pushers').ids.sort(),[f.robot.id,other.id].sort());
-  assert.throws(()=>f.service.decide(f.robot,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'}),{code:'SYNK_TIP_PUSHER'});
-  assert.equal(f.service.workspace(f.admin).canDecide,true);
+  f.store.put(TIP_SHARE_KINDS.snapshot,'pushers',{ids:[f.admin.id]});f.store.put(TIP_SHARE_KINDS.snapshot,'snapshot',{...old,pushers:[f.admin.id]});
+  const browser={session:'s-founder-browser',expiresAt:new Date(Date.parse(f.iso())+7*24*3600000).toISOString()};
+  assert.equal(f.service.workspace(f.admin,browser).canDecide,true);
+  assert.equal(f.service.decide(f.admin,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'},browser).rows[0].pending.to,'적용 중');
+  // 다음 회차가 올리면 옛 계정 목록은 세션 목록으로 바뀐다.
+  snapshot(f,[row()]);
+  assert.equal(Object.hasOwn(f.store.get(TIP_SHARE_KINDS.snapshot,'pushers'),'ids'),false);
+  assert.deepEqual(f.store.get(TIP_SHARE_KINDS.snapshot,'pushers').sessions.map(s=>s.hash),[`s-${f.robot.id}`]);
 });
 
-test('the pushing account cannot undo a choice, and choices it made before enrolling are dropped',t=>{
+test('the pushing session cannot undo a choice, and choices it made before it pushed are dropped',t=>{
   const f=fixture(t);
   snapshot(f,[row()]);
   f.service.decide(f.admin,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'});
   assert.throws(()=>f.service.cancel(f.robot,{row:52,postId:'DfoqrQ7yf3k'}),{status:403,code:'SYNK_TIP_PUSHER'});
   assert.equal(f.store.all(TIP_SHARE_KINDS.request).length,1);
   f.service.cancel(f.admin,{row:52,postId:'DfoqrQ7yf3k'});
-  // 아직 sync · snapshot을 부르지 않은 새 자동화 계정이 먼저 고르고, 90초 뒤 sync로 스스로 가져가려 한다.
+  // 아직 sync · snapshot을 부르지 않은 새 자동화 세션이 먼저 고르고, 90초 뒤 같은 세션의 sync로 스스로 가져가려 한다.
   const fresh=f.store.createUser({email:'fresh-robot@example.test',name:'New automation',role:'admin'});
   f.service.decide(fresh,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'});
   f.advance(91000);
@@ -191,7 +194,7 @@ test('snapshot input rejects duplicates, future times, unknown results and overs
   assert.deepEqual(snapshot(f,[row()],[{id:'00000000-0000-4000-8000-000000000000',outcome:'conflict',current:'버림'}]).settled,0,'unknown ids are ignored');
 });
 
-test('the account that pushes ledger rows can never approve a draft itself',t=>{
+test('the session that pushes ledger rows can never approve a draft, while the same account in a browser can',t=>{
   const f=fixture(t);
   snapshot(f,[row()]);
   assert.equal(f.service.workspace(f.robot).canDecide,false);assert.equal(f.service.workspace(f.admin).canDecide,true);
@@ -201,20 +204,56 @@ test('the account that pushes ledger rows can never approve a draft itself',t=>{
   f.service.sync(other,{version:1});
   assert.throws(()=>f.service.decide(other,{row:52,postId:'DfoqrQ7yf3k',to:'버림'}),{code:'SYNK_TIP_PUSHER'});
   assert.equal(f.service.decide(f.admin,{row:52,postId:'DfoqrQ7yf3k',to:'버림'}).rows[0].pending.to,'버림');
-  // 다른 관리자 계정이 아무리 sync를 불러도 먼저 오른 계정이 목록에서 밀려나지 않는다. 자리가 차면 새 계정을 거절한다.
-  for(let i=0;i<TIP_SHARE_LIMITS.pushers-2;i++)f.service.sync(f.store.createUser({email:`extra${i}@example.test`,name:'Extra',role:'admin'}),{version:1});
-  assert.throws(()=>f.service.decide(f.robot,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'}),{code:'SYNK_TIP_PUSHER'});
-  const late=f.store.createUser({email:'late@example.test',name:'Late',role:'admin'});
-  assert.throws(()=>f.service.sync(late,{version:1}),{status:403,code:'SYNK_TIP_PUSHERS_FULL'});
-  assert.throws(()=>f.service.snapshot(late,{version:1,generatedAt:f.iso(),rows:[row()],results:[]}),{status:403,code:'SYNK_TIP_PUSHERS_FULL'});
-  assert.equal(f.service.workspace(f.robot).canDecide,false);assert.equal(f.service.workspace(f.admin).canDecide,true);
-  assert.equal(f.service.sync(f.robot,{version:1}).requests.length,0,'an enrolled account still syncs once the list is full');
+  f.service.cancel(f.admin,{row:52,postId:'DfoqrQ7yf3k'});
+  // PC 도구와 유호님이 같은 계정을 쓴다: 도구가 올린 세션은 막히고, 같은 계정의 브라우저 세션은 고를 수 있다.
+  const until=new Date(Date.parse(f.iso())+7*24*3600000).toISOString();
+  const tool={session:'s-tool-run',expiresAt:until},browser={session:'s-browser',expiresAt:until};
+  f.service.snapshot(f.admin,{version:1,generatedAt:f.iso(),rows:[row()],results:[]},tool);
+  assert.equal(f.service.workspace(f.admin,tool).canDecide,false);
+  assert.throws(()=>f.service.decide(f.admin,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'},tool),{status:403,code:'SYNK_TIP_PUSHER'});
+  assert.equal(f.service.workspace(f.admin,browser).canDecide,true);
+  f.service.decide(f.admin,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'},browser);
+  f.advance(91000);
+  assert.deepEqual(f.service.sync(f.admin,{version:1},tool).requests.map(r=>r.to),['적용 중'],'a choice made in the browser session is handed to the tool session of the same account');
+  // 세션이 없거나 비어 있으면 고르지도 올리지도 못한다.
+  assert.throws(()=>f.service.decide(f.admin,{row:52,postId:'DfoqrQ7yf3k',to:'버림'},{session:''}),{status:401,code:'SYNK_TIP_LOGIN'});
+  assert.throws(()=>f.service.sync(f.admin,{version:1},{}),{status:401,code:'SYNK_TIP_LOGIN'});
+  assert.equal(f.service.workspace(f.admin,{}).canDecide,false);
+});
+
+test('a live pushing session is never pushed out, ended ones are dropped, and too many live ones stop new runs',t=>{
+  const f=fixture(t);
+  const ctx=(name,days=7)=>({session:name,expiresAt:new Date(Date.parse(f.iso())+days*24*3600000).toISOString()});
+  snapshot(f,[row()]);
+  // 로그아웃에 실패해 살아남은 도구 세션(leaked)은 그 뒤 회차가 아무리 많아도 목록에서 밀려나지 않는다(GPT GA1).
+  f.service.sync(f.robot,{version:1},ctx('leaked'));
+  // 도구는 회차 끝에 로그아웃한다. 끝난 세션은 다음 등록 때 빠져 목록이 작게 남는다.
+  for(let i=0;i<60;i++){f.advance(300000);f.service.sync(f.robot,{version:1},ctx(`run-${i}`));f.dead.add(`run-${i}`);}
+  const kept=f.store.get(TIP_SHARE_KINDS.snapshot,'pushers').sessions.map(s=>s.hash);
+  assert.deepEqual(kept,[`s-${f.robot.id}`,'leaked','run-59']);
+  assert.equal(f.service.workspace(f.robot,ctx('leaked')).canDecide,false);
+  assert.throws(()=>f.service.decide(f.robot,{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'},ctx('leaked')),{status:403,code:'SYNK_TIP_PUSHER'});
+  // 살아 있는 세션이 상한에 이르면 새 세션은 거절하고(막는 쪽으로 멈춘다), 이미 오른 세션은 계속 돈다.
+  f.dead.add(`s-${f.robot.id}`);f.dead.add('leaked');f.dead.add('run-59');
+  for(let i=0;i<TIP_SHARE_LIMITS.pushers;i++)f.service.sync(f.robot,{version:1},ctx(`live-${i}`));
+  assert.throws(()=>f.service.sync(f.robot,{version:1},ctx('one-more')),{status:403,code:'SYNK_TIP_PUSHERS_FULL'});
+  assert.throws(()=>f.service.snapshot(f.robot,{version:1,generatedAt:f.iso(),rows:[row()],results:[]},ctx('one-more')),{status:403,code:'SYNK_TIP_PUSHERS_FULL'});
+  assert.equal(f.service.sync(f.robot,{version:1},ctx('live-0')).requests.length,0);
+  for(let i=0;i<TIP_SHARE_LIMITS.pushers;i++)f.dead.add(`live-${i}`);
+  // 세션이 끝난 뒤(서버의 세션 만료)나 8일이 지나면 목록에서 빠진다.
+  f.service.sync(f.robot,{version:1},ctx('short',1));
+  assert.equal(f.service.workspace(f.robot,ctx('short')).canDecide,false);
+  f.advance(25*3600000);
+  assert.equal(f.service.workspace(f.robot,ctx('short')).canDecide,true);
+  f.service.sync(f.robot,{version:1},ctx('long',30));
+  f.advance(9*24*3600000);
+  assert.equal(f.service.workspace(f.robot,ctx('long')).canDecide,true);
 });
 
 // 경로: 로그인 · 관리자 · 데모 · 쿼리 · 출처 · CSRF · 본문 뒤 세션 다시 보기
 function routeHarness(t){
   const f=fixture(t);
-  const sessions=new Map([['admin',{hash:'h-admin',user:f.admin,body:{csrfToken:'csrf-admin'}}],['member',{hash:'h-member',user:f.member,body:{csrfToken:'csrf-member'}}],['robot',{hash:'h-robot',user:f.robot,body:{csrfToken:'csrf-robot'}}]]);
+  const sessions=new Map([['admin',{hash:'h-admin',user:f.admin,body:{csrfToken:'csrf-admin'}}],['member',{hash:'h-member',user:f.member,body:{csrfToken:'csrf-member'}}],['robot',{hash:'h-robot',user:f.robot,body:{csrfToken:'csrf-robot'}}],['robot-browser',{hash:'h-robot-browser',user:f.robot,body:{csrfToken:'csrf-robot-browser'}}]]);
   let revokeDuringBody=false;
   const session=req=>sessions.get(req.who)||null;
   const body=async req=>{if(revokeDuringBody)sessions.delete(req.who);return req.payload;};
@@ -260,4 +299,14 @@ test('posts need the same origin and the session CSRF token, and a session lost 
   await assert.rejects(noToken({method:'POST',headers:{origin:ORIGIN},payload:{row:52,postId:'DfoqrQ7yf3k'}},{setHeader(){}},{url:new URL('/api/tip-shares/decision/cancel',ORIGIN)}),{code:'SYNK_TIP_CSRF'});
   const noOrigin=createTipShareRoutes({service:bare.f.service,body:async req=>req.payload,send:()=>{},session:()=>({hash:'h',user:bare.f.admin,body:{csrfToken:'c'}}),origin:undefined});
   await assert.rejects(noOrigin({method:'POST',headers:{'x-csrf-token':'c'},payload:{row:52,postId:'DfoqrQ7yf3k'}},{setHeader(){}},{url:new URL('/api/tip-shares/decision/cancel',ORIGIN)}),{code:'SYNK_TIP_CSRF'});
+});
+
+test('routes hand the calling session to the service, so the account the PC tool uses can still choose from a browser',async t=>{
+  const {f,call}=routeHarness(t);
+  const payload={version:1,generatedAt:f.iso(),rows:[row()],results:[]};
+  assert.equal((await call({who:'robot',method:'POST',path:'/api/tip-shares/snapshot',payload})).status,200);
+  assert.equal((await call({who:'robot'})).payload.canDecide,false);
+  assert.equal((await call({who:'robot',method:'POST',path:'/api/tip-shares/decision',payload:{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'}})).error.code,'SYNK_TIP_PUSHER');
+  assert.equal((await call({who:'robot-browser'})).payload.canDecide,true);
+  assert.equal((await call({who:'robot-browser',method:'POST',path:'/api/tip-shares/decision',payload:{row:52,postId:'DfoqrQ7yf3k',to:'적용 중'}})).payload.rows[0].pending.to,'적용 중');
 });

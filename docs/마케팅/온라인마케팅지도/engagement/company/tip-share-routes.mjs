@@ -27,7 +27,7 @@ export function createTipShareRoutes({service,body,send,session,origin,isStopped
     if(path==='/api/tip-shares'){
       if(req.method!=='GET')throw tipShareError('공유한 게시물 요청을 확인해 주세요.',405,'SYNK_TIP_METHOD');
       if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw tipShareError('공유한 게시물 조회 요청을 확인해 주세요.',400,'SYNK_TIP_INVALID');
-      send(res,200,service.workspace(auth.user));return true;
+      send(res,200,service.workspace(auth.user,{session:auth.hash,expiresAt:auth.expiresAt}));return true;
     }
     const action=POSTS.get(path);
     if(!action)throw tipShareError('공유한 게시물 주소를 확인해 주세요.',404,'SYNK_TIP_NOT_FOUND');
@@ -42,7 +42,8 @@ export function createTipShareRoutes({service,body,send,session,origin,isStopped
     if(!latest||latest.hash!==auth.hash||latest.user.id!==auth.user.id)throw tipShareError('로그인 상태를 다시 확인해 주세요.',401,'SYNK_TIP_LOGIN');
     if(typeof latest.body?.csrfToken!=='string'||req.headers['x-csrf-token']!==latest.body.csrfToken)throw tipShareError('회사 프로그램 화면에서 요청해 주세요.',403,'SYNK_TIP_CSRF');
     const user=adminOf(latest);
-    send(res,200,service[action](user,input));
+    // 줄을 올리는 쪽은 세션으로 가르므로 세션의 해시와 끝나는 때를 함께 넘긴다.
+    send(res,200,service[action](user,input,{session:latest.hash,expiresAt:latest.expiresAt}));
     return true;
   };
 }
