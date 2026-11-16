@@ -361,7 +361,7 @@ function roomPreview(p){
     return null;
   };
   const [first,second]=p?.stage==='delivered'||finals.length?[finals,previews]:[previews,finals];
-  return pickPlayable(first)||pickPlayable(second)||pickFallback(first)||pickFallback(second);
+  return pickPlayable(first)||pickFallback(first)||pickPlayable(second)||pickFallback(second);
 }
 // keep(판 4): 「내 모델로 모아 두기」 회원 상태(app.mjs가 그 프로젝트에서 읽은 것만 — 스위치가 꺼져 있으면 없다).
 const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{})};};
@@ -611,6 +611,7 @@ function askRoom(s){
 }
 // 납품: 왼쪽 최종 파일 · 수령 확인, 오른쪽 완성본, 아래 인화지에 규격표와 기록.
 function deliveryRoom(s){
+  const nameOf=version=>version.label||'최종본';
   const p=s.project,st=studio(p),finals=(p.versions||[]).filter(v=>v.kind==='final'),film=finals.slice().reverse().find(v=>v.media?.mimeType?.startsWith('video/')&&safeUrl(v.media.url,{media:true})),shot=!film?finals.slice().reverse().find(v=>v.media?.mimeType?.startsWith('image/')&&safeUrl(v.media.url,{media:true})):null,hasFinalMedia=!!(film||shot),c=p.closeout,received=!!c?.receipt,next=isCustomerRoom(s)?null:nextOf(s);
   const events=historyEvents(p);
   return `<div class="sx-shell sx-room sx-delivery${s.demo?' is-demo':''}" data-mode="${esc(s.mode)}" data-tab="history" data-state="deliver">
@@ -621,12 +622,12 @@ function deliveryRoom(s){
         <p class="sx-kicker">납품</p>
         <h1 class="sx-display">${finals.length?'완성본을 받으세요':'최종 파일이 준비되면 여기에 올라와요'}</h1>
         <p class="sx-body sx-room-lead">${finals.length?'올릴 곳에 맞는 파일을 내려받으실 수 있어요.':'사용 안내와 함께 올려 드려요.'}</p>
-        ${finals.length?`<ul class="sx-files history-files">${finals.map(v=>`<li class="delivery"><div><h2>${esc(v.label)}</h2>${v.guide?`<p class="sx-small">${esc(v.guide)}</p>`:''}</div>${safeUrl(v.media?.url,{media:true})?`<a class="sx-go${received?'':' is-solid'} download" href="${esc(safeUrl(v.media.url,{media:true}))}" download="${esc(downloadName(p,v))}"><span>파일 받기</span>${arrow}</a>`:safeUrl(v.url)?`<a class="sx-go is-solid" href="${esc(safeUrl(v.url))}" target="_blank" rel="noopener noreferrer"><span>자료 열기</span>${arrow}</a>`:''}</li>`).join('')}</ul>`:''}
+        ${finals.length?`<ul class="sx-files history-files">${finals.map(v=>`<li class="delivery"><div><h2>${esc(nameOf(v))}</h2>${v.guide?`<p class="sx-small">${esc(v.guide)}</p>`:''}</div>${safeUrl(v.media?.url,{media:true})?`<a class="sx-go${received?'':' is-solid'} download" href="${esc(safeUrl(v.media.url,{media:true}))}" download="${esc(downloadName(p,v))}"><span>파일 받기</span>${arrow}</a>`:safeUrl(v.url)?`<a class="sx-go is-solid" href="${esc(safeUrl(v.url))}" target="_blank" rel="noopener noreferrer"><span>자료 열기</span>${arrow}</a>`:''}</li>`).join('')}</ul>`:''}
         ${c?.deliveryKey?(received?`<p class="sx-small sx-receipt" aria-label="납품 수령 확인"><b>수령 확인 완료</b> · <time datetime="${esc(c.receipt.confirmedAt)}">${esc(stamp(c.receipt.confirmedAt))}</time>. 파일은 여기서 언제든 다시 받을 수 있어요.</p>`:`<section class="sx-receipt" aria-label="납품 수령 확인">${s.mode==='customer'&&c.canConfirm?`<p class="sx-small">받아 보신 뒤 눌러 주세요. 확인한 시각이 담당자에게 가고, 파일은 여기서 언제든 다시 받으실 수 있어요.</p>${go('파일과 안내 확인했어요','confirm-delivery')}`:'<p class="sx-small">파일은 여기서 언제든 다시 받으실 수 있어요.</p>'}</section>`):''}
         ${finals.length?`<p class="sx-small">파일이 열리지 않거나 다른 형식·길이가 필요하면 알려 주세요. ${lnk('담당자에게 묻기','tab','data-tab="review" data-scroll="inquiry"')}</p>`:''}
         ${stepsOf(s,next)}
       </div>
-      ${film?`<div class="sx-room-screen sx-final" data-final><video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(film.label)}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div></div>`:shot?`<div class="sx-room-screen"><img class="sx-q-fill" src="${esc(safeUrl(shot.media.url,{media:true}))}" data-cap alt="${esc(shot.label||'최종본')}" decoding="async"><p class="sx-small sx-room-cap">${esc(shot.label||'최종본')}</p></div>`:s.demo?`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`:''}
+      ${film?`<div class="sx-room-screen sx-final" data-final><video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(nameOf(film))}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div></div>`:shot?`<div class="sx-room-screen"><img class="sx-q-fill" src="${esc(safeUrl(shot.media.url,{media:true}))}" data-cap alt="${esc(nameOf(shot))}" decoding="async"><p class="sx-small sx-room-cap">${esc(nameOf(shot))}</p></div>`:s.demo?`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`:''}
     </section>
     <section class="sx-legacy sx-history-paper">
       ${s.demo||s.example||!(st.deliverables?.revision||(st.deliverables?.items||[]).length)?'':deliverablesView(s,{readOnly:true})}

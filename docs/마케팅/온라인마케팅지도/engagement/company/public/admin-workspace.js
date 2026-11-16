@@ -83,6 +83,7 @@ function createInitialAdminState() {
     abortController: null,
     pendingReloadStamp: null,
     needsStateReload: false,
+    stateReloadError: '',
     invitesModalOpen: false,
     composing: false,
     deferredRender: false
@@ -92,7 +93,7 @@ function createInitialAdminState() {
 const directoryModes = [['workspace','Workspace 회원'],['synk','전체 SYNK ID'],['staff','직원 상세·성과']];
 const directoryStatuses = {active:'이용 중',disabled:'이용 중지','deletion-requested':'탈퇴 요청'};
 function newDirectoryState() {
-  return {mode:'workspace', q:'', draft:'', type:'all', company:'all', status:'all', page:1, data:null, error:'', busy:false, controller:null};
+  return {mode:'workspace', q:'', draft:'', type:'all', company:'all', status:'all', page:1, data:null, error:'', retryable:true, busy:false, controller:null};
 }
 const directorySearches = new Map();
 let memberDirectory = newDirectoryState();
@@ -137,17 +138,17 @@ function directoryRow(row,local) {
   const roles=[];
   if(local && row.staffId)roles.push(`직원 · ${roleLabel(row.role)||'직원'}${!row.staffActive?' (중지)':''}`);
   if(local && row.brands.length)roles.push('PULSE 고객');
-  const affiliations=local?[...row.memberships.map(m=>`${m.company} · ${adminCompanyRoleLabel(m.company,m.role)}`),...row.brands.map(b=>`${b.name} · ${b.role==='admin'?'브랜드 관리자':'브랜드 회원'}${b.status==='active'?'':' (종료)'}`)]:[];
+  const affiliations=local?[...(row.staffId && row.role==='admin'?['전체 접근 관리자']:[]),...row.memberships.map(m=>`${m.company} · ${adminCompanyRoleLabel(m.company,m.role)}`),...row.brands.map(b=>`${b.name} · ${b.role==='admin'?'브랜드 관리자':'브랜드 회원'}${b.status==='active'?'':' (종료)'}`)]:[];
   return `<tr><td data-label="회원" class="directory-identity">${identity}</td>
     ${local?`<td data-label="구분">${roles.map(r=>`<span>${escape(r)}</span>`).join('')}</td>
-    <td data-label="소속과 역할">${affiliations.length?affiliations.map(a=>`<span>${escape(a)}</span>`).join(''):'소속 미지정'}</td>`:
+    <td data-label="소속과 역할">${affiliations.length?affiliations.map(a=>`<span>${escape(a)}</span>`).join(''):'소속 회사 없음'}</td>`:
     `<td data-label="가입일">${escape(adminFormatDateTime(row.createdAt))}</td>`}
     <td data-label="상태">${escape(directoryStatuses[row.status]||row.status)}</td></tr>`;
 }
 
 function directoryResults() {
   const d=memberDirectory;
-  if(d.error)return `<p class="directory-feedback" role="alert">${escape(d.error)} <button type="button" class="btn small" data-directory-retry>다시 시도</button></p>`;
+  if(d.error)return `<p class="directory-feedback" role="alert">${escape(d.error)}${d.retryable?' <button type="button" class="btn small" data-directory-retry>다시 시도</button>':''}</p>`;
   if(d.busy||!d.data)return '<p class="directory-feedback" role="status">회원 목록을 불러오는 중입니다.</p>';
   const {rows,total,page,pageSize}=d.data,local=d.mode==='workspace',pages=Math.max(1,Math.ceil(total/pageSize));
   return `<p class="directory-total" role="status" tabindex="-1">검색 결과 <strong>${adminInt(total)}명</strong></p>${rows.length?
@@ -163,7 +164,7 @@ async function loadMemberDirectory(focusTarget = '') {
   if(d.mode==='staff'||state.tab!=='admin'||!adminCanUse())return;
   d.controller?.abort();
   const controller=new AbortController(),stamp=companyAuthSnapshot();
-  d.controller=controller;d.busy=true;d.data=null;d.error='';
+  d.controller=controller;d.busy=true;d.data=null;d.error='';d.retryable=true;
   const current=()=>memberDirectory===d && d.controller===controller && !controller.signal.aborted && adminCanUse() && state.tab==='admin' && companyAuthCurrent(stamp);
   const paint=()=>{const element=document.querySelector('[data-directory-results]');if(element)element.innerHTML=directoryResults();};
   paint();
@@ -176,7 +177,19 @@ async function loadMemberDirectory(focusTarget = '') {
     d.data=result;
   }catch(error){
     if(!current())return;
-    d.error=error.message||'회원 목록을 불러오지 못했습니다.';
+    if(error.status===403){
+      d.retryable=false;
+      d.error=d.mode==='synk'
+        ? '전체 SYNK ID 명부를 보려면 열람 권한이 있는 SYNK ID로 로그인해야 합니다. 계정 메뉴에서 로그인 상태와 열람 권한을 확인해 주세요.'
+        : '회원 명부를 볼 관리자 권한이 없습니다. 계정 메뉴에서 로그인한 계정을 확인해 주세요.';
+      await loadState().catch(()=>{});
+      if(!current())return;
+      if(document.activeElement===document.body && !(typeof overlay!=='undefined' && overlay.children.length)){
+        document.querySelector('[data-directory-scope="'+d.mode+'"]')?.focus();
+      }
+    }else{
+      d.error=error.message||'회원 목록을 불러오지 못했습니다.';
+    }
   }finally{
     if(current()){
       d.busy=false;d.controller=null;paint();
@@ -201,7 +214,7 @@ function showDirectoryMode(mode, refreshStaff = false) {
   directory.hidden=mode==='staff';staff.hidden=mode!=='staff';
   if(mode==='staff'){
     directory.replaceChildren();
-    if(refreshStaff)void adminManualRefresh();
+    if(refreshStaff)return adminManualRefresh();
     else if(!adminState.data&&!adminState.loading)void loadAdminWorkspace();
     else adminPaint();
   }
@@ -220,18 +233,27 @@ document.addEventListener('submit',event=>{
   if(d.mode==='workspace'){d.type=form.get('type');d.company=form.get('company');}
   void loadMemberDirectory();
 });
-document.addEventListener('click',event=>{
+document.addEventListener('click',async event=>{
   const button=event.target.closest?.('.admin-workspace button');if(!button||button.disabled)return;
   if(button.dataset.directoryScope){showDirectoryMode(button.dataset.directoryScope);return;}
   if(button.dataset.directoryStaffId){
-    adminState.tab='members';adminState.search=button.dataset.directoryStaffId;adminState.company='all';adminState.status='all';
-    showDirectoryMode('staff',true);
+    const memberId=button.dataset.directoryStaffId,stamp=companyAuthSnapshot();
+    adminState.tab='members';adminState.search=memberId;adminState.company='all';adminState.status='all';
+    const beforeReload=document.querySelector('.admin-workspace');
+    beforeReload.querySelector('[data-admin-search]').value=memberId;
+    beforeReload.querySelector('[data-admin-company]').value='all';
+    beforeReload.querySelector('[data-admin-status]').value='all';
+    let focusChanged=false;
+    const noteFocus=()=>{focusChanged=true;};
+    document.addEventListener('focusin',noteFocus);
+    try{await showDirectoryMode('staff',true);}
+    finally{document.removeEventListener('focusin',noteFocus);}
+    if(focusChanged || document.activeElement!==document.body || (typeof overlay!=='undefined' && overlay.children.length))return;
+    if(!adminCanUse() || state.tab!=='admin' || memberDirectory.mode!=='staff' || !companyAuthCurrent(stamp) || adminState.search!==memberId)return;
     const root=document.querySelector('.admin-workspace');
-    root.querySelector('[data-admin-search]').value=adminState.search;
-    root.querySelector('[data-admin-company]').value='all';
-    root.querySelector('[data-admin-status]').value='all';
-    adminPaint();
-    root.querySelector('[data-admin-search]').focus();
+    const target=root?.querySelector('.admin-name-btn[data-admin-member="'+CSS.escape(memberId)+'"]')
+      || root?.querySelector('[data-admin-panel] h2, [data-admin-panel] h3');
+    if(target){if(!target.matches('button'))target.tabIndex=-1;target.focus();}
     return;
   }
   if(button.hasAttribute('data-directory-retry'))void loadMemberDirectory('[data-directory-retry]');
@@ -296,6 +318,7 @@ function adminNoteWriteSucceeded(stamp) {
   if (state.tab !== 'admin') return;
   adminState.pendingReloadStamp = stamp || (typeof companyAuthSnapshot === 'function' ? companyAuthSnapshot() : null);
   adminState.needsStateReload = true;
+  adminState.stateReloadError = '';
   adminState.data = null;
   adminState.error = '';
   adminState.loading = true;
@@ -307,6 +330,7 @@ function adminOnStateLoaded() {
   const stamp = adminState.pendingReloadStamp;
   adminState.pendingReloadStamp = null;
   adminState.needsStateReload = false;
+  adminState.stateReloadError = '';
   if (!stamp) return;
   if (typeof companyAuthCurrent === 'function' && !companyAuthCurrent(stamp)) return;
   if (!adminCanUse() || state.tab !== 'admin') return;
@@ -331,6 +355,7 @@ function adminOnStateLoadFailed(err) {
   adminState.loading = false;
   adminState.refreshing = false;
   adminState.error = err?.message || '변경 내용을 반영한 직원 상태를 다시 불러오지 못했어요. 다시 시도해 주세요.';
+  adminState.stateReloadError = adminState.error;
   adminPaint();
 }
 
@@ -363,6 +388,7 @@ function adminLeaveIfNeeded() {
       adminState.forbidden = false;
       adminState.pendingReloadStamp = null;
       adminState.needsStateReload = false;
+      adminState.stateReloadError = '';
       adminState.invitesModalOpen = false;
     }
   }
@@ -482,6 +508,7 @@ async function adminManualRefresh() {
   const stamp = typeof companyAuthSnapshot === 'function' ? companyAuthSnapshot() : { userId: state.user?.id || null };
   adminState.pendingReloadStamp = null;
   adminState.needsStateReload = true;
+  adminState.stateReloadError = '';
   adminCancelInFlight();
   adminState.data = null;
   adminState.loading = true;
@@ -498,6 +525,7 @@ async function adminManualRefresh() {
     adminState.loading = false;
     adminState.refreshing = false;
     adminState.error = err?.message || '직원 목록을 새로 불러오지 못했어요. 다시 시도해 주세요.';
+    adminState.stateReloadError = adminState.error;
     adminPaint();
     return;
   }
@@ -794,6 +822,7 @@ function adminBannerMarkup() {
   if (adminState.rangeError) {
     return `<div class="admin-status-box is-error" role="alert"><div class="admin-status-copy"><strong>조회 기간을 확인해 주세요</strong><span>${escape(adminState.rangeError)}</span></div></div>`;
   }
+  if(adminState.tab==='members' && adminState.needsStateReload && !adminState.forbidden)return '';
   if (adminState.loading) {
     const title = adminState.refreshing ? '관리자 데이터를 새로 불러오고 있어요.' : '관리자 데이터를 불러오고 있어요.';
     const detail = '최신 수치를 확인하고 있습니다. 잠시만 기다려 주세요.';
@@ -806,6 +835,7 @@ function adminBannerMarkup() {
 }
 
 function adminFilterNoteMarkup(allMembers, filteredMembers) {
+  if(adminState.needsStateReload)return '';
   const hasFilter = adminState.search.trim() !== '' || adminState.company !== 'all' || adminState.status !== 'all';
   if (!hasFilter) {
     return `전체 직원 ${number(allMembers.length)}명을 표시하고 있습니다. 여러 회사를 겸임하는 직원도 전체 인원에서는 한 번만 셉니다.`;
@@ -845,6 +875,10 @@ function adminMemberSupplementarySummary(extra) {
 }
 
 function adminMembersPanelMarkup(allMembers, filteredMembers, extraMap) {
+  if(adminState.needsStateReload && !adminState.forbidden){
+    if(adminState.stateReloadError)return '<div class="admin-empty" role="alert"><h3>직원 정보를 불러오지 못했습니다</h3><p>최신 명부를 다시 불러와 주세요.</p><button type="button" class="btn small" data-admin-action="retry">다시 시도</button></div>';
+    return '<div class="admin-empty" role="status"><h3>직원 정보를 불러오는 중입니다</h3><p>최신 명부를 확인하고 있습니다.</p></div>';
+  }
   if (adminState.forbidden) {
     return `<div class="admin-empty"><h3>관리자 권한이 필요해요</h3><p>권한 상태를 다시 확인하고 있습니다.</p></div>`;
   }
@@ -1551,7 +1585,7 @@ function adminPaint() {
 
   const resetWrap = root.querySelector('[data-admin-reset-wrap]');
   if (resetWrap) {
-    resetWrap.hidden = !hasFilter;
+    resetWrap.hidden = !hasFilter || adminState.needsStateReload;
   }
 
   const refreshBtn = root.querySelector('[data-admin-action="refresh"]');
@@ -1634,8 +1668,8 @@ function adminWorkspacePage() {
       <div data-admin-filter-wrap ${adminState.tab === 'invitations' ? 'hidden' : ''}>
         <div class="admin-filter-bar" role="search" aria-label="직원 검색과 필터">
           <label class="admin-filter-field">
-            <span>이름 검색</span>
-            <input type="search" data-admin-search aria-label="직원 이름 검색" value="${escape(adminState.search)}" placeholder="직원 이름이나 이메일로 찾기" autocomplete="off" maxlength="160">
+            <span>직원 검색</span>
+            <input type="search" data-admin-search aria-label="직원 검색" value="${escape(adminState.search)}" placeholder="이름, 이메일 또는 직원 ID" autocomplete="off" maxlength="160">
           </label>
           <label class="admin-filter-field">
             <span>소속 회사</span>
@@ -1649,7 +1683,7 @@ function adminWorkspacePage() {
               ${ADMIN_STATUS_FILTERS.map(([val, label]) => `<option value="${escape(val)}" ${adminState.status === val ? 'selected' : ''}>${escape(label)}</option>`).join('')}
             </select>
           </label>
-          <div class="admin-filter-reset" data-admin-reset-wrap ${hasFilter ? '' : 'hidden'}>
+          <div class="admin-filter-reset" data-admin-reset-wrap ${hasFilter && !adminState.needsStateReload ? '' : 'hidden'}>
             <button type="button" class="btn small quiet" data-admin-action="reset-filters">필터 초기화</button>
           </div>
         </div>

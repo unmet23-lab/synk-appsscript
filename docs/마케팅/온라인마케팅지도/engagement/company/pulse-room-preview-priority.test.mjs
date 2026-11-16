@@ -113,13 +113,13 @@ test('4. 최종 사진과 최종 안내 링크가 함께 있으면 최종 사진
 
 test('5. 기타 파일 · 링크뿐인 최종본은 안전한 내려받기와 새 탭 링크로 남고, 실제로 열지 않는다',()=>{
   for(const stage of STAGES){
-    const file=room(stage,[FILE]);
+    const file=room(stage,[PREVIEW,FILE]);
     assert.deepEqual(file.videos,[]);assert.deepEqual(file.images,[]);
     const down=file.links.filter(a=>a.href===here(FILE.media.url));
     assert.equal(down.length,1,'같은 출처의 파일 받기 링크 하나');
     assert.ok(Object.hasOwn(down[0],'download'),'파일 받기는 download로 받는다');
     assertGoesToReview(file,FILE.label);
-    const link=room(stage,[GUIDE]);
+    const link=room(stage,[PREVIEW,GUIDE]);
     assert.deepEqual(link.videos,[]);assert.deepEqual(link.images,[]);
     const out=link.links.filter(a=>a.href===here(GUIDE.url));
     assert.equal(out.length,1,'외부 안내 링크 하나');
@@ -153,4 +153,17 @@ test('7. 큰 미리 보기의 이동은 roomTab이 받는 review이고, 없는 d
     assert.deepEqual(view.videos.map(v=>v.src),[here(shown.media.url)]);
     assertGoesToReview(view,shown.label);
   }
+});
+
+
+test('8. 기존 납품 방의 이름 없는 최종 파일·영상·사진에는 같은 이름을 표시한다',()=>{
+  for(const version of [FINAL_FILM,PHOTO_NEW,FILE]){
+    const p=project('delivered',[{...version,label:''}]);
+    p.requestFlow=false;delete p.studio.request;
+    const html=projectView({mode:'customer',tab:'history',project:p,demo:false});
+    assert.match(html,/<h2>최종본<\/h2>/);
+    if(version.media.mimeType.startsWith('video/'))assert.ok(tags(html,'video').some(video=>video['aria-label']==='최종본'));
+    if(version.media.mimeType.startsWith('image/'))assert.ok(tags(html,'img').some(image=>image.alt==='최종본'));
+  }
+  assert.deepEqual(opened,[]);
 });

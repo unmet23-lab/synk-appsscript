@@ -1471,5 +1471,6 @@
 .directory-paging { display:flex; justify-content:center; align-items:center; gap:1rem; margin:1rem 0; }
 @media (max-width:650px) {
   .directory-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .directory-form input, .directory-form select { font-size:16px; }
   .directory-form .directory-query { grid-column:1/-1; }
 }

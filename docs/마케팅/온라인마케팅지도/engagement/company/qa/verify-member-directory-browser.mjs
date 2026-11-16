@@ -11,65 +11,166 @@ const {chromium}=require(process.env.MESSENGER_PLAYWRIGHT||join(homedir(),'.cach
 const output=resolve(process.env.ADMIN_DIRECTORY_QA_OUT||'.tmp/admin-directory-browser');
 const fixture=await createAdminBrowserFixture();
 let browser;
-const checks=[],errors=[];
+const checks=[],errors=[],consoleErrors=[],failedRequests=[],responses=[];
 try {
   await mkdir(output,{recursive:true});
   browser=await chromium.launch({headless:true,executablePath:process.env.MESSENGER_CHROME||'C:/Program Files/Google/Chrome/Application/chrome.exe',env:크롬환경()});
   const context=await browser.newContext({viewport:{width:1440,height:980}});
   await context.addCookies([{name:'synk_company_session',value:fixture.cookieFor(fixture.admin),url:fixture.base}]);
+  const activeId='11111111-1111-4111-8111-111111111111',endedId='22222222-2222-4222-8222-222222222222';
+  const link=fixture.app.store.db.prepare('INSERT INTO synk_identity_links VALUES(?,?,?,?)');
+  link.run(activeId,fixture.dual.id,'synthetic-link',new Date().toISOString());
+  link.run(endedId,fixture.stopped.id,'synthetic-link',new Date().toISOString());
   fixture.app.store.put('customerWorkspaces','qa-brand',{name:'합성 스튜디오',status:'active',members:[
-    {synkUserId:'11111111-1111-4111-8111-111111111111',displayName:'합성 고객',role:'member'}]});
+    {synkUserId:activeId,displayName:'합성 겸임 고객',role:'member'},
+    {synkUserId:'33333333-3333-4333-8333-333333333333',displayName:'합성 전용 고객',role:'member'}]});
+  fixture.app.store.put('customerWorkspaces','qa-ended-brand',{name:'종료 브랜드',status:'archived',members:[
+    {synkUserId:endedId,displayName:'중지 고객',role:'member'}]});
   const page=await context.newPage();
   page.on('pageerror',err=>errors.push(err.message));
+  page.on('console',message=>{if(message.type()==='error')consoleErrors.push({text:message.text(),path:new URL(message.location().url||fixture.base).pathname});});
+  page.on('requestfailed',request=>{if(request.failure()?.errorText!=='net::ERR_ABORTED')failedRequests.push({path:new URL(request.url()).pathname,error:request.failure()?.errorText});});
+  page.on('response',response=>{if(response.status()>=400)responses.push({path:new URL(response.url()).pathname,status:response.status()});});
   await page.goto(fixture.base+'/?tab=admin');
-  const area=page.locator('[data-directory-body]'), form=area.locator('form'), results=area.locator('[data-directory-results]');
+  const area=page.locator('[data-directory-body]'),form=area.locator('form'),results=area.locator('[data-directory-results]');
   const check=(name,condition)=>{assert.ok(condition,name);checks.push(name);};
+  const byStaff=id=>results.locator('tbody tr').filter({has:page.locator('[data-directory-staff-id="'+id+'"]')});
+  async function search(text){
+    await form.locator('[name=q]').fill(text);await form.locator('[name=q]').press('Enter');
+    await results.locator('.directory-total').waitFor();
+  }
+  await results.locator('tbody').waitFor();
+  check('administrator affiliation',await byStaff(fixture.admin.id).getByText('전체 접근 관리자',{exact:true}).count()===1);
+  const dualRow=byStaff(fixture.dual.id);
+  check('verified staff and customer have one row',await dualRow.count()===1 && (await dualRow.innerText()).includes('PULSE 고객'));
+  check('central and staff IDs are visible', (await dualRow.innerText()).includes(activeId) && (await dualRow.innerText()).includes(fixture.dual.id));
+  const endedRow=byStaff(fixture.stopped.id);
+  check('disabled staff and ended brand are distinguished', (await endedRow.innerText()).includes('(중지)') && (await endedRow.innerText()).includes('(종료)'));
+  check('escaped user name is text',await results.locator('img').count()===0);
   for(const width of [1440,390]){
     await page.setViewportSize({width,height:950});
-    await results.locator('tbody').waitFor();
     check('fit viewport '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     await page.screenshot({path:join(output,'workspace-'+width+'.png')});
   }
+  check('mobile search control font',await form.locator('input,select').evaluateAll(nodes=>nodes.every(node=>parseFloat(getComputedStyle(node).fontSize)>=16)));
+  await search(fixture.dual.name);
+  check('same names stay separate',await results.locator('tbody tr').count()===2);
+  await form.locator('[name=q]').fill('');
+  await form.locator('[name=company]').selectOption('SHIFT');
+  await results.locator('.directory-total').waitFor();
+  const shiftIds=await results.locator('[data-directory-staff-id]').evaluateAll(nodes=>nodes.map(node=>node.dataset.directoryStaffId).sort());
+  check('company filter uses actual membership',JSON.stringify(shiftIds)===JSON.stringify([fixture.dual.id,fixture.shift.id,fixture.manager.id].sort()));
+  await form.locator('[name=company]').selectOption('PULSE');await form.locator('[name=status]').selectOption('disabled');
+  await results.getByText('1명',{exact:true}).waitFor();
+  check('company and disabled status combine',await byStaff(fixture.stopped.id).count()===1);
+  await form.locator('[name=company]').selectOption('all');await form.locator('[name=status]').selectOption('all');
+
   const joinedId='7834ca16-fec5-4612-bb0c-7cb021ae6376';
   fixture.app.store.put('users',joinedId,{...fixture.app.store.get('users',fixture.dual.id),id:joinedId,name:'방금 합류 시험',email:'new@example.test'});
-  await form.locator('[name=q]').fill(joinedId);
-  await form.locator('[name=q]').press('Enter');
-  await results.getByText('1명',{exact:true}).waitFor();
+  await search(joinedId);
+  let releaseState,enteredState;
+  const stateRequested=new Promise(resolve=>{enteredState=resolve;}),stateHeld=new Promise(resolve=>{releaseState=resolve;});
+  await page.route('**/api/state',async route=>{enteredState();await stateHeld;await route.continue();},{times:1});
   await results.locator('[data-directory-staff-id]').click();
-  await page.locator('[data-directory-staff]:visible .admin-name-btn[data-admin-member="'+joinedId+'"]').waitFor();
-  checks.push('employee ID opens employee actions');
+  await stateRequested;
+  const staff=page.locator('[data-directory-staff]:visible');
+  await staff.getByText('직원 정보를 불러오는 중입니다',{exact:true}).waitFor();
+  check('slow reload keeps visible filter and hides stale counts',await staff.locator('[data-admin-search]').inputValue()===joinedId && !(await staff.innerText()).includes('조건에 맞는 0명'));
+  check('slow reload does not claim employee is absent',await staff.getByText('조건에 맞는 직원이 없어요',{exact:true}).count()===0);
+  releaseState();
+  const member=staff.locator('.admin-name-btn[data-admin-member="'+joinedId+'"]');
+  await member.waitFor();
+  await page.waitForFunction(id=>document.activeElement?.getAttribute('data-admin-member')===id,joinedId);
+  checks.push('fresh employee loads and receives focus');
+  const focusedBounds=await member.boundingBox();
+  check('focused employee stays visible on mobile',focusedBounds.y>=0 && focusedBounds.y+focusedBounds.height<=950);
   await page.getByRole('button',{name:'Workspace 회원',exact:true}).click();
   check('return preserves search',await form.locator('[name=q]').inputValue()===joinedId);
-  await form.locator('[name=q]').fill('');
-  await form.locator('[name=type]').selectOption('customer');
-  await results.getByText('합성 고객',{exact:true}).waitFor();
-  check('only customers',await results.locator('tbody tr').count()===1);
-  await page.getByRole('button',{name:'전체 SYNK ID',exact:true}).click();
+  await results.locator('[data-directory-staff-id]').waitFor();
+  await page.route('**/api/state',route=>route.fulfill({status:503,json:{error:'합성 조회 실패'}}),{times:1});
+  await results.locator('[data-directory-staff-id]').click();
+  await staff.getByText('직원 정보를 불러오지 못했습니다',{exact:true}).waitFor();
+  check('failed reload shows a recovery action',await staff.getByText('조건에 맞는 직원이 없어요',{exact:true}).count()===0 && await staff.getByRole('button',{name:'다시 시도',exact:true}).count()===1);
+  await staff.locator('[data-admin-tab=invitations]').click();
+  check('invitation tab retains its announced error and top retry',await staff.locator('[data-admin-banner] [role=alert]').count()===1 && await staff.locator('[data-admin-banner] [data-admin-action=retry]').count()===1);
+  await page.screenshot({path:join(output,'invitation-error.png')});
+  await staff.locator('[data-admin-tab=members]').click();
+  await staff.getByRole('button',{name:'최근 7일',exact:true}).click();
+  await staff.getByText('직원 정보를 불러오지 못했습니다',{exact:true}).waitFor();
+  check('period refresh retains state recovery',await staff.getByRole('button',{name:'다시 시도',exact:true}).count()===1 && await staff.getByText('직원 정보를 불러오는 중입니다',{exact:true}).count()===0);
+  await staff.getByRole('button',{name:'다시 시도',exact:true}).click();await member.waitFor();
+  checks.push('employee recovery button restores the fresh member');
+  let releaseInviteRefresh,enteredInviteRefresh;
+  const inviteRefreshHeld=new Promise(resolve=>{releaseInviteRefresh=resolve;}),inviteRefreshEntered=new Promise(resolve=>{enteredInviteRefresh=resolve;});
+  await page.route('**/api/state',async route=>{enteredInviteRefresh();await inviteRefreshHeld;await route.continue();},{times:1});
+  await staff.locator('[data-admin-tab=invitations]').click();
+  await page.locator('.admin-head [data-admin-action=refresh]').click();await inviteRefreshEntered;
+  check('invitation tab announces the pending state reload',await staff.locator('[data-admin-banner] [role=status]').count()===1);
+  await page.screenshot({path:join(output,'invitation-loading.png')});
+  releaseInviteRefresh();await staff.locator('.admin-invites-table').waitFor();
+  await staff.locator('[data-admin-tab=members]').click();await member.waitFor();
+  await page.getByRole('button',{name:'Workspace 회원',exact:true}).click();
+  await results.locator('[data-directory-staff-id]').waitFor();
+  let releaseForInvite,enteredForInvite;
+  const inviteWait=new Promise(resolve=>{releaseForInvite=resolve;}),inviteRead=new Promise(resolve=>{enteredForInvite=resolve;});
+  await page.route('**/api/state',async route=>{enteredForInvite();await inviteWait;await route.continue();},{times:1});
+  await results.locator('[data-directory-staff-id]').click();await inviteRead;
+  await page.locator('.admin-head [data-action=invite]').click();
+  await page.locator('[data-form=invite] input[name=name]').focus();
+  releaseForInvite();await member.waitFor();await page.waitForTimeout(300);
+  check('staff reload preserves invite form focus',await page.evaluate(()=>!!document.activeElement?.closest('[data-form=invite]')));
+  await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'Workspace 회원',exact:true}).click();
+  await form.locator('[name=q]').fill('');await form.locator('[name=type]').selectOption('customer');
+  await results.getByText('합성 전용 고객',{exact:true}).waitFor();
+  check('customer filter includes linked and customer-only members',await results.locator('tbody tr').count()===3);
+  await page.locator('.admin-head [data-action=invite]').click();await page.locator('[data-form=invite]').waitFor();
+  await page.keyboard.press('Escape');
+  checks.push('invite form opens from Workspace directory');
+
+  let releaseForbiddenState,enteredForbiddenState;
+  const forbiddenHeld=new Promise(resolve=>{releaseForbiddenState=resolve;}),forbiddenEntered=new Promise(resolve=>{enteredForbiddenState=resolve;});
+  await page.route('**/api/state',async route=>{enteredForbiddenState();await forbiddenHeld;await route.continue();},{times:1});
+  await page.getByRole('button',{name:'전체 SYNK ID',exact:true}).focus();
+  await page.keyboard.press('Enter');await forbiddenEntered;
+  await page.keyboard.press('Tab');
+  releaseForbiddenState();
   await results.getByRole('alert').waitFor();
-  check('password session cannot read central directory',!(await results.innerText()).includes('합성 고객'));
-  // Only the central service response is simulated here. HTTP authorization and
-  // directory pagination run separately against the real route and a test database.
+  check('forbidden refresh preserves keyboard scope focus',await page.getByRole('button',{name:'전체 SYNK ID',exact:true}).evaluate(node=>node===document.activeElement));
+  await page.screenshot({path:join(output,'forbidden-focus.png')});
+  check('forbidden directory explains account and permission', (await results.innerText()).includes('열람 권한') && await results.getByRole('button',{name:'다시 시도'}).count()===0);
   await page.route('**/api/admin/member-directory/synk',async route=>{
-    const {page:n,q}=route.request().postDataJSON();
-    await route.fulfill({json:{total:q?0:26,page:n,pageSize:25,rows:q?[]:[
-      {id:'22222222-2222-4222-8222-222222222222',name:n===1?'중앙 합성 회원':'다음 회원',loginId:'qa@example.test',status:'active',createdAt:'2026-01-01T00:00:00Z'}]}});
+    const {page:n,q}=route.request().postDataJSON(),rows=q?[]:Array.from({length:n===1?25:1},(_,i)=>({
+      id:'44444444-4444-4444-8444-'+String((n-1)*25+i).padStart(12,'0'),name:n===1?(i===0?'중앙 합성 회원':'중앙 회원 '+i):'다음 회원',loginId:'qa'+i+'@example.test',status:'active',createdAt:'2026-01-01T00:00:00Z'}));
+    await route.fulfill({json:{total:q?0:26,page:n,pageSize:25,rows}});
   });
-  await results.getByRole('button',{name:'다시 시도'}).click();
+  await form.getByRole('button',{name:'검색',exact:true}).click();
   await results.getByText('중앙 합성 회원',{exact:true}).waitFor();
   for(const width of [390,1440]){
     await page.setViewportSize({width,height:950});
     check('central viewport '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     await page.screenshot({path:join(output,'synk-'+width+'.png')});
   }
-  await results.getByRole('button',{name:'다음',exact:true}).click();
-  await results.getByText('다음 회원',{exact:true}).waitFor();
+  await results.getByRole('button',{name:'다음',exact:true}).click();await results.getByText('다음 회원',{exact:true}).waitFor();
   check('page focus stays in results',await results.locator('.directory-total:focus').count()===1);
-  await form.locator('[name=q]').fill('검색 결과 없음');await form.getByRole('button',{name:'검색',exact:true}).click();
-  await results.getByText('조건에 맞는 회원이 없습니다.').waitFor();
-  check('central paging, empty and error recovery',errors.length===0);
-  await page.locator('.admin-head [data-action=invite]').click();
-  await page.locator('[data-form=invite]').waitFor();
-  checks.push('existing invite form opens from both directories');
-  await writeFile(join(output,'result.json'),JSON.stringify({synthetic:true,checks,errors},null,2));
+  await results.getByRole('button',{name:'이전',exact:true}).click();await results.getByText('중앙 합성 회원',{exact:true}).waitFor();
+  await page.route('**/api/admin/member-directory/synk',route=>route.fulfill({status:403,json:{error:'합성 열람 권한 해제'}}),{times:1});
+  await results.getByRole('button',{name:'다음',exact:true}).focus();await page.keyboard.press('Enter');
+  await results.getByRole('alert').waitFor();
+  check('forbidden page action restores keyboard scope focus',await page.getByRole('button',{name:'전체 SYNK ID',exact:true}).evaluate(node=>node===document.activeElement));
+  await search('검색 결과 없음');check('empty search feedback',await results.getByText('조건에 맞는 회원이 없습니다.').count()===1);
+  await page.locator('.admin-head [data-action=invite]').click();await page.locator('[data-form=invite]').waitFor();await page.keyboard.press('Escape');
+  checks.push('invite form opens from central directory');
+  await page.getByRole('button',{name:'Workspace 회원',exact:true}).click();await results.locator('tbody').waitFor();
+  fixture.app.store.put('users',fixture.admin.id,{...fixture.app.store.get('users',fixture.admin.id),role:'member'});
+  await page.locator('.admin-head [data-admin-action=refresh]').click();
+  await page.waitForFunction(()=>!document.querySelector('.admin-workspace'));
+  checks.push('revoked administrator leaves the admin view');
+  const expected=[{path:'/api/state',status:503},{path:'/api/admin/member-directory/synk',status:403},{path:'/api/admin/member-directory/synk',status:403},{path:'/api/admin/member-directory/workspace',status:403}];
+  check('only deliberate HTTP failures',JSON.stringify(responses.sort((a,b)=>a.path.localeCompare(b.path)))===JSON.stringify(expected.sort((a,b)=>a.path.localeCompare(b.path))));
+  check('no failed transport requests',failedRequests.length===0);
+  check('no unexpected console errors',consoleErrors.every(row=>expected.some(item=>item.path===row.path && row.text.includes(String(item.status)))));
+  check('no page exceptions',errors.length===0);
+  await writeFile(join(output,'result.json'),JSON.stringify({synthetic:true,centralResponseSimulated:true,checks,errors,consoleErrors,failedRequests,responses},null,2));
   console.log(JSON.stringify({passed:checks.length,errors:errors.length}));
 } finally {try{await browser?.close();}finally{await fixture.close();}}
