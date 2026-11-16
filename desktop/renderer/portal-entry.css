@@ -101,7 +101,8 @@
 #portal-entry[data-portal-state="welcome"] .portal-orb-stage[data-orb-mode="static"]::after,
 #portal-entry[data-portal-state="zooming"] .portal-orb-stage[data-orb-mode="static"]::after,
 #portal-entry[data-portal-state="checking"] .portal-orb-stage[data-orb-mode="static"]::after,
-#portal-entry[data-portal-state="entering"] .portal-orb-stage[data-orb-mode="static"]::after {
+#portal-entry[data-portal-state="entering"] .portal-orb-stage[data-orb-mode="static"]::after,
+#portal-entry[data-portal-state="entered"][data-portal-active="true"] .portal-orb-stage[data-orb-mode="static"]::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -112,6 +113,20 @@
   border-radius: 50%;
   background: radial-gradient(circle at 34% 28%, rgba(245, 247, 252, 0.52) 0%, rgba(20, 23, 29, 0.94) 38%, #040507 78%, #dce2ec 99%, #f4f7fc 100%);
   box-shadow: inset 0 0 0 1px rgba(236, 241, 248, 0.56);
+}
+
+/* 구를 유지하는 단계의 상태 글: 화면에는 보이지 않고 낭독기에만 읽힌다. */
+#portal-entry .portal-orb-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 #portal-entry .portal-stage {

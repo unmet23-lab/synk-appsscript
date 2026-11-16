@@ -112,6 +112,7 @@ function buildPortalMarkup() {
     <div class="portal-stage" data-portal-stage>
       <section class="portal-welcome" data-portal-pane="welcome" aria-label="SYNK">
         <button type="button" class="circle-portal" data-portal-action="orb" aria-label="SYNK 시작"></button>
+        <p class="portal-orb-status" data-portal-orb-status role="status" aria-live="polite"></p>
       </section>
 
       <section class="portal-interior" data-portal-interior hidden aria-labelledby="portal-heading">
@@ -303,6 +304,7 @@ export function mountPortalEntry(root, options = {}) {
   const orbStage = root.querySelector('[data-portal-orb-stage]');
   const welcomeSection = root.querySelector('[data-portal-pane="welcome"]');
   const orbButton = root.querySelector('[data-portal-action="orb"]');
+  const orbStatusEl = root.querySelector('[data-portal-orb-status]');
   const interiorSection = root.querySelector('[data-portal-interior]');
   const headNav = root.querySelector('[data-portal-head-nav]');
   const backWelcomeBtn = root.querySelector('[data-portal-action="back-welcome"]');
@@ -641,7 +643,11 @@ export function mountPortalEntry(root, options = {}) {
       return;
     }
     if (phase === 'checking' || phase === 'entering') {
-      if (doc?.activeElement && !root.contains(doc.activeElement)) {
+      // 내부 단계의 단추로 넘어오면 그 단추가 방금 숨겨졌으므로 초점을 포털로 옮긴다(카본 0.4.94 원천 검수).
+      if (
+        doc?.activeElement
+        && (!root.contains(doc.activeElement) || !isElementVisible(doc.activeElement))
+      ) {
         root.setAttribute('tabindex', '-1');
         root.focus?.({ preventScroll: true });
       }
@@ -768,6 +774,7 @@ export function mountPortalEntry(root, options = {}) {
     }
 
     if (!effectiveActive) {
+      if (orbStatusEl) orbStatusEl.textContent = '';
       stopZoomAnimation();
       releaseOrb();
       restoreHostElements();
@@ -787,6 +794,17 @@ export function mountPortalEntry(root, options = {}) {
     const showOrbScene = phase === 'welcome' || phase === 'zooming' || isOrbHoldPhase;
     welcomeSection.hidden = !showOrbScene;
     interiorSection.hidden = showOrbScene;
+    // 구를 유지하는 동안 화면에는 글을 띄우지 않고, 숨긴 내부 구역의 상태 글 대신 낭독기에만 같은 뜻을 알린다(Fable 0.4.94 원천 검수).
+    if (orbStatusEl) {
+      const orbStatus = phase === 'checking'
+        ? '저장된 로그인 정보를 확인하고 있어요.'
+        : phase === 'entering'
+          ? '계정에 연결된 작업 공간을 불러오고 있어요.'
+          : holdingExitOrb
+            ? '작업 공간을 여는 중이에요.'
+            : '';
+      if (orbStatusEl.textContent !== orbStatus) orbStatusEl.textContent = orbStatus;
+    }
     root.dataset.portalMode = phase === 'purpose' || phase === 'workspace' ? 'purpose' : 'default';
 
     if (showOrbScene) {

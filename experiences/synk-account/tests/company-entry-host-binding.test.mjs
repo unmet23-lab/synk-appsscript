@@ -2670,3 +2670,54 @@ for (const change of ['current', 'replacement', 'malformed', 'removed', 'same-ac
     assert.equal(lookups, 1);
   });
 }
+
+// 카본 0.4.94 원천 검수: 오류 단계의 「다시 시도」로 들어가는 동안 방금 숨긴 단추에 초점이 남으면 다음 프레임에 초점이 포털 밖으로 빠진다.
+// Fable 0.4.94 원천 검수: 구를 유지하는 동안 숨긴 내부 구역의 상태 글 대신 구 옆의 낭독기용 상태 글이 같은 뜻을 알린다.
+test('enter-error retry moves focus from the hidden retry button onto the portal while the orb holds', async t => {
+  const dom = createFakeDomEnvironment();
+  const authIdentity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1 };
+  const resolveCalls = [];
+  const host = mountWebPortalHost({
+    root: dom.root,
+    getReducedMotion: () => true,
+    getStartupState: () => ({ status: authIdentity.status }),
+    getAccount: () => ({
+      identity: () => authIdentity,
+      isAccountBound: id => authIdentity.signedIn === true && authIdentity.accountId === id,
+    }),
+    companyBoundaries: {
+      resolveAssignedDestination(args) {
+        resolveCalls.push(args);
+        if (resolveCalls.length === 1) return Promise.reject(new Error('assignment lookup failed'));
+        return new Promise(() => {});
+      },
+      openAssignedDestination() {
+        return { ok: true, navigationRequested: true };
+      },
+      cancelCompanyEntry() {},
+    },
+  });
+  t.after(() => host.dispose());
+
+  const orbStatus = dom.root.querySelector('[data-portal-orb-status]');
+  assert.ok(orbStatus, 'orb status line exists');
+  assert.equal(orbStatus.getAttribute('role'), 'status');
+
+  dom.root.querySelector('[data-portal-action="orb"]').click();
+  for (let n = 0; n < 6; n++) await tick();
+  assert.equal(host.getState().phase, 'enter-error');
+  assert.equal(orbStatus.textContent, '');
+  const retry = dom.root.querySelector('[data-portal-action="retry-enter"]');
+  assert.equal(retry.hidden, false);
+  retry.focus();
+  assert.equal(dom.doc.activeElement, retry);
+
+  retry.click();
+  assert.equal(host.getState().phase, 'entering');
+  assert.equal(resolveCalls.length, 2);
+  assert.equal(dom.root.querySelector('[data-portal-interior]').hidden, true);
+  assert.notEqual(dom.doc.activeElement, retry);
+  assert.equal(dom.doc.activeElement, dom.root);
+  assert.equal(dom.root.querySelector('[data-portal-pane="welcome"]').hidden, false);
+  assert.equal(orbStatus.textContent, '계정에 연결된 작업 공간을 불러오고 있어요.');
+});
