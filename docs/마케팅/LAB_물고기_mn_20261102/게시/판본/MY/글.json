@@ -499,7 +499,7 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "Dimakan 물고기!",
+      "글": "Habis dimakan 물고기!",
       "원문": "물고기한테 먹혔다!",
       "초": [
         16.2,
@@ -533,7 +533,7 @@
     {
       "id": "게시글.youtube.본문.2",
       "칸": "게시글",
-      "글": "Nak snorkeling kat Pulau Perhentian? Semua yang kau nampak kat situ 물고기 (mul-go-gi).",
+      "글": "Nak snorkeling kat Pulau Perhentian? Semua yang awak nampak kat situ tu 물고기 (mul-go-gi).",
       "원문": "프르헨티안섬에서 스노클링할 거야? 거기서 보는 건 다 물고기다."
     },
     {
