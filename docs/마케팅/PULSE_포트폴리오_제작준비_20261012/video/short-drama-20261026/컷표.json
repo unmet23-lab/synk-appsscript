@@ -1,0 +1,5320 @@
+{
+ "틀": 2,
+ "읽는법": "복사해 <편>/컷표.json으로 쓴다. 장면의 장소 · 빛과 인물의 묘사 · 옷 · 점은 지시문에 글자 그대로 들어가는 영어 문장이다(좌우는 「of the frame」이나 「her left」로). 장면의 「빛이름」은 영상양식/빛이름.json에서 한둘 — 옆빛 이름이면 빛 문장에 키 빛이 오는 쪽을 적고, 사람 없는 컷도 쓰는 장면은 쪽을 화면 기준으로 쓴다(her · face 없이). 연기의 t와 카메라의 초는 그 판(받을 영상) 안의 초 — 지시문 ACTION · CAMERA에 그대로 쓰고(카메라는 쓰는 구간 끝 out까지 적는다), 모델이 0.7~1.5초 늦게 하니 편집에서 쓸 구간(in~out)을 그만큼 뒤로 잡는다. 얼굴 연기가 보이는 사람 컷은 「연기세기」에 작게 · 중간 · 크게 가운데 하나를 적는다(비우면 작게 — 광고 얼굴은 작게). 그런 컷의 연기 박자는 얼굴 위에서 아래 차례로 쓰고, 마지막 박자에 끝까지 남는 모습을 적는다(지시문 틀 ACTION). 컷의 「시작그림」은 그 컷의 영상을 뽑을 시작 그림 파일(편 폴더 기준)이다 — 한 그림은 한 컷에만 쓰고, 한 판을 일부러 이어 쓰는 컷(한 방을 둘로 자른 컷)은 그 컷에 같은판: \"<까닭>\"을 적는다. 되풀이해 나오는 탈것(두 컷부터) · 소품(세 컷부터)은 맨 위 「소품」에 한 줄(종류 · 낱말 · 색 · 생김새 · 기준그림) — 「낱말」은 지시문에서 그것을 부르는 영어 이름씨, 「생김새」는 그것이 나오는 컷의 이미지 지시문에 글자 그대로 들어가는 영어 문장이고, 색은 이 줄에만 적는다(지시문마다 따로 적지 않는다). 「글자」에는 화면에 뜨는 글자를 한 줄씩 적는다(글, 종류, 어디, 만드는법). 종류가 강조, 이름, 끝로고, 장면속인 줄은 「시안」에 실제 장면 위에 얹어 본 시안 그림을 둘 이상 적는다(편 폴더 기준 경로 목록). 이 칸은 편 날짜가 2026-11-17 이후인 편만 본다. 편 날짜는 편 폴더 이름 끝의 _YYYYMMDD이고, 폴더 이름에 날짜가 없으면 「편」에 \"만든날\": \"YYYY-MM-DD\"를 적는다. 시안 파일이 둘보다 적으면 표만 볼 때는 주의, --영상으로 마감할 때는 걸림이다. 시안을 만들 수 없는 까닭이 있으면 「시안없음」에 그 까닭을 적는다(주의로 남는다). 검사: python -I -X utf8 tools/컷연속성검사.py <편>/컷표.json. 영상 굽기 꾸러미는 tools/꾸러미만들기.py가 이 표와 영상지시문/<판>.txt에서 짓는다 — 컷에 더 적을 수 있는 칸: 끝그림 · 참고그림(목록) · 목소리견본(목록) · 길이(판 길이를 손으로 정할 때 — 4~15초). 편집이 판의 한 자리만 잘라 쓰는 편(서울로 2000×550 ← 1280×720)은 컷마다 「창」을 적는다 — {\"세로\": 0.62}처럼 창 가운데가 판의 어디인가(0~1, [처음, 끝]이면 쓰는 구간 동안 옮김 · 가로도 같다 · 「배율」은 편 비율의 가장 큰 창보다 몇 배 가까운가). 받은 뒤 검사(tools/받은뒤검사.py)가 그 창으로 잘라 컷 안 탈것 · 배경 움직임을 잰다 — 전체 화면으로 재면 띠가 최종본과 달라 흠이 빠진다.",
+ "편": {
+  "이름": "7번 브랜디드 숏드라마 「사랑 한 칸」 1 · 2화(서진 · 이안)",
+  "비율": "9:16",
+  "길이": 119.96,
+  "메모": "옛 콘티(10-26 ~ 11-07)를 11-16 틀 2로 옮겼다(컷표만들기.py). 시간은 1화 0 ~ 60.02초 뒤에 2화를 이었다 — 최종본은 화마다 따로 자른다."
+ },
+ "이기는것": "여운 — 1화 매실 하나뿐인 빈 반찬 칸이 2화 끝에 그가 채운 꽉 찬 도시락 두 개가 된다",
+ "한문장": "한 발 뺀 그녀 앞에서, 미루던 그가 먼저 혼인신고서를 썼다",
+ "가까운사례": "S31 · S44 — 원본의 컷 · 초 · 구도를 그대로 옮긴 이미지 콘티(S31)에서, 광고 모델이 한국어 대사를 시댄스 첫 프레임 길로 말하는 판(S44). 다르게: 두 사람 · 93컷 숏드라마라 대사 판은 배역 목소리 견본을 소리 참고로 넣는다(그 판은 첫 장이 시작 그림과 조금 다르다)",
+ "엔진": {
+  "그림": "GPT Image 2.5 Sunburst(「새로」 판 — 결정 10-30 · 11-08)",
+  "영상": "Seedance 2.5 720p(드리미나 울트라 첫 프레임 · 대사 판은 소리 참고)"
+ },
+ "장면": {
+  "회사낮": {
+   "장소": "a bright open-plan office in Seoul — long rows of white desks with black monitors and laptops, grey mesh office chairs, white walls, a white ceiling with rows of square LED panel lights, big windows along one side. Image 8 shows this same office only for its furniture, materials and colors — do not copy its wide framing; this shot keeps the framing described above.",
+   "빛": "bright, even, cool-white office light from the ceiling panels plus soft daylight from the windows; clean bright whites, slightly high-key, like a Korean office drama.",
+   "빛이름": [
+    "High key",
+    "Window light"
+   ],
+   "시간대": "낮",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-1.jpg"
+  },
+  "식탁밤": {
+   "장소": "the dining corner of a cozy two-room apartment in Seoul — a light natural-oak dining table for two with two wooden chairs, a small kitchen behind with white cabinets, a stainless sink, a range hood and a few jars, a pendant lamp over the table, light oak floor, warm white walls.",
+   "빛": "night at home, but lit brightly and softly like a Korean TV romantic comedy — warm 3000K ceiling and pendant light filling the whole room, soft even fill light everywhere, gentle shadows, no dark corners; the window is dark blue.",
+   "빛이름": [
+    "High key",
+    "Practical light"
+   ],
+   "시간대": "밤",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-5.jpg"
+  },
+  "현관저녁": {
+   "장소": "the entrance hallway of the same apartment — a small sunken entry with beige stone tiles and a white shoe cabinet, one step up to the light oak floor of a narrow hallway with warm white walls, a white front door, and a glass-paneled oak middle door (jungmun) between the hallway and the living room.",
+   "빛": "early evening at home, lit brightly and softly like a Korean TV romantic comedy — warm 3000K room light everywhere, soft even fill light everywhere, gentle shadows; the window outside is blue dusk. Not moody or dim.",
+   "빛이름": [
+    "High key",
+    "Practical light"
+   ],
+   "시간대": "저녁",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-22.jpg"
+  },
+  "식탁저녁": {
+   "장소": "the dining corner of a cozy two-room apartment in Seoul — a light natural-oak dining table for two with two wooden chairs, a small kitchen behind with white cabinets, a stainless sink, a range hood and a few jars, a pendant lamp over the table, light oak floor, warm white walls.",
+   "빛": "early evening at home, lit brightly and softly like a Korean TV romantic comedy — warm 3000K room light everywhere, soft even fill light everywhere, gentle shadows; the window outside is blue dusk. Not moody or dim.",
+   "빛이름": [
+    "High key",
+    "Practical light"
+   ],
+   "시간대": "저녁",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-24.jpg"
+  },
+  "카페낮": {
+   "장소": "a bright café in Seoul — light wood tables, white walls, big windows with green potted plants, white ceramic coffee cups on saucers.",
+   "빛": "bright late-morning daylight pouring through the big windows; airy, soft and high-key, fresh greens and warm wood.",
+   "빛이름": [
+    "High key",
+    "Window light"
+   ],
+   "시간대": "낮",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-32.jpg"
+  },
+  "세탁밤": {
+   "장소": "a small laundry nook at the end of the apartment hallway — a white top-loading washing machine, a pale-blue plastic laundry basket of clean folded clothes on top, a white wall, light oak floor.",
+   "빛": "night at home, but lit brightly and softly like a Korean TV romantic comedy — warm 3000K ceiling and pendant light filling the whole room, soft even fill light everywhere, gentle shadows, no dark corners; the window is dark blue.",
+   "빛이름": [
+    "High key",
+    "Practical light"
+   ],
+   "시간대": "밤",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-1.jpg"
+  },
+  "현관밤": {
+   "장소": "the entrance hallway of the same apartment — a small sunken entry with beige stone tiles and a white shoe cabinet, one step up to the light oak floor of a narrow hallway with warm white walls, a white front door, and a glass-paneled oak middle door (jungmun) between the hallway and the living room.",
+   "빛": "night at home, but lit brightly and softly like a Korean TV romantic comedy — warm 3000K ceiling and pendant light filling the whole room, soft even fill light everywhere, gentle shadows, no dark corners; the window is dark blue.",
+   "빛이름": [
+    "High key",
+    "Practical light"
+   ],
+   "시간대": "밤",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-4.jpg"
+  },
+  "현관주말아침": {
+   "장소": "the entrance hallway of the same apartment — a small sunken entry with beige stone tiles and a white shoe cabinet, one step up to the light oak floor of a narrow hallway with warm white walls, a white front door, and a glass-paneled oak middle door (jungmun) between the hallway and the living room.",
+   "빛": "a weekend morning; bright, soft neutral daylight from a window mixed with the warm entrance light, faces bright and clean.",
+   "빛이름": [
+    "High key",
+    "Window light"
+   ],
+   "시간대": "아침",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-14.jpg"
+  },
+  "흰바탕": {
+   "장소": "none — a pure, seamless white studio background.",
+   "빛": "soft, even, shadowless white studio light.",
+   "빛이름": [
+    "High key"
+   ],
+   "시간대": "없음",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-22.jpg"
+  },
+  "침실밤": {
+   "장소": "the apartment's bedroom — a double bed with rumpled oatmeal-linen bedding and white pillows, a wooden nightstand with a small fabric-shade bedside lamp, sheer cream curtains, a white bedroom door.",
+   "빛": "night in the bedroom, but lit like a Korean TV drama — the warm bedside lamp plus soft warm fill light from above, so the bed, the walls and both faces are clearly and evenly lit; bright, soft and cozy, not dark or moody.",
+   "빛이름": [
+    "High key",
+    "Practical light"
+   ],
+   "시간대": "밤",
+   "실내": true,
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-23.jpg"
+  }
+ },
+ "인물": {
+  "이안_회사": {
+   "묘사": "Ian is a young Korean man in his late twenties - medium-brown wavy hair with a center part, a gentle face; real skin texture, unretouched.",
+   "옷": "In his navy two-button suit, white dress shirt and plain dark-navy tie.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/M01_ian_01_hero.jpg",
+   "설정": {
+    "믿음": "지금도 같이 사는데 결혼하면 뭐가 바뀌나",
+    "버릇": "몰리면 두 손을 들고 웃으며 넘기고, 서진이 화나면 눈빛부터 강아지가 된다",
+    "바라는것": "떠밀리지 않고 제 손으로 정하는 것",
+    "두려운것": "서진이 정말 떠나는 것(2화에서 처음 안다)",
+    "이편에서": "미루다가 먼저 혼인신고서를 쓰는 사람",
+    "반복장치": "빈 반찬 칸 도시락(1-2 · 1-3) → 자기가 꽉 채운 내일 도시락 둘(2-43)"
+   }
+  },
+  "이안_퇴근": {
+   "묘사": "Ian is a young Korean man in his late twenties - medium-brown wavy hair with a center part, a gentle face; real skin texture, unretouched.",
+   "옷": "In his navy suit, just home from work, the dark-navy tie loosened and the top shirt button open.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/M01_ian_01_hero.jpg",
+   "설정": {
+    "믿음": "지금도 같이 사는데 결혼하면 뭐가 바뀌나",
+    "버릇": "몰리면 두 손을 들고 웃으며 넘기고, 서진이 화나면 눈빛부터 강아지가 된다",
+    "바라는것": "떠밀리지 않고 제 손으로 정하는 것",
+    "두려운것": "서진이 정말 떠나는 것(2화에서 처음 안다)",
+    "이편에서": "미루다가 먼저 혼인신고서를 쓰는 사람",
+    "반복장치": "빈 반찬 칸 도시락(1-2 · 1-3) → 자기가 꽉 채운 내일 도시락 둘(2-43)"
+   }
+  },
+  "이안_맨투맨": {
+   "묘사": "Ian is a young Korean man in his late twenties - medium-brown wavy hair with a center part, a gentle face; real skin texture, unretouched.",
+   "옷": "In a plain charcoal-grey crew-neck sweatshirt and light-grey sweatpants.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/M01_ian_01_hero.jpg",
+   "설정": {
+    "믿음": "지금도 같이 사는데 결혼하면 뭐가 바뀌나",
+    "버릇": "몰리면 두 손을 들고 웃으며 넘기고, 서진이 화나면 눈빛부터 강아지가 된다",
+    "바라는것": "떠밀리지 않고 제 손으로 정하는 것",
+    "두려운것": "서진이 정말 떠나는 것(2화에서 처음 안다)",
+    "이편에서": "미루다가 먼저 혼인신고서를 쓰는 사람",
+    "반복장치": "빈 반찬 칸 도시락(1-2 · 1-3) → 자기가 꽉 채운 내일 도시락 둘(2-43)"
+   }
+  },
+  "이안_잠옷": {
+   "묘사": "Ian is a young Korean man in his late twenties - medium-brown wavy hair with a center part, a gentle face; real skin texture, unretouched.",
+   "옷": "In a plain oatmeal-beige long-sleeve cotton t-shirt and navy pajama pants.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/M01_ian_01_hero.jpg",
+   "설정": {
+    "믿음": "지금도 같이 사는데 결혼하면 뭐가 바뀌나",
+    "버릇": "몰리면 두 손을 들고 웃으며 넘기고, 서진이 화나면 눈빛부터 강아지가 된다",
+    "바라는것": "떠밀리지 않고 제 손으로 정하는 것",
+    "두려운것": "서진이 정말 떠나는 것(2화에서 처음 안다)",
+    "이편에서": "미루다가 먼저 혼인신고서를 쓰는 사람",
+    "반복장치": "빈 반찬 칸 도시락(1-2 · 1-3) → 자기가 꽉 채운 내일 도시락 둘(2-43)"
+   }
+  },
+  "이안_흰바탕": {
+   "묘사": "Ian is a young Korean man in his late twenties - medium-brown wavy hair with a center part, a gentle face; real skin texture, unretouched.",
+   "옷": "In a plain grey t-shirt, alone in front of a seamless pure-white backdrop.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/M01_ian_01_hero.jpg",
+   "설정": {
+    "믿음": "지금도 같이 사는데 결혼하면 뭐가 바뀌나",
+    "버릇": "몰리면 두 손을 들고 웃으며 넘기고, 서진이 화나면 눈빛부터 강아지가 된다",
+    "바라는것": "떠밀리지 않고 제 손으로 정하는 것",
+    "두려운것": "서진이 정말 떠나는 것(2화에서 처음 안다)",
+    "이편에서": "미루다가 먼저 혼인신고서를 쓰는 사람",
+    "반복장치": "빈 반찬 칸 도시락(1-2 · 1-3) → 자기가 꽉 채운 내일 도시락 둘(2-43)"
+   }
+  },
+  "서진_카디건": {
+   "묘사": "Seojin is a young Korean woman in her late twenties - long, narrow dark-brown eyes, slightly high cheekbones, a slim tapered jaw, natural black hair pulled back into a sleek low ponytail, small gold hoop earrings; real skin texture, unretouched.",
+   "옷": "In a cream chunky-knit cardigan over a pale-blue striped button-up shirt.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F03_seojin_01_hero.jpg",
+   "설정": {
+    "믿음": "계획대로 가야 마음이 놓인다",
+    "버릇": "계획표 노트를 늘 들고 다니고, 조급하면 손으로 먼저 끈다",
+    "바라는것": "그가 먼저 손을 내미는 것",
+    "두려운것": "서른이 되도록 제자리인 것",
+    "이편에서": "밀어붙이다 한 발 빼는 척하고, 그의 눈빛에 먼저 무너지는 사람",
+    "반복장치": "빈 혼인신고서(1-27) → 그가 이름을 다 쓴 혼인신고서(2-44)"
+   }
+  },
+  "서진_앞치마": {
+   "묘사": "Seojin is a young Korean woman in her late twenties - long, narrow dark-brown eyes, slightly high cheekbones, a slim tapered jaw, natural black hair pulled back into a sleek low ponytail, small gold hoop earrings; real skin texture, unretouched.",
+   "옷": "In a white long-sleeve t-shirt under a sage-green apron.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F03_seojin_01_hero.jpg",
+   "설정": {
+    "믿음": "계획대로 가야 마음이 놓인다",
+    "버릇": "계획표 노트를 늘 들고 다니고, 조급하면 손으로 먼저 끈다",
+    "바라는것": "그가 먼저 손을 내미는 것",
+    "두려운것": "서른이 되도록 제자리인 것",
+    "이편에서": "밀어붙이다 한 발 빼는 척하고, 그의 눈빛에 먼저 무너지는 사람",
+    "반복장치": "빈 혼인신고서(1-27) → 그가 이름을 다 쓴 혼인신고서(2-44)"
+   }
+  },
+  "서진_흰셔츠": {
+   "묘사": "Seojin is a young Korean woman in her late twenties - long, narrow dark-brown eyes, slightly high cheekbones, a slim tapered jaw, natural black hair pulled back into a sleek low ponytail, small gold hoop earrings; real skin texture, unretouched.",
+   "옷": "In a crisp white button-up shirt.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F03_seojin_01_hero.jpg",
+   "설정": {
+    "믿음": "계획대로 가야 마음이 놓인다",
+    "버릇": "계획표 노트를 늘 들고 다니고, 조급하면 손으로 먼저 끈다",
+    "바라는것": "그가 먼저 손을 내미는 것",
+    "두려운것": "서른이 되도록 제자리인 것",
+    "이편에서": "밀어붙이다 한 발 빼는 척하고, 그의 눈빛에 먼저 무너지는 사람",
+    "반복장치": "빈 혼인신고서(1-27) → 그가 이름을 다 쓴 혼인신고서(2-44)"
+   }
+  },
+  "서진_원피스": {
+   "묘사": "Seojin is a young Korean woman in her late twenties - long, narrow dark-brown eyes, slightly high cheekbones, a slim tapered jaw, natural black hair pulled back into a sleek low ponytail, small gold hoop earrings; real skin texture, unretouched.",
+   "옷": "In a fitted wine-red long-sleeve knit dress, black ankle boots and a thin gold necklace.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F03_seojin_01_hero.jpg",
+   "설정": {
+    "믿음": "계획대로 가야 마음이 놓인다",
+    "버릇": "계획표 노트를 늘 들고 다니고, 조급하면 손으로 먼저 끈다",
+    "바라는것": "그가 먼저 손을 내미는 것",
+    "두려운것": "서른이 되도록 제자리인 것",
+    "이편에서": "밀어붙이다 한 발 빼는 척하고, 그의 눈빛에 먼저 무너지는 사람",
+    "반복장치": "빈 혼인신고서(1-27) → 그가 이름을 다 쓴 혼인신고서(2-44)"
+   }
+  },
+  "서진_케이블니트": {
+   "묘사": "Seojin is a young Korean woman in her late twenties - long, narrow dark-brown eyes, slightly high cheekbones, a slim tapered jaw, natural black hair pulled back into a sleek low ponytail, small gold hoop earrings; real skin texture, unretouched.",
+   "옷": "In a cream cable-knit sweater, a canvas tote bag on her shoulder.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F03_seojin_01_hero.jpg",
+   "설정": {
+    "믿음": "계획대로 가야 마음이 놓인다",
+    "버릇": "계획표 노트를 늘 들고 다니고, 조급하면 손으로 먼저 끈다",
+    "바라는것": "그가 먼저 손을 내미는 것",
+    "두려운것": "서른이 되도록 제자리인 것",
+    "이편에서": "밀어붙이다 한 발 빼는 척하고, 그의 눈빛에 먼저 무너지는 사람",
+    "반복장치": "빈 혼인신고서(1-27) → 그가 이름을 다 쓴 혼인신고서(2-44)"
+   }
+  },
+  "서진_네이비": {
+   "묘사": "Seojin is a young Korean woman in her late twenties - long, narrow dark-brown eyes, slightly high cheekbones, a slim tapered jaw, natural black hair pulled back into a sleek low ponytail, small gold hoop earrings; real skin texture, unretouched.",
+   "옷": "In a navy crew-neck sweater.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F03_seojin_01_hero.jpg",
+   "설정": {
+    "믿음": "계획대로 가야 마음이 놓인다",
+    "버릇": "계획표 노트를 늘 들고 다니고, 조급하면 손으로 먼저 끈다",
+    "바라는것": "그가 먼저 손을 내미는 것",
+    "두려운것": "서른이 되도록 제자리인 것",
+    "이편에서": "밀어붙이다 한 발 빼는 척하고, 그의 눈빛에 먼저 무너지는 사람",
+    "반복장치": "빈 혼인신고서(1-27) → 그가 이름을 다 쓴 혼인신고서(2-44)"
+   }
+  },
+  "서진_잠옷": {
+   "묘사": "Seojin is a young Korean woman in her late twenties - long, narrow dark-brown eyes, slightly high cheekbones, a slim tapered jaw, natural black hair pulled back into a sleek low ponytail, small gold hoop earrings; real skin texture, unretouched.",
+   "옷": "In rose-mauve satin pajamas.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F03_seojin_01_hero.jpg",
+   "설정": {
+    "믿음": "계획대로 가야 마음이 놓인다",
+    "버릇": "계획표 노트를 늘 들고 다니고, 조급하면 손으로 먼저 끈다",
+    "바라는것": "그가 먼저 손을 내미는 것",
+    "두려운것": "서른이 되도록 제자리인 것",
+    "이편에서": "밀어붙이다 한 발 빼는 척하고, 그의 눈빛에 먼저 무너지는 사람",
+    "반복장치": "빈 혼인신고서(1-27) → 그가 이름을 다 쓴 혼인신고서(2-44)"
+   }
+  },
+  "민재": {
+   "묘사": "Minjae is Ian's Korean co-worker in his late twenties - short black hair with messy bangs; real skin texture, unretouched.",
+   "옷": "In a dark-grey knit cardigan over a light-blue button-down shirt.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/M04_minjae_01_hero.jpg",
+   "설정": "단역 — 이안의 회사 동기. 브랜드 표어 한 줄(1-16)과 「놓친다」 경고"
+  },
+  "소연": {
+   "묘사": "Soyeon is Seojin's Korean friend in her mid-thirties - shoulder-length dark-brown hair; real skin texture, unretouched.",
+   "옷": "In a mustard-yellow cardigan over a cream t-shirt.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/ego/refs/F05_soyeon_01_hero.jpg",
+   "설정": "단역 — 서진의 친구, 돌 지난 아기 엄마. 1화 끝 「한 발 빼 봐」 귀띔"
+  }
+ },
+ "소품": {
+  "빈칸도시락": {
+   "종류": "소품",
+   "낱말": [
+    "lunchbox"
+   ],
+   "색": "matte cream-white plastic with a light-oak lid",
+   "생김새": "A rectangular two-compartment lunchbox in matte cream-white plastic with a light-oak lid: plain white rice with one red pickled plum in the long compartment, and the small side-dish compartment completely empty.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-2.jpg"
+  },
+  "꽉찬도시락": {
+   "종류": "소품",
+   "낱말": [
+    "lunchboxes"
+   ],
+   "색": "cream-white boxes",
+   "생김새": "Two cream-white lunchboxes packed for tomorrow, full of side dishes (rolled omelet, seasoned greens, braised beef, cherry tomatoes) and white rice with black sesame.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-43.jpg"
+  },
+  "배송상자": {
+   "종류": "소품",
+   "낱말": [
+    "delivery box"
+   ],
+   "색": "plain kraft-paper brown with one flat bright-green label",
+   "생김새": "A plain brown kraft-paper delivery box; its flat bright-green label stays one solid chroma green with nothing written on it.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-4.jpg"
+  },
+  "혼인신고서": {
+   "종류": "소품",
+   "낱말": [
+    "sheet of paper",
+    "form"
+   ],
+   "색": "flat solid bright chroma green",
+   "생김새": "A sheet of paper on the table that is a flat, solid bright-green rectangle (chroma key) with nothing written on it — it stays exactly that green, flat and blank.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-27.jpg"
+  },
+  "새원피스": {
+   "종류": "소품",
+   "낱말": [
+    "dress"
+   ],
+   "색": "emerald-green satin",
+   "생김새": "A new emerald-green satin slip dress with a white paper price tag on a string.",
+   "기준그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-3.jpg"
+  }
+ },
+ "글자": [
+  {
+   "글": "아래쪽 대사 자막(모든 대사)",
+   "종류": "말자막",
+   "어디": "대사가 있는 컷 아래",
+   "만드는법": "후반에서 얹는다 — 숏드라마 관례, 그림에 굽지 않음"
+  },
+  {
+   "글": "혼인신고서의 칸과 이름",
+   "종류": "장면속",
+   "어디": "1-26 · 1-27 · 2-43 · 2-44",
+   "만드는법": "옛 계획은 초록 판을 후반에서 바꿔 끼우기(10-29) — 원칙 6(장면 속 글자는 장면과 한 장으로 굽는다)과 어긋나 굽기 전에 정한다"
+  },
+  {
+   "글": "배송 상자 라벨 「칸찬」",
+   "종류": "장면속",
+   "어디": "2-4 · 2-43",
+   "만드는법": "옛 계획은 초록 라벨을 후반에서 바꿔 끼우기 — 원칙 6과 어긋나 굽기 전에 정한다"
+  },
+  {
+   "글": "다음 화에",
+   "종류": "강조",
+   "어디": "1-45 끝",
+   "만드는법": "숏드라마 관례의 끝 글 — 그린 글자로(기본 글꼴로 치지 않는다)"
+  },
+  {
+   "글": "사랑 한 칸 — 반찬 정기배송 칸찬",
+   "종류": "끝로고",
+   "어디": "2-48 끝까지",
+   "만드는법": "그린 글자 · 재질로 — 꽉 찬 도시락 두 개 위"
+  }
+ ],
+ "소리": {
+  "목소리": "배역마다 시댄스가 처음 낸 목소리(목소리 판 — 견본 없이 일상 한 줄)를 떼어 그 배역의 모든 대사 판에 소리 참고로 넣는다(결정 10-29). 어색한 배역만 일레븐 v4 대안 — 이안 Orion · 서진 Roxie · 민재 Andre · 소연 Vesper(결정 10-30). 타입캐스트는 쓰지 않는다",
+  "첫말초": 0.53,
+  "초반을끄는것": "0초 도시락 뚜껑과 둘의 짧은 놀람 소리, 0.53초 민재 「야, 반찬 칸이 왜 비었어?」",
+  "음악": "원본 짜임 그대로 가사 있는 두 곡(Suno로 새로) — 1화는 1-7 사레(6초)에서 들어와 1-45 「…어떻게?」에서 뚝, 2화는 처음부터 깔리다 2-29 끝에서 끊기고 이명음 → 2-36 「다 연기였어」에서 다시 들어와 2-44에서 높아지고 끝 글자에서 맺는다",
+  "열쇠소리": "사레 기침(1-7) · 볼 누르는 소리(1-12) · 흰 번쩍 전환음(1-4 · 1-14 · 2-13) · 강아지 낑낑(2-22) · 바닥 미끄러짐(2-34) · 도시락 뚜껑 · 수도꼭지 · 현관문 · 구두 · 침실 문. 2-32에는 펜 소리를 넣지 않는다(쓰는 손을 감춘 복선)"
+ },
+ "끝": {
+  "컷": "2-48",
+  "가장센그림": "이름을 다 쓴 혼인신고서 옆, 그가 채운 꽉 찬 내일 도시락 두 개 — 포옹에서 디졸브",
+  "제품보임": true,
+  "로고멈춤초": 2.5,
+  "소리한방": "노래의 끝 화음"
+ },
+ "seq": [
+  [
+   "1-1",
+   "0.00",
+   "기",
+   "와이드 · 회사 점심 — 이안이 도시락을 열고 민재가 뒤에서 어깨 잡고 들여다봄"
+  ],
+  [
+   "1-2",
+   "0.53",
+   "기",
+   "인서트 · 이안 손의 도시락 — 흰밥에 매실 하나"
+  ],
+  [
+   "1-3",
+   "1.23",
+   "기",
+   "인서트 · 텅 빈 반찬 칸"
+  ],
+  [
+   "1-4",
+   "2.07",
+   "기",
+   "바스트 · 이안, 두 손을 들고 해명 → 흰 번쩍"
+  ],
+  [
+   "1-5",
+   "3.37",
+   "기",
+   "미디엄 · 어젯밤 집 식탁 — 이안 어깨 너머(오른쪽 끝 흐린 머리 · 녹차 잔) 서진(니트 카디건)이 계획표 노트를 들고"
+  ],
+  [
+   "1-6",
+   "4.43",
+   "기",
+   "미디엄 · 서진 어깨 너머 이안이 물을 마심"
+  ],
+  [
+   "1-7",
+   "5.73",
+   "기",
+   "클로즈업 · 이안 사레들려 기침(물 뿜기 대신)"
+  ],
+  [
+   "1-8",
+   "7.17",
+   "기",
+   "미디엄 · 서진 어깨 너머 이안, 냅킨으로 입을 가리고"
+  ],
+  [
+   "1-9",
+   "8.63",
+   "기",
+   "미디엄 · 이안 어깨 너머 서진"
+  ],
+  [
+   "1-10",
+   "9.77",
+   "기",
+   "클로즈업 · 서진(펀치인), 이안을 바라보며"
+  ],
+  [
+   "1-11",
+   "10.67",
+   "기",
+   "미디엄 · 서진 어깨 너머 이안, 머뭇"
+  ],
+  [
+   "1-12",
+   "12.30",
+   "기",
+   "바스트 · 이안 — 서진의 두 손이 들어와 볼을 꾹"
+  ],
+  [
+   "1-13",
+   "13.10",
+   "기",
+   "바스트 · 서진, 어이없는 숨"
+  ],
+  [
+   "1-14",
+   "13.67",
+   "기",
+   "바스트 · 볼 눌린 이안 → 흰 번쩍"
+  ],
+  [
+   "1-15",
+   "14.90",
+   "승",
+   "바스트 · 회사 민재(흰 번쩍에서)"
+  ],
+  [
+   "1-16",
+   "15.33",
+   "승",
+   "바스트 · 민재가 빈 칸을 가리키며"
+  ],
+  [
+   "1-17",
+   "17.40",
+   "승",
+   "미디엄 · 이안 옆얼굴"
+  ],
+  [
+   "1-18",
+   "19.17",
+   "승",
+   "클로즈업 · 매실을 씹는 이안"
+  ],
+  [
+   "1-19",
+   "21.83",
+   "승",
+   "바스트 · 종이컵 커피를 마시며 묻는 민재(컵이 입을 가림)"
+  ],
+  [
+   "1-20",
+   "23.00",
+   "승",
+   "바스트 · 고개를 숙여 도시락을 보는 이안"
+  ],
+  [
+   "1-21",
+   "23.90",
+   "승",
+   "바스트 · 이안 어깨 너머 민재"
+  ],
+  [
+   "1-22",
+   "25.93",
+   "승",
+   "인서트 · 집 현관문이 열림"
+  ],
+  [
+   "1-23",
+   "26.63",
+   "승",
+   "와이드 · 앞 흐린 서진 너머 이안이 들어옴"
+  ],
+  [
+   "1-24",
+   "27.97",
+   "승",
+   "인서트 · 개수대 물을 잠그는 서진의 손"
+  ],
+  [
+   "1-25",
+   "29.10",
+   "승",
+   "바스트 · 앞치마의 서진"
+  ],
+  [
+   "1-26",
+   "30.53",
+   "승",
+   "인서트 · 식탁 위 종이 · 펜"
+  ],
+  [
+   "1-27",
+   "31.20",
+   "승",
+   "인서트 · 빈 혼인신고서 접사"
+  ],
+  [
+   "1-28",
+   "32.03",
+   "승",
+   "인서트 · 이안 손을 끄는 서진의 손"
+  ],
+  [
+   "1-29",
+   "32.80",
+   "승",
+   "미디엄 · 이안 어깨 너머, 그의 팔에 볼을 대고 매달리는 서진"
+  ],
+  [
+   "1-30",
+   "35.10",
+   "승",
+   "바스트 · 서진 뒤통수 너머 이안"
+  ],
+  [
+   "1-31",
+   "36.57",
+   "승",
+   "바스트 · 이안(다른 각도) 곤란한 얼굴"
+  ],
+  [
+   "1-32",
+   "38.33",
+   "승",
+   "바스트 · 카페 소연(아기 엄마)"
+  ],
+  [
+   "1-33",
+   "39.50",
+   "전",
+   "바스트 · 서진"
+  ],
+  [
+   "1-34",
+   "40.80",
+   "전",
+   "클로즈업 · 서진이 휴대폰 달력을 내려다보며 한숨"
+  ],
+  [
+   "1-35",
+   "42.23",
+   "전",
+   "바스트 · 소연"
+  ],
+  [
+   "1-36",
+   "44.97",
+   "전",
+   "바스트 · 서진"
+  ],
+  [
+   "1-37",
+   "46.60",
+   "전",
+   "와이드 · 회사 — 책상에 엎드린 민재에게 이안이 다가와 업힘(원본 짜임 그대로)"
+  ],
+  [
+   "1-38",
+   "48.10",
+   "전",
+   "클로즈업 · 책상에 볼을 댄 민재, 그 등에 업힌 이안(위)"
+  ],
+  [
+   "1-39",
+   "49.83",
+   "전",
+   "클로즈업 · 책상에 머리를 댄 민재(입은 이안 팔에 가림), 위 가장자리에 이안"
+  ],
+  [
+   "1-40",
+   "51.63",
+   "전",
+   "클로즈업 · 업힌 이안(위, 크게) + 아래 민재"
+  ],
+  [
+   "1-41",
+   "53.83",
+   "전",
+   "클로즈업 · 아래 민재(얼굴을 들어 이안 쪽) + 위 이안"
+  ],
+  [
+   "1-42",
+   "55.86",
+   "결",
+   "바스트 · 카페 소연, 몸을 기울임"
+  ],
+  [
+   "1-43",
+   "56.42",
+   "결",
+   "익스트림 클로즈업 · 소연 입술"
+  ],
+  [
+   "1-44",
+   "57.99",
+   "결",
+   "미디엄 · 소연 어깨 너머 서진, 놀람"
+  ],
+  [
+   "1-45",
+   "58.92",
+   "결",
+   "클로즈업 · 서진(펀치인) — 「다음 화에」"
+  ],
+  [
+   "2-1",
+   "60.02",
+   "기",
+   "와이드 · 밤 세탁기 앞 이안 뒷모습 — 빨래를 개다 처음 보는 원피스를 집음"
+  ],
+  [
+   "2-2",
+   "60.45",
+   "기",
+   "바스트 · 원피스를 든 이안, 갸웃"
+  ],
+  [
+   "2-3",
+   "61.09",
+   "기",
+   "인서트 · 가격표 달린 새 원피스"
+  ],
+  [
+   "2-4",
+   "61.99",
+   "기",
+   "인서트 · 현관 바닥 — 들어오는 서진 구두, 옆에 칸찬 배송 상자"
+  ],
+  [
+   "2-5",
+   "62.62",
+   "기",
+   "바스트 · 원피스를 바구니에 도로 넣는 이안"
+  ],
+  [
+   "2-6",
+   "63.69",
+   "기",
+   "바스트 · 이안"
+  ],
+  [
+   "2-7",
+   "64.56",
+   "기",
+   "미디엄 · 이안 어깨 너머 서진, 머리를 넘기며 고개를 돌림"
+  ],
+  [
+   "2-8",
+   "65.62",
+   "기",
+   "미디엄 · 스쳐 가는 서진 뒤로 냄새를 맡는 이안"
+  ],
+  [
+   "2-9",
+   "66.89",
+   "기",
+   "클로즈업 · 서진, 미소"
+  ],
+  [
+   "2-10",
+   "68.16",
+   "기",
+   "로우 앵글 · 새 차림의 서진이 카메라 옆을 스쳐 지나가면 복도 끝에 혼자 선 이안이 드러남"
+  ],
+  [
+   "2-11",
+   "69.36",
+   "기",
+   "바스트 · 회사, 이안 어깨 너머 다가오는 민재"
+  ],
+  [
+   "2-12",
+   "70.10",
+   "기",
+   "인서트 · 편의점 샌드위치를 든 이안 손"
+  ],
+  [
+   "2-13",
+   "71.10",
+   "기",
+   "바스트 · 이안 → 흰 번쩍(18의 전환을 옮김)"
+  ],
+  [
+   "2-14",
+   "72.60",
+   "기",
+   "바스트 · 주말 아침 현관, 장바구니를 든 서진"
+  ],
+  [
+   "2-15",
+   "73.27",
+   "기",
+   "바스트 · 이안"
+  ],
+  [
+   "2-16",
+   "74.27",
+   "기",
+   "바스트 · 서진"
+  ],
+  [
+   "2-17",
+   "76.10",
+   "기",
+   "바스트 · 서진 어깨 너머 이안, 놀람"
+  ],
+  [
+   "2-18",
+   "77.80",
+   "기",
+   "바스트 · 이안(다른 각도)"
+  ],
+  [
+   "2-19",
+   "78.70",
+   "기",
+   "와이드 · 회사, 의자에 드러눕는 이안과 옆에서 팔을 붙잡는 민재"
+  ],
+  [
+   "2-20",
+   "80.74",
+   "승",
+   "미디엄 · 카페, 같은 몸짓으로 소연 어깨에 얼굴을 묻고 버둥대는 서진"
+  ],
+  [
+   "2-21",
+   "83.11",
+   "승",
+   "바스트 · 서진"
+  ],
+  [
+   "2-22",
+   "85.39",
+   "승",
+   "바스트 · 흰 바탕의 이안 — 버려진 강아지 같은 눈(상상)"
+  ],
+  [
+   "2-23",
+   "87.03",
+   "승",
+   "미디엄 · 불 끈 침실, 누운 이안"
+  ],
+  [
+   "2-24",
+   "87.96",
+   "승",
+   "바스트 · 앞 이안 흐림, 침대의 서진(태연히 머리를 빗음)"
+  ],
+  [
+   "2-25",
+   "88.63",
+   "승",
+   "어깨 너머 · 핸드크림을 바르는 서진 머리 · 손(앞 흐림) 너머 누운 이안"
+  ],
+  [
+   "2-26",
+   "90.33",
+   "승",
+   "미디엄 · 베개에 볼을 대고 누운 이안"
+  ],
+  [
+   "2-27",
+   "90.83",
+   "승",
+   "바스트 · 앞 이안 머리 흐림, 서진"
+  ],
+  [
+   "2-28",
+   "92.27",
+   "승",
+   "미디엄 · 일어나 앉는 이안"
+  ],
+  [
+   "2-29",
+   "93.54",
+   "승",
+   "미디엄 · 서진, 앞에서 이안이 일어나 나감(흐림)"
+  ],
+  [
+   "2-30",
+   "94.84",
+   "승",
+   "미디엄 · 서진 등(앞 흐림) 너머 침실 문, 이안이 나가 문이 닫힘"
+  ],
+  [
+   "2-31",
+   "96.24",
+   "승",
+   "미디엄 · 혼자 남은 서진 → 디졸브"
+  ],
+  [
+   "2-32",
+   "97.27",
+   "승",
+   "와이드 · 식탁을 짚고 종이 · 펜을 내려다보며 앉는 이안(쓰는 손은 안 보임)"
+  ],
+  [
+   "2-33",
+   "98.07",
+   "전",
+   "바스트 · 식탁의 이안, 고개 숙임"
+  ],
+  [
+   "2-34",
+   "99.07",
+   "전",
+   "미디엄 · 뛰어나와 바닥에 미끄러지는 서진"
+  ],
+  [
+   "2-35",
+   "100.00",
+   "전",
+   "와이드 · 식탁 이안, 앞 바닥의 서진"
+  ],
+  [
+   "2-36",
+   "100.87",
+   "전",
+   "미디엄 · 엎드린 서진"
+  ],
+  [
+   "2-37",
+   "102.27",
+   "전",
+   "클로즈업 · 고개를 드는 서진"
+  ],
+  [
+   "2-38",
+   "103.81",
+   "전",
+   "와이드 · 앞 서진 뒷모습 너머 이안"
+  ],
+  [
+   "2-39",
+   "105.31",
+   "전",
+   "바스트 · 눈물이 고인 이안"
+  ],
+  [
+   "2-40",
+   "108.75",
+   "전",
+   "바스트 · 울며 다가가는 서진"
+  ],
+  [
+   "2-41",
+   "110.65",
+   "전",
+   "바스트 · 서진 어깨 너머 이안"
+  ],
+  [
+   "2-42",
+   "111.29",
+   "전",
+   "와이드 · 식탁의 둘 — 이안이 식탁 위를 가리킴"
+  ],
+  [
+   "2-43",
+   "112.19",
+   "전",
+   "인서트 · 식탁 위 혼인신고서 · 펜 · 칸찬 상자 · 꽉 찬 도시락 두 개"
+  ],
+  [
+   "2-44",
+   "112.69",
+   "전",
+   "인서트 · 이름이 다 적힌 혼인신고서"
+  ],
+  [
+   "2-45",
+   "113.56",
+   "결",
+   "미디엄 · 일어나 서진을 껴안는 이안"
+  ],
+  [
+   "2-46",
+   "114.86",
+   "결",
+   "바스트 · 이안 어깨에 얼굴을 묻고 우는 서진"
+  ],
+  [
+   "2-47",
+   "116.99",
+   "결",
+   "클로즈업 · 포옹(서진 얼굴, 이안 뒤통수)"
+  ],
+  [
+   "2-48",
+   "118.60",
+   "결",
+   "디졸브 → 꽉 찬 도시락 두 개 위 「사랑 한 칸 — 반찬 정기배송 칸찬」"
+  ]
+ ],
+ "end": 119.96,
+ "detail": [
+  {
+   "cut": "1-1",
+   "t": 0.0,
+   "dur": 0.53,
+   "in": 0.8,
+   "out": 1.33,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-1.jpg",
+   "line": "와이드 · 회사 점심 — 이안이 도시락을 열고 민재가 뒤에서 어깨 잡고 들여다봄",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사",
+    "민재"
+   ],
+   "실내": true,
+   "구도": "와이드 · 회사 점심",
+   "카메라": "빠르게 다가감 약 13%(0.1–0.4초, 고르게) · 손에 든 작은 흔들림",
+   "소리": "둘의 짧은 놀람 소리",
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈썹이 살짝 오르고 눈이 도시락 속으로 내려가 커진다. 뒤의 민재는 눈썹을 크게 올리고 눈을 동그랗게 뜬다"
+    },
+    {
+     "t": 0.35,
+     "무엇": "이안의 입술이 조금 벌어지며 짧게 숨을 들이켠다. 민재의 입이 조금 더 벌어지고, 이안 어깨를 쥔 두 손가락에 힘이 들어간다(둘의 짧은 놀람 소리)"
+    },
+    {
+     "t": 0.6,
+     "무엇": "끝 모습 — 이안은 오른손에 뚜껑을 든 채 고개를 1cm쯤 숙여 빈 칸을 내려다보며 숨을 쉬고, 민재는 그 어깨 너머로 몸을 조금 더 기울여 들여다본다"
+    }
+   ],
+   "넘어옴": "첫 컷",
+   "소품": {
+    "빈칸도시락": "이안 손에 · 뚜껑 열림",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "소품행동": {
+    "빈칸도시락": "이안의 오른손이 든 뚜껑이 0.2~0.4s 사이 2cm쯤 더 들린다 — 도시락 몸체는 왼손에 받쳐 있다"
+   }
+  },
+  {
+   "cut": "1-2",
+   "t": 0.53,
+   "dur": 0.7,
+   "in": 0.8,
+   "out": 1.5,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-2.jpg",
+   "line": "인서트 · 이안 손의 도시락 — 흰밥에 매실 하나",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "인서트 · 이안 손의 도시락",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "MINJAE 「야, 반찬 칸이 왜 비었어?」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "화면 밖 민재의 「야, 반찬 칸이 왜 비었어?」가 시작되는 사이, 도시락을 든 이안의 두 손 손가락이 상자 가장자리를 고쳐 쥔다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "이안의 오른손 엄지가 뚜껑 끝을 상자 뒤 가장자리에 받쳐 누르고, 두 손목이 도시락을 카메라 쪽으로 5도쯤 기울여 흰밥과 빈 칸을 보인다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "두 팔꿈치가 굽혀지며 손이 도시락을 책상 쪽으로 천천히 내린다(1.4s까지)"
+    }
+   ],
+   "넘어옴": "놀란 두 사람의 시선이 내려간 곳 — 이안 손의 도시락 속",
+   "소품": {
+    "빈칸도시락": "이안 손에 · 뚜껑 열림",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "소품행동": {
+    "빈칸도시락": "이안의 두 손이 뚜껑을 받친 채 도시락을 책상 위로 내려놓는다(0.9~1.4s) — 다음 컷(1-3)에서 책상 위에 놓여 있다"
+   }
+  },
+  {
+   "cut": "1-3",
+   "t": 1.23,
+   "dur": 0.84,
+   "in": 1.5,
+   "out": 2.34,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-3.jpg",
+   "line": "인서트 · 텅 빈 반찬 칸",
+   "장면": "회사낮",
+   "인물": [],
+   "실내": true,
+   "구도": "인서트 · 텅 빈 반찬 칸",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "(이어짐)",
+   "움직임": "손에 든 카메라의 작은 흔들림만 있다. 손이 닿지 않으니 책상 위 도시락 · 옆의 뚜껑 · 빈 칸 안의 젓가락은 놓인 자리 그대로다. 실내라 아무것도 떨어지거나 떠다니지 않는다",
+   "넘어옴": "민재의 「…왜 비었어?」가 이어지는 동안 그 말이 가리키는 빈 반찬 칸으로 다가감",
+   "소품": {
+    "빈칸도시락": "책상 위 · 뚜껑은 옆에 · 빈 칸에 젓가락",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-4",
+   "t": 2.07,
+   "dur": 1.3,
+   "in": 0.8,
+   "out": 2.1,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-4.jpg",
+   "line": "바스트 · 이안, 두 손을 들고 해명 → 흰 번쩍",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사",
+    "민재"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안, 두 손을 들고 해명 → 흰 번쩍",
+   "카메라": "손에 든 작은 흔들림 · 끝에 흰 번쩍(현재 → 회상)",
+   "소리": "IAN (office) 「결혼 얘기 피한 벌이야.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈썹 안쪽이 살짝 오르고 눈꼬리가 멋쩍게 내려가며, 시선이 도시락에서 민재 쪽으로 조금 든다. 어깨 위 민재의 두 손이 한 번 가볍게 토닥인다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 「결혼 얘기 피한 벌이야.」를 빠르게 말하고 입이 말을 따라 움직인다. 들어 올린 오른손 손바닥이 위로 펴진 채 말에 맞춰 10cm쯤 흔들린다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 이안이 입꼬리를 한쪽만 조금 올린 채 입을 다물고, 고개를 오른쪽으로 2도쯤 기울이며 숨을 내쉰다(끝에 흰 번쩍)"
+    }
+   ],
+   "넘어옴": "빈 칸을 본 뒤 민재의 물음에 답하는 이안의 얼굴로 돌아옴",
+   "소품": {
+    "빈칸도시락": "이안 손에 · 뚜껑 열림",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "소품행동": {
+    "빈칸도시락": "이안의 왼손이 책상의 도시락을 다시 들어 낮게 받친다 — 첫 장에 이미 들려 있어 컷 사이에 든 것으로 본다. 판 안에서는 0.3~0.8s 왼손이 도시락을 조금 기울여 빈 칸을 민재 쪽으로 보인다"
+   }
+  },
+  {
+   "cut": "1-5",
+   "t": 3.37,
+   "dur": 1.06,
+   "in": 0.8,
+   "out": 1.86,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-5.jpg",
+   "line": "미디엄 · 어젯밤 집 식탁 — 이안 어깨 너머(오른쪽 끝 흐린 머리 · 녹차 잔) 서진(니트 카디건)이 계획표 노트를 들고",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_카디건",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 어젯밤 집 식탁",
+   "카메라": "흰 번쩍에서 열림 · 손에 든 흔들림(거의 고정)",
+   "소리": "SEOJIN (cardigan) 「우리 내년이면 칠 년이야. 이제 날 잡자.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈썹이 아주 조금 모이고 눈이 이안을 똑바로 본다. 오른쪽 끝 흐린 이안의 뒤통수가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "서진이 「우리 내년이면 칠 년이야. 이제 날 잡자.」를 차분하고 단단하게 말하고 입이 말을 따라 움직인다. 노트를 든 오른손이 이안 쪽으로 3cm쯤 더 내밀어진다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "끝 모습 — 서진이 턱을 1cm쯤 당기며 입을 다물고, 눈을 한 번 깜빡인 뒤 대답을 기다리듯 숨을 쉰다. 흐린 이안의 고개가 조금 숙여진다"
+    }
+   ],
+   "넘어옴": "흰 번쩍 뒤 이안의 「벌」이 생긴 어젯밤 식탁으로 건너감",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "1-6",
+   "t": 4.43,
+   "dur": 1.3,
+   "in": 0.8,
+   "out": 2.1,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-6.jpg",
+   "line": "미디엄 · 서진 어깨 너머 이안이 물을 마심",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_맨투맨",
+    "서진_카디건"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 서진 어깨 너머 이안이 물을 마심",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (cardigan) 「식장, 집, 아이 계획까지 다 정리해 놨어.」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 유리잔 너머로 서진 쪽을 힐끗 보고 눈썹이 살짝 오른다. 앞의 흐린 서진 뒷모습이 말에 맞춰 어깨를 조금 기울인다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "화면 밖에서 서진의 「식장, 집, 아이 계획까지 다 정리해 놨어.」가 시작되고, 잔에 입을 댄 이안이 물을 한 모금 삼켜 목울대가 한 번 오르내린다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 이안이 잔을 입에 댄 채 눈을 두 번 빠르게 깜빡이고, 시선이 서진과 잔 사이를 오가며 숨을 들이쉰다"
+    }
+   ],
+   "넘어옴": "서진의 다음 말이 이어지는 동안 그 말을 듣는 이안 쪽으로 돌아봄",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-7",
+   "t": 5.73,
+   "dur": 1.44,
+   "in": 0.8,
+   "out": 2.24,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-7.jpg",
+   "line": "클로즈업 · 이안 사레들려 기침(물 뿜기 대신)",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 이안 사레들려 기침(물 뿜기 대신)",
+   "카메라": "사레 순간 카메라가 튐 — 위로 약 10% · 돎 −12°(0.2–1.1초, 느려짐) · 모션 블러 · 손에 든 흔들림 강",
+   "소리": "기침 · 6초 노래 시작",
+   "연기세기": "중간",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "물을 마시던 이안의 눈이 커지고 눈썹이 확 오른다"
+    },
+    {
+     "t": 0.35,
+     "무엇": "이안이 잔을 입에서 떼며 입술이 벌어지고 한두 번 크게 사레 기침을 한다. 어깨가 앞으로 2cm쯤 움츠러들고 눈이 꼭 감긴다(물은 뿜지 않는다)"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 이안이 고개를 조금 숙인 채 눈을 반쯤 뜨고, 입을 다물며 거칠게 숨을 몰아쉰다"
+    }
+   ],
+   "넘어옴": "「아이 계획까지」라는 말에 물을 마시던 이안이 사레들림 — 앞 컷의 물 마시기가 이어짐",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-8",
+   "t": 7.17,
+   "dur": 1.46,
+   "in": 0.8,
+   "out": 2.26,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-8.jpg",
+   "line": "미디엄 · 서진 어깨 너머 이안, 냅킨으로 입을 가리고",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_맨투맨",
+    "서진_카디건"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 서진 어깨 너머 이안, 냅킨으로 입을 가리고",
+   "카메라": "몸을 세우는 이안을 따라 천천히 옆으로(카메라 왼쪽) 약 12%(0.3–1.2초) · 손에 든 흔들림",
+   "소리": "IAN (sweatshirt) 「잠깐만, 천천히…」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈썹이 찡그려지고 눈이 반쯤 감긴 채 냅킨을 입에 누른다. 앞의 흐린 서진 뒷모습이 고개를 조금 기울인다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "냅킨 너머로 이안의 「잠깐만, 천천히…」가 웅얼거리듯 들리고, 펼친 왼손 손바닥이 서진 쪽으로 5cm쯤 앞뒤로 흔들린다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "이안이 의자에서 허리를 세워 상체가 3cm쯤 올라온다(카메라가 따라감)"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 이안이 냅킨으로 입을 가린 채 눈을 떠 서진을 보고, 어깨를 한 번 들썩이며 숨을 고른다"
+    }
+   ],
+   "넘어옴": "사레 기침 끝에 몸을 세우며 서진에게 손을 드는 이안 — 기침이 이어짐",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-9",
+   "t": 8.63,
+   "dur": 1.14,
+   "in": 0.8,
+   "out": 1.94,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-9.jpg",
+   "line": "미디엄 · 이안 어깨 너머 서진",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_카디건",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 이안 어깨 너머 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (cardigan) 「나 내년이면…」 — 입 맞춤 · IAN (sweatshirt) 「알았어, 알았어…」(화면 밖 — 0.0초부터)",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈이 이안을 한 번 내려다봤다 다시 올라오고, 눈썹이 아주 조금 오른다. 앞의 흐린 이안 뒤통수가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "서진이 「나 내년이면…」을 낮고 단단하게 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "끝 모습 — 서진이 말끝을 끌며 턱을 1cm쯤 들고, 입술을 반쯤 벌린 채 이안을 보며 숨을 들이쉰다"
+    }
+   ],
+   "넘어옴": "손을 들어 말리는 이안의 말에 서진이 답함 — 어깨 너머로 서진 쪽",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-10",
+   "t": 9.77,
+   "dur": 0.9,
+   "in": 1.94,
+   "out": 2.84,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-10.jpg",
+   "line": "클로즈업 · 서진(펀치인), 이안을 바라보며",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_카디건",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 서진(펀치인), 이안을 바라보며",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "SEOJIN (cardigan) 「…앞자리 3이야.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 1.3,
+     "무엇": "서진의 눈썹이 살짝 올라가고 눈이 이안을 똑바로 본다. 오른쪽 아래 흐린 이안의 어깨가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 1.45,
+     "무엇": "서진이 「…앞자리 3이야.」를 차분하게 끝맺고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 2.2,
+     "무엇": "끝 모습 — 서진이 입을 다물고 눈을 한 번 천천히 깜빡인 뒤, 고개를 아주 조금 끄덕이며 이안을 본 채 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "1-9의 「나 내년이면…」이 끊기지 않고 이어지며 서진 얼굴로 펀치인(같은 판)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-11",
+   "t": 10.67,
+   "dur": 1.63,
+   "in": 0.8,
+   "out": 2.43,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-11.jpg",
+   "line": "미디엄 · 서진 어깨 너머 이안, 머뭇",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_맨투맨",
+    "서진_카디건"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 서진 어깨 너머 이안, 머뭇",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (sweatshirt) 「난 아직… 2인데.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 서진에게서 옆으로 비껴 나가고 눈썹이 살짝 오른다. 앞의 흐린 서진 뒷모습이 숨에 맞춰 어깨를 조금 들썩인다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 입꼬리를 어색하게 반만 올리며 「난 아직… 2인데.」를 머뭇머뭇 말하고 입이 말을 따라 움직인다. 잔을 쥔 오른손 손가락이 잔을 한 번 고쳐 쥔다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "끝 모습 — 이안이 어색한 반웃음을 남긴 채 입을 다물고, 고개를 2도쯤 기울이며 서진을 슬쩍 본다"
+    }
+   ],
+   "넘어옴": "서진의 「앞자리 3」에 답하는 이안 — 어깨 너머 맞은편으로 돌아옴",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-12",
+   "t": 12.3,
+   "dur": 0.8,
+   "in": 0.8,
+   "out": 1.6,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-12.jpg",
+   "line": "바스트 · 이안 — 서진의 두 손이 들어와 볼을 꾹",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_맨투맨",
+    "서진_카디건"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "볼 누르는 효과음",
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "첫 장부터 이안의 볼을 잡고 있는 서진의 손가락이 꾹 더 눌러 볼이 1cm쯤 부푼다(볼 누르는 효과음)"
+    },
+    {
+     "t": 0.35,
+     "무엇": "이안의 눈이 질끈 한 번 감겼다 뜨이고, 다문 입술이 눌린 볼 쪽으로 비뚤어진다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "끝 모습 — 이안이 볼이 눌린 채 눈을 들어 서진 쪽을 보며 코로 숨을 쉬고, 서진의 손가락은 볼을 계속 잡고 있다"
+    }
+   ],
+   "넘어옴": "「2인데」라는 말장난에 서진의 손이 바로 그의 볼을 잡음 — 말과 손이 이어짐",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-13",
+   "t": 13.1,
+   "dur": 0.57,
+   "in": 0.8,
+   "out": 1.37,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-13.jpg",
+   "line": "바스트 · 서진, 어이없는 숨",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_카디건",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진, 어이없는 숨",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (cardigan) 「하.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈썹 한쪽이 살짝 오르고 눈이 어이없다는 듯 조금 가늘어진다. 오른쪽 앞 흐린 이안의 어깨가 조금 움츠러든다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "서진이 「하.」 하고 짧게 코웃음 섞인 숨을 내쉬며 입술이 그 숨에만 살짝 벌어진다. 이안 쪽으로 뻗은 오른손 손가락에 힘이 들어간다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "끝 모습 — 서진이 입을 다물고 고개를 1도쯤 기울인 채 이안을 보며 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "볼을 잡힌 이안에서 볼을 잡은 손의 주인인 서진의 얼굴로",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-14",
+   "t": 13.67,
+   "dur": 1.23,
+   "in": 2.4,
+   "out": 3.63,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-12.jpg",
+   "line": "바스트 · 볼 눌린 이안 → 흰 번쩍",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_맨투맨",
+    "서진_카디건"
+   ],
+   "실내": true,
+   "구도": "바스트 · 볼 눌린 이안 → 흰 번쩍",
+   "카메라": "손에 든 작은 흔들림 · 끝에 흰 번쩍(회상 → 현재)",
+   "같은판": "1-12와 한 판 — 볼을 누르는 손이 들어오는 한 방을 1-13(서진의 숨)을 사이에 두고 둘로 잘라 쓴다(원칙 5)",
+   "소리": "IAN (sweatshirt) 「…미안.」 — 입 맞춤 · MINJAE 「야~」(J컷 — 0.43초부터)",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 1.9,
+     "무엇": "볼이 눌린 이안의 눈썹 안쪽이 살짝 오르고 눈이 강아지처럼 서진을 올려다본다. 서진의 손가락은 볼을 계속 꼭 잡고 있다"
+    },
+    {
+     "t": 2.05,
+     "무엇": "이안이 눌린 입으로 「…미안.」을 웅얼거리고 입이 말을 따라 비뚤게 움직인다"
+    },
+    {
+     "t": 2.9,
+     "무엇": "끝 모습 — 이안이 입을 다물고 눈을 한 번 깜빡이며 서진을 올려다본 채 코로 숨을 쉰다(끝에 흰 번쩍)"
+    }
+   ],
+   "넘어옴": "서진의 「하.」 뒤 볼이 눌린 채 사과하는 이안 — 1-12와 같은 판을 이어 씀",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-15",
+   "t": 14.9,
+   "dur": 0.43,
+   "in": 0.8,
+   "out": 1.23,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-15.jpg",
+   "line": "바스트 · 회사 민재(흰 번쩍에서)",
+   "장면": "회사낮",
+   "인물": [
+    "민재",
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "바스트 · 회사 민재(흰 번쩍에서)",
+   "카메라": "흰 번쩍에서 열림 · 손에 든 흔들림",
+   "소리": "MINJAE 「야~」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "민재의 눈썹이 올라가고 눈이 놀리듯 가늘어진다. 앞의 이안 손이 젓가락을 든 채 민재의 반찬 위로 1cm쯤 다가간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "민재가 입꼬리를 올리며 「야~」 하고 부르고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "끝 모습 — 민재가 씩 웃는 입을 남긴 채 고개를 2도쯤 기울여 이안을 보며 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "흰 번쩍에서 현재 회사로 — 회상을 듣던 민재의 부름",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "1-16",
+   "t": 15.33,
+   "dur": 2.07,
+   "in": 0.8,
+   "out": 2.87,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-16.jpg",
+   "line": "바스트 · 민재가 빈 칸을 가리키며",
+   "장면": "회사낮",
+   "인물": [
+    "민재",
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "바스트 · 민재가 빈 칸을 가리키며",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "MINJAE 「그 도시락, 사랑 한 칸은 있냐?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "민재의 눈썹이 한쪽만 올라가고 눈이 이안의 도시락 쪽으로 내려간다. 아래 왼쪽 이안의 손이 젓가락을 쥔 채 조금 들린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "민재가 검지로 아래 오른쪽을 두 번 톡톡 가리키며 「그 도시락, 사랑 한 칸은 있냐?」를 능청스럽게 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "끝 모습 — 민재가 가리키던 손가락을 거두며 고개를 2도쯤 기울이고, 놀리는 웃음을 입가에 남긴 채 이안을 보며 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "「야~」 하고 부른 민재가 그대로 할 말을 꺼냄 — 말이 이어짐",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-17",
+   "t": 17.4,
+   "dur": 1.77,
+   "in": 0.8,
+   "out": 2.57,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-17.jpg",
+   "line": "미디엄 · 이안 옆얼굴",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 이안 옆얼굴",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (office) 「이미 같이 사는데, 종이 한 장이 뭐…」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈썹이 살짝 모이고 눈이 화면 왼쪽 밖의 민재 쪽을 흘겨본다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 반쯤 혼잣말로 「이미 같이 사는데, 종이 한 장이 뭐…」를 투덜거리고 입이 말을 따라 움직인다. 젓가락을 쥔 손가락이 말끝에 젓가락을 한 번 까딱인다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "끝 모습 — 이안이 말끝을 흐리며 입을 다물고, 고개를 도시락 쪽으로 조금 돌리며 코로 숨을 내쉰다"
+    }
+   ],
+   "넘어옴": "민재의 「사랑 한 칸」 물음에 이안이 옆얼굴로 대꾸함",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-18",
+   "t": 19.17,
+   "dur": 2.66,
+   "in": 2.57,
+   "out": 5.23,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-18.jpg",
+   "line": "클로즈업 · 매실을 씹는 이안",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 매실을 씹는 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (office) 「…반찬도 안 싸 주고.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 2.0,
+     "무엇": "이안의 눈이 시큼함에 가늘어지고 미간에 주름이 살짝 잡힌다"
+    },
+    {
+     "t": 2.2,
+     "무엇": "이안이 매실을 씹느라 볼과 턱이 두세 번 움직이고, 씹는 사이로 「…반찬도 안 싸 주고.」를 중얼거리며 입이 말을 따라 움직인다. 젓가락 끝은 입가에 닿아 있다"
+    },
+    {
+     "t": 4.3,
+     "무엇": "끝 모습 — 이안이 입을 다문 채 한 번 더 씹으며 찡그린 눈을 천천히 풀고, 고개를 1도쯤 숙이며 숨을 내쉰다"
+    }
+   ],
+   "넘어옴": "「종이 한 장이 뭐…」 말끝을 흐린 이안이 매실을 입에 넣음 — 같은 판의 다음 샷",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-19",
+   "t": 21.83,
+   "dur": 1.17,
+   "in": 0.8,
+   "out": 1.97,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-19.jpg",
+   "line": "바스트 · 종이컵 커피를 마시며 묻는 민재(컵이 입을 가림)",
+   "장면": "회사낮",
+   "인물": [
+    "민재",
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "바스트 · 종이컵 커피를 마시며 묻는 민재(컵이 입을 가림)",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "MINJAE 「여자친구 내년에 몇이야?」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "민재의 눈이 종이컵 테두리 너머로 이안을 올려다보고 눈썹이 살짝 오른다. 왼쪽 앞 흐린 이안의 어깨가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "컵이 입을 가린 채 민재의 「여자친구 내년에 몇이야?」가 들리고, 컵을 든 손가락이 컵을 한 번 고쳐 쥔다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 민재가 컵을 입에 댄 채 눈웃음을 지으며 이안을 보고 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "이안의 투덜거림을 들은 민재가 커피를 마시며 되물음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-20",
+   "t": 23.0,
+   "dur": 0.9,
+   "in": 0.8,
+   "out": 1.7,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-20.jpg",
+   "line": "바스트 · 고개를 숙여 도시락을 보는 이안",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "바스트 · 고개를 숙여 도시락을 보는 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (office) 「…서른.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "고개를 숙인 이안의 눈꺼풀이 조금 더 내려가고 시선이 도시락에 머문다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 고개를 들지 않은 채 「…서른.」을 조용히 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 0.7,
+     "무엇": "끝 모습 — 이안이 입을 다물고 눈을 한 번 천천히 깜빡이며, 어깨가 조금 처지도록 숨을 내쉰다"
+    }
+   ],
+   "넘어옴": "민재의 「몇이야?」에 이안이 고개를 숙인 채 답함",
+   "소품": {
+    "빈칸도시락": "이안 앞 책상 위",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-21",
+   "t": 23.9,
+   "dur": 2.03,
+   "in": 0.8,
+   "out": 2.83,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-21.jpg",
+   "line": "바스트 · 이안 어깨 너머 민재",
+   "장면": "회사낮",
+   "인물": [
+    "민재",
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안 어깨 너머 민재",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "MINJAE 「그럼 너 같아도 급하겠다.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "민재의 눈썹이 알겠다는 듯 조금 오르고 눈이 이안을 본다. 오른쪽 앞 흐린 이안의 어깨가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "민재가 상체를 뒤로 3cm쯤 젖히며 「그럼 너 같아도 급하겠다.」를 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 민재가 고개를 두 번 작게 끄덕이고, 입가에 웃음을 남긴 채 입을 다물며 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "이안의 「…서른.」을 들은 민재의 맞장구 — 이안 어깨 너머로 돌아봄",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-22",
+   "t": 25.93,
+   "dur": 0.7,
+   "in": 0.8,
+   "out": 1.5,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-22.jpg",
+   "line": "인서트 · 집 현관문이 열림",
+   "장면": "현관저녁",
+   "인물": [
+    "이안_퇴근"
+   ],
+   "실내": true,
+   "구도": "인서트 · 집 현관문이 열림",
+   "카메라": "고정(흔들림 거의 없음) — 문만 열림",
+   "소리": "문 소리",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "간유리 너머 흐린 이안의 오른손이 문손잡이를 아래로 누른다"
+    },
+    {
+     "t": 0.35,
+     "무엇": "이안의 팔이 문을 밀어 문이 카메라 쪽으로 열리기 시작하고, 유리 너머 그의 어깨가 앞으로 기운다(문 소리)"
+    },
+    {
+     "t": 0.8,
+     "무엇": "이안이 한 걸음 내디디며 흐린 몸이 유리 가까이 커진다"
+    }
+   ],
+   "넘어옴": "민재의 「급하겠다」 뒤 그날 저녁 집으로 — 문 소리로 건너감",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "1-23",
+   "t": 26.63,
+   "dur": 1.34,
+   "in": 0.8,
+   "out": 2.14,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-23.jpg",
+   "line": "와이드 · 앞 흐린 서진 너머 이안이 들어옴",
+   "장면": "현관저녁",
+   "인물": [
+    "이안_퇴근",
+    "서진_앞치마"
+   ],
+   "실내": true,
+   "구도": "와이드 · 앞 흐린 서진 너머 이안이 들어옴",
+   "카메라": "앞 흐린 서진이 화면 왼쪽을 크게 지나가며 가림 · 들어오는 이안을 살짝 따라 오른쪽 · 손에 든 흔들림",
+   "소리": "IAN (home from work) 「나 오늘 점심에 매실만 먹었어.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "앞의 흐린 서진이 화면 왼쪽으로 크게 지나가기 시작하고, 이안의 눈이 부엌 쪽을 향하며 눈썹이 지친 듯 조금 처진다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 「나 오늘 점심에 매실만 먹었어.」를 투정하듯 말하고 입이 말을 따라 움직인다. 문손잡이를 쥔 왼손이 손잡이를 놓는다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "끝 모습 — 이안이 입꼬리에 지친 웃음을 남기고 고개를 1도쯤 기울이며, 어깨를 내리고 숨을 내쉰다. 서진의 흐린 어깨는 왼쪽 끝으로 빠져나간다"
+    }
+   ],
+   "넘어옴": "열린 문으로 이안이 들어섬 — 문을 민 그 몸이 이어짐",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-24",
+   "t": 27.97,
+   "dur": 1.13,
+   "in": 0.8,
+   "out": 1.93,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-24.jpg",
+   "line": "인서트 · 개수대 물을 잠그는 서진의 손",
+   "장면": "식탁저녁",
+   "인물": [
+    "서진_앞치마"
+   ],
+   "실내": true,
+   "구도": "인서트 · 개수대 물을 잠그는 서진의 손",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "물 멈추는 소리",
+   "연기": [
+    {
+     "t": 0.3,
+     "무엇": "서진의 오른손이 수도꼭지 레버를 아래로 눌러 내리고, 손목이 2cm쯤 꺾인다 — 물줄기가 그 손에 맞춰 끊긴다(물 멈추는 소리)"
+    },
+    {
+     "t": 0.7,
+     "무엇": "서진의 손가락이 레버에서 떨어지며 손이 화면 오른쪽 아래로 3cm쯤 물러난다. 앞치마 어깨가 숨에 맞춰 조금 오르내린다"
+    }
+   ],
+   "넘어옴": "이안의 「매실만 먹었어」에 대한 서진의 대답 — 물을 잠그는 손",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-25",
+   "t": 29.1,
+   "dur": 1.43,
+   "in": 0.8,
+   "out": 2.23,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-25.jpg",
+   "line": "바스트 · 앞치마의 서진",
+   "장면": "식탁저녁",
+   "인물": [
+    "서진_앞치마"
+   ],
+   "실내": true,
+   "구도": "바스트 · 앞치마의 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (apron) 「반찬 먹고 싶으면, 저기 이름 써.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진이 웃지 않은 채 눈을 아래 옆 식탁 쪽으로 한 번 흘긴다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "서진이 「반찬 먹고 싶으면, 저기 이름 써.」를 차갑고 고르게 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.3,
+     "무엇": "끝 모습 — 서진이 입을 다물고 시선을 이안 쪽으로 다시 올리며, 고개를 아주 조금 들어 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "물을 잠근 서진이 고개를 들어 이안에게 답함",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-26",
+   "t": 30.53,
+   "dur": 0.67,
+   "in": 0.8,
+   "out": 1.47,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-26.jpg",
+   "line": "인서트 · 식탁 위 종이 · 펜",
+   "장면": "식탁저녁",
+   "인물": [
+    "이안_퇴근"
+   ],
+   "실내": true,
+   "구도": "인서트 · 식탁 위 종이 · 펜",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "-",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "화면 아래 이안의 턱이 1cm쯤 아래로 숙여지며 시선이 식탁 위 종이로 내려간다"
+    },
+    {
+     "t": 0.45,
+     "무엇": "이안의 가슴이 숨을 들이쉬며 조금 올라오고, 느슨한 넥타이 매듭이 그에 맞춰 살짝 들썩인다"
+    }
+   ],
+   "넘어옴": "서진이 「저기」 하고 눈짓한 곳 — 이안의 시선이 식탁으로 내려감",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "식탁 위에 놓임 · 펜이 그 위에",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-27",
+   "t": 31.2,
+   "dur": 0.83,
+   "in": 1.47,
+   "out": 2.3,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-27.jpg",
+   "line": "인서트 · 빈 혼인신고서 접사",
+   "장면": "식탁저녁",
+   "인물": [],
+   "실내": true,
+   "구도": "인서트 · 빈 혼인신고서 접사",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "-",
+   "움직임": "손에 든 카메라의 작은 흔들림만 있다. 손이 닿지 않으니 식탁 위 초록 종이는 놓인 자리 그대로 평평하다(펜은 이 접사 화면 밖에 있다). 실내라 아무것도 떨어지거나 떠다니지 않는다",
+   "넘어옴": "이안이 내려다본 종이로 다가감 — 같은 판의 다음 샷",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "식탁 위에 놓임 · 펜이 그 위에",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-28",
+   "t": 32.03,
+   "dur": 0.77,
+   "in": 0.8,
+   "out": 1.57,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-28.jpg",
+   "line": "인서트 · 이안 손을 끄는 서진의 손",
+   "장면": "식탁저녁",
+   "인물": [
+    "서진_앞치마",
+    "이안_퇴근"
+   ],
+   "실내": true,
+   "구도": "인서트 · 이안 손을 끄는 서진의 손",
+   "카메라": "끌려가는 손을 손에 든 채 왼쪽으로 따라감 약 35%(0.2–0.7초) · 흔들림 강",
+   "소리": "옷 소리",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 팔뚝을 쥔 서진의 오른손과 그의 손을 잡은 왼손 손가락에 힘이 들어간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "서진의 두 손이 이안의 팔을 화면 왼쪽 식탁 쪽으로 끌고, 이안의 팔이 10cm쯤 끌려온다(옷 소리)"
+    },
+    {
+     "t": 0.6,
+     "무엇": "끌린 이안의 몸이 왼쪽으로 기울며 다리가 반걸음 따라 나온다"
+    }
+   ],
+   "넘어옴": "빈 서류를 본 이안의 손을 서진이 바로 끌어당김",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-29",
+   "t": 32.8,
+   "dur": 2.3,
+   "in": 0.8,
+   "out": 3.1,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-29.jpg",
+   "line": "미디엄 · 이안 어깨 너머, 그의 팔에 볼을 대고 매달리는 서진",
+   "장면": "식탁저녁",
+   "인물": [
+    "서진_앞치마",
+    "이안_퇴근"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 이안 어깨 너머, 그의 팔에 볼을 대고 매달리는 서진",
+   "카메라": "손에 든 흔들림 강 · 살짝 물러남 약 10%(0.3–1.9초)",
+   "소리": "SEOJIN (apron) 「구청은 내가 갈게. 너는 펜만 들어.」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈썹이 살짝 오르고 눈이 애교 있게 이안을 올려다본다. 그의 팔을 감싼 두 손이 팔을 꼭 끌어안는다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "볼을 그의 소매에 댄 채 입이 팔에 가려 서진의 「구청은 내가 갈게. 너는 펜만 들어.」가 웅얼거리듯 들리고, 서진의 몸이 좌우로 2cm쯤 흔들린다"
+    },
+    {
+     "t": 1.9,
+     "무엇": "끝 모습 — 서진이 눈을 한 번 깜빡이며 이안을 올려다본 채 볼을 소매에 비비고 숨을 쉰다. 이안의 팔은 그 흔들림에 따라 조금 밀린다"
+    }
+   ],
+   "넘어옴": "손을 끌던 서진이 그 팔에 매달림 — 끄는 동작이 이어짐",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-30",
+   "t": 35.1,
+   "dur": 1.47,
+   "in": 0.8,
+   "out": 2.27,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-30.jpg",
+   "line": "바스트 · 서진 뒤통수 너머 이안",
+   "장면": "식탁저녁",
+   "인물": [
+    "이안_퇴근",
+    "서진_앞치마"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진 뒤통수 너머 이안",
+   "카메라": "손에 든 흔들림 강 · 살짝 돎",
+   "소리": "IAN (home from work) 「이렇게 떠밀려서 쓰긴 싫어.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈썹 안쪽이 조금 모이고 눈이 아래의 서진을 내려다본다. 앞의 서진 뒤통수가 그를 올려다보며 조금 들린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 「이렇게 떠밀려서 쓰긴 싫어.」를 부드럽지만 단단하게 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "끝 모습 — 이안이 입을 다물고 시선을 서진에게 둔 채 고개를 1도쯤 저으며 숨을 내쉰다"
+    }
+   ],
+   "넘어옴": "매달린 서진의 부탁에 이안이 내려다보며 답함",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-31",
+   "t": 36.57,
+   "dur": 1.76,
+   "in": 0.8,
+   "out": 2.56,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-31.jpg",
+   "line": "바스트 · 이안(다른 각도) 곤란한 얼굴",
+   "장면": "현관저녁",
+   "인물": [
+    "이안_퇴근"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안(다른 각도) 곤란한 얼굴",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "소연의 첫말이 화면 밖에서 먼저(J컷)",
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈썹이 곤란하게 조금 모이고 시선이 옆 아래로 비껴 나간다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "이안이 입을 다문 채 코로 조용히 숨을 내쉬고, 입꼬리가 한쪽만 조금 당겨진다(화면 밖에서 소연의 첫말이 먼저 들린다)"
+    },
+    {
+     "t": 1.3,
+     "무엇": "끝 모습 — 이안이 눈을 한 번 천천히 깜빡이고 고개를 1cm쯤 숙이며 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "「떠밀려서 쓰긴 싫어」라고 말한 뒤의 이안 얼굴 — 말의 여운",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-32",
+   "t": 38.33,
+   "dur": 1.17,
+   "in": 0.8,
+   "out": 1.97,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-32.jpg",
+   "line": "바스트 · 카페 소연(아기 엄마)",
+   "장면": "카페낮",
+   "인물": [
+    "소연",
+    "서진_흰셔츠"
+   ],
+   "실내": true,
+   "구도": "바스트 · 카페 소연(아기 엄마)",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "SOYEON 「너 아직도 계획표 들고 다녀?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/soyeon.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "소연의 눈이 다 안다는 듯 조금 가늘어지고 눈썹이 살짝 오른다. 오른쪽 앞 흐린 서진의 어깨가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "소연이 「너 아직도 계획표 들고 다녀?」를 작은 웃음을 띠며 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 소연이 입가에 웃음을 남긴 채 입을 다물고 고개를 2도쯤 기울여 서진을 보며 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "J컷 — 앞 컷 끝에 먼저 들린 소연의 목소리가 얼굴로 이어짐(다른 날 낮 카페)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "1-33",
+   "t": 39.5,
+   "dur": 1.3,
+   "in": 0.8,
+   "out": 2.1,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-33.jpg",
+   "line": "바스트 · 서진",
+   "장면": "카페낮",
+   "인물": [
+    "서진_흰셔츠",
+    "소연"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (white shirt) 「응. 걔만 안 움직여.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈썹이 지친 듯 조금 처지고 눈이 소연을 본다. 왼쪽 앞 흐린 소연의 어깨가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "서진이 「응. 걔만 안 움직여.」를 한숨 섞어 말하고 입이 말을 따라 움직인다. 커피잔을 감싼 두 손가락이 잔을 한 번 고쳐 쥔다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 서진이 입을 다물고 어깨를 조금 떨구며 코로 숨을 내쉰다"
+    }
+   ],
+   "넘어옴": "소연의 물음에 서진이 답함 — 어깨 너머 맞은편",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-34",
+   "t": 40.8,
+   "dur": 1.43,
+   "in": 2.1,
+   "out": 3.53,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-34.jpg",
+   "line": "클로즈업 · 서진이 휴대폰 달력을 내려다보며 한숨",
+   "장면": "카페낮",
+   "인물": [
+    "서진_흰셔츠"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 서진이 휴대폰 달력을 내려다보며 한숨",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (white shirt) 「달력에 동그라미까지 쳐 놨는데.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 1.5,
+     "무엇": "서진의 눈썹 안쪽이 조금 모이고 눈이 아래 휴대폰 달력으로 내려간다. 휴대폰을 든 왼손 엄지가 화면을 한 번 쓸어내린다"
+    },
+    {
+     "t": 1.65,
+     "무엇": "서진이 「달력에 동그라미까지 쳐 놨는데.」를 혼잣말로 중얼거리고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 2.8,
+     "무엇": "끝 모습 — 서진이 입을 다물고 한숨을 길게 내쉬어 어깨가 조금 내려가며, 고개를 1cm쯤 더 숙인 채 화면을 본다"
+    }
+   ],
+   "넘어옴": "「안 움직여」 한숨 뒤 서진이 휴대폰 달력을 내려다봄 — 같은 판의 다음 샷",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-35",
+   "t": 42.23,
+   "dur": 2.74,
+   "in": 0.8,
+   "out": 3.54,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-35.jpg",
+   "line": "바스트 · 소연",
+   "장면": "카페낮",
+   "인물": [
+    "소연",
+    "서진_흰셔츠"
+   ],
+   "실내": true,
+   "구도": "바스트 · 소연",
+   "카메라": "천천히 옆으로(카메라 오른쪽) 약 12%(0.4–2.1초, 느려짐) · 손에 든 작은 흔들림",
+   "소리": "SOYEON 「원래 남자는 등 떠밀면 더 버텨.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/soyeon.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "소연의 눈이 따뜻하게 조금 가늘어지고 고개가 2도쯤 기운다. 오른쪽 앞 서진의 흰 소매 손이 잔 옆에서 손가락을 조금 오므린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "소연이 「원래 남자는 등 떠밀면 더 버텨.」를 다 안다는 듯 말하고 입이 말을 따라 움직인다. 잔 앞에 펼친 두 손이 말에 맞춰 5cm쯤 앞으로 밀었다 돌아온다"
+    },
+    {
+     "t": 2.0,
+     "무엇": "끝 모습 — 소연이 입가에 웃음을 남긴 채 입을 다물고, 두 손을 잔 옆으로 내리며 서진을 보고 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "서진의 혼잣말을 들은 소연이 답함 — 맞은편으로 돌아봄",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-36",
+   "t": 44.97,
+   "dur": 1.63,
+   "in": 0.8,
+   "out": 2.43,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-36.jpg",
+   "line": "바스트 · 서진",
+   "장면": "카페낮",
+   "인물": [
+    "서진_흰셔츠",
+    "소연"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (white shirt) 「그럼 어떡해. 손 놓고 기다려?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈썹이 답답하다는 듯 올라가며 모이고 눈이 소연을 본다. 왼쪽 앞 흐린 소연의 머리가 조금 기운다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "서진이 두 손바닥을 위로 펼쳐 5cm쯤 들어 올리며 「그럼 어떡해. 손 놓고 기다려?」를 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.3,
+     "무엇": "끝 모습 — 서진이 입을 다물고 펼친 손을 천천히 내리며, 고개를 조금 기울여 대답을 기다리듯 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "「더 버텨」라는 소연의 말에 서진이 맞받음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-37",
+   "t": 46.6,
+   "dur": 1.5,
+   "in": 0.8,
+   "out": 2.3,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-37.jpg",
+   "line": "와이드 · 회사 — 책상에 엎드린 민재에게 이안이 다가와 업힘(원본 짜임 그대로)",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사",
+    "민재"
+   ],
+   "실내": true,
+   "구도": "와이드 · 회사",
+   "카메라": "다가오는 이안을 따라 천천히 옆으로(카메라 오른쪽) 약 11%(0.3–1.5초, 고르게)",
+   "소리": "-",
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서 있는 이안의 눈이 민재를 내려다보고 어깨가 축 내려간다. 앉은 민재는 화면을 보다가 길게 한숨을 쉰다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "민재의 상체가 앞으로 무너지듯 책상 쪽으로 15cm쯤 숙여지고, 이안이 반걸음 다가서며 허리를 굽힌다(카메라가 이안을 따라감)"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 이안의 두 팔이 민재의 등 위로 내려오며 몸을 기대기 시작하고, 둘 다 입을 다문 채 숨을 내쉰다"
+    }
+   ],
+   "넘어옴": "서진의 「손 놓고 기다려?」에서 같은 고민을 하는 이안 쪽 회사로 — 두 사람의 고민을 맞대어 이음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-38",
+   "t": 48.1,
+   "dur": 1.73,
+   "in": 0.8,
+   "out": 2.53,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-38.jpg",
+   "line": "클로즈업 · 책상에 볼을 댄 민재, 그 등에 업힌 이안(위)",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사",
+    "민재"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 책상에 볼을 댄 민재, 그 등에 업힌 이안(위)",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (office) 「이러다 계획표에 나도 한 줄로 들어가겠어.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "민재의 머리 위에 턱을 얹은 이안의 눈썹이 칭얼대듯 조금 처지고 눈이 옆으로 비껴 간다. 아래 민재의 눈이 위의 이안 쪽으로 올라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 「이러다 계획표에 나도 한 줄로 들어가겠어.」를 칭얼대며 말하고 입이 말을 따라 움직인다. 민재 어깨에 얹은 손가락이 어깨를 한 번 꾹 쥔다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 이안이 입을 삐죽 다문 채 턱을 민재 머리에 비비고, 민재는 입을 다문 채 웃음기 있는 눈으로 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "업히기 시작한 이안이 민재 머리에 턱을 얹고 하소연함 — 앞 컷의 동작이 이어짐",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-39",
+   "t": 49.83,
+   "dur": 1.8,
+   "in": 0.8,
+   "out": 2.6,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-39.jpg",
+   "line": "클로즈업 · 책상에 머리를 댄 민재(입은 이안 팔에 가림), 위 가장자리에 이안",
+   "장면": "회사낮",
+   "인물": [
+    "민재",
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 책상에 머리를 댄 민재(입은 이안 팔에 가림), 위 가장자리에 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "MINJAE 「너 그러다 진짜 놓친다?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "책상에 머리를 댄 민재의 눈썹이 한쪽 오르고 눈이 위 가장자리의 이안 쪽으로 올라간다. 위의 이안 입술은 다문 채 숨에 맞춰 조금 움직인다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "민재가 볼을 책상에 댄 채 「너 그러다 진짜 놓친다?」를 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.4,
+     "무엇": "끝 모습 — 민재가 입을 다물고 이안을 올려다본 채 눈을 한 번 깜빡이며 숨을 쉰다. 그의 턱 아래 이안의 소매가 숨에 맞춰 조금 들썩인다"
+    }
+   ],
+   "넘어옴": "이안의 칭얼거림에 아래의 민재가 받아침",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-40",
+   "t": 51.63,
+   "dur": 2.2,
+   "in": 0.8,
+   "out": 3.0,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-40.jpg",
+   "line": "클로즈업 · 업힌 이안(위, 크게) + 아래 민재",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사",
+    "민재"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 업힌 이안(위, 크게) + 아래 민재",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (office) 「놓치긴. 육 년인데.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "손등에 턱을 괸 이안의 눈썹이 살짝 오르고 눈이 옆으로 흘긴다. 아래 민재의 눈이 옆으로 비껴 이안 쪽을 본다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안이 코웃음을 한 번 치고 「놓치긴. 육 년인데.」를 너무 자신 있게 말하며 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "끝 모습 — 이안이 입꼬리를 한쪽 올린 채 입을 다물고 턱을 1cm쯤 들며 숨을 쉰다. 민재는 입을 다문 채 눈을 한 번 깜빡인다"
+    }
+   ],
+   "넘어옴": "민재의 「놓친다?」에 이안이 자신만만하게 받음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-41",
+   "t": 53.83,
+   "dur": 2.03,
+   "in": 0.8,
+   "out": 2.83,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-41.jpg",
+   "line": "클로즈업 · 아래 민재(얼굴을 들어 이안 쪽) + 위 이안",
+   "장면": "회사낮",
+   "인물": [
+    "민재",
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 아래 민재(얼굴을 들어 이안 쪽) + 위 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "MINJAE 「육 년 된 사이가 제일 잘 놓쳐.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "민재의 눈이 위의 이안 쪽으로 옆눈질하며 올라가고 눈썹이 무심하게 조금 오른다. 위의 이안이 민재를 내려다본다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "민재가 얼굴을 책상에서 2cm쯤 들며 「육 년 된 사이가 제일 잘 놓쳐.」를 덤덤하게 말하고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 민재가 입을 다물고 이안을 올려다본 채 숨을 쉬고, 이안의 입꼬리가 조금 내려가며 눈을 한 번 깜빡인다"
+    }
+   ],
+   "넘어옴": "이안의 「육 년인데」를 민재가 같은 말로 되받아침",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-42",
+   "t": 55.86,
+   "dur": 0.56,
+   "in": 0.8,
+   "out": 1.36,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-42.jpg",
+   "line": "바스트 · 카페 소연, 몸을 기울임",
+   "장면": "카페낮",
+   "인물": [
+    "소연",
+    "서진_흰셔츠"
+   ],
+   "실내": true,
+   "구도": "바스트 · 카페 소연, 몸을 기울임",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "-",
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "턱을 괸 소연의 눈이 장난스럽게 가늘어지고 눈썹이 살짝 오른다. 오른쪽 앞 흐린 서진의 어깨가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "소연이 입을 다문 채 괸 손에서 턱을 떼며 상체를 서진 쪽으로 5cm쯤 기울인다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "끝 모습 — 소연이 입가에 웃음을 남긴 채 귓속말을 하려는 듯 숨을 들이쉰다"
+    }
+   ],
+   "넘어옴": "민재의 「제일 잘 놓쳐」에서 그 답을 쥔 카페 소연으로 — 두 고민의 끝을 맞대어 이음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-43",
+   "t": 56.42,
+   "dur": 1.57,
+   "in": 1.36,
+   "out": 2.93,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-43.jpg",
+   "line": "익스트림 클로즈업 · 소연 입술",
+   "장면": "카페낮",
+   "인물": [
+    "소연"
+   ],
+   "실내": true,
+   "구도": "익스트림 클로즈업 · 소연 입술",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SOYEON 「등 떠밀지 말고… 한 발 빼 봐.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/soyeon.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.85,
+     "무엇": "소연의 입술이 살짝 벌어지며 숨을 들이쉬고, 턱이 0.5cm쯤 앞으로 나온다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "소연이 「등 떠밀지 말고… 한 발 빼 봐.」를 천천히 속삭이고 입술이 말을 따라 움직인다"
+    },
+    {
+     "t": 2.3,
+     "무엇": "끝 모습 — 소연의 입술이 닫히며 한쪽 입꼬리가 아주 조금 올라가고, 숨이 조용히 나간다"
+    }
+   ],
+   "넘어옴": "몸을 기울인 소연의 귓속말 — 입술로 다가감(같은 판의 다음 샷)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-44",
+   "t": 57.99,
+   "dur": 0.93,
+   "in": 0.8,
+   "out": 1.73,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-44.jpg",
+   "line": "미디엄 · 소연 어깨 너머 서진, 놀람",
+   "장면": "카페낮",
+   "인물": [
+    "서진_흰셔츠",
+    "소연"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 소연 어깨 너머 서진, 놀람",
+   "카메라": "아주 살짝 다가감 약 4%(0.3–0.8초, 빨라짐)",
+   "소리": "-",
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈이 커지고 눈썹이 살짝 오른다. 왼쪽 앞 흐린 소연의 머리가 서진 쪽에서 조금 물러난다"
+    },
+    {
+     "t": 0.35,
+     "무엇": "서진의 입술이 조금 벌어지며 숨을 짧게 들이쉬고, 잔을 감싼 손가락에 힘이 들어간다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "끝 모습 — 서진이 입술을 반쯤 벌린 채 소연을 보며 눈을 한 번 깜빡이고 숨을 쉰다"
+    }
+   ],
+   "넘어옴": "소연의 귓속말을 들은 서진의 반응 — 어깨 너머 맞은편",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "1-45",
+   "t": 58.92,
+   "dur": 1.1,
+   "in": 1.73,
+   "out": 2.83,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/1-45.jpg",
+   "line": "클로즈업 · 서진(펀치인) — 「다음 화에」",
+   "장면": "카페낮",
+   "인물": [
+    "서진_흰셔츠",
+    "소연"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 서진(펀치인)",
+   "카메라": "펀치인(앞 컷에서 하드컷) · 손에 든 작은 흔들림 · 끝에 「다음 화에」",
+   "소리": "SEOJIN (white shirt) 「…어떻게?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기세기": "작게",
+   "연기": [
+    {
+     "t": 1.2,
+     "무엇": "서진의 눈이 크게 뜬 채 소연을 보고 눈썹이 조금 더 오른다. 왼쪽 아래 흐린 앞사람의 어깨가 숨에 맞춰 조금 오르내린다"
+    },
+    {
+     "t": 1.35,
+     "무엇": "서진이 상체를 소연 쪽으로 3cm쯤 기울이며 「…어떻게?」를 낮고 다급하게 묻고 입이 말을 따라 움직인다"
+    },
+    {
+     "t": 2.1,
+     "무엇": "끝 모습 — 서진이 입술을 조금 벌린 채 대답을 기다리며 소연을 보고 숨을 들이쉰다(노래 뚝 · 「다음 화에」)"
+    }
+   ],
+   "넘어옴": "놀란 서진의 얼굴로 펀치인 — 앞 컷의 놀람이 물음으로 이어짐(같은 판의 다음 샷)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-1",
+   "t": 60.02,
+   "dur": 0.43,
+   "in": 0.8,
+   "out": 1.23,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-1.jpg",
+   "line": "와이드 · 밤 세탁기 앞 이안 뒷모습 — 빨래를 개다 처음 보는 원피스를 집음",
+   "장면": "세탁밤",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "와이드 · 밤 세탁기 앞 이안 뒷모습",
+   "카메라": "빠르게 다가감 약 13%(0.1–0.3초)",
+   "소리": "새 노래",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안이 세탁기 안으로 오른팔을 깊이 넣어 빨래를 한 움큼 쥐고, 등이 조금 더 굽는다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "오른손이 낯선 초록 천을 집어 올리다 멈칫하고, 고개가 그 천 쪽으로 살짝 기운다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "끝 모습 — 허리를 조금 펴며 천을 가슴 높이로 끌어올리고 숨을 한 번 들이쉰다"
+    }
+   ],
+   "넘어옴": "2화 첫 컷 — 밤 세탁기 앞",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "이안 손에"
+   },
+   "소품행동": {
+    "새원피스": "이안이 오른손으로 세탁기 안에서 집어 든다(0.5~0.9s)"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "2-2",
+   "t": 60.45,
+   "dur": 0.64,
+   "in": 0.8,
+   "out": 1.44,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-2.jpg",
+   "line": "바스트 · 원피스를 든 이안, 갸웃",
+   "장면": "세탁밤",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 원피스를 든 이안, 갸웃",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "-",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "눈썹이 살짝 모이고 눈이 손에 든 원피스로 내려간다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "다문 입꼬리 한쪽이 조금 당겨진다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "고개가 오른쪽으로 천천히 갸웃 기운다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 고개를 기울인 채 원피스를 보며 눈을 한 번 깜빡이고 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "세탁기에서 집어 든 낯선 천이 무엇인지 — 들어 올린 원피스와 그의 얼굴로 다가감",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "이안 손에"
+   },
+   "소품행동": {
+    "새원피스": "이안이 왼손으로 어깨끈을 쥐고 눈앞에 들어 올린다(0.2~0.6s)"
+   }
+  },
+  {
+   "cut": "2-3",
+   "t": 61.09,
+   "dur": 0.9,
+   "in": 1.74,
+   "out": 2.64,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-3.jpg",
+   "line": "인서트 · 가격표 달린 새 원피스",
+   "장면": "세탁밤",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "인서트 · 가격표 달린 새 원피스",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "-",
+   "연기": [
+    {
+     "t": 1.5,
+     "무엇": "눈이 원피스의 가격표로 내려가고 눈썹이 조금 올라간다"
+    },
+    {
+     "t": 1.8,
+     "무엇": "입술이 살짝 벌어졌다 다물린다"
+    },
+    {
+     "t": 2.1,
+     "무엇": "두 손이 어깨끈을 양옆으로 조금 펼쳐 원피스를 몸 앞에 펴 들고, 고개가 앞으로 조금 나온다"
+    },
+    {
+     "t": 2.4,
+     "무엇": "끝 모습 — 가격표를 보며 눈을 한 번 깜빡이고 숨을 짧게 내쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "같은 판 — 갸웃하던 그가 원피스를 펴 들자 가격표가 보이는 다음 샷(한 방을 둘로 자름)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "이안 손에"
+   },
+   "소품행동": {
+    "새원피스": "이안이 두 손으로 어깨끈을 펼쳐 들어 가격표가 흔들린다(2.1~2.4s)"
+   }
+  },
+  {
+   "cut": "2-4",
+   "t": 61.99,
+   "dur": 0.63,
+   "in": 0.8,
+   "out": 1.43,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-4.jpg",
+   "line": "인서트 · 현관 바닥 — 들어오는 서진 구두, 옆에 칸찬 배송 상자",
+   "장면": "현관밤",
+   "인물": [
+    "서진_원피스"
+   ],
+   "실내": true,
+   "구도": "인서트 · 현관 바닥",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (wine dress) 「다녀왔어.」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 앵클부츠 한 발이 현관 돌바닥에 내려앉고 와인색 원피스 자락이 따라 흔들리며, 화면 밖에서 「다녀왔어」 목소리가 시작된다(얼굴은 보이지 않는다)"
+    },
+    {
+     "t": 0.6,
+     "무엇": "다른 발이 그 옆으로 와 닿으며 무게가 두 발로 옮겨진다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 부츠 끝이 배송 상자 쪽으로 반쯤 돌고 원피스 자락의 흔들림이 잦아든다"
+    }
+   ],
+   "넘어옴": "원피스를 든 그의 귀에 현관의 구두 소리와 「다녀왔어」가 들어옴 — 소리로 현관으로 건너감",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "현관 바닥",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-5",
+   "t": 62.62,
+   "dur": 1.07,
+   "in": 0.8,
+   "out": 1.87,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-5.jpg",
+   "line": "바스트 · 원피스를 바구니에 도로 넣는 이안",
+   "장면": "세탁밤",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 원피스를 바구니에 도로 넣는 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "옷 소리",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "눈이 현관 쪽(화면 오른쪽)으로 재빨리 가고 눈썹이 조금 올라간다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "입술이 꾹 다물린다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "오른손이 원피스를 바구니 속 빨래 밑으로 밀어 넣고, 어깨가 현관 쪽으로 반쯤 돈다"
+    },
+    {
+     "t": 1.3,
+     "무엇": "끝 모습 — 손을 바구니에서 떼며 고개가 현관 쪽으로 돌고 숨을 한 번 고른다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「다녀왔어」를 들은 그가 원피스를 서둘러 감춤 — 소리에 대한 반응",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "빨래 바구니에"
+   },
+   "소품행동": {
+    "새원피스": "이안이 오른손으로 바구니 속 빨래 밑에 밀어 넣는다(0.6~1.2s)"
+   }
+  },
+  {
+   "cut": "2-6",
+   "t": 63.69,
+   "dur": 0.87,
+   "in": 0.8,
+   "out": 1.67,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-6.jpg",
+   "line": "바스트 · 이안",
+   "장면": "현관밤",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (sweatshirt) 「열한 시 넘었네.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "눈이 현관의 그녀(화면 밖)에게 가고 눈썹이 아주 조금 내려앉는다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "입이 「열한 시 넘었네」를 담담하게 따라 움직인다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "고개가 아주 조금 옆으로 기운다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "끝 모습 — 말을 마친 입을 다물고 그녀를 보며 숨을 쉬고 눈을 한 번 깜빡인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "원피스를 감춘 그가 복도로 나와 들어온 그녀를 마주함",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-7",
+   "t": 64.56,
+   "dur": 1.06,
+   "in": 0.8,
+   "out": 1.86,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-7.jpg",
+   "line": "미디엄 · 이안 어깨 너머 서진, 머리를 넘기며 고개를 돌림",
+   "장면": "현관밤",
+   "인물": [
+    "서진_원피스",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 이안 어깨 너머 서진, 머리를 넘기며 고개를 돌림",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (wine dress) 「응, 좀 늦었지.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.1,
+     "무엇": "서진의 눈이 이안을 비켜 화면 오른쪽으로 가고 눈썹이 살짝 올라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "오른손이 귀 뒤로 머리를 넘기며 입이 「응, 좀 늦었지」를 가볍게 따라 움직인다"
+    },
+    {
+     "t": 0.7,
+     "무엇": "서진의 고개가 오른쪽으로 조금 더 돌고, 앞의 흐린 이안 어깨가 숨에 조금 오르내린다"
+    },
+    {
+     "t": 1.4,
+     "무엇": "끝 모습 — 머리를 넘긴 손이 내려오고 입꼬리에 작은 미소를 남긴 채 눈을 한 번 깜빡인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「열한 시 넘었네」에 대한 그녀의 대답 — 그의 어깨 너머로 받음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-8",
+   "t": 65.62,
+   "dur": 1.27,
+   "in": 0.8,
+   "out": 2.07,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-8.jpg",
+   "line": "미디엄 · 스쳐 가는 서진 뒤로 냄새를 맡는 이안",
+   "장면": "현관밤",
+   "인물": [
+    "이안_맨투맨",
+    "서진_원피스"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 스쳐 가는 서진 뒤로 냄새를 맡는 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (sweatshirt) 「향수… 바꿨어?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "앞의 흐린 서진이 화면 왼쪽으로 스쳐 지나가고, 이안의 눈이 그녀 뒷모습을 따라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안의 콧방울이 살짝 벌어지며 숨을 짧게 들이마신다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "입이 「향수… 바꿨어?」를 낮게 따라 움직이고, 고개가 그녀 쪽으로 조금 숙여 따라간다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 눈썹이 조금 모인 얼굴로 그녀가 간 쪽을 보며 입을 다물고 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "늦었다며 지나가는 그녀가 그의 옆을 스침 — 그 순간 낯선 향이 남음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-9",
+   "t": 66.89,
+   "dur": 1.27,
+   "in": 0.8,
+   "out": 2.07,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-9.jpg",
+   "line": "클로즈업 · 서진, 미소",
+   "장면": "현관밤",
+   "인물": [
+    "서진_원피스"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 서진, 미소",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (wine dress) 「비밀.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "어깨 너머로 돌아본 눈이 이안(화면 밖)에게 닿고 눈꼬리가 살짝 내려가며 웃는다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "입이 「비밀」을 짧게 따라 움직인다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "입술을 다문 작은 미소로 돌아가고 고개가 앞쪽으로 살짝 돌아선다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 입을 다문 미소로 숨을 쉬며 눈을 한 번 깜빡인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「향수… 바꿨어?」에 대한 대답 — 돌아보는 그녀의 얼굴",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-10",
+   "t": 68.16,
+   "dur": 1.2,
+   "in": 0.8,
+   "out": 2.0,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-10.jpg",
+   "line": "로우 앵글 · 새 차림의 서진이 카메라 옆을 스쳐 지나가면 복도 끝에 혼자 선 이안이 드러남",
+   "장면": "현관밤",
+   "인물": [
+    "서진_원피스",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "로우 앵글 · 새 차림의 서진이 카메라 옆을 스쳐 지나가면 복도 끝에 혼자 선 이안이 드러남",
+   "카메라": "가슴 높이 고정 — 거의 움직이지 않고, 0.2 ~ 0.7초 스쳐 가는 서진의 몸이 화면을 덮었다 지나가면 복도 끝에 선 이안이 끝 그림 그대로 보인다(한 판 이어짐)",
+   "끝그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-10e.jpg",
+   "소리": "구두 소리 · 끝 무렵 민재 목소리가 먼저(J컷)",
+   "연기": [
+    {
+     "t": 0.1,
+     "무엇": "서진이 카메라 쪽으로 성큼 걸어오고 오른손의 가방이 걸음에 맞춰 흔들린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "서진의 몸이 카메라 옆을 스쳐 지나가며 화면을 덮는다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "복도 끝에 선 이안이 드러나고, 그의 눈이 그녀가 간 쪽을 따라간다"
+    },
+    {
+     "t": 1.3,
+     "무엇": "끝 모습 — 이안이 두 팔을 내린 채 입을 다물고, 숨에 어깨가 조금 오르내리며 그녀 쪽을 본다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「비밀」을 남긴 그녀가 복도를 걸어 나감 — 그 뒤로 혼자 남은 그",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-11",
+   "t": 69.36,
+   "dur": 0.74,
+   "in": 0.8,
+   "out": 1.54,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-11.jpg",
+   "line": "바스트 · 회사, 이안 어깨 너머 다가오는 민재",
+   "장면": "회사낮",
+   "인물": [
+    "민재",
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "바스트 · 회사, 이안 어깨 너머 다가오는 민재",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "MINJAE 「오늘은 매실도 없냐?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/minjae.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.1,
+     "무엇": "민재의 눈이 이안의 손 쪽으로 내려가고 눈썹이 장난스럽게 올라간다"
+    },
+    {
+     "t": 0.2,
+     "무엇": "민재의 입이 「오늘은 매실도 없냐?」를 따라 움직이고 오른손 검지가 이안 쪽을 가리킨다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "앞의 이안이 젓가락을 입에서 떼며 눈만 민재 쪽으로 든다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 민재가 웃음 띤 입을 다물고 몸을 책상 쪽으로 조금 더 기울이며 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "복도 끝에 혼자 선 그 뒤로 민재 목소리가 먼저 들어옴(J컷) — 다음 날 회사",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "2-12",
+   "t": 70.1,
+   "dur": 1.0,
+   "in": 0.8,
+   "out": 1.8,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-12.jpg",
+   "line": "인서트 · 편의점 샌드위치를 든 이안 손",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "인서트 · 편의점 샌드위치를 든 이안 손",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "(이어짐)",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 오른손이 비닐에 싼 달걀 샌드위치를 책상 위로 조금 들어 올린다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "손목이 돌아 샌드위치의 잘린 면이 카메라 쪽으로 오고, 손가락이 비닐을 살짝 구긴다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "끝 모습 — 샌드위치를 든 손이 보여 주듯 한 번 작게 흔들린다"
+    }
+   ],
+   "넘어옴": "「매실도 없냐?」에 대한 대답 — 도시락 대신 든 편의점 샌드위치",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-13",
+   "t": 71.1,
+   "dur": 1.5,
+   "in": 2.1,
+   "out": 3.6,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-13.jpg",
+   "line": "바스트 · 이안 → 흰 번쩍(18의 전환을 옮김)",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안 → 흰 번쩍(18의 전환을 옮김)",
+   "카메라": "손에 든 흔들림 · 끝에 흰 번쩍(현재 → 회상)",
+   "소리": "IAN (office) 「도시락 대신 만 원 놓고 갔더라.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 1.9,
+     "무엇": "눈이 샌드위치에서 민재(화면 밖) 쪽으로 오르고 눈썹 안쪽이 살짝 올라간다"
+    },
+    {
+     "t": 2.1,
+     "무엇": "입이 「도시락 대신 만 원 놓고 갔더라」를 담담하게 따라 움직인다"
+    },
+    {
+     "t": 3.0,
+     "무엇": "고개가 아주 조금 옆으로 기울고 어깨가 한 번 내려앉는다"
+    },
+    {
+     "t": 3.3,
+     "무엇": "끝 모습 — 입을 다물고 짧게 숨을 내쉬며 눈을 한 번 깜빡인다(그 위로 흰 번쩍)"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "같은 판 — 샌드위치를 보여 준 손에서 그의 얼굴로(한 방을 둘로 자름)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-14",
+   "t": 72.6,
+   "dur": 0.67,
+   "in": 0.8,
+   "out": 1.47,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-14.jpg",
+   "line": "바스트 · 주말 아침 현관, 장바구니를 든 서진",
+   "장면": "현관주말아침",
+   "인물": [
+    "서진_케이블니트",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 주말 아침 현관, 장바구니를 든 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "-",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈이 앞의 흐린 이안에게 가고 눈썹이 살짝 올라간다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "입술을 다문 채 숨을 한 번 들이쉰다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "오른손이 어깨의 토트백 끈을 고쳐 잡고 고개가 조금 든다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 그를 보며 눈을 한 번 깜빡이고, 앞의 이안 어깨가 숨에 조금 오르내린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "흰 번쩍에서 열림 — 그가 말한 지난 주말 아침 현관의 회상",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "2-15",
+   "t": 73.27,
+   "dur": 1.0,
+   "in": 0.8,
+   "out": 1.8,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-15.jpg",
+   "line": "바스트 · 이안",
+   "장면": "현관주말아침",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (sweatshirt) 「주말 장 같이 보러 가자.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "눈이 그녀 쪽으로 밝아지고 눈썹이 살짝 올라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "작은 미소를 띤 입이 「주말 장 같이 보러 가자」를 따라 움직인다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "고개가 아주 조금 앞으로 기운다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 기대 섞인 입꼬리로 입을 다물고 그녀를 보며 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "장바구니를 든 그녀를 보고 그가 먼저 말을 건넴",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-16",
+   "t": 74.27,
+   "dur": 1.83,
+   "in": 0.8,
+   "out": 2.63,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-16.jpg",
+   "line": "바스트 · 서진",
+   "장면": "현관주말아침",
+   "인물": [
+    "서진_케이블니트",
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진",
+   "카메라": "손에 든 채 몸을 돌리는 서진을 살짝 따라감",
+   "소리": "SEOJIN (cable knit) 「아니. 오늘은 혼자 갈게.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈이 그를 잠깐 보다 아래로 비켜 가고 눈썹이 조금 내려앉는다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "입이 「아니. 오늘은 혼자 갈게」를 가볍지만 단호하게 따라 움직인다"
+    },
+    {
+     "t": 1.4,
+     "무엇": "고개와 어깨가 현관문 쪽(화면 오른쪽)으로 돌아서고 오른손이 가방끈을 쥔다"
+    },
+    {
+     "t": 2.0,
+     "무엇": "끝 모습 — 입을 다물고 숨을 한 번 내쉬며 문 쪽으로 몸을 돌리고, 앞의 이안 어깨가 조금 움찔한다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「같이 보러 가자」에 대한 그녀의 대답 — 그의 어깨 너머로",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-17",
+   "t": 76.1,
+   "dur": 1.7,
+   "in": 0.8,
+   "out": 2.5,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-17.jpg",
+   "line": "바스트 · 서진 어깨 너머 이안, 놀람",
+   "장면": "현관주말아침",
+   "인물": [
+    "이안_맨투맨",
+    "서진_케이블니트"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진 어깨 너머 이안, 놀람",
+   "카메라": "손에 든 흔들림 · 끝에 서진이 앞을 흐리게 지나감",
+   "소리": "-",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 크게 뜨였다가 아래로 떨어지고 눈썹 안쪽이 올라간다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "입술이 살짝 벌어졌다가 다물린다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "고개가 조금 숙여지고 숨이 짧게 빠져나간다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "앞으로 흐린 서진이 렌즈 앞을 지나가며 그의 얼굴을 잠깐 가린다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 그녀가 지나간 뒤 그가 아래를 보며 눈을 한 번 깜빡이고 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「혼자 갈게」를 들은 그의 얼굴 — 그녀 어깨 너머로",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-18",
+   "t": 77.8,
+   "dur": 0.9,
+   "in": 2.8,
+   "out": 3.7,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-18.jpg",
+   "line": "바스트 · 이안(다른 각도)",
+   "장면": "현관주말아침",
+   "인물": [
+    "이안_맨투맨"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안(다른 각도)",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (sweatshirt) 「…맨날 같이 갔잖아.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 2.6,
+     "무엇": "눈이 그녀가 나간 쪽으로 천천히 가고 눈썹 안쪽이 조금 올라간다"
+    },
+    {
+     "t": 2.8,
+     "무엇": "입이 「…맨날 같이 갔잖아」를 작게 따라 움직인다"
+    },
+    {
+     "t": 3.1,
+     "무엇": "고개가 조금 떨궈진다"
+    },
+    {
+     "t": 3.4,
+     "무엇": "끝 모습 — 입을 다물고 숨을 길게 내쉬며 눈을 한 번 깜빡인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "같은 판 — 그녀가 앞을 지나간 뒤 다른 각도에서 본 그(한 방을 둘로 자름)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-19",
+   "t": 78.7,
+   "dur": 2.04,
+   "in": 0.8,
+   "out": 2.84,
+   "band": "기",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-19.jpg",
+   "line": "와이드 · 회사, 의자에 드러눕는 이안과 옆에서 팔을 붙잡는 민재",
+   "장면": "회사낮",
+   "인물": [
+    "이안_회사",
+    "민재"
+   ],
+   "실내": true,
+   "구도": "와이드 · 회사, 의자에 드러눕는 이안과 옆에서 팔을 붙잡는 민재",
+   "카메라": "높은 자리 와이드 · 고정에 가까움(옆 약 4% 흐름)",
+   "소리": "IAN (office) 「설마… 아니겠지.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 천장으로 올라가고 눈썹이 축 처지며, 몸이 의자 등받이로 무너지듯 기댄다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "이안의 입이 「설마… 아니겠지」를 혼잣말로 따라 움직이고, 민재가 웃으며 이안의 팔을 붙잡는다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "민재의 웃음이 입을 다문 웃음으로 잦아들고 붙잡은 손으로 이안 팔을 한 번 흔든다"
+    },
+    {
+     "t": 1.8,
+     "무엇": "끝 모습 — 이안이 고개를 젖힌 채 숨을 길게 내쉬고 샌드위치를 든 손이 무릎 쪽으로 처진다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "회상에서 돌아와 다시 회사 — 「맨날 같이 갔잖아」를 떠올린 그가 의자에 무너짐(시간 건너뜀)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "2-20",
+   "t": 80.74,
+   "dur": 2.37,
+   "in": 0.8,
+   "out": 3.17,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-20.jpg",
+   "line": "미디엄 · 카페, 같은 몸짓으로 소연 어깨에 얼굴을 묻고 버둥대는 서진",
+   "장면": "카페낮",
+   "인물": [
+    "서진_네이비",
+    "소연"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 카페, 같은 몸짓으로 소연 어깨에 얼굴을 묻고 버둥대는 서진",
+   "카메라": "손에 든 채 소연 어깨로 쓰러지는 서진을 따라 아래로 · 기울어짐(0.3–2.1초) · 흔들림 강",
+   "소리": "SEOJIN (navy sweater) 「아, 이거 내가 더 괴로워.」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "소연의 눈이 웃음으로 가늘어지고 눈썹이 올라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "소연 어깨에 얼굴을 묻은 서진이 머리를 좌우로 비비며 버둥대고, 묻힌 입에서 「아, 이거 내가 더 괴로워」가 웅얼거리며 나온다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "소연의 입이 소리 없는 웃음에서 입을 다문 미소로 잦아들고, 두 손이 테이크아웃 컵을 고쳐 쥔다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "서진의 어깨가 한숨에 크게 오르내리고 머리가 소연 어깨로 더 기운다"
+    },
+    {
+     "t": 2.3,
+     "무엇": "끝 모습 — 소연이 입을 다문 미소로 고개를 서진 쪽으로 조금 기울이고 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "의자에 무너진 그와 같은 몸짓 — 같은 날 카페의 그녀(짝 맞춤)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-21",
+   "t": 83.11,
+   "dur": 2.28,
+   "in": 0.8,
+   "out": 3.08,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-21.jpg",
+   "line": "바스트 · 서진",
+   "장면": "카페낮",
+   "인물": [
+    "서진_네이비",
+    "소연"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (navy sweater) 「현관에서 날 보는 그 눈을 봤어야 돼.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 한쪽 눈이 찡그려지고 눈썹 안쪽이 모인다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "입이 「현관에서 날 보는 그 눈을 봤어야 돼」를 미안한 투로 따라 움직인다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "고개가 조금 옆으로 기울고 두 손이 컵을 감싸 쥔다"
+    },
+    {
+     "t": 2.4,
+     "무엇": "끝 모습 — 말을 마친 입을 다물고 숨을 내쉬며 눈을 한 번 깜빡이고, 앞의 소연 어깨가 웃음에 조금 들썩인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「내가 더 괴로워」 하던 그녀가 고개를 들고 까닭을 말함",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-22",
+   "t": 85.39,
+   "dur": 1.64,
+   "in": 0.8,
+   "out": 2.44,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-22.jpg",
+   "line": "바스트 · 흰 바탕의 이안 — 버려진 강아지 같은 눈(상상)",
+   "장면": "흰바탕",
+   "인물": [
+    "이안_흰바탕"
+   ],
+   "실내": true,
+   "구도": "바스트 · 흰 바탕의 이안",
+   "카메라": "첫 프레임 바로 뒤부터 렌즈를 보는 이안의 눈 쪽으로 카메라가 몸째 천천히 곧게 다가감 약 10%(줌 없음, 흔들림 없음) — 끝은 강아지 눈 클로즈업",
+   "소리": "낑낑 효과음",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "옆을 보던 눈이 렌즈로 천천히 돌아오고 눈썹 안쪽이 크게 올라간다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "아랫입술이 살짝 내밀어지며 조금 떨린다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "고개가 아주 조금 한쪽으로 기운다"
+    },
+    {
+     "t": 1.4,
+     "무엇": "끝 모습 — 렌즈를 보며 눈을 천천히 한 번 깜빡이고 입을 다문 채 숨을 쉰다"
+    }
+   ],
+   "연기세기": "중간",
+   "넘어옴": "「그 눈을 봤어야 돼」 — 그녀가 떠올린 그의 눈(상상)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "2-23",
+   "t": 87.03,
+   "dur": 0.93,
+   "in": 0.8,
+   "out": 1.73,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-23.jpg",
+   "line": "미디엄 · 불 끈 침실, 누운 이안",
+   "장면": "침실밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 불 끈 침실, 누운 이안",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "IAN (pajamas) 「…혹시, 좋아하는 사람 생겼어?」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 서진 쪽(화면 왼쪽 위)으로 올라가고 눈썹 안쪽이 조금 올라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "입이 「…혹시, 좋아하는 사람 생겼어?」를 조용히 따라 움직인다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "베개에 댄 고개가 그녀 쪽으로 조금 더 돌고, 왼쪽 앞의 서진 팔이 숨에 조금 움직인다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 입을 다물고 그녀를 올려다보며 숨을 쉬고 눈을 한 번 깜빡인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "그날 밤 침실 — 의심이 쌓인 그가 마침내 묻는다(시간 건너뜀)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "시간건너뜀": true
+  },
+  {
+   "cut": "2-24",
+   "t": 87.96,
+   "dur": 0.67,
+   "in": 0.8,
+   "out": 1.47,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-24.jpg",
+   "line": "바스트 · 앞 이안 흐림, 침대의 서진(태연히 머리를 빗음)",
+   "장면": "침실밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "바스트 · 앞 이안 흐림, 침대의 서진(태연히 머리를 빗음)",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "-",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈이 앞의 흐린 이안 쪽으로 슬쩍 가고 눈썹은 태연하게 펴진다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "입술을 다문 채 숨을 고른다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "오른손이 올라와 뒤로 묶은 머리를 한 번 쓸어내린다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 고개를 살짝 들고 그를 보며 눈을 한 번 깜빡이고, 앞의 이안 머리가 숨에 조금 오르내린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「좋아하는 사람 생겼어?」를 들은 그녀의 태연한 척",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-25",
+   "t": 88.63,
+   "dur": 1.7,
+   "in": 0.8,
+   "out": 2.5,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-25.jpg",
+   "line": "어깨 너머 · 핸드크림을 바르는 서진 머리 · 손(앞 흐림) 너머 누운 이안",
+   "장면": "침실밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "어깨 너머 · 핸드크림을 바르는 서진 머리 · 손(앞 흐림) 너머 누운 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (pajamas) 「새 옷에, 늦게 오고, 향수도…」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 두 손이 핸드크림을 손등에 문질러 펴고, 너머의 이안 목소리로 「새 옷에, 늦게 오고, 향수도…」가 시작된다(입은 보이지 않는다)"
+    },
+    {
+     "t": 0.8,
+     "무엇": "서진의 손가락이 서로 엇갈리며 문지르다 조금 느려진다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "너머의 이안이 등을 돌리고 누운 채 어깨가 숨에 오르내리고 이불이 조금 끌린다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "서진의 고개가 이안 쪽으로 아주 조금 돈다"
+    }
+   ],
+   "넘어옴": "태연히 머리를 넘긴 그녀가 핸드크림을 바르는 사이 등 돌린 그가 말을 이음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-26",
+   "t": 90.33,
+   "dur": 0.5,
+   "in": 2.8,
+   "out": 3.3,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-26.jpg",
+   "line": "미디엄 · 베개에 볼을 대고 누운 이안",
+   "장면": "침실밤",
+   "인물": [
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 베개에 볼을 대고 누운 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (pajamas) 「…바뀌었고.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 2.6,
+     "무엇": "눈이 베개 위에서 그녀 쪽으로 올라가고 눈썹 안쪽이 살짝 모인다"
+    },
+    {
+     "t": 2.7,
+     "무엇": "베개 위로 드러난 입이 「…바뀌었고」를 작게 따라 움직인다"
+    },
+    {
+     "t": 3.1,
+     "무엇": "끝 모습 — 볼을 베개에 댄 채 입을 다물고 숨을 쉬며 눈을 한 번 깜빡인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "같은 판 — 등 돌린 그의 말끝을 베개에 볼을 댄 얼굴로 받음(한 방을 둘로 자름)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-27",
+   "t": 90.83,
+   "dur": 1.44,
+   "in": 0.8,
+   "out": 2.24,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-27.jpg",
+   "line": "바스트 · 앞 이안 머리 흐림, 서진",
+   "장면": "침실밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "바스트 · 앞 이안 머리 흐림, 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (pajamas) 「그런 거 아니라니까.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈이 웃음으로 가늘어지고 눈썹이 살짝 올라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "입이 짧은 웃음 뒤 「그런 거 아니라니까」를 가볍게 따라 움직인다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "고개가 작게 좌우로 한 번 저어진다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "끝 모습 — 입꼬리에 어색한 미소를 남긴 채 입을 다물고 눈을 한 번 깜빡이며 숨을 쉬고, 앞의 이안 머리가 조금 움직인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「…바뀌었고」에 대한 그녀의 대답",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-28",
+   "t": 92.27,
+   "dur": 1.27,
+   "in": 0.8,
+   "out": 2.07,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-28.jpg",
+   "line": "미디엄 · 일어나 앉는 이안",
+   "장면": "침실밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 일어나 앉는 이안",
+   "카메라": "일어나 앉는 이안을 손에 든 채 따라 위로 약 20%(0.2–0.9초, 느려짐) · 흔들림 강",
+   "소리": "IAN (pajamas) 「너 거짓말하면 귀 빨개져.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 그녀 얼굴(화면 오른쪽)로 곧게 가고 눈썹 안쪽이 조금 모이며, 상체가 곧게 펴지기 시작한다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "입이 「너 거짓말하면 귀 빨개져」를 낮고 서운하게 따라 움직인다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "고개가 그녀 쪽으로 조금 나오며 상체가 다 펴진다"
+    },
+    {
+     "t": 1.4,
+     "무엇": "끝 모습 — 입을 다물고 그녀를 바로 보며 숨을 쉬고 눈을 한 번 깜빡이며, 오른쪽 끝의 흐린 서진 머리칼이 조금 흔들린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「그런 거 아니라니까」를 들은 그가 몸을 세워 그녀를 바로 봄",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-29",
+   "t": 93.54,
+   "dur": 1.3,
+   "in": 0.8,
+   "out": 2.1,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-29.jpg",
+   "line": "미디엄 · 서진, 앞에서 이안이 일어나 나감(흐림)",
+   "장면": "침실밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 서진, 앞에서 이안이 일어나 나감(흐림)",
+   "카메라": "고정 · 일어나 나가는 이안의 몸이 앞을 지나가며 화면을 덮음(0.5–1.0초)",
+   "소리": "IAN (pajamas) 「…잠깐 나가 있을게.」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 눈이 일어서는 이안을 따라 위로 가고 눈썹 안쪽이 살짝 올라가며, 앞의 이안 목소리로 「…잠깐 나가 있을게」가 시작된다(그의 입은 보이지 않는다)"
+    },
+    {
+     "t": 0.5,
+     "무엇": "이안의 몸이 일어나 앞을 지나가며 화면을 덮는다(0.5~1.0s)"
+    },
+    {
+     "t": 1.1,
+     "무엇": "서진의 입술이 살짝 벌어졌다 다물리고 핸드크림 튜브를 쥔 손가락에 힘이 들어간다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 서진이 그가 나간 쪽을 보며 숨을 짧게 들이쉬고 눈을 한 번 깜빡인다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「귀 빨개져」 뒤 그가 일어나 그녀 앞을 지나감",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-30",
+   "t": 94.84,
+   "dur": 1.4,
+   "in": 0.8,
+   "out": 2.2,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-30.jpg",
+   "line": "미디엄 · 서진 등(앞 흐림) 너머 침실 문, 이안이 나가 문이 닫힘",
+   "장면": "침실밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 서진 등(앞 흐림) 너머 침실 문, 이안이 나가 문이 닫힘",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "높은 이명음이 커짐 · 문 닫힘",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안이 문지방을 넘어 나가며 오른손이 문손잡이를 쥔다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "앞의 서진 어깨가 숨에 한 번 올라갔다 내려간다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "이안의 손이 문을 끌어당겨 문이 천천히 닫혀 온다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "문이 닫히고 이안은 문 너머로 사라진다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "서진의 고개가 닫힌 문 쪽으로 아주 조금 기운다"
+    }
+   ],
+   "넘어옴": "앞을 지나간 그가 침실 문으로 나감 — 그녀 등 너머로",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-31",
+   "t": 96.24,
+   "dur": 1.03,
+   "in": 0.8,
+   "out": 1.83,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-31.jpg",
+   "line": "미디엄 · 혼자 남은 서진 → 디졸브",
+   "장면": "침실밤",
+   "인물": [
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 혼자 남은 서진 → 디졸브",
+   "카메라": "처음 0.1–0.4초 옆으로(카메라 왼쪽) 약 10% 갔다가 멈춤(느려짐) → 고정 → 끝 0.3초 크로스 디졸브(식탁의 이안으로)",
+   "소리": "높은 이명음이 더 커짐",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "닫힌 문(화면 오른쪽)을 보는 눈이 한 번 깜빡이고 눈썹 안쪽이 올라간다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "입술이 살짝 떨리다 꾹 다물린다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "베개를 안은 두 팔에 힘이 들어가 베개가 조금 눌린다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "끝 모습 — 고개를 문 쪽으로 둔 채 숨을 떨리게 들이쉬고 어깨가 조금 오르내린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "그가 나가 닫힌 문 — 혼자 남은 그녀",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-32",
+   "t": 97.27,
+   "dur": 0.8,
+   "in": 0.8,
+   "out": 1.6,
+   "band": "승",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-32.jpg",
+   "line": "와이드 · 식탁을 짚고 종이 · 펜을 내려다보며 앉는 이안(쓰는 손은 안 보임)",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "와이드 · 식탁을 짚고 종이 · 펜을 내려다보며 앉는 이안(쓰는 손은 안 보임)",
+   "카메라": "디졸브에서 열림 · 고정에 가까움",
+   "소리": "이명음이 디졸브 끝에서 사라짐 → 정적",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 식탁 위 종이와 펜으로 내려가고, 숨이 길게 빠져나가며 어깨가 내려앉는다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "식탁을 짚은 두 손에 힘이 실리며 무릎이 굽어 의자 쪽으로 몸이 낮아진다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 종이를 내려다보며 의자에 앉고 한 번 더 숨을 쉰다(쓰는 손은 보이지 않는다)"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "디졸브 — 침실을 나간 그가 간 곳, 밤 식탁",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "식탁 위",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-33",
+   "t": 98.07,
+   "dur": 1.0,
+   "in": 0.8,
+   "out": 1.8,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-33.jpg",
+   "line": "바스트 · 식탁의 이안, 고개 숙임",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "바스트 · 식탁의 이안, 고개 숙임",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "숨소리",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "내리깐 눈이 아래 종이를 보다 한 번 천천히 깜빡인다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "입술이 살짝 벌어지며 숨이 길게 나간다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "고개가 조금 더 숙여지고 어깨가 숨에 오르내린다"
+    },
+    {
+     "t": 1.3,
+     "무엇": "끝 모습 — 아래를 보며 입을 다물고 천천히 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "식탁에 앉은 그에게 다가감 — 고개 숙인 얼굴",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-34",
+   "t": 99.07,
+   "dur": 0.93,
+   "in": 0.8,
+   "out": 1.73,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-34.jpg",
+   "line": "미디엄 · 뛰어나와 바닥에 미끄러지는 서진",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 뛰어나와 바닥에 미끄러지는 서진",
+   "카메라": "높은 자리에서 바닥을 내려다봄 · 뛰어들어 미끄러지는 서진을 손에 든 채 따라감 · 흔들림 강",
+   "소리": "미끄러지는 소리",
+   "연기": [
+    {
+     "t": 0.1,
+     "무엇": "서진의 눈이 식탁의 이안을 찾아 커지고 눈썹이 올라간다"
+    },
+    {
+     "t": 0.2,
+     "무엇": "들었던 발을 서둘러 내딛고 식탁 쪽으로 두 걸음 뛰어든다"
+    },
+    {
+     "t": 0.5,
+     "무엇": "양말 신은 발이 나무 바닥에서 앞으로 쭉 미끄러지며 두 팔이 허공으로 벌어진다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "끝 모습 — 서진이 무릎과 두 손으로 바닥에 털썩 주저앉으며 입이 놀라 벌어지고, 앞의 이안 뒤통수가 소리에 홱 든다"
+    }
+   ],
+   "연기세기": "중간",
+   "넘어옴": "고개 숙인 그를 향해 침실에서 그녀가 뛰어나옴",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "식탁 위",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-35",
+   "t": 100.0,
+   "dur": 0.87,
+   "in": 0.8,
+   "out": 1.67,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-35.jpg",
+   "line": "와이드 · 식탁 이안, 앞 바닥의 서진",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "와이드 · 식탁 이안, 앞 바닥의 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (pajamas) 「왜, 왜 그래.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 바닥의 서진에게 꽂히며 커지고 눈썹이 올라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "입이 「왜, 왜 그래」를 다급하게 따라 움직인다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "몸이 의자에서 그녀 쪽으로 반쯤 돌고 오른손이 식탁 모서리를 짚는다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "끝 모습 — 엉덩이를 의자에서 조금 들며 그녀를 보고 숨을 들이쉬고, 앞의 엎드린 서진 등이 숨에 오르내린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "미끄러지는 소리에 그가 돌아봄(소리가 0.78초 앞선다)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "식탁 위",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-36",
+   "t": 100.87,
+   "dur": 1.4,
+   "in": 0.8,
+   "out": 2.2,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-36.jpg",
+   "line": "미디엄 · 엎드린 서진",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 엎드린 서진",
+   "카메라": "높은 자리에서 내려다봄 · 손에 든 작은 흔들림",
+   "소리": "SEOJIN (pajamas) 「다 연기였어.」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "바닥에 이마를 댄 서진의 어깨가 떨리고, 엎드린 채 떨리는 목소리로 「다 연기였어」가 나온다(얼굴은 보이지 않는다)"
+    },
+    {
+     "t": 0.7,
+     "무엇": "바닥을 짚은 두 손의 손가락이 바닥을 조금 움켜쥔다"
+    },
+    {
+     "t": 1.1,
+     "무엇": "앞의 흐린 이안 머리가 그녀 쪽으로 조금 숙여진다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "서진의 등이 흐느끼는 숨에 한 번 크게 오르내린다"
+    }
+   ],
+   "넘어옴": "「왜 그래」에 그녀가 엎드려 큰절하듯 고백함",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-37",
+   "t": 102.27,
+   "dur": 1.54,
+   "in": 2.5,
+   "out": 4.04,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-37.jpg",
+   "line": "클로즈업 · 고개를 드는 서진",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 고개를 드는 서진",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (pajamas) 「늦은 것도, 원피스도, 향수도.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 2.3,
+     "무엇": "숙인 얼굴의 눈썹 안쪽이 올라가고 젖은 눈꺼풀이 천천히 열린다"
+    },
+    {
+     "t": 2.6,
+     "무엇": "떨리는 입이 「늦은 것도, 원피스도, 향수도」를 따라 움직인다"
+    },
+    {
+     "t": 3.0,
+     "무엇": "고개가 바닥에서 천천히 들려 그를 향한다"
+    },
+    {
+     "t": 3.7,
+     "무엇": "끝 모습 — 눈물이 고인 눈으로 그를 보며 입술을 다물고 떨리는 숨을 쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "같은 판 — 엎드렸던 그녀가 고개를 들며 말을 이음(한 방을 둘로 자름)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-38",
+   "t": 103.81,
+   "dur": 1.5,
+   "in": 0.8,
+   "out": 2.3,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-38.jpg",
+   "line": "와이드 · 앞 서진 뒷모습 너머 이안",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "와이드 · 앞 서진 뒷모습 너머 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "SEOJIN (pajamas) 「나가지 마…」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈가가 붉어지며 눈물이 차오르고 눈썹 안쪽이 올라가며, 앞의 서진 뒷모습에서 「나가지 마…」가 떨리며 나온다(그녀의 입은 보이지 않는다)"
+    },
+    {
+     "t": 0.7,
+     "무엇": "이안의 다문 입술이 조금 떨린다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "고개가 아주 조금 숙여지고 목울대가 한 번 움직인다"
+    },
+    {
+     "t": 1.6,
+     "무엇": "끝 모습 — 젖은 눈으로 그녀를 보며 숨을 떨리게 쉬고, 앞의 서진 어깨가 흐느낌에 오르내린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "그녀의 고백을 듣는 그 — 그녀 등 너머로",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-39",
+   "t": 105.31,
+   "dur": 3.44,
+   "in": 0.8,
+   "out": 4.24,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-39.jpg",
+   "line": "바스트 · 눈물이 고인 이안",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "바스트 · 눈물이 고인 이안",
+   "카메라": "0.5초부터 눈높이에서 이안의 얼굴 쪽으로 몸째 느리게 매끈하게 다가감 약 8%(손떨림은 숨결만) — 끝은 눈물 고인 눈이 화면 위 3분의 1",
+   "소리": "IAN (pajamas) 「…나 진짜 무서웠어.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.3,
+     "무엇": "눈에 눈물이 고이며 눈썹 안쪽이 천천히 올라가고 눈을 한 번 깜빡인다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "턱이 조금 떨리고 입술이 한 번 다물렸다 벌어진다"
+    },
+    {
+     "t": 0.9,
+     "무엇": "입이 떨리는 목소리로 「…나 진짜 무서웠어」를 따라 움직인다"
+    },
+    {
+     "t": 2.4,
+     "무엇": "고개가 아주 조금 숙여졌다 다시 그녀를 향하고 식탁 위 손가락이 오므라든다"
+    },
+    {
+     "t": 3.3,
+     "무엇": "끝 모습 — 눈물이 고인 눈으로 그녀를 보며 입을 다물고 떨리는 숨을 길게 내쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「나가지 마…」에 그가 처음으로 속을 말함",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-40",
+   "t": 108.75,
+   "dur": 1.9,
+   "in": 0.8,
+   "out": 2.7,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-40.jpg",
+   "line": "바스트 · 울며 다가가는 서진",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "바스트 · 울며 다가가는 서진",
+   "카메라": "다가가는 서진을 손에 든 채 따라감(위 · 옆, 0.2–1.4초) · 흔들림 강",
+   "소리": "SEOJIN (pajamas) 「계획표, 다 버릴게.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "젖은 눈이 그에게 가고 눈썹 안쪽이 찌푸려지며 올라간다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "울먹이는 입이 「계획표, 다 버릴게」를 따라 움직인다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "몸이 그 쪽으로 다가가며 오른팔이 그에게 뻗는다"
+    },
+    {
+     "t": 1.9,
+     "무엇": "끝 모습 — 뻗은 손끝이 떨리고, 입을 다물고 흐느끼는 숨에 어깨가 오르내린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「무서웠어」에 그녀가 울며 그에게 다가감",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-41",
+   "t": 110.65,
+   "dur": 0.64,
+   "in": 0.8,
+   "out": 1.44,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-41.jpg",
+   "line": "바스트 · 서진 어깨 너머 이안",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "바스트 · 서진 어깨 너머 이안",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "IAN (pajamas) 「버리지 마.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 그녀를 부드럽게 보고 눈썹이 조금 풀린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "입이 「버리지 마」를 나직하게 따라 움직인다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "고개가 작게 한 번 저어진다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 입꼬리가 아주 조금 올라간 얼굴로 입을 다물고 숨을 쉬며, 앞의 서진 머리칼이 조금 흔들린다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「계획표, 다 버릴게」에 대한 그의 대답 — 그녀 어깨 너머로",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-42",
+   "t": 111.29,
+   "dur": 0.9,
+   "in": 0.8,
+   "out": 1.7,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-42.jpg",
+   "line": "와이드 · 식탁의 둘 — 이안이 식탁 위를 가리킴",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "와이드 · 식탁의 둘",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "IAN (pajamas) 「이거… 일주일 전부터 쓰던 거야.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 식탁 위로 내려가고 서진의 눈이 그의 손끝을 따라간다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "이안의 입이 「이거… 일주일 전부터 쓰던 거야」를 수줍게 따라 움직이고 오른손 검지가 종이를 가리킨다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "서진의 입술이 살짝 벌어지고 그의 팔에 얹은 손가락에 힘이 들어간다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "끝 모습 — 이안이 고개를 들어 그녀를 보고, 서진은 식탁을 내려다보며 숨을 들이쉰다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「버리지 마」 뒤 그가 식탁 위를 가리킴 — 둘을 넓게",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "식탁 위 · 뚜껑 열림",
+    "배송상자": "식탁 위 · 열림",
+    "혼인신고서": "식탁 위",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-43",
+   "t": 112.19,
+   "dur": 0.5,
+   "in": 0.8,
+   "out": 1.3,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-43.jpg",
+   "line": "인서트 · 식탁 위 혼인신고서 · 펜 · 칸찬 상자 · 꽉 찬 도시락 두 개",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "인서트 · 식탁 위 혼인신고서 · 펜 · 칸찬 상자 · 꽉 찬 도시락 두 개",
+   "카메라": "고정(흔들림 거의 없음)",
+   "소리": "-",
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "식탁 아래쪽 가장자리에서 맞잡은 두 손 가운데 이안의 엄지가 서진 손등을 한 번 쓸어 준다"
+    },
+    {
+     "t": 0.6,
+     "무엇": "서진의 손가락이 그의 손을 조금 더 꼭 쥐고, 이안의 어깨가 숨에 조금 오르내린다"
+    },
+    {
+     "t": 1.0,
+     "무엇": "끝 모습 — 맞잡은 손이 둘의 숨에 맞춰 아주 조금 흔들린다"
+    }
+   ],
+   "넘어옴": "그가 가리킨 식탁 위 — 위에서 내려다봄",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "식탁 위 · 뚜껑 열림",
+    "배송상자": "식탁 위 · 열림",
+    "혼인신고서": "식탁 위",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-44",
+   "t": 112.69,
+   "dur": 0.87,
+   "in": 1.6,
+   "out": 2.47,
+   "band": "전",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-44.jpg",
+   "line": "인서트 · 이름이 다 적힌 혼인신고서",
+   "장면": "식탁밤",
+   "인물": [],
+   "실내": true,
+   "구도": "인서트 · 이름이 다 적힌 혼인신고서",
+   "카메라": "손에 든 작은 흔들림(거의 고정)",
+   "소리": "노래 높은 소리",
+   "넘어옴": "같은 판 — 식탁 위의 신고서로 다가감, 이름이 다 적힌 칸(한 방을 둘로 자름)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "식탁 위",
+    "새원피스": "화면밖"
+   },
+   "움직임": "식탁 위 초록 종이(혼인신고서 — 칸과 이름은 후반에서 바꿔 끼운다)와 식탁은 손이 닿지 않아 제자리에 놓여 있다 — 움직이는 것은 손에 든 작은 흔들림뿐이고, 종이가 들리거나 옮겨지지 않으며 실내 공기에 떠다니는 것도 없다"
+  },
+  {
+   "cut": "2-45",
+   "t": 113.56,
+   "dur": 1.3,
+   "in": 0.8,
+   "out": 2.1,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-45.jpg",
+   "line": "미디엄 · 일어나 서진을 껴안는 이안",
+   "장면": "식탁밤",
+   "인물": [
+    "이안_잠옷",
+    "서진_잠옷"
+   ],
+   "실내": true,
+   "구도": "미디엄 · 일어나 서진을 껴안는 이안",
+   "카메라": "일어나 껴안는 움직임을 손에 든 채 따라 위로 · 흔들림 강",
+   "소리": "IAN (pajamas) 「우리 결혼하자.」 — 입 맞춤",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "이안의 눈이 그녀 머리 위로 부드럽게 가늘어지고 눈썹이 풀리며, 일어선 몸이 곧게 펴진다"
+    },
+    {
+     "t": 0.4,
+     "무엇": "입이 「우리 결혼하자」를 따뜻하게 따라 움직인다"
+    },
+    {
+     "t": 0.8,
+     "무엇": "고개가 그녀 머리 쪽으로 기울고 두 팔이 그녀 등을 더 끌어안는다"
+    },
+    {
+     "t": 1.5,
+     "무엇": "끝 모습 — 입을 다문 작은 미소로 숨을 쉬며 눈을 한 번 깜빡이고, 서진의 손이 그의 등 옷자락을 쥔다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "이름이 다 적힌 신고서를 본 그녀를 그가 일어나 끌어안음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-46",
+   "t": 114.86,
+   "dur": 2.13,
+   "in": 0.8,
+   "out": 2.93,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-46.jpg",
+   "line": "바스트 · 이안 어깨에 얼굴을 묻고 우는 서진",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "바스트 · 이안 어깨에 얼굴을 묻고 우는 서진",
+   "카메라": "손에 든 흔들림 강(포옹)",
+   "소리": "SEOJIN (pajamas) 「진짜 미안해…」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/seojin.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "감은 눈의 눈썹 안쪽이 찌푸려지며 눈꺼풀이 떨린다"
+    },
+    {
+     "t": 0.3,
+     "무엇": "그의 어깨에 묻힌 입에서 울먹이는 「진짜 미안해…」가 웅얼거리며 나온다(입은 그의 어깨에 가린다)"
+    },
+    {
+     "t": 1.0,
+     "무엇": "고개가 그의 어깨로 더 파고들고 그의 등을 감은 손가락이 옷을 움켜쥔다"
+    },
+    {
+     "t": 1.9,
+     "무엇": "끝 모습 — 흐느끼는 숨에 어깨가 오르내리고 눈을 감은 얼굴의 눈썹이 조금 풀리며, 이안의 머리가 그녀 쪽으로 기운다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「결혼하자」에 그녀가 그의 어깨에 얼굴을 묻음",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-47",
+   "t": 116.99,
+   "dur": 1.61,
+   "in": 0.8,
+   "out": 2.41,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-47.jpg",
+   "line": "클로즈업 · 포옹(서진 얼굴, 이안 뒤통수)",
+   "장면": "식탁밤",
+   "인물": [
+    "서진_잠옷",
+    "이안_잠옷"
+   ],
+   "실내": true,
+   "구도": "클로즈업 · 포옹(서진 얼굴, 이안 뒤통수)",
+   "카메라": "포옹을 따라 손에 든 채 옆으로 돎(카메라 오른쪽 약 35% · 돎 −27°, 0.4–1.3초)",
+   "소리": "IAN (pajamas) 「내일부턴 내가 채울게. 사랑 한 칸.」",
+   "목소리견본": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/소리/p7/소리참고/B/ian.mp3"
+   ],
+   "연기": [
+    {
+     "t": 0.2,
+     "무엇": "서진의 젖은 눈이 천천히 감기고 눈썹이 풀리며, 이안 목소리로 「내일부턴 내가 채울게. 사랑 한 칸.」이 시작된다(그의 입은 뒤통수에 가린다)"
+    },
+    {
+     "t": 0.8,
+     "무엇": "서진의 입꼬리에 안도의 작은 미소가 떠오른다"
+    },
+    {
+     "t": 1.2,
+     "무엇": "볼이 그의 어깨에 더 기대지고 그의 등에 얹은 손이 옷을 살며시 쥔다"
+    },
+    {
+     "t": 1.8,
+     "무엇": "끝 모습 — 눈을 감고 작은 미소로 숨을 길게 내쉬고, 이안의 뒤통수가 그녀 쪽으로 조금 기운다"
+    }
+   ],
+   "연기세기": "작게",
+   "넘어옴": "「진짜 미안해…」에 그가 대답함 — 포옹을 돌아 그녀 얼굴로",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "화면밖",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   }
+  },
+  {
+   "cut": "2-48",
+   "t": 118.6,
+   "dur": 2.5,
+   "in": 0.8,
+   "out": 3.3,
+   "band": "결",
+   "시작그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-48.jpg",
+   "line": "디졸브 → 꽉 찬 도시락 두 개 위 「사랑 한 칸 — 반찬 정기배송 칸찬」",
+   "장면": "식탁밤",
+   "인물": [],
+   "실내": true,
+   "구도": "디졸브 → 꽉 찬 도시락 두 개 위 「사랑 한 칸",
+   "카메라": "위에서 내려다보며 두 도시락 쪽으로 몸째 아주 느리게 곧게 내려감 약 5%(줌 없음, 흔들림 없음) — 김은 넣지 않는다(11-07), 로고는 편집에서 고정으로 얹는다",
+   "소리": "노래 끝",
+   "넘어옴": "포옹에서 디졸브 — 그가 채운 내일 도시락 두 개(끝 장)",
+   "소품": {
+    "빈칸도시락": "화면밖",
+    "꽉찬도시락": "식탁 위 · 뚜껑 열림",
+    "배송상자": "화면밖",
+    "혼인신고서": "화면밖",
+    "새원피스": "화면밖"
+   },
+   "움직임": "꽉 찬 도시락 두 개와 나무 뚜껑 · 젓가락은 손이 닿지 않아 식탁 위 제자리에 놓여 있다 — 김 · 연기 · 떠다니는 것 없이, 디졸브가 끝난 뒤로 화면은 고정이다(로고 · 글자는 후반에서 얹는다)"
+  }
+ ],
+ "소리사건": [
+  {
+   "이름": "서진 「아이 계획까지 다 정리해 놨어」",
+   "t": 5.0,
+   "반응": "1-7"
+  },
+  {
+   "이름": "현관문 열림",
+   "t": 25.95,
+   "반응": "1-23"
+  },
+  {
+   "이름": "바닥 미끄러짐",
+   "t": 99.22,
+   "반응": "2-35"
+  }
+ ],
+ "사건": [
+  {
+   "이름": "빈 반찬 칸",
+   "넓게": "1-1",
+   "감정": "1-1",
+   "행동": "1-2",
+   "결과": "1-3",
+   "목적": "도시락의 빈 칸으로 둘 사이가 틀어졌다는 것을 첫 3초에 보인다",
+   "감정설계": [
+    {
+     "감정": "황당",
+     "장치": "1-1 들여다보는 민재 · 1-3 텅 빈 칸"
+    },
+    {
+     "감정": "멋쩍음",
+     "장치": "1-4 두 손을 든 이안의 해명"
+    }
+   ]
+  },
+  {
+   "이름": "앞자리 3과 2",
+   "넓게": "1-5",
+   "감정": "1-10",
+   "행동": "1-12",
+   "결과": "1-14",
+   "목적": "서진은 급하고 이안은 버틴다 — 나이 앞자리로 갈등을 웃기게 세운다",
+   "감정설계": [
+    {
+     "감정": "다급",
+     "장치": "1-5 계획표 노트 · 1-10 펀치인"
+    },
+    {
+     "감정": "얄미움",
+     "장치": "1-11 「난 아직… 2인데」"
+    },
+    {
+     "감정": "귀여운 응징",
+     "장치": "1-12 볼을 꾹 누르는 두 손"
+    }
+   ]
+  },
+  {
+   "이름": "빈 혼인신고서",
+   "넓게": "1-23",
+   "감정": "1-25",
+   "행동": "1-28",
+   "결과": "1-31",
+   "목적": "그녀가 서류로 밀어붙이자 그가 「떠밀려서는 싫다」고 버틴다(끝의 짝)",
+   "감정설계": [
+    {
+     "감정": "압박",
+     "장치": "1-26 · 1-27 식탁 위 빈 신고서"
+    },
+    {
+     "감정": "곤란",
+     "장치": "1-30 · 1-31 이안의 얼굴"
+    }
+   ]
+  },
+  {
+   "이름": "한 발 빼 봐",
+   "넓게": "1-42",
+   "감정": "1-43",
+   "행동": "1-44",
+   "결과": "1-45",
+   "목적": "1화 걸이 — 친구의 귀띔이 2화의 작전이 된다",
+   "감정설계": [
+    {
+     "감정": "솔깃",
+     "장치": "1-43 입술 극접사의 속삭임"
+    },
+    {
+     "감정": "놀람",
+     "장치": "1-44 · 1-45 펀치인"
+    }
+   ]
+  },
+  {
+   "이름": "새 원피스의 단서",
+   "넓게": "2-1",
+   "감정": "2-2",
+   "행동": "2-5",
+   "결과": "2-10",
+   "목적": "그녀가 다른 사람이 생긴 척을 시작한다 — 그는 처음 의심한다",
+   "감정설계": [
+    {
+     "감정": "의아",
+     "장치": "2-2 갸웃 · 2-3 가격표"
+    },
+    {
+     "감정": "불안",
+     "장치": "2-8 향수 냄새 · 2-10 혼자 남은 이안"
+    }
+   ]
+  },
+  {
+   "이름": "대면과 나감",
+   "넓게": "2-23",
+   "감정": "2-27",
+   "행동": "2-28",
+   "결과": "2-30",
+   "목적": "그가 「좋아하는 사람 생겼어?」라고 묻고 방을 나간다 — 정적",
+   "감정설계": [
+    {
+     "감정": "의심",
+     "장치": "2-23 · 2-26 누운 이안"
+    },
+    {
+     "감정": "들킴",
+     "장치": "2-28 「너 거짓말하면 귀 빨개져」"
+    },
+    {
+     "감정": "두려움",
+     "장치": "2-30 닫히는 문 · 이명음"
+    }
+   ]
+  },
+  {
+   "이름": "자백",
+   "넓게": "2-35",
+   "감정": "2-37",
+   "행동": "2-40",
+   "결과": "2-41",
+   "목적": "그녀가 먼저 무너져 다 연기였다고 말하고, 그는 무서웠다고 털어놓는다",
+   "감정설계": [
+    {
+     "감정": "다급",
+     "장치": "2-34 미끄러짐"
+    },
+    {
+     "감정": "후회",
+     "장치": "2-37 고개를 드는 서진"
+    },
+    {
+     "감정": "떨림",
+     "장치": "2-39 눈물이 고인 이안"
+    }
+   ]
+  },
+  {
+   "이름": "채운 신고서와 꽉 찬 도시락",
+   "넓게": "2-42",
+   "감정": "2-42",
+   "행동": "2-44",
+   "결과": "2-48",
+   "목적": "미루던 그가 먼저 신고서를 써 두었고, 그녀의 빈 칸을 자기가 채운다",
+   "감정설계": [
+    {
+     "감정": "뭉클",
+     "장치": "2-44 이름이 다 적힌 신고서"
+    },
+    {
+     "감정": "안도",
+     "장치": "2-45 ~ 2-47 포옹"
+    },
+    {
+     "감정": "여운",
+     "장치": "2-48 꽉 찬 도시락 두 개"
+    }
+   ]
+  }
+ ]
+}
