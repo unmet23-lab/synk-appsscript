@@ -34,7 +34,8 @@
  *      승인 목록과 지금 모든 규칙을 채운 것이 겹치는 것만 지운다. 승인이 넘기는 것은 20% 관문 하나다.
  *   3. 승인은 R이 멈춘 GCS 시각에서 3일이 지나면 무효다. 늦게 승인해도 만료는 늘지 않는다.
  *   4. 지울 것이 0개이거나 다른 이유로 멈춘 실행은 승인을 쓰지 않는다. 미리 보기(`--한번넘김 R`만)는 승인을 읽기만 한다.
- *   5. 어느 지우기 실행이든 지우기에 들어가면, 쓰지 않은 다른 승인은 모두 approvals/void/로 옮겨 무효로 한다.
+ *   5. 어느 지우기 실행이든 지우기에 들어가기 전에 쓰지 않은 다른 승인을 모두 approvals/void/로 옮겨 무효로 한다.
+ *      하나라도 못 옮기면 지우지 않고 멈춘다(APPROVAL_VOID_FAILED). 이 실행의 승인은 그 뒤에 쓴다.
  *   예전 판(O1)의 「R이 가장 최근에 멈춘 실행인가」는 보지 않는다. 승인이 따로 있고 3일 뒤 죽기 때문이다.
  *   지우기 실행은 runs/를 읽지 않는다. runs/를 읽는 것은 `--승인`의 R 한 장뿐이다.
  *
@@ -91,6 +92,7 @@ const REASONS = Object.freeze({
   BACKUP_STALE: '정기 백업의 가장 최근 완료 객체가 48시간보다 오래되었습니다(백업이 멈춘 것 같습니다)',
   TOO_MANY: '지울 것이 객체의 20%를 넘습니다(목록을 보신 뒤 --승인 <실행 ID>로 승인하고 --한번넘김 <실행 ID>로 한 번만 넘깁니다)',
   OVERRIDE_INVALID: '--한번넘김에 준 실행의 승인이 없거나, 이미 썼거나, 무효가 되었거나, 그 실행이 멈춘 지 3일이 지났습니다',
+  APPROVAL_VOID_FAILED: '쓰지 않은 다른 승인을 무효로 옮기지 못했습니다(그 파일을 잡고 있는 프로그램이 없는지 본 뒤 다시 돌립니다)',
 });
 
 class Failure extends Error {
@@ -236,13 +238,19 @@ function consumeApproval(stateDir, runId, rename = fs.renameSync) {
   try { fs.mkdirSync(path.dirname(p.used), { recursive: true }); rename(p.file, p.used); } catch { return null; }
   try { return JSON.parse(fs.readFileSync(p.used, 'utf8')); } catch { return {}; }  // 옮겼지만 못 읽으면 쓴 것으로 남기고 무효로 본다
 }
-/** 지우기에 들어가는 실행은 쓰지 않은 다른 승인을 모두 무효로 옮긴다(Fable 설계 검토 O2 8번). 못 옮겨도 해는 없다. */
-function voidApprovals(stateDir) {
+/** 지우기에 들어가는 실행은 쓰지 않은 다른 승인(except 말고)을 모두 무효로 옮긴다(Fable 설계 검토 O2 8번).
+ *  하나라도 못 옮기면 false다. 그때는 지우지 않는다(GPT 넷째 검수 — 남은 승인이 나중에 다시 쓰이지 않게). */
+function voidApprovals(stateDir, except, rename = fs.renameSync) {
   const dir = path.join(stateDir, 'approvals');
-  let names = [];
-  try { names = fs.readdirSync(dir).filter(name => /^[0-9TZ]+-[0-9a-f]{6}\.json$/.test(name)); } catch { return; }
-  try { fs.mkdirSync(path.join(dir, 'void'), { recursive: true }); } catch { return; }
-  for (const name of names) { try { fs.renameSync(path.join(dir, name), path.join(dir, 'void', name)); } catch {} }
+  let names;
+  try { names = fs.readdirSync(dir).filter(name => /^[0-9TZ]+-[0-9a-f]{6}\.json$/.test(name) && name !== except + '.json'); }
+  catch (error) { return error.code === 'ENOENT'; }
+  if (!names.length) return true;
+  try { fs.mkdirSync(path.join(dir, 'void'), { recursive: true }); } catch { return false; }
+  for (const name of names) {
+    try { rename(path.join(dir, name), path.join(dir, 'void', name)); } catch (error) { if (error.code !== 'ENOENT') return false; }  // 이미 없으면 된 것이다
+  }
+  return true;
 }
 
 function bucketsOf(config) {
@@ -388,8 +396,10 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
       else {
         kept = eligible.filter(item => referenced.has(key(item.name, item.generation)));
         let toDelete = eligible.filter(item => !referenced.has(key(item.name, item.generation)));
-        // 승인은 모든 관문을 지난 뒤, 지울 것이 있을 때만, 「지우는 중」 기록 바로 앞에서 쓴다.
-        if (toDelete.length && overrode) {
+        // 지우기에 들어가기 전에 쓰지 않은 다른 승인을 모두 무효로 옮긴다. 다 옮기지 못하면 승인도 쓰지 않고 멈춘다.
+        // 그다음 이 실행의 승인은 모든 관문을 지난 뒤, 지울 것이 있을 때만, 「지우는 중」 기록 바로 앞에서 쓴다.
+        if (toDelete.length && !voidApprovals(stateDir, overrode, _rename)) reasons.push('APPROVAL_VOID_FAILED');
+        else if (toDelete.length && overrode) {
           const used = consumeApproval(stateDir, overrode, _rename);
           if (!used || !validApproval(used, overrode, media) || !notExpired(used, startedAt) || used.eligibleSha256 !== approval.eligibleSha256) {
             if (used) approvalUsed = true;
@@ -401,7 +411,6 @@ async function run({ config, stateDir, endpoint = LIVE_ENDPOINT, token, execute 
           }
         }
         if (!reasons.length && toDelete.length) {
-          voidApprovals(stateDir);
           // 지우기 전에 이 실행을 「지우는 중」으로 남기고, 지울 때마다 고쳐 쓴다. 도중에 끊겨도 지운 것이 남는다(GPT GA1).
           writeJson(runFile, reportOf('deleting'));
           try {

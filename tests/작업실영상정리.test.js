@@ -500,6 +500,11 @@ test('보통 지우기가 지우기에 들어가면 쓰지 않은 승인은 무�
   const more = [...Array(10)].map((_, i) => object(40 + i));
   for (const name of more) s.put(MEDIA, name, 'more', old);
   backupNow(s, [...kept, ...more].map(n => ref(s, n)), 'c');
+  const busy = () => { throw Object.assign(new Error('synthetic'), { code: 'EPERM' }); };
+  const blocked = await go({ execute: true, config: ENABLED, _rename: busy });
+  assert.deepEqual([blocked.status, blocked.reasons], ['stopped', ['APPROVAL_VOID_FAILED']], '다른 승인을 무효로 옮기지 못하면 지우지 않는다(GPT 넷째 검수)');
+  assert.equal(s.deletes, 0);
+  assert.ok(fs.existsSync(approvalFile(dir, stopped.runId)));
   const normal = await go({ execute: true, config: ENABLED });
   assert.deepEqual([normal.status, normal.overrode, normal.deleted.length], ['cleaned', null, 2]);
   assert.ok(fs.existsSync(approvalFile(dir, stopped.runId, 'void')));
