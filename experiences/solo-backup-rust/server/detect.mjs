@@ -81,7 +81,9 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
         uploads++; previous = v;
         continue;
       }
-      if (ourHides.has(v.fileId)) { previous = null; continue; }
+      // After a hide the name starts over: the same bytes uploaded again (a key or a file put
+      // back by a PC not yet cleaned, after a restore hid it) is a change (카본 끝판 B1).
+      if (ourHides.has(v.fileId)) { previous = null; previousSha = undefined; continue; }
       if (kind === 'config' || kind === 'keys') events.push({ kind, fileId: v.fileId, rel, at: v.uploadTimestamp });
       if (v.uploadTimestamp > now - WINDOW_DAYS * DAY && v.uploadTimestamp > hourlyFrom) {
         const h = Math.floor(v.uploadTimestamp / HOUR) * HOUR;
@@ -93,7 +95,7 @@ export function summarize(versions, { customerPrefix, repoPrefix = customerPrefi
         if (rel.startsWith('data/') && previous) window.dataHiddenBytes += previous.contentLength || 0;
       }
       // A second hide marker hides nothing more.
-      previous = null;
+      previous = null; previousSha = undefined;
     }
   }
   events.sort((a, b) => a.at - b.at || a.fileId.localeCompare(b.fileId));
@@ -151,8 +153,9 @@ export function judge(summary, { baseline = 0, reported = null, previousSnapshot
 export function suggest(summary, { baseline = 0, now = Date.now() } = {}) {
   const oldest = Math.max(now - WINDOW_DAYS * DAY, baseline);
   const out = [];
-  const recent = summary.events.filter((e) => e.at > oldest);
-  if (recent.length) out.push({ at: recent[0].at - 1000, reason: recent[0].kind === 'overwrite' ? 'before-overwrite' : 'before-settings-change' });
+  // Strictly between the baseline and the first change after it, as for bursts (카본 끝판 B2).
+  const recent = summary.events.filter((e) => e.at > oldest + 1);
+  if (recent.length) out.push({ at: Math.max(recent[0].at - 1000, oldest + 1), reason: recent[0].kind === 'overwrite' ? 'before-overwrite' : 'before-settings-change' });
   const hours = summary.hourly.filter((h) => h.start >= oldest - HOUR);
   const total = Math.max(1, Math.round((now - (now - WINDOW_DAYS * DAY)) / HOUR));
   const counts = hours.map((h) => h.count).sort((a, b) => a - b);

@@ -36,8 +36,8 @@ async function harness(t, { grace = 0, config = {} } = {}) {
   const mailer = createMailer({ store, enabled: false, operator: 'ops@example.com', now });
   const logs = [];
   const verify = createVerifier({ audiences: [g.aud], fetchImpl: g.fetchImpl, now });
-  const hooks = { beforeVerify: null };
-  const api = createApi({ store, keys, files, mailer, now, log: (e) => logs.push(e), sleep: async (ms) => { clock.advance(ms); },
+  const hooks = { beforeVerify: null, onSleep: null };
+  const api = createApi({ store, keys, files, mailer, now, log: (e) => logs.push(e), sleep: async (ms) => { clock.advance(ms); if (hooks.onSleep) { const f = hooks.onSleep; hooks.onSleep = null; await f(ms); } },
     verifyGoogle: async (tok) => { if (hooks.beforeVerify) { const f = hooks.beforeVerify; hooks.beforeVerify = null; await f(); } return verify(tok); },
     config: { endpoint: 'https://s3.us-east-005.backblazeb2.com', bucket: 'synk-wb-test-bucket', restoreGraceMs: grace, ...config } });
   const srv = api.server(); const port = await listen(srv);
@@ -82,6 +82,7 @@ test('T20: invite list, Google subject binding, single-use nonces and only fresh
   assert.equal((await h.call('POST', 'provision', { google: p, device: { name: 'x' } })).code, 'NONCE');
   const action = await h.proof('lost');
   assert.equal((await h.call('POST', 'provision', { google: action, device: { name: 'x' } })).code, 'NONCE');
+  assert.equal((await h.call('POST', 'lost', { google: await h.proof('provision'), deviceId: 'aaaaaaaaaaaa' })).code, 'NONCE', 'nor a sign-in nonce an action one (카본 끝판 E2)');
   // Another Google account with the same address is refused; stale or foreign tokens are refused.
   assert.equal((await h.provision('PC', { sub: '999' })).code, 'SUB_MISMATCH');
   const n = await h.call('POST', 'nonce', { purpose: 'provision' });
@@ -579,6 +580,7 @@ test('GPT GB3: a finished restore waiting for its choice blocks a second one; on
   await h.api.runJob(h.store.job(r2.jobId));
   assert.equal((await h.call('POST', 'restore/choose', { jobId: r2.jobId, choice: 'continue' }, a.device.token)).state, 'continued');
   h.store.setJob(r1.jobId, { state: 'done' }); // as if r1 had never been chosen (an earlier version's data)
+  assert.equal((await h.call('POST', 'restore/choose', { jobId: r1.jobId, choice: 'undo', google: await h.proof('restore-undo') }, a.device.token)).code, 'NOT_FOUND', 'with nothing newer running too (카본 끝판 E4)');
   assert.equal((await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 5000 }, a.device.token)).ok, true, 'the stale r1 does not block either');
   assert.equal((await h.call('POST', 'restore/choose', { jobId: r1.jobId, choice: 'undo', google: await h.proof('restore-undo') }, a.device.token)).code, 'NOT_FOUND');
 });
@@ -1481,10 +1483,12 @@ test('카본 r8a D1: a plan cached before a restore is not shown after it', asyn
 test('카본 r8a D2 · D3: a non-string version or install id is refused before the sign-in; the rate key is the proxy\'s own entry', async (t) => {
   const h = await harness(t, { config: { trustedProxies: ['127.0.0.1', '::1'] } });
   h.store.addInvite('pilot@example.com');
+  const p = await h.proof('provision');
   for (const device of [{ name: 'PC', appVersion: ['0.7.0'] }, { name: 'PC', installId: ['a'.repeat(22)] }]) {
-    const r = await h.call('POST', 'provision', { google: await h.proof('provision'), device });
+    const r = await h.call('POST', 'provision', { google: p, device });
     assert.equal(r.code, 'BAD_INPUT');
   }
+  assert.equal((await h.call('POST', 'provision', { google: p, device: { name: 'PC' } })).ok, true, 'the refusals did not use the sign-in (카본 끝판 E1)');
   let last = null;
   for (let i = 0; i < 31; i++) {
     const res = await fetch(`http://127.0.0.1:${h.port}/backup-api/v1/nonce`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': `10.0.0.${i}, 203.0.113.9` }, body: JSON.stringify({ purpose: 'provision' }) });
@@ -1518,4 +1522,89 @@ test('GPT r8a GD1: the same time asked again after a third restore failed half-w
   h.b2.copyFile = realCopy;
   const id = await once(at);
   assert.equal(h.store.job(id).state, 'done', 'continued in the worker, free');
+  const latest = async (rel) => (await h.b2.listFileVersions({ prefix: base + rel })).find((v) => v.fileName === base + rel);
+  assert.equal((await latest('data/aa/d1')).contentSha1, crypto.createHash('sha1').update('pack-one-content').digest('hex'), 'both files are back (카본 끝판 E3)');
+  assert.equal((await latest('index/i1')).contentSha1, crypto.createHash('sha1').update('index-1').digest('hex'));
+});
+
+// ── 끝판 검수(11-16 밤)
+test('GPT 끝판 GD1 · 카본 끝판 D1: a failed run and its continuation are one of the day\'s restores; a retry that failed while making its keys does not end the continuation', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const ask = async (at) => {
+    const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at }, a.device.token);
+    if (!run.ok) return run;
+    await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+    await h.api.runJob(h.store.job(run.jobId));
+    if (h.store.job(run.jobId).state === 'done') await h.call('POST', 'restore/choose', { jobId: run.jobId, choice: 'continue' }, a.device.token);
+    h.clock.advance(60000);
+    return run;
+  };
+  const change = (i) => { const at = h.clock.t - 1000; h.b2.upload(base + 'data/aa/d1', `pack-change-${i}-x`); h.b2.upload(base + 'index/i1', `index-change-${i}`); h.clock.advance(60000); return at; };
+  let at = change(0);
+  const realCopy = h.b2.copyFile.bind(h.b2); let n = 0;
+  h.b2.copyFile = async (x) => { if (++n === 2) throw Object.assign(new Error('boom'), { status: 503 }); return realCopy(x); };
+  await ask(at); // fails half-way
+  h.b2.copyFile = realCopy;
+  // The retry fails while making its keys: it never starts.
+  const realCreate = h.b2.createKey.bind(h.b2);
+  h.b2.createKey = async () => { throw Object.assign(new Error('boom'), { status: 503 }); };
+  assert.equal((await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at }, a.device.token)).code, 'SERVER');
+  h.b2.createKey = realCreate;
+  assert.equal((await ask(at)).ok, true, 'still the continuation');
+  at = change(1); assert.equal((await ask(at)).ok, true);
+  at = change(2); assert.equal((await ask(at)).ok, true, 'the failed run and its continuation counted once: this is the third');
+  at = change(3); assert.equal((await ask(at)).code, 'LIMIT_RESTORE_DAY');
+});
+
+test('카본 끝판 D2: the grace is waited out again when a write key is deleted while the restore waits', async (t) => {
+  const h = await harness(t, { grace: 60000 });
+  const a = await readyCustomer(h);
+  seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(120000);
+  let deletedAt = null;
+  h.hooks.onSleep = async () => {
+    const name = h.store.keyIntent({ kind: 'write', customerId: a.customer.id, deviceId: a.device.id, purpose: 'seat' });
+    h.store.keyCreated(name, { keyId: 'k' + 'x'.repeat(23), capabilities: [] });
+    h.store.keyDeleted(name, 'test'); deletedAt = h.clock.t;
+  };
+  const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at: h.clock.t - 30000 }, a.device.token);
+  await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+  await h.api.runJob(h.store.job(run.jobId));
+  assert.ok(deletedAt !== null);
+  assert.ok(h.store.job(run.jobId).started_at >= deletedAt + 60000, 'started only after the new grace');
+});
+
+test('카본 끝판 E5: no silence mail when the server itself was down', async (t) => {
+  const h = await harness(t);
+  await readyCustomer(h);
+  h.store.beat();
+  h.clock.advance(3 * 86400000 + 60000);
+  h.store.beat(); // the server comes back after three days
+  h.jobs.silence(h.clock.t);
+  assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:silent:%'")[0].n, 0);
+});
+
+test('카본 r13 A1: a same-time request after a failed restore with a backup on top is a new restore — the server counts it as the worker did', async (t) => {
+  const h = await harness(t);
+  const a = await readyCustomer(h);
+  const base = seedRepo(h, `c/${a.customer.id}/`); h.clock.advance(60000);
+  const at = h.clock.t - 1000; h.b2.upload(base + 'data/aa/d1', 'pack-change-x'); h.b2.upload(base + 'index/i1', 'index-changed'); h.clock.advance(60000);
+  const ask = async () => {
+    const run = await h.call('POST', 'restore/run', { google: await h.proof('restore-run'), at }, a.device.token);
+    assert.equal(run.ok, true, run.code);
+    await h.call('POST', 'keys/ack', { keyIds: [run.keys.write.keyId, run.keys.read.keyId] }, a.device.token);
+    await h.api.runJob(h.store.job(run.jobId));
+    return run.jobId;
+  };
+  const realCopy = h.b2.copyFile.bind(h.b2); let n = 0;
+  h.b2.copyFile = async (x) => { if (++n === 2) throw Object.assign(new Error('boom'), { status: 503 }); return realCopy(x); };
+  const failed = await ask();
+  assert.equal(h.store.job(failed).state, 'failed');
+  h.b2.copyFile = realCopy;
+  h.clock.advance(3600000); h.b2.upload(base + 'snapshots/s9', 'a backup after the failure'); h.clock.advance(60000);
+  const id = await ask();
+  assert.equal(h.store.job(id).state, 'done');
+  assert.equal(h.store.job(id).continues, null, 'the worker took it as a new restore');
+  assert.equal(h.store.restoresSince(a.customer.id, h.clock.t - 86400000), 2);
 });

@@ -649,8 +649,12 @@ test('도움 요청 부호 목록: every error code the engine, the worker and t
   const app = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
   const files = [];
   const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) { if (!['tests', 'test', 'node_modules'].includes(e.name)) walk(f); } else if (/\.(c|m)?js$/.test(e.name)) files.push(f); } };
-  for (const d of ['engine/src', 'worker', 'ui']) if (fs.existsSync(path.join(app, d))) walk(path.join(app, d));
-  assert.ok(files.length > 10, 'the app folders were read');
+  for (const d of ['engine/src', 'worker', 'ui']) {
+    const before = files.length;
+    assert.ok(fs.existsSync(path.join(app, d)), `${d} is where the codes are looked for (카본 끝판 F1)`);
+    walk(path.join(app, d));
+    assert.ok(files.length > before, `${d} was read`);
+  }
   const missing = new Set();
   const shapes = [/code:\s*'([A-Z][A-Z0-9_]{1,40})'/g, /(?:failure|err|ServerError)\(\s*'([A-Z][A-Z0-9_]{1,40})'/g];
   for (const f of files) {
@@ -724,4 +728,191 @@ test('카본 r10a A1: hides that began within a second of the baseline still giv
   assert.deepEqual(c.map((x) => x.at), [baseline + 1], 'just after the baseline, before the first hide; the next hour is the same run');
   const s2 = summarize([...many(baseline + 1, 50), ...many(T0 + 15 * HOUR + 10 * 60000, 50)], { customerPrefix: P, since: T0, now: T0 + 16 * HOUR, hourlyFrom: baseline });
   assert.deepEqual(suggest(s2, { baseline, now: T0 + 16 * HOUR }).filter((x) => x.reason === 'before-mass-hide').map((x) => x.at), [T0 + 15 * HOUR + 10 * 60000 - 1000], 'no room right after the baseline: the next hour is not held back');
+});
+
+// ── 끝판 검수(11-16 밤)
+test('GPT 끝판 GC1 · 카본 끝판 C2: a run left unfinished changes nothing once B2 may have deleted what it needs; a finished one keeps its answer 29 days from when it finished', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-old-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 40 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c', T0 + 11 * DAY); b2.upload(R + 'data/aa/p1', 'x1', T0 + 11 * DAY); b2.upload(R + 'data/aa/p2', 'x2', T0 + 11 * DAY);
+  const at = T0 + 12 * DAY; // 28 days back
+  b2.upload(R + 'data/aa/p1', 'y1', T0 + 13 * DAY); b2.upload(R + 'data/aa/p2', 'y2', T0 + 13 * DAY);
+  await assert.rejects(fileHandlers({ withSession: failOn(b2, 2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'old0000000000001' }));
+  clock.advance(2 * DAY); // 30 days back now
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const calls = b2.calls.length;
+  await assert.rejects(f['restore.apply']({ prefix: P, at, runId: 'old0000000000001' }), { code: 'TOO_OLD' });
+  assert.equal(b2.calls.length, calls, 'nothing copied or hidden');
+  // A run finished near the edge keeps its answer for a retry long after it began.
+  const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-old2-')); t.after(() => fs.rmSync(dir2, { recursive: true, force: true }));
+  const clock2 = clockAt(T0 + 40 * DAY), b3 = new FakeB2({ clock: clock2 });
+  b3.upload(R + 'config', 'c', T0 + 11 * DAY); b3.upload(R + 'data/aa/p1', 'x1', T0 + 11 * DAY); b3.upload(R + 'data/aa/p2', 'x2', T0 + 11 * DAY);
+  b3.upload(R + 'data/aa/p1', 'y1', T0 + 13 * DAY); b3.upload(R + 'data/aa/p2', 'y2', T0 + 13 * DAY);
+  await assert.rejects(fileHandlers({ withSession: failOn(b3, 2), bucketId: b3.bucketId, stateDir: dir2, now: () => clock2.t })['restore.apply']({ prefix: P, at, runId: 'old0000000000002' }));
+  clock2.advance(DAY); // 29 days back: still continued
+  const g = fileHandlers({ withSession: sessionOf(b3), bucketId: b3.bucketId, stateDir: dir2, now: () => clock2.t });
+  assert.equal((await g['restore.apply']({ prefix: P, at, runId: 'old0000000000002' })).remaining, 0);
+  clock2.advance(28 * DAY);
+  assert.equal((await g['restore.apply']({ prefix: P, at, runId: 'old0000000000002' })).replayed, true, 'its answer is kept from when it finished');
+});
+
+test('카본 끝판 C3: after a failed undo and backups on top, a restore to the same time is a new restore — it counts, and its own undo is free', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-c3-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  const at = twoFiles(b2, clock);
+  const f = fileHandlers({ withSession: sessionOf(b2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const r1 = await f['restore.apply']({ prefix: P, at, runId: 'c3aaaaaaaaaaaaa1' });
+  clock.advance(10 * 60000);
+  await assert.rejects(fileHandlers({ withSession: failOn(b2, 2), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at: r1.preAt, runId: 'c3aaaaaaaaaaaaa2', undoOf: 'c3aaaaaaaaaaaaa1' }));
+  clock.advance(HOUR); b2.upload(R + 'snapshots/s9', 'a backup after the customer kept it'); clock.advance(HOUR);
+  const r2 = await f['restore.apply']({ prefix: P, at: r1.preAt, runId: 'c3aaaaaaaaaaaaa3' });
+  assert.equal(ledgerOf(dir).counts[P], 2, 'a new restore');
+  assert.equal(ledgerOf(dir).started[P].undo, undefined);
+  clock.advance(10 * 60000);
+  await f['restore.apply']({ prefix: P, at: r2.preAt, runId: 'c3aaaaaaaaaaaaa4', undoOf: 'c3aaaaaaaaaaaaa3' });
+  assert.equal(ledgerOf(dir).counts[P], 2, 'its undo is free');
+});
+
+test('카본 끝판 C4: a B2 session renewed in the middle of a round retries that one call, not the round', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-c4-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 10 * DAY), b2 = new FakeB2({ clock });
+  const at = twoFiles(b2, clock);
+  const { lazySession } = await import('../keys-worker.mjs');
+  const { B2Error } = await import('../b2-native.mjs');
+  let copies = 0, expired = false;
+  const authorizeImpl = async () => new Proxy(b2, { get: (o, k) => (k === 'copyFile' ? async (a) => { if (++copies === 2 && !expired) { expired = true; throw new B2Error(401, 'expired_auth_token'); } return o.copyFile(a); } : o[k]) });
+  const withSession = lazySession({}, { authorizeImpl });
+  const f = fileHandlers({ withSession, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  const before = b2.versions.length;
+  const r = await f['restore.apply']({ prefix: P, at, runId: 'c4aaaaaaaaaaaaa1' });
+  assert.equal(r.remaining, 0);
+  assert.equal(b2.versions.length - before, 2, 'two copies, none made twice');
+});
+
+test('카본 끝판 B1 · B2 · D3: the same bytes put back after a restore hid them are a change; a change within a second of the baseline still gets a candidate; operator alerts are once a day', () => {
+  const evil = up('keys/evil', 'evil', T0 + 2 * DAY);
+  const ourHide = hide('keys/evil', T0 + 3 * DAY);
+  const again = { ...up('keys/evil', 'evil', T0 + 4 * DAY) };
+  const s = summarize([up('keys/k1', 'k', T0), evil, ourHide, again], { customerPrefix: P, since: T0, now: T0 + 5 * DAY, journal: { hides: [ourHide.fileId] } });
+  assert.ok(s.events.some((e) => e.fileId === again.fileId), 'put back after our hide');
+  const c = suggest({ events: [{ kind: 'overwrite', fileId: 'f1', rel: 'data/a', at: 10500 }, { kind: 'overwrite', fileId: 'f2', rel: 'data/b', at: 20000 }], hourly: [] }, { baseline: 10000, now: 50000 });
+  assert.deepEqual(c.map((x) => x.at), [10001]);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-alerts-'));
+  const store = new Store(path.join(dir, 'wb.sqlite'));
+  try {
+    assert.ok(store.addAlert({ kind: 'reconcile', audience: 'operator' }));
+    assert.equal(store.addAlert({ kind: 'reconcile', audience: 'operator' }), null);
+  } finally { store.close(); fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('GPT r13 GA1: a continued run that crosses 29.5 days — while listing, or between two copies — changes nothing more', async (t) => {
+  const setup = (name) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), name)); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+    const clock = clockAt(T0 + 40 * DAY), b2 = new FakeB2({ clock });
+    b2.upload(R + 'config', 'c', T0 + 11 * DAY); b2.upload(R + 'data/aa/p1', 'x1', T0 + 11 * DAY); b2.upload(R + 'index/i1', 'i-x', T0 + 11 * DAY);
+    b2.upload(R + 'data/aa/p1', 'y1', T0 + 13 * DAY); b2.upload(R + 'index/i1', 'i-y', T0 + 13 * DAY);
+    return { dir, clock, b2 };
+  };
+  const at = T0 + 12 * DAY;
+  const changes = (b2) => b2.calls.filter((c) => c[0] === 'copyFile' || c[0] === 'hideFile').length;
+  // Crossing while the listing runs.
+  {
+    const { dir, clock, b2 } = setup('wb-ga1a-');
+    await assert.rejects(fileHandlers({ withSession: failOn(b2, 1), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'ga1a000000000001' }));
+    clock.t = at + 29.4 * DAY;
+    const slowList = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'listFileVersions' ? async (a) => { const r = await o.listFileVersions(a); clock.advance(0.2 * DAY); return r; } : o[k]) })));
+    const before = changes(b2);
+    await assert.rejects(fileHandlers({ withSession: slowList, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'ga1a000000000001' }), { code: 'TOO_OLD' });
+    assert.equal(changes(b2), before, 'no copy or hide after the line');
+  }
+  // Crossing between the data copy and the index copy.
+  {
+    const { dir, clock, b2 } = setup('wb-ga1b-');
+    await assert.rejects(fileHandlers({ withSession: failOn(b2, 1), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'ga1b000000000001' }));
+    clock.t = at + 29.45 * DAY;
+    const slowCopy = (fn) => sessionOf(b2)((s) => fn(new Proxy(s, { get: (o, k) => (k === 'copyFile' ? async (a) => { const r = await o.copyFile(a); clock.advance(0.1 * DAY); return r; } : o[k]) })));
+    const before = changes(b2);
+    await assert.rejects(fileHandlers({ withSession: slowCopy, bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'ga1b000000000001' }), { code: 'TOO_OLD' });
+    assert.equal(changes(b2) - before, 1, 'the data copy made before the line, nothing after it');
+    assert.equal(latestSha(b2, 'index/i1').contentSha1, sha('i-y'), 'the index is not copied back past the line');
+  }
+});
+
+test('GPT r14 GA1: a call made again after a renewed B2 sign-in that crossed 29.5 days is refused too', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-r14-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const clock = clockAt(T0 + 40 * DAY), b2 = new FakeB2({ clock });
+  b2.upload(R + 'config', 'c', T0 + 11 * DAY); b2.upload(R + 'data/aa/p1', 'x1', T0 + 11 * DAY);
+  b2.upload(R + 'data/aa/p1', 'y1', T0 + 13 * DAY);
+  const at = T0 + 12 * DAY;
+  await assert.rejects(fileHandlers({ withSession: failOn(b2, 1), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'r14a000000000001' }));
+  clock.t = at + 29.5 * DAY - 1000; // a second before the line
+  const { lazySession } = await import('../keys-worker.mjs');
+  const { B2Error } = await import('../b2-native.mjs');
+  let signIns = 0, expired = false;
+  const authorizeImpl = async () => {
+    if (signIns++) clock.advance(2000); // the renewed sign-in takes two seconds: past the line
+    return new Proxy(b2, { get: (o, k) => (k === 'copyFile' ? async (a) => { if (!expired) { expired = true; throw new B2Error(401, 'expired_auth_token'); } return o.copyFile(a); } : o[k]) });
+  };
+  const copies = b2.calls.filter((c) => c[0] === 'copyFile').length;
+  const f = fileHandlers({ withSession: lazySession({}, { authorizeImpl }), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+  await assert.rejects(f['restore.apply']({ prefix: P, at, runId: 'r14a000000000001' }), { code: 'TOO_OLD' });
+  assert.equal(signIns, 2, 'the sign-in was renewed');
+  assert.equal(b2.calls.filter((c) => c[0] === 'copyFile').length, copies, 'nothing copied after the line');
+});
+
+// ── Fable 5.2 설계 관문 넷째(files-worker 29.5일, 11-16 밤)
+test('설계 관문 넷째 2: wherever the 29.5-day line is crossed — sign-in, listing, a copy, a renewed sign-in, a hide — B2 gets no copy or hide past it, and nothing but copies, hides and listings', async (t) => {
+  const at = T0 + 12 * DAY, LIMIT = 29.5 * DAY;
+  const { lazySession } = await import('../keys-worker.mjs');
+  const { B2Error } = await import('../b2-native.mjs');
+  const allowed = new Set(['listFileVersions', 'copyFile', 'hideFile']);
+  const outcomes = new Set();
+  for (let before = 500; before <= 14500; before += 1000) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-gate4-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+    const clock = clockAt(T0 + 40 * DAY), b2 = new FakeB2({ clock });
+    b2.upload(R + 'config', 'c', T0 + 11 * DAY);
+    for (const n of ['p1', 'p2', 'p3']) b2.upload(R + `data/aa/${n}`, `x-${n}`, T0 + 11 * DAY);
+    b2.upload(R + 'index/i1', 'i-x', T0 + 11 * DAY); b2.upload(R + 'snapshots/s1', 's1', T0 + 11 * DAY);
+    for (const n of ['p1', 'p2', 'p3']) b2.upload(R + `data/aa/${n}`, `y-${n}`, T0 + 13 * DAY);
+    b2.upload(R + 'index/i1', 'i-y', T0 + 13 * DAY); b2.upload(R + 'snapshots/s2', 's2', T0 + 13 * DAY);
+    // A first run that stopped at its first copy: the next call continues it.
+    await assert.rejects(fileHandlers({ withSession: failOn(b2, 1), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t })['restore.apply']({ prefix: P, at, runId: 'gate400000000001' }));
+    clock.t = at + LIMIT - before;
+    const bad = [];
+    let expired = false;
+    // Every call takes a second; the first copy meets an expired token and the session signs in again.
+    const authorizeImpl = async () => {
+      clock.advance(1000);
+      return new Proxy(b2, { get: (o, k) => {
+        if (typeof o[k] !== 'function') return o[k];
+        if (!allowed.has(k)) return () => { bad.push(`${String(k)} called`); throw new Error('NOT_ALLOWED'); };
+        return async (a, opts) => {
+          opts?.beforeAttempt?.(); // what B2Session.call does before each attempt
+          if (k !== 'listFileVersions' && clock.t - at > LIMIT) bad.push(`${k} ${clock.t - at - LIMIT}ms past the line`);
+          clock.advance(1000);
+          if (k === 'copyFile' && !expired) { expired = true; throw new B2Error(401, 'expired_auth_token'); }
+          return o[k](a);
+        };
+      } });
+    };
+    const f = fileHandlers({ withSession: lazySession({}, { authorizeImpl }), bucketId: b2.bucketId, stateDir: dir, now: () => clock.t });
+    try { const r = await f['restore.apply']({ prefix: P, at, runId: 'gate400000000001' }); assert.equal(r.remaining, 0); outcomes.add('done'); }
+    catch (e) { assert.equal(e.code, 'TOO_OLD', `${before}ms before the line: ${e.message}`); outcomes.add('too-old'); }
+    assert.deepEqual(bad, [], `${before}ms before the line`);
+  }
+  assert.deepEqual([...outcomes].sort(), ['done', 'too-old'], 'the runs crossed the line at different points, and some finished in time');
+});
+
+test('설계 관문 넷째 3: a B2 call checks before every attempt, so a retry that would go out past the line does not', async () => {
+  const { B2Session } = await import('../b2-native.mjs');
+  let fetches = 0;
+  const fetchImpl = async () => { fetches++; return new Response(JSON.stringify({ code: 'service_unavailable', message: 'busy' }), { status: 503 }); };
+  const s = new B2Session({ accountId: 'a', token: 't', apiUrl: 'https://api.example', allowed: {}, fetchImpl, timeoutMs: 1000 });
+  let checks = 0;
+  const beforeAttempt = () => { if (++checks === 2) throw Object.assign(new Error('TOO_OLD'), { code: 'TOO_OLD' }); };
+  await assert.rejects(s.copyFile({ sourceFileId: 'f', fileName: 'n' }, { beforeAttempt }), { code: 'TOO_OLD' });
+  assert.equal(fetches, 1, 'the retry did not go out');
+  checks = 0; fetches = 0;
+  await assert.rejects(s.hideFile({ bucketId: 'b', fileName: 'n' }, { beforeAttempt }), { code: 'TOO_OLD' });
+  assert.equal(fetches, 1);
 });

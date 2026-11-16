@@ -89,12 +89,19 @@ export class Store {
       if (!cols('devices').includes('first_seen_at')) this.db.exec('alter table devices add column first_seen_at integer; update devices set first_seen_at = coalesce(last_seen_at, created_at)');
       if (!cols('customers').includes('detect_cursor')) this.db.exec('alter table customers add column detect_cursor integer');
       const sql = this.db.prepare("select sql from sqlite_master where type = 'table' and name = 'restore_jobs'").get()?.sql || '';
+      // Operator alerts (no customer) are one a day per kind too: SQLite's unique treats NULLs as
+      // all different (카본 끝판 D3).
+      this.db.exec(`delete from alerts where customer_id is null and rowid not in (select min(rowid) from alerts where customer_id is null group by kind, audience, day);
+create unique index if not exists alerts_operator_day on alerts(kind, audience, day) where customer_id is null`);
       if (!sql.includes("'preparing'")) {
         this.db.exec(`alter table restore_jobs rename to restore_jobs_old;
 ${SCHEMA.match(/create table if not exists restore_jobs\([^;]*\);/)[0]}
 insert into restore_jobs select * from restore_jobs_old;
 drop table restore_jobs_old;`);
       }
+      // The run a job continues (the same time asked again after a run that failed half-way):
+      // not counted as another of the day's restores (GPT 끝판 GD1).
+      if (!cols('restore_jobs').includes('continues')) this.db.exec('alter table restore_jobs add column continues text');
       this.db.exec('commit');
     } catch (e) { try { this.db.exec('rollback'); } catch {} throw e; }
   }
@@ -200,7 +207,9 @@ drop table restore_jobs_old;`);
   // is not counted in the day's cap.
   keyRequestsSince(customerId, since) { return this.get("select count(*) n from key_requests where customer_id = ? and at > ? and kind != 'incident'", customerId, since).n; }
   incidentSince(customerId, since) { return !!this.get("select 1 from key_requests where customer_id = ? and kind = 'incident' and at >= ?", customerId, since); }
-  restoresSince(customerId, since) { return this.get("select count(*) n from restore_jobs where customer_id = ? and undo_of is null and created_at > ? and (state != 'failed' or started_at is not null)", customerId, since).n; }
+  restoresSince(customerId, since) { return this.get("select count(*) n from restore_jobs where customer_id = ? and undo_of is null and continues is null and created_at > ? and (state != 'failed' or started_at is not null)", customerId, since).n; }
+  // The latest restore (not an undo) that started its run.
+  lastStartedRestore(customerId) { return this.get('select * from restore_jobs where customer_id = ? and undo_of is null and started_at is not null order by created_at desc, rowid desc limit 1', customerId) || null; }
   addKeyRequest(customerId, kind) { this.run('insert into key_requests(customer_id, kind, at) values (?, ?, ?)', customerId, kind, this.now()); }
   keyDeleting(name) { this.run("update keys set state = 'deleting' where name = ? and state != 'deleted'", name); }
   keyDeleted(name, reason) { this.run("update keys set state = 'deleted', deleted_at = ?, reason = ? where name = ?", this.now(), reason, name); }
@@ -256,9 +265,9 @@ drop table restore_jobs_old;`);
   // ── restore jobs
   // A restore starts 'preparing' (write keys being replaced) and becomes 'running' only
   // once every old write key is gone; a restart resumes the replacement first.
-  createJob({ customerId, deviceId, at, undoOf = null, state = 'running' }) {
+  createJob({ customerId, deviceId, at, undoOf = null, state = 'running', continues = null }) {
     const id = randomId(16);
-    this.run('insert into restore_jobs(id, customer_id, device_id, at, state, created_at, undo_of) values (?, ?, ?, ?, ?, ?, ?)', id, customerId, deviceId, at, state, this.now(), undoOf);
+    this.run('insert into restore_jobs(id, customer_id, device_id, at, state, created_at, undo_of, continues) values (?, ?, ?, ?, ?, ?, ?, ?)', id, customerId, deviceId, at, state, this.now(), undoOf, continues);
     return this.job(id);
   }
   job(id) { return this.get('select * from restore_jobs where id = ?', id) || null; }

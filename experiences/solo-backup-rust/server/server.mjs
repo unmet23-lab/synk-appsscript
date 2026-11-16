@@ -275,12 +275,17 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
       try {
         // A just-deleted B2 key still works for a few seconds (11-13): wait out what is left of
         // the grace since the last write key deletion — after a restart too.
-        { const left = usableAt(customer) - now(); if (left > 0) await sleep(left); }
+        // Until the grace is really over: a write key deleted while this waited moves it (카본 끝판 D2).
+        for (let left = usableAt(customer) - now(); left > 0; left = usableAt(customer) - now()) await sleep(left);
         if (!job.started_at) store.setJob(job.id, { started_at: now() });
         const r = await files('restore.apply', { prefix: customer.prefix, at: job.at, runId: job.id, undoOf: job.undo_of || null, resume }, { timeout: 3600000 });
         const prior = (() => { try { return JSON.parse(store.job(job.id).journal || '[]'); } catch { return []; } })();
         const fresh = store.job(job.id);
+        // Asked as a continuation, but the worker took it as a new restore (backups ran on top of
+        // the failed run): it is one of the day's restores here too (카본 r13 A1). The worker's
+        // own count stays the limit that holds when the two differ.
         store.setJob(job.id, { state: job.undo_of ? 'continued' : 'done', finished_at: now(), pre_at: fresh.pre_at ?? r.preAt, rounds: r.rounds,
+          ...(fresh.continues && r.counted === true ? { continues: null } : {}),
           counts: JSON.stringify({ ...r.counts, remaining: r.remaining }), journal: JSON.stringify([...prior, ...r.journal]) });
         if (job.undo_of) store.setCustomer(customer.id, { detect_since: now() });
         else notifyCustomer(customer, 'restore-done', { at: now(), to: job.at, jobId: job.id }, job.id);
@@ -555,10 +560,13 @@ export function createApi({ store, verifyGoogle, keys, files, mailer, config, no
         // The files worker allows three restores a day (RESTORES_PER_DAY); refuse here before any key is made.
         // The same time asked again after a run that failed half-way is its continuation, which
         // the files worker does free: not refused here as a fourth (GPT r8a GD1).
-        const last = store.lastJob(customer.id);
-        const continuing = !!last && last.state === 'failed' && !last.undo_of && !!last.started_at && last.at === at;
+        // The run is the latest one that started; a later request that failed before starting
+        // (while making its keys) does not end the continuation (카본 끝판 D1). The job is marked
+        // as continuing it, so the two are one of the day's restores (GPT 끝판 GD1).
+        const last = store.lastJob(customer.id), lastRun = store.lastStartedRestore(customer.id);
+        const continuing = !!lastRun && lastRun.state === 'failed' && lastRun.at === at && (!last || last.id === lastRun.id || !last.started_at);
         if (!continuing && store.restoresSince(customer.id, now() - DAY) >= LIMITS.restoresPerDay) fail(429, 'LIMIT_RESTORE_DAY');
-        const job = store.createJob({ customerId: customer.id, deviceId: device.id, at, state: 'preparing' });
+        const job = store.createJob({ customerId: customer.id, deviceId: device.id, at, state: 'preparing', continues: continuing ? (lastRun.continues || lastRun.id) : null });
         notifyCustomer(customer, 'restore-requested', { at: t, to: at, deviceId: device.id, jobId: job.id }, job.id);
         let write, read;
         try {

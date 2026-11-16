@@ -55,8 +55,11 @@ export class B2Session {
     Object.defineProperty(this, 'token', { value: token, enumerable: false });
     Object.assign(this, { accountId, apiUrl, downloadUrl, s3ApiUrl, allowed, fetchImpl, timeoutMs });
   }
-  async call(name, body) {
+  // `beforeAttempt`: run before every attempt, retries included — the files worker's time
+  // limit stops a call whose retry would go out past it (Fable 5.2 설계 관문 넷째 3).
+  async call(name, body, { beforeAttempt = null } = {}) {
     return withRetry(async () => {
+      beforeAttempt?.();
       const res = await this.fetchImpl(`${this.apiUrl}/b2api/v4/${name}`, {
         method: 'POST', headers: { authorization: this.token, 'content-type': 'application/json' }, body: JSON.stringify(body),
         signal: AbortSignal.timeout(this.timeoutMs),
@@ -100,7 +103,7 @@ export class B2Session {
     } while (startFileName);
     return files;
   }
-  hideFile({ bucketId, fileName }) { return this.call('b2_hide_file', { bucketId, fileName }); }
+  hideFile({ bucketId, fileName }, opts) { return this.call('b2_hide_file', { bucketId, fileName }, opts); }
   deleteFileVersion({ fileName, fileId }) { return this.call('b2_delete_file_version', { fileName, fileId }); }
-  copyFile({ sourceFileId, fileName }) { return this.call('b2_copy_file', { sourceFileId, fileName, metadataDirective: 'COPY' }); }
+  copyFile({ sourceFileId, fileName }, opts) { return this.call('b2_copy_file', { sourceFileId, fileName, metadataDirective: 'COPY' }, opts); }
 }

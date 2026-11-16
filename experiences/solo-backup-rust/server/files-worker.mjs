@@ -23,6 +23,10 @@ const checkTime = (v) => { if (!Number.isSafeInteger(v) || v < 0) throw err('BAD
 
 const DAY = 86400000;
 const PRE_AT_BACK_MS = 3600000, ID = /^[a-z0-9]{16}$/;
+// B2 deletes a hidden version 30 days after it was hidden (the bucket's lifecycle rule). A version
+// current at `at` was hidden at `at` or later, so until `at` + 30 days everything a restore to
+// `at` needs is still there. Half a day is kept back for when the rule runs (GPT 끝판 GC1).
+const SAFE_AGE_MS = 29.5 * DAY;
 // The restore ledger, on this worker's own volume (Fable 5.2 설계 관문 셋째 다): per customer
 // prefix one record — the run in progress or the last one that finished — and the day's count.
 // A run is known by the api's job ids (`runIds`; a continued run gathers the new ids). The ids
@@ -39,16 +43,27 @@ function restoreLedger(stateDir, now) {
   const load = (t = now()) => {
     let all = {};
     try { all = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) { if (e.code !== 'ENOENT') throw err('WORKER_STATE'); }
-    all.started = Object.fromEntries(Object.entries(all.started || {}).filter(([, v]) => v && (!v.done || t - v.t < 29 * DAY)));
+    // A finished run is kept 29 days from when it finished (a retry gets its answer, its undo is
+    // free); an unfinished one until it can no longer be continued (카본 끝판 C2).
+    all.started = Object.fromEntries(Object.entries(all.started || {}).filter(([, v]) => v && (v.done ? t - (v.doneAt ?? v.t) < 29 * DAY : !(t - v.at > SAFE_AGE_MS + DAY))));
     return all;
   };
   const save = (all) => { const tmp = `${file}.${process.pid}.tmp`; fs.writeFileSync(tmp, JSON.stringify(all)); fs.renameSync(tmp, file); };
   const ids = (run) => run?.runIds || (run?.runId ? [run.runId] : []);
   return {
-    peek(prefix, at, runId = null, undoOf = null) {
+    replay(prefix, at, runId) {
+      const run = load().started[prefix];
+      return runId && run?.done && run.result && run.at === at && ids(run).includes(runId) ? run.result : null;
+    },
+    // `unchanged(p)`: nothing but this worker's own copies and hides came after time p.
+    peek(prefix, at, runId = null, undoOf = null, unchanged = () => true) {
       const t = now(), run = load(t).started[prefix];
-      if (runId && run?.done && run.result && run.at === at && ids(run).includes(runId)) return { replay: run.result };
-      if (run && !run.done && run.at === at) return { free: true, t0: run.t, sameId: !!runId && ids(run).includes(runId) };
+      // The same unfinished run: the same time, the same kind (an undo continues an undo, a
+      // restore a restore), and either the same job or nothing new on top since its moment
+      // before. A new restore over backups made after a failed undo is a new restore: it counts,
+      // and its own undo is free (카본 끝판 C3).
+      const sameId = !!runId && ids(run).includes(runId);
+      if (run && !run.done && run.at === at && !!run.undo === !!undoOf && (sameId || !Number.isSafeInteger(run.preAt) || unchanged(run.preAt))) return { free: true, t0: run.t, sameId };
       if (run?.done && !run.undo && undoOf && ids(run).includes(undoOf) && Number.isSafeInteger(run.preAt) && run.preAt === at) return { free: true, undo: true, t0: t };
       return { free: false, t0: t };
     },
@@ -74,7 +89,7 @@ function restoreLedger(stateDir, now) {
     update(prefix, at, patch) {
       const all = load(), run = all.started[prefix];
       if (!run || run.at !== at) return;
-      all.started[prefix] = { ...run, ...patch };
+      all.started[prefix] = { ...run, ...patch, ...(patch.done ? { doneAt: now() } : {}) };
       save(all);
     },
   };
@@ -110,7 +125,19 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
   const ledger = restoreLedger(stateDir, now);
   const applying = new Set();
   const ours = restoreJournal(stateDir, now);
+  // The raw session is for listings only. This worker changes B2 through `writeGate` alone.
   const versions = (prefix) => withSession((s) => s.listFileVersions({ bucketId, prefix }));
+  // The one way this worker changes B2 (Fable 5.2 설계 관문 넷째 1): copy and hide for a restore
+  // to `at`, refused once B2 may have deleted what `at` needs. The limit is checked inside the
+  // session callback (a call made again after a renewed sign-in is checked again — GPT r14 GA1)
+  // and before every attempt inside the call (its retries — 설계 관문 넷째 3). Each call goes
+  // through the session on its own, so a renewed sign-in retries that one call, never a whole
+  // round that would copy again what was copied (카본 끝판 C4).
+  const writeGate = (at) => {
+    const young = () => { if (now() - at > SAFE_AGE_MS) throw err('TOO_OLD'); };
+    const guarded = (method) => (a) => withSession((s) => { young(); return s[method](a, { beforeAttempt: young }); });
+    return { young, copyFile: guarded('copyFile'), hideFile: guarded('hideFile') };
+  };
   const plan = (list, at, repo, t0 = now()) => {
     try { return planRestore(list, { at, now: t0, prefix: repo }); }
     catch (e) { if (/^RESTORE_/.test(e?.message || '')) throw err(e.message === 'RESTORE_TIME_TOO_OLD' ? 'TOO_OLD' : 'BAD_INPUT'); throw e; }
@@ -147,10 +174,20 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
       if (applying.has(prefix)) throw err('BUSY');
       applying.add(prefix);
       try {
-        const run = ledger.peek(prefix, at, runId, undoOf);
-        if (run.replay) return { ...run.replay, journal: [], replayed: true };
+        const replay = ledger.replay(prefix, at, runId);
+        if (replay) return { ...replay, journal: [], replayed: true };
+        // Whatever the run's start, nothing is changed once B2 may have deleted what `at` needs
+        // (GPT 끝판 GC1 · 카본 끝판 C2): checked before the listing, after it (a listing can take
+        // long), and by the write gate before every copy and hide, so a run that crosses the line
+        // stops there (GPT r13 GA1).
+        const gate = writeGate(at), { young } = gate;
+        young();
         const repo = prefix + 'r/';
         let list = await versions(repo);
+        young();
+        const own = ours.ids(prefix);
+        const unchanged = (p) => !list.some((v) => (v.uploadTimestamp || 0) > p && !own.has(v.fileId));
+        const run = ledger.peek(prefix, at, runId, undoOf, unchanged);
         plan(list, at, repo, run.t0); // a bad time is refused before the day's count is used
         const rec = ledger.take(prefix, at, run, runId);
         // The moment before belongs to the chain. The same run (same id) keeps it as it was
@@ -162,16 +199,18 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
         // undo stays inside the 29 days — 카본 r7 B1); lowered below to just before our first
         // own change if B2's clock is behind ours (Fable 6).
         let preAt = rec.preAt, preBase = rec.preBase ?? 0;
-        const own = ours.ids(prefix);
-        const intact = Number.isSafeInteger(preAt) && (run.sameId || !list.some((v) => (v.uploadTimestamp || 0) > preAt && !own.has(v.fileId)));
+        const intact = Number.isSafeInteger(preAt) && (run.sameId || unchanged(preAt));
         if (!intact) {
           preBase = list.reduce((m, v) => Math.max(m, v.uploadTimestamp || 0), 0);
           preAt = Math.max(preBase, run.t0 - PRE_AT_BACK_MS);
           ledger.update(prefix, at, { preAt, preBase });
         }
+        // Each own change as it is made (a round that stops half-way, or whose session is
+        // renewed, keeps what it learned); a loop, not a spread, for very long rounds (카본 끝판 C4 · C5).
         const lower = (entries) => {
-          const firstOwn = Math.min(...entries.map((e) => e.uploadTimestamp).filter(Number.isSafeInteger));
-          if (Number.isFinite(firstOwn) && firstOwn - 1 < preAt) { preAt = Math.max(preBase, firstOwn - 1); ledger.update(prefix, at, { preAt }); }
+          let firstOwn = Infinity;
+          for (const e of entries) if (Number.isSafeInteger(e.uploadTimestamp) && e.uploadTimestamp < firstOwn) firstOwn = e.uploadTimestamp;
+          if (firstOwn !== Infinity && firstOwn - 1 < preAt) { preAt = Math.max(preBase, firstOwn - 1); ledger.update(prefix, at, { preAt }); }
         };
         const journal = []; let first = null, rounds = 0, left = 0;
         for (; rounds < MAX_ROUNDS; rounds++) {
@@ -180,8 +219,7 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
           left = p.items.length;
           if (!left) break;
           let done;
-          try { done = await withSession((s) => applyPlan(s, { bucketId, plan: p, now: now(), onItem: (e) => ours.add(prefix, e) })); }
-          catch (e) { if (Array.isArray(e?.journal)) lower(e.journal); throw e; }
+          done = await applyPlan(gate, { bucketId, plan: p, now: now(), onItem: (e) => { ours.add(prefix, e); lower([e]); } });
           lower(done.journal);
           journal.push(...done.journal);
           list = await versions(repo);
@@ -189,7 +227,9 @@ export function fileHandlers({ withSession, bucketId, stateDir, now = () => Date
         if (rounds === MAX_ROUNDS) left = plan(list, at, repo, run.t0).items.length;
         // Something still left after the last round: the same run may continue, free. What it
         // did (without the per-file journal, which the journal file keeps) answers a retry.
-        const result = { at, preAt, rounds, remaining: left, counts: first.counts, copyBytes: first.copyBytes };
+        // `counted`: this worker took one of the day's restores for it. The api, which cannot see
+        // whether backups ran on top of a failed run, takes this as the answer (카본 r13 A1).
+        const result = { at, preAt, rounds, remaining: left, counts: first.counts, copyBytes: first.copyBytes, counted: !run.free };
         if (!left) ledger.update(prefix, at, { done: true, result });
         return { ...result, journal };
       } finally { applying.delete(prefix); }
