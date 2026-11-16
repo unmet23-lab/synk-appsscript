@@ -2081,4 +2081,12 @@ export const COACH_MUTANTS = [
     '        let shared = SHARED_PULLS.get(pulling);\n',
     '        let shared = null;\n',
   ],
+  [
+    C,
+    '놓기 거두기(4-4c 끝 판)',
+    '놓기가 차례를 기다리는 청하기를 거두지 않는다 — 다른 탭이 차례를 놓으면 놓은 호스트의 손님 요약이 뒤늦게 쓰이고 알려진다(4-4c 끝 판 카본 C1)',
+    HOST,
+    '      turn.close(); // 기다리던 청하기를 거둔다\n',
+    '',
+  ],
 ];

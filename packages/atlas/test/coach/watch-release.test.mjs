@@ -246,6 +246,12 @@ test('F2 — 차례를 기다리는 손님 요약 저장은 놓기가 거둔다 
   const handle = await acquireHost({ key, params: PARAMS, now: time.now, guest: true }, top);
   await quiet(20);
   const stuck = locks.hold(`synk-atlas:${key}`); // 다른 탭이 차례를 쥐고 놓지 않는다
+  let freed = false;
+  const free = () => {
+    if (freed) return;
+    freed = true;
+    stuck();
+  };
   const heard = ear(key);
   try {
     const locals = async () => (await port.read()).filter(row => row.value.kind === 'local').length;
@@ -256,14 +262,17 @@ test('F2 — 차례를 기다리는 손님 요약 저장은 놓기가 거둔다 
     await new Promise(resolve => setTimeout(resolve, 200)); // 차례 한도(1초)보다 짧게
     handle.landed();
     await quiet();
-    assert.equal(
-      heard.posts.length,
-      0,
-      '거둔 저장은 알리지 않고, 채널은 한도를 기다리지 않고 닫혔다',
-    );
-    assert.equal(await locals(), before, '거둔 저장은 쓰지 않았다');
+    assert.equal(heard.posts.length, 0, '채널은 한도를 기다리지 않고 닫혔다');
+    // 다른 탭이 차례를 놓은 뒤에 본다 — 잠금을 쥔 동안에는 거두지 않은 저장도 쓰지 못해 쓰기 단언이 늘 지나갔다. 거둔 저장은 놓인 차례를 뒤늦게
+    // 받아 쓰지도 알리지도 않는다(4-4c 끝 판 카본 C1).
+    free();
+    await quiet(20);
+    handle.landed();
+    await quiet();
+    assert.equal(await locals(), before, '거둔 저장은 차례가 풀린 뒤에도 쓰지 않았다');
+    assert.equal(heard.posts.length, 0, '거둔 저장은 알리지 않는다');
   } finally {
-    stuck();
+    free();
     heard.close();
   }
 });

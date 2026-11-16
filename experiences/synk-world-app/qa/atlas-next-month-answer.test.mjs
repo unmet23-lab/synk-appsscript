@@ -706,14 +706,19 @@ test('내 놓침이 서버에 닿기 전에는 묻지 않는다 · 물은 사이
 
 // ── 장면: 설계 P1 다시 보기(-c)로 고친 셋(Fable FA1 · FA2 — 카본 A1) ─────────────────────────────
 
-// 가짜 코치 하나와 상자 하나 — 자리(device)는 시험이 바꾼다. 묻기는 reply(n번째)를 돌려주고, hold가 있으면 그것이 풀릴 때까지 기다린다. 다시
-// 그리기는 판을 다시 그린다(상자를 또 부른다). 변형이 끝없이 다시 그려도 시험이 멈추도록 50번에서 끊는다.
+// 가짜 코치 하나와 상자 하나 — 자리(device) · 학습일(day) · 동의 판(revision) · 칸 밖의 내 답 수(unfolded) · 닫힘(closed)은 시험이 바꾼다.
+// 묻기는 reply(n번째)를 돌려주고, hold가 있으면 그것이 풀릴 때까지 기다린다. 다시 그리기는 판을 다시 그린다(상자를 또 부른다). 변형이 끝없이
+// 다시 그려도 시험이 멈추도록 50번에서 끊는다.
 function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {}) {
-  const box = { device: at(5), asks: 0, pulls: 0, redraws: 0, notes: [], hold: null, last: null };
+  const box = { device: at(5), day: 7, revision: 1, unfolded: 0, closed: false, asks: 0, pulls: 0, redraws: 0, notes: [], hold: null, last: null };
   const coach = {
-    summary: () => ({ storage: { guest: false, unfolded: 0, sync: { received: box.device } } }),
+    summary: () => {
+      if (box.closed) throw new Error('DISPOSED'); // 닫힌 코치
+      return { storage: { guest: false, unfolded: box.unfolded, sync: { received: box.device } } };
+    },
     pull: () => {
       box.pulls += 1;
+      if (box.closed) throw new Error('DISPOSED');
       if (box.pulls > FUSE) return null; // 퓨즈
       return Promise.resolve(false);
     },
@@ -723,7 +728,7 @@ function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {})
     answers,
     account: () => A_ID,
     lineOf: () => ({
-      revision: 1,
+      revision: box.revision,
       ask: async () => {
         box.asks += 1;
         if (box.asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
@@ -732,7 +737,7 @@ function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {})
         return reply(n, box);
       },
     }),
-    dayOf: () => 7,
+    dayOf: () => box.day,
     offsetOf: () => OFFSET,
     redraw: () => {
       box.redraws += 1;
@@ -971,4 +976,163 @@ test('완결되지 않은 답이라도 서버의 자리가 기기보다 앞서�
   await quiet(10);
   assert.equal(same.pulls, 0, '같은 자리의 완결되지 않은 답으로는 받지 않는다');
   assert.deepEqual(same.notes, ['LOOKBACK_REBUILDING']);
+});
+
+// ── 장면: 끝 판 검수(Fable)로 고친 둘 ────────────────────────────────────────────────────
+
+test('조건을 넘은 단위가 64개를 넘는 답도 버리지 않고 점수 차례로 앞의 64줄을 둔다 — 가장 점수가 큰 단위가 남는다(4-4c 끝 판 Fable F5)', { timeout: 60_000 }, async () => {
+  // 70줄 — 점수 5의 단위 69개(이름 차례 r00 ~ r68)와 맨 끝의 점수 10짜리 단위 하나(zz). 이름 차례로 앞의 64줄을 두면 zz가 빠진다.
+  const rows = Array.from({ length: 69 }, (_, i) => ({ unit: `r${String(i).padStart(2, '0')}`, misses: 2, reviews: 3, last: 2.9 }));
+  rows.push({ unit: 'zz', misses: 5, reviews: 5, last: 2.9 });
+  const box = fakeAsker({ reply: (_n, b) => done(b.device, rows) });
+  assert.equal(box.render(), null);
+  await quiet(10);
+  assert.deepEqual(box.notes, [], '꼴 틀림(LOOKBACK_FAILED)으로 버리지 않는다');
+  const month = box.render()?.month;
+  assert.equal(month?.length, 64, '앞의 64줄만 둔다');
+  assert.equal(month[0].unit, 'zz', '점수가 가장 큰 단위가 남는다(문장은 그 단위에서 고른다)');
+  assert.equal(box.asks, 1);
+});
+
+// ── 장면: 끝 판 검수(카본 -b 끝판)로 고친 둘 ─────────────────────────────────────────────────
+
+const rowOf = unit => [{ unit, misses: 2, reviews: 3, last: 2.9 }];
+const remainAt = summaryAt => ({ complete: false, reason: 'events-remain', summaryAt, lookback: { windows: WINDOWS } });
+
+test('완결되지 않은 답은 지금 기기 자리와 견준다 — 묻는 사이 기기가 서버의 자리에 왔으면 받지 않고 그 자리에서 한 번 다시 묻는다 · 닫힌 코치로는 받지 않는다 · 칸 밖의 내 답이 서면 멈춘다(4-4c 끝 판 카본 B1)', { timeout: 60_000 }, async () => {
+  // 카본의 재현 — 기기 자리 5에서 물었다. 묻는 사이 받기(첫 받기 · 다른 탭 알림)가 기기를 서버의 자리 9로 올렸다(그 다시 그리기는 묻는 중이라
+  // 묻지 않았다). 답은 상한에 걸려 사건이 남은 자리 9의 미완결 답이다.
+  const box = fakeAsker({ reply: n => (n === 1 ? remainAt(at(9)) : done(at(9))) });
+  const release = held(box);
+  box.device = at(5);
+  assert.equal(box.render(), null);
+  await quiet(5);
+  box.device = at(9);
+  assert.equal(box.render(), null, '받기 알림의 다시 그리기 — 묻는 중이라 묻지 않는다');
+  await quiet(5);
+  assert.equal(box.asks, 1);
+  release();
+  await quiet(20);
+  assert.equal(box.pulls, 0, '기기가 이미 서버의 자리에 왔다 — 5분 막이를 깨는 받기를 내지 않는다');
+  assert.equal(box.asks, 2, '묻는 사이 기기 자리가 바뀌었다 — 그 자리에서 한 번 다시 묻는다');
+  assert.deepEqual(box.notes, ['LOOKBACK_EVENTS_REMAIN']);
+  assert.equal(box.render()?.month.length, 1, '열린 판에 문장이 선다');
+  await quiet(10);
+  assert.equal(box.asks, 2, '되풀이하지 않는다');
+  // 닫힌 코치 — 답이 왔을 때 그 코치가 닫혔으면 그 코치로 받지 않는다. 받은 자리를 먼저 채우지 않으므로 뒤에 연 코치가 그 자리로 한 번 받는다.
+  const shut = fakeAsker({ reply: n => (n === 1 ? remainAt(at(9)) : done(at(9))) });
+  const go = held(shut);
+  shut.device = at(5);
+  shut.render();
+  await quiet(5);
+  shut.closed = true; // 판을 다시 정해 그 코치를 닫았다
+  go();
+  await quiet(10);
+  assert.equal(shut.pulls, 0, '닫힌 코치로 받지 않는다');
+  let secondPulls = 0;
+  shut.coach = {
+    summary: () => ({ storage: { guest: false, unfolded: 0, sync: { received: shut.device } } }),
+    pull: () => {
+      secondPulls += 1;
+      return Promise.resolve(false);
+    },
+  };
+  shut.device = at(6);
+  shut.render(); // 기기 자리가 바뀌었다 — 새 코치로 다시 묻는다. 완결된 답(자리 9)이 기기(자리 6)보다 앞서 그 자리로 받는다.
+  await quiet(10);
+  assert.equal(shut.asks, 2);
+  assert.equal(secondPulls, 1, '뒤에 연 코치는 그 답의 자리로 한 번 받는다(닫힌 코치가 받은 자리를 채우지 않았다)');
+  // 칸 밖의 내 답 — 묻는 사이 내 답이 섰으면 받지도 다시 묻지도 않는다. 그 답이 접혀 기기 자리가 바뀐 뒤 다시 묻는다.
+  const mine = fakeAsker({ reply: n => (n === 1 ? remainAt(at(9)) : done(at(10))) });
+  const go2 = held(mine);
+  mine.device = at(5);
+  mine.render();
+  await quiet(5);
+  mine.device = at(7);
+  mine.unfolded = 1;
+  go2();
+  await quiet(10);
+  assert.equal(mine.pulls, 0, '칸 밖의 내 답이 있으면 받지 않는다');
+  assert.equal(mine.asks, 1, '칸 밖의 내 답이 있으면 다시 묻지 않는다');
+  mine.unfolded = 0;
+  mine.device = at(10); // 내 답이 접혔다
+  mine.render();
+  await quiet(10);
+  assert.equal(mine.asks, 2, '접힌 뒤 한 번 다시 묻는다');
+  assert.equal(mine.render()?.month.length, 1);
+});
+
+test('밀려난 물음의 늦은 답과 실패는 상태를 덮지 않는다 — 학습일 04:00 경계의 어제 물음 · 물은 사이 학습일이 넘어간 물음 · 동의 판이 바뀐 앞 코치의 물음(4-4c 끝 판 카본 B2)', { timeout: 60_000 }, async () => {
+  // 카본의 재현 — 04:00 직전에 어제(7) 열쇠로 물었다. 그 물음이 늦는 사이 04:00이 지나 오늘(8) 열쇠로 물은 답이 먼저 왔다.
+  let late = null;
+  const yesterday = new Promise(resolve => {
+    late = resolve;
+  });
+  const box = fakeAsker({ reply: (n, b) => (n === 1 ? yesterday : done(b.device, rowOf('today'))) });
+  box.render();
+  await quiet(5);
+  box.day = 8;
+  box.render(); // 오늘 열쇠로 묻는다
+  await quiet(10);
+  assert.equal(box.asks, 2);
+  assert.equal(box.render()?.month[0].unit, 'today');
+  const redraws = box.redraws;
+  late(done(box.device, rowOf('yesterday'))); // 어제 물음의 답이 늦게 온다
+  await quiet(10);
+  assert.equal(box.render()?.month[0].unit, 'today', '밀려난 어제 물음의 답이 이 문서의 오늘 답을 덮지 않는다');
+  assert.equal(box.answers.read(A_ID, { revision: 1, day: 8 })?.month[0].unit, 'today', '저장소의 오늘 답도 그대로다');
+  await quiet(10);
+  assert.equal(box.asks, 2, '같은 자리에서 다시 묻지 않는다');
+  assert.equal(box.redraws, redraws, '어제 답으로 다시 그리지 않는다');
+  // 물은 사이 학습일이 넘어갔다(이 탭은 아직 다시 그리지 않아 새 물음이 없다) — 다른 탭이 적은 오늘 답을 어제 답으로 덮지 않는다.
+  const storage = memoryStorage();
+  const tab = createMonthAnswers({ storage });
+  const slow = fakeAsker({ storage, reply: (_n, b) => done(b.device, rowOf('yesterday')) });
+  const go = held(slow);
+  slow.render();
+  await quiet(5);
+  slow.day = 8;
+  tab.write(A_ID, { revision: 1, day: 8, askedFrom: slow.device, at: slow.device, windows: WINDOWS, month: rowOf('today'), since: tab.generation() });
+  go();
+  await quiet(10);
+  assert.equal(slow.answers.read(A_ID, { revision: 1, day: 8 })?.month[0].unit, 'today', '넘어간 학습일의 늦은 답이 다른 탭의 오늘 답을 덮지 않는다');
+  assert.equal(slow.redraws, 0, '쓸 데 없는 어제 답으로 다시 그리지 않는다');
+  assert.equal(slow.render()?.month[0].unit, 'today', '오늘 답으로 문장을 그린다');
+  assert.equal(slow.asks, 1);
+  // 동의 판이 바뀐 앞 코치의 물음 — 다른 기기에서 판이 올라 새 코치가 판 2로 물었다가 실패해 상한을 세웠다. 그 뒤 판 1 물음이 늦게 실패해도
+  // 판 2의 상한을 덮지 않는다(덮으면 같은 기기 자리에서 판 2로 다시 묻는다).
+  const network = () => Object.assign(new Error('NETWORK'), { code: 'NETWORK' });
+  let fail = null;
+  const before = new Promise((_resolve, reject) => {
+    fail = reject;
+  });
+  const old = fakeAsker({ reply: n => (n === 1 ? before : Promise.reject(network())) });
+  old.render();
+  await quiet(5);
+  old.revision = 2;
+  old.render();
+  await quiet(10);
+  assert.equal(old.asks, 2);
+  assert.deepEqual(old.notes, ['LOOKBACK_FAILED'], '판 2 물음의 실패');
+  fail(network());
+  await quiet(10);
+  old.render();
+  await quiet(10);
+  assert.equal(old.asks, 2, '밀려난 판 1 물음의 실패가 판 2의 상한을 덮지 않는다');
+  assert.deepEqual(old.notes, ['LOOKBACK_FAILED'], '밀려난 물음의 실패는 계기에 남기지 않는다');
+});
+
+// 셸은 node에서 못 올려 글이 유일한 지킴이다(atlas-next-off.test.mjs와 같은 길). 변형 실행기는 깬 사본을 SYNK_APP_SHELL_SOURCE로 넘긴다.
+const SHELL_SOURCE = process.env.SYNK_APP_SHELL_SOURCE ?? new URL('../app-shell.mjs', import.meta.url);
+test('셸 — 로그아웃과 동의 바꾸기(바꾼 뒤 · 실패한 뒤)에서 학습일 답을 지운다(글 지킴이 — 설계 §21-22 변형 「로그아웃 때 지우기 빼기」 · 4-4c 끝 판 Fable F3)', () => {
+  const shell = fs.readFileSync(SHELL_SOURCE, 'utf8');
+  assert.match(shell, /if\(leaving\)\{[^}]*clearMonthAnswer\(localStorage,leaving\);/, '로그아웃 — 떠나는 계정의 학습일 답을 지운다');
+  const consent = shell.split(/\r?\n/).find(text => text.includes("control.matches?.('[data-world-learning]')"));
+  assert.ok(consent, '동의 바꾸기 줄');
+  assert.match(consent, /\.then\(\(\)=>\{clearMonthAnswer\(localStorage,client\.snapshot\?\.accountId\);/, '동의를 바꾼 뒤 지운다');
+  assert.match(
+    consent,
+    /\.catch\(error=>\{control\.checked=!enabled;clearMonthAnswer\(localStorage,client\.snapshot\?\.accountId\);/,
+    '바꾸기가 실패해도 지운다(서버는 바뀌었는데 뒤 확인만 실패한 갈래)',
+  );
 });

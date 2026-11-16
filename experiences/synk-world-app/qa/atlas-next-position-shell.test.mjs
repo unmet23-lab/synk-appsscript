@@ -1245,7 +1245,7 @@ function accountMonthShell(reply) {
   const held = new Promise(resolve => {
     release = resolve;
   });
-  const seen = { named: null, asks: 0, offset: null, notes: [], release: () => release() };
+  const seen = { named: null, coach: null, asks: 0, offset: null, notes: [], release: () => release() };
   const like = accountLike(() => ({ ok: true }), { sync: () => ({ pulled: true, received: RECEIVED }) });
   const wrap = made => {
     for (const item of worldPosition.practice.pool) {
@@ -1255,20 +1255,26 @@ function accountMonthShell(reply) {
         break;
       }
     }
-    return { ...like.wrap(made), lookback: () => null, pull: () => null };
+    seen.coach = { ...like.wrap(made), lookback: () => null, pull: () => null };
+    return seen.coach;
   };
   const label = id => (id === seen.named?.unit ? seen.named.label : null);
   const planner = { ...PLANNER, say: (why, lang) => atlas.renderReason(why, { lang, label }) };
+  // 돌아보기 읽기는 실제 배선(app-shell.mjs의 lookback: coach => atlasNext.lookbackOf(coach))처럼 입구가 연 그 코치를 받았을 때만 준다 — 셸이
+  // 코치를 빠뜨리거나 다른 객체를 넘기면 null이라 묻지 않는다(4-4c 끝 판 카본 A1).
   const nextExtra = {
-    lookback: () => ({
-      revision: 3,
-      ask: async offset => {
-        seen.asks += 1;
-        seen.offset = offset;
-        await held;
-        return reply(seen.named);
-      },
-    }),
+    lookback: coach =>
+      coach && coach === seen.coach
+        ? {
+            revision: 3,
+            ask: async offset => {
+              seen.asks += 1;
+              seen.offset = offset;
+              await held;
+              return reply(seen.named);
+            },
+          }
+        : null,
     note: (kind, outcome) => seen.notes.push([kind, outcome]),
   };
   return { app: shell({ owner: 'acct-month', wrap, planner, nextExtra }), seen };

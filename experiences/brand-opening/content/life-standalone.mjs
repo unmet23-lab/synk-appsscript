@@ -25371,8 +25371,12 @@ function fresherOf(kept, stored) {
   if (!kept || !stored) return kept ?? stored;
   return aheadOf(stored.at, kept.at) ? stored : kept;
 }
+var MONTH_ROWS = 64;
+var MONTH_LIMIT = 4096;
+var byScore = (a, b) => b.misses + b.reviews - (a.misses + a.reviews) || (a.unit < b.unit ? -1 : a.unit > b.unit ? 1 : 0);
+var keptRows = (rows2) => rows2.length <= MONTH_ROWS ? rows2 : [...rows2].sort(byScore).slice(0, MONTH_ROWS);
 function validMonth(rows2) {
-  return Array.isArray(rows2) && rows2.length <= 64 && rows2.every(
+  return Array.isArray(rows2) && rows2.length <= MONTH_LIMIT && rows2.every(
     (row) => plain(row) && typeof row.unit === "string" && row.unit.length <= 200 && Number.isSafeInteger(row.misses) && Number.isSafeInteger(row.reviews) && (row.last === null || finite(row.last))
   );
 }
@@ -25487,7 +25491,17 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     state.asking = { key, token };
     const since = answers.generation();
     const settle = () => {
-      if (state.asking?.token === token) state.asking = null;
+      if (state.asking?.token !== token) return false;
+      state.asking = null;
+      return true;
+    };
+    const still = () => {
+      if (!alive(owner) || since !== answers.generation()) return false;
+      try {
+        return dayOf() === day;
+      } catch {
+        return false;
+      }
     };
     const missed = (code) => {
       state.tried = { key, from: device };
@@ -25497,12 +25511,16 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
     };
     const reply = (got) => {
-      settle();
-      if (!alive(owner) || since !== answers.generation()) return;
+      if (!settle() || !still()) return;
       const at = positionOf(got?.summaryAt);
       if (got?.complete !== true) {
         missed(lookbackCode(got?.reason));
-        if (at && aheadOf(at, device)) pullOnce(coach, at);
+        const storage2 = storageOf(coach);
+        if (!storage2 || (storage2.unfolded || 0) > 0) return;
+        const current2 = positionOf(storage2.sync?.received);
+        if (!current2) return;
+        if (at && aheadOf(at, current2)) pullOnce(coach, at);
+        else if (!samePosition(current2, device)) ask(coach, line, { owner, revision: revision2, day, device: current2 });
         return;
       }
       const windows = got.lookback?.windows;
@@ -25513,7 +25531,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
       const storage = storageOf(coach);
       if (!storage || (storage.unfolded || 0) > 0) return;
-      const answer = shapeOf({ askedFrom: device, at, windows, month });
+      const answer = shapeOf({ askedFrom: device, at, windows, month: keptRows(month) });
       state.kept = { key, answer };
       answers.write(owner, { revision: revision2, day, ...answer, since });
       const current = positionOf(storage.sync?.received);
@@ -25525,8 +25543,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
     };
     void Promise.resolve().then(() => line.ask(offsetOf())).then(reply, () => {
-      settle();
-      if (alive(owner) && since === answers.generation()) missed("LOOKBACK_FAILED");
+      if (settle() && still()) missed("LOOKBACK_FAILED");
     }).catch(() => {
     });
   }

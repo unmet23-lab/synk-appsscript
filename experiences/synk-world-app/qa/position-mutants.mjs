@@ -44,6 +44,12 @@ const MODULES = {
     scenes: path.join(here, 'atlas-next-position-shell.test.mjs'),
     env: 'SYNK_LEARNING_UI_MODULE',
   },
+  // 셸(app-shell.mjs)은 node에서 못 올려 글 지킴이가 본다 — 깬 사본의 글을 학습일 답 셈 시험이 읽는다(4-4c 끝 판 Fable F3).
+  appShell: {
+    source: path.join(here, '..', 'app-shell.mjs'),
+    scenes: path.join(here, 'atlas-next-month-answer.test.mjs'),
+    env: 'SYNK_APP_SHELL_SOURCE',
+  },
 };
 
 // 변형 하나 = [모듈, 갈래, 이름, 바꿀 글, 바꾼 글]. 바꿀 글은 그 모듈에 꼭 한 번 있어야 한다.
@@ -479,8 +485,8 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 초점",
     "초점 — 다시 그린 뒤 초점을 되돌리지 않는다(조건 3)",
-    "if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}",
-    "if(node)node.scrollTop=scrollTop;}",
+    "reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}",
+    "reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;}",
   ],
   [
     'shell',
@@ -507,8 +513,8 @@ export const POSITION_MUTANTS = [
     'shell',
     "셸 초점",
     "초점 — 다시 그린 뒤 스크롤 자리를 되돌리지 않는다(조건 3 · Fable 다시 검수)",
-    "if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}",
-    "refocusNext(root,focusKey);}",
+    "reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}",
+    "reopenRows(root,openRows);const node=root?.closest?.('#panel-content');refocusNext(root,focusKey);}",
   ],
   [
     'lookback',
@@ -798,15 +804,15 @@ export const POSITION_MUTANTS = [
     'monthAnswer',
     '학습일 답 다시 보기',
     '끊긴 물음 · 멈춘 문서의 실패를 적는다 — 다른 계정 · 멈춘 문서의 계기와 상한을 덮는다(카본 다시 보기 A1 · 끝 판 GPT GB2)',
-    "        if (alive(owner) && since === answers.generation()) missed('LOOKBACK_FAILED');\n",
-    "        if (since === answers.generation()) missed('LOOKBACK_FAILED');\n",
+    "        if (settle() && still()) missed('LOOKBACK_FAILED');\n",
+    "        if (settle() && since === answers.generation()) missed('LOOKBACK_FAILED');\n",
   ],
   [
     'monthAnswer',
     '학습일 답 다시 보기',
     '물은 사이 지우는 길이 돌아도 늦은 답을 든다 — 완결된 답으로 다시 그리고, 완결되지 않은 답이 새 세대의 받은 자리를 채운다(카본 다시 보기 A1 · 끝 판 GPT GB2)',
-    '      if (!alive(owner) || since !== answers.generation()) return;\n',
-    '      if (!alive(owner)) return;\n',
+    '      if (!alive(owner) || since !== answers.generation()) return false;\n',
+    '      if (!alive(owner)) return false;\n',
   ],
   // ── 끝 판 검수(GPT)로 고친 둘(GB1 · GB2) ──
   [
@@ -827,29 +833,29 @@ export const POSITION_MUTANTS = [
     'monthAnswer',
     '학습일 답 끝 판',
     '멈춘 문서에 온 답을 든다 — 계정 · 문서가 바뀐 뒤 온 늦은 답을 적고 다시 그린다(끝 판 GPT GB2)',
-    '      if (!alive(owner) || since !== answers.generation()) return;\n',
-    '      if (since !== answers.generation()) return;\n',
+    '      if (!alive(owner) || since !== answers.generation()) return false;\n',
+    '      if (since !== answers.generation()) return false;\n',
   ],
   [
     'monthAnswer',
     '학습일 답 끝 판',
     '물은 사이 지우는 길이 돈 물음의 실패를 적는다 — 앞 세대의 실패가 새 세대의 계기를 덮는다(끝 판 GPT GB2)',
-    "        if (alive(owner) && since === answers.generation()) missed('LOOKBACK_FAILED');\n",
-    "        if (alive(owner)) missed('LOOKBACK_FAILED');\n",
+    "        if (settle() && still()) missed('LOOKBACK_FAILED');\n",
+    "        if (settle() && alive(owner)) missed('LOOKBACK_FAILED');\n",
   ],
   // ── 끝 판 검수(카본)로 더한 셋(A1 · A2) ──
   [
     'monthAnswer',
     '학습일 답 끝 판',
     '완결되지 않은 답의 앞선 자리로 받지 않는다 — 상한에 걸린 계정의 기기가 그 자리를 다음 5분 받기까지 기다린다(끝 판 카본 A2)',
-    '        if (at && aheadOf(at, device)) pullOnce(coach, at);\n',
-    '',
+    '        if (at && aheadOf(at, current)) pullOnce(coach, at);\n',
+    '        if (false) pullOnce(coach, at);\n',
   ],
   [
     'monthAnswer',
     '학습일 답 끝 판',
     '완결되지 않은 답이면 자리를 가리지 않고 받는다 — 같은 자리 · 기기가 앞선 답으로도 5분 막이를 깬다(끝 판 카본 A1 · A2)',
-    '        if (at && aheadOf(at, device)) pullOnce(coach, at);\n',
+    '        if (at && aheadOf(at, current)) pullOnce(coach, at);\n',
     '        if (at) pullOnce(coach, at);\n',
   ],
   [
@@ -858,6 +864,92 @@ export const POSITION_MUTANTS = [
     '같은 자리의 완결된 답 뒤에도 받는다 — 쓸 수 있는 답을 그린 뒤 5분 막이를 깨는 받기를 부른다(끝 판 카본 A1)',
     '      if (samePosition(current, at)) redraw();\n',
     '      if (samePosition(current, at)) {\n        redraw();\n        pullOnce(coach, at);\n      }\n',
+  ],
+  // ── 끝 판 검수(Fable)로 더한 다섯(F3 · F5) ──
+  [
+    'appShell',
+    '학습일 답 끝 판 Fable',
+    '로그아웃 때 지우기 빼기 — 떠난 계정의 학습일 답이 이 기기에 남는다(설계 §21-22 변형 · 끝 판 Fable F3)',
+    'clearMonthAnswer(localStorage,leaving);',
+    '',
+  ],
+  [
+    'appShell',
+    '학습일 답 끝 판 Fable',
+    '동의를 바꾼 뒤 지우기 빼기 — 앞 동의 판의 답이 이 문서 · 다른 탭에 남는다(끝 판 Fable F3)',
+    '.then(()=>{clearMonthAnswer(localStorage,client.snapshot?.accountId);',
+    '.then(()=>{',
+  ],
+  [
+    'appShell',
+    '학습일 답 끝 판 Fable',
+    '동의 바꾸기가 실패하면 지우지 않는다 — 서버는 바뀌었는데 뒤 확인만 실패한 갈래에 열쇠가 남는다(끝 판 Fable F3)',
+    'control.checked=!enabled;clearMonthAnswer(localStorage,client.snapshot?.accountId);',
+    'control.checked=!enabled;',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 Fable',
+    '64줄을 넘는 답을 통째로 버린다 — 가장 열심히 한 학습자에게 문장이 서지 않는다(끝 판 Fable F5 · 고치기 전의 꼴)',
+    '    rows.length <= MONTH_LIMIT &&\n',
+    '    rows.length <= 64 &&\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 Fable',
+    '점수가 아니라 받은 차례로 앞의 64줄을 둔다 — 문장을 고를 점수 큰 단위가 빠진다(끝 판 Fable F5)',
+    'const keptRows = rows => (rows.length <= MONTH_ROWS ? rows : [...rows].sort(byScore).slice(0, MONTH_ROWS));\n',
+    'const keptRows = rows => rows.slice(0, MONTH_ROWS);\n',
+  ],
+  // ── 끝 판 카본(-b 끝판)으로 더한 일곱(A1 · B1 · B2) ──
+  [
+    'shell',
+    '학습일 답 끝 판 카본',
+    '셸이 돌아보기 읽기에 코치를 넘기지 않는다 — 실제 배선(lookbackOf)은 null을 내 서버 길 계정에 문장이 서지 않는다(4-4c 끝 판 카본 A1)',
+    'lineOf:coachNow=>homeNext?.lookback?.(coachNow)||null',
+    'lineOf:coachNow=>homeNext?.lookback?.()||null',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 카본',
+    '완결되지 않은 답을 물을 때의 자리와 견준다 — 묻는 사이 기기가 서버의 자리에 왔는데도 받는다(4-4c 끝 판 카본 B1 · 고치기 전의 꼴)',
+    '        if (at && aheadOf(at, current)) pullOnce(coach, at);\n',
+    '        if (at && aheadOf(at, device)) pullOnce(coach, at);\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 카본',
+    '묻는 사이 기기 자리가 바뀌어도 완결되지 않은 답 뒤에 다시 묻지 않는다 — 열린 판에 문장이 서지 않는다(4-4c 끝 판 카본 B1)',
+    '        else if (!samePosition(current, device)) ask(coach, line, { owner, revision, day, device: current });\n',
+    '',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 카본',
+    '닫힌 코치면 물을 때의 자리로 받는다 — 닫힌 코치가 받은 자리를 채워 뒤에 연 코치의 받기를 막는다(4-4c 끝 판 카본 B1)',
+    '        if (!storage || (storage.unfolded || 0) > 0) return;\n        const current = positionOf(storage.sync?.received);\n',
+    '        if ((storage?.unfolded || 0) > 0) return;\n        const current = positionOf(storage?.sync?.received) ?? device;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 카본',
+    '칸 밖의 내 답이 있어도 완결되지 않은 답 뒤에 받는다 — 접히지 않은 내 답을 두고 받기를 부른다(4-4c 끝 판 카본 B1)',
+    '        if (!storage || (storage.unfolded || 0) > 0) return;\n        const current = positionOf(storage.sync?.received);\n',
+    '        if (!storage) return;\n        const current = positionOf(storage.sync?.received);\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 카본',
+    '밀려난 물음의 답과 실패도 쓴다 — 표지를 보지 않아 앞 판 물음의 실패가 새 코치의 상한을 덮는다(4-4c 끝 판 카본 B2 · 고치기 전의 꼴)',
+    '      if (state.asking?.token !== token) return false;\n      state.asking = null;\n      return true;\n',
+    '      if (state.asking?.token === token) state.asking = null;\n      return true;\n',
+  ],
+  [
+    'monthAnswer',
+    '학습일 답 끝 판 카본',
+    '물은 사이 학습일이 넘어간 답도 쓴다 — 어제 답이 다른 탭의 오늘 답을 덮는다(4-4c 끝 판 카본 B2)',
+    '        return dayOf() === day;\n',
+    '        return true;\n',
   ],
 ];
 

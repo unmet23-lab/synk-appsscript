@@ -6,7 +6,8 @@
 //   보일 때는 기기가 지금 받은 요약의 자리(coach summary().storage.sync.received)와 답의 자리를 견준다(verdictOf). 캐시 값만 믿고 문장을
 //   짓지 않는다. 아직 칸에 들지 않은 답이 있으면(storage.unfolded > 0) 묻지도, 적지도, 짓지도 않는다.
 //   지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 연습 기록 비우기)은 열쇠를 지우고 세대 수를 올린다. 답이 오면 적기 직전에 물을 때의 세대 수가
-//   지금과 같은지 본다 — 다른 탭에서 로그아웃했거나 같은 계정에서 동의를 끈 뒤의 늦은 답이 적히지 않게.
+//   지금과 같은지 본다 — 다른 탭에서 로그아웃했거나 같은 계정에서 동의를 끈 뒤의 늦은 답이 적히지 않게. 다른 열쇠의 물음(학습일 경계 · 새 판의
+//   코치)에 밀려난 물음과 물은 사이 학습일이 넘어간 물음의 답 · 실패도 버린다.
 // 묻기 · 받기 · 다시 그리기(createMonthAsker)는 셸(world-learning-ui.mjs)이 판을 그릴 때 부른다. 상한이 셋이다(설계 주인 11-16 밤 조건 1 · 2).
 //   묻기 — 물은 뒤 기기 자리가 바뀌었을 때만 다시 묻는다. 완결되지 않았거나 실패한 답 뒤에도 기기 자리가 그대로면 다시 묻지 않는다.
 //   받기(coach.pull) — 기기가 답의 자리보다 뒤처졌을 때 그 답의 자리마다 한 번. 받기가 실패해도 그 자리에서는 다시 부르지 않는다.
@@ -68,10 +69,19 @@ function fresherOf(kept, stored) {
   return aheadOf(stored.at, kept.at) ? stored : kept;
 }
 
+// 학습일 답의 줄 — 서버(엔진 lookbackOfStore)는 조건을 넘은 단위를 자르지 않고 모두 낸다(지도 단위는 293개다). 문장은 점수(misses + reviews)가 큰
+// 단위에서 고르므로(world-lookback-next.mjs pickMonth), 받은 답이 64줄을 넘으면 점수 차례로 앞의 64줄만 둔다. 예전에는 64줄을 넘는 답을 통째로
+// 버려, 가장 열심히 한 학습자에게 문장이 서지 않았다(4-4c 끝 판 Fable F5). 받는 꼴 검사는 그보다 넉넉한 MONTH_LIMIT까지 본다.
+const MONTH_ROWS = 64;
+const MONTH_LIMIT = 4096;
+const byScore = (a, b) =>
+  b.misses + b.reviews - (a.misses + a.reviews) || (a.unit < b.unit ? -1 : a.unit > b.unit ? 1 : 0);
+const keptRows = rows => (rows.length <= MONTH_ROWS ? rows : [...rows].sort(byScore).slice(0, MONTH_ROWS));
+
 function validMonth(rows) {
   return (
     Array.isArray(rows) &&
-    rows.length <= 64 &&
+    rows.length <= MONTH_LIMIT &&
     rows.every(
       row =>
         plain(row) &&
@@ -225,12 +235,27 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     const key = `${owner}|${revision}|${day}`;
     if (state.asking?.key === key) return;
     if (state.tried?.key === key && samePosition(state.tried.from, device)) return;
-    // 물음마다 표지 — 비운 뒤 다시 물었을 때 앞 물음의 늦은 답이 새 물음의 「묻는 중」을 지우지 않게.
+    // 물음마다 표지 — 이 물음이 아직 지금 물음인지 가린다. 상자를 비웠거나(reset) 다른 열쇠의 물음(학습일 04:00 경계 · 동의 판이 바뀐 새 코치)이
+    // 이 물음을 밀어냈으면, 늦은 답과 실패는 「묻는 중」도, 이 문서의 답 · 저장소 · 상한 · 받은 자리도 건드리지 않는다. 밀려난 어제 물음의 답이
+    // 오늘 답을 덮으면 다시 그리기에서 오늘 답이 사라져 같은 자리에서 다시 묻고, 옛 판 물음의 실패가 새 코치의 상한을 덮는다(4-4c 끝 판 카본 B2).
     const token = {};
     state.asking = { key, token };
     const since = answers.generation();
+    // 이 물음이 지금 물음이면 「묻는 중」을 비우고 참을 낸다.
     const settle = () => {
-      if (state.asking?.token === token) state.asking = null;
+      if (state.asking?.token !== token) return false;
+      state.asking = null;
+      return true;
+    };
+    // 답이 왔을 때 아직 그 계정 · 문서 · 세대 · 학습일인가. 물은 사이 학습일이 넘어갔으면 어제 열쇠의 답은 쓸 데가 없고, 적으면 다른 탭이 적은
+    // 오늘 답을 덮는다(카본 B2). 동의 판은 코치마다 하나라(판이 바뀌면 새 코치가 새 열쇠로 묻는다) 표지가 가린다.
+    const still = () => {
+      if (!alive(owner) || since !== answers.generation()) return false;
+      try {
+        return dayOf() === day;
+      } catch {
+        return false;
+      }
     };
     const missed = code => {
       state.tried = { key, from: device };
@@ -241,16 +266,23 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
     };
     const reply = got => {
-      settle();
-      // 그 계정 · 문서가 아니거나 물은 사이 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 돌았으면, 늦은 답은 완결이든 아니든 들지도 적지도 다시
-      // 그리지도 않고 상한 · 받은 자리도 건드리지 않는다 — 앞 세대 답이 새 세대의 tried · pulled를 채우면 지금 코치가 꼭 해야 할 받기를
-      // 건너뛴다(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2).
-      if (!alive(owner) || since !== answers.generation()) return;
+      // 밀려난 물음이거나, 그 계정 · 문서가 아니거나, 물은 사이 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 돌았거나 학습일이 넘어갔으면, 늦은 답은
+      // 완결이든 아니든 들지도 적지도 다시 그리지도 않고 상한 · 받은 자리도 건드리지 않는다 — 앞 세대 답이 새 세대의 tried · pulled를 채우면 지금
+      // 코치가 꼭 해야 할 받기를 건너뛴다(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2 · 카본 B2).
+      if (!settle() || !still()) return;
       const at = positionOf(got?.summaryAt);
       if (got?.complete !== true) {
         missed(lookbackCode(got?.reason));
-        // 서버의 자리가 기기보다 앞서면 그 자리로 한 번 받는다 — 받으면 기기 자리가 바뀌어 다음 그리기가 다시 묻는다.
-        if (at && aheadOf(at, device)) pullOnce(coach, at);
+        // 물을 때의 자리가 아니라 지금 기기 자리와 견준다 — 묻는 사이 받기 알림이 기기를 올렸어도 그 다시 그리기는 「묻는 중」에 막혔다. 닫힌 코치 ·
+        // 칸 밖의 내 답이 있으면 멈춘다(닫힌 코치로 받은 자리를 채우면 뒤 코치의 받기를 막는다 — 4-4c 끝 판 카본 B1).
+        const storage = storageOf(coach);
+        if (!storage || (storage.unfolded || 0) > 0) return;
+        const current = positionOf(storage.sync?.received);
+        if (!current) return;
+        // 서버의 자리가 지금 기기보다 앞서면 그 자리로 한 번 받는다 — 받으면 기기 자리가 바뀌어 다음 그리기가 다시 묻는다.
+        if (at && aheadOf(at, current)) pullOnce(coach, at);
+        // 묻는 사이 기기 자리가 바뀌었다 — 그 자리에서 한 번 다시 묻는다(완결된 답의 FA2와 같은 셈 — 묻기 ≤ 기기 자리가 바뀐 수 + 1).
+        else if (!samePosition(current, device)) ask(coach, line, { owner, revision, day, device: current });
         return;
       }
       const windows = got.lookback?.windows;
@@ -261,7 +293,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
       const storage = storageOf(coach);
       if (!storage || (storage.unfolded || 0) > 0) return; // 물은 사이 칸 밖의 내 답이 섰다 — 그 답이 접힌 뒤 다시 묻는다
-      const answer = shapeOf({ askedFrom: device, at, windows, month });
+      const answer = shapeOf({ askedFrom: device, at, windows, month: keptRows(month) });
       state.kept = { key, answer };
       answers.write(owner, { revision, day, ...answer, since }); // 막힌 저장소면 이 문서의 답(kept)만 남는다
       const current = positionOf(storage.sync?.received);
@@ -276,10 +308,9 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     void Promise.resolve()
       .then(() => line.ask(offsetOf()))
       .then(reply, () => {
-        settle();
-        // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED)과 물은 사이 지우는 길이 돈 물음은 실패로 적지 않는다 — 다른 계정 · 새
-        // 세대의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2).
-        if (alive(owner) && since === answers.generation()) missed('LOOKBACK_FAILED');
+        // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED), 물은 사이 지우는 길이 돈 물음, 밀려난 물음 · 학습일이 넘어간 물음은 실패로
+        // 적지 않는다 — 다른 계정 · 새 세대 · 새 열쇠의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2 · 카본 B2).
+        if (settle() && still()) missed('LOOKBACK_FAILED');
       })
       .catch(() => {
         // 다시 그리기 · 받기의 예외는 묻기를 막지 않는다

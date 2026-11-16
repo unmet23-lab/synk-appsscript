@@ -208,13 +208,17 @@ test('학습 기록 토글 실패 — 계정 다시 읽기가 끝날 때까지 �
   refreshLearning:()=>{calls.push('refresh');return refreshed;},
  };
  const control={checked:true,disabled:false,dataset:{revision:'3'},matches:selector=>selector==='[data-world-learning]'};
- const listen=new Function('account','life','client','home','errorText','profile','town','screen',`'use strict';return (${body});`)(
+ // 듣개 몸이 쓰는 셸의 이름(학습일 답 지우기와 그 저장소)도 넘긴다 — 실패한 갈래에서도 그 계정의 학습일 답을 지운다(4-4c 끝 판 Fable F3).
+ const cleared=[];
+ const listen=new Function('account','life','client','home','errorText','profile','town','screen','clearMonthAnswer','localStorage',`'use strict';return (${body});`)(
   account,{owner:'acct-1',atlasNext:{redecide:()=>calls.push('redecide')}},{snapshot:{accountId:'acct-1'}},
-  {toast:()=>calls.push('toast')},error=>error.message,()=>calls.push('profile'),()=>{},'world-profile');
+  {toast:()=>calls.push('toast')},error=>error.message,()=>calls.push('profile'),()=>{},'world-profile',
+  (storage,accountId)=>cleared.push([storage,accountId]),'local-storage');
  listen({target:control});
  assert.equal(control.disabled,true,'누르면 잠근다');
  for(let i=0;i<5;i+=1)await Promise.resolve();
  assert.deepEqual(calls,['toast','redecide','refresh'],'실패를 알리고 판을 다시 정하고 계정을 다시 읽는다');
+ assert.deepEqual(cleared,[['local-storage','acct-1']],'실패한 갈래에서도 그 계정의 학습일 답을 지운다');
  assert.equal(control.checked,false,'되돌린 값');
  assert.equal(control.disabled,true,'다시 읽기가 끝나기 전에는 잠근 채');
  release({enabled:false,revision:4});
