@@ -104,22 +104,55 @@ button,input{font:inherit;color:inherit}
 #stage[data-space="solio"] .room[data-room="solio"],#stage[data-space="workspace"] .room[data-room="workspace"],#stage[data-space="pulse"] .room[data-room="pulse"]{display:block}
 .say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
 .say .then{display:block;color:var(--dim)}
-.rows{margin-top:clamp(34px,8vh,84px);display:grid}
-.row{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 6.2em minmax(190px,auto);align-items:center;column-gap:clamp(16px,2.4vw,36px);
-  padding:17px 0;border-top:1px solid var(--hair);color:var(--dim)}
+/* 줄들은 한 격자의 열을 같이 쓴다. 한 줄의 글이 길어도 모든 줄의 열이 같이 움직인다 */
+.rows{margin-top:clamp(34px,8vh,84px);display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr) 6.2em minmax(190px,auto);column-gap:clamp(16px,2.4vw,36px)}
+.row{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:center;padding:17px 0;border-top:1px solid var(--hair);color:var(--dim)}
 .row:last-child{border-bottom:1px solid var(--hair)}
-.row.now,.row:hover{color:var(--paper)}
+.row.now,button.row:hover{color:var(--paper)}
 .row{transition:color .25s ease}
 .read{margin:16px 0 0;display:flex;align-items:center;justify-content:space-between;gap:14px;font:var(--small);color:var(--dim)}
 .reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0}
 .reread:hover{border-bottom-color:var(--paper)}
+/* 구독 줄은 누르는 것이다. 누르면 그 구독의 안쪽으로 들어간다 */
+button.row{appearance:none;background:none;border:0;border-top:1px solid var(--hair);border-radius:0;margin:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+button.row:last-child{border-bottom:1px solid var(--hair)}
+button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
+/* 글이나 그림이 가운데를 차지하는 줄(백업, 지난 7일, 요금) */
+.row-plain > :nth-child(2){grid-column:2 / 4}
+.row-plain > :last-child{grid-column:4;justify-self:end}
+.rows-more{margin-top:clamp(18px,3.2vh,30px)}
+.note{font:var(--body);color:var(--dim);transition:color .3s ease}
+.note.ok{color:var(--paper)}
+.nm small{display:block;margin-top:5px;font:var(--small);color:var(--dim)}
+/* 지난 7일: 하루 사용량을 가는 세로선 일곱 개로 보인다. 오늘만 밝다 */
+.week{display:flex;align-items:flex-end;gap:9px;height:24px}
+.week i{display:block;width:2px;height:var(--h);min-height:1px;background:rgba(243,241,236,.38)}
+.week i.today{background:var(--paper)}
+.up{display:inline-block;margin-bottom:clamp(16px,3vh,30px)}
+.acts{display:flex;gap:22px}
+/* 안쪽으로 들어가면 첫 화면이 물러나고 같은 짜임(한 문장과 줄)의 방이 뜬다 */
+#stage[data-space="solio"][data-sub] .room[data-room="solio"]{display:none}
+#stage[data-space="solio"][data-sub] .room[data-room="solio-detail"]{display:block}
+#stage[data-aside][data-space] .room[data-room]{display:none}
+#stage[data-aside="account"][data-space] .room[data-room="account"],#stage[data-aside="settings"][data-space] .room[data-room="settings"]{display:block}
+.room.enter > *{animation:up .55s cubic-bezier(.2,.7,.2,1) both}
+.room.enter > :nth-child(2){animation-delay:.05s}
+.room.enter > :nth-child(3){animation-delay:.1s}
+.room.enter > :nth-child(4){animation-delay:.15s}
+.room.enter > :nth-child(5){animation-delay:.2s}
+@keyframes up{from{opacity:0;transform:translateY(10px)}}
+#stage.still .room.enter > *{animation:none}
+/* 구를 눌러 여는 화면의 아래: 계정, 설정, 로그아웃 */
+.sw-foot{position:absolute;left:16px;right:16px;bottom:clamp(58px,9vh,92px);margin:0;display:flex;justify-content:center;gap:28px}
+.sw-foot .quiet{border-bottom-color:transparent;color:rgba(243,241,236,.62)}
+.sw-foot .quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
 .rows.again .gauge i{animation:fill .9s cubic-bezier(.2,.7,.2,1) both}
 @keyframes fill{from{width:0}}
 .nm{font:var(--body)}
 .gauge{position:relative;height:1px;background:rgba(243,241,236,.15)}
 /* 급한 줄만 밝다. 넉넉한 줄의 긴 선이 급한 줄의 짧은 선보다 튀지 않게 한다 */
 .gauge i{position:absolute;left:0;top:0;height:1px;width:var(--v);background:rgba(243,241,236,.38);transition:background-color .25s ease}
-.row.now .gauge i,.row:hover .gauge i{background:var(--paper)}
+.row.now .gauge i,button.row:hover .gauge i{background:var(--paper)}
 .gauge i::after{content:"";position:absolute;right:0;top:-4px;width:1px;height:9px;background:inherit}
 .val{font:var(--body);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 .when{font:var(--small);font-variant-numeric:tabular-nums;text-align:right;color:var(--dim);white-space:nowrap}
@@ -159,10 +192,14 @@ button,input{font:inherit;color:inherit}
 #meta button:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
 
 @media (max-width:640px){
-  .row{grid-template-columns:minmax(0,1fr) auto;row-gap:10px;padding:14px 0}
+  .rows{grid-template-columns:minmax(0,1fr)}
+  .row{grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:10px;padding:14px 0}
   .gauge{grid-column:1 / -1;grid-row:2}
   .when{grid-column:1 / -1;grid-row:3;text-align:left}
-  .room{top:clamp(84px,13vh,128px);transform:none}
+  .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
+  .row-plain > :last-child{grid-column:2;grid-row:1}
+  /* 좁은 창에서는 줄이 다 들어가지 않으므로 방 안에서 스크롤한다 */
+  .room{top:clamp(84px,13vh,128px);transform:none;bottom:calc(62px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
   .rows{margin-top:28px}
   #meta{gap:2px 6px;padding:5px 10px;font-size:11px}
   #meta .tag{display:none}
@@ -172,10 +209,13 @@ button,input{font:inherit;color:inherit}
   .room{top:47%}
   .rows{margin-top:22px}
   .row{padding:10px 0}
+  .rows-more{margin-top:8px}
+  .up{margin-bottom:10px}
   #meta{bottom:8px;padding:3px 12px}
 }
 @media (prefers-reduced-motion:reduce){
   .layer,.rise,.way,.sw,#meta{transition-duration:.01s !important;transition-delay:0s !important}
+  .room.enter > *{animation:none}
 }
 </style>
 </head>
@@ -208,13 +248,31 @@ button,input{font:inherit;color:inherit}
 
     <div class="room" data-room="solio">
       <p class="say rise" style="--i:1">Codex가 내일 오후에 바닥납니다.<span class="then">Claude와 Gemini는 이번 주 내내 넉넉합니다.</span></p>
-      <div class="rows" role="list" aria-label="구독별 남은 양">
-        <div class="row rise" style="--i:3" role="listitem"><span class="nm">Claude</span><span class="gauge" aria-hidden="true"><i style="--v:64%"></i></span><span class="val">64% 남음</span><span class="when">목 09:00 초기화</span></div>
-        <div class="row now rise" style="--i:4" role="listitem"><span class="nm">Codex</span><span class="gauge" aria-hidden="true"><i style="--v:12%"></i></span><span class="val">12% 남음</span><span class="when">토 14:00 초기화</span></div>
-        <div class="row rise" style="--i:5" role="listitem"><span class="nm">Gemini</span><span class="gauge" aria-hidden="true"><i style="--v:88%"></i></span><span class="val">88% 남음</span><span class="when">일 00:00 초기화</span></div>
-        <div class="row rise" style="--i:6" role="listitem"><span class="nm">Higgsfield</span><span class="gauge" aria-hidden="true"><i style="--v:41%"></i></span><span class="val">41% 남음</span><span class="when">1,240 / 3,000 크레딧 · 12월 3일 결제</span></div>
+      <div class="rows" role="group" aria-label="구독별 남은 양">
+        <button type="button" data-svc="claude" class="row rise" style="--i:3"><span class="nm">Claude</span><span class="gauge" aria-hidden="true"><i style="--v:64%"></i></span><span class="val">64% 남음</span><span class="when">목 09:00 초기화</span></button>
+        <button type="button" data-svc="codex" class="row now rise" style="--i:4"><span class="nm">Codex</span><span class="gauge" aria-hidden="true"><i style="--v:12%"></i></span><span class="val">12% 남음</span><span class="when">토 14:00 초기화</span></button>
+        <button type="button" data-svc="gemini" class="row rise" style="--i:5"><span class="nm">Gemini</span><span class="gauge" aria-hidden="true"><i style="--v:88%"></i></span><span class="val">88% 남음</span><span class="when">일 00:00 초기화</span></button>
+        <button type="button" data-svc="higgsfield" class="row rise" style="--i:6"><span class="nm">Higgsfield</span><span class="gauge" aria-hidden="true"><i style="--v:41%"></i></span><span class="val">41% 남음</span><span class="when">1,240 / 3,000 크레딧 · 12월 3일 결제</span></button>
       </div>
       <p class="read rise" style="--i:7"><span id="read-when">방금 읽은 값입니다.</span><button class="reread" id="reread" type="button">다시 읽기</button></p>
+      <div class="rows rows-more">
+        <div class="row row-plain rise" style="--i:8"><span class="nm">백업</span><span class="note" id="backup-note">아직 보호를 시작하지 않았습니다.</span><button class="reread" id="backup-go" type="button">보호 시작</button></div>
+      </div>
+    </div>
+
+    <div class="room" data-room="solio-detail">
+      <button class="quiet up" id="detail-back" type="button">구독 전체로</button>
+      <p class="say" id="detail-say" aria-live="polite"></p>
+      <div class="rows" id="detail-rows"></div>
+      <p class="read"><span id="detail-note"></span><span class="acts"><button class="reread" type="button" data-later>계정 더하기</button><button class="reread" type="button" data-later>모델별 토큰</button></span></p>
+    </div>
+    <div class="room" data-room="account">
+      <button class="quiet up" type="button" data-aside-back>돌아가기</button>
+      <p class="say">계정<span class="then">로그인한 계정과 보안을 다루는 자리입니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
+    </div>
+    <div class="room" data-room="settings">
+      <button class="quiet up" type="button" data-aside-back>돌아가기</button>
+      <p class="say">설정<span class="then">소리와 움직임, 업데이트를 다루는 자리입니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
     </div>
 
     <div class="room" data-room="workspace">
@@ -231,6 +289,7 @@ button,input{font:inherit;color:inherit}
       <button class="sw rise" style="--i:0" type="button" data-go="solio"><span class="sw-n">SOLIO</span><span class="sw-d">혼자 하는 사업의 도구</span><span class="sw-now">지금 여기</span></button>
       <button class="sw rise" style="--i:2" type="button" data-go="pulse"><span class="sw-n">PULSE</span><span class="sw-d">고객과 함께 만드는 곳</span><span class="sw-now">지금 여기</span></button>
     </div>
+    <p class="sw-foot rise" style="--i:4"><button class="quiet" type="button" data-foot="account">계정</button><button class="quiet" type="button" data-foot="settings">설정</button><button class="quiet" type="button" data-foot="logout">로그아웃</button></p>
     <button id="sw-close" class="back rise" style="--i:3" type="button">돌아가기<kbd>Esc</kbd></button>
   </section>
 
@@ -378,6 +437,7 @@ function applySpace() {
   stage.dataset.space = space;
   $('#here-text').textContent = { solio: 'SOLIO', workspace: 'WORKSPACE', pulse: 'PULSE' }[space];
   $$('.sw').forEach(b => b.setAttribute('aria-current', String(b.dataset.go === space)));
+  delete stage.dataset.sub; delete stage.dataset.aside;
 }
 
 /* ── 흐름 ── */
@@ -385,7 +445,7 @@ async function boot() {
   const my = ++run;
   stage.classList.remove('still');
   sig.stop(); pointAt(null); S.spin = 0;
-  setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = '';
+  delete stage.dataset.sub; delete stage.dataset.aside; setUI('none'); snap('void'); $('#code').value = ''; $('#ask-status').textContent = '';
   hurry = false; stage.dataset.boot = '1';
   // 다시 켤 때는 날마다 보는 장면이라 짧게 간다(켜서 솔리오까지 3초 남짓).
   await wait(mode === 'back' ? 300 : 520); if (my !== run) return;
@@ -491,15 +551,64 @@ $$('.sw').forEach(b => {
   b.addEventListener('blur', () => pointAt(null));
 });
 layers.switch.addEventListener('pointermove', e => {
-  if (ui !== 'switch' || e.target.closest('.sw,.back')) return;
+  if (ui !== 'switch' || e.target.closest('.sw,.back,.sw-foot')) return;
   const name = placeUnder(e); layers.switch.style.cursor = name ? 'pointer' : '';
   if ((name ? ORDER.indexOf(name) : -1) !== hotWant) pointAt(name, false);
 });
 layers.switch.addEventListener('click', e => {
-  if (ui !== 'switch' || e.target.closest('.sw,.back')) return;
+  if (ui !== 'switch' || e.target.closest('.sw,.back,.sw-foot')) return;
   const name = placeUnder(e); if (name) go(name); else closeSwitch();
 });
 $('#sw-close').addEventListener('click', closeSwitch);
+
+/* ── 솔리오 안쪽. 구독 줄을 누르면 그 구독의 방으로 들어간다. 방은 첫 화면과 같은 짜임(한 문장과 줄)이다. 숫자는 예시 값이다 ── */
+const SVC = {
+  claude: { say: 'Claude는 초기화 전에 바닥나지 않습니다.', then: '목요일 09:00에 다시 찹니다.', acc: [['업무용', 64, '64% 남음', '목 09:00 초기화', 1]], week: [7, 9, 12, 8, 10, 6, 9], avg: '하루 평균 9%', plan: '월 290,000원', pay: '다음 결제 12월 9일' },
+  codex: { say: 'Codex는 내일 오후 3시쯤 막힙니다.', then: '토요일 14:00에 다시 찹니다.', acc: [['업무용', 12, '12% 남음', '토 14:00 초기화', 1], ['개인', 0, '막힘', '목 09:00에 다시 열림', 0]], week: [8, 14, 11, 19, 16, 9, 21], avg: '하루 평균 14%', plan: '월 290,000원', pay: '다음 결제 12월 2일' },
+  gemini: { say: 'Gemini는 넉넉합니다.', then: '일요일 00:00에 다시 찹니다.', acc: [['업무용', 88, '88% 남음', '일 00:00 초기화', 1]], week: [2, 1, 4, 2, 0, 1, 2], avg: '하루 평균 2%', plan: '월 360,000원', pay: '다음 결제 12월 11일' },
+  higgsfield: { say: 'Higgsfield는 결제일까지 남습니다.', then: '12월 3일에 3,000크레딧이 다시 찹니다.', acc: [['업무용', 41, '1,240 크레딧', '3,000 가운데', 1]], week: [3, 0, 6, 2, 9, 0, 4], avg: '하루 평균 80크레딧', plan: '월 360,000원', pay: '다음 결제 12월 3일' },
+};
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+/* 방이 바뀔 때 안의 것들이 차례로 떠오른다 */
+function flashRoom(name) { const r = $('.room[data-room="' + name + '"]'); r.classList.remove('enter'); void r.offsetWidth; r.classList.add('enter'); }
+function openDetail(svc) {
+  const d = SVC[svc]; if (!d || ui !== 'app') return;
+  const say = $('#detail-say'); say.textContent = d.say; say.appendChild(el('span', 'then', d.then));
+  const rows = $('#detail-rows'); rows.textContent = ''; $('#detail-note').textContent = '';
+  for (const [name, v, val, when, using] of d.acc) {
+    const r = el('div', 'row' + (using ? ' now' : '')), nm = el('span', 'nm', name);
+    if (using && d.acc.length > 1) nm.appendChild(el('small', '', '지금 쓰는 계정'));
+    const g = el('span', 'gauge'), bar = el('i'); g.setAttribute('aria-hidden', 'true'); bar.style.setProperty('--v', v + '%'); g.appendChild(bar);
+    r.append(nm, g, el('span', 'val', val), el('span', 'when', when)); rows.appendChild(r);
+  }
+  const w = el('div', 'row row-plain'), wk = el('span', 'week'), top = Math.max(...d.week, 1);
+  wk.setAttribute('role', 'img'); wk.setAttribute('aria-label', '지난 7일의 하루 사용량');
+  d.week.forEach((x, k) => { const b = el('i', k === d.week.length - 1 ? 'today' : ''); b.style.setProperty('--h', Math.round(x / top * 100) + '%'); wk.appendChild(b); });
+  w.append(el('span', 'nm', '지난 7일'), wk, el('span', 'val', d.avg)); rows.appendChild(w);
+  const p = el('div', 'row row-plain'); p.append(el('span', 'nm', '요금'), el('span', 'note', d.plan), el('span', 'val', d.pay)); rows.appendChild(p);
+  stage.dataset.sub = svc; flashRoom('solio-detail'); snd.tick();
+  if (!stage.classList.contains('still')) $('#detail-back').focus({ preventScroll: true });
+}
+function closeDetail() {
+  const svc = stage.dataset.sub; if (!svc) return;
+  delete stage.dataset.sub; flashRoom('solio');
+  const b = $('button.row[data-svc="' + svc + '"]'); if (b) b.focus({ preventScroll: true });
+}
+/* 계정과 설정은 어느 공간에 있든 열린다. 닫으면 있던 방으로 돌아온다 */
+function openAside(name) { stage.dataset.aside = name; closeSwitch(); flashRoom(name); }
+function closeAside() { if (!stage.dataset.aside) return; delete stage.dataset.aside; flashRoom(space === 'solio' && stage.dataset.sub ? 'solio-detail' : space); }
+$$('button.row[data-svc]').forEach(b => b.addEventListener('click', () => openDetail(b.dataset.svc)));
+$('#detail-back').addEventListener('click', closeDetail);
+$$('[data-aside-back]').forEach(b => b.addEventListener('click', closeAside));
+$$('[data-later]').forEach(b => b.addEventListener('click', () => { $('#detail-note').textContent = '「' + b.textContent + '」는 다음 시안에서 짓습니다.'; }));
+$$('[data-foot]').forEach(b => b.addEventListener('click', () => {
+  snd.tick();
+  if (b.dataset.foot === 'logout') { setMode('first'); boot(); } else openAside(b.dataset.foot);
+}));
+$('#backup-go').addEventListener('click', () => {
+  const n = $('#backup-note'); n.textContent = '안전합니다. 방금 확인했고, 11월 16일에 되살려 보는 시험을 통과했습니다.'; n.classList.add('ok');
+  $('#backup-go').hidden = true; snd.tick();
+});
 
 /* ── 시안 조작 ── */
 const meta = $('#meta');
@@ -524,7 +633,7 @@ stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; });
 document.addEventListener('keydown', e => {
   wakeMeta();
   const typing = e.target instanceof HTMLInputElement;
-  if (e.key === 'Escape') { if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (typing) e.target.blur(); return; }
+  if (e.key === 'Escape') { if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (ui === 'app' && stage.dataset.aside) closeAside(); else if (ui === 'app' && stage.dataset.sub) closeDetail(); else if (typing) e.target.blur(); return; }
   if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((e.key === 'Enter' || e.key === ' ') && stage.dataset.boot && !(e.target instanceof HTMLButtonElement && meta.contains(e.target))) { e.preventDefault(); hurryBoot(); return; }
   if (e.key === 'Enter' && ui === 'ask' && !stage.dataset.wait && !(e.target instanceof HTMLButtonElement)) { $('.way').click(); return; }
@@ -850,8 +959,8 @@ window.__orb = {
     ++run; skip = null;
     if (opt.space) { space = opt.space; applySpace(); }
     const map = { void: ['void', 'none'], rest: ['rest', 'rest'], ask: ['ask', 'ask'], app: ['home', 'app'], switch: ['sw', 'switch'] }[scene];
-    stage.classList.add('still'); resize(); sig.show(opt.sig);
-    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error);
+    delete stage.dataset.sub; delete stage.dataset.aside; stage.classList.add('still'); resize(); sig.show(opt.sig);
+    faceWant = null; snap(map[0]); setUI(map[1]); if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); if (opt.sub) openDetail(opt.sub); if (opt.aside) stage.dataset.aside = opt.aside;
     pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
     if (scene === 'switch') { layoutSwitch(); S.spin = -LON[faceWant || space]; S.ax = faceAx(faceWant || space); }
     draw(performance.now()); return { ...S, W, H };
