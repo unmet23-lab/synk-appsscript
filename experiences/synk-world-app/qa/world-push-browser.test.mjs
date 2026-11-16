@@ -308,9 +308,11 @@ test('WORLD 학습 알림 2단: 동의 → 켜기 → 서비스 워커 알림 �
   // ── C. 아이폰(390): 2단 줄 없이 「아직 앱을 닫은 채로 받을 수 없어요」, 다른 기기에서 켰으면 그 기기로 간다는 말 ──
   // 다른 기기(안드로이드)에서 2단을 켜 둔 계정.
   push.devices.set('https://fcm.googleapis.com/fcm/send/qa-other-device','00000000-0000-4000-8000-0000000000aa');
+   // 상태 응답이 기본 아이폰 안내보다 늦게 도착해도 최종 계정 상태를 확인한다.
+   push.hold=1500;
   {const {context,page}=await device({viewport:VIEWPORTS.phone,userAgent:IPHONE,notifications:false});
    await start(page);await openSettings(page);
-   await page.waitForFunction(()=>/\S/.test(document.querySelector('#panel-content [data-reminder-status]')?.textContent||''));
+    await page.waitForFunction(expected=>(document.querySelector('#panel-content [data-reminder-status]')?.textContent||'').includes(expected),s('reminder.push.status.away'));
    checks.iphone=await page.locator('#panel-content [data-reminder-settings]').innerText();
    assert.equal(await page.locator('#panel-content [data-push-enabled]').count(),0);
    assert.ok(checks.iphone.includes(s('reminder.push.status.away')),checks.iphone);
