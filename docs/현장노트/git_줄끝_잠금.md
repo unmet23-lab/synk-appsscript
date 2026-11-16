@@ -742,6 +742,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `CI=1 node --test --test-reporter=tap tests/ci-wide-dependencies.test.js`를 혼자 돌려 다 통과하면, 내 변경의 시험을 따로 돌린 숫자와 함께 `--시험건너뜀 "<그 시험 · 혼자 통과 · 내 시험 숫자>"`를 붙여 다시 올린다(까닭이 커밋 메시지에 남는다). 내 빌드처럼 무거운 일은 올리기가 끝날 때까지 멈춰 둔다.
 - 다시 확인: 세 번째 실행이 `[올림]` · `origin 확인 ✓`(`86814ae98`), 곧이어 무거운 일 없이 올린 다음 push는 관련 시험 245/245 · 71초(`aec62269b`).
 
+### 흔한 파일 이름(`account.cjs`)을 고치면 관련 시험이 이름만 같은 남의 시험 190개를 골라 15분을 넘기고, 그 시험이 남긴 QA 기록을 다음 `--모두`가 싣는다 (2026-11-17 Claude)
+- 증상: 업무 백업 `engine/src/account.cjs`를 고친 `--실행`이 관련 시험 215개로 900초를 넘겨 「16개 깨짐 · 끝까지 못 봄」으로 멈췄다. 그 가운데 190개는 「글에 이름: account.cjs」로만 골린 desktop · synk-account · synk-world-app · tests/atlas-dating 따위의 시험이었다. 멈춘 뒤 작업본에는 `experiences/synk-world-app/qa/classroom-*/result.json` 둘이 시각과 합성 요청 번호만 바뀐 채 남았고, 다음 `--모두 --실행`이 그 둘을 함께 올렸다(ecbb3f91d).
+- 원인: `tools/관련시험.js`의 ③ 규칙은 시험 글에 바꾼 파일 이름이 적혀 있으면 고른다. `account.cjs`처럼 여러 제품에 있는 이름이면 남의 시험이 대거 걸린다. synk-world-app의 QA 시험은 돌 때마다 추적 중인 `result.json`을 다시 쓴다.
+- 고침: 이름만 겹친 줄을 빼고 실제로 읽는 시험(지도의 「읽음」과 그 제품 폴더 시험)만 `CI=1 node --test`로 따로 돌려 통과를 보고, 그 숫자를 `--시험건너뜀 "<까닭>"`에 적어 올렸다. 섞인 두 기록은 앞 커밋 바이트로 되돌리는 커밋(fba1a687f)을 따로 올렸다. 그 되돌림은 관련 시험이 같은 파일을 다시 쓰므로 `--시험건너뜀`으로 올렸다.
+- 다시 확인: 관련 시험이 멈춘 뒤 다시 올리기 전에 `git status --short`로 내가 고치지 않은 파일이 생겼는지 본다. 생겼으면 `--모두` 대신 내 경로만 적어 올린다. 흔한 이름의 파일을 고칠 때는 미리 보기의 관련 시험 수를 보고, 이름만 겹친 것이 대부분이면 처음부터 위처럼 따로 돌린다.
+
 ### 워크트리에서 바로올리기의 관련 시험이 `experiences/synk-world-app/qa/` 둘을 「Cannot find package 'ts-fsrs'」로 깨뜨린다 — `npm ci --prefix packages/atlas` (2026-11-15 Claude)
 - 증상: 업무 백업만 바꾼 `--실행`이 「관련 시험 깨짐」으로 멈췄고, 깨진 것은 `atlas-next-account.test.mjs` · `world-life-next.test.mjs`의 1번 줄(파일을 읽자마자)이었다. 혼자 돌리면 `ERR_MODULE_NOT_FOUND: Cannot find package 'ts-fsrs' imported from packages/atlas/src/memory/fsrs.mjs`.
 - 원인: 그 시험이 부르는 `packages/atlas`는 자기 `package.json`에 `ts-fsrs`를 두는데(11-10부터), 새로 뜬 워크트리에는 그 폴더의 `node_modules`가 없다. 바뀐 경로와는 무관하다.
