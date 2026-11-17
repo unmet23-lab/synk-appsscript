@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획_몽글.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1117,
+  "lufs": -16
+ },
+ "made": "2026-11-16T23:29:52.103Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "버거 주세요!",
+   "dur": 0.952,
+   "syllablesPerSec": 5.25,
+   "src": "m1.wav",
+   "key": "bfcf0d49e4ecfdc1154f837389232495",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "콜라 주세요!",
+   "dur": 0.921,
+   "syllablesPerSec": 5.43,
+   "src": "m2.wav",
+   "key": "4add538c588a547cd560864f5f40c027",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "아이스크림 주세요!",
+   "dur": 1.255,
+   "syllablesPerSec": 6.37,
+   "src": "m3.wav",
+   "key": "a36398e268a5ea328878635a26a150f6",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "버거 셋!",
+   "dur": 0.705,
+   "syllablesPerSec": 4.26,
+   "src": "m4.wav",
+   "key": "81a5e548bff43779beb7a9236bc9bdde",
+   "words": 2
+  },
+  {
+   "id": "m6",
+   "text": "네!",
+   "dur": 0.448,
+   "syllablesPerSec": 2.23,
+   "src": "m6.wav",
+   "key": "1bfd2133eec58bde731b85f707b72a8e",
+   "words": 1
+  },
+  {
+   "id": "m5",
+   "text": "세… 세트… 주세요…",
+   "dur": 1.692,
+   "syllablesPerSec": 3.55,
+   "src": "m5.wav",
+   "key": "b93a5546275cbad73d5ed5bb38b1a2c6",
+   "words": 3
+  }
+ ]
+}

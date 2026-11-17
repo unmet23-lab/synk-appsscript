@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획_점원.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1117,
+  "lufs": -16
+ },
+ "made": "2026-11-17T01:35:03.774Z",
+ "lines": [
+  {
+   "id": "b1",
+   "text": "네~",
+   "dur": 0.509,
+   "syllablesPerSec": 1.96,
+   "src": "b1.wav",
+   "key": "0e6cf5ecc0fe8d7a8745709a34c2c45d",
+   "words": 1
+  },
+  {
+   "id": "b2",
+   "text": "네!",
+   "dur": 0.495,
+   "syllablesPerSec": 2.02,
+   "src": "b2.wav",
+   "key": "3c994c33fe4cf1e9bbc37099b789a654",
+   "words": 1
+  },
+  {
+   "id": "b3",
+   "text": "버거 셋이요?",
+   "dur": 0.764,
+   "syllablesPerSec": 6.54,
+   "src": "b3.wav",
+   "key": "cd78c15e960771a1b14971c69a0d6f31",
+   "words": 2
+  },
+  {
+   "id": "b4",
+   "text": "버거 셋, 나왔습니다!",
+   "dur": 1.515,
+   "syllablesPerSec": 5.28,
+   "src": "b4.wav",
+   "key": "0e25dc483918599290db36107618147a",
+   "words": 3
+  },
+  {
+   "id": "b5",
+   "text": "아~ 세트! 네~!",
+   "dur": 1.527,
+   "syllablesPerSec": 2.62,
+   "src": "b5.wav",
+   "key": "de0b3b0cd108bfb97945e77a7fe79892",
+   "words": 3
+  }
+ ]
+}

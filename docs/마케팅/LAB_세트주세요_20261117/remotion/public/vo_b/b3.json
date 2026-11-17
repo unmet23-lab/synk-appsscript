@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b3",
+ "text": "버거 셋이요?",
+ "dur": 0.764,
+ "words": [
+  {
+   "text": "버거",
+   "start": 0.02,
+   "end": 0.204
+  },
+  {
+   "text": "셋이요?",
+   "start": 0.286,
+   "end": 0.764
+  }
+ ],
+ "source": {
+  "key": "cd78c15e960771a1b14971c69a0d6f31",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1117,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 129
+ }
+}

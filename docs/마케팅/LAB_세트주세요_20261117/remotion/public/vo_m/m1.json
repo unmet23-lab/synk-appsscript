@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "버거 주세요!",
+ "dur": 0.952,
+ "words": [
+  {
+   "text": "버거",
+   "start": 0.02,
+   "end": 0.281
+  },
+  {
+   "text": "주세요!",
+   "start": 0.342,
+   "end": 0.952
+  }
+ ],
+ "source": {
+  "key": "bfcf0d49e4ecfdc1154f837389232495",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1117,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "패스트푸드 가게 계산대 앞. 한국에서 처음 주문하는 날, 설레는 마음으로 또박또박 신나게 주문한다.",
+   "next": "콜라 주세요!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 546
+ }
+}

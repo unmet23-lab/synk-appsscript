@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e6a8-50b1-7ed2-a35a-84e9d0d98806"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one fixed-camera felt scene with the three burgers and Mongle’s shocked reaction.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle recoils in shock as the proud worker presents three freshly slammed felt burgers."}}
+{"type":"turn.completed","usage":{"input_tokens":120352,"cached_input_tokens":94464,"cache_write_input_tokens":0,"output_tokens":1963,"reasoning_output_tokens":698}}

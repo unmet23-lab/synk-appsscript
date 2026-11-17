@@ -1,0 +1,10 @@
+{"type":"thread.started","thread_id":"01a1e69b-6c78-75d0-8cbc-49b738da3a40"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to keep the base scene consistent while adding the burger and delighted poses.\n"}}
+{"type":"error","message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 12:41 PM."}
+{"type":"turn.failed","error":{"message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 12:41 PM."}}
+{"type":"thread.started","thread_id":"01a1e69c-5e4a-7b31-a897-367e4dff1c50"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to keep the scene fixed and add the burger with the two new poses.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle bounces with delight as the smiling worker presents a felt burger on a red tray."}}
+{"type":"turn.completed","usage":{"input_tokens":145034,"cached_input_tokens":128256,"cache_write_input_tokens":0,"output_tokens":1305,"reasoning_output_tokens":277}}

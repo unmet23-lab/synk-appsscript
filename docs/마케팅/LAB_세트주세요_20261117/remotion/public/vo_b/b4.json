@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b4",
+ "text": "버거 셋, 나왔습니다!",
+ "dur": 1.515,
+ "words": [
+  {
+   "text": "버거",
+   "start": 0.02,
+   "end": 0.222
+  },
+  {
+   "text": "셋,",
+   "start": 0.303,
+   "end": 0.506
+  },
+  {
+   "text": "나왔습니다!",
+   "start": 0.789,
+   "end": 1.515
+  }
+ ],
+ "source": {
+  "key": "0e25dc483918599290db36107618147a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1117,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 136
+ }
+}

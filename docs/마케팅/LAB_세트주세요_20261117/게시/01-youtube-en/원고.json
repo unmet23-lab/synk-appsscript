@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "ko",
+  "title": "I said \"SET\" in Korea… and got 3 burgers 🍔🍔🍔 #learnkorean",
+  "caption": "세트 (se-teu) = combo meal 🍔🍟🥤\n셋 (set) = three — so if you say \"burger SET!\" in Korea, you might get THREE burgers 😂\n\nWords in this video:\n버거 주세요 (beo-geo ju-se-yo) = a burger, please\n콜라 주세요 (kol-la ju-se-yo) = a cola, please\n아이스크림 (a-i-seu-keu-rim) = ice cream\n네 (ne) = yes / sure\n세트 주세요 (se-teu ju-se-yo) = a combo, please\n\nTip: English words in Korean get Korean sounds — burger → 버거 (beo-geo), cola → 콜라 (kol-la).\n\nSYNK LAB\n#learnkorean #studykorean #koreanwords #koreanfood",
+  "pinnedComment": "What would YOU order? Say it in Korean 👇 (버거? 콜라? 세트? 😆)",
+  "alt": [
+    "A needle-felt miniature burger shop counter. It opens on Mongle, a coral felt ghost-like mascot, staring in shock at three burgers lined up on the counter, with the title How I got 3 burgers. Then from the start: Mongle orders in Korean — 버거 주세요 (a burger, please), 콜라 주세요 (a cola, please), 아이스크림 주세요 (ice cream, please) — and the smiling felt shop worker serves each one. Proud, Mongle says 버거 Set!, meaning a combo meal. The worker raises three fingers: 버거 셋이요? — 셋 means three in Korean. Mongle nods 네!, and three burgers slam down on the counter. Back in the wide shot, Mongle weakly says 세… 세트… 주세요… (a combo… please…). The worker laughs, 아~ 세트! 네~!, and slides over a tray with a burger, fries and a drink. Two labels end it: 셋 set = three, 세트 se-teu = combo."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = e42 v10(이해 시험 v3 뒤 7초 말풍선 뜻 줄 · 점원 목소리 · 화면 글 자리를 시험 없이 고침 · 16.4초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.6 LUFS. 표지 cover.png = 9.8초(버거 셋이 쾅 놓인 핵심 장면). 어린이 전용 아님. 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS. 10MB 올림판은 만들지 않았다 — 유튜브 스튜디오는 원본을 그대로 올린다.",
+  "version": "e42-en-v11"
+}
