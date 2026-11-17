@@ -22,6 +22,22 @@ test('릴스 판정 — 계정 평소 재생의 3배 · 최소 조회를 넘은 
   assert.deepEqual(릴스.계정판정({ 핸들: 'x', 상태: '막힘', 까닭: '계정 보호 확인 창' }, { 오늘: '2026-10-28' }), { 핸들: 'x', 상태: '막힘', 까닭: '계정 보호 확인 창', 후보: [] });
 });
 
+test('릴스 판정 — 응답에 올린 때가 없으면 code에서 잰다(11-18: 80편 넘게 읽고도 「릴스 0편 · 튄 편 0」이던 자리)', () => {
+  // 우리 릴스 둘의 실제 예약 시각이다(@synk.mn 10-30 21:00 · 11-15 13:00 KST).
+  assert.equal(new Date(릴스.코드올린때('DfHiHf-DxUl') * 1000).toISOString().slice(0, 16), '2026-10-30T12:00');
+  assert.equal(new Date(릴스.코드올린때('Dfv33Y2jZPR') * 1000).toISOString().slice(0, 16), '2026-11-15T04:00');
+  assert.equal(릴스.코드올린때('BIG1'), null, '짧은 가짜 code는 재지 않는다');
+  // 실제 원자료 꼴(11-17 @enkhsaikhan_bagsh): 올린때 · 길이가 다 null이다.
+  const 옛 = ['DL4_GFGBSUb', 'DTc4BI_gfNg', 'DZlif3sTXJ-', 'DYLqJiSzOkC', 'DXvT9SjTr39', 'DXdVWm_k56a'].map((code) => ({ code, 재생: 7000, 좋아요: 50, 댓글: 1, 올린때: null, 길이: null }));
+  const rec = { 핸들: 'enkhsaikhan_bagsh', 상태: '됨', 릴스: [...옛, { code: 'De1Mhzvyfjx', 재생: 450580, 좋아요: 6488, 댓글: 30, 올린때: null, 길이: null }, { code: '!!', 재생: 5, 올린때: null }] };
+  const r = 릴스.계정판정(rec, { 오늘: '2026-11-17', 기준값: { 배수: 3, 최소조회: 10000 } });
+  assert.equal(r.읽은편, 7, 'code로 올린 때를 잰 편은 판정에 든다');
+  assert.equal(r.날짜없음, 1, '끝내 못 잰 편은 세어 둔다');
+  assert.deepEqual(r.후보.map((p) => [p.id, String(p.날짜).slice(0, 10)]), [['De1Mhzvyfjx', '2026-10-23']]);
+  const 글 = 릴스.글({ 'lab-mn': { 막힘: null, 계정: [r] } }, '2026-11-17');
+  assert.match(글, /릴스 7편[\s\S]*튄 편 1[\s\S]*올린 때를 못 읽어 판정에서 빠진 편 1/);
+});
+
 test('릴스 읽기 — 한 계정에서 막히면 남은 브랜드는 부르지 않고 막힘을 적는다', () => {
   const 출력 = fs.mkdtempSync(path.join(os.tmpdir(), '릴스-'));
   try {

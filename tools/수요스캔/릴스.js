@@ -27,16 +27,32 @@ function 돌리기(job) {
   return JSON.parse(fs.readFileSync(job.out, 'utf8'));
 }
 
+// 릴스 code는 미디어 번호를 64진법으로 적은 것이고, 그 번호의 앞 41비트가 올린 시각이다(밀리초, 2011-08-24 기준).
+// 릴스 탭 응답에 taken_at이 실리지 않아도 올린 때를 잴 수 있다(2026-11-18 — 우리 릴스 셋의 예약 시각과 초까지 맞았다).
+const 코드글자 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const 인스타기준 = 1314220021721n;
+function 코드올린때(code) {
+  if (typeof code !== 'string' || !/^[\w-]{9,12}$/.test(code)) return null;
+  let 번호 = 0n;
+  for (const 글자 of code) 번호 = 번호 * 64n + BigInt(코드글자.indexOf(글자));
+  const 밀리초 = Number((번호 >> 23n) + 인스타기준);
+  // 인스타가 연 2010-10부터 지금 하루 뒤까지만 믿는다. 그 밖이면 code 꼴이 달라진 것이다.
+  return 밀리초 >= Date.UTC(2010, 9, 1) && 밀리초 <= Date.now() + 86_400_000 ? Math.floor(밀리초 / 1000) : null;
+}
+
 // ego 결과(계정 하나) → 틱톡정리와 같은 꼴의 판정
 function 계정판정(rec, { 오늘, 기준값, 창 = 판정.기본.창 }) {
   if (rec.상태 !== '됨') return { 핸들: rec.핸들, 상태: rec.상태, 까닭: rec.까닭 || null, 후보: [] };
-  const 목록 = (rec.릴스 || []).filter((x) => x && x.code && Number.isFinite(x.올린때)).map((x) => ({
+  // 올린 때가 응답에 없으면 code에서 잰다. 11-18까지는 그런 편을 말없이 버려, 릴스를 80편 넘게 읽고도 「릴스 0편 · 튄 편 0」이었다.
+  const 받은 = (rec.릴스 || []).filter((x) => x && x.code).map((x) => ({ ...x, 올린때: Number.isFinite(x.올린때) ? x.올린때 : 코드올린때(x.code) }));
+  const 날짜없음 = 받은.filter((x) => !Number.isFinite(x.올린때)).length;
+  const 목록 = 받은.filter((x) => Number.isFinite(x.올린때)).map((x) => ({
     id: x.code, 날짜: new Date(x.올린때 * 1000).toISOString(), 조회: Number.isFinite(x.재생) ? x.재생 : null,
     길이: Number.isFinite(x.길이) ? Math.round(x.길이) : null, 좋아요: x.좋아요 ?? null, 댓글수: x.댓글 ?? null,
   }));
   const r = 판정.틱톡정리({ 목록, 오늘, 판정: { ...판정.기본.틱톡판정, ...(기준값 || {}) }, 창 });
   return {
-    핸들: rec.핸들, 상태: '됨', 읽은편: 목록.length, 기준: r.기준.중앙값 === null ? null : { 중앙값: r.기준.중앙값, 편수: r.기준.편수 },
+    핸들: rec.핸들, 상태: '됨', 읽은편: 목록.length, 날짜없음, 기준: r.기준.중앙값 === null ? null : { 중앙값: r.기준.중앙값, 편수: r.기준.편수 },
     후보: r.후보.map((p) => ({ id: p.id, 날짜: p.날짜, 조회: p.조회, 배수: p.배수, 길이: p.길이, 좋아요: p.좋아요, 댓글수: p.댓글수, 주소: `https://www.instagram.com/reel/${p.id}/` })),
   };
 }
@@ -50,7 +66,7 @@ function 글(결과, 날짜) {
     if (s.막힘) 줄.push(`**막힘 — ${s.막힘}.** 남은 계정은 부르지 않았다(유호님 손 — 확인 창은 누르지 않는다).`, '');
     for (const a of s.계정) {
       if (a.상태 !== '됨') { 줄.push(`- @${a.핸들} — ${a.상태}${a.까닭 ? `(${a.까닭})` : ''}`); continue; }
-      줄.push(`- @${a.핸들} — 릴스 ${a.읽은편}편 · 중앙 ${a.기준 ? 짧은수(a.기준.중앙값) : '못 잼(5편 안 됨)'} · 튄 편 ${a.후보.length}`);
+      줄.push(`- @${a.핸들} — 릴스 ${a.읽은편}편 · 중앙 ${a.기준 ? 짧은수(a.기준.중앙값) : '못 잼(5편 안 됨)'} · 튄 편 ${a.후보.length}${a.날짜없음 ? ` · **올린 때를 못 읽어 판정에서 빠진 편 ${a.날짜없음}** — 0편이 아니라 못 잰 것이다(릴스읽기.mjs의 taken_at · code 꼴을 본다)` : ''}`);
       for (const p of a.후보) 줄.push(`  - ${p.id}(${짧은수(p.조회)} · ×${p.배수 ?? '—'} · ${String(p.날짜).slice(0, 10)} · ${p.길이 ?? '—'}초 · 좋아요 ${짧은수(p.좋아요)} · 댓글 ${짧은수(p.댓글수)}) ${p.주소}`);
     }
   }
@@ -123,4 +139,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(`❌ ${error.message}`); process.exitCode = 1; }
 }
 
-module.exports = { 계정판정, 읽기, 글 };
+module.exports = { 계정판정, 읽기, 글, 코드올린때 };
