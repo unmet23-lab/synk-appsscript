@@ -87,12 +87,12 @@ $setup = & node (Join-Path $support 'clean-app.cjs') setup $data (Join-Path $Wor
 Expect ($LASTEXITCODE -eq 0) "a local profile set up through the installed worker ($setup)"
 Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'a first backup by the installed run executable'
 $p = Start-Process -FilePath $Probe -ArgumentList @("`"$runExe`"", "`"$(Join-Path $Work 'register.json')`"", '--keep') -Wait -PassThru -NoNewWindow
-Expect ($p.ExitCode -eq 0 -and @(RunTasks).Count -eq 4) "four runs registered ($(@(RunTasks) -join ', '))"
+Expect ($p.ExitCode -eq 0 -and @(RunTasks).Count -eq 5) "five tasks (four runs and the request task) registered ($(@(RunTasks) -join ', '))"
 Set-Content -LiteralPath (Join-Path $state 'keep.txt') -Value 'user state'
-# Every state file but the locks and what the window rewrites when it opens (the installer opens it at the end).
+# Every state file but the locks and what the window rewrites when it opens (the installer opens it at the end), solio\status.json among them (4.13).
 function StateFiles() {
   Get-ChildItem -LiteralPath $state -Recurse -File -Force | Where-Object {
-    $_.Name -notmatch '\.lock$|^(progress|update|notify)\.json$|^native-error\.txt$|\.tmp$' -and $_.FullName -notmatch '\\webview\\'
+    $_.Name -notmatch '\.lock$|^(progress|update|notify)\.json$|^native-error\.txt$|\.tmp$' -and $_.FullName -notmatch '\\webview\\|\\solio\\status\.json$'
   } | ForEach-Object { [pscustomobject]@{ Path = $_.FullName.Substring($state.Length); Hash = (Get-FileHash -LiteralPath $_.FullName).Hash } }
 }
 $stateBefore = @(StateFiles)
@@ -168,7 +168,7 @@ Expect ((Get-FileHash -LiteralPath $app).Hash -eq $built.exeSha256.ToUpperInvari
 Expect ((Get-FileHash -LiteralPath $runExe).Hash -eq $built.runExeSha256.ToUpperInvariant()) 'WorkBackupRun.exe is the 0.7.1 build'
 Expect ((Get-FileHash -LiteralPath (Join-Path $dir 'resources\manifest.json')).Hash -eq $built.resourceManifestSha256.ToUpperInvariant()) 'resources are the 0.7.1 ones'
 Expect (-not (Test-Path -LiteralPath (Join-Path $dir 'WorkBackupRun.exe.old')) -and -not (Test-Path -LiteralPath (Join-Path $dir 'WorkBackup.exe.old'))) 'nothing left moved aside'
-Expect (@(RunTasks).Count -eq 4) "the four runs stay ($(@(RunTasks) -join ', '))"
+Expect (@(RunTasks).Count -eq 5) "the five tasks stay ($(@(RunTasks) -join ', '))"
 Get-Process -Name WorkBackup -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2
 $stateAfter = @(StateFiles)
@@ -193,7 +193,7 @@ while ($clock.Elapsed.TotalMinutes -lt 10 -and $steady -lt 10) {
 }
 $script:results['recoverySeconds'] = [math]::Round($clock.Elapsed.TotalSeconds, 1)
 Expect ((Version) -eq '0.7.2') "0.7.2 installed in place from the recovery key's package ($(Version), $($script:results['recoverySeconds']) s)"
-Expect (@(RunTasks).Count -eq 4) "the four runs stay after the second update ($(@(RunTasks).Count))"
+Expect (@(RunTasks).Count -eq 5) "the five tasks stay after the second update ($(@(RunTasks).Count))"
 Get-Process -Name WorkBackup -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2
 

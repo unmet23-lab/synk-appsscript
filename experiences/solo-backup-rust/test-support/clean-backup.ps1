@@ -81,7 +81,7 @@ $auto = & node (Join-Path $tools 'clean-app.cjs') automatic on
 Expect ($LASTEXITCODE -eq 0) "automatic backup turned on ($auto)"
 $p = Start-Process -FilePath $Probe -ArgumentList @("`"$runExe`"", "`"$(Join-Path $Work 'admin-register.json')`"", '--keep') -Wait -PassThru -NoNewWindow
 $register = Get-Content -LiteralPath (Join-Path $Work 'admin-register.json') -Raw | ConvertFrom-Json
-Expect ($p.ExitCode -eq 0 -and $register.register.ok -eq $true) "the administrator's four runs registered ($($register.register | ConvertTo-Json -Compress))"
+Expect ($p.ExitCode -eq 0 -and $register.register.ok -eq $true) "the administrator's five tasks registered ($($register.register | ConvertTo-Json -Compress))"
 $hourly = @($register.register.tasks | Where-Object { $_ -match '매시간' })[0]
 $count = RunCount $adminState
 $started = $false

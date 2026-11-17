@@ -1,7 +1,7 @@
 # The machine-wide installer, end to end, on a clean Windows runner (STAGE1_DESIGN.md 4.2 「컴퓨터 전체 설치」 · 4.11).
 # PowerShell 7. The runner's administrator installs silently; checks the files against the build receipt, the install
 # folder's permission, the uninstall entry, the Start menu shortcut and its notification identity, no desktop shortcut,
-# the run-task folder's owner and permission; a standard user registers its four runs there the way the app does
+# the run-task folder's owner and permission; a standard user registers its five tasks there the way the app does (four runs and the request task, 4.13)
 # (schedule_probe --keep), cannot run the machine setup or change the folder's permission, and a run of theirs ends at
 # once while the installer's marker is there, and so does the window app; installing again closes a running process from
 # the installed files or, when it cannot (a SYSTEM task's), stops before anything changed, stops at a file something
@@ -117,7 +117,7 @@ $q = Start-Process -FilePath $runExe -ArgumentList '--install' -RedirectStandard
 Expect ($q.ExitCode -eq 0 -and (Get-Content -LiteralPath $setupOut -Raw | ConvertFrom-Json).ok -eq $true) "--install as the administrator succeeds again ($(Get-Content -LiteralPath $setupOut -Raw))"
 Expect ((Service).GetFolder($folderPath).GetSecurityDescriptor(5) -eq $security) 'running --install again leaves the folder as it was'
 
-# 2. The standard user: registers its four runs the way the app does, cannot run the machine setup or change the
+# 2. The standard user: registers its five tasks (four runs and the request task) the way the app does, cannot run the machine setup or change the
 #    folder's permission, and a run of theirs ends at once while the installer's marker is there.
 $registered = Join-Path $Work 'user-register.json'
 $p = Start-Process -FilePath $Probe -ArgumentList @("`"$runExe`"", "`"$registered`"", '--keep') -Credential $credential -LoadUserProfile -WorkingDirectory $Work -Wait -PassThru
@@ -150,7 +150,7 @@ Remove-Item -LiteralPath (Join-Path $dir '.installing')
 Expect ($appCheck -match '\|exit 0$' -and -not (Test-Path -LiteralPath (Join-Path $userState 'ui.lock'))) "the window app ends at once while the marker is there and takes no lock ($appCheck)"
 Expect ($q.ExitCode -eq 0 -and -not (Test-Path -LiteralPath (Join-Path $userState 'runs.jsonl'))) "a run ends at once while the marker is there (exit $($q.ExitCode), $($clock.ElapsedMilliseconds) ms, nothing recorded)"
 $before = @(RunTasks)
-Expect ($before.Count -eq 4) "four runs before installing again ($($before.Count))"
+Expect ($before.Count -eq 5) "five tasks (four runs and the request task) before installing again ($($before.Count))"
 # User state the uninstaller must leave alone (as the app keeps it: %APPDATA%\SynkWorkBackup).
 $marker = Join-Path $userState 'keep.txt'
 New-Item -ItemType Directory -Force -Path $userState | Out-Null
@@ -205,7 +205,7 @@ function Unchanged([string]$what) {
   Expect ((Test-Path -LiteralPath $runExe) -and (Get-FileHash -LiteralPath $runExe).Hash -eq $built.runExeSha256.ToUpperInvariant() -and
     (Get-FileHash -LiteralPath (Join-Path $dir 'WorkBackup.exe')).Hash -eq $built.exeSha256.ToUpperInvariant()) "${what}: both executables are still in place"
   $still = @(RunTasks)
-  Expect ($still.Count -eq 4 -and -not (Compare-Object $before $still)) "${what}: the runs are still there ($($still.Count))"
+  Expect ($still.Count -eq 5 -and -not (Compare-Object $before $still)) "${what}: the runs are still there ($($still.Count))"
   Expect ((Get-ItemProperty -LiteralPath $uninstallKey -ErrorAction SilentlyContinue).DisplayName -eq $product) "${what}: still installed"
 }
 $userHeld = Hold -AsTheUser
@@ -248,7 +248,7 @@ $aside = @(Get-ChildItem -LiteralPath $dir -Force -Filter '*.old') + @(Get-Child
 Expect ($aside.Count -eq 0) "nothing moved aside or marked is left ($(@($aside | ForEach-Object Name) -join ', '))"
 Expect ((Get-FileHash -LiteralPath $runExe).Hash -eq $built.runExeSha256.ToUpperInvariant() -and (Get-FileHash -LiteralPath (Join-Path $dir 'WorkBackup.exe')).Hash -eq $built.exeSha256.ToUpperInvariant()) 'both executables are the built ones again'
 $again = @(RunTasks)
-Expect ($again.Count -eq 4 -and -not (Compare-Object $before $again)) "the second install kept the runs ($($again.Count))"
+Expect ($again.Count -eq 5 -and -not (Compare-Object $before $again)) "the second install kept the runs ($($again.Count))"
 
 # 4. Uninstall (in place, so this waits for it), then what is gone and what stays. If the installer could not close
 #    the SYSTEM process, the uninstaller cannot either: it stops before anything changed (its marker comes after).
@@ -299,7 +299,7 @@ $p = Start-Process -FilePath $Probe -ArgumentList @("`"$runExe`"", "`"$registere
 $r = Get-Content -LiteralPath $registered -Raw | ConvertFrom-Json
 Expect ($p.ExitCode -eq 0 -and $r.register.ok -eq $true -and $r.register.folder -eq '\') "the standard user's runs went to the root folder ($($r.register | ConvertTo-Json -Compress))"
 $runs = @(RunTasks)
-Expect ($runs.Count -eq 4 -and @($runs | Where-Object { $_ -like "$folderPath|*" }).Count -eq 0) "four runs, none in that folder ($($runs -join ', '))"
+Expect ($runs.Count -eq 5 -and @($runs | Where-Object { $_ -like "$folderPath|*" }).Count -eq 0) "five tasks, none in that folder ($($runs -join ', '))"
 Expect ((Run (Join-Path $dir 'uninstall.exe') @('/S', "_?=$dir")) -eq 0) 'the silent uninstall exits 0'
 Expect (@(RunTasks).Count -eq 0) 'the runs are gone'
 Expect ((FolderExists) -and (Service).GetFolder($folderPath).GetSecurityDescriptor(5) -eq $squatted) 'the folder is left to its owner as it was'

@@ -11,7 +11,9 @@ async function fixture() {
   for (const dir of ['repo', 'source', 'output']) await fs.mkdir(path.join(root, dir));
   const repositoryId = 'b'.repeat(64), vaultId = crypto.randomUUID(), calls = [];
   const now = Date.now(), vault = `vault:${vaultId}`, source = path.join(root, 'source');
-  const snap = (c, ago, tags) => ({ id: c.repeat(64), time: new Date(now - ago).toISOString(), hostname: vaultId, paths: [source], tags: [APP, vault, ...tags] });
+  // The backed-up path is a Windows path whatever runs the test: the file catalog only opens Windows-shaped sources
+  // (restore-select.cjs), and the CI also runs these tests on Linux, where the temp folder is not one.
+  const snap = (c, ago, tags) => ({ id: c.repeat(64), time: new Date(now - ago).toISOString(), hostname: vaultId, paths: ['C:\\work'], tags: [APP, vault, ...tags] });
   const fake = { snapshots: [
     snap('f', -60000, [VERIFIED, 'cloud-only']),            // newest, made by a later engine
     snap('d', 0, [VERIFIED]), snap('e', 3 * 86400000, [VERIFIED]),

@@ -6,8 +6,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
 const solio = require('../engine/src/solio.cjs');
+
+// A folder link: a junction on Windows (what `mklink /J` makes, no admin needed), a directory symlink elsewhere, so the
+// CI's Linux run sees the same refusal without a `cmd` it does not have.
+const junction = (link, target) => fs.symlinkSync(target, link, process.platform === 'win32' ? 'junction' : 'dir');
 
 const temp = t => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-solio-')); t.after(() => fs.rmSync(d, { recursive: true, force: true })); return d; };
 const NOW = Date.parse('2026-11-17T03:00:00Z');
@@ -130,7 +133,7 @@ test('requests: claimed by one side only, setup left to the window, leftovers an
   // The window takes the setup, even behind many requests that the run side handles; links and folders are not requests.
   for (let i = 0; i < 70; i++) put(a, name(NOW - 100 - i, `later${String(i).padStart(3, '0')}`), { v: 1, kind: 'run-now' });
   fs.mkdirSync(path.join(a.requests, name(1, 'afolder0')));
-  execFileSync('cmd', ['/c', 'mklink', '/J', path.join(a.requests, name(2, 'ajunctio')), temp(t)]);
+  junction(path.join(a.requests, name(2, 'ajunctio')), temp(t));
   assert.ok(!(await a.names(a.requests)).some(n => n.includes('afolder0') || n.includes('ajunctio')), 'plain files only');
   const windowWants = c => !c.ok || c.value.kind === 'setup';
   assert.equal(await a.pending(windowWants), true, 'a setup is waiting');
@@ -157,7 +160,7 @@ test('requests: a folder that is a junction is refused, so nothing is read or re
   const root = temp(t), elsewhere = temp(t);
   fs.mkdirSync(path.join(root, 'solio'), { recursive: true });
   fs.writeFileSync(path.join(elsewhere, name()), JSON.stringify({ v: 1, kind: 'run-now' }));
-  execFileSync('cmd', ['/c', 'mklink', '/J', path.join(root, 'solio', 'requests'), elsewhere]);
+  junction(path.join(root, 'solio', 'requests'), elsewhere);
   const files = new solio.SolioFiles({ root, now: () => NOW });
   await assert.rejects(files.process({ wants: () => true, handle: async () => ({ result: 'done' }) }), { code: 'SOLIO_FOLDER' });
   assert.ok(fs.existsSync(path.join(elsewhere, name())), 'untouched');
