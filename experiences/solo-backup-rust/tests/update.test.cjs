@@ -127,7 +127,9 @@ test('D0 comes back only when every file and folder is the same, and a sealed ki
   assert.throws(() => data.open(sealed));
 });
 
-test('D0 special entries: a restore must leave out links and names ending in a dot, and say so', { skip: process.platform !== 'win32' && 'Windows junctions' }, (t) => {
+// Not skipped anywhere (an unregistered skip turns conditional-qa red): off Windows Node makes the junction a plain
+// symbolic link, and both kinds are listed the same.
+test('D0 special entries: a restore must leave out links and names ending in a dot, and say so', (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-d0s-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const src = path.join(dir, 'src'), back = path.join(dir, 'back');
   data.make(src, 1); data.make(back, 1);
