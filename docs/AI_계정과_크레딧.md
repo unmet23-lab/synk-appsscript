@@ -22,7 +22,7 @@
 | Gemini 웹 다섯 줄(카본 검수 · 그림 · 딥리서치) | 그 계정의 웹 사용량 화면 `/usage`(reCAPTCHA가 뜨면 유호님이 체크하신다). 줄마다 하루 쓰임은 `차례.py gemini 쓰임` |
 | OpenAI API(받아쓰기) | ego에서 플랫폼 결제 화면을 읽는다. 읽는 명령은 없다 |
 | 힉스필드 | MCP `balance` — 어느 계정인지도 함께 나온다 |
-| 드리미나 울트라 | 드리미나 CLI `auth account --profile ultra`를 Bash 도구로 읽는다. PowerShell 도구로 읽으면 로그인이 풀린 것처럼 나온다 |
+| 드리미나 | 드리미나 CLI `auth account --profile unmet23`(주 계정, Advanced)과 `--profile ultra`(77yuhbs)를 Bash 도구로 읽는다. `availableCredits`가 지금 잔액이다. PowerShell 도구로 읽으면 로그인이 풀린 것처럼 나온다. 11-17 unmet23은 20,918이었다 |
 | 허깅페이스 ZeroGPU | `python -X utf8 tools/허깅페이스.py 한도` |
 | 그록 · 일레븐랩스 | 읽는 명령이 없어 웹 화면을 본다 |
 

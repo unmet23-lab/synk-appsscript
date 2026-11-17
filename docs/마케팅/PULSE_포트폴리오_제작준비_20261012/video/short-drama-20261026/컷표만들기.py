@@ -22,6 +22,14 @@ from pathlib import Path
 편 = Path(__file__).resolve().parent
 P7 = Path(r"C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7")
 정지 = P7 / "정지컷"
+새시작 = P7 / "시작그림"   # 11-17~ Seedream 5.5로 새로 구워 유호님이 고르신 시작 그림 — 있으면 이것, 없으면 옛 GPT 정지컷
+장면기준컷 = {"회사낮": "1-1", "식탁밤": "1-5", "현관저녁": "1-23", "식탁저녁": "1-29", "카페낮": "1-44", "세탁밤": "2-1",
+            "현관밤": "2-10", "현관주말아침": "2-14", "흰바탕": "2-22", "침실밤": "2-30"}   # 11-17 유호님 「추천대로 정해」(1-1은 1화 시험과 함께 고르심)
+
+
+def 그림(컷, 옛=None):
+    새 = 새시작 / f"{컷}.png"
+    return str(새 if 새.exists() else 정지 / f"{옛 or 컷}.jpg").replace("\\", "/")
 얼굴 = P7 / "ego" / "refs"
 
 컷목록 = json.loads((P7 / "컷목록.json").read_text(encoding="utf-8"))
@@ -86,7 +94,7 @@ def 장면표():
         # 옛 웹 판 지시문의 그림 번호 꼬리(「Image 8 shows this same office …」)는 판마다 번호가 달라 표 문장에서 뺀다(11-17) — 참조 그림은 컷 지시문의 REFS 줄이 부른다
         장소 = re.sub(r"\s*Image \d+ shows this same [^.]*?described above\.", "", 장소 or "")
         out[이름] = {"장소": 장소 or "", "빛": 빛, "빛이름": 빛이름[이름], "시간대": 시간대[이름], "실내": True,
-                    "기준그림": str(정지 / f"{cs[0]}.jpg").replace("\\", "/")}
+                    "기준그림": 그림(장면기준컷[이름], cs[0]) if (새시작 / f"{장면기준컷[이름]}.png").exists() else 그림(cs[0])}
     return out
 
 
@@ -134,10 +142,10 @@ def 인물표():
 소품 = {
     "빈칸도시락": {"종류": "소품", "낱말": ["lunchbox"], "색": "matte cream-white plastic with a light-oak lid",
                "생김새": "A rectangular two-compartment lunchbox in matte cream-white plastic with a light-oak lid: plain white rice with one red pickled plum in the long compartment, and the small side-dish compartment completely empty.",
-               "기준그림": str(정지 / "1-2.jpg").replace("\\", "/")},
+               "기준그림": 그림("1-2")},
     "꽉찬도시락": {"종류": "소품", "낱말": ["lunchboxes"], "색": "cream-white boxes",
                "생김새": "Two cream-white lunchboxes packed for tomorrow, full of side dishes (rolled omelet, seasoned greens, braised beef, cherry tomatoes) and white rice with black sesame.",
-               "기준그림": str(정지 / "2-43.jpg").replace("\\", "/")},
+               "기준그림": 그림("2-43")},
     # 11-17: 초록 빈 판(후반 바꿔 끼우기)을 버리고 글자를 장면과 한 장으로 굽는다(원칙 6). 라벨은 시안 넷을 2-43 장면에 넣어 보고
     #        유호님이 D(명조)를 고르셨다. 혼인신고서는 실제 양식 배치를 본떠 그린 그림(빈 양식 · 다 쓴 양식)을 넣는다 — 글로만 적으니
     #        작은 칸이 뜻 없는 글자로 나와서다. 세 그림과 그리는 스크립트는 P7/글자시안_1117(서류그리기.py)에 있다.
@@ -153,7 +161,7 @@ def 인물표():
     "새원피스": {"종류": "소품", "낱말": ["slip dress"],   # 11-17: 「dress」는 이안의 「white dress shirt」 · 서진의 「knit dress」와 겹쳐 검사가 29컷을 잘못 짚었다
              "색": "emerald-green satin",
              "생김새": "A new emerald-green satin slip dress with a white paper price tag on a string.",
-             "기준그림": str(정지 / "2-3.jpg").replace("\\", "/")},
+             "기준그림": 그림("2-3")},
 }
 
 글자 = [
@@ -206,20 +214,20 @@ def 컷줄(x):
     누구 = [누구키[n] for n in (s["누구"] if s else []) if n in 누구키]
     길이 = 끝컷길이 if 컷 == "2-48" else round(x["길이"], 2)
     줄 = {"cut": 컷, "t": t, "dur": 길이, "in": 0.8, "out": round(0.8 + 길이, 2), "band": 덩이(x["화"], x["시작"]),
-          "시작그림": str(정지 / f"{컷}.jpg").replace("\\", "/"), "line": x["화면"], "장면": 컷장면[컷], "인물": 누구, "실내": True,
+          "시작그림": 그림(컷), "line": x["화면"], "장면": 컷장면[컷], "인물": 누구, "실내": True,
           "구도": x["화면"].split(" — ")[0], "카메라": x["카메라"]}
     if p and len(p["샷"]) == 2 and p["샷"][1]["컷"] == 컷:   # 두 샷 판의 둘째 컷 — 앞 컷과 한 판(한 방을 둘로 자름)
         앞 = 컷판[p["샷"][0]["컷"]][1]
         줄["in"] = round(0.8 + 앞["쓰는초"], 2)
         줄["out"] = round(줄["in"] + x["길이"], 2)
     if 컷 == "1-14":   # 1-12와 같은 바스트 — 손이 들어와 볼을 누르는 순간(1-12)과 눌린 채 「…미안」(1-14)을 한 판에서 자른다
-        줄["시작그림"] = str(정지 / "1-12.jpg").replace("\\", "/")
+        줄["시작그림"] = 그림("1-12")
         줄["같은판"] = "1-12와 한 판 — 볼을 누르는 손이 들어오는 한 방을 1-13(서진의 숨)을 사이에 두고 둘로 잘라 쓴다(원칙 5)"
         줄["in"], 줄["out"] = 2.4, round(2.4 + 길이, 2)
     if 컷 in 바꾼카메라:   # 02_콘티 8-2 「요즘 기법으로 바꾼 컷」(10-29) — 원본 카메라 판은 대안(<컷>o)으로 남았다
         줄["카메라"] = 바꾼카메라[컷]
     if 컷 == "2-10":   # 「새로」 길의 2-10 — 서진이 카메라 옆을 스쳐 지나가면 복도 끝의 이안이 드러나는 한 판(끝 그림 2-10e)
-        줄["끝그림"] = str(정지 / "2-10e.jpg").replace("\\", "/")
+        줄["끝그림"] = 그림("2-10_끝", "2-10e")
         줄["카메라"] = "가슴 높이 고정 — 거의 움직이지 않고, 0.2 ~ 0.7초 스쳐 가는 서진의 몸이 화면을 덮었다 지나가면 복도 끝에 선 이안이 끝 그림 그대로 보인다(한 판 이어짐)"
     누가, 말, 꼴, _ = 대사(컷, x)
     줄["소리"] = (f"{누가} 「{말}」" + (" — 입 맞춤" if 꼴 == "입 맞춤" else "")) if 누가 else x["말"]
@@ -251,7 +259,7 @@ def 두샷판():
     for p in 주판:
         if len(p["샷"]) == 2:
             a, b = p["샷"][0]["컷"], p["샷"][1]["컷"]
-            out[a] = {"컷": [a, b], "참고그림": [str(정지 / f"{b}.jpg").replace("\\", "/")]}
+            out[a] = {"컷": [a, b], "참고그림": [그림(b)]}
     out["1-12"] = {"컷": ["1-12", "1-14"]}
     for k, v in 목소리판.items():
         out[k] = {"소리만": True, "길이": v["길이"]}
