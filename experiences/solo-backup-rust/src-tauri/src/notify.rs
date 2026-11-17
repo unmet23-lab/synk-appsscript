@@ -10,8 +10,9 @@ use std::{fs, path::Path};
 pub const AUMID: &str = "im.synk.workbackup";
 pub const SCHEME: &str = "synk-workbackup";
 pub const LEDGER: &str = "notify.json";
-/// The screens a notification may open (2.2). 「끊기」 · 「되돌리기」 stay a press away on the screen.
-pub const TOPICS: [&str; 8] = ["status", "folders", "changes", "devices", "restore", "space", "signin", "update"];
+/// The screens a notification may open (2.2). 「끊기」 · 「되돌리기」 stay a press away on the screen. `move` is the 「새 PC로
+/// 옮겨 오기」 screen SYNK 솔리오 opens (4.13) — opening it only shows it, nothing starts until the person presses on.
+pub const TOPICS: [&str; 9] = ["status", "folders", "changes", "devices", "restore", "space", "signin", "update", "move"];
 /// Problems shown once ever rather than once a day.
 const ONCE: [&str; 1] = ["first-backup"];
 const PROBLEMS: [&str; 4] = ["first-backup", "stale", "partial", "missing"];
@@ -43,6 +44,8 @@ pub fn missing() -> Notice {
 pub fn stale(cause: &str) -> Notice {
     let (title, body) = match cause {
         "metered" => ("사흘 넘게 백업하지 못했습니다", "데이터 요금제 회선이라 클라우드 백업을 쉬고 있습니다. 다른 회선에 연결되면 이어집니다."),
+        // 쉬는 회선(4.14): the person chose to rest on this Wi-Fi.
+        "network" => ("사흘 넘게 백업하지 못했습니다", "쉬도록 고른 Wi-Fi에 연결되어 있어 클라우드 백업을 쉬고 있습니다. 다른 회선에 연결되면 이어집니다."),
         "battery" => ("사흘 넘게 백업하지 못했습니다", "배터리로 쓰는 동안 클라우드 백업을 쉬고 있습니다. 전원을 연결하면 이어집니다."),
         "clock" => ("PC 시계가 맞지 않아 백업을 멈췄습니다", "시계를 맞추면 이어집니다. 시계를 확인해 주세요."),
         _ => ("사흘 넘게 백업하지 못했습니다", "무엇이 막혔는지 확인해 주세요."),

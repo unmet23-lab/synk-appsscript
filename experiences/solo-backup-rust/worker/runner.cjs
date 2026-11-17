@@ -12,9 +12,11 @@ const { Profiles, appFolders } = require(path.join(engineRoot, 'src/profiles.cjs
 const { ProvisionClient } = require(path.join(engineRoot, 'src/provision-client.cjs'));
 const { applyStatus, telemetryRun, APP_VERSION } = require(path.join(engineRoot, 'src/account.cjs'));
 const kits = require(path.join(engineRoot, 'src/move-kit.cjs'));
+const solio = require(path.join(engineRoot, 'src/solio.cjs'));
 
-const SKIP = new Set(['battery', 'saver', 'metered']);
-const TRIGGERS = new Set(['hourly', 'logon', 'wake', 'unlock', 'manual', 'test']);
+// `network`: 손님이 쉬도록 고른 Wi-Fi(4.14 「쉬는 회선」). `request`: 솔리오가 깨운 요청 작업(4.13).
+const SKIP = new Set(['battery', 'saver', 'metered', 'network']);
+const TRIGGERS = new Set(['hourly', 'logon', 'wake', 'unlock', 'manual', 'request', 'test']);
 
 // The provisioning server's measurement queue (서버API.md 「측정 받는 꼴」): runs not sent yet, 7 days and 200 at most.
 const QUEUE = 'telemetry-queue.json', WEEK = 7 * 86400000, QUEUE_MAX = 200, SERVER_MS = 20000;
@@ -58,7 +60,18 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
   // paths or settings leave the worker in run mode.
   const progress = () => ({ profiles: Object.fromEntries(Object.entries(profiles.engines).map(([name, e]) =>
     [name, e.job ? { kind: e.job.kind, stage: e.job.stage, percent: e.job.percent } : null])) });
-  profiles.on('state', () => publish(progress()));
+  profiles.on('state', () => { publish(progress()); void status(false); });
+  // 솔리오 상태 파일(4.13): 작업이 도는 동안(5초에 한 번까지)과 회차가 끝날 때 쓴다. 쓰지 못해도 회차는 그대로다.
+  const files = new solio.SolioFiles({ root });
+  let startup = null, statusChain = Promise.resolve();
+  function status(force) {
+    statusChain = statusChain.then(async () => {
+      const value = solio.statusOf({ state: profiles.engines.b2.getState(), version: APP_VERSION, startupRegistered: startup,
+        ledger: await solio.readJson(path.join(root, 'notify.json')), update: await solio.readJson(path.join(root, 'update.json')) });
+      await files.writeStatus(value, { force });
+    }).catch(() => {});
+    return statusChain;
+  }
   // This PC's device of the account, when it was provisioned (device.bin). No Google sign-in is made in a run: the
   // device token reads the status and sends the measurements (4.5 「토큰마다 할 수 있는 일」).
   async function connect() {
@@ -93,9 +106,16 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
       if (!trigger) throw Error('RUN_TRIGGER');
       const skipCloud = input.skipCloud == null ? null : SKIP.has(input.skipCloud) ? input.skipCloud : null;
       if (input.skipCloud != null && !skipCloud) throw Error('RUN_SKIP');
+      // 계기와 상관없이 본 쉼 판단: 요청으로 온 「지금 백업」은 화면에서 누른 것과 달리 이것을 지킨다(4.13).
+      // `rest`를 주지 않은 호출은 `skipCloud`를 쉼 판단으로 쓴다(카본 끝판 CC5).
+      const rest = input.rest == null ? skipCloud : SKIP.has(input.rest) ? input.rest : null;
+      if (input.rest != null && !rest) throw Error('RUN_SKIP');
       if (running || closing) throw Error('RUN_BUSY');
       running = true;
+      let ended = false;
       try {
+        // 작업 스케줄러 등록 여부를 먼저 읽는다. 회차가 도는 동안 쓰는 상태 파일도 그 값을 쓴다(카본 끝판 CC1).
+        startup = await host('startup.read', []).then(v => typeof v === 'boolean' ? v : null, () => null);
         const startedAt = Date.now(), cpu = process.cpuUsage();
         // The server status first (4.5): a seat that moved, a restore running or waiting, an account over its limit,
         // the snapshot a reading PC copies. Offline or slow, the run goes on with what it last knew.
@@ -110,6 +130,15 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
         // A run started by the person ("지금 백업") is the only forced one; the
         // scheduler never forces.
         const results = await profiles.runOnce({ skipCloud, force: trigger === 'manual' });
+        // 솔리오의 요청(4.13): 어느 계기로 돌든 백업 뒤에 요청 폴더를 읽는다. 요청 처리가 실패해도 회차 결과는 그대로다.
+        let requests = [];
+        if (trigger !== 'test' || input.requests === true) {
+          try {
+            const r = await solio.runRequests({ files, engine: profiles.engines.b2, root, rest, result: results.b2, driveSize: solio.driveSize });
+            requests = r.done;
+            if (r.forced) results.b2 = r.forced;
+          } catch { requests = [{ kind: 'all', result: 'failed', reason: 'error' }]; }
+        }
         if (ownCloud(server) && results.b2) measured = { trigger, startedAt, result: results.b2, skipCloud, cpu, fill: null };
         if (trigger !== 'test') await dailyKit({ engine: profiles.engines.b2, host, dir: workRoot || root, resticPath, result: results.b2 }).catch(() => {});
         // When each profile last backed up — a partial snapshot counts — as a time only: the run executable judges
@@ -120,8 +149,14 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
           if (results[name] && engine.config?.automatic) results[name].automatic = true;
         }
         // maxRSS is this worker's peak working set in KB (the T7 measure, 4.3).
-        return { trigger, skipCloud, profiles: results, worker: { maxRssKb: process.resourceUsage().maxRSS } };
-      } finally { running = false; }
+        startup = await host('startup.read', []).then(v => typeof v === 'boolean' ? v : null, () => null);
+        await status(true); ended = true;
+        return { trigger, skipCloud, profiles: results, requests, worker: { maxRssKb: process.resourceUsage().maxRSS } };
+      } finally {
+        // 도중에 끝나도(예외) 마지막 상태를 남긴다. 진행 중이라는 상태가 파일에 남지 않게(카본 끝판 CC3).
+        if (!ended) await status(true);
+        running = false;
+      }
     },
     // The fill after a partial run (4.2 「도우미」): the run executable passes the links the helper made to each drive's
     // shadow copy — none when it could not — and each profile whose newest partial snapshot is due fills from them.
@@ -139,11 +174,11 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
         }
         if (measured && results.b2) measured.fill = results.b2;
         return { profiles: results };
-      } finally { running = false; }
+      } finally { await status(true); running = false; }
     },
     // Every caller waits for the same stop, so a second $shutdown cannot exit before the first has saved (review E1).
     // The run's measurement is queued, and the queue sent, before the worker ends (4.9 · 5.5).
-    stop() { if (!stopped) { closing = true; stopped = profiles.stop().then(() => report().catch(() => {})); } return stopped; }
+    stop() { if (!stopped) { closing = true; stopped = profiles.stop().then(() => status(true)).then(() => report().catch(() => {})); } return stopped; }
   };
 }
 module.exports = { createRunner, dailyKit };

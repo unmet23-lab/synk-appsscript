@@ -27,11 +27,16 @@
 // The binary root looks beside itself for modules; the helper lives in its own folder (`src/bin/run/`).
 // Outside src/bin: the Tauri bundler takes every file and folder there for a program of its own (11-16 CI).
 #[path = "../run_helper.rs"] mod helper;
+// 공간 비우기 1판의 훑기 (4.15) — 회차 실행기만 쓴다.
+#[path = "../space.rs"] mod space;
+// AI 도구의 MCP 보기 도구 (4.16): `--mcp`.
+#[path = "../mcp.rs"] mod mcp;
 use backup_native::{bundle, notify, platform, power, runlog, schedule, secret, worker::Worker};
 use serde_json::{json, Map, Value};
-use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Instant, SystemTime, UNIX_EPOCH}};
+use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Duration, Instant, SystemTime, UNIX_EPOCH}};
 
-const TRIGGERS: [&str; 6] = ["hourly", "logon", "wake", "unlock", "manual", "test"];
+/// `request`: the request task SYNK 솔리오 starts after it leaves a request file (4.13 「읽는 때」).
+const TRIGGERS: [&str; 7] = ["hourly", "logon", "wake", "unlock", "manual", "request", "test"];
 /// Per-profile fields copied into runs.jsonl. Everything else the worker sends
 /// back stays out, so no file name, path or secret reaches the record.
 const FIELDS: [&str; 17] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic", "unreadable", "missing"];
@@ -128,6 +133,12 @@ fn host(method: &str, args: Value) -> Result<Value, String> {
         "secret.decrypt" => { let value = secret::decrypt(first()?)?; Ok(json!(value.as_str())) }
         "folders.snapshot" => backup_native::folders::host(method, &list).unwrap_or_else(|| Err("HOST_METHOD".into())),
         "reinstall.installed" => backup_native::reinstall::host(method, &list).unwrap_or_else(|| Err("HOST_METHOD".into())),
+        // Whether this account's run tasks are all there, for SYNK 솔리오's status file (4.13): read only.
+        "startup.read" => {
+            let exe = std::env::current_exe().map_err(|_| "EXECUTABLE")?;
+            let sid = schedule::current_sid()?;
+            Ok(json!(schedule::registered(&exe, &schedule::account_label(&sid), &sid)?))
+        }
         _ => Err("HOST_METHOD".into()),
     }
 }
@@ -162,6 +173,20 @@ fn record_profiles(result: &Value, started: u64, line: &mut Value) -> &'static s
     let overall = ORDER.iter().copied().find(|o| profiles.values().any(|p| p["outcome"] == *o)).unwrap_or("skipped");
     line["profiles"] = Value::Object(profiles);
     overall
+}
+
+/// What the run did with SYNK 솔리오's requests (4.13): at most 20, each its kind, result and reason words — never a name,
+/// a path or a hint.
+fn record_requests(value: &Value, line: &mut Value) {
+    let word = |v: &Value| v.as_str().filter(|s| !s.is_empty() && s.len() <= 24 && s.bytes().all(|b| b.is_ascii_lowercase() || b == b'-')).map(String::from);
+    let list: Vec<Value> = value["requests"].as_array().into_iter().flatten().take(20).filter_map(|r| {
+        let mut kept = Map::new();
+        kept.insert("kind".into(), json!(word(&r["kind"])?));
+        kept.insert("result".into(), json!(word(&r["result"])?));
+        if let Some(reason) = word(&r["reason"]) { kept.insert("reason".into(), json!(reason)); }
+        Some(Value::Object(kept))
+    }).collect();
+    if !list.is_empty() { line["requests"] = json!(list); }
 }
 
 /// Per-profile fill fields copied into runs.jsonl (4.2 채움 판): counts and reasons, no path.
@@ -208,6 +233,7 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
             now.saturating_sub(at) > notify::STALE_MS || (now < at && p["reason"] == "clock"))).collect();
         let waiting = |p: &Value| match (p["outcome"].as_str(), p["reason"].as_str()) {
             (Some("skipped"), Some("metered")) => Some("metered"),
+            (Some("skipped"), Some("network")) => Some("network"),
             (Some("skipped"), Some("battery" | "saver")) => Some("battery"),
             (Some("skipped"), Some("clock")) => Some("clock"),
             _ => None,
@@ -215,11 +241,31 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
         if !late.is_empty() {
             // One late profile with no known wait (a failure) makes it 「확인하기」: a wait never hides a failure (끝판 b A3).
             let causes: Vec<Option<&str>> = late.iter().map(|p| waiting(p)).collect();
-            let cause = if causes.contains(&None) { "" } else { ["clock", "metered", "battery"].into_iter().find(|c| causes.contains(&Some(*c))).unwrap_or("") };
+            let cause = if causes.contains(&None) { "" } else { ["clock", "metered", "network", "battery"].into_iter().find(|c| causes.contains(&Some(*c))).unwrap_or("") };
             found.push(notify::stale(cause));
         }
     }
     (found, judged)
+}
+
+/// Where the day's space scan walks (4.15): this PC's fixed drives — or, for a test run of a debug build, only the folders
+/// given in SWB_SPACE_ROOTS (never this PC's drives), with SWB_SPACE_TEMP as its temp folder and SWB_SPACE_BUDGET_MS.
+fn space_places(test: bool) -> Option<(space::Places, Duration)> {
+    if !test { return Some((space::Places::from_env(schedule::current_sid().ok()), space::BUDGET)); }
+    if !cfg!(debug_assertions) { return None; }
+    let roots = std::env::var("SWB_SPACE_ROOTS").ok()?;
+    let mut places = space::Places::from_env(None);
+    places.roots = roots.split(';').filter(|r| !r.is_empty()).map(PathBuf::from).collect();
+    places.temp = std::env::var_os("SWB_SPACE_TEMP").map(PathBuf::from);
+    (places.local, places.profile) = (None, None);
+    places.cloud_drives.clear();
+    let budget = std::env::var("SWB_SPACE_BUDGET_MS").ok().and_then(|v| v.parse().ok()).map(Duration::from_millis).unwrap_or(space::BUDGET);
+    Some((places, budget))
+}
+/// Whether this PC has started protection: a run whose every profile is 「not set up」 does not scan (4.15). A run with no
+/// profile record (busy, failed before the worker) is of a PC that has run tasks, so it does.
+fn space_wanted(line: &Value) -> bool {
+    line["profiles"].as_object().is_none_or(|p| p.is_empty() || !p.values().all(|r| r["outcome"] == "skipped" && r["reason"] == "not-configured"))
 }
 
 /// Runs with the state lock held. The worker owns the lock from its start; the
@@ -230,9 +276,10 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
     let checked = Instant::now();
     bundle::verify(&resources, bundle::RUN_SKIP)?;
     line["verifyMs"] = json!(checked.elapsed().as_millis() as u64);
-    let conditions = power::read();
-    // 「지금 백업」 is never rested (4.2 step 3).
-    let skip = if args.trigger == "manual" { None } else { power::skip_reason(&conditions) };
+    let conditions = power::read_in(root);
+    // 「지금 백업」 is never rested (4.2 step 3). A request's 「지금 백업」 is, so the worker also gets the rest itself (4.13).
+    let rest = power::skip_reason(&conditions);
+    let skip = if args.trigger == "manual" { None } else { rest };
     line["power"] = serde_json::to_value(&conditions).unwrap_or(Value::Null);
     line["skipCloud"] = json!(skip);
     let failure: Arc<Mutex<Option<String>>> = Arc::default();
@@ -246,7 +293,7 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
     let result = runtime.block_on(async {
         worker.call("$boot", json!([]), 120_000).await?;
         let ready = clock.elapsed().as_millis() as u64;
-        let value = worker.call("$run", json!([{"trigger": args.trigger, "skipCloud": skip}]), 0).await?;
+        let value = worker.call("$run", json!([{"trigger": args.trigger, "skipCloud": skip, "rest": rest}]), 0).await?;
         // 4.2 step 9: a partial snapshot left out files another program held. The helper's shadow copy links let the
         // worker read them again into a fill; with none (a test run, an account without a helper, a refused volume)
         // the fill still counts as tried, so the next one waits its 4 hours. A failed fill is not a failed run: the
@@ -268,6 +315,7 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
     let (ready, value, fill) = result.map_err(|code| failure.lock().unwrap().clone().unwrap_or(code))?;
     line["workerReadyMs"] = json!(ready);
     let overall = record_profiles(&value, started, line);
+    record_requests(&value, line);
     if let Some((volumes, asked, filled)) = fill {
         line["helper"] = asked.record(&volumes);
         match filled { Ok(result) => record_fills(&result, line), Err(code) => line["fillError"] = json!(code) }
@@ -289,6 +337,12 @@ fn run() -> i32 {
             return helper::serve();
         }
     }
+    // AI 도구의 MCP 보기 도구 (4.16): 표준 입출력 서버. 엔진 잠금을 쥐지 않고, 우선순위는 보통 아래다. 시험 판만 --test-mode를 받는다.
+    let mcp_test = cfg!(debug_assertions) && matches!(argv.as_slice(), [a, b] if a == "--mcp" && b == "--test-mode");
+    if mcp_test || matches!(argv.as_slice(), [a] if a == "--mcp") {
+        below_normal();
+        return match resources() { Ok(resources) => mcp::serve(mcp_test, resources), Err(_) => 70 };
+    }
     let Ok(args) = parse(&argv) else { return 64 };
     // An install or uninstall is replacing this folder's files: end before holding any of them (review GA3).
     if std::env::current_exe().ok().and_then(|exe| exe.parent().map(platform::installing)).unwrap_or(false) { return 0; }
@@ -298,7 +352,7 @@ fn run() -> i32 {
     let mut worker = None;
     // A second handle to the same lock file keeps the lock until the record is written, also when
     // execute() fails before or while starting the worker (review C1).
-    let guard = lock.as_ref().and_then(|f| f.try_clone().ok());
+    let mut guard = lock.as_ref().and_then(|f| f.try_clone().ok());
     let writing = Arc::new(Mutex::new(true));
     let code = match lock {
         // Another process holds the engine lock: a live run (its progress file) or the
@@ -324,6 +378,15 @@ fn run() -> i32 {
     line["end"] = json!(iso(epoch_ms()));
     line["ms"] = json!(clock.elapsed().as_millis() as u64);
     line["exit"] = json!(code);
+    // 공간 비우기 1판 (4.15): the day's first run scans once, after the run — whether it backed up, rested, failed or was
+    // busy — with the engine lock already let go (the scan only reads). Its own time is in `space`, not in `ms`; whatever
+    // happens to it, this run's result above stays.
+    let today: String = schedule::local_now().chars().take(10).collect();
+    if let Some((places, budget)) = space_places(args.test).filter(|_| space_wanted(&line) && space::due(&root, &today)) {
+        drop(worker.take());
+        drop(guard.take());
+        line["space"] = space::daily(&root, &places, &today, budget, epoch_ms());
+    }
     let _ = runlog::append(&root, &line);
     drop(worker); // the state lock goes with the worker and the guard, after the record is written
     drop(guard);
@@ -340,7 +403,7 @@ fn main() { std::process::exit(run()); }
         assert_eq!(parse(&args(&["--test-mode", "--run", "test"])), Ok(Args { trigger: "test", test: true }));
         assert_eq!(parse(&args(&["--run", "test"])), Err("TEST_MODE_REQUIRED".into()));
         for bad in [&["--run"][..], &["--run", "daily"], &["--run", "hourly", "--run", "wake"], &["hourly"], &[], &["--run", "manual", "--background"],
-                    &["--install"], &["--uninstall"], &["--open-app"], &["--run", "hourly", "--install"]] {
+                    &["--install"], &["--uninstall"], &["--open-app"], &["--run", "hourly", "--install"], &["--mcp"], &["--run", "hourly", "--mcp"]] {
             assert!(parse(&args(bad)).is_err(), "{bad:?}");
         }
     }
@@ -384,6 +447,7 @@ fn main() { std::process::exit(run()); }
         assert_eq!(names(&found), [first]);
         for (record, body) in [(json!({"outcome": "failed", "exitCode": 1, "automatic": true, "lastBackupMs": old}), notify::stale("").body),
                                (json!({"outcome": "skipped", "reason": "metered", "automatic": true, "lastBackupMs": old}), notify::stale("metered").body),
+                               (json!({"outcome": "skipped", "reason": "network", "automatic": true, "lastBackupMs": old}), notify::stale("network").body),
                                (json!({"outcome": "skipped", "reason": "saver", "automatic": true, "lastBackupMs": old}), notify::stale("battery").body),
                                (json!({"outcome": "skipped", "reason": "clock", "automatic": true, "lastBackupMs": old}), notify::stale("clock").body),
                                (json!({"outcome": "busy", "reason": "job", "automatic": true, "lastBackupMs": old}), notify::stale("").body),
@@ -439,6 +503,16 @@ fn main() { std::process::exit(run()); }
         assert!(found.is_empty() && judged == ["stale"], "never backed up: judged, and nothing to show");
         assert_eq!(problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now).1, ["partial", "missing", "stale"]);
         assert_eq!(problems(&Value::Null, now), (vec![], vec![]));
+    }
+    #[test] fn requests_are_recorded_as_words_only() {
+        let mut line = json!({});
+        record_requests(&json!({"requests": [{"kind": "run-now", "result": "rested", "reason": "network"}, {"kind": "setup", "result": "done", "hint": "a@b.c"},
+            {"kind": "C:\\x", "result": "done"}, {"kind": "pick", "result": "rejected", "reason": "이름"}]}), &mut line);
+        assert_eq!(line["requests"], json!([{"kind": "run-now", "result": "rested", "reason": "network"}, {"kind": "setup", "result": "done"}, {"kind": "pick", "result": "rejected"}]));
+        let mut none = json!({});
+        record_requests(&json!({"requests": []}), &mut none);
+        assert!(none.get("requests").is_none());
+        assert_eq!(parse(&args(&["--run", "request"])), Ok(Args { trigger: "request", test: false }));
     }
     #[test] fn fills_are_recorded_without_paths_and_a_full_one_is_not_told() {
         let mut line = json!({});

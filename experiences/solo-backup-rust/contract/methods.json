@@ -1,5 +1,8 @@
 {
   "previewRecommended": {"mutating":true,"timeoutMs":1800000,"dialog":false,"allowedReadOnly":true},
+  "setRestNetworks": {"mutating":true,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
+  "setAiTools": {"mutating":true,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
+  "aiToolsState": {"mutating":false,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
   "backupRecommended": {"mutating":true,"timeoutMs":1800000,"dialog":false,"allowedReadOnly":true},
   "startRecommended": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
   "restoreRecommended": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},

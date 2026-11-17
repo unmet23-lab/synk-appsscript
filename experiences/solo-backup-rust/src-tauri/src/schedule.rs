@@ -10,6 +10,10 @@
 //! the run executable ends restic itself before that. Runs that overlap across the
 //! four tasks meet at the engine lock and the second one records 「바쁨」.
 //!
+//! A fifth task, the request task 「요청 - <account> · <SID tag>」 (STAGE1_DESIGN.md 4.13 「읽는 때」), has no trigger: SYNK
+//! 솔리오 starts it (`IRegisteredTask::Run`) after it leaves a request file, and its run (`--run request`) reads the requests
+//! after the backup as every run does. It is made, checked and removed with the four others, in the same place.
+//!
 //! The tasks live in `\SYNK 업무 백업` when the installer made that folder (Administrators
 //! own it — one a standard user made first under that name is never used); otherwise in the
 //! root folder (the user's name in the task name keeps users apart there). Registration never needs administrator rights. The installer makes the
@@ -31,11 +35,11 @@ pub const FOLDER: &str = "\\SYNK 업무 백업";
 const ROOT: &str = "\\";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Trigger { Hourly, Logon, Wake, Unlock }
+pub enum Trigger { Hourly, Logon, Wake, Unlock, Request }
 impl Trigger {
-    pub const ALL: [Trigger; 4] = [Trigger::Hourly, Trigger::Logon, Trigger::Wake, Trigger::Unlock];
-    pub fn arg(self) -> &'static str { match self { Trigger::Hourly => "hourly", Trigger::Logon => "logon", Trigger::Wake => "wake", Trigger::Unlock => "unlock" } }
-    pub fn label(self) -> &'static str { match self { Trigger::Hourly => "매시간", Trigger::Logon => "로그온", Trigger::Wake => "깨어남", Trigger::Unlock => "잠금 해제" } }
+    pub const ALL: [Trigger; 5] = [Trigger::Hourly, Trigger::Logon, Trigger::Wake, Trigger::Unlock, Trigger::Request];
+    pub fn arg(self) -> &'static str { match self { Trigger::Hourly => "hourly", Trigger::Logon => "logon", Trigger::Wake => "wake", Trigger::Unlock => "unlock", Trigger::Request => "request" } }
+    pub fn label(self) -> &'static str { match self { Trigger::Hourly => "매시간", Trigger::Logon => "로그온", Trigger::Wake => "깨어남", Trigger::Unlock => "잠금 해제", Trigger::Request => "요청" } }
 }
 
 /// Characters Task Scheduler refuses in a task name are dropped; at most 40 characters.
@@ -45,7 +49,10 @@ pub fn user_label(name: &str) -> String {
 }
 /// The account's SID goes into the name as a short tag, so two accounts that share a user
 /// name (or a process that inherited another account's USERNAME) never share a task (review GA4).
-pub fn task_name(user: &str, sid: &str, trigger: Trigger) -> String { format!("회차 - {} - {} · {}", user_label(user), trigger.label(), sid_tag(sid)) }
+/// The request task is named apart (「요청 - <account> · <tag>」, 4.13): SYNK 솔리오 finds it by that name.
+pub fn task_name(user: &str, sid: &str, trigger: Trigger) -> String {
+    match trigger { Trigger::Request => format!("요청 - {} · {}", user_label(user), sid_tag(sid)), _ => format!("회차 - {} - {} · {}", user_label(user), trigger.label(), sid_tag(sid)) }
+}
 pub fn sid_tag(sid: &str) -> String { use sha2::{Digest, Sha256}; format!("{:x}", Sha256::digest(sid.as_bytes()))[..6].to_string() }
 
 /// The text of the first `<tag>` element, unescaped (review C2: compare values, not escaped text).
@@ -73,11 +80,14 @@ pub fn task_xml(trigger: Trigger, exe: &Path, sid: &str, start: &str) -> Result<
         Trigger::Logon => format!("<LogonTrigger><Enabled>true</Enabled><UserId>{user}</UserId><Delay>PT2M</Delay></LogonTrigger>"),
         Trigger::Wake => escape_subscription_trigger(),
         Trigger::Unlock => format!("<SessionStateChangeTrigger><Enabled>true</Enabled><StateChange>SessionUnlock</StateChange><UserId>{user}</UserId></SessionStateChangeTrigger>"),
+        // No trigger: SYNK 솔리오 starts it on demand (4.13).
+        Trigger::Request => String::new(),
     };
+    let triggers = if body.is_empty() { "<Triggers />".to_string() } else { format!("<Triggers>{body}</Triggers>") };
     Ok(format!(concat!(
         "<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">",
         "<RegistrationInfo><Author>SYNK 업무 백업</Author><Description>업무 백업 회차({label})</Description></RegistrationInfo>",
-        "<Triggers>{body}</Triggers>",
+        "{triggers}",
         "<Principals><Principal id=\"Author\"><UserId>{user}</UserId><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>",
         "<Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>",
         "<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><AllowHardTerminate>true</AllowHardTerminate><StartWhenAvailable>true</StartWhenAvailable>",
@@ -85,7 +95,7 @@ pub fn task_xml(trigger: Trigger, exe: &Path, sid: &str, start: &str) -> Result<
         "<AllowStartOnDemand>true</AllowStartOnDemand><Enabled>true</Enabled><Hidden>false</Hidden><RunOnlyIfIdle>false</RunOnlyIfIdle><WakeToRun>false</WakeToRun>",
         "<ExecutionTimeLimit>PT72H</ExecutionTimeLimit><Priority>7</Priority></Settings>",
         "<Actions Context=\"Author\"><Exec><Command>{command}</Command><Arguments>--run {arg}</Arguments></Exec></Actions></Task>"),
-        label = trigger.label(), body = body, user = user, command = escape(exe), arg = trigger.arg()))
+        label = trigger.label(), triggers = triggers, user = user, command = escape(exe), arg = trigger.arg()))
 }
 fn escape_subscription_trigger() -> String {
     let query = "<QueryList><Query Id=\"0\" Path=\"System\"><Select Path=\"System\">*[System[Provider[@Name='Microsoft-Windows-Power-Troubleshooter'] and EventID=1]]</Select></Query></QueryList>";
@@ -386,8 +396,12 @@ pub fn is_helper_task_name(name: &str) -> bool {
     name.strip_prefix("도우미 - ").and_then(|rest| rest.rsplit_once(" · ")).is_some_and(|(account, tag)| !account.trim().is_empty() && tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)))
 }
 
-/// Whether `name` is a run-task name as `task_name` makes it: 「회차 - <account> - <trigger> · <6 hex>」.
+/// Whether `name` is a run-task name as `task_name` makes it: 「회차 - <account> - <trigger> · <6 hex>」, or the request task's
+/// 「요청 - <account> · <6 hex>」.
 pub fn is_run_task_name(name: &str) -> bool {
+    if let Some((account, tag)) = name.strip_prefix("요청 - ").and_then(|rest| rest.rsplit_once(" · ")) {
+        return !account.trim().is_empty() && tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b));
+    }
     let Some(rest) = name.strip_prefix("회차 - ") else { return false };
     let Some((head, tag)) = rest.rsplit_once(" · ") else { return false };
     tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
@@ -544,6 +558,8 @@ pub fn local_now() -> String {
     }
     #[test] fn run_task_names_are_recognised() {
         for t in Trigger::ALL { assert!(is_run_task_name(&task_name("유호", SID, t)), "{t:?}"); assert!(is_run_task_name(&task_name("a - b", SID, t))); }
+        assert_eq!(task_name("유호", SID, Trigger::Request), format!("요청 - 유호 · {}", sid_tag(SID)));
+        for other in ["요청 - 유호", "요청 -  · abcdef", "요청 - 유호 · ABCDEF", "요청 - 유호 · abcde"] { assert!(!is_run_task_name(other), "{other}"); }
         for other in ["회차 - 유호 - 매시간", "회차 - 유호 - 매일 · abcdef", "회차 -  - 매시간 · abcdef", "회차 - 유호 - 매시간 · ABCDEF",
                       "회차 - 유호 - 매시간 · abcde", "백업 - 유호 - 매시간 · abcdef", "회차 - 유호 - 매시간 · abcdefa"] { assert!(!is_run_task_name(other), "{other}"); }
     }
@@ -573,6 +589,9 @@ pub fn local_now() -> String {
         assert!(hourly.contains("<Interval>PT1H</Interval>") && !hourly.contains("<Duration>") && hourly.contains("<StartBoundary>2026-11-12T22:00:00</StartBoundary>"));
         assert!(task_xml(Trigger::Logon, exe, SID, "2026-11-12T22:00:00").unwrap().contains("<LogonTrigger><Enabled>true</Enabled><UserId>"));
         assert!(task_xml(Trigger::Unlock, exe, SID, "2026-11-12T22:00:00").unwrap().contains("<StateChange>SessionUnlock</StateChange>"));
+        // The request task (4.13): no trigger at all, its own argument, the same settings as the runs.
+        let request = task_xml(Trigger::Request, exe, SID, "2026-11-12T22:00:00").unwrap();
+        assert!(request.contains("<Triggers />") && !request.contains("Trigger>") && request.contains("<Arguments>--run request</Arguments>"), "{request}");
     }
     #[test] fn action_values_are_compared_unescaped() {
         // Task Scheduler writes an apostrophe back as is; the XML it was given had &apos; (review C2).

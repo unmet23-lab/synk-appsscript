@@ -152,6 +152,62 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
     holder.stdin.end('\n'); await new Promise(ok => holder.once('exit', ok));
   }
 
+  // 솔리오의 요청 작업 (4.13): `--run request`는 백업 뒤에 요청을 처리하고, 기록에는 종류 · 결과 · 까닭 낱말만 남긴다. 이 시험의
+  // 프로필은 외장 드라이브 것이라, 솔리오의 「지금 백업」(클라우드 백업)은 「보호를 시작하지 않음」으로 거절된다.
+  const requests = path.join(state, 'solio', 'requests');
+  fs.mkdirSync(requests, { recursive: true });
+  fs.writeFileSync(path.join(requests, `${Date.now()}-runnow001.json`), JSON.stringify({ v: 1, kind: 'run-now' }));
+  assert.equal(await runExe(['--run', 'request', '--test-mode'], env), 0);
+  const asked = lines(state)[11];
+  assert.equal(asked.trigger, 'request');
+  assert.deepEqual(asked.requests, [{ kind: 'run-now', result: 'rejected', reason: 'not-set-up' }]);
+  assert.equal(asked.space, undefined, 'a test run scans nothing unless it is given folders');
+  const status = JSON.parse(fs.readFileSync(path.join(state, 'solio', 'status.json'), 'utf8'));
+  assert.deepEqual([status.v, status.state], [1, 'not-set-up']);
+
+  // 공간 비우기 1판 (4.15): 그날 처음 도는 회차 끝에 한 번, 엔진 잠금을 놓은 뒤 읽기만 한다. 시험 판은 준 폴더만 훑는다.
+  const scanned = path.join(root, 'scan');
+  fs.mkdirSync(path.join(scanned, 'proj', 'node_modules', 'pkg'), { recursive: true });
+  fs.writeFileSync(path.join(scanned, 'proj', 'package-lock.json'), '{}');
+  fs.writeFileSync(path.join(scanned, 'proj', 'node_modules', 'pkg', 'index.js'), 'module.exports = 1;');
+  const spaceEnv = { ...env, SWB_SPACE_ROOTS: scanned, SWB_SPACE_BUDGET_MS: '60000' };
+  assert.equal(await runExe(['--run', 'hourly', '--test-mode'], spaceEnv), 0);
+  const day = lines(state)[12];
+  assert.deepEqual([day.space?.finished, day.space?.report, day.space?.lapDays], [true, true, 1], JSON.stringify(day.space));
+  assert.ok(Number.isSafeInteger(day.space.ms) && day.space.dirs >= 3 && day.space.files >= 2);
+  assert.equal(day.outcome !== 'failed', true, 'the scan does not change the run');
+  const report = JSON.parse(fs.readFileSync(path.join(state, 'solio', 'space.json'), 'utf8'));
+  assert.ok(/^space-[0-9]+-[0-9a-f]{8}$/.test(report.report) && report.lap.days === 1 && Array.isArray(report.candidates));
+  assert.equal(await runExe(['--run', 'hourly', '--test-mode'], spaceEnv), 0);
+  assert.equal(lines(state)[13].space, undefined, 'once a day');
+
+  // AI 도구의 MCP 보기 도구 (4.16): 표준 입출력으로 한 줄씩 답하고, 입력이 닫히면 끝난다. 상태는 동의 없이, 찾기는 동의 뒤에만.
+  const mcp = async calls => {
+    const child = spawn(exe, ['--mcp', '--test-mode'], { env, stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+    const replies = []; let buf = '';
+    child.stdout.on('data', d => { buf += d; let i; while ((i = buf.indexOf('\n')) >= 0) { replies.push(JSON.parse(buf.slice(0, i))); buf = buf.slice(i + 1); } });
+    for (const m of calls) child.stdin.write(JSON.stringify({ jsonrpc: '2.0', ...m }) + '\n');
+    child.stdin.end();
+    assert.equal(await new Promise(ok => child.once('exit', ok)), 0);
+    return replies;
+  };
+  const tool = (id, name, args = {}) => ({ id, method: 'tools/call', params: { name, arguments: args } });
+  const session = await mcp([{ id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '1' } } },
+    { method: 'notifications/initialized' }, { id: 2, method: 'tools/list' }, tool(3, 'protection_status'), tool(4, 'find_restorable', { query: '보고서' })]);
+  assert.deepEqual(session.map(r => r.id), [1, 2, 3, 4]);
+  assert.equal(session[0].result.protocolVersion, '2025-06-18');
+  assert.deepEqual(session[1].result.tools.map(t => t.name), ['protection_status', 'space_report', 'find_restorable']);
+  assert.equal(session[2].result.structuredContent.state, 'not-set-up');
+  assert.ok(session[3].result.isError && session[3].result.content[0].text.includes('AI 도구'), 'no consent: told where to turn it on');
+  fs.mkdirSync(path.join(state, 'mcp'), { recursive: true });
+  fs.writeFileSync(path.join(state, 'mcp', 'consent.json'), JSON.stringify({ v: 1, tools: { find_restorable: true }, masks: [] }));
+  const found = (await mcp([{ id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18' } }, tool(2, 'find_restorable', { query: '보고서' })]))[1].result;
+  // On a metered connection or a Wi-Fi chosen to rest on, nothing is searched; otherwise the newest backup's file is found.
+  if (!found.isError) assert.ok(found.structuredContent.results.some(r => r.path.endsWith('보고서.txt')), JSON.stringify(found));
+  else assert.ok(found.content[0].text.includes('쉬는 회선'), JSON.stringify(found));
+  const used = fs.readFileSync(path.join(state, 'mcp.jsonl'), 'utf8');
+  assert.ok(!used.includes('보고서') && !used.includes(data), 'the tool log keeps names and counts only');
+
   const text = fs.readFileSync(path.join(state, 'runs.jsonl'), 'utf8');
   for (const p of [root, data, repo, keys, os.homedir()]) {
     for (const form of [p, p.replaceAll(path.sep, '/')]) assert.ok(!text.includes(JSON.stringify(form).slice(1, -1)) && !text.includes(form), 'no path in runs.jsonl');

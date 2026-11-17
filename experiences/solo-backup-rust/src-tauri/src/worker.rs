@@ -10,7 +10,7 @@ type Publish = dyn Fn(Value) + Send + Sync;
 type Failure = dyn Fn(&str) + Send + Sync;
 
 pub struct Worker {
-    input: Mutex<ChildStdin>, child: Mutex<Child>, job: ProcessJob, _lock: File,
+    input: Mutex<ChildStdin>, child: Mutex<Child>, job: ProcessJob, _lock: Option<File>,
     pending: Mutex<HashMap<u64, oneshot::Sender<Reply>>>, next_id: AtomicU64,
     host_count: AtomicUsize, failed: AtomicBool, closing: AtomicBool,
     host: Arc<Host>, publish: Arc<Publish>, failure: Arc<Failure>,
@@ -20,6 +20,13 @@ impl Worker {
     /// `run` starts the worker in scheduled-run mode (SWB_MODE=run): profile
     /// engines only and a single `$run` (worker/runner.cjs, STAGE1_DESIGN.md 4.2).
     pub fn start(resources: &Path, root: &Path, lock: File, test: bool, run: bool, host: Arc<Host>, publish: Arc<Publish>, failure: Arc<Failure>) -> Result<Arc<Self>, String> {
+        Self::start_mode(resources, root, Some(lock), test, run.then_some("run"), host, publish, failure)
+    }
+    /// `mode`: SWB_MODE (`run` — a scheduled run; `mcp` — the read-only MCP tools, STAGE1_DESIGN.md 4.16, which hold no
+    /// engine lock: `lock` is None). None is the window's app mode.
+    #[allow(clippy::too_many_arguments)]
+    pub fn start_mode(resources: &Path, root: &Path, lock: Option<File>, test: bool, mode: Option<&str>, host: Arc<Host>, publish: Arc<Publish>, failure: Arc<Failure>) -> Result<Arc<Self>, String> {
+        if !matches!(mode, None | Some("run") | Some("mcp")) { return Err("WORKER_MODE".into()); }
         let job = ProcessJob::new()?;
         let mut command = Command::new(resources.join("node.exe"));
         command.arg(resources.join("worker/dispatcher.cjs")).current_dir(resources).env_clear();
@@ -29,7 +36,7 @@ impl Worker {
         command.env("SWB_ROOT",root).env("SWB_CACHE_ROOT",crate::platform::cache_dir(root,test)?).env("SWB_RESTIC",resources.join("restic.exe")).env("SWB_ENGINE_ROOT",resources.join("engine"))
             .env("SWB_TEST",if test {"1"}else{"0"}).creation_flags(0x08000000).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
         let client = resources.join("recovery-client.json"); if client.is_file() { command.env("SWB_CLIENT",client); }
-        if run { command.env("SWB_MODE","run"); }
+        if let Some(mode) = mode { command.env("SWB_MODE",mode); }
         let mut child = command.spawn().map_err(|_| "WORKER_SPAWN")?;
         if let Err(error) = job.assign(&child) { let _=child.kill(); let _=child.wait(); return Err(error); }
         let input = child.stdin.take().ok_or("PIPE_FAILED")?;

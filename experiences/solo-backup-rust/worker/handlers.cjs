@@ -12,6 +12,7 @@ const fileSelection = require(path.join(engineRoot, 'src/restore-select.cjs'));
 const { RecommendedBackup } = require(path.join(engineRoot, 'src/recommended.cjs'));
 const { Account, APP_VERSION } = require(path.join(engineRoot, 'src/account.cjs'));
 const { MoveService } = require(path.join(engineRoot, 'src/move-service.cjs'));
+const solio = require(path.join(engineRoot, 'src/solio.cjs'));
 const contract = require('../contract/methods.json');
 
 // 「새 PC로 옮겨 오기」의 입력 (4.6): what each folder's place may be, as the screen sends it.
@@ -33,6 +34,9 @@ function writerChoices(choices) {
 }
 async function createApplication({ host, root, workRoot = null, resticPath, clientPath, publish, testMode = false }) {
   let closing = false, dialogBusy = false, launchAtLogin = false;
+  // 솔리오(STAGE1_DESIGN.md 4.13): 상태 파일, 솔리오가 남긴 「보호 시작」 이어 하기(`setup`), 쉬는 회선(4.14).
+  const solioFiles = new solio.SolioFiles({ root });
+  let solioSetup = null, solioBusy = false, solioAgain = false, restNetworks = await solio.readRestNetworks(root), aiTools = await solio.readAiTools(root);
   const window = null, handlers = new Map();
   const secretStore = {
     encrypt: async value => Buffer.from(await host('secret.encrypt', [value]), 'base64'),
@@ -93,11 +97,43 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   await recommended.open();recommended.onChange=()=>push();
   function state() {
     const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(),
+      solio:{ setup: solioSetup && Date.now() - Date.parse(solioSetup.at) < 1800000 ? { ...solioSetup } : null, restNetworks: [...restNetworks], aiTools },
       move:{ reinstall: reinstallJob ? { ...reinstallJob } : null, progress: moveProgress && cloud().job?.kind === 'move' ? { bytes: moveProgress.bytes, total: moveProgress.total, folder: moveProgress.folder, bytesPerSecond: moveProgress.bytesPerSecond } : null }};
     withRun(value);
     return {...value, protection:protection(value,{startupRegistered:launchAtLogin})};
   }
-  function push() { publish(state()); }
+  // 화면에 새 상태를 알리고 솔리오 상태 파일을 맞춘다. 돌려주는 약속은 상태 파일 쓰기가 끝날 때 풀린다(작업 메서드가 잠금을 쥔 채 기다린다).
+  function push() { publish(state()); return solioStatus(); }
+  // 상태 파일은 이 창이 엔진 잠금을 쥔 동안에만 쓴다. 예약 회차는 도는 내내 잠금을 쥐고 쓰므로 둘이 엇갈려 덮지 않는다(검수 GB1).
+  // 상태 파일을 쓰려고 잠금을 따로 쥐지는 않는다(그 순간 시작한 예약 회차가 「바쁨」으로 끝나지 않게). 이 창이 잠금을 쥔 때 —
+  // 작업 메서드, 창의 작업, 요청 처리, 1분마다의 확인 — 에 쓴다. 쓸 차례가 오면 그 자리에서(첫 기다림 전에) 잠금을 붙들어,
+  // 그사이 작업이 끝나도 쓰기가 끝날 때까지 놓지 않는다(다시 검수 GA1). 잠금을 쥐지 않은 때 바뀐 것은 다음에 쥘 때 쓴다.
+  // 같은 내용이면 쓰지 않는다. 쓰지 못해도 창은 그대로다.
+  let solioRun = Promise.resolve(), solioPin = false;
+  function solioStatus() {
+    if (lockHeld && !solioPin) { lockUsers++; solioPin = true; }
+    if (solioBusy) { solioAgain = true; return solioRun; }
+    solioBusy = true;
+    const make = async () => solio.statusOf({ state: profiles.engines.b2.getState(), version: APP_VERSION, startupRegistered: launchAtLogin,
+      ledger: await solio.readJson(path.join(root, 'notify.json')), update: await solio.readJson(path.join(root, 'update.json')) });
+    solioRun = (async () => {
+      try {
+        do {
+          solioAgain = false;
+          const pinned = solioPin; solioPin = false;
+          // 잠금을 붙들었으면 예약 회차는 돌 수 없다(5초마다 읽는 진행 값이 아직 남아 있어도 쓴다 — 카본 끝판 CB9).
+        try { if (pinned) await solioFiles.writeStatus(await make()); }
+          catch { /* 다음 차례에 다시 쓴다 */ }
+          finally { if (pinned) engineUnlock(); }
+        } while (solioAgain && !closing);
+      } finally {
+        // 마지막 확인과 같은 틈에 끝낸다: 그 뒤에 온 차례는 새로 돌고, 붙든 잠금이 남지 않는다(닫는 중이면 놓는다).
+        if (solioPin) { solioPin = false; engineUnlock(); }
+        solioBusy = false;
+      }
+    })();
+    return solioRun;
+  }
   // A scheduled run's progress (progress.json, read by the host) shows as that profile's
   // job — 「예약 백업 · 단계 N%」 — while this window runs nothing there itself.
   let runProgress = null;
@@ -116,7 +152,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   // Lock and unlock reach the host in the order they were asked (host calls otherwise run on
   // separate threads), and a request counts as a user before its answer arrives, so a job
   // ending meanwhile cannot let the lock go under it (review GA1).
-  let lockUsers = 0, lockChain = Promise.resolve();
+  let lockUsers = 0, lockHeld = false, lockChain = Promise.resolve();
   const jobsRunning = () => Object.values(profiles.engines).some(e => e.job);
   function lockCall(method) { const call = lockChain.then(() => host(method, [])); lockChain = call.catch(() => {}); return call; }
   // Settings reloads run one after another (reviews D2 · D3): an operation waits for a reload
@@ -126,11 +162,12 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   async function engineLock() {
     lockUsers++;
     if ((await lockCall('engine.lock').catch(() => false)) !== true) { engineUnlock(); return false; }
+    lockHeld = true;
     try { await reloadSettings(); } catch (e) { engineUnlock(); throw e; }
     return true;
   }
   function engineUnlock() { lockUsers = Math.max(0, lockUsers - 1); maybeUnlock(); }
-  function maybeUnlock() { if (lockUsers === 0 && !jobsRunning()) void lockCall('engine.unlock').catch(() => {}); }
+  function maybeUnlock() { if (lockUsers === 0 && !jobsRunning()) { lockHeld = false; void lockCall('engine.unlock').catch(() => {}); } }
   for (const engine of Object.values(profiles.engines)) engine.on('idle', maybeUnlock);
   async function setStartup(enabled) { launchAtLogin = await host('startup.set', [enabled]); return launchAtLogin; }
   function launchJob(engine, action) {
@@ -155,7 +192,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
         const context = {engine:profiles.current, selection:profiles.selection};
         if (!read && !switching && !job && context.engine.job) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
         if ((context.engine.config?.readOnly || context.engine.config?.mode === 'restore') && !contract[name].allowedReadOnly) return {ok:false,error:'복구 전용 연결입니다.',code:'READ_ONLY'};
-        try { profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
+        // 답하기 전에 솔리오 상태 파일 쓰기까지 마친다. 그 쓰기가 붙든 잠금이 답한 뒤에 남지 않게 한다(메서드 안에서 잠금을 쥐는 것도).
+        try { profiles.boundaries(); const result=await action(context,...args); await push(); return {ok:true,value:result}; }
         catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message),...(e.code==='RUN_ACTIVE'||(codes&&CODE.test(e.code||''))?{code:e.code}:{}),...(codes&&e.details?{details:e.details}:{})}; }
       } finally { if (claimed) dialogBusy=false; if (held) engineUnlock(); }
     });
@@ -338,7 +376,12 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     const objectInput = input => input && typeof input === 'object' && !Array.isArray(input) ? input : {};
     const sourcesOf = input => Array.isArray(input.sources) ? input.sources : cloud().config?.mode === 'restore' && cloud().config.nextSources?.length ? [...cloud().config.nextSources] : [...profiles.selections.b2.sources];
     function protect() { const engine = cloud(); return launchJob(engine, () => engine.protectNow({ registerStartup: async () => setStartup(true) })); }
-    handle('signInGoogle', async (_context, input) => { await account.signIn({ hint: objectInput(input).hint }); return state(); }, { lock: false, codes: true });
+    handle('signInGoogle', async (_context, input) => { solioSetup = null; await account.signIn({ hint: objectInput(input).hint }); return state(); }, { lock: false, codes: true });
+    // 쉬는 회선(4.14): 손님이 고른 Wi-Fi 이름. 회차 실행기가 그 회선에서는 종량 회선과 같이 쉰다(직접 누른 「지금 백업」만 예외).
+    handle('setRestNetworks', async (_context, names) => { restNetworks = await solio.writeRestNetworks(root, names); return state(); }, { codes: true });
+    // 「AI 도구」(4.16): 도구마다 켜고 끄기와 가리는 낱말. MCP 연결이 알려 온 도구 목록은 그때 다시 읽는다.
+    handle('setAiTools', async (_context, input) => { aiTools = await solio.writeAiTools(root, input); return state(); }, { codes: true });
+    handle('aiToolsState', async () => { aiTools = await solio.readAiTools(root); return aiTools; }, { read: true });
     // 「보호 시작」: the repository and the envelope here, then the schedule and the first backup as a job.
     handle('startProtection', async (_context, input) => {
       const v = objectInput(input); profiles.select('b2');
@@ -468,7 +511,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   async function recoveryTick() {
     if (closing || recovery.busy) return;
     let held = false;
-    try { held = await engineLock(); if (held) await recovery.tick(); } catch { /* next minute */ } finally { if (held) engineUnlock(); }
+    try { held = await engineLock(); if (held) { await recovery.tick(); await solioStatus(); } } catch { /* next minute */ } finally { if (held) engineUnlock(); }
   }
   // The account's look each hour while this window is open, and the envelope read back once a day (4.5). It writes the
   // engine's settings (moved, pins), so it runs under the engine lock like the recovery check.
@@ -497,6 +540,31 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   }
   const timers = [setInterval(() => void recoveryTick(), 60000), setInterval(() => void refreshRun(), 5000), setInterval(() => void accountTick(), 60000)];
   for (const t of timers) t.unref?.();
+  // 솔리오가 남긴 「보호 시작」 이어 하기(`setup`, 4.13): 창이 떠 있는 동안 2초마다 요청 폴더를 본다. 다른 요청(지금 백업 · 공간
+  // 설정 · 고르기)은 쉼 판단이 드는 회차 실행기의 몫이라 남겨 둔다. 요청은 엔진 잠금을 쥐고 차지한다.
+  // 엔진 창이 맡는 요청은 setup과 확인을 넘지 못한 것(거절만 하면 된다)이다. 회차 실행기 몫만 있으면 잠금을 쥐지 않는다. 그래야
+  // 요청 작업이 띄운 회차가 이 창의 잠금에 막혀 「바쁨」으로 끝나지 않는다(카본 끝판 CB2).
+  const windowWants = c => !c.ok || c.value.kind === 'setup';
+  async function solioTick() {
+    if (closing || dialogBusy) return;
+    let held = false;
+    try {
+      if (!(await solioFiles.pending(windowWants))) return;
+      held = await engineLock(); if (!held) return;
+      await solioFiles.ready(); await solioFiles.sweep();
+      const done = await solioFiles.process({ wants: windowWants, handle: async req => {
+        const c = profiles.engines.b2.config;
+        if (c?.movedTo) return { result: 'rejected', reason: 'moved' };
+        // 이미 보호를 시작한 PC는 버린다. 옮겨 오기만 한 PC(복구 전용)는 「보호 시작」만 받는다.
+        if (c?.repositoryId && (req.mode === 'move' || (c.mode === 'backup' && !c.readOnly))) return { result: 'rejected', reason: 'set-up' };
+        solioSetup = { mode: req.mode, hint: req.hint, at: new Date(req.at).toISOString() };
+        return { result: 'done' };
+      } });
+      if (done.length) await push();
+    } catch { /* 다음 차례 */ } finally { if (held) engineUnlock(); }
+  }
+  const solioTimer = setInterval(() => void solioTick(), 2000); solioTimer.unref?.(); timers.push(solioTimer);
+  void solioTick();
   void recoveryTick(); void refreshRun(); void accountTick();
   let startupRefresh = null;
   return {

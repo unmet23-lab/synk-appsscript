@@ -4,7 +4,7 @@
 const {StringDecoder}=require('node:string_decoder');
 const contract=require('../contract/methods.json');
 const MAX_IN=131072,MAX_OUT=2*1024*1024;
-const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,ran=false,filled=false,runWork=Promise.resolve(),shutdownIds=null,booting=false,stopping=false,terminating=false;
+const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,mcp=null,ran=false,filled=false,runWork=Promise.resolve(),shutdownIds=null,booting=false,stopping=false,terminating=false;
 function send(value){const text=JSON.stringify({v:1,...value});if(Buffer.byteLength(text)+1>MAX_OUT)fatal('PAYLOAD_TOO_LARGE');else process.stdout.write(text+'\n');}
 function fatal(code){if(terminating)return;terminating=true;stopping=true;process.stdout.write(JSON.stringify({v:1,fatal:code})+'\n',()=>process.exit(1));setTimeout(()=>process.exit(1),1000).unref();}
 function host(method,args){
@@ -33,6 +33,20 @@ async function message(value){
     const {createRunner}=require('./runner.cjs');
     runner=await createRunner({host,root:process.env.SWB_ROOT,workRoot:process.env.SWB_CACHE_ROOT||null,resticPath:process.env.SWB_RESTIC,publish:state=>send({event:'state',value:state})});
     send({id:value.id,ok:true,value:{mode:'run'}});return;
+  }
+  if(value.method==='$boot'&&process.env.SWB_MODE==='mcp'){
+    // MCP 보기 도구 모드(STAGE1_DESIGN.md 4.16): 읽기 전용 엔진 하나와 짧은 허용 목록(mcp.cjs METHODS)뿐이다.
+    if(booting||mcp)throw Error('DUPLICATE_BOOT');booting=true;
+    const {createMcp}=require('./mcp.cjs');
+    mcp=await createMcp({host,root:process.env.SWB_ROOT,workRoot:process.env.SWB_CACHE_ROOT||null,resticPath:process.env.SWB_RESTIC});
+    send({id:value.id,ok:true,value:{mode:'mcp'}});return;
+  }
+  if(mcp){
+    if(value.method==='$shutdown'){stopping=true;await mcp.stop();send({id:value.id,ok:true,value:null});process.stdin.pause();process.stdout.end(()=>process.exit(0));return;}
+    if(stopping||!mcp.METHODS.includes(value.method))throw Error('INVALID_METHOD');
+    // 실패는 낱말 부호로만 돌려준다(경로가 든 엔진 글은 나가지 않는다).
+    let result;try{result={ok:true,value:await mcp[value.method](value.args[0])};}catch(e){result={ok:false,code:typeof e?.code==='string'&&/^[A-Z][A-Z_]{1,31}$/.test(e.code)?e.code:'FAILED'};}
+    send({id:value.id,ok:true,value:result});return;
   }
   if(value.method==='$run'){
     if(!runner||ran)throw Error('NOT_READY');ran=true;

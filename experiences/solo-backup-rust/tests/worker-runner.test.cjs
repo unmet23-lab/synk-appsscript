@@ -118,6 +118,91 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     assert.ok(r4.frames.some(f => f.fatal === 'WORKER_FAILED'), JSON.stringify(input));
   }
 
+  // Registered with this test (S132): SYNK 솔리오의 요청 · 상태 파일(4.13)과 MCP 보기 도구의 찾기(4.16), 실제 restic으로.
+  await t.test('솔리오: 창은 setup을 받고, 회차는 끝에 요청을 처리해 상태 파일을 남기고, MCP 찾기는 읽기만 한다 (4.13 · 4.16)', async t => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-solio-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const data = path.join(root, 'data'), repo = path.join(root, 'repo'), keys = path.join(root, 'keys'), state = path.join(root, 'state');
+    for (const d of [data, repo, keys, state]) fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(data, '분기 보고서.txt'), 'stage 1 solio');
+    fs.writeFileSync(path.join(data, '건강검진 결과.txt'), 'kept out of the AI by a mask');
+    const requests = path.join(state, 'solio', 'requests'), results = path.join(state, 'solio', 'results');
+    fs.mkdirSync(requests, { recursive: true });
+    const now = Date.now();
+    const put = (tail, value) => fs.writeFileSync(path.join(requests, `${now}-${tail}.json`), JSON.stringify(value));
+    const answer = tail => JSON.parse(fs.readFileSync(path.join(results, `${now}-${tail}.json`), 'utf8'));
+    // The window (app mode) takes a setup left by 솔리오 and tells the screen to go straight to the Google sign-in.
+    put('setup0001', { v: 1, kind: 'setup', mode: 'protect', hint: 'customer@example.com' });
+    const app = worker(state, { dialogs: [
+      { method: 'dialog.open', value: { canceled: false, filePaths: [data] } },
+      { method: 'dialog.open', value: { canceled: false, filePaths: [repo] } },
+      { method: 'dialog.save', value: { canceled: false, filePath: path.join(keys, 'recovery.json') } }] });
+    await app.call('$boot');
+    let setup = null;
+    for (let i = 0; i < 50 && !setup; i++) { setup = (await app.call('getState')).value.value.solio.setup; if (!setup) await new Promise(ok => setTimeout(ok, 200)); }
+    assert.deepEqual([setup?.mode, setup?.hint], ['protect', 'customer@example.com']);
+    assert.equal(answer('setup0001').result, 'done');
+    for (const m of ['chooseSources', 'chooseTarget', 'setup', 'saveRecoveryKit']) assert.equal((await app.call(m)).value.ok, true, m);
+    // 「AI 도구」: only the search is turned on, with a mask word.
+    assert.equal((await app.call('setAiTools', [{ tools: { find_restorable: true }, masks: ['건강'] }])).value.ok, true);
+    await app.call('$shutdown'); assert.equal(await app.exited, 0);
+    const status = () => JSON.parse(fs.readFileSync(path.join(state, 'solio', 'status.json'), 'utf8'));
+    assert.equal(status().v, 1, 'the window wrote the status file');
+
+    // The request task's run: requests are handled after the backup; a setup is the window's and stays.
+    put('runnow001', { v: 1, kind: 'run-now' });
+    put('space0001', { v: 1, kind: 'space-setting', name: 'auto-free', value: true });
+    put('space0002', { v: 1, kind: 'space-setting', name: 'start-line', drive: 'C', gb: 1 });
+    put('badfield1', { v: 1, kind: 'run-now', path: 'C:\\' });
+    put('setup0002', { v: 1, kind: 'setup', mode: 'move' });
+    const r = worker(state, { mode: 'run' });
+    await r.call('$boot');
+    const run = (await r.call('$run', [{ trigger: 'request', rest: null }])).value;
+    await r.call('$shutdown'); assert.equal(await r.exited, 0);
+    // This test's profile is the drive one; 「지금 백업」 from 솔리오 is the cloud backup's, which is not set up here.
+    assert.deepEqual(run.requests.map(x => [x.kind, x.result, x.reason ?? null]).sort(), [['invalid', 'rejected', 'invalid'], ['run-now', 'rejected', 'not-set-up'],
+      ['space-setting', 'confirm-in-engine', null], ['space-setting', 'done', null]]);
+    assert.deepEqual([answer('runnow001').result, answer('space0001').result, answer('space0002').result, answer('badfield1').reason], ['rejected', 'confirm-in-engine', 'done', 'invalid']);
+    assert.ok(fs.existsSync(path.join(requests, `${now}-setup0002.json`)), 'the setup is left for the window');
+    assert.deepEqual(fs.readdirSync(path.join(requests, 'claimed')), []);
+    assert.equal(status().state, 'not-set-up', 'the status file speaks of the cloud backup');
+    assert.ok(!JSON.stringify(status()).includes(path.basename(root)) && !fs.readFileSync(path.join(state, 'solio', 'status.json'), 'utf8').includes('보고서'));
+
+    // A backup to search, then the MCP worker: the newest backup only, read only — no settings written, no repository lock.
+    // An MCP worker that was already up sees the backup made meanwhile (it opens again when the settings change).
+    const early = worker(state, { mode: 'mcp' }); await early.call('$boot');
+    const seenBefore = (await early.call('getState')).value.value.lastBackupAt;
+    const b = worker(state, { mode: 'run' }); await b.call('$boot');
+    assert.equal((await b.call('$run', [{ trigger: 'manual' }])).value.profiles.local.outcome, 'complete');
+    await b.call('$shutdown'); assert.equal(await b.exited, 0);
+    const seenAfter = (await early.call('getState')).value.value.lastBackupAt;
+    assert.ok(seenAfter && seenAfter !== seenBefore, `${seenBefore} → ${seenAfter}`);
+    await early.call('$shutdown'); assert.equal(await early.exited, 0);
+    const settings = path.join(state, 'vault', 'settings.json'), before = fs.statSync(settings).mtimeMs;
+    const m = worker(state, { mode: 'mcp' });
+    assert.deepEqual((await m.call('$boot')).value, { mode: 'mcp' });
+    const found = (await m.call('findFiles', [{ query: '보고서' }])).value;
+    assert.equal(found.ok, true);
+    assert.equal(found.value.results.length, 1);
+    assert.ok(found.value.results[0].path.endsWith('분기 보고서.txt') && found.value.results[0].path.startsWith(data), found.value.results[0].path);
+    assert.ok(found.value.snapshotAt && found.value.total === 1);
+    // 가리는 낱말: 그 낱말이 든 경로는 결과에도 수에도 없고, 그 낱말로 찾은 답은 찾은 것이 없는 답과 꼴이 같다.
+    const quiet = { configured: true, snapshotAt: found.value.snapshotAt, results: [], total: 0, cut: false };
+    assert.deepEqual((await m.call('findFiles', [{ query: '보고서', masks: ['분기'] }])).value.value, quiet);
+    assert.deepEqual((await m.call('findFiles', [{ query: '분기', masks: ['분기'] }])).value.value, quiet);
+    assert.deepEqual((await m.call('findFiles', [{ query: '없는이름' }])).value.value, quiet);
+    assert.equal((await m.call('findFiles', [{ query: '보고서', masks: 'x' }])).value.code, 'INVALID_REQUEST');
+    assert.equal((await m.call('findFiles', [{ query: '' }])).value.code, 'QUERY_INVALID');
+    assert.deepEqual(Object.keys((await m.call('getState')).value.value).sort(), ['configured', 'credential', 'lastBackupAt', 'mode']);
+    // Every app method is refused in this mode: the worker closes.
+    m.call('restoreLatest');
+    assert.equal(await m.exited, 1);
+    assert.equal(fs.statSync(settings).mtimeMs, before, 'the settings were not written');
+    const locks = [];
+    (function walk(dir) { for (const e of fs.readdirSync(dir, { withFileTypes: true })) if (e.isDirectory()) { if (e.name === 'locks') locks.push(...fs.readdirSync(path.join(dir, e.name))); else walk(path.join(dir, e.name)); } })(repo);
+    assert.deepEqual(locks, [], 'no repository lock was left');
+  });
+
   // Registered with this test (S132) — a top-level test that skips off Windows must be in the conditional QA list (11-15 precedent).
   await t.test('$fill comes after the run, once; a partial run with no links is an attempt and the next waits (4.2 채움 판)', { skip: process.platform !== 'win32' }, async t => {
     // Four worker boots and three backups: 259 s on a busy PC (11-16), so the limit has room.

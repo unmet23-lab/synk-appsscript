@@ -185,6 +185,14 @@ function errorItems(onItem) {
 const BUSY_WARNING = '다른 작업이 백업 저장소를 쓰는 중이라 이번 작업은 하지 못했습니다. 잠시 뒤 다시 해 주세요. 자동 백업은 다음 회차에 다시 합니다.';
 const RESTIC_SHA256 = 'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830';
 const isId = s => typeof s === 'string' && /^[a-f0-9]{64}$/.test(s);
+// 모르는 꼬리표의 판(STAGE1_DESIGN.md 4.15 · T33): 이 판의 엔진이 아는 꼬리표는 이것뿐이다. 모르는 꼬리표가 하나라도 붙은 판은 나중
+// 판의 엔진이 만든 것(공간 비우기 나 등급의 `cloud-only` 고정 판 따위)일 수 있어, 지우지도 고르지도 않는다. 엔진의 판 목록(snapshots)과
+// 복구 키 · 계정으로 잇는 두 목록에서 빼므로, 정리의 모든 길(매 회차 정리 · 다른 기기 판 정리 · 폴더 빼기 30일)은 그 판을 지울 판으로
+// 보지 못하고(정리는 목록에서 고른 번호만 forget한다), 고르는 자리(가장 새 확인된 판 · 폴더별 지킬 판 · 「지금 상태」 되살리기 · 파일
+// 골라 되살리기 · 되살리기 증명 · 대량 변경 비교)는 그 판을 고르지 않는다.
+const KNOWN_TAGS = new Set([APP, VERIFIED, 'pending', 'meta', 'partial', 'fill', 'movekit', 'recommended-verified-v1']);
+const KNOWN_TAG = /^(vault|run|fills):[a-f0-9-]{36}$/;
+const knownTags = s => Array.isArray(s?.tags) && s.tags.every(t => KNOWN_TAGS.has(t) || KNOWN_TAG.test(t));
 const json = s => JSON.parse(s.replace(/^\uFEFF/, ''));
 // Stream the pinned restic (31 MB) instead of reading it whole, and verify a
 // given file once per process (keyed by path, size and mtime so a swapped file
@@ -504,7 +512,7 @@ class BackupEngine extends EventEmitter {
   async snapshots(tags = [], { host } = {}) {
     const list = json(await this.run(['snapshots', '--json', '--tag', [APP, `vault:${this.config.vaultId}`, ...tags].join(',')], { timeoutMs: 60000 }));
     if (!Array.isArray(list) || list.some(s => !isId(s.id) || !Number.isFinite(Date.parse(s.time)))) throw new Error('백업 목록의 형식을 확인하지 못했습니다.');
-    return list.filter(s => s.tags?.includes(APP) && s.tags.includes(`vault:${this.config.vaultId}`) && tags.every(t => s.tags.includes(t)) && (host === undefined || s.hostname === host)).sort((a, b) => Date.parse(b.time) - Date.parse(a.time) || b.id.localeCompare(a.id));
+    return list.filter(s => s.tags?.includes(APP) && s.tags.includes(`vault:${this.config.vaultId}`) && tags.every(t => s.tags.includes(t)) && (host === undefined || s.hostname === host) && knownTags(s)).sort((a, b) => Date.parse(b.time) - Date.parse(a.time) || b.id.localeCompare(a.id));
   }
   async setup({ sources, parent }) {
     return this.operation('setup', async () => {
@@ -629,7 +637,7 @@ class BackupEngine extends EventEmitter {
       // Do not persist a new identity until a usable app snapshot has been found.
       const list = json(await this.run(['snapshots', '--json', '--tag', `${APP},vault:${kit.vaultId},${VERIFIED}`], options));
       if (!Array.isArray(list)) throw new Error('백업 목록을 읽지 못했습니다.');
-      const latest = list.filter(s => isId(s.id) && s.tags?.includes(VERIFIED) && s.tags.includes(APP) && s.tags.includes(`vault:${kit.vaultId}`)).sort((a,b) => Date.parse(b.time) - Date.parse(a.time))[0];
+      const latest = list.filter(s => isId(s.id) && s.tags?.includes(VERIFIED) && s.tags.includes(APP) && s.tags.includes(`vault:${kit.vaultId}`) && knownTags(s)).sort((a,b) => Date.parse(b.time) - Date.parse(a.time))[0];
       if (!latest) throw new Error('완료된 백업이 없습니다. 원래 PC에서 백업을 완료해 주세요.');
       // A customer repository's kit reads the device whose backup is newest (its vault is the repository's own).
       const customer = this.isCloud() && b2.customerRepository(kit.provider.prefix);
@@ -656,7 +664,7 @@ class BackupEngine extends EventEmitter {
       if (info.id !== repositoryId) throw new Error('계정에 적힌 저장소와 연결한 저장소가 다릅니다.');
       const list = json(await this.run(['snapshots', '--json', '--tag', `${APP},vault:${vaultId},${VERIFIED}`], options));
       if (!Array.isArray(list)) throw new Error('백업 목록을 읽지 못했습니다.');
-      const latest = list.filter(s => isId(s.id) && DEVICE.test(s.hostname || '') && s.tags?.includes(VERIFIED) && s.tags.includes(APP) && s.tags.includes(`vault:${vaultId}`) && Number.isFinite(Date.parse(s.time))).sort((a, b) => Date.parse(b.time) - Date.parse(a.time))[0];
+      const latest = list.filter(s => isId(s.id) && DEVICE.test(s.hostname || '') && s.tags?.includes(VERIFIED) && s.tags.includes(APP) && s.tags.includes(`vault:${vaultId}`) && Number.isFinite(Date.parse(s.time)) && knownTags(s)).sort((a, b) => Date.parse(b.time) - Date.parse(a.time))[0];
       if (!latest) throw new Error('완료된 백업이 없습니다. 원래 PC에서 백업을 완료해 주세요.');
       await this.storeCredential(password, key);
       this.secret = password; this.cloudCredentials = key;
@@ -1729,4 +1737,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, customerVault, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };
+module.exports = { BackupEngine, customerVault, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };
