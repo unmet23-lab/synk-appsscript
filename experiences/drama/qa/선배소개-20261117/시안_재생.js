@@ -89,6 +89,20 @@
 
   // ── ① 게시판 ──
   var board = $('#L-board'), bd = $('.bd', board), q = $('.q', board), hb = $('.heard-box', board), go = $('.go', board), links = $('.links', board), hint = $('.hint', board), pi = $('.pi', board);
+  // 줄을 누르면 인사를 듣고, 게시판 아래 선배마다 있는 이름 단추를 누르면 고른다(11-18 짝 맹검에서 이긴 판 c를 기본으로).
+  // 전에는 단추 하나가 마지막에 들은 선배로 바뀌어서, 먼저 들은 선배를 고르려면 네 번을 눌러야 했다(지킬 것 6 「누름 세 번」).
+  // 단추 둘은 줄 순서대로 같은 꼴로 둔다(지킬 것 2). 판 b(GPT 9점 처방 견본)만 단추 글을 길게 쓴다.
+  var picks = $('.picks', board), pickLong = typeof SKIN === 'string' && SKIN === 'b';
+  function buildPicks() {
+    picks.innerHTML = '';
+    S.order.forEach(function (k) {
+      var d = DATA.seniors[k], b = document.createElement('button'); b.type = 'button'; b.dataset.k = k;
+      b.append(document.createTextNode(pickLong ? d.name + ' 선배한테 물어볼래요' : d.name + ' 선배')); var sm = document.createElement('small'); sm.textContent = 'Ask ' + d.en; b.append(sm);
+      b.addEventListener('click', function () { if (S.stage === 'board') choose(k, 'me'); });
+      picks.append(b);
+    });
+    picks.classList.remove('off');
+  }
   function buildRows() {
     $$('.row', bd).forEach(function (r) { r.remove(); });
     S.order.forEach(function (k, i) {
@@ -118,6 +132,7 @@
     $('.keep', q).hidden = true;
     $('.l1', q).textContent = '학교 생활,'; $('.l2', q).textContent = '누구한테 물어볼래요?'; $('.sub', q).textContent = 'Who would you like to ask about school life?';
     $$('.swap', q).forEach(function (e) { e.classList.remove('out'); });
+    buildPicks();
     show('L-board');
   }
   function hear(k) {
@@ -130,7 +145,6 @@
     wait(140).then(function () {
       if (g !== gen || S.cur !== k) return;
       $('.hk span', hb).textContent = d.name + ' 선배의 인사'; $('.ht', hb).textContent = d.hi; $('.he', hb).textContent = d.hiEn; hb.classList.add('on');
-      setGo(go, d.name + ' 선배한테 물어볼래요', 'Ask ' + d.en, true);
     });
     voice(k + '-intro').then(function () { if (g === gen) row.classList.remove('playing'); });
   }
@@ -138,7 +152,7 @@
     var g = gen, d = DATA.seniors[k];
     S.pick = k; S.by = by; S.stage = 'picked'; stopVoice(); sfx.tick(); buzz(12);
     $$('.row', bd).forEach(function (r) { r.classList.remove('cur', 'playing'); r.classList.add(r.dataset.k === k ? (by === 'me' ? 'mine' : 'hers') : 'rest'); r.classList.add('heard'); });
-    hb.classList.remove('on'); go.classList.remove('on'); links.classList.add('off'); hint.classList.add('off');
+    hb.classList.remove('on'); go.classList.remove('on'); links.classList.add('off'); hint.classList.add('off'); picks.classList.add('off');
     document.querySelectorAll('.steps li').forEach(function (li) { li.classList.toggle('on', Number(li.dataset.step) === 2); });
     $('.keep em', q).textContent = 'You can switch after you meet ' + d.en + '.';
     // 이름은 동그라미와 포스트잇에 이미 있으니 서하의 말에서는 되풀이하지 않는다(11-18 미학 맹검 2차: 강조가 세 번 겹친다)
@@ -291,7 +305,7 @@
       .then(function () { return wait((DUR[other + '-intro'] || 3) * 1000 + 700); })
       .then(function () { if (run === autoGen) return fakeTap(row(pick)); })
       .then(function () { return wait((DUR[pick + '-intro'] || 3) * 1000 + 900); })
-      .then(function () { if (run === autoGen) return fakeTap(go); })
+      .then(function () { if (run === autoGen) return fakeTap($('.picks button[data-k="' + pick + '"]', board)); })
       .then(tapWhen(function () { return S.stage === 'picked' && go.classList.contains('on'); }, go, 1300))
       .then(tapWhen(function () { return S.stage === 'told' && go.classList.contains('on'); }, go, 1500))
       .then(tapWhen(on(mine), $('.mic', ep), 900))

@@ -8,10 +8,13 @@ const 뿌리 = path.resolve(__dirname, '..', '..', '..', '..');
 const { 공용작업본 } = require(path.join(뿌리, 'tools', 'lib', '공용작업본.js'));
 const { chromium } = require(path.join(뿌리, 'node_modules', 'playwright'));
 const 공용 = 공용작업본(뿌리);
-const 시안 = pathToFileURL(path.join(공용, '.tmp', 'senior-intro', '시안', 'index.html')).href;
+// --판 <이름>: 시안짓기.mjs --판으로 지은 .tmp/senior-intro/시안<이름>/을 찍어 띠<이름>(게시판은 띠2<이름>)에 둔다
+const 판i = process.argv.indexOf('--판');
+const 판 = 판i > 0 ? process.argv[판i + 1] : '';
+const 시안 = pathToFileURL(path.join(공용, '.tmp', 'senior-intro', `시안${판}`, 'index.html')).href;
 // 「게시판」은 둘째 시험에 쓰는 띠다. 고친 게시판만, 고르는 보기 없이 찍어 띠2에 따로 둔다(첫 시험의 띠를 지우지 않는다).
 const 모드 = process.argv[2] === '게시판' ? '게시판' : '전체';
-const 밖 = path.join(공용, '.tmp', 'senior-intro', 모드 === '게시판' ? '띠2' : '띠');
+const 밖 = path.join(공용, '.tmp', 'senior-intro', (모드 === '게시판' ? '띠2' : '띠') + 판);
 fs.rmSync(밖, { recursive: true, force: true }); fs.mkdirSync(밖, { recursive: true });
 
 (async () => {
@@ -54,7 +57,7 @@ fs.rmSync(밖, { recursive: true, force: true }); fs.mkdirSync(밖, { recursive:
     await 찍(page, '지금안');                                                          // ① 처음
     await page.click('#L-board .row[data-k="taeo"]'); await page.waitForTimeout(1500); await 찍(page, '지금안'); // ② 태오 줄을 누름
     await page.click('#L-board .row[data-k="yuna"]'); await page.waitForTimeout(1500); await 찍(page, '지금안'); // ③ 한유나 줄을 누름
-    await page.click('#L-board .go'); await page.waitForTimeout(800); await 찍(page, '지금안');               // ④ 고른 직후
+    await page.click('#L-board .picks button[data-k="yuna"]'); await page.waitForTimeout(800); await 찍(page, '지금안'); // ④ 고른 직후
     await 켜짐(page, '#L-board .go'); await page.waitForTimeout(500); await 찍(page, '지금안');               // ⑤ 포스트잇에 이름
     await page.click('#L-board .go'); await 켜짐(page, '#L-board .go'); await page.waitForTimeout(400); await 찍(page, '지금안'); // ⑥ 서하의 한마디
     if (errs.length) console.log('지금안 오류', errs); await ctx.close();

@@ -1,0 +1,63 @@
+/* 판 b — GPT가 준 9점 기준(11-18, 공용 작업본 .tmp/senior-intro/9점기준/답.md)을 게시판 처음 화면에 입힌 견본.
+   지금 판과 짝 맹검해 이기면 넓힌다(메모 「맹검 점수가 제자리면 검수자에게 기준을 묻는다」: 기준표는 가설이다).
+   처방 요지: 듣기(줄)와 고르기(선배마다 단추)를 나눈다 · 글이 먼저(이름 22 · 손글씨 18/24 · 영어 13/17, 늘 보임) · 사진은 오른쪽 작게 ·
+   기울기 0 · 액자 그림자 없음 · 깊이는 바탕→코르크→종이 3층 · 남색 하나 · 손글씨는 먹색.
+   유호님 기준 표와 부딪치는 곳(C020 알약 단추 둘, C016 절제한 카드)은 단추를 테두리만으로, 종이 결과 손글씨를 남기는 것으로 누그러뜨렸다. */
+
+.ph .bd{left:20px;top:80px;width:350px;height:392px;border-radius:3px;
+ box-shadow:inset 0 0 0 1px rgba(90,60,20,.22),inset 0 10px 16px -12px rgba(70,45,10,.25),0 10px 18px -16px rgba(60,45,20,.4)}
+.ph .slip{left:14px;top:14px;width:322px;height:40px;padding:0 12px;align-items:center;transform:none;box-shadow:0 1px 1px rgba(0,0,0,.1)}
+.ph .slip b{font-size:18px}
+.ph .slip span{font-size:12px}
+.ph .slip .pin{display:none}
+.ph .bd > .slip span{display:none}
+.ph .slip i.ctx{display:block;margin-left:auto;font-style:normal;font-size:12px;font-weight:600;color:var(--k3);letter-spacing:0}
+
+.ph .row{left:10px;width:330px;height:154px;transform:none;box-shadow:0 1px 1px rgba(0,0,0,.1),0 4px 8px -6px rgba(50,35,10,.3)}
+.ph .row.r1{top:64px;transform:none}.ph .row.r2{top:226px;transform:none}
+.ph .row.r1,.ph .row.r2{box-shadow:0 1px 1px rgba(0,0,0,.1),0 4px 8px -6px rgba(50,35,10,.3)}
+.ph .row.cur{transform:translateY(-1px);box-shadow:0 1px 1px rgba(0,0,0,.12),0 10px 14px -10px rgba(50,35,10,.42)}
+.ph .row > .pin{display:none}
+.ph .row .shot{left:244px;top:12px;width:72px;height:78px;padding:3px;transform:none;box-shadow:0 0 0 1px rgba(20,20,20,.1)}
+.ph .row.r2 .shot{transform:none}
+.ph .row .nm{left:14px;top:10px;font-size:22px}
+.ph .row .yr{left:14px;top:38px;font-size:12.5px}
+.ph .row .lb{display:none}
+.ph .row .it{left:14px;right:auto;width:218px;top:58px;font-size:18px;line-height:24px;color:#1d1b17}
+.ph .row .mean{left:14px;right:14px;top:112px;white-space:normal;overflow:visible;font-size:13px;line-height:17px;color:var(--k2);opacity:1;transform:none}
+.ph .bd.back .row .mean{opacity:1}
+/* 듣기 표시는 학년 줄 옆에 작게 — 줄 전체가 듣기 자리다 */
+.ph .row .sp{left:118px;right:auto;top:35px;width:auto;height:20px;padding:0 9px 0 6px;border-radius:999px;display:flex;align-items:center;gap:5px;box-shadow:inset 0 0 0 1px var(--k4)}
+.ph .row .sp::after{content:'인사 듣기';font-size:11.5px;font-weight:600;color:var(--k2);letter-spacing:0}
+.ph .row .sp svg{width:9px;height:9px;fill:var(--k2)}
+.ph .row .sp .bars{height:10px}
+.ph .row.heard:not(.playing) .sp{box-shadow:inset 0 0 0 1px var(--kl)}
+@keyframes nudge{0%,100%{transform:none;box-shadow:inset 0 0 0 1px var(--k4)}38%{transform:scale(1.08);box-shadow:inset 0 0 0 1.5px var(--pen),0 0 0 4px rgba(194,65,45,.14)}}
+.ph .row .ring{left:2px;top:-3px;width:96px;height:44px}
+/* 소리 단추는 게시판 위 빈자리에(GPT 처방: x20 y28 44×44) */
+.ph:not(.tdon) .hud{top:28px;left:20px;background:transparent}
+
+/* 서하의 말 */
+.ph .q{top:492px}
+.ph .who i{width:28px;height:28px}
+.ph .who b{font-size:13px}
+.ph .q p.t{margin-top:12px}
+.ph .q p.t .l1{font-size:18px;line-height:24px;margin-bottom:4px}
+.ph .q p.t .l2{font-size:28px;line-height:36px}
+.ph .q .sub{margin-top:6px;font-size:14px}
+.ph .hint{display:none}
+/* 들은 인사는 서하의 영어 자리에 한 줄로 */
+.ph .heard-box{top:604px}
+.ph .heard-box .hk{display:none}
+.ph .heard-box .ht{margin-top:0;font-size:15px;line-height:1.35}
+.ph .heard-box .he{margin-top:2px;font-size:12.5px}
+
+/* 고르기: 선배마다 같은 꼴의 단추(테두리만). 줄을 누르면 듣고, 단추를 누르면 고른다 */
+.ph .picks{position:absolute;z-index:40;left:24px;right:24px;top:646px;display:flex;flex-direction:column;gap:8px;transition:opacity .3s ease}
+.ph .picks.off{opacity:0;pointer-events:none}
+.ph .picks button{height:54px;border-radius:27px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:650;color:var(--navy);box-shadow:inset 0 0 0 1.5px var(--navy);background:transparent}
+.ph .picks button small{font-size:13px;font-weight:500;opacity:.7;letter-spacing:0}
+.ph .picks button:active{background:rgba(29,37,71,.06)}
+.ph .links{bottom:30px}
+.ph .links button{padding:12px 6px;border-radius:0;box-shadow:none;border-bottom:1px solid var(--kl)}
+.ph #L-board .go.pre{display:none}

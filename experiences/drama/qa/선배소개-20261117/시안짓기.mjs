@@ -23,7 +23,11 @@ const 폰트 = req(path.join(뿌리, 'tools', 'lib', '브랜드폰트.js'));
 const 공용 = 공용작업본(뿌리);
 const 굽기 = path.join(공용, '.tmp', 'senior-f-face', 'out');
 const 소리폴더 = path.join(공용, '.tmp', 'senior-intro', '소리');
-const 끝 = path.join(공용, '.tmp', 'senior-intro', '시안');
+// --판 <이름>: 시안.css 뒤에 시안_판<이름>.css를 덧대 .tmp/senior-intro/시안<이름>/에 따로 짓는다(지금 판과 짝 맹검할 견본, 11-18)
+const 판i = process.argv.indexOf('--판');
+const 판 = 판i > 0 ? process.argv[판i + 1] : '';
+const 덧댐 = 판 ? fs.readFileSync(path.join(여기, `시안_판${판}.css`), 'utf8') : '';
+const 끝 = path.join(공용, '.tmp', 'senior-intro', `시안${판}`);
 for (const d of ['img', 'snd', 'vid']) { fs.rmSync(path.join(끝, d), { recursive: true, force: true }); fs.mkdirSync(path.join(끝, d), { recursive: true }); }
 
 // ── 그림: [나올 이름, 원본, 원본이 없을 때 메울 그림, 긴 변, 자를 자리(원본을 쓸 때만, 왼 · 위 · 오른 · 아래 비율)] ──
@@ -119,7 +123,7 @@ const 휴대폰 = `
 <i class="tap" id="tap"></i>
 
 <div class="layer b" id="L-board">
- <div class="bd"><div class="slip"><i class="pin"></i><b>선배 소개</b><span>국제학부 학생회 · 2027 봄</span></div></div>
+ <div class="bd"><div class="slip"><i class="pin"></i><b>선배 소개</b><span>국제학부 학생회 · 2027 봄</span><i class="ctx">신입생 때 한 실수 · Our freshman slip-ups</i></div></div>
  <div class="pi">개강 첫날,<br>학생 식당에서<br>만나요!<em>— 학생회 지호</em><span class="add"><b></b><svg viewBox="0 0 100 8" preserveAspectRatio="none"><path pathLength="1" d="M1 5C20 2 40 7 60 4s30-1 39 1"/></svg></span></div>
  <div class="q">${서하줄}
   <p class="t swap"><span class="l1"></span><span class="l2"></span></p><p class="sub swap"></p>
@@ -127,6 +131,7 @@ const 휴대폰 = `
  <div class="heard-box"><div class="hk"><span></span><button type="button">다시 듣기</button></div><p class="ht"></p><p class="he"></p></div>
  <div class="hint"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="10"/><path d="M8.6 6.6v8.8L16.2 11z"/></svg><span>눌러서 인사를 들어 봐요<em>Tap to hear them say hi</em></span></div>
  <button class="go" type="button"></button>
+ <div class="picks off"></div>
  <div class="links"></div>
 </div>
 
@@ -167,7 +172,7 @@ const 지킨것 = [
   ['한 사람이 화면을 채우지 않는다', '고르기 전에는 두 사람이 늘 한 게시판에 함께 보입니다. 누른 줄은 조금 들릴 뿐입니다.'],
   ['사진보다 글이 먼저다', '이름과 손으로 쓴 소개 한 줄이 크고, 사진은 작게 붙였습니다. 사진은 정면 얼굴이 아니라 학교에서 일하는 모습입니다. 손글씨는 한글을 막 읽기 시작한 사람도 읽을 수 있게 또박또박한 글꼴을 썼습니다.'],
   ['소개 한 줄은 신입생 때 한 실수 한 가지다', '이상형, 점수, 하트 같은 연애 게임의 낱말과 꾸밈이 없습니다. 밥을 사 준다는 말도 없습니다.'],
-  ['누름 세 번 안에 끝난다', '한 줄 듣기, 다른 줄 듣기, 고르기. 「서하가 정해 주세요」를 누르면 한 번에 끝납니다.'],
+  ['누름 세 번 안에 끝난다', '한 줄 듣기, 다른 줄 듣기, 이름 단추로 고르기. 먼저 들은 선배를 골라도 세 번이고, 「서하가 정해 주세요」를 누르면 한 번에 끝납니다.'],
   ['말이 쉽다', '인사는 가장 쉬운 낱말로 썼고, 다시 듣기와 화면 언어 뜻이 붙습니다. 맞고 틀림을 판정하지 않습니다.'],
   ['선배는 아직 나를 모른다', '서하는 「선배한테는 이것만 말할게요. “신입생이 와요.”」라고 합니다. 식당에서 선배가 「신입생이죠?」 하고 묻는 것이 그래서 맞습니다.'],
   ['만나 본 뒤에도 바꿀 수 있다', '고른 직후에 「만난 뒤에도 바꿀 수 있어요」가 보이고, 「다시 고를래요」로 바로 돌아갑니다. 바꿀 수 있는 때(2화를 시작하기 전)는 1화가 끝날 때 다시 알립니다.'],
@@ -197,6 +202,7 @@ ${폰트.블록()}
 <style>
 [hidden]{display:none!important}
 ${fs.readFileSync(path.join(여기, '시안.css'), 'utf8')}
+${덧댐}
 .ph{--noise:${결(0.9, [0.2, 0.18, 0.12], 0.07)};--pnoise:${결(1.3, [0.3, 0.25, 0.1], 0.06)};--cork:${결(0.55, [0.35, 0.22, 0.08], 0.3)};--seoha:url(img/seoha.jpg)}
 .ph.tdon .hud{top:24px;left:auto;right:12px;width:40px;height:40px;background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}.ph.tdon .hud svg{stroke:#f2efe7}
 @media (prefers-reduced-motion:reduce){.ph *{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-delay:0s!important;transition-delay:0s!important}}
@@ -251,6 +257,7 @@ ${시험절}
 </div>
 <script>
 const DATA = ${JSON.stringify({ seniors: 인물 })};
+const SKIN = ${JSON.stringify(판)};
 const DUR = ${JSON.stringify(길이)};
 ${fs.readFileSync(path.join(여기, '시안_재생.js'), 'utf8')}
 </script>

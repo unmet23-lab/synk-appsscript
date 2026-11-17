@@ -82,6 +82,14 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .ph .row.r1{box-shadow:0 1px 1px rgba(0,0,0,.1),7px 8px 10px -8px rgba(50,35,10,.42)}
 .ph .row.r2{box-shadow:0 1px 1px rgba(0,0,0,.1),-7px 8px 10px -8px rgba(50,35,10,.42)}
 .ph .slip .pin{left:14px;top:-6px}
+.ph .slip i.ctx{display:none}
+/* 고르기: 게시판 아래 선배마다 같은 꼴의 이름 단추(11-18 판 c, 짝 맹검 7:5 · 6:5로 이겨 기본이 됐다). 줄을 누르면 듣고, 단추를 누르면 고른다.
+   짝 맹검에서 두 장면 모두 「테두리가 두껍다」고 해서 1.5px을 1px로 줄였다(이 줄임은 다시 맹검하지 않았다). */
+.ph .picks{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:absolute;z-index:40;left:24px;right:24px;top:690px;transition:opacity .3s ease}
+.ph .picks.off{opacity:0;pointer-events:none}
+.ph .picks button{height:50px;border-radius:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:15.5px;font-weight:650;line-height:1.15;color:var(--navy);background:transparent;box-shadow:inset 0 0 0 1px var(--navy)}
+.ph .picks button small{font-size:11.5px;font-weight:500;opacity:.7;letter-spacing:0}
+.ph .picks button:active{background:rgba(29,37,71,.06)}
 .ph .row{position:absolute;left:16px;width:334px;height:138px;text-align:left;background:var(--pnoise),linear-gradient(180deg,#fdfbf5,#f6f2e8);box-shadow:0 1px 1px rgba(0,0,0,.1),0 6px 10px -8px rgba(50,35,10,.38);
  transition:transform .35s cubic-bezier(.3,1.4,.4,1),box-shadow .35s ease,opacity .45s ease;transform-origin:50% 0}
 .ph .row.r1{top:58px;transform:rotate(-.7deg)}.ph .row.r2{top:204px;transform:rotate(.6deg)}
@@ -130,7 +138,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .ph .heard-box .hk button{font-size:12.5px;font-weight:650;color:var(--k);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(20,20,20,.3)}
 .ph .heard-box .ht{margin-top:5px;font-size:18px;font-weight:600;line-height:1.4;letter-spacing:-.03em;word-break:keep-all}
 .ph .heard-box .he{margin-top:4px;font-size:13.5px;line-height:1.4;font-weight:500;letter-spacing:0;color:var(--k2)}
-.ph .hint{position:absolute;z-index:45;left:24px;right:24px;top:610px;display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;line-height:1.3;letter-spacing:-.01em;color:var(--k2);pointer-events:none;transition:opacity .3s ease}
+.ph .hint{position:absolute;z-index:45;left:24px;right:24px;top:614px;display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;line-height:1.3;letter-spacing:-.01em;color:var(--k2);pointer-events:none;transition:opacity .3s ease}
 .ph .hint.off{opacity:0}
 .ph .hint svg{width:20px;height:20px;flex:none}.ph .hint svg circle{fill:none;stroke:var(--k3);stroke-width:1.2}.ph .hint svg path{fill:var(--k2)}
 .ph .hint em{display:block;font-style:normal;font-size:12px;font-weight:500;letter-spacing:0;color:var(--k3);margin-top:1px}
@@ -139,7 +147,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .ph .go.me{background:var(--navy)}
 .ph .go small{font-size:12.5px;font-weight:500;opacity:.62;letter-spacing:0}
 .ph .go:active{transform:scale(.98)}
-.ph .links{position:absolute;z-index:40;left:0;right:0;bottom:44px;text-align:center;font-size:13.5px;font-weight:600;color:var(--k2);transition:opacity .3s ease}
+.ph .links{position:absolute;z-index:40;left:0;right:0;bottom:34px;text-align:center;font-size:13.5px;font-weight:600;color:var(--k2);transition:opacity .3s ease}
 .ph .links.off{opacity:0;pointer-events:none}
 .ph .links button{padding:8px 16px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--k4)}
 .ph .links small{margin-left:7px;font-size:12px;font-weight:500;color:var(--k3);letter-spacing:0}
