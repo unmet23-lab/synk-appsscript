@@ -291,7 +291,9 @@ function handoffToMain({waitedForStart=false}={}){
   }
   startupAllowed=true;
   const from=startupWindow?.isVisible()?startupWindow.bounds():null;
-  if(!from){startupWindow?.dispose();startupWindow=null;showPlatformMain();return;}
+  // 앱 창을 먼저 만들고 시작 창을 없앤다. 시작 창이 그때 하나뿐인 창이면 먼저 없애는 순간 「모든 창이 닫힘」이 app.quit()를 불러,
+  // 확인이 시작 창이 보이기 전에 끝난 실행(빠른 인터넷, 공개 CI 검사기)이 켜지자마자 멈췄다(0.4.96 대역 빌드 검사에서 찾음)
+  if(!from){showPlatformMain();startupWindow?.dispose();startupWindow=null;return;}
   if(window&&!window.isDestroyed()&&mainWindowReady){showPlatformMain();setTimeout(()=>{startupWindow?.dispose();startupWindow=null;},50);return;}
   startupHandoff={bounds:from,done:false,timer:null};
   showPlatformMain();
