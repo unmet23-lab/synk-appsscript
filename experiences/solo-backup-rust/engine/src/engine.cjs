@@ -434,7 +434,7 @@ class BackupEngine extends EventEmitter {
       if (this.job) this.job.final = true;
       if (this.config && OWN_ERROR[kind]) {
         const code = cancelled ? 'CANCELED' : e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : kind === 'move' ? 'MOVE_FAILED' : 'RESTORE_FAILED';
-        this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}), ...(note.named === true ? { named: true } : {}) };
+        this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}), ...(note.named === true ? { named: true } : {}), ...(typeof note.from === 'string' ? { from: note.from } : {}) };
         await this.save().catch(() => {});
       } else if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
       else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
@@ -1368,8 +1368,10 @@ class BackupEngine extends EventEmitter {
         if (required > space.bavail * space.bsize) throw Object.assign(new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.'), { code: 'NO_SPACE' });
         if (named) target = await namedFolder(base, this.now());
         else {
-          target = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`);
-          await fs.mkdir(target); // Exclusive new empty directory; never restore into original paths.
+          // Exclusive new empty directory; never restore into original paths. Written down only once it is there, so a
+          // failure to make it leaves no folder to open (카본 끝판 A1 of the 화면 세션 E27 · E29 review).
+          const fresh = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`);
+          await fs.mkdir(fresh); target = fresh;
         }
         this.stage('파일 복구 및 내용 검증 중');
         // Export authenticated contents rather than original SID/DACL metadata. Each
@@ -1553,6 +1555,66 @@ class BackupEngine extends EventEmitter {
     }
     return false;
   }
+  /**
+   * 화면 세션 E27 「이 폴더 통째로 꺼내기」: one part of a backup — this device's, or another device's (`from`) — whole,
+   * into a new folder, with no catalog. `folder` is one of the backup's folders and `sub` a folder inside it (scopeOf).
+   * Like 「지금 상태」 restore it reads the part's list, checks the space, extracts every file and checks it by SHA-256,
+   * and writes only into a new folder, as `<새 폴더>/<번호-폴더>/<sub>`. A part whose list passes restore-tar's
+   * 1,000,000 entries is refused as CATALOG_TOO_LARGE: a folder inside it is taken instead. It runs as a restore, so
+   * cancelRestore stops it and its failure is lastRestoreError (with `from`); `scopeListMax` lowers the limit in tests.
+   */
+  async restoreScope({ from, folder, sub, parent, named = false }) {
+    let fromNote = null; try { fromNote = this.catalogHost(from).from; } catch { /* refused inside, and written down there */ }
+    return this.operation('restore', async () => {
+      const { host, from: other } = this.catalogHost(from);
+      if (folder === undefined) throw selection.issue('INVALID_REQUEST');
+      await this.identity(); await this.assertNoRemoteMaintenance();
+      const snapshot = (await this.snapshots([VERIFIED], { host }))[0];
+      if (!snapshot) throw selection.issue('NO_SNAPSHOT');
+      const plans = selection.sourcePlans(snapshot), [part] = selection.scopeOf(plans, { folder, sub }), plan = plans[part.index];
+      const base = await directory(parent);
+      // Never where the backup's folders were, on this PC or the old one (as the selected restore).
+      if ([...this.forbidden(), ...this.config.sources, ...plans.map(p => p.original)].some(p => overlap(base, p))) throw Object.assign(new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.'), { code: 'OUTPUT_UNSAFE' });
+      const selector = part.sub ? `${plan.selector}/${part.sub}` : plan.selector;
+      this.stage('복구할 파일 목록 확인 중');
+      let manifest;
+      await this.readPart(plan, snapshot.id, part.sub, async () => {
+        try { await this.run(['ls', '--json', '--recursive', selector], { consumeStdout: async stream => { manifest = await readManifest(stream, base, this.scopeListMax ? { max: this.scopeListMax } : {}); } }); }
+        catch (e) { if (e?.tooMany) throw Object.assign(new Error('이 폴더는 파일과 폴더가 100만 개를 넘어 통째로 꺼낼 수 없습니다. 안쪽 폴더를 골라 주세요.'), { code: 'CATALOG_TOO_LARGE' }); throw e; }
+      });
+      const space = await fs.statfs(base, { bigint: true });
+      const required = [...manifest.nodes.values()].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), 16n * 1024n * 1024n);
+      if (required > space.bavail * space.bsize) throw Object.assign(new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.'), { code: 'NO_SPACE' });
+      const restoredFolder = part.sub ? `${plan.label}/${part.sub}` : plan.label;
+      let target;
+      try {
+        if (named) target = await namedFolder(base, this.now());
+        else { const fresh = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`); await fs.mkdir(fresh); target = fresh; }
+        const destination = entryPath(target, restoredFolder);
+        await fs.mkdir(destination, { recursive: true }); await directory(destination);
+        this.stage('파일 복구 및 내용 검증 중');
+        await this.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: stream => extractVerified(stream, destination, manifest) });
+        this.restoreFinal();
+        const leftItems = manifest.skipped?.list || [];
+        const left = manifest.skipped?.count ? { skipped: { count: manifest.skipped.count, items: leftItems.slice(0, 1000), ...(manifest.skipped.cut ? { cut: true } : {}) } } : {};
+        const original = part.sub ? path.win32.join(plan.original, ...part.sub.split('/')) : plan.original;
+        await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify([{ original, restoredFolder, backupAt: snapshot.time, ...(other ? { from: other } : {}), ...left }], null, 2), { flag: 'wx' });
+      }
+      catch (e) {
+        // As 「지금 상태」 restore: stopped by the person, the health stays; failing, nothing more may stop it.
+        const stopped = !!this.job?.cancelled; if (this.job) this.job.final = true;
+        if (!stopped) {
+          this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '복구 또는 검증이 끝나지 않았습니다. 전체 점검 전에는 이전 백업을 정리하지 않습니다.' };
+          await this.save();
+        }
+        throw Object.assign(new Error(`${e.message}\n${target ? `완료되지 않은 복구 폴더: ${target}` : '복구 파일을 만들기 전에 중단했습니다.'}`), { exitCode: e.exitCode, code: e.code, ...(target ? { restorePath: target } : {}) });
+      }
+      this.config.lastRestore = { path: target, at: new Date(this.now()).toISOString(), fromEarlier: 0, inNone: 0, ...(manifest.skipped?.count ? { skipped: manifest.skipped.count } : {}),
+        scope: { from: other, folder: plan.original, sub: part.sub, snapshotAt: snapshot.time } };
+      await this.save();
+      return this.getState();
+    }, { named: named === true, ...(fromNote ? { from: fromNote } : {}) });
+  }
   queryFileCatalog({ token, query, offset }) { return this.catalogFor(token).query(query, offset); }
   setFileSelection(input) {
     if (this.job?.kind === 'restore-selected') throw selection.issue('JOB_BUSY');
@@ -1599,7 +1661,7 @@ class BackupEngine extends EventEmitter {
         await selection.spaceRequired(base, capture.files, plans);
         await directory(base);
         if (named) target = await namedFolder(base, this.now());
-        else { target = path.join(base, `선택복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(6).toString('hex')}`); await fs.mkdir(target); }
+        else { const fresh = path.join(base, `선택복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(6).toString('hex')}`); await fs.mkdir(fresh); target = fresh; }
         marker = path.join(target, '_복구중_미완료.txt');
         await fs.writeFile(marker, '복구가 완료되지 않았습니다. 이 폴더를 완료된 복구본으로 사용하지 마세요.\n', { flag: 'wx' });
         let count = 0, bytes = 0;
@@ -1630,7 +1692,7 @@ class BackupEngine extends EventEmitter {
         if (this.job) this.job.final = true; // failing: a late stop cannot rename it (카본 끝판 A2)
         this.config.lastSelectedRestore = previous;
         if (marker) await fs.writeFile(marker, '복구가 완료되지 않았습니다. 이전 완료 결과는 유지됩니다.\n', { flag: 'wx' }).catch(() => {});
-        this.config.lastSelectedRestoreError = { code: error.code, message: error.message, at: new Date(this.now()).toISOString(), ...(target ? { path: target } : {}), ...(named === true ? { named: true } : {}) };
+        this.config.lastSelectedRestoreError = { code: error.code, message: error.message, at: new Date(this.now()).toISOString(), ...(target ? { path: target } : {}), ...(named === true ? { named: true } : {}), ...(capture.from ? { from: capture.from } : {}) };
         if (error.code === 'INTEGRITY_FAILED') this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: error.message };
         await this.save().catch(() => {}); throw error;
       }

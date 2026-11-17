@@ -33,7 +33,7 @@ function nameIssue(name) {
   if (parts.some(p => !p || p === '.' || p === '..')) throw new Error('복구 목록 형식을 확인하지 못했습니다.');
   return parts.some(p => /[<>:"\\|?*\x00-\x1f]/.test(p) || /[. ]$/.test(p) || /^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])(?:\.|$)/i.test(p)) ? 'name' : null;
 }
-async function readManifest(input, root) {
+async function readManifest(input, root, { max = 1000000 } = {}) {
   const nodes = new Map(), skipped = { count: 0, list: [], cut: false }; let bytes = 0, pending = '', snapshots = 0;
   const decoder = new StringDecoder('utf8');
   function line(text) {
@@ -53,7 +53,7 @@ async function readManifest(input, root) {
     const size = node.type === 'dir' ? 0 : node.size;
     if (!Number.isSafeInteger(size) || size < 0 || !Number.isSafeInteger(bytes + size)) throw new Error('복구 목록의 파일 크기를 확인하지 못했습니다.');
     if (nodes.has(key(name))) throw new Error('같은 이름의 복구 파일이 중복됩니다.');
-    if (nodes.size >= 1000000) throw new Error('이 시험판은 작업 폴더 하나당 파일·폴더 100만 개까지 확인합니다.');
+    if (nodes.size >= max) throw Object.assign(new Error('이 시험판은 작업 폴더 하나당 파일·폴더 100만 개까지 확인합니다.'), { tooMany: true });
     nodes.set(key(name), { name, type: node.type, size }); bytes += size;
   }
   for await (const chunk of input) {

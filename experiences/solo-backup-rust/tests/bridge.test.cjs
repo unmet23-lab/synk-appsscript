@@ -42,14 +42,18 @@ test('bridge, worker and native method contract preserves all existing app actio
   const oldBackup=['browseBackupFolder'];
   // 화면 세션 요청 16: 「그만두기」 on a running restore.
   const stop=['cancelRestore'];
+  // 화면 세션 E27: a part of a backup, whole, into a new folder.
+  const scope=['restoreScope'];
   // 쉬는 회선(4.14): 손님이 고른 Wi-Fi 이름. 백업 상태를 바꾸지 않아 복구 전용 연결에서도 고른다(찾기 · 되살리기 내려받기에도 든다).
   // 「AI 도구」(4.16): MCP 보기 도구의 동의와 가리는 낱말, 연결이 알려 온 도구 목록.
   const solio=['setRestNetworks','setAiTools','aiToolsState'];
-  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup,...stop,...solio].sort();
+  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource',...account,...move,...oldBackup,...stop,...solio,...scope].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
   for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials','addSources','removeSource'])assert.equal(contract[name].allowedReadOnly,false);
-  for(const name of ['restoreLatest','restoreSelected','openFileCatalog','browseBackupFolder'])assert.equal(contract[name].allowedReadOnly,true);
+  for(const name of ['restoreLatest','restoreSelected','openFileCatalog','browseBackupFolder','restoreScope'])assert.equal(contract[name].allowedReadOnly,true);
+  // It asks where to put the folder (a dialog) and runs as long as the restore does, like 「지금 상태」 restore.
+  assert.deepEqual([contract.restoreScope.dialog,contract.restoreScope.timeoutMs],[contract.restoreLatest.dialog,contract.restoreLatest.timeoutMs]);
   // A Google sign-in opens the browser (dialog) and waits for the person, so it has no time limit.
   for(const name of ['signInGoogle','takeWriteSeat','revokeDevice','reportLost','rotateReadKey','restoreRun','restoreChoose'])assert.deepEqual([contract[name].dialog,contract[name].timeoutMs],[true,0],name);
   for(const name of ['devicesList','restorePlan','restoreJob','restoreSeen','cancelGoogle','openGoogleAccount'])assert.equal(contract[name].mutating,false,name);

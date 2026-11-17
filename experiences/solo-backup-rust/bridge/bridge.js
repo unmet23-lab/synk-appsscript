@@ -20,7 +20,7 @@
     'signInGoogle', 'startProtection', 'continueBackup', 'setRestNetworks', 'setAiTools', 'aiToolsState',
     'openAccountBackup', 'devicesList', 'takeWriteSeat', 'revokeDevice',
     'reportLost', 'rotateReadKey', 'restorePlan', 'restoreRun',
-    'restoreJob', 'restoreChoose', 'restoreSeen', 'cancelGoogle', 'openGoogleAccount', 'cancelRestore',
+    'restoreJob', 'restoreChoose', 'restoreSeen', 'cancelGoogle', 'openGoogleAccount', 'cancelRestore', 'restoreScope',
     'moveDevices', 'movePreview', 'moveStart', 'moveResult', 'moveState', 'moveOpen', 'setNextSources', 'moveReinstallList', 'moveReinstall', 'moveRestoreSettings', 'moveChecklist', 'moveCheck', 'moveOpenProgramPage', 'moveRelease'
   ];
 

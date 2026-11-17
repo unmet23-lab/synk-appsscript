@@ -251,6 +251,15 @@ test('move: synthetic old PC → backup → new PC, every file by SHA-256, nothi
       assert.equal(shaOf(path.join(got, meta.scope[0].source, '링크 자리', 'x.txt')), source[path.join(docs, '링크 자리', 'x.txt')]);
       assert.deepEqual(walk(got).map(p => path.basename(p)).sort(), ['x.txt', '복구경로.json']);
       assert.equal(JSON.parse(fs.readFileSync(path.join(got, '복구경로.json'), 'utf8')).from, from);
+      // 화면 세션 E27: the same part whole, with no catalog, into a new folder of its own; 복구경로.json names the old PC.
+      const whole = path.join(root, 'out-scope'); fs.mkdirSync(whole);
+      await engine.restoreScope({ from, folder: docs, sub: '링크 자리', parent: whole });
+      const scoped = engine.config.lastRestore;
+      assert.deepEqual([scoped.scope.from, scoped.scope.folder, scoped.scope.sub], [from, docs, '링크 자리']);
+      assert.equal(shaOf(path.join(scoped.path, meta.scope[0].source, '링크 자리', 'x.txt')), source[path.join(docs, '링크 자리', 'x.txt')]);
+      assert.deepEqual(walk(scoped.path).map(p => path.basename(p)).sort(), ['x.txt', '복구경로.json']);
+      const mapping = JSON.parse(fs.readFileSync(path.join(scoped.path, '복구경로.json'), 'utf8'));
+      assert.deepEqual([mapping[0].original, mapping[0].from], [path.join(docs, '링크 자리'), from]);
       // A device with no backup, a folder the old backup does not have, a part that climbs out.
       await assert.rejects(engine.openFileCatalog({ from: 'gone-pc' }), refused('NO_SNAPSHOT'));
       await assert.rejects(engine.browseBackupFolder({ from, folder: path.join(root, 'nowhere') }), refused('INVALID_REQUEST'));

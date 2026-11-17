@@ -49,7 +49,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   const shell = {
     openExternal: url => host('openExternal', [url]),
     openPath: async target => {
-      const completed = Object.values(profiles.engines).flatMap(e => [e.config?.lastRestore?.path, e.config?.lastSelectedRestore?.path]);
+      // Only folders the engine wrote down itself: a finished restore's, and the one a stopped or failed restore left (화면 세션 E29).
+      const completed = Object.values(profiles.engines).flatMap(e => [e.config?.lastRestore?.path, e.config?.lastSelectedRestore?.path, e.config?.lastRestoreError?.path, e.config?.lastSelectedRestoreError?.path]).filter(Boolean);
       if (!completed.includes(target)) throw new Error('완료된 복구 폴더가 없습니다.');
       await require(path.join(engineRoot, 'src/paths.cjs')).directory(target);
       await host('openPath', [target]); return '';
@@ -345,9 +346,24 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     }, { safeErrors: true });
     // 화면 세션 요청 16: 「그만두기」 on a running restore. It works beside the job, so it takes no slot or lock.
     handle('cancelRestore', ({ engine }) => engine.cancelRestore(), { read: true });
+    // 화면 세션 E27 「이 폴더 통째로 꺼내기」: a part of a backup (this device's or `from`'s), whole, into a new folder.
+    handle('restoreScope', async (context, input) => {
+      catalogInput(context, input, ['profile', 'from', 'folder', 'sub', 'place'], ['profile', 'folder']);
+      const { engine } = context;
+      engine.catalogHost(input.from);
+      if (engine.config?.health?.status === 'attention') {
+        const answer = await dialog.showMessageBox(window, { type: 'warning', message: '백업 점검을 아직 마치지 못했습니다.', detail: '복구를 시도하고 파일 내용을 검증합니다. 일부 파일은 복구되지 않을 수 있습니다.', buttons: ['취소', '복구 시도'], defaultId: 0, cancelId: 0 });
+        if (answer.response !== 1) throw new Error('복구를 취소했습니다.');
+      }
+      const place = await restorePlace(input, '꺼낸 폴더를 담을 별도 폴더 선택'); if (!place) throw new Error('복구를 취소했습니다.');
+      profiles.assertOutput(place.parent);
+      return launchJob(engine, () => engine.restoreScope({ from: input.from, folder: input.folder, sub: input.sub, ...place }));
+    }, { codes: true });
     handle('openSelectedRestoreFolder', async (context, input) => {
-      catalogInput(context, input, ['profile']);
-      const target = context.engine.config?.lastSelectedRestore?.path;
+      catalogInput(context, input, ['profile', 'unfinished'], ['profile']);
+      if (input.unfinished !== undefined && typeof input.unfinished !== 'boolean') throw fileSelection.issue('INVALID_REQUEST');
+      // 화면 세션 E29: `unfinished` — the folder a stopped or failed selected restore left, to remove it.
+      const target = input.unfinished ? context.engine.config?.lastSelectedRestoreError?.path : context.engine.config?.lastSelectedRestore?.path;
       if (!target) throw fileSelection.issue('INVALID_REQUEST');
       try { await require(path.join(engineRoot, 'src/paths.cjs')).directory(target); } catch { throw fileSelection.issue('OUTPUT_UNSAFE'); }
       if (await shell.openPath(target)) throw fileSelection.issue('OPERATION_FAILED');
@@ -501,7 +517,15 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       await shell.openExternal(url); return null;
     }, { read: true, codes: true });
     handle('moveRelease', async () => { await move.release(); return state(); }, { lock: false, codes: true });
-    handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; }, { lock: false });
+    // 화면 세션 E29: `{ unfinished: true }` opens the folder a stopped or failed restore left (lastRestoreError.path), to remove it.
+    handle('openRestoreFolder', async ({ engine }, input) => {
+      if (input !== undefined && input !== null && (typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some((k) => k !== 'unfinished') || (input.unfinished !== undefined && typeof input.unfinished !== 'boolean'))) throw Object.assign(new Error('열 폴더를 확인하지 못했습니다.'), { code: 'BAD_INPUT' });
+      const unfinished = input?.unfinished === true;
+      const target = unfinished ? engine.config?.lastRestoreError?.path : engine.config?.lastRestore?.path;
+      if (!target) throw Object.assign(new Error(unfinished ? '만들다 만 복구 폴더가 없습니다.' : '완료된 복구 폴더가 없습니다.'), { code: 'NOT_FOUND' });
+      if (unfinished) { try { await require(path.join(engineRoot, 'src/paths.cjs')).directory(target); } catch { throw Object.assign(new Error('그 폴더를 찾지 못했습니다.'), { code: 'NOT_FOUND' }); } }
+      const error = await shell.openPath(target); if (error) throw new Error(error); return null;
+    }, { lock: false, codes: true });
 
   profiles.on('state',push); recovery.on('state',push);
   // No backup timer here any more: Windows Task Scheduler starts the runs (STAGE1_DESIGN.md

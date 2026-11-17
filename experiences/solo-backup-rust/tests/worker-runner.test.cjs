@@ -11,12 +11,17 @@ const { spawn } = require('node:child_process');
 
 const restic = process.env.SOLO_BACKUP_RESTIC;
 const pkg = path.resolve(__dirname, '..');
+// Workers still open when the tests end: a check that failed before $shutdown left its worker running, and the open pipe kept
+// this file from ever finishing. Close them so a failure is reported instead.
+const live = new Set();
+test.after(() => { for (const child of live) child.kill(); });
 
 function worker(stateDir, { mode = null, dialogs = [], answers = {} } = {}) {
   const env = { SYSTEMROOT: process.env.SYSTEMROOT, WINDIR: process.env.WINDIR, USERPROFILE: process.env.USERPROFILE, APPDATA: process.env.APPDATA,
     LOCALAPPDATA: process.env.LOCALAPPDATA, TEMP: process.env.TEMP, TMP: process.env.TMP, SWB_ROOT: stateDir, SWB_RESTIC: restic,
     SWB_ENGINE_ROOT: path.join(pkg, 'engine'), SWB_TEST: '1', ...(mode ? { SWB_MODE: mode } : {}) };
   const child = spawn(process.execPath, [path.join(pkg, 'worker', 'dispatcher.cjs')], { env, stdio: ['pipe', 'pipe', 'ignore'], windowsHide: true });
+  live.add(child); child.once('close', () => live.delete(child));
   let buf = '', next = 0; const waiting = new Map(); const script = [...dialogs]; const frames = [];
   const send = o => child.stdin.write(JSON.stringify({ v: 1, ...o }) + '\n');
   child.stdout.on('data', d => {
@@ -308,5 +313,64 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     assert.deepEqual([waiting.ok, waiting.code], [false, 'JOB_BUSY'], JSON.stringify(waiting));
     await idle();
     await app.call('$shutdown'); assert.equal(await app.exited, 0);
+  });
+
+  await t.test('「이 폴더 통째로 꺼내기」 through the window, and the folder a restore left opens only when the engine wrote it down (화면 세션 E27 · E29)', async t => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-e27-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const data = path.join(root, 'data'), repo = path.join(root, 'repo'), keys = path.join(root, 'keys'), state = path.join(root, 'state'), out = path.join(root, 'out');
+    for (const d of [data, repo, keys, state, out, path.join(data, '안쪽')]) fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(data, '안쪽', '보고서.txt'), 'E27 part');
+    fs.writeFileSync(path.join(data, '밖.txt'), 'not in the part');
+    const opened = [];
+    const app = worker(state, { answers: { openPath: a => { opened.push(a[0]); return null; } }, dialogs: [
+      { method: 'dialog.open', value: { canceled: false, filePaths: [data] } },
+      { method: 'dialog.open', value: { canceled: false, filePaths: [repo] } },
+      { method: 'dialog.save', value: { canceled: false, filePath: path.join(keys, 'recovery.json') } },
+      { method: 'dialog.open', value: { canceled: false, filePaths: [out] } }] });
+    await app.call('$boot');
+    for (const m of ['chooseSources', 'chooseTarget', 'setup', 'saveRecoveryKit']) assert.equal((await app.call(m)).value.ok, true, m);
+    const local = async () => (await app.call('getState')).value.value.profiles.local;
+    const idle = async () => { for (let i = 0; i < 600; i++) { if (!(await local()).job) return; await new Promise(r => setTimeout(r, 100)); } throw new Error('the job did not end'); };
+    assert.equal((await app.call('backupNow')).value.ok, true); await idle();
+    // No folder of a restore that failed yet: nothing to open; a word that is not the method's is refused.
+    assert.deepEqual(['NOT_FOUND'], [(await app.call('openRestoreFolder', [{ unfinished: true }])).value.code]);
+    assert.equal((await app.call('openRestoreFolder', [{ folder: data }])).value.code, 'BAD_INPUT');
+    // The part 안쪽 of this PC's own backup, whole, into the folder picked.
+    const started = (await app.call('restoreScope', [{ profile: 'local', folder: data, sub: '안쪽', place: 'pick' }])).value;
+    assert.equal(started.ok, true, JSON.stringify(started)); await idle();
+    // The finished restore is on the window's state for the profile on screen (the per-profile summary does not carry it).
+    const s = (await app.call('getState')).value.value;
+    assert.equal(s.profile, 'local');
+    assert.equal(s.lastRestoreError, null, JSON.stringify(s.lastRestoreError));
+    assert.deepEqual([s.lastRestore.scope.from, s.lastRestore.scope.sub], [null, '안쪽']);
+    const label = fs.readdirSync(s.lastRestore.path).find(n => n !== '복구경로.json');
+    assert.equal(fs.readFileSync(path.join(s.lastRestore.path, label, '안쪽', '보고서.txt'), 'utf8'), 'E27 part');
+    assert.ok(!fs.existsSync(path.join(s.lastRestore.path, label, '밖.txt')), 'only the part');
+    assert.equal((await app.call('openRestoreFolder')).value.ok, true);
+    assert.deepEqual(opened, [s.lastRestore.path]);
+    // A request the window cannot check is refused before any folder is asked: a device name restic could not write.
+    assert.equal((await app.call('restoreScope', [{ profile: 'local', folder: data, from: 'old pc', place: 'pick' }])).value.code, 'INVALID_REQUEST');
+    await app.call('$shutdown'); assert.equal(await app.exited, 0);
+    // The folders a stopped or failed restore left, as the engine writes them down (화면 세션 E29 · 카본 끝판 A2): the window opens
+    // each kind's own for the person to remove, past the worker's guard on the path; a folder that is gone is said so.
+    const leftWhole = path.join(out, '복구-만들다만'), leftPicked = path.join(out, '선택복구-만들다만');
+    for (const d of [leftWhole, leftPicked]) fs.mkdirSync(d);
+    const settings = path.join(state, 'vault', 'settings.json'), config = JSON.parse(fs.readFileSync(settings, 'utf8')), at = new Date().toISOString();
+    config.lastRestoreError = { code: 'CANCELED', message: '되살리기를 그만두었습니다.', at, path: leftWhole };
+    config.lastSelectedRestoreError = { code: 'CANCELED', message: '되살리기를 그만두었습니다.', at, path: leftPicked };
+    fs.writeFileSync(settings, JSON.stringify(config, null, 2));
+    const reopened = [];
+    const again = worker(state, { answers: { openPath: a => { reopened.push(a[0]); return null; } } });
+    await again.call('$boot');
+    assert.equal((await again.call('openRestoreFolder', [{ unfinished: true }])).value.ok, true);
+    const picked = (await again.call('openSelectedRestoreFolder', [{ profile: 'local', unfinished: true }])).value;
+    assert.equal(picked.ok, true, JSON.stringify(picked));
+    assert.equal((await again.call('openRestoreFolder', [{ unfinished: false }])).value.ok, true);
+    assert.deepEqual(reopened, [leftWhole, leftPicked, s.lastRestore.path]);
+    fs.rmSync(leftWhole, { recursive: true });
+    assert.equal((await again.call('openRestoreFolder', [{ unfinished: true }])).value.code, 'NOT_FOUND');
+    assert.equal(reopened.length, 3);
+    await again.call('$shutdown'); assert.equal(await again.exited, 0);
   });
 });

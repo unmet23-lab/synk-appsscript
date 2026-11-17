@@ -1012,3 +1012,30 @@ test('넘길 폴더가 없으면 어느 폴더인지 함께 거절한다(화면 
   // The rest are checked as before (one folder inside another).
   await assert.rejects(f.account.takeWriteSeat({ sources: [f.root, f.source] }), (e) => e.code !== 'SOURCES_MISSING');
 });
+
+test('a reading device cut off leaves its read key to be replaced: asked at once here, or once this PC has its device (화면 세션 E28)', async () => {
+  // This PC has its device: 「복구 정보 다시 맡기기」 is asked at once, and goes when the new key is in.
+  const f = await fixture();
+  await f.account.signIn(); await f.account.startProtection({ sources: [f.source] });
+  f.provision.revoke = async () => ({ suggestReadKeyRotation: true });
+  assert.deepEqual(await f.account.revokeDevice(OLD), { suggestReadKeyRotation: true });
+  assert.deepEqual(f.account.state().needs, ['read-key']);
+  await f.account.rotateReadKey();
+  assert.deepEqual(f.account.state().needs, []);
+  // A device that had no key to hold (the server says so): nothing is asked.
+  f.provision.revoke = async () => ({ suggestReadKeyRotation: false });
+  await f.account.revokeDevice(OLD); assert.deepEqual(f.account.state().needs, []);
+  // No device here yet (the account was full): remembered across a restart, and asked once 「Google로 시작」 has given
+  // this PC its device — unless that sign-up brought a new read key (the account had none in use).
+  for (const [readKey, after] of [[null, ['read-key']], [RK, []]]) {
+    const g = await fixture({ provision: { readKey } });
+    g.provision.revoke = async () => ({ suggestReadKeyRotation: true });
+    await g.account.revokeDevice(OLD);
+    assert.deepEqual(g.account.state().needs, [], 'nothing to press before this PC has a device');
+    assert.equal(JSON.parse(await fs.readFile(g.account.viewFile, 'utf8')).rotateAfterSignIn, true);
+    await g.account.open();
+    await g.account.signIn();
+    assert.deepEqual(g.account.state().needs, after, String(readKey));
+    assert.equal(JSON.parse(await fs.readFile(g.account.viewFile, 'utf8')).rotateAfterSignIn, false, 'asked once');
+  }
+});

@@ -238,6 +238,7 @@
   "restoreSeen": {"mutating":false,"timeoutMs":10000,"dialog":false,"allowedReadOnly":true},
   "cancelGoogle": {"mutating":false,"timeoutMs":10000,"dialog":false,"allowedReadOnly":true},
   "cancelRestore": {"mutating":true,"timeoutMs":10000,"dialog":false,"allowedReadOnly":true},
+  "restoreScope": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
   "openGoogleAccount": {"mutating":false,"timeoutMs":30000,"dialog":false,"allowedReadOnly":true},
   "moveDevices": {"mutating":false,"timeoutMs":120000,"dialog":false,"allowedReadOnly":true},
   "movePreview": {"mutating":false,"timeoutMs":1800000,"dialog":false,"allowedReadOnly":true},

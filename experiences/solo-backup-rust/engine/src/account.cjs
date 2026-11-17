@@ -81,7 +81,9 @@ function cleanInfo(v) {
     restore: restoreView(o.restore), restoreEnded: endedView(o.restoreEnded), undoAsked: typeof o.undoAsked === 'string' && JOB.test(o.undoAsked) ? o.undoAsked : null, left: typeof o.left === 'string' && CODE.test(o.left) ? o.left : null,
     needs: Array.isArray(o.needs) ? NEEDS.filter((x) => x !== 'restore' && o.needs.includes(x)) : [], readKeyHeld: false,
     deadReadKey: typeof o.deadReadKey === 'string' && /^[a-f0-9]{32}$/.test(o.deadReadKey) ? o.deadReadKey : null,
-    googleRemovalUrl: typeof o.googleRemovalUrl === 'string' && ACCOUNT_PAGE.test(o.googleRemovalUrl) ? o.googleRemovalUrl : null };
+    googleRemovalUrl: typeof o.googleRemovalUrl === 'string' && ACCOUNT_PAGE.test(o.googleRemovalUrl) ? o.googleRemovalUrl : null,
+    // A reading device was cut off before this PC had a device of its own (화면 세션 E28): ask for a new read key once it has.
+    rotateAfterSignIn: o.rotateAfterSignIn === true };
 }
 
 // The server status (GET status) as the writer's engine needs it (4.5 「회차 실행기」 · 4.6 N2), for the run and the
@@ -262,7 +264,9 @@ class Account {
       if (e.code === 'LIMIT_DEVICES') e.details = { devices: listed(e.extra?.devices) };
       throw e;
     }
-    Object.assign(this.info, { googleStepRequired: !!r.googleStepRequired, writer: writerOf(r.writer), needs: [], left: null });
+    // After a reading device was cut off from here (E28) the account's read key is still the one it holds, unless this
+    // sign-up brought a new one (the server makes one only when the account has none in use).
+    Object.assign(this.info, { googleStepRequired: !!r.googleStepRequired, writer: writerOf(r.writer), needs: this.info.rotateAfterSignIn && !r.readKey ? ['read-key'] : [], left: null, rotateAfterSignIn: false });
     await this.note();
     return this.state();
   }
@@ -384,7 +388,7 @@ class Account {
       if (e.config.mode === 'restore') await e.updateCloudCredentials(readKey);
     }
     await this.provision.confirmReadKey(readKey.keyId);
-    Object.assign(this.info, { googleStepRequired: false, googleRemovalUrl: null, left: null, readKey: 'ready', readKeyHeld: false, deadReadKey: null, needs: this.info.needs.filter((x) => x !== 'read-key') });
+    Object.assign(this.info, { googleStepRequired: false, googleRemovalUrl: null, left: null, readKey: 'ready', readKeyHeld: false, deadReadKey: null, needs: this.info.needs.filter((x) => x !== 'read-key'), rotateAfterSignIn: false });
     await this.keep();
   }
   // The keys a restore (or a rotation) brought: the engine writes with the new write key and the new read key goes
@@ -429,6 +433,14 @@ class Account {
     this.need({ device: false });
     if (!DEVICE.test(deviceId || '')) throw failure('BAD_INPUT');
     const r = await this.google(() => this.provision.revoke(deviceId));
+    // 화면 세션 E28: a reading device cut off still holds the envelope's read key and the password (server 「POST
+    // devices/revoke」, 설계 S18). A new read key retires that one: 「복구 정보 다시 맡기기」(rotateReadKey) is asked
+    // through `needs` — at once when this PC has a device, or once 「Google로 시작」 has given it one.
+    if (r.suggestReadKeyRotation) {
+      if (this.provision.state().connected) this.info.needs = [...new Set([...this.info.needs, 'read-key'])];
+      else this.info.rotateAfterSignIn = true;
+      await this.keep();
+    }
     return { suggestReadKeyRotation: !!r.suggestReadKeyRotation };
   }
   async reportLost(deviceId) {

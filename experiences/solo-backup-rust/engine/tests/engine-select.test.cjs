@@ -237,3 +237,67 @@ test('a stop while a failing restore writes its failure changes nothing; a recom
   assert.match(path.basename(stopped.restorePath), /^추천복구-/);
   assert.ok((await fs.stat(stopped.restorePath)).isDirectory());
 });
+test('a part of another device\'s backup comes whole into a new folder; its refusals and failure are written down with the device (화면 세션 E27 · E26 알림)', async () => {
+  const f = await fixture(), { engine, fake, events, root } = f, oldId = 'c'.repeat(64), oldAt = new Date(Date.now() - 60000).toISOString();
+  fake.snapshots.push({ id: oldId, time: oldAt, hostname: 'old-pc', paths: ['C:\\old work', 'D:\\big'], tags: [APP, 'vault:' + engine.config.vaultId, VERIFIED] });
+  const node = (p, type = 'file') => ({ message_type: 'node', path: p, type, size: type === 'file' ? 3 : 0 });
+  const tree = { '/D/big': [node('/2024', 'dir'), node('/2024/사진', 'dir'), node('/2024/사진/a.jpg'), node('/top.txt')], '/D/big/2024': [node('/사진', 'dir'), node('/사진/a.jpg')] };
+  fake.ls = args => { const at = args.find(a => /^[0-9a-f]{64}:/.test(a)); if (!at || at.startsWith('a'.repeat(64))) return null; const rows = tree[at.slice(65)]; if (!rows) throw new Error('no such path in the backup'); return { id: at.slice(0, 64), nodes: args.includes('--recursive') ? rows : rows.filter(n => /^\/[^/]+$/.test(n.path)) }; };
+  // The tar restic sends for /D/big/2024: its folder and its file, then the two empty blocks.
+  const tarOf = async entries => { const pack = require('tar-stream').pack(); for (const [header, body] of entries) pack.entry(header, body); pack.finalize(); const parts = []; for await (const c of pack) parts.push(c); return Buffer.concat(parts); };
+  fake.content = await tarOf([[{ name: '사진', type: 'directory' }], [{ name: '사진/a.jpg', size: 3 }, Buffer.from('abc')]]);
+  const out = path.join(root, 'output'), health = engine.config.health.status;
+  events.length = 0;
+  await engine.restoreScope({ from: 'old-pc', folder: 'd:\\BIG', sub: '2024', parent: out });
+  const done = engine.config.lastRestore;
+  assert.equal(await fs.readFile(path.join(done.path, '02-big', '2024', '사진', 'a.jpg'), 'utf8'), 'abc');
+  assert.deepEqual(done.scope, { from: 'old-pc', folder: 'D:\\big', sub: '2024', snapshotAt: oldAt });
+  assert.deepEqual(JSON.parse(await fs.readFile(path.join(done.path, '복구경로.json'), 'utf8')), [{ original: 'D:\\big\\2024', restoredFolder: '02-big/2024', backupAt: oldAt, from: 'old-pc' }]);
+  assert.deepEqual(events.filter(e => ['ls', 'dump'].includes(e.args[0])).map(e => e.args), [['ls', '--json', '--recursive', oldId + ':/D/big/2024'], ['dump', oldId + ':/D/big/2024', '/', '--archive', 'tar']], 'only that part is read');
+  assert.equal(engine.config.lastRestoreError, null);
+  // Refused before anything is made, and written down as the restore's own failure with the device: a folder or a part
+  // the backup does not have, a place where the backup's folders are, a part past the list limit. The health stays.
+  const source = engine.config.sources[0];
+  for (const [input, expected] of [[{ folder: 'E:\\none' }, 'INVALID_REQUEST'], [{ folder: 'D:\\big', sub: '없음' }, 'INVALID_REQUEST'], [{ folder: 'D:\\big', sub: '2024', parent: source }, 'OUTPUT_UNSAFE']]) {
+    await assert.rejects(engine.restoreScope({ from: 'old-pc', parent: out, ...input }), e => e.code === expected, JSON.stringify(input));
+    assert.deepEqual([engine.config.lastRestoreError.code, engine.config.lastRestoreError.from, engine.config.lastRestoreError.path], [expected, 'old-pc', undefined]);
+  }
+  engine.scopeListMax = 1;
+  await assert.rejects(engine.restoreScope({ from: 'old-pc', folder: 'D:\\big', sub: '2024', parent: out }), e => e.code === 'CATALOG_TOO_LARGE' && /안쪽 폴더/.test(e.message));
+  assert.equal(engine.config.lastRestoreError.code, 'CATALOG_TOO_LARGE');
+  delete engine.scopeListMax;
+  await assert.rejects(engine.restoreScope({ from: 'old pc', folder: 'D:\\big', parent: out }), e => e.code === 'INVALID_REQUEST');
+  assert.equal(engine.config.lastRestoreError.from, undefined, 'a name restic could not have written is not written down');
+  await assert.rejects(engine.restoreScope({ from: 'old-pc', parent: out }), e => e.code === 'INVALID_REQUEST', 'a folder is needed');
+  assert.equal(engine.config.health.status, health);
+  assert.deepEqual(engine.config.lastRestore, done, 'the finished one stays');
+  // What arrives differs from the list: the folder it made is named, and the health asks for a check as 「지금 상태」's does.
+  fake.content = await tarOf([[{ name: '사진', type: 'directory' }], [{ name: '사진/a.jpg', size: 4 }, Buffer.from('abcd')]]);
+  await assert.rejects(engine.restoreScope({ from: 'old-pc', folder: 'D:\\big', sub: '2024', parent: out }));
+  const failed = engine.config.lastRestoreError;
+  assert.deepEqual([failed.code, failed.from], ['RESTORE_FAILED', 'old-pc']);
+  assert.ok(failed.path && (await fs.stat(failed.path)).isDirectory());
+  assert.equal(engine.config.health.status, 'attention');
+  // A stop while it reads: stopped, the health as it was, the folder named.
+  engine.config.health = { status: 'ok' };
+  fake.content = await tarOf([[{ name: '사진', type: 'directory' }], [{ name: '사진/a.jpg', size: 3 }, Buffer.from('abc')]]);
+  fake.afterDump = async () => { engine.cancelRestore(); };
+  await assert.rejects(engine.restoreScope({ from: 'old-pc', folder: 'D:\\big', sub: '2024', parent: out }), e => e.code === 'CANCELED');
+  assert.deepEqual([engine.config.lastRestoreError.code, engine.config.lastRestoreError.from, engine.config.health.status], ['CANCELED', 'old-pc', 'ok']);
+  assert.ok(engine.config.lastRestoreError.path);
+});
+
+test('a new folder that cannot be made is not written down as one a restore left (카본 끝판 A1 of 화면 세션 E27 · E29)', async () => {
+  const f = await fixture(), { engine, fake, root } = f, oldId = 'c'.repeat(64), oldAt = new Date(Date.now() - 60000).toISOString();
+  fake.snapshots.push({ id: oldId, time: oldAt, hostname: 'old-pc', paths: ['C:\\old work', 'D:\\big'], tags: [APP, 'vault:' + engine.config.vaultId, VERIFIED] });
+  const rows = [{ message_type: 'node', path: '/a.txt', type: 'file', size: 3 }];
+  fake.ls = args => { const at = args.find(a => /^[0-9a-f]{64}:/.test(a)); if (!at || at.startsWith('a'.repeat(64))) return null; return { id: at.slice(0, 64), nodes: rows }; };
+  // The place refuses the new folder (no right to write there, say): nothing was made, so nothing is named to open.
+  const promises = require('node:fs/promises'), mkdir = promises.mkdir, out = path.join(root, 'output');
+  promises.mkdir = async (p, ...rest) => { if (/^복구-/.test(path.basename(String(p)))) throw Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' }); return mkdir(p, ...rest); };
+  try {
+    await assert.rejects(engine.restoreScope({ from: 'old-pc', folder: 'D:\\big', parent: out }), e => /만들기 전에 중단/.test(e.message) && !/완료되지 않은 복구 폴더/.test(e.message));
+  } finally { promises.mkdir = mkdir; }
+  assert.deepEqual([engine.config.lastRestoreError.from, engine.config.lastRestoreError.path], ['old-pc', undefined]);
+  assert.deepEqual(await fs.readdir(out), []);
+});
