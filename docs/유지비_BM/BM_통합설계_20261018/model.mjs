@@ -346,7 +346,7 @@ function run(inp, scName, opts = {}) {
         newStudents = organicNew + paidNew;
         students = Math.min(cap, before + paidNew);
       } else {
-        marketNew = (mk.pool / 12) * step(inp.market.labCapture[scName], m) * season * (opts.demandMult ?? 1);
+        marketNew = (mk.pool / 12) * step(inp.market.labCapture[scName], m) * season * (opts.demandMult ?? 1) * (L.priceDemandMult ?? 1); // priceDemandMult [11-17]: 값을 올린 만큼 줄어든다고 본 새 등록
         const before = students * ret + pre;
         const want = Math.max(0, marketNew - pre); // [검수 2] 사전 등록은 그 달 시장 수요 안에 든다
         newStudents = Math.min(want, Math.max(0, cap - before));
