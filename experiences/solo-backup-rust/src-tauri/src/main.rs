@@ -4,7 +4,52 @@ use serde_json::{json,Value};
 use std::{collections::VecDeque, fs, io::Write, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
 use tauri::{Emitter,Manager};
 
-struct AppState { worker:Arc<Worker>, current:Arc<Mutex<Value>>, closing:AtomicBool }
+struct AppState { worker:Arc<Worker>, current:Arc<Mutex<Value>>, closing:AtomicBool, opening:Mutex<Opening> }
+/// A notice's topic word on its way to the screen (4.2 「알림」). Until the screen's first call the page may not be
+/// listening yet, so the word waits here. A word that waited goes a moment after that first call, so the screen has
+/// its first state when it picks the topic's screen (`move` picks by the state); until it has gone, a newer word
+/// replaces it rather than overtaking it (GPT GA1), so the last click is the screen that stays.
+#[derive(Default)] struct Opening { ready:bool, sending:bool, topic:Option<&'static str> }
+impl Opening {
+    /// A word taken from the file: the word to send now, or none when it is kept for later.
+    fn arrive(&mut self,topic:&'static str)->Option<&'static str>{if self.ready{Some(topic)}else{self.topic=Some(topic);None}}
+    /// The screen's call: true when a kept word is to go after the short wait.
+    fn call(&mut self)->bool{if self.ready||self.sending{false}else if self.topic.is_some(){self.sending=true;true}else{self.ready=true;false}}
+    /// After the wait: the newest kept word, and from now on words go at once.
+    fn release(&mut self)->Option<&'static str>{self.ready=true;self.sending=false;self.topic.take()}
+}
+const OPEN_WAIT:std::time::Duration=std::time::Duration::from_millis(300);
+/// A click on a notice while the window is already open: the second start leaves the topic word in the state folder
+/// before it wakes the first window (platform::state_root), which takes it when it wakes. Only an exact word of the
+/// fixed list is ever taken back, from a plain small file, and the file goes whatever was in it.
+const OPEN_TOPIC:&str="open-topic";
+fn leave_topic(root:&Path,topic:&str){let _=fs::write(root.join(OPEN_TOPIC),topic);}
+fn take_topic(root:&Path)->Option<&'static str>{
+    let path=root.join(OPEN_TOPIC);
+    let meta=fs::symlink_metadata(&path).ok()?;
+    let text=if meta.is_file()&&meta.len()<=16{fs::read_to_string(&path).ok()}else{None};
+    let _=fs::remove_file(&path);
+    let text=text?;
+    notify::TOPICS.iter().copied().find(|topic|*topic==text)
+}
+/// Hands a topic word to the screen, or keeps it if the page is not listening yet. Every send happens with the lock
+/// held, so words reach the screen in the order they were taken.
+fn hand_topic(app:&tauri::AppHandle,topic:&'static str){
+    let state=app.state::<AppState>();
+    let mut opening=state.opening.lock().unwrap();
+    if let Some(topic)=opening.arrive(topic){let _=app.emit("backup:open",json!({"topic":topic}));}
+}
+/// The screen's call (backup_call): a kept word goes after OPEN_WAIT, the newest one if another came meanwhile.
+fn screen_called(app:&tauri::AppHandle){
+    if !app.state::<AppState>().opening.lock().unwrap().call(){return;}
+    let app=app.clone();
+    std::thread::spawn(move||{
+        std::thread::sleep(OPEN_WAIT);
+        let state=app.state::<AppState>();
+        let mut opening=state.opening.lock().unwrap();
+        if let Some(topic)=opening.release(){let _=app.emit("backup:open",json!({"topic":topic}));}
+    });
+}
 struct NativeHost { root:PathBuf, exe:PathBuf, test:bool, packaged:bool, dialogs:Mutex<VecDeque<Value>>, dialog_busy:AtomicBool, engine:Mutex<Option<fs::File>> }
 impl NativeHost {
     fn call(&self,method:&str,args:Value)->Result<Value,String> {
@@ -107,7 +152,10 @@ async fn backup_call(window:tauri::WebviewWindow,state:tauri::State<'_,AppState>
     let policy=&protocol::methods()[&method];
     let read_only={let value=state.current.lock().unwrap();value["readOnly"]==true||value["mode"]=="restore"};
     if read_only&&!policy.allowed_read_only{return Ok(json!({"ok":false,"error":"복구 전용 연결입니다.","code":"READ_ONLY"}));}
-    Ok(match state.worker.call(&method,args,policy.timeout_ms).await {Ok(value)=>value,Err(code)=>json!({"ok":false,"error":"진행 중인 작업이 끝난 뒤 다시 눌러 주세요.","code":code})})
+    let result=match state.worker.call(&method,args,policy.timeout_ms).await {Ok(value)=>value,Err(code)=>json!({"ok":false,"error":"진행 중인 작업이 끝난 뒤 다시 눌러 주세요.","code":code})};
+    // The screen listens for `backup:open` before its first call (ui/app.js), so from here on a topic can go to it.
+    screen_called(window.app_handle());
+    Ok(result)
 }
 
 fn shutdown(app:tauri::AppHandle){
@@ -253,10 +301,10 @@ fn run()->Result<(),String>{
         return Ok(());
     }
     let switches:&[&str]=if cfg!(debug_assertions){&["--background","--test-mode","--smoke"]}else{&["--background"]};
-    // A notification's click is exactly one open address and nothing else (4.2 「알림」). Every notice so far opens the
-    // status screen, which is the window itself; a topic's own screen comes with the new screens (4.12).
-    let opened=matches!(args.as_slice(),[one] if notify::topic_of(one).is_some());
-    if !opened&&args.iter().any(|a|!switches.contains(&a.as_str())){return Err("INVALID_ARGUMENT".into());}
+    // A notification's click is exactly one open address and nothing else (4.2 「알림」). Its topic word goes to the
+    // screen as `backup:open`, which opens that screen (ui/app.js openTopic); no topic acts on being opened.
+    let topic=match args.as_slice(){[one]=>notify::topic_of(one),_=>None};
+    if topic.is_none()&&args.iter().any(|a|!switches.contains(&a.as_str())){return Err("INVALID_ARGUMENT".into());}
     let test=args.contains(&"--test-mode".into());let smoke_mode=args.contains(&"--smoke".into());
     if smoke_mode&&!test{return Err("TEST_MODE_REQUIRED".into());}
     let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
@@ -273,7 +321,11 @@ fn run()->Result<(),String>{
     if let Err(code)=backup_native::bundle::verify(&resources,&[]){
         return Err(if !cfg!(debug_assertions)&&(moved_aside("WorkBackupRun.exe")||moved_aside("WorkBackup.exe")){"INSTALL_INCOMPLETE".into()}else{code});
     }
+    // The word is left before the window lock is tried: if a window is already open, state_root wakes it and it takes
+    // the word; if this start is the window, it takes its own word back (and clears one a crashed start left).
+    if let Some(topic)=topic{if let Ok(dir)=platform::state_dir(test){leave_topic(&dir,topic);}}
     let (root,lock)=platform::state_root(test)?;
+    let launch_topic=take_topic(&root).filter(|_|topic.is_some());
     if root.join("migration-incomplete").exists(){return Err("MIGRATION_INCOMPLETE".into());}
     let signal=Arc::new(platform::InstanceSignal::new(&root)?);
     let scripted=if test{match std::env::var_os("SOLO_BACKUP_TEST_DIALOGS"){Some(path)=>{let data=fs::read(path).map_err(|_|"TEST_DIALOGS")?;if data.len()>131072{return Err("TEST_DIALOGS".into());}serde_json::from_slice::<VecDeque<Value>>(&data).map_err(|_|"TEST_DIALOGS")?},None=>VecDeque::new()}}else{VecDeque::new()};
@@ -295,14 +347,17 @@ fn run()->Result<(),String>{
         let initial=tauri::async_runtime::block_on(worker.call("$boot",json!([]),120000)).map_err(std::io::Error::other)?;
         first.observe(&initial);
         *current.lock().unwrap()=initial.clone();
-        app.manage(AppState{worker,current:current.clone(),closing:AtomicBool::new(false)});
+        app.manage(AppState{worker,current:current.clone(),closing:AtomicBool::new(false),opening:Mutex::new(Opening{topic:launch_topic,..Opening::default()})});
         tauri::WebviewWindowBuilder::new(app,"main",tauri::WebviewUrl::App("index.html".into()))
             .data_directory(root.join("webview"))
             // The screen is black (11-13 시안 A): no white flash before the web page is drawn (화면 세션 11-16).
             .background_color(tauri::window::Color(0,0,0,255))
             .title("업무 백업").inner_size(1080.0,820.0).min_inner_size(760.0,640.0).visible(!test&&!(background&&active(&initial)))
             .on_navigation(protocol::local_url).on_new_window(|_,_|tauri::webview::NewWindowResponse::Deny).build()?;
-        if !test{let focus_handle=handle.clone();std::thread::spawn(move||loop{if signal.wait(){show(&focus_handle);}});}
+        if !test{
+            let focus_handle=handle.clone();let topic_root=root.clone();
+            std::thread::spawn(move||loop{if signal.wait(){show(&focus_handle);if let Some(topic)=take_topic(&topic_root){hand_topic(&focus_handle,topic);}}});
+        }
         if !test{
             let open=tauri::menu::MenuItem::with_id(app,"open","업무 백업 열기",true,None::<&str>)?;
             let exit=tauri::menu::MenuItem::with_id(app,"exit","앱 종료 (자동 백업 중지)",true,None::<&str>)?;
@@ -341,3 +396,42 @@ fn main(){
     if !std::env::args().any(|a|a=="--test-mode"||a=="--migration-preview") {rfd::MessageDialog::new().set_title("업무 백업을 시작하지 못했습니다").set_description(code).show();}
     std::process::exit(1);
 }}
+
+#[cfg(test)] mod tests {
+    use super::*;
+    #[test] fn a_topic_word_is_taken_back_once_and_only_from_the_fixed_list(){
+        let dir=std::env::temp_dir().join(format!("swb-open-topic-{}",std::process::id()));
+        let _=fs::remove_dir_all(&dir);fs::create_dir_all(&dir).unwrap();
+        assert_eq!(take_topic(&dir),None);
+        for topic in notify::TOPICS{leave_topic(&dir,topic);assert_eq!(take_topic(&dir),Some(topic));assert_eq!(take_topic(&dir),None);}
+        for bad in ["STATUS","status\n"," restore","../status","status?x=1","","statusstatusstatus"]{
+            fs::write(dir.join(OPEN_TOPIC),bad).unwrap();
+            assert_eq!(take_topic(&dir),None,"{bad:?}");
+            assert!(!dir.join(OPEN_TOPIC).exists(),"{bad:?} is left");
+        }
+        // Not a plain file: nothing is read from it.
+        fs::create_dir(dir.join(OPEN_TOPIC)).unwrap();fs::write(dir.join(OPEN_TOPIC).join("x"),"status").unwrap();
+        assert_eq!(take_topic(&dir),None);
+        fs::remove_dir_all(&dir).unwrap();
+    }
+    #[test] fn the_last_word_clicked_is_the_screen_that_stays(){
+        // A start with a word: it waits for the screen's first call, a newer click meanwhile replaces it (GPT GA1),
+        // only one wait is started, and afterwards words go at once.
+        let mut opening=Opening{topic:Some("restore"),..Opening::default()};
+        assert_eq!(opening.arrive("move"),None);
+        assert!(opening.call());
+        assert!(!opening.call(),"a second call while the word waits starts no second wait");
+        assert_eq!(opening.arrive("status"),None,"a click during the wait does not overtake the waiting word");
+        assert_eq!(opening.release(),Some("status"));
+        assert_eq!(opening.arrive("space"),Some("space"));
+        assert!(!opening.call());
+        // A start without a word: the first call makes the screen ready, and words go at once.
+        let mut opening=Opening::default();
+        assert_eq!(opening.arrive("devices"),None,"a click before the screen's first call waits for it");
+        assert!(opening.call());
+        assert_eq!(opening.release(),Some("devices"));
+        let mut opening=Opening::default();
+        assert!(!opening.call());
+        assert_eq!(opening.arrive("changes"),Some("changes"));
+    }
+}
