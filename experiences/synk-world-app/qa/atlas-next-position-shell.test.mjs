@@ -1094,6 +1094,72 @@ test('엔진 판의 짧은 진단 — 손님 끝 화면은 판이 그 답으로 
   }
 });
 
+// 진단의 끝내기는 시작하자마자 판을 끝난 것으로 두어 판을 닫을 때의 정리(stop)가 아무것도 하지 않는다. 그래서 끝내기가 기다리는 사이 판만 닫히면
+// 끝내기가 stop처럼 홈을 다시 그려야 한다 — 그러지 않으면 홈 점검 칸과 열린 내 위치 판이 방금 마친 진단을 모른 채 남는다(시험 형식 판의 끝 판
+// 검수 카본 E1과 같은 막이). 홈을 그린 횟수(studied)로 센다.
+test('엔진 판의 짧은 진단 — 끝 화면이 답의 저장을 기다리는 사이 판만 닫혀도 판을 닫을 때처럼 홈을 다시 그린다(카본 E1과 같은 막이)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  const app = shell({
+    wrap: made => ({
+      ...made,
+      answer(pid, result) {
+        const out = made.answer(pid, result);
+        return { ...out, evidence: hold.then(() => out.evidence) };
+      },
+    }),
+  });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await app.education.position({ start: true });
+    await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+    assert.ok((await answerItems(app)) > 0);
+    await tick(30);
+    assert.doesNotMatch(app.box().html, /data-position-done/, '끝내기가 답의 저장을 기다린다');
+    const before = app.studied();
+    app.box().isConnected = false;
+    release();
+    await until(() => app.studied() > before, '판만 닫혀도 홈을 다시 그린다');
+    assert.doesNotMatch(app.box().html, /data-position-done/, '닫힌 판에 끝 화면을 그리지 않는다');
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
+test('엔진 판의 짧은 진단 — 손님 끝 화면이 접기를 기다리는 사이 판이 닫히면 끝 화면은 그리지 않되 끝낸 판이라 홈을 다시 그린다(카본 E1과 같은 막이)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  const closed = [];
+  const app = shell({
+    wrap: made => ({
+      ...made,
+      finishSet(options) {
+        const out = made.finishSet(options);
+        closed.push(options);
+        return { ...out, folded: hold.then(() => out.folded) };
+      },
+    }),
+  });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await app.education.position({ start: true });
+    await until(() => app.box()?.html.includes('data-position-run'), '진단 문항');
+    await answerItems(app);
+    await until(() => closed.length === 1, '판을 닫는다');
+    const before = app.studied();
+    app.box().isConnected = false;
+    release();
+    await until(() => app.studied() > before, '판이 닫혀도 홈을 다시 그린다');
+    assert.doesNotMatch(app.box().html, /data-position-done/, '닫힌 판에 끝 화면을 그리지 않는다');
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
 test('엔진 판의 짧은 진단 — 서버 길 계정의 끝 화면은 접기를 기다리지 않는다(서버가 접는다 — 문항 줄은 답의 evidence로 그린다, Fable 끝 판 F3)', async () => {
   const sync = accountLike([]);
   const closed = [];

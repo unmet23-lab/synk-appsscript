@@ -238,6 +238,21 @@ const areaLeft = (week, area) => {
   const row = Array.isArray(week?.examPlan?.areas) ? week.examPlan.areas.find(item => item?.area === area) : null;
   return Boolean(row) && row.remaining > 0;
 };
+// 말하기의 이번 주 몫. 소리를 끈 날 지금 판 계획은 말하기를 닫는다(world-exam-plan.mjs — notes에 'speaking-audio-off'를 적고, 이번 주에 한 적이
+// 없으면 영역을 뺀다). 소리 때문에 닫힌 몫은 찬 것이 아니라 잠긴 것이다(설계 주인이 승인한 해석 1). 그래서 계획에 말하기 영역이 없고(이번 주에
+// 하지 않음) 말하기 항목이 있으면 남은 몫으로 보고 줄을 넘긴다. 플래너가 소리 때문에 그 줄을 잠그고, 점검 칸이 비면 홈이 「조건에 걸린 날」로
+// 학습 조건 단추를 낸다. 영역 셈만 보면 소리를 끈 날 말하기 줄이 빠지고 그 자리에 보탬이 섰다(끝 판 검수 GPT GE1).
+const speakingLeft = week => {
+  if (areaLeft(week, 'speaking')) return true;
+  const plan = week?.examPlan;
+  const closed = Array.isArray(plan?.notes) && plan.notes.includes('speaking-audio-off');
+  const listed = Array.isArray(plan?.areas) && plan.areas.some(row => row?.area === 'speaking');
+  return closed && !listed && typeof week?.speaking?.routeId === 'string';
+};
+// 보탬을 막는 몫(해석 1 — 잠긴 활동과 낼 것이 없는 활동도 몫은 남은 것이다). 다시 확인과 말하기는 몫이 남아도 넘길 줄이 없을 수 있다(진단이
+// 낼 문항이 없음 · 말하기 항목의 유형을 읽지 못함). 시험 형식과 쓰기는 몫이 남으면 줄이 늘 넘어가므로(보탬도 같은 53번 길이 있어야 선다) 넘긴
+// 줄이 이미 보탬을 막는다.
+const checkLeft = week => areaLeft(week, 'recheck') || speakingLeft(week);
 const MOCK_OPEN = Object.freeze({
   id: 'world.mock',
   label: '시험 형식 연습',
@@ -271,10 +286,12 @@ function writingActivity(week, settings) {
   return writingLine(week, writing, settings);
 }
 // 보탬(설계 주인 11-17 다시 여쭘의 답 2) — 점검 칸 넷의 이번 주 몫이 모두 차 넘길 점검 칸 활동이 하나도 없는 날에만 부른다(아래 todayActivities).
-// 조건에 걸려 잠긴 활동도 몫이 남은 것이라 그날은 부르지 않는다. 이번 주 쓰기에서 열린 한 가지 고치기(그 고치기의 마지막 사건 needAt이 이번 주
-// 계획의 주 안)가 아직 열려 있으면 그것을 한 줄로 세운다. 고쳐 쓰기의 효과는 첫 글을 쓴 바로 뒤에 가장 크고, 다음 주 계획까지 미루면 한 주쯤
-// 식는다. 계획이 찬 뒤에는 첫 글(host.writing.start)이 서지 않으므로 고치기가 닫히면 더 열리지 않는다. 도움을 받아 고친 판(assisted)은 고치기가
-// 아직 열린 것이라 「이번에는 혼자」 줄로 한 번 더 설 수 있다. 고친 판은 앱이 지금 세는 대로 쓰기 한 수에 든다(셈의 꼴은 그대로다).
+// 조건에 걸려 잠긴 활동과 낼 것이 없는 활동도 몫이 남은 것이라 그날은 부르지 않는다(checkLeft). 이번 주 쓰기에서 열린 한 가지 고치기(그
+// 고치기의 마지막 사건 needAt이 이번 주 계획의 주 안)가 아직 열려 있으면 그것을 한 줄로 세운다. 고쳐 쓰기의 효과는 첫 글을 쓴 바로 뒤에 가장
+// 크고, 다음 주 계획까지 미루면 한 주쯤 식는다. 계획이 찬 뒤에는 첫 글(host.writing.start)이 서지 않으므로 고치기가 닫히면 더 열리지 않는다.
+// 도움을 받아 고친 판(assisted)은 고치기가 아직 열린 것이라 「이번에는 혼자」 줄로 한 번 더 설 수 있다. 거듭 설 수 있는 상한은 계획 주의 끝이다
+// (도움을 받아 다시 고치면 needAt이 옮겨 그 주 안에서는 다시 서고, 다음 계획 주에는 needAt이 지난주라 서지 않는다). 고친 판은 앱이 지금 세는
+// 대로 쓰기 한 수에 든다(셈의 꼴은 그대로다).
 function writingFixActivity(week, settings) {
   const writing = week?.writing;
   const bounds = week?.examPlan?.week;
@@ -306,7 +323,7 @@ function writingLine(week, writing, settings) {
 }
 function speakingActivity(week, settings) {
   const speaking = week?.speaking;
-  if (!speaking || typeof speaking.routeId !== 'string' || !areaLeft(week, 'speaking')) return null;
+  if (!speaking || typeof speaking.routeId !== 'string' || !speakingLeft(week)) return null;
   const facts =
     speaking.untried > 0
       ? { describe: { key: 'speaking', slots: { type: speaking.type, untried: speaking.untried } }, goals: areaGoal(week, 'speaking') }
@@ -441,8 +458,9 @@ export function todayActivities({
       writingActivity(week, normalized),
       speakingActivity(week, normalized),
     ].filter(Boolean);
-    // 보탬 — 넘길 점검 칸 활동이 하나도 없는 날에만(설계 주인 11-17 다시 여쭘의 답 2 · 위 writingFixActivity). 다른 줄이 하나라도 설 수 있는 날에는 서지 않는다.
-    if (checks.length === 0) checks.push(writingFixActivity(week, normalized));
+    // 보탬 — 넘길 점검 칸 활동이 하나도 없고 점검 칸 넷의 몫도 모두 찬 날에만(설계 주인 11-17 다시 여쭘의 답 2 · 위 writingFixActivity · checkLeft).
+    // 다른 줄이 하나라도 설 수 있는 날, 몫이 남았는데 넘길 줄이 없는 날에는 서지 않는다(끝 판 검수 GPT GE1).
+    if (checks.length === 0 && !checkLeft(week)) checks.push(writingFixActivity(week, normalized));
     for (const check of checks) if (check) out.push(check);
   }
   return out;

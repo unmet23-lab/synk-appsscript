@@ -13,9 +13,18 @@
 //   ⑤ 그 답의 시각이 창(since 이상) 안이다. 창은 lead를 고른 뒤 마지막에 건다 — 창 안의 줄만 먼저 자르면 창 앞에 이미 만난 계열의 창 안
 //      답이 첫 만남으로 서고, 창 바로 앞에 낸 제시에 창 안에서 한 답이 제시를 잃는다(설계 검토 카본 B6).
 // 내는 것은 능력 id마다의 근거 수다(줄은 내지 않는다). 시험 · 영역으로 묶는 것과 문턱(전체 30 · 영역별 10)은 제품이 한다.
-import { gameOfSet } from '../coach/set-id.mjs';
+import { gameOfSet, isGameId } from '../coach/set-id.mjs';
 import { byTime } from '../fold/order.mjs';
 import { toMark } from './rows.mjs';
+
+// 묻는 값(끝 판 검수 카본 F1) — 게임 이름은 판 번호의 게임 이름 꼴만, 창의 시작은 유한한 수(ms)만 받고 그 밖은 던진다. 꼴이 틀린 값으로 부르면
+// 판 번호를 읽지 못한 만남(null)과 「물은 게임 null」이 같다고 세거나, 창이 전체 기간으로 풀린다. 제품의 입구(코치 · talk · 리허설 서버)도 검사한다.
+function askOf({ game, since } = {}) {
+  if (!isGameId(game)) throw new TypeError('Atlas record: firstAnswers의 game은 게임 이름이다');
+  if (!Number.isFinite(since))
+    throw new TypeError('Atlas record: firstAnswers의 since는 유한한 수다');
+  return { game, since };
+}
 
 // 한 계열의 만남 줄(meet · carry — 처음부터, 차례는 상관없다) → 첫 만남이 혼자 낸 채점된 답이면 그 줄(①②③), 아니면 null.
 export function soloLead(rows) {
@@ -35,7 +44,8 @@ export function soloLead(rows) {
 
 // 능력 id마다의 근거 수 — 차례가 정해진 보통 객체(능력 id 차례). families는 계열마다의 만남 줄 묶음들(Map의 값 · 배열), setOf(key)는
 // 그 만남(답)의 제시가 실은 판 번호(없으면 null)다. 손님 코치는 기록부의 묶음에서, 서버는 사건 표에서 setOf를 짓는다.
-export function firstAnswersOf(families, setOf, { game, since }) {
+export function firstAnswersOf(families, setOf, ask) {
+  const { game, since } = askOf(ask);
   const counts = new Map();
   for (const rows of families) {
     const lead = soloLead(rows);
@@ -49,7 +59,9 @@ export function firstAnswersOf(families, setOf, { game, since }) {
 // 서버 저장소(server.mjs의 store 포트)에서 센다. 첫 걸음: 이 계정 · 이 판 묶음의 만남 줄 전부(meetRows). 둘째 걸음: 창 안에 선 혼자 낸
 // lead 답의 사건과 그 제시 사건을 사건 번호 묶음으로 한 번씩 찾아 판 번호를 읽는다(eventsByIds — 계정 · 사건 번호 유일 색인). 셋째: 셈.
 // 옛 꼴 답은 접기 번호가 사건 번호가 아니라(adapt.mjs serverKey) 찾지 못하고, 옛 꼴 제시에는 판 번호가 없다 — 둘 다 근거가 아니다.
-export async function firstAnswersOfStore(store, { game, since }) {
+// 묻는 값은 저장소를 읽기 전에 검사한다(꼴이 틀리면 읽지 않고 던진다).
+export async function firstAnswersOfStore(store, ask) {
+  const { game, since } = askOf(ask);
   const families = await store.meetRows();
   const keys = [];
   for (const rows of families.values()) {

@@ -340,13 +340,11 @@ let shift = 0;
 Date.now = () => realNow() + shift;
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
-const KST = 9 * HOUR;
-// 다음 월요일 한국 시각 10시로 옮긴다.
+// 고정한 월요일 한국 시각 10시(2026-11-23)로 옮긴다. 실행하는 날과 상관없이 같은 주에서 돈다 — 벽시계로 다음 월요일을 고르면 실행하는 주마다 시험일
+// (2027-04-18)까지 남은 기간과 계획의 단계가 달라지고, 2027-04-12부터는 시작 시각이 시험일 뒤로 넘어간다(끝 판 검수 카본 B3). 잰 열은 이 주의 열이다.
+const MONDAY_10_KST = Date.UTC(2026, 10, 23, 1);
 function toMonday10() {
-  const now = realNow();
-  const kst = new Date(now + KST);
-  const ahead = (8 - kst.getUTCDay()) % 7 || 7;
-  shift = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate() + ahead, 10) - KST - now;
+  shift = MONDAY_10_KST - realNow();
 }
 const label = row => (row ? `${row.activityId} · ${row.why?.code ?? '-'}` : '-');
 
@@ -364,7 +362,7 @@ async function finishDiagnostic(app) {
 }
 
 // 하루 — 점검 칸의 줄을 읽고 그 줄을 한다. 돌려주는 것: 그날의 줄 · 이번 주 계획의 다음 영역 · 넘긴 점검 칸 활동.
-async function dayOf(app, { log, writing, tried, done }) {
+async function dayOf(app, { log, writing, tried, done, fixes }) {
   app.education.refresh();
   await until(() => engineHome(app), '엔진 판의 이번 주 계획');
   const plan = app.plan();
@@ -372,7 +370,15 @@ async function dayOf(app, { log, writing, tried, done }) {
   const offered = plan.candidates.filter(open => ['position', 'mock', 'writing', 'speaking'].includes(open.route)).map(open => open.route);
   const area = name => plan.examPlan.areas.find(item => item.area === name);
   const count = name => (area(name) ? `${area(name).done}/${area(name).planned}` : '-');
-  const day = { check: label(row), next: plan.examPlan.next?.area ?? '-', offered: [...new Set(offered)].join(' · '), writing: count('writing'), speaking: count('speaking') };
+  // need — 쓰기 줄이 실은 한 가지 고치기의 꼴(retry · assisted). 같은 이유 코드(host.writing)의 「다시 연습」과 「이번에는 혼자」를 가른다.
+  const day = {
+    check: label(row),
+    need: row?.why?.slots?.need ?? null,
+    next: plan.examPlan.next?.area ?? '-',
+    offered: [...new Set(offered)].join(' · '),
+    writing: count('writing'),
+    speaking: count('speaking'),
+  };
   if (row?.activityId === 'world.position.check') {
     await app.education.position();
     await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
@@ -382,8 +388,9 @@ async function dayOf(app, { log, writing, tried, done }) {
   } else if (row?.activityId === 'world.mock') {
     assert.equal(log.record('mock', Date.now()), true);
   } else if (row?.activityId === 'topik2-writing-53') {
-    // 첫 글 뒤에는 규칙 점검이 「-다」 끝맺음을 짚어 한 가지 고치기가 열리고, 고쳐 쓰면 닫힌다
-    writing.state.need = writing.state.need ? null : { kind: 'retry', at: new Date(Date.now()).toISOString() };
+    // 쓰면 한 가지 고치기가 다음 꼴로 옮긴다(fixes에서 하나씩 — 기본은 첫 글 뒤 규칙 점검이 「-다」 끝맺음을 짚어 열리고(retry) 고쳐 쓰면 닫힌다(null)).
+    const kind = fixes.shift() ?? null;
+    writing.state.need = kind ? { kind, at: new Date(Date.now()).toISOString() } : null;
     done.writing.push(new Date(Date.now()).toISOString()); // 쓰기 연습의 기기 시각(앱 attempts — 이번 주 계획이 센다)
   } else if (row?.activityId === 'world.speaking.check') {
     tried.push(Number(String(row.open.routeId).split(':')[1]));
@@ -391,7 +398,9 @@ async function dayOf(app, { log, writing, tried, done }) {
   }
   return day;
 }
-async function weekOfScene({ hosts }) {
+// fixes — 학생이 쓰기 줄을 할 때마다 한 가지 고치기가 옮겨 갈 꼴의 차례(retry · assisted · null). 기본은 첫 글로 열리고 고쳐 쓰면 닫힌다.
+async function weekOfScene({ hosts, fixes = ['retry', null] }) {
+  const queue = [...fixes];
   toMonday10();
   const logs = new Map();
   const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
@@ -417,7 +426,7 @@ async function weekOfScene({ hosts }) {
   try {
     for (let i = 0; i < 7; i += 1) {
       if (i) shift += DAY;
-      days.push({ day: i + 1, ...(await dayOf(app, { log, writing, tried, done })) });
+      days.push({ day: i + 1, ...(await dayOf(app, { log, writing, tried, done, fixes: queue })) });
       if (!areas) areas = app.plan().examPlan.areas.map(row => row.area);
     }
   } finally {
@@ -446,6 +455,28 @@ test('점검 칸의 이레 — TOPIK II · 말하기를 켠 새 손님, 계획�
       '-',
     ],
     '1일째 짧은 진단 · 2일째 시험 형식 · 3일째 쓰기 · 4일째 말하기 · 5일째 쓰기 고치기 · 6 ~ 7일째 줄 없음',
+  );
+  assert.equal(days[4].need, 'retry', '5일째 고치기는 「다시 연습」이다');
+});
+
+// 설계 주인이 더하라고 한 장면(11-17 낮). 5일째 고치기를 도움을 받아 고치면(assisted) 고치기는 아직 열린 것이라 6일째에 「이번에는 혼자」 줄로 한 번
+// 더 서고, 혼자 써서 닫힌 7일째에는 줄이 없다. 「이번에는 혼자」가 거듭 설 수 있는 상한은 계획 주의 끝이다(§21-23의 3).
+test('점검 칸의 이레 — 같은 학생이 5일째 고치기를 도움을 받아 고치면 6일째에 「이번에는 혼자」가 서고, 혼자 써서 닫힌 7일째에는 줄이 없다(설계 주인 11-17 요청)', { timeout: 120_000 }, async t => {
+  const { days } = await weekOfScene({ hosts: true, fixes: ['retry', 'assisted', null] });
+  for (const row of days)
+    t.diagnostic(`${row.day}일째 — 점검 칸: ${row.check}${row.need ? ` (${row.need})` : ''} · 다음 영역: ${row.next} · 쓰기 ${row.writing} · 말하기 ${row.speaking} · 넘긴 활동: ${row.offered}`);
+  assert.deepEqual(
+    days.map(row => (row.need ? `${row.check} · ${row.need}` : row.check)),
+    [
+      'world.position.check · host.start',
+      'world.mock · host.form',
+      'topik2-writing-53 · host.writing.start',
+      'world.speaking.check · host.speaking',
+      'topik2-writing-53 · host.writing · retry',
+      'topik2-writing-53 · host.writing · assisted',
+      '-',
+    ],
+    '5일째 「다시 연습」 · 6일째 「이번에는 혼자」 · 7일째 줄 없음',
   );
 });
 

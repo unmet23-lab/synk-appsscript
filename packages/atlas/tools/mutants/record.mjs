@@ -926,4 +926,29 @@ export const RECORD_MUTANTS = [
     '  return Object.fromEntries([...counts].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));\n',
     '  return Object.fromEntries(counts);\n',
   ],
+  // ── 묻는 값의 꼴(끝 판 검수 카본 F1) ──
+  [
+    R,
+    '근거 셈(4-4d)',
+    '물은 게임 이름을 검사하지 않는다 — 물은 게임이 null이면 판 번호를 읽지 못한 만남을 센다(끝 판 검수 카본 F1)',
+    'src/record/first.mjs',
+    "  if (!isGameId(game)) throw new TypeError('Atlas record: firstAnswers의 game은 게임 이름이다');\n",
+    '',
+  ],
+  [
+    R,
+    '근거 셈(4-4d)',
+    '창의 시작을 검사하지 않는다 — since가 null이면 숫자 0과 견주어 전체 기간을 센다',
+    'src/record/first.mjs',
+    "  if (!Number.isFinite(since))\n    throw new TypeError('Atlas record: firstAnswers의 since는 유한한 수다');\n",
+    '',
+  ],
+  [
+    R,
+    '근거 셈(4-4d)',
+    '서버 셈이 저장소를 읽은 뒤에야 묻는 값을 검사한다 — 꼴이 틀린 값으로 만남 줄을 다 읽는다',
+    'src/record/first.mjs',
+    '  const { game, since } = askOf(ask);\n  const families = await store.meetRows();\n',
+    '  const { game, since } = ask ?? {};\n  const families = await store.meetRows();\n',
+  ],
 ];

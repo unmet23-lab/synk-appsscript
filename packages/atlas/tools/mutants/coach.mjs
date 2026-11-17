@@ -2170,4 +2170,12 @@ export const COACH_MUTANTS = [
     '      const bySkill = Object.freeze(firstAnswersOf(families.values(), setOf, { game, since }));\n',
     '      const bySkill = firstAnswersOf(families.values(), setOf, { game, since });\n',
   ],
+  [
+    C,
+    '근거 셈(4-4d)',
+    '손님 기록부가 장부 줄을 모으지 않는다 — 옮겨 온 장부에 접힌 계열의 시험 형식 첫 답이 근거로 선다(끝 판 검수 카본 F2)',
+    'src/record/log.mjs',
+    "    if (row.kind !== 'meet' && row.kind !== 'carry') continue;\n",
+    "    if (row.kind !== 'meet') continue;\n",
+  ],
 ];

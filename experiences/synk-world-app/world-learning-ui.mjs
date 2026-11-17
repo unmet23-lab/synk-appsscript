@@ -1037,9 +1037,11 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    finishing=true;ended=true;silence();
    try{await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
    counted(session.results());
-   // 저장을 기다리는 사이 판이 닫혔거나(패널을 닫음) 코치가 닫혔다 — 판 기록 없이 닫기만 한다(닫힌 코치면 session.finish가 null). 닫지 않으면 손님
-   // 칸이 그 답으로 다시 접히지 않고 다음 진단이 같은 기본 판으로 묶였다(Fable 끝 판 F2).
-   if(!finishing||!box.isConnected){try{session.finish({record:false});}catch{/* 닫힌 코치 */}return;}
+   // 저장을 기다리는 사이 판이 닫혔거나(패널을 닫음) 코치가 닫혔다 — 판 기록 없이 닫는다(닫힌 코치면 session.finish가 null). 닫지 않으면 손님
+   // 칸이 그 답으로 다시 접히지 않고 다음 진단이 같은 기본 판으로 묶였다(Fable 끝 판 F2). 끝내기가 판을 끝난 것으로 두어 판을 닫을 때의 정리(stop)가
+   // 아무것도 하지 않으므로, 판만 닫혔으면 여기서 stop처럼 홈을 다시 그리고 요약이 접히면 열린 내 위치 판을 다시 그린다. 코치가 닫혔으면 closed가
+   // 내 위치를 이미 열었다(시험 형식 판의 끝 판 검수 카본 E1과 같은 막이).
+   if(!finishing||!box.isConnected){const left=finishing;finishing=false;unwatch();let set=null;try{set=session.finish({record:false});}catch{set=null;}if(left){if(session.results().length)diagnosed=true;queueMicrotask(()=>refresh());if(set?.folded)Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});}return;}
    finishing=false;unwatch();
    const results=session.results();if(results.length)diagnosed=true;
    // 기기 기록부(손님 · 동의를 끈 계정 — storage.guest)는 판을 닫으면 요약이 그 판의 답으로 다시 접힌다. 접힌 뒤의 칸으로 끝 화면을 그린다(21-3 판 끝
@@ -1047,8 +1049,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    // 닫기 전에 읽는다 — 닫은 뒤 첫 요약 읽기가 접힌 칸이게.
    let local=false;try{local=coachNow.summary()?.storage?.guest===true;}catch{local=false;}
    // 판 기록은 학습자 응답이 켜진 계정만(지금 판 finishSet과 같은 규칙) — 그 밖에는 닫기만 한다(손님 요약이 그 판의 답으로 다시 접힌다).
+   // 접기를 기다리는 사이 판이 닫혔으면 끝 화면은 그리지 않되, 끝낸 판이라 홈과 열린 내 위치 판은 그 답으로 다시 그린다(카본 E1과 같은 막이).
    const set=session.finish({record:answering()});
-   if(local&&set?.folded){await Promise.race([Promise.resolve(set.folded).catch(()=>null),new Promise(resolve=>setTimeout(resolve,FOLD_WAIT_MS))]);if(stopped||!box.isConnected)return;}
+   if(local&&set?.folded){await Promise.race([Promise.resolve(set.folded).catch(()=>null),new Promise(resolve=>setTimeout(resolve,FOLD_WAIT_MS))]);if(stopped)return;if(!box.isConnected){refresh();evidenced();Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});return;}}
    refresh();
    let after=data;try{after=nextData(coachNow,P);}catch{after=data;}
    const routes=new Map([...after.fresh].map(id=>[id,{route:'practice',skillId:id}]));
@@ -1648,13 +1651,16 @@ async function townSend(coachNow,{wait=true}={}){
    if(finishing||drawn||ended&&!box.isConnected)return;
    finishing=true;ended=true;stopTick();player.silence();
    try{await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
-   // 저장을 기다리는 사이 판이 닫혔거나(패널을 닫음) 코치가 닫혔다 — 판 기록 없이 닫기만 한다(닫힌 코치면 null).
-   if(!finishing||!box.isConnected){try{session.finish({record:false});}catch{/* 닫힌 코치 */}return;}
+   // 저장을 기다리는 사이 판이 닫혔거나(패널을 닫음) 코치가 닫혔다 — 판 기록 없이 닫는다(닫힌 코치면 null). 끝내기가 판을 끝난 것으로 두어 판을 닫을
+   // 때의 정리(stop)가 아무것도 하지 않으므로, 판만 닫혔으면 여기서 stop처럼 홈을 다시 그리고 요약이 그 판의 답으로 접히면 열린 내 위치 판을 다시
+   // 그린다. 코치가 닫혔으면 closed가 내 위치를 이미 열었다(끝 판 검수 카본 E1).
+   if(!finishing||!box.isConnected){const left=finishing;finishing=false;unwatch();let set=null;try{set=session.finish({record:false});}catch{set=null;}if(left){queueMicrotask(()=>refresh());if(set?.folded)Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});}return;}
    finishing=false;drawn=true;unwatch();
-   // 기기 기록부는 판을 닫으면 요약이 그 판의 답으로 다시 접힌다 — 접힌 뒤의 칸으로 끝 한 장을 그린다. 기록부는 판을 닫기 전에 읽는다.
+   // 기기 기록부는 판을 닫으면 요약이 그 판의 답으로 다시 접힌다 — 접힌 뒤의 칸으로 끝 한 장을 그린다. 기록부는 판을 닫기 전에 읽는다. 접기를 기다리는
+   // 사이 판이 닫혔으면 끝 한 장은 그리지 않되, 끝낸 판이라 홈과 열린 내 위치 판은 그 답으로 다시 그린다(카본 E1).
    let local=false;try{local=next.summary()?.storage?.guest===true;}catch{local=false;}
    let set=null;try{set=session.finish({record:answering()});}catch{set=null;}
-   if(local&&set?.folded){await Promise.race([Promise.resolve(set.folded).catch(()=>null),new Promise(resolve=>setTimeout(resolve,FOLD_WAIT_MS))]);if(stopped||!box.isConnected)return;}
+   if(local&&set?.folded){await Promise.race([Promise.resolve(set.folded).catch(()=>null),new Promise(resolve=>setTimeout(resolve,FOLD_WAIT_MS))]);if(stopped)return;if(!box.isConnected){refresh();evidenced();Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});return;}}
    refresh();
    // 「다음 연습」은 그날 낼 것이 있는 짧은 연습만(world-mock-next.mjs todayPractice). 홈 코치로 센다 — 짧은 연습 풀의 은행은 홈 코치만 다 받는다(같은
    // 호스트라 만남과 하루 한도는 같다). 못 셈하면 잇지 않는다.

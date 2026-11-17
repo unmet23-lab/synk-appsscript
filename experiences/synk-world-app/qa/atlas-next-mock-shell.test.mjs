@@ -40,10 +40,18 @@ async function until(check, label, ms = 8000) {
 }
 
 let stores = 0;
-// 판 상자: innerHTML 글을 들고 단추 누르기(위임 click)와 판 안 단추의 click(querySelector로 건 것)을 흉내 낸다.
+// 판 상자: innerHTML 글을 들고 단추 누르기(위임 click)와 판 안 단추의 click(querySelector로 건 것)을 흉내 낸다. 판 안 단추는 판 글에 그 속성이
+// 있을 때만 찾고(문서의 querySelector와 같은 판정), 판 글을 바꾸면 앞 글의 단추에 건 click은 진짜 DOM처럼 사라진다 — 판 글에 없는 단추를 눌러
+// 시험이 지나가지 않게 한다(끝 판 검수 카본 B2).
 function stage() {
   const clicks = [];
   const handlers = new Map();
+  const has = selector => {
+    const found = /\[(data-[a-z-]+)(?:="([^"]*)")?\]/.exec(selector);
+    if (!found) return true;
+    const [, name, value] = found;
+    return value === undefined ? new RegExp(`\\s${name}(?=[\\s=>])`).test(box.html) : box.html.includes(`${name}="${value}"`);
+  };
   const box = {
     html: '',
     isConnected: true,
@@ -52,6 +60,7 @@ function stage() {
     },
     set innerHTML(value) {
       this.html = String(value);
+      handlers.clear();
     },
     addEventListener(type, fn) {
       if (type === 'click') clicks.push(fn);
@@ -60,12 +69,15 @@ function stage() {
     closest: () => null,
     focus() {},
     querySelectorAll: () => [],
-    querySelector: selector => ({
-      focus() {},
-      addEventListener(type, fn) {
-        if (type === 'click') handlers.set(selector, fn);
-      },
-    }),
+    querySelector: selector =>
+      has(selector)
+        ? {
+            focus() {},
+            addEventListener(type, fn) {
+              if (type === 'click') handlers.set(selector, fn);
+            },
+          }
+        : null,
   };
   box.press = (attr, value = '') => {
     const camel = attr.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
@@ -416,6 +428,77 @@ test('엔진 문서 — 손님 끝 한 장은 판이 그 답으로 다시 접힌
   }
 });
 
+// 끝내기는 시작하자마자 판을 끝난 것으로 두어(ended) 판을 닫을 때의 정리(stop)가 아무것도 하지 않는다. 그래서 끝내기가 기다리는 사이 판만 닫히면
+// 끝내기가 stop처럼 홈을 다시 그려야 한다 — 그러지 않으면 홈 점검 칸과 열린 내 위치 판이 방금 마친 판을 모른 채 남는다(끝 판 검수 카본 E1).
+// 셸의 refresh는 앱의 mockChanged를 부르므로 그 수로 다시 그림을 센다.
+test('엔진 문서 — 끝 한 장이 답의 저장을 기다리는 사이 판만 닫혀도 판을 닫을 때처럼 홈을 다시 그린다(끝 판 검수 카본 E1)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  let refreshes = 0;
+  const app = shell({
+    mockChanged: () => {
+      refreshes += 1;
+    },
+    mockWrap: made => ({
+      ...made,
+      answer(pid, result) {
+        const out = made.answer(pid, result);
+        return { ...out, evidence: hold.then(() => out?.evidence) };
+      },
+    }),
+  });
+  try {
+    await until(() => app.homeCoach(), '홈 코치');
+    await app.education.mock();
+    app.box().tap('[data-mock-start]');
+    assert.equal(await runToEnd(app, { submitted: true }), true, '마지막 영역을 냈다');
+    await tick(30);
+    const before = refreshes;
+    app.box().isConnected = false;
+    release();
+    await until(() => refreshes > before, '판만 닫혀도 홈을 다시 그린다');
+    assert.doesNotMatch(app.box().html, /data-mock-done/, '닫힌 판에 끝 한 장을 그리지 않는다');
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
+test('엔진 문서 — 손님 끝 한 장이 접기를 기다리는 사이 판이 닫히면 끝 한 장은 그리지 않되 끝낸 판이라 홈을 다시 그린다(카본 E1)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  const sets = [];
+  let refreshes = 0;
+  const app = shell({
+    mockChanged: () => {
+      refreshes += 1;
+    },
+    mockWrap: made => ({
+      ...made,
+      finishSet(options) {
+        const out = made.finishSet(options);
+        sets.push(options);
+        return out && { ...out, folded: hold.then(() => out.folded) };
+      },
+    }),
+  });
+  try {
+    await until(() => app.homeCoach(), '홈 코치');
+    await app.education.mock();
+    app.box().tap('[data-mock-start]');
+    assert.equal(await runToEnd(app, { submitted: true }), true, '마지막 영역을 냈다');
+    await until(() => sets.length === 1, '판을 닫는다');
+    const before = refreshes;
+    app.box().isConnected = false;
+    release();
+    await until(() => refreshes > before, '판이 닫혀도 홈을 다시 그린다');
+    assert.doesNotMatch(app.box().html, /data-mock-done/, '닫힌 판에 끝 한 장을 그리지 않는다');
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
 test('엔진 문서 — 처음 보는 문항이 모자라면 시험 형식 코치를 열지 않고 알린 뒤 내 위치로 간다 · 기록이 다 오지 않았으면 그 까닭으로 알린다', async () => {
   const short = shell({ wrap: made => ({ ...made, exposures: items => items.map(() => ({ seen: true, met: true })) }) });
   try {
@@ -447,19 +530,40 @@ test('엔진 문서 — 처음 보는 문항이 모자라면 시험 형식 코�
   }
 });
 
-test('엔진 문서 — 연습 도중 판을 다시 정해 코치가 닫히면 안내 한 줄과 함께 닫고 내 위치로 간다', async () => {
-  const app = shell();
+test('엔진 문서 — 연습 도중 판을 다시 정해 코치가 닫히면 안내 한 줄과 함께 닫고 내 위치로 간다 · 닫힌 판의 보기를 눌러도 답을 적지 않는다', async () => {
+  let answered = 0;
+  const app = shell({
+    // 시험 형식 코치가 답을 적는 횟수를 센다 — 닫힌 판의 보기 누름이 답을 적는지 본다.
+    mockWrap: made => ({
+      ...made,
+      answer(pid, result) {
+        answered += 1;
+        return made.answer(pid, result);
+      },
+    }),
+  });
   try {
     await until(() => app.homeCoach(), '홈 코치');
     await app.education.mock();
     app.box().tap('[data-mock-start]');
-    const html = app.box().html;
+    const mockBox = app.box();
+    const html = mockBox.html;
     app.retire();
     assert.ok(app.toasts.includes(ko('practice.next.changed')));
     await until(() => /data-position-next/.test(app.last()), '내 위치 판');
-    // 닫힌 판의 단추는 더 남기지 않는다.
+    // 닫힌 판의 단추는 더 남기지 않는다 — 닫힌 판(앞 상자)의 보기를 눌러도 답을 적지 않고, 판을 다시 그리거나 알림을 더 띄우지 않는다
+    // (끝 판 검수 GPT GB1 · 카본 B1 — 누른 뒤의 단언이 없어 클릭이 답을 적어도 지나갔다).
+    // 판을 닫을 때 연 문항은 「답하지 않음」 답으로 남는다(session.stop) — 그 수를 기준으로 누른 뒤에 더 적지 않는지 본다.
     const choice = /data-mock-choice="([^"]+)"/.exec(html)[1];
-    app.box().press('data-mock-choice', choice);
+    const answers = answered;
+    const shown = app.shown.length;
+    const toasts = app.toasts.length;
+    mockBox.press('data-mock-choice', choice);
+    await tick(20);
+    assert.equal(answered, answers, '닫힌 판의 보기를 눌러도 답을 적지 않는다');
+    assert.equal(mockBox.html, html, '닫힌 판의 글은 그대로다');
+    assert.equal(app.shown.length, shown, '판을 다시 그리지 않는다');
+    assert.equal(app.toasts.length, toasts, '알림을 더 띄우지 않는다');
   } finally {
     app.dispose();
   }

@@ -1586,14 +1586,30 @@ test('리허설 근거 읽기 — game은 게임 이름 꼴만 · days는 1 ~ 36
     const reply = await world.fetch(`/api/world/rehearsal/trail-first-answers?${query}`, { headers, ...init });
     return { status: reply.status, body: await reply.json() };
   };
+  // 거절은 상태 400과 오류 이름을 함께 본다 — 다른 상태로 오류 본문을 내도 지나가지 않게(끝 판 검수 카본 C1).
+  const rejects = async (query, code, label, init = {}) => {
+    const reply = await get(query, init);
+    assert.deepEqual([reply.status, reply.body.error?.code], [400, code], label);
+  };
   for (const game of ['', 'world mock', 'world-mock..x', 'x'.repeat(81), '한글'])
-    assert.equal((await get(firstQuery(device.revision, { game }))).body.error?.code, 'INVALID_GAME', `game ${JSON.stringify(game).slice(0, 20)}`);
-  for (const days of ['0', '366', '-1', '1.5', '', '07', 'x', '1000'])
-    assert.equal((await get(firstQuery(device.revision, { days }))).body.error?.code, 'INVALID_DAYS', `days ${days}`);
-  assert.equal((await get(`${firstQuery(device.revision)}&game=world-mock`)).body.error?.code, 'INVALID_QUERY', '같은 쿼리 둘');
-  assert.equal((await get(`${firstQuery(device.revision)}&offset=0`)).body.error?.code, 'INVALID_QUERY', '모르는 쿼리');
-  assert.equal((await get(firstQuery(device.revision), { method: 'POST', body: '{}' })).body.error?.code, 'INVALID_QUERY', 'GET만');
+    await rejects(firstQuery(device.revision, { game }), 'INVALID_GAME', `game ${JSON.stringify(game).slice(0, 20)}`);
+  for (const days of ['0', '366', '-1', '1.5', '', '07', 'x', '1000']) await rejects(firstQuery(device.revision, { days }), 'INVALID_DAYS', `days ${days}`);
+  await rejects(`${firstQuery(device.revision)}&game=world-mock`, 'INVALID_QUERY', '같은 쿼리 둘');
+  await rejects(`${firstQuery(device.revision)}&offset=0`, 'INVALID_QUERY', '모르는 쿼리');
+  await rejects(firstQuery(device.revision), 'INVALID_QUERY', 'GET만', { method: 'POST', body: '{}' });
+  // 빠진 쿼리 — game과 days는 400이고, revision이 없으면 동의 판 울타리(409)다(talk와 같다).
+  const without = key => {
+    const query = firstQuery(device.revision);
+    query.delete(key);
+    return query;
+  };
+  await rejects(without('game'), 'INVALID_GAME', 'game이 없다');
+  await rejects(without('days'), 'INVALID_DAYS', 'days가 없다');
+  const unfenced = await get(without('revision'));
+  assert.deepEqual([unfenced.status, unfenced.body.error?.code], [409, 'REVISION_CONFLICT'], 'revision이 없다');
   assert.equal((await get(firstQuery(device.revision - 1))).status, 409, '지난 동의 판');
+  // 경계 안 — days 1과 365는 받는다
+  assert.equal((await get(firstQuery(device.revision, { days: '1' }))).status, 200, 'days 1');
   const ok = await get(firstQuery(device.revision, { days: '365' }));
   assert.equal(ok.status, 200);
   assert.equal(ok.body.complete, true);

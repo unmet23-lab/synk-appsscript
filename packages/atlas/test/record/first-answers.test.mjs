@@ -161,3 +161,47 @@ test('서버 셈 — 답 사건에서 제시 사건으로 가 판 번호를 읽�
   );
   assert.deepEqual(calls, [], '근거가 될 lead가 없으면 사건을 찾지 않는다');
 });
+
+// 묻는 값의 꼴(끝 판 검수 카본 F1). 판 번호를 읽지 못한 만남(gameOfSet → null)은 어느 게임으로 물어도 세지 않아야 하는데, 물은 게임이 null이면
+// null === null로 세어졌다. 창의 시작이 null · 빈 글 · 참거짓이면 숫자 0과 견주어져 전체 기간으로 풀렸다. 이제 둘 다 입구에서 던진다.
+test('묻는 값 — game은 판 번호의 게임 이름 꼴만, since는 유한한 수만 받고 그 밖은 던진다 · 서버 셈은 던지기 전에 저장소를 읽지 않는다', async () => {
+  const families = [[meet('a', 100, 'ans1')]];
+  const unread = () => null; // 판 번호를 읽지 못한 만남(옛 꼴 제시 · 찾지 못한 제시)
+  for (const game of [null, undefined, '', 'world mock', 'x'.repeat(81), 7])
+    assert.throws(
+      () => firstAnswersOf(families, unread, { game, since: 0 }),
+      TypeError,
+      `game ${String(game).slice(0, 12)}`,
+    );
+  for (const since of [null, undefined, '', '0', true, Number.NaN, Number.POSITIVE_INFINITY])
+    assert.throws(
+      () => firstAnswersOf(families, unread, { game: 'world-mock', since }),
+      TypeError,
+      `since ${String(since)}`,
+    );
+  assert.throws(() => firstAnswersOf(families, unread), TypeError, '묻는 값이 없다');
+  assert.deepEqual(
+    firstAnswersOf(families, unread, { game: 'world-mock', since: 0 }),
+    {},
+    '판 번호를 읽지 못한 만남은 세지 않는다',
+  );
+  let reads = 0;
+  const store = {
+    meetRows: async () => {
+      reads += 1;
+      return new Map([['a', families[0]]]);
+    },
+    eventsByIds: async () => new Map(),
+  };
+  await assert.rejects(
+    firstAnswersOfStore(store, { game: null, since: 0 }),
+    TypeError,
+    'game null',
+  );
+  await assert.rejects(
+    firstAnswersOfStore(store, { game: 'world-mock', since: null }),
+    TypeError,
+    'since null',
+  );
+  assert.equal(reads, 0, '꼴이 틀린 값으로는 저장소를 읽지 않는다');
+});

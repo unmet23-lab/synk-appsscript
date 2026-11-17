@@ -38,6 +38,14 @@ async function until(check, label, ms = 8000) {
     await tick(10);
   }
 }
+// 이번 주 계획의 주 안 시각 — 지금에서 ago만큼 앞이되 이번 주 시작보다 앞으로 가지 않는다. 주가 막 시작한 때에 돌려도 이번 주 기록이 지난주로
+// 넘어가지 않는다(끝 판 검수 GPT GC1 · 카본 C2).
+const recentInWeek = ago => Math.max(worldPosition.exam.examWeek(Date.now()).start, Date.now() - ago);
+// 시험 도중 주가 바뀌면 앞서 적은 이번 주 기록이 지난주가 된다 — 이번 주가 1분도 남지 않았으면 주가 바뀔 때까지 기다린 뒤 시작한다.
+async function clearOfWeekEnd() {
+  const left = worldPosition.exam.examWeek(Date.now()).end - Date.now();
+  if (left < 60_000) await tick(left + 50);
+}
 
 let stores = 0;
 // 홈 코치를 앱처럼 연다 — 짧은 연습 풀 전체의 홈 은행(homeBanksOf)만 조각으로 받고 낱말 이름도 싣는다(world-atlas-next.mjs와 같다).
@@ -357,11 +365,12 @@ test('TOPIK II 학생 — 새 길 홈의 점검 칸에 쓰기 · 말하기 · �
   const logs = new Map();
   const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
   const log = createPlanLog({ storage: memory, store: 'synk-atlas:guest' });
-  // 이번 주 다시 확인을 마친 학생 — 짧은 진단 줄은 서지 않고 나머지 셋이 겨룬다
-  assert.equal(log.record('recheck', Date.now() - 60_000), true);
+  // 이번 주 다시 확인을 마친 학생 — 짧은 진단 줄은 서지 않고 나머지 셋이 겨룬다. 기록 시각은 이번 주 계획의 주 안이다.
+  await clearOfWeekEnd();
+  assert.equal(log.record('recheck', recentInWeek(60_000)), true);
   // 지난주에 한 시험 형식 판은 이번 주의 시험 형식 줄을 막지 않는다(주 경계는 weekActivity와 같은 계획의 주)
   assert.equal(log.record('mock', worldPosition.exam.examWeek(Date.now()).start - 3_600_000), true);
-  const writing = writingHost({ kind: 'retry', at: new Date(Date.now() - 3_600_000).toISOString() });
+  const writing = writingHost({ kind: 'retry', at: new Date(recentInWeek(3_600_000)).toISOString() });
   const app = shell({
     values: { ...EXAM_T2 },
     planLog: made => (made ? log : null),
@@ -395,7 +404,7 @@ test('TOPIK II 학생 — 새 길 홈의 점검 칸에 쓰기 · 말하기 · �
     assert.deepEqual(rows[0].why.slots, { type: 'roleplay', untried: 5 }, '이번 주에 아직 안 해 본 첫 유형(2번 — 능력 이름 끝 마디)과 안 해 본 유형 수');
     assert.equal(rows[0].open.routeId, 'speaking:2');
     // 이번 주에 시험 형식 판을 하면(이 기기의 판 기록) 시험 형식을 넘기지 않는다
-    assert.equal(log.record('mock', Date.now() - 30_000), true);
+    assert.equal(log.record('mock', recentInWeek(30_000)), true);
     app.education.refresh();
     await until(() => !app.plan().candidates.some(open => open.route === 'mock'), '시험 형식을 넘기지 않는 계획');
     assert.ok(app.plan().candidates.some(open => open.route === 'writing'), '쓰기 · 말하기는 그대로 넘긴다');
@@ -441,14 +450,13 @@ test('TOPIK I 학생 — 점검 칸의 이번 주 몫이 모두 찬 날에도 �
   const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
   const log = createPlanLog({ storage: memory, store: 'synk-atlas:guest' });
   // 이번 주 다시 확인과 시험 형식 판을 마친 학생 — 말하기는 켜지 않았다. 시각은 이번 주 계획의 주 안이다.
-  const start = worldPosition.exam.examWeek(Date.now()).start;
-  const recent = ago => Math.max(start, Date.now() - ago);
-  assert.equal(log.record('recheck', recent(60_000)), true);
-  assert.equal(log.record('mock', recent(30_000)), true);
+  await clearOfWeekEnd();
+  assert.equal(log.record('recheck', recentInWeek(60_000)), true);
+  assert.equal(log.record('mock', recentInWeek(30_000)), true);
   const app = shell({
     values: { ...EXAM_T1 },
     planLog: made => (made ? log : null),
-    writingPractice: writingHost({ kind: 'retry', at: new Date(recent(60_000)).toISOString() }),
+    writingPractice: writingHost({ kind: 'retry', at: new Date(recentInWeek(60_000)).toISOString() }),
   });
   try {
     app.education.refresh();

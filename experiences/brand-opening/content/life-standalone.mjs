@@ -27467,9 +27467,20 @@ function createWorldEducation({
       }
       counted(session.results());
       if (!finishing || !box.isConnected) {
+        const left = finishing;
+        finishing = false;
+        unwatch();
+        let set2 = null;
         try {
-          session.finish({ record: false });
+          set2 = session.finish({ record: false });
         } catch {
+          set2 = null;
+        }
+        if (left) {
+          if (session.results().length) diagnosed = true;
+          queueMicrotask(() => refresh());
+          if (set2?.folded) Promise.resolve(set2.folded).then(() => redrawNext(), () => {
+          });
         }
         return;
       }
@@ -27486,7 +27497,14 @@ function createWorldEducation({
       const set = session.finish({ record: answering() });
       if (local && set?.folded) {
         await Promise.race([Promise.resolve(set.folded).catch(() => null), new Promise((resolve) => setTimeout(resolve, FOLD_WAIT_MS))]);
-        if (stopped || !box.isConnected) return;
+        if (stopped) return;
+        if (!box.isConnected) {
+          refresh();
+          evidenced();
+          Promise.resolve(set.folded).then(() => redrawNext(), () => {
+          });
+          return;
+        }
       }
       refresh();
       let after = data;
@@ -28852,9 +28870,19 @@ function createWorldEducation({
       } catch {
       }
       if (!finishing || !box.isConnected) {
+        const left = finishing;
+        finishing = false;
+        unwatch();
+        let set2 = null;
         try {
-          session.finish({ record: false });
+          set2 = session.finish({ record: false });
         } catch {
+          set2 = null;
+        }
+        if (left) {
+          queueMicrotask(() => refresh());
+          if (set2?.folded) Promise.resolve(set2.folded).then(() => redrawNext(), () => {
+          });
         }
         return;
       }
@@ -28875,7 +28903,14 @@ function createWorldEducation({
       }
       if (local && set?.folded) {
         await Promise.race([Promise.resolve(set.folded).catch(() => null), new Promise((resolve) => setTimeout(resolve, FOLD_WAIT_MS))]);
-        if (stopped || !box.isConnected) return;
+        if (stopped) return;
+        if (!box.isConnected) {
+          refresh();
+          evidenced();
+          Promise.resolve(set.folded).then(() => redrawNext(), () => {
+          });
+          return;
+        }
       }
       refresh();
       let routes = /* @__PURE__ */ new Map();

@@ -215,6 +215,10 @@ test('서버 길 계정은 null이다 — 받은 요약이 있어 보기가 기�
     assert.equal(coach.summary().storage.waiting, false, '보기가 기다리지 않는 계정');
     assert.equal(coach.summary().storage.base, true, '받은 요약이 있다');
     assert.equal(coach.firstAnswers({ game: GAME, days: 90 }), null);
+    // 꼴이 틀린 값은 서버 길 계정에서도 던진다 — 셈 함수를 부르기 전에 null을 내므로 코치의 입구 검사만이 막는다. null로 숨기면 제품이 입구의
+    // 잘못을 「모름」으로 그린다(셈 함수에 입구 검사를 더한 끝 판 검수 카본 F1 뒤에도 코치의 검사가 쓸모 있는 자리).
+    assert.throws(() => coach.firstAnswers({ game: null, days: 90 }), TypeError, 'game null');
+    assert.throws(() => coach.firstAnswers({ game: GAME, days: 0 }), TypeError, 'days 0');
   } finally {
     coach.dispose();
   }
@@ -250,5 +254,56 @@ test('서버 셈(firstAnswersOfStore)은 같은 사건 열에서 손님 코치�
     );
   } finally {
     s.close();
+  }
+});
+
+// 옮겨 온 장부(record.carried)에 접힌 계열은 첫 만남이 장부 만남이라, 그 뒤 시험 형식 판에서 혼자 낸 첫 답도 근거가 아니다(규칙 ①). 손님
+// 기록부가 장부 줄을 만남 줄과 함께 계열마다 모으는지(record/log.mjs addMeetRows) 진짜 옮긴 장부로 보고, 메모리 서버가 같은 수를 내는지 맞댄다
+// (끝 판 검수 카본 F2 — 손으로 지은 장부 줄로 soloLead만 보던 빈틈).
+test('옮겨 온 장부에 접힌 계열의 시험 형식 첫 답은 근거가 아니다 — 손님 코치와 서버 셈이 같은 수를 낸다', async () => {
+  const time = clock(START);
+  const port = memoryPort();
+  const ledger = { keys: { [`family:${ITEMS[0].familyKey}`]: 1 }, cells: {} };
+  const mock = createCoach({
+    gameId: GAME,
+    map: fakeMap(ITEMS),
+    seed: 's',
+    dayOffset: 0,
+    host: {
+      guest: true,
+      port,
+      key: keyOf('carried'),
+      now: time.now,
+      legacy: async () => ({ log: [], ledger }),
+    },
+  });
+  await mock.ready;
+  await settle();
+  try {
+    const carried = (await eventsOf(port)).filter(event => event.type === 'record.carried');
+    assert.equal(carried.length, 1, '장면의 전제 — 장부를 한 번 옮겼다');
+    assert.deepEqual(Object.keys(carried[0].families), [ITEMS[0].familyKey]);
+    await solo(mock, time, ITEMS[0]); // 장부에 접힌 계열 — 첫 만남은 장부 만남
+    await solo(mock, time, ITEMS[1]); // 장부 밖 계열 — 근거
+    await settle();
+    const want = { [skillOf(1)]: 1 };
+    assert.deepEqual(mock.firstAnswers({ game: GAME, days: 90 }).bySkill, want, '손님 코치');
+    const index = indexOfMap(fakeMap(ITEMS));
+    const server = createMemoryAccount();
+    server.append(await eventsOf(port), time.t + DAY);
+    const memory = createMemory(PARAMS);
+    for (let guard = 0; guard < 200; guard += 1)
+      if (
+        (await foldAccount(server.account, { memory, params: PARAMS, index, nowMs: time.t })).done
+      )
+        break;
+    const store = server.account.store(foldEdition(PARAMS, index));
+    assert.deepEqual(
+      await firstAnswersOfStore(store, { game: GAME, since: time.t - 90 * DAY }),
+      want,
+      '서버 셈',
+    );
+  } finally {
+    mock.dispose();
   }
 });

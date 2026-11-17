@@ -395,8 +395,44 @@ export const TODAY_MUTANTS = [
   [
     '점검 칸 넷',
     "말하기 줄의 이번 주 몫 막이를 뺀다",
-    "  if (!speaking || typeof speaking.routeId !== 'string' || !areaLeft(week, 'speaking')) return null;\n",
+    "  if (!speaking || typeof speaking.routeId !== 'string' || !speakingLeft(week)) return null;\n",
     "  if (!speaking || typeof speaking.routeId !== 'string') return null;\n",
+  ],
+  [
+    '점검 칸 넷',
+    "소리 때문에 닫힌 말하기를 남은 몫으로 보지 않는다 — 소리를 끈 날 말하기 줄이 빠져 조건에 걸린 날 대신 보탬이 선다(끝 판 검수 GPT GE1)",
+    "  return closed && !listed && typeof week?.speaking?.routeId === 'string';\n",
+    "  return false;\n",
+  ],
+  [
+    '점검 칸 넷',
+    "소리 때문에 닫힌 말하기에서 이번 주에 한 말하기를 가리지 않는다 — 이번 주에 한 말하기가 다시 잠긴 줄로 서서 보탬을 막는다",
+    "  return closed && !listed && typeof week?.speaking?.routeId === 'string';\n",
+    "  return closed && typeof week?.speaking?.routeId === 'string';\n",
+  ],
+  [
+    '점검 칸 넷',
+    "소리 때문에 닫힌 말하기에서 말하기 항목이 있는지 보지 않는다 — 말하기 항목이 없는 날에도 보탬을 막는다",
+    "  return closed && !listed && typeof week?.speaking?.routeId === 'string';\n",
+    "  return closed && !listed;\n",
+  ],
+  [
+    '점검 칸 넷',
+    "보탬을 막는 몫이 다시 확인을 보지 않는다 — 진단이 낼 문항이 없는 날 다시 확인 몫이 남았는데 보탬이 선다(GPT GE1)",
+    "const checkLeft = week => areaLeft(week, 'recheck') || speakingLeft(week);\n",
+    "const checkLeft = week => speakingLeft(week);\n",
+  ],
+  [
+    '점검 칸 넷',
+    "보탬을 막는 몫이 말하기를 보지 않는다 — 말하기 값이 없는 날 말하기 몫이 남았는데 보탬이 선다",
+    "const checkLeft = week => areaLeft(week, 'recheck') || speakingLeft(week);\n",
+    "const checkLeft = week => areaLeft(week, 'recheck');\n",
+  ],
+  [
+    '점검 칸 넷',
+    "보탬이 몫을 보지 않고 넘길 줄만 본다 — 몫이 남았는데 넘길 줄이 없는 날에도 보탬이 선다(GPT GE1)",
+    "    if (checks.length === 0 && !checkLeft(week)) checks.push(writingFixActivity(week, normalized));\n",
+    "    if (checks.length === 0) checks.push(writingFixActivity(week, normalized));\n",
   ],
   [
     '점검 칸 넷',
@@ -407,13 +443,13 @@ export const TODAY_MUTANTS = [
   [
     '점검 칸 넷',
     "보탬이 다른 줄이 설 수 있는 날에도 선다 — 이번 주 쓰기에서 열린 고치기가 말하기를 민다(설계 주인 11-17 다시 여쭘의 답 2)",
-    "    if (checks.length === 0) checks.push(writingFixActivity(week, normalized));\n",
+    "    if (checks.length === 0 && !checkLeft(week)) checks.push(writingFixActivity(week, normalized));\n",
     "    checks.push(writingFixActivity(week, normalized));\n",
   ],
   [
     '점검 칸 넷',
     "보탬을 세우지 않는다 — 몫이 모두 찬 날 이번 주에 열린 고치기가 다음 주까지 식는다",
-    "    if (checks.length === 0) checks.push(writingFixActivity(week, normalized));\n",
+    "    if (checks.length === 0 && !checkLeft(week)) checks.push(writingFixActivity(week, normalized));\n",
     "",
   ],
   [
