@@ -2650,6 +2650,11 @@ def main(argv):
             else: r.더함("지도", "표", "확인", "소품 지도가 없다(--지도 · 컷순서 「지도」) — 쌓이는 소품이 있는 편이면 첫 콘티에서 지도를 만든다(점검표 39)")
         if "고요" in 항목 and (영상 or 받음): 고요항목(seq, r, 지도, 영상, 받음, o["앞"])
         if "빛" in 항목: 빛항목(seq, r, 그림, 영상, 받음, o["앞"])
+    if not o["json"]:
+        # JSON은 미디어 검사기끼리 쓰는 계약이다. 사람이 콘티를 보는 명령은 현행 기준 로드도 판정한다.
+        실패 = _영상기준(seq_path)
+        if 실패:
+            r.더함("영상기준", "표", "걸림", 실패)
     (출력 / "결과.json").write_text(json.dumps(dict(컷순서=str(seq_path), 영상=영상, 받음=받음, 그림=그림, 항목=r.항목들, 코드=r.코드()), ensure_ascii=False, indent=1), encoding="utf-8")
     단계 = "편집" if 영상 else "받은 뒤" if 받음 else "이미지 콘티" if 그림 else "지시문" if (o.get("지시문") or o.get("그림지시문")) else "콘티"
     판경로 = [str(seq_path), 영상, 받음, 그림, *(o.get("지시문") or []), *(o.get("그림지시문") or [])]
@@ -2657,36 +2662,24 @@ def main(argv):
         print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); 코드 = r.코드()
     else:
         코드 = r.보고(); print(f"결과 {출력 / '결과.json'}")
-        _흠시작(seq_path)
     _검사이력(r, 코드, 시작=str(seq_path), 단계=단계, 판경로=판경로)
     return 코드
 
 
-def _흠시작(seq_path):
-    """흠 장부의 시작 줄(tools/흠장부.js 시작 — 그 길에서 검사가 아직 못 잡는 흠 셋 이하)을 글 출력 끝에 알림으로 붙인다(흠 장부 설계 ④ · 2단계, 2026-11-15).
-    항목 목록 · 결과.json · --json 출력에는 넣지 않고 끝 코드도 이미 정해진 뒤다 — 이 검사를 부르는 도구(꾸러미만들기 · 받은뒤검사 · 영상관문판)는 --json으로
-    부르니 장부를 돌리지도 않는다. 편 폴더가 docs/마케팅 아래가 아니면(시험의 임시 폴더 · .tmp의 공모 폴더) 부르지 않는다. 무엇이 실패해도 조용히 지나간다.
-    끄기: 환경 변수 SYNK_FLAW_LEDGER=off."""
+def _영상기준(seq_path):
+    import os
+    도구 = Path(__file__).resolve().with_name("영상기준.js")
     try:
-        import os
-        if os.environ.get("SYNK_FLAW_LEDGER", "").strip().lower() == "off":
-            return
-        조각 = [x for x in re.split(r"[\\/]+", str(Path(seq_path).resolve())) if x]
-        if not any(x.lower() == "docs" and i + 2 < len(조각) and 조각[i + 1] == "마케팅" for i, x in enumerate(조각)):
-            return
-        장부 = Path(__file__).resolve().parent / "흠장부.js"
-        # 창 없이(CREATE_NO_WINDOW) — 콘솔 없는 부모에서 불려도 node 창이 화면에 뜨지 않게. 시간 제한 기본 30초(SYNK_FLAW_LEDGER_TIMEOUT_MS)
-        try:
-            제한 = max(float(os.environ.get("SYNK_FLAW_LEDGER_TIMEOUT_MS") or 30000), 1.0) / 1000
-        except ValueError:
-            제한 = 30.0
-        p = subprocess.run(["node", str(장부), "시작", str(Path(seq_path).resolve())], capture_output=True, text=True, encoding="utf-8", timeout=제한,
-                           stdin=subprocess.DEVNULL, creationflags=0x08000000 if os.name == "nt" else 0)
-        글 = (p.stdout or "").strip() if p.returncode == 0 else ""
-        if 글.startswith(("[흠 장부]", "[LAB 교훈]")):   # LAB 편은 「[LAB 교훈]」 줄만 뜰 수 있다(11-17 · Fable 5.2 P1-2)
-            print(글)
-    except BaseException:   # noqa: BLE001 — 장부는 검사 결과를 바꾸지 않는다
-        pass
+        제한 = max(float(os.environ.get("SYNK_FLAW_LEDGER_TIMEOUT_MS") or 240000), 1.0) / 1000
+        p = subprocess.run(["node", str(도구), str(seq_path.resolve())], capture_output=True,
+                           text=True, encoding="utf-8", timeout=제한, stdin=subprocess.DEVNULL,
+                           creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+        if p.returncode == 0 and p.stdout.startswith("[영상 기준] "):
+            print(p.stdout.rstrip(), file=sys.stderr)
+            return None
+        return f"현재 영상 기준을 읽지 못했다. {(p.stderr or '').strip()} 공용 작업본에서 영상기준.js를 다시 실행한다."
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        return f"현재 영상 기준을 확인할 수 없다. {exc}"
 
 
 def _검사이력(r, 코드, 시작=None, 단계="", 판경로=None):

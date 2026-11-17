@@ -20,9 +20,10 @@
 # 끊기면 다시 내지 않는다 — 기록에 submitId가 있으니 그 id로 `dreamina-canvas operation wait <submitId> --project-id <캔버스>`를 본다.
 import json, os, re, subprocess, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from 크레딧내기 import boards, PIC, 굽기전, 받은뒤, 인자값, 무시쓰는법
+from 크레딧내기 import boards, PIC, 굽기전, 받은뒤, 인자값, 무시쓰는법, 첫판계획, 첫판잠금, 첫판확인
 
 IGNORED = {}   # 판 id → 까닭 — --걸림무시로 지시문 걸림을 넘겨 낸 판(장부의 「걸림무시」 칸)
 HOME = os.path.join(os.path.expanduser("~"), ".ai-tools", "dreamina-canvas")
@@ -255,6 +256,11 @@ def safe(*a):
 
 
 def main():
+    with ExitStack() as 정리:
+        return 실행(정리)
+
+
+def 실행(정리):
     a = sys.argv[1:]
     opt = lambda k, d: a[a.index(k) + 1] if k in a else d
     global PROFILE, PROJECT, PER_SEC, RES
@@ -280,7 +286,15 @@ def main():
         raise SystemExit(f"꾸러미 폴더가 없다: {pos[0]}")
     pack0 = packs[0]
     out = out or (os.path.join(DAY, "받음", "_드리미나비교") if pack0.replace("\\", "/").startswith(DAY) else os.path.join(os.path.dirname(pack0), "받음"))
+    if go:
+        정리.enter_context(첫판잠금(out))
     bs = [(p, b) for p in packs for b in boards(p)]
+    if len(packs) > 1:
+        주인 = {}
+        for p, b in bs:
+            if b["id"] in 주인 and 주인[b["id"]] != p:
+                raise SystemExit(f"같은 받을곳에서 {b['id']}을 여러 꾸러미가 쓴다. 각각 다른 --받을곳으로 내야 첫 컷 파일을 구별할 수 있다.")
+            주인[b["id"]] = p
     ids = {b["id"] for _, b in bs}
     miss = [w for w in want if w not in ids]
     if miss:
@@ -292,6 +306,15 @@ def main():
             held.append(f"{b['id']}(빠짐 {', '.join(sorted(set(lost)))})")
             continue
         todo += [(p, b)] if want else [(p, b)] * max(0, b["판 수"] - have(out, b["id"]))
+    첫시험 = []
+    if go:
+        낼판 = []
+        for p in dict.fromkeys(p for p, _ in todo):
+            판들, 첫판 = 첫판계획(p, out, [b for q, b in todo if q == p], table, bool(want))
+            낼판.extend((p, b) for b in 판들)
+            if 첫판:
+                첫시험.append(첫판)
+        todo = 낼판
     total = sum(PER_SEC * b["길이"] for _, b in todo)
     bal = balance()
     print(f"잔액 {bal} · 칸 {PROFILE or '기본'} · {RES} · 받을곳 {out}")
@@ -312,6 +335,8 @@ def main():
     print(f"\n끝 · 잔액 {bal} → {balance()} (견적 {total})" + (f" · 못 낸 판 {bad}" if bad else ""))
     for p in dict.fromkeys(p for p, _ in todo):   # 받은 판을 바로 잰다(크레딧내기.받은뒤 — 컷표 틀 2가 있는 꾸러미만)
         받은뒤(p, out, table, [b["id"] for q, b in todo if q == p and not b.get("소리만") and b.get("방식") != "목소리 판"])
+    for 첫판 in 첫시험:
+        첫판확인(첫판)
 
 
 if __name__ == "__main__":

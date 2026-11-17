@@ -20,9 +20,12 @@
 #   받기.py와 같은 때에 돌리지 않는다(둘 다 _받음.json을 통째로 다시 쓴다).
 # 받은 뒤(11-14): 컷표(틀 2)가 있는 편은 낸 판을 받자마자 tools/받은뒤검사.py로 잰다(길이 · 비율 · 소리 줄기 · 사람 굳음 + 컷표의 받음 검사) —
 #   결과는 받을곳/_받은뒤검사.json과 화면의 「다시 낼 판」. 내기 결과는 바꾸지 않는다.
+# 첫 컷(11-18): 새 꾸러미는 대표 영상 판 하나만 먼저 낸다. 받은 파일, 지시문/참고, 현재 제작 기준으로 첫컷검사를 통과한 뒤 같은 묶음을 재개한다.
 # nsfw · 실패는 다시 내지 않고 알린다(현장노트 higgsfield 「같은 장면이 nsfw로 두 번 막힌다」).
-import json, os, re, shutil, subprocess, sys, threading
+import hashlib, json, os, re, shutil, subprocess, sys, threading
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack, contextmanager
+from pathlib import Path
 
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 LEDGER = os.path.join(DAY, "받음", "_크레딧내기.json")
@@ -200,6 +203,112 @@ def 받은뒤(pack, out, 컷표=None, 판ids=None, 더=None):
         return None
 
 
+@contextmanager
+def 첫판잠금(out):
+    """두 내기 도구가 같은 받을곳의 첫 판을 동시에 결제하지 않게 한다. 종료되면 OS가 잠금을 푼다."""
+    폴더 = Path(out)
+    폴더.mkdir(parents=True, exist_ok=True)
+    with (폴더 / "_첫컷제출.lock").open("a+b") as f:
+        f.seek(0)
+        if os.name == "nt":
+            import msvcrt
+            잠그기 = lambda: msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            잠그기 = lambda: fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        try:
+            잠그기()
+        except OSError as e:
+            raise SystemExit(f"이 받을곳의 제출이 이미 진행 중이거나 잠글 수 없다: {폴더}. 중복으로 제출하지 않았다.") from e
+        yield
+
+
+def 첫판계획(pack, out, 예정, 표경로=None, 직접=False):
+    """지정한 한 편의 대표 판을 먼저 받아 실제 파일을 확인한다. 반환값은 이번에 제출할 판과 새 시험 판이다.
+    범위 밖의 판을 임의로 굽지 않는다. 한 판을 명시한 재시도만 기존 첫 판 대신 새 파일을 만든다."""
+    if not 예정:
+        return [], None
+    검사 = 검사기()
+    표경로 = 표경로 or 컷표찾기(pack)
+    표 = json.loads(Path(표경로).read_text(encoding="utf-8-sig")) if 표경로 else None
+    후보 = []
+    for 판 in boards(pack):
+        정보 = 검사.판정보(판, 표)
+        if 정보["소리만"] or 판.get("빠진 파일") or not all((Path(pack) / 판["폴더"] / f).is_file() for f in 판["파일"]):
+            continue
+        # 옛 꾸러미에는 컷표와 인물 칸이 없다. 굽기 전 검사와 같은 방법으로 지시문의 WHO와 ACTION도 본다.
+        지시문 = (Path(pack) / 판["폴더"] / "지시문.txt").read_text(encoding="utf-8-sig")
+        정보["사람판"] = 검사.사람판단(지시문, 정보.get("인물"))[0]
+        인원 = min(2, len(정보.get("인물") or [])) or int(정보["사람판"])
+        후보.append((인원, 판, 정보))
+    if not 후보 or all(b.get("소리만") or b.get("방식") == "목소리 판" for b in 예정):
+        return 예정, None
+    _, 첫판, 정보 = max(후보, key=lambda x: x[0])
+    import 첫컷검사
+    # 새편.js를 사용하지 않은 직접 제출도 기준을 읽기 전에 크레딧을 쓰지 않는다.
+    기준 = 첫컷검사.기준읽기(Path(표경로).resolve() if 표경로 else Path(pack).resolve().parent)
+    print(f"첫 시험 컷 {첫판['id']} · 최신 기준 {기준['기준판'][:12]}", flush=True)
+    for x in 기준["최근지적"]:
+        print(f"  #{x['번호']} {x['이름']}: {x['확인']}", flush=True)
+    판id = 첫판["id"]
+    선택 = next((b for b in 예정 if b["id"] == 판id), None)
+    파일들 = []
+    for 파일 in Path(out).glob("*.mp4"):
+        m = re.fullmatch(re.escape(판id) + r"(?:__(\d+))?\.mp4", 파일.name)
+        if m:
+            파일들.append((int(m.group(1) or 1), 파일))
+    자료 = (pack, out, 표경로, 첫판, 정보, {p.name for _, p in 파일들})
+    재시도 = 직접 and 선택 and all(b["id"] == 판id for b in 예정)
+    if not 파일들 or 재시도:
+        if 선택 is None:
+            raise SystemExit(f"첫 시험 컷 {판id}이 아직 없다. 요청 범위에 이 판을 넣어 먼저 한 번 받는다. 나머지는 내지 않았다.")
+        return [선택], 자료
+    첫판확인(자료, max(파일들)[1])
+    # 첫 회차에 이미 제출한 대표 판은 묶음을 재개할 때 다시 결제하지 않는다.
+    남은 = list(예정)
+    if 직접 and 선택 is not None:
+        남은.remove(선택)
+    return 남은, None
+
+
+def 첫판확인(자료, 파일=None):
+    pack, out, 표경로, 판, 정보, 기존 = 자료
+    if 파일 is None:
+        새것 = [p for p in Path(out).glob("*.mp4") if p.name not in 기존 and
+              re.fullmatch(re.escape(판["id"]) + r"(?:__\d+)?\.mp4", p.name)]
+        if len(새것) != 1:
+            raise SystemExit(f"첫 시험 컷 {판['id']}에서 새로 받은 파일을 하나로 확인하지 못했다. 다음 판을 내기 전에 받기 기록을 본다.")
+        파일 = 새것[0]
+    import 첫컷검사
+    import 받은뒤검사
+    편 = Path(표경로).resolve().parent if 표경로 else Path(pack).resolve().parent
+    구간 = []
+    if 표경로:
+        표 = json.loads(Path(표경로).read_text(encoding="utf-8-sig"))
+        if 표.get("틀") == 2:
+            줄 = [r for r in 받은뒤검사.컷줄모음(표) if r["cut"] in 정보["컷들"]]
+            구간, 탈 = 받은뒤검사.구간모으기(줄)
+            if 탈 or not 구간:
+                raise SystemExit(f"첫 시험 컷 {판['id']}의 쓰는 구간을 컷표에서 확인할 수 없다. 컷표를 고쳐 다시 검사한다.")
+    if not 구간:
+        구간 = [(0, None, 정보["사람판"])]
+    elif 정보["사람판"] and not any(사람 for _, _, 사람 in 구간):
+        구간 = [(a, b, True) for a, b, _ in 구간]
+    폴더 = Path(pack) / 판["폴더"]
+    소스 = [(이름, 첫컷검사.파일지문(폴더 / 이름)) for 이름 in ["지시문.txt", *판["파일"]]]
+    묶음 = hashlib.sha256(json.dumps([Path(pack).name, 판, 소스], ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+    for a, b, 인물 in 구간:
+        명령 = [sys.executable, "-X", "utf8", str(Path(첫컷검사.__file__)), str(편), str(파일), "--시작", str(a), "--묶음", 묶음]
+        if b is not None:
+            명령 += ["--끝", str(b)]
+        if 인물:
+            명령.append("--사람")
+        코드 = subprocess.call(명령)
+        if 코드:
+            print(f"첫 시험 컷에서 멈췄다. 나머지 판은 제출하지 않았다. 확인 명령: {subprocess.list2cmdline(명령)}", flush=True)
+            raise SystemExit(코드)
+
+
 def home(acct):
     return os.path.join(os.path.expanduser("~"), ".ai-accounts", f"higgsfield-{acct}")
 
@@ -314,6 +423,11 @@ def safe(*a):
 
 
 def main():
+    with ExitStack() as 정리:
+        return 실행(정리)
+
+
+def 실행(정리):
     a = sys.argv[1:]
     opt = lambda k, d: a[a.index(k) + 1] if k in a else d
     acct, cap, conc, go = opt("--계정", "founder"), opt("--상한", None), int(opt("--동시", "3")), "--실행" in a
@@ -328,6 +442,8 @@ def main():
         raise SystemExit('쓰는 법: python -X utf8 크레딧내기.py <꾸러미> [<판>…] [--계정 이름] [--상한 크레딧] [--동시 3] [--컷표 컷순서.json] [--걸림무시 "판 id,…: 까닭"] [--실행]')
     pack, want = os.path.abspath(pos[0]), pos[1:]
     out = os.path.join(DAY, "받음") if pack.replace("\\", "/").startswith(DAY) else os.path.join(os.path.dirname(pack), "받음")
+    if go:
+        정리.enter_context(첫판잠금(out))
     bs = boards(pack)
     miss = [w for w in want if w not in {b["id"] for b in bs}]
     if miss:
@@ -339,6 +455,9 @@ def main():
             held.append(f"{b['id']}(빠짐 {', '.join(sorted(set(lost)))})")
             continue
         todo += [b] * max(0, b["판 수"] - (0 if want else have(out, b["id"])))
+    첫시험 = None
+    if go:
+        todo, 첫시험 = 첫판계획(pack, out, todo, table, bool(want))
     price = {}
     for b in todo:
         if b["길이"] not in price:
@@ -363,6 +482,8 @@ def main():
         bad = [x for x in ex.map(lambda b: safe(acct, pack, out, b, price[b["길이"]]), todo[1:]) if x]
     print(f"\n끝 · 잔액 {bal} → {hf(acct, 'account', 'status').get('credits')} (견적 {total})" + (f" · 못 낸 판 {bad}" if bad else ""))
     받은뒤(pack, out, table, [b["id"] for b in todo if not b.get("소리만") and b.get("방식") != "목소리 판"])   # 받은 판을 바로 잰다 — 굳은 판은 여기서 「다시 낼 판」으로 나온다
+    if 첫시험:
+        첫판확인(첫시험)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,8 @@ const { spawnSync } = require('node:child_process');
 const { contextFor, didVideoWork, MARK } = require('../tools/압축뒤입구.js');
 
 const repo = path.join(__dirname, '..');
-const skill = fs.readFileSync(path.join(repo, '.claude', 'skills', 'synk-video', 'SKILL.md'), 'utf8');
+const shared = require('../tools/lib/공용작업본.js').공용작업본(repo);
+const skill = fs.readFileSync(path.join(shared, '.claude', 'skills', 'synk-video', 'SKILL.md'), 'utf8');
 const j = (o) => JSON.stringify(o) + '\n';
 const bash = (command) => j({ type: 'assistant', timestamp: '2026-11-13T10:00:00.000Z', message: { content: [{ type: 'tool_use', name: 'Bash', input: { command } }] } });
 // 실제 기록처럼 스킬 목록 · 메모가 든 주입(첨부) 줄 — 「synk-video」 · 「시댄스」 · 「최종.mp4」 · 편 폴더 이름이 다 들어 있다

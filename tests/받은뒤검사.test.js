@@ -19,6 +19,10 @@ const 있음 = (명령, 인자) => spawnSync(명령, 인자, { encoding: 'utf8' 
 const 준비 = 있음('python', ['-I', '-X', 'utf8', '-c', 'import sys']) && 있음('ffmpeg', ['-version']) && 있음('ffprobe', ['-version']);
 const 건너뜀 = { skip: !준비 && '파이썬 · ffmpeg · ffprobe 없음' };
 
+test('첫 컷의 실제 영상과 최신 기준을 확인한 뒤에만 두 내기 도구가 다음 판을 제출한다', 건너뜀, () => {
+  execFileSync('python', ['-I', '-B', '-X', 'utf8', path.join(__dirname, 'fixtures', '첫컷검사', '확인_시험.py')], { encoding: 'utf8' });
+});
+
 // 가짜 사람 움직임 모듈 — 파일 이름으로 값을 낸다(굳음 · 가까움 · 조금), 부른 (파일, 시작 장, 장 수)를 옆 파일에 적는다
 const 가짜모듈 = String.raw`
 import json, os

@@ -617,40 +617,42 @@ test('시작 — 명령: 길 · --json · 모르는 깃발은 끝 코드 2 · SY
   assert.deepEqual(환경({ SYNK_FLAW_LEDGER: 'off', SYNK_FLAW_LEDGER_DIR: root }, () => 장부.시작('컷표영상')), { 줄: [], 까닭: 'SYNK_FLAW_LEDGER=off' });
 });
 
-test('새편 — 새 편을 세울 때 시작 줄을 끝에 붙이고(--json이면 stderr), 장부가 꺼지거나 던지거나 멈춰도 출력과 끝 코드는 같다', (t) => {
+test('새편 — 새 편과 재개 모두 최신 기준을 먼저 읽으며, 실패나 시간 초과는 쓰기 전에 알리고 재시도한다', (t) => {
   const root = 마케팅(t);
   편(root, 'synkbrief_흠_20261110', { 컷표: true, 확인: [{ 결과: '작은 흠', 시각: 때(10), 갈래: ['인물튐'], 메모: '작은 흠: 3~5초 얼굴이 앞 컷보다 둥글다' }] });
-  const 자리 = 임시(t);
   const 새 = path.join(root, 'synkbrief_새_20261120');
-  const 돌림 = (argv, 바꿈 = {}) => 환경({ SYNK_FLAW_LEDGER: undefined, SYNK_FLAW_LEDGER_DIR: root, SYNK_REMOTION_PARTS_DIR: 자리, NODE_OPTIONS: undefined, SYNK_FLAW_LEDGER_TIMEOUT_MS: undefined, ...바꿈 }, () => 찍어(() => 새편.main(argv)));
-  const 켬 = 돌림([새]);
-  const 끔 = 돌림([새], { SYNK_FLAW_LEDGER: 'off' });
-  assert.equal(켬.코드, 끔.코드);
-  assert.ok(켬.out.startsWith(`${끔.out}\n`), 켬.out);
-  assert.match(켬.out.slice(끔.out.length + 1), /^\[흠 장부\] 컷표영상\(컷표가 아직 없어 같은 브랜드 최근 편의 길\) · 최근 1편에서 검사가 아직 못 잡는 흠 1개[^\n]*\n {2}· 인물튐[^\n]*「3~5초 얼굴이 앞 컷보다 둥글다」\n {4}→ 할 것: [^\n]*$/);
-  assert.equal(fs.existsSync(새), false, '미리 보기는 아무것도 쓰지 않는다');
-  const 켬j = 돌림([새, '--json']);
-  const 끔j = 돌림([새, '--json'], { SYNK_FLAW_LEDGER: 'off' });
-  assert.deepEqual([켬j.코드, 켬j.out], [끔j.코드, 끔j.out], '--json의 stdout은 그대로다');
-  assert.match(켬j.err, /\[흠 장부\] 컷표영상/);
-  assert.doesNotMatch(끔j.err, /흠 장부/);
-  // 장부가 던지거나 멈춰도 — 장부를 띄운 node만 부러뜨린다(멈춤은 시간 제한 1.5초로 끊긴다, GPT 검수 GA1)
+  const 자리 = 임시(t);
+  const 돌림 = (argv, 바꿈 = {}) => 환경({ SYNK_FLAW_LEDGER: undefined, SYNK_FLAW_LEDGER_DIR: root, SYNK_REMOTION_PARTS_DIR: 자리,
+    NODE_OPTIONS: undefined, SYNK_FLAW_LEDGER_TIMEOUT_MS: undefined, ...바꿈 }, () => 찍어(() => 새편.main(argv)));
   const 부러짐 = 부러진장부(t);
-  const 던짐 = 돌림([새], 부러짐.던짐);
-  assert.deepEqual([던짐.코드, 던짐.out, 던짐.err], [끔.코드, 끔.out, 끔.err]);
-  const 앞때 = Date.now();
-  const 멈춤 = 돌림([새], 부러짐.멈춤);
-  assert.deepEqual([멈춤.코드, 멈춤.out, 멈춤.err], [끔.코드, 끔.out, 끔.err]);
-  assert.ok(Date.now() - 앞때 < 20000, `멈춘 장부를 시간 제한에서 끊는다(${Date.now() - 앞때}ms)`);
-  assert.equal(환경({ ...부러짐.던짐, SYNK_FLAW_LEDGER_DIR: root }, () => 새편.흠시작글(새)), '');
-  // 이미 있는 편(부품만 · package.json을 찍지 않는 편)에는 붙이지 않는다
+  for (const 바꿈 of [부러짐.던짐, 부러짐.멈춤]) {
+    const 실패 = 돌림([새, '--실행', '--json'], 바꿈);
+    assert.equal(실패.코드, 1);
+    assert.match(실패.err, /영상 기준 확인 실패/);
+    assert.equal(실패.out, '');
+    assert.equal(fs.existsSync(새), false);
+  }
+  const 켬 = 돌림([새, '--json']);
+  assert.equal(켬.코드, 0, 켬.err);
+  assert.ok(JSON.parse(켬.out).찍음.includes('package.json'));
+  assert.match(켬.err, /\[영상 기준\] [a-f0-9]{64}/);
+  assert.match(켬.err, /\[흠 장부\] 컷표영상/);
+  assert.match(켬.err, /3~5초 얼굴이 앞 컷보다 둥글다/);
+  assert.equal(fs.existsSync(새), false);
+  const 끔 = 돌림([새, '--json'], { SYNK_FLAW_LEDGER: 'off' });
+  assert.equal(끔.out, 켬.out);
+  assert.match(끔.err, /\[영상 기준\] [a-f0-9]{64}/);
+  assert.doesNotMatch(끔.err, /\[흠 장부\]/);
   const 옛 = path.join(root, 'synkbrief_옛편_20261020');
   fs.mkdirSync(path.join(옛, 'remotion'), { recursive: true });
   fs.writeFileSync(path.join(옛, 'remotion', 'package.json'), '{}');
-  assert.doesNotMatch(돌림([옛]).out, /흠 장부/);
+  const 재개 = 돌림([옛, '--json']);
+  assert.match(재개.err, /\[영상 기준\] [a-f0-9]{64}/);
+  assert.match(재개.err, /\[흠 장부\]/);
+  assert.equal(fs.readFileSync(path.join(옛, 'remotion', 'package.json'), 'utf8'), '{}');
 });
 
-test('컷표 검사 — docs/마케팅 아래 편의 컷표를 글로 돌리면 끝에 시작 줄을 붙이고, 끝 코드 · --json · 결과.json은 그대로다. 장부가 실패해도 같다', { skip: !파이썬 && '파이썬 없음' }, (t) => {
+test('컷표 검사 — 글로 돌리면 현재 기준을 확인하고 실패를 결과에 남긴다. 기계용 JSON 계약은 그대로다', { skip: !파이썬 && '파이썬 없음' }, (t) => {
   const root = 마케팅(t);
   편(root, 'synkbrief_흠_20261110', { 컷표: true, 확인: [{ 결과: '작은 흠', 시각: 때(10), 갈래: ['인물튐'], 메모: '작은 흠: 3~5초 얼굴이 앞 컷보다 둥글다' }] });
   const 편폴더 = path.join(root, 'synkbrief_검사_20261120');
@@ -671,11 +673,15 @@ test('컷표 검사 — docs/마케팅 아래 편의 컷표를 글로 돌리면 
     const 앞때 = Date.now();
     const 멈춤 = 돌([], 부러진.멈춤);   // 시간 제한 1.5초에서 끊긴다(GPT 검수 GA1)
     assert.ok(Date.now() - 앞때 < 30000, `${이름}: 멈춘 장부를 시간 제한에서 끊는다`);
-    assert.deepEqual([켬.코드, 부러짐.코드, 던짐.코드, 멈춤.코드], [끔.코드, 끔.코드, 끔.코드, 끔.코드], 이름);
-    assert.ok(켬.out.startsWith(끔.out), 이름);
-    assert.match(켬.out.slice(끔.out.length), /^\[흠 장부\] 컷표영상 · 최근 1편에서 검사가 아직 못 잡는 흠 1개[^\n]*\n {2}· 인물튐[^\n]*\n {4}→ 할 것: [^\n]*\n$/, `${이름}: ${켬.out}`);
-    assert.deepEqual([부러짐.out, 던짐.out, 멈춤.out], [끔.out, 끔.out, 끔.out], `${이름}: 장부가 실패하면 아무것도 붙이지 않는다`);
-    assert.deepEqual([켬.결과, 부러짐.결과, 던짐.결과, 멈춤.결과], [끔.결과, 끔.결과, 끔.결과, 끔.결과], `${이름}: 결과.json`);
+    assert.equal(켬.코드, 끔.코드, 이름);
+    assert.match(켬.err, /\[영상 기준\] [a-f0-9]{64}/);
+    assert.match(켬.err, /\[흠 장부\] 컷표영상/);
+    assert.match(끔.err, /\[영상 기준\]/);
+    assert.equal(켬.결과, 끔.결과);
+    for (const 실패 of [부러짐, 던짐, 멈춤]) {
+      assert.equal(실패.코드, 1, 이름);
+      assert.ok(JSON.parse(실패.결과).항목.some(x => x.항목 === '영상기준' && x.등급 === '걸림'), 이름);
+    }
     const 켬j = 돌(['--json']), 끔j = 돌(['--json'], { SYNK_FLAW_LEDGER: 'off' });
     assert.deepEqual([켬j.코드, 켬j.out], [끔j.코드, 끔j.out], `${이름}: --json 출력과 끝 코드`);
   }
@@ -693,9 +699,7 @@ test('실제 편 — 만족 사례 장부의 편(synkbrief 영상통화연인)�
   };
   const 끔 = 돌([], { SYNK_FLAW_LEDGER: 'off' }), 켬 = 돌([]);
   assert.equal(켬.코드, 끔.코드);
-  assert.ok(켬.out.startsWith(끔.out));
-  // 묶음은 둘까지다 — 검사가 아직 못 잡는 흠(셋 이하) · 검사가 띄웠는데 넘긴 흠(둘 이하)
-  assert.match(켬.out.slice(끔.out.length), /^(\[흠 장부\] 컷표영상[^\n]*\n( {2}· [^\n]*\n( {4}→ 할 것: [^\n]*\n)?){1,3}){0,2}$/);
+  assert.equal(켬.out, 끔.out);
   assert.equal(켬.결과, 끔.결과);
   const 켬j = 돌(['--json']), 끔j = 돌(['--json'], { SYNK_FLAW_LEDGER: 'off' });
   assert.deepEqual([켬j.코드, 켬j.out], [끔j.코드, 끔j.out]);

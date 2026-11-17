@@ -6,6 +6,27 @@ const os = require('node:os');
 const path = require('node:path');
 const { srtToLines, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, pickPrevious, episodeOf, 시청자 } = require('../tools/낯선이시험.js');
 
+test('편의 첫 장면과 따로 만든 번역 시안이 같은 검사를 거치고 최종본 맹검은 따로 돈다', () => {
+  const { 첫컷인자 } = require('../tools/낯선이시험.js');
+  const ep = path.resolve('docs/마케팅/LAB_시험');
+  const shot = path.join(ep, '장면', '시안.mp4');
+  const external = path.resolve('preview.mp4');
+  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn' }), [ep, shot, '--종류', 'LAB']);
+  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn' }, 30), [ep, shot, '--종류', 'LAB']);
+  assert.equal(첫컷인자(shot, { 브랜드: 'lab-mn' }, 31), null, '긴 장면 영상의 일반 맹검은 전체 영상을 본다');
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷: ep }, 31), /대표 구간/);
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷확인: '검수.json' }, 31), /대표 구간/);
+  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷시작: '18', 첫컷끝: '22' }, 31),
+    [ep, shot, '--시작', '18', '--끝', '22', '--종류', 'LAB']);
+  assert.deepEqual(첫컷인자(external, { 브랜드: 'lab-en', 첫컷: ep, 첫컷확인: 'review.json' }),
+    [ep, external, '--종류', 'LAB', '--확인파일', path.resolve('review.json')]);
+  assert.deepEqual(첫컷인자(external, { 브랜드: 'lab-mn', 첫컷: ep, 첫컷시작: '18', 첫컷끝: '22' }),
+    [ep, external, '--시작', '18', '--끝', '22', '--종류', 'LAB']);
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷끝: '35' }), /30초/);
+  assert.equal(첫컷인자(path.join(ep, '게시', 'v1.mp4'), { 브랜드: 'lab-mn' }), null);
+  assert.throws(() => 첫컷인자(external, { 브랜드: 'lab-mn', 첫컷확인: 'review.json' }), /첫컷확인/);
+});
+
 test('볼 이유 질문 — 무엇으로 이기나 · 볼 이유 점수 · 슬롭 · 약한 자리를 묻고, 광고(pulse)만 맡기겠나를 묻는다(10-29)', () => {
   const sns = buildWorthPrompt({ brand: 'lab-en', sheets: ['C:/a/정지컷_01.jpg'], speech: 'C:/a/말.txt' });
   assert.match(sns, /까다로운 시청자/);

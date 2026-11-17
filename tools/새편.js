@@ -24,8 +24,7 @@
  *   node_modules   없으면 부품 자리로 연결(junction). 다른 곳을 가리키는 연결이면 연결만 풀고 다시 건다(대상은 건드리지 않는다).
  *                  실폴더면 손대지 않는다. 편의 package.json이 원천과 다르면(옛 판 틀) 잇지 않는다.
  *   편 고유 파일(src/Root.tsx · 장면 · public/img · vo · sfx · scripts)은 만들지도 건드리지도 않는다.
- *   새 편(remotion/package.json을 이번에 찍는 편)이면 출력 끝에 흠 장부의 시작 줄(그 길에서 검사가 아직 못 잡는 흠 셋 이하 —
- *   tools/흠장부.js 「시작」)을 붙인다. 장부가 실패해도 출력과 끝 코드는 그대로다(아래 흠시작글).
+ *   새 편과 재개 모두 tools/영상기준.js로 현재 기준과 최근 지적을 먼저 보인다. 읽을 수 없으면 편을 쓰기 전에 멈춘다.
  *
  * 부품 자리: %LOCALAPPDATA%\synk\remotion-parts\<열쇠>\node_modules (Windows 밖은 ~/.cache/synk/remotion-parts, 환경변수 SYNK_REMOTION_PARTS_DIR로 바꾼다).
  *   열쇠 = remotion-<remotion 판>-<잠금 파일 지문 12자>-<OS>-<CPU>. 잠금이 바뀌면 새 자리에 깔리고 옛 자리는 그대로 남는다(옛 편의 연결이 산다).
@@ -583,13 +582,7 @@ function 부품글(r) {
   return 줄.join('\n');
 }
 
-/**
- * 흠 장부의 시작 줄 — 새 편(remotion/package.json을 이번에 찍는 편)을 세울 때 그 길에서 검사가 아직 못 잡는 흠을 셋 이하로 보인다
- * (흠 장부 설계 ④ · 2단계, 2026-11-15 — docs/마케팅/제작양식/흠장부_설계_20261115.md). 낼 것이 없거나, 장부를 못 읽거나, 장부가 던지면 빈 글이다 —
- * 이 명령의 출력(이 줄 말고)과 끝 코드는 장부와 상관없이 그대로다. 편 폴더가 docs/마케팅 아래가 아니면(시험의 임시 폴더) 장부가 아무것도 내지 않는다.
- * 장부는 따로 띄운 node에서 돌리고 시간 제한을 둔다(기본 30초, SYNK_FLAW_LEDGER_TIMEOUT_MS) — 같은 프로세스에서 부르면 장부가 멈출 때 이 명령도 못 끝난다
- * (GPT 검수 GA1, 11-15). 끄기: 환경 변수 SYNK_FLAW_LEDGER=off.
- */
+// 흠 시작 줄만 묻는 기존 호출: 장부가 꺼졌거나 읽지 못하면 빈 글을 돌려준다.
 function 흠시작글(편) {
   try {
     if (String(process.env.SYNK_FLAW_LEDGER || '').trim().toLowerCase() === 'off') return '';
@@ -600,6 +593,22 @@ function 흠시작글(편) {
     // LAB 편은 흠 장부 줄 없이 「[LAB 교훈]」 줄만 뜰 수 있다(11-17 LAB 교훈 표 — Fable 5.2 P1-2: 「[흠 장부]」만 받으면 통째로 버렸다)
     return /^\[(?:흠 장부|LAB 교훈)\]/.test(글) ? 글 : '';
   } catch { return ''; }
+}
+
+// JSON 결과와 진단을 분리한다. 기준을 못 읽으면 편이나 부품을 바꾸기 전에 끝낸다.
+function 기준확인(편) {
+  const 공용 = require('./lib/공용작업본.js').공용작업본(저장소);
+  const 공용명령 = path.join(공용, 'tools', '영상기준.js');
+  const 명령 = fs.existsSync(공용명령) ? 공용명령 : path.join(__dirname, '영상기준.js');
+  const 제한 = Number(process.env.SYNK_FLAW_LEDGER_TIMEOUT_MS) > 0 ? Number(process.env.SYNK_FLAW_LEDGER_TIMEOUT_MS) : 240000;
+  const r = spawnSync(process.execPath, [명령, path.resolve(편)], {
+    encoding: 'utf8', windowsHide: true, timeout: 제한, maxBuffer: 2 << 20,
+  });
+  if (r.error || r.status !== 0 || !r.stdout.startsWith('[영상 기준] ')) {
+    const 까닭 = r.error?.message || r.stderr?.trim() || '기준판이 출력되지 않았습니다.';
+    throw Error(`영상 기준 확인 실패. ${까닭} 같은 새편 명령으로 다시 실행하세요.`);
+  }
+  return r.stdout.trimEnd();
 }
 
 function main(argv) {
@@ -619,13 +628,10 @@ function main(argv) {
     console.log(json ? JSON.stringify(r, null, 1) : 부품글(r));
     return 0;
   }
+  try { console.error(기준확인(자리값[0])); }
+  catch (e) { console.error(e.message); return 1; }
   const r = 편찍기(자리값[0], { 실행, 갱신, 알림 });
   console.log(json ? JSON.stringify(r, null, 1) : 편글(r));
-  // 흠 장부 시작 줄은 위 출력 뒤에 한 덩이로 — --json이면 stdout의 JSON을 흐리지 않게 stderr로
-  if (r.갈래 === '틀까지' && r.찍음.includes('package.json')) {
-    const 흠 = 흠시작글(r.편);
-    if (흠) { if (json) console.error(흠); else console.log(흠); }
-  }
   return r.막힘.length || r.다름.length ? 1 : 0;
 }
 
@@ -634,4 +640,4 @@ if (require.main === module) {
 }
 
 module.exports = { 틀읽기, 편이름풀기, 적용편인가, 다른틀찾기, 요구하나, 부품자리, 잠금읽기, 열쇠, 실물빠짐, 깔린것대조, 부품상태, 부품깔기, 죽은임시치우기, 같은내용, blob값, raw줄읽기, 지난blob, 같은길, 틀항목, 편보기, 편찍기, 편글, 부품글, 기본원천, 표시이름, 임시접두, 비킴꼬리,
-  흠시작글, main };
+  흠시작글, 기준확인, main };

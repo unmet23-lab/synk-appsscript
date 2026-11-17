@@ -16,12 +16,13 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const { 공용작업본 } = require('./lib/공용작업본.js');
 
 const MARK = '〔압축 뒤 영상 입구〕';
 const TAIL_BYTES = 24 * 1024 * 1024;   // 세션 기록 끝 24MB만 본다(압축 직전까지의 일)
 // 영상 일의 증거는 이 세션이 실제로 부른 도구의 입력(명령 · 파일 경로)에서만 찾는다 — 기록에는 스킬 목록 · 메모 같은 주입 글이 늘 들어 있어
 // 그 글의 「synk-video · 시댄스」로 판정하면 거의 모든 세션이 걸린다(11-13 Fable 검수 1 — 세션 60개 가운데 59개)
-const VIDEO = /synkbrief_|yuhobuilds_|PULSE_포트폴리오|크레딧내기|드리미나내기|사람움직임[.]py|컷연속성검사|최종본검사|꾸러미점검|편집전점검|컷순서[.]json|컷표[.]json|영상지시문|이미지지시문|remotion[\\/]|_master[.]mp4|최종[.]mp4/;
+const VIDEO = /synkbrief_|yuhobuilds_|PULSE_포트폴리오|크레딧내기|드리미나내기|사람움직임[.]py|영상기준[.]js|첫컷검사[.]py|컷연속성검사|최종본검사|꾸러미점검|편집전점검|컷순서[.]json|컷표[.]json|영상지시문|이미지지시문|remotion[\\/]|_master[.]mp4|최종[.]mp4/;
 const BIG_LINE = 300 * 1024;            // 그림이 든 줄 — 도구 입력은 여기에 없다
 
 function readStdin() {
@@ -30,9 +31,12 @@ function readStdin() {
 
 function synkRoot(cwd) {
   let dir = path.resolve(cwd || '.');
-  for (let i = 0; i < 8; i++) {
-    const skill = path.join(dir, '.claude', 'skills', 'synk-video', 'SKILL.md');
-    if (fs.existsSync(skill) && fs.existsSync(path.join(dir, 'AGENTS.md'))) return dir;
+  while (true) {
+    if (fs.existsSync(path.join(dir, '.git'))) {
+      const shared = 공용작업본(dir);
+      const skill = path.join(shared, '.claude', 'skills', 'synk-video', 'SKILL.md');
+      return fs.existsSync(skill) && fs.existsSync(path.join(shared, 'AGENTS.md')) ? shared : null;
+    }
     const up = path.dirname(dir);
     if (up === dir) break;
     dir = up;
@@ -83,7 +87,7 @@ function contextFor(input, { readTail = tail } = {}) {
   const log = input.transcript_path ? readTail(input.transcript_path) : '';
   if (!didVideoWork(log)) return null;
   return `${MARK} 문맥이 방금 압축됐다. 이 세션은 영상 일을 하고 있었으니 압축 앞에 읽은 영상 규칙은 이제 문맥에 없다 — 아래가 synk-video 스킬 한 장 그대로다(tools/압축뒤입구.js가 넣음). `
-    + '굽기 · 편집 · 검수를 이어 가기 전에 이 한 장의 단계 표에서 지금 단계를 찾고, 지시문을 쓰기 전이면 지시문 틀도 다시 연다.\n\n' + skillBody(root);
+    + `계속하기 전에 공용 작업본의 node "${path.join(root, 'tools', '영상기준.js')}" <편 폴더>로 기준을 다시 읽는다.\n\n` + skillBody(root);
 }
 
 function main() {

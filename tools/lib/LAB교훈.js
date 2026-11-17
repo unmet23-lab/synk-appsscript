@@ -167,8 +167,8 @@ function 원천읽기(root) {
   return [...이해원천(글읽기(path.join(root, ...자리.이해))), ...판본원천(글읽기(path.join(root, ...자리.판본)))];
 }
 
-function 표읽기(root) {
-  const t = 글읽기(path.join(root, ...자리.표));
+function 표읽기(root, 표글) {
+  const t = 표글 ?? 글읽기(path.join(root, ...자리.표));
   if (t === null) return { 교훈: [], 뺌: [], 지문: {}, 없음: true };
   const j = JSON.parse(t);
   return { 교훈: Array.isArray(j.교훈) ? j.교훈 : [], 뺌: Array.isArray(j.뺌) ? j.뺌 : [], 시작일: j.시작일 || '',
@@ -269,10 +269,10 @@ const 짧은날 = (d) => String(d || '').slice(5);
 const 시작상한 = 12;
 
 // 시작 — 그 단계에서 먼저 지킬 교훈(올린 뒤 다시 나온 것 · 많이 나온 것부터), 숫자, 안 올린 기록 수
-function 시작(root, 단계, { 상한 = 시작상한 } = {}) {
+function 시작(root, 단계, { 상한 = 시작상한, 표글 } = {}) {
   if (!단계들.includes(단계)) throw new Error(`단계는 ${단계들.join(' · ')} 가운데 하나다: ${단계}`);
   const 원천 = 원천읽기(root);
-  const 표 = 표읽기(root);
+  const 표 = 표읽기(root, 표글);
   const 보는단계 = 단계 === '원본' ? ['원본', '시험'] : [단계];
   const 줄 = 셈(표, 원천).filter((e) => e.단계.some((x) => 보는단계.includes(x)))
     .sort((a, b) => b.다시 - a.다시 || b.횟수 - a.횟수 || String(b.최근).localeCompare(String(a.최근)) || a.id.localeCompare(b.id));

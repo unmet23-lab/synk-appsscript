@@ -303,6 +303,36 @@ function previousVideo(arg, account = null) {
   return { name: path.basename(p), video: plate.video.path };
 }
 
+// 장면 심사에는 기존 맹검 재료를 그대로 만들고, 제작자가 볼 첫 컷 확인은 별도로 진행한다.
+// 편의 장면/ 폴더를 쓰는 기존 명령도 같은 검사를 거친다. 다른 위치에서 만든 시험 컷은 --첫컷으로 편을 지정한다.
+function 첫컷인자(video, options, duration) {
+  const dir = path.dirname(path.resolve(video));
+  const episode = options['첫컷'] || (path.basename(dir) === '장면' && path.basename(path.dirname(path.dirname(dir))) === '마케팅'
+    ? path.dirname(dir) : null);
+  if (!episode) {
+    if (['첫컷확인', '첫컷시작', '첫컷끝'].some(k => Object.hasOwn(options, k))) throw new Error('--첫컷확인에는 --첫컷 <편 폴더>나 편의 장면/ 영상이 필요하다.');
+    return null;
+  }
+  const 구간요청 = Object.hasOwn(options, '첫컷시작') || Object.hasOwn(options, '첫컷끝');
+  if (duration > 30 && !구간요청) {
+    if (Object.hasOwn(options, '첫컷') || Object.hasOwn(options, '첫컷확인')) {
+      throw new Error('긴 영상은 --첫컷시작과 --첫컷끝으로 대표 구간을 지정한다.');
+    }
+    return null;
+  }
+  const args = [path.resolve(episode), path.resolve(video)];
+  if (구간요청) {
+    const start = Number(options['첫컷시작']), end = Number(options['첫컷끝']);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end <= start || end - start > 30) {
+      throw new Error('--첫컷시작과 --첫컷끝에 영상 안의 30초 이내 구간을 초 단위로 지정한다.');
+    }
+    args.push('--시작', String(start), '--끝', String(end));
+  }
+  if (options['브랜드'].startsWith('lab-')) args.push('--종류', 'LAB');
+  if (options['첫컷확인']) args.push('--확인파일', path.resolve(options['첫컷확인']));
+  return args;
+}
+
 function main(argv) {
   const args = { _: [] };
   for (let i = 0; i < argv.length; i += 1) {
@@ -311,23 +341,32 @@ function main(argv) {
   }
   const video = args._[0];
   if (!video || !args['말'] || !args['브랜드']) {
-    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더|영상>,…] [--틀 퀴즈]');
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더|영상>,…] [--틀 퀴즈] [--첫컷 <편 폴더>] [--첫컷시작 <초> --첫컷끝 <초>] [--첫컷확인 <확인 JSON>]');
     return 2;
   }
   const who = 시청자[args['브랜드']];
   if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${args['브랜드']}`);
+  const src = path.resolve(video);
+  const info = probe(src);
+  const firstCut = 첫컷인자(src, args, info.duration);
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
   const out = path.resolve(args['밖'] || path.join(ROOT, '.tmp', '낯선이시험', `${path.basename(video, path.extname(video))}-${stamp}`));
   fs.mkdirSync(out, { recursive: true });
   for (const f of fs.readdirSync(out)) if (/^(정지컷_|지난\d)/.test(f) && /\.jpg$/.test(f)) fs.rmSync(path.join(out, f)); // 같은 폴더로 다시 돌릴 때 옛 장면을 섞지 않는다
-  const src = path.resolve(video);
-  const info = probe(src);
+  const start = Number(args['첫컷시작'] || 0);
+  const end = Object.hasOwn(args, '첫컷끝') ? Number(args['첫컷끝']) : null;
+  if (end !== null && (end > info.duration + 0.005 || args['컷'])) throw new Error('첫 컷 구간은 실제 영상 안에서 고르고 --컷은 생략한다.');
   const 컷끔 = args['컷'] === '끔';
   const 컷줌 = args['컷'] !== undefined && !컷끔;
   let shots = 컷줌 ? cutShots(parseCuts(args['컷'], info.duration), info.duration) : shotTimes(info.duration);
   let 자동글 = '';
   let 자동더함 = 0;
-  if (!컷줌 && !컷끔) {
+  if (end !== null) {
+    shots = shotTimes(end - start).map(shot => {
+      const at = start + shot.at;
+      return { at, label: `${at.toFixed(2)}s` };
+    });
+  } else if (!컷줌 && !컷끔) {
     // 자동 칸 — 실패해도 예전 장면으로 시험한다(끝 코드는 그대로)
     try {
       let bounds = null;
@@ -377,6 +416,12 @@ function main(argv) {
   if (자동글) console.log(자동글);
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);
   for (const 줄 of 다음글(args['브랜드'])) console.log(줄);
+  if (firstCut) {
+    const result = spawnSync(process.env.SYNK_PYTHON || 'python', ['-X', 'utf8', path.join(__dirname, '첫컷검사.py'), ...firstCut],
+      { stdio: 'inherit', windowsHide: true });
+    if (result.error) throw result.error;
+    return result.status ?? 1;
+  }
   return 0;
 }
 
@@ -409,4 +454,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
-module.exports = { srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, sceneTimes, addCutShots, detectCuts, 자동칸, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };
+module.exports = { 첫컷인자, srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, sceneTimes, addCutShots, detectCuts, 자동칸, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };

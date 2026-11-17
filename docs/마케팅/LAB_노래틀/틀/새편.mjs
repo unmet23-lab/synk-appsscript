@@ -11,6 +11,7 @@
 // --갱신: remotion/src만 틀에서 다시 복사(판본 글 src/판본은 그대로) — 동결한 편에는 쓰지 않는다(설계 20).
 import fs from 'node:fs';
 import path from 'node:path';
+import 영상기준 from '../../../../tools/영상기준.js';
 import { fileURLToPath } from 'node:url';
 
 const 틀 = path.dirname(fileURLToPath(import.meta.url));
@@ -23,6 +24,7 @@ let 편 = null;
 for (let i = 0; i < 인자.length; i++) { if (값플래그.has(인자[i])) { i++; continue; } if (!인자[i].startsWith('--')) { 편 = 인자[i]; break; } }
 if (!편) { console.error('사용: node 새편.mjs <편 폴더> --곡 <wav> --정본 <song.json> [--그림 <파일>] [--기준 <json>] [--갱신]'); process.exit(2); }
 const 편폴더 = path.resolve(편);
+if (영상기준.main([편폴더]) !== 0) process.exit(1);
 const 사본 = path.join(편폴더, 'remotion');
 const 갱신 = 인자.includes('--갱신');
 

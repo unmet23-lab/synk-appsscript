@@ -9,6 +9,7 @@
 // 언어 프로필: C 묶음의 docs/마케팅/현지화/언어프로필.json이 있으면 src/langProfile.json으로 옮긴다(없으면 빈 {} — lang.ts 기본값).
 import fs from 'node:fs';
 import path from 'node:path';
+import 영상기준 from '../../../../tools/영상기준.js';
 import { fileURLToPath } from 'node:url';
 
 const 틀 = path.dirname(fileURLToPath(import.meta.url));
@@ -19,6 +20,7 @@ if (!편) {
   console.error('사용: node 새편.mjs <편 폴더> [--갱신]');
   process.exit(2);
 }
+if (영상기준.main([편]) !== 0) process.exit(1);
 const 사본 = path.join(편, 'remotion');
 const 편파일 = new Set(['episode.json', 'vo.generated.ts', 'langProfile.json']);
 

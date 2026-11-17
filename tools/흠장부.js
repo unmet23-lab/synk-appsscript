@@ -68,12 +68,13 @@ function 줄들(p) {
 }
 
 // ── 기준 표 ──
-function 기준읽기(repo = REPO) {
-  const 갈래 = json읽기(path.join(repo, 'docs', '마케팅', '제작양식', '흠갈래.json')) || { 줄: [], 항목: {} };
+function 기준읽기(repo = REPO, 원문 = {}) {
+  const 갈래 = 원문.흠갈래 ?? json읽기(path.join(repo, 'docs', '마케팅', '제작양식', '흠갈래.json')) ?? { 줄: [], 항목: {} };
   const 자리 = new Map();
   const 말씀칸 = new Map();   // 번호 → 점검표 셋째 칸(유호님 말씀 · 날짜) — 「같은 뿌리 말씀이 다시 나온 횟수」(말씀다시세기)가 읽는다
   try {
-    for (const l of fs.readFileSync(path.join(repo, 'docs', '마케팅', '제작양식', '광고영상_슬롭점검표.md'), 'utf8').split(/\r?\n/)) {
+    const 점검표 = 원문.점검표 ?? fs.readFileSync(path.join(repo, 'docs', '마케팅', '제작양식', '광고영상_슬롭점검표.md'), 'utf8');
+    for (const l of 점검표.split(/\r?\n/)) {
       const m = l.match(/^\| (\d+) \| ([^|]*)\|(?: ([^|]*)\|)?/);
       if (m) { 자리.set(Number(m[1]), m[2].trim()); if (m[3] !== undefined) 말씀칸.set(Number(m[1]), m[3].trim()); }
     }
@@ -86,7 +87,7 @@ function 기준읽기(repo = REPO) {
   for (const [이름, x] of Object.entries(갈래.항목 || {})) {
     for (const o of [].concat(x?.올린검사 || [])) for (const r of [].concat(o.규칙 || [])) if (!규칙열쇠.has(`${o.검사}:${r}`)) 규칙열쇠.set(`${o.검사}:${r}`, `항목:${이름}`);
   }
-  const 모음 = json읽기(path.join(repo, 'docs', '마케팅', '제작양식', '슬롭점검_모음.json')) || { 지적: [] };
+  const 모음 = 원문.모음 ?? json읽기(path.join(repo, 'docs', '마케팅', '제작양식', '슬롭점검_모음.json')) ?? { 지적: [] };
   return { 줄, 항목: 갈래.항목 || {}, 자리, 말씀칸, 규칙번호, 규칙열쇠, 모음, 묶음이름: 갈래.묶음 || {}, 후보: 갈래.새묶음후보 || {} };
 }
 
@@ -632,15 +633,15 @@ function 시작길(입력, 편들) {
 }
 
 // 시작 — { 길, 근거, 편?, 편수, 줄: [...] } 또는 { 줄: [], 까닭 }. 던지지 않는다(못 읽은 것은 「까닭」에)
-function 시작(입력, { 폴더 = '', 최근 = 20, 상한 = 시작상한 } = {}) {
+function 시작(입력, { 폴더 = '', 최근 = 20, 상한 = 시작상한, 기준뿌리 = 공용작업본(REPO), 원문 = {}, 범위밖허용 = false } = {}) {
   try {
     if (끔()) return { 줄: [], 까닭: 'SYNK_FLAW_LEDGER=off' };
     const s = String(입력 || '').trim();
     if (!s) return { 줄: [], 까닭: '편 폴더 · 컷표 파일 · 길 가운데 하나를 준다' };
     const 길이름 = 길들.includes(s) ? s : null;
-    if (!길이름 && !마케팅아래(s)) return { 줄: [], 까닭: '편 폴더가 docs/마케팅 아래가 아니다' };
+    if (!범위밖허용 && !길이름 && !마케팅아래(s)) return { 줄: [], 까닭: '편 폴더가 docs/마케팅 아래가 아니다' };
     const 뿌리 = 자료자리(폴더);
-    const 기준 = 기준읽기();
+    const 기준 = 기준읽기(기준뿌리, 원문);
     const 편들 = 모으기(뿌리, 기준);
     const g = 길이름 ? { 길: 길이름, 근거: '길 이름' } : 시작길(s, 편들);
     if (!g.길) return { 줄: [], 까닭: g.까닭 };
@@ -649,7 +650,7 @@ function 시작(입력, { 폴더 = '', 최근 = 20, 상한 = 시작상한 } = {}
     // 표 자리는 이 도구의 저장소(시험은 SYNK_LAB_LESSON_DIR). 못 읽으면 붙이지 않는다
     let LAB교훈 = null;
     if (g.길 === 'LAB') {
-      try { LAB교훈 = require('./lib/LAB교훈.js').시작(process.env.SYNK_LAB_LESSON_DIR ? path.resolve(process.env.SYNK_LAB_LESSON_DIR) : REPO, '원본', { 상한: 8 }); } catch { LAB교훈 = null; }
+      try { LAB교훈 = require('./lib/LAB교훈.js').시작(process.env.SYNK_LAB_LESSON_DIR ? path.resolve(process.env.SYNK_LAB_LESSON_DIR) : 기준뿌리, '원본', { 상한: 8, 표글: 원문.LAB교훈 }); } catch { LAB교훈 = null; }
     }
     return { 길: g.길, 근거: g.근거, ...(g.편 ? { 편: g.편 } : {}), 편수: r.편수, 줄: r.줄, ...(r.넘김줄.length ? { 넘김줄: r.넘김줄 } : {}), ...(LAB교훈 ? { LAB교훈 } : {}) };
   } catch (e) {
