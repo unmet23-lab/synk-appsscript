@@ -159,6 +159,7 @@ export const MODELS = Object.freeze([
 // 11-06 대표작 이름을 「霜の肌理」로 바꿨다(유호님 「이 판으로 바꿔」, 옛 이름 유리결). id · 그림 파일 이름은 저장된 요청서가 고른 작품을 잃지 않게 그대로 둔다.
 // 11-09 작품 진열 최신화(SYNK-appsscript docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열): synk.im · 고객 앱과 같은 차례로 쇼릴의 네 편을 앞에 두고 霜の肌理 · 화성 CF가 뒤를 잇는다.
 // 새 그림 셋은 최종본의 장 하나를 4:3로 자른 것이다(굽기.cjs pc — 출처는 sources.json의 publicFilm). 누르면 synk.im 작품 칸의 그 작품으로 간다.
+// 11-17 메인 네 편(유호님이 시안을 보시고 「시안대로 반영」): 도담 · 「다리가 기억하는 것」(서울로미디어캔버스 당선작) · 첨벙댕 · 매진 임박이 앞에, 霜の肌理 · 화성 CF가 뒤에 선다. 서울로는 2000×550의 아주 넓은 작품이라 자르지 않고 4:3 그림 가운데에 띠로 놓았다. 빠진 오미톡 15초 · 모두의코스는 저장된 초안이 고른 id를 잃지 않게 RETIRED_WORKS로 옮겼다.
 export const PORTFOLIO = Object.freeze([
   {
     id: 'dodam', title: '도담중공업 「이 아이를 보냅니다」', category: '1분 1초 · 기업 홍보영상',
@@ -170,13 +171,22 @@ export const PORTFOLIO = Object.freeze([
     sourceUrl: 'https://synk.im/pulse/#work-1',
   },
   {
-    id: 'omitok-court', title: '오미톡 「치익이 톡이 될 때까지」', category: '15초 · 음료 광고',
-    kind: '가상 브랜드로 만든 자체 작품',
-    description: '농구 코트에 뻗은 청년이 가상 음료 브랜드 「오미톡」의 오미자 탄산 한 캔에 살아나는 15초 세로 광고예요. 한 모금마다 바뀌는 얼굴로 다섯 가지 맛을 보여 줘요.',
-    image: '/assets/pulse/portfolio/omitok-court.webp',
-    gallery: [{ image: '/assets/pulse/portfolio/omitok-court.webp', caption: '노을 지는 농구 코트에서 땀에 젖은 청년이 활짝 웃는 장면. 오미톡 광고의 한 장면' }],
-    tags: ['음료', '세로 광고', '연기'],
+    id: 'seoullo-bridge', title: '「다리가 기억하는 것」', category: '2분 58초 · 단편 애니메이션',
+    kind: '공모전 당선작',
+    description: '1970년에 서울에 온 할머니가 손주와 서울로7017을 걸으며, 찻길이던 서울역 고가도로가 걷는 길로 다시 태어나기까지를 들려주는 단편 애니메이션이에요. 모든 장면을 털실과 펠트로 만든 작은 인형 마을처럼 꾸몄어요. 2026 서울로미디어캔버스 단편 애니메이션 공모 당선작이고, 2026년 12월부터 2027년 2월까지 서울로미디어캔버스에서 전시돼요.',
+    image: '/assets/pulse/portfolio/seoullo-bridge.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/seoullo-bridge.webp', caption: '비 오는 고가도로 밑을 알록달록한 우산을 쓴 펠트 인형 아이들이 줄지어 걷는 장면. 단편 애니메이션 「다리가 기억하는 것」의 한 장면' }],
+    tags: ['단편 애니메이션', '공모전 당선', '이야기'],
     sourceUrl: 'https://synk.im/pulse/#work-2',
+  },
+  {
+    id: 'cheombeong-dang', title: '첨벙댕', category: '26초 · 반려동물 용품 광고',
+    kind: '가상 브랜드로 만든 자체 작품',
+    description: '외계인을 닮은 개가 반려견 구명조끼 「첨벙댕」을 입고 우주까지 가는 B급 세로 광고예요. 말이 안 되는 이야기를 끝까지 밀어붙였어요.',
+    image: '/assets/pulse/portfolio/cheombeong-dang.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/cheombeong-dang.webp', caption: '물이 찬 방에서 주황 고글을 쓰고 노란 구명조끼를 입은 개가 입으로 물을 뿜으며 서 있는 장면. 광고 「첨벙댕」의 한 장면' }],
+    tags: ['반려동물', 'B급', '세로 광고'],
+    sourceUrl: 'https://synk.im/pulse/#work-3',
   },
   {
     id: 'maejin', title: '「매진 임박」', category: '1분 15초 · 코미디',
@@ -185,15 +195,6 @@ export const PORTFOLIO = Object.freeze([
     image: '/assets/pulse/portfolio/maejin.webp',
     gallery: [{ image: '/assets/pulse/portfolio/maejin.webp', caption: '어두운 거실에서 복면을 쓴 남자가 리본 묶은 선물 상자를 들고 서 있는 장면. 광고 「매진 임박」의 끝 장면' }],
     tags: ['제품 광고', '홈쇼핑', '코미디', '이야기'],
-    sourceUrl: 'https://synk.im/pulse/#work-3',
-  },
-  {
-    id: 'modu-course', title: '모두의코스 「가는 데마다 또 그 사람」', category: '39초 · 여행 앱 광고',
-    kind: '가상 브랜드로 만든 자체 작품',
-    description: '제주 2박 3일, 가는 데마다 같은 사람이 나타나는 세로 광고예요. 마지막 한 장면에서 그 까닭이 가상 여행 코스 앱 「모두의코스」로 풀려요.',
-    image: '/assets/pulse/portfolio/modu-course.webp',
-    gallery: [{ image: '/assets/pulse/portfolio/modu-course.webp', caption: '제주 바닷가 인피니티 수영장 한가운데 튜브를 낀 남자가 떠 있는 장면. 광고 「모두의코스」의 한 장면' }],
-    tags: ['앱 광고', '여행', '코미디'],
     sourceUrl: 'https://synk.im/pulse/#work-4',
   },
   {
@@ -203,7 +204,7 @@ export const PORTFOLIO = Object.freeze([
     image: '/assets/pulse/portfolio/yurigyeol.webp',
     gallery: [{ image: '/assets/pulse/portfolio/yurigyeol.webp', caption: '흩날리는 유리 조각 사이에 선 「霜の肌理」 세럼 병과 남색 육각 상자. 홀리데이 기프트 광고 「霜の肌理」의 한 장면' }],
     tags: ['제품 광고', '홀리데이', '임팩트'],
-    sourceUrl: 'https://synk.im/pulse/#work-7',
+    sourceUrl: 'https://synk.im/pulse/#work-8',
   },
   {
     id: 'hwaseong-cf', title: '화성 CF 「1억 년의 빛」', category: '55초 · CF',
@@ -217,7 +218,26 @@ export const PORTFOLIO = Object.freeze([
 ]);
 
 // No longer listed. A brief saved on this PC can still name it, so it stays readable until removed.
+// 11-17 메인 네 편에서 빠진 두 편은 synk.im 「더 많은 작품」의 05 · 06 칸에 그대로 있다.
 export const RETIRED_WORKS = Object.freeze([
+  {
+    id: 'omitok-court', title: '오미톡 「치익이 톡이 될 때까지」', category: '15초 · 음료 광고',
+    kind: '가상 브랜드로 만든 자체 작품',
+    description: '농구 코트에 뻗은 청년이 가상 음료 브랜드 「오미톡」의 오미자 탄산 한 캔에 살아나는 15초 세로 광고예요. 한 모금마다 바뀌는 얼굴로 다섯 가지 맛을 보여 줘요.',
+    image: '/assets/pulse/portfolio/omitok-court.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/omitok-court.webp', caption: '노을 지는 농구 코트에서 땀에 젖은 청년이 활짝 웃는 장면. 오미톡 광고의 한 장면' }],
+    tags: ['음료', '세로 광고', '연기'],
+    sourceUrl: 'https://synk.im/pulse/#work-5',
+  },
+  {
+    id: 'modu-course', title: '모두의코스 「가는 데마다 또 그 사람」', category: '39초 · 여행 앱 광고',
+    kind: '가상 브랜드로 만든 자체 작품',
+    description: '제주 2박 3일, 가는 데마다 같은 사람이 나타나는 세로 광고예요. 마지막 한 장면에서 그 까닭이 가상 여행 코스 앱 「모두의코스」로 풀려요.',
+    image: '/assets/pulse/portfolio/modu-course.webp',
+    gallery: [{ image: '/assets/pulse/portfolio/modu-course.webp', caption: '제주 바닷가 인피니티 수영장 한가운데 튜브를 낀 남자가 떠 있는 장면. 광고 「모두의코스」의 한 장면' }],
+    tags: ['앱 광고', '여행', '코미디'],
+    sourceUrl: 'https://synk.im/pulse/#work-6',
+  },
   {
     id: 'model-casting', title: 'PULSE AI 모델 캐스팅', category: '모델 이미지',
     kind: '자체 제작 이미지',

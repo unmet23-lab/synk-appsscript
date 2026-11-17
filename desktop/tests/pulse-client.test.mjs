@@ -34,14 +34,31 @@ test('the roster matches the website: twenty-one models and two idol teams of fo
   assert.deepEqual(MODELS.find(m=>m.id==='M03').tags.slice(2),['미스터리한','4차원']);
 });
 
-test('the portfolio lists the six works in the synk.im order and keeps the contest entry apart from the virtual brands',()=>{
+test('the portfolio lists the six works in the synk.im order and keeps the contest works apart from the virtual brands',()=>{
   // 11-09 작품 진열 최신화(SYNK-appsscript docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열): 쇼릴의 네 편이 앞, 霜の肌理 · 화성 CF가 뒤.
+  // 11-17 메인 네 편(유호님 「시안대로 반영」): 도담 · 서울로 당선작 · 첨벙댕 · 매진 임박. 霜の肌理는 synk.im 「더 많은 작품」 08번 칸이다.
   // 11-06 대표작 이름은 「霜の肌理」다 — 손님이 읽는 글에 옛 이름이 남지 않는다. 저장된 초안이 고른 옛 id(yurigyeol · maejin · hwaseong-cf)는 그대로다.
   assert.ok(PORTFOLIO.find(w=>w.id==='yurigyeol').title.includes('「霜の肌理」'));assert.doesNotMatch(JSON.stringify(PORTFOLIO),/유리결|YURIGYEOL|서리꽃 앰플/);
-  assert.deepEqual(PORTFOLIO.map(w=>w.id),['dodam','omitok-court','maejin','modu-course','yurigyeol','hwaseong-cf']);
-  assert.deepEqual(PORTFOLIO.map(w=>w.kind),[...Array(5).fill('가상 브랜드로 만든 자체 작품'),'공모전 출품작']);
-  assert.deepEqual(PORTFOLIO.slice(0,5).map(w=>w.sourceUrl),['https://synk.im/pulse/#work-1','https://synk.im/pulse/#work-2','https://synk.im/pulse/#work-3','https://synk.im/pulse/#work-4','https://synk.im/pulse/#work-7']);
+  assert.deepEqual(PORTFOLIO.map(w=>w.id),['dodam','seoullo-bridge','cheombeong-dang','maejin','yurigyeol','hwaseong-cf']);
+  assert.deepEqual(PORTFOLIO.map(w=>w.kind),['가상 브랜드로 만든 자체 작품','공모전 당선작',...Array(3).fill('가상 브랜드로 만든 자체 작품'),'공모전 출품작']);
+  assert.deepEqual(PORTFOLIO.slice(0,5).map(w=>w.sourceUrl),['https://synk.im/pulse/#work-1','https://synk.im/pulse/#work-2','https://synk.im/pulse/#work-3','https://synk.im/pulse/#work-4','https://synk.im/pulse/#work-8']);
   assert.ok(!PORTFOLIO.some(w=>w.id==='model-casting'));
+});
+
+test('a draft saved before 11-17 keeps the two works that left the main four and names them in the request',async()=>{
+  // 11-17에 메인에서 빠진 오미톡 15초 · 모두의코스는 RETIRED_WORKS로 옮겨, 그 id를 고른 초안이 작품을 잃지 않는다.
+  assert.deepEqual(RETIRED_WORKS.map(w=>w.id),['omitok-court','modu-course','model-casting']);
+  const saved={models:['M01'],works:['omitok-court','modu-course','maejin'],brief:{brand:'브랜드'}};
+  assert.deepEqual(sanitizePulseDraft(saved).works,['omitok-court','modu-course','maejin']);
+  const text=pulseRequestText(saved);
+  for(const line of ['- 오미톡 「치익이 톡이 될 때까지」 · 가상 브랜드로 만든 자체 작품\n  https://synk.im/pulse/#work-5','- 모두의코스 「가는 데마다 또 그 사람」 · 가상 브랜드로 만든 자체 작품\n  https://synk.im/pulse/#work-6','- 「매진 임박」 · 가상 브랜드로 만든 자체 작품\n  https://synk.im/pulse/#work-4'])assert.ok(text.includes(line),line);
+  const {root,show,press}=mount({saved});
+  const portfolio=await show('portfolio');
+  assert.equal(portfolio.match(/class="pulse-work-card/g).length,8);
+  for(const id of ['omitok-court','modu-course'])assert.match(portfolio,new RegExp('data-pulse-work="'+id+'"'));
+  await press({pulsePickWork:'omitok-court'});
+  assert.equal(root.innerHTML.match(/class="pulse-work-card/g).length,7);
+  assert.doesNotMatch(root.innerHTML,/data-pulse-work="omitok-court"/);
 });
 
 test('every model and work image is a recorded byte-for-byte copy of its public file',()=>{
@@ -52,12 +69,12 @@ test('every model and work image is a recorded byte-for-byte copy of its public 
     const bytes=fs.readFileSync(path.join(desktop,'assets/pulse',file));
     assert.equal(bytes.length,row.bytes,file);
     assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),row.sha256,file);
-    // 11-06 대표작 霜の肌理 · 11-09 새 작품 셋: synk.im이 이 작품들을 영상으로 보여 정지 그림이 없다 — 그 영상의 같은 원본에서 뽑은 장 하나만 출처를 적고 받는다.
-    if(row.publicFilm){assert.match(file,/^portfolio\/(?:yurigyeol|dodam|omitok-court|modu-course)\.webp$/);assert.match(row.publicFilm,/^https:\/\/synk\.im\/assets\/.+\.mp4$/);assert.match(row.transformation,/^frame at [\d.]+ s of the approved \d+ s film/);continue;}
+    // 11-06 대표작 霜の肌理 · 11-09 새 작품 셋 · 11-17 새 작품 둘: synk.im이 이 작품들을 영상으로 보여 정지 그림이 없다 — 그 영상의 같은 원본에서 뽑은 장 하나만 출처를 적고 받는다.
+    if(row.publicFilm){assert.match(file,/^portfolio\/(?:yurigyeol|dodam|omitok-court|modu-course|seoullo-bridge|cheombeong-dang)\.webp$/);assert.match(row.publicFilm,/^https:\/\/synk\.im\/assets\/.+\.mp4$/);assert.match(row.transformation,/^frame at [\d.]+ s of the approved \d+ s film/);continue;}
     assert.match(row.publicUrl,/^https:\/\/synk\.im\/assets\//);
     assert.equal(row.transformation,'none; byte-for-byte copy');
   }
-  assert.equal(sources.assets.length,27);
+  assert.equal(sources.assets.length,29);
   for(const model of MODELS)assert.equal(rows.get(model.image.replace('/assets/pulse/','')).publicUrl,model.sourceUrl,model.id);
 });
 

@@ -4,7 +4,7 @@
   "purpose": "PULSE public model gallery and works in the local desktop platform",
   "modelFactsSource": "../SYNK-website/site-v10/content/ko.mjs (pulse.models)",
   "publicSelectionSource": "../SYNK-website/site-v10/content/ko.mjs",
-  "selectionNote": "Keep the current public selection: twenty-one models (two idol teams included) and six works in the synk.im order (11-09 works refresh — SYNK-appsscript docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열). Model and contest pictures are byte-identical to the public synk.im file on their checked date; the flagship 霜の肌理 and the three works added on 11-09 are single frames of the approved films (publicFilm), because synk.im shows those works as films.",
+  "selectionNote": "Keep the current public selection: twenty-one models (two idol teams included) and six works in the synk.im order (11-09 works refresh, 11-17 main four — SYNK-appsscript docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열). Model and contest pictures are byte-identical to the public synk.im file on their checked date; the flagship 霜の肌理, the three works added on 11-09 and the two added on 11-17 are single frames of the approved films (publicFilm), because synk.im shows those works as films. The two works taken off the list on 11-17 (omitok-court, modu-course) keep their pictures so a brief saved on this PC can still show them.",
   "assets": [
     {
       "id": "M01",
@@ -294,6 +294,24 @@
       "bytes": 154684,
       "sha256": "9497942f8f65eb23432e537c4ff15edb2aa6697485435fed8a0939bf64679a57",
       "transformation": "none; byte-for-byte copy"
+    },
+    {
+      "id": "seoullo-bridge",
+      "file": "portfolio/seoullo-bridge.webp",
+      "source": "synk-vendor/contests-20261019/seoullo/다리가기억하는것_보완_무자막_2000x550.mp4",
+      "publicFilm": "https://synk.im/assets/v10/pulse-film-seoullo-20261117.mp4",
+      "bytes": 53730,
+      "sha256": "e4b40136795b6df273b20a2d389e41dec9580ab8af04085e92e1fa71870a9dbf",
+      "transformation": "frame at 59.0 s of the approved 178 s film (picture without captions, 2000x550), whole frame uncropped, Lanczos 1360x374, centred on a 1360x1020 #111111 canvas, WebP q80 — the synk.im poster frame (진열/굽기.cjs pc)"
+    },
+    {
+      "id": "cheombeong-dang",
+      "file": "portfolio/cheombeong-dang.webp",
+      "source": "synk-vendor/pulse-portfolio12-20261024/최종/p11/첨벙댕_9x16.mp4",
+      "publicFilm": "https://synk.im/assets/v10/pulse-film-pet-20261117.mp4",
+      "bytes": 44188,
+      "sha256": "0c718e8fabc83ab1f43133767318a49e62e5e2ba06e6e5069c43dcc3845c3717",
+      "transformation": "frame at 21.9 s of the approved 26 s film (finished cut, 1080x1920), crop x 0 y 555 1080x810, Lanczos 1360x1020, WebP q80 — the synk.im poster frame (진열/굽기.cjs pc)"
     }
   ]
 }

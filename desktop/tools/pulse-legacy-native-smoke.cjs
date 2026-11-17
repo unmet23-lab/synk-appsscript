@@ -119,12 +119,12 @@ app.whenReady().then(async()=>{
       await search('없는낱말');check('nothing-found-says-so',await run(`!!document.querySelector('#pulse-results .pulse-empty')`));await click('#pulse-client [data-pulse-reset]');
       await click('#pulse-client [data-pulse-gender="남"]');check('gender-filter-keeps-the-matching-team',SAME(await teams(),['OUTBLUE'])&&(await names()).length===10);await click('#pulse-client [data-pulse-gender="all"]');
       await click('#pulse-client [data-pulse-tab="portfolio"]');check('six-works-with-no-draft',await run(`document.querySelectorAll('#pulse-client .pulse-work-card').length`)===6);
-      // 11-09 작품 진열 최신화: synk.im · 고객 앱과 같은 차례, 그림은 모두 다 받은 4:3 장.
+      // 11-09 작품 진열 최신화: synk.im · 고객 앱과 같은 차례, 그림은 모두 다 받은 4:3 장. 11-17 메인 네 편(도담 · 서울로 당선작 · 첨벙댕 · 매진 임박)이 앞이다.
       {const works=await run(`[...document.querySelectorAll('#pulse-client .pulse-work-card .pulse-work-art')].map(card=>card.dataset.pulseWork)`);
         // 화면 밖 그림은 지연 로드라 숨은 창에서 안 받는다 — 바로 받게 바꾸고 3초까지 기다린다.
         await run(`new Promise(done=>{const all=[...document.querySelectorAll('#pulse-client .pulse-work-card img')];all.forEach(img=>{img.loading='eager';});const t=Date.now();(function wait(){if(all.every(img=>img.complete&&img.naturalWidth>0)||Date.now()-t>3000)return done();setTimeout(wait,50);})();})`);
         const art=await run(`[...document.querySelectorAll('#pulse-client .pulse-work-card img')].map(img=>[img.getAttribute('src'),img.naturalWidth,img.naturalHeight])`);
-        check('works-in-the-site-order-with-loaded-pictures',JSON.stringify(works)===JSON.stringify(['dodam','omitok-court','maejin','modu-course','yurigyeol','hwaseong-cf'])&&art.length>=6&&art.every(([,w,h])=>w>0&&Math.abs(w/h-4/3)<0.01),{works,art});}
+        check('works-in-the-site-order-with-loaded-pictures',JSON.stringify(works)===JSON.stringify(['dodam','seoullo-bridge','cheombeong-dang','maejin','yurigyeol','hwaseong-cf'])&&art.length>=6&&art.every(([,w,h])=>w>0&&Math.abs(w/h-4/3)<0.01),{works,art});}
       // A glyph missing from the body font falls through to the next family: measure with two different last families.
       let screenText=await run(`document.getElementById('pulse-client').innerText`);
       for(const tab of ['models','brief']){await click('#pulse-client [data-pulse-tab="'+tab+'"]');screenText+=await run(`document.getElementById('pulse-client').innerText`);}
