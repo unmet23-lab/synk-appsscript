@@ -293,8 +293,10 @@ function handoffToMain({waitedForStart=false}={}){
   const from=startupWindow?.isVisible()?startupWindow.bounds():null;
   // 앱 창을 먼저 만들고 시작 창을 없앤다. 시작 창이 그때 하나뿐인 창이면 먼저 없애는 순간 「모든 창이 닫힘」이 app.quit()를 불러,
   // 확인이 시작 창이 보이기 전에 끝난 실행(빠른 인터넷, 공개 CI 검사기)이 켜지자마자 멈췄다(0.4.96 대역 빌드 검사에서 찾음)
-  if(!from){showPlatformMain();startupWindow?.dispose();startupWindow=null;return;}
-  if(window&&!window.isDestroyed()&&mainWindowReady){showPlatformMain();setTimeout(()=>{startupWindow?.dispose();startupWindow=null;},50);return;}
+  // 드러남 값(orbBoot)은 겹쳐 넘기는 길에만 쓴다. 시작 창을 보지 못한 채 넘기거나 앱 창이 이미 준비됐으면 비워,
+  // 앱 창 얼굴이 시작 창이 만들어진 때부터 지난 만큼을 건너뛰지 않고 처음부터 드러나게 한다(0.4.96 공개 후보 Fable P2)
+  if(!from){orbBoot=null;showPlatformMain();startupWindow?.dispose();startupWindow=null;return;}
+  if(window&&!window.isDestroyed()&&mainWindowReady){orbBoot=null;showPlatformMain();setTimeout(()=>{startupWindow?.dispose();startupWindow=null;},50);return;}
   startupHandoff={bounds:from,done:false,timer:null};
   showPlatformMain();
 }

@@ -78,6 +78,8 @@ function observe(config){
   app.on('browser-window-created',(_event,created)=>{process.stderr.write('SYNK_QA_TRACE window-created\n');
     created.show=()=>{};created.showInactive=()=>{};created.focus=()=>{};
     const contents=created.webContents;contents.setBackgroundThrottling(false);contents.setAudioMuted(true);blockNetwork(contents);
+    // 얼굴 단계 기록은 앱 창의 dom-ready에서 바로 심는다. did-finish-load 뒤에 심으면 본체가 넘긴 드러남 시각만큼 welcome이 짧아져, 느린 러너에서 welcome을 놓칠 수 있었다(0.4.96 공개 후보 Fable P3). 아래 기다림 식의 심기는 이미 심었으면 그냥 지나간다
+    contents.on('dom-ready',()=>{if(contents.getURL()==='synk-desktop://platform/index.html')void contents.executeJavaScript("(()=>{if(window.__orbSeenPlant)return true;window.__orbSeenPlant=true;const plant=p=>{if(window.__orbSeen)return;const seen=window.__orbSeen=[p.dataset.portalState||''];const add=v=>{const s=v||'';if(seen[seen.length-1]!==s)seen.push(s);};new MutationObserver(list=>{for(const r of list)add(r.oldValue);add(p.getAttribute('data-portal-state'));}).observe(p,{attributes:true,attributeOldValue:true,attributeFilter:['data-portal-state']});};const p=document.getElementById('portal-entry');if(p){plant(p);return true;}const o=new MutationObserver(()=>{const q=document.getElementById('portal-entry');if(q){o.disconnect();plant(q);}});o.observe(document.documentElement,{childList:true,subtree:true});return true;})()",true).catch(()=>{});});
     // Windows exposes preloadURL rather than preload in early preferences.
     // Classify only after the exact production document has finished loading.
     contents.once('did-finish-load',()=>{

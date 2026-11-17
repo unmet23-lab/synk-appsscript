@@ -14,7 +14,7 @@ function run({visible=false,kind='first',reduced=false,mainReady=false}={}){
   const closeWindow=name=>{open.delete(name);events.push('close '+name);if(open.size===0)events.push('all-closed');};
   const startupWindow={isVisible:()=>visible,bounds:()=>({x:0,y:0,width:1440,height:940,maximized:false}),whenShown:()=>new Promise(()=>{}),dispose:()=>closeWindow('startup')};
   const context={
-    orbBoot:{kind,startedAt:Date.now()},startupWindow,window:null,mainWindowReady:mainReady,startupHandoff:null,startupAllowed:false,ARRIVE_SCENE_MS:1800,
+    orbBoot:{kind,startedAt:Date.now()},startupWindow,window:mainReady?{isDestroyed:()=>false}:null,mainWindowReady:mainReady,startupHandoff:null,startupAllowed:false,ARRIVE_SCENE_MS:1800,
     prefersReducedMotion:()=>reduced,
     showPlatformMain:()=>{open.add('main');events.push('main');},
     setTimeout:(fn,ms)=>{events.push('timer '+ms);return 0;},Promise,Date,
@@ -29,6 +29,8 @@ test('a startup window that never became visible is closed only after the app wi
     assert.deepEqual(events,['main','close startup'],kind);
     assert.equal(context.startupWindow,null,kind);
     assert.equal(context.startupAllowed,true,kind);
+    // 시작 창을 보지 못했으니 앱 창 얼굴은 처음부터 드러난다(드러남 값을 넘기지 않는다, 0.4.96 공개 후보 Fable P2)
+    assert.equal(context.orbBoot,null,kind);
   }
   // 움직임 줄이기에서는 도착 장면을 기다리지 않고 같은 길로 간다
   const reduced=run({kind:'arrive',reduced:true});
@@ -47,4 +49,10 @@ test('a visible startup window stays until the app window takes over',()=>{
   assert.deepEqual(events,['main']);
   assert.equal(context.startupHandoff?.done,false);
   assert.ok(context.startupWindow,'the startup window is closed later by finishHandoff');
+  assert.ok(context.orbBoot,'the app window face continues the reveal the person is watching');
+});
+test('an app window that is already loaded takes over without the reveal value',()=>{
+  const {events,context}=run({visible:true,mainReady:true});
+  assert.deepEqual(events,['main','timer 50']);
+  assert.equal(context.orbBoot,null);
 });

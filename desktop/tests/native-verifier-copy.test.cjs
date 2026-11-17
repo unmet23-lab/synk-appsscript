@@ -28,3 +28,10 @@ test('Windows native verifier keeps the gate from opening early while it holds t
   const {createStartupUpdateGate}=require('../src/platform-startup-update.cjs');
   assert.equal(typeof createStartupUpdateGate,'function');
 });
+test('Windows native verifier plants the face stage record when the app document is ready',()=>{
+  // did-finish-load 뒤에 심으면 본체가 넘긴 드러남 시각만큼 welcome이 짧아져 느린 러너에서 놓칠 수 있었다(0.4.96 공개 후보 Fable P3)
+  const at=verifier.indexOf("contents.on('dom-ready'");
+  assert.ok(at>0,'the verifier no longer plants the stage record at dom-ready');
+  const line=verifier.slice(at,verifier.indexOf('\n',at));
+  assert.ok(line.includes('__orbSeen=[p.dataset.portalState')&&line.includes('attributeOldValue:true'),line.slice(0,200));
+});
