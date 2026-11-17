@@ -2,8 +2,8 @@
 // The installed MCP server on a clean Windows runner (STAGE1_DESIGN.md 4.16, T32 in part): `WorkBackupRun.exe --mcp` over
 // standard input and output, the way an AI tool starts it. It answers initialize, lists its tools and gives the status
 // file through protection_status (no consent needed). Then the install marker (`.installing`) is put in the install
-// folder, as an install or update does, and the server must end by itself within 60 seconds; the marker is taken away
-// again whatever happens. The runner has no cloud profile, so find_restorable's first search on a big repository is
+// folder, as an install or update does, and the server must end by itself; an idle server looks once a minute, so
+// clean-backup.ps1 allows 65 seconds. The marker is taken away again whatever happens. The runner has no cloud profile, so find_restorable's first search on a big repository is
 // not measured here. Synthetic only; it writes into the install folder, so never on a person's PC.
 //   node clean-mcp.cjs <WorkBackupRun.exe> <install folder>
 const { spawn } = require('node:child_process');
