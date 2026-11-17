@@ -116,6 +116,45 @@ for (const [k, f] of Object.entries(FACES3)) {
   if (prompt.length > 4300) throw new Error(`sf3-${k} ${prompt.length}자 — 4,300자 넘음`);
   for (let n = 1; n <= 판수; n++) jobs.push({ id: `sf3-${k}_g${n}`, 얼굴: k, 차: 3, model: 'carbon', ratio: '9:16', refs: [], prompt, out: `${D}/out/sf3-${k}_g${n}.png` });
 }
+// ── 4차(11-17 밤, 2차 · 3차 판별 뒤) ──
+// 2차 네 장은 역검색을 넘었지만 판별 모델이 GPT 「중간」 · Gemini 「높음」으로 봤다(또렷한 아몬드 눈 · 애교살 · 정돈된 눈썹 · 계란형 턱선 — 「배우 프로필처럼 다듬어진 인상」).
+// 문 교수 2차와 같은 걸림이다. 3차 긴 웨이브도 한 장이 역검색에 걸렸다. 머리를 내린 판은 렌즈가 배우 프로필 카드를 25~44장 모아 왔고, 묶은 머리(포니테일)는 0~1장이었다.
+// 그래서 ① 「드라마 스틸 · 기획사 메이크업 · strikingly pretty · 번짐」을 빼고 친구가 찍은 사진의 결로 굽는다(대조를 낮음으로 넘은 얼굴 조각의 틀). 밝고 따뜻한 빛과 스물한 살은 그대로 둔다.
+// ② 얼굴 글에 흔한 얼굴의 작은 어긋남(조금 다른 두 눈, 고르지 않은 눈썹, 둥근 코끝, 볼의 홍조)을 넣고, 매력은 표정(이가 조금 보이는 진짜 웃음)에서 낸다.
+// ③ 셋째 방향은 머리를 내리지 않는다 — 집게핀으로 올린 머리.
+const OPEN4 = `Create one photograph, vertical 9:16. A candid moment that looks like a real photo a friend took across the table, in the natural look of a bright Korean campus drama. A third-year Korean university student, 21 years old and looking her age, the senior who quietly looks after a lost first-year student: brisk, dry-witted, kinder than she lets on; an original, ordinary-looking person.`;
+
+export const FACES4 = {
+  pony: {
+    이름: '가 · 포니테일',
+    얼굴: `First the everyday Korean features of a woman of 21: a slim oval face with softly full cheeks and a small rounded chin; light skin with a natural flush on the cheeks; ordinary, slightly narrow eyes with a thin inner eyelid fold, one eye a touch narrower than the other; soft, natural, slightly uneven straight brows; a small nose with a low bridge and a rounded tip; a thin upper lip and a slightly fuller lower lip. Then what makes her likeable: a clear, steady, intelligent gaze and a quick, dry smile. Two things must be clearly visible: her black hair tied in a high ponytail with loose strands at her temples and a few baby hairs along the hairline, her ears showing; and a one-sided smile that lifts one corner of her mouth and shows a little of her upper teeth.`,
+    표정: `a one-sided smile breaking out at one corner of her mouth, a little of her upper teeth showing, her eyes narrowing slightly with amusement`,
+  },
+  dimple: {
+    이름: '나 · 보조개',
+    얼굴: `First the everyday Korean features of a woman of 21: a soft, slightly round oval face with full cheeks and a small rounded chin; warm light skin with a natural flush; natural single-lidded eyes that narrow into crescents when she smiles; soft, slightly short, natural brows; a small nose with a low bridge and a rounded tip; medium natural lips. Then what makes her likeable: she looks cool at rest and turns warm the moment she smiles. Two things must be clearly visible: one dimple in her left cheek only (a soft dent in the skin, never a dark dot), showing as she smiles; and dark-brown hair cut to the collarbone, parted off-centre, one side tucked behind her ear.`,
+    표정: `a real smile she cannot hold back, her upper teeth just showing, the single dimple in her left cheek, her eyes narrowing into soft crescents`,
+  },
+  clip: {
+    이름: '다 · 올린 머리',
+    얼굴: `First the everyday Korean features of a woman of 21: a slightly long oval face with gentle cheekbones and a soft jaw; light skin with a natural flush; natural, long single-lidded eyes; straight, natural, slightly thick brows; a straight nose of medium width with a rounded tip; a slightly wide mouth with natural lips. Then what makes her likeable: a calm, unbothered look that softens the moment she is amused. Two things must be clearly visible: her dark-brown hair twisted up loosely at the back of her head and held with a plain matte claw clip, a few loose strands falling at her temples and neck, her ears showing; and her long single-lidded eyes looking at the viewer.`,
+    표정: `a small, amused smile, lips just parting, her long eyes bright and level`,
+  },
+};
+
+const MOMENT4 = (표정) => `THE MOMENT: lunchtime in a bright university cafeteria in the first week of March. She sits across a long pale table from the viewer; only the front edge of her stainless-steel lunch tray shows at the bottom of the frame. The viewer has just said something a little clumsy and she is amused: ${표정}, looking at the viewer. A real, unposed moment. Hands below the frame.
+CAMERA: across the table at eye level, about 1 m away; chest-up; her face in the upper third of the frame, a little off-centre, about a third of the frame wide.`;
+
+const LIGHT4 = `Light and color: bright, fresh March daylight. Large soft window light from the front-left falls across her face, the far side only slightly darker; warm sunlight from the windows behind her catches the edges of her hair. A clean, natural exposure with a slightly warm white balance. Nothing grey, dull or cold; no haze, no glow, no bloom, no HDR.
+Finish: a real photograph, never an advert, a fashion shoot or an actor's profile picture. Real, unretouched skin: visible pores, slight unevenness, a natural flush, a little shine on the nose. Everyday makeup she did herself, almost none, just a tinted lip balm. No airbrushing. No moles, freckles or dots on her face. Natural dark-brown irises. A few flyaway hairs catch the light.
+Background: the cafeteria behind her is soft and out of focus, long tables and a few students eating, nobody looking at the camera; through the windows, bare trees with thin dark branches and only a few tiny yellow sansuyu blossoms; no green leaves and no cherry blossoms.
+She must not resemble any real actor, idol, model or public figure. No text, letters, logos or watermarks anywhere. No border.`;
+
+for (const [k, f] of Object.entries(FACES4)) {
+  const prompt = [OPEN4, f.얼굴, CLOTHES, MOMENT4(f.표정), LIGHT4].join('\n');
+  if (prompt.length > 4300) throw new Error(`sf4-${k} ${prompt.length}자 — 4,300자 넘음`);
+  for (let n = 1; n <= 판수; n++) jobs.push({ id: `sf4-${k}_g${n}`, 얼굴: k, 차: 4, model: 'carbon', ratio: '9:16', refs: [], prompt, out: `${D}/out/sf4-${k}_g${n}.png` });
+}
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   fs.mkdirSync(`${D}/out`, { recursive: true });
   fs.writeFileSync(`${D}/jobs.json`, `${JSON.stringify(jobs, null, 1)}\n`);
