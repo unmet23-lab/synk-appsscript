@@ -7,7 +7,7 @@ import vm from 'node:vm';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { siteVisitsView, rowSpeech, SITE_VISITS_NAME, monthDay } from '../renderer/site-visits-model.mjs';
+import { siteVisitsView, rowSpeech, SITE_VISITS_NAME, monthDay, ro } from '../renderer/site-visits-model.mjs';
 
 const require = createRequire(import.meta.url);
 const { createSiteVisits, defaultFile, shapeProblem, pendingEntries, PENDING_MAX } = require('../src/site-visits.cjs');
@@ -355,4 +355,20 @@ test('a spike held in the ledger is said from the day it was first seen', () => 
   const fresh = summary();
   fresh.방문 = { ...fresh.방문, 급증: { 날: '2026-11-24', 줄: 502, 평소: 2, 처음날: '2026-11-24' } };
   assert.equal(siteVisitsView(ok(fresh), NOW).say, '11월 24일 방문 기록이 502줄로 평소(하루 2줄)보다 크게 늘었습니다.');
+});
+
+// PC 0.4.96 카본: 검색어 뒤 「로」 고정, 1위 갈래만 고른 문의 수가 합처럼 읽힘, 5개 기준 문장이 서로 다름
+test('particles follow the word, the top source is said as a share of the total, and the five-record rule reads the same everywhere', () => {
+  assert.deepEqual(['synk', '서울', '한국어', '검색', 'SNS', 'AI 답변', '직접', '다른 사이트', 'pulse ad', '2026', 'topik 3', '「synk」'].map(ro), ['로', '로', '로', '으로', '로', '으로', '으로', '로', '로', '으로', '으로', '로']);
+  const s = summary();
+  s.검색.구글.검색어 = [{ 말: '한국어 공부 앱', 노출: 9, 클릭: 1 }];
+  assert.match(siteVisitsView(ok(s), NOW).rows[3].more[0][1], /^구글에서는 「한국어 공부 앱」으로 가장 많이 보였습니다\./);
+  s.검색.구글.검색어 = [{ 말: 'synk', 노출: 9, 클릭: 1 }];
+  assert.match(siteVisitsView(ok(s), NOW).rows[3].more[0][1], /^구글에서는 「synk」로 가장 많이 보였습니다\./);
+  const acts = summary();
+  acts.행동.문의 = { 합: 3, 나눔: [{ 이름: '문의 메일', 수: 3 }] };
+  acts.행동.처음들어온곳별 = [{ 갈래: '검색', 문의: 2, 앱받기: 0 }, { 갈래: 'SNS', 문의: 1, 앱받기: 2 }];
+  assert.equal(siteVisitsView(ok(acts), NOW).rows[2].more[0][1], '문의 3번 가운데 2번은 검색으로 들어온 방문에서, 앱 받기 2번은 모두 SNS로 들어온 방문에서 눌렀습니다.');
+  const words = texts(siteVisitsView(ok(summary()), NOW)).join(' ');
+  assert.doesNotMatch(words, /5개 넘게/, 'the rule is "5 or more" everywhere');
 });

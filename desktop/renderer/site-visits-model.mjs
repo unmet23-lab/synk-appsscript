@@ -18,6 +18,12 @@ const num = n => Number(n || 0).toLocaleString('ko-KR');
 const pct = r => (r == null || !Number.isFinite(r) ? null : `${Math.round(r * 100)}%`);
 /** 요약에서 온 글 — 보이지 않는 글자를 빼고 길이를 줄인다. 화면은 이 글을 글자로만 넣는다. */
 const clean = (s, max = 60) => String(s ?? '').replace(/[\u0000-\u001f\u007f\u2028\u2029]/g, '').slice(0, max);
+/** 「으로」·「로」만 돌려준다 — 받침이 없거나 ㄹ이면 「로」. 영문은 m · n으로 끝나면, 숫자는 0 · 3 · 6이면 「으로」(검색어 · 갈래 뒤, PC 0.4.96 카본). */
+export function ro(word) {
+  const last = String(word ?? '').replace(/[^가-힣A-Za-z0-9]+$/, '').slice(-1);
+  if (/[가-힣]/.test(last)) { const b = (last.charCodeAt(0) - 0xac00) % 28; return b === 0 || b === 8 ? '로' : '으로'; }
+  return /[mnMN036]/.test(last) ? '으로' : '로';
+}
 const list = (items, f) => (items || []).map(f).filter(Boolean).join(' · ');
 const pageName = p => PAGE_NAMES[p] || (typeof p === 'string' && p.startsWith('/en/') && PAGE_NAMES[p.slice(3)] ? `영어 ${PAGE_NAMES[p.slice(3)]}` : clean(p, 40));
 
@@ -71,12 +77,12 @@ function fromRow(s) {
 
 function pagesRow(s) {
   const p = s.쪽, v = s.방문, nm = '어디를 봤나';
-  if (!ready(p)) return notReadyRow('pages', nm, p, '방문 기록을 아직 읽지 못했습니다.', '쪽마다 머문 시간과 내려 본 정도는 떠날 때의 기록이 5개 넘게 쌓인 쪽부터 보입니다.');
+  if (!ready(p)) return notReadyRow('pages', nm, p, '방문 기록을 아직 읽지 못했습니다.', '쪽마다 머문 시간과 내려 본 정도는 떠날 때의 기록이 5개 이상 쌓인 쪽부터 보입니다.');
   const pages = p.쪽들 || [];
   const seen = ready(v) ? v.본쪽 : pages.reduce((a, x) => a + (x.본수 || 0), 0);
   need(seen);
   const withRatio = pages.find(x => x.끝까지 != null);
-  const more = [['say', withRatio ? `${pageName(withRatio.쪽)}에서는 ${pct(withRatio.끝까지)}가 끝까지 내려 봤고, ${pct(withRatio.떠남비율)}가 여기서 사이트를 떠났습니다.` : '쪽마다 비율은 떠날 때의 기록이 5개 넘게 쌓인 쪽부터 보입니다.']];
+  const more = [['say', withRatio ? `${pageName(withRatio.쪽)}에서는 ${pct(withRatio.끝까지)}가 끝까지 내려 봤고, ${pct(withRatio.떠남비율)}가 여기서 사이트를 떠났습니다.` : '쪽마다 비율은 떠날 때의 기록이 5개 이상 쌓인 쪽부터 보입니다.']];
   for (const x of pages) {
     const has = x.끝까지 != null;
     more.push(['row', pageName(x.쪽), has ? `머문 시간 ${clean(x.머문시간, 20)} · 끝까지 내림 ${pct(x.끝까지)}` : '떠날 때의 기록이 적어 아직 비율을 셈하지 않습니다', `${num(x.본수)}쪽`, has ? `여기서 나감 ${pct(x.떠남비율)}` : '']);
@@ -99,8 +105,10 @@ function actsRow(s) {
   if (!q.합 && !d.합) more.push(['say', '아직 누른 사람이 없습니다.']);
   else {
     const parts = [];
-    if (topQ?.문의) parts.push(`문의는 ${josa(topQ.갈래, ['으로', '로'])} 들어온 방문에서 ${num(topQ.문의)}번`);
-    if (topD?.앱받기) parts.push(`앱 받기는 ${josa(topD.갈래, ['으로', '로'])} 들어온 방문에서 ${num(topD.앱받기)}번`);
+    // 가장 많은 갈래 하나만 말하므로, 전체 가운데 몇 번인지 함께 말한다(합처럼 읽히지 않게, PC 0.4.96 카본)
+    const part = (what, total, top, n) => n === total ? `${what} ${num(total)}번은 모두 ${top}${ro(top)} 들어온 방문에서` : `${what} ${num(total)}번 가운데 ${num(n)}번은 ${top}${ro(top)} 들어온 방문에서`;
+    if (topQ?.문의) parts.push(part('문의', q.합, clean(topQ.갈래, 20), topQ.문의));
+    if (topD?.앱받기) parts.push(part('앱 받기', d.합, clean(topD.갈래, 20), topD.앱받기));
     more.push(['say', parts.length ? `${parts.join(', ')} 눌렀습니다.` : '누른 방문의 처음 들어온 곳은 아직 갈래가 없습니다.']);
   }
   more.push(['row', '문의', `메일 ${num(count(q, '문의 메일'))} · 주소 복사 ${num(count(q, '문의 메일 주소 복사'))} · 양식 ${num(count(q, '문의 양식'))} · 광고 의뢰 ${num(count(q, '광고 의뢰'))}`, `${num(q.합)}번`, topQ?.문의 ? `${topQ.갈래}에서 ${num(topQ.문의)}` : '']);
@@ -121,7 +129,7 @@ function searchRow(s) {
   }
   need(g.노출, g.클릭);
   const words = g.검색어 || [], pages = g.쪽 || [];
-  const more = [['say', `${words[0] ? `구글에서는 「${clean(words[0].말, 40)}」로 가장 많이 보였습니다.` : '구글에서 많이 보인 검색어는 아직 없습니다.'} 네이버는 ${naverDone ? '등록돼 있습니다' : '아직 등록 전입니다'}.`]];
+  const more = [['say', `${words[0] ? `구글에서는 「${clean(words[0].말, 40)}」${ro(clean(words[0].말, 40))} 가장 많이 보였습니다.` : '구글에서 많이 보인 검색어는 아직 없습니다.'} 네이버는 ${naverDone ? '등록돼 있습니다' : '아직 등록 전입니다'}.`]];
   if (words.length) more.push(['row', '많이 보인 검색어', list(words, x => `${clean(x.말, 40)} ${num(x.노출)}`), '', '']);
   if (pages.length) more.push(['row', '많이 보인 쪽', list(pages, x => `${pageName(x.쪽)} ${num(x.노출)}`), '', '']);
   more.push(naverRow);
