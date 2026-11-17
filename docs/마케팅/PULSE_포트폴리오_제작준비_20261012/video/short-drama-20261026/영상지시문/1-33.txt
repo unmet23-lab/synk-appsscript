@@ -8,6 +8,7 @@ CAMERA: Movement — handheld, almost locked off, a small jitter only. Speed —
 SHOT 2 (1.4 s – end):
 ACTION: At about 1.5 s the inner ends of Seojin's eyebrows draw together a little and her eyes drop to the calendar on her phone; the thumb of her left hand holding the phone swipes down the screen once. At about 1.65 s Seojin murmurs to herself, "달력에 동그라미까지 쳐 놨는데.", her lips forming the Korean words. At about 2.8 s, the end pose, settling in as she finishes the line: after the last word she closes her mouth and lets out a long sigh, her shoulders lowering a little, and her head drops about 1 cm more, her eyes on the screen; this stays, lips closed, while she breathes.
 CAMERA: Movement — handheld, almost locked off, a small jitter only. Speed — gentle. Framing — close-up of Seojin and the phone. End — the same close-up.
+PACE: brisk, natural everyday Korean speech — about seven syllables per second, each line in one breath with no pause between its sentences; "응. 걔만 안 움직여." takes about 1.2 s; "달력에 동그라미까지 쳐 놨는데." takes about 2.0 s.
 LOOK: bright late-morning daylight pouring through the big windows; airy, soft and high-key, fresh greens and warm wood. The light and colour stay exactly like this to the last frame. No new people, no new text.
 Indoors: the air is clear and still, nothing falls or drifts anywhere.
 PHYSICS: the coffee cup stays on its saucer; the phone stays in her hand, flat in her fingers.
