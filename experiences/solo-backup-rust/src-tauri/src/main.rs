@@ -18,6 +18,9 @@ impl NativeHost {
                 match platform::try_lock(&self.root,platform::ENGINE_LOCK)?{Some(file)=>{*held=Some(file);Ok(json!(true))},None=>Ok(json!(false))}},
             "engine.unlock"=>{*self.engine.lock().unwrap()=None;Ok(json!(true))},
             "run.progress"=>Ok(backup_native::runlog::live(&self.root)),
+            // The Wi-Fi this PC is on, for 「쉬는 Wi-Fi 고르기」 (4.13): read only when the window asks, never kept or logged —
+            // Windows counts reading it as a location access, and without location permission it is null. Never in tests.
+            "wifi.name"=>Ok(if self.test{Value::Null}else{json!(backup_native::power::wifi_name())}),
             // The Downloads folder wherever Windows keeps it, for 「되살린 파일」 at its default place (화면 세션 부탁 2).
             "folders.downloads"=>{let id=&backup_native::folders::KNOWN.iter().find(|(name,_)|*name=="downloads").ok_or("FOLDERS_KNOWN")?.1;Ok(json!(backup_native::folders::known_folder(id)?))},
             // 「자동 실행 등록」 is now the four run tasks in Task Scheduler (STAGE1_DESIGN.md 4.1 · 4.2).

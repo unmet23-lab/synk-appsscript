@@ -38,7 +38,7 @@ $tools = Join-Path $Work 'tools'
 # repository (the window's 「복구 키 저장」 rule), and $Work holds both.
 $kits = Join-Path $Work 'kits'
 New-Item -ItemType Directory -Force -Path $tools, $kits | Out-Null
-foreach ($name in 'clean-app.cjs', 'clean-data.cjs', 'run-setup.cjs', 'clean-user.ps1') { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination $tools }
+foreach ($name in 'clean-app.cjs', 'clean-data.cjs', 'run-setup.cjs', 'clean-user.ps1', 'clean-mcp.cjs') { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination $tools }
 
 # 0. The standard user, and the install.
 $password = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(18)) + 'aA1!'
@@ -61,10 +61,14 @@ function AdminRun([string]$name) {
   $c = [Diagnostics.Stopwatch]::StartNew()
   $code = (Start-Process -FilePath $runExe -ArgumentList '--run', 'manual' -Wait -PassThru -NoNewWindow).ExitCode
   $run = LastRun $adminState
-  $script:results[$name] = [ordered]@{ exit = $code; seconds = [math]::Round($c.Elapsed.TotalSeconds, 1); outcome = $run.outcome; local = $run.profiles.local; job = $run.job }
+  $script:results[$name] = [ordered]@{ exit = $code; seconds = [math]::Round($c.Elapsed.TotalSeconds, 1); outcome = $run.outcome; local = $run.profiles.local; job = $run.job; space = $run.space }
   [pscustomobject]@{ Code = $code; Run = $run }
 }
 $r = AdminRun 'adminFirst'
+# 공간 비우기 1판 (4.15, T31 in part): the day's first run scans the disks once, after the run, within five minutes; its own
+# time is in `space`, not in the run's `ms`. How many days a whole lap takes is for the 72-hour test.
+$space = $r.Run.space
+Expect ($null -ne $space -and $null -ne $space.ms -and $space.ms -le 330000) "the day's first run scanned the disks after it, within five minutes (space: $($space | ConvertTo-Json -Compress -Depth 3))"
 Expect ($r.Code -eq 0 -and $r.Run.outcome -eq 'complete' -and $r.Run.profiles.local.newSnapshot -eq $true) "first backup by the installed run executable ($(Short $r.Run))"
 $locked = Join-Path $data '잠글 문서\계약서.docx'
 Change $locked
@@ -90,6 +94,36 @@ for ($i = 0; $i -lt 120 -and (RunCount $adminState) -le $count; $i++) { Start-Sl
 $run = LastRun $adminState
 $script:results['scheduledRun'] = [ordered]@{ started = $started; recorded = (RunCount $adminState) -gt $count; trigger = $run.trigger; outcome = $run.outcome; waitedSeconds = $i }
 "note: a run started from Task Scheduler — $($script:results['scheduledRun'] | ConvertTo-Json -Compress)"
+# 솔리오 잇기 (4.13, 11-17 엔진 쪽 세션 부탁): the fifth task, 「요청 - …」 (`--run request`, no trigger), woken the way Solio
+# wakes it (IRegisteredTask::Run); it must run and end with result 0. Task states: 2 queued, 4 running.
+$requestName = @($register.register.tasks | Where-Object { $_ -match '^요청 - ' })[0]
+$request = [ordered]@{ registered = [bool]$requestName }
+if ($requestName) {
+  $task = (Service).GetFolder($register.register.folder).GetTask($requestName)
+  $before = RunCount $adminState
+  $clock = [Diagnostics.Stopwatch]::StartNew()
+  try { $null = $task.Run($null); $request.started = $true } catch { $request.started = $false; $request.error = $_.Exception.Message }
+  Start-Sleep -Seconds 2
+  while ($clock.Elapsed.TotalSeconds -lt 120 -and @(2, 4) -contains $task.State) { Start-Sleep -Milliseconds 500 }
+  $request.seconds = [math]::Round($clock.Elapsed.TotalSeconds, 1)
+  $request.lastResult = $task.LastTaskResult
+  $request.recorded = (RunCount $adminState) -gt $before
+  $request.trigger = (LastRun $adminState).trigger
+}
+$script:results['requestTask'] = $request
+Expect ($request.registered -and $request.started -and $request.lastResult -eq 0) "the request task is registered with the four runs and runs when woken ($($request | ConvertTo-Json -Compress))"
+# The status file Solio reads (4.13): there after the runs, with no names and no paths — the data and work folders, the
+# D0 file names (the leak marker among them) and anything that looks like a drive path.
+$statusText = Get-Content -LiteralPath (Join-Path $adminState 'solio\status.json') -Raw -ErrorAction SilentlyContinue
+$leaks = @(foreach ($s in @($data, $Work, $env:USERPROFILE, 'SWB-LEAK-7f3a', '계약서')) { foreach ($form in @($s, $s.Replace('\', '\\'))) { if ($statusText -and $statusText.Contains($form)) { $s } } }) | Select-Object -Unique
+Expect ($statusText -and $leaks.Count -eq 0 -and $statusText -notmatch '[A-Za-z]:\\') "the status file is there after the runs, with no names or paths ($(if ($statusText) { "$($statusText.Length) characters, found: $($leaks -join ', ')" } else { 'missing' }))"
+# The MCP server (4.16, T32 in part): starts, lists its tools, answers protection_status, and ends by itself within
+# 60 seconds once the install marker is there (clean-mcp.cjs puts it and takes it away again).
+$mcpOut = & node (Join-Path $tools 'clean-mcp.cjs') $runExe $dir
+$mcp = $mcpOut | ConvertFrom-Json
+$script:results['mcp'] = $mcp
+Expect ($LASTEXITCODE -eq 0 -and ($mcp.tools -contains 'protection_status') -and $mcp.statusAnswered -and $null -ne $mcp.endedAfterMarkerMs -and $mcp.endedAfterMarkerMs -ge 0 -and $mcp.endedAfterMarkerMs -le 60000 -and $mcp.exitCode -eq 0) "the MCP server answers and ends by itself within 60 seconds of the install marker ($mcpOut)"
+Expect (-not (Test-Path -LiteralPath (Join-Path $dir '.installing'))) 'the install marker is gone again after the MCP check'
 & node (Join-Path $tools 'clean-data.cjs') list $data (Join-Path $Carry 'admin-list.json') | Out-Null
 Copy-Item -LiteralPath (Join-Path $Work 'admin-repo') -Destination (Join-Path $Carry 'admin-repo') -Recurse
 & node (Join-Path $tools 'clean-data.cjs') seal (Join-Path $kits 'admin-kit.json') (Join-Path $Carry 'admin-kit.sealed')
