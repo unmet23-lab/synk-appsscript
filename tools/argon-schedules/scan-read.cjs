@@ -116,7 +116,9 @@ function fallbackText() {
   return ROLES.map((r) => `- ${r}: https://docs.google.com/document/d/${DOCS[r]}/mobilebasic`).join('\n');
 }
 
-// 매일 문서는 형식이 역할마다 달라 해석하지 않고 원문만 남긴다. 신선함은 회차가 오늘이나 어제(KST) 끝났는지로 본다.
+// 매일 문서는 형식이 역할마다 달라 해석하지 않고 원문만 남긴다. 신선함은 마지막 회차가 성공(complete · no-change)으로
+// 오늘이나 어제(KST) 끝났는지로 본다. 실패 회차도 completedAt이 찍히므로 날짜만 보면 지난 문서를 새것으로 친다
+// (11-17 full이 45분 한도로 잘려 문서는 11-16 판 그대로였다).
 function saveDaily(raw, outDir, today) {
   const yesterday = kstDate(new Date(Date.now() - 24 * 3600 * 1000));
   const summary = { readAt: new Date().toISOString(), today, roles: {} };
@@ -124,9 +126,10 @@ function saveDaily(raw, outDir, today) {
     const entry = raw[r] || {};
     const text = String(entry.plaintext || '');
     const done = entry.run && entry.run.completedAt ? kstDate(new Date(entry.run.completedAt)) : null;
+    const runOk = Boolean(entry.run && ['complete', 'no-change'].includes(entry.run.status));
     summary.roles[r] = {
       run: entry.run, readCode: entry.readCode, readError: entry.readError, chars: text.length,
-      completedKst: done, fresh: done === today || done === yesterday,
+      completedKst: done, runOk, fresh: runOk && (done === today || done === yesterday),
       doc: `https://docs.google.com/document/d/${DOCS[r]}/edit`,
     };
     if (text) fs.writeFileSync(path.join(outDir, r + '.txt'), text.endsWith('\n') ? text : text + '\n');

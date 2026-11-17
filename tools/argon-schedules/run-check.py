@@ -21,7 +21,7 @@ def terminal_receipt(d):
  for key in ('offset','stderrOffset'):
   value=d.get(key)
   if type(value) is int and value>=0:receipt[key]=value
- for key in ('knownSourceCount','freshSourceCount','newCandidateCount','recoveredDocumentCount','unsupportedHistoryUrlCount'):
+ for key in ('knownSourceCount','freshSourceCount','newCandidateCount','recoveredDocumentCount','unsupportedHistoryUrlCount','markerLine'):
   value=d.get(key)
   if type(value) is int and 0<=value<=100000:receipt[key]=value
  for key in ('baselineSha256','sha256'):
@@ -101,16 +101,25 @@ try:
  assert not result.get('denied_actions'),'CLI_FAILED_OR_DENIED'
  cli_ok=result['status']=='SUCCESS'
  text=result.get('response','');lines=text.splitlines();complete=re.compile(r'SYNK_RUN_COMPLETE: '+re.escape(role)+r' : ([a-f0-9]{64})')
- # A model-API transport error after delivery (stream interrupted, idle timeout) ends the CLI with
- # status ERROR and can leave a short resumed-stream fragment before the marker. Only then accept a
- # complete marker within the first three lines; the Doc re-read below must still match its SHA.
- match=next((m for m in map(complete.fullmatch,lines[:1] if cli_ok else [x.strip() for x in lines[:3]]) if m),None)
+ # Normal delivery: SUCCESS with the complete marker exactly on the first line.
+ match=complete.fullmatch(lines[0]) if cli_ok and lines else None
  nochange=cli_ok and bool(lines) and lines[0]=='SYNK_RUN_NO_CHANGE: '+role
+ # Late marker (2026-11-17): the Doc was saved but the marker is not on the first line - the model wrote a
+ # status sentence first (11 of 17 failed runs 11-02~11-16 had saved their Doc), or a model-API transport
+ # error after delivery ended the CLI with ERROR and left a resumed-stream fragment (10-20). Accept it only
+ # when no failure/no-change marker line exists, every complete marker names one SHA, and the Doc re-read
+ # below equals that SHA and differs from this run's baseline (a quoted old marker cannot pass).
+ late=None
+ if not match and not nochange:
+  stripped=[x.strip() for x in lines];found=[(i,m) for i,m in enumerate(map(complete.fullmatch,stripped)) if m]
+  if found and len({m.group(1) for _,m in found})==1 and not any(x.startswith(('SYNK_RUN_FAILED','SYNK_RUN_NO_CHANGE')) for x in stripped):
+   late=found[0];match=late[1]
  assert cli_ok or match,'CLI_FAILED_OR_DENIED'
  assert match or nochange,'MISSING_DELIVERY_MARKER'
  if not cli_ok:d.update({'cliStatus':str(result['status'])[:32],'cliError':str(result.get('error') or '')[:200]})
  doc=read_doc()
  if match:assert doc['sha256']==match.group(1),'DOC_SHA_MISMATCH'
+ if late:assert d.get('baselineSha256') and doc['sha256']!=d['baselineSha256'],'MISSING_DELIVERY_MARKER';d['markerLine']=late[0]
  if nochange:assert doc['sha256']==d.get('baselineSha256'),'NO_CHANGE_DOC_CHANGED_OR_NO_BASELINE'
  if role=='full' and nochange:raise AssertionError('NO_NEW_SOURCE_CANDIDATES')
  if match and role in ('full','yt-tt','meta-brand'):d.update(source_check('audit','SOURCE_EVIDENCE_AUDIT_FAILED'))

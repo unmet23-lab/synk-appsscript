@@ -133,14 +133,71 @@ class RunCheckTest(unittest.TestCase):
         code, state, calls = self.run_checker('end', NEW)
         self.assertEqual((code, state['error'], len(calls)), (1, 'NO_CHANGE_DOC_CHANGED_OR_NO_BASELINE', 1))
 
-    def test_malformed_or_second_line_marker_fails(self):
+    def test_malformed_or_ambiguous_marker_fails_before_doc_read(self):
         for response in ['SYNK_RUN_NO_CHANGE: synkbrief-extra',
-                         'Preface\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW,
-                         'SYNK_RUN_COMPLETE: full : ' + NEW]:
-            with self.subTest(response=response):
+                         'SYNK_RUN_COMPLETE: full : ' + NEW,
+                         'Preface\nSYNK_RUN_COMPLETE: full : ' + NEW,
+                         'Preface\n**SYNK_RUN_COMPLETE: synkbrief : ' + NEW + '**',
+                         'Preface\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSYNK_RUN_COMPLETE: synkbrief : ' + 'c' * 64,
+                         'SYNK_RUN_FAILED: synkbrief : write conflict\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW,
+                         'Preface\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSYNK_RUN_NO_CHANGE: synkbrief',
+                         '']:
+            with self.subTest(response=response[:40]):
                 self.begin_and_append(events(response))
                 code, state, calls = self.run_checker('end', NEW)
                 self.assertEqual((code, state['error'], len(calls)), (1, 'MISSING_DELIVERY_MARKER', 0))
+
+    def test_late_marker_after_verified_delivery_is_complete(self):
+        # 11-16 23:00 meta-brand: a status sentence came first and the marker was on line 2; the Doc held that SHA.
+        for response, line in [('검증된 결과 파일을 저장하고 재읽기 검증을 실행했습니다.\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\n- Doc', 1),
+                               ('a\nb\nc\n  SYNK_RUN_COMPLETE: synkbrief : ' + NEW + '  \nSYNK_RUN_COMPLETE: synkbrief : ' + NEW, 3)]:
+            with self.subTest(line=line):
+                self.begin_and_append(events(response))
+                code, state, calls = self.run_checker('end', NEW)
+                self.assertEqual((code, state['status'], state['sha256'], state['markerLine'], len(calls)), (0, 'complete', NEW, line, 1))
+                self.assertNotIn('cliStatus', state)
+                receipt = next(item for item in (json.loads(p.read_text()) for p in
+                                                 (self.home / 'run-status' / 'history').glob('*.json'))
+                               if item['startedAt'] == state['startedAt'])
+                self.assertEqual((receipt['status'], receipt['markerLine']), ('complete', line))
+
+    def test_late_marker_needs_changed_doc_with_same_sha(self):
+        # A later line quoting the baseline SHA (nothing written) or a SHA the Doc does not hold is not delivery.
+        for marker, doc_sha, error in [(BASE, BASE, 'MISSING_DELIVERY_MARKER'), (NEW, BASE, 'DOC_SHA_MISMATCH'), (NEW, 'c' * 64, 'DOC_SHA_MISMATCH')]:
+            for status in ('SUCCESS', 'ERROR'):
+                with self.subTest(marker=marker[:1], doc=doc_sha[:1], status=status):
+                    self.begin_and_append(events('Preface\nSYNK_RUN_COMPLETE: synkbrief : ' + marker, status=status,
+                                                 error=INTERRUPTED if status == 'ERROR' else None))
+                    code, state, calls = self.run_checker('end', doc_sha)
+                    self.assertEqual((code, state['error'], len(calls)), (1, error, 1))
+                    self.assertNotIn('markerLine', state)
+
+    LATE_FULL = '검증 완료된 결과를 저장했습니다.\nSYNK_RUN_COMPLETE: full : ' + NEW
+
+    def test_late_marker_without_baseline_fails(self):
+        # A running record without a baseline hash cannot prove that this run changed the Doc.
+        self.begin_and_append(events('Preface\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW))
+        state = json.loads(self.record.read_text())
+        del state['baselineSha256']
+        self.record.write_text(json.dumps(state))
+        code, state, calls = self.run_checker('end', NEW)
+        self.assertEqual((code, state['error'], len(calls)), (1, 'MISSING_DELIVERY_MARKER', 1))
+
+    def test_creative_late_marker_records_audit_counts(self):
+        code, state, _ = self.creative_run(self.LATE_FULL)
+        self.assertEqual((code, state['status'], state['markerLine'], state['newCandidateCount']), (0, 'complete', 1, 8))
+
+    def test_creative_late_marker_still_requires_source_audit(self):
+        code, state, _ = self.creative_run(self.LATE_FULL, source_failure=True)
+        self.assertEqual((code, state['error']), (1, 'SOURCE_EVIDENCE_AUDIT_FAILED'))
+
+    def test_print_timeout_partial_output_fails(self):
+        # 11-17 05:00 full: agy hit --print-timeout and returned SUCCESS with an empty response; 11-11 yt-tt got ERROR.
+        for status, error in [('SUCCESS', 'MISSING_DELIVERY_MARKER'), ('ERROR', 'CLI_FAILED_OR_DENIED')]:
+            with self.subTest(status=status):
+                self.begin_and_append(events('', status=status, error=INTERRUPTED if status == 'ERROR' else None))
+                code, state, calls = self.run_checker('end', NEW)
+                self.assertEqual((code, state['error'], len(calls)), (1, error, 0))
 
     def test_missing_result_fails(self):
         self.begin_and_append(events('unused')[:1])
@@ -160,7 +217,8 @@ class RunCheckTest(unittest.TestCase):
     def test_transport_error_after_verified_delivery_is_complete(self):
         # 10-19·20 yt-tt·meta-brand: the Doc was saved and the marker sent, then the model stream broke.
         for response in ['SYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSummary',
-                         ' Cui\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSummary']:
+                         ' Cui\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSummary',
+                         'a\nb\nc\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW]:
             with self.subTest(response=response[:8]):
                 self.begin_and_append(events(response, status='ERROR', error=INTERRUPTED))
                 code, state, calls = self.run_checker('end', NEW)
@@ -175,8 +233,9 @@ class RunCheckTest(unittest.TestCase):
     def test_transport_error_still_needs_marker_and_matching_doc(self):
         cases = [('SYNK_RUN_NO_CHANGE: synkbrief', BASE, 'CLI_FAILED_OR_DENIED', 0),
                  ('partial answer', NEW, 'CLI_FAILED_OR_DENIED', 0),
-                 ('a\nb\nc\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW, NEW, 'CLI_FAILED_OR_DENIED', 0),
-                 ('SYNK_RUN_COMPLETE: synkbrief : ' + NEW, BASE, 'DOC_SHA_MISMATCH', 1)]
+                 ('SYNK_RUN_FAILED: synkbrief : x\nSYNK_RUN_COMPLETE: synkbrief : ' + NEW, NEW, 'CLI_FAILED_OR_DENIED', 0),
+                 ('SYNK_RUN_COMPLETE: synkbrief : ' + NEW, BASE, 'DOC_SHA_MISMATCH', 1),
+                 ('SYNK_RUN_COMPLETE: synkbrief : ' + BASE, BASE, 'MISSING_DELIVERY_MARKER', 1)]
         for response, doc_sha, error, reads in cases:
             with self.subTest(response=response[:12], doc=doc_sha[:1]):
                 self.begin_and_append(events(response, status='ERROR', error=INTERRUPTED))
