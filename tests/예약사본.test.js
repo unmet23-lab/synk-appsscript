@@ -144,6 +144,49 @@ test('끝 — docs/마케팅 밖에 남긴 결과물은 「남은 것」, .tmp �
     const r = 도구.끝({ 저장소: t.사본, 실행: true });
     assert.equal(r.결과, '남은 것 있음');
     assert.deepEqual(r.남은것, ['docs/마케팅 밖 git 밖 결과물 out/master.gif', 'docs/마케팅 밖 git 밖 결과물 out/master.mp4']);
+    assert.match(r.보존안내, /앞판_/, '남은 결과물을 어떻게 보존하는지 알린다');
+  } finally { t.치우기(); }
+});
+
+test('끝 — docs/마케팅 밖 결과물도 공용 작업본에 바이트가 같은 사본(같은 자리 · 앞판_ 보존 폴더)이 있으면 남은 것으로 세지 않는다(11-17 재사용 사본)', () => {
+  const t = 판();
+  try {
+    const 남은것 = () => 도구.끝({ 저장소: t.사본, 실행: true }).남은것;
+    // ① 같은 자리에 같은 바이트
+    쓰기(t.사본, 'out/qa/push/browser/a.png', '화면 A 첫판');
+    쓰기(t.메인, 'out/qa/push/browser/a.png', '화면 A 첫판');
+    assert.deepEqual(남은것(), []);
+    assert.equal(도구.끝({ 저장소: t.사본, 실행: true }).보존안내, null);
+    // ② 같은 자리에 다른 판(크기까지 같아도) — 남은 것
+    쓰기(t.메인, 'out/qa/push/browser/a.png', '화면 A 둘판');
+    assert.equal(fs.statSync(path.join(t.메인, 'out/qa/push/browser/a.png')).size, fs.statSync(path.join(t.사본, 'out/qa/push/browser/a.png')).size);
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/push/browser/a.png']);
+    // ③ 위 폴더 안 「앞판_…」 보존 폴더에 같은 짜임으로 복사해 두면 세지 않는다 — 사본 쪽은 지우지 않는다
+    쓰기(t.메인, 'out/qa/push/앞판_사본_20261116/browser/a.png', '화면 A 첫판');
+    assert.deepEqual(남은것(), []);
+    assert.ok(fs.existsSync(path.join(t.사본, 'out/qa/push/browser/a.png')), '사본 쪽은 그대로');
+    // ④ 옆 「<폴더>_앞판_…」 꼴도 본다
+    쓰기(t.사본, 'out/qa/speak/browser/b.png', '화면 B 첫판');
+    쓰기(t.메인, 'out/qa/speak/browser/b.png', '화면 B 둘판');
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/b.png']);
+    쓰기(t.메인, 'out/qa/speak/browser_앞판_20261117-0123/b.png', '화면 B 첫판');
+    assert.deepEqual(남은것(), []);
+    // ⑤ 보존 폴더에 크기만 같은 다른 바이트면 세고, 이름 꼴이 아니면(「앞판」이 앞에 없음) 보존으로 안 본다
+    쓰기(t.사본, 'out/qa/speak/browser/c.png', '화면 C 첫판');
+    쓰기(t.메인, 'out/qa/speak/browser_앞판_20261117-0123/c.png', '화면 C 둘판');
+    assert.equal(fs.statSync(path.join(t.메인, 'out/qa/speak/browser_앞판_20261117-0123/c.png')).size, fs.statSync(path.join(t.사본, 'out/qa/speak/browser/c.png')).size);
+    쓰기(t.메인, 'out/qa/speak/옛판/browser/c.png', '화면 C 첫판');
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/c.png']);
+    // ⑥ 보존 폴더가 이 사본 안을 가리키는 링크면 사본 자신이라 보존으로 안 본다
+    fs.symlinkSync(path.join(t.사본, 'out/qa/speak'), path.join(t.메인, 'out/qa/speak/앞판_링크'), 'junction');
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/c.png']);
+    // ⑦ 「..qa」처럼 점 둘로 시작하는 이름의 폴더도 사본 안이다 — 공용 쪽 같은 자리가 그 폴더를 가리키는 링크면 보존으로 안 본다(11-17 GPT GA1)
+    //   사본 뿌리 바로 아래여야 사본에서 본 상대 경로가 「..qa\…」로 시작한다(*.mp4는 어디서나 git 밖)
+    쓰기(t.사본, '..qa/d.mp4', '화면 D 첫판');
+    fs.symlinkSync(path.join(t.사본, '..qa'), path.join(t.메인, '..qa'), 'junction');
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 ..qa/d.mp4', 'docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/c.png']);
+    // 같은 파일을 두 번 세지 않는다
+    assert.equal(new Set(남은것()).size, 남은것().length);
   } finally { t.치우기(); }
 });
 
@@ -401,7 +444,7 @@ test('남은사본 — 끝난 앱 사본은 그 뒤로 그대로일 때만 건�
     const 회차 = 앱사본(t);
     // 파일 시각은 몇 ms 단위로 묶이기도 한다(Linux) — 끝과 다음 손질 사이를 띄운다
     const 잠깐 = () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 40);
-    const 끝냄 = () => { assert.equal(도구.끝({ 저장소: 회차, 자리, 실행: true }).결과, '지워도 됨'); 잠깐(); };
+    const 끝냄 = () => { const r = 도구.끝({ 저장소: 회차, 자리, 실행: true }); assert.equal(r.결과, '지워도 됨', JSON.stringify(r.남은것)); 잠깐(); };
     const 그사본 = () => 도구.남은사본({ 저장소: t.메인, 자리 }).사본.find((s) => s.이름 === path.basename(회차));
     const 보임 = () => Boolean(그사본());
     const 표시파일 = () => path.resolve(회차, 깃(회차)('rev-parse', '--git-dir').trim(), 'synk-sched-run');
@@ -488,6 +531,14 @@ test('남은사본 — 끝난 앱 사본은 그 뒤로 그대로일 때만 건�
     assert.equal(보임(), false);
     쓰기(회차, 'out/master.mp4', '밖 결과물');
     assert.equal(보임(), true, 'docs/마케팅 밖 결과물이 생기면 다시 본다');
+
+    // ⑨ 그 결과물을 공용 작업본 보존 폴더에 같은 바이트로 두면 끝이 「지워도 됨」이고, 그 뒤로 그대로면 건너뛴다(사본 쪽은 지우지 않는다)
+    쓰기(t.메인, 'out/앞판_20261117/master.mp4', '밖 결과물');
+    끝냄();
+    assert.equal(보임(), false, '공용에 보존된 밖 결과물은 남은 것이 아니다');
+    assert.ok(fs.existsSync(path.join(회차, 'out/master.mp4')));
+    fs.writeFileSync(path.join(t.메인, 'out/앞판_20261117/master.mp4'), '다른 바이트');
+    assert.equal(보임(), true, '보존본이 달라지면 다시 본다');
   } finally { t.치우기(); }
 });
 

@@ -32,6 +32,7 @@
  * 여러 회차가 같은 파일을 같이 넘기면 옆 이름을 먼저 만든 쪽만 넘기고 다른 쪽은 「열려 있음」이다. 바꾸기 직전에 공용 쪽을 다시 본다.
  * 남은사본은 최근 30분 안에 쓴 파일을 넘기지 않는다 — 도는 회차가 쓰는 중인 영상을 공용 자리에 내놓지 않는다.
  * 지워도 되는지: git 밖 파일 가운데 docs/마케팅은 넘기고, .tmp · node_modules · 빌드 결과는 버리는 것으로 보며, 그 밖 자리의 영상 · 소리 · 그림 · 문서가 있으면 「남은 것」이다.
+ *   다만 공용 작업본의 같은 자리나 「앞판_…」 보존 폴더에 바이트가 같은 사본이 있는 것은 세지 않는다(11-17, 앱이 다시 준 사본에 남은 앞 세션의 qa 화면).
  * 시험: node --test tests/예약사본.test.js
  */
 const crypto = require('crypto');
@@ -120,7 +121,7 @@ function 끝난뒤그대로인가(폴더, 표시) {
     if (지금 === null || JSON.stringify(지금) !== JSON.stringify(끝.파일)) return false;
     if (미커밋들(폴더).length) return false;
     if (git(폴더, ['rev-list', '-n', '1', 'HEAD', '--not', '--remotes=origin']).trim()) return false;
-    return 안넘긴결과물(폴더).length === 0;
+    return 안넘긴결과물(폴더, 공용작업본(폴더)).length === 0;
   } catch { return false; }
 }
 
@@ -315,8 +316,58 @@ function 링크끊기(나) {
   return 끊음;
 }
 
-/** docs/마케팅 밖 git 밖 자리에 남은 결과물 — 넘기지 않으므로 지우면 잃는다(.tmp · node_modules · 빌드 결과는 빼고) */
-function 안넘긴결과물(나) {
+/** 이 사본 안을 가리키는가 — 공용 쪽 보존 폴더가 링크로 이 사본을 가리키면 「보존됨」이 사본 자신이라 지우면 잃는다 */
+function 사본안인가(나, 절대) {
+  let 진짜;
+  try { 진짜 = fs.realpathSync.native(절대); } catch { return true; }
+  let 내진짜;
+  try { 내진짜 = fs.realpathSync.native(나); } catch { 내진짜 = 나; }
+  const 안쪽 = path.relative(내진짜, 진짜);
+  // 첫 조각이 정확히 「..」일 때만 밖이다 — 「..qa」처럼 점 둘로 시작하는 이름의 하위 폴더는 안쪽이다(11-17 GPT GA1)
+  return !path.isAbsolute(안쪽) && 안쪽.split(/[\\/]/)[0] !== '..';
+}
+
+/**
+ * 공용 작업본에 이 파일과 바이트가 같은 사본이 있는가(11-17). 앱은 깨끗한 사본을 다음 세션에 다시 주어, 앞 세션의 git 밖 qa 화면이 남는다
+ * (현장 노트 AI_CLI 「보관한 깨끗한 워크트리는 재사용 풀로」). 공용 쪽 같은 자리에 다른 판이 있으면 덮지 않고 옆 보존 폴더에 복사해 두는데,
+ * 그 뒤 사본 쪽을 지우지 않아도(예약 회차에서는 지우기가 판정기에 막힌다) 잃는 것이 없으니 「남은 것」으로 세지 않는다.
+ * 찾는 자리: 같은 경로 · 그 위 어느 폴더 A 아래의 `A/앞판_…/<A 아래 나머지>` · `A/<다음 폴더>_앞판_…/<그 아래 나머지>`. 크기가 같을 때만 해시를 잰다.
+ */
+function 공용에보존됨(나, 메인, 상대, 목록캐시 = new Map()) {
+  const 원본 = path.join(나, 상대);
+  let 크기;
+  try { 크기 = fs.statSync(원본).size; } catch { return false; }
+  let 내해시 = null;
+  const 같은가 = (후보) => {
+    let st;
+    try { st = fs.statSync(후보); } catch { return false; }
+    if (!st.isFile() || st.size !== 크기 || 사본안인가(나, 후보)) return false;
+    try { 내해시 = 내해시 || 해시(원본); return 해시(후보) === 내해시; } catch { return false; }
+  };
+  if (같은가(path.join(메인, 상대))) return true;
+  const 조각 = 상대.split('/');
+  // i = 조각.length - 1이면 위 = 파일이 든 폴더다(그 안 「앞판_…」) — 그때 「다음」은 파일 이름이라 옆 꼴은 보지 않는다
+  for (let i = 0; i < 조각.length; i++) {
+    const 위 = 조각.slice(0, i).join('/'), 다음 = i < 조각.length - 1 ? 조각[i] : null;
+    let 이름들 = 목록캐시.get(위);
+    if (이름들 === undefined) {
+      try { 이름들 = fs.readdirSync(path.join(메인, 위)); } catch { 이름들 = null; }
+      목록캐시.set(위, 이름들);
+    }
+    if (!이름들) break; // 공용 쪽에 이 폴더가 없으면 그 아래 보존 폴더도 없다
+    for (const 이름 of 이름들) {
+      if (이름.startsWith('앞판_') && 같은가(path.join(메인, 위, 이름, ...조각.slice(i)))) return true;
+      if (다음 && 이름.startsWith(`${다음}_앞판_`) && 같은가(path.join(메인, 위, 이름, ...조각.slice(i + 1)))) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * docs/마케팅 밖 git 밖 자리에 남은 결과물 — 넘기지 않으므로 지우면 잃는다(.tmp · node_modules · 빌드 결과는 빼고).
+ * 메인(공용 작업본)을 주면 거기에 바이트가 같은 사본이 있는 것은 뺀다(공용에보존됨).
+ */
+function 안넘긴결과물(나, 메인 = null) {
   const 찾음 = [];
   const 걷기 = (상대) => {
     if (상대 === 넘길곳 || 상대.startsWith(`${넘길곳}/`) || 버리는폴더.has(path.basename(상대))) return;
@@ -327,16 +378,20 @@ function 안넘긴결과물(나) {
     if (결과물꼴.test(상대)) 찾음.push(상대);
   };
   for (const e of 무시항목(나)) 걷기(e);
-  return 찾음.sort();
+  // 무시 목록이 폴더와 그 안 파일을 함께 내면 같은 파일을 두 번 걷는다
+  const 목록 = [...new Set(찾음)].sort();
+  if (!메인) return 목록;
+  const 목록캐시 = new Map();
+  return 목록.filter((p) => !공용에보존됨(나, 메인, p, 목록캐시));
 }
 
 function 끝(옵션 = {}) {
-  const { 나 } = 짝(옵션.저장소 || process.cwd());
+  const { 나, 메인 } = 짝(옵션.저장소 || process.cwd());
   const 앱사본 = !이름으로든사본(나);
   // 넘기기 전에 찍는다 — 넘기는 동안이나 그 뒤에 바뀐 것은 이 모습과 달라져 다음 회차가 다시 본다
   const 앞모습 = 옵션.실행 && 앱사본 ? 결과물모습(나) : null;
   const 넘김 = 넘기기({ ...옵션, 저장소: 나 });
-  const 안넘김 = 안넘긴결과물(나);
+  const 안넘김 = 안넘긴결과물(나, 메인);
   const 미커밋 = 미커밋들(나);
   let 안올린커밋 = [];
   try { 안올린커밋 = git(나, ['rev-list', '--oneline', 'HEAD', '--not', '--remotes=origin']).split('\n').filter(Boolean); }
@@ -360,7 +415,11 @@ function 끝(옵션 = {}) {
   const 다음 = !지워도됨 ? null : !앱사본
     ? '→ ExitWorktree remove(discard_changes: true)로 지운다 — 커밋은 모두 origin에 있다'
     : '→ 더 할 일 없다 — 앱이 만든 사본은 세션이 보관될 때 앱이 지운다. 커밋은 모두 origin에 있다';
-  return { 결과: 지워도됨 ? '지워도 됨' : 옵션.실행 ? '남은 것 있음' : '미리 보기', 워크트리: 나, 다음, 넘김, 끊은링크, 남은것 };
+  // 앞 세션이 남긴 qa 화면 같은 것이면(내가 만들지 않았으면) 지우지 말고 보존만 하면 된다 — 현장 노트 AI_CLI 「보관한 깨끗한 워크트리는 재사용 풀로」
+  const 보존안내 = 안넘김.length
+    ? `→ docs/마케팅 밖 결과물: 남길 것이면 공용 작업본(${메인})의 같은 자리에 복사하고, 거기 다른 판이 있으면 덮지 말고 그 폴더 안 「앞판_<날짜>」 폴더(또는 옆 「<폴더>_앞판_<날짜>」)에 같은 짜임으로 복사한다. 공용 쪽에 바이트가 같은 사본이 있으면 사본 쪽을 지우지 않아도 남은 것으로 세지 않는다`
+    : null;
+  return { 결과: 지워도됨 ? '지워도 됨' : 옵션.실행 ? '남은 것 있음' : '미리 보기', 워크트리: 나, 다음, 보존안내, 넘김, 끊은링크, 남은것 };
 }
 
 /** 회차를 시작할 때 — 뿌리 node_modules를 공용 작업본에 잇고(바로올리기의 관련 시험 · 도구가 찾는다), 멈춘 회차의 영상을 넘긴다 */
@@ -459,6 +518,7 @@ function main(argv = process.argv.slice(2)) {
     console.log([`[${r.결과}] ${r.워크트리}`, ...넘김글(r.넘김),
       ...(r.끊은링크.length ? [`워크트리 안 링크 ${r.끊은링크.length}개를 끊음(대상은 그대로): ${r.끊은링크.join(' · ')}`] : []),
       ...r.남은것.map((x) => `  남음: ${x}`),
+      r.보존안내 || '',
       r.다음 || '',
     ].filter(Boolean).join('\n'));
   } else console.log(사본글(r).join('\n'));
