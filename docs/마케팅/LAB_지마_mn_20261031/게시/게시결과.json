@@ -219,29 +219,29 @@
     },
     {
       "계정": "lab-us-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-16T13:00:00-05:00",
       "지문": "93f7cd3b7b56a70c7fcc832ffbd2eee0dde353ab0c4e5bf01135a8ae3fb1972d",
       "게시글지문": "910741bf6cd641c5447734ea56d9be7e2d0e31a18f09f5d860ae97b88206c9f2",
       "방법": "ego",
       "게시물ID": "kIsy_PxHrHA",
       "주소": "https://youtube.com/shorts/kIsy_PxHrHA",
-      "확인": "예약 한국 시각 2026-11-17 03:00 = 현지 13:00(2026-11-16) · 스튜디오 예약 창 「2026. 11. 17. 오전 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB USA | Korean Made Fun」 목록 「예약됨 2026. 11. 17.」 · 글 첫 줄 「The barista had 3 rules… then came his last day 🥲 #learnkorean」 · 동영상 언어 영어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "로그인 없이 oEmbed 200 · 제목 「The barista had 3 rules… then came his l · SYNK LAB USA | Korean Made Fun」 · 11-17 14:09 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-14T11:48:31.072Z"
+      "기록시각": "2026-11-17T05:09:34.040Z"
     },
     {
       "계정": "lab-vn-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-16T13:00:00+07:00",
       "지문": "c098c16bb5e9ac7eb3f0e47da241ddbd6ee13b7bff8422e2a04d1bbd405c6dbc",
       "게시글지문": "1110610428da9fbf42951fa7a3eaf8b5df7b4417eee011e22b64ee74738a89db",
       "방법": "ego",
       "게시물ID": "7708376050073488661",
       "주소": "https://www.tiktok.com/@synklab.vn/video/7708376050073488661",
-      "확인": "TikTok Studio 콘텐츠 목록(ego Profile 11, @synklab.vn) 2026-11-15 21:58 읽음 — Nov 16, 3:00 PM (GMT+9) Seoul · Everyone · 글 첫 줄 Muốn nói “đừng…” với bạn bè bằng tiếng Hàn · 예약 한국 시각 2026-11-16 15:00 = 현지 13:00",
+      "확인": "Profile 11 TikTok Studio 콘텐츠 목록 「Nov 16, 3:00 PM · Everyone · 조회 0」 · 목록 API status 102(공개) · visibility 1 · post_time 11-16 15:00 KST · 글 첫 줄 원고와 같음 · 11-17 15:03 읽음 · 공개 뒤 약 24시간 조회 0",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 첫 판 시험 · 자체검수(올리기 전 검사 고칠 것 0 · 게시글 맥락 없는 Opus 확인)",
-      "기록시각": "2026-11-15T12:36:26.048Z"
+      "기록시각": "2026-11-17T06:03:17.132Z"
     },
     {
       "계정": "lab-cn-douyin",
@@ -297,29 +297,29 @@
     },
     {
       "계정": "lab-id-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-17T13:00:00+07:00",
       "지문": "d2905e1631c89c4b68806d670c43516abf7a5c5ec638aaf9e27dc82f54098351",
       "게시글지문": "d9c72d3c37393577b04a7e832cbdcc8890e8fb0aa1244f849fc1d975e761abd9",
       "방법": "ego",
       "게시물ID": "nzIcneU5Ng0",
       "주소": "https://youtube.com/shorts/nzIcneU5Ng0",
-      "확인": "예약 한국 시각 2026-11-17 15:00 = 현지 13:00(2026-11-17) · 스튜디오 예약 창 「2026. 11. 17. 오후 3:00 현지 시간(GMT+0900)」 · 「예약」 단추로 완료 · 완료 뒤 창 제목은 「게시된 동영상」(예약 문구 없는 꼴) · 채널 「SYNK LAB Indonesia | Serunya Bahasa Korea」 Shorts 목록 맨 위 줄 「예약됨 2026. 11. 17.」(/video/nzIcneU5Ng0) · 글 첫 줄 「Dia selalu bilang gini… sampai hari terakhirnya 🥲 #belajarkorea」 · 동영상 언어 인도네시아어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "로그인 없이 oEmbed 200 · 제목 「Dia selalu bilang gini… sampai hari terakhirnya 🥲 #belajarkorea」 · 채널 SYNK LAB Indonesia(UC2hBQHVItJj6-YC_qsP7stQ = 원장) · 시청 화면 publishDate 2026-11-16T22:00-08:00(= 한국 11-17 15:00 = 현지 13:00) · isPrivate false · 21초 · 소리 트랙 있음 · 11-17 15:03 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-16T03:44:39.657Z"
+      "기록시각": "2026-11-17T06:03:16.811Z"
     },
     {
       "계정": "lab-th-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-17T13:00:00+07:00",
       "지문": "3dc1380f97e0b0b88dbec0aa78c2ebe61262fede6e165714f0bf6e758ed16500",
       "게시글지문": "19c02125123d02960711df63382dc0efb4d2a2a26de295e8d69d8dee11682cd1",
       "방법": "ego",
       "게시물ID": "wnZUC1zEsvk",
       "주소": "https://youtube.com/shorts/wnZUC1zEsvk",
-      "확인": "예약 한국 시각 2026-11-17 15:00 = 현지 13:00(2026-11-17) · 스튜디오 예약 창 「2026. 11. 17. 오후 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Thailand | เรียนเกาหลีสนุก ๆ」 목록 「예약됨 2026. 11. 17.」 · 글 첫 줄 「เขาพูดแบบนี้ทุกวัน… จนถึงวันสุดท้าย 🥲 #เรียนภาษาเกาหลี」 · 동영상 언어 태국어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "로그인 없이 oEmbed 200 · 태국어 제목 · 채널 SYNK LAB Thailand(UCyGr1LIjHGp_lZTtq-48EdA = 원장) · 시청 화면 publishDate 2026-11-16T22:00-08:00(= 한국 11-17 15:00 = 현지 13:00) · isPrivate false · 21초 · 소리 트랙 있음 · 11-17 15:03 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-16T03:44:13.236Z"
+      "기록시각": "2026-11-17T06:03:16.977Z"
     },
     {
       "계정": "lab-in-youtube",
@@ -436,14 +436,16 @@
     },
     {
       "계정": "lab-jp-instagram",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-17T13:00:00+09:00",
       "지문": "e1bc1b1c409b0a0caf7aa7b82995d72e99778e881f11d44a7b737857087013af",
       "게시글지문": "6b13a75e3da750398f88284e0ed4d71864ee84346dfedf7c2b00c635230f22ad",
       "방법": "ego 인스타 웹(Profile 16)",
-      "확인": "11-16 14:44 ego Profile 16(@synk.jp) instagram.com/scheduled_content/ 주간 보기 Tue 17 칸 1:00 PM(한국 = 도쿄 13:00) · 게시글 첫 줄 「韓国語のタメ口で「〜しないで」と言うときは…」 · 표지 판본 JP cover.png · AI 레이블 끔 · 페북 공유 끔",
+      "확인": "Profile 5(다른 인스타 계정 로그인)로 instagram.com/synk.jp/ 맨 위 릴스 Df1Bdhmv0iW · time 2026-11-17T04:00:12Z(= 한국 13:00) · og:description 첫 줄 「韓国語のタメ口で「〜しないで」と言うときは…」 · 좋아요 0 · 댓글 0 · 11-17 15:13 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-16T05:44:16.542Z"
+      "기록시각": "2026-11-17T06:13:23.855Z",
+      "게시물ID": "Df1Bdhmv0iW",
+      "주소": "https://www.instagram.com/synk.jp/reel/Df1Bdhmv0iW/"
     }
   ]
 }

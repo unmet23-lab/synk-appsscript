@@ -63,16 +63,16 @@
     },
     {
       "계정": "lab-au-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-17T13:00:00+11:00",
       "지문": "bc40690dab3679254c8c862904fcc551c6be2e1b68597c652aa6d272f8e310f7",
       "게시글지문": "0be82ec1f9644b657881b5a45773e753509c885476add88c1a8c0411dc08a502",
       "방법": "ego",
       "게시물ID": "fN5sHOoVrv4",
       "주소": "https://youtube.com/shorts/fN5sHOoVrv4",
-      "확인": "예약 한국 시각 2026-11-17 11:00 = 현지 13:00(2026-11-17) · 스튜디오 예약 창 「2026. 11. 17. 오전 11:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Australia | Korean Made Fun」 목록 「예약됨 2026. 11. 17.」 · 글 첫 줄 「Why Korean girls call their big bro “oppa” 👀 #learnkorean」 · 동영상 언어 영어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "로그인 없이 oEmbed 200 · 제목 「Why Korean girls call their big bro “opp · SYNK LAB Australia | Korean Made Fun」 · 11-17 14:09 읽음",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-15T09:17:12.935Z"
+      "기록시각": "2026-11-17T05:09:34.431Z"
     },
     {
       "계정": "lab-ca-youtube",
@@ -182,14 +182,28 @@
       "계정": "lab-mx-youtube",
       "상태": "예약됨",
       "시각": "2026-11-20T13:00:00-06:00",
-      "지문": "4d75510b8d72431ee160bf084e169a9f9540852a62bb1ea793d1facb854660e1",
+      "지문": "6ce894c2282ae03f30861eb48d59dbd84c395d2b678202be84664558b79509b4",
       "게시글지문": "bb066a4f6c8a36a15c74cd7684441663dd3c38efca6ebc9fd0f1e68631137060",
       "방법": "ego",
-      "게시물ID": "0_BLfRFZx_c",
-      "주소": "https://youtube.com/shorts/0_BLfRFZx_c",
+      "앞시도": [
+        {
+          "상태": "실패",
+          "시각": "2026-11-20T13:00:00-06:00",
+          "지문": "4d75510b8d72431ee160bf084e169a9f9540852a62bb1ea793d1facb854660e1",
+          "게시글지문": "bb066a4f6c8a36a15c74cd7684441663dd3c38efca6ebc9fd0f1e68631137060",
+          "방법": "ego",
+          "게시물ID": "0_BLfRFZx_c",
+          "주소": "https://youtube.com/shorts/0_BLfRFZx_c",
+          "확인": "스튜디오 채널 「SYNK LAB México | Coreano divertido」 쇼츠 목록에서 0_BLfRFZx_c 「비공개 · 2026. 11. 17. 업로드됨」 · 예약 2026. 11. 21.이던 것을 내림 · 까닭: 멕시코 판본을 건 뒤 다시 구움(스페인어 훅 목소리, 5f189f92fe) · 2026-11-17 14:13 읽음",
+          "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+          "기록시각": "2026-11-17T05:13:39.634Z"
+        }
+      ],
+      "게시물ID": "yC8wLphYKRI",
+      "주소": "https://youtube.com/shorts/yC8wLphYKRI",
       "확인": "예약 한국 시각 2026-11-21 04:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 창 「2026. 11. 21. 오전 4:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB México | Coreano divertido」 목록 「예약됨 2026. 11. 21.」 · 글 첫 줄 「Por qué las coreanas le dicen “oppa” a su hermano mayor 👀 #aprendecoreano」 · 동영상 언어 스페인어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-16T16:59:49.225Z"
+      "기록시각": "2026-11-17T05:46:51.765Z"
     },
     {
       "계정": "lab-jp-youtube",
@@ -229,6 +243,17 @@
       "확인": "예약 한국 시각 2026-11-20 14:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 창 「2026. 11. 20. 오후 2:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Malaysia | Seronok Belajar Korea」 목록 「예약됨 2026. 11. 20.」 · 글 첫 줄 「Kenapa perempuan Korea panggil abang “oppa” 👀 #belajarkorea」 · 동영상 언어 말레이어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
       "기록시각": "2026-11-16T17:09:31.680Z"
+    },
+    {
+      "계정": "lab-jp-instagram",
+      "상태": "예약됨",
+      "시각": "2026-11-20T13:00:00+09:00",
+      "지문": "9d0e2a9a2566cf6bec43931c0cb3afacad2529957420b8b337fdf257fd9d6343",
+      "게시글지문": "dfe9574d5a6858b4e8eaad471d476d2ed72a23435cb6898c44a1458d82a14fb8",
+      "방법": "ego",
+      "확인": "instagram.com/scheduled_content/ 주간 보기(Asia/Seoul) 「Fri 20」 칸 1건 「1:00 PM」 · 글 첫 줄 「韓国語では、お兄ちゃん・お姉ちゃんの呼び方が、呼ぶ人で変わります。」 · 걸기 전 그 칸은 비어 있었음 · 예약 창 「Your reel has been scheduled.」 · 누르기 전 「Date Fri, Nov 20, 2026 · Time 01 : 00 PM」 · AI 레이블 끔 · Facebook 공유 끔 · 게시글 일치 238/238 · 계정 머리 「synk.jp SYNK LAB Japan」 · 방법 ego-browser · Profile 16 · 공간 「igjpdy 1117 IG synk.jp」(316) · 인스타 웹 Create → Schedule content · 스크립트 C:/Users/q1212/ego/igjpdy-20261117-1438/ig-run-hyeong.mjs",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-17T06:02:23.871Z"
     }
   ]
 }
