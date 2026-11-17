@@ -31,13 +31,16 @@
 - **원본:** 판 폴더는 `.tmp/company-batch74-release-20261116-2210`이다. 운영 증거는 그 `deployment`의 `runtime-live-postcheck-1794844722649.json`과 `public-verification-1794844768745.json`에 있다. HA 증거는 `.tmp/company-batch74-carry-20261116-2210-r2/ha74`, 공개 감시 기록은 같은 폴더의 `public-health-release74-watch.json`, 영수증은 `.tmp/company-batch74-prep-20261116-2210`, 실행 기록은 `.tmp/company-batch74-work-20261116-2210`에 있다. 차례와 경과는 `.tmp/company-ha-release-order-20261020.md`의 「묶음 20261116-2210」 절들에 있다.
 
 <a id="pulse-marketing-20261116"></a>
-## PULSE 고객 앱 「마케팅 성과」 서버 — 판 번호는 화면과 묶어 올릴 때 정한다 (2026-11-16 저장소 준비, 운영 전)
+## PULSE 고객 앱 「마케팅 성과」 — 회사 이미지 판 75로 운영 반영, 스위치는 꺼져 있다 (2026-11-17 운영 반영)
 
 - **무엇인가:** 직원이 올린 마케팅 측정 리포트를 고객 방에서 읽는 칸의 서버 쪽이다. 경로와 권한은 [README](README.md#pulse-marketing)에, 설계는 [서버 설계](../../../PULSE_마케팅성과_20261116/서버_설계.md)에 있다. 스위치 `marketing`이 꺼진 채로 올라가므로 서버만 먼저 반영해도 고객에게 보이는 것은 없다. 그래도 회사 서버 반영은 고객 화면과 한 판으로 묶는다.
 - **저장과 스키마:** 새 저장 종류는 `pulseMarketingIndex`와 `pulseMarketingReports` 둘이다. 둘 다 범용 표 `documents`의 행이다. `store.mjs`의 `INDEXED`에 더하지 않았으므로 서버가 뜰 때 색인을 만들지 않는다. 스키마를 바꾸는 시작 코드가 없어서 반영 뒤 확인의 스키마 비교가 바뀌지 않아야 한다. 백업은 `company.sqlite`를 통째로 하므로 따로 등록할 것이 없다.
 - **스위치를 켜는 절차:** 관리자 세션으로 `POST /api/settings/pulse-features`에 몸통 `{"marketing":true}`를 보낸다. 같은 출처와 그 세션의 `X-CSRF-Token`이 있어야 한다. 끌 때는 `{"marketing":false}`다. 바꿀 때마다 감사 기록 `pulse-features-settings`에 `marketing` 값이 남는다. 스위치는 전체에 하나다. 켠 뒤에는 리포트를 올리는 순간 그 프로젝트의 고객에게 보이므로, 올리기 응답의 프로젝트 이름과 고객 이름으로 올린 자리를 확인한다. 켜기 전에 먼저 올려 두고 직원 목록(`GET /api/client-projects/<id>/marketing`)의 `visible`로 확인할 수도 있다.
 - **반영 뒤 확인(로그인 없이):** 익명 `GET /pulse/api/marketing`은 스위치가 꺼져 있으면 404, 켜져 있으면 401이다. 로그인 없는 `GET /api/client-projects/<프로젝트 id>/marketing`은 401이다. 공개 `GET /pulse/api/features`의 `features`에는 `marketing`이 없어야 한다.
 - **시험:** 새 시험 `pulse-marketing.test.mjs`를 회사 판의 선택 시험에 들인다. 이 시험은 `node_modules` 없이 돌고 `todo`와 `skip`이 없다. 오류 문장 대조 시험 `pulse-i18n-server-errors.test.mjs`에도 `pulse-marketing.mjs`를 더했지만, 그 시험은 acorn이 필요해 전처럼 저장소에서만 돈다.
+- **운영 반영:** 화면과 서버를 한 건(`20261116-130316-pulse-customer-room-marketing-reports`, 26파일)으로 묶어 [판 75](#batch75-20261117)에 실었다. `server.mjs`의 연결은 판 74가 먼저 실었다.
+- **운영에서 확인한 것(11-18 02:3x KST, 서버를 맡은 세션):** 로그인 없는 확인 넷이 맞았다. `GET /pulse/api/marketing`은 404, 프로젝트 id를 준 `GET /api/client-projects/<id>/marketing`은 401, `GET /pulse/api/features`에 `marketing` 칸이 없고, `/pulse-app/marketing-view.mjs`는 200이며 검수한 커밋의 바이트와 같다. 셸은 `synk-pulse-shell-v68-marketing-20261116`이다. 이어서 내부 시험 프로젝트 「[내부 시험] SYNK 마케팅 성과 확인」을 하나 만들고 `tools/마케팅리포트.js`로 리포트 다섯 건을 올렸다(새로 5건, 한 건은 고쳐 덮어 올림). 직원 목록은 5건과 `visible:false`를 냈다. 스위치가 꺼진 채 그 프로젝트의 초대 링크로 고객 방을 열면 `features.marketing`이 `false`이고 고객 목록 경로는 404다. 리포트의 실제 자료는 저장소에 두지 않았다.
+- **확인 안 함:** 스위치를 켠 뒤 고객 방에 칸이 보이는 것과 운영 화면의 1440 · 390 모습은 아직 보지 않았다. 스위치 쓰기를 자동 모드 판정기가 막아 유호님께 여쭸다(트랙 「유호님 차례」).
 
 <a id="pulse68-20261115"></a>
 ## 64 뒤 쌓인 PULSE 변경 열한 갈래 — 회사 이미지 판 68 (2026-11-15 운영 반영)
