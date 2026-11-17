@@ -141,7 +141,7 @@
   "lang": "kk",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "Су + ет =\nкорейше не болады?",
+  "hook": "Су + ет =\nкорейше қалай болады?",
   "hookSize": 52,
   "reads": [
     "mul",
@@ -161,7 +161,7 @@
   "lunchSize": 84,
   "bye": "Қош, етім",
   "byeSize": 62,
-  "endCard": "Етімді 물고기 жеді",
+  "endCard": "Етімді 물고기 жеп қойды!",
   "endSize": 52,
   "ask": "",
   "askSize": 40,
