@@ -107,8 +107,9 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   const stale = new Date(Date.now() - 31 * 60000); fs.utimesSync(marker, stale, stale);
   assert.equal(await run(copy, ['--run', 'manual', '--test-mode'], env, 240000), 0);
   assert.equal(lines(state)[5].outcome, 'complete', 'a stale marker does not stop a run');
-  // The MCP server of the installed copy ends within seconds once an install marker appears (it looks every 2 seconds),
-  // so an update does not leave the old executable held by an AI tool for long.
+  // The MCP server of the installed copy ends within seconds once an install marker appears (it looks every 2 seconds).
+  // The installer closes a server in its own user session itself; one in another user's session it cannot close has
+  // only the short time the installer holds the marker while it tries, so the next try can pass.
   const mcpCopy = spawn(copy, ['--mcp', '--test-mode'], { env, stdio: ['pipe', 'ignore', 'ignore'], windowsHide: true });
   const stop = setTimeout(() => mcpCopy.kill(), 60000);
   await new Promise(ok => setTimeout(ok, 3000));
