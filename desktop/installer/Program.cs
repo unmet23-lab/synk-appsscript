@@ -341,15 +341,15 @@ namespace Synk.SignalInstaller
                 try { using (Process.Start(new ProcessStartInfo(engine.InstalledExecutable()) { UseShellExecute = false })) { } } catch (Exception) { }
         }
 
+        /// <summary>앱을 켜지 못한 뒤 한 번 더 켜 보기까지(Claude가 정한 값: 실패 문장 두 줄을 읽을 틈)</summary>
+        internal const int OpenAgainMilliseconds = 3000;
+
         /// <summary>
         /// 가림막(1-가 구현 설계 2절). 앱이 끝나며 창을 닫는 동안 화면을 지킨다. 앱 창 바로 아래에 같은 구와 같은 글을 그리고,
         /// 첫 장을 그리면 표준 출력에 SYNK_CURTAIN_READY를 쓴다. 앱이 표준 입력으로 보내는 「cancel」이면 바로 끝나고, 「closing」이면 설치기의 알림을 기다린다.
         /// 스스로 끝나는 상한은 둘이다: 앱 창이 닫힌 뒤 60초, 「closing」 없이 입력이 닫힌 뒤 10초.
         /// 설치 엔진, 설치 등록, 바로가기, 설치기의 뮤텍스를 건드리지 않고, 만드는 파일은 개인 캐시뿐이다
         /// </summary>
-        /// <summary>앱을 켜지 못한 뒤 한 번 더 켜 보기까지(Claude가 정한 값: 실패 문장 두 줄을 읽을 틈)</summary>
-        internal const int OpenAgainMilliseconds = 3000;
-
         internal static class Curtain
         {
             internal const int AppGoneMilliseconds = 60000, InputGoneMilliseconds = 10000;

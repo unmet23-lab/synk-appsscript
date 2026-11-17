@@ -77,4 +77,13 @@ function createStartupUpdateGate({updater,platform=process.platform,onChange=()=
   function reveal(){hidden=false;}
   return {start,retry,openCurrent,install,cancelInstall,observe,snapshot,reveal,unseenFailure:()=>unseen,isBlocking:()=>active&&!disposed,dispose:()=>{disposed=true;updater.setStartupActive?.(false);}};
 }
-module.exports={createStartupUpdateGate,SILENT_CHECK_FAILURES,EARLY_OPEN_MS};
+/* 숨은 채 시작한 길의 보이지 않은 실패가 뒤에서 풀렸는지 본다. 풀렸으면 다음에 창을 열 때 옛 실패 장면을 보이지 않는다.
+   확인 실패는 확인이 다시 되면, 받기 실패는 받기가 끝나거나 새 판이 없어지면, 넘김 실패는 새 판이 없어지면 풀린다(0.4.96 카본 D2) */
+function unseenFailureResolved(failure,state){
+  if(!failure||!state)return false;
+  if(failure.stage==='check')return ['current','available','downloading','ready'].includes(state.state);
+  if(failure.stage==='download')return ['current','ready'].includes(state.state);
+  if(failure.stage==='handoff')return state.state==='current';
+  return false;
+}
+module.exports={createStartupUpdateGate,unseenFailureResolved,SILENT_CHECK_FAILURES,EARLY_OPEN_MS};

@@ -148,3 +148,14 @@ test('late main ready-to-show marks readiness but cannot expose the launcher whi
   const context={window,mainWindowReady:false,smoke:false,isPlatform:true,startupAllowed:false,process:{argv:[]},desktopPreferences:{snapshot:()=>({preferences:{}})},platformTray:{isActive:()=>true}};
   vm.createContext(context);vm.runInContext(line,context);window.emit('ready-to-show');assert.equal(shown,0);assert.equal(context.mainWindowReady,true);
 });
+test('an unseen failure from the hidden start clears once the background updater has moved past it',()=>{
+  // 숨은 채 시작해 받기에서 실패한 뒤 뒤에서 다 받았거나 새 판이 없어졌으면, 창을 열 때 옛 실패 장면을 보이지 않는다(0.4.96 카본 D2)
+  const {unseenFailureResolved}=require('../src/platform-startup-update.cjs');
+  const cases=[
+    ['check','checking',false],['check','current',true],['check','available',true],['check','downloading',true],['check','ready',true],['check','error',false],
+    ['download','downloading',false],['download','available',false],['download','error',false],['download','ready',true],['download','current',true],
+    ['handoff','ready',false],['handoff','opening',false],['handoff','current',true],
+  ];
+  for(const [stage,state,want] of cases)assert.equal(unseenFailureResolved({code:'UPDATE_FAILED',stage},{state}),want,stage+' '+state);
+  assert.equal(unseenFailureResolved(null,{state:'current'}),false);
+});

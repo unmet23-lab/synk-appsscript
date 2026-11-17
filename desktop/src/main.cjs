@@ -36,7 +36,7 @@ const {createPulseApp,pulseInviteRefusal}=require('./pulse-app.cjs');
 const {createCompanyEntryManager,createCompanyEntryPartitions,companyAnswerFromPulse,entryRefusal,bindingFromAuth}=require('./company-entry.cjs');
 const {createCompanyEntryDestinations}=require('./company-entry-destinations.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
-const {createStartupUpdateGate}=require('./platform-startup-update.cjs');
+const {createStartupUpdateGate,unseenFailureResolved}=require('./platform-startup-update.cjs');
 const {createStartupUpdateWindow}=require('./platform-startup-window.cjs');
 const {launchWindowsUpdate,writeHandoffNote,removeHandoffNote,launchCurtain,consumeArrivalNote,curtainEventName,windowHandle}=require('./platform-update-handoff.cjs');
 const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
@@ -217,7 +217,7 @@ else {
     appLocationReady=true;
     if(runtime.clientId==='platform'){
       const cacheRoot=path.join(app.getPath('userData'),'PlatformUpdates');
-      platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{sendDesktop('synk:update-changed',state);startupGate?.observe(state);if(unseenFailure?.stage==='check'&&['current','available','downloading','ready'].includes(state.state))unseenFailure=null;},
+      platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{sendDesktop('synk:update-changed',state);startupGate?.observe(state);if(unseenFailureResolved(unseenFailure,state))unseenFailure=null;},
         requestQuit:()=>setImmediate(()=>app.quit()),openDiskImage:file=>shell.openPath(file),
         prepareHandoff:info=>prepareUpdateHandoff(info),onHandoffCancelled:info=>{if(info?.reason!=='failed')endHandoff();},
         openInstaller:async(file,options)=>{const nonce=options.automatic?await updateRecovery.prepare({targetVersion:options.version,installerSHA256:options.artifact.sha256,...(options.token?{nonce:options.token}:{})}):null;await launchWindowsUpdate({spawn,file,pid:process.pid,automatic:options.automatic,nonce});}});
@@ -323,14 +323,18 @@ async function prepareUpdateHandoff({token,version,file}={}){
     const note={localAppData,token,appPid:process.pid,version,cut:0.5};
     if(!shown.length){
       // 모든 창이 숨었거나 최소화: 주 창 하나뿐이고 쓰다 만 초안이 없으면 조용히 바꾼다. 그 밖에는 설치기 창이 앱 창이 기억한 자리에 앞으로 뜬다
-      const others=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w!==main);
-      const quiet=!!main&&others.length===0&&!(await draftsUnsaved(main));
+      // 시작 관문 단계(새 판을 받아 바로 넘기는 때)에는 앱 창이 아직 없다. 그때는 시작 창이 앱 창 자리이고 쓰다 만 초안도 없다.
+      // 그래서 시작 창은 「다른 창」으로 세지 않고, 최소화는 시작 창이나 도착 쪽지로 본다(0.4.96 카본 D1, Fable F1)
+      const startupWin=startupWindow?.browserWindow?.()||null;
+      const others=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w!==main&&w!==startupWin);
+      const quiet=others.length===0&&(!main||!(await draftsUnsaved(main)));
+      const minimized=!!(main?.isMinimized()||startupWin?.isMinimized()||!main&&!startupWin&&arrivalShow==='minimized');
       if(gen!==handoffGen)return;
       // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 카본 C5)
       const reopened=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.isVisible()&&!w.isMinimized());
       if(!reopened.length){
         const at=windowPlacement?.restore();
-        if(writeHandoffNote({...note,bounds:at?screen.dipToScreenRect(null,at):null,maximized:at?.maximized===true,visibility:main?.isMinimized()?'minimized':'hidden',quiet}))quietQuit=quiet;
+        if(writeHandoffNote({...note,bounds:at?screen.dipToScreenRect(null,at):null,maximized:at?.maximized===true,visibility:minimized?'minimized':'hidden',quiet}))quietQuit=quiet;
         return;
       }
       shown=reopened;

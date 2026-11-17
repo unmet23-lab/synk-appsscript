@@ -387,3 +387,48 @@ test('a curtain handle that throws while the last window closes still hands the 
   await settled();
   assert.equal(prevented,true);assert.deepEqual(calls,['complete','quit']);
 });
+// 시작 관문 단계(앱 창이 아직 없음)에서 새 판을 받아 넘길 때: 시작 창은 앱 창 자리이고 쓸 초안이 없다(0.4.96 카본 D1, Fable F1).
+// 숨은 채 시작한 길은 조용히 바뀌고, 사람이 시작 창을 최소화해 두었으면 새 앱도 최소화로 켜진다. 다른 창이 있으면 조용히 가지 않는다
+function gateHandoffContext({startup=null,others=0,arrival=null}={}){
+  const notes=[],asked=[];
+  const startupWin=startup?{isDestroyed:()=>false,isVisible:()=>false,isMinimized:()=>startup==='minimized'}:null;
+  const extra=Array.from({length:others},()=>({isDestroyed:()=>false,isVisible:()=>false,isMinimized:()=>false}));
+  const context={
+    process:{env:{LOCALAPPDATA:'C:\Users\fixture\AppData\Local'},platform:'win32',pid:4321},
+    smoke:false,handoffGen:0,window:null,curtain:null,quietQuit:false,handoffCover:null,quittingRequested:false,arrivalShow:arrival,
+    startupWindow:startupWin?{isVisible:()=>false,browserWindow:()=>startupWin}:null,
+    endHandoff:()=>{},
+    BrowserWindow:{getAllWindows:()=>[...(startupWin?[startupWin]:[]),...extra],getFocusedWindow:()=>null},
+    draftsUnsaved:async win=>{asked.push(win);return false;},
+    windowPlacement:{restore:()=>({x:10,y:10,width:1440,height:940,maximized:false})},
+    screen:{dipToScreenRect:(_window,rect)=>rect},
+    writeHandoffNote:note=>{notes.push(note);return true;},
+    createStartupUpdateWindow:()=>{throw Error('no cover in the hidden path');},
+    session:{},ipcMain:{},app:{getAppPath:()=>'C:\app',getVersion:()=>'0.4.96'},path,
+    curtainEventName:()=>'Local\SYNK.Curtain.'+'a'.repeat(32),windowHandle:()=>1,
+    platformUpdate:{needsInstallHandoff:()=>true},launchCurtain:async()=>({cancel(){},closing(){}}),
+    spawn:()=>{},setTimeout,Promise,Date,Buffer,
+  };
+  vm.createContext(context);vm.runInContext(mainHandoffSource(),context);
+  return {context,notes,asked};
+}
+test('a handoff from the startup gate, before the app window exists, is quiet and keeps the minimized state',async()=>{
+  const shapes=[
+    [{},{quiet:true,visibility:'hidden'}],
+    [{startup:'hidden'},{quiet:true,visibility:'hidden'}],
+    [{startup:'minimized'},{quiet:true,visibility:'minimized'}],
+    [{arrival:'minimized'},{quiet:true,visibility:'minimized'}],
+    [{startup:'hidden',arrival:'minimized'},{quiet:true,visibility:'hidden'}],
+    [{others:1},{quiet:false,visibility:'hidden'}],
+  ];
+  for(const [shape,want] of shapes){
+    const label=JSON.stringify(shape);
+    const {context,notes,asked}=gateHandoffContext(shape);
+    await context.prepareUpdateHandoff({token:'t'.repeat(32),version:'0.4.97',file:'C:\setup.exe'});
+    assert.equal(notes.length,1,label);
+    assert.equal(notes[0].quiet,want.quiet,label);
+    assert.equal(notes[0].visibility,want.visibility,label);
+    assert.equal(context.quietQuit,want.quiet,label);
+    assert.equal(asked.length,0,label+': there is no app window whose drafts could be asked');
+  }
+});
