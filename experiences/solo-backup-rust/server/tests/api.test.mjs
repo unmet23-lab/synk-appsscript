@@ -1696,3 +1696,19 @@ test('카본 끝판2 C4: one silence notice per silence, not one a day; none for
   assert.equal(h.store.all("select count(*) n from outbox where key like 'wb:silent:%'")[0].n, 1);
   assert.equal(h.store.all("select count(*) n from outbox where key like ?", `wb:silent:${c2.customer.id}:%`)[0].n, 0);
 });
+
+test('처리방침 · 설계 검토 2026-11-17: the daily database copy keeps 30 days and leaves other files alone', async (t) => {
+  const h = await harness(t);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-backups-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const day = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const old = `workbackup-${day(h.clock.t - 31 * 86400000)}.sqlite`, kept = `workbackup-${day(h.clock.t - 30 * 86400000)}.sqlite`;
+  for (const f of [old, kept, 'workbackup-notes.txt', 'other-2000-01-01.sqlite']) fs.writeFileSync(path.join(dir, f), 'x');
+  const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files: h.files, now: () => h.clock.t, config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds, backupDir: dir } });
+  await jobs.daily(h.clock.t);
+  const left = fs.readdirSync(dir).sort();
+  assert.ok(left.includes(`workbackup-${day(h.clock.t)}.sqlite`), "today's copy was made");
+  assert.ok(!left.includes(old), 'a copy older than 30 days is gone');
+  assert.ok(left.includes(kept), 'the 30th day is kept');
+  assert.ok(left.includes('workbackup-notes.txt') && left.includes('other-2000-01-01.sqlite'), 'other files are left alone');
+});

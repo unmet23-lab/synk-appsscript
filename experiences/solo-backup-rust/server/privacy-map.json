@@ -1,0 +1,58 @@
+{
+  "about": "개통 서버가 보관하는 것과 synk.im 처리방침 「SYNK 업무 백업」 절(/privacy/#work-backup)의 갈래를 맞대는 대응표(Fable 5.2 설계 검토 2026-11-17). store.mjs의 표와 칸이 여기 없으면 tests/privacy-map.test.mjs가 깨진다. 표나 칸을 더하면 여기와 처리방침을 같은 날 고친다.",
+  "groups": {
+    "account": "계정과 초대",
+    "pc": "이어진 PC",
+    "status": "백업 상태 기록(정해진 낱말과 숫자만, 90일)",
+    "usage": "저장 사용량과 이상 확인",
+    "restore": "백업 되돌리기 기록",
+    "keys": "클라우드 저장소 출입증(비밀 값은 저장하지 않음)",
+    "mail": "메일과 도움 요청",
+    "none": "처리방침에 넣지 않음(사람에 대한 정보가 아님)"
+  },
+  "tables": {
+    "meta": { "group": "none", "why": "매일 작업을 마친 날짜 한 줄", "columns": { "k": "항목 이름", "v": "항목 값" } },
+    "customers": { "group": "account", "columns": {
+      "id": "무작위 계정 번호", "sub": "Google 계정 식별번호", "email": "이메일 주소", "prefix": "저장소 안 내 자리 이름(계정 번호로 만듦)",
+      "state": "계정 상태", "created_at": "만든 시각", "lost_at": "분실 신고 시각", "google_step": "분실 뒤 Google 확인 걸음이 남았는지",
+      "read_key": "지금 쓰는 읽기 출입증의 이름(값 아님)", "detect_since": "이상 확인의 기준 시각", "detect_cursor": "이상 확인의 기준 시각",
+      "move_pin": { "group": "pc", "text": "옮겨 오는 중인 PC 번호, 그 PC가 복사하는 백업 시점의 번호, 시각" } } },
+    "invites": { "group": "account", "columns": { "email": "초대받은 이메일 주소(가입 전부터)", "added_at": "초대한 시각", "used_at": "가입한 시각", "customer_id": "이어진 계정 번호" } },
+    "nonces": { "group": "account", "columns": { "value": "로그인 확인에 한 번 쓰는 무작위 값(하루 뒤 지움)", "purpose": "쓰임새", "created_at": "시각", "used_at": "쓴 시각" } },
+    "devices": { "group": "pc", "columns": {
+      "id": "PC 번호", "customer_id": "계정 번호", "name": "PC 이름", "role": "쓰기 · 읽기 역할", "state": "상태(끊어도 줄은 상태만 바뀐 채 남음)",
+      "created_at": "만든 시각", "last_seen_at": "마지막 연결 시각", "first_seen_at": "처음 연결 시각", "token_hash": "PC 인증값의 해시(원문은 저장하지 않음)",
+      "app_version": "앱 판", "moved_to": "자리를 넘겨받은 PC 번호", "install_id": "설치마다 만드는 무작위 설치 식별값" } },
+    "device_env": { "group": "pc", "columns": { "device_id": "PC 번호", "received_at": "받은 시각", "app_version": "앱 판", "windows": "Windows 판", "standby": "절전 방식" } },
+    "keys": { "group": "keys", "columns": {
+      "name": "출입증 이름", "key_id": "출입증 번호", "kind": "쓰기 · 읽기 종류", "customer_id": "계정 번호", "device_id": "받은 PC 번호", "purpose": "만든 까닭",
+      "state": "상태", "created_at": "만든 시각", "acked_at": "받았다고 확인한 시각", "deleted_at": "지운 시각", "reason": "지운 까닭", "capabilities": "권한 목록" } },
+    "key_requests": { "group": "keys", "columns": { "id": "번호", "customer_id": "계정 번호", "kind": "요청 종류", "at": "시각" } },
+    "runs": { "group": "status", "columns": { "id": "번호", "device_id": "PC 번호", "customer_id": "계정 번호", "received_at": "받은 시각", "started_at": "시작 시각", "trigger": "실행 계기(정해진 낱말)", "data": "결과 · 쉼 사유 · 걸린 시간 · 파일 수 · 용량 같은 정해진 낱말과 숫자(telemetry.mjs cleanBatch)" } },
+    "notifications": { "group": "status", "columns": { "id": "번호", "device_id": "PC 번호", "received_at": "받은 시각", "kind": "알림 종류(정해진 낱말)", "shown_at": "보여 준 시각", "clicked_at": "누른 시각" } },
+    "installs": { "group": "status", "columns": { "id": "번호", "device_id": "PC 번호", "received_at": "받은 시각", "step": "설치 단계 이름(정해진 낱말)", "duration_ms": "걸린 시간", "ok": "성공 여부" } },
+    "usage_daily": { "group": "usage", "columns": {
+      "customer_id": "계정 번호", "day": "날짜", "visible_bytes": "보이는 조각의 용량", "visible_count": "보이는 조각의 수", "hidden_bytes": "숨긴 조각의 용량",
+      "hidden_count": "숨긴 조각의 수", "visible_snapshots": "백업 시점 수", "detect": "그날 판정의 요약(이상 종류와 개수, 숨겨진 수와 용량, 확인한 시간 구간)", "scanned_at": "확인한 시각" } },
+    "detect_seen": { "group": "usage", "columns": { "customer_id": "계정 번호", "file_id": "바뀐 것으로 판정한 저장소 안 파일의 식별 번호", "kind": "종류", "at": "시각" } },
+    "alerts": { "group": "usage", "columns": {
+      "id": "번호", "customer_id": "계정 번호", "kind": "알아차린 이상과 알림의 종류", "audience": "손님용 · 운영자용", "day": "날짜", "created_at": "시각",
+      "detail": "상세(PC 이름과 번호, 되돌린 시각, 남은 날, 오류 낱말)", "mail_key": "보낸 메일의 열쇠" } },
+    "restore_jobs": { "group": "restore", "columns": {
+      "id": "작업 번호", "customer_id": "계정 번호", "device_id": "요청한 PC 번호", "at": "되돌릴 시각", "state": "상태", "created_at": "요청 시각",
+      "started_at": "시작 시각", "pre_at": "되돌리기 직전 시각", "rounds": "돈 바퀴 수", "finished_at": "끝난 시각", "undo_of": "취소한 작업 번호",
+      "continues": "이어 하는 작업 번호", "counts": "처리한 수", "journal": "복사하거나 숨긴 저장소 안 파일의 이름과 식별 번호(원래 파일 이름과 관계없는 문자열)",
+      "error": "오류 낱말", "choice_at": "고른 시각" } },
+    "outbox": { "group": "mail", "columns": { "key": "메일 열쇠(계정 번호 포함)", "to_addr": "받는 주소", "subject": "제목", "body": "본문(손님 메일에는 PC 이름과 시각, 운영자 메일에는 도움 요청 글)", "created_at": "시각", "state": "상태", "attempts": "시도 횟수", "last_at": "마지막 시도 시각" } },
+    "help": { "group": "mail", "columns": { "id": "번호", "device_id": "보낸 PC 번호", "created_at": "시각", "text": "쓰신 글 그대로(2,000자까지)", "bundle": "진단 묶음(앱 · Windows 판, 절전 방식, 최근 실행 기록, 오류 낱말, 설정 요약 — 정해진 낱말과 숫자만)" } },
+    "heartbeat": { "group": "none", "why": "서버가 살아 있던 시각과 멈춘 구간", "columns": { "id": "한 줄", "last_at": "마지막 시각", "gap_start": "멈춤 시작", "gap_end": "멈춤 끝" } },
+    "locks": { "group": "none", "why": "계정 번호에 걸린 10분짜리 작업 줄(끝나면 지움)", "columns": { "customer_id": "계정 번호", "holder": "작업 이름", "until": "끝 시각" } }
+  },
+  "outside": [
+    { "what": "매일 DB 사본(jobs.mjs, workbackup-날짜.sqlite)", "group": "all", "keep": "30일(jobs.mjs의 사본 정리)" },
+    { "what": "파일 일꾼의 되돌리기 장부 파일(files-worker.mjs journal-*.jsonl)", "group": "restore", "keep": "끝난 기록은 29일, 끝나지 않은 기록은 되돌릴 시각부터 30.5일" },
+    { "what": "서버 로그(server.mjs의 log)", "group": "none", "keep": "길 · 상태 · 걸린 시간 · 오류 낱말만, 사람에 대한 정보 없음" },
+    { "what": "메일 중계(mail-relay/relay.gs)와 운영자 메일함", "group": "mail", "keep": "중계는 보낸 메일 열쇠를 7일, 메일함은 지울 때까지" },
+    { "what": "접속 IP", "group": "none", "keep": "개통 서버는 메모리에서 요청 수만 세고 저장하지 않음. 회사 Caddy는 접근 기록을 끄고, 오류 기록에만 남을 수 있음" }
+  ]
+}

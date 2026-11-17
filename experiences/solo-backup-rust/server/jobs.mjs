@@ -5,6 +5,7 @@
 // audit's freshness, three-day silence mail, pruning, a database copy. Every step
 // catches its own failure so one bad customer or one worker outage does not stop
 // the rest, and key changes go through the api's per-customer line (BUSY = later).
+import fs from 'node:fs';
 import path from 'node:path';
 import { dayOf, ACK_MS } from './store.mjs';
 import { judge } from './detect.mjs';
@@ -13,6 +14,9 @@ import { LIMITS } from './server.mjs';
 
 const DAY = 86400000, HOUR = 3600000, KST = 9 * HOUR;
 const GROWTH_ALERT = 200 * 1024 ** 3;
+// The daily database copies are kept 30 days: a record the server drops (after 90 days, or on a deletion
+// request) leaves the copies within 30 days (synk.im 처리방침 「SYNK 업무 백업」, privacy-map.json).
+const BACKUP_KEEP_DAYS = 30;
 
 export function createJobs({ store, api, keys, files, mailer, config = {}, now = () => Date.now(), log = () => {}, fetchImpl = fetch }) {
   const cfg = { protectedKeyIds: [], backupDir: null, dailyHourKst: 3, auditRunsUrl: null, ...config };
@@ -182,6 +186,15 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     try { return await fn(); }
     catch (e) { if (e?.code === 'BUSY') return null; log({ task: name, code: e?.code || e?.name || 'Error' }); operator(name, { code: e?.code || e?.name || 'Error' }, `${name}:${dayOf(t0)}`); return null; }
   };
+  // Only this service's own day copies are removed; any other file in the folder is left alone.
+  function pruneBackups(t) {
+    const cut = dayOf(t - BACKUP_KEEP_DAYS * DAY);
+    for (const name of fs.readdirSync(cfg.backupDir)) {
+      const m = /^workbackup-(\d{4}-\d{2}-\d{2})\.sqlite$/.exec(name);
+      if (m && m[1] < cut) fs.rmSync(path.join(cfg.backupDir, name), { force: true });
+    }
+  }
+
   let t0 = 0;
   async function daily(t) {
     t0 = t;
@@ -191,7 +204,10 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     await task('audit', () => auditFresh(t));
     await task('silence', () => silence(t));
     await task('prune', () => { store.pruneTelemetry(); store.pruneNonces(); });
-    if (cfg.backupDir) await task('backup', () => store.backupTo(path.join(cfg.backupDir, `workbackup-${dayOf(t)}.sqlite`)));
+    if (cfg.backupDir) {
+      await task('backup', () => store.backupTo(path.join(cfg.backupDir, `workbackup-${dayOf(t)}.sqlite`)));
+      await task('backup-prune', () => pruneBackups(t));
+    }
   }
 
   // A restore left 'preparing' (the worker was down at start, or a stop mid-request):
