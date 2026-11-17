@@ -6,8 +6,9 @@
  *   node tools/사이트방문/모으기.js 돌리기 [--강제] [--AI강제] [--건너뛰기 방문,목적,검색,AI]
  *   node tools/사이트방문/모으기.js 보기                 지금 요약을 사람이 읽는 글로
  *   node tools/사이트방문/모으기.js AI재기 [--질문 K01,B01] [--서비스 Claude,Gemini]   한 회차만(장부에 남기지 않는 시험은 --시험)
- *   node tools/사이트방문/모으기.js 보는계정 [--받기]   솔리오에서 볼 수 있는 SYNK 계정. PC 앱이 남긴 viewer-pending.json(물은 계정의 번호와 이름)을
- *                                                     사람이 이름을 확인한 뒤 --받기로 viewers.json에 옮긴다(11-17 Fable 설계 검토 P1-2). 둘 다 요약과 같은 폴더(저장소 밖).
+ *   node tools/사이트방문/모으기.js 보는계정 [--받기 <번호> | --버리기]   솔리오에서 볼 수 있는 SYNK 계정. PC 앱이 남긴 viewer-pending.json(물은 계정의
+ *                                                     번호와 이름, 계정마다 한 줄)을 유호님께 보여 맞다고 하신 줄의 번호로 viewers.json에 옮긴다(설계 검토 1차 P1-2 · 2차 P1).
+ *                                                     둘 다 요약과 같은 폴더(저장소 밖). 받으면 대기 파일은 지운다. --버리기는 대기 파일만 지운다.
  *
  * 단계: 방문 기록(시트) → 홈 방문 목적(시트) → 서치콘솔 → AI 재기(6.5일마다) → 요약.
  * 한 단계가 막혀도 나머지는 돌고, 그 칸만 까닭과 함께 「못 읽음」이 된다(3일 안의 앞 값이 있으면 낡음 표시로 이어 쓴다).
@@ -21,6 +22,7 @@ const 셈 = require('./방문셈.js');
 const 구글 = require('./구글.js');
 const AI = require('./AI재기.js');
 const 요약 = require('./요약.js');
+const 보는쪽 = require('../../desktop/src/site-visits.cjs'); // 대기 파일을 읽는 법과 계정 번호 꼴을 PC 앱과 하나로 쓴다
 
 const 저장소 = path.resolve(__dirname, '..', '..');
 const 장부폴더 = () => process.env.SYNK_SITE_VISITS_LEDGER || path.join(공용작업본(저장소), '.tmp', '사이트방문');
@@ -109,7 +111,12 @@ async function 돌리기({ 지금 = new Date(), 설정 = 설정읽기(), 건너�
     } catch (e) { 알림.push(`AI 재기: ${e.message}`); }
   }
   const 끝회차 = 회차들[회차들.length - 1] || null;
-  단계.AI = 끝회차 ? { 회차: 끝회차, 앞회차: 회차들[회차들.length - 2] || null } : { 상태: '측정 전', 까닭: '첫 회차를 아직 재지 않았습니다.' };
+  // 견줄 앞 회차는 머리 숫자를 내는 서비스(웹 검색을 켠 Claude)가 답을 받은 가장 가까운 회차다. 일부 서비스만 막힌 회차는 남기되,
+  // 솔리오는 막힌 서비스를 「못 물음」으로 보이고 0과 견주지 않는다(설계 검토 2차 P2-3).
+  const 머리 = (줄) => (줄.서비스 || []).find((s) => s.이름 === 'Claude') || (줄.서비스 || [])[0];
+  const 앞들 = 회차들.slice(0, -1);
+  const 앞회차 = [...앞들].reverse().find((줄) => 머리(줄)?.답받음 > 0) || 앞들[앞들.length - 1] || null;
+  단계.AI = 끝회차 ? { 회차: 끝회차, 앞회차 } : { 상태: '측정 전', 까닭: '첫 회차를 아직 재지 않았습니다.' };
 
   const 결과 = 요약.요약만들기({ 단계, 앞요약, 지금, 세는쪽: 설정.세는쪽 || [], 안세는쪽: 설정.안세는쪽 || [] });
   return { 요약: 결과, 알림 };
@@ -141,21 +148,40 @@ function 보기글(s) {
   return 줄.join('\n');
 }
 
-/** 솔리오에서 「방문자 분석」을 볼 계정 — 요약 옆의 viewers.json. PC 앱이 남긴 물은 계정을 사람이 확인하고 옮긴다. */
-function 보는계정(받기, 폴더 = path.dirname(요약.요약자리())) {
+/**
+ * 솔리오에서 「방문자 분석」을 볼 계정 — 요약 옆의 viewers.json. PC 앱이 남긴 물은 계정(viewer-pending.json, 계정마다 한 줄)을
+ * 유호님께 이름과 시각으로 보여 맞다고 하신 줄의 번호를 붙여 받는다. 본 것과 받는 것을 번호로 묶는다 — 그 사이에 다른 계정이
+ * 솔리오를 열어도 다른 계정이 들어가지 않는다(설계 검토 2차 P1). 깨진 viewers.json은 덮지 않고 멈춘다.
+ * @param 옵션.받기 받을 계정 번호(목록의 줄과 글자까지 같아야 한다) · 옵션.버리기 물은 계정 목록을 지운다
+ */
+function 보는계정({ 받기 = null, 버리기 = false } = {}, 폴더 = path.dirname(요약.요약자리())) {
   const 목록자리 = path.join(폴더, 'viewers.json'), 물음자리 = path.join(폴더, 'viewer-pending.json');
-  const 목록 = JSON읽기(목록자리, { synk_user_ids: [] });
-  const 물음 = JSON읽기(물음자리, null);
+  let 목록 = { synk_user_ids: [] };
+  if (fs.existsSync(목록자리)) {
+    목록 = JSON읽기(목록자리, null);
+    if (!목록 || !Array.isArray(목록.synk_user_ids) || !목록.synk_user_ids.every((id) => typeof id === 'string' && 보는쪽.ID.test(id))) {
+      console.error(`${목록자리}를 읽지 못했다(깨졌거나 꼴이 다르다). 덮어쓰지 않고 멈춘다 — 파일을 고치거나 지운 뒤 다시 부른다. 그동안 솔리오에는 아무에게도 보이지 않는다.`);
+      return 1;
+    }
+  }
   const 보임 = (id) => `${String(id).slice(0, 6)}…`;
-  console.log(`볼 수 있는 계정: ${(목록.synk_user_ids || []).length ? 목록.synk_user_ids.map(보임).join(', ') : '없음(아무에게도 보이지 않는다)'}`);
-  if (!물음) { console.log('PC 앱이 남긴 물은 계정이 없다. 요약이 있는 PC에서 로그인한 채 솔리오를 열면 남는다.'); return 0; }
-  console.log(`물은 계정: 이름 「${물음.display_name || '이름 없음'}」 · 번호 ${보임(물음.synk_user_id)} · ${물음.asked_at}`);
-  if (!받기) { console.log('이 이름이 유호님 계정이 맞으면 --받기를 붙여 다시 부른다.'); return 0; }
-  if (!/^[A-Za-z0-9_-]{8,80}$/.test(물음.synk_user_id || '')) { console.error('물은 계정 번호의 꼴이 틀렸다. 옮기지 않았다.'); return 1; }
-  const ids = [...new Set([...(목록.synk_user_ids || []), 물음.synk_user_id])];
+  console.log(`볼 수 있는 계정: ${목록.synk_user_ids.length ? 목록.synk_user_ids.map(보임).join(', ') : '없음(아무에게도 보이지 않는다)'}`);
+  if (버리기) { fs.rmSync(물음자리, { force: true }); console.log('물은 계정 목록을 지웠다.'); return 0; }
+  const 물음 = 보는쪽.pendingEntries(JSON읽기(물음자리, null));
+  if (!물음.length) {
+    console.log('PC 앱이 남긴 물은 계정이 없다. 요약이 있는 PC에서 로그인한 채 솔리오를 열면 남는다(볼 계정이 정해진 뒤에는 남지 않는다).');
+    return 받기 == null ? 0 : 1;
+  }
+  console.log('물은 계정(오래된 차례):');
+  for (const x of 물음) console.log(`  ${x.asked_at} · 이름 「${x.display_name || '이름 없음'}」 · 번호 ${x.synk_user_id}`);
+  if (받기 == null) { console.log('유호님께 이름과 시각을 보여 유호님 계정이 맞다고 하시면, 그 줄의 번호를 붙여 「보는계정 --받기 <번호>」로 다시 부른다.'); return 0; }
+  const 고른 = 물음.find((x) => x.synk_user_id === 받기);
+  if (!고른) { console.error(`위 목록에 번호 「${String(받기).slice(0, 80)}」인 줄이 없다. 옮기지 않았다. 목록의 번호를 글자 그대로 붙인다.`); return 1; }
+  const ids = [...new Set([...목록.synk_user_ids, 고른.synk_user_id])];
   JSON쓰기(목록자리, { synk_user_ids: ids, 받은때: new Date().toISOString() });
+  // 볼 계정이 정해지면 PC 앱은 대기 줄을 더 쓰지 않는다. 남은 줄(시험 · 시연 계정의 번호와 이름)은 지운다(설계 검토 2차 P3-7).
   fs.rmSync(물음자리, { force: true });
-  console.log(`옮겼다 — 볼 수 있는 계정 ${ids.length}개. PC 앱은 솔리오를 다시 열 때 읽는다.`);
+  console.log(`옮겼다 — 「${고른.display_name || '이름 없음'}」(${보임(고른.synk_user_id)}). 볼 수 있는 계정 ${ids.length}개. PC 앱은 솔리오를 다시 열 때 읽는다.`);
   return 0;
 }
 
@@ -164,7 +190,10 @@ async function main(argv) {
   const 있나 = (f) => 나머지.includes(f);
   const 값 = (f) => { const i = 나머지.indexOf(f); return i >= 0 ? 나머지[i + 1] : null; };
   if (명령 === '보기') { console.log(보기글(요약.요약읽기())); return 0; }
-  if (명령 === '보는계정') return 보는계정(있나('--받기'));
+  if (명령 === '보는계정') {
+    if (있나('--받기') && !/^[A-Za-z0-9_-]{8,80}$/.test(값('--받기') || '')) { console.error('--받기 뒤에 받을 계정의 번호를 붙인다(「보는계정」만 부르면 물은 계정과 번호가 보인다).'); return 1; }
+    return 보는계정({ 받기: 있나('--받기') ? 값('--받기') : null, 버리기: 있나('--버리기') });
+  }
   if (명령 === 'AI재기') {
     const 세트 = AI.질문세트읽기();
     const 고른 = 값('--질문') ? new Set(값('--질문').split(',')) : null;
@@ -176,7 +205,7 @@ async function main(argv) {
     return 0;
   }
   if (명령 !== '돌리기') {
-    console.error('사용: node tools/사이트방문/모으기.js 돌리기 [--강제] [--AI강제] [--건너뛰기 방문,목적,검색,AI] | 보기 | AI재기 [--질문 …] [--서비스 …] [--시험] | 보는계정 [--받기]');
+    console.error('사용: node tools/사이트방문/모으기.js 돌리기 [--강제] [--AI강제] [--건너뛰기 방문,목적,검색,AI] | 보기 | AI재기 [--질문 …] [--서비스 …] [--시험] | 보는계정 [--받기 <번호> | --버리기]');
     return 1;
   }
   const 폴더 = 장부폴더();

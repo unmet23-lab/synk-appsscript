@@ -36,6 +36,9 @@ const dateOnly = ymd => (typeof ymd === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(y
 const ready = section => section && section.상태 === '됨';
 /** 숫자가 아직 없는 칸의 까닭 — 'wait'(읽을 권한을 기다림), 'before'(아직 세기 전 · 등록 전), 'unread'(고장 · 건너뜀) */
 const notYet = state => state === '권한 기다림' ? 'wait' : BEFORE.has(state) || !state ? 'before' : 'unread';
+/** 줄의 큰 숫자가 되는 칸이 숫자가 아니면 막는다 — safeRow가 그 줄을 「못 읽음」으로 둔다. 빠진 값을 0으로 보이지 않는다(설계 검토 2차 P3-4). */
+const isCount = x => typeof x === 'number' && Number.isFinite(x);
+function need(...values) { for (const x of values) if (!isCount(x)) throw new Error('MISSING'); }
 
 /** 아직 숫자가 없는 줄 — 숨기지 않고, 큰 숫자 자리에 「측정 전」(고장이면 「못 읽음」), 가운데에 까닭 한 줄 */
 function notReadyRow(key, nm, section, fallback, note) {
@@ -48,6 +51,7 @@ const LIMIT_FROM = '4초 안에 떠난 방문, 개인정보 신호(GPC)를 켠 �
 function fromRow(s) {
   const v = s.방문, nm = '어디서 왔나';
   if (!ready(v)) return notReadyRow('from', nm, v, '방문 기록을 아직 읽지 못했습니다.', '사이트 전체 방문 기록을 켠 날부터 들어온 곳을 셉니다. 그 앞에는 홈 첫 화면에서 고른 사업만 셌습니다.');
+  need(v.사람);
   const groups = [...(v.갈래 || [])].sort((a, b) => b.수 - a.수);
   const more = [];
   const top = (v.들어온곳 || [])[0];
@@ -57,7 +61,7 @@ function fromRow(s) {
   const days = (v.날마다 || []).map(d => Number(d.수) || 0);
   if (days.length) more.push(['week', '날마다', days, `하루 평균 ${num(Math.round((days.reduce((a, b) => a + b, 0) / days.length) * 10) / 10)}번`]);
   if (ready(s.목적) && s.목적.고른칸?.length) more.push(['row', '홈에서 고른 사업', list(s.목적.고른칸, x => `${clean(x.이름, 30).replace(/ · .*$/, '')} ${num(x.수)}`), `${num(s.목적.고른방문)}번`, '']);
-  const notes = [LIMIT_FROM];
+  const notes = [LIMIT_FROM, '「지난 7일」은 엿새와 오늘 모은 시각까지이고, 「그 앞 7일」도 같은 길이로 셉니다. 날마다 막대의 마지막 칸(오늘)은 하루가 덜 찼습니다.'];
   if (v.다시연쪽) notes.push(`새로 고침이나 뒤로 가기로 다시 연 ${num(v.다시연쪽)}번은 사람 방문에서 뺐습니다.`);
   if (v.버림) notes.push(`목록에 없는 값이 든 기록 ${num(v.버림)}줄은 버렸습니다.`);
   if (v.까닭) notes.push(clean(v.까닭, 120));
@@ -70,6 +74,7 @@ function pagesRow(s) {
   if (!ready(p)) return notReadyRow('pages', nm, p, '방문 기록을 아직 읽지 못했습니다.', '쪽마다 머문 시간과 내려 본 정도는 떠날 때의 기록이 5개 넘게 쌓인 쪽부터 보입니다.');
   const pages = p.쪽들 || [];
   const seen = ready(v) ? v.본쪽 : pages.reduce((a, x) => a + (x.본수 || 0), 0);
+  need(seen);
   const withRatio = pages.find(x => x.끝까지 != null);
   const more = [['say', withRatio ? `${pageName(withRatio.쪽)}에서는 ${pct(withRatio.끝까지)}가 끝까지 내려 봤고, ${pct(withRatio.떠남비율)}가 여기서 사이트를 떠났습니다.` : '쪽마다 비율은 떠날 때의 기록이 5개 넘게 쌓인 쪽부터 보입니다.']];
   for (const x of pages) {
@@ -85,7 +90,8 @@ function actsRow(s) {
   const a = s.행동, nm = '문의와 앱 받기';
   if (!ready(a)) return notReadyRow('acts', nm, a, '방문 기록을 아직 읽지 못했습니다.', '문의 메일, 문의 양식, 광고 의뢰, 앱 받기 단추를 누른 수를 셉니다.');
   const count = (group, name) => group.나눔?.find(x => x.이름 === name)?.수 || 0;
-  const q = a.문의 || { 합: 0, 나눔: [] }, d = a.앱받기 || { 합: 0, 나눔: [] };
+  need(a.문의?.합, a.앱받기?.합);
+  const q = a.문의, d = a.앱받기;
   const firstBy = (a.처음들어온곳별 || []);
   const topQ = [...firstBy].sort((x, y) => y.문의 - x.문의)[0];
   const topD = [...firstBy].sort((x, y) => y.앱받기 - x.앱받기)[0];
@@ -99,7 +105,7 @@ function actsRow(s) {
   }
   more.push(['row', '문의', `메일 ${num(count(q, '문의 메일'))} · 주소 복사 ${num(count(q, '문의 메일 주소 복사'))} · 양식 ${num(count(q, '문의 양식'))} · 광고 의뢰 ${num(count(q, '광고 의뢰'))}`, `${num(q.합)}번`, topQ?.문의 ? `${topQ.갈래}에서 ${num(topQ.문의)}` : '']);
   more.push(['row', '앱 받기', `Windows ${num(count(d, '앱 받기(Windows)'))} · Mac ${num(count(d, '앱 받기(Mac)'))}`, `${num(d.합)}번`, topD?.앱받기 ? `${topD.갈래}에서 ${num(topD.앱받기)}` : '']);
-  more.push(['note', '누른 수입니다. 한 사람이 여러 번 누르면 여러 번으로 셉니다. 실제로 접수된 문의의 수는 여기서 세지 않습니다. 사람 방문 대비 비율은 사람 방문이 30번을 넘을 때만 보입니다.']);
+  more.push(['note', '누른 수입니다. 한 사람이 여러 번 누르면 여러 번으로 셉니다. 실제로 접수된 문의의 수는 여기서 세지 않습니다. 사람 방문 대비 비율은 사람 방문이 30번 이상일 때부터 보입니다.']);
   const ratio = a.문의비율 != null && a.앱받기비율 != null ? `사람 방문의 ${pct(a.문의비율 + a.앱받기비율)}` : '';
   return { key: 'acts', nm, mid: `문의 ${num(q.합)} · 앱 받기 ${num(d.합)}`, val: `${num(q.합 + d.합)}번`, when: ratio, more };
 }
@@ -113,6 +119,7 @@ function searchRow(s) {
     r.more.unshift(naverRow);
     return r;
   }
+  need(g.노출, g.클릭);
   const words = g.검색어 || [], pages = g.쪽 || [];
   const more = [['say', `${words[0] ? `구글에서는 「${clean(words[0].말, 40)}」로 가장 많이 보였습니다.` : '구글에서 많이 보인 검색어는 아직 없습니다.'} 네이버는 ${naverDone ? '등록돼 있습니다' : '아직 등록 전입니다'}.`]];
   if (words.length) more.push(['row', '많이 보인 검색어', list(words, x => `${clean(x.말, 40)} ${num(x.노출)}`), '', '']);
@@ -130,29 +137,36 @@ function aiRow(s) {
   // 머리 숫자는 웹 검색을 켠 Claude만 — Gemini는 검색 없이 기억으로 답한 값이라 재는 길이 달라 합치지 않는다(검토 P2-11)
   const web = a.서비스.find(x => x.이름 === 'Claude') || a.서비스[0];
   const others = a.서비스.filter(x => x !== web);
+  need(web.답받음, web.언급);
   const prev = a.앞회차?.서비스?.find(x => x.이름 === web.이름);
-  const more = [['say', `웹 검색을 켠 ${josa(web.이름, ['이', '가'])} SYNK를 말한 답은 ${num(web.언급)}번이고, AI 답변을 보고 들어온 사람은 ${a.AI방문 != null ? `${num(a.AI방문)}번` : '아직 세기 전'}입니다.`]];
+  const prevDay = dateOnly(a.앞회차?.날);
+  const prevWhen = prev && prev.답받음 > 0 ? `지난 회차${prevDay ? `(${prevDay})` : ''} ${num(prev.언급)}번` : prev ? '지난 회차도 묻지 못했습니다' : '첫 정기 회차';
+  // 머리 숫자를 내는 서비스가 답을 하나도 받지 못했으면(크레딧 · 한도 막힘) 0으로 보이지 않고 「못 물음」으로 둔다(설계 검토 2차 P2-3)
+  const asked = web.답받음 > 0;
+  const more = [['say', asked ? `웹 검색을 켠 ${josa(web.이름, ['이', '가'])} SYNK를 말한 답은 ${num(web.언급)}번이고, AI 답변을 보고 들어온 사람은 ${a.AI방문 != null ? `${num(a.AI방문)}번` : '아직 세기 전'}입니다.` : `이번 회차에는 웹 검색을 켠 ${web.이름}에게 묻지 못했습니다. 아래 숫자는 다른 길로 물은 값과 지난 회차입니다.`]];
   more.push(['row', 'synk.im을 출처로 단 답', `일반 질문 ${num(web.인용)} · SYNK를 묻는 질문 ${num(web.브랜드답받음)}개 가운데 ${num(web.브랜드인용)}`, '', '']);
-  for (const x of others) more.push(['row', clean(x.이름, 20), `${clean(x.설명 || '다른 길로 물은 값', 40)} · 일반 질문 ${num(x.답받음)}개 가운데 ${num(x.언급)}개에서 SYNK를 말했습니다`, '', '']);
+  for (const x of others) more.push(['row', clean(x.이름, 20), x.답받음 > 0 ? `${clean(x.설명 || '다른 길로 물은 값', 40)} · 일반 질문 ${num(x.답받음)}개 가운데 ${num(x.언급)}개에서 SYNK를 말했습니다` : '이번 회차에는 묻지 못했습니다', '', '']);
   more.push(['row', 'AI 답변에서 온 방문', '지난 7일', a.AI방문 != null ? `${num(a.AI방문)}번` : '측정 전', '']);
   const stopped = Object.keys(a.멈춤 || {}).map(name => `${josa(clean(name, 20), ['은', '는'])} 이번 회차 중간에 막혀 일부 질문만 물었습니다.`);
   more.push(['note', [`${dateOnly(a.회차날)} 회차입니다. 공식 API로 물은 값이라 AI 앱 화면에서 사람이 물을 때와 다를 수 있습니다. 구글과 네이버의 AI 요약에서 온 방문은 검색으로 잡힙니다.`, ...stopped].join(' ')]);
-  const mid = `일반 질문 ${num(web.답받음)}개 가운데 ${web.이름} ${num(web.언급)}${others.length ? ` · ${list(others, x => `${clean(x.이름, 20)}(기억) ${num(x.언급)}`)}` : ''}`;
-  return { key: 'ai', nm, mid, val: `${num(web.언급)}번 나옴`, when: prev ? `지난 회차 ${num(prev.언급)}번` : '첫 정기 회차', more };
+  const otherMid = others.length ? list(others, x => `${clean(x.이름, 20)}(기억) ${x.답받음 > 0 ? num(x.언급) : '못 물음'}`) : '';
+  const mid = asked ? `일반 질문 ${num(web.답받음)}개 가운데 ${web.이름} ${num(web.언급)}${otherMid ? ` · ${otherMid}` : ''}` : `${dateOnly(a.회차날)} 회차에 ${web.이름}에게 묻지 못했습니다${otherMid ? ` · ${otherMid}` : ''}`;
+  return { key: 'ai', nm, mid, val: asked ? `${num(web.언급)}번 나옴` : '못 물음', when: prevWhen, more };
 }
 
 /** 결론 두 마디(say와 흐린 then) */
 function conclusion(s, now) {
   const v = s.방문, a = s.행동, g = s.검색?.구글, ai = s.AI;
   const fallback = () => {
-    if (ready(g)) return `구글 검색에는 최근 28일 동안 ${num(g.노출)}번 보였고 ${num(g.클릭)}번 눌렸습니다.`;
+    if (ready(g) && isCount(g.노출) && isCount(g.클릭)) return `구글 검색에는 최근 28일 동안 ${num(g.노출)}번 보였고 ${num(g.클릭)}번 눌렸습니다.`;
     const web = ready(ai) && ai.서비스?.length ? ai.서비스.find(x => x.이름 === 'Claude') || ai.서비스[0] : null;
-    if (web) return `웹 검색을 켠 ${web.이름}에게 일반 질문 ${num(web.답받음)}개를 물었더니 SYNK를 말한 답은 ${num(web.언급)}개였습니다.`;
+    if (web && web.답받음 > 0) return `웹 검색을 켠 ${web.이름}에게 일반 질문 ${num(web.답받음)}개를 물었더니 SYNK를 말한 답은 ${num(web.언급)}개였습니다.`;
     return '아래 줄마다 까닭을 적었습니다.';
   };
   // 숫자가 없는 칸은 기다리는 것(세기 전 · 권한 기다림)과 고장(못 읽음)을 섞지 않고, 0건처럼 말하지 않는다(PC 0.4.96 원천 검수 B1 · B2)
   if (!ready(v)) return { say: { before: '사이트 방문은 아직 세기 전입니다.', wait: '사이트 방문 기록을 읽을 권한을 기다리는 중입니다.', unread: '사이트 방문 숫자를 아직 읽지 못했습니다.' }[notYet(v?.상태)], then: fallback() };
-  if (v.급증) return { say: `${dateOnly(v.급증.날) || '오늘'} 방문 기록이 ${num(v.급증.줄)}줄로 평소(하루 ${num(v.급증.앞평균)}줄)보다 크게 늘었습니다.`, then: '공개 설문지에 남이 넣은 줄일 수 있어, 숫자를 그대로 믿기 전에 확인이 필요합니다.' };
+  if (!isCount(v.사람)) return { say: '사이트 방문 숫자를 아직 읽지 못했습니다.', then: fallback() };
+  if (v.급증) return { say: `${dateOnly(v.급증.날) || '오늘'} 방문 기록이 ${num(v.급증.줄)}줄로 평소(하루 ${num(v.급증.평소 ?? v.급증.앞평균)}줄)보다 크게 늘었습니다.`, then: '공개 설문지에 남이 넣은 줄일 수 있어, 숫자를 그대로 믿기 전에 확인이 필요합니다.' };
   const last = Date.parse(v.마지막기록 || '');
   const started = v.켠날 ? Date.parse(`${v.켠날}T00:00:00+09:00`) : NaN;
   if (Number.isFinite(started) && now - started < DAY && !v.사람) return { say: `방문 기록을 ${dateOnly(v.켠날)}부터 모으기 시작했습니다.`, then: '숫자는 하루가 지나면 이 자리에 보입니다.' };
@@ -160,7 +174,8 @@ function conclusion(s, now) {
   if (now - last > STOP_DAYS * DAY) return { say: `방문 기록이 ${monthDay(v.마지막기록)} 뒤로 끊겼습니다.`, then: '아무도 오지 않았거나 사이트의 방문 세기가 멈췄을 수 있어 확인이 필요합니다.' };
   if (!v.사람) return { say: '지난 7일 동안 사이트에 들어온 사람이 없습니다.', then: fallback() };
   const acts = ready(a) ? [a.문의?.합 ? `문의를 ${num(a.문의.합)}번` : null, a.앱받기?.합 ? `앱 받기를 ${num(a.앱받기.합)}번` : null].filter(Boolean) : [];
-  const actsMissing = ready(a) ? '' : { before: '아직 세기 전입니다', wait: '읽을 권한을 기다리는 중입니다', unread: '아직 읽지 못했습니다' }[notYet(a?.상태)];
+  const actsRead = ready(a) && isCount(a.문의?.합) && isCount(a.앱받기?.합);
+  const actsMissing = actsRead ? '' : { before: '아직 세기 전입니다', wait: '읽을 권한을 기다리는 중입니다', unread: '아직 읽지 못했습니다' }[ready(a) ? 'unread' : notYet(a?.상태)];
   const say = actsMissing ? `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, 문의와 앱 받기 숫자는 ${actsMissing}.`
     : acts.length ? `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, ${acts.join(', ')} 눌렀습니다.` : `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, 문의와 앱 받기는 아직 없습니다.`;
   const quiet = (v.갈래 || []).filter(x => (x.이름 === '검색' || x.이름 === 'AI 답변') && x.수 === 0).length === 2;
@@ -202,11 +217,11 @@ export function siteVisitsView(result, now = Date.now()) {
   ];
   const first = rows.find(r => !r.unread);
   if (first) first.now = 1;
-  const counted = Array.isArray(s.세는쪽) ? s.세는쪽.length : 0, notYet = Array.isArray(s.안세는쪽) ? s.안세는쪽.length : 0;
+  const counted = Array.isArray(s.세는쪽) ? s.세는쪽.length : 0, notCounted = Array.isArray(s.안세는쪽) ? s.안세는쪽.length : 0;
   return {
     visible: true, say: head.say, then: head.then,
     when: Number.isFinite(made) ? `${stamp(s.만든때)}에 모았습니다. 하루에 한 번 모읍니다.` : '아직 모은 적이 없습니다. 하루에 한 번 모읍니다.',
-    scope: `세는 쪽 ${num(counted)} · 아직 세지 않는 쪽 ${num(notYet)}`,
+    scope: `세는 쪽 ${num(counted)} · 아직 세지 않는 쪽 ${num(notCounted)}`,
     rows, stale, problem: null,
   };
 }

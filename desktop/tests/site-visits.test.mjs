@@ -3,13 +3,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { siteVisitsView, rowSpeech, SITE_VISITS_NAME, monthDay } from '../renderer/site-visits-model.mjs';
 
 const require = createRequire(import.meta.url);
-const { createSiteVisits, defaultFile, shapeProblem } = require('../src/site-visits.cjs');
+const { createSiteVisits, defaultFile, shapeProblem, pendingEntries, PENDING_MAX } = require('../src/site-visits.cjs');
 
 const NOW = new Date(2026, 10, 24, 12, 0).getTime();
 const iso = t => new Date(t).toISOString();
@@ -72,7 +73,7 @@ test('the view has the design shape: a conclusion in two parts, five rows of fou
   assert.ok(search.more.some(m => m[1] === '많이 보인 쪽' && m[2] === '홈 317'));
   assert.equal(ai.val, '0번 나옴', 'the headline is Claude with web search only');
   assert.equal(ai.mid, '일반 질문 24개 가운데 Claude 0 · Gemini(기억) 1');
-  assert.equal(ai.when, '지난 회차 0번');
+  assert.equal(ai.when, '지난 회차(11월 16일) 0번');
   assert.ok(ai.more.some(m => m[1] === 'Gemini' && /검색 없이 기억으로 답한 값/.test(m[2])));
   assert.equal(rowSpeech(from), '어디서 왔나, 12번, SNS 6 · 검색 3 · 직접 2 · AI 답변 1 · 다른 사이트 0, 그 앞 7일 9번');
   assert.equal(v.stale, false);
@@ -127,8 +128,8 @@ test('the first day after switching on says it is collecting', () => {
 
 test('a spike, a stopped counter, and an old summary are said first', () => {
   const spike = summary();
-  spike.방문 = { ...spike.방문, 급증: { 날: '2026-11-24', 줄: 502, 앞평균: 2.1 } };
-  assert.match(siteVisitsView(ok(spike), NOW).say, /^11월 24일 방문 기록이 502줄로 평소\(하루 2\.1줄\)보다 크게 늘었습니다\.$/);
+  spike.방문 = { ...spike.방문, 급증: { 날: '2026-11-24', 줄: 502, 평소: 2 } };
+  assert.match(siteVisitsView(ok(spike), NOW).say, /^11월 24일 방문 기록이 502줄로 평소\(하루 2줄\)보다 크게 늘었습니다\.$/);
   const stopped = summary();
   stopped.방문 = { ...stopped.방문, 마지막기록: iso(NOW - 5 * 864e5) };
   assert.match(siteVisitsView(ok(stopped), NOW).say, /^방문 기록이 11월 19일 뒤로 끊겼습니다\.$/);
@@ -215,7 +216,12 @@ test('the reader shows the summary only to an account listed in viewers.json, an
   assert.deepEqual(reader.snapshot(null), { ok: true, available: false }, 'not signed in');
   assert.deepEqual(reader.snapshot(yuho), { ok: true, available: false }, 'no viewers file: nobody sees it');
   const pending = JSON.parse(fs.readFileSync(path.join(dir, 'viewer-pending.json'), 'utf8'));
-  assert.deepEqual(pending, { synk_user_id: 'owner-1234567890', display_name: '유호', asked_at: iso(NOW) });
+  assert.deepEqual(pending, { asked: [{ synk_user_id: 'owner-1234567890', display_name: '유호', asked_at: iso(NOW) }] });
+  // 설계 검토 2차 P1: 다른 계정이 물어도 앞 줄을 덮지 않는다 — 받는 쪽이 본 줄의 번호로 고른다
+  reader.snapshot(other);
+  reader.snapshot(yuho);
+  const both = JSON.parse(fs.readFileSync(path.join(dir, 'viewer-pending.json'), 'utf8')).asked;
+  assert.deepEqual(both.map(x => x.synk_user_id), ['owner-1234567890', 'tester-1234567890'], 'one line per account, the same account is not written twice');
   fs.writeFileSync(path.join(dir, 'viewers.json'), JSON.stringify({ synk_user_ids: [yuho.synk_user_id] }));
   assert.deepEqual(reader.snapshot(other), { ok: true, available: false }, 'another account on the same PC');
   const good = reader.snapshot(yuho);
@@ -250,4 +256,84 @@ test('the default place is LOCALAPPDATA on Windows only', () => {
   assert.equal(defaultFile({}, 'darwin'), null);
   assert.equal(defaultFile({ SYNK_SITE_VISITS_SUMMARY: '/tmp/x.json' }, 'darwin'), '/tmp/x.json');
   assert.equal(createSiteVisits({ file: null }).snapshot({ synk_user_id: 'owner-1234567890' }).available, false);
+});
+
+// 설계 검토 2차 P1: 대기 파일은 계정마다 한 줄, 최근 몇 개까지만. 옛 한 건 꼴도 읽고, 꼴이 틀린 번호는 버린다
+test('the pending file keeps one line per account, the latest few, and reads the old single-entry shape', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'site-visits-'));
+  const file = path.join(dir, 'summary.json');
+  fs.writeFileSync(file, JSON.stringify(summary()));
+  fs.writeFileSync(path.join(dir, 'viewer-pending.json'), JSON.stringify({ synk_user_id: 'old-entry-1234567', display_name: '옛 줄', asked_at: iso(NOW - 864e5) }));
+  const reader = createSiteVisits({ file, now: () => new Date(NOW) });
+  for (let i = 0; i < PENDING_MAX + 2; i++) reader.snapshot({ synk_user_id: `account-${i}-123456`, display_name: `계정 ${i}` });
+  const asked = pendingEntries(JSON.parse(fs.readFileSync(path.join(dir, 'viewer-pending.json'), 'utf8')));
+  assert.equal(asked.length, PENDING_MAX);
+  assert.equal(asked.at(-1).synk_user_id, `account-${PENDING_MAX + 1}-123456`, 'the newest is last');
+  assert.ok(!asked.some(x => x.synk_user_id === 'old-entry-1234567'), 'the oldest falls off');
+  assert.deepEqual(pendingEntries({ synk_user_id: 'old-entry-1234567', display_name: '옛 줄', asked_at: 'x' }).map(x => x.display_name), ['옛 줄']);
+  assert.deepEqual(pendingEntries({ asked: [{ synk_user_id: 'bad id!' }, null, { synk_user_id: 'good-id-1234567' }] }).map(x => x.synk_user_id), ['good-id-1234567']);
+});
+
+// 설계 검토 2차 P3-4: 큰 숫자가 되는 칸이 빠지면 0이 아니라 그 줄만 「못 읽음」
+test('a missing count is not shown as zero: that row is unreadable and the conclusion says so', () => {
+  const s = summary();
+  delete s.방문.사람; delete s.방문.본쪽; delete s.행동.문의; delete s.검색.구글.클릭;
+  s.AI.서비스[0] = { 이름: 'Claude' };
+  const v = siteVisitsView(ok(s), NOW);
+  assert.deepEqual(v.rows.map(r => r.val), ['못 읽음', '못 읽음', '못 읽음', '못 읽음', '못 읽음']);
+  assert.equal(v.say, '사이트 방문 숫자를 아직 읽지 못했습니다.');
+  for (const t of texts(v)) assert.doesNotMatch(t, /^0번|^0쪽/);
+  const acts = summary();
+  delete acts.행동.앱받기;
+  assert.equal(siteVisitsView(ok(acts), NOW).say, '지난 7일 동안 사람이 12번 들어왔고, 문의와 앱 받기 숫자는 아직 읽지 못했습니다.');
+});
+
+// 설계 검토 2차 P2-3: 머리 숫자를 내는 Claude만 막힌 회차가 「0번 나옴 · 지난 회차 2번」으로 보이던 것
+test('a round where Claude could not ask says so instead of zero, and compares with the last answered round', () => {
+  const s = summary();
+  s.AI.서비스[0] = { ...s.AI.서비스[0], 답받음: 0, 언급: 0, 인용: 0, 브랜드답받음: 0, 브랜드인용: 0 };
+  s.AI.앞회차 = { 날: '2026-11-16', 서비스: [{ 이름: 'Claude', 언급: 2, 답받음: 24 }] };
+  s.AI.멈춤 = { Claude: 'HTTP 429' };
+  const ai = siteVisitsView(ok(s), NOW).rows[4];
+  assert.equal(ai.val, '못 물음');
+  assert.equal(ai.when, '지난 회차(11월 16일) 2번');
+  assert.match(ai.mid, /^11월 23일 회차에 Claude에게 묻지 못했습니다 · Gemini\(기억\) 1$/);
+  assert.match(ai.more[0][1], /묻지 못했습니다/);
+  s.AI.앞회차 = { 날: '2026-11-16', 서비스: [{ 이름: 'Claude', 언급: 0, 답받음: 0 }] };
+  assert.equal(siteVisitsView(ok(s), NOW).rows[4].when, '지난 회차도 묻지 못했습니다');
+  const gem = summary();
+  gem.AI.서비스[1] = { ...gem.AI.서비스[1], 답받음: 0, 언급: 0 };
+  const g = siteVisitsView(ok(gem), NOW).rows[4];
+  assert.equal(g.val, '0번 나옴');
+  assert.match(g.mid, /Gemini\(기억\) 못 물음$/);
+  assert.ok(g.more.some(m => m[0] === 'row' && m[1] === 'Gemini' && m[2] === '이번 회차에는 묻지 못했습니다'));
+  const fallback = summary({ 방문: { 상태: '측정 전', 까닭: 'x' }, 검색: { 구글: { 상태: '권한 기다림', 까닭: 'x' }, 네이버: { 상태: '등록 전', 까닭: 'x' } } });
+  fallback.AI.서비스[0] = { ...fallback.AI.서비스[0], 답받음: 0 };
+  assert.equal(siteVisitsView(ok(fallback), NOW).then, '아래 줄마다 까닭을 적었습니다.', 'a round Claude could not ask is not quoted as 0 of 0');
+});
+
+// 설계 검토 1차 P2-12 · 2차: 이 IPC 채널이 등록되고, 보낸 쪽 검사를 거치고, 플랫폼 창에서 로그인한 계정만 묻는다
+test('the IPC channel is registered behind the sender check and asks only for the signed-in platform account', () => {
+  const main = fs.readFileSync(new URL('../src/main.cjs', import.meta.url), 'utf8');
+  assert.match(main, /'synk:site-visits-snapshot':\(\)=>siteVisitsCall\(\),/);
+  assert.match(main, /for\(const \[channel,handler\]of Object\.entries\(handlers\)\)\{ipcMain\.removeHandler\(channel\);ipcMain\.handle\(channel,async\(event,\.\.\.args\)=>\{assertSender\(event,window,entry,runtime\.clientId\);/);
+  const line = main.split(/\r?\n/).find(l => l.startsWith('function siteVisitsCall(){'));
+  assert.ok(line, 'siteVisitsCall stays on one line');
+  const asked = [];
+  const run = (runtime, smoke, status) => vm.runInNewContext(`${line}\nsiteVisitsCall()`, {
+    runtime, smoke, accountStatus: () => status,
+    createSiteVisits: () => ({ snapshot: account => { asked.push(account); return { ok: true, available: false }; } }),
+    siteVisits: null,
+  });
+  const yuho = { signedIn: true, account: { synk_user_id: 'owner-1234567890', display_name: '유호' } };
+  assert.equal(run({ clientId: 'world' }, false, yuho).code, 'LAUNCHER_ONLY');
+  assert.equal(run({ clientId: 'platform' }, true, yuho).code, 'LAUNCHER_ONLY');
+  assert.equal(run({ clientId: 'platform' }, false, { signedIn: false, account: null }).code, 'SIGN_IN_REQUIRED');
+  assert.deepEqual({ ...run({ clientId: 'platform' }, false, yuho) }, { ok: true, available: false });
+  assert.deepEqual(asked.map(a => ({ ...a })), [yuho.account], 'the signed-in account is passed to the reader');
+  let bridge;
+  const calls = [];
+  vm.runInNewContext(fs.readFileSync(new URL('../src/preload.cjs', import.meta.url), 'utf8'), { require: () => ({ contextBridge: { exposeInMainWorld: (_n, v) => { bridge = v; } }, ipcRenderer: { invoke: async (...a) => { calls.push(a); return { ok: true }; }, on() {}, removeListener() {}, send() {} } }), process: { argv: [] } });
+  bridge.siteVisits.snapshot('ignored');
+  assert.deepEqual([...calls.at(-1)], ['synk:site-visits-snapshot'], 'the screen cannot pass arguments through');
 });

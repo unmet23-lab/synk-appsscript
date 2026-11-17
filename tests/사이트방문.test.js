@@ -367,3 +367,71 @@ test('돌리기 — 열쇠와 시트가 있으면 방문 · 목적 · 구글을 
   assert.match(모으기.보기글(s), /사람 1\(앞 —\)/);
   assert.deepEqual(모으기.숫자줄(s), { 날: '2026-11-17', 사람: 1, 문의: 1, 앱받기: 0, 구글노출: 50, 구글클릭: 2, AI언급: 1 });
 });
+
+// 설계 검토 2차 P2-2: 급증을 모으기가 도는 날만 보던 것 — 지난 7칸을 날마다 보고, 칸 안에 있는 동안 계속 알린다
+test('방문셈 — 어제 들어온 급증도, 알린 다음 날에도 급증을 알리고, 그 줄이 문턱을 올리지 않는다', () => {
+  const 평소 = Array.from({ length: 13 }, (_, d) => [줄(24 * (d + 1) - 1, {}), 줄(24 * (d + 1) - 2, {})]).flat();
+  const 어제 = Array.from({ length: 500 }, (_, i) => 줄(21 + i / 1000, {})); // 어제 15시쯤(한국)
+  const 셈하기 = (줄값, 때) => 셈.방문셈(셈.방문줄들(셈.줄들읽기([머리, ...줄값])).줄들, { 지금: 때 }).방문;
+  const 오늘본 = 셈하기([...평소, ...어제], 지금);
+  assert.deepEqual(오늘본.급증, { 날: '2026-11-16', 줄: 502, 평소: 2 }, '모으기가 다음 날 돌아도 잡힌다(평소 2줄 + 넣은 500줄)');
+  const 사흘뒤 = 셈하기([...평소, ...어제], new Date(+지금 + 3 * 하루));
+  assert.equal(사흘뒤.급증?.날, '2026-11-16', '7칸 안에 있는 동안 계속 알린다');
+  const 여드레뒤 = 셈하기([...평소, ...어제], new Date(+지금 + 8 * 하루));
+  assert.equal(여드레뒤.급증, null, '7칸을 벗어나면 알리지 않는다');
+  const 두번 = Array.from({ length: 60 }, (_, i) => 줄(0.5 + i / 1000, {}));
+  assert.equal(셈하기([...평소, ...어제, ...두번], 지금).급증.줄, 502, '큰 날을 먼저 말하고, 앞의 급증이 뒤의 문턱을 올리지 않는다');
+  assert.equal(셈하기([...평소, ...두번], 지금).급증.줄, 60, '오늘 들어온 급증');
+});
+
+// 설계 검토 2차 P3-6: 「그 앞 7일」은 이번 기간을 7일 통째로 앞으로 옮긴 같은 길이다
+test('방문셈 — 앞 기간은 이번 기간과 길이가 같다(오늘 모은 시각까지 ↔ 7일 앞 같은 시각까지)', () => {
+  const 켬 = { 켠날: '2026-10-01' };
+  const 줄값 = [줄(7 * 24 - 1, {}), 줄(7 * 24 + 1, {}), 줄(1, {})]; // 7일 앞 같은 시각의 1시간 뒤(앞 기간 밖) · 1시간 앞(앞 기간 안) · 오늘
+  const { 방문 } = 셈.방문셈(셈.방문줄들(셈.줄들읽기([머리, ...줄값])).줄들, { 지금, ...켬 });
+  assert.equal(방문.사람, 1);
+  assert.equal(방문.앞사람, 1, '7일 앞의 모은 시각 뒤 줄은 앞 기간에 들지 않는다');
+});
+
+// 설계 검토 2차 P1: 「보는계정 --받기」가 본 계정이 아니라 그 순간 대기 파일의 계정을 받던 것
+test('보는계정 — 본 줄의 번호로만 받고, 그 사이 다른 계정이 물어도 다른 계정이 들어가지 않는다', () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), '사이트방문-보는계정-'));
+  const 목록 = () => JSON.parse(fs.readFileSync(path.join(d, 'viewers.json'), 'utf8')).synk_user_ids;
+  const 물음 = (asked) => fs.writeFileSync(path.join(d, 'viewer-pending.json'), JSON.stringify({ asked }));
+  const 유호 = { synk_user_id: 'owner-1234567890', display_name: '유호', asked_at: '2026-11-17T01:00:00Z' };
+  const 시연 = { synk_user_id: 'demo-12345678901', display_name: '유호(시연)', asked_at: '2026-11-17T01:05:00Z' };
+  const 조용히 = (f) => { const [l, e] = [console.log, console.error]; console.log = console.error = () => {}; try { return f(); } finally { console.log = l; console.error = e; } };
+  물음([유호]);
+  assert.equal(조용히(() => 모으기.보는계정({}, d)), 0, '번호 없이 부르면 보기만 한다');
+  assert.ok(!fs.existsSync(path.join(d, 'viewers.json')));
+  물음([유호, 시연]); // 본 뒤에 시연 계정이 솔리오를 열었다
+  assert.equal(조용히(() => 모으기.보는계정({ 받기: 'someone-else-123' }, d)), 1, '목록에 없는 번호는 받지 않는다');
+  assert.ok(!fs.existsSync(path.join(d, 'viewers.json')));
+  assert.equal(조용히(() => 모으기.보는계정({ 받기: 유호.synk_user_id }, d)), 0);
+  assert.deepEqual(목록(), [유호.synk_user_id], '본 줄의 계정만 들어간다');
+  assert.ok(!fs.existsSync(path.join(d, 'viewer-pending.json')), '받으면 남은 대기 줄(시연 계정)은 지운다');
+  fs.writeFileSync(path.join(d, 'viewers.json'), '{ broken');
+  물음([시연]);
+  assert.equal(조용히(() => 모으기.보는계정({ 받기: 시연.synk_user_id }, d)), 1, '깨진 목록은 덮지 않고 멈춘다');
+  assert.equal(fs.readFileSync(path.join(d, 'viewers.json'), 'utf8'), '{ broken');
+  assert.equal(조용히(() => 모으기.보는계정({ 버리기: true }, d)), 1, '깨진 목록이면 버리기도 멈춘다');
+  fs.rmSync(path.join(d, 'viewers.json'));
+  assert.equal(조용히(() => 모으기.보는계정({ 버리기: true }, d)), 0);
+  assert.ok(!fs.existsSync(path.join(d, 'viewer-pending.json')), '--버리기는 대기 파일만 지운다');
+  assert.ok(!fs.existsSync(path.join(d, 'viewers.json')));
+});
+
+// 설계 검토 2차 P2-3: 일부 서비스만 막힌 회차는 남기되, 견줄 앞 회차는 Claude가 답한 회차다
+test('돌리기 — Claude만 막힌 회차는 장부에 남고, 견줄 앞 회차는 Claude가 답한 가장 가까운 회차다', async () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), '사이트방문-'));
+  const 회차줄 = (날, 앞날수, 클로드답) => ({ 잰때: new Date(+지금 - 앞날수 * 하루).toISOString(), 날, 서비스: [{ 이름: 'Claude', 일반질문: 24, 답받음: 클로드답, 언급: 클로드답 ? 2 : 0, 인용: 0, 브랜드질문: 6, 브랜드답받음: 0, 브랜드인용: 0 }, { 이름: 'Gemini', 일반질문: 24, 답받음: 24, 언급: 1, 인용: 0, 브랜드질문: 6, 브랜드답받음: 6, 브랜드인용: 1 }], 멈춤: 클로드답 ? {} : { Claude: 'http 429' } });
+  fs.writeFileSync(path.join(d, 'AI재기.jsonl'), `${JSON.stringify(회차줄('2026-11-03', 14, 24))}\n${JSON.stringify(회차줄('2026-11-10', 7, 0))}\n`);
+  const 설정 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools', '사이트방문', '설정.json'), 'utf8'));
+  const 이번 = 회차줄('2026-11-17', 0, 0);
+  const { 요약: s } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 켠날: null } }, 의존: { 장부폴더: d, 열쇠: null, 앞요약: null, 질문세트: { 질문: [] }, 원문쓰기: null,
+    회차재기: async () => ({ 날: 이번.날, 서비스: 이번.서비스.map((x) => ({ ...x, 판정들: [] })), 멈춤: 이번.멈춤 }) } });
+  assert.equal(fs.readFileSync(path.join(d, 'AI재기.jsonl'), 'utf8').trim().split(/\r?\n/).length, 3, 'Gemini가 답한 회차는 남는다');
+  assert.equal(s.AI.회차날, '2026-11-17');
+  assert.equal(s.AI.앞회차.날, '2026-11-03', 'Claude가 막힌 11-10은 건너뛴다');
+  assert.equal(s.AI.서비스[0].답받음, 0);
+});
