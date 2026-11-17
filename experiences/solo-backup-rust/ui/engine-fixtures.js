@@ -47,6 +47,10 @@ export const STATES = {
   'home-restore-error': { ...base, health: { status: 'attention', checkedAt: at('2026-11-13T14:21:00+09:00'), detail: '복구 또는 검증이 끝나지 않았습니다.' }, protection: { level: 'attention', reason: 'health', nextAction: 'check' },
     lastRestoreError: { code: 'RESTORE_FAILED', at: at('2026-11-13T14:21:00+09:00') } },
   'home-restore-unsafe': { ...base, lastRestoreError: { code: 'OUTPUT_UNSAFE', at: at('2026-11-13T14:21:00+09:00') } },
+  // 도는 되살리기 · 그만두는 중 · 그만둔 뒤(요청 16, 조율 세션 60a9de51e). 그만둔 뒤 엔진은 실패 칸에 CANCELED와 만들다 만 폴더를 적고 건강은 그대로 둔다
+  'home-restoring': { ...base, job: { kind: 'restore', stage: '파일 복구 및 내용 검증 중', percent: null }, protection: { level: 'running', reason: 'job', nextAction: 'none' } },
+  'home-restore-stopping': { ...base, job: { kind: 'restore-selected', stage: '되살리기를 그만두는 중', percent: null, cancelled: true }, protection: { level: 'running', reason: 'job', nextAction: 'none' } },
+  'home-restore-stopped': { ...base, lastRestoreError: { code: 'CANCELED', at: at('2026-11-13T14:21:00+09:00'), path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', named: true } },
   // 다운로드도 지키는 PC — 되살릴 자리를 처음부터 고르게 한다
   'home-downloads': { ...base, sources: [...SOURCES.slice(0, 3), 'C:\\Users\\studio\\Downloads'] },
   'home-restored': { ...base, lastSelectedRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 2026-11-13', at: at('2026-11-13T14:20:00+09:00'), files: 3, bytes: 6381567 } },

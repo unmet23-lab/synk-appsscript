@@ -42,12 +42,14 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
   /** 한 갈래 — start: 'handed'(넘긴 PC를 다시 켬) · 'read'(복구 전용 PC에서 옮겨 온 결과가 있음) · 'flaky'(넘긴 PC, 첫 moveState만 실패) ·
    *  'slowfail'(넘긴 PC, 첫 moveState는 바로 실패, 둘째는 2.5초 뒤 실패, 셋째부터 성공) · 'old'(복구 전용 PC, 사진 폴더가 너무 커서 옮기지 않은 결과 —
    *  옛 PC 백업에서 꺼내기, 조율 세션 793e0d6dc. 「2023」 층은 1.5초 늦게 「늦은폴더」를 답하고, 둘째 맨 위 층 읽기도 1.5초 걸린다 —
-   *  그 사이에 늦은 답이 화면에 올라오지 않는지 본다) · 'limit'(계정에 잇지 않은 PC, Google로 시작이 LIMIT_DEVICES로 막힘 — 화면 요청 9 · 15) */
+   *  그 사이에 늦은 답이 화면에 올라오지 않는지 본다) · 'limit'(계정에 잇지 않은 PC, Google로 시작이 LIMIT_DEVICES로 막힘 — 화면 요청 9 · 15) ·
+   *  'stop'(전체 되살리기가 도는 PC — cancelRestore가 그만두는 중으로 바꾸고, 다음 상태 읽기에서 그만둔 뒤가 된다, 요청 16) ·
+   *  'stopdone'(같은 PC, 누르는 사이 되살리기가 끝나 cancelRestore가 stopping: false로 답한다) */
   async function scenario(start) {
     const ctx = await browser.newContext({ viewport: { width: 1080, height: 820 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce' });
-    await ctx.addInitScript(({ handedHome, readState, signinState, handed, ended, result, bigResult, list, checklist, start }) => {
+    await ctx.addInitScript(({ handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, start }) => {
       const calls = []; window.__calls = calls; window.__args = [];
-      let cur = start === 'limit' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
+      let cur = start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
       window.__TAURI__ = { core: { invoke: async (_n, { method, args }) => {
         calls.push(method); window.__args.push({ method, input: args?.[0] ?? null });
         // 옛 PC 판 — 한 층 읽기와 범위 목록
@@ -65,6 +67,9 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
           { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', sameInstall: true },
           { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active', sameInstall: false },
           { id: 'e'.repeat(12), name: '옛 노트북', role: 'read', state: 'active', sameInstall: false }] } };
+        // 도는 되살리기 그만두기 — 그만두는 중(job.cancelled)으로 바꾸고, 그다음 상태 읽기에서 그만둔 뒤가 된다
+        if (method === 'cancelRestore' && start === 'stopdone') { cur = { ...restoring, job: null, protection: { level: 'protected', reason: null, nextAction: 'none' } }; return { ok: true, value: { stopping: false } }; }
+        if (method === 'cancelRestore') { const was = cur; cur = stopping; window.__finishStop = () => { if (cur === stopping) { cur = { ...stopped, lastRestoreError: { ...stopped.lastRestoreError, at: new Date().toISOString() } }; window.__push?.(); } }; return { ok: true, value: { stopping: was === restoring } }; }
         if (method === 'revokeDevice') return args?.[0] === 'e'.repeat(12) ? { ok: false, error: 'x', code: 'NOT_FOUND' } : { ok: true, value: { suggestReadKeyRotation: true } };
         if (method === 'setFileSelection') return { ok: true, value: { profile: 'b2', token: 'tk', selection: { revision: 2, count: 1, bytes: 10 } } };
         if (method === 'getState') return { ok: true, value: cur };
@@ -85,7 +90,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'continueBackup') { cur = handedHome; return { ok: true, value: cur }; }
         return { ok: false, error: 'x', code: 'FIXTURE' };
       } }, event: { listen: async (n, fn) => { if (n === 'backup:state') window.__push = () => fn({ payload: { ...cur } }); return () => {}; } } };
-    }, { handedHome, readState, signinState: STATES['start-signin'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, start });
+    }, { handedHome, readState, signinState: STATES['start-signin'], restoring: STATES['home-restoring'], stopping: STATES['home-restore-stopping'], stopped: STATES['home-restore-stopped'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, start });
     const pg = await ctx.newPage(), errors = [];
     pg.on('pageerror', (e) => errors.push(e.message));
     await pg.goto(base);
@@ -226,6 +231,31 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, left: [...document.querySelectorAll('#room [data-act="limit-revoke"]')].map((b) => b.dataset.device), focus: document.activeElement?.dataset?.act || '' }));
     check('「끊기」는 그 기기 번호로 revokeDevice를 부르고, 끊은 기기를 목록에서 빼며 남은 줄의 「끊기」를 거두고 다시 시작하라고 쓴다(포커스는 「다시 시작」)', rv.join() === ['e'.repeat(12), 'd'.repeat(12)].join() && !x.left.length && /옛 노트북/.test(x.text) && /「거실 PC」 연결을 끊었습니다/.test(x.text) && /「다시 시작」을 누르면/.test(x.text) && !/끊지 못했습니다/.test(x.text) && x.focus === 'google', JSON.stringify({ rv, left: x.left, focus: x.focus }));
     check('쪽 오류 없음(기기가 다 참)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  // 8. 도는 되살리기 그만두기(요청 16) — 「되살리기 그만두기」 → cancelRestore → 그만두는 중 → 그만둔 뒤의 한 줄
+  {
+    const { pg, ctx, errors } = await scenario('stop');
+    let x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, stop: !!document.querySelector('#room [data-act="restore-stop"]') }));
+    check('도는 되살리기에는 「되살리기 그만두기」가 있다', x.stop && /파일을 되살리고 있습니다/.test(x.text), x.text.slice(0, 120));
+    await click(pg, '#room [data-act="restore-stop"]');
+    await pg.waitForFunction(() => /되살리기를 그만두는 중입니다/.test(document.getElementById('room').innerText), null, { timeout: 5000 }).catch(() => {});
+    x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, note: document.getElementById('note')?.textContent || '', stop: !!document.querySelector('#room [data-act="restore-stop"]'), n: window.__calls.filter((c) => c === 'cancelRestore').length }));
+    check('「되살리기 그만두기」는 cancelRestore를 한 번 부르고, 그만두는 중으로 바뀌며 단추를 거둔다', x.n === 1 && /그만두는 중입니다/.test(x.note) && /되살리기를 그만두는 중입니다/.test(x.text) && !x.stop, JSON.stringify({ n: x.n, note: x.note }));
+    await pg.evaluate(() => window.__finishStop?.());
+    await pg.waitForFunction(() => /전체 되살리기를 그만두었습니다/.test(document.getElementById('room').innerText), null, { timeout: 5000 }).catch(() => {});
+    x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText }));
+    check('그만둔 뒤 기본 화면에 그만두었다는 한 줄과 만들다 만 폴더 이름이 남는다', /전체 되살리기를 그만두었습니다/.test(x.text) && /「되살린 파일 \(11월 13일\)」은 그대로 두었습니다/.test(x.text), x.text.slice(0, 200));
+    check('쪽 오류 없음(되살리기 그만두기)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  {
+    const { pg, ctx, errors } = await scenario('stopdone');
+    await click(pg, '#room [data-act="restore-stop"]');
+    await pg.waitForFunction(() => /이미 끝났습니다/.test(document.getElementById('note')?.textContent || ''), null, { timeout: 5000 }).catch(() => {});
+    const x = await pg.evaluate(() => ({ note: document.getElementById('note')?.textContent || '', stop: !!document.querySelector('#room [data-act="restore-stop"]') }));
+    check('그 사이 끝난 되살리기는(stopping: false) 상태를 다시 읽어 「이미 끝났습니다」로 쓰고 단추를 거둔다', /되살리기가 이미 끝났습니다/.test(x.note) && !x.stop, JSON.stringify(x));
+    check('쪽 오류 없음(그 사이 끝난 되살리기)', !errors.length, errors.join(' | '));
     await ctx.close();
   }
   await browser.close(); server.close();

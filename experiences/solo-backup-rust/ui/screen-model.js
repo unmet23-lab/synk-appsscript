@@ -47,6 +47,8 @@ function jobSay(job) {
 
 /** 진행 퍼센트(0~100, 모르면 null) */
 function pct(job) {
+  // 퍼센트가 없는 단계(null — 보호 준비 · 점검 · 그만두는 중)를 0%로 그리지 않는다: Number(null)은 0이다
+  if (job?.percent === null || job?.percent === undefined || job?.percent === '') return null;
   const p = Number(job?.percent);
   return Number.isFinite(p) ? Math.max(0, Math.min(100, Math.round(p))) : null;
 }
@@ -55,6 +57,8 @@ function pct(job) {
 function stageWord(job) {
   // 옮겨 오기는 처음에 폴더마다 목록을 읽느라 퍼센트가 없다(Fable F12)
   if (job?.kind === 'move') return Number.isFinite(Number(job.percent)) && job.percent !== null ? '옮겨 오는 중' : '옮겨 올 목록 읽는 중';
+  // 그만두는 되살리기(요청 16 — 엔진 단계 글 「되살리기를 그만두는 중」)
+  if (job?.cancelled === true) return '그만두는 중';
   const s = String(job?.stage || '');
   if (/정리/.test(s)) return '지난 판 정리 중';
   if (/점검|확인 중|구조/.test(s) && !/복구 확인/.test(s)) return '확인하는 중';
@@ -260,6 +264,9 @@ function undoNote(s, running, seen) {
 const recentOf = (x, now) => !!x && ms(x.at) !== null && now - ms(x.at) < 86400000 && ms(x.at) <= now + MINUTE;
 /** 되살리다 멈춘 폴더(엔진 lastRestoreError.path) — 그 안의 파일은 다 확인하지 못했다 */
 const leftover = (e) => (typeof e?.path === 'string' && baseName(e.path) ? ` 멈춘 폴더 「${baseName(e.path)}」의 파일은 다 확인하지 못했으니 쓰지 말고 지워 주세요.` : '');
+/** 그만둔 되살리기(요청 16)의 만들다 만 폴더 — 그 안의 파일은 끝까지 확인하지 않았다 */
+// 기본 자리의 이름은 「되살린 파일 (11월 13일)」처럼 괄호로 끝난다 — 조사는 괄호를 뗀 끝 글자로 고른다
+const keptOf = (e) => { const b = typeof e?.path === 'string' ? baseName(e.path) : '', w = b.replace(/[)\]\s]+$/, '') || b; return b ? ` 만들다 만 폴더 「${b}」${josa(w, '은/는').slice(w.length)} 그대로 두었습니다. 그 안의 파일은 다 확인하지 못했으니 쓰지 말고 지워 주세요.` : ''; };
 /** 다운로드 아래 기본 자리에 만든 폴더면 그 이름(「되살린 파일 (11월 16일) 2」)을 쓴다 — 고른 자리의 엔진 이름은 쓰지 않는다 */
 const madeIn = (r) => { const b = baseName(r?.path); return /^되살린 파일 \(\d{1,2}월 \d{1,2}일\)( \d{1,2})?$/.test(b) ? `「${b}」에 ` : ''; };
 /** 하루 안에 실패한 전체 되살리기(그 뒤에 성공한 것이 없을 때) */
@@ -272,8 +279,10 @@ function restoreNote(s, now, skipFull = false) {
   const sel = s.lastSelectedRestore, full = s.lastRestore, err = s.lastSelectedRestoreError;
   const items = [];
   const fullErr = fullRestoreError(s, now);
-  if (fullErr && !skipFull) items.push({ at: ms(fullErr.at), bad: true, text: `${whenKo(fullErr.at, now)}에 전체를 되살리지 못했습니다. ${failureText(fullErr.code)}${leftover(fullErr)}` });
-  if (recent(err) && (!sel || ms(err.at) > ms(sel.at))) items.push({ at: ms(err.at), bad: true, text: `${whenKo(err.at, now)}에 고른 파일을 되살리지 못했습니다. ${failureText(err.code)}` });
+  if (fullErr && !skipFull) items.push(fullErr.code === 'CANCELED' ? { at: ms(fullErr.at), text: `${whenKo(fullErr.at, now)}에 전체 되살리기를 그만두었습니다.${keptOf(fullErr)}` }
+    : { at: ms(fullErr.at), bad: true, text: `${whenKo(fullErr.at, now)}에 전체를 되살리지 못했습니다. ${failureText(fullErr.code)}${leftover(fullErr)}` });
+  if (recent(err) && (!sel || ms(err.at) > ms(sel.at))) items.push(err.code === 'CANCELED' ? { at: ms(err.at), text: `${whenKo(err.at, now)}에 고른 파일 되살리기를 그만두었습니다.${keptOf(err)}` }
+    : { at: ms(err.at), bad: true, text: `${whenKo(err.at, now)}에 고른 파일을 되살리지 못했습니다. ${failureText(err.code)}` });
   if (recent(sel)) items.push({ at: ms(sel.at), text: `${whenKo(sel.at, now)}에 고른 파일 ${count(sel.files)}개를 ${madeIn(sel)}되살렸습니다.`, act: { id: 'open-selected', label: '되살린 폴더 열기', kind: 'link', call: 'openSelectedRestoreFolder', withProfile: true } });
   // 엔진은 연결점 · 링크 · 특수 파일 · Windows가 담지 못하는 이름은 만들지 않고 그 수만 센다(lastRestore.skipped, 조율 세션 74a22589a)
   const skipped = Number(full?.skipped) > 0 ? Number(full.skipped) : 0;
@@ -306,14 +315,16 @@ function baseModel(state, now, opts) {
   if (job) {
     const name = jobName(job), percent = pct(job);
     const restoring = job.kind === 'restore' || job.kind === 'restore-selected';
-    const [title, said] = job.scheduled ? ['지금 백업하고 있습니다.', null] : jobSay(job);
+    const stopping = restoring && job.cancelled === true, canStop = restoring && !stopping && job.final !== true;
+    const [title, said] = stopping ? ['되살리기를 그만두는 중입니다.', '곧 멈춥니다. 그때까지 만든 폴더는 그대로 둡니다.'] : job.scheduled ? ['지금 백업하고 있습니다.', null] : jobSay(job);
     // 첫 백업 전(설정 전에 도는 보호 준비 등)에는 되살릴 것도, 옮겨 올 것도, 증거도 아직 없다
     const ready = !!s.configured && !!s.lastBackup;
-    return { ...base, id: 'home-run', tone: 'run', kick: `${device} · ${name} 도는 중`, title,
+    return { ...base, id: 'home-run', tone: 'run', kick: stopping ? `${device} · 되살리기 그만두는 중` : `${device} · ${name} 도는 중`, title,
       sub: said ?? (s.lastBackup?.at ? `창을 닫아도 계속됩니다. 끝나기 전까지 가장 최근 판은 ${whenKo(s.lastBackup.at, now)} 판입니다.` : '창을 닫아도 계속됩니다. 끝나면 알림으로 알려 드립니다.'),
       // 옮겨 오기는 그 화면(move-2)에서 본다 — 도는 동안 다른 일은 엔진이 받지 않는다
-      actions: job.kind === 'move' ? [{ id: 'move-see', label: '진행 보기', kind: 'main', to: 'move-2' }] : restoring || !ready ? [] : [RESTORE, MOVE],
-      hint: job.scheduled && ready ? `파일 되살리기는 지금 누르면 ${josa(name, '이/가')} 끝나는 대로 이어서 엽니다.` : null,
+      actions: job.kind === 'move' ? [{ id: 'move-see', label: '진행 보기', kind: 'main', to: 'move-2' }]
+        : canStop ? [{ id: 'restore-stop', label: '되살리기 그만두기', kind: 'line', call: 'cancelRestore' }] : restoring || !ready ? [] : [RESTORE, MOVE],
+      hint: canStop ? '잘못 골랐다면 그만둘 수 있습니다. 그때까지 만든 폴더는 그대로 둡니다.' : job.scheduled && ready ? `파일 되살리기는 지금 누르면 ${josa(name, '이/가')} 끝나는 대로 이어서 엽니다.` : null,
       progress: { label: name, stage: stageWord(job), percent },
       evidence: s.configured ? { ...evidence(s, now), run: { label: `${name} · ${stageWord(job)}`, percent } } : null };
   }
@@ -468,7 +479,9 @@ function baseModel(state, now, opts) {
   // 전체 되살리기가 실패하면 엔진은 lastRestoreError를 적고, 다음 전체 점검까지 지난 판을 정리하지 않으려 점검 주의(health)도 건다
   // (engine.cjs restoreLatest). 그 주의가 방금의 되살리기 실패에서 왔으면 「점검을 마치지 못했다」가 아니라 되살리기 말로 쓴다
   const rErr = fullRestoreError(s, now), hAt = ms(s.health?.checkedAt);
-  if (reason === 'health' && rErr && hAt !== null && Math.abs(ms(rErr.at) - hAt) <= 10 * MINUTE) {
+  // 손님이 그만둔 되살리기(CANCELED, 요청 16)는 실패가 아니다 — 앞선 실패의 점검 주의가 남아 있어도 이 갈래로 들이지 않는다(Fable F1).
+  // 그때는 일반 점검 주의 화면에 「전체 되살리기를 그만두었습니다」 줄이 붙는다
+  if (reason === 'health' && rErr && rErr.code !== 'CANCELED' && hAt !== null && Math.abs(ms(rErr.at) - hAt) <= 10 * MINUTE) {
     return { ...base, id: 'home-restore-error', tone: 'warn', stamp: '주의', kick: `${device} · 되살리기를 마치지 못함`, title: '파일을 되살리지 못했습니다.',
       sub: `${failureText(rErr.code)} 원래 파일과 백업은 그대로입니다.${leftover(rErr)}`,
       box: { title: '전체 점검을 마칠 때까지 지난 판을 지우지 않습니다', text: '되살리기를 마치지 못한 뒤라, 한 번 전체 점검을 마칠 때까지는 지난 판을 정리하지 않고 둡니다.' },

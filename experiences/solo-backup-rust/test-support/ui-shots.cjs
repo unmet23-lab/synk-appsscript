@@ -98,6 +98,8 @@ const CASES = [
   ['home-writekey', 'home', { name: 'home-writekey-wait', acct: { running: 'writekey', googleWait: true } }],
   // 셋째 증분(조율 세션 25d66f324 · 616e9dce5 뒤): 전체 되살리기 실패, 놓을 자리, 같은 PC의 앞선 연결
   ['home-restore-error', 'home'], ['home-restore-unsafe', 'home'],
+  // 도는 되살리기 그만두기(요청 16, 조율 세션 60a9de51e): 도는 중 · 그만두는 중 · 그만둔 뒤
+  ['home-restoring', 'home'], ['home-restore-stopping', 'home'], ['home-restore-stopped', 'home'],
   ['home', 'restore', { name: 'restore-pick', ui: { place: 'pick' } }], ['home', 'restore', { name: 'restore-confirm', ui: { confirmAll: true } }], ['home-downloads', 'restore', { name: 'restore-guarded' }],
   ['home-same-install', 'drawer', { name: 'drawer-same', acct: { devices: DEVICES_SAME }, scrollTo: '[data-act="lost-dev"]' }],
   // 되돌리기 셋(조율 세션 57c3d17e6 뒤): 끝난 결과 · 취소 실패 부호 · 복구 전용 PC의 되돌리기

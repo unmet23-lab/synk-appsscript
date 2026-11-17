@@ -118,7 +118,8 @@ test('기본 화면: 실제 엔진 상태의 빈칸 · 갈래에서 틀린 말�
   assert.equal(check.title, '백업을 점검하고 있습니다.');
   const selected = homeModel({ ...base, job: { kind: 'restore-selected', stage: '복구 중', percent: 10 } }, { now: NOW });
   assert.equal(selected.title, '파일을 되살리고 있습니다.');
-  assert.deepEqual(selected.actions, []);
+  // 도는 되살리기에는 「되살리기 그만두기」만 둔다(요청 16) — 되살리기 · 옮겨 오기는 내밀지 않는다
+  assert.deepEqual(selected.actions.map((a) => a.id), ['restore-stop']);
   const setup = homeModel({ ...STATES.start, job: { kind: 'setup', stage: '준비 중', percent: null } }, { now: NOW });
   assert.equal(setup.title, '보호를 준비하고 있습니다.');
   assert.deepEqual(setup.actions, []);
@@ -1570,4 +1571,49 @@ test('기기가 다 찼을 때(화면 요청 9 · 15, 개통 서버 ecbb3f91d): 
   assert.match(busy, /data-act="google-cancel" data-device="d{12}"/);
   // 끊은 뒤에는 남은 줄에 「끊기」를 두지 않는다 — 한 자리면 이을 수 있다(Fable F2)
   assert.match(freed, /옛 노트북/); assert.doesNotMatch(freed, /data-act="limit-revoke"/);
+});
+
+test('도는 되살리기 그만두기(요청 16, 조율 세션 60a9de51e): 진행 화면에 「되살리기 그만두기」, 그만두는 중, 그만둔 뒤의 한 줄', async () => {
+  const { homeModel } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const home = (s) => homeModel(s, { now: NOW });
+  // 도는 동안 — 「되살리기 그만두기」 하나(cancelRestore)와 그만두면 폴더를 그대로 둔다는 안내
+  const run = home(STATES['home-restoring']);
+  assert.equal(run.id, 'home-run'); assert.deepEqual(run.actions.map((a) => [a.id, a.call]), [['restore-stop', 'cancelRestore']]);
+  assert.match(run.hint, /그때까지 만든 폴더는 그대로 둡니다/);
+  const html = renderScreen('home', { state: STATES['home-restoring'], model: run, now: NOW }).html;
+  assert.match(html, /data-act="restore-stop"[^>]*>[^<]*되살리기 그만두기/);
+  // 고른 파일 되살리기도 같다
+  assert.deepEqual(home({ ...STATES['home-restoring'], job: { kind: 'restore-selected', stage: '고른 파일 되살리는 중', percent: 10 } }).actions.map((a) => a.id), ['restore-stop']);
+  // 마무리에 들어간 되살리기(job.final)는 그만둘 수 없다 — 단추를 두지 않는다
+  assert.deepEqual(home({ ...STATES['home-restoring'], job: { ...STATES['home-restoring'].job, final: true } }).actions, []);
+  // 백업은 그만두기가 없다
+  assert.ok(!home(STATES['home-run']).actions.some((a) => a.id === 'restore-stop'));
+  // 그만두는 중 — 큰 문장이 바뀌고 단추가 없다
+  const stopping = home(STATES['home-restore-stopping']);
+  assert.equal(stopping.title, '되살리기를 그만두는 중입니다.'); assert.deepEqual(stopping.actions, []); assert.equal(stopping.hint, null);
+  // 진행 줄은 「그만두는 중」이고 퍼센트를 그리지 않는다(엔진은 percent를 null로 둔다 — Number(null)이 0%로 그려지지 않게)
+  assert.equal(stopping.kick, '작업 노트북 · 되살리기 그만두는 중'); assert.deepEqual(stopping.progress, { label: '파일 되살리기', stage: '그만두는 중', percent: null });
+  assert.equal(stopping.evidence.run.percent, null);
+  assert.doesNotMatch(renderScreen('home', { state: STATES['home-restore-stopping'], model: stopping, now: NOW }).html, />0%</);
+  // 그만둔 뒤 — 실패가 아니라 그만둔 것으로 쓰고, 만들다 만 폴더 이름과 그 폴더를 쓰지 말라는 말을 붙인다(괄호로 끝나는 이름의 조사)
+  const stopped = home(STATES['home-restore-stopped']);
+  assert.equal(stopped.id, 'home');
+  assert.equal(stopped.restored.bad, undefined);
+  assert.equal(stopped.restored.text, '오후 2:21에 전체 되살리기를 그만두었습니다. 만들다 만 폴더 「되살린 파일 (11월 13일)」은 그대로 두었습니다. 그 안의 파일은 다 확인하지 못했으니 쓰지 말고 지워 주세요.');
+  const at = STATES['home-restore-stopped'].lastRestoreError.at;
+  const sel = home({ ...STATES.home, lastSelectedRestoreError: { code: 'CANCELED', at, path: 'D:\\받기\\사진' } });
+  assert.equal(sel.restored.text, '오후 2:21에 고른 파일 되살리기를 그만두었습니다. 만들다 만 폴더 「사진」은 그대로 두었습니다. 그 안의 파일은 다 확인하지 못했으니 쓰지 말고 지워 주세요.');
+  // 폴더가 적히지 않았으면 그만두었다는 말만
+  assert.equal(home({ ...STATES.home, lastSelectedRestoreError: { code: 'CANCELED', at } }).restored.text, '오후 2:21에 고른 파일 되살리기를 그만두었습니다.');
+  // 다른 실패는 전과 같다
+  assert.equal(home({ ...STATES.home, lastSelectedRestoreError: { code: 'NO_SPACE', at } }).restored.bad, true);
+  // 실패해 점검 주의가 걸린 뒤 다시 하다 그만두면 — 「되살리지 못했습니다」가 아니라 점검 주의 화면에 그만두었다는 줄(Fable F1)
+  const errAt = STATES['home-restore-error'].lastRestoreError.at;
+  const again = home({ ...STATES['home-restore-error'], lastRestoreError: { code: 'CANCELED', at: errAt, path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일) 2' } });
+  assert.equal(again.id, 'home-health'); assert.doesNotMatch(`${again.title} ${again.sub}`, /되살리지 못했습니다/);
+  assert.match(again.restored.text, /전체 되살리기를 그만두었습니다\. 만들다 만 폴더 「되살린 파일 \(11월 13일\) 2」는 그대로 두었습니다/);
+  // 엔진의 전체 되살리기 단계(퍼센트 없음)는 「되살리는 중」이고 0%를 그리지 않는다(Fable F3)
+  assert.equal(run.progress.percent, null); assert.doesNotMatch(html, />0%</);
 });

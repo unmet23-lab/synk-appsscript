@@ -826,6 +826,14 @@ async function send(a, el) {
     return go('home');
   }
   if (a.call === 'restoreLatest' && store.state?.job) { catalog = null; screen = 'home'; return go('home'); }
+  // 도는 되살리기 그만두기(요청 16) — false는 그만둘 것이 없다는 뜻이다. 그 사이 끝났는지, 마무리나 실패를 적는 중인지는
+  // 상태를 다시 읽어 가린다(카본 A1 — 끝난 되살리기에 「곧 끝납니다」라 하지 않게)
+  if (a.call === 'cancelRestore') {
+    if (r.value?.stopping) { note('되살리기를 그만두는 중입니다. 곧 멈춥니다.', 6000); return void store.refresh(); }
+    await store.refresh();
+    const j = store.state?.job, still = !!j && (j.kind === 'restore' || j.kind === 'restore-selected');
+    return note(still ? '되살리기가 끝나 가는 중이라 그만둘 수 없습니다. 곧 결과를 이 화면에 적습니다.' : '되살리기가 이미 끝났습니다. 결과는 이 화면에 적었습니다.', 6000);
+  }
   if (a.then) go(a.then);
 }
 

@@ -86,6 +86,9 @@ async function wd(method, url, body) {
     // 판이 없는 이 시험 PC에서 고른 폴더는 엔진의 글로 거절된다(NO_METHOD · BAD_INPUT이 아니다)
     const obNo = await callOf('browseBackupFolder', '{profile:"local"}'), obOne = await callOf('browseBackupFolder', '{profile:"local",from:"ffffffffffff",folder:"C:/nope"}');
     check('browseBackupFolder가 엔진에 닿고 folder 없는 요청을 거절한다', !!obNo && obNo.ok === false && ['INVALID_REQUEST', 'BAD_INPUT'].includes(obNo.code) && !!obOne && obOne.ok === false && !['NO_METHOD', 'BAD_INPUT'].includes(obOne.code), JSON.stringify({ obNo, obOne }));
+    // 도는 되살리기 그만두기(요청 16, 조율 세션 60a9de51e) — 새 메서드가 다리와 계약을 지나 엔진에 닿는다. 도는 되살리기가 없으면 그만둘 것이 없다고 답한다
+    const cr = await callOf('cancelRestore');
+    check('cancelRestore가 엔진에 닿고 도는 되살리기가 없으면 stopping: false로 답한다', !!cr && cr.ok === true && cr.value && cr.value.stopping === false, JSON.stringify(cr));
     // E17 · E24 — moveState에 깔기 · 설정 결과, 다시 로그인할 곳의 남은 수, begun이 실린다(옮겨 온 적 없는 PC는 비었다)
     const mvs = mvState?.value || {};
     check('moveState · moveResult가 엔진에 닿는다', mvState?.ok === true && mvState.value && mvs.unfinished === false && mvs.running === false && mvResult?.ok === true && mvResult.value === null
