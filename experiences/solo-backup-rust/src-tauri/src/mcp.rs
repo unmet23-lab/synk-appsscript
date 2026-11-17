@@ -24,8 +24,8 @@ const FINDS_PER_HOUR: usize = 10;
 const FIND_LIMIT: Duration = Duration::from_secs(60);
 const IDLE: Duration = Duration::from_secs(300);
 /// 설치 · 업데이트 표식을 보는 주기. 파일 하나의 정보를 읽을 뿐이라 짧게 둔다. 같은 사용자 세션의 서버는 설치기가
-/// Restart Manager로 바로 닫는다(hooks.nsh). 닫지 못하는 것은 다른 사용자 세션의 서버뿐이고, 그때 설치는 표식을 거두고
-/// 멈춘다. 그 서버가 닫기를 시도하는 짧은 동안의 표식을 보고 끝나야 다음 시도가 통과하므로, 1분이 아니라 2초마다 본다.
+/// Restart Manager로 바로 닫는다(hooks.nsh). 닫지 못하는 것은 다른 사용자 세션의 서버뿐이다. 그때 설치기는 표식을 둔 채
+/// 3초 기다린 뒤 한 번 더 닫으므로(3f0f170f7), 그 서버가 3초 안에 표식을 보고 끝나도록 2초마다 본다.
 const WATCH: Duration = Duration::from_secs(2);
 const RESULTS: usize = 50;
 /// 워커에서 부르는 메서드의 짧은 허용 목록(worker/mcp.cjs METHODS와 같다). methods.json의 `allowedReadOnly`는 「복구 전용
