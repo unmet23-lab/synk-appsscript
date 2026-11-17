@@ -318,3 +318,28 @@ test('a late first status answer never overwrites a newer pushed state',async()=
   assert.equal(dom.el('startup-update').dataset.state,'downloading');
   view.dispose();
 });
+// 0.4.96 검수 D3: 직접 설치를 안내하는 실패(stay)는 「잠시 뒤 쓰던 판을 엽니다」를 말하지 않으므로 저절로 닫지 않는다
+test('a failure that asks for a manual reinstall never closes by itself',async()=>{
+  const {AUTO_OPEN_MS}=await loaded;
+  for(const code of ['UPDATE_BUILD_MISMATCH','UPDATE_DOWNGRADE_REJECTED']){
+    const f=await fixture();
+    f.send({state:'error',code,platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+    await f.clock.advance(AUTO_OPEN_MS*3);
+    assert.equal(f.calls.filter(c=>c==='openCurrent').length,0,code);
+    f.view.dispose();
+  }
+});
+// 0.4.96 검수 D4: 그리기가 없는 판에서도 실패 뒤 다시 시도한 받기는 0에서 다시 센다
+test('without a drawable orb a retried download counts again from zero',async()=>{
+  const {mountStartupUpdate}=await loaded;
+  const clock=fakeClock(),dom=fakeDom();let push=null;
+  const bridge={getStatus:async()=>({state:'checking',platform:'win32'}),retry:async()=>({}),openCurrent:async()=>({}),install:async()=>({}),onChanged:fn=>{push=fn;return ()=>{};}};
+  const view=mountStartupUpdate({bridge,document:dom.document,window:{setTimeout:clock.setTimeout,clearTimeout:clock.clearTimeout,matchMedia:()=>({matches:false}),addEventListener(){},removeEventListener(){}},createOrb:()=>{throw Error('no canvas');},now:clock.now});
+  await view.ready;await settle();
+  push({state:'downloading',platform:'win32',progress:90,latestVersion:'0.4.97'});await clock.advance(6000);
+  assert.notEqual(dom.el('startup-percent').textContent,' · 0%');
+  push({state:'error',code:'UPDATE_DOWNLOAD_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await clock.advance(500);
+  push({state:'downloading',platform:'win32',progress:0,latestVersion:'0.4.97'});await clock.advance(100);
+  assert.equal(dom.el('startup-percent').textContent,' · 0%');
+  view.dispose();
+});

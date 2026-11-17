@@ -53,7 +53,7 @@ function checkShader(){
   assert(fs.existsSync(committed),'Missing compiled orb shader '+SHADER);
   assert(fs.existsSync(recordFile),'Missing '+SHADER+'.json (the hlsl hash and fxc version that made '+SHADER+')');
   const record=JSON.parse(fs.readFileSync(recordFile,'utf8')),hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-  // 원본은 줄끝을 LF로 바꿔 해시한다. 체크아웃마다 줄끝이 달라도(autocrlf, 공개 저장소 사본) 같은 원본이면 같은 해시다(0.4.96 Fable F5)
+  // 원본은 줄끝을 LF로 바꿔 해시한다. 체크아웃마다 줄끝이 달라도(autocrlf, 공개 저장소 사본) 같은 원본이면 같은 해시다(0.4.96 검수 F5)
   const sourceHash=crypto.createHash('sha256').update(Buffer.from(fs.readFileSync(source,'latin1').replace(/\r\n/g,'\n'),'latin1')).digest('hex');
   const sha256=hash(committed);
   assert(sourceHash===record.hlslSHA256,'orb/orb.ps is stale: orb/orb.hlsl changed. Recompile with fxc /nologo /T ps_3_0 /E main /O3 and update '+SHADER+'.json');

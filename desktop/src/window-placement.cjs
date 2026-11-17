@@ -40,7 +40,11 @@ function createWindowPlacement({directory,screen,enabled=true}){
     function metricsChanged(_event,_display,metrics){if(!Array.isArray(metrics)||metrics.some(value=>['bounds','workArea','scaleFactor','rotation'].includes(value)))displayChanged();}
     // Electron maximize() shows a hidden window. Defer it until an intentional
     // show so a maximized last session still respects hidden Windows startup.
-    function shown(){reconcile();if(pendingMaximized&&!window.isDestroyed()){pendingMaximized=false;lastMaximized=true;window.maximize();}}
+    // 다른 창 뒤로 보인 창(behindNext)은 처음 눌릴 때 최대화한다. maximize()는 창을 활성화해 앞으로 끌어올린다(0.4.96 검수 C3). 그동안 파일에는 최대화로 남는다(pendingMaximized)
+    let behindNext=false;
+    function maximizeNow(){if(pendingMaximized&&!window.isDestroyed()){pendingMaximized=false;lastMaximized=true;window.maximize();}}
+    function shown(){reconcile();if(!pendingMaximized||window.isDestroyed())return;if(behindNext){behindNext=false;window.once('focus',maximizeNow);return;}maximizeNow();}
+    function showBehind(){behindNext=true;window.showInactive();}
     function maximizedNow(){pendingMaximized=false;lastMaximized=true;schedule();}
     function unmaximizedNow(){if(!minimized())lastMaximized=false;reconcile();schedule();}
     function restored(){reconcile();schedule();}
@@ -49,7 +53,7 @@ function createWindowPlacement({directory,screen,enabled=true}){
     const displayListeners={'display-added':displayChanged,'display-removed':displayChanged,'display-metrics-changed':metricsChanged};
     for(const [event,listener]of Object.entries(displayListeners))screen.on?.(event,listener);
     function dispose(){disposed=true;clearTimeout(timer);clearTimeout(displayTimer);for(const [event,listener]of Object.entries(listeners))window.removeListener(event,listener);for(const [event,listener]of Object.entries(displayListeners))screen.removeListener?.(event,listener);window.removeListener('closed',dispose);}
-    window.once('closed',dispose);return dispose;
+    window.once('closed',dispose);dispose.showBehind=showBehind;return dispose;
   }
   return {restore,attach,adopt};
 }

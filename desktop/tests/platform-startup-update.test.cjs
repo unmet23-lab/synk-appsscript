@@ -174,3 +174,45 @@ test('an internet failure the updater announces while checking does not flash th
   let g2;g2=fixture({check:async()=>{g2.setState({state:'error',code:'UPDATE_SIGNATURE_INVALID'});return {ok:false,state:'error',code:'UPDATE_SIGNATURE_INVALID'};}});
   await g2.gate.start();await settle();assert.equal(g2.gate.snapshot().state,'error');assert.equal(g2.proceeds,0);
 });
+// 0.4.96 검수 F2: 조용한 업데이트가 실패해 되돌려 켠 앱(숨은 채 시작한 길)은 실패 장면을 지금 띄우지 않고 지금 판을 숨은 채 연다.
+// 그 실패는 다음에 창을 열 때 보이고, 실패한 판은 전처럼 미뤄 둔다
+test('a hidden start that begins with a recovered update failure opens the current version hidden and keeps the failure for later',async()=>{
+  const deferred=[],started=[],silent=[],changes=[];let proceeds=0,checks=0;
+  const updater={snapshot:()=>({state:'idle',releaseId:null,currentVersion:'0.4.96'}),setStartupActive(){},deferAutomaticRelease:id=>deferred.push(id),start:options=>started.push(options),checkForUpdate:async()=>{checks++;return {ok:true,state:'current'};}};
+  const gate=createStartupUpdateGate({updater,platform:'win32',recoveryCode:'UPDATE_RECOVERED',recoveryReleaseId:'platform-preview-0.4.97',hidden:true,onSilentFailure:value=>silent.push(value),onChange:state=>changes.push(state),proceed:()=>proceeds++});
+  await gate.start();
+  assert.equal(proceeds,1,'the current version opens without waiting for a person');
+  assert.equal(checks,0);
+  assert.deepEqual(deferred,['platform-preview-0.4.97']);
+  assert.deepEqual(silent,[{code:'UPDATE_RECOVERED',stage:'handoff',releaseId:'platform-preview-0.4.97'}]);
+  assert.deepEqual(gate.unseenFailure(),silent[0]);
+  assert.ok(!changes.some(state=>state.state==='error'),'no failure scene is published while hidden');
+  assert.equal(gate.isBlocking(),false);
+  // 보이는 길은 전처럼 실패 장면부터 보인다
+  const shown=[];const visible=createStartupUpdateGate({updater,platform:'win32',recoveryCode:'UPDATE_RECOVERED',recoveryReleaseId:'platform-preview-0.4.97',onChange:state=>shown.push(state),proceed:()=>{throw Error('must wait');}});
+  await visible.start();assert.equal(visible.snapshot().state,'error');assert.equal(visible.snapshot().code,'UPDATE_RECOVERED');assert.equal(visible.isBlocking(),true);
+});
+// 0.4.96 검수 C3: 다른 창 뒤로 보이는 시작 창은 최대화로 활성화되지 않는다. 처음 눌릴 때 최대화하고, 그동안 넘김 자리는 최대화로 알린다
+test('a startup window shown behind other windows maximizes only when it is first focused',()=>{
+  const made=[];
+  class TestWindow extends EventEmitter {
+    constructor(){super();made.push(this);this.calls=[];this.max=false;this.destroyed=false;this.webContents=new EventEmitter();Object.assign(this.webContents,{setWindowOpenHandler(){},getURL:()=>STARTUP_ENTRY,send(){}});}
+    isDestroyed(){return this.destroyed;}isMinimized(){return false;}isMaximized(){return this.max;}isVisible(){return true;}getNormalBounds(){return {x:10,y:20,width:1200,height:800};}getBounds(){return this.getNormalBounds();}
+    maximize(){this.calls.push('maximize');this.max=true;}show(){this.calls.push('show');}showInactive(){this.calls.push('inactive');}focus(){this.calls.push('focus');}
+    setClosable(){}loadURL(){return Promise.resolve();}destroy(){this.destroyed=true;}
+  }
+  const isolated={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onBeforeRequest(){}},protocol:{handle(){},unhandle(){}},on(){}};
+  const open=({inactive})=>{
+    const startup=createStartupUpdateWindow({BrowserWindow:TestWindow,session:{fromPartition:()=>isolated},ipcMain:{handle(){},removeHandler(){}},appRoot:path.resolve(__dirname,'..'),gate:{isBlocking:()=>true,snapshot:()=>({state:'checking'})},placement:()=>({x:10,y:20,width:1200,height:800,minWidth:960,minHeight:680,maximized:true}),onClose(){},setTimer:()=>0,clearTimer(){}});
+    startup.show({inactive});const window=made[made.length-1];window.emit('ready-to-show');return {startup,window};
+  };
+  const behind=open({inactive:true});
+  assert.deepEqual(behind.window.calls,['inactive'],'maximize would activate the window and pull it in front');
+  assert.equal(behind.startup.bounds().maximized,true,'the handoff keeps the maximized place for the app window');
+  behind.window.emit('focus');assert.deepEqual(behind.window.calls,['inactive','maximize']);
+  behind.window.emit('focus');assert.equal(behind.window.calls.filter(c=>c==='maximize').length,1);
+  behind.startup.dispose();
+  const front=open({inactive:false});
+  assert.deepEqual(front.window.calls,['maximize','show','focus']);
+  front.startup.dispose();
+});

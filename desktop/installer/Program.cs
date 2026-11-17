@@ -42,6 +42,9 @@ namespace Synk.SignalInstaller
                         try { created = mutex.WaitOne(10000); }
                         catch (AbandonedMutexException) { created = true; }
                     }
+                    // 앱이 뒤에서 띄운 자동 업데이트는 사람이 연 설치 파일이 아니다. 10초를 기다려도 뮤텍스를 얻지 못하면 창 보이기 요청도 대화 상자도 없이
+                    // 실패로 끝난다(앱은 READY 없이 끝난 것을 넘김 실패로 받는다). 요청을 쓰면 사람이 열지 않은 설치기 창이 앞으로 나왔다(0.4.96 검수 B2)
+                    if (!created && automatic != null) return 1;
                     // Platform: 도는 설치기(조용히 도는 것 포함)에 창을 보이라고 청하고 끝난다(5절 「설치 화면이 이미 열려 있음」). 청하지 못하면 지금처럼 알린다
                     if (!created && product.Id == "platform" && ShowRequest.Write(spec.AppId, UpdatingMarker.ReadPid(spec.AppId))) return 0;
                     if (!created) { MessageBox.Show("이미 " + product.ShortName + " 설치 화면이 열려 있어요.", product.WindowTitle); return 1; }
@@ -195,10 +198,17 @@ namespace Synk.SignalInstaller
                 window.Show();
                 try { window.Activate(); } catch (InvalidOperationException) { }
             };
-            // 앱을 켜기 시작한 뒤에 받은 요청은 끝에서 앱을 한 번 더 켜서 창을 부른다(도착 쪽지는 이미 숨음이나 최소화로 썼다, GPT 검수 GA1)
+            // 앱을 켜기 시작한 뒤에 받은 요청은 끝에서 앱을 한 번 더 켜서 창을 부른다(도착 쪽지는 이미 숨음이나 최소화로 썼다, 0.4.96 검수 GA1)
             ShowRequestGate gate = new ShowRequestGate(delegate { return ShowRequest.Take(spec.AppId, myPid, startedUtc); }, reveal);
             engine.BeforeLaunch = delegate(string kind, string appVersion)
             {
+                // 새 판을 켜기 전에 남은 깎기를 마친다(손 설치와 같은 차례: 다 깎기, 도착 쪽지, 앱 켜기). 엔진 뒤에 깎으면 도착 쪽지의 마지막 장이
+                // 덜 깎인 값으로 적히고, 먼저 켜진 새 앱 창 위에 설치기 창이 깎는 채로 남았다(0.4.96 검수 B1). 깎기는 3초를 넘기지 않는다.
+                // 「바꾸는 중」 표시는 깎는 동안 쥐고, 켜기 바로 앞에 놓는다(2절 장치 1의 차례)
+                if (kind == "updated")
+                {
+                    try { Task cut = (Task)window.Dispatcher.Invoke(new Func<Task>(window.FinishCut)); cut.Wait(5000); } catch (Exception) { }
+                }
                 releaseMarker();
                 try { window.Dispatcher.Invoke(new Action(gate.BeforeLaunch)); } catch (Exception) { }
                 arrive(kind, appVersion);
@@ -229,6 +239,8 @@ namespace Synk.SignalInstaller
             window.ContentRendered += delegate { rendered = true; if (note != null) window.StackBelow(curtainWindow); releaseCurtain(); };
             Func<Task> handOver = async delegate
             {
+                // 앱 켜기를 넘겼다. 끝에서 앱을 한 번 더 켜는 것은 이 길에서만 한다(0.4.96 검수 B2)
+                gate.Launched();
                 release();
                 // 조용한 업데이트에서는 새 앱도 숨은 채 켜지므로 그 창을 기다리지 않는다
                 if (revealed) await AppWindow.WaitAsync(engine.InstalledExecutable(), 20000);
@@ -272,14 +284,15 @@ namespace Synk.SignalInstaller
                         // 엔진이 끝 상태에 이르렀다. 표시는 어느 끝에서도 쥐지 않는다(사람을 기다리는 끝에서도 창을 보이기 전에 놓는다)
                         releaseMarker();
                         if (result.Updated && result.Relaunched) { timed("update"); if (revealed) await window.FinishCut(); await handOver(); }
-                        // 끝났는데 새 앱을 켜지 못했다: 「열기」를 두고 잠시 뒤 한 번 더 켜 본다
-                        else if (result.Updated) { timed("update"); reveal(); window.ShowLaunchFailure(null); openAgainLater(); }
+                        // 끝났는데 새 앱을 켜지 못했다: 「열기」를 두고 잠시 뒤 한 번 더 켜 본다.
+                        // 실패 장면에 머무는 동안의 창 보이기 요청은 이 창을 다시 앞으로 가져와야 하므로, 요청 관문을 켜기 전으로 되돌린다(0.4.96 검수 B2)
+                        else if (result.Updated) { timed("update"); gate.LaunchFailed(); reveal(); window.ShowLaunchFailure(null); openAgainLater(); }
                         // 장치 2: 사람이 켠 앱이 이미 앞에 있다. 알릴 것이 없어 창을 닫는다(보이는 업데이트에서도 닫는다)
                         else if (result.UserAppRunning) { release(); finish(); }
                         // 되돌려 켠 쓰던 앱이 실패 장면을 보인다. 그 앱의 창이 보인 뒤 닫는다(조용히 바꾼 때는 쓰던 앱이 숨은 채 있다가 다음에 열 때 보인다)
                         else if (result.Restored && result.Relaunched) await handOver();
                         // 되돌렸는데 쓰던 앱을 켜지 못했다: 「쓰던 판 열기」를 두고 잠시 뒤 한 번 더 켜 본다
-                        else if (result.Restored && kept != null && result.RestoredStatus != null) { restored = kept; restoredStatus = result.RestoredStatus; reveal(); window.ShowRestoredLaunchFailure(); openAgainLater(); }
+                        else if (result.Restored && kept != null && result.RestoredStatus != null) { restored = kept; restoredStatus = result.RestoredStatus; gate.LaunchFailed(); reveal(); window.ShowRestoredLaunchFailure(); openAgainLater(); }
                         else { reveal(); window.ShowAutomaticResult(result); }
                     }
                     catch (Exception error)
@@ -323,25 +336,26 @@ namespace Synk.SignalInstaller
                 {
                     // 쓰던 판 열기: 옛 판 해시를 다시 맞추고 되돌림 표시를 새로 써서 쓰던 앱이 실패 장면을 보이게 한다(도착 쪽지는 엔진이 쓴다)
                     try { AutomaticUpdateSession again = restored; string status = restoredStatus; await Task.Run(delegate { engine.RelaunchPrevious(again, status); }); }
-                    catch (Exception) { window.ShowRestoredLaunchFailure(); return; }
+                    catch (Exception) { gate.LaunchFailed(); window.ShowRestoredLaunchFailure(); return; }
                     await handOver();
                     return;
                 }
                 arrive(automatic != null ? "updated" : "installed", spec.Version);
                 try { engine.Launch(); }
-                catch (Exception error) { window.ShowLaunchFailure(error); return; }
+                catch (Exception error) { gate.LaunchFailed(); window.ShowLaunchFailure(error); return; }
                 await handOver();
             };
             if (revealed) window.Show();
             app.Run();
             requests.Stop();
             releaseMarker();
-            // 끝나기 직전에 요청을 한 번 더 본다. 표시를 놓는 순간이나 앱을 켜기 시작한 뒤에 사람이 켠 앱의 요청이 버려지지 않게, 앱을 한 번 더 켜서 창을 부르게 한다
+            // 끝나기 직전에 요청을 한 번 더 본다. 표시를 놓는 순간이나 앱을 켜기 시작한 뒤에 사람이 켠 앱의 요청이 버려지지 않게, 앱을 한 번 더 켜서 창을 부르게 한다.
+            // 앱 켜기를 실제로 넘긴 길에서만 켠다. 켜지 못한 실패 창을 사람이 닫았는데 앱을 켜면 안 된다(0.4.96 검수 B2)
             if (automatic != null && gate.OpenAgainAtEnd())
                 try { using (Process.Start(new ProcessStartInfo(engine.InstalledExecutable()) { UseShellExecute = false })) { } } catch (Exception) { }
         }
 
-        /// <summary>앱을 켜지 못한 뒤 한 번 더 켜 보기까지(Claude가 정한 값: 실패 문장 두 줄을 읽을 틈)</summary>
+        /// <summary>앱을 켜지 못한 뒤 한 번 더 켜 보기까지(정한 값: 실패 문장 두 줄을 읽을 틈)</summary>
         internal const int OpenAgainMilliseconds = 3000;
 
         /// <summary>

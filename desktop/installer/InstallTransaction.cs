@@ -14,7 +14,7 @@ namespace Synk.SignalInstaller
         {
             RejectReparsePoints(Path.GetDirectoryName(PendingPath));
             if(File.Exists(PendingPath)&&activeTransaction==null)
-                throw new InstallFailure("지난번 설치를 되돌렸는지 아직 확인하지 못했어요. 다시 설치하지 말고 SYNK에 알려 주세요.\n되돌리기 안내: "+PendingPath,false,true);
+                throw FailureKind.Tag(new InstallFailure("지난번 설치를 되돌렸는지 아직 확인하지 못했어요. 다시 설치하지 말고 SYNK에 알려 주세요.\n되돌리기 안내: "+PendingPath,false,true),FailureKind.Pending);
         }
         void BeginTransaction(UpdateBackup backup)
         {

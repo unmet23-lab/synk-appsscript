@@ -13,7 +13,8 @@ function assertStartupSender(event,window){if(!window||window.isDestroyed()||eve
 // 시작 창은 앱 창과 같은 자리와 크기로 띄운다. 테두리가 없고 바탕은 검정이다. 창 단추는 앱 창의 단추와 같은 모양으로 화면이 그린다.
 // placement()는 앱 창이 기억한 자리(window-placement.cjs의 restore), boot()는 구가 드러나기 시작한 시각과 움직임 종류다.
 function createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot,gate,onClose=()=>{},placement=()=>null,boot=()=>null,icon,onBridgeLost=()=>{},setTimer=setTimeout,clearTimer=clearTimeout}){
-  let window=null,disposed=false,registered=false,quitPrepared=false,watchdog=null,asked=false,shownWaiters=[];
+  // deferredMaximize: 다른 창 뒤로 보인 창은 처음 눌릴 때 최대화한다(그동안 자리 값은 최대화로 알린다)
+  let window=null,disposed=false,registered=false,quitPrepared=false,watchdog=null,asked=false,shownWaiters=[],deferredMaximize=false;
   const partition='synk-startup-update';
   const isolated=session.fromPartition(partition);
   isolated.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));isolated.setPermissionCheckHandler(()=>false);
@@ -45,8 +46,9 @@ function createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot,gate,o
     window.once('ready-to-show',()=>{
       if(!window||window.isDestroyed())return;
       if(fade)window.setOpacity?.(0);
-      if(at.maximized)window.maximize();
-      if(inactive)window.showInactive();else{window.show();window.focus();}
+      // 다른 창 뒤로 보일 때(inactive)는 최대화를 그 창이 처음 눌릴 때까지 미룬다. maximize()는 창을 활성화해 다른 프로그램 창 위로 끌어올린다(0.4.96 검수 C3)
+      if(at.maximized&&!inactive)window.maximize();
+      if(inactive){window.showInactive();if(at.maximized){deferredMaximize=true;window.once('focus',()=>{if(!window||window.isDestroyed()||!deferredMaximize)return;deferredMaximize=false;if(!window.isMaximized())window.maximize();});}}else{window.show();window.focus();}
       publish(gate.snapshot());
       if(fade){const started=Date.now(),step=()=>{if(disposed||!window||window.isDestroyed())return;const k=Math.min(1,(Date.now()-started)/FADE_MS);window.setOpacity?.(1-Math.pow(1-k,3));if(k<1)setTimer(step,16);else settleShown();};step();}
       else setTimer(settleShown,120);
@@ -63,7 +65,7 @@ function createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot,gate,o
   function prepareForQuit(){quitPrepared=true;if(!disposed&&window&&!window.isDestroyed())window.setClosable(true);}
   function cancelQuit(){quitPrepared=false;publish(gate.snapshot());}
   /* 앱 창이 같은 자리에 숨은 채 만들어질 때 쓰는 자리. 사람이 시작 창을 옮겼으면 그 자리를 따른다 */
-  function bounds(){if(!window||window.isDestroyed())return null;const b=window.getNormalBounds?.()||window.getBounds();return {...b,maximized:window.isMaximized?.()===true,visible:window.isVisible?.()!==false};}
+  function bounds(){if(!window||window.isDestroyed())return null;const b=window.getNormalBounds?.()||window.getBounds();return {...b,maximized:window.isMaximized?.()===true||deferredMaximize,visible:window.isVisible?.()!==false};}
   function isVisible(){return !!window&&!window.isDestroyed()&&window.isVisible?.()!==false;}
   function settleShown(){const waiters=shownWaiters;shownWaiters=[];for(const resolve of waiters)resolve(true);}
   /* 창이 보이고 첫 장을 그릴 시간이 지나면 풀린다(덮기를 마친 뒤). 이미 보이면 바로 풀린다 */

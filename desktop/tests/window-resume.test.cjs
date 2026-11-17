@@ -67,3 +67,15 @@ test('an adopted arrival place is fitted to the screen and does not overwrite th
   const fitted=f.placement.restore();assert.equal(fitted.x,310);assert.equal(fitted.y,70);
   for(const bad of [null,{x:1,y:1,width:0,height:5},{x:NaN,y:0,width:10,height:10}])assert.equal(f.placement.adopt(bad),false);
 });
+// 0.4.96 검수 C3: 다른 창 뒤로 보인 창은 최대화로 활성화되지 않는다. 처음 눌릴 때 최대화하고, 그동안 파일에는 최대화로 남는다
+test('a window shown behind other windows maximizes only when it is first focused',async t=>{
+  const f=fixture(t,{maximized:true});let inactive=0;f.window.showInactive=()=>{inactive++;f.window.emit('show');};
+  assert.equal(typeof f.dispose.showBehind,'function');
+  f.dispose.showBehind();
+  assert.equal(inactive,1);assert.equal(f.calls.filter(value=>value[0]==='maximize').length,0,'maximize would activate the window and pull it in front');
+  f.window.emit('resize');await delay(220);assert.equal(f.read().maximized,true);
+  f.window.emit('focus');assert.equal(f.calls.filter(value=>value[0]==='maximize').length,1);
+  f.window.emit('focus');assert.equal(f.calls.filter(value=>value[0]==='maximize').length,1);
+  // 보통 보이기는 지금처럼 바로 최대화한다
+  const g=fixture(t,{maximized:true});g.window.emit('show');assert.equal(g.calls.filter(value=>value[0]==='maximize').length,1);
+});

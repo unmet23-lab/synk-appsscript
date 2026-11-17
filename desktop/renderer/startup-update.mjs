@@ -157,7 +157,8 @@ export function mountStartupUpdate({
 
   /* ── 실패: 온전한 구가 어두워진 채 다가와 있고, 글과 단추가 왼쪽 아래에 놓인다. 잠시 뒤 지금 판을 연다 ── */
   function enterFailed() {
-    if (!orb) { setUi('forge'); return; }
+    // 그리기가 없는 판(정적 구)도 장면 값을 실패로 바꾼다. 남은 'forge'가 다시 시도한 받기의 첫 단계를 막았다(0.4.96 검수 D4)
+    if (!orb) { bootStarted = true; scene = 'failed'; setUi('forge'); return; }
     takeOverBoot();
     const from = scene;
     scene = 'failed';
@@ -169,7 +170,7 @@ export function mountStartupUpdate({
   }
   /* Mac에서 받은 판을 사람이 옮길 차례: 절반 깎인 구가 멈춰 있다 */
   function enterReady() {
-    if (!orb) { setUi('forge'); return; }
+    if (!orb) { bootStarted = true; scene = 'ready'; shown = target = 0.5; setUi('forge'); return; }
     if (scene !== 'forge') enterForge();
     scene = 'ready';
     setTarget(0.5); shown = 0.5; orb.forgeAt?.(0.5);
@@ -183,8 +184,9 @@ export function mountStartupUpdate({
   /* ── 저절로 열기 ── */
   function armAutoOpen() {
     clearAuto();
-    if (held || snapshot.state !== 'error' || !allowed('current')) return;
-    autoTimer = later(() => { autoTimer = null; autoSpent = true; if (!held && allowed('current')) void run('current'); }, autoOpenMs);
+    // 새 판을 받지 못해 직접 설치를 안내하는 글(stay)은 「잠시 뒤 쓰던 판을 엽니다」를 말하지 않으므로 저절로 닫지 않는다(0.4.96 검수 D3)
+    if (held || snapshot.state !== 'error' || !allowed('current') || copy(snapshot).stay) return;
+    autoTimer = later(() => { autoTimer = null; autoSpent = true; if (!held && allowed('current') && !copy(snapshot).stay) void run('current'); }, autoOpenMs);
   }
   function clearAuto() { if (autoTimer !== null) { win.clearTimeout(autoTimer); timers.delete(autoTimer); autoTimer = null; } }
   let focusing = false;

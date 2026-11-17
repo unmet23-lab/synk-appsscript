@@ -52,7 +52,10 @@ namespace Synk.SignalInstaller
         static readonly Brush Ring = SignalWindow.Solid("#8CF3F1EC");     // .55
         static readonly Brush BarInk = SignalWindow.Solid("#B8FFFFFF");   // .72
         static readonly Brush BarHover = SignalWindow.Solid("#1FFFFFFF"); // .12
+        static readonly Brush BarRing = SignalWindow.Solid("#EBF4F8FF");  // rgba(244,248,255,.92)
         static readonly Brush CloseHover = SignalWindow.Solid("#E5484D");
+        /// <summary>창 가장자리를 끌어 크기를 바꾸는 폭(DIP). 최대화한 동안에는 0이다</summary>
+        public const double ResizeBorder = 6;
         static readonly Brush Void = Brushes.Black;
 
         /// <summary>문의할 곳(5절: 막힌 상태의 안내에 알릴 곳을 함께 적는다). 앱의 계정 화면과 같은 주소다.</summary>
@@ -75,6 +78,7 @@ namespace Synk.SignalInstaller
         Scene scene = Scene.Intro;
         bool installed, automatic, allowClose, maximized, uiShown, curtain;
         Grid windowBar;
+        readonly WindowChrome chrome;
         Rect restoreBounds;
         string sayText = "", thenText = "";
         // 깎인 만큼: 받은 값(target)을 보이는 값(shown)이 따라간다. 시간으로 다가가는 단계는 stageStart부터 잰다
@@ -114,7 +118,8 @@ namespace Synk.SignalInstaller
             Language = System.Windows.Markup.XmlLanguage.GetLanguage("ko-KR");
             TextOptions.SetTextFormattingMode(this, TextFormattingMode.Ideal);
             AutomationProperties.SetName(this, Title);
-            WindowChrome.SetWindowChrome(this, new WindowChrome { CaptionHeight = 0, ResizeBorderThickness = new Thickness(6), GlassFrameThickness = new Thickness(0), CornerRadius = new CornerRadius(0), UseAeroCaptionButtons = false });
+            chrome = new WindowChrome { CaptionHeight = 0, ResizeBorderThickness = new Thickness(ResizeBorder), GlassFrameThickness = new Thickness(0), CornerRadius = new CornerRadius(0), UseAeroCaptionButtons = false };
+            WindowChrome.SetWindowChrome(this, chrome);
             PlaceFirst();
 
             Grid root = new Grid { Background = Void };
@@ -144,10 +149,10 @@ namespace Synk.SignalInstaller
             ver = new TrackedText(SignalWindow.Face(suit, 400), 12, 0.22, VerInk, 12, null) { Margin = new Thickness(0, 16, 0, 0), HorizontalAlignment = HorizontalAlignment.Left };
             column.Children.Add(Rise(ver, 1));
             detail = new TextBlock { FontWeight = FontWeights.Normal, FontSize = 12, Foreground = VerInk, TextWrapping = TextWrapping.Wrap, LineHeight = 18, LineStackingStrategy = LineStackingStrategy.BlockLineHeight };
-            // 기록 칸(막힌 상태의 알릴 곳과 엔진 기록): 단추 아래에 두고, 그 높이만큼 글 묶음을 아래 여백으로 내린다.
+            // 기록 칸(막힌 상태의 알릴 곳과 엔진 글에서 옮긴 값, Record): 단추 아래에 두고, 그 높이만큼 글 묶음을 아래 여백으로 내린다.
             // 문장이 두 줄짜리 실패 장면과 같은 자리에 남아 구의 눈과 겹치지 않는다
             detailBox = new ScrollViewer { Content = detail, MaxHeight = 72, Margin = new Thickness(0, 14, 0, 0), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Focusable = true, IsTabStop = true, Visibility = Visibility.Collapsed };
-            // 기록이 네 줄을 넘으면 자판(Tab으로 들어가 위아래 화살표)으로도 내려 볼 수 있다(0.4.96 카본 A4)
+            // 기록이 네 줄을 넘으면 자판(Tab으로 들어가 위아래 화살표)으로도 내려 볼 수 있다(0.4.96 검수 A4)
             AutomationProperties.SetName(detailBox, "기록");
             way = Way("설치");
             way.Margin = new Thickness(0, 22, 0, 0);
@@ -183,7 +188,7 @@ namespace Synk.SignalInstaller
             root.Children.Add(bar);
 
             SizeChanged += delegate { Layout(); };
-            // Windows가 테두리 없는 창을 직접 최대화하면(Win+위 화살표, 화면 맨 위로 끌어 붙이기) 작업 표시줄까지 덮는다. 작업 영역 최대화로 바꾼다(0.4.96 카본 A1)
+            // Windows가 테두리 없는 창을 직접 최대화하면(Win+위 화살표, 화면 맨 위로 끌어 붙이기) 작업 표시줄까지 덮는다. 작업 영역 최대화로 바꾼다(0.4.96 검수 A1)
             StateChanged += delegate { if (WindowState != WindowState.Maximized) return; WindowState = WindowState.Normal; if (!maximized) ToggleMaximize(); };
             SourceInitialized += delegate { RoundCorners(); };
             Closing += delegate(object sender, System.ComponentModel.CancelEventArgs args) { if (!allowClose && !Closable) args.Cancel = true; };
@@ -220,6 +225,24 @@ namespace Synk.SignalInstaller
         [StructLayout(LayoutKind.Sequential)] struct MonitorInfo { public int Size; public NativeRect Monitor, Work; public uint Flags; }
         [DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
         [DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
+        /// <summary>
+        /// DIP를 화면 화소로 바꾸는 배율. 창이 화면에 놓인 적이 없으면(조용한 업데이트) PresentationSource가 없으므로 이 창의 DPI로 셈한다.
+        /// 단위 행렬로 두면 고배율 화면에서 DIP가 그대로 화소로 적혀 다음 앱 창이 배율만큼 작고 치우친 자리에 열렸다(0.4.96 검수 B3)
+        /// </summary>
+        Matrix ToDevice()
+        {
+            PresentationSource source = PresentationSource.FromVisual(this);
+            if (source != null && source.CompositionTarget != null) return source.CompositionTarget.TransformToDevice;
+            DpiScale dpi = VisualTreeHelper.GetDpi(this);
+            return new Matrix(dpi.DpiScaleX, 0, 0, dpi.DpiScaleY, 0, 0);
+        }
+        Matrix FromDevice()
+        {
+            PresentationSource source = PresentationSource.FromVisual(this);
+            if (source != null && source.CompositionTarget != null) return source.CompositionTarget.TransformFromDevice;
+            DpiScale dpi = VisualTreeHelper.GetDpi(this);
+            return new Matrix(1 / dpi.DpiScaleX, 0, 0, 1 / dpi.DpiScaleY, 0, 0);
+        }
         void RoundCorners()
         {
             // Windows 11: 앱 창(Electron 테두리 없는 창)처럼 둥근 모서리를 청한다. 그 앞 판에서는 무시된다
@@ -236,17 +259,19 @@ namespace Synk.SignalInstaller
                 MonitorInfo info = new MonitorInfo { Size = Marshal.SizeOf(typeof(MonitorInfo)) };
                 Rect work = SystemParameters.WorkArea;
                 if (hwnd != IntPtr.Zero && GetMonitorInfo(MonitorFromWindow(hwnd, 2), ref info)) {
-                    PresentationSource source = PresentationSource.FromVisual(this);
-                    Matrix m = source != null && source.CompositionTarget != null ? source.CompositionTarget.TransformFromDevice : Matrix.Identity;
+                    Matrix m = FromDevice();
                     Point a = m.Transform(new Point(info.Work.Left, info.Work.Top)), b = m.Transform(new Point(info.Work.Right, info.Work.Bottom));
                     work = new Rect(a, b);
                 }
                 restoreBounds = new Rect(Left, Top, Width, Height);
-                // 최소 크기는 처음 화면 기준이다. 더 작은 화면에서 최대화하면 최소 크기에 막혀 작업 표시줄을 덮지 않게 줄인다(0.4.96 카본 A2)
+                // 최소 크기는 처음 화면 기준이다. 더 작은 화면에서 최대화하면 최소 크기에 막혀 작업 표시줄을 덮지 않게 줄인다(0.4.96 검수 A2)
                 MinWidth = Math.Min(MinWidth, work.Width); MinHeight = Math.Min(MinHeight, work.Height);
                 maximized = true;
                 Left = work.X; Top = work.Y; Width = work.Width; Height = work.Height;
             }
+            // 최대화는 창 상태를 Normal로 둔 채 크기만 맞추므로, 가장자리 끌기도 함께 끈다. 켜 두면 끌어서 줄인 창이 최대화로 남아
+            // 맨 위를 잡고 옮기기가 막히고 단추가 「이전 크기로」로 남았다(0.4.96 검수 B4)
+            chrome.ResizeBorderThickness = new Thickness(maximized ? 0 : ResizeBorder);
             AutomationProperties.SetName(maximizeButton, maximized ? "이전 크기로" : "최대화");
             ((ShapePath)maximizeButton.Content).Data = Geometry.Parse(maximized
                 ? "M7.5 9.5h8a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM9.5 6.5h8a1.5 1.5 0 0 1 1.5 1.5v8"
@@ -279,7 +304,7 @@ namespace Synk.SignalInstaller
         {
             if (String.IsNullOrEmpty(text)) return "";
             Typeface face = new Typeface(weight == FontWeights.Light ? light : suit, FontStyles.Normal, weight, FontStretches.Normal);
-            // 글상자는 자간 없이 그리므로 자간을 빼지 않고 그려질 폭 그대로 잰다. 빼면 경계의 문장이 한 줄로 남아 끝 글자가 잘렸다(0.4.96 카본 A3)
+            // 글상자는 자간 없이 그리므로 자간을 빼지 않고 그려질 폭 그대로 잰다. 빼면 경계의 문장이 한 줄로 남아 끝 글자가 잘렸다(0.4.96 검수 A3)
             double dip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             List<string> lines = new List<string>();
             string line = "";
@@ -317,7 +342,7 @@ namespace Synk.SignalInstaller
             ver.Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         }
         // ── 단추 ──
-        static Style FlatStyle(double radius, Brush hoverBackground, Brush hoverForeground, Brush hoverBorder, bool underline)
+        static Style FlatStyle(double radius, Brush hoverBackground, Brush hoverForeground, Brush hoverBorder, bool underline, bool barButton = false)
         {
             Style style = new Style(typeof(Button));
             FrameworkElementFactory surface = new FrameworkElementFactory(typeof(Border), "Surface");
@@ -342,12 +367,21 @@ namespace Synk.SignalInstaller
             disabled.Setters.Add(new Setter(UIElement.OpacityProperty, underline ? 0.5 : 0.38));
             template.Triggers.Add(disabled);
             style.Setters.Add(new Setter(Control.TemplateProperty, template));
-            // 키보드 초점 테: 시작 창의 :focus-visible(1px, 바깥 5px)
+            // 키보드 초점 테: 시작 창의 :focus-visible(1px, 바깥 5px).
+            // 맨 위 창 단추는 시작 창의 창 단추처럼 테를 단추 안쪽에 2px로 그리고 바탕을 밝힌다. 바깥 5px로 그리면 단추가 창 맨 위에서 4px 아래라
+            // 테의 윗줄이 창 밖으로 나가 보이지 않았다(0.4.96 검수 B5)
             FrameworkElementFactory ring = new FrameworkElementFactory(typeof(Border));
-            ring.SetValue(Border.CornerRadiusProperty, new CornerRadius(radius > 0 ? radius + 5 : 0));
-            ring.SetValue(Border.BorderThicknessProperty, new Thickness(1));
-            ring.SetValue(Border.BorderBrushProperty, Ring);
-            ring.SetValue(FrameworkElement.MarginProperty, new Thickness(-5));
+            if (barButton) {
+                ring.SetValue(Border.CornerRadiusProperty, new CornerRadius(radius));
+                ring.SetValue(Border.BorderThicknessProperty, new Thickness(2));
+                ring.SetValue(Border.BorderBrushProperty, BarRing);
+                ring.SetValue(Border.BackgroundProperty, BarHover);
+            } else {
+                ring.SetValue(Border.CornerRadiusProperty, new CornerRadius(radius > 0 ? radius + 5 : 0));
+                ring.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+                ring.SetValue(Border.BorderBrushProperty, Ring);
+                ring.SetValue(FrameworkElement.MarginProperty, new Thickness(-5));
+            }
             Style focus = new Style(typeof(Control));
             focus.Setters.Add(new Setter(Control.TemplateProperty, new ControlTemplate(typeof(Control)) { VisualTree = ring }));
             style.Setters.Add(new Setter(FrameworkElement.FocusVisualStyleProperty, focus));
@@ -379,7 +413,7 @@ namespace Synk.SignalInstaller
         {
             Button button = new Button {
                 Width = 44, Height = 32, Margin = new Thickness(2, 0, 0, 0), Background = Brushes.Transparent, BorderBrush = Brushes.Transparent, BorderThickness = new Thickness(0),
-                Foreground = BarInk, Style = FlatStyle(8, isClose ? CloseHover : BarHover, Brushes.White, null, false), Focusable = true
+                Foreground = BarInk, Style = FlatStyle(8, isClose ? CloseHover : BarHover, Brushes.White, null, false, true), Focusable = true
             };
             ShapePath icon = new ShapePath { Data = Geometry.Parse(geometry), StrokeThickness = 1.6, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, StrokeLineJoin = PenLineJoin.Round,
                 Width = 18, Height = 18, Stretch = Stretch.None, IsHitTestVisible = false, RenderTransform = new ScaleTransform(0.75, 0.75) };
@@ -510,10 +544,8 @@ namespace Synk.SignalInstaller
             uint flags = SWP_NOACTIVATE | SWP_NOOWNERZORDER;
             bool order = below != IntPtr.Zero && IsWindow(below);
             if (!order) flags |= 0x4; // SWP_NOZORDER
-            // 앱 창이 처음 화면의 최소 크기보다 작은 화면에 있었으면 그 크기를 그대로 잇는다(0.4.96 카본 A2)
-            PresentationSource source = PresentationSource.FromVisual(this);
-            Matrix m = source != null && source.CompositionTarget != null ? source.CompositionTarget.TransformFromDevice : Matrix.Identity;
-            Vector size = m.Transform(new Vector(note.Width, note.Height));
+            // 앱 창이 처음 화면의 최소 크기보다 작은 화면에 있었으면 그 크기를 그대로 잇는다(0.4.96 검수 A2)
+            Vector size = FromDevice().Transform(new Vector(note.Width, note.Height));
             if (size.X > 0 && size.Y > 0) { MinWidth = Math.Min(MinWidth, size.X); MinHeight = Math.Min(MinHeight, size.Y); }
             SetWindowPos(hwnd, order ? below : IntPtr.Zero, note.X, note.Y, note.Width, note.Height, flags);
             if (note.Maximized && !maximized) ToggleMaximize();
@@ -545,8 +577,7 @@ namespace Synk.SignalInstaller
             if (!maximized && hwnd != IntPtr.Zero && GetWindowRect(hwnd, out rect)) { note.X = rect.Left; note.Y = rect.Top; note.Width = rect.Right - rect.Left; note.Height = rect.Bottom - rect.Top; }
             else {
                 Rect dip = maximized ? restoreBounds : new Rect(Left, Top, Width, Height);
-                PresentationSource source = PresentationSource.FromVisual(this);
-                Matrix m = source != null && source.CompositionTarget != null ? source.CompositionTarget.TransformToDevice : Matrix.Identity;
+                Matrix m = ToDevice();
                 Point a = m.Transform(dip.TopLeft), b = m.Transform(dip.BottomRight);
                 note.X = (int)Math.Round(a.X); note.Y = (int)Math.Round(a.Y); note.Width = (int)Math.Round(b.X - a.X); note.Height = (int)Math.Round(b.Y - a.Y);
             }
@@ -645,7 +676,7 @@ namespace Synk.SignalInstaller
                 shown = Math.Min(target, shown + dt * (orb.Reduced ? 10 : FollowPerSecond));
                 orb.ForgeAt(shown); SetVersionLine();
             }
-            if (fullyCut != null && shown >= 0.999) { TaskCompletionSource<bool> done = fullyCut; fullyCut = null; done.TrySetResult(true); }
+            if (fullyCut != null && shown >= 0.999) { SnapFull(); TaskCompletionSource<bool> done = fullyCut; fullyCut = null; done.TrySetResult(true); }
             if (shown >= target && !timedStage && fullyCut == null && scene != Scene.Installing && scene != Scene.Automatic && scene != Scene.Finishing) ticker.Stop();
         }
         /// <summary>엔진이 끝났다. 남은 만큼을 정한 빠르기로 마저 깎는다. 3초를 넘기면 그 자리에서 다 깎는다(앱을 켜는 것을 오래 붙잡지 않는다)</summary>
@@ -653,11 +684,13 @@ namespace Synk.SignalInstaller
         {
             scene = Scene.Finishing; Want(1); SetButtons(); ticker.Start();
             TaskCompletionSource<bool> done = new TaskCompletionSource<bool>();
-            if (shown >= 0.999) { done.SetResult(true); return done.Task; }
+            if (shown >= 0.999) { SnapFull(); done.SetResult(true); return done.Task; }
             fullyCut = done;
-            Later(3000, delegate { if (fullyCut == done) { fullyCut = null; shown = 1; orb.ForgeAt(1); SetVersionLine(); done.TrySetResult(true); } });
+            Later(3000, delegate { if (fullyCut == done) { fullyCut = null; SnapFull(); done.TrySetResult(true); } });
             return done.Task;
         }
+        /// <summary>다 깎은 끝은 1로 놓는다. 도착 쪽지의 마지막 장이 0.999 같은 값으로 남지 않게 한다</summary>
+        void SnapFull() { shown = target = 1; orb.ForgeAt(1); SetVersionLine(); }
 
         void Failed(string a, string b, bool retryable, string details)
         {
@@ -672,14 +705,32 @@ namespace Synk.SignalInstaller
             (retryable ? retry : close).Focus();
         }
 
+        /// <summary>
+        /// 기록 칸의 글. 창의 문장(「~습니다」)과 알릴 곳을 앞에 두고, 엔진 글에서는 경로 같은 값만 옮긴다(FailureValues).
+        /// 엔진 글을 그대로 붙이면 「확인하지 못했습니다.」 바로 아래가 「끝나지 않았어요.」가 됐다(0.4.96 검수 F4). 붙일 것이 없으면 null(칸을 숨긴다)
+        /// </summary>
+        static string Record(string lead, bool contact, string engineMessage)
+        {
+            List<string> lines = new List<string>();
+            string first = lead ?? "";
+            if (contact) first = (first.Length > 0 ? first + " " : "") + "알릴 곳: " + Contact;
+            if (first.Length > 0) lines.Add(first);
+            lines.AddRange(FailureValues.Of(engineMessage));
+            return lines.Count == 0 ? null : String.Join(Environment.NewLine, lines);
+        }
+
         /// <summary>손 설치의 실패. 엔진이 붙인 종류로 문장을 고른다(5절 설치기 표)</summary>
         public void ShowInstallFailure(Exception error)
         {
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<Exception>(ShowInstallFailure), error); return; }
             InstallFailure failure = error as InstallFailure;
-            string kind = FailureKind.Of(error);
+            string kind = FailureKind.Of(error), message = error == null ? null : error.Message;
+            if (kind == FailureKind.Pending) {
+                Failed("지난번 설치를 되돌렸는지 확인하지 못했습니다.", "다시 설치하지 말고 SYNK에 알려 주세요.", false, Record(null, true, message));
+                return;
+            }
             if (failure != null && !failure.CanRetry) {
-                Failed("설치하다 멈췄습니다.", "다시 설치하지 말고 SYNK에 알려 주세요.", false, "앱 파일이 어떤 상태인지 확인하지 못했습니다. 알릴 곳: " + Contact + Environment.NewLine + error.Message);
+                Failed("설치하다 멈췄습니다.", "다시 설치하지 말고 SYNK에 알려 주세요.", false, Record("앱 파일이 어떤 상태인지 확인하지 못했습니다.", true, message));
                 return;
             }
             switch (kind) {
@@ -687,12 +738,15 @@ namespace Synk.SignalInstaller
                 case FailureKind.AppRunning: Failed("SYNK가 켜져 있어 설치하지 못했습니다.", "SYNK를 닫은 뒤 다시 시도해 주세요.", true, null); return;
                 case FailureKind.AllUsers: Failed("모든 Windows 계정용 SYNK가 이미 설치돼 있습니다.", "그 설치를 지운 뒤 다시 시도해 주세요.", true, null); return;
                 case FailureKind.Newer: Failed("이 PC에 더 새 판이 이미 설치돼 있습니다.", "synk.im에서 새 설치 파일을 받아 주세요.", false, null); return;
-                case FailureKind.Space: Failed("PC 저장 공간이 모자라 설치하지 못했습니다.", "공간을 비운 뒤 다시 시도해 주세요.", true, error.Message); return;
+                case FailureKind.Space:
+                    string gigabytes = FailureValues.Gigabytes(message);
+                    Failed("PC 저장 공간이 모자라 설치하지 못했습니다.", gigabytes != null ? "약 " + gigabytes + " GB를 비운 뒤 다시 시도해 주세요." : "공간을 비운 뒤 다시 시도해 주세요.", true, null); return;
                 case FailureKind.Damaged: Failed("설치 파일이 온전하지 않습니다.", "synk.im에서 설치 파일을 다시 받아 주세요.", false, null); return;
                 case FailureKind.Timeout: Failed("설치가 너무 오래 걸려 멈췄습니다.", "설치 전 상태로 되돌렸습니다. 다시 시도해도 됩니다.", true, null); return;
-                case FailureKind.Restored: Failed("설치를 마치지 못했습니다.", "설치 전 상태로 되돌렸습니다. 다시 시도해도 됩니다.", true, error.Message); return;
+                case FailureKind.Restored: Failed("설치를 마치지 못했습니다.", "설치 전 상태로 되돌렸습니다. 다시 시도해도 됩니다.", true, Record(null, false, message)); return;
             }
-            Failed("설치를 마치지 못했습니다.", "아래 내용을 확인한 뒤 다시 시도해 주세요.", true, error.Message);
+            string record = Record(null, false, message);
+            Failed("설치를 마치지 못했습니다.", record != null ? "아래 내용을 확인한 뒤 다시 시도해 주세요." : "다시 시도해 주세요.", true, record);
         }
         /// <summary>설치와 바꾸기는 끝났는데 앱을 열지 못했다. 「열기」로 한 번 더 연다</summary>
         public void ShowLaunchFailure(Exception error)
@@ -700,8 +754,8 @@ namespace Synk.SignalInstaller
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<Exception>(ShowLaunchFailure), error); return; }
             scene = Scene.LaunchFailure; ticker.Stop();
             SetCopy(automatic ? "새 판으로 바꿨습니다." : "설치했습니다.", "앱을 열지 못했습니다.");
-            // 기록 칸은 실패 장면(Failed)과 같이 빈 글이면 숨기고, 낭독기 이름을 글과 맞춘다(0.4.96 카본 A5)
-            detail.Text = error == null ? "" : error.Message ?? ""; detailBox.Visibility = String.IsNullOrWhiteSpace(detail.Text) ? Visibility.Collapsed : Visibility.Visible; Layout();
+            // 기록 칸은 실패 장면(Failed)과 같이 빈 글이면 숨기고, 낭독기 이름을 글과 맞춘다(0.4.96 검수 A5). 엔진 글에서는 값만 옮긴다(0.4.96 검수 F4)
+            detail.Text = Record(null, false, error == null ? null : error.Message) ?? ""; detailBox.Visibility = String.IsNullOrWhiteSpace(detail.Text) ? Visibility.Collapsed : Visibility.Visible; Layout();
             AutomationProperties.SetName(detail, detail.Text);
             openApp.IsEnabled = true; ((TextBlock)openApp.Content).Text = "열기"; AutomationProperties.SetName(openApp, "열기");
             orb.SetCutOn(false, false); orb.EyesWake();
@@ -728,21 +782,21 @@ namespace Synk.SignalInstaller
         {
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<AutomaticUpdateResult>(ShowAutomaticResult), result); return; }
             if (result.Restored) Failed("새 판으로 바꾸지 못했습니다.", "쓰던 판은 그대로입니다. 앱을 다시 열어 주세요.", false, null);
-            else Failed("새 판으로 바꾸다 멈췄습니다.", "다시 설치하지 말고 SYNK에 알려 주세요.", false, "앱 파일이 어떤 상태인지 확인하지 못했습니다. 알릴 곳: " + Contact + Environment.NewLine + result.Message);
+            else Failed("새 판으로 바꾸다 멈췄습니다.", "다시 설치하지 말고 SYNK에 알려 주세요.", false, Record("앱 파일이 어떤 상태인지 확인하지 못했습니다.", true, result.Message));
         }
         /// <summary>자동 업데이트를 시작한 뒤(READY 뒤) 엔진 밖으로 나온 예외. 앱이 60초 안에 꺼지지 않은 때가 여기로 온다</summary>
         public void ShowAutomaticError(Exception error)
         {
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<Exception>(ShowAutomaticError), error); return; }
             if (FailureKind.Of(error) == FailureKind.AppStillRunning) Failed("새 판으로 바꾸지 못했습니다.", "쓰던 SYNK가 켜져 있어 그대로 두었습니다.", false, null);
-            else Failed("새 판으로 바꾸지 못했습니다.", "쓰던 판은 그대로입니다.", false, error.Message);
+            else Failed("새 판으로 바꾸지 못했습니다.", "쓰던 판은 그대로입니다.", false, Record(null, false, error.Message));
         }
         /// <summary>READY 전에 막힌 상태(지난 설치가 끝나지 않은 표시)를 만났다. 앱이 다시 만든 창에 가려지지 않게 맨 위에 둔다</summary>
         public void ShowBlocked(Exception error)
         {
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<Exception>(ShowBlocked), error); return; }
             Topmost = true;
-            Failed("지난번 설치를 되돌렸는지 확인하지 못했습니다.", "다시 설치하지 말고 SYNK에 알려 주세요.", false, "알릴 곳: " + Contact + Environment.NewLine + error.Message);
+            Failed("지난번 설치를 되돌렸는지 확인하지 못했습니다.", "다시 설치하지 말고 SYNK에 알려 주세요.", false, Record(null, true, error.Message));
         }
         /// <summary>호스트가 일을 마쳐 창을 닫는다(닫기 막기를 지나간다)</summary>
         public void CloseNow() { allowClose = true; Close(); }

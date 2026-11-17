@@ -40,7 +40,7 @@ function observe(config){
   shell.openExternal=async url=>{opened.push({kind:'external',url});};
   shell.openPath=async()=>{forbidden.push({operation:'shell.openPath'});return 'QA_INSTALLER_OPEN_FORBIDDEN';};
   const updates=require(app.getAppPath()+'/src/platform-update.cjs'),original=updates.createPlatformUpdater;
-  // 첫 피드 답은 시작 창 캡처가 끝난 뒤에 돌려준다. 느린 러너에서 관문의 4초 먼저 열기가 그보다 앞서 앱 창을 열지 않게 이 실행에서만 늘린다(0.4.96 Fable F3)
+  // 첫 피드 답은 시작 창 캡처가 끝난 뒤에 돌려준다. 느린 러너에서 관문의 4초 먼저 열기가 그보다 앞서 앱 창을 열지 않게 이 실행에서만 늘린다(0.4.96 검수 F3)
   const gates=require(app.getAppPath()+'/src/platform-startup-update.cjs'),originalGate=gates.createStartupUpdateGate;
   gates.createStartupUpdateGate=options=>originalGate({...options,earlyOpenMs:60000});
   const runtime=JSON.parse(fs.readFileSync(app.getAppPath()+'/runtime.json','utf8'));
@@ -78,7 +78,7 @@ function observe(config){
   app.on('browser-window-created',(_event,created)=>{process.stderr.write('SYNK_QA_TRACE window-created\n');
     created.show=()=>{};created.showInactive=()=>{};created.focus=()=>{};
     const contents=created.webContents;contents.setBackgroundThrottling(false);contents.setAudioMuted(true);blockNetwork(contents);
-    // 얼굴 단계 기록은 앱 창의 dom-ready에서 바로 심는다. did-finish-load 뒤에 심으면 본체가 넘긴 드러남 시각만큼 welcome이 짧아져, 느린 러너에서 welcome을 놓칠 수 있었다(0.4.96 공개 후보 Fable P3). webContents.executeJavaScript는 쪽이 다 실릴 때(did-stop-loading)까지 미뤄지므로 mainFrame.executeJavaScript로 바로 심는다. 미뤄진 채로는 겹쳐 넘기는 길(시작 창이 보이던 실행)에서 welcome이 끝난 뒤에 심겨 Mac 빌드가 welcome을 놓쳤다(0.4.96 첫 빌드 Mac 두 작업). 아래 기다림 식의 심기는 이미 심었으면 그냥 지나간다
+    // 얼굴 단계 기록은 앱 창의 dom-ready에서 바로 심는다. did-finish-load 뒤에 심으면 본체가 넘긴 드러남 시각만큼 welcome이 짧아져, 느린 러너에서 welcome을 놓칠 수 있었다(0.4.96 공개 후보 검수 P3). webContents.executeJavaScript는 쪽이 다 실릴 때(did-stop-loading)까지 미뤄지므로 mainFrame.executeJavaScript로 바로 심는다. 미뤄진 채로는 겹쳐 넘기는 길(시작 창이 보이던 실행)에서 welcome이 끝난 뒤에 심겨 Mac 빌드가 welcome을 놓쳤다(0.4.96 첫 빌드 Mac 두 작업). 아래 기다림 식의 심기는 이미 심었으면 그냥 지나간다
     contents.on('dom-ready',()=>{if(contents.getURL()==='synk-desktop://platform/index.html')void contents.mainFrame.executeJavaScript("(()=>{if(window.__orbSeenPlant)return true;window.__orbSeenPlant=true;const plant=p=>{if(window.__orbSeen)return;const seen=window.__orbSeen=[p.dataset.portalState||''];const add=v=>{const s=v||'';if(seen[seen.length-1]!==s)seen.push(s);};const snap=()=>{if(p.dataset.portalState!=='welcome')return;const l=document.querySelector('.launcher'),c=p.querySelector('.orb-canvas')?.getBoundingClientRect();window.__orbWelcome={auth:p.dataset.portalAuthStatus,active:p.dataset.portalActive,client:p.dataset.orbClient,hidden:!!p.hidden,docActive:document.documentElement.dataset.portalActive,inert:!!l?.inert,inertAttr:!!l?.hasAttribute('inert'),covers:!!c&&c.width>=innerWidth-1&&c.height>=innerHeight-1};};snap();new MutationObserver(list=>{for(const r of list)if(r.attributeName==='data-portal-state')add(r.oldValue);add(p.getAttribute('data-portal-state'));snap();}).observe(p,{attributes:true,attributeOldValue:true,attributeFilter:['data-portal-state','data-portal-auth-status','data-portal-active','data-orb-client','hidden']});};const p=document.getElementById('portal-entry');if(p){plant(p);return true;}const o=new MutationObserver(()=>{const q=document.getElementById('portal-entry');if(q){o.disconnect();plant(q);}});o.observe(document.documentElement,{childList:true,subtree:true});return true;})()",true).catch(()=>{});});
     // Windows exposes preloadURL rather than preload in early preferences.
     // Classify only after the exact production document has finished loading.
@@ -87,7 +87,7 @@ function observe(config){
       startupWindow=created;startupCount++;
       (async()=>{try{
         await waitFor(contents,"document.documentElement.dataset.startupReady==='true'",'startup-renderer');
-        // 1-가 시작 창은 확인하는 동안 구만 보이고 문장 칸은 숨는다. 문장은 그 칸의 글로, 구만 보이는 것은 data-ui로, 실제로 숨었는지는 보이는 글(innerText)이 빈 것으로 본다(0.4.96 대역 빌드 검사, 공개 후보 Fable P2)
+        // 1-가 시작 창은 확인하는 동안 구만 보이고 문장 칸은 숨는다. 문장은 그 칸의 글로, 구만 보이는 것은 data-ui로, 실제로 숨었는지는 보이는 글(innerText)이 빈 것으로 본다(0.4.96 대역 빌드 검사, 공개 후보 검수 P2)
         const state=await contents.executeJavaScript("(async()=>({status:await synkStartupUpdate.getStatus(),title:document.title,text:document.body.innerText,say:document.getElementById('startup-say')?.textContent||'',ui:document.getElementById('startup-update')?.dataset.ui||'',desktop:typeof synkDesktop,node:typeof require,keys:Object.keys(synkStartupUpdate)}))()",true);
         check('real startup window is isolated and checking',state.status.state==='checking'&&state.title==='SYNK Platform'&&state.say==='새 판을 확인하고 있습니다.'&&state.ui==='none'&&state.text.trim()===''&&state.desktop==='undefined'&&state.node==='undefined'&&state.keys.sort().join(',')==='close,getStatus,install,minimize,onChanged,onWindowState,openCurrent,retry,toggleMaximize',state);
         check('startup window stays hidden in QA',!created.isVisible());
@@ -101,7 +101,7 @@ function observe(config){
       check('actual packaged Windows candidate',app.isPackaged&&app.getAppPath()===config.archive&&process.platform==='win32'&&process.arch==='x64'&&app.getVersion()===config.version);
       check('profile isolated before main initialization',app.getPath('userData').startsWith(config.appData+path.sep));
       check('production gate reaches current before one main window',startupCount===1&&mainCount===1&&states.join(',')==='checking,current'&&feedRequests===1,{states:states.slice(),feedRequests});
-      // 한 번에 묶여 온 바뀜은 옛 값을 차례로 적고 지금 값을 끝에 한 번만 적는다. 바뀜마다 지금 값을 끼우면 차례가 뒤집혔다(0.4.96 카본 E4)
+      // 한 번에 묶여 온 바뀜은 옛 값을 차례로 적고 지금 값을 끝에 한 번만 적는다. 바뀜마다 지금 값을 끼우면 차례가 뒤집혔다(0.4.96 검수 E4)
       // 얼굴의 단계 바뀜을 앱이 뜨자마자 적어 둔다. 느린 러너에서는 검사기가 welcome을 잡기 전에 얼굴이 묻는 화면으로 커진다(0.4.95 첫 빌드 Mac x64, Mac 사본과 같다)
       await waitFor(contents,"(()=>{const p=document.getElementById('portal-entry');if(!p)return false;if(!window.__orbSeen){const seen=window.__orbSeen=[p.dataset.portalState||''];const add=v=>{const s=v||'';if(seen[seen.length-1]!==s)seen.push(s);};const snap=()=>{if(p.dataset.portalState!=='welcome')return;const l=document.querySelector('.launcher'),c=p.querySelector('.orb-canvas')?.getBoundingClientRect();window.__orbWelcome={auth:p.dataset.portalAuthStatus,active:p.dataset.portalActive,client:p.dataset.orbClient,hidden:!!p.hidden,docActive:document.documentElement.dataset.portalActive,inert:!!l?.inert,inertAttr:!!l?.hasAttribute('inert'),covers:!!c&&c.width>=innerWidth-1&&c.height>=innerHeight-1};};snap();new MutationObserver(list=>{for(const r of list)if(r.attributeName==='data-portal-state')add(r.oldValue);add(p.getAttribute('data-portal-state'));snap();}).observe(p,{attributes:true,attributeOldValue:true,attributeFilter:['data-portal-state','data-portal-auth-status','data-portal-active','data-orb-client','hidden']});}return location.href==='synk-desktop://platform/index.html'&&document.documentElement.dataset.ready==='true';})()",'main-renderer');
       await waitFor(contents,"window.synkDesktop.authStatus().then(auth=>auth.status==='signed-out')",'signed-out');
@@ -146,7 +146,7 @@ function observe(config){
       await waitFor(contents,"document.querySelector('#portal-entry .orb-stage')?.dataset.ui==='switch'",'orb-switch');
       await clickVisible('#portal-entry [data-foot="settings"]','orb switch settings visible and unobscured');
       await waitFor(contents,"document.documentElement.dataset.orbClient==='legacy'&&document.documentElement.dataset.view==='settings'",'orb-legacy-settings');
-      // 임시 옛 화면에서는 옛 런처의 잠금이 풀려 마우스와 자판으로 눌려야 한다(Fable 최종). 프로그램 클릭은 잠긴 요소에도 통하므로 따로 본다
+      // 임시 옛 화면에서는 옛 런처의 잠금이 풀려 마우스와 자판으로 눌려야 한다(최종 검수). 프로그램 클릭은 잠긴 요소에도 통하므로 따로 본다
       const unlocked=await run("(()=>{const l=document.querySelector('.launcher'),back=document.querySelector('#portal-entry .legacy-back'),r=back?.getBoundingClientRect();return {launcherInert:Boolean(l?.inert),launcherInertAttr:Boolean(l?.hasAttribute('inert')),launcherAriaHidden:l?.getAttribute('aria-hidden')??null,backVisible:!!back&&!back.hidden&&!!r&&r.width>0&&r.height>0};})()");
       check('orb legacy view unlocks the old launcher and shows 「돌아가기」',!unlocked.launcherInert&&!unlocked.launcherInertAttr&&unlocked.launcherAriaHidden===null&&unlocked.backVisible,unlocked);
       for(const view of ['settings']){

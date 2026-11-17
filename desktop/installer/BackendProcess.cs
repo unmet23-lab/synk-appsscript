@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Synk.SignalInstaller
@@ -23,7 +25,9 @@ namespace Synk.SignalInstaller
     {
         public const string Key = "synk.failure-kind";
         public const string NotX64 = "not-x64", AppRunning = "app-running", AllUsers = "all-users", Newer = "newer", Space = "space", Damaged = "damaged",
-            Timeout = "timeout", AppStillRunning = "app-still-running", Restored = "restored";
+            Timeout = "timeout", AppStillRunning = "app-still-running", Restored = "restored",
+            // 지난 설치가 끝나지 않은 표시가 남아 있다. 이번 실행은 아무것도 바꾸지 않았다
+            Pending = "pending";
         public static T Tag<T>(T error, string kind) where T : Exception { try { error.Data[Key] = kind; } catch (Exception) { } return error; }
         public static string Of(Exception error)
         {
@@ -33,6 +37,49 @@ namespace Synk.SignalInstaller
             return null;
         }
         public static void Copy(Exception from, Exception to) { string kind = Of(from); if (kind != null) Tag(to, kind); }
+    }
+
+    /// <summary>
+    /// Platform 새 창의 기록 칸에 옮길 값(0.4.96 검수 F4). 엔진 문장은 세 제품이 같이 써서 해요체 그대로 두므로, 새 창은 기록 칸의 문장도 「~습니다」로
+    /// 스스로 쓰고 엔진 글에서는 값만 옮긴다. 값은 되돌릴 원본과 되돌리기 안내의 경로, 확인하지 못한 파일, 설치 엔진의 끝 코드다.
+    /// 엔진이 감싼 Windows의 글(「~니다」로 끝나거나 한글이 없는 줄)은 그대로 옮긴다. 엔진의 해요체 문장은 옮기지 않는다
+    /// </summary>
+    public static class FailureValues
+    {
+        static readonly Regex UncheckedFile = new Regex(@"확인하지 못했어요: (.+?)\. ");
+        static readonly Regex ExitCode = new Regex(@"\(코드 (-?\d+)\)");
+        static readonly Regex Gigabyte = new Regex(@"약 (\d+) GB");
+        static readonly Regex Hangul = new Regex(@"[가-힣]");
+        static readonly string[] PathLabels = { "되돌릴 원본: ", "되돌리기 안내: " };
+
+        public static List<string> Of(string message)
+        {
+            List<string> values = new List<string>();
+            if (String.IsNullOrEmpty(message)) return values;
+            foreach (string raw in message.Split('\n')) {
+                string line = raw.Trim();
+                if (line.Length == 0) continue;
+                bool labelled = false;
+                foreach (string label in PathLabels) {
+                    int at = line.IndexOf(label, StringComparison.Ordinal);
+                    if (at >= 0) { Add(values, label + line.Substring(at + label.Length).Trim()); labelled = true; }
+                }
+                if (labelled) continue;
+                Match file = UncheckedFile.Match(line + " ");
+                if (file.Success) Add(values, "확인하지 못한 파일: " + file.Groups[1].Value);
+                Match code = ExitCode.Match(line);
+                if (code.Success) Add(values, "설치 엔진 코드: " + code.Groups[1].Value);
+                if (!Hangul.IsMatch(line) || line.EndsWith("니다.", StringComparison.Ordinal) || line.EndsWith("니다", StringComparison.Ordinal)) Add(values, line);
+            }
+            return values;
+        }
+        /// <summary>공간이 모자랄 때 엔진이 적은 GB 수. 없으면 null</summary>
+        public static string Gigabytes(string message)
+        {
+            Match m = Gigabyte.Match(message ?? "");
+            return m.Success ? m.Groups[1].Value : null;
+        }
+        static void Add(List<string> values, string line) { if (!values.Contains(line)) values.Add(line); }
     }
 
     // The verified NSIS and every descendant belong to this job before the

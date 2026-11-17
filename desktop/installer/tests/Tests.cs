@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Json;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -172,7 +173,7 @@ internal static class SignalInstallerTests
                 Directory.Delete(Handoff.InstallerRoot, true);
                 Handoff.InstallerRoot = null;
             });
-            // 조용한 업데이트가 끝날 무렵 사람이 켠 앱의 요청이 사라지지 않는다(0.4.96 GPT 검수 GA1)
+            // 조용한 업데이트가 끝날 무렵 사람이 켠 앱의 요청이 사라지지 않는다(0.4.96 검수 GA1)
             Check("a show request before the launch reveals the installer, one after the launch opens the app again at the end", delegate
             {
                 var pending = new Queue<bool>(); int reveals = 0;
@@ -180,22 +181,60 @@ internal static class SignalInstallerTests
                 var before = new ShowRequestGate(take, delegate { reveals++; });
                 pending.Enqueue(true); before.Tick();
                 Assert(reveals == 1, "A request before the launch did not reveal the installer.");
-                before.BeforeLaunch(); Assert(!before.OpenAgainAtEnd(), "A request already answered before the launch opened the app again.");
+                before.BeforeLaunch(); before.Launched(); Assert(!before.OpenAgainAtEnd(), "A request already answered before the launch opened the app again.");
                 // 마지막 Tick과 BeforeLaunch 사이에 생긴 요청: 도착 쪽지를 쓰기 전에 받아 창을 보인다
                 reveals = 0; var edge = new ShowRequestGate(take, delegate { reveals++; });
-                pending.Enqueue(true); edge.BeforeLaunch();
+                pending.Enqueue(true); edge.BeforeLaunch(); edge.Launched();
                 Assert(reveals == 1 && !edge.OpenAgainAtEnd(), "A request waiting at the launch was not answered before the arrival note.");
                 // 켜기 시작한 뒤의 요청: 설치기 창만 보이면 새 앱이 숨은 채 남는다. 끝에서 앱을 한 번 더 켠다
                 reveals = 0; var after = new ShowRequestGate(take, delegate { reveals++; });
                 after.BeforeLaunch(); pending.Enqueue(true); after.Tick();
                 Assert(reveals == 0, "A request after the launch revealed only the installer window.");
+                after.Launched();
                 Assert(after.OpenAgainAtEnd(), "A request after the launch was lost.");
                 // 끝나기 직전에 막 생긴 요청도 받는다
                 var late = new ShowRequestGate(take, delegate { reveals++; });
-                late.BeforeLaunch(); pending.Enqueue(true);
+                late.BeforeLaunch(); late.Launched(); pending.Enqueue(true);
                 Assert(late.OpenAgainAtEnd() && pending.Count == 0, "A request at the very end was not taken.");
                 var none = new ShowRequestGate(take, delegate { reveals++; });
-                none.Tick(); none.BeforeLaunch(); Assert(!none.OpenAgainAtEnd() && reveals == 0, "No request still opened something.");
+                none.Tick(); none.BeforeLaunch(); none.Launched(); Assert(!none.OpenAgainAtEnd() && reveals == 0, "No request still opened something.");
+            });
+            // 앱을 켜지 못해 실패 장면에 머문 설치기: 요청이 창을 다시 앞으로 가져오고, 사람이 그 창을 닫아도 끝에서 앱을 켜지 않는다(0.4.96 검수 B2)
+            Check("after a failed launch a show request brings the failure window forward and the end never opens the app", delegate
+            {
+                var pending = new Queue<bool>(); int reveals = 0;
+                Func<bool> take = delegate { return pending.Count > 0 && pending.Dequeue(); };
+                // 켜기를 넘기지 않은 끝에서는 요청이 있어도 앱을 켜지 않는다(고치기 전 판은 여기서 앱을 켰다)
+                var unlaunched = new ShowRequestGate(take, delegate { reveals++; });
+                unlaunched.BeforeLaunch(); pending.Enqueue(true); unlaunched.Tick();
+                Assert(!unlaunched.OpenAgainAtEnd(), "An installer whose launch never went through opened the app at the end.");
+                pending.Enqueue(true);
+                Assert(!unlaunched.OpenAgainAtEnd(), "A request at the end opened the app although no launch went through.");
+                pending.Clear();
+                // 켜지 못한 뒤의 요청은 실패 장면의 창을 앞으로 가져온다
+                reveals = 0; var failed = new ShowRequestGate(take, delegate { reveals++; });
+                failed.BeforeLaunch(); pending.Enqueue(true); failed.Tick();
+                Assert(reveals == 0, "A request during the launch revealed the installer before the launch failed.");
+                failed.LaunchFailed(); pending.Enqueue(true); failed.Tick();
+                Assert(reveals == 1, "A request after the failed launch did not bring the failure window forward.");
+                Assert(!failed.OpenAgainAtEnd(), "Closing the failure window opened the app.");
+                // 실패 뒤 「쓰던 판 열기」로 다시 켜 넘긴 뒤의 요청은 끝에서 앱을 부른다
+                failed.BeforeLaunch(); failed.Launched(); pending.Enqueue(true); failed.Tick();
+                Assert(reveals == 1 && failed.OpenAgainAtEnd(), "A request after the second, handed-over launch was lost.");
+            });
+            // Platform 새 창의 기록 칸은 엔진의 해요체 문장을 옮기지 않고 값만 옮긴다(0.4.96 검수 F4). 엔진 글의 꼴은 아래 실제 엔진 실패에서도 본다
+            Check("the Platform window record keeps engine values and never the engine's sentences", delegate
+            {
+                AssertRecord("설치를 마치지 못했어요. 다시 해 주세요. (코드 2)", new[] { "설치 엔진 코드: 2" });
+                AssertRecord("설치된 파일을 확인하지 못했어요: resources/app.asar. 다시 설치해 주세요.", new[] { "확인하지 못한 파일: resources/app.asar" });
+                AssertRecord("설치가 끝났는지 확인하지 못해 되돌리기와 재시도를 멈췄어요.\n액세스가 거부되었습니다.", new[] { "액세스가 거부되었습니다." });
+                AssertRecord("Access is denied", new[] { "Access is denied" });
+                AssertRecord("설치가 끝나지 않았어요. 되돌릴 원본: C:\\x\\Cache\\a\nSYNK에 이 내용을 알려 주세요.\n되돌릴 원본: C:\\x\\Cache\\a", new[] { "되돌릴 원본: C:\\x\\Cache\\a" });
+                AssertRecord("SYNK가 아직 켜져 있어요.\n작업을 저장하고 앱을 끈 뒤 다시 해 주세요.", new string[0]);
+                var bad = ReadSpec(); bad.MinFreeBytes = long.MaxValue;
+                Exception space = Caught(delegate { Engine(bad).Preflight(); });
+                Assert(FailureKind.Of(space) == FailureKind.Space && FailureValues.Gigabytes(space.Message) != null, "The space failure lost its size: " + space.Message);
+                AssertRecord(space.Message, new string[0]);
             });
             Check("known-folder shortcut guard accepts Cloud variants but rejects symlinks, junctions and unknown reparse tags", delegate
             {
@@ -274,7 +313,12 @@ internal static class SignalInstallerTests
             {
                 var archive = Path.Combine(Spec.InstallDirectory, "resources", "app.asar");
                 var bytes = File.ReadAllBytes(archive);
-                try { File.WriteAllText(archive, "corrupted"); ExpectFailure(delegate { engine.VerifyInstalled(); }); }
+                try
+                {
+                    File.WriteAllText(archive, "corrupted"); ExpectFailure(delegate { engine.VerifyInstalled(); });
+                    // 새 창의 기록 칸에는 그 파일 이름만 옮긴다(0.4.96 검수 F4)
+                    AssertRecord(Caught(delegate { engine.VerifyInstalled(); }).Message, new[] { "확인하지 못한 파일: resources/app.asar" });
+                }
                 finally { File.WriteAllBytes(archive, bytes); }
             });
             holdDirectory = Path.Combine(Root, "held-process");
@@ -363,8 +407,15 @@ internal static class SignalInstallerTests
                             var result=Task.Run(delegate { return blocked.InstallAutomaticUpdateCore(session,Progress,delegate(Action<InstallProgress> progress) { throw new InstallFailure("Synthetic stop confirmation failure",false,false); },delegate(string executable,string arguments){relaunched=true;}); }).GetAwaiter().GetResult();
                             Assert(!result.Restored&&!result.Updated&&!relaunched,"Unconfirmed stop attempted recovery or launch.");
                             Assert(result.Message.Contains("일부 바뀌었을 수")&&result.Message.Contains("되돌릴 원본"),"Uncertain state not disclosed.");
+                            // 새 창의 기록 칸: 엔진 문장은 옮기지 않고, 되돌릴 원본의 실제 경로와 감싼 예외의 글만 옮긴다(0.4.96 검수 F4)
+                            List<string> kept=FailureValues.Of(result.Message);string label="되돌릴 원본: ";
+                            Assert(kept.Count==2&&kept[0].StartsWith(label,StringComparison.Ordinal)&&Directory.Exists(kept[0].Substring(label.Length))&&kept[1]=="Synthetic stop confirmation failure","The record lost the backup folder: "+String.Join(" | ",kept));
+                            AssertRecord(result.Message,kept.ToArray());
                             InstallFailure failure=null;try { Engine(ReadSpec()).Preflight(); }catch(InstallFailure error){failure=error;}
                             Assert(failure!=null&&!failure.CanRetry,"New installer did not respect unresolved transaction barrier.");
+                            // 지난 설치가 끝나지 않은 표시: 종류는 「pending」이고 기록 칸에는 되돌리기 안내의 경로만 옮긴다(0.4.96 검수 F4)
+                            Assert(FailureKind.Of(failure)==FailureKind.Pending,"The unfinished-install barrier carries no kind.");
+                            AssertRecord(failure.Message,new[] { "되돌리기 안내: "+Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Pending",Spec.Guid+".txt") });
                             failure=null;try { Engine(ReadSpec()).PrepareAutomaticUpdate(exited.Id,new string('a',64),new string('b',64)); }catch(InstallFailure error){failure=error;}
                             Assert(failure!=null&&!failure.CanRetry,"Automatic update did not reject the unresolved transaction before READY.");
                             string pending=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Pending",Spec.Guid+".txt");
@@ -598,6 +649,32 @@ internal static class SignalInstallerTests
             }
             if (Fixture.ContainsKey("autoFailure"))
             {
+                // 앱이 뒤에서 띄운 자동 업데이트가 설치기 뮤텍스를 얻지 못하면, 도는 설치기의 창을 부르거나 대화 상자를 띄우지 않고 실패로 끝난다(0.4.96 검수 B2).
+                // 고치기 전 판은 창 보이기 요청을 쓰고 0으로 끝났다
+                Check("an automatic installer that cannot take the installer lock ends without a show request or a dialog", delegate
+                {
+                    string wrapper=(string)Fixture["autoFailure"];Assert(IsInside(wrapper,Root),"Automatic wrapper escaped fixture root.");
+                    string request=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Handoff",Spec.AppId+".show-request");
+                    if(File.Exists(request))File.Delete(request);
+                    bool created;
+                    using(var mutex=new Mutex(true,@"Local\SYNK.Signal.Installer.platform."+WindowsIdentity.GetCurrent().User.Value,out created))
+                    {
+                        Assert(created,"Another Platform installer is open now; run the test again after it closes.");
+                        try
+                        {
+                            string nonce=System.Guid.NewGuid().ToString("N")+System.Guid.NewGuid().ToString("N");
+                            using(var child=Process.Start(new ProcessStartInfo(wrapper,"--auto-update --wait-pid="+Process.GetCurrentProcess().Id+" --handoff-token="+nonce){UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden,RedirectStandardOutput=true,RedirectStandardError=true}))
+                            {
+                                bool ended=child.WaitForExit(30000);
+                                if(!ended){try{child.Kill();child.WaitForExit(5000);}catch(Exception){}}
+                                Assert(ended,"The automatic installer stayed open (a dialog) instead of ending.");
+                                Assert(child.ExitCode!=0,"The automatic installer reported success without the installer lock.");
+                                Assert(!File.Exists(request),"The automatic installer asked the running installer to show its window.");
+                            }
+                        }
+                        finally { mutex.ReleaseMutex(); if(File.Exists(request))File.Delete(request); }
+                    }
+                });
                 Check("real automatic installer READY then normal parent exit rolls failed NSIS verification back and relaunches once", delegate
                 {
                     using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
@@ -721,6 +798,8 @@ internal static class SignalInstallerTests
                     WaitFor(delegate{try { if(!File.Exists(launched))return false;arguments=File.ReadAllText(launched);return true; }catch(IOException){return false;}},"Automatic installer did not finish its fixture launch receipt.",30000);
                     if(success) { Assert(arguments=="","Successful update used a startup bypass.");Assert(child.WaitForExit(10000),"Successful installer did not close itself.");Assert(child.ExitCode==0,"Successful installer failed.");
                         Assert(!File.Exists(updating),"The updating marker was left after the update.");
+                        // 새 판을 켜기 전에 다 깎는다(0.4.96 검수 B1). 고치기 전에는 엔진이 끝나기 전에 쪽지를 써서 0.99 아래로 적혔다
+                        double cut=ArrivalCut(arrival);Assert(cut>=0.999,"The arrival note was written before the carving finished: "+cut);
                         if(quiet){watching=false;Assert(!sawWindow,"Quiet update showed an installer window.");string text=File.ReadAllText(arrival);Assert(text.Contains("\"visibility\":\"hidden\"")&&text.Contains("\"kind\":\"updated\"")&&text.Contains("\"x\":100"),"Quiet arrival note: "+text);}
                         else Assert(sawWindow,"Visible update never showed its window."); }
                     else
@@ -781,6 +860,25 @@ internal static class SignalInstallerTests
         }
     }
     private static void Assert(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
+    private static Exception Caught(Action action)
+    {
+        try { action(); } catch (Exception error) { return error; }
+        throw new InvalidOperationException("Operation unexpectedly succeeded.");
+    }
+    // 해요체로 끝나는 문장(「~해 주세요」는 창 문장도 쓰므로 뺀다)
+    private static bool Haeyo(string text) { return System.Text.RegularExpressions.Regex.IsMatch(text ?? "", @"(?<!세)요(?=[.!?]?(\s|$))"); }
+    // Platform 새 창의 기록 칸에 옮길 값이 꼭 이것뿐이고, 엔진의 해요체 문장이 하나도 없다(0.4.96 검수 F4)
+    private static void AssertRecord(string engineMessage, string[] expected)
+    {
+        List<string> values = FailureValues.Of(engineMessage);
+        Assert(values.SequenceEqual(expected), "Record values «" + String.Join(" | ", values) + "» expected «" + String.Join(" | ", expected) + "» from: " + engineMessage);
+        Assert(!values.Any(Haeyo), "Record copied an engine sentence: " + String.Join(" | ", values));
+    }
+    private static double ArrivalCut(string file)
+    {
+        var data = Json.Deserialize<Dictionary<string, object>>(File.ReadAllText(file));
+        return Convert.ToDouble(data["cut"], System.Globalization.CultureInfo.InvariantCulture);
+    }
     private static void ExpectFailure(Action action)
     {
         bool failed = false;

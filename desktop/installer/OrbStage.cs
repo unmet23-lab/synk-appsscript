@@ -498,7 +498,13 @@ namespace Synk.SignalInstaller
                 wait = delegate { if (Now() < at) return; timers.Remove(wait); if (k == eyeToken) SetMood("calm", 0); };
                 timers.Add(wait);
             };
-            if (next == mood) { hold(); return; }
+            // 같은 표정이어도 깜빡임이나 앞선 표정 바꾸기가 눈을 감던 중이면 마저 뜬다. 위 ++eyeToken이 그 눈 뜨기를 지웠으므로,
+            // 그대로 돌아가면 눈이 감긴 줄로 멈춘다(0.4.96 검수 A1)
+            if (next == mood) {
+                if (lid != null || eyeOpen < 1) LidTo(1, next == "calm" ? 260 : 190, EaseOut, delegate { if (k == eyeToken) hold(); });
+                else hold();
+                return;
+            }
             LidTo(0, 110, EaseIO, delegate {
                 if (k != eyeToken) return;
                 mood = next; SayEyes();
@@ -571,13 +577,23 @@ namespace Synk.SignalInstaller
             StepTween(now);
             OrbUniforms u = Uniforms(now, true);
             if (gpu) { effect.Apply(u); return; }
-            // CPU 판은 한 장에 수백 ms가 걸린다. 바뀐 것이 없으면 1초에 한 번만 다시 그린다(1-가 구현 설계 1절의 사다리)
-            if (!cpuDirty && resting && now - lastCpu < 1000) return;
-            if (cpuBusy) return;
-            cpuDirty = false; lastCpu = now;
+            if (!CpuDue(cpuBusy, resting, ref cpuDirty, now - lastCpu)) return;
+            lastCpu = now;
             DrawCpuAsync(u);
         }
         double lastCpu;
+        /// <summary>
+        /// CPU 판이 이 장을 그릴지 고른다. 한 장에 수백 ms가 걸리므로 바뀐 것이 없으면 1초에 한 번만 다시 그린다(1-가 구현 설계 1절의 사다리).
+        /// 앞 장을 그리는 중이라 건너뛴 움직이는 장은 dirty로 남긴다. 그러지 않으면 그 사이에 끝난 짧은 전환이 1초 막음에 걸려
+        /// 전환 앞의 모습이 1초 가까이 남았다(0.4.96 검수 A2)
+        /// </summary>
+        internal static bool CpuDue(bool busy, bool resting, ref bool dirty, double sinceLast)
+        {
+            if (busy) { if (!resting) dirty = true; return false; }
+            if (!dirty && resting && sinceLast < 1000) return false;
+            dirty = false;
+            return true;
+        }
 
         void DrawCpuAsync(OrbUniforms u)
         {

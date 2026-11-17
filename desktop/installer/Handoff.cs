@@ -208,15 +208,16 @@ namespace Synk.SignalInstaller
     }
 
     /// <summary>
-    /// 창 보이기 요청을 받는 때(0.4.96 GPT 검수 GA1). 앱을 켜기 시작하기 전에 받은 요청은 설치기 창을 보이고, 도착 쪽지도 「앞」으로 쓴다.
+    /// 창 보이기 요청을 받는 때(0.4.96 검수 GA1). 앱을 켜기 시작하기 전에 받은 요청은 설치기 창을 보이고, 도착 쪽지도 「앞」으로 쓴다.
     /// 켜기 시작한 뒤(도착 쪽지를 이미 썼다)에 받은 요청은 설치기 창을 보여도 새 앱이 숨은 채 켜지므로, 끝나기 직전에 앱을 한 번 더 켜서 창을 부르게 남긴다.
-    /// 세 함수는 모두 설치기 창의 스레드에서 부른다
+    /// 앱을 켜지 못해 실패 장면에 머물면 켜기 전으로 되돌아가, 그 뒤의 요청은 다시 설치기 창을 앞으로 가져온다.
+    /// 끝에서 앱을 한 번 더 켜는 것은 앱 켜기를 실제로 넘긴 때(Launched)뿐이다(0.4.96 검수 B2). 함수는 모두 설치기 창의 스레드에서 부른다
     /// </summary>
     public sealed class ShowRequestGate
     {
         private readonly Func<bool> take;
         private readonly Action reveal;
-        private bool launchBegun, showAfterLaunch;
+        private bool launchBegun, showAfterLaunch, launched;
         public ShowRequestGate(Func<bool> take, Action reveal) { this.take = take; this.reveal = reveal; }
         /// <summary>0.5초마다 부른다</summary>
         public void Tick()
@@ -230,9 +231,21 @@ namespace Synk.SignalInstaller
             if (take()) reveal();
             launchBegun = true;
         }
-        /// <summary>끝나기 직전에 부른다. 앱을 한 번 더 켜야 하면 참이다</summary>
+        /// <summary>
+        /// 앱을 켜지 못해 설치기 창이 실패 장면(「열기」, 「쓰던 판 열기」)에 머문다. 켜기 전으로 되돌린다. 켜는 동안 받은 요청은 부른 쪽이 창을 보이므로 따로 남기지 않는다.
+        /// 되돌리지 않으면 그 뒤의 요청이 창을 앞으로 가져오지 못하고, 사람이 실패 창을 닫은 뒤 끝에서 앱을 되돌림 인자 없이 켰다
+        /// </summary>
+        public void LaunchFailed()
+        {
+            launchBegun = false;
+            showAfterLaunch = false;
+        }
+        /// <summary>앱 켜기를 넘겼다(켠 앱의 창을 기다리거나 끝낸다)</summary>
+        public void Launched() { launched = true; }
+        /// <summary>끝나기 직전에 부른다. 앱을 한 번 더 켜야 하면 참이다. 앱 켜기를 넘기지 않은 끝에서는 늘 거짓이다</summary>
         public bool OpenAgainAtEnd()
         {
+            if (!launched) return false;
             bool waiting = take();
             return waiting || showAfterLaunch;
         }
