@@ -27,7 +27,7 @@ const cellAt = (sec: number) => {
 const pop = (frame: number, at: number) => interpolate(frame, [fr(at), fr(at) + 6], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.7)) });
 
 type Line = { ko: string; cyr: string; mn: string };
-// 말풍선 — 말하는 이 머리 위, 꼬리가 그 머리를 가리킨다(tail = 꼬리 자리 비율)
+// 말풍선 — 말하는 이 머리 위, 꼬리가 그 머리를 가리킨다(tail = 꼬리 자리 비율). 키릴 읽기 줄은 52px(미학 맹검 11-17 카본 「휴대폰에서 뭉개질 만큼 작은 발음 줄」로 46px에서 키움)
 const Bubble: React.FC<{ at: number; to: number; line: Line; x: number; bottom: number; tail?: number; koSize?: number; soft?: boolean }> = ({ at, to, line, x, bottom, tail = 0.5, koSize = 92, soft }) => {
   const frame = useCurrentFrame();
   if (frame < fr(at) || frame >= fr(to)) return null;
@@ -36,7 +36,7 @@ const Bubble: React.FC<{ at: number; to: number; line: Line; x: number; bottom: 
     <div style={{ position: 'absolute', left: x, top: bottom, transform: `translate(-${tail * 100}%, -100%) scale(${0.85 + 0.15 * p})`, transformOrigin: `${tail * 100}% 100%`, opacity: Math.min(1, p * 1.5) }}>
       <div style={{ position: 'relative', background: PAPER, borderRadius: soft ? 46 : 34, padding: '16px 34px 18px', textAlign: 'center', boxShadow: '0 10px 26px rgba(0,0,0,0.35)', border: `5px solid ${INK}` }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: koSize, color: INK, lineHeight: 1.08, whiteSpace: 'nowrap' }}>{line.ko}</div>
-        <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 46, color: GREY, lineHeight: 1.15, marginTop: 4, whiteSpace: 'nowrap' }}>{line.cyr}</div>
+        <div style={{ fontFamily: EN, fontWeight: 600, fontSize: 52, color: GREY, lineHeight: 1.15, marginTop: 4, whiteSpace: 'nowrap' }}>{line.cyr}</div>
         <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 52, color: WARM, lineHeight: 1.15, marginTop: 2, whiteSpace: 'nowrap' }}>{line.mn}</div>
         <div style={{ position: 'absolute', left: `${tail * 100}%`, bottom: -26, width: 0, height: 0, transform: 'translateX(-50%)', borderLeft: '20px solid transparent', borderRight: '20px solid transparent', borderTop: `26px solid ${INK}` }} />
       </div>

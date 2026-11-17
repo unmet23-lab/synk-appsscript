@@ -11,6 +11,6 @@
  "alt": [
   "A needle-felt miniature story about a Korean boarding-house grandmother and Mongle, a coral felt ghost-like mascot going home to Mongolia. At breakfast she slams down a bowl of rice piled into a mountain and says 먹어라! (eat!), then slaps on one more scoop until Mongle is squished. At the door she zips Mongle into a huge puffy long padded coat until only its eyes show: 입어라! (put it on!). In its room she stacks a tower of side-dish containers into the suitcase: 챙겨라! (take it!). A dark label over her head shows -어라 · -아라 = -аарай with 먹어라 · 입어라 · 가라 · 와라. On the day Mongle flies home, at the airport she says gruffly 가라! (go!) but will not let go of the suitcase handle; the moving walkway drags her along, crying and shouting 가라! 가라!. At the glass gate she finally lets go and says softly 또 와라. (come again.) Mongle answers 네…! in tears, and as the glass door closes she squeezes one more kimchi container through the gap onto Mongle's head: 챙겨라!"
  ],
- "version": "m60-mn-v7",
- "_비고": "video.mp4 = m60 v7(이해 시험 v3 판에 8초 이름표 · 9.5초 공항 한 줄만 시험 없이 고침 · 20.6초) → 음량마감 −14.7 LUFS. upload_10MB.mp4 = 인스타 · 페북 크롬 확장 10MB 올림판. 표지 cover.png = 13.6초(울면서 끌려가는 할머니 · 핵심 장면). 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS."
+ "version": "m60-mn-v8",
+ "_비고": "video.mp4 = m60 v8(이해 시험 v3 판에 8초 이름표 · 9.5초 공항 한 줄을 시험 없이 고친 v7에, 미학 맹검이 짚은 마침표 · 읽기 줄 크기 · 끝 흔들림만 더 고침 · 20.6초) → 음량마감 −14.7 LUFS. upload_10MB.mp4 = 인스타 · 페북 크롬 확장 10MB 올림판. 표지 cover.png = 13.6초(울면서 끌려가는 할머니 · 핵심 장면). 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS."
 }

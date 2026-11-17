@@ -50,7 +50,7 @@ export const T = {
   m6: 8.85, m6To: 9.37,
   slam: 9.37,
   b4: 9.45, b4To: 10.96,
-  tag1: 14.2, tag2: 14.2, // 이름표 둘은 끝 판이 바뀌는 순간 함께(원본 박자 · 읽기 2.2초)
+  tag1: 14.2, tag2: 14.55, // 끝 낱말 카드 — 카드와 첫 줄은 끝 판이 바뀌는 순간(원본 박자), 둘째 줄은 pop 소리에 맞춰 0.35초 뒤(미학 맹검 11-17 「끝 리듬이 멈춰 있다」)
   back: 11.8,
   m5: 11.8, m5To: 13.6,
   b5: 13.6,
@@ -109,11 +109,12 @@ export type LocText = {
   m5: string;
   b5: string;
 };
+// 화면 글에 기본 이모지를 두지 않는다(미학 맹검 11-17 카본 · GPT 「기본 이모지가 교재 틀처럼 보인다」)
 export const FONT = "'Inter Tight', 'SUIT', sans-serif";
 export const LOCS: Record<Loc, LocText> = {
   en: {
     font: FONT,
-    headBig: 'How I got 3 burgers 🍔',
+    headBig: 'How I got 3 burgers',
     headSub: '',
     m1: 'A burger, please!',
     b1: 'Sure~',
@@ -121,13 +122,13 @@ export const LOCS: Record<Loc, LocText> = {
     b2: 'Okay!',
     m3: 'Ice cream, please!',
     m4ko: '버거 Set!',
-    m4: '…and a burger SET\n(= combo)! 😎', // 이해 시험 v3 넷이 같이 짚은 「Set이 무엇인지 · 친구가 안 보임」 — 시험 없이 고침
-    b3: 'THREE burgers? 🤔',
+    m4: '…and a burger SET\n(= combo)!', // 이해 시험 v3 넷이 같이 짚은 「Set이 무엇인지 · 친구가 안 보임」 — 시험 없이 고침
+    b3: 'THREE burgers?',
     m6: 'Yep!',
     b4: 'Three burgers, here you go!',
-    tag1: 'three 🍔🍔🍔',
-    tag2: 'combo 🍔🍟🥤',
-    m5: 'A combo… please… 🥲',
-    b5: 'Oh, a COMBO! Sure~ 😂',
+    tag1: 'three',
+    tag2: 'combo',
+    m5: 'A combo… please…',
+    b5: 'Oh, a COMBO! Sure~',
   },
 };

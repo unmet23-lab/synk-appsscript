@@ -55,19 +55,30 @@ const Bubble: React.FC<{ at: number; to: number; ko: string; rom?: string; mean:
   );
 };
 
-// 이름표 — 장면 속 물건 위에 붙는 꼬리표(한국어 · 읽는 법 · 영어)
-const Tag: React.FC<{ at: number; x: number; y: number; ko: string; rom: string; mean: string; font: string; below?: boolean }> = ({ at, x, y, ko, rom, mean, font, below }) => {
+// 끝 낱말 카드 — 「셋 = three」와 「세트 = combo」를 위 빈 벽의 한 장에 줄 맞춰 둔다. 줄마다 따로 미끄러져 들어오고, 카드는 천천히 숨 쉰다.
+// (미학 맹검 11-17 카본 「메뉴판 위 검은 상자 둘이 계단식으로 어긋나 점원 모자에 닿고, 기본 이모지를 얹어 초보 티가 난다 · 끝 리듬이 멈춰 있다」)
+type WordRow = { at: number; ko: string; rom: string; mean: string; color: string };
+const WordCard: React.FC<{ rows: WordRow[]; font: string; top: number }> = ({ rows, font, top }) => {
   const frame = useCurrentFrame();
+  const at = rows[0].at;
   if (frame < fr(at)) return null;
   const p = pop(frame, at);
+  const breathe = 1 + 0.012 * Math.sin(((frame - fr(at)) / FPS) * Math.PI * 1.2);
   return (
-    <div style={{ position: 'absolute', left: x, top: y, transform: `translate(-50%, ${below ? '0%' : '-100%'}) scale(${0.8 + 0.2 * p})`, transformOrigin: below ? '50% 0%' : '50% 100%', opacity: Math.min(1, p * 1.5), display: 'flex', flexDirection: below ? 'column-reverse' : 'column' }}>
-      <div style={{ background: INK, color: PAPER, borderRadius: 26, padding: '10px 26px 12px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.4)', whiteSpace: 'nowrap' }}>
-        <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 84, lineHeight: 1.0 }}>{ko}</span>
-        <span style={{ fontFamily: font, fontWeight: 600, fontSize: 40, color: '#CFC6D6', marginLeft: 14 }}>{rom}</span>
-        <div style={{ fontFamily: font, fontWeight: 800, fontSize: 50, color: '#FFB27A', lineHeight: 1.1, marginTop: 2 }}>= {mean}</div>
+    <div style={{ position: 'absolute', top, left: 0, width: 1080, display: 'flex', justifyContent: 'center', opacity: Math.min(1, p * 1.4), transform: `scale(${(0.9 + 0.1 * p) * breathe})`, transformOrigin: '50% 0%' }}>
+      <div style={{ background: PAPER, border: `6px solid ${INK}`, borderRadius: 36, padding: '22px 46px 24px', boxShadow: '0 10px 26px rgba(0,0,0,0.35)', display: 'grid', gridTemplateColumns: 'auto auto auto', columnGap: 22, rowGap: 8, alignItems: 'baseline' }}>
+        {rows.map((r) => {
+          const q = interpolate(frame, [fr(r.at), fr(r.at) + 7], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+          const cell = { opacity: q, transform: `translateX(${(1 - q) * -28}px)` };
+          return (
+            <React.Fragment key={r.ko}>
+              <div style={{ ...cell, fontFamily: KO, fontWeight: 900, fontSize: 92, color: r.color, lineHeight: 1.05, textAlign: 'right' }}>{r.ko}</div>
+              <div style={{ ...cell, fontFamily: font, fontWeight: 600, fontSize: 42, color: GREY, whiteSpace: 'nowrap' }}>{r.rom}</div>
+              <div style={{ ...cell, fontFamily: font, fontWeight: 800, fontSize: 60, color: INK, whiteSpace: 'nowrap' }}>= {r.mean}</div>
+            </React.Fragment>
+          );
+        })}
       </div>
-      <div style={{ width: 0, height: 0, margin: '0 auto', borderLeft: '18px solid transparent', borderRight: '18px solid transparent', ...(below ? { borderBottom: `22px solid ${INK}` } : { borderTop: `22px solid ${INK}` }) }} />
     </div>
   );
 };
@@ -116,15 +127,16 @@ export const Film: React.FC<{ loc: Loc; bare?: boolean }> = ({ loc, bare }) => {
     dx = (random(`sx-${frame}`) - 0.5) * 2 * SHAKE.px * k;
     dy = (random(`sy-${frame}`) - 0.5) * 2 * SHAKE.px * k;
   }
-  // 끄덕 — 눌렀다(0.9) 튕겨(1.05) 제자리
+  // 끄덕 · 통통 — 몸이 잠깐 부풀었다 제자리
   let nod: React.ReactNode = null;
   if (t >= NOD.at && t < NOD.at + NOD.dur && cell.img === NOD.img) {
-    const sy = interpolate(t, [NOD.at, NOD.at + 0.12, NOD.at + 0.26, NOD.at + NOD.dur], [1, 0.88, 1.05, 1], clamp);
-    nod = <BodyLayer img={NOD.img} body={NOD.body} sx={1 + (1 - sy) * 0.4} sy={sy} />;
+    // 몸을 줄이면 밑판의 원래 몸 윤곽이 드러나 이중 윤곽이 된다(미학 맹검 11-17 GPT) — 키우기만 해서 늘 원래 몸을 덮는다
+    const k = interpolate(t, [NOD.at, NOD.at + 0.12, NOD.at + 0.26, NOD.at + NOD.dur], [1, 1.08, 1.02, 1], clamp);
+    nod = <BodyLayer img={NOD.img} body={NOD.body} sx={k} sy={k} />;
   }
   if (t >= HOP.at && t < HOP.at + HOP.dur && cell.img === HOP.img) {
-    const sy = interpolate(t, [HOP.at, HOP.at + 0.1, HOP.at + 0.25, HOP.at + HOP.dur], [1, 0.9, 1.08, 1], clamp);
-    nod = <BodyLayer img={HOP.img} body={HOP.body} sx={1 + (1 - sy) * 0.4} sy={sy} />;
+    const k = interpolate(t, [HOP.at, HOP.at + 0.1, HOP.at + 0.25, HOP.at + HOP.dur], [1, 1.07, 1.02, 1], clamp);
+    nod = <BodyLayer img={HOP.img} body={HOP.body} sx={k} sy={k} />;
   }
   const flash = interpolate(t, [SHAKE.at, SHAKE.at + 0.05, SHAKE.at + 0.25], [0, 0.35, 0], clamp);
   return (
@@ -148,14 +160,23 @@ export const Film: React.FC<{ loc: Loc; bare?: boolean }> = ({ loc, bare }) => {
       {/* 점원 「네!」(4.2초)는 말풍선 없이 소리만 — 0.46초라 읽을 틈이 없고, 원본 박자 사이에 박자를 하나 더 만든다(나란히 「박자」) */}
       <Bubble at={T.m3} to={T.m3To} ko={'아이스크림\n주세요!'} rom="a-i-seu-keu-rim" mean={L.m3} font={L.font} x={250} bottom={1040} tail={0.3} maxW={620} />
       <Bubble at={T.m4} to={T.m4To} ko={L.m4ko} mean={L.m4} font={L.font} x={250} bottom={1020} tail={0.3} koSize={92} maxW={640} />
-      <Bubble at={T.b3} to={T.b3To} ko="버거 셋이요?" rom="셋 (set) = three 🤚" mean={L.b3} font={L.font} x={740} bottom={790} tail={0.64} koSize={76} />
+      <Bubble at={T.b3} to={T.b3To} ko="버거 셋이요?" rom="셋 (set) = three" mean={L.b3} font={L.font} x={740} bottom={790} tail={0.64} koSize={76} />
       <Bubble at={T.m6} to={T.m6To} ko="네!" rom="ne!" mean={L.m6} font={L.font} x={250} bottom={1040} tail={0.3} koSize={80} />
       <Bubble at={T.b4} to={T.b4To} ko={'버거 셋,\n나왔습니다!'} mean={L.b4} font={L.font} x={760} bottom={790} tail={0.77} maxW={640} />
       {/* 끝 이름표 — 버거 셋 위 「셋 = 3」, 위 빈 벽에 「세트 = combo」(올리기 전 검사 v9 「아래 앱 글자 자리」로 쟁반 밑에서 올림)(이해 시험 v2 「가운데 카드의 ❌가 헷갈린다 · 지난 편과 같은 뜻 풀이 카드」 — 교훈 P12대로 0.7초 간격) */}
-      {!bare ? <Tag at={T.tag1} x={330} y={1010} ko="셋" rom="set" mean={L.tag1} font={L.font} /> : null}
-      {!bare ? <Tag at={T.tag2} x={640} y={830} ko="세트" rom="se-teu" mean={L.tag2} font={L.font} /> : null}
-      <Bubble at={T.m5} to={T.m5To} ko={'세… 세트…\n주세요…'} rom="se-teu ju-se-yo" mean={L.m5} font={L.font} x={250} bottom={1030} tail={0.3} maxW={600} />
-      <Bubble at={T.b5} to={TOTAL + 1} ko="아~ 세트! 네~!" rom="a~ se-teu! ne~!" mean={L.b5} font={L.font} x={560} bottom={560} tail={0.6} maxW={640} />
+      {/* 끝 낱말 카드 — 미학 맹검 11-17로 두 꼬리표를 위 빈 벽의 한 장으로 모았다(셋은 몽글 쪽 색, 세트는 점원 쪽 색) */}
+      {!bare ? (
+        <WordCard
+          top={300}
+          font={L.font}
+          rows={[
+            { at: T.tag1, ko: '셋', rom: 'set', mean: L.tag1, color: BAD },
+            { at: T.tag2, ko: '세트', rom: 'se-teu', mean: L.tag2, color: GOOD },
+          ]}
+        />
+      ) : null}
+      <Bubble at={T.m5} to={T.m5To} ko={'세… 세트…\n주세요…'} rom="se-teu ju-se-yo" mean={L.m5} font={L.font} x={240} bottom={1030} tail={0.33} maxW={600} />
+      <Bubble at={T.b5} to={TOTAL + 1} ko="아~ 세트! 네~!" rom="a~ se-teu! ne~!" mean={L.b5} font={L.font} x={660} bottom={840} tail={0.62} maxW={640} />
       <Sound />
     </AbsoluteFill>
   );
