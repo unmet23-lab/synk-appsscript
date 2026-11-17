@@ -337,3 +337,15 @@ test('the IPC channel is registered behind the sender check and asks only for th
   bridge.siteVisits.snapshot('ignored');
   assert.deepEqual([...calls.at(-1)], ['synk:site-visits-snapshot'], 'the screen cannot pass arguments through');
 });
+
+// 설계 검토 3차 P2: 장부에 남은 급증은 처음 본 날부터 이어진다고 첫 문장에 말한다
+test('a spike held in the ledger is said from the day it was first seen', () => {
+  const held = summary();
+  held.방문 = { ...held.방문, 급증: { 날: '2026-11-24', 줄: 500, 평소: 2, 처음날: '2026-11-14' } };
+  const v = siteVisitsView(ok(held), NOW);
+  assert.equal(v.say, '11월 14일부터 방문 기록이 평소(하루 2줄)보다 크게 늘어 있습니다.');
+  assert.match(v.then, /남이 넣은 줄일 수 있어/);
+  const fresh = summary();
+  fresh.방문 = { ...fresh.방문, 급증: { 날: '2026-11-24', 줄: 502, 평소: 2, 처음날: '2026-11-24' } };
+  assert.equal(siteVisitsView(ok(fresh), NOW).say, '11월 24일 방문 기록이 502줄로 평소(하루 2줄)보다 크게 늘었습니다.');
+});

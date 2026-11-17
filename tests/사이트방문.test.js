@@ -435,3 +435,23 @@ test('돌리기 — Claude만 막힌 회차는 장부에 남고, 견줄 앞 회�
   assert.equal(s.AI.앞회차.날, '2026-11-03', 'Claude가 막힌 11-10은 건너뛴다');
   assert.equal(s.AI.서비스[0].답받음, 0);
 });
+
+// 설계 검토 3차 P2: 가짜 줄이 여드레 넘게 날마다 이어지면 13일 가운데값이 따라 올라 방문셈만으로는 알림이 꺼진다 — 장부가 붙든다
+test('급증 장부 — 처음 본 날과 평소 값을 남기고, 방문셈이 놓쳐도 풀 때까지 요약에 싣는다', () => {
+  const 평소 = Array.from({ length: 13 }, (_, d) => [줄(24 * (d + 1) - 1, {}), 줄(24 * (d + 1) - 2, {})]).flat();
+  const 열흘 = Array.from({ length: 10 }, (_, d) => Array.from({ length: 500 }, (_, i) => 줄(24 * d + 1 + i / 1000, {}))).flat();
+  const 셈하기 = (줄값) => 셈.방문셈(셈.방문줄들(셈.줄들읽기([머리, ...줄값])).줄들, { 지금 }).방문;
+  assert.equal(셈하기([...평소, ...열흘]).급증, null, '방문셈만으로는 열흘 이어진 급증을 놓친다(그래서 장부가 있다)');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), '사이트방문-급증-'));
+  const 조용히 = (f) => { const l = console.log; console.log = () => {}; try { return f(); } finally { console.log = l; } };
+  assert.equal(모으기.급증이어쓰기(null, d, 지금), null, '장부도 급증도 없으면 null');
+  assert.deepEqual(모으기.급증이어쓰기({ 날: '2026-11-08', 줄: 502, 평소: 2 }, d, 지금), { 날: '2026-11-08', 줄: 502, 평소: 2, 처음날: '2026-11-08' });
+  assert.deepEqual(모으기.급증이어쓰기(null, d, 지금), { 날: '2026-11-08', 줄: 502, 평소: 2, 처음날: '2026-11-08' }, '방문셈이 놓쳐도 장부가 붙든다');
+  assert.deepEqual(모으기.급증이어쓰기({ 날: '2026-11-17', 줄: 900, 평소: 500 }, d, 지금), { 날: '2026-11-17', 줄: 900, 평소: 2, 처음날: '2026-11-08' }, '평소 값은 처음 본 때의 것');
+  assert.equal(조용히(() => 모으기.급증(false, d)), 0);
+  assert.ok(fs.existsSync(path.join(d, '급증.json')), '보기만 하면 풀지 않는다');
+  assert.equal(조용히(() => 모으기.급증(true, d)), 0);
+  assert.ok(!fs.existsSync(path.join(d, '급증.json')));
+  assert.equal(JSON.parse(fs.readFileSync(path.join(d, '급증_풀림.jsonl'), 'utf8').trim()).처음날, '2026-11-08', '푼 것은 풀린 장부에 남는다');
+  assert.equal(모으기.급증이어쓰기(null, d, 지금), null, '풀면 다음 모으기부터 말하지 않는다');
+});

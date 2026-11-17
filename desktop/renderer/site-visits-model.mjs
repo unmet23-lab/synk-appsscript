@@ -166,7 +166,12 @@ function conclusion(s, now) {
   // 숫자가 없는 칸은 기다리는 것(세기 전 · 권한 기다림)과 고장(못 읽음)을 섞지 않고, 0건처럼 말하지 않는다(PC 0.4.96 원천 검수 B1 · B2)
   if (!ready(v)) return { say: { before: '사이트 방문은 아직 세기 전입니다.', wait: '사이트 방문 기록을 읽을 권한을 기다리는 중입니다.', unread: '사이트 방문 숫자를 아직 읽지 못했습니다.' }[notYet(v?.상태)], then: fallback() };
   if (!isCount(v.사람)) return { say: '사이트 방문 숫자를 아직 읽지 못했습니다.', then: fallback() };
-  if (v.급증) return { say: `${dateOnly(v.급증.날) || '오늘'} 방문 기록이 ${num(v.급증.줄)}줄로 평소(하루 ${num(v.급증.평소 ?? v.급증.앞평균)}줄)보다 크게 늘었습니다.`, then: '공개 설문지에 남이 넣은 줄일 수 있어, 숫자를 그대로 믿기 전에 확인이 필요합니다.' };
+  if (v.급증) {
+    // 장부에 남은 급증(처음 본 날이 이번 날과 다름)은 처음 본 날부터 이어진다고 말한다 — 사람이 풀기 전까지 첫 문장에 둔다(설계 검토 3차 P2)
+    const since = v.급증.처음날 && v.급증.처음날 !== v.급증.날 ? dateOnly(v.급증.처음날) : '';
+    const usual = num(v.급증.평소 ?? v.급증.앞평균);
+    return { say: since ? `${since}부터 방문 기록이 평소(하루 ${usual}줄)보다 크게 늘어 있습니다.` : `${dateOnly(v.급증.날) || '오늘'} 방문 기록이 ${num(v.급증.줄)}줄로 평소(하루 ${usual}줄)보다 크게 늘었습니다.`, then: '공개 설문지에 남이 넣은 줄일 수 있어, 숫자를 그대로 믿기 전에 확인이 필요합니다.' };
+  }
   const last = Date.parse(v.마지막기록 || '');
   const started = v.켠날 ? Date.parse(`${v.켠날}T00:00:00+09:00`) : NaN;
   if (Number.isFinite(started) && now - started < DAY && !v.사람) return { say: `방문 기록을 ${dateOnly(v.켠날)}부터 모으기 시작했습니다.`, then: '숫자는 하루가 지나면 이 자리에 보입니다.' };
