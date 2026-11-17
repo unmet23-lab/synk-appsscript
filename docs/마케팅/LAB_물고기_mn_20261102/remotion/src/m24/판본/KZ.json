@@ -141,7 +141,7 @@
   "lang": "kk",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "Су + ет =\nкорейше қай сөз?",
+  "hook": "Су + ет =\nкорейше не болады?",
   "hookSize": 52,
   "reads": [
     "mul",
@@ -161,7 +161,7 @@
   "lunchSize": 84,
   "bye": "Қош, етім",
   "byeSize": 62,
-  "endCard": "Етті 물고기 жеді",
+  "endCard": "Етімді 물고기 жеді",
   "endSize": 52,
   "ask": "",
   "askSize": 40,
@@ -172,7 +172,7 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "hook": "물 + 고기 =\n한국어로 어떤 낱말?",
+    "hook": "물 + 고기 =\n한국어로 뭐가 돼?",
     "water": "물",
     "meat": "고기",
     "eye": "눈",
@@ -181,7 +181,7 @@
     "tears": "눈물",
     "lunch": "내 밥!!",
     "bye": "잘 가, 내 고기",
-    "endCard": "고기를 물고기가 먹었다",
+    "endCard": "내 고기를 물고기가 먹었다",
     "ask": ""
   }
 }
