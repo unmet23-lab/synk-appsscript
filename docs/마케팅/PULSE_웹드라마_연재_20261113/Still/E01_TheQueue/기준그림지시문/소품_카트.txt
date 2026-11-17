@@ -1,5 +1,5 @@
 Photoreal 3:4 vertical prop reference photo for a premium drama, 35mm film grain, true-to-life colour.
-REFS: [IMG1] the piazza - for the ground, the light and the cart's place beside the columns; ignore everything else in it.
+REFS: [IMG1] the empty piazza on a grey overcast afternoon - for the ground and the light only; ignore everything else in it.
 
 SETTING: Covent Garden piazza in London in winter: wet grey cobblestones, the pale stone columns and glass roof of the old market hall along the back with giant red and gold Christmas baubles hanging soft in the background. The cart stands on the wet grey cobblestones beside a pale stone column of the market hall.
 
@@ -7,6 +7,6 @@ LIGHT: Grey overcast winter afternoon. Soft light from the large bright overcast
 
 FRAME: Vertical 3:4, the whole cart from canopy to wheels with the chalkboard in front of it, three-quarter view at chest height, 35mm lens feel; cart and chalkboard sharp; the piazza behind soft.
 
-PROPS: A small burnt-orange wooden sampling cart on two spoked wheels with a cream-and-orange striped canopy, a steel hot-chocolate urn with a tap, a small tray on the counter holding a row of pre-poured steaming paper cups, stacks of small paper cups and white plastic sip lids, and a little hand-chalked A-frame board standing in front of it. The cups on the tray and in the stacks are the same small white paper cups with a plain burnt-orange band around the middle. The chalkboard reads FREE HOT CHOCOLATE in white chalk handwriting, readable. The canopy's stripes are plain, with no lettering on them.
+PROPS: A small burnt-orange wooden sampling cart on two spoked wheels with a cream-and-orange striped canopy, a steel hot-chocolate urn with a tap, a small serving tray on the counter, stacks of small paper cups and white plastic sip lids, and a little hand-chalked A-frame board standing in front of it. The cups on the tray and in the stacks are the same small white paper cups with a plain burnt-orange band around the middle. The chalkboard reads FREE HOT CHOCOLATE in white chalk handwriting, readable. The canopy's stripes are plain, with no lettering on them.
 
-NOT: No people, hands or animals anywhere. Apart from FREE HOT CHOCOLATE on the chalkboard, no other text, letters, logos or watermark anywhere.
+NOT: No sunshine - no sun and no hard cast shadows. The canopy stripes are cream and burnt orange, never yellow; every cup is white with a burnt-orange band, never kraft brown. No people, hands or animals anywhere. Apart from FREE HOT CHOCOLATE on the chalkboard, no other text, letters, logos or watermark anywhere.
