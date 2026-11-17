@@ -72,7 +72,7 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
       });
     }
     // Gemini 계정 바꾸기를 연 채 같은 계정으로 두면 기다림이 끝나지 않는다. 10분이 지났을 때 로그인이 살아 있으면 그 계정으로 마치고,
-    // 창은 회원이 agy를 쓰는 중일 수 있어 닫지 않는다(Fable 10-22 P3-2). 로그인이 없을 때만 지금처럼 창을 닫고 알린다.
+    // 창은 회원이 agy를 쓰는 중일 수 있어 닫지 않는다(10-22 검수 P3-2). 로그인이 없을 때만 지금처럼 창을 닫고 알린다.
     current.timer=setTimeout(async()=>{
       if(['done','error','cancelled'].includes(current.stage))return;
       if(behavior.acceptAtTimeout){const v=await verifyLogin(service,folder).catch(()=>({ok:false}));if(v.ok){connected(current,v);return;}if(['done','error','cancelled'].includes(current.stage))return;}
@@ -82,7 +82,7 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
     return {ok:true,id:current.id};
   }
   // 기다리는 동안의 확인. Gemini는 처음에 로그인돼 있던 계정과 다른 계정(메일로 가림)이 읽히거나, 기다리는 사이 「로그인 필요」를 한 번 본 뒤
-  // (창에서 /logout을 했다) 다시 읽히면 연결로 본다 — 메일을 못 읽는 옛 agy도 /logout → /login으로 마칠 수 있게(Fable 10-22 P3-2). 처음에 로그인이 없었으면 어느 계정이든.
+  // (창에서 /logout을 했다) 다시 읽히면 연결로 본다 — 메일을 못 읽는 옛 agy도 /logout → /login으로 마칠 수 있게(10-22 검수 P3-2). 처음에 로그인이 없었으면 어느 계정이든.
   async function switched(current,v){
     if(!current.before)return true;
     const before=await current.before,lower=value=>String(value||'').toLowerCase();

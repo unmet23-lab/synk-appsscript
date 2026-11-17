@@ -1861,7 +1861,7 @@ export function mountDesktopPortalHost({
       const accountKey = context?.accountKey;
       const generation = context?.generation ?? null;
       // 공간 고르기에 돌려줄 실패 글. 진입 화면 글은 그 화면의 단추(「작업 공간 다시 확인」, 「개인 화면으로 계속」)를 가리킨다. 공간 고르기에는 그 단추가 없어
-      // 까닭이 분명한 글(예시 화면, 바쁨, 정리 중, 보관함)만 그대로 두고 나머지는 공간 고르기용 문장으로 바꾼다. 배정을 다시 조회하다 실패한 때도 같다(0.4.95 원천 후보 Fable F3 · 다시 검수 FA1)
+      // 까닭이 분명한 글(예시 화면, 바쁨, 정리 중, 보관함)만 그대로 두고 나머지는 공간 고르기용 문장으로 바꾼다. 배정을 다시 조회하다 실패한 때도 같다(0.4.95 원천 후보 검수 F3 · 다시 검수 FA1)
       const switchFailure = (code, hostMessage) => {
         const keep = ['PULSE_APP_DEMO_ACTIVE', 'PULSE_APP_BUSY', 'BUSY', 'PULSE_APP_STORAGE_UNAVAILABLE', 'SUITE_UNAVAILABLE'];
         let message = '그 공간을 열지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
@@ -1881,7 +1881,7 @@ export function mountDesktopPortalHost({
         const refreshed = await executeDesktopAssignmentFlow({ accountKey, generation, openSingle: false });
         if (refreshed?.ok === false) return switchFailure(refreshed.code || 'ACCOUNT_CHANGED', refreshed.message);
         if (!recordLive()) {
-          // 배정이 덜 확인된 까닭이 있으면 그대로 알린다. 「확인된 공간이 아닙니다」는 배정이 정말 없을 때만이다(0.4.95 원천 후보 카본 B7)
+          // 배정이 덜 확인된 까닭이 있으면 그대로 알린다. 「확인된 공간이 아닙니다」는 배정이 정말 없을 때만이다(0.4.95 원천 후보 검수 B7)
           const status = refreshed?.workspace?.status;
           // 호스트의 진입 화면 글은 그 화면의 단추(「작업 공간 다시 확인」)를 가리켜서, 공간 고르기에서는 이 문장들을 쓴다.
           // 이 길은 새 얼굴만 쓰므로 아래 「확인된 공간이 아닙니다」처럼 처음부터 「-습니다」로 쓴다(faceSentence는 「필요해요」를 바꾸지 못한다)

@@ -15,12 +15,12 @@ const WIRE_SOURCES=Object.freeze({'s1-plans':'claude-plans','s2-pricing':'higgsf
 const swap=o=>Object.freeze(Object.fromEntries(Object.entries(o).map(([k,v])=>[v,k])));
 const SERVICE_WIRE=swap(WIRE_SERVICES),SOURCE_WIRE=swap(WIRE_SOURCES);
 // 앱 안 기본 사본(10-19 공식 요금표를 앱 안 브라우저로 직접 확인). month: 월 결제 한 달, year: 연간 결제 1년 치(없으면 연간 결제가 없다), credits: 한 달 크레딧.
-// 금액은 공식 기본값(세전)이고, krVat는 한국 결제에 붙는 부가세율이다 — 화면은 한국 결제 값(기본값 × (1 + krVat))을 「한국 결제 · 부가세 포함」으로 보인다(Fable 3차 시안 P2-4).
+// 금액은 공식 기본값(세전)이고, krVat는 한국 결제에 붙는 부가세율이다 — 화면은 한국 결제 값(기본값 × (1 + krVat))을 「한국 결제 · 부가세 포함」으로 보인다(3차 시안 검수 P2-4).
 const DEFAULT_PRICES=Object.freeze({
   schemaVersion:1,kind:'synk-ai-prices',
   services:{
     // claude.com 요금표: 기본값 Pro 월 $20 · 연간 1년 치 $200(한 달 $17꼴), Max 5x $100(「$100부터」), 결제 주기는 Pro 월간·연간, Max 둘은 월간만.
-    // Max 20x $200은 Anthropic 도움말 11049741(「Max 20x: $200 per month」, 같은 날 2차 Fable 확인). 한국에서 열면 페이지가 「Prices include 10% VAT」와 함께 $22 · $220 · $110부터로 덧씌워 보인다(카드 원래 값 `data-original-text` $20 · $200 · $100부터).
+    // Max 20x $200은 Anthropic 도움말 11049741(「Max 20x: $200 per month」, 같은 날 2차 검수 확인). 한국에서 열면 페이지가 「Prices include 10% VAT」와 함께 $22 · $220 · $110부터로 덧씌워 보인다(카드 원래 값 `data-original-text` $20 · $200 · $100부터).
     // apiCredit(10-28): Max 요금제에 매달 딸려 Console 조직에 들어오는 API 크레딧(달러) — 공식 안내 「API credits for Max and Team plans」(HELP_LINKS claude-api-credits)를
     // 10-28에 확인했다(Max 5x $100 · Max 20x $200, 결제 주기마다 들어와 그 끝에 사라짐, Pro는 없음). 요금과 같은 요금제 사실이라 같은 60일 문을 따른다.
     claude:{checked:'2026-10-19',source:'claude-plans',currency:'USD',tax:'excluded',krVat:0.1,plans:{pro:{month:20,year:200},max5x:{month:100,apiCredit:100},max20x:{month:200,apiCredit:200}}},
@@ -39,7 +39,7 @@ const DEFAULT_PRICES=Object.freeze({
     // flowCredits: 매달 딸려 오는 Google Flow 크레딧(같은 쪽 · Flow 도움말 16526234 — 결제 주기 시작에 다시 차고 이월 없음, 날마다 주는 50개는 빼고 센다).
     // apiCredit: 매달 쌓이는 Google Cloud 크레딧 — 요금이 원화여도 apiCredit은 늘 달러다. AI Studio 안내 「Use Your Google AI Plan Credits in AI Studio」(10-13 갱신, HELP_LINKS gemini-api-credits):
     // Pro $10 · Ultra 5x $40 · Ultra 20x $100, 받은 날부터 12개월(쌓인다), Plus는 없다. 쓰려면 AI Studio 선불 결제와 개발자 프로그램 혜택에서 붙여야 한다.
-    // family: 가족 공유로 받는 계정(관리자가 내서 따로 내지 않는다 — 한 달 구독료에 두 번 세지 않게, Fable 설계 검토 P1-2). Cloud 크레딧은 가족과 나누지 않고(Ultra 혜택 안내),
+    // family: 가족 공유로 받는 계정(관리자가 내서 따로 내지 않는다 — 한 달 구독료에 두 번 세지 않게, 설계 검토 P1-2). Cloud 크레딧은 가족과 나누지 않고(Ultra 혜택 안내),
     // Flow 크레딧을 가족이 어떻게 나누는지는 확인하지 못해 두지 않는다.
     gemini:{checked:'2026-11-02',source:'gemini-plans',currency:'KRW',tax:'included',plans:{plus:{month:7500,flowCredits:200},pro:{apiCredit:10,flowCredits:1000},ultra5x:{month:119000,apiCredit:40,flowCredits:10000},ultra20x:{month:300000,apiCredit:100,flowCredits:25000},family:{month:0}}},
   },
@@ -59,7 +59,7 @@ const price=(v,max=100000)=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=ma
 const amount=v=>Number.isSafeInteger(v)&&v>0&&v<=1e9?v:null;
 const plain=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 // 확인한 날은 2026년부터 오늘(하루 여유)까지만 받는다 — 앞날짜로 60일 문을 피하지 못하게.
-// 앱 기본 사본(trusted)은 상한을 보지 않는다 — PC 시계가 늦어도 기본 사본까지 버려 금액·크레딧이 모두 사라지지 않게(Fable 3차 시안 P3-9).
+// 앱 기본 사본(trusted)은 상한을 보지 않는다 — PC 시계가 늦어도 기본 사본까지 버려 금액·크레딧이 모두 사라지지 않게(3차 시안 검수 P3-9).
 const checkedAt=(value,now,trusted=false)=>{const at=dayStamp(value);return at!==null&&at>=FLOOR&&(trusted||at<=now+DAY)?at:null;};
 
 function cleanService(service,raw,now,trusted=false){
@@ -129,7 +129,7 @@ function mergePrices(base,extra){
     const prev=services[service];
     if(!prev||entry.checked>prev.checked){
       let next=entry.krVat===undefined&&prev?.krVat!==undefined?{...entry,krVat:prev.krVat}:entry;
-      // 요금제에 딸린 크레딧(API 10-28 · Flow 11-02)도 같다 — 더 새 판이 금액만 고치고 그 칸을 빠뜨려도 「매달 $200」이 조용히 사라지지 않게(Fable 최종 P3). 0을 적었으면 0을 따른다.
+      // 요금제에 딸린 크레딧(API 10-28 · Flow 11-02)도 같다 — 더 새 판이 금액만 고치고 그 칸을 빠뜨려도 「매달 $200」이 조용히 사라지지 않게(최종 검수 P3). 0을 적었으면 0을 따른다.
       const carry=(key,plan)=>['apiCredit','flowCredits'].reduce((out,field)=>out[field]===undefined&&prev?.plans?.[key]?.[field]!==undefined?{...out,[field]:prev.plans[key][field]}:out,plan);
       const carried=Object.fromEntries(Object.entries(next.plans||{}).map(([key,plan])=>[key,carry(key,plan)]));
       if(Object.keys(carried).some(key=>carried[key]!==next.plans[key]))next={...next,plans:carried};

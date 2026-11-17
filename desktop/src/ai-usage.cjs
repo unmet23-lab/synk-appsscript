@@ -5,9 +5,9 @@
 //    초기화 전 마지막 읽기 뒤의 소비는 모른다(그래서 본체가 초기화 10분 전에 한 번 더 읽는다).
 //    처음 읽은 값은 그 창이 시작된 뒤의 소비다. 창은 7일이고 아직 안 끝났으니 첫 읽기 시각의 구간에 넣는다.
 //  · 크레딧형(Higgsfield·Typecast): 잔액이 줄어든 만큼이 소비, 늘어난 것은 충전으로 따로 둔다(한 구간에 둘이 겹치면 소비가 덜 잡힌다).
-// 구간은 달력 주가 아니라 지금 기준 7일씩이다(계정마다 초기화 요일이 다르다 — Fable 검수 10-19 P1-2).
+// 구간은 달력 주가 아니라 지금 기준 7일씩이다(계정마다 초기화 요일이 다르다 — 검수 10-19 P1-2).
 // 하루 막대(11-02 유호님 「1주일말고 1일 기준으로」)는 이 PC 시각 0시로 자른 달력 하루다. 처음 읽은 값(창 시작부터 쌓인 %)은 어느 날 쓴 건지 몰라 넣지 않는다.
-// 날 경계는 본체가 자정 10분 전과 날짜가 바뀐 뒤 첫 때에 읽어 맞춘다(ai-subscriptions.cjs autoDue — 6시간 읽기만으로는 저녁 소비가 다음 날로 넘어갔다, Fable F1).
+// 날 경계는 본체가 자정 10분 전과 날짜가 바뀐 뒤 첫 때에 읽어 맞춘다(ai-subscriptions.cjs autoDue — 6시간 읽기만으로는 저녁 소비가 다음 날로 넘어갔다, 검수 F1).
 // 앱이 꺼져 있던 동안 같은 창에서 쓴 양은 다시 읽은 날에 잡힌다(그 사이 초기화가 끼면 빠진다).
 const DAY = 864e5, WEEK = 7 * DAY, SAME_WINDOW = 15 * 60e3, KEEP = 180 * DAY;
 const WEEKLY = new Set(['claude', 'gpt', 'gemini']), CREDIT = new Set(['higgsfield', 'typecast']);
@@ -56,7 +56,7 @@ function accountEvents(samples) {
       } else {
         const same = prev.wr && s.wr ? Math.abs(prev.wr - s.wr) < SAME_WINDOW : !prev.wr && !s.wr;
         // 같은 창이면 늘어난 만큼만 센다. 같은 창에서 %가 줄거나(공급자 보정) 요금제가 바뀌어 %의 기준이 달라지면
-        // 그 사이 소비는 모르는 것으로 둔다(누적 전체를 새 소비로 세면 막대와 속도가 부푼다 — Fable 구현 검수 P1).
+        // 그 사이 소비는 모르는 것으로 둔다(누적 전체를 새 소비로 세면 막대와 속도가 부푼다 — 구현 검수 P1).
         // 창이 바뀌었으면(초기화) 새 창의 %가 그대로 소비다.
         // 요금제는 이름이 아니라 무게로 견준다(등급을 한 번 못 읽어 max_5x가 max로 읽혀도 같은 5배다).
         const v = same ? (wt === weightOf(prev.s, prev.p) ? Math.max(0, s.w - prev.w) : 0) : s.w;
@@ -78,7 +78,7 @@ function accountEvents(samples) {
 }
 
 // 등급 없이 「max」로 남은 Claude 읽기(Claude Code 설정 파일을 한 번 못 읽은 때)는 앞뒤 읽기의 Max 등급을 따른다.
-// 한 번 흔들린 읽기가 무게를 바꿔 막대를 부풀리거나 「왜 이 숫자?」를 켜지 않게(Fable 2차 검수 P1-4). 등급을 아는 읽기가 없으면 그대로 둔다.
+// 한 번 흔들린 읽기가 무게를 바꿔 막대를 부풀리거나 「왜 이 숫자?」를 켜지 않게(2차 검수 P1-4). 등급을 아는 읽기가 없으면 그대로 둔다.
 function steadyTiers(samples) {
   const tier = s => s.s === 'claude' && /^max(5x|20x)$/.test(planKey(s.p)), loose = s => s.s === 'claude' && planKey(s.p) === 'max';
   const first = samples.find(tier);
@@ -113,7 +113,7 @@ function usageSummary({ rows = [], history = [], now = Date.now() } = {}) {
     if (!perService.has(row.service)) perService.set(row.service, []);
     // weightAt: 그 구간 끝까지 마지막으로 읽은 요금제의 무게(그 전 읽기가 없으면 첫 읽기). 평균의 분모를 그때의 한도 크기로 센다.
     const weightAt = end => { let w = weightOf(samples[0].s, samples[0].p); for (const s of samples) { if (s.t >= end) break; w = weightOf(s.s, s.p); } return w; };
-    // weights: 보이는 다섯 구간 안에서 읽은 요금제 무게만(그 앞에서 바꾼 요금제로 「왜 이 숫자?」를 180일 동안 켜지 않게 — Fable 2차 P2-3).
+    // weights: 보이는 다섯 구간 안에서 읽은 요금제 무게만(그 앞에서 바꾼 요금제로 「왜 이 숫자?」를 180일 동안 켜지 않게 — 2차 검수 P2-3).
     const shown = samples.filter(s => s.t >= buckets[0].start);
     perService.get(row.service).push({ row, events, coverFrom, firstAt, weightAt, weights: new Set((shown.length ? shown : samples.slice(-1)).map(s => weightOf(s.s, s.p))) });
   }
@@ -127,7 +127,7 @@ function usageSummary({ rows = [], history = [], now = Date.now() } = {}) {
       const used = a => a.events.reduce((n, e) => (inBucket(e) ? n + e.v : n), 0);
       // 한도형 평균은 그 구간을 처음부터 덮은 계정끼리만 낸다(구간 중간에 연결한 계정의 반 주치가 평균을 끌어내리지 않게).
       // 그런 계정이 없을 때만 있는 계정으로 내고 「일부」로 둔다. 크레딧은 쓴 양의 합이라 있는 계정을 다 더한다.
-      // 무게는 사건별: 소비는 그때의 요금제 무게로, 분모는 그 구간 끝의 요금제 무게로 센다(10-19 2차, Fable 4차에서 미룬 것).
+      // 무게는 사건별: 소비는 그때의 요금제 무게로, 분모는 그 구간 끝의 요금제 무게로 센다(10-19 2차, 4차 검수에서 미룬 것).
       const whole = present.filter(a => a.coverFrom <= start);
       if (pct) {
         const use = whole.length ? whole : present;
@@ -162,14 +162,14 @@ function usageSummary({ rows = [], history = [], now = Date.now() } = {}) {
   return { since, buckets, days: allDays.slice(7), services, accounts };
 }
 
-// 계정 하나의 지난 4주(구간 1~4, 7일씩): 요금제 맞추기·안 쓰는 구독(10-19 2차, Fable 1차 아이디어 3·4)이 쓴다.
+// 계정 하나의 지난 4주(구간 1~4, 7일씩): 요금제 맞추기·안 쓰는 구독(10-19 2차, 1차 검수 아이디어 3·4)이 쓴다.
 //  값은 모두 지금 요금제(cur) 기준이다 — 그때 요금제 무게 ÷ 지금 무게로 바꿔, 4주 사이에 요금제를 바꾼 계정도 같은 잣대로 본다.
 //  used: 그 7일에 쓴 양(한도형 %p · 크레딧), peak: 그 7일에 읽은 가장 높은 주간 %(둘 중 큰 값을 본다), reads: 그 7일에 읽은 횟수.
-//  cover: 4주를 처음부터 덮었는지. known: 그 사이 소비를 놓친 틈이 없는지(Fable 2차 검수 P1-2) —
+//  cover: 4주를 처음부터 덮었는지. known: 그 사이 소비를 놓친 틈이 없는지(2차 검수 P1-2) —
 //   한도형은 같은 창 안의 틈은 누적 %가 메우므로, 4주 안에 끝난 주간 창마다 끝나기 하루 안에 읽었고 빠진 창이 없을 때.
 //   크레딧형은 틈 사이에 충전이 끼면 그 전 소비가 가려지므로 읽기 사이가 모두 이틀 안일 때. 마지막 읽기도 하루 안이어야 한다.
 //  hCover: 5시간 %를 남기기 시작한 때도 4주 앞인지(하루 여유). hPeak: 4주 동안 읽은 5시간 % 가운데 가장 높은 값 —
-//   6시간마다 읽어서는 5시간 창이 꽉 찬 순간을 대부분 놓치므로 「막힌 적」 대신 가장 바빴던 읽기로 본다(Fable 2차 검수 P1-3).
+//   6시간마다 읽어서는 5시간 창이 꽉 찬 순간을 대부분 놓치므로 「막힌 적」 대신 가장 바빴던 읽기로 본다(2차 검수 P1-3).
 function lastFourWeeks(samples, events, coverFrom, buckets, cur) {
   const four = buckets.slice(1), start = four[0].start, now = four[3].end, weekly = WEEKLY.has(samples[0].s);
   const scale = s => weightOf(s.s, s.p) / cur, reads = samples.filter(s => (weekly ? s.w !== null : s.c !== null));
@@ -189,7 +189,7 @@ function lastFourWeeks(samples, events, coverFrom, buckets, cur) {
     // 창이 없던 읽기(그 주에 안 씀) 뒤에는 다음 읽기의 누적 %가 새 창 시작부터 덮는다 — 그 사이에 창 하나가 통째로 시작하고 끝날 수 없을 때(7일 안).
     else if (!a.wr) known = b.t - a.t < WEEK;
     // 같은 창이면 틈이 있어도 누적 %가 메운다. 창이 바뀌었으면 끝나기 하루 안에 읽었고, 빠진 창이 없어야 한다
-    // (다음 읽기에 창이 없으면 옛 창이 끝난 뒤 7일 안이어야 그 사이 창 하나를 통째로 놓치지 않는다 — Fable 2차 반영 확인 P2).
+    // (다음 읽기에 창이 없으면 옛 창이 끝난 뒤 7일 안이어야 그 사이 창 하나를 통째로 놓치지 않는다 — 2차 반영 확인 P2).
     else if (!(b.wr && Math.abs(a.wr - b.wr) < SAME_WINDOW)) known = a.wr - a.t <= DAY && (b.wr ? b.wr - a.wr <= WEEK + DAY : b.t - a.wr < WEEK);
   }
   const withH = samples.filter(s => s.h !== null && s.h !== undefined), recentH = withH.filter(s => s.t >= start).map(s => s.h * scale(s));
@@ -202,11 +202,11 @@ function lastFourWeeks(samples, events, coverFrom, buckets, cur) {
   };
 }
 
-// 계정 하나의 지난 12주(7일씩, 오래된 → 최근): 연간 결제 팁(10-19 3차, Fable 1차 아이디어 7)이 「12주 내내 꾸준히」를 본다.
+// 계정 하나의 지난 12주(7일씩, 오래된 → 최근): 연간 결제 팁(10-19 3차, 1차 검수 아이디어 7)이 「12주 내내 꾸준히」를 본다.
 //  used는 그 7일에 쓴 양만 센다(지금 요금제 기준). 읽은 가장 높은 %는 앞 구간에서 이어진 창의 누적까지 담아 「많이 썼다」를 부풀리므로 쓰지 않고,
 //  놓친 틈은 적게 잡히는 쪽이라 그대로 둔다. cover: 첫 읽기가 12주 앞이었는지(첫 읽기의 누적 %가 12주 안 소비로 들어오지 않게). reads: 그 7일에 읽은 횟수.
 //  samePlan: 12주 동안 읽은 요금제가 모두 지금과 같은지 — Max에서 Pro로 내린 계정의 옛 구간이 지금 무게로 ×5·×20 부풀어
-//  「12주 내내 꾸준히」가 되지 않게 연간 결제 팁은 같은 요금제 12주만 본다(Fable 3차 시안 P3-3).
+//  「12주 내내 꾸준히」가 되지 않게 연간 결제 팁은 같은 요금제 12주만 본다(3차 시안 검수 P3-3).
 //  한도형은 무게로 견주고(등급을 한 번 못 읽은 「max」를 봐준다), 크레딧형은 무게가 늘 1이라 요금제 이름으로 견준다(Ultra → Plus로 내린 계정 — 구현 검수 P3-A).
 function lastTwelveWeeks(samples, events, firstAt, now, cur, plan) {
   const weekly = WEEKLY.has(samples[0].s), reads = samples.filter(s => (weekly ? s.w !== null : s.c !== null));

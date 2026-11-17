@@ -1388,10 +1388,18 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         render();
         return;
       }
-      // 다시 읽기가 예외로 끝났으면(답 없음) 앞에 받은 답을 지우지 않는다. 줄이 떴다 사라지지 않게 한다(0.4.97 검수 A1)
-      if (!res && vis.result) { render(); return; }
+      // 읽기가 예외로 끝났으면(답 없음) 앞에 받은 답을 지우지 않는다. 줄이 떴다 사라지지 않게 한다(0.4.97 검수 A1).
+      // 받은 답이 없으면 읽은 것으로 치지 않는다. 다음 알림이나 솔리오에 다시 올 때 읽고, 1초쯤 뒤 한 번은 스스로 다시 읽는다(0.4.97 최종 검수 F3)
+      if (!res || typeof res !== 'object') {
+        if (!vis.result) {
+          vis.done = false;
+          if (!vis.retried && vis.timer === null && solioReadable(machine.read())) { vis.retried = true; vis.timer = setTimer(() => { vis.timer = null; syncVisits(); }, ORB_TIMING.busyRetry); }
+        }
+        render();
+        return;
+      }
       vis.retried = false;
-      vis.result = res && typeof res === 'object' ? res : null;
+      vis.result = res;
       render();
     });
   }

@@ -292,13 +292,35 @@ if(!process.versions.electron){
           await w.js("document.querySelector('#portal-entry [data-orb-prog=visits]').click()");await wait(700);
           const kept=await w.js("(()=>{const rows="+rowsNow+";return {reads:window.__orbFixture.calls().filter(c=>c==='visits-snapshot').length,vals:rows.map(b=>b.querySelector('.val').textContent),pinned:rows.filter(b=>b.classList.contains('pin')&&b.classList.contains('opened')&&b.getAttribute('aria-expanded')==='true'&&!b.nextElementSibling.hasAttribute('aria-hidden')).length,open:document.querySelectorAll('#portal-entry [data-room=solio-visits] .more.open').length,focus:document.activeElement?.dataset?.vis||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog};})()");
           check('16 a fresh scene for the same account keeps the pinned lines open and the keyboard focus on its line',kept.reads===reads+1&&JSON.stringify(kept.vals)!==JSON.stringify(before.vals)&&kept.pinned===5&&kept.open===5&&before.focus!==null&&kept.focus===before.focus&&kept.prog==='visits',{before,...kept});
-          // 키보드: 초점이 오브제에 오면 그 프로그램이 열린다
+          // 키보드: 오브제 줄은 Tab 한 자리다. 연 오브제만 Tab 차례에 있고, 화살표로 옮긴 초점이 그 프로그램을 연다. Tab은 연 방 안으로 내려간다(0.4.97 최종 검수 F1)
+          const kbState="({obj:document.activeElement?.dataset?.orbProg||null,room:document.activeElement?.closest?.('[data-room]')?.dataset?.room||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog,tab:[...document.querySelectorAll('#portal-entry [data-orb-prog]')].map(o=>o.dataset.orbProg+':'+o.getAttribute('tabindex'))})";
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(400);
-          await w.js("document.querySelector('#portal-entry [data-orb-prog=subs]').focus()");await key(w,'Tab');await w.js("document.activeElement.dispatchEvent(new FocusEvent('focusin',{bubbles:true}))");await wait(300);
-          const kb=await w.js("({active:document.activeElement?.dataset?.orbProg||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog})");
-          check('16 keyboard focus on an object opens its program',kb.active==='visits'&&kb.prog==='visits',kb);
+          await w.js("document.querySelector('#portal-entry [data-orb-prog=subs]').focus()");await key(w,'Tab');await wait(250);
+          const kbSubs=await w.js(kbState);
+          check('16 Tab from the open object 구독 goes into the subscriptions room, not onto the next object',kbSubs.obj===null&&kbSubs.room==='solio'&&kbSubs.prog==='subs'&&JSON.stringify(kbSubs.tab)===JSON.stringify(['subs:0','visits:-1']),kbSubs);
+          await w.js("document.querySelector('#portal-entry [data-orb-prog=subs]').focus()");await key(w,'Right');await w.js("document.activeElement.dispatchEvent(new FocusEvent('focusin',{bubbles:true}))");await wait(300);
+          const kb=await w.js(kbState);
+          check('16 an arrow key moves along the objects and the object that takes the focus opens its program',kb.obj==='visits'&&kb.prog==='visits'&&JSON.stringify(kb.tab)===JSON.stringify(['subs:-1','visits:0']),kb);
+          await key(w,'Tab');await wait(250);
+          const kbIn=await w.js(kbState);
+          check('16 Tab from the open object 방문자 분석 goes into its room',kbIn.obj===null&&kbIn.room==='solio-visits',kbIn);
+          // 자판 초점이 연 오브제에 있는 채로 마우스가 다른 오브제를 열어도, 다음 Tab은 얼굴 첫 자리로 건너뛰지 않고 차례대로 간다(0.4.97 최종 다시 검수 FA1)
+          await w.js("document.querySelector('#portal-entry [data-orb-prog=visits]').focus()");await wait(100);
+          const subObj=await rect('#portal-entry [data-orb-prog="subs"]');await move(subObj.x,subObj.y);await wait(1300);
+          await key(w,'Tab');await wait(250);
+          const mix=await w.js("(()=>{const a=document.activeElement;return {obj:a?.dataset?.orbProg||null,room:a?.closest?.('[data-room]')?.dataset?.room||null,first:a===document.querySelector('#portal-entry .here-orb'),prog:document.querySelector('#portal-entry .orb-stage').dataset.prog,visitsTab:document.querySelector('#portal-entry [data-orb-prog=visits]').getAttribute('tabindex')};})()");
+          check('16 when the mouse opens another object while the keyboard focus sits on the one before, Tab carries on into the open room instead of jumping back to the start',mix.prog==='subs'&&mix.visitsTab==='-1'&&!mix.first&&mix.room==='solio',mix);
+          // 그 오브제 뒤에 얼굴 안의 Tab 자리가 하나도 없으면(구독 방과 그 뒤의 창 단추 묶음을 잠깐 inert로 막아 흉내 낸다) Tab은 얼굴 밖으로 나가지 않고 처음으로 돈다(0.4.97 최종 다시 검수 v4 P3의 의심).
+          // Electron은 문서 끝의 Tab을 문서 처음으로 돌리므로 얼굴의 첫 자리로 온다(고치기 전 판도 같다, 이 동작을 지키는 검사). 실제 앱에서는 방 뒤에 창 단추가 있어 Tab이 그리로 가는 것이 맞는 차례다
+          await w.js("(()=>{window.__inerted=[document.querySelector('#portal-entry [data-room=solio]'),...new Set([...document.querySelectorAll('#portal-entry [data-window]')].map(b=>b.parentElement))].filter(Boolean);for(const e of window.__inerted)e.inert=true;document.querySelector('#portal-entry [data-orb-prog=visits]').focus();return true;})()");await key(w,'Tab');await wait(250);
+          const wrap=await w.js("(()=>{const a=document.activeElement,root=document.querySelector('#portal-entry');const tabbable=[...root.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href],[tabindex]')].filter(e=>e.getAttribute('tabindex')!=='-1'&&!e.closest('[inert]')&&!e.hidden&&e.getClientRects().length>0);const r={inRoot:root.contains(a),first:a===tabbable[0],active:(a?.outerHTML||'').slice(0,80)};for(const e of window.__inerted)e.inert=false;return r;})()");
+          check('16 with no Tab stop left after the object, Tab wraps to the start of the face instead of leaving it',wrap.inRoot&&wrap.first,wrap);
+          await move(720,860);await wait(300);
+          // 방문자 분석을 다시 연 뒤에 구독을 누른다(앞 검사가 구독을 열어 둔 채 끝나므로, 누르기가 실제로 구독을 되돌리는지 보게)
+          await click(w,'#portal-entry [data-orb-prog="visits"]');await wait(400);
+          const beforeSubs=await w.js("document.querySelector('#portal-entry .orb-stage').dataset.prog");
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(400);
-          check('16 a click on 구독 brings the subscriptions back',(await w.js("document.querySelector('#portal-entry .orb-stage').dataset.prog"))==='subs'&&!(await w.js("document.querySelector('#portal-entry [data-room=solio]').hidden")));
+          check('16 a click on 구독 brings the subscriptions back',beforeSubs==='visits'&&(await w.js("document.querySelector('#portal-entry .orb-stage').dataset.prog"))==='subs'&&!(await w.js("document.querySelector('#portal-entry [data-room=solio]').hidden")),{beforeSubs});
           // 아직 숫자가 없는 요약: 다섯 줄이 모두 남고 큰 숫자 자리가 「측정 전」이다(방을 열 때 다시 읽는다)
           await w.js('window.__orbFixture.setVisits('+JSON.stringify({ok:true,available:true,summary:visitEarly()})+')');
           await click(w,'#portal-entry [data-orb-prog="visits"]');await wait(700);

@@ -1299,6 +1299,25 @@ test('a reread that ends in an exception keeps the answer already shown, so the 
   assert.equal(h.view.last().room.prog, 'visits');
 });
 
+test('a first read that ends in an exception is not counted as read: it is tried once more by itself and again on the next notice (0.4.97 Fable F3)', async t => {
+  let n = 0, failing = true;
+  const api = { snapshot: async () => { n += 1; if (failing) throw new Error('ipc closed'); return visible(); } };
+  const h = harness(t, { options: { siteVisits: api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(40);
+  const tried = n;
+  assert.ok(tried >= 2, 'read once more by itself after the exception: ' + tried);
+  assert.deepEqual(programKeys(h), [], 'no objects while every read fails');
+  await settle(40);
+  assert.equal(n, tried, 'the read by itself happens once, not in a loop');
+  failing = false;
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(n, tried + 1, 'the next signed-in notice reads again');
+  assert.deepEqual(programKeys(h), ['subs', 'visits']);
+});
+
 test('a first read refused while the main process was still refreshing is read once more by itself when no later notice comes (0.4.97 carbon A2)', async t => {
   // 첫 읽기의 답이 오기 전에 솔리오에 내려앉는다(그때의 읽기 요청은 읽는 중이라 막힌다). 그 뒤 첫 읽기가 거절로 돌아오고, 더 오는 알림은 없다
   let n = 0, release = null;

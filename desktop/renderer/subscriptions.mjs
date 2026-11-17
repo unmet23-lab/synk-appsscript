@@ -21,7 +21,7 @@ const AUTO = {
   typecast: { label: 'Typecast', short: SHORT.typecast, tool: 'Typecast API 키', plan: 'Typecast API 요금제(API Lite 등)의 이번 달 남은 크레딧을 읽어요. 설치할 프로그램은 없고, 키는 이 PC에만 암호화해 보관해요.', planLink: 'typecast-api', key: true },
 };
 // 한눈에 화면의 서비스 순서(ORDER)와 짧은 이름(SHORT)은 계산과 같이 쓰므로 subscriptions-model.mjs에 있다.
-// 지난 7일 사용량(10-19, Fable 검수 반영): 줄 왼쪽 보조 글은 무엇에 대한 숫자인지 말한다.
+// 지난 7일 사용량(10-19, 검수 반영): 줄 왼쪽 보조 글은 무엇에 대한 숫자인지 말한다.
 const USAGE_UNIT = { claude: '주간 한도 대비', gpt: 'Codex 한도 기준', gemini: 'Antigravity CLI(agy) 한도 기준', higgsfield: '쓴 크레딧', typecast: '쓴 크레딧' };
 // 아끼는 팁. 사실을 말하는 문장은 공식 원문으로 확인한 것만 쓰고 확인한 날을 붙인다(checked). 「공식 안내」는 그 근거 페이지.
 // Typecast는 계정판이 API 요금제를 읽고, 확인한 사실(미리 듣기 무료·이월 없음)은 웹 스튜디오 기준이라 사실 없는 팁만 둔다.
@@ -36,9 +36,9 @@ const PASS_TIPS = {
   gpt: { link: 'codex-resets', open: null, checked: '10/19', items: ['Codex 앱·CLI·웹의 설정 › 사용량에서 「1 reset available」(또는 「Full reset」)을 누르고 만료일을 확인한 뒤 써요.', '쓰면 5시간·주간 한도가 다시 차요. 대신 다음 주간 초기화는 다시 쓰기 시작한 날부터 일주일쯤 뒤로 바뀌고, 원래 날짜의 초기화는 따로 오지 않아요.', '새로 채울 한도가 없으면 쓰이지 않고 그대로 남아요. 만료되면 되살리거나 다시 받을 수 없어요.'] },
   claude: { link: 'claude-resets', open: 'claude-usage', checked: '10/19', items: ['그 계정으로 로그인한 claude.ai 웹이나 Claude 데스크톱의 설정 › 사용량에서 「Reset for free」를 눌러 써요. Claude Code와 휴대폰 앱에서는 못 써요.', '쓰면 그 한도가 바로 다시 차고, 주간 초기화는 원래 요일·시각에 그대로 와요. 쓴 뒤에는 되돌릴 수 없어요.', '요금제를 내리거나 해지하면 쓰지 않은 초기화권은 사라져요.'] },
 };
-// 3차(10-19, Fable 1차 아이디어 6·7) 글: 한 달 요약은 「여유」로 말하고 「낭비」·「남겼다」는 쓰지 않으며 끌 수 있다
+// 3차(10-19, 1차 검수 아이디어 6·7) 글: 한 달 요약은 「여유」로 말하고 「낭비」·「남겼다」는 쓰지 않으며 끌 수 있다
 // (꺼도 기록은 그대로 — 스크린타임 주간 리포트의 죄책감·「끄면 기록까지 지워짐」 불만 원문). 연간 결제 팁의 Higgsfield는 「중간에 월 결제로 못 돌아와요」를 머리 글에 붙인다.
-// 목표 묻기(값과 고르는 기준은 모델의 GOAL_KEYS·pickUsageTips): [값, 단추 글, 고른 뒤 칸 아래 줄, 고른 뒤 알림] — 「아직 몰라요」는 급한 순서 그대로라 그렇게 말한다(Fable 2차 P2-2).
+// 목표 묻기(값과 고르는 기준은 모델의 GOAL_KEYS·pickUsageTips): [값, 단추 글, 고른 뒤 칸 아래 줄, 고른 뒤 알림] — 「아직 몰라요」는 급한 순서 그대로라 그렇게 말한다(2차 검수 P2-2).
 const GOAL_TEXT = { save: ['아끼기', '아끼기 쪽', '팁을 「아끼기」 쪽으로 드릴게요.'], smooth: ['막힘 없이 쓰기', '막힘 없이 쓰기 쪽', '팁을 「막힘 없이 쓰기」 쪽으로 드릴게요.'], unsure: ['아직 몰라요', '급한 순서', '알겠어요. 급한 순서대로 드릴게요.'] };
 const GOALS = GOAL_KEYS.map(k => [k, ...GOAL_TEXT[k]]);
 const MANUAL_NAMES = ['Suno', 'Hugging Face', 'ElevenLabs', 'Kling', 'Midjourney', 'Cursor', 'Perplexity', 'Google AI Pro', 'Typecast'];
@@ -192,17 +192,17 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (!value?.ok || value.seq < snapshot?.seq) return;
     const was = snapshot?.login;
     snapshot = value;
-    // 줄의 「다시 로그인」으로 연 로그인이 끝나면 그 모드를 푼다 — 같은 안내에서 이어서 다른 계정을 더할 때 「새 계정 연결」로 돌아온다(Fable F2).
-    // 다른 서비스의 로그인이 끝난 것으로는 풀지 않는다. 그 로그인을 기다리던 Claude 다시 로그인 안내가 새 계정 연결로 바뀌었다(0.4.96 카본 C8)
+    // 줄의 「다시 로그인」으로 연 로그인이 끝나면 그 모드를 푼다 — 같은 안내에서 이어서 다른 계정을 더할 때 「새 계정 연결」로 돌아온다(검수 F2).
+    // 다른 서비스의 로그인이 끝난 것으로는 풀지 않는다. 그 로그인을 기다리던 Claude 다시 로그인 안내가 새 계정 연결로 바뀌었다(0.4.96 검수 C8)
     if (ui.relogin && value.login?.stage === 'done' && value.login.service === rowById(ui.relogin)?.service && !(was?.id === value.login.id && was.stage === 'done')) { ui.relogin = null; ui.email = ''; }
   };
-  // 다시 로그인 모드: 줄의 「다시 로그인」으로 연 Claude 안내는 그 줄의 계정으로만 로그인한다(메일을 비우면 새 계정 연결로 보고 막히던 것 — Fable F2).
+  // 다시 로그인 모드: 줄의 「다시 로그인」으로 연 Claude 안내는 그 줄의 계정으로만 로그인한다(메일을 비우면 새 계정 연결로 보고 막히던 것 — 검수 F2).
   const reloginRow = service => { const row = ui.relogin ? rowById(ui.relogin) : null; return service === 'claude' && row?.service === service && row.email ? row : null; };
   const loginEmail = service => (service === 'claude' ? reloginRow(service)?.email || ui.email.trim() || undefined : undefined);
   // 본체의 자동 읽기(quiet) 알림은 1분 다시 그리기처럼 숫자를 굴리지 않는다(저절로 움직이는 효과 없음).
   api?.onChanged?.(value => { if (value?.ok) { take(value); if (visible) paint({ quiet: !!value.quiet }); } });
   // 모델별 토큰: 본체가 세는 동안 진행 수를 0.5초마다 알린다. 화면은 1초에 한 번까지만, 그리고 「모델별 토큰」 칸만 바꾼다
-  // (계정판 전체를 다시 그리면 다른 칸의 입력 · 열린 선택 상자 · 스크롤이 흔들렸다 — Fable 설계 검토 3). 계정 관리 화면이거나 입력 칸에 초점이 있으면 건드리지 않는다.
+  // (계정판 전체를 다시 그리면 다른 칸의 입력 · 열린 선택 상자 · 스크롤이 흔들렸다 — 설계 검토 3). 계정 관리 화면이거나 입력 칸에 초점이 있으면 건드리지 않는다.
   let tokens = null, tokPaint = null, focusNext = null;
   const typing = () => !!(container?.contains(document.activeElement) && document.activeElement.matches('input,select,textarea'));
   // 본체의 판에는 순서 번호(epoch · seq)가 붙는다. 알림과 응답이 바뀐 차례로 닿아도 늦게 온 옛 판으로 새 판을 덮지 않는다.
@@ -215,7 +215,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   const goLive = () => { if (visible && !document.hidden && tokens?.enabled && api?.tokensLive) void Promise.resolve(api.tokensLive(true)).then(takeTokens, () => {}); };
   const stopLive = () => { if (tokens?.enabled && api?.tokensLive) void Promise.resolve(api.tokensLive(false)).then(takeTokens, () => {}); };
   // 누르는 사이(눌렀다 떼기 전)에 칸을 갈아 끼우면 그 누름이 사라진다 — 실시간 알림은 손을 뗀 뒤에 그린다.
-  // released: 창에 붙인 손 떼기 알림(보드 하나에 한 벌 — 치울 때 뗀다, 카본 지적), releaseTimer: 뗀 뒤 그리기.
+  // released: 창에 붙인 손 떼기 알림(보드 하나에 한 벌 — 치울 때 뗀다, 검수 지적), releaseTimer: 뗀 뒤 그리기.
   let pressing = false, paintAfterPress = false, released = null, releaseTimer = null;
   // 칸만 갈아 끼운 때 그린 글(칸 요소마다 — 계정판 전체를 다시 그리면 새 요소라 비교하지 않는다).
   const tokDrawn = new WeakMap();
@@ -320,7 +320,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // 다른 일이 도는 동안에는 단추가 잠겨 있다. 그래도 눌렸으면 확인 띠를 지우지 않고 그대로 둔다.
     if (name === 'tokens-off') { if (busy) return; if (!ui.tokOffArmed) { ui.tokOffArmed = true; focusNext = '[data-subs="tokens-off-cancel"]'; return paint(); } ui.tokOffArmed = false; ui.tokOpen.clear(); ui.tokAll = false; return void act('tokens', async () => { const r = await api.tokensEnable(false); takeTokens(r); if (r?.ok) { focusNext = '[data-subs="tokens-on"]'; toast('모델별 토큰을 끄고 모은 숫자를 지웠어요.'); } else focusNext = '[data-subs="tokens-off"][data-id="off-link"]'; return r; }); }
     if (name === 'tokens-off-cancel') { ui.tokOffArmed = false; focusNext = '[data-subs="tokens-off"][data-id="off-link"]'; return paint(); }
-    // 다시 세기는 본체가 시작만 하고 바로 돌려준다(진행은 onTokens 알림으로 — 그동안 다른 단추도 그대로 쓴다. Fable 설계 검토 6).
+    // 다시 세기는 본체가 시작만 하고 바로 돌려준다(진행은 onTokens 알림으로 — 그동안 다른 단추도 그대로 쓴다. 설계 검토 6).
     if (name === 'tokens-scan') return void act('tokens', async () => { const r = await api.tokensScan({ force: true }); takeTokens(r); return r; });
     if (name === 'tokens-range') { if (['today', 'week', 'month'].includes(data.range)) ui.tokRange = data.range; return paint(); }
     if (name === 'tokens-open') { ui.tokOpen.has(id) ? ui.tokOpen.delete(id) : ui.tokOpen.add(id); return paint(); }
@@ -354,7 +354,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       const text = String(get('apiCredit')).trim(), amount = text === '' ? null : num(text), date = get('apiDate');
       if (text !== '' && (amount === null || amount < 0 || amount > 100000)) return toast('남은 금액은 0에서 100,000달러 사이 숫자로 넣어 주세요.');
       const value = amount === null ? null : Math.round(amount * 100) / 100;
-      // Gemini(11-02): Cloud 크레딧은 받은 달마다 12개월씩 차례로 사라져 한 날짜로 말할 수 없어 남은 금액만 받는다(Fable 설계 검토 P1-1).
+      // Gemini(11-02): Cloud 크레딧은 받은 달마다 12개월씩 차례로 사라져 한 날짜로 말할 수 없어 남은 금액만 받는다(설계 검토 P1-1).
       if (row?.service === 'gemini') return void act('api', async () => { const r = await api.save({ row: { id, apiCredit: value } }); if (r?.rows) { ui.apiEditing = null; toast(value === null ? 'API 크레딧을 비웠어요.' : `API 크레딧 ${money(value, 'USD')}를 넣었어요.`); } return r; });
       const [y, mo, d] = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date.split('-').map(Number) : [];
       const until = amount !== null && y ? new Date(y, mo - 1, d).getTime() : null;
@@ -364,7 +364,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       return void act('api', async () => { const r = await api.save({ row: { id, apiCredit: value, apiCreditUntil: until, ...(billDay ? { billDay } : {}) } }); if (r?.rows) { ui.apiEditing = null; toast(value === null ? 'API 크레딧을 비웠어요.' : `API 크레딧 ${money(value, 'USD')}를 넣었어요.${billDay ? ` 크레딧이 사라지는 날이 결제일이라 결제일도 매월 ${billDay}일로 넣어 뒀어요.` : ''}`); } return r; });
     }
     // Flow 크레딧(Gemini 11-02): Flow 프로필에 보이는 남은 개수와 다시 차는 때(「12월 1일 오후 9:29에 초기화」). 시각을 비우면 그날 23:59로 본다 —
-    // 다시 차기 전에 「다시 찼을 거예요」라고 말하지 않게(Fable 설계 검토 P1-3). 이미 지난 때는 받지 않는다. 개수를 비우면 넣은 값을 지운다.
+    // 다시 차기 전에 「다시 찼을 거예요」라고 말하지 않게(설계 검토 P1-3). 이미 지난 때는 받지 않는다. 개수를 비우면 넣은 값을 지운다.
     // Flow는 결제 주기가 시작될 때 다시 차므로(공식 도움말), 결제일을 아직 안 넣은 월 결제 줄이면 그날의 일로 결제일도 채운다(Claude · GPT API 크레딧과 같은 규칙).
     if (name === 'flow') {
       const id = form.dataset.id, row = rowById(id), get = n => form.querySelector(`[name="${n}"]`)?.value ?? '';
@@ -375,7 +375,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       const until = amount !== null && y ? new Date(y, mo - 1, d, h, m, 0, 0).getTime() : null;
       if (amount !== null && until === null) return toast('Flow 프로필에 보이는 다시 차는 날짜(초기화 날짜)도 넣어 주세요.');
       if (until !== null && until <= Date.now()) return toast('다시 차는 때가 이미 지났어요. 날짜와 시각을 확인해 주세요.');
-      // 가족 공유로 받는 계정은 결제하지 않으니 결제일을 채우지 않는다(11-02 아르곤 A3).
+      // 가족 공유로 받는 계정은 결제하지 않으니 결제일을 채우지 않는다(11-02 검수 A3).
       const billDay = until !== null && row && !row.billDay && row.cycle !== 'annual' && row.plan !== 'family' ? d : null;
       return void act('flow', async () => { const r = await api.save({ row: { id, flowCredit: amount, flowCreditUntil: until, ...(billDay ? { billDay } : {}) } }); if (r?.rows) { ui.flowEditing = null; toast(amount === null ? 'Flow 크레딧을 비웠어요.' : `Flow 크레딧 ${credits(amount, true)}개를 넣었어요.${billDay ? ` Flow 크레딧은 결제 주기가 시작될 때 다시 차서 결제일도 매월 ${billDay}일로 넣어 뒀어요.` : ''}`); } return r; });
     }
@@ -434,7 +434,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
         ? `<div class="ms-fix-row"><i class="ms-dot" data-state="low" aria-hidden="true"></i><span>${a.row.loginUntil > now ? `로그인 기한 ${esc(loginWhen(a.row.loginUntil, now))}` : '로그인 기한 지남 · 곧 끊겨요'} · <b>${esc(a.name)}</b>(${esc(a.label)})</span><button type="button" class="ms-button ms-button-small" data-subs="relogin" data-id="${esc(a.row.id)}">미리 다시 로그인</button></div>`
         : `<div class="ms-fix-row"><i class="ms-dot" data-state="error" aria-hidden="true"></i><span>읽지 못함 · <b>${esc(a.name)}</b>(${esc(a.label)})${a.readAt ? ` · ${stamp(a.readAt, now)} 값` : ''}</span><button type="button" class="ms-button ms-button-small" data-subs="reread" data-id="${esc(a.row.id)}" ${checkBusy() ? 'disabled' : ''}>다시 읽기</button></div>`;
     const shown = items.length > 3 ? items.slice(0, 2) : items;
-    // 넘쳐서 가려진 줄에 로그인 기한이 다가온 계정이 있으면 그 수를 따로 말한다(끊긴 계정이 많을 때 묻히던 것 — Fable F1).
+    // 넘쳐서 가려진 줄에 로그인 기한이 다가온 계정이 있으면 그 수를 따로 말한다(끊긴 계정이 많을 때 묻히던 것 — 검수 F1).
     const hiddenSoon = items.slice(shown.length).filter(a => a.state === 'expiring').length;
     return `<div class="ms-fix">${shown.map(line).join('')}${items.length > shown.length ? `<div class="ms-fix-row"><i class="ms-dot" aria-hidden="true"></i><span>손볼 계정이 ${items.length - shown.length}개 더 있어요${hiddenSoon ? `(로그인 기한이 다가온 계정 ${hiddenSoon}개 포함)` : ''}</span><button type="button" class="ms-button ms-button-small" data-subs="manage">계정 관리에서 모두 보기</button></div>` : ''}</div>`;
   }
@@ -453,14 +453,14 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   }
   function valueHtml(g, now, stale) {
     // 읽은 때는 「확인」을 붙여 초기화 시각과 헷갈리지 않게 한다(10-31: 「5시간 사용 · 17:12」가 초기화 때로 읽혔다).
-    // 값이 오래됐을 때와, 읽은 뒤 한 창의 초기화가 지나 그 계정 값이 지난 확인 기준일 때(projected), 어림(guess) 창이 있을 때 붙인다(10-31 Fable F3).
+    // 값이 오래됐을 때와, 읽은 뒤 한 창의 초기화가 지나 그 계정 값이 지난 확인 기준일 때(projected), 어림(guess) 창이 있을 때 붙인다(10-31 검수 F3).
     const best = g.best, readAt = best?.row?.live?.readAt, read = (stale || best?.projected || best?.g?.session?.guess || best?.g?.weekly?.guess) && readAt ? ` · ${stamp(readAt, now)}\u00a0확인` : '';
-    // 한도형 줄의 대기 · 예상 값(다시 찼을 거예요 · 다 씀 · 손볼 것 · 확인 전)은 좁은 폭에서 숫자 값과 같이 이름 아래 줄로 내린다(10-31 아르곤 A3).
+    // 한도형 줄의 대기 · 예상 값(다시 찼을 거예요 · 다 씀 · 손볼 것 · 확인 전)은 좁은 폭에서 숫자 값과 같이 이름 아래 줄로 내린다(10-31 검수 A3).
     const wait = (big, small) => `<span class="ms-value${g.kind === 'weekly' ? ' is-limit' : ''}"><span class="ms-big is-wait"><b>${big}</b><span>${small}</span></span></span>`;
     if (best && g.kind === 'credit' && best.credits !== undefined) return `<span class="ms-gauge ms-value" data-level="${best.state}"><span class="ms-big"><b class="ms-big-num" data-roll="c-${esc(g.key)}">${credits(best.credits, true)}</b><span>크레딧${stale ? read : ''}</span></span></span>`;
     // 한도형(10-31): 큰 숫자는 덜 남은 창(focus)의 쓴 % — 바로 위에 그 창 이름, 옆에 「사용」, 아래에 같은 창의 남은 %를 붙이고,
     // 나머지 창은 그 아래 한 줄에 쓴 %(남은 %) 짝으로. 두 창을 모두 확인한 숫자로 읽었을 때만 왜 이 창이 큰 숫자인지(남은 비율이 덜 남은 쪽) 이름 옆에 짧게 —
-    // 한 창이 어림(guess)이면 비교하지 않는다(10-31 아르곤 A1). 두 창은 분모가 달라 어느 쪽에 먼저 막힐지는 말하지 않는다.
+    // 한 창이 어림(guess)이면 비교하지 않는다(10-31 검수 A1). 두 창은 분모가 달라 어느 쪽에 먼저 막힐지는 말하지 않는다.
     // 큰 숫자 창이 초기화가 지나 다시 찼을 창(guess)이면 0% 사용 · 100% 남음을 확인한 값처럼 보이지 않게 숫자를 쓰지 않는다.
     if (best?.g) {
       const k = best.focus, w = best.g[k], o = best.g[otherWindow(k)];
@@ -503,7 +503,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (g[o]) others.push(esc(windowText(WINDOW_NAME[o], g[o])));
     for (const m of a.row.live?.models || []) {
       if (!Number.isFinite(Number(m.usedPercent))) continue;
-      // 부가 모델(Gemini의 Claude·GPT 모델) 값은 주간 한도라 창 이름을 붙인다(10-31 아르곤 A2 · B1).
+      // 부가 모델(Gemini의 Claude·GPT 모델) 값은 주간 한도라 창 이름을 붙인다(10-31 검수 A2 · B1).
       const name = `${modelName(m.name)}\u00a0주간`;
       others.push(esc(m.resetsAt && now >= m.resetsAt ? guessText(name) : pairText(name, leftPercent(Math.min(100, Math.max(0, Number(m.usedPercent)))))));
     }
@@ -532,7 +532,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const login = g.login.map(a => line(a, '<span class="ms-acc-when">다시 로그인이 필요해요</span>', `<button type="button" class="ms-button ms-button-small ms-button-primary" data-subs="relogin" data-id="${esc(a.row.id)}">${reloginLabel(a.row)}</button>`)).join('');
     const pending = g.pending.map(a => line(a, `<span class="ms-acc-when">${snapshot?.checking ? '읽는 중이에요' : '아직 읽지 않았어요 · 「지금 확인」을 누르면 읽어요'}</span>`)).join('');
     // 지금 로그인되지 않은 Gemini 계정: 마지막으로 읽은 값(막대·%)과 읽은 때. 그 사이 초기화가 지났으면 풀렸을 것으로, 다 쓴 채면 풀리는 때를 말한다.
-    // 본체가 「로그인된 계정이 없음」(awayReason 'none')으로 알리면 그렇게 말한다(Fable 10-22 P2-1).
+    // 본체가 「로그인된 계정이 없음」(awayReason 'none')으로 알리면 그렇게 말한다(10-22 검수 P2-1).
     const awayWhy = a => (a.row.awayReason === 'none' ? 'Antigravity에 로그인된 계정이 없어' : 'Antigravity에 다른 계정이 로그인돼 있어');
     const awayWhen = a => [a.readAt ? `${awayWhy(a)} ${stamp(a.readAt, now)}에 마지막으로 읽은 값이에요` : `${awayWhy(a)} 아직 읽은 값이 없어요`, a.projected ? `${stamp(a.projected, now)}에 풀렸을 거예요` : a.state === 'out' && a.unblock ? `${soon(a.unblock, now)}에 풀려요` : ''].filter(Boolean).join(' · ');
     const away = g.away.map(a => line(a, `<span class="ms-acc-sub">${a.g ? windowsHtml(a, now, { lead: esc(awayWhen(a)), read: false }) : esc(awayWhen(a))}</span>${a.g ? `${bar(a)}${value(a)}` : ''}`)).join('');
@@ -583,7 +583,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // API 크레딧(Claude 10-28 · GPT 10-29)은 결제가 아니라 사라지는 돈이라 「만료」 대신 「사라져요」(「청구」로 읽힌 10-28 전례). 결제일과 같은 날이면 결제 줄에 붙는다(bill.api).
     const gone = amount => `API 크레딧 ${esc(money(amount, 'USD'))} 사라져요`;
     // Flow 크레딧(Gemini 11-02)은 사라지는 돈이 아니라 결제 주기 시작에 다시 차는 것이라 「다시 차요」(한 달 양을 알면 그 개수).
-    // 한 달 양을 모르면(등급 모름 · 가족 공유) 모델이 결제 줄에 true만 붙인다 — 숫자일 때만 개수를 말한다(11-02 아르곤 A1: true > 0이 참이라 「1개로」가 찍혔다).
+    // 한 달 양을 모르면(등급 모름 · 가족 공유) 모델이 결제 줄에 true만 붙인다 — 숫자일 때만 개수를 말한다(11-02 검수 A1: true > 0이 참이라 「1개로」가 찍혔다).
     const refill = amount => `Flow 크레딧${typeof amount === 'number' && amount > 0 ? ` ${esc(credits(amount, true))}개로` : ''} 다시 차요`;
     const what = item.type === 'unblock' ? `${esc(label)} · ${WINDOW_NAME[item.focus]} 한도${item.after !== null && item.after !== undefined ? ` · ${pairText('주간', item.after)}` : ''}${item.pass ? ` · ${passHtml(item.pass, now)}` : ''}`
       : item.type === 'reset' ? `${esc(label)} · 주간 초기화` : item.type === 'pass' ? `${esc(label)} · 초기화권 ${item.count}장 만료` : item.type === 'api' ? `${esc(label)} · ${gone(item.amount)}` : item.type === 'flow' ? `${esc(label)} · ${refill(item.amount)}`
@@ -614,13 +614,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   const baseLabel = u => (u.baseWeeks === 1 ? '그 전 7일' : `그 전 ${u.baseWeeks}주 평균`);
   /* 요금표(3차) 글: 금액·결제 주기·확인한 지 60일 문은 모델(priceTable·planPrice·officialPrice)이 정한다. 여기는 세금과 확인한 날을 말로 옮긴다. */
   const taxWord = t => (t.krVat ? `한국 결제 · 부가세 ${Math.round(t.krVat * 100)}% 포함` : t.tax === 'included' ? '부가세 포함' : t.tax === 'excluded' ? '세금 별도' : '');
-  // 「(으)로」(11-02 아르곤 C1): 끝 글자에 ㄹ 아닌 받침이 있으면 「으로」 — 괄호 안 끝말(「포함」 → 으로 · 「별도」 → 로), 괄호가 없으면 읽는 화폐 이름(원 → 으로 · 달러 → 로).
+  // 「(으)로」(11-02 검수 C1): 끝 글자에 ㄹ 아닌 받침이 있으면 「으로」 — 괄호 안 끝말(「포함」 → 으로 · 「별도」 → 로), 괄호가 없으면 읽는 화폐 이름(원 → 으로 · 달러 → 로).
   const roAfter = word => { const c = String(word).trim().slice(-1).charCodeAt(0) - 0xac00; return c >= 0 && c < 11172 && c % 28 && c % 28 !== 8 ? '으로' : '로'; };
   const priceNote = t => `요금 확인 ${md(t.at)}${taxWord(t) ? `(${taxWord(t)})` : ''}`;
   // 요금표 값은 그대로(센트까지), 1년 치를 12로 나눈 「꼴」 값처럼 끝자리가 긴 값은 정수로(요금표 카드도 $220 → $18로 보인다).
   const dollars = v => money(Math.abs(v - Math.round(v * 100) / 100) < 1e-9 ? v : Math.round(v), 'USD');
   const dollarsOr = (v, currency) => (currency === 'USD' ? dollars(v) : money(v, currency));
-  // 쓴 만큼은 어림이라 천 원 단위로 보인다(Fable 3차 시안 P3-5).
+  // 쓴 만큼은 어림이라 천 원 단위로 보인다(3차 시안 검수 P3-5).
   const round1000 = v => Math.round(v / 1000) * 1000;
   /* 팁 글: 모델이 고른 팁(spikeTip·paceTip·passTip·sizeTip·idleTip·annualTips)의 숫자를 머리 글·「왜 이 팁?」·펼친 목록으로 옮긴다. 언제 낼지·무엇을 고를지는 모델 몫. */
   // 크레딧: 지난 7일이 평소의 몇 배인지와, 잔액이 줄고 있는 계정 하나의 바닥 예측(충전일은 지난 충전에서 센 어림이라 「쯤」).
@@ -662,7 +662,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       why: [`초기화권 ${t.count}장 · 만료까지 ${rel(t.until - now)}${t.manual ? ' · 직접 넣은 값' : ''}`, `기준: 만료까지 3일 안 · 사실 확인 ${info.checked}`],
     };
   }
-  // 요금제 맞추기(Claude): 공식 배수는 5시간 창 기준이고 주간 배수는 공식 자료에 없다고 밝힌다(Fable 2차 P2-1). 금액·「월 결제만」은 요금표가 60일 안일 때만 모델이 준다.
+  // 요금제 맞추기(Claude): 공식 배수는 5시간 창 기준이고 주간 배수는 공식 자료에 없다고 밝힌다(2차 검수 P2-1). 금액·「월 결제만」은 요금표가 60일 안일 때만 모델이 준다.
   function sizeView(t) {
     const from = planName(t.plan), to = planName(t.rule.to);
     const items = [
@@ -676,7 +676,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       why: [`지난 4주 7일씩 ${t.highs.map(v => `${Math.round(v)}%`).join(' · ')} · 읽은 5시간 창 최고 ${t.hPeak}%(${esc(to)}로 치면 ${t.hScaled}%)`, `기준: 4주 모두 ${t.rule.limit}% 이하이고 읽을 때마다 5시간 창이 ${t.rule.h5}% 미만이었을 때${t.table ? ` · ${priceNote(t.table)}` : ''}`],
     };
   }
-  // 안 쓰는 구독: 결제일 당일은 이미 결제됐을 수 있어 「결제 전에」라고 하지 않는다(Fable 2차 P3-3).
+  // 안 쓰는 구독: 결제일 당일은 이미 결제됐을 수 있어 「결제 전에」라고 하지 않는다(2차 검수 P3-3).
   function idleView(t) {
     const when = t.days === 1 ? '내일' : md(t.billAt);
     const price = t.price ? `(${money(t.price.amount, t.price.currency)})` : '', unit = t.service === 'typecast' ? '키는' : '계정은';
@@ -753,7 +753,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       : `<p class="mu-goal-line">${goalName && !asking ? `팁: ${esc(goalName)} · <button type="button" class="ms-link" data-subs="goal-change">바꾸기</button> · ` : ''}<button type="button" class="ms-link" data-subs="tips-off">팁 끄기</button></p>`;
     return section(number, '하루 사용량', '계정을 합친 하루치예요. 노란 막대는 주간 한도의 하루 몫(약 14%)을 넘긴 날이에요.', `<div class="mu-list">${list.map(g => usageRow(g, now, tips.get(g.service))).join('')}</div>${goalCard}${restLine}${goalLine}`, 'ms-usage');
   }
-  /* 한 달 요약(3차, Fable 1차 아이디어 6) */
+  /* 한 달 요약(3차, 1차 검수 아이디어 6) */
   // 넣는 계정·쓴 몫·금액·여유·셈하지 못한 까닭은 모델의 monthSummary가 센다(공식 요금은 officialPrice — 한 달 요약·요금 합계·결제 목록·입구 글이 같은 기준).
   // 여기는 그 숫자를 글로: 합계는 원 단위 그대로, 쓴 만큼은 어림이라 천 원 단위, %는 정수.
   function summaryCard(now, rows) {
@@ -762,13 +762,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (!summaryOn(snapshot?.settings)) return '<p class="ms-sum-off">한 달 요약을 꺼 두었어요 · <button type="button" class="ms-link" data-subs="summary-on">다시 켜기</button></p>';
     const top = '<div class="ms-sum-top"><b>한 달 요약</b><span>지난 4주</span></div>';
     // 셈할 계정이 없을 때 까닭을 그대로(모델의 wait): 첫 기록에서 4주 뒤 날짜(「쯤」), 기록이 아직 없으면 첫 기록부터 4주 뒤, 그 날이 지났으면 읽지 못한 주,
-    // 한 달 크레딧을 몰라서면 그렇게(기록 탓으로 말하지 않는다 — Fable 3차 시안 P2-1).
+    // 한 달 크레딧을 몰라서면 그렇게(기록 탓으로 말하지 않는다 — 3차 시안 검수 P2-1).
     if (!s.items.length) {
       const why = s.wait === 'until' ? `계정마다 기록이 4주 쌓이면 보여 드려요 · <span class="ms-num">${md(s.waitAt)}</span>쯤부터` : s.wait === 'first' ? '첫 기록부터 4주 뒤에 보여 드려요.' : s.wait === 'gaps' ? '4주 동안 매주 읽은 기록이 있어야 셈할 수 있어요. 앱을 켜 두면 기록이 이어져요.' : '요금제의 한 달 크레딧을 알 수 없어 셈하지 못했어요.';
       return `<div class="ms-sum is-wait">${top}<p class="ms-sum-sub">${why}</p></div>`;
     }
     const money4 = s.hasMoney;
-    // 합계는 원 단위 그대로(아래 「한 달 구독료」와 같은 수), 쓴 만큼은 어림이라 천 원 단위(Fable 3차 시안 P3-5).
+    // 합계는 원 단위 그대로(아래 「한 달 구독료」와 같은 수), 쓴 만큼은 어림이라 천 원 단위(3차 시안 검수 P3-5).
     const big = money4 ? `쓴 만큼으로 치면 <b class="ms-num">약 ${money(round1000(s.worth), 'KRW')}</b>어치예요` : `쓴 만큼으로 치면 평균 <b class="ms-num">${s.pct}%</b>예요`;
     const sub = money4 ? `구독료 약 ${money(s.total, 'KRW')} 중 ${s.pct}% · 쓴 몫을 아는 계정 ${s.priced.length}개 기준` : `쓴 몫을 아는 계정 ${s.items.length}개 기준 · 요금을 넣으면 금액으로도 셈해요`;
     const plan = row => planName(row.plan), who = row => `<b>${esc(nameOf(row))}</b> 계정(${esc(labelOf(row))}${plan(row) ? ` ${esc(plan(row))}` : ''})`;
@@ -794,7 +794,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       + `<div class="ms-sum-actions"><button type="button" class="ms-link" data-subs="sum-open" aria-expanded="${ui.sumOpen}">${ui.sumOpen ? '계정별 접기' : '계정별로 보기'}</button><button type="button" class="ms-link" data-subs="sum-why" aria-expanded="${ui.sumWhy}">왜 이 숫자?</button><button type="button" class="ms-link" data-subs="summary-off">요약 끄기</button></div>${list}${why}</div>`;
   }
 
-  /* 연간 결제·할인 시기(3차, Fable 1차 아이디어 7) */
+  /* 연간 결제·할인 시기(3차, 1차 검수 아이디어 7) */
   // 어느 계정에 어떤 연간 결제·할인 팁을 낼지는 모델의 annualTips·shownAnnual(「팁 끄기」·쉬는 팁·둘까지)이 정하고, 글은 위 annualView가 만든다.
   // 쉬는 연간 결제 팁이 있으면 그 수를 말하고 「다시 보기」(누르면 쉬던 팁을 모두 되살린다 — 03 칸과 같은 단추, P3-7).
   function annualHtml(now, rows) {
@@ -820,7 +820,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const apiText = first ? `${API_COPY[first.service].title} ${money(first.left, 'USD')} ${md(first.until)}에 사라져요(${nameOf(first.row)})`
       : entered.length > 1 ? `API 크레딧 ${entered.map(x => `${SHORT[x.service]} ${money(x.c.left, 'USD')}`).join(', ')} 남음${when ? `(${when} 넣은 값)` : ''}`
         : entered.length ? `${API_COPY[entered[0].service].title} ${money(entered[0].c.left, 'USD')} 남음${when ? `(${when} 넣은 값)` : ''}` : '';
-    // Flow 크레딧(Gemini 11-02): 넣은 개수만 숫자로 — 한 번 굴린 값은 「다시 찼을 거예요」로만 말하고 숫자를 쓰지 않는다(쓴 만큼을 모른다, Fable 설계 검토 P1-3).
+    // Flow 크레딧(Gemini 11-02): 넣은 개수만 숫자로 — 한 번 굴린 값은 「다시 찼을 거예요」로만 말하고 숫자를 쓰지 않는다(쓴 만큼을 모른다, 설계 검토 P1-3).
     const flow = flowCredits(snapshot?.prices, rows, now);
     const flowText = !flow?.entered ? '' : flow.refilled === flow.entered ? 'Flow 크레딧 다시 찼을 거예요' : `Flow 크레딧 ${credits(flow.typed, true)}개`;
     const parts = [cost.count ? `한 달 약 ${money(cost.approx, 'KRW')}${cost.unknown ? `(요금 모르는 ${cost.unknown}개 빼고)` : ''}` : '', sum?.items.length ? `지난 4주 쓴 만큼 약 ${sum.pct}%` : '', apiText, flowText, annual ? `연간 결제 팁 ${annual}개` : '', bill].filter(Boolean);
@@ -853,13 +853,13 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const checkAt = snapshot?.check?.at;
     const read = auto && row.live?.readAt && (!checkAt || Math.abs(row.live.readAt - checkAt) > 2 * 60e3) ? `${stamp(row.live.readAt, now)}에 읽음` : '';
     const pass = passesOf(row, now);
-    // 로그인 기한이 7일 안인 줄은 ⋯을 열지 않아도 줄에서 보인다(Fable F1).
+    // 로그인 기한이 7일 안인 줄은 ⋯을 열지 않아도 줄에서 보인다(검수 F1).
     const soonMark = loginSoon(row, now) ? `<small class="ms-pass-mark">${row.loginUntil > now ? `로그인 기한 ${esc(loginWhen(row.loginUntil, now))}` : '로그인 기한 지남'}</small>` : '';
     return `<div class="ms-mrow${open ? ' open' : ''}" data-row="${esc(row.id)}"><div class="ms-mline"><span class="ms-mname">${esc(name)}${pass ? `<small class="ms-pass-mark">초기화권 ${pass.count}장</small>` : ''}${soonMark}</span><span class="ms-mplan">${esc(plan)}</span>${stateMark(row, now)}<span class="ms-mread">${esc(read)}</span><button type="button" class="ms-menu" data-subs="menu" data-id="${esc(row.id)}" aria-expanded="${open}" aria-label="${esc(name)} 관리 열기">${moreIcon}</button></div>${open ? menuPanel(row, now) : ''}</div>`;
   }
   function menuPanel(row, now) {
     const auto = row.source === 'auto', armed = ui.removeArmed === row.id, editing = ui.editing === row.id, dd = nextBill(row.billDay, now);
-    // 요금을 넣지 않았어도 공식 요금으로 셈하는 줄이면 그렇게 말한다(목록의 「공식 요금」과 맞게 — Fable 3차 시안 P3-8). 연간으로 표시한 줄은 「매월 n일」을 말하지 않는다.
+    // 요금을 넣지 않았어도 공식 요금으로 셈하는 줄이면 그렇게 말한다(목록의 「공식 요금」과 맞게 — 3차 시안 검수 P3-8). 연간으로 표시한 줄은 「매월 n일」을 말하지 않는다.
     const official = officialPrice(snapshot?.prices, row, now), tax = official ? taxWord(official.table) : '';
     // 가족 공유로 받는 Gemini 계정(11-02)은 공식 요금 ₩0 — 「₩0로 셈해요」 대신 따로 내지 않는다고 말한다.
     const family = auto && row.service === 'gemini' && row.plan === 'family';
@@ -871,12 +871,12 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const nobody = row.awayReason === 'none';
     const awayFact = row.state === 'elsewhere' ? `<p class="ms-soft">${esc(row.stateMessage || (nobody ? '지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요.' : '지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.'))} ${nobody ? 'Antigravity에 이 계정으로 로그인하면 이어서 읽어요.' : 'Antigravity를 이 계정으로 바꾸면 이어서 읽어요.'}</p>` : '';
     // Gemini 요금제를 아직 고르지 않은 줄(11-02 — agy는 등급을 알려 주지 않는다): 고르면 무엇을 알게 되는지 한 줄.
-    // Pro는 공식 요금을 확인하지 못해 「공식 요금」을 약속하지 않는다(11-02 아르곤 C4).
+    // Pro는 공식 요금을 확인하지 못해 「공식 요금」을 약속하지 않는다(11-02 검수 C4).
     const pickPlan = planChoice(row) && !row.plan ? '<p class="ms-soft">요금제를 「요금·결제일」에서 고르면 매달 딸려 오는 Flow · API 크레딧과 공식 요금(확인한 요금제만)을 알려 드려요.</p>' : '';
     const facts = [awayFact || (row.state && !['ok', 'unknown'].includes(row.state) && row.stateMessage ? `<p class="ms-warn-text">${esc(row.stateMessage)}</p>` : ''), loginFact(row, now), `<p>${pay ? esc(pay) : '요금·결제일을 아직 넣지 않았어요.'}</p>`, pickPlan, yearly, passFact(row, now), flowFact(row, now), apiFact(row, now), row.note ? `<p class="ms-soft">${esc(row.note)}</p>` : ''].join('');
     // API 크레딧은 받을 수 있는 요금제(Claude Max — 등급 모름 포함 · GPT Pro 세 등급 · Gemini Pro · Ultra)에만 — Claude Free·Pro·Enterprise · GPT Plus·Business ·
     // Gemini Plus · 가족 공유는 받지 못하거나 금액을 모른다(공식). 이미 넣은 값이 있으면 고치거나 비울 수 있게 둔다.
-    // Flow 크레딧(Gemini 11-02)은 요금제를 고르기 전에도 넣을 수 있게 Gemini 줄에 늘 둔다(Fable 설계 검토 P2-2 — 한 달 양은 요금제를 골라야 안다).
+    // Flow 크레딧(Gemini 11-02)은 요금제를 고르기 전에도 넣을 수 있게 Gemini 줄에 늘 둔다(설계 검토 P2-2 — 한 달 양은 요금제를 골라야 안다).
     const claude = auto && row.service === 'claude', passOpen = ui.passEditing === row.id, apiOpen = ui.apiEditing === row.id, flowable = planChoice(row), flowOpen = ui.flowEditing === row.id;
     const apiable = auto && API_CREDIT_SERVICES.includes(row.service) && (apiCreditPlan(row) || num(row.apiCredit) !== null);
     const buttons = [
@@ -943,7 +943,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (a.left !== null) return `<p>API 크레딧${a.until ? ` · ${esc(md(a.until))}에 사라져요` : ''} · ${a.at ? `${esc(md(a.at))}에 ${esc(money(a.left, 'USD'))} 남아 있었어요` : `${esc(money(a.left, 'USD'))} 남음`}</p>`;
     if (a.expired) return `<p class="ms-soft">넣어 둔 API 크레딧은 ${esc(md(a.expired))}에 사라졌어요 · 새로 들어온 금액을 「API 크레딧」에 넣어 주세요.</p>`;
     const renew = row.billDay && row.cycle !== 'annual' ? `매월 ${row.billDay}일 결제 때 새로 들어오고 남은 건 사라져요` : '결제일에 남은 건 사라져요';
-    // 등급(Max인지 Ultra인지)을 못 읽은 줄: 금액은 말하지 않고 「API 크레딧」 단추가 무엇인지만(Fable 최종 P3). GPT는 Codex가 등급까지 줘서 이 경우가 없다.
+    // 등급(Max인지 Ultra인지)을 못 읽은 줄: 금액은 말하지 않고 「API 크레딧」 단추가 무엇인지만(최종 검수 P3). GPT는 Codex가 등급까지 줘서 이 경우가 없다.
     if (a.unknown) return `<p class="ms-soft">Max · Ultra 요금제는 Claude Console 조직을 연결하면 API 크레딧이 매달 들어와요(${renew}). Max인지 Ultra인지 아직 못 읽어 금액은 말하지 못해요 · 남은 금액을 넣으면 사라지기 전에 알려 드려요.</p>`;
     return `<p class="ms-soft">${esc(planName(row.plan, row.service))} 요금제는 ${copy.org}을 연결하면 API 크레딧이 매달 ${esc(money(a.grant, 'USD'))}씩 들어와요(${renew}). 남은 금액을 넣으면 사라지기 전에 알려 드려요.</p>`;
   }
@@ -955,7 +955,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const at = a?.until && a.until > now ? a.until : dd ? new Date(now).setHours(0, 0, 0, 0) + dd * DAY_MS : null, t = at ? new Date(at) : null;
     const date = t ? `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}` : '', who = nameOf(row);
     const open = `<button type="button" class="ms-link" data-subs="help" data-link="${copy.billing}" title="${esc(who)} 계정으로 로그인한 브라우저에서 열어 주세요">${copy.billingLabel}</button> · <button type="button" class="ms-link" data-subs="help" data-link="${copy.help}">공식 안내</button>`;
-    // Gemini(11-02): 남은 금액만 받는다(받은 달마다 12개월씩 차례로 사라져 한 만료 날짜가 없다 — Fable 설계 검토 P1-1). 처음 쓰는 조건(개발자 프로그램 가입 · AI Studio 선불 결제)과
+    // Gemini(11-02): 남은 금액만 받는다(받은 달마다 12개월씩 차례로 사라져 한 만료 날짜가 없다 — 설계 검토 P1-1). 처음 쓰는 조건(개발자 프로그램 가입 · AI Studio 선불 결제)과
     // 그 크레딧을 결제 계정에 붙이는 개발자 프로그램 혜택 쪽을 같이 연다. AI Studio 결제 화면의 합계에는 선불로 넣은 돈도 섞여 그것은 빼고 넣는다.
     if (row.service === 'gemini') return `<form class="ms-form ms-pass-form ms-api-form" data-subs-form="api" data-id="${esc(row.id)}">
       <p class="ms-wide ms-soft">Google AI Pro · Ultra 요금제에는 Gemini API(AI Studio)에 쓰는 Google Cloud 크레딧이 매달 쌓이고, 받은 달마다 12개월 뒤 사라져요. 처음 한 번은 Google 개발자 프로그램에 가입하고, AI Studio 결제에서 선불 결제를 만든 뒤 개발자 프로그램 혜택 쪽에서 그 결제 계정에 붙여야 써요(조건은 공식 안내). AI 구독 관리는 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 AI Studio 결제를 열고 보이는 크레딧 금액을 넣어 주세요. 선불로 넣은 돈은 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요. ${open} · <button type="button" class="ms-link" data-subs="help" data-link="gemini-dev-benefits">개발자 프로그램 혜택</button></p>
@@ -1011,9 +1011,9 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // API 크레딧 칸(Claude 10-28 · GPT 10-29): 구독료가 아니라 요금제(Max · Pro)에 딸려 오는 크레딧이라 「한 달 구독료」 합계에 섞지 않고 따로 센다.
   // 서비스마다 다른 조직의 돈이라 칸도 서비스마다 하나씩이다(서로 바꿔 쓸 수 없다).
   // 넣은 값이 있으면 남은 금액의 합과 가장 먼저 사라지는 계정, 없으면 요금제로 매달 들어오는 금액.
-  // 넣은 값은 쓰는 만큼 낡아서 합에는 늘 넣은 날을 붙인다(하루만 지나도 수십 달러 다를 수 있다 — Fable 설계 검토 P1-2). 날이 여럿이면 처음~끝.
+  // 넣은 값은 쓰는 만큼 낡아서 합에는 늘 넣은 날을 붙인다(하루만 지나도 수십 달러 다를 수 있다 — 설계 검토 P1-2). 날이 여럿이면 처음~끝.
   const enteredWhen = c => (!c.oldest ? '' : md(c.oldest) === md(c.newest) ? md(c.oldest) : `${md(c.oldest)}~${md(c.newest)}`);
-  // Gemini 칸의 요금제 이름(11-02): 그 크레딧을 받는 Gemini 계정의 요금제 이름을 겹치지 않게 「 · 」로(「Ultra 20x」 · 섞이면 「Plus · Pro」 — 아르곤 A4: 늘 「Pro · Ultra」로 말하면 Plus 계정이 섞일 때 틀렸다).
+  // Gemini 칸의 요금제 이름(11-02): 그 크레딧을 받는 Gemini 계정의 요금제 이름을 겹치지 않게 「 · 」로(「Ultra 20x」 · 섞이면 「Plus · Pro」 — 검수 A4: 늘 「Pro · Ultra」로 말하면 Plus 계정이 섞일 때 틀렸다).
   // Claude 칸도 10-30 이름 바꿈(Max · Ultra) 뒤로는 받는 계정의 요금제 이름으로 센다(「Ultra 9개」 — 11-02).
   const grantPlans = (service, has) => [...new Set((snapshot?.rows || []).filter(r => r.source === 'auto' && r.service === service && has(r)).map(r => planName(r.plan, service)))].join(' · ') || API_COPY[service].plans;
   const geminiPlans = has => grantPlans('gemini', has);
@@ -1023,12 +1023,12 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const unknownWord = gemini ? '등급을 고르지 않은 Ultra' : 'Max인지 Ultra인지 모르는 계정';
     const first = c.first ? `<b>${esc(nameOf(c.first.row))}</b> ${esc(md(c.first.until))}에 가장 먼저 사라져요` : '';
     const monthly = c.granted ? `매달 ${esc(money(c.monthly, 'USD'))}(${esc(plans)} ${c.granted}개${c.unknown ? ` · ${unknownWord} ${c.unknown}개 빼고` : ''})` : '';
-    // Gemini Cloud 크레딧은 쌓이고 받은 달마다 12개월 뒤 사라지며, 개발자 프로그램 가입과 AI Studio 선불 결제가 있어야 쓴다(AI Studio 공식 안내 — Fable 설계 검토 P2-4).
+    // Gemini Cloud 크레딧은 쌓이고 받은 달마다 12개월 뒤 사라지며, 개발자 프로그램 가입과 AI Studio 선불 결제가 있어야 쓴다(AI Studio 공식 안내 — 설계 검토 P2-4).
     const how = gemini ? '매달 쌓이고 받은 달마다 12개월 뒤 사라져요 · 개발자 프로그램 가입과 AI Studio 선불 결제가 있어야 써요' : `${copy.org}을 연결한 계정에 들어와요`;
     const small = c.entered
       ? [enteredWhen(c) ? `${esc(enteredWhen(c))}에 넣은 값 · 계정 ${c.entered}개` : `계정 ${c.entered}개`, first, monthly].filter(Boolean).join(' · ')
       : c.granted ? `${esc(plans)} 계정 ${c.granted}개${c.unknown ? `(${unknownWord} ${c.unknown}개 빼고)` : ''} · ${how} · 남은 금액은 계정 줄 ⋯의 「API 크레딧」에서 넣어요`
-        // 등급을 모르는 계정뿐이면 금액 대신 그 수와 까닭(Fable 최종 P3).
+        // 등급을 모르는 계정뿐이면 금액 대신 그 수와 까닭(최종 검수 P3).
         : gemini ? '요금제 등급(5x·20x)을 아직 고르지 않아 매달 쌓이는 금액을 몰라요 · 계정 줄 ⋯의 「요금·결제일」에서 골라 주세요'
           : 'Max인지 Ultra인지 아직 못 읽어 매달 들어오는 금액을 몰라요 · 「지금 확인」으로 다시 읽어 보세요 · 남은 금액은 계정 줄 ⋯의 「API 크레딧」에서 넣어요';
     const big = c.entered ? `${money(c.left, 'USD')} 남음` : c.granted ? `매달 ${money(c.monthly, 'USD')}` : `${gemini ? 'Ultra' : 'Max · Ultra'} ${c.unknown}개`;
@@ -1062,7 +1062,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const priced = billList(snapshot?.prices, rows, now).map(x => ({ r: x.row, o: x.official, d: x.days }));
     const counts = [`구독 ${cost.count}개`, cost.official ? `공식 요금 ${cost.official}개` : '', cost.unknown ? `요금 모름 ${cost.unknown}개` : ''].filter(Boolean).join(' · ');
     // 11-02: 돈(구독료 · 결제 · 환산)과 구독에 포함된 크레딧(Claude · GPT · Gemini API · Flow)을 두 줄로 — 한 줄에 일곱 칸이면 6 + 1로 어긋난다.
-    // 넣은 구독료가 없으면 돈 줄은 숨긴다(크레딧 칸만 있는 새 회원, Fable 설계 검토 P2-5).
+    // 넣은 구독료가 없으면 돈 줄은 숨긴다(크레딧 칸만 있는 새 회원, 설계 검토 P2-5).
     const moneyRow = cost.count ? `<div class="ms-metrics">
         <div class="ms-metric"><span>한 달 구독료</span><strong class="ms-num">약 ${money(cost.approx, 'KRW')}</strong><small>${esc(pair(cost.krw, cost.usd) || '0')} · ${esc(counts)}</small></div>
         <div class="ms-metric"><span>7일 안 결제</span><strong class="ms-num">${cost.soon}건</strong><small>${cost.soon ? esc([pair(cost.soonKrw, cost.soonUsd), cost.soonUnknown ? `금액 모름 ${cost.soonUnknown}건` : ''].filter(Boolean).join(' · ')) : '다음 7일은 결제가 없어요'}</small></div>
@@ -1070,12 +1070,12 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       </div>` : '';
     const creditRow = apiList.length || flow ? `<h3 class="ms-metrics-head">구독에 포함된 크레딧</h3><div class="ms-metrics ms-metrics-credit">${apiList.map(([service, c]) => apiMetric(c, now, service)).join('')}${flow ? flowMetric(flow, now) : ''}</div>` : '';
     const metrics = moneyRow + creditRow;
-    // 가족 공유로 받는 Gemini 계정(11-02)은 ₩0 「공식 요금」이 아니라 「가족 공유」 — 위 칸의 구독 · 공식 요금 수에 세지 않는 것과 맞춘다(아르곤 C3).
+    // 가족 공유로 받는 Gemini 계정(11-02)은 ₩0 「공식 요금」이 아니라 「가족 공유」 — 위 칸의 구독 · 공식 요금 수에 세지 않는 것과 맞춘다(검수 C3).
     const priceText = (r, o) => (num(r.price) !== null ? esc(money(r.price, r.currency)) : o && r.source === 'auto' && r.service === 'gemini' && r.plan === 'family' ? '<small>가족 공유</small>' : o ? `${esc(dollarsOr(o.price, o.currency))}<small>공식 요금</small>` : '');
     const billName = r => { const name = esc(r.source === 'auto' ? nameOf(r) : KINDS.find(([k]) => k === r.kind)?.[1] || ''), bit = apiBit(r, now); return bit ? `<span class="ms-bill-name has-api"><span class="ms-bill-who">${name}</span>${bit}</span>` : `<span class="ms-bill-name">${name}</span>`; };
     const list = priced.length ? `<div class="ms-bills">${priced.map(({ r, o, d }) => `<div class="ms-bill ${svcClass(r.source === 'auto' ? r.service : null)}"><span class="ms-tag">${esc(labelOf(r))}</span>${billName(r)}<span class="ms-bill-price ms-num">${priceText(r, o)}</span><span class="ms-bill-day">${r.cycle === 'annual' ? '연간 결제' : r.billDay ? `매월 ${r.billDay}일 · ${billWord(d)}` : '결제일 없음'}</span><button type="button" class="ms-link" data-subs="cost-edit" data-id="${esc(r.id)}">고치기</button></div>`).join('')}</div>`
       : '<p class="ms-cost-empty">계정 줄의 ⋯에서 「요금·결제일」을 넣으면 한 달 합계와 다가오는 결제를 여기서 알려 드려요.</p>';
-    // 3차: 칸 머리에 한 달 요약과 연간 결제 팁(돈 이야기는 요금이 있는 화면에서 — Fable 1차 8-1).
+    // 3차: 칸 머리에 한 달 요약과 연간 결제 팁(돈 이야기는 요금이 있는 화면에서 — 1차 검수 8-1).
     const head = `${summaryCard(now, rows)}${annualHtml(now, rows)}`;
     return section('02', '요금·결제일', cost.official ? '넣은 요금을 먼저 쓰고, 넣지 않은 계정은 공식 요금으로 셈해요.' : '월 구독료와 결제일을 넣은 구독이 모여요.', head + metrics + list, 'ms-cost');
   }
@@ -1091,15 +1091,15 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       ${section('03', '직접 넣는 구독', 'Suno·Hugging Face처럼 자동으로 못 읽는 구독은 결제일·잔액·초기화 요일을 직접 넣어 둘 수 있어요.', `${manual.length ? `<div class="ms-mblock ms-s-other">${manual.map(r => manageRow(r, now)).join('')}</div>` : ''}${manualForm()}`)}
       ${section('04', '막혔을 때', '설치·로그인·키 문제를 하나씩 풀어요.', troubleshooting())}`;
   }
-  // 결제 주기 칸(3차, Fable 3차 시안 P3-4): 연간이면 요금은 1년 치를 12로 나눈 한 달 값으로 받고, 「매월 n일」 결제일은 숨긴다(달마다 오는 결제가 아니다).
+  // 결제 주기 칸(3차, 3차 시안 검수 P3-4): 연간이면 요금은 1년 치를 12로 나눈 한 달 값으로 받고, 「매월 n일」 결제일은 숨긴다(달마다 오는 결제가 아니다).
   const cycleField = cycle => `<label>결제 주기<select name="cycle" data-cycle-select><option value=""${cycle === 'annual' ? '' : ' selected'}>월 결제</option><option value="annual"${cycle === 'annual' ? ' selected' : ''}>연간 결제</option></select></label>`;
   const priceHint = '<small class="ms-only-annual">연간 결제면 1년 치를 12로 나눈 값을 넣어 주세요</small>';
-  // Gemini 요금제 칸(11-02): agy가 등급을 알려 주지 않아 맨 위에서 고른다(Fable 설계 검토 P2-2). 고르면 공식 요금과 매달 딸려 오는 크레딧을 안다.
+  // Gemini 요금제 칸(11-02): agy가 등급을 알려 주지 않아 맨 위에서 고른다(설계 검토 P2-2). 고르면 공식 요금과 매달 딸려 오는 크레딧을 안다.
   // ultra(등급 모름)는 옛 값이라 지금 그 값인 줄에만 보인다.
   const planField = row => `<label class="ms-wide">요금제<select name="plan"><option value=""${row.plan ? '' : ' selected'}>고르지 않음</option>${GEMINI_PLANS.filter(([k]) => k !== 'ultra' || row.plan === 'ultra').map(([k, t]) => `<option value="${k}"${row.plan === k ? ' selected' : ''}>${t}</option>`).join('')}</select><small>Antigravity CLI는 Google AI 요금제 등급을 알려 주지 않아요 · 가족 공유로 받는 계정은 「가족 공유」를 골라 요금을 두 번 세지 않게 해요</small></label>`;
   function editForm(row, now) {
     const v = x => (x === null || x === undefined ? '' : esc(x)), manual = row.source === 'manual';
-    // 요금을 비워 둔 자동 연결 계정은 공식 요금을 자리 표시로 보인다(넣으면 넣은 값이 먼저 — Fable 3차 시안 동의 1의 (C)).
+    // 요금을 비워 둔 자동 연결 계정은 공식 요금을 자리 표시로 보인다(넣으면 넣은 값이 먼저 — 3차 시안 검수 동의 1의 (C)).
     const official = officialPrice(snapshot?.prices, row, now), hint = official ? `${Math.round(official.price * 100) / 100}` : '29000';
     return `<form class="ms-form ms-edit" data-subs-form="edit" data-id="${esc(row.id)}" data-kind="${esc(row.kind)}" data-cycle="${row.cycle === 'annual' ? 'annual' : ''}">
       ${planChoice(row) ? planField(row) : ''}
@@ -1147,7 +1147,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const tool = snapshot?.tools?.[key], login = snapshot?.login && snapshot.login.service === key ? snapshot.login : null, otherLogin = snapshot?.login && snapshot.login.service !== key && !['done', 'error', 'cancelled'].includes(snapshot.login.stage);
     const installed = !!tool?.installed;
     // Gemini 계정 바꾸기: 이미 연결한 Gemini 계정이 있으면 검은 창(agy)에서 /logout → /login으로 바꾼다는 것을 함께 말한다(10-22).
-    // 마지막 읽기에서 agy에 로그인된 계정이 없었으면(다시 로그인·「로그인된 계정 없음」 줄만 있음) 창이 바로 로그인 화면이라 그렇게 말한다(Fable 재확인 P3).
+    // 마지막 읽기에서 agy에 로그인된 계정이 없었으면(다시 로그인·「로그인된 계정 없음」 줄만 있음) 창이 바로 로그인 화면이라 그렇게 말한다(재확인 P3).
     const geminiRows = key === 'gemini' ? (snapshot?.rows || []).filter(r => r.source === 'auto' && r.service === 'gemini') : [];
     const switching = geminiRows.length > 0;
     const signedOut = switching && !geminiRows.some(r => r.state === 'ok') && geminiRows.some(r => r.state === 'needs-login' || r.awayReason === 'none');
@@ -1179,7 +1179,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
         <div class="ms-inline"><button type="button" class="ms-link" data-subs="cancel-login">로그인 취소</button>${key === 'claude' && !login.console ? '<button type="button" class="ms-link" data-subs="console-login">코드가 안 들어가면 · 검은 창으로 로그인하기</button>' : ''}</div>`;
     } else {
       const last = login && ['done', 'error'].includes(login.stage) ? `<p class="${login.stage === 'done' ? 'ms-ok-text' : 'ms-warn-text'}">${esc(login.message)}</p>` : '';
-      // 줄의 「다시 로그인」으로 연 Claude 안내: 그 계정 하나로만 로그인하고, 기한이 새로 시작된다는 것을 말한다(Fable F2).
+      // 줄의 「다시 로그인」으로 연 Claude 안내: 그 계정 하나로만 로그인하고, 기한이 새로 시작된다는 것을 말한다(검수 F2).
       const again = reloginRow(key);
       if (again) loginBody = `${last}<p><b>${esc(again.email)}</b> 계정으로 다시 로그인해요. 다시 로그인하면 로그인 기한이 새로 시작돼요. Claude는 한 번 로그인하면 4주쯤 쓸 수 있어요.</p>
         <p class="ms-soft">브라우저(claude.ai)에 다른 Claude 계정이 로그인돼 있으면 그 계정으로 연결돼요. 먼저 브라우저에서 이 계정으로 바꿔 두세요.</p>
@@ -1222,7 +1222,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const d = el.dataset || {};
     return d.subs ? { selector: `[data-subs="${CSS.escape(d.subs)}"]${d.id ? `[data-id="${CSS.escape(d.id)}"]` : ''}${d.service ? `[data-service="${CSS.escape(d.service)}"]` : ''}` } : null;
   }
-  // 어느 행동이든 도는 동안에는 토큰 단추도 잠근다(act가 말없이 돌려보내 눌러도 아무 일이 없던 것 — Fable 최종 검수 지적).
+  // 어느 행동이든 도는 동안에는 토큰 단추도 잠근다(act가 말없이 돌려보내 눌러도 아무 일이 없던 것 — 최종 검수 지적).
   const tokenHtml = now => tokensSection({ state: tokens, view: { range: ui.tokRange, open: ui.tokOpen, all: ui.tokAll, offArmed: ui.tokOffArmed }, now, number: ui.tokNumber || '04', busy });
   // 모델별 토큰 칸만 다시 그린다. 칸이 아직 없으면(처음 상태를 받은 때) 한눈에 보기 전체를 그린다.
   function paintTokens() {
@@ -1237,15 +1237,15 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     tpl.innerHTML = html;
     const next = tpl.content.firstElementChild;
     // 짜임이 같으면(숫자 · 막대 너비 · 시각만 바뀐 실시간 판) 그 자리에서 글자와 속성만 바꾼다 — 초점과 가리킴이 그대로 남아
-    // 낭독기가 초점 단추를 판마다 다시 읽지 않는다(Fable 최종 검수 지적: 여러 세션이 쓰면 1.5초마다 칸을 갈아 끼웠다).
-    // 줄의 순서가 바뀐 판(두 모델의 순위가 엇갈림)은 갈아 끼운다 — 그 자리에서 바꾸면 초점 단추가 다른 모델이 된다(Fable 다시 검수 지적). data-id로 같은 모델에 초점을 돌려준다.
+    // 낭독기가 초점 단추를 판마다 다시 읽지 않는다(최종 검수 지적: 여러 세션이 쓰면 1.5초마다 칸을 갈아 끼웠다).
+    // 줄의 순서가 바뀐 판(두 모델의 순위가 엇갈림)은 갈아 끼운다 — 그 자리에서 바꾸면 초점 단추가 다른 모델이 된다(다시 검수 지적). data-id로 같은 모델에 초점을 돌려준다.
     if (next && sameShape(el, next) && idOrder(el) === idOrder(next)) { patchNode(el, next); tokDrawn.set(el, html); return; }
     const focus = focusKey(), wasInside = el.contains(document.activeElement);
     el.replaceWith(tpl.content);
     if (next) tokDrawn.set(next, html);
     restoreFocus(focus);
-    // 초점이 있던 모델이 순위에서 밀려 보이는 줄 밖으로 나갔으면 「모두 보기」(없으면 첫 줄)에 초점을 둔다 — 문서로 떨어지지 않게(Fable 다시 검수 지적).
-    // 쉼표로 묶은 선택자는 문서 순서로 찾아 늘 첫 줄이 잡혔다 — 둘로 나눠 찾는다(Fable 다시 검수 지적).
+    // 초점이 있던 모델이 순위에서 밀려 보이는 줄 밖으로 나갔으면 「모두 보기」(없으면 첫 줄)에 초점을 둔다 — 문서로 떨어지지 않게(다시 검수 지적).
+    // 쉼표로 묶은 선택자는 문서 순서로 찾아 늘 첫 줄이 잡혔다 — 둘로 나눠 찾는다(다시 검수 지적).
     if (wasInside && !next?.contains(document.activeElement)) (next?.querySelector('[data-subs="tokens-all"]') || next?.querySelector('.mt-row-btn'))?.focus({ preventScroll: true });
   }
   function sameShape(a, b) { return a.nodeType === b.nodeType && a.nodeName === b.nodeName && (a.nodeType !== 1 || (a.childNodes.length === b.childNodes.length && [...a.childNodes].every((n, i) => sameShape(n, b.childNodes[i])))); }

@@ -78,7 +78,7 @@ export function createOrbSignature(canvas, { getReducedMotion = () => false, get
   return {
     /* 맞춰지고 잠깐 머문 뒤에 끝난다. kind는 full · quick */
     play(kind = 'full') {
-      // 앞의 재생이 끝나기 전에 다시 부르면 앞의 타이머와 약속을 먼저 끝낸다(카본 B5)
+      // 앞의 재생이 끝나기 전에 다시 부르면 앞의 타이머와 약속을 먼저 끝낸다(검수 B5)
       finish();
       build(); seed = (seed * 7 + 3) % 97;
       const timing = getReducedMotion() ? SIGNATURE_TIMING.reduced : SIGNATURE_TIMING[kind] || SIGNATURE_TIMING.full;

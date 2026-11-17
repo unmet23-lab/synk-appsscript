@@ -330,14 +330,14 @@ export function createOrbStage(canvas, options = {}) {
     gl = null; U = null;
     if (options.noCanvas) { ctx2d = null; markMode(); return; }
     try { ctx2d = canvas.getContext('2d'); } catch { ctx2d = null; }
-    // WebGL 맥락을 이미 받은 캔버스는 2D 맥락을 주지 않는다(장치를 잃었거나 셰이더를 못 만든 때). 같은 자리에 새 캔버스를 두고 거기에 그린다(Fable 최종)
+    // WebGL 맥락을 이미 받은 캔버스는 2D 맥락을 주지 않는다(장치를 잃었거나 셰이더를 못 만든 때). 같은 자리에 새 캔버스를 두고 거기에 그린다(최종 검수)
     if (!ctx2d && doc?.createElement && canvas.parentNode) {
       const fresh = doc.createElement('canvas');
       for (const name of canvas.getAttributeNames?.() || []) if (name !== 'width' && name !== 'height') fresh.setAttribute(name, canvas.getAttribute(name));
       canvas.replaceWith(fresh);
       canvas = fresh;
       try { ctx2d = canvas.getContext('2d'); } catch { ctx2d = null; }
-      // 새 캔버스는 그림 크기가 기본값(300×150)이다. 곧바로 창에 맞추고 한 장 그린다(Fable 다시 검수)
+      // 새 캔버스는 그림 크기가 기본값(300×150)이다. 곧바로 창에 맞추고 한 장 그린다(다시 검수)
       resize();
     }
     markMode();
@@ -371,7 +371,7 @@ export function createOrbStage(canvas, options = {}) {
     if (changed) { canvas.width = cw; canvas.height = ch; }
     if (gl) gl.viewport(0, 0, cw, ch);
     if (!tw) { const lit = S.lit; snap(poseName); if (poseName === 'inside') S.lit = lit; }
-    // 크기를 바꾸면 캔버스가 지워진다. 다음 장을 기다리지 않고 그 자리에서 한 장 그린다(Fable 최종)
+    // 크기를 바꾸면 캔버스가 지워진다. 다음 장을 기다리지 않고 그 자리에서 한 장 그린다(최종 검수)
     if (changed && !paused) draw(now());
     wake();
   }
@@ -405,7 +405,7 @@ export function createOrbStage(canvas, options = {}) {
     if (m !== eye.mood) { await lidTo(0, 110); if (k !== eye.token) return; eye.mood = m; eyesChanged(); await lidTo(1, m === 'calm' ? 260 : 190, easeOut); if (k !== eye.token) return; }
     if (ms) { await new Promise(r => win.setTimeout(r, reduced() ? Math.min(ms, 120) : ms)); if (k !== eye.token) return; void setMood('calm'); }
   }
-  /* instant: 다른 창에서 이미 보이던 눈을 잇는 때는 떠오르지 않고 바로 보인다(0.4.96 카본 B3) */
+  /* instant: 다른 창에서 이미 보이던 눈을 잇는 때는 떠오르지 않고 바로 보인다(0.4.96 검수 B3) */
   function eyesAsleep({ instant = false } = {}) { eyeStop(); eye.mood = 'sleep'; eye.open = 1; eye.gate = 1; if (instant) eye.gateS = 1; eyesChanged(); wake(); }
   async function eyesWake() {
     eye.nextBlink = now() + 1400;
@@ -498,15 +498,15 @@ export function createOrbStage(canvas, options = {}) {
     const gap = t - lastDraw;
     const resting = idle();
     if (resting && gap < 32) { frameId = win.requestAnimationFrame(frame); return; }
-    // 멈춰 있어 일부러 늦춘 장면(초당 30장, 약 33ms 간격)은 50ms를 넘을 때만 느린 장면으로 센다. 24ms로 세면 장치와 상관없이 배율이 내려갔다(카본 B3).
-    // 200ms를 넘는 장면도 센다. 그래픽 가속이 없는 장치가 한 번도 세어지지 않았다. 창이 가려졌다 돌아온 첫 장은 resume()이 lastDraw를 0으로 돌려 세지 않는다(0.4.95 원천 후보 Fable F5)
+    // 멈춰 있어 일부러 늦춘 장면(초당 30장, 약 33ms 간격)은 50ms를 넘을 때만 느린 장면으로 센다. 24ms로 세면 장치와 상관없이 배율이 내려갔다(검수 B3).
+    // 200ms를 넘는 장면도 센다. 그래픽 가속이 없는 장치가 한 번도 세어지지 않았다. 창이 가려졌다 돌아온 첫 장은 resume()이 lastDraw를 0으로 돌려 세지 않는다(0.4.95 원천 후보 검수 F5)
     if (lastDraw && gap > 0) {
       sampled++; if (gap > (resting ? 50 : 24)) slowFrames++;
       if (sampled >= 60) { if (slowFrames > 40 && dprCap > 1) { dprCap = dprCap > 1.5 ? 1.5 : 1; resize(); } sampled = 0; slowFrames = 0; }
     }
     lastDraw = t;
     stepTween(t); draw(t);
-    // 이 장 안에서 resize()가 이미 다음 장을 걸었으면 또 걸지 않는다(고리가 둘로 도는 것을 막는다, Fable 최종)
+    // 이 장 안에서 resize()가 이미 다음 장을 걸었으면 또 걸지 않는다(고리가 둘로 도는 것을 막는다, 최종 검수)
     if (frameId === null) frameId = win.requestAnimationFrame(frame);
   }
   function wake() { if (!disposed && !paused && frameId === null && typeof win.requestAnimationFrame === 'function') frameId = win.requestAnimationFrame(frame); }
@@ -514,7 +514,7 @@ export function createOrbStage(canvas, options = {}) {
   if (!initGL()) useFallback(); else markMode();
   const glCanvas = canvas;
   const onLost = event => { event.preventDefault(); useFallback(); wake(); };
-  // 맥락 복구 알림은 원래 캔버스에 온다. 2D 새 캔버스로 바꿔 두었으면 원래 캔버스로 되돌린 뒤 WebGL을 다시 세운다(0.4.95 원천 후보 카본 B2)
+  // 맥락 복구 알림은 원래 캔버스에 온다. 2D 새 캔버스로 바꿔 두었으면 원래 캔버스로 되돌린 뒤 WebGL을 다시 세운다(0.4.95 원천 후보 검수 B2)
   const onRestored = () => {
     if (canvas !== glCanvas && canvas.parentNode) { canvas.replaceWith(glCanvas); canvas = glCanvas; }
     if (initGL()) ctx2d = null; else useFallback();

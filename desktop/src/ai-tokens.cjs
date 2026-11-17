@@ -88,7 +88,7 @@ function claudeFast(buf) {
   const end = objectEnd(buf, at + USAGE.length - 1);
   if (end < 0) return null;
   let u; try { u = JSON.parse(buf.toString('utf8', at + USAGE.length - 1, end + 1)); } catch { return null; }
-  // 응답 시각은 맨 위 type 표식 뒤에서만 찾는다 — 줄 끝 가까이의 도구 입력에 같은 이름의 칸이 있어도 그것을 읽지 않게(카본 지적).
+  // 응답 시각은 맨 위 type 표식 뒤에서만 찾는다 — 줄 끝 가까이의 도구 입력에 같은 이름의 칸이 있어도 그것을 읽지 않게(검수 지적).
   const ts = /"timestamp":"([^"\\]{10,40})"/.exec(tail.toString('utf8', tail.lastIndexOf(ASSISTANT_TOP)));
   if (!u || typeof u !== 'object' || !('output_tokens' in u) || !ts || !Number.isFinite(Date.parse(ts[1]))) return null;
   return { model: model[1], id: model[2], usage: u, timestamp: ts[1] };
@@ -279,7 +279,7 @@ async function listFiles(dir, match, limit = 200000) {
 // 줄 파일을 offset부터 마지막 줄바꿈까지 읽는다. 아직 쓰는 중인 마지막 조각은 다음 회차에 읽는다.
 // onLine은 바이트 조각(읽기 버퍼를 다시 쓰므로 그 자리에서만 쓴다)을 받는다. 덩이를 읽을 때마다 await라 앱의 다른 일이 사이사이 돈다.
 // stop: 덩이마다 묻는다. 참이면 그 파일을 버리고 STOPPED로 던진다 — 읽은 몫은 끝까지 읽은 뒤에만 합치니 버려도 숫자가 상하지 않는다
-// (0.4.93 Fable F1: 처음 세는 도중 끄면 읽던 큰 파일이 끝날 때까지 끄기가 끝나지 않아 화면 단추가 잠겼다).
+// (0.4.93 검수 F1: 처음 세는 도중 끄면 읽던 큰 파일이 끝날 때까지 끄기가 끝나지 않아 화면 단추가 잠겼다).
 const stoppedError = () => Object.assign(new Error('stopped'), { code: 'STOPPED' });
 async function readLines(file, from, size, onLine, stop) {
   const handle = await fsp.open(file, 'r');
@@ -311,7 +311,7 @@ const zlib = require('node:zlib');
 // 통째로 풀면 큰 세션(수백 MB)에서 줄을 한 번에 도느라 앱이 2.6초까지 멈췄다(11-15 이 PC 실측) — 흘려 풀며 덩이마다 줄을 넘긴다.
 async function readZstLines(file, onLine, stop) {
   if (typeof zlib.createZstdDecompress !== 'function') throw Object.assign(new Error('zstd unavailable'), { code: 'NO_ZSTD' });
-  // pipe()는 읽기 쪽 오류(잠김 · 지워짐)를 넘기지 않아 본체가 처리 안 된 오류로 멈출 수 있다 — pipeline으로 이어 어느 쪽 오류든 이 반복에서 던지고 둘 다 닫는다(카본 지적).
+  // pipe()는 읽기 쪽 오류(잠김 · 지워짐)를 넘기지 않아 본체가 처리 안 된 오류로 멈출 수 있다 — pipeline으로 이어 어느 쪽 오류든 이 반복에서 던지고 둘 다 닫는다(검수 지적).
   const stream = require('node:stream').pipeline(fs.createReadStream(file), zlib.createZstdDecompress(), () => {});
   let pieces = [];
   for await (const data of stream) {
@@ -457,7 +457,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
       }
     }
     const jobs = [...byKey.values()];
-    // 찾은 파일 수는 세기 전에 판에 올린다 — 처음 세는 몇 분 동안 화면이 「기록을 찾지 못했어요」로 읽지 않게(카본 지적).
+    // 찾은 파일 수는 세기 전에 판에 올린다 — 처음 세는 몇 분 동안 화면이 「기록을 찾지 못했어요」로 읽지 않게(검수 지적).
     const tools2 = { ...Object.fromEntries(SERVICES.map(s => [s, tools[s] || 0])), agy: fs.existsSync(roots.unreadable.agy) };
     const toolsBefore = JSON.stringify(d.tools);
     d.tools = tools2;
@@ -491,7 +491,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
     changed += prune(d, d.scannedAt);
     progress = null;
     // 실시간이면 이 회차의 응답 id 주인표를 넘겨준다(저장 파일에서 다시 만들지 않게). 아니면 남아 있던 옛 표를 버린다 —
-    // 이 회차가 새로 센 응답이 옛 표에 없어, 다음 실시간에 그 응답의 사본을 한 번 더 셌다(Fable 최종 검수 지적).
+    // 이 회차가 새로 센 응답이 옛 표에 없어, 다음 실시간에 그 응답의 사본을 한 번 더 셌다(최종 검수 지적).
     if (tracker) tracker.owners = isLive() ? owners : null;
     // 바뀐 것이 없으면 저장하지 않는다(마지막으로 센 때는 다음 저장 때 함께 남는다).
     try { if (changed) await persist(); lastError = null; } catch { lastError = 'SAVE_FAILED'; }
@@ -630,7 +630,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
           if (await scanFile(job, stat, d, owners, claimed)) { changed++; if (isNew) d.tools[job.service] = (d.tools[job.service] || 0) + 1; }
         } catch {
           // 파일은 있는데 읽기만 실패했으면(다른 프로그램이 잠깐 잡음 · 백신 검사) 목록에 되돌려 두 번까지 다시 읽는다 —
-          // 세션의 마지막 응답이면 다음 알림이 오지 않아 15분 세기까지 빠져 있었다(Fable 최종 검수 지적). 지워진 파일은 다시 세기가 다룬다.
+          // 세션의 마지막 응답이면 다음 알림이 오지 않아 15분 세기까지 빠져 있었다(최종 검수 지적). 지워진 파일은 다시 세기가 다룬다.
           const tries = (job.tries || 0) + 1;
           if (stat && tries <= 2 && !stopping && !T.dirty.has(job.key)) T.dirty.set(job.key, { ...job, tries });
         }
@@ -662,17 +662,17 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
     return first;
   }
   // 판마다 순서 번호를 붙인다(epoch: 이 본체의 세대 — 일꾼은 감싸개가 띄울 때마다 늘리는 번호, 직접 만들면 만든 때 · seq: 판을 낸 차례). 알림과 응답은 화면에 따로 닿아 순서가 바뀔 수 있어
-  // 화면이 늦게 온 옛 판(「세는 중」)으로 새 판(다 셈)을 덮지 않게 한다(Fable 최종 검수 지적).
+  // 화면이 늦게 온 옛 판(「세는 중」)으로 새 판(다 셈)을 덮지 않게 한다(최종 검수 지적).
   function publicState() {
     const d = load(), order = { epoch, seq: ++stateSeq };
     if (!d.enabled) return { ok: true, enabled: false, ...order };
     const by = sinceBy(), days = Object.values(by).sort();
-    // live: 화면이 실시간을 부탁했고 지켜보는 기록 폴더가 하나라도 있는지(폴더가 하나도 없으면 「실시간」이라 하지 않는다 — 카본 지적),
+    // live: 화면이 실시간을 부탁했고 지켜보는 기록 폴더가 하나라도 있는지(폴더가 하나도 없으면 「실시간」이라 하지 않는다 — 검수 지적),
     // liveAt: 실시간으로 마지막으로 더한 때(화면의 「마지막으로 센 때」는 scannedAt과 이것 중 늦은 것).
     return { ok: true, enabled: true, ...order, scanning: !!scanning || !!progress, progress: progress ? { ...progress } : null, scannedAt: d.scannedAt, enabledAt: d.enabledAt, live: isLive() && tracker?.watchers.size > 0, liveAt, since: days[0] || null, sinceBy: by, tools: { ...d.tools }, failed: d.failed || 0, error: lastError, fields: FIELDS, cells: cells() };
   }
 
-  // 켜기 · 끄기는 차례로 한다 — 끄는 동안(읽던 파일을 그만 읽기를 기다리는 동안) 온 켜기가 끄기에 묻히지 않게(0.4.93 카본 B1).
+  // 켜기 · 끄기는 차례로 한다 — 끄는 동안(읽던 파일을 그만 읽기를 기다리는 동안) 온 켜기가 끄기에 묻히지 않게(0.4.93 검수 B1).
   function setEnabled(on) {
     const run = enabling.then(() => setEnabledNow(on));
     enabling = run.catch(() => {});
@@ -687,7 +687,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
       return publicState();
     }
     // 세는 중이면 남은 파일을 그만 읽게 하고 끝나기를 기다린 뒤 지운다.
-    // 기다리는 동안 1분 · 2분 타이머가 새로 세기를 시작하지 않게, 켜짐을 먼저 내리고 끄는 중 표시를 세운다(카본 지적).
+    // 기다리는 동안 1분 · 2분 타이머가 새로 세기를 시작하지 않게, 켜짐을 먼저 내리고 끄는 중 표시를 세운다(검수 지적).
     d.enabled = false;
     disabling = true; stopping = true;
     // 알림 모으기를 먼저 닫는다(끄는 동안 알림이 새로 읽기를 시작하지 않게). 읽던 파일은 덩이 사이에서 그만 읽는다(stopping).
@@ -732,11 +732,11 @@ function createTokenUsageWorker({ root, home, env = process.env, claudeDirs = ()
   const { Worker } = require('node:worker_threads');
   const source = fs.readFileSync(__filename, 'utf8');
   const file = path.join(root, 'token-usage.json');
-  // 켠 적이 없는 회원(저장 파일 없음)에게는 일꾼을 띄우지 않고 꺼짐을 바로 돌려준다(Fable 최종 검수 지적 — 계정판을 쓰는 모든 회원이 스레드를 들고 있었다).
+  // 켠 적이 없는 회원(저장 파일 없음)에게는 일꾼을 띄우지 않고 꺼짐을 바로 돌려준다(최종 검수 지적 — 계정판을 쓰는 모든 회원이 스레드를 들고 있었다).
   // 순서 번호 0은 일꾼이 낸 어느 판보다 앞이라, 화면이 이미 받은 판을 이 판으로 덮지 않는다.
   const OFF = { ok: true, enabled: false, epoch: 0, seq: 0 };
   const STOPPED = { ok: false, code: 'TOKENS_WORKER_STOPPED' };
-  // generation: 일꾼을 띄울 때마다 늘리는 세대 번호 — 판의 epoch로 쓴다(벽시계는 뒤로 갈 수 있다 — Fable 다시 검수 지적).
+  // generation: 일꾼을 띄울 때마다 늘리는 세대 번호 — 판의 epoch로 쓴다(벽시계는 뒤로 갈 수 있다 — 다시 검수 지적).
   let current = null, seq = 0, closed = false, last = null, generation = 0;
   const newer = (a, b) => !b || a.epoch > b.epoch || (a.epoch === b.epoch && a.seq >= b.seq);
   const keep = state => { if (state?.ok && state.epoch && newer(state, last)) last = state; };
@@ -747,7 +747,7 @@ function createTokenUsageWorker({ root, home, env = process.env, claudeDirs = ()
     const run = { worker: new Worker(source, { eval: true, workerData: { synkTokenWorker: true, root, home, env: { ...env }, epoch: ++generation } }), waits: new Map(), retiring: false };
     run.worker.unref();
     run.worker.on('message', m => {
-      // 마지막 판은 더 새 판일 때만 바꾼다(늦게 닿은 「세는 중」 응답이 끝 알림을 덮지 않게 — Fable 다시 검수 지적).
+      // 마지막 판은 더 새 판일 때만 바꾼다(늦게 닿은 「세는 중」 응답이 끝 알림을 덮지 않게 — 다시 검수 지적).
       if (m?.type === 'change') { keep(m.state); try { onChange(m.state); } catch { /* 화면 쪽 실패는 세기와 상관없다 */ } return; }
       keep(m?.result);
       const w = run.waits.get(m?.id);
@@ -782,7 +782,7 @@ function createTokenUsageWorker({ root, home, env = process.env, claudeDirs = ()
     state: () => call('state'),
     scan: options => call('scan', options),
     auto: () => call('auto'),
-    // 끄기가 끝나는 사이 다시 켜 달라는 부탁이 왔거나 일꾼에 다른 부르기가 남아 있으면 일꾼을 내리지 않는다(0.4.93 카본 B1 — 내리면 그 켜기가 풀렸다).
+    // 끄기가 끝나는 사이 다시 켜 달라는 부탁이 왔거나 일꾼에 다른 부르기가 남아 있으면 일꾼을 내리지 않는다(0.4.93 검수 B1 — 내리면 그 켜기가 풀렸다).
     setEnabled: async on => { want = on === true; const r = await call('setEnabled', want); if (on !== true && r?.ok && want === false && !current?.waits.size) retire(); return r; },
     live: on => call('live', on === true),
     dispose: () => { closed = true; retire(); },

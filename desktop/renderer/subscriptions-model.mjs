@@ -24,16 +24,16 @@ const SPIKE_RATIO = 1.5, SPIKE_MIN = { higgsfield: 300, typecast: 3000 }, PACE_M
 // 초기화권(10-19): 「지금 쓰기」는 묶음의 모든 계정이 막혔고 가장 먼저 풀리는 때가 하루 넘게 남았을 때만(막힌 줄 안내와 팁이 같은 기준), 「곧 만료」는 3일 안일 때.
 // 초기화권은 GPT(Codex가 개수·만료일을 알려 준다)와 Claude(회원이 넣는다)에만 있다 — passesOf와 같은 두 서비스.
 const PASS_WAIT = DAY_MS, PASS_SOON = 3 * DAY_MS;
-// 2차(10-19, Fable 1차 아이디어 3·4): 요금제 맞추기는 공식 배수가 있는 Claude만 — 20x → 5x는 4주 모두 20% 이하, 5x → Pro는 16% 이하.
+// 2차(10-19, 1차 검수 아이디어 3·4): 요금제 맞추기는 공식 배수가 있는 Claude만 — 20x → 5x는 4주 모두 20% 이하, 5x → Pro는 16% 이하.
 // 공식 배수는 5시간 창 기준이라(claude.com/pricing 「per 5-hour session」) 4주 동안 읽은 5시간 % 최고도 낮춘 요금제에 들어가야 한다
-// (h5: 20x → 5x는 25% 미만, 5x → Pro는 20% 미만, Fable 2차 검수 P1-3). 안 쓰는 구독은 Claude(대화·Claude Code가 한 한도)와 크레딧형만 —
-// GPT·Gemini의 %는 Codex·Antigravity 한도라 구독 전체를 말하지 못한다(Fable 2차 P1-1). 4주 모두 5% 이하(크레딧은 4주 동안 0)이고 결제일이 5일 안일 때.
+// (h5: 20x → 5x는 25% 미만, 5x → Pro는 20% 미만, 2차 검수 P1-3). 안 쓰는 구독은 Claude(대화·Claude Code가 한 한도)와 크레딧형만 —
+// GPT·Gemini의 %는 Codex·Antigravity 한도라 구독 전체를 말하지 못한다(2차 검수 P1-1). 4주 모두 5% 이하(크레딧은 4주 동안 0)이고 결제일이 5일 안일 때.
 // 요금·결제 주기는 본체가 주는 요금표(snapshot.prices — 앱 기본 사본과 synk.im 갱신본 가운데 서비스마다 더 최근에 확인한 쪽, 3차)에서 쓰고,
 // 확인한 지 60일이 지난 서비스는 금액·결제 주기를 말하지 않는다. Claude 값은 한국어 요금표(부가세 10% 포함)다. 올려 쓰라는 권유는 하지 않는다(업셀 의심, 벤치마킹 불만 원문).
 const PRICE_FRESH = 60 * DAY_MS;
 const SIZE_DOWN = { max20x: { to: 'max5x', limit: 20, h5: 25, times: 4, part: '1/4', basis: '5배 대 20배' }, max5x: { to: 'pro', limit: 16, h5: 20, times: 5, part: '1/5', basis: '1배 대 5배' } };
 const IDLE_LIMIT = 5, IDLE_BILL_DAYS = 5;
-// 3차(10-19, Fable 1차 아이디어 6·7):
+// 3차(10-19, 1차 검수 아이디어 6·7):
 //  · 한 달 요약: 지난 4주를 쓴 만큼으로 치면 약 얼마어치인지. 가장 여유가 많은 계정은 30% 넘게 남았을 때만 말한다.
 //  · 연간 결제: 12주 내내 꾸준히 쓴 계정만(Claude는 4주씩 주간 평균 40% 넘게 · 크레딧형은 4주씩 한 달 크레딧의 50% 넘게), 요금표에 연간 결제가 있고
 //    1년에 덜 내는 요금제만 — Claude는 Pro만(Max는 월 결제만). 할인 시기는 요금표에 날짜·출처가 있는 할인이 45일 안에 시작하거나 지금 진행 중일 때만.
@@ -172,11 +172,11 @@ export function passesOf(row, now) {
 //    남은 금액은 OpenAI 플랫폼 결제 › Credit grants. Codex에는 API 키로도 쓰이지 않는다.
 //  · Gemini(AI Studio 공식 안내 11-02): Google AI Pro $10 · Ultra 5x $40 · Ultra 20x $100의 Google Cloud 크레딧이 매달 쌓이고 받은 달마다 12개월씩 차례로 사라진다
 //    (Plus · 가족 공유 계정은 없음). 개발자 프로그램 가입과 AI Studio 선불 결제가 있어야 쓰고, 남은 금액은 AI Studio 결제 화면. 한 날짜에 다 사라지지 않아
-//    만료 날짜는 받지 않는다(넣은 금액과 넣은 날만 — Fable 설계 검토 P1-1). 등급은 agy가 알려 주지 않아 회원이 고른다(등급을 모르는 옛 ultra는 「모름」).
+//    만료 날짜는 받지 않는다(넣은 금액과 넣은 날만 — 설계 검토 P1-1). 등급은 agy가 알려 주지 않아 회원이 고른다(등급을 모르는 옛 ultra는 「모름」).
 // 서비스마다 다른 조직의 돈이라 판 합계(apiCredits)도 서비스마다 따로 센다(서로 바꿔 쓸 수 없다).
 // 계정판이 스스로 아는 것은 요금제로 들어오는 금액뿐이다 — 요금표(본체가 준 snapshot.prices)의 apiCredit에서, 금액과 같은 60일 문을 따른다.
 // 받지 못하는 요금제(Claude Pro · GPT Plus · Gemini Plus 등)는 말하지 않고, 등급을 못 읽은 Claude Max · 등급을 고르지 않은 Gemini Ultra는 「모름」(unknown)이다.
-// 공식 요금처럼(officialPrice) 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 세지 않는다(Fable 최종 P3).
+// 공식 요금처럼(officialPrice) 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 세지 않는다(최종 검수 P3).
 export const API_CREDIT_SERVICES = ['claude', 'gpt', 'gemini'];
 // 크레딧을 받는 요금제(공식): Claude는 Max(등급 모름 포함), GPT는 Pro 세 등급, Gemini는 Pro · Ultra(등급 모름 포함). 화면의 「API 크레딧」 단추가 이 기준이다.
 export const apiCreditPlan = row => (row?.service === 'claude' ? /^max/.test(planKey(row.plan)) : row?.service === 'gpt' ? ['prolite', 'pro', 'promax'].includes(planKey(row.plan)) : row?.service === 'gemini' ? ['pro', 'ultra', 'ultra5x', 'ultra20x'].includes(planKey(row.plan)) : false);
@@ -228,7 +228,7 @@ export function apiCredits(prices, rows, now, service = 'claude') {
 // 그 양으로 다시 차고 남은 건 이월되지 않는다(공식 요금표 · Flow 도움말 16526234, 날마다 주는 50개는 세지 않는다 — 그날 안 쓰면 사라진다).
 // 남은 개수와 다시 차는 때는 Flow 오른쪽 위 프로필(「Google Flow 크레딧 25,038개 · 12월 1일 오후 9:29에 초기화」)에만 보이고 읽는 공식 경로가 없어 회원이 넣는다.
 // API 크레딧과 달리 연결 없이 요금제로 꼭 들어오므로, 넣어 둔 다시 차는 때가 지나면 한 번만 그 요금제의 한 달 양으로 다시 찼다고 굴린다(refilled — 그 뒤 쓴 만큼은 모른다).
-// 그다음 차는 때까지 지나면 넣은 값이 너무 오래돼(그사이 요금제를 바꾸거나 끊었을 수 있다) 숫자를 말하지 않고 다시 넣어 달라고만 한다(old — Fable 설계 검토 P1-3).
+// 그다음 차는 때까지 지나면 넣은 값이 너무 오래돼(그사이 요금제를 바꾸거나 끊었을 수 있다) 숫자를 말하지 않고 다시 넣어 달라고만 한다(old — 설계 검토 P1-3).
 // 한 달 양을 모르면(등급 모름 · 가족 공유) 굴리지 않고 「다시 찼어요」(expired)만 말한다. 한 달 양은 요금제 사실이라 요금표 60일 문 밖에서 읽는다(monthCredits처럼 — P2-3).
 function flowGrantOf(prices, row, now) {
   if (row?.source !== 'auto' || row.service !== 'gemini') return null;
@@ -338,9 +338,9 @@ export function upcoming(rows, now, checkAt = null, prices = null) {
 
 // official(row): 요금을 넣지 않은 줄의 공식 요금 { price, currency }(3차 요금표, 확인한 지 60일 안) — 없으면 null. 넣은 값이 늘 먼저다.
 // count는 넣은 요금과 공식 요금으로 센 구독 수(official은 그 가운데 공식 요금 수), unknown은 요금을 모르는 줄 수.
-// 공식 요금이 $0인 무료 요금제는 구독으로 세지 않고, 연간으로 표시한 줄의 「매월 n일」은 7일 안 결제로 세지 않는다(Fable 3차 시안 P3-4·P3-12).
+// 공식 요금이 $0인 무료 요금제는 구독으로 세지 않고, 연간으로 표시한 줄의 「매월 n일」은 7일 안 결제로 세지 않는다(3차 시안 검수 P3-4·P3-12).
 // soon은 7일 안 결제 수 — 요금을 모르는 줄도 결제일이 7일 안이면 센다(soonUnknown, 금액 합에는 넣지 않는다). GPT 줄은 공식 요금이 없는데 API 크레딧을
-// 넣으면 결제일이 저절로 채워져, 세지 않으면 칸의 「0건 · 다음 7일은 결제가 없어요」와 목록 · 02의 「D-5」가 어긋난다(10-29 Fable P2).
+// 넣으면 결제일이 저절로 채워져, 세지 않으면 칸의 「0건 · 다음 7일은 결제가 없어요」와 목록 · 02의 「D-5」가 어긋난다(10-29 검수 P2).
 export function costSummary(rows, now, rate = 1400, official = null) {
   let krw = 0, usd = 0, count = 0, fromTable = 0, unknown = 0, soon = 0, soonKrw = 0, soonUsd = 0, soonUnknown = 0;
   for (const row of rows) {
@@ -363,14 +363,14 @@ export const freshness = (at, now) => (!at ? null : now - at > STALE_MS ? 'stale
 export const dayAt = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime() : null; };
 // 본체가 준 서비스별 공식 요금(확인한 날·출처·세금). 확인한 지 60일이 지나면 그 서비스의 금액·결제 주기를 말하지 않는다(null).
 export function priceTable(prices, service, now) { const p = prices?.services?.[service], at = dayAt(p?.checked); return p?.plans && at !== null && now - at <= PRICE_FRESH ? { ...p, at } : null; }
-// 한국 결제 값: 요금표의 기본값(세전)에 한국 부가세(krVat)를 더한다 — claude.com이 한국에서 $20 → $22로 덧씌워 보이는 것과 같은 규칙(Fable 3차 시안 P2-4).
+// 한국 결제 값: 요금표의 기본값(세전)에 한국 부가세(krVat)를 더한다 — claude.com이 한국에서 $20 → $22로 덧씌워 보이는 것과 같은 규칙(3차 시안 검수 P2-4).
 const shown = (t, v) => Math.round(v * (1 + (t.krVat || 0)) * 100) / 100;
 // 요금제 하나의 한국 결제 값: month 월 결제 한 달, year 연간 결제 1년 치(없으면 연간 결제 없음).
 // 월 요금 없이 API 크레딧만 적은 요금제(GPT, 10-29 — 한국은 원화 현지 가격이라 달러 요금을 두지 않는다)는 금액이 없다(null).
 export function planPrice(t, key) { const p = t?.plans?.[key]; return p && Number.isFinite(p.month) ? { month: shown(t, p.month), year: p.year ? shown(t, p.year) : null } : null; }
 // 요금을 넣지 않은 자동 연결 계정의 공식 한 달 요금(한국 결제 값, 확인한 지 60일 안, 연간으로 표시한 계정은 1년 치의 12분의 1). 모르면 null.
 // 한 달 요약·요금 합계·결제 목록·입구 글이 모두 이 한 기준을 쓴다(넣은 값이 늘 먼저, 값마다 「공식 요금」·「넣은 요금」을 붙인다).
-// 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 채우지 않는다(Fable 3차 시안 P3-1).
+// 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 채우지 않는다(3차 시안 검수 P3-1).
 export function officialPrice(prices, row, now) {
   if (row.source !== 'auto' || num(row.price) !== null) return null;
   if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
@@ -405,7 +405,7 @@ export function usageBars(usage, group) {
 // 하루 막대(11-02): 본체가 센 달력 하루 일곱(마지막이 오늘). 한도형 값은 그날 쓴 주간 한도의 %p다.
 // 한도형은 주간 한도를 7로 나눈 하루 몫(약 14%)을 넘긴 날을 주의 색으로 — 그 속도면 초기화 전에 막힌다. 꼭대기는 가장 많이 쓴 날(하루 몫의 1.5배보다 작으면 그 값).
 // 크레딧은 가장 많이 쓴 날이 꼭대기. 하루 평균은 오늘을 뺀 지난 엿새, 그 전 7일 평균이 있을 때만 차이를 낸다 —
-// 차이는 화면에 보이는 두 정수끼리 뺀다(소수 차이를 반올림하면 「9% · 그 전 10%」 옆에 −0%p가 섰다, 아르곤 A1).
+// 차이는 화면에 보이는 두 정수끼리 뺀다(소수 차이를 반올림하면 「9% · 그 전 10%」 옆에 −0%p가 섰다, 검수 A1).
 export const DAY_SHARE = 100 / 7;
 export function usageDays(usage, group) {
   const u = usage?.services?.[group.service] || null, kind = group.kind === 'credit' ? 'credit' : 'pct', days = usage?.days || [];
@@ -448,7 +448,7 @@ export function spikeTip(snapshot, g, u, now) {
 export function paceTip(snapshot, g, now) {
   const stats = snapshot?.usage?.accounts || {}, live = g.usable.filter(a => a.g?.weekly);
   // 풀렸을 계정은 남은 양을 몰라서, 기록이 3일 안 된 계정이 있으면 속도를 몰라서 말하지 않는다.
-  // 초기화가 지나 어림(guess)인 주간 창도 풀렸을 계정처럼 남은 양을 몰라 서비스 전체를 예측하지 않는다(10-31 Fable F3 — 읽은 때보다 앞선 초기화 시각이 와도).
+  // 초기화가 지나 어림(guess)인 주간 창도 풀렸을 계정처럼 남은 양을 몰라 서비스 전체를 예측하지 않는다(10-31 검수 F3 — 읽은 때보다 앞선 초기화 시각이 와도).
   if (!live.length || g.projected.length || live.some(a => a.g.weekly.guess || !Number.isFinite(stats[a.row.id]?.rate3))) return null;
   let left = 0, rate = 0, weight = 0;
   for (const a of live) { const w = weightOf(a.row); left += a.g.weekly.left * w; rate += stats[a.row.id].rate3 * w; weight += w; }
@@ -494,7 +494,7 @@ export function passTip(g, now) {
   return { ...base, mode: 'expiry', at: soonest.pass.until, kind: 'save', name: soonest.name, until: soonest.pass.until, count: soonest.pass.count, manual: soonest.pass.manual, hint: passExpiry(g, soonest, now) };
 }
 // 두 팁(요금제 맞추기·안 쓰는 구독)과 한 달 요약은 4주 소비를 다 알 때만 말한다: 지금 읽히는 자동 연결 계정이고, 4주를 처음부터 덮었고, 놓친 틈이 없고,
-// 7일마다 읽은 적이 있을 때(못 읽은 주를 「안 썼다」로 세지 않게 — Fable 2차 검수 P1-2).
+// 7일마다 읽은 적이 있을 때(못 읽은 주를 「안 썼다」로 세지 않게 — 2차 검수 P1-2).
 const fourKnown = (row, w4) => row.source === 'auto' && row.state === 'ok' && !!w4?.cover && !!w4.known && w4.weeks.every(w => w.reads > 0);
 // 요금제 맞추기(Claude, 2차): 주간이 4주 모두 기준 이하이고 읽은 5시간 % 최고도 낮춘 요금제에 들어가는 Max 계정을 한 단계 아래로.
 // 덜 내는 액수가 큰 계정부터. 7일마다 「쓴 양」과 「읽은 가장 높은 주간 %」 가운데 큰 값을 본다(값은 지금 요금제 기준).
@@ -513,13 +513,13 @@ export function sizeTip(snapshot, g, now) {
   // 낮출지는 다음 결제 전에 정해야 하니 결제일을 넣어 둔 계정이면 그날 기준으로 줄을 세운다.
   // 모르면 열흘 뒤 — 몇 주씩 맞는 팁이라 기한이 있는 팁(결제 5일 안·만료 3일 안)을 먼저 보이고 그 뒤에 선다.
   const dd = nextBill(f.a.row.billDay, now), at = dd === null ? now + 10 * DAY_MS : new Date(now).setHours(0, 0, 0, 0) + dd * DAY_MS;
-  // 공식 배수는 5시간 창 기준이고 주간 배수는 공식 자료에 없다(Fable 2차 P2-1). 결제 주기도 금액과 같이 60일이 지나면 말하지 않는다(P3-1) —
+  // 공식 배수는 5시간 창 기준이고 주간 배수는 공식 자료에 없다(2차 검수 P2-1). 결제 주기도 금액과 같이 60일이 지나면 말하지 않는다(P3-1) —
   // 둘 다 요금표에서: 연간 결제가 있는 Pro는 그 값으로, 연간 결제가 없는 Max는 「월 결제만」.
   const pro = planPrice(table, 'pro'), hPeak = Math.round(f.hPeak);
   return { type: 'size', key: 'size:claude', kind: 'save', at, service: 'claude', name: f.a.name, plan: f.a.row.plan, rule: f.rule, highs: f.highs, hPeak, hScaled: hPeak * f.rule.times, saving: f.saving, proYear: pro?.year ?? null, proMonth: pro?.year ? pro.year / 12 : null, maxMonthly: !!(table && !table.plans.max5x?.year && !table.plans.max20x?.year), table };
 }
 // 안 쓰는 구독(2차): Claude와 크레딧형만. 4주 모두 5% 이하(크레딧은 4주 동안 0)이고 넣어 둔 결제일이 5일 안일 때 「계속 쓸지 정해 보세요」.
-// 결제일이 가까운 것부터(days 0은 결제일 당일 — 이미 결제됐을 수 있어 화면이 「결제 전에」라고 하지 않는다, Fable 2차 P3-3).
+// 결제일이 가까운 것부터(days 0은 결제일 당일 — 이미 결제됐을 수 있어 화면이 「결제 전에」라고 하지 않는다, 2차 검수 P3-3).
 export function idleTip(snapshot, g, now) {
   const credit = g.kind === 'credit';
   if (!credit && g.service !== 'claude') return null;
@@ -556,7 +556,7 @@ export function pickUsageTips(snapshot, groups, now, answered = {}) {
   return { goal, off, tips: new Map(chosen.map(c => [c.service, c.tip])), resting: restingCount(settings, now) };
 }
 
-/* ---------- 한 달 요약(3차, Fable 1차 아이디어 6) ---------- */
+/* ---------- 한 달 요약(3차, 1차 검수 아이디어 6) ---------- */
 // 계정 하나의 한 달 요금(원으로 어림): 넣은 값, 없으면 공식 요금. 모르면 null.
 export function monthPrice(snapshot, row, now) {
   const rate = Number(snapshot?.settings?.usdKrw) || 1400, won = (v, currency) => (currency === 'USD' ? v * rate : v);
@@ -564,7 +564,7 @@ export function monthPrice(snapshot, row, now) {
   const o = officialPrice(snapshot?.prices, row, now);
   return o ? { krw: won(o.price, o.currency), official: true, table: o.table } : null;
 }
-// 크레딧형 한 달 크레딧: Typecast는 API가 알려 준 이번 요금제 크레딧, 없으면 요금표. 요금제 사실이라 60일 문 밖이다(금액·결제 주기만 문 안 — Fable 3차 시안 P2-1).
+// 크레딧형 한 달 크레딧: Typecast는 API가 알려 준 이번 요금제 크레딧, 없으면 요금표. 요금제 사실이라 60일 문 밖이다(금액·결제 주기만 문 안 — 3차 시안 검수 P2-1).
 // Higgsfield Ultra는 CLI가 등급(3,000·6,000·9,000)을 알려 주지 않아 가장 작은 3,000으로 둔다(큰 등급이면 쓴 몫이 크게 잡혀 여유를 부풀리지 않는 쪽).
 export function monthCredits(prices, row) { const own = num(row.live?.planCredits); return own > 0 ? { credits: own, own: true } : (c => (c ? { credits: c, own: false } : null))(prices?.services?.[row.service]?.plans?.[planKey(row.plan)]?.credits); }
 export const ultraGuess = (row, allot) => row.service === 'higgsfield' && planKey(row.plan) === 'ultra' && allot && !allot.own;
@@ -574,7 +574,7 @@ export const summaryOn = settings => settings?.summaryOff !== true;
 // 크레딧형은 4주 동안 쓴 크레딧 ÷ 4주치 한 달 크레딧(한 달 = 365.25/12일). 100%를 넘으면 100%로 본다. 공식 요금이 $0인 무료 요금제는 구독이 아니라 뺀다.
 // 빠지는 까닭은 따로 센다: waiting(4주 기록이 모자람), noCredits(한 달 크레딧을 모름).
 // 셈할 계정이 없으면 wait로 까닭을 준다: until(첫 기록에서 4주 뒤 waitAt쯤) · first(기록이 아직 없음 — 첫 기록부터 4주 뒤) · gaps(그 날이 지났는데 읽지 못한 주가 있음) ·
-// credits(한 달 크레딧을 몰라서 — 기록 탓으로 말하지 않는다, Fable 3차 시안 P2-1).
+// credits(한 달 크레딧을 몰라서 — 기록 탓으로 말하지 않는다, 3차 시안 검수 P2-1).
 // 셈할 계정이 있으면: total 구독료(요금을 아는 계정끼리), worth 쓴 만큼 값, pct 쓴 몫(금액이 없으면 계정 평균), list 여유가 많은 계정부터, room 가장 여유가 많은 계정(30% 넘게 남았을 때만),
 // tables 공식 요금을 쓴 서비스의 요금표, usd 달러를 원으로 셈했는지, guessed Ultra 등급을 어림했는지, unpriced 요금을 모르는 계정 수.
 export function monthSummary(snapshot, rows, now) {
@@ -602,7 +602,7 @@ export function monthSummary(snapshot, rows, now) {
   return { items, waiting, noCredits, since, priced, total, worth, pct, list, room: (1 - list[0].share) * 100 >= ROOM_LINE ? list[0] : null, hasMoney: total > 0, rate: Number(snapshot?.settings?.usdKrw) || 1400, tables, usd: total > 0 && priced.some(i => i.price.official || i.row.currency === 'USD'), guessed: items.some(i => i.guess), unpriced: items.length - priced.length };
 }
 
-/* ---------- 연간 결제·할인 시기(3차, Fable 1차 아이디어 7) ---------- */
+/* ---------- 연간 결제·할인 시기(3차, 1차 검수 아이디어 7) ---------- */
 // 서비스마다 12주 내내 꾸준히 쓴 계정 하나(1년에 덜 내는 액수가 큰 계정부터). 요금표가 60일 안이고 그 요금제에 연간 결제가 있어야 한다.
 //  Claude: 4주씩 주간 한도를 평균 40% 넘게(쓴 양만, 한 주는 100%까지 — 놓친 틈은 적게 잡혀 「많이 썼다」를 부풀리지 않는다). Higgsfield: 4주씩 한 달 크레딧의 50% 넘게.
 //  12주 동안 요금제를 바꾼 계정(옛 구간이 지금 무게로 부풀어 보임), 이미 연간으로 표시한 계정, 지금 읽히지 않는 계정은 뺀다.

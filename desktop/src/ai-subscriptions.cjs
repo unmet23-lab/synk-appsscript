@@ -144,13 +144,13 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     row.state=result.state;row.awayReason=null;row.stateMessage=result.state==='ok'?'':cleanText(result.message,200);row.stateAt=now();
     if(result.email){
       const email=cleanText(result.email,254);
-      // 같은 줄에 다른 계정이 로그인됐으면(이 PC의 기본 로그인을 바꾼 경우 등) 앞 계정을 보고 넣은 초기화권·API 크레딧은 비운다(10-28 Fable 설계 검토 P3-9).
+      // 같은 줄에 다른 계정이 로그인됐으면(이 PC의 기본 로그인을 바꾼 경우 등) 앞 계정을 보고 넣은 초기화권·API 크레딧은 비운다(10-28 설계 검토 P3-9).
       // Flow 크레딧과 회원이 고른 요금제(Gemini, 11-02)도 그 계정의 것이라 같이 비운다.
       if(row.email&&row.email.toLowerCase()!==email.toLowerCase())Object.assign(row,{passCount:null,passUntil:null,apiCredit:null,apiCreditUntil:null,apiCreditAt:null,flowCredit:null,flowCreditUntil:null,flowCreditAt:null},providerPolicy(row.service)?.planChoices?{plan:null}:{});
       row.email=email;
     }
     // Claude Max 등급(max_5x·max_20x)을 알던 줄에 이번 읽기만 등급 없이 「max」가 오면(설정 파일을 그 순간 못 읽음) 알던 등급을 지킨다.
-    // 덮으면 기록에 무게가 다른 읽기가 섞여 사용량 막대가 부푼다(Fable 2차 검수 P1-4). 다른 요금제로 바뀐 것은 그대로 따른다.
+    // 덮으면 기록에 무게가 다른 읽기가 섞여 사용량 막대가 부푼다(2차 검수 P1-4). 다른 요금제로 바뀐 것은 그대로 따른다.
     if(result.plan){const plan=cleanText(result.plan,40);if(!(providerPolicy(row.service)?.preservePlan?.(row.plan,plan)))row.plan=plan;}
     // 로그인 기한은 공식 프로그램이 알려 준 읽기에서만 바꾼다(결과에 칸이 없으면 알던 기한을 그대로 둔다).
     if(Object.hasOwn(result,'loginUntil'))row.loginUntil=clampNumber(result.loginUntil,0,9e15);
@@ -188,7 +188,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
           if(live)group.owner.apply(await readConfirmed(live));
         }else{
           if(!b.rows.includes(group.row))continue;
-          // 읽는 사이에 다시 로그인으로 폴더가 바뀌었으면 옛 폴더의 결과(옛 기한 · 읽기 실패)를 새 줄에 덮지 않는다(Fable F3).
+          // 읽는 사이에 다시 로그인으로 폴더가 바뀌었으면 옛 폴더의 결과(옛 기한 · 읽기 실패)를 새 줄에 덮지 않는다(검수 F3).
           const folder=group.row.folder,result=await readConfirmed(group.row);
           if(group.row.folder===folder)applyRead(group.row,result);
         }
@@ -219,10 +219,10 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const same=b.rows.find(row=>mine(row)&&(email&&String(row.email||'').toLowerCase()===email||!email&&row.folder===folder&&(spec.folders||!row.email)))
       ||(!spec.folders?b.rows.find(row=>mine(row)&&!row.email)||(!email?b.rows.find(mine):null):null);
     if(same){
-      // 폴더를 옮긴 줄이 지금 도는 확인에 들어 있으면 그 확인의 몫에서 뺀다 — 옛 폴더로 읽은 결과는 버리고(check), 연결 뒤의 읽기가 새 폴더로 다시 읽는다(Fable F3).
+      // 폴더를 옮긴 줄이 지금 도는 확인에 들어 있으면 그 확인의 몫에서 뺀다 — 옛 폴더로 읽은 결과는 버리고(check), 연결 뒤의 읽기가 새 폴더로 다시 읽는다(검수 F3).
       if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;checkingIds?.delete(same.id);}
       if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';if(info.plan)same.plan=info.plan;
-      // 로그인 기한은 그 기한을 준 로그인이 이 줄의 로그인일 때만 넣는다(자기 폴더로 읽던 줄에 기본 로그인의 기한을 적지 않는다 — Fable F4).
+      // 로그인 기한은 그 기한을 준 로그인이 이 줄의 로그인일 때만 넣는다(자기 폴더로 읽던 줄에 기본 로그인의 기한을 적지 않는다 — 검수 F4).
       if(Object.hasOwn(info,'loginUntil')&&(same.folder||null)===(folder||null))same.loginUntil=clampNumber(info.loginUntil,0,9e15);
       persist();return same;
     }
@@ -373,7 +373,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     const morning=new Date(at);morning.setHours(BILL_HOUR,0,0,0);
     const billToday=day=>{const d=new Date(at),lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return d.getDate()===Math.min(Number(day),lastDay);};
     if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>row.billDay&&billToday(row.billDay)))return {};
-    // 하루 막대(11-02 Fable F1): 자정 10분 전에 한 번, 날짜가 바뀐 뒤 첫 때에 한 번 전체를 읽는다 —
+    // 하루 막대(11-02 검수 F1): 자정 10분 전에 한 번, 날짜가 바뀐 뒤 첫 때에 한 번 전체를 읽는다 —
     // 6시간마다만 읽으면 자정 앞 마지막 읽기 뒤의 저녁 소비가 다음 날 막대에 실린다(경계 오차를 2분 tick + 10분 안으로).
     const today=new Date(at);today.setHours(0,0,0,0);
     const nextDay=new Date(today);nextDay.setDate(nextDay.getDate()+1);
@@ -399,7 +399,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     check:guard(check),useExisting:guard(useExisting),startLogin,submitCode,cancelLogin,openLoginUrl,openInstaller,openHelp,save:guard(save),connectKey:guard(connectKey),
     autoTick:guard(autoTick),autoDue:guard(async at=>autoDue(at)),
     // 모델별 토큰: 판 보기 · 다시 세기 · 켜기와 끄기(끄면 모은 숫자를 지운다).
-    // 다시 세기는 시작만 하고 바로 돌려준다(첫 세기는 몇 분 — 화면은 진행을 onTokens 알림으로 받는다. Fable 설계 검토 6).
+    // 다시 세기는 시작만 하고 바로 돌려준다(첫 세기는 몇 분 — 화면은 진행을 onTokens 알림으로 받는다. 설계 검토 6).
     // force가 아니면 마지막으로 센 지 5분이 지났을 때만 센다. tokensAuto: 본체의 2분 틱이 부른다(켜져 있고 3시간이 지났을 때만).
     tokens:async()=>tokenUsage.state(),
     tokensScan:async({force=false}={})=>{void tokenUsage.scan({force:force===true});return tokenUsage.state();},

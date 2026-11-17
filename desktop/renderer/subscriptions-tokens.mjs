@@ -15,7 +15,7 @@ const pad = n => String(n).padStart(2, '0');
 export const tokenDay = t => { const d = new Date(t); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 // k일 앞의 날(이 PC 시각 기준 달력 날 — 하루가 23 · 25시간인 날에도 하루씩 간다).
 const dayBefore = (now, k) => { const d = new Date(now); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - k); return tokenDay(d.getTime()); };
-// 날(YYYY-MM-DD)을 「11/5」로. 올해가 아닌 날은 해를 앞에 붙인다(기록은 400일까지 남는다 — 카본 지적).
+// 날(YYYY-MM-DD)을 「11/5」로. 올해가 아닌 날은 해를 앞에 붙인다(기록은 400일까지 남는다 — 검수 지적).
 const md = (key, now = Date.now()) => `${Number(key.slice(0, 4)) !== new Date(now).getFullYear() ? `${Number(key.slice(0, 4))}/` : ''}${Number(key.slice(5, 7))}/${Number(key.slice(8, 10))}`;
 const hm = t => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
@@ -100,7 +100,7 @@ function modelRow(m, s, open) {
 function notes(state) {
   const tools = state?.tools || {}, found = ['claude', 'gpt', 'grok', 'gemini'].filter(k => tools[k] > 0);
   const lines = [];
-  // 처음 세는 중에는 아직 모른다 — 「찾지 못했어요」는 다 센 뒤에만(카본 지적: 진행 표시와 함께 떴다).
+  // 처음 세는 중에는 아직 모른다 — 「찾지 못했어요」는 다 센 뒤에만(검수 지적: 진행 표시와 함께 떴다).
   if (!found.length && state?.scannedAt) lines.push(`이 PC에서 ${TOOL_NAMES}의 기록을 아직 찾지 못했어요. 이 도구들을 쓰면 여기에 모여요.`);
   // 실시간(11-16)은 이 화면이 열려 있을 때만이라 그렇게 알린다.
   lines.push('이 화면을 열어 두면 AI가 답을 마칠 때마다 몇 초 안에 숫자를 더해요. 화면을 닫아 두면 3시간마다 다시 세어요.');
@@ -114,7 +114,7 @@ export function tokensSection({ state, view = {}, now = Date.now(), number = '04
   const head = (desc, body) => `<section class="ms-section mt-section" data-section="${number}" id="ms-tokens"><div class="ms-section-heading"><h2>모델별 토큰</h2><p>${desc}</p></div>${body}</section>`;
   if (!state?.ok) return '';
   if (!state.enabled) {
-    // 안내는 사실대로(Fable 설계 검토 9): 기록 파일 전체를 훑고 그중 모델 이름과 토큰 수만 꺼낸다. 남기는 것에는 파일 위치와 읽은 자리도 있다.
+    // 안내는 사실대로(설계 검토 9): 기록 파일 전체를 훑고 그중 모델 이름과 토큰 수만 꺼낸다. 남기는 것에는 파일 위치와 읽은 자리도 있다.
     return head('모델마다 출력 토큰을 얼마나 썼는지 보여 줘요.', `<div class="mt-off"><p>토큰은 AI가 읽고 쓴 글의 양을 세는 단위예요. 출력 토큰은 AI가 답하며 쓴 양이에요.</p><p>켜면 이 PC의 AI 도구가 남긴 대화 기록 파일을 훑어, 응답마다 모델 이름과 토큰 수만 꺼내 더해요. 대화 내용은 꺼내 두지 않고 밖으로 보내지 않아요. 로그인 정보 파일은 열지 않아요.</p><p class="mt-soft">이 PC에 남기는 것은 날짜와 모델별 숫자, 어느 기록 파일을 어디까지 읽었는지예요. 끄면 모두 지워요.</p><p class="mt-soft">읽는 도구: ${TOOL_NAMES}</p><div class="ms-inline"><button type="button" class="ms-button ms-button-primary" data-subs="tokens-on" ${busy ? 'disabled' : ''}>모델별 토큰 켜기</button></div></div>`);
   }
   const p = state.progress, counting = p && p.total ? ` <b class="ms-num">${p.done.toLocaleString('ko-KR')}/${p.total.toLocaleString('ko-KR')}</b>` : '';
@@ -153,7 +153,7 @@ function foot(state, view, now, busy) {
   const off = view.offArmed
     ? `<div class="mt-off-confirm"><span>끄면 모은 숫자를 지워요. 다시 켜면 처음부터 다시 세어요.</span><button type="button" class="ms-button ms-button-small ms-button-danger" data-subs="tokens-off" data-id="off-confirm" ${busy ? 'disabled' : ''}>끄고 지우기</button><button type="button" class="ms-button ms-button-small" data-subs="tokens-off-cancel">그대로 두기</button></div>`
     : '';
-  // 줄의 조각을 모아 가운뎃점으로 잇는다 — 앞 조각이 비어도 「· 끄기」처럼 점이 홀로 남지 않게(카본 지적).
+  // 줄의 조각을 모아 가운뎃점으로 잇는다 — 앞 조각이 비어도 「· 끄기」처럼 점이 홀로 남지 않게(검수 지적).
   // 처음 세다 멈춘 판은 위 칸에 「다시 세기」가 있으니 여기서는 되풀이하지 않는다.
   const scanBtn = state.scanning || !state.scannedAt ? '' : `<button type="button" class="ms-link" data-subs="tokens-scan" ${busy ? 'disabled' : ''}>다시 세기</button>`;
   const offBtn = `<button type="button" class="ms-link" data-subs="tokens-off" data-id="off-link" ${busy || view.offArmed ? 'disabled' : ''}>끄기</button>`;

@@ -370,6 +370,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       }
       o.setAttribute('aria-current', String(o.dataset.orbProg === prog));
     }
+    // 오브제 줄은 Tab 한 자리다. 연 오브제만 Tab 차례에 두고 줄 안은 좌우 화살표로 옮긴다.
+    // 그래야 Tab이 연 프로그램의 방 안으로 바로 내려간다(0.4.97 최종 검수 F1: 구독 방에 Tab으로 들어가지 못했다)
+    const shown = app.objs.filter(o => !o.hidden), current = shown.find(o => o.dataset.orbProg === prog) || shown[0];
+    for (const o of shown) { const want = o === current ? '0' : '-1'; if (o.getAttribute('tabindex') !== want) o.setAttribute('tabindex', want); }
   }
   /* 다른 프로그램의 방이 뜰 때 안의 것들이 차례로 떠오른다(시안 flashRoom) */
   function enterRoom(prog) {
@@ -627,7 +631,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (focusEl(targetFor(s.focus), { select: s.focus === 'code-select' })) appliedFocusSeq = s.focusSeq;
   }
   function focusables() {
-    return [...root.querySelectorAll(FOCUSABLE)].filter(el => el !== heading && isVisible(el) && !el.closest('[inert]'));
+    return [...root.querySelectorAll(FOCUSABLE)].filter(el => el !== heading && el.getAttribute('tabindex') !== '-1' && isVisible(el) && !el.closest('[inert]'));
   }
   function trapping() {
     const mode = getMode();
@@ -796,7 +800,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (!items.length) { event.preventDefault(); return; }
       const first = items[0], last = items[items.length - 1], active = doc.activeElement;
       // 제목(heading)처럼 Tab 목록 밖에 초점이 있어도 얼굴 안에서 돈다(0.4.95 원천 후보 검수)
-      const outside = !items.includes(active);
+      // 오브제 줄의 오브제는 Tab 차례(-1)에서 빠져 있어도 줄 안의 자리다. 자판 초점이 오브제에 있는 채로 마우스가 다른 오브제를 열면
+      // 그 오브제가 -1이 되는데, 그때도 처음으로 건너뛰지 않고 브라우저의 차례대로 잇는다(0.4.97 최종 다시 검수 FA1)
+      const outside = !items.includes(active) && !(active?.closest?.('.obj[data-orb-prog]') && root.contains(active));
       if (event.shiftKey) { if (outside || active === first) { event.preventDefault(); last.focus?.({ preventScroll: true }); } }
       else if (outside || active === last) { event.preventDefault(); first.focus?.({ preventScroll: true }); }
       return;
@@ -804,6 +810,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (mode === 'legacy' || typing || event.ctrlKey || event.metaKey || event.altKey) return;
     if ((event.key === 'Enter' || event.key === ' ') && scene?.boot) { event.preventDefault(); onAction('wake'); return; }
     if (event.key === 'Enter' && scene?.layer === 'ask' && !scene.ask.wait && !(t?.closest?.('button')) && scene.ask.showSignIn) { event.preventDefault(); onAction('signin'); return; }
+    const obj = t?.closest?.('.obj[data-orb-prog]');
+    if (obj && root.contains(obj) && scene?.layer === 'app' && ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      const list = app.objs.filter(o => !o.hidden), i = list.indexOf(obj);
+      if (i < 0 || !list.length) return;
+      event.preventDefault();
+      const k = event.key === 'Home' ? 0 : event.key === 'End' ? list.length - 1 : (i + (event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : list.length - 1)) % list.length;
+      // 초점이 옮겨 가면 focusin이 그 프로그램을 연다(여는 길 셋 가운데 자판 길)
+      list[k].focus?.({ preventScroll: true });
+      return;
+    }
     if (scene?.layer === 'switch' && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
       const list = [...sw.names.querySelectorAll('button')];
       if (!list.length) return;
