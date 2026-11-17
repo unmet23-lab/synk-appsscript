@@ -137,9 +137,11 @@ const 재현 = [
   ['she stops mid-step and snow falls around her in the stairwell.', true, ['걸림', '주의']],
   ['Indoors: snowflakes drift down past her face.', null, ['걸림', '주의']],
   ['the living-room curtains sway in the draft.', null, ['걸림', '주의']],
+  // 11-18 경산 E2~E4: 창이 「snowy roofs」를 보여 준다는 빛 문장이 실내 눈으로 걸렸다 — 지붕은 창밖이다(rooftops만 받던 것을 roofs까지)
+  ['a deep blue window at the right of the frame shows snowy roofs.', true, ['주의']],
 ];
 
-test('지시문 낱말 — Astra · 아르곤 재현 문장 23개가 뜻대로 갈린다', { skip: !파이썬 && '파이썬 없음' }, () => {
+test('지시문 낱말 — Astra · 아르곤 재현 문장 24개가 뜻대로 갈린다', { skip: !파이썬 && '파이썬 없음' }, () => {
   const dir = 임시();
   const 파일 = 재현.map(([t], i) => 쓰기(dir, `c${String(i).padStart(2, '0')}.txt`, t.startsWith('SOUND:') ? t : `ACTION: ${t}`));
   const 실내 = 재현.map(([, 실내], i) => (실내 === true ? `c${String(i).padStart(2, '0')}` : null)).filter(Boolean);

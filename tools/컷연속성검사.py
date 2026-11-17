@@ -110,7 +110,7 @@ from pathlib import Path
     r"|\b(?:she|he|they|[A-Z][a-z]+)\b[^.;]{0,50}?\b(?:opens?|closes?|shuts?|pulls?|pushes?|nudges?|kicks?|swings?|slides?|props?|holds?|draws?|tugs?)\b[^.;]{0,30}\b" + 큰물건
     + r"|\b(?:pulled|pushed|drawn|tugged|kicked|nudged|held|swung|slid|opened|closed|shut) (?:open|shut|closed|ajar|by|back|wide|inward|outward|aside)\b|\b(?:opened|closed|pushed|pulled) by\b"
     r"|손이|손으로|밀어|밀면|당겨|당기|잡아|잡고|누가|사람이|안에서 (?:열|밀|당)", re.I | re.M)
-창밖 = re.compile(r"\b(?:outside|out the window|through the (?:window|glass|pane)|beyond the (?:glass|window)|past the window|outdoors|out there|on the street|in the street|across the street|rooftops?|sky|off (?:her|his|their|the) (?:coat|shoulders?|hair|sleeves?|hat|scarf|bag))\b|창밖|밖에|바깥|하늘|털어", re.I)
+창밖 = re.compile(r"\b(?:outside|out the window|through the (?:window|glass|pane)|beyond the (?:glass|window)|past the window|outdoors|out there|on the street|in the street|across the street|roof(?:top)?s?|sky|off (?:her|his|their|the) (?:coat|shoulders?|hair|sleeves?|hat|scarf|bag))\b|창밖|밖에|바깥|하늘|털어", re.I)
 소리줄표식 = re.compile(r"^\s*(?:SOUND|VOICE|AUDIO|MUSIC|SFX|AMBIENCE|CAMERA)\s*:", re.I)   # CAMERA 줄도 — 「a drone flies at the window in one unbroken move」는 창이 움직이는 게 아니다
 명시실내 = re.compile(r"\bindoors?\b\s*[:：—-]|^\s*indoors?\b|^\s*(?:interior|inside the (?:flat|apartment|house|room|stairwell))\b\s*[:：—-]|실내\s*[:：]", re.I | re.M)   # 글이 스스로 「Indoors:」라고 밝힌 컷은 밝힌 실내
 
