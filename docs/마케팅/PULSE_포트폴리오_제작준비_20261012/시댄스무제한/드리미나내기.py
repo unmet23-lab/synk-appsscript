@@ -31,6 +31,7 @@ DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 PROFILE = None   # CLI 로그인 칸 — main()의 --계정이 정한다
 PROJECT = open(os.path.join(HOME, "캔버스.txt"), encoding="utf-8").read().strip()   # 내는 캔버스 id — 공개 저장소라 git 밖에 둔다(칸이 있으면 캔버스_<칸>.txt)
 PER_SEC_OF = {None: 37, "ultra": 19, "unmet23": 22}   # unmet23 = Advanced 분기(11-17 CLI 720p 초당 22)
+PER_SEC_RES = {("unmet23", "480p"): 17}   # 11-18 CLI 상한 1로 물은 최소 상한: 480p 6초 102 · 7초 119
 RES = "720p"   # --해상도(11-17 PULSE 영어 둘째 편 480p 시험) — 시댄스 2.5는 480p · 720p · 1080p · 4k
 PER_SEC = 37   # main()이 칸에 맞춰 PER_SEC_OF에서 고른다
 lock = threading.Lock()
@@ -260,7 +261,7 @@ def main():
     cap, conc, go, out = opt("--상한", None), int(opt("--동시", "3")), "--실행" in a, opt("--받을곳", None)
     PROFILE = opt("--계정", None)
     RES = opt("--해상도", "720p")
-    PER_SEC = PER_SEC_OF.get(PROFILE, PER_SEC_OF[None])
+    PER_SEC = PER_SEC_RES.get((PROFILE, RES)) or PER_SEC_OF.get(PROFILE, PER_SEC_OF[None])
     if PROFILE:
         PROJECT = open(os.path.join(HOME, f"캔버스_{PROFILE}.txt"), encoding="utf-8").read().strip()
     ignore, table = 인자값(a, "--걸림무시"), 인자값(a, "--컷표")
