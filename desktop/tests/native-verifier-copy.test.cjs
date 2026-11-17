@@ -36,6 +36,10 @@ test('Windows native verifier plants the face stage record when the app document
   assert.ok(line.includes('__orbSeen=[p.dataset.portalState')&&line.includes('attributeOldValue:true'),line.slice(0,200));
   // webContents.executeJavaScript는 쪽이 다 실릴 때(did-stop-loading)까지 미뤄져 dom-ready에서 불러도 일찍 심기지 않는다. 프레임에 바로 심어야 한다(0.4.96 첫 빌드 Mac 두 작업)
   assert.ok(line.includes('contents.mainFrame.executeJavaScript(')&&!/contents\.executeJavaScript\(/.test(line),line.slice(0,200));
+  // 겹쳐 넘기는 길에서는 welcome이 지나간 뒤 기록으로 통과한다. 그때 판정은 지금 값이 아니라 welcome 때 적어 둔 값으로 해야 한다(0.4.96 Mac 사본 검수 P2)
+  assert.ok(line.includes("window.__orbWelcome={auth:p.dataset.portalAuthStatus")&&line.includes("attributeFilter:['data-portal-state','data-portal-auth-status'"),line.slice(0,200));
+  const wait=verifier.slice(verifier.lastIndexOf('await waitFor(contents,',verifier.indexOf("'orb-welcome'")),verifier.indexOf("'orb-welcome'"));
+  assert.ok(wait.includes("const w=window.__orbWelcome;return (window.__orbSeen||[]).includes('welcome')&&!!w&&!w.hidden&&w.active==='true'&&w.auth==='signed-out'&&w.client==='portal'&&w.inert===true"),wait.slice(0,240));
 });
 test('Windows native verifier checks that the startup sentence is really hidden while checking',()=>{
   // 문장 칸의 글과 data-ui는 HTML에 처음부터 적힌 값이라 숨김 CSS가 깨져도 맞는다. 보이는 글이 빈 것까지 봐야 실제로 숨었는지 안다(0.4.96 공개 후보 Fable P2)
