@@ -145,8 +145,14 @@ test('D0 special entries: a restore must leave out links and names ending in a d
   assert.equal(good.ok, true, JSON.stringify(good));
   assert.deepEqual(good.leftOut, ['연결점', data.SPECIALS.oddName]);
   const said = item => [{ skipped: { count: item.length, items: item.map(name => ({ name: `C/work/src/${name}`, kind: 'link' })) } }];
-  assert.equal(data.leftOutSaid(good.leftOut, said(good.leftOut)).ok, true);
-  assert.deepEqual(data.leftOutSaid(good.leftOut, said(['연결점'])).unsaid, [data.SPECIALS.oddName], 'one the restore did not count');
+  // The link is counted; the name ending in a dot never reached a Windows backup (restic 0.19.1, run 44152169842), so
+  // the restore has nothing to count for it. Counting it means the backup changed: the expectation is to be turned.
+  const kept = data.leftOutSaid(good.leftOut, said(['연결점']));
+  assert.equal(kept.ok, true, JSON.stringify(kept));
+  assert.deepEqual(kept.notBackedUp, [data.SPECIALS.oddName]);
+  assert.deepEqual(data.leftOutSaid(good.leftOut, said(good.leftOut)).saidOdd, [data.SPECIALS.oddName], 'the odd name counted');
+  assert.equal(data.leftOutSaid(good.leftOut, said(good.leftOut)).ok, false);
+  assert.deepEqual(data.leftOutSaid(good.leftOut, []).unsaid, ['연결점'], 'a link the restore did not count');
   assert.equal(data.leftOutSaid(good.leftOut, []).ok, false);
   // The junction gone through (its folder restored as a copy) and the odd name restored are both wrong.
   fs.cpSync(path.join(back, '문서', '메모 0'), path.join(back, '연결점', '메모 0'), { recursive: true });

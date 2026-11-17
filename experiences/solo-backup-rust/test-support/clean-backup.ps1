@@ -56,7 +56,8 @@ $data = Join-Path $Work 'admin-data'
 $made = & node (Join-Path $tools 'clean-data.cjs') make $data $DataMB
 $script:results['adminData'] = $made | ConvertFrom-Json
 # The special entries of 7장 D0 (a junction, two symbolic links, a name ending in a dot): every run below must stay
-# complete with them, and runner 2 checks the restore leaves them out and says so.
+# complete with them, and runner 2 checks the restore leaves them out and counts the links. The name ending in a dot
+# never reaches the backup (restic 0.19.1, run 44152169842 — a known gap; clean-data.cjs leftOutSaid).
 $specials = & node (Join-Path $tools 'clean-data.cjs') specials $data
 Expect ($LASTEXITCODE -eq 0) "the special entries made in the administrator's data ($specials)"
 $setup = & node (Join-Path $tools 'clean-app.cjs') setup $data (Join-Path $Work 'admin-repo') (Join-Path $kits 'admin-kit.json')

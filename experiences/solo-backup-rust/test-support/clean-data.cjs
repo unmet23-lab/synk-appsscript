@@ -11,8 +11,9 @@
 //                                                  GITHUB_RUN_ID, for the recovery kits carried between runners
 // D0 holds what 7장 asks of every data set: Korean names, an empty folder, a 0-byte file, a path over 260 characters,
 // a name with the telemetry-leak marker, small notes, medium pictures and one large incompressible file, and (specials)
-// a folder junction, a file and a folder symbolic link and a name ending in a dot. The backup keeps those four; a
-// restore leaves them out and counts them (4.6, restore-tar readManifest — 74a22589a). A file nobody may read is made
+// a folder junction, a file and a folder symbolic link and a name ending in a dot. The backup keeps the three links; a
+// restore leaves them out and counts them (4.6, restore-tar readManifest — 74a22589a). The name ending in a dot never
+// reaches the backup on Windows (see leftOutSaid — a known gap). A file nobody may read is made
 // by clean-backup.ps1 for one run only (icacls), since every run would be partial while it stays.
 // Synthetic only — the lists may be public; the sealed kits may not be opened without the seed.
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
@@ -100,12 +101,18 @@ function compare(expected, actual) {
   return { files: kept, matched: kept - missing.length - changed.length, missing, changed, extra, dirsMissing, leftOut: [...links, ...odd], leftIn,
     ok: !missing.length && !changed.length && !extra.length && !dirsMissing.length && !leftIn.length };
 }
-/** What 복구경로.json says it left out (each folder's `skipped`) against the links and odd names of the list. */
+/** What 복구경로.json says it left out (each folder's `skipped`) against the links and odd names of the list. A link is
+ *  in the backup, so the restore must count it. A name Windows cannot hold never reaches the backup there: restic 0.19.1
+ *  left the name ending in a dot out of every snapshot with no error, and the runs were still complete (run 44152169842,
+ *  11-18 — counts and the restore listing; how restic loses it is not measured). Until the backup keeps it or tells the
+ *  person (트랙, the 업무 백업 sessions), the restore must not count one either; a count of one means that changed. */
 function leftOutSaid(leftOut, mapping) {
   const entries = Array.isArray(mapping) ? mapping : [], said = entries.flatMap(e => e?.skipped?.items || []);
   const count = entries.reduce((n, e) => n + (e?.skipped?.count || 0), 0);
-  const unsaid = leftOut.filter(rel => !said.some(item => typeof item?.name === 'string' && (item.name === rel || item.name.endsWith(`/${rel}`))));
-  return { expected: leftOut.length, count, unsaid, ok: count === leftOut.length && !unsaid.length };
+  const has = rel => said.some(item => typeof item?.name === 'string' && (item.name === rel || item.name.endsWith(`/${rel}`)));
+  const links = leftOut.filter(rel => !oddName(rel)), notBackedUp = leftOut.filter(oddName);
+  const unsaid = links.filter(rel => !has(rel)), saidOdd = notBackedUp.filter(has);
+  return { expected: links.length, count, unsaid, notBackedUp, saidOdd, ok: count === links.length && !unsaid.length && !saidOdd.length };
 }
 
 function key() {

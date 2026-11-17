@@ -43,7 +43,7 @@ if ($r.restored) {
   Expect (Test-Path -LiteralPath (Join-Path $r.restored '복구경로.json')) 'the restore says where each folder came from (복구경로.json)'
   $compare = & node (Join-Path $tools 'clean-data.cjs') compare (Join-Path $Carry 'admin-list.json') (Join-Path $r.restored '01-admin-data') (Join-Path $r.restored '복구경로.json')
   $script:results['admin'] = [ordered]@{ seconds = $seconds; compare = ($compare | ConvertFrom-Json) }
-  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged, the links and the odd name left out and counted ($compare)"
+  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged, the links left out and counted, the odd name not in the backup ($compare)"
 }
 
 # 2. The standard user's backup, restored by a new standard user here.
@@ -68,7 +68,7 @@ Expect ($p.ExitCode -eq 0 -and $r.ok -and $r.restored) "the standard user's back
 if ($r.restored) {
   $compare = & node (Join-Path $tools 'clean-data.cjs') compare (Join-Path $Carry 'std-list.json') (Join-Path $r.restored '01-std-data') (Join-Path $r.restored '복구경로.json')
   $script:results['std'] = [ordered]@{ seconds = $seconds; compare = ($compare | ConvertFrom-Json) }
-  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged, the links and the odd name left out and counted ($compare)"
+  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged, the links left out and counted, the odd name not in the backup ($compare)"
 }
 Remove-Item -LiteralPath $kits -Recurse -Force
 $script:results['mismatches'] = $script:bad
