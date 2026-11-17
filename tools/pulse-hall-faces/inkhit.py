@@ -1,8 +1,9 @@
 # 글 잉크 × 진짜 얼굴(자국 번호로 고름) — 모든 프레임
 # python -X utf8 tools/pulse-hall-faces/inkhit.py <ink 폴더> [<real-wide ids> <real-tall ids>] [--다]
+# 닿은 글 표시: l 머리글 · t 제목 · d 소개 줄 · n 작품 줄 · c 단추 · p 값 안내 · i 번호 줄
 # 진짜 얼굴 자국 번호를 주지 않으면 data/real-faces-<판>.json을 쓴다. 쇼릴 판은 환경 변수 REEL(기본 20261109c).
 # 얼굴 상자: YuNet 상자 + 턱 여유(아래 +6%), 쇼릴 상자 · 첫 화면 밖은 자름, 화면 폭 12px 미만은 뺌.
-# 잉크: 검은 바탕 위 밝기 > 60 인 화소, 글 칸(label · title · lead · side · index) 상자 안만. 단추는 바탕까지 잉크다.
+# 잉크: 검은 바탕 위 밝기 > 60 인 화소, 글 칸(label · title · lead · now · cta · price · index) 상자 안만. 단추는 바탕까지 잉크다. 작품 줄은 작품마다 찍은 그림을 그 작품 컷 프레임에만 쓴다.
 import json, sys, os, collections
 import numpy as np, cv2
 d = sys.argv[1]
@@ -26,20 +27,29 @@ for r in meta:
     if r['src'] and n not in r['src']: bad.append((r['vp'], r['page'], 'src', r['src']))
     if r['poster'] and n == 'tall' and 'tall' not in r['poster']: bad.append((r['vp'], r['page'], 'poster', r['poster']))
     F = FJ[n]
-    img = cv2.imread(os.path.join(d, r['file']), cv2.IMREAD_GRAYSCALE)
-    H, W = img.shape
-    zone = np.zeros_like(img, dtype=bool)
-    for k, b in r['parts'].items():
-        x0, y0 = max(0, int(b['x']) - 2), max(0, int(b['y']) - 2); x1, y1 = min(W, int(b['x'] + b['w']) + 3), min(H, int(b['y'] + b['h']) + 3)
-        if x1 > x0 and y1 > y0: zone[y0:y1, x0:x1] = True
-    ink = (img > 60) & zone
-    pinks = {}
-    for k, b in r['parts'].items():
-        z = np.zeros_like(img, dtype=bool)
-        x0, y0 = max(0, int(b['x']) - 2), max(0, int(b['y']) - 2); x1, y1 = min(W, int(b['x'] + b['w']) + 3), min(H, int(b['y'] + b['h']) + 3)
+    CODE = {'label': 'l', 'title': 't', 'lead': 'd', 'now': 'n', 'cta': 'c', 'price': 'p', 'index': 'i', 'side': 's'}
+    def zone_of(boxes, shape):
+        H, W = shape; z = np.zeros(shape, dtype=bool)
+        x0, y0 = max(0, int(boxes['x']) - 2), max(0, int(boxes['y']) - 2); x1, y1 = min(W, int(boxes['x'] + boxes['w']) + 3), min(H, int(boxes['y'] + boxes['h']) + 3)
         if x1 > x0 and y1 > y0: z[y0:y1, x0:x1] = True
-        pinks[k] = (img > 60) & z
-    # 잉크 열마다 가장 위 잉크 y(위에서 내려오는 얼굴과의 틈을 재려고)
+        return z
+    files = r.get('files') or {None: r['file']}
+    imgs = {k: cv2.imread(os.path.join(d, f), cv2.IMREAD_GRAYSCALE) for k, f in files.items()}
+    H, W = next(iter(imgs.values())).shape
+    # 작품마다(그 작품 이름을 넣어 찍은 그림) 글 칸별 잉크 — 작품 줄은 그 작품 상자만
+    pinks_by = {}
+    for k, img in imgs.items():
+        boxes = dict(r['parts'])
+        if r.get('nowBoxes') and k in r['nowBoxes']: boxes['now'] = r['nowBoxes'][k]
+        pinks_by[k] = {part: (img > 60) & zone_of(bx, img.shape) for part, bx in boxes.items()}
+    ink_by = {k: np.logical_or.reduce(list(v.values())) if v else np.zeros((H, W), dtype=bool) for k, v in pinks_by.items()}
+    tl = r.get('timeline')
+    def work_at(t):
+        if not tl or None in imgs: return next(iter(imgs))
+        cur = tl[0]['work']
+        for seg in tl:
+            if t >= seg['at']: cur = seg['work']
+        return cur if cur in imgs else next(iter(imgs))
     rv = r['reel']; s = max(rv['w'] / F['w'], rv['h'] / F['h']); ox = rv['x'] + (rv['w'] - F['w'] * s) / 2; oy = rv['y'] + (rv['h'] - F['h'] * s) / 2
     cT, cB = max(rv['y'], 0), min(rv['y'] + rv['h'], H); cL, cR = max(rv['x'], 0), min(rv['x'] + rv['w'], W)
     hits = collections.defaultdict(list); gap = None
@@ -52,10 +62,11 @@ for r in meta:
             y0 = max(oy + f['y'] * s, cT); y1 = min(oy + f['y'] * s + f['h'] * s * (1 + CHIN), cB)
             if x1 <= x0 or y1 <= y0: continue
             X0, X1, Y0, Y1 = int(x0), int(np.ceil(x1)), int(y0), int(np.ceil(y1))
+            wk = work_at(fr['t']); ink = ink_by[wk]; pinks = pinks_by[wk]
             sub = ink[Y0:Y1, X0:X1]
             if sub.any():
                 ys = np.where(sub.any(axis=1))[0]
-                parts = ''.join(k[0] for k, m in pinks.items() if m[Y0:Y1, X0:X1].any())
+                parts = ''.join(CODE.get(k, k[0]) for k, m in pinks.items() if m[Y0:Y1, X0:X1].any())
                 hits[tid].append((fr["t"], int(sub.sum()), float(round(Y1 - (Y0 + int(ys[0])), 1)), parts))
             else:
                 below = ink[Y1:, X0:X1]
