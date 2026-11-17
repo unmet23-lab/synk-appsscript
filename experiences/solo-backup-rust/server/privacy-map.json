@@ -50,7 +50,8 @@
   },
   "outside": [
     { "what": "매일 DB 사본(jobs.mjs, workbackup-날짜.sqlite)", "group": "all", "keep": "30일(jobs.mjs의 사본 정리)" },
-    { "what": "파일 일꾼의 되돌리기 장부 파일(files-worker.mjs journal-*.jsonl)", "group": "restore", "keep": "끝난 기록은 29일, 끝나지 않은 기록은 되돌릴 시각부터 30.5일" },
+    { "what": "파일 일꾼의 되돌리기 작업 장부(files-worker.mjs journal-<자리>.jsonl, 복사하거나 숨긴 저장소 안 파일의 식별 번호와 시각)", "group": "restore", "keep": "지우는 코드 없음(탐지가 우리 복사와 숨김을 가리려고 계속 읽음). 계정을 지울 때 운영자가 함께 지움(README 「계정 삭제 요청」)" },
+    { "what": "파일 일꾼의 되돌리기 날짜 장부(files-worker.mjs restore-days.json)", "group": "restore", "keep": "끝난 줄은 29일, 끝나지 않은 줄은 되돌릴 시각부터 30.5일이 지나면 읽을 때 빠지고 다음 저장 때 파일에서도 빠짐. 계정을 지울 때 운영자가 그 줄을 지움" },
     { "what": "서버 로그(server.mjs의 log)", "group": "none", "keep": "길 · 상태 · 걸린 시간 · 오류 낱말만, 사람에 대한 정보 없음" },
     { "what": "메일 중계(mail-relay/relay.gs)와 운영자 메일함", "group": "mail", "keep": "중계는 보낸 메일 열쇠를 7일, 메일함은 지울 때까지" },
     { "what": "접속 IP", "group": "none", "keep": "개통 서버는 메모리에서 요청 수만 세고 저장하지 않음. 회사 Caddy는 접근 기록을 끄고, 오류 기록에만 남을 수 있음" }

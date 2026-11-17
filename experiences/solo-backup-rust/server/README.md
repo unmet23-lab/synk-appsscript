@@ -58,6 +58,17 @@ docker compose --project-name synk-company --file deploy/compose.yaml exec -T wb
 
 명령: `invite-add` · `invite-remove`(표준 입력) · `invites` · `customers [--email]` · `devices <손님>` · `cut-device <기기>` · `lost <기기>` · `scan <손님>` · `reconcile` · `backup <경로>` · `mail-held [--to]` · `key-delete <출입증 번호>`(대조가 「표에 없음」으로 알린 우리 출입증을 확인한 뒤 지운다).
 
+## 계정 삭제 요청
+
+synk.im 처리방침 「SYNK 업무 백업」 절은 계정 삭제 요청을 받으면 지체 없이 아래를 지운다고 약속한다. 손님 자리 해지 관리 명령이 생기기 전에는 운영자가 손으로 하며, 그 명령은 이 목록을 그대로 따른다. 무엇이 어디에 있는지는 `privacy-map.json`이 정본이다.
+
+- api의 `data/wb.sqlite`: 그 계정 번호와 그 계정 PC 번호가 들어간 모든 표의 줄, 초대 목록의 그 이메일 줄, 그 계정의 메일 줄(`outbox`).
+- 출입증 일꾼: 그 계정의 출입증을 B2에서 지운다.
+- 파일 일꾼의 `state/`: `journal-<자리>.jsonl`(자리는 `c/` 뒤 16자)과 `restore-days.json`의 그 자리 줄.
+- 클라우드 백업: 그 계정 자리의 파일을 모두 숨긴다(지움 처리). 숨긴 파일은 버킷 규칙으로 약 30일 뒤 사라진다.
+- 메일: 운영 메일함에서 그 계정의 메일을 지운다.
+- 매일 사본(`backups/`)은 손대지 않는다. 30일이 지나면 지워진다.
+
 ## 아직 정하지 않은 것
 
 - `data/wb.sqlite`의 매일 사본은 같은 디스크의 `backups/`에만 남는다. 회사 백업(`company-backup.sh`)은 회사 볼륨만 옮기므로, 이 사본을 회사 밖으로 보내는 길은 프로필을 켜는 인프라 판에서 함께 정한다.
