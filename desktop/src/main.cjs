@@ -270,7 +270,9 @@ function requestPlatformWindow(action){
   arrivalShow=null;autostartHidden=false;
   if(action)pendingDesktopAction=action;
   if(!startupAllowed||startupGate?.isBlocking()){showStartupWindow();return;}
-  if(window&&!window.isDestroyed()&&(!mainWindowReady||window.isVisible())){if(mainWindowReady)showPlatformMain();return;}
+  // 최소화한 창도 isVisible()이 참이다. 숨은 길에서 미룬 실패가 있으면 최소화한 창은 아직 보지 않은 창으로 보고 실패부터 보인다(0.4.97 엔진 검수 GA2)
+  const unseenMinimized=Boolean(unseenFailure)&&window&&!window.isDestroyed()&&window.isMinimized();
+  if(window&&!window.isDestroyed()&&(!mainWindowReady||window.isVisible()&&!unseenMinimized)){if(mainWindowReady)showPlatformMain();return;}
   const updatable=platformUpdate&&platformUpdate.snapshot().state!=='disabled'&&!quittingRequested;
   if(updatable&&unseenFailure){const failure=unseenFailure;unseenFailure=null;void beginPlatformStartup(null,null,{initialError:failure});return;}
   showPlatformMain();
@@ -301,7 +303,8 @@ function handoffToMain({waitedForStart=false}={}){
   startupAllowed=true;
   // 사람이 최소화해 둔 시작 창은 보이는 창으로 세지 않는다(Electron은 최소화한 창도 isVisible()이 참이다). 앱 창도 최소화한 채 연다(0.4.96 검수 D6)
   const startupMinimized=startupWindow?.browserWindow?.()?.isMinimized?.()===true;
-  if(startupMinimized&&!arrivalShow)arrivalShow='minimized';
+  // 업데이트 뒤 「뒤」로 보이던 시작 창을 사람이 최소화했어도 최소화가 이긴다. 숨은 길만 그대로 둔다(0.4.97 엔진 검수 GA1)
+  if(startupMinimized&&arrivalShow!=='hidden')arrivalShow='minimized';
   const from=startupWindow?.isVisible()&&!startupMinimized?startupWindow.bounds():null;
   // 앱 창을 먼저 만들고 시작 창을 없앤다. 시작 창이 그때 하나뿐인 창이면 먼저 없애는 순간 「모든 창이 닫힘」이 app.quit()를 불러,
   // 확인이 시작 창이 보이기 전에 끝난 실행(빠른 인터넷, 공개 CI 검사기)이 켜지자마자 멈췄다(0.4.96 대역 빌드 검사에서 찾음)
@@ -525,6 +528,8 @@ function createWindow(){
   const programRoot=resolveProgramRoot({platform:process.platform,env:process.env,getHome:()=>app.getPath('home')});
   if(!installations)installations=createClientLifecycle({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,programRoot,packageRoot:packaged?path.join(process.resourcesPath,'clients'):path.join(app.getAppPath(),'dist'),cacheRoot:path.join(app.getPath('userData'),'Installers'),releases:runtime.releases||[],spawn,openPath:file=>shell.openPath(file),onChange:async()=>{try{const state=await installations.getClients();send('synk:clients-changed',state);send('synk:client-progress',state);}catch{}}});
   window.on('focus',async()=>{try{send('synk:clients-changed',await installations.getClients());}catch{}});
+  // 최소화한 채 되돌려 켠 앱의 미룬 실패는 사람이 작업 표시줄에서 창을 되살릴 때 보인다(0.4.97 엔진 검수 GA2)
+  if(isPlatform)window.on('restore',()=>{if(!unseenFailure||quittingRequested||!startupAllowed||startupGate?.isBlocking()||!platformUpdate||platformUpdate.snapshot().state==='disabled')return;const failure=unseenFailure;unseenFailure=null;void beginPlatformStartup(null,null,{initialError:failure});});
   const companyRequest=createCompanyRequests({entry,clientId:runtime.clientId,session:ownSession,auth});
   // The company entry's refusals before its own service sees a request (another client, the smoke run, the sign-in
   // suite not ready) have the same answer form (company-entry.cjs entryRefusal).

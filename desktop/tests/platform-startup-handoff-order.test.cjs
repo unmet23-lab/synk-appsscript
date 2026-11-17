@@ -105,3 +105,31 @@ test('the login hidden start is used once and cleared when a person opens the wi
   const request=extract(/function requestPlatformWindow\(action\)\{[\s\S]*?\n\}\n/,'requestPlatformWindow');
   assert.ok(request.includes('autostartHidden=false'),'a window a person asks for is never hidden by the login start');
 });
+// 0.4.97 엔진 검수 GA1: 업데이트 뒤 「뒤」로 보이던(또는 앞에 보이던) 시작 창을 사람이 최소화했으면 앱 창도 최소화로 넘긴다
+test('a startup window minimized by a person hands over minimized even when it arrived behind other windows',()=>{
+  for(const arrived of ['behind',null]){
+    const events=[];
+    const startupWindow={isVisible:()=>true,browserWindow:()=>({isMinimized:()=>true}),bounds:()=>({x:0,y:0,width:1440,height:940,maximized:false}),whenShown:()=>new Promise(()=>{}),dispose:()=>events.push('close startup')};
+    const context={orbBoot:{kind:'first',startedAt:Date.now()},startupWindow,arrivalShow:arrived,window:null,mainWindowReady:false,startupHandoff:null,startupAllowed:false,ARRIVE_SCENE_MS:1800,
+      prefersReducedMotion:()=>false,showPlatformMain:()=>events.push('main:'+context.arrivalShow),setTimeout:(fn,ms)=>{events.push('timer '+ms);return 0;},Promise,Date};
+    vm.createContext(context);vm.runInContext(handoffSource(),context);context.handoffToMain();
+    assert.deepEqual(events,['main:minimized','close startup'],String(arrived));
+  }
+});
+// 0.4.97 엔진 검수 GA2: 최소화한 채 되돌려 켠 앱의 미룬 실패는 사람이 창을 열 때 보인다. 최소화한 창도 isVisible()이 참이라 앞에서 그냥 돌아가던 길이다
+test('a failure kept back while the app was restored minimized is shown when a person opens the window',()=>{
+  const source=extract(/function requestPlatformWindow\(action\)\{[\s\S]*?\n\}\n/,'requestPlatformWindow');
+  for(const [minimized,failure,expected] of [[true,true,['begin:UPDATE_RECOVERED']],[false,true,['main']],[true,false,['main']]]){
+    const events=[];
+    const context={arrivalShow:'minimized',autostartHidden:false,pendingDesktopAction:null,startupAllowed:true,startupGate:null,quittingRequested:false,mainWindowReady:true,
+      window:{isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>minimized},unseenFailure:failure?{code:'UPDATE_RECOVERED',stage:'check'}:null,
+      platformUpdate:{snapshot:()=>({state:'current'}),reopenCheck(){}},showStartupWindow:()=>events.push('startup'),showPlatformMain:()=>events.push('main'),
+      beginPlatformStartup:(a,b,o)=>{events.push('begin:'+o.initialError.code);return Promise.resolve();},Boolean};
+    vm.createContext(context);vm.runInContext(source,context);context.requestPlatformWindow();
+    assert.deepEqual(events,expected,`minimized ${minimized}, failure ${failure}`);
+    if(expected[0].startsWith('begin'))assert.equal(context.unseenFailure,null,'the failure is shown once');
+  }
+  // 작업 표시줄에서 되살릴 때도 같은 실패를 한 번 보인다
+  const restore=mainSource().split('\n').find(line=>line.includes("window.on('restore',"));
+  assert.ok(restore&&restore.includes('const failure=unseenFailure;unseenFailure=null;void beginPlatformStartup(null,null,{initialError:failure})')&&restore.includes('startupGate?.isBlocking()'),'restoring the minimized window shows the kept failure once');
+});

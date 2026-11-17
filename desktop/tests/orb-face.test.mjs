@@ -1258,6 +1258,9 @@ test('the view writes summary words only as text and waits for the object names 
   const css = fs.readFileSync(new URL('../renderer/orb-face.css', import.meta.url), 'utf8');
   assert.match(css, /\.orb-stage\[data-rail="1"\] \.room\[data-room\^="solio"\]\{[^}]*padding-bottom:34px;[^}]*mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/, 'the last row stays above the bottom fade');
   assert.match(css, /#portal-entry \.room\{position:absolute;[^}]*top:52%;transform:translateY\(-50%\)/, 'without objects the Solio room keeps its place');
+  assert.match(css, /#portal-entry \.more-in \.row,#portal-entry \.more-in \.row:last-child\{border:0;padding:8px 0;min-height:0\}/, 'opened inner lines drop the old launcher minimum height (.rows .row min-height:60px), so they sit 36 to 40 px apart as in the sketch');
+  assert.match(css, /\.room\[data-room\^="solio"\]\.scrolled\{-webkit-mask-image:linear-gradient\(transparent,#000 30px,#000 calc\(100% - 30px\),transparent\)/, 'a scrolled room fades its top edge too');
+  assert.match(src, /r\.classList\.toggle\('scrolled', r\.scrollTop > 0\)/);
 });
 
 test('a first read refused during a refresh is read again once the account is signed in, and the objects appear then', async t => {

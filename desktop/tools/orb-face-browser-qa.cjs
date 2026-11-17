@@ -103,7 +103,7 @@ if(!process.versions.electron){
       w.win.webContents.invalidate();await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await wait(200);w.win.webContents.invalidate();
       const image=await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});
       const file=path.join(out,`${String(++shot).padStart(2,'0')}-${mode}-${name}.png`);fs.writeFileSync(file,image.toPNG());
-      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;let hiddenBy=null;for(let a=el.parentElement;a&&a!==document.body;a=a.parentElement){const as=getComputedStyle(a);if(Number(as.opacity)===0){hiddenBy=a;break;}if(as.overflowY!=='visible'||as.overflowX!=='visible'){const r=a.getBoundingClientRect();if(b.bottom<=r.top+1||b.top>=r.bottom-1||b.right<=r.left+1||b.left>=r.right-1){hiddenBy=a;break;}}}if(hiddenBy)continue;if(b.right>W+1||b.left<-1||b.bottom>Hh+1||b.top<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
+      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;let hiddenBy=null,pos=st.position;for(let a=el.parentElement;a&&a!==document.body;a=a.parentElement){const as=getComputedStyle(a);if(Number(as.opacity)===0){hiddenBy=a;break;}if(pos==='fixed')continue;if(pos!=='absolute'||as.position!=='static'){const r=a.getBoundingClientRect();if(as.overflowY!=='visible'&&(b.bottom<=r.top+1||b.top>=r.bottom-1)){hiddenBy=a;break;}if(as.overflowX!=='visible'&&(b.right<=r.left+1||b.left>=r.right-1)){hiddenBy=a;break;}}if(!(pos==='absolute'&&as.position==='static'))pos=as.position;}if(hiddenBy)continue;if(b.right>W+1||b.left<-1||b.bottom>Hh+1||b.top<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
       check('capture '+name,metrics.pageOverflow===0&&metrics.outside.length===0,{file:path.basename(file),...metrics});
       return file;
     }
@@ -242,8 +242,8 @@ if(!process.versions.electron){
           check('3 returning boot never shows the ask or chooser layer and reaches Solio',arrived!==null&&!seen.some(s=>s.askVisible||s.swVisible||s.phase==='auth'),{arrivedMs:arrived,phases:[...new Set(seen.map(s=>s.phase))]});
           w.win.destroy();
         }
-        // 16. 솔리오 안의 프로그램 오브제와 「방문자 분석」(사이트방문 설계 6절, 맡긴 세션 11-18). 볼 계정에게만 셋째 오브제가 있다.
-        //     요약에서 온 글은 글자로만 들어가고, 이름이 펼쳐지는 0.62초 동안에는 머물러도 열리지 않고, 맨 아랫줄은 아래 흐림 위에 남고, 다른 계정에는 앞 계정의 답이 남지 않는다
+        // 16. 솔리오 안의 프로그램 오브제와 「방문자 분석」(사이트방문 설계 6절, 맡긴 세션 11-18). 볼 계정에게만 오브제 줄(구독, 방문자 분석)이 있다.
+        //     요약에서 온 글은 글자로만 들어가고, 이름이 펼쳐지는 동안(오브제 둘이면 0.55초)에는 머물러도 열리지 않고, 맨 아랫줄은 아래 흐림 위에 남고, 다른 계정에는 앞 계정의 답이 남지 않는다
         if(only('16')&&mode==='main'){
           const w=await open();await boot(w,{subs:subsReady,visits:{ok:true,available:true,summary:visitSummary()}},{restore:signedIn('none')});
           await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
@@ -266,7 +266,7 @@ if(!process.versions.electron){
           // 찍는 동안 창 크기가 바뀌어도 손 밑의 오브제가 열리지 않게 포인터를 왼쪽 아래 빈 곳에 둔다
           await move(12,660);await wait(500);
           await captureSizes(w,'visits');
-          // 멀리 갔다가 첫 오브제(구독) 위로 곧장 온다: 이름이 펼쳐지는 0.62초 동안은 열리지 않는다
+          // 멀리 갔다가 첫 오브제(구독) 위로 곧장 온다: 이름 둘이 펼쳐지는 0.55초 동안은 열리지 않는다
           await move(720,640);await wait(800);await w.js('window.__overLog.length=0;window.__progLog.length=0');
           const s=await rect('#portal-entry [data-orb-prog="subs"]');await move(s.x,s.y);await wait(1300);
           const settle=await opened('subs');check('16 coming straight onto an object waits until the two names are out (0.55 s)',settle!==null&&settle>=520&&settle<1000,{ms:settle});
@@ -278,8 +278,11 @@ if(!process.versions.electron){
           await move(720,860);
           for(let i=0;i<5;i++)await w.js("document.querySelectorAll('#portal-entry [data-room=solio-visits] button.row[data-vis]')["+i+"].click()");
           await wait(900);await capture(w,'visits-open');
-          const bottom=await w.js("(()=>{const room=document.querySelector('#portal-entry [data-room=solio-visits]');room.scrollTop=room.scrollHeight;const r=room.getBoundingClientRect(),read=room.querySelector('.read').getBoundingClientRect(),cs=getComputedStyle(room);return {scrolls:room.scrollHeight>room.clientHeight+4,gap:Math.round(r.bottom-read.bottom),mask:(cs.maskImage||cs.webkitMaskImage||'').includes('linear-gradient'),open:room.querySelectorAll('.more.open').length};})()");
-          check('16 the last line stays above the bottom fade when the room scrolls',bottom.mask&&bottom.open===5&&bottom.gap>=30,bottom);
+          // 펼친 안쪽 줄은 바깥 줄보다 촘촘하다(시안: 위아래 8px, 줄 사이 36~40px)
+          const inner=await w.js("(()=>{const m=document.querySelector('#portal-entry [data-room=solio-visits] .more.open .more-in');const rows=[...m.querySelectorAll(':scope > .row')];const tops=rows.map(r=>Math.round(r.getBoundingClientRect().top));const cs=rows[0]?getComputedStyle(rows[0]):null;const kid=rows[0]?[...rows[0].children].map(c=>{const k=getComputedStyle(c);return c.className+':'+Math.round(c.getBoundingClientRect().height)+':'+k.display+':'+k.lineHeight+':'+k.fontSize;}):[];return {kid,rowsTpl:cs?.gridTemplateRows,innerTpl:getComputedStyle(m).gridTemplateRows,heights:rows.map(r=>Math.round(r.getBoundingClientRect().height)),steps:tops.slice(1).map((t,i)=>t-tops[i]),padding:cs?cs.paddingTop+' '+cs.paddingBottom:null,display:cs?.display,outer:Math.round(document.querySelector('#portal-entry [data-room=solio-visits] button.row[data-vis]').getBoundingClientRect().height)};})()");
+          check('16 opened inner lines are tighter than the outer lines (about 36 to 40 px apart)',inner.steps.length>0&&inner.steps.every(s=>s>=30&&s<=44),inner);
+          const bottom=await w.js("(()=>{const room=document.querySelector('#portal-entry [data-room=solio-visits]');room.scrollTop=room.scrollHeight;room.dispatchEvent(new Event('scroll'));const r=room.getBoundingClientRect(),read=room.querySelector('.read').getBoundingClientRect(),cs=getComputedStyle(room),m=cs.maskImage||cs.webkitMaskImage||'';return {scrolls:room.scrollHeight>room.clientHeight+4,gap:Math.round(r.bottom-read.bottom),mask:m.includes('linear-gradient'),topFade:room.classList.contains('scrolled')&&(m.startsWith('linear-gradient(transparent')||m.startsWith('linear-gradient(rgba(0, 0, 0, 0)')),open:room.querySelectorAll('.more.open').length};})()");
+          check('16 the last line stays above the bottom fade, and a scrolled room fades its top edge too',bottom.scrolls&&bottom.mask&&bottom.topFade&&bottom.open===5&&bottom.gap>=30,bottom);
           await capture(w,'visits-bottom');
           // 키보드: 초점이 오브제에 오면 그 프로그램이 열린다
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(400);

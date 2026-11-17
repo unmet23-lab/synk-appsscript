@@ -371,6 +371,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   function enterRoom(prog) {
     const el = prog === 'visits' ? app.visits : app.solio;
     el.scrollTop = 0;
+    el.classList.remove('scrolled');
     el.classList.remove('enter');
     void el.offsetWidth;
     el.classList.add('enter');
@@ -396,6 +397,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onRailOut = event => {
     const o = event.target?.closest?.('.obj[data-orb-prog]');
     if (o && !o.contains(event.relatedTarget)) clearTimeout(progTimer);
+  };
+  /* 방이 조금이라도 내려가 있으면 위쪽 끝도 흐린다. 맨 위로 돌아오면(줄을 접어 스크롤이 0이 된 때 포함) 뗀다(시안 세션 11-18) */
+  const onRoomScroll = event => {
+    const r = event.target;
+    if (r && r.nodeType === 1 && r.classList.contains('room')) r.classList.toggle('scrolled', r.scrollTop > 0);
   };
   const onRailFocus = event => {
     const o = event.target?.closest?.('.obj[data-orb-prog]');
@@ -807,6 +813,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const resizeObserver = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => { if (scene?.layer === 'switch') layoutSwitch(); }) : null;
 
   root.addEventListener('click', onClick);
+  root.addEventListener('scroll', onRoomScroll, true);
   root.addEventListener('submit', onSubmit);
   root.addEventListener('input', onInput);
   root.addEventListener(QA_GUEST_EVENT, onQaGuest);
@@ -859,6 +866,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       clearTimeout(visLeave);
       if (introWait) introWait();
       root.removeEventListener('click', onClick);
+      root.removeEventListener('scroll', onRoomScroll, true);
       root.removeEventListener('submit', onSubmit);
       root.removeEventListener('input', onInput);
       root.removeEventListener(QA_GUEST_EVENT, onQaGuest);
