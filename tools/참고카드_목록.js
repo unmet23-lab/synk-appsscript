@@ -50,6 +50,16 @@ function 판단읽기(머리) {
   return 언제판단[머리.언제] || '';
 }
 
+/**
+ * 판단이 시안인 카드의 상태 글은 README 「자동 시안」 절의 꼴로 쓴다. 워크스페이스 「공유한 게시물」은 이 글의 앞머리로 진행을 정한다
+ * (`tools/팁장부동기.js` 줄만들기). 11-17에 「안 맞음 — 」 · 「시험함 — 」으로 닫은 카드 다섯 장이 「시안 만들 예정」으로,
+ * 10월에 멈춘 「적용 중(…)」 카드 한 장이 진행 중으로 보였다.
+ */
+const 시안상태꼴 = /^(새로$|시안 만드는 중 — |시안 대기 — |적용 중 — 자동 |적용함|기각 — |보류 — |버림)/;
+function 상태꼴어긋남(목록) {
+  return 목록.filter(c => !c.오류 && (c.판단 || 판단읽기(c)) === '시안' && !시안상태꼴.test(String(c.상태 || '').trim()));
+}
+
 function 카드들() {
   let 파일들 = [];
   try { 파일들 = fs.readdirSync(카드폴더).filter(f => f.endsWith('.md')).sort(); } catch (_) {}
@@ -104,6 +114,9 @@ function main() {
   if (모르는.length) { console.error(`모르는 인자: ${모르는.join(' ')} (아는 것: --확인 --json)`); process.exit(1); }
   const 목록 = 카드들();
   if (args.includes('--json')) { console.log(JSON.stringify(목록, null, 2)); return; }
+  for (const c of 상태꼴어긋남(목록)) {
+    console.error(`알림: 카드/${c.파일}의 상태 「${String(c.상태 || '(비었음)').slice(0, 30)}」가 README 「자동 시안」 절의 꼴과 다르다. 워크스페이스가 진행을 잘못 보이니 「기각 — 」 · 「적용함 — 」 · 「보류 — 유호님 차례: 」 가운데 맞는 것으로 고친다.`);
+  }
   const 새목록 = 목록글(목록);
   if (args.includes('--확인')) { console.log(새목록); return; }
   const 원문 = fs.readFileSync(안내, 'utf8');
@@ -118,4 +131,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { 머리읽기, 대상나누기, 목록글, 갈아쓰기, 카드들, 판단읽기 };
+module.exports = { 머리읽기, 대상나누기, 목록글, 갈아쓰기, 카드들, 판단읽기, 상태꼴어긋남 };
