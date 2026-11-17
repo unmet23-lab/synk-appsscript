@@ -2,7 +2,7 @@
 꿈 무대 영상 시험(2026-11-17) — 받은 영상이 등록된 아바타와 같은 사람인지 0.33초마다 잰다.
 사진 시험 `닮음.py`와 같은 모델(YuNet + SFace). 장마다 가장 큰 얼굴을 재고, 얼굴 띠(0.33초 간격 얼굴 크롭)와 8장 띠를 함께 남긴다.
 
-    python -I -X utf8 영상닮음.py <아바타 기준 사진> <영상…> [--밖 <폴더>]
+    python -I -X utf8 영상닮음.py <아바타 기준 사진[,둘째,셋째…]> <영상…> [--밖 <폴더>]
 
 출력: 영상마다 한 줄(중앙 · 가장 낮음 · 얼굴 못 찾은 장 수)과 <밖>/<영상이름>_얼굴띠.jpg · _8장.jpg, 숫자는 <밖>/영상닮음.json.
 """
@@ -52,11 +52,14 @@ def main():
         밖 = args[i + 1]
         del args[i:i + 2]
     기준, 영상들 = args[0], args[1:]
-    img = 줄임(cv2.imdecode(np.fromfile(기준, np.uint8), cv2.IMREAD_COLOR))
-    f = 가장큰얼굴(img)
-    if f is None:
-        raise SystemExit(f"기준 사진에서 얼굴을 못 찾음: {기준}")
-    ref = 특징(img, f)
+    # 기준은 쉼표로 여러 장을 줄 수 있다(아바타의 각도 세트) — 장마다 그 가운데 가장 높은 닮음을 쓴다
+    refs = []
+    for 한 in 기준.split(","):
+        img = 줄임(cv2.imdecode(np.fromfile(한, np.uint8), cv2.IMREAD_COLOR))
+        f = 가장큰얼굴(img)
+        if f is None:
+            raise SystemExit(f"기준 사진에서 얼굴을 못 찾음: {한}")
+        refs.append(특징(img, f))
     밖 = 밖 or os.path.dirname(os.path.abspath(영상들[0]))
     os.makedirs(밖, exist_ok=True)
     결과 = {}
@@ -84,7 +87,7 @@ def main():
             if face is None:
                 못 += 1
                 continue
-            값.append((round(i / fps, 2), 닮(ref, 특징(fr, face))))
+            값.append((round(i / fps, 2), max(닮(r, 특징(fr, face)) for r in refs)))
             x, y, w, h = [int(t) for t in face[:4]]
             pad = int(0.35 * max(w, h))
             crop = fr[max(0, y - pad):y + h + pad, max(0, x - pad):x + w + pad]

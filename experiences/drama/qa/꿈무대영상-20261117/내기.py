@@ -80,22 +80,38 @@ def main():
     ref_args = [x for r in refs for x in ("--ref", f"res:{r}")]
     ceiling = 상한 if 실행 else 1
     t0 = time.time()
-    잔액0 = cli(prof, "auth", "account")["data"]["availableCredits"]
+    def 잔액():
+        # 잔액 읽기가 가끔 빈 답을 준다(11-17 컷 3: 영상은 만들어졌는데 여기서 넘어져 받지 못했다) — 못 읽으면 None으로 두고 계속 간다
+        try:
+            return cli(prof, "auth", "account")["data"]["availableCredits"]
+        except Exception:
+            return None
+
+    잔액0 = 잔액()
     made = cli(prof, "node", "create", "video", "--model", "seedance_2.5", "--mode", mode, *ref_args, "--prompt", 글,
                "--ratio", 비율, "--resolution", "720p", "--duration", 길이, "--title", 판, "--project-id", project,
                "--run", "--credit-ceiling", str(ceiling), "--wait", "--timeout", "45m")
     data = made.get("data") or made.get("partialData") or {}
     it = (data.get("items") or [data])[0]
     sub = it.get("submission") or it
-    rid = next((r.get("resourceId") for r in (sub.get("resources") or []) if r.get("state") == "succeeded"), None)
-    잔액1 = cli(prof, "auth", "account")["data"]["availableCredits"]
+    rid = next((r.get("resourceId") for r in (sub.get("resources") or []) if r.get("state") == "succeeded" or r.get("status") == "success"), None)
+    잔액1 = 잔액()
     줄 = {"판": 판, "모드": mode, "길이": 길이, "실행": 실행, "상한": ceiling, "잔액 전": 잔액0, "잔액 뒤": 잔액1,
          "submitId": sub.get("submitId"), "resourceId": rid, "상태": sub.get("state"), "걸린초": round(time.time() - t0),
          "오류": made.get("error"), "지시문": 글}
     if rid:
         dst = os.path.join(받을곳, f"{판}.mp4")
-        cli(prof, "resource", "download", rid, "--project-id", project, "-o", dst, timeout=300)
-        줄["파일"] = dst
+        # 받기가 실패해도 답이 조용할 때가 있다(11-17 컷 1) — 파일이 생겼는지 보고 한 번 더 받는다
+        for _ in range(2):
+            try:
+                cli(prof, "resource", "download", rid, "--project-id", project, "-o", dst, timeout=300)
+            except Exception as e:
+                줄["받기 오류"] = str(e)[:200]
+            if os.path.exists(dst) and os.path.getsize(dst) > 100000:
+                줄["파일"] = dst
+                break
+        else:
+            줄["받기"] = "실패 — dreamina-canvas resource download <resourceId> --project-id <캔버스> -o <파일>로 다시 받는다"
     with open(os.path.join(받을곳, "_내기.json"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps(줄, ensure_ascii=False) + "\n")
     print(json.dumps({k: v for k, v in 줄.items() if k != "지시문"}, ensure_ascii=False)[:1500])

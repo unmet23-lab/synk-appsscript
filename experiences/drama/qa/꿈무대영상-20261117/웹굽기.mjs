@@ -1,3 +1,4 @@
+// 결과 그림은 「원본 폭 600 이상」이거나 「화면에 보이는 폭 200 이상」으로 찾는다 — 화면이 넓으면 결과 작은 그림의 원본 폭이 600 아래라 새 판을 못 찾았다(11-17 저녁).
 // 저장소 사본(2026-11-17). 실제로 돌린 파일은 ~/ego/dream-stage-20261117b/bake.mjs 이고 `ego-browser nodejs < 웹굽기.mjs`로 돌린다.
 // 쓰기 전에 고칠 곳 둘: taskSpace(242)의 번호를 지금 연 작업 공간 번호로, job.json 경로를 웹일감.py의 DREAM_JOB과 같게.
 // 작업 공간은 「유호」 프로필(Profile 7)에서 새로 만들고 드리미나에 unmet23으로 로그인돼 있는지(오른쪽 위 크레딧이 23K대인지) 먼저 본다.
@@ -82,7 +83,7 @@ if (!(st.refs === job.refs.length && st.checked === "true" && st.cost === "0/ima
     await page.mouse.wheel(0, 3000, { label: "scroll feed to bottom" });
     await page.waitForTimeout(2000);
   }
-  const last3 = () => page.evaluate(() => [...document.querySelectorAll("img")].filter(im => /dreamina-sign/.test(im.src) && im.naturalWidth >= 600).slice(-3).map(im => im.src.split("?")[0]));
+  const last3 = () => page.evaluate(() => [...document.querySelectorAll("img")].filter(im => /dreamina-sign/.test(im.src) && (im.naturalWidth >= 600 || im.getBoundingClientRect().width >= 200)).slice(-3).map(im => im.src.split("?")[0]));
   await toBottom();
   const beforeSet = new Set(await last3());
   await page.click("loc=role:button[name='Generate']", { label: "generate images" });
@@ -98,7 +99,7 @@ if (!(st.refs === job.refs.length && st.checked === "true" && st.cost === "0/ima
   if (busy || !now.every(x => !beforeSet.has(x))) { console.log("새 판을 못 찾음 — 받지 않음"); process.exit(0); }
   await toBottom();
   const box = await page.evaluate(() => {
-    const ims = [...document.querySelectorAll("img")].filter(im => /dreamina-sign/.test(im.src) && im.naturalWidth >= 600);
+    const ims = [...document.querySelectorAll("img")].filter(im => /dreamina-sign/.test(im.src) && (im.naturalWidth >= 600 || im.getBoundingClientRect().width >= 200));
     const im = ims[ims.length - 3];
     const r = im.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, src: im.src.slice(60, 100) };
   });
