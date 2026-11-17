@@ -113,8 +113,8 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "Air + daging =\nkata Korea apa?",
-      "원문": "물 + 고기 =\n한국어로 무슨 낱말?",
+      "글": "Air + daging =\nbahasa Koreanya apa?",
+      "원문": "물 + 고기 =\n한국어로 뭐야?",
       "초": [
         0.62,
         3
@@ -128,7 +128,7 @@
         "가운데": true,
         "x": 94,
         "y": 648,
-        "글자크기": 52,
+        "글자크기": 50,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -217,8 +217,8 @@
     {
       "id": "litFish",
       "칸": "개그",
-      "글": "Harfiahnya:\n“daging air”",
-      "원문": "글자 그대로 하면:\n“물의 고기”",
+      "글": "Arti harfiah:\n“daging air”",
+      "원문": "글자 그대로의 뜻:\n“물의 고기”",
       "초": [
         3,
         4.3

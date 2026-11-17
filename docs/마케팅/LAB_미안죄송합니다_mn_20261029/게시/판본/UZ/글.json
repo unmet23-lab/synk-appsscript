@@ -322,8 +322,8 @@
     {
       "id": "tags.3",
       "칸": "해설",
-      "글": "ustoz, xoʻjayinga ✓",
-      "원문": "선생님 · 사장님께 ✓",
+      "글": "ustoz va xoʻjayinga ✓",
+      "원문": "선생님과 사장님께 ✓",
       "초": [
         2.3,
         4.4
@@ -519,8 +519,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "Xoʻjayinga kofe toʻkildimi?\n→ 죄송합니다.",
-      "원문": "사장님께 커피가 쏟아졌어요?\n→ 죄송합니다.",
+      "글": "Xoʻjayinga kofe sachradimi?\n→ 죄송합니다.",
+      "원문": "사장님한테 커피가 튀었어?\n→ 죄송합니다.",
       "초": [
         13,
         14.8
@@ -574,8 +574,8 @@
     {
       "id": "게시글.instagram.본문.3",
       "칸": "게시글",
-      "글": "Oʻrtada 미안해요 (mi-an-hae-yo) ham bor — odobli, lekin xoʻjayinga aytishga hali yetarli emas.",
-      "원문": "가운데에 미안해요도 있어요 — 예의 바르지만 사장님께 말하기에는 아직 모자라요."
+      "글": "Oʻrtada 미안해요 (mi-an-hae-yo) ham bor — odobli ifoda, lekin xoʻjayin uchun baribir kamlik qiladi.",
+      "원문": "가운데에 미안해요도 있어요 — 예의 바른 표현이지만 사장님께는 그래도 모자라요."
     },
     {
       "id": "게시글.instagram.본문.4",

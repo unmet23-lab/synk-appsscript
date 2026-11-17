@@ -161,14 +161,14 @@
   "tags": [
     "faqat doʻstga",
     "odobli",
-    "ustoz, xoʻjayinga ✓",
+    "ustoz va xoʻjayinga ✓",
     "",
     "",
     "",
     "",
     "faqat ichingizda ayting!"
   ],
-  "endCard": "Xoʻjayinga kofe toʻkildimi?\n→ 죄송합니다.",
+  "endCard": "Xoʻjayinga kofe sachradimi?\n→ 죄송합니다.",
   "endSize": 32,
   "ask": "Kimga 죄송합니다 deysiz?",
   "askSize": 32,
@@ -192,9 +192,9 @@
     "means.7": "(혹시 내 월급도\n오르려나…)",
     "tags.0": "친구한테만",
     "tags.1": "예의 바르게",
-    "tags.2": "선생님 · 사장님께 ✓",
+    "tags.2": "선생님과 사장님께 ✓",
     "tags.7": "속으로만 말하세요!",
-    "endCard": "사장님께 커피가 쏟아졌어요?\n→ 죄송합니다.",
+    "endCard": "사장님한테 커피가 튀었어?\n→ 죄송합니다.",
     "ask": "누구한테 죄송합니다라고 해요?"
   }
 }

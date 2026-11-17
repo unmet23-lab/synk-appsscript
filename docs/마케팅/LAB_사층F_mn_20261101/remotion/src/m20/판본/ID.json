@@ -140,7 +140,7 @@
   ],
   "death": "Mati =",
   "deathSize": 84,
-  "sameSound": "Bunyi sama!",
+  "sameSound": "Bunyinya sama!",
   "sameSize": 54,
   "floorA": "Lantai 4 =",
   "floorF": "lantai hantu",
@@ -152,7 +152,7 @@
   "phew": "Aman deh…",
   "phewSize": 62,
   "whisper": "sa",
-  "endCard": "Berani ke F?",
+  "endCard": "Berani ke lantai F?",
   "endSize": 50,
   "ask": "",
   "askSize": 38,
@@ -171,6 +171,6 @@
     "so": "4 → F",
     "soSub": "F = Four",
     "phew": "이제 안전해…",
-    "endCard": "F에 갈 용기 있어?"
+    "endCard": "F층에 갈 용기 있어?"
   }
 }

@@ -238,7 +238,7 @@
     {
       "id": "sameSound",
       "칸": "해설",
-      "글": "Bunyi sama!",
+      "글": "Bunyinya sama!",
       "원문": "소리가 같다!",
       "초": [
         5.8,
@@ -400,8 +400,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "Berani ke F?",
-      "원문": "F에 갈 용기 있어?",
+      "글": "Berani ke lantai F?",
+      "원문": "F층에 갈 용기 있어?",
       "초": [
         14.9,
         16
@@ -422,7 +422,7 @@
     {
       "id": "게시글.tiktok.본문.1",
       "칸": "게시글",
-      "글": "Dalam bahasa Korea, angka 4 dibaca 사 (sa), dan 死 yang artinya “mati” juga dibaca 사 (sa). Makanya banyak gedung di Korea menulis F (Four) untuk lantai 4.",
+      "글": "Dalam bahasa Korea, angka 4 dibaca 사 (sa), dan 死 yang artinya “mati” juga dibaca 사 (sa). Makanya di banyak gedung di Korea, lantai 4 ditulis F (Four).",
       "원문": "한국어로 숫자 4는 사라고 읽고, 「죽다」라는 뜻의 死도 사라고 읽는다. 그래서 한국의 많은 건물이 4층에 F(Four)라고 쓴다."
     },
     {
