@@ -15,8 +15,8 @@ function bench({ fold = { max: 40, keep: 20, ageMs: 1 }, account = false, connec
   let now = START; const mem = new Map();
   const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)), removeItem: k => mem.delete(k) };
   const clock = () => new Date(now).toISOString();
-  const open = (gameId = 'world-practice', { followups = true } = {}) => {
-    const coach = Game.createGame({ gameId, map, storage, clock, followups, fold, ...(account ? { learnerKey: 'device', storageScope: 'account', accountKey: 'acct', historyComplete: !connected } : {}) });
+  const open = (gameId = 'world-practice', { followups = true, module = Game } = {}) => {
+    const coach = module.createGame({ gameId, map, storage, clock, followups, fold, ...(account ? { learnerKey: 'device', storageScope: 'account', accountKey: 'acct', historyComplete: !connected } : {}) });
     if (connected) coach.syncPort.markComplete(true);
     return coach;
   };
@@ -312,6 +312,362 @@ test('an answer inside the cycle before a frozen anchor does not overtake it, on
   assert.deepEqual(run({ hold: false, late: 20 }), clean, 'another device: a late answer inside the earlier cycle');
   assert.deepEqual(run({ hold: false, late: 45.5 }).map(r => r[2]), ['adjusted-history', 'adjusted-history', 'adjusted-history'], 'a late answer that would have started this cycle still marks it');
 });
+test('an answer the server never sends back stays inside its own cycle, however many cycles later', () => {
+  // 설계 관문 §6 남긴 일 ①(셋째 사슬 Fable 최종 P2): 계정 장부에서 0일 답이 끝내 안 돌아와 날것에 남은 채 46 · 92일 앵커가 접히면, 표에는 칸마다
+  // 마지막 사이클 시작과 그 앞 하나(ps)만 남아 0일 답이 늦은 기록으로 읽혔다 — 살아 있는 앵커와 그 칸의 다음 앵커가 모두 판단 보류가 됐다.
+  const run = fold => {
+    const b = bench({ fold, account: true, connected: true }), coach = b.open(), cell = { skill: 'ko.reading.detail' }, reads = [];
+    b.at(0); const first = play(coach, item('first', cell));
+    const hold = new Set([first.pid, coach.events().find(e => e.id === first.pid).decisionId]);
+    const settle = () => coach.syncPort.settle(coach.events().filter(e => !hold.has(e.id) && !hold.has(e.presentationId) && !hold.has(e.decisionId)).map(e => e.id));
+    for (let k = 1; k <= 4; k++) {
+      b.at(46 * k); const anchor = play(coach, item(`c-${k}`, cell));
+      b.at(46 * k + 2); fill(b, coach, `f-${k}`, 25); settle(); fill(b, coach, `g-${k}`, 25); settle();
+      b.at(46 * k + 3); reads.push(rowsOf(coach.followups(), anchor.answer.eventId).map(r => [r.window, r.status, r.reason]));
+    }
+    return { reads, raw: coach.events().some(e => e.id === first.answer.eventId), folded: coach.followups().coverage.folded, row: b.stored().ledger?.followups.rows.find(r => r.s === cell.skill) };
+  };
+  const whole = run(false), folded = run({ remote: true, max: 40, keep: 20, ageMs: 1 });
+  assert.ok(folded.folded > 0); assert.equal(folded.raw, true, 'the first answer is still in the log');
+  assert.deepEqual(whole.reads, Array(4).fill([['d1', 'missed', null], ['d7', 'not_due', null], ['d30', 'not_due', null]]));
+  assert.deepEqual(folded.reads, whole.reads);
+  assert.deepEqual([folded.row.at, folded.row.ps, folded.row.pc], [START + 184 * DAY, START + 138 * DAY, [START, START + 46 * DAY, START + 92 * DAY]],
+    'the frozen row keeps every earlier cycle start');
+});
+test('a late answer from another device inside any earlier cycle marks nothing; one that would start a cycle still marks the live row', () => {
+  const run = late => {
+    const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    a.at(0); play(coachA, item('c-0', cell)); a.at(46); play(coachA, item('c-46', cell)); a.at(90.8); play(coachA, item('c-inside', cell));
+    a.at(92); const live = play(coachA, item('c-92', cell));
+    a.at(93); fill(a, coachA, 'x', 20); settle(coachA); a.at(94); fill(a, coachA, 'y', 20); settle(coachA); fill(a, coachA, 'z', 20); settle(coachA);
+    assert.equal(coachA.events().some(e => e.id === live.answer.eventId), false, 'the live anchor folded');
+    b.at(late); play(coachB, item('late', cell)); importLate(coachA, coachB.events());
+    a.at(95); return rowsOf(coachA.followups(), live.answer.eventId).map(r => r.status + (r.reason ? `/${r.reason}` : ''));
+  };
+  assert.deepEqual(run(20), ['missed', 'not_due', 'not_due'], 'inside the first cycle, two before the live one');
+  assert.deepEqual(run(60), ['missed', 'not_due', 'not_due'], 'inside the cycle just before it');
+  // 45.5일 답은 전체 기록에서 둘째 사이클을 열고, 90.8일 답이 셋째를 열어 92일 답은 앵커가 아니다.
+  assert.deepEqual(run(45.5), Array(3).fill('unavailable/adjusted-history'), 'between the first two cycles');
+});
+// ── 늦게 온 앵커(성질 시험이 찾은 길, 11-17 · 설계 관문 §7) ─────────────────
+test('a late anchor from another device pairs with the first answer this device logged in its window before it arrived', () => {
+  // 다른 기기의 답이 늦게 와 새 사이클을 열면 로그 맨 뒤에 붙는다. 「뒤에 온 제시」를 로그 차례로 보면 이 기기가 먼저 적어 둔 창 안의 답이
+  // 후보에서 빠져, 그 답이 접힌 뒤 더 뒤의 답이 짝이 됐다(창의 첫 답이 아님).
+  const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+  b.at(0); const anchor = play(coachB, item('b-anchor', cell));
+  a.at(1.5); const first = play(coachA, item('a-first', cell)); a.at(1.6); play(coachA, item('a-second', cell));
+  a.at(1.7); importLate(coachA, coachB.events());
+  assert.equal(windowOf(coachA.followups(), anchor.answer.eventId, 'd1').targetAttemptId, first.answer.eventId, 'read before the fold');
+  a.at(2); fill(a, coachA, 'x', 20); settle(coachA); fill(a, coachA, 'y', 20); settle(coachA);
+  assert.equal(coachA.events().some(e => e.id === first.answer.eventId), false, 'the first answer folded');
+  const d1 = windowOf(coachA.followups(), anchor.answer.eventId, 'd1');
+  assert.deepEqual([d1.status, d1.targetAttemptId], ['observed', first.answer.eventId], 'and kept through it');
+});
+test('a late anchor whose window lost its first answer to a fold marks that window instead of pairing a later answer', () => {
+  // 늦은 앵커가 열 창의 첫 답(채점할 수 없는 답 — 사슬에는 안 들지만 짝 후보다)이 그 앵커가 오기 전에 접혔다. 접힌 이력에서는 그 답을 찾을 길이
+  // 없으니, 바닥 앞에 열린 창처럼 뒤 답이 대신하지 않는다(lf — 그 창 안에서 처음 보인 계열이 접혔을 때만).
+  const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+  b.at(0); const anchor = play(coachB, item('b-anchor', cell));
+  a.at(1.5); const pid = coachA.present(item('a-unanswered', cell)); coachA.answer(pid, { correct: null, assessable: false, reason: 'unanswered' });
+  a.at(1.6); fill(a, coachA, 'x', 20); settle(coachA); fill(a, coachA, 'y', 20); settle(coachA);
+  assert.equal(coachA.events().some(e => e.id === pid), false, 'the unanswered item folded');
+  a.at(2.5); const later = play(coachA, item('a-later', cell));
+  a.at(2.6); importLate(coachA, coachB.events());
+  const rows = Object.fromEntries(rowsOf(coachA.followups(), anchor.answer.eventId).map(r => [r.window, r]));
+  assert.deepEqual([rows.d1.status, rows.d1.reason, rows.d1.targetAttemptId], ['unavailable', 'adjusted-history', null], 'not the later answer');
+  assert.notEqual(rows.d1.targetAttemptId, later.answer.eventId);
+  assert.deepEqual([rows.d7.status, rows.d30.status], ['not_due', 'not_due'], 'a window opened after the fold reads as usual');
+  // 앵커가 접혀 표에 얼어도 그대로다.
+  a.at(3); fill(a, coachA, 'z', 20); settle(coachA); fill(a, coachA, 'w', 20); settle(coachA);
+  assert.equal(coachA.events().some(e => e.id === anchor.answer.eventId), false, 'the anchor folded');
+  assert.deepEqual(['status', 'reason'].map(k => windowOf(coachA.followups(), anchor.answer.eventId, 'd1')[k]), ['unavailable', 'adjusted-history']);
+});
+test('a late anchor whose family this device folded since is marked: the fold reads as met before it', () => {
+  // Trail은 접힌 이력을 모두 로그 앞으로 본다. 늦게 온 앵커의 계열을 이 기기가 그 뒤에 보고 접었으면, 전체 기록으로는 새 문항인 답이 여기서는
+  // 다시 본 문항으로 읽힌다(kind가 갈린다) — 짝처럼 접힌 같은 계열이 없는 답만 전체 기록처럼 읽는다.
+  const run = shared => {
+    const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    b.at(0); const anchor = play(coachB, item('b-anchor', { ...cell, family: 'F' }));
+    // 이 기기가 접은 이력은 모두 앵커의 1일 창 앞이다(창 안에서 처음 보인 계열이 접히면 그 창은 따로 표시된다 — 앞 시험).
+    a.at(0.5); play(coachA, item('a-sight', { skill: 'ko.reading.reason', family: shared ? 'F' : 'G' }));
+    a.at(0.6); fill(a, coachA, 'x', 20); settle(coachA); fill(a, coachA, 'y', 20); settle(coachA);
+    assert.ok(a.stored().ledger.cutoff >= START, 'the anchor is older than the fold');
+    a.at(0.9); importLate(coachA, coachB.events());
+    return rowsOf(coachA.followups(), anchor.answer.eventId).map(r => [r.status, r.reason, r.kind]);
+  };
+  assert.deepEqual(run(true), Array(3).fill(['unavailable', 'adjusted-history', 'recovery']));
+  assert.deepEqual(run(false), Array(3).fill(['not_due', null, 'retention']), 'a family this device never folded reads as usual');
+});
+// ── 로그 차례와 시각이 어긋난 답 · 시계 되돌림 동안 접힌 것(씨앗 탐침이 찾은 길, 11-17 · 설계 관문 §7) ─────
+test('a late anchor read as helped or a repeat only by log order is marked; one the whole log reads the same way is not', () => {
+  // Trail은 같은 문항 · 계열의 도움 · 시도를 로그 차례나 시각 어느 쪽으로든 앞이면 앞선 기록으로 본다. 다른 기기의 답이 늦게 와 이 기기가 그 뒤에
+  // 같은 계열을 본 기록 뒤에 붙으면, 전체 기록(시각 순)으로는 처음 본 문항인 답이 여기서는 다시 본 문항이 된다(kind가 갈린다).
+  const run = mode => {
+    const { a, b, coachA, coachB } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    if (mode === 'already') { a.at(-1); play(coachA, item('a-before', { skill: 'ko.reading.reason', family: 'F' })); }
+    b.at(0); const anchor = play(coachB, item('b-anchor', { ...cell, family: 'F' }), { correct: mode !== 'wrong' });
+    a.at(0.5); play(coachA, item('a-after', { skill: 'ko.reading.reason', family: mode === 'other' ? 'G' : 'F' }));
+    a.at(0.6); importLate(coachA, coachB.events());
+    return rowsOf(coachA.followups(), anchor.answer.eventId).map(r => [r.status, r.reason, r.kind]);
+  };
+  assert.deepEqual(run('shared'), Array(3).fill(['unavailable', 'adjusted-history', 'recovery']));
+  assert.deepEqual(run('other'), Array(3).fill(['not_due', null, 'retention']), 'a family this device never met');
+  // 시각 순으로 읽어도 자격과 종류가 같으면 표시하지 않는다(이미 다시 본 문항 · 틀린 답은 어느 쪽으로 읽어도 recovery).
+  assert.deepEqual(run('already'), Array(3).fill(['not_due', null, 'recovery']), 'already a repeat by time');
+  assert.deepEqual(run('wrong'), Array(3).fill(['not_due', null, 'recovery']), 'a wrong answer reads as a recovery either way');
+});
+test('a late pair read as helped only by log order is marked', () => {
+  // 짝 후보(다른 기기 1.5일 · 계열 P 첫 제시)보다 시각은 뒤 · 로그 위치는 앞에 이 기기가 같은 계열에서 힌트를 봤다. Trail은 그 짝을 도움 받은 답으로
+  // 읽고(assisted-correct), 전체 기록은 혼자 맞힌 답으로 읽는다.
+  const run = shared => {
+    const { a, b, coachA, coachB } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    a.at(0); const mine = play(coachA, item('a-anchor', cell));
+    b.at(1.5); play(coachB, item('b-pair', { ...cell, family: 'P' }));
+    a.at(1.6); const open = coachA.present(item('a-open', { skill: 'ko.reading.reason', family: shared ? 'P' : 'Q' })); a.step(1000); coachA.help(open, 'hint');
+    a.at(1.7); importLate(coachA, coachB.events());
+    const d1 = windowOf(coachA.followups(), mine.answer.eventId, 'd1');
+    return [d1.status, d1.reason, d1.outcome];
+  };
+  assert.deepEqual(run(true), ['unavailable', 'adjusted-history', null]);
+  assert.deepEqual(run(false), ['observed', null, 'independent-correct']);
+});
+test('a late pair whose family has folded help only from a withdrawn presentation is marked: Trail and the time order both read that help as before it', () => {
+  // 카본 검수: 철회한 제시는 장부의 presented에 들지 않아 그 계열이 「접혀 보인 것」이 아니지만, 그 제시의 도움 비트는 keys에 남는다. 다른 기기의 1.5일
+  // 답(계열 F)이 늦게 오면 짝 후보가 되고, Trail은 접힌 도움을 모두 앞으로 보아 도움 받은 답으로 읽는다. 전체 기록에서는 그 힌트(1.6일)가 뒤다.
+  const run = withdraw => {
+    const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    a.at(0); const mine = play(coachA, item('a-anchor', cell));
+    b.at(1.5); play(coachB, item('b-pair', { ...cell, family: 'F' }));
+    a.at(1.6); const q = coachA.present(item('a-hinted', { skill: 'ko.reading.reason', family: withdraw ? 'F' : 'G' })); a.step(1000); coachA.help(q, 'hint');
+    a.step(1000); coachA.exclude(q); coachA.flush(); coachA.dispose();
+    // 계정 저장소는 답 없는 문항을 30일 동안 접지 않는다(다른 기기에서 답이 올 수 있다).
+    a.at(32); const again = a.open(); fill(a, again, 'x', 20); settle(again); fill(a, again, 'y', 20); settle(again);
+    assert.equal(again.events().some(e => e.id === q), false, 'the withdrawn presentation folded');
+    a.at(33); importLate(again, coachB.events());
+    const d1 = windowOf(again.followups(), mine.answer.eventId, 'd1');
+    return [d1.status, d1.reason, d1.outcome];
+  };
+  assert.deepEqual(run(true), ['unavailable', 'adjusted-history', null]);
+  assert.deepEqual(run(false), ['observed', null, 'independent-correct']);
+});
+test('a late anchor whose family has folded help only from a withdrawn presentation is marked as well', () => {
+  // 5일에 계열 F 힌트를 본 제시를 철회하고 접은 뒤 시계를 3일로 되돌려 계열 F를 맞히면, Trail은 접힌 힌트를 앞으로 보아 도움 받은 답(recovery)으로
+  // 읽는다. 전체 기록은 혼자 맞힌 답(retention)이다. d1은 그 뒤에 처음 보인 계열이 접혀 어차피 판단 보류지만, d7 · d30은 종류만 갈린다.
+  const run = withdraw => {
+    const b = bench({ fold: { max: 40, keep: 20, ageMs: 1 } }), cell = { skill: 'ko.reading.detail' }; let coach = b.open();
+    b.at(5); const q = coach.present(item('hinted', { skill: 'ko.reading.reason', family: withdraw ? 'F' : 'G' })); b.step(1000); coach.help(q, 'hint');
+    b.step(1000); coach.exclude(q); coach.flush(); coach.dispose();
+    b.at(5.1); coach = b.open(); fill(b, coach, 'x', 45); coach.flush(); coach.dispose();
+    assert.equal(b.stored().events.some(e => e.id === q), false, 'the withdrawn presentation folded');
+    b.at(3); coach = b.open(); const anchor = play(coach, item('anchor', { ...cell, family: 'F' })); coach.flush(); coach.dispose();
+    b.at(6); return rowsOf(b.open().followups(), anchor.answer.eventId).map(r => [r.window, r.status, r.reason, r.kind]);
+  };
+  assert.deepEqual(run(true).map(([window, status, reason]) => [window, status, reason]), ['d1', 'd7', 'd30'].map(w => [w, 'unavailable', 'adjusted-history']));
+  assert.deepEqual(run(false).slice(1), [['d7', 'not_due', null, 'retention'], ['d30', 'not_due', null, 'retention']]);
+});
+test('a presentation an older version logged without a measure has no family to Trail: an answer whose family key is its item key is read as Trail reads it', () => {
+  // 한 기기 · 시간 순 기록. 옛 판이 측정 정보 없이 남긴 제시(문항 old.v1)는 Trail에서 문항 키만 지닌다. 새 문항의 계열 키가 그 문항 키와 같아도
+  // Trail은 새 답을 처음 보는 문항의 혼자 맞힌 답으로 읽으므로, 앞선 도움 · 시도로 보고 판단 보류를 달지 않는다.
+  const b = bench({ fold: false }); let coach = b.open();
+  const old = play(coach, item('old'), { help: true }); coach.flush(); coach.dispose();
+  const stored = b.stored(); for (const e of stored.events) if (e.id === old.pid) delete e.measure; b.store(stored);
+  b.at(1); coach = b.open(); const fresh = play(coach, item('new', { family: 'old.v1' })); coach.flush(); coach.dispose();
+  b.at(3); const report = b.open().followups();
+  assert.deepEqual(rowsOf(report, fresh.answer.eventId).map(r => [r.window, r.kind, r.status, r.reason]),
+    [['d1', 'retention', 'due', null], ['d7', 'retention', 'not_due', null], ['d30', 'retention', 'not_due', null]]);
+});
+test('a late first answer the log no longer reads as new marks its window, whether a later answer is found or none', () => {
+  // 1일 창의 첫 답(다른 기기 1.5일 · 계열 Q)이 늦게 왔는데, 이 기기는 그 사이 계열 Q를 보고 접었다. 그 답은 여기서 새 문항으로 읽히지 않아
+  // 짝이 되지 못하지만 전체 기록은 그 답을 짝으로 고른다 — 더 뒤의 답(1.8일)이 대신하지 않고, 뒤 답이 없어도 그 창은 판단 보류다.
+  const run = later => {
+    const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    a.at(0); const mine = play(coachA, item('a-anchor', cell));
+    b.at(1.5); const first = play(coachB, item('b-first', { ...cell, family: 'Q' }));
+    a.at(1.6); play(coachA, item('a-sight', { skill: 'ko.reading.reason', family: 'Q' })); fill(a, coachA, 'x', 20); settle(coachA); fill(a, coachA, 'y', 20); settle(coachA);
+    assert.equal(a.stored().ledger.presented.some(([, , family]) => family === 'Q'), true, 'this device folded its sight of the family');
+    if (later) { a.at(1.8); play(coachA, item('a-later', cell)); }
+    a.at(1.9); importLate(coachA, coachB.events());
+    const d1 = windowOf(coachA.followups(), mine.answer.eventId, 'd1');
+    // 그 늦은 답까지 접혀도 창은 판단 보류로 남는다(씨앗 탐침 8201 — 짝이 없으면 그 답을 표시한 짝으로 얼린다).
+    a.at(2); fill(a, coachA, 'z', 20); settle(coachA); fill(a, coachA, 'w', 20); settle(coachA);
+    const gone = !coachA.events().some(e => e.id === first.answer.eventId), after = windowOf(coachA.followups(), mine.answer.eventId, 'd1');
+    return [d1.status, d1.reason, d1.targetAttemptId === first.answer.eventId, gone, after.status, after.reason];
+  };
+  assert.deepEqual(run(true), ['unavailable', 'adjusted-history', false, true, 'unavailable', 'adjusted-history'], 'not the later answer');
+  assert.deepEqual(run(false), ['unavailable', 'adjusted-history', true, true, 'unavailable', 'adjusted-history'], 'and not an open window either: the late answer stands as a marked pair');
+});
+test('a pair marked for a late first answer stays marked when that answer folds before the pair does', () => {
+  // Fable 최종 검수: 지금 고른 짝(9.5일 X)에 단 「앞선 후보」 표시는 앞선 답(다른 기기 7.2일 · 계열 Q)이 날것에 있는 동안만 살았다. 하루 지난
+  // 항목만 접는 저장소에서 앞선 답이 먼저 접히고 X는 cutoff 뒤에 남으면, 표시된 짝이 얼지 않아 다음 읽기에서 X가 표시 없는 관측이 됐다.
+  const DAYFOLD = { remote: true, max: 40, keep: 20, ageMs: DAY };
+  const a = bench({ fold: DAYFOLD, account: true, connected: true }), b = bench({ fold: false, account: true, connected: true });
+  const coachA = a.open(), coachB = b.open(), settle = coach => coach.syncPort.settle(coach.events().map(e => e.id)), cell = { skill: 'ko.reading.detail' };
+  a.at(0); const anchor = play(coachA, item('a-anchor', cell));
+  b.at(7.2); const early = play(coachB, item('b-first', { ...cell, family: 'Q' }), { correct: false });
+  a.at(7.5); play(coachA, item('a-sight', { skill: 'ko.reading.reason', family: 'Q' })); fill(a, coachA, 'x', 20); settle(coachA);
+  a.at(8.8); fill(a, coachA, 'y', 3); settle(coachA); fill(a, coachA, 'y2', 1);
+  assert.equal(a.stored().events.some(e => e.itemKey === 'a-sight.v1'), false, 'this device folded its sight of the family');
+  a.at(9.5); const later = play(coachA, item('a-later', cell));
+  a.at(9.6); importLate(coachA, coachB.events());
+  const d7 = () => ['status', 'reason'].map(k => windowOf(coachA.followups(), anchor.answer.eventId, 'd7')[k]);
+  assert.deepEqual(d7(), ['unavailable', 'adjusted-history']);
+  settle(coachA); a.at(9.7); fill(a, coachA, 'z', 12); settle(coachA); fill(a, coachA, 'z2', 1);
+  const events = a.stored().events;
+  assert.deepEqual([events.some(e => e.id === early.answer.eventId), events.some(e => e.id === later.answer.eventId)], [false, true], 'the early answer folded first; the pair is still in the log');
+  assert.deepEqual(d7(), ['unavailable', 'adjusted-history'], 'still marked');
+  a.at(12); fill(a, coachA, 'w', 12); settle(coachA); fill(a, coachA, 'w2', 1);
+  assert.deepEqual(d7(), ['unavailable', 'adjusted-history'], 'and once the pair folds too');
+});
+test('a late answer that overtakes a frozen row keeps its cycle: a clock set back inside it starts no anchor', () => {
+  // 얼린 50일 행을 다른 기기의 20일 답이 추월해 표시한다. 그 답이 접혀도 사슬은 그 시각을 사이클 시작으로 남겨(ps), 30일로 되돌려 같은 칸을 풀어도
+  // 새 사이클을 열지 않는다 — 전체 기록에서도 30일 답은 20일 사이클 안이다.
+  const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+  a.at(50); const row = play(coachA, item('a-row', cell)); a.at(51); fill(a, coachA, 'x', 20); settle(coachA); fill(a, coachA, 'y', 20); settle(coachA);
+  b.at(20); play(coachB, item('b-late', cell)); importLate(coachA, coachB.events());
+  a.at(52); fill(a, coachA, 'z', 20); settle(coachA); fill(a, coachA, 'w', 20); settle(coachA);
+  const stored = a.stored().ledger.followups.rows.find(r => r.id === row.answer.eventId);
+  assert.deepEqual([stored.l, stored.ps], [1, START + 20 * DAY], 'marked, and the late start kept in its chain');
+  coachA.flush(); coachA.dispose();
+  a.at(30); const back = a.open(), answer = play(back, item('a-back', cell));
+  assert.equal(rowsOf(back.followups(), answer.answer.eventId).length, 0, 'inside the late cycle while the clock is back');
+  back.flush(); back.dispose();
+  a.at(53); const report = a.open().followups();
+  assert.equal(rowsOf(report, answer.answer.eventId).length, 0);
+  assert.deepEqual(rowsOf(report, row.answer.eventId).map(r => r.reason), Array(3).fill('adjusted-history'));
+});
+test('a clock set back inside any earlier cycle of a frozen row starts no anchor there, not only the one just before it', () => {
+  // 돌연변이 P3: 시계 너머의 행은 ps만이 아니라 pc의 사이클들로도 막는다. 0 · 46 · 92일 앵커를 접어 {92일, ps 46일, pc [0일]}을 남기고
+  // 30일로 되돌려 같은 칸을 풀면, 첫 사이클(0~45일) 안의 그 답은 전체 기록에서도 앵커가 아니다.
+  const run = fold => {
+    const b = bench({ fold }), cell = { skill: 'ko.reading.detail' }; let coach = b.open();
+    for (const day of [0, 46, 92]) { b.at(day); play(coach, item(`c-${day}`, cell)); fill(b, coach, `f-${day}`, 45); }
+    coach.flush(); coach.dispose();
+    const row = fold && b.stored().ledger.followups.rows.find(r => r.s === cell.skill);
+    b.at(30); coach = b.open(); const back = play(coach, item('c-back', cell)), during = rowsOf(coach.followups(), back.answer.eventId).length;
+    for (let n = 0; n < 45; n++) { b.step(61000); play(coach, item(`back-${n}`, { skill: 'ko.reading.main', difficulty: 3 })); }
+    coach.flush(); coach.dispose();
+    b.at(93.5); const after = rowsOf(b.open().followups(), back.answer.eventId).length;
+    return { during, after, chain: row && [row.at, row.ps, row.pc] };
+  };
+  const whole = run(false), folded = run({ max: 40, keep: 20, ageMs: 1 });
+  assert.deepEqual(folded.chain, [START + 92 * DAY, START + 46 * DAY, [START]]);
+  assert.deepEqual([whole.during, whole.after], [0, 0]);
+  assert.deepEqual([folded.during, folded.after], [0, 0]);
+});
+test('a late start whose cycle ended before the fold it came after marks the next start: what folded there was read by another chain', () => {
+  // 씨앗 탐침(3037 · 3231): 10일 앵커의 사이클 안이라 시작이 아니던 50일 답이 접힌 뒤, 시계를 1일로 되돌려 같은 칸을 풀면 1일 답이 사슬 머리가
+  // 된다(10일 행은 그 사이클 안). 전체 기록은 1일 · 50일을 시작으로 읽지만 50일 답은 이미 접혀, 이 기기는 그 뒤 첫 답(60일)을 시작으로 세운다 —
+  // 그 시작을 판단 보류로 둔다. 1일 행은 줄이 끝나 시작점만 남아도 lf를 지닌다.
+  const run = fold => {
+    const b = bench({ fold }), cell = { skill: 'ko.reading.detail' }; let coach = b.open();
+    b.at(10); play(coach, item('c-10', cell)); fill(b, coach, 'a', 45);
+    b.at(50); play(coach, item('c-50', cell)); fill(b, coach, 'b', 45);
+    coach.flush(); coach.dispose();
+    b.at(1); coach = b.open(); play(coach, item('c-1', cell));
+    for (let n = 0; n < 45; n++) { b.step(61000); play(coach, item(`back-${n}`, { skill: 'ko.reading.main', difficulty: 3 })); }
+    coach.flush(); coach.dispose();
+    // 51일(cutoff 뒤)에 접으면 1일 행은 45일이 지나 시작점만 남는다.
+    b.at(51); coach = b.open(); fill(b, coach, 'c', 45); coach.flush(); coach.dispose();
+    const start = fold && b.stored().ledger.followups.rows.find(r => r.at === START + DAY);
+    b.at(60); coach = b.open(); const next = play(coach, item('c-60', cell));
+    return { rows: rowsOf(coach.followups(), next.answer.eventId).map(r => r.reason), start: start && [start.lf > START + 50 * DAY, 'p' in start] };
+  };
+  const whole = run(false), folded = run({ max: 40, keep: 20, ageMs: 1 });
+  assert.deepEqual(whole.rows, [], 'the whole log reads 60 days inside the cycle the 50-day answer opened');
+  assert.deepEqual(folded.start, [true, false], 'the 1-day start is kept as a start only, with its lf');
+  assert.deepEqual(folded.rows, Array(3).fill('adjusted-history'));
+});
+test('a frozen start right after a late start whose cycle ended before the fold it came after is marked too', () => {
+  // 카본 검수: 10 · 60일 앵커(50일 답은 10일 사이클 안)를 접어 {60일, ps 10일}을 남긴 뒤 시계를 1일로 되돌려 같은 칸을 풀고 되돌린 채로 접으면
+  // 1일 행(lf)과 60일 행이 함께 얼어 있다. 전체 기록은 1 · 50일을 시작으로 읽어 60일 답은 앵커가 아니다. 얼린 행끼리 이을 때도 다음 시작을 판단 보류로 둔다.
+  const run = fold => {
+    const b = bench({ fold }), cell = { skill: 'ko.reading.detail' }; let coach = b.open();
+    b.at(10); play(coach, item('c-10', cell)); fill(b, coach, 'a', 45);
+    b.at(50); play(coach, item('c-50', cell)); fill(b, coach, 'b', 45);
+    b.at(60); const row = play(coach, item('c-60', cell)); fill(b, coach, 'c', 45); coach.flush(); coach.dispose();
+    b.at(1); coach = b.open(); play(coach, item('c-1', cell));
+    for (let n = 0; n < 45; n++) { b.step(61000); play(coach, item(`back-${n}`, { skill: 'ko.reading.main', difficulty: 3 })); }
+    coach.flush(); coach.dispose();
+    const rows = fold && b.stored().ledger.followups.rows.filter(r => r.s === cell.skill).map(r => [r.at, Number.isFinite(r.lf)]);
+    b.at(61); return { rows, reasons: rowsOf(b.open().followups(), row.answer.eventId).map(r => r.reason) };
+  };
+  const whole = run(false), folded = run({ max: 40, keep: 20, ageMs: 1 });
+  assert.deepEqual(whole.reasons, [], 'the whole log reads 60 days inside the cycle the 50-day answer opened');
+  assert.deepEqual(folded.rows, [[START + DAY, true], [START + 60 * DAY, false]], 'both rows frozen, the 1-day one with its lf');
+  assert.deepEqual(folded.reasons, Array(3).fill('adjusted-history'));
+});
+test('a clock set back before a frozen row keeps the cycles before that row: a later clock set back inside them starts no anchor', () => {
+  // 카본 검수: 0 · 55일 앵커를 접어 {55일, ps 0일}을 남긴 뒤 48일로 되돌려 같은 칸을 풀고 접으면 48일 행이 사슬 머리가 된다(55일 행은 그 사이클 안).
+  // 48일 행도 0일 사이클을 지녀, 55일 행이 표에서 빠진 뒤 20일로 되돌려 푼 답이 새 사이클을 열지 않는다. 전체 기록에서도 20일 답은 0일 사이클 안이다.
+  const run = fold => {
+    const b = bench({ fold }), cell = { skill: 'ko.reading.detail' }; let coach = b.open();
+    const back = (day, name) => { b.at(day); coach = b.open(); const answer = play(coach, item(name, cell));
+      for (let n = 0; n < 45; n++) { b.step(61000); play(coach, item(`${name}-back-${n}`, { skill: 'ko.reading.main', difficulty: 3 })); }
+      coach.flush(); coach.dispose(); return answer; };
+    b.at(0); play(coach, item('c-0', cell)); fill(b, coach, 'a', 45);
+    b.at(55); play(coach, item('c-55', cell)); fill(b, coach, 'b', 45); coach.flush(); coach.dispose();
+    back(48, 'c-48');
+    b.at(56); coach = b.open(); fill(b, coach, 'c', 45); coach.flush(); coach.dispose();
+    const row = fold && b.stored().ledger.followups.rows.find(r => r.s === cell.skill);
+    const late = back(20, 'c-20');
+    b.at(57); return { chain: row && [row.at, row.ps ?? null], rows: rowsOf(b.open().followups(), late.answer.eventId).length };
+  };
+  const whole = run(false), folded = run({ max: 40, keep: 20, ageMs: 1 });
+  assert.equal(whole.rows, 0, 'the whole log reads 20 days inside the 0-day cycle');
+  assert.deepEqual(folded.chain, [START + 48 * DAY, START], 'the 48-day row keeps the 0-day start');
+  assert.equal(folded.rows, 0);
+});
+test('a late anchor whose window lost to a fold a first answer shown before the window opened marks that window too', () => {
+  // 카본 검수: 창 안의 첫 답이 창이 열리기 전에 보인 문항이면 그 계열의 처음 시각(fs)은 창 앞이다. 앵커 뒤에 처음 보인 계열은 창 안에서 답했을 수 있다.
+  // 앵커 뒤에 처음 보인 계열이 하나도 접히지 않았으면(채움 문항은 창이 닫힌 뒤) 그 창은 전체 기록과 같게 읽는다.
+  const run = early => {
+    const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    b.at(0); const anchor = play(coachB, item('b-anchor', cell));
+    const pid = early && (a.at(0.99), coachA.present(item('a-early', cell)));
+    if (early) { a.at(1.01); coachA.answer(pid, { correct: null, assessable: false, reason: 'unanswered' }); }
+    a.at(3.1); fill(a, coachA, 'x', 20); settle(coachA); fill(a, coachA, 'y', 20); settle(coachA);
+    if (early) assert.equal(coachA.events().some(e => e.id === pid), false, 'the early item folded');
+    a.at(3.2); importLate(coachA, coachB.events());
+    const d1 = windowOf(coachA.followups(), anchor.answer.eventId, 'd1');
+    return [d1.status, d1.reason];
+  };
+  assert.deepEqual(run(true), ['unavailable', 'adjusted-history']);
+  assert.deepEqual(run(false), ['missed', null]);
+});
+test('a fold while the clock is set back marks a frozen row it would have read as met before', () => {
+  // 시계 너머의 행은 읽지 않지만, 되돌린 동안의 기록이 그 행 앞(시각)의 같은 계열 시도면 표시해 둔다 — 그 기록이 시계가 돌아오기 전에 접혀도 남는다.
+  // (설계 관문 §2 「앵커 k × ③」의 「되돌린 동안 접혔으면 못 봄」을 닫음.)
+  const run = (fold, shared) => {
+    const b = bench({ fold }), cell = { skill: 'ko.reading.detail' }; let coach = b.open();
+    b.at(10); const row = play(coach, item('r', { ...cell, family: 'F' })); fill(b, coach, 'a', 45);
+    coach.flush(); coach.dispose();
+    b.at(5); coach = b.open(); const back = play(coach, item('f-back', { skill: 'ko.reading.reason', family: shared ? 'F' : 'G' }));
+    for (let n = 0; n < 45; n++) { b.step(61000); play(coach, item(`back-${n}`, { skill: 'ko.reading.main', difficulty: 3 })); }
+    coach.flush(); coach.dispose();
+    if (fold) assert.equal(b.stored().events.some(e => e.id === back.answer.eventId), false, 'the attempt folded while the clock was back');
+    b.at(10.5); return rowsOf(b.open().followups(), row.answer.eventId).map(r => [r.status, r.reason, r.kind]);
+  };
+  assert.deepEqual(run(false, true), Array(3).fill(['not_due', null, 'recovery']), 'the whole log reads it as a repeat');
+  assert.deepEqual(run({ max: 40, keep: 20, ageMs: 1 }, true), Array(3).fill(['unavailable', 'adjusted-history', 'retention']));
+  assert.deepEqual(run({ max: 40, keep: 20, ageMs: 1 }, false), Array(3).fill(['not_due', null, 'retention']), 'another family marks nothing');
+});
+test('a fold while the clock is set back marks a frozen pair whose family it showed before that pair', () => {
+  // 10일 앵커의 1일 창 짝(11.5일 · 계열 P)이 얼었다. 5일로 되돌려 계열 P를 보고 접으면, 전체 기록에서 그 짝은 처음 보인 계열이 아니다(짝이 아님).
+  const run = (fold, shared) => {
+    const b = bench({ fold }), cell = { skill: 'ko.reading.detail' }; let coach = b.open();
+    b.at(10); const row = play(coach, item('r', cell)); b.at(11.5); const pair = play(coach, item('p', { ...cell, family: 'P' })); fill(b, coach, 'a', 45);
+    coach.flush(); coach.dispose();
+    b.at(5); coach = b.open(); const back = play(coach, item('p-back', { skill: 'ko.reading.reason', family: shared ? 'P' : 'Q' }));
+    for (let n = 0; n < 45; n++) { b.step(61000); play(coach, item(`back-${n}`, { skill: 'ko.reading.main', difficulty: 3 })); }
+    coach.flush(); coach.dispose();
+    if (fold) assert.equal(b.stored().events.some(e => e.id === back.pid), false, 'the sight folded while the clock was back');
+    b.at(12); const d1 = windowOf(b.open().followups(), row.answer.eventId, 'd1');
+    return [d1.status, d1.reason, d1.targetAttemptId === pair.answer.eventId];
+  };
+  assert.deepEqual(run(false, true), ['due', null, false], 'the whole log pairs nothing there');
+  assert.deepEqual(run({ max: 40, keep: 20, ageMs: 1 }, true), ['unavailable', 'adjusted-history', true]);
+  assert.deepEqual(run({ max: 40, keep: 20, ageMs: 1 }, false), ['observed', null, true], 'another family marks nothing');
+});
 test('a clock set back before a frozen pair keeps that pair and its marks: a late answer in its window never replaces it', () => {
   // 끝 판 둘째 사슬 GPT: 시계를 앵커와 짝 사이로 되돌린 동안 늦은 답이 같은 창에 오면, 그 답이 짝을 대신해 얼려졌다.
   const run = clockBack => {
@@ -589,7 +945,10 @@ test('after a clock set back two rows of one cell: the earlier starts the cycle,
   const whole = script(false), folded = script({ max: 40, keep: 20, ageMs: 1 });
   assert.ok(folded.folded > 0);
   assert.equal(whole.earlier.length, 3); assert.equal(whole.later, 0);
-  assert.deepEqual([folded.earlier, folded.later], [whole.earlier, whole.later]);
+  // 사슬은 전체 기록과 같다. 되돌린 동안의 0일 답은 늦은 앵커(lf)라, 그 뒤에 처음 보여 접힌 계열이 있는 d1 · d7 창은 첫 답을 잃었을 수 있어
+  // 판단 보류다(카본 검수 11-17 — 창이 열리기 전에 보인 문항도 창 안에서 답할 수 있다).
+  assert.equal(folded.later, whole.later);
+  assert.deepEqual(folded.earlier, [['d1', 'unavailable'], ['d7', 'unavailable'], whole.earlier[2]]);
 });
 test('a late set response touches no row', () => {
   const { a, b, coachA, coachB, settle } = twoDevices();
@@ -708,6 +1067,58 @@ test('a follow-up reading that fails never stops the learning write', () => {
     assert.equal(ledger.followups.floor, ledger.cutoff); assert.deepEqual(ledger.followups.rows, []);
     assert.equal(coach.summary().storage.available, true);
   } finally { require.cache[temperPath] = saved; if (savedGame) require.cache[gamePath] = savedGame; else delete require.cache[gamePath]; }
+});
+// 읽기가 예외를 내는 Temper로 Core를 다시 불러 그 모듈로 코치를 연다(저장소와 시계는 그대로).
+function withBrokenReading(fn) {
+  const temperPath = require.resolve('../atlas/temper.js'), gamePath = require.resolve('../atlas/game-learning.js');
+  const saved = require.cache[temperPath], savedGame = require.cache[gamePath];
+  require.cache[temperPath] = { ...saved, exports: { ...Temper, followups: () => { throw new Error('broken reading'); } } }; delete require.cache[gamePath];
+  try { return fn(require(gamePath)); } finally { require.cache[temperPath] = saved; if (savedGame) require.cache[gamePath] = savedGame; else delete require.cache[gamePath]; }
+}
+test('a fold whose reading fails keeps the first sights it froze: a late candidate in a family seen since is still found', () => {
+  // 설계 관문 §6 남긴 일 ②(셋째 사슬 Fable 최종 P3): 읽기가 예외를 낸 접기는 앞 표의 행만 두고 계열의 처음 시각(fs)을 버려, 그 뒤에 온 늦은 짝 후보를 놓쳤다.
+  const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+  a.at(0); const mine = play(coachA, item('a-first', cell));
+  a.at(1.5); play(coachA, item('a-pair', { ...cell, family: 'fp' }));
+  a.at(2); play(coachA, item('a-fx', { ...cell, family: 'fx' }));
+  a.at(3); fill(a, coachA, 'x', 20); settle(coachA); a.at(5); fill(a, coachA, 'y', 20); settle(coachA); fill(a, coachA, 'z', 20); settle(coachA);
+  const sight = a.stored().ledger.followups.fs?.['family:fx'];
+  assert.ok(Number.isFinite(sight), 'the fold froze when fx was first seen');
+  coachA.flush(); coachA.dispose();
+  withBrokenReading(Broken => {
+    const coach = a.open('world-practice', { module: Broken }), before = a.stored().ledger.folded;
+    a.at(6); fill(a, coach, 'w', 40); settle(coach); fill(a, coach, 'v', 40); settle(coach);
+    assert.ok(a.stored().ledger.folded > before, 'it folded while its reading failed');
+    coach.flush(); coach.dispose();
+  });
+  const { ledger } = a.stored();
+  assert.equal(ledger.followups.floor, ledger.cutoff, 'the failed reading left a floor');
+  assert.equal(ledger.followups.fs?.['family:fx'], sight, 'and kept the first sight it had frozen');
+  b.at(1.2); play(coachB, item('b-x', { ...cell, family: 'fx' }));
+  a.at(7); const again = a.open(); importLate(again, coachB.events());
+  const d1 = windowOf(again.followups(), mine.answer.eventId, 'd1');
+  assert.deepEqual([d1.status, d1.reason], ['unavailable', 'adjusted-history']);
+});
+test('a fold whose reading fails and takes a family for the first time still lets a late first answer of it mark the pair', () => {
+  // 카본 검수: 읽기가 예외를 낸 접기가 처음 접은 계열(fy)은 표에 처음 시각이 없다. 바닥(floor)이 선 표에서는 그런 계열이 바닥 때까지 처음 보였을 수
+  // 있는 것으로 읽어, 그보다 앞서 늦게 온 같은 계열 답을 앞선 후보로 찾는다.
+  const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+  a.at(0); const mine = play(coachA, item('a-first', cell));
+  a.at(1.5); play(coachA, item('a-pair', { ...cell, family: 'fp' }));
+  a.at(3); fill(a, coachA, 'x', 20); settle(coachA); a.at(5); fill(a, coachA, 'y', 20); settle(coachA); fill(a, coachA, 'z', 20); settle(coachA);
+  a.at(5.5); const fy = play(coachA, item('a-fy', { skill: 'ko.reading.reason', family: 'fy' })); settle(coachA);
+  assert.equal(a.stored().ledger.followups.fs?.['family:fy'], undefined, 'fy has not folded yet');
+  coachA.flush(); coachA.dispose();
+  withBrokenReading(Broken => {
+    const coach = a.open('world-practice', { module: Broken });
+    a.at(6); fill(a, coach, 'w', 40); settle(coach); fill(a, coach, 'v', 40); settle(coach);
+    coach.flush(); coach.dispose();
+  });
+  assert.equal(a.stored().events.some(e => e.id === fy.pid), false, 'the failed fold took fy');
+  b.at(1.2); play(coachB, item('b-y', { ...cell, family: 'fy' }));
+  a.at(7); const again = a.open(); importLate(again, coachB.events());
+  const d1 = windowOf(again.followups(), mine.answer.eventId, 'd1');
+  assert.deepEqual([d1.status, d1.reason], ['unavailable', 'adjusted-history']);
 });
 test('a clock set back does not show a frozen row or pair from its future', () => {
   const b = bench(), coach = b.open(); const first = play(coach, item('first'));

@@ -159,7 +159,7 @@
     windows: Object.freeze([['d1', 1, 3], ['d7', 7, 10], ['d30', 30, 37]].map(Object.freeze)) });
   const cellOf = row => JSON.stringify([row.g, row.s, row.d, row.f, row.m, row.a]);
   const validRow = r => !!r && typeof r === 'object' && typeof r.id === 'string' && typeof r.g === 'string' && typeof r.s === 'string' && Number.isFinite(r.at)
-    && (r.ps === undefined || Number.isFinite(r.ps))
+    && (r.ps === undefined || Number.isFinite(r.ps)) && (r.pc === undefined || Array.isArray(r.pc) && r.pc.every(Number.isFinite)) && (r.lf === undefined || Number.isFinite(r.lf))
     && (!r.p || Number.isFinite(r.ra) && Array.isArray(r.pf) && Array.isArray(r.fx) && r.fx.every(Array.isArray) && !!r.t && typeof r.t === 'object' && Object.values(r.t).every(pair => !!pair && Number.isFinite(pair.at)));
   // Another version's table, or one that does not read, counts as none.
   const sights = s => s === undefined || !!s && typeof s === 'object' && !Array.isArray(s) && Object.values(s).every(Number.isFinite);
@@ -210,60 +210,115 @@
     for (const [, item, family] of prior?.presented || []) { foldedShown.add(`item:${item}`); foldedShown.add(`family:${family}`); }
     // A pair is chosen or read again only while no sight of its item or family has folded: Trail reads folded history as before everything.
     const fresh = a => trace(byId.get(a.presentationId)).every(key => !foldedShown.has(key) && shown.get(key)?.id === a.presentationId);
-    // Help and attempts in the log by item and family. A frozen answer is not read again (an anchor, or a pair the log cannot
+    // Help and attempts in the log by item and family, keyed as Trail keys them (Trail.traceKeys: a presentation without a measure has
+    // no family there, unlike trace above). A frozen answer is not read again (an anchor, or a pair the log cannot
     // judge again). When the table calls it independent and one of these came before it, a late entry has changed what the
     // whole log reads there: after help it was a helped answer, after an attempt it was not a new item.
+    const trailKeys = p => [`item:${p.itemKey}`, ...(p.measure ? [`family:${p.measure.familyKey}`] : [])];
     const metAt = new Map();
     for (const e of visible) if (['practice.helped', 'practice.attempted'].includes(e.type) && byId.get(e.presentationId)?.type === 'practice.presented')
-      for (const key of trace(byId.get(e.presentationId))) { if (!metAt.has(key)) metAt.set(key, []); metAt.get(key).push(e); }
+      for (const key of trailKeys(byId.get(e.presentationId))) { if (!metAt.has(key)) metAt.set(key, []); metAt.get(key).push(e); }
     const metLate = (answer, at) => [`item:${answer.i}`, `family:${answer.fa}`].some(key => (metAt.get(key) || []).some(e => stamp(e) < at && !(answer.pf || []).includes(e.id)));
+    // Trail counts help or an attempt on the item or family as earlier in either order, by log position or by time. One logged before an
+    // answer but made after it (the answer appended late, or a clock set back) can change Trail's reading of that answer from the whole log's
+    // in time order: help or a repeat it never had. byTime reads it as the whole log would (folded history still first, as Trail reads it;
+    // at the same moment the log's order decides). An anchor whose standing or kind, or a pair whose result, reads otherwise is marked.
+    const kindOf = e => (e.type === 'practice.attempted' ? 'attempt' : e.level === 'answer' ? 'answer' : 'help');
+    const foldedKind = (key, kind) => !!prior?.keys && Object.prototype.hasOwnProperty.call(prior.keys, key) && (prior.keys[key] & { attempt: 1, answer: 2, help: 4 }[kind]) !== 0; // Trail.BITS
+    // Any folded history of an item or family: a sight, or help and attempts (kept even for a withdrawn presentation, which is no sight).
+    const foldedKey = key => foldedShown.has(key) || !!prior?.keys && Object.prototype.hasOwnProperty.call(prior.keys, key);
+    const byTime = a => {
+      const p = byId.get(a.presentationId), at = stamp(a), pos = position.get(a.eventId);
+      const earlierOf = kinds => trailKeys(p).some(key => kinds.some(kind => foldedKind(key, kind))
+        || (metAt.get(key) || []).some(e => e.id !== a.eventId && kinds.includes(kindOf(e)) && (stamp(e) < at || stamp(e) === at && position.get(e.id) < pos)));
+      const assisted = earlierOf(['help', 'answer']) ? true : p.firstExposure === true ? false : null;
+      const exposure = earlierOf(['attempt', 'answer']) || p.firstExposure === false ? 'repeat' : p.firstExposure === true ? 'new' : 'unknown';
+      return { ...a, assisted, exposure, independent: !a.exclusionReason && assisted === false && exposure === 'new' && ['correct', 'incorrect'].includes(a.verdict) };
+    };
+    const standing = a => JSON.stringify([qualified(a), counted(a) && a.verdict === 'correct']);
+    const misread = a => { const t = byTime(a); return (t.assisted !== a.assisted || t.exposure !== a.exposure) && standing(t) !== standing(a); };
     const ordered = [...original.attempts].sort((a, b) => stamp(a) - stamp(b) || position.get(a.eventId) - position.get(b.eventId));
     const inCell = new Map();
     for (const a of ordered) { const cell = tuple(a); if (!inCell.has(cell)) inCell.set(cell, []); inCell.get(cell).push(a); }
     const table = tableOf(prior), floor = floorOf(prior, table), usable = complete === true, iso = ms => new Date(ms).toISOString();
+    // Every anchor at or before the cutoff was frozen when the log folded there, so one still read from the log came afterwards (another
+    // device's late entry, or an answer while the clock was set back): lf on its row. What it opened by then may have lost its first answer
+    // to that fold, read by another chain: a window (below), or the next cycle of its cell.
+    const folded = table && Number.isFinite(prior.cutoff) ? prior.cutoff : -Infinity;
     // A late candidate is found by time: a folded first sight counts by the time the table froze for its family (fs — an item is shown
     // and folds with its family, so that time bounds both); folded without one (older than any live anchor, or by an older writer), it came first.
+    // Under a floor (a fold without a reading froze no first sights, or an older writer folded) such a family may have been first seen as late as the floor.
     const frozenSight = table?.fs || {};
-    const timely = a => { const p = byId.get(a.presentationId), keys = trace(p), sight = frozenSight[keys[1]];
+    const timely = a => { const p = byId.get(a.presentationId), keys = trace(p), sight = frozenSight[keys[1]] ?? (Number.isFinite(floor) && foldedShown.has(keys[1]) ? floor : undefined);
       return keys.every(key => shown.get(key)?.id === p.id) && (Number.isFinite(sight) ? sight >= stamp(p) : keys.every(key => !foldedShown.has(key))); };
     // One running anchor per cell: frozen first, then the log in time order. Later answers in its cycle change nothing;
     // an earlier one still in the log (another device's late entry) marks the frozen row instead of replacing it.
     const frozen = a => typeof a.at === 'number', when = a => (frozen(a) ? a.at : stamp(a));
     const chain = new Map(), cycles = new Map(), overtaken = new Set(), begin = (cell, a) => { chain.set(cell, a); if (!cycles.has(cell)) cycles.set(cell, []); cycles.get(cell).push(a); };
     // Two rows of one cell come only from a clock set back: the earlier starts the cycle, as a whole log reads it. A row past
-    // this clock is not read yet, but the cycle before it (its frozen ps) still keeps an answer inside from starting another.
-    const bounds = new Map();
+    // this clock is not read yet, but the cycles before it (its frozen ps and pc) still keep an answer inside from starting another.
+    // Every row keeps the starts before it (ps, pc), whether it is read now, past this clock or inside another row's cycle (known).
+    const bounds = new Map(), known = new Map();
     for (const row of [...(table?.rows || [])].sort((x, y) => x.at - y.at)) {
-      const cell = cellOf(row), running = chain.get(cell);
-      if (row.at > now) { if (Number.isFinite(row.ps)) bounds.set(cell, [...(bounds.get(cell) || []), row.ps]); }
-      else if (!running || row.at > when(running) + keep) begin(cell, row);
+      const cell = cellOf(row), running = chain.get(cell), before = [...(row.pc || []), ...(Number.isFinite(row.ps) ? [row.ps] : [])];
+      known.set(cell, [...(known.get(cell) || []), ...before]);
+      if (row.at > now) bounds.set(cell, [...(bounds.get(cell) || []), ...before]);
+      else if (!running || row.at > when(running) + keep) {
+        // After a late start whose cycle ended before the fold it came after, the next frozen start is marked like one read from the log (unsure).
+        if (running && Number.isFinite(running.lf) && when(running) + keep < running.lf) overtaken.add(row.id);
+        begin(cell, row);
+      }
     }
     const inside = (cell, at) => (bounds.get(cell) || []).some(ps => at >= ps && at <= ps + keep);
+    // The cell's chain: the starts every row keeps from before the first start read now (a clock set back can put a start read from the log
+    // ahead of the rows that kept them), the late starts below and the starts read now. An answer inside any of these cycles (its start to
+    // keepDays after) starts nothing in a whole log either.
+    const history = cell => { const head = when(cycles.get(cell)[0]); return (known.get(cell) || []).filter(at => at < head); };
+    const lateStarts = new Map(), unsure = new Set(), covered = (cell, at) =>
+      [...history(cell), ...(lateStarts.get(cell) || []), ...cycles.get(cell).map(when)].some(start => at >= start && at <= start + keep);
     for (const a of ordered) {
       if (!qualified(a)) continue;
       const cell = tuple(a), running = chain.get(cell);
       if (running && frozen(running) && stamp(a) < running.at) {
-        // Inside the cycle before it (its start to keepDays after, frozen as ps) an answer changes nothing, as a whole log reads it.
-        // Anything else marks the row, never replacing it; the next cycle opens from this chain, chosen by time alone.
-        if (!(Number.isFinite(running.ps) && stamp(a) >= running.ps && stamp(a) <= running.ps + keep)) overtaken.add(running.id);
-      } else if (stamp(a) > floor && (!running || stamp(a) > when(running) + keep) && !inside(cell, stamp(a))) begin(cell, a);
+        // An earlier answer inside a cycle of the chain changes nothing, as a whole log reads it (an answer the server never sent back
+        // stays in the log for good). Anything else marks the row, never replacing it; the next cycle opens from this chain, chosen by time alone.
+        // It started a cycle in the whole log, so the chain keeps its time like any start (ps, pc): once it folds, a later entry or an answer
+        // while the clock is set back inside its cycle still starts nothing.
+        if (!covered(cell, stamp(a))) { overtaken.add(running.id); lateStarts.set(cell, [...(lateStarts.get(cell) || []), stamp(a)]); }
+      } else if (stamp(a) > floor && (!running || stamp(a) > when(running) + keep) && !inside(cell, stamp(a))) {
+        // A late start whose cycle ended before the fold it came after: what folded there was read by another chain, so the first answer of
+        // this cycle may have left with it. The start found now stands, marked, as a window lost to a fold.
+        const lateBy = running && (frozen(running) ? running.lf : stamp(running) <= folded ? folded : undefined);
+        if (Number.isFinite(lateBy) && when(running) + keep < lateBy) unsure.add(a.eventId);
+        begin(cell, a);
+      }
     }
-    // The start of the cycle before each anchor, frozen with it.
-    const prevStart = new Map();
-    for (const list of cycles.values()) list.forEach((a, i) => { const ps = i ? when(list[i - 1]) : frozen(a) ? a.ps : undefined; if (Number.isFinite(ps)) prevStart.set(a, ps); });
-    const withPs = a => (prevStart.has(a) ? { ps: prevStart.get(a) } : {});
+    // The starts of the cycles before each anchor, frozen with it: ps the one just before, pc the earlier ones, oldest first (a number each,
+    // so a cell that runs for years keeps its whole chain in a few bytes a cycle).
+    const prevStart = new Map(), earlier = new Map();
+    for (const [cell, list] of cycles) {
+      const all = [...new Set([...history(cell), ...(lateStarts.get(cell) || []), ...list.map(when)])].sort((x, y) => x - y);
+      for (const a of list) { const before = all.filter(start => start < when(a)); if (before.length) prevStart.set(a, before.at(-1)); if (before.length > 1) earlier.set(a, before.slice(0, -1)); }
+    }
+    const withPs = a => ({ ...(prevStart.has(a) ? { ps: prevStart.get(a) } : {}), ...(earlier.has(a) ? { pc: earlier.get(a) } : {}) });
+    // A late anchor's window opened by the fold it came after may have lost its first answer there: like a floor, no later answer stands in
+    // for it (lf, frozen with the row).
     const toRow = a => {
       const actual = current.get(a.eventId), m = a.measure;
       return { g: game(a), s: m.skillId, d: m.difficulty, f: m.responseFormat, m: m.modality, a: m.audioRequired, tv: a.taskVersion, id: a.eventId, at: stamp(a), ra: Date.parse(a.recordedAt),
         i: a.itemKey, fa: m.familyKey, p: a.presentationId, dc: a.decisionId, cp: completion.get(a.decisionId).id, k: counted(a) && a.verdict === 'correct' ? 'retention' : 'recovery',
-        x: invalidated(a) || !actual || !qualified(actual) ? 1 : 0, pf: proofs(a), fx: [], t: {}, ...withPs(a) };
+        x: invalidated(a) || !actual || !qualified(actual) ? 1 : 0, pf: proofs(a), fx: [], t: {}, ...withPs(a), ...(stamp(a) <= folded ? { lf: folded } : {}) };
     };
     const pairOf = a => {
       const actual = current.get(a.eventId), p = byId.get(a.presentationId);
       const pair = { id: a.eventId, at: stamp(a), pa: stamp(p), i: a.itemKey, fa: a.measure.familyKey, p: a.presentationId, dc: a.decisionId, cp: completion.get(a.decisionId).id, pf: proofs(a), x: 0, s: null, o: null, r: null };
+      const result = x => (!qualified(x) || x.exposure !== 'new' || x.assisted === false && !counted(x) ? { s: 'unavailable', r: x.exclusionReason || 'unassessable-target' }
+        : { s: 'observed', o: `${x.assisted ? 'assisted' : 'independent'}-${x.verdict}` });
       if (invalidated(a) || !actual) pair.x = 1;
-      else if (!qualified(actual) || actual.exposure !== 'new' || actual.assisted === false && !counted(actual)) { pair.s = 'unavailable'; pair.r = actual.exclusionReason || 'unassessable-target'; }
-      else { pair.s = 'observed'; pair.o = `${actual.assisted ? 'assisted' : 'independent'}-${actual.verdict}`; }
+      // A pair from before the cutoff (another device's late entry) is read with all folded history first, by Trail and byTime alike: help or an
+      // attempt folded from after it (a withdrawn presentation's, which leaves no sight) would read as before it. As with a late anchor, it is marked.
+      else { const read = result(actual); Object.assign(pair, read);
+        if (JSON.stringify(result(byTime(actual))) !== JSON.stringify(read) || stamp(a) <= folded && trailKeys(p).some(foldedKey)) pair.l = 1; }
       return pair;
     };
     // A start without details only bounds its cell's next anchor: no rows.
@@ -274,12 +329,19 @@
     // Every live anchor is read, so a fold keeps it whole; the share only limits what is reported now.
     for (const anchor of live) {
       const row = frozen(anchor) ? { ...anchor, fx: [...(anchor.fx || [])], t: { ...anchor.t }, pf: anchor.pf || [] } : toRow(anchor), cell = cellOf(row);
+      if (frozen(anchor)) Object.assign(row, withPs(anchor));
       if ([row.id, row.p, row.dc, row.cp, ...row.pf].some(gone)) row.x = 1;
       // A frozen row keeps its first reading. One the table calls a retention (an independent correct answer) that the log now
       // shows was helped or met before is marked like any row a late entry overtakes; its windows wait for the next cycle.
       if (overtaken.has(row.id) || row.k === 'retention' && metLate(row, row.at)) row.l = 1;
+      // A late anchor whose item or family the fold took: Trail reads all folded history as before it, so a sight that came after it may
+      // read as one before (a new item read as a repeat). As with a pair, only an answer with no folded sight is read like the whole log.
+      if (!frozen(anchor) && stamp(anchor) <= folded && trace(byId.get(anchor.presentationId)).some(foldedKey)) row.l = 1;
+      if (!frozen(anchor) && (misread(anchor) || unsure.has(anchor.eventId))) row.l = 1;
+      // What came after the anchor, by time as a frozen row reads it: an anchor appended late (another device's entry) still has the
+      // answers this device logged before it arrived after it. Only at the same moment does the log's order decide.
       const logged = position.has(row.id) ? { eventId: row.id, at: iso(row.at), recordedAt: iso(row.ra) } : null;
-      const follows = e => (logged ? before(logged, e) : row.at <= stamp(e) && row.ra <= Date.parse(e.recordedAt));
+      const follows = e => row.ra <= Date.parse(e.recordedAt) && (row.at < stamp(e) || row.at === stamp(e) && (!logged || before(logged, e)));
       for (const h of summary.help) if (h.presentationId === row.p && ['answer', 'explanation'].includes(h.level) && follows(h) && !row.fx.some(([id]) => id === h.eventId)) row.fx.push([h.eventId, stamp(h)]);
       row.fx = row.fx.filter(([id]) => !gone(id));
       const candidates = (inCell.get(cell) || []).filter(a => a.eventId !== row.id && a.attemptNo === 1
@@ -287,19 +349,27 @@
       const targets = candidates.filter(fresh), early = candidates.filter(timely);
       const measure = { skillId: row.s, modality: row.m, difficulty: row.d, audioRequired: row.a, responseFormat: row.f, taskVersion: row.tv };
       for (const [window, start, end] of FOLLOWUP.windows) {
-        // A window opened before the floor may have lost its first answer: a later one never stands in for it.
+        // A window opened before the floor may have lost its first answer: a later one never stands in for it. So may one a late anchor opened
+        // before the fold it came after, if a family was first seen after the anchor and folded there (a pair is always its family's first sight,
+        // and one shown before the window opened may still be answered inside it).
         const due = row.at + start * day, expires = row.at + end * day, within = a => stamp(a) >= due && stamp(a) < expires;
-        const first = early.find(within), found = due <= floor ? null : targets.find(within);
+        const lost = due <= row.lf && Object.values(frozenSight).some(at => at >= row.at && at < expires && at <= row.lf);
+        const first = early.find(within), found = due <= floor || lost ? null : targets.find(within);
         // What is still in the log is read again; the table only stands in for what has left it. A frozen pair past this clock
         // (a device clock set back) is kept and marked as usual, but neither shown nor replaced until the clock reaches it.
         const stored = row.t[window] || null, ahead = !!stored && stored.at > now, kept = ahead ? null : stored;
-        const reread = !ahead && !!found && (!kept || found.eventId === kept.id), pair = reread ? pairOf(found) : stored && { ...stored };
+        // With no pair at all, a window whose first answer came late (after its family folded here, so the log no longer reads it as new) is lost
+        // to it: that answer stands as the pair, marked, so the window stays lost once that answer folds too (the whole log pairs it).
+        const reread = !ahead && !!found && (!kept || found.eventId === kept.id);
+        const pair = reread ? pairOf(found) : stored ? { ...stored } : first && !lost && due > floor ? { ...pairOf(first), l: 1 } : null;
         if (pair) row.t[window] = pair;
         if (pair && [pair.id, pair.p, pair.dc, pair.cp, ...(pair.pf || [])].some(gone)) pair.x = 1;
         // A late entry: an earlier candidate for this window, the pair's item shown before it, or help or an attempt before an answer
         // the table still calls independent (the log's reading would have counted it). Appended entries sit last in the log, so this reads their times.
+        // The earlier candidate counts against a pair read now as much as a frozen one: it came late, after its family folded, so the log no
+        // longer reads it as new, while the whole log pairs it. With no pair at all, the window is lost to it as to a fold.
         const late = key => firstShown.get(key) < pair.pa;
-        if (pair && (stored?.l || stored && first && stamp(first) < stored.at || [`item:${pair.i}`, `family:${pair.fa}`].some(late) || /^independent/.test(pair.o) && metLate(pair, pair.at))) pair.l = 1;
+        if (pair && (stored?.l || first && stamp(first) < pair.at || [`item:${pair.i}`, `family:${pair.fa}`].some(late) || /^independent/.test(pair.o) && metLate(pair, pair.at))) pair.l = 1;
         const shown = ahead ? null : pair;
         let status = now < due ? 'not_due' : now < expires ? 'due' : 'missed', outcome = null, reason = null;
         if (!usable) { status = 'unavailable'; reason = 'incomplete-history'; }
@@ -309,20 +379,31 @@
         else if (shown?.l) { status = 'unavailable'; reason = 'adjusted-history'; }
         else if (shown) { status = shown.s; outcome = shown.o; reason = shown.r; }
         else if (due <= floor) { status = 'unavailable'; reason = 'older-source-unavailable'; }
+        else if (lost) { status = 'unavailable'; reason = 'adjusted-history'; }
         if (selected.has(anchor)) items.push({ id: `${row.id}:${window}`, sourceAttemptId: row.id, sourceAt: iso(row.at), gameId: row.g, measure,
           kind: row.k, window, dueAt: iso(due), expiresAt: iso(expires), status, reason,
           targetAttemptId: shown?.id || null, targetAt: shown ? iso(shown.at) : null, outcome, correctionEventIds: row.fx.filter(([, at]) => !shown || at <= shown.pa).map(([id]) => id) });
       }
       rows.push(row);
     }
-    // Each cell's cycle starts, oldest first: a fold keeps the last one at or before its cutoff.
-    const starts = [...cycles.values()].map(list => list.map(a => (frozen(a) ? { g: a.g, s: a.s, d: a.d, f: a.f, m: a.m, a: a.a, id: a.id, at: a.at, ...withPs(a) }
-      : { g: game(a), s: a.measure.skillId, d: a.measure.difficulty, f: a.measure.responseFormat, m: a.measure.modality, a: a.measure.audioRequired, id: a.eventId, at: stamp(a), ...withPs(a) })));
+    // Each cell's cycle starts, oldest first: a fold keeps the last one at or before its cutoff, and with it the earlier starts (ps, pc). A late
+    // start keeps its lf after its rows end: the next cycle of its cell still opens against the fold it came after.
+    const starts = [...cycles.values()].map(list => list.map(a => (frozen(a) ? { g: a.g, s: a.s, d: a.d, f: a.f, m: a.m, a: a.a, id: a.id, at: a.at, ...withPs(a), ...(Number.isFinite(a.lf) ? { lf: a.lf } : {}) }
+      : { g: game(a), s: a.measure.skillId, d: a.measure.difficulty, f: a.measure.responseFormat, m: a.measure.modality, a: a.measure.audioRequired, id: a.eventId, at: stamp(a), ...withPs(a),
+        ...(stamp(a) <= folded ? { lf: folded } : {}) })));
     const report = { policy: FOLLOWUP.version, asOf, observationOpportunities: true, evidenceComplete: usable,
       coverage: { folded: prior?.folded || 0, adjusted: prior?.adjusted || 0, limited: live.length > selected.size, excludedAnchors: live.length - selected.size,
         floor: Number.isFinite(floor) ? iso(floor) : null, reason: !usable ? 'incomplete-history' : floor > now - keep ? 'older-source-unavailable' : null },
       items, learningEffectClaim: false, causalClaim: false, policyPromotion: false };
-    Object.defineProperty(report, 'sealing', { enumerable: false, value: { rows, starts, floor, now, later: (table?.rows || []).filter(row => row.at > now),
+    // A row past this clock (a clock set back) is not read until the clock reaches it, but what the log shows before it now marks it as any
+    // frozen row is marked: entries made while the clock is back may fold before it returns. Help or an attempt before a retention, or before
+    // a pair the table calls independent, and a sight of a pair's item or family before it.
+    const markAhead = row => { const out = { ...row, t: { ...row.t } };
+      if (out.k === 'retention' && metLate(out, out.at)) out.l = 1;
+      for (const [window, pair] of Object.entries(out.t)) if ([`item:${pair.i}`, `family:${pair.fa}`].some(key => firstShown.get(key) < pair.pa)
+        || /^independent/.test(pair.o) && metLate(pair, pair.at)) out.t[window] = { ...pair, l: 1 };
+      return out; };
+    Object.defineProperty(report, 'sealing', { enumerable: false, value: { rows, starts, floor, now, later: (table?.rows || []).filter(row => row.at > now).map(markAhead),
       // A family folded before without a frozen time was seen before anything left in the log: a later sight never stands in for it.
       sights: [...Object.entries(frozenSight), ...[...firstShown].filter(([key]) => Number.isFinite(frozenSight[key]) || !foldedShown.has(key))] } });
     return report;
@@ -337,7 +418,9 @@
     for (const [key, at] of seen) if (key.startsWith('family:') && !(first.get(key) <= at)) first.set(key, at);
     for (const [key, at] of first) if (at <= cutoff && at >= oldest) fs[key] = at;
     const met = new Set(presented.flatMap(([, item, family]) => [`item:${item}`, `family:${family}`]));
-    const held = pair => pair.at <= cutoff || pair.at > now || met.has(`item:${pair.i}`) || met.has(`family:${pair.fa}`);
+    // A marked pair is kept whatever its time: the late entry that marked it may fold before it does, and a reading without that entry
+    // would take the pair as unmarked (Fable final review, 11-17).
+    const held = pair => !!pair.l || pair.at <= cutoff || pair.at > now || met.has(`item:${pair.i}`) || met.has(`family:${pair.fa}`);
     for (const cycle of starts) {
       const start = cycle.filter(a => a.at <= cutoff).at(-1), row = start && full.get(start.id);
       if (row) out.push({ ...row, t: Object.fromEntries(Object.entries(row.t).filter(([, pair]) => held(pair))) });

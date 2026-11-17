@@ -266,8 +266,9 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
     let read = null;
     try { read = readFollowups(events, { scope, asOf: new Date(now).toISOString(), prior: ledger }); } catch { read = null; }
     ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
+    // Without a reading the table keeps what it froze, first sights of families included, and a floor at the cutoff.
     ledger.followups = read ? Temper.sealFollowups(read, { cutoff: ledger.cutoff, folded: ledger.folded, presented: ledger.presented })
-      : { v: Temper.FOLLOWUP.table, folded: ledger.folded, floor: ledger.cutoff, rows: Array.isArray(ledger.followups?.rows) ? ledger.followups.rows : [] };
+      : { v: Temper.FOLLOWUP.table, folded: ledger.folded, floor: ledger.cutoff, ...(ledger.followups?.fs ? { fs: ledger.followups.fs } : {}), rows: Array.isArray(ledger.followups?.rows) ? ledger.followups.rows : [] };
     // An older reading of this log cannot see the table: it offers nothing rather than rows from what is left.
     ledger.followupsPreserved = false;
     session = newSession(planned.kept);

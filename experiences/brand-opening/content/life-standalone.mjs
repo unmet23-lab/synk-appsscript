@@ -9418,7 +9418,7 @@ var require_temper = __commonJS({
         windows: Object.freeze([["d1", 1, 3], ["d7", 7, 10], ["d30", 30, 37]].map(Object.freeze))
       });
       const cellOf = (row) => JSON.stringify([row.g, row.s, row.d, row.f, row.m, row.a]);
-      const validRow = (r) => !!r && typeof r === "object" && typeof r.id === "string" && typeof r.g === "string" && typeof r.s === "string" && Number.isFinite(r.at) && (r.ps === void 0 || Number.isFinite(r.ps)) && (!r.p || Number.isFinite(r.ra) && Array.isArray(r.pf) && Array.isArray(r.fx) && r.fx.every(Array.isArray) && !!r.t && typeof r.t === "object" && Object.values(r.t).every((pair) => !!pair && Number.isFinite(pair.at)));
+      const validRow = (r) => !!r && typeof r === "object" && typeof r.id === "string" && typeof r.g === "string" && typeof r.s === "string" && Number.isFinite(r.at) && (r.ps === void 0 || Number.isFinite(r.ps)) && (r.pc === void 0 || Array.isArray(r.pc) && r.pc.every(Number.isFinite)) && (r.lf === void 0 || Number.isFinite(r.lf)) && (!r.p || Number.isFinite(r.ra) && Array.isArray(r.pf) && Array.isArray(r.fx) && r.fx.every(Array.isArray) && !!r.t && typeof r.t === "object" && Object.values(r.t).every((pair) => !!pair && Number.isFinite(pair.at)));
       const sights = (s) => s === void 0 || !!s && typeof s === "object" && !Array.isArray(s) && Object.values(s).every(Number.isFinite);
       const tableOf = (prior) => {
         const t3 = prior?.followups;
@@ -9475,13 +9475,29 @@ var require_temper = __commonJS({
           foldedShown.add(`family:${family}`);
         }
         const fresh = (a) => trace(byId.get(a.presentationId)).every((key) => !foldedShown.has(key) && shown.get(key)?.id === a.presentationId);
+        const trailKeys = (p) => [`item:${p.itemKey}`, ...p.measure ? [`family:${p.measure.familyKey}`] : []];
         const metAt = /* @__PURE__ */ new Map();
         for (const e of visible) if (["practice.helped", "practice.attempted"].includes(e.type) && byId.get(e.presentationId)?.type === "practice.presented")
-          for (const key of trace(byId.get(e.presentationId))) {
+          for (const key of trailKeys(byId.get(e.presentationId))) {
             if (!metAt.has(key)) metAt.set(key, []);
             metAt.get(key).push(e);
           }
         const metLate = (answer, at) => [`item:${answer.i}`, `family:${answer.fa}`].some((key) => (metAt.get(key) || []).some((e) => stamp2(e) < at && !(answer.pf || []).includes(e.id)));
+        const kindOf = (e) => e.type === "practice.attempted" ? "attempt" : e.level === "answer" ? "answer" : "help";
+        const foldedKind = (key, kind) => !!prior?.keys && Object.prototype.hasOwnProperty.call(prior.keys, key) && (prior.keys[key] & { attempt: 1, answer: 2, help: 4 }[kind]) !== 0;
+        const foldedKey = (key) => foldedShown.has(key) || !!prior?.keys && Object.prototype.hasOwnProperty.call(prior.keys, key);
+        const byTime = (a) => {
+          const p = byId.get(a.presentationId), at = stamp2(a), pos = position.get(a.eventId);
+          const earlierOf = (kinds) => trailKeys(p).some((key) => kinds.some((kind) => foldedKind(key, kind)) || (metAt.get(key) || []).some((e) => e.id !== a.eventId && kinds.includes(kindOf(e)) && (stamp2(e) < at || stamp2(e) === at && position.get(e.id) < pos)));
+          const assisted = earlierOf(["help", "answer"]) ? true : p.firstExposure === true ? false : null;
+          const exposure = earlierOf(["attempt", "answer"]) || p.firstExposure === false ? "repeat" : p.firstExposure === true ? "new" : "unknown";
+          return { ...a, assisted, exposure, independent: !a.exclusionReason && assisted === false && exposure === "new" && ["correct", "incorrect"].includes(a.verdict) };
+        };
+        const standing = (a) => JSON.stringify([qualified(a), counted(a) && a.verdict === "correct"]);
+        const misread = (a) => {
+          const t3 = byTime(a);
+          return (t3.assisted !== a.assisted || t3.exposure !== a.exposure) && standing(t3) !== standing(a);
+        };
         const ordered = [...original.attempts].sort((a, b) => stamp2(a) - stamp2(b) || position.get(a.eventId) - position.get(b.eventId));
         const inCell = /* @__PURE__ */ new Map();
         for (const a of ordered) {
@@ -9490,9 +9506,10 @@ var require_temper = __commonJS({
           inCell.get(cell).push(a);
         }
         const table = tableOf(prior), floor = floorOf(prior, table), usable = complete === true, iso3 = (ms) => new Date(ms).toISOString();
+        const folded = table && Number.isFinite(prior.cutoff) ? prior.cutoff : -Infinity;
         const frozenSight = table?.fs || {};
         const timely = (a) => {
-          const p = byId.get(a.presentationId), keys = trace(p), sight = frozenSight[keys[1]];
+          const p = byId.get(a.presentationId), keys = trace(p), sight = frozenSight[keys[1]] ?? (Number.isFinite(floor) && foldedShown.has(keys[1]) ? floor : void 0);
           return keys.every((key) => shown.get(key)?.id === p.id) && (Number.isFinite(sight) ? sight >= stamp2(p) : keys.every((key) => !foldedShown.has(key)));
         };
         const frozen = (a) => typeof a.at === "number", when = (a) => frozen(a) ? a.at : stamp2(a);
@@ -9501,27 +9518,46 @@ var require_temper = __commonJS({
           if (!cycles.has(cell)) cycles.set(cell, []);
           cycles.get(cell).push(a);
         };
-        const bounds = /* @__PURE__ */ new Map();
+        const bounds = /* @__PURE__ */ new Map(), known = /* @__PURE__ */ new Map();
         for (const row of [...table?.rows || []].sort((x, y) => x.at - y.at)) {
-          const cell = cellOf(row), running = chain.get(cell);
-          if (row.at > now) {
-            if (Number.isFinite(row.ps)) bounds.set(cell, [...bounds.get(cell) || [], row.ps]);
-          } else if (!running || row.at > when(running) + keep) begin(cell, row);
+          const cell = cellOf(row), running = chain.get(cell), before2 = [...row.pc || [], ...Number.isFinite(row.ps) ? [row.ps] : []];
+          known.set(cell, [...known.get(cell) || [], ...before2]);
+          if (row.at > now) bounds.set(cell, [...bounds.get(cell) || [], ...before2]);
+          else if (!running || row.at > when(running) + keep) {
+            if (running && Number.isFinite(running.lf) && when(running) + keep < running.lf) overtaken.add(row.id);
+            begin(cell, row);
+          }
         }
         const inside = (cell, at) => (bounds.get(cell) || []).some((ps) => at >= ps && at <= ps + keep);
+        const history = (cell) => {
+          const head = when(cycles.get(cell)[0]);
+          return (known.get(cell) || []).filter((at) => at < head);
+        };
+        const lateStarts = /* @__PURE__ */ new Map(), unsure = /* @__PURE__ */ new Set(), covered = (cell, at) => [...history(cell), ...lateStarts.get(cell) || [], ...cycles.get(cell).map(when)].some((start) => at >= start && at <= start + keep);
         for (const a of ordered) {
           if (!qualified(a)) continue;
           const cell = tuple(a), running = chain.get(cell);
           if (running && frozen(running) && stamp2(a) < running.at) {
-            if (!(Number.isFinite(running.ps) && stamp2(a) >= running.ps && stamp2(a) <= running.ps + keep)) overtaken.add(running.id);
-          } else if (stamp2(a) > floor && (!running || stamp2(a) > when(running) + keep) && !inside(cell, stamp2(a))) begin(cell, a);
+            if (!covered(cell, stamp2(a))) {
+              overtaken.add(running.id);
+              lateStarts.set(cell, [...lateStarts.get(cell) || [], stamp2(a)]);
+            }
+          } else if (stamp2(a) > floor && (!running || stamp2(a) > when(running) + keep) && !inside(cell, stamp2(a))) {
+            const lateBy = running && (frozen(running) ? running.lf : stamp2(running) <= folded ? folded : void 0);
+            if (Number.isFinite(lateBy) && when(running) + keep < lateBy) unsure.add(a.eventId);
+            begin(cell, a);
+          }
         }
-        const prevStart = /* @__PURE__ */ new Map();
-        for (const list of cycles.values()) list.forEach((a, i) => {
-          const ps = i ? when(list[i - 1]) : frozen(a) ? a.ps : void 0;
-          if (Number.isFinite(ps)) prevStart.set(a, ps);
-        });
-        const withPs = (a) => prevStart.has(a) ? { ps: prevStart.get(a) } : {};
+        const prevStart = /* @__PURE__ */ new Map(), earlier = /* @__PURE__ */ new Map();
+        for (const [cell, list] of cycles) {
+          const all = [.../* @__PURE__ */ new Set([...history(cell), ...lateStarts.get(cell) || [], ...list.map(when)])].sort((x, y) => x - y);
+          for (const a of list) {
+            const before2 = all.filter((start) => start < when(a));
+            if (before2.length) prevStart.set(a, before2.at(-1));
+            if (before2.length > 1) earlier.set(a, before2.slice(0, -1));
+          }
+        }
+        const withPs = (a) => ({ ...prevStart.has(a) ? { ps: prevStart.get(a) } : {}, ...earlier.has(a) ? { pc: earlier.get(a) } : {} });
         const toRow = (a) => {
           const actual = current.get(a.eventId), m = a.measure;
           return {
@@ -9545,19 +9581,19 @@ var require_temper = __commonJS({
             pf: proofs(a),
             fx: [],
             t: {},
-            ...withPs(a)
+            ...withPs(a),
+            ...stamp2(a) <= folded ? { lf: folded } : {}
           };
         };
         const pairOf = (a) => {
           const actual = current.get(a.eventId), p = byId.get(a.presentationId);
           const pair = { id: a.eventId, at: stamp2(a), pa: stamp2(p), i: a.itemKey, fa: a.measure.familyKey, p: a.presentationId, dc: a.decisionId, cp: completion.get(a.decisionId).id, pf: proofs(a), x: 0, s: null, o: null, r: null };
+          const result = (x) => !qualified(x) || x.exposure !== "new" || x.assisted === false && !counted(x) ? { s: "unavailable", r: x.exclusionReason || "unassessable-target" } : { s: "observed", o: `${x.assisted ? "assisted" : "independent"}-${x.verdict}` };
           if (invalidated(a) || !actual) pair.x = 1;
-          else if (!qualified(actual) || actual.exposure !== "new" || actual.assisted === false && !counted(actual)) {
-            pair.s = "unavailable";
-            pair.r = actual.exclusionReason || "unassessable-target";
-          } else {
-            pair.s = "observed";
-            pair.o = `${actual.assisted ? "assisted" : "independent"}-${actual.verdict}`;
+          else {
+            const read = result(actual);
+            Object.assign(pair, read);
+            if (JSON.stringify(result(byTime(actual))) !== JSON.stringify(read) || stamp2(a) <= folded && trailKeys(p).some(foldedKey)) pair.l = 1;
           }
           return pair;
         };
@@ -9571,10 +9607,13 @@ var require_temper = __commonJS({
         const items = [], rows2 = [];
         for (const anchor of live) {
           const row = frozen(anchor) ? { ...anchor, fx: [...anchor.fx || []], t: { ...anchor.t }, pf: anchor.pf || [] } : toRow(anchor), cell = cellOf(row);
+          if (frozen(anchor)) Object.assign(row, withPs(anchor));
           if ([row.id, row.p, row.dc, row.cp, ...row.pf].some(gone)) row.x = 1;
           if (overtaken.has(row.id) || row.k === "retention" && metLate(row, row.at)) row.l = 1;
+          if (!frozen(anchor) && stamp2(anchor) <= folded && trace(byId.get(anchor.presentationId)).some(foldedKey)) row.l = 1;
+          if (!frozen(anchor) && (misread(anchor) || unsure.has(anchor.eventId))) row.l = 1;
           const logged = position.has(row.id) ? { eventId: row.id, at: iso3(row.at), recordedAt: iso3(row.ra) } : null;
-          const follows = (e) => logged ? before(logged, e) : row.at <= stamp2(e) && row.ra <= Date.parse(e.recordedAt);
+          const follows = (e) => row.ra <= Date.parse(e.recordedAt) && (row.at < stamp2(e) || row.at === stamp2(e) && (!logged || before(logged, e)));
           for (const h of summary.help) if (h.presentationId === row.p && ["answer", "explanation"].includes(h.level) && follows(h) && !row.fx.some(([id]) => id === h.eventId)) row.fx.push([h.eventId, stamp2(h)]);
           row.fx = row.fx.filter(([id]) => !gone(id));
           const candidates = (inCell.get(cell) || []).filter((a) => a.eventId !== row.id && a.attemptNo === 1 && framed(a) && follows(byId.get(a.presentationId)) && a.measure.familyKey !== row.fa && a.itemKey !== row.i);
@@ -9582,13 +9621,15 @@ var require_temper = __commonJS({
           const measure2 = { skillId: row.s, modality: row.m, difficulty: row.d, audioRequired: row.a, responseFormat: row.f, taskVersion: row.tv };
           for (const [window2, start, end] of FOLLOWUP.windows) {
             const due = row.at + start * day, expires = row.at + end * day, within = (a) => stamp2(a) >= due && stamp2(a) < expires;
-            const first = early.find(within), found = due <= floor ? null : targets.find(within);
+            const lost = due <= row.lf && Object.values(frozenSight).some((at) => at >= row.at && at < expires && at <= row.lf);
+            const first = early.find(within), found = due <= floor || lost ? null : targets.find(within);
             const stored = row.t[window2] || null, ahead = !!stored && stored.at > now, kept = ahead ? null : stored;
-            const reread = !ahead && !!found && (!kept || found.eventId === kept.id), pair = reread ? pairOf(found) : stored && { ...stored };
+            const reread = !ahead && !!found && (!kept || found.eventId === kept.id);
+            const pair = reread ? pairOf(found) : stored ? { ...stored } : first && !lost && due > floor ? { ...pairOf(first), l: 1 } : null;
             if (pair) row.t[window2] = pair;
             if (pair && [pair.id, pair.p, pair.dc, pair.cp, ...pair.pf || []].some(gone)) pair.x = 1;
             const late = (key) => firstShown.get(key) < pair.pa;
-            if (pair && (stored?.l || stored && first && stamp2(first) < stored.at || [`item:${pair.i}`, `family:${pair.fa}`].some(late) || /^independent/.test(pair.o) && metLate(pair, pair.at))) pair.l = 1;
+            if (pair && (stored?.l || first && stamp2(first) < pair.at || [`item:${pair.i}`, `family:${pair.fa}`].some(late) || /^independent/.test(pair.o) && metLate(pair, pair.at))) pair.l = 1;
             const shown2 = ahead ? null : pair;
             let status = now < due ? "not_due" : now < expires ? "due" : "missed", outcome = null, reason = null;
             if (!usable) {
@@ -9613,6 +9654,9 @@ var require_temper = __commonJS({
             } else if (due <= floor) {
               status = "unavailable";
               reason = "older-source-unavailable";
+            } else if (lost) {
+              status = "unavailable";
+              reason = "adjusted-history";
             }
             if (selected.has(anchor)) items.push({
               id: `${row.id}:${window2}`,
@@ -9634,7 +9678,18 @@ var require_temper = __commonJS({
           }
           rows2.push(row);
         }
-        const starts = [...cycles.values()].map((list) => list.map((a) => frozen(a) ? { g: a.g, s: a.s, d: a.d, f: a.f, m: a.m, a: a.a, id: a.id, at: a.at, ...withPs(a) } : { g: game(a), s: a.measure.skillId, d: a.measure.difficulty, f: a.measure.responseFormat, m: a.measure.modality, a: a.measure.audioRequired, id: a.eventId, at: stamp2(a), ...withPs(a) }));
+        const starts = [...cycles.values()].map((list) => list.map((a) => frozen(a) ? { g: a.g, s: a.s, d: a.d, f: a.f, m: a.m, a: a.a, id: a.id, at: a.at, ...withPs(a), ...Number.isFinite(a.lf) ? { lf: a.lf } : {} } : {
+          g: game(a),
+          s: a.measure.skillId,
+          d: a.measure.difficulty,
+          f: a.measure.responseFormat,
+          m: a.measure.modality,
+          a: a.measure.audioRequired,
+          id: a.eventId,
+          at: stamp2(a),
+          ...withPs(a),
+          ...stamp2(a) <= folded ? { lf: folded } : {}
+        }));
         const report = {
           policy: FOLLOWUP.version,
           asOf,
@@ -9653,12 +9708,18 @@ var require_temper = __commonJS({
           causalClaim: false,
           policyPromotion: false
         };
+        const markAhead = (row) => {
+          const out = { ...row, t: { ...row.t } };
+          if (out.k === "retention" && metLate(out, out.at)) out.l = 1;
+          for (const [window2, pair] of Object.entries(out.t)) if ([`item:${pair.i}`, `family:${pair.fa}`].some((key) => firstShown.get(key) < pair.pa) || /^independent/.test(pair.o) && metLate(pair, pair.at)) out.t[window2] = { ...pair, l: 1 };
+          return out;
+        };
         Object.defineProperty(report, "sealing", { enumerable: false, value: {
           rows: rows2,
           starts,
           floor,
           now,
-          later: (table?.rows || []).filter((row) => row.at > now),
+          later: (table?.rows || []).filter((row) => row.at > now).map(markAhead),
           // A family folded before without a frozen time was seen before anything left in the log: a later sight never stands in for it.
           sights: [...Object.entries(frozenSight), ...[...firstShown].filter(([key]) => Number.isFinite(frozenSight[key]) || !foldedShown.has(key))]
         } });
@@ -9671,7 +9732,7 @@ var require_temper = __commonJS({
         for (const [key, at] of seen) if (key.startsWith("family:") && !(first.get(key) <= at)) first.set(key, at);
         for (const [key, at] of first) if (at <= cutoff && at >= oldest) fs[key] = at;
         const met = new Set(presented2.flatMap(([, item, family]) => [`item:${item}`, `family:${family}`]));
-        const held = (pair) => pair.at <= cutoff || pair.at > now || met.has(`item:${pair.i}`) || met.has(`family:${pair.fa}`);
+        const held = (pair) => !!pair.l || pair.at <= cutoff || pair.at > now || met.has(`item:${pair.i}`) || met.has(`family:${pair.fa}`);
         for (const cycle of starts) {
           const start = cycle.filter((a) => a.at <= cutoff).at(-1), row = start && full.get(start.id);
           if (row) out.push({ ...row, t: Object.fromEntries(Object.entries(row.t).filter(([, pair]) => held(pair))) });
@@ -12337,7 +12398,7 @@ var require_game_learning = __commonJS({
           read = null;
         }
         ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
-        ledger.followups = read ? Temper.sealFollowups(read, { cutoff: ledger.cutoff, folded: ledger.folded, presented: ledger.presented }) : { v: Temper.FOLLOWUP.table, folded: ledger.folded, floor: ledger.cutoff, rows: Array.isArray(ledger.followups?.rows) ? ledger.followups.rows : [] };
+        ledger.followups = read ? Temper.sealFollowups(read, { cutoff: ledger.cutoff, folded: ledger.folded, presented: ledger.presented }) : { v: Temper.FOLLOWUP.table, folded: ledger.folded, floor: ledger.cutoff, ...ledger.followups?.fs ? { fs: ledger.followups.fs } : {}, rows: Array.isArray(ledger.followups?.rows) ? ledger.followups.rows : [] };
         ledger.followupsPreserved = false;
         session = newSession(planned.kept);
         for (const e of planned.folded) settled.delete(e.id);
