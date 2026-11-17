@@ -124,6 +124,8 @@ test('90일 정리는 브랜드 없는 인물이 살아 있는 프로젝트를 �
   const f=await fixture(t),{store}=f.app,old=new Date(Date.now()-91*86400000).toISOString();
   const open=(await f.send()).projectId,done=(await f.send()).projectId;
   for(const id of [open,done])store.put('clientProjects',id,{...store.get('clientProjects',id),updatedAt:old});
+  // done의 의뢰 기록은 15일 전에 예고가 나갔다(판 4 설계 11-7 — 의뢰 기록도 예고 뒤 14일에 지운다). open은 이번 회차가 첫 예고.
+  store.put('clientProjects',done,{...store.get('clientProjects',done),requestRetentionNotice:{at:new Date(Date.now()-15*86400000).toISOString(),deleteAt:''}});
   // 검토 중 인물 하나(열림), 쓸 수 있게 된 인물 하나(끝남 — 그 프로젝트는 정리된다). 끝난 쪽 판의 파일은 프로젝트 자산과 이름이 같다.
   const doneRow=store.get('clientProjects',done),shared=doneRow.studio.assets[0].diskName;
   const personaOpen=randomUUID(),personaDone=randomUUID(),revision=randomUUID();
@@ -133,7 +135,7 @@ test('90일 정리는 브랜드 없는 인물이 살아 있는 프로젝트를 �
   store.put('pulsePersonaRevisions',revision,{id:revision,personaId:personaDone,revision:1,status:'published',assets:[{id:randomUUID(),diskName:shared,mimeType:'image/png'}]});
   const before=(await readdir(join(f.options.dataDir,'studio-media'))).length;
   f.jar.clear();await f.start();
-  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1,retention:{deleted:1,held:0,failed:0,noticed:1}});
+  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1,requests:{noticed:1},retention:{deleted:1,held:0,failed:0,noticed:1}});
   assert.equal(store.get('clientProjects',open).stage,'received','열린 인물 검토가 있는 프로젝트는 그대로');
   assert.equal(store.get('pulsePersonas',personaOpen).status,'reviewing');assert.ok(store.get('pulsePersonas',personaOpen).retentionNotice,'열린 인물은 예고만');
   assert.equal(store.get('pulsePersonas',personaDone).status,'deleted');assert.equal(store.get('pulsePersonas',personaDone).deletion.reason,'origin_stopped');

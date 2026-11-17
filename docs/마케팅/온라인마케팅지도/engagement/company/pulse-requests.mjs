@@ -4,14 +4,15 @@ import {mkdir,open,readdir,rename,statfs,unlink,stat} from 'node:fs/promises';
 import {resolve,dirname,basename} from 'node:path';
 import {pipeline} from 'node:stream/promises';
 import {validMediaSignature} from './studio-media.mjs';
-import {ensureLocalMedia} from './studio-media-cloud.mjs';
+import {ensureLocalMedia,MEDIA_NAME} from './studio-media-cloud.mjs';
 import {emptyPulseStudio} from './pulse-studio.mjs';
 import {recordSceneReview} from './client-scene-requests.mjs';
 import {CASTING_MODELS,OUTFIT_IDS,HAIR_IDS} from './public/pulse-app/casting-catalog.mjs';
 import {castingOf,personaRefOf,MODEL_CHOICE_KINDS,MODEL_OPTIONAL_CHOICES} from './public/pulse-app/casting-choice.mjs';
 import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
-import {personaHoldsProject,PERSONA_SLOTS} from './pulse-personas.mjs';
+import {personaHoldsProject,PERSONA_SLOTS,requestClock,stoppedNoticeDue,stoppedDeleteDue} from './pulse-personas.mjs';
+import {workspaceMediaNames,personaMediaNameSet} from './workspace-media.mjs';
 import {applyInlineTranslations,missingTranslations,inlineObject} from './pulse-translations.mjs';
 import {PROGRESS_FIELDS,applyProgressAction,progressOf,progressCustomerView} from './pulse-progress.mjs';
 
@@ -365,31 +366,77 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
       if(info&&stamp-info.mtimeMs>86400000)await unlink(file).catch(()=>{});
     }
   }
-  // 동의 문구의 약속: 접수 뒤 90일 동안 아무 움직임이 없고 제작으로 이어지지 않은 의뢰는 연락처 · 답 · 파일을 지우고 보관으로 돌린다.
-  // 유지보수 예약에서만 돈다(익명 요청이 방아쇠가 되면 안 된다). 움직임 하나라도 있으면 그때부터 다시 잰다.
-  // 차례(판 4 설계 11-6 「한 길」 — Fable 5.2 설계 검토 11-12): 먼저 보관 기간 뒤 지우기(sweepRetention — 브랜드 인물의 기한 · 브랜드 없는 인물의 90일 시계,
-  // 14일 전 예고 뒤에만 지움), 그다음 의뢰 정리. 브랜드 없는 인물(또는 열린 인물)이 살아 있는 의뢰는 정리하지 않는다 — 인물이 시계로 지워진 같은 회차에 정리된다.
-  // 그래서 브랜드 없는 인물을 지우는 날은 직원 · 손님 화면이 보는 시계의 날 하나다. startup(서버 시작 직후 회차): 예고만 내고 지우기 · 정리는 다음 회차(6시간 뒤)부터 —
-  // 백업 복원 직후 잃은 구간의 움직임을 사람이 볼 틈을 둔다(Fable 5.2 설계 검토 P3).
+  // 의뢰 기록 90일 시계(판 4 설계 11-7 — 11-18 유호님 「자율주행」 → (a), Fable 5.2 설계 검토 「고쳐서 진행」 반영): 동의 줄 「이 내용과 연락처를 … · 제작으로 이어지지 않으면
+  // 90일 뒤 지워요」를 의뢰서를 낸 모든 프로젝트에(공개 의뢰서 · 방 안 의뢰서, 담당자 확인 전후). 마지막 움직임에서 90일 — 14일 전에 담당자 예고, 예고가 나간 의뢰만 지운다.
+  // 유지보수 예약에서만 돈다(익명 요청이 방아쇠가 되면 안 된다). 움직임 하나라도 있으면 그때부터 다시 잰다. 보관은 따로 셈하지 않는다 — 보관한 의뢰도 지운다(예고 글이 「보관을 풀고」를 말한다).
+  // 차례(11-6 「한 길」 그대로): ① 인물 쓸기(sweepRetention — 브랜드 인물의 기한 · 브랜드 없는 인물의 90일 시계) ② 지운 뒤 못 지운 파일 잇기 ③ 의뢰 기록 예고 ④ 의뢰 기록 지우기.
+  // 브랜드 없는 인물(또는 열린 인물)이 살아 있는 의뢰는 지우지 않는다(지우는 바로 그 트랜잭션에서 본다) — 인물이 시계로 지워진 같은 회차에 정리된다.
+  // startup(서버 시작 직후 회차): 예고만 내고 지우기 · 잇기는 다음 회차(6시간 뒤)부터 — 백업 복원 직후 잃은 구간의 움직임을 사람이 볼 틈을 둔다.
+  // 결과: retired(지운 의뢰 수)와, 0이 아닐 때만 requests({noticed,held,failed,unclear,resumed}) · retention(인물 쓸기).
+  async function finishRetire(projectId){
+    const pending=store.get('clientProjects',projectId)?.retirePendingUnlink;if(!Array.isArray(pending)||!pending.length)return;
+    // 다른 문서가 아직 가리키는 이름은 지우지 않는다(같은 이름이 다른 프로젝트 · 인물에 있으면 그대로) — 목록은 지운 뒤의 DB에서 읽는다.
+    const used=new Set([...workspaceMediaNames(store.db),...personaMediaNameSet(store.db)]),left=[];
+    for(const name of pending){
+      // studio-media 이름 규칙(작업실 영상 클라우드와 같은 규칙 — 직원이 올린 소리 · 자막 파일 포함)이 아니면 그 폴더의 파일이 아니다.
+      if(typeof name!=='string'||used.has(name)||!MEDIA_NAME.test(name))continue;
+      const path=resolve(media(),name);if(dirname(path)!==media())continue;
+      try{await unlink(path);}catch(error){if(error?.code!=='ENOENT')left.push(name);}
+    }
+    clientProjects.settleRetire(projectId,left);
+    if(left.length)throw fail('지운 의뢰의 파일 일부를 지우지 못했어요.',500);
+  }
+  async function sweepRequestRecords({noticeOnly}){
+    const result={retired:0,noticed:0,held:0,failed:0,unclear:0,resumed:0};
+    if(!noticeOnly)for(const {id} of store.all('clientProjects').filter(row=>Array.isArray(row.retirePendingUnlink)&&row.retirePendingUnlink.length)){
+      try{await finishRetire(id);result.resumed++;}catch{result.failed++;}
+    }
+    for(const row of store.all('clientProjects'))if(requestClock(store,row,clock())?.unclear)result.unclear++;
+    for(const {id} of store.all('clientProjects').filter(row=>stoppedNoticeDue(requestClock(store,row,clock()),clock()))){
+      try{
+        store.transaction(()=>{
+          const now=clock(),due=requestClock(store,store.get('clientProjects',id),now);
+          if(!stoppedNoticeDue(due,now))return;
+          clientProjects.noticeRequestRetention(id,{at:now,deleteAt:due.deleteAt});result.noticed++;
+        });
+      }catch{result.failed++;}
+    }
+    if(noticeOnly)return result;
+    for(const {id} of store.all('clientProjects').filter(row=>stoppedDeleteDue(requestClock(store,row,clock()),clock()))){
+      let retired=false;
+      try{
+        retired=store.transaction(()=>{
+          const now=clock(),row=store.get('clientProjects',id),due=requestClock(store,row,now);
+          if(!stoppedDeleteDue(due,now))return false;
+          // 붙잡는 인물은 지우는 바로 그 순간에 본다(await 없이 트랜잭션 안 — 회차 도중의 귀속 취소 · 새 요청도 본다).
+          if(personaHoldsProject(store,id)){result.held++;return false;}
+          const request=row.studio?.request||{};
+          // 결제가 확인됐다가 취소된 의뢰는 결제 기록만 남긴다(설계 검토 D7 — 법이 남기라는 것은 거래 기록이다). 이력이 없는 옛 결제는 그때의 payment에서 만든 이력을 적는다.
+          const payment=due.keepPayment?{payment:request.payment,paymentLog:paymentLogOf(request)}:{};
+          clientProjects.retireRequestWithin(id,{...emptyPulseStudio(),request:{schemaVersion:1,number:request.number||'',status:'retired',retiredAt:now,answers:{},files:[],asks:[],notes:[],rounds:[],...payment}});
+          for(const line of store.all(KIND).filter(item=>item.projectId===id))store.remove(KIND,line.id);
+          return true;
+        });
+      }catch{result.failed++;continue;}
+      if(!retired)continue;
+      result.retired++;
+      try{await finishRetire(id);}catch{result.failed++;}
+    }
+    return result;
+  }
   async function retireUnconfirmed({startup=false}={}){
     const retention=workspaces?.sweepRetention?await workspaces.sweepRetention({noticeOnly:startup}):null;
-    const stamp=now(),cutoff=REQUEST_LIMITS.unconfirmedDays*86400000;let retired=0;
-    for(const row of startup?[]:store.all(KIND)){
+    const {retired,...requests}=await sweepRequestRecords({noticeOnly:startup});
+    // 공개 의뢰서 대기 줄(번호와 프로젝트 id만)의 정리: 프로젝트가 없는 줄은 접수 뒤 90일에, 확인됐거나 단계를 옮긴 의뢰의 줄은 바로 지운다(지우기는 위 시계 하나가 한다).
+    const stamp=now(),cutoff=REQUEST_LIMITS.unconfirmedDays*86400000;
+    if(!startup)for(const row of store.all(KIND)){
       if(row.status!=='submitted')continue;
       const project=row.projectId&&store.get('clientProjects',row.projectId);
       if(!project){if(stamp-Date.parse(row.submittedAt)>cutoff)store.remove(KIND,row.id);continue;}
-      if(stamp-Date.parse(project.updatedAt)<=cutoff)continue;
-      // 붙잡는 인물은 정리하는 바로 그 순간에 본다(await 없이 정리 트랜잭션 앞 — 회차 도중의 귀속 취소 · 새 요청도 본다, Fable 5.2 설계 검토 P1 (b)).
-      // 정리 대기 줄을 지우는 아래 갈래보다 먼저 본다 — 인물 검토 중 보관한 의뢰도 줄을 남겨, 보관을 풀면 뒤에 정리된다(GPT 서버 다시 검수 GA1).
-      if(personaHoldsProject(store,project.id))continue;
-      // 보관한 확인 전 의뢰는 대기 줄을 남긴다 — 보관을 풀면(received) 그때부터 다시 재어 정리된다(GPT 서버 끝 판 GA1). 확인됐거나 다른 단계로 간 의뢰만 줄을 지운다.
-      if(!project.studio?.request?.confirmedAt&&project.stage==='archived')continue;
-      if(project.studio?.request?.confirmedAt||project.stage!=='received'){store.remove(KIND,row.id);continue;}
-      const files=clientProjects.retireRequest(project.id,{...emptyPulseStudio(),request:{schemaVersion:1,number:row.number||'',status:'retired',retiredAt:clock(),answers:{},files:[],asks:[],notes:[],rounds:[]}});
-      for(const file of files)await unlink(inMedia(file.diskName)).catch(()=>{});
-      store.remove(KIND,row.id);retired++;
+      if(project.studio?.request?.confirmedAt||!['received','archived'].includes(project.stage)||project.studio?.request?.status==='retired')store.remove(KIND,row.id);
     }
-    return {retired,...(retention&&(retention.deleted||retention.held||retention.failed||retention.noticed||retention.resumed||retention.unclear)?{retention}:{})};
+    for(const key of Object.keys(requests))if(!requests[key])delete requests[key];
+    return {retired,...(Object.keys(requests).length?{requests}:{}),...(retention&&(retention.deleted||retention.held||retention.failed||retention.noticed||retention.resumed||retention.unclear)?{retention}:{})};
   }
   // 접수 뒤 손님이 더 보내는 파일(되묻기 답 · 자료 더 보내기 · 담당자가 만든 프로젝트의 의뢰서). 받는 형식과 문턱은 초안과 같고, 자리는 처음부터 백업되는 폴더다.
   async function receiveProjectFile(req,{session,client=''}){

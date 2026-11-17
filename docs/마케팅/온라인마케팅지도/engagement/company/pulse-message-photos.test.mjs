@@ -268,7 +268,8 @@ test('message photos are in the backup list and leave with the rest when an unco
   const two=await f.photo();assert.equal(two.status,201);const unsent=f.row().studio.messageUploads[0].diskName;
   const names=workspaceMediaNames(f.app.store.db);
   assert.equal(names.includes(diskName),true,'backups carry sent message photos');assert.equal(names.includes(unsent),true,'and photos waiting to be sent');
-  f.put(current=>({...current,updatedAt:new Date(Date.now()-91*86400000).toISOString()}));
+  // 의뢰 기록 90일 시계(판 4 설계 11-7): 15일 전에 예고가 나간 의뢰.
+  f.put(current=>({...current,updatedAt:new Date(Date.now()-91*86400000).toISOString(),requestRetentionNotice:{at:new Date(Date.now()-15*86400000).toISOString(),deleteAt:''}}));
   assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1});
   assert.equal(f.row().studio.assets.length,0);
   assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).includes(diskName),false,'the photo file leaves too');

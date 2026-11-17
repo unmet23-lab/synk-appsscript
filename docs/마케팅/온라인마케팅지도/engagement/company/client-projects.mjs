@@ -123,9 +123,45 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     return {...storeRow(row),invite:raw,expiresAt};
   }
   function reissueRequestInvite(id){const row=store.get('clientProjects',id);if(!row||row.stage==='archived')throw fail('의뢰를 찾지 못했어요. hello@synk.im으로 알려 주세요.',404);const raw=randomBytes(32).toString('base64url'),expiresAt=new Date(Date.parse(clock())+INVITE_DAYS*86400000).toISOString();storeRow({...append(row,'의뢰서 링크 다시 만듦','customer'),inviteHash:digest(raw),inviteRevision:row.inviteRevision+1,inviteExpiresAt:expiresAt});return {invite:raw,expiresAt};}
-  // 제작으로 이어지지 않은 의뢰의 보존 기한이 끝났을 때(pulse-requests.mjs). 연락처 · 답 · 파일을 지우고 번호만 남겨 보관한다. 지울 파일 목록을 돌려준다.
-  // 전용 인물 문서가 가진 파일은 같은 이름이 프로젝트 목록에 있어도 돌려주지 않는다 — 인물의 보관 · 삭제는 인물 쪽이 정한다(기획 12-2 「90일 정리」).
-  function retireRequest(id,studio){return store.transaction(()=>{const row=store.get('clientProjects',id);if(!row)return [];const persona=new Set(PERSONA_MEDIA_KINDS.flatMap(kind=>store.all(kind).flatMap(doc=>personaMediaOf(kind,doc))));const files=[...(row.studio?.assets||[]),...(row.studio?.messageUploads||[]),...(row.intake?.files||[])].filter(file=>!persona.has(file?.diskName));const {intake,...kept}=row;const retired=append(kept,'보존 기한이 끝나 의뢰 자료를 지움','system');storeRow({...retired,title:`지운 의뢰 ${studio.request.number}`.trim(),customerName:'지운 의뢰',contact:'',summary:'',nextStep:'',dueDate:'',stage:'archived',inviteHash:null,inviteRevision:row.inviteRevision+1,inviteExpiresAt:null,messages:[],studio:studio.request?.retiredAt?{...studio,request:{...studio.request,retiredAt:retired.updatedAt}}:studio});return files;});}
+  // 제작으로 이어지지 않은 의뢰의 보존 기한이 끝났을 때(pulse-requests.mjs 의뢰 기록 90일 시계 — 판 4 설계 11-7). 손님 답 · 연락처 · 보낸 파일 · 대화를 지우고 번호만 남겨 보관한다.
+  // 남길 칸을 적는 쪽(Fable 5.2 설계 검토 11-18 · 질문 1): 뒤에 칸이 새로 생겨도 손님 글이 저절로 남지 않게. updatedAt은 append가 지운 때로 채운다(D2 — 직원 목록 정렬 · 인물 시계가 읽는다).
+  // history는 행동 이름(고정 문자열) · 때 · 직원 id라 남기고, 인물 예고 줄의 인물 이름만 비운다(D8 — 알림 사건도 같다).
+  // 프로젝트에 묶인 곁 문서(권리 기록 · 자료 사용 기록 · 직원 초안 · 자동 안내 기록)도 같은 트랜잭션에서 지운다(D5). 납품 준비 · 납품 점검은 승인한 시안이 있어야 생기고
+  // 시안이 있으면 제작한 프로젝트라 이 길에 오지 않는다. 메일 대기함은 받는 주소의 해시 · 사건 id, 알림 읽음은 id만 가진다.
+  // 지울 파일 이름은 retirePendingUnlink로 프로젝트에 남기고 돌려준다 — 파일을 지운 뒤 finishRetire가 비운다(커밋과 파일 지우기 사이에 서버가 멈춰도 다음 회차가 잇는다, D9).
+  // 전용 인물 문서가 가진 파일은 같은 이름이 프로젝트 목록에 있어도 지우지 않는다 — 인물의 보관 · 삭제는 인물 쪽이 정한다(기획 12-2 「90일 정리」).
+  // studio는 부르는 쪽이 짓는다(빈 PULSE 기획 + 지운 의뢰 표시, 결제가 확인됐다가 취소된 의뢰는 결제 기록만 — D7). retiredAt은 지운 때로 맞춘다.
+  const RETIRE_KEEP=['id','createdAt','revision','ownerId','reviewerId','teamId','history','notificationEvents','inviteRevision','receiptId'];
+  const RETIRE_SIDE=['clientRights','clientMaterialUsage'];
+  const withoutPersonaName=list=>(Array.isArray(list)?list:[]).map(entry=>entry&&typeof entry==='object'&&'personaName' in entry?(({personaName,...rest})=>rest)(entry):entry);
+  // retireRequestWithin은 부르는 쪽 트랜잭션 안에서(의뢰 기록 쓸기가 다시 판정한 같은 트랜잭션 — 저장소 트랜잭션은 겹쳐 열 수 없다), retireRequest는 혼자 부를 때.
+  function retireRequest(id,studio){return store.transaction(()=>retireRequestWithin(id,studio));}
+  function retireRequestWithin(id,studio){
+    const row=store.get('clientProjects',id);if(!row)return [];
+    const persona=new Set(PERSONA_MEDIA_KINDS.flatMap(kind=>store.all(kind).flatMap(doc=>personaMediaOf(kind,doc))));
+    const names=[...(row.studio?.assets||[]),...(row.studio?.messageUploads||[]),...(row.intake?.files||[])].map(file=>file?.diskName)
+      .filter(name=>typeof name==='string'&&name&&!persona.has(name));
+    const kept=Object.fromEntries(RETIRE_KEEP.filter(key=>Object.hasOwn(row,key)).map(key=>[key,row[key]]));
+    const retired=append({...kept,history:withoutPersonaName(row.history)},'보존 기한이 끝나 의뢰 자료를 지움','system');
+    const pending=[...new Set([...(Array.isArray(row.retirePendingUnlink)?row.retirePendingUnlink:[]),...names])];
+    storeRow({...retired,title:`지운 의뢰 ${studio.request.number}`.trim(),customerName:'지운 의뢰',contact:'',summary:'',terms:'',nextStep:'',internalNotes:'',dueDate:'',nextContactDate:'',stage:'archived',
+      inviteHash:null,inviteRevision:(row.inviteRevision||0)+1,inviteExpiresAt:null,versions:[],messages:[],studio:{...studio,request:{...studio.request,retiredAt:retired.updatedAt}},...(pending.length?{retirePendingUnlink:pending}:{})});
+    // storeRow는 앞 문서의 알림 사건을 잇는다 — 이은 뒤 인물 이름을 비운다(같은 트랜잭션, 판 · 기록 표식은 그대로).
+    const stored=store.get('clientProjects',id);if(stored?.notificationEvents)store.put('clientProjects',id,{...stored,notificationEvents:withoutPersonaName(stored.notificationEvents)});
+    for(const kind of RETIRE_SIDE)store.remove(kind,id);
+    for(const draft of store.all('clientDrafts').filter(item=>item?.projectId===id&&typeof item.ownerId==='string'&&typeof item.kind==='string'))store.remove('clientDrafts',draft.ownerId+'|'+id+'|'+draft.kind);
+    for(const reply of store.all('pulseAutoReplies').filter(item=>item?.projectId===id&&typeof item.id==='string'))store.remove('pulseAutoReplies',reply.id);
+    return pending;
+  }
+  // 지운 의뢰의 파일을 다 지운 뒤(pulse-requests finishRetire) 남은 이름 목록을 비운다 — 시스템 쓰기라 updatedAt을 옮기지 않는다.
+  function settleRetire(id,left){return store.transaction(()=>{const row=store.get('clientProjects',id);if(!row||!Array.isArray(row.retirePendingUnlink))return;const {retirePendingUnlink,...rest}=row;store.put('clientProjects',id,left.length?{...rest,retirePendingUnlink:left}:rest);});}
+  // 의뢰 기록 지우기 예고(판 4 설계 11-7): 예고 기록은 프로젝트에(requestRetentionNotice), 담당자 · 검토자에게는 알림 한 줄(기록의 시스템 줄 — client-notifications가
+  // request_retention_notice로 싣는다, 보관한 프로젝트에서도). 시스템 쓰기라 updatedAt을 옮기지 않는다(옮기면 예고가 곧바로 풀린다).
+  function noticeRequestRetention(id,{at,deleteAt}){
+    const row=store.get('clientProjects',id);if(!row)return null;
+    const next={...row,requestRetentionNotice:{at,deleteAt},revision:row.revision+1,updatedAt:row.updatedAt,history:[...(row.history||[]),{id:randomUUID(),action:'의뢰 기록 지우기 예고(제작으로 이어지지 않은 채 90일 동안 진행 없음)',actor:'system',at,notice:'request_retention',deleteAt}].slice(-300)};
+    return storeRow(next);
+  }
   function latestPreview(row){return row.versions.filter(v=>v.kind==='preview').at(-1);}
   function sceneRequests(user,id,input){
     object(input);return store.transaction(()=>{
@@ -291,5 +327,5 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     const next=append(row,'자동 안내','pulse-auto-reply');next.history=[...next.history.slice(0,-1),{...next.history.at(-1),actorName:'자동 안내'}];
     storeRow({...next,messages:[...row.messages,message]});return {posted:true,messageId:message.id};
   });}
-  return {workspace,readableSources,searchSources,save,createFromRequest,reissueRequestInvite,retireRequest,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,openVerified,checkInvite,read,session,sessionByHash,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
+  return {workspace,readableSources,searchSources,save,createFromRequest,reissueRequestInvite,retireRequest,retireRequestWithin,settleRetire,noticeRequestRetention,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,openVerified,checkInvite,read,session,sessionByHash,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
 }

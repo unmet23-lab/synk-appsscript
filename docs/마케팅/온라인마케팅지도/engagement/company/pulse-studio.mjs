@@ -9,7 +9,7 @@ import {feedbackRoundActions,applyFeedbackRoundAction,feedbackRoundsView} from '
 import {previewActions,applyPreviewAction,previewsView,visiblePreviewAssetIds} from './pulse-previews.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {requestActions,applyRequestAction,requestView,usesRequestFlow} from './pulse-requests.mjs';
-import {createPersonaGuard} from './pulse-personas.mjs';
+import {createPersonaGuard,requestClock} from './pulse-personas.mjs';
 import {withTranslation,staffSources,translationStaffView,localizeCustomerProject,inlineObject} from './pulse-translations.mjs';
 import {serverText,staffDisplayName,createStaffNames} from './pulse-locale.mjs';
 import {postedProgressAssetIds,progressPurpose,assertProgressUpload} from './pulse-progress.mjs';
@@ -75,14 +75,16 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   const seatOf=row=>seats&&row?.studio?.request?seats.seatFor(row):null;
   function customerState(token){const {row}=customer(token),result=clientProjects.read(token),mail=customerMail(row),seat=seatOf(row),persona=personaService?.customerView(row,localeOf(row)),removed=persona?null:personaService?.removedView?.(row);return {...result,project:{...localized(row,{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{}),...(seat?{seat}:{})}),...(persona?{persona}:{}),...(removed?{personaRemoved:removed}:{})}};}
   function staffState(user,projectId){
-    const row=clientProjects.project(user,projectId),{inviteHash,inviteRevision,notificationEvents,studio,...safe}=row;
+    const row=clientProjects.project(user,projectId),{inviteHash,inviteRevision,notificationEvents,studio,requestRetentionNotice,retirePendingUnlink,...safe}=row;
     let canEdit=true;try{clientProjects.project(user,projectId,true);}catch{canEdit=false;}
     // Staff media must use staff routes. A staff session cannot impersonate
     // a customer's capability merely to render an image or video.
     const versions=row.versions.map(version=>({...version,...(version.media?{media:{...media(row,version.media,true),url:'/api/client-media/'+version.media.id}}:{})}));
     const mail=staffMail(row),translation=translationStaffView(studioOf(row),row,localeOf(row)),listed=personaService?personaService.staffList(user,projectId):null,personaList=listed?.personas||[];
     const seat=seatOf(row),seatsNow=seats&&row.studio?.request?seats.seatsNow():null;
-    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{}),...(seat?{seat}:{}),...(seatsNow?{seats:seatsNow}:{}),...(translation?{translation}:{}),...(personaList.length?{personas:personaList}:{}),...(listed?.removed?{personaRemoved:listed.removed}:{}),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
+    // 의뢰 기록 90일 시계(판 4 설계 11-7): 예고가 나갔거나 날짜를 못 읽을 때만 데스크가 한 줄로 보인다. requestRetentionNotice(저장된 예고)는 낡을 수 있어 싣지 않는다.
+    const clock90=requestClock(store,row,clock()),requestRetention=clock90&&(clock90.unclear||clock90.noticed)?clock90:null;
+    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),...(requestRetention?{requestRetention}:{}),...(mail?{mail}:{}),...(seat?{seat}:{}),...(seatsNow?{seats:seatsNow}:{}),...(translation?{translation}:{}),...(personaList.length?{personas:personaList}:{}),...(listed?.removed?{personaRemoved:listed.removed}:{}),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
   }
   function asset(studio,assetId,{image=false}={}){if(!assetId)return null;const found=studio.assets.find(value=>value.id===id(assetId));if(!found||image&&!found.mimeType.startsWith('image/'))throw fail(image?'프로젝트의 이미지 자료를 선택해 주세요.':'이 프로젝트의 자료를 선택해 주세요.',404);return found;}
   function pointer(studio,input,{image=false}={}){const found=asset(studio,input.assetId,{image});return {assetId:found?.id||null,imageUrl:image?url(input.imageUrl):undefined};}

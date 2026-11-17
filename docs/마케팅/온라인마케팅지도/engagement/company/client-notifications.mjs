@@ -17,6 +17,21 @@ const RETENTION_NOTICE='persona_retention_notice';
 titles[RETENTION_NOTICE]='맞춤 인물을 곧 지워요';
 const kstDayOf=value=>{const at=Date.parse(value);return Number.isFinite(at)?new Date(at+9*3600000).toISOString().slice(0,10):'';};
 const retentionNoticeText=event=>`${event.personaName?`맞춤 인물 「${event.personaName}」`:'맞춤 인물'}을 ${kstDayOf(event.deleteAt)||'곧'} 지워요 — 제작으로 이어지지 않은 채 진행이 멈춰 있어요. 이어 가려면 이 프로젝트에 기록을 남겨 주세요(보관한 프로젝트는 보관을 풀면 돼요).`;
+// 의뢰 기록 90일 시계의 지우기 예고(판 4 설계 11-7, 11-18): 의뢰서를 낸 프로젝트가 제작으로 이어지지 않은 채 멈추면 14일 뒤 손님 답 · 연락처 · 보낸 파일 · 대화를 지운다고.
+// 보관한 프로젝트에서도 싣는다(보관한 의뢰도 지운다 — 보관을 풀고 기록을 남기면 다시 90일).
+const REQUEST_NOTICE='request_retention_notice';
+titles[REQUEST_NOTICE]='의뢰 기록을 곧 지워요';
+const requestNoticeText=event=>`이 의뢰의 기록(손님 답 · 연락처 · 보낸 파일 · 대화)을 ${kstDayOf(event.deleteAt)||'곧'} 지워요 — 제작으로 이어지지 않은 채 진행이 멈춰 있어요. 이어 가려면 이 프로젝트에 기록을 남겨 주세요(보관한 프로젝트는 먼저 보관을 풀어 주세요).`;
+const RETENTION_TYPES=new Set([RETENTION_NOTICE,REQUEST_NOTICE]);
+// 낡은 예고는 싣지 않는다(Fable 5.2 설계 검토 D3): 그 뒤 프로젝트가 움직였으면(시계가 다시 돈다 — 예고 쓰기는 updatedAt을 옮기지 않는다), 의뢰 예고는 의뢰 기록을 이미 지웠으면,
+// 인물 예고는 그 인물을 이미 지웠으면(기록의 「맞춤 인물 지움」 시스템 줄).
+function staleRetention(project,event){
+  if(!RETENTION_TYPES.has(event.type))return false;
+  if(Date.parse(project.updatedAt)>=Date.parse(event.createdAt))return true;
+  // 지운 의뢰에 남은 인물(귀속 취소 등)도 인물 시계의 예고를 받으므로, 「이미 지운 의뢰」는 의뢰 예고에만 건다.
+  if(event.type===REQUEST_NOTICE)return project.studio?.request?.status==='retired';
+  return (project.history||[]).some(entry=>entry?.actor==='system'&&entry.personaId===event.personaId&&String(entry.action||'').startsWith('맞춤 인물 지움')&&entry.at>=event.createdAt);
+}
 // 결제(판 4): 담당자가 크몽 결제를 요청 · 확인 · 취소했을 때 손님에게. 손님 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{payment_requested:'크몽에서 결제해 주세요',payment_confirmed:'결제를 확인했어요',payment_cancelled:'결제가 취소됐어요'});
 // 받으실 날 고치기(운영 조각 6-A): 담당자가 확인한 결제의 받으실 날을 고쳤을 때 손님에게(앱 안 · 기기 알림 · 메일 순간 due_changed).
@@ -88,6 +103,7 @@ export function appendClientNotificationEvents(previous,row){
   const committed=history?.id&&history.id!==previous?.history?.at(-1)?.id;
   // 지우기 예고: 시스템 기록 줄 하나가 알림 하나. 그 쓰기는 프로젝트 시계(updatedAt)를 옮기지 않으므로 알림 때는 기록 줄의 때다.
   if(committed&&history.actor==='system'&&history.notice==='persona_retention'&&typeof history.personaId==='string')add(RETENTION_NOTICE,history.id,['owner','reviewer'],{createdAt:history.at,tab:'desk',personaId:history.personaId,personaName:String(history.personaName||'').slice(0,40),deleteAt:history.deleteAt||null});
+  if(committed&&history.actor==='system'&&history.notice==='request_retention')add(REQUEST_NOTICE,history.id,['owner','reviewer'],{createdAt:history.at,tab:'desk',deleteAt:history.deleteAt||null});
   if(committed&&actorId!=='customer'){
     const approval=buildCustomerPreviewApproval(row),beforeApproval=buildCustomerPreviewApproval(previous||{});
     // Uploads already create preview_ready. Announce the later point at which
@@ -145,7 +161,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
   const notify=ids=>{try{onChange(unique(ids));}catch{/* Notification delivery is recoverable from the durable source. */}};
   const unsubscribe=clientProjects.subscribeChanges?.(change=>notify(change.userIds));
   function eligible(user,project,event){
-    if(project.stage==='archived'&&event.type!==RETENTION_NOTICE||user.role==='viewer'||event.actorId===user.id)return false;
+    if(project.stage==='archived'&&!RETENTION_TYPES.has(event.type)||user.role==='viewer'||event.actorId===user.id||staleRetention(project,event))return false;
     const owner=project.ownerId===user.id;
     const reviewer=project.reviewerId===user.id&&(user.role==='admin'||user.teamId&&user.teamId===project.teamId);
     if(!event.audiences.some(audience=>audience==='owner'&&owner||audience==='reviewer'&&reviewer))return false;
@@ -160,7 +176,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
     // workflow views. These sources apply the same current project ACL once.
     const projects=projectId?[clientProjects.project(user,projectId)]:clientProjects.readableSources(user);
     for(const source of projects){
-      if(user.role==='viewer'||!source.notificationEvents?.length||source.stage==='archived'&&!source.notificationEvents.some(event=>event.type===RETENTION_NOTICE))continue;
+      if(user.role==='viewer'||!source.notificationEvents?.length||source.stage==='archived'&&!source.notificationEvents.some(event=>RETENTION_TYPES.has(event.type)))continue;
       const messages=new Map(source.messages.map(message=>[message.id,message])),versions=new Map(source.versions.map(version=>[version.id,version]));
       for(const event of source.notificationEvents||[]){
         if(!eligible(user,source,event))continue;
@@ -174,10 +190,10 @@ export function createClientNotificationsService({store,clientProjects,clientWor
         const studioEvent=['customer_preferences','customer_reference','customer_strategy','customer_strategy_confirmed','customer_concept','customer_scene','customer_comment','request_received','customer_request_answer','customer_request_file','customer_request_edit','customer_model_answer','customer_draft_review','customer_draft_approved'].includes(event.type)&&['direction','strategy','concepts','storyboard','history','desk'].includes(event.tab);
         // The existing messenger consumes workroom links only. Project news has
         // its own source opener, so use the exact PULSE tab for this projection.
-        const href=event.type===RETENTION_NOTICE?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:'desk'}):projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;
+        const href=RETENTION_TYPES.has(event.type)?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:'desk'}):projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;
         const readAt=store.get('clientNotificationReads',receiptId(user.id,event.id))?.readAt||null;
         const reviewNote=message?.workflow?.history?.findLast(entry=>entry.at===event.workflowAt&&entry.action===event.workflowAction&&entry.actor===event.actorId)?.note;
-        const text=event.type===RETENTION_NOTICE?retentionNoticeText(event):projectId&&studioNewsBodies[event.type]?studioNewsBodies[event.type]:event.type==='customer_feedback_round'?`고객이 ${feedbackRound.number}차 수정 의견 ${feedbackRound.items.length}개를 한 번에 보냈어요. 영상 확인에서 봐 주세요.`:event.type==='customer_delivery_receipt'?'고객이 파일과 사용 안내를 받았다고 했어요. 남은 일을 보고 마감해 주세요.':event.type==='customer_approval'?`${version?.label||'최근 시안'}을 고객이 승인했어요.`:event.type==='changes_requested'?reviewNote||'무엇을 더 고칠지 봐 주세요.':event.type==='review_requested'?`${version?.label||'고친 시안'}을 봐 주세요.`:message?.text||source.nextStep||'이 프로젝트의 요청과 다음 할 일을 봐 주세요.';
+        const text=event.type===RETENTION_NOTICE?retentionNoticeText(event):event.type===REQUEST_NOTICE?requestNoticeText(event):projectId&&studioNewsBodies[event.type]?studioNewsBodies[event.type]:event.type==='customer_feedback_round'?`고객이 ${feedbackRound.number}차 수정 의견 ${feedbackRound.items.length}개를 한 번에 보냈어요. 영상 확인에서 봐 주세요.`:event.type==='customer_delivery_receipt'?'고객이 파일과 사용 안내를 받았다고 했어요. 남은 일을 보고 마감해 주세요.':event.type==='customer_approval'?`${version?.label||'최근 시안'}을 고객이 승인했어요.`:event.type==='changes_requested'?reviewNote||'무엇을 더 고칠지 봐 주세요.':event.type==='review_requested'?`${version?.label||'고친 시안'}을 봐 주세요.`:message?.text||source.nextStep||'이 프로젝트의 요청과 다음 할 일을 봐 주세요.';
         result.push({id:event.id,kind:'client_workflow',type:event.type,message:null,title:titles[event.type]||'고객 프로젝트가 바뀌었어요',text,body:text,projectTitle:source.title,createdAt:event.createdAt,readAt,unread:!readAt,href,projectId:source.id,messageId:event.messageId||null,versionId:event.versionId||null,seconds:message?.seconds??null,tab:event.tab||(event.versionId?'review':'history')});
       }
     }

@@ -352,24 +352,40 @@ test('stale drafts lose their files after 14 quiet days counted from the last sa
   assert.equal((await readdir(join(f.options.dataDir,'pulse-request-media'))).length,0);
   assert.ok(after.csrf);
 });
-test('unconfirmed requests retire after 90 quiet days, only from the maintenance job, and anything that moved stays',async t=>{
+// 의뢰 기록 90일 시계(판 4 설계 11-7, 11-18 유호님 「자율주행」 → (a)): 의뢰서를 낸 의뢰는 확인 전후와 상관없이 90일 움직임이 없으면 예고 뒤 14일에 지운다.
+test('requests with a brief retire after 90 quiet days and a 14-day notice, confirmed or not, only from the maintenance job; produced work and anything that moved stays',async t=>{
   const f=await fixture(t),{store}=f.app,old=new Date(Date.now()-91*86400000).toISOString();
   const send=async()=>{f.jar.clear();const draft=await f.start();await f.upload(draft.csrf);const sent=await f.call('/pulse/api/request/submit',{body:{answers:answers()},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));return sent.data.projectId;};
-  const quiet=await send(),confirmed=await send(),recent=await send();
-  for(const id of [quiet,confirmed])store.put('clientProjects',id,{...store.get('clientProjects',id),updatedAt:old});
-  const row=store.get('clientProjects',confirmed);store.put('clientProjects',confirmed,{...row,studio:{...row.studio,request:{...row.studio.request,status:'confirmed',confirmedAt:old}}});
+  const quiet=await send(),confirmed=await send(),produced=await send(),recent=await send();
+  for(const id of [quiet,confirmed,produced])store.put('clientProjects',id,{...store.get('clientProjects',id),updatedAt:old});
+  const row=store.get('clientProjects',confirmed);store.put('clientProjects',confirmed,{...row,internalNotes:'김합성 님 전화로 일정 상의',terms:'15초 한 편',studio:{...row.studio,request:{...row.studio.request,status:'confirmed',confirmedAt:old}}});
+  const made=store.get('clientProjects',produced);store.put('clientProjects',produced,{...made,studio:{...made.studio,request:{...made.studio.request,status:'confirmed',confirmedAt:old,approvedAt:old}}});
   f.jar.clear();await f.start();await new Promise(resolve=>setTimeout(resolve,80));
   assert.equal(store.get('clientProjects',quiet).stage,'received','a public request can never trigger the deletion');
-  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1});
-  const gone=store.get('clientProjects',quiet);
-  assert.equal(gone.stage,'archived');assert.equal(gone.contact,'');assert.equal(gone.inviteHash,null);assert.equal(gone.intake,undefined);
-  assert.equal(JSON.stringify(gone).includes('김합성'),false,'no contact survives');
-  assert.equal(JSON.stringify(gone).includes('buyer@pulse-synthetic.test'),false);
-  assert.equal(gone.studio.request.status,'retired');assert.equal(gone.studio.assets.length,0);
-  assert.equal(store.get('clientProjects',confirmed).stage,'received','confirmed work is not touched');
-  assert.equal(store.get('clientProjects',confirmed).contact,'김합성 · buyer@pulse-synthetic.test');
+  // 첫 회차는 예고만(담당자 알림 · 시계를 옮기지 않음) — 확인 전 · 확인 뒤 모두, 제작을 시작한 의뢰는 빼고.
+  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:0,requests:{noticed:2}});
+  for(const id of [quiet,confirmed]){
+    const noticed=store.get('clientProjects',id);
+    assert.equal(noticed.updatedAt,old,'the notice does not move the clock');assert.equal(noticed.history.at(-1).notice,'request_retention');
+    assert.ok(noticed.notificationEvents.some(event=>event.type==='request_retention_notice'),'staff hear about it');
+    // 예고가 15일 전에 나갔던 것처럼(예고 뒤 14일이 지났다).
+    store.put('clientProjects',id,{...noticed,requestRetentionNotice:{...noticed.requestRetentionNotice,at:new Date(Date.now()-15*86400000).toISOString()}});
+  }
+  assert.equal(store.get('clientProjects',produced).requestRetentionNotice,undefined,'produced work has no clock');
+  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:2});
+  for(const id of [quiet,confirmed]){
+    const gone=store.get('clientProjects',id);
+    assert.equal(gone.stage,'archived');assert.equal(gone.contact,'');assert.equal(gone.inviteHash,null);assert.equal(gone.intake,undefined);
+    assert.equal(JSON.stringify(gone).includes('김합성'),false,'no contact or note survives');
+    assert.equal(JSON.stringify(gone).includes('buyer@pulse-synthetic.test'),false);
+    assert.equal(gone.internalNotes,'');assert.equal(gone.terms,'');assert.equal(gone.requestRetentionNotice,undefined);assert.equal(gone.retirePendingUnlink,undefined,'every file left');
+    assert.equal(gone.studio.request.status,'retired');assert.equal(gone.studio.assets.length,0);assert.equal(gone.studio.request.retiredAt,gone.updatedAt);
+    assert.equal(store.all('pulseRequests').some(item=>item.projectId===id),false,'its waiting line goes too');
+  }
+  assert.equal(store.get('clientProjects',produced).contact,'김합성 · buyer@pulse-synthetic.test','work that went into production is not touched');
   assert.equal(store.get('clientProjects',recent).contact,'김합성 · buyer@pulse-synthetic.test');
-  assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).length,2,'only the retired request loses its file');
+  assert.equal((await readdir(join(f.options.dataDir,'studio-media'))).length,2,'only the retired requests lose their files');
+  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:0},'nothing left to do');
 });
 const openRoom=async(f,extra={})=>{const draft=await f.start();const sent=await f.call('/pulse/api/request/submit',{body:{answers:answers(extra)},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));return {sent,room:(await f.call('/pulse/api/project')).data,id:sent.data.projectId};};
 test('after sending, a customer can still send files of every accepted kind, read them back and take them away',async t=>{

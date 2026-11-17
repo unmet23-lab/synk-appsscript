@@ -246,12 +246,15 @@ test('작업 소식 · 90일 정리(확인 안 된 접수) 뒤에는 소식 · �
   const f=await fixture(t);
   const kept=await f.order();
   const keptImage=await kept.image('kept.png');await kept.save({text:'보관해도 남는 소식',assets:[keptImage]});await kept.post(kept.progress()[0].id);
-  // 일반 보관(stage archived — 파일을 지우지 않는다, client-projects.mjs).
-  const row=f.app.store.get('clientProjects',kept.id);f.app.store.put('clientProjects',kept.id,{...row,stage:'archived',revision:row.revision+1});
+  // 일반 보관(stage archived — 파일을 지우지 않는다, client-projects.mjs). 제작을 시작한 프로젝트라 의뢰 기록 90일 시계(판 4 설계 11-7)도 없다.
+  const row=f.app.store.get('clientProjects',kept.id);f.app.store.put('clientProjects',kept.id,{...row,stage:'archived',revision:row.revision+1,studio:{...row.studio,request:{...row.studio.request,approvedAt:row.updatedAt}}});
   const gone=await f.order({},{confirm:false});
   const goneImage=await gone.image('gone.png');await gone.save({text:'정리되는 소식',assets:[goneImage]});await gone.post(gone.progress()[0].id);
   const goneDisk=gone.disk(goneImage),keptDisk=kept.disk(keptImage);
-  f.advance(91*86400000);
+  // 의뢰 기록 90일 시계(판 4 설계 11-7): 77일째 예고 → 14일 뒤 지움.
+  f.advance(77*86400000);
+  assert.equal((await f.app.pulseRequests.retireUnconfirmed()).requests?.noticed,1);
+  f.advance(15*86400000);
   const result=await f.app.pulseRequests.retireUnconfirmed();
   assert.equal(result.retired,1);
   const after=f.app.store.get('clientProjects',gone.id);

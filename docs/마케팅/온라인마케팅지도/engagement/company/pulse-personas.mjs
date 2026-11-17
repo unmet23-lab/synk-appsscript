@@ -144,9 +144,10 @@ export function projectInProduction(row){
 // 공개 의뢰서 90일 정리(retireUnconfirmed)는 그 프로젝트의 브랜드 없는 인물이 다 지워진 뒤에만 돌고(personaHoldsProject), 이미 「지운 의뢰」가 된
 // 프로젝트에 남은 브랜드 없는 인물(정리 때 브랜드 인물이었다가 귀속을 취소한 인물 · 옛 잔여)도 예고 없이 바로 지우지 않고 이 시계를 탄다.
 // 공개 의뢰서 정리가 이 프로젝트를 붙잡을 인물: 살아 있는(묘비 아님) 인물 가운데 브랜드 없는 인물(상태와 상관없이 — 지우는 중 포함), 또는 아직 열린 인물(브랜드 인물의 지우는 중 포함 — 판 3 그대로).
-export function personaHoldsProject(store,projectId){
-  return store.all(K.personas).some(persona=>live(persona)&&persona.originProjectId===projectId&&(!persona.workspaceId||!PERSONA_SETTLED.includes(persona?.status)));
+export function holdingPersonas(store,projectId){
+  return store.all(K.personas).filter(persona=>live(persona)&&persona.originProjectId===projectId&&(!persona.workspaceId||!PERSONA_SETTLED.includes(persona?.status)));
 }
+export function personaHoldsProject(store,projectId){return holdingPersonas(store,projectId).length>0;}
 // 브랜드 없는 인물의 시계. 돌려줌:
 //   null — 시계 없음(브랜드 인물 · 지우는 중 · 묘비 · 제작한 프로젝트).
 //   {unclear} — 원 프로젝트가 없거나 날짜를 읽을 수 없다. 지우지 않는다(직원 칸에 알리고 쓸기 결과에 센다).
@@ -177,6 +178,28 @@ export function stoppedClock(store,persona,now){
 // 쓸기가 지금 예고를 낼 인물인지 · 지울 인물인지(둘 다 위 시계 하나로).
 export const stoppedNoticeDue=(clock,now)=>!!clock&&!clock.unclear&&!clock.noticed&&Date.parse(clock.noticeFrom)<=Date.parse(now);
 export const stoppedDeleteDue=(clock,now)=>!!clock&&!clock.unclear&&clock.noticed&&Date.parse(clock.deleteAt)<=Date.parse(now);
+// ── 의뢰 기록 90일 시계(판 4 설계 11-7, 11-18 유호님 「자율주행」 → (a) · Fable 5.2 설계 검토 반영) ──
+// 의뢰서 동의 줄 「이 내용과 연락처를 … 쓰는 데 동의해요 · 제작으로 이어지지 않으면 90일 뒤 지워요」를 의뢰 기록에도: 의뢰서를 낸(consentAt) 프로젝트가
+// 제작으로 이어지지 않은 채 90일 움직이지 않으면 14일 전 예고 뒤 손님 답 · 연락처 · 보낸 파일 · 대화를 지운다. 공개 의뢰서 · 방 안 의뢰서 · 확인 전후가 모두 이 시계 하나다.
+// 결제가 한 번이라도 확인된 적이 있는지 — 이력(paymentLog)으로 본다. payment는 지금 상태 하나라 취소한 뒤 다시 요청하면 confirmedAt이 덮인다(설계 검토 D1).
+// 이력이 없는 옛 결제는 그때의 payment에서 만든 이력과 같다(pulse-requests seedPaymentLog — confirmedAt이 있으면 confirmed 한 줄).
+export const paymentEverConfirmed=request=>Array.isArray(request?.paymentLog)?request.paymentLog.some(entry=>entry?.kind==='confirmed'):!!request?.payment?.confirmedAt;
+// 돌려줌: null — 시계 없음(의뢰서를 내지 않음 · 이미 지운 의뢰 · 제작한 프로젝트). {unclear} — 날짜를 못 읽음(지우지 않고 센다).
+//   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt,keepPayment?} — 마지막 움직임 = max(프로젝트 updatedAt, 이 프로젝트를 붙잡는 인물의 updatedAt)
+//   (인물 쪽 일이 더 늦으면 그 인물이 정리를 붙잡으므로 보인 날짜가 맞게 — 설계 검토 D4). 예고는 마지막 움직임보다 «뒤»에 나간 것만, 지우는 날은 인물 시계와 같은 식.
+//   keepPayment — 결제가 확인됐다가 취소된 의뢰: 지울 때 결제 기록(payment · paymentLog)만 남긴다(설계 검토 D7).
+export function requestClock(store,row,now){
+  const request=row?.studio?.request;
+  if(!request||typeof request!=='object'||!request.consentAt||request.status==='retired'||projectInProduction(row))return null;
+  const touched=Date.parse(row.updatedAt),at=Date.parse(now);
+  if(!Number.isFinite(touched)||!Number.isFinite(at))return {unclear:'date'};
+  let last=touched;
+  for(const persona of holdingPersonas(store,row.id)){const own=Date.parse(persona.updatedAt);if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;}
+  const clockAt=last+STOPPED_DAYS*DAY_MS,sent=Date.parse(row.requestRetentionNotice?.at),noticed=Number.isFinite(sent)&&sent>last;
+  const iso=value=>new Date(value).toISOString();
+  const deleteAt=Date.parse(kstDayEnd(kstToday(iso(Math.max(clockAt,(noticed?sent:at)+STOPPED_NOTICE_DAYS*DAY_MS)))));
+  return {lastAt:iso(last),clockAt:iso(clockAt),noticeFrom:iso(clockAt-STOPPED_NOTICE_DAYS*DAY_MS),noticed,noticeAt:noticed?iso(sent):null,deleteAt:iso(deleteAt),...(paymentEverConfirmed(request)?{keepPayment:true}:{})};
+}
 
 // 다시 쓰기 의뢰 프로젝트가 참조한 인물 · 판(설계 4-3): personaRef가 있으면 그 판, 없으면 의뢰 때 붙인 판.
 export function reuseRefOf(row){

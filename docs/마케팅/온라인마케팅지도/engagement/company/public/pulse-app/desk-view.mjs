@@ -66,6 +66,10 @@ function personaClock(p){
   return s.noticed?`<p class="desk-sum desk-persona-clock"><i class="led is-wait"></i> 지우기 예고를 보냈어요 — <b>${esc(kstDayOf(s.deleteAt))}</b>에 이 인물과 손님 사진을 지워요(제작으로 이어지지 않았고 ${esc(kstDayOf(s.lastAt))} 뒤로 진행이 없어요). 이어 가려면 이 프로젝트에 기록을 남겨 주세요.</p>`
     :`<p class="desk-at desk-persona-clock">이 프로젝트가 ${esc(kstDayOf(s.deleteAt))}까지 움직이지 않으면 이 인물과 손님 사진을 지워요(제작으로 이어지지 않은 프로젝트). 기록을 남기면 그날부터 다시 90일이고, 시안 · 최종본이나 마감 기록이 있으면 지우지 않아요.</p>`;
 }
+// 의뢰 기록 90일 시계(판 4 설계 11-7): 의뢰서를 낸 프로젝트가 제작으로 이어지지 않은 채 멈추면 14일 전 예고 뒤 손님 답 · 연락처 · 보낸 파일 · 대화를 지운다.
+// 서버는 예고가 나간 뒤(또는 날짜를 못 읽을 때)만 싣는다. 예고는 지우는 날 14일 전이라 아직 90일이 차지 않았다 — 마지막 움직임 날을 적는다.
+const requestClockLine=c=>!c?'':c.unclear?'<p class="desk-at" data-request-clock>이 의뢰 기록의 지우는 날을 셀 수 없어요 — 날짜를 읽지 못해 지우지 않고 두어요. 관리자에게 알려 주세요.</p>'
+  :`<p class="desk-sum desk-persona-clock" data-request-clock><i class="led is-wait"></i> 의뢰 기록 지우기 예고를 보냈어요 — <b>${esc(kstDayOf(c.deleteAt))}</b>에 손님 답 · 연락처 · 보낸 파일 · 대화를 지워요(제작으로 이어지지 않았고 ${esc(kstDayOf(c.lastAt))} 뒤로 진행이 없어요${c.keepPayment?' · 결제 기록은 남겨요':''}). 이어 가려면 이 프로젝트에 기록을 남겨 주세요(보관했으면 먼저 보관을 풀어 주세요).</p>`;
 const personaRemoved=r=>r?`<section class="desk-persona" data-persona-removed><h2 class="desk-h">맞춤 인물${r.name?` · ${esc(r.name)}`:''} · 지움</h2><p class="desk-at">${esc(kstDayOf(r.at))}에 지웠어요 — 제작으로 이어지지 않은 채 90일 동안 진행이 없었어요. 손님이 다시 맡기려면 의뢰서에서 맞춤 인물을 다시 요청하고 사진을 다시 보내야 해요.</p></section>`:'';
 function personaOne(p,canEdit){
   const en=!!p.locale&&p.locale!=='ko',input=(name,label,max,{area=false,required=false,value='',type='text',attrs=''}={})=>`<label><span>${esc(label)}</span>${area?`<textarea name="${name}" rows="2" maxlength="${max}" ${required?'required':''}>${esc(value)}</textarea>`:`<input type="${type}" name="${name}" value="${esc(value)}" ${type==='text'?`maxlength="${max}"`:''} ${required?'required':''} ${attrs}>`}</label>${en&&['why','scope','note','displayName',...P_USAGE.map(([key])=>key)].includes(name)&&!attrs.includes('data-no-tr')?`<label><span>${esc(label)} · 손님에게 보일 영어</span>${area?`<textarea name="${name}Tr" rows="2" maxlength="${max*2}" lang="en"></textarea>`:`<input name="${name}Tr" maxlength="${max*2}" lang="en">`}</label>`:''}`;
@@ -155,7 +159,7 @@ export function deskView(r,{bar=true,top=''}={}){
         <dl class="kv">${r.brief.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
         <h2 class="desk-h">받은 자료</h2><div class="contact is-wide">${r.files.map(file=>`<figure><img src="${esc(file.src)}" alt=""><figcaption>${esc(file.label)}${file.size?`<small>${esc(file.size)}</small>`:''}</figcaption></figure>`).join('')}</div>
         ${r.staffFiles?.length?`<h2 class="desk-h">저희가 올린 그림</h2><div class="contact is-wide">${r.staffFiles.map(file=>`<figure><img src="${esc(file.src)}" alt=""><figcaption>${esc(file.label)}</figcaption></figure>`).join('')}</div>`:''}
-        ${r.attachments?.length?`<h2 class="desk-h">내려받는 자료</h2><ul class="desk-files">${r.attachments.map(file=>`<li><a href="${esc(file.url)}" download>${esc(file.label)}</a></li>`).join('')}</ul>`:''}${personaDesk(r.personas,r.canEdit!==false)}${personaRemoved(r.personaRemoved)}${translationBlock(r.translation,r.canEdit!==false)}
+        ${r.attachments?.length?`<h2 class="desk-h">내려받는 자료</h2><ul class="desk-files">${r.attachments.map(file=>`<li><a href="${esc(file.url)}" download>${esc(file.label)}</a></li>`).join('')}</ul>`:''}${requestClockLine(r.requestRetention)}${personaDesk(r.personas,r.canEdit!==false)}${personaRemoved(r.personaRemoved)}${translationBlock(r.translation,r.canEdit!==false)}
       </div>
       <aside class="desk-side">
         <section><h2>자동 점검</h2><ul class="checks">${r.checks.map(item=>`<li><i class="led ${item.ok?'is-ok':'is-wait'}"></i><div><b>${esc(item.label)}</b>${item.note?`<small>${esc(item.note)}</small>`:''}</div></li>`).join('')}</ul></section>
