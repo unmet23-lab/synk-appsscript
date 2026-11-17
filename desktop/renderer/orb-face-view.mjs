@@ -5,6 +5,7 @@
 // 모듈 맨 위에서는 DOM을 건드리지 않는다.
 import { createOrbStage, easeIO, easeIOQ, easeOut, lerp, smooth, switchGeom, PLACE_LON } from './orb-stage.mjs';
 import { createOrbSignature } from './orb-signature.mjs';
+import { rowSpeech } from './site-visits-model.mjs';
 
 export const PORTAL_STATE_EVENT = 'synk:portal-state';
 export const QA_GUEST_EVENT = 'synk:qa-guest-entry';
@@ -13,6 +14,18 @@ const EASE = { io: easeIO, ioq: easeIOQ, out: easeOut };
 const NON_HOST_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'LINK', 'META', 'NOSCRIPT']);
 const FOCUSABLE = 'button:not([disabled]),input:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
 const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱크"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>';
+/* 솔리오 안의 프로그램 오브제(시안 .rail의 그림). 이름은 컨트롤러가 장면으로 넘긴다. 백업은 방이 생길 때 구독 다음 자리에 넣는다 */
+const PROGRAM_ICON = Object.freeze({
+  subs: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg>',
+  visits: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="14.7" cy="5.3" r="1.9" fill="currentColor"/></svg>',
+});
+/* 다가가서 잠깐 머물러야 열리고, 벗어나서 잠깐 지나야 닫힌다(시안 NEAR). pad는 오브제 줄에 다가갔다고 보는 거리(px) */
+const NEAR = Object.freeze({ row: 120, prog: 180, close: 400, pad: 64 });
+/* 오브제 이름이 다 펼쳐지는 데 걸리는 시간. 이름 하나가 0.46초에 펼쳐지고 오브제마다 70ms씩 늦게 시작한다(CSS .obj-n).
+ * 이름이 펼쳐지는 동안에는 그 위에 머물러도 프로그램을 열지 않는다. 셋이면 620ms(시안 railSettle), 둘이면 550ms다(사이트방문 설계 6절, 맡긴 세션 11-18) */
+export function railSettleMs(count) {
+  return 460 + 70 * Math.max(0, count - 1) + 20;
+}
 const CHEVRON = '<svg viewBox="0 0 8 5" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="M1 1l3 3 3-3"/></svg>';
 
 function markup() {
@@ -50,6 +63,10 @@ function markup() {
     <div class="here">
       <button class="here-orb" type="button" data-orb-act="open-switch" aria-label="다른 공간으로 가기"></button>
       <button class="here-name" type="button" data-orb-act="open-switch" aria-label="다른 공간으로 가기"><span data-here-text>SOLIO</span>${CHEVRON}</button>
+      <nav class="rail" aria-label="이 공간의 프로그램" data-orb-rail hidden>
+        <button class="obj" type="button" data-orb-prog="subs" aria-current="false" style="--k:0">${PROGRAM_ICON.subs}<span class="obj-n"></span></button>
+        <button class="obj" type="button" data-orb-prog="visits" aria-current="false" style="--k:1">${PROGRAM_ICON.visits}<span class="obj-n"></span></button>
+      </nav>
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
     </div>
     <div class="room" data-room="solio">
@@ -57,6 +74,11 @@ function markup() {
       <p class="say rise" style="--i:1"><span data-say></span><span class="then" data-then></span></p>
       <div class="rows rise" style="--i:3" role="group" aria-label="구독별 남은 양" data-rows></div>
       <p class="read rise" style="--i:5"><span data-read></span><button class="reread" type="button" data-orb-act="reread">다시 읽기</button><button class="reread" type="button" data-orb-act="connect" hidden>구독 연결하기</button><button class="reread" type="button" data-orb-act="recheck-auth" hidden>다시 확인</button></p>
+    </div>
+    <div class="room" data-room="solio-visits" hidden>
+      <p class="say rise" style="--i:1"><span data-vis-say></span><span class="then" data-vis-then></span></p>
+      <div class="rows vis rise" style="--i:3" role="group" aria-label="synk.im 방문자 분석" data-vis-rows></div>
+      <p class="read rise" style="--i:5"><span data-vis-when></span><span data-vis-scope></span></p>
     </div>
     <div class="room" data-room="space">
       <p class="say rise" style="--i:1"><span data-space-say></span><span class="then" data-space-then></span></p>
@@ -96,6 +118,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     solio: $('[data-room="solio"]'), say: $('[data-say]'), then: $('[data-then]'), rows: $('[data-rows]'), read: $('[data-read]'),
     reread: $('[data-orb-act="reread"]'), connect: $('[data-orb-act="connect"]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
+    rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
+    visits: $('[data-room="solio-visits"]'), visSay: $('[data-vis-say]'), visThen: $('[data-vis-then]'), visRows: $('[data-vis-rows]'), visWhen: $('[data-vis-when]'), visScope: $('[data-vis-scope]'),
   };
 
   let disposed = false;
@@ -108,6 +132,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const savedHost = new Map();
   let introWait = null;
   let lastLayer = 'none';
+  // 솔리오 안의 프로그램과 방문자 분석의 줄. 펼침은 화면만의 상태다(컨트롤러는 어느 프로그램이 열렸는지만 안다)
+  let lastProg = null;
+  let visKey = '';
+  let railSince = -1e9, progTimer = 0, visTimer = 0, visLeave = 0;
+  const clock = () => { try { return win.performance?.now?.() ?? Date.now(); } catch { return Date.now(); } };
+  // 키보드로 옮긴 초점인가. 창에 초점이 없으면 :focus-visible이 맞지 않으므로 마지막 입력이 자판이었는지도 본다
+  let keyboardModality = false;
+  const focusVisible = el => { if (keyboardModality) return true; try { return el.matches(':focus-visible'); } catch { return false; } };
+  const onAnyKey = event => { if (event.key === 'Tab' || event.key?.startsWith?.('Arrow')) keyboardModality = true; };
+  const onAnyPointer = () => { keyboardModality = false; };
 
   const reduced = () => {
     try { if (getReducedMotion() === true) return true; } catch { /* 무시 */ }
@@ -269,10 +303,19 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (app.nameBtn?.getAttribute?.('aria-label') !== nameLabel) app.nameBtn?.setAttribute?.('aria-label', nameLabel);
     app.orbBtn.setAttribute('aria-label', `지금 ${s.spaceLabel}. 다른 공간으로 가기`);
     app.legacyBack.hidden = s.mode !== 'legacy';
-    if (!room) return;
+    if (!room) { renderRail(s, [], null); lastProg = null; return; }
     const solio = room.space === 'solio';
-    app.solio.hidden = !solio;
+    const prog = solio ? (room.prog || 'subs') : null;
+    app.solio.hidden = !solio || prog !== 'subs';
+    app.visits.hidden = prog !== 'visits';
     app.space.hidden = solio;
+    renderRail(s, solio ? room.programs || [] : [], prog);
+    renderVisits(solio ? room.visits : null);
+    if (prog !== lastProg) {
+      closeMores(true);
+      if (lastProg !== null && prog) enterRoom(prog);
+      lastProg = prog;
+    }
     layers.app.setAttribute('aria-label', solio ? '솔리오' : room.space === 'workspace' ? 'Workspace' : 'PULSE');
     if (solio) {
       const t = room.solio;
@@ -300,6 +343,155 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       app.reopen.disabled = s.busy;
     }
   }
+
+  /* ── 솔리오 안의 프로그램(시안 .rail) ── */
+  function renderRail(s, programs, prog) {
+    const on = s.mode === 'app' && programs.length > 0;
+    app.rail.hidden = !on;
+    // 같은 값은 다시 쓰지 않는다(장면은 1분마다 다시 그린다)
+    if (on && stageEl.dataset.rail !== '1') stageEl.dataset.rail = '1'; else if (!on && 'rail' in stageEl.dataset) delete stageEl.dataset.rail;
+    if (prog && stageEl.dataset.prog !== prog) stageEl.dataset.prog = prog; else if (!prog && 'prog' in stageEl.dataset) delete stageEl.dataset.prog;
+    if (!on) { app.rail.classList.remove('near'); clearTimeout(progTimer); }
+    for (const o of app.objs) {
+      const p = programs.find(x => x.key === o.dataset.orbProg);
+      o.hidden = !p;
+      if (!p) continue;
+      const label = p.note ? `${p.label}, ${p.note}` : p.label;
+      if (o.getAttribute('aria-label') !== label) {
+        o.setAttribute('aria-label', label);
+        const name = o.querySelector('.obj-n');
+        const parts = [doc.createTextNode(p.label)];
+        if (p.note) { const small = doc.createElement('small'); small.textContent = p.note; parts.push(small); }
+        name.replaceChildren(...parts);
+      }
+      o.setAttribute('aria-current', String(o.dataset.orbProg === prog));
+    }
+  }
+  /* 다른 프로그램의 방이 뜰 때 안의 것들이 차례로 떠오른다(시안 flashRoom) */
+  function enterRoom(prog) {
+    const el = prog === 'visits' ? app.visits : app.solio;
+    el.scrollTop = 0;
+    el.classList.remove('enter');
+    void el.offsetWidth;
+    el.classList.add('enter');
+  }
+  /* 포인터가 오브제 줄 가까이 오면 이름이 차례로 펼쳐진다. 펼쳐지기 시작한 때를 적어 둔다 */
+  function updateNear(x, y) {
+    if (app.rail.hidden || scene?.layer !== 'app') { app.rail.classList.remove('near'); return; }
+    const r = app.rail.getBoundingClientRect();
+    const near = x > r.left - NEAR.pad && x < r.right + NEAR.pad && y > r.top - NEAR.pad && y < r.bottom + NEAR.pad;
+    if (near === app.rail.classList.contains('near')) return;
+    app.rail.classList.toggle('near', near);
+    if (near) railSince = clock();
+  }
+  const onRailOver = event => {
+    const o = event.target?.closest?.('.obj[data-orb-prog]');
+    if (!o || event.pointerType !== 'mouse' || o.contains(event.relatedTarget)) return;
+    updateNear(event.clientX, event.clientY);
+    clearTimeout(progTimer);
+    // 이름이 다 펼쳐지기 전에는 열지 않는다. 펼쳐지는 동안 이름 밑으로 지나가던 오브제가 열리지 않게 한다
+    const settle = railSettleMs(app.objs.filter(x => !x.hidden).length);
+    progTimer = setTimeout(() => { if (!disposed && !o.hidden && scene?.layer === 'app') onAction('prog', o.dataset.orbProg); }, Math.max(NEAR.prog, railSince + settle - clock()));
+  };
+  const onRailOut = event => {
+    const o = event.target?.closest?.('.obj[data-orb-prog]');
+    if (o && !o.contains(event.relatedTarget)) clearTimeout(progTimer);
+  };
+  const onRailFocus = event => {
+    const o = event.target?.closest?.('.obj[data-orb-prog]');
+    if (o && focusVisible(o)) onAction('prog', o.dataset.orbProg);
+  };
+
+  /* ── 방문자 분석의 방(시안 buildVis). 요약에서 온 글이 섞이므로 모두 textContent로만 넣는다(사이트방문 설계 6절, 검토 P2-5) ── */
+  function el(tag, cls, text) {
+    const n = doc.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = String(text);
+    return n;
+  }
+  function renderVisits(v) {
+    const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows]) : '';
+    if (key === visKey) return;
+    visKey = key;
+    clearTimeout(visTimer);
+    clearTimeout(visLeave);
+    setText(app.visSay, key ? v.say : '');
+    setText(app.visThen, key ? v.then : '');
+    setText(app.visWhen, key ? v.when : '');
+    setText(app.visScope, key ? v.scope : '');
+    app.visRows.replaceChildren(...(key && Array.isArray(v.rows) ? v.rows.flatMap(visRow) : []));
+    app.visRows.hidden = !(key && Array.isArray(v.rows) && v.rows.length);
+  }
+  function visRow(r) {
+    const b = el('button', 'row' + (r.now ? ' now' : '') + (r.unread ? ' unread' : ''));
+    b.type = 'button';
+    b.dataset.vis = String(r.key);
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-label', rowSpeech(r));
+    b.append(el('span', 'nm', r.nm), el('span', 'mid', r.mid), el('span', 'val', r.val), el('span', 'when', r.when));
+    const more = el('div', 'more'), inner = el('div', 'more-in');
+    more.setAttribute('aria-hidden', 'true');
+    let j = 0;
+    const put = n => { n.style.setProperty('--j', String(j++)); inner.append(n); };
+    for (const item of Array.isArray(r.more) ? r.more : []) {
+      const [kind, a, c, val, when] = Array.isArray(item) ? item : [];
+      if (kind === 'say') put(el('p', 'more-say', a));
+      else if (kind === 'note') put(el('p', 'more-note', a));
+      else if (kind === 'week') {
+        const days = (Array.isArray(c) ? c : []).map(x => (typeof x === 'number' && Number.isFinite(x) ? Math.max(0, x) : 0));
+        const top = Math.max(1, ...days);
+        const row = el('div', 'row sub row-plain'), week = el('span', 'week');
+        week.setAttribute('role', 'img');
+        week.setAttribute('aria-label', `지난 7일의 하루 방문 수 ${days.join(', ')}`);
+        days.forEach((x, k) => { const i = el('i', k === days.length - 1 ? 'today' : ''); i.style.setProperty('--h', Math.round((x / top) * 100) + '%'); week.append(i); });
+        row.append(el('span', 'nm', a), week, el('span', 'val', val));
+        put(row);
+      } else if (kind === 'row') {
+        const row = el('div', 'row sub');
+        row.append(el('span', 'nm', a), el('span', 'mid', c), el('span', 'val', val), el('span', 'when', when));
+        put(row);
+      }
+    }
+    more.append(inner);
+    return [b, more];
+  }
+  /* 줄 하나를 펼치거나 접는다. pin이면 눌러서 연 것이라 손이 떠나도 열려 있다 */
+  function setMore(b, on) {
+    const more = b.nextElementSibling;
+    if (!more || !more.classList.contains('more')) return;
+    more.classList.toggle('open', on);
+    if (on) more.removeAttribute('aria-hidden'); else more.setAttribute('aria-hidden', 'true');
+    b.classList.toggle('opened', on);
+    b.setAttribute('aria-expanded', String(on));
+    if (!on) b.classList.remove('pin');
+  }
+  /* 한 줄을 펼치면 그 아래에 열려 있던 줄은 접는다. 위쪽 줄은 접지 않는다(접으면 손 밑의 줄이 위로 달아난다) */
+  function openVis(b, pin = false) {
+    const rows = [...app.visRows.querySelectorAll('button.row[data-vis]')], i = rows.indexOf(b);
+    if (i < 0) return;
+    rows.forEach((r, k) => { if (k > i && !r.classList.contains('pin')) setMore(r, false); });
+    if (pin) b.classList.add('pin');
+    setMore(b, true);
+  }
+  function closeMores(all = false) {
+    for (const b of app.visRows.querySelectorAll('button.row[data-vis]')) if (all || !b.classList.contains('pin')) setMore(b, false);
+  }
+  const onVisOver = event => {
+    const b = event.target?.closest?.('button.row[data-vis]');
+    if (!b || event.pointerType !== 'mouse' || b.contains(event.relatedTarget)) return;
+    clearTimeout(visTimer);
+    visTimer = setTimeout(() => { if (!disposed && b.isConnected) openVis(b); }, NEAR.row);
+  };
+  const onVisOut = event => {
+    const b = event.target?.closest?.('button.row[data-vis]');
+    if (b && !b.contains(event.relatedTarget)) clearTimeout(visTimer);
+  };
+  const onVisEnter = () => { clearTimeout(visLeave); };
+  const onVisLeave = () => { clearTimeout(visTimer); clearTimeout(visLeave); visLeave = setTimeout(() => { if (!disposed) closeMores(); }, NEAR.close); };
+  const onVisFocus = event => {
+    const b = event.target?.closest?.('button.row[data-vis]');
+    if (b && focusVisible(b)) openVis(b);
+  };
 
   function setUnavailable(button, off) {
     button.disabled = false;
@@ -494,6 +686,15 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (!target) return;
     const name = target.closest?.('.sw[data-go]');
     if (name && root.contains(name)) { event.preventDefault(); onAction('go', name.dataset.go); return; }
+    const visRowEl = target.closest?.('button.row[data-vis]');
+    if (visRowEl && root.contains(visRowEl)) {
+      event.preventDefault();
+      clearTimeout(visTimer);
+      if (visRowEl.classList.contains('pin')) setMore(visRowEl, false); else openVis(visRowEl, true);
+      return;
+    }
+    const obj = target.closest?.('.obj[data-orb-prog]');
+    if (obj && root.contains(obj)) { event.preventDefault(); clearTimeout(progTimer); onAction('prog', obj.dataset.orbProg); return; }
     const row = target.closest?.('button.row[data-svc]');
     if (row && root.contains(row)) { event.preventDefault(); onAction('row', row.dataset.svc); return; }
     const act = target.closest?.('[data-orb-act]');
@@ -521,6 +722,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const r = stageEl.getBoundingClientRect();
     if (!r.width || !r.height) return;
     if (!reduced()) stage.setPointer((event.clientX - r.left) / r.width, (event.clientY - r.top) / r.height);
+    if (scene?.layer === 'app') updateNear(event.clientX, event.clientY);
     if (scene?.layer === 'switch' && !event.target?.closest?.('.sw,.back,.sw-foot,.sw-top')) {
       const place = stage.placeUnder(event.clientX - r.left, event.clientY - r.top);
       const ok = place && scene.places.includes(place);
@@ -528,7 +730,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       stage.setHot(ok ? place : null);
     }
   };
-  const onPointerLeave = () => { stage.setPointer(0.5, 0.5); };
+  const onPointerLeave = () => { stage.setPointer(0.5, 0.5); app.rail.classList.remove('near'); clearTimeout(progTimer); };
   const onNameHover = event => {
     if (scene?.layer !== 'switch') return;
     const name = event.target?.closest?.('.sw[data-go]');
@@ -614,6 +816,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   sw.names.addEventListener('pointerout', onNameHover);
   sw.names.addEventListener('focusin', onNameHover);
   sw.names.addEventListener('focusout', onNameHover);
+  app.rail.addEventListener('pointerover', onRailOver);
+  app.rail.addEventListener('pointerout', onRailOut);
+  app.rail.addEventListener('focusin', onRailFocus);
+  app.visRows.addEventListener('pointerover', onVisOver);
+  app.visRows.addEventListener('pointerout', onVisOut);
+  app.visRows.addEventListener('pointerenter', onVisEnter);
+  app.visRows.addEventListener('pointerleave', onVisLeave);
+  app.visRows.addEventListener('focusin', onVisFocus);
+  doc.addEventListener('keydown', onAnyKey, true);
+  doc.addEventListener('pointerdown', onAnyPointer, true);
   doc.addEventListener('keydown', onKeyDown);
   doc.addEventListener('paste', onPaste);
   doc.addEventListener('focusin', onFocusIn);
@@ -642,6 +854,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (disposed) return;
       disposed = true;
       clearTimeout(settleTimer);
+      clearTimeout(progTimer);
+      clearTimeout(visTimer);
+      clearTimeout(visLeave);
       if (introWait) introWait();
       root.removeEventListener('click', onClick);
       root.removeEventListener('submit', onSubmit);
@@ -649,6 +864,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       root.removeEventListener(QA_GUEST_EVENT, onQaGuest);
       stageEl.removeEventListener('pointermove', onPointerMove);
       stageEl.removeEventListener('pointerleave', onPointerLeave);
+      doc.removeEventListener('keydown', onAnyKey, true);
+      doc.removeEventListener('pointerdown', onAnyPointer, true);
       doc.removeEventListener('keydown', onKeyDown);
       doc.removeEventListener('paste', onPaste);
       doc.removeEventListener('focusin', onFocusIn);

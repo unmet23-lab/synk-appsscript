@@ -8,7 +8,7 @@ if(process.argv.includes('--orb-qa-no-canvas'))contextBridge.exposeInMainWorld('
 const GUEST_GEN='90000000-0000-4000-8000-000000000009';
 let auth={configured:true,status:'restoring',signedIn:false,sessionGeneration:0,accountGeneration:GUEST_GEN};
 let env={platform:'win32',arch:'x64',version:'0.4.95',mode:'development',publicAppsAvailable:[],qaGuestEntry:false};
-let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[];
+let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null;
 const listeners=new Set(),subsListeners=new Set(),calls=[];
 let release=null;let restoring=new Promise(resolve=>{release=resolve;});
 let configured=null;const ready=new Promise(resolve=>{configured=resolve;});
@@ -42,9 +42,11 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     check:async()=>{calls.push('subs-check');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};if(checkResult)return checkResult;return subs?{...subs,seq:(subs.seq||1)+1,check:{...(subs.check||{}),at:Date.now()}}:{ok:false,code:'READ_FAILED'};},
     onChanged:fn=>{subsListeners.add(fn);return ()=>subsListeners.delete(fn);},
   }),
+  // 본체(main.cjs siteVisitsCall)처럼 로그인한 회원에게만 답한다. 정하지 않으면 볼 계정이 아닌 답(available:false)이다
+  siteVisits:Object.freeze({snapshot:async()=>{calls.push('visits-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return visits||{ok:true,available:false};}}),
 }));
 contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
-  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;configured();},
+  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;configured();},
   restore:snapshot=>{auth=snapshot;release();emit();},
   // 다음 계정 확인을 붙잡아 둔다(다시 시도 뒤 확인 단계를 보려고). restore가 다시 풀어 준다
   holdAuth:()=>{restoring=new Promise(resolve=>{release=resolve;});},
@@ -54,6 +56,8 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   setCheckResult:value=>{checkResult=value||null;},
   setInvite:value=>{inviteMode=value;},
   setSubs:value=>{subs=value;for(const fn of subsListeners){try{fn(value);}catch{}}},
+  // 방문자 분석 요약의 답을 바꾼다(다음 읽기부터)
+  setVisits:value=>{visits=value||null;},
   calls:()=>[...calls],
   tray:()=>JSON.parse(JSON.stringify(tray)),
 }));

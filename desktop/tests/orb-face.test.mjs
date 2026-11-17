@@ -3,6 +3,7 @@
 // 옮기기 설계 「이어받는 로그인 동작」의 뜻(복원하는 동안 글 0, 묻는 화면을 거치지 않음, 배정 하나는 바로, 둘은 고르기 한 번, 구 지키기와 풀기)을 본다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { createOrbFaceController, faceSentence, ORB_RETURNING_KEY, sanitizeInviteFeedback, unconfiguredReason, workspaceLead } from '../renderer/orb-face.mjs';
 
 const ACCOUNT = '20000000-0000-4000-8000-000000000002';
@@ -1102,4 +1103,179 @@ test('host sentences ending in 「해요」 or 「달라요」 also take the 「
   assert.equal(faceSentence('열린 작업 공간의 계정과 현재 로그인한 계정이 달라요. 계정을 맞춘 뒤 다시 확인해 주세요.'), '열린 작업 공간의 계정과 현재 로그인한 계정이 다릅니다. 계정을 맞춘 뒤 다시 확인해 주세요.');
   assert.equal(faceSentence('지금은 확인 못해요.'), '지금은 확인 못합니다.');
   assert.equal(faceSentence('다시 시도해 주세요.'), '다시 시도해 주세요.');
+});
+
+/* ── 솔리오 「방문자 분석」 오브제와 방(사이트방문 설계 6절, 맡긴 세션 11-18) ── */
+const VISIT_SUMMARY = () => ({
+  판: 1, 만든때: new Date(Date.now() - 3600e3).toISOString(), 기간날수: 7, 세는쪽: ['/', '/lab/'], 안세는쪽: ['/a/'],
+  방문: { 상태: '측정 전', 까닭: '아직 공개 전입니다.' }, 쪽: { 상태: '측정 전', 까닭: '아직 공개 전입니다.' }, 행동: { 상태: '측정 전', 까닭: '아직 공개 전입니다.' },
+  검색: { 구글: { 상태: '권한 기다림', 까닭: '읽을 권한을 기다리고 있습니다.' }, 네이버: { 상태: '등록 전', 까닭: '아직 등록하지 않았습니다.' } },
+  AI: { 상태: '측정 전', 까닭: '아직 묻지 않았습니다.' },
+});
+const visible = () => ({ ok: true, available: true, summary: VISIT_SUMMARY() });
+function visitsFake(answer, onAsk = () => {}) {
+  const asked = [];
+  return { asked, api: { snapshot: async () => { asked.push(1); onAsk(); return typeof answer === 'function' ? answer(asked.length) : answer; } } };
+}
+const programKeys = h => (h.view.last().room?.programs || []).map(p => p.key);
+
+test('a viewer account gets two objects beside the orb, 구독 and 방문자 분석, read once on the way into Solio and never flickering', async t => {
+  let h = null, askedAt = -1;
+  const viewer = visitsFake(visible(), () => { if (askedAt < 0) askedAt = h.view.log.length; });
+  h = harness(t, { options: { siteVisits: viewer.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(viewer.asked.length, 1, 'read once when Solio opens (the main process notes a waiting account at this read)');
+  const arriveAt = h.view.log.findIndex(e => e[0] === 'arrive');
+  assert.ok(askedAt >= 0 && askedAt <= arriveAt, 'asked on the way in, before the small orb lands, so the objects are there when the room shows');
+  assert.deepEqual(programKeys(h), ['subs', 'visits']);
+  assert.deepEqual(h.view.last().room.programs.map(p => p.label), ['구독', '방문자 분석']);
+  assert.equal(h.view.last().room.prog, 'subs');
+  assert.equal(h.view.last().room.visits.visible, true);
+  assert.equal(h.view.last().room.visits.rows.length, 5);
+  const counts = h.view.scenes.map(s => s.room?.programs?.length ?? 0);
+  assert.ok(counts.every((n, i) => i === 0 || n >= counts[i - 1]), 'the objects appear once and do not come and go: ' + counts.join(','));
+});
+
+test('an account that is not a viewer, an app without the reader, and a guest keep Solio as it was, with no objects', async t => {
+  const other = visitsFake({ ok: true, available: false });
+  const o = harness(t, { options: { siteVisits: other.api } });
+  await settle();
+  o.face.setState(signedIn());
+  await settle(20);
+  assert.equal(other.asked.length, 1, 'a non-viewer still asks once, so the main process can note who opened Solio');
+  assert.deepEqual(programKeys(o), []);
+  assert.equal(o.view.last().room.prog, 'subs');
+  assert.equal(o.face.handle('prog', 'visits'), false, 'a program that is not there never opens');
+  assert.equal(o.face.handle('prog', 'subs'), false);
+
+  const none = harness(t);
+  await settle();
+  none.face.setState(signedIn());
+  await settle(20);
+  assert.deepEqual(programKeys(none), [], 'an app without the reader has no objects');
+
+  const viewer = visitsFake(visible());
+  const g = harness(t, {
+    initial: { status: 'signed-out' },
+    options: { siteVisits: viewer.api, allowGuestEntry: () => true, onBrowse: () => ({ ok: true, action: 'purpose' }), onSelectPurpose: () => ({ ok: true }) },
+  });
+  await settle();
+  g.face.handle('qa-guest');
+  await settle(20);
+  assert.equal(g.face.getState().phase, 'entered');
+  assert.equal(g.view.last().room.space, 'solio');
+  assert.deepEqual(programKeys(g), []);
+  assert.equal(g.view.last().room.visits.visible, false);
+  assert.equal(viewer.asked.length, 0, 'a guest never asks');
+});
+
+test('opening 방문자 분석 reads again, 구독 brings the subscriptions back, and signing out starts the next visit on 구독', async t => {
+  const viewer = visitsFake(visible());
+  const h = harness(t, { options: { siteVisits: viewer.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(viewer.asked.length, 1);
+  assert.equal(h.face.handle('prog', 'visits'), true);
+  await settle(10);
+  assert.equal(h.view.last().room.prog, 'visits');
+  assert.equal(viewer.asked.length, 2, 'the summary is read again when the room opens (it changes once a day, there is no change notice)');
+  assert.equal(h.face.handle('prog', 'subs'), true);
+  assert.equal(h.view.last().room.prog, 'subs');
+  h.face.handle('prog', 'visits');
+  await settle(10);
+  h.face.setState({ status: 'signed-out', accountKey: null, generation: 2 });
+  await settle(30);
+  assert.equal(h.face.handle('prog', 'visits'), false, 'nothing opens from the ask scene');
+  h.face.setState(signedIn(ACCOUNT, 3));
+  await settle(30);
+  assert.equal(h.view.last().room.prog, 'subs', 'a new visit starts on 구독');
+});
+
+test('when the account changes with 방문자 분석 open, the objects go, the room is 구독 again, and a late answer is dropped', async t => {
+  let release = null;
+  const answers = new Map([[ACCOUNT, visible()], [OTHER, { ok: true, available: false }]]);
+  let current = ACCOUNT;
+  const asked = [];
+  const api = { snapshot: () => { const who = current; asked.push(who); if (who === ACCOUNT && asked.length > 1) return new Promise(r => { release = () => r(answers.get(ACCOUNT)); }); return Promise.resolve(answers.get(who)); } };
+  const h = harness(t, { options: { siteVisits: api } });
+  await settle();
+  h.face.setState(signedIn(ACCOUNT, 1));
+  await settle(20);
+  assert.equal(h.view.last().room.visits.visible, true);
+  // 방문자 분석을 연 채 다시 읽는 동안 다른 계정이 들어온다. 늦게 온 앞 계정의 답은 버린다
+  assert.equal(h.face.handle('prog', 'visits'), true);
+  await settle(4);
+  assert.equal(h.view.last().room.prog, 'visits');
+  current = OTHER;
+  const before = h.view.scenes.length;
+  h.face.setState(signedIn(OTHER, 2));
+  await settle(40);
+  release?.();
+  await settle(20);
+  const room = h.view.last().room;
+  assert.ok(room, 'the other account entered Solio');
+  assert.equal(h.face.getState().accountKey, OTHER);
+  assert.equal(room.visits.visible, false, 'the previous account answer is dropped');
+  assert.deepEqual(programKeys(h), []);
+  assert.equal(room.prog, 'subs');
+  assert.ok(asked.includes(OTHER), 'the new account asks for itself');
+  assert.ok(!h.view.scenes.slice(before).some(s => s.room?.visits?.visible), 'no scene after the change shows the previous answer');
+});
+
+test('a refusal during a token refresh keeps the answer the same account already has', async t => {
+  let n = 0;
+  const api = { snapshot: async () => (++n === 1 ? visible() : { ok: false, code: 'SIGN_IN_REQUIRED' }) };
+  const h = harness(t, { options: { siteVisits: api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  h.face.handle('prog', 'visits');
+  await settle(10);
+  assert.equal(n, 2);
+  assert.equal(h.view.last().room.visits.visible, true);
+  assert.deepEqual(programKeys(h), ['subs', 'visits']);
+  assert.equal(h.view.last().room.prog, 'visits');
+});
+
+test('the view writes summary words only as text and waits for the object names before opening a program', async () => {
+  const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  const start = src.indexOf('/* ── 방문자 분석의 방');
+  const end = src.indexOf('function setUnavailable(');
+  assert.ok(start > 0 && end > start, 'the visits room code is where this test reads it');
+  const room = src.slice(start, end);
+  assert.doesNotMatch(room, /innerHTML|outerHTML|insertAdjacentHTML|createContextualFragment|DOMParser/, 'summary words never become markup');
+  assert.match(room, /n\.textContent = String\(text\)/);
+  assert.equal(src.split('innerHTML').length - 1, 2, 'only the fixed markup and dispose touch innerHTML');
+  assert.doesNotMatch(src, /data-orb-prog="backup"|solio-backup/, 'no backup object until its room exists');
+  const { railSettleMs } = await import('../renderer/orb-face-view.mjs');
+  assert.equal(railSettleMs(3), 620, 'three names: the sketch value');
+  assert.equal(railSettleMs(2), 550, 'two names: 0.46 s plus one 70 ms step, with the same margin');
+  assert.match(src, /Math\.max\(NEAR\.prog, railSince \+ settle - clock\(\)\)/);
+  assert.match(src, /if \(!o \|\| event\.pointerType !== 'mouse'/, 'resting opens a program only for a mouse');
+  const css = fs.readFileSync(new URL('../renderer/orb-face.css', import.meta.url), 'utf8');
+  assert.match(css, /\.orb-stage\[data-rail="1"\] \.room\[data-room\^="solio"\]\{[^}]*padding-bottom:34px;[^}]*mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/, 'the last row stays above the bottom fade');
+  assert.match(css, /#portal-entry \.room\{position:absolute;[^}]*top:52%;transform:translateY\(-50%\)/, 'without objects the Solio room keeps its place');
+});
+
+test('a first read refused during a refresh is read again once the account is signed in, and the objects appear then', async t => {
+  let n = 0, refusing = true;
+  const api = { snapshot: async () => (++n, refusing ? { ok: false, code: 'SIGN_IN_REQUIRED' } : visible()) };
+  const h = harness(t, { options: { siteVisits: api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const refused = n;
+  assert.ok(refused >= 1 && refused <= 2, 'asked on the way in and, refused, once more on landing: ' + refused);
+  refusing = false;
+  assert.deepEqual(programKeys(h), [], 'no objects while the main process refuses');
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(n, refused + 1, 'the next signed-in notice reads once more');
+  assert.deepEqual(programKeys(h), ['subs', 'visits']);
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(n, refused + 1, 'a read that was answered is not repeated on every notice');
 });

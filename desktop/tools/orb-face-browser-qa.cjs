@@ -45,6 +45,23 @@ if(!process.versions.electron){
   const subsReady={ok:true,seq:1,rows:[row('r-claude','claude',36,now+3*D),row('r-gpt','gpt',88,now+5*D),row('r-gemini','gemini',12,now+6*D),{id:'r-hf',service:'higgsfield',source:'auto',label:'Higgsfield',kind:'credit',state:'ok',plan:'plus',billDay:3,live:{readAt:now,credits:1240,planCredits:3000}}],check:{at:now-5*60e3},checking:false,usage:{accounts:{'r-claude':{rate3:5},'r-gpt':{rate3:10},'r-gemini':{rate3:2}}},prices:null};
   const subsNone={ok:true,seq:1,rows:[],check:{at:now-60e3},checking:false,usage:{accounts:{}}};
   const subsOld={...subsReady,check:{at:now-7*H}};
+  // 방문자 분석 요약(합성 숫자). 구글 검색어 하나에 태그를 넣어 화면이 글자로만 넣는지 본다(사이트방문 설계 6절)
+  const day=k=>new Date(now-k*D).toISOString().slice(0,10);
+  const visitSummary=()=>({판:1,만든때:new Date(now-H).toISOString(),기간날수:7,세는쪽:Array.from({length:15},(_,i)=>'/p'+i+'/'),안세는쪽:['/a/','/b/','/c/','/d/','/e/'],
+    방문:{상태:'됨',까닭:null,받은때:new Date(now).toISOString(),켠날:day(10),마지막기록:new Date(now-2*H).toISOString(),사람:12,앞사람:9,본쪽:20,다시연쪽:0,버림:0,급증:null,
+      갈래:[{이름:'검색',수:3},{이름:'SNS',수:6},{이름:'AI 답변',수:1},{이름:'직접',수:2},{이름:'다른 사이트',수:0}],
+      들어온곳:[{이름:'인스타그램',수:6},{이름:'구글',수:3}],첫쪽:[{쪽:'/',이름:'홈',수:8}],날마다:[1,2,0,3,2,2,2].map((수,i)=>({날:day(6-i),수})),AI방문:1},
+    쪽:{상태:'됨',까닭:null,쪽들:[{쪽:'/',이름:'홈',본수:14,떠남수:9,머문시간:'30초~1분',끝까지:0.333,떠남비율:0.5},{쪽:'/pulse/',이름:'PULSE',본수:4,떠남수:2,머문시간:null,끝까지:null,떠남비율:null}]},
+    행동:{상태:'됨',까닭:null,문의:{합:1,나눔:[{이름:'문의 메일',수:1},{이름:'문의 양식',수:0}]},앱받기:{합:2,나눔:[{이름:'앱 받기(Windows)',수:2},{이름:'앱 받기(Mac)',수:0}]},문의비율:null,앱받기비율:null,처음들어온곳별:[{갈래:'SNS',문의:1,앱받기:2}]},
+    목적:{상태:'됨',까닭:null,방문:5,고른방문:2,고른칸:[{이름:'PULSE · 광고·영상',수:2}]},
+    검색:{구글:{상태:'됨',까닭:null,시작:day(28),끝:day(1),노출:1140,클릭:8,평균순위:9.5,앞:{노출:900,클릭:5,평균순위:11},검색어:[{말:'<img src=x onerror=window.__visXss=1>',노출:40,클릭:0},{말:'synk',노출:681,클릭:2}],쪽:[{쪽:'/',노출:317,클릭:3}]},
+      네이버:{상태:'등록 전',까닭:'네이버 서치어드바이저에 아직 등록하지 않았습니다.'}},
+    AI:{상태:'됨',까닭:null,회차날:day(1),서비스:[{이름:'Claude',설명:'웹 검색을 켠 답',일반질문:24,답받음:24,언급:0,인용:0,브랜드질문:6,브랜드답받음:6,브랜드인용:5},{이름:'Gemini',설명:'검색 없이 기억으로 답한 값',일반질문:24,답받음:22,언급:1,인용:0,브랜드질문:6,브랜드답받음:6,브랜드인용:1}],
+      앞회차:{날:day(8),서비스:[{이름:'Claude',언급:0,답받음:24}]},멈춤:{},AI방문:1}});
+  // 아직 숫자가 없는 요약: 줄을 숨기지 않고 「측정 전」과 까닭 한 줄로 둔다(빠진 값을 0으로 보이지 않는다)
+  const visitEarly=()=>({판:1,만든때:new Date(now-H).toISOString(),기간날수:7,세는쪽:Array.from({length:15},(_,i)=>'/p'+i+'/'),안세는쪽:['/a/','/b/','/c/','/d/','/e/'],
+    방문:{상태:'측정 전',까닭:'방문 기록을 켠 뒤 첫 하루를 모으는 중입니다.'},쪽:{상태:'측정 전',까닭:'방문 기록을 켠 뒤 첫 하루를 모으는 중입니다.'},행동:{상태:'측정 전',까닭:'방문 기록을 켠 뒤 첫 하루를 모으는 중입니다.'},
+    검색:{구글:{상태:'권한 기다림',까닭:'서치콘솔 읽기 권한을 기다리고 있습니다.'},네이버:{상태:'등록 전',까닭:'네이버 서치어드바이저에 아직 등록하지 않았습니다.'}},AI:{상태:'측정 전',까닭:'아직 물은 회차가 없습니다.'}});
   app.whenReady().then(async()=>{
     const checks=[],consoleErrors=[],blockedRequests=[],timings={},loadFailures=[];let shot=0;
     const check=(name,ok,detail={})=>{checks.push({name,ok:!!ok,detail});};
@@ -86,7 +103,7 @@ if(!process.versions.electron){
       w.win.webContents.invalidate();await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await wait(200);w.win.webContents.invalidate();
       const image=await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});
       const file=path.join(out,`${String(++shot).padStart(2,'0')}-${mode}-${name}.png`);fs.writeFileSync(file,image.toPNG());
-      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;if(b.right>W+1||b.left<-1||b.bottom>Hh+1||b.top<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
+      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;let hiddenBy=null;for(let a=el.parentElement;a&&a!==document.body;a=a.parentElement){const as=getComputedStyle(a);if(Number(as.opacity)===0){hiddenBy=a;break;}if(as.overflowY!=='visible'||as.overflowX!=='visible'){const r=a.getBoundingClientRect();if(b.bottom<=r.top+1||b.top>=r.bottom-1||b.right<=r.left+1||b.left>=r.right-1){hiddenBy=a;break;}}}if(hiddenBy)continue;if(b.right>W+1||b.left<-1||b.bottom>Hh+1||b.top<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
       check('capture '+name,metrics.pageOverflow===0&&metrics.outside.length===0,{file:path.basename(file),...metrics});
       return file;
     }
@@ -223,6 +240,69 @@ if(!process.versions.electron){
           while(Date.now()<tEnd){const s=await w.js("(()=>{const st=document.querySelector('.orb-stage');const ask=document.querySelector('[data-layer=ask]');const sw=document.querySelector('[data-layer=switch]');return {phase:document.getElementById('portal-entry')?.dataset.portalState,ui:st?.dataset.ui,askVisible:ask?getComputedStyle(ask).visibility!=='hidden':false,swVisible:sw?getComputedStyle(sw).visibility!=='hidden':false,mode:document.documentElement.dataset.orbClient};})()");seen.push(s);if(s.mode==='app'&&s.ui==='app'){arrived=Date.now()-t3;break;}await wait(50);}
           timings.returningToSolio=arrived;
           check('3 returning boot never shows the ask or chooser layer and reaches Solio',arrived!==null&&!seen.some(s=>s.askVisible||s.swVisible||s.phase==='auth'),{arrivedMs:arrived,phases:[...new Set(seen.map(s=>s.phase))]});
+          w.win.destroy();
+        }
+        // 16. 솔리오 안의 프로그램 오브제와 「방문자 분석」(사이트방문 설계 6절, 맡긴 세션 11-18). 볼 계정에게만 셋째 오브제가 있다.
+        //     요약에서 온 글은 글자로만 들어가고, 이름이 펼쳐지는 0.62초 동안에는 머물러도 열리지 않고, 맨 아랫줄은 아래 흐림 위에 남고, 다른 계정에는 앞 계정의 답이 남지 않는다
+        if(only('16')&&mode==='main'){
+          const w=await open();await boot(w,{subs:subsReady,visits:{ok:true,available:true,summary:visitSummary()}},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          const objs=()=>w.js("[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg+':'+o.getAttribute('aria-current'))");
+          const o1=await objs();check('16 a viewer account sees 구독 and 방문자 분석 beside the orb',JSON.stringify(o1)===JSON.stringify(['subs:true','visits:false']),{objs:o1});
+          const asked=(await calls(w)).filter(c=>c==='visits-snapshot').length;check('16 the summary is read once on arriving at Solio',asked===1,{asked});
+          await w.js("(()=>{const st=document.querySelector('#portal-entry .orb-stage');window.__progLog=[];new MutationObserver(()=>window.__progLog.push([st.dataset.prog,performance.now()])).observe(st,{attributes:true,attributeFilter:['data-prog']});window.__overLog=[];document.querySelector('#portal-entry [data-orb-rail]').addEventListener('pointerover',e=>{const o=e.target.closest('.obj');if(o)window.__overLog.push([o.dataset.orbProg,performance.now(),e.pointerType]);});return true;})()");
+          const rect=sel=>w.js('(()=>{const r=document.querySelector('+JSON.stringify(sel)+').getBoundingClientRect();return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})()');
+          await w.js("(()=>{window.__ptr=null;window.__move=(x,y)=>{const t=document.elementFromPoint(x,y)||document.body,prev=window.__ptr,o={bubbles:true,cancelable:true,composed:true,pointerType:'mouse',pointerId:1,isPrimary:true,clientX:x,clientY:y};if(prev!==t){if(prev)prev.dispatchEvent(new PointerEvent('pointerout',{...o,relatedTarget:t}));t.dispatchEvent(new PointerEvent('pointerover',{...o,relatedTarget:prev}));window.__ptr=t;}t.dispatchEvent(new PointerEvent('pointermove',o));return true;};return true;})()");
+          const move=async(x,y)=>{await w.js('window.__move('+x+','+y+')');await wait(20);};
+          // 그 오브제 위에 처음 올라온 때부터 그 프로그램이 처음 열린 때까지
+          const opened=async name=>w.js('(()=>{const n='+JSON.stringify(name)+',o=window.__overLog.find(e=>e[0]===n);if(!o)return null;const p=window.__progLog.find(e=>e[0]===n&&e[1]>=o[1]);return p?Math.round(p[1]-o[1]):null;})()');
+          // 줄 가까이 먼저 가서 이름이 다 펼쳐진 뒤 방문자 분석 위에 머문다: 짧게 열린다
+          const here=await rect('#portal-entry .here-name');await move(here.x,here.y);await wait(900);
+          const near=await w.js("document.querySelector('#portal-entry [data-orb-rail]').classList.contains('near')");
+          await capture(w,'rail-near');
+          await w.js('window.__overLog.length=0;window.__progLog.length=0');
+          const v=await rect('#portal-entry [data-orb-prog="visits"]');await move(v.x,v.y);await wait(700);
+          const quick=await opened('visits');check('16 after the names are out, resting on 방문자 분석 opens it in about 0.18 s',near&&quick!==null&&quick>=150&&quick<450,{near,ms:quick});
+          // 찍는 동안 창 크기가 바뀌어도 손 밑의 오브제가 열리지 않게 포인터를 왼쪽 아래 빈 곳에 둔다
+          await move(12,660);await wait(500);
+          await captureSizes(w,'visits');
+          // 멀리 갔다가 첫 오브제(구독) 위로 곧장 온다: 이름이 펼쳐지는 0.62초 동안은 열리지 않는다
+          await move(720,640);await wait(800);await w.js('window.__overLog.length=0;window.__progLog.length=0');
+          const s=await rect('#portal-entry [data-orb-prog="subs"]');await move(s.x,s.y);await wait(1300);
+          const settle=await opened('subs');check('16 coming straight onto an object waits until the two names are out (0.55 s)',settle!==null&&settle>=520&&settle<1000,{ms:settle});
+          // 요약에서 온 글은 글자로만 들어간다
+          await click(w,'#portal-entry [data-orb-prog="visits"]');await wait(500);
+          const xss=await w.js("(()=>{const room=document.querySelector('#portal-entry [data-room=solio-visits]');return {imgs:room.querySelectorAll('img').length,asText:[...room.querySelectorAll('.mid')].some(m=>m.textContent.startsWith('<img src=x')),ran:window.__visXss===1,rows:room.querySelectorAll('button.row[data-vis]').length,say:room.querySelector('[data-vis-say]').textContent,hidden:room.hidden};})()");
+          check('16 summary words stay plain text in the room (no element is made from them)',xss.imgs===0&&xss.asText&&!xss.ran&&xss.rows===5&&!xss.hidden&&xss.say.length>0,xss);
+          // 줄을 모두 눌러 펼치고 맨 아래로 내린다: 맨 아랫줄은 아래 흐림(30px) 위에 남는다
+          await move(720,860);
+          for(let i=0;i<5;i++)await w.js("document.querySelectorAll('#portal-entry [data-room=solio-visits] button.row[data-vis]')["+i+"].click()");
+          await wait(900);await capture(w,'visits-open');
+          const bottom=await w.js("(()=>{const room=document.querySelector('#portal-entry [data-room=solio-visits]');room.scrollTop=room.scrollHeight;const r=room.getBoundingClientRect(),read=room.querySelector('.read').getBoundingClientRect(),cs=getComputedStyle(room);return {scrolls:room.scrollHeight>room.clientHeight+4,gap:Math.round(r.bottom-read.bottom),mask:(cs.maskImage||cs.webkitMaskImage||'').includes('linear-gradient'),open:room.querySelectorAll('.more.open').length};})()");
+          check('16 the last line stays above the bottom fade when the room scrolls',bottom.mask&&bottom.open===5&&bottom.gap>=30,bottom);
+          await capture(w,'visits-bottom');
+          // 키보드: 초점이 오브제에 오면 그 프로그램이 열린다
+          await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(400);
+          await w.js("document.querySelector('#portal-entry [data-orb-prog=subs]').focus()");await key(w,'Tab');await w.js("document.activeElement.dispatchEvent(new FocusEvent('focusin',{bubbles:true}))");await wait(300);
+          const kb=await w.js("({active:document.activeElement?.dataset?.orbProg||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog})");
+          check('16 keyboard focus on an object opens its program',kb.active==='visits'&&kb.prog==='visits',kb);
+          await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(400);
+          check('16 a click on 구독 brings the subscriptions back',(await w.js("document.querySelector('#portal-entry .orb-stage').dataset.prog"))==='subs'&&!(await w.js("document.querySelector('#portal-entry [data-room=solio]').hidden")));
+          // 아직 숫자가 없는 요약: 다섯 줄이 모두 남고 큰 숫자 자리가 「측정 전」이다(방을 열 때 다시 읽는다)
+          await w.js('window.__orbFixture.setVisits('+JSON.stringify({ok:true,available:true,summary:visitEarly()})+')');
+          await click(w,'#portal-entry [data-orb-prog="visits"]');await wait(700);
+          const early=await w.js("(()=>{const room=document.querySelector('#portal-entry [data-room=solio-visits]');return {rows:room.querySelectorAll('button.row[data-vis]').length,vals:[...room.querySelectorAll('button.row[data-vis] .val')].map(v=>v.textContent),zero:/(^|[^0-9])0번/.test([...room.querySelectorAll('button.row[data-vis]')].map(b=>b.textContent).join(' '))};})()");
+          check('16 a summary with no numbers yet keeps all five lines as 「측정 전」 with a reason, never 0',early.rows===5&&early.vals.every(v=>v==='측정 전')&&!early.zero,early);
+          await capture(w,'visits-early');
+          // 다른 계정(볼 계정이 아님)이 들어오면 앞 계정의 답이 화면에 남지 않는다
+          await click(w,'#portal-entry [data-orb-prog="visits"]');await wait(400);
+          await w.js('window.__orbFixture.setVisits('+JSON.stringify({ok:true,available:false})+')');
+          await w.js('window.__orbFixture.setAuth('+JSON.stringify({...signedIn('none',7),account:{synk_user_id:'60000000-0000-4000-8000-000000000006',display_name:'다른 회원'}})+')');
+          await wait(600);const back=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1200);
+          const o2=await objs();
+          const gone=await w.js("(()=>{const room=document.querySelector('#portal-entry [data-room=solio-visits]');return {hidden:room.hidden,rows:room.querySelectorAll('button.row').length,say:room.querySelector('[data-vis-say]').textContent,anyText:/사람이|검색|AI에게/.test(room.textContent)};})()");
+          const railGone=await w.js("({rail:document.querySelector('#portal-entry [data-orb-rail]').hidden,mark:document.querySelector('#portal-entry .orb-stage').dataset.rail||null,subs:!document.querySelector('#portal-entry [data-room=solio]').hidden})");
+          check('16 another account (not a viewer) gets no objects, Solio as before, and never the previous answer',back.ok&&railGone.rail&&!railGone.mark&&railGone.subs&&gone.hidden&&gone.rows===0&&!gone.say&&!gone.anyText,{objs:o2,...railGone,...gone});
           w.win.destroy();
         }
         // 4. 배정 하나(Workspace, PULSE 각각)
