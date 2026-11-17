@@ -107,6 +107,15 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   const stale = new Date(Date.now() - 31 * 60000); fs.utimesSync(marker, stale, stale);
   assert.equal(await run(copy, ['--run', 'manual', '--test-mode'], env, 240000), 0);
   assert.equal(lines(state)[5].outcome, 'complete', 'a stale marker does not stop a run');
+  // The MCP server of the installed copy ends within seconds once an install marker appears (it looks every 2 seconds),
+  // so an update does not leave the old executable held by an AI tool for long.
+  const mcpCopy = spawn(copy, ['--mcp', '--test-mode'], { env, stdio: ['pipe', 'ignore', 'ignore'], windowsHide: true });
+  const stop = setTimeout(() => mcpCopy.kill(), 60000);
+  await new Promise(ok => setTimeout(ok, 3000));
+  const marked = Date.now(); fs.utimesSync(marker, new Date(), new Date());
+  assert.equal(await new Promise(ok => mcpCopy.once('exit', ok)), 0);
+  clearTimeout(stop);
+  assert.ok(Date.now() - marked < 10000, `ended ${Date.now() - marked} ms after the marker`);
 
   // With automatic on, the next run finds the first backup from the state — no new snapshot needed — and tells
   // it once (a test run keeps the ledger without showing anything); the run after that tells nothing.

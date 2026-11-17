@@ -10,7 +10,7 @@
 //!   (worker/mcp.cjs, restic은 읽기 명령만 `--no-lock`)가 하고, 이 서버는 워커의 짧은 허용 목록(`WORKER_METHODS`)만 부른다.
 //!   찾기는 한 시간에 10번(이 PC의 MCP 프로세스를 모두 합쳐), 한 번에 60초까지다. 종량 회선과 쉬는 회선에서는 찾지 않는다.
 //! - 표준 입력이 닫힐 때까지 남고, 5분 동안 요청이 없으면 워커만 내린다. 설치 · 업데이트 표식(`.installing`)이 보이면 바로
-//!   끝난다(요청마다, 그리고 1분마다 본다).
+//!   끝난다(요청마다, 그리고 2초마다 본다 — 업데이트 뒤 옛 실행 파일이 오래 남지 않게).
 //! - 기록 `mcp.jsonl`에는 호출마다 도구 이름 · 결과 수 · 걸린 ms만 남긴다. 찾은 낱말과 경로는 남기지 않는다.
 use backup_native::{platform, power, protocol, runlog, secret, worker::Worker};
 use fs2::FileExt;
@@ -23,6 +23,9 @@ const LINE_MAX: usize = 1 << 20;
 const FINDS_PER_HOUR: usize = 10;
 const FIND_LIMIT: Duration = Duration::from_secs(60);
 const IDLE: Duration = Duration::from_secs(300);
+/// 설치 · 업데이트 표식을 보는 주기. 파일 하나의 정보를 읽을 뿐이라 짧게 둔다(설치 세션 11-17: 1분이면 업데이트 뒤
+/// AI 도구가 붙든 옛 WorkBackupRun.exe가 1분까지 남았다).
+const WATCH: Duration = Duration::from_secs(2);
 const RESULTS: usize = 50;
 /// 워커에서 부르는 메서드의 짧은 허용 목록(worker/mcp.cjs METHODS와 같다). methods.json의 `allowedReadOnly`는 「복구 전용
 /// 연결에서 부를 수 있다」는 뜻이고 되살리기 같은 바꾸는 메서드도 들어 있어, AI 쪽 경계로 쓰지 않는다.
@@ -314,7 +317,7 @@ pub fn serve(test: bool, resources: PathBuf) -> i32 {
     let server = Arc::new(server);
     let watch = server.clone();
     std::thread::spawn(move || loop {
-        std::thread::sleep(Duration::from_secs(60));
+        std::thread::sleep(WATCH);
         if platform::installing(&watch.exe_dir) { std::process::exit(0); }
         watch.idle_check();
     });
