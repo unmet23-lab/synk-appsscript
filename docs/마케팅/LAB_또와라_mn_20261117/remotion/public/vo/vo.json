@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_65a8c7e1915a6295614f775b",
+  "name": "미선"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1117,
+  "lufs": -16
+ },
+ "made": "2026-11-17T01:36:58.997Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "먹어라!",
+   "dur": 0.679,
+   "syllablesPerSec": 4.42,
+   "src": "h1.wav",
+   "key": "71be67cf58f1145f528880ace58c4c81",
+   "words": 1
+  },
+  {
+   "id": "h2",
+   "text": "입어라!",
+   "dur": 0.699,
+   "syllablesPerSec": 4.29,
+   "src": "h2.wav",
+   "key": "2914630b03b5e7d4241edfdc71375497",
+   "words": 1
+  },
+  {
+   "id": "h3",
+   "text": "챙겨라!",
+   "dur": 0.881,
+   "syllablesPerSec": 3.41,
+   "src": "h3.wav",
+   "key": "02227289ecdf72c0fa21dc565cff16b3",
+   "words": 1
+  },
+  {
+   "id": "h4",
+   "text": "가라!",
+   "dur": 0.592,
+   "syllablesPerSec": 3.38,
+   "src": "h4.wav",
+   "key": "8dcd4b201f37e67b20000d1b1b3db2d3",
+   "words": 1
+  },
+  {
+   "id": "h5",
+   "text": "가라! 가라!",
+   "dur": 1.521,
+   "syllablesPerSec": 2.63,
+   "src": "h5.wav",
+   "key": "e18b0c6a364542c9eed2dbb21717b4ae",
+   "words": 2
+  },
+  {
+   "id": "h6",
+   "text": "또 와라.",
+   "dur": 0.973,
+   "syllablesPerSec": 3.08,
+   "src": "h6.wav",
+   "key": "9857c6b64b41ffbbbc363ff9e02d9c05",
+   "words": 2
+  },
+  {
+   "id": "m1",
+   "text": "네…!",
+   "dur": 0.995,
+   "syllablesPerSec": 1.01,
+   "src": "m1.wav",
+   "key": "ebb91ec144d2f1576657593a3333d373",
+   "words": 1
+  }
+ ]
+}

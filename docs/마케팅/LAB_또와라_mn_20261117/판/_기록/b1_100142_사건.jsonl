@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e706-2c98-7421-aeaf-df55bcb5bd56"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt-diorama image with the towering rice bowl, shocked Mongle, and stern, rosy-cheeked grandmother."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A stern, rosy-cheeked grandma serves a towering rice mountain to a stunned Mongle in a cozy felt kitchen."}}
+{"type":"turn.completed","usage":{"input_tokens":127353,"cached_input_tokens":111744,"cache_write_input_tokens":0,"output_tokens":1797,"reasoning_output_tokens":370}}

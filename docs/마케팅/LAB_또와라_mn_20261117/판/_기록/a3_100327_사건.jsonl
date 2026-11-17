@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e707-c3eb-7910-bcc7-99a44271f1d9"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one image with the same grandmother and felt airport style, separated from Mongle by the narrowly open glass door.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Grandma gives a small, tearful wave to Mongle across the narrowly open glass door."}}
+{"type":"turn.completed","usage":{"input_tokens":73302,"cached_input_tokens":47360,"cache_write_input_tokens":0,"output_tokens":1335,"reasoning_output_tokens":177}}

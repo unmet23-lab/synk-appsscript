@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e709-6814-7823-8204-40c1c4971640"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt-diorama panel, matching the reference characters and keeping the top wall empty.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Grandma packs a towering stack of side dishes into the suitcase while worried Mongle watches."}}
+{"type":"turn.completed","usage":{"input_tokens":48999,"cached_input_tokens":32512,"cache_write_input_tokens":0,"output_tokens":1231,"reasoning_output_tokens":0}}

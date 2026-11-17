@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a single panel of a vertical comedy short (fixed camera).
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama, portrait 2:3, warm soft light, shallow depth of field like a macro photo of a stop-motion set, fuzzy felt and fabric textures everywhere. Match the felt craft look of the FIRST attached photo (only its craft look and scale, NOT its café). Keep every important thing between 12% and 88% of the image width (the edges will be cropped). The TOP 22% of the image is a calm, plain, softly blurred wall — keep it empty.
+
+SET: the small front entrance (hyeongwan) of the same old Korean boarding house on a cold winter morning: a felt shoe-step with a few pairs of felt shoes, a wooden felt sliding door with frosted panes behind, everything softly lit and slightly blurred. The floor of the entrance (where the characters are) is at about 66% of the image height.
+- MONGLE sits on the entrance step at the LEFT-CENTRE (about 36% of the image width), but it is WRAPPED round and round in a very long, very thick knitted red-and-cream striped felt scarf — at least five thick loops stacked up its whole body like a tower, so only its two glossy bead eyes peek out from a tiny gap between the loops, looking surprised and a little squashed. The long scarf end trails on the floor.
+- GRANDMA stands on the RIGHT (centre at about 68% of the image width), full body visible, still holding the far end of the scarf in both hands and pulling it to tighten one more loop, with a determined, fussy face (lips pressed, eyebrows down).
+- Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+- GRANDMA must be the SAME felt doll as the grandmother in the THIRD attached image: same face, same short curly grey perm, plum quilted padded vest over a cream knit, flower-patterned loose trousers, white felt rubber shoes.
+
+Exactly ONE Mongle and ONE grandmother, nobody else.
+Absolutely no text, letters, numbers, Hangul, logos, symbols or watermarks anywhere.

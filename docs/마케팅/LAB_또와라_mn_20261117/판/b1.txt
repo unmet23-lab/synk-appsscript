@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a single panel of a vertical comedy short (fixed camera).
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama, portrait 2:3, warm soft light, shallow depth of field like a macro photo of a stop-motion set, fuzzy felt and fabric textures everywhere. Match the felt craft look of the FIRST attached photo (only its craft look and scale, NOT its café). Keep every important thing between 12% and 88% of the image width (the edges will be cropped). The TOP 22% of the image is a calm, plain, softly blurred wall — keep it empty.
+
+SET: the small, warm kitchen of an old Korean boarding house (hasukjip), early morning. A low wooden felt dining table runs across the image; its top surface is at about 62% of the image height. Behind it a cream felt wall with a small window with soft morning light, a few felt pots on a shelf, all softly blurred.
+- On the table, in the centre-left (about 40% of the image width): one rice bowl with a RIDICULOUSLY tall mountain of white felt rice heaped on it — the rice tower is taller than Mongle, piled into a steep peak, a few grains tumbling down its sides. Around it a few small felt side dishes (kimchi, egg roll, seaweed).
+- MONGLE (from the SECOND image) sits ON the table at the LEFT (centre at about 24% of the image width, hem on the table top), body about 20% of the image width wide, staring UP at the rice mountain with wide shocked bead eyes and a small open "o" mouth.
+- GRANDMA stands BEHIND the table on the RIGHT (centre at about 70% of the image width), visible from the knees up above the table, one hand still pressing the rice bowl down onto the table as if she just slammed it there, the other hand on her hip. Face: stern pout, chin up, eyebrows down — but cheeks rosy (loving).
+- Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+- GRANDMA must be the SAME felt doll as the grandmother in the THIRD attached image: same face, same short curly grey perm, plum quilted padded vest over a cream knit, flower-patterned loose trousers, white felt rubber shoes.
+
+Exactly ONE Mongle and ONE grandmother, nobody else.
+Absolutely no text, letters, numbers, Hangul, logos, symbols or watermarks anywhere.
