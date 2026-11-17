@@ -213,6 +213,47 @@ test('11-18 K-drama weekend workshop and 2030 return home: workshop cost by clas
 });
 function addMonth(label, n) { let [y, m] = label.split('-').map(Number); m += n; while (m > 12) { m -= 12; y += 1; } while (m < 1) { m += 12; y -= 1; } return `${y}-${String(m).padStart(2, '0')}`; }
 
+// [11-18 유호님 「그 나라에 머물러」] 베트남 · 우즈베키스탄을 여는 판에서는 대표가 그 나라에 가서 산다.
+// 몽골 줄에서: 첫 이주 달 한 달 전부터 한국인 강사 자리값이 나가고, 이주 달부터 대표의 울란바토르 교실 시간은 점검 10시간이 된다.
+// 대표가 사는 나라의 교실 시간(개원 전 80 · 연 뒤 30)이 대표 시간에 붙고, 이주비가 그 달 회사 일회 비용에 붙는다. 몽골만 하는 판은 그대로다.
+test('11-18 founder lives in Vietnam and Uzbekistan in the plans that open them: Korean teacher from the first move, founder hours and moving costs', () => {
+  const runFor = (planName, patch) => {
+    const inp = structuredClone(base); inp.timeline = { ...inp.timeline, end: inp.planHorizon.end }; if (patch) patch(inp);
+    const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans[planName] };
+    return { inp, r: run(inp, '기본', opts) };
+  };
+  const { inp, r } = runFor('성공적');
+  const at = (m) => r.rows.find((x) => x.m === m);
+  const C = inp.company; const ST = C.founderStays; const SH = C.founderStayHours; const RH = C.returnHome; const KT = inp.lab.krTeacher;
+  assert.deepEqual(ST.map((s) => [s.country, s.month]), [['vn', '2028-07'], ['uz', '2029-07']]);
+  const leave = ST[0].month; const hand = addMonth(leave, -KT.handoverMonths);
+  // 한국인 강사: 넘겨받는 달부터, 그 전에는 없다. 넘겨받는 달만 외국인 고용 부담금 한 명 몫을 더 낸다
+  assert.equal(at(addMonth(hand, -1)).lab.krTeacher, 0);
+  assert.ok(at(hand).lab.krTeacher > 0 && at(leave).lab.krTeacher > 0);
+  close(at(hand).lab.krTeacher - at(leave).lab.krTeacher, inp.lab.staff.foreignLevy.mnt);
+  // 대표 시간: 넘겨받는 달은 회화 + 운영 30, 이주 달부터 울란바토르는 점검만, 사는 나라 교실 시간이 붙는다
+  const teach = C.premiumClasses * C.premiumTeachingHoursPerClass;
+  close(at(hand).hours.lab, teach + 30);
+  for (const m of [leave, '2028-10', '2029-07', '2029-10', '2030-01']) close(at(m).hours.lab, RH.labRemoteHours, 1e-9);
+  close(at(leave).hours.abroad, SH.preOpen); close(at('2028-08').hours.abroad, SH.preOpen); close(at('2028-09').hours.abroad, SH.open);
+  close(at('2029-07').hours.abroad, SH.preOpen); close(at('2029-09').hours.abroad, SH.open); close(at('2030-01').hours.abroad, SH.open);
+  assert.equal(at(RH.month).hours.abroad, 0, '귀국 달부터 몽골 밖 교실 시간은 없다');
+  // 이주비는 그 달 회사 일회 비용에 붙는다
+  const plain = (m) => C.oneOff.filter((x) => x.month === m).reduce((a, x) => a + x.krw, 0);
+  for (const s of ST) close(at(s.month).company.oneOff - plain(s.month), s.krw);
+  // 몽골만 하는 판은 앞 판과 같다(이주 없음, 한국인 강사는 귀국 한 달 전부터)
+  const mn = runFor('보수적').r; const mnAt = (m) => mn.rows.find((x) => x.m === m);
+  for (const row of mn.rows) assert.equal(row.hours.abroad, 0, `${row.m} 몽골만 하는 판에는 몽골 밖 교실 시간이 없다`);
+  assert.equal(mnAt('2029-12').lab.krTeacher, 0);
+  close(mnAt('2028-07').hours.lab, teach + 30 + inp.lab.workshop.leadHoursPerClass);
+  // 베트남만 여는 판(평균적)은 하노이로만 옮기고 귀국까지 거기 산다
+  const avg = runFor('평균적').r; const avgAt = (m) => avg.rows.find((x) => x.m === m);
+  close(avgAt('2029-07').hours.abroad, SH.open); close(avgAt('2029-07').company.oneOff, plain('2029-07'));
+  // 머무는 판을 빼면(founderStays 비움) 세 나라 판의 몽골 줄은 몽골만 하는 판과 같은 대표 시간으로 돈다
+  const noStay = runFor('성공적', (i) => { i.company.founderStays = []; }).r;
+  for (const m of ['2028-07', '2029-07']) close(noStay.rows.find((x) => x.m === m).hours.lab, teach + 30 + inp.lab.workshop.leadHoursPerClass);
+});
+
 // [11-18 대체 검수 P2-1] 앞 시험은 워크숍 · 한국인 강사 값 자체만 재서, 학원 비용 합계에서 두 값을 빼도 통과했다.
 // 이 시험은 달마다 학원 비용이 비용 칸을 모두 더한 값(워크숍 · 한국인 강사 포함)과 같은지 본다.
 // 저장된 results.json의 2030년 값(운영 계획 보수적의 몽골 판)이 지금 입력과 같은지도 본다. 아래 11-09 시험의 저장 값 대조는 2029년까지만 본다

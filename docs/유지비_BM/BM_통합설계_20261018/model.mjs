@@ -291,6 +291,11 @@ function run(inp, scName, opts = {}) {
   const moveMonth = ((C.oneOff || []).find((x) => x.move) || {}).month || null; // [10-22] 대표가 울란바토르로 옮기는 달 — 그 뒤 한국 출강은 담당자만 한다
   // [11-18 유호님 「웅」] 대표 귀국(몽골 판에서만 센다). 관문에 걸리거나 이주하지 않는 판이면 귀국도 없다
   const RH = !CO && C.returnHome && moveMonth && !gateFail && !opts.noMove ? C.returnHome : null;
+  // [11-18 유호님 「그 나라에 머물러」] 이 판이 여는 나라(베트남 · 우즈베키스탄)에 대표가 가서 산다. 몽골 줄에서만 센다
+  const STAYS = !CO && moveMonth && !gateFail && !opts.noMove && opts.plan
+    ? (C.founderStays || []).filter((s) => opts.plan.countries.includes(s.country) && (!RH || s.month < RH.month)).sort((a, b) => (a.month < b.month ? -1 : 1))
+    : [];
+  const awayFrom = [STAYS.length ? STAYS[0].month : null, RH ? RH.month : null].filter(Boolean).sort()[0] || null; // 대표가 울란바토르를 떠나는 달
   const KT = L.krTeacher;
   const yearMnRev = {}; const yearMnProfit = {}; const yearKrProfit = {};
 
@@ -311,9 +316,11 @@ function run(inp, scName, opts = {}) {
     // [11-18] 대표 귀국: 귀국 달부터 대표는 교실을 멀리서 점검만 한다. 회화 반과 워크숍은 한국인 강사가 맡는다. 강사 자리값은 넘겨받는 달부터 나간다.
     //   [11-18 대체 검수] 교실 운영을 넘긴 C안에서 빠지는 것은 한국인 강사 자리값뿐이다. 귀국 비용(co.oneOff)과 귀국 뒤 한국 쪽 시간(h.path의 pathHours)은 C안에서도 센다
     const returned = !!RH && m >= RH.month;
-    const krTeacherOn = !!RH && !!KT && isOpen && !partnerMode && m >= addMonths(RH.month, -(KT.handoverMonths || 0));
-    const founderInUB = !CO && !!moveMonth && m >= moveMonth && !gateFail && !opts.noMove && !returned;
-    multNow.krTeacherMNT = krTeacherOn ? KT.salaryMNT * wageM * si + KT.housingMNT * rentInfl + KT.flightMNT + (m < RH.month ? L.staff.foreignLevy.mnt : 0) : 0; // 넘겨받는 달은 외국인 고용 부담금 한 명 몫을 더 낸다
+    const away = !!awayFrom && m >= awayFrom; // [11-18] 귀국했거나 다른 나라로 옮겨 울란바토르에 없다
+    const stayNow = !returned ? STAYS.filter((s) => m >= s.month).pop() || null : null; // 대표가 지금 사는 나라(몽골 밖)
+    const krTeacherOn = !!awayFrom && !!KT && isOpen && !partnerMode && m >= addMonths(awayFrom, -(KT.handoverMonths || 0));
+    const founderInUB = !CO && !!moveMonth && m >= moveMonth && !gateFail && !opts.noMove && !away;
+    multNow.krTeacherMNT = krTeacherOn ? KT.salaryMNT * wageM * si + KT.housingMNT * rentInfl + KT.flightMNT + (m < awayFrom ? L.staff.foreignLevy.mnt : 0) : 0; // 넘겨받는 달은 외국인 고용 부담금 한 명 몫을 더 낸다
     multNow.wsFree = krTeacherOn ? (L.workshop?.krTeacherClasses ?? 0) : (founderInUB ? (L.workshop?.founderClasses ?? 0) : 0); // 워크숍을 돈 없이 맡는 반 수
     if (isOpen && stage === null) stage = hosted ? 'host' : (full4 ? 'v23' : (forceStage2 ? 's2' : 's1'));
     // D안 직영 준비는 계획 달 두 달 전부터, 가용 현금이 「출자(10만 달러 초과) + 한국 고정비 석 달 + 여유」를 채울 때 시작한다. 못 채우면 SYNK반을 이어 간다
@@ -667,9 +674,12 @@ function run(inp, scName, opts = {}) {
     // [11-18] 대표가 울란바토르에 있으면 K드라마 워크숍 founderClasses반을 직접 맡는다(넘겨받는 달부터는 한국인 강사). 귀국 뒤에는 교실을 멀리서 점검만 한다
     const wsFounderH = founderInUB && isOpen && !krTeacherOn ? Math.min(lab.wsClasses || 0, L.workshop?.founderClasses ?? 0) * (L.workshop?.leadHoursPerClass || 0) : 0;
     lab.wsFounderHours = wsFounderH;
-    h.lab = isPreOpen ? 80 : (isOpen ? (returned ? RH.labRemoteHours : C.premiumClasses * C.premiumTeachingHoursPerClass + 30 + wsFounderH) : (C.labPrepEarly && m >= C.labPrepEarly.from && m < preOpenStart ? C.labPrepEarly.hours : 0));
+    h.lab = isPreOpen ? 80 : (isOpen ? (away ? (C.returnHome?.labRemoteHours ?? 10) : C.premiumClasses * C.premiumTeachingHoursPerClass + 30 + wsFounderH) : (C.labPrepEarly && m >= C.labPrepEarly.from && m < preOpenStart ? C.labPrepEarly.hours : 0));
     if (partnerMode) h.lab = isOpen ? 10 : (isPreOpen ? 30 : 0); // [페이블 3차] C안이면 대표는 회화를 가르치지 않고 운영 점검만
-    const fixedHours = h.mgmt + h.world + h.marketing + h.online + h.path + h.lab;
+    // [11-18 유호님 「그 나라에 머물러」] 대표가 사는 나라의 교실: 개원 준비 달 80시간, 연 뒤 운영 30시간(울란바토르 때와 같은 꼴)
+    const STAYH = C.founderStayHours || { preOpen: 80, open: 30 };
+    h.abroad = stayNow ? (m < (inp.countries?.[stayNow.country]?.open || stayNow.month) ? STAYH.preOpen : STAYH.open) : 0;
+    const fixedHours = h.mgmt + h.world + h.marketing + h.online + h.path + h.lab + h.abroad;
 
     // ── PULSE·SHIFT 수요(대표 시간을 따지기 전). 정기 고객(광고 정기·몽골 콘텐츠·SHIFT 운영)은 「이미 맡은 일」, 나머지는 「새 일」
     // 계획한 고객·주문 수 × subVolume(보수 25% · 기본 50% · 상방 100%). AI바우처만 가정별 건수를 따로 둔다
@@ -810,7 +820,8 @@ function run(inp, scName, opts = {}) {
     co.accounting = m >= C.krCorpFrom ? C.accountingKRW : 0;
     co.tools = C.toolsKRW; co.infra = C.infraKRW;
     co.oneOff = C.oneOff.filter((x) => x.month === m && !(x.move && (gateFail || opts.noMove))).reduce((a, x) => a + x.krw, 0) // 관문에 걸리면 한국에 남는다(이주비 없음) [페이블 3차]
-      + (RH && m === RH.month ? RH.krw || 0 : 0); // [11-18] 대표 귀국(항공 · 짐)
+      + (RH && m === RH.month ? RH.krw || 0 : 0) // [11-18] 대표 귀국(항공 · 짐)
+      + STAYS.filter((s) => s.month === m).reduce((a, s) => a + (s.krw || 0), 0); // [11-18] 베트남 · 우즈베키스탄 이주(항공 · 짐 · 첫 달 숙소)
     const payPlan = step(C.founderPayKRW, m);
     co.founderPay = (stopped || opts.freezePay) ? Math.min(payPlan, C.founderPayKRW[0].v) : payPlan; // 동결은 첫 생활비(150만원)에서 멈추는 것이지 앞당기는 것이 아니다 // 멈춤 규칙이 걸리면 생활비 인상을 멈춘다
     co.textbookWriting = (C.textbookFinishing && m === C.textbookFinishing.month ? C.textbookFinishing.krw : 0) // 교재 원어민 검수·편집 마무리
