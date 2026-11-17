@@ -140,39 +140,39 @@
   "lang": "ky",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "",
+  "hook": "Ага, эже\nкорейче кантип болот?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "Ага бирөө —\nаты экөө!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "Ага",
+  "colB": "Эже",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "Эркек баланын агасы",
+    "Кыз баланын агасы",
+    "Эркек баланын эжеси",
+    "Кыз баланын эжеси"
   ],
   "meanSize": 50,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "Кыз бала «형» дебейт!",
+    "Эркек бала «언니» дебейт!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "Эркек бала айтса",
+  "rowF": "Кыз бала айтса",
   "rowSize": 64,
-  "end": "",
+  "end": "Ким айтканына жараша!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 남자 형제, 손위 여자 형제\n한국어로 어떻게 돼?",
+    "reveal": "손위 남자 형제는 한 명 —\n이름은 둘!",
+    "colA": "손위 남자 형제",
+    "colB": "손위 여자 형제",
+    "means.0": "남자아이의 손위 남자 형제",
+    "means.1": "여자아이의 손위 남자 형제",
+    "means.2": "남자아이의 손위 여자 형제",
+    "means.3": "여자아이의 손위 여자 형제",
+    "why.0": "여자아이는 「형」이라고 하지 않아요!",
+    "why.1": "남자아이는 「언니」라고 하지 않아요!",
+    "rowM": "남자아이가 말하면",
+    "rowF": "여자아이가 말하면",
+    "end": "누가 말하느냐에 따라 달라요!"
+  }
 }

@@ -1,0 +1,35 @@
+{
+  "판본": "CN",
+  "컴포지션": "m20-CN",
+  "언어": "zh-Hans",
+  "글": "docs/마케팅/LAB_사층F_mn_20261101/remotion/src/m20/판본/CN.json",
+  "글sha256": "add781f372a51d5dbeca3bed82e671e99326a13a9389d9bd0dc22c5d8bfd7ca2",
+  "시각": "2026-11-17T03:42:05.006Z",
+  "영상": "docs/마케팅/LAB_사층F_mn_20261101/게시/판본/CN/video.mp4",
+  "표지": "docs/마케팅/LAB_사층F_mn_20261101/게시/판본/CN/cover.png",
+  "표지초": 0.7,
+  "돌림판본": {
+    "언어": "zh-Hans",
+    "파일": "게시/판본/CN/video.mp4",
+    "표지": "게시/판본/CN/cover.png",
+    "글": "게시/판본/CN/글.json",
+    "원고": {
+      "douyin": "게시/판본/CN/원고_douyin.json",
+      "xiaohongshu": "게시/판본/CN/원고_xiaohongshu.json"
+    }
+  },
+  "음량": {
+    "LUFS": -14.5,
+    "봉우리dBFS": -1.4,
+    "리미터": 0.84
+  },
+  "길이초": 16.021,
+  "프레임": 480,
+  "영상Mbps": 10.95,
+  "소리kbps": 399,
+  "영상sha256": "245d2db75929da87202d449529aaf24ab68e13a6ad1c412b850baa06d6d02d26",
+  "자산sha256": "5a81359f4f079a1f8faf85fda958fe803021f1c0f81deb352fe812e6abd1bc99",
+  "자산수": 49,
+  "구운때": "2026-11-17T03:42:04.179Z",
+  "표지프레임": 21
+}

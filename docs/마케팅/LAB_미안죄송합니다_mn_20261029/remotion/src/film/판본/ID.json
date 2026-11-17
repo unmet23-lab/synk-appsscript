@@ -132,7 +132,7 @@
   "boss": "Bos",
   "scene": "Tabrakan sama bos,\nkopinya tumpah…",
   "sceneSize": 40,
-  "level": "Level {n}",
+  "level": "Kesopanan {n}",
   "reads": [
     "mi-an",
     "mi-an-hae-yo",
@@ -146,13 +146,13 @@
     "Tapi bentar…",
     "Kok aku yang\nminta maaf?",
     "Bos yang\nnabrak duluan!",
-    "Gajiku juga\nharus naik dong!"
+    "Siapa tahu…\ngajiku naik, hehe"
   ],
   "meanSizes": [
     56,
     56,
     56,
-    52,
+    42,
     66,
     58,
     52,
@@ -181,7 +181,7 @@
   "_원문": {
     "boss": "사장님",
     "scene": "사장님이랑 부딪쳤다,\n커피가 쏟아졌다…",
-    "level": "{n}단계",
+    "level": "공손함 {n}",
     "means.0": "미안!",
     "means.1": "미안해요.",
     "means.2": "죄송합니다, 사장님.",
@@ -189,7 +189,7 @@
     "means.4": "근데 잠깐…",
     "means.5": "왜 내가\n사과해?",
     "means.6": "사장님이\n먼저 박았잖아!",
-    "means.7": "내 월급도\n올려 줘야지!",
+    "means.7": "혹시 알아…\n내 월급이 오를지도, 헤헤",
     "tags.0": "친구한테만",
     "tags.1": "공손",
     "tags.2": "선생님 · 사장님께 ✓",
