@@ -185,7 +185,7 @@ function subscriptionCall(operation){const service=subscriptions();if(!service)r
 // 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.
 // 타이머는 node:timers에서 가져와 unref한다(앱은 창이 살아 있는 동안 돌고, main.cjs를 setInterval 없는 VM에서 돌리는 시험도 붙잡지 않는다).
 const subscriptionBoardFile=()=>path.join(app.getPath('userData'),'AiSubscriptions','board.json');
-// 모델별 토큰(11-15)도 같은 틱에서: 켜 둔 회원이면 3시간마다 뒤에서 센다(Claude Code가 오래된 대화를 지우기 전에 — Fable 설계 검토 7). 판단은 ai-tokens.cjs auto.
+// 모델별 토큰(11-15)도 같은 틱에서: 켜 둔 회원이면 3시간마다 뒤에서 센다(Claude Code가 오래된 대화를 지우기 전에 — 설계 검토 7). 판단은 ai-tokens.cjs auto.
 require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())&&!fs.existsSync(path.join(app.getPath('userData'),'AiSubscriptions','token-usage.json'))))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});void Promise.resolve(subscriptions()?.tokensAuto?.()).catch(()=>{});},2*60*1000).unref?.();
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();handoffCover?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
@@ -309,7 +309,7 @@ function handoffToMain({waitedForStart=false}={}){
   // 앱 창을 먼저 만들고 시작 창을 없앤다. 시작 창이 그때 하나뿐인 창이면 먼저 없애는 순간 「모든 창이 닫힘」이 app.quit()를 불러,
   // 확인이 시작 창이 보이기 전에 끝난 실행(빠른 인터넷, 공개 CI 검사기)이 켜지자마자 멈췄다(0.4.96 대역 빌드 검사에서 찾음)
   // 드러남 값(orbBoot)은 겹쳐 넘기는 길에만 쓴다. 시작 창을 보지 못한 채 넘기거나 앱 창이 이미 준비됐으면 비워,
-  // 앱 창 얼굴이 시작 창이 만들어진 때부터 지난 만큼을 건너뛰지 않고 처음부터 드러나게 한다(0.4.96 공개 후보 Fable P2)
+  // 앱 창 얼굴이 시작 창이 만들어진 때부터 지난 만큼을 건너뛰지 않고 처음부터 드러나게 한다(0.4.96 공개 후보 검수 P2)
   if(!from){orbBoot=null;if(startupMinimized&&window&&!window.isDestroyed()&&mainWindowReady){arrivalShow=null;window.minimize();}else showPlatformMain();startupWindow?.dispose();startupWindow=null;return;}
   if(window&&!window.isDestroyed()&&mainWindowReady){orbBoot=null;showPlatformMain();setTimeout(()=>{startupWindow?.dispose();startupWindow=null;},50);return;}
   startupHandoff={bounds:from,done:false,timer:null};
@@ -344,16 +344,16 @@ async function prepareUpdateHandoff({token,version,file}={}){
     if(!shown.length){
       // 모든 창이 숨었거나 최소화: 주 창 하나뿐이고 쓰다 만 초안이 없으면 조용히 바꾼다. 그 밖에는 설치기 창이 앱 창이 기억한 자리에 앞으로 뜬다
       // 시작 관문 단계(새 판을 받아 바로 넘기는 때)에는 앱 창이 아직 없다. 그때는 시작 창이 앱 창 자리이고 쓰다 만 초안도 없다.
-      // 그래서 시작 창은 「다른 창」으로 세지 않고, 최소화는 시작 창이나 도착 쪽지로 본다(0.4.96 카본 D1, Fable F1)
+      // 그래서 시작 창은 「다른 창」으로 세지 않고, 최소화는 시작 창이나 도착 쪽지로 본다(0.4.96 검수 D1 · F1)
       const startupWin=startupWindow?.browserWindow?.()||null;
       const others=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w!==main&&w!==startupWin);
       // 다만 시작 창이 있는데 보이지도 최소화되지도 않았으면 사람이 켠 실행에서 아직 그려지기 전이다(숨은 채 시작한 길에는 시작 창이 없다).
-      // 그때는 조용히 가지 않는다. 설치기 창과 새 앱이 앞으로 뜬다(0.4.96 공개 후보 카본 D1 2차)
+      // 그때는 조용히 가지 않는다. 설치기 창과 새 앱이 앞으로 뜬다(0.4.96 공개 후보 검수 D1 2차)
       const asked=!!startupWin&&!startupWin.isMinimized();
       const quiet=!asked&&others.length===0&&(!main||!(await draftsUnsaved(main)));
       const minimized=!!(main?.isMinimized()||startupWin?.isMinimized()||!main&&!startupWin&&arrivalShow==='minimized');
       if(gen!==handoffGen)return;
-      // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 카본 C5)
+      // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 검수 C5)
       const reopened=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.isVisible()&&!w.isMinimized());
       if(!reopened.length){
         const at=windowPlacement?.restore();
@@ -615,7 +615,7 @@ function createWindow(){
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
-  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}/* 얼굴의 첫 장 알림이 이 이벤트보다 먼저 와서 넘기기가 이미 창을 보였으면 다시 보이지 않는다(「뒤」로 보인 창이 앞으로 나서지 않게, 0.4.96 카본 C4) */if(isPlatform&&window.isVisible())return;const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(autostartHidden&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 로그인 때의 숨은 시작은 첫 창에만 쓴다. 넘김 실패로 다시 만든 창이나 사람이 연 창은 숨기지 않는다(0.4.96 검수 D5) */if(isPlatform)autostartHidden=false;/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;showBehind();}else window.show();}});
+  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}/* 얼굴의 첫 장 알림이 이 이벤트보다 먼저 와서 넘기기가 이미 창을 보였으면 다시 보이지 않는다(「뒤」로 보인 창이 앞으로 나서지 않게, 0.4.96 검수 C4) */if(isPlatform&&window.isVisible())return;const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(autostartHidden&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 로그인 때의 숨은 시작은 첫 창에만 쓴다. 넘김 실패로 다시 만든 창이나 사람이 연 창은 숨기지 않는다(0.4.96 검수 D5) */if(isPlatform)autostartHidden=false;/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;showBehind();}else window.show();}});
   if(smoke) {
     const timer=setTimeout(()=>{process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:'TIMEOUT'})+'\n');app.exit(1);},20000);
     contents.once('did-finish-load',async()=>{

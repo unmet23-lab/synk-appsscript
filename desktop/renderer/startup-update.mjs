@@ -117,7 +117,7 @@ export function mountStartupUpdate({
   function enterForge() {
     if (scene === 'forge') return;
     const handoff = snapshot.boot?.kind === 'handoff';
-    // 그리기가 없는 판(정적 구)도 장면을 바꿔 글과 진행을 보인다(0.4.96 카본 C6)
+    // 그리기가 없는 판(정적 구)도 장면을 바꿔 글과 진행을 보인다(0.4.96 검수 C6)
     if (!orb) { scene = 'forge'; bootStarted = true; shown = target = handoff ? 0.5 : 0; setUi('forge'); return; }
     // 앱 창 위에 덮어 띄운 넘김 장면(본체 boot.kind 'handoff'): 받기가 끝난 절반 깎인 구가 이미 와 있고 글도 바로 놓인다. 가림막과 설치기가 같은 장에서 잇는다
     if (handoff) {
@@ -128,7 +128,7 @@ export function mountStartupUpdate({
       return;
     }
     takeOverBoot();
-    // 다시 시도한 받기는 0에서 다시 깎는다. 앞 실패 때의 목표가 남으면 구와 숫자가 그 자리까지 먼저 오른다(0.4.96 카본 C7)
+    // 다시 시도한 받기는 0에서 다시 깎는다. 앞 실패 때의 목표가 남으면 구와 숫자가 그 자리까지 먼저 오른다(0.4.96 검수 C7)
     scene = 'forge'; shown = 0; target = 0;
     void orb.setMood?.('sleep');
     orb.setCut?.(1); orb.setCutOn?.(true);
@@ -178,7 +178,7 @@ export function mountStartupUpdate({
   }
   function setUi(ui) { if (nodes.root.dataset.ui !== ui) nodes.root.dataset.ui = ui; }
   /* 첫 상태가 받는 중, 바꾸는 중, 실패이면(숨은 채 받다가 창을 연 때, 지난 실패를 보일 때) 드러남을 건너뛴다. 빈 자리에서 그 장면으로 다가오고,
-   * 뒤늦은 드러남이 그 장면의 구를 빈 자리로 되돌리지 않게 한다(0.4.96 카본 C2) */
+   * 뒤늦은 드러남이 그 장면의 구를 빈 자리로 되돌리지 않게 한다(0.4.96 검수 C2) */
   function takeOverBoot() { if (bootStarted || !orb) return; bootStarted = true; orb.snap('void'); }
 
   /* ── 저절로 열기 ── */
@@ -226,7 +226,7 @@ export function mountStartupUpdate({
       else clearAuto();
       focusDue = !pending && ['error', 'ready'].includes(s.state);
     }
-    // 첫 실패 상태는 관문이 일을 끝내기 전에 와서 「지금 판 열기」가 아직 막혀 있다. 같은 상태로 곧 이어 오는 판에서 열 수 있게 되면 그때 건다(0.4.96 카본 C1)
+    // 첫 실패 상태는 관문이 일을 끝내기 전에 와서 「지금 판 열기」가 아직 막혀 있다. 같은 상태로 곧 이어 오는 판에서 열 수 있게 되면 그때 건다(0.4.96 검수 C1)
     else if (s.state === 'error' && autoTimer === null && !autoSpent) armAutoOpen();
     if (focusDue && !pending) {
       const first = ['retry', 'install', 'current'].map(key => nodes[key]).find(btn => btn && !btn.hidden && !btn.disabled);

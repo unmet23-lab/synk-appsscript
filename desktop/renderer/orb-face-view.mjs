@@ -124,7 +124,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
 
   let disposed = false;
   // 구의 움직임 세대. 점 로고가 도는 동안 다른 움직임(로그아웃으로 묻는 화면에 돌아가기 따위)이 시작되면
-  // arrive가 남은 자리 옮기기를 하지 않는다(카본 A8)
+  // arrive가 남은 자리 옮기기를 하지 않는다(검수 A8)
   let motionGen = 0;
   let scene = null;
   let appliedFocusSeq = -1;
@@ -135,6 +135,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   // 솔리오 안의 프로그램과 방문자 분석의 줄. 펼침은 화면만의 상태다(컨트롤러는 어느 프로그램이 열렸는지만 안다)
   let lastProg = null;
   let visKey = '';
+  let restoringVis = false;
+  const moreKeys = new WeakMap();
   let railSince = -1e9, progTimer = 0, visTimer = 0, visLeave = 0;
   const clock = () => { try { return win.performance?.now?.() ?? Date.now(); } catch { return Date.now(); } };
   // 키보드로 옮긴 초점인가. 창에 초점이 없으면 :focus-visible이 맞지 않으므로 마지막 입력이 자판이었는지도 본다
@@ -222,7 +224,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     setText(ask.status, a.status);
     setText(ask.inviteError, a.inviteError);
     if (a.wait) stageEl.dataset.wait = a.wait; else delete stageEl.dataset.wait;
-    // 기다리는 동안 사라지는 칸과, 기다리지 않을 때 숨은 상태 묶음은 inert로 둔다. CSS가 0.35초 뒤에 숨기는 동안에도 초점과 Tab이 밟지 않게 한다(0.4.95 원천 후보 카본)
+    // 기다리는 동안 사라지는 칸과, 기다리지 않을 때 숨은 상태 묶음은 inert로 둔다. CSS가 0.35초 뒤에 숨기는 동안에도 초점과 Tab이 밟지 않게 한다(0.4.95 원천 후보 검수)
     for (const el of [ask.ways, ask.signup, ask.form]) el.inert = Boolean(a.wait);
     ask.statusBox.inert = !a.wait;
     renderActions(ask.actions, a.actions, s.busy, s.busyAction);
@@ -298,7 +300,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   function renderApp(s) {
     const room = s.room;
     setText(app.name, s.spaceLabel);
-    // 보이는 공간 이름이 낭독 이름에도 들어가게 한다(카본 A6, WCAG 2.5.3)
+    // 보이는 공간 이름이 낭독 이름에도 들어가게 한다(검수 A6, WCAG 2.5.3)
     const nameLabel = s.spaceLabel ? `${s.spaceLabel}, 다른 공간으로 가기` : '다른 공간으로 가기';
     if (app.nameBtn?.getAttribute?.('aria-label') !== nameLabel) app.nameBtn?.setAttribute?.('aria-label', nameLabel);
     app.orbBtn.setAttribute('aria-label', `지금 ${s.spaceLabel}. 다른 공간으로 가기`);
@@ -316,6 +318,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (lastProg !== null && prog) enterRoom(prog);
       lastProg = prog;
     }
+    // 방이 가려진 동안(옛 화면, 다른 공간) 스크롤은 사건 없이 0으로 돌아온다. 그릴 때마다 위쪽 흐림 표시를 지금 스크롤에 맞춘다(0.4.97 검수 A3)
+    for (const r of [app.solio, app.visits]) if (r.classList.contains('scrolled') && !(r.scrollTop > 0)) r.classList.remove('scrolled');
     layers.app.setAttribute('aria-label', solio ? '솔리오' : room.space === 'workspace' ? 'Workspace' : 'PULSE');
     if (solio) {
       const t = room.solio;
@@ -415,28 +419,59 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (text !== undefined && text !== null) n.textContent = String(text);
     return n;
   }
+  /* 장면은 1분마다 새로 온다(상대 시각, 다시 읽은 요약). 줄의 차례가 같으면 그 자리의 줄을 고쳐 쓰고,
+     차례가 달라 새로 지을 때도 펼친 줄, 눌러 고정한 줄, 자판 초점을 줄 이름(key)으로 되살린다(0.4.97 공개 후보 검수 A2) */
   function renderVisits(v) {
     const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows]) : '';
     if (key === visKey) return;
     visKey = key;
     clearTimeout(visTimer);
-    clearTimeout(visLeave);
+    if (!key) clearTimeout(visLeave);
     setText(app.visSay, key ? v.say : '');
     setText(app.visThen, key ? v.then : '');
     setText(app.visWhen, key ? v.when : '');
     setText(app.visScope, key ? v.scope : '');
-    app.visRows.replaceChildren(...(key && Array.isArray(v.rows) ? v.rows.flatMap(visRow) : []));
-    app.visRows.hidden = !(key && Array.isArray(v.rows) && v.rows.length);
+    const rows = key && Array.isArray(v.rows) ? v.rows : [];
+    const old = [...app.visRows.querySelectorAll('button.row[data-vis]')];
+    if (rows.length && old.length === rows.length && old.every((b, i) => b.dataset.vis === String(rows[i].key))) {
+      rows.forEach((r, i) => fillVisRow(old[i], r));
+    } else {
+      const kept = new Map(rows.length ? old.filter(b => b.classList.contains('opened')).map(b => [b.dataset.vis, b.classList.contains('pin')]) : []);
+      const focused = rows.length ? old.find(b => b === doc.activeElement)?.dataset.vis : undefined;
+      app.visRows.replaceChildren(...rows.flatMap(visRow));
+      // 펼침을 먼저 되살린다. 초점을 옮기면 모양이 계산되어, 그 뒤에 붙인 펼침은 처음부터 다시 펼쳐진다
+      for (const b of app.visRows.querySelectorAll('button.row[data-vis]')) if (kept.has(b.dataset.vis)) { setMore(b, true); if (kept.get(b.dataset.vis)) b.classList.add('pin'); }
+      const again = focused === undefined ? null : [...app.visRows.querySelectorAll('button.row[data-vis]')].find(b => b.dataset.vis === focused);
+      if (again) { restoringVis = true; try { again.focus({ preventScroll: true }); } catch {} finally { restoringVis = false; } }
+    }
+    app.visRows.hidden = !rows.length;
   }
   function visRow(r) {
-    const b = el('button', 'row' + (r.now ? ' now' : '') + (r.unread ? ' unread' : ''));
+    const b = el('button', 'row');
     b.type = 'button';
     b.dataset.vis = String(r.key);
     b.setAttribute('aria-expanded', 'false');
-    b.setAttribute('aria-label', rowSpeech(r));
-    b.append(el('span', 'nm', r.nm), el('span', 'mid', r.mid), el('span', 'val', r.val), el('span', 'when', r.when));
-    const more = el('div', 'more'), inner = el('div', 'more-in');
+    const more = el('div', 'more');
     more.setAttribute('aria-hidden', 'true');
+    more.append(el('div', 'more-in'));
+    fillVisRow(b, r, more);
+    return [b, more];
+  }
+  /* 줄 하나의 글을 쓴다. 펼침, 고정, 초점은 건드리지 않는다 */
+  function fillVisRow(b, r, more = b.nextElementSibling) {
+    b.classList.toggle('now', !!r.now);
+    b.classList.toggle('unread', !!r.unread);
+    const label = rowSpeech(r);
+    if (b.getAttribute('aria-label') !== label) b.setAttribute('aria-label', label);
+    const parts = [['nm', r.nm], ['mid', r.mid], ['val', r.val], ['when', r.when]];
+    if (b.children.length === parts.length && parts.every(([cls], k) => b.children[k].className === cls)) parts.forEach(([, text], k) => setText(b.children[k], text == null ? '' : String(text)));
+    else b.replaceChildren(...parts.map(([cls, text]) => el('span', cls, text)));
+    const inner = more?.firstElementChild;
+    if (!inner) return;
+    const moreKey = JSON.stringify(Array.isArray(r.more) ? r.more : []);
+    if (moreKeys.get(inner) === moreKey) return;
+    moreKeys.set(inner, moreKey);
+    inner.replaceChildren();
     let j = 0;
     const put = n => { n.style.setProperty('--j', String(j++)); inner.append(n); };
     for (const item of Array.isArray(r.more) ? r.more : []) {
@@ -458,8 +493,6 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
         put(row);
       }
     }
-    more.append(inner);
-    return [b, more];
   }
   /* 줄 하나를 펼치거나 접는다. pin이면 눌러서 연 것이라 손이 떠나도 열려 있다 */
   function setMore(b, on) {
@@ -495,6 +528,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onVisEnter = () => { clearTimeout(visLeave); };
   const onVisLeave = () => { clearTimeout(visTimer); clearTimeout(visLeave); visLeave = setTimeout(() => { if (!disposed) closeMores(); }, NEAR.close); };
   const onVisFocus = event => {
+    if (restoringVis) return;
     const b = event.target?.closest?.('button.row[data-vis]');
     if (b && focusVisible(b)) openVis(b);
   };
@@ -623,14 +657,14 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const elapsed = Number.isFinite(startedAt) ? Math.max(0, Date.now() - startedAt) : 0;
     /* 눈: 빛이 자리를 잡을 즈음 잠든 눈이 떠오르고 곧 눈을 뜬다. 시작 창에서 이미 뜬 눈이면 뜬 채로 잇는다 */
     if (Number.isFinite(asleepAt) && Number.isFinite(wakeAt)) {
-      // 시작 창에서 이미 보이던 눈은 앱 창의 첫 장에서도 그대로 보인다. 떠오르는 중에 넘어오면 0에서 다시 떠오르며 깜빡인 듯 보였다(0.4.96 카본 B3)
+      // 시작 창에서 이미 보이던 눈은 앱 창의 첫 장에서도 그대로 보인다. 떠오르는 중에 넘어오면 0에서 다시 떠오르며 깜빡인 듯 보였다(0.4.96 검수 B3)
       const at = (when, fn) => { const left = when - elapsed; if (left <= 0) fn(true); else setTimeout(() => { if (!disposed && gen === motionGen) fn(false); }, reduced() ? Math.min(left, 120) : left); };
       if (elapsed >= wakeAt) stage.eyesCalm?.({ instant: true });
       else { at(asleepAt, instant => stage.eyesAsleep?.({ instant })); at(wakeAt, () => { void stage.eyesWake?.(); }); }
     }
     if (elapsed >= delay + ms) { stage.snap('rest'); introPainted = true; stage.draw?.(); return; }
     if (elapsed < delay) await wait(reduced() ? Math.min(delay - elapsed, 120) : delay - elapsed);
-    // 기다리는 동안 다른 움직임이 시작됐으면 덮지 않는다. 기다리는 동안 서둘렀으면 드러나는 움직임도 짧게 한다(0.4.95 원천 후보 카본)
+    // 기다리는 동안 다른 움직임이 시작됐으면 덮지 않는다. 기다리는 동안 서둘렀으면 드러나는 움직임도 짧게 한다(0.4.95 원천 후보 검수)
     if (disposed || gen !== motionGen) return;
     const moving = stage.tween('rest', introHurried ? Math.min(ms, 320) : ms, easeOut, (t, a, b) => lerp(a, b, smooth(0, 0.62, t)), { elapsed: Math.max(0, elapsed - delay) });
     introPainted = true;
@@ -761,7 +795,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const items = focusables();
       if (!items.length) { event.preventDefault(); return; }
       const first = items[0], last = items[items.length - 1], active = doc.activeElement;
-      // 제목(heading)처럼 Tab 목록 밖에 초점이 있어도 얼굴 안에서 돈다(0.4.95 원천 후보 카본)
+      // 제목(heading)처럼 Tab 목록 밖에 초점이 있어도 얼굴 안에서 돈다(0.4.95 원천 후보 검수)
       const outside = !items.includes(active);
       if (event.shiftKey) { if (outside || active === first) { event.preventDefault(); last.focus?.({ preventScroll: true }); } }
       else if (outside || active === last) { event.preventDefault(); first.focus?.({ preventScroll: true }); }
@@ -792,7 +826,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (typeof ask.form.requestSubmit === 'function') ask.form.requestSubmit();
     else ask.form.dispatchEvent(new win.Event('submit', { bubbles: true, cancelable: true }));
   };
-  /* 새 얼굴이 보이는 동안 초점이 뿌리 밖으로 나가면 돌려놓는다. 뿌리 밖에 열린 대화상자와 legacy에서는 끌어오지 않는다(Fable 설계 검토 2차 3) */
+  /* 새 얼굴이 보이는 동안 초점이 뿌리 밖으로 나가면 돌려놓는다. 뿌리 밖에 열린 대화상자와 legacy에서는 끌어오지 않는다(설계 검토 2차 3) */
   const onFocusIn = event => {
     if (disposed || !trapping()) return;
     const t = event.target && typeof event.target.nodeType === 'number' ? event.target : null;

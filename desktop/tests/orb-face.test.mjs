@@ -1261,6 +1261,7 @@ test('the view writes summary words only as text and waits for the object names 
   assert.match(css, /#portal-entry \.more-in \.row,#portal-entry \.more-in \.row:last-child\{border:0;padding:8px 0;min-height:0\}/, 'opened inner lines drop the old launcher minimum height (.rows .row min-height:60px), so they sit 36 to 40 px apart as in the sketch');
   assert.match(css, /\.room\[data-room\^="solio"\]\.scrolled\{-webkit-mask-image:linear-gradient\(transparent,#000 30px,#000 calc\(100% - 30px\),transparent\)/, 'a scrolled room fades its top edge too');
   assert.match(src, /r\.classList\.toggle\('scrolled', r\.scrollTop > 0\)/);
+  assert.match(src, /if \(r\.classList\.contains\('scrolled'\) && !\(r\.scrollTop > 0\)\) r\.classList\.remove\('scrolled'\)/, 'a room shown again after being hidden drops a stale top fade (0.4.97 carbon A3)');
 });
 
 test('a first read refused during a refresh is read again once the account is signed in, and the objects appear then', async t => {
@@ -1271,7 +1272,7 @@ test('a first read refused during a refresh is read again once the account is si
   h.face.setState(signedIn());
   await settle(20);
   const refused = n;
-  assert.ok(refused >= 1 && refused <= 2, 'asked on the way in and, refused, once more on landing: ' + refused);
+  assert.ok(refused >= 1 && refused <= 3, 'asked on the way in and, refused, once more on landing (and once by itself): ' + refused);
   refusing = false;
   assert.deepEqual(programKeys(h), [], 'no objects while the main process refuses');
   h.face.setState(signedIn());
@@ -1281,4 +1282,36 @@ test('a first read refused during a refresh is read again once the account is si
   h.face.setState(signedIn());
   await settle(20);
   assert.equal(n, refused + 1, 'a read that was answered is not repeated on every notice');
+});
+
+test('a reread that ends in an exception keeps the answer already shown, so the objects do not go away (0.4.97 carbon A1)', async t => {
+  let n = 0;
+  const api = { snapshot: async () => { if (++n === 1) return visible(); throw new Error('ipc closed'); } };
+  const h = harness(t, { options: { siteVisits: api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(h.face.handle('prog', 'visits'), true);
+  await settle(10);
+  assert.equal(n, 2);
+  assert.deepEqual(programKeys(h), ['subs', 'visits']);
+  assert.equal(h.view.last().room.visits.visible, true);
+  assert.equal(h.view.last().room.prog, 'visits');
+});
+
+test('a first read refused while the main process was still refreshing is read once more by itself when no later notice comes (0.4.97 carbon A2)', async t => {
+  // 첫 읽기의 답이 오기 전에 솔리오에 내려앉는다(그때의 읽기 요청은 읽는 중이라 막힌다). 그 뒤 첫 읽기가 거절로 돌아오고, 더 오는 알림은 없다
+  let n = 0, release = null;
+  const api = { snapshot: () => { n += 1; if (n === 1) return new Promise(r => { release = () => r({ ok: false, code: 'SIGN_IN_REQUIRED' }); }); return Promise.resolve(visible()); } };
+  const h = harness(t, { options: { siteVisits: api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(n, 1, 'the landing read was held back by the read in flight');
+  release();
+  await settle(40);
+  assert.ok(n >= 2, 'read again after the refusal: ' + n);
+  assert.deepEqual(programKeys(h), ['subs', 'visits']);
+  const shown = h.view.scenes.map(s => s.room?.programs?.length ?? 0);
+  assert.ok(shown.every((c, i) => i === 0 || c >= shown[i - 1]), 'the objects appear once: ' + shown.join(','));
 });

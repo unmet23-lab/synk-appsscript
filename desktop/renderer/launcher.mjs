@@ -53,7 +53,7 @@ const pulseClient=mountPulseClient($('pulse-client'),{storage:localStore,getCont
 const accountPage=mountAccountPage($('view-account'),{bridge,getIdentity:()=>auth,getAppIds:()=>library.appIds,onBack:()=>showView('settings'),onSignIn:()=>openAccount(),onSignOut:signOut,onInsight:()=>showView('insight'),onWorkspace:()=>{if(allowed('messenger'))launchFromHome('messenger');else toast('이 계정에서는 작업실을 열 수 없어요.');},onAccountChanged:()=>void refreshAuth({reload:true}),toast:message=>toast(message)});
 // Signed out, a sign-in entry starts the browser sign-in at once and the dialog shows how it goes; a saved sign-in that
 // failed to load (status 'error') or one in progress keeps the dialog first, where 「저장된 로그인 다시 확인」 lives.
-// 새 얼굴이 보이는 동안(임시 옛 화면 포함)에는 계정 대화상자를 열지 않는다. 로그인 전이면 저장된 로그인을 다시 확인한다(대화상자의 「저장된 로그인 다시 확인」과 같다, 0.4.95 원천 후보 Fable F2)
+// 새 얼굴이 보이는 동안(임시 옛 화면 포함)에는 계정 대화상자를 열지 않는다. 로그인 전이면 저장된 로그인을 다시 확인한다(대화상자의 「저장된 로그인 다시 확인」과 같다, 0.4.95 원천 후보 검수 F2)
 function openAccount(){if(bridge&&auth.signedIn){showView('account');return;}if(portalHost?.isClientShown?.()){if(bridge)void refreshAuth({reload:true});return;}if(!$('account-dialog').open)$('account-dialog').showModal();if(bridge&&auth.configured&&auth.status==='signed-out')void startSignIn();}
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');$('view-home').before(continuityRoot);
 const continuityStyle=document.createElement('link');continuityStyle.rel='stylesheet';continuityStyle.href='./platform-continuity.css';document.head.append(continuityStyle);
@@ -460,7 +460,7 @@ let windowMaximized=false,portalWindowChrome=null;
 function orbRunnable(id){const action=allowed(id)?getAppAction(id):null;return Boolean(bridge&&action&&!action.disabled&&action.action==='launch');}
 // 임시로 여는 옛 화면(설계 9절). 2단계에서 같은 손으로 다시 짓는다
 // 「구독 연결하기」(manage)는 옛 구독 판이 그려진 뒤 판 안의 「계정 관리」를 한 번 눌러 계정 관리 쪽으로 연다. 판 파일은 고치지 않는다
-// 단추 찾기는 앞 호출을 취소하고, 옛 화면에서 구독 판이 아직 보일 때만 누른다(0.4.95 원천 후보 카본)
+// 단추 찾기는 앞 호출을 취소하고, 옛 화면에서 구독 판이 아직 보일 때만 누른다(0.4.95 원천 후보 검수)
 let orbManageTimer=null;
 function openOrbLegacy(kind,extra){clearTimeout(orbManageTimer);orbManageTimer=null;if(kind==='subscriptions'){pendingHashRoute=null;subscriptionsBoard.setVisible(false);showView('solio',{section:'subscriptions'});if(extra?.view==='manage'){let tries=0;const go=()=>{orbManageTimer=null;if(portalHost?.clientMode?.()!=='legacy'||document.documentElement.dataset.view!=='solio')return;const button=document.querySelector('#solio-subscriptions [data-subs="manage"]');if(button){button.click();return;}if(++tries<25)orbManageTimer=setTimeout(go,60);};go();}return;}if(kind==='account'){showView('account');return;}if(kind==='settings')showView('settings');}
 function syncMaximizeButton(button,maximized){if(!button)return;button.setAttribute('aria-label',maximized?'창 크기 복원':'최대화');button.dataset.maximized=String(Boolean(maximized));}

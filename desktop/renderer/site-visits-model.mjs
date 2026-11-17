@@ -2,7 +2,7 @@
 // 요약은 이 PC의 모으기 도구(tools/사이트방문/모으기.js)가 쓰고 desktop/src/site-visits.cjs가 읽는다. 꼴은 tools/사이트방문/요약.js 머리 주석.
 // 무엇을 보일지는 docs/마케팅/사이트방문_분석/설계.md 6절, 모습은 검정 구 시안(docs/디자인/플랫폼_클라이언트_검정구_20261116/검정구.html의 VIS · buildVis)이 정한다.
 // 돌려주는 꼴은 시안의 VIS와 같다: { say, then, when, scope, rows:[{ key, nm, mid, val, when, now?, unread?, more:[['say',글] | ['row',이름,가운데,큰 숫자,앞 기간] | ['week',이름,[7],큰 숫자] | ['note',글]] }] }.
-// 여기서 나오는 글에는 요약에서 온 글(구글 검색어, 까닭 문장)이 섞인다. 화면은 모두 textContent로만 넣는다 — innerHTML에 넣지 않는다(11-17 Fable 설계 검토 P2-5).
+// 여기서 나오는 글에는 요약에서 온 글(구글 검색어, 까닭 문장)이 섞인다. 화면은 모두 textContent로만 넣는다 — innerHTML에 넣지 않는다(11-17 설계 검토 P2-5).
 // 화면 글은 처음 읽는 사람이 한 번에 알아듣게 쓰고, GEO · SEO 같은 말을 쓰지 않는다.
 import { josa } from './solio-today.mjs';
 
@@ -21,7 +21,7 @@ const clean = (s, max = 60) => String(s ?? '').replace(/[\u0000-\u001f\u007f\u20
 /**
  * 「으로」·「로」만 돌려준다 — 받침이 없거나 ㄹ이면 「로」. 영문은 끝소리가 받침으로 읽히는 m · n · ng · b · k · p · ck이면 「으로」,
  * 숫자는 0 · 3 · 6이면 「으로」. 우리가 정한 이름(들어온 갈래 다섯)에만 쓴다. 사람이 친 글(검색어)에는 조사를 붙이지 않는 문장을 쓴다 —
- * 영문 끝소리는 글자만으로 다 가를 수 없다(PC 0.4.96 Fable 최종: 「korean learning」로, 「TOPIK」로).
+ * 영문 끝소리는 글자만으로 다 가를 수 없다(PC 0.4.96 최종 검수: 「korean learning」로, 「TOPIK」로).
  */
 export function ro(word) {
   const text = String(word ?? '').replace(/[^가-힣A-Za-z0-9]+$/, ''), last = text.slice(-1);
@@ -110,7 +110,7 @@ function actsRow(s) {
   if (!q.합 && !d.합) more.push(['say', '아직 누른 사람이 없습니다.']);
   else {
     const parts = [];
-    // 가장 많은 갈래 하나만 말하므로, 전체 가운데 몇 번인지 함께 말한다(합처럼 읽히지 않게, PC 0.4.96 카본)
+    // 가장 많은 갈래 하나만 말하므로, 전체 가운데 몇 번인지 함께 말한다(합처럼 읽히지 않게, PC 0.4.96 검수)
     const part = (what, total, top, n) => n === total ? `${what} ${num(total)}번은 모두 ${top}${ro(top)} 들어온 방문에서` : `${what} ${num(total)}번 가운데 ${num(n)}번은 ${top}${ro(top)} 들어온 방문에서`;
     if (topQ?.문의) parts.push(part('문의', q.합, clean(topQ.갈래, 20), topQ.문의));
     if (topD?.앱받기) parts.push(part('앱 받기', d.합, clean(topD.갈래, 20), topD.앱받기));
@@ -154,11 +154,11 @@ function aiRow(s) {
   const prev = a.앞회차?.서비스?.find(x => x.이름 === web.이름);
   const prevDay = dateOnly(a.앞회차?.날);
   const asked = web.답받음 > 0;
-  // 지난 회차만 막혔으면 「는」, 이번과 지난 회차가 함께 막혔을 때만 「도」(PC 0.4.96 카본 P2)
+  // 지난 회차만 막혔으면 「는」, 이번과 지난 회차가 함께 막혔을 때만 「도」(PC 0.4.96 검수 P2)
   const prevWhen = prev && prev.답받음 > 0 ? `지난 회차${prevDay ? `(${prevDay})` : ''} ${num(prev.언급)}번` : prev ? (asked ? '지난 회차는 묻지 못했습니다' : '지난 회차도 묻지 못했습니다') : '첫 정기 회차';
   // 머리 숫자를 내는 서비스가 답을 하나도 받지 못했으면(크레딧 · 한도 막힘) 0으로 보이지 않고 「못 물음」으로 둔다(설계 검토 2차 P2-3)
   const more = [['say', asked ? `웹 검색을 켠 ${josa(web.이름, ['이', '가'])} SYNK를 말한 답은 ${num(web.언급)}번이고, AI 답변을 보고 들어온 사람은 ${a.AI방문 != null ? `${num(a.AI방문)}번` : '아직 세기 전'}입니다.` : `이번 회차에는 웹 검색을 켠 ${web.이름}에게 묻지 못했습니다. 아래 숫자는 다른 길로 물은 값과 지난 회차입니다.`]];
-  // 묻지 못한 회차의 출처 줄을 0건처럼 보이지 않는다(PC 0.4.96 Fable 다시 검수 P2)
+  // 묻지 못한 회차의 출처 줄을 0건처럼 보이지 않는다(PC 0.4.96 다시 검수 P2)
   const brand = web.브랜드답받음 > 0 ? `SYNK를 묻는 질문 ${num(web.브랜드답받음)}개 가운데 ${num(web.브랜드인용)}` : '';
   more.push(['row', 'synk.im을 출처로 단 답', asked ? `일반 질문 ${num(web.인용)} · ${brand || 'SYNK를 묻는 질문은 묻지 못했습니다'}` : brand ? `일반 질문은 묻지 못했습니다 · ${brand}` : '이번 회차에는 묻지 못했습니다', '', '']);
   for (const x of others) more.push(['row', clean(x.이름, 20), x.답받음 > 0 ? `${clean(x.설명 || '다른 길로 물은 값', 40)} · 일반 질문 ${num(x.답받음)}개 가운데 ${num(x.언급)}개에서 SYNK를 말했습니다` : '이번 회차에는 묻지 못했습니다', '', '']);

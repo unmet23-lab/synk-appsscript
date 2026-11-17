@@ -28,7 +28,7 @@ function createStartupUpdateGate({updater,platform=process.platform,onChange=()=
     if(value.state==='checking')publish('checking');
     else if(value.state==='downloading'){stage='download';publish('downloading');}
     else if(value.state==='opening'){stage='handoff';publish('installing');}
-    // 확인 단계의 인터넷 실패는 확인 결과를 받은 attempt가 실패 장면 없이 지금 판을 연다. 업데이터가 먼저 알리는 오류 상태로 실패 장면을 띄우지 않는다(0.4.96 공개 후보 카본 D2)
+    // 확인 단계의 인터넷 실패는 확인 결과를 받은 attempt가 실패 장면 없이 지금 판을 연다. 업데이터가 먼저 알리는 오류 상태로 실패 장면을 띄우지 않는다(0.4.96 공개 후보 검수 D2)
     else if(value.state==='error'){if(stage==='check'&&SILENT_CHECK_FAILURES.has(value.code))return;fail(value.code||'UPDATE_FAILED');}
     else if(platform==='darwin'&&value.state==='ready')publish('ready',value.code);
   }
@@ -80,7 +80,7 @@ function createStartupUpdateGate({updater,platform=process.platform,onChange=()=
   return {start,retry,openCurrent,install,cancelInstall,observe,snapshot,reveal,unseenFailure:()=>unseen,isBlocking:()=>active&&!disposed,dispose:()=>{disposed=true;updater.setStartupActive?.(false);}};
 }
 /* 숨은 채 시작한 길의 보이지 않은 실패가 뒤에서 풀렸는지 본다. 풀렸으면 다음에 창을 열 때 옛 실패 장면을 보이지 않는다.
-   확인 실패는 확인이 다시 되면, 받기 실패는 받기가 끝나거나 새 판이 없어지면, 넘김 실패는 새 판이 없어지면 풀린다(0.4.96 카본 D2) */
+   확인 실패는 확인이 다시 되면, 받기 실패는 받기가 끝나거나 새 판이 없어지면, 넘김 실패는 새 판이 없어지면 풀린다(0.4.96 검수 D2) */
 function unseenFailureResolved(failure,state){
   if(!failure||!state)return false;
   if(failure.stage==='check')return ['current','available','downloading','ready'].includes(state.state);

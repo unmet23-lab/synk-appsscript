@@ -142,7 +142,7 @@
 #portal-entry .reread:hover:not(:disabled):not([aria-disabled="true"]){border-bottom-color:var(--paper)}
 #portal-entry .reread:disabled,#portal-entry .reread[aria-disabled="true"]{opacity:.45;cursor:default}
 #portal-entry .room[data-room="space"] .read{justify-content:flex-start;gap:28px;margin-top:clamp(28px,5vh,48px)}
-/* 오류가 없을 때 빈 알림 칸이 남은 폭을 차지해 「다시 열기」를 오른쪽 끝으로 밀지 않게 한다(카본 A3) */
+/* 오류가 없을 때 빈 알림 칸이 남은 폭을 차지해 「다시 열기」를 오른쪽 끝으로 밀지 않게 한다(검수 A3) */
 #portal-entry .room[data-room="space"] .read span:empty{display:none}
 #portal-entry .rows[hidden] + .read{justify-content:flex-start}
 #portal-entry .rows[hidden] + .read span:empty{display:none}
@@ -255,7 +255,7 @@ html[data-orb-client="legacy"] #portal-entry .here{top:6px}
 html[data-orb-client="legacy"] #portal-entry .legacy-back{display:inline-block}
 html[data-orb-client="legacy"] #portal-entry .rail{display:none}
 html[data-orb-client="legacy"] #portal-entry .room{display:none}
-/* 임시 옛 화면에서 로그인 전 SYNK ID 줄(「로그인하지 않음 · 로그인」)은 숨긴다. 들어온 회원이 토큰 갱신 중이어도 그 줄이 뜨고, 새 얼굴이 계정 연결을 맡는다(0.4.95 원천 후보 Fable F2) */
+/* 임시 옛 화면에서 로그인 전 SYNK ID 줄(「로그인하지 않음 · 로그인」)은 숨긴다. 들어온 회원이 토큰 갱신 중이어도 그 줄이 뜨고, 새 얼굴이 계정 연결을 맡는다(0.4.95 원천 후보 검수 F2) */
 html[data-orb-client="legacy"] .setting-row:has(#settings-login[data-signed-in="false"]){display:none}
 html[data-orb-client="legacy"] #portal-entry .orb-stage[data-ui="app"] [data-layer="app"] .rise{transition-delay:0s}
 /* 옛 메뉴로 라이브러리나 플레저에 가지 못하게 옛 제목 줄과 아래 상태 줄을 숨긴다 */
@@ -264,14 +264,14 @@ html[data-orb-client="legacy"] .launcher > .titlebar,
 html[data-orb-client="legacy"] .launcher > .statusbar{display:none !important}
 /* 솔리오 위 탭 줄(홈 · 백업·복구 · AI 구독 관리)과 구독 판 맨 위의 「솔리오 홈」 링크. 옛 솔리오 홈에 펠트 바구니가 있어서다. 돌아가는 길은 띠의 「돌아가기」다 */
 html[data-orb-client="legacy"] #solio-tabs,
-/* 옛 구독 판의 「솔리오 홈」만 가린다. 계정 관리 화면의 「한눈에 보기로」는 그 화면에서 돌아가는 하나뿐인 길이다(Fable 최종) */
+/* 옛 구독 판의 「솔리오 홈」만 가린다. 계정 관리 화면의 「한눈에 보기로」는 그 화면에서 돌아가는 하나뿐인 길이다(최종 검수) */
 html[data-orb-client="legacy"] #solio-subscriptions .ms-back[data-view="solio"]{display:none !important}
 /* 설정의 라이브러리 · 플레저로 가는 줄 넷(앱 순서와 보기, 화면 밀도, 회원 혜택, 보기 설정 되돌리기). 옮기기 설계 「정한 것」 6에 따라 길만 닫는다 */
 html[data-orb-client="legacy"] #view-settings .setting-row:has(#personal-settings-open),
 html[data-orb-client="legacy"] #view-settings .setting-row:has(#density),
 html[data-orb-client="legacy"] #view-settings .setting-row:has([data-view="benefits"]),
 html[data-orb-client="legacy"] #view-settings .setting-row:has(#reset-preferences){display:none !important}
-/* 임시 옛 화면에서 옛 홈 · 라이브러리 · 맞춤 정보로 새는 단추와, 새 얼굴이 막은 빠른 검색 · 단축키를 된다고 말하는 줄을 가린다(Fable 최종) */
+/* 임시 옛 화면에서 옛 홈 · 라이브러리 · 맞춤 정보로 새는 단추와, 새 얼굴이 막은 빠른 검색 · 단축키를 된다고 말하는 줄을 가린다(최종 검수) */
 html[data-orb-client="legacy"] #view-account .setting-row:has([data-account-action="insight"]),
 html[data-orb-client="legacy"] #view-settings dd:has([data-pulse-legacy="open"]),
 html[data-orb-client="legacy"] #view-settings dt:has(+ dd [data-pulse-legacy="open"]),
