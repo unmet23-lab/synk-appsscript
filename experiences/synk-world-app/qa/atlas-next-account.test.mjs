@@ -5,7 +5,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as atlas from '../../../packages/atlas/src/index.mjs';
-import {createAtlasNext,rehearsalTrail,postLegacyBatches,askSwitch,NEXT_MARK,LEGACY_KEY} from '../world-atlas-next.mjs';
+import {pathToFileURL} from 'node:url';
+// 변형 시험(qa/position-mutants.mjs의 entry)은 깬 입구 사본을 SYNK_ATLAS_NEXT_MODULE로 넘긴다. 그 밖에는 원본이다.
+const {createAtlasNext,rehearsalTrail,postLegacyBatches,askSwitch,NEXT_MARK,LEGACY_KEY}=await import(process.env.SYNK_ATLAS_NEXT_MODULE?pathToFileURL(process.env.SYNK_ATLAS_NEXT_MODULE).href:'../world-atlas-next.mjs');
 import {createRehearsalTrail} from '../rehearsal-trail.mjs';
 import {createPracticeNextSession} from '../world-practice-next.mjs';
 import {watchLifeDue,createLifeNext} from '../world-life-next.mjs';
@@ -27,13 +29,14 @@ const markOf=(storage,owner)=>JSON.parse(storage.getItem(NEXT_MARK+owner)??'{}')
 
 // 가짜 계정 길 — 셸의 trail()처럼 부를 때마다 지금 값을 돌려준다. get(since, revision)은 state.get이 정한다.
 // lookback(offset, revision)을 주면 나르개에 30일째 문장의 돌아보기 읽기가 있다(계정 클라이언트 trail.lookback — §21-22).
-function accountLine({enabled=true,revision=1,learningSync=true,get=async()=>({summary:null,serverTime:0}),lookback=null}={}){
- const state={enabled,revision,learningSync,get,lookback,reads:0,gets:[],lookbacks:[],legacy:[]};
+function accountLine({enabled=true,revision=1,learningSync=true,get=async()=>({summary:null,serverTime:0}),lookback=null,firstAnswers=null}={}){
+ const state={enabled,revision,learningSync,get,lookback,firstAnswers,reads:0,gets:[],lookbacks:[],firsts:[],legacy:[]};
  state.trail=async()=>{
   state.reads+=1;
   return {learning:{enabled:state.enabled,revision:state.revision},learningSync:state.learningSync,
    transport:at=>({get:since=>{state.gets.push({at,since});return state.get(since,at);},post:async()=>({accepted:[],clamped:[],summary:null,serverTime:0}),
-    ...(state.lookback?{lookback:offset=>{state.lookbacks.push({at,offset});return state.lookback(offset,at);}}:{})}),
+    ...(state.lookback?{lookback:offset=>{state.lookbacks.push({at,offset});return state.lookback(offset,at);}}:{}),
+    ...(state.firstAnswers?{firstAnswers:query=>{state.firsts.push({at,query});return state.firstAnswers(query,at);}}:{})}),
    postLegacy:async events=>{state.legacy.push(events);return {ok:true};}};
  };
  return state;
@@ -1626,4 +1629,44 @@ test('옮기기 물음 — 생활 몫은 옛 꼴(옛 거울 결정의 경험 wor
   assert.equal(found.events,16,'옮길 사건은 모두');
   found.close();
  }finally{next.dispose();}
+});
+
+test('예상 급수의 근거 읽기(firstAnswersOf — 4-4d §21-23의 2) — 돌아보기 읽기와 같은 규칙: 오프라인으로 연 올리는 길도 다시 닿으면 표지의 판 나르개로 묻고, 다시 읽은 나르개에 읽기가 없으면 그 실패, 읽기가 없는 나르개면 null',async()=>{
+ const query={game:'world-mock',days:90};
+ const storage=memoryStorage([[NEXT_MARK+'acct-fa1',JSON.stringify({went:true,path:'upload',revision:5})]]);
+ const line=accountLine({revision:5,firstAnswers:async(asked,at)=>({ok:true,complete:true,asked,at})});const real=line.trail;let down=true;
+ line.trail=async()=>{if(down)throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});return real();};
+ const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
+ const next=createAtlasNext({owner:'acct-fa1',storage,trail:()=>line.trail(),load,health:recorder()});
+ const coach=await next.practiceCoach(POOL);
+ assert.equal(coach,opened[0]);
+ const reader=next.firstAnswersOf(coach);
+ assert.ok(reader,'오프라인으로 연 올리는 길에도 근거 읽기를 준다');
+ assert.equal(reader.revision,5,'표지의 판으로');
+ await assert.rejects(reader.ask(query),{code:'NETWORK'});
+ down=false;
+ assert.deepEqual(await reader.ask(query),{ok:true,complete:true,asked:query,at:5},'다시 닿으면 표지의 판 나르개로 묻는다(물은 값 그대로)');
+ assert.deepEqual(line.firsts,[{at:5,query}]);
+ assert.equal(next.firstAnswersOf({}),null,'이 입구가 연 코치가 아니면 null');
+ next.dispose();
+ assert.equal(next.firstAnswersOf(coach),null,'닫은 입구는 null');
+ const s2=memoryStorage([[NEXT_MARK+'acct-fa1b',JSON.stringify({went:true,path:'upload',revision:5})]]);
+ const l2=accountLine({revision:5});let off2=true;
+ const n2=createAtlasNext({owner:'acct-fa1b',storage:s2,trail:async()=>{if(off2)throw fail(0,'NETWORK',{retryable:true});return l2.trail();},load:fakeLoader().load,health:recorder()});
+ const c2=await n2.practiceCoach(POOL);
+ off2=false;
+ await assert.rejects(n2.firstAnswersOf(c2).ask(query),{code:'FIRST_ANSWERS_UNAVAILABLE'});
+ n2.dispose();
+ const l3=accountLine({revision:3,firstAnswers:async(asked,at)=>({asked,at})});
+ const n3=createAtlasNext({owner:'acct-fa1c',storage:memoryStorage(),trail:()=>l3.trail(),load:fakeLoader().load,health:recorder()});
+ assert.deepEqual(await n3.firstAnswersOf(await n3.practiceCoach(POOL)).ask(query),{asked:query,at:3});
+ n3.dispose();
+ const l4=accountLine({revision:3});
+ const n4=createAtlasNext({owner:'acct-fa1d',storage:memoryStorage(),trail:()=>l4.trail(),load:fakeLoader().load,health:recorder()});
+ assert.equal(n4.firstAnswersOf(await n4.practiceCoach(POOL)),null,'읽기가 없는 나르개면 null');
+ n4.dispose();
+ // 손님 — 근거는 코치가 센다
+ const n5=createAtlasNext({owner:'guest',storage:memoryStorage(),trail:()=>l3.trail(),load:fakeLoader().load,health:recorder()});
+ assert.equal(n5.firstAnswersOf(await n5.practiceCoach(POOL)),null,'손님은 null');
+ n5.dispose();
 });

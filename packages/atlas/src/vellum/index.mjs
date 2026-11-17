@@ -8,6 +8,7 @@ import { EN } from './en.mjs';
 import { josa } from './josa.mjs';
 import { KO } from './ko.mjs';
 import { MN } from './mn.mjs';
+import { DESCRIBE_SLOTS, describeSlots } from './slots.mjs';
 
 export const LANGS = Object.freeze(['ko', 'en', 'mn']);
 export const LEVELS = Object.freeze(['word', 'easy', 'standard']);
@@ -29,7 +30,11 @@ const COUNTS = Object.freeze({
   // 30일째 문장은 말하는 조건의 하한 아래면 짓지 않는다 — memory/lookback.mjs의 MONTH_FLOOR와 같다(시험이 맞댄다, 단계 4 §21-7).
   'progress.month': Object.freeze({ misses: 2, reviews: 3 }),
 });
+// 설명 문장(점검 칸의 쓰기 · 말하기 — 4-4d)의 칸은 slots.mjs 표 한 곳이 정한다(열거값 · 정수 하한 · 상한). 두뇌가 같은 표로 먼저 거르고,
+// 여기서 한 번 더 본다 — 표에 맞지 않는 칸이면 문장을 짓지 않는다(null). 그 코드들의 하한은 COUNTS가 아니라 그 표에 있다.
 const counted = why => {
+  if (Object.hasOwn(DESCRIBE_SLOTS, why.code))
+    return describeSlots(why.code, why.slots ?? {}) !== null;
   const need = own(COUNTS, why.code);
   if (!need) return true;
   return Object.entries(need).every(
@@ -57,6 +62,10 @@ const NAMELESS = new Set([
   'host.recheck',
   'host.start',
   'host.next',
+  'host.writing',
+  'host.writing.start',
+  'host.speaking',
+  'host.speaking.again',
   ...SILENT_CODES,
 ]);
 // 이름이 없어도 되는 종류 — 이름(단위)을 모르면 이름 없는 틀로 짓는다(생활 단위가 없는 복습 · 이름이 실리지 않은 단위, §20-6의 5).

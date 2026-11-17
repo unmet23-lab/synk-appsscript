@@ -9,6 +9,18 @@ const { render, subjectOf, LANGS, SILENT_CODES } = await subject('vellum/index.m
 const { finalOf, josa } = await subject('vellum/josa.mjs');
 const { reasonLine } = await subject('reason/ko.mjs');
 const { REASON_CODES } = await subject('reason/index.mjs');
+const { DESCRIBE_SLOTS } = await subject('vellum/slots.mjs');
+const { KO } = await subject('vellum/ko.mjs');
+const { EN } = await subject('vellum/en.mjs');
+const { MN } = await subject('vellum/mn.mjs');
+
+// 점검 칸의 쓰기 · 말하기 설명(4-4d — 단계 4 계획 §21-23의 3) — 칸 표(vellum/slots.mjs)에 맞는 칸의 보기.
+const DESCRIBED = Object.freeze({
+  'host.writing': { focus: 'ending-53', need: 'retry' },
+  'host.writing.start': {},
+  'host.speaking': { type: 'answer', untried: 3 },
+  'host.speaking.again': {},
+});
 
 const NAMES = [
   '기숙사',
@@ -99,7 +111,7 @@ test('reasonLine이 다루는 이유 종류는 모두 표에 있다', () => {
       streak: 2,
       status: 'missed',
     };
-    const line = render({ code, slots }, { label });
+    const line = render({ code, slots: DESCRIBED[code] ?? slots }, { label });
     assert.equal(typeof line, 'string', code);
     if (!host.has(code)) assert.ok(line.length > 5, code);
   }
@@ -293,6 +305,12 @@ test('영어 · 몽골어 줄 — 홈 · 활동 고르기 종류마다 있고, �
     ['host.missed', {}],
     ['host.bridge', { unit: 'u' }],
     ['host.bridge', {}],
+    ['host.writing', { focus: 'ending-53', need: 'retry' }],
+    ['host.writing', { focus: 'ending-53', need: 'assisted' }],
+    ['host.writing.start', {}],
+    ['host.speaking', { type: 'answer', untried: 1 }],
+    ['host.speaking', { type: 'opinion', untried: 6 }],
+    ['host.speaking.again', {}],
   ];
   const skillName = { en: 'Reading for details', mn: 'Уншаад нарийн мэдээллийг олох' };
   for (const lang of ['en', 'mn'])
@@ -522,4 +540,117 @@ test('progress.month — 한국어 문장 · 영어 · 몽골어는 null · 하�
   assert.equal(at(MONTH_FLOOR.misses - 1, MONTH_FLOOR.reviews), null, '놓친 자리가 모자라다');
   assert.equal(at(MONTH_FLOOR.misses, MONTH_FLOOR.reviews - 1), null, '뒤 창 자리가 모자라다');
   assert.equal(at(Number.NaN, 5), null);
+});
+
+// 점검 칸의 쓰기 · 말하기 설명(4-4d — 단계 4 계획 §21-23의 3, 설계 주인 11-17 답 4). 칸 표는 vellum/slots.mjs 한 곳이고, 세 언어 줄은
+// 그 코드의 칸을 빠짐없이, 그 칸만 쓴다. 열거값마다 · 정수의 하한과 상한마다 줄을 지어 읽은 칸을 표와 맞댄다(Proxy로 읽은 칸을 센다).
+function samplesOf(table) {
+  let out = [{}];
+  for (const [name, form] of Object.entries(table)) {
+    const values = form.enum
+      ? [...form.enum]
+      : [...new Set([form.min, form.min + 1, form.max ?? form.min + 9])];
+    out = out.flatMap(sample => values.map(value => ({ ...sample, [name]: value })));
+  }
+  return out;
+}
+test('점검 칸의 쓰기 · 말하기 설명 — 한국어 · 영어 · 몽골어 줄이 칸 표의 칸을 빠짐없이, 그 칸만 쓴다(설계 주인 11-17 답 4)', () => {
+  const tables = { ko: KO, en: EN, mn: MN };
+  assert.deepEqual(Object.keys(DESCRIBE_SLOTS).sort(), [
+    'host.speaking',
+    'host.speaking.again',
+    'host.writing',
+    'host.writing.start',
+  ]);
+  let lines = 0;
+  for (const [code, table] of Object.entries(DESCRIBE_SLOTS)) {
+    const names = Object.keys(table).sort();
+    for (const sample of samplesOf(table))
+      for (const lang of LANGS) {
+        const list = tables[lang][code]?.standard?.default;
+        assert.ok(Array.isArray(list) && list.length, `${lang} ${code}: 줄이 있다`);
+        for (const template of list) {
+          const used = new Set();
+          const slots = new Proxy(sample, {
+            get(target, key) {
+              if (typeof key === 'string') used.add(key);
+              return target[key];
+            },
+          });
+          const line = template(slots, '', josa);
+          assert.equal(typeof line, 'string', `${lang} ${code}`);
+          assert.deepEqual(
+            [...used].sort(),
+            names,
+            `${lang} ${code} ${JSON.stringify(sample)}: 읽은 칸`,
+          );
+          assert.doesNotMatch(line, /undefined|null|NaN|\[object/, `${lang} ${code}`);
+          assert.equal(
+            render({ code, slots: sample }, { lang }),
+            line,
+            `${lang} ${code}: render와 같은 줄`,
+          );
+          lines += 1;
+        }
+      }
+  }
+  assert.ok(lines >= 3 * (2 + 1 + 6 * 3 + 1), `줄 ${lines}개`);
+});
+
+test('설명 칸이 표에 맞지 않으면 문장을 짓지 않는다 — 표 밖의 열거값 · 글자로 넘긴 수 · 하한 밑 · 상한 위 · 빠진 칸 · 더한 칸(카본 B3)', () => {
+  const bad = [
+    ['host.writing', { focus: 'ending-54', need: 'retry' }],
+    ['host.writing', { focus: 'ending-53', need: 'found' }],
+    ['host.writing', { focus: 'ending-53' }],
+    ['host.writing', { focus: 'ending-53', need: 'retry', extra: 1 }],
+    ['host.writing', { focus: ['ending-53'], need: 'retry' }],
+    ['host.writing', null],
+    ['host.writing', []],
+    ['host.speaking', { type: 'answer', untried: '3' }],
+    ['host.speaking', { type: 'answer', untried: 0 }],
+    ['host.speaking', { type: 'answer', untried: 7 }],
+    ['host.speaking', { type: 'answer', untried: 2.5 }],
+    ['host.speaking', { type: 'answer', untried: Number.MAX_SAFE_INTEGER + 1 }],
+    ['host.speaking', { type: 'toString', untried: 2 }],
+    ['host.speaking', { type: 'answer' }],
+    ['host.speaking', { untried: 2 }],
+    ['host.writing.start', { focus: 'ending-53' }],
+    ['host.speaking.again', { untried: 0 }],
+  ];
+  for (const lang of LANGS)
+    for (const [code, slots] of bad)
+      assert.equal(
+        render({ code, slots }, { lang }),
+        null,
+        `${lang} ${code} ${JSON.stringify(slots)}`,
+      );
+  // 칸 없는 둘은 근거 없는 정상 경로다 — 하한에 막혀 null이 되지 않고, 「0개」 문장도 없다(다시 검수 Opus 대체 FA3)
+  for (const lang of LANGS)
+    for (const code of ['host.writing.start', 'host.speaking.again']) {
+      const line = render({ code, slots: {} }, { lang });
+      assert.equal(typeof line, 'string', `${lang} ${code}`);
+      assert.equal(render({ code }, { lang }), line, `${lang} ${code}: 칸이 없어도`);
+      assert.doesNotMatch(line, /\b0\b|0개/, `${lang} ${code}: 0을 말하지 않는다`);
+    }
+  assert.equal(
+    render({ code: 'host.writing', slots: { focus: 'ending-53', need: 'retry' } }),
+    '지난 53번 글에서 놓친 「-다」 끝맺음을 다시 연습해요. TOPIK 쓰기의 언어 사용 점수에 도움이 돼요.',
+  );
+  assert.equal(
+    render({ code: 'host.writing', slots: { focus: 'ending-53', need: 'assisted' } }),
+    '도움을 받아 고친 53번 글의 「-다」 끝맺음을 이번에는 혼자 써 봐요. TOPIK 쓰기의 언어 사용 점수에 도움이 돼요.',
+  );
+  assert.equal(
+    render({ code: 'host.speaking', slots: { type: 'interpret', untried: 2 } }),
+    'TOPIK 말하기 여섯 유형 가운데 이번 주에 이 기기에서 아직 안 해 본 유형이 2개예요. 오늘은 「자료 해석하기」를 해 봐요.',
+  );
+  // 가리키는 것이 없는 종류 — 이름을 찾지 않는다(NAMELESS)
+  for (const code of Object.keys(DESCRIBE_SLOTS)) {
+    assert.equal(subjectOf({ code, slots: { unit: 'u' } }), null, code);
+    assert.equal(
+      typeof render({ code, slots: DESCRIBED[code] }, { label: () => null }),
+      'string',
+      `${code}: 이름이 없어도 짓는다`,
+    );
+  }
 });

@@ -37,7 +37,7 @@ var require_strata = __commonJS({
   "strata/index.js"(exports, module) {
     "use strict";
     var CONFIDENCE = ["authored", "measured", "ai_draft"];
-    var KINDS = ["skill", "grammar_point", "expression", "situation", "letter", "syllable", "concept", "topic", "task", "word"];
+    var KINDS2 = ["skill", "grammar_point", "expression", "situation", "letter", "syllable", "concept", "topic", "task", "word"];
     var TYPES = ["part_of", "prerequisite", "recommended_before", "contrasts_with"];
     var copy3 = (value) => JSON.parse(JSON.stringify(value));
     var fail2 = (message) => {
@@ -69,7 +69,7 @@ var require_strata = __commonJS({
         if (!text2(key) || !text2(source.path) || !/^[a-f0-9]{64}$/.test(source.sha256)) fail2("invalid source hash");
       }
       for (const node of data.nodes) {
-        if (!text2(node.id) || ids.has(node.id) || !KINDS.includes(node.kind) || !text2(node.label_ko)) fail2("invalid or duplicate node");
+        if (!text2(node.id) || ids.has(node.id) || !KINDS2.includes(node.kind) || !text2(node.label_ko)) fail2("invalid or duplicate node");
         if (node.level !== null && (!Number.isInteger(node.level?.intro) || node.level.intro < 1 || node.level.intro > 6 || !text2(node.level.basis))) fail2("invalid level");
         if (node.when_ko !== void 0 && (node.kind !== "situation" || !text2(node.when_ko))) fail2("invalid situation words");
         refs(node);
@@ -10943,7 +10943,7 @@ var require_memory_sync = __commonJS({
     var ROUNDS = 50;
     var MAX_BYTES = 4096;
     var AHEAD_MS = 864e5;
-    var KINDS = Object.freeze(["presentation", "flow", "declined"]);
+    var KINDS2 = Object.freeze(["presentation", "flow", "declined"]);
     var object4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
     var instant = (value) => typeof value === "string" && Number.isFinite(Date.parse(value));
     var failure = (code, message) => Object.assign(new Error(message), { code });
@@ -10985,12 +10985,12 @@ var require_memory_sync = __commonJS({
       return state;
     }
     function sendable(entry) {
-      if (!KINDS.includes(entry.kind) || !ID.test(entry.key || "") || !instant(entry.at)) return false;
+      if (!KINDS2.includes(entry.kind) || !ID.test(entry.key || "") || !instant(entry.at)) return false;
       if (entry.kind === "presentation") return entry.key === "chosen" && (entry.value === null || object4(entry.value));
       if (entry.kind === "declined") return entry.value === null;
       return object4(entry.value) && entry.value.content === entry.key && Date.parse(entry.value.at) === Date.parse(entry.at) && JSON.stringify(entry.value).length <= MAX_BYTES;
     }
-    var received = (entry) => object4(entry) && KINDS.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object4(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object4(entry.value));
+    var received = (entry) => object4(entry) && KINDS2.includes(entry.kind) && ID.test(entry.key || "") && instant(entry.at) && (entry.kind === "flow" ? object4(entry.value) : entry.kind === "declined" ? entry.value === null : entry.value === null || object4(entry.value));
     function createMemorySync({
       adapter,
       accountKey,
@@ -11230,7 +11230,7 @@ var require_flow = __commonJS({
     })(typeof globalThis !== "undefined" ? globalThis : exports, function(getGuard) {
       "use strict";
       const VERSION2 = "flow-1";
-      const KINDS = ["content", "pace", "support"];
+      const KINDS2 = ["content", "pace", "support"];
       const OUTCOMES2 = ["success", "fail", "timeout", "skip", "void"];
       const MODES = ["auto", "fixed", "easier", "harder"];
       const CONDITIONS = ["good", "okay", "tired", "no_time"];
@@ -11281,7 +11281,7 @@ var require_flow = __commonJS({
           const keys = ["id", "values", "start", "weight", "kind", "follows", "label"];
           if (!knob || typeof knob !== "object" || Object.keys(knob).some((key) => !keys.includes(key))) fail2("invalid knob");
           const value = { id: knob.id, values: knob.values, start: knob.start ?? 0, weight: knob.weight ?? 1, kind: knob.kind ?? "content", follows: knob.follows ?? null, label: knob.label ?? knob.id };
-          if (!id(value.id) || seen.has(value.id) || !Array.isArray(value.values) || value.values.length < 2 || value.values.length > 12 || !value.values.every(scalar) || !Number.isInteger(value.start) || value.start < 0 || value.start >= value.values.length || !within(value.weight, 0.25, 4) || !KINDS.includes(value.kind) || ![null, "declared"].includes(value.follows) || typeof value.label !== "string" || value.label.length > 60) fail2(`invalid knob ${knob && knob.id}`);
+          if (!id(value.id) || seen.has(value.id) || !Array.isArray(value.values) || value.values.length < 2 || value.values.length > 12 || !value.values.every(scalar) || !Number.isInteger(value.start) || value.start < 0 || value.start >= value.values.length || !within(value.weight, 0.25, 4) || !KINDS2.includes(value.kind) || ![null, "declared"].includes(value.follows) || typeof value.label !== "string" || value.label.length > 60) fail2(`invalid knob ${knob && knob.id}`);
           seen.add(value.id);
           spec.knobs.push(value);
         }
@@ -11645,7 +11645,7 @@ var require_flow = __commonJS({
           })
         };
       }
-      return Object.freeze({ VERSION: VERSION2, KINDS, OUTCOMES: OUTCOMES2, MODES, CONDITIONS, DIMENSIONS, ITEM, PRESENTATION, defineContent, priorFromSummary, declaredFrom, start, challenge, sigmoid, logit });
+      return Object.freeze({ VERSION: VERSION2, KINDS: KINDS2, OUTCOMES: OUTCOMES2, MODES, CONDITIONS, DIMENSIONS, ITEM, PRESENTATION, defineContent, priorFromSummary, declaredFrom, start, challenge, sigmoid, logit });
     });
   }
 });
@@ -13253,7 +13253,7 @@ var require_ask = __commonJS({
       "use strict";
       const VERSION2 = "ask-1.2";
       const MAX_OPTIONS = 64;
-      const KINDS = ["setting", "confirm", "choice", "refresh", "follow_up"];
+      const KINDS2 = ["setting", "confirm", "choice", "refresh", "follow_up"];
       const DAY4 = 864e5;
       const id = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
       const canonical = (value) => JSON.stringify(value, (_key, entry) => entry && typeof entry === "object" && !Array.isArray(entry) ? Object.fromEntries(Object.keys(entry).sort().map((key) => [key, entry[key]])) : entry);
@@ -13276,7 +13276,7 @@ var require_ask = __commonJS({
         if (!Array.isArray(questions)) throw new TypeError("Ask: questions must be an array");
         const ids = /* @__PURE__ */ new Set();
         for (const q2 of questions) {
-          if (!q2 || !id(q2.id) || ids.has(q2.id) || !KINDS.includes(q2.kind ?? "setting") || !id(q2.about ?? q2.id) || !Array.isArray(q2.options) || q2.options.length < 2 || q2.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q2 && q2.id}`);
+          if (!q2 || !id(q2.id) || ids.has(q2.id) || !KINDS2.includes(q2.kind ?? "setting") || !id(q2.about ?? q2.id) || !Array.isArray(q2.options) || q2.options.length < 2 || q2.options.length > MAX_OPTIONS) throw new TypeError(`Ask: invalid question ${q2 && q2.id}`);
           ids.add(q2.id);
           const options = /* @__PURE__ */ new Set();
           for (const option of q2.options) {
@@ -13413,7 +13413,7 @@ var require_ask = __commonJS({
         };
         return choose({ ...rest, questions, decide });
       }
-      return Object.freeze({ VERSION: VERSION2, MAX_OPTIONS, KINDS, rank, choose, fromAtlas });
+      return Object.freeze({ VERSION: VERSION2, MAX_OPTIONS, KINDS: KINDS2, rank, choose, fromAtlas });
     });
   }
 });
@@ -25396,7 +25396,6 @@ function lifeTutorExpression(lesson2, question2) {
 }
 
 // experiences/synk-world-app/world-month-answer.mjs
-var PREFIX = "synk:world:month-answer:";
 var VERSION = 1;
 var GEN = /^(\d{13})\.[0-9a-z]{1,16}$/;
 var finite = (value) => Number.isFinite(value);
@@ -25456,38 +25455,40 @@ var shapeOf = ({ askedFrom, at, windows, month }) => ({
   month: month.map((row) => ({ unit: row.unit, misses: row.misses, reviews: row.reviews, last: row.last ?? null }))
 });
 var generation = 0;
-var keyOf = (account) => `${PREFIX}${account}`;
+var keyOf = (kind, account) => `${kind.prefix}${account}`;
 function clearMonthAnswer(storage, account) {
   generation += 1;
-  try {
-    if (account) storage?.removeItem(keyOf(account));
-  } catch {
+  for (const kind of KINDS) {
+    try {
+      if (account) storage?.removeItem(keyOf(kind, account));
+    } catch {
+    }
   }
 }
-function createMonthAnswers({ storage = globalThis.localStorage } = {}) {
+function createMonthAnswers({ storage = globalThis.localStorage, kind = MONTH_KIND } = {}) {
   return {
     generation: () => generation,
     // 적어 둔 답 — 계정 · 동의 판 · 학습일이 맞고 꼴이 맞을 때만. 아니면 null(다시 묻는다). 늘 저장소에서 바로 읽는다(다른 탭이 덮었으면 그 값).
     read(account, { revision: revision2, day }) {
       let value = null;
       try {
-        value = JSON.parse(storage?.getItem(keyOf(account)) ?? "null");
+        value = JSON.parse(storage?.getItem(keyOf(kind, account)) ?? "null");
       } catch {
         return null;
       }
       if (!plain(value) || value.v !== VERSION || value.revision !== revision2 || value.day !== day) return null;
       const askedFrom = positionOf(value.askedFrom);
       const at = positionOf(value.at);
-      if (!askedFrom || !at || !validWindows(value.windows) || !validMonth(value.month)) return null;
-      return { askedFrom, at, windows: value.windows, month: value.month };
+      if (!askedFrom || !at || !kind.valid(value)) return null;
+      return { askedFrom, at, ...kind.body(value) };
     },
     // 답을 적는다 — 물을 때의 세대 수가 지금과 같고 저장소가 있을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
-    write(account, { revision: revision2, day, askedFrom, at, windows, month, since }) {
+    write(account, { revision: revision2, day, since, ...answer }) {
       if (since !== generation) return false;
       if (!storage) return false;
-      const value = { v: VERSION, revision: revision2, day, ...shapeOf({ askedFrom, at, windows, month }) };
+      const value = { v: VERSION, revision: revision2, day, ...kind.shape(answer) };
       try {
-        storage.setItem(keyOf(account), JSON.stringify(value));
+        storage.setItem(keyOf(kind, account), JSON.stringify(value));
         return true;
       } catch {
         return false;
@@ -25511,7 +25512,52 @@ var LOOKBACK_CODES = Object.freeze({
   rebuilding: "LOOKBACK_REBUILDING"
 });
 var lookbackCode = (reason) => LOOKBACK_CODES[reason] ?? "LOOKBACK_FAILED";
-function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive }) {
+var MONTH_KIND = Object.freeze({
+  prefix: "synk:world:month-answer:",
+  valid: (value) => validWindows(value.windows) && validMonth(value.month),
+  body: (value) => ({ windows: value.windows, month: value.month }),
+  parse: (got) => {
+    const windows = got.lookback?.windows;
+    const month = got.lookback?.month;
+    return validWindows(windows) && validMonth(month) ? { windows, month: keptRows(month) } : null;
+  },
+  shape: shapeOf,
+  use: (stored) => ({ month: monthOfAnswer(stored) }),
+  code: lookbackCode,
+  failed: "LOOKBACK_FAILED",
+  query: (line, offsetOf) => line.ask(offsetOf())
+});
+var FIRST_GAME = "world-mock";
+var FIRST_DAYS = 90;
+var FIRST_SKILL = /^[A-Za-z0-9_.:-]{1,120}$/;
+var FIRST_LIMIT = 4096;
+var validBySkill = (value) => plain(value) && Object.keys(value).length <= FIRST_LIMIT && Object.entries(value).every(([skill2, n]) => FIRST_SKILL.test(skill2) && Number.isSafeInteger(n) && n >= 0);
+var validFirst = (value, start) => value?.game === FIRST_GAME && value.days === FIRST_DAYS && finite(value[start]) && validBySkill(value.bySkill);
+var bySkillCopy = (bySkill) => Object.fromEntries(
+  Object.keys(bySkill).sort().map((skill2) => [skill2, bySkill[skill2]])
+);
+var FIRST_CODES = Object.freeze({
+  "fold-failed": "FIRST_ANSWERS_FOLD_FAILED",
+  "events-remain": "FIRST_ANSWERS_EVENTS_REMAIN",
+  rebuilding: "FIRST_ANSWERS_REBUILDING"
+});
+var firstAnswersCode = (reason) => FIRST_CODES[reason] ?? "FIRST_ANSWERS_FAILED";
+var FIRST_KIND = Object.freeze({
+  prefix: "synk:world:first-answers:",
+  valid: (value) => validFirst(value, "from"),
+  body: (value) => ({ game: value.game, days: value.days, from: value.from, bySkill: value.bySkill }),
+  parse: (got) => {
+    const body = got.firstAnswers;
+    return validFirst(body, "since") ? { game: body.game, days: body.days, from: body.since, bySkill: body.bySkill } : null;
+  },
+  shape: ({ askedFrom, at, game, days, from, bySkill }) => ({ askedFrom, at, game, days, from, bySkill: bySkillCopy(bySkill) }),
+  use: (stored) => ({ since: stored.from, bySkill: Object.freeze(bySkillCopy(stored.bySkill)) }),
+  code: firstAnswersCode,
+  failed: "FIRST_ANSWERS_FAILED",
+  query: (line) => line.ask({ game: FIRST_GAME, days: FIRST_DAYS })
+});
+var KINDS = Object.freeze([MONTH_KIND, FIRST_KIND]);
+function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive, kind = MONTH_KIND }) {
   const state = { owner: null, generation: null, asking: null, tried: null, pulled: /* @__PURE__ */ new Set(), kept: null, coach: null, ahead: null };
   const reset = () => {
     state.asking = null;
@@ -25594,7 +25640,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       const holder = holderOf(coach, line);
       const storage = holder.storage;
       if (got?.complete !== true) {
-        missed(lookbackCode(got?.reason));
+        missed(kind.code(got?.reason));
         if (!storage) {
           if (at) state.ahead = { key, at };
           return;
@@ -25606,14 +25652,13 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
         else if (!samePosition(current2, device)) ask(holder.coach, holder.line, { owner, revision: revision2, day, device: current2 });
         return;
       }
-      const windows = got.lookback?.windows;
-      const month = got.lookback?.month;
-      if (!at || !validWindows(windows) || !validMonth(month)) {
-        missed("LOOKBACK_FAILED");
+      const body = kind.parse(got);
+      if (!at || !body) {
+        missed(kind.failed);
         return;
       }
       if (storage && heldBack(storage)) return;
-      const answer = shapeOf({ askedFrom: device, at, windows, month: keptRows(month) });
+      const answer = kind.shape({ askedFrom: device, at, ...body });
       state.kept = { key, answer };
       answers.write(owner, { revision: revision2, day, ...answer, since });
       if (!storage) return;
@@ -25625,12 +25670,12 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
         else if (verdict2 === "ask") ask(holder.coach, holder.line, { owner, revision: revision2, day, device: current });
       }
     };
-    void Promise.resolve().then(() => line.ask(offsetOf())).then(reply, () => {
-      if (settle() && still()) missed("LOOKBACK_FAILED");
+    void Promise.resolve().then(() => kind.query(line, offsetOf)).then(reply, () => {
+      if (settle() && still()) missed(kind.failed);
     }).catch(() => {
     });
   }
-  return {
+  const box = {
     month(coach) {
       const owner = account();
       if (!owner) return null;
@@ -25658,7 +25703,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       const key = `${owner}|${revision2}|${day}`;
       const stored = fresherOf(keptFor(key), answers.read(owner, { revision: revision2, day }));
       const verdict2 = stored ? verdictOf(device, stored) : "ask";
-      if (verdict2 === "use") return { month: monthOfAnswer(stored) };
+      if (verdict2 === "use") return kind.use(stored);
       if (verdict2 === "behind") pullOnce(coach, stored.at);
       else {
         if (state.ahead?.key === key && aheadOf(state.ahead.at, device)) pullOnce(coach, state.ahead.at);
@@ -25669,6 +25714,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     // 묻는 중 · 상한 · 받은 자리 · 이 문서의 답을 비운다. 계정이나 세대 수가 바뀌면 month()가 스스로 부른다.
     reset
   };
+  return Object.freeze({ ...box, answer: box.month });
 }
 
 // experiences/synk-world-app/world-learning-ui.mjs
@@ -26944,13 +26990,14 @@ function createWorldEducation({
     }
     const exam = examOf(values), audioAvailable = values.audio !== "off", listening = (item) => item.audioRequired ?? item.modality === "listening";
     const summary = coachNow.summary(), diagnostic = position.items, practice = position.practice.pool;
-    const met = coachNow.exposures([...diagnostic, ...practice]);
+    const mockPool = Array.isArray(position.mock?.pool) ? position.mock.pool : [];
+    const met = coachNow.exposures([...diagnostic, ...practice, ...mockPool]);
     const fresh = /* @__PURE__ */ new Set();
     practice.forEach((item, i) => {
       if (met[diagnostic.length + i]?.seen === false && (audioAvailable || !listening(item))) fresh.add(item.skillId);
     });
     const synced = nextSync.coach === coachNow ? nextSync.value : null;
-    const unseen = P.unseenFamilies([{ items: diagnostic, exposures: met.slice(0, diagnostic.length) }, { items: practice, exposures: met.slice(diagnostic.length) }], (item) => P.withheldItem(item));
+    const unseen = P.unseenFamilies([{ items: diagnostic, exposures: met.slice(0, diagnostic.length) }, { items: practice, exposures: met.slice(diagnostic.length, diagnostic.length + practice.length) }], (item) => P.withheldItem(item));
     const board = P.buildPositionNext({ exam, skills: P.examSkills(engine.SKILLS, exam), summary, prefer: (id) => fresh.has(id), synced, unseen });
     const plan = P.selectDiagnosticNext({ position: board, items: diagnostic, exposures: met.slice(0, diagnostic.length), audioAvailable });
     let life = [];
@@ -26969,7 +27016,39 @@ function createWorldEducation({
     const lifeOpen = (unit) => judged?.state === "engine" && Array.isArray(judged.items) ? judged.items.some((row) => row.unit === unit) : null;
     const cards = P.recheckCards({ due: coachNow.due(), units: summary.units, routes, capped: current?.today?.capped === true, audioAvailable, lifeOpen });
     const scope = owner === "guest" ? "device" : summary.storage?.guest === false ? "account" : null;
-    return { values, exam, board, plan, cards, fresh, judged, scope, month: monthOf(coachNow, P, routes) };
+    return {
+      values,
+      exam,
+      board,
+      plan,
+      cards,
+      fresh,
+      judged,
+      scope,
+      month: monthOf(coachNow, P, routes),
+      estimate: estimateOf(coachNow, P, exam, values),
+      mock: mockOf(coachNow, values, exam, met.slice(diagnostic.length + practice.length))
+    };
+  }
+  function estimateOf(coachNow, P, exam, values) {
+    if (typeof P?.estimateNext !== "function" || !position.ESTIMATE_POLICY) return null;
+    let counts = null;
+    try {
+      counts = typeof coachNow.firstAnswers === "function" ? coachNow.firstAnswers({ game: FIRST_GAME, days: FIRST_DAYS }) : null;
+    } catch {
+      counts = null;
+    }
+    if (!counts) counts = evidenceAsker.answer(coachNow);
+    try {
+      return P.estimateNext({ bySkill: counts?.bySkill ?? null, form: formOf(exam), mode: values.examMode || null, policy: position.ESTIMATE_POLICY });
+    } catch {
+      return null;
+    }
+  }
+  function mockOf(coachNow, values, exam, met) {
+    if (position.topik?.ready === false) return null;
+    const plan = mockNextPlan(coachNow, values, exam, met);
+    return plan?.status === "ready" && Number.isSafeInteger(plan.minutes) ? { minutes: plan.minutes } : null;
   }
   function monthOf(coachNow, P, routes) {
     let counts = null;
@@ -27006,6 +27085,23 @@ function createWorldEducation({
     note: (code) => homeNext?.note?.("load", { ok: false, code }),
     alive: (account) => !stopped && getProgress()?.owner === account
   });
+  const evidenceAsker = createMonthAsker({
+    kind: FIRST_KIND,
+    answers: createMonthAnswers({ kind: FIRST_KIND, storage: (() => {
+      try {
+        return target?.localStorage ?? null;
+      } catch {
+        return null;
+      }
+    })() }),
+    account: () => owner === "guest" ? null : owner,
+    lineOf: (coachNow) => homeNext?.firstAnswers?.(coachNow) || null,
+    dayOf: () => homePlanner ? homePlanner.todayKey(Date.now()) : null,
+    offsetOf: () => -(/* @__PURE__ */ new Date()).getTimezoneOffset(),
+    redraw: () => redrawNext(),
+    note: (code) => homeNext?.note?.("load", { ok: false, code }),
+    alive: (account) => !stopped && getProgress()?.owner === account
+  });
   const summaryShape = (summary) => {
     let n = 0, cells = 0, sittings = 0, lapses = 0;
     for (const skill2 of summary?.skills || []) {
@@ -27027,8 +27123,9 @@ function createWorldEducation({
     const synced = nextSync.coach === coachNow ? nextSync.value : null;
     const complete = N.recordsComplete(summary.storage, synced);
     const key = [homePlanner.todayKey(now), planEnds, info.type, complete, summaryShape(summary)].join("|");
-    if (weekMet.coach !== coachNow || weekMet.key !== key) weekMet = { coach: coachNow, key, met: coachNow.exposures([...diagnostic, ...practice]) };
-    const metDiag = weekMet.met.slice(0, diagnostic.length), metPractice = weekMet.met.slice(diagnostic.length);
+    const mockPool = Array.isArray(position.mock?.pool) ? position.mock.pool : [];
+    if (weekMet.coach !== coachNow || weekMet.key !== key) weekMet = { coach: coachNow, key, met: coachNow.exposures([...diagnostic, ...practice, ...mockPool]) };
+    const metDiag = weekMet.met.slice(0, diagnostic.length), metPractice = weekMet.met.slice(diagnostic.length, diagnostic.length + practice.length), metMock = weekMet.met.slice(diagnostic.length + practice.length);
     const at = new Map(practice.map((item, i) => [item, i])), seenOf = (item) => {
       const row = metPractice[at.get(item)];
       return row ? row.seen : null;
@@ -27081,7 +27178,27 @@ function createWorldEducation({
       writingTimes,
       speaking
     });
-    return examPlan ? { examPlan, fresh: (item) => seenOf(item) === false, diagnostic: { ready } } : null;
+    if (!examPlan) return null;
+    const mockNow = position.topik?.ready === false ? null : mockNextPlan(coachNow, values, exam, metMock), examWeek2 = position.exam.examWeek(now);
+    let mockTimes = [];
+    try {
+      mockTimes = homeNext?.planLog?.(coachNow)?.times?.("mock") || [];
+    } catch {
+      mockTimes = [];
+    }
+    const mock = mockNow?.status === "ready" ? {
+      minutes: mockNow.minutes,
+      audioRequired: (mockNow.sections || []).some((row) => row.section === "listening" && row.status === "ready"),
+      done: mockTimes.some((at2) => at2 >= examWeek2.start && at2 < examWeek2.end)
+    } : null;
+    const row53 = info.type === "topik2" ? writingList().find((row) => row.route === "writing:53") || null : null;
+    const need = row53?.practiceNeed && Date.parse(row53.practiceNeed.at) <= now ? row53.practiceNeed : null;
+    const needKind = ["retry", "assisted"].includes(need?.kind) ? need.kind : null;
+    const writing = row53 ? { label: writingLabel(row53.route), routeId: row53.route, minutes: row53.minutes, focus: "ending-53", need: needKind, needAt: needKind ? need.at : null } : null;
+    const first = speaking?.recommend?.[0] || null, listed = first ? speaking.list.find((row) => row.route === first.routeId) || null : null;
+    const type = typeof listed?.targets?.[0] === "string" ? listed.targets[0].split(".").pop() : null;
+    const speakingNow = first && type ? { label: first.label, routeId: first.routeId, minutes: first.minutes, type, untried: speaking.untried } : null;
+    return { examPlan, fresh: (item) => seenOf(item) === false, diagnostic: { ready }, mock, writing, speaking: speakingNow };
   }
   function planOnce(coachNow, area) {
     let done = false;
@@ -27170,7 +27287,7 @@ function createWorldEducation({
       return;
     }
     const two2 = topik2Domains(), exams = studentExam(data.values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
-    home.showPanel(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.fresh.has(id), scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0, month: data.month }), PANEL);
+    home.showPanel(t2("position.title"), draw.board({ board: data.board, plan: data.plan, cards: data.cards, exams, practice: (id) => data.fresh.has(id), scope: data.scope, diagnosed, writing: data.exam === "topik2" && writingList().length > 0, month: data.month, estimate: data.estimate, mock: data.mock }), PANEL);
     heard.panel = false;
     const root = panelNode("[data-position-next]");
     if (keepScroll) {
@@ -27217,6 +27334,14 @@ function createWorldEducation({
         check3();
         const first = writingList()[0];
         if (first && typeof writingPractice?.open === "function") void Promise.resolve(writingPractice.open(first.route)).catch(failed);
+      } catch (error2) {
+        failed(error2);
+      }
+    });
+    root?.querySelector?.("[data-position-mock]")?.addEventListener("click", () => {
+      try {
+        check3();
+        void Promise.resolve(openMock({ exam: data.exam })).catch(failed);
       } catch (error2) {
         failed(error2);
       }
@@ -28489,12 +28614,12 @@ function createWorldEducation({
     });
     startSection();
   }
-  function mockNextPlan(coachNow, values, exam) {
+  function mockNextPlan(coachNow, values, exam, met = null) {
     const P = homePlanner?.position, N = homePlanner?.plan, mock = position?.mock;
     if (!mock || typeof P?.selectMockNext !== "function" || typeof N?.recordsComplete !== "function" || typeof coachNow?.exposures !== "function") return null;
     const synced = nextSync.coach === coachNow ? nextSync.value : null;
     try {
-      return P.selectMockNext({ select: mock.selectMock, forms: mock.forms, exam, pool: mock.pool, exposures: coachNow.exposures(mock.pool), complete: N.recordsComplete(coachNow.summary().storage, synced), audioAvailable: values?.audio !== "off" });
+      return P.selectMockNext({ select: mock.selectMock, forms: mock.forms, exam, pool: mock.pool, exposures: met && met.length === mock.pool.length ? met : coachNow.exposures(mock.pool), complete: N.recordsComplete(coachNow.summary().storage, synced), audioAvailable: values?.audio !== "off" });
     } catch {
       return null;
     }
@@ -28661,12 +28786,22 @@ function createWorldEducation({
     home.attachPanelResource?.({ dispose: stop });
     unwatch = atlasNext?.retired?.(next2, closed) ?? (() => {
     });
+    let logged = false;
+    const markPlan = () => {
+      if (logged || !session.presented) return;
+      logged = true;
+      try {
+        homeNext?.planLog?.(next2)?.record("mock", Date.now());
+      } catch {
+      }
+    };
     function paint(focus = ".wpos-run-skill") {
       if (ended) return;
       if (session.disposed) {
         closed();
         return;
       }
+      markPlan();
       const now = session.current;
       if (!now || session.finished) {
         void finish();

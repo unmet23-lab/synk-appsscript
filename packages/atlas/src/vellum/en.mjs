@@ -7,6 +7,29 @@ const days = n => `${n} ${n === 1 ? 'day' : 'days'}`;
 const times = n => `${n} ${n === 1 ? 'time' : 'times'}`;
 const one = sentence => ({ standard: { default: [sentence] } });
 
+// 점검 칸의 쓰기 · 말하기(4-4d — 한국어 줄 ko.mjs와 같은 뜻). 유형 이름은 WORLD 화면 글 표(speaking.type.1 ~ 6)의 영어와 같다.
+// 세 겹 대조(11-17, 세 번)에서 말하기 줄의 부정 수량(「haven’t tried 1 of the six」), 쓰기 다시 줄의 무생물 주어, 다시 하기 줄의 -ing 겹침을 고쳤다.
+const WRITING = Object.freeze({
+  'ending-53': Object.freeze({
+    retry:
+      'Practise the plain written style for Question 53 again — you missed it in your last response.',
+    assisted:
+      'You fixed your Question 53 sentence endings with help. This time, use the plain written style on your own.',
+    gain: 'Using it helps your TOPIK Writing language-use score.',
+  }),
+});
+const SPEAKING = Object.freeze({
+  answer: 'Answer a question',
+  roleplay: 'Role-play from a picture',
+  narrate: 'Tell a story from pictures',
+  respond: 'Complete a conversation',
+  interpret: 'Interpret data',
+  opinion: 'Give your opinion',
+});
+const writing = s => `${WRITING[s.focus][s.need]} ${WRITING[s.focus].gain}`;
+const speaking = s =>
+  `You still have ${s.untried} of the 6 TOPIK Speaking task types left to try on this device this week. Today, try ‘${SPEAKING[s.type]}’.`;
+
 const retry = (s, name) =>
   s.other
     ? `You just missed ‘${name}’ — let’s try it again in a different question.`
@@ -93,5 +116,16 @@ export const EN = Object.freeze({
     name
       ? `You learned ‘${name}’ in a lesson — today, let’s review it in a new situation.`
       : 'Today, let’s review expressions from your lessons in a new situation.',
+  ),
+  // 점검 칸의 쓰기 · 말하기(4-4d — 위 WRITING · SPEAKING).
+  'host.writing': one(writing),
+  'host.writing.start': one(
+    () =>
+      'Write a Question 53 response. The rule check points out what to review for TOPIK Writing, such as the plain written style.',
+  ),
+  'host.speaking': one(speaking),
+  'host.speaking.again': one(
+    () =>
+      'You’ve tried all six TOPIK Speaking task types on this device this week. Try one again for more practice speaking within the time limit.',
   ),
 });

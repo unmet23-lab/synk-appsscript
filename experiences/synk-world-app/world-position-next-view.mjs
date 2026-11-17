@@ -146,12 +146,48 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
     return `<section class="wpos-group" data-domain="writing"><h3>${escape(t('plan.area.writing'))}</h3><p class="wpos-note">${escape(t('position.writing.note'))}</p>${open}</section>`;
   }
 
+  // 예상 급수 칸(4-4d — 단계4_계획 §21-23의 2). 지금 판 그림(world-position-ui.mjs estimateBlock)과 같은 글 열쇠로 값만 잇는다(글은 리디자인).
+  // estimate: estimateNext의 값. 근거 수를 모르면(status 'checking') 「기록 확인 중」만 두고 수를 그리지 않는다. mock: 시험 형식 연습을 열 수
+  // 있으면 { minutes } — 단추(data-position-mock)를 단다. 셸의 openMock이 판 셋을 가른다(§21-23의 1).
+  function estimateBlock(estimate, mock) {
+    if (!estimate) return '';
+    const state =
+      estimate.status === 'checking'
+        ? 'homeTutor.checking'
+        : estimate.status === 'mode-unsupported'
+          ? 'position.estimate.ibt'
+          : estimate.status === 'no-estimator'
+            ? 'position.estimate.waiting'
+            : 'position.estimate.early';
+    const known = estimate.status === 'too-early' || estimate.status === 'no-estimator';
+    const collected =
+      known && count(estimate.evidence) > 0
+        ? `<p class="wpos-estimate-count"><span>${escape(t('position.estimate.collected', { n: count(estimate.evidence), listening: count(estimate.perDomain?.listening), reading: count(estimate.perDomain?.reading) }))}</span></p>`
+        : '';
+    const open = Number.isSafeInteger(mock?.minutes)
+      ? `<button class="quiet-button wpos-practice" type="button" data-position-mock>${escape(t('mock.open', { minutes: mock.minutes }))} <span aria-hidden="true">→</span></button>`
+      : '';
+    return `<section class="wpos-estimate" data-estimate="${escape(estimate.status)}"${known ? ` data-evidence="${count(estimate.evidence)}" data-listening="${count(estimate.perDomain?.listening)}" data-reading="${count(estimate.perDomain?.reading)}"` : ''}><p class="life-section-label">ESTIMATE</p><h3>${escape(t('position.estimate.title'))}</h3><p class="wpos-estimate-state">${led('')}<strong>${escape(t(state))}</strong></p><p class="wpos-note">${escape(t('position.estimate.basis'))}</p>${collected}${open}</section>`;
+  }
+
   // 판 한 장. board: buildPositionNext · plan: selectDiagnosticNext · cards: recheckCards · exams: 고를 수 있는 시험(둘 이상일 때 위에 고르기) ·
   // practice(skillId): 「이 항목 연습하기」를 달 수 있나 · scope: 'account' | 'device' | null · diagnosed: 이 문서에서 진단을 한 번 했나 · writing: 쓰기 줄 단추.
-  // 시험 형식 연습 · 예상 급수 · 놓친 곳 카드는 새 길에서 숨긴다(21-10의 4 · 5 — 4-4d · 4-6).
+  // 놓친 곳 카드는 새 길에서 숨긴다(21-10의 5 — 4-6). 예상 급수 칸과 시험 형식 단추는 4-4d가 잇는다(estimate · mock — 위 estimateBlock).
   // month: 30일째 문장(4-4c — 21-7) { text, unit, misses, reviews } — 셸이 Vellum으로 지은 문장(그 화면 언어의 줄이 없으면 셸이 null을 넘긴다).
   // 판 맨 위(머리 그림 바로 뒤)에 한 줄로 싣는다. 모양은 리디자인이 정한다 — 여기서는 글 한 줄과 수를 data-*로만.
-  function board({ board, plan = null, cards = [], exams = null, practice = null, scope = null, diagnosed = false, writing = false, month = null } = {}) {
+  function board({
+    board,
+    plan = null,
+    cards = [],
+    exams = null,
+    practice = null,
+    scope = null,
+    diagnosed = false,
+    writing = false,
+    month = null,
+    estimate = null,
+    mock = null,
+  } = {}) {
     if (!board || !Array.isArray(board.skills)) throw TypeError('WORLD position next view needs the position board');
     const exam = board.exam === 'topik2' ? 'topik2' : 'topik1';
     const summary = summaryOf(board);
@@ -175,7 +211,7 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
       typeof month?.text === 'string' && month.text
         ? `<p class="wpos-month" data-position-month data-unit="${escape(month.unit)}" data-misses="${count(month.misses)}" data-reviews="${count(month.reviews)}">${escape(month.text)}</p>`
         : '';
-    return `<div class="wpos life-heading" data-position-next="engine" data-exam="${exam}" data-complete="${flag(board.complete)}" data-unfolded="${flag(board.unfolded)}" data-catching="${flag(board.catching)}" tabindex="-1">${poster(t('position.title'), summary)}${monthLine}${examSwitch}<ul class="wpos-counts" aria-label="${escape(summary)}">${counts}</ul><p class="wpos-intro">${escape(t('position.intro'))}</p>${incomplete}${attentionBlock(board, practice)}${cards.length ? recheck : ''}${diagnosticBlock(board, plan, diagnosed)}${groups(board, practice)}${writingBlock(board, writing)}${carriedBlock(board)}${cards.length ? '' : recheck}${scopeLine}</div>`;
+    return `<div class="wpos life-heading" data-position-next="engine" data-exam="${exam}" data-complete="${flag(board.complete)}" data-unfolded="${flag(board.unfolded)}" data-catching="${flag(board.catching)}" tabindex="-1">${poster(t('position.title'), summary)}${monthLine}${examSwitch}<ul class="wpos-counts" aria-label="${escape(summary)}">${counts}</ul><p class="wpos-intro">${escape(t('position.intro'))}</p>${incomplete}${attentionBlock(board, practice)}${estimateBlock(estimate, mock)}${cards.length ? recheck : ''}${diagnosticBlock(board, plan, diagnosed)}${groups(board, practice)}${writingBlock(board, writing)}${carriedBlock(board)}${cards.length ? '' : recheck}${scopeLine}</div>`;
   }
 
   return Object.freeze({ board });

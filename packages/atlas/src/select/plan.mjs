@@ -10,6 +10,7 @@
 import { unitsOf } from '../fold/units.mjs';
 import { PARAMS } from '../params.mjs';
 import { REASON_CODES } from '../reason/index.mjs';
+import { DESCRIBE_SLOTS, describeSlots } from '../vellum/slots.mjs';
 import { choose, dayCapped } from './choose.mjs';
 import { startSession } from './session.mjs';
 
@@ -19,6 +20,11 @@ const DESCRIBE_CODES = Object.freeze({
   recheck: REASON_CODES.recheck,
   start: REASON_CODES.start,
   next: REASON_CODES.next,
+  // 점검 칸의 쓰기 · 말하기(4-4d — §21-23의 3). 칸이 있는 둘(writing · speaking)은 { key, slots }로 넘긴다 — 칸 꼴은 vellum/slots.mjs 한 곳.
+  writing: REASON_CODES.writing,
+  'writing.start': REASON_CODES.writingStart,
+  speaking: REASON_CODES.speaking,
+  'speaking.again': REASON_CODES.speakingAgain,
 });
 
 // 사실의 표(앞이 먼저). 순위를 앞지르는 줄이 앞에 오고, ranks: false인 줄(describe)은 순위에 쓰지 않고 이유만 단다.
@@ -66,9 +72,27 @@ function leadOf(facts, candidates) {
   return null;
 }
 
+// 설명 — 글자 하나(칸 없는 설명) 또는 { key, slots }(칸이 있는 설명, 4-4d). 칸 표(vellum/slots.mjs)에 든 코드는 칸이 표에 맞을 때만 선다.
+// 틀리면(표 밖의 열거값 · 글자로 넘긴 수 · 하한 밑이나 상한 위의 수 · 빠지거나 더한 칸) 근거 없는 문장으로 물러서지 않고 그 줄의 이유를
+// 비운다(BAD — 설계 검토 Fable F6 · 카본 B3). 제품의 잘못이므로 숨기지 않고 시험이 잡는다. 표에 없는 코드(form · recheck · start · next)는
+// 지금처럼 칸이 없다. 근거 칸의 describe는 지금처럼 글자 하나(설명의 열쇠)다.
+const BAD = Symbol('describe slots');
 const describeWhy = value => {
-  const code = own(DESCRIBE_CODES, value);
-  return code ? { code, slots: {}, evidence: { fact: 'describe', describe: value } } : null;
+  const plain = value !== null && typeof value === 'object' && !Array.isArray(value);
+  const key = typeof value === 'string' ? value : plain ? value.key : undefined;
+  const code = own(DESCRIBE_CODES, key);
+  if (!code) return null;
+  const given = typeof value === 'string' ? {} : (value.slots ?? {});
+  const slots = Object.hasOwn(DESCRIBE_SLOTS, code)
+    ? describeSlots(code, given)
+    : given !== null &&
+        typeof given === 'object' &&
+        !Array.isArray(given) &&
+        !Object.keys(given).length
+      ? {}
+      : null;
+  if (slots === null) return BAD;
+  return { code, slots: { ...slots }, evidence: { fact: 'describe', describe: key } };
 };
 
 // 목표 — 제품이 넘긴 { kind, … }들. kind: homework(이번 주 숙제 — skill · status) · interest(「더 배우고 싶어요」 — topic) ·
@@ -78,7 +102,8 @@ const describeWhy = value => {
 // 묶는다(카본 C3 · 설계 주인 11-15).
 const GOAL_KEY = /^[a-z][a-zA-Z0-9_.:-]{0,79}$/;
 const HOMEWORK_STATUS = ['review', 'missed'];
-const TEXT_SLOTS = ['kind', 'topic', 'skill'];
+// id도 글자 칸이다 — 겹침 열쇠에 드는데(아래 goalsOf) 글자가 아니면 배열 · 객체가 열쇠를 갈라 같은 목표를 두 번 센다(4-4d — §21-23의 3).
+const TEXT_SLOTS = ['kind', 'topic', 'skill', 'id'];
 const goalOk = goal =>
   TEXT_SLOTS.every(slot => goal?.[slot] == null || typeof goal[slot] === 'string') &&
   GOAL_KEY.test(goal?.kind ?? '');
@@ -134,7 +159,11 @@ function viewOf(learner, now, params) {
 function whyOf(ruled, goals, top, none, facts) {
   if (ruled) return ruled.why;
   const quiet = !top || Boolean(top.idle) || none;
-  return goalReason(goals, top) ?? (quiet ? describeWhy(facts.describe) : null) ?? top?.why ?? null;
+  const goal = goalReason(goals, top);
+  if (goal) return goal;
+  const described = quiet ? describeWhy(facts.describe) : null;
+  if (described === BAD) return null; // 칸이 틀린 설명 — 그 줄의 이유를 비운다(제품의 잘못, 시험이 잡는다)
+  return described ?? top?.why ?? null;
 }
 
 // 항목: { id, locked, fact(앞지른 사실의 표 자리 · 없으면 -1), goals, tier, todo, offered(넘긴 후보 수 — 코치는 지도에 맞춘 뒤의 수),

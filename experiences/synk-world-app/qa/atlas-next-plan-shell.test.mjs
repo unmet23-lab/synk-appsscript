@@ -14,6 +14,8 @@ import { worldLearning } from '../world-learning-map.mjs';
 import { homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 import { createPlanLog } from '../world-plan-next.mjs';
+import { WRITING_CANDIDATES } from '../world-writing-practice.mjs';
+import { SPEAKING_CANDIDATES } from '../world-speaking-practice.mjs';
 
 // 변형 시험은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
 const { createWorldEducation } = await import(
@@ -84,9 +86,19 @@ function stage() {
 // 셸 하나 — 새 길 홈 입구(homeNext)를 넘긴 학습 화면. values: 학습 목표 값(시험 정보). planLog(made): 입구의 판 기록(시험은 기기 저장소 하나).
 // wrap: 홈 코치에 얹을 것(묶음 만남을 세거나 기록부를 계정처럼 보이게).
 // planner: 입구가 플래너를 주는 때(끝내 주지 않으면 홈이 확인 중에 머문다). fast: 창의 시계를 30ms로 줄인다(기다림 한도를 넘기는 장면).
+// writingPractice · speakingPractice: 앱이 넘기는 쓰기 · 말하기 호스트(app-shell.mjs와 같은 꼴 — 아래 writingHost · speakingHost). 없으면 넘기지 않는다.
 // focusing: 판 글의 단추와 문서의 초점(activeElement), 판 안의 스크롤 칸(#panel-content)을 흉내 낸다. 진짜 홈처럼 판을 보일 때마다 스크롤 자리가 처음으로
 // 가고 초점은 닫기 단추(판 밖)로 간다(home.mjs openPanel) — 셸이 되돌려야 한다. 셸이 초점을 둔 자리는 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
-function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, planLog = null, planner = async () => PLANNER, fast = false, focusing = false } = {}) {
+function shell({
+  values = { audio: 'off', ...EXAM_T1 },
+  wrap = made => made,
+  planLog = null,
+  planner = async () => PLANNER,
+  fast = false,
+  focusing = false,
+  writingPractice = null,
+  speakingPractice = null,
+} = {}) {
   const opens = [];
   const toasts = [];
   const waits = [];
@@ -242,6 +254,8 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, wrap = made => made, pla
     position: worldPosition,
     target,
     homeNext,
+    ...(writingPractice ? { writingPractice } : {}),
+    ...(speakingPractice ? { speakingPractice } : {}),
   });
   return {
     education,
@@ -315,16 +329,134 @@ test('새 길 홈은 시험을 고른 학생에게 이번 주 계획을 짓는�
   }
 });
 
-test('TOPIK II 학생 — 새 길 홈에는 쓰기 · 말하기 줄이 없고, 배우기 허브의 쓰기 줄은 지금처럼 위로 올라간다(설계 주인 11-16 조건 3 — 4-4d가 첫 장면을 뒤집는다)', async () => {
-  const app = shell({ values: { audio: 'off', ...EXAM_T2 } });
+// 앱의 쓰기 호스트(app-shell.mjs writingPractice — world-writing-practice.mjs writingCandidates의 꼴): 한 가지 고치기가 열려 있으면 53번 후보에
+// practiceNeed와 연습 전 어림 분(5분)이 붙는다. need는 시험이 바꾼다(state.need).
+function writingHost(need) {
+  const state = { need };
+  return {
+    state,
+    candidates: () => WRITING_CANDIDATES.map(row => (row.route === 'writing:53' && state.need ? { ...row, minutes: 5, practiceNeed: state.need } : row)),
+    open() {},
+    attempts: () => [],
+  };
+}
+// 앱의 말하기 호스트(app-shell.mjs speakingPractice — 「말하기 평가도 준비해요」를 켠 학생). tried: 이번 주에 이 기기에서 해 본 유형(1~6).
+function speakingHost({ tried = [] } = {}) {
+  return {
+    available: () => true,
+    candidates: () => SPEAKING_CANDIDATES.filter(row => row.exam === 'speaking'),
+    chosen: () => true,
+    choose: () => true,
+    week: () => ({ times: [], tried }),
+    open() {},
+  };
+}
+const checkRows = plan => plan.today.items.filter(row => row.kind === 'check');
+
+test('TOPIK II 학생 — 새 길 홈의 점검 칸에 쓰기 · 말하기 · 시험 형식이 넘어가고, 이번 주 다시 확인을 마친 학생에게는 한 가지 고치기가 열린 53번이 그 목표로 선다(4-4d — 4-4b 장면을 뒤집음)', async () => {
+  const logs = new Map();
+  const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
+  const log = createPlanLog({ storage: memory, store: 'synk-atlas:guest' });
+  // 이번 주 다시 확인을 마친 학생 — 짧은 진단 줄은 서지 않고 나머지 셋이 겨룬다
+  assert.equal(log.record('recheck', Date.now() - 60_000), true);
+  // 지난주에 한 시험 형식 판은 이번 주의 시험 형식 줄을 막지 않는다(주 경계는 weekActivity와 같은 계획의 주)
+  assert.equal(log.record('mock', worldPosition.exam.examWeek(Date.now()).start - 3_600_000), true);
+  const writing = writingHost({ kind: 'retry', at: new Date(Date.now() - 3_600_000).toISOString() });
+  const app = shell({
+    values: { ...EXAM_T2 },
+    planLog: made => (made ? log : null),
+    writingPractice: writing,
+    speakingPractice: speakingHost({ tried: [1] }),
+  });
   try {
     app.education.refresh();
     await until(() => engineHome(app), '엔진 판의 이번 주 계획');
     const plan = app.plan();
     assert.equal(plan.examPlan.exam.type, 'topik2');
-    assert.ok(!plan.today.items.some(row => ['writing', 'speaking'].includes(row.route)), '새 길 홈에 쓰기 · 말하기 줄이 없다');
-    assert.ok(!plan.candidates.some(open => ['writing', 'speaking'].includes(open.route)));
+    assert.ok(plan.candidates.some(open => open.route === 'writing' && open.routeId === 'writing:53'), '53번 쓰기를 넘긴다');
+    assert.ok(plan.candidates.some(open => open.route === 'speaking' && open.routeId === 'speaking:2'), '이번 주에 아직 안 해 본 첫 유형(2번)을 넘긴다');
+    assert.ok(plan.candidates.some(open => open.route === 'mock'), '시험 형식을 넘긴다(고르기가 ready)');
+    assert.ok(!plan.candidates.some(open => open.route === 'position'), '이번 주 다시 확인을 마쳐 짧은 진단은 넘기지 않는다');
+    // 이 장면의 계획은 다음 영역이 말하기다 — 말하기 줄은 영역 목표를, 쓰기는 한 가지 고치기 목표를 하나씩 받아 제품 차례(쓰기 → 말하기)로 가른다
+    assert.equal(plan.examPlan.next?.area, 'speaking');
+    let rows = checkRows(plan);
+    assert.equal(rows.length, 1, '점검 칸은 한 줄');
+    assert.equal(rows[0].activityId, 'topik2-writing-53', '한 가지 고치기 목표를 맞춘 쓰기가 같은 수의 목표를 맞춘 말하기보다 앞선다');
+    assert.equal(rows[0].why.code, 'host.writing');
+    assert.deepEqual(rows[0].why.slots, { focus: 'ending-53', need: 'retry' });
+    assert.equal(rows[0].open.routeId, 'writing:53');
+    // 한 가지 고치기의 시각이 계획 시각보다 뒤면(기기 시계가 앞선 기록) 아직 열린 것으로 보지 않는다 — 목표가 없는 쓰기는 영역 목표를 맞춘 말하기 뒤다
+    writing.state.need = { kind: 'retry', at: new Date(Date.now() + 3_600_000).toISOString() };
+    app.education.refresh();
+    await until(() => checkRows(app.plan())[0]?.activityId !== 'topik2-writing-53', '말하기가 앞선 점검 칸');
+    rows = checkRows(app.plan());
+    assert.equal(rows[0].activityId, 'world.speaking.check');
+    assert.equal(rows[0].why.code, 'host.speaking');
+    assert.deepEqual(rows[0].why.slots, { type: 'roleplay', untried: 5 }, '이번 주에 아직 안 해 본 첫 유형(2번 — 능력 이름 끝 마디)과 안 해 본 유형 수');
+    assert.equal(rows[0].open.routeId, 'speaking:2');
+    // 이번 주에 시험 형식 판을 하면(이 기기의 판 기록) 시험 형식을 넘기지 않는다
+    assert.equal(log.record('mock', Date.now() - 30_000), true);
+    app.education.refresh();
+    await until(() => !app.plan().candidates.some(open => open.route === 'mock'), '시험 형식을 넘기지 않는 계획');
+    assert.ok(app.plan().candidates.some(open => open.route === 'writing'), '쓰기 · 말하기는 그대로 넘긴다');
     assert.equal(app.education.examType(), 'topik2', '허브는 이 값으로 TOPIK II 학생의 쓰기 줄을 맨 위에 둔다(지금 판과 같다)');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('쓰기 · 말하기 호스트가 없으면(앱이 모듈을 부르지 않은 때) 점검 칸에 쓰기 · 말하기를 넘기지 않는다 — 지금 판과 같다 · 소리를 끈 날의 시험 형식은 듣기 없이 넘긴다', async () => {
+  const app = shell({ values: { audio: 'off', ...EXAM_T2 } });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    const plan = app.plan();
+    assert.ok(!plan.candidates.some(open => ['writing', 'speaking'].includes(open.route)));
+    const mock = plan.candidates.find(open => open.route === 'mock');
+    assert.equal(mock?.audioRequired, false, '소리를 끈 날의 시험 형식 판에는 듣기 칸이 없다 — 소리 때문에 잠그지 않는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('TOPIK I 학생 — 쓰기 호스트가 있어도 점검 칸에 53번 쓰기를 넘기지 않고, 말하기를 켰으면 이번 주에 아직 안 해 본 첫 유형을 넘긴다', async () => {
+  const app = shell({
+    values: { ...EXAM_T1 },
+    writingPractice: writingHost({ kind: 'retry', at: new Date(Date.now() - 3_600_000).toISOString() }),
+    speakingPractice: speakingHost(),
+  });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    const plan = app.plan();
+    assert.ok(!plan.candidates.some(open => open.route === 'writing'), 'TOPIK I 학생에게는 쓰기가 없다');
+    assert.ok(plan.candidates.some(open => open.route === 'speaking' && open.routeId === 'speaking:1'));
+  } finally {
+    app.dispose();
+  }
+});
+
+test('TOPIK I 학생 — 점검 칸의 이번 주 몫이 모두 찬 날에도 쓰기 호스트에 열린 53번 고치기를 보탬으로 세우지 않는다(4-4d 설계 주인 다시 여쭘의 답 2)', async () => {
+  const logs = new Map();
+  const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
+  const log = createPlanLog({ storage: memory, store: 'synk-atlas:guest' });
+  // 이번 주 다시 확인과 시험 형식 판을 마친 학생 — 말하기는 켜지 않았다. 시각은 이번 주 계획의 주 안이다.
+  const start = worldPosition.exam.examWeek(Date.now()).start;
+  const recent = ago => Math.max(start, Date.now() - ago);
+  assert.equal(log.record('recheck', recent(60_000)), true);
+  assert.equal(log.record('mock', recent(30_000)), true);
+  const app = shell({
+    values: { ...EXAM_T1 },
+    planLog: made => (made ? log : null),
+    writingPractice: writingHost({ kind: 'retry', at: new Date(recent(60_000)).toISOString() }),
+  });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    const plan = app.plan();
+    assert.ok(!plan.candidates.some(open => ['position', 'mock', 'speaking'].includes(open.route)), '장면의 전제 — 점검 칸의 몫이 모두 찼다');
+    assert.ok(!plan.candidates.some(open => open.route === 'writing'), 'TOPIK I 학생에게는 보탬 쓰기도 없다');
+    assert.equal(checkRows(plan).length, 0, '점검 칸 줄이 없다');
   } finally {
     app.dispose();
   }
@@ -413,7 +545,11 @@ test('새 길 짧은 진단이 끝나면 이 기기의 판 기록에 다시 확�
     const plan = app.plan().examPlan;
     assert.equal(plan.areas.find(row => row.area === 'recheck').done, 1, '이번 주 다시 확인 한 번(이 기기에서 센 수)');
     assert.ok(!plan.notes.includes('start'), '진단에서 만난 문항이 있으니 시작점이 아니다');
-    assert.ok(!app.plan().today.items.some(row => row.kind === 'check'), '이번 주 다시 확인을 마쳤으니 점검 칸의 진단 줄이 없다');
+    // 점검 칸에는 4-4d부터 시험 형식 · 쓰기 · 말하기도 선다 — 진단 줄만 없어진다.
+    assert.ok(
+      !app.plan().today.items.some(row => row.kind === 'check' && row.activityId === 'world.position.check'),
+      '이번 주 다시 확인을 마쳤으니 점검 칸의 진단 줄이 없다',
+    );
     const settled = asked.length;
     app.education.refresh();
     assert.equal(asked.length, settled, '판 끝 뒤 다시 물은 만남을 그날 그대로 쓴다');

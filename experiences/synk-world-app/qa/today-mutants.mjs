@@ -313,6 +313,115 @@ export const TODAY_MUTANTS = [
     "            queueMicrotask(() => {\n              if (!disposed && at === generation && coach === made) changed();\n            });\n",
     "            changed();\n",
   ],
+  // ── 점검 칸 넷(4-4d — 단계4_계획 §21-23의 3, 설계 주인 11-17 답 3 · 4): 시험 형식 · 쓰기 · 말하기 줄, 제품 차례, 계획 목표의 범위 ──
+  [
+    '점검 칸 넷',
+    "같은 자리의 점검 칸을 두뇌 차례(활동 id 사전 순)로 둔다 — 제품 차례를 뺀다(설계 주인 11-17 답 3)",
+    "  entries = checkOrdered(Array.isArray(entries) ? entries : [], byId);\n",
+    "",
+  ],
+  [
+    '점검 칸 넷',
+    "제품 차례에서 시험 형식과 쓰기를 바꾼다",
+    "export const CHECK_ORDER = Object.freeze(['world.position.check', 'world.mock', 'topik2-writing-53', 'world.speaking.check']);",
+    "export const CHECK_ORDER = Object.freeze(['world.position.check', 'topik2-writing-53', 'world.mock', 'world.speaking.check']);",
+  ],
+  [
+    '점검 칸 넷',
+    "제품 차례로 가를 때 두뇌의 맞춘 목표 수를 보지 않는다 — 목표를 맞춘 줄이 앞서지 못한다",
+    "  -(entry.goals ?? 0),\n",
+    "",
+  ],
+  [
+    '점검 칸 넷',
+    "쓰기에 한 가지 고치기의 목표를 싣지 않는다",
+    "        goals: [...areaGoal(week, 'writing'), { kind: 'practiceNeed', id: writing.focus }],\n",
+    "        goals: areaGoal(week, 'writing'),\n",
+  ],
+  [
+    '점검 칸 넷',
+    "말하기에 다음 영역의 목표를 싣지 않는다",
+    "      ? { describe: { key: 'speaking', slots: { type: speaking.type, untried: speaking.untried } }, goals: areaGoal(week, 'speaking') }\n",
+    "      ? { describe: { key: 'speaking', slots: { type: speaking.type, untried: speaking.untried } }, goals: [] }\n",
+  ],
+  [
+    '점검 칸 넷',
+    "짧은 진단에 다음 영역의 목표를 싣지 않는다",
+    "    { describe: start ? 'start' : 'recheck', goals: areaGoal(week, 'recheck') },\n",
+    "    { describe: start ? 'start' : 'recheck' },\n",
+  ],
+  [
+    '점검 칸 넷',
+    "다음 영역이 아닌 점검 칸 활동에도 영역 목표를 싣는다",
+    "  week?.examPlan?.next?.area === area ? [{ kind: `plan.area.${area}` }] : [];\n",
+    "  week?.examPlan?.next?.area ? [{ kind: `plan.area.${week.examPlan.next.area}` }] : [];\n",
+  ],
+  [
+    '점검 칸 넷',
+    "이번 주에 시험 형식 판을 했어도 시험 형식 줄을 세운다",
+    "  if (!mock || mock.done === true || !Number.isFinite(mock.minutes)) return null;\n",
+    "  if (!mock || !Number.isFinite(mock.minutes)) return null;\n",
+  ],
+  [
+    '점검 칸 넷',
+    "시험 형식의 분을 싣지 않는다 — 시간 설정에 걸리지 않는다",
+    "      minutes: mock.minutes,\n",
+    "",
+  ],
+  [
+    '점검 칸 넷',
+    "시험 형식의 소리 요구를 버린다 — 소리를 끈 날 듣기가 든 판이 선다",
+    "      audioRequired: mock.audioRequired === true,\n",
+    "      audioRequired: false,\n",
+  ],
+  [
+    '점검 칸 넷',
+    "말하기가 소리를 요구하지 않는다 — 소리를 끈 날 말하기 줄이 선다",
+    "    goals: ['exam', 'prepare', 'speaking'],\n    audioRequired: true,\n",
+    "    goals: ['exam', 'prepare', 'speaking'],\n    audioRequired: false,\n",
+  ],
+  [
+    '점검 칸 넷',
+    "이번 주에 여섯 유형을 다 해 본 말하기에도 칸이 있는 문장을 고른다 — 칸이 틀려 줄이 서지 않는다",
+    "    speaking.untried > 0\n",
+    "    speaking.untried >= 0\n",
+  ],
+  [
+    '점검 칸 넷',
+    "쓰기 줄의 이번 주 몫 막이를 뺀다 — 쓰기가 계획을 넘어 매일 서고 말하기 차례가 오지 않는다(이레 측정 · 설계 주인 11-17 다시 여쭘의 답 1)",
+    "  if (!writing || typeof writing.routeId !== 'string' || !areaLeft(week, 'writing')) return null;\n",
+    "  if (!writing || typeof writing.routeId !== 'string') return null;\n",
+  ],
+  [
+    '점검 칸 넷',
+    "말하기 줄의 이번 주 몫 막이를 뺀다",
+    "  if (!speaking || typeof speaking.routeId !== 'string' || !areaLeft(week, 'speaking')) return null;\n",
+    "  if (!speaking || typeof speaking.routeId !== 'string') return null;\n",
+  ],
+  [
+    '점검 칸 넷',
+    "몫을 남은 수가 아니라 계획 수로 본다 — 채운 영역도 남은 것으로 본다",
+    "  return Boolean(row) && row.remaining > 0;\n",
+    "  return Boolean(row) && row.planned > 0;\n",
+  ],
+  [
+    '점검 칸 넷',
+    "보탬이 다른 줄이 설 수 있는 날에도 선다 — 이번 주 쓰기에서 열린 고치기가 말하기를 민다(설계 주인 11-17 다시 여쭘의 답 2)",
+    "    if (checks.length === 0) checks.push(writingFixActivity(week, normalized));\n",
+    "    checks.push(writingFixActivity(week, normalized));\n",
+  ],
+  [
+    '점검 칸 넷',
+    "보탬을 세우지 않는다 — 몫이 모두 찬 날 이번 주에 열린 고치기가 다음 주까지 식는다",
+    "    if (checks.length === 0) checks.push(writingFixActivity(week, normalized));\n",
+    "",
+  ],
+  [
+    '점검 칸 넷',
+    "보탬이 이번 주 쓰기에서 열린 고치기인지 보지 않는다 — 지난주에 열린 고치기도 선다",
+    "  if (!(at >= bounds.start && at < bounds.end)) return null;\n",
+    "",
+  ],
 ];
 
 // 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 두면 node가 「겹쳐 부른 시험」으로 보고 파일을 하나도

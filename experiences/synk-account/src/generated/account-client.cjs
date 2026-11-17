@@ -155,6 +155,9 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
       // 30일째 문장의 돌아보기 읽기(단계4_계획 §21-22). offset = 기기의 현지 시각 − UTC(분, −720 ~ 840). 답은 complete · reason? · summaryAt ·
       // lookback({ windows, month? }) — 접기가 끝까지 갔을 때만 month가 있다.
       lookback: ({ revision, offset, signal }) => request(`synk-learning?view=trail-lookback&revision=${encodeURIComponent(revision)}&offset=${encodeURIComponent(offset)}`, undefined, { signal }),
+      // 예상 급수의 근거 읽기(단계4_계획 §21-23의 2). game = 판 번호의 게임 이름, days = 1 ~ 365의 정수(제품은 90). 답은 complete · reason? ·
+      // summaryAt · firstAnswers({ game, days, since, bySkill }) — 접기가 끝까지 갔을 때만 firstAnswers가 있다.
+      firstAnswers: ({ revision, game, days, signal }) => request(`synk-learning?view=trail-first-answers&revision=${encodeURIComponent(revision)}&game=${encodeURIComponent(game)}&days=${encodeURIComponent(days)}`, undefined, { signal }),
     }),
     // Core memory (lib/atlas/memory-sync.js): chosen presentation, content memories, declined offers.
     memory: Object.freeze({

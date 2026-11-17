@@ -10,6 +10,7 @@ import { EDITION } from '../edition.mjs';
 import { PARAMS } from '../params.mjs';
 import { firstLedgerCells } from '../record/carry.mjs';
 import { EVENT_TYPES, FEEDBACK_VALUES } from '../record/events.mjs';
+import { firstAnswersOf } from '../record/first.mjs';
 import { unitLookback } from '../record/lookback.mjs';
 import { storeName } from '../record/port.mjs';
 import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
@@ -19,6 +20,7 @@ import { render } from '../vellum/index.mjs';
 import { acquireHost, hostScope, releaseHost } from './host.mjs';
 import { keepGuest, moveGuest, noteGuest, planMove } from './move.mjs';
 import { createSession, learnerOf } from './session.mjs';
+import { isGameId } from './set-id.mjs';
 import { storeExists } from './stores.mjs';
 
 export { COACH_METHODS } from './methods.mjs';
@@ -552,6 +554,23 @@ export function createCoach(options = {}) {
       }
       month.sort((a, b) => (a.unit < b.unit ? -1 : a.unit > b.unit ? 1 : 0));
       return Object.freeze({ windows, month: Object.freeze(month) });
+    },
+
+    // 예상 급수의 근거 수(단계 4 계획 §21-23의 2 — 설계 주인 11-17 답 2). 그 게임의 판에서 처음 본 문항에 혼자 낸 채점된 첫 답을 능력 id마다
+    // 센다(셈은 서버 읽기와 같은 record/first.mjs firstAnswersOf). 게임 이름(game)은 제품이 넘기고, 기간은 정수 날 수(days, 1 ~ 365)다. 창의
+    // 시작(since)은 코치 시계에서 days × 24시간을 뺀 때이고 학습일 경계로 맞추지 않는다. 내는 것은 { game, days, since, bySkill }(얼림).
+    // 사건을 치우지 않는 기록부(손님과 동의를 끈 계정)에서만 센다 — lookback()과 같은 규칙. 서버 길 계정은 null이고, 보기가 아직 내 답을
+    // 다 담지 않았으면(기록이 다 오지 않음 — 제품 recordsComplete가 거짓) null이다. 든 사건 전부(저장이 끝난 사건)를 읽는다.
+    firstAnswers({ game, days } = {}) {
+      live();
+      if (!isGameId(game)) throw new TypeError('Atlas coach: firstAnswers의 game은 게임 이름이다');
+      if (!Number.isInteger(days) || days < 1 || days > 365)
+        throw new TypeError('Atlas coach: firstAnswers의 days는 1 ~ 365의 정수다');
+      if (!state.host.guest || state.host.view().waitAll === true) return null; // 서버 길 계정 · 기록이 다 오지 않음
+      const since = state.host.now() - days * DAY_MS;
+      const { families, setOf } = state.host.trail.meetRows();
+      const bySkill = Object.freeze(firstAnswersOf(families.values(), setOf, { game, since }));
+      return Object.freeze({ game, days, since, bySkill });
     },
 
     // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).

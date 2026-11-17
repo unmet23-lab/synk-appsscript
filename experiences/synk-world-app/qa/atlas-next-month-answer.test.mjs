@@ -18,8 +18,13 @@ import { blockedStorages, memoryStorage, writesBlockedAfter } from './storage-sc
 
 const {
   aheadOf,
+  clearMonthAnswer,
   createMonthAnswers,
   createMonthAsker,
+  FIRST_DAYS,
+  FIRST_GAME,
+  FIRST_KIND,
+  firstAnswersCode,
   headOrder,
   lookbackCode,
   monthOfAnswer,
@@ -137,6 +142,77 @@ test('학습일 답 — 저장소가 막히거나 없어도 던지지 않는다(
 
 // ── 장면 바탕 ───────────────────────────────────────────────────────────────────────────
 
+// ── 예상 급수의 근거 상자(4-4d — 단계4_계획 §21-23의 2): 학습일 답과 같은 상자의 다른 종류(FIRST_KIND) ──
+const FIRST_BODY = Object.freeze({ game: 'world-mock', days: 90, since: 1_786_000_000_000, bySkill: { 'ko.reading.main': 3, 'ko.listening.detail': 1 } });
+
+test('근거 답 — 계정마다 열쇠 하나(학습일 답과 다른 열쇠) · 물은 게임 · 날 수 · 능력마다의 수가 꼴일 때만 · 창의 시작은 since로 낸다', () => {
+  assert.equal(FIRST_GAME, 'world-mock');
+  assert.equal(FIRST_DAYS, 90, '제품 상수(설계 주인 11-17 답 2)');
+  const storage = memoryStorage();
+  const first = createMonthAnswers({ storage, kind: FIRST_KIND });
+  const month = createMonthAnswers({ storage });
+  const body = FIRST_KIND.parse({ firstAnswers: FIRST_BODY });
+  assert.ok(body, '받은 답의 몸');
+  const answer = FIRST_KIND.shape({ askedFrom: at(5), at: at(5), ...body });
+  assert.equal(first.write('acct', { revision: 3, day: 'd1', ...answer, since: first.generation() }), true);
+  const read = first.read('acct', { revision: 3, day: 'd1' });
+  assert.deepEqual(FIRST_KIND.use(read), { since: FIRST_BODY.since, bySkill: { 'ko.listening.detail': 1, 'ko.reading.main': 3 } }, '쓰기의 세대 수가 창의 시작을 덮지 않는다');
+  assert.equal(month.read('acct', { revision: 3, day: 'd1' }), null, '학습일 답 열쇠와 다르다');
+  assert.ok([...storage.map.keys()].some(key => key.startsWith('synk:world:first-answers:')), '근거 열쇠 머리');
+  const raw = JSON.parse(storage.getItem([...storage.map.keys()].find(key => key.startsWith('synk:world:first-answers:'))));
+  assert.deepEqual(Object.keys(raw).sort(), ['askedFrom', 'at', 'bySkill', 'days', 'day', 'from', 'game', 'revision', 'v'].sort(), '값에는 자리 · 게임 · 창 · 능력마다의 수만');
+  assert.equal(first.read('acct', { revision: 4, day: 'd1' }), null, '동의 판이 다르면 버린다');
+  assert.equal(first.read('acct', { revision: 3, day: 'd2' }), null, '학습일이 다르면 버린다');
+  for (const bad of [
+    { ...FIRST_BODY, game: 'world-mock2' },
+    { ...FIRST_BODY, days: 30 },
+    { ...FIRST_BODY, since: 'x' },
+    { ...FIRST_BODY, bySkill: { 'ko.reading.main': -1 } },
+    { ...FIRST_BODY, bySkill: { 'ko.reading.main': 1.5 } },
+    { ...FIRST_BODY, bySkill: { 'bad skill': 1 } },
+    { ...FIRST_BODY, bySkill: [] },
+  ])
+    assert.equal(FIRST_KIND.parse({ firstAnswers: bad }), null, JSON.stringify(bad).slice(0, 80));
+  assert.equal(FIRST_KIND.parse({}), null);
+  assert.equal(firstAnswersCode('fold-failed'), 'FIRST_ANSWERS_FOLD_FAILED');
+  assert.equal(firstAnswersCode('events-remain'), 'FIRST_ANSWERS_EVENTS_REMAIN');
+  assert.equal(firstAnswersCode('rebuilding'), 'FIRST_ANSWERS_REBUILDING');
+  assert.equal(firstAnswersCode('mystery'), 'FIRST_ANSWERS_FAILED');
+});
+
+test('근거 답 — 지우는 길(clearMonthAnswer)은 학습일 답과 근거 답 두 열쇠를 함께 지우고, 그 전에 물은 늦은 답을 적지 않는다', () => {
+  const storage = memoryStorage();
+  const first = createMonthAnswers({ storage, kind: FIRST_KIND });
+  const month = createMonthAnswers({ storage });
+  const since = first.generation();
+  const answer = FIRST_KIND.shape({ askedFrom: at(5), at: at(5), ...FIRST_KIND.parse({ firstAnswers: FIRST_BODY }) });
+  first.write('acct', { revision: 3, day: 'd1', ...answer, since });
+  month.write('acct', { revision: 3, day: 'd1', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since });
+  clearMonthAnswer(storage, 'acct');
+  assert.equal(first.read('acct', { revision: 3, day: 'd1' }), null, '근거 답을 지운다');
+  assert.equal(month.read('acct', { revision: 3, day: 'd1' }), null, '학습일 답을 지운다');
+  assert.equal(first.write('acct', { revision: 3, day: 'd1', ...answer, since }), false, '지우기 전에 물은 늦은 근거 답은 적지 않는다');
+  // 한 열쇠를 지우다 저장소가 던져도 다른 열쇠는 지운다
+  const keys = new Map();
+  let thrown = 0;
+  const flaky = {
+    getItem: key => keys.get(key) ?? null,
+    setItem: (key, value) => keys.set(key, String(value)),
+    removeItem: key => {
+      if (key.startsWith('synk:world:month-answer:')) {
+        thrown += 1;
+        throw new Error('blocked');
+      }
+      keys.delete(key);
+    },
+  };
+  const flakyFirst = createMonthAnswers({ storage: flaky, kind: FIRST_KIND });
+  flakyFirst.write('acct', { revision: 1, day: 'd', ...answer, since: flakyFirst.generation() });
+  clearMonthAnswer(flaky, 'acct');
+  assert.equal(thrown, 1);
+  assert.equal(flakyFirst.read('acct', { revision: 1, day: 'd' }), null, '학습일 답 지우기가 던져도 근거 답은 지운다');
+});
+
 const readJson = url => JSON.parse(fs.readFileSync(new URL(url, import.meta.url), 'utf8'));
 const MAP_DATA = { index: readJson('../../../packages/atlas/map/index.json'), units: readJson('../../../packages/atlas/map/units.json') };
 const BANK = bankItems(readJson('../world-topik-items.json'));
@@ -204,16 +280,16 @@ function worldOf() {
     (await (await fetcher(`/api/world/rehearsal/trail?revision=${revision}`, { headers })).json()).summary;
   const clear = async revision =>
     (await fetcher('/api/world/rehearsal/trail-clear', { method: 'POST', body: JSON.stringify({ revision }), headers })).json();
-  return { time, use, trail, logged, count, read, clear, edition: engine => engine.foldEdition(engine.PARAMS, index) };
+  return { time, use, trail, logged, count, read, clear, fetch: fetcher, edition: engine => engine.foldEdition(engine.PARAMS, index) };
 }
 
 // 기기 하나 — 진짜 엔진 코치(서버 길 계정) · 그 호스트 손잡이(올리기는 시험이 부른다) · 받기를 잡아 두거나 끊는 손잡이 · 돌아보기 읽기 셈.
 let devices = 0;
-async function deviceOf(world) {
+async function deviceOf(world, { gameId = 'world-month' } = {}) {
   const line = await world.trail();
   const revision = line.learning.revision;
   const base = line.transport(revision);
-  const knobs = { hold: null, offline: false, asks: 0, replies: [], lookbackHold: null, postHold: null };
+  const knobs = { hold: null, offline: false, asks: 0, replies: [], lookbackHold: null, postHold: null, firstAsks: 0, firstReplies: [], firstQueries: [] };
   const transport = {
     post: async (events, since) => {
       if (knobs.postHold) await knobs.postHold;
@@ -227,7 +303,7 @@ async function deviceOf(world) {
   };
   const key = `synk-atlas:month-answer-${process.pid}-${(devices += 1)}`;
   const coach = atlas.createCoach({
-    gameId: 'world-month',
+    gameId,
     mapData: MAP_DATA,
     dayOffset: OFFSET,
     host: { guest: false, account: A_ID, revision, key, port: atlas.memoryPort(), transport, now: world.time.now },
@@ -243,12 +319,23 @@ async function deviceOf(world) {
     knobs.replies.push(got);
     return got;
   };
+  // 예상 급수의 근거 읽기(4-4d) — 묻기 · 답을 센다(학습일 답의 돌아보기 읽기와 따로).
+  const askFirst = async query => {
+    knobs.firstAsks += 1;
+    knobs.firstQueries.push(query);
+    if (knobs.firstAsks > FUSE) throw new Error(`근거 묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
+    const got = await base.firstAnswers(query);
+    if (got && typeof got === 'object') SEEN_AT.set(got, positionOf(coach.summary().storage.sync?.received));
+    knobs.firstReplies.push(got);
+    return got;
+  };
   return {
     coach,
     handle,
     revision,
     knobs,
     line: { revision, ask },
+    firstLine: { revision, ask: askFirst },
     position: () => positionOf(coach.summary().storage.sync?.received),
     close() {
       releaseHost(handle);
@@ -294,17 +381,18 @@ async function practise(world, device, count) {
 
 // 내 위치 판 — 셸처럼 판을 그릴 때마다 묻기 · 받기 상자(createMonthAsker)를 부르고, 받기 알림(watch)이 오면 다시 그린다. 묻기가 다시 그리면
 // 그 판이 쓸 수 있는 답을 그렸는지 센다. 기기 자리는 그릴 때마다 적어 바뀐 수를 센다. 상자 하나를 기기 여럿이 이어 쓸 수 있다(같은 문서).
-function panelOf(world, first, { storage = memoryStorage() } = {}) {
+function panelOf(world, first, { storage = memoryStorage(), kind } = {}) {
   // pulledAt — 받기를 어느 답의 자리로 불렀는지(자리 → 수). 총횟수만 견주면 자리 A로 두 번 · B로 0번도 지나간다(끝 판 GPT GA2).
   const counts = { renders: 0, redraws: 0, wasted: 0, pulls: 0, pulledAt: new Map(), positions: [], notes: [], shown: null };
   let device = first;
   let off = null;
   let rendering = false;
-  const answers = createMonthAnswers({ storage });
+  const answers = createMonthAnswers({ storage, kind });
   const asker = createMonthAsker({
     answers,
+    kind,
     account: () => A_ID,
-    lineOf: () => device.line,
+    lineOf: () => (kind ? device.firstLine : device.line),
     dayOf: () => dayOf(world.time.now()),
     offsetOf: () => OFFSET,
     redraw: () => {
@@ -322,7 +410,7 @@ function panelOf(world, first, { storage = memoryStorage() } = {}) {
       // 이 받기의 답 자리 — 판을 그리는 중(month)이면 적어 둔 답의 자리, 아니면 방금 온 답의 자리(받기는 그 둘에서만 부른다).
       const place = rendering
         ? positionOf(answers.read(A_ID, { revision: device.revision, day: dayOf(world.time.now()) })?.at)
-        : positionOf(device.knobs.replies.at(-1)?.summaryAt);
+        : positionOf((kind ? device.knobs.firstReplies : device.knobs.replies).at(-1)?.summaryAt);
       const key = JSON.stringify(place);
       counts.pulledAt.set(key, (counts.pulledAt.get(key) ?? 0) + 1);
       if (counts.pulls > FUSE) return null; // 퓨즈 — 셈은 bounded가 본다
@@ -344,7 +432,7 @@ function panelOf(world, first, { storage = memoryStorage() } = {}) {
     } finally {
       rendering = false;
     }
-    counts.shown = got ? got.month : null;
+    counts.shown = got ? (got.month ?? got.bySkill) : null;
     return got;
   }
   const attach = next => {
@@ -863,7 +951,7 @@ const storageOfBox = box => ({ guest: false, unfolded: box.unfolded, unfoldedRow
 // 가짜 코치 하나와 상자 하나 — 자리(device) · 학습일(day) · 동의 판(revision) · 칸 밖의 내 답 수(unfolded) · 접혀 돌아오지 않은 제외 · 본인 말
 // 수(rows) · 닫힘(closed)은 시험이 바꾼다. 묻기는 reply(n번째)를 돌려주고, hold가 있으면 그것이 풀릴 때까지 기다린다. 다시 그리기는 판을 다시
 // 그린다(상자를 또 부른다). 변형이 끝없이 다시 그려도 시험이 멈추도록 50번에서 끊는다.
-function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {}) {
+function fakeAsker({ storage = memoryStorage(), reply, live = () => true, kind } = {}) {
   const box = { device: at(5), day: 7, revision: 1, unfolded: 0, rows: 0, closed: false, asks: 0, pulls: 0, redraws: 0, notes: [], hold: null, last: null };
   const coach = {
     summary: () => {
@@ -877,14 +965,16 @@ function fakeAsker({ storage = memoryStorage(), reply, live = () => true } = {})
       return Promise.resolve(false);
     },
   };
-  const answers = createMonthAnswers({ storage });
+  const answers = createMonthAnswers({ storage, kind });
   const asker = createMonthAsker({
     answers,
+    kind,
     account: () => A_ID,
     lineOf: () => ({
       revision: box.revision,
-      ask: async () => {
+      ask: async query => {
         box.asks += 1;
+        box.query = query;
         if (box.asks > FUSE) throw new Error(`묻기 퓨즈 — ${FUSE}번을 넘게 물었다`);
         const n = box.asks;
         if (box.hold) await box.hold;
@@ -1388,11 +1478,168 @@ test('묻는 사이 앞 코치가 닫히고 같은 판의 새 코치가 열리�
   assert.equal(mine.render()?.month.length, 1);
 });
 
+// ── 예상 급수의 근거 상자(4-4d — 단계4_계획 §21-23의 2 · 6): 학습일 답과 같은 상자, 종류만 FIRST_KIND ──
+const firstDone = (summaryAt, bySkill = { 'ko.reading.main': 2 }) => ({
+  complete: true,
+  summaryAt,
+  firstAnswers: { game: 'world-mock', days: 90, since: 1_786_000_000_000, bySkill },
+});
+
+test('근거 상자 — 저장소가 막혀도(없음 · 읽기가 던짐 · 쓰기가 말없이 버림 · 쓰기가 던짐 · 막히지 않음) 완결된 답 뒤에는 다시 묻지 않고, 이 문서가 든 답으로 근거 수를 낸다 · 물은 값은 게임과 날 수다(§21-23의 6)', async () => {
+  for (const [name, storage] of Object.entries({ ...blockedStorages(), '막히지 않음': memoryStorage() })) {
+    const box = fakeAsker({ storage, kind: FIRST_KIND, reply: (_n, b) => firstDone(b.device) });
+    assert.equal(box.render(), null, `${name} — 처음은 묻고 근거 수를 모른다(「확인 중」)`);
+    await quiet(10);
+    for (let i = 0; i < 5; i += 1) box.render();
+    await quiet(10);
+    assert.deepEqual(box.query, { game: 'world-mock', days: 90 }, `${name} — 물은 값`);
+    assert.equal(box.asks, 1, `${name} — 묻기 ${box.asks} ≤ 기기 자리가 바뀐 수 0 + 1`);
+    assert.equal(box.redraws, 1, `${name} — 같은 자리의 답으로 한 번 다시 그린다`);
+    const got = box.render();
+    assert.deepEqual(got?.bySkill, { 'ko.reading.main': 2 }, `${name} — 이 문서가 든 답으로 근거 수를 낸다`);
+    assert.equal(got.since, 1_786_000_000_000, `${name} — 창의 시작`);
+  }
+  // 쓰기만 막히고 앞 답이 남은 저장소(GPT GB1) — 이 문서의 새 답으로 견준다
+  const { storage, unblock } = writesBlockedAfter(store => {
+    const seed = createMonthAnswers({ storage: store, kind: FIRST_KIND });
+    const answer = FIRST_KIND.shape({ askedFrom: at(3), at: at(3), ...FIRST_KIND.parse(firstDone(at(3), { 'ko.reading.main': 1 })) });
+    seed.write(A_ID, { revision: 1, day: 7, ...answer, since: seed.generation() });
+  });
+  const box = fakeAsker({ storage, kind: FIRST_KIND, reply: (_n, b) => firstDone(b.device, { 'ko.reading.main': 5 }) });
+  assert.equal(box.render(), null, '앞 답은 지난 자리 — 묻는다');
+  await quiet(10);
+  for (let i = 0; i < 5; i += 1) box.render();
+  await quiet(10);
+  assert.equal(box.asks, 1, '같은 자리에서 다시 묻지 않는다');
+  assert.equal(box.render()?.bySkill['ko.reading.main'], 5, '이 문서의 새 답');
+  unblock();
+});
+
+test('근거 상자 — 접혀 돌아오지 않은 내 사건이 있으면(unfoldedRows > 0) 묻지도 그리지도 않는다 · 손님이면 칸을 보기 전에 null이다', async () => {
+  const box = fakeAsker({ kind: FIRST_KIND, reply: (_n, b) => firstDone(b.device) });
+  box.rows = 1; // 판 직후 — 시험 형식 답이 아직 접혀 돌아오지 않았다
+  for (let i = 0; i < 3; i += 1) assert.equal(box.render(), null);
+  await quiet(10);
+  assert.equal(box.asks, 0, '판 직후에는 묻지 않는다');
+  box.rows = 0;
+  box.device = at(6); // 그 답이 접혀 돌아와 자리가 바뀌었다
+  assert.equal(box.render(), null);
+  await quiet(10);
+  assert.equal(box.asks, 1, '접혀 돌아온 뒤 한 번 묻는다');
+  assert.ok(box.render()?.bySkill, '그 답으로 근거 수');
+  // 손님 — 코치가 센다(셸은 코치 값이 있으면 상자를 부르지 않는다). 상자는 막는 수와 상관없이 null이다.
+  const guest = fakeAsker({ kind: FIRST_KIND, reply: (_n, b) => firstDone(b.device) });
+  const summary = guest.coach.summary;
+  guest.coach.summary = () => ({ storage: { ...summary().storage, guest: true } });
+  assert.equal(guest.render(), null);
+  await quiet(10);
+  assert.equal(guest.asks, 0, '손님은 묻지 않는다');
+});
+
+test('근거 상자 — 완결되지 않은 답은 까닭을 계기에 남기고 다시 그리지 않으며 같은 자리에서는 다시 묻지 않는다 · 꼴이 틀린 답은 FIRST_ANSWERS_FAILED', async () => {
+  const box = fakeAsker({ kind: FIRST_KIND, reply: (_n, b) => ({ complete: false, reason: 'events-remain', summaryAt: b.device }) });
+  assert.equal(box.render(), null);
+  await quiet(10);
+  for (let i = 0; i < 4; i += 1) assert.equal(box.render(), null, '근거 수를 그리지 않는다(「확인 중」)');
+  await quiet(10);
+  assert.equal(box.asks, 1, '같은 자리에서 다시 묻지 않는다');
+  assert.equal(box.redraws, 0, '쓸 수 없는 답으로 다시 그리지 않는다');
+  assert.deepEqual(box.notes, ['FIRST_ANSWERS_EVENTS_REMAIN']);
+  const bad = fakeAsker({ kind: FIRST_KIND, reply: (_n, b) => ({ ...firstDone(b.device), firstAnswers: { game: 'world-mock2', days: 90, since: 1, bySkill: {} } }) });
+  bad.render();
+  await quiet(10);
+  assert.deepEqual(bad.notes, ['FIRST_ANSWERS_FAILED'], '다른 게임의 답');
+  assert.equal(bad.render(), null);
+});
+
+test('근거 상자 — 묻는 사이 지우는 길(로그아웃 · 동의 바꿈)이 돌면 늦은 답을 적지도 그리지도 않는다 · 지우는 길은 두 열쇠를 함께 지운다', async () => {
+  const storage = memoryStorage();
+  const box = fakeAsker({ storage, kind: FIRST_KIND, reply: (_n, b) => firstDone(b.device) });
+  const release = held(box);
+  box.render();
+  await quiet(5);
+  clearMonthAnswer(storage, A_ID);
+  release();
+  await quiet(10);
+  assert.equal(box.redraws, 0, '늦은 답으로 다시 그리지 않는다');
+  assert.equal([...storage.map.keys()].filter(key => key.includes(A_ID)).length, 0, '늦은 답을 적지 않는다');
+});
+
+// 진짜 엔진 코치(서버 길 계정 — 'world-mock' 판) + 리허설 서버의 근거 읽기(talk와 같은 셈 — 엔진 firstAnswersOfStore).
+async function soloAnswers(world, device, items) {
+  for (const item of items) {
+    world.time.advance(60_000);
+    const pid = device.coach.present(item);
+    world.time.advance(20_000);
+    await device.coach.answer(pid, { correct: true, assessable: true }).stored;
+  }
+  await device.handle.settled();
+  await device.handle.upload();
+}
+const firstQuery = (revision, extra = {}) => new URLSearchParams({ revision: String(revision), game: 'world-mock', days: '90', ...extra });
+
+test('리허설 근거 읽기 — game은 게임 이름 꼴만 · days는 1 ~ 365 정수만 · 쿼리는 셋 하나씩 · GET만(그 밖은 400) · 동의 판 울타리', { timeout: 60_000 }, async () => {
+  const world = worldOf();
+  const device = await deviceOf(world, { gameId: 'world-mock' });
+  const headers = { 'x-synk-contract': '1', 'x-synk-product': 'world' };
+  const get = async (query, init = {}) => {
+    const reply = await world.fetch(`/api/world/rehearsal/trail-first-answers?${query}`, { headers, ...init });
+    return { status: reply.status, body: await reply.json() };
+  };
+  for (const game of ['', 'world mock', 'world-mock..x', 'x'.repeat(81), '한글'])
+    assert.equal((await get(firstQuery(device.revision, { game }))).body.error?.code, 'INVALID_GAME', `game ${JSON.stringify(game).slice(0, 20)}`);
+  for (const days of ['0', '366', '-1', '1.5', '', '07', 'x', '1000'])
+    assert.equal((await get(firstQuery(device.revision, { days }))).body.error?.code, 'INVALID_DAYS', `days ${days}`);
+  assert.equal((await get(`${firstQuery(device.revision)}&game=world-mock`)).body.error?.code, 'INVALID_QUERY', '같은 쿼리 둘');
+  assert.equal((await get(`${firstQuery(device.revision)}&offset=0`)).body.error?.code, 'INVALID_QUERY', '모르는 쿼리');
+  assert.equal((await get(firstQuery(device.revision), { method: 'POST', body: '{}' })).body.error?.code, 'INVALID_QUERY', 'GET만');
+  assert.equal((await get(firstQuery(device.revision - 1))).status, 409, '지난 동의 판');
+  const ok = await get(firstQuery(device.revision, { days: '365' }));
+  assert.equal(ok.status, 200);
+  assert.equal(ok.body.complete, true);
+  assert.equal(ok.body.firstAnswers.game, 'world-mock');
+  assert.equal(ok.body.firstAnswers.days, 365);
+  assert.equal(ok.body.firstAnswers.since, ok.body.serverTime - 365 * DAY, '창의 시작 = 답할 때 − days × 24시간');
+  assert.deepEqual(ok.body.firstAnswers.bySkill, {}, '아직 근거가 없다');
+  device.close();
+});
+
+test('근거 상자 — 서버 길 계정: 첫 그리기는 묻고 「확인 중」, 같은 자리의 답이 오면 한 번 다시 그려 그 판의 혼자 낸 첫 답 수를 낸다 · 다른 게임의 답과 다시 낸 답은 세지 않는다 · 새 답이 접혀 돌아오면 한 번 더 묻는다', { timeout: 90_000 }, async () => {
+  const world = worldOf();
+  // 다른 게임의 판에서 먼저 만난 문항(ITEMS[0]) — 그 계열의 첫 만남이 'world-month' 판이라 근거가 아니다
+  const other = await deviceOf(world);
+  await soloAnswers(world, other, [ITEMS[0]]);
+  other.close();
+  const device = await deviceOf(world, { gameId: 'world-mock' });
+  await soloAnswers(world, device, [ITEMS[0], ITEMS[1], ITEMS[2], ITEMS[3], ITEMS[1]]); // ITEMS[1]은 다시 낸 답
+  await until(async () => (await world.read(device.revision))?.foldedUntil >= world.logged());
+  await device.coach.synced();
+  await until(() => device.coach.summary().storage.unfoldedRows === 0);
+  const panel = panelOf(world, device, { kind: FIRST_KIND });
+  assert.equal(panel.render(), null, '첫 그리기 — 묻고 근거 수 없이');
+  await until(() => panel.counts.shown);
+  assert.deepEqual(panel.counts.shown, { [ITEM.skillId]: 3 }, 'ITEMS[1] · [2] · [3]의 혼자 낸 첫 답 셋');
+  assert.deepEqual(device.knobs.firstQueries[0], { game: 'world-mock', days: 90 });
+  for (let i = 0; i < 4; i += 1) assert.deepEqual(panel.render()?.bySkill, { [ITEM.skillId]: 3 }, '같은 자리 — 적은 답');
+  await quiet();
+  assert.equal(device.knobs.firstAsks, 1, '묻기는 한 번');
+  // 새 답 — 올려 접혀 돌아오면(받기 알림이 판을 다시 그린다) 한 번 더 묻는다
+  await soloAnswers(world, device, [ITEMS[4]]);
+  await until(() => device.knobs.firstAsks === 2 && panel.counts.shown?.[ITEM.skillId] === 4);
+  await quiet();
+  panel.bounded(device.knobs.firstAsks, device.knobs.firstReplies, '근거 상자');
+  panel.close();
+  device.close();
+});
+
 // 셸은 node에서 못 올려 글이 유일한 지킴이다(atlas-next-off.test.mjs와 같은 길). 변형 실행기는 깬 사본을 SYNK_APP_SHELL_SOURCE로 넘긴다.
 const SHELL_SOURCE = process.env.SYNK_APP_SHELL_SOURCE ?? new URL('../app-shell.mjs', import.meta.url);
 test('셸 — 로그아웃과 동의 바꾸기(바꾼 뒤 · 실패한 뒤)에서 학습일 답을 지운다(글 지킴이 — 설계 §21-22 변형 「로그아웃 때 지우기 빼기」 · 4-4c 끝 판 Fable F3)', () => {
   const shell = fs.readFileSync(SHELL_SOURCE, 'utf8');
   assert.match(shell, /if\(leaving\)\{[^}]*clearMonthAnswer\(localStorage,leaving\);/, '로그아웃 — 떠나는 계정의 학습일 답을 지운다');
+  // 예상 급수의 근거 읽기(4-4d): 입구 감싸기와 홈 입구가 그 코치를 연 판의 근거 줄을 잇는다(지우기는 위의 clearMonthAnswer가 두 열쇠를 함께 지운다)
+  assert.ok(shell.includes('firstAnswersOf:coach=>made&&!disposed?made.firstAnswersOf?.(coach)??null:null'), '입구 감싸기의 근거 줄');
+  assert.ok(shell.includes('firstAnswers:coach=>atlasNext.firstAnswersOf(coach)'), '홈 입구의 근거 줄');
   const consent = shell.split(/\r?\n/).find(text => text.includes("control.matches?.('[data-world-learning]')"));
   assert.ok(consent, '동의 바꾸기 줄');
   assert.match(consent, /\.then\(\(\)=>\{clearMonthAnswer\(localStorage,client\.snapshot\?\.accountId\);/, '동의를 바꾼 뒤 지운다');

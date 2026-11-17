@@ -5,7 +5,7 @@
 // 엔진이 준비되지 못하면(입구 · 묶음 · 지도 · 저장소) null을 돌려주고 셸은 지금 판으로 간다 — 학습이 막히지 않는다.
 import { createPracticeNextSession } from './world-practice-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from './world-today.mjs';
-import { buildPositionNext, examSkills, recheckCards, unitRoutes, unseenFamilies } from './world-position-next.mjs';
+import { buildPositionNext, estimateNext, examSkills, recheckCards, unitRoutes, unseenFamilies } from './world-position-next.mjs';
 import { createDiagnosticNextSession, selectDiagnosticNext, withheldItem } from './world-diagnostic-next.mjs';
 import { createMockNextSession, selectMockNext, todayPractice } from './world-mock-next.mjs';
 import { createPositionNextView } from './world-position-next-view.mjs';
@@ -36,6 +36,8 @@ export const positionPlanner = Object.freeze({
   // 30일째 문장(4-4c — 단계4_계획 §21-7): 코치(손님 · 동의를 끈 계정)나 서버 읽기가 낸 단위마다의 수에서 이름이 서는 단위 하나를 고르고 이유를 짓는다.
   pickMonth,
   monthWhy,
+  // 예상 급수 칸(4-4d — 단계4_계획 §21-23의 2): 코치나 근거 상자가 낸 능력마다의 근거 수를 시험 · 영역으로 묶어 지금 판 문턱으로 센다.
+  estimateNext,
 });
 // 이번 주 계획 새 판(4-4b — 단계4_계획 §21-6): 능력 읽개 · 시작점 · 기기 판 기록으로 지금 판의 buildExamPlan을 새 칸으로 읽는다. 홈 코치 하나로
 // 짓는다(내 위치와 같은 코치 · 같은 묶음 만남 — 셸 world-learning-ui.mjs weekNext).
@@ -411,6 +413,9 @@ export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args
           // 30일째 문장의 돌아보기 읽기(단계 4 계획 §21-22) — offset = 기기의 현지 시각 − UTC(분).
           lookback: offset =>
             call(`rehearsal/trail-lookback?${new URLSearchParams({ revision: String(at), offset: String(offset) })}`, {}, from),
+          // 예상 급수의 근거 읽기(단계 4 계획 §21-23의 2) — game · days는 상자(world-month-answer.mjs FIRST_KIND)가 준다.
+          firstAnswers: ({ game, days }) =>
+            call(`rehearsal/trail-first-answers?${new URLSearchParams({ revision: String(at), game, days: String(days) })}`, {}, from),
         }),
       postLegacy: events => call('rehearsal/trail-legacy', { method: 'POST', body: { revision, events } }, from),
     };
@@ -695,6 +700,13 @@ export function createAtlasNext({
         if (typeof to.lookback !== 'function')
           throw Object.assign(new Error('LOOKBACK_UNAVAILABLE'), { code: 'LOOKBACK_UNAVAILABLE' });
         return to.lookback(offset);
+      },
+      // 예상 급수의 근거 읽기(§21-23의 2)도 같은 길로 잇는다 — 돌아보기 읽기와 같은 까닭. 읽기가 없는 나르개면 그 실패로 던진다.
+      firstAnswers: async query => {
+        const to = await ready();
+        if (typeof to.firstAnswers !== 'function')
+          throw Object.assign(new Error('FIRST_ANSWERS_UNAVAILABLE'), { code: 'FIRST_ANSWERS_UNAVAILABLE' });
+        return to.firstAnswers(query);
       },
     });
   }
@@ -1028,6 +1040,13 @@ export function createAtlasNext({
       const plan = made && !gone.has(made) ? plans.get(made) : null;
       if (disposed || plan?.path !== 'upload' || typeof plan.transport?.lookback !== 'function') return null;
       return Object.freeze({ revision: plan.revision, ask: offset => plan.transport.lookback(offset) });
+    },
+    // 예상 급수의 근거 읽기(4-4d — 단계4_계획 §21-23의 2). lookbackOf와 같은 규칙으로 그 판의 동의 판과 묻는 함수를 준다(묻는 값 game · days는
+    // 상자가 넘긴다). 손님 · 기기 길 · 이 입구가 연 코치가 아님 · 닫은 코치 · 나르개에 읽기가 없으면 null(근거 수 없이 「확인 중」).
+    firstAnswersOf(made) {
+      const plan = made && !gone.has(made) ? plans.get(made) : null;
+      if (disposed || plan?.path !== 'upload' || typeof plan.transport?.firstAnswers !== 'function') return null;
+      return Object.freeze({ revision: plan.revision, ask: query => plan.transport.firstAnswers(query) });
     },
     // 이 기기의 판 기록(4-4b — 단계4_계획 §21-6 가): 그 코치의 저장소 이름으로 연다. 이 입구가 연 코치가 아니거나 엔진을 못 받았으면 null —
     // 계획이 이번 주에 한 판을 세지 못할 뿐이다. 저장소가 없는 입구(storage null — 시험)도 null.

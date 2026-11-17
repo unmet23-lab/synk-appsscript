@@ -34,6 +34,28 @@ const homework = (s, name) =>
 
 const one = sentence => ({ standard: { default: [sentence] } });
 
+// 점검 칸의 쓰기 · 말하기(4-4d — 단계 4 계획 §21-23의 3, 설계 주인 11-17 답 4). 문장은 그 연습으로 학생이 얻는 것을 말한다. 쓰기는 TOPIK
+// 쓰기의 어느 점수 칸에 도움이 되는지, 말하기는 시험의 어느 유형을 이번 주에 이 기기에서 아직 안 해 봤는지다(이번 주 계획의 speakingNeeds와 같은 셈). 칸은 slots.mjs 표의 것을 빠짐없이,
+// 그것만 쓴다(시험이 세 언어 줄을 표와 맞댄다). 유형 이름은 WORLD 화면 글 표(speaking.type.1 ~ 6)와 같다.
+const WRITING = Object.freeze({
+  'ending-53': Object.freeze({
+    retry: '지난 53번 글에서 놓친 「-다」 끝맺음을 다시 연습해요.',
+    assisted: '도움을 받아 고친 53번 글의 「-다」 끝맺음을 이번에는 혼자 써 봐요.',
+    gain: 'TOPIK 쓰기의 언어 사용 점수에 도움이 돼요.',
+  }),
+});
+const SPEAKING = Object.freeze({
+  answer: '질문에 대답하기',
+  roleplay: '그림 보고 역할 수행하기',
+  narrate: '그림 보고 이야기하기',
+  respond: '대화 완성하기',
+  interpret: '자료 해석하기',
+  opinion: '의견 제시하기',
+});
+const writing = s => `${WRITING[s.focus][s.need]} ${WRITING[s.focus].gain}`;
+const speaking = (s, _, j) =>
+  `TOPIK 말하기 여섯 유형 가운데 이번 주에 이 기기에서 아직 안 해 본 유형이 ${s.untried}개예요. 오늘은 「${SPEAKING[s.type]}」${j(`「${SPEAKING[s.type]}」`, '을', '를')} 해 봐요.`;
+
 export const KO = Object.freeze({
   'unit.retry': one(retry),
   'unit.shaky': one(shaky),
@@ -87,5 +109,16 @@ export const KO = Object.freeze({
   'progress.month': one(
     (s, name) =>
       `한 달 전에 ${s.misses}번 놓친 「${name}」, 그 뒤로 ${s.reviews}번 모두 혼자 맞혔어요.`,
+  ),
+  // 점검 칸의 쓰기 · 말하기(4-4d — 위 WRITING · SPEAKING). 칸 없는 둘은 근거 없는 정상 경로다(한 가지 고치기 전 · 여섯 유형을 다 해 봄).
+  'host.writing': one(writing),
+  'host.writing.start': one(
+    () =>
+      '53번 글을 한 편 써 봐요. 규칙 점검이 「-다」 끝맺음처럼 TOPIK 쓰기에서 확인해 볼 곳을 짚어 줘요.',
+  ),
+  'host.speaking': one(speaking),
+  'host.speaking.again': one(
+    () =>
+      'TOPIK 말하기 여섯 유형을 이번 주에 이 기기에서 모두 해 봤어요. 한 유형을 다시 하며 정해진 시간 안에 말하는 연습을 이어가요.',
   ),
 });

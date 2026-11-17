@@ -14,7 +14,9 @@ export const PLAN_NEXT_POLICY = Object.freeze({
   log: 240,
 });
 export const PLAN_LOG_PREFIX = 'synk.world.plan-log.v1:';
-export const PLAN_LOG_AREAS = Object.freeze(['recheck', 'listening', 'reading']);
+// mock — 시험 형식 판(4-4d — §21-23의 3). 점검 칸의 시험 형식 줄이 이번 주에 한 판을 보고 서지 않는다. 이번 주 계획의 영역 셈(weekActivity)에는
+// 영역이 아니라 들지 않는다.
+export const PLAN_LOG_AREAS = Object.freeze(['recheck', 'listening', 'reading', 'mock']);
 const PLAN_DOMAINS = Object.freeze(['listening', 'reading', 'writing']);
 const PLAN_SKILL = /^ko2?\.(listening|reading|writing)\.[a-z]+$/;
 
@@ -109,7 +111,8 @@ export function createPlanLog({ storage, store, policy = PLAN_NEXT_POLICY } = {}
   };
   return Object.freeze({
     key,
-    // 판 하나 — area: recheck(짧은 진단) · listening · reading(짧은 연습의 영역), at: 끝난 때(ms). 못 적으면 false다(계획이 그 판을 세지 못할 뿐이다).
+    // 판 하나 — area: recheck(짧은 진단) · listening · reading(짧은 연습의 영역) · mock(시험 형식 — 문항을 처음 낸 때), at: 끝난 때(ms). 못 적으면
+    // false다(계획이 그 판을 세지 못할 뿐이다).
     record(area, at = Date.now()) {
       if (!key || !PLAN_LOG_AREAS.includes(area) || !Number.isFinite(at)) return false;
       const rows = [...read(), { area, at }].sort((a, b) => a.at - b.at);

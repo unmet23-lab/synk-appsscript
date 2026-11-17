@@ -64,6 +64,7 @@ function lazyAtlasNext(owner){
   planLog:coach=>made&&!disposed?made.planLog?.(coach)??null:null,
   // 30일째 문장의 돌아보기 읽기(4-4c 둘째 묶음 — 단계4_계획 §21-22): 입구가 연 코치의 판으로 묻는 줄. 입구를 받기 전이거나 닫았으면 null(문장 없이 그린다).
   lookbackOf:coach=>made&&!disposed?made.lookbackOf?.(coach)??null:null,
+  firstAnswersOf:coach=>made&&!disposed?made.firstAnswersOf?.(coach)??null:null,
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
@@ -402,7 +403,7 @@ function mountLifeLearning({owner,progress,keep}){
  const lifeNext=lifeDue?{coach:()=>lifeDue.coach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),note:(kind,outcome)=>atlasNext.note(kind,outcome),nextAt:id=>lifeDue.nextAt(id),state:()=>lifeDue.state()}:null;
  // 새 길 홈(4-3 — 단계4_계획 §20-4): 생활 판정이 있을 때만. 홈은 생활 판정의 판을 따르고(ask — 단추를 누를 때 지금 판이면 다시 묻는다), 홈 코치 ·
  // 플래너는 입구가 준다. 「내 성향」 답과 손님이 열 수 있는 게임은 지금 판의 createPlan과 같은 값이다. 꺼진 판은 null(지금 판 그대로).
- const homeNext=lifeDue?{coach:pool=>atlasNext.homeCoach(pool),planner:()=>atlasNext.homePlanner(),retired:(coach,fn)=>atlasNext.retired(coach,fn),planLog:coach=>atlasNext.planLog(coach),lookback:coach=>atlasNext.lookbackOf(coach),note:(kind,outcome)=>atlasNext.note(kind,outcome),life:()=>lifeDue.state(),ask:()=>lifeDue.coach(),
+ const homeNext=lifeDue?{coach:pool=>atlasNext.homeCoach(pool),planner:()=>atlasNext.homePlanner(),retired:(coach,fn)=>atlasNext.retired(coach,fn),planLog:coach=>atlasNext.planLog(coach),lookback:coach=>atlasNext.lookbackOf(coach),firstAnswers:coach=>atlasNext.firstAnswersOf(coach),note:(kind,outcome)=>atlasNext.note(kind,outcome),life:()=>lifeDue.state(),ask:()=>lifeDue.coach(),
   judge:(snapshot,now)=>lifeDue.judge(snapshot,now),answers:()=>life.answers,openGames:()=>operating&&!client.snapshot?guestGames():null,
   // 줄이 없는 날(다 한 날 · 상한 날)의 「다음 연습」은 생활 팩으로 · 홈 계획을 새로 그린 뒤 보고 있는 허브 포스터를 맞춘다(§20-8).
   packs:()=>life.ui?.packs?.(),painted:()=>life.ui?.syncToday?.()}:null;

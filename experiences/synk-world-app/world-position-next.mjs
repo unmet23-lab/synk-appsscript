@@ -367,3 +367,41 @@ export function recheckCards({
     card(line.unit, { dueNow: false, dueAt: line.dueAt, lapses: line.lapses, sittings: line.sittings });
   return Object.freeze(cards.slice(0, policy.cards));
 }
+
+// 예상 급수 칸의 새 길 값(4-4d — 단계4_계획 §21-23의 2). 엔진이 낸 능력 id마다의 근거 수(coach.firstAnswers · 서버 길 계정의 근거 상자)를 시험
+// (능력 id 앞머리 — ko. TOPIK I · ko2. TOPIK II)과 영역(둘째 마디 — listening · reading)으로 묶고, 지금 판의 문턱(policy — 셸이 넘기는
+// world-position.mjs ESTIMATE_POLICY: 전체 30 · 영역별 10)으로 센다. 꼴은 지금 판 estimateGate와 같다(판 그림이 같은 칸을 그린다). 'world-mock'
+// 판은 늘 PBT 줄인 판이고 시간 제한이 있어 그 셋은 따로 보지 않는다. 근거 수를 모르면(bySkill null — 첫 그리기 · 오프라인 · 판 직후 · 읽기가 없는
+// 옛 계정 · 완결되지 않은 답) status 'checking'이다 — 수를 그리지 않고, 빈 근거로 문턱을 세지 않는다. 급수는 내지 않는다(문턱을 넘어도
+// 'no-estimator'). IBT로 본다고 한 학생은 지금 판처럼 'mode-unsupported'다.
+const ESTIMATE_PREFIX = Object.freeze({ 'topik-i': 'ko', 'topik-ii': 'ko2' });
+const ESTIMATE_DOMAINS = Object.freeze(['listening', 'reading']);
+export function estimateNext({ bySkill = null, form = 'topik-i', mode = null, policy = null } = {}) {
+  if (!Number.isSafeInteger(policy?.minEvidence) || !Number.isSafeInteger(policy?.minPerDomain))
+    throw TypeError('WORLD estimate next needs the estimate policy');
+  const which = form === 'topik-ii' ? 'topik-ii' : 'topik-i';
+  const ibt = mode === 'ibt';
+  const perDomain = { listening: 0, reading: 0 };
+  const base = {
+    policy: policy.version ?? null,
+    form: which,
+    mode: ibt ? 'ibt' : 'pbt',
+    visible: false,
+    needed: policy.minEvidence,
+    neededPerDomain: policy.minPerDomain,
+    updatedAt: null,
+    range: null,
+    grade: null,
+    passClaim: false,
+  };
+  const known = bySkill !== null && typeof bySkill === 'object' && !Array.isArray(bySkill);
+  if (!known) return { ...base, status: ibt ? 'mode-unsupported' : 'checking', evidence: 0, perDomain };
+  for (const [skill, n] of Object.entries(bySkill)) {
+    const [head, domain] = skill.split('.');
+    if (head !== ESTIMATE_PREFIX[which] || !ESTIMATE_DOMAINS.includes(domain) || !Number.isSafeInteger(n) || n < 0) continue;
+    perDomain[domain] += n;
+  }
+  const evidence = perDomain.listening + perDomain.reading;
+  const enough = evidence >= policy.minEvidence && perDomain.listening >= policy.minPerDomain && perDomain.reading >= policy.minPerDomain;
+  return { ...base, status: ibt ? 'mode-unsupported' : enough ? 'no-estimator' : 'too-early', evidence, perDomain };
+}

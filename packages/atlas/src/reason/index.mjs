@@ -24,6 +24,11 @@ export const REASON_CODES = Object.freeze({
   recheck: 'host.recheck',
   start: 'host.start',
   next: 'host.next',
+  // 점검 칸의 쓰기 · 말하기 설명(4-4d — 단계 4 계획 §21-23의 3). 칸이 있는 둘은 vellum/slots.mjs 표의 칸과 함께 선다.
+  writing: 'host.writing', // 쓰기의 한 가지 고치기가 열렸다(칸 focus · need)
+  writingStart: 'host.writing.start', // 한 가지 고치기가 아직 없다(칸 없음)
+  speaking: 'host.speaking', // 이 기기에서 안 해 본 말하기 유형이 있다(칸 type · untried)
+  speakingAgain: 'host.speaking.again', // 이 기기에서 여섯 유형을 다 해 봤다(칸 없음)
   order: 'host.order', // 제품 순서 문항(코치 fields.mjs) — 문장이 없는 종류(Vellum SILENT)
   idle: 'idle',
   capped: 'day.capped',

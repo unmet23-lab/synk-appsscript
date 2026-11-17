@@ -210,9 +210,12 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const get=wrap(input=>client.trail.get(input)),post=wrap(input=>client.trail.post(input)),legacy=typeof client.learning?.post==='function'?wrap(input=>client.learning.post(input)):null;
   // 30일째 문장의 돌아보기 읽기(§21-22) — 다른 길과 같은 감싸개(wrap)라 계정이 바뀌면 답을 받은 뒤 던진다(늦은 답이 적히지 않는다).
   const lookback=typeof client.trail.lookback==='function'?wrap(input=>client.trail.lookback(input)):null;
+  // 예상 급수의 근거 읽기(4-4d — §21-23의 2) — 같은 감싸개. 묻는 값(game · days)은 셸의 근거 상자가 준다.
+  const firstAnswers=typeof client.trail.firstAnswers==='function'?wrap(input=>client.trail.firstAnswers(input)):null;
   // account: 이 줄의 주인 — 입구(world-atlas-next.mjs readLine)가 제 주인과 견준다(세션이 바뀐 뒤 앞 계정 입구가 읽어도 새 계정 줄을 쓰지 않게).
  return Object.freeze({account:id,learning:Object.freeze({enabled:prefs.enabled,revision:prefs.revision}),learningSync:currentAccount.capabilities?.learningSync===true,
-   transport:revision=>Object.freeze({get:since=>get({revision,since}),post:(events,since)=>post({revision,events,since}),...(lookback?{lookback:offset=>lookback({revision,offset})}:{})}),
+   transport:revision=>Object.freeze({get:since=>get({revision,since}),post:(events,since)=>post({revision,events,since}),...(lookback?{lookback:offset=>lookback({revision,offset})}:{}),
+    ...(firstAnswers?{firstAnswers:({game,days})=>firstAnswers({revision,game,days})}:{})}),
    postLegacy:legacy?events=>legacy({revision:prefs.revision,events}):null});
  }
  async function prepareHangulProgress({storage:cache=globalThis.localStorage,target=globalThis}={}){

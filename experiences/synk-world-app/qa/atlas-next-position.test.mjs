@@ -13,7 +13,9 @@ const P = await import(
     ? pathToFileURL(process.env.SYNK_POSITION_NEXT_MODULE).href
     : new URL('../world-position-next.mjs', import.meta.url).href
 );
-const { buildPositionNext, examSkills, recheckCards, unitRoutes, unseenFamilies, difficultyCell, recordsComplete } = P;
+const { buildPositionNext, examSkills, recheckCards, unitRoutes, unseenFamilies, difficultyCell, recordsComplete, estimateNext } = P;
+import { ESTIMATE_POLICY } from '../world-position.mjs';
+import { createPositionNextView } from '../world-position-next-view.mjs';
 
 const readJson = url => JSON.parse(fs.readFileSync(new URL(url, import.meta.url), 'utf8'));
 const DAY = 86_400_000;
@@ -515,4 +517,75 @@ test('진짜 계정 길 코치 — 첫 받기가 끊긴 뒤 올리기만 되면 
     releaseHost(handle);
     coach.dispose();
   }
+});
+
+// ── 예상 급수 칸의 새 길 값(4-4d — 단계4_계획 §21-23의 2): 능력 id마다의 근거 수를 시험 · 영역으로 묶어 지금 판 문턱으로 센다 ──
+const COUNTS = Object.freeze({
+  'ko.listening.detail': 6,
+  'ko.listening.main': 5,
+  'ko.reading.main': 12,
+  'ko.reading.detail': 7, // TOPIK I 30 · 듣기 11 · 읽기 19
+  'ko2.reading.detail': 4,
+  'ko2.listening.main': 2,
+  'ko.writing.sentence': 9, // 쓰기 — 영역이 아니라 세지 않는다
+  'world.speaking.answer': 3, // 시험 능력이 아니다
+});
+
+test('예상 급수 칸 — 능력 id 앞머리로 시험을, 둘째 마디로 영역을 묶어 지금 판 문턱(전체 30 · 영역별 10)으로 센다(4-4d — §21-23의 2)', () => {
+  const one = estimateNext({ bySkill: COUNTS, form: 'topik-i', policy: ESTIMATE_POLICY });
+  assert.equal(one.status, 'no-estimator', '문턱을 넘어도 급수는 내지 않는다');
+  assert.equal(one.evidence, 30);
+  assert.deepEqual(one.perDomain, { listening: 11, reading: 19 });
+  assert.equal(one.needed, ESTIMATE_POLICY.minEvidence);
+  assert.equal(one.neededPerDomain, ESTIMATE_POLICY.minPerDomain);
+  assert.equal(one.grade, null);
+  assert.equal(one.range, null);
+  assert.equal(one.passClaim, false);
+  const two = estimateNext({ bySkill: COUNTS, form: 'topik-ii', policy: ESTIMATE_POLICY });
+  assert.equal(two.status, 'too-early');
+  assert.equal(two.evidence, 6, 'TOPIK II 능력(ko2.)만');
+  assert.deepEqual(two.perDomain, { listening: 2, reading: 4 });
+  // 전체는 넘어도 한 영역이 모자라면 이르다
+  const thin = estimateNext({ bySkill: { 'ko.reading.main': 25, 'ko.listening.main': 9 }, form: 'topik-i', policy: ESTIMATE_POLICY });
+  assert.equal(thin.status, 'too-early');
+  assert.equal(thin.evidence, 34);
+  // 꼴이 아닌 수는 세지 않는다
+  const odd = estimateNext({ bySkill: { 'ko.reading.main': -3, 'ko.listening.main': 2.5, 'ko.reading.detail': '4', 'ko.reading.x': 1 }, form: 'topik-i', policy: ESTIMATE_POLICY });
+  assert.equal(odd.evidence, 1);
+});
+
+test('예상 급수 칸 — 근거 수를 모르면(null) 「확인 중」이고 수를 세지 않는다 · 빈 근거(0)는 이르다 · IBT로 본다고 하면 지금 판처럼 잇지 않는다', () => {
+  const unknown = estimateNext({ bySkill: null, form: 'topik-i', policy: ESTIMATE_POLICY });
+  assert.equal(unknown.status, 'checking');
+  assert.equal(unknown.evidence, 0);
+  const empty = estimateNext({ bySkill: {}, form: 'topik-i', policy: ESTIMATE_POLICY });
+  assert.equal(empty.status, 'too-early', '빈 근거는 아는 0이다');
+  assert.equal(estimateNext({ bySkill: COUNTS, form: 'topik-i', mode: 'ibt', policy: ESTIMATE_POLICY }).status, 'mode-unsupported');
+  assert.equal(estimateNext({ bySkill: null, form: 'topik-i', mode: 'ibt', policy: ESTIMATE_POLICY }).status, 'mode-unsupported');
+  assert.throws(() => estimateNext({ bySkill: COUNTS, form: 'topik-i' }), /policy/, '문턱 정책이 없으면 던진다(셸은 그 칸을 비운다)');
+});
+
+test('새 판 그림 — 예상 급수 칸은 모를 때 「기록 확인 중」만, 알면 모은 답 수를, 시험 형식을 열 수 있으면 단추를 단다(4-4d)', () => {
+  // 글 열쇠와 값을 그대로 보이는 t — 값은 따옴표 없이 잇는다(그림이 글을 이스케이프한다).
+  const t = (key, values = {}) => {
+    const pairs = Object.entries(values).map(([name, value]) => `${name}=${value}`);
+    return pairs.length ? `${key}(${pairs.join(',')})` : key;
+  };
+  const view = createPositionNextView({ t });
+  const board = { exam: 'topik1', skills: [], attention: [], counts: { independent: 0, practicing: 0, notyet: 0 }, total: 0, complete: true, unfolded: false, catching: false, domains: {}, carried: null };
+  const draw = (estimate, mock = null) => view.board({ board, estimate, mock });
+  const unknown = draw(estimateNext({ bySkill: null, policy: ESTIMATE_POLICY }));
+  assert.match(unknown, /data-estimate="checking"/);
+  assert.match(unknown, /homeTutor\.checking/, '「기록 확인 중」');
+  assert.ok(!unknown.includes('position.estimate.collected'), '수를 그리지 않는다');
+  assert.ok(!unknown.includes('data-evidence'), '수 칸도 없다');
+  const known = draw(estimateNext({ bySkill: COUNTS, form: 'topik-ii', policy: ESTIMATE_POLICY }), { minutes: 26 });
+  assert.match(known, /data-estimate="too-early" data-evidence="6" data-listening="2" data-reading="4"/);
+  assert.match(known, /position\.estimate\.early/);
+  assert.match(known, /position\.estimate\.collected\(n=6,listening=2,reading=4\)/);
+  assert.match(known, /<button[^>]*data-position-mock>mock\.open\(minutes=26\)/, '시험 형식 단추');
+  const none = draw(estimateNext({ bySkill: {}, policy: ESTIMATE_POLICY }));
+  assert.ok(!none.includes('position.estimate.collected'), '모은 답이 0이면 수 줄은 없다');
+  assert.ok(!none.includes('data-position-mock'), '열 수 없으면 단추가 없다');
+  assert.ok(!draw(null).includes('data-estimate'), '값이 없으면 칸이 없다');
 });

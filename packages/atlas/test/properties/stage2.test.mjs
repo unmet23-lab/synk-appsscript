@@ -959,3 +959,109 @@ test('㉑ 판정 못 한 답(도움을 받았어도)을 거두는 제외 — 서
     assert.deepEqual(view.ability.get(SKILL_V), server.ability.get(SKILL_V), '서버와 같다');
   }
 });
+
+// 4-4d(단계 4 계획 §21-23의 3 — 설계 주인 11-17 답 4): 점검 칸의 쓰기 · 말하기 설명은 칸 표(vellum/slots.mjs)에 맞는 칸과 함께 서고, 칸이
+// 틀리면 근거 없는 문장으로 물러서지 않고 그 줄의 이유를 비운다. 순위 · 할 것은 그대로다. 목표의 id도 글자 칸이다.
+test('⑳ 활동 고르기 — 쓰기 · 말하기 설명은 칸 표에 맞는 칸과 함께 서고, 틀린 칸은 그 줄의 이유를 비운다(4-4d)', () => {
+  const learner = createLearner();
+  const plan = list => planActivities(list, learner, memory, T0, { params: WIDE });
+  const one = facts => plan([{ id: 'check', facts }])[0];
+  assert.deepEqual(
+    one({ describe: { key: 'writing', slots: { focus: 'ending-53', need: 'assisted' } } }).why,
+    {
+      code: 'host.writing',
+      slots: { focus: 'ending-53', need: 'assisted' },
+      evidence: { fact: 'describe', describe: 'writing' },
+    },
+    '근거 칸의 describe는 글자 하나',
+  );
+  assert.deepEqual(one({ describe: 'writing.start' }).why, {
+    code: 'host.writing.start',
+    slots: {},
+    evidence: { fact: 'describe', describe: 'writing.start' },
+  });
+  assert.deepEqual(
+    one({ describe: { key: 'speaking', slots: { type: 'narrate', untried: 6 } } }).why.slots,
+    {
+      type: 'narrate',
+      untried: 6,
+    },
+  );
+  assert.equal(one({ describe: 'speaking.again' }).why.code, 'host.speaking.again');
+  assert.equal(
+    one({ describe: { key: 'speaking.again', slots: {} } }).why.code,
+    'host.speaking.again',
+  );
+  for (const describe of [
+    'writing', // 칸이 있어야 하는 설명을 글자로
+    'speaking',
+    { key: 'writing', slots: { focus: 'ending-53', need: 'found' } },
+    { key: 'writing', slots: { focus: 'ending-53', need: 'retry', at: 1 } },
+    { key: 'speaking', slots: { type: 'answer', untried: '2' } },
+    { key: 'speaking', slots: { type: 'answer', untried: 0 } },
+    { key: 'speaking', slots: { type: 'answer', untried: 7 } },
+    { key: 'speaking', slots: { type: 'chat', untried: 2 } },
+    { key: 'speaking', slots: [] },
+    { key: 'speaking', slots: null },
+    { key: 'form', slots: { x: 1 } }, // 칸 없는 설명에 칸
+    { key: 'writing.start', slots: { focus: 'ending-53' } },
+  ]) {
+    const entry = one({ describe });
+    assert.equal(entry.why, null, JSON.stringify(describe));
+    assert.equal(entry.tier, 9, '순위 · 할 것은 그대로');
+    assert.equal(entry.todo, 0);
+  }
+  assert.equal(one({ describe: { key: 'nope' } }).why, null, '모르는 열쇠는 지금처럼 없는 것');
+  assert.equal(one({ describe: 'form' }).why.code, 'host.form', '칸 없는 설명은 지금처럼');
+  assert.equal(one({ describe: { key: 'form' } }).why.code, 'host.form');
+  // 할 것이 없는 줄(후보가 있지만 모두 만난 것 — idle)에서도 칸이 틀린 설명은 엔진의 이유로 물러서지 않고 이유가 빈다
+  const known = createLearner();
+  startSession(known, T0, WIDE);
+  walk(known, [true, true], T0, [word('a', 0), word('b', 1)]);
+  const idle = planActivities(
+    [
+      {
+        id: 'known',
+        candidates: [word('a', 0), word('b', 1)],
+        facts: { describe: { key: 'speaking', slots: { type: 'answer' } } },
+      },
+    ],
+    known,
+    memory,
+    T0 + 120_000,
+    { params: WIDE },
+  )[0];
+  assert.equal(idle.idle, true, '할 것이 없는 줄');
+  assert.equal(idle.why, null, '엔진의 이유(idle)로 물러서지 않는다');
+  // 칸이 틀린 설명이 있어도 목표 문장이 먼저다
+  assert.equal(
+    one({
+      describe: { key: 'speaking', slots: { type: 'answer' } },
+      goals: [{ kind: 'interest', topic: 'cafe' }],
+    }).why.code,
+    'goal.match',
+  );
+});
+
+test('⑳ 활동 고르기 — 목표의 id도 글자 칸이다(글자가 아니면 그 목표를 받지 않는다 — 4-4d)', () => {
+  const learner = createLearner();
+  const plan = list => planActivities(list, learner, memory, T0, { params: WIDE });
+  const goals = list => plan([{ id: 'w', facts: { goals: list } }])[0].goals;
+  assert.equal(goals([{ kind: 'practiceNeed', id: 'ending-53' }]), 1);
+  assert.equal(goals([{ kind: 'practiceNeed', id: ['ending-53'] }]), 0, '배열 id');
+  assert.equal(goals([{ kind: 'practiceNeed', id: { a: 1 } }]), 0, '객체 id');
+  assert.equal(goals([{ kind: 'practiceNeed', id: 7 }]), 0, '수 id');
+  assert.equal(
+    goals([
+      { kind: 'practiceNeed', id: 'a' },
+      { kind: 'practiceNeed', id: 'a' },
+    ]),
+    1,
+    '같은 목표는 한 번',
+  );
+  assert.equal(
+    goals([{ kind: 'plan.area.writing' }, { kind: 'practiceNeed', id: 'ending-53' }]),
+    2,
+  );
+  assert.equal(goals([{ kind: 'plan.area.writing', id: null }]), 1, 'id가 없는 것(null)은 받는다');
+});

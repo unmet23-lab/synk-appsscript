@@ -213,8 +213,120 @@ function checkActivity(week, settings) {
   const area = Array.isArray(plan?.areas) ? plan.areas.find(row => row?.area === 'recheck') : null;
   if (!area || !(area.remaining > 0) || week.diagnostic?.ready !== true) return null;
   const start = Array.isArray(plan.notes) && plan.notes.includes('start');
-  return activity('check', { ...CHECK_OPEN, targets: [], goals: [...CHECK_OPEN.goals] }, { describe: start ? 'start' : 'recheck' }, [], settings, 'check');
+  return activity(
+    'check',
+    { ...CHECK_OPEN, targets: [], goals: [...CHECK_OPEN.goals] },
+    { describe: start ? 'start' : 'recheck', goals: areaGoal(week, 'recheck') },
+    [],
+    settings,
+    'check',
+  );
 }
+
+// 점검 칸의 시험 형식 · 쓰기 · 말하기(4-4d — §21-23의 3, 설계 주인 11-17 답 3 · 4). 짧은 진단과 같이 후보 없이 넘기고, 이유는 두뇌의 설명
+// 사실이다(시험 형식 host.form · 쓰기 host.writing · host.writing.start · 말하기 host.speaking · host.speaking.again). 칸이 있는 설명은
+// { key, slots }로 넘기고, 칸의 꼴은 엔진의 칸 표 한 곳이 검사한다(제품은 표를 따로 들지 않는다 — 칸이 틀리면 그 줄의 이유가 비어 줄이 서지
+// 않는다). 다음 영역의 목표({ kind: 'plan.area.<영역>' })와 한 가지 고치기의 목표({ kind: 'practiceNeed', id })는 이 넷에만 싣는다 — 오늘 공부 ·
+// 복습 칸의 줄은 계획 목표가 있을 때와 없을 때 같다. 시험 형식 줄은 이번 주에 시험 형식 판을 하지 않았을 때만 선다(week.mock.done — 이 기기의
+// 판 기록). 시험 형식에는 영역 목표가 없다(지금 판 planTokens와 같다 — 시험 형식은 이번 주 계획의 영역이 아니다).
+const areaGoal = (week, area) =>
+  week?.examPlan?.next?.area === area ? [{ kind: `plan.area.${area}` }] : [];
+// 이번 주 계획에 그 영역의 몫이 남았나(설계 주인 11-17 다시 여쭘의 답 1 — 이레 측정에서 쓰기가 계획을 넘어 매일 서고 말하기 줄이 0번이었다).
+// 쓰기 · 말하기 줄은 이 몫이 남았을 때만 넘긴다. 짧은 진단 · 시험 형식과 같은 「이번 주 몫」 규칙이다 — 점검 칸은 이번 주 계획에서 남은 몫을
+// 보이는 자리라, 계획을 채운 영역이 날마다 서면 계획이 한 주의 양을 정한다는 원칙이 깨진다. 영역이 계획에 없으면 몫도 없다.
+const areaLeft = (week, area) => {
+  const row = Array.isArray(week?.examPlan?.areas) ? week.examPlan.areas.find(item => item?.area === area) : null;
+  return Boolean(row) && row.remaining > 0;
+};
+const MOCK_OPEN = Object.freeze({
+  id: 'world.mock',
+  label: '시험 형식 연습',
+  route: 'mock',
+  minutesEstimated: false,
+  targets: Object.freeze([]),
+  goals: Object.freeze(['exam', 'prepare']),
+  modality: 'reading',
+});
+function mockActivity(week, settings) {
+  const mock = week?.mock;
+  if (!mock || mock.done === true || !Number.isFinite(mock.minutes)) return null;
+  return activity(
+    'check',
+    {
+      ...MOCK_OPEN,
+      targets: [],
+      goals: [...MOCK_OPEN.goals],
+      minutes: mock.minutes,
+      audioRequired: mock.audioRequired === true,
+    },
+    { describe: 'form' },
+    [],
+    settings,
+    'check',
+  );
+}
+function writingActivity(week, settings) {
+  const writing = week?.writing;
+  if (!writing || typeof writing.routeId !== 'string' || !areaLeft(week, 'writing')) return null;
+  return writingLine(week, writing, settings);
+}
+// 보탬(설계 주인 11-17 다시 여쭘의 답 2) — 점검 칸 넷의 이번 주 몫이 모두 차 넘길 점검 칸 활동이 하나도 없는 날에만 부른다(아래 todayActivities).
+// 조건에 걸려 잠긴 활동도 몫이 남은 것이라 그날은 부르지 않는다. 이번 주 쓰기에서 열린 한 가지 고치기(그 고치기의 마지막 사건 needAt이 이번 주
+// 계획의 주 안)가 아직 열려 있으면 그것을 한 줄로 세운다. 고쳐 쓰기의 효과는 첫 글을 쓴 바로 뒤에 가장 크고, 다음 주 계획까지 미루면 한 주쯤
+// 식는다. 계획이 찬 뒤에는 첫 글(host.writing.start)이 서지 않으므로 고치기가 닫히면 더 열리지 않는다. 도움을 받아 고친 판(assisted)은 고치기가
+// 아직 열린 것이라 「이번에는 혼자」 줄로 한 번 더 설 수 있다. 고친 판은 앱이 지금 세는 대로 쓰기 한 수에 든다(셈의 꼴은 그대로다).
+function writingFixActivity(week, settings) {
+  const writing = week?.writing;
+  const bounds = week?.examPlan?.week;
+  if (!writing?.need || typeof writing.routeId !== 'string' || !bounds) return null;
+  const at = Date.parse(writing.needAt);
+  if (!(at >= bounds.start && at < bounds.end)) return null;
+  return writingLine(week, writing, settings);
+}
+function writingLine(week, writing, settings) {
+  const facts = writing.need
+    ? {
+        describe: { key: 'writing', slots: { focus: writing.focus, need: writing.need } },
+        goals: [...areaGoal(week, 'writing'), { kind: 'practiceNeed', id: writing.focus }],
+      }
+    : { describe: 'writing.start', goals: areaGoal(week, 'writing') };
+  const open = {
+    id: 'topik2-writing-53',
+    label: writing.label,
+    route: 'writing',
+    routeId: writing.routeId,
+    minutes: writing.minutes,
+    minutesEstimated: true,
+    targets: [],
+    goals: ['exam', 'prepare', 'writing'],
+    audioRequired: false,
+    modality: 'writing',
+  };
+  return activity('check', open, facts, [], settings, 'check');
+}
+function speakingActivity(week, settings) {
+  const speaking = week?.speaking;
+  if (!speaking || typeof speaking.routeId !== 'string' || !areaLeft(week, 'speaking')) return null;
+  const facts =
+    speaking.untried > 0
+      ? { describe: { key: 'speaking', slots: { type: speaking.type, untried: speaking.untried } }, goals: areaGoal(week, 'speaking') }
+      : { describe: 'speaking.again', goals: areaGoal(week, 'speaking') };
+  const open = {
+    id: 'world.speaking.check',
+    label: speaking.label,
+    route: 'speaking',
+    routeId: speaking.routeId,
+    minutes: speaking.minutes,
+    minutesEstimated: true,
+    targets: [],
+    goals: ['exam', 'prepare', 'speaking'],
+    audioRequired: true,
+    modality: 'speaking',
+  };
+  return activity('check', open, facts, [], settings, 'check');
+}
+// 같은 자리일 때의 제품 차례(설계 주인 11-17 답 3) — 짧은 진단은 이번 주 계획에 다시 확인이 남았을 때만 서므로 늘 앞을 차지하지 않는다.
+export const CHECK_ORDER = Object.freeze(['world.position.check', 'world.mock', 'topik2-writing-53', 'world.speaking.check']);
 
 // 홈 계획에 넘길 활동(§20-2 표). engine: 엔진 판정이 선 때만 엔진에 기대는 활동(생활 복습 · 짧은 연습)을 넘긴다 — 확인 중에는 제품 사실로
 // 말할 수 있는 활동(하던 것 · 한글 먼저 · 다음 레슨)만이다(설계 검토 H8 · H12).
@@ -323,8 +435,15 @@ export function todayActivities({
         length: Number.isInteger(practiceLength) && practiceLength > 0 ? practiceLength : 5,
       }),
     );
-    const check = checkActivity(week, normalized);
-    if (check) out.push(check);
+    const checks = [
+      checkActivity(week, normalized),
+      mockActivity(week, normalized),
+      writingActivity(week, normalized),
+      speakingActivity(week, normalized),
+    ].filter(Boolean);
+    // 보탬 — 넘길 점검 칸 활동이 하나도 없는 날에만(설계 주인 11-17 다시 여쭘의 답 2 · 위 writingFixActivity). 다른 줄이 하나라도 설 수 있는 날에는 서지 않는다.
+    if (checks.length === 0) checks.push(writingFixActivity(week, normalized));
+    for (const check of checks) if (check) out.push(check);
   }
   return out;
 }
@@ -393,8 +512,36 @@ function rowWhy(entry, act, { capped, say }) {
 }
 
 // 세 줄 — plan()의 차례 그대로, 칸마다 한 줄. opened: 이번 학습일에 이 문서에서 연 칸.
+// 점검 칸 넷이 두뇌에서 같은 자리(잠김 · 앞지른 사실 · 층 · 맞춘 목표 수 · 할 것)이면 제품 차례(CHECK_ORDER)로 다시 가른다(설계 주인 11-17 답 3).
+// 두뇌의 차례는 그대로 두고, 점검 칸 항목들이 앉은 자리 안에서만 그 차례를 바꾼다 — 다른 칸의 줄은 움직이지 않는다.
+const brainKey = entry => [
+  Number(Boolean(entry.locked)),
+  entry.fact < 0 ? Number.POSITIVE_INFINITY : entry.fact,
+  entry.tier,
+  -(entry.goals ?? 0),
+  -(entry.todo ?? 0),
+];
+const checkRank = entry => {
+  const at = CHECK_ORDER.indexOf(entry.id);
+  return at < 0 ? CHECK_ORDER.length : at;
+};
+function checkOrdered(entries, byId) {
+  const isCheck = entry => byId.get(entry?.id)?.role === 'check';
+  const checks = entries.filter(isCheck);
+  if (checks.length < 2) return entries;
+  const sorted = [...checks].sort((a, b) => {
+    const x = brainKey(a);
+    const y = brainKey(b);
+    for (let i = 0; i < x.length; i += 1) if (x[i] !== y[i]) return x[i] - y[i];
+    return checkRank(a) - checkRank(b);
+  });
+  let next = 0;
+  return entries.map(entry => (isCheck(entry) ? sorted[next++] : entry));
+}
+
 export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null, dayCapped } = {}) {
   const byId = new Map(activities.map(act => [act.plan.id, act]));
+  entries = checkOrdered(Array.isArray(entries) ? entries : [], byId);
   // 하루 복습 상한(§20-3): plan 쪽 칸(dayCapped — plan 머리에서 한 번 센 엔진 전체의 값)을 먼저 읽는다(설계 주인 11-15, §20-14). 그 칸이 없는
   // 옛 엔진이면 어느 항목의 capped로든 읽는다. 생활 복습 항목만 보면 생활 복습 없이 짧은 연습이나 다음 레슨만 있는 상한 날을 「다 만났어요」로
   // 잘못 말한다(GPT 끝 판 GB1).

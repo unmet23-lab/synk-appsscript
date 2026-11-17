@@ -13,6 +13,8 @@ import { worldLearning } from '../world-learning-map.mjs';
 import { banksOf, homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 import { todayPractice } from '../world-mock-next.mjs';
+import { createPlanLog } from '../world-plan-next.mjs';
+import { memoryStorage } from './storage-scenes.mjs';
 import STRINGS from '../../brand-opening/world-strings.mjs';
 
 // 변형 시험은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
@@ -81,7 +83,8 @@ function stage() {
 
 // 셸 하나 — life: 생활 판정의 판('engine' · 'old'). planner: 입구가 플래너를 주는 때(끝내 주지 않으면 확인 중에 머문다). fast: 창의 시계를 30ms로.
 // wrap: 홈 코치에 얹을 것(만남 · 요약을 바꿔 열 수 없는 날을 흉내 낸다).
-function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner = async () => PLANNER, fast = false, wrap = made => made, mockChanged = null } = {}) {
+// mockWrap — 시험 형식 코치(world-mock)만 감싼다(저장 · 접기를 시험이 붙잡는 장면). wrap은 홈 코치를 감싼다.
+function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner = async () => PLANNER, fast = false, wrap = made => made, mockWrap = made => made, mockChanged = null } = {}) {
   stores += 1;
   const key = `synk-atlas:mock-shell-${process.pid}-${stores}`;
   const port = atlas.memoryPort();
@@ -98,6 +101,9 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner
   const opens = [];
   const toasts = [];
   const shown = [];
+  // 이 기기의 판 기록(4-4d — 점검 칸의 시험 형식 줄) — 앱처럼 그 코치의 저장소 이름으로 연다(같은 저장소의 코치는 같은 기록).
+  const logStorage = memoryStorage();
+  const planLog = made => (made ? createPlanLog({ storage: logStorage, store: key }) : null);
   const coaches = [];
   const mockCalls = [];
   const retirers = [];
@@ -189,12 +195,13 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner
     openGames: () => null,
     packs() {},
     painted() {},
+    planLog,
   };
   // 입구의 겉 — 시험 형식 코치(같은 저장소의 world-mock)와 판을 다시 정할 때 부를 함수만.
   const atlasNext = {
     async mockCoach(pool) {
       mockCalls.push(pool.length);
-      const made = await openCoach('world-mock', banksOf(pool));
+      const made = mockWrap(await openCoach('world-mock', banksOf(pool)));
       coaches.push(made);
       return made;
     },
@@ -230,6 +237,7 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner
     box: () => box,
     last: () => shown.at(-1) ?? '',
     homeCoach: () => coaches[0] ?? null,
+    planTimes: area => planLog(true).times(area),
     retire() {
       for (const row of retirers.filter(entry => entry.live)) row.fn({ reason: 'account' });
     },
@@ -246,8 +254,9 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner
   };
 }
 
-// 시험 형식 판을 끝까지 푼다(소리를 끈 날 — 읽기만). wrong: 틀린 보기를 고른다. 끝 한 장이 서면 참.
-async function runToEnd(app, { wrong = false } = {}) {
+// 시험 형식 판을 끝까지 푼다(소리를 끈 날 — 읽기만). wrong: 틀린 보기를 고른다. 끝 한 장이 서면 참. submitted: 마지막 영역을 낸 데서 멈춘다 — 낸 뒤
+// 판이 그대로면(다음 영역도 끝 한 장도 아님) 끝 한 장이 저장이나 접기를 기다리는 중이라 참.
+async function runToEnd(app, { wrong = false, submitted = false } = {}) {
   for (let guard = 0; guard < 400; guard += 1) {
     const html = app.box().html;
     if (html.includes('data-mock-done')) return true;
@@ -281,6 +290,7 @@ async function runToEnd(app, { wrong = false } = {}) {
     }
     app.box().press('data-mock-submit');
     await tick(10);
+    if (submitted && app.box().html === html) return true;
   }
   return false;
 }
@@ -329,6 +339,79 @@ test('엔진 문서 — 새 코치(world-mock)로 안내 · 영역 · 끝 한 �
     assert.ok(links.length > 0, '틀린 항목의 연습을 잇는다(홈 코치로 센 그날의 연습)');
     assert.ok(links.every(id => routes.has(id)), `잇는 연습(${links.join(', ')})은 그날 낼 것이 있는 연습뿐`);
   } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 문서 — 끝 한 장이 답의 저장을 기다리는 사이 판이 닫히면 판을 기록 없이 닫고 끝 한 장을 그리지 않는다(진단 Fable 끝 판 F2와 같은 막이)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  const sets = [];
+  // 답의 저장(evidence)이 끝나는 때를 시험이 정한다 — 진짜 저장을 기다린 뒤 풀린다.
+  const app = shell({
+    mockWrap: made => ({
+      ...made,
+      answer(pid, result) {
+        const out = made.answer(pid, result);
+        return { ...out, evidence: hold.then(() => out?.evidence) };
+      },
+      finishSet(options) {
+        sets.push(options);
+        return made.finishSet(options);
+      },
+    }),
+  });
+  try {
+    await until(() => app.homeCoach(), '홈 코치');
+    await app.education.mock();
+    app.box().tap('[data-mock-start]');
+    assert.equal(await runToEnd(app, { submitted: true }), true, '마지막 영역을 냈다');
+    await tick(30);
+    assert.deepEqual(sets, [], '끝내기가 저장을 기다린다 — 판은 아직 닫지 않았다');
+    app.box().isConnected = false;
+    release();
+    await until(() => sets.length > 0, '판을 닫는다');
+    assert.deepEqual(
+      sets.map(options => options.record),
+      [false],
+      '판 기록 없이 닫기만 한다',
+    );
+    assert.doesNotMatch(app.box().html, /data-mock-done/, '닫힌 판에 끝 한 장을 그리지 않는다');
+    await until(() => app.homeCoach().summary().storage.unfolded === 0, '그 답이 손님 요약에 접힌다');
+  } finally {
+    release();
+    app.dispose();
+  }
+});
+
+test('엔진 문서 — 손님 끝 한 장은 판이 그 답으로 다시 접힌 뒤에 짓는다(진단 Fable 끝 판 F3와 같은 막이)', async () => {
+  let release = () => {};
+  const hold = new Promise(resolve => (release = resolve));
+  const sets = [];
+  // 접기가 끝나는 때를 시험이 정한다 — 진짜 접기를 기다린 뒤 풀린다.
+  const app = shell({
+    mockWrap: made => ({
+      ...made,
+      finishSet(options) {
+        const out = made.finishSet(options);
+        sets.push(options);
+        return out && { ...out, folded: hold.then(() => out.folded) };
+      },
+    }),
+  });
+  try {
+    await until(() => app.homeCoach(), '홈 코치');
+    await app.education.mock();
+    app.box().tap('[data-mock-start]');
+    assert.equal(await runToEnd(app, { submitted: true }), true, '마지막 영역을 냈다');
+    await until(() => sets.length === 1, '판을 닫는다');
+    await tick(50);
+    assert.doesNotMatch(app.box().html, /data-mock-done/, '접기가 끝나기 전에는 끝 한 장을 짓지 않는다');
+    release();
+    await until(() => app.box().html.includes('data-mock-done'), '접힌 뒤의 끝 한 장');
+    assert.equal(app.homeCoach().summary().storage.unfolded, 0, '끝 한 장은 그 답이 다 접힌 칸으로 지었다');
+  } finally {
+    release();
     app.dispose();
   }
 });
@@ -456,4 +539,29 @@ test('앱의 배선 — 시험 점검 카드의 판정은 셸의 mockReady이고
   assert.match(source, /'reminder-exam-start','reminder-exam-mock','reminder-exam-plan'/, '시험 형식 단추의 명령');
   assert.match(source, /\n  mockChanged:\(\)=>reminders\?\.examChanged\?\.\(\),\r?\n/);
   assert.match(source, /async mockCoach\(pool\)\{if\(disposed\)return null;const entry=await load\(\);return disposed\?null:entry\.mockCoach\(pool\);\},/);
+});
+
+test('그만둔 시험 형식 판도 이 기기의 판 기록에 한 판으로 적힌다 — 문항을 처음 낸 때 한 번(설계 다시 검수 Opus 대체 FA2 · 설계 주인 11-17 답 3)', async () => {
+  const app = shell();
+  try {
+    await until(() => app.homeCoach(), '홈 코치');
+    await app.education.mock();
+    assert.match(app.box().html, /data-mock-intro/, '안내 한 장');
+    assert.equal(app.planTimes('mock').length, 0, '안내 한 장에서는 적지 않는다(아직 문항을 내지 않았다)');
+    app.box().tap('[data-mock-start]');
+    assert.match(app.box().html, /data-mock-run/, '첫 문항');
+    assert.equal(app.planTimes('mock').length, 1, '문항을 처음 낸 때 한 판');
+    // 답하면 판을 다시 그린다 — 다시 그려도 한 판이다
+    const choice = /data-mock-choice="([^"]+)"/.exec(app.box().html)?.[1];
+    assert.ok(choice, '보기');
+    app.box().press('data-mock-choice', choice);
+    assert.equal(app.planTimes('mock').length, 1, '다시 그려도 한 판');
+    // 그만두기 — 판을 기록 없이 닫아도(엔진의 판 기록은 없다) 이 기기의 판 기록에는 남는다
+    app.box().press('data-mock-stop');
+    await until(() => app.box().html.includes('data-mock-done'), '그만둔 뒤의 끝 한 장');
+    assert.equal(app.planTimes('mock').length, 1, '그만둬도 한 판 — 두 번 적지 않는다');
+    assert.deepEqual(app.planTimes('recheck'), [], '다른 영역에는 적지 않는다');
+  } finally {
+    app.dispose();
+  }
 });

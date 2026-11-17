@@ -11,7 +11,7 @@ import * as atlas from '../../../packages/atlas/src/index.mjs';
 import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
-import { homeBanksOf, positionPlanner } from '../world-atlas-next.mjs';
+import { homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 
 // 변형 시험(qa/position-mutants.mjs)은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
@@ -1346,6 +1346,170 @@ test('엔진 판 — 서버 길 계정의 30일째 문장: 완결되지 않은 �
     assert.equal(app.shown.length, drawn, '완결되지 않은 답으로는 다시 그리지 않는다');
     assert.ok(!app.last().includes('data-position-month'));
     assert.deepEqual(seen.notes, [['load', { ok: false, code: 'LOOKBACK_REBUILDING' }]], '까닭을 계기에');
+  } finally {
+    app.dispose();
+  }
+});
+
+// ── 예상 급수 칸(4-4d — 단계4_계획 §21-23의 2): 새 길 내 위치 판에 근거 수 · 「확인 중」 · 시험 형식 단추. 코치의 셈은 packages/atlas의
+// test/coach/first-answers.test.mjs가, 근거 상자의 묻기 · 받기 · 다시 그리기 상한은 qa/atlas-next-month-answer.test.mjs가 본다. 여기서는 셸의 배선만.
+const estimateOfHtml = html =>
+  /<section class="wpos-estimate" data-estimate="([a-z-]+)"(?: data-evidence="(\d+)" data-listening="(\d+)" data-reading="(\d+)")?/.exec(html)?.slice(1).filter(value => value !== undefined) ?? null;
+// 손님 홈 코치에 근거 셈을 얹는다(firstAnswers(query) — 시험이 정한다). storage: 코치 요약의 저장 칸에 덮어 얹을 값. 플래너에는 앱처럼 계획
+// 꾸러미(planPlanner — 시험 형식 고르기가 기록이 다 왔는가를 본다)를 싣는다.
+function estimateShell({ firstAnswers, storage = null } = {}) {
+  const asked = [];
+  const wrap = made => {
+    const summary = storage
+      ? () => {
+          const base = made.summary();
+          return { ...base, storage: { ...base.storage, ...storage } };
+        }
+      : made.summary;
+    return {
+      ...made,
+      summary,
+      firstAnswers: query => {
+        asked.push(query);
+        return firstAnswers(query);
+      },
+    };
+  };
+  return { app: shell({ wrap, planner: { ...PLANNER, plan: planPlanner } }), asked };
+}
+const COACH_COUNTS = Object.freeze({ 'ko.listening.main': 4, 'ko.reading.main': 7, 'ko2.reading.main': 9 });
+
+test('엔진 판 — 예상 급수 칸: 손님은 코치가 센 근거 수를 그 시험(능력 id 앞머리)의 듣기 · 읽기로 묶어 지금 판 글로 잇는다(4-4d — §21-23의 2)', async () => {
+  const { app, asked } = estimateShell({ firstAnswers: query => ({ ...query, since: 1, bySkill: COACH_COUNTS }) });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    assert.deepEqual(estimateOfHtml(app.last()), ['too-early', '11', '4', '7'], 'TOPIK I 판 — ko. 능력만(ko2.는 세지 않는다)');
+    assert.deepEqual(asked.at(-1), { game: 'world-mock', days: 90 }, '근거를 세는 판과 창(제품 상수)');
+    assert.match(app.last(), /모은 답 11개 · 듣기 4 · 읽기 7/, '지금 판 글(position.estimate.collected)');
+    assert.ok(app.last().indexOf('data-estimate') > app.last().indexOf('wpos-counts'), '칸 수 아래(지금 판과 같은 자리)');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 예상 급수 칸: 손님의 기록이 다 오지 않아 코치가 null이면 수 없이 「기록 확인 중」만 둔다 · 코치가 던져도 판은 열린다', async () => {
+  for (const [name, firstAnswers] of [
+    ['기록이 다 오지 않음(null)', () => null],
+    [
+      '코치가 던짐',
+      () => {
+        throw new Error('DISPOSED');
+      },
+    ],
+  ]) {
+    const { app } = estimateShell({ firstAnswers });
+    try {
+      await app.education.position();
+      await until(() => /data-position-next="engine"/.test(app.last()), `${name} — 엔진 판`);
+      assert.deepEqual(estimateOfHtml(app.last()), ['checking'], `${name} — 확인 중`);
+      assert.match(app.last(), /기록 확인 중/, name);
+      assert.ok(!/모은 답/.test(app.last()), `${name} — 빈 근거로 수를 그리지 않는다`);
+    } finally {
+      app.dispose();
+    }
+  }
+});
+
+test('엔진 판 — 손님의 근거 수는 접혀 돌아오지 않은 내 사건(unfoldedRows)이 있어도 코치가 센 수를 그린다 — 근거 상자의 막는 수는 서버 길 계정만 본다(카본 4-4d 설계 B4)', async () => {
+  const { app } = estimateShell({ firstAnswers: query => ({ ...query, since: 1, bySkill: COACH_COUNTS }), storage: { unfoldedRows: 3, unfolded: 2 } });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    assert.deepEqual(estimateOfHtml(app.last()), ['too-early', '11', '4', '7']);
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 시험 형식을 열 수 있는 날에는 예상 급수 칸에 시험 형식 단추가 선다(내 위치 단추 — §21-23의 1 · 2)', async () => {
+  const { app } = estimateShell({ firstAnswers: query => ({ ...query, since: 1, bySkill: {} }) });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    assert.match(app.last(), /<button[^>]*data-position-mock>/, '시험 형식 단추');
+    assert.ok(!/모은 답/.test(app.last()), '모은 답이 0이면 수 줄은 없다');
+  } finally {
+    app.dispose();
+  }
+});
+
+// 서버 길 계정의 근거 수(4-4d — §21-23의 2): 코치가 null을 내므로 셸이 그 코치를 연 판의 근거 읽기(homeNext.firstAnswers)로 묻는다. 첫 그리기는
+// 「확인 중」, 같은 자리의 답이 오면 열린 판을 한 번 다시 그려 수를 싣는다(30일째 문장의 계정 길과 같은 상자 — 종류만 다르다).
+function accountFirstShell(reply) {
+  let release = null;
+  const held = new Promise(resolve => {
+    release = resolve;
+  });
+  const seen = { coach: null, asks: 0, queries: [], notes: [], release: () => release() };
+  const like = accountLike(() => ({ ok: true }), { sync: () => ({ pulled: true, received: RECEIVED }) });
+  const wrap = made => {
+    seen.coach = { ...like.wrap(made), lookback: () => null, firstAnswers: () => null, pull: () => null };
+    return seen.coach;
+  };
+  const nextExtra = {
+    firstAnswers: coach =>
+      coach && coach === seen.coach
+        ? {
+            revision: 3,
+            ask: async query => {
+              seen.asks += 1;
+              seen.queries.push(query);
+              await held;
+              return reply();
+            },
+          }
+        : null,
+    note: (kind, outcome) => seen.notes.push([kind, outcome]),
+  };
+  return { app: shell({ owner: 'acct-first', wrap, nextExtra }), seen };
+}
+
+test('엔진 판 — 서버 길 계정의 근거 수: 첫 그리기는 묻고 「기록 확인 중」, 같은 자리의 답이 오면 열린 판을 한 번 다시 그려 그 수를 싣는다(4-4d — §21-23의 2)', async () => {
+  const { app, seen } = accountFirstShell(() => ({
+    ok: true,
+    complete: true,
+    summaryAt: RECEIVED,
+    firstAnswers: { game: 'world-mock', days: 90, since: 1, bySkill: { 'ko.listening.detail': 10, 'ko.reading.detail': 20 } },
+  }));
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await until(() => seen.asks === 1, '묻는다');
+    await tick(80);
+    assert.deepEqual(estimateOfHtml(app.last()), ['checking'], '답이 오기 전 — 수 없이');
+    assert.deepEqual(seen.queries[0], { game: 'world-mock', days: 90 });
+    const drawn = app.shown.length;
+    seen.release();
+    await until(() => estimateOfHtml(app.last())?.[0] === 'no-estimator', '답이 오면 수');
+    assert.deepEqual(estimateOfHtml(app.last()), ['no-estimator', '30', '10', '20'], '문턱을 넘어도 급수는 내지 않는다');
+    await tick(40);
+    assert.equal(app.shown.length, drawn + 1, '열린 판을 한 번 다시 그리고 되풀이하지 않는다');
+    assert.equal(seen.asks, 1, '한 번 묻는다');
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 서버 길 계정의 근거 수: 완결되지 않은 답이면 다시 그리지 않고 「확인 중」을 두며 까닭을 계기에 남긴다', async () => {
+  const { app, seen } = accountFirstShell(() => ({ ok: true, complete: false, reason: 'fold-failed', summaryAt: RECEIVED }));
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await until(() => seen.asks === 1, '묻는다');
+    await tick(80);
+    const drawn = app.shown.length;
+    seen.release();
+    await until(() => seen.notes.length === 1, '물은 답');
+    await tick(40);
+    assert.equal(app.shown.length, drawn, '완결되지 않은 답으로는 다시 그리지 않는다');
+    assert.deepEqual(estimateOfHtml(app.last()), ['checking']);
+    assert.deepEqual(seen.notes, [['load', { ok: false, code: 'FIRST_ANSWERS_FOLD_FAILED' }]], '까닭을 계기에');
   } finally {
     app.dispose();
   }

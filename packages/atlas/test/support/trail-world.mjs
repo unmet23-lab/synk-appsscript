@@ -89,6 +89,24 @@ export function createMemoryAccount() {
             ),
           ]),
         ),
+      // 예상 급수의 근거 셈(4-4d — talk lib/atlas-trail-store.js와 같은 뜻).
+      meetRows: async () => {
+        const out = new Map();
+        for (const row of allRows()) {
+          if (row.kind !== 'meet' && row.kind !== 'carry') continue;
+          if (!out.has(row.family)) out.set(row.family, []);
+          out.get(row.family).push(structuredClone(row));
+        }
+        return out;
+      },
+      eventsByIds: async ids => {
+        const want = new Set(ids);
+        return new Map(
+          visible()
+            .filter(record => want.has(record.event.id))
+            .map(record => [record.event.id, structuredClone(record)]),
+        );
+      },
       entriesAfter: async (after, limit) =>
         visible()
           .filter(record => record.seq > after)

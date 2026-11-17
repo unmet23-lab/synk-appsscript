@@ -107,6 +107,8 @@ export async function openTrail({
     heldEvents: () => record.heldEvents(),
     // 단위마다의 근거 줄 전부 — 30일째 문장(coach.lookback, 단계 4 계획 §21-7). 사건을 치우지 않는 기록부만 처음부터 다 든다.
     unitRows: () => record.unitRows(),
+    // 계열마다의 만남 줄과 그 판 번호 — 예상 급수의 근거(coach.firstAnswers, 단계 4 계획 §21-23의 2). 사건을 치우지 않는 기록부만.
+    meetRows: () => record.meetRows(),
     // 받은 요약의 자리 { edition, gen, foldedUntil }와 그 요약의 처음 장부 칸(단계 4 계획 §21-22) — 손님 기록부 · 받은 요약이 없으면 null.
     received: () => record.received(),
     receivedCarried: () => record.receivedCarried(),

@@ -197,6 +197,22 @@ const entryOf = item => ({
   atMs: Date.parse(item.event.at),
 });
 
+// 묶음 하나의 만남 · 장부 줄을 계열마다 모으고, 그 묶음의 머리가 2판 제시이면 만남(답)마다 그 판 번호를 적는다(기록부 meetRows — 예상 급수의
+// 근거, 단계 4 계획 §21-23의 2). 옛 꼴 제시 · 장부 · 본인 말 묶음에는 판 번호가 없다.
+const setOfSource = event =>
+  event.type === EVENT_TYPES.presented && isCurrent(event) && typeof event.setId === 'string'
+    ? event.setId
+    : null;
+function addMeetRows(group, index, families, sets) {
+  const setId = setOfSource(group.source.event);
+  for (const row of rowsOfGroup(group, index)) {
+    if (row.kind !== 'meet' && row.kind !== 'carry') continue;
+    if (!families.has(row.family)) families.set(row.family, []);
+    families.get(row.family).push(row);
+    if (row.kind === 'meet' && setId) sets.set(row.key, setId);
+  }
+}
+
 function folded(state, id) {
   if (state.guest) return Boolean(state.local) && state.held.get(id)?.key <= state.local.until;
   const seq = state.acks.get(id);
@@ -791,6 +807,17 @@ export function createRecord({
           byUnit.get(row.unit).push(row);
         }
       return byUnit;
+    },
+    // 계열마다의 만남 줄 전부와 그 만남이 든 제시의 판 번호(예상 급수의 근거 — 단계 4 계획 §21-23의 2). 든 사건 전부를 unitRows와 같은
+    // 어댑터 · 근거 줄(rowsOfGroup)로 짓고, 만남 · 장부 줄만 서버 저장소와 같은 꼴로 계열마다 모은다(셈은 record/first.mjs가 서버 읽기와
+    // 같이 한다). setOf(key) = 그 만남(답)이 든 묶음의 머리가 2판 제시이면 그 판 번호, 아니면 null(옛 꼴 제시 · 장부 · 본인 말).
+    // 사건을 치우지 않는 기록부(손님과 동의를 끈 계정)만 처음부터 다 든다 — 계정 기기는 이틀 치만 들어 코치가 부르지 않는다.
+    meetRows() {
+      const families = new Map();
+      const sets = new Map();
+      for (const group of groupsOf([...state.held.values()].map(entryOf)).values())
+        addMeetRows(group, index, families, sets);
+      return { families, setOf: key => sets.get(key) ?? null };
     },
     acked: id => state.acks.get(id),
 

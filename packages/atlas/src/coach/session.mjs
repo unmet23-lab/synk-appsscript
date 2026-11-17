@@ -17,6 +17,7 @@ import { choose } from '../select/choose.mjs';
 import { filterCandidates } from '../select/filter.mjs';
 import { dayKey, present, record, say, startSession } from '../select/session.mjs';
 import { hostRow, presentedFields } from './fields.mjs';
+import { coachTag, setIdOf } from './set-id.mjs';
 
 export const learnerOf = view => ({
   ...view,
@@ -66,13 +67,6 @@ const issuedOf = row => event => ({
   review: row.tier === 1,
   units: [...row.brandNew],
 });
-// 판 번호의 코치 꼬리 — 같은 경험 이름의 코치 둘이 같은 밀리초에 판을 열어도 번호가 갈린다(Fable 5.2 D9).
-const coachTag = () =>
-  Array.from(
-    { length: 6 },
-    () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)],
-  ).join('');
-
 const HELP_LEVELS = { answer: 'answer', explanation: 'explanation' };
 const HELP_KINDS = ['text', 'hint', 'answer', 'replay', 'explanation'];
 const REASONS = ['motor', 'audio', 'unanswered', 'demo', 'visual', 'storage'];
@@ -181,7 +175,8 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     s.groups.clear(); // 앞 판의 제시 번호는 이 판에서 받지 않는다(GPT GC4)
     s.lastAt = now;
     s.setSeq += 1;
-    s.setId = `set.${gameId}.${now}.${s.tag}.${s.setSeq}`;
+    // 판 번호의 꼴은 set-id.mjs 한 곳이다 — 읽는 함수(gameOfSet)와 함께 바뀐다(설계 주인 11-17 답 1).
+    s.setId = setIdOf(gameId, now, s.tag, s.setSeq);
     build();
     return s.learner;
   }

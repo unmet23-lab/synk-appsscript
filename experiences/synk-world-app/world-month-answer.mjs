@@ -14,7 +14,9 @@
 //   받기(coach.pull) — 기기가 답의 자리보다 뒤처졌을 때 그 답의 자리마다 한 번. 받기가 실패해도 그 자리에서는 다시 부르지 않는다.
 //   다시 그리기 — 적은 답의 자리가 기기 자리와 같을 때만 한 번. 쓸 수 없는 답(완결되지 않음 · 뒤처짐)으로는 다시 그리지 않는다.
 // 규칙마다 qa/position-mutants.mjs에 깬 변형이 있고, qa/atlas-next-month-answer.test.mjs의 셈 시험이 잡는다.
-const PREFIX = 'synk:world:month-answer:';
+// 예상 급수의 근거 상자(4-4d — 단계4_계획 §21-23의 2)도 이 상자를 쓴다. 열쇠 머리 · 값의 꼴 · 받은 답 읽기 · 묻는 함수 · 까닭 코드 · 내는 꼴만
+// 종류(kind — MONTH_KIND · FIRST_KIND)로 받고, 묻기 · 받기 · 다시 그리기의 상한과 자리 견주기는 같다(설계 검토 Fable F5). 지우는 길은 두 종류의
+// 열쇠를 함께 지운다.
 const VERSION = 1;
 const GEN = /^(\d{13})\.[0-9a-z]{1,16}$/;
 const finite = value => Number.isFinite(value);
@@ -117,45 +119,49 @@ const shapeOf = ({ askedFrom, at, windows, month }) => ({
   month: month.map(row => ({ unit: row.unit, misses: row.misses, reviews: row.reviews, last: row.last ?? null })),
 });
 
-// 세대 수 — 이 문서의 모든 저장소가 함께 쓴다(로그아웃 · 동의 끔은 셸의 다른 자리에서 clearMonthAnswer로 지운다).
+// 세대 수 — 이 문서의 모든 저장소가 함께 쓴다(로그아웃 · 동의 끔은 셸의 다른 자리에서 clearMonthAnswer로 지운다). 상자의 종류(학습일 답 · 근거)와
+// 상관없이 하나다 — 지우는 길 한 번이 두 종류의 물음 모두를 늦은 답으로 만든다.
 let generation = 0;
-const keyOf = account => `${PREFIX}${account}`;
+const keyOf = (kind, account) => `${kind.prefix}${account}`;
 
-// 지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 연습 기록 비우기) — 그 계정의 열쇠를 지우고 세대 수를 올린다(물은 뒤의 늦은 답을 적지 않게).
+// 지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 연습 기록 비우기) — 그 계정의 두 열쇠(학습일 답 · 근거)를 지우고 세대 수를 올린다(물은 뒤의 늦은
+// 답을 적지 않게). 한 열쇠를 지우다 저장소가 던져도 다른 열쇠는 지운다.
 export function clearMonthAnswer(storage, account) {
   generation += 1;
-  try {
-    if (account) storage?.removeItem(keyOf(account));
-  } catch {
-    // 저장소가 막혀도 세대 수는 올렸다 — 다음 읽기는 판 · 학습일로 다시 거른다
+  for (const kind of KINDS) {
+    try {
+      if (account) storage?.removeItem(keyOf(kind, account));
+    } catch {
+      // 저장소가 막혀도 세대 수는 올렸다 — 다음 읽기는 판 · 학습일로 다시 거른다
+    }
   }
 }
 
-// 저장소 — 계정마다 열쇠 하나. storage는 localStorage 꼴(getItem · setItem · removeItem).
-export function createMonthAnswers({ storage = globalThis.localStorage } = {}) {
+// 저장소 — 계정마다 열쇠 하나(종류마다). storage는 localStorage 꼴(getItem · setItem · removeItem). kind는 상자의 종류(없으면 학습일 답).
+export function createMonthAnswers({ storage = globalThis.localStorage, kind = MONTH_KIND } = {}) {
   return {
     generation: () => generation,
     // 적어 둔 답 — 계정 · 동의 판 · 학습일이 맞고 꼴이 맞을 때만. 아니면 null(다시 묻는다). 늘 저장소에서 바로 읽는다(다른 탭이 덮었으면 그 값).
     read(account, { revision, day }) {
       let value = null;
       try {
-        value = JSON.parse(storage?.getItem(keyOf(account)) ?? 'null');
+        value = JSON.parse(storage?.getItem(keyOf(kind, account)) ?? 'null');
       } catch {
         return null;
       }
       if (!plain(value) || value.v !== VERSION || value.revision !== revision || value.day !== day) return null;
       const askedFrom = positionOf(value.askedFrom);
       const at = positionOf(value.at);
-      if (!askedFrom || !at || !validWindows(value.windows) || !validMonth(value.month)) return null;
-      return { askedFrom, at, windows: value.windows, month: value.month };
+      if (!askedFrom || !at || !kind.valid(value)) return null;
+      return { askedFrom, at, ...kind.body(value) };
     },
     // 답을 적는다 — 물을 때의 세대 수가 지금과 같고 저장소가 있을 때만(지우는 길이 그 사이에 돌았으면 적지 않는다). 적었나를 돌려준다.
-    write(account, { revision, day, askedFrom, at, windows, month, since }) {
+    write(account, { revision, day, since, ...answer }) {
       if (since !== generation) return false;
       if (!storage) return false;
-      const value = { v: VERSION, revision, day, ...shapeOf({ askedFrom, at, windows, month }) };
+      const value = { v: VERSION, revision, day, ...kind.shape(answer) };
       try {
-        storage.setItem(keyOf(account), JSON.stringify(value));
+        storage.setItem(keyOf(kind, account), JSON.stringify(value));
         return true;
       } catch {
         return false;
@@ -185,14 +191,79 @@ const LOOKBACK_CODES = Object.freeze({
 });
 export const lookbackCode = reason => LOOKBACK_CODES[reason] ?? 'LOOKBACK_FAILED';
 
+// 상자의 종류 — 학습일 답(30일째 문장). 받은 답의 줄은 점수 차례로 64줄까지만 둔다(keptRows).
+//   prefix 열쇠 머리 · valid(값) 저장소 값의 몸이 꼴인가 · body(값) 값의 몸 · parse(답) 받은 답의 몸(꼴이 아니면 null) · shape(답) 적는 꼴 ·
+//   use(적은 답) 셸에 내는 꼴 · code(까닭) 완결되지 않은 답의 계기 코드 · failed 실패의 계기 코드 · query(줄, offsetOf) 묻는 함수
+export const MONTH_KIND = Object.freeze({
+  prefix: 'synk:world:month-answer:',
+  valid: value => validWindows(value.windows) && validMonth(value.month),
+  body: value => ({ windows: value.windows, month: value.month }),
+  parse: got => {
+    const windows = got.lookback?.windows;
+    const month = got.lookback?.month;
+    return validWindows(windows) && validMonth(month) ? { windows, month: keptRows(month) } : null;
+  },
+  shape: shapeOf,
+  use: stored => ({ month: monthOfAnswer(stored) }),
+  code: lookbackCode,
+  failed: 'LOOKBACK_FAILED',
+  query: (line, offsetOf) => line.ask(offsetOf()),
+});
+
+// ── 예상 급수의 근거 상자(4-4d — 단계4_계획 §21-23의 2, 설계 주인 11-17 답 2) ──
+// 서버 길 계정은 기기에 이틀 치만 있어 코치가 근거를 세지 못한다(coach.firstAnswers() null). 서버의 근거 읽기(learning?view=trail-first-answers)로
+// 묻고, 그 답(능력 id마다의 근거 수)을 계정마다 열쇠 하나에 둔다. 근거 답은 능력마다의 수라 자르지 않는다. 학습일 열쇠는 학습일 답처럼 하루에 한 번
+// 다시 묻는 경계일 뿐이다 — 창은 서버가 답할 때의 시각에서 days × 24시간을 뺀 때이고 답에 since로 싣는다(학습일 경계로 맞추지 않는다).
+export const FIRST_GAME = 'world-mock'; // 근거를 세는 판의 게임 이름(새 길의 시험 형식 연습 — world-mock-next.mjs의 gameId)
+export const FIRST_DAYS = 90; // 창의 날 수 — 제품 상수(설계 주인 11-17 답 2 · world-position.mjs ESTIMATE_POLICY.recentDays와 같다)
+const FIRST_SKILL = /^[A-Za-z0-9_.:-]{1,120}$/;
+const FIRST_LIMIT = 4096;
+const validBySkill = value =>
+  plain(value) &&
+  Object.keys(value).length <= FIRST_LIMIT &&
+  Object.entries(value).every(([skill, n]) => FIRST_SKILL.test(skill) && Number.isSafeInteger(n) && n >= 0);
+// 받은 답의 몸(서버 firstAnswers — 창의 시작 since) · 적은 값의 몸(창의 시작 from) — 물은 게임 · 날 수와 같고, 창의 시작이 수이고, 능력마다의
+// 수가 꼴일 때만. 상자 안에서는 창의 시작을 from에 둔다 — 쓰기의 since는 세대 수라(write) 이름이 겹치면 창의 시작을 덮는다.
+const validFirst = (value, start) =>
+  value?.game === FIRST_GAME && value.days === FIRST_DAYS && finite(value[start]) && validBySkill(value.bySkill);
+const bySkillCopy = bySkill =>
+  Object.fromEntries(
+    Object.keys(bySkill)
+      .sort()
+      .map(skill => [skill, bySkill[skill]]),
+  );
+const FIRST_CODES = Object.freeze({
+  'fold-failed': 'FIRST_ANSWERS_FOLD_FAILED',
+  'events-remain': 'FIRST_ANSWERS_EVENTS_REMAIN',
+  rebuilding: 'FIRST_ANSWERS_REBUILDING',
+});
+export const firstAnswersCode = reason => FIRST_CODES[reason] ?? 'FIRST_ANSWERS_FAILED';
+export const FIRST_KIND = Object.freeze({
+  prefix: 'synk:world:first-answers:',
+  valid: value => validFirst(value, 'from'),
+  body: value => ({ game: value.game, days: value.days, from: value.from, bySkill: value.bySkill }),
+  parse: got => {
+    const body = got.firstAnswers;
+    return validFirst(body, 'since') ? { game: body.game, days: body.days, from: body.since, bySkill: body.bySkill } : null;
+  },
+  shape: ({ askedFrom, at, game, days, from, bySkill }) => ({ askedFrom, at, game, days, from, bySkill: bySkillCopy(bySkill) }),
+  use: stored => ({ since: stored.from, bySkill: Object.freeze(bySkillCopy(stored.bySkill)) }),
+  code: firstAnswersCode,
+  failed: 'FIRST_ANSWERS_FAILED',
+  query: line => line.ask({ game: FIRST_GAME, days: FIRST_DAYS }),
+});
+const KINDS = Object.freeze([MONTH_KIND, FIRST_KIND]);
+
 // 학습일 답의 묻기 · 받기 · 다시 그리기 — 셸이 판을 그릴 때마다 month(coach)를 부른다. 쓸 수 있는 답이면 { month }, 아니면 null(문장 없이
-// 그린다 — 필요하면 묻거나 받기를 한 번 부른다). 셸이 주는 것:
+// 그린다 — 필요하면 묻거나 받기를 한 번 부른다). 근거 상자(kind FIRST_KIND)는 같은 함수를 answer(coach)로 부르고 { since, bySkill }을 받는다
+// (null이면 근거 수를 그리지 않고 「확인 중」). 셸이 주는 것:
 //   answers   createMonthAnswers의 저장소
 //   account   지금 계정 id(손님이면 null) — 부를 때마다 지금 값
 //   lineOf    코치 → { revision, ask(offset) } 그 코치를 연 판의 돌아보기 읽기(손님 · 기기 길 · 읽기가 없는 판이면 null)
 //   dayOf     지금 학습일 열쇠 · offsetOf 기기의 현지 시각 − UTC(분)
 //   redraw    열린 판을 다시 그린다 · note 계기 코드를 남긴다 · alive(account) 답이 왔을 때 아직 그 계정 · 문서인가
-export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive }) {
+//   kind      상자의 종류(없으면 학습일 답 — answers도 같은 종류로 만든다)
+export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive, kind = MONTH_KIND }) {
   // asking 묻는 중인 열쇠 · tried 완결되지 않았거나 실패한 물음의 열쇠와 기기 자리 · pulled 받기를 부른 답의 자리 · kept 이 문서가 들고 있는 답 ·
   // coach 이 상자가 마지막으로 그린 코치 · ahead 닫힌 코치에 온 완결되지 않은 답의 앞선 자리(열쇠와 함께 — 다음 그리기의 코치가 받는다).
   // owner · generation — 상자가 지금 따르는 계정과 세대 수(바뀌면 위를 모두 비운다).
@@ -300,7 +371,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       const holder = holderOf(coach, line);
       const storage = holder.storage;
       if (got?.complete !== true) {
-        missed(lookbackCode(got?.reason));
+        missed(kind.code(got?.reason));
         // 열린 코치가 없다(물은 코치가 닫혔고 같은 판의 새 코치를 아직 그리지 않았다) — 닫힌 코치로 받지 않는다(받은 자리를 먼저 채우면 뒤 코치의
         // 받기를 막는다 — 4-4c 끝 판 카본 B1). 서버의 자리는 남겨, 다음 그리기의 코치가 그 자리로 한 번 받게 한다(카본 -c B1).
         if (!storage) {
@@ -318,14 +389,13 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
         else if (!samePosition(current, device)) ask(holder.coach, holder.line, { owner, revision, day, device: current });
         return;
       }
-      const windows = got.lookback?.windows;
-      const month = got.lookback?.month;
-      if (!at || !validWindows(windows) || !validMonth(month)) {
-        missed('LOOKBACK_FAILED');
+      const body = kind.parse(got);
+      if (!at || !body) {
+        missed(kind.failed);
         return;
       }
       if (storage && heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다
-      const answer = shapeOf({ askedFrom: device, at, windows, month: keptRows(month) });
+      const answer = kind.shape({ askedFrom: device, at, ...body });
       state.kept = { key, answer };
       answers.write(owner, { revision, day, ...answer, since }); // 막힌 저장소면 이 문서의 답(kept)만 남는다
       // 열린 코치가 없으면 적기만 한다 — 다음 그리기의 코치가 이 답으로 견준다(버리면 같은 자리에서 다시 묻는다 — 카본 -c B1). 접혀 돌아오지
@@ -341,18 +411,18 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       }
     };
     void Promise.resolve()
-      .then(() => line.ask(offsetOf()))
+      .then(() => kind.query(line, offsetOf))
       .then(reply, () => {
         // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED), 물은 사이 지우는 길이 돈 물음, 밀려난 물음 · 학습일이 넘어간 물음은 실패로
         // 적지 않는다 — 다른 계정 · 새 세대 · 새 열쇠의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2 · 카본 B2).
-        if (settle() && still()) missed('LOOKBACK_FAILED');
+        if (settle() && still()) missed(kind.failed);
       })
       .catch(() => {
         // 다시 그리기 · 받기의 예외는 묻기를 막지 않는다
       });
   }
 
-  return {
+  const box = {
     month(coach) {
       const owner = account();
       if (!owner) return null;
@@ -380,7 +450,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       const key = `${owner}|${revision}|${day}`;
       const stored = fresherOf(keptFor(key), answers.read(owner, { revision, day }));
       const verdict = stored ? verdictOf(device, stored) : 'ask';
-      if (verdict === 'use') return { month: monthOfAnswer(stored) };
+      if (verdict === 'use') return kind.use(stored);
       if (verdict === 'behind') pullOnce(coach, stored.at);
       else {
         // 닫힌 코치에 온 완결되지 않은 답의 앞선 자리 — 그때 받지 못했으면 이 코치로 한 번 받는다(4-4c 끝 판 카본 -c B1).
@@ -392,4 +462,6 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     // 묻는 중 · 상한 · 받은 자리 · 이 문서의 답을 비운다. 계정이나 세대 수가 바뀌면 month()가 스스로 부른다.
     reset,
   };
+  // 근거 상자는 같은 함수를 answer로 부른다 — 무엇을 내는지는 상자의 종류가 정한다(학습일 답 { month } · 근거 { since, bySkill }).
+  return Object.freeze({ ...box, answer: box.month });
 }

@@ -12,6 +12,7 @@ export {
   stepSkill,
 } from './ability/index.mjs';
 export { COACH_METHODS, createCoach } from './coach/index.mjs';
+export { gameOfSet, isGameId } from './coach/set-id.mjs';
 export { EDITION } from './edition.mjs';
 export { applyOwn, createView, overlay, touchedBy } from './fold/device.mjs';
 export { evidenceOf, markOf, unitRowOf } from './fold/evidence.mjs';
@@ -24,6 +25,7 @@ export { openMap } from './map/index.mjs';
 export { GRADES, gradeOf, PRODUCED } from './memory/grade.mjs';
 export { createMemory } from './memory/index.mjs';
 export { lookbackOf, lookbackWindows, MONTH_FLOOR } from './memory/lookback.mjs';
+export { firstAnswersOf, firstAnswersOfStore, soloLead } from './record/first.mjs';
 export { lookbackOfStore, unitLookback } from './record/lookback.mjs';
 export { EDITIONS, PARAMS } from './params.mjs';
 export { monthReason, PROGRESS_CODES, REASON_CODES } from './reason/index.mjs';
@@ -76,3 +78,10 @@ export {
   stubbornCapOf,
 } from './select/session.mjs';
 export { render as renderReason, LANGS as VELLUM_LANGS } from './vellum/index.mjs';
+export {
+  DESCRIBE_SLOTS,
+  describeSlots,
+  SPEAKING_TYPES,
+  WRITING_FOCUSES,
+  WRITING_NEEDS,
+} from './vellum/slots.mjs';

@@ -25,6 +25,9 @@
 //   ledgerEvents(until)            [event] — 장부 사건과 그 장부를 겨눈 거둠 사건(받은 차례 순, 바닥 위, until까지)
 //   missedUnits(from, to)          [unit] — 앞 창 [from, to) 안에 놓침 줄(kind 'unit' · grade 'again')이 있는 단위(30일째 문장의 첫 걸음)
 //   unitRowsOf(units)              Map<unit, rows> — 그 단위들의 단위 줄 · 본인 말 줄 전부(둘째 걸음)
+// 4-4d(단계 4 계획 §21-23의 2 — 예상 급수의 근거 셈, record/first.mjs firstAnswersOfStore)에서 더한 포트:
+//   meetRows()                     Map<family, rows> — 이 계정 · 이 판 묶음의 만남 · 장부 줄(kind 'meet' · 'carry') 전부
+//   eventsByIds(ids)               Map<id, { seq, receivedMs, event }> — 그 사건 번호들의 사건(바닥 위, 없는 번호는 빠진다)
 import { firstLedgerCells } from './carry.mjs';
 import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
 import { EMPTY_INDEX, serverKey, sourcesOf } from './adapt.mjs';

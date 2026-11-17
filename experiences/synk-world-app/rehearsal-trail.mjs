@@ -18,7 +18,15 @@ const EDITION = /^[A-Za-z0-9_.:+-]{1,200}$/;
 const GEN = /^[0-9]{13}\.[0-9a-z]{8}$/;
 const MAX_BATCH = 256;
 export const MAX_BODY = 262_144; // talk 입구의 본문 상한과 같다 — 넘으면 리허설 서버가 413
-export const TRAIL_PATHS = Object.freeze(['trail', 'trail-clear', 'trail-lookback', 'trail-account', 'trail-control', 'trail-legacy']);
+export const TRAIL_PATHS = Object.freeze([
+  'trail',
+  'trail-clear',
+  'trail-lookback',
+  'trail-first-answers',
+  'trail-account',
+  'trail-control',
+  'trail-legacy',
+]);
 // 옛 꼴 사건의 범위(talk synk-server.js — 계정 · 손님 모두 같다).
 const LEGACY_SCOPE = { domain: 'LAB', workspace: 'learning', subject: 'device' };
 
@@ -118,6 +126,25 @@ function memoryAccount(atlas) {
             structuredClone(allRows().filter(r => (r.kind === 'unit' || r.kind === 'say') && r.unit === unit)),
           ]),
         ),
+      // 예상 급수의 근거 셈(단계 4 계획 §21-23의 2 — talk lib/atlas-trail-store.js와 같은 뜻): 이 판 묶음의 만남 줄(meet · carry)을 계열마다,
+      // 사건을 사건 번호 묶음으로(계정 · 사건 번호 유일 색인 — 바닥 위만).
+      meetRows: async () => {
+        const out = new Map();
+        for (const row of allRows()) {
+          if (row.kind !== 'meet' && row.kind !== 'carry') continue;
+          if (!out.has(row.family)) out.set(row.family, []);
+          out.get(row.family).push(structuredClone(row));
+        }
+        return out;
+      },
+      eventsByIds: async ids => {
+        const want = new Set(ids);
+        return new Map(
+          visible()
+            .filter(record => want.has(record.event.id))
+            .map(record => [record.event.id, structuredClone(record)]),
+        );
+      },
       entriesAfter: async (after, limit) =>
         visible()
           .filter(record => record.seq > after)
@@ -438,6 +465,36 @@ export function createRehearsalTrail({
     return { ...base, complete: true, lookback: { windows, month: await atlas.lookbackOfStore(store, windows, params) } };
   }
 
+  // 예상 급수의 근거 읽기(talk lib/atlas-trail-service.js firstAnswers와 같은 뜻 — 단계 4 계획 §21-23의 2, 설계 주인 11-17 답 2). 돌아보기 읽기처럼
+  // 먼저 접고, 접기가 끝까지 갔을 때만 능력 id마다의 근거 수를 낸다(엔진 firstAnswersOfStore — 손님 코치의 firstAnswers와 같은 셈). 창의 시작은
+  // 답하는 지금 시각에서 days × 24시간을 뺀 때이고 답에 since로 싣는다(학습일 경계로 맞추지 않는다). game은 판 번호의 게임 이름 꼴만(엔진
+  // isGameId), days는 1부터 365까지의 정수만 받는다 — 그 밖은 400.
+  async function firstAnswers(entry, query) {
+    const game = query.get('game');
+    if (!atlas.isGameId(game)) fail(400, 'INVALID_GAME');
+    const raw = query.get('days');
+    if (!/^[1-9]\d{0,2}$/.test(raw ?? '') || Number(raw) > 365) fail(400, 'INVALID_DAYS');
+    const days = Number(raw);
+    const folded = await fold(entry);
+    const at = now();
+    const reason = !folded.ok
+      ? 'fold-failed'
+      : folded.served !== edition
+        ? 'rebuilding'
+        : folded.done !== true
+          ? 'events-remain'
+          : null;
+    const store = folded.served && entry.store.hasHead(folded.served) ? entry.store.account.store(folded.served) : null;
+    const head = store ? await store.head() : null;
+    const summaryAt = head
+      ? { edition: folded.served, gen: head.gen ?? null, foldedUntil: Math.max(head.foldedUntil, head.floorSeq ?? 0) }
+      : null;
+    const base = { ok: true, scope: 'synk-atlas-trail', revision: entry.revision, serverTime: at, summaryAt };
+    if (reason) return { ...base, complete: false, reason };
+    const since = at - days * 86_400_000;
+    return { ...base, complete: true, firstAnswers: { game, days, since, bySkill: await atlas.firstAnswersOfStore(store, { game, since }) } };
+  }
+
   // 옛 POST(talk synk-server.js learning POST와 같은 검사 — 범위 · 번호 · 같은 번호의 다른 사건 · 다른 판에서 받은 같은 번호는 409
   // EVENT_CONFLICT, ids 없음). 받은 판을 적어 두고 견준다 — 판을 안 보면 talk의 409가 리허설에서는 통과로 보였다(Fable 5.2 끝 판 넘친 #8 ①).
   // 부모 · 차례 · 꼴 검사는 talk에만 있다(파일 머리 — 4-8 리허설 대조에서).
@@ -541,6 +598,14 @@ export function createRehearsalTrail({
       const revision = query.get('revision');
       fence(entry, /^(?:0|[1-9]\d{0,9})$/.test(revision ?? '') ? Number(revision) : -1);
       return lookback(entry, query);
+    }
+    // 예상 급수의 근거 읽기(talk learning?view=trail-first-answers — 단계 4 계획 §21-23의 2). GET만, 쿼리는 revision · game · days 하나씩.
+    if (name === 'trail-first-answers') {
+      if (method !== 'GET' || [...query.keys()].some(k => !['revision', 'game', 'days'].includes(k) || query.getAll(k).length !== 1))
+        fail(400, 'INVALID_QUERY');
+      const revision = query.get('revision');
+      fence(entry, /^(?:0|[1-9]\d{0,9})$/.test(revision ?? '') ? Number(revision) : -1);
+      return firstAnswers(entry, query);
     }
     if (method === 'GET') {
       if ([...query.keys()].some(k => !['revision', 'edition', 'since', 'gen'].includes(k) || query.getAll(k).length !== 1))
