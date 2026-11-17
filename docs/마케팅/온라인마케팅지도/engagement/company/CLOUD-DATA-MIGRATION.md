@@ -32,6 +32,8 @@
 
    **작업실 영상(2026-11 회사 판부터):** 데이터 스냅숏 맨 위의 `media-manifest.json`이 `"bytesIncluded": false`이면 영상 본문은 묶음에 없고 같은 버킷의 그 데이터 백업 곁 객체 `company/production/<스냅숏 이름>.media-<sha256>`에 있다([영상 곁 객체](CLOUD-OPERATIONS.md#media-once-20261101)). 묶음 안 릴리스의 `deploy/backup-media.py`로 스냅숏과 준비된 회사 볼륨을 함께 채운 뒤 다음 단계로 간다. 자기 곁 객체를 먼저 쓰고 같은 내용이면 다른 백업의 곁 객체도 받는다. 목록의 sha256이 맞는 사본만 쓰고, 틀린 사본은 건너뛰며, 하나라도 없으면 멈춘다. GCS가 없을 때(77yuhbs 서버 직접 백업에서 되살릴 때)는 그 회차 영수증의 `….media-<sha256>` 사본을 복호화해 한 폴더에 두고 `--source` 대신 `--from-dir <그 폴더>`를 준다([서버 직접 백업 README](../../../../../tools/server-backup/README.md)).
 
+   **작업실 영상 클라우드(2026-11-18 정기 백업부터):** 스냅숏의 `media-manifest.json` 옆에 `media-cloud.json`이 있고 목록이 비어 있지 않으면, 그 영상은 곁 객체로 다시 올리지 않고 미디어 버킷 `synk-company-media-<프로젝트 번호>`의 `studio-media/<저장 이름>` 객체(정해진 generation)를 가리킨다. 아래 명령은 그대로 쓴다. `hydrate`가 `media-cloud.json`의 버킷을 읽어(백업 버킷과 같은 프로젝트 번호일 때만) 가리킨 영상을 미디어 버킷에서 받고, 나머지는 곁 객체에서 받는다. 그래서 토큰의 계정은 미디어 버킷도 읽을 수 있어야 한다. 서버 직접 백업에서 되살릴 때는 sourceKey가 `gcs/<미디어 버킷>/studio-media/…`인 items도 같은 폴더에 함께 내려받는다([서버 직접 백업 README](../../../../../tools/server-backup/README.md), [운영 기록](CLOUD-OPERATIONS.md#media-cloud-a2-20261117)).
+
    ```sh
    media_tool="$(find "$PWD/restored-new/host/opt/synk/releases" -path '*/engagement/company/deploy/backup-media.py' | head -n 1)"
    snapshot="$(find "$PWD/restored-new/data-snapshots" -mindepth 1 -maxdepth 1 -type d)"
