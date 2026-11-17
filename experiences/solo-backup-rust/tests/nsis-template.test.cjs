@@ -126,7 +126,12 @@ test('the hooks keep runs from starting, never overwrite a mapped executable, as
   assert.equal([...macro('SWB_CLOSE').matchAll(STOP)].length, 0, 'the passes are the only stops');
   for (const at of stops) assert.match(pass.slice(0, at), /Delete "\$INSTDIR\\\.installing"\n\s*$/, 'every stop takes the marker away first');
   // When another session holds the files, the message says so (Restart Manager cannot close another session's processes — review 4).
-  assert.match(pass, /IntOp \$3 \$3 & \$\{RmRebootReasonSessionMismatch\}\n\s+\$\{If\} \$3 <> 0\n\s+StrCpy \$R3 "다른 사용자가 [^"]+"\n\s+\$\{EndIf\}\n\s+Delete "\$INSTDIR\\\.installing"\n\s+Abort "\$R3"/);
+  assert.match(pass, /\n\s+\$\{If\} \$3 <> 0\n\s+StrCpy \$R3 "다른 사용자가 [^"]+"\n\s+\$\{EndIf\}\n\s+Delete "\$INSTDIR\\\.installing"\n\s+Abort "\$R3"/);
+  // Except on the first pass: there another session leaves the marker 3 seconds, so an MCP server there can see it and
+  // end, and the second pass tries again (엔진 쪽 세션 제안, 11-18). It is the pass's only wait, and its other failures stop.
+  assert.match(pass, /IntOp \$3 \$3 & \$\{RmRebootReasonSessionMismatch\}\n\s+!if "\$\{ask\}" == "1"\n(\s*;[^\n]*\n)*\s+\$\{If\} \$3 <> 0\n\s+Sleep 3000\n\s+\$\{Else\}\n\s+!endif\n\s+!insertmacro RestartManager_EndSession \$R0\n/);
+  assert.match(pass, /Abort "\$R3"\n\s+!if "\$\{ask\}" == "1"\n\s+\$\{EndIf\}\n\s+!endif\n\s+\$\{EndIf\}/);
+  assert.equal(pass.split('Sleep').length - 1, 1);
   assert.doesNotMatch(macro('SWB_CLOSE') + pass, /\bGoto\b|^\s*\w+:\s*$/m, 'no hand-written labels: the pass goes in twice');
   // The template's own check (a session and a question per file, its stop after our marker) is not used by the hooks.
   assert.doesNotMatch(hooks, /CheckIfAppIsRunning/);

@@ -55,15 +55,26 @@ AllowSkipFiles off
         !endif
         System::Call 'RSTRTMGR::RmShutdown(p R0, i ${RmForceShutdown}, p 0) i .r0'
         ${If} $0 <> 0
-          !insertmacro RestartManager_EndSession $R0
           ; Restart Manager cannot close another session's processes — on a PC where people switch users, the
           ; window app left in someone else's tray. Say so, so the person knows what to do (Fable 5.2 review 4).
           IntOp $3 $3 & ${RmRebootReasonSessionMismatch}
+          !if "${ask}" == "1"
+          ; On the first pass, though, the marker stays 3 seconds first: an MCP server an AI tool started in the other
+          ; session ends by itself on seeing it (mcp.rs looks every 2 seconds), and the second pass, in a fresh
+          ; session, tries again. A window app there still stops that pass (엔진 쪽 세션 제안, 11-18).
           ${If} $3 <> 0
-            StrCpy $R3 "다른 사용자가 이 컴퓨터에 로그인해 ${PRODUCTNAME}을 쓰고 있습니다. 그 사용자가 로그아웃한 뒤 다시 해 주세요."
+            Sleep 3000
+          ${Else}
+          !endif
+            !insertmacro RestartManager_EndSession $R0
+            ${If} $3 <> 0
+              StrCpy $R3 "다른 사용자가 이 컴퓨터에 로그인해 ${PRODUCTNAME}을 쓰고 있습니다. 그 사용자가 로그아웃한 뒤 다시 해 주세요."
+            ${EndIf}
+            Delete "$INSTDIR\.installing"
+            Abort "$R3"
+          !if "${ask}" == "1"
           ${EndIf}
-          Delete "$INSTDIR\.installing"
-          Abort "$R3"
+          !endif
         ${EndIf}
       ${EndIf}
     ${EndIf}
@@ -72,7 +83,8 @@ AllowSkipFiles off
 !macroend
 
 ; Closes everything of the installed version: a first pass that may ask, then a second in a fresh session
-; that does not, for what started while the question was open.
+; that does not, for what started while the question was open and for another session's MCP server that the
+; first pass gave 3 seconds to see the marker.
 !macro SWB_CLOSE
   nsis_tauri_utils::StrReplace "$(appRunning)" "{{product_name}}" "${PRODUCTNAME}"
   Pop $R1
