@@ -1,6 +1,6 @@
 /* 「오늘」 한 장 — 일력 한 장(11-16 뼈대 다시 짜기, 깃발 ?today=1 뒤). 시안: qa/오늘한장-20261114/뼈대시안.mjs.
    11-14 A안(사진 위 + 어두운 판 + 유리 카드 + 흰 알약)은 카본이 「흔한 어두운 화면 틀」로 짚었고 11-16 맹검에서 3점이었다. 이 판은 6점으로 두 쌍을 다 이겼다.
-   밝은 종이 한 장 — 날짜 숫자가 주인공, 태오는 동그란 영상 쪽지, 선은 굵은 먹줄 하나와 가는 줄 하나만, 단추는 먹색 하나.
+   밝은 종이 한 장 — 날짜 숫자가 주인공, 태오는 큰 말과 장면 한 컷(11-18), 선은 굵은 먹줄과 목록의 세로 먹줄, 단추는 종이 아래 끝의 먹색 띠.
    노랑(드라마의 따뜻한 빛)은 끝 화면의 날짜 동그라미와 체크에만 — 「고쳤다」는 순간에만 쓴다. 장면(드라마)은 어둡게 그대로 두고, 이 장이 들리면 그 어둠이 드러난다. */
 .td { position: fixed; inset: 0; z-index: 60; overflow: hidden; isolation: isolate;
  --paper: #f2efe7; --paper-2: #e7e2d6; --ink-0: #17160f; --ink-2: rgba(23,22,15,.62); --ink-3: rgba(23,22,15,.46); --rule: rgba(23,22,15,.13);
@@ -12,11 +12,12 @@
 .td-bind span:last-child { font-family: var(--sans); letter-spacing: 0; }
 .td-sheet { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 14px 20px 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; background: var(--paper); }
 .td-sheet::-webkit-scrollbar { display: none; }
+.td-sheet.td-into-sheet { scroll-padding-bottom: 84px; } /* 아래에 붙은 먹색 띠 밑에 Tab 초점이 서지 않게 */
 .td-sheet > .td-l, .td-sheet > .td-r { display: contents; } /* 휴대폰은 한 줄로 쌓는다 — 넓은 화면만 두 기둥 */
 
 /* 일력 머리 */
 .td-dn { display: flex; align-items: flex-end; gap: 14px; }
-.td-num { position: relative; font-family: var(--num); font-weight: 500; font-size: 128px; line-height: .86; letter-spacing: -.065em; margin: 4px 0 0 -6px; font-variant-numeric: tabular-nums; }
+.td-num { position: relative; font-family: var(--num); font-weight: 500; font-size: clamp(128px, min(21vh, 46vw), 184px); line-height: .86; letter-spacing: -.065em; margin: 4px 0 0 -6px; font-variant-numeric: tabular-nums; }
 .td-num.sun { color: var(--sun); } .td-num.sat { color: var(--sat); }
 .td-wd { padding-bottom: 8px; }
 .td-wd b { display: block; font-size: 22px; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; }
@@ -29,39 +30,64 @@
 .td-ring path { fill: none; stroke: var(--mark); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: td-draw .9s .35s cubic-bezier(.6,.05,.3,1) forwards; }
 @keyframes td-draw { to { stroke-dashoffset: 0; } }
 
-/* 태오 쪽지 — 굵은 먹줄 아래, 동그란 영상과 한마디 */
-.td-say { display: grid; grid-template-columns: 60px 1fr; gap: 14px; align-items: start; margin: 20px 0 6px; padding: 16px 0 18px; border-top: 1.5px solid var(--ink-0); }
-.td-bub { position: relative; display: block; width: 60px; height: 60px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: #2a2620; box-shadow: 0 0 0 1px var(--rule); transition: box-shadow .25s; }
-/* 얼굴만 — 뒤의 학생들이 동그라미에 걸리지 않게 더 당긴다(11-16 카본) */
-.td-bub video { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; transform: scale(2.4); transform-origin: 50% 25%; }
+/* 태오의 한마디 — 굵은 먹줄 아래, 말이 먼저(왼쪽에 크게)이고 말한 사람은 오른쪽 장면 사진 한 장과 그 아래 이름이다.
+   11-18 GPT 맹검: 동그란 얼굴 · 이름 · 따옴표 묶음이 홈페이지 추천사 같았고, 말이 좁은 오른쪽에 밀려 빠듯했다.
+   사진은 1화 학생 식당의 태오(듣는 고리 영상) — 얼굴만 오린 동그라미가 아니라 어깨와 식당이 보이는 장면이라 「그날 만난 사람」으로 읽힌다. */
+.td-say { display: grid; grid-template-columns: minmax(0, 1fr) 116px; gap: 16px; align-items: start; margin: 20px 0 0; padding: 18px 0 0; border-top: 1.5px solid var(--ink-0); }
+.td-pic { margin: 0; }
+.td-bub { position: relative; display: block; width: 100%; aspect-ratio: 4 / 3; padding: 0; border: 0; border-radius: 2px; overflow: hidden; background: #2a2620; }
+/* 가로 4:3 장면 한 컷 — 세로 9:16 영상에서 가로 72% · 세로 19~49%(머리부터 턱 아래까지와 둘레의 식당)만 보인다. 듣는 고리 · 말하는 판 · 정지 그림 셋 모두
+   이 안에 머리와 턱이 든다(11-18 세 판 대조). 세로 사진은 짧은 한마디 옆에서 아래로 길게 남아 구멍을 만들었다(같은 날 맹검 1차). */
+.td-bub video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; transform: scale(1.389); transform-origin: 39.3% 36.9%; }
 button.td-bub { cursor: pointer; transition: transform .22s var(--spring); }
-button.td-bub:active { transform: scale(.94); }
+button.td-bub:active { transform: scale(.96); }
 button.td-bub:disabled { cursor: default; transform: none; }
-/* 말하는 동안만 가는 먹줄 하나. 소리 자동 재생이 막히면 이름 옆에 「듣기」가 뜬다(11-16 카본: 흰 틈 + 검은 테의 이중 테두리가 구식 배지 같았다). */
-.td-say.speaking .td-bub { box-shadow: 0 0 0 1.5px var(--ink-0); }
-.td-who { display: flex; align-items: center; gap: 10px; margin: 2px 0 0; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
-.td-listen { display: none; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: var(--ink-0); font: 700 12.5px/1 var(--sans); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+/* 이름은 사진 아래 한 줄. 말하는 동안 이름 옆에 가는 소리 막대 셋이 뛰고, 소리 자동 재생이 막히면 「듣기」가 뜬다. */
+.td-who { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; font-size: 12px; font-weight: 700; letter-spacing: -.01em; color: var(--ink-0); }
+.td-say.speaking .td-who span::after { content: ''; display: inline-block; width: 9px; height: 9px; margin-left: 6px; vertical-align: -1px;
+ background: linear-gradient(currentColor, currentColor) 0 100% / 2px 100% no-repeat, linear-gradient(currentColor, currentColor) 50% 100% / 2px 60% no-repeat, linear-gradient(currentColor, currentColor) 100% 100% / 2px 80% no-repeat;
+ animation: td-eq .7s ease-in-out infinite alternate; }
+@keyframes td-eq { to { background-size: 2px 40%, 2px 100%, 2px 50%; } }
+.td-listen { display: none; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: var(--ink-0); font: 700 12px/1 var(--sans); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .td-listen::before { content: ''; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
 .td-say.tap .td-listen { display: inline-flex; }
-/* 태오의 말은 할 일 제목과 다른 목소리로 — 보통 굵기, 매단 따옴표(11-16 카본: 요일 · 태오의 말 · 할 일 제목이 같은 먹 · 굵기로 묶였다) */
-.td-line { position: relative; margin: 4px 0 0; font-size: 19.5px; font-weight: 500; line-height: 1.45; letter-spacing: -.03em; text-wrap: pretty; }
-.td-line::before { content: '“'; position: absolute; left: -.5em; top: -.02em; color: var(--ink-3); font-weight: 600; }
+/* 태오의 말은 할 일 제목과 다른 목소리로 — 보통 굵기 · 큰 글. 따옴표 없이 말 자체가 쪽지다. 낱말을 끊지 않고, 줄을 고르게 나누는 balance는 쓰지 않는다
+   (「같이 가자고 했던 / 거 기억나요?」처럼 서술어 앞을 끊었다). */
+.td-line { margin: -3px 0 0; font-size: 20px; font-weight: 500; line-height: 1.45; letter-spacing: -.035em; word-break: keep-all; overflow-wrap: anywhere; text-wrap: pretty; }
 .td-line .w { display: inline-block; animation: td-word .5s var(--spring) both; }
+.td-line .s { display: block; } /* 문장마다 새 줄 */
+.td-line .cl { display: inline-block; } /* 쉼표로 나뉜 짧은 마디는 한 덩이로 다음 줄에 넘어간다. 칸보다 넓으면 덩이 안에서 줄을 바꿔 사진 쪽으로 넘치지 않는다(11-18 카본 A2) */
 .td-yo { font-style: normal; font-weight: 800; }
 
-/* 오늘 할 것 — 가는 줄로 나눈 세 줄, 줄마다 앱이 본 것 한 문장. 누르면 나머지 까닭과 근거가 펼쳐진다. */
+/* 오늘 할 것 — 일력의 인쇄 여백처럼 왼쪽 여백 칸(무엇 · 몇 분)과 본문(제목 · 앱이 본 것 한 문장 · 끝의 「자세히」)을 세로 먹줄 하나로 가른다.
+   누르면 나머지 까닭과 근거가 펼쳐진다.
+   11-18 GPT 맹검: 가로줄 · 회색 설명 · 오른쪽 「자세히」 줄 · 검정 알약 단추가 생산성 앱 목록 같았고, 위의 일력 생각이 아래로 이어지지 않았다.
+   가로줄과 카드 테두리는 없다. 이유 문장은 앱이 무엇을 보고 골랐는지라 각주처럼 흐리게 두지 않는다. 다음 장(내일)의 줄도 같은 여백 칸을 쓴다. */
 .td-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 10px 0 0; padding-bottom: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+.td-r > .td-sec.td-lead { margin: 34px 0 0; padding: 0; border: 0; font-size: 12px; color: var(--ink-3); }
 .td-n { font-family: var(--num); font-size: 13px; font-weight: 600; color: var(--ink-0); }
-.td-row { position: relative; display: block; width: 100%; padding: 14px 0 15px; border: 0; border-bottom: 1px solid var(--rule); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .2s; }
-.td-row:active { background: rgba(23,22,15,.035); }
+.td-row { position: relative; display: block; width: 100%; padding: 14px 0 15px; border: 0; border-bottom: 1px solid var(--rule); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .2s; }
+.td-row:active { background-color: rgba(23,22,15,.035); }
 .td-k { display: flex; gap: 7px; align-items: baseline; font-size: 12px; font-weight: 700; color: var(--ink-3); }
 .td-k b { font-family: var(--num); font-weight: 600; }
-/* 펼침은 글로 말한다 — 「자세히」 · 「접기」(11-16 카본: 「+」 · 「⌄」 기호가 무엇인지 모호했다) */
+.td-list { --col: 66px; --vr: rgba(23,22,15,.24); margin: 6px 0 0; }
+.td-list .td-row { display: grid; grid-template-columns: var(--col) minmax(0, 1fr); column-gap: 29px; padding: 10px 0 26px; border: 0;
+ background: linear-gradient(var(--vr), var(--vr)) calc(var(--col) + 14px) 0 / 1px 100% no-repeat; }
+.td-list .td-row:last-child { padding-bottom: 6px; }
+.td-list .td-k { flex-direction: column; align-items: flex-start; gap: 3px; padding-top: 3px; font-size: 12.5px; letter-spacing: -.01em; color: var(--ink-0); }
+.td-list .td-k b { font-weight: 500; font-size: 13px; color: var(--ink-2); }
+/* 펼침은 글로 말한다 — 「자세히」 · 「접기」(11-16 카본: 「+」 · 「⌄」 기호가 무엇인지 모호했다). 오늘 장에서는 이유 문장 끝에 먹색으로 붙는다. */
 .td-tog { margin-left: auto; font-weight: 600; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(23,22,15,.25); }
+.td-list .td-tog { display: inline-flex; align-items: center; gap: 5px; margin-left: 2px; font-size: 12.5px; font-weight: 700; color: var(--ink-0); text-decoration: none; }
+.td-list .td-tog::after { content: ''; width: 5px; height: 5px; border: solid currentColor; border-width: 0 1.6px 1.6px 0; transform: translateY(-2px) rotate(45deg); transition: transform .25s var(--spring); }
+.td-list .td-row.open .td-tog::after { transform: translateY(1px) rotate(-135deg); }
+.td-end { display: inline-block; } /* 마지막 낱말과 「자세히」를 한 덩이로 — 칸보다 넓으면 안에서 줄을 바꾼다 */
 .td-tog .c, .td-row.open .td-tog .o { display: none; }
 .td-row.open .td-tog .c { display: inline; }
 .td h3 { margin: 3px 0 0; font-size: 17px; font-weight: 700; letter-spacing: -.03em; line-height: 1.32; }
+.td-list h3 { margin: 0; font-size: 17px; line-height: 1.36; word-break: keep-all; }
 .td-why { margin: 5px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.td-list .td-why { margin-top: 4px; font-size: 14px; line-height: 1.5; font-weight: 450; color: rgba(23,22,15,.74); word-break: keep-all; }
 .td-empty { margin: 14px 0 0; }
 .td-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s var(--spring); }
 .td-more > span { overflow: hidden; }
@@ -71,14 +97,23 @@ button.td-bub:disabled { cursor: default; transform: none; }
 .td-row.open .td-more { grid-template-rows: 1fr; }
 .td-row:focus-visible, .td-go:focus-visible, .td-bub:focus-visible { outline: 2px solid var(--ink-0); outline-offset: 3px; }
 
-/* 단추 — 먹색 하나. 아래에 붙어 있고, 바탕은 종이로 꽉 막는다(11-16 카본: 반투명 가림이 글을 반쯤 잘라 먹은 것처럼 보였다). */
+/* 단추 — 아래에 붙어 있다. 두 가지뿐이다.
+   td-into: 드라마로 들어가는 단추(오늘 시작 · 이어서 · 1화 처음부터)는 종이 아래의 어두운 장면이 드러난 자리다(그림자 없는 먹색 띠).
+     누르면 이 종이가 들려 그 어둠이 장면이 된다(11-18 GPT 맹검: 둥근 검정 알약이 종이와 관계없이 떠 있었다).
+   td-turn: 이 장을 뜯거나 넘기는 단추(오늘은 여기까지 · 드라마 처음 화면)는 종이 위의 마지막 줄이다 — 종이색 바탕에 윗변 먹줄. */
 .td-foot { position: sticky; bottom: 0; z-index: 2; order: 9; margin: auto -20px 0; padding: 14px 20px max(16px, env(safe-area-inset-bottom)); background: var(--paper); }
-.td-go { display: flex; align-items: center; gap: 12px; width: 100%; height: 60px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--ink-0); color: var(--paper); font: 700 17px/1 var(--sans); letter-spacing: -.02em; cursor: pointer; transition: transform .22s var(--spring); }
-.td-go:active { transform: scale(.98); }
-.td-go.center { justify-content: center; }
-.td-go.ghost { justify-content: center; height: 52px; background: none; color: var(--ink-0); box-shadow: inset 0 0 0 1.5px var(--ink-0); }
+.td-go { display: flex; align-items: center; gap: 12px; width: 100%; height: 60px; padding: 0 20px; border: 0; border-radius: 0; background: var(--ink-0); color: var(--paper); font: 700 18px/1 var(--sans); letter-spacing: -.02em; cursor: pointer; transition: transform .22s var(--spring), opacity .25s; }
 .td-go:disabled { cursor: default; }
+.td-foot.td-into { padding: 0; background: var(--ink-0); transition: background-color .3s; } /* 일력 머리 띠와 같은 먹색 — 종이 한 장의 위아래 (11-18 맹검 1차: 띠 밑에 흐린 장면을 비치게 했더니 알아볼 것 없는 임시 배경 같았다) */
+.td-foot.td-into .td-go { height: auto; min-height: 66px; padding: 0 20px env(safe-area-inset-bottom); background: none; }
+.td-foot.td-into .td-go:active { opacity: .7; }
+/* 띠가 화면 끝까지 닿아 바깥 테두리는 잘린다 — 초점 테두리는 띠 안쪽에 종이색으로(11-18 카본 A3) */
+.td-foot.td-into .td-go:focus-visible { outline: 2px solid var(--paper); outline-offset: -7px; }
+.td-foot.td-turn { padding-top: 10px; }
+.td-foot.td-turn .td-go { height: 58px; padding: 0; background: none; color: var(--ink-0); border-top: 1.5px solid var(--ink-0); }
+.td-foot.td-turn .td-go:active { opacity: .6; }
 .td-m { margin-left: auto; font-family: var(--num); font-weight: 600; font-size: 15px; color: rgba(242,239,231,.62); }
+.td-foot.td-turn .td-m { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink-3); }
 .td-arr { position: relative; width: 18px; height: 2px; background: currentColor; flex: none; }
 .td-go .td-arr:first-child { margin-left: auto; }
 .td-arr::after { content: ''; position: absolute; right: 0; top: -4px; width: 8px; height: 8px; border: solid currentColor; border-width: 2px 2px 0 0; transform: rotate(45deg); }
@@ -110,6 +145,9 @@ button.td-bub:disabled { cursor: default; transform: none; }
 .td.lifting { background: #060608; transition: background .45s .15s; }
 .td.lifting .td-sheet { animation: td-lift .62s cubic-bezier(.6,0,.75,.2) forwards; transform-origin: 50% 0; }
 .td.lifting .td-bind { opacity: 0; transition: opacity .3s; }
+/* 들리는 동안 아래의 어둠은 바탕의 어둠과 하나가 된다 — 띠가 종이에 붙어 같이 올라가지 않게 */
+.td.lifting .td-foot.td-into { background-color: transparent; }
+.td.lifting .td-foot.td-into .td-go { opacity: 0; }
 .td-under .td-say { margin-top: 18px; }
 @keyframes td-lift { to { transform: translateY(-105%) rotate(-2.5deg); box-shadow: 0 50px 90px -30px rgba(0,0,0,.6); } }
 .td.tearing .td-top { animation: td-tear .95s cubic-bezier(.55,0,.8,.2) forwards; transform-origin: 8% 0; pointer-events: none; }
@@ -122,23 +160,59 @@ button.td-bub:disabled { cursor: default; transform: none; }
 
 @media (min-width: 1024px) {
  .td-bind { height: 34px; line-height: 34px; padding: 0 64px; font-size: 13px; }
- .td-sheet { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 520px); justify-content: center; align-content: center; align-items: center; column-gap: 96px; padding: 56px 64px 48px; }
+ .td-sheet { position: relative; display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 520px); justify-content: center; align-content: center; align-content: safe center; align-items: center; column-gap: 96px; padding: 56px 64px 48px; } /* safe — 세로로 넘치면 위가 잘려 닿지 않는 일이 없게 위에서부터 */
+ /* 아래 먹색 띠가 있는 장(오늘 · 할 것이 없는 날) — 띠 자리만큼 아래 여백, Tab 초점이 띠 밑에 서지 않게 스크롤 여백(11-18 Fable),
+    띠 글(두 기둥 끝)과 맞게 기둥 폭은 540으로 같다(11-18 Fable: 빈 날 장은 520이라 띠 글이 20px 어긋났다) */
+ .td-sheet.td-into-sheet { grid-template-columns: minmax(0, 540px) minmax(0, 540px); padding-bottom: 132px; scroll-padding-bottom: 132px; }
  .td-sheet > .td-l, .td-sheet > .td-r { display: flex; flex-direction: column; }
  .td-num { font-size: 300px; margin-left: -14px; }
  .td-date.small .td-num { font-size: 220px; }
  .td-wd b { font-size: 34px; } .td-wd span { font-size: 15px; }
- .td-say { grid-template-columns: 96px 1fr; margin-top: 36px; padding-top: 24px; }
- .td-bub { width: 96px; height: 96px; }
- .td-line { font-size: 26px; }
+ .td-say { grid-template-columns: minmax(0, 1fr) 176px; gap: 28px; margin-top: 36px; padding-top: 26px; }
+ .td-today .td-say { grid-template-columns: minmax(0, 1fr) 236px; gap: 32px; }
+ .td-who { font-size: 13px; }
+ .td-line { font-size: 27px; }
  .td h3 { font-size: 19px; }
  .td-foot { position: static; margin: 0; padding: 22px 0 0; background: none; box-shadow: none; }
+ /* 넓은 화면의 어둠은 종이 아래 한 띠 — 글은 두 기둥 끝에 맞춘다. 띠는 화면 아래에 고정하고, 종이는 그 위에서 스크롤된다 — 종이 안의 절대 위치였을 때 세로가 낮은 화면(1366×768)이나 줄을 펼친 뒤에
+    띠가 목록을 덮었다(11-18 카본 A1). 종이의 아래 여백(td-into-sheet)이 띠 높이보다 커서 끝까지 내리면 마지막 줄이 띠 위에 선다. */
+ .td-foot.td-into { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; padding: 0; }
+ .td-foot.td-into .td-go { min-height: 88px; padding: 0 max(64px, calc(50% - 588px)); font-size: 24px; } /* 띠 글은 종이의 두 기둥 끝에 맞춘다 — 왼쪽 「오늘 시작」, 오른쪽 몇 분과 화살표 */
+ .td-foot.td-into .td-m { font-size: 18px; }
+ .td-list { --col: 76px; }
+ /* 오늘 장 — 날짜가 위 한 줄을 다 쓰고, 그 아래 먹줄 하나에 왼쪽 태오의 한마디와 오른쪽 오늘 할 것이 같이 매달린다.
+    단추 띠의 글은 두 기둥 끝에 맞는다(11-18 맹검 1차: 목록이 날짜 중간 높이에 걸려 따로 떠 있었고, 목록 글이 날짜에 비해 각주처럼 작았다). */
+ .td-today { grid-template-rows: auto auto 1fr; align-items: start; }
+ .td-today > .td-l, .td-today > .td-r { display: contents; }
+ .td-today .td-date { grid-column: 1 / -1; grid-row: 1; }
+ .td-today .td-dn { justify-content: space-between; } /* 요일은 오른쪽 기둥 끝까지 — 숫자와 요일이 위 한 줄을 다 쓴다 */
+ .td-today .td-wd { text-align: right; } .td-today .td-wd b { font-size: 44px; }
+ .td-today .td-num { font-size: min(300px, 31vh); }
+ .td-today .td-say { grid-column: 1; grid-row: 2 / span 2; margin-top: 30px; }
+ .td-today .td-r > .td-sec { grid-column: 2; grid-row: 2; margin: 30px 0 0; padding: 26px 0 0; border-top: 1.5px solid var(--ink-0); font-size: 13px; }
+ .td-today .td-list { grid-column: 2; grid-row: 3; --col: 84px; margin-top: 12px; }
+ .td-today .td-list .td-k, .td-today .td-list .td-k b, .td-today .td-list .td-tog { font-size: 15px; }
+ .td-today .td-list h3 { font-size: 24px; }
+ .td-today .td-list .td-why { font-size: 17.5px; }
+ .td-today .td-list .td-row { padding-bottom: 30px; }
  .td-top .td-r > .td-sec, .td-under .td-r > .td-sec { margin-top: 0; }
  .td-next { margin-top: 28px; }
+}
+/* 세로가 낮은 넓은 화면(1366×768 · 1536×864 노트북 등) — 세 줄과 이유가 띠 위 첫 화면에 다 들게 날짜와 여백을 줄인다(11-18 카본 A1 뒤 잼: 줄이기 전에는 셋째 줄 이유가 띠에 가렸다) */
+@media (min-width: 1024px) and (max-height: 880px) {
+ .td-sheet.td-into-sheet { padding-top: 30px; padding-bottom: 104px; scroll-padding-bottom: 104px; }
+ .td-today .td-num { font-size: min(300px, 24vh); }
+ .td-today .td-wd b { font-size: 36px; }
+ .td-today .td-say, .td-today .td-r > .td-sec { margin-top: 22px; padding-top: 20px; }
+ .td-today .td-list { margin-top: 8px; }
+ .td-today .td-list .td-row { padding-bottom: 18px; }
+ .td-foot.td-into .td-go { min-height: 76px; }
 }
 @media (prefers-reduced-motion: reduce) {
  .td .rise, .td-line .w { animation: none !important; }
  .td-ring path { animation: none; stroke-dashoffset: 0; }
  .td-bub { transition: none; }
+ .td-say.speaking .td-who span::after { animation: none; }
  .td-now::before { animation: none; transform: rotate(45deg) translate(-2px,-3px); }
  .td.lifting .td-sheet, .td.tearing .td-top { animation: none; }
  .td * { transition: none !important; }

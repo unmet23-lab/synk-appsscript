@@ -429,3 +429,33 @@ test('태오 한마디 영상 자리는 있는 틀에만, 정해 둔 이름으�
  }
  assert.ok(TAEO_LINES.done && !/'요'/.test(TAEO_LINES.done));
 });
+
+test('태오 한마디와 이유 문장의 줄바꿈 덩이 — 문장마다 새 줄, 12자 이하 마디는 한 덩이, 마지막 낱말과 「자세히」는 한 덩이(11-18 Fable)', async () => {
+ const { words, tail } = await import('../experiences/drama/pilot/today/screen.mjs');
+ const text = (h) => h.replace(/<[^>]+>/g, '');
+ const count = (h, re) => (h.match(re) || []).length;
+ // 문장 둘 → 새 줄 둘. 「식당에서 처음 만났죠?」(12자) · 「그 장면,」 · 「오늘 한 번 더 해요.」(12자)는 모두 한 덩이로 넘어간다.
+ const a = words('식당에서 처음 만났죠? 그 장면, 오늘 한 번 더 해요.');
+ assert.equal(count(a, /<span class="s">/g), 2);
+ assert.equal(count(a, /<span class="cl">/g), 3);
+ assert.equal(text(a).replace(/\s+/g, ' '), '식당에서 처음 만났죠? 그 장면, 오늘 한 번 더 해요.');
+ // 낱말이 떠오르는 차례는 문장을 넘어서도 이어진다.
+ const delays = [...a.matchAll(/animation-delay:(\d+)ms/g)].map((m) => Number(m[1]));
+ assert.deepEqual(delays, delays.map((_, i) => 160 + i * 60));
+ // 12자와 13자 경계 — 13자 마디는 덩이로 묶지 않아 칸 안에서 줄을 바꾼다.
+ assert.equal(count(words('가나다라마바사아자차카타'), /<span class="cl">/g), 1);
+ assert.equal(count(words('가나다라마바사아자차카타파'), /<span class="cl">/g), 0);
+ // 띄어쓰기 없는 문장은 낱말 하나 · 덩이 하나.
+ const one = words('안녕하세요.');
+ assert.equal(count(one, /class="w"/g), 1);
+ assert.equal(count(one, /<span class="cl">/g), 1);
+ // 따옴표 속 '요'는 낫표로 묶이고, 긴 문장(18자)은 덩이로 묶지 않는다.
+ const yo = words("이번엔 끝에 '요'까지 붙여서요.");
+ assert.match(yo, /<em class="td-yo">「요」<\/em>까지/);
+ assert.equal(count(yo, /<span class="cl">/g), 0);
+ // 이유 문장 끝 — 마지막 낱말과 뒤에 붙일 것이 한 덩이, 앞은 그대로 흐른다.
+ assert.equal(tail('어제 끝이 반말처럼 들렸어요.', '<i>자세히</i>'), '어제 끝이 반말처럼 <span class="td-end">들렸어요. <i>자세히</i></span>');
+ assert.equal(tail('안녕하세요.', 'X'), '<span class="td-end">안녕하세요. X</span>');
+ assert.match(tail("끝에 '요'", 'X'), /<span class="td-end"><em class="td-yo">「요」<\/em> X<\/span>$/);
+ assert.equal(tail('<b> 굵게', 'X'), '&lt;b&gt; <span class="td-end">굵게 X</span>');
+});
