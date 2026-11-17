@@ -10,6 +10,7 @@ import {randomUUID} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
 import {requestClock,paymentEverConfirmed,stoppedNoticeDue,stoppedDeleteDue,kstDayEnd,kstToday} from './pulse-personas.mjs';
 import {deskView} from './public/pulse-app/desk-view.mjs';
+import {applyRequestAction} from './pulse-requests.mjs';
 
 const DAY=86400000,isoOf=ms=>new Date(ms).toISOString(),endOf=ms=>kstDayEnd(kstToday(isoOf(ms)));
 const afterDay=ms=>Date.parse(endOf(ms))+60000;
@@ -40,9 +41,20 @@ test('시계 계산: 의뢰서(동의)가 있고 제작 신호가 없을 때만 
   assert.equal(paymentEverConfirmed(refunded.studio.request),true);assert.equal(requestClock(store,refunded,isoOf(t0)).keepPayment,true);
   assert.equal(paymentEverConfirmed({payment:{status:'cancelled',confirmedAt:isoOf(t0),cancelledAt:isoOf(t0)}}),true,'이력이 없는 옛 결제는 그때의 payment로');
   assert.equal(paymentEverConfirmed({payment:{status:'requested'}}),false);assert.equal(requestClock(store,row({payment:{status:'requested'}}),isoOf(t0)).keepPayment,undefined);
-  // D4: 이 프로젝트를 붙잡는 인물(브랜드 없는 인물 · 열린 인물)이 더 늦게 움직였으면 그날부터.
-  personas.push({id:'a',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0+30*DAY)},{id:'b',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+60*DAY)},{id:'c',originProjectId:'p2',workspaceId:null,status:'ready',updatedAt:isoOf(t0+70*DAY)});
-  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+30*DAY),'브랜드에 묶여 정리된 인물 · 다른 프로젝트의 인물은 보지 않는다');
+  // D4 · GA1: 이 프로젝트에서 나온 인물이 더 늦게 움직였으면 그날부터 — 브랜드에 묶인 인물도 본다(인물 일로 풀린 예고가 브랜드 보관 뒤 되살아나지 않게).
+  personas.push({id:'a',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0+30*DAY)},{id:'c',originProjectId:'p2',workspaceId:null,status:'ready',updatedAt:isoOf(t0+70*DAY)});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+30*DAY),'다른 프로젝트의 인물은 보지 않는다');
+  personas.push({id:'b',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+60*DAY)});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+60*DAY),'브랜드에 묶인 인물의 움직임도 이 의뢰의 움직임이다');
+  // 76일 예고 뒤 89일에 인물 일 → 예고가 풀리고, 그 인물이 92일에 브랜드에 묶여도 옛 예고는 되살아나지 않는다(GPT 서버 검수 GA1).
+  personas.length=0;personas.push({id:'e',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+92*DAY)});
+  assert.equal(requestClock(store,row({},{requestRetentionNotice:{at:isoOf(t0+76*DAY)}}),isoOf(t0+93*DAY)).noticed,false);
+  // 시계가 지운 인물의 묘비는 움직임이 아니고, 직원이 지운 인물은 움직임이다.
+  personas.length=0;personas.push({id:'f',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+80*DAY),updatedAt:isoOf(t0+80*DAY),deletion:{confirmedBy:'system'}});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0));
+  personas.push({id:'g',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+85*DAY),updatedAt:isoOf(t0+85*DAY),deletion:{confirmedBy:'staff-1'}});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+85*DAY));
+  personas.length=0;
   personas.push({id:'d',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:'언젠가'});
   assert.deepEqual(requestClock(store,row(),isoOf(t0)),{unclear:'date'},'날짜를 못 읽으면 지우지 않는다');
   personas.length=0;
@@ -88,8 +100,10 @@ test('의뢰서를 낸 프로젝트는 확인 전후 · 방 안 의뢰서 · 보
   const open=await f.send(),room=await f.send(),noConsent=await f.send(),refunded=await f.send(),archived=await f.send(),moved=await f.send();
   // room: 담당자가 확인한 뒤 멈춘 방 안 의뢰서 꼴 — 내부 메모 · 조건 · 인물 예고 기록 줄(인물 이름)과 곁 문서(권리 · 자료 사용 · 직원 초안 · 자동 안내)가 있다.
   f.unlist(room);
-  f.put(room,row=>({...row,internalNotes:'김합성 님과 통화 — 다음 주 다시',terms:'15초 한 편',studio:{...row.studio,request:{...row.studio.request,status:'confirmed',confirmedAt:isoOf(start)}},
-    history:[...row.history,{id:randomUUID(),actor:'system',action:'맞춤 인물 지우기 예고(제작으로 이어지지 않은 채 90일 동안 진행 없음)',at:isoOf(start),notice:'persona_retention',personaId:'gone',personaName:'김실명',deleteAt:isoOf(start)}]}));
+  f.put(room,row=>({...row,internalNotes:'김합성 님과 통화 — 다음 주 다시',terms:'15초 한 편',studio:{...row.studio,request:{...row.studio.request,status:'confirmed',confirmedAt:isoOf(start)}}}));
+  // 인물 예고 줄은 실제 쓰기 길(storeRow)로 남겨 알림 사건에도 인물 이름이 실린다(카본 서버 검수 A2 — 지울 때 두 곳 모두 비우는지 본다).
+  {const row=f.row(room);f.app.clientProjects.commitWorkflow({...row,revision:row.revision+1,history:[...row.history,{id:randomUUID(),actor:'system',action:'맞춤 인물 지우기 예고(제작으로 이어지지 않은 채 90일 동안 진행 없음)',at:isoOf(start),notice:'persona_retention',personaId:'gone',personaName:'김실명',deleteAt:isoOf(start)}]});}
+  assert.ok(f.row(room).notificationEvents.some(event=>event.personaName==='김실명'),'알림 사건에 인물 이름이 실렸다'); assert.equal(f.row(room).updatedAt,isoOf(start));
   store.put('clientRights',room,{ciphertext:store.encrypt({projectId:room,note:'로고 권리 확인'})});
   store.put('clientMaterialUsage',room,{ciphertext:store.encrypt({projectId:room})});
   store.put('clientDrafts',f.owner.id+'|'+room+'|project',{schema:1,ownerId:f.owner.id,projectId:room,kind:'project',revision:1,status:'active',updatedAt:isoOf(start),ciphertext:store.encrypt({internalNotes:'초안'})});
@@ -102,15 +116,21 @@ test('의뢰서를 낸 프로젝트는 확인 전후 · 방 안 의뢰서 · 보
   const log=[{kind:'requested',at:isoOf(start),by:'',amount:300000},{kind:'confirmed',at:isoOf(start),by:'',amount:300000},{kind:'cancelled',at:isoOf(start),by:'',was:'confirmed',amount:300000,note:'손님 사정으로 환불'},{kind:'requested',at:isoOf(start),by:'',amount:300000}];
   f.put(refunded,row=>({...row,studio:{...row.studio,request:{...row.studio.request,status:'confirmed',confirmedAt:isoOf(start),payment:{status:'requested',amount:300000,requestedAt:isoOf(start)},paymentLog:log}}}));
   f.put(archived,row=>({...row,stage:'archived'}));
+  // 브랜드 연결 신청: 대기는 의뢰와 함께 지우고, 승인된 것(브랜드 회원 관계)은 남긴다(GPT 서버 검수 GA3).
+  store.put('pulseWorkspaceClaims','claim-pending',{id:'claim-pending',projectId:open,inviteRevision:1,synkUserId:'synk-user-1',displayName:'김합성',status:'pending',createdAt:isoOf(start),decidedAt:null,decidedBy:null,workspaceId:null,note:''});
+  store.put('pulseWorkspaceClaims','claim-approved',{id:'claim-approved',projectId:open,inviteRevision:1,synkUserId:'synk-user-2',displayName:'브랜드 관리자',status:'approved',createdAt:isoOf(start),decidedAt:isoOf(start),decidedBy:f.owner.id,workspaceId:'w1',note:''});
   const files=await readdir(f.media());assert.equal(files.length,6);
   // 75일: 할 일 없음. 77일의 서버 시작 직후 회차: 예고만(동의가 있는 다섯).
   f.stamp=start+75*DAY;assert.deepEqual(await f.sweep(),{retired:0});
+  assert.equal(store.all('pulseRequests').filter(item=>item.projectId===refunded).length,1,'확인된 의뢰의 대기 줄은 90일 멈추기 전에는 그대로(GPT 서버 검수 GA2 — 다시 보내기 · 하루 상한이 읽는다)');
   f.stamp=start+77*DAY;assert.deepEqual(await f.sweep({startup:true}),{retired:0,requests:{noticed:5}});
   for(const id of [open,room,refunded,archived,moved]){
     const row=f.row(id);assert.equal(row.updatedAt,isoOf(start),'예고는 시계를 옮기지 않는다');assert.equal(row.requestRetentionNotice.deleteAt,endOf(start+91*DAY),'예고가 77일에 나갔으니 예고 + 14일');
     assert.equal(row.history.at(-1).notice,'request_retention');
   }
   assert.equal(f.row(noConsent).requestRetentionNotice,undefined,'동의가 없는 프로젝트는 예고도 없다');
+  // 예고가 나간 공개 의뢰서 대기 줄은 「예고됨」 — 옛 서버로 되돌려도 그 줄을 보고 예고 없이 지우지 않는다(GPT 서버 검수 GA4).
+  for(const id of [open,refunded,archived,moved])assert.deepEqual(store.all('pulseRequests').filter(item=>item.projectId===id).map(item=>item.status),['noticed'],id);
   // 직원: 알림(보관한 프로젝트에서도) · 데스크 줄.
   const news=await f.staff('/api/client-projects/'+archived+'/news');assert.equal(news.status,200,JSON.stringify(news.data));
   const item=news.data.items.find(entry=>entry.type==='request_retention_notice');
@@ -130,6 +150,8 @@ test('의뢰서를 낸 프로젝트는 확인 전후 · 방 안 의뢰서 · 보
   // 보인 날(91일)이 끝나기 전에는 지우지 않는다. 끝난 뒤 첫 회차: 넷을 지운다.
   f.stamp=start+91*DAY;assert.deepEqual(await f.sweep(),{retired:0});
   f.stamp=afterDay(start+91*DAY);
+  // 서버 시작 직후 회차는 지울 날이 지난 의뢰도 지우지 않는다 — 복원 직후 잃은 움직임을 사람이 볼 틈(GPT 서버 검수 GA6).
+  assert.deepEqual(await f.sweep({startup:true}),{retired:0});assert.equal(f.row(open).studio.request.status,'submitted');
   assert.deepEqual(await f.sweep(),{retired:4});
   const KEEP=['id','createdAt','revision','updatedAt','ownerId','reviewerId','teamId','history','notificationEvents','inviteRevision','receiptId','title','customerName','contact','summary','terms','nextStep','internalNotes','dueDate','nextContactDate','stage','inviteHash','inviteExpiresAt','versions','messages','studio'];
   for(const id of [open,room,refunded,archived]){
@@ -142,10 +164,12 @@ test('의뢰서를 낸 프로젝트는 확인 전후 · 방 안 의뢰서 · 보
   const roomGone=f.row(room);
   assert.equal(roomGone.internalNotes,'');assert.equal(roomGone.terms,'');
   assert.ok(roomGone.history.some(entry=>entry.notice==='persona_retention'&&!('personaName' in entry)),'기록 줄은 남기고 인물 이름만 비운다(D8)');
+  assert.ok(roomGone.notificationEvents.some(event=>event.personaId==='gone'&&!('personaName' in event)),'알림 사건의 인물 이름도 비운다(D8)');
   for(const kind of ['clientRights','clientMaterialUsage'])assert.equal(store.get(kind,room),null,kind);
   assert.equal(store.all('clientDrafts').filter(item=>item.projectId===room).length,0,'두 직원의 초안 모두(D5)');
   assert.equal(store.all('clientDrafts').filter(item=>item.projectId===open).length,0);
   assert.equal(store.get('pulseAutoReplies','reply-1'),null);
+  assert.equal(store.get('pulseWorkspaceClaims','claim-pending'),null,'대기 연결 신청을 지운다');assert.equal(store.get('pulseWorkspaceClaims','claim-approved').status,'approved','승인된 연결은 남긴다');
   // 결제가 확인됐다가 취소된 의뢰는 결제 기록만 남긴다(D7).
   const refundGone=f.row(refunded).studio.request;
   assert.deepEqual(refundGone.paymentLog,log);assert.equal(refundGone.payment.status,'requested');assert.deepEqual(refundGone.answers,{});
@@ -176,4 +200,34 @@ test('파일 지우기가 도중에 멈춘 지운 의뢰는 다음 보통 회차
   assert.equal(f.row(id).retirePendingUnlink,undefined);
   assert.equal(f.row(other).studio.assets.length,1);
   assert.deepEqual(await f.sweep(),{retired:0});
+});
+
+test('방 안 의뢰서의 실제 제출 길(request_submit)이 동의 때를 적어 시계에 든다 — 저장만 한 의뢰서는 동의가 아니다(카본 서버 검수 A3)',()=>{
+  const t0=Date.parse('2026-11-18T03:00:00Z'),store={all:()=>[]};
+  const blank=()=>({request:{schemaVersion:1,number:'',status:'writing',answers:{},files:[],asks:[],notes:[],rounds:[]}});
+  const saved=blank();applyRequestAction({studio:saved,row:{id:'p',studio:saved},input:{action:'request_save',answers:answers()},staff:false,stamp:{at:isoOf(t0)}});
+  assert.equal(saved.request.consentAt,undefined,'저장만 하면 동의 때가 없다');
+  assert.equal(requestClock(store,{id:'p',updatedAt:isoOf(t0),versions:[],studio:saved},isoOf(t0)),null,'동의 줄을 보내지 않은 방 안 의뢰서는 시계 밖');
+  const sent=blank();applyRequestAction({studio:sent,row:{id:'p',studio:sent},input:{action:'request_submit',answers:answers()},staff:false,stamp:{at:isoOf(t0)}});
+  assert.equal(sent.request.status,'submitted');assert.equal(sent.request.consentAt,isoOf(t0));
+  assert.equal(requestClock(store,{id:'p',updatedAt:isoOf(t0),versions:[],studio:sent},isoOf(t0+DAY)).deleteAt,endOf(t0+90*DAY),'보낸 방 안 의뢰서는 90일 시계');
+});
+
+test('인물 쪽 일(프로젝트 updatedAt을 옮기지 않음)로 시계가 다시 돌면 의뢰 기록 · 인물 예고 알림과 데스크 줄이 사라진다(카본 서버 검수 A1)',async t=>{
+  const f=await fixture(t),{store}=f.app,start=f.stamp;
+  const id=await f.send(),personaId=randomUUID();
+  store.put('pulsePersonas',personaId,{id:personaId,originProjectId:id,workspaceId:null,kind:'virtual',status:'ready',displayName:'합성 인물',createdAt:isoOf(start),updatedAt:isoOf(start)});
+  f.stamp=start+77*DAY;
+  const swept=await f.sweep();assert.equal(swept.requests.noticed,1);assert.equal(swept.retention.noticed,1);
+  const types=async()=>(await f.staff('/api/client-projects/'+id+'/news')).data.items.map(item=>item.type).filter(type=>/retention/.test(type)).sort();
+  assert.deepEqual(await types(),['persona_retention_notice','request_retention_notice']);
+  // 80일: 인물 쪽 직원 일 — 인물 문서만 움직인다(프로젝트 updatedAt은 그대로).
+  f.stamp=start+80*DAY;store.put('pulsePersonas',personaId,{...store.get('pulsePersonas',personaId),updatedAt:isoOf(f.stamp)});
+  assert.equal(f.row(id).updatedAt,isoOf(start));
+  assert.deepEqual(await types(),[],'두 예고 모두 낡았다');
+  assert.equal((await f.staff('/api/client-projects/'+id+'/studio')).data.project.requestRetention,undefined,'데스크 줄도 없다');
+  // 그날부터 76일 뒤에 새 예고가 나가면 새 사건만 싣는다.
+  f.stamp=start+80*DAY+76*DAY+60000;const again=await f.sweep();assert.equal(again.requests.noticed,1);assert.equal(again.retention.noticed,1);
+  const news=(await f.staff('/api/client-projects/'+id+'/news')).data.items.filter(item=>/retention/.test(item.type));
+  assert.equal(news.length,2,'옛 예고 둘은 빠지고 새 예고 둘만');for(const item of news)assert.ok(item.text.includes(endOf(f.stamp+14*DAY).slice(0,10)),item.text);
 });

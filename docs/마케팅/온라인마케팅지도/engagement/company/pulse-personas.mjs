@@ -185,8 +185,10 @@ export const stoppedDeleteDue=(clock,now)=>!!clock&&!clock.unclear&&clock.notice
 // 이력이 없는 옛 결제는 그때의 payment에서 만든 이력과 같다(pulse-requests seedPaymentLog — confirmedAt이 있으면 confirmed 한 줄).
 export const paymentEverConfirmed=request=>Array.isArray(request?.paymentLog)?request.paymentLog.some(entry=>entry?.kind==='confirmed'):!!request?.payment?.confirmedAt;
 // 돌려줌: null — 시계 없음(의뢰서를 내지 않음 · 이미 지운 의뢰 · 제작한 프로젝트). {unclear} — 날짜를 못 읽음(지우지 않고 센다).
-//   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt,keepPayment?} — 마지막 움직임 = max(프로젝트 updatedAt, 이 프로젝트를 붙잡는 인물의 updatedAt)
-//   (인물 쪽 일이 더 늦으면 그 인물이 정리를 붙잡으므로 보인 날짜가 맞게 — 설계 검토 D4). 예고는 마지막 움직임보다 «뒤»에 나간 것만, 지우는 날은 인물 시계와 같은 식.
+//   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt,keepPayment?} — 마지막 움직임 = max(프로젝트 updatedAt, 이 프로젝트에서 나온 인물의 updatedAt)
+//   (인물 쪽 일이 더 늦으면 보인 날짜가 맞게 — 설계 검토 D4). 붙잡는 인물만이 아니라 이 프로젝트에서 나온 모든 인물을 본다 — 인물 일로 풀린 예고가 그 인물이 브랜드에
+//   묶여 붙잡지 않게 된 뒤 되살아나 예고 없이 지우지 않게(GPT 서버 검수 GA1). 묘비 · 지우는 중인 인물은 직원이 지운 것만 움직임으로 본다(시계가 지운 것은 그 시계의 일이다).
+//   예고는 마지막 움직임보다 «뒤»에 나간 것만, 지우는 날은 인물 시계와 같은 식.
 //   keepPayment — 결제가 확인됐다가 취소된 의뢰: 지울 때 결제 기록(payment · paymentLog)만 남긴다(설계 검토 D7).
 export function requestClock(store,row,now){
   const request=row?.studio?.request;
@@ -194,7 +196,10 @@ export function requestClock(store,row,now){
   const touched=Date.parse(row.updatedAt),at=Date.parse(now);
   if(!Number.isFinite(touched)||!Number.isFinite(at))return {unclear:'date'};
   let last=touched;
-  for(const persona of holdingPersonas(store,row.id)){const own=Date.parse(persona.updatedAt);if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;}
+  for(const persona of store.all(K.personas).filter(item=>item?.originProjectId===row.id)){
+    if((persona.deletedAt||['deleting','deleted'].includes(persona.status))&&persona.deletion?.confirmedBy==='system')continue;
+    const own=Date.parse(persona.updatedAt);if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;
+  }
   const clockAt=last+STOPPED_DAYS*DAY_MS,sent=Date.parse(row.requestRetentionNotice?.at),noticed=Number.isFinite(sent)&&sent>last;
   const iso=value=>new Date(value).toISOString();
   const deleteAt=Date.parse(kstDayEnd(kstToday(iso(Math.max(clockAt,(noticed?sent:at)+STOPPED_NOTICE_DAYS*DAY_MS)))));

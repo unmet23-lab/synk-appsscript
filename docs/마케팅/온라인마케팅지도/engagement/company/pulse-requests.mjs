@@ -398,6 +398,9 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
           const now=clock(),due=requestClock(store,store.get('clientProjects',id),now);
           if(!stoppedNoticeDue(due,now))return;
           clientProjects.noticeRequestRetention(id,{at:now,deleteAt:due.deleteAt});result.noticed++;
+          // 예고가 나간 공개 의뢰서 대기 줄은 「예고됨」으로 — 이 판 전의 서버(예고 없이 90일에 지우던 정리)로 되돌려도 그 줄을 보고 지우지 않게(GPT 서버 검수 GA4).
+          // 줄은 접수 뒤 76일이 지난 것뿐이라 다시 보내기(초안 쿠키 30일) · 하루 접수 상한(오늘 접수)과 겹치지 않는다.
+          for(const line of store.all(KIND).filter(item=>item.projectId===id&&item.status==='submitted'))store.put(KIND,line.id,{...line,status:'noticed'});
         });
       }catch{result.failed++;}
     }
@@ -427,13 +430,16 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
   async function retireUnconfirmed({startup=false}={}){
     const retention=workspaces?.sweepRetention?await workspaces.sweepRetention({noticeOnly:startup}):null;
     const {retired,...requests}=await sweepRequestRecords({noticeOnly:startup});
-    // 공개 의뢰서 대기 줄(번호와 프로젝트 id만)의 정리: 프로젝트가 없는 줄은 접수 뒤 90일에, 확인됐거나 단계를 옮긴 의뢰의 줄은 바로 지운다(지우기는 위 시계 하나가 한다).
+    // 공개 의뢰서 대기 줄(번호와 프로젝트 id만)의 정리 — 지우기는 위 시계 하나가 한다. 프로젝트가 없는 줄은 접수 뒤 90일에, 지운 의뢰의 줄은 바로 뗀다.
+    // 확인됐거나 단계를 옮긴 의뢰의 줄은 옛 정리처럼 그 프로젝트가 90일 멈춘 뒤에만 뗀다 — 접수 직후의 다시 보내기와 하루 접수 상한이 이 줄을 읽는다(GPT 서버 검수 GA2).
     const stamp=now(),cutoff=REQUEST_LIMITS.unconfirmedDays*86400000;
     if(!startup)for(const row of store.all(KIND)){
-      if(row.status!=='submitted')continue;
+      if(!['submitted','noticed'].includes(row.status))continue;
       const project=row.projectId&&store.get('clientProjects',row.projectId);
       if(!project){if(stamp-Date.parse(row.submittedAt)>cutoff)store.remove(KIND,row.id);continue;}
-      if(project.studio?.request?.confirmedAt||!['received','archived'].includes(project.stage)||project.studio?.request?.status==='retired')store.remove(KIND,row.id);
+      if(project.studio?.request?.status==='retired'){store.remove(KIND,row.id);continue;}
+      if(stamp-Date.parse(project.updatedAt)<=cutoff)continue;
+      if(project.studio?.request?.confirmedAt||!['received','archived'].includes(project.stage))store.remove(KIND,row.id);
     }
     for(const key of Object.keys(requests))if(!requests[key])delete requests[key];
     return {retired,...(Object.keys(requests).length?{requests}:{}),...(retention&&(retention.deleted||retention.held||retention.failed||retention.noticed||retention.resumed||retention.unclear)?{retention}:{})};

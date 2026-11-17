@@ -3,6 +3,7 @@ import {customerClientKickoff} from './client-kickoff.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {serverText} from './pulse-locale.mjs';
 import {progressOf} from './pulse-progress.mjs';
+import {requestClock,stoppedClock} from './pulse-personas.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const titles={customer_feedback:'고객이 시안을 고쳐 달래요',customer_support:'고객이 물어봤어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'고친 시안 검토를 부탁했어요',changes_requested:'고친 시안에 더 고칠 게 있대요',review_accepted:'고친 시안 검토가 끝났어요',work_started:'고객 요청을 처리하기 시작했어요',work_completed:'고객 요청 처리를 끝냈어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당자가 됐어요',reviewer_assigned:'고객 프로젝트 검토자가 됐어요'};
@@ -23,14 +24,13 @@ const REQUEST_NOTICE='request_retention_notice';
 titles[REQUEST_NOTICE]='의뢰 기록을 곧 지워요';
 const requestNoticeText=event=>`이 의뢰의 기록(손님 답 · 연락처 · 보낸 파일 · 대화)을 ${kstDayOf(event.deleteAt)||'곧'} 지워요 — 제작으로 이어지지 않은 채 진행이 멈춰 있어요. 이어 가려면 이 프로젝트에 기록을 남겨 주세요(보관한 프로젝트는 먼저 보관을 풀어 주세요).`;
 const RETENTION_TYPES=new Set([RETENTION_NOTICE,REQUEST_NOTICE]);
-// 낡은 예고는 싣지 않는다(Fable 5.2 설계 검토 D3): 그 뒤 프로젝트가 움직였으면(시계가 다시 돈다 — 예고 쓰기는 updatedAt을 옮기지 않는다), 의뢰 예고는 의뢰 기록을 이미 지웠으면,
-// 인물 예고는 그 인물을 이미 지웠으면(기록의 「맞춤 인물 지움」 시스템 줄).
-function staleRetention(project,event){
+// 낡은 예고는 싣지 않는다(Fable 5.2 설계 검토 D3 · 카본 서버 검수 A1): 예고는 지금 그 시계가 「바로 이 예고가 나갔다」고 할 때만 싣는다. 시계가 마지막 움직임
+// (프로젝트와 그 프로젝트를 붙잡는 인물 — 인물 쪽 일은 프로젝트 updatedAt을 옮기지 않는다)으로 다시 돌았거나, 의뢰 기록 · 인물을 이미 지웠거나, 그 뒤 새 예고가 나갔으면
+// 옛 사건은 싣지 않는다. 시계는 인물 모듈의 계산(requestClock · stoppedClock) 하나를 그대로 쓴다 — 예고 기록과 사건의 때는 같은 순간이다.
+function staleRetention(store,project,event,now){
   if(!RETENTION_TYPES.has(event.type))return false;
-  if(Date.parse(project.updatedAt)>=Date.parse(event.createdAt))return true;
-  // 지운 의뢰에 남은 인물(귀속 취소 등)도 인물 시계의 예고를 받으므로, 「이미 지운 의뢰」는 의뢰 예고에만 건다.
-  if(event.type===REQUEST_NOTICE)return project.studio?.request?.status==='retired';
-  return (project.history||[]).some(entry=>entry?.actor==='system'&&entry.personaId===event.personaId&&String(entry.action||'').startsWith('맞춤 인물 지움')&&entry.at>=event.createdAt);
+  const clock=event.type===REQUEST_NOTICE?requestClock(store,project,now):stoppedClock(store,typeof event.personaId==='string'?store.get('pulsePersonas',event.personaId):null,now);
+  return !clock||!!clock.unclear||!clock.noticed||Date.parse(clock.noticeAt)!==Date.parse(event.createdAt);
 }
 // 결제(판 4): 담당자가 크몽 결제를 요청 · 확인 · 취소했을 때 손님에게. 손님 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{payment_requested:'크몽에서 결제해 주세요',payment_confirmed:'결제를 확인했어요',payment_cancelled:'결제가 취소됐어요'});
@@ -161,7 +161,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
   const notify=ids=>{try{onChange(unique(ids));}catch{/* Notification delivery is recoverable from the durable source. */}};
   const unsubscribe=clientProjects.subscribeChanges?.(change=>notify(change.userIds));
   function eligible(user,project,event){
-    if(project.stage==='archived'&&!RETENTION_TYPES.has(event.type)||user.role==='viewer'||event.actorId===user.id||staleRetention(project,event))return false;
+    if(project.stage==='archived'&&!RETENTION_TYPES.has(event.type)||user.role==='viewer'||event.actorId===user.id||staleRetention(store,project,event,clock()))return false;
     const owner=project.ownerId===user.id;
     const reviewer=project.reviewerId===user.id&&(user.role==='admin'||user.teamId&&user.teamId===project.teamId);
     if(!event.audiences.some(audience=>audience==='owner'&&owner||audience==='reviewer'&&reviewer))return false;

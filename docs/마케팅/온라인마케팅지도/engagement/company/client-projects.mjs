@@ -126,7 +126,7 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   // 제작으로 이어지지 않은 의뢰의 보존 기한이 끝났을 때(pulse-requests.mjs 의뢰 기록 90일 시계 — 판 4 설계 11-7). 손님 답 · 연락처 · 보낸 파일 · 대화를 지우고 번호만 남겨 보관한다.
   // 남길 칸을 적는 쪽(Fable 5.2 설계 검토 11-18 · 질문 1): 뒤에 칸이 새로 생겨도 손님 글이 저절로 남지 않게. updatedAt은 append가 지운 때로 채운다(D2 — 직원 목록 정렬 · 인물 시계가 읽는다).
   // history는 행동 이름(고정 문자열) · 때 · 직원 id라 남기고, 인물 예고 줄의 인물 이름만 비운다(D8 — 알림 사건도 같다).
-  // 프로젝트에 묶인 곁 문서(권리 기록 · 자료 사용 기록 · 직원 초안 · 자동 안내 기록)도 같은 트랜잭션에서 지운다(D5). 납품 준비 · 납품 점검은 승인한 시안이 있어야 생기고
+  // 프로젝트에 묶인 곁 문서(권리 기록 · 자료 사용 기록 · 직원 초안 · 자동 안내 기록 · 승인되지 않은 브랜드 연결 신청)도 같은 트랜잭션에서 지운다(D5 · GA3). 납품 준비 · 납품 점검은 승인한 시안이 있어야 생기고
   // 시안이 있으면 제작한 프로젝트라 이 길에 오지 않는다. 메일 대기함은 받는 주소의 해시 · 사건 id, 알림 읽음은 id만 가진다.
   // 지울 파일 이름은 retirePendingUnlink로 프로젝트에 남기고 돌려준다 — 파일을 지운 뒤 finishRetire가 비운다(커밋과 파일 지우기 사이에 서버가 멈춰도 다음 회차가 잇는다, D9).
   // 전용 인물 문서가 가진 파일은 같은 이름이 프로젝트 목록에 있어도 지우지 않는다 — 인물의 보관 · 삭제는 인물 쪽이 정한다(기획 12-2 「90일 정리」).
@@ -151,6 +151,9 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     for(const kind of RETIRE_SIDE)store.remove(kind,id);
     for(const draft of store.all('clientDrafts').filter(item=>item?.projectId===id&&typeof item.ownerId==='string'&&typeof item.kind==='string'))store.remove('clientDrafts',draft.ownerId+'|'+id+'|'+draft.kind);
     for(const reply of store.all('pulseAutoReplies').filter(item=>item?.projectId===id&&typeof item.id==='string'))store.remove('pulseAutoReplies',reply.id);
+    // 브랜드 연결 신청(손님 표시 이름 · SYNK ID): 승인된 것은 브랜드 회원 관계라 남기고, 대기 · 거둠 · 거절은 의뢰와 함께 지운다(GPT 서버 검수 GA3 —
+    // 닫힌 초대라 승인할 수 없는 대기 신청이 직원 목록과 손님별 대기 수에 남지 않게).
+    for(const claim of store.all('pulseWorkspaceClaims').filter(item=>item?.projectId===id&&item.status!=='approved'&&typeof item.id==='string'))store.remove('pulseWorkspaceClaims',claim.id);
     return pending;
   }
   // 지운 의뢰의 파일을 다 지운 뒤(pulse-requests finishRetire) 남은 이름 목록을 비운다 — 시스템 쓰기라 updatedAt을 옮기지 않는다.
