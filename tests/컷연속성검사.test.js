@@ -2289,3 +2289,16 @@ test('되풀이 탈것 — 색은 그 이름씨에 붙은 것만 센다: 서울�
   const 답 = JSON.parse(r.stdout);
   assert.deepEqual(문장.map(([글], i) => [글, 답[i]]).filter(([, 색], i) => JSON.stringify(색) !== JSON.stringify(문장[i][1])), []);
 });
+
+test('대사 빠르기(11-18) — 옛 판(7번 1-5: 대사 15자에 말 빠르기 줄 없음)은 주의, 새 판(끝나는 초 · PACE 줄)과 짧은 말 · 목소리 판 · 따옴표 없는 판은 지나간다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const 옛 = 'ONE SINGLE CONTINUOUS SHOT.\nACTION: At about 0.2 s Seojin looks at Ian. At about 0.3 s Seojin says, calm and firm, "우리 내년이면 칠 년이야. 이제 날 잡자.", her lips clearly forming the Korean words. At about 0.9 s she closes her mouth.\nSOUND: only Seojin\'s voice saying "우리 내년이면 칠 년이야. 이제 날 잡자."';
+  const 새1 = 옛.replace('her lips clearly', 'the whole line finished by 2.2 s, her lips clearly');
+  const 새2 = 옛 + '\nPACE: about seven syllables per second, in one breath, no pause between sentences.';
+  const 짧은 = 옛.replaceAll('우리 내년이면 칠 년이야. 이제 날 잡자.', '하.');
+  const 따옴표없음 = 'ACTION: At about 0.3 s Seojin pushes the tap lever down and the water stops.';
+  const 글들 = [[옛, false], [새1, false], [새2, false], [짧은, false], [옛, true], [따옴표없음, false]];
+  const 스크립트 = 'import sys, json\nsys.path.insert(0, sys.argv[1])\nimport 컷연속성검사 as k\nprint(json.dumps([[g for g, _ in k.굽기전검사(t, 소리만=s) if "(대사)" in _] for t, s in json.load(sys.stdin)]))';
+  const r = spawnSync('python', ['-I', '-X', 'utf8', '-c', 스크립트, path.dirname(도구)], { input: JSON.stringify(글들), encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(JSON.parse(r.stdout), [['주의'], [], [], [], [], []]);
+});

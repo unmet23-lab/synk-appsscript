@@ -1,8 +1,8 @@
 @이미지 1 is the exact first frame of this video.
 ONE SINGLE CONTINUOUS SHOT.
 WHO: Seojin — only her arm in its white sleeve and the side of her sage-green apron at the right — exactly as in @이미지 1; the running tap over the stainless sink.
-ACTION: At about 0.3 s Seojin's right hand pushes the tap lever down and her wrist bends about 2 cm — the stream of water stops with that movement of her hand. At about 0.7 s Seojin's fingers leave the lever and her hand draws back about 3 cm toward the lower right of the frame; her apron shoulder rises and falls a little with her breath.
-PHYSICS: the water runs straight down under gravity until her hand shuts the tap, and then it stops; the tap and the sink stay exactly where they are.
+ACTION: At about 0.3 s Seojin's fingers press the tap lever down, and the stream of water thins and stops. At about 0.8 s her hand lets go of the lever and draws back toward the lower right of the frame; her apron shoulder rises and falls a little with her breath.
+PHYSICS: the water runs straight down from the tap until her hand shuts it; the tap and the sink stay where they are.
 CAMERA: Movement — handheld, almost locked off, a small jitter only. Speed — gentle. Framing — close on the tap and the sink. End — the same framing.
 LOOK: early evening at home, lit brightly and softly like a Korean TV romantic comedy — warm 3000K room light everywhere, soft even fill light everywhere, gentle shadows; the window outside is blue dusk. Not moody or dim. The light and colour stay exactly like this to the last frame. No new people, no new text.
 Indoors: the air is clear and still, nothing falls or drifts anywhere.
