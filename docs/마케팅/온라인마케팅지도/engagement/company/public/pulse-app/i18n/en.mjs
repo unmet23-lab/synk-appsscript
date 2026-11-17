@@ -1497,7 +1497,7 @@ export default {
   "단편 애니메이션 · 2분 58초":"Short animation · 2 min 58 sec",
   "2분 58초":"2 min 58 sec",
   "공모전 당선작":"Contest winner",
-  "휴대폰을 눕히면 크게 보여요":"Turn your phone sideways to see it larger",
+  "화면을 가로로 돌리면 크게 보여요":"Turn your screen sideways to see it larger",
   "반려견 구명조끼 · 26초":"Dog life vest · 26 sec",
   "26초":"26 sec",
   "블프 스나이퍼":"Black Friday Sniper",
