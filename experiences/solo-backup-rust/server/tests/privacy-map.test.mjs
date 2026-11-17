@@ -41,7 +41,12 @@ test('every table and column the server keeps has a privacy group, and the map n
     for (const [col, v] of Object.entries(entry.columns)) {
       const text = typeof v === 'string' ? v : v.text;
       assert.ok(typeof text === 'string' && text.length > 1, `${table}.${col}: described`);
-      if (typeof v === 'object') assert.ok(map.groups[v.group], `${table}.${col}: a known group`);
+      if (typeof v === 'object') {
+        assert.ok(map.groups[v.group], `${table}.${col}: a known group`);
+        // The 90-day group and the «not in the policy» group are whole-table groups: the 90-day test and the «why»
+        // check read the table's group, so a column may not move into either of them (카본 끝판 A2).
+        assert.ok(!['status', 'none'].includes(v.group), `${table}.${col}: a column cannot take the ${v.group} group`);
+      }
     }
   }
 });

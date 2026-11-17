@@ -186,12 +186,14 @@ export function createJobs({ store, api, keys, files, mailer, config = {}, now =
     try { return await fn(); }
     catch (e) { if (e?.code === 'BUSY') return null; log({ task: name, code: e?.code || e?.name || 'Error' }); operator(name, { code: e?.code || e?.name || 'Error' }, `${name}:${dayOf(t0)}`); return null; }
   };
-  // Only this service's own day copies are removed; any other file in the folder is left alone.
+  // Only this service's own day copies are removed; any other file in the folder is left alone. The copy made
+  // 30 days ago goes too, so at most 30 copies remain (today and the 29 days before) and no copy outlives 30 days
+  // (처리방침 「30일이 지나면 지웁니다」, 카본 끝판 A1).
   function pruneBackups(t) {
     const cut = dayOf(t - BACKUP_KEEP_DAYS * DAY);
     for (const name of fs.readdirSync(cfg.backupDir)) {
       const m = /^workbackup-(\d{4}-\d{2}-\d{2})\.sqlite$/.exec(name);
-      if (m && m[1] < cut) fs.rmSync(path.join(cfg.backupDir, name), { force: true });
+      if (m && m[1] <= cut) fs.rmSync(path.join(cfg.backupDir, name), { force: true });
     }
   }
 

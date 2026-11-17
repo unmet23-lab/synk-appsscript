@@ -1697,18 +1697,21 @@ test('카본 끝판2 C4: one silence notice per silence, not one a day; none for
   assert.equal(h.store.all("select count(*) n from outbox where key like ?", `wb:silent:${c2.customer.id}:%`)[0].n, 0);
 });
 
-test('처리방침 · 설계 검토 2026-11-17: the daily database copy keeps 30 days and leaves other files alone', async (t) => {
+test('처리방침 · 설계 검토 2026-11-17: the daily database copy is deleted when it is 30 days old and leaves other files alone', async (t) => {
   const h = await harness(t);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-backups-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const day = (ms) => new Date(ms).toISOString().slice(0, 10);
-  const old = `workbackup-${day(h.clock.t - 31 * 86400000)}.sqlite`, kept = `workbackup-${day(h.clock.t - 30 * 86400000)}.sqlite`;
-  for (const f of [old, kept, 'workbackup-notes.txt', 'other-2000-01-01.sqlite']) fs.writeFileSync(path.join(dir, f), 'x');
+  const old = `workbackup-${day(h.clock.t - 31 * 86400000)}.sqlite`, day30 = `workbackup-${day(h.clock.t - 30 * 86400000)}.sqlite`;
+  const kept = `workbackup-${day(h.clock.t - 29 * 86400000)}.sqlite`;
+  for (const f of [old, day30, kept, 'workbackup-notes.txt', 'other-2000-01-01.sqlite']) fs.writeFileSync(path.join(dir, f), 'x');
   const jobs = createJobs({ store: h.store, api: h.api, keys: h.keys, files: h.files, now: () => h.clock.t, config: { bucketId: h.b2.bucketId, protectedKeyIds: h.protectedKeyIds, backupDir: dir } });
   await jobs.daily(h.clock.t);
   const left = fs.readdirSync(dir).sort();
   assert.ok(left.includes(`workbackup-${day(h.clock.t)}.sqlite`), "today's copy was made");
   assert.ok(!left.includes(old), 'a copy older than 30 days is gone');
-  assert.ok(left.includes(kept), 'the 30th day is kept');
+  assert.ok(!left.includes(day30), 'the copy made 30 days ago is gone too (카본 끝판 A1)');
+  assert.ok(left.includes(kept), 'the copy made 29 days ago is kept');
+  assert.equal(left.filter((f) => /^workbackup-\d{4}-\d{2}-\d{2}\.sqlite$/.test(f)).length, 2, 'today and the 29th day only');
   assert.ok(left.includes('workbackup-notes.txt') && left.includes('other-2000-01-01.sqlite'), 'other files are left alone');
 });
