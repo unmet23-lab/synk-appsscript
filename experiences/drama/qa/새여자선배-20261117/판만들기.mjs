@@ -61,9 +61,11 @@ const 자료 = {
   목소리: 소리들.map((s) => ({ id: s.열쇠, 번호: s.번호, src: s.src, 초: s.초, 음높이: s.음높이, 결: s.결 })),
   이름: 시안.이름,
   추천: 시안.추천,
+  정한얼굴: 시안.정한얼굴 || null, // { 방향, 판, 말, 대조 } — 얼굴이 정해졌으면 태오 옆에 그 판만 크게 두고 나머지는 「다른 얼굴 후보 보기」로 접는다
   얼굴대기: 시안.얼굴대기 || '', // 얼굴을 아직 굽는 중이면 그 까닭 한 줄 — 후보 카드 대신 이 글을 보인다
 };
 
+const 정함 = 시안.정한얼굴 || null;
 const 학생줄 = ['네, 맞아요. 길을 잃어서 한참 헤맸어요.', '네, 선배님! 그런데 혹시 도서관이 어디에 있는지 아세요?', '정말요? 선배님 덕분에 살았어요.', '네, 꼭 살게요!'];
 const 대본 = 줄들.map((l, i) => `<div class="say"><span class="who">선배</span><p>${esc(l.text)}</p></div><div class="say you"><span class="who">학생</span><p>${esc(학생줄[i])}</p></div>`).join('\n');
 
@@ -112,6 +114,12 @@ section{display:flex;flex-direction:column;gap:18px}
 .photo img{width:100%;height:100%;object-fit:cover;display:block}
 .photo:focus-visible,.btn:focus-visible,.take:focus-visible,textarea:focus-visible{outline:3px solid var(--sansuyu);outline-offset:2px}
 .face.fixed .photo{outline:1px solid var(--rule)}
+.faces.duo{grid-template-columns:repeat(auto-fit,minmax(210px,320px))}
+.faces.duo .one{min-height:0}
+details.more{font-size:15px;color:var(--ink);max-width:none}
+details.more summary{font-weight:700;padding:6px 0 12px}
+details.more .hint{color:var(--muted);font-size:14px;margin:0 0 14px}
+details.more .btn.none{margin-top:16px}
 .tag{position:absolute;left:8px;top:8px;background:var(--navy);color:var(--paper);font-size:12px;font-weight:700;padding:3px 8px;border-radius:2px}
 .tag.rec{background:var(--sansuyu);color:#141c33}
 .face h3{font-size:19px}
@@ -159,16 +167,16 @@ details ul{padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
 <div class="wrap">
 <header>
  <p class="slate">SYNK WORLD · 시즌 1 · 선배 소개</p>
- <h1>새 여자 선배를 골라 주세요</h1>
- <p class="lead">태오와 나란히 「선배 소개」에 서는 선배입니다. 같은 과 3학년이고, 무심한 듯 챙기는 사람입니다. 걸음이 빠르고 군말이 없습니다. 얼굴, 목소리, 이름을 하나씩 누르시면 바로 저장됩니다. 마음에 드는 것이 없으면 「이 가운데 없다」를 누르고 아래에 한 줄 남겨 주세요.</p>
+ <h1>${정함 ? '새 여자 선배의 목소리와 이름을 골라 주세요' : '새 여자 선배를 골라 주세요'}</h1>
+ <p class="lead">태오와 나란히 「선배 소개」에 서는 선배입니다. 같은 과 3학년이고, 무심한 듯 챙기는 사람입니다. 걸음이 빠르고 군말이 없습니다. ${정함 ? '얼굴은 말씀하신 대로 예쁘고 약간 보정된 판으로 정했습니다. 목소리와 이름을' : '얼굴, 목소리, 이름을'} 하나씩 누르시면 바로 저장됩니다. 마음에 드는 것이 없으면 「이 가운데 없다」를 누르고 아래에 한 줄 남겨 주세요.</p>
  <div class="now" id="now" aria-live="polite"></div>
 </header>
 
 <section aria-labelledby="h-face">
  <div class="head"><h2 id="h-face">얼굴</h2>
  <p>참고 사진 없이 글로만 새로 구운 얼굴입니다. 자리와 옷은 태오 기준 사진과 같은 3월 첫 주 학생 식당, 같은 과 점퍼로 맞췄습니다. 사진을 누르면 크게 보입니다.</p>${시안.얼굴말 ? `<p>${esc(시안.얼굴말)}</p>` : ''}</div>
- <div class="faces" id="faces"></div>
- <button class="btn none" id="face-none" type="button">얼굴은 이 가운데 없다</button>
+ <div class="faces${정함 ? ' duo' : ''}" id="faces"></div>
+ ${정함 ? `<details class="more"><summary>다른 얼굴 후보 보기</summary><p class="hint">바꾸고 싶으시면 「이 얼굴로 바꾸기」를 눌러 주세요. 누르시면 바로 저장됩니다.</p><div class="faces" id="faces-more"></div><button class="btn none" id="face-none" type="button">얼굴은 이 가운데 없다</button></details>` : '<button class="btn none" id="face-none" type="button">얼굴은 이 가운데 없다</button>'}
 </section>
 
 <section aria-labelledby="h-voice">
@@ -209,7 +217,12 @@ let picks = { face: null, take: {}, voice: null, name: null, memo: '' };
 let ref = null, saving = Promise.resolve(), state = '불러오는 중';
 const $ = (id) => document.getElementById(id);
 const h = (tag, attrs, kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs || {})) { if (k === 'text') e.textContent = v; else if (k === 'on') for (const [ev, fn] of Object.entries(v)) e.addEventListener(ev, fn); else e.setAttribute(k, v); } for (const c of [].concat(kids || [])) if (c) e.append(c); return e; };
-const faceName = (id) => id === 'none' ? '이 가운데 없다' : (DATA.얼굴.find((f) => f.id === id) || {}).이름;
+const FIX = DATA.정한얼굴;
+const isFix = (dir, take) => !!FIX && dir === FIX.방향 && take === FIX.판;
+const takeOf = (dir) => { const f = DATA.얼굴.find((x) => x.id === dir); return f ? (f.판들.find((p) => p.id === picks.take[dir]) || f.판들[0]) : null; };
+const overridden = () => !!FIX && !!picks.face && picks.face !== 'none' && !isFix(picks.face, (takeOf(picks.face) || {}).id);
+const faceName = (id) => { if (id === 'none') return '이 가운데 없다'; const f = DATA.얼굴.find((x) => x.id === id); const p = takeOf(id); return f ? f.이름 + (p && p.이름 ? ' ' + p.이름 : '') : null; };
+const fixName = () => { const f = DATA.얼굴.find((x) => x.id === FIX.방향); const p = f.판들.find((x) => x.id === FIX.판); return f.이름 + ' ' + p.이름; };
 const voiceName = (id) => id === 'none' ? '이 가운데 없다' : (DATA.목소리.find((v) => v.id === id) ? DATA.목소리.find((v) => v.id === id).번호 + '번' : null);
 const nameName = (id) => id === 'none' ? '이 가운데 없다' : (DATA.이름.find((n) => n.id === id) || {}).이름;
 
@@ -217,24 +230,36 @@ function open(src, alt) { const b = h('div', { class: 'box', role: 'dialog', 'ar
 
 function renderNow() {
   const it = (label, v) => h('span', {}, [h('b', { text: label + ' ' }), h('span', { class: 'v' + (v ? ' on' : ''), text: v || '아직' })]);
-  $('now').replaceChildren(it('얼굴', picks.face && faceName(picks.face)), it('목소리', picks.voice && voiceName(picks.voice)), it('이름', picks.name && nameName(picks.name)), h('span', { class: 'state', text: state }));
+  $('now').replaceChildren(it('얼굴', picks.face ? faceName(picks.face) : FIX ? fixName() + ' (Claude가 정함)' : null), it('목소리', picks.voice && voiceName(picks.voice)), it('이름', picks.name && nameName(picks.name)), h('span', { class: 'state', text: state }));
 }
 function renderFaces() {
-  const cards = [h('div', { class: 'face fixed' }, [
+  const main = [h('div', { class: 'face fixed' }, [
     h('button', { class: 'photo', type: 'button', 'aria-label': '태오 기준 사진 크게 보기', on: { click: () => open(TAEO.src, '태오') } }, [h('img', { src: TAEO.src, alt: '권태오 기준 사진', loading: 'lazy' }), h('span', { class: 'tag', text: '이미 정해진 선배' })]),
     h('h3', { text: '권태오' }), h('p', { class: 'one', text: '장난기 있는 3학년. 덧니가 보이는 웃음. 새 선배는 이 사진 옆에 놓입니다.' })])];
-  for (const f of DATA.얼굴) {
-    const shown = picks.take[f.id] || f.판들[0].id;
-    const cur = f.판들.find((p) => p.id === shown) || f.판들[0];
-    cards.push(h('div', { class: 'face' }, [
-      h('button', { class: 'photo', type: 'button', 'aria-label': f.이름 + ' 크게 보기', on: { click: () => open(cur.src, f.이름) } }, [h('img', { src: cur.src, alt: f.이름 + ' 후보 사진', loading: 'lazy' }), DATA.추천.얼굴 === f.id ? h('span', { class: 'tag rec', text: 'Claude 추천' }) : null]),
-      h('h3', { text: f.이름 }), h('p', { class: 'one', text: f.한줄 }),
-      f.판들.length > 1 ? h('div', { class: 'takes', role: 'group', 'aria-label': f.이름 + ' 다른 판' }, f.판들.map((p, i) => h('button', { class: 'take', type: 'button', 'aria-pressed': String(p.id === cur.id), text: p.이름 || ((i + 1) + '번 판'), on: { click: () => { picks.take = { ...picks.take, [f.id]: p.id }; renderFaces(); if (picks.face === f.id) save({}); } } }))) : null,
-      h('p', { class: 'chk', text: cur.대조 || f.대조 || '' }),
-      h('button', { class: 'btn', type: 'button', 'aria-pressed': String(picks.face === f.id), text: picks.face === f.id ? '이 얼굴로 골랐습니다' : '이 얼굴로', on: { click: () => save({ face: f.id, take: { ...picks.take, [f.id]: cur.id } }) } })]));
+  const more = [];
+  if (FIX) {
+    const f = DATA.얼굴.find((x) => x.id === FIX.방향), p = f.판들.find((x) => x.id === FIX.판);
+    main.push(h('div', { class: 'face' }, [
+      h('button', { class: 'photo', type: 'button', 'aria-label': '정한 얼굴 크게 보기', on: { click: () => open(p.src, f.이름) } }, [h('img', { src: p.src, alt: '정한 얼굴 사진', loading: 'lazy' }), h('span', { class: 'tag rec', text: overridden() ? 'Claude가 정했던 얼굴' : '정한 얼굴' })]),
+      h('h3', { text: fixName() }), h('p', { class: 'one', text: FIX.말 || '' }),
+      h('p', { class: 'chk', text: FIX.대조 || p.대조 || '' }),
+      overridden() ? h('button', { class: 'btn', type: 'button', text: '이 얼굴로 되돌리기', on: { click: () => save({ face: null }) } }) : null]));
   }
-  if (DATA.얼굴대기) cards.push(h('p', { class: 'pending', text: DATA.얼굴대기 }));
-  $('faces').replaceChildren(...cards);
+  for (const f of DATA.얼굴) {
+    const 판들 = FIX && f.id === FIX.방향 ? f.판들.filter((p) => p.id !== FIX.판) : f.판들;
+    if (!판들.length) continue;
+    const cur = 판들.find((p) => p.id === picks.take[f.id]) || 판들[0];
+    const picked = picks.face === f.id && (takeOf(f.id) || {}).id === cur.id;
+    (FIX ? more : main).push(h('div', { class: 'face' }, [
+      h('button', { class: 'photo', type: 'button', 'aria-label': f.이름 + ' 크게 보기', on: { click: () => open(cur.src, f.이름) } }, [h('img', { src: cur.src, alt: f.이름 + ' 후보 사진', loading: 'lazy' }), !FIX && DATA.추천.얼굴 === f.id ? h('span', { class: 'tag rec', text: 'Claude 추천' }) : null]),
+      h('h3', { text: f.이름 }), h('p', { class: 'one', text: f.한줄 }),
+      판들.length > 1 ? h('div', { class: 'takes', role: 'group', 'aria-label': f.이름 + ' 다른 판' }, 판들.map((p, i) => h('button', { class: 'take', type: 'button', 'aria-pressed': String(p.id === cur.id), text: p.이름 || ((i + 1) + '번 판'), on: { click: () => { const was = picked; picks.take = { ...picks.take, [f.id]: p.id }; if (was) save({}); else renderFaces(); } } }))) : null,
+      h('p', { class: 'chk', text: cur.대조 || f.대조 || '' }),
+      h('button', { class: 'btn', type: 'button', 'aria-pressed': String(picked), text: FIX ? (picked ? '이 얼굴로 바꿨습니다' : '이 얼굴로 바꾸기') : (picked ? '이 얼굴로 골랐습니다' : '이 얼굴로'), on: { click: () => save({ face: f.id, take: { ...picks.take, [f.id]: cur.id } }) } })]));
+  }
+  if (DATA.얼굴대기) (FIX ? more : main).push(h('p', { class: 'pending', text: DATA.얼굴대기 }));
+  $('faces').replaceChildren(...main);
+  if ($('faces-more')) $('faces-more').replaceChildren(...more);
   $('face-none').hidden = !DATA.얼굴.length;
   $('face-none').setAttribute('aria-pressed', String(picks.face === 'none'));
 }
