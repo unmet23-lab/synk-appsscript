@@ -136,14 +136,18 @@ def 인물표():
     "꽉찬도시락": {"종류": "소품", "낱말": ["lunchboxes"], "색": "cream-white boxes",
                "생김새": "Two cream-white lunchboxes packed for tomorrow, full of side dishes (rolled omelet, seasoned greens, braised beef, cherry tomatoes) and white rice with black sesame.",
                "기준그림": str(정지 / "2-43.jpg").replace("\\", "/")},
-    # 11-17: 초록 빈 판(후반 바꿔 끼우기)을 버리고 글자를 장면과 한 장으로 굽는다(원칙 6). 옛 기준그림(1-27 · 2-4)은 초록 판이라
-    #        참조로 넣지 않는다 — 새 엔진으로 처음 승인한 판이 생기면 그 그림으로 바꾼다.
+    # 11-17: 초록 빈 판(후반 바꿔 끼우기)을 버리고 글자를 장면과 한 장으로 굽는다(원칙 6). 라벨은 시안 넷을 2-43 장면에 넣어 보고
+    #        유호님이 D(명조)를 고르셨다. 혼인신고서는 실제 양식 배치를 본떠 그린 그림(빈 양식 · 다 쓴 양식)을 넣는다 — 글로만 적으니
+    #        작은 칸이 뜻 없는 글자로 나와서다. 세 그림과 그리는 스크립트는 P7/글자시안_1117(서류그리기.py)에 있다.
+    #        상자 · 서류가 나오는 컷의 이미지 지시문은 이 기준그림을 참조 그림으로 붙이고 「printed exactly like …」로 부른다.
     "배송상자": {"종류": "소품", "낱말": ["delivery box"], "색": "plain kraft-paper brown with one flat bright-green label printed in white",
-             "생김새": "A plain brown kraft-paper delivery box with one flat bright-green rectangular label, printed with the brand name \"칸찬\" in large bold rounded white Korean letters and, beneath it, \"반찬 정기배송\" in small white letters.",
-             "기준그림": str(정지 / "2-4.jpg").replace("\\", "/")},
+             "생김새": "A plain brown kraft-paper delivery box with one flat bright-green rectangular label, printed exactly like the 칸찬 label reference: the brand name \"칸찬\" in an elegant white serif (Myeongjo) Hangul logotype set between thin white horizontal rules, and beneath it \"반찬 정기배송\" in small white letters.",
+             "기준그림": str(P7 / "소품기준" / "칸찬라벨_D.jpg").replace("\\", "/")},
     "혼인신고서": {"종류": "소품", "낱말": ["sheet of paper", "form"], "색": "plain white paper printed in black",
-              "생김새": "A Korean marriage registration form on plain white A4 paper, printed in thin black lines and small black Korean type, with the title \"혼인신고서\" in bold black letters centred across the top and two rows of name boxes below it labelled \"남편\" and \"아내\".",
-              "기준그림": str(정지 / "1-27.jpg").replace("\\", "/")},
+              "생김새": "A Korean marriage registration form on plain white A4 paper, printed exactly like the marriage-form reference: thin black table lines and small black Korean type, the title \"혼인신고서\" centred across the top, and below it the ① table with a \"남편(부)\" column and an \"아내(처)\" column.",
+              "기준그림": str(P7 / "소품기준" / "혼인신고서_작성.png").replace("\\", "/"),
+              "기준그림_빈양식": str(P7 / "소품기준" / "혼인신고서_빈양식.png").replace("\\", "/"),
+              "상태": "1-26 · 1-27은 빈 양식(기준그림_빈양식 — 모든 칸이 비었다). 2-32부터는 이안이 일주일 동안 써 온 다 쓴 양식(기준그림 — 이름 「이안」 · 「서진」, 생년월일, 주소, 근친혼 「해당 없음」, 신고인 서명까지 같은 필체 볼펜 손글씨)"},
     "새원피스": {"종류": "소품", "낱말": ["dress"], "색": "emerald-green satin",
              "생김새": "A new emerald-green satin slip dress with a white paper price tag on a string.",
              "기준그림": str(정지 / "2-3.jpg").replace("\\", "/")},
@@ -151,12 +155,12 @@ def 인물표():
 
 글자 = [
     {"글": "아래쪽 대사 자막(모든 대사)", "종류": "말자막", "어디": "대사가 있는 컷 아래", "만드는법": "후반에서 얹는다 — 숏드라마 관례, 그림에 굽지 않음"},
-    {"글": "혼인신고서의 칸과 이름", "종류": "장면속", "어디": "1-26 · 1-27 · 2-43 · 2-44",
-     "만드는법": "장면과 한 장으로 굽는다(11-17, 원칙 6 — 옛 초록 판 바꿔 끼우기는 버림). 원고: 흰 A4 양식, 맨 위 굵은 「혼인신고서」, 「남편」 · 「아내」 이름 줄. 2-43 · 2-44는 이름 칸에 같은 필체 볼펜 손글씨 「이안」 · 「서진」, 나머지 칸은 읽히지 않는 작은 손글씨. 1-26 · 1-27은 빈 양식"},
-    {"글": "배송 상자 라벨 「칸찬」", "종류": "장면속", "어디": "2-4 · 2-43",
-     "만드는법": "장면과 한 장으로 굽는다(11-17, 원칙 6). 원고: 밝은 초록 라벨에 둥글고 굵은 흰 한글 「칸찬」, 그 아래 작은 흰 글씨 「반찬 정기배송」. 라벨 면이 카메라 쪽"},
+    {"글": "혼인신고서의 칸과 이름", "종류": "장면속", "어디": "1-26 · 1-27 · 2-32 · 2-34 · 2-35 · 2-42 · 2-43 · 2-44",
+     "만드는법": "장면과 한 장으로 굽는다(11-17, 원칙 6 — 옛 초록 판 바꿔 끼우기는 버림). 원고는 실제 양식 배치를 본떠 그린 그림 두 장(소품 「혼인신고서」의 기준그림)을 참조 그림으로 붙인다. 1-26 · 1-27은 빈 양식, 2-32부터는 다 쓴 양식(이름 「이안」 · 「서진」과 생년월일 · 주소 · 서명까지 같은 필체 볼펜 손글씨, 주민등록번호 뒷자리는 별표). 2-43 · 2-44는 서류가 화면 폭의 절반을 넘게 잡아 이름이 휴대폰에서 읽히게 한다(11-17 장면 시험에서 서류가 작게 잡히면 이름이 잘 안 보였다)"},
+    {"글": "배송 상자 라벨 「칸찬」", "종류": "장면속", "어디": "2-4 · 2-42 · 2-43",
+     "만드는법": "장면과 한 장으로 굽는다(11-17, 원칙 6). 라벨은 유호님이 고르신 D(명조) — 밝은 초록 라벨에 흰 명조 「칸찬」을 가는 흰 가로줄 사이에 두고, 그 아래 작은 흰 글씨 「반찬 정기배송」. 소품 「배송상자」의 기준그림을 참조 그림으로 붙인다. 라벨 면이 카메라 쪽"},
     {"글": "다음 화에", "종류": "강조", "어디": "1-45 끝", "만드는법": "숏드라마 관례의 끝 글 — 그린 글자로(기본 글꼴로 치지 않는다)"},
-    {"글": "사랑 한 칸 — 반찬 정기배송 칸찬", "종류": "끝로고", "어디": "2-48 끝까지", "만드는법": "그린 글자 · 재질로 — 꽉 찬 도시락 두 개 위"},
+    {"글": "사랑 한 칸 — 반찬 정기배송 칸찬", "종류": "끝로고", "어디": "2-48 끝까지", "만드는법": "그린 글자 · 재질로 — 꽉 찬 도시락 두 개 위. 「칸찬」은 상자 라벨과 같은 로고타입(D · 흰 명조와 가는 가로줄)으로 그린다"},
 ]
 
 소리 = {
