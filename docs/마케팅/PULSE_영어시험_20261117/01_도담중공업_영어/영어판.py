@@ -4,7 +4,7 @@
 #     소리: 최종소리.build를 그대로 쓰고 내레이션만 영어 판(내레이션_영어.py)으로 바꾼다 — 놓는 자리 · 곡 내림 · 효과음은 한국어 판과 같다.
 #           마지막 줄만 56.08 → 55.58초로 0.5초 당긴다(영어 줄 2.28초가 57.97초 마지막 화음 앞에서 끝나야 곡 내림을 화음 전에 다 푼다).
 #     판: Remotion src/p10en(영어 자막 · SYNK PULSE 끝 화면 3.5초)으로 굽고 음량을 −14 LUFS로 맞춘다.
-#   python -X utf8 영어판.py [소리] [화면] [판] [--목소리 아이작|조지|브라이언] [--로고 A|B|C]
+#   python -X utf8 영어판.py [소리] [화면] [판] [--목소리 아이작|조지|브라이언] [--로고 A|B|C] [--평면로고]
 #     → git 밖 synk-vendor/pulse-portfolio12-20261024/최종/p10_en/도담_영어_<로고>_<목소리>.mp4 · _폰.mp4 · _반초.jpg
 #   python -X utf8 영어판.py 낱장 <파일> <초> [<초> …]   → p10_en/_낱장/<파일 이름>_t<초>.png
 import os
@@ -36,10 +36,13 @@ CARD = 84   # P10en.tsx의 CARD와 같아야 한다(끝 화면이 필름 뒤로 
 # 11-18 새벽 다섯째 판: 넷째 판(위 셋째 판 설명의 V2)도 GPT 미학 맹검 4점 기각(「펠트 로고 · 노을 · 명조가 따로 논다, 가운데 정렬 범용 카드」). 같은 판을 또 고치지 않고
 #   9점 기준을 묻고 시안을 견줬다. 승인 갈색 단색 판은 후반 가이드 「마지막 장면 안에서 끝낸다 · 납작한 판으로 덮지 않는다」에 걸려, 같은 묶음(로고 · 세로줄 · 고지와 주소)을
 #   장면 하늘 가운데에 두는 판(맹검 8점)으로 정했다. 그래서 하늘은 위 30%에서 700px 아래 80%까지 더 짙게 가라앉힌다(P10en.tsx EndCard).
+# 여섯째 판(11-18 새벽): 다섯째 판도 카본 맹검 4점 기각 — 「붉은 구름 위에서 PULSE가 묻힘 · 주소가 폰에서 안 읽힘 · 좌우 두 단 배너 · 8칸 내내 멈춤」.
+#   그래서 서명 자리(가운데 위) 뒤를 무채색으로 한 번 더 누르고(BACK_*), 판 뒤 다가감을 1.5% → 4%로 키웠다. 글 크기 · 짜임은 P10en.tsx.
 SKY_TOP, SKY_BOTTOM, SKY_FROM, SKY_TO = 0.30, 0.80, 100.0, 700.0
+BACK_CX, BACK_CY, BACK_RX, BACK_RY, BACK_AMT, BACK_DESAT = 960.0, 400.0, 900.0, 320.0, 0.55, 0.6   # 서명 뒤 타원 — 가운데에서 55% 더 어둡게 · 60% 무채색으로
 TRIM = os.path.join(PUB, "SYNK-PULSE-Paper-trim.png")   # 승인 로고(배치용/SYNK-PULSE-Paper.png)의 투명 여백만 잘라 낸 파생 파일 — 비례 · 화소 그대로
 KIT_LOGO = os.path.join(C.REPO, "docs", "홍보물", "마케팅실행_20260909", "브랜드킷", "배치용", "SYNK-PULSE-Paper.png")
-PUSH = 0.015
+PUSH = 0.04
 LOGO_CX = 0.55   # 도담 끝 로고 묶음 가운데(화면 폭 몫) — 한국어 판은 0.5
 
 # 영어 내레이션 아홉 줄 — (첫 낱말을 놓을 화면 초, 곡 dB, 목소리 띠 dB, [(자막 글, 줄 끝 낱말)]). 자리 · 내림 값은 한국어 판 「_초반」 그대로(최종소리.py 54~66줄).
@@ -62,12 +65,17 @@ LIFT = {"When it's fully grown it'll weigh 300 tons": 1.5, "We fitted every blad
         "It's all grown up": 5.5, "Now for the first time we wake it": 4.5, "we send our baby out into the world": 2.5}
 
 
+FLAT = [False]   # --평면로고: 끝 화면 로고를 비교 시안(trim_logo 설명)으로 — 이름 끝에 「_평면로고시안」이 붙는다
+
+
 def args():
     a = sys.argv[1:]
     voice, logo, what = "아이작", "C", []
     i = 0
     while i < len(a):
-        if a[i] == "--목소리":
+        if a[i] == "--평면로고":
+            FLAT[0], i = True, i + 1
+        elif a[i] == "--목소리":
             voice, i = a[i + 1], i + 2
         elif a[i] == "--로고":
             logo, i = a[i + 1], i + 2
@@ -154,6 +162,9 @@ def frames37(plate, first_f, count):
     yy = np.arange(END.H, dtype=np.float32)
     kk = np.clip((yy - SKY_FROM) / (SKY_TO - SKY_FROM), 0, 1)
     SKY = (SKY_TOP + (SKY_BOTTOM - SKY_TOP) * kk * kk * (3 - 2 * kk))[:, None, None]   # 끝 화면 배경 밝기 — 위 SKY_TOP, SKY_FROM~SKY_TO px 사이로 SKY_BOTTOM
+    Y, X = np.mgrid[0:END.H, 0:E.W].astype(np.float32)
+    bw = np.clip(1 - np.sqrt(((X - BACK_CX) / BACK_RX) ** 2 + ((Y - BACK_CY) / BACK_RY) ** 2), 0, 1)
+    BW = (bw * bw * (3 - 2 * bw))[..., None]                                     # 서명 뒤 타원 무게(가운데 1 → 가장자리 0)
     a0, a1, amt = END.TAKE_DOWN
     for i in range(count):
         f = first_f + i
@@ -169,6 +180,11 @@ def frames37(plate, first_f, count):
         img = base.astype(np.float32) * (1 - amt * END.ease_io((f - a0) / (a1 - a0)))
         out = END.ease_io((f - END.HOLD_END_F + 1) / END.FADE_LEN) if f >= END.HOLD_END_F else 0.0
         img = img * (1 - (1 - SKY) * out)                                   # 하늘만 가라앉히고 노을띠 · 도시 불은 거의 그대로
+        rise = END.ease_io((f - (E.F[-1] - 4) + 1) / 10) if f >= E.F[-1] - 4 else 0.0   # 서명이 뜨는 곡선(P10en.tsx CARD_ON · 0.4초)
+        if rise > 0:                                                        # 서명 뒤는 무채색으로 한 번 더(PULSE 베리색이 붉은 구름에 묻히지 않게) —
+            w = BW * rise                                                   #   도담 로고가 꺼지는 곡선에 맞추면 서명보다 먼저 잿빛 얼룩으로 보였다(11-18 관문 P3)
+            g = img.mean(axis=2, keepdims=True)
+            img = (img * (1 - BACK_DESAT * w) + g * BACK_DESAT * w) * (1 - BACK_AMT * w)
         k = END.ease_io((f - END.ON_F + 1) / (END.LOCK_F - END.ON_F + 1)) * (1 - out)   # 도담 로고는 같은 0.5초에 빠진다
         if k > 0:
             a = (logo * k)[..., None]
@@ -203,22 +219,41 @@ def picture(logo):
     print("화면", logo, C.frames_of(os.path.join(OUT, f"화면_{logo}.mp4")), "장")
 
 
-def trim_logo():
+def trim_logo(flat=False):
+    """승인 로고의 투명 여백만 잘라 TRIM에 둔다. flat=True는 유호님께 견줘 보일 비교 시안 — 외곽선(알파)은 승인 파일 그대로 두고
+    synk는 크림 한 색, PULSE는 베리 몸통 색 한 색으로 채워 펠트 음영 · 실땀을 뺀다. 로고 정본 규칙(「펠트를 한 색으로 덮거나 평평하게 만들지 않는다」)과
+    어긋나므로 유호님이 고르시기 전에는 올리는 판에 쓰지 않는다(11-18 맹검: 같은 장면 · 같은 짜임에서 펠트 4점 · 평면 7점, GPT)."""
+    import numpy as np
     from PIL import Image
     im = Image.open(KIT_LOGO).convert("RGBA")
-    im.crop(im.getchannel("A").getbbox()).save(TRIM)
+    im = im.crop(im.getchannel("A").getbbox())
+    if flat:
+        a = np.asarray(im).astype(np.float32)
+        A = a[..., 3]
+        col = (A > 128).sum(axis=0)
+        w = len(col)
+        gap = [x for x in np.where(col == 0)[0] if w * 0.4 < x < w * 0.75]      # synk와 PULSE 사이 빈 기둥
+        cut = int(np.median(gap))
+        px = a[:, cut:, :3][A[:, cut:] > 200]
+        berry = np.median(px[(px.max(1) - px.min(1)) > 60], axis=0)            # 흰 실땀을 뺀 베리 몸통 색
+        out = np.zeros_like(a)
+        out[..., 3] = A
+        out[:, :cut, :3] = (239, 230, 216)
+        out[:, cut:, :3] = berry
+        im = Image.fromarray(out.astype(np.uint8))
+    im.save(TRIM)
 
 
-def render(logo, voice, jobs=2):
+def render(logo, voice, jobs=2, flat=False):
     os.makedirs(PUB, exist_ok=True)
-    trim_logo()
+    trim_logo(flat)
     for src, to in ((os.path.join(OUT, f"화면_{logo}.mp4"), os.path.join(PUB, "picture.mp4")), (os.path.join(OUT, f"소리_{voice}.wav"), os.path.join(PUB, "sound.wav")),
                     (os.path.join(OUT, f"timing_{voice}.json"), os.path.join(CAP, "src", "p10en", "timing.json"))):
         if not os.path.exists(to) or C.md5(src) != C.md5(to):
             shutil.copyfile(src, to)
-    name = f"도담_영어_{logo}_{voice}"
+    name = f"도담_영어_{logo}_{voice}" + ("_평면로고시안" if flat else "")
     out, raw = os.path.join(OUT, name + ".mp4"), os.path.join(OUT, "_렌더.mp4")
-    C.run(shutil.which("npx"), "remotion", "render", "src/p10en/entry.tsx", "p10en", raw, f"--concurrency={jobs}", "--log=error", cwd=CAP)
+    C.run(shutil.which("npx"), "remotion", "render", "src/p10en/entry.tsx", "p10en", raw, f"--concurrency={jobs}", "--timeout=120000", "--log=error", cwd=CAP)   # 다른 무거운 일과 겹치면 첫 프레임 가져오기가 28초를 넘겨 멈췄다(11-18)
     want = E.F[-1] + CARD
     if C.frames_of(raw) != want:
         raise SystemExit(f"렌더가 {C.frames_of(raw)}장 — {want}장이어야 한다(P10en.tsx의 CARD를 맞춘다)")
@@ -246,4 +281,4 @@ if __name__ == "__main__":
         stills(*what[1:])
         raise SystemExit
     for w in what:
-        {"소리": lambda: sound(voice), "화면": lambda: picture(logo), "판": lambda: render(logo, voice)}[w]()
+        {"소리": lambda: sound(voice), "화면": lambda: picture(logo), "판": lambda: render(logo, voice, flat=FLAT[0])}[w]()
