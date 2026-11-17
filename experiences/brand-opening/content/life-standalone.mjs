@@ -26886,9 +26886,14 @@ function createWorldEducation({
     bindPractice(root, routes);
     return { coachNow, plan, map };
   }
+  function heldMock() {
+    if (!openMockNext.pending) return false;
+    openMockNext.skipped = true;
+    return true;
+  }
   function repaint() {
     try {
-      if (home.openPanel?.() === "" || openPosition.pending || openMockNext.pending) return;
+      if (home.openPanel?.() === "" || openPosition.pending || heldMock()) return;
       if (panelNode("[data-position-next]")) {
         showNext({ keepScroll: true });
         return;
@@ -27378,7 +27383,7 @@ function createWorldEducation({
     if (start && data.plan.status === "ready" && data.plan.items.length) startDiagnosticNext(coachNow, data);
   }
   function redrawNext() {
-    if (redrawingNext || stopped || openPosition.pending || openMockNext.pending) return;
+    if (redrawingNext || stopped || openPosition.pending || heldMock()) return;
     redrawingNext = true;
     try {
       if (panelOpen() && panelNode("[data-position-next]")) showNext({ keepScroll: true, fresh: true });
@@ -28690,12 +28695,15 @@ function createWorldEducation({
     check3();
     const ticket = ++mockOpen, panel = home.openPanel?.() ?? "";
     openMockNext.pending = ticket;
+    let settled = false;
     try {
-      let settled = false;
       home.attachPanelResource?.({ dispose() {
         if (!settled && ticket === mockOpen) {
           mockOpen++;
-          if (openMockNext.pending === ticket) openMockNext.pending = 0;
+          if (openMockNext.pending === ticket) {
+            openMockNext.pending = 0;
+            openMockNext.skipped = false;
+          }
         }
       } });
       const moved = () => ticket !== mockOpen || (home.openPanel?.() ?? "") !== panel;
@@ -28791,7 +28799,12 @@ function createWorldEducation({
         }
       }, { once: true });
     } finally {
-      if (openMockNext.pending === ticket) openMockNext.pending = 0;
+      if (openMockNext.pending === ticket) {
+        openMockNext.pending = 0;
+        const skipped = openMockNext.skipped;
+        openMockNext.skipped = false;
+        if (skipped && !settled && !stopped) repaint();
+      }
     }
   }
   function runMockNext({ next: next2, plan, sections, exam, mode = null, audioAvailable = true, box, top }) {
@@ -29058,7 +29071,7 @@ function createWorldEducation({
     });
   }
   async function openPlan({ keepScroll = false, quiet = false } = {}) {
-    if (keepScroll && (openPosition.pending || openMockNext.pending)) return "skipped";
+    if (keepScroll && (openPosition.pending || heldMock())) return "skipped";
     check3();
     const ticket = ++planOpen;
     if (!keepScroll) {

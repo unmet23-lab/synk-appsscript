@@ -1540,16 +1540,32 @@ export const POSITION_MUTANTS = [
     "shell",
     "시험 형식 고르기와 여는 길",
     "시험 형식을 기다리는 열기에 판 자원을 달지 않는다 — 그 사이 연 같은 종류의 판을 늦게 온 판이 덮는다(Fable 끝 판 F6)",
-    "  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket)openMockNext.pending=0;}}});\n",
+    "  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket){openMockNext.pending=0;openMockNext.skipped=false;}}}});\n",
     "",
   ],
   [
     "shell",
     "시험 형식 고르기와 여는 길",
     "시험 형식을 기다리는 동안에도 열린 판을 뒤에서 다시 그린다 — 첫 받기 답이 그 열기를 끊는다(Fable 끝 판 F6)",
-    "  if(redrawingNext||stopped||openPosition.pending||openMockNext.pending)return;\n",
+    "  if(redrawingNext||stopped||openPosition.pending||heldMock())return;\n",
     "  if(redrawingNext||stopped||openPosition.pending)return;\n",
   ],
+  [
+    "shell",
+    "시험 형식 고르기와 여는 길",
+    "시험 형식 열기가 판을 그리지 않고 끝나도 기다리는 사이 건너뛴 다시 그리기를 하지 않는다 — 열린 판이 옛 상태로 남는다(끝 판 카본 B1)",
+    "if(skipped&&!settled&&!stopped)repaint();",
+    "",
+  ],
+  [
+    "shell",
+    "시험 형식 고르기와 여는 길",
+    "시험 형식 열기가 기다리는 사이 건너뛴 다시 그리기를 적지 않는다 — 끝에 다시 그릴 것을 모른다(끝 판 카본 B1)",
+    "function heldMock(){if(!openMockNext.pending)return false;openMockNext.skipped=true;return true;}",
+    "function heldMock(){return Boolean(openMockNext.pending);}",
+  ],
+  // 「판을 그린 뒤에도 끝에 다시 그린다」(!settled 빼기)와 「판이 바뀔 때 건너뛴 표를 지우지 않는다」는 넣지 않는다 — 새로 그린 판(시험 형식 판 ·
+  // 다른 판)을 keepScroll로 한 번 더 그리거나 그리지 않는 같은 동작이 된다(방어용 막이).
   [
     "mockShell",
     "시험 형식 고르기와 여는 길",

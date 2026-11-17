@@ -1732,3 +1732,44 @@ test('엔진 판 — 내 위치 판에서 연 시험 형식이 첫 받기 답을
     for (const coach of made) coach.dispose();
   }
 });
+
+test('엔진 판 — 내 위치 판에서 연 시험 형식이 기다리는 사이 건너뛴 다시 그리기는, 그 열기가 판을 그리지 않고 끝나면(코치를 못 받음) 끝에 한 번 한다 — 열린 판이 옛 상태로 남지 않는다(끝 판 카본 B1)', async () => {
+  let release = null;
+  const gate = new Promise(resolve => {
+    release = resolve;
+  });
+  let asked = 0;
+  // 첫 받기는 시간 초과로 답하고(판은 기록 일부로 선다), 길게 기다리는 두 번째 받기는 시험이 풀 때 된다 — 그 답의 다시 그리기는 시험 형식 열기가
+  // 기다리는 사이에 와서 건너뛴다. 입구는 시험 형식 코치를 주지 않는다(입구가 지금 판으로 정했거나 엔진을 못 받은 날) — 열기는 안내 한 줄로 끝난다.
+  const sync = accountLike(() => (++asked === 1 ? { ok: false, kind: 'timeout', code: 'PULL_TIMEOUT' } : gate.then(() => ({ ok: true }))));
+  const entry = {
+    calls: [],
+    async mockCoach(pool) {
+      entry.calls.push(pool.length);
+      await tick(20);
+      return null;
+    },
+    retired: () => () => {},
+  };
+  const app = shell({ panels: true, planner: { ...PLANNER, plan: planPlanner }, atlasNext: entry, wrap: sync.wrap });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await until(() => sync.calls.length === 2, '길게 기다리는 두 번째 받기');
+    assert.match(app.last(), /data-complete="false"/, '첫 받기가 시간 초과라 기록 일부');
+    const toasts = app.toasts.length;
+    const opening = app.education.mock();
+    await tick(30);
+    release();
+    await opening;
+    await tick(30);
+    assert.equal(entry.calls.length, 1, '시험 형식 코치를 물었고 받지 못했다');
+    assert.equal(app.toasts.length, toasts + 1, '안내 한 줄');
+    assert.ok(!/data-mock-stage/.test(app.last()), '시험 형식 판은 열지 않는다');
+    assert.match(app.last(), /data-position-next="engine"/, '내 위치 판 그대로');
+    assert.match(app.last(), /data-complete="true"/, '기다리는 사이 건너뛴 다시 그리기를 끝에 한 번 한다 — 받기가 끝난 판');
+  } finally {
+    release();
+    app.dispose();
+  }
+});

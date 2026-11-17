@@ -678,10 +678,15 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   bindPractice(root,routes);
   return {coachNow,plan,map};
  }
+ // 내 위치 · 새 길 시험 형식을 여는 중이면 열린 판을 뒤에서 다시 그리지 않는다(Fable 끝 판 F6 — 다시 그리기도 판 자원을 정리해 그 열기를 끊는다).
+ // 시험 형식 열기 중에 건너뛴 다시 그리기는 적어 두었다가, 그 열기가 판을 그리지 않고 끝나면(확인 중 · 코치를 못 받음 · 오류) 열린 판이 그대로
+ // 남으므로 끝에 한 번 다시 그린다(끝 판 카본 B1). 내 위치 열기는 오류가 아니면 끝에 판을 새로 그리므로 적지 않는다 — 그래서 막이마다 내 위치
+ // 열기(openPosition.pending)를 먼저 보고, 시험 형식 열기는 그 뒤에 이것으로 본다(루트 시험 world-position-lifecycle이 세 함수만 떼어 돌린다).
+ function heldMock(){if(!openMockNext.pending)return false;openMockNext.skipped=true;return true;}
  // 은행을 다 불러오면 열려 있는 판을 새 문항으로 다시 그린다(진단·연습·모의가 진행 중일 때는 건드리지 않는다).
  function repaint(){
   try{
-   if(home.openPanel?.()===''||openPosition.pending||openMockNext.pending)return;
+   if(home.openPanel?.()===''||openPosition.pending||heldMock())return;
    // 새 길 「내 위치」 판은 새 길로 다시 그린다(옛 코치를 읽지 않는다 — §6).
    if(panelNode('[data-position-next]')){showNext({keepScroll:true});return;}
    if(panelNode('[data-position-board]')&&!panelNode('[data-position-board="hangul"]'))showBoard(readCoach(),{keepScroll:true});
@@ -998,7 +1003,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 종류가 빈 값)은 다시 그리지 않는다 —
  // 닫은 판이 다시 열린다(설계 검토 D1).
  function redrawNext(){
-  if(redrawingNext||stopped||openPosition.pending||openMockNext.pending)return;
+  if(redrawingNext||stopped||openPosition.pending||heldMock())return;
   redrawingNext=true;
   try{if(panelOpen()&&panelNode('[data-position-next]'))showNext({keepScroll:true,fresh:true});}catch{/* the next open draws it */}finally{redrawingNext=false;}
  }
@@ -1586,13 +1591,13 @@ async function townSend(coachNow,{wait=true}={}){
  async function openMockNext({exam=null}={}){
   check();const ticket=++mockOpen,panel=home.openPanel?.()??'';
   openMockNext.pending=ticket;
+  let settled=false;
   try{
   // 기다리는 동안 판 종류가 바뀌었거나, 판을 닫거나 다른 판을 열어 판 자원이 정리되면 이 표만 무효로 한다(내 위치 열기와 같은 판 자원 — Fable 끝
   // 판 F6). 판 종류로만 가리면 내 위치 · 짧은 진단 · 이번 주 계획처럼 종류가 같은 판을 그 사이 열어도 늦게 온 안내가 그 판을 덮고 연습을 닫았다.
   // 기다리는 동안은 열린 판을 뒤에서 다시 그리지 않는다(pending — 다시 그리기도 판 자원을 정리하므로, 첫 받기 답이 내 위치 판을 다시 그리면 이
-  // 열기가 끊긴다). 판을 보이기 직전에 settled가 되어 그 판의 정리는 무시된다.
-  let settled=false;
-  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket)openMockNext.pending=0;}}});
+  // 열기가 끊긴다). 판을 보이기 직전에 settled가 되어 그 판의 정리는 무시된다. 판이 바뀌면 건너뛴 다시 그리기도 지운다(새 판은 새로 그려졌다).
+  home.attachPanelResource?.({dispose(){if(!settled&&ticket===mockOpen){mockOpen++;if(openMockNext.pending===ticket){openMockNext.pending=0;openMockNext.skipped=false;}}}});
   const moved=()=>ticket!==mockOpen||(home.openPanel?.()??'')!==panel;
   try{await prepare();}catch{/* device-local practice still runs */}
   check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local practice still runs */}
@@ -1620,7 +1625,7 @@ async function townSend(coachNow,{wait=true}={}){
   box.querySelector('[data-mock-intro]')?.focus?.({preventScroll:true});top();
   box.querySelector('[data-mock-start]')?.addEventListener('click',()=>{try{check();runMockNext({next,plan,sections,exam:which,mode:values.examMode||null,audioAvailable:values.audio!=='off',box,top});}catch(error){failed(error);}},{once:true});
   box.querySelector('[data-mock-later]')?.addEventListener('click',()=>{try{void openMyPosition();}catch(error){failed(error);}},{once:true});
-  }finally{if(openMockNext.pending===ticket)openMockNext.pending=0;}
+  }finally{if(openMockNext.pending===ticket){openMockNext.pending=0;const skipped=openMockNext.skipped;openMockNext.skipped=false;if(skipped&&!settled&&!stopped)repaint();}}
  }
  // 새 길 시험 형식 연습 한 번(§21-23의 1): 겉(영역 · 이동 · 재생 · 답 · 영역 사이 · 끝 한 장)은 지금 판 runMock과 같고, 새 코치를 다룬다
  // (world-mock-next.mjs createMockNextSession). 판을 다시 정해 코치가 닫히면(DISPOSED · retired) 안내 한 줄과 함께 닫고 내 위치를 연다(진단 새 길과
@@ -1735,7 +1740,7 @@ async function townSend(coachNow,{wait=true}={}){
   return new Promise(resolve=>{let timer=null;const done=()=>{watchClock.clear(timer);planWaits.delete(done);resolve();};planWaits.add(done);timer=watchClock.set(done,PLAN_WAIT_MS);timer?.unref?.();});
  }
  async function openPlan({keepScroll=false,quiet=false}={}){
-  if(keepScroll&&(openPosition.pending||openMockNext.pending))return 'skipped';
+  if(keepScroll&&(openPosition.pending||heldMock()))return 'skipped';
   check();const ticket=++planOpen;
   if(!keepScroll){try{await prepare();}catch{/* the plan shows what this device has */}check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}check();
    // 기다린 사이 학생이 다른 판을 열었으면 덮지 않는다 — 기다림이 8초까지 길어서 학생이 누른 열기도 본다(4-4b 다시 검수 Fable FA2).

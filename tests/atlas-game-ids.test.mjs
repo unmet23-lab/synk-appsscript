@@ -36,7 +36,10 @@ const all = (text, pattern) => [...text.matchAll(pattern)].map(match => match[1]
 const GAME_CONST = /\b[A-Z_]*GAME(?:_ID)?\s*=\s*['"]([^'"]*)['"]/g;
 const MADE_WITH = /\bcreate(?:Game|Coach)\(\{\s*gameId\s*:\s*['"]([^'"]*)['"]/g;
 const POLICY_ID = /\bgameId\s*:\s*['"]([^'"]*)['"]/g;
-const QUOTED = /['"]([a-z][a-z0-9-]*)['"]/g;
+// WORLD 코치를 만드는 coachFor 호출(정의의 기본값 포함)은 괄호 안의 글자 값을 꼴과 상관없이 모두 모은다 — 빈 이름 · 점 둘 · 띄어쓰기 · 틀(`…`)
+// 같은 틀린 이름도 모아야 꼴 검사에 걸린다(끝 판 카본 B2). 괄호는 한 겹(화살표 함수의 인자)까지 안고, 그보다 깊어 못 읽는 호출은 수 대조가 잡는다.
+const COACH_CALL = /\bcoachFor\(((?:[^()]|\([^()]*\))*)\)/g;
+const coachNames = args => [...args.matchAll(/(['"`])([^'"`]*)\1/g)].map(match => match[2]);
 
 function gather() {
   const found = new Map(); // 이름 → 처음 찾은 파일
@@ -46,12 +49,13 @@ function gather() {
   // ① 게임들의 GAME_ID
   const games = tracked.filter(file => /^experiences\/[^/]+\/learning\.mjs$/.test(file));
   for (const file of games) for (const id of all(read(file), GAME_CONST)) add(id, file);
-  // ② WORLD 새 엔진 코치 — coachFor 줄의 따옴표 이름 · 정책의 gameId · 이름 상수
+  // ② WORLD 새 엔진 코치 — coachFor 호출의 글자 값 · 정책의 gameId · 이름 상수
   const world = tracked.filter(file => /^experiences\/synk-world-app\/[^/]+\.mjs$/.test(file) && isSource(file));
   for (const file of world) {
     const text = read(file);
-    for (const line of text.split('\n').filter(row => row.includes('coachFor(')))
-      for (const id of all(line, QUOTED)) if (id.startsWith('world-')) add(id, file);
+    const calls = [...text.matchAll(COACH_CALL)];
+    assert.equal(calls.length, (text.match(/\bcoachFor\(/g) ?? []).length, `${file} — coachFor 호출을 모두 읽는다`);
+    for (const [, args] of calls) for (const id of coachNames(args)) add(id, file);
     for (const id of all(text, POLICY_ID)) add(id, file);
     for (const id of all(text, GAME_CONST)) add(id, file);
   }
@@ -124,4 +128,11 @@ test('꼴 검사 자체 — 틀린 이름은 거짓, 맞는 이름은 참이다(
   assert.deepEqual(all("const GAME_ID = '';", GAME_CONST), ['']);
   assert.deepEqual(all("createGame({ gameId: '' })", MADE_WITH), ['']);
   assert.deepEqual(all("const policy = { gameId: '' };", POLICY_ID), ['']);
+  // coachFor 호출은 꼴이 틀린 이름도 그대로 모은다 — 여러 줄 호출 · 화살표 함수 인자 · 틀 글자까지(끝 판 카본 B2).
+  const coachIds = text => [...text.matchAll(COACH_CALL)].flatMap(([, args]) => coachNames(args));
+  assert.deepEqual(coachIds("coachFor('world-a..b',()=>[a,b],(a,b)=>{x=a;})"), ['world-a..b']);
+  assert.deepEqual(coachIds("coachFor(GUEST, banks,\n  'world mock')"), ['world mock']);
+  assert.deepEqual(coachIds("coachFor(GUEST, banks, `world-${kind}`)"), ['world-${kind}']);
+  assert.deepEqual(coachIds("coachFor(gameId,held,setHeld)"), []);
+  for (const id of ['world-a..b', 'world mock', 'world-${kind}']) assert.equal(isGameId(id), false, id);
 });
