@@ -106,6 +106,7 @@ a { color: inherit; }
 .pill.main { background: var(--paper); border-color: var(--paper); color: var(--void); }
 .pill.main:hover { background: #fff; border-color: #fff; }
 .pill[disabled], .pill[aria-disabled="true"] { opacity: .38; cursor: default; }
+.lnk[aria-disabled="true"] { opacity: .45; cursor: default; }
 .pill svg { width: 18px; height: 18px; flex: none; }
 .lnk { appearance: none; display: inline-flex; align-items: center; gap: 12px; margin: 0; padding: 0 0 5px; background: none; border: 0; border-bottom: 1px solid rgba(243, 241, 236, .4); border-radius: 0; font: 400 15px/1.2 var(--sans); color: var(--paper); text-decoration: none; white-space: nowrap; }
 .lnk:hover { border-bottom-color: var(--paper); }

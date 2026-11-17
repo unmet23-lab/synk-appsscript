@@ -44,12 +44,13 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
    *  옛 PC 백업에서 꺼내기, 조율 세션 793e0d6dc. 「2023」 층은 1.5초 늦게 「늦은폴더」를 답하고, 둘째 맨 위 층 읽기도 1.5초 걸린다 —
    *  그 사이에 늦은 답이 화면에 올라오지 않는지 본다) · 'limit'(계정에 잇지 않은 PC, Google로 시작이 LIMIT_DEVICES로 막힘 — 화면 요청 9 · 15) ·
    *  'stop'(전체 되살리기가 도는 PC — cancelRestore가 그만두는 중으로 바꾸고, 다음 상태 읽기에서 그만둔 뒤가 된다, 요청 16) ·
-   *  'stopdone'(같은 PC, 누르는 사이 되살리기가 끝나 cancelRestore가 stopping: false로 답한다) */
+   *  'stopdone'(같은 PC, 누르는 사이 되살리기가 끝나 cancelRestore가 stopping: false로 답한다) ·
+   *  'denied'(계정에 잇지 않은 PC, Google 화면의 Drive 칸을 켜지 않아 「Google로 시작」이 DENIED로 끝남) */
   async function scenario(start) {
     const ctx = await browser.newContext({ viewport: { width: 1080, height: 820 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce' });
     await ctx.addInitScript(({ handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, start }) => {
       const calls = []; window.__calls = calls; window.__args = [];
-      let cur = start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
+      let cur = start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' || start === 'denied' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
       window.__TAURI__ = { core: { invoke: async (_n, { method, args }) => {
         calls.push(method); window.__args.push({ method, input: args?.[0] ?? null });
         // 옛 PC 판 — 한 층 읽기와 범위 목록
@@ -66,6 +67,10 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'restoreScope') return { ok: true, value: cur };
         if (method === 'openRestoreFolder' || method === 'openSelectedRestoreFolder') return { ok: true, value: null };
         // 기기가 다 참 — 다시 깐 PC의 옛 연결(백업하는 기기, sameInstall)과 되살리기 기기 둘
+        if (method === 'signInGoogle' && start === 'denied') {
+          if (calls.filter((c) => c === 'signInGoogle').length < 2) return { ok: false, error: 'x', code: 'DENIED' };
+          return new Promise((r) => { window.__finishSignIn = () => r({ ok: false, error: 'x', code: 'REAUTH' }); });
+        }
         if (method === 'signInGoogle') return { ok: false, error: 'x', code: 'LIMIT_DEVICES', details: { devices: [
           { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', sameInstall: true },
           { id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active', sameInstall: false },
@@ -238,6 +243,21 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, left: [...document.querySelectorAll('#room [data-act="limit-revoke"]')].map((b) => b.dataset.device), focus: document.activeElement?.dataset?.act || '' }));
     check('「끊기」는 그 기기 번호로 revokeDevice를 부르고, 끊은 기기를 목록에서 빼며 남은 줄의 「끊기」를 거두고 다시 시작하라고 쓴다(포커스는 「다시 시작」)', rv.join() === ['e'.repeat(12), 'd'.repeat(12)].join() && !x.left.length && /옛 노트북/.test(x.text) && /「거실 PC」 연결을 끊었습니다/.test(x.text) && /「다시 시작」을 누르면/.test(x.text) && !/끊지 못했습니다/.test(x.text) && x.focus === 'google', JSON.stringify({ rv, left: x.left, focus: x.focus }));
     check('쪽 오류 없음(기기가 다 참)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  // 9. Google 동의 화면의 Drive 칸을 켜지 않아 DENIED — 알림과 상자로 그 칸을 켜라고 쓰고, 다시 누르면 상자를 비운다
+  {
+    const { pg, ctx, errors } = await scenario('denied');
+    await click(pg, '#room [data-act="google"]');
+    let x = await pg.evaluate(() => ({ box: document.querySelector('#room .box')?.innerText || '', note: document.getElementById('note')?.textContent || '' }));
+    check('DENIED 뒤 알림과 상자가 Google Drive가 적힌 칸을 켜라고 쓴다', /Google Drive가 적힌 칸은 꺼진 채로 나옵니다\. 그 칸을 켜지 않고 넘어가면/.test(x.box) && /「계속」까지 눌러 주세요\. Google Drive가 적힌 칸이 나오면 켜 주세요/.test(x.note), JSON.stringify(x));
+    await click(pg, '#room [data-act="google"]');
+    x = await pg.evaluate(() => ({ n: window.__calls.filter((c) => c === 'signInGoogle').length, box: document.querySelector('#room .box')?.innerText || '', on: document.getElementById('note').classList.contains('on'), note: document.getElementById('note')?.textContent || '' }));
+    check('다시 누르면 signInGoogle을 다시 부르고, 기다리는 동안 거절 상자와 거절 알림을 걷는다(카본 A1)', x.n === 2 && !/허락을 받지 못했습니다/.test(x.box) && !(x.on && /허락을 받지 못/.test(x.note)), JSON.stringify(x));
+    await pg.evaluate(() => window.__finishSignIn?.()); await pg.waitForTimeout(150);
+    x = await pg.evaluate(() => ({ box: document.querySelector('#room .box')?.innerText || '', note: document.getElementById('note')?.textContent || '' }));
+    check('두 번째가 DENIED가 아니면(REAUTH) 거절 상자가 다시 나오지 않는다(카본 A4)', !/허락을 받지 못했습니다/.test(x.box) && /Google 로그인을 마치지 않았습니다/.test(x.note), JSON.stringify(x));
+    check('쪽 오류 없음(Drive 칸)', !errors.length, errors.join(' | '));
     await ctx.close();
   }
   // 8. 도는 되살리기 그만두기(요청 16) — 「되살리기 그만두기」 → cancelRestore → 그만두는 중 → 그만둔 뒤의 한 줄

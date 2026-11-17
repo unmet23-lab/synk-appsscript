@@ -88,6 +88,8 @@ function notYet(to) {
 }
 
 function note(text, holdMs = 4200) {
+  // Google 거절 글은 어느 단추에서 나든 다 읽을 만큼 둔다(Opus 대체 검수 F2)
+  if (text === failureText('DENIED')) holdMs = Math.max(holdMs, 12000);
   noteBar.textContent = text; noteBar.classList.add('on');
   clearTimeout(noteTimer); noteTimer = setTimeout(() => noteBar.classList.remove('on'), holdMs);
 }
@@ -270,11 +272,12 @@ async function limitRevoke(deviceId) {
   acct = { ...acct, running: 'limit-revoke', revoking: d.id, googleWait: true, limitWhy: null }; paint();
   try {
     if (store.busy && !(await untilFree(15000))) return note(failureText('BUSY'));
-    note('브라우저에서 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
+    note('브라우저에서 Google 로그인을 마쳐 주세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
     const r = await store.call('revokeDevice', d.id);
     const name = String(d.name || '').trim() || '이름 없는 기기';
     if (r.ok) { acct = { ...acct, limit: (acct.limit || []).map((x) => (x && x.id === d.id ? { ...x, state: 'revoked' } : x)), freed: name }; note(`「${name}」 연결을 끊었습니다. 「다시 시작」을 눌러 주세요.`, 9000); }
-    else if (['REAUTH', 'DENIED', 'CANCELED'].includes(r.code)) note('Google 로그인을 마치지 않아 끊지 않았습니다. 다시 눌러 주세요.');
+    else if (r.code === 'DENIED') note('Google에서 허락을 받지 못해 끊지 않았습니다. 다시 눌러 Google 화면에서 「계속」까지 눌러 주세요. Google Drive가 적힌 칸이 나오면 켜 주세요.', 12000);
+    else if (['REAUTH', 'CANCELED'].includes(r.code)) note('Google 로그인을 마치지 않아 끊지 않았습니다. 다시 눌러 주세요.');
     // 서버는 그때 백업하는 기기를 끊지 않는다 — 목록이 낡았다(그 사이 자리가 옮겨졌다)
     // 다른 Google 계정을 골랐거나(그 계정에 이 기기가 없다) 그 사이 다른 곳에서 끊겼다 — 공용 글 「그 요청을 찾지 못했습니다」로는 알 수 없다(Fable F1)
     else if (r.code === 'NOT_FOUND' || r.code === 'DEVICE_STATE') {
@@ -301,12 +304,16 @@ async function signIn() {
   if (s?.account && s.account.available === false) return note(failureText('NO_GOOGLE'));
   // 기기를 끊는 중이면 버린다 — 목록을 먼저 지우고 BUSY로 끝나지 않게(단추도 그동안 막힌다)
   if (acct.signing || runningCalls.has('revokeDevice')) return;
-  acct = { ...acct, signing: true, limit: null, freed: null, limitWhy: null }; paint();
+  acct = { ...acct, signing: true, limit: null, freed: null, limitWhy: null, denied: false };
+  if (/^Google(에서 허락을 받지 못| 로그인을 마치지 않)/.test(noteBar.textContent)) noteBar.classList.remove('on');
+  paint();
   const r = await store.call('signInGoogle', {});
   acct = { ...acct, signing: false, devices: null };
   if (!r.ok) {
     if (r.code === 'LIMIT_DEVICES') acct = { ...acct, limit: Array.isArray(r.details?.devices) ? r.details.devices : [] };
-    else if (['REAUTH', 'DENIED', 'CANCELED'].includes(r.code)) note('Google 로그인을 마치지 않았습니다. 다시 눌러 주세요.');
+    // Drive 칸을 켜지 않았거나 Google 화면에서 그만둠(DENIED) — 다시 누르기 전에 그 칸을 상자로도 보인다
+    else if (r.code === 'DENIED') { acct = { ...acct, denied: true }; note(failureText('DENIED'), 12000); }
+    else if (['REAUTH', 'CANCELED'].includes(r.code)) note('Google 로그인을 마치지 않았습니다. 다시 눌러 주세요.');
     else note(failureText(r.code));
   }
   paint();
@@ -754,7 +761,7 @@ async function run(a, el) {
     // 넘기기처럼 몇 분짜리 목록 읽기 뒤에 이어서 해도 되는 단추는 더 기다린다(a.wait, Fable 4b D12)
     if (store.busy && a.wait) note('앞서 읽던 목록을 다 읽은 뒤 이어서 합니다.', a.wait);
     if (store.busy && !(await untilFree(a.wait || 15000))) return note(failureText('BUSY'));
-    if (a.google) note(a.google === 'maybe' ? '브라우저가 열리면 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저에서 Google 로그인을 마쳐 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
+    if (a.google) note(a.google === 'maybe' ? '브라우저가 열리면 Google 로그인을 마쳐 주세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.' : '브라우저에서 Google 로그인을 마쳐 주세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.', 300000);
     return await send(a, el);
   } finally {
     runningCalls.delete(key);

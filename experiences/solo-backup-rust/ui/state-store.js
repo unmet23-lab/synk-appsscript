@@ -139,7 +139,7 @@ export function failureText(code) {
     NONCE: 'Google 로그인을 확인하지 못했습니다. 다시 눌러 주세요.',
     TOKEN: 'Google 로그인을 확인하지 못했습니다. 다시 눌러 주세요.',
     INVALID: 'Google 로그인을 확인하지 못했습니다. 다시 눌러 주세요.',
-    DENIED: 'Google 계정에서 허락을 받지 못했습니다. 다시 눌러 「계속」까지 눌러 주세요.',
+    DENIED: 'Google에서 허락을 받지 못했습니다. 다시 눌러 Google 화면에서 「계속」까지 눌러 주세요. Google Drive가 적힌 칸이 나오면 켜 주세요.',
     DEVICE: '이 PC의 연결이 끊겼습니다. 「Google로 시작」을 다시 눌러 주세요.',
     DEVICE_GONE: '이 PC의 연결이 끊겼습니다. 「Google로 시작」을 다시 눌러 주세요.',
     DEVICE_STATE: '이 PC는 끊겼거나 다른 PC로 옮겨진 기기라 이 일을 할 수 없습니다.',

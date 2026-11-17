@@ -1596,7 +1596,7 @@ test('기기가 다 찼을 때(화면 요청 9 · 15, 개통 서버 ecbb3f91d): 
   assert.equal((draw({ limit: [W, R1, R2], running: 'limit-revoke', revoking: R1.id, googleWait: true }).html.match(/data-act="google-cancel"/g) || []).length, 1);
   // 끊는 동안 「다시 시작」도 막힌다(signIn이 목록을 지우지 않게)
   assert.match(busy, /data-act="google"[^>]*aria-disabled="true"/); assert.doesNotMatch(full, /data-act="google"[^>]*aria-disabled/);
-  assert.match(busy, /「계속」을 누르면 그 기기의 연결을 끊습니다/); assert.doesNotMatch(full, /그 기기의 연결을 끊습니다/);
+  assert.match(busy, /「계속」을 눌러 주세요\. 그러면 그 기기의 연결을 끊습니다/); assert.doesNotMatch(full, /그 기기의 연결을 끊습니다/);
   const freed = draw({ limit: [W, { ...R1, state: 'revoked' }, R2], freed: '거실 PC' }).html;
   assert.match(freed, /「거실 PC」 연결을 끊었습니다<\/b>「다시 시작」을 누르면 이 PC를 이을 수 있습니다/); assert.match(freed, /data-act="google"[^]*?<\/svg>다시 시작<\/button>/); assert.doesNotMatch(freed, /거실 PC<\/span>|data-device="d{12}"/);
   // 끊지 못한 까닭은 상자에 남는다(Fable -b 2). 끊기 단추는 그대로 둔다
@@ -1697,4 +1697,29 @@ test('범위를 통째로 받기 · 옛 PC 판의 실패 · 만들다 만 폴더
   assert.match(freed, /이은 뒤 「복구 정보 다시 맡기기」 단추가 보이면 눌러 주세요\. 눌러야 끊은 기기가 이 백업을 더는 열지 못합니다\./);
   const rk = home({ ...STATES.home, account: { connected: true, role: 'read', needs: ['read-key'] }, mode: 'restore' });
   assert.equal(rk.id, 'home-readkey'); assert.equal(rk.actions[0].call, 'rotateReadKey');
+});
+
+test('Google 동의 화면의 Drive 칸(개통 서버 세션 실측 11-17): 누르기 전과 DENIED 뒤에 그 칸을 켜라고 쓴다', async () => {
+  const { homeModel } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { failureText } = await load('state-store.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const draw = (acct) => renderScreen('start-1', { state: STATES['start-signin'], model: homeModel(STATES['start-signin'], { now: NOW }), now: NOW, fake: true, acct }).html;
+  // 누르기 전 · 기다리는 동안 · 끊는 동안 모두 그 칸을 말한다
+  assert.match(draw({}), /Google Drive가 적힌 칸이 나오면 꼭 켜 주세요/);
+  assert.match(draw({ signing: true }), /Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요\. 5분 안에/);
+  assert.match(draw({ limit: [{ id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active' }], running: 'limit-revoke', revoking: 'd'.repeat(12) }), /계정을 고르고 「계속」을 누르세요\. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요\. 그러면 그 기기의 연결을 끊습니다\.'?/);
+  // DENIED 뒤 — 상자로 그 칸과 까닭을 보이고, 다음 누름에 비운다(app.js signIn). 기기가 다 찬 목록이 있으면 그 상자가 먼저다
+  const denied = draw({ denied: true });
+  assert.match(denied, /<b>Google에서 허락을 받지 못했습니다<\/b>Google 화면의 Google Drive가 적힌 칸은 꺼진 채로 나옵니다\. 그 칸을 켜지 않고 넘어가면/);
+  // Opus 대체 검수 F1 — 다시 누르면 칸 없는 「추가 액세스」 화면이 뜰 수 있어, 칸은 조건으로만 말한다(세 거절 글 모두)
+  assert.match(denied, /다시 눌러 「계속」까지 눌러 주세요\. 그 칸이 나오면 켜 주세요\./);
+  const appSrc = require('node:fs').readFileSync(path.join(__dirname, '..', 'ui', 'app.js'), 'utf8');
+  for (const text of [denied, failureText('DENIED'), appSrc]) assert.doesNotMatch(text, /칸을 켜고 「계속」까지/);
+  assert.match(appSrc, /허락을 받지 못해 끊지 않았습니다\. 다시 눌러 Google 화면에서 「계속」까지 눌러 주세요\. Google Drive가 적힌 칸이 나오면 켜 주세요\./);
+  assert.doesNotMatch(denied, /Google Drive 칸/, '같은 칸을 한 이름으로 부른다(카본 A2)');
+  assert.doesNotMatch(draw({}), /허락을 받지 못했습니다/);
+  assert.doesNotMatch(draw({ denied: true, limit: [{ id: 'd'.repeat(12), name: '거실 PC', role: 'read', state: 'active' }] }), /허락을 받지 못했습니다/);
+  // 공용 거절 글(다른 Google 로그인 단추 — 복구 정보 다시 맡기기 · 이어서 백업 등)도 그 칸을 말한다. 「취소」를 눌러도 DENIED라 두 경우에 맞는 말이다
+  assert.equal(failureText('DENIED'), 'Google에서 허락을 받지 못했습니다. 다시 눌러 Google 화면에서 「계속」까지 눌러 주세요. Google Drive가 적힌 칸이 나오면 켜 주세요.');
 });

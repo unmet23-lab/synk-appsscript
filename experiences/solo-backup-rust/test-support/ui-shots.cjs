@@ -81,6 +81,7 @@ const CASES = [
   ['start-signin', 'start-1', { name: 'start-1-full-same', acct: { limit: DEVICES_FULL.map((d) => (d.role === 'write' ? { ...d, sameInstall: true } : { ...d, sameInstall: false })) } }],
   ['start-signin', 'start-1', { name: 'start-1-revoking', acct: { limit: DEVICES_FULL, running: 'limit-revoke', revoking: (DEVICES_FULL.find((d) => d.name === '거실 PC') || {}).id, googleWait: true } }],
   ['start-signin', 'start-1', { name: 'start-1-why', acct: { limit: DEVICES_FULL, limitWhy: { name: '옛 노트북', text: '이 Google 계정에서 「옛 노트북」을 찾지 못했습니다. 기기 목록을 받을 때 고른 Google 계정으로 다시 눌러 주세요. 같은 계정이었다면 「다시 시작」을 눌러 목록을 새로 받아 주세요.' } } }],
+  ['start-signin', 'start-1', { name: 'start-1-denied', acct: { denied: true } }],
   ['start-signin', 'start-1', { name: 'start-1-freed', acct: { limit: DEVICES_FULL.map((d) => (d.name === '거실 PC' ? { ...d, state: 'revoked' } : d)), freed: '거실 PC' } }],
   ['start-write', 'start-2', { name: 'start-2-empty' }], ['start-write-picked', 'start-2', { name: 'start-2-picked' }],
   ['start-google-step', 'start-2', { name: 'start-2-google' }], ['start-write-picked', 'start-2', { name: 'start-2-again', acct: { repoExists: true } }],

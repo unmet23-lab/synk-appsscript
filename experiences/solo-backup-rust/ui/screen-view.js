@@ -124,14 +124,17 @@ function start1(s, acct, now, fake) {
   const full = limit ? limitBox(limit, acct, now, s) : '';
   // 기기를 끊는 동안(limit-revoke)에도 브라우저의 Google 로그인을 기다린다 — 그 걸음에 맞는 글을 쓴다(카본 A1)
   const revoking = acct?.running === 'limit-revoke';
-  const hint = signing ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.'
-    : revoking ? '브라우저에서 Google 계정을 고르고 「계속」을 누르면 그 기기의 연결을 끊습니다.' : '브라우저가 열리면 계정을 고르고 「계속」을 누르세요.';
+  // Google 동의 화면의 Drive 칸은 꺼진 채로 나온다 — 켜지 않으면 DENIED로 끝난다(개통 서버 세션 실측 11-17). 누르기 전부터 말한다
+  const hint = signing ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.'
+    : revoking ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 그러면 그 기기의 연결을 끊습니다.' : '브라우저가 열리면 계정을 고르고 「계속」을 누르세요. Google Drive가 적힌 칸이 나오면 꼭 켜 주세요.';
+  // 앞선 「Google로 시작」이 DENIED로 끝났으면 다시 누르기 전에 그 칸을 상자로 보인다(다음 누름에 비운다)
+  const denied = acct?.denied && !limit ? '<div class="box rise i3"><b>Google에서 허락을 받지 못했습니다</b>Google 화면의 Google Drive가 적힌 칸은 꺼진 채로 나옵니다. 그 칸을 켜지 않고 넘어가면 복구 정보를 Google 계정에 맡길 수 없어 시작하지 못합니다. 다시 눌러 「계속」까지 눌러 주세요. 그 칸이 나오면 켜 주세요.</div>' : '';
   // 진단(찾아낸 작업 폴더)이 엔진에 들어오기 전에는 다음 화면에서 손님이 폴더를 고른다 — 그 흐름대로 말한다(Fable F3).
   // 상태에 계정 칸이 없는 예시 화면은 시안 A의 글 그대로
   const real = !!s?.account || !fake;
   const html = `<div class="in">${kick(real ? 'Google로 시작' : '설정할 것이 없습니다')}${say('업무 자료를', '매시간 저절로 지킵니다.')}
     ${limit ? '' : then(real ? 'Google 계정으로 시작한 뒤 지킬 폴더를 고르면, 그 폴더를 암호화해 클라우드에 올리고 그다음부터 매시간 바뀐 것만 저절로 올립니다.' : 'Google 계정으로 시작하면 이 PC의 문서, 바탕화면, 사진과 찾아낸 작업 폴더를 암호화해 클라우드에 올립니다.')}
-    ${full || notes(['<b>SYNK도 백업 내용을 열 수 없습니다.</b> 여는 열쇠는 내 Google 계정에만 맡깁니다.', '그래서 Google 계정에 들어갈 수 있는 사람은 백업도 열 수 있습니다. <b>Google 2단계 인증을 켜 두세요.</b>'])}
+    ${denied}${full || notes(['<b>SYNK도 백업 내용을 열 수 없습니다.</b> 여는 열쇠는 내 Google 계정에만 맡깁니다.', '그래서 Google 계정에 들어갈 수 있는 사람은 백업도 열 수 있습니다. <b>Google 2단계 인증을 켜 두세요.</b>'])}
     ${acts([{ id: 'google', label: signing ? '브라우저에서 계속해 주세요' : limit ? '다시 시작' : 'Google로 시작', kind: 'main', icon: 'google', disabled: signing || revoking }], `<span class="hint">${h(hint)}</span>${revoking ? '' : gcancel(acct)}<p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><button class="lnk sm" type="button" data-act="code-in">복구 코드로 되살리기</button></p>`)}
     <p class="foot rise i6">${h(EX.telemetry)}</p></div>`;
   return { kind: 'home', tone: 'setup', here: '백업·복구', top: [], html, acts: { google: { id: 'google', call: 'signInGoogle', signin: true }, 'code-in': { id: 'code-in', pending: '복구 코드' } } };
