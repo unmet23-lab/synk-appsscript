@@ -325,7 +325,7 @@ test('돌리기 — 열쇠가 없으면 시트 · 서치콘솔은 권한 기다�
   fs.writeFileSync(path.join(d, 'AI재기.jsonl'), `${JSON.stringify({ 잰때: new Date(+지금 - 하루).toISOString(), 날: '2026-11-16', 서비스: [{ 이름: 'Claude', 일반질문: 24, 답받음: 24, 언급: 0, 인용: 0, 브랜드질문: 6, 브랜드답받음: 6, 브랜드인용: 2 }], 멈춤: {} })}\n`);
   const 설정 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools', '사이트방문', '설정.json'), 'utf8'));
   let 재기 = 0;
-  const { 요약: s } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 시트: 'S', 켠날: '2026-11-01' } }, 의존: { 장부폴더: d, 열쇠: null, 앞요약: null, 회차재기: async () => { 재기 += 1; return null; } } });
+  const { 요약: s } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 시트: 'S', 켠날: '2026-11-01', 켠때: null } }, 의존: { 장부폴더: d, 열쇠: null, 앞요약: null, 회차재기: async () => { 재기 += 1; return null; } } });
   assert.equal(재기, 0, '6.5일 안이면 다시 재지 않는다');
   assert.equal(s.방문.상태, '권한 기다림', '권한이 없는 것은 고장(못 읽음)과 나눈다');
   assert.equal(s.방문.까닭, '방문 기록 시트를 읽을 권한을 기다립니다.');
@@ -347,7 +347,7 @@ test('돌리기 — 열쇠와 시트가 있으면 방문 · 목적 · 구글을 
     return { ok: true, status: 200, json: async () => ({ rows: JSON.parse(o.body).dimensions.length ? [] : [{ clicks: 2, impressions: 50, position: 7 }] }) };
   };
   const 회차 = { 날: '2026-11-17', 서비스: [{ 이름: 'Claude', 일반질문: 24, 답받음: 23, 언급: 1, 인용: 0, 브랜드질문: 6, 브랜드답받음: 6, 브랜드인용: 3, 판정들: [] }], 멈춤: {} };
-  const { 요약: s, 알림 } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 시트: 'S', 켠날: '2026-11-15' } },
+  const { 요약: s, 알림 } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 시트: 'S', 켠날: '2026-11-15', 켠때: null } },
     의존: { 장부폴더: d, 열쇠: { fake: true }, 접근토큰: async () => 'T', fetch기, 앞요약: null, 질문세트: { 질문: [] }, 회차재기: async () => 회차, 원문쓰기: null } });
   assert.equal(s.방문.상태, '됨');
   assert.equal(s.방문.사람, 1);
@@ -454,4 +454,20 @@ test('급증 장부 — 처음 본 날과 평소 값을 남기고, 방문셈이 
   assert.ok(!fs.existsSync(path.join(d, '급증.json')));
   assert.equal(JSON.parse(fs.readFileSync(path.join(d, '급증_풀림.jsonl'), 'utf8').trim()).처음날, '2026-11-08', '푼 것은 풀린 장부에 남는다');
   assert.equal(모으기.급증이어쓰기(null, d, 지금), null, '풀면 다음 모으기부터 말하지 않는다');
+});
+
+// 11-17 공개 뒤: 켠 때(공개 커밋 시각) 앞의 줄은 설정할 때 생긴 시험 줄이라 세지 않는다
+test('돌리기 — 켠 때 앞의 줄은 세지 않고 알림에 그 수를 적는다', async () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), '사이트방문-'));
+  const 설정 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools', '사이트방문', '설정.json'), 'utf8'));
+  const 방문값 = [머리, 줄(5, {}), 줄(1, {})]; // 지금(11-17 12:00 한국)에서 5시간 앞 · 1시간 앞
+  const fetch기 = async (u, o) => {
+    if (u.startsWith('https://sheets.googleapis.com/')) return { ok: true, status: 200, json: async () => ({ values: u.includes('/S/') ? 방문값 : [] }) };
+    return { ok: true, status: 200, json: async () => ({ rows: [] }) };
+  };
+  const { 요약: s, 알림 } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 시트: 'S', 켠날: '2026-11-17', 켠때: '2026-11-17T09:00:00+09:00' } }, 건너뛰기: ['AI', '검색'],
+    의존: { 장부폴더: d, 열쇠: { fake: true }, 접근토큰: async () => 'T', fetch기, 앞요약: null } });
+  assert.equal(s.방문.사람, 1, '켠 때(09:00) 뒤의 줄 하나만 센다');
+  assert.ok(알림.some((x) => x.includes('켜기 전 줄 1개')));
+  assert.deepEqual(설정.방문기록.켠때 && Number.isFinite(Date.parse(설정.방문기록.켠때)), true, '설정의 켠때는 시각으로 읽힌다');
 });
