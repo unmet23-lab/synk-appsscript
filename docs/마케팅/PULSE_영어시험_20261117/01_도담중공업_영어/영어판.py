@@ -3,8 +3,8 @@
 #     화면: 1~36컷은 한국어 판이 잘라 둔 컷(최종/p10/_컷/01~36.mp4)을 그대로 잇고, 37컷 끝 로고만 영문으로 그린 이름(로고_영어.py)으로 다시 굽는다. 다시 굽는 영상 판은 없다.
 #     소리: 최종소리.build를 그대로 쓰고 내레이션만 영어 판(내레이션_영어.py)으로 바꾼다 — 놓는 자리 · 곡 내림 · 효과음은 한국어 판과 같다.
 #           마지막 줄만 56.08 → 55.58초로 0.5초 당긴다(영어 줄 2.28초가 57.97초 마지막 화음 앞에서 끝나야 곡 내림을 화음 전에 다 푼다).
-#     판: Remotion src/p10en(영어 자막 · SYNK PULSE 끝 화면 3.25초)으로 굽고 음량을 −14 LUFS로 맞춘다.
-#   python -X utf8 영어판.py [소리] [화면] [판] [--목소리 아이작|조지|브라이언] [--로고 A|B]
+#     판: Remotion src/p10en(영어 자막 · SYNK PULSE 끝 화면 3.5초)으로 굽고 음량을 −14 LUFS로 맞춘다.
+#   python -X utf8 영어판.py [소리] [화면] [판] [--목소리 아이작|조지|브라이언] [--로고 A|B|C]
 #     → git 밖 synk-vendor/pulse-portfolio12-20261024/최종/p10_en/도담_영어_<로고>_<목소리>.mp4 · _폰.mp4 · _반초.jpg
 #   python -X utf8 영어판.py 낱장 <파일> <초> [<초> …]   → p10_en/_낱장/<파일 이름>_t<초>.png
 import os
@@ -30,9 +30,17 @@ CARD = 84   # P10en.tsx의 CARD와 같아야 한다(끝 화면이 필름 뒤로 
 # 끝 화면 배경(11-17 고침): 첫 판은 필름이 검정으로 어두워진 뒤 검정 판 위에 끝 화면을 얹었다. 미학 맹검(카본) 기각 4점 —
 #   「납작한 단색 검정 판 위에 넉 줄이 정지 이미지처럼 멈춤」, 후반 가이드 3절 「마지막 장면 안에서 끝낸다. 검은 화면 로고로 넘어가지 않는다」.
 #   그래서 37번 판의 마지막 장(카메라는 판 96장부터 이미 멈춰 있다 — 11-17 잼)을 끝 화면 동안 이어 두고, 도담 로고가 빠지는 0.5초에
-#   검정 대신 45% 밝기까지만 내리며, 판 뒤로는 1.5%만 아주 천천히 다가간다(멈춘 그림처럼 보이지 않게).
-DIM = 0.45
+#   검정 대신 위 하늘만 가라앉히며(SKY_*), 판 뒤로는 1.5%만 아주 천천히 다가간다(멈춘 그림처럼 보이지 않게).
+# 11-17 밤 셋째 판: 둘째 판(45% 고르게)은 미학 맹검 3점 「노을이 탁한 갈색, PULSE가 묻힘」, 맹검(Fable) 5.5점. 시안 셋 맹검에서 V2(위 하늘만 가라앉히고
+#   큰 로고를 위에, 한 줄 고지 · 주소를 아래에)가 7.5점으로 골라졌다 — 그 판에 맹검이 권한 「로고 뒤 부드러운 타원 어둠 · 고지와 주소 사이 두 배 · 주소 키움」을 더했다(P10en.tsx).
+# 11-18 새벽 다섯째 판: 넷째 판(위 셋째 판 설명의 V2)도 GPT 미학 맹검 4점 기각(「펠트 로고 · 노을 · 명조가 따로 논다, 가운데 정렬 범용 카드」). 같은 판을 또 고치지 않고
+#   9점 기준을 묻고 시안을 견줬다. 승인 갈색 단색 판은 후반 가이드 「마지막 장면 안에서 끝낸다 · 납작한 판으로 덮지 않는다」에 걸려, 같은 묶음(로고 · 세로줄 · 고지와 주소)을
+#   장면 하늘 가운데에 두는 판(맹검 8점)으로 정했다. 그래서 하늘은 위 30%에서 700px 아래 80%까지 더 짙게 가라앉힌다(P10en.tsx EndCard).
+SKY_TOP, SKY_BOTTOM, SKY_FROM, SKY_TO = 0.30, 0.80, 100.0, 700.0
+TRIM = os.path.join(PUB, "SYNK-PULSE-Paper-trim.png")   # 승인 로고(배치용/SYNK-PULSE-Paper.png)의 투명 여백만 잘라 낸 파생 파일 — 비례 · 화소 그대로
+KIT_LOGO = os.path.join(C.REPO, "docs", "홍보물", "마케팅실행_20260909", "브랜드킷", "배치용", "SYNK-PULSE-Paper.png")
 PUSH = 0.015
+LOGO_CX = 0.55   # 도담 끝 로고 묶음 가운데(화면 폭 몫) — 한국어 판은 0.5
 
 # 영어 내레이션 아홉 줄 — (첫 낱말을 놓을 화면 초, 곡 dB, 목소리 띠 dB, [(자막 글, 줄 끝 낱말)]). 자리 · 내림 값은 한국어 판 「_초반」 그대로(최종소리.py 54~66줄).
 #   자막은 한 화면에 한 문장, 마침표 · 쉼표 없음(슬롭 점검표 6번). 숫자는 읽기 쉽게 300으로 적는다.
@@ -56,7 +64,7 @@ LIFT = {"When it's fully grown it'll weigh 300 tons": 1.5, "We fitted every blad
 
 def args():
     a = sys.argv[1:]
-    voice, logo, what = "아이작", "B", []
+    voice, logo, what = "아이작", "C", []
     i = 0
     while i < len(a):
         if a[i] == "--목소리":
@@ -85,7 +93,7 @@ def sound(voice):
     sign_off(wav)
 
 
-ECHO_AT = (E.F[-1] - 4) / E.FPS + 0.6    # P10en.tsx 끝 화면의 SYNK PULSE 로고가 올라오기 시작하는 초(CARD_ON + 0.6 = 61.68초)
+ECHO_AT = (E.F[-1] - 4) / E.FPS          # P10en.tsx 끝 화면의 SYNK PULSE 로고가 올라오기 시작하는 초(CARD_ON = 61.08초)
 ECHO_DB = -3.0                           # 메아리 첫 0.5초 크기 = 몸통 0.25초 칸 크기 가운데 + 이 값
 AIR_DB = -50.0                           # 끝 화면 아래 바깥 공기 크기(dBFS RMS)
 
@@ -138,11 +146,14 @@ def sign_off(wav):
 
 
 def frames37(plate, first_f, count):
-    """37컷 + 끝 화면 배경 — 도담_끝로고.frames와 같되 끝에서 검정이 아니라 DIM 밝기로 내리고, 판 뒤는 마지막 장을 PUSH만큼 천천히 다가가며 잇는다"""
+    """37컷 + 끝 화면 배경 — 도담_끝로고.frames와 같되 끝에서 검정이 아니라 하늘만 SKY 밝기로 가라앉히고, 판 뒤는 마지막 장을 PUSH만큼 천천히 다가가며 잇는다"""
     import cv2
     import numpy as np
     logo = END.logo_alpha()
     n = END.PLATE_N
+    yy = np.arange(END.H, dtype=np.float32)
+    kk = np.clip((yy - SKY_FROM) / (SKY_TO - SKY_FROM), 0, 1)
+    SKY = (SKY_TOP + (SKY_BOTTOM - SKY_TOP) * kk * kk * (3 - 2 * kk))[:, None, None]   # 끝 화면 배경 밝기 — 위 SKY_TOP, SKY_FROM~SKY_TO px 사이로 SKY_BOTTOM
     a0, a1, amt = END.TAKE_DOWN
     for i in range(count):
         f = first_f + i
@@ -157,7 +168,7 @@ def frames37(plate, first_f, count):
             base = cv2.warpAffine(base, M, (w, h), flags=cv2.INTER_LANCZOS4)
         img = base.astype(np.float32) * (1 - amt * END.ease_io((f - a0) / (a1 - a0)))
         out = END.ease_io((f - END.HOLD_END_F + 1) / END.FADE_LEN) if f >= END.HOLD_END_F else 0.0
-        img = img * (1 - (1 - DIM) * out)                                   # 장면은 45%까지만
+        img = img * (1 - (1 - SKY) * out)                                   # 하늘만 가라앉히고 노을띠 · 도시 불은 거의 그대로
         k = END.ease_io((f - END.ON_F + 1) / (END.LOCK_F - END.ON_F + 1)) * (1 - out)   # 도담 로고는 같은 0.5초에 빠진다
         if k > 0:
             a = (logo * k)[..., None]
@@ -175,7 +186,8 @@ def picture(logo):
         if not os.path.exists(p) or C.frames_of(p) != k:
             raise SystemExit(f"한국어 판 컷 {p}가 없거나 {k}장이 아니다 — b2b-factory-20261026/최종편집.py 화면을 먼저 돌린다")
         paths.append(p)
-    END.L = types.SimpleNamespace(render=lambda h: LE.render(h, logo))   # 끝 로고 이름만 영문으로(표식 · 자리 · 움직임은 한국어 판 그대로)
+    END.L = types.SimpleNamespace(render=lambda h: LE.render(h, logo))   # 끝 로고 이름만 영문으로(표식 · 움직임은 한국어 판 그대로)
+    END.CX = E.W * LOGO_CX     # 자리만 오른쪽으로 — 한가운데 두면 표식이 왼쪽 송전탑 애자와 맞닿을 듯했다(11-17 미학 맹검)
     k = E.F[37] - E.F[36] + CARD          # 37컷 + 끝 화면 동안 이어 두는 마지막 장
     out37 = os.path.join(d, "37.mp4")
     E.encode(frames37(E.decode(C.clip(E.CUTS[37][0]), 0, END.PLATE_N), E.F[36], k), out37)
@@ -191,8 +203,15 @@ def picture(logo):
     print("화면", logo, C.frames_of(os.path.join(OUT, f"화면_{logo}.mp4")), "장")
 
 
+def trim_logo():
+    from PIL import Image
+    im = Image.open(KIT_LOGO).convert("RGBA")
+    im.crop(im.getchannel("A").getbbox()).save(TRIM)
+
+
 def render(logo, voice, jobs=2):
     os.makedirs(PUB, exist_ok=True)
+    trim_logo()
     for src, to in ((os.path.join(OUT, f"화면_{logo}.mp4"), os.path.join(PUB, "picture.mp4")), (os.path.join(OUT, f"소리_{voice}.wav"), os.path.join(PUB, "sound.wav")),
                     (os.path.join(OUT, f"timing_{voice}.json"), os.path.join(CAP, "src", "p10en", "timing.json"))):
         if not os.path.exists(to) or C.md5(src) != C.md5(to):

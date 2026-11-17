@@ -2,6 +2,8 @@
 #   결정 11-05 「끝 로고는 치지 말고 그린다」 · 슬롭 점검표 22번. 표식(두 토막 고리 + 점)은 한국어 판 그대로 쓰고 이름만 바꾼다.
 #   획: 고른 두께 T=10(글자 칸 100) · 평평한 획 끝 · 곧은 각. 열린 가로획 끝은 한국어 판처럼 35°로 비스듬히 자른다(날개 끝).
 #   시안 A = 표식 + DODAM 한 줄. 시안 B = 표식 + DODAM, 그 아래 같은 획을 0.32배로 줄인 HEAVY INDUSTRIES 한 줄(자간 넓게).
+#   시안 C(11-17 밤, 기본) = 표식 + 굵은 DODAM(획 15 · 자간 10 · 가로획 없는 A) 한 줄. B는 미학 맹검 4점 「과녁형 원 + 둥근 기성 산세리프 + 자간만 벌린
+#     소제목 = 템플릿」, 마감 관문 「HEAVY INDUSTRIES가 폰에서 6px」이라 소제목을 빼고 이름을 굵고 덜 기성 글꼴 같게 다시 그렸다.
 #   render(name_h, 시안)은 한국어 판 L.render와 같은 꼴(mark, name, gap)을 돌려줘 도담_끝로고.logo_alpha가 그대로 쓴다.
 #   python -X utf8 로고_영어.py [출력 폴더]   → name_A.png · name_B.png · _미리보기_A.png · _미리보기_B.png
 import os
@@ -164,7 +166,19 @@ def word(letters, gap):
     return unary_union(gs)
 
 
-def dodam():
+def A_open(x, w=96):
+    """가로획 없는 A(Λ) — 시안 C. 산업 · 기술 회사 이름에서 흔히 쓰는 꼴이지만 기성 글꼴의 A와 달라 이름이 그린 글자로 읽힌다"""
+    top = (x + w / 2, 100 - T * 0.3)
+    lb, rb = (x + T * 0.62, 0), (x + w - T * 0.62, 0)
+    return clip(bar(leg(top, lb), top, leg(top, rb)), x, w)
+
+
+T_C = 15.0   # 시안 C 획 — 「중공업의 무게감 없이 템플릿 같다」(11-17 미학 맹검 4점)에 굵게
+
+
+def dodam(시안="A"):
+    if 시안 == "C":
+        return with_t(T_C, lambda: word([D, O, D, A_open, M], 10.0))
     return with_t(T_BIG, lambda: word([D, O, D, A, M], 16.0))
 
 
@@ -173,8 +187,8 @@ def heavy():
 
 
 def name_geom(시안):
-    big = dodam()
-    if 시안 == "A":
+    big = dodam(시안)
+    if 시안 in ("A", "C"):
         return big
     bx0, by0, bx1, by1 = big.bounds
     small = heavy()
@@ -191,7 +205,7 @@ def render(name_h, 시안="A"):
     """한국어 판 L.render와 같은 꼴 — (표식 RGBA, 이름 RGBA, 사이 px). name_h는 DODAM 글자 높이(px)"""
     wm = name_geom(시안)
     x0, y0, x1, y1 = wm.bounds
-    big = dodam().bounds
+    big = dodam(시안).bounds
     s = name_h / (big[3] - big[1])
     pad = int(name_h * 0.1)
     Wn, Hn = int((x1 - x0) * s + 2 * pad), int((y1 - y0) * s + 2 * pad)
@@ -213,7 +227,7 @@ if __name__ == "__main__":
     from PIL import Image
     out = sys.argv[1] if len(sys.argv) > 1 else "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p10_en/로고"
     os.makedirs(out, exist_ok=True)
-    for 시안 in ("A", "B"):
+    for 시안 in ("A", "B", "C"):
         m, n, gap = render(120, 시안)
         Image.fromarray(n).save(os.path.join(out, f"name_{시안}.png"))
         pw = m.shape[1] + int(gap) + n.shape[1] + 80
