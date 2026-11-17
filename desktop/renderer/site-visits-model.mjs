@@ -18,11 +18,16 @@ const num = n => Number(n || 0).toLocaleString('ko-KR');
 const pct = r => (r == null || !Number.isFinite(r) ? null : `${Math.round(r * 100)}%`);
 /** 요약에서 온 글 — 보이지 않는 글자를 빼고 길이를 줄인다. 화면은 이 글을 글자로만 넣는다. */
 const clean = (s, max = 60) => String(s ?? '').replace(/[\u0000-\u001f\u007f\u2028\u2029]/g, '').slice(0, max);
-/** 「으로」·「로」만 돌려준다 — 받침이 없거나 ㄹ이면 「로」. 영문은 m · n으로 끝나면, 숫자는 0 · 3 · 6이면 「으로」(검색어 · 갈래 뒤, PC 0.4.96 카본). */
+/**
+ * 「으로」·「로」만 돌려준다 — 받침이 없거나 ㄹ이면 「로」. 영문은 끝소리가 받침으로 읽히는 m · n · ng · b · k · p · ck이면 「으로」,
+ * 숫자는 0 · 3 · 6이면 「으로」. 우리가 정한 이름(들어온 갈래 다섯)에만 쓴다. 사람이 친 글(검색어)에는 조사를 붙이지 않는 문장을 쓴다 —
+ * 영문 끝소리는 글자만으로 다 가를 수 없다(PC 0.4.96 Fable 최종: 「korean learning」로, 「TOPIK」로).
+ */
 export function ro(word) {
-  const last = String(word ?? '').replace(/[^가-힣A-Za-z0-9]+$/, '').slice(-1);
+  const text = String(word ?? '').replace(/[^가-힣A-Za-z0-9]+$/, ''), last = text.slice(-1);
   if (/[가-힣]/.test(last)) { const b = (last.charCodeAt(0) - 0xac00) % 28; return b === 0 || b === 8 ? '로' : '으로'; }
-  return /[mnMN036]/.test(last) ? '으로' : '로';
+  if (/[0-9]/.test(last)) return /[036]/.test(last) ? '으로' : '로';
+  return /(?:[mnbkp]|ng|ck)$/i.test(text) ? '으로' : '로';
 }
 const list = (items, f) => (items || []).map(f).filter(Boolean).join(' · ');
 const pageName = p => PAGE_NAMES[p] || (typeof p === 'string' && p.startsWith('/en/') && PAGE_NAMES[p.slice(3)] ? `영어 ${PAGE_NAMES[p.slice(3)]}` : clean(p, 40));
@@ -129,7 +134,7 @@ function searchRow(s) {
   }
   need(g.노출, g.클릭);
   const words = g.검색어 || [], pages = g.쪽 || [];
-  const more = [['say', `${words[0] ? `구글에서는 「${clean(words[0].말, 40)}」${ro(clean(words[0].말, 40))} 가장 많이 보였습니다.` : '구글에서 많이 보인 검색어는 아직 없습니다.'} 네이버는 ${naverDone ? '등록돼 있습니다' : '아직 등록 전입니다'}.`]];
+  const more = [['say', `${words[0] ? `구글에서 가장 많이 보인 검색어는 「${clean(words[0].말, 40)}」입니다.` : '구글에서 많이 보인 검색어는 아직 없습니다.'} 네이버는 ${naverDone ? '등록돼 있습니다' : '아직 등록 전입니다'}.`]];
   if (words.length) more.push(['row', '많이 보인 검색어', list(words, x => `${clean(x.말, 40)} ${num(x.노출)}`), '', '']);
   if (pages.length) more.push(['row', '많이 보인 쪽', list(pages, x => `${pageName(x.쪽)} ${num(x.노출)}`), '', '']);
   more.push(naverRow);

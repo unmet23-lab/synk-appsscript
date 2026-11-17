@@ -363,12 +363,15 @@ test('a spike held in the ledger is said from the day it was first seen', () => 
 
 // PC 0.4.96 카본: 검색어 뒤 「로」 고정, 1위 갈래만 고른 문의 수가 합처럼 읽힘, 5개 기준 문장이 서로 다름
 test('particles follow the word, the top source is said as a share of the total, and the five-record rule reads the same everywhere', () => {
-  assert.deepEqual(['synk', '서울', '한국어', '검색', 'SNS', 'AI 답변', '직접', '다른 사이트', 'pulse ad', '2026', 'topik 3', '「synk」'].map(ro), ['로', '로', '로', '으로', '로', '으로', '으로', '로', '로', '으로', '으로', '로']);
+  assert.deepEqual(['서울', '한국어', '검색', 'SNS', 'AI 답변', '직접', '다른 사이트', '2026', 'topik 3'].map(ro), ['로', '로', '으로', '로', '으로', '으로', '로', '으로', '으로']);
+  // 영문 끝소리는 글자만으로 다 가를 수 없어(synk는 「싱크」, TOPIK은 「토픽」) 사람이 친 글에는 ro를 쓰지 않는다
+  assert.deepEqual(['korean learning', 'TOPIK', 'web app', 'Google'].map(ro), ['으로', '으로', '으로', '로'], 'English endings read as a final consonant take 으로');
   const s = summary();
   s.검색.구글.검색어 = [{ 말: '한국어 공부 앱', 노출: 9, 클릭: 1 }];
-  assert.match(siteVisitsView(ok(s), NOW).rows[3].more[0][1], /^구글에서는 「한국어 공부 앱」으로 가장 많이 보였습니다\./);
-  s.검색.구글.검색어 = [{ 말: 'synk', 노출: 9, 클릭: 1 }];
-  assert.match(siteVisitsView(ok(s), NOW).rows[3].more[0][1], /^구글에서는 「synk」로 가장 많이 보였습니다\./);
+  // PC 0.4.96 Fable 최종: 사람이 친 검색어 뒤에는 조사를 붙이지 않는다
+  assert.match(siteVisitsView(ok(s), NOW).rows[3].more[0][1], /^구글에서 가장 많이 보인 검색어는 「한국어 공부 앱」입니다\./);
+  s.검색.구글.검색어 = [{ 말: 'korean learning', 노출: 9, 클릭: 1 }];
+  assert.match(siteVisitsView(ok(s), NOW).rows[3].more[0][1], /^구글에서 가장 많이 보인 검색어는 「korean learning」입니다\./);
   const acts = summary();
   acts.행동.문의 = { 합: 3, 나눔: [{ 이름: '문의 메일', 수: 3 }] };
   acts.행동.처음들어온곳별 = [{ 갈래: '검색', 문의: 2, 앱받기: 0 }, { 갈래: 'SNS', 문의: 1, 앱받기: 2 }];
