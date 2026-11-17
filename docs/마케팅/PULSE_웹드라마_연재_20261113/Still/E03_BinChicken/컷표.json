@@ -71,7 +71,7 @@
       "종류": "소품",
       "낱말": ["box"],
       "색": "black",
-      "생김새": "A knee-high, closed-top black wooden box with scuffed corners the living statue stands on, a dented silver tip tin at its foot with a small round white sticker bearing a deep tomato-red TRY TOUR mark.",
+      "생김새": "A knee-high, closed-top black wooden box with scuffed corners the living statue stands on, a dented silver tip tin at its foot with a small round white sticker bearing a deep red TRY TOUR mark.",
       "기준그림": "ref/소품_상자.png"
     },
     "시식대": {
@@ -120,7 +120,7 @@
       "종류": "소품",
       "낱말": ["board"],
       "색": "white with forest-green print",
-      "생김새": "A small white A-frame tour schedule board topped with the deep tomato-red round TRY TOUR mark and, below it, the line \"NEXT STOP: MELBOURNE\" in large clean forest-green letters.",
+      "생김새": "A small white A-frame tour schedule board topped with the deep red round TRY TOUR mark and, below it, the line \"NEXT STOP: MELBOURNE\" in large clean forest-green letters.",
       "기준그림": "ref/소품_일정판.png"
     }
   },
