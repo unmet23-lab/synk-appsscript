@@ -11,6 +11,7 @@ import { createMockNextSession, selectMockNext, todayPractice } from './world-mo
 import { createPositionNextView } from './world-position-next-view.mjs';
 import { buildPlanNext, createPlanLog, planBoard, planReader, planStart, recordsComplete } from './world-plan-next.mjs';
 import { monthWhy, pickMonth } from './world-lookback-next.mjs';
+import { FIRST_GAME } from './world-month-answer.mjs';
 import { lifeReviewCandidate } from './world-account.bundle.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
@@ -1008,13 +1009,14 @@ export function createAtlasNext({
       if (!account) return answered(await coachFor(GUEST, banks, 'world-home'), since);
       return faceCoach(banks, 'world-home', since);
     },
-    // 시험 형식 연습의 코치(4-4d — §21-23의 1). 짧은 연습 · 생활 · 홈과 같은 판 정하기 · 같은 호스트이고 gameId는 'world-mock'이다 — 판 번호
-    // (set.world-mock.…)가 예상 급수 근거의 판을 가린다(§21-23의 2). 지금 판이면 null. pool: 시험 형식 풀(은행 + 빈칸 베기).
+    // 시험 형식 연습의 코치(4-4d — §21-23의 1). 짧은 연습 · 생활 · 홈과 같은 판 정하기 · 같은 호스트이고 gameId는 근거를 세는 판의 게임 이름
+    // (world-month-answer.mjs FIRST_GAME — 'world-mock')이다. 판 번호(set.world-mock.…)가 예상 급수 근거의 판을 가리므로 근거 상자와 같은
+    // 상수를 쓴다(Fable 끝 판 F15). 지금 판이면 null. pool: 시험 형식 풀(은행 + 빈칸 베기).
     async mockCoach(pool) {
       if (disposed) return null;
       const since = loosened;
-      if (!account) return answered(await coachFor(GUEST, banksOf(pool), 'world-mock'), since);
-      return faceCoach(banksOf(pool), 'world-mock', since);
+      if (!account) return answered(await coachFor(GUEST, banksOf(pool), FIRST_GAME), since);
+      return faceCoach(banksOf(pool), FIRST_GAME, since);
     },
     // 홈 플래너(4-3 — world-today.mjs). 엔진을 받아야 화면 언어의 문장(Vellum)을 그린다 — 못 받으면 null(셸은 생활 판정을 따라 지금 판으로 간다).
     async homePlanner() {

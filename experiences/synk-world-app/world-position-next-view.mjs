@@ -147,12 +147,15 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
   }
 
   // 예상 급수 칸(4-4d — 단계4_계획 §21-23의 2). 지금 판 그림(world-position-ui.mjs estimateBlock)과 같은 글 열쇠로 값만 잇는다(글은 리디자인).
-  // estimate: estimateNext의 값. 근거 수를 모르면(status 'checking') 「기록 확인 중」만 두고 수를 그리지 않는다. mock: 시험 형식 연습을 열 수
+  // estimate: estimateNext의 값. 근거 수를 모르면(status 'checking') 「기록 확인 중」만 두고 수를 그리지 않는다. 근거를 읽지 못했으면(status
+  // 'unread') 상태 줄 없이 그린다 — 「기록 확인 중」을 남기지 않고 수도 그리지 않는다(설계 주인 11-17 저녁 답 4 나). mock: 시험 형식 연습을 열 수
   // 있으면 { minutes } — 단추(data-position-mock)를 단다. 셸의 openMock이 판 셋을 가른다(§21-23의 1).
   function estimateBlock(estimate, mock) {
     if (!estimate) return '';
     const state =
-      estimate.status === 'checking'
+      estimate.status === 'unread'
+        ? null
+        : estimate.status === 'checking'
         ? 'homeTutor.checking'
         : estimate.status === 'mode-unsupported'
           ? 'position.estimate.ibt'
@@ -167,7 +170,7 @@ export function createPositionNextView({ t, has = () => true, formatDate = null 
     const open = Number.isSafeInteger(mock?.minutes)
       ? `<button class="quiet-button wpos-practice" type="button" data-position-mock>${escape(t('mock.open', { minutes: mock.minutes }))} <span aria-hidden="true">→</span></button>`
       : '';
-    return `<section class="wpos-estimate" data-estimate="${escape(estimate.status)}"${known ? ` data-evidence="${count(estimate.evidence)}" data-listening="${count(estimate.perDomain?.listening)}" data-reading="${count(estimate.perDomain?.reading)}"` : ''}><p class="life-section-label">ESTIMATE</p><h3>${escape(t('position.estimate.title'))}</h3><p class="wpos-estimate-state">${led('')}<strong>${escape(t(state))}</strong></p><p class="wpos-note">${escape(t('position.estimate.basis'))}</p>${collected}${open}</section>`;
+    return `<section class="wpos-estimate" data-estimate="${escape(estimate.status)}"${known ? ` data-evidence="${count(estimate.evidence)}" data-listening="${count(estimate.perDomain?.listening)}" data-reading="${count(estimate.perDomain?.reading)}"` : ''}><p class="life-section-label">ESTIMATE</p><h3>${escape(t('position.estimate.title'))}</h3>${state ? `<p class="wpos-estimate-state">${led('')}<strong>${escape(t(state))}</strong></p>` : ''}<p class="wpos-note">${escape(t('position.estimate.basis'))}</p>${collected}${open}</section>`;
   }
 
   // 판 한 장. board: buildPositionNext · plan: selectDiagnosticNext · cards: recheckCards · exams: 고를 수 있는 시험(둘 이상일 때 위에 고르기) ·

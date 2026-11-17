@@ -563,6 +563,13 @@ test('예상 급수 칸 — 근거 수를 모르면(null) 「확인 중」이고
   assert.equal(estimateNext({ bySkill: COUNTS, form: 'topik-i', mode: 'ibt', policy: ESTIMATE_POLICY }).status, 'mode-unsupported');
   assert.equal(estimateNext({ bySkill: null, form: 'topik-i', mode: 'ibt', policy: ESTIMATE_POLICY }).status, 'mode-unsupported');
   assert.throws(() => estimateNext({ bySkill: COUNTS, form: 'topik-i' }), /policy/, '문턱 정책이 없으면 던진다(셸은 그 칸을 비운다)');
+  // 근거를 읽지 못했으면(근거 상자가 그 자리에서 묻기를 그만두었다) 「확인 중」이 아니라 읽지 못함이다(설계 주인 11-17 저녁 답 4 나).
+  const unread = estimateNext({ bySkill: null, unread: true, form: 'topik-i', policy: ESTIMATE_POLICY });
+  assert.equal(unread.status, 'unread');
+  assert.equal(unread.evidence, 0);
+  assert.deepEqual(estimateNext({ bySkill: COUNTS, unread: true, form: 'topik-i', policy: ESTIMATE_POLICY }), estimateNext({ bySkill: COUNTS, form: 'topik-i', policy: ESTIMATE_POLICY }), '수를 알면 수가 이긴다');
+  assert.equal(estimateNext({ bySkill: null, unread: true, mode: 'ibt', policy: ESTIMATE_POLICY }).status, 'mode-unsupported', 'IBT는 그대로');
+  assert.equal(estimateNext({ bySkill: null, unread: 'yes', policy: ESTIMATE_POLICY }).status, 'checking', '참일 때만');
 });
 
 test('새 판 그림 — 예상 급수 칸은 모를 때 「기록 확인 중」만, 알면 모은 답 수를, 시험 형식을 열 수 있으면 단추를 단다(4-4d)', () => {
@@ -588,4 +595,11 @@ test('새 판 그림 — 예상 급수 칸은 모를 때 「기록 확인 중」
   assert.ok(!none.includes('position.estimate.collected'), '모은 답이 0이면 수 줄은 없다');
   assert.ok(!none.includes('data-position-mock'), '열 수 없으면 단추가 없다');
   assert.ok(!draw(null).includes('data-estimate'), '값이 없으면 칸이 없다');
+  // 읽지 못함 — 상태 줄 없이 그린다(「기록 확인 중」도 수도 없다). 시험 형식 단추는 그대로 단다(설계 주인 11-17 저녁 답 4 나).
+  const unread = draw(estimateNext({ bySkill: null, unread: true, policy: ESTIMATE_POLICY }), { minutes: 26 });
+  assert.match(unread, /data-estimate="unread"/);
+  assert.ok(!unread.includes('homeTutor.checking'), '「기록 확인 중」이 없다');
+  assert.ok(!unread.includes('wpos-estimate-state'), '상태 줄이 없다');
+  assert.ok(!unread.includes('data-evidence') && !unread.includes('position.estimate.collected'), '수가 없다');
+  assert.match(unread, /<button[^>]*data-position-mock>/, '시험 형식 단추는 그대로');
 });

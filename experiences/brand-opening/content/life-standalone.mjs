@@ -25554,11 +25554,13 @@ var FIRST_KIND = Object.freeze({
   use: (stored) => ({ since: stored.from, bySkill: Object.freeze(bySkillCopy(stored.bySkill)) }),
   code: firstAnswersCode,
   failed: "FIRST_ANSWERS_FAILED",
-  query: (line) => line.ask({ game: FIRST_GAME, days: FIRST_DAYS })
+  query: (line) => line.ask({ game: FIRST_GAME, days: FIRST_DAYS }),
+  // 근거를 읽지 못한 자리에서는 한 번 다시 그린다 — 예상 급수 칸이 「기록 확인 중」으로 남지 않고 근거 수 없이 그린다(설계 주인 11-17 저녁 답 4 나).
+  redrawMissed: true
 });
 var KINDS = Object.freeze([MONTH_KIND, FIRST_KIND]);
 function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive, kind = MONTH_KIND }) {
-  const state = { owner: null, generation: null, asking: null, tried: null, pulled: /* @__PURE__ */ new Set(), kept: null, coach: null, ahead: null };
+  const state = { owner: null, generation: null, asking: null, tried: null, pulled: /* @__PURE__ */ new Set(), kept: null, coach: null, ahead: null, missed: null };
   const reset = () => {
     state.asking = null;
     state.tried = null;
@@ -25566,6 +25568,7 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
     state.kept = null;
     state.coach = null;
     state.ahead = null;
+    state.missed = null;
   };
   const follow = (owner) => {
     const now = answers.generation();
@@ -25633,6 +25636,13 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       } catch {
       }
     };
+    const drawMissed = () => {
+      if (kind.redrawMissed !== true) return;
+      try {
+        redraw();
+      } catch {
+      }
+    };
     const reply = (got) => {
       if (!settle() || !still()) return;
       const at = positionOf(got?.summaryAt);
@@ -25650,11 +25660,13 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
         if (!current2) return;
         if (at && aheadOf(at, current2)) pullOnce(holder.coach, at);
         else if (!samePosition(current2, device)) ask(holder.coach, holder.line, { owner, revision: revision2, day, device: current2 });
+        else drawMissed();
         return;
       }
       const body = kind.parse(got);
       if (!at || !body) {
         missed(kind.failed);
+        drawMissed();
         return;
       }
       if (storage && heldBack(storage)) return;
@@ -25671,12 +25683,16 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       }
     };
     void Promise.resolve().then(() => kind.query(line, offsetOf)).then(reply, () => {
-      if (settle() && still()) missed(kind.failed);
+      if (settle() && still()) {
+        missed(kind.failed);
+        drawMissed();
+      }
     }).catch(() => {
     });
   }
   const box = {
     month(coach) {
+      state.missed = null;
       const owner = account();
       if (!owner) return null;
       follow(owner);
@@ -25708,9 +25724,12 @@ function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, n
       else {
         if (state.ahead?.key === key && aheadOf(state.ahead.at, device)) pullOnce(coach, state.ahead.at);
         ask(coach, line, { owner, revision: revision2, day, device });
+        if (state.asking?.key !== key && state.tried?.key === key && samePosition(state.tried.from, device)) state.missed = coach;
       }
       return null;
     },
+    // 마지막 그리기(month · answer)가 이 코치로 묻기를 그만둔 자리에서 멈췄는가(설계 주인 11-17 저녁 답 4 나 — 셸이 「확인 중」 대신 읽지 못함으로 그린다).
+    missed: (coach) => state.missed !== null && state.missed === coach,
     // 묻는 중 · 상한 · 받은 자리 · 이 문서의 답을 비운다. 계정이나 세대 수가 바뀌면 month()가 스스로 부른다.
     reset
   };
@@ -26869,7 +26888,7 @@ function createWorldEducation({
   }
   function repaint() {
     try {
-      if (home.openPanel?.() === "" || openPosition.pending) return;
+      if (home.openPanel?.() === "" || openPosition.pending || openMockNext.pending) return;
       if (panelNode("[data-position-next]")) {
         showNext({ keepScroll: true });
         return;
@@ -27038,9 +27057,17 @@ function createWorldEducation({
     } catch {
       counts = null;
     }
-    if (!counts) counts = evidenceAsker.answer(coachNow);
+    let unread = false;
+    if (!counts) {
+      try {
+        counts = evidenceAsker.answer(coachNow);
+        unread = !counts && evidenceAsker.missed(coachNow);
+      } catch {
+        counts = null;
+      }
+    }
     try {
-      return P.estimateNext({ bySkill: counts?.bySkill ?? null, form: formOf(exam), mode: values.examMode || null, policy: position.ESTIMATE_POLICY });
+      return P.estimateNext({ bySkill: counts?.bySkill ?? null, unread, form: formOf(exam), mode: values.examMode || null, policy: position.ESTIMATE_POLICY });
     } catch {
       return null;
     }
@@ -27179,18 +27206,20 @@ function createWorldEducation({
       speaking
     });
     if (!examPlan) return null;
-    const mockNow = position.topik?.ready === false ? null : mockNextPlan(coachNow, values, exam, metMock), examWeek2 = position.exam.examWeek(now);
-    let mockTimes = [];
+    const mockNow = position.topik?.ready === false ? null : mockNextPlan(coachNow, values, studentExam(values), metMock), examWeek2 = position.exam.examWeek(now);
+    let mockDone = null;
     try {
-      mockTimes = homeNext?.planLog?.(coachNow)?.times?.("mock") || [];
+      const times = homeNext?.planLog?.(coachNow)?.times?.("mock");
+      if (Array.isArray(times)) mockDone = times.filter((at2) => at2 >= examWeek2.start && at2 < examWeek2.end).length;
     } catch {
-      mockTimes = [];
+      mockDone = null;
     }
     const mock = mockNow?.status === "ready" ? {
       minutes: mockNow.minutes,
       audioRequired: (mockNow.sections || []).some((row) => row.section === "listening" && row.status === "ready"),
-      done: mockTimes.some((at2) => at2 >= examWeek2.start && at2 < examWeek2.end)
+      done: mockDone > 0
     } : null;
+    if (mockNow) examPlan.mock = { status: mockNow.status, minutes: mockNow.minutes, total: mockNow.total, sections: mockNow.sections.map((row) => ({ section: row.section, status: row.status, count: row.items.length, minutes: row.minutes })) };
     const row53 = info.type === "topik2" ? writingList().find((row) => row.route === "writing:53") || null : null;
     const need = row53?.practiceNeed && Date.parse(row53.practiceNeed.at) <= now ? row53.practiceNeed : null;
     const needKind = ["retry", "assisted"].includes(need?.kind) ? need.kind : null;
@@ -27198,7 +27227,7 @@ function createWorldEducation({
     const first = speaking?.recommend?.[0] || null, listed = first ? speaking.list.find((row) => row.route === first.routeId) || null : null;
     const type = typeof listed?.targets?.[0] === "string" ? listed.targets[0].split(".").pop() : null;
     const speakingNow = first && type ? { label: first.label, routeId: first.routeId, minutes: first.minutes, type, untried: speaking.untried } : null;
-    return { examPlan, fresh: (item) => seenOf(item) === false, diagnostic: { ready }, mock, writing, speaking: speakingNow };
+    return { examPlan, fresh: (item) => seenOf(item) === false, diagnostic: { ready }, mock, mockDone, writing, speaking: speakingNow };
   }
   function planOnce(coachNow, area) {
     let done = false;
@@ -27349,7 +27378,7 @@ function createWorldEducation({
     if (start && data.plan.status === "ready" && data.plan.items.length) startDiagnosticNext(coachNow, data);
   }
   function redrawNext() {
-    if (redrawingNext || stopped || openPosition.pending) return;
+    if (redrawingNext || stopped || openPosition.pending || openMockNext.pending) return;
     redrawingNext = true;
     try {
       if (panelOpen() && panelNode("[data-position-next]")) showNext({ keepScroll: true, fresh: true });
@@ -28660,90 +28689,110 @@ function createWorldEducation({
   async function openMockNext({ exam = null } = {}) {
     check3();
     const ticket = ++mockOpen, panel = home.openPanel?.() ?? "";
-    const moved = () => ticket !== mockOpen || (home.openPanel?.() ?? "") !== panel;
+    openMockNext.pending = ticket;
     try {
-      await prepare();
-    } catch {
-    }
-    check3();
-    try {
-      await target.SYNKLearningHost?.ready?.();
-    } catch {
-    }
-    check3();
-    try {
-      await bankReady();
-    } catch {
-    }
-    check3();
-    if (ticket !== mockOpen) return;
-    if (homePhase() === "checking") {
-      await settledHome();
+      let settled = false;
+      home.attachPanelResource?.({ dispose() {
+        if (!settled && ticket === mockOpen) {
+          mockOpen++;
+          if (openMockNext.pending === ticket) openMockNext.pending = 0;
+        }
+      } });
+      const moved = () => ticket !== mockOpen || (home.openPanel?.() ?? "") !== panel;
+      try {
+        await prepare();
+      } catch {
+      }
+      check3();
+      try {
+        await target.SYNKLearningHost?.ready?.();
+      } catch {
+      }
+      check3();
+      try {
+        await bankReady();
+      } catch {
+      }
+      check3();
+      if (ticket !== mockOpen) return;
+      if (homePhase() === "checking") {
+        await settledHome();
+        check3();
+        if (moved()) return;
+      }
+      if (homePhase() === "old") {
+        settled = true;
+        return openMockOld({ exam });
+      }
+      const homeCoach = homePhase() === "engine" ? homeWatch?.coach?.() ?? null : null;
+      if (!homeCoach) {
+        home.toast(t2("homeTutor.checking"));
+        return;
+      }
+      try {
+        await syncedNext(homeCoach);
+      } catch {
+      }
       check3();
       if (moved()) return;
-    }
-    if (homePhase() === "old") return openMockOld({ exam });
-    const homeCoach = homePhase() === "engine" ? homeWatch?.coach?.() ?? null : null;
-    if (!homeCoach) {
-      home.toast(t2("homeTutor.checking"));
-      return;
-    }
-    try {
-      await syncedNext(homeCoach);
-    } catch {
-    }
-    check3();
-    if (moved()) return;
-    let values = {};
-    try {
-      values = getProgress().learningProfileValues() || {};
-    } catch {
-      values = {};
-    }
-    const which = exam || studentExam(values), plan = mockNextPlan(homeCoach, values, which);
-    if (!plan || plan.status !== "ready") {
-      home.toast(t2(plan?.reason === "history.incomplete" ? "position.diagnostic.history" : "mock.unavailable"));
-      void openMyPosition();
-      return;
-    }
-    let next2 = null;
-    try {
-      next2 = await atlasNext?.mockCoach?.(position.mock.pool) ?? null;
-    } catch {
-      next2 = null;
-    }
-    check3();
-    if (moved()) return;
-    if (homePhase() === "old") return openMockOld({ exam });
-    if (!next2) {
-      home.toast(t2("practice.unavailable"));
-      return;
-    }
-    const sections = plan.sections.filter((row) => row.status === "ready");
-    home.showPanel(t2("mock.title"), '<div class="wpos-stage" data-mock-stage></div>', { ...PANEL, eyebrow: "EXAM FORM" });
-    const box = panelNode("[data-mock-stage]");
-    if (!box) return;
-    const top = () => {
-      for (const node of [box.closest?.("#panel-content"), box.closest?.("dialog")]) if (node) node.scrollTop = 0;
-    };
-    box.innerHTML = view.renderMockIntro({ plan, exam: which, mode: values.examMode || null });
-    box.querySelector("[data-mock-intro]")?.focus?.({ preventScroll: true });
-    top();
-    box.querySelector("[data-mock-start]")?.addEventListener("click", () => {
+      let values = {};
       try {
-        check3();
-        runMockNext({ next: next2, plan, sections, exam: which, mode: values.examMode || null, audioAvailable: values.audio !== "off", box, top });
-      } catch (error2) {
-        failed(error2);
+        values = getProgress().learningProfileValues() || {};
+      } catch {
+        values = {};
       }
-    }, { once: true });
-    box.querySelector("[data-mock-later]")?.addEventListener("click", () => {
-      try {
+      const which = exam || studentExam(values), plan = mockNextPlan(homeCoach, values, which);
+      if (!plan || plan.status !== "ready") {
+        settled = true;
+        home.toast(t2(plan?.reason === "history.incomplete" ? "position.diagnostic.history" : "mock.unavailable"));
         void openMyPosition();
-      } catch (error2) {
-        failed(error2);
+        return;
       }
-    }, { once: true });
+      let next2 = null;
+      try {
+        next2 = await atlasNext?.mockCoach?.(position.mock.pool) ?? null;
+      } catch {
+        next2 = null;
+      }
+      check3();
+      if (moved()) return;
+      if (homePhase() === "old") {
+        settled = true;
+        return openMockOld({ exam });
+      }
+      if (!next2) {
+        home.toast(t2("practice.unavailable"));
+        return;
+      }
+      const sections = plan.sections.filter((row) => row.status === "ready");
+      settled = true;
+      home.showPanel(t2("mock.title"), '<div class="wpos-stage" data-mock-stage></div>', { ...PANEL, eyebrow: "EXAM FORM" });
+      const box = panelNode("[data-mock-stage]");
+      if (!box) return;
+      const top = () => {
+        for (const node of [box.closest?.("#panel-content"), box.closest?.("dialog")]) if (node) node.scrollTop = 0;
+      };
+      box.innerHTML = view.renderMockIntro({ plan, exam: which, mode: values.examMode || null });
+      box.querySelector("[data-mock-intro]")?.focus?.({ preventScroll: true });
+      top();
+      box.querySelector("[data-mock-start]")?.addEventListener("click", () => {
+        try {
+          check3();
+          runMockNext({ next: next2, plan, sections, exam: which, mode: values.examMode || null, audioAvailable: values.audio !== "off", box, top });
+        } catch (error2) {
+          failed(error2);
+        }
+      }, { once: true });
+      box.querySelector("[data-mock-later]")?.addEventListener("click", () => {
+        try {
+          void openMyPosition();
+        } catch (error2) {
+          failed(error2);
+        }
+      }, { once: true });
+    } finally {
+      if (openMockNext.pending === ticket) openMockNext.pending = 0;
+    }
   }
   function runMockNext({ next: next2, plan, sections, exam, mode = null, audioAvailable = true, box, top }) {
     const session = homePlanner.position.createMockNextSession({ coach: next2, sections, exam, plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
@@ -28931,6 +28980,7 @@ function createWorldEducation({
       const button = event.target.closest?.("button");
       if (!button || button.disabled) return;
       try {
+        if (finishing) return;
         check3();
         if (button.dataset.mockChoice) {
           confirm = false;
@@ -29008,7 +29058,7 @@ function createWorldEducation({
     });
   }
   async function openPlan({ keepScroll = false, quiet = false } = {}) {
-    if (keepScroll && openPosition.pending) return "skipped";
+    if (keepScroll && (openPosition.pending || openMockNext.pending)) return "skipped";
     check3();
     const ticket = ++planOpen;
     if (!keepScroll) {

@@ -1120,6 +1120,14 @@ export const BRAIN_MUTANTS = [
   ],
   [
     'unit',
+    '끝 판 Fable(4-4d)',
+    '칸 표가 보통 객체인지 보지 않는다 — 프로토타입이 다른 객체의 칸을 받는다(Fable 끝 판 F4)',
+    'src/vellum/slots.mjs',
+    '  !Array.isArray(value) &&\n  Object.getPrototypeOf(value) === Object.prototype;\n',
+    '  !Array.isArray(value);\n',
+  ],
+  [
+    'unit',
     'Vellum 설명 칸(4-4d)',
     '근거 없는 코드에도 칸을 둔다 — 한 가지 고치기 전 쓰기 문장이 null로 되돈다(다시 검수 Opus 대체 FA3)',
     'src/vellum/slots.mjs',

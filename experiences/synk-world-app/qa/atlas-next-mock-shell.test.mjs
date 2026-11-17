@@ -96,7 +96,8 @@ function stage() {
 // 셸 하나 — life: 생활 판정의 판('engine' · 'old'). planner: 입구가 플래너를 주는 때(끝내 주지 않으면 확인 중에 머문다). fast: 창의 시계를 30ms로.
 // wrap: 홈 코치에 얹을 것(만남 · 요약을 바꿔 열 수 없는 날을 흉내 낸다).
 // mockWrap — 시험 형식 코치(world-mock)만 감싼다(저장 · 접기를 시험이 붙잡는 장면). wrap은 홈 코치를 감싼다.
-function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner = async () => PLANNER, fast = false, wrap = made => made, mockWrap = made => made, mockChanged = null } = {}) {
+// owner: 학습자(기본 손님) · extra: 셸에 더 넘길 것(학습자 응답 responses 따위 — Fable 끝 판 F7 장면).
+function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner = async () => PLANNER, fast = false, wrap = made => made, mockWrap = made => made, mockChanged = null, owner = 'guest', extra = {} } = {}) {
   stores += 1;
   const key = `synk-atlas:mock-shell-${process.pid}-${stores}`;
   const port = atlas.memoryPort();
@@ -167,7 +168,7 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner
   };
   const state = { values, panel: null };
   const progress = {
-    owner: 'guest',
+    owner,
     learningProfile: () => ({ profile: { status: 'active', revision: 1, consent: true } }),
     learningProfileValues: () => state.values,
     status: () => ({ phase: 'synced', rejected: false, scoped: false, message: '' }),
@@ -238,6 +239,7 @@ function shell({ values = { audio: 'off', ...EXAM_T1 }, life = 'engine', planner
     homeNext,
     atlasNext,
     ...(mockChanged ? { mockChanged } : {}),
+    ...extra,
   });
   return {
     education,
@@ -598,6 +600,46 @@ test('확인 중에 연 시험 형식은 기다린 사이 학생이 다른 판�
   }
 });
 
+test('엔진 문서 — 끝 한 장이 답의 저장을 기다리는 사이 누른 「그만두기」는 받지 않는다 — 끝까지 마친 판의 판 기록과 응답 줄이 남는다(Fable 끝 판 F7)', async () => {
+  for (const press of [false, true]) {
+    let release = () => {};
+    const hold = new Promise(resolve => (release = resolve));
+    const sets = [];
+    // 학습자 응답이 켜진 계정 — 끝까지 마친 판은 판 기록과 함께 닫고 응답 줄을 단다.
+    const app = shell({
+      owner: 'acct-mock',
+      extra: { responses: true },
+      mockWrap: made => ({
+        ...made,
+        answer(pid, result) {
+          const out = made.answer(pid, result);
+          return { ...out, evidence: hold.then(() => out?.evidence) };
+        },
+        finishSet(options) {
+          sets.push(options);
+          return made.finishSet(options);
+        },
+      }),
+    });
+    const name = press ? '저장을 기다리는 사이 그만두기를 누름' : '누르지 않음';
+    try {
+      await until(() => app.homeCoach(), '홈 코치');
+      await app.education.mock();
+      app.box().tap('[data-mock-start]');
+      assert.equal(await runToEnd(app, { submitted: true }), true, `${name} — 마지막 영역을 냈다`);
+      await tick(20);
+      if (press) app.box().press('data-mock-stop');
+      release();
+      await until(() => app.box().html.includes('data-mock-done'), `${name} — 끝 한 장`);
+      assert.deepEqual(sets, [{ kind: 'mock' }], `${name} — 끝까지 마친 판은 판 기록과 함께 한 번 닫는다`);
+      assert.match(app.box().html, /data-set-response-box/, `${name} — 응답 줄`);
+    } finally {
+      release();
+      app.dispose();
+    }
+  }
+});
+
 test('알림 시트의 판정(mockReady) — 지금 판은 참, 확인 중은 거짓, 엔진은 고르기가 설 때만 참이고 시험 형식 코치를 만들지 않는다 · 홈을 다시 그릴 때마다 앱에 알린다(§21-23의 5)', async () => {
   const old = shell({ life: 'old' });
   try {
@@ -607,6 +649,10 @@ test('알림 시트의 판정(mockReady) — 지금 판은 참, 확인 중은 �
   }
   const checking = shell({ planner: () => new Promise(() => {}) });
   try {
+    // 홈을 한 번 그려 확인 중 판을 읽은 뒤에 본다 — 엔진 분기와 같은 차례다(끝 판 검수 그록 KB2). 만든 자리에서 바로 보면, 계획을 아직 읽지 않은 엔진
+    // 셸도 거짓이라 확인 중 판이 참이 되는 회귀를 놓친다.
+    checking.education.refresh();
+    await until(() => checking.education.metrics().plan?.today?.state === 'checking', '확인 중 판으로 그린 홈');
     assert.equal(checking.education.mockReady(), false, '확인 중');
   } finally {
     checking.dispose();

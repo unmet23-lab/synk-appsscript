@@ -178,6 +178,23 @@ test('근거 답 — 계정마다 열쇠 하나(학습일 답과 다른 열쇠) 
   assert.equal(firstAnswersCode('events-remain'), 'FIRST_ANSWERS_EVENTS_REMAIN');
   assert.equal(firstAnswersCode('rebuilding'), 'FIRST_ANSWERS_REBUILDING');
   assert.equal(firstAnswersCode('mystery'), 'FIRST_ANSWERS_FAILED');
+  // 저장소에 적힌 값도 꼴이 틀리면 버린다 — 깨진 값이 남은 브라우저에서 상자의 answer()가 던지지 않게(Fable 끝 판 F12). 자리 · 동의 판 · 학습일은
+  // 맞고 근거의 몸만 틀린 값이다.
+  const firstKey = [...storage.map.keys()].find(key => key.startsWith('synk:world:first-answers:'));
+  const { bySkill: _dropped, ...noCounts } = raw;
+  for (const [name, broken] of [
+    ['다른 게임', { ...raw, game: 'world-mock2' }],
+    ['다른 날 수', { ...raw, days: 30 }],
+    ['창의 시작이 수가 아님', { ...raw, from: 'x' }],
+    ['능력마다의 수가 없음', noCounts],
+    ['능력마다의 수가 꼴이 아님', { ...raw, bySkill: { 'ko.reading.main': -1 } }],
+    ['능력마다의 수가 배열', { ...raw, bySkill: [] }],
+  ]) {
+    storage.setItem(firstKey, JSON.stringify(broken));
+    assert.equal(first.read('acct', { revision: 3, day: 'd1' }), null, name);
+  }
+  storage.setItem(firstKey, JSON.stringify(raw));
+  assert.ok(first.read('acct', { revision: 3, day: 'd1' }), '꼴이 맞는 값은 그대로 읽는다(위 버림이 열쇠 탓이 아니다)');
 });
 
 test('근거 답 — 지우는 길(clearMonthAnswer)은 학습일 답과 근거 답 두 열쇠를 함께 지우고, 그 전에 물은 늦은 답을 적지 않는다', () => {
@@ -1017,6 +1034,7 @@ function fakeAsker({ storage = memoryStorage(), reply, live = () => true, kind }
     return box.last;
   };
   box.answers = answers;
+  box.asker = asker;
   return box;
 }
 const done = (summaryAt, month = [{ unit: 'u0', misses: 2, reviews: 3, last: 2.9 }]) => ({
@@ -1556,20 +1574,55 @@ test('근거 상자 — 접혀 돌아오지 않은 내 사건이 있으면(unfol
   assert.equal(guest.asks, 0, '손님은 묻지 않는다');
 });
 
-test('근거 상자 — 완결되지 않은 답은 까닭을 계기에 남기고 다시 그리지 않으며 같은 자리에서는 다시 묻지 않는다 · 꼴이 틀린 답은 FIRST_ANSWERS_FAILED', async () => {
+test('근거 상자 — 완결되지 않은 답 · 꼴이 틀린 답 · 묻기 실패 뒤에는 까닭을 계기에 남기고 그 자리에서 묻기를 그만두었다고 알리며 열린 판을 한 번만 다시 그린다(「확인 중」을 남기지 않는다 — 설계 주인 11-17 저녁 답 4 나) · 같은 자리에서는 다시 묻지 않는다(Fable 끝 판 F11)', async () => {
   const box = fakeAsker({ kind: FIRST_KIND, reply: (_n, b) => ({ complete: false, reason: 'events-remain', summaryAt: b.device }) });
   assert.equal(box.render(), null);
+  assert.equal(box.asker.missed(box.coach), false, '묻는 중 — 「확인 중」');
   await quiet(10);
-  for (let i = 0; i < 4; i += 1) assert.equal(box.render(), null, '근거 수를 그리지 않는다(「확인 중」)');
+  assert.equal(box.redraws, 1, '묻기를 그만둔 자리 — 열린 판을 한 번 다시 그린다');
+  assert.equal(box.asker.missed(box.coach), true, '다시 그린 판은 읽지 못함으로 그린다');
+  for (let i = 0; i < 4; i += 1) {
+    assert.equal(box.render(), null, '근거 수를 그리지 않는다');
+    assert.equal(box.asker.missed(box.coach), true, '같은 자리 — 읽지 못함');
+  }
   await quiet(10);
   assert.equal(box.asks, 1, '같은 자리에서 다시 묻지 않는다');
-  assert.equal(box.redraws, 0, '쓸 수 없는 답으로 다시 그리지 않는다');
+  assert.equal(box.redraws, 1, '되풀이해 다시 그리지 않는다');
   assert.deepEqual(box.notes, ['FIRST_ANSWERS_EVENTS_REMAIN']);
+  // 기기 자리가 바뀌면 그 자리에서 한 번 다시 묻는다(상한은 지금대로 — 묻기 ≤ 기기 자리가 바뀐 수 + 1).
+  box.device = at(6);
+  assert.equal(box.render(), null);
+  assert.equal(box.asker.missed(box.coach), false, '새 자리 — 묻는 중');
+  await quiet(10);
+  assert.equal(box.asks, 2);
+  assert.equal(box.redraws, 2);
+  assert.equal(box.asker.missed(box.coach), true);
+  assert.equal(box.asker.missed({}), false, '다른 코치로 그린 판이 아니다');
+  // 꼴이 틀린 완결 답도 그 자리의 실패다 — 여러 번 그려도 같은 자리에서는 다시 묻지 않는다(Fable 끝 판 F11).
   const bad = fakeAsker({ kind: FIRST_KIND, reply: (_n, b) => ({ ...firstDone(b.device), firstAnswers: { game: 'world-mock2', days: 90, since: 1, bySkill: {} } }) });
   bad.render();
   await quiet(10);
   assert.deepEqual(bad.notes, ['FIRST_ANSWERS_FAILED'], '다른 게임의 답');
-  assert.equal(bad.render(), null);
+  for (let i = 0; i < 6; i += 1) assert.equal(bad.render(), null);
+  await quiet(10);
+  assert.equal(bad.asks, 1, '꼴이 틀린 답 뒤에도 같은 자리에서는 다시 묻지 않는다');
+  assert.equal(bad.redraws, 1);
+  assert.equal(bad.asker.missed(bad.coach), true);
+  // 묻기가 실패해도(오프라인 · 서버 오류) 같다.
+  const failing = fakeAsker({
+    kind: FIRST_KIND,
+    reply: () => {
+      throw new Error('offline');
+    },
+  });
+  failing.render();
+  await quiet(10);
+  assert.deepEqual(failing.notes, ['FIRST_ANSWERS_FAILED']);
+  for (let i = 0; i < 6; i += 1) assert.equal(failing.render(), null);
+  await quiet(10);
+  assert.equal(failing.asks, 1);
+  assert.equal(failing.redraws, 1);
+  assert.equal(failing.asker.missed(failing.coach), true);
 });
 
 test('근거 상자 — 묻는 사이 지우는 길(로그아웃 · 동의 바꿈)이 돌면 늦은 답을 적지도 그리지도 않는다 · 지우는 길은 두 열쇠를 함께 지운다', async () => {
@@ -1641,6 +1694,37 @@ test('리허설 근거 읽기 — game은 게임 이름 꼴만 · days는 1 ~ 36
   assert.equal(ok.body.firstAnswers.since, ok.body.serverTime - 365 * DAY, '창의 시작 = 답할 때 − days × 24시간');
   assert.deepEqual(ok.body.firstAnswers.bySkill, {}, '아직 근거가 없다');
   device.close();
+});
+
+test('리허설 근거 읽기 — 다시 짓는 중이거나 사건이 남은 접기에서는 완결되지 않은 답(까닭 · 자리)을 내고 근거 수를 싣지 않으며, 접기가 끝나면 완결된 답이다(Fable 끝 판 F14)', { timeout: 60_000 }, async () => {
+  const world = worldOf();
+  world.use(OLD);
+  const other = await deviceOf(world, { gameId: 'world-mock' });
+  await practise(world, other, 12);
+  await until(async () => (await world.read(other.revision))?.foldedUntil >= world.logged());
+  const revision = other.revision;
+  other.close();
+  // 엔진을 올린 배포 — 접기 상한이 작아 한 번의 읽기로 다 짓지 못한다(talk의 2,000건 상한을 몇 건으로 줄인 흉내).
+  world.use(atlas, 2);
+  const headers = { 'x-synk-contract': '1', 'x-synk-product': 'world' };
+  const replies = [];
+  for (let i = 0; i < 40 && replies.at(-1)?.complete !== true; i += 1) {
+    const reply = await world.fetch(`/api/world/rehearsal/trail-first-answers?${firstQuery(revision)}`, { headers });
+    assert.equal(reply.status, 200);
+    replies.push(await reply.json());
+  }
+  const open = replies.filter(body => body.complete === false);
+  assert.ok(open.length > 0, '접기 상한에 걸린 읽기가 적어도 한 번 있다');
+  for (const body of open) {
+    assert.ok(['rebuilding', 'events-remain', 'fold-failed'].includes(body.reason), `까닭 ${body.reason}`);
+    assert.equal(body.firstAnswers, undefined, '완결되지 않은 답에는 근거 수를 싣지 않는다');
+    assert.ok(body.summaryAt === null || positionOf(body.summaryAt), '자리는 꼴이거나 없다');
+    assert.equal(firstAnswersCode(body.reason).startsWith('FIRST_ANSWERS_'), true);
+  }
+  const last = replies.at(-1);
+  assert.equal(last.complete, true, '접기가 끝나면 완결된 답');
+  assert.equal(last.firstAnswers.game, 'world-mock');
+  assert.ok(Object.values(last.firstAnswers.bySkill).every(n => Number.isSafeInteger(n) && n >= 0), '능력마다의 수');
 });
 
 test('근거 상자 — 서버 길 계정: 첫 그리기는 묻고 「확인 중」, 같은 자리의 답이 오면 한 번 다시 그려 그 판의 혼자 낸 첫 답 수를 낸다 · 다른 게임의 답과 다시 낸 답은 세지 않는다 · 새 답이 접혀 돌아오면 한 번 더 묻는다', { timeout: 90_000 }, async () => {

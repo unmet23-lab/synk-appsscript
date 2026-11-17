@@ -5,7 +5,9 @@
 // 같은 자리 — 문항을 처음 낸 때), 쓰기는 첫 글 뒤에 한 가지 고치기가 열리고 고쳐 쓰면 닫히며, 말하기는 그 유형을 이번 주에 해 본 것으로 적는다.
 // 장면은 둘이다 — 계획에 쓰기 · 말하기가 있는 경우(앱이 쓰기 · 말하기 모듈을 부른 때)와 듣기 · 읽기만 있는 경우(모듈을 아직 부르지 못한 때 —
 // 쓰기 · 말하기 후보가 비어 계획에 그 영역이 없다). 잰 열은 단계4_계획 §21-23의 3 「지었다」에 옮긴다. 말하기 영역이 있는데 이레 동안 말하기 줄이
-// 0이면 설계 주인께 다시 여쭌다(조건) — 그래서 그 장면은 말하기 줄이 한 번 이상 서는지 본다.
+// 0이면 설계 주인께 다시 여쭌다(조건) — 그래서 그 장면은 말하기 줄이 한 번 이상 서는지 본다. 점검 칸의 차례 돌리기(설계 주인 11-17 저녁 답 1)는
+// 장면 셋으로 본다 — 줄을 따르는 학생(지금 열 그대로), 시험 형식만 하지 않는 학생, 2일째부터 아무것도 하지 않는 학생. 변형 시험은 깬 홈 플래너
+// 사본을 SYNK_TODAY_MODULE로, 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -15,7 +17,6 @@ import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
 import { homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
-import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 import { createPlanLog } from '../world-plan-next.mjs';
 import { WRITING_CANDIDATES } from '../world-writing-practice.mjs';
 import { SPEAKING_CANDIDATES } from '../world-speaking-practice.mjs';
@@ -24,6 +25,13 @@ import { SPEAKING_CANDIDATES } from '../world-speaking-practice.mjs';
 const { createWorldEducation } = await import(
   process.env.SYNK_LEARNING_UI_MODULE ? pathToFileURL(process.env.SYNK_LEARNING_UI_MODULE).href : '../world-learning-ui.mjs'
 );
+// 홈 플래너도 깬 사본을 받는다 — today 변형 실행기의 「점검 칸 돌리기」 갈래가 넘긴다(설계 주인 11-17 저녁 답 1의 변형 둘).
+const { createWorldTodayPlan, todayKey, watchHomePlan } = await import(
+  process.env.SYNK_TODAY_MODULE ? pathToFileURL(process.env.SYNK_TODAY_MODULE).href : '../world-today.mjs'
+);
+// 이레 측정은 한국에 있는 학생의 기기로 돈다 — 학습일(기기 현지 새벽 4시 경계)과 계획 주(한국 시각 월요일 0시부터)가 같은 날을 가리키게 기기
+// 시간대를 한국으로 둔다. 두지 않으면 UTC 기기(CI)에서는 한국 시각 오전 10시가 전날 학습일이라, 차례 돌리기의 「몇째 학습일」이 하루 늦게 센다.
+process.env.TZ = 'Asia/Seoul';
 
 const readJson = url => JSON.parse(fs.readFileSync(new URL(url, import.meta.url), 'utf8'));
 const INDEX = readJson('../../../packages/atlas/map/index.json');
@@ -361,8 +369,9 @@ async function finishDiagnostic(app) {
   throw Error('짧은 진단이 끝나지 않았다');
 }
 
-// 하루 — 점검 칸의 줄을 읽고 그 줄을 한다. 돌려주는 것: 그날의 줄 · 이번 주 계획의 다음 영역 · 넘긴 점검 칸 활동.
-async function dayOf(app, { log, writing, tried, done, fixes }) {
+// 하루 — 점검 칸의 줄을 읽고 그 줄을 한다(skip(줄, 며칠째)가 참이면 하지 않는다). 돌려주는 것: 그날의 줄 · 이번 주 계획의 다음 영역 · 넘긴
+// 점검 칸 활동.
+async function dayOf(app, { log, writing, tried, done, fixes, skip = () => false, number = 1 }) {
   app.education.refresh();
   await until(() => engineHome(app), '엔진 판의 이번 주 계획');
   const plan = app.plan();
@@ -379,7 +388,9 @@ async function dayOf(app, { log, writing, tried, done, fixes }) {
     writing: count('writing'),
     speaking: count('speaking'),
   };
-  if (row?.activityId === 'world.position.check') {
+  if (skip(row, number)) {
+    // 학생이 이날 그 줄을 하지 않는다 — 판 기록 · 쓰기 · 말하기 기록이 그대로다
+  } else if (row?.activityId === 'world.position.check') {
     await app.education.position();
     await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
     await app.education.position({ start: true });
@@ -399,7 +410,8 @@ async function dayOf(app, { log, writing, tried, done, fixes }) {
   return day;
 }
 // fixes — 학생이 쓰기 줄을 할 때마다 한 가지 고치기가 옮겨 갈 꼴의 차례(retry · assisted · null). 기본은 첫 글로 열리고 고쳐 쓰면 닫힌다.
-async function weekOfScene({ hosts, fixes = ['retry', null] }) {
+// skip(줄, 며칠째) — 학생이 하지 않는 줄(기본은 날마다 선 줄을 한다).
+async function weekOfScene({ hosts, fixes = ['retry', null], skip = () => false }) {
   const queue = [...fixes];
   toMonday10();
   const logs = new Map();
@@ -426,7 +438,7 @@ async function weekOfScene({ hosts, fixes = ['retry', null] }) {
   try {
     for (let i = 0; i < 7; i += 1) {
       if (i) shift += DAY;
-      days.push({ day: i + 1, ...(await dayOf(app, { log, writing, tried, done, fixes: queue })) });
+      days.push({ day: i + 1, ...(await dayOf(app, { log, writing, tried, done, fixes: queue, skip, number: i + 1 })) });
       if (!areas) areas = app.plan().examPlan.areas.map(row => row.area);
     }
   } finally {
@@ -485,7 +497,49 @@ test('점검 칸의 이레 — 같은 학생, 계획에 듣기 · 읽기만 있�
   t.diagnostic(`계획 영역: ${areas.join(' · ')}`);
   for (const row of days) t.diagnostic(`${row.day}일째 — 점검 칸: ${row.check} · 다음 영역: ${row.next} · 쓰기 ${row.writing} · 말하기 ${row.speaking} · 넘긴 활동: ${row.offered}`);
   assert.ok(!areas.includes('writing') && !areas.includes('speaking'), '계획에 쓰기 · 말하기가 없다');
-  const checks = days.map(row => row.check.split(' · ')[0]);
-  assert.ok(!checks.includes('topik2-writing-53') && !checks.includes('world.speaking.check'), '쓰기 · 말하기 줄이 없다');
-  assert.equal(checks.filter(id => id === 'world.mock').length, 1, '시험 형식 줄은 이번 주에 한 번');
+  // 열 전체를 잠근다 — 진단 · 시험 형식이 한 번씩이고 그 사이에 다른 점검 칸 줄이 끼지 않는다(끝 판 검수 그록 KB1).
+  assert.deepEqual(
+    days.map(row => row.check),
+    ['world.position.check · host.start', 'world.mock · host.form', '-', '-', '-', '-', '-'],
+    '1일째 짧은 진단 · 2일째 시험 형식 · 3 ~ 7일째 줄 없음',
+  );
+});
+
+// 점검 칸의 차례 돌리기(설계 주인 11-17 저녁 답 1) — 넘길 수 있는 줄을 지금 차례로 늘어놓고, 오늘의 줄은 밀린 날 수(오늘이 이번 계획 주의 몇째
+// 학습일인가 − 1 − 이번 주 점검 칸 넷에서 한 수의 합) 번째다. 줄을 따르는 학생은 밀린 날이 늘 0이라 위 첫 장면의 열 그대로다. 아래 둘은 줄을
+// 하지 않는 학생이다 — 밀린 날 수를 늘 0으로 두는 변형은 둘째 장면이, 「− 1」을 빼는 변형은 첫 장면이 잡는다.
+test('점검 칸의 이레 — 시험 형식만 하지 않는 학생: 1 진단 · 2 시험 형식 · 3 쓰기 · 4 말하기 · 5 ~ 7 시험 형식이고, 시험 형식 몫이 남아 보탬은 서지 않는다(차례 돌리기 — 설계 주인 11-17 저녁 답 1)', { timeout: 120_000 }, async t => {
+  const { days } = await weekOfScene({ hosts: true, skip: row => row?.activityId === 'world.mock' });
+  for (const row of days) t.diagnostic(`${row.day}일째 — 점검 칸: ${row.check} · 다음 영역: ${row.next} · 쓰기 ${row.writing} · 말하기 ${row.speaking} · 넘긴 활동: ${row.offered}`);
+  assert.deepEqual(
+    days.map(row => row.check),
+    [
+      'world.position.check · host.start',
+      'world.mock · host.form',
+      'topik2-writing-53 · host.writing.start',
+      'world.speaking.check · host.speaking',
+      'world.mock · host.form',
+      'world.mock · host.form',
+      'world.mock · host.form',
+    ],
+    '하지 않은 시험 형식에 막히지 않고 쓰기 · 말하기가 돌아 선 뒤, 남은 시험 형식만 선다 — 쓰기 고치기 보탬은 서지 않는다',
+  );
+});
+
+test('점검 칸의 이레 — 2일째부터 아무것도 하지 않는 학생: 넘긴 줄이 차례로 돈다(2 시험 형식 · 3 쓰기 · 4 말하기 · 5 시험 형식 · 6 쓰기 · 7 말하기 — 설계 주인 11-17 저녁 답 1)', { timeout: 120_000 }, async t => {
+  const { days } = await weekOfScene({ hosts: true, skip: (_row, day) => day >= 2 });
+  for (const row of days) t.diagnostic(`${row.day}일째 — 점검 칸: ${row.check} · 다음 영역: ${row.next} · 쓰기 ${row.writing} · 말하기 ${row.speaking} · 넘긴 활동: ${row.offered}`);
+  assert.deepEqual(
+    days.map(row => row.check),
+    [
+      'world.position.check · host.start',
+      'world.mock · host.form',
+      'topik2-writing-53 · host.writing.start',
+      'world.speaking.check · host.speaking',
+      'world.mock · host.form',
+      'topik2-writing-53 · host.writing.start',
+      'world.speaking.check · host.speaking',
+    ],
+    '하지 않은 날마다 다음 줄로 돈다',
+  );
 });

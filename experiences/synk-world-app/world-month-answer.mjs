@@ -193,7 +193,8 @@ export const lookbackCode = reason => LOOKBACK_CODES[reason] ?? 'LOOKBACK_FAILED
 
 // 상자의 종류 — 학습일 답(30일째 문장). 받은 답의 줄은 점수 차례로 64줄까지만 둔다(keptRows).
 //   prefix 열쇠 머리 · valid(값) 저장소 값의 몸이 꼴인가 · body(값) 값의 몸 · parse(답) 받은 답의 몸(꼴이 아니면 null) · shape(답) 적는 꼴 ·
-//   use(적은 답) 셸에 내는 꼴 · code(까닭) 완결되지 않은 답의 계기 코드 · failed 실패의 계기 코드 · query(줄, offsetOf) 묻는 함수
+//   use(적은 답) 셸에 내는 꼴 · code(까닭) 완결되지 않은 답의 계기 코드 · failed 실패의 계기 코드 · query(줄, offsetOf) 묻는 함수 ·
+//   redrawMissed 그 자리에서 묻기를 그만두면(실패 · 완결되지 않은 답 뒤의 상한) 열린 판을 한 번 다시 그린다 — 「확인 중」을 그리는 종류만 둔다
 export const MONTH_KIND = Object.freeze({
   prefix: 'synk:world:month-answer:',
   valid: value => validWindows(value.windows) && validMonth(value.month),
@@ -214,7 +215,9 @@ export const MONTH_KIND = Object.freeze({
 // 서버 길 계정은 기기에 이틀 치만 있어 코치가 근거를 세지 못한다(coach.firstAnswers() null). 서버의 근거 읽기(learning?view=trail-first-answers)로
 // 묻고, 그 답(능력 id마다의 근거 수)을 계정마다 열쇠 하나에 둔다. 근거 답은 능력마다의 수라 자르지 않는다. 학습일 열쇠는 학습일 답처럼 하루에 한 번
 // 다시 묻는 경계일 뿐이다 — 창은 서버가 답할 때의 시각에서 days × 24시간을 뺀 때이고 답에 since로 싣는다(학습일 경계로 맞추지 않는다).
-export const FIRST_GAME = 'world-mock'; // 근거를 세는 판의 게임 이름(새 길의 시험 형식 연습 — world-mock-next.mjs의 gameId)
+// 근거를 세는 판의 게임 이름 — 새 길의 시험 형식 연습 코치가 이 이름으로 열린다(입구 world-atlas-next.mjs mockCoach가 가져다 쓴다 — 한 곳에만
+// 적는다. 두 곳에 따로 적으면 한쪽만 바뀔 때 근거 수가 말없이 0이 된다 — Fable 끝 판 F15).
+export const FIRST_GAME = 'world-mock';
 export const FIRST_DAYS = 90; // 창의 날 수 — 제품 상수(설계 주인 11-17 답 2 · world-position.mjs ESTIMATE_POLICY.recentDays와 같다)
 const FIRST_SKILL = /^[A-Za-z0-9_.:-]{1,120}$/;
 const FIRST_LIMIT = 4096;
@@ -251,6 +254,8 @@ export const FIRST_KIND = Object.freeze({
   code: firstAnswersCode,
   failed: 'FIRST_ANSWERS_FAILED',
   query: line => line.ask({ game: FIRST_GAME, days: FIRST_DAYS }),
+  // 근거를 읽지 못한 자리에서는 한 번 다시 그린다 — 예상 급수 칸이 「기록 확인 중」으로 남지 않고 근거 수 없이 그린다(설계 주인 11-17 저녁 답 4 나).
+  redrawMissed: true,
 });
 const KINDS = Object.freeze([MONTH_KIND, FIRST_KIND]);
 
@@ -265,9 +270,10 @@ const KINDS = Object.freeze([MONTH_KIND, FIRST_KIND]);
 //   kind      상자의 종류(없으면 학습일 답 — answers도 같은 종류로 만든다)
 export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, redraw, note, alive, kind = MONTH_KIND }) {
   // asking 묻는 중인 열쇠 · tried 완결되지 않았거나 실패한 물음의 열쇠와 기기 자리 · pulled 받기를 부른 답의 자리 · kept 이 문서가 들고 있는 답 ·
-  // coach 이 상자가 마지막으로 그린 코치 · ahead 닫힌 코치에 온 완결되지 않은 답의 앞선 자리(열쇠와 함께 — 다음 그리기의 코치가 받는다).
+  // coach 이 상자가 마지막으로 그린 코치 · ahead 닫힌 코치에 온 완결되지 않은 답의 앞선 자리(열쇠와 함께 — 다음 그리기의 코치가 받는다) ·
+  // missed 마지막 그리기가 묻기를 그만둔 자리에서 멈춘 코치(아니면 null — 셸이 「확인 중」 대신 읽지 못함으로 그린다).
   // owner · generation — 상자가 지금 따르는 계정과 세대 수(바뀌면 위를 모두 비운다).
-  const state = { owner: null, generation: null, asking: null, tried: null, pulled: new Set(), kept: null, coach: null, ahead: null };
+  const state = { owner: null, generation: null, asking: null, tried: null, pulled: new Set(), kept: null, coach: null, ahead: null, missed: null };
   const reset = () => {
     state.asking = null;
     state.tried = null;
@@ -275,6 +281,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     state.kept = null;
     state.coach = null;
     state.ahead = null;
+    state.missed = null;
   };
   // 계정이 바뀌었거나 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 세대 수를 올렸으면 상자를 비운다 — 앞 계정 · 앞 세대의 상한과 받은 자리가 다시
   // 들어온 같은 계정의 물음과 받기를 막지 않게(카본 다시 보기 A1).
@@ -361,6 +368,16 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
         // 계기는 그리기를 막지 않는다
       }
     };
+    // 이 자리에서 묻기를 그만두었다 — 「확인 중」을 그리는 종류(redrawMissed)면 열린 판을 한 번 다시 그려 읽지 못함으로 바꾼다(설계 주인 11-17 저녁
+    // 답 4 나). 다시 그린 판은 같은 자리에서 다시 묻지 않으므로(상한) 다시 그리기도 묻기 수로 묶인다.
+    const drawMissed = () => {
+      if (kind.redrawMissed !== true) return;
+      try {
+        redraw();
+      } catch {
+        // 다시 그리기는 묻기를 막지 않는다
+      }
+    };
     const reply = got => {
       // 밀려난 물음이거나, 그 계정 · 문서가 아니거나, 물은 사이 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 돌았거나 학습일이 넘어갔으면, 늦은 답은
       // 완결이든 아니든 들지도 적지도 다시 그리지도 않고 상한 · 받은 자리도 건드리지 않는다 — 앞 세대 답이 새 세대의 tried · pulled를 채우면 지금
@@ -387,11 +404,14 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
         if (at && aheadOf(at, current)) pullOnce(holder.coach, at);
         // 묻는 사이 기기 자리가 바뀌었다 — 그 자리에서 한 번 다시 묻는다(완결된 답의 FA2와 같은 셈 — 묻기 ≤ 기기 자리가 바뀐 수 + 1).
         else if (!samePosition(current, device)) ask(holder.coach, holder.line, { owner, revision, day, device: current });
+        // 받을 것도 다시 물을 것도 없다 — 이 자리에서 묻기를 그만두었다.
+        else drawMissed();
         return;
       }
       const body = kind.parse(got);
       if (!at || !body) {
         missed(kind.failed);
+        drawMissed();
         return;
       }
       if (storage && heldBack(storage)) return; // 물은 사이 접혀 돌아오지 않은 내 사건이 섰다 — 그 사건이 접힌 뒤 다시 묻는다
@@ -415,7 +435,10 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       .then(reply, () => {
         // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED), 물은 사이 지우는 길이 돈 물음, 밀려난 물음 · 학습일이 넘어간 물음은 실패로
         // 적지 않는다 — 다른 계정 · 새 세대 · 새 열쇠의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2 · 카본 B2).
-        if (settle() && still()) missed(kind.failed);
+        if (settle() && still()) {
+          missed(kind.failed);
+          drawMissed();
+        }
       })
       .catch(() => {
         // 다시 그리기 · 받기의 예외는 묻기를 막지 않는다
@@ -424,6 +447,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
 
   const box = {
     month(coach) {
+      state.missed = null;
       const owner = account();
       if (!owner) return null;
       follow(owner);
@@ -456,9 +480,13 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
         // 닫힌 코치에 온 완결되지 않은 답의 앞선 자리 — 그때 받지 못했으면 이 코치로 한 번 받는다(4-4c 끝 판 카본 -c B1).
         if (state.ahead?.key === key && aheadOf(state.ahead.at, device)) pullOnce(coach, state.ahead.at);
         ask(coach, line, { owner, revision, day, device });
+        // 묻지 않았고 묻는 중도 아니다 — 이 자리에서 묻기를 그만두었다(실패하거나 완결되지 않은 답 뒤의 상한). 셸은 「확인 중」 대신 읽지 못함으로 그린다.
+        if (state.asking?.key !== key && state.tried?.key === key && samePosition(state.tried.from, device)) state.missed = coach;
       }
       return null;
     },
+    // 마지막 그리기(month · answer)가 이 코치로 묻기를 그만둔 자리에서 멈췄는가(설계 주인 11-17 저녁 답 4 나 — 셸이 「확인 중」 대신 읽지 못함으로 그린다).
+    missed: coach => state.missed !== null && state.missed === coach,
     // 묻는 중 · 상한 · 받은 자리 · 이 문서의 답을 비운다. 계정이나 세대 수가 바뀌면 month()가 스스로 부른다.
     reset,
   };

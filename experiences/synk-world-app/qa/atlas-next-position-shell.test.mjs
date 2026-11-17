@@ -11,7 +11,7 @@ import * as atlas from '../../../packages/atlas/src/index.mjs';
 import { sliceOf } from '../../../packages/atlas/tools/map-ship.mjs';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
-import { homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
+import { banksOf, homeBanksOf, planPlanner, positionPlanner } from '../world-atlas-next.mjs';
 import { createWorldTodayPlan, todayKey, watchHomePlan } from '../world-today.mjs';
 
 // 변형 시험(qa/position-mutants.mjs)은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
@@ -87,7 +87,8 @@ function stage() {
 // focusing: 판 글의 단추와 문서의 초점(activeElement)을 흉내 내고, 셸이 초점을 둔 자리를 focused에 적는다(판 머리는 root, 단추는 이름=값#몇 번째).
 // paint: 판 글을 바꿔 둔다(진짜 판에서 생길 수 있는 꼴을 흉내 낸다). focusing이면 판 안의 스크롤 칸(#panel-content)도 흉내 낸다 — 판 글을 바꾸면 스크롤 자리가
 // 처음으로 가고(셸이 되돌려야 한다), 능력 줄(details)은 접힌 채로 서며, 닫힌 줄 안의 단추에는 초점이 가지 않는다(브라우저는 닫힌 details의 몸을 그리지 않는다).
-function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html, planner = PLANNER, fade = false, nextExtra = {} } = {}) {
+// atlasNext: 입구의 겉(시험 형식 코치 mockCoach · 판을 다시 정할 때의 retired)을 시험이 줄 때만 셸에 넘긴다(Fable 끝 판 F6 장면).
+function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer: 'reads' }, host = null, storage = new Map(), wrap = made => made, open = homeCoach, timers = null, panels = false, focusing = false, paint = html => html, planner = PLANNER, fade = false, nextExtra = {}, atlasNext = null } = {}) {
   const opens = [];
   const engine = {
     ...worldLearning,
@@ -302,6 +303,7 @@ function shell({ owner = 'guest', values = { audio: 'off' }, reading = { answer:
     position: worldPosition,
     target,
     homeNext,
+    ...(atlasNext ? { atlasNext } : {}),
   });
   return {
     education,
@@ -1562,21 +1564,171 @@ test('엔진 판 — 서버 길 계정의 근거 수: 첫 그리기는 묻고 �
   }
 });
 
-test('엔진 판 — 서버 길 계정의 근거 수: 완결되지 않은 답이면 다시 그리지 않고 「확인 중」을 두며 까닭을 계기에 남긴다', async () => {
-  const { app, seen } = accountFirstShell(() => ({ ok: true, complete: false, reason: 'fold-failed', summaryAt: RECEIVED }));
+test('엔진 판 — 서버 길 계정의 근거 수: 완결되지 않은 답이나 묻기 실패 뒤에는 「기록 확인 중」을 남기지 않고 근거 수 없이 한 번 다시 그리며 까닭을 계기에 남긴다 · 같은 자리에서는 다시 묻지 않는다(설계 주인 11-17 저녁 답 4 나)', async () => {
+  const cellOf = html => {
+    const from = html.indexOf('<section class="wpos-estimate"');
+    return from < 0 ? '' : html.slice(from, html.indexOf('</section>', from));
+  };
+  for (const [name, reply, code] of [
+    ['완결되지 않은 답', () => ({ ok: true, complete: false, reason: 'fold-failed', summaryAt: RECEIVED }), 'FIRST_ANSWERS_FOLD_FAILED'],
+    [
+      '묻기 실패',
+      () => {
+        throw new Error('offline');
+      },
+      'FIRST_ANSWERS_FAILED',
+    ],
+  ]) {
+    const { app, seen } = accountFirstShell(reply);
+    try {
+      await app.education.position();
+      await until(() => /data-position-next="engine"/.test(app.last()), `${name} — 엔진 판`);
+      await until(() => seen.asks === 1, `${name} — 묻는다`);
+      await tick(80);
+      assert.deepEqual(estimateOfHtml(app.last()), ['checking'], `${name} — 답이 오기 전에는 「확인 중」`);
+      const drawn = app.shown.length;
+      seen.release();
+      await until(() => seen.notes.length === 1, `${name} — 물은 답`);
+      await tick(40);
+      assert.equal(app.shown.length, drawn + 1, `${name} — 열린 판을 한 번 다시 그리고 되풀이하지 않는다`);
+      assert.deepEqual(estimateOfHtml(app.last()), ['unread'], `${name} — 읽지 못함`);
+      assert.ok(!/기록 확인 중/.test(cellOf(app.last())), `${name} — 「기록 확인 중」이 남지 않는다`);
+      assert.ok(!/모은 답/.test(cellOf(app.last())), `${name} — 근거 수를 그리지 않는다`);
+      assert.deepEqual(seen.notes, [['load', { ok: false, code }]], `${name} — 까닭을 계기에`);
+      // 판을 다시 열어도 같은 자리에서는 다시 묻지 않고 읽지 못함 그대로다(다시 묻는 상한은 지금대로).
+      await app.education.position();
+      await tick(40);
+      assert.equal(seen.asks, 1, `${name} — 같은 자리에서 다시 묻지 않는다`);
+      assert.deepEqual(estimateOfHtml(app.last()), ['unread'], `${name} — 다시 연 판도 읽지 못함`);
+    } finally {
+      app.dispose();
+    }
+  }
+});
+
+// ── 시험 형식 고르기와 여는 길(4-4d Fable 끝 판 F5 · F9 · F8 · F6) ──
+const EXAM_T2 = Object.freeze({ reasons: ['exam'], primaryReason: 'exam', examType: 'topik2', targetGrade: 4, examDate: '2027-04-18', weeklyMinutes: 120 });
+// 입구의 겉(시험 형식 코치) — 손님 world-mock 코치를 연다. hold가 있으면 그것이 풀릴 때까지 코치를 주지 않는다(코치 받기를 기다리는 장면).
+function mockEntry(made, hold = null) {
+  const calls = [];
+  return {
+    calls,
+    async mockCoach(pool) {
+      calls.push(pool.length);
+      if (hold) await hold;
+      stores += 1;
+      const coach = atlas.createCoach({
+        gameId: 'world-mock',
+        mapData: { index: banksOf(pool).map(bank => sliceOf(INDEX, bank, WORDS)), units: UNITS, words: WORDS },
+        dayOffset: 540,
+        host: { guest: true, port: atlas.memoryPort(), key: `synk-atlas:position-shell-mock-${process.pid}-${stores}` },
+      });
+      await coach.ready;
+      made.push(coach);
+      return coach;
+    },
+    retired: () => () => {},
+  };
+}
+
+test('엔진 판 — 내 위치 판에서 다른 시험 단추를 눌러도 홈의 시험 형식 줄과 이번 주 계획의 시험 형식 칸은 학생의 시험으로 고른다 — 여는 판 · 알림 시트와 같은 시험(Fable 끝 판 F5 · F9 · F8)', async () => {
+  const app = shell({ values: { audio: 'available', ...EXAM_T2 }, focusing: true, planner: { ...PLANNER, plan: planPlanner } });
+  const plan = () => app.education.metrics().plan;
+  const homeMock = () => (plan()?.candidates || []).find(open => open.id === 'world.mock') ?? null;
+  const pick = exam => worldPosition.mock.selectMock({ forms: worldPosition.mock.forms, exam, pool: worldPosition.mock.pool, seen: () => false, audioAvailable: true });
+  try {
+    app.education.refresh();
+    await until(() => plan()?.today?.state === 'engine' && plan()?.examPlan && homeMock(), '엔진 판의 홈 시험 형식 줄');
+    const [one, two] = [pick('topik1'), pick('topik2')];
+    assert.notEqual(one.minutes, two.minutes, '두 시험의 판 분이 다르다(이 장면이 가르는 조건)');
+    assert.equal(homeMock().minutes, two.minutes, 'TOPIK II 학생 — TOPIK II 판의 분');
+    assert.equal(plan().examPlan.mock?.status, 'ready', '이번 주 계획에 시험 형식 고르기 결과(F8)');
+    assert.deepEqual(Object.keys(plan().examPlan.mock).sort(), ['minutes', 'sections', 'status', 'total'], '지금 판(planWith)과 같은 꼴');
+    assert.equal(plan().examPlan.mock.minutes, two.minutes, '홈 줄과 같은 고르기');
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    app.click('data-position-exam', 'topik1');
+    await tick(20);
+    app.education.refresh();
+    await tick(20);
+    assert.equal(homeMock().minutes, two.minutes, '판에서 TOPIK I을 눌러도 홈 줄은 학생의 시험(TOPIK II) 판의 분');
+    assert.equal(plan().examPlan.mock.minutes, two.minutes, '이번 주 계획의 칸도 같은 고르기');
+    assert.equal(await app.education.plan(), 'shown', '이번 주 계획 판');
+    assert.match(app.last(), /data-plan-mock-section/, '새 길 계획 판에 시험 형식 칸이 선다(F8)');
+    assert.match(app.last(), /<button[^>]*data-plan-mock>/);
+  } finally {
+    app.dispose();
+  }
+});
+
+test('엔진 판 — 내 위치 판에서 연 시험 형식이 코치를 기다리는 사이 학생이 같은 종류의 판(짧은 진단)을 열면, 늦게 온 코치가 그 판을 덮지 않고 진단을 닫지 않는다(Fable 끝 판 F6)', async () => {
+  let release = null;
+  const hold = new Promise(resolve => {
+    release = resolve;
+  });
+  const made = [];
+  const entry = mockEntry(made, hold);
+  const sets = [];
+  const app = shell({
+    panels: true,
+    planner: { ...PLANNER, plan: planPlanner },
+    atlasNext: entry,
+    wrap: coach => ({
+      ...coach,
+      finishSet(options) {
+        sets.push(options);
+        return coach.finishSet(options);
+      },
+    }),
+  });
   try {
     await app.education.position();
     await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
-    await until(() => seen.asks === 1, '묻는다');
-    await tick(80);
+    assert.match(app.last(), /data-position-mock/, '시험 형식 단추');
+    const opening = app.education.mock({ exam: 'topik1' });
+    await until(() => entry.calls.length === 1, '시험 형식 코치를 기다린다');
+    await app.education.position({ start: true });
+    await until(() => /data-position-stage/.test(app.last()), '그 사이 연 짧은 진단 판(같은 판 종류)');
     const drawn = app.shown.length;
-    seen.release();
-    await until(() => seen.notes.length === 1, '물은 답');
-    await tick(40);
-    assert.equal(app.shown.length, drawn, '완결되지 않은 답으로는 다시 그리지 않는다');
-    assert.deepEqual(estimateOfHtml(app.last()), ['checking']);
-    assert.deepEqual(seen.notes, [['load', { ok: false, code: 'FIRST_ANSWERS_FOLD_FAILED' }]], '까닭을 계기에');
+    release();
+    await opening;
+    await tick(30);
+    assert.ok(!app.shown.slice(drawn).some(html => /data-mock-stage/.test(html)), '늦게 온 시험 형식 안내가 진단 판을 덮지 않는다');
+    assert.match(app.last(), /data-position-stage/, '진단 판 그대로');
+    assert.deepEqual(sets, [], '진단 판을 닫지 않는다');
   } finally {
+    release();
     app.dispose();
+    for (const coach of made) coach.dispose();
+  }
+});
+
+test('엔진 판 — 내 위치 판에서 연 시험 형식이 첫 받기 답을 기다리는 사이 그 답이 와도 판을 뒤에서 다시 그려 열기를 끊지 않는다 — 기다리는 동안은 열린 판을 다시 그리지 않는다(Fable 끝 판 F6)', async () => {
+  let release = null;
+  const gate = new Promise(resolve => {
+    release = resolve;
+  });
+  let asked = 0;
+  // 첫 받기는 시간 초과로 답하고(판은 기록 일부로 선다), 길게 기다리는 두 번째 받기는 시험이 풀 때 된다 — 된 답이 열린 판을 다시 그린다(GB1).
+  const sync = accountLike(() => (++asked === 1 ? { ok: false, kind: 'timeout', code: 'PULL_TIMEOUT' } : gate.then(() => ({ ok: true }))));
+  const made = [];
+  const entry = mockEntry(made);
+  const app = shell({ panels: true, planner: { ...PLANNER, plan: planPlanner }, atlasNext: entry, wrap: sync.wrap });
+  try {
+    await app.education.position();
+    await until(() => /data-position-next="engine"/.test(app.last()), '엔진 판');
+    await until(() => sync.calls.length === 2, '길게 기다리는 두 번째 받기');
+    const opening = app.education.mock();
+    await tick(30);
+    assert.equal(entry.calls.length, 0, '받기 답을 기다린다');
+    release();
+    await opening;
+    await tick(30);
+    assert.match(app.last(), /data-mock-stage/, '받기 답이 온 뒤 시험 형식 판을 연다');
+    assert.equal(entry.calls.length, 1, '시험 형식 코치를 한 번 받았다');
+  } finally {
+    release();
+    app.dispose();
+    for (const coach of made) coach.dispose();
   }
 });

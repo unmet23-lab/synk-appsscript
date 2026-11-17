@@ -2156,6 +2156,22 @@ export const COACH_MUTANTS = [
   ],
   [
     C,
+    '끝 판 Fable(4-4d)',
+    '코치를 만들 때 게임 이름 꼴을 보지 않는다 — 꼴이 틀린 이름의 판이 저장되지만 근거가 되지 못한다(Fable 끝 판 F1)',
+    'src/coach/index.mjs',
+    "  if (!isGameId(gameId)) throw new TypeError('Atlas: coach gameId must be a game name');\n",
+    '',
+  ],
+  [
+    C,
+    '끝 판 Fable(4-4d)',
+    'unfoldedRows가 도움을 세지 않는다 — 접기 전 도움이 단위 줄을 바꿔도 학습일 답을 막지 않는다(Fable 끝 판 F2)',
+    'src/coach/host.mjs',
+    '  EVENT_TYPES.attempted,\n  EVENT_TYPES.helped,\n  EVENT_TYPES.stated,\n',
+    '  EVENT_TYPES.attempted,\n  EVENT_TYPES.stated,\n',
+  ],
+  [
+    C,
     '근거 셈(4-4d)',
     'game이 게임 이름 꼴인지 보지 않는다',
     'src/coach/index.mjs',

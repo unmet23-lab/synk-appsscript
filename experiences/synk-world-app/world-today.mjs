@@ -469,11 +469,13 @@ const CHECKING_CODES = Object.freeze({
   prerequisite: 'host.prerequisite',
   next: 'host.next',
 });
+// 계획이 넘긴 활동(act.role — 숙제 연습 · 점검 칸)은 엔진 판의 두뇌만 줄로 세운다. 확인 중 판에 내려오면 그 활동의 설명(describe)을 「다음
+// 레슨」 문장으로 잘못 읽으니 뺀다(Fable 끝 판 F10 — plan()이 던지는 가정한 장애에서 점검 칸 활동이 host.next 줄로 섰다).
 function checkingEntries(activities, say) {
   const rank = act =>
     act.plan.facts.resume ? 0 : act.plan.facts.prerequisite ? 1 : act.plan.facts.describe ? 2 : 3;
   return activities
-    .filter(act => rank(act) < 3)
+    .filter(act => !act.role && rank(act) < 3)
     .sort((a, b) => rank(a) - rank(b))
     .map(act => {
       const fact = act.plan.facts.resume
@@ -540,7 +542,9 @@ const checkRank = entry => {
   const at = CHECK_ORDER.indexOf(entry.id);
   return at < 0 ? CHECK_ORDER.length : at;
 };
-function checkOrdered(entries, byId) {
+// 점검 칸의 차례 돌리기(설계 주인 11-17 저녁 — Fable 끝 판 F16의 답 1). 늘어놓은 줄 가운데 잠기지 않은 줄 n개에서 오늘의 줄은 shift mod n번째다
+// (shift는 아래 checkShift). 잠긴 줄은 돌리지 않고 뒤에 둔다 — 조건에 걸린 날의 규칙은 그대로다.
+function checkOrdered(entries, byId, shift = 0) {
   const isCheck = entry => byId.get(entry?.id)?.role === 'check';
   const checks = entries.filter(isCheck);
   if (checks.length < 2) return entries;
@@ -550,13 +554,42 @@ function checkOrdered(entries, byId) {
     for (let i = 0; i < x.length; i += 1) if (x[i] !== y[i]) return x[i] - y[i];
     return checkRank(a) - checkRank(b);
   });
+  const open = sorted.filter(entry => !entry.locked);
+  const turn = open.length > 1 ? shift % open.length : 0;
+  const turned = [...open.slice(turn), ...open.slice(0, turn), ...sorted.filter(entry => entry.locked)];
   let next = 0;
-  return entries.map(entry => (isCheck(entry) ? sorted[next++] : entry));
+  return entries.map(entry => (isCheck(entry) ? turned[next++] : entry));
+}
+// 밀린 날 수(설계 주인 11-17 저녁 답 1). 상태를 새로 저장하지 않고, 계획과 셸이 이미 가진 값으로만 센다. k = 「오늘이 이번 계획 주의 몇째
+// 학습일인가 − 1」 − 「이번 주 점검 칸 넷에서 한 수의 합」(0 밑은 0). 한 수는 다시 확인을 끝낸 수(계획의 recheck done), 시험 형식 판의 수(셸이 넘기는
+// week.mockDone — 이 기기의 판 기록이라 그만둔 판도 센다), 쓰기 · 말하기 수(계획의 writing · speaking done — 배우기 허브에서 한 것도 기기 기록이라
+// 센다)다. 계획 주는 한국 시각 월요일 0시부터 이레이고(world-exam-plan.mjs examWeek) 학습일은 기기 현지 새벽 4시가 경계라(todayKey), 계획 주의
+// 월요일을 1째 날로 센다. 주의 시작이나 한 수 값을 하나라도 읽지 못하면 0이다(지금 차례 그대로). 줄을 따르는 학생은 날마다 한 수씩 늘어 늘 0이다.
+const KST_MS = 9 * 3_600_000;
+const DAY_MS = 86_400_000;
+function checkShift(week, now) {
+  const plan = week?.examPlan;
+  const start = plan?.week?.start;
+  const mock = week?.mockDone;
+  if (!Number.isFinite(start) || !Array.isArray(plan?.areas) || !Number.isSafeInteger(mock) || mock < 0) return 0;
+  let done = mock;
+  for (const area of ['recheck', 'writing', 'speaking']) {
+    const row = plan.areas.find(item => item?.area === area);
+    const value = row ? row.done : 0;
+    if (!Number.isSafeInteger(value) || value < 0) return 0;
+    done += value;
+  }
+  const monday = new Date(start + KST_MS);
+  const first = Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate());
+  const at = new Date(now);
+  if (at.getHours() < DAY_START_HOUR) at.setDate(at.getDate() - 1);
+  const day = Math.round((Date.UTC(at.getFullYear(), at.getMonth(), at.getDate()) - first) / DAY_MS) + 1;
+  return Math.max(0, day - 1 - done);
 }
 
-export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null, dayCapped } = {}) {
+export function todayRows({ entries = [], activities = [], opened = new Set(), say = () => null, dayCapped, shift = 0 } = {}) {
   const byId = new Map(activities.map(act => [act.plan.id, act]));
-  entries = checkOrdered(Array.isArray(entries) ? entries : [], byId);
+  entries = checkOrdered(Array.isArray(entries) ? entries : [], byId, shift);
   // 하루 복습 상한(§20-3): plan 쪽 칸(dayCapped — plan 머리에서 한 번 센 엔진 전체의 값)을 먼저 읽는다(설계 주인 11-15, §20-14). 그 칸이 없는
   // 옛 엔진이면 어느 항목의 capped로든 읽는다. 생활 복습 항목만 보면 생활 복습 없이 짧은 연습이나 다음 레슨만 있는 상한 날을 「다 만났어요」로
   // 잘못 말한다(GPT 끝 판 GB1).
@@ -635,7 +668,8 @@ export function createWorldTodayPlan({
   const planned = engine ? quiet(() => coach.plan(activities.map(act => act.plan), { lang })) : null;
   const live = engine && Array.isArray(planned);
   const entries = live ? planned : checkingEntries(activities, say);
-  const { rows, capped } = todayRows({ entries, activities, opened, say, dayCapped: live ? planned.capped : undefined });
+  const shift = live && week ? checkShift(week, now) : 0;
+  const { rows, capped } = todayRows({ entries, activities, opened, say, dayCapped: live ? planned.capped : undefined, shift });
   const selected = pickRow(rows, opened);
   const checking = !live;
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;

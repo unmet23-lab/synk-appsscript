@@ -198,7 +198,8 @@ const entryOf = item => ({
 });
 
 // 묶음 하나의 만남 · 장부 줄을 계열마다 모으고, 그 묶음의 머리가 2판 제시이면 만남(답)마다 그 판 번호를 적는다(기록부 meetRows — 예상 급수의
-// 근거, 단계 4 계획 §21-23의 2). 옛 꼴 제시 · 장부 · 본인 말 묶음에는 판 번호가 없다.
+// 근거, 단계 4 계획 §21-23의 2). 옛 꼴 제시 · 장부 · 본인 말 묶음에는 판 번호가 없다. 그래서 제시 종류와 2판 여부(isCurrent) 검사는 지금 길에서
+// 닿지 않는 막이다 — 옛 꼴 제시는 판 번호 칸을 싣지 않는다. 시험이 없으니, 옛 꼴 제시가 판 번호를 싣게 되면 시험과 변형을 함께 더한다(Fable 끝 판 F3).
 const setOfSource = event =>
   event.type === EVENT_TYPES.presented && isCurrent(event) && typeof event.setId === 'string'
     ? event.setId

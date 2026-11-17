@@ -74,7 +74,7 @@ export const PLAN_MUTANTS = [
   ['shell', '다른 기기의 답이 접혀 와도(요약이 바뀌어도) 묶음 만남을 다시 묻지 않는다 — 기록이 다 온 탭이 그날 내내 옛 만남으로 계획을 짓는다(4-4b 끝 판 카본 C2)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,info.type,complete].join('|');\n"],
   ['shell', '다시 그릴 때마다 묶음 만남을 묻는다 — 홈이 그릴 때마다 풀 전체를 훑는다', '  if(weekMet.coach!==coachNow||weekMet.key!==key)weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice,...mockPool])};\n', '  weekMet={coach:coachNow,key,met:coachNow.exposures([...diagnostic,...practice,...mockPool])};\n'],
   ['shell', '판 기록을 열지 않고 계획을 짓는다 — 이번 주에 한 판을 세지 못한다', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:homeNext?.planLog?.(coachNow)??null,', '  const examPlan=N.buildPlanNext({examPlan:position.exam,info,reader,log:null,'],
-  ['shell', '진단이 낼 문항이 있어도 홈에 알리지 않는다 — 점검 칸이 빈다', '  return {examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready},mock,writing,speaking:speakingNow};\n', '  return {examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready:false},mock,writing,speaking:speakingNow};\n'],
+  ['shell', '진단이 낼 문항이 있어도 홈에 알리지 않는다 — 점검 칸이 빈다', '  return {examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready},mock,mockDone,writing,speaking:speakingNow};\n', '  return {examPlan,fresh:item=>seenOf(item)===false,diagnostic:{ready:false},mock,mockDone,writing,speaking:speakingNow};\n'],
   ['shell', '새 길 홈에 이번 주 계획을 넘기지 않는다 — 계획 입구 · 허브 줄 · 알림이 읽을 계획이 없다', '   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:why=>homePlanner.say(why,lang),week});\n', '   labels:id=>skillLabel(id),opened:opened.kinds,lang,say:why=>homePlanner.say(why,lang)});\n'],
   ['shell', '건너뛴 문항뿐인 판도 판 기록에 센다', "   if(!(Array.isArray(results)?results:[]).some(row=>row&&!row.skipped&&(row.verdict==='correct'||row.verdict==='incorrect')))return;\n", ''],
   // 판 기록의 「한 판에 한 번」 막이(planOnce의 done)를 빼는 변형은 두지 않는다 — 판 끝은 그만둔 판에서(ended), 그만두기는 끝난 판에서(ended)
@@ -108,14 +108,16 @@ export const PLAN_MUTANTS = [
   ['shell', "생활 레슨 · 복습 · 카페 판이 열린 동안에도 알림마다 홈과 묶음 만남을 다시 짓는다(받기 알림 설계 검토 D8)", "return LIFE_SESSIONS.has(kind)||SESSION_PANELS.some(selector=>panelNode(selector));", "return SESSION_PANELS.some(selector=>panelNode(selector));"],
   // ── 점검 칸의 값(4-4d — 단계4_계획 §21-23의 3): 시험 형식 판 기록 · 셸이 이번 주 계획 값에 싣는 시험 형식 · 쓰기 · 말하기 ──
   ['next', "이 기기의 판 기록이 시험 형식 판을 받지 않는다 — 점검 칸의 시험 형식 줄이 이번 주 내내 선다(4-4d)", "export const PLAN_LOG_AREAS = Object.freeze(['recheck', 'listening', 'reading', 'mock']);", "export const PLAN_LOG_AREAS = Object.freeze(['recheck', 'listening', 'reading']);"],
-  ['shell', "이번 주에 한 시험 형식 판을 보지 않는다 — 판을 한 뒤에도 점검 칸에 시험 형식을 넘긴다(4-4d)", "done:mockTimes.some(at=>at>=examWeek.start&&at<examWeek.end)}", "done:false}"],
-  ['shell', "시험 형식 판을 주 경계 없이 센다 — 지난주에 한 판이 이번 주 줄을 막는다(4-4d)", "done:mockTimes.some(at=>at>=examWeek.start&&at<examWeek.end)}", "done:mockTimes.length>0}"],
+  ['shell', "이번 주에 한 시험 형식 판을 보지 않는다 — 판을 한 뒤에도 점검 칸에 시험 형식을 넘긴다(4-4d)", "   done:mockDone>0}:null;", "   done:false}:null;"],
+  ['shell', "시험 형식 판을 주 경계 없이 센다 — 지난주에 한 판이 이번 주 줄을 막는다(4-4d)", "mockDone=times.filter(at=>at>=examWeek.start&&at<examWeek.end).length;", "mockDone=times.length;"],
   ['shell', "한 가지 고치기의 시각을 보지 않는다 — 계획 시각 뒤의 기록도 열린 것으로 본다(4-4d)", "const need=row53?.practiceNeed&&Date.parse(row53.practiceNeed.at)<=now?row53.practiceNeed:null;", "const need=row53?.practiceNeed||null;"],
   ['shell', "TOPIK I 학생에게도 53번 쓰기를 넘긴다(4-4d)", "const row53=info.type==='topik2'?writingList().find(row=>row.route==='writing:53')||null:null;", "const row53=writingList().find(row=>row.route==='writing:53')||null;"],
   ['shell', "말하기 유형을 추천 첫 줄이 아니라 목록 첫 줄에서 읽는다(4-4d)", "listed=first?speaking.list.find(row=>row.route===first.routeId)||null:null", "listed=first?speaking.list[0]||null:null"],
   ['shell', "말하기의 안 해 본 유형 수 대신 유형 수를 넘긴다(4-4d)", "type,untried:speaking.untried}", "type,untried:speaking.list.length}"],
   ['shell', "시험 형식이 듣기 칸과 상관없이 소리를 요구한다 — 소리를 끈 날 듣기 없는 판도 잠근다(4-4d)", "audioRequired:(mockNow.sections||[]).some(row=>row.section==='listening'&&row.status==='ready')", "audioRequired:true"],
   ['shell', "시험 형식 풀의 만남을 묶음 만남과 따로 묻는다 — 다시 그릴 때마다 묻는다(카본 A8과 같은 막이 · 4-4d)", "exposures:met&&met.length===mock.pool.length?met:coachNow.exposures(mock.pool)", "exposures:coachNow.exposures(mock.pool)"],
+  ['shell', '새 길 계획 판에 시험 형식 칸을 싣지 않는다 — 홈 줄이 서는 날에도 계획 판에 그 칸이 없다(Fable 끝 판 F8 · 설계 주인 11-17 저녁 답 3)', "  if(mockNow)examPlan.mock=", "  if(false)examPlan.mock="],
+  ['week', '이번 주에 한 판의 수(mockDone)를 홈 플래너에 넘기지 않는다 — 차례 돌리기가 늘 0이라 하지 않은 시험 형식이 이레 내내 선다(설계 주인 11-17 저녁 답 1)', 'diagnostic:{ready},mock,mockDone,writing,', 'diagnostic:{ready},mock,writing,'],
   ['week', '쓰기의 한 가지 고치기가 열린 시각을 넘기지 않는다 — 몫이 모두 찬 날에도 보탬이 서지 않는다(설계 주인 11-17 다시 여쭘의 답 2)', 'needAt:needKind?need.at:null', 'needAt:null'],
 ];
 

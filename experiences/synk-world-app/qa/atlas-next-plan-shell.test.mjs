@@ -385,6 +385,11 @@ test('TOPIK II 학생 — 새 길 홈의 점검 칸에 쓰기 · 말하기 · �
     assert.ok(plan.candidates.some(open => open.route === 'writing' && open.routeId === 'writing:53'), '53번 쓰기를 넘긴다');
     assert.ok(plan.candidates.some(open => open.route === 'speaking' && open.routeId === 'speaking:2'), '이번 주에 아직 안 해 본 첫 유형(2번)을 넘긴다');
     assert.ok(plan.candidates.some(open => open.route === 'mock'), '시험 형식을 넘긴다(고르기가 ready)');
+    // 이번 주 계획 판에도 시험 형식 칸이 선다 — 지금 판과 같은 꼴 · 조건으로 고르기 결과를 싣는다(Fable 끝 판 F8 · 설계 주인 11-17 저녁 답 3).
+    assert.equal(plan.examPlan.mock?.status, 'ready', '계획에 시험 형식 고르기 결과');
+    assert.equal(plan.examPlan.mock.minutes, plan.candidates.find(open => open.route === 'mock').minutes, '홈 줄과 같은 고르기');
+    assert.equal(await app.education.plan(), 'shown');
+    assert.match(app.last(), /data-plan-mock-section/, '새 길 계획 판의 시험 형식 칸');
     assert.ok(!plan.candidates.some(open => open.route === 'position'), '이번 주 다시 확인을 마쳐 짧은 진단은 넘기지 않는다');
     // 이 장면의 계획은 다음 영역이 말하기다 — 말하기 줄은 영역 목표를, 쓰기는 한 가지 고치기 목표를 하나씩 받아 제품 차례(쓰기 → 말하기)로 가른다
     assert.equal(plan.examPlan.next?.area, 'speaking');

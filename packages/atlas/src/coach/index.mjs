@@ -116,6 +116,9 @@ export function createCoach(options = {}) {
     throw new TypeError('Atlas: coach options must be an object');
   }
   const gameId = options.gameId ?? 'atlas';
+  // 게임 이름은 판 번호(set-id.mjs)와 근거 셈이 읽는 꼴이다. 꼴이 틀리면 판은 저장되지만 근거가 되지 못하고, 그 이름으로 물으면 던진다.
+  // 그래서 만들 때 막는다(Fable 끝 판 F1 · 설계 주인 11-17 저녁 승인). 지금 쓰는 게임 이름은 tests/atlas-game-ids.test.mjs가 CI에서 본다.
+  if (!isGameId(gameId)) throw new TypeError('Atlas: coach gameId must be a game name');
   const params = options.params ?? PARAMS;
   const dayOffset = options.dayOffset ?? -new Date().getTimezoneOffset();
   const scope = options.scope ?? globalThis; // 시험만 준다(틀 흉내)
@@ -566,6 +569,8 @@ export function createCoach(options = {}) {
       if (!isGameId(game)) throw new TypeError('Atlas coach: firstAnswers의 game은 게임 이름이다');
       if (!Number.isInteger(days) || days < 1 || days > 365)
         throw new TypeError('Atlas coach: firstAnswers의 days는 1 ~ 365의 정수다');
+      // 손님 기록부의 보기가 waitAll이 되는 길은 닿는 줄을 모르는 제외가 다시 접히기 전의 잠깐뿐이라, waitAll 막이는 지금 사실상 닿지 않는다(시험이
+      // 없다 — Fable 끝 판 F3). 닿는 길이 생기면 그 장면의 시험과 변형을 더한다.
       if (!state.host.guest || state.host.view().waitAll === true) return null; // 서버 길 계정 · 기록이 다 오지 않음
       const since = state.host.now() - days * DAY_MS;
       const { families, setOf } = state.host.trail.meetRows();

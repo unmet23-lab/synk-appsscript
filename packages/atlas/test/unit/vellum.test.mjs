@@ -616,6 +616,12 @@ test('설명 칸이 표에 맞지 않으면 문장을 짓지 않는다 — 표 �
     ['host.speaking', { untried: 2 }],
     ['host.writing.start', { focus: 'ending-53' }],
     ['host.speaking.again', { untried: 0 }],
+    // 보통 객체가 아닌 칸 — 칸 자체는 맞아도 받지 않는다(프로토타입이 다른 객체 · 프로토타입이 없는 객체, Fable 끝 판 F4)
+    [
+      'host.writing',
+      Object.assign(Object.create({ inherited: true }), { focus: 'ending-53', need: 'retry' }),
+    ],
+    ['host.writing', Object.assign(Object.create(null), { focus: 'ending-53', need: 'retry' })],
   ];
   for (const lang of LANGS)
     for (const [code, slots] of bad)

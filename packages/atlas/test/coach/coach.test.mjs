@@ -31,6 +31,31 @@ test('지도 없이 만든 코치는 ready가 MAP_FAILED로 거절되고, 아직
   await assert.rejects(bare.ready, { code: 'MAP_FAILED' });
   assert.throws(() => bare.recommend([]), { code: 'NOT_READY' });
   assert.throws(() => createCoach(null), TypeError);
+  // 게임 이름은 판 번호와 근거 셈이 읽는 꼴이다 — 꼴이 틀리면 만들 때 던진다(Fable 끝 판 F1 · 설계 주인 11-17 저녁 승인). 빠진 이름은 atlas다.
+  for (const gameId of [
+    '',
+    'a..b',
+    'world.',
+    '.world',
+    'g'.repeat(81),
+    'world mock',
+    '한글',
+    1,
+    {},
+  ])
+    assert.throws(() => createCoach({ gameId }), TypeError, JSON.stringify(gameId));
+  for (const gameId of [
+    undefined,
+    'atlas',
+    'world-mock',
+    'world-mock.x',
+    'set:1_a',
+    'g'.repeat(80),
+  ]) {
+    const made = createCoach({ gameId });
+    await assert.rejects(made.ready, { code: 'MAP_FAILED' }, String(gameId));
+    made.dispose();
+  }
   const time = clock();
   const { coach } = await openCoach({ items: bankOf(rng(1)), time });
   for (const name of ['live', 'today', 'presentation', 'reset'])

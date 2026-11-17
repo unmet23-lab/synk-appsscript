@@ -12,6 +12,7 @@ import {lifeDue,lifeUnitsOf} from '../world-life-next.mjs';
 import {PACKS,LESSONS} from '../life-content.mjs';
 import {lifeTargets} from '../life-plan.mjs';
 import {bankItems} from '../world-topik-items.mjs';
+import {examWeek} from '../world-exam-plan.mjs';
 
 const readJson=url=>JSON.parse(fs.readFileSync(new URL(url,import.meta.url),'utf8'));
 const MAP_DATA={index:readJson('../../../packages/atlas/map/index.json'),units:readJson('../../../packages/atlas/map/units.json')};
@@ -47,9 +48,9 @@ function progressOf({completed=[],reviews=[],hangul=null,active=null,answers={}}
  return {exportSnapshot:()=>snapshot,summary:()=>({nextLesson:next?{...next}:null,resume:Boolean(active)&&Object.keys(answers).length>0})};
 }
 const judgeOf=(coach,progress,now)=>{const summary=coach.summary();return {state:'engine',...lifeDue({snapshot:progress.exportSnapshot(),lessons:LESSONS,unitsOf:lifeUnitsOf(coach,LESSONS),memory:summary.units,due:coach.due(),now})};};
-function planOf({coach,progress,now,settings={},pool=[],opened=new Set(),lang='ko',openGames=null,judged}){
+function planOf({coach,progress,now,settings={},pool=[],opened=new Set(),lang='ko',openGames=null,judged,week=null}){
  const say=why=>atlas.renderReason(why,{lang});
- return createWorldTodayPlan({coach,progress,judged:judged===undefined?judgeOf(coach,progress,now):judged,settings,now,pool,opened,lang,openGames,say,labels:id=>id});
+ return createWorldTodayPlan({coach,progress,judged:judged===undefined?judgeOf(coach,progress,now):judged,settings,now,pool,opened,lang,openGames,say,labels:id=>id,week});
 }
 const kinds=plan=>plan.today.items.map(row=>row.kind);
 
@@ -320,6 +321,30 @@ test('엔진 판에서 plan()이 실패하면 확인 중 판으로 내려 제품
  assert.equal(plan.selected.lessonId,'greetings-story');
  const all=planOf({coach:broken,progress:progressOf({completed:ORDER}),now:time.t});
  assert.deepEqual([all.status,all.today.empty],['checking',{code:'checking',text:null}],'다 마친 학생도 다 한 날이 아니라 확인 중이다');
+ coach.dispose();
+});
+
+// 점검 칸 활동을 넘기는 이번 주 계획(셸 weekNext의 꼴) — 짧은 진단 · 시험 형식 · 쓰기 · 말하기의 이번 주 몫이 모두 남은 주.
+const checkWeekOf=now=>{
+ const area=(name,remaining)=>({area:name,planned:1,done:1-remaining,remaining,classwork:[]});
+ return {examPlan:{week:examWeek(now),areas:[area('recheck',1),area('writing',1),area('speaking',1)],homework:[],next:{area:'recheck',skillId:null},notes:['start']},fresh:()=>false,diagnostic:{ready:true},
+  mock:{minutes:26,audioRequired:false,done:false},writing:{label:'쓰기 연습 · 53',routeId:'writing:53',minutes:18,focus:'ending-53',need:null,needAt:null},
+  speaking:{label:'말하기 연습',routeId:'speaking:3',minutes:4,type:'narrate',untried:2}};
+};
+const CHECK_IDS=['world.position.check','world.mock','topik2-writing-53','world.speaking.check'];
+test('엔진 판에서 plan()이 실패해도 계획이 넘긴 점검 칸 활동은 확인 중 판의 「다음 레슨」 줄로 서지 않는다(Fable 끝 판 F10)',async()=>{
+ const {coach,time}=await homeCoach();
+ const progress=progressOf({completed:['greetings-expressions']});
+ const settings={reasons:['exam'],primaryReason:'exam',examType:'topik2',speaking:true};
+ const week=checkWeekOf(time.t);
+ const live=planOf({coach,progress,now:time.t,settings,week});
+ assert.ok(live.today.items.some(row=>CHECK_IDS.includes(row.activityId)),'장면의 전제 — 엔진 판에서는 점검 칸 줄이 선다');
+ const broken=Object.create(coach,{plan:{value:()=>{throw new Error('plan');}}});
+ const plan=planOf({coach:broken,progress,now:time.t,settings,week});
+ assert.equal(plan.today.state,'checking');
+ assert.ok(!plan.today.items.some(row=>CHECK_IDS.includes(row.activityId)),'계획이 넘긴 활동은 확인 중 판의 줄이 아니다');
+ assert.deepEqual(kinds(plan),['new'],'생활의 다음 레슨 줄만');
+ assert.equal(plan.today.items[0].why.code,'host.next');
  coach.dispose();
 });
 

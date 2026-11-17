@@ -13,6 +13,8 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const source = path.join(here, '..', 'world-today.mjs');
 const scenes = [path.join(here, 'atlas-next-home.test.mjs'), path.join(here, 'atlas-next-plan.test.mjs')];
+// 갈래마다 더 도는 장면 — 점검 칸의 차례 돌리기는 이레 측정(진짜 셸과 엔진 코치로 이레를 날마다 연다 — 느려서 그 갈래만)이 잡는다(설계 주인 11-17 저녁 답 1).
+const BRANCH_SCENES = Object.freeze({ '점검 칸 돌리기': [path.join(here, 'atlas-next-check-week.test.mjs')] });
 
 // 변형 하나 = [갈래, 이름, 바꿀 글, 바꾼 글]. 바꿀 글은 원본에 꼭 한 번 있어야 한다.
 export const TODAY_MUTANTS = [
@@ -313,11 +315,17 @@ export const TODAY_MUTANTS = [
     "            queueMicrotask(() => {\n              if (!disposed && at === generation && coach === made) changed();\n            });\n",
     "            changed();\n",
   ],
+  [
+    '확인 중',
+    '확인 중 판이 계획이 넘긴 활동(숙제 연습 · 점검 칸)의 설명을 다음 레슨으로 읽는다(Fable 끝 판 F10)',
+    '    .filter(act => !act.role && rank(act) < 3)\n',
+    '    .filter(act => rank(act) < 3)\n',
+  ],
   // ── 점검 칸 넷(4-4d — 단계4_계획 §21-23의 3, 설계 주인 11-17 답 3 · 4): 시험 형식 · 쓰기 · 말하기 줄, 제품 차례, 계획 목표의 범위 ──
   [
     '점검 칸 넷',
     "같은 자리의 점검 칸을 두뇌 차례(활동 id 사전 순)로 둔다 — 제품 차례를 뺀다(설계 주인 11-17 답 3)",
-    "  entries = checkOrdered(Array.isArray(entries) ? entries : [], byId);\n",
+    "  entries = checkOrdered(Array.isArray(entries) ? entries : [], byId, shift);\n",
     "",
   ],
   [
@@ -466,15 +474,40 @@ export const TODAY_MUTANTS = [
     "  if (!(at >= bounds.start && at < bounds.end)) return null;\n",
     "",
   ],
+  // ── 점검 칸 돌리기(4-4d — 설계 주인 11-17 저녁 답 1): 밀린 날 수만큼 넘길 수 있는 줄을 돌린다. 이레 측정의 장면 셋이 잡는다. ──
+  [
+    '점검 칸 돌리기',
+    '밀린 날 수를 늘 0으로 둔다 — 하지 않은 줄이 이레 내내 맨 앞에 선다(시험 형식만 하지 않는 학생 장면이 잡는다)',
+    '  return Math.max(0, day - 1 - done);\n',
+    '  return 0;\n',
+  ],
+  [
+    '점검 칸 돌리기',
+    '「− 1」을 뺀다 — 줄을 따르는 학생도 첫날부터 돈다(따르는 학생 장면이 잡는다)',
+    '  return Math.max(0, day - 1 - done);\n',
+    '  return Math.max(0, day - done);\n',
+  ],
+  [
+    '점검 칸 돌리기',
+    '시험 형식 판을 한 수로 세지 않는다 — 시험 형식을 한 학생도 다음 날부터 하루씩 밀린다',
+    '  let done = mock;\n',
+    '  let done = 0;\n',
+  ],
+  [
+    '점검 칸 돌리기',
+    '잠긴 줄도 돌린다 — 조건에 걸린 줄이 오늘의 줄 자리에 선다',
+    '  const open = sorted.filter(entry => !entry.locked);\n',
+    '  const open = sorted;\n',
+  ],
 ];
 
 // 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 두면 node가 「겹쳐 부른 시험」으로 보고 파일을 하나도
 // 돌리지 않은 채 0으로 끝나, 깨지 않은 사본의 확인은 통과하고 모든 변형이 살아남은 것으로 보인다(4-4b 끝 판 GPT GB2 — position-mutants와 같은 고침).
 // 통과는 종료 코드 0이면서 통과한 시험이 하나 이상일 때다.
-function run(copy) {
+function run(copy, more = []) {
   const env = { ...process.env, SYNK_TODAY_MODULE: copy };
   delete env.NODE_TEST_CONTEXT;
-  const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...scenes], {
+  const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...scenes, ...more], {
     env,
     encoding: 'utf8',
   });
@@ -496,7 +529,8 @@ const plain = copyOf('plain');
 fs.writeFileSync(plain, original);
 let baseline;
 try {
-  baseline = run(plain);
+  // 깨지 않은 사본은 이번에 돌 갈래의 장면을 모두 돈다(갈래를 주지 않으면 모든 갈래의 장면).
+  baseline = run(plain, only ? (BRANCH_SCENES[only] ?? []) : [...new Set(Object.values(BRANCH_SCENES).flat())]);
 } finally {
   fs.rmSync(plain, { force: true });
 }
@@ -520,7 +554,7 @@ for (const [index, [branch, name, from, to]] of TODAY_MUTANTS.entries()) {
   fs.writeFileSync(copy, original.replace(from, to));
   try {
     ran += 1;
-    const caught = !run(copy);
+    const caught = !run(copy, BRANCH_SCENES[branch] ?? []);
     if (!caught) survived += 1;
     console.log(`${caught ? '잡음' : '살아남음'} · ${branch} · ${name}`);
   } finally {

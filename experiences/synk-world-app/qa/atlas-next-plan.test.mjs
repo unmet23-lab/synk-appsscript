@@ -638,6 +638,33 @@ test('점검 칸 넷이 두뇌에서 같은 자리이면 제품 차례(짧은 �
 // 플래너의 잠금만 보는 장면이다. 이번 주 계획은 소리를 켠 채 지었고(checkWeek) 학습 설정의 소리만 끈다. 셸은 소리를 끈 날 계획을 소리 없이 지어
 // 말하기를 그 주의 몫에서 빼고(notes speaking-audio-off) 시험 형식을 읽기만으로 고르므로(audioRequired 거짓), 소리 때문에 잠기는 아래 두 줄은 셸
 // 길로는 넘어오지 않는다. 실제로 생기는 소리를 끈 주는 아래 「장면 가」가 본다(끝 판 검수 GPT GE1 — 설계 주인 11-17 오후 답).
+// 점검 칸의 차례 돌리기(설계 주인 11-17 저녁 답 1): 밀린 날 수 k만큼 넘길 수 있는 줄을 돌리고, 잠긴 줄은 돌리지 않는다. 날은 기기 현지 학습일로
+// 세므로, 계획 주의 시작(한국 시각 월요일 0시)을 이 기기의 오늘 학습일에서 거꾸로 잡는다 — 어느 시간대에서 돌려도 같은 날이 된다. 잠긴 시험
+// 형식이 돌기에 들면 k = 3에서 오늘의 줄이 달라진다(잠긴 줄은 줄이 아니라 다음 줄이 선다 — k = 1 · 2에서는 같은 줄이 선다).
+test('점검 칸 차례 돌리기 — 밀린 날 수만큼 넘길 수 있는 줄만 돌리고, 시간 설정에 걸려 잠긴 시험 형식은 돌리지 않는다 · 값을 읽지 못한 날은 돌리지 않는다(설계 주인 11-17 저녁 답 1)', async () => {
+  const { coach, time } = await homeCoach();
+  const progress = progressOf({ completed: ORDER });
+  const settings = { ...EXAM_T2, speaking: true, minutes: 10 };
+  const base = checkWeek(coach, time.t, { writing: { ...CHECK_FACTS.writing, minutes: 5, need: null }, mockDone: 0 });
+  const done = base.examPlan.areas.filter(row => ['recheck', 'writing', 'speaking'].includes(row.area)).reduce((n, row) => n + row.done, 0);
+  const local = new Date(time.t);
+  if (local.getHours() < 4) local.setDate(local.getDate() - 1);
+  const today = Date.UTC(local.getFullYear(), local.getMonth(), local.getDate());
+  // 오늘이 이번 계획 주의 day째 학습일이 되게 주의 시작을 잡는다.
+  const weekOn = (day, more = {}) => {
+    const start = today - (day - 1) * DAY - 9 * HOUR;
+    return { ...base, ...more, examPlan: { ...base.examPlan, week: { ...base.examPlan.week, start, end: start + 7 * DAY } } };
+  };
+  const row = (day, more) => checkRow(homePlan({ coach, progress, now: time.t, settings, week: weekOn(day, more) }))?.activityId ?? null;
+  const open = ['topik2-writing-53', 'world.speaking.check'];
+  assert.ok(1 + done + 3 <= 7, `장면의 전제 — 이번 주에 한 수(${done})가 작아 k = 3까지 이번 주 안에 든다`);
+  assert.equal(row(1 + done), open[0], 'k = 0 — 지금 차례(시험 형식은 시간 설정 10분에 걸려 잠겼다)');
+  for (let k = 1; k <= 3; k += 1) assert.equal(row(1 + done + k), open[k % open.length], `k = ${k} — 잠기지 않은 둘 가운데 ${k % open.length}번째`);
+  assert.equal(row(2 + done, { mockDone: null }), open[0], '시험 형식 판 수를 읽지 못한 날은 돌리지 않는다');
+  assert.equal(row(2 + done, { mockDone: 1 }), open[0], '시험 형식 판도 한 수로 센다 — 밀린 날이 없다');
+  coach.dispose();
+});
+
 test('점검 칸 — 플래너는 넘겨받은 줄이 소리 · 시간 조건에 걸리면 잠그고(소리가 필요한 말하기 · 듣기가 든 시험 형식 · 시간 설정을 넘는 시험 형식), 이번 주에 시험 형식 판을 한 뒤에는 시험 형식 줄이 서지 않는다', async () => {
   const { coach, time } = await homeCoach();
   const progress = progressOf({ completed: ORDER });

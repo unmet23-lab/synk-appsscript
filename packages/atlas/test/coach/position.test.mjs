@@ -171,6 +171,16 @@ test('unfoldedRows — 서버 접기가 단위 줄을 바꾸는 내 사건(답 �
   assert.deepEqual(counts(), [1, 0], '받았지만 아직 접지 않은 본인 말');
   await folded();
   assert.deepEqual(counts(), [0, 0], '본인 말을 접은 요약이 왔다');
+  // 도움(힌트)도 단위 줄을 바꾼다 — 답처럼 두 칸 모두 센다(Fable 끝 판 F2).
+  const hinted = coach.present(items[3]);
+  await sent();
+  await folded();
+  coach.help(hinted, 'hint');
+  assert.deepEqual(counts(), [1, 1], '저장 중인 도움은 둘 다 센다');
+  await sent();
+  assert.deepEqual(counts(), [1, 1], '받았지만 아직 접지 않은 도움');
+  await folded();
+  assert.deepEqual(counts(), [0, 0], '도움을 접은 요약이 왔다');
   // 제시를 거두는 제외도 센다(거두는 대상과 상관없이). 판 기록은 세지 않는다.
   const shown = coach.present(items[2]);
   await sent();
