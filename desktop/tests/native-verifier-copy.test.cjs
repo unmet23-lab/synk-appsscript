@@ -35,3 +35,10 @@ test('Windows native verifier plants the face stage record when the app document
   const line=verifier.slice(at,verifier.indexOf('\n',at));
   assert.ok(line.includes('__orbSeen=[p.dataset.portalState')&&line.includes('attributeOldValue:true'),line.slice(0,200));
 });
+test('Windows native verifier checks that the startup sentence is really hidden while checking',()=>{
+  // 문장 칸의 글과 data-ui는 HTML에 처음부터 적힌 값이라 숨김 CSS가 깨져도 맞는다. 보이는 글이 빈 것까지 봐야 실제로 숨었는지 안다(0.4.96 공개 후보 Fable P2)
+  const at=verifier.indexOf("check('real startup window is isolated and checking'");
+  assert.ok(at>0);
+  const line=verifier.slice(at,verifier.indexOf('\n',at));
+  assert.ok(line.includes("state.text.trim()===''")&&line.includes("state.ui==='none'"),line.slice(0,240));
+});

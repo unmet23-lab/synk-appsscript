@@ -87,9 +87,9 @@ function observe(config){
       startupWindow=created;startupCount++;
       (async()=>{try{
         await waitFor(contents,"document.documentElement.dataset.startupReady==='true'",'startup-renderer');
-        // 1-가 시작 창은 확인하는 동안 구만 보이고 문장 칸은 숨는다(innerText가 비어 있다). 문장은 그 칸의 글로, 구만 보이는 것은 data-ui로 본다(0.4.96 대역 빌드 검사에서 찾음)
+        // 1-가 시작 창은 확인하는 동안 구만 보이고 문장 칸은 숨는다. 문장은 그 칸의 글로, 구만 보이는 것은 data-ui로, 실제로 숨었는지는 보이는 글(innerText)이 빈 것으로 본다(0.4.96 대역 빌드 검사, 공개 후보 Fable P2)
         const state=await contents.executeJavaScript("(async()=>({status:await synkStartupUpdate.getStatus(),title:document.title,text:document.body.innerText,say:document.getElementById('startup-say')?.textContent||'',ui:document.getElementById('startup-update')?.dataset.ui||'',desktop:typeof synkDesktop,node:typeof require,keys:Object.keys(synkStartupUpdate)}))()",true);
-        check('real startup window is isolated and checking',state.status.state==='checking'&&state.title==='SYNK Platform'&&state.say==='새 판을 확인하고 있습니다.'&&state.ui==='none'&&state.desktop==='undefined'&&state.node==='undefined'&&state.keys.sort().join(',')==='close,getStatus,install,minimize,onChanged,onWindowState,openCurrent,retry,toggleMaximize',state);
+        check('real startup window is isolated and checking',state.status.state==='checking'&&state.title==='SYNK Platform'&&state.say==='새 판을 확인하고 있습니다.'&&state.ui==='none'&&state.text.trim()===''&&state.desktop==='undefined'&&state.node==='undefined'&&state.keys.sort().join(',')==='close,getStatus,install,minimize,onChanged,onWindowState,openCurrent,retry,toggleMaximize',state);
         check('startup window stays hidden in QA',!created.isVisible());
         await capture(created,'startup-checking');startupReadyResolve();
       }catch(error){startupReadyReject(error);errors.push(error.stack||error.message);void finish(false);}})();
