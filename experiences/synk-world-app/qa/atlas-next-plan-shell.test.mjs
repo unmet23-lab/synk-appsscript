@@ -46,6 +46,19 @@ async function clearOfWeekEnd() {
   const left = worldPosition.exam.examWeek(Date.now()).end - Date.now();
   if (left < 60_000) await tick(left + 50);
 }
+// 점검 칸의 차례 돌리기(world-today.mjs checkShift — 밀린 날 수)는 「오늘이 이번 계획 주의 몇째 학습일인가」를 센다. 그래서 차례를 보는
+// 장면은 요일에 따라 결과가 바뀐다(11-18 수요일에 깨졌다 — 시계를 하루씩 옮겨 이레를 재 보니 월 · 화 · 금만 지났다). 그런 장면은 계획 주의
+// 월요일 정오(한국 시각)로 시계를 옮겨 돌린다. 시간은 그대로 흐르고, 끝나면 시계를 되돌린다.
+async function onPlanMonday(run) {
+  const real = Date.now;
+  const offset = worldPosition.exam.examWeek(real()).start + 12 * 3_600_000 - real();
+  Date.now = () => real() + offset;
+  try {
+    return await run();
+  } finally {
+    Date.now = real;
+  }
+}
 
 let stores = 0;
 // 홈 코치를 앱처럼 연다 — 짧은 연습 풀 전체의 홈 은행(homeBanksOf)만 조각으로 받고 낱말 이름도 싣는다(world-atlas-next.mjs와 같다).
@@ -361,7 +374,8 @@ function speakingHost({ tried = [] } = {}) {
 }
 const checkRows = plan => plan.today.items.filter(row => row.kind === 'check');
 
-test('TOPIK II 학생 — 새 길 홈의 점검 칸에 쓰기 · 말하기 · 시험 형식이 넘어가고, 이번 주 다시 확인을 마친 학생에게는 한 가지 고치기가 열린 53번이 그 목표로 선다(4-4d — 4-4b 장면을 뒤집음)', async () => {
+test('TOPIK II 학생 — 새 길 홈의 점검 칸에 쓰기 · 말하기 · 시험 형식이 넘어가고, 이번 주 다시 확인을 마친 학생에게는 한 가지 고치기가 열린 53번이 그 목표로 선다(4-4d — 4-4b 장면을 뒤집음)', () =>
+  onPlanMonday(async () => {
   const logs = new Map();
   const memory = { getItem: key => logs.get(key) ?? null, setItem: (key, value) => logs.set(key, String(value)), removeItem: key => logs.delete(key) };
   const log = createPlanLog({ storage: memory, store: 'synk-atlas:guest' });
@@ -417,7 +431,7 @@ test('TOPIK II 학생 — 새 길 홈의 점검 칸에 쓰기 · 말하기 · �
   } finally {
     app.dispose();
   }
-});
+  }));
 
 test('쓰기 · 말하기 호스트가 없으면(앱이 모듈을 부르지 않은 때) 점검 칸에 쓰기 · 말하기를 넘기지 않는다 — 지금 판과 같다 · 소리를 끈 날의 시험 형식은 듣기 없이 넘긴다', async () => {
   const app = shell({ values: { audio: 'off', ...EXAM_T2 } });
