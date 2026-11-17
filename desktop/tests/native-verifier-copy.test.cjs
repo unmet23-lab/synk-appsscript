@@ -17,3 +17,14 @@ test('Windows native verifier waits only for screen copy the renderer still has'
   for(const text of ['새 판을 확인하고 있습니다.','브라우저에서 가입한 뒤','처음이라면 가입하기','로그인하면 구독별 남은 양이 여기에 보입니다.','지금 v',' · 시험판','최신 버전이에요.'])assert.ok(expected.includes(text),text);
   assert.deepEqual(expected.filter(text=>!renderer.includes(text)),[],'화면 글을 바꿨다면 검증 도구와 공개 CI 사본의 기대 글도 같은 판에서 맞춰 주세요');
 });
+test('Windows native verifier keeps the gate from opening early while it holds the first feed answer',()=>{
+  // 검사기는 첫 피드 답을 시작 창 캡처 뒤에 돌려준다. 관문의 4초 먼저 열기를 그대로 두면 느린 러너에서 앱 창이 먼저 열려 거짓으로 실패한다(0.4.96 Fable F3)
+  const hold=verifier.indexOf('await startupReady;'),swap=verifier.indexOf('gates.createStartupUpdateGate=options=>originalGate({...options,earlyOpenMs:');
+  assert.ok(hold>0,'the verifier no longer holds the first feed answer; drop this test with that change');
+  assert.ok(swap>0&&swap<verifier.indexOf("/runtime.json'"),'the startup gate must be swapped inside observe() with the updater, before src/main.cjs evaluates');
+  const value=Number(/earlyOpenMs:(\d+)/.exec(verifier.slice(swap))?.[1]);
+  const startupWait=Number(/'startup-renderer'(?:,(\d+))?\)/.exec(verifier)?.[1]||15000);
+  assert.ok(value>startupWait+5000,'earlyOpenMs '+value+' must outlast the startup window wait '+startupWait);
+  const {createStartupUpdateGate}=require('../src/platform-startup-update.cjs');
+  assert.equal(typeof createStartupUpdateGate,'function');
+});

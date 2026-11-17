@@ -1,6 +1,6 @@
 {
-  "note": "orb.ps를 만든 원본과 fxc. build-signal.cjs의 checkShader가 읽는다. orb.hlsl을 고치면 fxc /nologo /T ps_3_0 /E main /O3로 다시 컴파일하고 이 파일의 세 값을 고친다.",
-  "hlslSHA256": "76535e1166e5ad2eeb4d5c31ff78b902a006f2e10f471f3526d0e4773190ce9e",
+  "note": "orb.ps를 만든 원본과 fxc. build-signal.cjs의 checkShader가 읽는다. orb.hlsl을 고치면 fxc /nologo /T ps_3_0 /E main /O3로 다시 컴파일하고 이 파일의 세 값을 고친다. hlslSHA256은 orb.hlsl의 줄끝을 LF로 바꾼 바이트의 해시다.",
+  "hlslSHA256": "3c4071375c340157bce6a3ba9ba77e177ead11d0c0e46179af6d7e79d6244d0b",
   "psSHA256": "39e298a79fb2491d1946ce6738366feea4319a15e5b3f1d37ff30fc031747a40",
   "fxc": "10.0.22621.0"
 }

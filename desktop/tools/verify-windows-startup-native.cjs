@@ -40,6 +40,9 @@ function observe(config){
   shell.openExternal=async url=>{opened.push({kind:'external',url});};
   shell.openPath=async()=>{forbidden.push({operation:'shell.openPath'});return 'QA_INSTALLER_OPEN_FORBIDDEN';};
   const updates=require(app.getAppPath()+'/src/platform-update.cjs'),original=updates.createPlatformUpdater;
+  // 첫 피드 답은 시작 창 캡처가 끝난 뒤에 돌려준다. 느린 러너에서 관문의 4초 먼저 열기가 그보다 앞서 앱 창을 열지 않게 이 실행에서만 늘린다(0.4.96 Fable F3)
+  const gates=require(app.getAppPath()+'/src/platform-startup-update.cjs'),originalGate=gates.createStartupUpdateGate;
+  gates.createStartupUpdateGate=options=>originalGate({...options,earlyOpenMs:60000});
   const runtime=JSON.parse(fs.readFileSync(app.getAppPath()+'/runtime.json','utf8'));
   check('candidate runtime identity',runtime.update.buildId===config.buildId&&runtime.update.releaseId==='platform-preview-'+config.version);
   // The candidate must pin real signing keys and refuse an unsigned feed; the QA feed below is signed by a
