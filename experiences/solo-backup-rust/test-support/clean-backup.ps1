@@ -59,9 +59,10 @@ $script:results['adminData'] = $made | ConvertFrom-Json
 # complete with them, and runner 2 checks the restore leaves them out and says so.
 $specials = & node (Join-Path $tools 'clean-data.cjs') specials $data
 Expect ($LASTEXITCODE -eq 0) "the special entries made in the administrator's data ($specials)"
-# A file nobody may read (7장 D0), for one run only: every run would be partial while it stays.
+# A file nobody may read (7장 D0), for one run only: every run would be partial while it stays. It is made new after the
+# first run: restic does not open a file the last backup has unchanged, so an old one denied is never read (runs
+# 44128184320 · 44133423276 — complete, 421 unmodified).
 $denied = Join-Path $data '읽을 수 없는 파일.txt'
-[IO.File]::WriteAllBytes($denied, [byte[]](1..200))
 $setup = & node (Join-Path $tools 'clean-app.cjs') setup $data (Join-Path $Work 'admin-repo') (Join-Path $kits 'admin-kit.json')
 Expect ($LASTEXITCODE -eq 0) "the administrator's local profile set up through the installed worker ($setup)"
 function AdminRun([string]$name) {
@@ -80,6 +81,7 @@ Expect ($r.Code -eq 0 -and $r.Run.outcome -eq 'complete' -and $r.Run.profiles.lo
 # The file nobody may read (Everyone denied reading it): a partial backup, and no shadow copy is asked for it — a copy
 # would not let it be read either (4.2 채움 판, 74a22589a). The denial goes before the held file's run, so that run's
 # fill shows the denied one used up no attempt of the four-hour window.
+[IO.File]::WriteAllBytes($denied, [byte[]](1..200))
 icacls $denied /deny '*S-1-1-0:(R)' | Out-Null
 $r = AdminRun 'adminDenied'
 icacls $denied /remove:d '*S-1-1-0' | Out-Null
