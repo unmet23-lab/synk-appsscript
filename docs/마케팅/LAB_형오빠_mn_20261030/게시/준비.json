@@ -2408,6 +2408,16 @@
         "원고": {
           "youtube": "게시/판본/KG/원고_youtube.json"
         }
+      },
+      "CN": {
+        "언어": "zh-Hans",
+        "파일": "게시/판본/CN/video.mp4",
+        "표지": "게시/판본/CN/cover.png",
+        "글": "게시/판본/CN/글.json",
+        "원고": {
+          "douyin": "게시/판본/CN/원고_douyin.json",
+          "xiaohongshu": "게시/판본/CN/원고_xiaohongshu.json"
+        }
       }
     }
   }
