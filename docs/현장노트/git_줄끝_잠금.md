@@ -100,6 +100,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 파이프의 종료 코드는 마지막 `tail`의 것이다. `tail`은 끝날 때 한꺼번에 내보내므로, 배경으로 넘어간 명령의 출력도 남지 않았다. 다른 세션의 올리기 여섯이 줄을 서 있어 관련 시험이 오래 걸렸다.
 - 고침: 출력을 파일로 받고 종료 코드를 따로 적는다 — `node tools/바로올리기.js … --실행 > <폴더>/commit.log 2>&1; echo "exit $?" >> <폴더>/commit.log`를 `run_in_background`로 돌린다. 메시지가 길면 `-F <파일>`로 준다.
 - 다시 확인: `commit.log` 끝에 「올린 커밋: … · origin 확인 ✓」와 `exit 0`이 함께 있고, `git log origin/master -1 -- <고친 경로>`가 그 커밋이다.
+- 덧붙임(2026-11-18 Claude · GPT 검수 모델 세션): 같은 `… | tail` 올리기를 띄워 둔 채 세션이 끝났다. 다음 세션에서 보니 그 `node tools/바로올리기.js`가 부모 셸 없이 30분째 살아 있었고, 자식 프로세스가 없었고, CPU는 2.4초에서 늘지 않았다. origin에는 커밋이 없었다. 다만 관련 시험 자리를 기다리는 올리기도 이렇게 조용하므로([시험 노트의 자리 기다림](시험_화면확인.md)), 멈춘 것인지 기다리는 것인지는 확인하지 않았다(`<git-common-dir>/synk-관련시험/자리/`의 `.lock`을 먼저 봤어야 했다). 올리기 잠금(`%LOCALAPPDATA%\synk\ops\갱신.lock`)의 주인은 다른 세션의 올리기였다. 그래서 `Get-CimInstance Win32_Process`의 명령줄로 내 경로를 올리는 프로세스인지 확인한 뒤 그것만 끄고, 위 「고침」대로 출력을 파일로 받아 다시 올렸다. 부모가 사라진 올리기는 출력이 남지 않아 결과를 알 수 없다. 두 번째를 띄우면 같은 경로를 두 번 올리려 할 수 있으니, 자리 기다림인지 본 뒤 끄고 다시 돌린다.
 
 ### GitHub SSH가 같은 열쇠를 된다 안 된다 한다 — `Permission denied (publickey)`로 바로올리기 · 공개가 멈춘다 (2026-11-04 Claude)
 - **증상:** 19시 전후로 `git fetch` · `git push`가 `git@github.com: Permission denied (publickey)`로 끊겼다. 15분짜리 관련 시험을 다 돌린 바로올리기가 push에서 「push가 거절됐다」로 멈췄고, `공개.js --실행`도 같은 말로 멈췄다. 공개 도구 로그에는 `Permission denied`가 안 남고 `correct access rights`만 남기도 한다.
