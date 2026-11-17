@@ -1,0 +1,12 @@
+{
+  "note": "LAB 영어 E36 「내립시다」 — 영어 목소리 없음(영어는 화면 글). 아주머니 = 미선, 몽글 = 소진(장부 머리말 「몽글이 말하는 줄도 소진」). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_내립시다_20261113/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1136, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "a1", "text": "내립시다!", "voice": { "id": "tc_65a8c7e1915a6295614f775b", "name": "미선" }, "emotion": "normal" },
+    { "id": "m1", "text": "잠시만요, 내릴게요!", "emotion": "normal" },
+    { "id": "m2", "text": "잠시만요… 내릴게요…", "emotion": "tonedown" }
+  ]
+}

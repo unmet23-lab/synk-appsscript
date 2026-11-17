@@ -1,0 +1,16 @@
+{
+ "id": "01-ig-fb-mn",
+ "brand": "LAB",
+ "platform": "instagram+facebook+tiktok",
+ "account": "@synk.mn · SYNK(synkworld)",
+ "format": "reels",
+ "language": "mn",
+ "audioLanguage": "ko",
+ "caption": "«내립시다» (нэрипсида) гэдгийг шууд орчуулбал «хамт буучихъя» гэсэн утгатай. Гэхдээ хүн ихтэй метронд «би бууна, зам тавиарай» гэсэн үг.\nӨөрөө буухдаа ингэж хэлээрэй: 잠시만요, 내릴게요 (жамсиманё, нэрилгэё) = Уучлаарай, би буух гэсэн юм.\nМетронд сонсоод гайхсан солонгос үг танд байна уу? Сэтгэгдэл хэсэгт бичээрэй 👇\nБид бол SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+ "firstComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+ "alt": [
+  "A needle-felted Seoul subway car, packed. A felt lady pushes toward the doors shouting 내립시다! (nae-rip-si-da). The coral felt mascot Mongle hears it as \"Let's get off together!\", hops with joy and follows her out. On the platform she walks away without looking back. Mongle runs back to the train, but the doors shut in its face while passengers stare through the windows, and the train leaves. Mongle is alone, crying: this was not its stop. In faded colors the first scene replays: what she meant was \"I'm getting off, make way!\" In a bright dreamy next-time scene Mongle says 잠시만요, 내릴게요 (Excuse me, I'm getting off) and people make way. Last shot: Mongle alone on a bench in the empty station, next train in 8 minutes, quietly practicing the phrase."
+ ],
+ "version": "m39-mn-v9",
+ "_비고": "video.mp4 = m39 v9(이해 시험 v3 판 v7에 시험 없이 고침: 18~22초 뜻 칸을 첫 장면 되짚기로 바꾸고 ⏪ · 상상 칸에 💭 표시, 「Буцаад суух гэтэл…」 줄, 문이 닫힌 뒤 창 안 얼굴 칸을 줄임 · 28.0초) → 음량마감 −14.6 LUFS. upload_10MB.mp4 = 인스타 · 페북 크롬 확장 10MB 올림판. 표지 cover.png = 1.45초(만원 지하철에서 「내립시다!」를 외치는 아주머니). 13시 칸이라 텔레그램 판은 없다(텔레그램은 하루 한 편 · 21:00 편만). 장면 · 목소리는 같은 이야기의 영어판 E36(LAB_내립시다_20261113)을 그대로 쓴다. 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS."
+}

@@ -1,0 +1,48 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_65a8c7e1915a6295614f775b",
+  "name": "미선"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1136,
+  "lufs": -17
+ },
+ "made": "2026-11-12T16:24:48.745Z",
+ "lines": [
+  {
+   "id": "a1",
+   "text": "내립시다!",
+   "dur": 0.935,
+   "syllablesPerSec": 4.28,
+   "src": "a1.wav",
+   "key": "cd82bb66cda40c0f22b01e80a6017102",
+   "words": 1
+  },
+  {
+   "id": "m1",
+   "text": "잠시만요, 내릴게요!",
+   "dur": 1.533,
+   "syllablesPerSec": 5.22,
+   "src": "m1.wav",
+   "key": "c122006e37deff5f23674078b2a57712",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "잠시만요… 내릴게요…",
+   "dur": 1.845,
+   "syllablesPerSec": 4.34,
+   "src": "m2.wav",
+   "key": "c1317b7bbfd22d312482fed27534c2ea",
+   "words": 2
+  }
+ ]
+}
