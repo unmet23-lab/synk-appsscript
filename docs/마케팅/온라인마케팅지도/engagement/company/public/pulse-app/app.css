@@ -290,6 +290,7 @@ details[open]>summary::after{transform:rotate(180deg)}
 .welcome-work{min-width:0}
 .welcome-work video{display:block;width:100%;aspect-ratio:16/9;border-radius:14px;background:#000;object-fit:cover}
 .welcome-work--portrait video{aspect-ratio:9/16}
+.welcome-work--pano video{aspect-ratio:40/11}
 .welcome-work h3{margin:14px 0 4px;font-size:var(--t-title-s);letter-spacing:var(--track-tight)}
 .welcome-work p{margin:0;max-width:40em;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
 .welcome-maker{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:36px;align-items:end}
@@ -1115,6 +1116,7 @@ body:has(.approval-card.is-floating) .notice{bottom:112px}
 .film-credits ul{margin:0;padding:0;list-style:none}
 .film-card--portrait{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
 .film-card--portrait .film-media video{aspect-ratio:9/16}
+.film-card--pano .film-media video{aspect-ratio:40/11}
 @media (max-width:860px){.film-card{grid-template-columns:minmax(0,1fr);gap:16px;padding:14px}.film-full{width:100%}.film-card--portrait .film-media{width:min(100%,340px);justify-self:center}}
 /* 11-02 저장 알림은 누를 곳을 가리지 않는다: 클릭은 그대로 아래로 지나가고, 넓은 화면에서는 머리 막대 바로 아래에 뜬다(콘셉트 고르기 단추 · 영상 재생 막대를 가리던 것). */
 .notice{pointer-events:none}

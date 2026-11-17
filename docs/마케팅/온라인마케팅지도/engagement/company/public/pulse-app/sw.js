@@ -70,7 +70,9 @@
 // v67: 공통 진입의 메모리 수신기를 공개 셸에 포함한다. 초대와 API 응답은 캐시하지 않는다.
 // v68(11-16): 고객 방 「마케팅 성과」 칸 — 방의 입구 줄 · 머리 칸 이름으로 views.mjs · film-views.mjs · room-view.mjs · app.mjs · api.mjs · film-legacy.css · i18n/en.mjs가 바뀌었다(v67 위).
 // 칸 화면 모듈 marketing-view.mjs는 스위치(features.marketing)가 켜진 손님이 칸을 처음 열 때만 받으므로 미리 받지 않고 받을 때 담는 목록(RUNTIME)에 둔다. 리포트는 API라 담지 않는다.
-const CACHE = 'synk-pulse-shell-v68-marketing-20261116';
+// v69(11-17): 메인 네 편 — 완성 광고 목록 · 첫 화면 쇼릴 4판(영상 둘은 같은 이름에 바이트만 바뀜, 포스터는 그대로) · 「다리가 기억하는 것」(seoullo-bridge, 2000 × 550 — 자르지 않는 칸)으로
+// films-view.mjs · film-home.mjs · views.mjs · film.css · app.css · slate-screens.css · i18n/en.mjs가 바뀌었다(v68 위). 목록은 그대로다.
+const CACHE = 'synk-pulse-shell-v69-main-four-20261117';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','entry-handoff.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

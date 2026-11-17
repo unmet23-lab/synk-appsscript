@@ -64,6 +64,7 @@
 .entry .welcome-work-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,3.16fr);gap:clamp(14px,2vw,28px);align-items:start;margin-top:clamp(28px,4vh,44px)}
 .entry .welcome-work video{display:block;width:100%;aspect-ratio:16/9;border-radius:0;background:#000;object-fit:cover}
 .entry .welcome-work--portrait video{aspect-ratio:9/16}
+.entry .welcome-work--pano video{aspect-ratio:40/11}
 .entry .welcome-work h3{margin:14px 0 4px;font-size:19px;font-weight:650;letter-spacing:-.025em}
 .entry .welcome-work p{margin:0;max-width:38em;font-size:15px;line-height:1.55;color:var(--on-2)}
 .entry-promise{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:clamp(28px,5vw,84px)}

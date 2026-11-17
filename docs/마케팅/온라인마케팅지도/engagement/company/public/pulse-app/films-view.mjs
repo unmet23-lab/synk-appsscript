@@ -16,6 +16,9 @@ import {t,k} from './i18n.mjs';
 // 확정 · 맹검 통과 판만 싣고(기각 · 다시 만드는 편 · 판정 전인 편은 뺌) 잘 나온 차례로 둔다.
 // featured 넷은 첫 화면 쇼릴(film-home.mjs REEL)에 나오는 편과 같다. 새 영상 · 포스터는 굽기.cjs가 최종본에서 720p로 만들고 메타데이터를 비운다.
 // 매진 임박은 11-05에 다시 구운 1분 15초 판으로 바이트를 바꿨다(이름 그대로). 霜の肌理의 「대표작」 꼬리표는 차례를 바꾸며 뗐다.
+// 2026-11-17 메인 네 편(진열 작품.json의 시안을 그대로 옮겼다):
+// featured는 도담중공업 · 「다리가 기억하는 것」(서울로미디어캔버스 단편 애니메이션 공모 당선작) · 첨벙댕 · 매진 임박이고, 나머지는 진열 작품.json 차례(화성 CF 자리는 화성 셋 묶음으로 뒤에).
+// 「다리가 기억하는 것」은 2000 × 550 아주 넓은 작품(orientation 'pano')이라 어느 칸에서도 자르지 않는다 — 본편은 소리 있는 자막 판을 원본 크기 그대로 구웠다(굽기.cjs app).
 // 다국어 판 2: 손님 길(첫 화면 · 완성 광고 목록 · 방향 화면의 비슷한 작품)에 보이는 이름 · 한 줄 · 길이 · 구분은 원문을 k로 표시하고
 // 보일 때 filmTitle · filmLine · filmNote가 그 언어로 옮긴다. 설명 · 출품 · 출처 · 완성 달 · 출연은 옛 탭 카드(filmCard)에만 보여 한국어로 둔다.
 const HWASEONG_ENTRY='2026 별별화성 Awards(화성특례시 공모전)',HWASEONG_MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누리 제4유형)'; // i18n-skip
@@ -29,11 +32,18 @@ export const FINISHED_FILMS=Object.freeze([
     cast:'준호',origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
   },
   {
-    id:'omitok-court',kind:'ad',title:k('치익이 톡이 될 때까지'),orientation:'portrait',featured:true,line:k('오미톡 · 15초'),
-    poster:'./assets/films/omitok-court-poster-v1.webp',
-    full:{src:'./assets/films/omitok-court-v1.mp4',duration:k('15초')},
-    description:'농구 코트에 뻗은 청년이 오미자 탄산 한 캔에 살아나는 15초 세로 광고예요. 한 모금마다 바뀌는 얼굴로 다섯 가지 맛을 보여 줘요.', // i18n-skip
-    cast:'한결',origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
+    id:'seoullo-bridge',kind:'animation',title:k('다리가 기억하는 것'),orientation:'pano',featured:true,line:k('단편 애니메이션 · 2분 58초'),
+    poster:'./assets/films/seoullo-bridge-poster-v1.webp',
+    full:{src:'./assets/films/seoullo-bridge-v1.mp4',duration:k('2분 58초')},
+    description:'1970년에 서울에 온 할머니가 손주와 서울로7017을 걸으며, 찻길이던 서울역 고가도로가 걷는 길로 다시 태어나기까지를 들려주는 단편 애니메이션이에요. 모든 장면을 털실과 펠트로 만든 작은 인형 마을처럼 지었어요. 2026년 12월부터 2027년 2월까지 서울로미디어캔버스에서 전시돼요.', // i18n-skip
+    entry:'2026 서울로미디어캔버스 단편 애니메이션 공모',origin:k('공모전 당선작'),finished:'2026년 11월', // i18n-skip
+  },
+  {
+    id:'cheombeong-dang',kind:'ad',title:k('첨벙댕'),orientation:'portrait',featured:true,line:k('반려견 구명조끼 · 26초'),
+    poster:'./assets/films/cheombeong-dang-poster-v1.webp',
+    full:{src:'./assets/films/cheombeong-dang-v1.mp4',duration:k('26초')},
+    description:'외계인을 닮은 개가 반려견 구명조끼 「첨벙댕」을 입고 우주까지 가는, 말이 안 되게 밀어붙인 B급 광고예요.', // i18n-skip
+    origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
   },
   {
     id:'maejin-imbak',kind:'ad',title:k('매진 임박'),featured:true,line:k('홈쇼핑 × 공포 코미디'),
@@ -43,7 +53,14 @@ export const FINISHED_FILMS=Object.freeze([
     origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
   },
   {
-    id:'modu-course',kind:'ad',title:k('가는 데마다 또 그 사람'),orientation:'portrait',featured:true,line:k('모두의코스 · 39초'),
+    id:'omitok-court',kind:'ad',title:k('치익이 톡이 될 때까지'),orientation:'portrait',line:k('오미톡 · 15초'),
+    poster:'./assets/films/omitok-court-poster-v1.webp',
+    full:{src:'./assets/films/omitok-court-v1.mp4',duration:k('15초')},
+    description:'농구 코트에 뻗은 청년이 오미자 탄산 한 캔에 살아나는 15초 세로 광고예요. 한 모금마다 바뀌는 얼굴로 다섯 가지 맛을 보여 줘요.', // i18n-skip
+    cast:'한결',origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
+  },
+  {
+    id:'modu-course',kind:'ad',title:k('가는 데마다 또 그 사람'),orientation:'portrait',line:k('모두의코스 · 39초'),
     poster:'./assets/films/modu-course-poster-v1.webp',
     full:{src:'./assets/films/modu-course-v1.mp4',duration:k('39초')},
     description:'제주 2박 3일, 가는 데마다 같은 사람이 나타나는 세로 광고예요. 마지막 한 장면에서 그 까닭이 가상 여행 코스 앱 「모두의코스」로 풀려요.', // i18n-skip
@@ -55,13 +72,6 @@ export const FINISHED_FILMS=Object.freeze([
     full:{src:'./assets/films/somchae-room-v1.mp4',duration:k('1분')},
     description:'딸의 방문 앞에서 보낸 엄마의 한 해를 같은 자리에서 지켜본 연말 광고예요. 가상 침구 브랜드 「솜채」의 이야기예요.', // i18n-skip
     cast:'은정 · 지유',origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
-  },
-  {
-    id:'cheombeong-dang',kind:'ad',title:k('첨벙댕'),orientation:'portrait',line:k('반려견 구명조끼 · 26초'),
-    poster:'./assets/films/cheombeong-dang-poster-v1.webp',
-    full:{src:'./assets/films/cheombeong-dang-v1.mp4',duration:k('26초')},
-    description:'외계인을 닮은 개가 반려견 구명조끼 「첨벙댕」을 입고 우주까지 가는, 말이 안 되게 밀어붙인 B급 광고예요.', // i18n-skip
-    origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
   },
   {
     id:'yurigyeol-holiday',kind:'ad',title:'霜の肌理',orientation:'portrait',line:k('홀리데이 기프트 · 15초'),
@@ -85,18 +95,18 @@ export const FINISHED_FILMS=Object.freeze([
     cast:'채원',origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
   },
   {
-    id:'castingbook-intro',kind:'ad',title:k('손님을 부르는 모델'),line:k('캐스팅북 · 30초'),
-    poster:'./assets/films/castingbook-intro-poster-v1.webp',
-    full:{src:'./assets/films/castingbook-intro-v1.mp4',duration:k('30초')},
-    description:'손님 없는 카페 사장이 캐스팅북에서 모델을 골라 포스터를 붙이고, 그 포스터를 보고 손님이 찾아오기까지를 담은 영상이에요.', // i18n-skip
-    origin:k('SYNK PULSE 캐스팅북 소개 영상'),finished:'2026년 11월', // i18n-skip
-  },
-  {
     id:'omitok-pour',kind:'ad',title:k('오미톡'),orientation:'portrait',line:k('제품 광고 · 13초'),
     poster:'./assets/films/omitok-pour-poster-v1.webp',
     full:{src:'./assets/films/omitok-pour-v1.mp4',duration:k('13초')},
     description:'얼음 상자에서 꺼낸 캔이 잔으로 쏟아지고 얼음이 튀어 오르기까지, 사람 없이 제품과 물성만으로 끌고 가는 광고예요.', // i18n-skip
     origin:SELF_MADE,finished:'2026년 11월', // i18n-skip
+  },
+  {
+    id:'castingbook-intro',kind:'ad',title:k('손님을 부르는 모델'),line:k('캐스팅북 · 30초'),
+    poster:'./assets/films/castingbook-intro-poster-v1.webp',
+    full:{src:'./assets/films/castingbook-intro-v1.mp4',duration:k('30초')},
+    description:'손님 없는 카페 사장이 캐스팅북에서 모델을 골라 포스터를 붙이고, 그 포스터를 보고 손님이 찾아오기까지를 담은 영상이에요.', // i18n-skip
+    origin:k('SYNK PULSE 캐스팅북 소개 영상'),finished:'2026년 11월', // i18n-skip
   },
   {
     id:'hwaseong-light',kind:'ad',title:k('1억 년의 빛'),line:k('화성 CF · 55초'),
@@ -134,17 +144,17 @@ export const filmLine=film=>t(film?.line||film?.full?.duration||'');
 export const filmNote=film=>film?.origin?t(film.origin):film?.entry?t('공모전 출품작'):'';
 // i18n-skip-start
 // 여기부터 옛 탭(완성 광고 카드)과 옛 첫 화면 칸 — 한국어로 둔다(손님 길 판 2 범위 밖).
-const KINDS={'music-video':'뮤직비디오',ad:'광고',short:'숏폼',song:'CM송',film:'브랜드 필름'};
+const KINDS={'music-video':'뮤직비디오',ad:'광고',short:'숏폼',song:'CM송',film:'브랜드 필름',animation:'단편 애니메이션'};
 const media=(value,extension)=>typeof value==='string'&&new RegExp(`^\\./assets/(?:films|casting/video)/[A-Za-z0-9_-]+\\.${extension}$`).test(value)?value:'';
 function filmCard(film){
   const poster=media(film?.poster,'webp'),excerpt=media(film?.excerpt?.src,'mp4'),full=media(film?.full?.src,'mp4');
   if(!excerpt&&!full)return '';
-  const title=esc(film.title),heading='film-'+esc(String(film.id||'').replace(/[^a-z0-9-]/g,'')),portrait=film.orientation==='portrait';
+  const title=esc(film.title),heading='film-'+esc(String(film.id||'').replace(/[^a-z0-9-]/g,'')),portrait=film.orientation==='portrait',pano=film.orientation==='pano';
   const facts=[[excerpt?'본편':'길이',full?film.full.duration:''],['출연',film.cast],['구분',film.origin],['출품',film.entry],['완성',film.finished]].filter(([,value])=>value);
   const credits=(Array.isArray(film.credits)?film.credits:[]).filter(value=>typeof value==='string'&&value);
   const label=excerpt?`${title} · ${esc(film.excerpt.duration||'')} 발췌`:`${title}${film.full.duration?' · '+esc(film.full.duration):''}`;
   // 재생 중인 영상은 실시간 갱신이 화면을 다시 그리지 않게 data-film-player로 표시한다(app.mjs canApplyRemote).
-  return `<article class="film-card${portrait?' film-card--portrait':''}" aria-labelledby="${heading}"><div class="film-media"><video controls playsinline preload="none" data-film-player${poster?` poster="${esc(poster)}"`:''} src="${esc(excerpt||full)}" aria-label="${label}"></video></div><div class="film-copy"><span class="eyebrow ko">${esc(KINDS[film.kind]||'광고')}</span><h2 id="${heading}">${title}</h2>${film.description?`<p>${esc(film.description)}</p>`:''}${facts.length?`<dl class="film-facts">${facts.map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`:''}${credits.length?`<div class="film-credits"><span>출처</span><ul>${credits.map(value=>`<li>${esc(value)}</li>`).join('')}</ul></div>`:''}${excerpt&&full?`<a class="film-full" href="${esc(full)}" target="_blank" rel="noopener noreferrer">본편 보기${film.full.duration?' · '+esc(film.full.duration):''} <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`:''}</div></article>`;
+  return `<article class="film-card${portrait?' film-card--portrait':''}${pano?' film-card--pano':''}" aria-labelledby="${heading}"><div class="film-media"><video controls playsinline preload="none" data-film-player${poster?` poster="${esc(poster)}"`:''} src="${esc(excerpt||full)}" aria-label="${label}"></video></div><div class="film-copy"><span class="eyebrow ko">${esc(KINDS[film.kind]||'광고')}</span><h2 id="${heading}">${title}</h2>${film.description?`<p>${esc(film.description)}</p>`:''}${facts.length?`<dl class="film-facts">${facts.map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`:''}${credits.length?`<div class="film-credits"><span>출처</span><ul>${credits.map(value=>`<li>${esc(value)}</li>`).join('')}</ul></div>`:''}${excerpt&&full?`<a class="film-full" href="${esc(full)}" target="_blank" rel="noopener noreferrer">본편 보기${film.full.duration?' · '+esc(film.full.duration):''} <span aria-hidden="true">↗</span><span class="sr-only"> (새 탭)</span></a>`:''}</div></article>`;
 }
 // 보일 작품이 하나도 없으면 레일 항목도 두지 않는다(views.mjs).
 export const hasFinishedFilms=(films=FINISHED_FILMS)=>films.some(film=>filmCard(film));
@@ -152,7 +162,7 @@ export function filmsView(films=FINISHED_FILMS){return `<div class="film-list">$
 // 첫 화면의 완성작 칸: 같은 영상을 더 작은 칸으로 — 세로 작품은 좁은 칸, 가로 작품은 넓은 칸에 놓는다.
 function featuredFilm(film){
   const poster=media(film?.poster,'webp'),full=media(film?.full?.src,'mp4');if(!full)return '';
-  return `<article class="welcome-work${film.orientation==='portrait'?' welcome-work--portrait':''}"><video controls playsinline preload="none" data-film-player${poster?` poster="${esc(poster)}"`:''} src="${esc(full)}" aria-label="${esc(film.title)}${film.full.duration?' · '+esc(film.full.duration):''}"></video><h3>${esc(film.title)}</h3>${film.description?`<p>${esc(film.description)}</p>`:''}</article>`;
+  return `<article class="welcome-work${film.orientation==='portrait'?' welcome-work--portrait':''}${film.orientation==='pano'?' welcome-work--pano':''}"><video controls playsinline preload="none" data-film-player${poster?` poster="${esc(poster)}"`:''} src="${esc(full)}" aria-label="${esc(film.title)}${film.full.duration?' · '+esc(film.full.duration):''}"></video><h3>${esc(film.title)}</h3>${film.description?`<p>${esc(film.description)}</p>`:''}</article>`;
 }
 export function featuredFilmsView(films=FINISHED_FILMS){return `<div class="welcome-work-grid">${films.filter(film=>film.featured).map(featuredFilm).join('')}</div>`;}
 // i18n-skip-end

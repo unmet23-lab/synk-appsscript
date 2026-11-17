@@ -658,11 +658,11 @@ function filmsRoom(s){
       <div class="sx-room-left">
         ${s.demo?demoCredit(s):''}
         <p class="sx-kicker">${esc(t('완성 광고'))}</p>
-        <h1 class="sx-display">${esc(t('SYNK가 끝까지 만든 광고예요'))}</h1>
+        <h1 class="sx-display">${esc(t('SYNK가 끝까지 만든 작품이에요'))}</h1>
         <ol class="sx-film-list">${list.map(film=>`<li><button type="button" class="sx-film-row" data-film-open="${esc(film.id)}"><span class="sx-serif">${esc(filmTitle(film))}</span><span class="sx-small">${esc(t(filmLine(film)))}${filmNote(film)?` · ${esc(t(filmNote(film)))}`:''}</span></button></li>`).join('')}</ol>
         ${isCustomerRoom(s)?'':stepsOf(s,next)}
       </div>
-      <div class="sx-room-screen"><img class="sx-q-fill" data-film-poster src="${esc(first?.poster||'')}" alt="" decoding="async"></div>
+      <div class="sx-room-screen"><img class="sx-q-fill" data-film-poster${first?.orientation==='pano'?' data-pano':''} src="${esc(first?.poster||'')}" alt="" decoding="async"></div>
     </section>
     ${isCustomerRoom(s)?journalOf(s,'drawer',{tab:'films'}):''}
   </div>`;

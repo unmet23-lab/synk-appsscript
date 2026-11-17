@@ -63,8 +63,10 @@ const DEMO_LABEL={top:'예시 프로젝트',after:'예시 프로젝트 체험하
 
 // 쇼릴: 작품 여럿의 자막 없는 구간을 이은 소리 없는 반복 영상. 2026-11-09 3판은 synk.im과 같은 영상이고(docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열/굽기.cjs reel),
 // 시간표는 그 도구가 구운 영상의 24fps 컷 경계(reel.json)다. 도담중공업으로 열고 오미톡 · 매진 임박 · 모두의코스가 이어진 뒤 도담 · 매진 · 모두의코스가 한 번 더 나온다. 화면 글이 얼굴을 덮지 않는 컷만 쓴다. 화면 비율이 맞는 작품만 꽉 채우고 안 맞는 작품은 자르지 않고 검은 바탕의 스크린으로 영상 안에 구워 두었다(11-09).
-const REEL_TOTAL=12.33;
-const REEL=[[0,'dodam-heavy'],[2,'omitok-court'],[3.13,'maejin-imbak'],[4.96,'modu-course'],[6.79,'dodam-heavy'],[8.58,'maejin-imbak'],[10.42,'modu-course']].map(([at,work])=>({at,work}));
+// 2026-11-17 4판(12.46초, 진열 작품.json 메인 네 편): 도담중공업 → 「다리가 기억하는 것」(우산 장면) → 첨벙댕 → 매진 임박 → 도담 → 「다리가 기억하는 것」(빛이 된 버스) → 매진 → 첨벙댕(물 찬 방 · 우주).
+// 2000 × 550 애니메이션은 자르지 않고 띠로 구웠다(넓은 판 1480 × 408 · 세로 판 880 × 242). 포스터는 첫 장면이 같아 3판 그림 그대로다.
+const REEL_TOTAL=12.46;
+const REEL=[[0,'dodam-heavy'],[1.63,'seoullo-bridge'],[3.13,'cheombeong-dang'],[4.46,'maejin-imbak'],[6.08,'dodam-heavy'],[7.46,'seoullo-bridge'],[9.08,'maejin-imbak'],[10.5,'cheombeong-dang']].map(([at,work])=>({at,work}));
 const filmOf=id=>FINISHED_FILMS.find(film=>film.id===id);
 // 11-09: 「완성 광고」 쪽 목록은 쇼릴에 나오는 네 편(featured)이다 — 이름에 손을 올리면 쇼릴이 그 작품 컷만 돈다. 쇼릴에 없는 공모전 출품작 한 줄은 뺐고
 // (손을 올려도 그 작품 컷이 없어 이름과 화면이 어긋난다), 화성 세 편은 「완성 광고」 공간에 그대로 있다.
@@ -144,7 +146,7 @@ const fmtShort=value=>`${Math.floor(value/60)}:${pad(Math.floor(value%60))}`;
 export function openScreening(film,{onClose}={}){
   if(!film?.full?.src)return null;
   const opener=document.activeElement,box=document.createElement('div');
-  box.className='sx-screening';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label',t('{title} 상영',{title:filmTitle(film)}));box.dataset.ratio=film.orientation==='portrait'?'9:16':'16:9';
+  box.className='sx-screening';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label',t('{title} 상영',{title:filmTitle(film)}));box.dataset.ratio=film.orientation==='portrait'?'9:16':film.orientation==='pano'?'40:11':'16:9';
   box.innerHTML=`<video class="sx-screening-film" playsinline src="${esc(film.full.src)}"></video><div class="sx-screening-ui"><button type="button" class="sx-small sx-screening-close" data-close>${esc(t('닫기'))}</button><p class="sx-screening-title"><b>${esc(filmTitle(film))}</b> <span>${esc(filmLine(film))}</span><em>${esc(filmNote(film))}</em></p><div class="sx-screening-time"><span class="sx-no" data-t>0:00</span><div class="sx-screening-line" data-line><i data-fill></i></div></div></div>`;
   document.body.append(box);
   requestAnimationFrame(()=>box.classList.add('is-on'));
@@ -211,7 +213,7 @@ export function applyEntryIntake({starts,notes,slots,say=null},state){
 const pages=({start,demoHref,paused=null})=>[
   {layer:'reel',html:`<div class="sx-hero-copy"><p class="sx-kicker" data-in>${esc(t('SYNK PULSE · AI 광고 제작'))}</p><h1 class="sx-display">${lines(HERO_TITLE)}</h1><p class="sx-body sx-hero-lead" data-in>${esc(t(HERO_LEAD))}</p></div>
     <div class="sx-hero-act"><button type="button" class="sx-credit" data-watch-now data-in><b data-cr-name></b> <span data-cr-line></span><em data-cr-note></em></button><button type="button" class="sx-go is-solid" data-entry="start" data-in${paused?' hidden':''}><span data-start-label>${esc(start)}</span>${arrow}</button>${pausedSlot(paused,true)}<button type="button" class="sx-open-m sx-small" data-entry="open" data-in>${esc(t('내 프로젝트 다시 열기'))}</button></div>`},
-  {layer:'reel',cls:'is-works',veil:true,html:`<header class="sx-works-head"><p class="sx-kicker" data-in>${esc(t('완성 광고'))}</p><h2 class="sx-body" data-in>${esc(t('SYNK가 끝까지 만든 광고예요. 가상 브랜드로 만든 자체 작품이에요. 새 작품은 완성되는 대로 더해요.'))}</h2></header>
+  {layer:'reel',cls:'is-works',veil:true,html:`<header class="sx-works-head"><p class="sx-kicker" data-in>${esc(t('완성 광고'))}</p><h2 class="sx-body" data-in>${esc(t('SYNK가 끝까지 만든 작품이에요. 가상 브랜드로 만든 자체 광고와 공모전 당선작이에요. 새 작품은 완성되는 대로 더해요.'))}</h2></header>
     <div class="sx-works-wrap"><ol class="sx-works">${OWN.map(workRow).join('')}</ol>${CONTEST?`<button type="button" class="sx-work is-contest" data-work="${esc(CONTEST.id)}" data-in><span class="sx-small">${esc(t('공모전 출품작'))}</span><span class="sx-work-name sx-serif">${esc(filmTitle(CONTEST))}</span><span class="sx-work-line sx-small">${esc(filmLine(CONTEST))}</span></button>`:''}</div>`},
   {layer:'none',cls:'is-check',html:`<div class="sx-check"><p class="sx-kicker" data-in>${esc(t('이렇게 만들어요'))}</p><h2 class="sx-display">${lines([k('영상 전에 세 번 확인해요')])}</h2><p class="sx-body sx-check-lead" data-in>${esc(t(CHECK_LEAD))}</p>
     <ol class="sx-check-list">${CHECK_THREE.map((text,i)=>`<li data-in><button type="button" data-check="${i}"><span class="sx-no">${i+1}/3</span><span class="sx-serif">${esc(t(text))}</span></button></li>`).join('')}</ol>
@@ -406,6 +408,6 @@ let listScreening=null;
 export function mountFilmList(root){
   const host=root.querySelector('.sx-films');if(!host){listScreening?.close();return;}
   const poster=host.querySelector('[data-film-poster]');
-  const show=row=>{const film=filmOf(row.dataset.filmOpen);if(poster&&film?.poster&&poster.getAttribute('src')!==film.poster)poster.src=film.poster;host.querySelectorAll('.sx-film-row').forEach(item=>item.classList.toggle('is-on',item===row));};
+  const show=row=>{const film=filmOf(row.dataset.filmOpen);if(poster&&film?.poster&&poster.getAttribute('src')!==film.poster){poster.src=film.poster;poster.toggleAttribute('data-pano',film.orientation==='pano');}host.querySelectorAll('.sx-film-row').forEach(item=>item.classList.toggle('is-on',item===row));};
   host.querySelectorAll('.sx-film-row').forEach(row=>{row.addEventListener('pointerenter',()=>show(row));row.addEventListener('focus',()=>show(row));row.addEventListener('click',()=>{listScreening?.close();listScreening=openScreening(filmOf(row.dataset.filmOpen),{onClose:()=>{listScreening=null;}});});});
 }

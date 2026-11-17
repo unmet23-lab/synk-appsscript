@@ -164,8 +164,8 @@ test('the reel file waits for the page load, a held reel fetches not even its po
     // Fable 최종: 6쪽 「만드는 사람」(그 작품 컷만 도는 쪽)을 다녀와 1쪽으로 돌아와도, 파일이 안 붙은 동안 이름 줄 · 「지금 작품」은 포스터의 작품이다.
     leanApi.focus(null);assert.equal(names.at(-1),'dodam-heavy','이름 줄은 포스터(쇼릴 첫 장면)의 작품');assert.equal(leanApi.current().id,'dodam-heavy','누르면 열리는 작품도 보이는 것과 같다');
     assert.ok(!names.includes('maejin-imbak'),'안 붙은 동안에는 컷 번호만 옮겨 간 작품 이름을 알리지 않는다');
-    leanApi.focus('omitok-court',{ask:true});assert.match(lean.getAttribute('src'),/\.mp4$/,'손님이 작품을 고르면 받는다');
-    assert.equal(names.at(-1),'omitok-court','붙는 순간부터 고른 작품 이름');assert.equal(leanApi.current().id,'omitok-court');leanApi.stop();
+    leanApi.focus('cheombeong-dang',{ask:true});assert.match(lean.getAttribute('src'),/\.mp4$/,'손님이 작품을 고르면 받는다');
+    assert.equal(names.at(-1),'cheombeong-dang','붙는 순간부터 고른 작품 이름');assert.equal(leanApi.current().id,'cheombeong-dang');leanApi.stop();
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:false,effectiveType:'2g'}});
     const slow=fakeVideo(),slowApi=mountReel(slow,{});slowApi.play();assert.equal(slow.getAttribute('src'),null,'2G도 포스터로');slowApi.stop();
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:false,effectiveType:'3g'}});
