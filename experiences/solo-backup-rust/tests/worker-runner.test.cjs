@@ -138,7 +138,9 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     const answer = tail => JSON.parse(fs.readFileSync(path.join(results, `${now}-${tail}.json`), 'utf8'));
     // The window (app mode) takes a setup left by 솔리오 and tells the screen to go straight to the Google sign-in.
     put('setup0001', { v: 1, kind: 'setup', mode: 'protect', hint: 'customer@example.com' });
-    const app = worker(state, { dialogs: [
+    // What the window's host answers for the Wi-Fi this PC is on (화면 세션 E30).
+    let wifiNow = '사무실 Wi-Fi 5G'; const answers = { 'wifi.name': () => wifiNow };
+    const app = worker(state, { answers, dialogs: [
       { method: 'dialog.open', value: { canceled: false, filePaths: [data] } },
       { method: 'dialog.open', value: { canceled: false, filePaths: [repo] } },
       { method: 'dialog.save', value: { canceled: false, filePath: path.join(keys, 'recovery.json') } }] });
@@ -150,6 +152,14 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     for (const m of ['chooseSources', 'chooseTarget', 'setup', 'saveRecoveryKit']) assert.equal((await app.call(m)).value.ok, true, m);
     // 「AI 도구」: only the search is turned on, with a mask word.
     assert.equal((await app.call('setAiTools', [{ tools: { find_restorable: true }, masks: ['건강'] }])).value.ok, true);
+    // 「쉬는 Wi-Fi」 reads the Wi-Fi this PC is on (화면 세션 E30): a name it could be, else null — a name past 32 bytes or with a
+    // control character, none, or a host that cannot read it. Reading it changes nothing the window shows.
+    const wifi = async () => { const r = (await app.call('wifiName')).value; assert.equal(r.ok, true, JSON.stringify(r)); return r.value; };
+    const solioBefore = (await app.call('getState')).value.value.solio;
+    assert.equal(await wifi(), '사무실 Wi-Fi 5G');
+    for (const odd of ['가'.repeat(11), 'a\u0007b', '', null, 7]) { wifiNow = odd; assert.equal(await wifi(), null, JSON.stringify(odd)); }
+    delete answers['wifi.name']; assert.equal(await wifi(), null, 'the host could not read it');
+    assert.deepEqual((await app.call('getState')).value.value.solio, solioBefore);
     await app.call('$shutdown'); assert.equal(await app.exited, 0);
     const status = () => JSON.parse(fs.readFileSync(path.join(state, 'solio', 'status.json'), 'utf8'));
     assert.equal(status().v, 1, 'the window wrote the status file');

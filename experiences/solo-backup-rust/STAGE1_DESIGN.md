@@ -1115,7 +1115,7 @@ Fable 5.2(`claude-fable-5-2`) 24건. 원문은 Git 밖 공유 노트 `옮겨오�
 - `pick free`는 가장 새 공간 보고서의 번호와 견준 뒤, 1판이라 모두 거절(`not-available`)한다. `pick restore`는 찾기 결과의 보고서를 1단계에 남기지 않으므로 거절(`no-report`)한다. 찾기 결과는 AI 도구에만 답하고, 그것을 요청으로 잇는 일은 2단계 요청 도구(`propose_restore`)와 함께 한다.
 - 요청 작업은 작업 스케줄러의 다섯째 작업 「요청 - <계정 이름> · <SID 짧은 표시>」(`--run request`, 계기 없음)다. 회차 작업 넷과 같은 자리에 같이 만들고 같이 지운다(`schedule.rs`). 이 PC에는 등록하지 않았다.
 - 열기 주소의 낱말 목록에 `move`를 더해 아홉 낱말이 됐다(`notify.rs`). 화면은 이미 `move`를 옮겨 오기 화면으로 잇는다(`ui/app.js`).
-- 4.14의 「쉬는 회선」은 엔진 설정 `rest-networks.json`(엔진 창 메서드 `setRestNetworks`)과 회차 실행기의 판단(`power.rs`)까지 지었다. 지금 Wi-Fi 이름은 Windows 연결 정보로 읽고, 기록에는 남기지 않는다. 이름을 읽지 못하면(최신 Windows 11의 위치 권한) 쉬지 않는다. 쉬는 회선을 하나도 고르지 않았으면 Wi-Fi 이름을 읽지 않는다. 읽기 자체가 위치 접근으로 남기 때문이다(카본 끝판 CB8). 화면의 고르기와 지금 Wi-Fi 이름을 보이는 일은 화면 세션의 몫이다. 개통 서버의 측정 쉼 낱말은 11-17부터 이 쉼을 `network`로, 솔리오 요청 회차를 계기 `request`로 받는다. 엔진도 같은 날 밤부터 그 두 낱말로 보낸다(`engine/src/account.cjs`의 `telemetryRun` · `PAUSES`).
+- 4.14의 「쉬는 회선」은 엔진 설정 `rest-networks.json`(엔진 창 메서드 `setRestNetworks`)과 회차 실행기의 판단(`power.rs`)까지 지었다. 지금 Wi-Fi 이름은 Windows 연결 정보로 읽고, 기록에는 남기지 않는다. 이름을 읽지 못하면(최신 Windows 11의 위치 권한) 쉬지 않는다. 쉬는 회선을 하나도 고르지 않았으면 Wi-Fi 이름을 읽지 않는다. 읽기 자체가 위치 접근으로 남기 때문이다(카본 끝판 CB8). 화면의 고르기와 지금 Wi-Fi 이름을 보이는 일은 화면 세션의 몫이다. 화면은 엔진 창 메서드 `wifiName`(작업자가 창 host의 `wifi.name`을 부름, 11-17 화면 세션 E30)으로 지금 Wi-Fi 이름을 읽는다. 저장하지 않으며 못 읽으면 null이다. 개통 서버의 측정 쉼 낱말은 11-17부터 이 쉼을 `network`로, 솔리오 요청 회차를 계기 `request`로 받는다. 엔진도 같은 날 밤부터 그 두 낱말로 보낸다(`engine/src/account.cjs`의 `telemetryRun` · `PAUSES`).
 - 꼴과 견본은 [contract/solio](contract/solio/README.md)에 있다. 시험은 `tests/solio.test.cjs`(8개), 그리고 실제 restic으로 도는 회차 워커 시험(S132)과 회차 실행기 시험(S133)에 더한 단계다([QA](QA.md)).
 
 ### 4.14 우리 노트북을 0번 손님으로 (로드맵 15)

@@ -398,6 +398,10 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     // 「AI 도구」(4.16): 도구마다 켜고 끄기와 가리는 낱말. MCP 연결이 알려 온 도구 목록은 그때 다시 읽는다.
     handle('setAiTools', async (_context, input) => { aiTools = await solio.writeAiTools(root, input); return state(); }, { codes: true });
     handle('aiToolsState', async () => { aiTools = await solio.readAiTools(root); return aiTools; }, { read: true });
+    // 화면 세션 E30: the Wi-Fi this PC is on, for 「쉬는 Wi-Fi」 — read when that screen asks, never kept or written to a log.
+    // The host reads it only then (Windows counts it as a location access). Anything that could not be a Wi-Fi name, or a
+    // host that could not read one, is null: the screen then offers the field to type it in.
+    handle('wifiName', async () => { const name = await host('wifi.name', []).catch(() => null); return solio.okNetworkName(name) ? name : null; }, { read: true });
     // 「보호 시작」: the repository and the envelope here, then the schedule and the first backup as a job.
     handle('startProtection', async (_context, input) => {
       const v = objectInput(input); profiles.select('b2');
