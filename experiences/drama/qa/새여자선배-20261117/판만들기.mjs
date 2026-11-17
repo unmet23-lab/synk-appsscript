@@ -34,7 +34,8 @@ fs.mkdirSync(path.join(끝, 'snd'), { recursive: true });
 const 줄일 = [];
 const 그림 = (원본, 이름) => { 줄일.push([원본, path.join(끝, 'img', `${이름}.jpg`)]); return `img/${이름}.jpg`; };
 const 태오그림 = 그림(path.join(공용, 시안.태오.그림), 'taeo');
-const 얼굴들 = 시안.얼굴.map((f) => ({ ...f, 판들: f.판.map((p) => ({ id: p, src: 그림(path.join(얼굴폴더, 'out', `${p}.png`), p) })) }));
+// 판은 이름만 적거나 { id, 이름, 대조 }로 적는다 — 판마다 결(화사한 판 · 수수한 판)과 대조 결과가 다를 때
+const 얼굴들 = 시안.얼굴.map((f) => ({ ...f, 판들: f.판.map((p) => (typeof p === 'string' ? { id: p } : p)).map((p) => ({ ...p, src: 그림(path.join(얼굴폴더, 'out', `${p.id}.png`), p.id) })) }));
 const r = spawnSync('python', ['-X', 'utf8', '-c', `
 import json, sys
 from PIL import Image
@@ -165,7 +166,7 @@ details ul{padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
 
 <section aria-labelledby="h-face">
  <div class="head"><h2 id="h-face">얼굴</h2>
- <p>참고 사진 없이 글로만 새로 구운 얼굴입니다. 자리와 옷은 태오 기준 사진과 같은 3월 첫 주 학생 식당, 같은 과 점퍼로 맞췄습니다. 사진을 누르면 크게 보입니다.</p></div>
+ <p>참고 사진 없이 글로만 새로 구운 얼굴입니다. 자리와 옷은 태오 기준 사진과 같은 3월 첫 주 학생 식당, 같은 과 점퍼로 맞췄습니다. 사진을 누르면 크게 보입니다.</p>${시안.얼굴말 ? `<p>${esc(시안.얼굴말)}</p>` : ''}</div>
  <div class="faces" id="faces"></div>
  <button class="btn none" id="face-none" type="button">얼굴은 이 가운데 없다</button>
 </section>
@@ -228,8 +229,8 @@ function renderFaces() {
     cards.push(h('div', { class: 'face' }, [
       h('button', { class: 'photo', type: 'button', 'aria-label': f.이름 + ' 크게 보기', on: { click: () => open(cur.src, f.이름) } }, [h('img', { src: cur.src, alt: f.이름 + ' 후보 사진', loading: 'lazy' }), DATA.추천.얼굴 === f.id ? h('span', { class: 'tag rec', text: 'Claude 추천' }) : null]),
       h('h3', { text: f.이름 }), h('p', { class: 'one', text: f.한줄 }),
-      f.판들.length > 1 ? h('div', { class: 'takes', role: 'group', 'aria-label': f.이름 + ' 다른 판' }, f.판들.map((p, i) => h('button', { class: 'take', type: 'button', 'aria-pressed': String(p.id === cur.id), text: (i + 1) + '번 판', on: { click: () => { picks.take = { ...picks.take, [f.id]: p.id }; renderFaces(); if (picks.face === f.id) save({}); } } }))) : null,
-      h('p', { class: 'chk', text: f.대조 }),
+      f.판들.length > 1 ? h('div', { class: 'takes', role: 'group', 'aria-label': f.이름 + ' 다른 판' }, f.판들.map((p, i) => h('button', { class: 'take', type: 'button', 'aria-pressed': String(p.id === cur.id), text: p.이름 || ((i + 1) + '번 판'), on: { click: () => { picks.take = { ...picks.take, [f.id]: p.id }; renderFaces(); if (picks.face === f.id) save({}); } } }))) : null,
+      h('p', { class: 'chk', text: cur.대조 || f.대조 || '' }),
       h('button', { class: 'btn', type: 'button', 'aria-pressed': String(picks.face === f.id), text: picks.face === f.id ? '이 얼굴로 골랐습니다' : '이 얼굴로', on: { click: () => save({ face: f.id, take: { ...picks.take, [f.id]: cur.id } }) } })]));
   }
   if (DATA.얼굴대기) cards.push(h('p', { class: 'pending', text: DATA.얼굴대기 }));

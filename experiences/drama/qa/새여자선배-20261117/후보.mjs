@@ -155,6 +155,24 @@ for (const [k, f] of Object.entries(FACES4)) {
   if (prompt.length > 4300) throw new Error(`sf4-${k} ${prompt.length}자 — 4,300자 넘음`);
   for (let n = 1; n <= 판수; n++) jobs.push({ id: `sf4-${k}_g${n}`, 얼굴: k, 차: 4, model: 'carbon', ratio: '9:16', refs: [], prompt, out: `${D}/out/sf4-${k}_g${n}.png` });
 }
+// ── 5차(11-17 밤, 4차를 본 뒤) — 가운데 판 ──
+// 4차는 GPT 판별이 여섯 장 모두 「흔함」이었지만 휴대폰 사진 결이라 태오 기준 사진 옆에서는 많이 수수하다. 생김새 글(FACES4의 흔한 얼굴)은 그대로 두고
+// 빛과 렌즈만 2차 쪽으로 되살린다(얼굴 양쪽에 고른 큰 앞빛, 금빛 역광, 녹은 배경). 「기획사 메이크업 · strikingly pretty · 드라마 촬영팀 · 번짐」은 넣지 않는다.
+const OPEN5 = `Create one photograph, vertical 9:16. A natural moment from a bright, fresh Korean campus drama; it looks like a real photo of a real moment, not a posed portrait. A third-year Korean university student, 21 years old and looking her age, the senior who quietly looks after a lost first-year student: brisk, dry-witted, kinder than she lets on; an original person with an ordinary, likeable face.`;
+
+const MOMENT5 = (표정) => `THE MOMENT: lunchtime in a bright university cafeteria in the first week of March. She sits across a long pale table from the viewer; only the front edge of her stainless-steel lunch tray shows at the bottom of the frame. The viewer has just said something a little clumsy and she is amused: ${표정}, looking at the viewer. A real, unposed moment. Hands below the frame.
+CAMERA: across the table at eye level, about 1 m away, 85mm at f/2; chest-up; her face in the upper third of the frame, a little off-centre, about a third of the frame wide.`;
+
+const LIGHT5 = `Light and color: bright, high-key, fresh and clear. Large soft window light from the front falls evenly across her face; warm golden sunlight from the windows behind her makes the edges of her hair glow. Clean, warm, airy color with lifted shadows. Nothing grey, dull or cold; no haze over her face; no HDR.
+Finish: a real photograph, never an advert, a fashion shoot or an actor's profile picture. Light everyday makeup she did herself: a little blush and a tinted lip balm, brows left natural. Real, unretouched skin: fine pores, a natural flush, a little shine on the nose; no airbrushing. No moles, freckles or dots on her face. Natural dark-brown irises. A few flyaway hairs catch the light.
+Background: the cafeteria behind her is soft and well out of focus, long tables and a few students eating, nobody looking at the camera; through the windows, bare trees with thin dark branches and only a few tiny yellow sansuyu blossoms; no green leaves and no cherry blossoms.
+She must not resemble any real actor, idol, model or public figure. No text, letters, logos or watermarks anywhere. No border.`;
+
+for (const [k, f] of Object.entries(FACES4)) {
+  const prompt = [OPEN5, f.얼굴, CLOTHES, MOMENT5(f.표정), LIGHT5].join('\n');
+  if (prompt.length > 4300) throw new Error(`sf5-${k} ${prompt.length}자 — 4,300자 넘음`);
+  for (let n = 1; n <= 판수; n++) jobs.push({ id: `sf5-${k}_g${n}`, 얼굴: k, 차: 5, model: 'carbon', ratio: '9:16', refs: [], prompt, out: `${D}/out/sf5-${k}_g${n}.png` });
+}
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   fs.mkdirSync(`${D}/out`, { recursive: true });
   fs.writeFileSync(`${D}/jobs.json`, `${JSON.stringify(jobs, null, 1)}\n`);
