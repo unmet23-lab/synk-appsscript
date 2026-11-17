@@ -307,6 +307,17 @@
         }
       },
       {
+        "계정": "lab-mx-youtube",
+        "채널": "유튜브 SYNK LAB México | Coreano divertido",
+        "주소": "https://www.youtube.com/watch?v=VbVZpi88RfU",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-17T19:00:33.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-us-youtube",
         "채널": "유튜브 @synklabusa",
         "주소": "https://www.youtube.com/watch?v=bIa_nviXK54",
