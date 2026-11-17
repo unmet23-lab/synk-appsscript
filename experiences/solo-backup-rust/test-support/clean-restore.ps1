@@ -2,7 +2,8 @@
 # Installs silently, opens the recovery kits runner 1 sealed, and restores each repository with the installed app's own
 # worker the way 「복구 키로 연결」 · 「최신 백업 복구」 do (clean-app.cjs stands in for the window): the administrator's
 # backup as this runner's administrator, the standard user's as a new standard user here. Every file's size and SHA-256
-# and every folder must come back as runner 1 listed them. Until 「옮겨 오기」 (4.6) lands, this restores into a new
+# and every folder must come back as runner 1 listed them, except D0's links and the name ending in a dot: those must
+# not come back, and 복구경로.json must count each of them as left out (4.6). Until 「옮겨 오기」 (4.6) lands, this restores into a new
 # folder — not the original places. PowerShell 7. Synthetic only. Never run it on a person's PC.
 param(
   [Parameter(Mandatory = $true)][string]$Setup,
@@ -39,10 +40,10 @@ $seconds = [math]::Round($clock.Elapsed.TotalSeconds, 1)
 $r = Restored ($out -join "`n")
 Expect ($LASTEXITCODE -eq 0 -and $r.ok -and $r.restored) "the administrator's backup restored from its recovery kit ($seconds s)"
 if ($r.restored) {
-  $compare = & node (Join-Path $tools 'clean-data.cjs') compare (Join-Path $Carry 'admin-list.json') (Join-Path $r.restored '01-admin-data')
-  $script:results['admin'] = [ordered]@{ seconds = $seconds; compare = ($compare | ConvertFrom-Json) }
-  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged ($compare)"
   Expect (Test-Path -LiteralPath (Join-Path $r.restored '복구경로.json')) 'the restore says where each folder came from (복구경로.json)'
+  $compare = & node (Join-Path $tools 'clean-data.cjs') compare (Join-Path $Carry 'admin-list.json') (Join-Path $r.restored '01-admin-data') (Join-Path $r.restored '복구경로.json')
+  $script:results['admin'] = [ordered]@{ seconds = $seconds; compare = ($compare | ConvertFrom-Json) }
+  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged, the links and the odd name left out and counted ($compare)"
 }
 
 # 2. The standard user's backup, restored by a new standard user here.
@@ -65,9 +66,9 @@ $seconds = [math]::Round($clock.Elapsed.TotalSeconds, 1)
 $r = Restored (Get-Content -LiteralPath $log -Raw)
 Expect ($p.ExitCode -eq 0 -and $r.ok -and $r.restored) "the standard user's backup restored by a new standard user ($seconds s)"
 if ($r.restored) {
-  $compare = & node (Join-Path $tools 'clean-data.cjs') compare (Join-Path $Carry 'std-list.json') (Join-Path $r.restored '01-std-data')
+  $compare = & node (Join-Path $tools 'clean-data.cjs') compare (Join-Path $Carry 'std-list.json') (Join-Path $r.restored '01-std-data') (Join-Path $r.restored '복구경로.json')
   $script:results['std'] = [ordered]@{ seconds = $seconds; compare = ($compare | ConvertFrom-Json) }
-  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged ($compare)"
+  Expect ($LASTEXITCODE -eq 0) "every file and folder came back unchanged, the links and the odd name left out and counted ($compare)"
 }
 Remove-Item -LiteralPath $kits -Recurse -Force
 $script:results['mismatches'] = $script:bad

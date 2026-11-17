@@ -1,15 +1,19 @@
 'use strict';
 // Synthetic data and hash lists for the clean-Windows exercise (STAGE1_DESIGN.md 4.11 · 7장 D0).
 //   node clean-data.cjs make <dir> [MB=100]        deterministic data; prints the summary
-//   node clean-data.cjs list <dir> <out.json>      every file (size, SHA-256) and folder under <dir>
-//   node clean-data.cjs compare <list.json> <dir>  the same list again under <dir>: exit 0 only when equal
+//   node clean-data.cjs specials <dir>             the special entries below, into data `make` made (an administrator:
+//                                                  symbolic links need the right to make them)
+//   node clean-data.cjs list <dir> <out.json>      every file (size, SHA-256), folder and link under <dir>
+//   node clean-data.cjs compare <list.json> <dir> [<복구경로.json>]   the same list again under <dir>, links and names
+//                                                  Windows cannot hold left out: exit 0 only when equal (and, given the
+//                                                  restore's 복구경로.json, when it counts each of them as left out)
 //   node clean-data.cjs seal <in> <out> · open <in> <out>   AES-256-GCM with a key from WORKBACKUP_CI_SEED and
 //                                                  GITHUB_RUN_ID, for the recovery kits carried between runners
-// D0 holds what 7장 asks of every data set that the 0.7.0 engine can already restore: Korean names, an empty
-// folder, a 0-byte file, a path over 260 characters, a name with the telemetry-leak marker, small notes, medium
-// pictures and one large incompressible file. Still left out, because 0.7.0's restore stops at them (restore-tar
-// readManifest — junctions and links) or they need decisions of the 「옮겨 오기」 work (T16): folder junctions,
-// file and folder symbolic links, names ending in a dot, a file nobody may read. They come in with that work.
+// D0 holds what 7장 asks of every data set: Korean names, an empty folder, a 0-byte file, a path over 260 characters,
+// a name with the telemetry-leak marker, small notes, medium pictures and one large incompressible file, and (specials)
+// a folder junction, a file and a folder symbolic link and a name ending in a dot. The backup keeps those four; a
+// restore leaves them out and counts them (4.6, restore-tar readManifest — 74a22589a). A file nobody may read is made
+// by clean-backup.ps1 for one run only (icacls), since every run would be partial while it stays.
 // Synthetic only — the lists may be public; the sealed kits may not be opened without the seed.
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 
@@ -36,30 +40,72 @@ function make(root, mb = 100) {
   return { files, bytes: total, longestPath: path.join(root, deep).length + 12 };
 }
 
+// The four special entries (7장): a junction to a folder of the data (the backup must not go through it), a file and a
+// folder symbolic link with relative targets, and a file whose name ends in a dot (Node writes every absolute path
+// through the long-path prefix, which keeps the dot). Junctions need no right to make; symbolic links need an
+// administrator here.
+const SPECIALS = { junction: '연결점', fileLink: '링크/메모 링크.txt', folderLink: '링크/폴더 링크', oddName: '끝이 점인 이름.' };
+function specials(root) {
+  if (!fs.existsSync(path.join(root, '문서', '메모 0', '메모-0.txt')) || !fs.existsSync(path.join(root, '빈 폴더'))) throw Error('specials go into data `make` made');
+  fs.symlinkSync(path.join(root, '문서'), path.join(root, SPECIALS.junction), 'junction');
+  fs.mkdirSync(path.join(root, '링크'));
+  fs.symlinkSync(path.join('..', '문서', '메모 0', '메모-0.txt'), path.join(root, ...SPECIALS.fileLink.split('/')), 'file');
+  fs.symlinkSync(path.join('..', '빈 폴더'), path.join(root, ...SPECIALS.folderLink.split('/')), 'dir');
+  put(root, SPECIALS.oddName, bytes('odd', 1024));
+  if (!fs.readdirSync(root).includes(SPECIALS.oddName)) throw Error('the name ending in a dot was not kept');
+  return { made: Object.values(SPECIALS) };
+}
+/** A name Windows cannot hold as named: a part ending in a dot or a space (restore-tar nameIssue, the part this data uses). */
+const oddName = rel => rel.split('/').some(part => /[. ]$/.test(part));
+
 function walk(root) {
-  const files = {}, dirs = [];
+  const files = {}, dirs = [], links = [];
   (function go(dir, rel) {
     for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
       const r = rel ? `${rel}/${item.name}` : item.name, full = path.join(dir, item.name);
-      if (item.isSymbolicLink()) throw Error(`link in data: ${r}`);
-      if (item.isDirectory()) { dirs.push(r); go(full, r); }
+      // Node reports junctions as symbolic links too. Neither is gone through.
+      if (item.isSymbolicLink()) links.push(r);
+      else if (item.isDirectory()) { dirs.push(r); go(full, r); }
       else if (item.isFile()) { const data = fs.readFileSync(full); files[r] = { size: data.length, sha256: crypto.createHash('sha256').update(data).digest('hex') }; }
       else throw Error(`special entry: ${r}`);
     }
   })(root, '');
-  return { files, dirs: dirs.sort() };
+  return { files, dirs: dirs.sort(), links: links.sort() };
 }
 
+/** A restore against the list made before the backup: every file and folder back, except the links and the names
+ *  Windows cannot hold. Those must not be there at all; they are what the restore says it left out (leftOut). */
 function compare(expected, actual) {
-  const missing = [], changed = [], extra = [];
+  const missing = [], changed = [], extra = [], leftIn = [];
+  const links = expected.links || [], odd = Object.keys(expected.files).filter(oddName);
+  const underLink = rel => links.some(l => rel.startsWith(`${l}/`));
   for (const [rel, want] of Object.entries(expected.files)) {
+    if (oddName(rel)) continue;
     const got = actual.files[rel];
     if (!got) missing.push(rel); else if (got.size !== want.size || got.sha256 !== want.sha256) changed.push(rel);
   }
-  for (const rel of Object.keys(actual.files)) if (!expected.files[rel]) extra.push(rel);
-  const dirsMissing = expected.dirs.filter(d => !actual.dirs.includes(d));
-  return { files: Object.keys(expected.files).length, matched: Object.keys(expected.files).length - missing.length - changed.length, missing, changed, extra, dirsMissing,
-    ok: !missing.length && !changed.length && !extra.length && !dirsMissing.length };
+  for (const rel of Object.keys(actual.files)) {
+    if (oddName(rel)) leftIn.push(rel);
+    else if (!expected.files[rel] || underLink(rel)) extra.push(rel);
+  }
+  // A restore makes no link at all and nothing under a name Windows cannot hold (GPT GA1: one under any name, or an odd
+  // name back as a folder, passed before). A link of the list must come back as nothing; anything under one would be
+  // the link gone through.
+  for (const rel of actual.links || []) leftIn.push(rel);
+  for (const rel of actual.dirs) if (oddName(rel)) leftIn.push(rel); else if (underLink(rel)) extra.push(rel);
+  for (const rel of links) if (actual.files[rel] || actual.dirs.includes(rel)) leftIn.push(rel);
+  const dirsMissing = expected.dirs.filter(d => !oddName(d) && !actual.dirs.includes(d));
+  const kept = Object.keys(expected.files).length - odd.length;
+  leftIn.splice(0, leftIn.length, ...new Set(leftIn));
+  return { files: kept, matched: kept - missing.length - changed.length, missing, changed, extra, dirsMissing, leftOut: [...links, ...odd], leftIn,
+    ok: !missing.length && !changed.length && !extra.length && !dirsMissing.length && !leftIn.length };
+}
+/** What 복구경로.json says it left out (each folder's `skipped`) against the links and odd names of the list. */
+function leftOutSaid(leftOut, mapping) {
+  const entries = Array.isArray(mapping) ? mapping : [], said = entries.flatMap(e => e?.skipped?.items || []);
+  const count = entries.reduce((n, e) => n + (e?.skipped?.count || 0), 0);
+  const unsaid = leftOut.filter(rel => !said.some(item => typeof item?.name === 'string' && (item.name === rel || item.name.endsWith(`/${rel}`))));
+  return { expected: leftOut.length, count, unsaid, ok: count === leftOut.length && !unsaid.length };
 }
 
 function key() {
@@ -78,19 +124,22 @@ function open(sealed) {
   return Buffer.concat([d.update(sealed.subarray(33)), d.final()]);
 }
 
-module.exports = { make, walk, compare, seal, open, LEAK_MARKER };
+module.exports = { make, specials, walk, compare, leftOutSaid, seal, open, LEAK_MARKER, SPECIALS };
 if (require.main === module) {
   const [mode, a, b] = process.argv.slice(2);
   if (mode === 'make') console.log(JSON.stringify(make(path.resolve(a), b ? Number(b) : 100)));
+  else if (mode === 'specials') console.log(JSON.stringify(specials(path.resolve(a))));
   else if (mode === 'list') { const list = walk(path.resolve(a)); fs.writeFileSync(b, JSON.stringify(list, null, 1)); console.log(JSON.stringify({ files: Object.keys(list.files).length, dirs: list.dirs.length })); }
   else if (mode === 'compare') {
     const result = compare(JSON.parse(fs.readFileSync(a, 'utf8')), walk(path.resolve(b)));
+    const where = process.argv[5];
+    const said = where ? leftOutSaid(result.leftOut, JSON.parse(fs.readFileSync(where, 'utf8'))) : null;
     // Names only of what differs, at most 20 of each — synthetic data, nothing secret.
     const cut = list => list.slice(0, 20);
-    console.log(JSON.stringify({ ...result, missing: cut(result.missing), changed: cut(result.changed), extra: cut(result.extra), dirsMissing: cut(result.dirsMissing) }));
-    process.exitCode = result.ok ? 0 : 1;
+    console.log(JSON.stringify({ ...result, missing: cut(result.missing), changed: cut(result.changed), extra: cut(result.extra), dirsMissing: cut(result.dirsMissing), ...(said ? { said } : {}) }));
+    process.exitCode = result.ok && (!said || said.ok) ? 0 : 1;
   }
   else if (mode === 'seal') fs.writeFileSync(b, seal(fs.readFileSync(a)), { flag: 'wx' });
   else if (mode === 'open') fs.writeFileSync(b, open(fs.readFileSync(a)), { flag: 'wx' });
-  else { console.error('usage: clean-data.cjs make|list|compare|seal|open …'); process.exitCode = 64; }
+  else { console.error('usage: clean-data.cjs make|specials|list|compare|seal|open …'); process.exitCode = 64; }
 }

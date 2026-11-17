@@ -127,6 +127,45 @@ test('D0 comes back only when every file and folder is the same, and a sealed ki
   assert.throws(() => data.open(sealed));
 });
 
+test('D0 special entries: a restore must leave out links and names ending in a dot, and say so', { skip: process.platform !== 'win32' && 'Windows junctions' }, (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-d0s-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const src = path.join(dir, 'src'), back = path.join(dir, 'back');
+  data.make(src, 1); data.make(back, 1);
+  // The two that need no right to make: the runner's administrator makes the symbolic links too (specials).
+  fs.symlinkSync(path.join(src, '문서'), path.join(src, data.SPECIALS.junction), 'junction');
+  fs.writeFileSync(path.join(src, data.SPECIALS.oddName), 'odd');
+  const list = data.walk(src);
+  assert.deepEqual(list.links, ['연결점'], 'a junction is listed as a link and not gone through');
+  assert.ok(!Object.keys(list.files).some(f => f.startsWith('연결점/')));
+  assert.ok(list.files[data.SPECIALS.oddName], 'a name ending in a dot is kept as named');
+  // A restore without the two: every other file back, both left out.
+  const good = data.compare(list, data.walk(back));
+  assert.equal(good.ok, true, JSON.stringify(good));
+  assert.deepEqual(good.leftOut, ['연결점', data.SPECIALS.oddName]);
+  const said = item => [{ skipped: { count: item.length, items: item.map(name => ({ name: `C/work/src/${name}`, kind: 'link' })) } }];
+  assert.equal(data.leftOutSaid(good.leftOut, said(good.leftOut)).ok, true);
+  assert.deepEqual(data.leftOutSaid(good.leftOut, said(['연결점'])).unsaid, [data.SPECIALS.oddName], 'one the restore did not count');
+  assert.equal(data.leftOutSaid(good.leftOut, []).ok, false);
+  // The junction gone through (its folder restored as a copy) and the odd name restored are both wrong.
+  fs.cpSync(path.join(back, '문서', '메모 0'), path.join(back, '연결점', '메모 0'), { recursive: true });
+  fs.writeFileSync(path.join(back, data.SPECIALS.oddName), 'odd');
+  const bad = data.compare(list, data.walk(back));
+  assert.equal(bad.ok, false);
+  assert.deepEqual(bad.leftIn.sort(), ['연결점', data.SPECIALS.oddName].sort());
+  assert.ok(bad.extra.some(f => f.startsWith('연결점/')));
+  // Any link in the restore, under any name, and an odd name back as a folder are wrong too (GPT GA1).
+  const listed = data.walk(back);
+  for (const actual of [{ ...listed, links: ['새 링크'] }, { ...listed, links: [data.SPECIALS.oddName] }, { ...listed, dirs: [...listed.dirs, '폴더.'] }]) {
+    const fresh = data.compare(list, { ...actual, files: Object.fromEntries(Object.entries(actual.files).filter(([f]) => !f.startsWith('연결점/') && f !== data.SPECIALS.oddName)), dirs: actual.dirs.filter(d => d !== '연결점' && !d.startsWith('연결점/')) });
+    assert.equal(fresh.ok, false, JSON.stringify(actual.links));
+    assert.equal(fresh.leftIn.length, 1);
+  }
+  // specials() itself, where this account may make symbolic links (the CI runner's administrator).
+  const full = path.join(dir, 'full'); data.make(full, 1);
+  try { data.specials(full); } catch (e) { if (e.code === 'EPERM') return t.diagnostic('no right to make symbolic links here: specials() is run on the runner'); throw e; }
+  assert.deepEqual(data.walk(full).links, ['링크/메모 링크.txt', '링크/폴더 링크', '연결점']);
+});
+
 test('the clean-Windows workflow keeps secrets and keys to this repository and its own runs', () => {
   const flow = read('../../.github/workflows/workbackup-clean-windows.yml');
   const on = flow.slice(flow.indexOf('\non:'), flow.indexOf('\npermissions:'));
