@@ -144,7 +144,9 @@ function aiRow(s) {
   // 머리 숫자를 내는 서비스가 답을 하나도 받지 못했으면(크레딧 · 한도 막힘) 0으로 보이지 않고 「못 물음」으로 둔다(설계 검토 2차 P2-3)
   const asked = web.답받음 > 0;
   const more = [['say', asked ? `웹 검색을 켠 ${josa(web.이름, ['이', '가'])} SYNK를 말한 답은 ${num(web.언급)}번이고, AI 답변을 보고 들어온 사람은 ${a.AI방문 != null ? `${num(a.AI방문)}번` : '아직 세기 전'}입니다.` : `이번 회차에는 웹 검색을 켠 ${web.이름}에게 묻지 못했습니다. 아래 숫자는 다른 길로 물은 값과 지난 회차입니다.`]];
-  more.push(['row', 'synk.im을 출처로 단 답', `일반 질문 ${num(web.인용)} · SYNK를 묻는 질문 ${num(web.브랜드답받음)}개 가운데 ${num(web.브랜드인용)}`, '', '']);
+  // 묻지 못한 회차의 출처 줄을 0건처럼 보이지 않는다(PC 0.4.96 Fable 다시 검수 P2)
+  const brand = web.브랜드답받음 > 0 ? `SYNK를 묻는 질문 ${num(web.브랜드답받음)}개 가운데 ${num(web.브랜드인용)}` : '';
+  more.push(['row', 'synk.im을 출처로 단 답', asked ? `일반 질문 ${num(web.인용)} · ${brand || 'SYNK를 묻는 질문은 묻지 못했습니다'}` : brand ? `일반 질문은 묻지 못했습니다 · ${brand}` : '이번 회차에는 묻지 못했습니다', '', '']);
   for (const x of others) more.push(['row', clean(x.이름, 20), x.답받음 > 0 ? `${clean(x.설명 || '다른 길로 물은 값', 40)} · 일반 질문 ${num(x.답받음)}개 가운데 ${num(x.언급)}개에서 SYNK를 말했습니다` : '이번 회차에는 묻지 못했습니다', '', '']);
   more.push(['row', 'AI 답변에서 온 방문', '지난 7일', a.AI방문 != null ? `${num(a.AI방문)}번` : '측정 전', '']);
   const stopped = Object.keys(a.멈춤 || {}).map(name => `${josa(clean(name, 20), ['은', '는'])} 이번 회차 중간에 막혀 일부 질문만 물었습니다.`);

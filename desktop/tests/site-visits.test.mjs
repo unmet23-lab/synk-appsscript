@@ -299,6 +299,13 @@ test('a round where Claude could not ask says so instead of zero, and compares w
   assert.equal(ai.when, '지난 회차(11월 16일) 2번');
   assert.match(ai.mid, /^11월 23일 회차에 Claude에게 묻지 못했습니다 · Gemini\(기억\) 1$/);
   assert.match(ai.more[0][1], /묻지 못했습니다/);
+  // PC 0.4.96 Fable 다시 검수 P2: 출처 줄도 0건처럼 보이지 않는다
+  const cite = r => r.more.find(m => m[0] === 'row' && m[1] === 'synk.im을 출처로 단 답')[2];
+  assert.equal(cite(ai), '이번 회차에는 묻지 못했습니다');
+  const brandOnly = summary();
+  brandOnly.AI.서비스[0] = { ...brandOnly.AI.서비스[0], 답받음: 0, 언급: 0, 인용: 0, 브랜드답받음: 6, 브랜드인용: 4 };
+  assert.equal(cite(siteVisitsView(ok(brandOnly), NOW).rows[4]), '일반 질문은 묻지 못했습니다 · SYNK를 묻는 질문 6개 가운데 4');
+  assert.equal(cite(siteVisitsView(ok(summary()), NOW).rows[4]), '일반 질문 0 · SYNK를 묻는 질문 6개 가운데 5', 'an asked round keeps its numbers');
   s.AI.앞회차 = { 날: '2026-11-16', 서비스: [{ 이름: 'Claude', 언급: 0, 답받음: 0 }] };
   assert.equal(siteVisitsView(ok(s), NOW).rows[4].when, '지난 회차도 묻지 못했습니다');
   const gem = summary();
