@@ -100,6 +100,8 @@ const CASES = [
   ['home-restore-error', 'home'], ['home-restore-unsafe', 'home'],
   // 도는 되살리기 그만두기(요청 16, 조율 세션 60a9de51e): 도는 중 · 그만두는 중 · 그만둔 뒤
   ['home-restoring', 'home'], ['home-restore-stopping', 'home'], ['home-restore-stopped', 'home'],
+  // 범위를 통째로 받기 · 옛 PC 판의 실패 · 만들다 만 폴더 열기 · 끊은 뒤 안내(E27 · E26 알림 · E29 · E28, 조율 세션 ced52da00)
+  ['home-scope-done', 'home'], ['home-scope-big', 'home'], ['home-scope-unsafe-sel', 'home'], ['home-scope-failed', 'home'],
   ['home', 'restore', { name: 'restore-pick', ui: { place: 'pick' } }], ['home', 'restore', { name: 'restore-confirm', ui: { confirmAll: true } }], ['home-downloads', 'restore', { name: 'restore-guarded' }],
   ['home-same-install', 'drawer', { name: 'drawer-same', acct: { devices: DEVICES_SAME }, scrollTo: '[data-act="lost-dev"]' }],
   // 되돌리기 셋(조율 세션 57c3d17e6 뒤): 끝난 결과 · 취소 실패 부호 · 복구 전용 PC의 되돌리기
@@ -141,7 +143,7 @@ const CASES = [
   ['home', 'drawer', { name: 'drawer-handed', mv: 'handed', scrollTo: '[data-act="move-apps"]' }],
   // 옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc)
   ['home-move-read', 'restore-old', { name: 'restore-old-root', mv: 'toobigResult', acct: 'MOVE', old: 'root' }], ['home-move-read', 'restore-old', { name: 'restore-old-reading', mv: 'toobigResult', acct: 'MOVE', old: 'reading' }],
-  ['home-move-read', 'restore-old', { name: 'restore-old-browse', mv: 'toobigResult', acct: 'MOVE', old: 'browse' }], ['home-move-read', 'restore-old', { name: 'restore-old-deep', mv: 'toobigResult', acct: 'MOVE', old: 'deep' }],
+  ['home-move-read', 'restore-old', { name: 'restore-old-browse', mv: 'toobigResult', acct: 'MOVE', old: 'browse' }], ['home-move-read', 'restore-old', { name: 'restore-old-inner', mv: 'toobigResult', acct: 'MOVE', old: 'inner' }], ['home-move-read', 'restore-old', { name: 'restore-old-deep', mv: 'toobigResult', acct: 'MOVE', old: 'deep' }],
   ['home-move-read', 'restore-old', { name: 'restore-old-nosplit', mv: 'toobigResult', acct: 'MOVE', old: 'noSplit' }], ['home-move-read', 'restore-old', { name: 'restore-old-stale', mv: 'toobigResult', acct: 'MOVE', old: 'stale' }],
   ['home-move-read', 'restore', { name: 'restore-old-catalog', mv: 'toobigResult', acct: 'MOVE', catalog: 'ok' }], ['home-move-read', 'restore', { name: 'restore-old-toolarge', mv: 'toobigResult', acct: 'MOVE', catalog: 'tooLarge' }],
   ['home', 'restore', { name: 'restore-moved', mv: 'handed', acct: 'MOVE' }],

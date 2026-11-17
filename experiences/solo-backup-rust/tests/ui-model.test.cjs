@@ -251,7 +251,7 @@ test('셋째: 전체 되살리기 실패 칸(lastRestoreError)과 점검 주의�
   assert.equal(m.id, 'home-restore-error');
   assert.equal(m.title, '파일을 되살리지 못했습니다.');
   assert.match(m.sub, /빈 공간과 인터넷 연결/);
-  assert.doesNotMatch(m.sub, /멈춘 폴더/, '폴더를 만들기 전의 실패에는 멈춘 폴더 말이 없다');
+  assert.doesNotMatch(m.sub, /만들다 만 폴더/, '폴더를 만들기 전의 실패에는 만들다 만 폴더 말이 없다');
   // 쓰는 도중의 실패(ENOSPC · 만든 폴더 있음)는 그 폴더를 쓰지 말라고 한다(Fable 셋째 F4 — 엔진이 실제로 적는 꼴)
   const mid = { ...STATES['home-restore-error'], lastRestoreError: { code: 'ENOSPC', at: STATES['home-restore-error'].lastRestoreError.at, path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)' } };
   const mm = homeModel(mid, { now: NOW });
@@ -1365,12 +1365,12 @@ test('옮겨 오기 E25(조율 세션 178555524): 100만 개 넘는 폴더는 �
   assert.equal(t.main, '옮겨 왔습니다.'); assert.equal(t.soft, '「사진」 폴더는 너무 커서 옮기지 않았습니다.'); assert.equal(t.tone, 'warn');
   const three = draw('move-3', read, res).html;
   // 폴더는 「곳」으로 센다
-  assert.match(three, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(three, /옛 PC의 백업에는 그대로 있습니다\. 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 새 폴더에 꺼낼 수 있습니다\. 폴더를 통째로 꺼내는 길은 아직 없습니다\. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요\./);
+  assert.match(three, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(three, /옛 PC의 백업에는 그대로 있습니다\. 「옛 PC 백업에서 꺼내기」에서 안쪽 폴더를 골라 통째로 꺼낼 수 있습니다\. 옛 PC를 정리하기 전에 그 화면에 한 번 들어가, 꺼낼 수 없다고 나오는 것이 없는지 확인해 주세요\./);
   assert.match(three, /<span class="ds">C:\\Users\\studio\\Pictures<\/span>/);
   assert.doesNotMatch(three, /data-act="move-again"/); assert.doesNotMatch(three, /파일 되살리기로/);
   // 넘기기 — 그 폴더는 지킬 폴더에 없고(엔진이 roots []를 준다), 옛 PC의 백업에 남는다고 쓴다
   const four = draw('move-4', read, res).html;
-  assert.match(four, /「사진」 폴더는 너무 커서 옮기지 않았습니다\. 「작업 노트북」의 백업에는 그대로 있습니다\. 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 새 폴더에 꺼낼 수 있습니다\. 넘긴 뒤에도 「파일 되살리기」 화면의 「옛 PC 백업에서 꺼내기」 단추로 다시 들어올 수 있습니다. 폴더를 통째로 꺼내는 길은 아직 없습니다\. 「작업 노트북」을 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요\./);
+  assert.match(four, /「사진」 폴더는 너무 커서 옮기지 않았습니다\. 「작업 노트북」의 백업에는 그대로 있습니다\. 「옛 PC 백업에서 꺼내기」에서 안쪽 폴더를 골라 통째로 꺼낼 수 있습니다\. 「작업 노트북」을 정리하기 전에 그 화면에 한 번 들어가, 꺼낼 수 없다고 나오는 것이 없는지 확인해 주세요\. 넘긴 뒤에도 「파일 되살리기」 화면의 「옛 PC 백업에서 꺼내기」 단추로 다시 들어올 수 있습니다\./);
   assert.doesNotMatch(four, /data-root="C:\\Users\\studio\\Pictures"/);
   // Fable F1 — 항목이 2,000개를 넘어 폴더 항목이 잘려도 묶음은 결과의 폴더 목록으로 만든다(「이상」을 붙이지 않는다)
   const cut = { ...res, result: { ...res.result, items: Array.from({ length: 2000 }, (_, i) => ({ original: 'C:\\Users\\studio\\Documents', name: `f${i}`, result: 'side', p: `x${i}` })) } };
@@ -1383,9 +1383,9 @@ test('옮겨 오기 E25(조율 세션 178555524): 100만 개 넘는 폴더는 �
   assert.match(draw('move-3', read, cutMixed).html, /앞의 2,000개만 남겼습니다\. 파일 수는 그 안에서 센 것입니다/);
   assert.match(cut3, /너무 커서 옮기지 않은 폴더<\/span><span class="vl"><span class="x">1곳<\/span>/); assert.match(cut3, /<span class="ds">C:\\Users\\studio\\Pictures<\/span>/);
   // Fable F5 — 옛 PC를 쓸 수 있을 때의 조건문을 붙인다(그 폴더는 「파일 되살리기」로 꺼낼 수 없다 — 이 PC의 최신 판만 열고 20만 개까지, E26)
-  // 꺼내는 길은 파일을 골라 한 번에 1,000개까지라 폴더째 되찾을 수 없다 — 옛 PC를 정리하기 전에 직접 옮겨 두라는 말을 네 자리 모두에 둔다(Opus 대체 검수 F2)
-  for (const html of [one, three, four]) assert.equal(html.split('USB나 외장 디스크').length - 1, 1);
-  assert.match(one, /옮겨 온 뒤 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 꺼낼 수 있습니다/);
+  // E27(조율 세션 ced52da00) — 안쪽 폴더를 골라 통째로 꺼낼 수 있게 되어, 옛 PC를 정리하기 전에 직접 옮겨 두라는 말을 거둔다
+  for (const html of [one, three, four]) { assert.doesNotMatch(html, /USB나 외장 디스크|직접 옮겨 두세요|폴더를 통째로 꺼내는 길은 아직 없습니다/); }
+  assert.match(one, /옮겨 온 뒤 「옛 PC 백업에서 꺼내기」에서 안쪽 폴더를 골라 통째로 꺼낼 수 있습니다\. 옛 PC를 정리하기 전에 그 화면에 한 번 들어가/);
   // E26 — 옛 PC의 판에는 남지만 「파일 되살리기」는 이 PC의 최신 판만 연다. 네 자리 모두 지금은 꺼낼 수 없다고 함께 밝힌다
   for (const html of [one, three, four]) { assert.match(html, /「옛 PC 백업에서 꺼내기」/); assert.doesNotMatch(html, /지금은 이 앱으로 꺼낼 수 없습니다/); }
   // 확인서와 넘기기에는 꺼내는 단추가 있다(놓을 자리는 옮겨 오기 전이라 없다)
@@ -1396,12 +1396,12 @@ test('옮겨 오기 E25(조율 세션 178555524): 100만 개 넘는 폴더는 �
   // Fable E26 F1 — 넘기기 전 기본 화면도 그 폴더를 밝히고 지금은 꺼낼 수 없다고 쓴다. 결과를 아직 안 읽었으면 결과로 보내는 글만 쓴다
   const homeDone = (result) => m.homeModel(read, { now: NOW, move: res.state, result });
   assert.equal(homeDone(res.result).id, 'home-move-done');
-  assert.equal(homeDone(res.result).sub, '「사진」 폴더는 너무 커서 옮기지 않았습니다. 옛 PC의 백업에는 그대로 있습니다. 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 새 폴더에 꺼낼 수 있습니다. 폴더를 통째로 꺼내는 길은 아직 없습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요. 결과를 본 뒤 이 PC로 이어서 백업하세요.');
+  assert.equal(homeDone(res.result).sub, '「사진」 폴더는 너무 커서 옮기지 않았습니다. 옛 PC의 백업에는 그대로 있습니다. 「옛 PC 백업에서 꺼내기」에서 안쪽 폴더를 골라 통째로 꺼낼 수 있습니다. 옛 PC를 정리하기 전에 그 화면에 한 번 들어가, 꺼낼 수 없다고 나오는 것이 없는지 확인해 주세요. 결과를 본 뒤 이 PC로 이어서 백업하세요.');
   assert.equal(homeDone(null).sub, '옮긴 것과 옮기지 않은 것을 결과에서 본 뒤 이 PC로 이어서 백업하세요.');
   // Opus -b 1 — 큰 폴더와 옮기지 못한 파일이 섞이면 둘 다 말한다(확인서의 큰 글과 같은 셈)
   const mixed = { ...res.result, counts: { ...res.result.counts, fail: 1 }, items: [...res.result.items, { original: 'C:\\Users\\studio\\Documents', name: 'a.txt', result: 'fail', c: 'MOVE_BUSY' }] };
   assert.equal(m.moveLeft(mixed).failed, 1); assert.equal(m.moveLeft(mixed).big, 1);
-  assert.equal(homeDone(mixed).sub, '1개는 옮겨 오지 못했습니다. 「사진」 폴더는 너무 커서 옮기지 않았습니다. 옛 PC의 백업에는 그대로 있습니다. 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 새 폴더에 꺼낼 수 있습니다. 폴더를 통째로 꺼내는 길은 아직 없습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요. 결과를 본 뒤 이 PC로 이어서 백업하세요.');
+  assert.equal(homeDone(mixed).sub, '1개는 옮겨 오지 못했습니다. 「사진」 폴더는 너무 커서 옮기지 않았습니다. 옛 PC의 백업에는 그대로 있습니다. 「옛 PC 백업에서 꺼내기」에서 안쪽 폴더를 골라 통째로 꺼낼 수 있습니다. 옛 PC를 정리하기 전에 그 화면에 한 번 들어가, 꺼낼 수 없다고 나오는 것이 없는지 확인해 주세요. 결과를 본 뒤 이 PC로 이어서 백업하세요.');
   // Opus -b 2 — 연결 건너뜀만 남은 흔한 결과(complete 거짓)는 확인서처럼 못했다고 단정하지 않는다
   const linksOnly = { ...res.result, items: res.result.items.filter((x) => x.result !== 'folder-skip'), folders: res.result.folders.map((x) => ({ ...x, tooBig: undefined })) };
   assert.equal(m.moveLeft(linksOnly).n, 0); assert.equal(m.moveLeft(linksOnly).big, 0); assert.equal(m.moveTitle(linksOnly).tone, 'ok');
@@ -1423,7 +1423,7 @@ test('옮겨 오기 E25(조율 세션 178555524): 100만 개 넘는 폴더는 �
   assert.equal(nothing.items.length, 4); assert.ok(nothing.folders.every((x) => x.roots.length === 0));
   assert.equal(m.moveTitle(nothing).main, '옮겨 온 파일이 없습니다.'); assert.equal(m.moveLeft(nothing).n, 0); assert.equal(m.moveLeft(nothing).big, 0);
   assert.equal(homeDone(nothing).title, '옮겨 온 파일이 없습니다.'); assert.equal(homeDone(nothing).sub, '옮기지 않은 까닭을 결과에서 본 뒤 이 PC로 이어서 백업하세요.');
-  assert.match(homeDone(allBigRes).sub, /^「[^」]+」 등 폴더 \d+곳은 너무 커서 옮기지 않았습니다\. 옛 PC의 백업에는 그대로 있습니다\. 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 새 폴더에 꺼낼 수 있습니다\. 폴더를 통째로 꺼내는 길은 아직 없습니다\. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요\. 결과를 본 뒤 이 PC로 이어서 백업하세요\.$/);
+  assert.match(homeDone(allBigRes).sub, /^「[^」]+」 등 폴더 \d+곳은 너무 커서 옮기지 않았습니다\. 옛 PC의 백업에는 그대로 있습니다\. 「옛 PC 백업에서 꺼내기」에서 안쪽 폴더를 골라 통째로 꺼낼 수 있습니다\. 옛 PC를 정리하기 전에 그 화면에 한 번 들어가, 꺼낼 수 없다고 나오는 것이 없는지 확인해 주세요\. 결과를 본 뒤 이 PC로 이어서 백업하세요\.$/);
   for (const r of [res.result, null]) assert.doesNotMatch(homeDone(r).sub, /옛 PC 백업에 그대로 있습니다/);
   // Fable F3 — 예시의 공간과 합계가 남은 폴더의 합이다
   assert.equal(big.preview.volumes[0].bytes, big.preview.bytes); assert.equal(big.preview.files, rows.files);
@@ -1452,9 +1452,10 @@ test('옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc): 옛 PC 판의 폴�
   assert.match(draw('restore-old', { mv: { ...res, result: skipped }, old: OLD_PC.root }).html, /<span class="nm">바탕화면<\/span><span class="vl">옮기지 않음<\/span>/);
   assert.equal(m.oldWhere('사진', '2024/여행'), '「사진 › 2024 › 여행」'); assert.equal(m.oldWhere('사진', ''), '「사진」');
   assert.equal(m.oldUp('2024/여행'), '2024'); assert.equal(m.oldUp('2024'), '');
-  // 거절 글 — 한 층 읽기의 CATALOG_TOO_LARGE는 나눌 수 없는 층, 목록 열기의 것은 안쪽 폴더로 나눠 열라는 뜻이다
+  // 거절 글 — 한 층 읽기의 CATALOG_TOO_LARGE는 안쪽 목록을 읽을 수 없는 층, 목록 열기의 것은 통째로 꺼내거나 안쪽 폴더로 나눠 열라는 뜻이다
   assert.equal(m.oldFailText('CATALOG_TOO_LARGE', '작업 노트북'), m.OLD_NO_SPLIT);
-  assert.match(m.oldFailText('CATALOG_TOO_LARGE', '작업 노트북', { open: true }), /안쪽 폴더를 골라 나눠 열어 주세요/);
+  assert.match(m.oldFailText('CATALOG_TOO_LARGE', '작업 노트북', { open: true }), /통째로 꺼내거나, 안쪽 폴더를 골라 나눠 열어 주세요/);
+  assert.match(m.oldFailText('UNSAFE_MANIFEST', '작업 노트북', { open: true }), /통째로 꺼내면 그런 이름의 파일과 폴더는 그 안까지 빼고 나머지를 꺼냅니다/);
   assert.match(m.oldFailText('NO_SNAPSHOT', '작업 노트북'), /^「작업 노트북」의 확인된 백업이 없어/);
   assert.match(m.oldFailText('INVALID_REQUEST', '작업 노트북'), /처음부터 다시 골라 주세요/);
   assert.equal(m.oldFailText('JOB_BUSY', '작업 노트북'), null);
@@ -1467,26 +1468,60 @@ test('옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc): 옛 PC 판의 폴�
   const b = draw('restore-old', { old: OLD_PC.browse });
   for (const n of ['2023', '2024', '2025', '카메라 원본']) assert.match(b.html, new RegExp(`data-act="old-in" data-name="${n}"`));
   assert.match(b.html, /바로 안의 파일은 <b class="num">12<\/b>개입니다/);
-  assert.match(b.html, /<button class="pill main" type="button" data-act="old-open">이 폴더 열기/); assert.match(b.html, /다른 폴더 고르기/); assert.equal(b.back, 'restore-old'); assert.equal(root.back, 'home');
+  // E27 — 주 단추는 「이 폴더 통째로 꺼내기」(restoreScope), 파일을 고르는 길은 「파일 골라 꺼내기」. 안쪽 층(「사진 › 2025」)에서 본다 — 맨 위 「사진」은 100만 개가 넘는다
+  const inner = draw('restore-old', { old: { ...OLD_PC.browse, sub: '2025' } });
+  assert.match(inner.html, /<button class="pill main" type="button" data-act="old-whole">이 폴더 통째로 꺼내기/); assert.match(inner.html, /data-act="old-open">파일 골라 꺼내기/);
+  assert.equal(inner.acts['old-whole'].call, 'restoreScope'); assert.match(b.html, /다른 폴더 고르기/); assert.equal(b.back, 'restore-old'); assert.equal(root.back, 'home');
+  assert.match(inner.html, /어떻게 꺼낼까요/); assert.match(inner.html, /누르면 다운로드 안의 「되살린 파일 \(\d+월 \d+일\)」 폴더에 바로 놓습니다/); assert.match(inner.html, /data-act="place-pick"/);
   // 안쪽 층 — 「한 칸 위로」, 뺀 폴더
   const d = draw('restore-old', { old: OLD_PC.deep });
   assert.match(d.html, /「사진 › 2024」/); assert.match(d.html, /한 칸 위로/); assert.match(d.html, /Windows에 둘 수 없는 이름의 폴더 1곳은 열 수 없어 뺐습니다/); assert.equal(d.back, 'restore-old');
-  // Opus 대체 검수 F3 — 뺀 이름이 있는 층은 통째로 열면 반드시 거절되므로 열지 않고 안쪽을 고르게 한다
-  assert.match(d.html, /data-act="old-open" aria-disabled="true"/); assert.match(d.html, /이 층은 통째로 열 수 없습니다/);
-  // -b FA2 — 뺀 이름이 있는 층의 바로 안 파일은 꺼낼 길이 없다고 쓰고, 고를 안쪽 폴더가 없으면 고르라고 하지 않는다
-  assert.match(d.html, /바로 안의 파일 3개는 이 앱으로 꺼낼 수 없습니다/);
+  // Opus 대체 검수 F3 — 뺀 이름이 있는 층은 목록으로 열면 반드시 거절되므로 파일을 골라 꺼내지 않는다. E27 — 통째로는 그런 이름만 빼고 꺼낸다
+  assert.match(d.html, /data-act="old-open" aria-disabled="true"/); assert.match(d.html, /이 층은 파일을 골라 꺼낼 수 없습니다\. 통째로 꺼내면 그런 이름의 폴더와 그 안의 파일은 빼고 나머지를 꺼냅니다/);
+  assert.doesNotMatch(d.html, /data-act="old-whole" aria-disabled/); assert.doesNotMatch(d.html, /이 앱으로 꺼낼 수 없습니다|직접 옮겨 두세요/);
+  // 고를 안쪽 폴더가 없는 그런 층도 통째로는 꺼낸다 — 막다른 곳이 아니다
   const dead = draw('restore-old', { old: { ...OLD_PC.deep, level: { ...OLD_PC.deep.level, folders: [], files: 40 } } });
-  assert.match(dead.html, /바로 안의 파일 40개도 꺼낼 수 없습니다/); assert.doesNotMatch(dead.html, /안쪽 폴더를 골라 그 부분만 여세요/);
-  // -c FA3 — 그 층은 꺼낼 것이 없다: 제목도 그렇게 쓰고 돌아갈 곳을 가리킨다
-  assert.match(dead.html, /<span class="soft">이 앱으로는 꺼낼 수 없습니다\.<\/span>/); assert.doesNotMatch(dead.html, /어디까지 열까요/); assert.match(dead.html, /「한 칸 위로」로 돌아가 다른 폴더를 골라 주세요/);
+  assert.doesNotMatch(dead.html, /data-act="old-whole" aria-disabled/); assert.doesNotMatch(dead.html, /안쪽 폴더만 필요하면/); assert.match(dead.html, /어떻게 꺼낼까요/);
   // Opus 대체 검수 F7 — 좁은 창에서는 목록이 글 아래라 「오른쪽에서」라고 쓰지 않는다
   assert.doesNotMatch(b.html, /오른쪽에서/); assert.match(b.html, /「안쪽 폴더」 목록에서/);
-  // 읽는 중에는 열지 않는다
-  assert.match(draw('restore-old', { old: OLD_PC.reading }).html, /data-act="old-open" aria-disabled="true"/);
-  // 나눌 수 없는 층 — 열지 않고, 직접 옮기라는 말은 한 번만
+  // 읽는 중에는 열지도, 통째로 꺼내지도 않는다
+  const reading = draw('restore-old', { old: { ...OLD_PC.reading, sub: '2025' } }).html;
+  assert.match(reading, /data-act="old-open" aria-disabled="true"/); assert.match(reading, /data-act="old-whole" aria-disabled="true"/);
+  // Fable F4 — 막힌 동안에는 꺼내는 법 · 놓을 자리 안내를 그리지 않고 그 상태를 말한다
+  assert.match(reading, /안쪽 폴더를 읽고 있습니다\. 다 읽으면 꺼낼 수 있습니다/); assert.doesNotMatch(reading, /바로 놓습니다|data-act="place-pick"|「이 폴더 통째로 꺼내기」는 안의/);
+  const staleHtml = draw('restore-old', { old: OLD_PC.stale }).html;
+  assert.match(staleHtml, /이 층을 읽지 못해 지금은 꺼낼 수 없습니다/); assert.doesNotMatch(staleHtml, /바로 놓습니다|data-act="place-pick"/);
+  // Fable -b 1 — 단추가 도는 동안에도 놓을 자리 안내는 남고, 「자리 바꾸기」만 막힌다
+  const busyInner = draw('restore-old', { old: { ...OLD_PC.browse, sub: '2025' }, acct: { ...MOVE_ACCT, running: 'old-whole' } }).html;
+  assert.match(busyInner, /바로 놓습니다/); assert.match(busyInner, /data-act="place-pick" aria-disabled="true"/); assert.match(busyInner, /data-act="old-whole" aria-disabled="true"/);
+  // Fable -b 2 — 기기 이름을 모르면 「옛 PC」로 부른다
+  assert.equal(m.tooBigKept('이름을 알 수 없는 PC'), m.tooBigKept());
+  assert.match(m.tooBigKept(), /^옛 PC의 백업에는 그대로 있습니다\..* 옛 PC를 정리하기 전에/); assert.match(m.tooBigKept('작업 노트북'), / 「작업 노트북」을 정리하기 전에/);
+  // 안쪽 목록을 읽을 수 없는 층 — 목록으로는 열지 않고 통째로 꺼내게 한다. 100만 개를 넘을 때만 직접 옮기라는 말이 한 번 나온다
   const ns = draw('restore-old', { old: OLD_PC.noSplit });
-  assert.equal(ns.html.split('이 앱으로는 꺼낼 수 없습니다').length - 1, 1); assert.match(ns.html, /data-act="old-open" aria-disabled="true"/);
-  assert.equal(ns.html.split('USB나 외장 디스크').length - 1, 1);
+  assert.match(ns.html, /안쪽 폴더를 보여 드릴 수 없습니다/); assert.match(ns.html, /data-act="old-open" aria-disabled="true"/); assert.doesNotMatch(ns.html, /data-act="old-whole" aria-disabled/);
+  assert.equal(ns.html.split('USB나 외장 디스크').length - 1, 1); assert.doesNotMatch(ns.html, /이 앱으로는 꺼낼 수 없습니다/);
+  // 너무 커서 옮기지 않은 폴더(100만 개 넘음)의 맨 위 층은 통째로 꺼낼 수 없다 — 안쪽 폴더를 고르게 한다. 안쪽 층에서는 된다
+  const bigTop = b;
+  assert.match(bigTop.html, /data-act="old-whole" aria-disabled="true"/); assert.match(bigTop.html, /data-act="old-open" aria-disabled="true"/);
+  // 그 층 바로 안의 파일(12개)은 어느 길로도 꺼낼 수 없다 — 그때만 직접 옮겨 두라고 쓴다. 바로 안에 파일이 없으면 그 말이 없다
+  assert.match(bigTop.html, /바로 안의 파일 12개는 이 앱으로 꺼낼 수 없으니, 옛 PC를 아직 쓸 수 있으면 정리하기 전에 직접 옮겨 두세요/);
+  assert.doesNotMatch(draw('restore-old', { old: { ...OLD_PC.browse, level: { ...OLD_PC.browse.level, files: 0 } } }).html, /직접 옮겨 두세요/); assert.match(bigTop.html, /100만 개를 넘어 통째로도, 목록으로도 꺼낼 수 없습니다\. 「안쪽 폴더」 목록에서 안쪽 폴더를 골라/);
+  assert.doesNotMatch(d.html, /data-act="old-whole" aria-disabled/);
+  // 통째로 꺼내기의 거절 글(부르는 자리와 끝난 실패 칸에 함께 쓴다)
+  assert.match(m.scopeFailText('CATALOG_TOO_LARGE'), /100만 개를 넘어 통째로 꺼낼 수 없습니다\. 안쪽 폴더를 골라 주세요/);
+  // 카본 A2 — 엔진이 거절하는 자리를 모두 말한다(지키는 폴더 · 저장소 · 옛 PC가 백업하던 폴더와 그 안 · 위)
+  assert.equal(m.scopeFailText('OUTPUT_UNSAFE'), '놓을 자리가 이 PC가 지키는 폴더나 백업을 담는 폴더, 또는 옛 PC가 백업하던 폴더와 겹칩니다. 그 폴더들의 안이나 위 폴더에는 놓을 수 없으니 다른 폴더를 골라 주세요.');
+  assert.equal(m.scopeFailText('NO_SPACE'), null);
+  // 카본 A3 — 한 층의 놓을 자리 안내도 범위 목록과 같이 위 폴더까지 말한다
+  assert.match(inner.html, /옛 PC가 백업하던 폴더와 그 안, 그 폴더들이 든 위 폴더에는 놓을 수 없습니다/);
+  // 카본 A1 — 100만 개 넘는 폴더의 맨 위 층이 안쪽 목록도 못 읽으면 막힌 「통째로 꺼내기」를 권하지 않고 직접 옮겨 두라고 쓴다
+  const stuck = draw('restore-old', { old: { ...OLD_PC.noSplit, sub: '' } }).html;
+  assert.match(stuck, /<span class="soft">이 앱으로는 꺼낼 수 없습니다\.<\/span>/); assert.match(stuck, /data-act="old-whole" aria-disabled="true"/);
+  assert.doesNotMatch(stuck, /「이 폴더 통째로 꺼내기」로 꺼내 주세요/); assert.equal(stuck.split('직접 옮겨 두세요').length - 1, 1);
+  // 맨 위 층을 읽지 못했으면(고를 안쪽 목록이 없음) 그 목록에서 고르라고 하지 않는다
+  const topFail = draw('restore-old', { old: { ...OLD_PC.browse, level: null, code: 'OPERATION_FAILED', error: 'x' } }).html;
+  assert.doesNotMatch(topFail, /목록에서 안쪽 폴더를 골라/); assert.match(topFail, /data-act="old-reload"/);
   // 판이 바뀌어 고른 자리가 없음 — 처음부터
   assert.match(draw('restore-old', { old: OLD_PC.stale }).html, /data-act="old-top"/);
   // 범위로 연 목록 — 꺼내기만 있고 「전체 되살리기」는 없다
@@ -1502,9 +1537,9 @@ test('옛 PC 백업에서 꺼내기(조율 세션 793e0d6dc): 옛 PC 판의 폴�
   // 이름을 모르면 머리줄은 「옛 PC 백업」(Opus 대체 검수 F5)
   assert.match(draw('restore', { catalog: OLD_CATALOG.ok, acct: { ...MOVE_ACCT, devices: null } }).html, /<\/i>옛 PC 백업 · /);
   assert.doesNotMatch(draw('restore-old', { old: OLD_PC.browse, acct: { ...MOVE_ACCT, devices: null } }).html, /이름을 알 수 없는 PC/);
-  // Opus 대체 검수 F3 — 이름 때문에 목록을 못 열면 안쪽 폴더로 나눠 열라고 쓰고, 같은 실패를 되풀이할 「목록 다시 열기」를 두지 않는다
+  // Opus 대체 검수 F3 — 이름 때문에 목록을 못 열면 돌아가 통째로 꺼내라고 쓰고(E27), 같은 실패를 되풀이할 「목록 다시 열기」를 두지 않는다
   const unsafe = draw('restore', { catalog: { ...OLD_CATALOG.tooLarge, errorCode: 'UNSAFE_MANIFEST', error: 'x' } });
-  assert.match(unsafe.html, /Windows에 둘 수 없는 이름이 있어 한 번에 열 수 없습니다/); assert.doesNotMatch(unsafe.html, /data-act="reopen"|전체 되살리기/);
+  assert.match(unsafe.html, /Windows에 둘 수 없는 이름이 있어 목록을 열 수 없습니다\. 「다른 폴더 고르기」로 돌아가 통째로 꺼내면/); assert.doesNotMatch(unsafe.html, /data-act="reopen"|전체 되살리기/);
   // Opus 대체 검수 F4 · -b FA1 — 옛 PC가 백업하던 폴더 모두와 그 안, 그 위 폴더에는 놓지 못한다고 미리 쓴다
   assert.match(c.html, /옛 PC가 백업하던 폴더\(사진 · 문서 · 바탕화면 · Projects\)와 그 안, 그 폴더들이 든 위 폴더에는 놓을 수 없습니다/);
   assert.match(draw('restore', { catalog: OLD_CATALOG.ok, mv: { ...res, result: undefined } }).html, /옛 PC가 백업하던 폴더와 그 안, 그 폴더들이 든 위 폴더에는/);
@@ -1616,4 +1651,50 @@ test('도는 되살리기 그만두기(요청 16, 조율 세션 60a9de51e): 진�
   assert.match(again.restored.text, /전체 되살리기를 그만두었습니다\. 만들다 만 폴더 「되살린 파일 \(11월 13일\) 2」는 그대로 두었습니다/);
   // 엔진의 전체 되살리기 단계(퍼센트 없음)는 「되살리는 중」이고 0%를 그리지 않는다(Fable F3)
   assert.equal(run.progress.percent, null); assert.doesNotMatch(html, />0%</);
+});
+
+test('범위를 통째로 받기 · 옛 PC 판의 실패 · 만들다 만 폴더 열기 · 끊은 뒤 안내(E27 · E26 알림 · E29 · E28, 조율 세션 ced52da00)', async () => {
+  const { homeModel } = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const home = (s) => homeModel(s, { now: NOW });
+  const at = STATES['home-scope-done'].lastRestore.at;
+  // E27 — 통째로 받은 범위(lastRestore.scope)는 그 범위를 말하고, 건너뛴 이름의 수와 폴더 열기를 그대로 둔다
+  const done = home(STATES['home-scope-done']);
+  assert.equal(done.restored.text, '오후 2:21에 옛 PC 백업의 「사진 › 2024 › 여행」 폴더를 「되살린 파일 (11월 13일)」에 통째로 꺼냈습니다. 2개는 만들지 않고 건너뛰었습니다. 다른 곳을 가리키는 연결, 특수 파일, Windows에서 쓸 수 없는 이름입니다.');
+  assert.equal(done.restored.act.call, 'openRestoreFolder'); assert.equal(done.restored.act.arg, undefined);
+  // 범위 없는 「지금 상태」 되살리기는 전과 같다
+  assert.match(home({ ...STATES['home-scope-done'], lastRestore: { ...STATES['home-scope-done'].lastRestore, scope: undefined } }).restored.text, /가장 최근 판 전체를/);
+  // E26 알림 — 옛 PC 판의 실패(from)는 그 말로 쓰고, 100만 개 넘는 범위는 안쪽 폴더를 고르라며 그 화면으로 돌아가는 길을 둔다
+  const big = home(STATES['home-scope-big']);
+  assert.equal(big.restored.text, '오후 2:21에 옛 PC 백업에서 폴더를 꺼내지 못했습니다. 파일과 폴더가 100만 개를 넘어 통째로 꺼낼 수 없습니다. 안쪽 폴더를 골라 주세요.');
+  assert.equal(big.restored.bad, true); assert.equal(big.restored.act.id, 'old-start');
+  // 고른 파일 받기가 옛 PC의 원래 자리와 겹치면 「지키는 폴더 안에는」만이 아니라 그 까닭을 쓴다
+  const unsafeSel = home(STATES['home-scope-unsafe-sel']);
+  assert.match(unsafeSel.restored.text, /옛 PC 백업에서 고른 파일을 꺼내지 못했습니다\. 놓을 자리가 이 PC가 지키는 폴더나 백업을 담는 폴더, 또는 옛 PC가 백업하던 폴더와 겹칩니다/);
+  // 이 PC 판의 겹침은 전과 같은 글이다
+  assert.doesNotMatch(home({ ...STATES.home, lastSelectedRestoreError: { code: 'OUTPUT_UNSAFE', at } }).restored.text, /옛 PC/);
+  // 옛 PC 판 받기의 실패가 점검 주의를 걸면 — 그 말로 쓰고, 다시 꺼내는 길과 만들다 만 폴더 열기를 둔다
+  const failed = home(STATES['home-scope-failed']);
+  assert.equal(failed.id, 'home-restore-error'); assert.equal(failed.title, '옛 PC 백업에서 폴더를 꺼내지 못했습니다.');
+  assert.deepEqual(failed.actions.map((a) => a.id), ['old-start', 'check', 'open-left']);
+  assert.deepEqual(failed.actions[2].arg, { unfinished: true });
+  // 이 PC 판의 실패는 전과 같이 「다시 되살리기」(만들다 만 폴더가 있으면 그 열기도)
+  assert.deepEqual(home(STATES['home-restore-error']).actions.map((a) => a.id), ['restore', 'check']);
+  // E29 — 그만두었거나 실패한 되살리기의 만들다 만 폴더 열기. 전체는 openRestoreFolder({ unfinished }), 고른 파일은 openSelectedRestoreFolder({ profile, unfinished })
+  const stopped = home(STATES['home-restore-stopped']);
+  assert.deepEqual(stopped.restored.act, { id: 'open-left', label: '만들다 만 폴더 열기', kind: 'link', call: 'openRestoreFolder', arg: { unfinished: true } });
+  const sel = home({ ...STATES.home, lastSelectedRestoreError: { code: 'CANCELED', at, path: 'D:\\받기\\사진' } });
+  assert.deepEqual(sel.restored.act, { id: 'open-left-sel', label: '만들다 만 폴더 열기', kind: 'link', call: 'openSelectedRestoreFolder', withProfile: true, extra: { unfinished: true } });
+  // 폴더가 적히지 않은 실패에는 여는 단추가 없다
+  assert.equal(home({ ...STATES.home, lastSelectedRestoreError: { code: 'NO_SPACE', at } }).restored.act, undefined);
+  // 옛 PC 판을 그만두면 「옛 PC 백업 꺼내기를 그만두었습니다」
+  assert.match(home({ ...STATES.home, lastRestoreError: { code: 'CANCELED', at, from: 'f'.repeat(12), path: 'D:\\받기\\사진' } }).restored.text, /^오후 2:21에 옛 PC 백업 꺼내기를 그만두었습니다\. 만들다 만 폴더 「사진」은/);
+  // 그린 화면에 그 단추가 실린다
+  assert.match(renderScreen('home', { state: STATES['home-restore-stopped'], model: stopped, now: NOW }).html, /data-act="open-left"[^>]*>[^<]*만들다 만 폴더 열기/);
+  // E28 — 끊은 뒤에는 이은 뒤 「복구 정보 다시 맡기기」를 한 번 더 하라고 쓴다(엔진이 read-key를 실을 때 그 단추가 나온다)
+  const freed = renderScreen('start-1', { state: STATES['start-signin'], model: homeModel(STATES['start-signin'], { now: NOW }), now: NOW, fake: true, acct: { limit: [{ id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active' }], freed: '거실 PC' } }).html;
+  assert.match(freed, /이은 뒤 「복구 정보 다시 맡기기」 단추가 보이면 눌러 주세요\. 눌러야 끊은 기기가 이 백업을 더는 열지 못합니다\./);
+  const rk = home({ ...STATES.home, account: { connected: true, role: 'read', needs: ['read-key'] }, mode: 'restore' });
+  assert.equal(rk.id, 'home-readkey'); assert.equal(rk.actions[0].call, 'rotateReadKey');
 });

@@ -6,7 +6,7 @@
 import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.js';
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
-  moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, TOO_BIG_MOVE_FIRST, tooBigMoveFirst, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
+  moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
   appsJob, appsSettings, appsUnrestored, movedHere } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
@@ -112,7 +112,7 @@ function limitBox(limit, acct, now, s) {
     : '쓰지 않는 되살리기 기기를 끊으면 이 PC를 이을 수 있습니다. 끊을 때 Google 로그인을 한 번 더 합니다.';
   // 끊지 못한 까닭(acct.limitWhy — NOT_FOUND · DEVICE_STATE)은 다음 누름까지 상자에 남긴다(Fable -b 2)
   const why = acct?.limitWhy && typeof acct.limitWhy.text === 'string' ? acct.limitWhy : null;
-  const head = acct?.freed ? `<b>「${h(acct.freed)}」 연결을 끊었습니다</b>「다시 시작」을 누르면 이 PC를 이을 수 있습니다.`
+  const head = acct?.freed ? `<b>「${h(acct.freed)}」 연결을 끊었습니다</b>「다시 시작」을 누르면 이 PC를 이을 수 있습니다. 이은 뒤 「복구 정보 다시 맡기기」 단추가 보이면 눌러 주세요. 눌러야 끊은 기기가 이 백업을 더는 열지 못합니다.`
     : why ? `<b>「${h(why.name || '그 기기')}」 연결을 끊지 못했습니다</b>${h(why.text)}`
     : `<b>이 계정에 이을 수 있는 기기가 다 찼습니다</b>백업하는 기기 하나와 되살리기만 하는 기기 둘까지 이을 수 있습니다. ${body}`;
   return `<div class="box rise i3">${head}</div>${rows ? `<div class="rows rise i3">${rows}</div>` : ''}`;
@@ -308,11 +308,11 @@ function restoreScoped(s, now, cat, ui, mv, acct) {
  * 바로 아래 폴더를 한 층씩 보여 안쪽 폴더를 고르게 한다. 고른 범위로 목록을 연다(「이 폴더 열기」 → restoreScoped).
  * old = 창이 기억하는 고름 { from, folder, label, sub, level(엔진 값 · 읽는 중 undefined · 실패 null), error, code }
  */
-function restoreOld(s, mv, acct, old, now) {
+function restoreOld(s, mv, acct, old, now, ui) {
   const fromName = movedFromOf(s, mv, acct), run = acct?.running || null;
   // 옛 PC 판의 거절 글은 옛 기기 이름으로 그릴 때 만든다(카본 A1)
   const errText = old?.code ? oldFailText(old.code, fromName) || old.error : old?.error;
-  const base = { kind: 'flow', tone: 'ok', here: '옛 PC 백업에서 꺼내기', back: 'home', top: [{ id: 'home', label: '닫기' }], acts: { home: { id: 'home', to: 'home' } } };
+  const base = { kind: 'flow', tone: 'ok', here: '옛 PC 백업에서 꺼내기', back: 'home', top: [{ id: 'home', label: '닫기' }], acts: { home: { id: 'home', to: 'home' }, 'old-whole': { id: 'old-whole', call: 'restoreScope' } } };
   if (!old?.folder) {
     const res = mv?.result;
     if (res === undefined) return { ...base, tone: 'run', html: flow(`${kick(`${h(oldWho(fromName))} 백업`)}${say('폴더 목록을', '읽고 있습니다.')}`, panel('꺼낼 폴더', '', '<p class="empty">읽는 중입니다.</p>')) };
@@ -327,16 +327,32 @@ function restoreOld(s, mv, acct, old, now) {
   const where = oldWhere(old.label, old.sub), lv = old.level;
   const at = lv?.snapshotAt ? ` · ${h(whenKo(lv.snapshotAt, now))} 판` : '';
   const noSplit = old.code === 'CATALOG_TOO_LARGE';
-  // 뺀 이름이 있는데 고를 안쪽 폴더가 없으면 이 층에서 꺼낼 것이 없다(Opus -c FA3)
-  const deadEnd = !!lv?.leftOut && !lv.folders?.length;
-  const l = `${kick(`${h(oldWho(fromName))} 백업${at}`)}${say(h(where), noSplit || deadEnd ? '이 앱으로는 꺼낼 수 없습니다.' : '어디까지 열까요?')}
-    ${then(noSplit ? h(OLD_NO_SPLIT_THEN) : deadEnd ? h(['Windows에 둘 수 없는 이름의 폴더가 있어 이 층에서는 꺼낼 수 있는 것이 없습니다.',
-      ...(lv.files ? [`바로 안의 파일 ${count(lv.files)}개도 꺼낼 수 없습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 직접 옮겨 두세요.`] : []),
-      old.sub ? '「한 칸 위로」로 돌아가 다른 폴더를 골라 주세요.' : '「다른 폴더 고르기」로 돌아가 주세요.'].join(' '))
-      : lv?.leftOut ? h(['Windows에 둘 수 없는 이름의 폴더가 있어 이 층은 통째로 열 수 없습니다.',
-      ...(lv.files ? [`바로 안의 파일 ${count(lv.files)}개는 이 앱으로 꺼낼 수 없습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 직접 옮겨 두세요.`] : []),
-      ...(lv.folders?.length ? ['「안쪽 폴더」 목록에서 안쪽 폴더를 골라 그 부분만 여세요.'] : [])].join(' ')) : '이 폴더를 열면 안의 파일을 모두 목록에 올립니다. 파일이 아주 많으면 열리지 않으니, 그때는 「안쪽 폴더」 목록에서 안쪽 폴더를 골라 그 부분만 여세요.')}
-    ${acts([{ id: 'old-open', label: '이 폴더 열기', kind: 'main', disabled: !lv || !!run || noSplit || !!lv?.leftOut }, { id: 'old-up', label: old.sub ? '한 칸 위로' : '다른 폴더 고르기', kind: 'line', disabled: !!run }])}`;
+  // 통째로 꺼내기(restoreScope, E27)도 한 범위에 100만 개까지다 — 너무 커서 옮기지 않은 폴더(100만 개 넘음)의 맨 위 층은 통째로 꺼낼 수 없고,
+  // 목록(20만 개까지)으로도 열리지 않는다. 안쪽 폴더를 고르게 한다
+  const tooBigTop = !old.sub && oldFolders(mv?.result).some((f) => f.original === old.folder && f.tooBig);
+  // 통째로 꺼내기는 층을 읽은 뒤에, 또는 안쪽 목록만 못 읽은 층(noSplit)에서 된다. 판이 바뀐 자리 · 읽기 실패에는 두지 않는다
+  const canWhole = !run && !tooBigTop && (!!lv || noSplit);
+  const place = restorePlace(s, ui?.place, now, ui?.sentDefaultAt);
+  const placeHint = place.mode === 'default' ? `누르면 다운로드 안의 「${place.name}」 폴더에 바로 놓습니다.`
+    : place.unsafe ? '다운로드에는 놓을 수 없어, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : place.guarded ? '다운로드도 지키는 폴더라, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : '누르면 놓을 폴더를 고르는 창이 한 번 뜹니다.';
+  const busy = run ? ' aria-disabled="true"' : '';
+  const placeLink = place.mode === 'default' ? `<button class="lnk sm" type="button" data-act="place-pick"${busy}>자리 바꾸기</button>` : place.guarded ? '' : `<button class="lnk sm" type="button" data-act="place-default"${busy}>다운로드에 놓기</button>`;
+  // 놓을 자리 안내는 통째로 꺼낼 수 있는 층에만 둔다 — 읽는 중 · 읽지 못함 · 100만 개 넘는 맨 위 층에는 두지 않는다(Fable F4)
+  const showPlace = !tooBigTop && (!!lv || noSplit);
+  const stuck = noSplit && tooBigTop;
+  const l = `${kick(`${h(oldWho(fromName))} 백업${at}`)}${say(h(where), stuck ? '이 앱으로는 꺼낼 수 없습니다.' : noSplit ? '안쪽 폴더를 보여 드릴 수 없습니다.' : '어떻게 꺼낼까요?')}
+    ${then(stuck ? '바로 안에 파일이 너무 많아 안쪽 폴더 목록을 보여 드릴 수 없고, 파일과 폴더가 100만 개를 넘어 통째로도 꺼낼 수 없습니다. 옛 PC를 아직 쓸 수 있으면, 정리하기 전에 그 폴더를 USB나 외장 디스크로 직접 옮겨 두세요.'
+      : noSplit ? h(OLD_NO_SPLIT_THEN) : tooBigTop ? h(['이 폴더는 파일과 폴더가 100만 개를 넘어 통째로도, 목록으로도 꺼낼 수 없습니다.',
+      ...(lv?.folders?.length ? ['「안쪽 폴더」 목록에서 안쪽 폴더를 골라 그 폴더를 통째로 꺼내거나, 파일을 골라 꺼내세요.'] : []),
+      // 그 층 바로 안의 파일은 어느 길로도 꺼낼 수 없다 — 그때만 직접 옮겨 두라고 쓴다
+      ...(lv?.files ? [`바로 안의 파일 ${count(lv.files)}개는 이 앱으로 꺼낼 수 없으니, 옛 PC를 아직 쓸 수 있으면 정리하기 전에 직접 옮겨 두세요.`] : [])].join(' '))
+      : lv?.leftOut ? h(['Windows에 둘 수 없는 이름의 폴더가 있어 이 층은 파일을 골라 꺼낼 수 없습니다. 통째로 꺼내면 그런 이름의 폴더와 그 안의 파일은 빼고 나머지를 꺼냅니다.',
+      ...(lv.folders?.length ? ['안쪽 폴더만 필요하면 「안쪽 폴더」 목록에서 골라 주세요.'] : [])].join(' '))
+      : !lv ? (errText ? '이 층을 읽지 못해 지금은 꺼낼 수 없습니다.' : '안쪽 폴더를 읽고 있습니다. 다 읽으면 꺼낼 수 있습니다.')
+      : '「이 폴더 통째로 꺼내기」는 안의 파일과 폴더를 모두 새 폴더에 꺼냅니다. 몇 개만 필요하면 「파일 골라 꺼내기」로 목록을 열어 고르세요. 파일이 아주 많으면 목록은 열리지 않습니다.')}
+    ${acts([{ id: 'old-whole', label: '이 폴더 통째로 꺼내기', kind: 'main', disabled: !canWhole }, { id: 'old-open', label: '파일 골라 꺼내기', kind: 'line', disabled: !lv || !!run || noSplit || !!lv?.leftOut || tooBigTop },
+      { id: 'old-up', label: old.sub ? '한 칸 위로' : '다른 폴더 고르기', kind: 'link', disabled: !!run }],
+      showPlace ? `<span class="hint">${h(placeHint)} 옛 PC가 백업하던 폴더와 그 안, 그 폴더들이 든 위 폴더에는 놓을 수 없습니다. ${placeLink}</span>` : '')}`;
   let body;
   // 나눌 수 없는 층은 왼쪽 글이 까닭과 할 일을 말한다 — 오른쪽에 같은 글을 되풀이하지 않는다
   if (noSplit) body = '<p class="empty">바로 안의 파일이 너무 많아 안쪽 목록을 읽지 못했습니다.</p>';
@@ -511,7 +527,7 @@ function move1Real(s, mv, acct, now) {
     ${notes([...(kit ? [h(kit)] : []), ...(resuming ? ['앞서 멈춘 옮겨 오기를 잇습니다. 그때 고른 자리를 그대로 씁니다.'] : []),
       ...(rechoose ? [`${h(moveStopText(s, mv.state))} 파일을 놓기 전에 멈춰 자리를 다시 고를 수 있습니다.`] : []),
       '이미 있는 파일은 덮어쓰지 않습니다. 내용이 다르면 「(복구본)」을 붙여 나란히 둡니다.', '창을 닫아도 계속되고, 끊겨도 다시 시작하면 멈춘 곳부터 잇습니다.'])}
-    ${rows.big.length ? `<div class="box rise i3"><b>${h(josa(folderSubjectKo(rows.big), '은/는'))} 옮겨 오지 못합니다.</b>${rows.big.length === rows.rows.length ? '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않습니다. 옮겨 올 수 있는 폴더가 없습니다.' : '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다.'} 옛 PC의 백업에는 그대로 있고, 옮겨 온 뒤 필요한 파일은 「옛 PC 백업에서 꺼내기」로 골라 한 번에 1,000개까지 꺼낼 수 있습니다. ${h(TOO_BIG_MOVE_FIRST)}</div>` : ''}
+    ${rows.big.length ? `<div class="box rise i3"><b>${h(josa(folderSubjectKo(rows.big), '은/는'))} 옮겨 오지 못합니다.</b>${rows.big.length === rows.rows.length ? '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않습니다. 옮겨 올 수 있는 폴더가 없습니다.' : '파일과 폴더가 100만 개를 넘는 폴더라 옮기지 않고, 나머지 폴더만 옮겨 옵니다.'} 옛 PC의 백업에는 그대로 있고, 옮겨 온 뒤 「옛 PC 백업에서 꺼내기」에서 안쪽 폴더를 골라 통째로 꺼낼 수 있습니다. 옛 PC를 정리하기 전에 그 화면에 한 번 들어가, 꺼낼 수 없다고 나오는 것이 없는지 확인해 주세요.</div>` : ''}
     ${p.suggestKeepAsIs ? '<div class="box rise i3"><b>이 PC에 같은 파일이 이미 많습니다.</b>같은 PC를 다시 깐 것이라면 되살리지 않고 이 PC에서 이어서 백업하는 편이 빠릅니다.</div>' : ''}
     ${acts([nothing && hadResult ? { id: 'move-result', label: '확인서 보기', kind: 'main' } : { id: 'move-go', label: '이 자리로 옮겨 오기', kind: 'main', disabled: !rows.places || blocked || busy || nothing }, ...(p.suggestKeepAsIs ? [quit] : [])], `<span class="hint">${h(hint)}</span>`)}`;
   const dis = busy ? ' aria-disabled="true"' : '';
@@ -626,7 +642,7 @@ function move4Real(s, mv, acct, now) {
     ${stepBoxOf(needStep, ack)}
     ${notes([...(g?.failed ? [`옮겨 오지 못한 파일(${count(g.failed)}개${g.cut ? ' 이상' : ''})은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
       ...(g?.unverified ? [`내용을 견주지 못한 파일(${count(g.unverified)}개${g.cut ? ' 이상' : ''})은 이 PC에 있던 것을 그대로 두었고, 백업의 것은 「${h(fromName)}」의 백업에 그대로 있습니다.`] : []),
-      ...(g?.big ? [`${h(josa(folderSubjectKo(moveBigFolders(res)), '은/는'))} 너무 커서 옮기지 않았습니다. ${h(tooBigKept(fromName))} 넘긴 뒤에도 「파일 되살리기」 화면의 「옛 PC 백업에서 꺼내기」 단추로 다시 들어올 수 있습니다. ${h(tooBigMoveFirst(fromName))}`] : []),
+      ...(g?.big ? [`${h(josa(folderSubjectKo(moveBigFolders(res)), '은/는'))} 너무 커서 옮기지 않았습니다. ${h(tooBigKept(fromName))} 넘긴 뒤에도 「파일 되살리기」 화면의 「옛 PC 백업에서 꺼내기」 단추로 다시 들어올 수 있습니다.`] : []),
       ...(!res && st?.unfinished ? ['옮겨 오기를 마치지 않았습니다. 옮겨 오지 않은 파일은 옛 PC 백업에 그대로 있습니다.'] : []),
       ...(res ? ['넘긴 뒤에도 「설정」의 「프로그램과 설정」에서 프로그램을 깔고 다시 로그인할 곳을 볼 수 있습니다.'] : [])])}
     ${g?.big ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="old-start"${run ? ' aria-disabled="true"' : ''}>옛 PC 백업에서 꺼내기 ${I.rarr}</button></div>` : ''}
@@ -1121,7 +1137,7 @@ export function renderScreen(id, ctx) {
     case 'start-2': return start2(s, ctx.acct, fake, now);
     case 'start-3': return start3(s, fake);
     case 'restore': return restore(s, now, ctx.catalog, ctx.ui, ctx.mv, ctx.acct);
-    case 'restore-old': return restoreOld(s, ctx.mv, ctx.acct, ctx.old, now);
+    case 'restore-old': return restoreOld(s, ctx.mv, ctx.acct, ctx.old, now, ctx.ui);
     case 'partial': case 'partial-std': return partial(s, now, partialMode(id, s, fake));
     case 'move-0': return move0(s, now, fake);
     // 실제 상태(또는 창의 옮겨 오기 기억 mv가 있는 예시)는 엔진에 잇는 갈래로, 기억 없는 예시 상태는 시안 그대로 그린다

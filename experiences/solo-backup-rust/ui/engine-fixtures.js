@@ -50,6 +50,13 @@ export const STATES = {
   // 도는 되살리기 · 그만두는 중 · 그만둔 뒤(요청 16, 조율 세션 60a9de51e). 그만둔 뒤 엔진은 실패 칸에 CANCELED와 만들다 만 폴더를 적고 건강은 그대로 둔다
   'home-restoring': { ...base, job: { kind: 'restore', stage: '파일 복구 및 내용 검증 중', percent: null }, protection: { level: 'running', reason: 'job', nextAction: 'none' } },
   'home-restore-stopping': { ...base, job: { kind: 'restore-selected', stage: '되살리기를 그만두는 중', percent: null, cancelled: true }, protection: { level: 'running', reason: 'job', nextAction: 'none' } },
+  // 옛 PC 판의 범위를 통째로 받음 · 그 실패 · 고른 파일 받기의 겹침(E27 · E26 알림 · E29, 조율 세션 ced52da00)
+  'home-scope-done': { ...base, lastRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', at: at('2026-11-13T14:21:00+09:00'), fromEarlier: 0, inNone: 0, skipped: 2,
+    scope: { from: 'f'.repeat(12), folder: 'C:\\Users\\studio\\Pictures', sub: '2024/여행', snapshotAt: at('2026-11-12T21:00:00+09:00') } } },
+  'home-scope-big': { ...base, lastRestoreError: { code: 'CATALOG_TOO_LARGE', at: at('2026-11-13T14:21:00+09:00'), from: 'f'.repeat(12) } },
+  'home-scope-unsafe-sel': { ...base, lastSelectedRestoreError: { code: 'OUTPUT_UNSAFE', at: at('2026-11-13T14:21:00+09:00'), from: 'f'.repeat(12) } },
+  'home-scope-failed': { ...base, health: { status: 'attention', checkedAt: at('2026-11-13T14:21:00+09:00'), detail: '복구 또는 검증이 끝나지 않았습니다.' }, protection: { level: 'attention', reason: 'health', nextAction: 'check' },
+    lastRestoreError: { code: 'RESTORE_FAILED', at: at('2026-11-13T14:21:00+09:00'), from: 'f'.repeat(12), path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)' } },
   'home-restore-stopped': { ...base, lastRestoreError: { code: 'CANCELED', at: at('2026-11-13T14:21:00+09:00'), path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', named: true } },
   // 다운로드도 지키는 PC — 되살릴 자리를 처음부터 고르게 한다
   'home-downloads': { ...base, sources: [...SOURCES.slice(0, 3), 'C:\\Users\\studio\\Downloads'] },
@@ -90,6 +97,8 @@ export const { OLD_PC, OLD_CATALOG } = (() => {
     root: { from, folder: null, label: null, sub: '' },
     reading: { from, folder: PIC, label: '사진', sub: '', level: undefined, error: null, code: null },
     browse: { from, folder: PIC, label: '사진', sub: '', level, error: null, code: null },
+    // 안쪽 층 — 100만 개 넘는 「사진」 안이라 통째로 꺼낼 수 있다(E27)
+    inner: { from, folder: PIC, label: '사진', sub: '2025', level: { ...level, sub: '2025', folders: ['01월', '02월', '03월'], files: 48 }, error: null, code: null },
     deep: { from, folder: PIC, label: '사진', sub: '2024', level: { ...level, sub: '2024', folders: ['01월', '02월', '03월', '04월', '05월', '06월', '07월', '08월', '09월', '10월', '11월', '여행'], files: 3, leftOut: 1 }, error: null, code: null },
     // 바로 안에 파일만 20만 개 넘게 둔 층 — 나눌 수 없다(browseBackupFolder의 CATALOG_TOO_LARGE)
     noSplit: { from, folder: PIC, label: '사진', sub: '카메라 원본', level: null, code: 'CATALOG_TOO_LARGE', error: '' },

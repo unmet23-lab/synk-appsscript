@@ -62,6 +62,9 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'openFileCatalog') return { ok: true, value: { profile: 'b2', token: 'tk', from: args?.[0]?.from ?? null, snapshotAt: '2026-11-13T05:02:00Z', fileCount: 1, totalBytes: 10, scope: args?.[0]?.folder ? [{ source: '03-Pictures', folder: args[0].folder, sub: args[0].sub || '' }] : null, selection: { revision: 1, count: 0, bytes: 0 } } };
         if (method === 'queryFileCatalog') return { ok: true, value: { profile: 'b2', token: 'tk', query: '', offset: 0, total: 1, pageSize: 100, selection: { revision: 1, count: 0, bytes: 0 }, rows: [{ id: '1', source: '03-Pictures', path: '/2024/여행/a.jpg', name: 'a.jpg', size: 10, mtime: '2024-07-01T00:00:00Z', selected: false }] } };
         if (method === 'closeFileCatalog') return { ok: true, value: null };
+        // 범위를 통째로 받기(E27)는 뒤에서 도는 되살리기라 곧 상태를 돌려준다 · 만들다 만 폴더 열기(E29)
+        if (method === 'restoreScope') return { ok: true, value: cur };
+        if (method === 'openRestoreFolder' || method === 'openSelectedRestoreFolder') return { ok: true, value: null };
         // 기기가 다 참 — 다시 깐 PC의 옛 연결(백업하는 기기, sameInstall)과 되살리기 기기 둘
         if (method === 'signInGoogle') return { ok: false, error: 'x', code: 'LIMIT_DEVICES', details: { devices: [
           { id: 'a'.repeat(12), name: '작업 노트북', role: 'write', state: 'active', sameInstall: true },
@@ -211,6 +214,10 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     check('「찾은 것 모두 고르기」는 action all과 찾기 낱말을 보내고 목록을 다시 읽는다', sel.length === 1 && sel[0].action === 'all' && sel[0].query === '' && sel[0].ids === undefined && q1 === q0 + 1, JSON.stringify({ sel, q0, q1 }));
     await click(pg, '#room [data-act="old-back"]'); x = await seen(pg);
     check('「다른 폴더 고르기」는 고르던 층으로 돌아가고 목록을 닫는다', x.screen === 'restore-old' && x.calls.includes('closeFileCatalog') && await pg.$('#room [data-act="old-in"][data-name="여행"]') !== null, x.calls.slice(-4).join(','));
+    // E27 — 「이 폴더 통째로 꺼내기」는 고른 층을 restoreScope로 받고(놓을 자리는 기본 자리), 기본 화면으로 가서 진행을 본다
+    await click(pg, '#room [data-act="old-whole"]'); x = await seen(pg);
+    const sc = await lastArgs(pg, 'restoreScope');
+    check('「이 폴더 통째로 꺼내기」는 그 층을 restoreScope로 받고 기본 화면으로 간다', x.screen === 'home' && sc.length === 1 && sc[0].from === 'f'.repeat(12) && /Pictures$/.test(sc[0].folder) && sc[0].sub === '2024' && sc[0].place === 'default' && typeof sc[0].profile === 'string', JSON.stringify(sc));
     await click(pg, '#orb-btn'); await click(pg, '#room [data-act="restore"]'); x = await seen(pg);
     o = await lastArgs(pg, 'openFileCatalog');
     check('다른 길로 「파일 되살리기」에 오면 이 PC의 판을 연다(범위 없이)', x.screen === 'restore' && o.length === 2 && o[1].from === undefined && o[1].folder === undefined, JSON.stringify(o));
@@ -246,6 +253,10 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     await pg.waitForFunction(() => /전체 되살리기를 그만두었습니다/.test(document.getElementById('room').innerText), null, { timeout: 5000 }).catch(() => {});
     x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText }));
     check('그만둔 뒤 기본 화면에 그만두었다는 한 줄과 만들다 만 폴더 이름이 남는다', /전체 되살리기를 그만두었습니다/.test(x.text) && /「되살린 파일 \(11월 13일\)」은 그대로 두었습니다/.test(x.text), x.text.slice(0, 200));
+    // E29 — 그 줄의 「만들다 만 폴더 열기」는 openRestoreFolder({ unfinished: true })
+    await click(pg, '#room [data-act="open-left"]');
+    const ol = await pg.evaluate(() => window.__args.filter((a) => a.method === 'openRestoreFolder').map((a) => a.input));
+    check('「만들다 만 폴더 열기」는 openRestoreFolder에 unfinished를 실어 부른다', ol.length === 1 && ol[0] && ol[0].unfinished === true, JSON.stringify(ol));
     check('쪽 오류 없음(되살리기 그만두기)', !errors.length, errors.join(' | '));
     await ctx.close();
   }

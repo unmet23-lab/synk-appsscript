@@ -4,7 +4,7 @@
 
 import { createStore, failureText } from './state-store.js';
 import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey, moveLeft, moveRows,
-  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp } from './screen-model.js';
+  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp, scopeFailText } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -779,7 +779,7 @@ async function send(a, el) {
   if (a.flow && MOVE_FLOWS[a.flow]) return MOVE_FLOWS[a.flow]();
   if (a.call === 'closeWindow') { const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close(); }
   let r;
-  const where = a.call === 'restoreSelected' || a.call === 'restoreLatest' ? restorePlace(state(), ui.place, now(), ui.sentDefaultAt) : null;
+  const where = a.call === 'restoreSelected' || a.call === 'restoreLatest' || a.call === 'restoreScope' ? restorePlace(state(), ui.place, now(), ui.sentDefaultAt) : null;
   const place = where?.mode ?? null;
   // 기본 자리로 보낸 때를 적어 둔다 — 그 뒤의 겹침 거절만 「다운로드에는 놓을 수 없다」로 읽는다(Fable 셋째 -b FA1).
   // 그렇게 거절된 뒤 고른 자리로 보내면 이 창에서는 고르기를 굳힌다 — 다음에 다운로드로 돌아가 같은 실패를 되풀이하지 않게(-c FA1)
@@ -790,6 +790,13 @@ async function send(a, el) {
     if (r.ok && r.value?.started) { catalog = null; screen = 'home'; return go('home'); }
     if (!r.ok && (r.code === 'CATALOG_EXPIRED' || r.code === 'SELECTION_STALE')) { note(failureText(r.code)); return openCatalog(); }
   } else if (a.call === 'restoreLatest') r = await store.call('restoreLatest', { place });
+  // 옛 PC 판의 고른 층을 통째로 새 폴더에 받는다(restoreScope, E27) — 뒤에서 도는 되살리기라 기본 화면에서 진행과 「그만두기」를 본다
+  else if (a.call === 'restoreScope') {
+    if (!old?.folder) return;
+    r = await store.call('restoreScope', { profile: state()?.profile, folder: old.folder, ...(old.from ? { from: old.from } : {}), ...(old.sub ? { sub: old.sub } : {}), place });
+    if (r.ok) { catalog = null; return go('home'); }
+    if (!(r.code === 'OUTPUT_UNSAFE' && place === 'default') && scopeFailText(r.code)) return note(scopeFailText(r.code), 9000);
+  }
   else if (a.call === 'removeSource') r = await store.call('removeSource', el?.dataset.path ?? a.arg);
   // 분실 신고 뒤에는 Google 걸음을 확인받아야 봉투를 올린다(설계 2.4 (5)(나)) — 확인했을 때만 googleStepDone
   else if (a.account) {
@@ -803,12 +810,14 @@ async function send(a, el) {
     r = await store.call(a.call);
     if (r.ok) void store.refresh();
   }
-  else if (a.withProfile) r = await store.call(a.call, { profile: state()?.profile });
+  else if (a.withProfile) r = await store.call(a.call, { profile: state()?.profile, ...(a.extra || {}) });
   else if (a.args) r = await store.call(a.call, ...a.args);
   else if (a.arg !== undefined) r = await store.call(a.call, a.arg);
   else r = await store.call(a.call);
   // 다른 일이 도는 중이라 거절된 것은 폴더가 없다는 뜻이 아니다(FA3)
-  if (!r.ok && (a.call === 'openSelectedRestoreFolder' || a.call === 'openRestoreFolder') && !['BUSY', 'JOB_BUSY', 'CANCELED'].includes(r.code)) return note('되살린 폴더를 찾을 수 없습니다. 옮기거나 지웠다면 「파일 되살리기」로 다시 꺼내 주세요.');
+  // 만들다 만 폴더(E29 — unfinished)는 지우러 여는 것이라, 없으면 이미 지운 것이다
+  const unfinished = a.arg?.unfinished === true || a.extra?.unfinished === true;
+  if (!r.ok && (a.call === 'openSelectedRestoreFolder' || a.call === 'openRestoreFolder') && !['BUSY', 'JOB_BUSY', 'CANCELED'].includes(r.code)) return note(unfinished ? '만들다 만 폴더를 찾을 수 없습니다. 이미 지웠다면 더 할 일은 없습니다.' : '되살린 폴더를 찾을 수 없습니다. 옮기거나 지웠다면 「파일 되살리기」로 다시 꺼내 주세요.');
   if (!r.ok && r.code === 'OUTPUT_UNSAFE' && place === 'default') { ui = { ...ui, place: 'pick' }; note('다운로드가 지키는 폴더와 겹쳐 그 안에는 되살릴 수 없습니다. 놓을 자리를 고르도록 바꿨으니 다시 눌러 주세요.'); return paint(); }
   if (!r.ok && r.code === 'REPO_EXISTS') { acct = { ...acct, repoExists: true }; return paint(); }
   if (!r.ok && r.code === 'GOOGLE_STEP') acct = { ...acct, googleAck: false };
