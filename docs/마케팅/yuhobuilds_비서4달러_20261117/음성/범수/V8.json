@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "그런데 대화에 남은 옛 규칙대로, 받은 그림 일곱 장을 또 열더라고요.",
+ "dur": 3.569,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.01,
+   "end": 0.251
+  },
+  {
+   "text": "대화에",
+   "start": 0.692,
+   "end": 0.946
+  },
+  {
+   "text": "남은",
+   "start": 0.986,
+   "end": 1.16
+  },
+  {
+   "text": "옛",
+   "start": 1.213,
+   "end": 1.28
+  },
+  {
+   "text": "규칙대로,",
+   "start": 1.32,
+   "end": 1.721
+  },
+  {
+   "text": "받은",
+   "start": 1.962,
+   "end": 2.176
+  },
+  {
+   "text": "그림",
+   "start": 2.216,
+   "end": 2.39
+  },
+  {
+   "text": "일곱",
+   "start": 2.456,
+   "end": 2.63
+  },
+  {
+   "text": "장을",
+   "start": 2.67,
+   "end": 2.844
+  },
+  {
+   "text": "또",
+   "start": 2.898,
+   "end": 2.951
+  },
+  {
+   "text": "열더라고요.",
+   "start": 2.991,
+   "end": 3.569
+  }
+ ],
+ "source": {
+  "key": "6adc1c442e8be2d65c538b20a16f21e3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.15,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

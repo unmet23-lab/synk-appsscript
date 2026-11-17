@@ -1,0 +1,13 @@
+{
+  "id": "04-yuhobuilds-x",
+  "brand": "yuhobuilds",
+  "language": "ko",
+  "audioLanguage": "ko",
+  "alteredContent": true,
+  "madeForKids": false,
+  "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음. 영상은 판 모두 최종.mp4 하나.",
+  "platform": "x",
+  "account": "@yuhobuilds",
+  "format": "video-post",
+  "caption": "AI 비서한테 SNS 게시물 하나 보냈는데, 요금으로 치면 4.2달러였어요.\n비서가 몇 주째 한 대화를 이어 쓰느라, 받을 때마다 지난 대화를 처음부터 다시 읽고 있었어요. 많을 땐 한 번에 53만 토큰.\n길어졌으면 요약해서 새 대화로.\n요청문: https://synk.im/prompts/#assistant-long-chat"
+}

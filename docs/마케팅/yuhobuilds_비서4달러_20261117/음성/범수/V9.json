@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V9",
+ "text": "그래서 게시물을 받을 때마다, 규칙 파일부터 다시 읽게 했어요.",
+ "dur": 2.977,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.06,
+   "end": 0.25
+  },
+  {
+   "text": "게시물을",
+   "start": 0.314,
+   "end": 0.668
+  },
+  {
+   "text": "받을",
+   "start": 0.706,
+   "end": 0.858
+  },
+  {
+   "text": "때마다,",
+   "start": 0.897,
+   "end": 1.188
+  },
+  {
+   "text": "규칙",
+   "start": 1.568,
+   "end": 1.771
+  },
+  {
+   "text": "파일부터",
+   "start": 1.809,
+   "end": 2.114
+  },
+  {
+   "text": "다시",
+   "start": 2.177,
+   "end": 2.366
+  },
+  {
+   "text": "읽게",
+   "start": 2.405,
+   "end": 2.544
+  },
+  {
+   "text": "했어요.",
+   "start": 2.582,
+   "end": 2.977
+  }
+ ],
+ "source": {
+  "key": "fe069ecd6794f501b6ad91f9c9299dbe",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 138
+ }
+}

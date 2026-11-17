@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "알고 보니 게시물 하나 받을 때마다, 지난 대화를 처음부터 다시 읽고 있었어요.",
+ "dur": 3.92,
+ "words": [
+  {
+   "text": "알고",
+   "start": 0.02,
+   "end": 0.203
+  },
+  {
+   "text": "보니",
+   "start": 0.246,
+   "end": 0.415
+  },
+  {
+   "text": "게시물",
+   "start": 0.613,
+   "end": 0.895
+  },
+  {
+   "text": "하나",
+   "start": 0.951,
+   "end": 1.064
+  },
+  {
+   "text": "받을",
+   "start": 1.106,
+   "end": 1.303
+  },
+  {
+   "text": "때마다,",
+   "start": 1.346,
+   "end": 1.614
+  },
+  {
+   "text": "지난",
+   "start": 2.079,
+   "end": 2.276
+  },
+  {
+   "text": "대화를",
+   "start": 2.319,
+   "end": 2.573
+  },
+  {
+   "text": "처음부터",
+   "start": 2.615,
+   "end": 2.954
+  },
+  {
+   "text": "다시",
+   "start": 2.996,
+   "end": 3.193
+  },
+  {
+   "text": "읽고",
+   "start": 3.236,
+   "end": 3.377
+  },
+  {
+   "text": "있었어요.",
+   "start": 3.419,
+   "end": 3.92
+  }
+ ],
+ "source": {
+  "key": "9512ccaf2599916672ca9484ba31301c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 156
+ }
+}

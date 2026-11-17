@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "몇 주째 한 대화를 이어 썼거든요.",
+ "dur": 1.811,
+ "words": [
+  {
+   "text": "몇",
+   "start": 0.02,
+   "end": 0.111
+  },
+  {
+   "text": "주째",
+   "start": 0.15,
+   "end": 0.322
+  },
+  {
+   "text": "한",
+   "start": 0.4,
+   "end": 0.506
+  },
+  {
+   "text": "대화를",
+   "start": 0.57,
+   "end": 0.886
+  },
+  {
+   "text": "이어",
+   "start": 0.938,
+   "end": 1.044
+  },
+  {
+   "text": "썼거든요.",
+   "start": 1.083,
+   "end": 1.811
+  }
+ ],
+ "source": {
+  "key": "98822af9d395ed76ed9b31d86f5c5895",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 139
+ }
+}

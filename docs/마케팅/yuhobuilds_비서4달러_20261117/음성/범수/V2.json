@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "한 번만 그런 게 아니었어요.",
+ "dur": 1.281,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.03,
+   "end": 0.134
+  },
+  {
+   "text": "번만",
+   "start": 0.172,
+   "end": 0.381
+  },
+  {
+   "text": "그런",
+   "start": 0.419,
+   "end": 0.563
+  },
+  {
+   "text": "게",
+   "start": 0.601,
+   "end": 0.641
+  },
+  {
+   "text": "아니었어요.",
+   "start": 0.693,
+   "end": 1.281
+  }
+ ],
+ "source": {
+  "key": "ee212ed73c55ab10d6b3c89ed273d3ef",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 182
+ }
+}

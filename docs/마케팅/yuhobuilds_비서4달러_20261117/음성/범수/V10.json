@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V10",
+ "text": "AI는 한 줄 보낼 때마다, 그 대화를 처음부터 다시 읽어요. 길어졌으면, 요약해서 새 대화로.",
+ "dur": 5.286,
+ "words": [
+  {
+   "text": "AI는",
+   "start": 0.02,
+   "end": 0.418
+  },
+  {
+   "text": "한",
+   "start": 0.462,
+   "end": 0.55
+  },
+  {
+   "text": "줄",
+   "start": 0.595,
+   "end": 0.683
+  },
+  {
+   "text": "보낼",
+   "start": 0.728,
+   "end": 0.89
+  },
+  {
+   "text": "때마다,",
+   "start": 0.934,
+   "end": 1.229
+  },
+  {
+   "text": "그",
+   "start": 1.406,
+   "end": 1.479
+  },
+  {
+   "text": "대화를",
+   "start": 1.524,
+   "end": 1.804
+  },
+  {
+   "text": "처음부터",
+   "start": 1.863,
+   "end": 2.158
+  },
+  {
+   "text": "다시",
+   "start": 2.202,
+   "end": 2.423
+  },
+  {
+   "text": "읽어요.",
+   "start": 2.468,
+   "end": 2.703
+  },
+  {
+   "text": "길어졌으면,",
+   "start": 3.146,
+   "end": 3.721
+  },
+  {
+   "text": "요약해서",
+   "start": 4.251,
+   "end": 4.634
+  },
+  {
+   "text": "새",
+   "start": 4.679,
+   "end": 4.752
+  },
+  {
+   "text": "대화로.",
+   "start": 4.827,
+   "end": 5.286
+  }
+ ],
+ "source": {
+  "key": "f522a3e7d82a758f8bd94c2eae314a52",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 175
+ }
+}

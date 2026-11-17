@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "많을 땐 한 번에, 53만 토큰을 다시 읽었어요.",
+ "dur": 2.612,
+ "words": [
+  {
+   "text": "많을",
+   "start": 0.02,
+   "end": 0.246
+  },
+  {
+   "text": "땐",
+   "start": 0.289,
+   "end": 0.402
+  },
+  {
+   "text": "한",
+   "start": 0.444,
+   "end": 0.53
+  },
+  {
+   "text": "번에,",
+   "start": 0.571,
+   "end": 0.77
+  },
+  {
+   "text": "53만",
+   "start": 1.138,
+   "end": 1.535
+  },
+  {
+   "text": "토큰을",
+   "start": 1.576,
+   "end": 1.845
+  },
+  {
+   "text": "다시",
+   "start": 1.888,
+   "end": 2.058
+  },
+  {
+   "text": "읽었어요.",
+   "start": 2.101,
+   "end": 2.612
+  }
+ ],
+ "source": {
+  "key": "01b791910b58a67db0ca7560f3cbb88d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 179
+ }
+}

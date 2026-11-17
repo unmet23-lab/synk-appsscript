@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "AI 비서한테 SNS 게시물 하나 보냈는데, 요금으로 치면 4.2달러였어요.",
+ "dur": 4.063,
+ "words": [
+  {
+   "text": "AI",
+   "start": 0.02,
+   "end": 0.256
+  },
+  {
+   "text": "비서한테",
+   "start": 0.294,
+   "end": 0.661
+  },
+  {
+   "text": "SNS",
+   "start": 0.766,
+   "end": 1.132
+  },
+  {
+   "text": "게시물",
+   "start": 1.171,
+   "end": 1.432
+  },
+  {
+   "text": "하나",
+   "start": 1.472,
+   "end": 1.59
+  },
+  {
+   "text": "보냈는데,",
+   "start": 1.629,
+   "end": 1.995
+  },
+  {
+   "text": "요금으로",
+   "start": 2.427,
+   "end": 2.701
+  },
+  {
+   "text": "치면",
+   "start": 2.741,
+   "end": 2.99
+  },
+  {
+   "text": "4.2달러였어요.",
+   "start": 3.028,
+   "end": 4.063
+  }
+ ],
+ "source": {
+  "key": "dbb6e811bda865181dc0a00ed721ce1f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "고친 뒤 첫 게시물은, 요약하고 나니 4만 토큰대였어요.",
+ "dur": 3.106,
+ "words": [
+  {
+   "text": "고친",
+   "start": 0.02,
+   "end": 0.268
+  },
+  {
+   "text": "뒤",
+   "start": 0.314,
+   "end": 0.376
+  },
+  {
+   "text": "첫",
+   "start": 0.423,
+   "end": 0.515
+  },
+  {
+   "text": "게시물은,",
+   "start": 0.562,
+   "end": 1.01
+  },
+  {
+   "text": "요약하고",
+   "start": 1.443,
+   "end": 1.798
+  },
+  {
+   "text": "나니",
+   "start": 1.845,
+   "end": 2.03
+  },
+  {
+   "text": "4만",
+   "start": 2.154,
+   "end": 2.37
+  },
+  {
+   "text": "토큰대였어요.",
+   "start": 2.417,
+   "end": 3.106
+  }
+ ],
+ "source": {
+  "key": "926b58b8c5b89c9734e8c271428ba27e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 171
+ }
+}
