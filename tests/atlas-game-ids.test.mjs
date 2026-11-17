@@ -31,10 +31,11 @@ const isSource = file =>
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const all = (text, pattern) => [...text.matchAll(pattern)].map(match => match[1]);
 
-// 게임 이름 상수 — GAME_ID로 끝나는 이름과, 입구가 가져다 쓰는 근거 판의 FIRST_GAME처럼 GAME으로 끝나는 이름.
-const GAME_CONST = /\b[A-Z_]*GAME(?:_ID)?\s*=\s*['"]([^'"]+)['"]/g;
-const MADE_WITH = /\bcreate(?:Game|Coach)\(\{\s*gameId\s*:\s*['"]([^'"]+)['"]/g;
-const POLICY_ID = /\bgameId\s*:\s*['"]([^'"]+)['"]/g;
+// 게임 이름 상수 — GAME_ID로 끝나는 이름과, 입구가 가져다 쓰는 근거 판의 FIRST_GAME처럼 GAME으로 끝나는 이름. 세 꼴 모두 빈 이름('')도 모은다 —
+// 모으기에서 빠진 이름은 꼴 검사를 비켜 간다(끝 판 고침 검수 GPT GB1).
+const GAME_CONST = /\b[A-Z_]*GAME(?:_ID)?\s*=\s*['"]([^'"]*)['"]/g;
+const MADE_WITH = /\bcreate(?:Game|Coach)\(\{\s*gameId\s*:\s*['"]([^'"]*)['"]/g;
+const POLICY_ID = /\bgameId\s*:\s*['"]([^'"]*)['"]/g;
 const QUOTED = /['"]([a-z][a-z0-9-]*)['"]/g;
 
 function gather() {
@@ -88,6 +89,13 @@ test('지금 쓰는 게임 이름은 모두 엔진의 게임 이름 꼴이다 �
     assert.ok(found.has(id), `WORLD 새 엔진 코치 이름 ${id}을 찾는다(모으기가 깨지지 않았다)`);
   const games = [...found.values()].filter(file => /\/learning\.mjs$/.test(file)).length;
   assert.ok(games >= 8, `게임들의 GAME_ID를 찾는다(${games}개)`);
+  // learning.mjs마다 이름 상수에 넣은 값을 빠짐없이 모았다 — 빈 이름이나, 모으기가 못 읽는 꼴(따옴표 글자가 아닌 값)로 바뀐 이름이
+  // 수에서 말없이 빠지지 않게(GPT GB1). 넣기를 세는 꼴은 GAME_CONST의 이름 꼴과 같고, 견주기(==)는 세지 않는다.
+  for (const file of tracked.filter(name => /^experiences\/[^/]+\/learning\.mjs$/.test(name))) {
+    const text = read(file);
+    const assigned = (text.match(/\b[A-Z_]*GAME(?:_ID)?\s*=(?![=>])/g) ?? []).length;
+    assert.equal(all(text, GAME_CONST).length, assigned, `${file} — 이름 상수의 값을 모두 모은다`);
+  }
   const bad = [...found].filter(([id]) => !isGameId(id));
   assert.deepEqual(bad, [], '꼴이 틀린 게임 이름 — 새 코치가 만들 때 던진다');
 });
@@ -112,4 +120,8 @@ test('SYNK-talk 서버 런타임의 게임 이름도 꼴에 맞는다(형제 저
 test('꼴 검사 자체 — 틀린 이름은 거짓, 맞는 이름은 참이다(모으기만 보고 지나가지 않게)', () => {
   for (const id of ['', 'a..b', 'world.', '.world', 'g'.repeat(81), 'world mock', '한글']) assert.equal(isGameId(id), false, id);
   for (const id of ['atlas', 'world-mock', 'world-mock.x', 'first-steps-v1', 'g'.repeat(80)]) assert.equal(isGameId(id), true, id);
+  // 모으기는 빈 이름도 모은다 — 그래야 빈 게임 이름이 위 꼴 검사에 걸린다(GPT GB1).
+  assert.deepEqual(all("const GAME_ID = '';", GAME_CONST), ['']);
+  assert.deepEqual(all("createGame({ gameId: '' })", MADE_WITH), ['']);
+  assert.deepEqual(all("const policy = { gameId: '' };", POLICY_ID), ['']);
 });
