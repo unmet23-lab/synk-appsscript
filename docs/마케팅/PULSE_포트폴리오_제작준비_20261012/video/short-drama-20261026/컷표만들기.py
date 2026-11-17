@@ -83,6 +83,8 @@ def 장면표():
                 break
         # 사람 없는 컷(인서트)도 이 빛 줄을 그대로 쓰므로 얼굴 낱말을 뺀다 — 뜻(앞에서 고르게 채운 빛)은 그대로
         빛 = re.sub(r"soft fill(?: light)? on the faces, bright clean skin tones,", "soft even fill light everywhere,", 빛 or "")
+        # 옛 웹 판 지시문의 그림 번호 꼬리(「Image 8 shows this same office …」)는 판마다 번호가 달라 표 문장에서 뺀다(11-17) — 참조 그림은 컷 지시문의 REFS 줄이 부른다
+        장소 = re.sub(r"\s*Image \d+ shows this same [^.]*?described above\.", "", 장소 or "")
         out[이름] = {"장소": 장소 or "", "빛": 빛, "빛이름": 빛이름[이름], "시간대": 시간대[이름], "실내": True,
                     "기준그림": str(정지 / f"{cs[0]}.jpg").replace("\\", "/")}
     return out
@@ -148,7 +150,8 @@ def 인물표():
               "기준그림": str(P7 / "소품기준" / "혼인신고서_작성.png").replace("\\", "/"),
               "기준그림_빈양식": str(P7 / "소품기준" / "혼인신고서_빈양식.png").replace("\\", "/"),
               "상태": "1-26 · 1-27은 빈 양식(기준그림_빈양식 — 모든 칸이 비었다). 2-32부터는 이안이 일주일 동안 써 온 다 쓴 양식(기준그림 — 이름 「이안」 · 「서진」, 생년월일, 주소, 근친혼 「해당 없음」, 신고인 서명까지 같은 필체 볼펜 손글씨)"},
-    "새원피스": {"종류": "소품", "낱말": ["dress"], "색": "emerald-green satin",
+    "새원피스": {"종류": "소품", "낱말": ["slip dress"],   # 11-17: 「dress」는 이안의 「white dress shirt」 · 서진의 「knit dress」와 겹쳐 검사가 29컷을 잘못 짚었다
+             "색": "emerald-green satin",
              "생김새": "A new emerald-green satin slip dress with a white paper price tag on a string.",
              "기준그림": str(정지 / "2-3.jpg").replace("\\", "/")},
 }

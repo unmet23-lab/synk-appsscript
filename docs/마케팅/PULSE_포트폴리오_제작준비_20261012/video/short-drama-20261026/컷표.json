@@ -16,7 +16,7 @@
  },
  "장면": {
   "회사낮": {
-   "장소": "a bright open-plan office in Seoul — long rows of white desks with black monitors and laptops, grey mesh office chairs, white walls, a white ceiling with rows of square LED panel lights, big windows along one side. Image 8 shows this same office only for its furniture, materials and colors — do not copy its wide framing; this shot keeps the framing described above.",
+   "장소": "a bright open-plan office in Seoul — long rows of white desks with black monitors and laptops, grey mesh office chairs, white walls, a white ceiling with rows of square LED panel lights, big windows along one side.",
    "빛": "bright, even, cool-white office light from the ceiling panels plus soft daylight from the windows; clean bright whites, slightly high-key, like a Korean office drama.",
    "빛이름": [
     "High key",
@@ -338,7 +338,7 @@
   "새원피스": {
    "종류": "소품",
    "낱말": [
-    "dress"
+    "slip dress"
    ],
    "색": "emerald-green satin",
    "생김새": "A new emerald-green satin slip dress with a white paper price tag on a string.",
@@ -1637,7 +1637,7 @@
    "연기": [
     {
      "t": 0.2,
-     "무엇": "민재의 눈썹이 한쪽만 올라가고 눈이 이안의 도시락 쪽으로 내려간다. 아래 왼쪽 이안의 손이 젓가락을 쥔 채 조금 들린다"
+     "무엇": "민재의 눈썹이 한쪽만 올라가고 눈이 이안의 도시락 쪽으로 내려간다. 아래 오른쪽 이안의 손이 젓가락을 쥔 채 조금 들린다"
     },
     {
      "t": 0.3,
@@ -1770,7 +1770,7 @@
    "연기": [
     {
      "t": 0.2,
-     "무엇": "민재의 눈이 종이컵 테두리 너머로 이안을 올려다보고 눈썹이 살짝 오른다. 왼쪽 앞 흐린 이안의 어깨가 숨에 맞춰 조금 오르내린다"
+     "무엇": "민재의 눈이 종이컵 테두리 너머로 이안을 올려다보고 눈썹이 살짝 오른다. 오른쪽 앞 흐린 이안의 어깨가 숨에 맞춰 조금 오르내린다"
     },
     {
      "t": 0.3,
@@ -1827,7 +1827,7 @@
    ],
    "넘어옴": "민재의 「몇이야?」에 이안이 고개를 숙인 채 답함",
    "소품": {
-    "빈칸도시락": "이안 앞 책상 위",
+    "빈칸도시락": "이안 앞 책상 위 · 매실은 1-18에서 먹어 없음(도시락 앞쪽 끝만 보이게 잡는다)",
     "꽉찬도시락": "화면밖",
     "배송상자": "화면밖",
     "혼인신고서": "화면밖",
@@ -3342,6 +3342,9 @@
    "카메라": "가슴 높이 고정 — 거의 움직이지 않고, 0.2 ~ 0.7초 스쳐 가는 서진의 몸이 화면을 덮었다 지나가면 복도 끝에 선 이안이 끝 그림 그대로 보인다(한 판 이어짐)",
    "끝그림": "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/콘티/p7/정지컷/2-10e.jpg",
    "소리": "구두 소리 · 끝 무렵 민재 목소리가 먼저(J컷)",
+   "끝그림인물": [
+    "이안_맨투맨"
+   ],
    "연기": [
     {
      "t": 0.1,
@@ -4115,7 +4118,7 @@
    "연기": [
     {
      "t": 2.6,
-     "무엇": "눈이 베개 위에서 그녀 쪽으로 올라가고 눈썹 안쪽이 살짝 모인다"
+     "무엇": "등 뒤에 앉은 그녀를 의식하듯 눈이 베개 위에서 위로 올라가고(고개는 돌리지 않는다) 눈썹 안쪽이 살짝 모인다"
     },
     {
      "t": 2.7,
@@ -4209,7 +4212,7 @@
    "연기": [
     {
      "t": 0.2,
-     "무엇": "이안의 눈이 그녀 얼굴(화면 오른쪽)로 곧게 가고 눈썹 안쪽이 조금 모이며, 상체가 곧게 펴지기 시작한다"
+     "무엇": "이안의 눈이 그녀 얼굴(화면 왼쪽)로 곧게 가고 눈썹 안쪽이 조금 모이며, 상체가 곧게 펴지기 시작한다"
     },
     {
      "t": 0.4,
@@ -4221,7 +4224,7 @@
     },
     {
      "t": 1.4,
-     "무엇": "끝 모습 — 입을 다물고 그녀를 바로 보며 숨을 쉬고 눈을 한 번 깜빡이며, 오른쪽 끝의 흐린 서진 머리칼이 조금 흔들린다"
+     "무엇": "끝 모습 — 입을 다물고 그녀를 바로 보며 숨을 쉬고 눈을 한 번 깜빡이며, 왼쪽 끝의 흐린 서진 머리칼이 조금 흔들린다"
     }
    ],
    "연기세기": "작게",
