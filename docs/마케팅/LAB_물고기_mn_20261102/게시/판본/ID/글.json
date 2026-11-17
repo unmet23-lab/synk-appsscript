@@ -519,27 +519,6 @@
       }
     },
     {
-      "id": "ask",
-      "칸": "끝질문",
-      "글": "Kamu tim 물고기?",
-      "원문": "너 물고기 편이야?",
-      "초": [
-        16.2,
-        17.5
-      ],
-      "상자": {
-        "폭": 760,
-        "굵기": 800,
-        "줄높이": 1.14,
-        "최대줄": 1,
-        "가운데": true,
-        "x": 130,
-        "y": 370,
-        "글자크기": 40,
-        "글꼴": "'Inter Tight', 'SUIT', sans-serif"
-      }
-    },
-    {
       "id": "게시글.tiktok.본문.1",
       "칸": "게시글",
       "글": "Bahasa Korea suka gabungin kata-kata pendek jadi kata baru: 물 (mul) air + 고기 (go-gi) daging = 물고기 (mul-go-gi), ikan.",
