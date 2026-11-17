@@ -1606,6 +1606,43 @@ def 소품줄검사(seq):
     return out
 
 
+키부터 = "20261118"   # T20 — 이 날 이후 편(편 날짜)은 걸림, 앞선 편 · 날짜를 못 읽는 편은 주의(진행 중인 다른 편의 판을 막지 않으려고)
+
+
+def 인물키검사(seq, 폴더=None):
+    """T20 — 사람과 탈것이 한 컷에 나오면 그 인물 줄에 「키」(그 탈것에 견준 키)가 있어야 한다(63) → [(등급, 어디, 글)].
+    왜: 11-18 YOUTH UP 「잠깐」 — 인물 기준 그림부터 아빠와 차가 같은 키(장난감 크기 차)라, 「서서는 지붕 너머가 보이고 앉으면 안 보인다」는
+    핵심 장면이 처음부터 서지 않았다. 유호님 「차 높이도 아이시선으로 강조해야하는부분도 크게 강조한것같지가않은데 ?」. 키를 표에 한 번 적고
+    키 기준 그림을 하나 굽어 그 컷들의 참고로 넣어야 컷마다 사람과 차의 크기가 같아진다(원칙 3 한 편은 한 세계)."""
+    out = []; 인물표 = seq.get("인물") if isinstance(seq.get("인물"), dict) else {}; 표 = 소품표줄(seq)
+    def 탈것인가(이름):
+        줄 = 표.get(이름)
+        return (isinstance(줄, dict) and str(줄.get("종류") or "").strip() == "탈것") or bool(_탈것이름.search(str(이름)))
+    빠진 = {}   # 인물 → [(컷, 탈것)]
+    for d in seq.get("detail") or []:
+        if not isinstance(d, dict): continue
+        소품 = d.get("소품") if isinstance(d.get("소품"), dict) else {}
+        차 = [n for n, v in 소품.items() if v not in _소품없음 and 탈것인가(n)]
+        if not 차: continue
+        사람 = []
+        for 칸 in ("인물", "그림인물", "끝그림인물"):
+            v = d.get(칸)
+            if isinstance(v, list): 사람 += [x for x in v if isinstance(x, str) and x.strip() and x not in 사람]
+        for 누구 in 사람:
+            p = 인물표.get(누구)
+            if isinstance(p, dict) and not 빈칸(p.get("키")): continue
+            곳 = 빠진.setdefault(누구, [])
+            if not any(c == d.get("cut") for c, _ in 곳): 곳.append((d.get("cut"), 차[0]))
+    if not 빠진: return out
+    날짜 = 편날짜(seq, 폴더); 등급 = "걸림" if (날짜 and 날짜 >= 키부터) else "주의"
+    for 누구, 곳 in 빠진.items():
+        컷들 = " · ".join(f"{c}({t})" for c, t in 곳[:4]) + (" …" if len(곳) > 4 else "")
+        out.append((등급, f"인물 {누구}", f"사람과 탈것이 한 컷에 나오는데({컷들}) 인물 「{누구}」 줄에 「키」 칸이 없다 — 그 탈것에 견준 키"
+                    f"(해치백 지붕이 어깨에 온다 · 8살은 모자 꼭대기가 지붕보다 낮다)를 한 번 적고, 키 기준 그림을 하나 굽어 그 컷들의 참고 그림으로 넣는다. "
+                    f"인물 기준 그림만 넣으면 모델은 사람 옆에 장난감 크기 차를 그린다(63)"))
+    return out
+
+
 def _파일지문(p):
     """파일 내용의 sha1(못 읽으면 None) — 이름이 달라도 같은 그림인지 본다"""
     import hashlib
@@ -1722,7 +1759,7 @@ def 꾸러미시작그림(seq, 판들):
 
 
 def 틀검사(seq, r, 폴더=None, 그림폴더=None, 영상=None):
-    """컷표 틀 2의 칸 검사(T1~T19) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약).
+    """컷표 틀 2의 칸 검사(T1~T20) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약).
     폴더: 컷표가 있는 편 폴더(시작 그림 · 글자 시안 파일을 읽어 견줄 때) · 그림폴더: --그림 폴더 — 둘 다 없어도 돈다(내기 도구의 굽기전은 표만 넘긴다).
     영상: --영상(편집 · 마감 관문판) — 글자 시안(T19)이 없으면 주의가 아니라 걸림이다."""
     def 걸림(컷, 글): r.더함("틀", 컷, "걸림", 글)
@@ -1809,8 +1846,8 @@ def 틀검사(seq, r, 폴더=None, 그림폴더=None, 영상=None):
             걸림(cut, f"컷 사이 낮 · 밤이 바뀜(51) — 앞 컷 {p.get('cut')} 「{a}」 → 이 컷 「{b}」(날 · 때가 바뀌는 컷이면 시간건너뜀: true)")
         # T6
         if 빈칸(d.get("넘어옴")): 주의(cut, "「넘어옴」 칸이 비었다 — 앞 컷에서 넘어올 까닭(29)")
-    # T17 같은 시작 그림 · 같은 받은 영상을 두 컷이 쓴다(50) / T18 되풀이해 나오는 탈것 · 소품 한 줄(51)
-    for 등급, 어디, 글 in 시작그림검사(seq, 폴더, 그림폴더) + 소품줄검사(seq): (걸림 if 등급 == "걸림" else 주의)(어디, 글)
+    # T17 같은 시작 그림 · 같은 받은 영상을 두 컷이 쓴다(50) / T18 되풀이해 나오는 탈것 · 소품 한 줄(51) / T20 사람과 탈것이 한 컷이면 인물 키(63)
+    for 등급, 어디, 글 in 시작그림검사(seq, 폴더, 그림폴더) + 소품줄검사(seq) + 인물키검사(seq, 폴더): (걸림 if 등급 == "걸림" else 주의)(어디, 글)
     # T7 기승전결
     rows = [row for row in (seq.get("seq") or []) if isinstance(row, (list, tuple)) and row]
     띠 = {str(row[2]).strip() for row in rows if len(row) > 2}
