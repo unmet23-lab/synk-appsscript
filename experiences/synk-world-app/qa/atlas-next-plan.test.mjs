@@ -635,14 +635,18 @@ test('점검 칸 넷이 두뇌에서 같은 자리이면 제품 차례(짧은 �
   coach.dispose();
 });
 
-test('점검 칸 — 소리를 끈 날의 말하기 · 시간 설정에 걸린 시험 형식은 잠기고, 이번 주에 시험 형식 판을 한 뒤에는 시험 형식 줄이 서지 않는다', async () => {
+// 플래너의 잠금만 보는 장면이다. 이번 주 계획은 소리를 켠 채 지었고(checkWeek) 학습 설정의 소리만 끈다. 셸은 소리를 끈 날 계획을 소리 없이 지어
+// 말하기를 그 주의 몫에서 빼고(notes speaking-audio-off) 시험 형식을 읽기만으로 고르므로(audioRequired 거짓), 소리 때문에 잠기는 아래 두 줄은 셸
+// 길로는 넘어오지 않는다. 실제로 생기는 소리를 끈 주는 아래 「장면 가」가 본다(끝 판 검수 GPT GE1 — 설계 주인 11-17 오후 답).
+test('점검 칸 — 플래너는 넘겨받은 줄이 소리 · 시간 조건에 걸리면 잠그고(소리가 필요한 말하기 · 듣기가 든 시험 형식 · 시간 설정을 넘는 시험 형식), 이번 주에 시험 형식 판을 한 뒤에는 시험 형식 줄이 서지 않는다', async () => {
   const { coach, time } = await homeCoach();
   const progress = progressOf({ completed: ORDER });
   const at = (settings, facts) => homePlan({ coach, progress, now: time.t, settings: { ...EXAM_T2, speaking: true, ...settings }, week: checkWeek(coach, time.t, facts) });
   const quiet = at({ audio: 'off' }, { writing: null, mock: null });
-  assert.equal(checkRow(quiet), null, '소리를 끈 날의 말하기는 잠긴다');
+  assert.ok(quiet.candidates.some(open => open.route === 'speaking'), '장면의 전제 — 말하기 줄을 넘겨받는다(소리를 켠 채 지은 주)');
+  assert.equal(checkRow(quiet), null, '넘겨받은 말하기 줄은 소리를 끈 날 잠긴다(플래너의 잠금)');
   const mockQuiet = at({ audio: 'off' }, { writing: null, speaking: null });
-  assert.equal(checkRow(mockQuiet), null, '소리를 끈 날 듣기가 든 시험 형식은 잠긴다');
+  assert.equal(checkRow(mockQuiet), null, '넘겨받은 시험 형식에 듣기가 들었으면 소리를 끈 날 잠긴다(플래너의 잠금)');
   const short = at({ minutes: 10 }, { writing: null, speaking: null });
   assert.equal(checkRow(short), null, '시간 설정(10분)에 걸린 시험 형식(40분)은 잠긴다');
   const done = at({}, { writing: null, speaking: null, mock: { ...CHECK_FACTS.mock, done: true } });
@@ -721,9 +725,11 @@ test('보탬 — 점검 칸 넷의 이번 주 몫이 모두 찬 날에만 이번
   coach.dispose();
 });
 
-// 보탬을 막는 몫(설계 주인이 승인한 해석 1 — 잠긴 활동과 낼 것이 없는 활동도 몫은 남은 것이다). 넘길 줄이 없다는 것만으로는 몫이 모두 찬 날이
-// 아니다(끝 판 검수 GPT GE1).
-test('보탬은 점검 칸의 몫이 남은 날에는 서지 않는다 — 넘길 줄이 없어도 다시 확인이나 말하기 몫이 남았으면 그날은 보탬이 아니다(해석 1 · 끝 판 검수 GPT GE1)', async () => {
+// 장면 나(끝 판 검수 GPT GE1 — 설계 주인 11-17 오후 답). 보탬은 계획이 낸 넷(다시 확인 · 시험 형식 · 쓰기 · 말하기)의 이번 주 몫이 모두 0일 때만
+// 선다. 넘길 줄이 없다는 것만으로는 몫이 모두 찬 날이 아니다. 여기서는 몫이 남았는데 그 줄을 지을 수 없는 주를 손으로 짓는다. 다시 확인 장면은
+// GPT가 든 입력(다시 확인 몫 1, 진단이 낼 문항 없음)이고, 셸 길로는 생기지 않는 입력이다. 셸의 계획은 진단이 낼 문항이 있을 때만 다시 확인 몫을
+// 세운다(available.recheck). 홈 플래너가 계획 값을 고르게 보는지만 본다.
+test('장면 나 — 계획이 낸 넷의 몫이 남았는데 그 줄을 지을 수 없는 주에는 보탬이 서지 않는다 · 다시 확인 몫 1에 진단이 낼 문항이 없는 GPT 입력은 셸 길로는 생기지 않는다(끝 판 검수 GPT GE1)', async () => {
   const { coach, time } = await homeCoach();
   const progress = progressOf({ completed: ORDER });
   const settings = { ...EXAM_T2, speaking: true };
@@ -732,12 +738,16 @@ test('보탬은 점검 칸의 몫이 남은 날에는 서지 않는다 — 넘�
   const full = fillArea(fillArea(opened, 'writing'), 'speaking');
   const plan = week => homePlan({ coach, progress, now: time.t, settings, week });
   assert.equal(checkRow(plan(full))?.activityId, 'topik2-writing-53', '장면의 전제 — 몫이 모두 찬 날에는 보탬이 선다');
-  // 다시 확인 몫이 남았는데 진단이 낼 문항이 없는 주 — 셸은 이 값을 짓지 않지만(계획은 낼 문항이 있을 때만 다시 확인 몫을 세운다) 홈 플래너는 몫으로 본다
+  // 다시 확인 몫이 남았는데 진단이 낼 문항이 없는 주(GPT 입력) — 셸은 이 값을 짓지 않지만(계획은 낼 문항이 있을 때만 다시 확인 몫을 세운다) 홈 플래너는 몫으로 본다
   assert.ok(full.examPlan.areas.find(row => row.area === 'recheck')?.planned > 0, '장면의 전제 — 계획에 다시 확인 칸이 있다');
   const recheckAreas = full.examPlan.areas.map(row => (row.area === 'recheck' ? { ...row, done: 0, remaining: row.planned } : row));
   const recheckLeft = plan({ ...full, diagnostic: { ready: false }, examPlan: { ...full.examPlan, areas: recheckAreas } });
   assert.ok(!recheckLeft.candidates.some(open => open.route === 'position'), '진단이 낼 문항이 없으면 짧은 진단을 넘기지 않는다');
   assert.ok(!recheckLeft.candidates.some(open => open.route === 'writing'), '다시 확인 몫이 남아 보탬이 서지 않는다');
+  // 시험 형식 판이 있고 이번 주에 하지 않았는데 판의 분을 읽지 못한 주 — 시험 형식은 계획의 영역이 아니라서 셸이 넘긴 판으로 몫을 본다
+  const mockLeft = plan({ ...full, mock: { ...CHECK_FACTS.mock, minutes: Number.NaN } });
+  assert.ok(!mockLeft.candidates.some(open => open.route === 'mock'), '판의 분을 읽지 못하면 시험 형식을 넘기지 않는다');
+  assert.ok(!mockLeft.candidates.some(open => open.route === 'writing'), '시험 형식 몫이 남아 보탬이 서지 않는다');
   // 말하기 몫이 남았는데 말하기 줄을 지을 값이 없는 주(셸이 말하기 항목의 유형을 읽지 못함)
   const speakingLeft = plan({ ...fillArea(opened, 'writing'), speaking: null });
   assert.ok(!speakingLeft.candidates.some(open => open.route === 'speaking'), '말하기 값이 없으면 말하기를 넘기지 않는다');
@@ -745,38 +755,51 @@ test('보탬은 점검 칸의 몫이 남은 날에는 서지 않는다 — 넘�
   coach.dispose();
 });
 
-// 소리를 끈 날 지금 판 계획은 말하기를 닫는다(notes 'speaking-audio-off' · 이번 주에 한 적이 없으면 영역도 빠진다). 위 「소리를 끈 날의 말하기」
-// 장면은 소리를 켠 채 지은 주를 써서 이 길을 보지 못했다 — 여기서는 셸처럼 소리를 끈 날의 재료로 이번 주 계획을 짓는다(끝 판 검수 GPT GE1).
-test('소리를 끈 날 — 계획이 말하기를 닫아도 이번 주에 하지 않은 말하기는 잠긴 줄로 넘어가 조건에 걸린 날이 되고 보탬은 서지 않는다 · 이번 주에 한 말하기와 말하기 항목이 없는 날은 보탬이 선다(해석 1 · GPT GE1)', async () => {
+// 장면 가(끝 판 검수 GPT GE1 — 설계 주인 11-17 오후 답). 셸처럼 소리를 끈 날의 재료로 이번 주 계획을 짓는다(weekOf audioAvailable 거짓). 지금 판
+// 계획은 소리를 끈 날 말하기를 그 주의 몫으로 묻지 않는다(notes speaking-audio-off · 이번 주에 한 적이 없으면 영역도 빠진다 — 이미 정한 제품 동작).
+// 그래서 말하기 줄은 넘어가지 않고, 나머지 몫이 다 찼으면 그날은 소리 없이 할 수 있는 쓰기 고치기가 보탬으로 선다. 고치기가 없으면 점검 칸 줄이
+// 없고, 잠긴 줄이 없으니 그날은 조건에 걸린 날이 아니다. 앞 판(d55a35d3c2)은 계획에서 빠진 말하기를 잠긴 줄로 되살려 이 장면에서 떨어진다.
+test('장면 가 — 소리를 끈 주에는 계획이 말하기를 몫에서 빼고, 나머지 몫이 다 찼으면 이번 주에 열린 쓰기 고치기가 보탬으로 선다 · 고치기가 없으면 점검 칸 줄이 없고 조건에 걸린 날이 아니다(끝 판 검수 GPT GE1)', async () => {
   const { coach, time } = await homeCoach();
   const progress = progressOf({ completed: ORDER });
   const settings = { ...EXAM_T2, speaking: true, audio: 'off' };
   const bounds = examPlan.examWeek(time.t);
-  // 다시 확인과 시험 형식은 이번 주에 마쳤고 쓰기는 채웠다. 이번 주 쓰기에서 연 고치기가 열려 있다.
-  const quietWeek = ({ times = [], list = [{ id: 'speaking-3', route: 'speaking:3' }], speaking = CHECK_FACTS.speaking } = {}) => {
-    const week = weekOf({ coach, settings, now: time.t, audioAvailable: false, extra: { speaking: list }, speaking: { times, untried: CHECK_FACTS.speaking.untried } });
+  // 다시 확인과 시험 형식은 이번 주에 마쳤고 쓰기는 채웠다. 셸은 소리를 끈 날에도 말하기 값(이번 주에 아직 안 해 본 첫 유형)을 넘긴다.
+  // need — 이번 주 쓰기에서 연 고치기(없으면 null).
+  const quietWeek = ({ times = [], need = 'retry' } = {}) => {
+    const week = weekOf({ coach, settings, now: time.t, audioAvailable: false, extra: { speaking: [{ id: 'speaking-3', route: 'speaking:3' }] }, speaking: { times, untried: CHECK_FACTS.speaking.untried } });
     const areas = week.examPlan.areas.map(row => (row.area === 'recheck' ? { ...row, done: row.planned, remaining: 0 } : row));
-    const writing = { ...CHECK_FACTS.writing, need: 'retry', needAt: new Date(bounds.start + 60_000).toISOString() };
+    const writing = { ...CHECK_FACTS.writing, need, needAt: need ? new Date(bounds.start + 60_000).toISOString() : null };
     const mock = { ...CHECK_FACTS.mock, audioRequired: false, done: true };
-    return fillArea({ ...week, examPlan: { ...week.examPlan, next: null, areas }, mock, writing, speaking }, 'writing');
+    return fillArea({ ...week, examPlan: { ...week.examPlan, next: null, areas }, mock, writing, speaking: CHECK_FACTS.speaking }, 'writing');
   };
   const plan = week => homePlan({ coach, progress, now: time.t, settings, week });
   const quiet = quietWeek();
   assert.ok(quiet.examPlan.notes.includes('speaking-audio-off'), '장면의 전제 — 소리를 끈 날 계획이 말하기를 닫는다');
   assert.ok(!quiet.examPlan.areas.some(row => row.area === 'speaking'), '장면의 전제 — 이번 주에 한 적이 없어 계획에 말하기 영역이 없다');
-  const locked = plan(quiet);
-  assert.ok(locked.candidates.some(open => open.route === 'speaking'), '말하기를 넘긴다 — 소리 때문에 잠긴다');
-  assert.ok(!locked.candidates.some(open => open.route === 'writing'), '보탬은 서지 않는다');
-  assert.equal(checkRow(locked), null, '잠긴 줄은 그리지 않는다');
-  assert.deepEqual([locked.status, locked.today.empty?.code], ['unavailable', 'blocked'], '오늘 칸이 비어 홈이 조건에 걸린 날로 학습 조건 단추를 낸다');
-  // 이번 주에 말하기를 한 주 — 몫이 찼다. 말하기를 넘기지 않고 보탬이 선다
+  assert.ok(
+    quiet.examPlan.areas.some(row => row.area === 'recheck') && quiet.examPlan.areas.filter(row => ['recheck', 'writing'].includes(row.area)).every(row => row.remaining === 0),
+    '장면의 전제 — 다시 확인과 쓰기 몫이 찼다',
+  );
+  // 이번 주 쓰기에서 연 고치기가 열린 날 — 말하기를 넘기지 않고 보탬이 선다
+  const fixed = plan(quiet);
+  assert.ok(!fixed.candidates.some(open => open.route === 'speaking'), '계획이 말하기를 몫에서 뺐으니 말하기를 넘기지 않는다');
+  const row = checkRow(fixed);
+  assert.equal(row?.activityId, 'topik2-writing-53', '보탬이 선다');
+  assert.equal(row.why.code, 'host.writing');
+  assert.deepEqual(row.why.slots, { focus: 'ending-53', need: 'retry' });
+  assert.equal(fixed.status, 'ready', '조건에 걸린 날이 아니다');
+  // 고치기가 없는 날 — 점검 칸 줄이 없고, 잠긴 줄이 없으니 조건에 걸린 날이 아니다
+  const none = plan(quietWeek({ need: null }));
+  assert.ok(!none.candidates.some(open => ['speaking', 'writing', 'mock', 'position'].includes(open.route)), '점검 칸 활동을 넘기지 않는다');
+  assert.equal(checkRow(none), null, '열린 고치기가 없으면 점검 칸 줄이 없다');
+  assert.deepEqual([none.status, none.today.empty?.code], ['empty', 'done'], '잠긴 줄이 없으니 조건에 걸린 날(unavailable · blocked)이 아니라 다 한 날이다');
+  // 이번 주에 말하기를 한 주 — 말하기 영역은 남지만 몫은 찼다. 말하기를 넘기지 않고 같은 보탬이 선다
   const did = quietWeek({ times: [new Date(bounds.start + 2 * 3_600_000).toISOString()] });
   assert.ok(did.examPlan.areas.some(row => row.area === 'speaking' && row.done > 0 && row.remaining === 0), '장면의 전제 — 이번 주에 한 말하기가 영역에 남는다');
   const didPlan = plan(did);
   assert.ok(!didPlan.candidates.some(open => open.route === 'speaking'), '이번 주에 한 말하기는 넘기지 않는다');
   assert.equal(checkRow(didPlan)?.activityId, 'topik2-writing-53', '보탬이 선다');
-  // 말하기 항목이 없는 날(모듈을 아직 부르지 못함) — 소리를 켜도 말하기가 없으니 몫이 없다. 보탬이 선다
-  assert.equal(checkRow(plan(quietWeek({ list: [], speaking: null })))?.activityId, 'topik2-writing-53', '말하기 항목이 없으면 보탬이 선다');
   coach.dispose();
 });
 

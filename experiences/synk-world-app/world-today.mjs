@@ -238,21 +238,18 @@ const areaLeft = (week, area) => {
   const row = Array.isArray(week?.examPlan?.areas) ? week.examPlan.areas.find(item => item?.area === area) : null;
   return Boolean(row) && row.remaining > 0;
 };
-// 말하기의 이번 주 몫. 소리를 끈 날 지금 판 계획은 말하기를 닫는다(world-exam-plan.mjs — notes에 'speaking-audio-off'를 적고, 이번 주에 한 적이
-// 없으면 영역을 뺀다). 소리 때문에 닫힌 몫은 찬 것이 아니라 잠긴 것이다(설계 주인이 승인한 해석 1). 그래서 계획에 말하기 영역이 없고(이번 주에
-// 하지 않음) 말하기 항목이 있으면 남은 몫으로 보고 줄을 넘긴다. 플래너가 소리 때문에 그 줄을 잠그고, 점검 칸이 비면 홈이 「조건에 걸린 날」로
-// 학습 조건 단추를 낸다. 영역 셈만 보면 소리를 끈 날 말하기 줄이 빠지고 그 자리에 보탬이 섰다(끝 판 검수 GPT GE1).
-const speakingLeft = week => {
-  if (areaLeft(week, 'speaking')) return true;
-  const plan = week?.examPlan;
-  const closed = Array.isArray(plan?.notes) && plan.notes.includes('speaking-audio-off');
-  const listed = Array.isArray(plan?.areas) && plan.areas.some(row => row?.area === 'speaking');
-  return closed && !listed && typeof week?.speaking?.routeId === 'string';
-};
-// 보탬을 막는 몫(해석 1 — 잠긴 활동과 낼 것이 없는 활동도 몫은 남은 것이다). 다시 확인과 말하기는 몫이 남아도 넘길 줄이 없을 수 있다(진단이
-// 낼 문항이 없음 · 말하기 항목의 유형을 읽지 못함). 시험 형식과 쓰기는 몫이 남으면 줄이 늘 넘어가므로(보탬도 같은 53번 길이 있어야 선다) 넘긴
-// 줄이 이미 보탬을 막는다.
-const checkLeft = week => areaLeft(week, 'recheck') || speakingLeft(week);
+// 보탬을 막는 몫(끝 판 검수 GPT GE1 — 설계 주인 11-17 오후 답). 보탬은 넘길 점검 칸 활동(잠긴 것 포함)이 하나도 없고, 계획이 낸 넷(다시 확인 ·
+// 시험 형식 · 쓰기 · 말하기)의 이번 주 남은 몫이 모두 0일 때만 선다. 넷을 고르게 본다. 몫이 남았는데 줄을 지을 수 없는 주(진단이 낼 문항이 없음 ·
+// 시험 형식 판의 분을 읽지 못함 · 말하기 항목의 유형을 읽지 못함)에도 보탬은 서지 않는다. 시험 형식은 계획의 영역이 아니라서, 셸이 넘긴 판(week.mock
+// — 고르기가 ready일 때만)이 있고 이번 주에 판을 하지 않았으면 몫이 남은 것으로 본다. 쓰기 항은 지금은 결과를 바꾸지 않는다(보탬도 쓰기 값이 있어야
+// 서고, 그 값이 있으면 쓰기 몫이 남은 날 쓰기 줄이 넘어간다). 넷을 고르게 보려고 둔다.
+// 소리를 끈 주에는 지금 판 계획이 소리가 필요한 영역(말하기 · 듣기)을 그 주의 몫으로 묻지 않는다(world-exam-plan.mjs — notes speaking-audio-off ·
+// audio-off, 이미 정한 제품 동작이다). 그래서 소리 때문에 계획에서 빠진 말하기는 남은 몫이 아니고, 그날은 소리 없이 할 수 있는 쓰기 고치기가
+// 보탬으로 선다. 「조건에 걸린 날 안내가 가려진다」(해석 1의 근거)는 계획에 몫이 남았는데 플래너가 조건으로 잠근 줄에만 맞는다. 잠긴 줄도 넘긴
+// 줄이라 보탬을 막는다. 계획에서 빠진 말하기를 잠긴 줄로 되살리면 계획 화면과 홈이 서로 다른 말을 한다(설계 주인이 되돌리게 한 안 1).
+const mockLeft = week => Boolean(week?.mock) && week.mock.done !== true;
+const checkLeft = week =>
+  areaLeft(week, 'recheck') || mockLeft(week) || areaLeft(week, 'writing') || areaLeft(week, 'speaking');
 const MOCK_OPEN = Object.freeze({
   id: 'world.mock',
   label: '시험 형식 연습',
@@ -286,7 +283,7 @@ function writingActivity(week, settings) {
   return writingLine(week, writing, settings);
 }
 // 보탬(설계 주인 11-17 다시 여쭘의 답 2) — 점검 칸 넷의 이번 주 몫이 모두 차 넘길 점검 칸 활동이 하나도 없는 날에만 부른다(아래 todayActivities).
-// 조건에 걸려 잠긴 활동과 낼 것이 없는 활동도 몫이 남은 것이라 그날은 부르지 않는다(checkLeft). 이번 주 쓰기에서 열린 한 가지 고치기(그
+// 넘길 줄이 조건에 걸려 잠긴 날과, 계획이 낸 넷의 몫이 남았는데 줄을 지을 수 없는 날에도 부르지 않는다(checkLeft). 이번 주 쓰기에서 열린 한 가지 고치기(그
 // 고치기의 마지막 사건 needAt이 이번 주 계획의 주 안)가 아직 열려 있으면 그것을 한 줄로 세운다. 고쳐 쓰기의 효과는 첫 글을 쓴 바로 뒤에 가장
 // 크고, 다음 주 계획까지 미루면 한 주쯤 식는다. 계획이 찬 뒤에는 첫 글(host.writing.start)이 서지 않으므로 고치기가 닫히면 더 열리지 않는다.
 // 도움을 받아 고친 판(assisted)은 고치기가 아직 열린 것이라 「이번에는 혼자」 줄로 한 번 더 설 수 있다. 거듭 설 수 있는 상한은 계획 주의 끝이다
@@ -323,7 +320,7 @@ function writingLine(week, writing, settings) {
 }
 function speakingActivity(week, settings) {
   const speaking = week?.speaking;
-  if (!speaking || typeof speaking.routeId !== 'string' || !speakingLeft(week)) return null;
+  if (!speaking || typeof speaking.routeId !== 'string' || !areaLeft(week, 'speaking')) return null;
   const facts =
     speaking.untried > 0
       ? { describe: { key: 'speaking', slots: { type: speaking.type, untried: speaking.untried } }, goals: areaGoal(week, 'speaking') }
@@ -458,8 +455,8 @@ export function todayActivities({
       writingActivity(week, normalized),
       speakingActivity(week, normalized),
     ].filter(Boolean);
-    // 보탬 — 넘길 점검 칸 활동이 하나도 없고 점검 칸 넷의 몫도 모두 찬 날에만(설계 주인 11-17 다시 여쭘의 답 2 · 위 writingFixActivity · checkLeft).
-    // 다른 줄이 하나라도 설 수 있는 날, 몫이 남았는데 넘길 줄이 없는 날에는 서지 않는다(끝 판 검수 GPT GE1).
+    // 보탬 — 넘길 점검 칸 활동이 하나도 없고 계획이 낸 넷의 몫도 모두 찬 날에만(설계 주인 11-17 다시 여쭘의 답 2 · 위 writingFixActivity · checkLeft).
+    // 다른 줄이 하나라도 넘어가는 날(잠긴 줄 포함), 몫이 남았는데 넘길 줄이 없는 날에는 서지 않는다(끝 판 검수 GPT GE1).
     if (checks.length === 0 && !checkLeft(week)) checks.push(writingFixActivity(week, normalized));
     for (const check of checks) if (check) out.push(check);
   }

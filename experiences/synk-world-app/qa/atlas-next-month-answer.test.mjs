@@ -211,6 +211,26 @@ test('근거 답 — 지우는 길(clearMonthAnswer)은 학습일 답과 근거 
   clearMonthAnswer(flaky, 'acct');
   assert.equal(thrown, 1);
   assert.equal(flakyFirst.read('acct', { revision: 1, day: 'd' }), null, '학습일 답 지우기가 던져도 근거 답은 지운다');
+  // 거꾸로 — 근거 열쇠를 지우다 던져도 학습일 답 열쇠는 지운다. 지우는 차례와 상관없이 두 열쇠를 다 지우는지 본다(끝 판 검수 그록 C).
+  const others = new Map();
+  let thrownFirst = 0;
+  const flakyOther = {
+    getItem: key => others.get(key) ?? null,
+    setItem: (key, value) => others.set(key, String(value)),
+    removeItem: key => {
+      if (key.startsWith('synk:world:first-answers:')) {
+        thrownFirst += 1;
+        throw new Error('blocked');
+      }
+      others.delete(key);
+    },
+  };
+  const flakyMonth = createMonthAnswers({ storage: flakyOther });
+  flakyMonth.write('acct', { revision: 1, day: 'd', askedFrom: at(5), at: at(5), windows: WINDOWS, month: [], since: flakyMonth.generation() });
+  assert.notEqual(flakyMonth.read('acct', { revision: 1, day: 'd' }), null, '장면의 전제 — 학습일 답을 적었다');
+  clearMonthAnswer(flakyOther, 'acct');
+  assert.equal(thrownFirst, 1);
+  assert.equal(flakyMonth.read('acct', { revision: 1, day: 'd' }), null, '근거 답 지우기가 던져도 학습일 답은 지운다');
 });
 
 const readJson = url => JSON.parse(fs.readFileSync(new URL(url, import.meta.url), 'utf8'));
@@ -1608,8 +1628,11 @@ test('리허설 근거 읽기 — game은 게임 이름 꼴만 · days는 1 ~ 36
   const unfenced = await get(without('revision'));
   assert.deepEqual([unfenced.status, unfenced.body.error?.code], [409, 'REVISION_CONFLICT'], 'revision이 없다');
   assert.equal((await get(firstQuery(device.revision - 1))).status, 409, '지난 동의 판');
-  // 경계 안 — days 1과 365는 받는다
-  assert.equal((await get(firstQuery(device.revision, { days: '1' }))).status, 200, 'days 1');
+  // 경계 안 — days 1과 365는 받는다. 창의 시작은 두 끝 모두 「답할 때 − days × 24시간」이다(날 수를 무시하고 365로 셈하면 days 1에서 떨어진다 — 끝 판 검수 그록 KC1).
+  const one = await get(firstQuery(device.revision, { days: '1' }));
+  assert.equal(one.status, 200, 'days 1');
+  assert.equal(one.body.firstAnswers.days, 1);
+  assert.equal(one.body.firstAnswers.since, one.body.serverTime - DAY, 'days 1의 창의 시작 = 답할 때 − 24시간');
   const ok = await get(firstQuery(device.revision, { days: '365' }));
   assert.equal(ok.status, 200);
   assert.equal(ok.body.complete, true);

@@ -1377,6 +1377,13 @@ export const POSITION_MUTANTS = [
   [
     "monthAnswer",
     "근거 상자",
+    "지우는 길이 근거 열쇠부터 지우다 던지면 나머지 열쇠를 지우지 않는다 — 로그아웃 뒤 학습일 답이 남는다(끝 판 검수 그록 C)",
+    "  for (const kind of KINDS) {\n    try {\n      if (account) storage?.removeItem(keyOf(kind, account));\n    } catch {\n",
+    "  try {\n    for (const kind of [...KINDS].reverse()) if (account) storage?.removeItem(keyOf(kind, account));\n  } catch {\n    {\n",
+  ],
+  [
+    "monthAnswer",
+    "근거 상자",
     "근거 답을 학습일 답과 같은 열쇠에 둔다",
     "  prefix: 'synk:world:first-answers:',\n",
     "  prefix: 'synk:world:month-answer:',\n",
