@@ -26,7 +26,13 @@ OUT = os.path.join(E.ROOT, "최종", "p10_en")
 KO_CUTS = os.path.join(E.OUT, "_컷")
 CAP = os.path.normpath(os.path.join(B2B, "..", "자막시안_20261103", "remotion"))
 PUB = os.path.join(E.ROOT, "최종", "자막시안_public", "p10en")
-CARD = 78   # P10en.tsx의 CARD와 같아야 한다(끝 화면이 필름 뒤로 더 서 있는 장 수)
+CARD = 84   # P10en.tsx의 CARD와 같아야 한다(끝 화면이 필름 뒤로 더 서 있는 장 수 — 3.5초, 로고가 앉은 뒤 2.5초 넘게)
+# 끝 화면 배경(11-17 고침): 첫 판은 필름이 검정으로 어두워진 뒤 검정 판 위에 끝 화면을 얹었다. 미학 맹검(카본) 기각 4점 —
+#   「납작한 단색 검정 판 위에 넉 줄이 정지 이미지처럼 멈춤」, 후반 가이드 3절 「마지막 장면 안에서 끝낸다. 검은 화면 로고로 넘어가지 않는다」.
+#   그래서 37번 판의 마지막 장(카메라는 판 96장부터 이미 멈춰 있다 — 11-17 잼)을 끝 화면 동안 이어 두고, 도담 로고가 빠지는 0.5초에
+#   검정 대신 45% 밝기까지만 내리며, 판 뒤로는 1.5%만 아주 천천히 다가간다(멈춘 그림처럼 보이지 않게).
+DIM = 0.45
+PUSH = 0.015
 
 # 영어 내레이션 아홉 줄 — (첫 낱말을 놓을 화면 초, 곡 dB, 목소리 띠 dB, [(자막 글, 줄 끝 낱말)]). 자리 · 내림 값은 한국어 판 「_초반」 그대로(최종소리.py 54~66줄).
 #   자막은 한 화면에 한 문장, 마침표 · 쉼표 없음(슬롭 점검표 6번). 숫자는 읽기 쉽게 300으로 적는다.
@@ -79,8 +85,9 @@ def sound(voice):
     sign_off(wav)
 
 
-ECHO_AT = (E.F[-1] - 8) / E.FPS + 0.75   # P10en.tsx 끝 화면의 SYNK PULSE 로고가 올라오기 시작하는 초(CARD_ON + 0.75 = 61.67초)
+ECHO_AT = (E.F[-1] - 4) / E.FPS + 0.6    # P10en.tsx 끝 화면의 SYNK PULSE 로고가 올라오기 시작하는 초(CARD_ON + 0.6 = 61.68초)
 ECHO_DB = -3.0                           # 메아리 첫 0.5초 크기 = 몸통 0.25초 칸 크기 가운데 + 이 값
+AIR_DB = -50.0                           # 끝 화면 아래 바깥 공기 크기(dBFS RMS)
 
 
 def sign_off(wav):
@@ -105,6 +112,14 @@ def sign_off(wav):
     echo = SND.lp(echo, 7000)                                             # 먼 메아리처럼 윗소리를 조금 덜어 낸다
     head = echo[:int(0.5 * rate)]
     g = 10 ** ((body + ECHO_DB - 20 * np.log10(np.sqrt(np.mean(head ** 2)) + 1e-9)) / 20)
+    # 필름 끝(61.25초)부터 섞음이 디지털 무음이라(한국어 판 Mix가 그 뒤를 0으로 둔다) 61.23~61.68초가 완전히 비었다(11-17 마감 관문 지적).
+    #   한국어 판 끝처럼 「디지털 무음이 아니라 바깥 공기」로 — 낮게 거른 공기 소리를 60.9초부터 끝까지 −50 dB 안팎으로 깐다
+    air_at = int(60.9 * rate)
+    n_air = len(x) - air_at
+    air = SND.lp(SND.pink(n_air / rate + 0.1, seed=37)[:n_air], 900)
+    air = np.stack([air, np.roll(air, int(0.013 * rate))], axis=1).astype(np.float32)
+    air *= 10 ** ((AIR_DB - 20 * np.log10(np.sqrt(np.mean(air ** 2)) + 1e-9)) / 20)
+    x[air_at:] += SND.fades(air, 0.4, 0.6)
     a = int(ECHO_AT * rate)
     seg = (echo * g)[:len(x) - a]
     seg = SND.fades(seg.astype(np.float32), 0.03, 0.9)
@@ -122,6 +137,34 @@ def sign_off(wav):
     print(f"끝 메아리 {ECHO_AT:.2f}초 · 몸통 가운데 {body:.1f} dB{ECHO_DB:+.0f} · 봉우리 {20 * np.log10(peak):.1f} dBFS · 길이 {len(x) / rate:.2f}초")
 
 
+def frames37(plate, first_f, count):
+    """37컷 + 끝 화면 배경 — 도담_끝로고.frames와 같되 끝에서 검정이 아니라 DIM 밝기로 내리고, 판 뒤는 마지막 장을 PUSH만큼 천천히 다가가며 잇는다"""
+    import cv2
+    import numpy as np
+    logo = END.logo_alpha()
+    n = END.PLATE_N
+    a0, a1, amt = END.TAKE_DOWN
+    for i in range(count):
+        f = first_f + i
+        base = plate[min(i, n - 1)]
+        if i >= n:
+            x = END.ease_io((i - n + 1) / max(1, count - n))
+            sc = 1 + PUSH * x
+            h, w = base.shape[:2]
+            ch, cw = h / sc, w / sc
+            y0, x0 = (h - ch) / 2, (w - cw) / 2
+            M = np.float32([[sc, 0, -x0 * sc], [0, sc, -y0 * sc]])
+            base = cv2.warpAffine(base, M, (w, h), flags=cv2.INTER_LANCZOS4)
+        img = base.astype(np.float32) * (1 - amt * END.ease_io((f - a0) / (a1 - a0)))
+        out = END.ease_io((f - END.HOLD_END_F + 1) / END.FADE_LEN) if f >= END.HOLD_END_F else 0.0
+        img = img * (1 - (1 - DIM) * out)                                   # 장면은 45%까지만
+        k = END.ease_io((f - END.ON_F + 1) / (END.LOCK_F - END.ON_F + 1)) * (1 - out)   # 도담 로고는 같은 0.5초에 빠진다
+        if k > 0:
+            a = (logo * k)[..., None]
+            img = img * (1 - a) + END.COLOR * a
+        yield np.clip(img + 0.5, 0, 255).astype(np.uint8)
+
+
 def picture(logo):
     d = os.path.join(OUT, f"_컷_{logo}")
     os.makedirs(d, exist_ok=True)
@@ -133,9 +176,9 @@ def picture(logo):
             raise SystemExit(f"한국어 판 컷 {p}가 없거나 {k}장이 아니다 — b2b-factory-20261026/최종편집.py 화면을 먼저 돌린다")
         paths.append(p)
     END.L = types.SimpleNamespace(render=lambda h: LE.render(h, logo))   # 끝 로고 이름만 영문으로(표식 · 자리 · 움직임은 한국어 판 그대로)
-    k = E.F[37] - E.F[36]
+    k = E.F[37] - E.F[36] + CARD          # 37컷 + 끝 화면 동안 이어 두는 마지막 장
     out37 = os.path.join(d, "37.mp4")
-    E.encode(END.frames(E.decode(C.clip(E.CUTS[37][0]), 0, END.PLATE_N), E.F[36], k), out37)
+    E.encode(frames37(E.decode(C.clip(E.CUTS[37][0]), 0, END.PLATE_N), E.F[36], k), out37)
     if C.frames_of(out37) != k:
         raise SystemExit(f"{out37}: {k}장이어야 하는데 {C.frames_of(out37)}장")
     paths.append(out37)

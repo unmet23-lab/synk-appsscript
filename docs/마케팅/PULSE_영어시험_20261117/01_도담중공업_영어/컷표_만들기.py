@@ -3,7 +3,7 @@
 #   글 콘티(b2b-factory-20261026/02_콘티.md 2절 37컷 표)에서 컷표를 지어 쓴다. 화면은 한국어 판 그대로라 장면 · 인물 문장은 검수용 요약이다(지시문에 쓰지 않는다).
 #   연기 박자는 최종편집.py CUTS 설명(판 기록)의 박자를 컷 시각으로 옮겼고, 기록이 없는 컷은 한국어 판 화면을 컷마다 5장 띠로 보고 보이는 것만 적었다(11-17).
 #   기준 그림(ref/)과 끝 로고 시안(시안/)은 한국어 판 화면.mp4와 영어 판 끝 장면에서 뽑는다.
-#   python -X utf8 컷표_만들기.py [첫 판 영상(끝 화면 시안 둘째)]   → 이 폴더/컷표.json · ref/*.jpg · 시안/*.jpg
+#   python -X utf8 컷표_만들기.py [첫 판 영상] [검정 끝 화면 판 영상]   (끝 화면 시안 둘째 · 셋째 — 영상이 없으면 그 시안은 지난 것을 그대로 둔다)   → 이 폴더/컷표.json · ref/*.jpg · 시안/*.jpg
 import io
 import json
 import os
@@ -66,6 +66,13 @@ CUT = {
     36: ("미디엄 클로즈업 · 3/4 · 노을빛", ["준호"], [(0.0, "준호가 멀리를 바라본다"), (0.4, "입가에 옅은 웃음이 핀다")]),
     37: ("와이드 · 송전탑 꼭대기 → 도시", [], "송전탑이 카메라 옆을 스쳐 멀어지고 도시의 불이 한 구역씩 켜진다 · 57.9초부터 DODAM 로고"),
 }
+# 글 콘티 표의 화면 줄 가운데 실제 그림과 다른 곳(카본 판 심사 11-17 ④ — 프레임으로 확인함)은 실제 그림대로 바로잡는다
+LINE_FIX = {
+    33: "해 질 녘 발전소 터빈동 — 큰 문 안에 놓인 우리 터빈을 비스듬히 옆에서, 문 너머 노을 · 젖은 바닥에 비침",
+    34: "바깥 해 질 녘 — 앞 작업자 뒤통수 너머 오른쪽에 준호, 뒤에 한 명(안전모 없음) · 초점이 준호 얼굴로",
+    35: "세 사람 뒷모습(가운데 준호, 오른쪽 사람은 어깨만) 너머 발전소 굴뚝 · 송전탑 · 노을",
+    37: "노을 구름 아래 송전탑 꼭대기가 왼쪽 앞에 남은 채 카메라가 물러나고, 멀리 도시의 불이 한 구역씩 켜짐 · 57.9초부터 DODAM 로고, 61초부터 45% 밝기로 내려 끝 화면 배경",
+}
 SCENE = {}
 for cuts, name in (((1, 2), "설계실"), ((3, 4, 5, 6, 7, 12), "공장밤"), ((8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 29, 30, 31, 32), "조립동"),
                    ((19, 20, 21), "마당"), ((22, 23), "시험대"), ((24, 28), "시험동"), ((25, 26, 27), "관제실"),
@@ -104,7 +111,7 @@ for n in range(1, 38):
     sc = SCENE[n]
     d = {"cut": f"C{n}", "t": round(t0, 3), "dur": round(t1 - t0, 3), "in": round(E.CUTS[n][1] / E.FPS, 3), "out": round(E.CUTS[n][1] / E.FPS + (t1 - t0), 3),
          "band": "기" if n <= 7 else "승" if n <= 18 else "전" if n <= 30 else "결",
-         "판": E.CUTS[n][0], "line": r["화면"], "장면": sc, "인물": people, "구도": comp, "카메라": r["카메라"], "소리": ""}
+         "판": E.CUTS[n][0], "line": LINE_FIX.get(n, r["화면"]), "장면": sc, "인물": people, "구도": comp, "카메라": r["카메라"], "소리": ""}
     if n == 20 or SCENES[sc]["실내"]:
         d["실내"] = True            # 20번은 마당 장면 속 운전석
     else:
@@ -136,7 +143,7 @@ cue = {
     "인물": {
         "준호": {"묘사": "Junho, a Korean engineer in his late 30s, short black hair, calm face, no glasses.", "옷": "A navy work jacket over a grey T-shirt.",
                "설정": "터빈을 3년 들여다본 엔지니어 — 마지막에 옅게 웃는다", "기준그림": "ref/인물_준호.jpg"},
-        "작업자": {"묘사": "Factory workers seen as hands, backs and silhouettes, faces hidden by masks or framing.", "옷": "Grey work suits, gloves, white hard hats.",
+        "작업자": {"묘사": "Factory workers seen as hands, backs and silhouettes, faces hidden by masks or framing.", "옷": "Grey work suits and gloves; white hard hats in the assembly and test cuts, bare heads at the plant at sunset.",
                 "설정": "단역 — 얼굴 없이 손과 몸으로 일한다", "기준그림": "ref/인물_작업자.jpg"},
     },
     "소품": {"터빈": {"종류": "되풀이 소품", "낱말": ["터빈"], "색": "cream-white casing",
@@ -144,16 +151,17 @@ cue = {
     "글자": [{"글": x["s"], "종류": "말자막", "어디": f"{x['a']:.2f}–{x['b']:.2f}초", "만드는법": "Remotion 명조 44px 한 줄(한국어 판 자막 결 그대로)"} for x in subs] + [
         {"글": "DODAM / HEAVY INDUSTRIES", "종류": "끝로고", "어디": "C37 57.9초부터 61.2초",
          "만드는법": "그린 글자 — 한국어 판 로고와 같은 기하 획(로고_영어.py), 시안 A · B를 실제 끝 장면 위에서 견줌", "시안": ["시안/끝로고_A.jpg", "시안/끝로고_B.jpg"]},
-        {"글": "Every person in this film is AI / A spec film for a fictional brand", "종류": "정보", "어디": "61.0~64.5초(필름이 어두워진 뒤 끝 화면)",
-         "만드는법": "명조 62px 문구와 작은 대문자 26px 줄 — 자막과 같은 서체 결, 0.4초 12px 올라오며 차례로"},
+        {"글": "Every person in this film is AI / Dodam Heavy Industries doesn't exist", "종류": "정보", "어디": "61.08~64.75초(마지막 장면을 45%로 내린 하늘 위)",
+         "만드는법": "명조 54px 두 줄 한 덩이 — 자막과 같은 서체 결, 0.4초 12px 올라옴. 첫 판의 작은 대문자 소제목은 미학 맹검 기각(폰에서 안 읽힘)으로 뺐다"},
         {"글": "SYNK PULSE", "종류": "끝로고", "어디": "61.6~64.5초",
-         "만드는법": "재질로 만든 승인 로고 — 브랜드킷 배치용 SYNK-PULSE-Paper.png(펠트 재질 그림)를 비례 그대로 쓴다", "시안": ["시안/끝화면.jpg", "시안/끝화면_첫판.jpg"]},
-        {"글": "synk.im/en/pulse", "종류": "정보", "어디": "61.8~64.5초", "만드는법": "주소 한 줄 — Inter Tight 34px, 로고 아래"},
+         "만드는법": "재질로 만든 승인 로고 — 브랜드킷 배치용 SYNK-PULSE-Paper.png(펠트 재질 그림)를 비례 그대로 680px로 쓴다",
+         "시안": ["시안/끝화면.jpg", "시안/끝화면_검정판.jpg", "시안/끝화면_첫판.jpg"]},
+        {"글": "synk.im/en/pulse", "종류": "정보", "어디": "61.83~64.75초", "만드는법": "주소 한 줄 — Inter Tight 30px, 로고 아래"},
     ],
     "소리": {"목소리": "내레이션 — 아이작(한국어 판과 같은 목소리)의 영어 판, 원고 전체를 한 번에 굽고 문장 사이 무음에서 자름", "첫말초": 1.70,
            "초반을끄는것": "1.7초 「When it's fully grown, it'll weigh three hundred tons」", "음악": "연주곡 한 곡(572b8b0b) 0초부터 이음 없이",
            "열쇠소리": "용접 · 라쳇 · 에어브레이크 · 시험동 웅 · 57.97초 마지막 화음"},
-    "끝": {"컷": "C37", "가장센그림": "송전탑이 스쳐 지나고 노을 아래 도시의 불이 켜지는 위로 DODAM 로고", "제품보임": False, "브랜드보임": True, "로고멈춤초": 2.8,
+    "끝": {"컷": "C37", "가장센그림": "송전탑이 스쳐 지나고 노을 아래 도시의 불이 켜지는 위로 DODAM 로고", "제품보임": False, "브랜드보임": True, "로고멈춤초": 2.8, "끝화면": "SYNK PULSE 로고는 62.08초에 앉아 64.75초까지 2.67초",
           "소리한방": "57.97초 곡의 마지막 화음 +4 dB — 로고가 다 켜지는 순간"},
     "seq": seq,
     "end": end,
@@ -183,7 +191,8 @@ if __name__ == "__main__":
             os.path.join(HERE, "시안", f"끝로고_{x}.jpg"), quality=85)
     # 끝 화면 시안 둘 — 지금 판(문구 62 · 작은 줄 26 · 로고 560 · 주소 34px)과 첫 판(46 · 20 · 452 · 28px, 폰에서 작은 줄이 4px 남짓이라 키움)
     for name, fin in (("끝화면.jpg", os.path.join(E.ROOT, "최종", "p10_en", "도담_영어_B_아이작.mp4")),
-                      ("끝화면_첫판.jpg", sys.argv[1] if len(sys.argv) > 1 else "")):
+                      ("끝화면_첫판.jpg", sys.argv[1] if len(sys.argv) > 1 else ""),
+                      ("끝화면_검정판.jpg", sys.argv[2] if len(sys.argv) > 2 else "")):
         if fin and os.path.exists(fin):
             raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", "63.6", "-i", fin, "-frames:v", "1", "-vf", "scale=960:-2", "-f", "image2pipe", "-vcodec", "png", "-"],
                                  capture_output=True, check=True).stdout
