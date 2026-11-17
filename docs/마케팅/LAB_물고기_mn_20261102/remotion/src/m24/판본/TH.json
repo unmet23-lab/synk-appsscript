@@ -163,7 +163,7 @@
   "byeSize": 56,
   "endCard": "โดน 물고기 กิน!",
   "endSize": 47,
-  "ask": "ทีม 물고기?",
+  "ask": "",
   "askSize": 36,
   "coverAt": 2.5,
   "hello": "",
@@ -181,7 +181,6 @@
     "tears": "눈물",
     "lunch": "점심!!",
     "bye": "잘 가, 고기!",
-    "endCard": "물고기한테 먹혔다!",
-    "ask": "물고기 편이야?"
+    "endCard": "물고기한테 먹혔다!"
   }
 }
