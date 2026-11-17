@@ -62,6 +62,7 @@ const 잇기 = require('./lib/판본잇기.js');
 
 const REPO = path.resolve(__dirname, '..');
 const { 공용작업본 } = require('./lib/공용작업본.js');
+const { GPT검수 } = require('./lib/GPT검수모델.js');
 // 증거(질문 · 답 · 채점)는 공용 작업본의 .tmp에 둔다 — 워크트리 · 예약 회차 사본의 .tmp는 사본을 지우면 같이 사라진다(11-15 Fable 5.2 판본 회차 검수 9)
 const 메인 = 공용작업본(REPO);
 // 같은 폴더인가 — 윈도우 경로는 대소문자를 가리지 않는다(같은 사본을 대소문자만 다르게 열면 남의 사본으로 보였다, 11-15 다시 검수 P3)
@@ -503,7 +504,9 @@ function 부르는법(밖, 시험관, 도장 = '') {
   const 판본자리 = `${path.basename(path.dirname(밖))}_${path.basename(밖)}${도장 ? `_${도장}` : ''}`;
   const 넣는곳 = (s) => (안쪽 ? `${path.join(밖, `답_${s}.md`)}에 넣는다` : `사본 안 새 빈 폴더(.tmp/시험관/${판본자리}/${s}/ — 이 질문.md를 함께 둔다)의 답.md에 쓰게 한 뒤 node tools/뜻검사.js 답넣기 "${밖}" ${s} <그 답.md>로 넣는다(옆에 같은 질문.md가 없는 답 · 재료보다 먼저 쓴 답은 거절한다)`);
   return 시험관.map((s) => (s === 'gpt'
-    ? `  gpt    → node tools/codex계정.js exec --skip-git-repo-check -C <빈 폴더> -s read-only -o "${path.join(밖, '답_gpt.md')}" - < "${q}"`
+    // 모델 · 추론은 GPT 검수와 같은 값을 적어 준다(lib/GPT검수모델.js · 11-18 「싹다 6.2 SOL MAX로」) — 빼면 굽기 계정의 그림 굽기 설정을 탄다
+    // -c 값은 따옴표 없이 쓴다 — Codex는 TOML로 안 읽히는 값을 글자 그대로 받고, 작은따옴표는 cmd.exe에서 벗겨지지 않는다(11-18 카본 A1)
+    ? `  gpt    → node tools/codex계정.js exec --skip-git-repo-check -C <빈 폴더> -s read-only -m ${GPT검수.모델} -c model_reasoning_effort=${GPT검수.추론} -o "${path.join(밖, '답_gpt.md')}" - < "${q}"`
     : s === 'fable'
       // Fable은 5.2로만(유호님 11-11 · 11-13) — 이 PC의 Claude 설정이 「fable」 별칭을 claude-fable-5-2로 묶는다
       ? `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Fable 5.2 하위 에이전트(Agent model: fable — 설정이 claude-fable-5-2로 묶음, 답 기록의 model 칸이 claude-fable-5-2인지 확인)에게 질문.md 내용을 그대로 주고 최종 답을 ${넣는곳(s)}`

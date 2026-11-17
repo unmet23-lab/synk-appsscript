@@ -13,6 +13,7 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawn, spawnSync } = require('node:child_process');
+const { codex모델인자 } = require('./GPT검수모델.js');
 
 const 뿌리 = path.resolve(__dirname, '..', '..');
 const 도구머리 = 'Do not run any shell commands, do not open, create or edit any files and do not use any tools. Answer only from the text and images in this message.';
@@ -126,6 +127,7 @@ function 격자같음(a, b, { 최대 = 4, 평균 = 0.35 } = {}) {
 
 /**
  * GPT에게 그림 몇 장 + 글을 보여 답 글을 받는다(구독 Codex — 돈 안 나감).
+ * 모델과 추론은 GPT 검수와 같은 값(lib/GPT검수모델.js — 11-18 「싹다 6.2 SOL MAX로」)을 -m · -c로 넘긴다. 넘기지 않으면 굽기 계정의 그림 굽기 설정을 탄다.
  * → { 결과: '받음' | '막힘', 답, 꼴?, 첫줄?, 초, 코드 }. 꼴: 계정 없음(종료 3 — 굽기 계정이 모두 막힘 · 로그인 필요) · 답 없음 · 부르기 실패.
  */
 function GPT묻기({ 그림들 = [], 글, 답파일, 시간 = 15 * 60 * 1000 }) {
@@ -134,7 +136,7 @@ function GPT묻기({ 그림들 = [], 글, 답파일, 시간 = 15 * 60 * 1000 }) 
   fs.mkdirSync(path.dirname(답파일), { recursive: true });
   try { fs.rmSync(답파일, { force: true }); } catch { /* 없다 */ }
   const 입력 = `${도구머리}\n\n(첨부 그림은 이 순서로 붙였다: ${그림들.map((f) => path.basename(f)).join(', ') || '없음'})\n\n${글}`;
-  const 인자 = [돌림, 'exec', '--skip-git-repo-check', '-C', 작업, '-s', 'read-only', ...그림들.flatMap((f) => ['-i', path.resolve(f)]), '-o', 답파일, '-'];
+  const 인자 = [돌림, 'exec', '--skip-git-repo-check', '-C', 작업, '-s', 'read-only', ...codex모델인자(), ...그림들.flatMap((f) => ['-i', path.resolve(f)]), '-o', 답파일, '-'];
   const 시작 = Date.now();
   return new Promise((resolve) => {
     const c = spawn(process.execPath, 인자, { windowsHide: true });
