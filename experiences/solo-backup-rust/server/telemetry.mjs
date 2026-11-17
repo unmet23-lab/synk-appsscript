@@ -3,9 +3,11 @@
 // app bug puts into a batch never reaches the database (T25). Unknown fields are
 // counted and dropped; an item with a bad value is dropped whole.
 
-const TRIGGER = new Set(['hourly', 'logon', 'wake', 'unlock', 'manual', 'window']);
+// `request`: a run Solio's request task started; `network`: the run rested on a Wi-Fi the customer chose to rest on
+// (솔리오 잇기 305e380fe, 4.13 · 4.14).
+const TRIGGER = new Set(['hourly', 'logon', 'wake', 'unlock', 'manual', 'window', 'request']);
 const RESULT = new Set(['complete', 'partial', 'fill', 'skipped', 'failed', 'busy', 'not-due', 'paused']);
-const PAUSE = new Set(['battery', 'saver', 'metered', 'clock', 'user', 'none']);
+const PAUSE = new Set(['battery', 'saver', 'metered', 'network', 'clock', 'user', 'none']);
 const FILL = new Set(['none', 'done', 'failed', 'skipped']);
 const STANDBY = new Set(['S3', 'S0', 'unknown']);
 // Closed word lists (shape alone would let a folder name like 'secret-project' through).

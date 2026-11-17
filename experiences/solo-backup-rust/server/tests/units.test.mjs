@@ -239,6 +239,13 @@ test('telemetry: closed words, bounds and time window', () => {
   assert.ok(w.runs.every((x) => x.startedAt >= now - 8 * DAY && x.startedAt <= now + HOUR));
 });
 
+test('telemetry: a Solio request run and a rest on a chosen Wi-Fi are kept as fixed words (솔리오 잇기 305e380fe)', () => {
+  const now = T0 + DAY;
+  const r = cleanBatch({ runs: [{ trigger: 'request', startedAt: now - HOUR, result: 'complete' }, { trigger: 'hourly', startedAt: now, result: 'skipped', pause: 'network' }, { trigger: 'requests', startedAt: now, result: 'complete' }, { trigger: 'hourly', startedAt: now, result: 'skipped', pause: 'Office-WiFi' }] }, { now });
+  assert.deepEqual(r.runs.map((x) => [x.trigger, x.pause ?? null]), [['request', null], ['hourly', 'network']]);
+  assert.equal(r.dropped.items, 2, 'a word outside the closed lists drops the item, so a Wi-Fi name never comes in');
+});
+
 test('settings file and secrets folder: only WB_ names, never secrets, environment wins', (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wb-settings-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const file = path.join(dir, 'settings.env');
