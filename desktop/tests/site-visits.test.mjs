@@ -162,6 +162,27 @@ test('a version mismatch says which side needs updating', () => {
   assert.deepEqual(broken.rows, []);
 });
 
+// PC 0.4.96 원천 검수(카본) B1 · B2: 숫자가 없는 칸을 결론에서 0건처럼 말하거나, 조각을 이어 붙여 틀린 문장을 만들지 않는다
+test('the conclusion tells waiting, not yet counted and unreadable apart, and never turns a missing section into zero', () => {
+  const visitsAs = 상태 => siteVisitsView(ok(summary({ 방문: { 상태, 까닭: 'x' }, 쪽: { 상태, 까닭: 'x' }, 행동: { 상태, 까닭: 'x' } })), NOW);
+  assert.equal(visitsAs('측정 전').say, '사이트 방문은 아직 세기 전입니다.');
+  assert.equal(visitsAs('권한 기다림').say, '사이트 방문 기록을 읽을 권한을 기다리는 중입니다.');
+  assert.equal(visitsAs('못 읽음').say, '사이트 방문 숫자를 아직 읽지 못했습니다.');
+  for (const 상태 of ['측정 전', '권한 기다림', '못 읽음']) {
+    const v = visitsAs(상태);
+    assert.equal(v.then, '구글 검색에는 최근 28일 동안 1,140번 보였고 8번 눌렸습니다.', `${상태}: the search fallback still reads`);
+    assert.doesNotMatch(v.say, /했입니다|전입니다입니다/);
+  }
+  const actsAs = 상태 => siteVisitsView(ok(summary({ 행동: { 상태, 까닭: 'x' } })), NOW).say;
+  assert.equal(actsAs('측정 전'), '지난 7일 동안 사람이 12번 들어왔고, 문의와 앱 받기 숫자는 아직 세기 전입니다.');
+  assert.equal(actsAs('권한 기다림'), '지난 7일 동안 사람이 12번 들어왔고, 문의와 앱 받기 숫자는 읽을 권한을 기다리는 중입니다.');
+  assert.equal(actsAs('못 읽음'), '지난 7일 동안 사람이 12번 들어왔고, 문의와 앱 받기 숫자는 아직 읽지 못했습니다.');
+  const zero = summary();
+  zero.행동.문의 = { 합: 0, 나눔: [] };
+  zero.행동.앱받기 = { 합: 0, 나눔: [] };
+  assert.equal(siteVisitsView(ok(zero), NOW).say, '지난 7일 동안 사람이 12번 들어왔고, 문의와 앱 받기는 아직 없습니다.', 'zero is said only when the section was read');
+});
+
 // 11-17 Fable 설계 검토 P2-5: 요약에서 온 글은 글자로만 — 모델은 HTML을 만들지 않고, 보이지 않는 글자와 긴 글을 걸러 둔다
 test('words from the summary stay plain text: no markup is built, control characters and long words are trimmed', () => {
   const s = summary();

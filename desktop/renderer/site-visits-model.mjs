@@ -34,6 +34,8 @@ export function stamp(iso) {
 }
 const dateOnly = ymd => (typeof ymd === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ymd) ? `${Number(ymd.slice(5, 7))}월 ${Number(ymd.slice(8, 10))}일` : '');
 const ready = section => section && section.상태 === '됨';
+/** 숫자가 아직 없는 칸의 까닭 — 'wait'(읽을 권한을 기다림), 'before'(아직 세기 전 · 등록 전), 'unread'(고장 · 건너뜀) */
+const notYet = state => state === '권한 기다림' ? 'wait' : BEFORE.has(state) || !state ? 'before' : 'unread';
 
 /** 아직 숫자가 없는 줄 — 숨기지 않고, 큰 숫자 자리에 「측정 전」(고장이면 「못 읽음」), 가운데에 까닭 한 줄 */
 function notReadyRow(key, nm, section, fallback, note) {
@@ -148,7 +150,8 @@ function conclusion(s, now) {
     if (web) return `웹 검색을 켠 ${web.이름}에게 일반 질문 ${num(web.답받음)}개를 물었더니 SYNK를 말한 답은 ${num(web.언급)}개였습니다.`;
     return '아래 줄마다 까닭을 적었습니다.';
   };
-  if (!ready(v)) return { say: v?.상태 === '측정 전' ? '사이트 방문은 아직 세기 전입니다.' : '사이트 방문 숫자를 아직 읽지 못했습니다.', then: fallback() };
+  // 숫자가 없는 칸은 기다리는 것(세기 전 · 권한 기다림)과 고장(못 읽음)을 섞지 않고, 0건처럼 말하지 않는다(PC 0.4.96 원천 검수 B1 · B2)
+  if (!ready(v)) return { say: { before: '사이트 방문은 아직 세기 전입니다.', wait: '사이트 방문 기록을 읽을 권한을 기다리는 중입니다.', unread: '사이트 방문 숫자를 아직 읽지 못했습니다.' }[notYet(v?.상태)], then: fallback() };
   if (v.급증) return { say: `${dateOnly(v.급증.날) || '오늘'} 방문 기록이 ${num(v.급증.줄)}줄로 평소(하루 ${num(v.급증.앞평균)}줄)보다 크게 늘었습니다.`, then: '공개 설문지에 남이 넣은 줄일 수 있어, 숫자를 그대로 믿기 전에 확인이 필요합니다.' };
   const last = Date.parse(v.마지막기록 || '');
   const started = v.켠날 ? Date.parse(`${v.켠날}T00:00:00+09:00`) : NaN;
@@ -157,7 +160,9 @@ function conclusion(s, now) {
   if (now - last > STOP_DAYS * DAY) return { say: `방문 기록이 ${monthDay(v.마지막기록)} 뒤로 끊겼습니다.`, then: '아무도 오지 않았거나 사이트의 방문 세기가 멈췄을 수 있어 확인이 필요합니다.' };
   if (!v.사람) return { say: '지난 7일 동안 사이트에 들어온 사람이 없습니다.', then: fallback() };
   const acts = ready(a) ? [a.문의?.합 ? `문의를 ${num(a.문의.합)}번` : null, a.앱받기?.합 ? `앱 받기를 ${num(a.앱받기.합)}번` : null].filter(Boolean) : [];
-  const say = acts.length ? `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, ${acts.join(', ')} 눌렀습니다.` : `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, 문의와 앱 받기는 아직 없습니다.`;
+  const actsMissing = ready(a) ? '' : { before: '아직 세기 전입니다', wait: '읽을 권한을 기다리는 중입니다', unread: '아직 읽지 못했습니다' }[notYet(a?.상태)];
+  const say = actsMissing ? `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, 문의와 앱 받기 숫자는 ${actsMissing}.`
+    : acts.length ? `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, ${acts.join(', ')} 눌렀습니다.` : `지난 7일 동안 사람이 ${num(v.사람)}번 들어왔고, 문의와 앱 받기는 아직 없습니다.`;
   const quiet = (v.갈래 || []).filter(x => (x.이름 === '검색' || x.이름 === 'AI 답변') && x.수 === 0).length === 2;
   const top = (v.들어온곳 || [])[0];
   const then = v.까닭 ? clean(v.까닭, 120) : quiet ? '검색과 AI 답변으로는 아직 거의 오지 않습니다.' : top ? `${josa(clean(top.이름, 20), ['에서', '에서'])} 가장 많이 왔습니다.` : '';
