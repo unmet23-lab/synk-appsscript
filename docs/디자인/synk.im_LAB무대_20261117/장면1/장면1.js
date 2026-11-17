@@ -1,6 +1,7 @@
-// LAB 「직접 풀어 보기」 첫 장면 — 빨랫줄과 단어 카드(2026-11-18, 둘째 판).
-// 30일은 줄 하나다. 보기 세 낱말이 「지금」 자리에 나무 집게로 물린 단어 카드다. 카드를 누르면 답이 되고, 잡아 끌면 흔들린다.
-// 답하면 틀린 보기는 집게가 열리며 떨어져 나가고, 남은 카드(배울 말)는 뒤집혀 기록 면에 도장을 받은 뒤 줄을 따라 다음에 돌아올 날로 간다.
+// LAB 「직접 풀어 보기」 첫 장면 — 줄에 매단 3D 낱말 배지(2026-11-18, 셋째 판).
+// 30일은 줄 하나다. 보기 세 낱말이 「지금」 자리에 은색 집게로 물린 배지다. 배지 앞면 창에서는 그 말을 하는 인물이 움직인다(옴니 1.2로 구운 짧은 영상).
+// 카드를 누르면 답이 되고, 잡아 끌면 흔들린다. 손을 올리면 그쪽으로 돌아보며 빛이 미끄러지고, 창 속 인물이 그 말을 몸으로 한다.
+// 답하면 틀린 보기는 집게가 열리며 공중에서 돌며 떨어지고, 남은 배지(배울 말)는 뒤집혀 무지갯빛 기록 면에 도장을 받은 뒤 줄을 따라 다음에 돌아올 날로 간다.
 // 이 쪽은 첫 장면(첫 문제 → 맞힘 · 틀림 → 1분 뒤 감기 → 둘째 문제 → 내일로)까지 짓는다. 글은 공개본 원고(../원고.json) 그대로다.
 (() => {
   'use strict';
@@ -29,6 +30,11 @@
     toMinute: '1분 뒤로', toDay1: '내일로', again: '처음부터 다시',
   };
 
+  // 낱말마다 창 속 장면(옴니 1.2로 구운 5초 영상과 첫 장 그림). 영상이 없으면 그림만 둔다.
+  const PIC = { '안녕하세요.': { k: 'hello', tone: '#ADD9F5', say: 0.7 }, '감사합니다.': { k: 'thanks', tone: '#F9C7B4', say: 0.8 }, '다녀왔어요.': { k: 'home', tone: '#BCE4D1', say: 0.25 } };
+  const VIDEO = window.__SCVIDEO !== false;
+  const cardSrc = (k, ext) => (window.__CARDDATA && window.__CARDDATA[`${k}.${ext}`]) || `card/${k}.${ext}`;
+
   /* ── 소리: 동작마다 다른 효과음(Web Audio). 쪽이 열릴 때 받아 두고, 처음 누르는 순간부터 난다. ── */
   const SND = {
     hover: { f: 'sound/hover.mp3', g: 0.28, vary: 0.12 }, press: { f: 'sound/press.mp3', g: 0.7, vary: 0.06 },
@@ -36,6 +42,7 @@
     flip: { f: 'sound/flip.mp3', g: 0.62, vary: 0.08 }, clipopen: { f: 'sound/clipopen.mp3', g: 0.7, vary: 0.08 }, clipsnap: { f: 'sound/clipsnap.mp3', g: 0.9, vary: 0.08 },
     slide: { f: 'sound/slide.mp3', g: 0.3 }, tick: { f: 'sound/tick.mp3', g: 0.6 }, whoosh: { f: 'sound/whoosh.mp3', g: 0.26, vary: 0.1 }, pop: { f: 'sound/pop.mp3', g: 0.5 },
     chime: { f: 'sound/chime.wav', g: 0.5 }, notify: { f: 'sound/notify.wav', g: 0.4 },
+    vhello: { f: 'sound/v-hello.mp3', g: 0.85 }, vthanks: { f: 'sound/v-thanks.mp3', g: 0.85 }, vhome: { f: 'sound/v-home.mp3', g: 0.85 },
   };
   const AC = window.AudioContext || window.webkitAudioContext;
   let ac = null, master = null, soundOn = true;
@@ -74,8 +81,9 @@
   const endTag = document.createElement('span'); endTag.className = 'sc-end'; endTag.textContent = '내 위치'; endTag.setAttribute('aria-hidden', 'true'); endTag.style.cssText = 'left:0;top:0'; line.append(endTag);
   // 카드 크기는 CSS가 정한다(화면 폭에 따라 줄어든다). 보이지 않는 견본 한 장으로 잰다.
   const probe = document.createElement('div'); probe.className = 'sc-card'; probe.style.cssText = 'visibility:hidden;pointer-events:none'; probe.setAttribute('aria-hidden', 'true'); layer.append(probe);
+  const hooks = [1, 2, 3, 4].map(() => { const h = document.createElement('span'); h.className = 'sc-pin sc-hook'; h.setAttribute('aria-hidden', 'true'); h.innerHTML = '<i class="sc-pin-b"></i><i class="sc-pin-a"></i>'; layer.insertBefore(h, probe); return h; });
 
-  let W = 0, CY = 96, SAG = 16, CW = 232, CH = 150, narrow = false;
+  let W = 0, CY = 96, SAG = 16, CW = 232, CH = 150, HW = 30, HH = 24, narrow = false;
   let slotX = [0, 0, 0], knotX = [0, 0, 0, 0, 0];
   const cards = new Set();
   const wave = { a: 0, v: 0, x: 0 };
@@ -91,8 +99,8 @@
   const posX = (at) => (at.kind === 'slot' ? slotX[at.i] : knotX[at.i]);
   const layout = () => {
     narrow = narrowMQ.matches;
-    W = line.clientWidth; CY = narrow ? 80 : 96; SAG = narrow ? 9 : 16;
-    CW = probe.offsetWidth || 232; CH = probe.offsetHeight || 150;
+    W = line.clientWidth; CY = narrow ? 76 : 92; SAG = narrow ? 9 : 16;
+    CW = probe.offsetWidth || 232; CH = probe.offsetHeight || 150; HW = hooks[0].offsetWidth || 30; HH = hooks[0].offsetHeight || 24;
     const gut = parseFloat(getComputedStyle(head).paddingLeft) || 20;
     if (narrow) {
       // 휴대폰: 보기 세 장이 폭을 다 쓴다. 날 매듭은 보기가 떨어져 나간 뒤에 나타난다.
@@ -101,9 +109,9 @@
       const A = gut + (W - 2 * gut) * 0.52, B = W - gut - 14;
       knotX = [slotX[1], A, A + (B - A) * Math.sqrt(1 / 30), A + (B - A) * Math.sqrt(7 / 30), B];
     } else {
-      const sp = CW + 26;
+      const sp = CW + 30;
       slotX = [0, 1, 2].map((i) => gut + 8 + CW / 2 + i * sp);
-      const A = slotX[2] + CW + 20, B = W - gut - 40;
+      const A = slotX[2] + CW + 40, B = W - gut - 40;
       knotX = [slotX[1], A, A + (B - A) * Math.sqrt(1 / 30), A + (B - A) * Math.sqrt(7 / 30), B];
     }
     bracket.style.width = (slotX[2] - slotX[0] + CW) + 'px';
@@ -115,19 +123,41 @@
   /* ── 카드 ── */
   const makeCard = (id, text, num) => {
     const el = document.createElement('div'); el.className = 'sc-card'; el.setAttribute('role', 'button'); el.setAttribute('aria-disabled', 'true'); el.tabIndex = 0;
-    el.innerHTML = '<div class="sc-card-in"><div class="sc-flip"><div class="sc-face sc-front"><span class="sc-num" aria-hidden="true"></span><span class="sc-word"></span></div>'
-      + '<div class="sc-face sc-back" aria-hidden="true"><span class="sc-back-tag"></span><span class="sc-back-word"></span><span class="sc-stamps"></span></div></div></div>'
-      + '<span class="sc-pin" aria-hidden="true"><i class="sc-pin-a"></i><i class="sc-pin-b"></i><i class="sc-pin-spring"></i></span>';
+    el.innerHTML = '<div class="sc-card-in"><div class="sc-box"><div class="sc-flip">'
+      + '<div class="sc-face sc-front"><div class="sc-pic"></div><div class="sc-meta"><span class="sc-num" aria-hidden="true"></span><span class="sc-word"></span></div><i class="sc-dot"></i><i class="sc-gloss"></i></div>'
+      + '<div class="sc-face sc-back" aria-hidden="true"><span class="sc-back-tag"></span><span class="sc-back-word"></span><i class="sc-back-rule"></i><span class="sc-stamps"></span><i class="sc-gloss"></i></div>'
+      + '<i class="sc-side is-l"></i><i class="sc-side is-r"></i><i class="sc-side is-t"></i><i class="sc-side is-b"></i></div>'
+      + '<span class="sc-pin" aria-hidden="true"><i class="sc-pin-b"></i><i class="sc-pin-a"></i></span></div></div>';
     const sh = document.createElement('div'); sh.className = 'sc-shadow'; sh.setAttribute('aria-hidden', 'true');
     layer.insertBefore(sh, probe); layer.insertBefore(el, probe);
-    const c = { el, sh, flip: $('.sc-flip', el), wordEl: $('.sc-word', el), numEl: $('.sc-num', el), backTag: $('.sc-back-tag', el), backWord: $('.sc-back-word', el), stamps: $('.sc-stamps', el), pin: $('.sc-pin', el),
-      id, text, x: 0, y: -400, th: 0, w: 0, s: 1, lift: 0, op: 0, home: 'fly', at: null, moving: false, grab: false, vx: 0, px: 0, dip: 0, dipV: 0, dx: 0, fall: null, answerable: false };
+    const c = { el, sh, box: $('.sc-box', el), flip: $('.sc-flip', el), pic: $('.sc-pic', el), wordEl: $('.sc-word', el), numEl: $('.sc-num', el), backTag: $('.sc-back-tag', el), backWord: $('.sc-back-word', el), stamps: $('.sc-stamps', el), pin: $('.sc-pin', el),
+      id, text, x: 0, y: -400, th: 0, w: 0, s: 1, lift: 0, op: 0, home: 'fly', at: null, moving: false, grab: false, vx: 0, px: 0, dip: 0, dipV: 0, dx: 0, fall: null, answerable: false,
+      ps: 0, pv: 0, pt: 0, fx: 0, fv: 0, ft: 0, hover: false, video: null, picKey: null };
     setFace(c, id, text, num);
     gsap.set(c.flip, { rotationY: 0, transformPerspective: 900 });
     bindCard(c); cards.add(c); return c;
   };
+  function setPic(c) {
+    const m = PIC[c.text]; if (!m || c.picKey === m.k) return; c.picKey = m.k;
+    c.pic.style.setProperty('--tone', m.tone);
+    const img = new Image(); img.src = cardSrc(m.k, 'jpg'); img.alt = ''; img.decoding = 'async';
+    c.pic.replaceChildren(img); c.video = null;
+    if (!VIDEO) return;
+    const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.poster = cardSrc(m.k, 'jpg');
+    v.addEventListener('loadeddata', () => { c.pic.append(v); c.video = v; }, { once: true });
+    v.src = cardSrc(m.k, 'mp4');
+  }
+  // 창 속 인물이 그 말을 몸으로 한다(처음부터 한 번). 이미 하고 있으면 그대로 둔다.
+  // voice가 참이면 그 말을 소리로도 한다(처음 떨어질 때는 셋이 겹치므로 몸짓만).
+  const act = (c, again = false, voice = false) => {
+    const m = PIC[c.text], v = c.video, busy = v && !v.paused && !v.ended;
+    if (busy && !again) return;
+    if (voice && m) play('v' + m.k, { delay: v && !reduce ? m.say : 0 });
+    if (!v || reduce) return;
+    try { v.currentTime = 0; } catch { /* 아직 못 감음 */ } v.play().catch(() => {});
+  };
   function setFace(c, id, text, num) {
-    c.id = id; c.text = text; c.wordEl.textContent = text; c.backWord.textContent = text; c.numEl.textContent = String(num);
+    c.id = id; c.text = text; c.wordEl.textContent = text; c.backWord.textContent = text; c.numEl.textContent = String(num); setPic(c);
     c.el.setAttribute('aria-label', `${num}번 ${text}`); c.el.classList.remove('is-right', 'is-wrong');
   }
   const removeCard = (c) => { cards.delete(c); c.el.remove(); c.sh.remove(); };
@@ -150,21 +180,30 @@
         f.vy += 2300 * dt; f.vy *= 1 - 0.8 * dt;
         c.w += Math.sin(f.t * 8 + f.ph) * 7 * dt; c.w *= 1 - 0.4 * dt;
         c.y += f.vy * dt; c.x += (f.vx + Math.sin(f.t * 6 + f.ph) * 40) * dt; c.th += c.w * dt;
+        c.ps += c.pv * dt; c.fx += c.fv * dt; c.pv *= 1 - 0.3 * dt; c.fv *= 1 - 0.3 * dt;
         c.op = clamp(1 - (f.t - 0.3) / 0.5, 0, 1);
         if (c.op <= 0) { removeCard(c); continue; }
       } else {
+        // 세로 축 비틀림(ψ)과 앞뒤 기울임(φ): 줄에 매단 배지는 흔들릴 때 조금씩 돈다. 손을 올리면 그쪽으로 돌아본다.
+        if (!reduce) {
+          c.pv += ((c.pt - c.ps) * 38 - c.pv * 3.2) * dt; c.ps += c.pv * dt;
+          c.fv += ((c.ft - c.fx) * 60 - c.fv * 7) * dt; c.fx += c.fv * dt;
+        }
         // 집게가 옮겨 가는 속도가 바뀌면(가속 · 감속) 카드 아래쪽이 뒤로 처졌다가 흔들린다. 시계 방향이 + 이므로 Δω = +Δv / L · cosθ
         const vNew = (c.x - c.px) / dt, dv = vNew - c.vx; c.vx = vNew; c.px = c.x;
         if (!c.grab && !reduce) {
-          if (Math.abs(dv) < 3000) c.w += (dv / L) * Math.cos(c.th) * 0.22;
+          if (Math.abs(dv) < 3000) { c.w += (dv / L) * Math.cos(c.th) * 0.22; c.pv += (dv / L) * 0.05; }
           c.w += (-om * om * Math.sin(c.th) - 1.5 * c.w) * dt;
           c.th = clamp(c.th + c.w * dt, -0.75, 0.75);
         } else if (reduce) { c.th = 0; c.w = 0; }
-        if (c.home === 'line') c.y = cordY(c.x) - 7 - c.lift;
+        if (c.home === 'line') c.y = cordY(c.x) + 2 - c.lift;
       }
       const tx = c.x - CW / 2;
       c.el.style.transform = `translate(${tx}px, ${c.y}px) rotate(${c.th}rad) scale(${c.s})`;
-      c.sh.style.transform = `translate(${tx - 10 - c.th * 26}px, ${c.y + 18 + Math.abs(c.th) * 6}px) rotate(${c.th * 0.85}rad) scale(${c.s})`;
+      c.box.style.transform = `rotateY(${c.ps}rad) rotateX(${c.fx}rad)`;
+      c.el.style.setProperty('--g', (Math.sin(c.ps) * 0.9 + c.th * 0.6).toFixed(3));
+      const sx = Math.max(0.12, Math.abs(Math.cos(c.ps)));
+      c.sh.style.transform = `translate(${tx - 14 - c.th * 30}px, ${c.y + 26 + Math.abs(c.th) * 6}px) rotate(${c.th * 0.85}rad) scale(${c.s * sx}, ${c.s})`;
       c.el.style.opacity = String(c.op); c.sh.style.opacity = String((c.home === 'line' ? 0.85 : 0.5) * c.op);
     }
     stopLis.forEach((li, i) => {
@@ -172,6 +211,13 @@
       li.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
     });
     endTag.style.transform = `translate(${W - 8}px, ${cordY(W - 8) - 12}px) translate(-100%, -50%)`;
+    const full = line.classList.contains('is-full');
+    hooks.forEach((h, k) => {
+      const i = k + 1, x = knotX[i];
+      const taken = [...cards].some((c) => c.home === 'line' && !c.moving && c.at && c.at.kind === 'knot' && c.at.i === i);
+      h.style.transform = `translate(${x - HW / 2}px, ${cordY(x) - HH + 11}px)`;
+      h.style.opacity = taken || (narrow && full) ? '0' : '1';
+    });
     let d = '', ds = '';
     for (let x = -20; x <= W + 20; x += 8) { const y = cordY(x), m = x === -20 ? 'M' : 'L'; d += `${m}${x} ${y.toFixed(1)}`; ds += `${m}${x} ${(y + 6).toFixed(1)}`; }
     cordPath.setAttribute('d', d); cordShadow.setAttribute('d', ds);
@@ -183,9 +229,18 @@
   let answering = null, hinted = false;
   function bindCard(c) {
     const el = c.el; let down = null, dragged = false, suppress = 0;
-    el.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && c.home === 'line' && !c.moving && !down) { play('hover'); c.w -= clamp(e.movementX * 0.02, -0.5, 0.5) || 0.25; } });
+    el.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && c.home === 'line' && !c.moving && !down) { c.hover = true; play('hover'); c.w -= clamp(e.movementX * 0.02, -0.5, 0.5) || 0.25; act(c, false, true); } });
+    el.addEventListener('pointerleave', () => { c.hover = false; c.pt = 0; c.ft = 0; });
     el.addEventListener('pointermove', (e) => {
-      if (!down) { if (e.pointerType === 'mouse' && c.home === 'line') c.w -= clamp(e.movementX * 0.006, -0.6, 0.6); return; }
+      if (!down) {
+        if (e.pointerType === 'mouse' && c.home === 'line') {
+          c.w -= clamp(e.movementX * 0.006, -0.6, 0.6);
+          // 손이 있는 쪽으로 돌아본다(배지의 그 쪽 가장자리가 손 쪽으로 다가온다)
+          const r = el.getBoundingClientRect(); const u = clamp((e.clientX - r.left) / r.width - 0.5, -0.5, 0.5), v = clamp((e.clientY - r.top) / r.height - 0.5, -0.5, 0.5);
+          c.pt = -u * 0.62; c.ft = v * 0.32;
+        }
+        return;
+      }
       if (!dragged && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 7) { dragged = true; c.grab = true; el.classList.add('is-grab'); el.classList.remove('is-down'); hideHint(); }
       if (!dragged) return;
       const R = layer.getBoundingClientRect(), px = e.clientX - R.left, py = e.clientY - R.top;
@@ -206,7 +261,7 @@
     el.addEventListener('click', () => {
       if (performance.now() - suppress < 400) return;
       if (c.answerable && answering) answering(c);
-      else if (c.home === 'line' && !c.moving) { c.w += sign() * 1.4; play('hover', { g: 1.6 }); }
+      else if (c.home === 'line' && !c.moving) { c.w += sign() * 1.4; c.pv += sign() * 4; play('hover', { g: 1.6 }); act(c, true, true); }
     });
     el.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -222,7 +277,7 @@
   });
   const showHint = (c) => {
     if (hinted || reduce) return; hinted = true;
-    if (narrow) { hint.style.left = clamp(c.x - 85, 12, W - 182) + 'px'; hint.style.top = (c.y + CH + 22) + 'px'; }
+    if (narrow) { hint.style.left = clamp(c.x - 85, 12, W - 182) + 'px'; hint.style.top = (c.y + CH + 16) + 'px'; }
     else { hint.style.left = (c.x + CW / 2 + 16) + 'px'; hint.style.top = (c.y + CH * 0.42) + 'px'; }
     gsap.fromTo(hint, { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' });
     setTimeout(hideHint, 4200);
@@ -247,13 +302,13 @@
   };
   // 처음: 카드가 위에서 떨어져 열린 집게가 줄을 물고 닫힌다
   const dropIn = (c, at, delay) => new Promise((res) => {
-    c.at = at; const x1 = posX(at); c.x = c.px = c.dx = x1; c.home = 'fly'; c.th = sign() * (0.08 + Math.random() * 0.12); c.w = 0;
+    c.at = at; const x1 = posX(at); c.x = c.px = c.dx = x1; c.home = 'fly'; c.th = sign() * (0.08 + Math.random() * 0.12); c.w = 0; c.ps = sign() * (1.2 + Math.random() * 0.6); c.pv = 0;
     c.el.classList.add('is-open');
     const y0 = -CH - 120; c.y = y0; c.op = 0;
     const o = { t: 0 };
     gsap.to(o, { t: 1, duration: reduce ? 0 : 0.6, ease: 'power3.in', delay: reduce ? 0 : delay,
-      onUpdate: () => { c.y = y0 + (cordY(x1) - 7 - y0) * o.t; c.op = Math.min(1, o.t * 2.5); },
-      onComplete: () => { c.home = 'line'; c.op = 1; c.el.classList.remove('is-open'); c.w += sign() * 1.1; c.dipV += 160; kick(x1, 110); play('clipsnap'); res(); } });
+      onUpdate: () => { c.y = y0 + (cordY(x1) + 2 - y0) * o.t; c.op = Math.min(1, o.t * 2.5); },
+      onComplete: () => { c.home = 'line'; c.op = 1; c.el.classList.remove('is-open'); c.w += sign() * 1.1; c.pv += sign() * 3; c.dipV += 160; kick(x1, 110); play('clipsnap'); setTimeout(() => act(c), 120); res(); } });
   });
   // 집게가 열리면 카드는 떨어지고, 빈 집게는 줄에 남아 닫혔다가 사라진다
   const leavePin = (c) => {
@@ -272,16 +327,17 @@
     setTimeout(() => {
       leavePin(c);
       c.home = 'fall'; c.fall = { vy: -40, vx: sign() * (20 + Math.random() * 50), t: 0, ph: Math.random() * 6 };
-      c.w += sign() * (1.2 + Math.random()); c.el.style.pointerEvents = 'none'; if (document.activeElement === c.el) c.el.blur();
+      c.w += sign() * (1.2 + Math.random()); c.pv += sign() * (7 + Math.random() * 5); c.fv += sign() * (3 + Math.random() * 3); c.pt = c.ps; c.ft = c.fx;
+      c.el.style.pointerEvents = 'none'; if (document.activeElement === c.el) c.el.blur();
       kick(c.x, 70); play('whoosh', { g: 0.6, rate: 1.05 + Math.random() * 0.25 });
       res();
     }, reduce ? 0 : 110);
   }, reduce ? 0 : delay));
-  const flipTo = (c, face) => new Promise((res) => { play('flip'); gsap.to(c.flip, { rotationY: face === 'front' ? 0 : 180, transformPerspective: 900, duration: reduce ? 0 : 0.62, ease: 'back.out(1.4)', onComplete: res }); c.w += 0.45; });
+  const flipTo = (c, face) => new Promise((res) => { play('flip'); gsap.to(c.flip, { rotationY: face === 'front' ? 0 : 180, transformPerspective: 900, duration: reduce ? 0 : 0.62, ease: 'back.out(1.4)', onComplete: res }); c.w += 0.45; c.pv += sign() * 1.5; });
   const stamp = (c, ok, label) => {
     const s = document.createElement('span'); s.className = `sc-stamp ${ok ? 'is-ok' : 'is-x'}`; s.innerHTML = `<em>${ok ? '✓' : '✕'}</em><span></span>`; s.querySelector('span').textContent = label;
     c.stamps.append(s); while (c.stamps.children.length > 2) c.stamps.firstElementChild.remove();
-    play('stamp'); c.w += sign() * (ok ? 0.7 : 1.1); kick(c.x, 40);
+    play('stamp'); c.w += sign() * (ok ? 0.7 : 1.1); c.fv -= 2.2; kick(c.x, 40);
     if (!reduce) { gsap.fromTo(s, { scale: 1.9, opacity: 0, rotation: -24 }, { scale: 1, opacity: 1, rotation: -12, duration: 0.32, ease: 'back.out(2.4)' }); gsap.fromTo(c, { s: 0.955 }, { s: 1, duration: 0.4, ease: 'back.out(3)' }); }
   };
   // 줄을 따라 옮겨 간다: 집게가 살짝 열려 들리고, 미끄러지고, 닿으면 닫힌다
@@ -303,7 +359,7 @@
       .to(c, { lift: 34, duration: reduce ? 0 : 0.28, ease: 'power2.out' })
       .call(() => { flipTo(c, 'front'); })
       .to(c, { lift: 0, duration: reduce ? 0 : 0.42, ease: 'bounce.out' }, reduce ? '>' : '+=0.3')
-      .call(() => { play('clipsnap', { g: 0.6 }); kick(c.x, 60); });
+      .call(() => { play('clipsnap', { g: 0.6 }); kick(c.x, 60); act(c, true, true); });
   });
   const markStop = (i, ok) => { const b = stopLis[i].querySelector('b'); b.textContent = ok ? '✓' : '✕'; b.style.color = ok ? 'var(--ink)' : 'var(--stamp)'; if (!reduce) gsap.fromTo(b, { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(2)' }); };
   const setClock = (k) => stopLis.forEach((li, i) => { if (!i) return; li.classList.toggle('is-now', i === k); li.classList.toggle('is-past', i < k); });
@@ -343,22 +399,23 @@
       cs.forEach((c) => { c.answerable = false; c.el.setAttribute('aria-disabled', 'true'); });
       const correct = cs.find((c) => c.id === q.answer), right = picked === correct;
       if (right) {
-        picked.el.classList.add('is-right'); mark(picked.wordEl, 'under'); play('underline'); play('chime', { delay: 0.18 }); picked.w += sign() * 1.4;
+        picked.el.classList.add('is-right'); mark(picked.wordEl, 'under'); play('underline'); play('chime', { delay: 0.18 }); picked.w += sign() * 1.4; picked.pv += sign() * 2; act(picked, true, true);
       } else {
         picked.el.classList.add('is-wrong'); play('strike', { delay: 0.1 }); picked.w += sign() * 1.5; kick(picked.x, 50);
         if (!reduce) gsap.fromTo(picked.wordEl, { x: 0 }, { keyframes: [{ x: -7 }, { x: 6 }, { x: -4 }, { x: 3 }, { x: 0 }], duration: 0.4, ease: 'power1.inOut' });
         setTimeout(() => mark(picked.wordEl, 'strike'), 100);
-        setTimeout(() => { correct.el.classList.add('is-right'); mark(correct.wordEl, 'under'); play('underline'); correct.w += sign() * 0.9; }, 640);
+        if (picked.video) { picked.video.pause(); try { picked.video.currentTime = 0; } catch { /* 아직 못 감음 */ } }
+        setTimeout(() => { correct.el.classList.add('is-right'); mark(correct.wordEl, 'under'); play('underline'); correct.w += sign() * 0.9; correct.pv += sign() * 2; act(correct, true, true); }, 640);
       }
       done({ right, correct });
     };
   });
   // 답한 뒤: 배울 말만 남기고 나머지는 떨어진다 → 남은 카드가 뒤집혀 기록 면에 도장을 받는다
   const settle = async (cs, r, tag) => {
-    await wait(r.right ? 560 : 1250);
+    await wait(r.right ? 1500 : 2300);
     cs.filter((c) => c !== r.correct).forEach((c, i) => unclip(c, i * 180));
     await wait(420); setFull(false);
-    await wait(260);
+    await wait(900);
     r.correct.backTag.textContent = tag;
     await flipTo(r.correct, 'back'); await wait(60);
     stamp(r.correct, r.right, r.right ? '내일' : '1분 뒤');
