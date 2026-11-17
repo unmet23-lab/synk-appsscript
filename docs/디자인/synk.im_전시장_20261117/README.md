@@ -15,7 +15,7 @@ synk.im 홈을 전시장처럼 다시 짠 움직이는 시안이다. PC 클라�
 
 ## 보는 법
 
-- claude.ai 페이지: <https://claude.ai/artifact/QSAfT4oTv6hiyJkNgNNQHy> (올린 계정에서만 열린다). 버전 1이 첫 판, 버전 2와 3이 둘째 판, 버전 4가 셋째 판, 버전 5가 셋째 판에 작은 고침 둘을 넣은 지금 판이다.
+- claude.ai 페이지: <https://claude.ai/artifact/QSAfT4oTv6hiyJkNgNNQHy> (올린 계정에서만 열린다). 버전 1이 첫 판, 버전 2와 3이 둘째 판, 버전 4가 셋째 판, 버전 5가 셋째 판에 작은 고침 둘을 넣은 지금 판이다. 11-18에 세션이 다른 계정으로 이어져, 그 계정에서 열리는 같은 판을 <https://claude.ai/artifact/UoV3LYHxyT4k2VV9uNqtrz>에 따로 올렸다(그 페이지의 버전 1이 위의 버전 5와 같다).
 - 저장소에서 볼 때는 `node tools/지면서버.js 8765`를 띄우고 `http://localhost:8765/docs/디자인/synk.im_전시장_20261117/전시장.html`을 연다. 파일을 바로 열면(file://) 처마 가림판이 막혀 입구가 깨져 보인다.
 - 화면 아래의 막대는 시안을 조작하는 것이고 디자인의 일부가 아니다. 입구를 「처마」와 「구」로 바꾸고, 하늘을 낮 · 노을 · 밤으로 바꾼다. 4초 동안 손을 대지 않으면 사라진다.
 - 페이지에 올릴 판은 `node docs/디자인/synk.im_전시장_20261117/아티팩트판.cjs <나갈 폴더> [PULSE 쇼릴 mp4]`로 굽는다. 그 페이지는 바깥 주소의 그림과 영상을 막으므로, 도구가 문서 뼈대를 벗기고 SUIT를 심고 그림과 영상을 함께 올릴 폴더로 모은다. PULSE 쇼릴(7.4MB)은 저장소에 넣지 않았다. `https://synk.im/assets/v10/pulse-reel-wide-20261109c.mp4`를 받아 둘째 인자로 준다.

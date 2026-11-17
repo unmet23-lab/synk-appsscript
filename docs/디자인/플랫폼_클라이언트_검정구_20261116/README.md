@@ -6,7 +6,7 @@
 
 ## 보는 법
 
-- 아티팩트로 올린 판은 넷이다. 세션이 다른 Claude 계정으로 이어질 때마다 주소가 갈렸다. 지금 판(솔리오의 방문자 분석까지, 11-17)은 synk.yuh 계정의 <https://claude.ai/artifact/7GHnTKDHzeGqNSqtpSaNAq>에 있다. 그 앞 판(구의 눈, 다가가면 펼쳐지는 화면, 창 크기까지)은 <https://claude.ai/artifact/FbnB9hSR9kDwbRQBxJgkJQ>에 있다. 앞 판들은 <https://claude.ai/artifact/NphZaesCyDETPyC9jtmiwo>(솔리오 안쪽까지)와 <https://claude.ai/artifact/2v82TK2W96MCNRFkdYRh9W>의 버전 1(첫 판)에 있다. 각 주소는 그 페이지를 올린 계정으로 로그인했을 때만 열린다.
+- 아티팩트로 올린 판은 다섯이다. 세션이 다른 Claude 계정으로 이어질 때마다 주소가 갈렸다. 지금 판(방을 내리면 위쪽도 흐려지는 고침까지, 11-18)은 11-18에 세션이 이어진 계정의 <https://claude.ai/artifact/X6yWd5Py84B5cW2ZSih2aF>에 있다. 그 앞 판(솔리오의 방문자 분석까지, 11-17)은 synk.yuh 계정의 <https://claude.ai/artifact/7GHnTKDHzeGqNSqtpSaNAq>에 있고, 11-18의 고침은 들어가지 않았다. 그보다 앞선 판(구의 눈, 다가가면 펼쳐지는 화면, 창 크기까지)은 <https://claude.ai/artifact/FbnB9hSR9kDwbRQBxJgkJQ>에 있다. 앞 판들은 <https://claude.ai/artifact/NphZaesCyDETPyC9jtmiwo>(솔리오 안쪽까지)와 <https://claude.ai/artifact/2v82TK2W96MCNRFkdYRh9W>의 버전 1(첫 판)에 있다. 각 주소는 그 페이지를 올린 계정으로 로그인했을 때만 열린다.
 - 저장소에서 볼 때는 `node tools/지면서버.js 8765`를 띄우고 `http://localhost:8765/docs/디자인/플랫폼_클라이언트_검정구_20261116/검정구.html`을 연다. 앱 안 브라우저에서는 `.claude/launch.json`의 「시안지면」으로 띄운다.
 - 아티팩트로 올릴 때는 `node docs/디자인/플랫폼_클라이언트_검정구_20261116/아티팩트판.cjs <나갈 파일>`로 구운 판을 올린다. 아티팩트는 문서 뼈대를 스스로 씌우고 바깥 글꼴 파일을 막으므로, 이 도구가 뼈대를 벗기고 SUIT를 파일 안에 심는다.
 - 제목 줄 없는 실제 창으로 볼 때는 저장소 뿌리에서 `desktop\node_modules\.bin\electron docs/디자인/플랫폼_클라이언트_검정구_20261116/창으로보기.cjs`를 돌린다. PC 앱에 깔린 Electron을 빌려 1440×900 창을 띄우고, 창 단추만 검정 위에 얹는다. 맨 위 40px를 잡으면 창이 옮겨진다.
