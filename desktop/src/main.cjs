@@ -190,8 +190,9 @@ app.on('will-quit',event=>{
     // will-quit runs only after the normal window/draft guards accepted. Hold
     // this quit until the wrapper starts; it waits for our PID before installing.
     event.preventDefault();
-    // 마지막 창이 닫혔다. 가림막은 이제 설치기의 알림을 기다린다(앱이 끝나며 입력이 닫혀도 끝나지 않는다)
-    curtain?.closing();
+    // 마지막 창이 닫혔다. 가림막은 이제 설치기의 알림을 기다린다(앱이 끝나며 입력이 닫혀도 끝나지 않는다).
+    // 가림막에 알리다 난 실패는 넘김을 막지 않는다(가림막은 입력이 닫힌 뒤 10초에 스스로 끝난다)
+    try{curtain?.closing();}catch{}
     // 넘김 준비(덮는 창, 가림막)를 기다리는 동안 사람이 끝내면, 설치 작업이 끝나기를 기다린 뒤 넘긴다(그 사이에는 넘김이 바쁘다고 돌아온다)
     void Promise.resolve(platformUpdate.isBusy()?platformUpdate.waitForIdle():null).then(()=>platformUpdate.completeInstall()).then(result=>{
       if(result.ok&&!platformUpdate.needsInstallHandoff())app.quit();
@@ -316,16 +317,21 @@ async function prepareUpdateHandoff({token,version,file}={}){
     endHandoff();
     const gen=handoffGen;
     const main=window&&!window.isDestroyed()?window:null;
-    const shown=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.isVisible()&&!w.isMinimized());
+    let shown=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.isVisible()&&!w.isMinimized());
     const note={localAppData,token,appPid:process.pid,version,cut:0.5};
     if(!shown.length){
       // 모든 창이 숨었거나 최소화: 주 창 하나뿐이고 쓰다 만 초안이 없으면 조용히 바꾼다. 그 밖에는 설치기 창이 앱 창이 기억한 자리에 앞으로 뜬다
       const others=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w!==main);
       const quiet=!!main&&others.length===0&&!(await draftsUnsaved(main));
       if(gen!==handoffGen)return;
-      const at=windowPlacement?.restore();
-      if(writeHandoffNote({...note,bounds:at?screen.dipToScreenRect(null,at):null,maximized:at?.maximized===true,visibility:main?.isMinimized()?'minimized':'hidden',quiet}))quietQuit=quiet;
-      return;
+      // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 카본 C5)
+      const reopened=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w.isVisible()&&!w.isMinimized());
+      if(!reopened.length){
+        const at=windowPlacement?.restore();
+        if(writeHandoffNote({...note,bounds:at?screen.dipToScreenRect(null,at):null,maximized:at?.maximized===true,visibility:main?.isMinimized()?'minimized':'hidden',quiet}))quietQuit=quiet;
+        return;
+      }
+      shown=reopened;
     }
     const front=!!BrowserWindow.getFocusedWindow();
     let target=null;
@@ -577,7 +583,7 @@ function createWindow(){
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
-  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(process.argv.includes('--synk-autostart')&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;window.showInactive();}else window.show();}});
+  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}/* 얼굴의 첫 장 알림이 이 이벤트보다 먼저 와서 넘기기가 이미 창을 보였으면 다시 보이지 않는다(「뒤」로 보인 창이 앞으로 나서지 않게, 0.4.96 카본 C4) */if(isPlatform&&window.isVisible())return;const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(process.argv.includes('--synk-autostart')&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;window.showInactive();}else window.show();}});
   if(smoke) {
     const timer=setTimeout(()=>{process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:'TIMEOUT'})+'\n');app.exit(1);},20000);
     contents.once('did-finish-load',async()=>{

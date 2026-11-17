@@ -193,7 +193,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const was = snapshot?.login;
     snapshot = value;
     // 줄의 「다시 로그인」으로 연 로그인이 끝나면 그 모드를 푼다 — 같은 안내에서 이어서 다른 계정을 더할 때 「새 계정 연결」로 돌아온다(Fable F2).
-    if (ui.relogin && value.login?.stage === 'done' && !(was?.id === value.login.id && was.stage === 'done')) { ui.relogin = null; ui.email = ''; }
+    // 다른 서비스의 로그인이 끝난 것으로는 풀지 않는다. 그 로그인을 기다리던 Claude 다시 로그인 안내가 새 계정 연결로 바뀌었다(0.4.96 카본 C8)
+    if (ui.relogin && value.login?.stage === 'done' && value.login.service === rowById(ui.relogin)?.service && !(was?.id === value.login.id && was.stage === 'done')) { ui.relogin = null; ui.email = ''; }
   };
   // 다시 로그인 모드: 줄의 「다시 로그인」으로 연 Claude 안내는 그 줄의 계정으로만 로그인한다(메일을 비우면 새 계정 연결로 보고 막히던 것 — Fable F2).
   const reloginRow = service => { const row = ui.relogin ? rowById(ui.relogin) : null; return service === 'claude' && row?.service === service && row.email ? row : null; };

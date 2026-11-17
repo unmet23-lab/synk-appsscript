@@ -134,6 +134,14 @@ test('all platform reveal entry points share the pre-show gate and createWindow 
   calls.length=0;context.startupAllowed=true;context.mainWindowReady=true;context.window.isVisible=()=>false;context.unseenFailure={code:'UPDATE_STORAGE_FAILED',stage:'download'};
   context.requestPlatformWindow();assert.deepEqual(calls,[['begin','UPDATE_STORAGE_FAILED']]);assert.equal(context.unseenFailure,null);
 });
+// 얼굴의 첫 장 알림이 ready-to-show보다 먼저 와서 넘기기가 창을 이미 보였으면, ready-to-show는 창을 다시 보이거나 앞으로 내지 않는다(0.4.96 카본 C4)
+test('a ready-to-show that comes after the handoff already showed the window does not show it again',()=>{
+  const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8'),line=main.split('\n').find(value=>value.trim().startsWith("window.once('ready-to-show'"));assert.ok(line);
+  const calls=[];const window=new EventEmitter();window.show=()=>calls.push('show');window.showInactive=()=>calls.push('showInactive');window.minimize=()=>calls.push('minimize');window.isVisible=()=>true;
+  const context={window,mainWindowReady:false,smoke:false,isPlatform:true,startupAllowed:true,startupHandoff:null,arrivalShow:null,process:{argv:[]},desktopPreferences:{snapshot:()=>({preferences:{}})},platformTray:{isActive:()=>true}};
+  vm.createContext(context);vm.runInContext(line,context);window.emit('ready-to-show');
+  assert.deepEqual(calls,[]);assert.equal(context.mainWindowReady,true);
+});
 test('late main ready-to-show marks readiness but cannot expose the launcher while a gate blocks it',()=>{
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8'),line=main.split('\n').find(value=>value.trim().startsWith("window.once('ready-to-show'"));assert.ok(line);
   let shown=0;const window=new EventEmitter();window.show=()=>shown++;

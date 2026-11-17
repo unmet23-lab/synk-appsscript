@@ -146,7 +146,9 @@ namespace Synk.SignalInstaller
             detail = new TextBlock { FontWeight = FontWeights.Normal, FontSize = 12, Foreground = VerInk, TextWrapping = TextWrapping.Wrap, LineHeight = 18, LineStackingStrategy = LineStackingStrategy.BlockLineHeight };
             // 기록 칸(막힌 상태의 알릴 곳과 엔진 기록): 단추 아래에 두고, 그 높이만큼 글 묶음을 아래 여백으로 내린다.
             // 문장이 두 줄짜리 실패 장면과 같은 자리에 남아 구의 눈과 겹치지 않는다
-            detailBox = new ScrollViewer { Content = detail, MaxHeight = 72, Margin = new Thickness(0, 14, 0, 0), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Focusable = false, Visibility = Visibility.Collapsed };
+            detailBox = new ScrollViewer { Content = detail, MaxHeight = 72, Margin = new Thickness(0, 14, 0, 0), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Focusable = true, IsTabStop = true, Visibility = Visibility.Collapsed };
+            // 기록이 네 줄을 넘으면 자판(Tab으로 들어가 위아래 화살표)으로도 내려 볼 수 있다(0.4.96 카본 A4)
+            AutomationProperties.SetName(detailBox, "기록");
             way = Way("설치");
             way.Margin = new Thickness(0, 22, 0, 0);
             way.Click += delegate { OnWay(); };
@@ -181,6 +183,8 @@ namespace Synk.SignalInstaller
             root.Children.Add(bar);
 
             SizeChanged += delegate { Layout(); };
+            // Windows가 테두리 없는 창을 직접 최대화하면(Win+위 화살표, 화면 맨 위로 끌어 붙이기) 작업 표시줄까지 덮는다. 작업 영역 최대화로 바꾼다(0.4.96 카본 A1)
+            StateChanged += delegate { if (WindowState != WindowState.Maximized) return; WindowState = WindowState.Normal; if (!maximized) ToggleMaximize(); };
             SourceInitialized += delegate { RoundCorners(); };
             Closing += delegate(object sender, System.ComponentModel.CancelEventArgs args) { if (!allowClose && !Closable) args.Cancel = true; };
             PreviewKeyDown += delegate(object sender, KeyEventArgs args) {
@@ -238,6 +242,8 @@ namespace Synk.SignalInstaller
                     work = new Rect(a, b);
                 }
                 restoreBounds = new Rect(Left, Top, Width, Height);
+                // 최소 크기는 처음 화면 기준이다. 더 작은 화면에서 최대화하면 최소 크기에 막혀 작업 표시줄을 덮지 않게 줄인다(0.4.96 카본 A2)
+                MinWidth = Math.Min(MinWidth, work.Width); MinHeight = Math.Min(MinHeight, work.Height);
                 maximized = true;
                 Left = work.X; Top = work.Y; Width = work.Width; Height = work.Height;
             }
@@ -273,13 +279,14 @@ namespace Synk.SignalInstaller
         {
             if (String.IsNullOrEmpty(text)) return "";
             Typeface face = new Typeface(weight == FontWeights.Light ? light : suit, FontStyles.Normal, weight, FontStretches.Normal);
-            double dip = VisualTreeHelper.GetDpi(this).PixelsPerDip, track = -0.012 * size;
+            // 글상자는 자간 없이 그리므로 자간을 빼지 않고 그려질 폭 그대로 잰다. 빼면 경계의 문장이 한 줄로 남아 끝 글자가 잘렸다(0.4.96 카본 A3)
+            double dip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
             List<string> lines = new List<string>();
             string line = "";
             foreach (string word in text.Split(' ')) {
                 string next = line.Length == 0 ? word : line + " " + word;
                 FormattedText measured = new FormattedText(next, CultureInfo.GetCultureInfo("ko-KR"), FlowDirection.LeftToRight, face, size, Paper, dip);
-                if (line.Length > 0 && measured.WidthIncludingTrailingWhitespace + track * next.Length > maxWidth) { lines.Add(line); line = word; }
+                if (line.Length > 0 && measured.WidthIncludingTrailingWhitespace > maxWidth) { lines.Add(line); line = word; }
                 else line = next;
             }
             if (line.Length > 0) lines.Add(line);
@@ -503,6 +510,11 @@ namespace Synk.SignalInstaller
             uint flags = SWP_NOACTIVATE | SWP_NOOWNERZORDER;
             bool order = below != IntPtr.Zero && IsWindow(below);
             if (!order) flags |= 0x4; // SWP_NOZORDER
+            // 앱 창이 처음 화면의 최소 크기보다 작은 화면에 있었으면 그 크기를 그대로 잇는다(0.4.96 카본 A2)
+            PresentationSource source = PresentationSource.FromVisual(this);
+            Matrix m = source != null && source.CompositionTarget != null ? source.CompositionTarget.TransformFromDevice : Matrix.Identity;
+            Vector size = m.Transform(new Vector(note.Width, note.Height));
+            if (size.X > 0 && size.Y > 0) { MinWidth = Math.Min(MinWidth, size.X); MinHeight = Math.Min(MinHeight, size.Y); }
             SetWindowPos(hwnd, order ? below : IntPtr.Zero, note.X, note.Y, note.Width, note.Height, flags);
             if (note.Maximized && !maximized) ToggleMaximize();
         }
@@ -561,7 +573,7 @@ namespace Synk.SignalInstaller
         void OnOpen()
         {
             if (scene != Scene.LaunchFailure) return;
-            openApp.IsEnabled = false; ((TextBlock)openApp.Content).Text = "여는 중";
+            openApp.IsEnabled = false; ((TextBlock)openApp.Content).Text = "여는 중"; AutomationProperties.SetName(openApp, "여는 중");
             EventHandler handler = LaunchRequested; if (handler != null) handler(this, EventArgs.Empty);
         }
 
@@ -688,7 +700,9 @@ namespace Synk.SignalInstaller
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<Exception>(ShowLaunchFailure), error); return; }
             scene = Scene.LaunchFailure; ticker.Stop();
             SetCopy(automatic ? "새 판으로 바꿨습니다." : "설치했습니다.", "앱을 열지 못했습니다.");
-            detail.Text = error == null ? "" : error.Message; detailBox.Visibility = error == null ? Visibility.Collapsed : Visibility.Visible; Layout();
+            // 기록 칸은 실패 장면(Failed)과 같이 빈 글이면 숨기고, 낭독기 이름을 글과 맞춘다(0.4.96 카본 A5)
+            detail.Text = error == null ? "" : error.Message ?? ""; detailBox.Visibility = String.IsNullOrWhiteSpace(detail.Text) ? Visibility.Collapsed : Visibility.Visible; Layout();
+            AutomationProperties.SetName(detail, detail.Text);
             openApp.IsEnabled = true; ((TextBlock)openApp.Content).Text = "열기"; AutomationProperties.SetName(openApp, "열기");
             orb.SetCutOn(false, false); orb.EyesWake();
             SetButtons(); ShowUi(); openApp.Focus();

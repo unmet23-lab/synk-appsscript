@@ -606,6 +606,9 @@ internal static class SignalInstallerTests
                     RunAutomaticFixture((string)Fixture["autoFailure"],false);
                     // 조용한 업데이트: 넘김 쪽지가 「조용히」이면 창을 보이지 않고 되돌린 쓰던 앱을 켜며, 그 앱이 숨은 채 켜지도록 도착 쪽지에 숨음을 적는다
                     RunAutomaticFixture((string)Fixture["autoFailure"],false,true);
+                    // 앱 쪽 넘김이 반쯤 깨진 두 모습: 읽을 수 없는 쪽지, 가림막이 뜨지 못한 쪽지. 설치기는 쪽지 없는 옛 길처럼 창을 보이며 끝까지 간다
+                    RunAutomaticFixture((string)Fixture["autoFailure"],false,false,"broken");
+                    RunAutomaticFixture((string)Fixture["autoFailure"],false,false,"stale-curtain");
                     engine.VerifyInstalled(); VerifyRegistrationAndShortcuts();
                     using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
                     using(var key=hive.OpenSubKey(AppModelKey()))
@@ -684,7 +687,9 @@ internal static class SignalInstallerTests
         using (var stream = File.OpenRead(FixtureJson))
             return (InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
     }
-    private static void RunAutomaticFixture(string wrapper,bool success,bool quiet=false)
+    // noteKind: null(쪽지 없음, 0.4.95 앱이 넘기는 길), "broken"(읽을 수 없는 쪽지), "stale-curtain"(가림막을 가리키지만 가림막이 뜨지 못한 쪽지).
+    // 앱 쪽 넘김이 반쯤 깨져도 설치기는 창을 보이며 끝까지 간다(맡긴 세션 11-17 조건 1의 설치기 쪽)
+    private static void RunAutomaticFixture(string wrapper,bool success,bool quiet=false,string noteKind=null)
     {
         Assert(IsInside(wrapper,Root),"Automatic wrapper escaped fixture root.");
         string nonce=System.Guid.NewGuid().ToString("N")+System.Guid.NewGuid().ToString("N"),hold=Path.Combine(Root,"auto-parent-"+nonce),launched=Path.Combine(Spec.InstallDirectory,"fixture-launched");
@@ -696,6 +701,9 @@ internal static class SignalInstallerTests
             string note=Path.Combine(handoffFolder,Spec.AppId+".handoff.json"),arrival=Path.Combine(handoffFolder,Spec.AppId+".arrival.json"),updating=Path.Combine(handoffFolder,Spec.AppId+".updating.json");
             if(File.Exists(arrival))File.Delete(arrival);
             if(quiet){Directory.CreateDirectory(handoffFolder);File.WriteAllText(note,"{\"schemaVersion\":1,\"token\":\""+nonce+"\",\"appPid\":"+parent.Id+",\"version\":\"0.0.2\",\"window\":0,\"x\":100,\"y\":100,\"width\":1440,\"height\":940,\"maximized\":false,\"visibility\":\"hidden\",\"quiet\":true,\"cut\":0.5,\"curtainEvent\":null,\"writtenAt\":\"2026-11-17T00:00:00.000Z\"}");}
+            else if(noteKind=="broken"){Directory.CreateDirectory(handoffFolder);File.WriteAllText(note,"{\"schemaVersion\":1,\"token\":\""+nonce+"\",\"appPid\":"+parent.Id+",\"vers");}
+            else if(noteKind=="stale-curtain"){Directory.CreateDirectory(handoffFolder);File.WriteAllText(note,"{\"schemaVersion\":1,\"token\":\""+nonce+"\",\"appPid\":"+parent.Id+",\"version\":\"0.0.2\",\"window\":0,\"watchWindow\":0,\"x\":100,\"y\":100,\"width\":1440,\"height\":940,\"maximized\":false,\"visibility\":\"front\",\"quiet\":false,\"cut\":0.5,\"curtainEvent\":\"Local\\\\SYNK.Curtain."+nonce.Substring(0,32)+"\",\"writtenAt\":\"2026-11-17T00:00:00.000Z\"}");}
+            else Assert(noteKind==null,"Unknown handoff note kind: "+noteKind);
             var start=new ProcessStartInfo(wrapper,"--auto-update --wait-pid="+parent.Id+" --handoff-token="+nonce){UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden,RedirectStandardOutput=true,RedirectStandardError=true};
             using(var child=Process.Start(start))
             {
@@ -781,8 +789,15 @@ internal static class SignalInstallerTests
     }
     private static void Check(string name, Action action)
     {
-        try { action(); Checks.Add(new { name = name, ok = true }); }
-        catch (Exception error) { Checks.Add(new { name = name, ok = false, error = error.Message }); throw; }
+        // 검사마다 걸린 시간을 진행 파일에 적는다. 실행기가 시간 제한으로 이 시험을 끊어도 어디까지 왔는지 남는다
+        var watch = Stopwatch.StartNew();
+        try { action(); Checks.Add(new { name = name, ok = true, ms = watch.ElapsedMilliseconds }); }
+        catch (Exception error) { Checks.Add(new { name = name, ok = false, ms = watch.ElapsedMilliseconds, error = error.Message }); Progress(name, watch, "FAIL"); throw; }
+        Progress(name, watch, "ok");
+    }
+    private static void Progress(string name, Stopwatch watch, string result)
+    {
+        try { File.AppendAllText(Path.Combine(Root, "test-progress.txt"), result + "\t" + watch.ElapsedMilliseconds + "ms\t" + name + Environment.NewLine); } catch (Exception) { }
     }
     private static void WaitFor(Func<bool> ready, string error, int timeout = 7000)
     {

@@ -131,7 +131,8 @@ async function main() {
   const testExe = path.join(fixture.directory, 'SignalInstallerTests.exe');
   execute(fixture.csc, ['/nologo', '/target:exe', '/platform:x64', '/out:' + testExe,
     '/r:System.Web.Extensions.dll', '/r:System.Core.dll', '/r:System.Runtime.Serialization.dll', engineSource, path.join(installerRoot, 'AutoUpdateEngine.cs'), path.join(installerRoot, 'BackendProcess.cs'), path.join(installerRoot, 'InstallTransaction.cs'), path.join(installerRoot, 'Handoff.cs'), path.join(__dirname, 'Tests.cs')]);
-  const stdout = execute(testExe, [fixtureFile], { timeout: 180000 });
+  // 자동 업데이트를 끝까지 도는 회차가 늘어(11-17 실패 주입 둘), CPU가 바쁜 PC에서 3분을 넘겼다. 검사마다 걸린 시간은 test-progress.txt에 남는다
+  const stdout = execute(testExe, [fixtureFile], { timeout: 420000 });
   fs.writeFileSync(path.join(fixture.directory, 'test-output.txt'), stdout);
   console.log(stdout.trim());
   console.log(JSON.stringify({ fixtureFile, report: path.join(fixture.directory, 'test-results.json') }));

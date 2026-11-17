@@ -38,3 +38,36 @@ test('a blink that was due when the eyes came back does not erase a smile that h
   } finally { stage.dispose(); }
 });
 
+
+// 0.4.96 카본 B3: 시작 창에서 이미 보이던 눈을 앱 창이 이을 때 눈이 사라졌다가 다시 떠오르지 않는다
+test('eyes continued from another window are fully shown on the first frame', () => {
+  const { stage, step } = fakeStage();
+  try {
+    stage.snap('rest');
+    stage.eyesOff();
+    stage.eyesCalm({ instant: true }); step(1000);
+    assert.ok(stage.state().eyes.gate > 0.99, 'calm eyes faded in: ' + stage.state().eyes.gate);
+    stage.eyesOff();
+    stage.eyesAsleep({ instant: true }); step(1016);
+    assert.ok(stage.state().eyes.gate > 0.99, 'sleeping eyes faded in: ' + stage.state().eyes.gate);
+    // 처음 떠오르는 눈은 그대로 천천히 떠오른다
+    stage.eyesOff(); stage.eyesAsleep(); step(1032);
+    assert.ok(stage.state().eyes.gate < 0.2);
+  } finally { stage.dispose(); }
+});
+
+// 0.4.96 카본 B4: 눈을 끈 구는 무대에 눈 표정을 알리지 않고 깜빡이지도 않는다
+test('a stage without eyes reports off and never blinks', async () => {
+  const frames = [], said = [];
+  let t = 1000;
+  const win = { devicePixelRatio: 1, requestAnimationFrame: fn => { frames.push(fn); return frames.length; }, cancelAnimationFrame() {}, performance: { now: () => t }, setTimeout: fn => setTimeout(fn, 0) };
+  const host = { getBoundingClientRect: () => ({ width: 1200, height: 800 }) };
+  const canvas = { ownerDocument: { defaultView: win }, parentElement: host, parentNode: host, dataset: {}, width: 0, height: 0, style: { setProperty() {}, getPropertyValue: () => '' }, getContext: () => null, addEventListener() {}, removeEventListener() {} };
+  const stage = createOrbStage(canvas, { eyes: false, getHome: () => ({ x: 40, y: 40 }), onEyes: m => said.push(m) });
+  try {
+    stage.snap('rest'); stage.eyesAsleep(); stage.eyesCalm();
+    for (let i = 0; i < 60; i++) { t = 1000 + i * 100; const fn = frames.shift(); if (fn) fn(t); }
+    assert.ok(said.every(m => m === 'off'), JSON.stringify(said));
+    assert.equal(stage.state().eyes.open, 1, 'a hidden eye blinked');
+  } finally { stage.dispose(); }
+});

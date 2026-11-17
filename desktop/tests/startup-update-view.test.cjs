@@ -248,3 +248,50 @@ test('an arrival that is already over just rests',async()=>{
   assert.deepEqual(f.orb.calls,[['setCutOn',false],['setLit',1],['snap','rest'],['eyesCalm']]);
   f.view.dispose();
 });
+// 0.4.96 카본 C1: 관문은 실패를 일이 끝나기 전에 먼저 보내 「지금 판 열기」가 막힌 판이 첫 판이다. 곧 이어 오는 같은 실패에서 열 수 있게 되면 그때 저절로 열기를 건다
+test('a failure that first arrives without the open-current permission still opens by itself once the permission follows',async()=>{
+  const {AUTO_OPEN_MS}=await loaded;
+  const f=await fixture();
+  f.send({state:'error',code:'UPDATE_DOWNLOAD_FAILED',platform:'win32',canRetry:false,canOpenCurrent:false});await settle();
+  assert.deepEqual(visibleActions(f),[]);assert.equal(f.dom.focused.length,0);
+  f.send({state:'error',code:'UPDATE_DOWNLOAD_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await settle();
+  assert.ok(f.dom.focused.length>0,'the first action receives focus once it exists');
+  await f.clock.advance(AUTO_OPEN_MS+100);assert.equal(f.calls.filter(c=>c==='openCurrent').length,1);
+});
+// 0.4.96 카본 C2: 숨은 채 받다가 창을 열면 첫 상태가 받는 중이다. 뒤늦은 드러남이 깎는 구를 빈 자리로 되돌리지 않는다
+test('a window opened in the middle of a download shows the forge orb, not an empty reveal',async()=>{
+  const f=await fixture({status:{state:'downloading',platform:'win32',progress:40,latestVersion:'0.4.96',boot:{kind:'back',startedAt:1_000_000}}});
+  await f.clock.advance(3000);
+  const snaps=f.orb.named('snap').map(c=>c[1]),tweens=f.orb.named('tween').map(c=>c[1]);
+  assert.deepEqual(snaps,['void'],'only the starting point is set');
+  assert.ok(tweens.includes('forge')&&!tweens.includes('rest'),JSON.stringify(tweens));
+  assert.equal(f.dom.el('startup-update').dataset.ui,'forge');
+  // 빈 자리는 출발점일 뿐이고, 구는 깎는 자세에 남는다(뒤늦은 드러남이 그 뒤에 빈 자리로 되돌리면 받는 동안 구가 보이지 않는다)
+  assert.equal(f.orb.api.pose,'forge');
+  const g=await fixture({status:{state:'error',code:'UPDATE_DOWNLOAD_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true,boot:{kind:'back',startedAt:1_000_000}}});
+  await g.clock.advance(3000);
+  assert.deepEqual(g.orb.named('snap').map(c=>c[1]),['void']);assert.ok(g.orb.named('tween').some(c=>c[1]==='forge'));assert.equal(g.orb.api.pose,'forge');
+});
+// 0.4.96 카본 C6: 그리기가 없는 판도 받는 동안 글과 진행을 보인다
+test('without a drawable orb the download still shows its text and progress',async()=>{
+  const {mountStartupUpdate}=await loaded;
+  const clock=fakeClock(),dom=fakeDom();let push=null;
+  const bridge={getStatus:async()=>({state:'checking',platform:'win32'}),retry:async()=>({}),openCurrent:async()=>({}),install:async()=>({}),onChanged:fn=>{push=fn;return ()=>{};}};
+  const view=mountStartupUpdate({bridge,document:dom.document,window:{setTimeout:clock.setTimeout,clearTimeout:clock.clearTimeout,matchMedia:()=>({matches:false}),addEventListener(){},removeEventListener(){}},createOrb:()=>{throw Error('no canvas');},now:clock.now});
+  await view.ready;await settle();
+  push({state:'downloading',platform:'win32',progress:50,latestVersion:'0.4.96'});await clock.advance(5000);
+  assert.equal(dom.el('startup-update').dataset.ui,'forge');assert.equal(dom.el('startup-say').textContent,'새 판을 받고 있습니다.');
+  assert.match(dom.el('startup-percent').textContent,/^ · \d+%$/);
+  view.dispose();
+});
+// 0.4.96 카본 C7: 실패 뒤 다시 시도한 받기는 0에서 다시 깎는다
+test('a retried download starts carving again from zero instead of jumping to the failed point',async()=>{
+  const f=await fixture();
+  f.send({state:'downloading',platform:'win32',progress:90,latestVersion:'0.4.96'});await f.clock.advance(6000);
+  f.send({state:'error',code:'UPDATE_DOWNLOAD_FAILED',platform:'win32',canRetry:true,canOpenCurrent:true});await f.clock.advance(500);
+  const mark=f.orb.named('forgeAt').length;
+  f.send({state:'downloading',platform:'win32',progress:0,latestVersion:'0.4.96'});await f.clock.advance(6000);
+  const after=f.orb.named('forgeAt').slice(mark).map(c=>c[1]);
+  assert.ok(after.every(v=>v<=0.001),'cut went past the new progress: '+JSON.stringify(after.slice(-3)));
+  assert.equal(f.dom.el('startup-percent').textContent,' · 0%');
+});

@@ -60,7 +60,7 @@ export function mountStartupUpdate({
     minimize: $('startup-minimize'), maximize: $('startup-maximize'), close: $('startup-close'),
   };
   let snapshot = { state: 'checking' }, revision = 0, pending = null, disposed = false, unsubscribe = null, unsubscribeWindow = null;
-  let lastState = null, scene = 'boot', bootStarted = false, autoTimer = null, held = false, shown = 0, target = 0, followId = null, followAt = 0;
+  let lastState = null, scene = 'boot', bootStarted = false, autoTimer = null, autoSpent = false, focusDue = false, held = false, shown = 0, target = 0, followId = null, followAt = 0;
   const timers = new Set();
   const later = (fn, ms) => { const id = win.setTimeout(() => { timers.delete(id); if (!disposed) fn(); }, Math.max(0, ms)); timers.add(id); return id; };
 
@@ -115,16 +115,21 @@ export function mountStartupUpdate({
   }
   /* ── 새 판을 받는 동안: 옛 결을 지우며 구가 다가오고, 받는 만큼(앞 절반)과 바꾸는 만큼(뒤 절반) 새 결이 깎인다 ── */
   function enterForge() {
-    if (scene === 'forge' || !orb) return;
+    if (scene === 'forge') return;
+    const handoff = snapshot.boot?.kind === 'handoff';
+    // 그리기가 없는 판(정적 구)도 장면을 바꿔 글과 진행을 보인다(0.4.96 카본 C6)
+    if (!orb) { scene = 'forge'; bootStarted = true; shown = target = handoff ? 0.5 : 0; setUi('forge'); return; }
     // 앱 창 위에 덮어 띄운 넘김 장면(본체 boot.kind 'handoff'): 받기가 끝난 절반 깎인 구가 이미 와 있고 글도 바로 놓인다. 가림막과 설치기가 같은 장에서 잇는다
-    if (snapshot.boot?.kind === 'handoff') {
+    if (handoff) {
       scene = 'forge'; bootStarted = true; shown = target = 0.5;
       orb.forgeAt?.(0.5); orb.setCutOn?.(true, { instant: true }); orb.snap('forge'); orb.eyesAsleep?.();
       if (nodes.root.dataset) nodes.root.dataset.instant = 'true';
       setUi('forge');
       return;
     }
-    scene = 'forge'; shown = 0;
+    takeOverBoot();
+    // 다시 시도한 받기는 0에서 다시 깎는다. 앞 실패 때의 목표가 남으면 구와 숫자가 그 자리까지 먼저 오른다(0.4.96 카본 C7)
+    scene = 'forge'; shown = 0; target = 0;
     void orb.setMood?.('sleep');
     orb.setCut?.(1); orb.setCutOn?.(true);
     const t0 = now(), erase = 1500;
@@ -153,6 +158,7 @@ export function mountStartupUpdate({
   /* ── 실패: 온전한 구가 어두워진 채 다가와 있고, 글과 단추가 왼쪽 아래에 놓인다. 잠시 뒤 지금 판을 연다 ── */
   function enterFailed() {
     if (!orb) { setUi('forge'); return; }
+    takeOverBoot();
     const from = scene;
     scene = 'failed';
     orb.setCutOn?.(false);
@@ -170,12 +176,15 @@ export function mountStartupUpdate({
     setUi('forge');
   }
   function setUi(ui) { if (nodes.root.dataset.ui !== ui) nodes.root.dataset.ui = ui; }
+  /* 첫 상태가 받는 중, 바꾸는 중, 실패이면(숨은 채 받다가 창을 연 때, 지난 실패를 보일 때) 드러남을 건너뛴다. 빈 자리에서 그 장면으로 다가오고,
+   * 뒤늦은 드러남이 그 장면의 구를 빈 자리로 되돌리지 않게 한다(0.4.96 카본 C2) */
+  function takeOverBoot() { if (bootStarted || !orb) return; bootStarted = true; orb.snap('void'); }
 
   /* ── 저절로 열기 ── */
   function armAutoOpen() {
     clearAuto();
     if (held || snapshot.state !== 'error' || !allowed('current')) return;
-    autoTimer = later(() => { autoTimer = null; if (!held && allowed('current')) void run('current'); }, autoOpenMs);
+    autoTimer = later(() => { autoTimer = null; autoSpent = true; if (!held && allowed('current')) void run('current'); }, autoOpenMs);
   }
   function clearAuto() { if (autoTimer !== null) { win.clearTimeout(autoTimer); timers.delete(autoTimer); autoTimer = null; } }
   let focusing = false;
@@ -211,13 +220,16 @@ export function mountStartupUpdate({
     setText(nodes.install, pending === 'install' ? '여는 중' : '설치 파일 열기');
     nodes.actions.hidden = Object.keys(METHODS).every(action => nodes[action].hidden);
     if (changed) {
-      if (s.state === 'error') { held = false; armAutoOpen(); }
+      if (s.state === 'error') { held = false; autoSpent = false; armAutoOpen(); }
       else clearAuto();
-      if (!pending && ['error', 'ready'].includes(s.state)) {
-        const first = ['retry', 'install', 'current'].map(key => nodes[key]).find(btn => btn && !btn.hidden && !btn.disabled);
-        // 저절로 열기를 멈추지 않도록, 초점은 손으로 옮겼을 때만 멈춘다. 여기서 옮기는 초점은 화면 낭독기를 위한 것이다
-        if (first) { focusing = true; try { first.focus?.({ preventScroll: true }); } finally { focusing = false; } }
-      }
+      focusDue = !pending && ['error', 'ready'].includes(s.state);
+    }
+    // 첫 실패 상태는 관문이 일을 끝내기 전에 와서 「지금 판 열기」가 아직 막혀 있다. 같은 상태로 곧 이어 오는 판에서 열 수 있게 되면 그때 건다(0.4.96 카본 C1)
+    else if (s.state === 'error' && autoTimer === null && !autoSpent) armAutoOpen();
+    if (focusDue && !pending) {
+      const first = ['retry', 'install', 'current'].map(key => nodes[key]).find(btn => btn && !btn.hidden && !btn.disabled);
+      // 저절로 열기를 멈추지 않도록, 초점은 손으로 옮겼을 때만 멈춘다. 여기서 옮기는 초점은 화면 낭독기를 위한 것이다. 단추가 아직 없으면 생길 때 옮긴다
+      if (first) { focusDue = false; focusing = true; try { first.focus?.({ preventScroll: true }); } finally { focusing = false; } }
     }
     if (s.window) setMaximized(s.window.maximized === true);
     if (!bootStarted && revision > 0) boot(s.boot);
@@ -231,7 +243,7 @@ export function mountStartupUpdate({
   }
   async function run(action) {
     if (disposed || pending || !allowed(action)) return;
-    clearAuto();
+    clearAuto(); autoSpent = true;
     pending = action; const start = revision; render();
     try {
       const result = await bridge[METHODS[action]](); if (disposed || revision !== start) return;

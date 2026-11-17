@@ -425,9 +425,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const elapsed = Number.isFinite(startedAt) ? Math.max(0, Date.now() - startedAt) : 0;
     /* 눈: 빛이 자리를 잡을 즈음 잠든 눈이 떠오르고 곧 눈을 뜬다. 시작 창에서 이미 뜬 눈이면 뜬 채로 잇는다 */
     if (Number.isFinite(asleepAt) && Number.isFinite(wakeAt)) {
-      const at = (when, fn) => { const left = when - elapsed; if (left <= 0) fn(); else setTimeout(() => { if (!disposed && gen === motionGen) fn(); }, reduced() ? Math.min(left, 120) : left); };
-      if (elapsed >= wakeAt) stage.eyesCalm?.();
-      else { at(asleepAt, () => stage.eyesAsleep?.()); at(wakeAt, () => { void stage.eyesWake?.(); }); }
+      // 시작 창에서 이미 보이던 눈은 앱 창의 첫 장에서도 그대로 보인다. 떠오르는 중에 넘어오면 0에서 다시 떠오르며 깜빡인 듯 보였다(0.4.96 카본 B3)
+      const at = (when, fn) => { const left = when - elapsed; if (left <= 0) fn(true); else setTimeout(() => { if (!disposed && gen === motionGen) fn(false); }, reduced() ? Math.min(left, 120) : left); };
+      if (elapsed >= wakeAt) stage.eyesCalm?.({ instant: true });
+      else { at(asleepAt, instant => stage.eyesAsleep?.({ instant })); at(wakeAt, () => { void stage.eyesWake?.(); }); }
     }
     if (elapsed >= delay + ms) { stage.snap('rest'); introPainted = true; stage.draw?.(); return; }
     if (elapsed < delay) await wait(reduced() ? Math.min(delay - elapsed, 120) : delay - elapsed);

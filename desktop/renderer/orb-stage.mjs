@@ -387,12 +387,12 @@ export function createOrbStage(canvas, options = {}) {
   }
   /* 눈의 지금 표정을 얼굴에 알린다(화면 확인이 무대의 data-eyes로 읽는다). 눈을 껐으면 off다 */
   let eyesSaid = null;
-  function eyesChanged() { const m = eye.gate > 0 ? eye.mood : 'off'; if (m === eyesSaid) return; eyesSaid = m; try { options.onEyes?.(m); } catch { /* 무시 */ } }
+  function eyesChanged() { const m = eye.on && eye.gate > 0 ? eye.mood : 'off'; if (m === eyesSaid) return; eyesSaid = m; try { options.onEyes?.(m); } catch { /* 무시 */ } }
   function stepEye(t) {
     const l = eye.lid;
     if (l) { const k = clamp((t - l.t0) / l.ms, 0, 1); eye.open = lerp(l.from, l.to, l.ease(k)); if (k >= 1) { eye.lid = null; l.res(); } }
     eye.gateS += (eye.gate - eye.gateS) * 0.09;
-    if (!reduced() && !still && !eye.lid && eye.mood === 'calm' && eye.gateS > 0.9 && S.eye > 0.9 && t > eye.nextBlink) { eye.nextBlink = t + 2600 + Math.random() * 4200; void blink(); }
+    if (eye.on && !reduced() && !still && !eye.lid && eye.mood === 'calm' && eye.gateS > 0.9 && S.eye > 0.9 && t > eye.nextBlink) { eye.nextBlink = t + 2600 + Math.random() * 4200; void blink(); }
   }
   async function blink() { const k = ++eye.token; await lidTo(0, 90); if (k !== eye.token) return; await lidTo(1, 170, easeOut); }
   function eyeStop() { ++eye.token; if (eye.lid) { const l = eye.lid; eye.lid = null; l.res(); } }
@@ -405,7 +405,8 @@ export function createOrbStage(canvas, options = {}) {
     if (m !== eye.mood) { await lidTo(0, 110); if (k !== eye.token) return; eye.mood = m; eyesChanged(); await lidTo(1, m === 'calm' ? 260 : 190, easeOut); if (k !== eye.token) return; }
     if (ms) { await new Promise(r => win.setTimeout(r, reduced() ? Math.min(ms, 120) : ms)); if (k !== eye.token) return; void setMood('calm'); }
   }
-  function eyesAsleep() { eyeStop(); eye.mood = 'sleep'; eye.open = 1; eye.gate = 1; eyesChanged(); wake(); }
+  /* instant: 다른 창에서 이미 보이던 눈을 잇는 때는 떠오르지 않고 바로 보인다(0.4.96 카본 B3) */
+  function eyesAsleep({ instant = false } = {}) { eyeStop(); eye.mood = 'sleep'; eye.open = 1; eye.gate = 1; if (instant) eye.gateS = 1; eyesChanged(); wake(); }
   async function eyesWake() {
     eye.nextBlink = now() + 1400;
     const k = ++eye.token; eye.gate = 1;
@@ -414,7 +415,7 @@ export function createOrbStage(canvas, options = {}) {
     await lidTo(1, 460, easeOut); if (k !== eye.token) return;
     eye.nextBlink = now() + 1100;
   }
-  function eyesCalm() { eyeStop(); eye.mood = 'calm'; eye.open = 1; eye.gate = 1; eyesChanged(); wake(); }
+  function eyesCalm({ instant = false } = {}) { eyeStop(); eye.mood = 'calm'; eye.open = 1; eye.gate = 1; if (instant) eye.gateS = 1; eyesChanged(); wake(); }
   function eyesOff() { eyeStop(); eye.gate = 0; eye.gateS = 0; eye.mood = 'sleep'; eye.open = 1; eyesChanged(); wake(); }
   /* 웅장한 판에서 깎인 만큼에 따라 구가 조금씩 커진다. 자세를 옮기는 중이 아니면 그 자리에서 크기를 맞춘다(시안 forgeAt) */
   function forgeAt(p) {

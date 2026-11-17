@@ -1663,8 +1663,11 @@ test('a Claude login nearing its time limit is flagged a week ahead with a way t
   assert.doesNotMatch(el.innerHTML,/id="ms-email"/);assert.doesNotMatch(el.innerHTML,/이 PC의 기존 로그인 쓰기/);assert.doesNotMatch(el.innerHTML,/새 계정 연결/);
   await click({subs:'login',service:'claude'});
   assert.deepEqual(logins,[['claude',{email:'soon@example.com'}]]);
+  // 다른 서비스의 로그인이 끝난 것으로는 다시 로그인 모드가 풀리지 않는다(0.4.96 카본 C8)
+  listeners.forEach(cb=>cb({...snapshot,seq:2,login:{id:'g-1',service:'gemini',stage:'done',message:'Gemini 계정을 연결했어요.',needsCode:false,url:null,console:false}}));
+  assert.match(el.innerHTML,/data-subs="login" data-service="claude" >다시 로그인<\/button>/);assert.doesNotMatch(el.innerHTML,/새 계정 연결/);
   // 로그인이 끝나면 다시 로그인 모드가 풀려, 같은 안내에서 이어서 다른 계정을 더하는 길(「새 계정 연결」, 빈 메일 칸)로 돌아온다.
-  const done={...snapshot,seq:2,login:{id:'l-1',service:'claude',stage:'done',message:'soon@example.com 계정을 연결했어요.',needsCode:false,url:null,console:false}};
+  const done={...snapshot,seq:3,login:{id:'l-1',service:'claude',stage:'done',message:'soon@example.com 계정을 연결했어요.',needsCode:false,url:null,console:false}};
   listeners.forEach(cb=>cb(done));
   assert.match(el.innerHTML,/soon@example\.com 계정을 연결했어요\./);
   assert.match(el.innerHTML,/>새 계정 연결<\/button>/);assert.match(el.innerHTML,/id="ms-email" type="email" autocomplete="email" value=""/);

@@ -314,3 +314,76 @@ test('main updater is platform-packaged only, uses existing trusted sender check
   assert.match(main,/ipcMain\.handle\(channel,async\(event,\.\.\.args\)=>\{assertSender\(event,window,entry,runtime\.clientId\)/);
   for(const operation of ['check-for-update','download-update','install-update'])assert.match(main,new RegExp("'synk:"+operation+"':\\(\\)=>platformUpdate\\?\\."));
 });
+// 넘김의 단계마다(창 상태 읽기, 조용한 업데이트 판정, 쪽지 쓰기, 덮는 창, 가림막 깔기) 일부러 예외를 던져도 옛 길이 그대로 돈다:
+// 넘김 준비는 거절되지 않고 가림막이나 조용한 끝내기를 남기지 않으며, 앱은 끝내기를 부르고 설치기를 같은 토큰으로 연다(가림막 없이 설치기가 뜨고 새 판으로 바뀐다).
+// 0.4.96에 든 넘김 코드가 깨지면 그 판을 깐 PC는 업데이트로 고침을 받을 수 없으므로, 이 시험이 그 떨어지는 길을 묶는다(맡긴 세션 11-17 조건 1)
+function mainHandoffSource(){
+  const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8').replace(/\r\n/g,'\n');
+  const found=main.match(/async function prepareUpdateHandoff\(\{token,version,file\}=\{\}\)\{[\s\S]*?\n\}\n/);
+  assert.ok(found,'prepareUpdateHandoff is no longer where this test reads it');
+  return found[0];
+}
+function handoffContext(fail,{visible=true,focused=true,startup=false,others=0,onDrafts=null}={}){
+  const calls=[],boom=name=>{if(fail===name)throw Error('synthetic '+name);},view={visible};
+  const win={isDestroyed:()=>false,isVisible:()=>view.visible,isMinimized:()=>false,getNormalBounds:()=>({x:10,y:10,width:1440,height:940}),isMaximized:()=>false,getNativeWindowHandle:()=>{boom('handle');return Buffer.alloc(8);}};
+  const extra=Array.from({length:others},()=>({...win}));
+  const context={
+    process:{env:{LOCALAPPDATA:'C:\Users\fixture\AppData\Local'},platform:'win32',pid:4321},
+    smoke:false,handoffGen:0,window:win,curtain:null,quietQuit:false,handoffCover:null,quittingRequested:false,
+    startupWindow:startup?{isVisible:()=>true,browserWindow:()=>win}:null,
+    endHandoff:()=>{calls.push('end');boom('end');},
+    BrowserWindow:{getAllWindows:()=>{boom('windows');return [win,...extra];},getFocusedWindow:()=>{boom('focus');return focused?win:null;}},
+    draftsUnsaved:async()=>{boom('drafts');onDrafts?.(view);return false;},
+    windowPlacement:{restore:()=>{boom('placement');return {x:10,y:10,width:1440,height:940,maximized:false};}},
+    screen:{dipToScreenRect:(_window,rect)=>{boom('screen');return rect;}},
+    writeHandoffNote:note=>{calls.push(note.quiet?'quiet-note':'note');boom('note');return true;},
+    createStartupUpdateWindow:()=>{boom('cover');calls.push('cover');return {show(){boom('cover-show');},whenShown:()=>fail==='cover-shown'?Promise.reject(Error('synthetic cover-shown')):Promise.resolve(),browserWindow:()=>win};},
+    session:{},ipcMain:{},app:{getAppPath:()=>'C:\app',getVersion:()=>'0.4.96'},path,
+    curtainEventName:()=>{boom('event');return 'Local\SYNK.Curtain.'+'a'.repeat(32);},windowHandle:()=>{boom('handle');return 1;},
+    platformUpdate:{needsInstallHandoff:()=>true},
+    launchCurtain:async()=>{calls.push('curtain');boom('curtain');return {cancel(){},closing(){}};},
+    spawn:()=>{},setTimeout,Promise,Date,Buffer,
+  };
+  vm.createContext(context);vm.runInContext(mainHandoffSource(),context);
+  return {context,calls};
+}
+test('every handoff step that throws falls back to the old path: the app still quits and opens the installer with no curtain left',async t=>{
+  const cases=[
+    ['windows',{}],['focus',{}],['end',{}],['handle',{}],['screen',{}],['event',{}],['note',{}],['curtain',{}],['cover',{}],['cover-show',{}],['cover-shown',{}],
+    ['windows',{visible:false}],['drafts',{visible:false}],['placement',{visible:false}],['screen',{visible:false}],['note',{visible:false}],
+    ['handle',{startup:true}],['curtain',{startup:true}],['note',{focused:false}],
+  ];
+  for(const [fail,shape] of cases){
+    const label=fail+' '+JSON.stringify(shape);
+    const {context,calls}=handoffContext(fail,shape);
+    const seen=[];
+    const f=await fixture(t,{prepareHandoff:info=>context.prepareUpdateHandoff(info),openInstaller:async(_file,options)=>{seen.push(options);}});
+    await f.updater.checkForUpdate();await f.updater.downloadUpdate();
+    assert.equal((await f.updater.installUpdate({automatic:true})).state,'opening',label);
+    assert.equal(f.quits(),1,label+': the app did not ask to quit');
+    assert.equal(context.curtain,null,label+': a curtain was left behind');
+    assert.equal(context.quietQuit,false,label+': a quiet quit was left behind');
+    if(fail==='note')assert.equal(calls.includes('curtain'),false,label+': a curtain was laid without a note');
+    assert.equal((await f.updater.completeInstall()).ok,true,label);
+    assert.equal(seen.length,1,label+': the installer was not opened');assert.equal(seen[0].automatic,true,label);assert.match(seen[0].token,/^[a-f0-9]{64}$/,label);
+  }
+  // 깨뜨리지 않으면 같은 대역에서 가림막과 조용한 끝내기가 실제로 남는다(위 단언이 아무것도 안 보는 시험이 아님을 확인한다)
+  const visible=handoffContext(null);await visible.context.prepareUpdateHandoff({token:'a'.repeat(64),version:'0.4.97',file:'x.exe'});
+  assert.notEqual(visible.context.curtain,null);assert.deepEqual(visible.calls.filter(c=>c!=='end'),['cover','note','curtain']);
+  const hidden=handoffContext(null,{visible:false});await hidden.context.prepareUpdateHandoff({token:'a'.repeat(64),version:'0.4.97',file:'x.exe'});
+  assert.equal(hidden.context.quietQuit,true);assert.deepEqual(hidden.calls.filter(c=>c!=='end'),['quiet-note']);
+  // 초안을 묻는 사이 사람이 창을 열면 조용히 가지 않고 보이는 넘김(덮는 창, 쪽지, 가림막)으로 간다(0.4.96 카본 C5)
+  const reopened=handoffContext(null,{visible:false,onDrafts:view=>{view.visible=true;}});await reopened.context.prepareUpdateHandoff({token:'a'.repeat(64),version:'0.4.97',file:'x.exe'});
+  assert.equal(reopened.context.quietQuit,false);assert.deepEqual(reopened.calls.filter(c=>c!=='end'),['cover','note','curtain']);
+});
+test('a curtain handle that throws while the last window closes still hands the update to the installer',async()=>{
+  const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8').replace(/\r\n/g,'\n');
+  const found=main.match(/app\.on\('will-quit',event=>\{\n[\s\S]*?\n\}\);\n/);assert.ok(found,'will-quit handler moved');
+  const handlers={},calls=[];
+  const context={app:{on:(name,fn)=>{handlers[name]=fn;},quit:()=>calls.push('quit')},curtain:{closing(){throw Error('synthetic closing');}},
+    platformUpdate:{needsInstallHandoff:()=>calls.filter(c=>c==='complete').length===0,isBusy:()=>false,waitForIdle:async()=>{},completeInstall:async()=>{calls.push('complete');return {ok:true};}},Promise};
+  vm.createContext(context);vm.runInContext(found[0],context);
+  let prevented=false;handlers['will-quit']({preventDefault(){prevented=true;}});
+  await settled();
+  assert.equal(prevented,true);assert.deepEqual(calls,['complete','quit']);
+});
