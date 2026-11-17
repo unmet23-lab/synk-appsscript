@@ -6,7 +6,10 @@
  * 폰트 정본 §10(브랜드 이름 · 끝 로고는 로고타입으로 묶어 작게, 효과 없이)과 후반 가이드 「엔드카드」(글자는 HTML 층을 크롬으로
  * 투명 PNG로 뽑아 합성한다)를 따른다. 글꼴은 감성 편 승인값인 Noto Serif KR(제목)과 SUIT(크레딧, 로마자)다.
  *
- *   node 끝글자.cjs <밖 폴더> [--주연 <이름>] [--고침 <이름>] [--바탕 <그림>]
+ *   node 끝글자.cjs <밖 폴더> [--주연 <이름>] [--바탕 <그림>]
+ *
+ * 크레딧은 「주연 ○○」 한 줄이다. 11-18 유호님이 「대사 고침 ○○」 줄의 뜻을 물으시고(「애초에 이걸 넣는 의미가 뭐야 ?」) 「빼 줘」라고 하셨다.
+ * 학생이 고친 대사는 컷 3에서 학생 목소리로 이미 들리고, 5화 대본 한 쪽이 원래 대사와 나란히 보여 준다. 끝 화면 글자로 다시 알릴 까닭이 없다.
  *
  * 시안마다 층 둘(제목.png, 크레딧.png — 1280×720 투명, 2배 밀도)을 내고, --바탕을 주면 그 위에 얹은 미리 보기(<시안>_보기.png)도 낸다.
  * 층을 나눈 까닭은 영상에서 제목과 크레딧이 차례로 올라오게 하려는 것이다(`이어붙이기.py --끝글자`).
@@ -19,7 +22,6 @@ const 인자 = process.argv.slice(2);
 const 밖 = path.resolve(인자[0] || '.');
 const 값 = (이름, 기본) => (인자.includes(이름) ? 인자[인자.indexOf(이름) + 1] : 기본);
 const 주연 = 값('--주연', '유호');
-const 고침 = 값('--고침', '유호');
 const 바탕 = 값('--바탕', '');
 const 뿌리 = path.resolve(__dirname, '..', '..', '..', '..');
 const b64 = (p) => fs.readFileSync(p).toString('base64');
@@ -39,26 +41,24 @@ body{color:#F6EFE6;font-family:"S";-webkit-font-smoothing:antialiased}
 
 // 시안 셋. 제목 층과 크레딧 층을 따로 그린다. 글자 뒤에는 아무 효과도 두지 않는다.
 const 시안 = {
-  // 가: 가운데 가로 묶음 — 제목 한 줄, 한참 아래에 크레딧 두 줄(역할은 작게, 이름은 명조로 크게)
+  // 가: 가운데 가로 묶음 — 제목 한 줄, 한참 아래에 크레딧 한 줄(역할은 작게, 이름은 명조로 크게)
   가: {
     제목: `<div class="층" style="display:flex;flex-direction:column;align-items:center;top:232px;height:200px">
       <div style="font-family:M;font-weight:500;font-size:78px;letter-spacing:.12em;margin-right:-.12em;line-height:1">안녕<span style="letter-spacing:.02em">,</span> 서울</div>
     </div>`,
-    크레딧: `<div class="층" style="top:440px;display:grid;grid-template-columns:1fr auto auto 1fr;column-gap:26px;row-gap:16px;align-items:baseline;height:140px;align-content:start">
+    크레딧: `<div class="층" style="top:424px;display:grid;grid-template-columns:1fr auto auto 1fr;column-gap:26px;align-items:baseline;height:80px;align-content:start">
       <i></i><div class="역" style="font-size:27px;text-align:right">주연</div><div class="이" style="font-size:34px">${주연}</div><i></i>
-      <i></i><div class="역" style="font-size:27px;text-align:right">대사 고침</div><div class="이" style="font-size:34px">${고침}</div><i></i>
     </div>`,
   },
-  // 나: 왼쪽 아래 두 줄 묶음 — 작은 「안녕,」 위에 큰 「서울」, 크레딧은 같은 왼쪽 줄에 맞춘다
+  // 나: 왼쪽 아래 두 줄 묶음 — 작은 「안녕,」 위에 큰 「서울」, 크레딧 한 줄은 같은 왼쪽 줄에 맞춘다
   나: {
     제목: `<div class="층" style="left:104px;top:318px;width:700px">
       <div style="font-family:M;font-weight:400;font-size:40px;letter-spacing:.1em;line-height:1">안녕,</div>
       <div style="font-family:M;font-weight:600;font-size:118px;letter-spacing:.08em;line-height:1;margin-top:14px;margin-left:-6px">서울</div>
     </div>`,
     크레딧: `<div class="층" style="left:104px;top:536px;width:700px">
-      <div style="display:grid;grid-template-columns:auto auto 1fr;column-gap:20px;row-gap:10px;align-items:baseline">
+      <div style="display:grid;grid-template-columns:auto auto 1fr;column-gap:20px;align-items:baseline">
         <div class="역" style="font-size:24px">주연</div><div class="이" style="font-size:30px">${주연}</div><i></i>
-        <div class="역" style="font-size:24px">대사 고침</div><div class="이" style="font-size:30px">${고침}</div><i></i>
       </div>
     </div>`,
   },
@@ -72,10 +72,9 @@ const 시안 = {
         <span style="margin-top:14px">울</span>
       </div>
     </div>`,
-    크레딧: `<div class="층" style="left:104px;top:556px;width:600px">
-      <div style="display:grid;grid-template-columns:auto auto 1fr;column-gap:20px;row-gap:10px;align-items:baseline">
+    크레딧: `<div class="층" style="left:104px;top:580px;width:600px">
+      <div style="display:grid;grid-template-columns:auto auto 1fr;column-gap:20px;align-items:baseline">
         <div class="역" style="font-size:24px">주연</div><div class="이" style="font-size:30px">${주연}</div><i></i>
-        <div class="역" style="font-size:24px">대사 고침</div><div class="이" style="font-size:30px">${고침}</div><i></i>
       </div>
     </div>`,
   },
