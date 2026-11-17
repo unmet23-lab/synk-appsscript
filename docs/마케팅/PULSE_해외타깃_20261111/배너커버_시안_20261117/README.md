@@ -2,7 +2,7 @@
 
 X @synk_pulse(11-17에 @yuhobuilds에서 바꾼 PULSE 영어 계정)의 머리 배너와 링크드인 대표 프로필(양유호)의 커버 시안이다. 설계는 [영어 채비 설계](../영어채비_설계_20261117.md) 4-2절과 4-3절이고, 유호님이 고르시기 전에는 두 곳 모두 지금 그림을 그대로 둔다(X는 옛 yuhobuilds 한국어 배너, 링크드인은 11-05 펠트 로고 정물).
 
-**고르기 화면:** https://claude.ai/artifact/GQtuRzUqSFFM7wgLkKiBAA — 플랫폼마다 두 시안을 원본 크기와 실제 프로필 화면(데스크톱 · 휴대폰)에 끼운 모습으로 나란히 보인다. 화면 원고는 저장소 밖 임시 폴더에 있었고, 다시 만들 때는 이 폴더의 `판/`과 `미리보기/`를 `img/<플랫폼>-<시안>.png` · `-desk.png` · `-phone.png`로 이어 올린다.
+**고르기 화면:** synk.yuh 계정 https://claude.ai/artifact/GQtuRzUqSFFM7wgLkKiBAA · unmet29 계정 https://claude.ai/artifact/E4sunhehUKChxnzL2V4LiY (아티팩트는 올린 계정에서만 열려서 같은 화면을 두 계정에 올렸다) — 플랫폼마다 두 시안을 원본 크기와 실제 프로필 화면(데스크톱 · 휴대폰)에 끼운 모습으로 나란히 보인다. 화면 원고는 저장소 밖 임시 폴더에 있었고, 다시 만들 때는 이 폴더의 `판/`과 `미리보기/`를 `img/<플랫폼>-<시안>.png` · `-desk.png` · `-phone.png`로 이어 올린다.
 
 ## 플랫폼마다 두 시안
 
