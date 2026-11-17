@@ -25,8 +25,8 @@ function fixture(reviewCode = 0) {
       if (args[1] === 'review') { reviews.push(args[2]); return { code: reviewCode, stdout: '' }; }
       return { code: 0, stdout: args[0].includes('커밋') ? '{"결과":"완료"}' : '[]' };
     } };
-  return { writes, deleted, reviews, notifications, ctx,
-    run: rows => mod.exports.사후({ 글: JSON.stringify({ 줄: rows }) }, { 줄: [{ row: 7, 게시물ID: 'fixture-a' }, { row: 8, 게시물ID: 'fixture-b' }] }, ctx) };
+  return { writes, deleted, reviews, notifications, ctx, mod: mod.exports,
+    run: (rows, 더 = {}) => mod.exports.사후({ 글: JSON.stringify({ 줄: rows }) }, { 줄: [{ row: 7, 게시물ID: 'fixture-a' }, { row: 8, 게시물ID: 'fixture-b' }], ...더 }, ctx) };
 }
 
 test('행 번호와 게시물 ID가 함께 요청과 일치해야 캐시·장부에 접근한다', async () => {
@@ -90,6 +90,36 @@ test('텔레그램은 카드 커밋보다 먼저 보낸다(커밋이 오래 걸�
   t.ctx.실행 = ((실행) => (exe, args) => { if (args[0]?.includes('커밋')) order.push('커밋'); return 실행(exe, args); })(t.ctx.실행);
   await t.run([{ row: 7, 게시물ID: 'fixture-a', 종류: '기타', 판단: '기각', 사유: '잘못 보낸 링크' }]);
   assert.deepEqual(order, ['알림', '커밋']);
+});
+
+test('받기 기록에서 그 줄을 받던 동안의 그림 열기(vision_analyze)만 센다', () => {
+  const { 받기그림수, 받기그림확인 } = fixture().mod;
+  const 로그 = [
+    '2026-11-16 02:53:55,344 INFO tools.vision_tools: vision_analyze: native fast path',
+    '2026-11-16 02:53:56,449 INFO agent.tool_executor: tool vision_analyze completed (1.11s, 108463 chars)',
+    '2026-11-16 02:53:56,450 INFO agent.tool_executor: tool vision_analyze completed (1.11s, 107579 chars)',
+    '2026-11-16 09:10:00,000 INFO agent.tool_executor: tool vision_analyze completed (1.0s, 1 chars)',
+    '2026-11-16 02:54:10,000 INFO agent.tool_executor: tool terminal completed (3.0s, 10 chars)',
+  ].join('\r\n');
+  const 받음 = new Date('2026-11-16T02:58:00').getTime();
+  assert.equal(받기그림수(로그, 받음 - 20 * 60000, 받음 + 60000), 2, '창 밖(09:10)과 다른 도구는 세지 않는다');
+  assert.equal(받기그림확인([받음], () => 로그).수, 2);
+  assert.equal(받기그림확인([받음 + 6 * 3600000], () => 로그).수, 0);
+  assert.equal(받기그림확인([NaN], () => 로그), null, '받은 시각을 모르면 세지 않는다');
+  assert.equal(받기그림확인([받음], () => { throw new Error('없음'); }), null, '기록을 못 읽으면 판단을 막지 않는다');
+});
+
+test('받으며 그림을 열었으면 텔레그램 「확인할 것」에 알리고 실행 기록에 수를 남긴다', async () => {
+  const t = fixture();
+  const 줄 = { row: 7, 게시물ID: 'fixture-a', 종류: '기타', 판단: '기각', 사유: '잘못 보낸 링크' };
+  const r = await t.run([줄], { 받기그림: { 수: 7 } });
+  assert.equal(r.받기그림, 7);
+  assert.match(t.notifications[0], /확인할 것: .*그림을 7번 열었음/);
+  const 깨끗 = fixture();
+  const r2 = await 깨끗.run([줄], { 받기그림: { 수: 0 } });
+  assert.equal(r2.받기그림, 0);
+  assert.doesNotMatch(깨끗.notifications[0], /확인할 것/);
+  assert.equal((await fixture().run([줄])).받기그림, '모름');
 });
 
 test('판단 값이 세 갈래가 아니면 기록하지 않고 다음 실행에 남긴다', async () => {

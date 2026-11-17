@@ -21,6 +21,8 @@ const 스킬 = 'C:/Users/q1212/AppData/Local/hermes/skills/research/synk-tip-rev
 const 장부 = `${스킬}/scripts/ledger.py`;
 const 문서 = `${스킬}/claude_review.md`;
 const 캐시 = 'C:/Users/q1212/AppData/Local/hermes/cache/synk-tips';
+// 헤르메스 받기 기록. 11-16 스킬 3.0부터 받기는 그림을 열지 않는다(vision_analyze 0). 판단 때마다 지켜졌는지 센다.
+const 받기기록 = 'C:/Users/q1212/AppData/Local/hermes/logs/agent.log';
 const 장부주소 = 'https://docs.google.com/spreadsheets/d/1bqSom9mNKb3pB_YW7D_PxiI32cVG5ZzKnns0wgxeNKM/edit';
 // 한 번에 3줄 — 10-21 아침 6줄 한 번이 93분 걸렸다. 나머지는 15분 뒤 다음 확인이 잇는다.
 const 최대줄 = 3;
@@ -58,6 +60,31 @@ function 기다릴까(시각들, 지금) {
 function 받은시각(줄) {
   if (!/^[\w-]+$/.test(String(줄.게시물ID || ''))) return NaN;
   try { return fs.statSync(path.join(캐시, 줄.게시물ID, 'intake.json')).mtimeMs; } catch { return NaN; }
+}
+
+/**
+ * 받기 기록(agent.log)에서 [시작, 끝] 사이에 끝난 vision_analyze 호출 수. 줄 머리 시각은 이 PC의 현지 시각이다.
+ * 11-16 02:52 공유 때 헤르메스가 옛 기억대로 그림 7장을 열어 받기에서만 2.4~4.2달러가 나갔다. 그 뒤 대화 지침에
+ * 「그림을 열지 않는다」를 넣었고, 지켜지는지는 사람이 다음 공유를 기다려 보지 않고 판단 회차마다 여기서 센다.
+ */
+function 받기그림수(로그, 시작, 끝) {
+  let 수 = 0;
+  for (const 줄 of String(로그 || '').split(/\r?\n/)) {
+    if (!줄.includes('tool vision_analyze completed')) continue;
+    const m = 줄.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})/);
+    if (!m) continue;
+    const t = new Date(`${m[1]}T${m[2]}`).getTime();
+    if (t >= 시작 && t <= 끝) 수 += 1;
+  }
+  return 수;
+}
+
+/** 이번 줄들을 받던 동안(첫 intake 20분 전 ~ 마지막 intake 1분 뒤)의 그림 열기 수. 받은 시각을 모르면 null. */
+function 받기그림확인(받은시각들, 읽기 = () => fs.readFileSync(받기기록, 'utf8')) {
+  const 아는 = 받은시각들.filter((t) => Number.isFinite(t));
+  if (!아는.length) return null;
+  const 시작 = Math.min(...아는) - 20 * 60000, 끝 = Math.max(...아는) + 60000;
+  try { return { 수: 받기그림수(읽기(), 시작, 끝), 시작: new Date(시작).toISOString(), 끝: new Date(끝).toISOString() }; } catch { return null; }
 }
 
 function 한줄로(글, 길이) {
@@ -113,6 +140,8 @@ module.exports = {
   시간제한: 120 * 60 * 1000,
   구독대체: true,
   기다릴까,
+  받기그림수,
+  받기그림확인,
   장부적용안,
   텔레그램글,
   카드형식,
@@ -137,7 +166,8 @@ module.exports = {
       재료 = 이번.map((x) => 자료.줄자료(캐시, x));
     } catch (e) { 자료오류 = String(e?.message || e).slice(0, 200); }
     return { 할일: true, 줄: 이번, 남은줄: Math.max(0, 줄.length - 최대줄),
-      판단문서: fs.readFileSync(문서, 'utf8'), 카드형식: 카드형식(루트), 지도, 재료, 자료오류 };
+      판단문서: fs.readFileSync(문서, 'utf8'), 카드형식: 카드형식(루트), 지도, 재료, 자료오류,
+      받기그림: 받기그림확인(이번.map(받은시각)) };
   },
 
   인자({ 크레딧 }) {
@@ -188,7 +218,10 @@ ${자료.덧붙임 ? `\n${자료.덧붙임}\n` : ''}
     const 처리한 = new Set();
     const 기록한 = [];
     const 문제 = [];
-    const 카드표 = ctx.실행(process.execPath, ['tools/참고카드_목록.js', '--json']);
+    if (자료.받기그림?.수 > 0) {
+      문제.push(`헤르메스가 받으며 그림을 ${자료.받기그림.수}번 열었음(받기 비용이 다시 늘어남 · 대화 지침과 스킬 3.0 「그림을 열지 않는다」를 안 따름)`);
+    }
+    const 카드표 =ctx.실행(process.execPath, ['tools/참고카드_목록.js', '--json']);
     try {
       const 틀린 = JSON.parse(카드표.stdout).filter((c) => c.오류);
       if (틀린.length) 문제.push(`머리 정보 오류 카드 ${틀린.length}장(${틀린.map((c) => c.파일).join(', ')})`);
@@ -230,6 +263,7 @@ ${자료.덧붙임 ? `\n${자료.덧붙임}\n` : ''}
     let 커밋결과 = '알 수 없음';
     try { const j = JSON.parse(커밋.stdout); 커밋결과 = j.결과 + (j.이유 ? `(${j.이유})` : ''); } catch { 문제.push(`커밋 결과를 읽지 못함(종료 ${커밋.code}${커밋.code === 127 ? ' — 명령 한도 10분에 끊겼을 수 있다' : ''})`); }
     if (/멈춤|실패/.test(커밋결과)) 문제.push(`커밋 ${커밋결과}`);
-    return { 기록: 기록한.length, 판단: 기록한.map((x) => `${x.row}:${x.판단}`), 커밋: 커밋결과, 문제 };
+    return { 기록: 기록한.length, 판단: 기록한.map((x) => `${x.row}:${x.판단}`), 커밋: 커밋결과,
+      받기그림: 자료.받기그림 ? 자료.받기그림.수 : '모름', 문제 };
   },
 };
