@@ -1,5 +1,5 @@
 # 드리미나 시댄스 2.5 — 꾸러미 판을 공식 CLI(dreamina-canvas)로 내고 받는다(2026-11-04, 유호님 「필요하면 cli 설치하고 진행해도돼」).
-#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--계정 ultra] [--컷표 <컷순서.json>] [--걸림무시 "<판 id>,…: <까닭>"] [--실행]
+#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--계정 ultra] [--해상도 720p] [--컷표 <컷순서.json>] [--걸림무시 "<판 id>,…: <까닭>"] [--실행]
 #   내기 전에 낼 판의 지시문을 스스로 검사한다(11-10, 크레딧내기.py의 굽기전) — 사람을 굳히는 낱말 · 손 없이 움직이는 물건 · 실내의 눈이 걸리면 --실행이어도 내지 않는다.
 #   컷표(--컷표, 안 주면 꾸러미 폴더나 그 한 층 위의 컷표.json)가 있으면 표 검사 · 빛 문장 대조도 돈다. 그래도 내야 하면 --걸림무시 "<판 id>,<판 id>: <까닭>"(그 판만) · "모두: <까닭>"
 #   — _드리미나.json 그 판 줄의 「걸림무시」 칸에 남는다. _순서.json 판의 "컷" · "소리만" · "인물" 칸은 크레딧내기.py 머리 설명과 같다.
@@ -30,7 +30,8 @@ EXE = os.path.join(HOME, "dreamina-canvas.exe")
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 PROFILE = None   # CLI 로그인 칸 — main()의 --계정이 정한다
 PROJECT = open(os.path.join(HOME, "캔버스.txt"), encoding="utf-8").read().strip()   # 내는 캔버스 id — 공개 저장소라 git 밖에 둔다(칸이 있으면 캔버스_<칸>.txt)
-PER_SEC_OF = {None: 37, "ultra": 19}
+PER_SEC_OF = {None: 37, "ultra": 19, "unmet23": 22}   # unmet23 = Advanced 분기(11-17 CLI 720p 초당 22)
+RES = "720p"   # --해상도(11-17 PULSE 영어 둘째 편 480p 시험) — 시댄스 2.5는 480p · 720p · 1080p · 4k
 PER_SEC = 37   # main()이 칸에 맞춰 PER_SEC_OF에서 고른다
 lock = threading.Lock()
 TAKEN = []   # 이번 실행에서 받으려고 잡아 둔 파일 이름
@@ -188,7 +189,7 @@ def run_one(pack, out, b):
         prompt = build_prompt(pack, b, image_ids, audio_ids)
         ref_args = [x for i in image_ids + audio_ids for x in ("--ref", f"res:{i}")]
         made = cli("node", "create", "video", "--model", "seedance_2.5", "--mode", mode, *ref_args, "--prompt", prompt, "--ratio", b["비율"],
-                   "--resolution", "720p", "--duration", str(b["길이"]), "--title", b["id"], "--project-id", PROJECT,
+                   "--resolution", RES, "--duration", str(b["길이"]), "--title", b["id"], "--project-id", PROJECT,
                    "--run", "--credit-ceiling", str(ceiling), "--wait", "--timeout", "45m", check=False)
         data = made.get("data") or made.get("partialData") or {}
         node, submit, rid, state, raw = result_of(data)
@@ -255,9 +256,10 @@ def safe(*a):
 def main():
     a = sys.argv[1:]
     opt = lambda k, d: a[a.index(k) + 1] if k in a else d
-    global PROFILE, PROJECT, PER_SEC
+    global PROFILE, PROJECT, PER_SEC, RES
     cap, conc, go, out = opt("--상한", None), int(opt("--동시", "3")), "--실행" in a, opt("--받을곳", None)
     PROFILE = opt("--계정", None)
+    RES = opt("--해상도", "720p")
     PER_SEC = PER_SEC_OF.get(PROFILE, PER_SEC_OF[None])
     if PROFILE:
         PROJECT = open(os.path.join(HOME, f"캔버스_{PROFILE}.txt"), encoding="utf-8").read().strip()
@@ -266,7 +268,7 @@ def main():
         raise SystemExit(f"--걸림무시에는 까닭을 적는다: {무시쓰는법}")
     if table is not None and not (table and os.path.exists(table)):
         raise SystemExit(f"--컷표 파일이 없다: {table or '(경로 없음)'}")
-    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정", "--걸림무시", "--컷표") if k in a}
+    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정", "--걸림무시", "--컷표", "--해상도") if k in a}
     pos = [x for i, x in enumerate(a) if not x.startswith("--") and i not in vals]
     if not pos:
         raise SystemExit('쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<꾸러미>…] [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--컷표 컷순서.json] [--걸림무시 "판 id,…: 까닭"] [--실행]')
@@ -291,7 +293,7 @@ def main():
         todo += [(p, b)] if want else [(p, b)] * max(0, b["판 수"] - have(out, b["id"]))
     total = sum(PER_SEC * b["길이"] for _, b in todo)
     bal = balance()
-    print(f"잔액 {bal} · 칸 {PROFILE or '기본'} · 받을곳 {out}")
+    print(f"잔액 {bal} · 칸 {PROFILE or '기본'} · {RES} · 받을곳 {out}")
     for p, b in todo:
         s, e, r, au = split_media(p, b)
         print(f"  {b['id']:<18} {b['길이']}초 {b['비율']} · {PER_SEC * b['길이']}크레딧 · {mode_of(s, e, r, au)} · 시작 {len(s)} 끝 {len(e)} 참고 {len(r)} 소리 {len(au)} · {os.path.basename(p)}")
