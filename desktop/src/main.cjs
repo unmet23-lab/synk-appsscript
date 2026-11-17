@@ -258,10 +258,20 @@ function showPlatformMain(){
   if(!mainInitialized)initializeMain();
   else if(!window||window.isDestroyed())createWindow();
   else{if(window.isMinimized())window.restore();window.show();window.focus();}
-  if(pendingDesktopAction&&window&&!window.isDestroyed()){
-    const action=pendingDesktopAction;pendingDesktopAction=null;
-    if(window.webContents.isLoading())window.webContents.once('did-finish-load',()=>sendDesktop('synk:desktop-action',action));else sendDesktop('synk:desktop-action',action);
-  }
+  deliverPendingAction();
+}
+/* 단축키 따위로 미뤄 둔 요청(명령 메뉴 열기 등)을 앱 창 화면에 한 번 전달한다. 창을 보이는 일과 따로 둔다.
+   최소화한 채 넘기는 길도 창을 보이지 않고 이 요청만 전달한다(0.4.97 엔진 다시 검수 -e GPT GA1) */
+function deliverPendingAction(){
+  if(!pendingDesktopAction||!window||window.isDestroyed())return;
+  const action=pendingDesktopAction;pendingDesktopAction=null;
+  if(window.webContents.isLoading())window.webContents.once('did-finish-load',()=>sendDesktop('synk:desktop-action',action));else sendDesktop('synk:desktop-action',action);
+}
+// 숨은 길(Windows의 숨은 시작)에서 미룬 실패는 사람이 앱을 처음 보는 자리에서 한 번 보인다. 그 자리는 셋이다:
+// 열기 요청(트레이, 두 번째 실행, 단축키), 작업 표시줄에서 되살림, 준비된 앱 창을 처음 보일 때. 셋 모두 이 함수를 지난다(0.4.97 엔진 다시 검수 설계 정리)
+function showKeptFailure(){
+  if(!unseenFailure||quittingRequested||!startupAllowed||startupGate?.isBlocking()||!platformUpdate||platformUpdate.snapshot().state==='disabled')return false;
+  const failure=unseenFailure;unseenFailure=null;void beginPlatformStartup(null,null,{initialError:failure});return true;
 }
 // 다시 열 때(트레이, 두 번째 실행, 단축키)는 숨어 있던 앱 창을 바로 보인다. 시작 창을 띄우지 않고, 미뤄 둔 판 목록을 비운 뒤 곧바로 뒤에서 확인한다.
 // 다만 숨은 채 시작한 길에서 아직 보이지 않은 실패 장면이 있으면 그 장면을 먼저 보이고, 그 판은 목록에서 비우지 않는다(1-가 구현 설계 2절)
@@ -272,9 +282,12 @@ function requestPlatformWindow(action){
   if(!startupAllowed||startupGate?.isBlocking()){showStartupWindow();return;}
   // 최소화한 창도 isVisible()이 참이다. 숨은 길에서 미룬 실패가 있으면 최소화한 창은 아직 보지 않은 창으로 보고 실패부터 보인다(0.4.97 엔진 검수 GA2)
   const unseenMinimized=Boolean(unseenFailure)&&window&&!window.isDestroyed()&&window.isMinimized();
-  if(window&&!window.isDestroyed()&&(!mainWindowReady||window.isVisible()&&!unseenMinimized)){if(mainWindowReady)showPlatformMain();return;}
   const updatable=platformUpdate&&platformUpdate.snapshot().state!=='disabled'&&!quittingRequested;
-  if(updatable&&unseenFailure){const failure=unseenFailure;unseenFailure=null;void beginPlatformStartup(null,null,{initialError:failure});return;}
+  // 아직 준비되지 않은 창(최소화로 되돌려 켠 직후)에 미룬 실패가 있으면 준비를 기다리지 않고 실패부터 보인다.
+  // 기다리면 ready-to-show가 도착 쪽지를 지운 창을 그냥 보이고 실패는 남았다(0.4.97 엔진 다시 검수 GPT GA1)
+  const unseenNotReady=updatable&&Boolean(unseenFailure)&&window&&!window.isDestroyed()&&!mainWindowReady;
+  if(window&&!window.isDestroyed()&&!unseenNotReady&&(!mainWindowReady||window.isVisible()&&!unseenMinimized)){if(mainWindowReady)showPlatformMain();return;}
+  if(showKeptFailure())return;
   showPlatformMain();
   if(updatable)platformUpdate.reopenCheck?.();
 }
@@ -310,7 +323,9 @@ function handoffToMain({waitedForStart=false}={}){
   // 확인이 시작 창이 보이기 전에 끝난 실행(빠른 인터넷, 공개 CI 검사기)이 켜지자마자 멈췄다(0.4.96 대역 빌드 검사에서 찾음)
   // 드러남 값(orbBoot)은 겹쳐 넘기는 길에만 쓴다. 시작 창을 보지 못한 채 넘기거나 앱 창이 이미 준비됐으면 비워,
   // 앱 창 얼굴이 시작 창이 만들어진 때부터 지난 만큼을 건너뛰지 않고 처음부터 드러나게 한다(0.4.96 공개 후보 검수 P2)
-  if(!from){orbBoot=null;if(startupMinimized&&window&&!window.isDestroyed()&&mainWindowReady){arrivalShow=null;window.minimize();}else showPlatformMain();startupWindow?.dispose();startupWindow=null;return;}
+  // 최소화한 시작 창에서 넘길 때 앱 창이 있으면 보이지 않는다. 준비됐으면 바로 최소화하고, 준비 전이면 ready-to-show가 도착 값(최소화)대로 최소화한 채 켠다.
+  // 준비 전에 보이면 ready-to-show가 「이미 보인 창」으로 건너뛰어 최소화가 빠졌다(0.4.97 엔진 다시 검수 -c GPT GA1)
+  if(!from){orbBoot=null;if(startupMinimized&&window&&!window.isDestroyed()){if(mainWindowReady){arrivalShow=null;window.minimize();}deliverPendingAction();}else showPlatformMain();startupWindow?.dispose();startupWindow=null;return;}
   if(window&&!window.isDestroyed()&&mainWindowReady){orbBoot=null;showPlatformMain();setTimeout(()=>{startupWindow?.dispose();startupWindow=null;},50);return;}
   startupHandoff={bounds:from,done:false,timer:null};
   showPlatformMain();
@@ -529,7 +544,7 @@ function createWindow(){
   if(!installations)installations=createClientLifecycle({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,programRoot,packageRoot:packaged?path.join(process.resourcesPath,'clients'):path.join(app.getAppPath(),'dist'),cacheRoot:path.join(app.getPath('userData'),'Installers'),releases:runtime.releases||[],spawn,openPath:file=>shell.openPath(file),onChange:async()=>{try{const state=await installations.getClients();send('synk:clients-changed',state);send('synk:client-progress',state);}catch{}}});
   window.on('focus',async()=>{try{send('synk:clients-changed',await installations.getClients());}catch{}});
   // 최소화한 채 되돌려 켠 앱의 미룬 실패는 사람이 작업 표시줄에서 창을 되살릴 때 보인다(0.4.97 엔진 검수 GA2)
-  if(isPlatform)window.on('restore',()=>{if(!unseenFailure||quittingRequested||!startupAllowed||startupGate?.isBlocking()||!platformUpdate||platformUpdate.snapshot().state==='disabled')return;const failure=unseenFailure;unseenFailure=null;void beginPlatformStartup(null,null,{initialError:failure});});
+  if(isPlatform)window.on('restore',()=>{showKeptFailure();});
   const companyRequest=createCompanyRequests({entry,clientId:runtime.clientId,session:ownSession,auth});
   // The company entry's refusals before its own service sees a request (another client, the smoke run, the sign-in
   // suite not ready) have the same answer form (company-entry.cjs entryRefusal).
@@ -615,7 +630,7 @@ function createWindow(){
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
-  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}/* 얼굴의 첫 장 알림이 이 이벤트보다 먼저 와서 넘기기가 이미 창을 보였으면 다시 보이지 않는다(「뒤」로 보인 창이 앞으로 나서지 않게, 0.4.96 검수 C4) */if(isPlatform&&window.isVisible())return;const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(autostartHidden&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 로그인 때의 숨은 시작은 첫 창에만 쓴다. 넘김 실패로 다시 만든 창이나 사람이 연 창은 숨기지 않는다(0.4.96 검수 D5) */if(isPlatform)autostartHidden=false;/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;showBehind();}else window.show();}});
+  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}/* 얼굴의 첫 장 알림이 이 이벤트보다 먼저 와서 넘기기가 이미 창을 보였으면 다시 보이지 않는다(「뒤」로 보인 창이 앞으로 나서지 않게, 0.4.96 검수 C4) */if(isPlatform&&window.isVisible())return;const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(autostartHidden&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 로그인 때의 숨은 시작은 첫 창에만 쓴다. 넘김 실패로 다시 만든 창이나 사람이 연 창은 숨기지 않는다(0.4.96 검수 D5) */if(isPlatform)autostartHidden=false;/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){/* 숨은 길에서 미룬 실패가 있으면 창을 보이기 전에 실패부터 보인다(로그인 때 숨은 시작인데 트레이가 없어 창이 그냥 보이는 경우 따위) */if(isPlatform&&showKeptFailure())return;if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;showBehind();}else window.show();}});
   if(smoke) {
     const timer=setTimeout(()=>{process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:'TIMEOUT'})+'\n');app.exit(1);},20000);
     contents.once('did-finish-load',async()=>{

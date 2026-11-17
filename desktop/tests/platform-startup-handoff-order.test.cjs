@@ -64,10 +64,10 @@ test('a minimized startup window hands over without pulling the app window in fr
     const events=[];
     const startupWindow={isVisible:()=>true,browserWindow:()=>({isMinimized:()=>true}),bounds:()=>({x:0,y:0,width:1440,height:940,maximized:false}),whenShown:()=>new Promise(()=>{}),dispose:()=>events.push('close startup')};
     const context={orbBoot:{kind:'first',startedAt:Date.now()},startupWindow,arrivalShow:null,window:mainReady?{isDestroyed:()=>false,minimize:()=>events.push('minimize')}:null,mainWindowReady:mainReady,startupHandoff:null,startupAllowed:false,ARRIVE_SCENE_MS:1800,
-      prefersReducedMotion:()=>false,showPlatformMain:()=>events.push('main:'+context.arrivalShow),setTimeout:(fn,ms)=>{events.push('timer '+ms);return 0;},Promise,Date};
+      prefersReducedMotion:()=>false,showPlatformMain:()=>events.push('main:'+context.arrivalShow),deliverPendingAction:()=>events.push('deliver'),setTimeout:(fn,ms)=>{events.push('timer '+ms);return 0;},Promise,Date};
     vm.createContext(context);vm.runInContext(handoffSource(),context);context.handoffToMain();
     assert.equal(context.startupHandoff,null,'no visible overlap handoff');
-    assert.deepEqual(events,mainReady?['minimize','close startup']:['main:minimized','close startup']);
+    assert.deepEqual(events,mainReady?['minimize','deliver','close startup']:['main:minimized','close startup']);
   }
 });
 // 0.4.96 검수 C3: 다른 창 뒤로 넘길 때는 최대화로 창을 활성화하지 않는다
@@ -115,21 +115,62 @@ test('a startup window minimized by a person hands over minimized even when it a
     vm.createContext(context);vm.runInContext(handoffSource(),context);context.handoffToMain();
     assert.deepEqual(events,['main:minimized','close startup'],String(arrived));
   }
+  // 0.4.97 엔진 다시 검수(-c GPT GA1): 앱 창이 이미 있으면 보이지 않는다. 준비됐으면 바로 최소화하고, 준비 전이면 도착 값을 최소화로 두어 ready-to-show가 최소화한 채 켠다
+  for(const ready of [true,false]){
+    const events=[];
+    const startupWindow={isVisible:()=>true,browserWindow:()=>({isMinimized:()=>true}),bounds:()=>({x:0,y:0,width:1440,height:940,maximized:false}),whenShown:()=>new Promise(()=>{}),dispose:()=>events.push('close startup')};
+    const context={orbBoot:{kind:'first',startedAt:Date.now()},startupWindow,arrivalShow:null,window:{isDestroyed:()=>false,minimize:()=>events.push('minimize')},mainWindowReady:ready,startupHandoff:null,startupAllowed:false,ARRIVE_SCENE_MS:1800,
+      prefersReducedMotion:()=>false,showPlatformMain:()=>events.push('main'),deliverPendingAction:()=>events.push('deliver'),setTimeout:(fn,ms)=>{events.push('timer '+ms);return 0;},Promise,Date};
+    vm.createContext(context);vm.runInContext(handoffSource(),context);context.handoffToMain();
+    // 창은 보이지 않아도 단축키로 미뤄 둔 요청(명령 메뉴 등)은 전달한다(0.4.97 엔진 다시 검수 -e GPT GA1)
+    assert.deepEqual(events,ready?['minimize','deliver','close startup']:['deliver','close startup'],'ready '+ready);
+    assert.equal(context.arrivalShow,ready?null:'minimized','ready '+ready);
+  }
 });
 // 0.4.97 엔진 검수 GA2: 최소화한 채 되돌려 켠 앱의 미룬 실패는 사람이 창을 열 때 보인다. 최소화한 창도 isVisible()이 참이라 앞에서 그냥 돌아가던 길이다
 test('a failure kept back while the app was restored minimized is shown when a person opens the window',()=>{
-  const source=extract(/function requestPlatformWindow\(action\)\{[\s\S]*?\n\}\n/,'requestPlatformWindow');
-  for(const [minimized,failure,expected] of [[true,true,['begin:UPDATE_RECOVERED']],[false,true,['main']],[true,false,['main']]]){
+  const kept=extract(/function showKeptFailure\(\)\{[\s\S]*?\n\}\n/,'showKeptFailure');
+  const source=kept+extract(/function requestPlatformWindow\(action\)\{[\s\S]*?\n\}\n/,'requestPlatformWindow');
+  // 마지막 둘은 0.4.97 엔진 다시 검수(GPT GA1): 최소화로 되돌려 켠 직후 창이 아직 준비되지 않았을 때 연 경우. 실패가 있으면 기다리지 않고 실패부터, 없으면 준비를 기다린다
+  for(const [minimized,failure,expected,ready=true] of [[true,true,['begin:UPDATE_RECOVERED']],[false,true,['main']],[true,false,['main']],[false,true,['begin:UPDATE_RECOVERED'],false],[false,false,[],false]]){
     const events=[];
-    const context={arrivalShow:'minimized',autostartHidden:false,pendingDesktopAction:null,startupAllowed:true,startupGate:null,quittingRequested:false,mainWindowReady:true,
+    const context={arrivalShow:'minimized',autostartHidden:false,pendingDesktopAction:null,startupAllowed:true,startupGate:null,quittingRequested:false,mainWindowReady:ready,
       window:{isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>minimized},unseenFailure:failure?{code:'UPDATE_RECOVERED',stage:'check'}:null,
       platformUpdate:{snapshot:()=>({state:'current'}),reopenCheck(){}},showStartupWindow:()=>events.push('startup'),showPlatformMain:()=>events.push('main'),
       beginPlatformStartup:(a,b,o)=>{events.push('begin:'+o.initialError.code);return Promise.resolve();},Boolean};
     vm.createContext(context);vm.runInContext(source,context);context.requestPlatformWindow();
-    assert.deepEqual(events,expected,`minimized ${minimized}, failure ${failure}`);
-    if(expected[0].startsWith('begin'))assert.equal(context.unseenFailure,null,'the failure is shown once');
+    assert.deepEqual(events,expected,`minimized ${minimized}, failure ${failure}, ready ${ready}`);
+    if(expected[0]?.startsWith('begin'))assert.equal(context.unseenFailure,null,'the failure is shown once');
   }
-  // 작업 표시줄에서 되살릴 때도 같은 실패를 한 번 보인다
-  const restore=mainSource().split('\n').find(line=>line.includes("window.on('restore',"));
-  assert.ok(restore&&restore.includes('const failure=unseenFailure;unseenFailure=null;void beginPlatformStartup(null,null,{initialError:failure})')&&restore.includes('startupGate?.isBlocking()'),'restoring the minimized window shows the kept failure once');
+  // 작업 표시줄에서 되살릴 때와 준비된 창을 처음 보일 때도 같은 한 함수로 실패를 한 번 보인다(0.4.97 엔진 다시 검수 설계 정리)
+  const lines=mainSource().split('\n');
+  const restore=lines.find(line=>line.includes("window.on('restore',"));
+  assert.ok(restore&&restore.includes('showKeptFailure()'),'restoring the minimized window shows the kept failure once');
+  const ready=lines.find(line=>line.includes("window.once('ready-to-show',"));
+  assert.ok(ready&&ready.includes("if(isPlatform&&showKeptFailure())return;if(isPlatform&&arrivalShow==='behind')"),'the first show of a ready window shows the kept failure before the window');
+  assert.ok(kept.includes('startupGate?.isBlocking()')&&kept.includes("platformUpdate.snapshot().state==='disabled'")&&kept.includes('unseenFailure=null'),'the one function shows the failure once and only when the update works');
+  for(const [state,blocking,quitting,expected] of [['current',false,false,true],['disabled',false,false,false],['current',true,false,false],['current',false,true,false]]){
+    const events=[];
+    const context={unseenFailure:{code:'UPDATE_RECOVERED'},quittingRequested:quitting,startupAllowed:true,startupGate:{isBlocking:()=>blocking},platformUpdate:{snapshot:()=>({state})},
+      beginPlatformStartup:(a,b,o)=>{events.push(o.initialError.code);return Promise.resolve();}};
+    vm.createContext(context);vm.runInContext(kept,context);
+    assert.equal(context.showKeptFailure(),expected,`${state} ${blocking} ${quitting}`);
+    assert.deepEqual(events,expected?['UPDATE_RECOVERED']:[]);
+    assert.equal(context.unseenFailure===null,expected);
+  }
+});
+// 0.4.97 엔진 다시 검수 -e GPT GA1: 단축키로 미뤄 둔 요청은 창을 보이는 일과 따로 한 번 전달한다. 창이 불러오는 중이면 다 불러온 뒤에 보낸다
+test('a request kept back by a shortcut reaches the app screen once, whether or not the window is shown',()=>{
+  const source=extract(/function deliverPendingAction\(\)\{[\s\S]*?\n\}\n/,'deliverPendingAction');
+  for(const loading of [false,true]){
+    const sent=[],waits=[];
+    const context={pendingDesktopAction:{action:'command-menu'},window:{isDestroyed:()=>false,webContents:{isLoading:()=>loading,once:(event,fn)=>waits.push([event,fn])}},sendDesktop:(channel,value)=>sent.push([channel,value.action])};
+    vm.createContext(context);vm.runInContext(source,context);
+    context.deliverPendingAction();context.deliverPendingAction();
+    if(loading){assert.deepEqual(sent,[]);assert.equal(waits.length,1);assert.equal(waits[0][0],'did-finish-load');waits[0][1]();}
+    assert.deepEqual(sent,[['synk:desktop-action','command-menu']],'loading '+loading);
+    assert.equal(context.pendingDesktopAction,null);
+  }
+  // 창을 보이는 길(showPlatformMain)도 같은 함수로 전달한다
+  assert.ok(extract(/function showPlatformMain\(\)\{[\s\S]*?\n\}\n/,'showPlatformMain').includes('deliverPendingAction();'));
 });
