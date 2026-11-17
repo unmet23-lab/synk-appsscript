@@ -147,6 +147,8 @@ button,input{font:inherit;color:inherit}
 #stage[data-fan] .room{opacity:.14}
 /* 방은 위에서부터 놓는다. 줄이 펼쳐져 길어져도 손 밑의 줄이 움직이지 않는다 */
 .room{position:absolute;left:clamp(20px,9.5cqw,168px);right:clamp(20px,9.5cqw,168px);top:clamp(92px,21cqh,196px);max-height:calc(100% - clamp(92px,21cqh,196px) - 70px);overflow-y:auto;scrollbar-width:none;display:none;padding-bottom:34px;transition:opacity .3s ease;-webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
+/* 방을 내리면 위쪽도 흐린다. 위쪽 끝에 걸린 줄의 글자가 반쯤 잘려 보이지 않게 한다. 맨 위에 있을 때는 아래쪽만 흐리다 */
+.room.scrolled{-webkit-mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent)}
 #stage[data-space="solio"] .room[data-room="solio"],#stage[data-space="workspace"] .room[data-room="workspace"],#stage[data-space="pulse"] .room[data-room="pulse"]{display:block}
 .say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance}
 .say .then{display:block;color:var(--dim)}
@@ -262,6 +264,8 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 
 @container stage (max-width:640px){
   .rows{grid-template-columns:minmax(0,1fr)}
+  /* 방문자 분석의 줄도 좁은 창에서는 한 칸으로 쌓는다. 이 줄이 없으면 네 칸이 남아 큰 숫자가 창 밖으로 밀린다 */
+  .rows.vis{grid-template-columns:minmax(0,1fr)}
   .row{grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:10px;padding:14px 0}
   .gauge{grid-column:1 / -1;grid-row:2}
   .when{grid-column:1 / -1;grid-row:3;text-align:left}
@@ -749,7 +753,10 @@ const SVC = {
 };
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
 /* 방이 바뀔 때 안의 것들이 차례로 떠오른다 */
-function flashRoom(name) { const r = $('.room[data-room="' + name + '"]'); r.classList.remove('enter'); void r.offsetWidth; r.classList.add('enter'); }
+function flashRoom(name) { const r = $('.room[data-room="' + name + '"]'); r.classList.remove('enter'); void r.offsetWidth; r.classList.add('enter'); roomFade(r); }
+/* 방이 내려가 있는 동안만 위쪽을 흐린다. 방이 바뀌거나 줄이 접혀 맨 위로 돌아오면 푼다 */
+function roomFade(r) { r.classList.toggle('scrolled', r.scrollTop > 0); }
+$$('.room').forEach(r => r.addEventListener('scroll', () => roomFade(r), { passive: true }));
 /* 지금 보이는 방 */
 function roomNow() { return stage.dataset.aside || (space === 'solio' ? ({ backup: 'solio-backup', visits: 'solio-visits' }[stage.dataset.prog] || 'solio') : space); }
 /* 줄마다 안쪽을 미리 지어 둔다: 그 구독의 결론 한 문장, 계정마다 남은 양, 지난 7일, 요금과 할 수 있는 일 */
@@ -1524,7 +1531,7 @@ window.__orb = {
     delete stage.dataset.aside; stage.classList.add('still'); resize(); sig.show(opt.sig);
     /* fan은 구 곁의 펼침, sweep은 고리가 그어진 만큼, prog는 프로그램(subs, backup, visits), near는 오브제의 이름이 펼쳐진 모습, sub는 안쪽을 펼칠 구독이다.
        vis는 방문자 분석의 숫자 상태(full, early), visRow는 안쪽을 펼칠 줄(from, pages, acts, search, ai)이다 */
-    fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); closeMores(true); nearK = 0;
+    fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); closeMores(true); nearK = 0; requestAnimationFrame(() => $$('.room').forEach(roomFade));
     stage.dataset.prog = opt.prog || 'subs'; $$('.obj').forEach(o => o.setAttribute('aria-current', String(o.dataset.prog === stage.dataset.prog))); $('.rail').classList.toggle('near', !!opt.near);
     if (opt.vis) buildVis(opt.vis); faceWant = null; snap(map[0]); setUI(map[1]); if (opt.visRow) { const vb = $('button.row[data-vis="' + opt.visRow + '"]'); if (vb) openVis(vb, true); } if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openMore(opt.sub, true); if (opt.aside) stage.dataset.aside = opt.aside;
     cut = 1; cutOn = cutOnWant = 0; delete stage.dataset.forge;
