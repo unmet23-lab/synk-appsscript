@@ -18,7 +18,8 @@ async function macCanvas(canvas){
 const ORB_DIR='docs/디자인/플랫폼_클라이언트_검정구_20261116/아이콘',ORB_GENERATOR='docs/디자인/플랫폼_클라이언트_검정구_20261116/아이콘만들기.cjs';
 const ORB_ICO=[16,24,32,48,64,128,256],ORB_MAC=[256,512,1024],ORB_WINDOW='synk-1024-둥근점.png';
 const orbFile=name=>path.resolve(root,'..',ORB_DIR,name);
-async function alphaBox(bytes){const {data,info}=await sharp(bytes).ensureAlpha().raw().toBuffer({resolveWithObject:true});let x1=info.width,x2=-1;for(let y=0;y<info.height;y++)for(let x=0;x<info.width;x++)if(data[(y*info.width+x)*4+3]){x1=Math.min(x1,x);x2=Math.max(x2,x);}return {size:info.width,x1,x2,disc:x2-x1+1,channels:info.channels};}
+// 알파 채널은 원본 그림의 것을 본다. ensureAlpha 뒤의 채널 수는 늘 4라 불투명 그림도 지나갔다(0.4.96 카본 E2)
+async function alphaBox(bytes){const meta=await sharp(bytes).metadata();const {data,info}=await sharp(bytes).ensureAlpha().raw().toBuffer({resolveWithObject:true});let x1=info.width,x2=-1;for(let y=0;y<info.height;y++)for(let x=0;x<info.width;x++)if(data[(y*info.width+x)*4+3]){x1=Math.min(x1,x);x2=Math.max(x2,x);}return {size:info.width,height:info.height,x1,x2,disc:x2-x1+1,channels:info.channels,hasAlpha:meta.hasAlpha===true};}
 // Mac은 다른 앱 아이콘과 같은 크기로 보이게 그림을 1024 가운데의 824 칸에 둔다(world · messenger와 같은 칸). 구는 원이라 모서리를 깎지 않고,
 // 그림의 원판(투명하지 않은 둘레)이 그 칸에 꼭 맞도록 줄여 투명한 바탕 가운데에 놓는다. 줄인 폭은 바탕과 짝수 차이로 맞춰 좌우가 같게 한다.
 async function orbMacFrame(bytes,size){
@@ -28,19 +29,21 @@ async function orbMacFrame(bytes,size){
   return sharp({create:{width:size,height:size,channels:4,background:{r:0,g:0,b:0,alpha:0}}}).composite([{input:image,left:(size-n)/2,top:(size-n)/2}]).png().toBuffer();
 }
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
-async function platformOrb(out){
+async function platformOrb(out,{macOnly=false}={}){
   const names=[...new Set([...ORB_ICO.map(s=>'synk-'+s+'.png'),...ORB_MAC.map(s=>'synk-'+s+'.png'),ORB_WINDOW])],files={};
-  for(const name of names){files[name]=fs.readFileSync(orbFile(name));const box=await alphaBox(files[name]);if(box.channels!==4)throw Error('Orb icon needs alpha: '+name);}
+  for(const name of names){files[name]=fs.readFileSync(orbFile(name));const box=await alphaBox(files[name]);if(!box.hasAlpha)throw Error('Orb icon needs alpha: '+name);if(box.height!==box.size)throw Error('Orb icon is not square: '+name);}
   for(const size of ORB_ICO){const box=await alphaBox(files['synk-'+size+'.png']);if(box.size!==size)throw Error('Orb icon size differs: '+size);}
-  fs.writeFileSync(path.join(out,'platform.png'),files[ORB_WINDOW]);
-  fs.writeFileSync(path.join(out,'platform.ico'),ico(ORB_ICO.map(size=>({size,data:files['synk-'+size+'.png']}))));
+  if((await alphaBox(files[ORB_WINDOW])).size!==1024)throw Error('Orb window icon size differs: '+ORB_WINDOW);
+  // Mac만 다시 만들 때는 Windows 아이콘(platform.png · platform.ico)을 덮지 않는다(0.4.96 카본 E3)
+  if(!macOnly){fs.writeFileSync(path.join(out,'platform.png'),files[ORB_WINDOW]);
+  fs.writeFileSync(path.join(out,'platform.ico'),ico(ORB_ICO.map(size=>({size,data:files['synk-'+size+'.png']}))));}
   fs.writeFileSync(path.join(out,'platform.icns'),icns(await Promise.all(ORB_MAC.map(async size=>({size,data:await orbMacFrame(files['synk-'+size+'.png'],size)})))));
   const list=keys=>keys.map(name=>({file:name,sha256:sha(files[name])}));
   return {source:{id:'platform',source:ORB_DIR,generator:ORB_GENERATOR,windows:'platform.ico packs the hand-drawn transparent PNGs 16-256 unchanged; platform.png is '+ORB_WINDOW+' (round-dot eyes survive OS downscaling).',files:list(names)},
     mac:{id:'platform',composition:'Transparent orb; its opaque disc is scaled to the 824 tile centered in the frame; no rounded-rect mask.',files:list(ORB_MAC.map(s=>'synk-'+s+'.png'))}};
 }
-async function main({macOnly=false}={}){const out=path.join(root,'assets');fs.mkdirSync(out,{recursive:true});const previous=JSON.parse(fs.readFileSync(path.join(out,'sources.json')));const ledger={version:3,transformation:'world and messenger: approved existing assets; proportion preserved, centered on white; no recoloring or redrawing. platform: the black orb with dot eyes (decision 11-17), packed from hand-drawn transparent PNGs without redrawing.',mac:{canvas:1024,tile:824,inset:100,radius:185,exterior:'transparent',composition:'world and messenger: existing Windows composition proportionally scaled into the rounded tile; marks unchanged. platform: see its input row.',inputs:[]},sources:[]};
-  const orb=await platformOrb(out);ledger.sources.push(orb.source);ledger.mac.inputs.push(orb.mac);
+async function main({macOnly=false}={}){const out=path.join(root,'assets');fs.mkdirSync(out,{recursive:true});const previous=macOnly?JSON.parse(fs.readFileSync(path.join(out,'sources.json'))):null;const ledger={version:3,transformation:'world and messenger: approved existing assets; proportion preserved, centered on white; no recoloring or redrawing. platform: the black orb with dot eyes (decision 11-17), packed from hand-drawn transparent PNGs without redrawing.',mac:{canvas:1024,tile:824,inset:100,radius:185,exterior:'transparent',composition:'world and messenger: existing Windows composition proportionally scaled into the rounded tile; marks unchanged. platform: see its input row.',inputs:[]},sources:[]};
+  const orb=await platformOrb(out,{macOnly});ledger.sources.push(orb.source);ledger.mac.inputs.push(orb.mac);
   for(const [id,name]of Object.entries(sources)){if(id==='platform')continue;let canvas,sourceRow;
     if(macOnly){canvas=fs.readFileSync(path.join(out,id+'.png'));sourceRow=previous.sources.find(row=>row.id===id);if(!sourceRow)throw Error('Existing icon provenance missing: '+id);}
     else{const bytes=fs.readFileSync(path.join(source,name));const image=await sharp(bytes,{density:144}).resize(832,832,{fit:'contain',background:'#ffffff'}).png().toBuffer();canvas=await sharp({create:{width:1024,height:1024,channels:4,background:'#ffffff'}}).composite([{input:image,left:96,top:96}]).png().toBuffer();sourceRow={id,source:'experiences/synk-account/assets/'+name,sha256:crypto.createHash('sha256').update(bytes).digest('hex')};}

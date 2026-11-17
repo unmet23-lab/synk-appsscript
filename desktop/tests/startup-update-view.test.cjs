@@ -147,7 +147,8 @@ test('a failure opens the current version by itself after a while unless a hand 
 
 test('Mac ready waits for the person: install file or current version, no automatic opening',async()=>{
   const {AUTO_OPEN_MS}=await loaded;
-  const f=await fixture();
+  // Mac 시작 창은 처음부터 Mac 상태를 받는다(설치 파일 열기의 응답도 Mac이다, 0.4.96 카본 E5)
+  const f=await fixture({snapshot:{state:'checking',currentVersion:'0.4.95',platform:'darwin'}});
   f.send({state:'ready',platform:'darwin',canInstall:true,canOpenCurrent:true,latestVersion:'0.4.96'});await settle();
   assert.equal(f.dom.el('startup-say').textContent,'새 판을 받았습니다.');assert.deepEqual(visibleActions(f),['startup-install','startup-open-current']);
   assert.ok(f.orb.named('forgeAt').some(c=>c[1]===0.5),'the orb stops half cut');
@@ -294,4 +295,26 @@ test('a retried download starts carving again from zero instead of jumping to th
   const after=f.orb.named('forgeAt').slice(mark).map(c=>c[1]);
   assert.ok(after.every(v=>v<=0.001),'cut went past the new progress: '+JSON.stringify(after.slice(-3)));
   assert.equal(f.dom.el('startup-percent').textContent,' · 0%');
+});
+// 0.4.96 카본 E5: 움직임 줄이기에서 업데이트 뒤 도착 장면은 돌지 않고 바로 쉬는 구가 되며, 받는 동안의 깎임은 빨리 따라간다
+test('with reduced motion the arrival rests at once and the carving follows quickly',async()=>{
+  const f=await fixture({reduced:true,status:{state:'checking',platform:'win32',boot:{kind:'arrive',startedAt:1_000_000,cut:0.5,lit:0.58}}});
+  await f.clock.advance(100);
+  assert.ok(f.orb.named('snap').some(c=>c[1]==='rest'));assert.equal(f.orb.named('setAz').length,0,'no turn under reduced motion');
+  assert.ok(f.orb.named('eyesCalm').length>0);
+  const g=await fixture({reduced:true});
+  g.send({state:'downloading',platform:'win32',progress:100,latestVersion:'0.4.96'});await g.clock.advance(400);
+  assert.ok(g.orb.named('forgeAt').some(c=>c[1]>=0.499),'reduced motion follows the received value within a moment');
+});
+// 0.4.96 카본 E5: 첫 상태 물음이 늦게 끝나도, 그 사이 밀어 준 새 상태를 덮지 않는다
+test('a late first status answer never overwrites a newer pushed state',async()=>{
+  const {mountStartupUpdate}=await loaded;
+  const clock=fakeClock(),dom=fakeDom(),orb=fakeOrb();let push=null,answer;
+  const bridge={getStatus:()=>new Promise(resolve=>{answer=resolve;}),retry:async()=>({}),openCurrent:async()=>({}),install:async()=>({}),onChanged:fn=>{push=fn;return ()=>{};}};
+  const view=mountStartupUpdate({bridge,document:dom.document,window:{setTimeout:clock.setTimeout,clearTimeout:clock.clearTimeout,matchMedia:()=>({matches:false}),addEventListener(){},removeEventListener(){}},createOrb:()=>orb.api,now:clock.now});
+  await settle();
+  push({state:'downloading',platform:'win32',progress:30,latestVersion:'0.4.96'});await settle();
+  answer({state:'checking',platform:'win32'});await view.ready;await settle();
+  assert.equal(dom.el('startup-update').dataset.state,'downloading');
+  view.dispose();
 });
