@@ -109,32 +109,35 @@ const Hook: React.FC<{ L: LocPack }> = ({ L }) => {
 const Cards: React.FC<{ L: LocPack }> = ({ L }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
-  const k = CARDS.findIndex((c) => t >= c.at && t < c.end);
+  const swap = L.swapAt ?? CARDS[1].end; // (선택) 두 채널 판만 ✗를 더 오래 둔다 — 판본.ts nopeAt · swapAt
+  const cards = CARDS.map((c, i) => (i === 1 ? { ...c, end: swap } : i === 2 ? { ...c, at: swap } : c));
+  const nopeAt = L.nopeAt ?? NOPE.at;
+  const k = cards.findIndex((c) => t >= c.at && t < c.end);
   if (k < 0) return null;
-  const c = CARDS[k];
+  const c = cards[k];
   const sf = fr(c.at);
   const p = interpolate(frame, [sf, sf + 6], [0.85, 1], { ...clamp, easing: Easing.out(Easing.back(2.4)) });
   return (
     <div style={{ position: 'absolute', left: LAYOUT.left, top: LAYOUT.top, width: LAYOUT.width, transform: `scale(${p})`, transformOrigin: '50% 0%' }}>
       <div style={{ position: 'relative', background: CARD_BG, border: `5px solid ${INK}`, borderRadius: 40, padding: '12px 28px 14px', textAlign: 'center', boxShadow: '0 10px 26px rgba(0,0,0,0.32)' }}>
-        {k === 1 && t >= NOPE.at ? <Nope /> : null}
+        {k === 1 && t >= nopeAt ? <Nope at={nopeAt} small={!!L.nopeMean} /> : null}
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 60, color: CREAM, lineHeight: 1.1, whiteSpace: 'nowrap' }}>{c.ko}</div>
         <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 40, color: '#E9DCC6', lineHeight: 1.2, marginTop: 2 }}>{L.cardReads[k]}</div>
-        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.rowSize, color: CARD_MEAN, lineHeight: 1.2, marginTop: 4 }}>{L.cardMeans[k]}</div>
+        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.rowSize, color: CARD_MEAN, lineHeight: 1.2, marginTop: 4 }}>{k === 1 && t >= nopeAt && L.nopeMean ? L.nopeMean : L.cardMeans[k]}</div>
       </div>
     </div>
   );
 };
 
 // 빨간 ✗ — 「눈 + 물 = 눈물?」 카드 한가운데(v5). 몽글의 짐작이 틀렸다는 표시 — 바로 다음 카드가 진짜 뜻(눈 👁️ + 물)
-const Nope: React.FC = () => {
+const Nope: React.FC<{ at: number; small?: boolean }> = ({ at, small }) => {
   const frame = useCurrentFrame();
-  const sf = fr(NOPE.at);
+  const sf = fr(at);
   const p = interpolate(frame, [sf, sf + 4], [1.6, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
-  const n = NOPE.size;
+  const n = small ? 100 : NOPE.size; // small = 판본 nopeMean이 있을 때 — 한국어 줄(카드 맨 위)의 「=」 위에만
   const d = `M${n * 0.16} ${n * 0.16} L${n * 0.84} ${n * 0.84} M${n * 0.84} ${n * 0.16} L${n * 0.16} ${n * 0.84}`;
   return (
-    <svg width={n} height={n} style={{ position: 'absolute', left: '50%', top: '50%', marginLeft: -n / 2, marginTop: -n / 2, transform: `scale(${p})`, zIndex: 2 }}>
+    <svg width={n} height={n} style={{ position: 'absolute', left: '50%', top: small ? -6 : '50%', marginLeft: -n / 2, marginTop: small ? 0 : -n / 2, transform: `scale(${p})`, zIndex: 2 }}>
       <path d={d} stroke={INK} strokeWidth={n * 0.2} strokeLinecap="round" />
       <path d={d} stroke="#E8432F" strokeWidth={n * 0.13} strokeLinecap="round" />
     </svg>
@@ -155,11 +158,11 @@ const End: React.FC<{ L: LocPack }> = ({ L }) => {
             <div key={k} style={{ background: 'rgba(255,244,222,0.12)', border: '3px solid rgba(255,244,222,0.5)', borderRadius: 24, padding: '4px 24px 8px', whiteSpace: 'nowrap' }}>
               <span style={{ fontFamily: KO, fontWeight: 800, fontSize: 72, color: CREAM }}>{g.ko}</span>
               <span style={{ fontSize: 56, marginLeft: 8 }}>{g.icon}</span>
-              <span style={{ fontFamily: L.font, fontWeight: 800, fontSize: 46, color: CARD_MEAN, marginLeft: 12 }}>{L.endNames[k]}</span>
+              <span style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.endNameSize ?? 46, color: CARD_MEAN, marginLeft: 12 }}>{L.endNames[k]}</span>
             </div>
           ))}
         </div>
-        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: 44, color: CREAM, lineHeight: 1.2, marginTop: 8 }}>{L.endMean}</div>
+        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.endMeanSize ?? 44, color: CREAM, lineHeight: 1.2, marginTop: 8 }}>{L.endMean}</div>
       </div>
     </div>
   );

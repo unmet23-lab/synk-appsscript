@@ -24,15 +24,25 @@ export type LocPack = {
   helloRead: string;
   helloVo: string;
   helloSec: number;
+  // (선택, 11-17 두 채널 판) 빨간 ✗가 뜨는 초 · 「눈 + 물 = 눈물?」 카드에서 진짜 뜻 카드로 넘어가는 초. 비우면 data.ts의 원래 값(10.75 · 11.25)이다.
+  // 몽골판은 11-17에 이미 예약돼 원래 값 그대로 두고, 두 채널 판은 이해 시험 넷이 같이 짚은 「✗가 0.5초라 무엇을 지우는지 모름」을 받아 ✗를 0.9초 둔다.
+  nopeAt?: number;
+  swapAt?: number;
+  // (선택, 11-17 두 채널 판) 끝 카드 꼬리표 · 아래 줄 글자 크기. 비우면 원래 값(46 · 44) — 버마어 판은 시험관 셋이 「끝 카드 아랫줄을 못 읽음」을 짚어 키운다.
+  endNameSize?: number;
+  endMeanSize?: number;
+  // (선택, 11-17 두 채널 판 다시 시험 1) ✗가 뜬 뒤 「눈 + 물 = 눈물?」 카드의 뜻 줄을 바꿀 글(예: 「눈 + 물 ≠ 눈물!」). 있으면 ✗는 작게 한국어 줄 위에만 둔다 —
+  // 시험관들이 「✗가 무엇을 지우는지 모름」 · 「✗가 아래 뜻 줄을 가림」을 같이 짚었다. 비우면 원래대로(큰 ✗가 카드 한가운데, 뜻 줄 그대로).
+  nopeMean?: string;
 };
 
 // ── 아래는 판본 틀 편들이 같은 꼴로 쓴다(편마다 칸 표만 다르다) ──
 // 칸 꼴: 글(빈 글 안 됨) · 글?(선택 — 비우면 그 자리를 그리지 않음) · 수 · 참거짓 · 글들(개수 고정, 선택이면 빈 글 됨) · 수들
-type 칸 = '글' | '글?' | '수' | '참거짓' | { 글들: number; 선택?: boolean } | { 수들: number };
+type 칸 = '글' | '글?' | '글*' | '수' | '수?' | '참거짓' | { 글들: number; 선택?: boolean } | { 수들: number };
 const 칸표: Record<keyof LocPack, 칸> = {
   lang: '글', font: '글', lineH: '수', hook: '글', cardReads: { 글들: 3 }, cardMeans: { 글들: 3 }, endNames: { 글들: 2 }, endMean: '글', rowSize: '수',
   means: { 글들: 9 }, meanSize: '수', reads: { 글들: 9 }, readSize: '수',
-  coverAt: '수',
+  coverAt: '수', nopeAt: '수?', swapAt: '수?', endNameSize: '수?', endMeanSize: '수?', nopeMean: '글*',
   hello: '글?', helloName: '글?', helloRead: '글?', helloVo: '글?', helloSec: '수',
 };
 
@@ -44,6 +54,10 @@ export const 빈칸 = (p: Record<string, unknown>): string[] => {
     if (kind === '글' || kind === '글?') {
       if (typeof v !== 'string') out.push(`${k}: 글이 아님`);
       else if (kind === '글' && !v.trim()) out.push(`${k}: 빈 글`);
+    } else if (kind === '글*') {
+      if (v !== undefined && typeof v !== 'string') out.push(`${k}: 글이 아님`);
+    } else if (kind === '수?') {
+      if (v !== undefined && (typeof v !== 'number' || !Number.isFinite(v))) out.push(`${k}: 수가 아님`);
     } else if (kind === '수') {
       if (typeof v !== 'number' || !Number.isFinite(v)) out.push(`${k}: 수가 아님`);
     } else if (kind === '참거짓') {
