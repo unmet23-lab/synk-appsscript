@@ -24,8 +24,10 @@ const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; dr
   const f = useCurrentFrame();
   const s = crop.s * (1 + (f / FPS) * drift) * (crop.push ? interpolate(f / FPS, [crop.push.t0, crop.push.t1], [1, crop.push.to], { ...clamp, easing: Easing.inOut(Easing.cubic) }) : 1);
   const ay = crop.ay ?? 1000;
+  // 11-17 B49: path = 한 컷 안에서 cy를 시각(컷 안 초)마다 옮긴다 — 최종본 검사 「같은판」(같은 판을 잘라 키워 이어 붙임)을 피해 핵심 장면을 한 컷으로 훑는다
+  const cy = crop.path ? interpolate(f / FPS, crop.path.t, crop.path.cy, { ...clamp, easing: Easing.inOut(Easing.cubic) }) : crop.cy;
   const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
-  const y = Math.min(0, Math.max(1920 - 1920 * s, ay - crop.cy * s));
+  const y = Math.min(0, Math.max(1920 - 1920 * s, ay - cy * s));
   const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})`, filter: blur ? `blur(${blur}px) brightness(0.62)` : look === 'past' ? 'grayscale(0.85) sepia(0.12) contrast(1.06) brightness(1.06)' : look === 'dim' ? 'brightness(0.42) saturate(0.7)' : undefined };
   return (
     <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
