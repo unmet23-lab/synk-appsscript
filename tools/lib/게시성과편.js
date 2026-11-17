@@ -177,4 +177,11 @@ function writePlanBlock(dir, lines) {
   return { changed: true, file };
 }
 
-module.exports = { ROLES, BLOCK_START, BLOCK_END, parseFirstLine, readFolder, hookFor, buildIndex, writeResultJson, writePlanBlock, brandOf };
+/** 게시결과 판의 「숨김」 방법이 「삭제」로 시작하는 게시물인가 — 지운 게시물은 화면에서 읽을 수 없다(11-17).
+ * 비공개 · 보관은 주인이 아직 분석 화면을 열 수 있으니 여기에 넣지 않는다. */
+function removedPost(info, postKey) {
+  if (!info || !postKey) return false;
+  return resultRows(info.result).some(p => p && p.숨김 && /^삭제/.test(String(p.숨김.방법 || '').trim()) && postIdOf(p.주소)?.key === postKey);
+}
+
+module.exports = { ROLES, BLOCK_START, BLOCK_END, parseFirstLine, readFolder, hookFor, buildIndex, writeResultJson, writePlanBlock, brandOf, removedPost };

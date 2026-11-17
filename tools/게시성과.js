@@ -155,7 +155,8 @@ function metaOf(item, index, accounts) {
   const brandFromAccount = account ? (/^lab-/.test(account) ? 'LAB' : /^synkbrief-/.test(account) ? 'synkbrief' : /^yuhobuilds-/.test(account) ? 'yuhobuilds' : /^shift-/.test(account) ? 'SHIFT' : null) : null;
   if (!found || !found.info) return { folder: null, ambiguous: found?.ambiguous || null, account, brand: brandFromAccount, role: null, hook: null, hookSlot: null };
   const hook = 편.hookFor(found.info, { account, platform: r.platform });
-  return { folder: found.info.folder, dir: found.info.dir, account, brand: found.info.brand || brandFromAccount, role: found.info.role || null, hook: hook.label, hookSlot: hook.slot };
+  return { folder: found.info.folder, dir: found.info.dir, account, brand: found.info.brand || brandFromAccount, role: found.info.role || null, hook: hook.label, hookSlot: hook.slot,
+    removed: 편.removedPost(found.info, r.postKey) };
 }
 
 // 계정 원장 그대로(계정 키 → 값) — LAB 계정 · 나라 · 칸별 절이 나라 · 시간대 · 칸 · 숫자 읽기 길을 읽는다(11-10)
@@ -632,8 +633,8 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
     if (meta.folder) {
       if (!byFolder.has(meta.folder)) byFolder.set(meta.folder, { dir: meta.dir, items: [] });
       byFolder.get(meta.folder).items.push({ item, meta, lines });
-      // 주 1회 읽기 — 편 폴더가 있는 최근 14일 편만(시험 게시·남의 주소는 읽지 않는다)
-      if (item.screenNeeded.length && Date.parse(item.record.publishedAt) >= now - RECENT_DAYS * 86_400_000) {
+      // 주 1회 읽기 — 편 폴더가 있는 최근 14일 편만(시험 게시·남의 주소는 읽지 않는다). 게시결과에 「숨김 · 삭제」로 적힌 게시물은 화면이 없어 뺀다(11-17)
+      if (item.screenNeeded.length && !meta.removed && Date.parse(item.record.publishedAt) >= now - RECENT_DAYS * 86_400_000) {
         screenList.push({ 편: meta.folder, 주소: item.record.url, 채널: 채널이름(item.record.platform, item.channel), 게시: item.record.publishedAt,
           칸: item.screenNeeded.map(m => 판정.METRICS[m]?.label || m), 적기이름: item.screenNeeded.map(m => Object.keys(SCREEN_NAMES).find(k => SCREEN_NAMES[k] === m) || m) });
       }

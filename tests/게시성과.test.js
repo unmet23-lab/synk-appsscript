@@ -339,6 +339,22 @@ test('--적기 미리 보기도 그 값이 들어간 판정을 보이고, 장부
   assert.ok(!r.화면목록.some(x => x.주소.includes('CODE5x') && x.칸.includes('팔로우')));
 });
 
+test('화면 목록 — 게시결과에 「숨김 · 삭제」로 적힌 게시물은 읽을 화면이 없어 빼고, 비공개 · 보관은 남긴다(11-17)', async t => {
+  const { dir, folder } = tempRepo(t);
+  const server = data({ entries: [1, 2, 3, 4, 5].map(n => igEntry(n, n * 10)) });
+  const opts = { now: T0 + 9 * 24 * H, data: server, shorts: new Map() };
+  const before = await 도구.run({ 실행: false, 저장소: dir, 값들: [] }, opts);
+  assert.ok(before.화면목록.some(x => x.주소.includes('CODE5x')), '숨김 전에는 목록에 있다');
+  const file = path.join(folder, '게시', '게시결과.json');
+  const write = 숨김 => fs.writeFileSync(file, JSON.stringify({ 판: [{ 계정: 'lab-instagram', 상태: '게시됨', 시각: iso(T0 + 5 * 24 * H), 주소: 'https://www.instagram.com/reel/CODE5x/', 숨김 }] }));
+  write({ 방법: '보관 — 인스타 앱' });
+  const kept = await 도구.run({ 실행: false, 저장소: dir, 값들: [] }, opts);
+  assert.ok(kept.화면목록.some(x => x.주소.includes('CODE5x')), '보관은 주인이 분석을 볼 수 있어 남긴다');
+  write({ 방법: '삭제 — 유호님 「삭제해 줘」. Business Suite에서 삭제' });
+  const after = await 도구.run({ 실행: false, 저장소: dir, 값들: [] }, opts);
+  assert.ok(!after.화면목록.some(x => x.주소.includes('CODE5x')), '삭제한 게시물은 뺀다');
+});
+
 test('--적기는 화면 값을 장부에 남기고 72시간 판정에 더한다', async t => {
   const { dir } = tempRepo(t);
   const server = data({ entries: [1, 2, 3, 4, 5].map(n => igEntry(n, n * 10)) });
