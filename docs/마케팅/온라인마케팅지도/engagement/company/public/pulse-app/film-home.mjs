@@ -147,7 +147,7 @@ export function openScreening(film,{onClose}={}){
   if(!film?.full?.src)return null;
   const opener=document.activeElement,box=document.createElement('div');
   box.className='sx-screening';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label',t('{title} 상영',{title:filmTitle(film)}));box.dataset.ratio=film.orientation==='portrait'?'9:16':film.orientation==='pano'?'40:11':'16:9';
-  box.innerHTML=`<video class="sx-screening-film" playsinline src="${esc(film.full.src)}"></video><div class="sx-screening-ui"><button type="button" class="sx-small sx-screening-close" data-close>${esc(t('닫기'))}</button><p class="sx-screening-title"><b>${esc(filmTitle(film))}</b> <span>${esc(filmLine(film))}</span><em>${esc(filmNote(film))}</em></p><div class="sx-screening-time"><span class="sx-no" data-t>0:00</span><div class="sx-screening-line" data-line><i data-fill></i></div></div></div>`;
+  box.innerHTML=`<video class="sx-screening-film" playsinline src="${esc(film.full.src)}"></video><div class="sx-screening-ui"><button type="button" class="sx-small sx-screening-close" data-close>${esc(t('닫기'))}</button>${film.orientation==='pano'?`<p class="sx-small sx-screening-turn">${esc(t('휴대폰을 눕히면 크게 보여요'))}</p>`:''}<p class="sx-screening-title"><b>${esc(filmTitle(film))}</b> <span>${esc(filmLine(film))}</span><em>${esc(filmNote(film))}</em></p><div class="sx-screening-time"><span class="sx-no" data-t>0:00</span><div class="sx-screening-line" data-line><i data-fill></i></div></div></div>`;
   document.body.append(box);
   requestAnimationFrame(()=>box.classList.add('is-on'));
   const video=box.querySelector('video'),fill=box.querySelector('[data-fill]'),tc=box.querySelector('[data-t]');
@@ -408,6 +408,7 @@ let listScreening=null;
 export function mountFilmList(root){
   const host=root.querySelector('.sx-films');if(!host){listScreening?.close();return;}
   const poster=host.querySelector('[data-film-poster]');
-  const show=row=>{const film=filmOf(row.dataset.filmOpen);if(poster&&film?.poster&&poster.getAttribute('src')!==film.poster){poster.src=film.poster;poster.toggleAttribute('data-pano',film.orientation==='pano');}host.querySelectorAll('.sx-film-row').forEach(item=>item.classList.toggle('is-on',item===row));};
+  // 포스터는 새 그림을 다 받은 뒤에 주소와 넓은 판 표시(data-pano)를 함께 바꾼다 — 먼저 표시만 바꾸면 받는 동안 앞 그림이 잘리거나 띠로 줄어 보였다(11-18 검수).
+  const show=row=>{const film=filmOf(row.dataset.filmOpen);if(poster&&film?.poster&&poster.dataset.want!==film.poster&&poster.getAttribute('src')!==film.poster){const want=film.poster,pano=film.orientation==='pano';poster.dataset.want=want;const swap=()=>{if(poster.dataset.want!==want)return;poster.src=want;poster.toggleAttribute('data-pano',pano);};const next=new Image();next.onload=swap;next.onerror=swap;next.src=want;if(next.complete)swap();}host.querySelectorAll('.sx-film-row').forEach(item=>item.classList.toggle('is-on',item===row));};
   host.querySelectorAll('.sx-film-row').forEach(row=>{row.addEventListener('pointerenter',()=>show(row));row.addEventListener('focus',()=>show(row));row.addEventListener('click',()=>{listScreening?.close();listScreening=openScreening(filmOf(row.dataset.filmOpen),{onClose:()=>{listScreening=null;}});});});
 }
