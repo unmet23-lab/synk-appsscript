@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { BRAIN_MUTANTS } from './mutants/brain.mjs';
 import { COACH_MUTANTS } from './mutants/coach.mjs';
 import { MAP_MUTANTS } from './mutants/map.mjs';
+import { ME_MUTANTS } from './mutants/me.mjs';
 import { RECORD_MUTANTS } from './mutants/record.mjs';
 import { testEnv } from './test.mjs';
 
@@ -24,7 +25,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = path.join(ROOT, '.mutants');
 const WORK = path.join(BASE, String(process.pid));
 
-export const MUTANTS = [...BRAIN_MUTANTS, ...MAP_MUTANTS, ...RECORD_MUTANTS, ...COACH_MUTANTS];
+export const MUTANTS = [
+  ...BRAIN_MUTANTS,
+  ...MAP_MUTANTS,
+  ...RECORD_MUTANTS,
+  ...COACH_MUTANTS,
+  ...ME_MUTANTS,
+];
 
 export const SELF_TEST = [
   [

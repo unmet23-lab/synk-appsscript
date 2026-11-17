@@ -141,8 +141,8 @@ export const COACH_MUTANTS = [
     '판 수명',
     '판 길이만큼 나간 판에 같은 set이 와도 잇는다(닫지 않는 제품의 새것이 굶는다 — Fable 다시 확인 N1)',
     SESSION,
-    'return count > 0 && count < length && !aged(host.now());',
-    'return count > 0;',
+    "journaled(['present', 'say']) > 0 && journaled(['present']) < length && !aged(host.now())",
+    "journaled(['present', 'say']) > 0",
   ],
   [
     C,
@@ -1350,14 +1350,6 @@ export const COACH_MUTANTS = [
     SESSION,
     "      s.journal.push({ kind: 'help', eventId: event.id, parent: pid });\n",
     "      if (folds.length) s.journal.push({ kind: 'help', eventId: event.id, parent: pid });\n",
-  ],
-  [
-    C,
-    '판 수명(끝 판 둘째)',
-    '저장에 실패한 제시도 판의 낸 수에 센다(판 길이를 채우기 전에 새 판 — 카본 E2)',
-    SESSION,
-    "  const served = () => s.journal.filter(op => op.kind === 'present' && kept(op)).length;\n",
-    "  const served = () => s.journal.filter(op => op.kind === 'present').length;\n",
   ],
   [
     C,

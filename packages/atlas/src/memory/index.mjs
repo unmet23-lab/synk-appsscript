@@ -16,6 +16,9 @@ import { createFsrs } from './fsrs.mjs';
 
 const DAY = 86_400_000;
 const HOUR = 3_600_000;
+// 「또렷함」의 간격(날) — 다음에 돌아올 때까지 이만큼 이상 남은 말만 또렷하다고 한다(단계 4 계획 §22-2). 고르는 데 쓰지 않는 보이기
+// 기준이라 두뇌의 PARAMS(관문 5의 판 값)에 넣지 않는다. 실측(§22-0 표): 고르기를 혼자 네 번, 만들기 · 말하기를 혼자 두 번 맞히면 넘는다.
+export const CLEAR_DAYS = 7;
 const FSRS_GRADE = Object.freeze({ again: 1, hard: 2, good: 3 });
 const SAYS = Object.freeze(['known', 'relearn']);
 
@@ -193,6 +196,24 @@ export function createMemory(params = PARAMS) {
     return high;
   }
 
+  // 「나」 칸의 갈래(단계 4 계획 §22-2) — 기억의 뜻이라 여기서 정하고 요약 줄에 싣는다. 빈 줄은 null.
+  //  said(직접 말함): 마지막 자리가 「이미 알아요」 — 다시 답할 때까지.
+  //  shaky(흔들림): 마지막 자리가 놓침 · 힌트 뒤 맞힘(again · hard), 끈질긴 단위, 또는 놓친 적이 있고 지금 떠올릴 확률이 목표 아래이며
+  //   다음 간격이 CLEAR_DAYS 미만.
+  //  clear(또렷함): 흔들림이 아니고 확률이 목표 이상이며 간격이 CLEAR_DAYS 이상 — 돌아올 때가 되면 흔들림이 아니라 익히는 중으로 간다.
+  //  learning(익히는 중): 나머지(「나」 목록에 싣지 않는다).
+  function standing(state, now) {
+    if (!has(state)) return null;
+    const last = state.open.grade;
+    if (last === 'known') return 'said';
+    if (last === 'again' || last === 'hard' || state.stubborn === true) return 'shaky';
+    const recall = retrievability(state, now);
+    const interval = intervalDays(state);
+    if (state.lapses >= 1 && recall < params.retention && interval < CLEAR_DAYS) return 'shaky';
+    if (recall >= params.retention && interval >= CLEAR_DAYS) return 'clear';
+    return 'learning';
+  }
+
   return Object.freeze({
     append,
     has,
@@ -205,5 +226,6 @@ export function createMemory(params = PARAMS) {
     isDue: (state, now) =>
       has(state) && !inSitting(state, now) && retrievability(state, now) < params.retention,
     intervalDays,
+    standing,
   });
 }

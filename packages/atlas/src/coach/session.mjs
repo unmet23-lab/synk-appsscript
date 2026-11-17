@@ -186,9 +186,10 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
   const aged = now =>
     dayKey(now, params, dayOffset) !== s.learner.day.key || now - s.lastAt >= DEFAULT_SET_IDLE_MS;
   const stale = now => Boolean(s.open?.fallback) && aged(now);
-  // 이 판에 낸 수 — 저장에 실패했거나 제외된 제시는 판 상태(build)에서 빠지므로 여기서도 세지 않는다(카본 끝 판 둘째 E — 판 길이를 다
-  // 채우기 전에 새 판이 열리던 것).
-  const served = () => s.journal.filter(op => op.kind === 'present' && kept(op)).length;
+  // 이 판 일지의 줄 수(단계 4 계획 §22-5 · Fable F6) — 저장 실패 · 제외와 상관없이 센다. 판이 열렸는가는 제시 · 본인 말 줄이 있는가로,
+  // 판의 끝은 제시 줄 수로 잰다. 그래서 제시가 모두 실패하거나 제외된 판도 판 길이에서 끝난다(「끝나지 않는 판」을 막는다). 저장에 실패한
+  // 제시도 판 길이에 세므로 그런 판은 하나 짧아질 수 있다 — 카본 끝 판 둘째 E2(「낸 수에서 뺀다」)를 4-5에서 거뒀다(짧아지는 쪽으로만 틀린다).
+  const journaled = kinds => s.journal.filter(op => kinds.includes(op.kind)).length;
 
   const ensure = () => {
     const now = host.now();
@@ -202,9 +203,10 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
   const repeated = set => {
     if (!s.learner?.session || s.open.fallback || set.more || s.open.sign !== setSign(set))
       return false;
-    const count = served();
     const length = Number.isInteger(set.length) && set.length > 0 ? set.length : Infinity;
-    return count > 0 && count < length && !aged(host.now());
+    return (
+      journaled(['present', 'say']) > 0 && journaled(['present']) < length && !aged(host.now())
+    );
   };
 
   // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다). 답 · 도움은 지금 거름

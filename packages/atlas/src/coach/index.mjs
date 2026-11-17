@@ -368,9 +368,16 @@ export function createCoach(options = {}) {
           .filter(([, unit]) => memory.has(unit))
           .map(([unit, line]) => ({
             unit,
+            // 이름(단계 4 계획 §22-2 — 코치가 아는 이름: 지도 units.json과 코치 옵션 label이 넘긴 이름 사전). 없으면 null(「나」 목록과 수에서 뺀다 — N3).
+            kind: state.map.unit(unit)?.kind ?? null,
+            label: label(unit),
             sittings: line.sittings,
             lapses: line.lapses,
             stubborn: line.stubborn === true,
+            // 마지막 자리의 결과(§22-3 · §19-1 ⑤): again · hard · weak · good · known. 「아직 혼자 못 맞힘」은 again이나 hard다.
+            last: line.open.grade,
+            // 흔들림 · 또렷함 · 익히는 중 · 직접 말함(§22-2 — 기억 모듈 standing).
+            state: memory.standing(line, now),
             due: memory.isDue(line, now),
             recall: memory.retrievability(line, now),
             lastAt: line.lastAt,

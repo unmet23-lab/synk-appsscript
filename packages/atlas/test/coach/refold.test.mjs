@@ -527,7 +527,7 @@ test('저장 실패 뒤 같은 계열의 도움 — 도움이 저장되면 판 �
   assert.deepEqual(inner, view);
 });
 
-test('저장에 실패한 제시는 판의 낸 수에 들지 않는다 — 판 길이를 다 채우기 전에 새 판이 열리지 않는다(카본 끝 판 둘째 E2)', async () => {
+test('판의 끝은 일지의 제시 줄 수 — 저장에 실패한 제시도 판 길이에 센다(단계 4 계획 §22-5 · Fable F6, 카본 끝 판 둘째 E2를 거둠)', async () => {
   const w = await sessionOn({ seed: 35, tag: 'served' });
   const set = { length: 3 };
   // 문항마다 같은 set을 넘기는 제품처럼 — 고른 문항을 낸다
@@ -542,9 +542,36 @@ test('저장에 실패한 제시는 판의 낸 수에 들지 않는다 — 판 �
   await show();
   const setId = w.session.setId;
   await show(true); // 저장에 실패한 제시
+  w.session.choose(w.items, { set });
+  assert.equal(w.session.setId, setId, '일지의 제시는 둘 — 판 길이 셋 전이라 같은 판');
   await show();
   w.session.choose(w.items, { set });
-  assert.equal(w.session.setId, setId, '저장된 제시는 둘 — 판 길이 셋을 다 채우기 전이라 같은 판');
+  assert.notEqual(
+    w.session.setId,
+    setId,
+    '일지의 제시가 셋(하나는 저장 실패) — 판 길이에 닿아 새 판이다',
+  );
+  w.close();
+});
+
+test('끝나지 않는 판 — 제시가 모두 저장에 실패해도 판 길이에서 끝난다(§22-5 · Fable F6)', async () => {
+  const w = await sessionOn({ seed: 36, tag: 'all-failed' });
+  const set = { length: 2 };
+  const show = async () => {
+    const { rows, products } = w.session.choose(w.items, { set });
+    w.port.arm();
+    const pid = w.session.present(products.get(rows[0].item.itemKey), {});
+    await settle();
+    await settle();
+    return pid;
+  };
+  await show();
+  const setId = w.session.setId;
+  w.session.choose(w.items, { set });
+  assert.equal(w.session.setId, setId, '제시 하나(저장 실패) — 같은 판');
+  await show();
+  w.session.choose(w.items, { set });
+  assert.notEqual(w.session.setId, setId, '제시 둘이 모두 저장 실패여도 판 길이 둘에서 새 판');
   w.close();
 });
 
