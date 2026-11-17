@@ -137,11 +137,10 @@ async function applyStatus(engine, status, deviceId, prefix = null) {
 // One run as the server's measurement intake takes it (서버API.md 「측정 받는 꼴」): fixed words and whole numbers
 // only. A test run is not sent. `result` is the cloud profile's run result, `fill` its fill (if one was asked).
 // 「쉬는 회선」(4.14)은 서버의 쉼 낱말에 아직 없어 데이터 요금제 회선과 같이 보낸다(손님이 고른 비싼 회선).
-const PAUSES = { battery: 'battery', saver: 'saver', metered: 'metered', network: 'metered' };
-// 솔리오의 요청 작업이 띄운 회차(`request`)는 서버의 계기 낱말에 아직 없어 아래 목록에 넣지 않는다(측정에서 빠진다). 개통 서버가
-// 그 낱말을 받게 되면 이 목록에 더한다(STAGE1_DESIGN.md 4.13 「엔진 쪽 구현」).
+const PAUSES = { battery: 'battery', saver: 'saver', metered: 'metered', network: 'network' };
+// 솔리오의 요청 작업이 띄운 회차(`request`)와 쉬도록 고른 Wi-Fi(`network`)는 개통 서버의 측정 낱말에 있다(e97e19166).
 function telemetryRun({ trigger, startedAt, result, fill = null, skipCloud = null, maxRssKb = null, cpuMs = null }) {
-  if (!['hourly', 'logon', 'wake', 'unlock', 'manual'].includes(trigger) || !result || !Number.isSafeInteger(startedAt)) return null;
+  if (!['hourly', 'logon', 'wake', 'unlock', 'manual', 'request'].includes(trigger) || !result || !Number.isSafeInteger(startedAt)) return null;
   const n = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : undefined);
   const outcome = result.outcome === 'skipped' && result.reason === 'paused' ? 'paused' : result.outcome;
   if (!['complete', 'partial', 'skipped', 'failed', 'busy', 'not-due', 'paused'].includes(outcome)) return null;

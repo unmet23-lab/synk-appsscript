@@ -355,9 +355,12 @@ test('measurements are whole numbers and fixed words the server keeps', async ()
     telemetryRun({ trigger: 'unlock', startedAt, result: { outcome: 'failed', exitCode: 1, durationMs: 300 } }),
     telemetryRun({ trigger: 'logon', startedAt, result: { outcome: 'skipped', reason: 'paused' } }),
     telemetryRun({ trigger: 'hourly', startedAt, result: { outcome: 'skipped', reason: 'battery' }, skipCloud: 'battery' }),
+    // 솔리오의 요청 작업이 띄운 회차가 쉬도록 고른 Wi-Fi에서 쉰 것(4.13 · 4.14): 서버가 두 낱말을 그대로 받는다.
+    telemetryRun({ trigger: 'request', startedAt, result: { outcome: 'skipped', reason: 'network' }, skipCloud: 'network' }),
   ];
   const kept = cleanBatch({ runs: items });
-  assert.equal(kept.runs.length, 5); assert.deepEqual(kept.dropped, { unknownFields: 0, items: 0 });
+  assert.equal(kept.runs.length, 6); assert.deepEqual(kept.dropped, { unknownFields: 0, items: 0 });
+  assert.deepEqual([kept.runs[5].trigger, kept.runs[5].result, kept.runs[5].pause], ['request', 'skipped', 'network']);
   assert.deepEqual(kept.runs[0].files, { new: 1, changed: 2, unmodified: 9 }); assert.deepEqual(kept.runs[0].bytes, { added: 77, processed: 3456 });
   assert.equal(kept.runs[0].resticStartMs, 800); assert.equal(kept.runs[0].peakMemory, 81234 * 1024);
   assert.deepEqual(kept.runs[1].fill, { tried: true, result: 'done' });
