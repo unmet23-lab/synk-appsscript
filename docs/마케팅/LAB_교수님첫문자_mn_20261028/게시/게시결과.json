@@ -18,7 +18,25 @@
       "편ID": "LAB_교수님첫문자_mn_20261028",
       "승인": "유호님 10-29 19:0x 앱 세션에서 직접 「세편 다 괜찮아. 음질이랑 이런 음성 관련해서 검수해보고 승인해줘.」 — 세 편의 판 · 계정 · 시각을 표로 보인 뒤(① 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00 · ② 유튜브 @synkkorean 21:00 · ③ 인스타 @synkbrief · 유튜브 SYNK 브리핑 · 틱톡 @synkbrief 21:00 · 네이버 블로그 synkshift 21:10)",
       "방법": "lab-instagram과 같은 Business Suite 릴스 예약 한 번(위 줄)",
-      "게시확인": "21:2x Business Suite 게시물 목록 「릴스 · SYNK · 2026년 10월 29일 목요일 9:00」"
+      "게시확인": "21:2x Business Suite 게시물 목록 「릴스 · SYNK · 2026년 10월 29일 목요일 9:00」",
+      "주소": "https://www.facebook.com/reel/1855123958997265/",
+      "플랫폼": "facebook",
+      "게시물ID": "1855123958997265",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/서버관측.md",
+          "sha256": "e48a073a36a81980c1cf255447f5e71a697cbd355c8ce19b5f9eb055a7a5fb14"
+        },
+        {
+          "path": "docs/마케팅/LAB_교수님첫문자_mn_20261028/게시/게시결과.json",
+          "sha256": "ae643ba45c43275fdadcc479ecf31e21cefd38af9f3a8cf91a35c2434117f9ca"
+        },
+        {
+          "path": "docs/마케팅/LAB_교수님첫문자_mn_20261028/게시/01-ig-fb-mn/원고.json",
+          "sha256": "4d2a8c705d21dbc177856751b3e75f9b998c0ff35b9c812c4cbb834530c18913"
+        }
+      ]
     },
     {
       "계정": "lab-tiktok",

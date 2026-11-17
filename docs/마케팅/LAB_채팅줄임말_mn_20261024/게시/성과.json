@@ -84,6 +84,21 @@
         }
       },
       {
+        "계정": "lab-facebook",
+        "채널": "페북 @synkworld",
+        "주소": "https://www.facebook.com/reel/1097136043028707/",
+        "형식": "facebook-reels",
+        "게시": "2026-10-26T05:04:39.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회",
+          "평균 시청",
+          "공유"
+        ]
+      },
+      {
         "계정": "lab-instagram",
         "채널": "인스타 @synk.mn",
         "주소": "https://www.instagram.com/reel/De9O5VEDKQ1/",

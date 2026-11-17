@@ -101,5 +101,55 @@
       ],
       "게시물ID": "224478059750"
     }
+  ],
+  "추가게시": [
+    {
+      "계정": "synkbrief-tiktok",
+      "상태": "공개 확인 필요",
+      "시각": "2026-11-15T12:00:00.000Z",
+      "주소": "https://www.tiktok.com/@synkbrief/video/7708318907437763860",
+      "편ID": "synkbrief_없는판결_20261111",
+      "플랫폼": "tiktok",
+      "게시물ID": "7708318907437763860",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/서버관측.md",
+          "sha256": "e48a073a36a81980c1cf255447f5e71a697cbd355c8ce19b5f9eb055a7a5fb14"
+        },
+        {
+          "path": "docs/마케팅/synkbrief_없는판결_20261111/게시/게시결과.json",
+          "sha256": "18de17f9270fc1e35e6546df3a0c0555a2a34b48162e0242609014b8b925f291"
+        },
+        {
+          "path": "docs/마케팅/synkbrief_없는판결_20261111/게시/03-synkbrief-tiktok/원고.json",
+          "sha256": "8739557aa2eef3383dbab26fdd5db0fef75a688bda10ca199aafe1b20dcb5f7c"
+        }
+      ]
+    },
+    {
+      "계정": "synkbrief-instagram",
+      "상태": "공개 확인 필요",
+      "시각": "2026-11-15T12:04:00.000Z",
+      "주소": "https://www.instagram.com/p/DfwvGsfikEv/",
+      "편ID": "synkbrief_없는판결_20261111",
+      "플랫폼": "instagram",
+      "게시물ID": "DfwvGsfikEv",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/인스타공개캡션.md",
+          "sha256": "c736e2c9a896c11692a78f4728ebb4b5c6db852fdda1aadbe60fd7a85714c614"
+        },
+        {
+          "path": "docs/마케팅/synkbrief_없는판결_20261111/게시/게시결과.json",
+          "sha256": "18de17f9270fc1e35e6546df3a0c0555a2a34b48162e0242609014b8b925f291"
+        },
+        {
+          "path": "docs/마케팅/synkbrief_없는판결_20261111/게시/01-synkbrief-instagram/원고.json",
+          "sha256": "3ca4eb78ec51b6c11e7d9222435fc955c4b1173953cb2fa6942fff3b4dcb6789"
+        }
+      ]
+    }
   ]
 }

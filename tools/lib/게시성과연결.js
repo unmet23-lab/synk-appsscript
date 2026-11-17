@@ -9,6 +9,15 @@ const GROUPS = new Set(['콘텐츠', '작품', '운영시험', '공개확인대�
 const handleOf = value => String(value || '').trim().replace(/^https?:\/\//i, '').replace(/^(?:www\.)?(?:facebook\.com|instagram\.com|youtube\.com|tiktok\.com)\//i, '').replace(/^@/, '').replace(/\/$/, '').toLowerCase();
 const isObject = value => value && typeof value === 'object' && !Array.isArray(value);
 
+/** sns-계정.json 계정 하나가 서버 채널과 같은 계정인가 — 같은 플랫폼이고 핸들이 같거나(「@synk.mn」 · 「facebook.com/synkworld」 꼴을 맞춘다),
+ * 핸들 없는 페북 페이지는 원장 apiPageId가 채널 externalId와 같을 때(11-18 — Sri Lanka · Cambodia 페북은 핸들이 없다). 이름이 비슷한 것은 보지 않는다. */
+function channelMatches(account, channel) {
+  if (!account || !channel || account.platform !== channel.platform) return false;
+  const handle = handleOf(account.handle);
+  if (handle && handleOf(channel.handle) === handle) return true;
+  return Boolean(account.apiPageId && channel.externalId && String(account.apiPageId) === String(channel.externalId));
+}
+
 function latest(ledger) {
   const out = new Map();
   for (const line of ledger) {
@@ -45,7 +54,7 @@ function prepare(repo, requests, server, accounts, ledger, now) {
     const account = accounts.find(a => a.key === input.계정);
     if (entries.length !== 1 || !account || account.platform !== id.platform) throw new Error('서버 등록·계정·플랫폼을 하나로 확인하지 못했다');
     const entry = entries[0], channel = server.channels.find(c => c.id === entry.channelId);
-    if (!channel || channel.platform !== account.platform || !handleOf(account.handle) || handleOf(channel.handle) !== handleOf(account.handle)) throw new Error('연결 계정이 서버의 실제 계정과 다르다');
+    if (!channelMatches(account, channel)) throw new Error('연결 계정이 서버의 실제 계정과 다르다');
     const folder = input.편 || null;
     if (folder && (typeof folder !== 'string' || path.basename(folder) !== folder || /[\\/]|^\.{1,2}$/.test(folder))) throw new Error('편은 docs/마케팅 바로 아래 폴더 이름이어야 한다');
     if (input.구분 !== '운영시험' && !folder) throw new Error('콘텐츠·작품·확인 대기는 편을 지정한다');
@@ -57,7 +66,9 @@ function prepare(repo, requests, server, accounts, ledger, now) {
       return { path: rel.replace(/\\/g, '/'), sha256: createHash('sha256').update(bytes).digest('hex') };
     });
     const line = { kind: '게시연결', post: id.key, url: entry.url, platform: id.platform, externalId: id.externalId,
-      account: account.key, folder, group: input.구분, reason: input.이유.trim(), evidence };
+      account: account.key, folder, group: input.구분, reason: input.이유.trim(), evidence,
+      // 누가 이었나 — 「캡션」은 tools/게시성과.js가 판 글로 스스로 이은 줄(lib/게시성과캡션.js). 없으면 사람이 --연결목록으로 이은 줄
+      ...(typeof input.방법 === 'string' && input.방법.trim() ? { how: input.방법.trim() } : {}) };
     const before = old.get(id.key);
     if (before && before.folder && folder && before.folder !== folder && input.정정 !== true) throw new Error('다른 편에 연결된 게시물이다 — 근거를 확인하고 정정을 명시한다');
     const unchanged = before && JSON.stringify(Object.fromEntries(Object.entries(before).filter(([k]) => k !== 'at'))) === JSON.stringify(line);
@@ -118,4 +129,4 @@ function writeResults(repo, plans) {
   return files;
 }
 
-module.exports = { GROUPS, latest, identity, resultRows, prepare, applyResult, filterServer, writeResults };
+module.exports = { GROUPS, handleOf, channelMatches, latest, identity, resultRows, prepare, applyResult, filterServer, writeResults };

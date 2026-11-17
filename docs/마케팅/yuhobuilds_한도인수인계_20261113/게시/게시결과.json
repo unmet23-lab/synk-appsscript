@@ -88,5 +88,55 @@
       "승인": "유호님 11-02 「묻지 말고 걸어」(상시)",
       "확인": "Windows 예약 작업 「SYNK 스레드 21시 게시」가 21:00:01에 시작해 21:01:41에 「게시되었습니다」를 받았고, 예약결과.jsonl 끝 줄은 「게시됨」과 이 주소다. 21:41에 받침 회차가 최종 확인(「작은 흠 — 등록 가능」)을 다시 돌리고 같은 스크립트를 불렀더니 「이미 올라감」으로 멈췄고, 프로필 첫 글이 이 주소였다."
     }
+  ],
+  "추가게시": [
+    {
+      "계정": "yuhobuilds-youtube",
+      "상태": "공개 확인 필요",
+      "시각": "2026-11-16T12:01:31.000Z",
+      "주소": "https://www.youtube.com/watch?v=SL54CN7HBQI",
+      "편ID": "yuhobuilds_한도인수인계_20261113",
+      "플랫폼": "youtube",
+      "게시물ID": "SL54CN7HBQI",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/서버관측.md",
+          "sha256": "e48a073a36a81980c1cf255447f5e71a697cbd355c8ce19b5f9eb055a7a5fb14"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_한도인수인계_20261113/게시/게시결과.json",
+          "sha256": "22a7422a2dda608c46f6b8f8f24c47bd00138759cfb09d24105b38da9a17f72b"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_한도인수인계_20261113/게시/02-yuhobuilds-youtube/원고.json",
+          "sha256": "efe48efe498e8471c92e858b35cba1e290b292e376a8673635c3219253166629"
+        }
+      ]
+    },
+    {
+      "계정": "yuhobuilds-instagram",
+      "상태": "공개 확인 필요",
+      "시각": "2026-11-16T12:01:26.000Z",
+      "주소": "https://www.instagram.com/p/DfzTodaDVOe/",
+      "편ID": "yuhobuilds_한도인수인계_20261113",
+      "플랫폼": "instagram",
+      "게시물ID": "DfzTodaDVOe",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/인스타공개캡션.md",
+          "sha256": "c736e2c9a896c11692a78f4728ebb4b5c6db852fdda1aadbe60fd7a85714c614"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_한도인수인계_20261113/게시/게시결과.json",
+          "sha256": "22a7422a2dda608c46f6b8f8f24c47bd00138759cfb09d24105b38da9a17f72b"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_한도인수인계_20261113/게시/01-yuhobuilds-instagram/원고.json",
+          "sha256": "ee9574c6b113567ca73e8fa74682650f57dc7000c27aad1e601ce51f36c74241"
+        }
+      ]
+    }
   ]
 }

@@ -87,5 +87,55 @@
         "21:30 예약 시각에는 카카오 로그인이 풀려 있어 못 걸었다 — 유호님이 다시 로그인하신 뒤 22:01에 바로 공개 발행"
       ]
     }
+  ],
+  "추가게시": [
+    {
+      "계정": "yuhobuilds-youtube",
+      "상태": "공개 확인 필요",
+      "시각": "2026-11-15T12:03:28.000Z",
+      "주소": "https://www.youtube.com/watch?v=z1EMSJizg6Y",
+      "편ID": "yuhobuilds_떨어뜨린영상_20261111",
+      "플랫폼": "youtube",
+      "게시물ID": "z1EMSJizg6Y",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/서버관측.md",
+          "sha256": "e48a073a36a81980c1cf255447f5e71a697cbd355c8ce19b5f9eb055a7a5fb14"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_떨어뜨린영상_20261111/게시/게시결과.json",
+          "sha256": "a932897d356d300e263462f8efcd7126591ac7ee22accb19defe00b2d27df7d4"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_떨어뜨린영상_20261111/게시/02-yuhobuilds-youtube/원고.json",
+          "sha256": "7aa8099e74c76c568786ba3def03543a8d1b3ed09eb3c090acac6a8d4df2fc6c"
+        }
+      ]
+    },
+    {
+      "계정": "yuhobuilds-instagram",
+      "상태": "공개 확인 필요",
+      "시각": "2026-11-15T12:03:29.000Z",
+      "주소": "https://www.instagram.com/p/DfwvCaLl2bg/",
+      "편ID": "yuhobuilds_떨어뜨린영상_20261111",
+      "플랫폼": "instagram",
+      "게시물ID": "DfwvCaLl2bg",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/인스타공개캡션.md",
+          "sha256": "c736e2c9a896c11692a78f4728ebb4b5c6db852fdda1aadbe60fd7a85714c614"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_떨어뜨린영상_20261111/게시/게시결과.json",
+          "sha256": "a932897d356d300e263462f8efcd7126591ac7ee22accb19defe00b2d27df7d4"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_떨어뜨린영상_20261111/게시/01-yuhobuilds-instagram/원고.json",
+          "sha256": "6dbb1fbf523f56ae80c890014250ad12b5e60425d67f14b0d4d244cc340e6324"
+        }
+      ]
+    }
   ]
 }

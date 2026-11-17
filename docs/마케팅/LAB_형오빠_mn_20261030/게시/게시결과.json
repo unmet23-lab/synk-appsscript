@@ -17,7 +17,26 @@
       "방법": "Business Suite 릴스 예약 한 번(lab-instagram 줄)",
       "승인": "유호님 10-31 04:3x 앱 세션 「네 편 다 올려」(M19 — 인스타 @synk.mn · 페북 SYNK · 틱톡 @synk.mn · 텔레그램 SYNK LAB 21:00, 편 · 판 · 계정 · 시각을 보인 뒤)",
       "교체": "유호님 10-31 18:2x 앱 「세 편 다 교체」 — 배경음을 끝까지 이은 m19_v5로 옛 예약을 지우고 같은 시각에 다시 예약(18:32~18:44, 스크립트 C:/Users/q1212/ego/plates-20261031/rep/). 게시 파일은 새 판으로 바뀜",
-      "확인": "10-31 21:13 Claude가 ego로 Business Suite 게시됨 목록 SYNK 릴스(0:28 · 2026년 10월 31일 9:01)를 확인, 예약 목록에서 빠짐"
+      "확인": "10-31 21:13 Claude가 ego로 Business Suite 게시됨 목록 SYNK 릴스(0:28 · 2026년 10월 31일 9:01)를 확인, 예약 목록에서 빠짐",
+      "주소": "https://www.facebook.com/reel/1632379511713455/",
+      "편ID": "LAB_형오빠_mn_20261030",
+      "플랫폼": "facebook",
+      "게시물ID": "1632379511713455",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/서버관측.md",
+          "sha256": "e48a073a36a81980c1cf255447f5e71a697cbd355c8ce19b5f9eb055a7a5fb14"
+        },
+        {
+          "path": "docs/마케팅/LAB_형오빠_mn_20261030/게시/게시결과.json",
+          "sha256": "de75ff2c9d9a0be49a2f845774842be570c9add749d5cba0ff6e725d76260478"
+        },
+        {
+          "path": "docs/마케팅/LAB_형오빠_mn_20261030/게시/01-ig-fb-mn/원고.json",
+          "sha256": "baa7b25ee63a22e02e05a005af6fdae7833114f54f8599fdebbb6d97dfa9e3d2"
+        }
+      ]
     },
     {
       "계정": "lab-telegram",

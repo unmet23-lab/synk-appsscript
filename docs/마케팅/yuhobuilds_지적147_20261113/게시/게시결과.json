@@ -95,5 +95,31 @@
       "주소": null,
       "보류": "11-17 유호님 「x는 이미 유호빌드로 가입되어있는데 이걸 변경해도 되」 — X @yuhobuilds를 PULSE 계정으로 바꾼다. X 예약 목록(x.com/compose/post/unsent/scheduled · @yuhobuilds)에서 Edit → 다섯 줄 고르기 → Delete로 거뒀다. 거둔 뒤 목록 0줄(11-17 07:30). 영상과 글은 이 폴더에 남긴다."
     }
+  ],
+  "추가게시": [
+    {
+      "계정": "yuhobuilds-instagram",
+      "상태": "공개 확인 필요",
+      "시각": "2026-11-14T12:01:30.000Z",
+      "주소": "https://www.instagram.com/p/DfuKAoVjz8M/",
+      "편ID": "yuhobuilds_지적147_20261113",
+      "플랫폼": "instagram",
+      "게시물ID": "DfuKAoVjz8M",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/인스타공개캡션.md",
+          "sha256": "c736e2c9a896c11692a78f4728ebb4b5c6db852fdda1aadbe60fd7a85714c614"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_지적147_20261113/게시/게시결과.json",
+          "sha256": "f4f5d093907ef283e04f1725975a950606d25edd56e3107b445cbde66cdb652a"
+        },
+        {
+          "path": "docs/마케팅/yuhobuilds_지적147_20261113/게시/01-yuhobuilds-instagram/원고.json",
+          "sha256": "3647303d8839dba86a33f477aa93ce1b426b22c43ab0ab04ca5cb3d4462dbaf8"
+        }
+      ]
+    }
   ]
 }

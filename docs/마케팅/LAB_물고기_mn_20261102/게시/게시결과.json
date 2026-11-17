@@ -7,7 +7,25 @@
       "방법": "11-02 14:10~14:12 Claude가 ego(공간 「LAB 몽골 메타 텔레 1102 14시」, Profile 1)로 Business Suite 릴스 만들기(SYNK · synk.mn 한 번에 교차 예약) — 원본 게시/01-ig-fb-mn/video.mp4 · 썸네일 cover.png · 캡션은 캡션_mn.txt 끝에 첫댓글_mn.txt를 한 문단으로(공백 빼고 같음) · 두 줄 날짜 2026-11-06 · 오후 9:00 → 「릴스가 처리 완료 후 Facebook에서 2026. 11. 6.에, Instagram에서 2026. 11. 6.에 게시되도록 예약되었습니다」. AI 표시 없음. 스크립트 C:/Users/q1212/ego/plates-20261102-1400/bs-a · bs-b · bs-c.js(판은 cur.json, 기록 bs.steps.txt)",
       "확인": "11-02 14:16 Business Suite 예약 목록 synk.mn 줄 「2026년 11월 6일 금요일 9:00 · 전체 공개」, 캡션 첫 줄 「Солонгосоор загасыг 물고기 (мулгоги) гэдэг.」",
       "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과",
-      "편ID": "LAB_물고기_mn_20261102"
+      "편ID": "LAB_물고기_mn_20261102",
+      "주소": "https://www.instagram.com/p/DfZjquQiUP-/",
+      "플랫폼": "instagram",
+      "게시물ID": "DfZjquQiUP-",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/서버관측.md",
+          "sha256": "e48a073a36a81980c1cf255447f5e71a697cbd355c8ce19b5f9eb055a7a5fb14"
+        },
+        {
+          "path": "docs/마케팅/LAB_물고기_mn_20261102/게시/게시결과.json",
+          "sha256": "9c1d5f6987e32902652ce26c02716458305ee297a5c9ae8a2885d075f8c37163"
+        },
+        {
+          "path": "docs/마케팅/LAB_물고기_mn_20261102/게시/01-ig-fb-mn/원고.json",
+          "sha256": "0341fa2a6708dc30a192580d55cf4a2b254641fe5ad252fa72dbc8711a6d342a"
+        }
+      ]
     },
     {
       "계정": "lab-facebook",

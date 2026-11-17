@@ -15,6 +15,7 @@
  *   node tools/게시성과.js --화면목록 [--json]  주 1회 읽을 칸 목록(요약의 「화면 필요」와 같다)
  *   node tools/게시성과.js --요약              장부만으로 요약을 다시 만든다(서버를 읽지 않는다)
  *   node tools/게시성과.js --연결목록 <json> [--실행]  주소·편·계정·구분·근거·이유를 확인해 기존 장부/게시결과에 잇는다(게시 안 함)
+ *   (늘) 주소 없이 건 판의 게시물은 계정 · 게시글지문 · 서버 글 = 판 글이 맞으면 스스로 잇는다(캡션 연결 — lib/게시성과캡션.js, 장부 「게시연결」 how 캡션)
  *   공통: --json · --캐시 <서버 읽기 JSON>(시험·다시 보기) · --저장소 <폴더>(기본: 이 도구가 든 저장소) · --쇼츠안읽음
  *
  * 장부 = docs/_ops/게시성과.jsonl (한 줄 = 판정 하나 또는 화면 읽기 하나 · 바뀐 판정만 덧붙인다 · 고치지 않는다)
@@ -30,6 +31,7 @@ const 편 = require('./lib/게시성과편.js');
 const 배수 = require('./lib/평소배수.js');
 const 시험 = require('./lib/게시성과시험.js');
 const 연결 = require('./lib/게시성과연결.js');
+const 캡션 = require('./lib/게시성과캡션.js');
 const 관문 = require('./lib/관문대조.js');
 const 나라 = require('./lib/게시성과나라.js');
 
@@ -149,9 +151,9 @@ function ledgerLine(item, j, meta, at) {
 function metaOf(item, index, accounts) {
   const r = item.record;
   const found = index.resolve(r.postKey);
-  const handle = String(item.channel?.handle || '').replace(/^@/, '').toLowerCase();
-  const byHandle = accounts.find(a => a.platform === r.platform && String(a.handle || '').replace(/^@/, '').toLowerCase() === handle && handle);
-  const account = found?.account || byHandle?.key || null;
+  // 편을 못 찾아도 계정은 채널로 안다 — 원장 핸들이 「facebook.com/synkworld」 꼴이어도 맞추고, 핸들 없는 페북은 apiPageId로(11-18 — 페북 @synkworld 판정 줄이 계정 없이 쌓였다)
+  const owners = accounts.filter(a => 연결.channelMatches(a, item.channel));
+  const account = found?.account || (owners.length === 1 ? owners[0].key : null);
   const brandFromAccount = account ? (/^lab-/.test(account) ? 'LAB' : /^synkbrief-/.test(account) ? 'synkbrief' : /^yuhobuilds-/.test(account) ? 'yuhobuilds' : /^shift-/.test(account) ? 'SHIFT' : null) : null;
   if (!found || !found.info) return { folder: null, ambiguous: found?.ambiguous || null, account, brand: brandFromAccount, role: null, hook: null, hookSlot: null };
   const hook = 편.hookFor(found.info, { account, platform: r.platform });
@@ -167,7 +169,7 @@ function loadLedgerAccounts(repo) {
 function loadAccounts(repo) {
   try {
     const { accounts } = JSON.parse(fs.readFileSync(path.join(repo, 'docs', '마케팅', 'sns-계정.json'), 'utf8'));
-    return Object.entries(accounts || {}).map(([key, a]) => ({ key, platform: a.platform, handle: a.handle || '' }));
+    return Object.entries(accounts || {}).map(([key, a]) => ({ key, platform: a.platform, handle: a.handle || '', ...(a.apiPageId ? { apiPageId: String(a.apiPageId) } : {}) }));
   } catch { return []; }
 }
 
@@ -490,7 +492,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
       ? `- ${kst(u.at)} ${u.folder} · ${u.account} · 주소 없음${u.url ? `(게시물 주소가 아님: ${u.url})` : ''}`
       : `- ${kst(u.at)} ${u.folder} · ${u.account || '계정 모름'} · ${u.url}`)) : ['- 없음']),
     '',
-    ...(unmapped.length ? ['## 편 폴더를 못 찾은 등록', '', '서버 등록은 있는데 어느 편인지 못 찾았다. 계정·원고·공개 주소를 대조한 뒤 --연결목록으로 기록한다. 시각만 비슷한 게시물은 잇지 않는다.', '',
+    ...(unmapped.length ? ['## 편 폴더를 못 찾은 등록', '', '서버 등록은 있는데 어느 편인지 못 찾았다. 주소 없이 건 판은 계정 · 게시글지문 · 서버 글과 판 글이 맞으면 판정이 스스로 잇는다(캡션 연결, lib/게시성과캡션.js) — 여기 남은 것은 그 셋이 맞지 않은 것이다. 계정·원고·공개 주소를 대조한 뒤 --연결목록으로 기록한다. 시각만 비슷한 게시물은 잇지 않는다.', '',
       ...unmapped.map(u => `- ${kst(u.publishedAt)} ${u.channel} · ${u.url}${u.ambiguous ? ` (여러 폴더: ${u.ambiguous.join(', ')})` : ''}`), ''] : []),
     ...(excluded.length ? ['## 콘텐츠 비교에서 따로 둔 게시', '', '운영 시험·작품·공개 확인 대기는 일반 콘텐츠의 비교 표본과 기획 판정에서 뺀다. 원래 관측 숫자는 장부에 보존하고, 공개·삭제 상태를 바꾸지 않는다.', '',
       ...excluded.map(l => `- ${cell(l.group)} · ${l.folder || '운영 시험'} · ${l.account} · ${l.url} — ${cell(l.reason)}`), ''] : []),
@@ -502,9 +504,11 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
 // 안 돼 판정이 조용히 빠진다(11-08 평가 — LAB 몽골 「와요」 인스타 · 페북처럼 Business Suite로 건 판이 「게시확인」 글만 남겼다).
 const TRACKED_ACCOUNT = /instagram|facebook|youtube|tiktok/;
 
-/** 게시결과.json에 「게시됨」인데 서버 등록에 없는 주소(최근 14일) — 서버가 재는 계정 판이 게시물 주소 없이 「게시됨」이면 주소없음으로 함께 */
-function unregisteredOf(index, registeredKeys, now) {
+/** 게시결과.json에 「게시됨」인데 서버 등록에 없는 주소(최근 14일) — 서버가 재는 계정 판이 게시물 주소 없이 「게시됨」이면 주소없음으로 함께.
+ * 장부의 콘텐츠 연결(사람 --연결목록 · 캡션 연결)이 그 편 · 계정에 이미 게시물을 이었으면 주소없음으로 띄우지 않는다(판정은 쌓이고 있다) */
+function unregisteredOf(index, registeredKeys, now, connections = new Map()) {
   const out = [];
+  const linked = new Set([...connections.values()].filter(l => l.group === '콘텐츠' && l.folder).map(l => `${l.folder}|${l.account}`));
   for (const info of index.folders.values()) {
     for (const p of 연결.resultRows(info.result)) {
       if (!p || p.상태 !== '게시됨') continue;
@@ -512,7 +516,7 @@ function unregisteredOf(index, registeredKeys, now) {
       if (!Number.isFinite(at) || at < now - RECENT_DAYS * 86_400_000 || at > now) continue;
       const id = 판정.postIdOf(p.주소);
       if (!id) {
-        if (typeof p.계정 === 'string' && TRACKED_ACCOUNT.test(p.계정)) out.push({ folder: info.folder, account: p.계정, url: p.주소 || null, at, 주소없음: true });
+        if (typeof p.계정 === 'string' && TRACKED_ACCOUNT.test(p.계정) && !linked.has(`${info.folder}|${p.계정}`)) out.push({ folder: info.folder, account: p.계정, url: p.주소 || null, at, 주소없음: true });
         continue;
       }
       if (registeredKeys.has(id.key)) continue;
@@ -592,6 +596,18 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   report.연결 = linkPlans.map(p => ({ post: p.line.post, 편: p.line.folder, 계정: p.line.account, 구분: p.line.group, 변경: p.changed }));
   // 미리 보기에도 같은 연결을 적용하되 파일·장부는 --실행에서만 쓴다.
   const connections = 연결.latest([...ledger, ...linkLines]);
+  // 편 색인은 연결 Map을 그대로 들고 있다 — 아래 캡션 연결을 Map에 더하면 색인도 그것으로 찾는다
+  const index = 편.buildIndex(path.join(repo, 'docs', '마케팅'), connections);
+  // 캡션 연결(11-18) — 주소 없이 걸린 판의 게시물을 계정 · 게시글지문 · 같은 글로 잇는다(lib/게시성과캡션.js). 장부에만 쓰고 게시결과.json은 고치지 않는다
+  let autoLines = [];
+  try {
+    const { requests, skipped } = 캡션.요청들({ repo, server: source, accounts, index, connections });
+    const { plans, failed } = 캡션.준비(repo, requests, source, accounts, [...ledger, ...linkLines], now);
+    autoLines = plans.filter(p => p.changed).map(p => p.line);
+    for (const line of autoLines) connections.set(line.post, line);
+    report.캡션연결 = autoLines.map(l => ({ post: l.post, 편: l.folder, 계정: l.account }));
+    report.캡션못이음 = [...failed, ...skipped.filter(s => s.account)];
+  } catch (e) { report.캡션연결오류 = e.message; }
   const server = 연결.filterServer(source, connections);
   const shortsByChannel = shorts || await shortsLists(server, { skip: o.쇼츠안읽음 });
   let screens = screensOf(ledger);
@@ -612,7 +628,6 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   }
 
   const judged = 판정.judgeAll(server, { now, shortsByChannel, screens });
-  const index = 편.buildIndex(path.join(repo, 'docs', '마케팅'), connections);
   const latest = latestJudgments(ledger);
   const at = new Date(now).toISOString();
   const byFolder = new Map();
@@ -643,10 +658,10 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   report.새판정 = newLines.map(l => `${l.channel} ${POINT_LABEL[l.point]} ${l.folder || '(편 폴더 없음)'}: ${l.verdict}${l.multiple?.value != null ? ` · ${배글(l.multiple.value)}` : ''}`);
   report.화면목록 = screenList.sort((a, b) => String(a.게시).localeCompare(String(b.게시)));
   const registeredKeys = new Set([...source.entries, ...source.posts].map(p => 판정.postIdOf(p.url)?.key).filter(Boolean));
-  const unregistered = unregisteredOf(index, registeredKeys, now);
+  const unregistered = unregisteredOf(index, registeredKeys, now, connections);
   report.미등록 = unregistered.map(u => `${u.folder} ${u.주소없음 ? `${u.account} 주소 없음${u.url ? `(${u.url})` : ''}` : u.url}`);
   // 2주 시험 — 이번 판정 줄까지 들어간 장부로(미리 보기도 쓸 때와 같은 표)
-  const ledgerAfter = [...ledger, ...linkLines, ...newLines];
+  const ledgerAfter = [...ledger, ...linkLines, ...autoLines, ...newLines];
   report.미연결 = unmapped;
   report.별도분류 = [...connections.values()].filter(l => l.group !== '콘텐츠').length;
   const studyLedger = ledgerAfter.filter(l => !connections.has(l.post) || connections.get(l.post).group === '콘텐츠');
@@ -656,9 +671,9 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   // 쓰기 — 장부(바뀐 판정만) → 편 폴더 → 요약 → 올리기
   const written = new Set();
   for (const rel of 연결.writeResults(repo, linkPlans)) written.add(rel);
-  if (linkLines.length) {
-    appendLines(ledgerFile, linkLines);
-    ledger.push(...linkLines);
+  if (linkLines.length || autoLines.length) {
+    appendLines(ledgerFile, [...linkLines, ...autoLines]);
+    ledger.push(...linkLines, ...autoLines);
     written.add(LEDGER);
   }
   if (newLines.length) {
@@ -688,7 +703,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   report.쓴파일 = [...written];
   if (written.size) {
     const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
-    const r = await 장부올리기([...written], `chore(게시 성과): 판정 ${newLines.length}줄${o.적기 ? ' · 화면 값 적음' : ''} — ${[...new Set(newLines.map(l => l.folder).filter(Boolean))].slice(0, 4).join(', ') || '요약'}`, { 저장소: repo });
+    const r = await 장부올리기([...written], `chore(게시 성과): 판정 ${newLines.length}줄${autoLines.length ? ` · 캡션 연결 ${autoLines.length}건` : ''}${o.적기 ? ' · 화면 값 적음' : ''} — ${[...new Set(newLines.map(l => l.folder).filter(Boolean))].slice(0, 4).join(', ') || '요약'}`, { 저장소: repo });
     report.올리기 = 장부올리기글(r, '게시 성과') || r.결과;
   }
   return report;
@@ -743,6 +758,8 @@ async function main(argv) {
     for (const u of report.미등록 || []) console.log(`  ! 서버 미등록: ${u}`);
     for (const u of report.미연결 || []) console.log(`  ! 편 연결 필요: ${u.channel} ${u.url} (계정·원고 확인 뒤 --연결목록)`);
     if (report.연결?.length) console.log(`  편 연결 ${report.연결.length}건${o.실행 ? ' 확인·기록' : ' 미리 보기'}`);
+    if (report.캡션연결?.length) console.log(`  캡션으로 이음 ${report.캡션연결.length}건${o.실행 ? '' : '(미리 보기)'}: ${report.캡션연결.map(c => `${c.편} ${c.계정}`).join(' · ')}`);
+    if (report.캡션연결오류) console.log(`  ! 캡션 연결을 건너뜀: ${report.캡션연결오류}`);
     if (report.올리기) console.log(`  ${report.올리기}`);
     if (!o.실행 && report.새판정.length) console.log('  (미리 보기 — --실행을 붙이면 쓴다)');
     const logFile = path.join(lockDir, '마지막실행.json');

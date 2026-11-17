@@ -19,6 +19,9 @@ const { randomUUID } = require('node:crypto');
 const { execFile } = require('node:child_process');
 
 const PROJECT = 'synk-bake-unmet27';
+// 등록 제목은 앞 TITLE_MAX자(파이썬 글자 = 코드 포인트)만 가져온다. 자동 등록의 제목은 플랫폼 캡션(유튜브는 영상 제목)이라,
+// 캡션으로 편을 잇는 lib/게시성과캡션.js가 「잘렸는가」를 이 값으로 가린다(11-18).
+const TITLE_MAX = 160;
 
 function 파이썬(매개) {
   // 매개는 숫자만 받아 문자열에 넣는다(주입 막기).
@@ -70,7 +73,7 @@ if app and app.get('State',{}).get('Running') is True and mount:
     point['metricProvenance']={k:plain(v) for k,v in (p.get('metricProvenance') or {}).items() if code(k,40) and isinstance(v,dict)}
     if isinstance(p.get('window'),dict):point['window']={k:p['window'].get(k) for k in ('status','dueAt','fetchedAt','lastErrorCode')}
     points.append(point)
-   entries.append({'id':e['_id'],'channelId':e['channelId'],'platform':code(e.get('platform')),'url':text(e.get('url'),300),'postIdentity':text(e.get('postIdentity'),200),'publishedAt':when(e['publishedAt']),'publicationFormat':code(e.get('publicationFormat')),'origin':code(e.get('origin')),'createdAt':when(e.get('createdAt')),'title':text(e.get('title'),160),'checkpoints':points})
+   entries.append({'id':e['_id'],'channelId':e['channelId'],'platform':code(e.get('platform')),'url':text(e.get('url'),300),'postIdentity':text(e.get('postIdentity'),200),'publishedAt':when(e['publishedAt']),'publicationFormat':code(e.get('publicationFormat')),'origin':code(e.get('origin')),'createdAt':when(e.get('createdAt')),'title':text(e.get('title'),${TITLE_MAX}),'checkpoints':points})
   out['entries']=entries
   posts=[p for p in rows('posts') if p.get('channelId') in ids and not p.get('unavailableAt') and when(p.get('publishedAt'))]
   posts.sort(key=lambda p:ms(p['publishedAt']),reverse=True)
@@ -151,4 +154,4 @@ function 다듬기(payload) {
   return { checkedAt: iso(payload.checkedAt) || new Date().toISOString(), channels, entries, posts, snapshots };
 }
 
-module.exports = { 읽기, 다듬기, 파이썬 };
+module.exports = { 읽기, 다듬기, 파이썬, TITLE_MAX };
