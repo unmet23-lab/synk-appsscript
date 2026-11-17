@@ -28,7 +28,8 @@ function createStartupUpdateGate({updater,platform=process.platform,onChange=()=
     if(value.state==='checking')publish('checking');
     else if(value.state==='downloading'){stage='download';publish('downloading');}
     else if(value.state==='opening'){stage='handoff';publish('installing');}
-    else if(value.state==='error')fail(value.code||'UPDATE_FAILED');
+    // 확인 단계의 인터넷 실패는 확인 결과를 받은 attempt가 실패 장면 없이 지금 판을 연다. 업데이터가 먼저 알리는 오류 상태로 실패 장면을 띄우지 않는다(0.4.96 공개 후보 카본 D2)
+    else if(value.state==='error'){if(stage==='check'&&SILENT_CHECK_FAILURES.has(value.code))return;fail(value.code||'UPDATE_FAILED');}
     else if(platform==='darwin'&&value.state==='ready')publish('ready',value.code);
   }
   function run(task){

@@ -388,10 +388,11 @@ test('a curtain handle that throws while the last window closes still hands the 
   assert.equal(prevented,true);assert.deepEqual(calls,['complete','quit']);
 });
 // 시작 관문 단계(앱 창이 아직 없음)에서 새 판을 받아 넘길 때: 시작 창은 앱 창 자리이고 쓸 초안이 없다(0.4.96 카본 D1, Fable F1).
-// 숨은 채 시작한 길은 조용히 바뀌고, 사람이 시작 창을 최소화해 두었으면 새 앱도 최소화로 켜진다. 다른 창이 있으면 조용히 가지 않는다
+// 숨은 채 시작한 길(시작 창이 없음)은 조용히 바뀌고, 사람이 시작 창을 최소화해 두었으면 새 앱도 최소화로 켜진다. 다른 창이 있거나,
+// 사람이 켠 실행에서 시작 창이 아직 그려지기 전(보이지도 최소화되지도 않음)이면 조용히 가지 않는다(공개 후보 카본 D1 2차)
 function gateHandoffContext({startup=null,others=0,arrival=null}={}){
   const notes=[],asked=[];
-  const startupWin=startup?{isDestroyed:()=>false,isVisible:()=>false,isMinimized:()=>startup==='minimized'}:null;
+  const startupWin=startup?{isDestroyed:()=>false,isVisible:()=>startup==='minimized',isMinimized:()=>startup==='minimized'}:null;
   const extra=Array.from({length:others},()=>({isDestroyed:()=>false,isVisible:()=>false,isMinimized:()=>false}));
   const context={
     process:{env:{LOCALAPPDATA:'C:\Users\fixture\AppData\Local'},platform:'win32',pid:4321},
@@ -412,13 +413,13 @@ function gateHandoffContext({startup=null,others=0,arrival=null}={}){
   vm.createContext(context);vm.runInContext(mainHandoffSource(),context);
   return {context,notes,asked};
 }
-test('a handoff from the startup gate, before the app window exists, is quiet and keeps the minimized state',async()=>{
+test('a handoff from the startup gate, before the app window exists, is quiet only when no window was asked for and keeps the minimized state',async()=>{
   const shapes=[
     [{},{quiet:true,visibility:'hidden'}],
-    [{startup:'hidden'},{quiet:true,visibility:'hidden'}],
+    [{startup:'unshown'},{quiet:false,visibility:'hidden'}],
     [{startup:'minimized'},{quiet:true,visibility:'minimized'}],
     [{arrival:'minimized'},{quiet:true,visibility:'minimized'}],
-    [{startup:'hidden',arrival:'minimized'},{quiet:true,visibility:'hidden'}],
+    [{startup:'unshown',arrival:'minimized'},{quiet:false,visibility:'hidden'}],
     [{others:1},{quiet:false,visibility:'hidden'}],
   ];
   for(const [shape,want] of shapes){

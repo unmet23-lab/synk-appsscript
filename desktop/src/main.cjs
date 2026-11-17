@@ -329,7 +329,10 @@ async function prepareUpdateHandoff({token,version,file}={}){
       // 그래서 시작 창은 「다른 창」으로 세지 않고, 최소화는 시작 창이나 도착 쪽지로 본다(0.4.96 카본 D1, Fable F1)
       const startupWin=startupWindow?.browserWindow?.()||null;
       const others=BrowserWindow.getAllWindows().filter(w=>!w.isDestroyed()&&w!==main&&w!==startupWin);
-      const quiet=others.length===0&&(!main||!(await draftsUnsaved(main)));
+      // 다만 시작 창이 있는데 보이지도 최소화되지도 않았으면 사람이 켠 실행에서 아직 그려지기 전이다(숨은 채 시작한 길에는 시작 창이 없다).
+      // 그때는 조용히 가지 않는다. 설치기 창과 새 앱이 앞으로 뜬다(0.4.96 공개 후보 카본 D1 2차)
+      const asked=!!startupWin&&!startupWin.isMinimized();
+      const quiet=!asked&&others.length===0&&(!main||!(await draftsUnsaved(main)));
       const minimized=!!(main?.isMinimized()||startupWin?.isMinimized()||!main&&!startupWin&&arrivalShow==='minimized');
       if(gen!==handoffGen)return;
       // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 카본 C5)

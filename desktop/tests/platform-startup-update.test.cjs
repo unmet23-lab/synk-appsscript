@@ -159,3 +159,18 @@ test('an unseen failure from the hidden start clears once the background updater
   for(const [stage,state,want] of cases)assert.equal(unseenFailureResolved({code:'UPDATE_FAILED',stage},{state}),want,stage+' '+state);
   assert.equal(unseenFailureResolved(null,{state:'current'}),false);
 });
+test('an internet failure the updater announces while checking does not flash the failure scene or leave an unseen failure',async()=>{
+  // 업데이터는 확인 실패를 오류 상태로 먼저 알린다(관문의 observe가 먼저 받는다). 그 알림으로 실패 장면을 띄우거나, 숨은 채 시작한 길에서
+  // 다음에 창을 열 때 보일 실패로 남기지 않는다. 확인 결과를 받은 쪽이 글 없이 지금 판을 연다(0.4.96 공개 후보 카본 D2)
+  for(const hidden of [false,true])for(const code of ['UPDATE_NETWORK_FAILED','UPDATE_TIMEOUT']){
+    let f;f=fixture({hidden,check:async()=>{f.setState({state:'error',code});return {ok:false,state:'error',code};}});
+    await f.gate.start();await settle();
+    const label=code+(hidden?' hidden':' visible');
+    assert.equal(f.changes.some(c=>c.state==='error'),false,label+': no failure scene');
+    assert.equal(f.proceeds,1,label);assert.equal(f.gate.unseenFailure(),null,label);
+    assert.deepEqual(f.silent.map(v=>[v.code,v.silent]),[[code,true]],label);
+  }
+  // 그 밖의 확인 실패는 그대로 실패 장면이다
+  let g2;g2=fixture({check:async()=>{g2.setState({state:'error',code:'UPDATE_SIGNATURE_INVALID'});return {ok:false,state:'error',code:'UPDATE_SIGNATURE_INVALID'};}});
+  await g2.gate.start();await settle();assert.equal(g2.gate.snapshot().state,'error');assert.equal(g2.proceeds,0);
+});
