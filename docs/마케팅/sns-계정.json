@@ -65,7 +65,7 @@
         "노래": "미정"
       },
       "postRoute": "vk-web",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "unknown",
       "metricsRoute": "vk-api",
       "metricsState": "missing",
@@ -555,7 +555,7 @@
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -626,7 +626,7 @@
         "노래": "미정"
       },
       "postRoute": "rutube-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "unknown",
       "metricsRoute": "screen-only",
       "metricsState": "missing",
@@ -687,7 +687,7 @@
         "노래": "미정"
       },
       "postRoute": "meta-business-suite",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -805,7 +805,7 @@
         "노래": "미정"
       },
       "postRoute": "meta-business-suite",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -1269,7 +1269,7 @@
         "노래": "미정"
       },
       "postRoute": "youtube-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -2109,7 +2109,7 @@
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
@@ -2154,7 +2154,7 @@
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
