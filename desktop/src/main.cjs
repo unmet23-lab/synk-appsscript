@@ -173,9 +173,9 @@ let aiSubscriptions=null;
 const subscriptionSecrets={available:()=>{try{return ['win32','darwin'].includes(process.platform)&&safeStorage.isEncryptionAvailable()&&safeStorage.getSelectedStorageBackend?.()!=='basic_text';}catch{return false;}},encrypt:value=>safeStorage.encryptString(value),decrypt:data=>safeStorage.decryptString(data)};
 function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(!aiSubscriptions)aiSubscriptions=createAiSubscriptions({root:path.join(app.getPath('userData'),'AiSubscriptions'),secrets:subscriptionSecrets,priceFetch:typeof globalThis.fetch==='function'?globalThis.fetch.bind(globalThis):null,openExternal:url=>shell.openExternal(url),onChange:snapshot=>sendDesktop('synk:subscriptions-changed',snapshot),onTokens:state=>sendDesktop('synk:subscriptions-tokens-changed',state)});return aiSubscriptions;}
 // synk.im 방문자 분석(11-17 유호님 「내가 솔리오에서 확인할수있게」): 운영 PC의 모으기(tools/사이트방문)가 남긴 요약 파일 하나만 읽는다.
-// 파일이 없는 PC에서는 available:false라 화면에 나오지 않는다. 플랫폼 창에서 로그인한 회원만 묻는다(site-visits.cjs).
+// 파일이 없는 PC에서는 available:false라 화면에 나오지 않는다. 플랫폼 창에서 로그인한 회원만 묻고, 그 계정이 viewers.json에 있어야 보인다(site-visits.cjs).
 let siteVisits=null;
-function siteVisitsCall(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!siteVisits)siteVisits=createSiteVisits();return siteVisits.snapshot();}
+function siteVisitsCall(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!siteVisits)siteVisits=createSiteVisits();return siteVisits.snapshot(accountStatus()?.account);}
 function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
 // 계정판 자동 읽기(지난 7일 사용량 기록용): 로그인한 회원이 계정판을 써 본 PC에서만, 앱이 켜 있는 동안 2분마다 읽을 때인지 본다.
 // 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.

@@ -8,11 +8,16 @@
 node tools/사이트방문/모으기.js 돌리기 [--강제] [--AI강제] [--건너뛰기 방문,목적,검색,AI]
 node tools/사이트방문/모으기.js 보기
 node tools/사이트방문/모으기.js AI재기 [--질문 K01,B01] [--서비스 Claude,Gemini] [--시험]
+node tools/사이트방문/모으기.js 보는계정 [--받기]
+node tools/사이트방문/브라우저확인.mjs <SYNK-website의 dist 폴더>
 node --test tests/사이트방문.test.js
 ```
 
 - `돌리기`는 23시간 안에 돌았으면 건너뛴다. 다른 `돌리기`가 돌고 있으면(2시간 안의 잠금) 건너뛴다.
 - `AI재기 --시험`은 보관함에 원문을 남기지 않고 센 값만 찍는다. 장부에는 어느 쪽도 남기지 않는다.
+- `보는계정`은 솔리오에서 「방문자 분석」을 볼 SYNK 계정을 보인다. PC 앱이 남긴 물은 계정(`viewer-pending.json`)의 이름이 유호님 계정이 맞으면 `--받기`로 `viewers.json`에 옮긴다. 이 파일이 없으면 아무에게도 보이지 않는다.
+- 방문 기록 시트의 줄은 칸마다 허용 목록으로 다시 거른다(공개 설문지라 누구나 줄을 넣을 수 있다). 목록 밖 줄은 버린 수만 요약에 남고, 오늘 줄 수가 갑자기 뛰면 솔리오가 그것을 먼저 말한다.
+- `브라우저확인.mjs`는 빌드한 쪽을 synk.im 이름으로 로컬에서 열어, 바깥으로 아무것도 보내지 않고 기록 줄을 확인한다(이 PC는 `SYNK_PLAYWRIGHT_CHROMIUM`에 브라우저 경로를 준다).
 
 ## 단계와 받는 곳
 
@@ -38,6 +43,7 @@ node --test tests/사이트방문.test.js
 - 요약(솔리오가 읽음): `%LOCALAPPDATA%\synk\site-visits\summary.json`(바꾸려면 `SYNK_SITE_VISITS_SUMMARY`). 꼴은 `요약.js` 머리 주석에 있다.
 - 장부(git 밖): `<공용 작업본>/.tmp/사이트방문/` — `하루.jsonl`(날마다 숫자 한 줄), `AI재기.jsonl`(회차마다 센 값), `마지막.json`, `돌는중.json`(잠금).
 - AI 답 원문: 비공개 보관함 `PULSE_마케팅_내부검증/AI검색_기준선/정기/<날짜>/<서비스>/<질문>.txt`.
+- 볼 계정: 요약과 같은 폴더의 `viewers.json`, PC 앱이 남기는 `viewer-pending.json`(저장소 밖).
 - 구글 열쇠: `~/SYNK_보안/구글_사이트방문_읽기.json`(서비스 계정, 읽기 전용, 값은 출력하지 않는다. 바꾸려면 `SYNK_SITE_VISITS_GOOGLE_KEY`).
 
 ## 안전

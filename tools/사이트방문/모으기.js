@@ -6,6 +6,8 @@
  *   node tools/사이트방문/모으기.js 돌리기 [--강제] [--AI강제] [--건너뛰기 방문,목적,검색,AI]
  *   node tools/사이트방문/모으기.js 보기                 지금 요약을 사람이 읽는 글로
  *   node tools/사이트방문/모으기.js AI재기 [--질문 K01,B01] [--서비스 Claude,Gemini]   한 회차만(장부에 남기지 않는 시험은 --시험)
+ *   node tools/사이트방문/모으기.js 보는계정 [--받기]   솔리오에서 볼 수 있는 SYNK 계정. PC 앱이 남긴 viewer-pending.json(물은 계정의 번호와 이름)을
+ *                                                     사람이 이름을 확인한 뒤 --받기로 viewers.json에 옮긴다(11-17 Fable 설계 검토 P1-2). 둘 다 요약과 같은 폴더(저장소 밖).
  *
  * 단계: 방문 기록(시트) → 홈 방문 목적(시트) → 서치콘솔 → AI 재기(6.5일마다) → 요약.
  * 한 단계가 막혀도 나머지는 돌고, 그 칸만 까닭과 함께 「못 읽음」이 된다(3일 안의 앞 값이 있으면 낡음 표시로 이어 쓴다).
@@ -54,8 +56,9 @@ async function 돌리기({ 지금 = new Date(), 설정 = 설정읽기(), 건너�
   else {
     try {
       const 값 = await 구글.시트읽기({ 시트: 설정.방문기록.시트, 탭: 설정.방문기록.탭, 토큰, fetch기 });
-      const 정리 = 셈.줄들읽기(값).map((r) => 셈.방문줄(r, 설정.방문기록.시간대분)).filter(Boolean);
-      단계.방문 = { 칸: 셈.방문셈(정리, { 지금, 시간대분: 설정.방문기록.시간대분, 켠날: 설정.방문기록.켠날 }) };
+      const { 줄들: 정리, 버림 } = 셈.방문줄들(셈.줄들읽기(값), 설정.방문기록.시간대분, { 세는쪽: 설정.세는쪽 });
+      단계.방문 = { 칸: 셈.방문셈(정리, { 지금, 시간대분: 설정.방문기록.시간대분, 켠날: 설정.방문기록.켠날, 버림 }) };
+      if (버림) 알림.push(`방문 기록: 목록 밖 줄 ${버림}개를 버렸다`);
       알림.push(`방문 기록: 시트 ${Math.max(0, 값.length - 1)}줄 · 셀 줄 ${정리.length}`);
     } catch (e) { 단계.방문 = 오류칸(e, '방문 기록 시트를'); 알림.push(`방문 기록: ${e.message}`); }
   }
@@ -96,15 +99,19 @@ async function 돌리기({ 지금 = new Date(), 설정 = 설정읽기(), 건너�
       const 질문들 = (의존.질문세트 || AI.질문세트읽기()).질문;
       const 회차 = await (의존.회차재기 || AI.회차재기)({ 날: 오늘, 질문들, 원문쓰기: 의존.원문쓰기 === undefined ? AI.원문쓰기만들기(오늘) : 의존.원문쓰기 });
       const 줄 = { 잰때: new Date(지금).toISOString(), 날: 회차.날, 서비스: 회차.서비스.map(({ 판정들, ...s }) => s), 멈춤: 회차.멈춤 };
-      줄덧붙이기(AI장부, 줄);
-      회차들.push(줄);
-      알림.push(`AI 재기: ${줄.서비스.map((s) => `${s.이름} 언급 ${s.언급}/${s.답받음}`).join(' · ')}`);
+      // 모든 서비스가 답을 하나도 받지 못한 회차(크레딧 · 한도 · 로그인 막힘)는 새 회차로 치지 않는다 — 앞 회차 값을 날짜와 함께 그대로 보인다(검토 P2-11)
+      if (줄.서비스.every((s) => !s.답받음)) 알림.push(`AI 재기: 답을 하나도 받지 못해 회차로 남기지 않았다(${Object.keys(줄.멈춤 || {}).join(', ') || '까닭 모름'})`);
+      else {
+        줄덧붙이기(AI장부, 줄);
+        회차들.push(줄);
+        알림.push(`AI 재기: ${줄.서비스.map((s) => `${s.이름} 언급 ${s.언급}/${s.답받음}`).join(' · ')}`);
+      }
     } catch (e) { 알림.push(`AI 재기: ${e.message}`); }
   }
   const 끝회차 = 회차들[회차들.length - 1] || null;
   단계.AI = 끝회차 ? { 회차: 끝회차, 앞회차: 회차들[회차들.length - 2] || null } : { 상태: '측정 전', 까닭: '첫 회차를 아직 재지 않았습니다.' };
 
-  const 결과 = 요약.요약만들기({ 단계, 앞요약, 지금, 세는쪽: 설정.세는쪽 || [] });
+  const 결과 = 요약.요약만들기({ 단계, 앞요약, 지금, 세는쪽: 설정.세는쪽 || [], 안세는쪽: 설정.안세는쪽 || [] });
   return { 요약: 결과, 알림 };
 }
 
@@ -134,11 +141,30 @@ function 보기글(s) {
   return 줄.join('\n');
 }
 
+/** 솔리오에서 「방문자 분석」을 볼 계정 — 요약 옆의 viewers.json. PC 앱이 남긴 물은 계정을 사람이 확인하고 옮긴다. */
+function 보는계정(받기, 폴더 = path.dirname(요약.요약자리())) {
+  const 목록자리 = path.join(폴더, 'viewers.json'), 물음자리 = path.join(폴더, 'viewer-pending.json');
+  const 목록 = JSON읽기(목록자리, { synk_user_ids: [] });
+  const 물음 = JSON읽기(물음자리, null);
+  const 보임 = (id) => `${String(id).slice(0, 6)}…`;
+  console.log(`볼 수 있는 계정: ${(목록.synk_user_ids || []).length ? 목록.synk_user_ids.map(보임).join(', ') : '없음(아무에게도 보이지 않는다)'}`);
+  if (!물음) { console.log('PC 앱이 남긴 물은 계정이 없다. 요약이 있는 PC에서 로그인한 채 솔리오를 열면 남는다.'); return 0; }
+  console.log(`물은 계정: 이름 「${물음.display_name || '이름 없음'}」 · 번호 ${보임(물음.synk_user_id)} · ${물음.asked_at}`);
+  if (!받기) { console.log('이 이름이 유호님 계정이 맞으면 --받기를 붙여 다시 부른다.'); return 0; }
+  if (!/^[A-Za-z0-9_-]{8,80}$/.test(물음.synk_user_id || '')) { console.error('물은 계정 번호의 꼴이 틀렸다. 옮기지 않았다.'); return 1; }
+  const ids = [...new Set([...(목록.synk_user_ids || []), 물음.synk_user_id])];
+  JSON쓰기(목록자리, { synk_user_ids: ids, 받은때: new Date().toISOString() });
+  fs.rmSync(물음자리, { force: true });
+  console.log(`옮겼다 — 볼 수 있는 계정 ${ids.length}개. PC 앱은 솔리오를 다시 열 때 읽는다.`);
+  return 0;
+}
+
 async function main(argv) {
   const [명령, ...나머지] = argv;
   const 있나 = (f) => 나머지.includes(f);
   const 값 = (f) => { const i = 나머지.indexOf(f); return i >= 0 ? 나머지[i + 1] : null; };
   if (명령 === '보기') { console.log(보기글(요약.요약읽기())); return 0; }
+  if (명령 === '보는계정') return 보는계정(있나('--받기'));
   if (명령 === 'AI재기') {
     const 세트 = AI.질문세트읽기();
     const 고른 = 값('--질문') ? new Set(값('--질문').split(',')) : null;
@@ -150,7 +176,7 @@ async function main(argv) {
     return 0;
   }
   if (명령 !== '돌리기') {
-    console.error('사용: node tools/사이트방문/모으기.js 돌리기 [--강제] [--AI강제] [--건너뛰기 방문,목적,검색,AI] | 보기 | AI재기 [--질문 …] [--서비스 …] [--시험]');
+    console.error('사용: node tools/사이트방문/모으기.js 돌리기 [--강제] [--AI강제] [--건너뛰기 방문,목적,검색,AI] | 보기 | AI재기 [--질문 …] [--서비스 …] [--시험] | 보는계정 [--받기]');
     return 1;
   }
   const 폴더 = 장부폴더();
@@ -186,4 +212,4 @@ if (require.main === module) {
   main(process.argv.slice(2)).then((c) => process.exit(c), (e) => { console.error(e.stack || e.message); process.exit(1); });
 }
 
-module.exports = { 돌리기, 숫자줄, 보기글, main };
+module.exports = { 돌리기, 숫자줄, 보기글, 보는계정, main };

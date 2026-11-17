@@ -54,13 +54,15 @@ async function session() {
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const out = {};
 
-// 1. 검색에서 홈으로 → 4초 → 사이트 안 링크로 PULSE → 질문창에 글 → 광고 의뢰 누름
+// 1. 검색에서 홈으로 → 4초 → 새로 고침 → 사이트 안 링크로 PULSE → 질문창에 글 → 광고 의뢰 누름
 {
   const { ctx, forms, outside } = await session();
   const page = await ctx.newPage();
   await page.goto(`http://synk.im:${port}/`, { referer: 'https://www.google.com/', waitUntil: 'load' });
   await wait(4600);
   const afterWait = forms.length;
+  // 새로 고침: 같은 방문이 다시 들어온 것으로 세어지지 않게 「다시 연 쪽: 새로 고침」이 붙어야 한다(11-17 검토 P1-1)
+  await page.reload({ waitUntil: 'load' }); await wait(4600);
   await page.mouse.wheel(0, 20000); await wait(600);
   await Promise.all([page.waitForURL('**/pulse/'), page.evaluate(() => { const a = [...document.querySelectorAll('a[href]')].find(a => a.getAttribute('href') === '/pulse/'); a.click(); })]);
   await page.waitForLoadState('load');

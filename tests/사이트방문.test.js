@@ -48,18 +48,65 @@ test('시각읽기 — 시트 일련번호와 한국어 날짜 글', () => {
   assert.equal(셈.한국날(t), '2026-11-16');
 });
 
-test('방문줄 — 판 · 꼬리표 · 빼기 · 모르는 기록 · 깨진 JSON은 세지 않는다', () => {
+test('방문줄 — 우리 시험 줄과 빼기 줄은 조용히 빼고, 목록 밖 줄은 까닭과 함께 버린다', () => {
   const r = (칸) => { const [t, j] = 줄(1, 칸); return { 타임스탬프: t, 기록: j }; };
   assert.ok(셈.방문줄(r({})));
-  assert.equal(셈.방문줄(r({ 판: 'gate-v1' })), null);
   assert.equal(셈.방문줄(r({ 꼬리표: 'launch-check' })), null);
-  assert.equal(셈.방문줄(r({ 기록: '봄' })), null);
   assert.equal(셈.방문줄({ ...r({}), 빼기: '빼기' }), null);
-  assert.equal(셈.방문줄({ 타임스탬프: 일련(+지금), 기록: '{깨짐' }), null);
-  assert.equal(셈.방문줄({ 타임스탬프: 일련(+지금), 기록: '[1,2]' }), null);
+  assert.deepEqual(셈.방문줄(r({ 판: 'gate-v1' })), { 버림: '판' });
+  assert.deepEqual(셈.방문줄(r({ 기록: '봄' })), { 버림: '기록' });
+  assert.deepEqual(셈.방문줄({ 타임스탬프: 일련(+지금), 기록: '{깨짐' }), { 버림: 'JSON이 아님' });
+  assert.deepEqual(셈.방문줄({ 타임스탬프: 일련(+지금), 기록: '[1,2]' }), { 버림: 'JSON이 아님' });
   assert.equal(셈.방문줄(r({})).처음들어온곳, '직접', '처음 들어온 곳이 비면 들어온 곳');
-  assert.equal(셈.방문줄(r({ 쪽: 'x'.repeat(200) })).쪽.length, 80, '값은 80자까지만 읽는다');
   assert.deepEqual(셈.열쇠들.slice(0, 2), ['판', '기록']);
+});
+
+// 11-17 Fable 설계 검토 P2-4: 공개 설문지에 남이 넣은 줄이 숫자와 솔리오 문장에 그대로 들어가던 것
+test('방문줄 — 칸마다 허용 목록으로 다시 거른다(남이 넣은 줄)', () => {
+  const r = (칸) => { const [t, j] = 줄(1, 칸); return { 타임스탬프: t, 기록: j }; };
+  const 세는쪽 = ['/', '/pulse/'];
+  assert.deepEqual(셈.방문줄(r({ 쪽: '/<img src=x onerror=alert(1)>' })), { 버림: '쪽' });
+  assert.deepEqual(셈.방문줄(r({ 쪽: '/lab/' }), 540, { 세는쪽 }), { 버림: '쪽' }, '세는 쪽 목록 밖');
+  assert.ok(셈.방문줄(r({ 쪽: '/pulse/' }), 540, { 세는쪽 }));
+  assert.deepEqual(셈.방문줄(r({ '들어온 곳': '<b>가짜 글</b>' })), { 버림: '들어온 곳' });
+  assert.deepEqual(셈.방문줄(r({ '들어온 곳': '검색', '들어온 곳 이름': '여기로 접속 http://evil.example' })), { 버림: '들어온 곳 이름' });
+  assert.deepEqual(셈.방문줄(r({ '쪽 언어': '프랑스어 쪽' })), { 버림: '쪽 언어' });
+  assert.deepEqual(셈.방문줄(r({ 기기: '냉장고' })), { 버림: '기기' });
+  assert.deepEqual(셈.방문줄(r({ 꼬리표: 'Evil Tag!' })), { 버림: '꼬리표' });
+  assert.deepEqual(셈.방문줄(r({ 기록: '누름', '누른 것': '모르는 것' })), { 버림: '누른 것' });
+  assert.deepEqual(셈.방문줄(r({ 기록: '떠남', '머문 시간': '5초' })), { 버림: '떠남 칸' });
+  assert.deepEqual(셈.방문줄(r({ '다시 연 쪽': '가짜' })), { 버림: '다시 연 쪽' });
+  assert.deepEqual(셈.방문줄(r({ 쪽: 123 })), { 버림: '쪽' }, '글이 아닌 값');
+  const 많이 = [머리, ...Array.from({ length: 502 }, () => 줄(1, { 기록: '누름', '누른 것': '문의 메일', 쪽: '/<b>가짜</b>' })), 줄(1, {})];
+  const { 줄들, 버림, 버림까닭 } = 셈.방문줄들(셈.줄들읽기(많이));
+  assert.equal(줄들.length, 1);
+  assert.equal(버림, 502);
+  assert.deepEqual(버림까닭, { 쪽: 502 });
+});
+
+// 11-17 Fable 설계 검토 P1-1: 새로 고침 · 뒤로 가기로 다시 연 쪽이 사람 방문으로 다시 세어지던 것
+test('방문셈 — 다시 연 쪽은 본 쪽에는 들고 사람 방문에는 들지 않는다', () => {
+  const 값들 = [머리,
+    줄(5, { '들어온 곳': '인스타그램', 꼬리표: 'ig-bio' }),
+    줄(4.9, { '들어온 곳': 'SYNK 안', 쪽: '/pulse/', '처음 들어온 곳': '인스타그램' }),
+    줄(4.8, { '들어온 곳': '인스타그램', 꼬리표: 'ig-bio', '다시 연 쪽': '뒤로·앞으로' }),
+    줄(4.7, { '들어온 곳': '인스타그램', 꼬리표: 'ig-bio', '다시 연 쪽': '새로 고침' }),
+  ];
+  const { 방문 } = 셈.방문셈(셈.방문줄들(셈.줄들읽기(값들)).줄들, { 지금 });
+  assert.equal(방문.사람, 1, '인스타그램에서 홈 → PULSE → 뒤로 → 새로 고침은 한 번의 방문');
+  assert.equal(방문.본쪽, 4);
+  assert.equal(방문.다시연쪽, 2);
+});
+
+test('방문셈 — 하루 줄 수가 갑자기 뛰면 급증으로 알리고, 버린 수를 싣는다', () => {
+  const 평소 = Array.from({ length: 7 }, (_, d) => 줄(24 * (d + 1), {}));
+  const 오늘 = Array.from({ length: 30 }, (_, i) => 줄(0.1 + i / 100, {}));
+  const { 방문 } = 셈.방문셈(셈.방문줄들(셈.줄들읽기([머리, ...평소, ...오늘])).줄들, { 지금, 버림: 3 });
+  assert.equal(방문.급증.줄, 30);
+  assert.equal(방문.급증.날, '2026-11-17');
+  assert.equal(방문.버림, 3);
+  const 조용 = 셈.방문셈(셈.방문줄들(셈.줄들읽기([머리, ...평소, 줄(1, {})])).줄들, { 지금 }).방문;
+  assert.equal(조용.급증, null);
 });
 
 test('방문셈 — 사람 방문 · 갈래 · 첫 쪽 · 날마다 · 쪽 비율 · 누름', () => {
@@ -80,8 +127,9 @@ test('방문셈 — 사람 방문 · 갈래 · 첫 쪽 · 날마다 · 쪽 비�
     // 앞 7일 사람 방문 둘, 15일 전 하나(안 셈)
     줄(24 * 8, {}), 줄(24 * 10, { '들어온 곳': '검색' }), 줄(24 * 15, {}),
   ];
-  const 정리 = 셈.줄들읽기(값들).map((r) => 셈.방문줄(r)).filter(Boolean);
-  const { 방문, 쪽, 행동 } = 셈.방문셈(정리, { 지금 });
+  const 읽음 = 셈.방문줄들(셈.줄들읽기(값들));
+  assert.equal(읽음.버림, 1, '모르는 누름 하나는 목록 밖이라 버린다');
+  const { 방문, 쪽, 행동 } = 셈.방문셈(읽음.줄들, { 지금 });
   assert.equal(방문.사람, 4);
   assert.equal(방문.앞사람, 2);
   assert.equal(방문.본쪽, 5);
@@ -103,7 +151,7 @@ test('방문셈 — 사람 방문 · 갈래 · 첫 쪽 · 날마다 · 쪽 비�
   assert.equal(행동.문의.합, 1);
   assert.equal(행동.앱받기.합, 2);
   assert.deepEqual(행동.앱받기.나눔, [{ 이름: '앱 받기(Windows)', 수: 2 }, { 이름: '앱 받기(Mac)', 수: 0 }]);
-  assert.equal(행동.문의비율, 0.25);
+  assert.equal(행동.문의비율, null, '사람 방문이 30번 안 되면 비율을 내지 않는다(검토 P2-7)');
   assert.deepEqual(행동.처음들어온곳별, [{ 갈래: '검색', 문의: 1, 앱받기: 0 }, { 갈래: 'SNS', 문의: 0, 앱받기: 2 }]);
   assert.ok(방문.마지막기록);
 });
@@ -152,7 +200,7 @@ test('구글 — 서비스 계정 JWT 서명과 서치콘솔 칸(끝은 오늘�
 });
 
 test('AI — Claude 응답 읽기(인용 · 검색 결과 · 검색 오류 객체)', () => {
-  const r = AI.클로드읽기({ model: 'claude-opus-5-5', stop_reason: 'end_turn', content: [
+  const r = AI.클로드읽기({ model: 'claude-opus-5-5', stop_reason: 'end_turn', usage: { input_tokens: 12000, output_tokens: 900, server_tool_use: { web_search_requests: 2 } }, content: [
     { type: 'server_tool_use', name: 'web_search' },
     { type: 'web_search_tool_result', content: [{ type: 'web_search_result', url: 'https://synk.im/pulse/' }, { url: 'https://kmong.com/a' }] },
     { type: 'web_search_tool_result', content: { type: 'web_search_tool_result_error', error_code: 'max_uses_exceeded' } },
@@ -163,7 +211,12 @@ test('AI — Claude 응답 읽기(인용 · 검색 결과 · 검색 오류 객�
   assert.deepEqual(r.인용주소, ['https://kmong.com/a']);
   assert.deepEqual(r.검색주소, ['https://synk.im/pulse/', 'https://kmong.com/a']);
   assert.equal(r.거절, false);
+  assert.deepEqual(r.사용, { 입력: 12000, 출력: 900, 검색: 2 }, '쓴 몫을 센다(검토 P2-11)');
   assert.equal(AI.클로드읽기({ stop_reason: 'refusal', content: [] }).거절, true);
+  const q = { id: 'K01', 묶음: '일반', 글: '질문' };
+  const 셈 = AI.셈('Claude', [AI.판정(q, { ...r, 답: '가'.repeat(100) }), AI.판정(q, { ...r, 답: '나'.repeat(100) })]);
+  assert.deepEqual(셈.사용, { 입력: 24000, 출력: 1800, 검색: 4 });
+  assert.equal(AI.셈('Gemini', [AI.판정(q, AI.제미나이읽기({ text: '다'.repeat(100) }))]).사용, null, '구독 길은 쓴 몫을 모른다');
 });
 
 test('AI — Gemini 구독 통로의 답 글에서 출처 주소를 읽고, 판정은 붙인 꼬리를 뺀다', () => {
@@ -252,6 +305,19 @@ test('돌리기 — 켠 날이 없으면 시트가 있어도 측정 전', async 
   const { 요약: s } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 켠날: null } }, 건너뛰기: ['AI'], 의존: { 장부폴더: d, 열쇠: { fake: true }, 접근토큰: async () => 'T', fetch기: async () => ({ ok: true, status: 200, json: async () => ({ values: [], rows: [] }) }), 앞요약: null } });
   assert.equal(s.방문.상태, '측정 전');
   assert.equal(s.방문.까닭, '사이트 전체 방문 기록을 아직 켜지 않았습니다.');
+});
+
+// 11-17 Fable 설계 검토 P2-11: 통째로 막힌 회차가 「0개 / 0개」 새 회차로 남던 것
+test('돌리기 — 답을 하나도 못 받은 AI 회차는 남기지 않고 앞 회차를 그대로 보인다', async () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), '사이트방문-'));
+  const 앞 = { 잰때: new Date(+지금 - 8 * 하루).toISOString(), 날: '2026-11-09', 서비스: [{ 이름: 'Claude', 일반질문: 24, 답받음: 24, 언급: 1, 인용: 0, 브랜드질문: 6, 브랜드답받음: 6, 브랜드인용: 5 }], 멈춤: {} };
+  fs.writeFileSync(path.join(d, 'AI재기.jsonl'), `${JSON.stringify(앞)}\n`);
+  const 설정 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools', '사이트방문', '설정.json'), 'utf8'));
+  const { 요약: s, 알림 } = await 모으기.돌리기({ 지금, 설정: { ...설정, 방문기록: { ...설정.방문기록, 켠날: null } }, 의존: { 장부폴더: d, 열쇠: null, 앞요약: null, 질문세트: { 질문: [] }, 원문쓰기: null,
+    회차재기: async () => ({ 날: '2026-11-17', 서비스: [{ 이름: 'Claude', 일반질문: 24, 답받음: 0, 언급: 0, 인용: 0, 브랜드질문: 6, 브랜드답받음: 0, 브랜드인용: 0, 판정들: [] }], 멈춤: { Claude: 'http 429' } }) } });
+  assert.equal(s.AI.회차날, '2026-11-09', '앞 회차를 그대로');
+  assert.equal(fs.readFileSync(path.join(d, 'AI재기.jsonl'), 'utf8').trim().split(/\r?\n/).length, 1, '장부에 새 줄이 없다');
+  assert.ok(알림.some((x) => x.includes('회차로 남기지 않았다')));
 });
 
 test('돌리기 — 열쇠가 없으면 시트 · 서치콘솔은 권한 기다림, AI는 장부의 마지막 회차', async () => {

@@ -54,7 +54,10 @@ function 클로드읽기(응답) {
     // 검색 도구의 오류는 content가 목록이 아니라 객체다 — 목록일 때만 읽는다
     if (b.type === 'web_search_tool_result' && Array.isArray(b.content)) for (const r of b.content) if (r?.url) 검색.add(r.url);
   }
-  return { 답, 인용주소: [...인용], 검색주소: [...검색], 거절: 응답?.stop_reason === 'refusal', 모델: 응답?.model || null };
+  // 쓴 몫(무료 크레딧으로 몇 주를 도는지 재려고 — 11-17 Fable 설계 검토 P2-11)
+  const u = 응답?.usage || {};
+  const 사용 = { 입력: Number(u.input_tokens) || 0, 출력: Number(u.output_tokens) || 0, 검색: Number(u.server_tool_use?.web_search_requests) || 0 };
+  return { 답, 인용주소: [...인용], 검색주소: [...검색], 거절: 응답?.stop_reason === 'refusal', 모델: 응답?.model || null, 사용 };
 }
 
 const 제미나이꼬리 = '\n\n답 끝에 참고한 출처 주소가 있으면 한 줄에 하나씩 적어 줘.';
@@ -78,6 +81,7 @@ function 판정(q, 읽음) {
     검색에걸림: 읽음.검색주소.some((u) => synk주소(호스트(u))),
     출처수: new Set(읽음.인용주소.map(호스트).filter(Boolean)).size,
     모델: 읽음.모델,
+    사용: 읽음.사용 || null,
   };
 }
 
@@ -92,6 +96,8 @@ function 셈(이름, 판정들) {
     인용: 받음(일반).filter((p) => p.인용).length,
     브랜드질문: 브랜드.length, 브랜드답받음: 받음(브랜드).length,
     브랜드인용: 받음(브랜드).filter((p) => p.인용).length,
+    // 쓴 몫의 합 — Claude만 알 수 있다(구독 길은 null)
+    사용: 판정들.some((p) => p.사용) ? 판정들.reduce((a, p) => ({ 입력: a.입력 + (p.사용?.입력 || 0), 출력: a.출력 + (p.사용?.출력 || 0), 검색: a.검색 + (p.사용?.검색 || 0) }), { 입력: 0, 출력: 0, 검색: 0 }) : null,
   };
 }
 
