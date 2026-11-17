@@ -21,6 +21,7 @@
 6. 눈으로 보기: `node tools/pulse-hall-faces/shot.cjs https://synk.im shots <desktop|mobile> <ko|en> 1920x1080 2.25 4.9` → `python -X utf8 tools/pulse-hall-faces/overlay.py shots ko-1920x1080.json 그림.png`(진짜 얼굴 초록, 헛잡이 주황).
 7. 글자 대비: `node tools/pulse-hall-faces/contrast.cjs https://synk.im pulse/ 1920x1080 out.json desktop 0.5 2.3 4.9 …` → `python -X utf8 tools/pulse-hall-faces/contrast.py out.json`(글을 숨긴 쇼릴 + 그늘에서 글 상자 밑 배경의 아래 10% 대비, 글 그림자는 셈하지 않는다).
 8. 엔진 견주기: `node tools/pulse-hall-faces/engines.cjs <후보 CSS>` — 크롬과 WebKit이 같은 제목 크기 · 단추 자리를 내는지(11-17에 18크기 모두 같았다).
+9. 첫 화면 밖 단추: `node tools/pulse-hall-faces/lower.cjs https://synk.im http://127.0.0.1:<포트> <mobile|desktop> <크기 목록>` — 가운데 구역 · 문의 칸의 의뢰 단추가 기준 판과 같은지 크기마다 견준다(다르면 끝 코드 1). 첫 화면 규칙을 쪽 전체 클래스(`.btn.pv-cta`)로 쓰면 아래 구역의 같은 단추에도 걸리는데, 1~7은 첫 화면만 보므로 이것으로 따로 본다. 후보 CSS만 바꿔 보려면 두 주소를 같게 주고 `CSS=<경로>`를 준다(견줄 쪽에만 끼운다).
 
 ## 크기 목록(`data/`)
 
@@ -35,3 +36,4 @@
 - 라이브(그때 공개본)는 넓은 화면 1,078 가운데 272, 낮고 넓은 창 654 가운데 507, 폭 540~900 552 가운데 113, 돌리기 108 가운데 26에서 글 잉크가 진짜 얼굴에 닿았다.
 - 고친 판(SYNK-website `claude/pulse-hero-wide-chin-20261117`)은 네 묶음 모두 0이다. 판 엇갈림은 둘 다 0이다.
 - 11-18에 글자 잉크를 좌우로 8px씩 넓혀 다시 세어 보니, 오른쪽 칸을 화면 폭의 76.5%에 둔 판은 한국어 작품 줄이 모두의코스 컷 끝(12.17~12.29초)에 셀카 남자 얼굴 상자 옆 3.9~6.8px까지 붙었다(37크기). 칸을 77.5%로 옮긴 뒤 가장 좁은 틈은 22px이고, 네 묶음은 그대로 0이다. 겹침이 0이어도 틈이 몇 px인지 한 번 본다.
+- 11-18 다시 검수에서, 높이 500 아래 첫 화면 자리 규칙이 `.btn.pv-cta`로 쓰여 아래 구역 단추 둘에도 걸린 것을 찾았다(568×320에서 가운데 구역 단추 폭 523 → 149px). `.pv-side .btn.pv-cta`로 좁힌 뒤 `lower.cjs`로 네 목록을 라이브와 견주어 다름 0이다.
