@@ -308,6 +308,10 @@ test('a round where Claude could not ask says so instead of zero, and compares w
   assert.equal(cite(siteVisitsView(ok(summary()), NOW).rows[4]), '일반 질문 0 · SYNK를 묻는 질문 6개 가운데 5', 'an asked round keeps its numbers');
   s.AI.앞회차 = { 날: '2026-11-16', 서비스: [{ 이름: 'Claude', 언급: 0, 답받음: 0 }] };
   assert.equal(siteVisitsView(ok(s), NOW).rows[4].when, '지난 회차도 묻지 못했습니다');
+  // PC 0.4.96 카본 P2: 이번 회차는 물었고 지난 회차만 막혔으면 「도」가 아니라 「는」
+  const lastOnly = summary();
+  lastOnly.AI.앞회차 = { 날: '2026-11-16', 서비스: [{ 이름: 'Claude', 언급: 0, 답받음: 0 }] };
+  assert.equal(siteVisitsView(ok(lastOnly), NOW).rows[4].when, '지난 회차는 묻지 못했습니다');
   const gem = summary();
   gem.AI.서비스[1] = { ...gem.AI.서비스[1], 답받음: 0, 언급: 0 };
   const g = siteVisitsView(ok(gem), NOW).rows[4];
