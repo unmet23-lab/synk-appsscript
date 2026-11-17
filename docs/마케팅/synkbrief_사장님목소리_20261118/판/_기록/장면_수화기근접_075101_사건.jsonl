@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1ebb4-e5e6-71b0-83c6-56da080bcb69"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create the still with the reference face, wardrobe, office lighting, and phone pose preserved.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":114963,"cached_input_tokens":97920,"cache_write_input_tokens":0,"output_tokens":1957,"reasoning_output_tokens":411}}

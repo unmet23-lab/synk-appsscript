@@ -1,0 +1,6 @@
+{"type":"thread.started","thread_id":"01a1ebb5-79a1-7051-977a-fd73ba300053"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create the whiteboard shot, matching the dusty-blue cardigan and warm office light.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The local skill file is blocked by this session’s policy, so I’ll use the image-generation tool directly.\n"}}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":124759,"cached_input_tokens":107520,"cache_write_input_tokens":0,"output_tokens":1462,"reasoning_output_tokens":273}}

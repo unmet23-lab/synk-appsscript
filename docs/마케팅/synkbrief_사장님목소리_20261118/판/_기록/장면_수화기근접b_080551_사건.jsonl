@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1ebc2-7709-7a02-8c45-000664ab1c9f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create the still, preserving the reference face, hair, beauty mark, and clothing.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":129838,"cached_input_tokens":103296,"cache_write_input_tokens":0,"output_tokens":1637,"reasoning_output_tokens":412}}
