@@ -678,7 +678,9 @@ function run(inp, scName, opts = {}) {
     if (partnerMode) h.lab = isOpen ? 10 : (isPreOpen ? 30 : 0); // [페이블 3차] C안이면 대표는 회화를 가르치지 않고 운영 점검만
     // [11-18 유호님 「그 나라에 머물러」] 대표가 사는 나라의 교실: 개원 준비 달 80시간, 연 뒤 운영 30시간(울란바토르 때와 같은 꼴)
     const STAYH = C.founderStayHours || { preOpen: 80, open: 30 };
-    h.abroad = stayNow ? (m < (inp.countries?.[stayNow.country]?.open || stayNow.month) ? STAYH.preOpen : STAYH.open) : 0;
+    // [11-18 카본 P3 · Fable P2] 대표가 떠난 나라의 교실(하노이는 2029-07부터, 귀국 뒤에는 두 나라 모두)도 울란바토르처럼 한 달 labRemoteHours씩 멀리서 점검한다
+    const leftStays = STAYS.filter((s) => m >= s.month && s !== stayNow).length;
+    h.abroad = (stayNow ? (m < (inp.countries?.[stayNow.country]?.open || stayNow.month) ? STAYH.preOpen : STAYH.open) : 0) + leftStays * (C.returnHome?.labRemoteHours ?? 10);
     const fixedHours = h.mgmt + h.world + h.marketing + h.online + h.path + h.lab + h.abroad;
 
     // ── PULSE·SHIFT 수요(대표 시간을 따지기 전). 정기 고객(광고 정기·몽골 콘텐츠·SHIFT 운영)은 「이미 맡은 일」, 나머지는 「새 일」

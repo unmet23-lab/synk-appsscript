@@ -236,8 +236,10 @@ test('11-18 founder lives in Vietnam and Uzbekistan in the plans that open them:
   close(at(hand).hours.lab, teach + 30);
   for (const m of [leave, '2028-10', '2029-07', '2029-10', '2030-01']) close(at(m).hours.lab, RH.labRemoteHours, 1e-9);
   close(at(leave).hours.abroad, SH.preOpen); close(at('2028-08').hours.abroad, SH.preOpen); close(at('2028-09').hours.abroad, SH.open);
-  close(at('2029-07').hours.abroad, SH.preOpen); close(at('2029-09').hours.abroad, SH.open); close(at('2030-01').hours.abroad, SH.open);
-  assert.equal(at(RH.month).hours.abroad, 0, '귀국 달부터 몽골 밖 교실 시간은 없다');
+  // 떠난 나라(하노이는 2029-07부터, 귀국 뒤에는 두 나라)는 울란바토르처럼 한 달 labRemoteHours씩 점검한다
+  const rem = RH.labRemoteHours;
+  close(at('2029-07').hours.abroad, SH.preOpen + rem); close(at('2029-09').hours.abroad, SH.open + rem); close(at('2030-01').hours.abroad, SH.open + rem);
+  close(at(RH.month).hours.abroad, 2 * rem); close(at('2030-10').hours.abroad, 2 * rem);
   // 이주비는 그 달 회사 일회 비용에 붙는다
   const plain = (m) => C.oneOff.filter((x) => x.month === m).reduce((a, x) => a + x.krw, 0);
   for (const s of ST) close(at(s.month).company.oneOff - plain(s.month), s.krw);
@@ -248,7 +250,7 @@ test('11-18 founder lives in Vietnam and Uzbekistan in the plans that open them:
   close(mnAt('2028-07').hours.lab, teach + 30 + inp.lab.workshop.leadHoursPerClass);
   // 베트남만 여는 판(평균적)은 하노이로만 옮기고 귀국까지 거기 산다
   const avg = runFor('평균적').r; const avgAt = (m) => avg.rows.find((x) => x.m === m);
-  close(avgAt('2029-07').hours.abroad, SH.open); close(avgAt('2029-07').company.oneOff, plain('2029-07'));
+  close(avgAt('2029-07').hours.abroad, SH.open); close(avgAt('2029-07').company.oneOff, plain('2029-07')); close(avgAt('2030-10').hours.abroad, RH.labRemoteHours);
   // 머무는 판을 빼면(founderStays 비움) 세 나라 판의 몽골 줄은 몽골만 하는 판과 같은 대표 시간으로 돈다
   const noStay = runFor('성공적', (i) => { i.company.founderStays = []; }).r;
   for (const m of ['2028-07', '2029-07']) close(noStay.rows.find((x) => x.m === m).hours.lab, teach + 30 + inp.lab.workshop.leadHoursPerClass);
