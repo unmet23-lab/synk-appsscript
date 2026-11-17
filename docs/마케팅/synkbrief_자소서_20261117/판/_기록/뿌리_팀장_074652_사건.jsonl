@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e68a-b76b-7c81-abef-34358bb98c3b"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create a frontal face reference, with the 85mm portrait framing and office lighting you specified.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":100113,"cached_input_tokens":93824,"cache_write_input_tokens":0,"output_tokens":1392,"reasoning_output_tokens":305}}

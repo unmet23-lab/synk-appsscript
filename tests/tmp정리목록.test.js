@@ -82,7 +82,8 @@ test('최근 작업이 경로로 끌어 쓰는 옛 폴더와 그 폴더가 다�
     assert.deepEqual(목록.참조로남김.map((x) => x.이름), ['old-evidence-20261012', 'platform-ha-20261011', 'server-latency-20261013']);
     assert.deepEqual(목록.참조로남김.find((x) => x.이름 === 'server-latency-20261013').가리킨, ['platform-ha-20261011']);
     assert.match(정리.글로(목록), /최근 작업이 경로로 끌어 써서 목록에서 뺀 폴더 3개/);
-    const r = 정리.옮기기(['platform-ha-20261011', 'video-20261002'], { 임시, 대기, 지금: new Date(2026, 10, 1).getTime() });
+    // 11-17: 기준 시각을 2026-11-01로 박아 두면, 파일 시각(지금부터 30일 전)과의 차이가 날마다 줄어 11-17부터 후보에서 빠졌다 — 지금으로 잰다
+    const r = 정리.옮기기(['platform-ha-20261011', 'video-20261002'], { 임시, 대기, 지금: Date.now() });
     assert.deepEqual(r.옮김, ['video-20261002']);
     assert.ok(fs.existsSync(path.join(임시, 'platform-ha-20261011', 'remote.cjs')), '참조되는 폴더는 승인 목록에 있어도 옮기지 않는다');
   } finally { fs.rmSync(방, { recursive: true, force: true }); }

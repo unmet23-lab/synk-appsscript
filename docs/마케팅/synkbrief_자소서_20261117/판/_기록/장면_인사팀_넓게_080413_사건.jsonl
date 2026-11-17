@@ -1,0 +1,10 @@
+{"type":"thread.started","thread_id":"01a1e69a-9d23-79e2-848e-aa52aa1a281b"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 두 참고 이미지의 인물 외형을 유지하고, 요청하신 28mm 광각 구도의 세로형 사무실 장면을 만들겠습니다.\n"}}
+{"type":"error","message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 12:41 PM."}
+{"type":"turn.failed","error":{"message":"You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at 12:41 PM."}}
+{"type":"thread.started","thread_id":"01a1e69c-4542-7aa1-9131-5f0f1fb63fe0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create the office still with both reference faces and outfits, using the 28mm lens specified for this frame.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":213117,"cached_input_tokens":193536,"cache_write_input_tokens":0,"output_tokens":2121,"reasoning_output_tokens":556}}

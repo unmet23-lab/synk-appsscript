@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e698-e107-7483-88d6-39ff3412ff57"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 요청하신 한 줄 제목이 가장 선명하게 보이는 세로 스틸을 만들겠습니다. 첨부 이미지는 손과 세이지 그린 소매의 참고로만 사용하겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":116592,"cached_input_tokens":103296,"cache_write_input_tokens":0,"output_tokens":1760,"reasoning_output_tokens":489}}

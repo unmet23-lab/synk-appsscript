@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1e698-431a-7691-b7ce-675b95c92fae"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해, 요청하신 두 줄의 한글 입력문이 가장 선명하게 읽히도록 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":135976,"cached_input_tokens":126336,"cache_write_input_tokens":0,"output_tokens":1658,"reasoning_output_tokens":364}}
