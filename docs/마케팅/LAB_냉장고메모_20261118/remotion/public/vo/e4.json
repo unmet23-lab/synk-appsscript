@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e4",
+ "text": "Read the whole note first.",
+ "dur": 1.392,
+ "words": [
+  {
+   "text": "Read",
+   "start": 0.02,
+   "end": 0.196
+  },
+  {
+   "text": "the",
+   "start": 0.245,
+   "end": 0.325
+  },
+  {
+   "text": "whole",
+   "start": 0.405,
+   "end": 0.614
+  },
+  {
+   "text": "note",
+   "start": 0.662,
+   "end": 0.855
+  },
+  {
+   "text": "first.",
+   "start": 0.919,
+   "end": 1.392
+  }
+ ],
+ "source": {
+  "key": "425bc294543f2bb9b5e62ec6fc83b8e8",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1118,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 383
+ }
+}

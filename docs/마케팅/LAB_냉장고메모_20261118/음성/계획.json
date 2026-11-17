@@ -1,0 +1,56 @@
+{
+  "note": "LAB E46 냉장고 메모 「케이크 먹지 마」 나레이션 — 해설 소진 세기 1.0(LAB 장부 머리말 「목소리」 10-28), 영어 줄 + 한국어 줄(한국어 표현은 한국어 음성 — 머리말 「국가별 음성·자막」). 원본 Fpr5gks_sEU의 자리(훅 0.5 · 반전 7.0 · 끝 9.2)를 따른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_냉장고메모_20261118/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1118,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "e0",
+      "text": "My Korean roommate left me a note...",
+      "emotion": "smart",
+      "next": "Cake... for me?"
+    },
+    {
+      "id": "e1",
+      "text": "Cake... for me?",
+      "emotion": "smart",
+      "prev": "My Korean roommate left me a note. I copy the messy handwriting letter by letter. The first word is cake.",
+      "next": "Eat the cake? Okay!"
+    },
+    {
+      "id": "e2",
+      "text": "Eat the cake? Okay!",
+      "emotion": "happy"
+    },
+    {
+      "id": "k3",
+      "text": "먹지 마!",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "e3",
+      "text": "Wait... don't eat it?",
+      "emotion": "normal",
+      "seed": 1121
+    },
+    {
+      "id": "e4",
+      "text": "Read the whole note first.",
+      "emotion": "normal"
+    }
+  ]
+}

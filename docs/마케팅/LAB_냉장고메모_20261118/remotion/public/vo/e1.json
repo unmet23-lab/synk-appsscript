@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "Cake... for me?",
+ "dur": 1.485,
+ "words": [
+  {
+   "text": "Cake...",
+   "start": 0.02,
+   "end": 0.503
+  },
+  {
+   "text": "for",
+   "start": 0.845,
+   "end": 0.986
+  },
+  {
+   "text": "me?",
+   "start": 1.046,
+   "end": 1.485
+  }
+ ],
+ "source": {
+  "key": "d80dea1f5b3e3ef7320ab2ba887a9c0a",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1118,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "My Korean roommate left me a note. I copy the messy handwriting letter by letter. The first word is cake.",
+   "next": "Eat the cake? Okay!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 216
+ }
+}

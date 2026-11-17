@@ -1,0 +1,16 @@
+Create one photorealistic image, portrait 2:3, 1024x1536.
+
+Subject: a casual first-person (POV) phone photo taken while standing in front of a white kitchen fridge, camera at chest height looking straight at the fridge door (the door surface is flat and square to the camera, no strong perspective).
+
+Composition (important — keep these positions):
+- A plain white paper memo, like one sheet torn from a small notepad, slightly wavy, is stuck on the fridge door by ONE round red magnet at its top center. The memo is large in the frame: it spans from about 13% to 87% of the image width and from about 12% to 50% of the image height.
+- The memo paper is COMPLETELY BLANK: no writing, no letters, no doodles, no lines, no printed grid, no logo. Just clean slightly off-white paper with a soft natural shadow under it on the fridge door.
+- In the lower part of the frame (from about 60% of the height down to the bottom edge), the viewer's own LEFT hand comes in from the lower-left corner and holds a small round white ceramic dessert plate, tilted a little toward the camera. On the plate: one triangular slice of strawberry cream layer cake (white whipped cream, two pale sponge layers, one fresh strawberry on top) with ONE big bite clearly missing from its pointed front corner, a few crumbs and a smear of cream on the plate, and a small silver dessert fork resting on the plate with a little cream on its tip.
+- The plate and hand stay in the left 60% of the width. The right part of the frame below the memo (from 52% to 95% of the height, right 40% of the width) shows only the plain fridge door, nothing else (a writing hand will be added there later).
+- A vertical fridge door handle may show along the far right edge, thin and subtle.
+
+Look:
+- Real home kitchen daylight from the left, soft and even, natural colours, slight phone-camera look, sharp focus on the memo and the cake, no motion blur, no vignette.
+- Matte white fridge door with faint real-world texture.
+- Natural young adult left hand with short clean nails, no rings, no nail polish, a plain light grey knit sweater cuff at the wrist.
+- No text anywhere in the image, no brand names, no other magnets or papers, no people's faces.

@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e3",
+ "text": "Wait... don't eat it?",
+ "dur": 1.326,
+ "words": [
+  {
+   "text": "Wait...",
+   "start": 0.02,
+   "end": 0.364
+  },
+  {
+   "text": "don't",
+   "start": 0.628,
+   "end": 0.87
+  },
+  {
+   "text": "eat",
+   "start": 0.931,
+   "end": 1.053
+  },
+  {
+   "text": "it?",
+   "start": 1.113,
+   "end": 1.326
+  }
+ ],
+ "source": {
+  "key": "2d653883eca33c05ca725108cf27fc2d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 515
+ }
+}

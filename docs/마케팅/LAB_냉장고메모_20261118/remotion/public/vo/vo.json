@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1118,
+  "lufs": -17
+ },
+ "made": "2026-11-17T22:50:38.986Z",
+ "lines": [
+  {
+   "id": "e0",
+   "text": "My Korean roommate left me a note...",
+   "dur": 1.804,
+   "syllablesPerSec": null,
+   "src": "e0.wav",
+   "key": "9a283d3b997e55c35edf5660ec912df1",
+   "words": 7
+  },
+  {
+   "id": "e1",
+   "text": "Cake... for me?",
+   "dur": 1.485,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "d80dea1f5b3e3ef7320ab2ba887a9c0a",
+   "words": 3
+  },
+  {
+   "id": "e2",
+   "text": "Eat the cake? Okay!",
+   "dur": 1.8,
+   "syllablesPerSec": null,
+   "src": "e2.wav",
+   "key": "83998976b75108ee896772ac55ef3903",
+   "words": 4
+  },
+  {
+   "id": "k3",
+   "text": "먹지 마!",
+   "dur": 0.867,
+   "syllablesPerSec": 3.46,
+   "src": "k3.wav",
+   "key": "b8fd22a906fb4fef41347ca5d6b81d9c",
+   "words": 2
+  },
+  {
+   "id": "e3",
+   "text": "Wait... don't eat it?",
+   "dur": 1.326,
+   "syllablesPerSec": null,
+   "src": "e3.wav",
+   "key": "2d653883eca33c05ca725108cf27fc2d",
+   "words": 4
+  },
+  {
+   "id": "e4",
+   "text": "Read the whole note first.",
+   "dur": 1.392,
+   "syllablesPerSec": null,
+   "src": "e4.wav",
+   "key": "425bc294543f2bb9b5e62ec6fc83b8e8",
+   "words": 5
+  }
+ ]
+}
