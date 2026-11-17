@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T10:51:42.410Z",
+  "generatedAt": "2026-11-17T00:02:07.751Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -38,7 +38,7 @@
     },
     {
       "file": "../계정_사업속성.json",
-      "sha256": "18e083ac104900954855a781ebcc7c1734858be3b3c594d4b2ba93bdca927955"
+      "sha256": "d37dd63f9cc7a98ec65c23c1c61461f41c47c848527c7a9753a4129fd6f9f1d9"
     },
     {
       "file": "inputs/upload-plan.json",
@@ -54,7 +54,7 @@
     },
     {
       "file": "inputs/existing-accounts.json",
-      "sha256": "a58a73caa25c4d748126de202cc812b95b466cb7ceda87e84b5768f9eb581b1c"
+      "sha256": "999944e191a67d997ab466b700bee12d2f6397107ab74f5a282b7cefb234f13c"
     },
     {
       "file": "inputs/content-status.json",
@@ -74,7 +74,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "bde9fe4540f6b98fcf34ed0d33aab015f71e6a7588084572ad791e01d490d337"
+      "sha256": "aea2c9748be9137a9e9fb4f4d4edd599740b1d493e890d5816ff4852baa6c70f"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",

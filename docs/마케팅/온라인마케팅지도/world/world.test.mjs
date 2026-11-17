@@ -68,7 +68,8 @@ test('PULSE는 타깃 파일의 나라를 그대로 칠하고 한국에 공통 �
   assert.equal(kr.name, '한국');
   const pulseRows = data.queries.channels.rows.filter(r => r.business === 'PULSE');
   assert.equal(world.pulse.summary.primary,pulseRows.filter(r=>SECURED.has(r.accountStatus)).length);
-  assert.equal(world.pulse.summary.secured,8,'7 PULSE and 1 shared representative account, deduplicated across countries');
+  // 11-17: X(@synk_pulse)가 PULSE 공통 계정으로 더해지고, 링크드인 대표 프로필은 연계(SYNK)에서 PULSE 계정으로 옮겨 8 → 9곳이다.
+  assert.equal(world.pulse.summary.secured,9,'9 PULSE accounts (7 before, X @synk_pulse, representative LinkedIn), deduplicated across countries');
   for (const c of world.pulse.countries.filter(x => x.status === 'target')) {
     if(c.code==='JP'){assert.equal(c.secured,0);assert.ok(c.accounts.every(a=>a.state==='계정 계획'&&!a.url));}
     else {assert.equal(c.secured,2);assert.deepEqual(c.accounts.map(a=>a.id).sort(),['pulse-tiktok','yuho-linkedin-primary']);assert.ok(c.accounts.every(a=>a.secured&&a.shared));}

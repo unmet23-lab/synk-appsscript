@@ -106,8 +106,10 @@ test('login overview counts only managed channels and keeps partial and switch-o
 test('brand navigation opens its own channels and clears stale destination cuts', () => {
   assert.deepEqual(brandChannelView('PULSE'),{filters:{brand:'PULSE',channelCountry:'all',channelScope:'all',platform:'all',loginState:'all'},focus:{}});
   const pulse=channels.filter(row=>row.brand===brandChannelView('PULSE').filters.brand);
-  assert.equal(pulse.length,5);
+  // 11-17: X(@yuhobuilds → @synk_pulse)와 링크드인 대표 프로필이 PULSE로 옮겨 와 5 → 7곳이다.
+  assert.equal(pulse.length,7);
   assert.ok(pulse.some(row=>row.id==='pulse-youtube'));
+  assert.ok(pulse.some(row=>row.id==='yuhobuilds-x')&&pulse.some(row=>row.id==='yuho-linkedin-primary'));
   assert.ok(!pulse.some(row=>row.id==='lab-youtube'));
 });
 
@@ -269,7 +271,8 @@ test('shared YouTube and Substack stay single accounts and do not inflate owned 
     assert.equal(brand.ownedCount, channels.filter(row => row.brand === brand.id && row.channelScope === '기존 운영').length, brand.id);
     assert.equal(brand.sharedCount, expectedShared[brand.id], brand.id);
   }
-  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 5);
+  // 11-17: X와 링크드인 대표 프로필이 YUHO에서 PULSE로 옮겨 PULSE 기존 운영은 5 → 7이다(합계 37은 그대로).
+  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 7);
   assert.equal(channels.find(row => row.id === 'pulse-youtube').handle, '@synkpulse');
   assert.equal(registry.accounts['pulse-youtube'].expectedChannelId, 'UCvCOJtdC-JgotRgAsbdNFBg');
 });

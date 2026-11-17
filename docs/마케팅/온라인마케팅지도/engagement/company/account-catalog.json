@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-16T10:51:42.410Z",
+  "generatedAt": "2026-11-17T00:02:07.751Z",
   "sourceAt": "2026-11-10",
   "accounts": [
     {
@@ -203,19 +203,14 @@
     },
     {
       "id": "yuho-linkedin-primary",
-      "business": "SYNK",
-      "secondaryBusinesses": [
-        "LAB",
-        "SHIFT",
-        "PULSE",
-        "PATH"
-      ],
-      "contentTrack": "YUHO",
-      "purpose": "유호의 개인 경력·제작 경험·기관·기업 협업. 최종 운영 개인 프로필",
-      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 대표 프로필 — 영어 제작기와 대표작. 경력의 회사 칸은 SYNK 회사 페이지에 걸린다",
+      "classificationBasis": "2026-11-17 유호님 「링크드인 대표 프로필은 pulse 중심으로 바꾸자」에 따라 헤드라인, 소개, 웹사이트, 경력 직함을 SYNK PULSE로 바꿨다. 11-11에 정한 PULSE 공통 계정 넷 가운데 하나다. yuhobuilds 매일 줄에서 빠졌다.",
       "classificationSourcePaths": [
-        "docs/마케팅_정본.md",
-        "docs/마케팅/채널과_발행.md"
+        "docs/마케팅/PULSE_해외타깃_20261111/영어채비_설계_20261117.md",
+        "docs/마케팅/sns-계정.json"
       ],
       "platform": "linkedin",
       "handle": "양유호",
@@ -227,23 +222,18 @@
     },
     {
       "id": "yuhobuilds-x",
-      "business": "SYNK",
-      "secondaryBusinesses": [
-        "LAB",
-        "SHIFT",
-        "PULSE",
-        "PATH"
-      ],
-      "contentTrack": "YUHO",
-      "purpose": "유호의 짧은 작업 기록과 결과 공유",
-      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 영어 계정 — 영어 제작기와 대표작 영상. 2026-11-17에 @yuhobuilds에서 아이디를 바꿨다",
+      "classificationBasis": "2026-11-17 유호님 「x는 이미 유호빌드로 가입되어있는데 이걸 변경해도 되」에 따라 @yuhobuilds를 PULSE 영어 계정 @synk_pulse로 바꿨다. yuhobuilds 매일 줄에서 빠졌다.",
       "classificationSourcePaths": [
-        "docs/마케팅_정본.md",
-        "docs/마케팅/채널과_발행.md"
+        "docs/마케팅/PULSE_해외타깃_20261111/영어채비_설계_20261117.md",
+        "docs/마케팅/sns-계정.json"
       ],
       "platform": "x",
-      "handle": "@yuhobuilds",
-      "publicUrl": "https://x.com/yuhobuilds",
+      "handle": "@synk_pulse",
+      "publicUrl": "https://x.com/synk_pulse",
       "externalId": null,
       "country": "공통·미분리",
       "countryCode": null,

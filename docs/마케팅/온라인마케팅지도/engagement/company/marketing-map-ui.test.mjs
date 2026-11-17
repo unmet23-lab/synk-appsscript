@@ -25,7 +25,8 @@ const acc = (id, business, platform, secured = true, extra = {}) => ({ id, busin
 const country = (code, name, status, accounts, extra = {}) => ({ code, name, status, region: '동아시아', center: [10, 10], small: false, area: 500, secured: accounts.filter(a => a.secured).length, planned: accounts.length, accounts, lines: [], ...extra });
 const view = (brand, countries, shared = [], extra = {}) => ({ brand, name: brand, what: '', headline: { first: brand, second: '' }, countries, shared, sharedNote: null,
   summary: { active: countries.filter(c => c.status === 'active').length, target: countries.filter(c => c.status === 'target').length, secured: 0, planned: 0 }, ...extra });
-const linkedin = acc('yuho-linkedin-primary', 'SYNK', 'LinkedIn', true, { contentTrack: 'YUHO', shared: true });
+// 11-17: 링크드인 대표 프로필은 PULSE 계정이다(PULSE 중심으로 바꿈). SYNK 공통 계정의 예는 아래 「전체 보기」 시험의 회사 페이지가 맡는다.
+const linkedin = acc('yuho-linkedin-primary', 'PULSE', 'LinkedIn', true, { shared: true });
 const tiktok = acc('pulse-tiktok', 'PULSE', 'TikTok', true, { shared: true });
 const fixture = () => ({
   schema: 'synk-marketing-map/v1', generatedAt: '2026-11-13T11:00:00Z', geo,
@@ -85,7 +86,7 @@ test('전체 보기: 사업별로 묶고 미개설 계획·장기 계획은 확�
   assert.match(html, /나라 미정/, '나라 없는 계정은 「나라 미정」으로');
   const rich = fixture();
   rich.all.accounts.push(acc('yuhokorean-ig', 'LAB', 'Instagram', true, { contentTrack: 'yuhokorean', purpose: '한국어 학습 표현·숏폼' }));
-  rich.all.accounts.find(a => a.id === 'yuho-linkedin-primary').secondaryBusinesses = ['LAB', 'SHIFT', 'PULSE', 'PATH'];
+  rich.all.accounts.push(acc('synk-linkedin-company', 'SYNK', 'LinkedIn', true, { secondaryBusinesses: ['LAB', 'SHIFT', 'PULSE', 'PATH'] }));
   const richHtml = mmPage(rich, 'all', null);
   assert.match(richHtml, /SYNK 공통/);
   assert.match(richHtml, /연계 LAB·SHIFT·PULSE·PATH/);

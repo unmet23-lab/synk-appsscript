@@ -34,6 +34,9 @@ const profileLabels = {
   'owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile':'이름·로고·소개 확인 · 모바일 링크 미확인',
   'page-created-owner-verified; bio-homepage-and-synkpulse-username-saved; linkedin-inspired-felt-logo-v1-saved':'페이지·소개·홈페이지·짧은 주소·새 로고 확인',
   'owner-verified; handle-bio-approved-logo-saved; display-name-locked-until-2026-11-19':'아이디·영어 소개·로고 확인 · 이름은 11-19 뒤',
+  // 11-17 PULSE 전환: X @yuhobuilds → @synk_pulse, 링크드인 대표 프로필 PULSE 중심(inputs/existing-accounts.json의 profileStatus)
+  'pulse-english-2026-11-17; handle-name-bio-logo-website-saved-profile-reread; name-under-review':'PULSE 아이디·이름·영어 소개·로고·링크 확인 · 이름은 X 검토 중',
+  'pulse-centric-2026-11-17; ko-en-headline-about-website-title-featured-saved; public-preview-reread':'PULSE 헤드라인·소개·웹사이트·직함·추천 확인',
   'v6-saved-public-verified':'저장·공개 확인 기록',
   'v6-saved-editor-verified':'저장·편집화면 확인 기록',
   'v6-saved-settings-verified':'저장·설정화면 확인 기록',
@@ -49,6 +52,8 @@ const coverLabels = {
   'v4-desktop-public-verified-mobile-check-deferred':'PC 확인 · 모바일 보류',
   'v4-desktop-mobile-public-verified-preserved':'PC·모바일 확인 기록',
   'not-in-cover-refresh-scope':'이번 커버 작업 범위 밖',
+  'old-yuhobuilds-banner-kept-until-pulse-draft-picked':'옛 yuhobuilds 배너 유지 · PULSE 시안 고르기 전',
+  'synk-felt-logo-cover-kept-until-pulse-draft-picked':'SYNK 펠트 로고 커버 유지 · PULSE 시안 고르기 전',
   'not-applicable-unconfirmed-account':'개설 미확인',
   'not-applicable-uncreated-account':'개설 보류',
   'excluded-not-rechecked':'운영 제외 · 미확인'
