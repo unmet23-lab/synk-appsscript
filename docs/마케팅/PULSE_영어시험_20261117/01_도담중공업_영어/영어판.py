@@ -42,7 +42,10 @@ NARR_AT = [
     (55.58, -4.0, -2.0, [("Wherever it goes it'll keep turning", "turning")]),             # 결 — 36 준호 옅은 웃음 끝 → 37 송전탑 · 도시 불
 ]
 PIECE_ENDS = ["tons", "hand", "unchecked", "day", "up", "it", "Today", "world"]
-LIFT = {"It's all grown up": 4.0, "Now for the first time we wake it": 3.0}   # 한국어 판의 「다 컸습니다」 · 「이제 처음으로 깨워 봅니다」 자리
+# 줄마다 목소리를 올릴 dB — 한국어 판은 「다 컸습니다」 +4 · 「이제 처음으로 깨워 봅니다」 +3만 올렸다. 영어 첫 판(같은 값)은 목소리 띠에서 목소리 − 곡이
+#   +8.3 · +8.4 · +10.5 · +9.1 · +8.6 · +8.4 · +10.9 · +7.7 · +10.6 dB로, 한국어 판이 맞춘 「+10 dB 안팎」(그 아래 +6~7은 「묻혔다」)보다 낮은 줄이 다섯이라 그 줄만 더 올린다
+LIFT = {"When it's fully grown it'll weigh 300 tons": 1.5, "We fitted every blade by hand": 1.5, "For three years we looked in on it every day": 1.0,
+        "It's all grown up": 5.5, "Now for the first time we wake it": 4.5, "we send our baby out into the world": 2.5}
 
 
 def args():
@@ -67,8 +70,56 @@ def sound(voice):
     SND.NARR_AT, SND.PIECE_ENDS, SND.LIFT, SND.LAYOUT = NARR_AT, PIECE_ENDS, LIFT, "영어"
     # 곡 내림 · 쉼 · 마감 이득은 한국어 판 「_초반」 값 그대로다(최종소리.py가 NARR 기본값 「아이작_초반b」로 불러올 때 이미 그 값이다)
     assert (SND.DUCK_IN, SND.DUCK_OUT, SND.BREATH_MIN, SND.FINISH_BOOST) == (0.35, 0.80, 0.55, 1.0), "최종소리 초반 값이 바뀌었다 — 확인"
+    # 리미터 앞 이득만 1.0 → 2.0 dB. 영어 첫 판(1.0)은 섞음이 −14.0 LUFS · 실제 봉우리 −0.6 dBFS로 나와 음량마감이 소리를 내리지 않았고,
+    #   마감 파일 봉우리가 −1.0 dBFS(문턱 −1.2)로 미통과였다. 섞음을 조금 더 크게 만들어 음량마감이 내리면서 봉우리도 문턱 아래로 간다.
+    SND.FINISH_BOOST = 2.0
     os.makedirs(OUT, exist_ok=True)
-    SND.build(os.path.join(OUT, f"소리_{voice}.wav"), E.TF, timing_path=os.path.join(OUT, f"timing_{voice}.json"))
+    wav = os.path.join(OUT, f"소리_{voice}.wav")
+    SND.build(wav, E.TF, timing_path=os.path.join(OUT, f"timing_{voice}.json"))
+    sign_off(wav)
+
+
+ECHO_AT = (E.F[-1] - 8) / E.FPS + 0.75   # P10en.tsx 끝 화면의 SYNK PULSE 로고가 올라오기 시작하는 초(CARD_ON + 0.75 = 61.67초)
+ECHO_DB = -3.0                           # 메아리 첫 0.5초 크기 = 몸통 0.25초 칸 크기 가운데 + 이 값
+
+
+def sign_off(wav):
+    """끝 화면(61.0~64.5초) 아래에 곡의 마지막 화음(57.97초)을 한 번 더, 잔향을 붙여 SYNK PULSE 로고가 올라오는 자리에 놓는다.
+    첫 판은 끝 화면 3.25초가 방 소리뿐이라 최종본검사 「끝소리」(끝 4.25초가 몸통 가운데보다 10 dB 넘게 작음 — 점검표 2)에 걸렸다.
+    새 소리를 들이지 않고 필름이 끝난 그 화음을 메아리처럼 되울려, 도담 로고의 한 방(57.97초)과 같은 소리로 맺는다."""
+    import wave
+    import numpy as np
+    rate = SND.RATE
+    with wave.open(wav, "rb") as w:
+        x = np.frombuffer(w.readframes(w.getnframes()), np.int16).reshape(-1, 2).astype(np.float32) / 32768
+    total = (E.F[-1] + CARD) / E.FPS + 0.05
+    if len(x) < int(total * rate):
+        x = np.pad(x, ((0, int(total * rate) - len(x)), (0, 0)))
+    n4 = int(0.25 * rate)
+    db = [20 * np.log10(np.sqrt(np.mean(x[i:i + n4] ** 2)) + 1e-9) for i in range(int(1 * rate), int(55 * rate), n4)]
+    body = float(np.median(db))
+    song = C.load_stereo(SND.SONG)
+    chord = song[int(SND.FINAL_CHORD * rate):int(60.0 * rate)]
+    echo = np.concatenate([chord, np.zeros((int(3.0 * rate), 2), np.float32)]) + 0.5 * np.pad(
+        SND.wet(chord, SND.hall_ir(3.5, 2.8)), ((0, 0), (0, 0)))[:len(chord) + int(3.0 * rate)]
+    echo = SND.lp(echo, 7000)                                             # 먼 메아리처럼 윗소리를 조금 덜어 낸다
+    head = echo[:int(0.5 * rate)]
+    g = 10 ** ((body + ECHO_DB - 20 * np.log10(np.sqrt(np.mean(head ** 2)) + 1e-9)) / 20)
+    a = int(ECHO_AT * rate)
+    seg = (echo * g)[:len(x) - a]
+    seg = SND.fades(seg.astype(np.float32), 0.03, 0.9)
+    x[a:a + len(seg)] += seg
+    nf = int(0.1 * rate)
+    x[-nf:] *= np.linspace(1, 0, nf, dtype=np.float32)[:, None]
+    peak = float(np.max(np.abs(x)))
+    if peak > 0.89:
+        x *= 0.89 / peak
+    with wave.open(wav, "wb") as w:
+        w.setnchannels(2)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(np.clip(x * 32767, -32768, 32767).astype(np.int16).tobytes())
+    print(f"끝 메아리 {ECHO_AT:.2f}초 · 몸통 가운데 {body:.1f} dB{ECHO_DB:+.0f} · 봉우리 {20 * np.log10(peak):.1f} dBFS · 길이 {len(x) / rate:.2f}초")
 
 
 def picture(logo):
