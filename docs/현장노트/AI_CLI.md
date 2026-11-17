@@ -1934,6 +1934,12 @@
 - 고침: 바뀐 계정으로 로그인한 채 띠의 「다시 표시하지 않기」를 한 번 누른다. 계정을 바꿀 때마다 그 계정에서 한 번씩 누르면 된다. ✕로 닫으면 칸에 기록이 남지 않는지는 확인 안 함. 앱이 도는 중에 전역 상태 파일에 그 칸을 직접 넣는 방법은 앱이 이 파일과 `.bak`을 몇 분마다 다시 써서 지워질 것으로 보여 하지 않았다(확인 안 함).
 - 다시 확인: `node -e "const s=require(require('os').homedir()+'/.codex/.codex-global-state.json');const o=s['electron-owner-atoms:'+s['electron-renderer-content-owner']];console.log(o['full-access-warning-dismissed-at-v2']??'없음')"`가 숫자(누른 시각)를 내면 지금 계정에서는 띠가 다시 안 뜬다. 계정이 언제 바뀌었는지는 화면 로그(`…\LocalCache\Local\Codex\Logs\YYYY\MM\DD\codex-desktop-*-t0-*.log`)에서 `account/logout`과 `account_login_completed`를 찾으면 나온다. 11-15 20:40에는 「없음」이었다.
 
+### `codex exec -o`의 답 파일을 synk-vendor 아래에 두면 「path contains a reparse point」로 바로 끝난다 (2026-11-17 Claude)
+- 증상: 7번 엔진 맹검에서 `node tools/codex계정.js exec -m gpt-6-astra … -i <synk-vendor/…/화면N.png> -o <synk-vendor/…/gpt_1-10.md> -`가 세 판 모두 끝 코드 1로 끝났다. 기록 끝줄은 `Error: Failed to open last message file "…/synk-vendor/…/gpt_1-10.md": path contains a reparse point`였다.
+- 원인: `C:/Users/q1212/Documents/synk-vendor` 경로 어딘가가 연결 지점(junction 같은 reparse point)이다. Codex는 연결 지점이 낀 경로에 마지막 답을 쓰지 않는다.
+- 고침: 그림과 답 파일을 세션 임시 폴더(연결 지점 없는 곳)로 복사해 `-i` · `-o`를 그쪽으로 주고, 다 끝난 뒤 답만 synk-vendor로 복사한다.
+- 다시 확인: 같은 명령을 임시 폴더 경로로 돌려 끝 코드 0과 답 파일이 생기는지 본다. `-i` 그림만 synk-vendor에 둬도 되는지는 확인 안 함(그림도 옮겨서 돌렸다).
+
 ## Claude Code·공식 CLI 읽기(계정판)
 
 ### 다른 저장소 검수를 재개할 때 공용 검수 폴더가 작업 경로에 빠지면 읽기부터 거절된다 (2026-10-24 GPT)

@@ -136,11 +136,13 @@ def 인물표():
     "꽉찬도시락": {"종류": "소품", "낱말": ["lunchboxes"], "색": "cream-white boxes",
                "생김새": "Two cream-white lunchboxes packed for tomorrow, full of side dishes (rolled omelet, seasoned greens, braised beef, cherry tomatoes) and white rice with black sesame.",
                "기준그림": str(정지 / "2-43.jpg").replace("\\", "/")},
-    "배송상자": {"종류": "소품", "낱말": ["delivery box"], "색": "plain kraft-paper brown with one flat bright-green label",
-             "생김새": "A plain brown kraft-paper delivery box; its flat bright-green label stays one solid chroma green with nothing written on it.",
+    # 11-17: 초록 빈 판(후반 바꿔 끼우기)을 버리고 글자를 장면과 한 장으로 굽는다(원칙 6). 옛 기준그림(1-27 · 2-4)은 초록 판이라
+    #        참조로 넣지 않는다 — 새 엔진으로 처음 승인한 판이 생기면 그 그림으로 바꾼다.
+    "배송상자": {"종류": "소품", "낱말": ["delivery box"], "색": "plain kraft-paper brown with one flat bright-green label printed in white",
+             "생김새": "A plain brown kraft-paper delivery box with one flat bright-green rectangular label, printed with the brand name \"칸찬\" in large bold rounded white Korean letters and, beneath it, \"반찬 정기배송\" in small white letters.",
              "기준그림": str(정지 / "2-4.jpg").replace("\\", "/")},
-    "혼인신고서": {"종류": "소품", "낱말": ["sheet of paper", "form"], "색": "flat solid bright chroma green",
-              "생김새": "A sheet of paper on the table that is a flat, solid bright-green rectangle (chroma key) with nothing written on it — it stays exactly that green, flat and blank.",
+    "혼인신고서": {"종류": "소품", "낱말": ["sheet of paper", "form"], "색": "plain white paper printed in black",
+              "생김새": "A Korean marriage registration form on plain white A4 paper, printed in thin black lines and small black Korean type, with the title \"혼인신고서\" in bold black letters centred across the top and two rows of name boxes below it labelled \"남편\" and \"아내\".",
               "기준그림": str(정지 / "1-27.jpg").replace("\\", "/")},
     "새원피스": {"종류": "소품", "낱말": ["dress"], "색": "emerald-green satin",
              "생김새": "A new emerald-green satin slip dress with a white paper price tag on a string.",
@@ -150,9 +152,9 @@ def 인물표():
 글자 = [
     {"글": "아래쪽 대사 자막(모든 대사)", "종류": "말자막", "어디": "대사가 있는 컷 아래", "만드는법": "후반에서 얹는다 — 숏드라마 관례, 그림에 굽지 않음"},
     {"글": "혼인신고서의 칸과 이름", "종류": "장면속", "어디": "1-26 · 1-27 · 2-43 · 2-44",
-     "만드는법": "옛 계획은 초록 판을 후반에서 바꿔 끼우기(10-29) — 원칙 6(장면 속 글자는 장면과 한 장으로 굽는다)과 어긋나 굽기 전에 정한다"},
+     "만드는법": "장면과 한 장으로 굽는다(11-17, 원칙 6 — 옛 초록 판 바꿔 끼우기는 버림). 원고: 흰 A4 양식, 맨 위 굵은 「혼인신고서」, 「남편」 · 「아내」 이름 줄. 2-43 · 2-44는 이름 칸에 같은 필체 볼펜 손글씨 「이안」 · 「서진」, 나머지 칸은 읽히지 않는 작은 손글씨. 1-26 · 1-27은 빈 양식"},
     {"글": "배송 상자 라벨 「칸찬」", "종류": "장면속", "어디": "2-4 · 2-43",
-     "만드는법": "옛 계획은 초록 라벨을 후반에서 바꿔 끼우기 — 원칙 6과 어긋나 굽기 전에 정한다"},
+     "만드는법": "장면과 한 장으로 굽는다(11-17, 원칙 6). 원고: 밝은 초록 라벨에 둥글고 굵은 흰 한글 「칸찬」, 그 아래 작은 흰 글씨 「반찬 정기배송」. 라벨 면이 카메라 쪽"},
     {"글": "다음 화에", "종류": "강조", "어디": "1-45 끝", "만드는법": "숏드라마 관례의 끝 글 — 그린 글자로(기본 글꼴로 치지 않는다)"},
     {"글": "사랑 한 칸 — 반찬 정기배송 칸찬", "종류": "끝로고", "어디": "2-48 끝까지", "만드는법": "그린 글자 · 재질로 — 꽉 찬 도시락 두 개 위"},
 ]
@@ -295,7 +297,7 @@ def 짓기():
         "이기는것": "여운 — 1화 매실 하나뿐인 빈 반찬 칸이 2화 끝에 그가 채운 꽉 찬 도시락 두 개가 된다",
         "한문장": "한 발 뺀 그녀 앞에서, 미루던 그가 먼저 혼인신고서를 썼다",
         "가까운사례": "S31 · S44 — 원본의 컷 · 초 · 구도를 그대로 옮긴 이미지 콘티(S31)에서, 광고 모델이 한국어 대사를 시댄스 첫 프레임 길로 말하는 판(S44). 다르게: 두 사람 · 93컷 숏드라마라 대사 판은 배역 목소리 견본을 소리 참고로 넣는다(그 판은 첫 장이 시작 그림과 조금 다르다)",
-        "엔진": {"그림": "다시 굽기 — Seedream 5.5 또는 나노바나나 카본(결정 11-16: 납품 그림에 GPT API 안 씀). 지금 시작 그림은 GPT Image 2.5 Sunburst 「새로」 판(10-30 · 11-07)", "영상": "Seedance 2.5 720p(드리미나 울트라 첫 프레임 · 대사 판은 소리 참고)"},
+        "엔진": {"그림": "Seedream 5.5 · 2K · 9:16(드리미나 unmet23) — 11-17 엔진 맹검에서 유호님이 고르신 화면 여섯 가운데 다섯이 Seedream이었다(결정 11-17). 93장 모두 이것 하나로 다시 굽는다. 지금 시작 그림은 아직 GPT Image 2.5 Sunburst 「새로」 판(10-30 · 11-07)", "영상": "Seedance 2.5 720p(드리미나 울트라 첫 프레임 · 대사 판은 소리 참고)"},
         "장면": 장면표(), "인물": 인물표(), "소품": 소품, "글자": 글자, "소리": 소리, "끝": 끝,
         "seq": [[d["cut"], f"{d['t']:.2f}", d["band"], d["line"]] for d in detail],
         "end": round(화2시작 + 59.94, 2),
