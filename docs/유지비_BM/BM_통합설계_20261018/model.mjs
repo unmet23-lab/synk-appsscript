@@ -103,6 +103,22 @@ function setPremiumClasses(inp, classes) {
   }
   inp.company.premiumClasses = classes;
 }
+// [11-18 유호님 「웅 넣어」] K드라마 주말 워크숍(정규 반 값 안, 따로 받지 않음). 정규 반 학생(라이트 뺌) × 나오는 몫을 한 반 인원으로 나눠 반 수를 올림한다.
+//   freeLead = 돈을 따로 내지 않고 진행하는 반 수다. 대표가 울란바토르에 있으면 founderClasses(대표 시간), 귀국 뒤에는 한국인 강사가 맡는 krTeacherClasses(그 자리값은 krTeacher로 따로 센다).
+//   돈: 그 밖의 반 진행자 시급, 모든 반의 촬영 · 편집 보조, 제작 실비, 빌린 교실 단계의 주말 교실 사용료. w = 임금 물가, ri = 임대 물가
+function workshopPlan(inp, stageKey, regularStudents, freeLead, w = 1, ri = 1) {
+  const W = inp.lab.workshop; const si = 1 + inp.lab.socialInsurance;
+  if (!W || !(W.uptake > 0) || !(regularStudents > 0)) return { participants: 0, classes: 0, paidLead: 0, freeLead: 0, lead: 0, assist: 0, production: 0, room: 0, cost: 0 };
+  const participants = regularStudents * W.uptake;
+  const classes = Math.ceil(participants / W.perClass - 1e-9);
+  const free = Math.min(classes, freeLead ?? W.founderClasses ?? 0);
+  const paidLead = classes - free;
+  const lead = paidLead * W.leadHoursPerClass * W.leadHourlyMNT * w * si;
+  const assist = classes * W.assistHoursPerClass * W.assistHourlyMNT * w * si;
+  const production = classes * W.productionPerClassMNT;
+  const room = stageKey === 'host' ? classes * W.sessionHours * W.hostRoomHourMNT * ri : 0;
+  return { participants, classes, paidLead, freeLead: free, lead, assist, production, room, cost: lead + assist + production + room };
+}
 function labBaseBonus(inp, ratio) {
   let each = 0;
   for (const tier of inp.lab.incentives.baseBonus) if (ratio >= tier.atBep) each = tier.each;
@@ -148,6 +164,7 @@ function labStageFixed(inp, stageKey, opts = {}, mult = {}) {
     + L.incentives.fieldBonusMin * si + L.incentives.baseBonus[0].each * headcountBase * si
     + st.foreignLevy.count * st.foreignLevy.mnt // 외국인 고용 부담금(사회보험 대상 아님)
     + (opts.extraFixedMNT || 0) // [페이블 5차] 나라 판 손익분기: 현지 책임자·회계·출장
+    + (mult.krTeacherMNT || 0) // [11-18] 대표 귀국 뒤 회화 반 · 워크숍을 맡는 한국인 강사 자리값(그달 값)
     + (opts.demand === 'acq' ? (stageKey === 's2' || stageKey === 'v23' ? L.acquisition.adBudgetMNT[1].v : L.acquisition.adBudgetMNT[0].v) : 0); // 옛 수요 방식의 광고비(달 평균). 시장 방식은 광고비가 새 등록을 따라 움직여 손익분기에서 변동비로 센다
   return { fixed, wages, avgUtil, headcountBase };
 }
@@ -188,10 +205,11 @@ function labBep(inp, sc, stageKey, opts = {}, mult = {}) {
     const teacherBonus = Math.ceil(Math.max(0, c.weekdayClasses - dirTeach) / 2) * boundaryBonus * si;
     return c.weekdayClasses * wkdClassCost + c.saturdayClasses * satClassCost + c.classes * o.cuPerClass + teacherBonus;
   };
+  const wsAt = (n) => workshopPlan(inp, stageKey, n * (1 - L.lightShare), mult.wsFree, w, mult.rent || 1).cost; // [11-18] K드라마 주말 워크숍(반 수가 학생 수를 따라 계단으로 는다)
   const margin = (n) => {
     const { revenue, hostFee, variable } = revenueAt(n);
     const fieldBonusExtra = (labFieldBonus(inp, revenue) - L.incentives.fieldBonusMin) * si;
-    return revenue - variable - teachingAt(n) - fixedAdj - Math.max(0, hostFloor - hostFee) - fieldBonusExtra;
+    return revenue - variable - teachingAt(n) - wsAt(n) - fixedAdj - Math.max(0, hostFloor - hostFee) - fieldBonusExtra;
   };
   let n = null;
   for (let k = 1; k <= 20000; k += 1) { if (margin(k / 10) >= 0) { n = k / 10; break; } }
@@ -199,7 +217,7 @@ function labBep(inp, sc, stageKey, opts = {}, mult = {}) {
   const seats = n * u.seatEq; const size = avgClassSize(inp, stageKey, seats);
   const atBep = revenueAt(n);
   const revPer = atBep.revenue / n;
-  const varPer = (atBep.variable + teachingAt(n) + Math.max(0, hostFloor - atBep.hostFee) + (labFieldBonus(inp, atBep.revenue) - L.incentives.fieldBonusMin) * si) / n;
+  const varPer = (atBep.variable + teachingAt(n) + wsAt(n) + Math.max(0, hostFloor - atBep.hostFee) + (labFieldBonus(inp, atBep.revenue) - L.incentives.fieldBonusMin) * si) / n;
   return { students: n, fixedAdj, revPer, varPer, contrib: revPer - varPer, classSize: size, classes: classesAt(n).classes, boundaryBonusEach: boundaryBonus, marginAtBep: margin(n) };
 }
 
@@ -254,7 +272,7 @@ function run(inp, scName, opts = {}) {
   const fullCapexMNT = (key) => (key === 's2' ? L.stages.s1.capexMNT + L.stages.s2.capexMNT : L.stages[key].capexMNT) * (opts.capexMult || 1);
   const directCapexKRW = (key, rentMult) => toKRW(fullCapexMNT(key) + (L.stages[key].rentFixedMNT || L.stages[key].areaM2 * L.rentPerM2MNT) * rentMult * L.stages[key].depositMonths);
   const bepCache = {}; // 그달 단계·물가 계단별 손익분기(성과급 배수용)
-  const bepAt = (key, mult, k) => { const c = `${key}|${k}|${mult.rooms || mult.hostRooms || ''}`; if (!(c in bepCache)) bepCache[c] = labBep(inp, sc, key, opts, mult).students; return bepCache[c]; };
+  const bepAt = (key, mult, k) => { const c = `${key}|${k}|${mult.rooms || mult.hostRooms || ''}|${mult.wsFree ?? ''}|${Math.round(mult.krTeacherMNT || 0)}`; if (!(c in bepCache)) bepCache[c] = labBep(inp, sc, key, opts, mult).students; return bepCache[c]; }; // [11-18] 워크숍을 누가 맡는지 · 한국인 강사 자리값도 손익분기를 바꾼다
   let directNeedAt = null;
 
   const rows = [];
@@ -271,6 +289,9 @@ function run(inp, scName, opts = {}) {
   const gateFail = hosted && !!stopR && !opts.noGate && !!L.openGate && sc.labPreReg < L.openGate.minPreReg;
   if (gateFail) stopFrom = preOpenStart;
   const moveMonth = ((C.oneOff || []).find((x) => x.move) || {}).month || null; // [10-22] 대표가 울란바토르로 옮기는 달 — 그 뒤 한국 출강은 담당자만 한다
+  // [11-18 유호님 「웅」] 대표 귀국(몽골 판에서만 센다). 관문에 걸리거나 이주하지 않는 판이면 귀국도 없다
+  const RH = !CO && C.returnHome && moveMonth && !gateFail && !opts.noMove ? C.returnHome : null;
+  const KT = L.krTeacher;
   const yearMnRev = {}; const yearMnProfit = {}; const yearKrProfit = {};
 
   for (let i = 0; i < M.length; i += 1) {
@@ -287,6 +308,13 @@ function run(inp, scName, opts = {}) {
     // ── LAB 단계
     const isPreOpen = m >= preOpenStart && m < L.openMonth;
     const isOpen = m >= L.openMonth;
+    // [11-18] 대표 귀국: 귀국 달부터 대표는 교실을 멀리서 점검만 한다. 회화 반과 워크숍은 한국인 강사가 맡는다. 강사 자리값은 넘겨받는 달부터 나간다.
+    //   [11-18 대체 검수] 교실 운영을 넘긴 C안에서 빠지는 것은 한국인 강사 자리값뿐이다. 귀국 비용(co.oneOff)과 귀국 뒤 한국 쪽 시간(h.path의 pathHours)은 C안에서도 센다
+    const returned = !!RH && m >= RH.month;
+    const krTeacherOn = !!RH && !!KT && isOpen && !partnerMode && m >= addMonths(RH.month, -(KT.handoverMonths || 0));
+    const founderInUB = !CO && !!moveMonth && m >= moveMonth && !gateFail && !opts.noMove && !returned;
+    multNow.krTeacherMNT = krTeacherOn ? KT.salaryMNT * wageM * si + KT.housingMNT * rentInfl + KT.flightMNT + (m < RH.month ? L.staff.foreignLevy.mnt : 0) : 0; // 넘겨받는 달은 외국인 고용 부담금 한 명 몫을 더 낸다
+    multNow.wsFree = krTeacherOn ? (L.workshop?.krTeacherClasses ?? 0) : (founderInUB ? (L.workshop?.founderClasses ?? 0) : 0); // 워크숍을 돈 없이 맡는 반 수
     if (isOpen && stage === null) stage = hosted ? 'host' : (full4 ? 'v23' : (forceStage2 ? 's2' : 's1'));
     // D안 직영 준비는 계획 달 두 달 전부터, 가용 현금이 「출자(10만 달러 초과) + 한국 고정비 석 달 + 여유」를 채울 때 시작한다. 못 채우면 SYNK반을 이어 간다
     // 직영 준비는 ① 계획 달 두 달 전부터 ② SYNK반이 찼을 때(교실을 다 빌린 뒤 정원 85%를 두 달) ③ 가용 현금이 「출자 + 한국 고정비 석 달 + 여유」를 채울 때만 시작한다
@@ -447,6 +475,11 @@ function run(inp, scName, opts = {}) {
     lab.foreignLevy = isOpen && m >= st.foreignLevy.from ? st.foreignLevy.count * st.foreignLevy.mnt : 0;
     lab.adminFixed += lab.foreignLevy;
     lab.countryOverhead = (isOpen || isPreOpen) && L.countryOverheadMNT ? L.countryOverheadMNT * wageM : 0; // [10-19] 대표가 상주하지 않는 나라의 현지 책임자·출장·회계
+    // [11-18] K드라마 주말 워크숍(정규 반 값 안)과 귀국 뒤 한국인 강사 자리값
+    const wsP = isOpen ? workshopPlan(inp, stageKey, reg, multNow.wsFree, wageM, rentInfl) : null;
+    lab.wsParticipants = wsP ? wsP.participants : 0; lab.wsClasses = wsP ? wsP.classes : 0; lab.wsPaidLead = wsP ? wsP.paidLead : 0;
+    lab.workshop = wsP ? wsP.cost : 0; lab.wsRoom = wsP ? wsP.room : 0;
+    lab.krTeacher = multNow.krTeacherMNT || 0;
     lab.paymentFee = lab.revenue * o.paymentFee;
     lab.reserve = lab.revenue * o.reserve;
     const HS = L.hosted;
@@ -456,7 +489,7 @@ function run(inp, scName, opts = {}) {
     if (isOpen && stageKey === 'host' && HS.floorPerRoomMNT) lab.hostFee = Math.max(lab.hostFee, HS.floorPerRoomMNT * rooms * rentInfl); // 최소 보장
     // 직영으로 옮긴 뒤 몇 달은 옮겨 간 학생 수강료의 일부를 기관에 준다(학생·강사·선수금을 붙잡지 않는 대가) [D안 업그레이드 2차 10-19]
     lab.hostTail = isOpen && hosted && directSwitch && m >= directSwitch && HS.exitTail && m < addMonths(directSwitch, HS.exitTail.months) ? HS.exitTail.rate * (lab.tuition + lab.premium) * Math.min(1, ((studentsAtSwitch || 0) * Math.pow(sc.labRetention, M.indexOf(m) - M.indexOf(directSwitch))) / Math.max(1, students)) : 0; // 옮겨 간 학생 가운데 남은 사람 몫만 [페이블 3차]
-    const costBeforeInc = lab.wages + lab.socialIns + lab.cleaning + lab.rent + lab.utilities + lab.materials + lab.marketing + lab.cu + lab.benefits + lab.appAI + lab.bookCost + lab.extrasCost + lab.adminFixed + lab.countryOverhead + lab.paymentFee + lab.reserve + lab.hostFee + lab.hostTail;
+    const costBeforeInc = lab.wages + lab.socialIns + lab.cleaning + lab.rent + lab.utilities + lab.materials + lab.marketing + lab.cu + lab.benefits + lab.appAI + lab.bookCost + lab.extrasCost + lab.adminFixed + lab.countryOverhead + lab.paymentFee + lab.reserve + lab.hostFee + lab.hostTail + lab.workshop + lab.krTeacher;
     const op0 = lab.revenue - costBeforeInc;
 
     // ── 인센티브(₮): 기본 성과급·현장 보너스는 늘 나가고, 이익 나눔·창립 보너스는 이익의 25% 안에서
@@ -629,8 +662,12 @@ function run(inp, scName, opts = {}) {
     h.marketing = m >= C.founderBaseHours.worldSwitch ? C.founderBaseHours.marketingAfter : C.founderBaseHours.marketingBefore; // 몽골어 콘텐츠
     h.online = cohortStart || (m >= t4.from && (i - M.indexOf(t4.from)) % t4.everyMonths === 1) ? (m >= t4.teacherCostFrom ? 2 : t4.founderHours / 2) : 0;
     // 상담 담당이 있으면 대표는 점검·어려운 건만(팀장이 있으면 더 적게), 없으면 일의 절반을 대표가 한다
-    h.path = (pathFte ? (pathLead ? CS.founderHoursWithLead : CS.founderHoursBase + CS.founderHoursRate * pathHoursTotal) : 0.5 * pathHoursTotal) + univContracts * (P.univMarketingFounderHours ?? 10) + (m >= P.koreaTripsFrom && [3, 9].includes(mo) ? 30 : 0);
-    h.lab = isPreOpen ? 80 : (isOpen ? C.premiumClasses * C.premiumTeachingHoursPerClass + 30 : (C.labPrepEarly && m >= C.labPrepEarly.from && m < preOpenStart ? C.labPrepEarly.hours : 0));
+    h.path = (pathFte ? (pathLead ? CS.founderHoursWithLead : CS.founderHoursBase + CS.founderHoursRate * pathHoursTotal) : 0.5 * pathHoursTotal) + univContracts * (P.univMarketingFounderHours ?? 10) + (m >= P.koreaTripsFrom && [3, 9].includes(mo) ? 30 : 0)
+      + (returned ? RH.pathHours || 0 : 0); // [11-18] 귀국 뒤 한국 쪽 유학 · 정착 키우기(매출은 더하지 않음)
+    // [11-18] 대표가 울란바토르에 있으면 K드라마 워크숍 founderClasses반을 직접 맡는다(넘겨받는 달부터는 한국인 강사). 귀국 뒤에는 교실을 멀리서 점검만 한다
+    const wsFounderH = founderInUB && isOpen && !krTeacherOn ? Math.min(lab.wsClasses || 0, L.workshop?.founderClasses ?? 0) * (L.workshop?.leadHoursPerClass || 0) : 0;
+    lab.wsFounderHours = wsFounderH;
+    h.lab = isPreOpen ? 80 : (isOpen ? (returned ? RH.labRemoteHours : C.premiumClasses * C.premiumTeachingHoursPerClass + 30 + wsFounderH) : (C.labPrepEarly && m >= C.labPrepEarly.from && m < preOpenStart ? C.labPrepEarly.hours : 0));
     if (partnerMode) h.lab = isOpen ? 10 : (isPreOpen ? 30 : 0); // [페이블 3차] C안이면 대표는 회화를 가르치지 않고 운영 점검만
     const fixedHours = h.mgmt + h.world + h.marketing + h.online + h.path + h.lab;
 
@@ -772,7 +809,8 @@ function run(inp, scName, opts = {}) {
     const co = r.company;
     co.accounting = m >= C.krCorpFrom ? C.accountingKRW : 0;
     co.tools = C.toolsKRW; co.infra = C.infraKRW;
-    co.oneOff = C.oneOff.filter((x) => x.month === m && !(x.move && (gateFail || opts.noMove))).reduce((a, x) => a + x.krw, 0); // 관문에 걸리면 한국에 남는다(이주비 없음) [페이블 3차]
+    co.oneOff = C.oneOff.filter((x) => x.month === m && !(x.move && (gateFail || opts.noMove))).reduce((a, x) => a + x.krw, 0) // 관문에 걸리면 한국에 남는다(이주비 없음) [페이블 3차]
+      + (RH && m === RH.month ? RH.krw || 0 : 0); // [11-18] 대표 귀국(항공 · 짐)
     const payPlan = step(C.founderPayKRW, m);
     co.founderPay = (stopped || opts.freezePay) ? Math.min(payPlan, C.founderPayKRW[0].v) : payPlan; // 동결은 첫 생활비(150만원)에서 멈추는 것이지 앞당기는 것이 아니다 // 멈춤 규칙이 걸리면 생활비 인상을 멈춘다
     co.textbookWriting = (C.textbookFinishing && m === C.textbookFinishing.month ? C.textbookFinishing.krw : 0) // 교재 원어민 검수·편집 마무리

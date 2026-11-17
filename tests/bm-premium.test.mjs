@@ -22,6 +22,7 @@ const fixture = () => {
   L.staff.director = L.staff.dance = L.staff.teacherHourly = L.staff.ops.wage = 0;
   L.staff.v23.dance = L.staff.v23.beauty = L.staff.v23.vocal = L.staff.v23.satClassCost = 0;
   L.staff.foreignLevy.count = 0;
+  L.workshop.uptake = 0; // [11-18] K드라마 주말 워크숍 비용도 다른 비용처럼 0으로 둔다 — 이 고정 값은 회화 · 반 · 성과급 규칙만 잰다
   for (const key of Object.keys(L.staff.cleaning)) L.staff.cleaning[key] = 0;
   for (const stage of Object.values(L.stages)) stage.rentFixedMNT = 0;
   for (const [key, value] of Object.entries(L.other)) {
@@ -157,6 +158,110 @@ test('break-even pays the one-times bonus tier and revenue-linked field bonus be
   assert.ok(profit(result.students-0.1,1)<0,'search includes the tier that will actually be paid');
   assert.ok(profit(result.students*1.6,1.6)>0,'the next bonus tier remains affordable in the fixture');
   close(result.marginAtBep,profit(result.students,1));
+});
+
+// 운영 계획(보수적)의 몽골 판을 2030-12까지 돌린다. model.mjs의 runPlan이 몽골에 쓰는 것과 같은 선택이다
+const mnPlanRun = () => {
+  const inp = structuredClone(base); inp.timeline = { ...inp.timeline, end: inp.planHorizon.end };
+  const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans['보수적'] };
+  return { inp, r: run(inp, '기본', opts) };
+};
+const near = (actual, expected, tol = 1, what = '') => assert.ok(Math.abs(actual - expected) <= tol, `${what} ${actual} != ${expected}`);
+
+// [11-18 유호님 「웅 넣어」 · 「웅」(2030년 귀국)] K드라마 주말 워크숍과 대표 귀국의 계산 규칙을 지킨다 — 워크숍 비용은 반 수 × (보조 + 제작 실비) + 진행자 시급(대표 · 한국인 강사가 맡지 않는 반) + 빌린 교실 단계의 주말 교실 사용료,
+// 대표는 울란바토르에 있는 동안 한 반을 대표 시간으로 맡고, 귀국 달부터 교실은 멀리서 점검만 한다. 한국인 강사는 넘겨받는 달부터 자리값이 나가고 그달만 외국인 고용 부담금을 한 명 몫 더 낸다
+test('11-18 K-drama weekend workshop and 2030 return home: workshop cost by class, founder hours, Korean teacher from the handover month', () => {
+  const { inp, r } = mnPlanRun();
+  const W = inp.lab.workshop, KT = inp.lab.krTeacher, RH = inp.company.returnHome, si = 1 + inp.lab.socialInsurance;
+  const at = (m) => r.rows.find((x) => x.m === m);
+  const steps = (m) => inp.lab.inflation.steps.filter((s) => m >= s).length;
+  const expectWs = (row, free) => {
+    const { lab, m } = row; const w = Math.pow(1 + inp.lab.inflation.wage, steps(m)); const ri = Math.pow(1 + inp.lab.inflation.rent, steps(m));
+    const classes = Math.ceil(lab.students * (1 - inp.lab.lightShare) * W.uptake / W.perClass - 1e-9);
+    const paid = classes - Math.min(classes, free);
+    return { classes, cost: paid * W.leadHoursPerClass * W.leadHourlyMNT * w * si + classes * W.assistHoursPerClass * W.assistHourlyMNT * w * si + classes * W.productionPerClassMNT + (lab.stage === 'host' ? classes * W.sessionHours * W.hostRoomHourMNT * ri : 0) };
+  };
+  // 빌린 교실 단계(대표가 한 반을 맡음)와 직영 단계(귀국 뒤 한국인 강사가 두 반까지)
+  for (const [m, free] of [['2027-10', W.founderClasses], ['2028-10', W.founderClasses], ['2030-10', W.krTeacherClasses]]) {
+    const row = at(m); const e = expectWs(row, free);
+    assert.equal(row.lab.wsClasses, e.classes, `${m} 워크숍 반 수`);
+    close(row.lab.workshop, e.cost);
+  }
+  assert.equal(at('2027-10').lab.stage, 'host');
+  assert.ok(at('2027-10').lab.wsRoom > 0 && at('2030-10').lab.wsRoom === 0, '주말 교실 사용료는 빌린 교실 단계에서만');
+  // 대표 시간: 울란바토르에 있는 동안 회화 + 교실 운영 30시간 + 워크숍 한 반, 귀국 달부터 교실 점검만 · 한국 쪽 유학 · 정착 시간
+  const C = inp.company; const teach = C.premiumClasses * C.premiumTeachingHoursPerClass;
+  close(at('2027-10').hours.lab, teach + 30 + W.leadHoursPerClass);
+  close(at(RH.month).hours.lab, RH.labRemoteHours);
+  const before = addMonth(RH.month, -1); const after = '2030-04';
+  // [11-18 대체 검수 P2-1] 넘겨받는 달(2030-01)에는 한국인 강사가 워크숍을 맡는다. 대표 교실 시간은 회화 32.5 + 교실 운영 30 = 62.5시간이고 워크숍 22시간이 붙지 않는다
+  assert.equal(before, '2030-01');
+  close(at(before).hours.lab, teach + 30);
+  close(at(before).hours.lab, 62.5);
+  assert.equal(at(before).lab.wsFounderHours, 0);
+  // [11-18 대체 검수 P3] 베트남 · 우즈베키스탄 워크숍 값 = 몽골 값 × 그 나라 배수(시급은 임금, 제작 실비는 기타). 대표가 맡는 반은 없다
+  for (const c of ['vn', 'uz']) { const s = inp.countries[c].scale, o = inp.countries[c].overrides.lab.workshop; close(o.leadHourlyMNT, W.leadHourlyMNT * s.wage); close(o.assistHourlyMNT, W.assistHourlyMNT * s.wage); close(o.productionPerClassMNT, W.productionPerClassMNT * s.other); assert.equal(o.founderClasses, 0, c); }
+  assert.ok(at(after).hours.path - at('2029-04').hours.path >= RH.pathHours - 1e-9, '귀국 뒤 한국 쪽 유학 · 정착 시간이 더해진다');
+  // 한국인 강사: 넘겨받는 달(귀국 한 달 전)부터, 그달만 외국인 고용 부담금 한 명 몫을 더 낸다
+  assert.equal(at(addMonth(before, -1)).lab.krTeacher, 0);
+  const kt = (m) => { const w = Math.pow(1 + inp.lab.inflation.wage, steps(m)); const ri = Math.pow(1 + inp.lab.inflation.rent, steps(m)); return KT.salaryMNT * w * si + KT.housingMNT * ri + KT.flightMNT; };
+  close(at(before).lab.krTeacher, kt(before) + inp.lab.staff.foreignLevy.mnt);
+  close(at(RH.month).lab.krTeacher, kt(RH.month));
+  close(at(RH.month).company.oneOff - (inp.company.oneOff.filter((x) => x.month === RH.month).reduce((a, x) => a + x.krw, 0)), RH.krw);
+  // 넘겨받는 달 전에는 한국인 강사 자리값이 없다
+  for (const row of r.rows) if (row.m < before) assert.equal(row.lab.krTeacher, 0);
+});
+function addMonth(label, n) { let [y, m] = label.split('-').map(Number); m += n; while (m > 12) { m -= 12; y += 1; } while (m < 1) { m += 12; y -= 1; } return `${y}-${String(m).padStart(2, '0')}`; }
+
+// [11-18 대체 검수 P2-1] 앞 시험은 워크숍 · 한국인 강사 값 자체만 재서, 학원 비용 합계에서 두 값을 빼도 통과했다.
+// 이 시험은 달마다 학원 비용이 비용 칸을 모두 더한 값(워크숍 · 한국인 강사 포함)과 같은지 본다.
+// 저장된 results.json의 2030년 값(운영 계획 보수적의 몽골 판)이 지금 입력과 같은지도 본다. 아래 11-09 시험의 저장 값 대조는 2029년까지만 본다
+test('11-18 lab cost carries the workshop and the Korean teacher: monthly cost equals its columns, stored 2030 plan results match the inputs', () => {
+  const { r } = mnPlanRun();
+  const at = (m) => r.rows.find((x) => x.m === m);
+  const cols = ['wages', 'socialIns', 'cleaning', 'rent', 'utilities', 'materials', 'marketing', 'cu', 'benefits', 'appAI', 'bookCost', 'extrasCost', 'adminFixed', 'countryOverhead', 'paymentFee', 'reserve', 'hostFee', 'hostTail', 'workshop', 'krTeacher', 'incentives', 'remitCost'];
+  for (const m of ['2027-10', '2030-10']) {
+    const { lab } = at(m);
+    for (const k of cols) assert.equal(typeof lab[k], 'number', `${m} lab.${k}`);
+    assert.ok(lab.workshop > 0, `${m} 워크숍 비용이 있어야 대조가 뜻이 있다`);
+    near(lab.cost, cols.reduce((a, k) => a + lab[k], 0), 1, `${m} 학원 비용 = 비용 칸 합`);
+  }
+  assert.ok(at('2030-10').lab.krTeacher > 0, '2030-10 한국인 강사 자리값이 있어야 대조가 뜻이 있다');
+  // 저장된 2030년 값
+  const R = JSON.parse(readFileSync(new URL('../docs/유지비_BM/BM_통합설계_20261018/results.json', import.meta.url), 'utf8'));
+  const P = R.plans['보수적'];
+  assert.equal(P.countries[0], 'mn');
+  const y2030 = r.rows.filter((x) => x.m.startsWith('2030'));
+  assert.equal(y2030.length, 12);
+  const S = (f) => y2030.reduce((a, x) => a + f(x), 0);
+  const mn = P.years[2030].byC.mn;
+  near(mn.labRev, S((x) => x.labKRW.revenue), 1, '2030 학원 매출');
+  near(mn.labProfit, S((x) => x.labKRW.profit), 1, '2030 학원 이익');
+  near(mn.ebitda, S((x) => x.ebitdaKRW), 1, '2030 몽골 판 영업이익');
+  near(mn.endStudents, y2030[11].lab.students, 1e-9, '2030-12 학생');
+  for (const x of y2030) {
+    const s = P.monthly.find((q) => q.m === x.m).byC.mn;
+    near(s.labProfit, x.labKRW.profit, 1, `${x.m} 학원 이익`);
+    near(s.students, x.lab.students, 1e-9, `${x.m} 학생`);
+  }
+});
+
+// [11-18 대체 검수 P2-1] 손익분기도 워크숍 비용과 한국인 강사 자리값을 내야 한다. 앞의 고정 값은 워크숍 참여율이 0이라 두 값을 빼도 통과했다.
+// 고정 값 위에서 워크숍 참여율과 강사 자리값을 0보다 크게 두고, 손익분기 학생 수를 따로 셈한 이익과 맞댄다
+test('11-18 break-even pays the workshop classes and the Korean teacher seat before allowing the threshold', () => {
+  const inp = fixture(), sc = inp.scenarios['기본'];
+  Object.assign(inp.lab.workshop, { uptake: 0.5, perClass: 10, leadHoursPerClass: 2, leadHourlyMNT: 10, assistHoursPerClass: 1, assistHourlyMNT: 5, productionPerClassMNT: 20, hostRoomHourMNT: 0 });
+  const fixed = 1000, seat = 300, free = 1;
+  const result = labBep(inp, sc, 'v23', { extraFixedMNT: fixed }, { krTeacherMNT: seat, wsFree: free });
+  // 정규 학생은 0.8n(라이트 20%), 워크숍에 그 절반이 나오고 열 명이 한 반이다. 한 반은 돈 없이 맡고 나머지 반에 진행자 2시간 × 10을 낸다. 보조 1시간 × 5와 제작 실비 20은 모든 반에 낸다
+  const ws = (n) => { const classes = Math.ceil(n * 0.8 * 0.5 / 10 - 1e-9); return (classes - Math.min(classes, free)) * 2 * 10 + classes * (1 * 5 + 20); };
+  const margin = (n) => 90 * n + Math.min(n * 0.2, 5) * 40 - ws(n) - fixed - seat;
+  assert.ok(margin(result.students) >= 0, `손익분기 ${result.students}명에서 이익이 0 아래`);
+  assert.ok(margin(result.students - 0.1) < 0, '한 칸 앞에서 이미 흑자라면 더 이른 손익분기를 놓쳤다');
+  assert.ok(ws(result.students) > 0, '손익분기에서 워크숍 반이 열려 있어야 대조가 뜻이 있다');
+  close(result.fixedAdj, fixed + seat);
+  close(result.marginAtBep, margin(result.students));
+  assert.ok(result.students > labBep(inp, sc, 'v23', { extraFixedMNT: fixed }, { wsFree: free }).students, '강사 자리값이 손익분기를 올린다');
 });
 
 // [11-10] 11-09 방향을 넣은 운영 계획 정본을 지킨다 — 자동화(진단 → 구축 → 월 유지)는 선택사항이라 기본 계산에서 0이고 값은 비교 줄로 남는다,
