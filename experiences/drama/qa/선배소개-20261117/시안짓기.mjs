@@ -39,6 +39,8 @@ const 그림들 = [
   // 한유나의 식당 스틸은 맞은편 자리에서 본 넓은 컷이다(그림.mjs의 today-yuna2, 없으면 1판). 첫 시험에서 여덟이 「얼굴이 화면에 꽉 찬다」고 해서 얼굴 사진을 스틸로 쓰지 않는다.
   ['still-yuna', path.join(굽기, 'today-yuna2.png'), fs.existsSync(path.join(굽기, 'today-yuna.png')) ? path.join(굽기, 'today-yuna.png') : 유나스틸, 1280],
   ['face-yuna', 유나스틸, null, 900],
+  // 「오늘」 동그라미는 얼굴을 가운데 두고 자른다(11-18 미학 맹검: 원 안에서 입과 턱이 잘린다)
+  ['bub-yuna', 유나스틸, null, 240, [0.2, 0.205, 0.8, 0.539]],
   ['selfie-taeo', path.join(뿌리, 'experiences/synk-world-app/me2-assets/sample-scene.webp'), null, 900],
   ['selfie-yuna', path.join(굽기, 'selfie-yuna2.png'), fs.existsSync(path.join(굽기, 'selfie-yuna.png')) ? path.join(굽기, 'selfie-yuna.png') : 유나스틸, 900],
 ];
@@ -82,6 +84,9 @@ const 인물 = {
     hi: '나는 3학년 권태오예요. 편하게 선배라고 불러요.', hiEn: 'I am Kwon Taeo, a third-year. Just call me seonbae.',
     ep1: '저기, 혹시 신입생이에요? 아까 정문 안내 지도 앞에서 빙빙 돌고 있었죠?', ep1En: 'Hey, are you a new student? You were going in circles at the map by the gate, right?',
     ep2: '하하, 여기 처음 오면 다 헤매요. 나는 3학년 권태오예요. 편하게 선배라고 불러요.', ep2En: 'Haha, everyone gets lost here at first. I am Kwon Taeo, third year. Just call me seonbae.', nameAt: 4000,
+    // 자막은 한 화면에 한 문장. [시작 초, 한국어, 뜻] — 시작 초는 소리의 문장 사이 쉼(silencedetect)에서 쟀다
+    ep1Parts: [[0, '저기, 혹시 신입생이에요?', 'Hey, are you a new student?'], [2.7, '아까 정문 안내 지도 앞에서 빙빙 돌고 있었죠?', 'You were going in circles at the map by the gate, right?']],
+    ep2Parts: [[0, '하하, 여기 처음 오면 다 헤매요.', 'Haha, everyone gets lost here at first.'], [3.55, '나는 3학년 권태오예요.', 'I am Kwon Taeo, a third-year.'], [5.65, '편하게 선배라고 불러요.', 'Just call me seonbae.']],
     todayLine: '그때 했던 대사, 오늘 한 번 더 해 봐요.', todayEn: 'That line from before — try it once more today.',
     photo: 'img/intro-taeo.jpg', still: 'img/still-taeo.jpg', selfie: 'img/selfie-taeo.jpg', face: 'img/still-taeo.jpg', today: { video: 'vid/today-taeo.mp4', poster: 'img/today-taeo.jpg' },
     introA: '신입생 때 교수님께 “수고하셨어요”라고 했다가 혼났어요.', hiA: '3학년 권태오예요. 첫날 밥은 내가 살게요.', hiAEn: 'I am Kwon Taeo, third year. Lunch is on me the first day.',
@@ -92,8 +97,10 @@ const 인물 = {
     hi: '나는 3학년 한유나예요. 그냥 선배라고 불러요.', hiEn: 'I am Han Yuna, a third-year. Just call me seonbae.',
     ep1: '저기, 신입생이죠? 나도 1학년 때 정문 지도 앞에서 세 바퀴 돌았는데, 아까 그랬죠?', ep1En: 'Hey, you are new, right? I circled that map three times in my first year too. That was you just now?',
     ep2: '여기 처음 오면 다 그래요. 나는 3학년 한유나예요. 그냥 선배라고 불러요.', ep2En: 'Everyone does that at first. I am Han Yuna, third year. Just call me seonbae.', nameAt: 2500,
+    ep1Parts: [[0, '저기, 신입생이죠?', 'Hey, you are new, right?'], [2.15, '나도 1학년 때 정문 지도 앞에서 세 바퀴 돌았는데, 아까 그랬죠?', 'I circled that map three times in my first year too. That was you just now?']],
+    ep2Parts: [[0, '여기 처음 오면 다 그래요.', 'Everyone does that at first.'], [2.15, '나는 3학년 한유나예요.', 'I am Han Yuna, a third-year.'], [4.33, '그냥 선배라고 불러요.', 'Just call me seonbae.']],
     todayLine: '그때 그 대사요. 오늘 한 번만 더 해요.', todayEn: 'That line from before. Just once more today.',
-    photo: 'img/intro-yuna.jpg', still: 'img/still-yuna.jpg', selfie: 'img/selfie-yuna.jpg', face: 'img/face-yuna.jpg', today: { poster: 'img/face-yuna.jpg' },
+    photo: 'img/intro-yuna.jpg', still: 'img/still-yuna.jpg', selfie: 'img/selfie-yuna.jpg', face: 'img/face-yuna.jpg', today: { poster: 'img/bub-yuna.jpg' },
     introA: '신입생 때 정문 지도 앞에서 세 바퀴 돌았어요.', hiA: '3학년 한유나예요. 식당 찾기 어려우니까 천천히 와요.', hiAEn: 'I am Han Yuna, third year. The cafeteria is hard to find. Take your time.',
   },
 };
@@ -112,7 +119,7 @@ const 휴대폰 = `
 <i class="tap" id="tap"></i>
 
 <div class="layer b" id="L-board">
- <div class="bd"><i class="stray"></i><div class="slip"><i class="pin"></i><b>선배 소개</b><span>국제학부 학생회 · 2027 봄</span></div></div>
+ <div class="bd"><div class="slip"><i class="pin"></i><b>선배 소개</b><span>국제학부 학생회 · 2027 봄</span></div></div>
  <div class="pi">개강 첫날,<br>학생 식당에서<br>만나요!<em>— 학생회 지호</em><span class="add"><b></b><svg viewBox="0 0 100 8" preserveAspectRatio="none"><path pathLength="1" d="M1 5C20 2 40 7 60 4s30-1 39 1"/></svg></span></div>
  <div class="q">${서하줄}
   <p class="t swap"><span class="l1"></span><span class="l2"></span></p><p class="sub swap"></p>

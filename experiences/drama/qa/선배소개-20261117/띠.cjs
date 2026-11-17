@@ -72,7 +72,7 @@ fs.rmSync(밖, { recursive: true, force: true }); fs.mkdirSync(밖, { recursive:
   // ── 고른 뒤: 선배마다 ──
   for (const [k, 이름] of 모드 === '전체' ? [['taeo', '뒤_태오'], ['yuna', '뒤_한유나']] : []) {
     const { ctx, page, errs } = await 열기(`?step=3&pick=${k}&mute=1`);
-    await page.waitForTimeout(600); await 찍(page, 이름);                                                   // ① 일주일 뒤
+    await page.waitForTimeout(150); await 찍(page, 이름);                                                   // ① 일주일 뒤(2.3초 뒤 식당으로 넘어가므로 일찍 찍는다)
     await 켜짐(page, '#L-ep'); await page.waitForTimeout(2600); await 찍(page, 이름);                        // ② 선배의 첫 말
     await 켜짐(page, '#L-ep .mine'); await page.waitForTimeout(500); await 찍(page, 이름);                   // ③ 내 차례
     await page.click('#L-ep .mic'); await 켜짐(page, '#L-ep .memo'); await page.waitForTimeout(900); await 찍(page, 이름); // ④ 이름을 말하는 순간

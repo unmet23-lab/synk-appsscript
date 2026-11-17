@@ -111,10 +111,10 @@
   }
   function resetBoard() {
     clearTimeout(nudgeT); nudgeT = setTimeout(nudge, 2500);
-    S.cur = null; S.pick = null; S.by = null; S.stage = 'board';
+    S.cur = null; S.pick = null; S.by = null; S.stage = 'board'; board.classList.remove('picked');
     buildRows(); bd.classList.remove('back', 'away'); pi.classList.remove('in'); $('.add', pi).classList.remove('w'); $('.add b', pi).textContent = '';
     hb.classList.remove('on'); go.classList.remove('on', 'me'); hint.classList.remove('off'); links.classList.remove('off');
-    links.innerHTML = '<button type="button" data-act="seoha">서하가 정해 주세요</button><small>Let Seoha pick</small>';
+    links.innerHTML = '<button type="button" data-act="seoha">서하가 정해 주세요<small>Let Seoha pick</small></button>';
     $('.keep', q).hidden = true;
     $('.l1', q).textContent = '학교 생활,'; $('.l2', q).textContent = '누구한테 물어볼래요?'; $('.sub', q).textContent = 'Who would you like to ask about school life?';
     $$('.swap', q).forEach(function (e) { e.classList.remove('out'); });
@@ -141,14 +141,17 @@
     hb.classList.remove('on'); go.classList.remove('on'); links.classList.add('off'); hint.classList.add('off');
     document.querySelectorAll('.steps li').forEach(function (li) { li.classList.toggle('on', Number(li.dataset.step) === 2); });
     $('.keep em', q).textContent = 'You can switch after you meet ' + d.en + '.';
-    swapQ(q, by === 'me' ? '좋아요.' : '그럼,', d.name + ' 선배한테 물어봐요.', 'Okay. Ask ' + d.en + ' about school life.').then(function () { if (g === gen) $('.keep', q).hidden = false; });
-    wait(900).then(function () { if (g !== gen) return; bd.classList.add('back'); pi.classList.add('in'); sfx.paper(); return wait(620); })
+    // 이름은 동그라미와 포스트잇에 이미 있으니 서하의 말에서는 되풀이하지 않는다(11-18 미학 맹검 2차: 강조가 세 번 겹친다)
+    swapQ(q, by === 'me' ? '좋아요.' : '그럼,', '이 선배한테 물어봐요.', 'Okay. Ask ' + d.en + ' about school life.').then(function () { if (g === gen) $('.keep', q).hidden = false; });
+    // 포스트잇은 고르지 않은 줄 쪽에 붙는다. 고른 줄(이름과 동그라미)은 덮지 않는다.
+    pi.style.top = S.order.indexOf(k) === 0 ? '232px' : '88px';
+    wait(900).then(function () { if (g !== gen) return; bd.classList.add('back'); board.classList.add('picked'); pi.classList.add('in'); sfx.paper(); return wait(620); })
       .then(function () { if (g !== gen) return; sfx.tack(); buzz(8); return wait(500); })
-      .then(function () { if (g !== gen) return; $('.add b', pi).textContent = d.name + ' 선배랑!'; $('.add', pi).classList.add('w'); sfx.pen(); return wait(1900); })
+      .then(function () { if (g !== gen) return; $('.add b', pi).textContent = d.name + ' 선배랑'; $('.add', pi).classList.add('w'); sfx.pen(); return wait(1900); })
       .then(function () {
         if (g !== gen) return;
         setGo(go, '다음', 'Next');
-        links.innerHTML = '<button type="button" data-act="again">다시 고를래요</button><small>Choose again</small>'; links.classList.remove('off');
+        links.innerHTML = '<button type="button" data-act="again">다시 고를래요<small>Choose again</small></button>'; links.classList.remove('off');
       });
   }
   go.addEventListener('click', function () {
@@ -168,19 +171,24 @@
   // ── ② 일주일 뒤 → ③ 1화 식당 ──
   function chapter() {
     var g = ++gen, d = senior();
-    $('#L-chap .mini i').textContent = d.name + ' 선배랑!'; show('L-chap'); sfx.paper();
+    $('#L-chap .mini i').textContent = d.name + ' 선배랑'; show('L-chap'); sfx.paper();
     wait(2300).then(function () { if (g === gen) episode(); });
   }
   $('#L-chap').addEventListener('click', function () { if ($('#L-chap').classList.contains('on')) episode(); });
   var ep = $('#L-ep'), mine = $('.mine', ep);
-  function cap(ko, en) { $('.ko', ep).textContent = ko; $('.en', ep).textContent = en; }
+  function cap(ko, en) {
+    $('.ko', ep).textContent = ko; $('.en', ep).textContent = en;
+    if (ko) $('.cap', ep).animate([{ opacity: 0.25, transform: 'translateY(3px)' }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'ease-out' });
+  }
+  // 자막은 한 화면에 한 문장만 둔다. 문장마다 소리의 쉼에 맞춰 바꾼다.
+  function capParts(parts, g) { parts.forEach(function (p) { setTimeout(function () { if (g === gen) cap(p[1], p[2]); }, p[0] * 1000); }); }
   function episode() {
     var g = ++gen, d = senior();
     S.stage = 'ep'; $('img.bg', ep).src = d.still; $('.tag', ep).textContent = '3학년 선배'; cap('', '');
     mine.classList.remove('on', 'saying', 'said'); $('.memo', ep).classList.remove('on'); $('.go', ep).classList.remove('on');
-    $('.memo i', ep).textContent = d.name + ' 선배랑!';
+    $('.memo i', ep).textContent = d.name + ' 선배랑';
     show('L-ep');
-    wait(900).then(function () { if (g !== gen) return; cap(d.ep1, d.ep1En); return voice(S.pick + '-ep-01'); })
+    wait(900).then(function () { if (g !== gen) return; capParts(d.ep1Parts, g); return voice(S.pick + '-ep-01'); })
       .then(function (ok) { if (g !== gen || ok === false) return; return wait(350).then(function () { if (g === gen) { mine.classList.add('on'); sfx.tick(); } }); });
   }
   $('.mic', ep).addEventListener('click', function () {
@@ -189,7 +197,7 @@
     wait(40).then(function () { mine.classList.add('said'); return wait(1500); })
       .then(function () { if (g !== gen) return; tone(659, 0.1); tone(523, 0.14, { at: 0.09 }); mine.classList.remove('saying'); return wait(450); })
       .then(function () {
-        if (g !== gen) return; mine.classList.remove('on'); cap(d.ep2, d.ep2En);
+        if (g !== gen) return; mine.classList.remove('on'); capParts(d.ep2Parts, g);
         wait(d.nameAt).then(function () { if (g !== gen) return; $('.tag', ep).textContent = d.name + ' 선배'; $('.tag', ep).animate([{ transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'cubic-bezier(.3,1.5,.4,1)' }); $('.memo', ep).classList.add('on'); sfx.tack(); buzz(10); });
         return voice(S.pick + '-ep-02');
       })
