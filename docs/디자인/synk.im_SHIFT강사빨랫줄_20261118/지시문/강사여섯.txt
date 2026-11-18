@@ -1,0 +1,16 @@
+Use the image generation tool to create ONE landscape image (3:2, about 1536x1024). Do not write code. Return the image.
+
+Six square portrait tiles in a neat grid of 3 columns and 2 rows on a pure white background. Every tile is exactly the same size, filled edge to edge with its own flat pastel color (very soft vignette is fine), with rounded corners of about 6% of the tile width. White gaps of about 4% of the image width separate the tiles and the outer border. Nothing crosses from one tile into another.
+
+Style: exactly the same stylized 3D animated-film character style as Image 2 (same studio, same artist): big expressive eyes, simplified small nose, smooth rounded sculpted forms, soft clay-like matte skin with rosy cheeks, hair sculpted in big soft clumps, gentle soft key light from the front left, very soft shadow. All six must look like characters from the same animated film as Image 2. NOT realistic, NOT semi-realistic, NOT a digital painting, NOT a photo of a real person. Friendly, calm, professional adults.
+
+Framing in every tile: head and shoulders of one person, centered, looking at the camera with a slight 3/4 turn, the top of the head about 12% below the tile top, shoulders cut by the bottom edge of the tile. Same camera distance and the same head size in all six tiles.
+
+Row 1, left (soft sky blue tile #CFE2F6): a stylized 3D character inspired by the man in Image 1 (use Image 1 only for his features, never copy its photo look): his slim face shape, straight dark eyebrows, and his tousled black hair falling over the forehead. Early 30s Korean man, white open-collar shirt. Relaxed confident half smile.
+Row 1, middle (butter yellow tile #F6E4A6): a Korean woman in her mid 40s, neat shoulder-length black bob, thin round glasses, cream knit cardigan over a light blouse, warm smile.
+Row 1, right (peach pink tile #F7D2C8): a Korean man in his late 20s, short wavy brown-black hair, light denim shirt, cheerful open smile.
+Row 2, left (mint tile #CDEBDC): a Korean woman in her early 30s, long dark hair tied low, light green hoodie, kind teacher-like smile.
+Row 2, middle (lavender tile #DED7F3): a Korean man in his mid 40s, short neat hair with a little grey at the temples, charcoal work jacket over a grey t-shirt, calm reassuring look.
+Row 2, right (soft sky blue tile #CFE2F6): the same man as Row 1 left (Image 1) again, same white shirt, looking slightly more to the other side, a little warmer smile.
+
+Absolutely no letters, numbers, words, logos, name tags, badges or symbols anywhere. No hands, no props, no microphones, no laptops.

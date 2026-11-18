@@ -1,0 +1,11 @@
+Use the image generation tool to create ONE square image (1:1, about 1024x1024). Do not write code. Return the image.
+
+One square portrait tile, filled edge to edge with a flat soft sky blue color (#CFE2F6), very soft vignette is fine. No border, no white margin.
+
+Style: exactly the same stylized 3D animated-film character style as the four characters in Image 2 (same studio, same artist, same render): big expressive eyes, simplified small nose, smooth rounded sculpted forms, soft clay-like matte skin with light rosy cheeks, hair sculpted in big soft clumps, the same soft key light from the front left and the same camera distance. He must look like he belongs in the same set as Image 2, side by side with them. NOT realistic, NOT semi-realistic, NOT a painting, NOT a photo.
+
+Person: an early 30s Korean man inspired by the man in Image 1. Use Image 1 only for his features: slim face, straight dark eyebrows, and his tousled black hair with strands falling over the forehead. White open-collar shirt. Relaxed, confident, friendly half smile.
+
+Framing: head and shoulders, centered, looking at the camera with a slight 3/4 turn, the top of the head about 12% below the top edge, shoulders cut by the bottom edge. Same head size as the characters in Image 2.
+
+Absolutely no letters, numbers, words, logos or symbols. No hands, no props.
