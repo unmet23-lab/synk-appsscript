@@ -10,6 +10,7 @@
  *   메모 목록도 함께 본다. 하네스는 메모 목록의 앞 200줄과 25KB까지만 싣고 넘는 뒤쪽은 말없이 버린다.
  *
  *   node tools/기록찾기.js <낱말> [낱말…]        낱말이 모두 든 줄을 찾는다(영문 대소문자는 가리지 않는다)
+ *   node tools/기록찾기.js --현재 <낱말> [--원문 "경로#앵커"] [--json]  작업 시작이나 재개 시 공용 원문의 범위를 짧게 본다. 명시 원문은 두 곳까지.
  *   node tools/기록찾기.js --또는 <낱말…>        낱말 가운데 하나라도 든 줄
  *   node tools/기록찾기.js --곳 결정,트랙 <낱말…>  찾을 곳을 고른다(결정 · 트랙 · 관문 · 현장 · 메모, 기본은 전부)
  *   node tools/기록찾기.js --줄 docs/_ops/결정.md:123 [더…]   그 줄을 통째로 본다
@@ -243,9 +244,20 @@ function 메모점검화면(점검) {
 
 function main() {
   const args = process.argv.slice(2);
-  const 오류 = 인자게이트('기록찾기', args, ['--또는', '--곳', '--줄', '--메모점검', '--모두', '--json']);
+  const 오류 = 인자게이트('기록찾기', args, ['--또는', '--곳', '--줄', '--메모점검', '--모두', '--json', '--현재', '--원문']);
   if (오류) { console.error(오류); process.exit(2); }
   const json = args.includes('--json');
+  if (args.includes('--현재') || args.includes('--원문')) {
+    try {
+      const { values, positionals } = require('node:util').parseArgs({ args, allowPositionals: true,
+        options: { 현재: { type: 'boolean' }, 원문: { type: 'string', multiple: true, default: [] }, json: { type: 'boolean' } } });
+      if (!values.현재 || !positionals.length || values.원문.length > 2) throw Error('사용: node tools/기록찾기.js --현재 <낱말> [--원문 "경로#앵커"] [--json]');
+      const { 현재찾기, 현재화면 } = require('./lib/작업원문.js');
+      const r = 현재찾기(뿌리, positionals, values.원문);
+      console.log(json ? JSON.stringify(r) : 현재화면(r));
+    } catch (e) { console.error('현재 원문을 확인하지 못했습니다. ' + e.message); process.exitCode = 2; }
+    return;
+  }
   if (args.includes('--메모점검')) {
     const 점검 = 메모점검();
     if (json) { const { 본문, ...나머지 } = 점검; console.log(JSON.stringify(나머지, null, 2)); } else console.log(메모점검화면(점검));

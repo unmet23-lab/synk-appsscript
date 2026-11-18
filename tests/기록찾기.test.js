@@ -12,6 +12,72 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const 도구 = path.join(__dirname, '..', 'tools', '기록찾기.js');
+
+test('현재 — 한 담당 원문의 실제 제목, 범위와 조건을 인용하고 이전 승인과 추정을 가져오지 않는다', t => {
+  const { 뿌리, 돌리기 } = 판(t, { 보관행: [행('2026-10-01', '펜던트 모든 면 확정(예전 안)')] });
+  fs.writeFileSync(path.join(뿌리, 'docs/문서_지도.md'), '| 펜던트 | [제작](제작.md#조건) |\n');
+  const src = path.join(뿌리, 'docs/제작.md');
+  fs.writeFileSync(src, '# 펜던트\n\n외부 공개 전이다.\n\n<a id="조건"></a>\n## 관찰과 사용자 선택\n- 사용자가 선택한 범위는 앞면 색뿐이다.\n- 검수자는 뒷면을 추천했지만 사용자는 아직 고르지 않았다.\n## 과거 안\n펜던트 모든 면 확정(예전 안)\n');
+  const get = () => JSON.parse(돌리기('--현재', '펜던트', '--json').글);
+  const 첫 = get();
+  assert.equal(첫.상태, '원문 발췌');
+  assert.equal(첫.승인판정, '자동 판정하지 않음');
+  assert.equal(첫.원문[0].제목, '관찰과 사용자 선택');
+  assert.equal(첫.원문[0].안내.글, '외부 공개 전이다.');
+  const 글 = 돌리기('--현재', '펜던트').글;
+  assert.match(글, /앞면 색뿐/); assert.match(글, /아직 고르지/); assert.doesNotMatch(글, /모든 면 확정/);
+  assert.match(돌리기('펜던트').글, /모든 면 확정/);
+  fs.writeFileSync(src, fs.readFileSync(src, 'utf8').replace('앞면 색뿐', '앞면과 옆면 색'));
+  assert.notEqual(get().원문[0].지문, 첫.원문[0].지문);
+});
+
+test('현재 — 동명 후보는 선택을 미루고, 누락·긴 문장·중복 앵커를 승인으로 채우지 않는다', t => {
+  const { 뿌리, 돌리기 } = 판(t);
+  fs.writeFileSync(path.join(뿌리, 'docs/문서_지도.md'), '| 장식 | [시안](시안.md), [결과](결과.md) |\n');
+  fs.writeFileSync(path.join(뿌리, 'docs/시안.md'), '# 임시 시안\n## 초안\n이력\n## 초안\n이력 둘\n## 보류\n' + '아직'.repeat(700) + ' 승인 전.\n');
+  const 둘 = JSON.parse(돌리기('--현재', '장식', '--json').글);
+  assert.equal(둘.상태, '원문 선택 필요'); assert.equal(둘.원문.length, 0); assert.equal(둘.후보.length, 2);
+  fs.writeFileSync(path.join(뿌리, 'docs/결과.md'), '# 결과\n기록\n');
+  assert.equal(JSON.parse(돌리기('--현재', '결과', '--json').글).원문[0].제목, '결과');
+  assert.equal(JSON.parse(돌리기('--현재', '무관한말', '--json').글).상태, '지정된 원문 없음');
+  const 없다 = 돌리기('--현재', '장식', '--원문', 'docs/시안.md#없는곳');
+  assert.equal(없다.코드, 2); assert.match(없다.오류, /원문에 없습니다/);
+  assert.equal(돌리기('--현재', '장식', '--원문', 'docs/시안.md#초안').코드, 2);
+  const 긴 = JSON.parse(돌리기('--현재', '장식', '--원문', 'docs/시안.md#보류', '--json').글).원문[0];
+  assert.equal(긴.발췌.length, 0); assert.equal(긴.생략줄, 1);
+  assert.equal(돌리기('--현재', '장식', '--곳', '결정').코드, 2);
+});
+
+test('현재 — 옛 사본의 상대·절대 원문도 공용 작업본을 읽고 받은 원격판과 동시 수정은 구분한다', t => {
+  const { 뿌리 } = 판(t);
+  const { 현재찾기 } = require('../tools/lib/작업원문.js');
+  const git = (d, ...args) => {
+    const r = spawnSync('git', ['-c', 'user.name=시험', '-c', 'user.email=test@example.invalid', '-c', 'commit.gpgsign=false',
+      '-c', 'core.hooksPath=/dev/null', '-c', 'core.autocrlf=false', ...args], { cwd: d, encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr); return r.stdout.trim();
+  };
+  const 파일 = 'docs/정본.md', p = path.join(뿌리, 파일), 옛 = path.join(뿌리, '옛사본');
+  fs.writeFileSync(p, '# 정본\n## 현재\n시험 A\n');
+  fs.writeFileSync(path.join(뿌리, 'docs/예전.md'), '# 예전\n## 현재\n옛 자료\n');
+  git(뿌리,'init','-b','master'); git(뿌리,'add',파일,'docs/예전.md');
+  git(뿌리,'commit','-m','시험 바탕'); git(뿌리,'worktree','add','--detach',옛,'HEAD');
+  const 읽기 = (입력 = 파일) => 현재찾기(옛, ['시험'], [입력 + '#현재']).원문[0];
+  fs.writeFileSync(p, '# 정본\n## 현재\n공용 미커밋 B\n');
+  assert.equal(읽기().발췌[0].글, '공용 미커밋 B');
+  assert.equal(읽기(path.join(옛, 파일)).발췌[0].글, '공용 미커밋 B');
+  fs.writeFileSync(path.join(옛, 파일),'# 정본\n## 현재\n받은 판 C\n');
+  const 신설 = 'docs/새자료.md';
+  fs.writeFileSync(path.join(옛, 신설), '# 새 자료\n## 현재\n첫 판\n');
+  git(옛, 'add', 신설); git(옛, 'rm', 'docs/예전.md'); git(옛,'commit','-am','변경');
+  git(뿌리,'update-ref','refs/remotes/origin/master',git(옛,'rev-parse','HEAD'));
+  assert.throws(읽기, /겹칩니다/);
+  fs.writeFileSync(p,'# 정본\n## 현재\n시험 A\n');
+  assert.equal(읽기().발췌[0].글, '받은 판 C');
+  assert.equal(읽기(신설).발췌[0].글, '첫 판');
+  assert.throws(() => 읽기('docs/예전.md'), /원문을 삭제/);
+  fs.writeFileSync(path.join(뿌리, 신설), '# 새 자료\n## 현재\n동시 초안\n');
+  assert.throws(() => 읽기(신설), /겹칩니다/);
+});
 const 긴글 = (n) => '가나다라마바사아자차'.repeat(n / 10);
 
 function 판(t, { 결정행 = [], 보관행 = [], 트랙줄 = [], 관문줄 = [], 현장 = '', 메모 = null } = {}) {
