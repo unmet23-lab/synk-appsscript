@@ -14,6 +14,24 @@ const listeners=new Set(),subsListeners=new Set(),calls=[];
 let subsSeq=100;
 const emitSubs=()=>{for(const fn of subsListeners){try{fn(subs);}catch{}}};
 const nextSubs=mutate=>{const base=subs?JSON.parse(JSON.stringify(subs)):{ok:true,rows:[]};mutate(base);subsSeq=Math.max(subsSeq,Number(base.seq)||0)+1;base.seq=subsSeq;subs=base;return base;};
+// 모델별 토큰(2단계 둘째 조각 3절). 켜기 · 끄기 · 세기 · 실시간 부탁을 적고, 판에 순서 번호를 붙여 알린다(본체 ai-tokens.cjs처럼 늦은 판이 새 판을 덮지 않게)
+let tokens={ok:true,enabled:false,epoch:1,seq:1};const tokenListeners=new Set();
+const emitTokens=()=>{for(const fn of tokenListeners){try{fn(tokens);}catch{}}};
+const nextTokens=patch=>{tokens={...tokens,...patch,ok:true,epoch:1,seq:(tokens.seq||1)+1};return tokens;};
+// 내 계정(2단계 둘째 조각 5절). 합성 회원 하나의 자료다. 바꾸는 요청은 이 창의 자료만 고치고, 모든 곳 로그아웃은 본체처럼 이 PC의 로그인도 끝낸다
+const iso=ms=>new Date(Date.now()-ms).toISOString();
+const qaAccount=()=>({ok:true,account:{synk_user_id:'20000000-0000-4000-8000-000000000002',status:'active',profile:{display_name:'합성 회원',locale:'ko',time_zone:'Asia/Seoul'},profile_revision:3},
+  memberships:[{kind:'learner',role:'student',student_code:'S-01'}],learning:{enabled:false,revision:1},capabilities:{learningSync:true},
+  sessions:[{id:'s-now',product:'platform',label:'',current:true,last_seen:iso(0)},{id:'s-phone',product:'world',label:'휴대폰',current:false,last_seen:iso(26*3600e3)},{id:'s-laptop',product:'platform',label:'집 노트북',current:false,last_seen:iso(4*86400e3)}],dataRequests:[]});
+let account=qaAccount();
+const accountOps={
+  accountView:()=>JSON.parse(JSON.stringify(account)),
+  updateProfile:params=>{account.account.profile={...account.account.profile,...params?.profile};account.account.profile_revision++;return {ok:true};},
+  revokeSession:params=>{account.sessions=account.sessions.filter(s=>s.id!==params?.session_id);return {ok:true};},
+  setLearning:params=>{account.learning={enabled:params?.enabled===true,revision:account.learning.revision+1};return {ok:true};},
+  requestDeletion:()=>{const due=new Date(Date.now()+7*86400e3).toISOString();account.account.status='deletion-requested';account.learning={enabled:false,revision:account.learning.revision+1};account.dataRequests=[{kind:'delete',status:'pending',request_id:'qa-delete',due_at:due}];return {ok:true,request:{due_at:due}};},
+  cancelDeletion:()=>{account.account.status='active';account.dataRequests=[];return {ok:true};},
+};
 let release=null;let restoring=new Promise(resolve=>{release=resolve;});
 let configured=null;const ready=new Promise(resolve=>{configured=resolve;});
 const emit=()=>{for(const fn of listeners){try{fn(auth);}catch{}}};
@@ -31,7 +49,11 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   authSignUp:async()=>{calls.push('signUp');return {ok:true};},
   authCancelSignIn:async()=>{calls.push('cancelSignIn');auth={configured:true,status:'signed-out',signedIn:false,sessionGeneration:auth.sessionGeneration+1,accountGeneration:GUEST_GEN};emit();return {ok:true};},
   authSignOut:async()=>{calls.push('signOut');auth={configured:true,status:'signed-out',signedIn:false,sessionGeneration:auth.sessionGeneration+1,accountGeneration:GUEST_GEN};emit();return {ok:true,serverRevoked:true,serverSessionRevoked:true};},
-  accountRequest:async(operation,params)=>{calls.push(operation+(params?.outcome?':'+params.outcome:''));if(operation==='completePurposeOnboarding')return {ok:true};if(operation==='load')return {ok:true};return {ok:false,error:{code:'QA_OPERATION_DISABLED'}};},
+  accountRequest:async(operation,params)=>{calls.push(operation+(params?.outcome?':'+params.outcome:'')+(params?.session_id?':'+params.session_id:''));if(operation==='completePurposeOnboarding')return {ok:true};if(operation==='load')return {ok:true};
+    if(operation==='revokeAll'){auth={configured:true,status:'signed-out',signedIn:false,sessionGeneration:auth.sessionGeneration+1,accountGeneration:GUEST_GEN};setTimeout(emit,0);return {ok:true};}
+    if(auth.signedIn===true&&Object.hasOwn(accountOps,operation))return accountOps[operation](params);return {ok:false,error:{code:'QA_OPERATION_DISABLED'}};},
+  accountIdentity:async()=>{calls.push('identity');if(auth.signedIn!==true)return {ok:false,error:{code:'AUTH_REQUIRED'}};return {ok:true,email:'member@example.com',newEmail:null,createdAt:'2026-03-02T00:00:00Z',identities:[{provider:'email'},{provider:'google'}]};},
+  authSecurity:async section=>{calls.push('security:'+section);return {ok:true};},
   resolveCompanyEntryDestinations:async req=>{calls.push('resolve');return echo(req,{result:assignment});},
   openAssignedCompanyDestination:async req=>{calls.push('open:'+req.destination);return echo(req,{destination:req.destination});},
   cancelCompanyEntry:async()=>null,
@@ -54,13 +76,22 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     connectKey:async(service,_key,options)=>{calls.push('subs-key:'+service+(options?.replace?':'+options.replace:''));return {ok:false,code:'INVALID_KEY'};},
     submitCode:async id=>{calls.push('subs-code:'+id);return {ok:true};},
     openLoginUrl:async id=>{calls.push('subs-open-url:'+id);return {ok:true};},
-    tokens:async()=>({ok:true,enabled:false}),tokensScan:async()=>({ok:true,enabled:false}),tokensEnable:async on=>{calls.push('subs-tokens-enable:'+on);return {ok:true,enabled:on===true};},tokensLive:async on=>{calls.push('subs-tokens-live:'+on);return {ok:true};},onTokens:()=>()=>{},
+    tokens:async()=>{calls.push('subs-tokens');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return tokens;},
+    tokensScan:async options=>{calls.push('subs-tokens-scan:'+(options?.force?'force':'soft'));if(!tokens.enabled)return tokens;return options?.force?nextTokens({scanning:true}):tokens;},
+    tokensEnable:async on=>{calls.push('subs-tokens-enable:'+on);const next=on?nextTokens({enabled:true,scanning:true,scannedAt:null,progress:{done:0,total:40},cells:[],live:false}):nextTokens({enabled:false,scanning:false,scannedAt:null,progress:null,cells:[],live:false});emitTokens();return next;},
+    tokensLive:async on=>{calls.push('subs-tokens-live:'+on);return tokens.enabled?nextTokens({live:on===true}):tokens;},
+    onTokens:fn=>{tokenListeners.add(fn);return ()=>tokenListeners.delete(fn);},
   }),
   // 본체(main.cjs siteVisitsCall)처럼 로그인한 회원에게만 답한다. 정하지 않으면 볼 계정이 아닌 답(available:false)이다
   siteVisits:Object.freeze({snapshot:async()=>{calls.push('visits-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return visits||{ok:true,available:false};}}),
 }));
 contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
-  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;configured();},
+  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;if(value?.tokens)tokens=value.tokens;configured();},
+  // 모델별 토큰의 새 판을 알린다(세는 중의 진행, 다 센 판). 순서 번호는 이 창이 붙인다
+  setTokens:value=>{nextTokens(value||{});emitTokens();},
+  tokens:()=>JSON.parse(JSON.stringify(tokens)),
+  // 내 계정의 합성 자료(지금 판)를 읽는다
+  account:()=>JSON.parse(JSON.stringify(account)),
   restore:snapshot=>{auth=snapshot;release();emit();},
   // 다음 계정 확인을 붙잡아 둔다(다시 시도 뒤 확인 단계를 보려고). restore가 다시 풀어 준다
   holdAuth:()=>{restoring=new Promise(resolve=>{release=resolve;});},

@@ -99,3 +99,19 @@ test('the account room is a top room like the two Solio rooms', () => {
   assert.doesNotMatch(css, /\.room\[data-room\^="solio"\]/, 'the top room rules follow the class, not the room name');
   assert.match(block('@media (min-width:641px)'), /#portal-entry \.room-top\{top:clamp\(92px,21vh,196px\);transform:none/);
 });
+
+/* ── 2단계 둘째 조각 둘째 묶음: 모델별 토큰 줄과 내 계정 방 ── */
+test('the learning switch lights only when on, and the deletion confirm group is one left line with a quiet question focus', () => {
+  assert.match(css, /#portal-entry \.more-acts \.quiet\[aria-pressed="true"\],#portal-entry \.quiet\[aria-checked="true"\],#portal-entry \.quiet\.warn\{color:var\(--paper\);border-bottom-color:var\(--paper\)\}/);
+  assert.match(css, /#portal-entry \.quiet\[aria-checked="false"\]\{color:var\(--dim\)\}/);
+  assert.match(css, /#portal-entry \.confirm\{display:grid;grid-column:1 \/ -1;[^}]*border-left:1px solid rgba\(243,241,236,\.34\)\}/);
+  assert.match(css, /#portal-entry \.confirm \[data-ask-q\]:focus\{outline:none\}/);
+});
+
+test('a long name in 내 계정 is cut short instead of covering the next cell, and a lone button in the subscriptions room sits under the sentence', () => {
+  assert.match(css, /#portal-entry \.room\[data-room="account"\] button\.row \.val\{min-width:0;overflow:hidden;text-overflow:ellipsis\}/);
+  assert.match(css, /#portal-entry \.room\[data-room="solio"\] \.read:has\(> \[data-read\]:empty\)\{justify-content:flex-start\}/);
+  assert.match(css, /#portal-entry \.room\[data-room="solio"\] \.read > \[data-read\]:empty\{display:none\}/);
+  const view = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(view, /const ASIDE_NAMES = Object\.freeze\(\['manage', 'account'\]\);/, 'the account room shares the top room markup');
+});

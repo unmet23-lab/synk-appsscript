@@ -28,10 +28,10 @@ export function railSettleMs(count) {
 }
 const CHEVRON = '<svg viewBox="0 0 8 5" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="M1 1l3 3 3-3"/></svg>';
 
-/* 펼침이나 구독 방에서 여는 방(2단계 둘째 조각 설계 1.3절, 시안 data-room="manage"). 맨 위 「돌아가기」, 결론 문장, 줄 묶음, 맨 아래 줄과 글 단추 하나다.
-   내 계정 · 설정 방은 다음 묶음에서 이 표에 더한다 */
-const ASIDE_NAMES = Object.freeze(['manage']);
-const ASIDE_LABEL = Object.freeze({ manage: '연결한 계정' });
+/* 펼침이나 구독 방에서 여는 방(2단계 둘째 조각 설계 1.3절, 시안 data-room="manage" · "account"). 맨 위 「돌아가기」, 결론 문장, 줄 묶음, 맨 아래 줄과 글 단추 하나다.
+   설정 방은 다음 묶음에서 이 표에 더한다 */
+const ASIDE_NAMES = Object.freeze(['manage', 'account']);
+const ASIDE_LABEL = Object.freeze({ manage: '연결한 계정', account: '내 계정' });
 function asideMarkup(name) {
   return `<div class="room room-top room-aside" data-room="${name}" hidden>
       <button class="quiet up" type="button" data-orb-act="aside-back">돌아가기</button>
@@ -163,6 +163,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* 방(2단계 둘째 조각). asideReturn은 방을 연 자리(닫을 때 초점을 돌려줄 곳)다. applied는 컨트롤러가 보낸 요청(열 줄, 접을 줄, 초점)을 한 번씩만 따르려고 적어 둔다.
      stale은 입력 중이거나 누르는 중이라 다시 짓기를 미룬 안쪽이다. 손을 떼거나 초점이 그 안쪽을 떠나면 마저 짓는다 */
   let lastAside = null, asideReturn = null, pressing = false, liveSeq = 0, fldSeq = 0;
+  /* 방 안에서 옛 화면(마을 기록)을 열 때 누른 단추. 옛 화면을 닫으면 그리로 초점을 돌린다 */
+  let legacyReturn = null, lastModeSeen = null;
   const applied = { open: {}, close: {}, focus: {} };
   const stale = new Map();
   const ptrPx = { x: -1e4, y: -1e4, t: 0, v: 0 };
@@ -307,8 +309,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   function renderRows(today) {
     const rows = today.rows || [];
     renderSubRows(rows);
-    // 구독 줄 아래의 종류가 다른 줄(요금)은 줄 열쇠(data-key)로 그린다(2단계 둘째 조각 설계 2.4절)
-    putRows(app.rows, rows.length ? today.extra || [] : [], 'solio');
+    // 구독 줄 아래의 종류가 다른 줄(요금, 모델별 토큰)은 줄 열쇠(data-key)로 그린다(2단계 둘째 조각 설계 2.4절 · 3.4절).
+    // 모델별 토큰 줄은 구독이 없어도 서므로 구독 줄 수와 상관없이 그린다
+    putRows(app.rows, today.extra || [], 'solio');
   }
   function renderSubRows(rows) {
     const key = JSON.stringify(rows.map(r => [r.key, r.name, r.sub, r.gauge, r.val, r.when, r.urgent, r.label, r.more]));
@@ -434,7 +437,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       setText(app.then, t.then);
       renderRows(t);
       app.rows.classList.toggle('dim', Boolean(t.dim));
-      app.rows.hidden = !(t.rows && t.rows.length);
+      app.rows.hidden = !((t.rows && t.rows.length) || (t.extra && t.extra.length));
       setText(app.read, t.read);
       app.reread.hidden = t.action !== 'reread';
       // 「구독 관리 열기」는 구독 줄이 있어 「다시 읽기」가 보일 때만 그 옆에 둔다(설계 검토 2차 4)
@@ -614,11 +617,17 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     more.classList.toggle('open', on);
     more.inert = !on;
     if (on) more.removeAttribute('aria-hidden'); else more.setAttribute('aria-hidden', 'true');
+    const was = b.classList.contains('opened');
     b.classList.toggle('opened', on);
     b.setAttribute('aria-expanded', String(on));
     if (!on) b.classList.remove('pin');
     // 묻고 있던 줄을 접으면 물음을 거둔다(2단계 둘째 조각 설계 8.2)
     if (!on && more.querySelector('.quiet.warn')) disarmRow(b);
+    // 지켜보는 줄(모델별 토큰, 계정 지우기)은 열고 접을 때 컨트롤러에 알린다. 그리는 중에 다시 그리지 않게 한 박자 뒤에 알린다
+    if (was !== on && b.dataset?.watch && b.dataset.key) {
+      const room = b.closest('.room')?.dataset.room || '', key = b.dataset.key;
+      setTimeout(() => { if (!disposed) onAction('room', { room, key, act: on ? 'row-open' : 'row-fold' }); }, 0);
+    }
   }
   /* 한 줄을 펼치면 그 아래에 열려 있던 줄은 접는다. 위쪽 줄은 접지 않는다(접으면 손 밑의 줄이 위로 달아난다) */
   function openVis(b, pin = false) {
@@ -841,6 +850,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const inner = b.nextElementSibling?.firstElementChild;
     let t = null;
     if (f.grp) { const g = [...(inner?.querySelectorAll('[data-grp]') || [])].find(x => x.dataset.grp === f.grp); t = g && !g.hidden ? g.querySelector('input,button') : null; }
+    else if (f.ask) t = inner?.querySelector('[data-ask-q]') || null;
     else if (f.field) t = fieldEl(inner, f.field);
     else if (f.act) t = actEl(inner, f.act, f.arg);
     restoringVis = true;
@@ -881,6 +891,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     b.classList.toggle('now', !!r.now);
     b.classList.toggle('unread', !!r.unread);
     b.classList.toggle('gap', !!r.gap);
+    if (r.watch) b.dataset.watch = '1'; else delete b.dataset.watch;
     const label = r.label || [r.nm, r.sub, r.mid, r.val, r.when].filter(Boolean).join(', ');
     if (b.getAttribute('aria-label') !== label) b.setAttribute('aria-label', label);
     const cells = [['nm', r.nm, r.sub], ['mid', r.mid], ['val', r.val], ['when', r.when]], ck = JSON.stringify(cells);
@@ -995,7 +1006,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     else { q.dataset.roomAct = act || ''; q.dataset.roomArg = arg == null ? '' : String(arg); }
     if (f.includes('off')) q.setAttribute('aria-disabled', 'true');
     if (f.includes('enter')) q.dataset.enter = '';
-    if (act === 'grp') q.setAttribute('aria-expanded', String(f.includes('on')));
+    // 묶음을 여닫는 단추(grp, 확인 묶음을 펼치는 「지우기 요청」)는 펼쳤는지 낭독기에 알린다
+    if (act === 'grp' || f.includes('toggle')) q.setAttribute('aria-expanded', String(f.includes('on')));
     // 묻는 동안 단추는 무엇이 지워지는지 쓴 알림 줄을 가리킨다(설계 8.2)
     if (f.includes('warn')) q.setAttribute('aria-describedby', liveId);
     return q;
@@ -1015,6 +1027,43 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       else if (kind === 'cmd') { const p = el('p', 'more-note more-cmd'); p.append(el('code', '', a)); out.push(p); }
       else if (kind === 'live') { const p = el('p', 'more-note more-live', a || ''); p.id = liveId; p.setAttribute('role', 'status'); p.setAttribute('aria-live', 'polite'); out.push(p); }
       else if (kind === 'row') { const r = el('div', 'row sub' + (e ? ' now' : '')); r.append(el('span', 'nm', a), cellOf('mid', b, liveId), cellOf('val', c, liveId), cellOf('when', d, liveId)); out.push(r); }
+      else if (kind === 'gauge') {
+        // 몫을 그은 선(모델별 토큰의 모델 줄). 선은 낭독하지 않고 이름, 값, 오른쪽 칸을 읽는다
+        const r = el('div', 'row sub'), g = el('span', 'gauge'), bar = el('i');
+        g.setAttribute('aria-hidden', 'true');
+        bar.style.setProperty('--v', Math.max(0, Math.min(100, Number(b) || 0)) + '%');
+        g.append(bar);
+        r.append(el('span', 'nm', a), g, el('span', 'val', c || ''), el('span', 'when', d || ''));
+        out.push(r);
+      } else if (kind === 'tog') {
+        // 켜고 끄는 것(시안 tog). 누르면 동작만 보내고, 켜짐 표시는 답이 온 장면으로 바뀐다
+        // 켜짐 단추는 같은 안쪽의 다른 글 단추(내려받기, 열기)처럼 오른쪽 끝 칸에 선다
+        const r = el('div', 'row sub'), mid = el('span', 'mid', b || ''), s = el('span', 'when'), q = el('button', 'quiet', c ? '켜짐' : '꺼짐');
+        mid.id = liveId + '-tog' + (++fldSeq);
+        q.type = 'button';
+        q.setAttribute('role', 'switch');
+        q.setAttribute('aria-checked', String(!!c));
+        q.setAttribute('aria-label', a);
+        q.setAttribute('aria-describedby', mid.id);
+        q.dataset.roomAct = d || '';
+        q.dataset.roomArg = '';
+        if (flagsOf(e).includes('off')) q.setAttribute('aria-disabled', 'true');
+        s.append(q);
+        r.append(el('span', 'nm', a), mid, el('span', 'val', ''), s);
+        out.push(r);
+      } else if (kind === 'confirm') {
+        // 줄 안에서 펼치는 확인 묶음(설계 8.3). 물음 줄이 묶음의 이름이고, 펼치면 초점이 물음 줄로 온다
+        const g = el('div', 'confirm'), q = el('p', 'more-say', a), p = el('p', 'more-acts');
+        q.id = liveId + '-ask';
+        q.tabIndex = -1;
+        q.dataset.askQ = '';
+        g.setAttribute('role', 'group');
+        g.setAttribute('aria-labelledby', q.id);
+        g.append(q, ...(b || []).map(t => el('p', 'more-note', t)));
+        for (const spec of c || []) p.append(actButton(spec, liveId));
+        g.append(p);
+        out.push(g);
+      }
       else if (kind === 'acts') { const p = el('p', 'more-acts'); if (b) p.append(el('span', 'lab', b)); for (const spec of a || []) p.append(actButton(spec, liveId)); out.push(p); }
       else if (kind === 'pick') {
         const p = el('p', 'more-acts');
@@ -1110,6 +1159,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (s.layer === 'ask') return s.ask.unconfigured ? '로그인 설정 확인' : '로그인 방법';
     if (s.layer === 'switch') return '공간 고르기';
     if (s.layer === 'app' && s.aside === 'manage') return '계정 관리';
+    if (s.layer === 'app' && s.aside === 'account') return '내 계정';
     if (s.layer === 'app') return s.space === 'solio' ? '솔리오' : s.space === 'workspace' ? 'Workspace' : 'PULSE';
     if (s.phase === 'welcome') return 'SYNK Platform';
     return '';
@@ -1119,6 +1169,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (disposed) return;
     scene = next;
     const s = next;
+    // 옛 화면으로 바뀌는 그리기에서 지금 초점의 자리를 적어 둔다. 옛 런처가 제 제목으로 초점을 옮기기 전이다
+    if (s.mode === 'legacy' && lastModeSeen !== 'legacy') { const a = doc.activeElement; legacyReturn = a && a !== doc.body && root.contains(a) ? a : null; }
+    lastModeSeen = s.mode;
     // 뿌리에 지키는 표시(설계 4절)
     root.hidden = s.mode === 'off';
     root.dataset.portalState = s.phase;
@@ -1187,8 +1240,16 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       // 방이 열리면 그 방의 맨 위 문장에 초점을 둔다. 낭독기는 결론 문장부터 읽는다(2단계 둘째 조각 설계 1.3절)
       case 'aside': return app.asides[scene?.aside]?.say || null;
       case 'aside-return': return asideReturnTarget();
+      case 'legacy-return': return legacyReturnTarget();
       default: return null;
     }
+  }
+  /* 방에서 연 옛 화면(마을 기록)을 닫을 때 초점을 돌려줄 자리. 연 단추가 보이면 그 단추, 아니면 그 방의 맨 위 문장이다 */
+  function legacyReturnTarget() {
+    const a = legacyReturn;
+    legacyReturn = null;
+    if (a && a.isConnected && root.contains(a) && isVisible(a) && !a.closest('[inert],[hidden]')) return a;
+    return app.asides[scene?.aside]?.say || app.orbBtn;
   }
   /* 방을 닫을 때 초점을 돌려줄 자리. 연 단추가 접힌 줄 안쪽에 있으면 그 줄 단추로, 보이지 않으면 구 단추로 간다 */
   function asideReturnTarget() {
@@ -1501,7 +1562,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     else heading.focus?.({ preventScroll: true });
   };
   const onVisibility = () => {
-    if (doc.hidden) { stage.pause(); return; }
+    if (doc.hidden) { stage.pause(); onAction('hidden'); return; }
     stage.resume();
     onAction('visible');
   };

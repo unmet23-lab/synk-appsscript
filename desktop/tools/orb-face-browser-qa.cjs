@@ -220,11 +220,23 @@ if(!process.versions.electron){
           check('9 settings hides the four library and pleasure rows',hiddenRows.every(Boolean),{hiddenRows});await captureWide(w,'legacy-settings');
           await key(w,'Escape');const lb2=await until(w,s=>s.mode==='app');check('9 Esc leaves the old settings',lb2.ok,lb2.state);
           await wait(700);check('17 coming back from an old screen with focus on the orb does not open the fan',!(await state(w)).fan&&await w.js("document.activeElement===document.querySelector('#portal-entry .here-orb')"));
-          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="account"]');const la=await until(w,s=>s.mode==='legacy'&&s.ui==='app');check('9 「계정」 opens the account view',la.ok,la.state);await capture(w,'legacy-account');
+          // 「계정」은 새 얼굴의 내 계정 방을 연다(2단계 둘째 조각 설계 9.3). 옛 내 계정 화면은 그 방의 「마을 기록」으로만 간다
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="account"]');await wait(700);
+          const ar=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=account]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,say:(r?.querySelector('[data-aside-text]')||{}).textContent||'',onSay:document.activeElement===r?.querySelector('[data-aside-say]')};})()");
+          check('9 「계정」 opens 내 계정 in the face, not the old account view',ar.shown&&ar.mode==='app'&&ar.say==='합성 회원 님으로 로그인했습니다.'&&ar.onSay,ar);
+          const townSel="(()=>{const b=[...document.querySelectorAll('#portal-entry [data-room=account] button.row[data-key]')].find(x=>x.dataset.key==='data');return b;})()";
+          await w.js(`${townSel}.click()`);await wait(400);
+          await w.js(`(()=>{const t=[...${townSel}.nextElementSibling.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct==='town');t.focus();t.click();return true;})()`);
+          const la=await until(w,s=>s.mode==='legacy'&&s.ui==='app');check('9 the town record in 내 계정 opens the old account view',la.ok,la.state);await capture(w,'legacy-account');
           // 옛 화면에서는 어떤 단추를 눌러도 옛 홈 · 라이브러리 · 혜택 · 맞춤 정보로 가지 않는다(Fable 최종)
           const leak=await w.js("(async()=>{const tries=['[data-account-action=insight]','[data-account-action=workspace]','[data-view=home]','[data-view=library]','[data-view=benefits]'];const seen=[];for(const sel of tries){const b=document.querySelector(sel);if(b){b.click();await new Promise(r=>setTimeout(r,120));seen.push([sel,document.documentElement.dataset.view]);}}return {seen,hidden:getComputedStyle(document.querySelector('#view-account .setting-row:has([data-account-action=insight])')||document.body).display};})()");
           check('9 the old screens cannot leak to home, library, benefits or insight',leak.seen.every(([,v])=>['solio','settings','account'].includes(v)),leak);
-          await click(w,'[data-orb-act="legacy-back"]');await until(w,s=>s.mode==='app'&&s.ui==='app');
+          await click(w,'[data-orb-act="legacy-back"]');await until(w,s=>s.mode==='app'&&s.ui==='app');await wait(400);
+          const tb=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=account]'),a=document.activeElement;return {shown:!!r&&!r.hidden,onTown:a?.dataset?.roomAct==='town'};})()");
+          check('9 coming back from the old account view returns to 내 계정 with focus on 「열기」',tb.shown&&tb.onTown,tb);
+          // Esc는 펼친 줄을 먼저 접고, 그다음 방을 닫는다
+          await key(w,'Escape');await wait(200);await key(w,'Escape');await wait(400);
+          check('9 Esc folds the row, then closes 내 계정',await w.js("document.querySelector('#portal-entry [data-room=account]').hidden&&!document.querySelector('#portal-entry [data-room=solio]').hidden"));
           // 14. 들어온 뒤 30초 동안 옛 모습의 대화상자 · 메뉴가 뜨지 않는다
           let stray=null;for(let i=0;i<60;i++){const s=await w.js("(()=>{const open=[...document.querySelectorAll('dialog[open]')].map(d=>d.id);const root=document.documentElement.dataset.orbClient;return {open,root};})()");if(s.open.length||s.root!=='app'){stray=s;break;}await wait(500);}
           check('14 nothing old opens over the face for 30 seconds',!stray,{stray});
@@ -485,8 +497,8 @@ if(!process.versions.electron){
           const actText=(key,a)=>w.js('(window.__act('+JSON.stringify(key)+','+JSON.stringify(a)+')||{}).textContent||""');
           const saves=async()=>(await calls(w)).filter(c=>c.startsWith('subs-save:'));
           // 1. 요금 줄: 구독 줄 아래에 틈을 두고 서고, 이 PC에 없는 계정의 넣은 요금도 합에 든다(설계 검토 D13)
-          const cost=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]');return b?{gap:b.classList.contains('gap'),mid:b.querySelector('.mid').textContent,when:b.querySelector('.when').textContent,last:!b.nextElementSibling.nextElementSibling,label:b.getAttribute('aria-label')}:null;})()");
-          check('18-1 the 「요금」 line stands under the subscription rows with a gap and counts the account not on this PC',!!cost&&cost.gap&&cost.last&&/^한 달 약 /.test(cost.mid)&&/이 PC에 없는 계정 포함/.test(cost.mid)&&/^다음 결제 /.test(cost.when),cost);
+          const cost=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]');return b?{gap:b.classList.contains('gap'),mid:b.querySelector('.mid').textContent,when:b.querySelector('.when').textContent,next:b.nextElementSibling.nextElementSibling?.dataset?.key||null,label:b.getAttribute('aria-label')}:null;})()");
+          check('18-1 the 「요금」 line stands under the subscription rows with a gap, above the token line, and counts the account not on this PC',!!cost&&cost.gap&&cost.next==='tok'&&/^한 달 약 /.test(cost.mid)&&/이 PC에 없는 계정 포함/.test(cost.mid)&&/^다음 결제 /.test(cost.when),cost);
           const c1=await rect('#portal-entry [data-rows] button.row[data-key=cost]');await mv(c1.x,c1.y);await wait(500);
           const costOpen=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]'),m=b.nextElementSibling;return {opened:b.classList.contains('opened'),say:(m.querySelector('.more-say')||{}).textContent||'',bills:m.querySelectorAll('.row.sub').length,rate:!!m.querySelector('input[data-f=usdKrw]'),manage:!!m.querySelector('[data-orb-act=connect]')};})()");
           check('18-1 resting on the 「요금」 line opens its bills, the dollar rate and 「계정 관리」',costOpen.opened&&/^한 달에 약 .+원을 냅니다\./.test(costOpen.say)&&costOpen.bills>=3&&costOpen.rate&&costOpen.manage,costOpen);
@@ -616,6 +628,114 @@ if(!process.versions.electron){
           const dim=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]');return {inert:r.inert,opacity:getComputedStyle(r).opacity};})()");
           check('18-14 while the fan is open the room is dimmed and out of the Tab order',dim.inert&&Number(dim.opacity)<0.2,dim);
           await key(w,'Escape');await until(w,s=>!s.fan,{timeout:2000});
+          w.win.destroy();
+        }
+        // 18 둘째 묶음: 구독 방의 「모델별 토큰」 줄(12.2절의 2)과 내 계정 방(12.2절의 10 · 11 · 15). 숨은 창이라 누르기 전에 초점을 먼저 둔다
+        if(only('18')&&mode==='main'){
+          const tday=k=>{const d=new Date(now-k*D);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+          const tokCells=[[tday(0),'claude','claude-opus-5-5',900,61000,0,0,0,40],[tday(1),'claude','claude-sonnet-5',500,22000,0,0,0,30],[tday(2),'gpt','gpt-6.1-sol',300,17000,0,0,0,25]];
+          const w=await open();await boot(w,{subs:subsReady,tokens:{ok:true,enabled:false,epoch:1,seq:1}},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          const TOK='#portal-entry [data-rows] button.row[data-key=tok]';
+          const tokState=()=>w.js(`(()=>{const b=document.querySelector(${JSON.stringify(TOK)});if(!b)return null;const m=b.nextElementSibling;return {opened:b.classList.contains('opened'),unread:b.classList.contains('unread'),mid:b.querySelector('.mid').textContent,val:b.querySelector('.val').textContent,when:b.querySelector('.when').textContent,afterCost:b.previousElementSibling?.previousElementSibling?.dataset?.key==='cost',live:(m.querySelector('[role=status]')||{}).textContent||'',gauges:m.querySelectorAll('.gauge').length};})()`);
+          const tokBtn=(a,arg)=>`[...document.querySelector(${JSON.stringify(TOK)}).nextElementSibling.querySelectorAll('[data-room-act]')].find(q=>q.dataset.roomAct===${JSON.stringify(a)}&&(${JSON.stringify(arg===undefined)}||q.dataset.roomArg===${JSON.stringify(arg??'')}))`;
+          const tokAct=(a,arg)=>w.js(`(()=>{const x=${tokBtn(a,arg)};if(!x)return false;x.focus();x.click();return true;})()`);
+          const tokText=a=>w.js(`(()=>{const x=${tokBtn(a)};return x?x.textContent:'';})()`);
+          const since=async n=>(await calls(w)).slice(n);
+          const t0=await tokState();
+          check('18-2 the 「모델별 토큰」 line stands under the cost line, dim and switched off',!!t0&&t0.afterCost&&t0.unread&&t0.mid==='꺼져 있습니다',t0);
+          await click(w,TOK);await wait(400);
+          await w.js(`document.querySelector(${JSON.stringify(TOK)}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,'tok-off-open');
+          let n0=(await calls(w)).length;
+          await tokAct('tok-on');await wait(700);
+          const t1=await tokState(),c1=await since(n0);
+          check('18-2 switching on starts the first count, says it may take minutes, and asks for live counting while the line is open',t1.mid==='처음 세는 중입니다'&&t1.val==='0/40'&&t1.live==='켰습니다. 기록이 많으면 처음 세는 데 몇 분 걸립니다.'&&c1.includes('subs-tokens-enable:true')&&c1.includes('subs-tokens-live:true'),{t1,c1});
+          await w.js('window.__orbFixture.setTokens({scanning:true,progress:{done:20,total:40}})');await wait(1400);
+          const t2=await tokState();
+          check('18-2 the first count shows its progress',t2.val==='20/40',t2);
+          await w.js('window.__orbFixture.setTokens('+JSON.stringify({scanning:false,progress:null,scannedAt:now,liveAt:null,since:tday(20),sinceBy:{claude:tday(20),gpt:tday(20)},tools:{claude:3,gpt:1},failed:0,error:null,cells:tokCells})+')');await wait(600);
+          const t3=await tokState();
+          check('18-2 once counted the closed line names the top model and its share, with the total and responses',/^가장 많이 쓴 모델은 Opus 5\.5입니다 · \d+%$/.test(t3.mid)&&!!t3.val&&t3.when==='지난 7일 · 응답 95번'&&t3.gauges===3,t3);
+          // 기간을 고르면 줄이 열린 채 서고 초점이 고른 단추에 남는다
+          await tokAct('tok-range','today');await wait(400);
+          const t4=await w.js(`(()=>{const b=document.querySelector(${JSON.stringify(TOK)}),a=document.activeElement;return {opened:b.classList.contains('opened'),focus:a?.dataset?.pv||null,pressed:b.nextElementSibling.querySelector('[data-pv="today"]')?.getAttribute('aria-pressed'),when:b.querySelector('.when').textContent};})()`);
+          check('18-2 choosing 「오늘」 keeps the line open and focus on that button',t4.opened&&t4.focus==='today'&&t4.pressed==='true'&&t4.when==='오늘 · 응답 40번',t4);
+          await tokAct('tok-range','week');await wait(300);
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`document.querySelector(${JSON.stringify(TOK)}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,`tok-open-${W}`);}
+          w.win.setContentSize(1440,900);await wait(300);
+          // 줄을 접으면 실시간 부탁을 거둔다(설계 검토 D8)
+          n0=(await calls(w)).length;await click(w,TOK);await wait(500);
+          const c2=await since(n0);
+          check('18-2 folding the line drops the live counting',c2.includes('subs-tokens-live:false'),{c2});
+          // 끄기 두 번: 더블클릭 한 번은 묻기만 하고, 0.6초 뒤의 두 번째 누름에 끄고 지운다
+          await click(w,TOK);await wait(400);
+          await w.js(`(()=>{const x=${tokBtn('tok-off')};x.click();x.click();return true;})()`);await wait(300);
+          const off1=await tokText('tok-off'),sent1=(await calls(w)).includes('subs-tokens-enable:false');
+          check('18-2 one double click on 「끄기」 only asks',off1==='한 번 더 누르면 끄고 지웁니다'&&!sent1,{off1,sent1});
+          await wait(700);await tokAct('tok-off');await wait(700);
+          const t5=await tokState();
+          check('18-2 a second press after 0.6 s switches off and says the numbers are gone',(await calls(w)).includes('subs-tokens-enable:false')&&t5.mid==='꺼져 있습니다'&&t5.live==='모델별 토큰을 끄고 모은 숫자를 지웠습니다.',t5);
+          await click(w,TOK);await wait(300);await w.js('document.activeElement&&document.activeElement.blur&&document.activeElement.blur()');
+          // 10. 내 계정: 펼침의 「계정」이 새 얼굴의 방을 연다
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="account"]');await wait(900);
+          const A='#portal-entry [data-room=account] ';
+          await w.js(`(()=>{window.__aq=(key,sel)=>{const b=[...document.querySelectorAll(${JSON.stringify(A+'button.row[data-key]')})].find(x=>x.dataset.key===key);return sel?(b?b.nextElementSibling.querySelector(sel):null):b;};
+            window.__aact=(key,act,arg)=>{const b=window.__aq(key);if(!b)return null;return [...b.nextElementSibling.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct===act&&(arg===undefined||x.dataset.roomArg===arg))||null;};
+            window.__alive=key=>((window.__aq(key)?.nextElementSibling.querySelector('[role=status]'))||{}).textContent||'';return true;})()`);
+          const aact=(key,a,arg)=>w.js('(()=>{const b=window.__aact('+JSON.stringify(key)+','+JSON.stringify(a)+(arg===undefined?'':','+JSON.stringify(arg))+');if(!b)return false;b.focus();b.click();return true;})()');
+          const aopen=key=>w.js('(()=>{const b=window.__aq('+JSON.stringify(key)+');if(!b.classList.contains("opened"))b.click();return true;})()');
+          const alive=key=>w.js('window.__alive('+JSON.stringify(key)+')');
+          const atype=(key,field,value)=>w.js('(()=>{const i=[...window.__aq('+JSON.stringify(key)+').nextElementSibling.querySelectorAll("input[data-f]")].find(x=>x.dataset.f==='+JSON.stringify(field)+');if(!i)return false;i.focus();i.value='+JSON.stringify(value)+';i.dispatchEvent(new Event("input",{bubbles:true}));return true;})()');
+          const atext=sel=>text(w,A+sel);
+          const a0=await w.js(`(()=>{const r=document.querySelector('#portal-entry [data-room=account]');return {shown:!r.hidden,solioHidden:document.querySelector('#portal-entry [data-room=solio]').hidden,say:r.querySelector('[data-aside-text]').textContent,then:r.querySelector('[data-aside-then]').textContent,foot:r.querySelector('[data-aside-foot]').textContent,heading:document.querySelector('#portal-entry [data-orb-heading]').textContent,onSay:document.activeElement===r.querySelector('[data-aside-say]'),rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key),email:(window.__aq('login').querySelector('.when')||{}).textContent};})()`);
+          check('18-10 「계정」 opens 내 계정 with the member name, the places, the whole e-mail and the account number',a0.shown&&a0.solioHidden&&a0.onSay&&a0.say==='합성 회원 님으로 로그인했습니다.'&&a0.then==='이 PC를 포함해 세 곳에서 쓰고 있습니다.'&&/^문의할 때 쓰는 계정 번호 20000000-/.test(a0.foot)&&a0.heading==='내 계정'&&JSON.stringify(a0.rows)==='["name","login","places","data","del"]'&&a0.email==='member@example.com',a0);
+          await captureSizes(w,'account-room');
+          // 이름: 빈 이름과 61자는 그 줄에서 거절하고, 새 이름은 저장해 맨 위 문장이 바뀐다
+          await aopen('name');await wait(300);
+          await atype('name','name','  ');await aact('name','name-save');await wait(300);const n1=await alive('name');
+          await atype('name','name','가'.repeat(61));await aact('name','name-save');await wait(300);const n2=await alive('name');
+          await atype('name','name','새 합성 이름');await aact('name','name-save');await wait(800);const n3=await alive('name'),say2=await atext('[data-aside-text]');
+          check('18-10 a name is refused empty or over 60, and a new one is saved and named at the top',n1==='이름을 넣어 주세요.'&&n2==='이름은 60자 안으로 적어 주세요.'&&n3==='이름을 바꿨습니다. SYNK 앱마다 다음에 열 때 새 이름이 보입니다.'&&say2==='새 합성 이름 님으로 로그인했습니다.'&&(await calls(w)).includes('updateProfile'),{n1,n2,n3,say2});
+          // 로그인과 보안은 기본 브라우저에서 연다
+          await aopen('login');await wait(300);await aact('login','security','password');await wait(400);
+          const s1=await alive('login');
+          check('18-10 「바꾸기 ↗」 opens 「로그인과 보안」 in the browser and says what follows',(await calls(w)).includes('security:password')&&s1==='기본 브라우저에서 SYNK ID의 「로그인과 보안」을 열었습니다. 비밀번호를 바꾸면 이 PC 앱도 로그아웃됩니다.',{s1});
+          // 로그인한 곳: 한 곳을 로그아웃시키면 목록과 맨 위 둘째 줄이 따라 바뀐다
+          await aopen('places');await wait(300);
+          await w.js("window.__aq('places').scrollIntoView({block:'start'})");await wait(150);await capture(w,'account-places');
+          await aact('places','revoke','s-phone');await wait(800);
+          const p1=await w.js("(()=>({rows:window.__aq('places').nextElementSibling.querySelectorAll('.row.sub').length,live:window.__alive('places'),then:document.querySelector('#portal-entry [data-room=account] [data-aside-then]').textContent}))()");
+          check('18-10 one place is signed out and the list and the count follow',(await calls(w)).includes('revokeSession:s-phone')&&p1.rows===2&&p1.live==='그 기기의 로그인을 끝냈습니다.'&&p1.then==='이 PC를 포함해 두 곳에서 쓰고 있습니다.',p1);
+          // 학습 기록 연결
+          await aopen('data');await wait(300);await aact('data','learning');await wait(800);
+          const l1=await w.js("(()=>{const s=window.__aq('data').nextElementSibling.querySelector('[role=switch]');return {checked:s.getAttribute('aria-checked'),text:s.textContent,live:window.__alive('data')};})()");
+          check('18-10 the learning switch turns on through the account server',(await calls(w)).includes('setLearning')&&l1.checked==='true'&&l1.text==='켜짐'&&l1.live==='학습 기록 연결을 켰습니다.',l1);
+          await w.js("window.__aq('data').scrollIntoView({block:'start'})");await wait(150);await capture(w,'account-data');
+          // 11. 계정 지우기 요청: 확인 묶음이 펼쳐지고 초점이 물음 줄에 온다. 펼친 직후의 보내기는 받지 않는다
+          await aopen('del');await wait(300);await aact('del','delete-ask');await wait(400);
+          const d1=await w.js("(()=>{const g=window.__aq('del').nextElementSibling.querySelector('.confirm'),q=g?.querySelector('[data-ask-q]');return {shown:!!g,role:g?.getAttribute('role'),labelled:!!q&&g.getAttribute('aria-labelledby')===q.id,onQ:!!q&&document.activeElement===q,q:q?.textContent||'',facts:g?g.querySelectorAll('.more-note').length:0,expanded:window.__aact('del','delete-ask')?.getAttribute('aria-expanded')};})()");
+          await aact('del','delete-send');await wait(200);
+          const early=(await calls(w)).includes('requestDeletion');
+          check('18-11 「지우기 요청」 opens the confirm group with focus on its question, and an immediate send is not taken',d1.shown&&d1.role==='group'&&d1.labelled&&d1.onQ&&d1.q==='계정 삭제를 요청할까요?'&&d1.facts===3&&d1.expanded==='true'&&!early,{d1,early});
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js("window.__aq('del').scrollIntoView({block:'start'})");await wait(150);await capture(w,`account-delete-confirm-${W}`);}
+          w.win.setContentSize(1440,900);await wait(300);
+          await aact('del','delete-send');await wait(900);
+          const d2=await w.js("(()=>{const b=window.__aq('del');return {val:b.querySelector('.val').textContent,say:document.querySelector('#portal-entry [data-room=account] [data-aside-text]').textContent,live:window.__alive('del'),cancel:!!window.__aact('del','delete-cancel')};})()");
+          check('18-11 sending requests the deletion, and the room says until when it can be cancelled',(await calls(w)).includes('requestDeletion')&&d2.val==='요청됨'&&d2.say==='계정을 지워 달라고 요청했습니다.'&&/^삭제 요청을 받았습니다\. .+까지는 이 자리에서 취소할 수 있습니다\.$/.test(d2.live)&&d2.cancel,d2);
+          await w.js("window.__aq('del').scrollIntoView({block:'start'})");await wait(150);await capture(w,'account-delete-requested');
+          await aact('del','delete-cancel');await wait(900);
+          const d3={say:await atext('[data-aside-text]'),live:await alive('del')};
+          check('18-11 cancelling the request brings the name back and says learning stays off',(await calls(w)).includes('cancelDeletion')&&d3.say==='새 합성 이름 님으로 로그인했습니다.'&&d3.live==='삭제 요청을 취소했습니다. 학습 기록 연결은 꺼 둔 채입니다.',d3);
+          // 모든 곳에서 로그아웃: 더블클릭 한 번은 묻기만 한다. 쓰던 글이 없으면 두 번째 누름에 바로 보내고, 이 PC도 로그아웃되어 묻는 화면으로 간다
+          await aopen('places');await wait(300);
+          await w.js("(()=>{const b=window.__aact('places','revoke-all');b.click();b.click();return true;})()");await wait(300);
+          const r1=await w.js("(()=>{const b=window.__aact('places','revoke-all'),live=document.getElementById(b?.getAttribute('aria-describedby')||'');return {text:b?.textContent||'',live:live?.textContent||''};})()");
+          const sentAll=(await calls(w)).includes('revokeAll');
+          check('18-10 one double click on 「모든 곳에서 로그아웃」 only asks and says this PC signs out too',r1.text==='한 번 더 누르면 모두 로그아웃합니다'&&/이 PC도 바로 로그아웃됩니다\.$/.test(r1.live)&&!sentAll,{r1,sentAll});
+          await wait(700);await aact('places','revoke-all');
+          const lo=await until(w,s=>s.phase==='auth'&&s.ui==='ask',{timeout:12000});
+          const after=await w.js("({room:document.querySelector('#portal-entry [data-room=account]').hidden,dialog:!!document.querySelector('#leave-dialog[open]')})");
+          check('18-15 a second press signs out everywhere, closes the room and goes back to the ask scene',lo.ok&&(await calls(w)).includes('revokeAll')&&after.room&&!after.dialog,{...lo.state,...after});
           w.win.destroy();
         }
         if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.'],['/pulse-app/','pulse','PULSE를 열었습니다.']]){

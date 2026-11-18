@@ -2,7 +2,8 @@
 // 요금 줄, 계정 관리 방(계정 줄 · 사실 줄 · 고치는 칸 · 계정 더하기 · 막혔을 때), 입력 검사, 화면 글의 말투를 본다. 메일은 모두 example.com이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CODE_SAY, DEFAULT_SAY, codeSay, costRow, manageRoom, addItems, manageOpenKey, checkBillDay, parsePass, parseApi, parseFlow, parseCost, parseManual, checkCode, checkKey, checkEmail, checkRate, readWord, MANAGE_HELP, ADD_SERVICES } from '../renderer/solio-rooms.mjs';
+import { CODE_SAY, DEFAULT_SAY, codeSay, costRow, manageRoom, addItems, manageOpenKey, checkBillDay, parsePass, parseApi, parseFlow, parseCost, parseManual, checkCode, checkKey, checkEmail, checkRate, readWord, MANAGE_HELP, ADD_SERVICES, tokRow, TOK_SHOWN, accountRoom, accountSay, checkName, ACCOUNT_SAY, ACCOUNT_NETWORK_SAY, ACCOUNT_DEFAULT_SAY, SESSIONS_SHOWN } from '../renderer/solio-rooms.mjs';
+import { tokenDay } from '../renderer/subscriptions-tokens.mjs';
 
 const NOW = new Date(2026, 10, 18, 10, 0).getTime(), D = 864e5, H = 3600e3;
 const weekly = (id, service, used, resetsAt, extra = {}) => ({ id, service, source: 'auto', label: service, kind: 'weekly', state: 'ok', plan: 'pro', email: id + '@example.com', folder: true, live: { readAt: NOW - 5 * 60e3, weekly: { usedPercent: used, resetsAt } }, ...extra });
@@ -386,6 +387,220 @@ test('input checks: other subscriptions, code, key, e-mail and the dollar rate',
   assert.equal(DEFAULT_SAY, '요청을 마치지 못했습니다. 잠시 뒤 다시 해 주세요.');
 });
 
+/* ── 모델별 토큰 줄(설계 3절, 설계 검토 D8) ── */
+const dayKey = k => tokenDay(NOW - k * D);
+// 본체 칸의 차례: [날짜, 도구, 모델, 입력, 출력, 캐시 읽기, 캐시 쓰기, 생각, 응답 수]
+const cell = (k, service, model, out, n) => [dayKey(k), service, model, 10, out, 0, 0, 0, n];
+const tokOn = (extra = {}) => ({ ok: true, enabled: true, epoch: 1, seq: 1, scanning: false, progress: null, scannedAt: NOW - 30 * 60e3, liveAt: null, live: false, since: dayKey(20), sinceBy: { claude: dayKey(20), gpt: dayKey(20) }, tools: { claude: 3, gpt: 2 }, failed: 0, error: null,
+  cells: [cell(0, 'claude', 'claude-opus-5-5', 6100, 40), cell(1, 'claude', 'claude-opus-5-5', 1000, 10), cell(2, 'gpt', 'gpt-6.1-sol', 2900, 25), cell(10, 'claude', 'claude-sonnet-5', 50000, 90)], ...extra });
+const tokSt = (extra = {}) => ({ notes: new Map(), tokRange: 'week', tokAll: false, ...extra });
+
+test('token line: switched off says so dimly, explains what it reads and offers to switch on', () => {
+  assert.equal(tokRow(null, tokSt(), NOW), null, 'no line before the state is read');
+  assert.equal(tokRow({ ok: false, code: 'SIGN_IN_REQUIRED' }, tokSt(), NOW), null);
+  const row = tokRow({ ok: true, enabled: false }, tokSt(), NOW);
+  assert.deepEqual([row.key, row.nm, row.mid, row.unread, row.watch], ['tok', '모델별 토큰', '꺼져 있습니다', true, true]);
+  assert.equal(row.more[0][1], '모델마다 AI가 답으로 쓴 토큰을 셉니다. 토큰은 AI가 읽고 쓴 글의 양입니다.');
+  assert.ok(kinds(row.more, 'note').some(n => /끄면 모두 지웁니다\.$/.test(n[1])), 'what stays on this PC and that switching off clears it');
+  assert.deepEqual(actsOf(row.more).map(a => a[1]), ['tok-on']);
+});
+
+test('token line: the first count shows its progress, a stopped count offers 「다시 세기」', () => {
+  const first = tokRow(tokOn({ scannedAt: null, scanning: true, progress: { done: 120, total: 1840 } }), tokSt(), NOW);
+  assert.deepEqual([first.mid, first.val], ['처음 세는 중입니다', '120/1,840']);
+  assert.ok(kinds(first.more, 'note').some(n => n[1] === '기록이 많으면 몇 분 걸립니다. 다른 화면을 봐도 계속 셉니다.'));
+  assert.deepEqual(actsOf(first.more).map(a => a[1]), ['tok-off'], 'it can still be switched off');
+  const stopped = tokRow(tokOn({ scannedAt: null, error: 'SCAN_FAILED' }), tokSt(), NOW);
+  assert.equal(stopped.mid, '세다가 멈췄습니다');
+  assert.deepEqual(actsOf(stopped.more).map(a => a[1]), ['tok-scan', 'tok-off']);
+});
+
+test('token line: the closed line says one thing, the top model and its share, with the total and responses', () => {
+  const row = tokRow(tokOn(), tokSt(), NOW);
+  assert.equal(row.mid, '가장 많이 쓴 모델은 Opus 5.5입니다 · 71%');
+  assert.equal(row.val, '1만');
+  assert.equal(row.when, '지난 7일 · 응답 75번');
+  const pick = kinds(row.more, 'pick')[0];
+  assert.deepEqual([pick[1], pick[2], pick[3], pick[5]], ['기간', [['오늘', 'today'], ['7일', 'week'], ['30일', 'month']], 'week', 'tok-range']);
+  const gauges = kinds(row.more, 'gauge');
+  assert.deepEqual(gauges.map(g => [g[1], g[2], g[3], g[4]]), [['Opus 5.5', 71, '7,100', 'Claude Code · 응답 50번'], ['GPT-6.1 Sol', 29, '2,900', 'Codex · 응답 25번']]);
+  const month = tokRow(tokOn(), tokSt({ tokRange: 'month' }), NOW);
+  assert.equal(month.mid, '가장 많이 쓴 모델은 Sonnet 5입니다 · 83%');
+  assert.equal(month.when, '지난 30일 · 응답 165번');
+  const today = tokRow(tokOn({ cells: [cell(3, 'claude', 'claude-opus-5-5', 100, 1)] }), tokSt({ tokRange: 'today' }), NOW);
+  assert.deepEqual([today.mid, today.val, today.when, today.unread], ['오늘은 센 응답이 없습니다', '', '', true]);
+  const none = tokRow(tokOn({ cells: [] }), tokSt(), NOW);
+  assert.equal(none.mid, '지난 7일 동안 센 응답이 없습니다');
+});
+
+test('token line: a share under 0.5% says 「1% 미만」, more than six models fold behind 「모두 보기」', () => {
+  const tiny = tokRow(tokOn({ cells: [cell(0, 'claude', 'claude-opus-5-5', 1, 1), cell(0, 'gpt', 'gpt-6.1-sol', 999, 1)] }), tokSt(), NOW);
+  assert.deepEqual(kinds(tiny.more, 'gauge').map(g => [g[2], g[3]]), [[100, '999'], [1, '1']], 'a used model keeps at least a sliver of line');
+  // 모델이 아주 많으면 가장 많이 쓴 모델도 0.5%에 못 미칠 수 있다
+  const crowd = tokRow(tokOn({ cells: Array.from({ length: 300 }, (_, i) => cell(0, 'gpt', 'gpt-6.' + i, 1, 1)) }), tokSt(), NOW);
+  assert.match(crowd.mid, / · 1% 미만$/);
+  assert.equal(kinds(crowd.more, 'gauge').length, TOK_SHOWN);
+  const nine = tokOn({ cells: Array.from({ length: 8 }, (_, i) => cell(0, 'gpt', 'gpt-6.' + i, 100 + i, 1)).concat([cell(0, 'claude', 'claude-opus-5-5', 1, 1)]) });
+  const shut = tokRow(nine, tokSt(), NOW), all = tokRow(nine, tokSt({ tokAll: true }), NOW);
+  assert.equal(kinds(shut.more, 'gauge').length, TOK_SHOWN);
+  assert.equal(actsOf(shut.more).find(a => a[1] === 'tok-all')[0], '모델 9개 모두 보기');
+  assert.equal(kinds(all.more, 'gauge').length, 9);
+  assert.equal(kinds(all.more, 'gauge').at(-1)[1], 'Opus 5.5');
+  assert.equal(actsOf(all.more).find(a => a[1] === 'tok-all')[0], '여섯 개만 보기');
+});
+
+test('token line: tools that start late, unreadable files, a stopped count, no records and Antigravity are said as facts', () => {
+  const late = tokRow(tokOn({ sinceBy: { claude: dayKey(20), gpt: dayKey(3) } }), tokSt(), NOW);
+  const month = (k => (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일')(new Date(NOW - k * D)))(3);
+  assert.ok(kinds(late.more, 'note').some(n => n[1] === 'Codex 기록은 ' + month + '부터 있습니다. 그 전 날은 비어 있습니다.'), 'the tool whose records begin inside the range');
+  const facts = tokRow(tokOn({ failed: 3, error: 'SCAN_FAILED', live: true, liveAt: NOW - 60e3, tools: { claude: 3, agy: 2 } }), tokSt(), NOW);
+  const notes = kinds(facts.more, 'note').map(n => n[1]).join(' ');
+  assert.match(notes, /09:59에 마지막으로 셌습니다\./, 'the later of the scan and the live count');
+  assert.match(notes, /이 줄을 열어 두면 답이 끝날 때마다 숫자를 더합니다\./);
+  assert.match(notes, /읽지 못한 파일이 3개 있습니다\./);
+  assert.match(notes, /지난번에는 끝까지 세지 못했습니다\./);
+  assert.match(notes, /Antigravity CLI는 토큰 수를 남기지 않아 세지 못합니다\./);
+  const empty = tokRow(tokOn({ cells: [], tools: {} }), tokSt(), NOW);
+  assert.match(kinds(empty.more, 'note').map(n => n[1]).join(' '), /이 PC에서 Claude Code, Codex, Grok CLI, Gemini CLI의 기록을 아직 찾지 못했습니다\./);
+  assert.ok(!/많은 순서입니다/.test(kinds(empty.more, 'note').map(n => n[1]).join(' ')), 'no order sentence without models');
+  const again = tokRow(tokOn({ scanning: true, progress: { done: 3, total: 9 } }), tokSt(), NOW);
+  assert.match(kinds(again.more, 'note').map(n => n[1]).join(' '), /지금 다시 세고 있습니다\(기록 파일 3\/9\)\./);
+  assert.equal(actsOf(again.more).find(a => a[1] === 'tok-scan')[3], 'off', 'no second count while one runs');
+  const yesterday = tokRow(tokOn({ scannedAt: NOW - D }), tokSt(), NOW);
+  assert.match(kinds(yesterday.more, 'note').map(n => n[1]).join(' '), /11월 17일 10:00에 마지막으로 셌습니다\./);
+});
+
+test('token line: switching off asks first and says what goes in the status line', () => {
+  const row = tokRow(tokOn(), tokSt({ armed: { key: 'tok', act: 'tok-off', at: NOW } }), NOW);
+  const off = actsOf(row.more).find(a => a[1] === 'tok-off');
+  assert.equal(off[0], '한 번 더 누르면 끄고 지웁니다');
+  assert.match(off[3], /warn/);
+  assert.equal(row.more.at(-1)[1], '끄면 모은 숫자를 지웁니다. 다시 켜면 처음부터 다시 셉니다.');
+  const busy = tokRow(tokOn(), tokSt({ busy: 'tok:tok-scan' }), NOW);
+  assert.equal(actsOf(busy.more).find(a => a[1] === 'tok-scan')[3], 'off');
+});
+
+/* ── 내 계정 방(설계 5절) ── */
+const AID = '11111111-1111-4111-8111-111111111111';
+const sess = (id, extra = {}) => ({ id, product: 'world', label: '', last_seen: new Date(NOW - 2 * H).toISOString(), current: false, revoked: false, ...extra });
+const view = (extra = {}) => ({ ok: true, account: { synk_user_id: AID, status: 'active', profile: { display_name: '합성 회원', locale: 'ko', time_zone: 'Asia/Seoul' }, profile_revision: 3 },
+  memberships: [{ kind: 'learner', role: 'student', student_code: 'S-01' }], learning: { enabled: true, revision: 2 }, capabilities: { learningSync: true },
+  sessions: [sess('s-now', { product: 'platform', current: true }), sess('s-phone', { label: '휴대폰', last_seen: new Date(NOW - 3 * D).toISOString() }), sess('s-old', { revoked: true })], dataRequests: [], ...extra });
+const who = (extra = {}) => ({ ok: true, email: 'member@example.com', newEmail: null, createdAt: '2026-03-02T00:00:00Z', identities: [{ provider: 'email' }, { provider: 'google' }], ...extra });
+const accSt = (extra = {}) => ({ notes: new Map(), ...extra });
+const accRow = (room, key) => room.rows.find(r => r.key === key);
+
+test('account room: loading, a failed read with its reason and 「다시 불러오기」, and the account number always at the bottom', () => {
+  const loading = accountRoom({ loading: true }, accSt(), NOW, { accountKey: AID });
+  assert.deepEqual([loading.say, loading.rows, loading.foot, loading.act[1]], ['계정 정보를 불러오고 있습니다.', [], '문의할 때 쓰는 계정 번호 ' + AID, 'sign-out']);
+  const failed = accountRoom({ error: accountSay('NETWORK') }, accSt(), NOW, { accountKey: AID });
+  assert.deepEqual([failed.say, failed.then, failed.act.slice(0, 2)], ['계정 정보를 불러오지 못했습니다.', ACCOUNT_NETWORK_SAY, ['다시 불러오기', 'retry']]);
+  const ready = accountRoom({ data: view(), identity: who() }, accSt(), NOW, {});
+  assert.equal(ready.foot, '문의할 때 쓰는 계정 번호 ' + AID, 'the number comes from the account server once read (설계 검토 D12)');
+  assert.deepEqual(ready.act.slice(0, 2), ['로그아웃', 'sign-out']);
+});
+
+test('account room: the first sentence names the member, the second counts the places; without a name it says SYNK 회원', () => {
+  const room = accountRoom({ data: view(), identity: who() }, accSt(), NOW, {});
+  assert.deepEqual([room.say, room.then], ['합성 회원 님으로 로그인했습니다.', '이 PC를 포함해 두 곳에서 쓰고 있습니다.']);
+  assert.deepEqual(room.rows.map(r => r.key), ['name', 'login', 'places', 'data', 'del']);
+  const nameless = accountRoom({ data: view({ account: { ...view().account, profile: {} } }) }, accSt(), NOW, {});
+  assert.equal(nameless.say, 'SYNK 회원으로 로그인했습니다.');
+  const fromSignIn = accountRoom({ data: view({ account: { ...view().account, profile: {} } }) }, accSt(), NOW, { name: '로그인 이름' });
+  assert.equal(fromSignIn.say, '로그인 이름 님으로 로그인했습니다.');
+  const one = accountRoom({ data: view({ sessions: [sess('s-now', { current: true })] }) }, accSt(), NOW, {});
+  assert.equal(one.then, '이 PC에서만 쓰고 있습니다.');
+});
+
+test('account room: the name line, its field, affiliation and the joined day only when known', () => {
+  const room = accountRoom({ data: view(), identity: who() }, accSt(), NOW, {});
+  const name = accRow(room, 'name');
+  assert.deepEqual([name.nm, name.mid, name.val, name.when], ['이름', 'SYNK 앱마다 이 이름으로 보입니다', '합성 회원', '2026년 3월 2일 가입']);
+  assert.deepEqual(kinds(name.more, 'fld')[0].slice(1, 6), ['새 이름', '합성 회원', '60자까지', 'name', 'text']);
+  assert.deepEqual(kinds(name.more, 'row')[0].slice(1, 3), ['소속', '학생 · S-01']);
+  assert.equal(accRow(accountRoom({ data: view({ memberships: [] }), identity: who({ createdAt: null }) }, accSt(), NOW, {}), 'name').when, '', 'no joined day without one');
+  assert.equal(kinds(accRow(accountRoom({ data: view({ memberships: [] }) }, accSt(), NOW, {}), 'name').more, 'row')[0][2], '학교나 회사와 연결된 소속이 없습니다');
+});
+
+test('account room: sign-in shows the whole e-mail and opens 「로그인과 보안」 for each change (설계 검토 D11)', () => {
+  const login = accRow(accountRoom({ data: view(), identity: who() }, accSt(), NOW, {}), 'login');
+  assert.deepEqual([login.mid, login.when], ['이메일과 비밀번호 · Google', 'member@example.com']);
+  assert.deepEqual(kinds(login.more, 'row').map(r => [r[1], Array.isArray(r[4]) ? r[4].slice(0, 3) : r[4]]), [['로그인 이메일', ['바꾸기 ↗', 'security', 'email']], ['비밀번호', ['바꾸기 ↗', 'security', 'password']], ['Google', '']]);
+  const google = accRow(accountRoom({ data: view(), identity: who({ identities: [{ provider: 'google' }], newEmail: 'next@example.com' }) }, accSt(), NOW, {}), 'login');
+  assert.equal(kinds(google.more, 'row')[1][4][0], '비밀번호 만들기 ↗');
+  assert.ok(kinds(google.more, 'note').some(n => n[1] === '새 이메일 next@example.com의 확인을 기다리고 있습니다.'));
+  const email = accRow(accountRoom({ data: view(), identity: who({ identities: [{ provider: 'email' }] }) }, accSt(), NOW, {}), 'login');
+  assert.deepEqual(kinds(email.more, 'row')[2][4].slice(0, 3), ['Google 연결하기 ↗', 'security', 'google']);
+  const unread = accRow(accountRoom({ data: view(), identityError: true }, accSt(), NOW, {}), 'login');
+  assert.deepEqual([unread.mid, unread.when], ['불러오지 못했습니다', '']);
+});
+
+test('account room: places put this PC first without a sign-out, show six of seven, and ask twice to sign out everywhere', () => {
+  const seven = [sess('s-now', { product: 'platform', current: true }), ...Array.from({ length: 6 }, (_, i) => sess('s' + i, { label: '기기 ' + i }))];
+  const places = accRow(accountRoom({ data: view({ sessions: seven }) }, accSt(), NOW, {}), 'places');
+  assert.deepEqual([places.mid, places.val], ['이 PC · 기기 0 · 기기 1 외 4곳', '7곳']);
+  const rows = kinds(places.more, 'row');
+  assert.equal(rows.length, SESSIONS_SHOWN);
+  assert.deepEqual([rows[0][1], rows[0][2], rows[0][4], rows[0][5]], ['이 PC', 'SYNK 플랫폼 · 지금 쓰는 중', '', true]);
+  assert.deepEqual([rows[1][1], rows[1][2], rows[1][4].slice(0, 3)], ['기기 0', 'SYNK WORLD · 오늘 08:00에 사용', ['로그아웃시키기', 'revoke', 's0']]);
+  assert.equal(actsOf(places.more).find(a => a[1] === 'sessions-all')[0], '1곳 더 보기');
+  assert.equal(kinds(accRow(accountRoom({ data: view({ sessions: seven }), allSessions: true }, accSt(), NOW, {}), 'places').more, 'row').length, 7);
+  const armed = accRow(accountRoom({ data: view() }, accSt({ armed: { key: 'places', act: 'revoke-all', at: NOW } }), NOW, {}), 'places');
+  assert.equal(actsOf(armed.more).find(a => a[1] === 'revoke-all')[0], '한 번 더 누르면 모두 로그아웃합니다');
+  assert.equal(armed.more.at(-1)[1], '이 PC를 포함해 다른 기기와 브라우저의 SYNK 로그인을 모두 끝냅니다. 이 PC도 바로 로그아웃됩니다.');
+});
+
+test('account room: my data has the learning switch, the practice record and the town record, and no personality line (설계 검토 D4 · D5)', () => {
+  const data = accRow(accountRoom({ data: view() }, accSt(), NOW, {}), 'data');
+  assert.equal(data.mid, '학습 기록 연결 켜짐 · 연습 기록 · 마을 기록');
+  const tog = kinds(data.more, 'tog')[0];
+  assert.deepEqual([tog[1], tog[3], tog[4], tog[5]], ['학습 기록 연결', true, 'learning', '']);
+  assert.deepEqual(kinds(data.more, 'row').map(r => [r[1], r[4][1]]), [['연습 기록', 'export'], ['마을 기록', 'town']]);
+  assert.ok(!texts(data).some(t => /내 성향/.test(t)));
+  const deleting = view({ account: { ...view().account, status: 'deletion-requested' }, learning: { enabled: false, revision: 3 } });
+  const locked = kinds(accRow(accountRoom({ data: deleting }, accSt(), NOW, {}), 'data').more, 'tog')[0];
+  assert.deepEqual([locked[2], locked[5]], ['계정 삭제를 요청해서 켤 수 없습니다. 요청을 취소하면 다시 켤 수 있습니다', 'off']);
+  const noFeature = kinds(accRow(accountRoom({ data: view({ learning: { enabled: false, revision: 1 }, capabilities: {} }) }, accSt(), NOW, {}), 'data').more, 'tog')[0];
+  assert.deepEqual([noFeature[2], noFeature[5]], ['지금은 켤 수 없습니다. 이 기기에서 하는 연습은 그대로 할 수 있습니다', 'off']);
+});
+
+test('account room: deleting is a confirm group, not a second press; a pending request can be cancelled; processing cannot', () => {
+  const before = accRow(accountRoom({ data: view() }, accSt(), NOW, {}), 'del');
+  assert.deepEqual([before.gap, before.unread, before.watch, before.mid], [true, true, true, '요청한 뒤 7일 동안은 취소할 수 있습니다']);
+  assert.deepEqual(actsOf(before.more).map(a => a[1]), ['delete-ask']);
+  assert.equal(kinds(before.more, 'confirm').length, 0);
+  const asking = accRow(accountRoom({ data: view(), askDelete: true }, accSt(), NOW, {}), 'del');
+  const box = kinds(asking.more, 'confirm')[0];
+  assert.equal(box[1], '계정 삭제를 요청할까요?');
+  assert.equal(box[2].length, 3);
+  assert.deepEqual(box[3].map(a => a[1]), ['delete-send', 'delete-keep']);
+  assert.match(actsOf(asking.more).find(a => a[1] === 'delete-ask')[3], /toggle on/);
+  const due = new Date(2026, 11, 3, 15, 0).toISOString();
+  const pending = view({ account: { ...view().account, status: 'deletion-requested' }, dataRequests: [{ kind: 'delete', status: 'pending', request_id: 'r1', due_at: due }] });
+  const room = accountRoom({ data: pending }, accSt(), NOW, {});
+  assert.deepEqual([room.say, room.then], ['계정을 지워 달라고 요청했습니다.', '12월 3일 15:00까지는 이 자리에서 취소할 수 있습니다.']);
+  const del = accRow(room, 'del');
+  assert.deepEqual([del.now, del.val, del.mid], [true, '요청됨', '12월 3일까지 취소할 수 있습니다']);
+  assert.deepEqual(actsOf(del.more).map(a => a[1]), ['delete-cancel']);
+  assert.equal(kinds(accRow(room, 'name').more, 'fld').length, 0, 'the name cannot be changed while deletion is requested');
+  const processing = accountRoom({ data: view({ account: { ...view().account, status: 'deletion-requested' } }) }, accSt(), NOW, {});
+  assert.equal(processing.then, '계정 삭제를 처리하고 있습니다.');
+  assert.deepEqual(actsOf(accRow(processing, 'del').more), []);
+});
+
+test('account errors take the 합니다 voice, and the name check keeps the old rules', () => {
+  assert.equal(accountSay('PROFILE_CONFLICT'), ACCOUNT_SAY.PROFILE_CONFLICT);
+  assert.equal(accountSay('SERVICE_UNAVAILABLE'), ACCOUNT_NETWORK_SAY);
+  assert.equal(accountSay('WHATEVER', true), ACCOUNT_NETWORK_SAY);
+  assert.equal(accountSay('WHATEVER'), ACCOUNT_DEFAULT_SAY);
+  assert.equal(checkName('  ').say, '이름을 넣어 주세요.');
+  assert.equal(checkName('가'.repeat(60)).value, '가'.repeat(60));
+  assert.equal(checkName('가'.repeat(61)).say, '이름은 60자 안으로 적어 주세요.');
+  assert.equal(checkName('😀'.repeat(31)).say, '이름은 60자 안으로 적어 주세요.', 'UTF-16 length is what the server counts');
+  assert.equal(checkName('a\u0007b').say, '이름에 쓸 수 없는 글자가 들어 있습니다.');
+  assert.equal(checkName('  새 이름 ').value, '새 이름');
+});
+
 /* ── 화면 글: 합니다체이고, 「GEO」 · 「SEO」 같은 말이 없다(설계 1.3절 「화면 글」) ── */
 test('screen words: no 해요체 endings and no GEO or SEO anywhere the room functions write', () => {
   const rows = [
@@ -401,6 +616,13 @@ test('screen words: no 해요체 endings and no GEO or SEO anywhere the room fun
   for (const svc of ADD_SERVICES) all.push(...texts(addItems(s, st({ add: { svc } }), NOW)));
   for (const stage of ['browser', 'console', 'verifying']) for (const svc of ['claude', 'gpt', 'gemini']) all.push(...texts(addItems({ ...s, tools: { [svc]: { installed: true } }, login: { id: 'l', service: svc, stage, url: 'https://example.com', needsCode: stage === 'browser' } }, st({ add: { svc } }), NOW)));
   all.push(...Object.values(CODE_SAY), DEFAULT_SAY, ...MANAGE_HELP.flat());
+  // 모델별 토큰 줄과 내 계정 방(둘째 묶음)
+  for (const t of [{ ok: true, enabled: false }, tokOn({ scannedAt: null, scanning: true, progress: { done: 1, total: 2 } }), tokOn({ scannedAt: null, error: 'X' }), tokOn({ failed: 2, error: 'X', live: true, tools: { agy: 1 }, cells: [] }), tokOn({ sinceBy: { gpt: dayKey(2) } })]) all.push(...texts(tokRow(t, tokSt({ armed: { key: 'tok', act: 'tok-off', at: NOW } }), NOW)));
+  all.push(...texts(tokRow(tokOn({ cells: Array.from({ length: 8 }, (_, i) => cell(0, 'gpt', 'gpt-6.' + i, 9, 1)) }), tokSt(), NOW)));
+  const pend = view({ account: { ...view().account, status: 'deletion-requested' }, dataRequests: [{ kind: 'delete', status: 'pending', request_id: 'r', due_at: new Date(NOW + 7 * D).toISOString() }] });
+  for (const acc of [{ loading: true }, { error: ACCOUNT_NETWORK_SAY }, { data: view(), identity: who(), askDelete: true }, { data: pend }, { data: view({ account: { ...view().account, status: 'deletion-requested' } }) }, { data: view({ capabilities: {}, learning: { enabled: false } }), identity: who({ identities: [{ provider: 'google' }], newEmail: 'n@example.com' }) }])
+    all.push(...texts(accountRoom(acc, accSt({ armed: { key: 'places', act: 'revoke-all', at: NOW } }), NOW, {})));
+  all.push(...Object.values(ACCOUNT_SAY), ACCOUNT_NETWORK_SAY, ACCOUNT_DEFAULT_SAY, checkName('').say, checkName('가'.repeat(61)).say, checkName('\u0007').say);
   const sentences = all.flatMap(t => t.split(/(?<=[.!?])\s+/));
   const yo = sentences.filter(x => /(어요|아요|해요|예요|에요|돼요)[.!?]?$/.test(x.trim()));
   assert.deepEqual(yo, [], 'every sentence ends in 합니다체');

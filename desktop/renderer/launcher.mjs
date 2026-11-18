@@ -51,6 +51,11 @@ const memberHome=mountMemberHome($('view-home'),{storage:localStore,getSnapshot:
 const pulseClient=mountPulseClient($('pulse-client'),{storage:localStore,getContext:()=>({owner:library.owner,status:library.status}),getFavorite:()=>effectivePrefs().favorites.includes('pulse'),onFavorite:toggleSelectedFavorite,onToast:toast,onOpenApp:()=>command('pulse-app','pulse')});
 // 「내 계정」: signed-in entry points open it; signed out they keep the sign-in dialog.
 const accountPage=mountAccountPage($('view-account'),{bridge,getIdentity:()=>auth,getAppIds:()=>library.appIds,onBack:()=>showView('settings'),onSignIn:()=>openAccount(),onSignOut:signOut,onInsight:()=>showView('insight'),onWorkspace:()=>{if(allowed('messenger'))launchFromHome('messenger');else toast('이 계정에서는 작업실을 열 수 없어요.');},onAccountChanged:()=>void refreshAuth({reload:true}),toast:message=>toast(message)});
+// 새 얼굴의 내 계정 방(2단계 둘째 조각 설계 1.3절)이 넘겨준 손잡이와, 그 방에서 「로그인과 보안」을 연 때. 옛 내 계정에서 연 때와 같이 로그인 화면의 비밀번호 안내에 쓴다
+let orbRooms=null,orbSecurityOpenedAt=0;
+const ORB_SECURITY_HINT_MS=30*60000;
+const orbSecurityRecent=()=>!!orbSecurityOpenedAt&&Date.now()-orbSecurityOpenedAt<ORB_SECURITY_HINT_MS;
+const SIGN_OUT_DRAFT='저장하지 않은 내용은 로그아웃하면 사라져요. 돌아가서 저장하거나, 저장 없이 로그아웃할 수 있어요.';
 // Signed out, a sign-in entry starts the browser sign-in at once and the dialog shows how it goes; a saved sign-in that
 // failed to load (status 'error') or one in progress keeps the dialog first, where 「저장된 로그인 다시 확인」 lives.
 // 새 얼굴이 보이는 동안(임시 옛 화면 포함)에는 계정 대화상자를 열지 않는다. 로그인 전이면 저장된 로그인을 다시 확인한다(대화상자의 「저장된 로그인 다시 확인」과 같다, 0.4.95 원천 후보 검수 F2)
@@ -87,6 +92,8 @@ accountLifecycle.register('benefits',{render:()=>renderBenefits()});
 accountLifecycle.register('solio',{render:()=>renderSolio()});
 accountLifecycle.register('insight',{render:()=>renderInsightView()});
 accountLifecycle.register('convenience',{beforeOwnerChange:()=>convenience?.capture(),afterRender:()=>convenience?.refresh()});
+// 계정 · 세션이 바뀌면 새 얼굴의 내 계정 방이 보이던 자료와 오는 중인 답을 버린다(2단계 둘째 조각 설계 1.3절)
+accountLifecycle.register('orb-rooms',{onAccountChange:()=>orbRooms?.accountChanged?.()});
 function enqueueLibraryAction(id,action){
   const epoch=ownerEpoch;
   pendingLibraryActions++;
@@ -247,7 +254,7 @@ function renderAuth(){
   let message=signedIn?'로그인돼 있어요.':!bridge?'회원가입과 로그인은 SYNK Platform PC 앱에서 해요.':!auth.configured?'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.':phase==='signing-in'?'브라우저 창에서 로그인하고 「연결하기」를 눌러 주세요. 창이 안 보이면 「로그인 취소」를 누른 뒤 다시 로그인해 주세요.':phase==='restoring'?'저장된 로그인을 확인하고 있어요.':phase==='signing-out'?'로그아웃하고 있어요.':signUpOpened?'회원가입 페이지를 열었어요. 가입을 마쳤다면 「로그인」을 눌러 주세요.':'아직 로그인하지 않았어요.';
   if(auth.error)message+='\n'+(auth.error.message||'로그인을 완료하지 못했어요. 다시 시도해 주세요.');
   // A password changed in the browser's SYNK ID ends this app's session too.
-  if(!signedIn&&auth.error?.code==='AUTH_REQUIRED'&&accountPage.securityVisitedRecently())message+='\n비밀번호를 바꿨다면 새 비밀번호로 다시 로그인해 주세요.';$('account-state').textContent=message;
+  if(!signedIn&&auth.error?.code==='AUTH_REQUIRED'&&(accountPage.securityVisitedRecently()||orbSecurityRecent()))message+='\n비밀번호를 바꿨다면 새 비밀번호로 다시 로그인해 주세요.';$('account-state').textContent=message;
   for(const id of ['signup-button','sign-up']){$(id).hidden=!!signedIn;$(id).disabled=typeof bridge?.authSignUp!=='function'||signing||signUpPending||accountRetryPending;$(id).textContent=signUpPending?'여는 중…':'회원가입';}
   $('signup-help').hidden=!!signedIn||signing||retryable;
   $('forgot-password').hidden=!!signedIn||signing||!bridge||!auth.configured;$('forgot-password').disabled=typeof bridge?.authRecover!=='function';
@@ -406,7 +413,7 @@ async function startSignIn(){
 // disabled, and signOutPending keeps the account page from starting a second one in that window.
 async function signOut(){
   if(signOutPending||!bridge||!auth.signedIn)return;const leaveEpoch=ownerEpoch;
-  if(!await confirmDraftExit('저장하지 않은 내용은 로그아웃하면 사라져요. 돌아가서 저장하거나, 저장 없이 로그아웃할 수 있어요.')||leaveEpoch!==ownerEpoch||!auth.signedIn)return;
+  if(!await confirmDraftExit(SIGN_OUT_DRAFT)||leaveEpoch!==ownerEpoch||!auth.signedIn)return;
   signOutPending=true;$('sign-out').disabled=true;
   const signedOutGeneration=Number.isSafeInteger(auth.sessionGeneration)?auth.sessionGeneration+1:null;
   landing={route:{view:'home'},guest:true};setAuth({status:'signing-out',configured:auth.configured,signedIn:false});const revision=authRevision;
@@ -459,9 +466,24 @@ let windowMaximized=false,portalWindowChrome=null;
 // 검정 구 얼굴(PC 클라이언트 1단계)이 보이는 동안 트레이와 바로가기는 새 얼굴에서 바로 실행되는 앱만 연다. 가린 옛 라이브러리의 앱 소개로 가지 않는다
 function orbRunnable(id){const action=allowed(id)?getAppAction(id):null;return Boolean(bridge&&action&&!action.disabled&&action.action==='launch');}
 // 임시로 여는 옛 화면(설계 9절). 2단계에서 같은 손으로 다시 짓는다
-// 구독과 계정 관리는 새 얼굴의 방이 맡는다(2단계 둘째 조각 설계 9.2). 옛 구독 판을 열어 판 안의 단추를 누르던 길은 걷었다.
-// 내 계정(마을 기록이 남는다)과 설정은 그 방이 생길 때까지 옛 화면을 연다
+// 구독, 계정 관리, 내 계정은 새 얼굴의 방이 맡는다(2단계 둘째 조각 설계 9.2). 옛 구독 판을 열어 판 안의 단추를 누르던 길은 걷었다.
+// account 갈래는 내 계정 방의 마을 기록과 연습 기록 내려받기가 쓴다(설계 9.1, 설계 검토 D4). 설정은 설정 방이 생길 때까지 옛 화면을 연다
 function openOrbLegacy(kind){if(kind==='account'){showView('account');return;}if(kind==='settings')showView('settings');}
+// 새 얼굴의 방이 쓰는 다리(설계 1.3절 「자료 어댑터」). 내 계정 요청은 부를 때의 계정 세대를 잡아 두고, 답이 왔을 때 세대가 바뀌었으면 버린다(옛 내 계정의 epoch 약속과 같다)
+function orbAccountCall(run){const epoch=accountLifecycle.epoch();return Promise.resolve().then(run).then(result=>epoch===accountLifecycle.epoch()?result:{ok:false,code:'changed'});}
+function orbRoomOptions(){
+  const account=typeof bridge?.accountRequest==='function'&&typeof bridge?.accountIdentity==='function'?{
+    request:(operation,params)=>orbAccountCall(()=>bridge.accountRequest(operation,params)),
+    identity:()=>orbAccountCall(()=>bridge.accountIdentity()),
+    security:section=>typeof bridge.authSecurity==='function'?bridge.authSecurity(section):{ok:false},
+    securityOpened:()=>{orbSecurityOpenedAt=Date.now();},
+    changed:()=>void refreshAuth({reload:true}),
+    signedOutAll:()=>toast('모든 SYNK 앱에서 로그아웃했어요.'),
+    name:()=>auth.account?.display_name||'',
+  }:null;
+  // 모든 곳에서 로그아웃 전의 쓰던 글 확인은 펼침의 「로그아웃」과 같은 대화상자다(설계 8.3)
+  return {account,confirmLeave:()=>confirmDraftExit(SIGN_OUT_DRAFT),bind:api=>{orbRooms=api||null;}};
+}
 function syncMaximizeButton(button,maximized){if(!button)return;button.setAttribute('aria-label',maximized?'창 크기 복원':'최대화');button.dataset.maximized=String(Boolean(maximized));}
 function windowState(state){windowMaximized=Boolean(state?.maximized);syncMaximizeButton($('maximize'),windowMaximized);portalWindowChrome?.syncMaximize(windowMaximized);}
 function createPortalWindowChrome(portalRoot){
@@ -536,7 +558,7 @@ portalHost=mountDesktopPortalHost({
   root:$('portal-entry'),
   mountFace:mountOrbFace,
   // PC 쪽 옵션(설계 4절). 검사 실행 길은 본체가 열어 준 때만 열린다(설계 11절)
-  faceOptions:{orbBoot:typeof bridge?.orbBoot==='function'?()=>bridge.orbBoot():null,onFirstFrame:typeof bridge?.orbFirstFrame==='function'?()=>bridge.orbFirstFrame():null,onOpenLegacy:openOrbLegacy,onSignOut:()=>signOut(),subscriptions:bridge?.subscriptions||null,siteVisits:bridge?.siteVisits||null,allowGuestEntry:()=>environment?.qaGuestEntry===true,look:ORB_LOOK},
+  faceOptions:{orbBoot:typeof bridge?.orbBoot==='function'?()=>bridge.orbBoot():null,onFirstFrame:typeof bridge?.orbFirstFrame==='function'?()=>bridge.orbFirstFrame():null,onOpenLegacy:openOrbLegacy,onSignOut:()=>signOut(),subscriptions:bridge?.subscriptions||null,rooms:orbRoomOptions(),siteVisits:bridge?.siteVisits||null,allowGuestEntry:()=>environment?.qaGuestEntry===true,look:ORB_LOOK},
   hostElements:[document.querySelector('.launcher')].filter(Boolean),
   bridge,
   getAuth:()=>auth,

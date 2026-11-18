@@ -1413,14 +1413,14 @@ test('with an old screen open, the orb closes it quietly and opens the fan pinne
   assert.deepEqual([h.view.last().fan.open, h.view.last().fan.pin], [true, true]);
 });
 
-test('「계정」 and 「설정」 still open the old screens until their rooms are built, and the launcher no longer clicks the old board (설계 9.2)', async t => {
+test('「설정」 still opens the old screen until its room is built, 「계정」 falls back to it only without the account bridge, and the launcher no longer clicks the old board (설계 9.2)', async t => {
   const h = harness(t);
   await settle();
   h.face.setState(signedIn());
   await settle();
   h.face.handle('foot', 'account');
   await settle();
-  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'account']);
+  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'account'], 'a host without faceOptions.rooms keeps the old screen');
   assert.ok(h.face.handle('escape'));
   h.face.handle('foot', 'settings');
   assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'settings']);
@@ -1522,11 +1522,11 @@ test('Esc closes the fan first, then the old screen, then the room (설계 9.1)'
   assert.deepEqual([h.view.last().fan.open, h.view.last().aside], [true, 'manage'], 'the fan opens over the room');
   assert.ok(h.face.handle('escape'));
   assert.deepEqual([h.view.last().fan.open, h.view.last().aside], [false, 'manage'], 'Esc closes the fan and keeps the room');
-  h.face.handle('foot', 'account');
+  h.face.handle('foot', 'settings');
   assert.equal(h.face.clientMode(), 'legacy');
   assert.equal(h.view.last().aside, 'manage', 'the room is kept under the old screen');
   assert.ok(h.face.handle('escape'));
-  assert.deepEqual([h.face.clientMode(), h.view.last().aside], ['app', 'manage']);
+  assert.deepEqual([h.face.clientMode(), h.view.last().aside, h.view.last().focus], ['app', 'manage', 'legacy-return'], 'back in the room, focus goes where the old screen was opened');
   assert.ok(h.face.handle('escape'));
   assert.equal(h.view.last().aside, null);
   assert.equal(h.face.handle('escape'), false, 'nothing left to close');
@@ -1588,4 +1588,175 @@ test('another space, a sign-out and another account close the room and clear its
   h.face.setState(signedIn(OTHER, 4));
   await settle(30);
   assert.equal(h.view.last().aside ?? null, null, 'another account closes the room');
+});
+
+/* ── 2단계 둘째 조각 둘째 묶음: 모델별 토큰 줄과 내 계정 방(2단계_둘째조각_구현설계.md 3절 · 5절 · 8.3절 · 9절, 설계 검토 D1 · D4 · D8) ── */
+const FACE_AID = ACCOUNT;
+const faceView = (extra = {}) => ({ ok: true, account: { synk_user_id: FACE_AID, status: 'active', profile: { display_name: '합성 회원', locale: 'ko', time_zone: 'Asia/Seoul' }, profile_revision: 3 },
+  memberships: [], learning: { enabled: false, revision: 1 }, capabilities: { learningSync: true },
+  sessions: [{ id: 's-now', product: 'platform', current: true, last_seen: new Date().toISOString() }, { id: 's-phone', product: 'world', label: '휴대폰', last_seen: new Date(Date.now() - 864e5).toISOString() }], dataRequests: [], ...extra });
+function accountFaceHarness(t, { rows = [roomRow('c', 'claude', { price: 290000, currency: 'KRW', billDay: 9 })], tokens = { ok: true, enabled: true, epoch: 1, seq: 1, scannedAt: Date.now() - 60e3, cells: [] }, answers = {}, leave = true, rooms: withRooms = true } = {}) {
+  const snap = { ok: true, seq: 1, rows, check: { at: Date.now() - 60e3 }, usage: { accounts: {} }, settings: {}, tools: {}, login: null };
+  const acalls = [];
+  let bound = null, tokListen = null, tok = tokens;
+  const reply = (op, params) => { acalls.push([op, params]); const a = answers[op]; return Promise.resolve(typeof a === 'function' ? a(params) : a ?? (op === 'accountView' ? faceView() : op === 'identity' ? { ok: true, email: 'member@example.com', identities: [{ provider: 'email' }] } : { ok: true })); };
+  const subscriptions = {
+    snapshot: async () => snap,
+    check: async () => ({ ...snap, seq: snap.seq + 1 }),
+    onChanged: () => () => {},
+    save: async () => snap,
+    tokens: async () => { acalls.push(['tokens']); return tok; },
+    tokensScan: async options => { acalls.push(['tokensScan', options]); return tok; },
+    tokensEnable: async on => { acalls.push(['tokensEnable', on]); tok = { ...tok, seq: tok.seq + 1, enabled: on }; return tok; },
+    tokensLive: async on => { acalls.push(['tokensLive', on]); return tok; },
+    onTokens: fn => { tokListen = fn; return () => { tokListen = null; }; },
+  };
+  const rooms = withRooms ? {
+    account: { request: reply, identity: () => reply('identity'), security: section => reply('security', section), securityOpened: () => acalls.push(['securityOpened']), changed: () => acalls.push(['changed']), name: () => '로그인 이름' },
+    confirmLeave: () => { acalls.push(['confirmLeave']); return Promise.resolve(leave); },
+    bind: api => { bound = api; },
+  } : undefined;
+  const h = harness(t, { options: { subscriptions, ...(rooms ? { rooms } : {}) } });
+  return { ...h, acalls, ops: () => acalls.map(c => c[0]), bound: () => bound, pushTokens: v => tokListen?.(v), room: () => h.view.last().rooms?.account };
+}
+async function enterAs(h) { await settle(); h.face.setState(signedIn()); await settle(30); }
+
+test('the token line stands under the cost line, and also alone when there is no subscription (설계 3.4)', async t => {
+  const h = accountFaceHarness(t);
+  await enterAs(h);
+  assert.deepEqual(h.view.last().room.solio.extra.map(r => r.key), ['cost', 'tok']);
+  assert.equal(h.ops().filter(o => o === 'tokens').length, 1, 'read once on the way into Solio');
+  const none = accountFaceHarness(t, { rows: [] });
+  await enterAs(none);
+  assert.deepEqual(none.view.last().room.solio.extra.map(r => r.key), ['tok'], 'no subscription still shows the token line');
+  assert.equal(none.view.last().room.solio.rows.length, 0);
+});
+
+test('live counting is asked only while the token line is open in the subscriptions room (설계 검토 D8)', async t => {
+  const h = accountFaceHarness(t);
+  await enterAs(h);
+  assert.ok(!h.ops().includes('tokensLive'), 'nothing is asked while the line is closed');
+  h.face.handle('room', { room: 'solio', key: 'tok', act: 'row-open' });
+  await settle();
+  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensScan' || c[0] === 'tokensLive').map(c => [c[0], c[1]]), [['tokensScan', { force: false }], ['tokensLive', true]]);
+  h.face.handle('subs-manage');
+  await settle();
+  assert.deepEqual(h.acalls.at(-1).slice(0, 2), ['tokensLive', false], 'another room over it stops the live count');
+  h.face.handle('aside-back');
+  await settle();
+  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', true], 'coming back with the line still open asks again');
+  h.view.isHidden = () => true;
+  h.face.handle('hidden');
+  await settle();
+  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', false], 'a hidden window stops it');
+  h.face.handle('room', { room: 'solio', key: 'tok', act: 'row-fold' });
+  h.view.isHidden = () => false;
+  h.face.handle('visible');
+  await settle();
+  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', false], 'a folded line stays quiet');
+});
+
+test('「계정」 opens 내 계정 in the face: focus on its first sentence, the account read through the bridge, the old screen untouched (설계 9.3)', async t => {
+  const h = accountFaceHarness(t);
+  await enterAs(h);
+  h.face.handle('open-switch');
+  h.face.handle('foot', 'account');
+  await settle();
+  const s = h.view.last();
+  assert.deepEqual([s.aside, s.fan.open, s.focus], ['account', false, 'aside']);
+  assert.ok(!h.calls.some(c => c[0] === 'openLegacy'));
+  assert.deepEqual(h.ops().filter(o => o === 'accountView' || o === 'identity').sort(), ['accountView', 'identity']);
+  assert.equal(h.room().say, '합성 회원 님으로 로그인했습니다.');
+  assert.equal(h.room().foot, '문의할 때 쓰는 계정 번호 ' + FACE_AID);
+  assert.ok(h.face.handle('escape'));
+  assert.deepEqual([h.view.last().aside, h.view.last().focus], [null, 'aside-return']);
+});
+
+test('the town record opens the old account screen and coming back returns to 내 계정 with focus on that button (설계 검토 D4)', async t => {
+  const h = accountFaceHarness(t);
+  await enterAs(h);
+  h.face.handle('foot', 'account');
+  await settle();
+  h.face.handle('room', { room: 'account', key: 'data', act: 'town' });
+  await settle();
+  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'account']);
+  assert.deepEqual([h.face.clientMode(), h.view.last().aside], ['legacy', 'account']);
+  h.face.handle('legacy-back');
+  assert.deepEqual([h.face.clientMode(), h.view.last().aside, h.view.last().focus], ['app', 'account', 'legacy-return']);
+  h.face.handle('room', { room: 'account', key: 'data', act: 'export' });
+  assert.equal(h.calls.filter(c => c[0] === 'openLegacy' && c[1] === 'account').length, 2, 'the practice record download opens the same screen');
+});
+
+test('signing out everywhere asks twice in the face, then the launcher’s unsaved-writing check, then sends revokeAll (설계 검토 D1)', async t => {
+  const h = accountFaceHarness(t);
+  await enterAs(h);
+  h.face.handle('foot', 'account');
+  await settle();
+  h.face.handle('room', { room: 'account', key: 'places', act: 'revoke-all' });
+  await settle();
+  assert.ok(!h.ops().includes('confirmLeave'));
+  h.face.handle('room', { room: 'account', key: 'places', act: 'revoke-all' });
+  await settle();
+  assert.ok(!h.ops().includes('confirmLeave'), 'a second press within 0.6 s is not taken');
+  await new Promise(resolve => setTimeout(resolve, ROOM_TIMING.armGuard + 20));
+  h.face.handle('room', { room: 'account', key: 'places', act: 'revoke-all' });
+  await settle();
+  assert.deepEqual(h.ops().filter(o => o === 'confirmLeave' || o === 'revokeAll'), ['confirmLeave', 'revokeAll']);
+  const kept = accountFaceHarness(t, { leave: false });
+  await enterAs(kept);
+  kept.face.handle('foot', 'account');
+  await settle();
+  kept.face.handle('room', { room: 'account', key: 'places', act: 'revoke-all' });
+  await new Promise(resolve => setTimeout(resolve, ROOM_TIMING.armGuard + 20));
+  kept.face.handle('room', { room: 'account', key: 'places', act: 'revoke-all' });
+  await settle();
+  assert.ok(!kept.ops().includes('revokeAll'), 'going back to save sends nothing');
+});
+
+test('the deletion request is a confirm group and its send button is not the button that opened it (설계 8.3)', async t => {
+  const h = accountFaceHarness(t);
+  await enterAs(h);
+  h.face.handle('foot', 'account');
+  await settle();
+  h.face.handle('room', { room: 'account', key: 'del', act: 'delete-ask' });
+  h.face.handle('room', { room: 'account', key: 'del', act: 'delete-ask' });
+  h.face.handle('room', { room: 'account', key: 'del', act: 'delete-send' });
+  await settle();
+  assert.ok(!h.ops().includes('requestDeletion'), 'pressing 「지우기 요청」 twice or sending at once does not request');
+  assert.deepEqual([h.room().focus.key, h.room().focus.ask], ['del', true]);
+  await new Promise(resolve => setTimeout(resolve, ROOM_TIMING.armGuard + 20));
+  h.face.handle('room', { room: 'account', key: 'del', act: 'delete-send' });
+  await settle();
+  assert.equal(h.ops().filter(o => o === 'requestDeletion').length, 1);
+});
+
+test('the launcher’s account change drops the shown account and a late answer; signing out closes the room and clears it', async t => {
+  let release = null;
+  const h = accountFaceHarness(t, { answers: { accountView: () => (release ? faceView() : new Promise(r => { release = r; })) } });
+  await enterAs(h);
+  assert.equal(typeof h.bound()?.accountChanged, 'function', 'the face hands the launcher its handle');
+  h.face.handle('foot', 'account');
+  await settle();
+  const first = release;
+  h.bound().accountChanged();
+  await settle();
+  first(faceView({ account: { ...faceView().account, profile: { display_name: '옛 계정 이름' } } }));
+  await settle();
+  assert.equal(h.room().say, '합성 회원 님으로 로그인했습니다.', 'the room read the account again and dropped the old answer');
+  h.face.setState({ status: 'signed-out', generation: 2 });
+  await settle();
+  assert.equal(h.view.last().aside ?? null, null);
+  h.face.setState(signedIn(ACCOUNT, 3));
+  await settle(30);
+  h.face.handle('foot', 'account');
+  assert.equal(h.room().say, '계정 정보를 불러오고 있습니다.', 'nothing from before the sign-out is shown');
+});
+
+test('a guest cannot open 내 계정', async t => {
+  const h = accountFaceHarness(t);
+  await settle();
+  h.face.setState({ status: 'signed-out', generation: 1 });
+  await settle(30);
+  h.face.handle('foot', 'account');
+  assert.equal(h.view.last().aside ?? null, null);
 });

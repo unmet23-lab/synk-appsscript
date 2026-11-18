@@ -1,6 +1,7 @@
 // 솔리오 안쪽의 나머지(2단계 둘째 조각)를 구독 스냅숏에서 만든다. DOM이 없다.
-// 설계: docs/디자인/플랫폼_클라이언트_검정구_20261116/2단계_둘째조각_구현설계.md 1~4절. 셈은 subscriptions-model.mjs를 그대로 쓰고,
+// 설계: docs/디자인/플랫폼_클라이언트_검정구_20261116/2단계_둘째조각_구현설계.md 1~5절. 셈은 subscriptions-model.mjs를 그대로 쓰고,
 // 이 파일은 그 숫자를 합니다체 글과 줄 자료로 옮긴다. 옛 구독 판(subscriptions.mjs)의 입력 검사 규칙은 닫힌 함수 안에 있어 여기에 옮겨 적었다(설계 14절 D3).
+// 모델별 토큰의 기간 묶기와 숫자 글은 subscriptions-tokens.mjs, 내 계정의 자료 읽기는 옛 내 계정(account-page.mjs)의 순수 함수를 그대로 쓴다.
 //
 // 줄 하나: { key, nm, sub, mid, val, when, now, unread, gap, label, more }
 // 안쪽 한 줄은 [종류, …]이다(시안 nodesOf). 함수 대신 동작 이름을 적는다.
@@ -8,8 +9,12 @@
 //   ['row', 이름, 가운데, 값, 오른쪽, 밝힘] — 칸은 글, 단추 [글, 동작, 인자, 표시], 또는 { text, btn: 단추 }
 //   ['acts', [단추…], 앞 글] — 단추는 [글, 동작, 인자, 표시]. 표시는 'far' · 'off' · 'warn' · 'enter' · 'top'(바깥 동작)을 띄어 적는다
 //   ['pick', 이름, [[글, 값]…], 지금 값, 칸 이름, 동작] · ['fld', 이름, 값, 도움말, 칸 이름, 종류] · ['qa', 물음, 답] · ['grp', 이름, [안쪽…], 숨김]
+//   ['gauge', 이름, 몫(0~100), 값, 오른쪽] · ['tog', 이름, 설명, 켜짐, 동작, 표시] · ['confirm', 물음, [사실…], [단추…]](줄 안에서 펼치는 확인, 설계 8.3)
+// 줄의 watch가 참이면 화면이 그 줄을 열고 접을 때 알린다(모델별 토큰의 실시간, 계정 지우기 확인 묶음).
 import { ORDER, num, nameOf, planName, planKey, accountState, passesOf, passPlan, apiCreditPlan, apiCreditOf, apiCreditEndsAtBill, apiCredits, API_CREDIT_SERVICES, flowCreditOf, flowCredits, officialPrice, costOf, billList, nextMonthlyBill, monthSummary, summaryOn, shownAnnual, serviceGroups, isUsedUp, nextBill, DAY_MS } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, josa, joinNames } from './solio-today.mjs';
+import { TOKEN_RANGES, tokenSummary, tokenText } from './subscriptions-tokens.mjs';
+import { NAME_MAX, nameProblem, pendingDeletion, membershipLines, sessionRows, signInMethods } from './account-page.mjs';
 
 /* ── 오류 코드의 글. 옛 구독 판의 CODE_TEXT를 합니다체로 다시 썼다. 표에 없으면 DEFAULT_SAY다 ── */
 export const CODE_SAY = Object.freeze({
@@ -48,6 +53,8 @@ export const usd = n => '$' + Number(n).toLocaleString('en-US', { maximumFractio
 export const money = (v, currency) => (currency === 'USD' ? usd(v) : won(v));
 const md = t => (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일')(new Date(t));
 const hm = t => (d => pad(d.getHours()) + ':' + pad(d.getMinutes()))(new Date(t));
+/* 「12월 3일 15:00」 */
+export const dateTimeWords = t => md(t) + ' ' + hm(t);
 const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const daysBetween = (t, now) => Math.round((dayStart(t) - dayStart(now)) / DAY_MS);
 const dayAfter = (now, n) => { const d = new Date(now); return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n).getTime(); };
@@ -615,4 +622,234 @@ function loginSteps(snapshot, svc, st, key, ctx, { relogin = null } = {}) {
   const dis = flags(busyOther && 'off', off('login'));
   out.push(['acts', s.dark ? [[failed ? '다시 시도' : 'Gemini 로그인', 'login', svc, dis]] : [[failed ? '다시 시도' : '새 계정 연결', 'login', svc, dis], ['이 PC의 기존 로그인 쓰기', 'existing', svc, flags(busyOther && 'off', off('existing'))]]]);
   return out;
+}
+
+/* ── 구독 방의 「모델별 토큰」 줄(설계 3절, 설계 검토 D8). 기간 묶기와 모델 이름은 subscriptions-tokens.mjs를 그대로 쓴다.
+   st: { tokRange, tokAll, armed, busy, notes }. 토큰 자료가 없거나(아직 읽지 않음, 본체가 거절) ok가 아니면 줄을 세우지 않는다 ── */
+export const TOK_SHOWN = 6;
+// 오른쪽 칸의 프로그램 이름. 본체가 기록을 읽는 도구 넷이다
+const TOK_TOOLS = Object.freeze({ claude: 'Claude Code', gpt: 'Codex', grok: 'Grok CLI', gemini: 'Gemini CLI' });
+const TOK_SPAN = Object.freeze({ today: '오늘', week: '지난 7일', month: '지난 30일' });
+const tokDay = (key, now) => (Number(key.slice(0, 4)) !== new Date(now).getFullYear() ? Number(key.slice(0, 4)) + '년 ' : '') + Number(key.slice(5, 7)) + '월 ' + Number(key.slice(8, 10)) + '일';
+const tokShare = m => { const p = Math.round((m.share || 0) * 100); return p === 0 && m.out > 0 ? '1% 미만' : p + '%'; };
+const rowLabel = parts => parts.filter(Boolean).join(', ') + '. 자세한 내용은 이 줄 아래에 펼쳐집니다.';
+export function tokRow(tokens, st = {}, now = Date.now()) {
+  if (!tokens || tokens.ok !== true) return null;
+  const off = act => (st.busy === 'tok:' + act ? 'off' : '');
+  const note = ['live', st.notes?.get?.('tok') || ''];
+  const base = { key: 'tok', nm: '모델별 토큰', watch: true };
+  if (!tokens.enabled) {
+    return { ...base, mid: '꺼져 있습니다', val: '', when: '', unread: true, label: rowLabel(['모델별 토큰', '꺼져 있습니다']), more: [
+      ['say', '모델마다 AI가 답으로 쓴 토큰을 셉니다. 토큰은 AI가 읽고 쓴 글의 양입니다.'],
+      ['note', '켜면 이 PC에 남은 대화 기록에서 모델 이름과 토큰 수만 꺼내 더합니다. 대화 내용은 꺼내 두지 않고 밖으로 보내지 않습니다. 로그인 정보 파일은 열지 않습니다.'],
+      ['note', '이 PC에 남기는 것은 날짜와 모델별 숫자, 어느 기록 파일을 어디까지 읽었는지입니다. 끄면 모두 지웁니다.'],
+      ['acts', [['모델별 토큰 켜기', 'tok-on', '', off('tok-on')]]],
+      note,
+    ] };
+  }
+  // 끄기는 두 번 누른다(설계 8절). 묻는 동안 알림 줄에 무엇이 지워지는지 쓴다
+  const armed = !!st.armed && st.armed.key === 'tok' && st.armed.act === 'tok-off';
+  const offBtn = [armed ? '한 번 더 누르면 끄고 지웁니다' : '끄기', 'tok-off', '', flags(armed && 'warn', off('tok-off'))];
+  const live = armed ? ['live', '끄면 모은 숫자를 지웁니다. 다시 켜면 처음부터 다시 셉니다.'] : note;
+  const p = tokens.progress, progress = p && p.total ? fmt(p.done) + '/' + fmt(p.total) : '';
+  if (!tokens.scannedAt) {
+    if (tokens.scanning) {
+      return { ...base, mid: '처음 세는 중입니다', val: progress, when: '', label: rowLabel(['모델별 토큰', '처음 세는 중입니다', progress && '기록 파일 ' + progress]), more: [
+        ['say', '처음이라 이 PC의 기록 파일을 모두 세고 있습니다.'],
+        ['note', '기록이 많으면 몇 분 걸립니다. 다른 화면을 봐도 계속 셉니다.'],
+        ['acts', [offBtn]], live] };
+    }
+    const mid = tokens.error ? '세다가 멈췄습니다' : '아직 세지 않았습니다';
+    return { ...base, mid, val: '', when: '', unread: true, label: rowLabel(['모델별 토큰', mid]), more: [
+      ['say', tokens.error ? '기록 파일을 세다가 멈췄습니다.' : '아직 기록 파일을 세지 않았습니다.'],
+      ['acts', [['다시 세기', 'tok-scan', '', off('tok-scan')], offBtn]], live] };
+  }
+  const range = TOKEN_RANGES.some(([k]) => k === st.tokRange) ? st.tokRange : 'week';
+  const s = tokenSummary(tokens, range, now), span = TOK_SPAN[s.range], top = s.models[0] || null;
+  // 닫힌 줄의 요약은 한 가지만 말한다(시안 맹검 11-18)
+  const mid = top ? '가장 많이 쓴 모델은 ' + top.label + '입니다 · ' + tokShare(top) : s.range === 'today' ? '오늘은 센 응답이 없습니다' : span + ' 동안 센 응답이 없습니다';
+  const val = top ? tokenText(s.total.out) : '';
+  const when = top ? span + ' · 응답 ' + fmt(s.total.n) + '번' : '';
+  const more = [['pick', '기간', TOKEN_RANGES.map(([k, t]) => [t, k]), s.range, '', 'tok-range']];
+  for (const m of st.tokAll ? s.models : s.models.slice(0, TOK_SHOWN)) more.push(['gauge', m.label, Math.max(Math.round(m.share * 100), m.out > 0 ? 1 : 0), tokenText(m.out), (TOK_TOOLS[m.service] || m.tool) + ' · 응답 ' + fmt(m.n) + '번']);
+  if (s.models.length > TOK_SHOWN) more.push(['acts', [[st.tokAll ? '여섯 개만 보기' : '모델 ' + s.models.length + '개 모두 보기', 'tok-all', '']]]);
+  if (s.late.length) more.push(['note', s.late.map(l => (TOK_TOOLS[l.service] || l.tool) + ' 기록은 ' + tokDay(l.since, now) + '부터').join(', ') + ' 있습니다. 그 전 날은 비어 있습니다.']);
+  const tools = tokens.tools || {}, found = ['claude', 'gpt', 'grok', 'gemini'].some(k => tools[k] > 0);
+  const about = [];
+  if (top) about.push('AI가 답으로 쓴 토큰(글의 양)이 많은 순서입니다.', '오른쪽은 그 모델을 쓴 프로그램입니다.');
+  if (!found) about.push('이 PC에서 Claude Code, Codex, Grok CLI, Gemini CLI의 기록을 아직 찾지 못했습니다.');
+  about.push('이 PC에 기록이 남지 않는 웹과 휴대폰 사용은 빠집니다.');
+  if (tools.agy) about.push('Antigravity CLI는 토큰 수를 남기지 않아 세지 못합니다.');
+  more.push(['note', about.join(' ')]);
+  const last = Math.max(Number(tokens.scannedAt) || 0, Number(tokens.liveAt) || 0), facts = [];
+  if (tokens.scanning) facts.push('지금 다시 세고 있습니다' + (progress ? '(기록 파일 ' + progress + ')' : '') + '.');
+  else if (last) facts.push((dayStart(last) === dayStart(now) ? '' : md(last) + ' ') + hm(last) + '에 마지막으로 셌습니다.');
+  if (tokens.live) facts.push('이 줄을 열어 두면 답이 끝날 때마다 숫자를 더합니다.');
+  if (tokens.failed > 0 && !tokens.scanning) facts.push('읽지 못한 파일이 ' + fmt(tokens.failed) + '개 있습니다.');
+  if (tokens.error) facts.push('지난번에는 끝까지 세지 못했습니다.');
+  if (facts.length) more.push(['note', facts.join(' ')]);
+  more.push(['acts', [['토큰 다시 세기', 'tok-scan', '', flags(tokens.scanning && 'off', off('tok-scan'))], offBtn]], live);
+  return { ...base, mid, val, when, unread: !top, label: rowLabel(['모델별 토큰', mid, val && val + ' 토큰', when]), more };
+}
+
+/* ── 내 계정 방(설계 5절, 설계 검토 D1 · D4 · D5 · D11 · D12). 자료는 accountView와 accountIdentity다 ── */
+/* 오류 글. 옛 내 계정의 MESSAGES를 합니다체로 다시 썼다 */
+export const ACCOUNT_SAY = Object.freeze({
+  PROFILE_CONFLICT: '다른 곳에서 먼저 이름을 바꿨습니다. 지금 이름을 확인한 뒤 다시 저장해 주세요.',
+  REVISION_CONFLICT: '다른 곳에서 학습 기록 연결을 먼저 바꿨습니다. 지금 상태를 확인한 뒤 다시 해 주세요.',
+  LEARNING_DISABLED: '지금은 학습 기록 연결을 켤 수 없습니다.',
+  FEATURE_DISABLED: '지금은 학습 기록 연결을 켤 수 없습니다.',
+  ACCOUNT_UNAVAILABLE: '지금 이 계정 상태에서는 할 수 없습니다.',
+  DELETION_NOT_CANCELLABLE: '이미 처리하기 시작해 삭제 요청을 취소할 수 없습니다. hello@synk.im으로 알려 주세요.',
+  REQUEST_NOT_FOUND: '취소할 삭제 요청을 찾지 못했습니다. 계정 정보를 새로 불러왔습니다.',
+  SESSION_NOT_FOUND: '이미 끝난 로그인입니다. 목록을 새로 불러왔습니다.',
+  AUTH_REQUIRED: 'SYNK ID로 다시 로그인해 주세요.',
+  AUTH_CHANGED: '로그인 상태가 바뀌었습니다. 다시 해 주세요.',
+  SUITE_UNAVAILABLE: '로그인 기록을 읽지 못했습니다. 플랫폼을 다시 시작한 뒤 해 주세요.',
+  PROFILE_REVISION_MISSING: '이 계정 서버 판에서는 여기서 이름을 바꿀 수 없습니다.',
+  SECURITY_OPEN_FAILED: '브라우저를 열지 못했습니다. synk.im/id에서 로그인한 뒤 「로그인과 보안」을 열어 주세요.',
+});
+export const ACCOUNT_NETWORK_SAY = '계정 서버에 닿지 못했습니다. 인터넷 연결을 확인한 뒤 다시 해 주세요.';
+export const ACCOUNT_DEFAULT_SAY = '처리하지 못했습니다. 잠시 뒤 다시 해 주세요.';
+export const accountSay = (code, retryable = false) => (code && Object.hasOwn(ACCOUNT_SAY, code) ? ACCOUNT_SAY[code]
+  : retryable || ['NETWORK', 'SERVICE_UNAVAILABLE', 'AUTH_SERVER_UNAVAILABLE'].includes(code) ? ACCOUNT_NETWORK_SAY : ACCOUNT_DEFAULT_SAY);
+/* 바꾼 뒤 이 코드가 오면 조용히 다시 읽고 알린다(옛 내 계정 193행) */
+export const ACCOUNT_CONFLICTS = Object.freeze(['PROFILE_CONFLICT', 'REQUEST_NOT_FOUND', 'SESSION_NOT_FOUND', 'REVISION_CONFLICT']);
+export const SESSIONS_SHOWN = 6;
+/* 이름 검사. 규칙은 옛 nameProblem(빈 이름, 60자, 쓸 수 없는 글자)이고 글만 합니다체로 고쳐 쓴다 */
+export function checkName(value) {
+  const name = String(value ?? '').trim();
+  if (!nameProblem(value)) return { ok: true, value: name };
+  if (!name) return bad('이름을 넣어 주세요.');
+  if (name.length > NAME_MAX || [...name].length > NAME_MAX) return bad('이름은 ' + NAME_MAX + '자 안으로 적어 주세요.');
+  return bad('이름에 쓸 수 없는 글자가 들어 있습니다.');
+}
+const dayWords = t => (d => d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일')(new Date(t));
+const PLACE_WORD = ['', '한', '두', '세', '네'];
+const placeWord = n => (PLACE_WORD[n] ? PLACE_WORD[n] + ' 곳' : n + '곳');
+const usedWhen = (t, now) => (dayStart(t) === dayStart(now) ? '오늘 ' : md(t) + ' ') + hm(t);
+
+/* acc: { data, identity, loading, error, identityError, allSessions, askDelete }
+   st: 방 상태(armed · busy · notes) · ctx: { name(로그인 정보의 이름), accountKey(계정 번호를 아직 읽지 못했을 때) } */
+export function accountRoom(acc = {}, st = {}, now = Date.now(), ctx = {}) {
+  const data = acc.data || null, account = data?.account || null;
+  const number = account?.synk_user_id || ctx.accountKey || '';
+  // 계정 번호는 시안처럼 맨 아래 작은 줄에 늘 보인다(설계 검토 D12)
+  const foot = number ? '문의할 때 쓰는 계정 번호 ' + number : '';
+  if (!data) {
+    if (acc.error) return { say: '계정 정보를 불러오지 못했습니다.', then: acc.error, rows: [], foot, act: ['다시 불러오기', 'retry', acc.loading ? 'off' : ''] };
+    return { say: '계정 정보를 불러오고 있습니다.', then: '', rows: [], foot, act: ['로그아웃', 'sign-out', ''] };
+  }
+  const off = (key, act) => (st.busy === key + ':' + act ? 'off' : '');
+  const name = String(account?.profile?.display_name || ctx.name || '').trim();
+  const pending = pendingDeletion(data), deleting = account?.status === 'deletion-requested';
+  const sessions = sessionRows(data), n = sessions.length;
+  const due = pending ? Date.parse(pending.due_at || '') : NaN, dueText = Number.isFinite(due) ? md(due) + ' ' + hm(due) : '';
+  const say = deleting ? '계정을 지워 달라고 요청했습니다.' : name ? name + ' 님으로 로그인했습니다.' : 'SYNK 회원으로 로그인했습니다.';
+  const then = pending ? (dueText ? dueText + '까지는' : '7일 동안은') + ' 이 자리에서 취소할 수 있습니다.'
+    : deleting ? '계정 삭제를 처리하고 있습니다.'
+      : n > 1 ? '이 PC를 포함해 ' + placeWord(n) + '에서 쓰고 있습니다.' : n === 1 ? '이 PC에서만 쓰고 있습니다.' : '';
+  const rows = [
+    nameRow(acc, st, name, deleting, off),
+    loginRow(acc, st, off),
+    placesRow(acc, st, now, sessions, off),
+    dataRow(acc, st, deleting, off),
+    deleteRow(acc, st, pending, deleting, Number.isFinite(due) ? due : null, off),
+  ];
+  return { say, then, rows, foot, act: ['로그아웃', 'sign-out', ''] };
+}
+function nameRow(acc, st, name, deleting, off) {
+  const created = Date.parse(acc.identity?.createdAt || ''), memberships = membershipLines(acc.data);
+  const more = [];
+  // 삭제를 요청한 동안에는 이름을 바꿀 수 없다(옛 화면과 같다)
+  if (deleting) more.push(['say', '계정 삭제를 요청한 동안에는 이름을 바꿀 수 없습니다.']);
+  else more.push(['fld', '새 이름', name, NAME_MAX + '자까지', 'name', 'text'], ['acts', [['저장', 'name-save', '', flags('enter', off('name', 'name-save'))]]]);
+  more.push(['row', '소속', memberships.length ? memberships.join(' / ') : '학교나 회사와 연결된 소속이 없습니다', '', '']);
+  more.push(['note', '회사 Workspace에는 회사 계정 이름이 보입니다.']);
+  more.push(['live', st.notes?.get?.('name') || '']);
+  const when = Number.isFinite(created) ? dayWords(created) + ' 가입' : '';
+  return { key: 'name', nm: '이름', mid: 'SYNK 앱마다 이 이름으로 보입니다', val: name, when, label: rowLabel(['이름', name, when]), more };
+}
+function loginRow(acc, st, off) {
+  const id = acc.identity || null, methods = signInMethods(id), email = String(id?.email || '');
+  const ways = [methods.email ? '이메일과 비밀번호' : '', methods.google ? 'Google' : ''].filter(Boolean);
+  const unknown = acc.identityError ? '불러오지 못했습니다' : '불러오는 중입니다';
+  const go = (text, section) => [text, 'security', section, off('login', 'security')];
+  // 비밀번호와 로그인 이메일은 브라우저의 SYNK ID에서 바꾼다. PC 앱은 비밀번호를 받지 않는다. 메일은 옛 화면처럼 전체를 보인다(설계 검토 D11)
+  const more = [['say', '비밀번호와 로그인 이메일은 브라우저에서 바꿉니다. PC 앱은 비밀번호를 받지 않습니다.']];
+  more.push(['row', '로그인 이메일', email || unknown, '', go('바꾸기 ↗', 'email')]);
+  if (id?.newEmail) more.push(['note', '새 이메일 ' + id.newEmail + '의 확인을 기다리고 있습니다.']);
+  if (methods.email || !methods.google) more.push(['row', '비밀번호', '바꾸면 이 PC 앱도 로그아웃됩니다. 새 비밀번호로 다시 로그인합니다', '', go('바꾸기 ↗', 'password')]);
+  else more.push(['row', '비밀번호', 'Google로 가입한 계정입니다. 비밀번호를 만들면 이메일로도 로그인할 수 있습니다', '', go('비밀번호 만들기 ↗', 'password')]);
+  if (methods.google) more.push(['row', 'Google', '연결되어 있습니다', '', '']);
+  else if (id) more.push(['row', 'Google', '연결하면 다음부터 Google로 로그인해도 이 계정이 열립니다', '', go('Google 연결하기 ↗', 'google')]);
+  if (email) more.push(['note', '브라우저에 다른 계정이 로그인되어 있을 수 있습니다. 열린 화면의 로그인 이메일이 ' + email + '인지 확인해 주세요.']);
+  more.push(['live', st.notes?.get?.('login') || '']);
+  const mid = ways.length ? ways.join(' · ') : unknown;
+  return { key: 'login', nm: '로그인', mid, val: '', when: email, label: rowLabel(['로그인', mid, email]), more };
+}
+function placesRow(acc, st, now, sessions, off) {
+  const raw = new Map((acc.data?.sessions || []).filter(Boolean).map(r => [r.id, r]));
+  const place = s => (s.current ? '이 PC' : s.label || s.name);
+  const more = [];
+  if (!sessions.length) more.push(['note', '보일 로그인 기록이 없습니다.']);
+  for (const s of acc.allSessions ? sessions : sessions.slice(0, SESSIONS_SHOWN)) {
+    const t = Date.parse(raw.get(s.id)?.last_seen || '');
+    const seen = s.current ? '지금 쓰는 중' : Number.isFinite(t) ? usedWhen(t, now) + '에 사용' : '사용 기록 없음';
+    more.push(['row', place(s), [s.current || s.label ? s.name : '', seen].filter(Boolean).join(' · '), '', s.current ? '' : ['로그아웃시키기', 'revoke', s.id, off('places', 'revoke:' + s.id)], s.current]);
+  }
+  if (sessions.length > SESSIONS_SHOWN) more.push(['acts', [[acc.allSessions ? '여섯 곳만 보기' : (sessions.length - SESSIONS_SHOWN) + '곳 더 보기', 'sessions-all', '']]]);
+  // 모든 곳에서 로그아웃은 두 번 누른다. 두 번째 누름 뒤 쓰던 글이 있으면 펼침의 로그아웃과 같은 확인을 거친다(설계 검토 D1)
+  const armed = !!st.armed && st.armed.key === 'places' && st.armed.act === 'revoke-all';
+  more.push(['acts', [[armed ? '한 번 더 누르면 모두 로그아웃합니다' : '모든 곳에서 로그아웃', 'revoke-all', '', flags(armed && 'warn', off('places', 'revoke-all'))]]]);
+  more.push(['live', armed ? '이 PC를 포함해 다른 기기와 브라우저의 SYNK 로그인을 모두 끝냅니다. 이 PC도 바로 로그아웃됩니다.' : st.notes?.get?.('places') || '']);
+  const names = sessions.map(place);
+  const mid = names.length > 3 ? names.slice(0, 3).join(' · ') + ' 외 ' + (names.length - 3) + '곳' : names.join(' · ');
+  const val = sessions.length + '곳';
+  return { key: 'places', nm: '로그인한 곳', mid, val, when: '', label: rowLabel(['로그인한 곳', mid, val]), more };
+}
+function dataRow(acc, st, deleting, off) {
+  const data = acc.data, on = data?.learning?.enabled === true, can = data?.capabilities?.learningSync === true && !deleting;
+  const why = on ? '켜져 있습니다. 연습 기록을 계정에 저장해 다른 기기에서도 이어 갑니다'
+    : can ? '켜면 연습 기록을 계정에 저장해 다른 기기에서도 이어 갑니다'
+      : deleting ? '계정 삭제를 요청해서 켤 수 없습니다. 요청을 취소하면 다시 켤 수 있습니다' : '지금은 켤 수 없습니다. 이 기기에서 하는 연습은 그대로 할 수 있습니다';
+  // 연습 기록 내려받기와 마을 기록은 옛 내 계정 화면을 연다(설계 검토 D4). 내 성향은 두지 않는다(D5)
+  const more = [
+    ['tog', '학습 기록 연결', why, on, 'learning', flags(!(on || can) && 'off', off('data', 'learning'))],
+    ['row', '연습 기록', '내 기록을 파일 하나로 받습니다. 과제와 AI 기록은 들어 있지 않습니다', '', ['내려받기', 'export', '']],
+    ['row', '마을 기록', '싱크타운 주민이 기억하는 일을 보고, 빼거나 비울 수 있습니다', '', ['열기', 'town', '']],
+    ['note', '내려받기와 마을 기록은 지금 앱의 내 계정 화면에서 엽니다. 맨 위 「돌아가기」를 누르면 이 방으로 돌아옵니다.'],
+    ['live', st.notes?.get?.('data') || ''],
+  ];
+  const mid = '학습 기록 연결 ' + (on ? '켜짐' : '꺼짐') + ' · 연습 기록 · 마을 기록';
+  return { key: 'data', nm: '내 데이터', mid, val: '', when: '', label: rowLabel(['내 데이터', mid]), more };
+}
+/* 계정 지우기. 요청은 같은 단추를 두 번 누르지 않고 줄 안에서 펼치는 확인 묶음으로 보낸다(설계 8.3, 설계 검토 D1) */
+function deleteRow(acc, st, pending, deleting, due, off) {
+  const live = ['live', st.notes?.get?.('del') || ''];
+  if (pending) {
+    const mid = (due ? md(due) : '7일 안') + '까지 취소할 수 있습니다';
+    return { key: 'del', gap: true, now: true, nm: '계정 지우기', mid, val: '요청됨', when: '', label: rowLabel(['계정 지우기', '요청됨', mid]), more: [
+      ['say', (due ? md(due) + ' ' + hm(due) + '까지는' : '7일 동안은') + ' 이 자리에서 요청을 취소할 수 있습니다.'],
+      ['note', '그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지웁니다. 늦어도 요청 후 30일 안에 지우고, 지운 뒤에는 되돌릴 수 없습니다. 취소해도 학습 기록 연결은 꺼진 채로 남습니다.'],
+      ['acts', [['요청 취소', 'delete-cancel', '', off('del', 'delete-cancel')]]], live] };
+  }
+  if (deleting) {
+    return { key: 'del', gap: true, now: true, nm: '계정 지우기', mid: '삭제를 처리하고 있습니다', val: '', when: '', label: rowLabel(['계정 지우기', '삭제를 처리하고 있습니다']), more: [
+      ['say', '계정 삭제를 처리하고 있어 이제는 취소할 수 없습니다.'],
+      ['note', '늦어도 요청 후 30일 안에 계정과 기록을 지웁니다. 궁금한 점은 hello@synk.im으로 알려 주세요.'], live] };
+  }
+  const asking = !!acc.askDelete;
+  const more = [['say', '계정을 지우면 학습 기록, 맞춤 기억, 로그인 정보가 함께 지워집니다.']];
+  // 확인 묶음이 펼쳐지면 같은 사실을 되풀이하지 않게 작은 글을 뺀다
+  if (!asking) more.push(['note', '요청하면 학습 기록 연결을 바로 멈춥니다. 7일이 지나면 되돌릴 수 없습니다. 회사 작업실 자료와 학교 소속 기록은 그곳에서 따로 정리합니다.']);
+  more.push(['acts', [['지우기 요청', 'delete-ask', '', flags('toggle', asking && 'on', off('del', 'delete-ask'))]]]);
+  if (asking) more.push(['confirm', '계정 삭제를 요청할까요?', [
+    '요청하면 학습 기록 연결을 바로 멈춥니다.',
+    '7일 동안은 이 자리에서 요청을 취소할 수 있습니다. 그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지우고(늦어도 요청 후 30일 안), 지운 뒤에는 되돌릴 수 없습니다.',
+    '회사 작업실 자료와 학교 소속 기록은 그곳에서 따로 정리합니다.',
+  ], [['삭제 요청 보내기', 'delete-send', '', off('del', 'delete-send')], ['그만두기', 'delete-keep', '']]]);
+  more.push(live);
+  // 줄이 접히면 확인 묶음도 접는다(화면이 접힘을 알린다)
+  return { key: 'del', gap: true, unread: true, watch: true, nm: '계정 지우기', mid: '요청한 뒤 7일 동안은 취소할 수 있습니다', val: '', when: '', label: rowLabel(['계정 지우기', '요청한 뒤 7일 동안은 취소할 수 있습니다']), more };
 }

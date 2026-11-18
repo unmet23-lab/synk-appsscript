@@ -83,15 +83,18 @@ test('a face gets the new callbacks, PC options pass through and cannot replace 
   const state = { phase: 'welcome', active: true, authStatus: 'restoring' };
   const face = { getState: () => state, setState: () => state, isActive: () => true, shouldBlockShortcuts: () => true, openPurposePicker: () => false, closePurposePicker: () => Promise.resolve(false), dispose() {}, clientMode: () => 'app', isClientShown: () => true };
   const legacy = () => {};
+  // 방이 쓰는 다리(2단계 둘째 조각 설계 1.3절 「자료 어댑터」)도 같은 길로 그대로 닿는다
+  const rooms = { account: { request() {}, identity() {} }, confirmLeave() {}, bind() {} };
   const host = mountDesktopPortalHost({
     root, getAuth: () => null, bridge: null,
     mountFace: (r, options) => { seen = options; return face; },
-    faceOptions: { onSignIn: 'not mine', onEnter: 'not mine', onOpenLegacy: legacy, look: { places: false } },
+    faceOptions: { onSignIn: 'not mine', onEnter: 'not mine', onOpenLegacy: legacy, rooms, look: { places: false } },
   });
   t.after(() => host.dispose());
   assert.equal(typeof seen.onSignIn, 'function');
   assert.equal(typeof seen.onEnter, 'function');
   assert.equal(seen.onOpenLegacy, legacy);
+  assert.equal(seen.rooms, rooms);
   assert.deepEqual(seen.look, { places: false });
   assert.equal(typeof seen.onEnterDefault, 'function');
   assert.equal(typeof seen.onOpenSpace, 'function');
@@ -336,4 +339,14 @@ test('a failed fresh lookup for an expired record is said in switch words too (0
   made.face.handle('go', 'pulse');
   await settle();
   assert.equal(made.view.scenes.at(-1).fan.error, '계정 연결이 바뀌었습니다. 잠시 뒤 다시 시도해 주세요.');
+});
+
+test('the launcher hands the face its room bridge: account requests that drop a reply after an account change, the shared sign-out check, and a handle for the account lifecycle', () => {
+  const src = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
+  assert.match(src, /rooms:orbRoomOptions\(\)/);
+  assert.match(src, /function orbAccountCall\(run\)\{const epoch=accountLifecycle\.epoch\(\);[^}]*epoch===accountLifecycle\.epoch\(\)\?result:\{ok:false,code:'changed'\}/);
+  assert.match(src, /confirmLeave:\(\)=>confirmDraftExit\(SIGN_OUT_DRAFT\)/);
+  assert.match(src, /if\(!await confirmDraftExit\(SIGN_OUT_DRAFT\)/, 'the fan sign-out asks the same question');
+  assert.match(src, /accountLifecycle\.register\('orb-rooms',\{onAccountChange:\(\)=>orbRooms\?\.accountChanged\?\.\(\)\}\)/);
+  assert.match(src, /accountPage\.securityVisitedRecently\(\)\|\|orbSecurityRecent\(\)/, 'a 「로그인과 보안」 opened from the room also adds the password hint');
 });

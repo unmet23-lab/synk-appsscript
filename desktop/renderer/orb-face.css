@@ -234,7 +234,9 @@
 #portal-entry .more-acts{align-items:center;gap:10px 22px}
 #portal-entry .more-acts .lab{font:var(--small);color:var(--dim)}
 #portal-entry .more-acts .quiet[aria-pressed="false"]{border-bottom-color:transparent;color:var(--dim)}
-#portal-entry .more-acts .quiet[aria-pressed="true"],#portal-entry .quiet.warn{color:var(--paper);border-bottom-color:var(--paper)}
+#portal-entry .more-acts .quiet[aria-pressed="true"],#portal-entry .quiet[aria-checked="true"],#portal-entry .quiet.warn{color:var(--paper);border-bottom-color:var(--paper)}
+/* 켜고 끄는 것(학습 기록 연결)은 켜진 것만 밝다(시안 219~220행) */
+#portal-entry .quiet[aria-checked="false"]{color:var(--dim)}
 #portal-entry .quiet[aria-disabled="true"]{opacity:.42;cursor:default}
 /* 물음과 답: 물음을 누르면 답이 바로 아래에 나온다 */
 #portal-entry .more-acts.qa{padding:5px 0}
@@ -258,6 +260,17 @@
 #portal-entry .grp{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-content:start}
 #portal-entry .grp > *{grid-column:1 / -1}
 #portal-entry .grp > .more-acts{padding-top:10px}
+/* 줄 안에서 펼치는 확인 묶음(계정 지우기 요청, 2단계 둘째 조각 설계 8.3). 왼쪽 선 하나로 묶고, 물음 줄에 초점이 와도 테두리는 긋지 않는다 */
+#portal-entry .confirm{display:grid;grid-column:1 / -1;align-content:start;margin:2px 0 14px;padding:4px 0 0 16px;border-left:1px solid rgba(243,241,236,.34)}
+#portal-entry .confirm .more-say{color:var(--paper)}
+#portal-entry .confirm [data-ask-q]:focus{outline:none}
+#portal-entry .confirm .more-note{padding-bottom:8px;max-width:46em}
+#portal-entry .confirm .more-acts{padding:8px 0 4px}
+/* 내 계정 줄의 이름 칸은 긴 이름(60자까지)이 오른쪽 칸을 덮지 않게 줄여 쓴다. 온전한 이름은 줄의 낭독 이름과 안쪽 칸에 있다 */
+#portal-entry .room[data-room="account"] button.row .val{min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* 구독 방에서 맨 아래 글이 비면(구독이 없어 모델별 토큰 줄만 선 때) 단추 하나가 문장 아래 왼쪽에 선다 */
+#portal-entry .room[data-room="solio"] .read:has(> [data-read]:empty){justify-content:flex-start}
+#portal-entry .room[data-room="solio"] .read > [data-read]:empty{display:none}
 
 /* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다 */
 #portal-entry .sw-top{position:absolute;left:16px;right:16px;top:calc(var(--portal-chrome-h,40px) + clamp(14px,4vh,40px));display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
