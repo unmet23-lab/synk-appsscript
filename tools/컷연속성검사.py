@@ -1817,6 +1817,55 @@ def 인물키검사(seq, 폴더=None):
     return out
 
 
+간격부터 = "20261119"   # T25 · T26 — 이 날 이후 편(편 날짜)은 걸림, 앞선 편 · 날짜를 못 읽는 편은 주의(진행 중인 다른 편의 판을 막지 않으려고)
+
+
+def 차간격검사(seq, 폴더=None):
+    """T25 — 한 컷에 탈것이 둘 이상(줄지어 선 차) 나오면 그 컷이 쓰는 장면 줄에 「차간격」(차 길이에 견준 간격, 지시문에 그대로 쓸 문장)이 있어야 한다(63) → [(등급, 어디, 글)].
+    왜: 11-18 YOUTH UP 「잠깐」 — 높은 부감(C03)에서는 줄지은 차 사이가 차 길이 3분의 1쯤 벌어졌는데, 바로 다음 아이 눈높이(C04)에서는 하늘색 차와
+    미니밴이 손가락 몇 개만 한 틈으로 붙었다. 유호님 「지금 차 거리가 긴데 갑자기 다음장면에서 차 거리가 엄청 좁아지거든? 이것때문에 부자연스럽고 이해가 덜돼」.
+    간격은 「차 사이 아이」 이야기의 뼈대인데 표 어디에도 적지 않아 컷마다 모델이 정했다(원칙 3 한 편은 한 세계)."""
+    out = []; 표 = 소품표줄(seq); 장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}
+    def 탈것인가(이름):
+        줄 = 표.get(이름)
+        return (isinstance(줄, dict) and str(줄.get("종류") or "").strip() == "탈것") or bool(_탈것이름.search(str(이름)))
+    빠진 = {}   # 장면 → [(컷, 탈것들)]
+    for d in seq.get("detail") or []:
+        if not isinstance(d, dict): continue
+        소품 = d.get("소품") if isinstance(d.get("소품"), dict) else {}
+        차 = [n for n, v in 소품.items() if v not in _소품없음 and 탈것인가(n)]
+        if len(차) < 2: continue
+        이름 = d.get("장면") if isinstance(d.get("장면"), str) else "(장면 없음)"
+        줄 = 장면표.get(이름)
+        if isinstance(줄, dict) and not 빈칸(줄.get("차간격")): continue
+        빠진.setdefault(이름, []).append((d.get("cut"), 차[:2]))
+    if not 빠진: return out
+    날짜 = 편날짜(seq, 폴더); 등급 = "걸림" if (날짜 and 날짜 >= 간격부터) else "주의"
+    for 이름, 곳 in 빠진.items():
+        컷들 = " · ".join(f"{c}({'·'.join(t)})" for c, t in 곳[:4]) + (" …" if len(곳) > 4 else "")
+        out.append((등급, f"장면 {이름}", f"한 컷에 탈것이 둘 이상인데({컷들}) 장면 「{이름}」 줄에 「차간격」 칸이 없다 — 줄지은 차 사이를 차 길이에 견준 말"
+                    f"(「차 길이 3분의 1 — 아이 하나가 겨우 들어간다」)로 한 번 적고, 그 장면의 그림 · 영상 지시문에 그대로 쓴다. 넓은 컷과 가까운 컷이 서로 다른 간격으로 나온다(63)"))
+    return out
+
+
+def 자막크기검사(seq, 폴더=None):
+    """T26 — 말자막 줄(글자 종류 「말자막」)에 「크기」(1080 폭 화면의 글자 크기 px)가 있어야 하고 64 아래면 안 된다(4) → [(등급, 어디, 글)].
+    왜: 11-18 YOUTH UP 「잠깐」 — 말자막을 48px(화면 폭 4.4%)로 구웠다. 유호님 「자막이 너무 작은것같아」. 휴대폰에서 읽히려면 1080 폭에서 64px 넘게(72px 권장),
+    한 줄에 안 들어가면 두 줄로 나눈다."""
+    out = []; 글자 = seq.get("글자") if isinstance(seq.get("글자"), list) else []
+    날짜 = 편날짜(seq, 폴더); 등급 = "걸림" if (날짜 and 날짜 >= 간격부터) else "주의"
+    for i, g in enumerate(글자):
+        if not isinstance(g, dict) or str(g.get("종류") or "").strip() != "말자막": continue
+        k = g.get("크기")
+        try: n = float(k)
+        except (TypeError, ValueError): n = None
+        if n is None:
+            out.append((등급, f"글자 {i + 1}", f"말자막 「{str(g.get('글') or '')[:20]}」에 「크기」 칸이 없다 — 1080 폭 화면의 글자 크기(px)를 적는다. 64 아래면 휴대폰에서 작다(72 권장, 4)"))
+        elif n < 64:
+            out.append((등급, f"글자 {i + 1}", f"말자막 「{str(g.get('글') or '')[:20]}」 크기 {k:g}px — 1080 폭에서 64px 아래는 휴대폰에서 작다(72 권장, 한 줄에 안 들어가면 두 줄, 4)" if isinstance(k, (int, float)) else f"말자막 크기 {k} — 64px 아래(4)"))
+    return out
+
+
 원고시험부터 = "20261118"   # T21 — 이 날 이후 편(편 날짜)은 걸림, 앞선 편 · 날짜를 못 읽는 편은 주의(진행 중인 다른 편의 판을 막지 않으려고)
 
 
@@ -2055,10 +2104,11 @@ def 틀검사(seq, r, 폴더=None, 그림폴더=None, 영상=None):
             걸림(cut, f"컷 사이 낮 · 밤이 바뀜(51) — 앞 컷 {p.get('cut')} 「{a}」 → 이 컷 「{b}」(날 · 때가 바뀌는 컷이면 시간건너뜀: true)")
         # T6
         if 빈칸(d.get("넘어옴")): 주의(cut, "「넘어옴」 칸이 비었다 — 앞 컷에서 넘어올 까닭(29)")
-    # T17 같은 시작 그림 · 같은 받은 영상을 두 컷이 쓴다(50) / T18 되풀이해 나오는 탈것 · 소품 한 줄(51) / T20 사람과 탈것이 한 컷이면 인물 키(63)
+    # T17 같은 시작 그림 · 같은 받은 영상을 두 컷이 쓴다(50) / T18 되풀이해 나오는 탈것 · 소품 한 줄(51) / T20 사람과 탈것이 한 컷이면 인물 키(63) / T25 탈것 둘 이상이면 장면 차간격(63) / T26 말자막 크기(4)
     # T21 내레이션 · 대사 원고는 맥락 없는 눈이 줄마다 「바로」로 판정한 기록이 지금 글 그대로 있어야 한다(64)
     # T22 한 편에 색감 하나(51) · T23 같은 분야 최상급 실제 광고 둘(3)
     for 등급, 어디, 글 in 시작그림검사(seq, 폴더, 그림폴더) + 소품줄검사(seq) + 인물키검사(seq, 폴더) + 원고시험검사(seq, 폴더) + 색감검사(seq, 폴더) + 최상급검사(seq): (걸림 if 등급 == "걸림" else 주의)(어디, 글)
+    for 등급, 어디, 글 in 차간격검사(seq, 폴더) + 자막크기검사(seq, 폴더): (걸림 if 등급 == "걸림" else 주의)(어디, 글)   # T25 · T26(11-18 YOUTH UP 「잠깐」)
     # T7 기승전결
     rows = [row for row in (seq.get("seq") or []) if isinstance(row, (list, tuple)) and row]
     띠 = {str(row[2]).strip() for row in rows if len(row) > 2}
