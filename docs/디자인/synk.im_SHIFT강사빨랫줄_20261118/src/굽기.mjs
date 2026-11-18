@@ -11,16 +11,21 @@ const 편 = path.resolve(여기, "..");
 const 루트 = path.resolve(편, "../../..");
 const require = createRequire(path.join(루트, "package.json"));
 const { chromium } = require("playwright");
+const 브랜드폰트 = require("./tools/lib/브랜드폰트.js");
 const b64 = (p, t) => `data:${t};base64,` + fs.readFileSync(p).toString("base64");
 const 자산 = path.join(편, "assets");
 const 소리 = ["hover", "press", "flip", "clipopen", "clipsnap", "whoosh", "pop"];
 let html = fs.readFileSync(path.join(여기, "빨랫줄.src.html"), "utf8");
+const 움직임태그 = '<script src="../assets/gsap-3.12.5.js"></script>';
+if (!html.includes(움직임태그)) throw new Error("원고에서 강사 카드의 GSAP 스크립트를 찾지 못했습니다.");
+const gsap = fs.readFileSync(path.join(자산, "gsap-3.12.5.js"), "utf8");
+html = html.replace(움직임태그, () => `<script>
+${gsap}</script>`);
 for (const 이름 of ["yuho", "a", "b", "c", "d"]) html = html.replaceAll(`{{P_${이름}}}`, b64(path.join(자산, `p-${이름}.webp`), "image/webp"));
 for (const s of 소리) html = html.replaceAll(`{{S_${s}}}`, b64(path.join(자산, "sound", `${s}.mp3`), "audio/mpeg"));
 if (/\{\{[A-Z]_/.test(html)) throw new Error("채우지 못한 자리 " + html.match(/\{\{[A-Z]_[a-z]+\}\}/)[0]);
 const 출력 = path.join(편, "시안.html");
-fs.writeFileSync(출력, html);
-execFileSync(process.execPath, [path.join(루트, "tools/lib/브랜드폰트.js"), "--심기", 출력], { stdio: "inherit" });
+fs.writeFileSync(출력, 브랜드폰트.심기(브랜드폰트.원고로(html)).html);
 
 const 캡처 = path.join(루트, ".tmp", "SHIFT빨랫줄", "캡처"); fs.mkdirSync(캡처, { recursive: true });
 const 주소 = "file:///" + 출력.replaceAll("\\", "/");

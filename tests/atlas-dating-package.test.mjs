@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import net from 'node:net';
 import { execFile, spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { promisify } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -14,7 +15,30 @@ import { buildDatingPackage, verifyDatingPackage, DATING_PACKAGE_FILES, DATING_P
 import { DATING_PUBLIC_FILES } from '../experiences/atlas-lab/dating-public.mjs';
 
 const run = promisify(execFile), entry = 'experiences/atlas-lab/dating-server.mjs';
-const tick = ms => new Promise(resolve => setTimeout(resolve, ms));
+// The account CLI returns a generic public startup error. In this fixture only,
+// observe the real bind error so a failed config, database or package still fails.
+const bindDiagnostic = 'data:text/javascript,' + encodeURIComponent(`
+  import { channel } from 'node:diagnostics_channel';
+  channel('tracing:net.server.listen:error').subscribe(({ error }) => {
+    if (error.code === 'EADDRINUSE') console.error('package-test: EADDRINUSE');
+  });
+`);
+function accountCliReady(child) {
+  return new Promise((resolve, reject) => {
+    let stdout = '', stderr = '';
+    child.stdout.setEncoding('utf8').on('data', chunk => {
+      stdout += chunk;
+      if (/SYNK 나다운 만남 \(account\).*\/atlas-lab\/dating\.html/.test(stdout)) resolve();
+    });
+    child.stderr.setEncoding('utf8').on('data', chunk => { stderr += chunk; });
+    child.once('error', reject);
+    child.once('close', code => {
+      const error = new Error(`Packaged account CLI exited (${code}): ${stderr}`);
+      if (stderr.split(/\r?\n/).includes('package-test: EADDRINUSE')) error.code = 'EADDRINUSE';
+      reject(error);
+    });
+  });
+}
 // This test deliberately replaces the process on the same port; do not reuse a
 // keepalive socket belonging to the previous server instance.
 const request = (url, options = {}) => fetch(url, { ...options, headers: { ...options.headers, Connection: 'close' } });
@@ -24,8 +48,11 @@ async function fixture(t) {
     assert.ok(path.basename(dir).startsWith('synk-dating-package-')); await fs.rm(dir, { recursive: true, force: true }); });
   return dir;
 }
-async function port() { const server = net.createServer(); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const value = server.address().port; await new Promise(resolve => server.close(resolve)); return value; }
+async function listen(server, port) {
+  const listening = once(server, 'listening');
+  server.listen(port, '127.0.0.1');
+  await listening;
+}
 async function exists(filename) { try { await fs.lstat(filename); return true; } catch (error) { if (error.code === 'ENOENT') return false; throw error; } }
 async function copySource(target) {
   await fs.mkdir(target);
@@ -63,10 +90,12 @@ test('the explicit package list covers the actual static and delayed CJS depende
 test('isolated package starts from another cwd under a module parent and serves only the reviewed surface', { timeout: 30000 }, async t => {
   // Register process cleanup before fixture directory cleanup (test hooks are FIFO).
   let child, server;
-  t.after(async () => {
+  async function stopServers() {
     if (child && child.exitCode === null && child.signalCode === null) { const exited = new Promise(resolve => child.once('exit', resolve)); child.kill(); await exited; }
     if (server) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
-  });
+    child = null; server = null;
+  }
+  t.after(stopServers);
   const dir = await fixture(t), bundle = path.join(dir, 'bundle'), cwd = path.join(dir, 'unrelated-cwd');
   await fs.writeFile(path.join(dir, 'package.json'), '{"type":"module"}'); await fs.mkdir(cwd);
   const built = await buildDatingPackage(bundle); assert.equal(built.verified, true); assert.equal(built.files, 59);
@@ -82,42 +111,59 @@ test('isolated package starts from another cwd under a module parent and serves 
     { cwd, windowsHide: true, timeout: 10000 }), error => {
     assert.equal(JSON.parse(error.stderr.trim().split('\n').at(-1)).error.code, 'backup-repository-path-forbidden'); return true;
   });
-  const listeningPort = await port(), origin = `http://127.0.0.1:${listeningPort}`, configPath = path.join(dir, 'outside-account.json'), db = path.join(dir, 'outside-data.sqlite');
-  await fs.writeFile(configPath, JSON.stringify(accountConfig(origin)));
-  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('SYNK_DATING_')));
-  Object.assign(env, { SYNK_DATING_MODE: 'account', SYNK_DATING_PORT: String(listeningPort), SYNK_DATING_DB: db, SYNK_DATING_ACCOUNT_CONFIG: configPath });
-  const checked = await run(process.execPath, [path.join(bundle, entry), '--check-config'], { cwd, env, windowsHide: true, timeout: 10000 });
-  const status = JSON.parse(checked.stdout); assert.equal(status.databaseOpened, false); assert.equal(status.listening, false); assert.equal(status.providerTested, false);
-  assert.equal(await exists(db), false);
-  // A successful same-port bind proves check-config did not leave a listener.
-  const probe = net.createServer(); await new Promise(resolve => probe.listen(listeningPort, '127.0.0.1', resolve)); await new Promise(resolve => probe.close(resolve));
-  let stdout = '', stderr = '';
-  child = spawn(process.execPath, [path.join(bundle, entry)], { cwd, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
-  child.stdout.on('data', chunk => { stdout += chunk; }); child.stderr.on('data', chunk => { stderr += chunk; });
-  for (let i = 0; i < 150 && !stdout.includes('/atlas-lab/dating.html') && child.exitCode === null; i++) await tick(20);
-  assert.match(stdout, /SYNK 나다운 만남 \(account\)/, stderr);
-  const configResponse = await request(origin + '/api/atlas-dating/config'), config = await configResponse.json();
-  assert.equal(configResponse.status, 200); assert.equal(config.mode, 'account'); assert.equal(config.demoEnabled, false); assert.equal(config.labAvailable, false);
-  for (const route of DATING_PUBLIC_FILES) { const response = await request(origin + route); assert.equal(response.status, 200, route); await response.arrayBuffer(); }
-  for (const route of ['/atlas-lab/dating-server.mjs', '/atlas-lab/account.config.json', '/atlas-lab/deploy/account.public.example.json', '/dating-package.json', '/package.json', '/api/atlas-journey/state']) {
-    const response = await request(origin + route); assert.equal(response.status, 404, route); await response.arrayBuffer();
+  // The registered callback must use one fixed port across CLI and store restarts.
+  // Another process can acquire it between listeners; repeat the entire proof on
+  // a fresh callback and database only when the OS reports that collision.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await verifyAccount(attempt);
+      break;
+    } catch (error) {
+      if (error.code !== 'EADDRINUSE' || attempt === 3) throw error;
+      await stopServers();
+    }
   }
-  const unauthorized = await request(origin + '/api/atlas-dating/state'); assert.equal(unauthorized.status, 401); await unauthorized.arrayBuffer();
-  const ended = new Promise(resolve => child.once('exit', resolve)); child.kill(); await ended; child = null;
-  // Only the copied modules are imported; CJS engines resolve within the bundle.
-  const packaged = await import(pathToFileURL(path.join(bundle, entry)).href);
-  const start = async () => { server = packaged.createDatingServer({ mode: 'account', databasePath: db, verify: async () => ({ accountId: 'synk:package' }) });
-    await new Promise(resolve => server.listen(listeningPort, '127.0.0.1', resolve)); };
-  await start();
-  const headers = { Origin: origin, Authorization: 'Bearer synthetic', 'Content-Type': 'application/json' };
-  const initial = await (await request(origin + '/api/atlas-dating/state', { headers })).json();
-  const saved = await request(origin + '/api/atlas-dating/action', { method: 'POST', headers, body: JSON.stringify({ requestId: randomUUID(), expectedRevision: initial.view.revision,
-    action: { kind: 'profile', profile: { nickname: '독립 묶음 합성 계정', region: '', intro: '' } } }) });
-  assert.equal(saved.status, 200); const savedState = await saved.json();
-  await server.shutdownDating(); server = null; await start();
-  const restored = await (await request(origin + '/api/atlas-dating/state', { headers })).json();
-  assert.equal(restored.view.profile.nickname, '독립 묶음 합성 계정'); assert.equal(restored.view.revision, savedState.view.revision);
   assert.equal((await verifyDatingPackage(bundle, built.manifestSha256)).verified, true);
+
+  async function verifyAccount(attempt) {
+    const probe = net.createServer();
+    await listen(probe, 0);
+    const listeningPort = probe.address().port, origin = `http://127.0.0.1:${listeningPort}`, configPath = path.join(dir, 'outside-account.json'), db = path.join(dir, `outside-data-${attempt}.sqlite`);
+    const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('SYNK_DATING_')));
+    // Keep the callback port occupied while checking the config to prove that check does not bind it.
+    try {
+      await fs.writeFile(configPath, JSON.stringify(accountConfig(origin)));
+      Object.assign(env, { SYNK_DATING_MODE: 'account', SYNK_DATING_PORT: String(listeningPort), SYNK_DATING_DB: db, SYNK_DATING_ACCOUNT_CONFIG: configPath });
+      const checked = await run(process.execPath, [path.join(bundle, entry), '--check-config'], { cwd, env, windowsHide: true, timeout: 10000 });
+      const status = JSON.parse(checked.stdout); assert.equal(status.databaseOpened, false); assert.equal(status.listening, false); assert.equal(status.providerTested, false);
+      assert.equal(await exists(db), false);
+    } finally {
+      await new Promise(resolve => probe.close(resolve));
+    }
+    child = spawn(process.execPath, ['--import', bindDiagnostic, path.join(bundle, entry)], { cwd, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    await accountCliReady(child);
+    const configResponse = await request(origin + '/api/atlas-dating/config'), config = await configResponse.json();
+    assert.equal(configResponse.status, 200); assert.equal(config.mode, 'account'); assert.equal(config.demoEnabled, false); assert.equal(config.labAvailable, false);
+    for (const route of DATING_PUBLIC_FILES) { const response = await request(origin + route); assert.equal(response.status, 200, route); await response.arrayBuffer(); }
+    for (const route of ['/atlas-lab/dating-server.mjs', '/atlas-lab/account.config.json', '/atlas-lab/deploy/account.public.example.json', '/dating-package.json', '/package.json', '/api/atlas-journey/state']) {
+      const response = await request(origin + route); assert.equal(response.status, 404, route); await response.arrayBuffer();
+    }
+    const unauthorized = await request(origin + '/api/atlas-dating/state'); assert.equal(unauthorized.status, 401); await unauthorized.arrayBuffer();
+    const ended = new Promise(resolve => child.once('exit', resolve)); child.kill(); await ended; child = null;
+    // Only the copied modules are imported; CJS engines resolve within the bundle.
+    const packaged = await import(pathToFileURL(path.join(bundle, entry)).href);
+    const start = async () => { server = packaged.createDatingServer({ mode: 'account', databasePath: db, verify: async () => ({ accountId: 'synk:package' }) });
+      await listen(server, listeningPort); };
+    await start();
+    const headers = { Origin: origin, Authorization: 'Bearer synthetic', 'Content-Type': 'application/json' };
+    const initial = await (await request(origin + '/api/atlas-dating/state', { headers })).json();
+    const saved = await request(origin + '/api/atlas-dating/action', { method: 'POST', headers, body: JSON.stringify({ requestId: randomUUID(), expectedRevision: initial.view.revision,
+      action: { kind: 'profile', profile: { nickname: '독립 묶음 합성 계정', region: '', intro: '' } } }) });
+    assert.equal(saved.status, 200); const savedState = await saved.json();
+    await server.shutdownDating(); server = null; await start();
+    const restored = await (await request(origin + '/api/atlas-dating/state', { headers })).json();
+    assert.equal(restored.view.profile.nickname, '독립 묶음 합성 계정'); assert.equal(restored.view.revision, savedState.view.revision);
+  }
 });
 
 test('canary operational files stay outside the allowlist and existing or in-checkout targets remain untouched', async t => {
