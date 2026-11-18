@@ -544,10 +544,22 @@ test('잠금 없이 승인 소비만 두 프로세스가 한꺼번에 해도 하
 // ── 잠금(L4) ──
 
 function holder(dir) {
-  const code = "const { _takeLock } = require(" + JSON.stringify(TOOL) + "); _takeLock(" + JSON.stringify(dir) + ").then(() => console.log('held'), e => console.log(e.code)); setInterval(() => {}, 1000);";
-  const p = spawn(process.execPath, ['-e', code], { stdio: ['ignore', 'pipe', 'pipe'] });
-  const ready = new Promise(resolve => { let out = ''; p.stdout.on('data', d => { out += d; if (out.includes('\n')) resolve(out.trim()); }); });
-  const gone = new Promise(resolve => p.on('close', resolve));
+  const code = `
+    const { _takeLock } = require(process.argv[1]);
+    _takeLock(process.argv[2]).then(release => {
+      process.stdin.once('end', release);
+      process.stdin.resume();
+      console.log('held');
+    }, error => console.log(error.code));
+  `;
+  const p = spawn(process.execPath, ['-e', code, TOOL, dir], { stdio: ['pipe', 'pipe', 'inherit'] });
+  const ready = new Promise((resolve, reject) => {
+    let output = '';
+    p.stdout.on('data', data => { output += data; if (output.includes('\n')) resolve(output.trim()); });
+    p.once('error', reject);
+    p.once('close', (code, signal) => reject(new Error(`잠금 결과를 받기 전에 자식이 끝났다 (${signal || code})`)));
+  });
+  const gone = new Promise(resolve => p.once('close', resolve));
   return { p, ready, gone };
 }
 
@@ -579,15 +591,17 @@ test('같은 폴더를 다른 철자로 불러도 같은 잠금이다', async t 
 test('여덟 프로세스가 한꺼번에 잠금을 잡으면 하나만 잡는다', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'media-gc-race-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  const code = "const { _takeLock } = require(" + JSON.stringify(TOOL) + "); _takeLock(" + JSON.stringify(dir) + ").then(r => { console.log('got'); setTimeout(() => r().then(() => process.exit(0)), 1500); }, e => { console.log(e.code); process.exit(0); });";
-  const outs = await Promise.all([...Array(8)].map(() => new Promise(resolve => {
-    const p = spawn(process.execPath, ['-e', code], { stdio: ['ignore', 'pipe', 'pipe'] });
-    let out = '';
-    p.stdout.on('data', d => { out += d; });
-    p.on('close', () => resolve(out.trim()));
-  })));
-  assert.equal(outs.filter(line => line === 'got').length, 1, outs.join(' | '));
-  assert.ok(outs.every(line => line === 'got' || line === 'BUSY'), outs.join(' | '));
+  const contenders = [];
+  try {
+    for (let i = 0; i < 8; i++) contenders.push(holder(dir));
+    // 늦게 뜬 자식까지 모두 시도한 뒤에만 부모가 연결을 닫아 잠금을 푼다.
+    const outs = await Promise.all(contenders.map(child => child.ready));
+    assert.equal(outs.filter(result => result === 'held').length, 1, outs.join(' | '));
+    assert.ok(outs.every(result => result === 'held' || result === 'BUSY'), outs.join(' | '));
+  } finally {
+    for (const { p } of contenders) p.stdin.end();
+    await Promise.all(contenders.map(child => child.gone));
+  }
   assert.deepEqual(fs.readdirSync(dir), [], '상태 폴더에 잠금 파일이 남지 않는다');
 });
 
