@@ -206,7 +206,7 @@ async function 예약게시(cli, env, cwd, url, map) {
   throw Error('Claude Code가 기존 공모 지도 게시 작업을 마치지 못했습니다.');
 }
 
-async function 클로드지도갱신(config, map) {
+async function 클로드지도갱신(config, map, observe) {
   const target = new URL(config.artifact_url);
   const { profile, owner } = config.artifact_sync || {};
   if (!/^https:\/\/claude\.ai\/(?:code\/)?artifact\/[\w-]+$/.test(target.href) ||
@@ -224,6 +224,7 @@ async function 클로드지도갱신(config, map) {
   소유계정확인(cli, env, cwd, owner);
   const live = () => Artifact연결(cli, env, cwd, async (call) => 게시판정보(await call('read', { url }), profile));
   const old = await live();
+  observe?.(old.html, old.version);
   if (같은지도(old.html, source)) return { status: 'current', version: old.version };
 
   const deferred = await 구독확인(cli, env, cwd) || await 예약게시(cli, env, cwd, url, map);
@@ -232,6 +233,7 @@ async function 클로드지도갱신(config, map) {
   if (updated.id !== old.id || updated.version === old.version || !updated.html.includes(source)) {
     throw Error('동일한 비공개 Claude 주소에서 새 지도 원문을 확인하지 못했습니다.');
   }
+  observe?.(updated.html, updated.version);
   return { status: 'updated', version: updated.version };
 }
 

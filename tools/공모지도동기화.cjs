@@ -6,6 +6,7 @@ const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { 가져오기, 보고서읽기 } = require('./lib/grok-contests.cjs');
 const { 클로드지도갱신 } = require('./lib/공모지도-클로드.cjs');
+const { openTrial, runTrial, needsReceipt } = require('./lib/contest-pilot.cjs');
 
 const 기본보관함 = path.join(os.homedir(), 'Documents', 'SYNK-보관함', '지원사업');
 
@@ -52,17 +53,25 @@ function PC지도생성(folder, map) {
   }
 }
 
-async function 지도동기화(folder, config, { 수신 = 브라우저수신, 웹갱신 = 클로드지도갱신 } = {}) {
+async function 지도동기화(folder, config, { 수신 = 브라우저수신, 웹갱신 = 클로드지도갱신, 비교옵션 = {} } = {}) {
   const map = path.join(folder, '공모지도.html');
   const summary = { map, reports: null, imported: 0, candidates: 0, failedReports: [] };
+  let trial = null;
+  let rawGrok = [];
+  let remoteMap;
+  try { trial = openTrial(folder); } catch (error) { summary.pilotError = error.message; }
   try {
-    const feed = await 수신(config.grok, 보고서읽기(folder).map(report => report.reportId));
+    const known = 보고서읽기(folder).map(report => report.reportId);
+    // 지도에 먼저 들어갔어도 비교용 원본이 비어 있으면 같은 정기 보고서를 다시 받는다.
+    const imported = trial && !trial.closed ? known.filter(id => !trial.slots.includes(id) || !needsReceipt(trial, id, 'grok')) : known;
+    const feed = await 수신(config.grok, imported);
     if (!(feed.receipts > 0) || !Array.isArray(feed.reports) || feed.reports.length > 24 ||
         (feed.failures != null && !Array.isArray(feed.failures))) {
       throw Error('그록 수집 페이지의 회차 목록 형식이 맞지 않습니다.');
     }
     summary.reports = feed.receipts;
     summary.failedReports = [...(feed.failures || [])];
+    rawGrok = feed.reports;
     for (const report of feed.reports) {
       try {
         const result = await 가져오기(folder, report);
@@ -90,7 +99,8 @@ async function 지도동기화(folder, config, { 수신 = 브라우저수신, �
     if (fs.existsSync(map)) {
       summary.artifactSource = summary.pc === 'error' ? 'previous-pc-map' : 'rendered-pc-map';
       try {
-        summary.artifact = await 웹갱신(config, map);
+        summary.artifact = await 웹갱신(config, map, trial && !trial.closed ?
+          (html, version) => { remoteMap = { html, version }; } : undefined);
       } catch (error) {
         summary.artifact = { status: 'error', message: 오류문구(error, '웹 지도를 확인하지 못했습니다.') };
       }
@@ -98,7 +108,11 @@ async function 지도동기화(folder, config, { 수신 = 브라우저수신, �
       summary.artifact = { status: 'skipped', message: '게시할 PC 공모 지도가 없습니다.' };
     }
   }
-  const failed = Object.hasOwn(summary, 'grokError') || summary.pc === 'error' || summary.failedReports.length ||
+  if (trial && !trial.closed) {
+    try { summary.pilot = await runTrial(trial, { ...비교옵션, rawGrok, map: summary, remoteMap }); }
+    catch (error) { summary.pilotError = 오류문구(error, '같은 회차의 조사 결과를 비교하지 못했습니다.'); }
+  }
+  const failed = summary.pilotError || summary.pilot?.errors?.length || Object.hasOwn(summary, 'grokError') || summary.pc === 'error' || summary.failedReports.length ||
     ['skipped', 'error'].includes(summary.artifact?.status);
   summary.exitCode = failed ? 1 : summary.artifact?.status === 'deferred' ? 2 : 0;
   return summary;

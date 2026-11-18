@@ -246,4 +246,4 @@ function 합치기(통합, reports) {
   return { ...통합, items };
 }
 
-module.exports = { 가져오기, 보고서읽기, 합치기, 동일공고 };
+module.exports = { 가져오기, 보고서읽기, 합치기, 동일공고, 주소, 사이트, 모음사이트, 본문 };
