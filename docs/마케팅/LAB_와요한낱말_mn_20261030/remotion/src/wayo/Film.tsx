@@ -1,14 +1,18 @@
 // LAB 몽골 M18 「와요 한 낱말」 — 펠트 판의 다섯 줄(그림 다섯은 무대판 한 장에 구운 것)이 몽골어 → 한국어로 한 줄씩 뒤집히고,
 // 줄마다 그것이 「오는」 움직임(손 흔듦 · 비 · 눈 · 졸음 · 벨)이 붙는다. 다섯이 다 뒤집히면 와요가 세로 한 줄로 맞춰지고,
 // 끝은 몽골어 동사 넷 ↔ 와요 하나 표(관문 조건 ①). 전부 useCurrentFrame()으로만 움직인다.
+// 11-18 판본 틀: 그 나라 글(위 머리 글 · 판의 다섯 줄 · 읽는 법 · 끝 표의 머리 · 동사 · 낱말 · 「한국어로는」 줄 · 와요 읽는 법)과 글꼴 · 글자 크기는
+// 판본 꾸러미 p(./판본/<KEY>.json)에서 받는다. 그림 · 한국어 · 소리 · 박자 · 카메라는 그대로다.
 import { measureText } from '@remotion/layout-utils';
 import React from 'react';
-import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { ROWS, Row, TEXT } from './data';
+import { AbsoluteFill, Audio, continueRender, delayRender, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
+import { fontsReady } from '../lib/fonts';
+import { ROWS, Row, SUBJECTS } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 const C = { coral: '#F96859', coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8', blue: '#5B8FC9' };
-const MN = "'Inter Tight', 'SUIT', sans-serif";
+const MN = "'Inter Tight', 'SUIT', sans-serif"; // 그 나라 글이 아닌 기호(z · ! · ↓)만 이 서체로 — 그 나라 글은 판본 font
 const KO = "'SUIT', 'Inter Tight', sans-serif";
 const MASTER = 0.8; // Remotion은 소리를 16비트로 더해 넘치면 자른다 — 모든 볼륨에 같은 값을 곱한다(현장 노트)
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -19,8 +23,27 @@ const X0 = 330; // 글 줄 왼쪽(그림 칸 오른쪽)
 const KO_SIZE = 64;
 const SUBJ_BOX = 214; // 와요 줄을 맞출 때 주어 칸 너비(친구가 · 전화가에 맞춤)
 const subjW = (s: string) => measureText({ text: s, fontFamily: KO, fontSize: KO_SIZE, fontWeight: '800' }).width;
+// 다섯 주어의 폭 — 글꼴(SUIT)이 다 들어온 뒤에만 잰다(11-18 판본 틀로 옮기며 고침). measureText는 처음 잰 폭을 그 렌더 탭에 기억하는데,
+// 글꼴이 오기 전에 재면 대체 글꼴 폭(약 7~10px 큼)이 남아 와요 줄 맞춤(14.4초~)에서 와요가 테 왼쪽 선에 걸리고, 그런 탭과 아닌 탭이 섞이면
+// 8프레임마다 줄이 튀었다(옮기기 전 렌더 · 옮긴 뒤 렌더 모두). 10-30에 나간 몽골판은 글꼴이 온 뒤에 잰 판이라 이 고침으로 그 화면과 같아진다.
+const useSubjWidths = (): number[] | null => {
+  const [ws, setWs] = React.useState<number[] | null>(null);
+  const [handle] = React.useState(() => delayRender('주어 폭 재기(글꼴 기다림)'));
+  React.useEffect(() => {
+    let live = true;
+    fontsReady.then(() => {
+      if (live) setWs(ROWS.map((r) => subjW(r.subj)));
+      continueRender(handle);
+    });
+    return () => {
+      live = false;
+    };
+  }, [handle]);
+  return ws;
+};
 
-const RowText: React.FC<{ row: Row; i: number }> = ({ row, i }) => {
+// 판의 한 줄 — 뒤집히기 전 그 나라 말(판본 lines) 크게, 뒤집힌 뒤 한국어 · 읽는 법(판본 reads) · 그 나라 말 작게. L = 판본 글(이 안의 p는 뒤집힘 진행)
+const RowText: React.FC<{ L: LocPack; row: Row; i: number; w: number }> = ({ L, row, i, w }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   const ft = T.flips[i];
@@ -28,21 +51,21 @@ const RowText: React.FC<{ row: Row; i: number }> = ({ row, i }) => {
   const snap = interpolate(t, [T.snap, T.snap + 0.35], [0, 1], { ...clamp, easing: EASE_OUT });
   const bump = interpolate(t, [T.snap + 0.25, T.snap + 0.4, T.snap + 0.6], [0, 1, 0], clamp);
   const gone = interpolate(t, [T.card, T.card + 0.35], [1, 0.12], clamp); // 끝 표가 뜨면 뒤로 물러난다
-  const shift = (SUBJ_BOX - subjW(row.subj)) * snap;
+  const shift = (SUBJ_BOX - w) * snap; // w = 주어 폭(useSubjWidths)
   const mnRot = interpolate(p, [0, 0.5], [0, 90], clamp);
   const koRot = interpolate(p, [0.5, 1], [-90, 0], clamp);
   return (
     <div style={{ position: 'absolute', left: X0, top: (row.ty ?? row.y) - 86, width: 640, height: 172, perspective: 900, opacity: gone }}>
       {p < 0.5 ? (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', transform: `rotateX(${mnRot}deg)`, fontFamily: MN, fontWeight: 700, fontSize: row.mn.length > 16 ? 46 : 52, color: C.brown, letterSpacing: -0.5 }}>{row.mn}</div>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', transform: `rotateX(${mnRot}deg)`, fontFamily: L.font, fontWeight: 700, fontSize: L.lineSizes[i], color: C.brown, letterSpacing: -0.5 }}>{L.lines[i]}</div>
       ) : (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', transform: `rotateX(${koRot}deg)` }}>
           <div style={{ fontFamily: KO, fontWeight: 800, fontSize: KO_SIZE, lineHeight: 1.05, color: C.brown, whiteSpace: 'nowrap' }}>
             <span style={{ display: 'inline-block', transform: `translateX(${shift}px)` }}>{row.subj}</span>
             <span style={{ display: 'inline-block', marginLeft: 16, transform: `translateX(${shift}px) scale(${1 + 0.14 * bump})`, transformOrigin: 'left center', color: C.coralShade }}>와요</span>
           </div>
-          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 40, lineHeight: 1.15, color: C.coralShade, marginTop: 4, transform: `translateX(${shift}px)` }}>{row.read}</div>
-          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 34, lineHeight: 1.15, color: C.brown, opacity: 0.8, transform: `translateX(${shift}px)` }}>{row.mn}</div>
+          <div style={{ fontFamily: L.font, fontWeight: 700, fontSize: L.readSize, lineHeight: 1.15, color: C.coralShade, marginTop: 4, transform: `translateX(${shift}px)` }}>{L.reads[i]}</div>
+          <div style={{ fontFamily: L.font, fontWeight: 700, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, opacity: 0.8, transform: `translateX(${shift}px)` }}>{L.lines[i]}</div>
         </div>
       )}
     </div>
@@ -198,20 +221,22 @@ const MongleFx: React.FC = () => {
   parts.push(bubble('!', ex, 'snap'));
   return <>{parts}</>;
 };// ── 위 머리 글 ─────────────────────────────────────────────────────
-const Title: React.FC = () => {
+// 판본 title · titleSize. 줄 바꿈 문자로 줄을 나눌 수 있고, 글 폭 760px를 넘으면 줄이 바뀐다(몽골판 한 줄은 약 703px라 예전 렌더 그대로)
+const Title: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
   const second = [...T.flips].sort((x, y) => x - y)[1];
   const gone = interpolate(f, [fr(second - 0.3), fr(second)], [1, 0], clamp); // 둘째 줄이 뒤집히면 걷는다(v1 시험: 위 제목 띠가 지난 편과 같아 보임)
   return (
     <div style={{ position: 'absolute', left: 0, width: 1080, top: 150, display: 'flex', justifyContent: 'center', opacity: gone }}>
-      <div style={{ background: C.cream, borderRadius: 28, padding: '12px 26px 14px', fontFamily: MN, fontWeight: 800, fontSize: 37, color: C.brown, boxShadow: '0 6px 18px rgba(80,40,20,0.14)' }}>{TEXT.title}</div>
+      <div style={{ background: C.cream, borderRadius: 28, padding: '12px 26px 14px', fontFamily: p.font, fontWeight: 800, fontSize: p.titleSize, color: C.brown, boxShadow: '0 6px 18px rgba(80,40,20,0.14)', maxWidth: 760, textAlign: 'center', whiteSpace: 'pre-line' }}>{p.title}</div>
     </div>
   );
 };
 
-// ── 끝 표: 몽골어 동사 넷 ↔ 와요 하나 ──────────────────────────────────
+// ── 끝 표: 그 나라 말 동사 넷 ↔ 와요 하나 ──────────────────────────────────
+// 판본 endHead · verbs · nouns · endKo · wayoRead(와 글자 크기). 머리 · 「한국어로는」 줄은 줄 바꿈 문자로 줄을 나눌 수 있고 글 폭 820px에서 줄이 바뀐다(몽골판은 예전 렌더 그대로)
 const fadeIn = (f: number, t: number, d = 0.4) => interpolate(f, [fr(t), fr(t + d)], [0, 1], { ...clamp, easing: EASE_IO });
-const EndCard: React.FC = () => {
+const EndCard: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
   const a = fadeIn(f, T.card, 0.35);
   if (a <= 0) return null;
@@ -221,23 +246,23 @@ const EndCard: React.FC = () => {
   const pop = interpolate(f, [fr(T.cardKo), fr(T.cardKo + 0.3)], [0.6, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
   return (
     <div style={{ position: 'absolute', left: 70, width: 880, top: 170, height: 1190, background: 'rgba(255,253,248,0.97)', borderRadius: 44, opacity: a, transform: `translateY(${(1 - a) * 24}px)`, boxShadow: '0 10px 30px rgba(80,40,20,0.18)', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 56 }}>
-      <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 46, color: C.brown }}>{TEXT.endMn}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.endHeadSize, color: C.brown, maxWidth: 820, textAlign: 'center', whiteSpace: 'pre-line' }}>{p.endHead}</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22, marginTop: 30, width: 700 }}>
-        {TEXT.endVerbs.map((v, k) => (
-          <div key={v} style={{ background: '#EFE4D2', borderRadius: 24, padding: '14px 0 16px', textAlign: 'center', opacity: fadeIn(f, T.card + 0.08 * k, 0.3) }}>
-            <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 50, color: C.brown, lineHeight: 1.1 }}>{v}</div>
-            <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 32, color: C.brown, opacity: 0.7, marginTop: 4 }}>{TEXT.endNouns[k]}</div>
+        {p.verbs.map((v, k) => (
+          <div key={k} style={{ background: '#EFE4D2', borderRadius: 24, padding: '14px 0 16px', textAlign: 'center', opacity: fadeIn(f, T.card + 0.08 * k, 0.3) }}>
+            <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.verbSize, color: C.brown, lineHeight: 1.1 }}>{v}</div>
+            <div style={{ fontFamily: p.font, fontWeight: 700, fontSize: p.nounSize, color: C.brown, opacity: 0.7, marginTop: 4 }}>{p.nouns[k]}</div>
           </div>
         ))}
       </div>
       <div style={{ opacity: b, marginTop: 34, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 44, color: C.brown }}>↓</div>
-        <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 44, color: C.brown, marginTop: 10 }}>{TEXT.endKo}</div>
+        <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.endKoSize, color: C.brown, marginTop: 10, maxWidth: 820, textAlign: 'center', whiteSpace: 'pre-line' }}>{p.endKo}</div>
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 176, lineHeight: 1.05, color: C.coralShade, transform: `scale(${pop})` }}>와요</div>
-        <div style={{ fontFamily: MN, fontWeight: 600, fontSize: 44, color: C.coralShade }}>ваё</div>
+        <div style={{ fontFamily: p.font, fontWeight: 600, fontSize: p.wayoReadSize, color: C.coralShade }}>{p.wayoRead}</div>
       </div>
       {/* 끝 질문 · 댓글 안내는 캡션으로(v1 시험: 세 시험관이 끝 질문을 짚고, 두 시험관이 댓글 알약 끝 카드를 지난 편과 같다고 셈) — 그 자리엔 다섯 주어가 와요 하나로 모인다 */}
-      <div style={{ opacity: q, marginTop: 26, fontFamily: KO, fontWeight: 800, fontSize: 46, color: C.brown, transform: `scale(${1 + 0.06 * c})` }}>친구가 · 비가 · 눈이 · 잠이 · 전화가</div>
+      <div style={{ opacity: q, marginTop: 26, fontFamily: KO, fontWeight: 800, fontSize: 46, color: C.brown, transform: `scale(${1 + 0.06 * c})` }}>{SUBJECTS}</div>
     </div>
   );
 };
@@ -279,8 +304,10 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => {
+// p = 판본 글(./판본/<KEY>.json). Root가 글이 다 찬 판본만 컴포지션 wayo-<KEY>로 등록한다(인사가 켜진 판본은 Greeting.tsx가 앞에 인사를 붙인다)
+export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
+  const ws = useSubjWidths(); // 재기 전(null)인 프레임은 찍히지 않는다(delayRender)
   const push = interpolate(f, [0, fr(T.total)], [1, 1.06], clamp); // 끝까지 완전히 멈춘 화면이 되지 않게
   // 뒤집힐 때마다(와요 맞춤 때도) 그 줄 쪽으로 한 박 다가갔다 돌아온다 — 원본의 「한 줄씩 바뀌는 박자」를 화면 전체의 박자로
   const t = f / 30;
@@ -307,13 +334,13 @@ export const Film: React.FC = () => {
           <Fx key={`fx${i}`} row={r} i={i} />
         ))}
         {ROWS.map((r, i) => (
-          <RowText key={i} row={r} i={i} />
+          <RowText key={i} L={p} row={r} i={i} w={ws ? ws[i] : SUBJ_BOX} />
         ))}
         <SnapFrame />
         <MongleFx />
       </AbsoluteFill>
-      <Title />
-      <EndCard />
+      <Title p={p} />
+      <EndCard p={p} />
       <Sound />
     </AbsoluteFill>
   );
