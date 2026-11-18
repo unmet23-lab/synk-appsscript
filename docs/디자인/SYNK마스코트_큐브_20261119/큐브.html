@@ -54,6 +54,9 @@ h2{margin:0;font:var(--title);letter-spacing:-.012em}
 .sizes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px}
 .sizes canvas{display:block}
 .sizes figcaption{font:var(--small);font-variant-numeric:tabular-nums;color:var(--dim)}
+.opts{display:flex;flex-wrap:wrap;gap:6px 22px}
+.cand.hero .stage{max-width:640px}
+.tag.sub{padding-block:clamp(28px,5vh,52px) 4px}
 .nogl{display:none;margin:18px 0 0;font:var(--small);color:var(--soft)}
 html[data-nogl] .nogl{display:block}
 .foot{margin:28px 0 0;font:var(--small);color:var(--dim)}
@@ -68,9 +71,9 @@ html[data-nogl] .nogl{display:block}
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안</p>
-    <h1>미래에서 온 큐브,<span>다섯 가지 모습.</span></h1>
-    <p class="lead">지금의 검정 구와 같은 바탕, 같은 빛으로 그렸습니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 둘째 판</p>
+    <h1>맞춰지는 깎은 큐브,<span>가의 몸에 다의 몸짓.</span></h1>
+    <p class="lead">고르신 대로 섞었습니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
   </header>
 
   <div class="moods" role="group" aria-label="표정 바꾸기">
@@ -81,6 +84,21 @@ html[data-nogl] .nogl{display:block}
     <button class="mood" type="button" id="mood-sleep" data-mood="sleep" aria-pressed="false">잠</button>
   </div>
   <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
+
+  <section class="cand hero" data-v="5">
+    <button class="stage" type="button" aria-label="가에 다를 섞은 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">가 + 다</p>
+      <p class="say">평소에는 가처럼 한 덩어리입니다. 생각하는 동안 판이 따로 돌아 빛줄기가 조각나고, 답이 나오면 딱 맞춰지면서 빛줄기가 하나로 이어집니다. 그때 틈으로 빛이 샙니다.</p>
+      <div class="opts" role="group" aria-label="판의 수">
+        <button class="mood" type="button" id="cuts-5" data-cuts="1" aria-pressed="true">판 다섯 장</button>
+        <button class="mood" type="button" id="cuts-3" data-cuts="0" aria-pressed="false">판 석 장</button>
+      </div>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <p class="tag sub">앞서 본 다섯</p>
 
   <section class="cand" data-v="0">
     <button class="stage" type="button" aria-label="가, 깎은 큐브. 누르면 생각합니다."><canvas></canvas></button>
@@ -149,7 +167,7 @@ precision highp float;
 precision mediump float;
 #endif
 uniform vec2 uRes;
-uniform float uT, uDpr, uScale, uSeed, uThink, uGlow, uScan, uLit, uEyeK;
+uniform float uT, uDpr, uScale, uSeed, uThink, uGlow, uScan, uLit, uEyeK, uCuts;
 uniform int uKind;
 uniform mat3 uInv;
 uniform vec3 uL, uOff, uCore;
@@ -216,10 +234,36 @@ float slabs(vec3 p){
   d = min(d, sdRB(ry(p + vec3(0.0, 0.86, 0.0), uSlab.w), vec3(1.0, 0.14, 1.0), 0.05));
   return d;
 }
+/* 가 + 다: 가의 둥근 큐브를 가로로 썬 판. 가운데 판은 돌지 않는다. uCuts가 1이면 다섯 장, 0이면 석 장이다 */
+float ri(float a, float b, float r){ vec2 u = max(vec2(r + a, r + b), vec2(0.0)); return min(-r, max(a, b)) + length(u); }
+float mslab(vec3 p, float y0, float h, float a){ return ri(sdRB(ry(p, a), vec3(1.0), 0.17), abs(p.y - y0) - h, 0.012); }
+/* 한 점에서 가까운 판은 그 점이 든 판과 틈 건너의 판 하나뿐이라 둘만 잰다. 나머지는 틈 하나 너머에 있어 걸음을 그만큼으로 묶는다 */
+float mixSlabs(vec3 p){
+  float g = 0.011;
+  float ay = abs(p.y);
+  float sg = p.y < 0.0 ? -1.0 : 1.0;
+  float a1 = sg > 0.0 ? uSlab.x : uSlab.z;
+  float a2 = sg > 0.0 ? uSlab.y : uSlab.w;
+  if (uCuts > 0.5) {
+    float d1 = mslab(p, sg * 0.54, 0.16 - g, a1);
+    float d2 = ay < 0.54 ? mslab(p, 0.0, 0.38 - g, 0.0) : mslab(p, sg * 0.86, 0.16 - g, a2);
+    return min(min(d1, d2), 0.15);
+  }
+  return min(min(mslab(p, 0.0, 0.38 - g, 0.0), mslab(p, sg * 0.70, 0.32 - g, a1)), 0.30);
+}
+float slabAng(float y){
+  float ay = abs(y);
+  if (ay < 0.38) return 0.0;
+  if (uCuts > 0.5) {
+    if (y > 0.0) return ay < 0.70 ? uSlab.x : uSlab.y;
+    return ay < 0.70 ? uSlab.z : uSlab.w;
+  }
+  return y > 0.0 ? uSlab.x : uSlab.z;
+}
 vec2 map(vec3 p){
   if (uKind == 0) return vec2(sdRB(p, vec3(1.0), 0.17), 0.0);
   if (uKind == 1) return vec2(sdRB(p, vec3(1.0), 0.02), 0.0);
-  float d = slabs(p);
+  float d = uKind == 5 ? mixSlabs(p) : slabs(p);
   float c = max(length(p.xz) - 0.86, abs(p.y) - 0.97);
   if (c < d) return vec2(c, 1.0);
   return vec2(d, 0.0);
@@ -258,20 +302,23 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   float side = smoothstep(-0.28, 0.32, ndl);
   float ppx = ppu / uDpr;
   vec3 c;
-  if (uKind == 0) {
-    /* 면마다 둥근 네모 모양으로 결을 깎았다. 결이 빛을 한 줄로 모아, 면의 가운데를 지나는 빛줄기가 생긴다 */
-    vec3 a = abs(n);
+  if (uKind == 0 || uKind == 5) {
+    /* 면마다 둥근 네모 모양으로 결을 깎았다. 결이 빛을 한 줄로 모아, 면의 가운데를 지나는 빛줄기가 생긴다.
+       판으로 썬 큐브(가 + 다)는 판마다 제 각만큼 돌린 자리에서 결을 읽는다. 판이 어긋나면 빛줄기도 조각난다 */
+    float ang = uKind == 5 ? slabAng(p.y) : 0.0;
+    vec3 pl = ry(p, ang);
+    vec3 a = abs(ry(n, ang));
     vec2 q; vec3 U3; vec3 V3;
-    if (a.z >= a.x && a.z >= a.y) { q = p.xy; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 1.0, 0.0); }
-    else if (a.x >= a.y) { q = p.zy; U3 = vec3(0.0, 0.0, 1.0); V3 = vec3(0.0, 1.0, 0.0); }
-    else { q = p.xz; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 0.0, 1.0); }
+    if (a.z >= a.x && a.z >= a.y) { q = pl.xy; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 1.0, 0.0); }
+    else if (a.x >= a.y) { q = pl.zy; U3 = vec3(0.0, 0.0, 1.0); V3 = vec3(0.0, 1.0, 0.0); }
+    else { q = pl.xz; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 0.0, 1.0); }
     float flatK = smoothstep(0.90, 0.995, max(a.x, max(a.y, a.z)));
     vec2 q2 = q * q;
     float r4 = sqrt(sqrt(dot(q2, q2)));
     vec2 g2 = q * q2;
     g2 /= max(length(g2), 0.00001);
-    vec3 Bw = (U3 * g2.x + V3 * g2.y) * uInv;
-    vec3 Tw = (U3 * (-g2.y) + V3 * g2.x) * uInv;
+    vec3 Bw = ry(U3 * g2.x + V3 * g2.y, -ang) * uInv;
+    vec3 Tw = ry(U3 * (-g2.y) + V3 * g2.x, -ang) * uInv;
     float pole = smoothstep(0.05, 0.30, r4);
     float sp = 0.03 * ppu * max(ndv, 0.05);
     float v1 = smoothstep(2.4, 6.0, sp) * flatK;
@@ -295,6 +342,12 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
     float pulse = 1.0 + 0.35 * uThink;
     c = vec3(0.005) + WARM * (an * side * groove * 0.78 * pulse + an2 * groove * 0.09 + rings + spec * 0.20 * side
       + bevel * (pow(max(dot(nW, H), 0.0), 18.0) * 0.55 * side + 0.030) + 0.010 * max(ndl, 0.0));
+    if (uKind == 5) {
+      /* 틈 가까이의 옆면은 안쪽 빛을 조금 받는다 */
+      float ay = abs(p.y);
+      float spill = exp(-abs(ay - 0.38) / 0.03) + uCuts * exp(-abs(ay - 0.70) / 0.03);
+      c += WARM * spill * min(uGlow, 1.0) * 0.09 * (1.0 - a.y);
+    }
   } else if (uKind == 1) {
     /* 매끈한 검정. 모서리에만 빛이 걸린다 */
     vec3 a = abs(p);
@@ -325,7 +378,7 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   c *= uLit;
   float small = 1.0 - smoothstep(14.0, 60.0, ppx);
   bool face = n.z > 0.5;
-  if (uKind == 2) face = face && abs(p.y) < 0.365 + 0.3 * small;
+  if (uKind == 2 || uKind == 5) face = face && abs(p.y) < 0.365 + 0.3 * small;
   if (uEye.x > 0.001 && face) {
     vec2 e = eyes(p.xy, ppx, uEyeK, uEye.w, uKind == 1 ? 1.0 : 0.0);
     c *= 1.0 - e.y * uEye.x;
@@ -428,7 +481,7 @@ void main(){
   col += g * 2.8 / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
-const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
+const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
 
 const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -464,11 +517,12 @@ const CUBES = [
   { kind: 2, yaw: -0.50, pitch: 0.30, scale: 0.98, eyeK: 1.15, sep: 5.5 },
   { kind: 3, yaw: -0.60, pitch: 0.34, scale: 0.98, eyeK: 1.2, sep: 5.5 },
   { kind: 4, yaw: -0.50, pitch: 0.30, scale: 1, eyeK: 1, sep: 5.5 },
+  { kind: 5, yaw: -0.42, pitch: 0.27, scale: 1.02, eyeK: 1.3, sep: 6.5 },   /* 가 + 다 */
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
   az: 0, spin: 0, slab: [0, 0, 0, 0], slabT: [0, 0, 0, 0], nextShuffle: 0, a4: 0.6 + i, b4: 0.2,
-  R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null,
+  R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null, cuts: 1,
 }));
 let mood = 'auto';
 
@@ -519,14 +573,14 @@ function step(c, now, dt) {
     c.eyeOn = 1 - clamp(c.think * 1.6, 0, 1);
     c.scan = ((t * 0.55) % 1) * 3.8 - 1.9;
   }
-  if (c.kind === 2) {
+  if (c.kind === 2 || c.kind === 5) {
     if (want && now > c.nextShuffle) {
       const j = (Math.random() * 4) | 0;
       c.slabT[j] += (Math.random() < .5 ? -1 : 1) * (Math.PI / 8) * (1 + ((Math.random() * 3) | 0));
       c.nextShuffle = now + 260 + Math.random() * 280;
     }
     for (let j = 0; j < 4; j++) c.slab[j] += (c.slabT[j] - c.slab[j]) * (1 - Math.exp(-dt * (want ? 7 : 11)));
-    c.glow = 0.28 + 0.30 * c.think + 1.0 * c.flash;
+    c.glow = (c.kind === 5 ? 0.14 : 0.28) + 0.30 * c.think + 1.0 * c.flash;
   }
   c.R = qMat(q);
   const az = Math.PI * 0.75 + azAdd, lz = 0.5, h = Math.sqrt(1 - lz * lz);
@@ -578,6 +632,7 @@ function drawGL(tg, now) {
   gl.uniform1f(U.uScan, c.scan);
   gl.uniform1f(U.uLit, c.lit);
   gl.uniform1f(U.uEyeK, c.eyeK);
+  gl.uniform1f(U.uCuts, c.cuts);
   gl.uniform1i(U.uKind, c.kind);
   gl.uniformMatrix3fv(U.uInv, false, c.R);
   gl.uniform3f(U.uL, c.L[0], c.L[1], c.L[2]);
@@ -697,9 +752,16 @@ window.addEventListener('pointermove', e => point(e.clientX, e.clientY), { passi
 window.addEventListener('pointerleave', () => { for (const c of CUBES) { c.tx = 0; c.ty = 0; } });
 document.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') for (const c of CUBES) { c.tx = 0; c.ty = 0; } });
 
-for (const b of document.querySelectorAll('.mood')) b.addEventListener('click', () => {
+for (const b of document.querySelectorAll('[data-mood]')) b.addEventListener('click', () => {
   mood = b.dataset.mood;
-  for (const o of document.querySelectorAll('.mood')) o.setAttribute('aria-pressed', String(o === b));
+  for (const o of document.querySelectorAll('[data-mood]')) o.setAttribute('aria-pressed', String(o === b));
+  kick();
+});
+/* 가 + 다: 판을 다섯 장으로 썰지 석 장으로 썰지 바꿔 본다. 바꾸면 한 번 생각해서 판이 도는 모습을 보인다 */
+for (const b of document.querySelectorAll('[data-cuts]')) b.addEventListener('click', () => {
+  const c = CUBES[5];
+  c.cuts = +b.dataset.cuts; c.slab = [0, 0, 0, 0]; c.slabT = [0, 0, 0, 0]; c.thinkUntil = performance.now() + 2200;
+  for (const o of document.querySelectorAll('[data-cuts]')) o.setAttribute('aria-pressed', String(o === b));
   kick();
 });
 
@@ -726,7 +788,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { can
 
 const t0 = performance.now();
 for (const c of CUBES) c.bootUntil = t0 + 1100 + c.i * 260;
-if (reduced) CUBES[2].slab = CUBES[2].slabT = [0.30, -0.16, 0.22, -0.38];
+if (reduced) for (const c of [CUBES[2], CUBES[5]]) c.slab = c.slabT = [0.30, -0.16, 0.22, -0.38];
 kick();
 })();
 </script>
