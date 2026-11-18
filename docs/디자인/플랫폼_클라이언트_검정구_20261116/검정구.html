@@ -221,6 +221,10 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 .quiet:disabled{opacity:.42;cursor:default}
 /* 물음과 답: 물음을 누르면 답이 바로 아래에 나온다 */
 .more-acts.qa{padding:5px 0}
+/* 되돌릴 수 없는 일(지우기)은 같은 줄의 다른 단추와 떨어져 오른쪽 끝에 선다 */
+.more-acts .far{margin-left:auto}
+/* 줄 안쪽 사실 줄의 기한과 값은 찾아보는 값이라 설명보다 밝게 둔다 */
+.row.sub .when,.row.sub .val{color:rgba(243,241,236,.8)}
 .more-acts.qa + .more-note{padding:2px 0 12px;max-width:46em}
 .more-in .row .quiet{white-space:nowrap}
 /* 글을 넣는 칸은 로그인 화면의 초대코드 칸과 같이 밑줄 한 줄이다 */
@@ -417,7 +421,7 @@ body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:tran
     </div>
     <!-- 계정 관리: 구독에 연결한 계정을 더하고, 고치고, 지우는 방. 구독 방의 「계정 관리」로 온다 -->
     <div class="room" data-room="manage">
-      <button class="quiet up" type="button" data-aside-back>돌아가기</button><button class="quiet up" type="button" id="mg-add">계정 더하기</button>
+      <button class="quiet up" type="button" data-aside-back>돌아가기</button>
       <p class="say"></p>
       <div class="rows vis" role="group" aria-label="연결한 계정"></div>
       <p class="read"></p>
@@ -1090,16 +1094,18 @@ function costRow() {
 }
 function tokRow() {
   if (!TOK.on) return { key: 'tok', unread: 1, nm: '모델별 토큰', mid: '꺼져 있습니다', more: [
-    ['say', '모델마다 출력 토큰을 얼마나 썼는지 셉니다. 토큰은 AI가 읽고 쓴 글의 양입니다.'],
+    ['say', '모델마다 AI가 답으로 쓴 토큰을 셉니다. 토큰은 AI가 읽고 쓴 글의 양입니다.'],
     ['note', '켜면 이 PC에 남은 대화 기록에서 모델 이름과 토큰 수만 꺼내 더합니다. 대화 내용은 꺼내 두지 않고 밖으로 보내지 않습니다. 로그인 정보 파일은 열지 않습니다.'],
     ['acts', [['모델별 토큰 켜기', () => { TOK.on = true; buildExtras(); tellRow('solio', 'tok', '켰습니다. 기록이 많으면 처음 세는 데 몇 분 걸립니다.'); }]]],
   ] };
   const total = TOK.total[TOK.range], resp = TOK.resp[TOK.range];
-  return { key: 'tok', nm: '모델별 토큰', mid: TOK.models.map(m => m[0] + ' ' + Math.round(m[2] * 100) + '%').join(' · '), val: tokText(total), when: TOK.span[TOK.range] + ' · 응답 ' + resp.toLocaleString('ko-KR') + '번', more: [
+  /* 줄의 요약은 안쪽 목록을 되풀이하지 않고 한 가지만 말한다(맹검 11-18: 비율 넷을 요약에 몰아 쓰고 안쪽 막대가 같은 것을 되풀이했다) */
+  const top = TOK.models[0];
+  return { key: 'tok', nm: '모델별 토큰', mid: '가장 많이 쓴 모델은 ' + top[0] + '입니다 · ' + Math.round(top[2] * 100) + '%', val: tokText(total), when: TOK.span[TOK.range] + ' · 응답 ' + resp.toLocaleString('ko-KR') + '번', more: [
     ['pick', '기간', ['오늘', '7일', '30일'], TOK.range, k => { TOK.range = k; buildExtras(); }],
     ...TOK.models.map(m => ['gauge', m[0], Math.round(m[2] * 100), tokText(total * m[2]), m[1] + ' · 응답 ' + Math.round(resp * m[3]).toLocaleString('ko-KR') + '번']),
-    ['note', '출력 토큰이 많은 순서입니다. 이 PC에 기록이 남지 않는 웹과 휴대폰 사용은 빠집니다. 06:12에 마지막으로 셌습니다.'],
-    ['acts', [['다시 세기', q => tell(q, '기록 파일을 다시 세고 있습니다.')], ['끄기', q => twice(q, '한 번 더 누르면 끄고 지웁니다', '끄면 모은 숫자를 지웁니다. 다시 켜면 처음부터 다시 셉니다.', () => { TOK.on = false; buildExtras(); })]]],
+    ['note', 'AI가 답으로 쓴 토큰(글의 양)이 많은 순서입니다. 오른쪽은 그 모델을 쓴 프로그램입니다. 이 PC에 기록이 남지 않는 웹과 휴대폰 사용은 빠집니다. 06:12에 마지막으로 셌습니다.'],
+    ['acts', [['토큰 다시 세기', q => tell(q, '기록 파일을 다시 세고 있습니다.')], ['끄기', q => twice(q, '한 번 더 누르면 끄고 지웁니다', '끄면 모은 숫자를 지웁니다. 다시 켜면 처음부터 다시 셉니다.', () => { TOK.on = false; buildExtras(); })]]],
     ['live'],
   ] };
 }
@@ -1108,12 +1114,12 @@ function buildExtras() { putRows($('.room[data-room="solio"] .rows'), [costRow()
 /* 계정 관리. 줄 하나가 계정 하나다. 줄을 열면 그 계정의 사실과 할 수 있는 일(다시 로그인, 요금과 결제일, 지우기)이 나온다.
    맨 아래 두 줄은 계정 더하기(고른 서비스의 차례를 그 자리에서 밟는다)와 막혔을 때다 */
 const MG = { fix: false, seq: 0, list: [
-  { id: 'c1', svc: 'claude', nm: 'Claude', acc: '업무용', plan: 'Ultra', state: '64% 남음', read: '방금 읽음', price: 290000, day: 9, say: 'Claude 업무용은 초기화 전에 바닥나지 않습니다. 목요일 09:00에 다시 찹니다.',
-    facts: [['row', '로그인', '한 번 로그인하면 4주쯤 이어집니다', '', '12월 14일까지'], ['row', '초기화권', '주간 한도를 한 번 다시 채웁니다', '1장', '12월 20일까지'], ['row', 'API 크레딧', '구독에 든 금액입니다', '$50', '12월 9일에 사라짐']] },
-  { id: 'x1', svc: 'codex', nm: 'Codex', acc: '업무용', plan: 'Pro 200', state: '12% 남음', read: '방금 읽음', price: 290000, day: 2, say: 'Codex 업무용은 내일 오후 3시쯤 막힙니다. 토요일 14:00에 다시 찹니다.',
-    facts: [['row', '초기화권', 'Codex가 알려 준 값입니다', '2장', '12월 31일까지'], ['row', 'API 크레딧', '구독에 든 금액입니다', '$30', '12월 2일에 사라짐']] },
-  { id: 'x2', svc: 'codex', nm: 'Codex', acc: '개인', plan: 'Pro 100', state: '다 썼습니다', read: '목 09:00에 다시 열립니다', price: 145000, day: 20, say: 'Codex 개인은 다 썼습니다. 목요일 09:00에 다시 열립니다.', facts: [] },
-  { id: 'g1', svc: 'gemini', nm: 'Gemini', acc: '업무용', plan: 'Ultra 20x', state: '88% 남음', read: '방금 읽음', price: 360000, day: 11, say: 'Gemini 업무용은 넉넉합니다. 일요일 00:00에 다시 찹니다.',
+  { id: 'c1', svc: 'claude', nm: 'Claude', acc: '업무용', plan: 'Ultra', state: '한도 64% 남음', read: '방금 읽음', price: 290000, day: 9, say: 'Claude 업무용은 초기화 전에 바닥나지 않습니다. 목요일 09:00에 다시 찹니다.',
+    facts: [['row', '로그인', '한 번 로그인하면 4주쯤 이어집니다', '', '12월 14일까지'], ['row', '초기화권', '주간 한도를 한 번 다시 채웁니다', '1장', '12월 20일까지'], ['row', 'API 크레딧', '구독에 함께 들어 있는 API 사용 금액입니다', '$50', '12월 9일에 사라짐']] },
+  { id: 'x1', svc: 'codex', nm: 'Codex', acc: '업무용', plan: 'Pro 200', state: '한도 12% 남음', read: '방금 읽음', price: 290000, day: 2, say: 'Codex 업무용은 내일 오후 3시쯤 막힙니다. 토요일 14:00에 다시 찹니다.',
+    facts: [['row', '초기화권', 'Codex가 알려 준 값입니다', '2장', '12월 31일까지'], ['row', 'API 크레딧', '구독에 함께 들어 있는 API 사용 금액입니다', '$30', '12월 2일에 사라짐']] },
+  { id: 'x2', svc: 'codex', nm: 'Codex', acc: '개인', plan: 'Pro 100', out: 'Codex 개인은 다 써서 목요일 09:00에 다시 열립니다.', state: '다 썼습니다', read: '목 09:00에 다시 열립니다', price: 145000, day: 20, say: 'Codex 개인은 다 썼습니다. 목요일 09:00에 다시 열립니다.', facts: [] },
+  { id: 'g1', svc: 'gemini', nm: 'Gemini', acc: '업무용', plan: 'Ultra 20x', state: '한도 88% 남음', read: '방금 읽음', price: 360000, day: 11, say: 'Gemini 업무용은 넉넉합니다. 일요일 00:00에 다시 찹니다.',
     facts: [['row', 'Flow 크레딧', '영상과 그림에 씁니다', '1,200', '12월 11일에 다시 참']] },
   { id: 'h1', svc: 'higgsfield', nm: 'Higgsfield', acc: '업무용', plan: 'Ultra', state: '1,240 크레딧', read: '방금 읽음', price: 360000, day: 3, say: 'Higgsfield 업무용은 결제일까지 남습니다. 12월 3일에 3,000크레딧이 다시 찹니다.', facts: [] },
 ] };
@@ -1150,13 +1156,13 @@ function addItems() {
     ['acts', [['연결', q => { if (!fldOf(q, 'key')) { tell(q, '복사한 키를 붙여 넣어 주세요.'); return; } addDone({ svc: 'typecast', nm: 'Typecast', acc: '키 ····a41c', plan: 'API Lite', state: '38,000 크레딧', read: '방금 읽음', say: 'Typecast는 이번 달 크레딧이 남아 있습니다.' }); }]]],
     ['live']]);
   const has = s.tool + (s.ver ? ' ' + s.ver : '');
-  const done = () => addDone({ svc: addAt.svc, nm: s.nm, acc: '새 계정', plan: '요금제 읽음', state: '100% 남음', read: '방금 읽음', say: s.nm + ' 새 계정은 방금 처음 읽었습니다.' });
+  const done = () => addDone({ svc: addAt.svc, nm: s.nm, acc: '새 계정', plan: '요금제 읽음', state: '한도 100% 남음', read: '방금 읽음', say: s.nm + ' 새 계정은 방금 처음 읽었습니다.' });
   if (step === 'install' || step === 'installing') return items.concat([plan,
     ['row', '2 설치', s.tool + '가 이 PC에 없습니다. 설치 창을 열면 공식 설치 명령이 돌아갑니다. 1~2분 걸립니다.', '', step === 'installing' ? '설치 창이 열려 있음' : '아직 없음', 1],
     ['row', '3 로그인', '설치가 끝나면 열립니다', '', ''],
     ['acts', step === 'installing' ? [['설치가 끝났습니다 · 다시 확인', () => { s.ver = '0.9'; addGo('ready', s.tool + '가 설치된 것을 확인했습니다.'); }]] : [['설치 창 열기', () => addGo('installing', s.tool + ' 설치 창을 열었습니다. 창을 닫지 말고 끝날 때까지 기다려 주세요.')]]],
     ['live']]);
-  const tool = ['row', '2 설치', has + '가 이 PC에 있습니다', '', '확인'];
+  const tool = ['row', '2 설치', has + '가 이 PC에 있습니다', '', '설치됨'];
   if (step === 'wait') return items.concat([plan, tool,
     ['row', '3 로그인', '브라우저에서 로그인을 마쳐 주세요. 끝나면 저절로 넘어갑니다.', '', '기다리는 중', 1],
     ['acts', [['로그인 화면 다시 열기', q => tell(q, BROWSER)], ['주소 복사', q => tell(q, '주소를 복사했습니다. 다른 계정으로 로그인하려면 시크릿 창에 붙여 넣습니다.')], ['취소', () => addGo('ready', '로그인을 취소했습니다.')]]],
@@ -1197,13 +1203,14 @@ function saveCost(a, q) {
 }
 function buildManage() {
   const n = MG.list.length, cnt = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟'][n] || n + '개';
-  const rows = MG.list.map(a => {
+  const rows = MG.list.map((a, i) => {
     const fix = MG.fix && a.id === 'x2';
-    return { key: a.id, now: fix, nm: a.nm, sub: a.acc + ' · ' + a.plan, mid: fix ? '다시 로그인해야 합니다' : a.state + ' · ' + a.read, val: a.price ? '월 ' + won(a.price) : '', when: a.day ? '매월 ' + a.day + '일 결제' : '요금을 넣지 않음', more: [
+    /* 다 썼거나 다시 로그인해야 하는 계정은 밝게 둔다. 줄마다 상태 글을 읽지 않아도 막힌 계정이 보이게 한다(맹검 11-18) */
+    return { key: a.id, now: fix || !!a.out, gap: i === 0 ? 1 : 0, nm: a.nm, sub: a.acc + ' · ' + a.plan, mid: fix ? '다시 로그인해야 합니다' : a.state + ' · ' + a.read, val: a.price ? '월 ' + won(a.price) : '', when: a.day ? '매월 ' + a.day + '일 결제' : '요금을 넣지 않음', more: [
       ['say', fix ? a.nm + ' ' + a.acc + '은 로그인이 풀렸습니다. 다시 로그인하면 이어서 읽습니다.' : a.say],
       ...a.facts,
       ['acts', [['다시 로그인', q => relogin(a, q)], ['요금과 결제일', q => { const g = grpOf(q, 'cost'); g.hidden = !g.hidden; if (!g.hidden) $('input', g).focus(); }],
-        ['지우기', q => twice(q, '한 번 더 누르면 지웁니다', '이 앱이 만든 로그인 폴더와 쌓인 사용 기록을 함께 지웁니다. 되돌릴 수 없습니다.', () => { MG.list = MG.list.filter(x => x !== a); if (a.id === 'x2') MG.fix = false; buildManage(); })]]],
+        ['지우기', q => twice(q, '한 번 더 누르면 지웁니다', '이 앱이 만든 로그인 폴더와 쌓인 사용 기록을 함께 지웁니다. 되돌릴 수 없습니다.', () => { MG.list = MG.list.filter(x => x !== a); if (a.id === 'x2') MG.fix = false; buildManage(); }), 'far']]],
       ['grp', 'cost', [
         ['fld', '월 구독료', a.price ? a.price.toLocaleString('ko-KR') : '', '원. 연간 결제면 1년 치를 12로 나눈 값', 'price'],
         ['fld', '결제일', a.day ? String(a.day) : '', '매월 며칠인지', 'day'],
@@ -1213,10 +1220,13 @@ function buildManage() {
       ['live'],
     ] };
   });
-  rows.push({ key: 'add', gap: 1, nm: '계정 더하기', mid: Object.keys(ADD).map(k => ADD[k].nm).join(' · '), more: addItems() });
-  rows.push({ key: 'help', nm: '막혔을 때', mid: '설치, 로그인, 코드, 키에서 막힐 때 보는 열두 가지', more: HELP.map(h => ['qa', h[0], h[1]]) });
-  setRoom('manage', { say: n ? '연결한 계정은 ' + cnt + '입니다.' : '아직 연결한 계정이 없습니다.', then: MG.fix ? 'Codex 개인은 다시 로그인해야 합니다.' : '로그인 정보는 이 PC 밖으로 나가지 않습니다.',
-    foot: '공식 프로그램이 이 PC에서만 사용량을 읽습니다.', act: ['모두 다시 읽기', q => { $('span', q.parentElement).textContent = '방금 모두 다시 읽었습니다.'; }], rows });
+  /* 계정 더하기는 맨 위 줄이다. 계정이 많아도 그 차례가 화면 아래에 묻히지 않는다(맹검 11-18: 목록 밑의 덤처럼 보였다) */
+  rows.unshift({ key: 'add', nm: '계정 더하기', mid: '구독 하나를 이 PC에 연결합니다', more: addItems() });
+  rows.push({ key: 'help', gap: 1, nm: '막혔을 때', mid: '설치, 로그인, 코드, 키에서 막힐 때 보는 열두 가지', more: HELP.map(h => ['qa', h[0], h[1]]) });
+  /* 둘째 줄은 지금 알아야 할 것 하나를 말한다. 로그인 정보 안내는 맨 아래 작은 줄로 내렸다(맹검 11-18: 안내가 제목만큼 자리를 차지했다) */
+  const out = MG.list.find(a => a.out);
+  setRoom('manage', { say: n ? '연결한 계정은 ' + cnt + '입니다.' : '아직 연결한 계정이 없습니다.', then: MG.fix ? 'Codex 개인은 다시 로그인해야 합니다.' : out ? out.out : n ? '모두 방금 읽었고, 막힌 계정은 없습니다.' : '구독을 하나 연결하면 남은 양과 결제일을 여기에서 봅니다.',
+    foot: '로그인 정보와 사용량은 이 PC 밖으로 나가지 않습니다.', act: ['모두 다시 읽기', q => { $('span', q.parentElement).textContent = '방금 모두 다시 읽었습니다.'; }], rows });
   /* 손볼 계정이 있으면 구독 방의 맨 위 문장이 둘째 줄에서 그것을 말한다 */
   $('.room[data-room="solio"] .say .then').textContent = MG.fix ? 'Codex 개인은 다시 로그인해야 합니다.' : 'Claude와 Gemini는 이번 주 내내 넉넉합니다.';
   $('#read-when').textContent = MG.fix ? '손볼 계정이 하나 있습니다.' : '방금 읽은 값입니다.';
@@ -1285,7 +1295,7 @@ function buildSettings() {
   const flip = name => on => { SET[name] = on; buildSettings(); };
   setRoom('settings', {
     say: '이 PC의 SYNK는 최신 판입니다.',
-    then: !SET.auto ? '컴퓨터를 켤 때 함께 시작하지 않습니다.' : SET.tray ? '컴퓨터를 켜면 트레이에서 조용히 함께 시작합니다.' : '컴퓨터를 켜면 함께 시작합니다.',
+    then: !SET.auto ? '컴퓨터를 켤 때 함께 켜지 않습니다.' : SET.tray ? '컴퓨터를 켜면 창 없이 함께 켜집니다.' : '컴퓨터를 켜면 창과 함께 켜집니다.',
     foot: 'SYNK Platform 0.4.97 · 시험판 · Windows',
     act: ['문제 알리기용 정보 복사', q => { $('span', q.parentElement).textContent = '버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.'; }],
     rows: [
@@ -1296,8 +1306,8 @@ function buildSettings() {
       ] },
       { key: 'start', nm: '켜고 닫을 때', mid: [SET.auto ? '자동 시작' : '자동 시작 안 함', SET.auto && SET.tray ? '트레이로 시작' : '', SET.keep ? '닫아도 트레이에 남음' : '닫으면 끔'].filter(Boolean).join(' · '), more: [
         ['tog', '자동 시작', '컴퓨터를 켜면 SYNK도 함께 켭니다', SET.auto, flip('auto')],
-        ['tog', '트레이로 시작', '자동으로 켤 때는 창을 띄우지 않습니다', SET.tray, flip('tray')],
-        ['tog', '트레이에 남기기', '닫기 단추를 눌러도 끄지 않고 트레이에 둡니다', SET.keep, flip('keep')],
+        ['tog', '트레이로 시작', '자동으로 켤 때는 창을 띄우지 않고 작업 표시줄 오른쪽 끝의 작은 아이콘(트레이)으로만 둡니다', SET.tray, flip('tray')],
+        ['tog', '트레이에 남기기', '닫기 단추를 눌러도 끄지 않고 그 아이콘으로 둡니다', SET.keep, flip('keep')],
       ] },
       { key: 'key', nm: '어디서나 열기', mid: SET.key ? '어느 화면에서든 이 단축키로 SYNK를 엽니다' : '단축키를 정하지 않았습니다', val: SET.key, more: [
         ['fld', '단축키', SET.key, '예: Ctrl+Alt+S', 'key'],
@@ -1324,7 +1334,6 @@ buildExtras(); holdBox($('.room[data-room="solio"] .rows'));
 buildManage(); buildAccount(); buildSettings();
 for (const name of ['manage', 'account', 'settings']) wireBox($('.room[data-room="' + name + '"] .rows'));
 $('#to-manage').addEventListener('click', () => { snd.tick(); openManage(); });
-$('#mg-add').addEventListener('click', () => { snd.tick(); const b = $('.room[data-room="manage"] button.row[data-key="add"]'); openRow(b, true); showRow(b); });
 $('#fixbtn').addEventListener('click', () => { MG.fix = !MG.fix; buildManage(); });
 
 /* ── 이 공간의 프로그램. 구 옆에 작은 오브제로 놓인다. 다가가면 이름이 펼쳐지고, 그 위에 잠깐 머물면 그 프로그램이 열린다 ── */
