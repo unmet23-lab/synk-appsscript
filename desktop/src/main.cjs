@@ -528,7 +528,8 @@ function createWindow(){
   // The Workspace page keeps unsaved drafts with beforeunload; without this prompt closing, reopening or quitting is cancelled with no word (10-22).
   if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});else if(runtime.clientId==='messenger')installDraftExitGuard({contents,window,dialog,text:WORKSPACE_EXIT_TEXT});
   platformTray?.attachWindow(window);
-  if(isPlatform)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+  // 쓰던 글을 지키려고 끝내기를 그만두면 끝내는 중 표시를 되돌린다. Workspace도 같다. 되돌리지 않으면 화면 프로세스 되살리기가 끝내는 중으로 보고 멈춘다(엔진 검수 GA1)
+  contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;if(isPlatform){startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}}});
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});
   const send=(channel,value)=>{if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);};
   const windowState=()=>({maximized:window.isMaximized(),minimized:window.isMinimized(),focused:window.isFocused(),platform:process.platform});
@@ -542,7 +543,9 @@ function createWindow(){
   contents.on('will-redirect',(event,url)=>{if(!allowedNavigation(url,entry,runtime.clientId))event.preventDefault();});
   const programRoot=resolveProgramRoot({platform:process.platform,env:process.env,getHome:()=>app.getPath('home')});
   if(!installations)installations=createClientLifecycle({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,programRoot,packageRoot:packaged?path.join(process.resourcesPath,'clients'):path.join(app.getAppPath(),'dist'),cacheRoot:path.join(app.getPath('userData'),'Installers'),releases:runtime.releases||[],spawn,openPath:file=>shell.openPath(file),onChange:async()=>{try{const state=await installations.getClients();send('synk:clients-changed',state);send('synk:client-progress',state);}catch{}}});
-  window.on('focus',async()=>{try{send('synk:clients-changed',await installations.getClients());}catch{}});
+  // 자동 되살리기가 멈춘 뒤에도(10분 안에 세 번 넘게 사라짐) 사람이 창을 꺼내거나 누르면 첫 화면을 다시 싣는다(엔진 검수 GA2)
+  window.on('show',()=>{connectionRecovery?.recoverIfGone?.();});
+  window.on('focus',async()=>{connectionRecovery?.recoverIfGone?.();try{send('synk:clients-changed',await installations.getClients());}catch{}});
   // 최소화한 채 되돌려 켠 앱의 미룬 실패는 사람이 작업 표시줄에서 창을 되살릴 때 보인다(0.4.97 엔진 검수 GA2)
   if(isPlatform)window.on('restore',()=>{showKeptFailure();});
   const companyRequest=createCompanyRequests({entry,clientId:runtime.clientId,session:ownSession,auth});

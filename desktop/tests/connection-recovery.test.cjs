@@ -167,7 +167,31 @@ test('renderer recovery stops after three losses in ten minutes and starts again
 test('renderer recovery does nothing while quitting, after dispose, or when a new renderer already took over',async()=>{
   const quitting=goneFixture({quitting:true});quitting.gone();quitting.run();await settle();assert.equal(quitting.contents.loads.length,0);quitting.recovery.dispose();
   const disposed=goneFixture();disposed.gone();disposed.recovery.dispose();disposed.run();await settle();assert.equal(disposed.contents.loads.length,0);
-  const swapped=goneFixture();swapped.gone();swapped.contents.crashed=false;swapped.run();await settle();assert.equal(swapped.contents.loads.length,0);swapped.recovery.dispose();
+  // 새 문서가 시작됐으면(다른 이동이 새 화면 프로세스를 맡았다) 싣지 않는다
+  const swapped=goneFixture();swapped.gone();swapped.contents.emit('did-start-navigation',{},'http://127.0.0.1:4280/learning-hub/',false,true);swapped.run();await settle();assert.equal(swapped.contents.loads.length,0);swapped.recovery.dispose();
+});
+test('a renderer that exits cleanly with no replacement is reloaded even though isCrashed() says false (엔진 검수 GA3)',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  f.gone('clean-exit');f.contents.crashed=false;f.run();await settle();
+  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
+});
+test('after the automatic limit, showing or focusing the window loads the entry again; nothing happens when the page is fine (엔진 검수 GA2)',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  assert.equal(f.recovery.recoverIfGone(),false,'a live page is left alone');
+  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.success(i);await settle();f.tick(60000);}
+  f.gone();f.run();await settle();assert.equal(f.contents.loads.length,4,'the fourth loss in ten minutes is not reloaded by itself');
+  assert.equal(f.recovery.recoverIfGone(),true);await settle();
+  assert.equal(f.contents.loads.length,5,'a person bringing the window up reloads it');
+  f.contents.success(4);await settle();
+  assert.equal(f.recovery.recoverIfGone(),false,'once a document started, it is not loaded again');
+  const q=goneFixture({quitting:true});q.gone();assert.equal(q.recovery.recoverIfGone(),false,'not while quitting');q.recovery.dispose();
+  f.recovery.dispose();
+});
+test('main resets the quit flag for every client when unsaved writing cancels the quit, and asks for recovery on show and focus (엔진 검수 GA1 · GA2)',()=>{
+  const main=fs.readFileSync(path.join(__dirname,'..','src','main.cjs'),'utf8');
+  assert.match(main,/\n  contents\.on\('will-prevent-unload',event=>\{if\(!event\.defaultPrevented\)\{quittingRequested=false;if\(isPlatform\)\{/);
+  assert.match(main,/window\.on\('show',\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);\}\);/);
+  assert.match(main,/window\.on\('focus',async\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);/);
 });
 test('main passes the quit flag so a window closing for quit is not reloaded',()=>{
   const main=fs.readFileSync(path.join(__dirname,'..','src','main.cjs'),'utf8');
