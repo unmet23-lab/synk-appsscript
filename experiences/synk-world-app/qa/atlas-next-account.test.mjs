@@ -837,6 +837,24 @@ test('판 응답 읽기(readResponses) — 올리는 길은 그 판 나르개로
  n4.dispose();
 });
 
+test('판 응답 읽기 둘이 같은 차례에 끝나면 — 뒤 읽기의 409로 판을 다시 정한 뒤에는 앞 읽기의 200 답도 앞 판의 목록을 주지 않는다(4-5 코드 다시 검수 GPT GA6)',async()=>{
+ const pending=[];
+ const line=accountLine({revision:4,responses:()=>new Promise((resolve,reject)=>pending.push({resolve,reject}))});
+ const calls=[];
+ const load=fakeLoader(()=>{const made=fakeCoach();made.responses=input=>{calls.push(input);return {complete:true,rows:[{id:'stale'}]};};return made;}).load;
+ const next=createAtlasNext({owner:'acct-race',storage:memoryStorage(),trail:()=>line.trail(),load,health:recorder()});
+ const coach=await next.practiceCoach(POOL);
+ const first=next.readResponses(coach);
+ const second=next.readResponses(coach);
+ await until(()=>pending.length===2);
+ pending[1].reject(fail(409,'REVISION_CONFLICT',{revision:5}));
+ pending[0].resolve({ok:true,revision:4,complete:true,responses:[]});
+ assert.equal(await second,null,'409를 받은 읽기는 앞 판의 목록을 주지 않는다');
+ assert.equal(await first,null,'같은 차례에 끝난 앞 읽기도 앞 판의 목록을 주지 않는다');
+ assert.deepEqual(calls,[],'닫힌 판의 코치 목록을 읽지 않는다');
+ next.dispose();
+});
+
 test('판 응답 읽기가 판 울타리(409 REVISION_CONFLICT) · 동의 꺼짐(403 LEARNING_DISABLED)을 받으면 판을 다시 정하고 앞 판의 목록을 주지 않는다(4-5 코드 검수 GPT)',async()=>{
  for(const error of [fail(409,'REVISION_CONFLICT',{revision:5}),fail(403,'LEARNING_DISABLED')]){
   const calls=[];const line=accountLine({revision:4,responses:async()=>{throw error;}});const health=recorder();

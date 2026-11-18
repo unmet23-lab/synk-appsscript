@@ -323,3 +323,59 @@ test('「내 계정」을 홈 코치가 서기 전에 열면 코치가 선 뒤 �
  const old=setup({atlasNext:{readResponses:async()=>assert.fail('읽지 않는다')},homeNext:{...base,planner:async()=>planner,life:()=>'old'}});
  assert.equal(await old.education.readResponses(),false);
 });
+
+// 기다린 읽기는 끝나지 않아도 시험이 멈추지 않게 한도를 둔다(고치기 전 판에서는 끝나지 않았다).
+const within=(promise,ms=2000)=>Promise.race([promise,new Promise(resolve=>setTimeout(resolve,ms))]);
+test('「내 계정」을 홈 코치가 서기 전에 열었으면, 코치가 낸 기기 응답이 서버 값과 같아도 빈 채로 그린 시트를 다시 그리게 참을 준다(4-5 코드 다시 검수 GPT GA7)',async()=>{
+ let ready=false,onChange=null;const asked=[];
+ const row={id:'r-device',at:'2026-10-21T03:00:00Z',kind:'mock',value:'helpful',completionId:'done.device'};
+ const homeCoach={watch:()=>()=>{},responses:()=>({complete:true,rows:[row]})};
+ const today={items:[],minutes:0,line:null,empty:{code:'done',text:null},capped:false,cappedText:null,firstDay:false,state:'engine',redrawAt:null};
+ const planner={todayKey:()=>'2026-10-22',say:()=>null,
+  createWorldTodayPlan:()=>({status:'empty',selected:null,selectedKind:null,reason:'',resume:null,candidates:[],examPlan:null,today}),
+  watchHomePlan:options=>{onChange=options.onChange;return {phase:()=>(ready?'engine':'checking'),coach:()=>(ready?homeCoach:null),redrawAt(){},dispose(){}};}};
+ const base={judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){}};
+ const env=setup({atlasNext:{readResponses:async coach=>{asked.push(coach);return coach.responses();}},homeNext:{...base,planner:async()=>planner,life:()=>'engine'}});
+ for(let tick=0;tick<20&&!onChange;tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(env.education.responses(),[],'코치가 서기 전에 연 시트는 빈 목록을 그린다');
+ let settled=null;
+ const pending=env.education.readResponses().then(value=>{settled=value;});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ ready=true;onChange();
+ await within(pending);
+ assert.deepEqual(asked,[homeCoach],'코치가 서면 한 번 읽는다');
+ assert.equal(settled,true,'시트가 그린 빈 목록과 견주어 바뀌었다');
+});
+
+test('「내 계정」을 연 뒤 생활 판정이 지금 판으로 서면 홈 코치를 열지 않아도 기다리던 읽기가 다시 그리기(refresh)에서 끝나고, 닫으면(dispose) 끝난다(4-5 코드 다시 검수 GPT GA2)',async()=>{
+ const today={items:[],minutes:0,line:null,empty:{code:'done',text:null},capped:false,cappedText:null,firstDay:false,state:'checking',redrawAt:null};
+ const open=life=>{
+  let watched=false;
+  const planner={todayKey:()=>'2026-10-22',say:()=>null,
+   createWorldTodayPlan:()=>({status:'empty',selected:null,selectedKind:null,reason:'',resume:null,candidates:[],examPlan:null,today}),
+   watchHomePlan:()=>{watched=true;return {phase:()=>'checking',coach:()=>null,redrawAt(){},dispose(){}};}};
+  const base={judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){}};
+  const env=setup({atlasNext:{readResponses:async()=>assert.fail('지금 판이면 읽지 않는다')},homeNext:{...base,planner:async()=>planner,life:()=>life.now}});
+  return {env,watched:()=>watched};
+ };
+ const life={now:'checking'};
+ const one=open(life);
+ for(let tick=0;tick<20&&!one.watched();tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ let settled=null;
+ const pending=one.env.education.readResponses().then(value=>{settled=value;});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(settled,null,'확인 중에는 기다린다');
+ life.now='old';
+ one.env.education.refresh();
+ await within(pending);
+ assert.equal(settled,false,'지금 판으로 서면 읽지 않고 끝낸다');
+ const still={now:'checking'};
+ const two=open(still);
+ for(let tick=0;tick<20&&!two.watched();tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ let closed=null;
+ const waiting=two.env.education.readResponses().then(value=>{closed=value;});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ two.env.education.dispose();
+ await within(waiting);
+ assert.equal(closed,false,'닫으면 끝낸다');
+});

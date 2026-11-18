@@ -271,6 +271,14 @@ const CLEAR_MUTANTS = [
   [
     C,
     '비우기(4-5)',
+    '0 걸음이 던지면 비우기가 거절된다 — 입구가 결과를 모르는 실패로 보고 「비우는 중」 표지를 남긴다(4-5 코드 다시 검수 GPT GA3)',
+    RESET,
+    "      flushed = { ok: false, code: codeOf(error, 'UNSENT') };\n",
+    '      throw error;\n',
+  ],
+  [
+    C,
+    '비우기(4-5)',
     '옛 로그가 없어도 바닥을 둔다',
     RESET,
     '  const floor = old.missing ? null : { epoch: old.value?.epoch ?? null };\n',
@@ -404,6 +412,14 @@ const CLEAR_MUTANTS = [
     LOG,
     '      const [key] = await put([value], gen);\n      accept({ key, value });\n      // 덧붙이고',
     '      const [key] = await put([value]);\n      accept({ key, value });\n      // 덧붙이고',
+  ],
+  [
+    R,
+    '비우기(4-5)',
+    '손님 요약을 저장을 시작할 때의 세대로 쓴다 — 앞 저장을 기다리는 사이 새 세대 표지를 읽은 탭이 비우기 전 요약을 새 세대에 쓴다(4-5 코드 다시 검수 GPT GA8)',
+    LOG,
+    '    const gen = local.gen ?? state.gen;\n',
+    '    const gen = state.gen;\n',
   ],
   [
     C,
@@ -710,9 +726,25 @@ const RESPONSE_MUTANTS = [
   [
     C,
     '판 응답(4-5)',
-    '코치가 기기에서 본 빼기를 호스트에 모으지 않는다',
+    '코치가 기기에서 본 빼기를 호스트에 모으지 않는다 — 다른 탭에서 뺀 응답을 읽고 센 뒤 치우면 되살아난다',
     COACH,
+    '      noteGone(host.responsesGone, host.trail.heldEvents());\n',
+    '',
+  ],
+  [
+    C,
+    '판 응답(4-5)',
+    '저장 중인 빼기까지 호스트의 겨눈 번호에 든다 — 저장이 거절돼도 응답이 계속 숨는다(4-5 코드 다시 검수 GPT GA1)',
+    COACH,
+    '      noteGone(host.responsesGone, host.trail.heldEvents());\n',
     '      noteGone(host.responsesGone, events);\n',
+  ],
+  [
+    C,
+    '판 응답(4-5)',
+    '뺀 코치가 그 빼기가 저장된 뒤 겨눈 번호를 호스트에 들지 않는다 — 사이에 목록을 읽지 않고 치우면 되살아난다(4-5 코드 다시 검수 GPT GA9)',
+    COACH,
+    '        if (ok) host.responsesGone.add(eventId);\n',
     '',
   ],
 ];

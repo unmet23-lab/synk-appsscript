@@ -367,6 +367,63 @@ test('늦게 쓰는 탭 — 차례를 기다리던 손님 요약 저장은 그 �
   );
 });
 
+test('늦게 쓰는 탭 — 앞 요약을 저장하는 사이 새로 접은 요약은 접은 때의 세대로 쓴다. 그사이 다른 탭이 비우고 이 탭이 새 세대 표지만 읽었어도 비우기 전 요약을 새 세대에 쓰지 않는다(4-5 코드 다시 검수 GPT GA8)', async () => {
+  const port = memoryPort();
+  // 요약 쓰기를 저장소에 쓴 뒤 답만 붙잡는 문과, 통째로 다시 읽기(read)를 붙잡는 문.
+  let holdLocal = null;
+  let holdRead = null;
+  const gated = {
+    ...port,
+    async append(values, options) {
+      const keys = await port.append(values, options);
+      if (holdLocal && values.some(value => value?.kind === 'local')) await holdLocal;
+      return keys;
+    },
+    async read() {
+      if (holdRead) await holdRead;
+      return port.read();
+    },
+  };
+  const late = await guestOn(gated, { exclusive: (_job, work) => work() });
+  await practise(late, items[0]);
+  await late.refold();
+  await late.localSaved();
+  let releaseLocal = null;
+  holdLocal = new Promise(resolve => {
+    releaseLocal = resolve;
+  });
+  await practise(late, items[2]);
+  const first = late.refold(); // 앞 요약의 저장이 저장소에 쓴 뒤 답을 기다린다
+  await new Promise(resolve => setTimeout(resolve, 0));
+  await practise(late, items[3]);
+  const second = late.refold(); // 앞 저장이 끝나기를 기다리는 새 요약(접은 세대 0)
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  let releaseRead = null;
+  holdRead = new Promise(resolve => {
+    releaseRead = resolve;
+  });
+  const refreshing = late.refresh(); // 꼬리에서 새 세대의 비움 표지를 읽고, 통째로 다시 읽기는 붙잡힌다
+  for (let i = 0; i < 50 && late.generation() !== 1; i += 1)
+    await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(late.generation(), 1, '이 탭이 새 세대 표지를 읽었다');
+  holdLocal = null;
+  releaseLocal(); // 앞 저장이 끝나고, 기다리던 새 요약의 저장이 이어진다(다시 읽기는 아직 붙잡혀 있다)
+  for (let i = 0; i < 20; i += 1) await new Promise(resolve => setTimeout(resolve, 0));
+  holdRead = null;
+  releaseRead(); // 막이에 걸린 저장은 다시 읽은 뒤 거절로 끝난다
+  await refreshing.catch(() => {});
+  await late.localSaved();
+  await Promise.allSettled([first, second]);
+  const fresh = await guestOn(port, { exclusive: busy });
+  assert.equal(
+    fresh.view().met.has(items[0].familyKey) || fresh.view().met.has(items[3].familyKey),
+    false,
+    '비우기 전 기록을 접은 요약이 새 세대에 들지 않았다',
+  );
+});
+
 test('옮긴 장부 칸 — 넷째 걸음이 지운 「옮겨 오기 전 기록」의 계열 · 문항과 옮긴 때를 비움 표지에 남기고, 앞 표지의 바닥은 잇는다', async () => {
   const port = memoryPort();
   const record = await guestOn(port);

@@ -137,7 +137,14 @@ async function forgetMoved(account, legacy, open, drop = true) {
 export async function resetAccount(host, { account, clear, legacy, open }) {
   const path = host.guest ? 'device' : 'upload';
   if (path === 'upload') {
-    const flushed = await flush(host);
+    let flushed;
+    try {
+      flushed = await flush(host);
+    } catch (error) {
+      // 0 걸음이 던졌다(기록부 다시 읽기 · 올리기의 저장소 실패) — 서버에 닿기 전이라 아무것도 지우지 않았다. 결과를 아는 실패로 돌려준다
+      // (입구가 「비우는 중」 표지를 지운다 — 4-5 코드 다시 검수 GPT GA3).
+      flushed = { ok: false, code: codeOf(error, 'UNSENT') };
+    }
     if (!flushed.ok) return { ok: false, path, step: 'upload', code: flushed.code, known: true };
   }
   if (typeof clear !== 'function')

@@ -613,8 +613,9 @@ export function createRecord({
       .map(issuedRow);
     const next = { ...emptySummary(edition()), lines, issued, lineSeq: until, foldedUntil: until };
     // 보기의 바탕은 이 메모리 요약이다 — 탭 하나여도 차례 없이 선다(s2). 저장은 뒤에서, 아무도 기다리지 않는다(§18-5-1 R2 —
-    // coach.ready · 사건의 stored · 판 끝의 folded는 이 계산까지만 기다린다).
-    state.local = { summary: next, until, key: null };
+    // coach.ready · 사건의 stored · 판 끝의 folded는 이 계산까지만 기다린다). 접은 때의 세대를 함께 든다 — 저장은 이 세대로 막이를 건다(GB2 ·
+    // 4-5 코드 다시 검수 GPT GA8: 앞 저장을 기다리는 사이 다른 탭이 비웠으면 비우기 전 요약을 새 세대에 쓰지 않는다).
+    state.local = { summary: next, until, key: null, gen: state.gen };
     void saveLocal();
   }
 
@@ -652,8 +653,9 @@ export function createRecord({
   async function saveOnce() {
     const local = state.local;
     if (!local || local.key != null) return false;
-    // 그 요약을 접은 세대로 쓴다 — 차례를 기다리는 사이 다른 탭이 비웠으면 지워진 세상의 요약을 새 세대에 쓰지 않는다(GB2와 같은 꼴).
-    const gen = state.gen;
+    // 그 요약을 접은 세대로 쓴다 — 차례를 기다리는 사이 다른 탭이 비웠으면 지워진 세상의 요약을 새 세대에 쓰지 않는다(GB2와 같은 꼴). 접은 때의
+    // 세대는 요약과 함께 든다 — 저장을 시작할 때 읽으면 앞 저장을 기다리는 사이 새 세대를 읽은 탭이 비우기 전 요약을 새 세대에 썼다(GA8).
+    const gen = local.gen ?? state.gen;
     const value = { kind: 'local', summary: packSummary(local.summary), until: local.until };
     const write = async () => {
       const [key] = await put([value], gen);

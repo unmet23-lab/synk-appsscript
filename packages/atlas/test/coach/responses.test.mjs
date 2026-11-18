@@ -715,3 +715,159 @@ test('올리는 계정 코치 — 이 기기에서 뺀 서버 응답은 그 빼�
     coach.dispose();
   }
 });
+
+// GB4 장면의 둘 — 빼기와 치우기 사이에 목록을 한 번도 읽지 않은 것(GA9)과, 빼기의 저장이 거절된 것(GA1)이다. 판 하나를 끝내 응답을 남기고
+// 서버가 받게 한 뒤, 그 응답을 낸 서버 값을 코치에 둔다.
+async function servedResponse(tag, port = memoryPort()) {
+  const items = bankOf(rng(67), { items: 4 });
+  const map = fakeMap(items);
+  const server = createServer({ random: rng(68), index: indexOfMap(map) });
+  const time = clock();
+  server.tick(time.now() - server.now);
+  const top = topWindow();
+  const account = `acct-${tag}`;
+  const key = storeName({ account, revision: 1 });
+  const transport = {
+    post: (events, since) => server.post(events, since),
+    get: async since => ({ summary: await server.summary(since), serverTime: server.now }),
+  };
+  const coach = createCoach({
+    gameId: 'resp',
+    map,
+    seed: 's',
+    dayOffset: 0,
+    scope: top,
+    host: { guest: false, account, revision: 1, key, port, transport, now: time.now },
+  });
+  await coach.ready;
+  await coach.synced();
+  const pid = coach.present(items[0]);
+  await coach.answer(pid, { correct: true, assessable: true }).stored;
+  const set = coach.finishSet({ kind: 'short' });
+  await set.folded;
+  time.advance(1000);
+  const given = coach.feedback(set, 'too_much');
+  const handle = await acquireHost({ key, params: PARAMS, now: time.now, guest: false }, top);
+  await handle.settled();
+  await handle.upload();
+  assert.equal(typeof handle.trail.acked(given.id), 'number', '서버가 응답을 받았다');
+  const read = {
+    ok: true,
+    revision: 1,
+    complete: true,
+    seen: [given.id],
+    seenFrom: null,
+    serverTime: server.now,
+    responses: [
+      {
+        id: given.id,
+        at: given.at,
+        value: given.value,
+        completionId: set.completionId,
+        decisionId: set.decisionId,
+        variant: 'short',
+      },
+    ],
+  };
+  assert.deepEqual(idsOf(coach.responses({ server: read }).rows), [given.id]);
+  return { coach, handle, server, time, given, map, key, port, transport, account };
+}
+
+test('올리는 계정 코치 — 뺀 뒤 목록을 한 번도 읽지 않고 그 빼기가 올라가 이틀 뒤 치워져도 서버 앞 값에서 되살아나지 않는다(4-5 코드 다시 검수 GPT GA9)', async () => {
+  const { coach, handle, server, time, given } = await servedResponse('gone-unread');
+  try {
+    const gone = coach.excludeResponse(given.id);
+    await handle.settled();
+    await handle.upload();
+    assert.equal(typeof handle.trail.acked(gone.id), 'number', '서버가 빼기를 받았다');
+    time.advance(3 * 86_400_000);
+    server.tick(3 * 86_400_000);
+    assert.ok((await handle.trail.compact()) > 0, '이틀 지난 사건을 치웠다');
+    assert.equal(handle.trail.heldEvent(gone.id), null, '빼기 사건이 기기에서 치워졌다');
+    assert.deepEqual(
+      coach.responses().rows,
+      [],
+      '사이에 목록을 읽지 않았어도 뺀 응답이 되살아나지 않는다',
+    );
+  } finally {
+    releaseHost(handle);
+    coach.dispose();
+  }
+});
+
+test('올리는 계정 코치 — 다른 탭에서 뺀 서버 응답도 이 탭이 그 빼기를 읽고 목록을 센 뒤라면, 이틀 뒤 치워져도 되살아나지 않는다(GB4 · 4-5 코드 다시 검수 GPT GA1 — 저장된 빼기에서 모은다)', async () => {
+  const port = memoryPort();
+  const a = await servedResponse('gone-other', port);
+  const topB = topWindow();
+  const other = createCoach({
+    gameId: 'resp',
+    map: a.map,
+    seed: 's',
+    dayOffset: 0,
+    scope: topB,
+    host: {
+      guest: false,
+      account: a.account,
+      revision: 1,
+      key: a.key,
+      port,
+      transport: a.transport,
+      now: a.time.now,
+    },
+  });
+  await other.ready;
+  const handleB = await acquireHost(
+    { key: a.key, params: PARAMS, now: a.time.now, guest: false },
+    topB,
+  );
+  try {
+    const gone = other.excludeResponse(a.given.id);
+    await handleB.settled();
+    await handleB.upload();
+    assert.equal(typeof handleB.trail.acked(gone.id), 'number', '서버가 다른 탭의 빼기를 받았다');
+    await a.handle.refresh();
+    assert.ok(a.handle.trail.heldEvent(gone.id), '이 탭이 다른 탭의 빼기를 읽었다');
+    assert.deepEqual(a.coach.responses().rows, [], '목록을 세면 그 빼기를 든다');
+    a.time.advance(3 * 86_400_000);
+    a.server.tick(3 * 86_400_000);
+    assert.ok((await a.handle.trail.compact()) > 0, '이틀 지난 사건을 치웠다');
+    assert.equal(a.handle.trail.heldEvent(gone.id), null, '빼기 사건이 이 탭에서 치워졌다');
+    assert.deepEqual(a.coach.responses().rows, [], '다른 탭에서 뺀 응답이 되살아나지 않는다');
+  } finally {
+    releaseHost(handleB);
+    other.dispose();
+    releaseHost(a.handle);
+    a.coach.dispose();
+  }
+});
+
+test('올리는 계정 코치 — 저장이 거절된 판 응답 빼기는 그 응답을 계속 숨기지 않는다(4-5 코드 다시 검수 GPT GA1)', async () => {
+  const base = memoryPort();
+  let refuse = false;
+  const port = {
+    ...base,
+    async append(values, options) {
+      if (refuse) {
+        refuse = false;
+        throw Object.assign(new Error('쓰기 거절'), { code: 'STORAGE_FAILED' });
+      }
+      return base.append(values, options);
+    },
+  };
+  const { coach, handle, given } = await servedResponse('gone-refused', port);
+  try {
+    refuse = true;
+    const gone = coach.excludeResponse(given.id);
+    assert.deepEqual(coach.responses().rows, [], '저장 중인 빼기는 목록에서 바로 뺀다');
+    await handle.settled();
+    assert.equal(handle.trail.heldEvent(gone.id), null, '빼기가 저장되지 않았다');
+    assert.deepEqual(
+      idsOf(coach.responses().rows),
+      [given.id],
+      '저장되지 않은 빼기는 응답을 숨기지 않는다',
+    );
+  } finally {
+    releaseHost(handle);
+    coach.dispose();
+  }
+});

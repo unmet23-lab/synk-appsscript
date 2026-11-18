@@ -26018,38 +26018,43 @@ function createWorldEducation({
     else row.from.exclude(id);
     return true;
   }
-  let responsesWaiting = null, responsesDone = null;
-  async function readResponses() {
+  let responsesWaiting = null, responsesDone = null, responsesShown = null;
+  async function readResponses(shown = null) {
     if (!answering() || typeof atlasNext?.readResponses !== "function") return false;
     const coach2 = nextCoach();
     if (!coach2) {
       if (homePhase() !== "checking") return false;
-      responsesWaiting ??= new Promise((resolve) => {
-        responsesDone = resolve;
-      });
+      if (!responsesWaiting) {
+        responsesShown = JSON.stringify(responseList());
+        responsesWaiting = new Promise((resolve) => {
+          responsesDone = resolve;
+        });
+      }
       return responsesWaiting;
     }
-    const before = JSON.stringify(responseList());
+    const before = shown ?? JSON.stringify(responseList());
     try {
       await atlasNext.readResponses(coach2);
     } catch {
-      return false;
+      if (shown == null) return false;
     }
     return !stopped && JSON.stringify(responseList()) !== before;
   }
   function readWaitingResponses() {
     if (!responsesWaiting) return;
-    const done = responsesDone;
+    const done = responsesDone, shown = responsesShown;
     if (stopped || homePhase() === "old") {
       responsesWaiting = null;
       responsesDone = null;
+      responsesShown = null;
       done(false);
       return;
     }
     if (!nextCoach()) return;
     responsesWaiting = null;
     responsesDone = null;
-    void readResponses().then(done, () => done(false));
+    responsesShown = null;
+    void readResponses(shown).then(done, () => done(false));
   }
   const bankUrl = topikBankUrl || audioUrl("world-topik-items.json");
   let bankWait = null, bankFailedAt = -Infinity;
@@ -26358,6 +26363,7 @@ function createWorldEducation({
       mockChanged();
     } catch {
     }
+    readWaitingResponses();
     return current;
   }
   function drawHome() {
@@ -29356,6 +29362,7 @@ function createWorldEducation({
   }, metrics: () => ({ owner, plan: current }), today: () => current?.today ? { ...current.today, selected: current.selected, selectedKind: current.selectedKind, reason: current.reason } : null, dispose() {
     stopped = true;
     wakePlanWaits();
+    readWaitingResponses();
     stopHearing();
     homeWatch?.dispose();
     release(coach);

@@ -369,7 +369,14 @@ export function createCoach(options = {}) {
       const held = state.host.trail.heldEvents().find(event => event.id === eventId);
       if (held && held.type !== EVENT_TYPES.feedback)
         throw new TypeError('Atlas: excludeResponse takes a set response (feedback.given)');
-      return session.excludeResponse(eventId).event;
+      const host = state.host;
+      const made = session.excludeResponse(eventId);
+      // 빼기가 저장되면 그 겨눈 번호를 호스트가 사는 동안 든다 — 사이에 목록을 한 번도 읽지 않고 이틀 뒤 치워도 서버 앞 값에서 되살아나지
+      // 않게(4-5 코드 다시 검수 GPT GA9). 저장되지 않은 빼기는 들지 않는다(GA1).
+      made.stored.then(ok => {
+        if (ok) host.responsesGone.add(eventId);
+      });
+      return made.event;
     },
 
     // 판 응답 목록(단계 4 계획 §22-5 — 「내가 남긴 응답」 · 짧은 연습 길이). 셈은 record/responses.mjs(옛 엔진과 같은 뜻 — 판마다 가장 새 응답
@@ -388,7 +395,9 @@ export function createCoach(options = {}) {
       }
       const read = host.guest ? null : host.responsesRead;
       const events = host.ownEvents();
-      noteGone(host.responsesGone, events);
+      // 겨눈 번호는 저장된 빼기(기록부가 든 사건 — 다른 탭의 빼기 포함)에서만 든다. 저장 중인 빼기는 목록에서 바로 빠지지만, 저장이 거절되면
+      // 다시 보여야 한다(4-5 코드 다시 검수 GPT GA1).
+      noteGone(host.responsesGone, host.trail.heldEvents());
       const rows = responseRows({
         events,
         server: read?.rows ?? null,

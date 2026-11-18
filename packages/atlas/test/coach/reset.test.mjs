@@ -307,6 +307,43 @@ test('올리는 계정 — 올리기가 안 되면 서버를 부르지 않고 �
   a.dispose();
 });
 
+test('올리는 계정의 0 걸음 — 기록부를 다시 읽다 저장소가 실패하면 서버를 부르지 않고 결과를 아는 실패로 돌려준다(4-5 코드 다시 검수 GPT GA3)', async () => {
+  const w = world(57);
+  const base = memoryPort();
+  let failRange = false;
+  const port = {
+    ...base,
+    async range(afterKey) {
+      if (failRange) throw Object.assign(new Error('읽기 실패'), { code: 'STORAGE_FAILED' });
+      return base.range(afterKey);
+    },
+  };
+  const a = open(w, {
+    guest: false,
+    account: 'A',
+    revision: 1,
+    key: storeName({ account: 'A', revision: 1 }),
+    port,
+    transport: w.route,
+  });
+  await a.ready;
+  const pid = a.present(w.items[0]);
+  await a.answer(pid, { correct: true, assessable: true }).stored;
+  failRange = true;
+  const done = await a.reset({ guestPort: w.guestPort });
+  failRange = false;
+  assert.equal(done.ok, false);
+  assert.equal(done.step, 'upload');
+  assert.equal(done.code, 'STORAGE_FAILED');
+  assert.equal(
+    done.known,
+    true,
+    '서버에 비우기를 보내지 않았다 — 입구가 「비우는 중」 표지를 지운다',
+  );
+  assert.ok(!w.calls.includes('clear'));
+  a.dispose();
+});
+
 test('올리는 계정 — 서버가 받지 않으면(409) 결과를 알고, 닿지 못하면 결과를 모른다', async () => {
   const w = world(47);
   const a = await accountCoach(w, 'A');

@@ -212,28 +212,33 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 「내 계정」을 열 때: 새 길 올리는 계정이면 서버의 판 응답(다른 기기에서 남긴 것 · 30일)을 다시 읽어 코치에 넘긴다(입구 readResponses). 목록이
  // 바뀌었으면 참 — 셸이 그 칸만 다시 그린다.
  // 홈 코치가 아직 서지 않아 읽을 코치가 없으면 코치가 설 때(판 감시의 알림) 한 번 읽고 그 결과를 준다 — 준비 중에 연 시트가 서버 응답을 끝내
- // 읽지 못하던 것(4-5 코드 검수 GPT). 기다리는 사이 다시 부르면 같은 약속이다. 그사이 시트를 닫았으면 셸이 그리지 않는다.
- let responsesWaiting=null,responsesDone=null;
- async function readResponses(){
+ // 읽지 못하던 것(4-5 코드 검수 GPT). 기다리는 사이 다시 부르면 같은 약속이다. 그사이 시트를 닫았으면 셸이 그리지 않는다. 기다린 읽기는 시트가
+ // 그린 목록(기다리기 시작한 때의 목록)과 견준다 — 코치가 선 때의 목록과 견주면, 코치가 낸 기기 응답이 서버 값과 같을 때 빈 채로 그린 시트를
+ // 다시 그리지 않았다(4-5 코드 다시 검수 GPT GA7).
+ let responsesWaiting=null,responsesDone=null,responsesShown=null;
+ async function readResponses(shown=null){
   if(!answering()||typeof atlasNext?.readResponses!=='function')return false;
   const coach=nextCoach();
   if(!coach){
    // 홈 코치가 설 수 있을 때(확인 중)만 기다린다 — 지금 판이면 읽을 새 길 코치가 없다.
    if(homePhase()!=='checking')return false;
-   responsesWaiting??=new Promise(resolve=>{responsesDone=resolve;});return responsesWaiting;
+   if(!responsesWaiting){responsesShown=JSON.stringify(responseList());responsesWaiting=new Promise(resolve=>{responsesDone=resolve;});}
+   return responsesWaiting;
   }
-  const before=JSON.stringify(responseList());
-  try{await atlasNext.readResponses(coach);}catch{return false;}
+  const before=shown??JSON.stringify(responseList());
+  try{await atlasNext.readResponses(coach);}catch{if(shown==null)return false;}
   return !stopped&&JSON.stringify(responseList())!==before;
  }
- // 판 감시가 알릴 때 · 홈 플래너를 못 받았을 때: 기다리던 읽기를 코치가 섰으면 하고, 지금 판으로 정해졌으면 읽지 않고 끝낸다.
+ // 판 감시가 알릴 때 · 홈 플래너를 못 받았을 때 · 화면을 다시 맞출 때(refresh) · 닫을 때: 기다리던 읽기를 코치가 섰으면 하고, 지금 판으로
+ // 정해졌거나 닫았으면 읽지 않고 끝낸다. 생활 판정이 지금 판으로 서면 홈 코치를 열지 않아 판 감시는 알리지 않는다 — 셸이 다시 그리며 부르는
+ // refresh와 dispose가 끝낸다(4-5 코드 다시 검수 GPT GA2).
  function readWaitingResponses(){
   if(!responsesWaiting)return;
-  const done=responsesDone;
-  if(stopped||homePhase()==='old'){responsesWaiting=null;responsesDone=null;done(false);return;}
+  const done=responsesDone,shown=responsesShown;
+  if(stopped||homePhase()==='old'){responsesWaiting=null;responsesDone=null;responsesShown=null;done(false);return;}
   if(!nextCoach())return;
-  responsesWaiting=null;responsesDone=null;
-  void readResponses().then(done,()=>done(false));
+  responsesWaiting=null;responsesDone=null;responsesShown=null;
+  void readResponses(shown).then(done,()=>done(false));
  }
  // 공개 TOPIK 은행: 처음 추천·판을 열 때 한 번 불러오고(실패하면 다음에 다시), 다 불러오면 추천과 열려 있는 판을 다시 그린다.
  const bankUrl=topikBankUrl||audioUrl('world-topik-items.json');
@@ -416,6 +421,8 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   try{if(homeNext&&panelNode('[data-position-next="checking"]'))redrawNext();}catch{/* the next open draws it */}
   // 시험 점검 카드의 판정이 바뀌었을 수 있다(판 · 은행 · 기록이 다 왔는가 — 4-4d §21-23의 5). 앱이 열린 카드만 맞춘다.
   if(typeof mockChanged==='function')try{mockChanged();}catch{/* 알림 카드는 다음에 열 때 맞춘다 */}
+  // 기다리던 「내 계정」 판 응답 읽기 — 생활 판정이 지금 판으로 서면 판 감시가 알리지 않으므로 여기서 끝낸다(GA2).
+  readWaitingResponses();
   return current;
  }
  function drawHome(){
@@ -1867,5 +1874,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();readWaitingResponses();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

@@ -1662,7 +1662,12 @@ export const POSITION_MUTANTS = [
   // ── 4-5 「내가 남긴 응답」 · 짧은 연습 길이의 셸(4-5 코드 검수 GPT GA8 · GA9) ──
   ["responseShell", "판 응답 셸", "짧은 연습 길이에 판을 여는 새 길 코치를 넘기지 않는다", "  const count=practiceLength(next),skill={id:skillId,label:skillLabel(skillId)};\n", "  const count=practiceLength(),skill={id:skillId,label:skillLabel(skillId)};\n"],
   ["responseShell", "판 응답 셸", "홈 코치가 서기 전에 연 「내 계정」은 읽지 않고 끝낸다", "   if(homePhase()!=='checking')return false;\n", "   return false;\n"],
-  ["responseShell", "판 응답 셸", "코치가 선 뒤 기다린 읽기를 하지 않는다", "  void readResponses().then(done,()=>done(false));\n", "  done(false);\n"],
+  ["responseShell", "판 응답 셸", "코치가 선 뒤 기다린 읽기를 하지 않는다", "  void readResponses(shown).then(done,()=>done(false));\n", "  done(false);\n"],
+  // ── 4-5 코드 다시 검수(GPT -b)의 고침 ──
+  ["entry", "판 응답 입구", "같은 차례에 끝난 앞 읽기가 판을 다시 정한 뒤에도 앞 판의 목록을 준다(GA6)", "      if (disposed || at !== generation || gone.has(made)) return null;\n", "      if (disposed || gone.has(made)) return null;\n"],
+  ["responseShell", "판 응답 셸", "기다린 읽기를 코치가 선 때의 목록과 견준다 — 빈 채로 그린 시트를 다시 그리지 않는다(GA7)", "  const before=shown??JSON.stringify(responseList());\n", "  const before=JSON.stringify(responseList());\n"],
+  ["responseShell", "판 응답 셸", "다시 그리기가 기다리던 읽기를 끝내지 않는다 — 지금 판으로 서면 끝내 기다린다(GA2)", "  readWaitingResponses();\n  return current;\n", "  return current;\n"],
+  ["responseShell", "판 응답 셸", "닫아도 기다리던 읽기를 끝내지 않는다(GA2)", "dispose(){stopped=true;wakePlanWaits();readWaitingResponses();", "dispose(){stopped=true;wakePlanWaits();"],
   ["me","나 칸","흔들리는 말을 놓친 수로 세우지 않는다","  finite(b.lapses) - finite(a.lapses) || finite(a.lastAt) - finite(b.lastAt) || byName(a, b);\n","  finite(a.lastAt) - finite(b.lastAt) || byName(a, b);\n"],
   ["me","나 칸","흔들리는 말에서 마지막 자리가 오래된 것을 앞세우지 않는다","  finite(b.lapses) - finite(a.lapses) || finite(a.lastAt) - finite(b.lastAt) || byName(a, b);\n","  finite(b.lapses) - finite(a.lapses) || byName(a, b);\n"],
   ["me","나 칸","이름이 없는 단위도 싣는다(N3를 어긴다)","    if (!label) {\n","    if (false) {\n"],

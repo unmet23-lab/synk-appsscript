@@ -1423,6 +1423,9 @@ export function createAtlasNext({
     async readResponses(made) {
       const plan = made && !gone.has(made) ? plans.get(made) : null;
       if (disposed || !plan || typeof made.responses !== 'function') return null;
+      // 읽기를 시작한 때의 판 — 기다리는 사이 판을 다시 정했으면(다른 읽기가 받은 409 · 403 포함) 앞 판의 목록을 주지 않는다. 닫은 코치 표(gone)는
+      // 은퇴의 다음 차례에 적히므로, 같은 차례에 끝난 앞 읽기는 이 번호로 거른다(4-5 코드 다시 검수 GPT GA6).
+      const at = generation;
       let server = null;
       if (plan.path === 'upload' && typeof plan.transport?.responses === 'function') {
         try {
@@ -1433,12 +1436,12 @@ export function createAtlasNext({
           // 판 울타리 · 동의 꺼짐(409 REVISION_CONFLICT · 403 LEARNING_DISABLED)은 판이 바뀐 것이다 — 판을 다시 정하고(코치를 닫는다) 앞 판의
           // 목록을 주지 않는다(4-5 코드 검수 GPT — 다른 기기에서 비운 판의 응답이 「내 계정」 · 연습 길이에 남던 것). 그 밖의 실패는 앞 값 그대로다.
           if (planFenced(error)) {
-            if (!disposed && !gone.has(made) && plans.get(made) === plan) retire('account');
+            if (!disposed && at === generation && !gone.has(made) && plans.get(made) === plan) retire('account');
             return null;
           }
         }
       }
-      if (disposed || gone.has(made)) return null;
+      if (disposed || at !== generation || gone.has(made)) return null;
       try {
         return made.responses(server == null ? {} : { server });
       } catch {
