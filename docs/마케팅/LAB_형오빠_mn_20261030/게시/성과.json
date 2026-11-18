@@ -378,6 +378,17 @@
         }
       },
       {
+        "계정": "lab-vn-youtube",
+        "채널": "유튜브 @synklabvietnam",
+        "주소": "https://www.youtube.com/watch?v=JsX-YsrWj3M",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-18T06:00:00.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-au-youtube",
         "채널": "유튜브 @synklabaustralia",
         "주소": "https://www.youtube.com/watch?v=fN5sHOoVrv4",
