@@ -91,6 +91,8 @@
   paintSound();
 
   /* ── 줄: 왼쪽 「지금」 자리(보기 세 칸)와 오른쪽 날 매듭 ── */
+  // 보기 뜻: 영어 판은 한글 보기 밑에 뜻을 단다(?mean으로 미리 본다)
+  const MEAN = new URLSearchParams(location.search).has('mean') ? { '안녕하세요.': 'Hello', '감사합니다.': 'Thank you', '다녀왔어요.': 'I’m home', '저는 수진이에요.': 'I’m Sujin', '저는 몽글이에요.': 'I’m Mongle' } : {};
   const STOPS = [{ l: '지금', s: '지금' }, { l: '1분 뒤', s: '1분' }, { l: '내일', s: '1일' }, { l: '7일 뒤', s: '7일' }, { l: '30일 뒤', s: '30일' }];
   stopsEl.replaceChildren(...STOPS.map((s, i) => {
     const li = document.createElement('li'); li.className = 'sc-stop' + (i ? '' : ' is-today');
@@ -146,13 +148,13 @@
   const makeCard = (id, text, num) => {
     const el = document.createElement('div'); el.className = 'sc-card'; el.setAttribute('role', 'button'); el.setAttribute('aria-disabled', 'true'); el.tabIndex = 0;
     el.innerHTML = '<div class="sc-card-in"><div class="sc-box"><div class="sc-flip">'
-      + '<div class="sc-face sc-front"><div class="sc-pic"></div><div class="sc-meta"><span class="sc-num" aria-hidden="true"></span><span class="sc-word"></span></div><i class="sc-dot"></i><i class="sc-gloss"></i></div>'
+      + '<div class="sc-face sc-front"><div class="sc-pic"></div><div class="sc-meta"><span class="sc-num" aria-hidden="true"></span><span class="sc-wordbox"><span class="sc-word"></span><span class="sc-mean"></span></span></div><i class="sc-gloss"></i></div>'
       + '<div class="sc-face sc-back" aria-hidden="true"><span class="sc-back-tag"></span><span class="sc-back-word"></span><i class="sc-back-rule"></i><span class="sc-stamps"></span><i class="sc-gloss"></i></div>'
       + '<i class="sc-side is-l"></i><i class="sc-side is-r"></i><i class="sc-side is-t"></i><i class="sc-side is-b"></i></div>'
       + '<span class="sc-pin" aria-hidden="true"><i class="sc-pin-b"></i><i class="sc-pin-a"></i></span></div></div>';
     const sh = document.createElement('div'); sh.className = 'sc-shadow'; sh.setAttribute('aria-hidden', 'true');
     layer.insertBefore(sh, probe); layer.insertBefore(el, probe);
-    const c = { el, sh, box: $('.sc-box', el), flip: $('.sc-flip', el), pic: $('.sc-pic', el), wordEl: $('.sc-word', el), numEl: $('.sc-num', el), backTag: $('.sc-back-tag', el), backWord: $('.sc-back-word', el), stamps: $('.sc-stamps', el), pin: $('.sc-pin', el),
+    const c = { el, sh, box: $('.sc-box', el), flip: $('.sc-flip', el), pic: $('.sc-pic', el), wordEl: $('.sc-word', el), meanEl: $('.sc-mean', el), numEl: $('.sc-num', el), backTag: $('.sc-back-tag', el), backWord: $('.sc-back-word', el), stamps: $('.sc-stamps', el), pin: $('.sc-pin', el),
       id, text, x: 0, y: -400, th: 0, w: 0, s: 1, lift: 0, op: 0, home: 'fly', at: null, moving: false, grab: false, vx: 0, px: 0, dip: 0, dipV: 0, dx: 0, fall: null, answerable: false,
       ps: 0, pv: 0, pt: 0, fx: 0, fv: 0, ft: 0, hover: false, video: null, picKey: null };
     setFace(c, id, text, num);
@@ -180,6 +182,7 @@
   };
   function setFace(c, id, text, num) {
     c.id = id; c.text = text; c.wordEl.textContent = text; c.backWord.textContent = text; c.numEl.textContent = String(num); setPic(c);
+    c.meanEl.textContent = MEAN[text] || ''; c.el.classList.toggle('has-mean', !!MEAN[text]);   // 영어 판: 한글 보기 밑에 뜻
     c.el.classList.toggle('is-long', [...text].length > 7);   // 긴 보기(「저는 몽글이에요.」)는 카드 모서리 점과 부딪히지 않게 조금 작게
     c.el.setAttribute('aria-label', `${num}번 ${text}`); c.el.classList.remove('is-right', 'is-wrong');
   }
@@ -271,6 +274,7 @@
       const prev = c.th; c.th += (target - c.th) * 0.4; c.w = (c.th - prev) * 60;
     });
     el.addEventListener('pointerdown', (e) => {
+      stopHand();
       if (c.home === 'show' && !c.moving) { el.classList.add('is-down'); play('press'); setTimeout(() => el.classList.remove('is-down'), 120); return; }
       if (c.moving || c.home !== 'line') return;
       down = { x: e.clientX, y: e.clientY }; dragged = false;
@@ -309,7 +313,7 @@
     gsap.fromTo(hint, { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' });
     setTimeout(hideHint, 4200);
   };
-  function hideHint() { gsap.to(hint, { opacity: 0, duration: 0.3 }); }
+  function hideHint() { gsap.to(hint, { opacity: 0, duration: 0.3 }); untip(); stopHand(); }
 
   /* ── 글이 낱말마다 들어온다 ── */
   const kinetic = (el, text, delay = 0) => {
@@ -408,10 +412,12 @@
   const DOCK = [[0, null], [0, null], [1, 'sun'], [7, 'rain'], [30, 'snow'], [30, 'snow']];
   const headDay = (k) => {
     sceneNo = k; root.dataset.day = String(k);
-    const [n, u] = DAYS[k], num = Number(n), was = Number(dayN.textContent);
-    dayU.textContent = u;
-    if (!reduce && Number.isFinite(num) && Number.isFinite(was) && num !== was) { const o = { v: was }; gsap.to(o, { v: num, duration: 0.9, ease: 'power3.out', onUpdate: () => { dayN.textContent = String(Math.round(o.v)); } }); }
-    else dayN.textContent = n;
+    const [n, u] = DAYS[k], num = Number(n);
+    if (dayN) {   // 사양서 띠(data-head b)의 날 숫자 — 쪽에 그 칸이 있을 때만
+      const was = Number(dayN.textContent); dayU.textContent = u;
+      if (!reduce && Number.isFinite(num) && Number.isFinite(was) && num !== was) { const o = { v: was }; gsap.to(o, { v: num, duration: 0.9, ease: 'power3.out', onUpdate: () => { dayN.textContent = String(Math.round(o.v)); } }); }
+      else dayN.textContent = n;
+    }
     if (k <= 1 || k === 5) dockStack.replaceChildren(calPage(...DOCK[k]));
   };
   const setClock = (k) => { headDay(k); stopLis.forEach((li, i) => { if (!i) return; li.classList.toggle('is-now', i === k); li.classList.toggle('is-past', i < k); }); };
@@ -588,12 +594,88 @@
   });
   const mmss = (v) => { const s = Math.round(v); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 
+  /* ── 안내(11-19 · 처음 보는 사람용, 게임 첫 판처럼): 지금 할 일 한 가지를 그 자리 옆 말풍선으로 보이고, 처음 한 번은 손가락이 먼저 해 보인다 ── */
+  const G = {
+    pick: '알맞은 말을 골라 카드를 눌러 보세요', pickSub: '답하면 그 말이 언제 다시 나오는지 보여 드려요.',
+    record: '답한 말은 기록 카드가 돼요', recordSub: '이 카드에 「낱말 뜻 읽기」 실력이 기록돼요. 오늘 결과 도장이 찍혔어요.',
+    line: '이 줄이 앞으로의 30일이에요', lineSub: '잊을 만할 때마다 1분 · 내일 · 7일 · 30일 뒤에 다시 물어봐요.',
+    right: '맞았어요!', wrong: '아쉬워요. 정답은 {n}번이에요', rightSub1: '맞힌 말은 조금 더 있다가, 내일 다시 나와요.', wrongSub1: '처음 만난 분께는 「안녕하세요」라고 인사해요. 틀린 말은 더 빨리, 1분 뒤에 다시 나와요.',
+    next: '눌러서 그날로 가 보세요', back: '그 말이 돌아왔어요', backSub: '이번에는 장면이 달라요. 다시 골라 보세요.',
+    shot: '그날 앱을 열면 보이는 화면이에요', check: '처음 보는 문제예요', checkSub: '도움 없이 혼자 골라 보세요.',
+    me: '30일 동안 쌓인 기록이에요', meSub: '카드를 누르면 앞면과 기록 면이 바뀌어요.', off: '안내 끄기',
+  };
+  let guideOn = true, handTL = null, handBob = null;
+  const fillT = (t, o) => String(t).replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
+  const guide = document.createElement('div'); guide.className = 'sc-guide'; guide.setAttribute('role', 'status'); guide.setAttribute('aria-live', 'polite');
+  guide.innerHTML = '<p class="sc-guide-t"></p><p class="sc-guide-s"></p><button type="button" class="sc-guide-x"></button><i class="sc-guide-tail" aria-hidden="true"></i>';
+  $('.sc-guide-x', guide).textContent = G.off;
+  root.append(guide);
+  const hand = document.createElement('div'); hand.className = 'sc-hand'; hand.setAttribute('aria-hidden', 'true');
+  hand.innerHTML = '<svg viewBox="0 0 48 56"><path d="M18 30V9.5a4.5 4.5 0 0 1 9 0V25l1.2-.4a4.4 4.4 0 0 1 5.4 2.4l.4-.1a4.4 4.4 0 0 1 5.4 2.7 4.3 4.3 0 0 1 5.1 3.5l.5 4.6c.6 5.6-1.2 10-4.6 13.3l-1.2 1.2c-1.4 1.4-3.3 2.1-5.3 2.1H22.6c-2.4 0-4.6-1.1-6-3L7.9 40.6a4.6 4.6 0 0 1 7-5.9z"/></svg><i class="sc-hand-ring"></i>';
+  root.append(hand);
+  const rel = (el) => { const r = el.getBoundingClientRect(), R = root.getBoundingClientRect(); return { x: r.left - R.left, y: r.top - R.top, w: r.width, h: r.height }; };
+  const union = (els) => { const bs = els.map(rel); const x = Math.min(...bs.map((b) => b.x)), y = Math.min(...bs.map((b) => b.y)); return { x, y, w: Math.max(...bs.map((b) => b.x + b.w)) - x, h: Math.max(...bs.map((b) => b.y + b.h)) - y }; };
+  // side: right · left · top · bottom. 말풍선 꼬리는 대상 쪽을 가리킨다
+  const tip = (t, s, box, side) => {
+    if (!guideOn) return;
+    $('.sc-guide-t', guide).textContent = t; $('.sc-guide-s', guide).textContent = s || '';
+    guide.dataset.side = side; guide.classList.add('is-on');
+    const RW = root.clientWidth, m = 16;
+    // 옆에 설 때는 남은 폭에 맞춰 줄을 바꾼다(대상을 덮지 않게)
+    const cap = narrow ? 270 : 340, room = side === 'right' ? RW - (box.x + box.w + m) - 12 : side === 'left' ? box.x - m - 12 : cap;
+    guide.style.maxWidth = Math.min(cap, Math.max(150, room)) + 'px';
+    const gw = guide.offsetWidth, gh = guide.offsetHeight;
+    let x, y;
+    if (side === 'right') { x = box.x + box.w + m; y = box.y + box.h / 2 - gh / 2; }
+    else if (side === 'left') { x = box.x - gw - m; y = box.y + box.h / 2 - gh / 2; }
+    else if (side === 'top') { x = box.x + box.w / 2 - gw / 2; y = box.y - gh - m; }
+    else { x = box.x + box.w / 2 - gw / 2; y = box.y + box.h + m; }
+    const cx = clamp(x, 12, RW - gw - 12);
+    const tail = side === 'top' || side === 'bottom' ? clamp(box.x + box.w / 2 - cx, 18, gw - 18) : clamp(box.y + box.h / 2 - y, 16, gh - 16);
+    guide.style.setProperty('--tail', tail + 'px');
+    play('pop', { g: 0.55, rate: 1.15 });
+    if (reduce) { gsap.set(guide, { x: cx, y, opacity: 1, scale: 1 }); return; }
+    gsap.killTweensOf(guide);
+    gsap.fromTo(guide, { x: cx, y: y + (side === 'top' ? 8 : side === 'bottom' ? -8 : 0), opacity: 0, scale: 0.92 }, { x: cx, y, opacity: 1, scale: 1, duration: 0.42, ease: 'back.out(2.2)' });
+  };
+  const untip = () => { guide.classList.remove('is-on'); gsap.to(guide, { opacity: 0, duration: reduce ? 0 : 0.2 }); };
+  const stopHand = () => { handTL?.kill(); handTL = null; handBob?.kill(); handBob = null; gsap.killTweensOf(hand); gsap.to(hand, { opacity: 0, duration: reduce ? 0 : 0.2 }); };
+  const ring = () => { const r = $('.sc-hand-ring', hand); gsap.fromTo(r, { scale: 0.2, opacity: 0.9 }, { scale: 1.7, opacity: 0, duration: 0.6, ease: 'power2.out' }); play('press', { g: 0.35 }); };
+  // 처음 한 번: 손가락이 보기 카드를 하나씩 짚어 보고, 누르는 시늉을 한다(정답을 고르지는 않는다). 방문자가 손을 대면 멈춘다
+  const demoCards = (cs) => {
+    if (reduce || !guideOn) return;
+    stopHand();
+    const pts = cs.map((c) => { const b = rel(c.el); return [b.x + b.w * 0.58, b.y + b.h * 0.66]; });
+    handTL = gsap.timeline({ repeat: 2, repeatDelay: 2.2, delay: 0.6 });
+    handTL.set(hand, { x: pts[0][0] + 70, y: pts[0][1] + 90, opacity: 0, scale: 1 }).to(hand, { opacity: 1, duration: 0.3 });
+    pts.forEach(([x, y], i) => handTL.to(hand, { x, y, duration: 0.55, ease: 'power2.inOut' }).call(() => { cs[i].w += sign() * 0.7; cs[i].pv += sign() * 1.5; }).to({}, { duration: 0.25 }));
+    handTL.to(hand, { x: pts[1][0], y: pts[1][1], duration: 0.5, ease: 'power2.inOut' }).to(hand, { scale: 0.84, duration: 0.12 }).call(ring).to(hand, { scale: 1, duration: 0.2 }).to(hand, { opacity: 0, duration: 0.4, delay: 0.5 });
+  };
+  // 단추를 가리킨다: 손가락이 단추 오른쪽 아래에서 톡톡 친다
+  const pointAt = (el) => {
+    if (reduce || !guideOn) return;
+    stopHand();
+    const b = rel(el), x = b.x + b.w - 18, y = b.y + b.h * 0.55;
+    gsap.set(hand, { x: x + 30, y: y + 40, opacity: 0, scale: 1 });
+    gsap.to(hand, { x, y, opacity: 1, duration: 0.5, ease: 'power3.out' });
+    handBob = gsap.to(hand, { y: y + 9, duration: 0.5, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 0.5 });
+  };
+  $('.sc-guide-x', guide).addEventListener('click', () => { guideOn = false; untip(); stopHand(); play('press'); });
+  // 지금 할 일 — 장면마다 부른다
+  // 좁은 화면: 고를 때는 카드 밑(묻는 말을 가리지 않는다), 답한 뒤에는 카드 위(결과 글을 가리지 않는다). 단추는 손가락만 가리킨다
+  const guidePick = (cs, demo, t = G.pick, s = G.pickSub) => { tip(t, s, union(cs.map((c) => c.el)), narrow ? 'bottom' : 'right'); if (demo) demoCards(cs); };
+  // 카드 옆에 빈자리가 있으면 옆에, 없으면 위에(좁은 화면에서 결과 글을 가리지 않는다)
+  const guideCard = (c, t, s) => { const b = rel(c.el), RW = root.clientWidth; tip(t, s, b, !narrow || RW - (b.x + b.w) >= 190 ? 'right' : b.x >= 190 ? 'left' : 'top'); };
+  // 「이 줄이 30일」: 좁은 화면에서는 날 이름(1분 뒤 · 내일 · 7일 뒤 · 30일 뒤)을 가리키며 그 위에 선다
+  const guideLine = (c, t, s) => (narrow ? tip(t, s, union(stopLis.slice(1)), 'top') : guideCard(c, t, s));
+  const guideButton = (b, t = G.next) => { if (!b) return; if (!narrow) tip(t, '', rel(b), 'right'); pointAt(b); b.addEventListener('click', () => { untip(); stopHand(); }, { once: true }); };
+
   /* ── 흐름 ── */
   const setQhead = (t) => {
     const no = document.createElement('span'); no.className = 'sc-qno'; no.textContent = String(sceneNo + 1).padStart(2, '0');
     const all = document.createElement('i'); all.textContent = '/' + String(DAYS.length).padStart(2, '0'); no.append(all);
     const tx = document.createElement('span'); tx.className = 'sc-qtx'; tx.textContent = t;
-    qhead.replaceChildren(no, tx); specQ.textContent = t;
+    qhead.replaceChildren(no, tx); if (specQ) specQ.textContent = t;
   };
   // 묻는 말은 한 덩어리로 감싼다: 강조 「형광펜」(data-em="mark")은 글이 다 들어온 뒤 왼쪽에서 오른쪽으로 칠해진다
   const markPrompt = () => {
@@ -601,12 +683,15 @@
     if (root.dataset.em === 'mark' && !reduce) gsap.fromTo(mk, { backgroundSize: '0% 48%' }, { backgroundSize: '100% 48%', duration: 0.75, delay: 0.7, ease: 'power2.inOut' });
   };
   const showQuestion = (q) => { setQhead(q.head); kinetic(ctxEl, q.context, 0.05); kinetic(promptEl, q.prompt, 0.18); markPrompt(); setAfter(q.say, q.sub); next.replaceChildren(); };
-  const takeAnswer = (cs, q) => new Promise((done) => {
+  const takeAnswer = (cs, q, fb = {}) => new Promise((done) => {
     cs.forEach((c) => { c.answerable = true; c.el.removeAttribute('aria-disabled'); });
     answering = (picked) => {
-      answering = null;
+      answering = null; stopHand(); untip();
       cs.forEach((c) => { c.answerable = false; c.el.setAttribute('aria-disabled', 'true'); });
       const correct = cs.find((c) => c.id === q.answer), right = picked === correct;
+      const said = () => union(cs.map((k) => k.el)), side = narrow ? 'bottom' : 'right';
+      if (right) tip(G.right, fb.right, said(), side);
+      else setTimeout(() => tip(fillT(G.wrong, { n: cs.indexOf(correct) + 1 }), fb.wrong, said(), side), 640);
       if (right) {
         picked.el.classList.add('is-right'); mark(picked.wordEl, 'under'); play('underline'); play('chime', { delay: 0.18 }); picked.w += sign() * 1.4; picked.pv += sign() * 2; act(picked, true, true);
       } else {
@@ -624,7 +709,7 @@
     await wait(r.right ? 1500 : 2300);
     cs.filter((c) => c !== r.correct).forEach((c, i) => unclip(c, i * 180));
     await wait(420); setFull(false);
-    await wait(900);
+    await wait(900); untip();
     r.correct.backTag.textContent = tag;
     await flipTo(r.correct, 'back'); await wait(60);
     stamp(r.correct, r.right, label);
@@ -635,14 +720,19 @@
     showQuestion(Q.first); enterStage(); setFull(true);
     const cs = Q.first.choices.map(([id, text], i) => makeCard(id, text, i + 1));
     await Promise.all(cs.map((c, i) => dropIn(c, { kind: 'slot', i }, 0.3 + i * 0.2)));
+    guidePick(cs, !again);
     if (again) cs[0].el.focus({ preventScroll: true });   // 다시 할 때는 첫 카드로(처음 열릴 때는 쪽의 포커스를 뺏지 않는다)
-    const r = await takeAnswer(cs, Q.first);
+    const r = await takeAnswer(cs, Q.first, { right: G.rightSub1, wrong: G.wrongSub1 });
     await settle(cs, r, '오늘 처음 만난 말', '지금');
+    guideCard(r.correct, G.record, G.recordSub);
     setAfter(r.right ? Q.right.say : Q.wrong.say, r.right ? Q.right.sub : Q.wrong.sub);
-    await wait(700);
-    await travel(r.correct, { kind: 'knot', i: r.right ? 2 : 1 }); showHint(r.correct);
-    await wait(260);
-    if (r.right) button(Q.toDay1, () => toTomorrow(r.correct)); else button(Q.toMinute, () => toMinute(r.correct));
+    await wait(1500);
+    const at = r.right ? 2 : 1;
+    untip(); await travel(r.correct, { kind: 'knot', i: at });
+    guideLine(r.correct, G.line, fillT(G.lineSub, { d: STOPS[at].l }));
+    if (!guideOn) showHint(r.correct);
+    await wait(guideOn ? 1900 : 260);
+    guideButton(r.right ? button(Q.toDay1, () => toTomorrow(r.correct)) : button(Q.toMinute, () => toMinute(r.correct)));
   }
   async function toMinute(c) {
     hideHint(); await leaveStage(); setClock(1);
@@ -661,6 +751,7 @@
       const k = makeCard(id, text, i + 1); drops.push(dropIn(k, { kind: 'slot', i }, 0.15 + drops.length * 0.2)); return k;
     });
     await Promise.all(drops);
+    guidePick(cs, false, G.back, G.backSub);
     c.el.classList.remove('is-called');
     if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
     const r = await takeAnswer(cs, q);
@@ -674,7 +765,7 @@
     await wait(700);
     await travel(r.correct, { kind: 'knot', i: r.right ? 2 : 1 });
     await wait(260);
-    if (r.right) button(Q.toDay1, () => toTomorrow(r.correct)); else button(Q.toMinute, () => toMinute(r.correct));
+    guideButton(r.right ? button(Q.toDay1, () => toTomorrow(r.correct)) : button(Q.toMinute, () => toMinute(r.correct)));
   }
   const clearStage = (h) => { setQhead(h); ctxEl.textContent = ''; promptEl.textContent = ''; setAfter('', ''); next.replaceChildren(); };
   // 내일: 앱을 열면 튜터 카드가 먼저 꺼낸다(실제 화면) → 카드가 돌아와 그 말을 한다 → 「내일」 칸 ✓
@@ -684,8 +775,9 @@
     clearStage(D.d1.head); enterStage();
     c.backTag.textContent = '어제 만난 말';
     await showShot(shot, D.d1.shot);
+    tip(G.shot, '', rel(shot), narrow ? 'bottom' : 'right');
     await wait(700);
-    await callBack(c);
+    await callBack(c); untip();
     await wait(2300);
     await flipTo(c, 'back'); await wait(60);
     stamp(c, true, '내일'); markStop(2, true); c.el.classList.remove('is-called');
@@ -693,7 +785,7 @@
     await wait(900);
     await travel(c, { kind: 'knot', i: 3 });
     await wait(260);
-    button(D.d1.next, () => toWeek(c));
+    guideButton(button(D.d1.next, () => toWeek(c)));
   }
   // 7일 뒤: 다시 확인할 때(실제 화면 「7일 뒤 · 지금 확인」) → 카드가 돌아오고 7일 칸에 물음표 도장(확인 중)
   async function toWeek(c) {
@@ -702,8 +794,9 @@
     clearStage(D.d7.head); enterStage();
     c.backTag.textContent = '일주일 전에 만난 말';
     await showShot(shot, D.d7.shot);
+    tip(G.shot, '', rel(shot), narrow ? 'bottom' : 'right');
     await wait(700);
-    await callBack(c);
+    await callBack(c); untip();
     await wait(2300);
     await flipTo(c, 'back'); await wait(60);
     stamp(c, 'wait', '7일 뒤'); c.el.classList.remove('is-called');
@@ -711,7 +804,7 @@
     await wait(900);
     await travel(c, { kind: 'knot', i: 4 });
     await wait(260);
-    button(D.d7.next, () => toMonth(c));
+    guideButton(button(D.d7.next, () => toMonth(c)));
   }
   // 30일 뒤: 눈 오는 겨울. 7일 칸은 그 사이 레슨에서 확인됐고(실제 화면), 30일 칸은 같은 항목의 처음 보는 문제(앱의 첫 레슨 둘째 문제)로 채운다.
   // 돌아온 카드(기록)는 30일 매듭에 걸린 채로 있고, 보기 세 장은 새로 떨어진다.
@@ -734,18 +827,19 @@
     showQuestion(q); setFull(true);
     const cs = q.choices.map(([id, text], i) => makeCard(id, text, i + 1));
     await Promise.all(cs.map((k, i) => dropIn(k, { kind: 'slot', i }, 0.15 + i * 0.2)));
+    guidePick(cs, false, G.check, G.checkSub);
     if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
     const r = await takeAnswer(cs, q);
     await wait(r.right ? 1500 : 2300);
     cs.forEach((k, i) => unclip(k, i * 180));
-    await wait(420); setFull(false);
+    await wait(420); setFull(false); untip();
     if (narrow) gsap.to(c, { op: 1, duration: reduce ? 0 : 0.4 });
     await wait(700);
     c.el.classList.remove('is-called');
     stamp(c, r.right, '30일 뒤'); markStop(4, r.right);
     setAfter(r.right ? q.right.say : q.wrong.say, r.right ? q.right.sub : q.wrong.sub);
     await wait(900);
-    button(q.next, () => toMe(c, r.right));
+    guideButton(button(q.next, () => toMe(c, r.right)));
   }
   // 내 위치: 집게에서 풀린 카드가 앞으로 나와 기록 면을 보이고 큰 도장을 받는다. 넓은 화면에서는 옆에 실제 「이렇게 본 근거」 화면.
   async function toMe(c, right) {
@@ -764,6 +858,7 @@
     c.moving = false; play('clipsnap', { g: 0.45, rate: 0.8 });
     await wait(260);
     seal(c, right);
+    setTimeout(() => tip(G.me, G.meSub, rel(c.el), narrow ? 'bottom' : 'left'), reduce ? 0 : 700);
     if (wide) {
       evid.style.left = (cx + (CW * S) / 2 + 36) + 'px'; evid.style.top = '18px'; evid.style.width = Math.min(380, W - (cx + (CW * S) / 2 + 36) - 24) + 'px';
       await wait(380); showShot(evid, D.me.shot);
@@ -774,7 +869,7 @@
     finalButtons();
   }
   async function restart() {
-    hideHint(); hideShot(); hideShot(evid); await leaveStage();
+    hideHint(); guideOn = true; hideShot(); hideShot(evid); await leaveStage();
     [...cards].forEach((c, i) => unclip(c, i * 140));
     setSky(null); winter = false; endTag.classList.remove('is-now'); root.classList.remove('is-me');
     await wait(700);
