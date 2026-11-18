@@ -1,15 +1,15 @@
-// LAB 몽골 M37 「피곤할 때 네 마디」 화면 글 정본(11-09). 몽골어는 세 겹 검수(../../../게시/검문/)를 거친 글만 둔다.
+// LAB 몽골 M37 「피곤할 때 네 마디」 장면 정본(11-09) — 그림 · 한국어(말풍선 한글 · 목소리) · 소리 · 박자. 판본마다 같다.
 // 우리편 M1 「화날 때 네 마디」(10-31, 인스타 72시간 19,463회 · 평소의 136배)의 뼈대를 1:1로 — 머리 칸 → 상황 칸 + 표현 칸 넷 → 끝 칸.
 // M1이 화 게이지가 차올랐다면 이 편은 배터리가 줄어든다. 끝은 1%에 친구 문자 「노래방 갈래?」 → 100%로 번쩍 → 노래방 「한 곡 더!」.
-// 키릴 읽는 법은 우리 몽골 편 규칙(ㅓ=ө · ㅐㅔ=э · ㅜ=у · ㅡ=ы · 받침 ㅇ=н · ㅈ=ж). 소리는 소진(세기 1.0) 몽글 · 범수 친구 · 효과음은 직접 합성(../../../소리/만들기.py).
+// 그 나라 글(머리 글 · 상황 줄 · 말 읽는 법 · 뜻 · 배터리 이름표 · 문자 · 끝 줄)은 판본 글 하나(./판본/<KEY>.json — ./판본.ts)가 원천이다
+// (11-18 판본 틀로 옮김 — 옛 TEXT와 말풍선 · 상황 칸의 몽골어는 판본 MN.json으로 옮겼다. 몽골어는 세 겹 검수(../../../게시/검문/)를 거친 글 그대로).
+// 소리는 소진(세기 1.0) 몽글 · 범수 친구 · 효과음은 직접 합성(../../../소리/만들기.py).
 export const FPS = 30;
 export const TOTAL = 30.4;
 
 export type Bubble = {
-  n: number; // 1~4
+  n: number; // 1~4 — 판본 글 reads · means의 차례(n - 1)
   ko: string;
-  read: string;
-  mn: string;
   battery: number; // 이 칸에서 내려가는 배터리(0~1)
   side: 'left' | 'right';
   bottom: number;
@@ -20,54 +20,44 @@ export type Bubble = {
 export type Cell = {
   at: number;
   img: string;
-  sit?: string;
+  sit?: number; // 상황 줄 — 판본 글 sits의 차례
   bubble?: Bubble;
   vo?: { id: string; at: number }[];
 };
 
-export const TEXT = {
-  hook: 'Ядарсан үедээ найздаа\nхэлэх 4 үг',
-  gauge: 'ЭРЧ ХҮЧ',
-  openKo: '지쳤어…',
-  openRead: 'жичөссө',
-  openMn: 'Туйлдлаа…', // 시험관(그록) 「0~3초 지쳤어의 뜻이 안 보인다」 — 4/4 칸과 같은 말을 첫 칸에도
-  msgFrom: 'Найз',
-  msgKo: '노래방 갈래?',
-  msgRead: 'норэбан галлэ?',
-  msgMn: 'Караоке явах уу?',
-  goKo: '가자!',
-  goRead: 'гажа!',
-  goMn: 'Явъя!',
-  moreKo: '한 곡 더!',
-  moreRead: 'хан гог дө!',
-  moreMn: 'Дахиад нэг дуу!',
-  end: 'Караоке гэхээр л цэнэг дүүрчихдэг!',
+// 작은 말풍선 · 문자의 한국어(판본마다 같다). 그 아래 읽는 법과 뜻은 판본 글에 있다.
+export const KO_LINES = {
+  open: '지쳤어…', // 머리 칸 — 판본 글 openRead · openMean(시험관(그록) 「0~3초 지쳤어의 뜻이 안 보인다」 — 4/4 칸과 같은 말을 첫 칸에도)
+  msg: '노래방 갈래?', // 친구 문자 — msgRead · msgMean
+  go: '가자!', // 100% — goRead · goMean
+  more: '한 곡 더!', // 노래방 — moreRead · moreMean
+  next: '졸려…', // 다음 날 1교시 — nextRead · nextMean
 };
 
 export const CELLS: Cell[] = [
   // 머리 칸 — 하루 끝 모습을 앞에서 먼저: 1%, 책상에 녹아내린 몽글
   { at: 0.0, img: 'open.jpg', vo: [{ id: 'a4', at: 0.55 }] },
-  { at: 3.2, img: 'class1.jpg', sit: 'Өглөөний 1-р хичээл…' },
+  { at: 3.2, img: 'class1.jpg', sit: 0 },
   {
     at: 5.0, img: 'class2.jpg', vo: [{ id: 'a1', at: 5.12 }, { id: 'a1', at: 6.5 }],
-    bubble: { n: 1, ko: '졸려…', read: 'жоллё', mn: 'Нойр хүрч байна…', battery: 0.75, side: 'right', bottom: 790, width: 640, tip: [640, 860] },
+    bubble: { n: 1, ko: '졸려…', battery: 0.75, side: 'right', bottom: 790, width: 640, tip: [640, 860] },
   },
-  { at: 7.7, img: 'sub1.jpg', sit: 'Өглөөний метро пиг дүүрэн…' },
+  { at: 7.7, img: 'sub1.jpg', sit: 1 },
   {
     at: 9.6, img: 'sub2.jpg', vo: [{ id: 'a2', at: 9.72 }, { id: 'a2', at: 11.1 }],
-    bubble: { n: 2, ko: '힘들어…', read: 'химдырө', mn: 'Хэцүү байна…', battery: 0.5, side: 'right', bottom: 1110, width: 640, tip: [560, 1190] },
+    bubble: { n: 2, ko: '힘들어…', battery: 0.5, side: 'right', bottom: 1110, width: 640, tip: [560, 1190] },
   },
-  { at: 12.5, img: 'store1.jpg', sit: 'Цагийн ажил — хайрцаг дуусахгүй…' },
+  { at: 12.5, img: 'store1.jpg', sit: 2 },
   {
     at: 14.4, img: 'store2.jpg', vo: [{ id: 'a3', at: 14.52 }, { id: 'a3', at: 16.0 }],
     // 지하철 눌림과 같은 그림이던 상자 더미를 「상자에 머리부터 처박힌 몽글」로 바꿨다(볼 이유 심사 v3 답 4) →
     // 얼굴이 안 보여 「캐릭터로 안 읽히는 붉은 주머니」(아르곤 맹검 v6 [C137]) — 상자 앞 날개에 축 늘어져 얼굴을 기댄 판(판/알바4.txt)
-    bubble: { n: 3, ko: '피곤해…', read: 'пигонхэ', mn: 'Ядарч байна…', battery: 0.25, side: 'right', bottom: 950, width: 640, tip: [460, 1030] }, // 꼬리가 길게 찌른다(맹검 v7 · v8) — 말풍선을 내려 짧게
+    bubble: { n: 3, ko: '피곤해…', battery: 0.25, side: 'right', bottom: 950, width: 640, tip: [460, 1030] }, // 꼬리가 길게 찌른다(맹검 v7 · v8) — 말풍선을 내려 짧게
   },
-  { at: 17.5, img: 'desk1.jpg', sit: 'Шөнийн 3 цаг — даалгавар дуусахгүй…' },
+  { at: 17.5, img: 'desk1.jpg', sit: 3 },
   {
     at: 19.4, img: 'desk2.jpg', vo: [{ id: 'a4', at: 19.52 }, { id: 'a4', at: 21.0 }],
-    bubble: { n: 4, ko: '지쳤어…', read: 'жичөссө', mn: 'Туйлдлаа…', battery: 0.01, side: 'right', bottom: 860, width: 640, tip: [620, 1080] },
+    bubble: { n: 4, ko: '지쳤어…', battery: 0.01, side: 'right', bottom: 860, width: 640, tip: [620, 1080] },
   },
   // 끝 — 1%에 문자 → 100% → 노래방
   { at: 22.5, img: 'phone.jpg', vo: [{ id: 'b1', at: 23.2 }] },
@@ -75,7 +65,7 @@ export const CELLS: Cell[] = [
   { at: 26.9, img: 'karaoke.jpg', vo: [{ id: 'a6', at: 27.05 }] },
   // 끝 장치(M1의 「고양이가 컵을 또 민다」 자리) — 다음 날 아침 1교시, 마이크를 곁에 둔 채 다시 1%(장면 심사 v1 답 3)
   // 시험관 둘이 「끝 장면의 마이크 · 종이 조각 · 1교시」를 같이 짚어 밤새 노래한 다음 날임을 글로 잇는다(v4)
-  { at: 28.6, img: 'next.jpg', sit: 'Шөнөжин дуулсны маргааш —\n1-р хичээл…', vo: [{ id: 'a1', at: 28.95 }] },
+  { at: 28.6, img: 'next.jpg', sit: 4, vo: [{ id: 'a1', at: 28.95 }] },
 ];
 
 export const MSG_AT = 23.0;

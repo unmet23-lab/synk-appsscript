@@ -1,22 +1,23 @@
 // LAB 몽골 M37 「피곤할 때 네 마디」(11-09) — 머리 칸(1% · 녹아내린 몽글) → 하루의 네 칸(상황 → 표현, 왼쪽 배터리가 칸마다 줄어든다) → 1%에 친구 문자 「노래방 갈래?」 → 100%로 번쩍 → 노래방 「한 곡 더!」.
 // 우리편 M1 「화날 때 네 마디」의 틀 · 말풍선 꼴을 M31에서 가져왔다. 그림은 장면마다 구운 한 장(누끼 없음). 같은 판을 부드러운 타원 가면으로 겹쳐 그 자리만 움직인다.
+// 11-18 판본 틀: 그 나라 글(머리 글 · 상황 줄 · 말 읽는 법 · 뜻 · 배터리 이름표 · 문자 · 끝 줄)과 글꼴 · 글자 크기는 판본 꾸러미 p(./판본/<KEY>.json)에서 받는다.
+// 그림 · 한국어 · 소리 · 박자 · 카메라는 그대로다. 옛 「한 장면 먼저」(m37-scene) 컴포지션은 뺐다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { BGM_HIGH, BGM_LOW, Bubble as BubbleData, CELLS, CHARGE_AT, END_AT, FPS, KARAOKE_AT, MONGLE, MSG_AT, NEXT_AT, SFX, TEXT, TOTAL, UP_AT } from './data';
+import { BGM_HIGH, BGM_LOW, Bubble as BubbleData, CELLS, CHARGE_AT, END_AT, FPS, KARAOKE_AT, KO_LINES, MONGLE, MSG_AT, NEXT_AT, SFX, TOTAL, UP_AT } from './data';
+import { LocPack } from './판본';
 
 const fr = (sec: number) => Math.round(sec * FPS);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const MASTER = 0.8; // Remotion은 소리를 16비트로 더해 넘치면 자른다 — 모든 볼륨에 같은 값을 곱한다(현장 노트)
 export const TOTAL_FRAMES = fr(TOTAL);
 export { FPS };
-export const SCENE_FROM = 24.4;
 
 const INK = '#2B2522';
 const MEAN = '#B8325A';
 const ROSE = '#E2456B';
 const CREAM = '#FFFDF7';
-const FONT = "'Inter Tight', 'SUIT', sans-serif";
 const FULL: React.CSSProperties = { position: 'absolute', inset: 0, width: 1080, height: 1920, objectFit: 'cover' };
 // v10(11-10 15시 회차) — GPT 대체 맹검 v9 넷 다 기각 「글 상자가 둘 셋 쌓인 학습지 틀 · 스피커 이모지 · 배터리 표지판」 → 상자 · 테두리 · 이모지를 모두 걷고
 // 글자만 둔다: 위는 어두운 빛(그늘) 위 크림 글자, 말은 몽글 곁 글자 + 부드러운 그늘, 배터리는 가는 선 하나.
@@ -222,7 +223,7 @@ const batteryAt = (t: number) => {
   if (t >= NEXT_AT) v = interpolate(t, [NEXT_AT, NEXT_AT + 0.25], [1, 0.01], { ...clamp, easing: Easing.out(Easing.cubic) });
   return v;
 };
-const Battery: React.FC<{ t: number; scene?: boolean }> = ({ t }) => {
+const Battery: React.FC<{ p: LocPack; t: number }> = ({ p, t }) => {
   const v = batteryAt(t);
   const low = v < 0.08;
   const blink = low ? (Math.sin(t * 9) > -0.1 ? 1 : 0.35) : 1;
@@ -242,23 +243,23 @@ const Battery: React.FC<{ t: number; scene?: boolean }> = ({ t }) => {
         <div style={{ position: 'absolute', left: 5, right: 5, bottom: 5, height: fillH, background: col, borderRadius: 9, opacity: blink }} />
       </div>
       <div style={{ marginTop: 8, fontFamily: EN, fontWeight: 900, fontSize: 46, color: CREAM, lineHeight: 1.1, textShadow: SH }}>{Math.round(v * 100)}%</div>
-      <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 26, color: DIM, whiteSpace: 'nowrap', textShadow: SH, letterSpacing: 1 }}>{TEXT.gauge}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 700, fontSize: p.gaugeSize, color: DIM, whiteSpace: 'nowrap', textShadow: SH, letterSpacing: 1 }}>{p.gauge}</div>
     </div>
     </>
   );
 };
 
-const Sit: React.FC<{ text: string; at: number; t: number }> = ({ text, at, t }) => {
+const Sit: React.FC<{ pk: LocPack; text: string; at: number; t: number }> = ({ pk, text, at, t }) => {
   const p = interpolate(t, [at, at + 0.17], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  return <div style={{ position: 'absolute', left: 60, right: 60, top: 250, textAlign: 'center', opacity: p, transform: `translateY(${(1 - p) * 14}px)`, color: CREAM, fontFamily: FONT, fontWeight: 700, fontSize: 58, lineHeight: 1.2, whiteSpace: 'pre-line', textShadow: SH }}>{text}</div>;
+  return <div style={{ position: 'absolute', left: 60, right: 60, top: 250, textAlign: 'center', opacity: p, transform: `translateY(${(1 - p) * 14}px)`, color: CREAM, fontFamily: pk.font, fontWeight: 700, fontSize: pk.sitSize, lineHeight: Math.max(1.2, pk.lineH), whiteSpace: 'pre-line', textShadow: SH }}>{text}</div>;
 };
 
-const Hook: React.FC<{ t: number }> = ({ t }) => {
+const Hook: React.FC<{ pk: LocPack; t: number }> = ({ pk, t }) => {
   const p = interpolate(t, [0, 0.2], [0.92, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  return <div style={{ position: 'absolute', left: 60, right: 60, top: 210, textAlign: 'center', transform: `scale(${p})`, color: CREAM, fontFamily: FONT, fontWeight: 800, fontSize: 84, lineHeight: 1.14, whiteSpace: 'pre-line', textShadow: SH }}>{TEXT.hook}</div>;
+  return <div style={{ position: 'absolute', left: 60, right: 60, top: 210, textAlign: 'center', transform: `scale(${p})`, color: CREAM, fontFamily: pk.font, fontWeight: 800, fontSize: pk.hookSize, lineHeight: Math.max(1.14, pk.lineH), whiteSpace: 'pre-line', textShadow: SH }}>{pk.hook}</div>;
 };
 
-const Speech: React.FC<{ b: BubbleData; at: number; t: number }> = ({ b, at, t }) => {
+const Speech: React.FC<{ pk: LocPack; b: BubbleData; at: number; t: number }> = ({ pk, b, at, t }) => {
   const p = interpolate(t, [at, at + 0.13], [0.86, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
   const cx = b.side === 'right' ? 1080 - 160 - b.width / 2 : 150 + b.width / 2;
   return (
@@ -267,15 +268,15 @@ const Speech: React.FC<{ b: BubbleData; at: number; t: number }> = ({ b, at, t }
       <div style={{ position: 'absolute', bottom: 1920 - b.bottom, ...(b.side === 'right' ? { right: 160 } : { left: 150 }), width: b.width, textAlign: 'center', transform: `scale(${p}) rotate(-2deg)`, transformOrigin: '50% 100%', textShadow: SH }}>
         <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 40, color: DIM, lineHeight: 1, letterSpacing: 2 }}>{b.n} / 4</div>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 124, color: CREAM, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{b.ko}</div>
-        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 50, color: DIM, lineHeight: 1.15, marginTop: 2, fontStyle: 'italic' }}>{b.read}</div>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 52, color: PINK, lineHeight: 1.14, marginTop: 8, whiteSpace: 'pre-line' }}>{b.mn}</div>
+        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 50, color: DIM, lineHeight: 1.15, marginTop: 2, fontStyle: 'italic' }}>{pk.reads[b.n - 1]}</div>
+        <div style={{ fontFamily: pk.font, fontWeight: 800, fontSize: pk.meanSize, color: PINK, lineHeight: Math.max(1.14, pk.lineH), marginTop: 8, whiteSpace: 'pre-line' }}>{pk.means[b.n - 1]}</div>
       </div>
     </>
   );
 };
 
 // 작은 말풍선 — 머리 칸 · 끝 칸(한국어 · 읽기 · 몽골 뜻)
-const Small: React.FC<{ t: number; from: number; until: number; left: number; top: number; width: number; ko: string; read: string; mn?: string; tip: [number, number]; koSize?: number }> = ({ t, from, until, left, top, width, ko, read, mn, koSize = 84 }) => {
+const Small: React.FC<{ pk: LocPack; t: number; from: number; until: number; left: number; top: number; width: number; ko: string; read: string; mn?: string; tip: [number, number]; koSize?: number }> = ({ pk, t, from, until, left, top, width, ko, read, mn, koSize = 84 }) => {
   if (t < from || t >= until) return null;
   const p = interpolate(t, [from, from + 0.13], [0.8, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   const h = Math.round(koSize * 1.14 + 42 * 1.15 + (mn ? 46 * 1.14 + 4 : 0) + 28 + 12 + 6);
@@ -285,23 +286,23 @@ const Small: React.FC<{ t: number; from: number; until: number; left: number; to
       <div style={{ position: 'absolute', left, top, width, height: h, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', transform: `scale(${p}) rotate(-2deg)`, transformOrigin: '50% 100%', textShadow: SH }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: koSize * 1.12, color: CREAM, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{ko}</div>
         <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 42, color: DIM, lineHeight: 1.15, whiteSpace: 'nowrap', fontStyle: 'italic' }}>{read}</div>
-        {mn ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 48, color: PINK, lineHeight: 1.14, marginTop: 4, whiteSpace: 'nowrap' }}>{mn}</div> : null}
+        {mn ? <div style={{ fontFamily: pk.font, fontWeight: 800, fontSize: pk.smallSize, color: PINK, lineHeight: Math.max(1.14, pk.lineH), marginTop: 4, whiteSpace: 'nowrap' }}>{mn}</div> : null}
       </div>
     </div>
   );
 };
 
 // 문자 — 깔끔한 알림 꼴(앱 화면을 그리지 않는다)
-const Message: React.FC<{ t: number }> = ({ t }) => {
+const Message: React.FC<{ pk: LocPack; t: number }> = ({ pk, t }) => {
   if (t < MSG_AT || t >= UP_AT) return null;
   const p = interpolate(t, [MSG_AT, MSG_AT + 0.22], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.5)) });
   return (
     <div style={{ position: 'absolute', left: 150, width: 780, top: 250, transform: `translateY(${(1 - p) * -40}px) scale(${0.9 + 0.1 * p})`, opacity: p, transformOrigin: '50% 0%' }}>
-      <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 40, color: DIM, marginBottom: 10, marginLeft: 12, textShadow: SH }}>{TEXT.msgFrom}</div>
+      <div style={{ fontFamily: pk.font, fontWeight: 700, fontSize: 40, color: DIM, marginBottom: 10, marginLeft: 12, textShadow: SH }}>{pk.msgFrom}</div>
       <div style={{ background: 'rgba(255,250,240,0.96)', borderRadius: '12px 44px 44px 44px', padding: '14px 30px 20px', boxShadow: '0 10px 26px rgba(16,8,4,0.4)' }}>
-        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 92, color: INK, lineHeight: 1.16, whiteSpace: 'nowrap' }}>{TEXT.msgKo}</div>
-        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 44, color: '#6A584C', lineHeight: 1.15, fontStyle: 'italic' }}>{TEXT.msgRead}</div>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 52, color: MEAN, lineHeight: 1.14, marginTop: 4 }}>{TEXT.msgMn}</div>
+        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 92, color: INK, lineHeight: 1.16, whiteSpace: 'nowrap' }}>{KO_LINES.msg}</div>
+        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 44, color: '#6A584C', lineHeight: 1.15, fontStyle: 'italic' }}>{pk.msgRead}</div>
+        <div style={{ fontFamily: pk.font, fontWeight: 800, fontSize: pk.msgSize, color: MEAN, lineHeight: Math.max(1.14, pk.lineH), marginTop: 4, whiteSpace: 'pre-line' }}>{pk.msgMean}</div>
       </div>
     </div>
   );
@@ -331,9 +332,9 @@ const Sounds: React.FC<{ from?: number }> = ({ from = 0 }) => {
   );
 };
 
-export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
+export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
   const frame = useCurrentFrame();
-  const t = frame / FPS + (scene ? SCENE_FROM : 0);
+  const t = frame / FPS;
   const i = cellAt(t);
   const c = CELLS[i];
   return (
@@ -343,25 +344,23 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       {t >= UP_AT - 0.02 && t < UP_AT + 0.35 ? <AbsoluteFill style={{ background: '#FFF4D6', opacity: interpolate(t, [UP_AT - 0.02, UP_AT + 0.03, UP_AT + 0.35], [0, 0.85, 0], clamp) }} /> : null}
       {/* 위쪽 그늘 — 글자가 놓일 자리(상자가 아니라 빛) */}
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 680, background: 'linear-gradient(to bottom, rgba(20,11,7,0.58) 0%, rgba(20,11,7,0.36) 58%, rgba(20,11,7,0) 100%)' }} />
-      <Battery t={t} />
-      {!scene && t < 3.2 ? <Hook t={t} /> : null}
-      {!scene && t < 3.2 ? <Small t={t} from={0.55} until={3.2} left={330} top={830} width={520} ko={TEXT.openKo} read={TEXT.openRead} mn={TEXT.openMn} tip={[560, 1150]} /> : null}
-      {!scene && c.sit ? <Sit text={c.sit} at={c.at} t={t} /> : null}
-      {c.bubble ? <Speech b={c.bubble} at={c.at} t={t} /> : null}
-      <Message t={t} />
+      <Battery p={p} t={t} />
+      {t < 3.2 ? <Hook pk={p} t={t} /> : null}
+      {t < 3.2 ? <Small pk={p} t={t} from={0.55} until={3.2} left={330} top={830} width={520} ko={KO_LINES.open} read={p.openRead} mn={p.openMean} tip={[560, 1150]} /> : null}
+      {c.sit !== undefined ? <Sit pk={p} text={p.sits[c.sit]} at={c.at} t={t} /> : null}
+      {c.bubble ? <Speech pk={p} b={c.bubble} at={c.at} t={t} /> : null}
+      <Message pk={p} t={t} />
       {/* 몽글 머리 위에서 아래로 — 아래에 두면 몸 · 이불 위 휴대폰을 덮는다 */}
-      <Small t={t} from={UP_AT + 0.08} until={KARAOKE_AT} left={250} top={460} width={580} ko={TEXT.goKo} read={TEXT.goRead} mn={TEXT.goMn} tip={[590, 770]} koSize={96} />
-      <Small t={t} from={KARAOKE_AT + 0.1} until={NEXT_AT} left={480} top={540} width={560} ko={TEXT.moreKo} read={TEXT.moreRead} mn={TEXT.moreMn} tip={[520, 880]} koSize={92} />
+      <Small pk={p} t={t} from={UP_AT + 0.08} until={KARAOKE_AT} left={250} top={460} width={580} ko={KO_LINES.go} read={p.goRead} mn={p.goMean} tip={[590, 770]} koSize={96} />
+      <Small pk={p} t={t} from={KARAOKE_AT + 0.1} until={NEXT_AT} left={480} top={540} width={560} ko={KO_LINES.more} read={p.moreRead} mn={p.moreMean} tip={[520, 880]} koSize={92} />
       {/* 꼬리가 몸 안에 묻혀 「꼬리 없는 말풍선이 머리 위에 벽돌처럼」(아르곤 맹검 v7) — 말풍선을 올리고 꼬리를 머리 꼭대기에 */}
-      <Small t={t} from={NEXT_AT + 0.33} until={TOTAL + 1} left={300} top={548} width={560} ko="졸려…" read="жоллё" mn="Нойр хүрч байна…" tip={[690, 880]} koSize={92} />
-      {!scene && t >= END_AT && t < NEXT_AT ? (
+      <Small pk={p} t={t} from={NEXT_AT + 0.33} until={TOTAL + 1} left={300} top={548} width={560} ko={KO_LINES.next} read={p.nextRead} mn={p.nextMean} tip={[690, 880]} koSize={92} />
+      {t >= END_AT && t < NEXT_AT ? (
         <div style={{ position: 'absolute', left: 60, right: 60, top: 290, textAlign: 'center', opacity: interpolate(t, [END_AT, END_AT + 0.15], [0, 1], clamp) }}>
-          <span style={{ color: CREAM, fontFamily: FONT, fontWeight: 800, fontSize: 60, lineHeight: 1.2, textShadow: SH }}>{TEXT.end}</span>
+          <span style={{ color: CREAM, fontFamily: p.font, fontWeight: 800, fontSize: p.endSize, lineHeight: Math.max(1.2, p.lineH), whiteSpace: 'pre-line', textShadow: SH }}>{p.end}</span>
         </div>
       ) : null}
-      <Sounds from={scene ? SCENE_FROM : 0} />
+      <Sounds />
     </AbsoluteFill>
   );
 };
-
-export const SceneFilm: React.FC = () => <Film scene />;
