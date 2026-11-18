@@ -572,6 +572,9 @@ export function createSync({
     visible() {
       void pull();
     },
+    // 이 세션에 건너뛴 것을 뺀 대기열이 남았나 — 계정 비우기의 0 걸음(단계 4 계획 §22-4)이 다 올렸는지 본다. 서버가 받지 않아 이 세션에
+    // 건너뛴 사건은 비우기와 상관없이 서버에 가지 않으므로 세지 않는다.
+    left: () => trail()?.unsent(1, state.skipped).length ?? 0,
     status: () => ({
       stopped: state.stopped,
       writesOff: state.writesOff,

@@ -15,6 +15,7 @@ export const TURN_JOBS = Object.freeze({
   compact: { wait: 1_000, miss: 'skip', streak: 'skip' }, // 치우기 — 다음 날
   legacy: { wait: 4_000, miss: 'free', streak: 'free' }, // 옛 기록 옮기기 — coach.ready가 기다리는 일
   move: { wait: 10_000, miss: 'skip', streak: 'skip' }, // 손님 → 계정 옮기기 — 「옮기지 못했어요 · 다시」
+  reset: { wait: 10_000, miss: 'skip', streak: 'skip' }, // 연습 기록 비우기(단계 4 계획 §22-4) — 지우는 일이라 차례를 얻었을 때만, 못 얻으면 「지금은 비우지 못했어요」
 });
 export const STREAK_COUNT = 3;
 export const STREAK_MS = 60_000;

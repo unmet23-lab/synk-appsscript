@@ -11,7 +11,7 @@ import { EDITION } from '../edition.mjs';
 import { createMemory } from '../memory/index.mjs';
 import { applyOwn } from '../fold/device.mjs';
 import { byTime } from '../fold/order.mjs';
-import { carriedFields, carriedSoFar, legacyToImport } from '../record/carry.mjs';
+import { carriedFields, carriedSoFar, carriedWith, legacyToImport } from '../record/carry.mjs';
 import { EVENT_TYPES } from '../record/events.mjs';
 import { idbPort } from '../record/idb.mjs';
 import { openTrail } from './record.mjs';
@@ -196,6 +196,21 @@ function createHost({
     }
   }
 
+  // 다른 탭이 이 저장소를 비웠다(단계 4 계획 §22-4 다른 탭의 은퇴 알림 — Fable새5). 기록부가 꼬리에서 새 세대의 비움 표지를 만났거나 막이에
+  // 걸려 다시 읽은 뒤 세대마다 한 번 부른다. 저장소가 닫혔을 때(storeClosed)와 같은 길로 셸에 알린다 — 셸이 이 탭의 코치를 은퇴시키고 다시
+  // 정한다(손님 호스트도 — 셸이 손님 코치에도 onAccount를 준다). 그래야 다른 탭에 열린 판이 지워진 제시에 답을 이어 쓰지 않는다. 같은 문서의
+  // 판들에도 알린다(다시 세운다).
+  function clearedElsewhere(gen) {
+    if (state.closed) return;
+    note('save', { ok: false, code: 'STORE_CLEARED', dependent: true });
+    tell('cleared', { gen });
+    try {
+      onAccount?.({ kind: 'store', code: 'STORE_CLEARED', status: null, revision: null });
+    } catch {
+      // 셸의 알림이 던져도 호스트는 그대로다
+    }
+  }
+
   // 다른 탭의 알림으로 꼬리를 읽는다 — 닫힌 뒤에는 읽지 않고, 저장소 읽기가 실패해도 처리되지 않은 거절로 새지 않게 계기에만 남긴다
   // (다음 알림 · 다음 열기에 다시 읽는다, 카본 끝 판 B5).
   async function refresh() {
@@ -356,6 +371,7 @@ function createHost({
         // 손님 · 동의를 끈 기록부의 요약 저장이 끝나면 다른 탭에 알린다 — 다른 탭은 꼬리를 다시 읽어 접힌 요약을 받는다(받기 알림 설계 검토 D2 ·
         // 설계 주인 11-16 저녁 조건 2). 계정 기록부의 길은 그대로다.
         ...(guest ? { onLocalSaved: () => announce() } : {}),
+        onCleared: gen => clearedElsewhere(gen),
       });
       state.channel = channelOf(key, () => void refresh());
       if (globalThis.addEventListener) globalThis.addEventListener('online', online);
@@ -375,6 +391,8 @@ function createHost({
     pull: options => (guest ? Promise.resolve(null) : sync.pull(options)),
     firstPull: wait => (guest ? Promise.resolve({ ok: true, guest: true }) : sync.firstPull(wait)),
     syncStatus: () => sync.status(),
+    // 아직 못 올린 내 사건이 남았나(이 세션에 서버가 받지 않아 건너뛴 것은 빼고 — 계정 비우기의 0 걸음). 손님은 0.
+    unsentLeft: () => (guest ? 0 : sync.left()),
     refresh,
     subscribe(listener) {
       listeners.add(listener);
@@ -472,13 +490,29 @@ function withinTime(promise, wait) {
   return Promise.race([promise, late]).finally(() => clearTimeout(timer));
 }
 
+// 비운 뒤(단계 4 계획 §22-4)에는 셋을 더 본다. ① 옛 로그의 바닥(손님 비우기가 둔다) — 바닥과 같은 옛 로그(같은 epoch이거나 어느 쪽이든 epoch을
+// 모름)면 바닥 시각 뒤의 사건만 옮기고 접힌 장부는 옮기지 않는다(비운 기록이 옛 로그에서 되살아나지 않게 — Fable새3). epoch이 다르면(옛 엔진이
+// 비운 뒤) 모두 새것이다. ② 옮김 표지의 번호는 「이미 있음」이다 — 계정 비우기가 손님 저장소에서 지운 옮긴 사건을 옛 로그에서 다시 들이지
+// 않는다(카본새1 · Fable새1). ③ 비움 표지의 옮긴 장부 칸도 이미 옮긴 것으로 센다 — 지운 장부가 새 번호로 다시 들지 않게(Fable -c FA1).
 async function carryLegacy(record, legacy, note, wait) {
   try {
     await record.refresh(); // 차례에 들자마자 꼬리부터 — 다른 탭이 방금 옮긴 것을 또 옮기지 않게(§18-5-1)
     const old = await withinTime(Promise.resolve().then(legacy), wait);
     if (!old) return;
-    await record.importLegacy(legacyToImport(old.log, id => record.has(id)));
-    const fields = carriedFields(old.ledger, carriedSoFar(record.heldEvents()));
+    const cleared = record.cleared?.() ?? null;
+    const floor = cleared?.legacy ?? null;
+    const epoch = old.epoch ?? null;
+    const same = floor != null && (floor.epoch == null || epoch == null || floor.epoch === epoch);
+    const moved = record.movedIds?.() ?? new Set();
+    const fresh = legacyToImport(old.log, id => record.has(id) || moved.has(id)).filter(
+      event => !same || Date.parse(event.at) > floor.at,
+    );
+    await record.importLegacy(fresh);
+    if (same) return;
+    const fields = carriedFields(
+      old.ledger,
+      carriedWith(carriedSoFar(record.heldEvents()), cleared?.carried ?? null),
+    );
     if (fields && !(await record.add(EVENT_TYPES.carried, fields).stored))
       throw new Error('carried');
   } catch {

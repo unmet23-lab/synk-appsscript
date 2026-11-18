@@ -3,7 +3,7 @@
 //   const coach = SynkAtlas.coach({ gameId, banks, host: { account, revision, guest, port, transport, health }, lang, label });
 //   await coach.ready;   // 엔진 묶음 + 지도 조각 + 기록부 읽기
 // 아직 짓지 않은 것(코드 NOT_IMPLEMENTED로 분명히 던진다 — 조용히 빈 값을 주면 제품이 엔진이 돈다고 믿는다):
-//   live · today · presentation(순간 맞춤 · 오늘 컨디션 · 표시 설정 — 게임을 잇는 4-6), reset(비우기 — 「나」 4-5).
+//   live · today · presentation(순간 맞춤 · 오늘 컨디션 · 표시 설정 — 게임을 잇는 4-6).
 import { openMap } from '../map/index.mjs';
 import { lookbackWindows } from '../memory/lookback.mjs';
 import { EDITION } from '../edition.mjs';
@@ -19,6 +19,7 @@ import { dayKey } from '../select/session.mjs';
 import { render } from '../vellum/index.mjs';
 import { acquireHost, hostScope, releaseHost } from './host.mjs';
 import { keepGuest, moveGuest, noteGuest, planMove } from './move.mjs';
+import { resetAccount, resetGuest } from './reset.mjs';
 import { createSession, learnerOf } from './session.mjs';
 import { isGameId } from './set-id.mjs';
 import { storeExists } from './stores.mjs';
@@ -251,6 +252,30 @@ export function createCoach(options = {}) {
   const heldWhy = (top, opts) =>
     HELD_CODES.has(top?.why?.code) ? { ...top.why, line: say(top.why, opts) } : null;
 
+  // 손님 저장소를 옆으로 연다(셸 표시 · 문서 호스트 없이 — 틀이 손님 저장소를 받지 않게, §18-5-3 R7). 옛 기록 읽개(legacy)를 주면 연 뒤 옛 기록
+  // 옮기기를 한 번 돌린다. create: false면 손님 저장소가 없을 때 null(만들지 않는다). port는 시험만. 계정 코치의 손님 → 계정 옮기기와 계정
+  // 비우기의 넷째 걸음(reset)이 쓴다.
+  async function openGuestAside({ legacy = null, create = true, port = null } = {}) {
+    const key = storeName({});
+    if (!create && !port && !(await storeExists(key))) return null;
+    return acquireHost(
+      {
+        key,
+        aside: true,
+        guest: true,
+        params,
+        // 계정 코치의 계기 — 옆으로 연 손님 저장소의 실패(다녀감 표지 · 옛 기록 옮기기 · 저장)도 셸의 계기에 남게(카본 끝 판 둘째 D).
+        health: state.host.health ?? null,
+        legacy,
+        map: state.map,
+        now: options.host?.now,
+        ...(port ? { port } : {}),
+        ...testHost(options.host),
+      },
+      scope,
+    );
+  }
+
   // 고른 줄 → recommend의 결과. none이면 낼 문항이 없다(제품은 판을 끝낸다), idle이면 할 것이 없다(채우기 문항이 selected).
   function picked(top, products, facts, opts) {
     if (!top || top.none)
@@ -434,24 +459,8 @@ export function createCoach(options = {}) {
     async guestRecords({ legacy = null, create = true, port = null } = {}) {
       live();
       if (state.host.guest) throw fail('GUEST', '손님 코치에는 옮길 계정이 없다');
-      const key = storeName({});
-      if (!create && !port && !(await storeExists(key))) return null;
-      const aside = await acquireHost(
-        {
-          key,
-          aside: true,
-          guest: true,
-          params,
-          // 계정 코치의 계기 — 옆으로 연 손님 저장소의 실패(다녀감 표지 · 옛 기록 옮기기 · 저장)도 셸의 계기에 남게(카본 끝 판 둘째 D).
-          health: state.host.health ?? null,
-          legacy,
-          map: state.map,
-          now: options.host?.now,
-          ...(port ? { port } : {}),
-          ...testHost(options.host),
-        },
-        scope,
-      );
+      const aside = await openGuestAside({ legacy, create, port });
+      if (!aside) return null;
       // 여는 사이(저장소 열기 · 옛 기록 옮기기) 코치를 닫았으면 옆으로 연 것도 놓는다(카본 끝 판 C).
       if (state.disposed) {
         releaseHost(aside);
@@ -660,7 +669,30 @@ export function createCoach(options = {}) {
     live: notYet('live'),
     today: notYet('today'),
     presentation: notYet('presentation'),
-    reset: notYet('reset'),
+    // 연습 기록 비우기(단계 4 계획 §22-4 — 길 셋은 reset.mjs). 손님 코치는 이 기기의 손님 기록 전부를, 계정 코치는 서버 비우기로 판을 올린 뒤
+    // 손님 저장소에서 그 계정으로 옮긴 사건을 지운다. 받는 것: legacy { read, clear }(옛 엔진의 손님 로그 — 입구가 준다), clear()(서버 비우기 —
+    // 기기 길 계정은 입구가 준다, 올리는 계정은 나르개의 clear), guestPort(시험만 — 손님 저장소 포트). 돌려주는 것:
+    //   손님 { ok, path: 'guest', gen, legacy: 'cleared' | 'busy' | 'failed' | 'none' } — busy · failed는 「일부만 비움」.
+    //   계정 { ok: true, path: 'upload' | 'device', revision(새 판), guest: { ok, dropped, legacy, code? } } 또는
+    //        { ok: false, path, step: 'upload' | 'clear', code, known }(known 거짓 — 서버의 결과를 모른다).
+    // 「비우는 중」 표지 · 본인 값 옮기기 · 앞 판 쓸기 · 다시 정하기는 입구의 몫이다(22-1의 4).
+    async reset({ legacy = null, clear = null, guestPort = null } = {}) {
+      live();
+      const host = state.host;
+      const account = options.host?.account ?? null;
+      if (host.guest && account == null) return resetGuest(host, legacy);
+      const transport = options.host?.transport;
+      const call =
+        clear ??
+        (!host.guest && typeof transport?.clear === 'function' ? () => transport.clear() : null);
+      return resetAccount(host, {
+        account,
+        clear: call,
+        legacy,
+        open: () =>
+          openGuestAside({ legacy: legacy?.read ?? null, create: false, port: guestPort }),
+      });
+    },
 
     plan(activities, opts = {}) {
       live();

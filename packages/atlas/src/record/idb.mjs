@@ -1,5 +1,8 @@
 // IndexedDB 저장 포트(port.mjs의 꼴). 자동 열쇠 저장소 하나 — 덧붙이기 한 번이 트랜잭션 하나라 탭 사이에서 원자적이다.
 // 다른 탭 · 게임 틀이 덧붙이면 BroadcastChannel로 알린다(받는 쪽은 range로 꼬리만 읽는다 — 설계 §5-4 「탭과 틀」).
+// 막이 트랜잭션(swap — 단계 4 계획 §22-4)은 지우기 세대를 열쇠 0의 머리 기록에 둔다(port.mjs).
+import { clearedError, GEN_KEY, genOf } from './port.mjs';
+
 const STORE = 'log';
 
 const done = request =>
@@ -40,6 +43,47 @@ async function atomically(transaction, issue) {
   }
   const [results] = await Promise.all([Promise.all(requests), settled]);
   return results;
+}
+
+const abortQuietly = transaction => {
+  try {
+    transaction.abort();
+  } catch {
+    // 이미 끝난 트랜잭션 — 되돌릴 것이 없다.
+  }
+};
+
+// 막이 트랜잭션(단계 4 계획 §22-4 「늦게 쓰는 탭의 막이」) — 같은 쓰기 트랜잭션에서 머리 기록(GEN_KEY)의 지우기 세대를 먼저 읽고, expect와
+// 다르면 아무것도 쓰지 않고 되돌린 뒤 CLEARED로 거절한다. 같으면 그 읽기의 onsuccess 안에서(트랜잭션이 아직 살아 있다) 나머지 요청을 낸다 —
+// 읽기와 쓰기 사이에 다른 탭의 비우기가 끼지 못한다. 요청을 내다 동기 예외가 나면 트랜잭션째 되돌리고 그 예외를 던진다(atomically와 같은 규칙).
+// issue(store, track, current) — current는 읽은 세대. 돌려주는 값은 track한 요청들의 결과(낸 차례).
+async function fenced(transaction, expect, issue) {
+  const settled = finished(transaction);
+  const store = transaction.objectStore(STORE);
+  const outcome = { stale: null, error: null, requests: [] };
+  const read = store.get(GEN_KEY);
+  read.onsuccess = () => {
+    const current = genOf(read.result);
+    if (expect !== null && current !== expect) {
+      outcome.stale = current;
+      abortQuietly(transaction);
+      return;
+    }
+    try {
+      issue(store, request => outcome.requests.push(done(request)), current);
+    } catch (error) {
+      outcome.error = error;
+      abortQuietly(transaction);
+    }
+  };
+  try {
+    await settled;
+  } catch (error) {
+    for (const request of outcome.requests) request.catch(() => {});
+    if (outcome.stale !== null) throw clearedError(outcome.stale);
+    throw outcome.error ?? error;
+  }
+  return Promise.all(outcome.requests);
 }
 
 // 열기가 다른 연결에 막혔을 때(뒤 판 엔진이 저장소 꼴을 올리는데 옛 판 탭이 연결을 쥔 채) 기다리는 한도 — 넘으면 STORAGE_FAILED로
@@ -116,10 +160,16 @@ export async function idbPort(
   return {
     read: () => each(),
     range: afterKey => each(globalThis.IDBKeyRange.lowerBound(afterKey, true)),
-    async append(values) {
-      const keys = await atomically(db.transaction(STORE, 'readwrite'), (store, track) => {
+    // expect(지우기 세대)를 주면 막이 트랜잭션으로 덧붙인다(위 fenced — port.mjs append).
+    async append(values, { expect = null } = {}) {
+      const transaction = db.transaction(STORE, 'readwrite');
+      const issue = (store, track) => {
         for (const value of values) track(store.add(value));
-      });
+      };
+      const keys =
+        expect === null
+          ? await atomically(transaction, issue)
+          : await fenced(transaction, expect, issue);
       // 알림은 저장과 따로 — 커밋한 뒤 채널이 닫혀 던져도 저장된 열쇠를 돌려준다(실패로 돌리면 다시 써서 겹친다, GPT 끝 판 GB2).
       try {
         channel?.postMessage({ appended: keys.at(-1) });
@@ -132,6 +182,30 @@ export async function idbPort(
       await atomically(db.transaction(STORE, 'readwrite'), (store, track) => {
         for (const key of keys) track(store.delete(key));
       });
+    },
+    // 막이 트랜잭션(위 fenced · port.mjs swap). removeAll은 머리 기록까지 지우는 store.clear()라 같은 트랜잭션에서 세대를 다시 쓴다.
+    async swap({ expect = null, gen = null, removeAll = false, remove = [], append = [] } = {}) {
+      const results = await fenced(
+        db.transaction(STORE, 'readwrite'),
+        expect,
+        (store, track, current) => {
+          if (removeAll) {
+            track(store.clear());
+            track(store.put({ kind: 'gen', gen: gen ?? current }, GEN_KEY));
+          } else {
+            for (const key of remove) track(store.delete(key));
+            if (gen !== null) track(store.put({ kind: 'gen', gen }, GEN_KEY));
+          }
+          for (const value of append) track(store.add(value));
+        },
+      );
+      const keys = append.length ? results.slice(-append.length) : [];
+      try {
+        channel?.postMessage({ appended: keys.at(-1) ?? null });
+      } catch {
+        // 다른 탭은 다음 읽기에서 꼬리를 본다.
+      }
+      return keys;
     },
     async close() {
       db.close();

@@ -51,6 +51,7 @@ function leadAt(record, family, at, index) {
 
 // exclusive: 호스트의 차례(turn) — 기록부가 차례 밖에서 시작된 손님 요약 저장에만 청한다(§18-5-1 R1).
 // onLocalSaved: 손님 요약 저장 묶음이 끝났을 때 — 호스트가 다른 탭에 알린다(받기 알림 설계 검토 D2).
+// onCleared: 다른 탭이 이 저장소를 비웠을 때(세대마다 한 번 — 단계 4 계획 §22-4 다른 탭의 은퇴 알림) — 호스트가 셸에 알린다.
 export async function openTrail({
   port,
   revision,
@@ -62,6 +63,7 @@ export async function openTrail({
   now,
   exclusive,
   onLocalSaved,
+  onCleared,
 }) {
   const record = await openRecord({
     port,
@@ -74,6 +76,7 @@ export async function openTrail({
     ...(now ? { now } : {}),
     ...(exclusive ? { exclusive } : {}),
     ...(onLocalSaved ? { onLocalSaved } : {}),
+    ...(onCleared ? { onCleared } : {}),
   });
   const clockNow = now ?? (() => Date.now());
   const nowMs = () => Math.round(clockNow() + record.clock.offsetMs);

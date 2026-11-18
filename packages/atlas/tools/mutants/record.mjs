@@ -43,8 +43,8 @@ export const RECORD_MUTANTS = [
     '기기',
     '손님이 꼬리를 읽지 않고 다시 접는다(다른 탭이 먼저 쓴 답까지 접었다고 적는다)',
     LOG,
-    '    await refresh();\n    const until = state.readKey;',
-    '    const until = state.readKey;',
+    '    await refresh();\n    foldLocal();\n',
+    '    foldLocal();\n',
   ],
   [
     R,

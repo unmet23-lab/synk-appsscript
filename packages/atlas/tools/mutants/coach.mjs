@@ -1372,7 +1372,7 @@ export const COACH_MUTANTS = [
     '옮기기(끝 판 둘째)',
     '옆으로 연 손님 저장소에 계정 코치의 계기를 넘기지 않는다(카본 D1)',
     'src/coach/index.mjs',
-    '          health: state.host.health ?? null,\n',
+    '        health: state.host.health ?? null,\n',
     '',
   ],
   [

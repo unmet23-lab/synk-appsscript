@@ -26,7 +26,7 @@ import {
 const { aimedUnit } = await subject('coach/fields.mjs');
 const { PRESENTED_FIELDS_V2 } = await subject('record/events.mjs');
 
-test('지도 없이 만든 코치는 ready가 MAP_FAILED로 거절되고, 아직 짓지 않은 넷은 NOT_IMPLEMENTED로 던진다', async () => {
+test('지도 없이 만든 코치는 ready가 MAP_FAILED로 거절되고, 아직 짓지 않은 셋은 NOT_IMPLEMENTED로 던진다(reset은 4-5에서 지었다)', async () => {
   const bare = createCoach({});
   await assert.rejects(bare.ready, { code: 'MAP_FAILED' });
   assert.throws(() => bare.recommend([]), { code: 'NOT_READY' });
@@ -58,7 +58,7 @@ test('지도 없이 만든 코치는 ready가 MAP_FAILED로 거절되고, 아직
   }
   const time = clock();
   const { coach } = await openCoach({ items: bankOf(rng(1)), time });
-  for (const name of ['live', 'today', 'presentation', 'reset'])
+  for (const name of ['live', 'today', 'presentation'])
     assert.throws(() => coach[name](), { code: 'NOT_IMPLEMENTED' }, name);
   assert.ok(Object.isFrozen(coach));
   coach.dispose();

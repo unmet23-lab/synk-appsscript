@@ -11,15 +11,23 @@
 //                    · { kind: 'mark', mark, account?, revision?, until?, ids?, at }(손님 저장소의 경계 표지 — 단계 4 §18-5-3: 옮김 ·
 //                      두기 · 로그아웃 · 있었음. 옮김 표지의 ids는 그때 실제로 옮긴 2판 번호(함께 간 2판 제외 포함) + 옛 POST로 실제로 보낸
 //                      옛 꼴 번호 — move.mjs)
+//                    · { kind: 'cleared', gen, at, legacy, carried }(비움 표지 — 단계 4 계획 §22-4. 손님 비우기와 계정 비우기의 넷째 걸음이
+//                      저장소 안을 지울 때 같은 트랜잭션으로 쓴다. gen은 지우기 세대, legacy는 옛 로그의 바닥 { epoch, at }, carried는 옮긴 장부
+//                      칸 { families, items, last }) · { kind: 'gen', gen }(열쇠 0의 머리 기록 — 포트가 막이에 읽는다, port.mjs)
 //   치우기의 합친 표지는 swept: { at }를 싣는다 — 다른 탭은 꼬리에서 그것을 만나면 포트를 통째로 다시 읽는다(단계 4 §18-5-5 A6).
+//   쓰기는 모두 포트의 막이 트랜잭션(swap)으로 한다 — 이 기록부가 읽은 지우기 세대가 저장소의 지금 세대가 아니면(다른 탭이 비웠으면) 쓰지 않고
+//   통째로 다시 읽은 뒤 onCleared로 한 번 알린다(단계 4 계획 §22-4 「늦게 쓰는 탭의 막이」 · 「다른 탭의 은퇴 알림」). 꼬리에서 새 세대의
+//   비움 표지를 만나도 같다.
 //   파생 기록(손님 요약 · 치우기 · 옮기기)을 쓰는 일은 호스트의 차례(src/coach/turn.mjs) 안에서 한다 — 기록부가 스스로 차례를
 //   청하는 곳은 차례 밖에서 시작된 손님 요약 저장 하나뿐이고(exclusive), 호스트가 「차례 안」으로 둔 동안에는 다시 청하지 않는다
 //   (Web Locks는 다시 들어갈 수 없다 — 단계 4 §18-5-1 R1 · s8).
 import { overlay } from '../fold/device.mjs';
 import { deviceKey, EMPTY_INDEX, groupsOf } from './adapt.mjs';
+import { carriedList } from './carry.mjs';
 import { createClock } from './clock.mjs';
 import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, isId, parentOf } from './events.mjs';
 import { familySkillsOf, ownFoldEvents, touchesOf, WAIT } from './own.mjs';
+import { genOf } from './port.mjs';
 import { linesOfGroups, rowsOfGroup } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
 import {
@@ -97,6 +105,11 @@ function createState(guest, now) {
     sweptAt: 0, // 가장 늦은 치우기의 시각(서버 시각을 고친 기기 시각 — 포트에서 읽은 값)
     serverTimed: false, // 이 세션에 서버의 답에서 서버 시각을 받았다 — 치우기는 그 뒤에만(A6)
     marks: [], // 손님 저장소의 경계 표지(포트 열쇠 자리 — §18-5-3)
+    // 지우기 세대(단계 4 계획 §22-4) — 이 기록부가 읽은 저장소의 세대(머리 기록 · 비움 표지에서). 쓰기는 이 세대를 막이로 건다. 줄지 않는다.
+    gen: 0,
+    noticed: 0, // 셸에 알린(onCleared) 가장 큰 세대 — 처음 읽은 세대와 이 기록부가 스스로 비운 세대는 알리지 않는다
+    cleared: null, // 가장 늦은 비움 표지 { gen, at, legacy, carried }
+    clearedKey: 0,
     positions: 0,
     seqInMs: 0,
     lastMs: -1,
@@ -121,6 +134,8 @@ function resetRead(state) {
   state.positions = 0;
   state.sweptAt = 0;
   state.marks = [];
+  state.cleared = null; // 세대(gen)는 줄지 않아 그대로 둔다
+  state.clearedKey = 0;
 }
 
 function takeEvent(state, value, key) {
@@ -180,12 +195,45 @@ function takeLocal(state, value, key, edition) {
     state.local = { summary, until: value.until, key };
 }
 
+// 옛 로그의 바닥 { epoch, at }(단계 4 계획 §22-4) — epoch을 모르면 null로 둔다. 꼴이 틀리면 바닥이 없는 것이다.
+const floorOf = value =>
+  value && typeof value === 'object' && Number.isFinite(value.at)
+    ? { epoch: value.epoch ?? null, at: value.at }
+    : null;
+const carriedOfValue = value =>
+  value && typeof value === 'object' && Array.isArray(value.families) && Array.isArray(value.items)
+    ? { families: [...value.families], items: [...value.items], last: value.last ?? null }
+    : null;
+
+// 비움 표지(단계 4 계획 §22-4). 세대가 지금 읽은 세대보다 크면 다른 탭이 비운 것이다 — 메모리 사본을 버리고 포트를 통째로 다시 읽는다(치운
+// 표시와 같은 resync — 처음부터 통째로 읽는 load · reload는 읽은 뒤 이 표시를 내린다). 같은 세대의 뒤 표지는 바닥 · 옮긴 장부 칸을 고친
+// 것이다(liftFloor) — 은퇴시키지 않고 표지만 새로 든다.
+function takeCleared(state, value, key) {
+  const gen = genOf(value);
+  if (gen > state.gen) state.resync = true;
+  state.gen = Math.max(state.gen, gen);
+  if (
+    state.cleared &&
+    (gen < state.cleared.gen || (gen === state.cleared.gen && key < state.clearedKey))
+  )
+    return;
+  state.cleared = {
+    gen,
+    at: Number.isFinite(value.at) ? value.at : null,
+    legacy: floorOf(value.legacy),
+    carried: carriedOfValue(value.carried),
+  };
+  state.clearedKey = key;
+}
+
 function take(state, { key, value }, now, edition) {
   state.lastKey = Math.max(state.lastKey, key);
   if (value.kind === 'event') takeEvent(state, value, key);
   else if (value.kind === 'ack') takeAck(state, value, key, now);
   else if (value.kind === 'summary') takeSummary(state, value, key);
   else if (value.kind === 'local') takeLocal(state, value, key, edition);
+  else if (value.kind === 'gen') state.gen = Math.max(state.gen, genOf(value));
+  else if (value.kind === 'cleared') takeCleared(state, value, key);
   // 표지는 열쇠로 한 번만 — 내가 쓴 표지는 꼬리를 읽을 때 다시 온다(내 덧붙이기는 읽은 자리를 올리지 않는다).
   else if (value.kind === 'mark' && !state.marks.some(mark => mark.key === key))
     state.marks.push({ ...value, key });
@@ -332,6 +380,23 @@ const movedIds = (marks, account, revision) =>
 // 묶음의 머리 — 제시 · 본인 말 · 판 결정 · 장부. 자식(전달 · 도움 · 답 · 마침 · 응답 · 제외)은 부모를 따라간다.
 const isHead = event => parentOf(event) == null;
 
+// 계정 비우기의 넷째 걸음이 지울 기록(단계 4 계획 §22-4) — 포트를 통째로 읽은 줄(rows)에서 옮김 표지의 번호(gone)와 그것에 기댄 사건(부모 사슬
+// — 부모는 늘 앞 열쇠라 한 번 훑기로 다 걸린다), 손님 요약 사본. 같은 번호가 두 열쇠에 선 옛 기록(R10)도 빠짐없이 걸린다. { drop: 열쇠들,
+// events: 지울 사건들 }.
+function movedRows(rows, gone) {
+  const drop = [];
+  const events = [];
+  for (const { key, value } of rows) {
+    if (value.kind === 'local') drop.push(key);
+    if (value.kind !== 'event') continue;
+    if (!gone.has(value.event.id) && !gone.has(parentOf(value.event))) continue;
+    gone.add(value.event.id);
+    drop.push(key);
+    events.push(value.event);
+  }
+  return { drop, events };
+}
+
 // 제시의 자식 — 전달 · 도움 · 답. 같은 제시의 자식은 차례가 뜻을 가진다: 뒤 답은 앞 답에 기대고(§18-4 시도 번호), 답의 판정은 그 앞의
 // 도움 · 전달에 기댄다(adapt.mjs — 첫 답 앞의 도움이 있어야 도움 받은 답, 소리 상태는 전달에서). 그래서 열쇠 차례의 앞머리로만 옮기고
 // 보낸다(설계 주인 11-13 — 카본 다시 A1 ② · GPT 다시 GA1 · GA3 · GA4).
@@ -413,10 +478,74 @@ export function createRecord({
   exclusive = (_job, work) => work(),
   // 손님 요약 저장 묶음이 끝났다 — 호스트가 다른 탭에 알린다(받기 알림 설계 검토 D2 · 설계 주인 11-16 저녁). 호스트는 손님 · 동의를 끈 기록부에만 준다.
   onLocalSaved = null,
+  // 다른 탭이 이 저장소를 비웠다(gen — 단계 4 계획 §22-4 다른 탭의 은퇴 알림). 세대마다 한 번 — 호스트가 셸에 알린다.
+  onCleared = null,
 }) {
   const state = createState(guest, now);
   const edition = () => foldEdition(params, index);
   const accept = row => take(state, row, now, edition());
+
+  // 막이 쓰기(단계 4 계획 §22-4 「늦게 쓰는 탭의 막이」) — 이 기록부가 읽은 세대를 포트에 넘겨(append의 expect) 같은 트랜잭션에서 대조하며
+  // 덧붙인다. 다른 탭이 비웠으면(CLEARED) 쓰지 않고 통째로 다시 읽어 셸에 알린 뒤 그 거절을 그대로 던진다 — 부르는 쪽은 저장 실패로 받는다.
+  // 막이를 모르는 포트(제품이 준 옛 꼴)는 둘째 인자를 버리고 막이 없이 덧붙인다.
+  async function put(values) {
+    try {
+      return await port.append(values, { expect: state.gen });
+    } catch (error) {
+      if (error?.code === 'CLEARED') await caughtUp();
+      throw error;
+    }
+  }
+  const stamp = () => Math.round(now() + state.clock.offsetMs);
+  // 비우기의 걸음(clear · dropMoved) — 꼬리부터 읽고 한다. 다른 탭이 먼저 비웠으면(막이) 다시 읽고 두 번까지 더 한다.
+  async function fencedTurn(work) {
+    for (let attempt = 0; ; attempt += 1) {
+      await refresh();
+      try {
+        return await work();
+      } catch (error) {
+        if (error?.code !== 'CLEARED' || attempt >= 2) throw error;
+        await caughtUp();
+      }
+    }
+  }
+  // 스스로 비운 뒤 — 그 세대는 알리지 않고, 다시 읽어 메모리 사본을 맞추고, 손님 요약을 그 자리에서 접는다.
+  async function settleCleared(gen) {
+    state.noticed = Math.max(state.noticed, gen);
+    await reload();
+    foldLocal();
+  }
+  async function caughtUp() {
+    try {
+      await reload();
+      if (guest) foldLocal();
+    } catch {
+      // 다시 읽기는 다음 꼬리 읽기 · 다음 열기에.
+    }
+    noticeCleared();
+  }
+  // 이 기록부가 아직 알리지 않은 새 세대를 읽었으면 한 번 알린다.
+  function noticeCleared() {
+    if (state.gen <= state.noticed) return;
+    state.noticed = state.gen;
+    try {
+      onCleared?.(state.gen);
+    } catch {
+      // 셸의 알림이 던져도 기록부는 그대로다.
+    }
+  }
+  const movedIdsOf = account =>
+    new Set(
+      state.marks
+        .filter(mark => mark.mark === 'moved' && (account == null || mark.account === account))
+        .flatMap(mark => (Array.isArray(mark.ids) ? mark.ids : [])),
+    );
+  const requireSwap = () => {
+    if (typeof port.swap !== 'function')
+      throw Object.assign(new Error('Atlas record: 이 저장소는 안에서 비우지 못한다'), {
+        code: 'STORAGE_UNSUPPORTED',
+      });
+  };
 
   // 손님: 든 사건으로 요약을 스스로 접는다(서버와 같은 어댑터 · 근거 줄 · 접기).
   async function refoldGuest() {
@@ -424,6 +553,11 @@ export function createRecord({
     // 끝난 내 덧붙이기가 아직 안 읽은 다른 탭 사건(더 앞 열쇠)까지 접었다고 적어, 그 사건이 요약에도 얹기에도 빠졌다(GPT 끝 판 GC1 ·
     // 단계 4 §18-5-1 A4 — s6). 내 덧붙이기로는 readKey가 오르지 않으니(take) 포트가 어떤 차례로 돌든 맞고, 그 뒤 열쇠의 내 사건은 밀린 것으로 얹힌다.
     await refresh();
+    foldLocal();
+  }
+
+  // 손님 요약을 읽은 데까지 그 자리에서 접는다(꼬리를 읽지 않는다 — refoldGuest와 다시 읽은 뒤의 refresh가 부른다).
+  function foldLocal() {
     const until = state.readKey;
     const items = [...state.held.values()].filter(item => item.key <= until);
     // 접은 뒤에 든 사건이 없고 판 묶음(두뇌 · 색인 · 기록 규칙 — 아르곤 끝 판 D2)이 같으면 다시 접지 않는다. 「접은 자리가 읽은 자리 이상」으로
@@ -487,7 +621,7 @@ export function createRecord({
     if (!local || local.key != null) return false;
     const value = { kind: 'local', summary: packSummary(local.summary), until: local.until };
     const write = async () => {
-      const [key] = await port.append([value]);
+      const [key] = await put([value]);
       accept({ key, value });
       // 덧붙이고 얹었으면 쓴 저장이다 — 앞 요약 지우기만 실패하면 계기에만 남기고 알린다. 남은 행은 다음 저장의 지우기가 함께 지운다
       // (지우기는 remove가 된 뒤에만 rows에서 뺀다 — 받기 알림 다시 검수 Fable F1 · 설계 주인 11-16 저녁).
@@ -550,12 +684,13 @@ export function createRecord({
       return false;
     }
     try {
-      const [key] = await port.append([value]);
+      const [key] = await put([value]);
       accept({ key, value });
-    } catch {
+    } catch (error) {
       state.unsaved.add(event.id);
       remember(state, event);
-      noteSave(health, false, 'STORAGE_ERROR');
+      // 다른 탭이 저장소를 비운 뒤의 늦은 쓰기(막이) — 저장 실패와 가른다. 셸은 onCleared로 이 탭의 코치를 은퇴시킨다.
+      noteSave(health, false, error?.code === 'CLEARED' ? 'STORE_CLEARED' : 'STORAGE_ERROR');
       return false;
     }
     noteSave(health, true);
@@ -608,10 +743,17 @@ export function createRecord({
     }
   }
 
-  // 꼬리를 읽는다 — 다른 탭의 치운 표시를 만났으면 포트를 통째로 다시 읽는다(A6).
+  // 꼬리를 읽는다 — 다른 탭의 치운 표시 · 새 세대의 비움 표지를 만났으면 포트를 통째로 다시 읽는다(A6 · 단계 4 계획 §22-4). 손님 기록부는
+  // 다시 읽은 뒤 요약을 그 자리에서 다시 접는다(비운 저장소의 보기 바탕이 비지 않게). 새 세대를 읽었으면 셸에 한 번 알린다.
   async function refresh() {
     await readTail();
-    for (let guard = 0; state.resync && guard < 3; guard += 1) await reload();
+    let reloaded = false;
+    for (let guard = 0; state.resync && guard < 3; guard += 1) {
+      await reload();
+      reloaded = true;
+    }
+    if (reloaded && guest) foldLocal();
+    noticeCleared();
   }
 
   // 다른 탭이 치웠다 — 메모리 사본을 버리고 포트를 통째로 다시 읽는다. 표지를 읽기 전에 치워진 사건이 받은 표지 없이 남아 두 번
@@ -634,6 +776,7 @@ export function createRecord({
         state.readKey = Math.max(state.readKey, row.key);
       }
       state.resync = false; // 처음부터 통째로 읽었다 — 앞의 치운 표시는 다 반영됐다
+      state.noticed = state.gen; // 처음 읽은 세대는 알리지 않는다
       if (guest) await refoldGuest();
       return this;
     },
@@ -729,7 +872,7 @@ export function createRecord({
         return baseOf(state);
       }
       const values = answerValues({ accepted, clamped, rejected, serverTime, next }, now);
-      const keys = await port.append(values);
+      const keys = await put(values);
       values.forEach((value, i) => accept({ key: keys[i], value })); // 서버 시각을 실은 표지가 시계를 맞춘다(takeAck)
       if (Number.isFinite(serverTime)) state.serverTimed = true;
       if (rejected.length) noteSave(health, false, rejectedCode);
@@ -851,7 +994,7 @@ export function createRecord({
         state.summary && !state.summaryRows.has(state.summaryKey)
           ? [{ kind: 'summary', summary: packSummary(state.summary) }]
           : [];
-      const [keepKey, ...carried] = await port.append([value, ...carry]);
+      const [keepKey, ...carried] = await put([value, ...carry]);
       state.ownSweeps.add(keepKey);
       accept({ key: keepKey, value });
       carried.forEach((key, i) => accept({ key, value: carry[i] }));
@@ -926,11 +1069,95 @@ export function createRecord({
         ...(mark === 'moved' && Array.isArray(ids) ? { ids: [...new Set(ids.filter(isId))] } : {}),
         at: Math.round(now() + state.clock.offsetMs),
       };
-      const [key] = await port.append([value]);
+      const [key] = await put([value]);
       accept({ key, value });
       return key;
     },
     marks: () => state.marks.map(mark => ({ ...mark })),
+    // 옮김 표지에 적힌 번호(판과 상관없이) — account를 주면 그 계정의 것만. 옛 기록 옮기기는 이 번호를 「이미 있음」으로 보고(단계 4 계획 §22-4 —
+    // 카본새1 · Fable새1), 계정 비우기의 넷째 걸음은 그 계정의 것을 지운다.
+    movedIds: (account = null) => movedIdsOf(account),
+    // 가장 늦은 비움 표지 { gen, at, legacy, carried }의 사본(비운 적이 없으면 null)과 지금 읽은 지우기 세대.
+    cleared: () =>
+      state.cleared
+        ? {
+            ...state.cleared,
+            legacy: state.cleared.legacy ? { ...state.cleared.legacy } : null,
+            carried: state.cleared.carried
+              ? {
+                  ...state.cleared.carried,
+                  families: [...state.cleared.carried.families],
+                  items: [...state.cleared.carried.items],
+                }
+              : null,
+          }
+        : null,
+    generation: () => state.gen,
+
+    // 손님 저장소 비우기(단계 4 계획 §22-4 손님 1 — 설계 주인 답 2). 사건 · 요약 사본 · 옮기기 표지를 한 트랜잭션으로 지우고 비움 표지
+    // { gen, at, legacy, carried: null }을 쓴다. 저장소를 다시 만들지 않고 안에서 비우므로 열쇠 번호는 이어지고 이름도 그대로다. legacy는 옛 로그의
+    // 바닥의 epoch({ epoch } — 모르면 epoch null, 옛 로그가 없으면 legacy 자체가 null)이고 바닥 시각은 이 표지의 시각이다. 다른 탭이 먼저 비웠으면
+    // (막이) 다시 읽고 두 번까지 더 한다. 이 기록부가 들던 쓰기 상태(저장 실패 · 앞 답 · 계열)도 비운다. 같은 문서의 코치 은퇴는 입구가 한다.
+    async clear({ legacy = null } = {}) {
+      if (!guest) throw new TypeError('Atlas record: 계정 저장소는 서버 비우기로 판을 올려 비운다');
+      requireSwap();
+      return fencedTurn(async () => {
+        const gen = state.gen + 1;
+        const at = stamp();
+        const floor = legacy ? { epoch: legacy.epoch ?? null, at } : null;
+        const value = { kind: 'cleared', gen, at, legacy: floor, carried: null };
+        const [key] = await port.swap({ expect: state.gen, gen, removeAll: true, append: [value] });
+        for (const table of [state.unsaved, state.failed, state.families, state.lastAttempt])
+          table.clear();
+        await settleCleared(gen);
+        return { gen, key };
+      });
+    },
+
+    // 계정 비우기의 넷째 걸음(단계 4 계획 §22-4 올리는 계정 4 — 설계 주인 답 3). 그 계정의 옮김 표지 모두(판과 상관없이)의 번호와 그것에 기댄
+    // 사건(자식 · 제외 — 부모 사슬, 남기면 부모 없는 사건이 된다)을 지운다. 같은 트랜잭션에서 손님 요약 사본을 지우고, 세대를 올리고, 지운
+    // 「옮겨 오기 전 기록」의 계열 · 문항과 마지막으로 옮긴 때를 비움 표지의 carried에 더한다(Fable -c FA1 — 옛 장부가 새 번호로 다시 들지
+    // 않게). 옛 로그의 바닥(legacy)은 앞 표지의 것을 그대로 잇는다 — 이 걸음은 바닥을 새로 두지 않는다. 옮김 표지와 로그아웃 뒤의 손님 사건 ·
+    // 남의 계정으로 옮긴 사건은 둔다. 지울 것이 없으면 쓰지 않는다. { gen, dropped } — dropped는 지운 사건 수.
+    async dropMoved({ account }) {
+      if (!guest) throw new TypeError('Atlas record: 옮긴 사건은 손님 저장소에서 지운다');
+      if (account == null) throw new TypeError('Atlas record: 계정 없는 옮긴 사건 지우기');
+      requireSwap();
+      return fencedTurn(async () => {
+        const { drop, events } = movedRows(await port.read(), movedIdsOf(account));
+        if (!events.length) return { gen: state.gen, dropped: 0 };
+        const gen = state.gen + 1;
+        const value = {
+          kind: 'cleared',
+          gen,
+          at: stamp(),
+          legacy: state.cleared?.legacy ?? null,
+          carried: carriedList(events, state.cleared?.carried ?? null),
+        };
+        await port.swap({ expect: state.gen, gen, remove: drop, append: [value] });
+        await settleCleared(gen);
+        return { gen, dropped: new Set(events.map(event => event.id)).size };
+      });
+    },
+
+    // 옛 엔진 비우기가 됐다(손님 2 · 계정 4b) — 바닥과 옮긴 장부 칸을 거둔다(단계 4 계획 §22-4 옛 로그의 바닥 — Fable -c FA3). 옛 로그와 그
+    // 장부가 비었으니 그 뒤의 옛 사건과 장부는 모두 새것이다. 같은 세대의 비움 표지를 하나 더 쓴다 — 다른 탭은 같은 세대라 은퇴하지 않고 표지만
+    // 새로 든다. 거둘 것이 없으면 쓰지 않는다(false).
+    async liftFloor() {
+      await refresh();
+      const cleared = state.cleared;
+      if (!cleared || (cleared.legacy == null && cleared.carried == null)) return false;
+      const value = {
+        kind: 'cleared',
+        gen: cleared.gen,
+        at: cleared.at,
+        legacy: null,
+        carried: null,
+      };
+      const [key] = await put([value]);
+      accept({ key, value });
+      return true;
+    },
 
     // 손님 저장소에서 옮겨 오는 2판 사건(§18-5-3 ③ — 계정 기록부). 이미 든 번호는 건너뛰고(두 번 옮겨도 한 번), 제외의 닿는 줄 메모도
     // 함께 한 번에 덧붙인다. 도장(판 번호)은 guestUpload가 찍었다.
@@ -942,7 +1169,7 @@ export function createRecord({
         event,
         ...(touches.get(event.id) ? { touches: touches.get(event.id) } : {}),
       }));
-      const keys = await port.append(values);
+      const keys = await put(values);
       keys.forEach((key, i) => accept({ key, value: values[i] }));
       return keys;
     },
@@ -951,7 +1178,7 @@ export function createRecord({
     async importLegacy(events) {
       if (!events.length) return [];
       const values = events.map(event => ({ kind: 'event', event }));
-      const keys = await port.append(values);
+      const keys = await put(values);
       keys.forEach((key, i) => accept({ key, value: values[i] }));
       if (guest) await refoldGuest();
       return keys;

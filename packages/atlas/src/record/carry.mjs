@@ -125,6 +125,42 @@ export function carriedFields(
 const omit = (table, known) =>
   Object.fromEntries(Object.entries(table).filter(([key]) => !known.has(key)));
 
+// 옮긴 장부 칸(단계 4 계획 §22-4 올리는 계정 4 — Fable -c FA1). 계정 비우기의 넷째 걸음이 손님 저장소에서 지운 「옮겨 오기 전 기록」의 계열 ·
+// 문항과 마지막으로 옮긴 때를 비움 표지(cleared.carried)에 { families, items, last } 꼴로 남긴다. 지운 사건(events — 거둔 장부는 없던 것)의 장부와
+// 앞 표지의 칸(before)을 합친다. 둘 다 없으면 null이다.
+export function carriedList(events, before = null) {
+  const now = carriedSoFar(events);
+  if (!now.last && !before) return null;
+  return {
+    families: [...new Set([...(before?.families ?? []), ...now.families])].sort(),
+    items: [...new Set([...(before?.items ?? []), ...now.items])].sort(),
+    last: later(before?.last ?? null, now.last),
+  };
+}
+
+// 기록부의 「옮겨 오기 전 기록」(carriedSoFar)에 비움 표지의 옮긴 장부 칸을 더한다 — 다시 옮기는 장부가 계정 비우기로 지운 칸을 새 번호로
+// 다시 들이지 않게(carryLegacy · 4b의 판단이 읽는다). 칸이 없으면 그대로.
+export function carriedWith(soFar, extra) {
+  if (!extra) return soFar;
+  return {
+    families: new Set([...soFar.families, ...(extra.families ?? [])]),
+    items: new Set([...soFar.items, ...(extra.items ?? [])]),
+    last: later(soFar.last, extra.last ?? null),
+  };
+}
+
+// 계정 비우기의 4b(단계 4 계획 §22-4 — 설계 주인 둘째 답 가) — 옛 손님 로그를 통째로 비워도 되나. 옛 로그의 사건 번호가 모두 그 계정으로 옮긴
+// 번호(moved)에 들고, 손님 저장소의 「옮겨 오기 전 기록」(events의 장부 사건)이 모두 옮긴 번호에 들고, 접힌 장부에 아직 옮기지 않은 칸이 없을
+// 때만 참이다(carried — 비움 표지의 옮긴 장부 칸도 옮긴 것으로 센다). 로그아웃 뒤의 손님 사건이 섞였거나(번호가 옮긴 번호 밖) 옮기지 않은 장부
+// 칸이 있으면 거짓이다 — 옛 로그를 건드리지 않는다(알려진 한계 — §6).
+export function legacyAllMoved(old, { moved, events, carried = null }) {
+  const log = Array.isArray(old?.log) ? old.log : [];
+  if (!log.every(event => moved.has(event?.id))) return false;
+  if (events.some(event => event.type === EVENT_TYPES.carried && !moved.has(event.id)))
+    return false;
+  return carriedFields(old?.ledger, carriedWith(carriedSoFar(events), carried)) === null;
+}
+
 // 옛 로그 가운데 아직 옮기지 않은 옛 꼴 사건(로그 순서 그대로 — 기기 차례 열쇠 l.<적힌 시각>.<순번>이 이 순서를 지킨다).
 export const legacyToImport = (oldLog, has) =>
   (Array.isArray(oldLog) ? oldLog : []).filter(

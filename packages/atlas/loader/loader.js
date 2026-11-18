@@ -31,6 +31,7 @@
     'watch',
     'pull',
     'firstAnswers',
+    'excludeResponse',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;
