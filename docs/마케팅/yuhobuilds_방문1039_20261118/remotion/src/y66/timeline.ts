@@ -6,7 +6,8 @@ export const T = {
   page: 0, // 실제 페이지 + 1,039번 방문 · 그중 진짜 사람은?
   hall: 2.7, // 홀이 참
   settle: 3.2, // 「처음으로 제대로 재 봤다」
-  top: 6.8, // 윗줄 가까이 — 사람인지, 로봇인지
+  askWho: 5.55, // 「사람인지, 로봇인지」 — 말(5.58)과 같이(r8 · 최종 확인 11-18 작은 흠)
+  top: 6.8, // 띠가 홀 맨 위에 서고 카메라가 한 번 다가감
   sweep: 7.9, // 띠 출발(홀 넓게) · 로봇 셈
   sweepEnd: 10.5,
   botNote: 10.0, // 로봇 = 사람 없이 자동으로 들어온 프로그램
@@ -17,8 +18,11 @@ export const T = {
   laptop: 15.8, // 고치면서 띄워 본 화면도 따로
   stream: 16.5,
   apart: 18.5,
-  ask: 19.5, // 사이트를 만든 AI한테 고치게 한 세 가지(뺄 것 셋)
-  strike: 21.6,
+  ask: 19.2, // 사이트를 만든 AI한테 고치게 한 세 가지 — 방문 통계에서 빼기(r8: 19.5 → 19.2 — 나란히 셈이 우리 초를 38/36.8배로 늘려 원본 19.3초 박자에 0.6초 안으로)
+  // r8(최종 확인 11-18 미흡): 셋을 한꺼번에 지우지 않고 말에 맞춰 하나씩 「고친 것」 도장을 찍고 밀어낸다. 마지막이 23.4초에 빠져 0.5초 안에 종이 화면.
+  fix1: 20.9,
+  fix2: 21.8,
+  fix3: 22.7,
   save: 23.9, // 보낼 세 줄(밝은 종이)
   tick2: 24.8,
   tick3: 26.3,
@@ -27,7 +31,11 @@ export const T = {
   line: 30.2, // 한 문장
   under: 31.8,
   end: 33.3, // 끝 — 여러분 홈페이지 홀
-  endSweep: 33.9,
+  // r8(최종 확인 11-18 「끝 3초가 약함」): 띠가 장면 시작과 함께 7.9초 훑기와 같은 빠르기(2.6초)로 홀을 끝까지 훑고,
+  // 남은 몇 자리만 노랗게 「?」로 빛나며 멈춘다 — 그 순간 쿵.
+  endSweep: 33.35,
+  endSweepEnd: 35.95,
+  endGlow: 35.95,
 } as const;
 
 export const VO: { id: string; at: number }[] = [
@@ -47,6 +55,7 @@ export const SFX: { file: string; at: number; v: number }[] = [
   { file: 'swish', at: 2.7, v: 0.55 },
   { file: 'tok', at: 3.2, v: 0.5 },
   { file: 'tick', at: 4.6, v: 0.4 },
+  { file: 'tok', at: 5.55, v: 0.4 },
   { file: 'tick', at: 5.8, v: 0.4 },
   { file: 'swish', at: 6.8, v: 0.45 },
   { file: 'swish', at: 7.9, v: 0.6 },
@@ -57,8 +66,11 @@ export const SFX: { file: string; at: number; v: number }[] = [
   { file: 'tok', at: 14.1, v: 0.5 },
   { file: 'swish', at: 15.8, v: 0.5 },
   { file: 'tick', at: 18.5, v: 0.45 },
-  { file: 'swish', at: 19.5, v: 0.5 },
-  { file: 'tick', at: 21.6, v: 0.45 },
+  { file: 'swish', at: 19.2, v: 0.5 },
+  { file: 'tok', at: 20.9, v: 0.55 },
+  { file: 'tok', at: 21.8, v: 0.55 },
+  { file: 'tok', at: 22.7, v: 0.55 },
+  { file: 'swish', at: 23.1, v: 0.35 },
   { file: 'tok', at: 23.9, v: 0.5 },
   { file: 'tok', at: 24.8, v: 0.5 },
   { file: 'tok', at: 26.3, v: 0.5 },
@@ -66,7 +78,8 @@ export const SFX: { file: string; at: number; v: number }[] = [
   { file: 'thud', at: 28.0, v: 0.6 },
   { file: 'swish', at: 30.2, v: 0.45 },
   { file: 'tick', at: 31.8, v: 0.45 },
-  { file: 'thud', at: 33.3, v: 0.85 },
-  { file: 'swish', at: 33.9, v: 0.5 },
+  { file: 'tok', at: 33.3, v: 0.5 },
+  { file: 'swish', at: 33.35, v: 0.6 },
   { file: 'tick', at: 35.2, v: 0.4 },
+  { file: 'thud', at: 35.95, v: 0.9 },
 ];

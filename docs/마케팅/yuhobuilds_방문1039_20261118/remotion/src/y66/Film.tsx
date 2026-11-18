@@ -7,10 +7,10 @@ import React from 'react';
 import { Audio } from '@remotion/media';
 import { AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from '../lib/fonts';
-import { clamp, IN_OUT, mix, OUT, prog } from '../lib/motion';
+import { clamp, IN, IN_OUT, mix, OUT, prog } from '../lib/motion';
 import { BigCount } from './Counter';
-import { BUTTER, HUMAN_FIGS, HUMANS, INK, ROBOT, STAGE, TOTAL_VISITS } from './data';
-import { Hall, HallTimes, robotsSoFar } from './Hall';
+import { BUTTER, FIGS, HUMAN_FIGS, HUMANS, INK, ROBOT, STAGE, TOTAL_VISITS } from './data';
+import { END_HUMANS, Hall, HallTimes, robotsSoFar } from './Hall';
 import { LEN, SFX, T, VO } from './timeline';
 
 export const FPS = 30;
@@ -20,7 +20,16 @@ const ROBOT_TXT = '#A9ACB4';
 const PAPER = '#F4F2EC';
 const DARK = '#0E0F12';
 
-const H: HallTimes = { fillA: T.hall, fillB: T.settle - 0.05, sweepA: T.sweep, sweepB: T.sweepEnd, glow: T.glow, meAt: T.me };
+const H: HallTimes = { fillA: T.hall, fillB: T.settle - 0.05, sweepA: T.sweep, sweepB: T.sweepEnd, glow: T.glow, meAt: T.me, bandIn: T.top };
+
+/** 홀 그림 좌표 → 화면 좌표(홀을 scale · origin으로 당겨 잡았을 때). */
+const HALL_OY = 0.57 * 1920;
+const toScreen = (x: number, y: number, sc: number) => ({ x: 540 + (x - 540) * sc, y: HALL_OY + (y - HALL_OY) * sc });
+/** 「사람?」 · 「로봇?」 이름표를 붙일 홀 안의 두 그림(r8 · 최종 확인 11-18 「이름표가 아주 작다」). */
+const TAG_FIGS = [
+  { k: '사람?', at: 4.6, f: FIGS.find((g) => g.r === 10 && g.c === 8)!, c: DARK, bg: INK, bd: INK },
+  { k: '로봇?', at: 5.8, f: FIGS.find((g) => g.r === 13 && g.c === 23)!, c: DARK, bg: ROBOT_TXT, bd: ROBOT_TXT },
+];
 
 const inWin = (t: number, a: number, b: number) => t >= a && t < b;
 /** 장면에 들어올 때 1.035배에서 당겨 앉음. */
@@ -108,13 +117,15 @@ const HallScene: React.FC<{ t: number }> = ({ t }) => {
   let scale = 1;
   let origin = '50% 57%';
   if (t < T.settle) scale = mix(1.06, 1, prog(t * FPS, F(T.hall), F(T.settle - T.hall)));
-  else if (t < T.sweep) scale = mix(1, 1.04, interpolate(t, [T.settle, T.sweep], [0, 1], clamp));
-  else if (t < T.push) scale = mix(1.04, 1, prog(t * FPS, F(T.sweep), 8));
+  // 6.8초 박자는 띠가 홀 맨 위로 떨어져 서는 것이 맡는다(r8 — 글 바뀜은 말에 맞춰 5.55초로 당김). 카메라는 끊지 않고 천천히 다가간다.
+  else if (t < T.sweep) scale = mix(1, 1.06, interpolate(t, [T.settle, T.sweep], [0, 1], clamp));
+  // 띠가 다 내려간 뒤(10.5초~)에도 카메라가 천천히 다가가 홀이 멈춰 보이지 않게(r8 최종본 검사 「구간굳음」).
+  else if (t < T.push) scale = mix(1.06, 1, prog(t * FPS, F(T.sweep), 8)) + 0.03 * interpolate(t, [T.sweepEnd, T.push], [0, 1], clamp);
   else {
     origin = '52% 66%';
     scale =
       t < T.me
-        ? mix(1, 1.14, prog(t * FPS, F(T.push), 8)) + 0.04 * interpolate(t, [T.push, T.me], [0, 1], clamp)
+        ? mix(1.03, 1.14, prog(t * FPS, F(T.push), 8)) + 0.04 * interpolate(t, [T.push, T.me], [0, 1], clamp)
         : mix(1.18, 1.52, prog(t * FPS, F(T.me), 10)) + 0.04 * interpolate(t, [T.me, T.laptop], [0, 1], clamp);
   }
   const robots = robotsSoFar(t, H);
@@ -127,23 +138,43 @@ const HallScene: React.FC<{ t: number }> = ({ t }) => {
       </AbsoluteFill>
       <TopShade h={t >= T.me ? 760 : 680} />
       {t >= T.settle + 0.1 && t < T.sweep && <Spot t={t} />}
-      {inWin(t, T.settle, T.top) && <Head t={t} size={96} top={296} lines={[{ at: T.settle, node: '처음으로' }, { at: T.settle, node: '제대로 재 봤다' }]} />}
-      {inWin(t, T.settle, T.top) && (
-        <div style={{ position: 'absolute', left: 74, top: 540, display: 'flex', gap: 22, fontFamily: KO, fontWeight: 800, fontSize: 52 }}>
-          {[
-            { k: '사람?', at: 4.6, c: INK, bg: 'rgba(244,242,236,0.12)' },
-            { k: '로봇?', at: 5.8, c: ROBOT_TXT, bg: 'rgba(169,172,180,0.14)' },
-          ].map((x) => {
-            const p = appear(t, x.at, 0.2);
-            return (
-              <div key={x.k} style={{ opacity: p, transform: `scale(${0.8 + 0.2 * p})`, color: x.c, background: x.bg, borderRadius: 40, padding: '10px 30px' }}>
+      {inWin(t, T.settle, T.askWho) && <Head t={t} size={96} top={312} lines={[{ at: T.settle, node: '처음으로' }, { at: T.settle, node: '제대로 재 봤다' }]} />}
+      {inWin(t, T.settle, T.sweep + 0.25) &&
+        TAG_FIGS.map((x) => {
+          const p = appear(t, x.at, 0.2);
+          const gone = interpolate(t, [T.sweep, T.sweep + 0.22], [0, 1], clamp);
+          const head = toScreen(x.f.x, x.f.y - 22 * x.f.s, scale);
+          const pillBottom = head.y - 64;
+          return (
+            <React.Fragment key={x.k}>
+              <div style={{ position: 'absolute', left: head.x - 2, top: pillBottom, width: 4, height: 54 * p, background: x.bd, opacity: (1 - gone) * 0.8, borderRadius: 2 }} />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: head.x,
+                  top: pillBottom,
+                  transform: `translate(-50%, -100%) scale(${0.7 + 0.3 * p})`,
+                  transformOrigin: '50% 100%',
+                  opacity: p * (1 - gone),
+                  fontFamily: KO,
+                  fontWeight: 900,
+                  fontSize: 68,
+                  letterSpacing: -1.6,
+                  color: x.c,
+                  background: x.bg,
+                  border: `4px solid ${x.bd}`,
+                  borderRadius: 48,
+                  padding: '6px 34px 10px',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.55)',
+                }}
+              >
                 {x.k}
               </div>
-            );
-          })}
-        </div>
-      )}
-      {inWin(t, T.top, T.sweep) && <Head t={t} size={96} top={296} lines={[{ at: T.top, node: '사람인지,' }, { at: T.top, node: '로봇인지' }]} />}
+            </React.Fragment>
+          );
+        })}
+      {inWin(t, T.askWho, T.sweep) && <Head t={t} size={96} top={312} lines={[{ at: T.askWho, node: '사람인지,' }, { at: T.askWho, node: '로봇인지' }]} />}
       {inWin(t, T.sweep, T.glow) && (
         <>
           <BigCount label="로봇" value={robots} color={ROBOT_TXT} size={176} />
@@ -154,8 +185,10 @@ const HallScene: React.FC<{ t: number }> = ({ t }) => {
             </div>
           )}
           {t >= T.botNote && (
-            <div style={{ position: 'absolute', left: 74, top: 596, opacity: appear(t, T.botNote, 0.12), fontFamily: KO, fontWeight: 800, fontSize: 44, letterSpacing: -1, color: DARK, background: INK, borderRadius: 14, padding: '10px 24px' }}>
-              로봇 = 사람 없이 자동으로 들어온 프로그램
+            <div style={{ position: 'absolute', left: 74, top: 588, opacity: appear(t, T.botNote, 0.12), fontFamily: KO, fontWeight: 800, fontSize: 60, lineHeight: 1.16, letterSpacing: -1.4, color: DARK, background: INK, borderRadius: 18, padding: '14px 32px 16px' }}>
+              로봇 = 사람 없이
+              <br />
+              자동으로 들어온 프로그램
             </div>
           )}
         </>
@@ -210,8 +243,11 @@ const LaptopScene: React.FC<{ t: number }> = ({ t }) => {
       </div>
       <div style={{ position: 'absolute', left: 560, top: 1020, width: 446, height: 660, borderRadius: 28, border: `3px dashed ${t >= T.apart ? BUTTER : '#3A3D46'}`, background: '#121317' }}>
         <div style={{ position: 'absolute', left: 26, top: 22, fontFamily: KO, fontWeight: 800, fontSize: 44, color: INK }}>미리 보기 방문</div>
-        <div style={{ position: 'absolute', left: 26, top: 90, fontFamily: KO, fontWeight: 800, fontSize: 40, color: BUTTER, opacity: appear(t, T.apart) }}>1,039에는 안 섞임</div>
-        <div style={{ position: 'absolute', left: 26, top: 200, width: 394, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div style={{ position: 'absolute', left: 26, top: 84, fontFamily: KO, fontWeight: 900, fontSize: 54, lineHeight: 1.12, letterSpacing: -1.4, color: BUTTER, opacity: appear(t, T.stream) }}>
+          1,039에는
+          <br />안 섞임
+        </div>
+        <div style={{ position: 'absolute', left: 26, top: 240, width: 394, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {Array.from({ length: pileN }, (_, k) => (
             <div key={k} style={{ width: 24, height: 24, borderRadius: 6, background: '#3E414A' }} />
           ))}
@@ -221,30 +257,77 @@ const LaptopScene: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-/** 19.5~23.9초 — 사이트를 만든 AI한테 고치게 한 세 가지 = 숫자에서 뺄 셋. 21.6초에 셋이 한꺼번에 빠진다. */
+/** 19.5~23.9초 — 사이트를 만든 AI한테 고치게 한 세 가지 = 방문 통계에서 뺄 셋(로봇 · 아마 나 · 미리 보기).
+ *  r8(최종 확인 11-18 미흡): 머리 글을 셋 모두에 맞는 「방문 통계에서 빼기」로 바꾸고(미리 보기는 1,039 밖이지만 같은 측정 통계에 따로 쌓였다),
+ *  칸마다 무엇을 고쳤는지 도장(걸러 내기 · 안 세기 · 측정 끄기)을 말에 맞춰 하나씩 찍은 뒤 밀어낸다. 마지막 칸이 23.4초에 빠진다. */
 const ASK3 = [
-  { k: '로봇', n: '1,022번', icon: 'robot' },
-  { k: '아마 나', n: '10번쯤', icon: 'me' },
-  { k: '미리 보기', n: '따로 쌓인 것', icon: 'laptop' },
+  { k: '로봇', n: '1,022번', fix: '걸러 내기', icon: 'robot', at: T.fix1 },
+  { k: '아마 나', n: '10번쯤', fix: '안 세기', icon: 'me', at: T.fix2 },
+  { k: '미리 보기', n: '따로 쌓인 화면', fix: '측정 끄기', icon: 'laptop', at: T.fix3 },
 ] as const;
 
 const AskScene: React.FC<{ t: number }> = ({ t }) => {
   const s = enter(t, T.ask);
-  const out = appear(t, T.strike, 0.2);
+  const sub = appear(t, T.fix1 - 0.4, 0.25);
   return (
     <AbsoluteFill style={{ transform: `scale(${s})` }}>
       <Head t={t} size={92} lines={[{ at: T.ask, node: '사이트를 만든 AI한테' }, { at: T.ask, node: '고치게 한 세 가지' }]} />
-      <div style={{ position: 'absolute', left: 74, top: 540, fontFamily: KO, fontWeight: 800, fontSize: 52, color: BUTTER, opacity: out }}>사람 숫자에서 빼기</div>
-      {ASK3.map((r, i) => (
-        <div key={r.k} style={{ position: 'absolute', left: 74 - 60 * appear(t, 22.5 + 0.45 * i, 0.3), top: 636 + i * 276, width: 932, height: 244, borderRadius: 32, background: '#17181D', border: '2px solid #2A2C33', opacity: 1 - 0.45 * out - 0.25 * appear(t, 22.5 + 0.45 * i, 0.3), transform: `rotate(${-1.5 * appear(t, 22.5 + 0.45 * i, 0.3)}deg)` }}>
-          <div style={{ position: 'absolute', left: 40, top: 50 + 5 * Math.sin(t * 3 + i), width: 150, height: 150, borderRadius: 75, background: '#22242B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {r.icon === 'robot' ? <RobotIcon size={66} color={INK} /> : r.icon === 'me' ? <PersonIcon size={74} color={INK} dashed /> : <LaptopIcon w={96} color={INK} />}
+      <div style={{ position: 'absolute', left: 74, top: 532, fontFamily: KO, fontWeight: 800, fontSize: 58, letterSpacing: -1.4, color: BUTTER, opacity: sub, transform: `translateY(${(1 - sub) * 18}px)` }}>방문 통계에서 빼기</div>
+      {ASK3.map((r, i) => {
+        const inP = appear(t, T.ask + 0.1 + 0.22 * i, 0.3);
+        const st = appear(t, r.at, 0.2);
+        const go = interpolate(t, [r.at + 0.42, r.at + 0.72], [0, 1], { ...clamp, easing: IN });
+        return (
+          <div
+            key={r.k}
+            style={{
+              position: 'absolute',
+              left: 74 + (1 - inP) * 140 - go * 1180,
+              // 셋째 칸 글이 아래 앱 글자 자리(1428px) 위에 오게(r8 올리기 전 검사).
+              top: 628 + i * 262,
+              width: 932,
+              height: 240,
+              borderRadius: 34,
+              background: '#17181D',
+              border: '2px solid #2A2C33',
+              opacity: inP * (1 - 0.6 * go),
+              transform: `rotate(${-2 * go}deg)`,
+            }}
+          >
+            <div style={{ position: 'absolute', left: 36, top: 40 + 5 * Math.sin(t * 3 + i), width: 160, height: 160, borderRadius: 80, background: '#22242B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {r.icon === 'robot' ? <RobotIcon size={72} color={INK} /> : r.icon === 'me' ? <PersonIcon size={80} color={INK} dashed /> : <LaptopIcon w={104} color={INK} />}
+            </div>
+            <div style={{ position: 'absolute', left: 232, top: 30, fontFamily: KO, fontWeight: 900, fontSize: 82, letterSpacing: -2, color: INK, whiteSpace: 'nowrap' }}>{r.k}</div>
+            <div style={{ position: 'absolute', left: 232, top: 140, fontFamily: KO, fontWeight: 700, fontSize: 52, letterSpacing: -1, color: '#B9BBC2', whiteSpace: 'nowrap' }}>
+              <span style={{ position: 'relative' }}>
+                {r.n}
+                <span style={{ position: 'absolute', left: -6, top: '52%', height: 8, width: `calc(${st} * (100% + 12px))`, background: BUTTER, borderRadius: 4, opacity: st > 0 ? 1 : 0 }} />
+              </span>
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                right: 30,
+                top: 30,
+                opacity: st,
+                transform: `rotate(-4deg) scale(${1.45 - 0.45 * st})`,
+                transformOrigin: '100% 0%',
+                fontFamily: KO,
+                fontWeight: 900,
+                fontSize: 50,
+                letterSpacing: -1.2,
+                color: BUTTER,
+                border: `5px solid ${BUTTER}`,
+                borderRadius: 16,
+                padding: '4px 22px 8px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {r.fix}
+            </div>
           </div>
-          <div style={{ position: 'absolute', left: 230, top: 44, fontFamily: KO, fontWeight: 900, fontSize: 80, letterSpacing: -2, color: INK }}>{r.k}</div>
-          <div style={{ position: 'absolute', left: 230, top: 150, fontFamily: KO, fontWeight: 700, fontSize: 48, color: '#B9BBC2' }}>{r.n}</div>
-          <div style={{ position: 'absolute', left: 210, top: 122, height: 8, width: 680 * out, background: BUTTER, borderRadius: 4 }} />
-        </div>
-      ))}
+        );
+      })}
     </AbsoluteFill>
   );
 };
@@ -324,16 +407,21 @@ const LineScene: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-/** 33.3초~ — 끝: 가장 센 장면(띠가 훑는 홀)을 「여러분 홈페이지」로. 띠는 훑다가 끝난다 — 답은 보는 사람 몫. */
+/** 33.3초~ — 끝: 가장 센 장면(띠가 훑는 홀)을 「여러분 홈페이지」로.
+ *  r8(최종 확인 11-18 「끝 3초가 약함」): 띠가 33.35초에 7.9초 훑기와 같은 빠르기(2.6초)로 출발해 홀을 끝까지 훑고,
+ *  35.95초에 남은 일곱 자리만 노랗게 「?」로 빛나며 멈춘다(쿵) — 답은 보는 사람 몫이라 숫자는 세지 않는다. */
 const EndScene: React.FC<{ t: number }> = ({ t }) => {
   const push = interpolate(t, [T.end, LEN], [0, 1], { ...clamp, easing: IN_OUT });
-  const h: HallTimes = { fillA: T.end - 0.3, fillB: T.end, sweepA: T.endSweep, sweepB: T.endSweep + 6.2 };
+  const h: HallTimes = { fillA: T.end - 0.3, fillB: T.end, sweepA: T.endSweep, sweepB: T.endSweepEnd, glow: T.endGlow, qAt: T.endGlow + 0.04 };
+  const hit = t >= T.endGlow ? Math.max(0, 1 - (t - T.endGlow) / 0.3) : 0;
   return (
     <AbsoluteFill>
-      <AbsoluteFill style={{ transform: `scale(${1.02 + 0.08 * push})`, transformOrigin: '50% 60%' }}>
-        <Hall t={t} h={h} />
+      <AbsoluteFill style={{ transform: `scale(${1.02 + 0.08 * push + 0.015 * hit})`, transformOrigin: '50% 60%' }}>
+        <Hall t={t} h={h} humans={END_HUMANS} />
       </AbsoluteFill>
-      <Spot t={t} />
+      <div style={{ position: 'absolute', inset: 0, opacity: 1 - interpolate(t, [T.endSweep, T.endSweep + 0.3], [0, 1], clamp) }}>
+        <Spot t={t} />
+      </div>
       <TopShade h={680} />
       <Head
         t={t}
