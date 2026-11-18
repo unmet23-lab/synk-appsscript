@@ -47,6 +47,17 @@
         "화면필요": []
       },
       {
+        "계정": "yuhobuilds-threads",
+        "채널": "스레드 @yuhobuilds",
+        "주소": "https://www.threads.com/@yuhobuilds/post/DfzTsA5EXiJ",
+        "형식": "threads-post",
+        "게시": "2026-11-16T12:01:36.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "yuhobuilds-youtube",
         "채널": "유튜브 @yuhobuilds",
         "주소": "https://www.youtube.com/watch?v=SL54CN7HBQI",
