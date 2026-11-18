@@ -207,18 +207,22 @@ const BRAND_SIDE=new Set(['reuse_renewed','reuse_withdrawn','paused','unpaused',
 // 모두 원 의뢰 쪽이고 시스템 쓰기는 updatedAt을 옮기지 않는다). 브랜드 인물과 시계가 지운 인물은 updatedAt을 쓰지 않는다 — 귀속 뒤 동의 연장 · 지우기가 옮긴다
 // (GPT 서버 다시 검수 -d GA2). 대신 원 의뢰 쪽 흔적의 마지막을 모은다: 만든 때, 이력에서 사람이 한 원 의뢰 쪽 항목(브랜드 쪽 동작과, 어느 방에서 했는지
 // 이력만으로는 모르는 사용 확인은 뺀다 — -d GA1), store가 있으면 잘리지 않는 기록(원 프로젝트에서 남긴 손님 확인, 원 프로젝트로 받은 인물 사진, 판을 연 때 ·
-// 판 파일 · 만드는 방식 · 보낸 때). 이력이 잘린 문서와 아무 흔적도 없는 망가진 문서는 updatedAt(안전한 상한)으로 둔다.
+// 판 파일 · 만드는 방식 · 보낸 때). 이력이 200건 상한으로 잘렸으면(첫 항목이 만들기가 아니면) 잘려 나간 앞부분의 일은 남은 첫 항목보다 앞이므로 그 때를
+// 상한으로 함께 넣는다(-e GA1 · -f GA2 — updatedAt보다 좁고, 일찍 지우지 않는다). 시계(origin_stopped)가 지운 브랜드 없는 인물은 지운다고 판정한 때까지
+// 90일 동안 사람 손이 닿지 않았으므로(그 시계의 마지막 움직임에 인물 updatedAt이 든다) 「판정 때 - 90일」이 사람 손 움직임의 상한이다(-f GA1).
+// 이력이 없는 망가진 문서만 updatedAt으로 둔다.
 export function legacyOriginActivity(persona,store=null){
   const own=Date.parse(persona?.updatedAt);
   if(typeof persona?.originActivityAt==='string'){const kept=Date.parse(persona.originActivityAt);return Number.isFinite(kept)&&Number.isFinite(own)?Math.max(kept,own):NaN;}
   const systemGone=(persona?.deletedAt||['deleting','deleted'].includes(persona?.status))&&persona?.deletion?.confirmedBy==='system';
   if(!persona?.workspaceId&&!systemGone)return own;
-  // 이력이 잘렸으면(첫 항목이 만들기가 아니면) 빠진 원 의뢰 쪽 일을 알 수 없다 — 안전한 상한(updatedAt)으로 둔다(GPT 서버 다시 검수 -e GA1). 늦게 잡는 쪽이다.
-  if(!Array.isArray(persona.history)||persona.history[0]?.action!=='created')return own;
+  const history=Array.isArray(persona.history)?persona.history:[];
+  if(!history.length)return own;
   let best=null;
   const see=value=>{const at=Date.parse(value);if(Number.isFinite(at)&&(best===null||at>best))best=at;};
   see(persona.createdAt);
-  for(const entry of persona.history){
+  if(history[0]?.action!=='created')see(history[0]?.at);
+  for(const entry of history){
     if(!entry||entry.actorKind==='system'||/:usage$/.test(String(entry.action||''))||(persona.workspaceId&&BRAND_SIDE.has(entry.action)))continue;
     see(entry.at);
   }
@@ -231,7 +235,10 @@ export function legacyOriginActivity(persona,store=null){
       for(const asset of Array.isArray(revision.assets)?revision.assets:[])see(asset?.at);
     }
   }
-  return best??own;
+  if(best===null)return own;
+  const decided=Date.parse(persona.deletion?.confirmedAt);
+  if(systemGone&&!persona.workspaceId&&persona.deletion?.reason==='origin_stopped'&&Number.isFinite(decided))return Math.min(best,decided-STOPPED_DAYS*DAY_MS);
+  return best;
 }
 export const originActivityAligned=persona=>typeof persona?.originActivityAt==='string'&&persona.originActivityRev===persona.revision;
 // 의뢰 기록 시계가 읽는 값. NaN이면 날짜를 못 읽음(지우지 않고 센다).

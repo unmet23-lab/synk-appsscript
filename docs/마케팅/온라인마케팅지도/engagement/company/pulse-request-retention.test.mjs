@@ -76,14 +76,20 @@ test('시계 계산: 의뢰서(동의)가 있고 제작 신호가 없을 때만 
     pulsePersonaRevisions:[{personaId:'m',createdAt:isoOf(t0+33*DAY),method:{at:isoOf(t0+35*DAY)},assets:[{at:isoOf(t0+52*DAY)}]},{personaId:'other',createdAt:isoOf(t0+170*DAY),assets:[]}]};
   const recordStore={all:kind=>records[kind]||[]};
   assert.equal(legacyOriginActivity(brandOnly,recordStore),t0+52*DAY,'원 프로젝트의 확인 · 사진 · 판만 — 다른 의뢰의 사용 확인(60일) · 사진(140일) · 브랜드 동의(150일)는 빼고');
-  // 이력이 잘렸으면(첫 항목이 만들기가 아님) 빠진 원 의뢰 쪽 일(예: 70일 메모)을 알 수 없어 안전한 상한 updatedAt으로 둔다(-e GA1). 남기는 쪽이다.
+  // 이력이 잘렸으면(첫 항목이 만들기가 아님) 잘려 나간 앞부분의 일은 남은 첫 항목보다 앞이다 — 그 때를 상한으로 넣는다(-e GA1). 남은 첫 항목이 160일의 동의 연장이면 160일.
   const cut={...brandOld,history:[{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]};
   assert.equal(legacyOriginActivity(cut),t0+160*DAY);assert.equal(legacyOriginActivity(cut,recordStore),t0+160*DAY);
   // 옛 묘비(시계가 지움): 만든 때와 사람 손 항목, 이력이 없거나 잘렸으면 updatedAt.
   const tombOld={id:'n',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),revision:9,deletion:{confirmedBy:'system'},
     history:[{at:isoOf(t0+2*DAY),action:'created',actorKind:'customer'},{at:isoOf(t0+80*DAY),actorKind:'staff',action:'note'},{at:isoOf(t0+95*DAY),actorKind:'system',action:'retention_deleting'},{at:isoOf(t0+100*DAY),actorKind:'system',action:'deleted'}]};
   assert.equal(legacyOriginActivity(tombOld),t0+80*DAY);assert.equal(legacyOriginActivity({...tombOld,history:[{at:isoOf(t0+10*DAY),action:'created',actorKind:'customer'}]}),t0+10*DAY);
-  assert.equal(legacyOriginActivity({...tombOld,history:[]}),t0+100*DAY);assert.equal(legacyOriginActivity({...tombOld,history:tombOld.history.slice(1)}),t0+100*DAY);
+  assert.equal(legacyOriginActivity({...tombOld,history:[]}),t0+100*DAY,'이력이 없는 망가진 문서만 updatedAt');assert.equal(legacyOriginActivity({...tombOld,history:tombOld.history.slice(1)}),t0+80*DAY);
+  // 0일 귀속 기록이 남은 채 앞이 잘리고 89일에 동의를 연장했어도 원 의뢰 쪽은 0일이다 — updatedAt(89일)으로 늦추지 않는다(-f GA2).
+  assert.equal(legacyOriginActivity({...brandOld,createdAt:isoOf(t0),updatedAt:isoOf(t0+89*DAY),history:[{at:isoOf(t0),action:'reuse_approved',actorKind:'member'},{at:isoOf(t0+89*DAY),action:'reuse_renewed',actorKind:'member'}]}),t0);
+  // 시계(origin_stopped)가 91일에 지운 브랜드 없는 인물의 이력이 잘려 76일 예고부터 남았으면, 판정 때 - 90일(1일)이 사람 손 움직임의 상한이다(-f GA1).
+  const stoppedTomb={...tombOld,updatedAt:isoOf(t0+91*DAY),deletion:{confirmedBy:'system',reason:'origin_stopped',confirmedAt:isoOf(t0+91*DAY)},history:[
+    {at:isoOf(t0+76*DAY),action:'retention_notice',actorKind:'system'},{at:isoOf(t0+91*DAY),action:'retention_deleting',actorKind:'system'},{at:isoOf(t0+91*DAY),action:'deleted',actorKind:'system'}]};
+  assert.equal(legacyOriginActivity(stoppedTomb),t0+DAY);
   // 쓸기 회차의 다시 채우기: 칸이 없거나 어긋난 인물만, revision · updatedAt · 이력은 그대로. 채운 뒤에는 그 칸을 읽는다.
   {
     const docs=new Map([[brandOld.id,brandOld],[tombOld.id,tombOld],['ok',{id:'ok',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0),...on(t0+5*DAY)}],['bad',{id:'bad',originProjectId:'p1',revision:1,updatedAt:'?'}]]);
