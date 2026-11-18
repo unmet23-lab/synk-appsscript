@@ -31,6 +31,13 @@ test('수신이 끊겨도 장부를 그리고, 잘못된 회차 뒤의 정상 �
   assert.equal(offline.pc, 'rendered');
   assert.equal(offline.artifactSource, 'rendered-pc-map');
   assert.equal(offline.artifact.status, 'current');
+  for (const error of [new Error(), undefined]) {
+    const emptyError = await 지도동기화(folder, config, { 수신: () => Promise.reject(error), 웹갱신 });
+    assert.equal(emptyError.pc, 'rendered');
+    assert.equal(emptyError.artifact.status, 'current');
+    assert.equal(emptyError.grokError, '그록 회차를 읽지 못했습니다.');
+    assert.equal(emptyError.exitCode, 1);
+  }
 
   const report = { schema: 'synk-grok-contests-v1', reportId: 'good', reports: ['fixture.md'], items: [] };
   const feed = { receipts: 3, reports: [{ reportId: 'bad' }, report], failures: ['download'] };
@@ -58,6 +65,8 @@ test('수신이 끊겨도 장부를 그리고, 잘못된 회차 뒤의 정상 �
   const prior = await 지도동기화(folder, config, { 수신: () => feed, 웹갱신 });
   assert.equal(prior.pc, 'error');
   assert.equal(prior.artifactSource, 'previous-pc-map');
+  assert.equal(prior.artifact.status, 'current');
+  assert.equal(prior.exitCode, 1);
   assert.deepEqual(fs.readFileSync(map), saved);
   fs.unlinkSync(map);
   const missing = await 지도동기화(folder, config, { 수신: () => feed, 웹갱신 });

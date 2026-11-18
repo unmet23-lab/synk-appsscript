@@ -13,6 +13,11 @@ function 읽기(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
 }
 
+function 오류문구(error, 기본문구) {
+  const message = typeof error === 'string' ? error : error?.message;
+  return typeof message === 'string' && message.trim() ? message : 기본문구;
+}
+
 function 브라우저수신(config, importedIds) {
   if (!/^https:\/\/grok\.com\/bot\/[0-9a-f-]{36}$/i.test(config?.botUrl) ||
       typeof config.detailsName !== 'string' || typeof config.pageTitle !== 'string' || !path.isAbsolute(config.downloadLock || '') ||
@@ -68,32 +73,32 @@ async function 지도동기화(folder, config, { 수신 = 브라우저수신, �
       } catch (error) {
         const reportId = report?.reportId || '회차 미상';
         summary.failedReports.push(reportId);
-        (summary.importErrors ??= []).push({ reportId, message: error.message });
+        (summary.importErrors ??= []).push({ reportId, message: 오류문구(error, '보고서를 저장하지 못했습니다.') });
       }
     }
   } catch (error) {
-    summary.grokError = error.message;
+    summary.grokError = 오류문구(error, '그록 회차를 읽지 못했습니다.');
   }
   try {
     PC지도생성(folder, map);
     summary.pc = 'rendered';
   } catch (error) {
     summary.pc = 'error';
-    summary.pcError = error.message;
+    summary.pcError = 오류문구(error, 'PC 공모 지도를 만들지 못했습니다.');
   }
   if (config.artifact_sync) {
     if (fs.existsSync(map)) {
-      summary.artifactSource = summary.pcError ? 'previous-pc-map' : 'rendered-pc-map';
+      summary.artifactSource = summary.pc === 'error' ? 'previous-pc-map' : 'rendered-pc-map';
       try {
         summary.artifact = await 웹갱신(config, map);
       } catch (error) {
-        summary.artifact = { status: 'error', message: error.message };
+        summary.artifact = { status: 'error', message: 오류문구(error, '웹 지도를 확인하지 못했습니다.') };
       }
     } else {
       summary.artifact = { status: 'skipped', message: '게시할 PC 공모 지도가 없습니다.' };
     }
   }
-  const failed = summary.grokError || summary.pcError || summary.failedReports.length ||
+  const failed = Object.hasOwn(summary, 'grokError') || summary.pc === 'error' || summary.failedReports.length ||
     ['skipped', 'error'].includes(summary.artifact?.status);
   summary.exitCode = failed ? 1 : summary.artifact?.status === 'deferred' ? 2 : 0;
   return summary;

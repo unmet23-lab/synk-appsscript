@@ -773,6 +773,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 그 시험이 부르는 `packages/atlas`는 자기 `package.json`에 `ts-fsrs`를 두는데(11-10부터), 새로 뜬 워크트리에는 그 폴더의 `node_modules`가 없다. 바뀐 경로와는 무관하다.
 - 고침: 그 워크트리에서 `npm ci --prefix packages/atlas --no-audit --no-fund`(잠금 파일 그대로, `node_modules`는 Git 밖) 뒤 다시 올린다. 깔 수 없으면 두 시험만 깨진 것을 확인하고 `--시험건너뜀 "<까닭>"`.
 - 다시 확인: 깐 뒤 두 시험 91/91, 다시 올린 `--실행`이 관련 시험을 건너뛰지 않고 통과.
+- 11-19에는 공모 지도 작업본에 루트 의존성 `parse5`가 빠져 공개 도구의 CSP 시험이 시작하자마자 실패했다. 작업본 루트에서 `npm ci`를 실행한 뒤 `node --test tests/공개-importmap-csp.test.cjs` 10건이 모두 통과했다.
 
 ### 맞는 키인데 `git fetch` · `바로올리기`가 「Permission denied (publickey)」를 번갈아 낸다 — GitHub 쪽 성능 저하일 때가 있다 (2026-11-04 Claude)
 - 증상: 11-04 19시대에 `git fetch` · `ls-remote` · `바로올리기 따라가기`가 `git@github.com: Permission denied (publickey).`로 끝났다. 같은 키로 `ssh -T git@github.com`이 몇 초 간격으로 「Hi unmet23-lab!」와 실패를 번갈아 냈고, `ssh -v`에는 `Offering public key` 뒤 `Authentications that can continue`만 남았다. 바로 앞 시각까지 같은 명령이 됐다.
