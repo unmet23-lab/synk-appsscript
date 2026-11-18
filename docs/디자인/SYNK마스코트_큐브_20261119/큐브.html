@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SYNK 큐브 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+
+/* 짜임: 검정 무대가 아래로 다섯 번 이어진다. 한 무대에 큐브 하나이고, 글은 큐브 옆에만 놓는다. 색과 글자는 검정 구 시안과 같다. */
+:root{
+  color-scheme:dark;
+  --void:#000000;                    /* 바탕 */
+  --paper:#F3F1EC;                   /* 글. 큐브에 닿는 빛과 같은 온도의 흰색 */
+  --soft:rgba(243,241,236,.78);      /* 설명 글 */
+  --dim:rgba(243,241,236,.5);        /* 둘째 줄, 꼬리표 */
+  --hair:rgba(243,241,236,.10);      /* 1px 선 */
+  --ring:rgba(243,241,236,.55);      /* 자판 초점 */
+  --bar:rgba(0,0,0,.84);             /* 표정 막대의 바닥 */
+  --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --display:300 clamp(28px,4.4vw,54px)/1.25 var(--sans);
+  --title:300 clamp(24px,2.7vw,36px)/1.25 var(--sans);
+  --body:400 16px/1.6 var(--sans);
+  --small:400 13px/1.3 var(--sans);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--void)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:clamp(28px,7vh,80px) 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.head{display:flex;flex-direction:column;gap:18px;padding-bottom:clamp(22px,4vh,40px)}
+.tag{margin:0;font:var(--small);letter-spacing:.2em;color:var(--dim)}
+h1{margin:0;font:var(--display);letter-spacing:-.018em;text-wrap:balance}
+h1 span{display:block;color:var(--dim)}
+.lead{margin:0;font:var(--body);color:var(--soft);max-width:34em}
+
+/* 표정 막대. 스크롤해도 위에 붙어 있어 어느 큐브에서든 바꿔 본다 */
+.moods{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px;padding-block:13px;background:var(--bar);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
+.moods span{font:var(--small);color:var(--dim);margin-right:4px}
+.mood{appearance:none;background:none;border:0;border-bottom:1px solid transparent;border-radius:0;margin:0;padding:6px 0 5px;font:400 14px/1.3 var(--sans);color:var(--dim);cursor:pointer;transition:color .25s ease,border-color .25s ease}
+.mood:hover{color:var(--paper)}
+.mood[aria-pressed="true"]{color:var(--paper);border-bottom-color:var(--paper)}
+.mood:focus-visible,.stage:focus-visible{outline:1px solid var(--ring);outline-offset:5px}
+
+.cand{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(20px,5vw,72px);align-items:center;padding-block:clamp(20px,4vh,44px);border-bottom:1px solid var(--hair)}
+.stage{appearance:none;display:block;width:100%;max-width:560px;aspect-ratio:1/1;justify-self:center;margin:0;padding:0;border:0;border-radius:0;background:var(--void);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stage canvas{display:block;width:100%;height:100%}
+.info{min-width:0;display:flex;flex-direction:column;gap:14px}
+.key{margin:0;font:var(--small);letter-spacing:.2em;color:var(--dim)}
+h2{margin:0;font:var(--title);letter-spacing:-.012em}
+.say{margin:0;font:var(--body);color:var(--soft);max-width:27em}
+.sizes{display:flex;align-items:flex-end;gap:26px;margin:16px 0 0;padding:0}
+.sizes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px}
+.sizes canvas{display:block}
+.sizes figcaption{font:var(--small);font-variant-numeric:tabular-nums;color:var(--dim)}
+.nogl{display:none;margin:18px 0 0;font:var(--small);color:var(--soft)}
+html[data-nogl] .nogl{display:block}
+.foot{margin:28px 0 0;font:var(--small);color:var(--dim)}
+
+@media (max-width:760px){
+  .cand{grid-template-columns:1fr;gap:6px;padding-block:18px 34px}
+  .stage{max-width:440px}
+}
+@media (prefers-reduced-motion:reduce){.mood{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <p class="tag">SYNK 마스코트 시안</p>
+    <h1>미래에서 온 큐브,<span>다섯 가지 모습.</span></h1>
+    <p class="lead">지금의 검정 구와 같은 바탕, 같은 빛으로 그렸습니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
+  </header>
+
+  <div class="moods" role="group" aria-label="표정 바꾸기">
+    <span>표정</span>
+    <button class="mood" type="button" id="mood-auto" data-mood="auto" aria-pressed="true">평소</button>
+    <button class="mood" type="button" id="mood-smile" data-mood="smile" aria-pressed="false">웃음</button>
+    <button class="mood" type="button" id="mood-think" data-mood="think" aria-pressed="false">생각 중</button>
+    <button class="mood" type="button" id="mood-sleep" data-mood="sleep" aria-pressed="false">잠</button>
+  </div>
+  <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
+
+  <section class="cand" data-v="0">
+    <button class="stage" type="button" aria-label="가, 깎은 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">가</p>
+      <h2>깎은 큐브</h2>
+      <p class="say">지금 구의 형제입니다. 면마다 둥글게 결을 깎아, 빛줄기가 시곗바늘처럼 면 위를 돕니다. 눈은 구와 같은 점 눈입니다.</p>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <section class="cand" data-v="1">
+    <button class="stage" type="button" aria-label="나, 모놀리스. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">나</p>
+      <h2>모놀리스</h2>
+      <p class="say">칼로 자른 듯한 검정 큐브입니다. 모서리에만 빛이 걸리고, 눈은 가는 틈 둘입니다. 생각할 때는 꼭짓점 하나로 서서 돕니다.</p>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <section class="cand" data-v="2">
+    <button class="stage" type="button" aria-label="다, 맞춰지는 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">다</p>
+      <h2>맞춰지는 큐브</h2>
+      <p class="say">판 다섯 장을 쌓은 큐브입니다. 생각하는 동안 판이 따로 돌고, 답이 나오면 딱 맞춰지면서 틈으로 빛이 샙니다. 싱크라는 이름을 몸으로 보여 줍니다.</p>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <section class="cand" data-v="3">
+    <button class="stage" type="button" aria-label="라, 구를 품은 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">라</p>
+      <h2>구를 품은 큐브</h2>
+      <p class="say">유리 큐브 안에 지금의 검정 구가 떠 있습니다. 큐브는 천천히 돌고 구는 늘 이쪽을 봅니다. 구를 버리지 않고 큐브를 더하는 길입니다.</p>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <section class="cand" data-v="4">
+    <button class="stage" type="button" aria-label="마, 4차원 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">마</p>
+      <h2>4차원 큐브</h2>
+      <p class="say">선으로만 그린 4차원 큐브입니다. 안쪽 큐브와 바깥 큐브가 서로 자리를 바꾸며 돕니다. 가장 낯설고, 얼굴보다는 표식에 가깝습니다.</p>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <p class="foot">큐브 옆의 작은 그림은 96, 44, 20픽셀로 줄였을 때의 모습입니다.</p>
+</main>
+
+<script>
+(() => {
+'use strict';
+/* 큐브 다섯을 그린다. 가, 나, 다, 라는 셰이더 하나(WebGL)로, 마는 선(2D 캔버스)으로 그린다.
+   WebGL 문맥은 하나만 만들고, 그린 것을 캔버스마다 옮겨 찍는다. 눈의 모양은 검정 구의 점 눈(desktop/renderer/orb-stage.mjs)을 그대로 옮겼다. */
+
+const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 uRes;
+uniform float uT, uDpr, uScale, uSeed, uThink, uGlow, uScan, uLit, uEyeK;
+uniform int uKind;
+uniform mat3 uInv;
+uniform vec3 uL, uOff, uCore;
+uniform vec4 uEye;
+uniform vec2 uGaze;
+uniform vec4 uSlab;
+const vec3 WARM = vec3(1.0, 0.982, 0.955);
+const float CAM = 6.0;
+const float FOV = 0.36;
+const float RO = 0.56;
+
+float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+float sdBox2(vec2 p, vec2 b, float r){ vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
+float sdRB(vec3 p, vec3 b, float r){ vec3 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r; }
+vec3 ry(vec3 p, float a){ float c = cos(a), s = sin(a); return vec3(c * p.x - s * p.z, p.y, s * p.x + c * p.z); }
+float gw(float x, float e){ float s = sin(x); return s / sqrt(s * s + e * e); }
+
+/* 눈 하나의 모양(안이 −). 표정: 0 평소(세로로 선 알약), 1 웃음, 2 잠, 3 문제, 4 일하는 중(도는 점) */
+float eyeSd(vec2 p, float open, float mood, float t, vec2 cz){
+  if (mood < 0.5) { float h = mix(0.012, cz.y, open); return sdBox2(p, vec2(cz.x, h), min(cz.x, h)); }
+  float sd;
+  if (mood < 1.5) { vec2 c = p - vec2(0.0, -0.060); sd = max(abs(length(c) - 0.100) - 0.014, 0.045 - c.y); }
+  else if (mood < 2.5) { vec2 c = p - vec2(0.0, 0.060); sd = max(abs(length(c) - 0.100) - 0.014, c.y + 0.045); }
+  else if (mood < 3.5) { sd = sdBox2(p, vec2(0.056, 0.013), 0.013); }
+  else { float a = t * 5.2; sd = min(length(p - 0.052 * vec2(cos(a), sin(a))) - 0.026, length(p - 0.052 * vec2(cos(a - 1.25), sin(a - 1.25))) - 0.015); }
+  return max(sd, abs(p.y) - mix(0.003, 0.2, open));
+}
+/* 두 눈. fp는 얼굴 위의 자리(얼굴의 반 폭이 1), ppx는 그 1이 화면에서 몇 CSS 화소인지다. 켜진 정도와 눈 둘레를 어둡게 할 정도를 낸다.
+   slit이 1이면 평소 눈이 가는 틈이고 점으로 쪼개지 않는다 */
+vec2 eyes(vec2 fp, float ppx, float k0, float sepCells, float slit){
+  float small = 1.0 - smoothstep(14.0, 60.0, ppx);
+  float k = k0 * mix(1.0, 1.7, small);
+  float g = 0.040 * k;
+  vec2 gz = uGaze * g;
+  vec2 eL = vec2(-sepCells, 1.5) * g + gz;
+  vec2 eR = vec2(sepCells, 1.5) * g + gz;
+  vec2 cz = mix(vec2(0.050, 0.094), vec2(0.046, 0.064), small);
+  if (slit > 0.5 && uEye.z < 0.5) cz = mix(vec2(0.017, 0.125), vec2(0.030, 0.090), small);
+  float sd = min(eyeSd((fp - eL) / k, uEye.y, uEye.z, uT, cz), eyeSd((fp - eR) / k, uEye.y, uEye.z, uT, cz)) * k;
+  float solid = 1.0 - smoothstep(-0.6, 0.6, sd * ppx);
+  float e = solid;
+  if (slit < 0.5) {
+    vec2 cc = (floor(fp / g) + 0.5) * g;
+    float cs = min(eyeSd((cc - eL) / k, uEye.y, uEye.z, uT, cz), eyeSd((cc - eR) / k, uEye.y, uEye.z, uT, cz)) * k;
+    float tol = uEye.z < 0.5 ? 0.0 : 0.008;
+    float on = 1.0 - smoothstep(tol - 0.003, tol + 0.003, cs);
+    float edpx = length(fp - cc) * ppx;
+    float rd = 0.27 * g * ppx;
+    float led = (1.0 - smoothstep(rd - 0.6, rd + 0.6, edpx)) + 0.20 * exp(-max(edpx - rd, 0.0) / (0.4 * rd + 0.5));
+    e = mix(solid, on * led, smoothstep(3.0, 5.0, g * ppx));
+  } else {
+    e += 0.20 * exp(-max(sd, 0.0) * ppx / 2.5);
+  }
+  float dim = 0.34 * (1.0 - smoothstep(-0.2 * g, 1.0 * g, sd));
+  return vec2(e, dim);
+}
+
+/* 다: 판 다섯 장. 가운데 판은 돌지 않고 위아래 두 장씩이 저마다 돈다 */
+float slabs(vec3 p){
+  float d = sdRB(p, vec3(1.0, 0.36, 1.0), 0.05);
+  d = min(d, sdRB(ry(p - vec3(0.0, 0.54, 0.0), uSlab.x), vec3(1.0, 0.14, 1.0), 0.05));
+  d = min(d, sdRB(ry(p - vec3(0.0, 0.86, 0.0), uSlab.y), vec3(1.0, 0.14, 1.0), 0.05));
+  d = min(d, sdRB(ry(p + vec3(0.0, 0.54, 0.0), uSlab.z), vec3(1.0, 0.14, 1.0), 0.05));
+  d = min(d, sdRB(ry(p + vec3(0.0, 0.86, 0.0), uSlab.w), vec3(1.0, 0.14, 1.0), 0.05));
+  return d;
+}
+vec2 map(vec3 p){
+  if (uKind == 0) return vec2(sdRB(p, vec3(1.0), 0.17), 0.0);
+  if (uKind == 1) return vec2(sdRB(p, vec3(1.0), 0.02), 0.0);
+  float d = slabs(p);
+  float c = max(length(p.xz) - 0.86, abs(p.y) - 0.97);
+  if (c < d) return vec2(c, 1.0);
+  return vec2(d, 0.0);
+}
+vec3 nrm(vec3 p){
+  vec2 e = vec2(0.0012, 0.0);
+  return normalize(vec3(map(p + e.xyy).x - map(p - e.xyy).x, map(p + e.yxy).x - map(p - e.yxy).x, map(p + e.yyx).x - map(p - e.yyx).x));
+}
+
+/* 가, 나, 다: 속이 찬 큐브 */
+vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
+  float t = max(t0, 0.0);
+  float id = 0.0, dmin = 1000.0, tmin = t;
+  bool hit = false;
+  float pxo = 1.0 / ppu;
+  for (int i = 0; i < 84; i++) {
+    vec2 m = map(ro + rd * t);
+    if (m.x < dmin) { dmin = m.x; tmin = t; id = m.y; }
+    if (m.x < 0.0012) { hit = true; id = m.y; break; }
+    t += m.x;
+    if (t > t1) break;
+  }
+  float cover = 1.0;
+  if (!hit) {
+    if (dmin > pxo * 1.2) return vec3(0.0);
+    t = tmin; cover = 1.0 - dmin / (pxo * 1.2);
+  }
+  if (id > 0.5) return WARM * min(uGlow, 1.0) * cover;
+  vec3 p = ro + rd * t;
+  vec3 n = nrm(p);
+  vec3 nW = n * uInv;
+  vec3 V = -rdW;
+  vec3 H = normalize(uL + V);
+  float ndv = max(dot(nW, V), 0.0);
+  float ndl = dot(nW, uL);
+  float side = smoothstep(-0.28, 0.32, ndl);
+  float ppx = ppu / uDpr;
+  vec3 c;
+  if (uKind == 0) {
+    /* 면마다 둥근 네모 모양으로 결을 깎았다. 결이 빛을 한 줄로 모아, 면의 가운데를 지나는 빛줄기가 생긴다 */
+    vec3 a = abs(n);
+    vec2 q; vec3 U3; vec3 V3;
+    if (a.z >= a.x && a.z >= a.y) { q = p.xy; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 1.0, 0.0); }
+    else if (a.x >= a.y) { q = p.zy; U3 = vec3(0.0, 0.0, 1.0); V3 = vec3(0.0, 1.0, 0.0); }
+    else { q = p.xz; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 0.0, 1.0); }
+    float flatK = smoothstep(0.90, 0.995, max(a.x, max(a.y, a.z)));
+    vec2 q2 = q * q;
+    float r4 = sqrt(sqrt(dot(q2, q2)));
+    vec2 g2 = q * q2;
+    g2 /= max(length(g2), 0.00001);
+    vec3 Bw = (U3 * g2.x + V3 * g2.y) * uInv;
+    vec3 Tw = (U3 * (-g2.y) + V3 * g2.x) * uInv;
+    float pole = smoothstep(0.05, 0.30, r4);
+    float sp = 0.03 * ppu * max(ndv, 0.05);
+    float v1 = smoothstep(2.4, 6.0, sp) * flatK;
+    float v2 = smoothstep(2.4, 6.0, sp / 5.0) * flatK;
+    float e1 = clamp(7.5 / max(sp, 0.001), 0.06, 0.265);
+    float e2 = clamp(7.5 / max(sp / 5.0, 0.001), 0.06, 0.265);
+    float w1 = gw(6.2831853 * r4 / 0.03, e1);
+    float w2 = gw(6.2831853 * r4 / 0.006, e2);
+    vec3 nn = normalize(nW + Bw * (0.22 * w1 * v1 + 0.10 * w2 * v2));
+    float tdh = dot(Tw, H);
+    float an = pow(max(1.0 - tdh * tdh, 0.0), 96.0) * pole * flatK * pow(max(dot(nW, H), 0.0), 1.2);
+    float groove = 0.60 + 0.40 * (0.70 * w1 * v1 * (1.0 - 0.7 * v2) + 0.42 * w2 * v2);
+    float spec = pow(max(dot(nn, H), 0.0), 30.0);
+    float amb = 0.5 + 0.5 * dot(nn, normalize(vec3(-0.25, 0.7, 0.66)));
+    float rings = ((0.5 + 0.5 * w1) * v1 * 0.036 + (0.5 + 0.5 * w2) * v2 * 0.016) * amb;
+    vec3 L2 = normalize(vec3(-uL.x * 0.7 + 0.35, -uL.y * 0.5 - 0.3, 0.6));
+    vec3 H2 = normalize(L2 + V);
+    float t2 = dot(Tw, H2);
+    float an2 = pow(max(1.0 - t2 * t2, 0.0), 28.0) * pole * flatK * smoothstep(-0.2, 0.4, dot(nW, L2));
+    float bevel = 1.0 - flatK;
+    float pulse = 1.0 + 0.35 * uThink;
+    c = vec3(0.005) + WARM * (an * side * groove * 0.78 * pulse + an2 * groove * 0.09 + rings + spec * 0.20 * side
+      + bevel * (pow(max(dot(nW, H), 0.0), 18.0) * 0.55 * side + 0.030) + 0.010 * max(ndl, 0.0));
+  } else if (uKind == 1) {
+    /* 매끈한 검정. 모서리에만 빛이 걸린다 */
+    vec3 a = abs(p);
+    float m1 = max(a.x, max(a.y, a.z));
+    float m3 = min(a.x, min(a.y, a.z));
+    float m2 = a.x + a.y + a.z - m1 - m3;
+    float ew = max(1.5 * pxo, 0.012);
+    float edge = smoothstep(1.0 - ew * 2.2, 1.0 - ew * 0.6, m2);
+    vec3 ne = normalize(sign(p) * smoothstep(0.93, 0.985, a) + 0.0001);
+    float eb = 0.10 + 0.90 * pow(max(dot(ne * uInv, H), 0.0), 4.0);
+    float face = 0.012 * max(ndl, 0.0) + 0.034 * pow(1.0 - ndv, 4.0) * side;
+    float yW = (p * uInv).y;
+    float scan = exp(-abs(yW - uScan) / 0.014) * uThink * 0.55;
+    c = vec3(0.004) + WARM * (face + edge * eb * 0.85 + scan);
+  } else {
+    /* 판마다 가로로 결이 있어, 판이 도는 각에 따라 옆면의 밝기가 저마다 다르다 */
+    vec3 To = cross(vec3(0.0, 1.0, 0.0), n);
+    float tl = length(To);
+    To /= max(tl, 0.0001);
+    float tdh = dot(To * uInv, H);
+    float an = pow(max(1.0 - tdh * tdh, 0.0), 8.0) * smoothstep(0.3, 0.9, tl) * pow(max(dot(nW, H), 0.0), 1.5);
+    float spec = pow(max(dot(nW, H), 0.0), 22.0);
+    float ay = abs(p.y);
+    float spill = (exp(-abs(ay - 0.38) / 0.035) + exp(-abs(ay - 0.70) / 0.035)) * smoothstep(0.3, 0.9, tl);
+    c = vec3(0.005) + WARM * (an * side * 0.11 + spec * 0.30 * side + 0.03 * pow(1.0 - ndv, 3.0) * side + 0.012 * max(ndl, 0.0)
+      + spill * min(uGlow, 1.0) * 0.10);
+  }
+  c *= uLit;
+  float small = 1.0 - smoothstep(14.0, 60.0, ppx);
+  bool face = n.z > 0.5;
+  if (uKind == 2) face = face && abs(p.y) < 0.365 + 0.3 * small;
+  if (uEye.x > 0.001 && face) {
+    vec2 e = eyes(p.xy, ppx, uEyeK, uEye.w, uKind == 1 ? 1.0 : 0.0);
+    c *= 1.0 - e.y * uEye.x;
+    c += WARM * e.x * uEye.x * 0.96;
+  }
+  return c * cover;
+}
+
+float edgeLine(vec3 p, float ew){
+  vec3 a = abs(p);
+  float m1 = max(a.x, max(a.y, a.z));
+  float m3 = min(a.x, min(a.y, a.z));
+  float m2 = a.x + a.y + a.z - m1 - m3;
+  return 1.0 - smoothstep(ew * 0.6, ew * 2.0, 1.0 - m2);
+}
+float edgeLit(vec3 p){ return smoothstep(-0.6, 0.9, dot(normalize(p) * uInv, uL)); }
+
+/* 라: 유리 큐브와 그 안의 검정 구. 구는 큐브가 돌아도 보는 쪽을 향한다 */
+vec3 glass(vec3 ro, vec3 rd, vec3 rdW, float ppu){
+  vec3 rdd = rd + vec3(0.00001) * (1.0 - step(0.00001, abs(rd)));
+  vec3 inv = 1.0 / rdd;
+  vec3 ta = (-1.0 - ro) * inv;
+  vec3 tb = (1.0 - ro) * inv;
+  vec3 tmn = min(ta, tb);
+  vec3 tmx = max(ta, tb);
+  float tN = max(tmn.x, max(tmn.y, tmn.z));
+  float tF = min(tmx.x, min(tmx.y, tmx.z));
+  if (tN >= tF || tF <= 0.0) return vec3(0.0);
+  vec3 pN = ro + rd * tN;
+  vec3 pF = ro + rd * tF;
+  vec3 V = -rdW;
+  vec3 H = normalize(uL + V);
+  float ew = 1.1 / ppu;
+  float glow = min(uGlow, 1.0);
+  vec3 c = WARM * edgeLine(pF, ew) * 0.22 * (0.3 + 0.7 * edgeLit(pF));
+  vec3 dc = pF - uCore;
+  c += WARM * glow * 0.034 / (0.25 + dot(dc, dc));
+  c *= uLit;
+  vec3 oc = ro - uCore;
+  float b = dot(oc, rd);
+  float h = b * b - (dot(oc, oc) - RO * RO);
+  if (h > 0.0) {
+    float ts = -b - sqrt(h);
+    if (ts > tN && ts < tF) {
+      vec3 n = ((oc + rd * ts) / RO) * uInv;
+      vec3 A = normalize(vec3(0.28, 0.52, 0.81));
+      vec3 T = cross(A, n);
+      float tl = length(T);
+      T /= max(tl, 0.0001);
+      float tdh = dot(T, H);
+      float an = pow(max(1.0 - tdh * tdh, 0.0), 44.0) * smoothstep(0.03, 0.30, tl);
+      float side = smoothstep(-0.28, 0.32, dot(n, uL));
+      float z = max(dot(n, V), 0.0);
+      float rim = pow(1.0 - z, 5.0) * 0.5 * smoothstep(-0.5, 1.0, dot(n, uL));
+      c = vec3(0.004) + WARM * (an * side * 0.62 * (1.0 + 0.6 * glow) + rim + pow(max(dot(n, H), 0.0), 30.0) * 0.12 * side);
+      c *= uLit;
+      if (uEye.x > 0.001) {
+        vec3 F = normalize(vec3(uGaze.x * 0.10, uGaze.y * 0.10, 1.0));
+        vec3 Rr = normalize(cross(vec3(0.0, 1.0, 0.0), F));
+        vec3 Uu = cross(F, Rr);
+        float front = smoothstep(0.10, 0.40, dot(n, F));
+        vec2 e = eyes(vec2(dot(n, Rr), dot(n, Uu)), RO * ppu / uDpr, uEyeK, uEye.w, 0.0);
+        c *= 1.0 - e.y * uEye.x * front;
+        c += WARM * e.x * uEye.x * front * 0.96;
+      }
+    }
+  }
+  vec3 nN;
+  if (tmn.x >= tmn.y && tmn.x >= tmn.z) nN = vec3(-sign(rd.x), 0.0, 0.0);
+  else if (tmn.y >= tmn.z) nN = vec3(0.0, -sign(rd.y), 0.0);
+  else nN = vec3(0.0, 0.0, -sign(rd.z));
+  vec3 nW = nN * uInv;
+  float ndv = max(dot(nW, V), 0.0);
+  float fr = 0.04 + 0.96 * pow(1.0 - ndv, 5.0);
+  c *= 0.92 - 0.5 * fr;
+  vec3 dn = pN - uCore;
+  c += uLit * WARM * (fr * 0.16 * (0.4 + 0.6 * smoothstep(-0.2, 0.8, dot(nW, uL))) + pow(max(dot(nW, H), 0.0), 90.0) * 0.30
+    + glow * 0.012 / (0.25 + dot(dn, dn))
+    + edgeLine(pN, ew) * (0.25 + 0.75 * edgeLit(pN)) * 0.9);
+  return c;
+}
+
+void main(){
+  vec2 f = gl_FragCoord.xy;
+  vec2 uv = (f - 0.5 * uRes) / uRes.y * 2.0;
+  vec3 roW = vec3(0.0, 0.0, CAM) - uOff;
+  vec3 rdW = normalize(vec3(uv * FOV, -1.0));
+  vec3 ro = (uInv * roW) / uScale;
+  vec3 rd = uInv * rdW;
+  float ppu = uRes.y * uScale / (2.0 * FOV * CAM);
+  vec3 col = vec3(0.0);
+  float bq = dot(ro, rd);
+  float hq = bq * bq - (dot(ro, ro) - 3.1);
+  if (hq > 0.0) {
+    float sq = sqrt(hq);
+    if (uKind == 3) col = glass(ro, rd, rdW, ppu);
+    else col = solid(ro, rd, rdW, -bq - sq, -bq + sq, ppu);
+  }
+  float g = ign(f + uSeed * 7.31) + ign(f.yx + 17.0 + uSeed * 3.17) - 1.0;
+  col += g * 2.8 / 255.0;
+  gl_FragColor = vec4(max(col, 0.0), 1.0);
+}`;
+const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
+
+const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+/* 사원수 [x, y, z, w]. qMul(a, b)는 b를 먼저 돌리고 a를 돌린다 */
+const qAxis = (ax, ang) => { const s = Math.sin(ang / 2); return [ax[0] * s, ax[1] * s, ax[2] * s, Math.cos(ang / 2)]; };
+const qMul = (a, b) => [
+  a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+  a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+  a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+  a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]];
+const qSlerp = (a, b, t) => {
+  let d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+  const s = d < 0 ? -1 : 1; d = Math.abs(d);
+  let ka = 1 - t, kb = t;
+  if (d < 0.9995) { const th = Math.acos(d), sn = Math.sin(th); ka = Math.sin((1 - t) * th) / sn; kb = Math.sin(t * th) / sn; }
+  const q = [ka * a[0] + s * kb * b[0], ka * a[1] + s * kb * b[1], ka * a[2] + s * kb * b[2], ka * a[3] + s * kb * b[3]];
+  const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  return [q[0] / n, q[1] / n, q[2] / n, q[3] / n];
+};
+/* 큐브 좌표를 화면 좌표로 돌리는 행렬(행 차례). 이 배열을 그대로 셰이더에 넘기면 셰이더는 그 뒤집은 행렬(화면 → 큐브)로 읽는다 */
+const qMat = ([x, y, z, w]) => [
+  1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w),
+  2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w),
+  2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)];
+const AX = [1, 0, 0], AY = [0, 1, 0], AZ = [0, 0, 1];
+
+/* 큐브 다섯. yaw와 pitch는 쉬는 자세, scale은 몸 크기, eyeK는 눈 크기, sep는 두 눈 사이(점 칸 수의 반) */
+const CUBES = [
+  { kind: 0, yaw: -0.42, pitch: 0.27, scale: 1.02, eyeK: 1.3, sep: 6.5 },
+  { kind: 1, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.25, sep: 6.5 },
+  { kind: 2, yaw: -0.50, pitch: 0.30, scale: 0.98, eyeK: 1.15, sep: 5.5 },
+  { kind: 3, yaw: -0.60, pitch: 0.34, scale: 0.98, eyeK: 1.2, sep: 5.5 },
+  { kind: 4, yaw: -0.50, pitch: 0.30, scale: 1, eyeK: 1, sep: 5.5 },
+].map((c, i) => ({
+  ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
+  px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
+  az: 0, spin: 0, slab: [0, 0, 0, 0], slabT: [0, 0, 0, 0], nextShuffle: 0, a4: 0.6 + i, b4: 0.2,
+  R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null,
+}));
+let mood = 'auto';
+
+/* 한 큐브의 한순간을 셈한다(자세, 눈, 생각하는 정도). 그리기는 따로 한다 */
+function step(c, now, dt) {
+  const t = now / 1000;
+  const ph = (t + c.i * 2.3) % 12;
+  const want = !reduced && (mood === 'think' || now < c.thinkUntil || now < c.bootUntil || (mood === 'auto' && ph > 8.2 && ph < 10.6));
+  if (want && !c.wasThink) { const kick = [0.62, -0.36, 0.46, -0.72]; c.slabT = c.slabT.map((a, j) => a + kick[j]); c.nextShuffle = now + 420; }
+  if (!want && c.wasThink) { c.smileUntil = now + 1300; c.flash = 1; c.slabT = c.slabT.map(a => Math.round(a / (Math.PI / 2)) * (Math.PI / 2)); }
+  c.wasThink = want;
+  c.think += ((want ? 1 : 0) - c.think) * (1 - Math.exp(-dt * (want ? 3.2 : 4.4)));
+  c.flash *= Math.exp(-dt * 2.4);
+  c.px += (c.tx - c.px) * (1 - Math.exp(-dt * 6));
+  c.py += (c.ty - c.py) * (1 - Math.exp(-dt * 6));
+
+  /* 눈. 표정을 바꿀 때는 감았다 뜨는 사이에 바꾼다 */
+  const wantMood = mood === 'sleep' ? 2 : mood === 'smile' ? 1 : want ? 4 : now < c.smileUntil ? 1 : 0;
+  if (!c.lid && c.moodShown !== wantMood) c.lid = { t0: now, swap: wantMood };
+  if (!c.lid && c.moodShown === 0 && now > c.nextBlink && !reduced) { c.lid = { t0: now, swap: null }; c.nextBlink = now + 2600 + Math.random() * 3800; }
+  if (c.lid) {
+    const u = reduced ? 1 : (now - c.lid.t0) / 190;
+    if (u >= 0.5 && c.lid.swap !== null) { c.moodShown = c.lid.swap; c.lid.swap = null; }
+    c.open = Math.abs(1 - 2 * Math.min(u, 1));
+    if (u >= 1) { c.lid = null; c.open = 1; }
+  }
+  c.lit += ((mood === 'sleep' ? 0.5 : 1) - c.lit) * (1 - Math.exp(-dt * 3));
+
+  /* 자세 */
+  const sway = reduced ? 0 : 1;
+  let yaw = c.yaw + sway * 0.13 * Math.sin(t * 0.5 + c.i) + c.px * 0.36;
+  const pitch = c.pitch + sway * 0.035 * Math.sin(t * 0.37 + c.i * 2) - c.py * 0.24;
+  let azAdd = c.px * 0.5;
+  c.eyeOn = 1; c.glow = 0; c.scan = -9;
+  if (c.kind === 0) {
+    /* 생각할 때 빛이 시곗바늘처럼 돈다 */
+    if (want) c.az += dt * 2.6 * c.think;
+    else { const home = Math.round(c.az / (2 * Math.PI)) * 2 * Math.PI; c.az += (home - c.az) * (1 - Math.exp(-dt * 2.5)); }
+    azAdd += c.az;
+  }
+  if (c.kind === 3) { c.spin += dt * (0.22 + 0.9 * c.think) * sway; yaw += c.spin; }
+  let q = qMul(qAxis(AX, pitch), qAxis(AY, yaw));
+  if (c.kind === 1) {
+    /* 생각할 때 꼭짓점 하나로 서서 돈다 */
+    c.spin += dt * 1.6 * c.think;
+    const stand = qMul(qAxis(AX, 0.26), qMul(qAxis(AY, c.spin), qMul(qAxis(AZ, 0.9553166), qAxis(AY, Math.PI / 4))));
+    q = qSlerp(q, stand, easeIO(clamp(c.think, 0, 1)));
+    c.eyeOn = 1 - clamp(c.think * 1.6, 0, 1);
+    c.scan = ((t * 0.55) % 1) * 3.8 - 1.9;
+  }
+  if (c.kind === 2) {
+    if (want && now > c.nextShuffle) {
+      const j = (Math.random() * 4) | 0;
+      c.slabT[j] += (Math.random() < .5 ? -1 : 1) * (Math.PI / 8) * (1 + ((Math.random() * 3) | 0));
+      c.nextShuffle = now + 260 + Math.random() * 280;
+    }
+    for (let j = 0; j < 4; j++) c.slab[j] += (c.slabT[j] - c.slab[j]) * (1 - Math.exp(-dt * (want ? 7 : 11)));
+    c.glow = 0.28 + 0.30 * c.think + 1.0 * c.flash;
+  }
+  c.R = qMat(q);
+  const az = Math.PI * 0.75 + azAdd, lz = 0.5, h = Math.sqrt(1 - lz * lz);
+  c.L = [Math.cos(az) * h, Math.sin(az) * h, lz];
+  if (c.kind === 3) {
+    const k = c.think, w = [
+      sway * 0.05 * Math.sin(t * 0.7) + 0.20 * k * Math.cos(t * 3.1),
+      sway * 0.06 * Math.sin(t * 0.9 + 1) + 0.20 * k * Math.sin(t * 3.1),
+      0.10 * k * Math.sin(t * 2.3)];
+    const r = c.R, s = c.scale;
+    c.core = [(r[0] * w[0] + r[3] * w[1] + r[6] * w[2]) / s, (r[1] * w[0] + r[4] * w[1] + r[7] * w[2]) / s, (r[2] * w[0] + r[5] * w[1] + r[8] * w[2]) / s];
+    c.glow = 0.22 + 0.6 * k * (0.7 + 0.3 * Math.sin(t * 9)) + 0.5 * c.flash;
+  }
+  if (c.kind === 4) { c.a4 += dt * (0.35 + 1.5 * c.think) * sway; c.b4 += dt * (0.21 + 0.7 * c.think) * sway; }
+  c.bob = sway * 0.05 * Math.sin(t * 0.8 + c.i * 1.7);
+}
+
+/* ── WebGL: 문맥 하나로 그리고 캔버스마다 옮겨 찍는다 ── */
+const glc = document.createElement('canvas');
+let gl = null, U = null;
+try {
+  gl = glc.getContext('webgl', { antialias: false, alpha: false, depth: false, stencil: false, powerPreference: 'high-performance' });
+  if (gl) {
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) || 'shader'); return s; };
+    const pr = gl.createProgram();
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr) || 'link');
+    gl.useProgram(pr);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    U = {}; for (const n of UNIFORMS) U[n] = gl.getUniformLocation(pr, n);
+  }
+} catch (err) { console.error('큐브 셰이더를 준비하지 못했다:', err); gl = null; }
+if (!gl) document.documentElement.dataset.nogl = '1';
+
+const seed = Math.random();
+function drawGL(tg, now) {
+  const c = tg.cube, w = tg.w, h = tg.h;
+  if (glc.width < w || glc.height < h) { glc.width = Math.max(glc.width, w); glc.height = Math.max(glc.height, h); }
+  gl.viewport(0, 0, w, h);
+  gl.uniform2f(U.uRes, w, h);
+  gl.uniform1f(U.uT, now / 1000);
+  gl.uniform1f(U.uDpr, tg.dpr);
+  gl.uniform1f(U.uScale, c.scale);
+  gl.uniform1f(U.uSeed, seed);
+  gl.uniform1f(U.uThink, c.think);
+  gl.uniform1f(U.uGlow, c.glow);
+  gl.uniform1f(U.uScan, c.scan);
+  gl.uniform1f(U.uLit, c.lit);
+  gl.uniform1f(U.uEyeK, c.eyeK);
+  gl.uniform1i(U.uKind, c.kind);
+  gl.uniformMatrix3fv(U.uInv, false, c.R);
+  gl.uniform3f(U.uL, c.L[0], c.L[1], c.L[2]);
+  gl.uniform3f(U.uOff, 0, c.bob || 0, 0);
+  gl.uniform3f(U.uCore, c.core[0], c.core[1], c.core[2]);
+  gl.uniform4f(U.uEye, c.eyeOn, c.open, c.moodShown, c.sep);
+  gl.uniform2f(U.uGaze, clamp(c.px * 1.6, -1.5, 1.5), clamp(-c.py * 1.6, -1.5, 1.5));
+  gl.uniform4f(U.uSlab, c.slab[0], c.slab[1], c.slab[2], c.slab[3]);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  tg.ctx.drawImage(glc, 0, glc.height - h, w, h, 0, 0, w, h);
+}
+
+/* ── 마: 4차원 큐브. 꼭짓점 열여섯, 모서리 서른둘을 선으로 긋는다 ── */
+const EDGES = [];
+for (let i = 0; i < 16; i++) for (let b = 0; b < 4; b++) if (!(i & (1 << b))) EDGES.push([i, i | (1 << b)]);
+const PAPER = '243,241,236';
+function drawTess(tg, now) {
+  const c = tg.cube, ctx = tg.ctx, w = tg.w, h = tg.h, s = Math.min(w, h), R = s * 0.27, r = c.R;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+  const ca = Math.cos(c.a4), sa = Math.sin(c.a4), cb = Math.cos(c.b4), sb = Math.sin(c.b4);
+  const P = [];
+  for (let i = 0; i < 16; i++) {
+    let x = i & 1 ? 1 : -1, y = i & 2 ? 1 : -1, z = i & 4 ? 1 : -1, wv = i & 8 ? 1 : -1;
+    const x1 = x * ca - wv * sa, w1 = x * sa + wv * ca;
+    const z1 = z * cb - w1 * sb, w2 = z * sb + w1 * cb;
+    const k4 = 1.9 / (2.9 - w2);
+    x = x1 * k4; y = y * k4; z = z1 * k4;
+    const X = r[0] * x + r[1] * y + r[2] * z, Y = r[3] * x + r[4] * y + r[5] * z, Z = r[6] * x + r[7] * y + r[8] * z;
+    const k3 = 6 / (6 - Z * 0.9);
+    P.push([w / 2 + X * R * k3, h / 2 - (Y + (c.bob || 0)) * R * k3, Z, w2]);
+  }
+  const tiny = s / tg.dpr < 60;
+  ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1, tg.dpr * (tiny ? 0.9 : 1.05));
+  for (const [a, b] of EDGES) {
+    const A = P[a], B = P[b], d = clamp(((A[2] + B[2]) / 2 + 1.5) / 3, 0, 1), near = clamp(((A[3] + B[3]) / 2 + 1.4) / 2.8, 0, 1);
+    ctx.strokeStyle = `rgba(${PAPER},${((0.14 + 0.5 * d + 0.3 * near) * c.lit).toFixed(3)})`;
+    ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke();
+  }
+  if (!tiny) for (const p of P) {
+    ctx.fillStyle = `rgba(${PAPER},${((0.3 + 0.6 * clamp((p[2] + 1.5) / 3, 0, 1)) * c.lit).toFixed(3)})`;
+    ctx.beginPath(); ctx.arc(p[0], p[1], tg.dpr * 1.5, 0, 6.2832); ctx.fill();
+  }
+  /* 가운데의 눈 둘 */
+  const u = R * (tiny ? 1.5 : 0.82), cx = w / 2 + c.px * 0.06 * u, cy = h / 2 - (c.bob || 0) * R - 0.06 * u + c.py * 0.06 * u, sep = 0.22 * u, m = c.moodShown;
+  ctx.fillStyle = ctx.strokeStyle = `rgba(${PAPER},.96)`;
+  ctx.lineWidth = Math.max(1, 0.028 * u);
+  for (const sx of [-1, 1]) {
+    const ex = cx + sx * sep;
+    if (m === 0) {
+      const hw = 0.05 * u, hh = (0.012 + (0.094 - 0.012) * c.open) * u, rr = Math.min(hw, hh);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(ex - hw, cy - hh, hw * 2, hh * 2, rr); else ctx.rect(ex - hw, cy - hh, hw * 2, hh * 2);
+      ctx.fill();
+    } else if (m === 1) { ctx.globalAlpha = c.open; ctx.beginPath(); ctx.arc(ex, cy + 0.06 * u, 0.1 * u, -(Math.PI - 0.467), -0.467); ctx.stroke(); ctx.globalAlpha = 1; }
+    else if (m === 2) { ctx.globalAlpha = c.open; ctx.beginPath(); ctx.arc(ex, cy - 0.06 * u, 0.1 * u, 0.467, Math.PI - 0.467); ctx.stroke(); ctx.globalAlpha = 1; }
+    else {
+      const a = now / 1000 * 5.2;
+      ctx.globalAlpha = c.open;
+      ctx.beginPath(); ctx.arc(ex + 0.052 * u * Math.cos(a), cy - 0.052 * u * Math.sin(a), 0.026 * u, 0, 6.2832); ctx.fill();
+      ctx.beginPath(); ctx.arc(ex + 0.052 * u * Math.cos(a - 1.25), cy - 0.052 * u * Math.sin(a - 1.25), 0.015 * u, 0, 6.2832); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+/* ── 그릴 자리. 큰 무대 다섯과 작게 본 그림 열다섯 ── */
+const targets = [];
+let quality = 1;
+const dprNow = () => Math.min(window.devicePixelRatio || 1, 2);
+function fit(tg) {
+  const css = tg.fixed || tg.cv.clientWidth || 1;
+  tg.dpr = tg.fixed ? Math.max(dprNow(), 2) : Math.max(1, dprNow() * quality);
+  const px = Math.max(1, Math.round(css * tg.dpr));
+  if (tg.cv.width !== px || tg.cv.height !== px) { tg.cv.width = px; tg.cv.height = px; }
+  tg.w = px; tg.h = px;
+}
+const seen = typeof IntersectionObserver === 'function' ? new IntersectionObserver(es => {
+  for (const e of es) { const tg = targets.find(t => t.cv === e.target); if (tg) tg.visible = e.isIntersecting; }
+  kick();
+}, { rootMargin: '120px' }) : null;
+function addTarget(cv, cube, fixed) {
+  const ctx = cv.getContext('2d', { alpha: false });
+  if (!ctx) return null;
+  const tg = { cv, ctx, cube, fixed, visible: !seen, w: 1, h: 1, dpr: 1 };
+  if (fixed) { cv.style.width = fixed + 'px'; cv.style.height = fixed + 'px'; }
+  targets.push(tg); fit(tg);
+  if (seen) seen.observe(cv);
+  return tg;
+}
+for (const sec of document.querySelectorAll('.cand')) {
+  const cube = CUBES[+sec.dataset.v], stage = sec.querySelector('.stage');
+  cube.big = addTarget(stage.querySelector('canvas'), cube, 0);
+  const sizes = sec.querySelector('.sizes');
+  for (const px of [96, 44, 20]) {
+    const fig = document.createElement('figure'), cv = document.createElement('canvas'), cap = document.createElement('figcaption');
+    cap.textContent = String(px); fig.append(cv, cap); sizes.append(fig);
+    addTarget(cv, cube, px);
+  }
+  stage.addEventListener('click', () => { cube.thinkUntil = performance.now() + 2600; kick(); });
+}
+if (typeof ResizeObserver === 'function') {
+  const ro = new ResizeObserver(() => { for (const tg of targets) if (!tg.fixed) fit(tg); kick(); });
+  for (const tg of targets) if (!tg.fixed) ro.observe(tg.cv);
+}
+
+/* 손. 큰 무대마다 그 가운데에서 손이 어디 있는지 본다. 멀리 있으면 앞을 본다 */
+function point(x, y) {
+  for (const c of CUBES) {
+    if (!c.big) continue;
+    const r = c.big.cv.getBoundingClientRect(), nx = (x - (r.left + r.width / 2)) / (r.width / 2), ny = (y - (r.top + r.height / 2)) / (r.height / 2);
+    const far = Math.hypot(nx, ny) > 2.2;
+    c.tx = far ? 0 : clamp(nx, -1.2, 1.2); c.ty = far ? 0 : clamp(ny, -1.2, 1.2);
+  }
+  kick();
+}
+window.addEventListener('pointermove', e => point(e.clientX, e.clientY), { passive: true });
+window.addEventListener('pointerleave', () => { for (const c of CUBES) { c.tx = 0; c.ty = 0; } });
+document.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') for (const c of CUBES) { c.tx = 0; c.ty = 0; } });
+
+for (const b of document.querySelectorAll('.mood')) b.addEventListener('click', () => {
+  mood = b.dataset.mood;
+  for (const o of document.querySelectorAll('.mood')) o.setAttribute('aria-pressed', String(o === b));
+  kick();
+});
+
+/* ── 돌리기 ── */
+let last = 0, frameId = 0, slow = 0, still = 0;
+function frame(now) {
+  frameId = 0;
+  const dt = last ? clamp((now - last) / 1000, 0, 0.05) : 0.016;
+  if (last && now - last > 30) slow++; else slow = Math.max(0, slow - 1);
+  last = now;
+  /* 화면이 버거우면 큰 무대의 해상도를 낮춘다 */
+  if (slow > 45 && quality > 0.55) { quality = Math.max(0.55, quality * 0.8); slow = 0; for (const tg of targets) if (!tg.fixed) fit(tg); }
+  for (const c of CUBES) step(c, now, dt);
+  for (const tg of targets) {
+    if (!tg.visible) continue;
+    if (tg.cube.kind === 4) drawTess(tg, now);
+    else if (gl) drawGL(tg, now);
+  }
+  if (!reduced) frameId = requestAnimationFrame(frame);
+  else if (++still < 14) frameId = requestAnimationFrame(frame);   /* 움직임을 줄인 화면: 표정이 바뀔 만큼만 그리고 멈춘다 */
+}
+function kick() { still = 0; if (!frameId && !document.hidden) frameId = requestAnimationFrame(frame); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelAnimationFrame(frameId); frameId = 0; last = 0; } else kick(); });
+
+const t0 = performance.now();
+for (const c of CUBES) c.bootUntil = t0 + 1100 + c.i * 260;
+if (reduced) CUBES[2].slab = CUBES[2].slabT = [0.30, -0.16, 0.22, -0.38];
+kick();
+})();
+</script>
+</body>
+</html>
