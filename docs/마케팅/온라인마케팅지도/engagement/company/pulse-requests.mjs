@@ -11,7 +11,7 @@ import {CASTING_MODELS,OUTFIT_IDS,HAIR_IDS} from './public/pulse-app/casting-cat
 import {castingOf,personaRefOf,MODEL_CHOICE_KINDS,MODEL_OPTIONAL_CHOICES} from './public/pulse-app/casting-choice.mjs';
 import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
-import {personaHoldsProject,PERSONA_SLOTS,requestClock,stoppedNoticeDue,stoppedDeleteDue} from './pulse-personas.mjs';
+import {personaHoldsProject,PERSONA_SLOTS,requestClock,backfillOriginActivity,stoppedNoticeDue,stoppedDeleteDue} from './pulse-personas.mjs';
 import {workspaceMediaNames,personaMediaNameSet} from './workspace-media.mjs';
 import {applyInlineTranslations,missingTranslations,inlineObject} from './pulse-translations.mjs';
 import {PROGRESS_FIELDS,applyProgressAction,progressOf,progressCustomerView} from './pulse-progress.mjs';
@@ -425,11 +425,14 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
     return result;
   }
   async function retireUnconfirmed({startup=false}={}){
+    // 원 의뢰 쪽 움직임 칸이 없거나 어긋난 인물을 가장 먼저 채운다 — 인물 쓸기(시계의 지우기)가 인물 문서를 옮기기 전의 값으로. 시작 회차도 한다
+    // (시스템 쓰기, 남기는 쪽 값 — Fable 5.2 설계 검토 3).
+    let backfillFailed=0;try{backfillOriginActivity(store);}catch{backfillFailed=1;}
     const retention=workspaces?.sweepRetention?await workspaces.sweepRetention({noticeOnly:startup}):null;
-    const {retired,...requests}=await sweepRequestRecords({noticeOnly:startup});
-    // 공개 의뢰서 대기 줄(번호와 프로젝트 id만)은 접수 뒤 하루가 지나면 뗀다. 지우기는 위 시계 하나가 하고, 이 줄을 읽는 일은 접수 직후의 다시 보내기(10분)와
-    // 하루 접수 상한(24시간)뿐이다(GPT 서버 검수 GA2). 이 판 전의 서버는 이 줄을 보고 예고 없이 90일에 지웠으므로, 그 서버로 되돌려도 지울 줄이 남지 않게
-    // 시작 회차에서도 뗀다(GPT 서버 다시 검수 GA4). 상태를 바꿔 두면 옛 서버의 초안 읽기가 그 줄을 쓰던 초안으로 보아 다시 보내기를 받으므로 바꾸지 않고 뗀다.
+    const {retired,...requests}=await sweepRequestRecords({noticeOnly:startup});requests.failed+=backfillFailed;
+    // 공개 의뢰서 대기 줄(번호와 프로젝트 id만)은 접수 뒤 하루가 지나면 뗀다(시작 회차에서도). 지우기는 위 시계 하나가 하고, 이 줄을 읽는 일은 접수 직후의
+    // 다시 보내기(10분)와 하루 접수 상한(24시간)뿐이다(GPT 서버 검수 GA2). 이 판 전의 서버는 이 줄로 예고 없이 지웠다. 배포 도구는 새 판의 앱을 시작한 뒤에는
+    // 옛 판으로 자동 복구하지 않으므로(deploy/ha/release-entry.mjs) 그 서버가 이 DB에서 다시 도는 길은 없다. 이 판 뒤로 그 정리 코드를 다시 올리지 않는다(결정 표 11-18).
     const stamp=now();
     for(const row of store.all(KIND))if(row.status==='submitted'&&!(stamp-Date.parse(row.submittedAt)<=86400000))store.remove(KIND,row.id);
     for(const key of Object.keys(requests))if(!requests[key])delete requests[key];

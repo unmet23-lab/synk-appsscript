@@ -8,7 +8,7 @@ import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
-import {requestClock,paymentEverConfirmed,stoppedNoticeDue,stoppedDeleteDue,kstDayEnd,kstToday} from './pulse-personas.mjs';
+import {requestClock,paymentEverConfirmed,stoppedNoticeDue,stoppedDeleteDue,kstDayEnd,kstToday,withOriginActivity,legacyOriginActivity,backfillOriginActivity} from './pulse-personas.mjs';
 import {deskView} from './public/pulse-app/desk-view.mjs';
 import {applyRequestAction} from './pulse-requests.mjs';
 
@@ -41,42 +41,52 @@ test('시계 계산: 의뢰서(동의)가 있고 제작 신호가 없을 때만 
   assert.equal(paymentEverConfirmed(refunded.studio.request),true);assert.equal(requestClock(store,refunded,isoOf(t0)).keepPayment,true);
   assert.equal(paymentEverConfirmed({payment:{status:'cancelled',confirmedAt:isoOf(t0),cancelledAt:isoOf(t0)}}),true,'이력이 없는 옛 결제는 그때의 payment로');
   assert.equal(paymentEverConfirmed({payment:{status:'requested'}}),false);assert.equal(requestClock(store,row({payment:{status:'requested'}}),isoOf(t0)).keepPayment,undefined);
-  // D4: 이 프로젝트에서 나온 브랜드 없는 인물이 더 늦게 움직였으면 그날부터.
-  const kept=at=>[{id:'x',at:isoOf(at),action:'reuse_approved',actorKind:'member'}];
-  personas.push({id:'a',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0+30*DAY)},{id:'c',originProjectId:'p2',workspaceId:null,status:'ready',updatedAt:isoOf(t0+70*DAY)});
+  // 인물 쪽 움직임은 쓰는 쪽이 남긴 originActivityAt 칸만 읽는다(GPT 서버 검수 세 회차 뒤 구조 바꿈 · Fable 5.2 설계 검토 11-18).
+  // 칸이 맞으면(originActivityRev === revision) 그 칸 — updatedAt · 이력 · 지우기 기록은 보지 않는다.
+  const on=(at,rev=3)=>({revision:rev,originActivityAt:isoOf(at),originActivityRev:rev});
+  personas.push({id:'a',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0+30*DAY),...on(t0+30*DAY)},{id:'c',originProjectId:'p2',workspaceId:null,status:'ready',updatedAt:isoOf(t0+70*DAY),...on(t0+70*DAY)});
   assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+30*DAY),'다른 프로젝트의 인물은 보지 않는다');
-  // 브랜드에 귀속된 인물은 귀속된 때까지만 이 의뢰의 움직임이다 — 그 뒤 브랜드에서 한 일(동의 연장 등)은 원 의뢰를 늦추지 않는다(GPT 서버 다시 검수 GA1).
-  personas.push({id:'b',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+160*DAY),history:[{at:isoOf(t0+20*DAY),action:'request_update',actorKind:'staff'},...kept(t0+45*DAY),{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]});
-  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+45*DAY),'브랜드 인물은 귀속된 때');
-  personas.length=0;personas.push({id:'b2',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+89*DAY),history:[...kept(t0+10*DAY),{at:isoOf(t0+89*DAY),action:'reuse_renewed',actorKind:'member'}]});
+  // 귀속 뒤 브랜드 쪽 일(동의 연장)은 칸을 옮기지 않는다 — updatedAt이 160일이어도 원 의뢰는 45일(-b GA1).
+  personas.push({id:'b',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+160*DAY),...on(t0+45*DAY)});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+45*DAY));
+  personas.length=0;personas.push({id:'b2',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+89*DAY),...on(t0+10*DAY)});
   assert.equal(requestClock(store,row({},{requestRetentionNotice:{at:isoOf(t0+86*DAY)}}),isoOf(t0+90*DAY)).noticed,true,'귀속 뒤 동의 연장은 예고를 풀지 않는다');
-  // 귀속 취소 뒤 다시 귀속하면 그 마지막 귀속 때. 이력에서 귀속 때를 못 찾으면 날짜를 못 읽는 것으로 센다(지우지 않는다).
-  personas.length=0;personas.push({id:'b3',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+70*DAY),history:[...kept(t0+10*DAY),{at:isoOf(t0+40*DAY),action:'unassigned',actorKind:'staff'},...kept(t0+50*DAY)]});
-  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+50*DAY));
-  personas.length=0;personas.push({id:'b4',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+70*DAY)});
-  assert.deepEqual(requestClock(store,row(),isoOf(t0)),{unclear:'date'});
-  // 76일 예고 뒤 89일에 인물 일 → 예고가 풀리고, 그 인물이 92일에 브랜드에 귀속돼도 옛 예고는 되살아나지 않는다(귀속 자체가 움직임 — GPT 서버 검수 GA1).
-  personas.length=0;personas.push({id:'e',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+92*DAY),history:[{at:isoOf(t0+89*DAY),action:'request_update',actorKind:'staff'},...kept(t0+92*DAY)]});
-  assert.equal(requestClock(store,row({},{requestRetentionNotice:{at:isoOf(t0+76*DAY)}}),isoOf(t0+93*DAY)).noticed,false);
-  // 시계가 지운 브랜드 없는 인물은 지우기 기록이 아니라 지우기 직전의 움직임으로 보고(GPT 서버 다시 검수 GA3), 직원이 지운 인물은 지운 때가 움직임이다.
-  personas.length=0;personas.push({id:'f',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+80*DAY),updatedAt:isoOf(t0+80*DAY),deletion:{confirmedBy:'system'}});
-  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0),'사람 손 움직임이 남지 않은 옛 묘비는 보지 않는다');
-  // 76일 예고 뒤 80일에 직원이 인물을 손봤고, 그 인물을 시계가 100일에 지웠다 — 예고는 풀린 채로 남는다(지우기 기록 날짜가 앞 움직임을 지우지 않는다).
+  // 시계가 지운 인물의 묘비도 칸을 들고 간다 — 80일의 직원 일로 풀린 76일 예고는 100일의 지우기 뒤에도 풀린 채다(-b GA3).
   const notice={requestRetentionNotice:{at:isoOf(t0+76*DAY)}};
-  personas.length=0;personas.push({id:'h',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system',lastActivityAt:isoOf(t0+80*DAY)}});
+  personas.length=0;personas.push({id:'h',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system'},...on(t0+80*DAY,7)});
   let gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
-  personas[0]={...personas[0],status:'deleting',deletedAt:undefined};
-  gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY),'지우는 중인 인물도 같다');assert.equal(gone.noticed,false);
-  // 지우기 직전 날짜가 없는 옛 묘비는 이력의 사람 손 항목(시스템 항목은 뺀다).
-  personas.length=0;personas.push({id:'i',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system'},
-    history:[{at:isoOf(t0+80*DAY),actorKind:'staff'},{at:isoOf(t0+95*DAY),actorKind:'system'},{at:isoOf(t0+100*DAY),actorKind:'system'}]});
-  gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
-  // 브랜드 인물은 묘비여도 귀속된 때 — 80일에 귀속, 브랜드 시계가 100일에 지웠으면 예고는 풀린 채로 남는다.
-  personas.length=0;personas.push({id:'j',originProjectId:'p1',workspaceId:'w',status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system',lastActivityAt:isoOf(t0+99*DAY)},history:kept(t0+80*DAY)});
-  gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
-  personas.length=0;personas.push({id:'f',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+80*DAY),updatedAt:isoOf(t0+80*DAY),deletion:{confirmedBy:'system'}});
-  personas.push({id:'g',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+85*DAY),updatedAt:isoOf(t0+85*DAY),deletion:{confirmedBy:'staff-1'}});
-  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+85*DAY));
+  // 칸을 모르는 코드가 그 뒤에 썼으면(판 번호 어긋남) 칸을 믿지 않고 max(칸, updatedAt) — 남기는 쪽.
+  personas.length=0;personas.push({id:'k',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+60*DAY),revision:4,originActivityAt:isoOf(t0+20*DAY),originActivityRev:3});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+60*DAY));
+  // 칸이 없는 옛 인물(이 판 전): 브랜드 없는 인물은 updatedAt.
+  personas.length=0;personas.push({id:'l',originProjectId:'p1',workspaceId:null,status:'ready',revision:2,updatedAt:isoOf(t0+30*DAY)});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+30*DAY));
+  // 옛 브랜드 인물: 이력에서 귀속과 귀속 뒤 원 의뢰 데스크 일(메모)을 넣고 브랜드 쪽 동작(동의 연장)은 뺀다 — 귀속 때만 보면 메모가 빠져 앞당겨진다(Fable 설계 검토 2).
+  const brandOld={id:'m',originProjectId:'p1',workspaceId:'w',status:'ready',revision:6,updatedAt:isoOf(t0+160*DAY),history:[
+    {at:isoOf(t0+20*DAY),action:'request_update',actorKind:'customer'},{at:isoOf(t0+45*DAY),action:'reuse_approved',actorKind:'member'},
+    {at:isoOf(t0+70*DAY),action:'note',actorKind:'staff'},{at:isoOf(t0+90*DAY),action:'retention_notice',actorKind:'system'},{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]};
+  assert.equal(legacyOriginActivity(brandOld),t0+70*DAY);
+  // 이력이 잘려 원 의뢰 쪽 항목이 없으면 updatedAt(남기는 쪽 — 영영 멈추지 않는다, -c GA2).
+  assert.equal(legacyOriginActivity({...brandOld,history:[{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]}),t0+160*DAY);
+  // 옛 묘비(시계가 지움): 사람 손 항목, 없으면 updatedAt.
+  const tombOld={id:'n',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),revision:9,deletion:{confirmedBy:'system'},
+    history:[{at:isoOf(t0+80*DAY),actorKind:'staff',action:'note'},{at:isoOf(t0+95*DAY),actorKind:'system',action:'retention_deleting'},{at:isoOf(t0+100*DAY),actorKind:'system',action:'deleted'}]};
+  assert.equal(legacyOriginActivity(tombOld),t0+80*DAY);assert.equal(legacyOriginActivity({...tombOld,history:[]}),t0+100*DAY);
+  // 쓸기 회차의 다시 채우기: 칸이 없거나 어긋난 인물만, revision · updatedAt · 이력은 그대로. 채운 뒤에는 그 칸을 읽는다.
+  {
+    const docs=new Map([[brandOld.id,brandOld],[tombOld.id,tombOld],['ok',{id:'ok',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0),...on(t0+5*DAY)}],['bad',{id:'bad',originProjectId:'p1',revision:1,updatedAt:'?'}]]);
+    const fake={all:()=>[...docs.values()],get:(kind,id)=>docs.get(id),put:(kind,id,doc)=>docs.set(id,doc),transaction:fn=>fn()};
+    assert.equal(backfillOriginActivity(fake),2,'날짜를 못 읽는 인물은 채우지 않는다');
+    assert.deepEqual([docs.get('m').originActivityAt,docs.get('m').originActivityRev,docs.get('m').revision,docs.get('m').updatedAt],[isoOf(t0+70*DAY),6,6,isoOf(t0+160*DAY)]);
+    assert.equal(docs.get('n').originActivityAt,isoOf(t0+80*DAY));assert.equal(docs.get('ok').originActivityAt,isoOf(t0+5*DAY));assert.equal(docs.get('bad').originActivityAt,undefined);
+  }
+  // 쓰는 쪽 규칙: 채우는 쓰기는 칸과 판 번호를 함께, 채우지 않는 쓰기는 맞던 칸의 판 번호만 따라가고 어긋난 칸은 어긋난 채 둔다.
+  assert.deepEqual(withOriginActivity({revision:3,originActivityAt:'x',originActivityRev:3},{revision:4,originActivityAt:'x',originActivityRev:3},{at:'y',touch:true}),{revision:4,originActivityAt:'y',originActivityRev:4});
+  assert.deepEqual(withOriginActivity({revision:3,originActivityAt:'x',originActivityRev:3},{revision:4,originActivityAt:'x',originActivityRev:3},{touch:false}),{revision:4,originActivityAt:'x',originActivityRev:4});
+  assert.deepEqual(withOriginActivity({revision:3,originActivityAt:'x',originActivityRev:2},{revision:4,originActivityAt:'x',originActivityRev:2},{touch:false}),{revision:4,originActivityAt:'x',originActivityRev:2});
+  // 76일 예고 뒤 89일에 인물 일 → 예고가 풀리고, 그 인물이 92일에 귀속돼도(귀속도 원 의뢰 쪽 움직임) 옛 예고는 되살아나지 않는다(GPT 서버 검수 GA1).
+  personas.length=0;personas.push({id:'e',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+92*DAY),...on(t0+92*DAY)});
+  assert.equal(requestClock(store,row({},{requestRetentionNotice:{at:isoOf(t0+76*DAY)}}),isoOf(t0+93*DAY)).noticed,false);
   personas.length=0;
   personas.push({id:'d',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:'언젠가'});
   assert.deepEqual(requestClock(store,row(),isoOf(t0)),{unclear:'date'},'날짜를 못 읽으면 지우지 않는다');
@@ -241,13 +251,14 @@ test('방 안 의뢰서의 실제 제출 길(request_submit)이 동의 때를 �
 test('인물 쪽 일(프로젝트 updatedAt을 옮기지 않음)로 시계가 다시 돌면 의뢰 기록 · 인물 예고 알림과 데스크 줄이 사라진다(카본 서버 검수 A1)',async t=>{
   const f=await fixture(t),{store}=f.app,start=f.stamp;
   const id=await f.send(),personaId=randomUUID();
-  store.put('pulsePersonas',personaId,{id:personaId,originProjectId:id,workspaceId:null,kind:'virtual',status:'ready',displayName:'합성 인물',createdAt:isoOf(start),updatedAt:isoOf(start)});
+  store.put('pulsePersonas',personaId,{id:personaId,originProjectId:id,workspaceId:null,kind:'virtual',status:'ready',displayName:'합성 인물',revision:1,createdAt:isoOf(start),updatedAt:isoOf(start)});
   f.stamp=start+77*DAY;
   const swept=await f.sweep();assert.equal(swept.requests.noticed,1);assert.equal(swept.retention.noticed,1);
   const types=async()=>(await f.staff('/api/client-projects/'+id+'/news')).data.items.map(item=>item.type).filter(type=>/retention/.test(type)).sort();
   assert.deepEqual(await types(),['persona_retention_notice','request_retention_notice']);
-  // 80일: 인물 쪽 직원 일 — 인물 문서만 움직인다(프로젝트 updatedAt은 그대로).
-  f.stamp=start+80*DAY;store.put('pulsePersonas',personaId,{...store.get('pulsePersonas',personaId),updatedAt:isoOf(f.stamp)});
+  // 80일: 데스크의 인물 내부 메모 — 인물 문서만 움직인다(프로젝트 updatedAt은 그대로). 쓰는 쪽이 원 의뢰 쪽 움직임 칸을 채운다.
+  f.stamp=start+80*DAY;{const note=await f.staff('/api/personas/'+personaId,{body:{action:'note',text:'다음 주 다시',revision:store.get('pulsePersonas',personaId).revision}});assert.equal(note.status,200,JSON.stringify(note.data));}
+  assert.equal(store.get('pulsePersonas',personaId).originActivityAt,isoOf(f.stamp));
   assert.equal(f.row(id).updatedAt,isoOf(start));
   assert.deepEqual(await types(),[],'두 예고 모두 낡았다');
   assert.equal((await f.staff('/api/client-projects/'+id+'/studio')).data.project.requestRetention,undefined,'데스크 줄도 없다');

@@ -186,28 +186,52 @@ export const stoppedDeleteDue=(clock,now)=>!!clock&&!clock.unclear&&clock.notice
 export const paymentEverConfirmed=request=>Array.isArray(request?.paymentLog)?request.paymentLog.some(entry=>entry?.kind==='confirmed'):!!request?.payment?.confirmedAt;
 // 돌려줌: null — 시계 없음(의뢰서를 내지 않음 · 이미 지운 의뢰 · 제작한 프로젝트). {unclear} — 날짜를 못 읽음(지우지 않고 센다).
 //   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt,keepPayment?} — 마지막 움직임 = max(프로젝트 updatedAt, 이 프로젝트에서 나온 인물의 마지막 움직임)
-//   (인물 쪽 일이 더 늦으면 보인 날짜가 맞게 — 설계 검토 D4). 붙잡는 인물만이 아니라 이 프로젝트에서 나온 모든 인물을 보되, 브랜드 인물은 귀속된 때까지,
-//   시계가 지운 인물은 지우기 직전까지다(personaActivity).
+//   (인물 쪽 일이 더 늦으면 보인 날짜가 맞게 — 설계 검토 D4). 인물 쪽 움직임은 쓰는 쪽이 남긴 originActivityAt 칸만 읽는다(originActivity — 아래).
 //   예고는 마지막 움직임보다 «뒤»에 나간 것만, 지우는 날은 인물 시계와 같은 식.
 //   keepPayment — 결제가 확인됐다가 취소된 의뢰: 지울 때 결제 기록(payment · paymentLog)만 남긴다(설계 검토 D7).
-// 인물 쪽에서 이 의뢰의 마지막 움직임(의뢰 기록 시계용). 셋으로 나눈다.
-// ① 브랜드에 귀속된 인물(묘비 포함)은 마지막으로 귀속된 때(이력의 reuse_approved — 귀속 취소 뒤 다시 들어가면 그때). 귀속 뒤 브랜드에서 한 일(다시 쓰기 동의 연장 ·
-//    지우기 요청 · 브랜드 시계의 지우기)은 원 의뢰의 움직임이 아니다(GPT 서버 다시 검수 GA1). 귀속 전의 일은 귀속된 때보다 앞이라 그 안에 들고, 귀속 자체가 움직임이라
-//    인물 일로 풀린 예고가 귀속 뒤 되살아나지 않는다(GPT 서버 검수 GA1). 이력에서 귀속된 때를 못 찾으면 NaN(날짜를 못 읽음 — 지우지 않고 센다).
-// ② 시계가 지운(지우는 중 포함) 브랜드 없는 인물은 지우기 직전의 움직임 — 지우기 기록이 updatedAt을 옮겨도 그 앞 직원 일로 풀린 예고가 되살아나지 않게(GA3).
-//    지우기 직전 날짜(deletion.lastActivityAt)가 없는 옛 묘비는 그 이력의 사람 손 항목, 그것도 없으면 null(보지 않음).
-// ③ 그 밖의 브랜드 없는 인물(이 의뢰를 붙잡는 인물 · 직원이 지운 인물)은 updatedAt.
-export function personaActivity(persona){
-  const history=Array.isArray(persona?.history)?persona.history:[];
-  if(persona?.workspaceId){
-    for(let i=history.length-1;i>=0;i--)if(history[i]?.action==='reuse_approved')return Date.parse(history[i].at);
-    return NaN;
-  }
-  if(!((persona?.deletedAt||['deleting','deleted'].includes(persona?.status))&&persona?.deletion?.confirmedBy==='system'))return Date.parse(persona?.updatedAt);
-  const kept=Date.parse(persona.deletion.lastActivityAt);if(Number.isFinite(kept))return kept;
+// 원 의뢰 쪽 움직임 칸(의뢰 기록 시계 — GPT 서버 검수 세 회차 뒤 구조를 바꿈, Fable 5.2 설계 검토 「고쳐서 진행」 11-18).
+// 인물 문서의 updatedAt과 이력은 브랜드 쪽 일 · 시스템 기록 · 지우기도 옮기고, 이력은 200건에서 잘린다. 그래서 읽는 쪽이 「원 의뢰에서 한 일」을 거꾸로 맞히지 않고,
+// 쓰는 쪽이 같은 트랜잭션에서 칸 하나를 채운다.
+//   originActivityAt — 이 인물을 두고 원 의뢰에서 사람이 마지막으로 한 일의 때. 채우는 쓰기: 원 프로젝트의 손님 방 · 데스크 쓰기와 인물 만들기(이 모듈 —
+//     다시 쓰기 프로젝트 방의 사용 확인은 채우지 않는다), 브랜드 없는 인물에 사람이 한 Workspace 쓰기와 귀속 · 귀속 취소(pulse-workspaces). 귀속 뒤 브랜드 쪽 일
+//     (동의 연장 · 철회 · 지우기 요청 · 사용 중지와 그 풀기)과 시스템 쓰기(예고 · 닫기 · 시계의 지우기 · 묘비)는 채우지 않는다.
+//   originActivityRev — 이 칸을 아는 코드가 마지막으로 쓴 판 번호. 인물의 revision과 어긋나면 이 칸을 모르는 코드가 그 뒤에 썼다는 뜻이라 칸을 믿지 않고
+//     남기는 쪽으로 다시 잰다(legacyOriginActivity). 쓸기가 회차마다 그런 인물을 다시 채운다(backfillOriginActivity).
+export function withOriginActivity(prev,next,{at,touch}){
+  if(touch)return {...next,originActivityAt:at,originActivityRev:next.revision};
+  return typeof prev?.originActivityAt==='string'&&prev.originActivityRev===prev.revision?{...next,originActivityRev:next.revision}:next;
+}
+// 귀속 뒤 브랜드 쪽 동작(pulse-workspaces) — 옛 브랜드 인물의 이력에서 원 의뢰의 일이 아닌 것.
+const BRAND_SIDE=new Set(['reuse_renewed','reuse_withdrawn','paused','unpaused','deletion_requested','deleting','retention_deleting']);
+// 칸이 없거나 어긋난 인물의 값(남기는 쪽 — 늦게 잡을수록 오래 남는다). 칸이 있으나 어긋났으면 max(칸, updatedAt).
+// 칸이 없으면: 브랜드 없는 인물은 updatedAt, 브랜드 인물과 시계가 지운 인물은 이력에서 사람이 한 원 의뢰 쪽 마지막 항목(브랜드 인물은 귀속과 귀속 뒤 데스크 일을
+// 넣고 브랜드 쪽 동작을 뺀다 — Fable 설계 검토 2), 못 찾으면 updatedAt.
+export function legacyOriginActivity(persona){
+  const own=Date.parse(persona?.updatedAt);
+  if(typeof persona?.originActivityAt==='string'){const kept=Date.parse(persona.originActivityAt);return Number.isFinite(kept)&&Number.isFinite(own)?Math.max(kept,own):NaN;}
+  const systemGone=(persona?.deletedAt||['deleting','deleted'].includes(persona?.status))&&persona?.deletion?.confirmedBy==='system';
+  if(!persona?.workspaceId&&!systemGone)return own;
   let best=null;
-  for(const entry of history){if(!entry||entry.actorKind==='system')continue;const at=Date.parse(entry.at);if(Number.isFinite(at)&&(best===null||at>best))best=at;}
-  return best;
+  for(const entry of Array.isArray(persona?.history)?persona.history:[]){
+    if(!entry||entry.actorKind==='system'||(persona.workspaceId&&BRAND_SIDE.has(entry.action)))continue;
+    const at=Date.parse(entry.at);if(Number.isFinite(at)&&(best===null||at>best))best=at;
+  }
+  return best??own;
+}
+export const originActivityAligned=persona=>typeof persona?.originActivityAt==='string'&&persona.originActivityRev===persona.revision;
+// 의뢰 기록 시계가 읽는 값. NaN이면 날짜를 못 읽음(지우지 않고 센다).
+export function originActivity(persona){return originActivityAligned(persona)?Date.parse(persona.originActivityAt):legacyOriginActivity(persona);}
+// 쓸기 회차 머리(시작 회차 포함): 칸이 없거나 어긋난 인물을 다시 채운다. 시스템 쓰기다 — revision · updatedAt · 이력을 옮기지 않는다.
+export function backfillOriginActivity(store){
+  let filled=0;
+  for(const {id} of store.all(K.personas).filter(item=>item&&!originActivityAligned(item))){
+    store.transaction(()=>{
+      const persona=store.get(K.personas,id);if(!persona||originActivityAligned(persona))return;
+      const at=legacyOriginActivity(persona);if(!Number.isFinite(at))return;
+      store.put(K.personas,id,{...persona,originActivityAt:new Date(at).toISOString(),originActivityRev:persona.revision});filled++;
+    });
+  }
+  return filled;
 }
 export function requestClock(store,row,now){
   const request=row?.studio?.request;
@@ -216,7 +240,7 @@ export function requestClock(store,row,now){
   if(!Number.isFinite(touched)||!Number.isFinite(at))return {unclear:'date'};
   let last=touched;
   for(const persona of store.all(K.personas).filter(item=>item?.originProjectId===row.id)){
-    const own=personaActivity(persona);if(own===null)continue;if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;
+    const own=originActivity(persona);if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;
   }
   const clockAt=last+STOPPED_DAYS*DAY_MS,sent=Date.parse(row.requestRetentionNotice?.at),noticed=Number.isFinite(sent)&&sent>last;
   const iso=value=>new Date(value).toISOString();
@@ -293,10 +317,12 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   const usageOf=(row,persona)=>{const usage=row?.studio?.request?.personaUsage;return object(usage)&&usage.personaId===persona.id?usage:null;};
   function getPersona(id){const persona=typeof id==='string'&&UUID.test(id)?store.get(K.personas,id):null;if(!live(persona))throw fail('그 인물을 찾지 못했어요.',404);return persona;}
 
-  function putPersona(persona,{action,actorKind,actor,from}){
+  // origin — 이 쓰기가 인물의 원 프로젝트(손님 방 · 데스크)에서 일어났는지. 다시 쓰기 프로젝트 방의 사용 확인만 false다(Fable 설계 검토 1).
+  function putPersona(persona,{action,actorKind,actor,from,origin=true}){
     const at=clock(),next={...persona,revision:(persona.revision||0)+1,updatedAt:at};
     next.history=[...(persona.history||[]),{id:randomUUID(),at,action,actorKind,actor:String(actor||''),from:from??persona.status,to:next.status}].slice(-PERSONA_LIMITS.history);
-    store.put(K.personas,next.id,next);return next;
+    const out=withOriginActivity(persona,next,{at,touch:origin&&actorKind!=='system'});
+    store.put(K.personas,out.id,out);return out;
   }
   // 원 프로젝트에 기록 한 줄(90일 시계 · 직원 · 손님 화면 새로 읽기). studio를 넘기면 그것도 함께 쓴다.
   function touch(row,action,actor,studio=null){
@@ -404,7 +430,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
     const asked=askedOf(request);
     const persona={id:randomUUID(),schemaVersion:1,workspaceId:null,originProjectId:projectId,kind:asked.kind,status:'submitted',revision:1,
       request:asked.request,
-      displayName:'',why:'',quote:null,currentRevisionId:null,staffNote:'',createdAt:at,updatedAt:at,history:[{id:randomUUID(),at,action:'created',actorKind:'customer',actor:'customer',from:'',to:'submitted'}]};
+      displayName:'',why:'',quote:null,currentRevisionId:null,staffNote:'',createdAt:at,updatedAt:at,originActivityAt:at,originActivityRev:1,history:[{id:randomUUID(),at,action:'created',actorKind:'customer',actor:'customer',from:'',to:'submitted'}]};
     store.put(K.personas,persona.id,persona);
     for(const file of files.slice(0,PERSONA_LIMITS.sources))store.put(K.sources,file.id,{id:file.id,personaId:persona.id,projectId,purpose:PERSONA_PURPOSE[file.slot]||'mood',diskName:file.diskName,fileName:file.fileName,mimeType:file.mimeType,byteSize:file.byteSize,sha256:file.sha256,inline:!!file.inline,at:file.at||at,by:'customer'});
     return persona;
@@ -463,11 +489,11 @@ export function createPersonaService({store,clientProjects,features=null,localeO
         const studio=structuredClone(row.studio),usage=studio.request.personaUsage;
         studio.request={...studio.request,personaUsage:{...usage,approvalId:approval.id,approvedAt:at}};
         studio.strategy=withPersonaRef(studio.strategy,{personaId:persona.id,revisionId},{at,author:'customer',authorId:'customer',authorName:row.customerName});
-        putPersona(persona,{action:label,actorKind:'customer',actor:'customer'});
+        putPersona(persona,{action:label,actorKind:'customer',actor:'customer',origin:row.id===persona.originProjectId});
         touch(row,'전용 인물 이번 광고 사용 확인','customer',studio);
         return {approval:approval.id};
       }
-      putPersona({...persona,status:personaNext(persona,{by:'customer',kind:input.kind,decision:input.decision}),why:''},{action:label,actorKind:'customer',actor:'customer'});
+      putPersona({...persona,status:personaNext(persona,{by:'customer',kind:input.kind,decision:input.decision}),why:''},{action:label,actorKind:'customer',actor:'customer',origin:row.id===persona.originProjectId});
       touch(row,input.decision==='approve'?'전용 인물 확인':'전용 인물 고칠 점','customer');
       return {approval:approval.id};
     });

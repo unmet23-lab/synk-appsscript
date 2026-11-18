@@ -321,7 +321,9 @@ test('시나리오 8: 다시 쓰기 의뢰는 사진 · 학습 없이 붙이기 
   // 이 방에서는 사용 확인(usage)만 — 다른 종류는 최신 판 안내(409).
   const wrongKind=await a.call('/pulse/api/persona/approve',{body:{personaId:view.id,kind:'reference',revisionId:view.awaiting.revisionId,viewedHash:view.awaiting.viewedHash,idempotencyKey:randomUUID(),decision:'approve'},csrf:room.csrf});
   assert.equal(wrongKind.status,409);
+  const originBefore=f.store().get('pulsePersonas',view.id).originActivityAt;assert.ok(originBefore);
   assert.equal((await a.approve(view)).status,200);
+  assert.equal(f.store().get('pulsePersonas',view.id).originActivityAt,originBefore,'다시 쓰기 방의 사용 확인은 원 의뢰 쪽 움직임이 아니다(Fable 5.2 설계 검토 1)');
   const project=f.store().get('clientProjects',sent.projectId);
   assert.deepEqual(project.studio.strategy.data.castingSelection.personaRef,{personaId:x.personaId,revisionId:x.revisionId});
   // 제작 시작(이미지 판 확인)까지: 실제 가드로 다시 본다.
@@ -691,7 +693,9 @@ test('다시 쓰기 보관 12개월 뒤 지우기(결정 표 11-11 ④ · ①): 
   // 쓰는 중인 다시 쓰기 의뢰(연결 확인 뒤 · 끝나지 않음).
   const running=await f.reuseRequest(busy.b,busy.w,busy.p.personaId,busy.p.revisionId);assert.equal((await f.confirm(running.projectId)).status,200);
   // 반년 뒤 연장 → 지우는 날이 그 연장의 기한 + 30일로 옮겨 간다.
+  const renewOrigin=f.store().get('pulsePersonas',renew.p.personaId).originActivityAt;
   advance(f,183*86400000);await renew.b.login(ids.a);await f.keep(renew.b,renew.w,renew.p.personaId);
+  assert.equal(f.store().get('pulsePersonas',renew.p.personaId).originActivityAt,renewOrigin,'귀속 뒤 동의 연장은 원 의뢰 쪽 움직임이 아니다(GPT 서버 다시 검수 GA1)');
   const renewed=f.store().all('pulsePersonaApprovals').filter(item=>item.kind==='reuse'&&item.personaId===renew.p.personaId&&item.decision==='approve').at(-1).terms.deleteAt;
   assert.ok(Date.parse(renewed)>Date.parse(deleteAt)+150*86400000);
   // 원 프로젝트들의 의뢰 기록 예고(판 4 설계 11-7) — 14일 뒤 회차부터 「지운 의뢰」가 된다(브랜드 인물은 의뢰 기록과 상관없다).
@@ -921,7 +925,7 @@ test('90일 시계 · 예고 전에는 지우지 않는다(배포 · 복원 직�
   const brand=await f.staff('/api/customer-workspaces/'+wc);assert.equal(brand.data.workspace.pending[0].deleteAt,pending.deleteAt,'직원 브랜드 화면의 보관 대기에도');
   assert.equal((await b.member('/models')).data.workspaces.find(item=>item.id===wb).models[0].deleteAt===pending.deleteAt,false,'브랜드 인물은 브랜드 시계');
   // ① 옛 날짜(복원으로 300일 전 움직임만 남음), 예고 없음 → 첫 쓸기는 예고만, 지우는 날은 지금 + 14일 — 서버를 다시 띄워도 그 전에는 그대로.
-  const old=isoOf(t0-300*DAY);f.store().put('clientProjects',x.projectId,{...projectOf(f,x.projectId),updatedAt:old});f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),updatedAt:old});
+  const old=isoOf(t0-300*DAY);f.store().put('clientProjects',x.projectId,{...projectOf(f,x.projectId),updatedAt:old});f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),updatedAt:old,originActivityAt:old});
   assert.deepEqual((await sweep(f)).retention,{deleted:0,held:0,failed:0,noticed:1},'옛 날짜여도 예고 없이 지우지 않는다');
   assert.equal((await stoppedView(f,x.personaId,x.projectId)).deleteAt,endOf(t0+14*DAY));
   await f.restart();f.stamp=t0+14*DAY-60000;assert.equal((await sweep(f)).retention,undefined,'예고 + 14일 전에는 그대로');
@@ -945,7 +949,7 @@ test('90일 시계 · 지운 뒤 원 프로젝트(설계 검토 P2): 손님 방�
   const b=f.browser(),y=await f.readyPersona(b);unlisted(f,y.projectId);
   const now=f.stamp,old=isoOf(now-200*DAY);
   f.store().put('clientProjects',y.projectId,{...projectOf(f,y.projectId),updatedAt:old});
-  f.store().put('pulsePersonas',y.personaId,{...personaOf(f,y.personaId),updatedAt:old,retentionNotice:{at:isoOf(now-20*DAY),deleteAt:isoOf(now-6*DAY),reason:'origin_stopped'}});
+  f.store().put('pulsePersonas',y.personaId,{...personaOf(f,y.personaId),updatedAt:old,originActivityAt:old,retentionNotice:{at:isoOf(now-20*DAY),deleteAt:isoOf(now-6*DAY),reason:'origin_stopped'}});
   assert.deepEqual((await sweep(f)).retention,{deleted:1,held:0,failed:0});
   const removedAt=personaOf(f,y.personaId).deletion.confirmedAt;assert.equal(removedAt,isoOf(now));
   const room=(await b.room()).project;
@@ -978,6 +982,7 @@ test('90일 시계 · 카본 서버 검수 A1 두 회차(한 길): 공개 의뢰
   f.stamp+=60000;
   const unassigned=await f.personaAct(y.personaId,{action:'unassign',note:'잘못 묶은 것을 바로잡음'});assert.equal(unassigned.status,200,JSON.stringify(unassigned.data));
   const unassignedAt=f.stamp;
+  assert.equal(personaOf(f,y.personaId).originActivityAt,isoOf(unassignedAt),'귀속 취소는 원 의뢰 쪽 움직임이다(Fable 5.2 설계 검토 4)');
   assert.equal((await sweep(f)).retention,undefined,'정리된 의뢰의 인물이어도 귀속 취소 직후 지우지 않는다');
   assert.equal(personaOf(f,y.personaId).status,'ready');
   assert.deepEqual(await stoppedView(f,y.personaId,y.projectId),{deleteAt:endOf(unassignedAt+90*DAY),noticed:false,noticeAt:null,lastAt:isoOf(unassignedAt),retired:true});
@@ -1006,10 +1011,10 @@ test('90일 시계 · 한 길의 남은 자리(Fable 5.2 설계 검토): 이미 
   const row=projectOf(f,x.projectId),now=f.stamp;
   for(const item of f.store().all('pulseRequests').filter(entry=>entry.projectId===x.projectId))f.store().remove('pulseRequests',item.id);
   f.store().put('clientProjects',row.id,{...row,stage:'archived',updatedAt:isoOf(now-DAY),studio:{...row.studio,request:{...row.studio.request,status:'retired',retiredAt:isoOf(now-DAY)}}});
-  f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),updatedAt:isoOf(now-100*DAY)});
+  f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),updatedAt:isoOf(now-100*DAY),originActivityAt:isoOf(now-100*DAY)});
   // 날짜를 못 읽는 인물(옛 자료): 지우지 않고 결과에 센다.
   const b=f.browser(),y=await f.readyPersona(b);unlisted(f,y.projectId);
-  f.store().put('pulsePersonas',y.personaId,{...personaOf(f,y.personaId),updatedAt:'언젠가'});
+  f.store().put('pulsePersonas',y.personaId,{...personaOf(f,y.personaId),updatedAt:'언젠가',originActivityAt:'언젠가'});
   assert.deepEqual((await sweep(f)).retention,{deleted:0,held:0,failed:0,noticed:1,unclear:1},'지운 의뢰의 인물도 예고 없이 지우지 않는다');
   assert.equal(personaOf(f,x.personaId).status,'ready');
   assert.deepEqual(await stoppedView(f,y.personaId,y.projectId),{unclear:true});
@@ -1026,10 +1031,10 @@ test('90일 시계 · 한 길의 남은 자리(Fable 5.2 설계 검토): 이미 
   await sweep(f);
   // 공개 의뢰서 대기 줄은 접수 뒤 하루가 지나면 뗀다 — 지우기는 의뢰 기록 시계 하나가 한다(GPT 서버 다시 검수 GA4).
   assert.equal(f.store().all('pulseRequests').filter(item=>item.projectId===held).length,0,'하루가 지난 대기 줄은 뗀다');
-  const kept=f.store().all('pulsePersonas').find(item=>item.originProjectId===held).updatedAt;
+  const kept=f.store().all('pulsePersonas').find(item=>item.originProjectId===held).originActivityAt;
   // 의뢰 기록 90일 시계(판 4 설계 11-7, Fable 설계 검토 D10): 보관한 의뢰도 같은 시계 — 91일 회차의 예고 뒤 14일, 인물을 지운 같은 회차에 의뢰 기록도 지우고 대기 줄을 뗀다.
   f.stamp=afterDay(f.stamp+14*DAY);const swept=await sweep(f);
-  {const tomb=f.store().all('pulsePersonas').find(item=>item.originProjectId===held);assert.equal(tomb.status,'deleted');assert.equal(tomb.deletion.lastActivityAt,kept,'시계가 지운 인물은 지우기 직전의 움직임을 남긴다(GPT 서버 다시 검수 GA3)');}
+  {const tomb=f.store().all('pulsePersonas').find(item=>item.originProjectId===held);assert.equal(tomb.status,'deleted');assert.equal(tomb.originActivityAt,kept,'묘비는 원 의뢰 쪽 움직임 칸을 들고 간다(GPT 서버 다시 검수 GA3)');assert.equal(tomb.originActivityRev,tomb.revision);}
   assert.equal(swept.retired,1,'보관한 의뢰도 예고 뒤 지운다');assert.equal(projectOf(f,held).studio.request.status,'retired');
   assert.equal(f.store().all('pulseRequests').filter(item=>item.projectId===held).length,0,'지운 의뢰의 대기 줄을 뗀다');
 });
@@ -1041,7 +1046,7 @@ test('90일 시계 · 카본 서버 끝 판 A1: 정리된 의뢰에 남은 인�
   const now=f.stamp,retiredAt=isoOf(now-DAY);
   for(const item of f.store().all('pulseRequests').filter(entry=>entry.projectId===x.projectId))f.store().remove('pulseRequests',item.id);
   f.store().put('clientProjects',x.projectId,{...projectOf(f,x.projectId),stage:'archived',updatedAt:retiredAt,studio:{...projectOf(f,x.projectId).studio,request:{...projectOf(f,x.projectId).studio.request,status:'retired',retiredAt}}});
-  f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),updatedAt:isoOf(now-80*DAY+3600000)});
+  f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),updatedAt:isoOf(now-80*DAY+3600000),originActivityAt:isoOf(now-80*DAY+3600000)});
   f.stamp=now+DAY;assert.equal((await sweep(f)).retention?.noticed,1,'정리된 의뢰의 인물도 예고부터');
   assert.equal((await stoppedView(f,x.personaId,x.projectId)).retired,true);
   // 담당자가 보관을 풀고(쓰기) 기록을 남긴다 — 프로젝트 updatedAt이 정리 때보다 뒤로 → 예고가 풀리고 그날부터 90일.

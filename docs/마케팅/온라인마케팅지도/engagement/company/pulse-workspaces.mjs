@@ -7,7 +7,7 @@
 import {randomUUID,createHash} from 'node:crypto';
 import {unlink,open} from 'node:fs/promises';
 import {join} from 'node:path';
-import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersonaRef,reuseStateOf,reuseUntil,reuseDeleteAt,consentAllowsReuse,stoppedClock,stoppedNoticeDue,stoppedDeleteDue} from './pulse-personas.mjs';
+import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersonaRef,reuseStateOf,reuseUntil,reuseDeleteAt,consentAllowsReuse,stoppedClock,stoppedNoticeDue,stoppedDeleteDue,withOriginActivity} from './pulse-personas.mjs';
 import {personaRefOf} from './public/pulse-app/casting-choice.mjs';
 import {withTranslation} from './pulse-translations.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
@@ -73,10 +73,12 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     next.history=[...(workspace.history||[]),{id:randomUUID(),at,action,actorKind,actor:String(actor||''),...(subject?{subject}:{}),...(note?{note}:{})}].slice(-WORKSPACE_LIMITS.history);
     store.put(K.workspaces,next.id,next);return next;
   }
+  // 원 의뢰 쪽 움직임 칸(pulse-personas withOriginActivity): 사람이 브랜드 없는 인물에 한 일과 귀속 · 귀속 취소만 채운다(Fable 5.2 설계 검토 4, 11-18).
   function putPersona(persona,patch,{action,actorKind,actor}){
     const at=clock(),next={...persona,...patch,revision:(persona.revision||0)+1,updatedAt:at};
     next.history=[...(persona.history||[]),{id:randomUUID(),at,action,actorKind,actor:String(actor||''),from:persona.status,to:next.status}].slice(-200);
-    store.put(K.personas,next.id,next);return next;
+    const out=withOriginActivity(persona,next,{at,touch:actorKind!=='system'&&(!persona.workspaceId||!next.workspaceId)});
+    store.put(K.personas,out.id,out);return out;
   }
   // 프로젝트에 기록 한 줄과 함께 칸을 바꾼다(드롭할 칸은 undefined로 넘긴다).
   function touchProject(row,patch,action,actor){
@@ -614,7 +616,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     const noVault=[...new Set([...(persona.deletion?.noVault||[]),...(Array.isArray(persona.removedNoVault)?persona.removedNoVault:[]),...names.map(name=>hashes.get(name))])].filter(hash=>typeof hash==='string'&&SHA256.test(hash)).sort();
     store.remove(K.consents,persona.id);
     const system=actorKind==='system';
-    putPersona(persona,{status:'deleting',pendingUnlink:[...new Set(names)],deletion:{confirmedAt:now,confirmedBy:system?'system':actor,note,requested:persona.deletionRequest||null,...(reason?{reason}:{}),...(system&&persona.updatedAt?{lastActivityAt:persona.updatedAt}:{}),noVault}},{action:system?'retention_deleting':'deleting',actorKind,actor:system?'':actor});
+    putPersona(persona,{status:'deleting',pendingUnlink:[...new Set(names)],deletion:{confirmedAt:now,confirmedBy:system?'system':actor,note,requested:persona.deletionRequest||null,...(reason?{reason}:{}),noVault}},{action:system?'retention_deleting':'deleting',actorKind,actor:system?'':actor});
     const workspace=persona.workspaceId?store.get(K.workspaces,persona.workspaceId):null;if(workspace)putWorkspace(workspace,{action:system?'model_retention_deleting':'model_deleting',actorKind,actor:system?'':actor,note,subject:persona.id});
   }
 
@@ -639,7 +641,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   const STOPPED_NOTE='제작으로 이어지지 않은 채 90일 동안 진행이 없어 지움',RETIRED_NOTE='원 의뢰를 90일 정리한 뒤 예고하고 지움';
   // 시스템 쓰기는 시계(updatedAt)를 옮기지 않는다(설계 검토 P2 — 공개 의뢰서 90일 정리 · 인물 시계가 밀리지 않게). 판(revision)은 올려 열린 직원 화면이 새로 읽게 한다.
   function systemPersona(persona,patch,action,now){
-    const next={...persona,...patch,revision:(persona.revision||0)+1,updatedAt:persona.updatedAt};
+    const next=withOriginActivity(persona,{...persona,...patch,revision:(persona.revision||0)+1,updatedAt:persona.updatedAt},{touch:false});
     next.history=[...(persona.history||[]),{id:randomUUID(),at:now,action,actorKind:'system',actor:'',from:persona.status,to:next.status}].slice(-200);
     store.put(K.personas,next.id,next);return next;
   }
@@ -727,7 +729,9 @@ export function createWorkspaceService({store,clientProjects,features=null,local
       const tomb={id:current.id,schemaVersion:current.schemaVersion||1,workspaceId:current.workspaceId??null,originProjectId:current.originProjectId,kind:current.kind,displayName:current.displayName||'',status:'deleted',revision:(current.revision||0)+1,
         currentRevisionId:current.currentRevisionId||null,revisionIds,createdAt:current.createdAt,updatedAt:at,deletedAt:at,deletion:{...(current.deletion||{}),finishedAt:at},pendingUnlink:[],
         history:[...(current.history||[]),{id:randomUUID(),at,action:'deleted',actorKind:'system',actor:'',from:'deleting',to:'deleted'}].slice(-200)};
-      store.put(K.personas,tomb.id,tomb);
+      // 묘비는 원 의뢰 쪽 움직임 칸을 들고 간다(시스템 쓰기 — 칸을 채우지 않고, 맞던 칸이면 판 번호만 따라간다, Fable 5.2 설계 검토 3).
+      const kept=typeof current.originActivityAt==='string'?withOriginActivity(current,{...tomb,originActivityAt:current.originActivityAt,originActivityRev:current.originActivityRev},{touch:false}):tomb;
+      store.put(K.personas,kept.id,kept);
     });
   }
   async function resumeDeletions(){
