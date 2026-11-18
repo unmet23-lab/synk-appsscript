@@ -73,7 +73,11 @@ export function gcsClient({credentials,fetchImpl=fetch,base='https://storage.goo
     const token=await credentials.token();
     const signal=stop?AbortSignal.any([AbortSignal.timeout(timeout),stop]):AbortSignal.timeout(timeout);
     const r=await fetchImpl(url,{...init,headers:{...init.headers,authorization:'Bearer '+token},redirect:'error',signal});
-    if(!r.ok&&!allow.includes(r.status)){const text=await r.text().catch(()=>'');throw fail('미디어 버킷 요청이 실패했어요.',502,'MEDIA_GCS_'+r.status+(text?'':''));}
+    if(!r.ok){
+      // 404·412를 허용한 호출도 상태만 쓴다. 스트림 정리가 늦거나 실패해도 받은 HTTP 상태를 전달한다.
+      r.body?.cancel().catch(()=>{});
+      if(!allow.includes(r.status))throw fail('미디어 버킷 요청이 실패했어요.',502,'MEDIA_GCS_'+r.status);
+    }
     return r;
   }
   const objectUrl=(bucket,name)=>base+'/storage/v1/b/'+encodeURIComponent(bucket)+'/o/'+encodeURIComponent(name);

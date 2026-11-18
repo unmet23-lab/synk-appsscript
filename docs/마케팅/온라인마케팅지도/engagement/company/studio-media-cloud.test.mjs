@@ -15,6 +15,24 @@ import {createMediaCloud,gcsClient,MEDIA_CLOUD_KIND,SWITCH_FILE,ensureLocalMedia
 const BUCKET='synk-company-media-931078180935',KiB=1024;
 const md5b64=b=>createHash('md5').update(b).digest('base64'),sha=b=>createHash('sha256').update(b).digest('hex');
 
+test('GCS discards error bodies without reading them and preserves the HTTP result if cleanup fails',async()=>{
+  const credentials={token:async()=>'test-token'};
+  for(const status of [503,404]){
+    let pulls=0,cancels=0;
+    const body=new ReadableStream({
+      pull(controller){pulls++;controller.close();},
+      cancel(){cancels++;throw new Error('stream cleanup failed');}
+    },{highWaterMark:0});
+    const client=gcsClient({credentials,fetchImpl:async()=>new Response(body,{status})});
+    const lookup=client.stat(BUCKET,'synthetic');
+    if(status===404)assert.equal(await lookup,null);
+    else await assert.rejects(lookup,{message:'미디어 버킷 요청이 실패했어요.',status:502,code:'MEDIA_GCS_503'});
+    assert.deepEqual({pulls,cancels},{pulls:0,cancels:1});
+  }
+  const empty=gcsClient({credentials,fetchImpl:async()=>new Response(null,{status:500})});
+  await assert.rejects(empty.stat(BUCKET,'synthetic'),{status:502,code:'MEDIA_GCS_500'});
+});
+
 // 가짜 GCS: 필요한 JSON API만. objects는 name → {bytes, generation, created}.
 async function fakeGcs(){
   const objects=new Map(),calls={upload:0,download:0,list:0,stat:0};let generation=1000,hook=null,downloadHook=null;
