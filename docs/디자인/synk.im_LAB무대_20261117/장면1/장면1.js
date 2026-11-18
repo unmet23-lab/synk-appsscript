@@ -1,8 +1,9 @@
-// LAB 「직접 풀어 보기」 첫 장면 — 줄에 매단 3D 낱말 배지(2026-11-18, 셋째 판).
+// LAB 「직접 풀어 보기」 — 줄에 매단 3D 낱말 배지(2026-11-18, 셋째 판 · 저녁에 나머지 장면을 더함).
 // 30일은 줄 하나다. 보기 세 낱말이 「지금」 자리에 은색 집게로 물린 배지다. 배지 앞면 창에서는 그 말을 하는 인물이 움직인다(옴니 1.2로 구운 짧은 영상).
 // 카드를 누르면 답이 되고, 잡아 끌면 흔들린다. 손을 올리면 그쪽으로 돌아보며 빛이 미끄러지고, 창 속 인물이 그 말을 몸으로 한다.
 // 답하면 틀린 보기는 집게가 열리며 공중에서 돌며 떨어지고, 남은 배지(배울 말)는 뒤집혀 무지갯빛 기록 면에 도장을 받은 뒤 줄을 따라 다음에 돌아올 날로 간다.
-// 이 쪽은 첫 장면(첫 문제 → 맞힘 · 틀림 → 1분 뒤 감기 → 둘째 문제 → 내일로)까지 짓는다. 글은 공개본 원고(../원고.json) 그대로다.
+// 흐름: 첫 문제 → (틀리면 1분 뒤 둘째 문제) → 내일(튜터가 먼저 꺼냄) → 7일 뒤(그림만 보고 떠올리기) → 30일 뒤(겨울, 처음 보는 문제) → 내 위치(기록 면과 큰 도장).
+// 날이 바뀔 때는 탁상 달력이 넘어가고, 아침 · 비 · 눈으로 바탕과 소리가 바뀐다. 글은 공개본 원고(../원고.json)를 따르고, 30일 문제만 줄을 따라 돌아온 말로 바꿨다(README 「나머지 장면」).
 (() => {
   'use strict';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -29,9 +30,20 @@
     backWrong: { say: '또 1분 뒤에 돌아옵니다', sub: '맞힐 때까지 간격이 벌어지지 않습니다.' },
     toMinute: '1분 뒤로', toDay1: '내일로', again: '처음부터 다시',
   };
+  // 날마다(원고 days). 30일 문제는 원고의 「친구가 떨어진 책 → 감사합니다」 대신, 줄을 따라 돌아온 말(안녕하세요)을 처음 보는 장면으로 묻는다.
+  const D = {
+    d1: { head: '내일 아침 · 앱을 열면', chat: '어제 처음 만난 말이에요. 오늘 한 번 더 들어 볼까요?', say: '앱을 열면 튜터가 먼저 꺼냅니다', sub: '복습 시간표를 따로 열지 않습니다. 돌아올 말이 없는 날에는 다른 연습을 권합니다.', next: '7일 뒤로' },
+    d7: { head: '7일 뒤 · 기억나요?', chat: '일주일 만이에요. 이 사람은 뭐라고 했을까요?', chat2: '속으로 말해 보고, 카드를 눌러 확인하세요.', say: '맞혔다고 끝이 아닙니다', sub: '일주일 뒤, 다시 확인할 때입니다. 레슨이나 복습을 이어 가면 처음 보는 문제로 확인합니다.', next: '30일 뒤로' },
+    d30: { head: '30일 뒤 · 처음 보는 문제', say: '한 달 뒤, 처음 보는 문제', sub: '레슨을 이어 가면 같은 항목의 다른 문제가 나옵니다. 외웠는지가 아니라 아는지를 봅니다.', context: '눈 오는 아침, 엘리베이터에서 이웃을 만났어요.', prompt: '이웃에게 어떤 인사를 할까요?', answer: 'c', choices: [['a', '감사합니다.'], ['b', '다녀왔어요.'], ['c', '안녕하세요.']],
+      right: { say: '한 달 뒤에도 혼자 맞혔습니다', sub: '이 답이 30일 칸을 채웁니다. 하루 · 일주일 · 한 달 뒤 확인이 모두 끝났습니다.' }, wrong: { say: '이 칸은 「다시 연습」으로 남습니다', sub: '틀린 답도 그대로 남고, 이 말은 1분 뒤 다른 장면으로 돌아옵니다.' }, next: '내 위치 보기' },
+    me: { head: '내 위치', say: '점수 말고 근거로 봅니다', sub: '게임 · 생활 레슨 · 짧은 진단의 답이 한 기록에 모입니다. 내 위치는 처음 보는 문제를 도움 없이 푼 답으로만 정합니다.', go: 'SYNK WORLD 열기' },
+  };
+  const WORLD = /(^|\.)synk\.im$/.test(location.hostname) ? '/world/' : 'https://synk.im/world/';
 
-  // 낱말마다 창 속 장면(옴니 1.2로 구운 5초 영상과 첫 장 그림). 영상이 없으면 그림만 둔다.
-  const PIC = { '안녕하세요.': { k: 'hello', tone: '#ADD9F5', say: 0.7 }, '감사합니다.': { k: 'thanks', tone: '#F9C7B4', say: 0.8 }, '다녀왔어요.': { k: 'home', tone: '#BCE4D1', say: 0.25 } };
+  // 낱말마다 창 속 장면(옴니 1.2로 구운 5초 영상과 첫 장 그림). 영상이 없으면 그림만 둔다. 30일 뒤에는 같은 인물이 겨울 옷을 입은 판을 쓴다.
+  const PIC = { '안녕하세요.': { k: 'hello', v: 'hello', tone: '#ADD9F5', say: 0.7 }, '감사합니다.': { k: 'thanks', v: 'thanks', tone: '#F9C7B4', say: 0.8 }, '다녀왔어요.': { k: 'home', v: 'home', tone: '#BCE4D1', say: 0.25 } };
+  const PICW = { '안녕하세요.': { k: 'hello-w', v: 'hello', tone: '#CFE6F5', say: 0.7 }, '감사합니다.': { k: 'thanks-w', v: 'thanks', tone: '#F5D3D3', say: 0.8 }, '다녀왔어요.': { k: 'home-w', v: 'home', tone: '#D3EBDD', say: 0.25 } };
+  let winter = false;
   const VIDEO = window.__SCVIDEO !== false;
   const cardSrc = (k, ext) => (window.__CARDDATA && window.__CARDDATA[`${k}.${ext}`]) || `card/${k}.${ext}`;
 
@@ -43,6 +55,7 @@
     slide: { f: 'sound/slide.mp3', g: 0.3 }, tick: { f: 'sound/tick.mp3', g: 0.6 }, whoosh: { f: 'sound/whoosh.mp3', g: 0.26, vary: 0.1 }, pop: { f: 'sound/pop.mp3', g: 0.5 },
     chime: { f: 'sound/chime.wav', g: 0.5 }, notify: { f: 'sound/notify.wav', g: 0.4 },
     vhello: { f: 'sound/v-hello.mp3', g: 0.85 }, vthanks: { f: 'sound/v-thanks.mp3', g: 0.85 }, vhome: { f: 'sound/v-home.mp3', g: 0.85 },
+    rain: { f: 'sound/rain.mp3', g: 0.3 }, wind: { f: 'sound/wind.mp3', g: 0.34 },
   };
   const AC = window.AudioContext || window.webkitAudioContext;
   let ac = null, master = null, soundOn = true;
@@ -106,18 +119,20 @@
       // 휴대폰: 보기 세 장이 폭을 다 쓴다. 날 매듭은 보기가 떨어져 나간 뒤에 나타난다.
       const sp = (W - 2 * gut - CW) / 2;
       slotX = [0, 1, 2].map((i) => gut + CW / 2 + i * sp);
-      const A = gut + (W - 2 * gut) * 0.52, B = W - gut - 14;
-      knotX = [slotX[1], A, A + (B - A) * Math.sqrt(1 / 30), A + (B - A) * Math.sqrt(7 / 30), B];
+      const A = gut + (W - 2 * gut) * 0.36, B = W - gut - CW / 2;
+      knotX = [slotX[1], A, A + (B - A) * (1 / 30) ** 0.4, A + (B - A) * (7 / 30) ** 0.4, B];
     } else {
       const sp = CW + 30;
       slotX = [0, 1, 2].map((i) => gut + 8 + CW / 2 + i * sp);
-      const A = slotX[2] + CW + 40, B = W - gut - 40;
-      knotX = [slotX[1], A, A + (B - A) * Math.sqrt(1 / 30), A + (B - A) * Math.sqrt(7 / 30), B];
+      // 30일 매듭은 카드가 걸려도 오른쪽 끝(「내 위치」 글)에 닿지 않게 둔다. 날 간격은 30일을 0.4제곱으로 눌러 앞쪽 날도 떨어져 보이게 한다.
+      const A = slotX[2] + CW + 40, B = W - gut - CW / 2 - 10;
+      knotX = [slotX[1], A, A + (B - A) * (1 / 30) ** 0.4, A + (B - A) * (7 / 30) ** 0.4, B];
     }
     bracket.style.width = (slotX[2] - slotX[0] + CW) + 'px';
     line.classList.toggle('is-short', narrow || knotX[2] - knotX[1] < 56);
     endTag.style.display = narrow ? 'none' : '';
     for (const c of cards) if (c.home === 'line' && !c.moving && c.at) c.x = c.px = c.dx = posX(c.at);
+    if (skyKind) sizeSky();
   };
 
   /* ── 카드 ── */
@@ -138,11 +153,11 @@
     bindCard(c); cards.add(c); return c;
   };
   function setPic(c) {
-    const m = PIC[c.text]; if (!m || c.picKey === m.k) return; c.picKey = m.k;
+    const m = (winter && PICW[c.text]) || PIC[c.text]; if (!m || c.picKey === m.k) return; c.picKey = m.k; c.pm = m;
     c.pic.style.setProperty('--tone', m.tone);
     const img = new Image(); img.src = cardSrc(m.k, 'jpg'); img.alt = ''; img.decoding = 'async';
     c.pic.replaceChildren(img); c.video = null;
-    if (!VIDEO) return;
+    if (!VIDEO || (window.__CARDDATA && !window.__CARDDATA[m.k + '.mp4'])) return;   // 한 파일로 묶은 쪽에 영상이 없으면 그림만
     const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.poster = cardSrc(m.k, 'jpg');
     v.addEventListener('loadeddata', () => { c.pic.append(v); c.video = v; }, { once: true });
     v.src = cardSrc(m.k, 'mp4');
@@ -150,9 +165,9 @@
   // 창 속 인물이 그 말을 몸으로 한다(처음부터 한 번). 이미 하고 있으면 그대로 둔다.
   // voice가 참이면 그 말을 소리로도 한다(처음 떨어질 때는 셋이 겹치므로 몸짓만).
   const act = (c, again = false, voice = false) => {
-    const m = PIC[c.text], v = c.video, busy = v && !v.paused && !v.ended;
+    const m = c.pm, v = c.video, busy = v && !v.paused && !v.ended;
     if (busy && !again) return;
-    if (voice && m) play('v' + m.k, { delay: v && !reduce ? m.say : 0 });
+    if (voice && m) play('v' + m.v, { delay: v && !reduce ? m.say : 0 });
     if (!v || reduce) return;
     try { v.currentTime = 0; } catch { /* 아직 못 감음 */ } v.play().catch(() => {});
   };
@@ -223,7 +238,7 @@
     cordPath.setAttribute('d', d); cordShadow.setAttribute('d', ds);
     if (visible) requestAnimationFrame(tick);
   };
-  new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !visible) { visible = true; last = performance.now(); requestAnimationFrame(tick); } visible = v; }, { rootMargin: '200px 0px' }).observe(root);
+  new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !visible) { visible = true; last = performance.now(); requestAnimationFrame(tick); if (skyKind && !skyRaf) { skyLast = 0; skyRaf = requestAnimationFrame(skyTick); } } visible = v; }, { rootMargin: '200px 0px' }).observe(root);
 
   /* ── 손: 지나가면 살짝 밀리고, 짧게 누르면 답, 잡아 끌면 따라 흔들린다 ── */
   let answering = null, hinted = false;
@@ -248,6 +263,7 @@
       const prev = c.th; c.th += (target - c.th) * 0.4; c.w = (c.th - prev) * 60;
     });
     el.addEventListener('pointerdown', (e) => {
+      if (c.home === 'show' && !c.moving) { el.classList.add('is-down'); play('press'); setTimeout(() => el.classList.remove('is-down'), 120); return; }
       if (c.moving || c.home !== 'line') return;
       down = { x: e.clientX, y: e.clientY }; dragged = false;
       el.classList.add('is-down'); play('press');
@@ -262,10 +278,13 @@
       if (performance.now() - suppress < 400) return;
       if (c.answerable && answering) answering(c);
       else if (c.home === 'line' && !c.moving) { c.w += sign() * 1.4; c.pv += sign() * 4; play('hover', { g: 1.6 }); act(c, true, true); }
+      else if (c.home === 'show' && !c.moving) turnShow(c);
     });
     el.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault(); if (!c.answerable || !answering) return;
+      e.preventDefault();
+      if (c.home === 'show' && !c.moving) { turnShow(c); return; }
+      if (!c.answerable || !answering) return;
       el.classList.add('is-down'); play('press'); setTimeout(() => { el.classList.remove('is-down'); answering?.(c); }, 110);
     });
   }
@@ -336,9 +355,12 @@
   const flipTo = (c, face) => new Promise((res) => { play('flip'); gsap.to(c.flip, { rotationY: face === 'front' ? 0 : 180, transformPerspective: 900, duration: reduce ? 0 : 0.62, ease: 'back.out(1.4)', onComplete: res }); c.w += 0.45; c.pv += sign() * 1.5; });
   const stamp = (c, ok, label) => {
     const s = document.createElement('span'); s.className = `sc-stamp ${ok ? 'is-ok' : 'is-x'}`; s.innerHTML = `<em>${ok ? '✓' : '✕'}</em><span></span>`; s.querySelector('span').textContent = label;
-    c.stamps.append(s); while (c.stamps.children.length > 2) c.stamps.firstElementChild.remove();
+    // 기록 면은 여권처럼 도장이 쌓인다(그날 확인한 결과). 셋째부터는 작게 겹쳐 찍는다.
+    c.stamps.append(s); while (c.stamps.children.length > 6) c.stamps.firstElementChild.remove();
+    c.stamps.classList.toggle('is-many', c.stamps.children.length > 2);
+    const rot = -18 + Math.random() * 14; gsap.set(s, { rotation: rot });
     play('stamp'); c.w += sign() * (ok ? 0.7 : 1.1); c.fv -= 2.2; kick(c.x, 40);
-    if (!reduce) { gsap.fromTo(s, { scale: 1.9, opacity: 0, rotation: -24 }, { scale: 1, opacity: 1, rotation: -12, duration: 0.32, ease: 'back.out(2.4)' }); gsap.fromTo(c, { s: 0.955 }, { s: 1, duration: 0.4, ease: 'back.out(3)' }); }
+    if (!reduce) { gsap.fromTo(s, { scale: 1.9, opacity: 0, rotation: rot - 12 }, { scale: 1, opacity: 1, rotation: rot, duration: 0.32, ease: 'back.out(2.4)' }); gsap.fromTo(c, { s: c.s * 0.955 }, { s: c.s, duration: 0.4, ease: 'back.out(3)' }); }
   };
   // 줄을 따라 옮겨 간다: 집게가 살짝 열려 들리고, 미끄러지고, 닿으면 닫힌다
   const travel = (c, at) => new Promise((res) => {
@@ -352,18 +374,148 @@
       .to(c, { lift: 0, duration: reduce ? 0 : 0.14, ease: 'power2.in' }, '>-0.06');
   });
   // 그 말이 돌아왔다: 줄 위에서 깡충 뛰며 앞면(낱말)으로 뒤집히고, 붉은 테로 「돌아온 말」임을 알린다
-  const callBack = (c) => new Promise((res) => {
+  // voice가 거짓이면 몸짓만 한다(답을 소리로 미리 알려 주지 않을 때).
+  const callBack = (c, voice = true) => new Promise((res) => {
     play('whoosh', { g: 0.7, rate: 1.2 }); c.el.classList.add('is-called');
     c.wordEl.querySelectorAll('.sc-mark').forEach((m) => m.remove()); c.el.classList.remove('is-right', 'is-wrong');
     gsap.timeline({ onComplete: res })
       .to(c, { lift: 34, duration: reduce ? 0 : 0.28, ease: 'power2.out' })
       .call(() => { flipTo(c, 'front'); })
       .to(c, { lift: 0, duration: reduce ? 0 : 0.42, ease: 'bounce.out' }, reduce ? '>' : '+=0.3')
-      .call(() => { play('clipsnap', { g: 0.6 }); kick(c.x, 60); act(c, true, true); });
+      .call(() => { play('clipsnap', { g: 0.6 }); kick(c.x, 60); act(c, true, voice); });
   });
   const markStop = (i, ok) => { const b = stopLis[i].querySelector('b'); b.textContent = ok ? '✓' : '✕'; b.style.color = ok ? 'var(--ink)' : 'var(--stamp)'; if (!reduce) gsap.fromTo(b, { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(2)' }); };
   const setClock = (k) => stopLis.forEach((li, i) => { if (!i) return; li.classList.toggle('is-now', i === k); li.classList.toggle('is-past', i < k); });
   const setFull = (on) => line.classList.toggle('is-full', on);
+
+  /* ── 날이 바뀐다: 탁상 달력이 넘어가고, 바탕 · 날씨 · 소리가 바뀐다 ── */
+  const wall = $('.sc-wall');
+  wall.insertAdjacentHTML('beforeend', '<i class="sc-tint is-rain"></i><i class="sc-tint is-snow"></i>');
+  const sky = document.createElement('canvas'); sky.className = 'sc-sky'; sky.setAttribute('aria-hidden', 'true'); wall.after(sky);
+  const skyCtx = sky.getContext('2d');
+  let skyKind = null, flakes = [], skyRaf = 0, skyLast = 0, skyW = 0, skyH = 0, ambT = 0;
+  const flake = (kind, top) => (kind === 'rain'
+    ? { x: Math.random() * (skyW + 200), y: top ? Math.random() * skyH : -30 - Math.random() * 200, l: 14 + Math.random() * 16, v: 900 + Math.random() * 500, a: 0.16 + Math.random() * 0.2 }
+    : { x: Math.random() * skyW, y: top ? Math.random() * skyH : -10 - Math.random() * 120, r: 1.4 + Math.random() * 3.2, v: 26 + Math.random() * 46, ph: Math.random() * 6.3, sw: 10 + Math.random() * 22 });
+  const sizeSky = () => {
+    const dpr = Math.min(2, devicePixelRatio || 1); skyW = root.clientWidth; skyH = root.clientHeight;
+    sky.width = Math.round(skyW * dpr); sky.height = Math.round(skyH * dpr); skyCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  const skyTick = (now) => {
+    skyRaf = 0; if (!skyKind) { skyCtx.clearRect(0, 0, skyW, skyH); return; }
+    const dt = Math.min(0.04, (now - (skyLast || now)) / 1000); skyLast = now;
+    skyCtx.clearRect(0, 0, skyW, skyH);
+    if (skyKind === 'rain') {
+      skyCtx.lineCap = 'round'; skyCtx.lineWidth = 1.2;
+      for (const f of flakes) {
+        f.y += f.v * dt; f.x -= f.v * 0.16 * dt; if (f.y > skyH + 30) Object.assign(f, flake('rain', false));
+        skyCtx.strokeStyle = `rgba(96,114,142,${f.a})`; skyCtx.beginPath(); skyCtx.moveTo(f.x, f.y); skyCtx.lineTo(f.x + f.l * 0.16, f.y - f.l); skyCtx.stroke();
+      }
+    } else {
+      for (const f of flakes) {
+        f.y += f.v * dt; f.ph += dt * 1.3; if (f.y > skyH + 10) Object.assign(f, flake('snow', false));
+        const x = f.x + Math.sin(f.ph) * f.sw;
+        skyCtx.fillStyle = 'rgba(255,255,255,.95)'; skyCtx.shadowColor = 'rgba(110,130,165,.35)'; skyCtx.shadowBlur = 3;
+        skyCtx.beginPath(); skyCtx.arc(x, f.y, f.r, 0, 6.283); skyCtx.fill();
+      }
+      skyCtx.shadowBlur = 0;
+    }
+    if (visible) skyRaf = requestAnimationFrame(skyTick);
+  };
+  // 바탕 소리는 4초짜리 판을 겹쳐 이어 튼다(녹화 도구도 같은 기록으로 섞는다)
+  const setSky = (kind) => {
+    clearInterval(ambT); ambT = 0;
+    skyKind = reduce ? null : kind;
+    if (kind) { const k = kind === 'rain' ? 'rain' : 'wind', go = () => play(k); go(); ambT = setInterval(go, 3600); }
+    if (!skyKind) { gsap.to(sky, { opacity: 0, duration: 0.8 }); return; }
+    sizeSky(); const n = Math.round(skyW / (kind === 'rain' ? 9 : 13)); flakes = Array.from({ length: n }, () => flake(kind, true));
+    gsap.fromTo(sky, { opacity: 0 }, { opacity: 1, duration: 1.2 });
+    skyLast = 0; if (!skyRaf) skyRaf = requestAnimationFrame(skyTick);
+  };
+
+  const cal = document.createElement('div'); cal.className = 'sc-cal'; cal.setAttribute('aria-hidden', 'true');
+  cal.innerHTML = '<div class="sc-cal-body"><i class="sc-cal-ring"></i><i class="sc-cal-ring"></i><div class="sc-cal-stack"></div></div><span class="sc-cal-cap"></span>';
+  root.append(cal);
+  const calStack = $('.sc-cal-stack', cal), calCap = $('.sc-cal-cap', cal);
+  const DAY0 = new Date(), WK = '일월화수목금토';
+  const ICON = {
+    sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.6"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>',
+    rain: '<svg viewBox="0 0 24 24"><path d="M7 15.5a4.5 4.5 0 0 1 .4-9 5.5 5.5 0 0 1 10.3 1.7A3.7 3.7 0 0 1 17.3 15.5z"/><path d="M8.5 18.2l-1 2.6M12.5 18.2l-1 2.6M16.5 18.2l-1 2.6"/></svg>',
+    snow: '<svg viewBox="0 0 24 24"><path d="M12 2.8v18.4M4 7.4l16 9.2M4 16.6l16-9.2M9.6 4.2L12 6l2.4-1.8M9.6 19.8L12 18l2.4 1.8"/></svg>',
+  };
+  const calPage = (n, icon) => {
+    const d = new Date(DAY0); d.setDate(d.getDate() + n);
+    const p = document.createElement('div'); p.className = 'sc-cal-page';
+    p.innerHTML = `<span class="sc-cal-m">${d.getMonth() + 1}월</span><span class="sc-cal-d">${d.getDate()}</span><span class="sc-cal-w">${WK[d.getDay()]}요일</span><span class="sc-cal-n">${n ? `+${n}일` : '오늘'}</span>${icon ? `<span class="sc-cal-i">${ICON[icon]}</span>` : ''}`;
+    return p;
+  };
+  // from일 → to일: 한 장씩 넘어가며 처음과 끝은 느리고 가운데는 빠르다(장마다 종이 소리)
+  const flipDays = (from, to, scene, cap, icon) => new Promise((res) => {
+    calStack.replaceChildren(); const pages = [];
+    for (let n = to; n >= from; n--) { const p = calPage(n, n === to ? icon : null); calStack.append(p); pages.push(p); }
+    calCap.textContent = cap;
+    const N = to - from, T = Math.min(2.1, 0.25 + N * 0.075);
+    const tl = gsap.timeline({ onComplete: () => gsap.to(cal, { opacity: 0, scale: 1.04, y: -6, duration: 0.3, delay: reduce ? 0 : 0.7, ease: 'power2.in', onComplete: res }) });
+    tl.fromTo(cal, { opacity: 0, scale: 0.9, y: 12 }, { opacity: 1, scale: 1, y: 0, duration: reduce ? 0 : 0.32, ease: 'back.out(2)' });
+    tl.call(() => { root.dataset.scene = scene; setSky(scene === 'rain' || scene === 'snow' ? scene : null); play('whoosh', { g: 0.8, rate: 0.9 }); }, null, 0.1);
+    for (let i = 0; i < N; i++) {
+      const p = pages[pages.length - 1 - i], u = N === 1 ? 0 : i / (N - 1);
+      const at = reduce ? 0 : 0.42 + T * (u < 0.5 ? 2 * u * u : 1 - ((-2 * u + 2) ** 2) / 2);
+      tl.to(p, { rotationX: -172, opacity: 0, duration: reduce ? 0 : 0.42, ease: 'power2.in', transformOrigin: '50% 0%', transformPerspective: 700 }, at)
+        .call(() => play('flip', { g: 0.5, rate: 1.3 + u * 0.5 }), null, at);
+    }
+    tl.call(() => { play('tick'); const last = pages[0]; if (!reduce) gsap.fromTo(last, { y: 3 }, { y: 0, duration: 0.3, ease: 'back.out(3)' }); }, null, '>-0.1');
+  });
+
+  /* ── 튜터 말풍선(앱이 먼저 꺼내는 말) ── */
+  const chat = document.createElement('div'); chat.className = 'sc-chat'; chat.setAttribute('aria-live', 'polite');
+  chat.innerHTML = '<span class="sc-chat-who"><i aria-hidden="true"></i>튜터</span><p class="sc-chat-msg"></p><p class="sc-chat-more"></p>';
+  stage.append(chat);
+  const chatMsg = $('.sc-chat-msg', chat), chatMore = $('.sc-chat-more', chat);
+  const showChat = async (text, more = '') => {
+    chatMsg.innerHTML = '<span class="sc-typing" aria-hidden="true"><i></i><i></i><i></i></span>'; chatMore.textContent = '';
+    gsap.fromTo(chat, { opacity: 0, y: 12, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: reduce ? 0 : 0.42, ease: 'back.out(2)' });
+    play('notify');
+    await wait(760);
+    chatMsg.textContent = text; play('pop', { g: 0.5, rate: 1.2 });
+    if (!reduce) gsap.fromTo(chatMsg, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3 });
+    if (more) { await wait(500); chatMore.textContent = more; if (!reduce) gsap.fromTo(chatMore, { opacity: 0 }, { opacity: 1, duration: 0.4 }); }
+  };
+  const hideChat = () => gsap.to(chat, { opacity: 0, y: -6, duration: reduce ? 0 : 0.25 });
+
+  // 돌아온 카드를 한 번 누를 때까지 기다린다(누르면 답이 아니라 확인)
+  const waitTap = (c, label) => new Promise((res) => {
+    c.answerable = true; c.el.removeAttribute('aria-disabled'); c.el.setAttribute('aria-label', label);
+    c.el.focus({ preventScroll: true });
+    answering = () => { answering = null; c.answerable = false; c.el.setAttribute('aria-disabled', 'true'); c.el.setAttribute('aria-label', c.text); res(); };
+  });
+
+  /* ── 내 위치: 카드가 줄에서 풀려 앞으로 나오고, 기록 면에 큰 도장 ── */
+  const showScale = () => (narrow ? 1.6 : 1.42);
+  const seal = (c, ok) => {
+    const s = document.createElement('span'); s.className = `sc-seal ${ok ? 'is-ok' : 'is-x'}`;
+    s.innerHTML = '<b></b><small></small>'; s.firstChild.textContent = ok ? '혼자 맞힘' : '다시 연습'; s.lastChild.textContent = ok ? '처음 보는 문제 · 도움 없이' : '1분 뒤 다시';
+    $('.sc-back', c.el).append(s);
+    play('stamp', { g: 1.25, rate: 0.82 }); if (ok) play('chime', { delay: 0.25 }); c.fv -= 3.2; c.pv += sign() * 2;
+    if (!reduce) { gsap.fromTo(s, { scale: 2.3, opacity: 0, rotation: -32 }, { scale: 1, opacity: 1, rotation: -13, duration: 0.36, ease: 'back.out(2.2)' }); gsap.fromTo(c, { s: showScale() * 0.94 }, { s: showScale(), duration: 0.5, ease: 'back.out(3)' }); }
+  };
+  // 앞으로 나온 카드를 누르면 앞면(인물)과 뒷면(기록)을 오간다
+  const turnShow = (c) => {
+    const front = Math.abs(gsap.getProperty(c.flip, 'rotationY')) > 90;
+    flipTo(c, front ? 'front' : 'back'); c.pv += sign() * 3;
+    if (front) setTimeout(() => act(c, true, true), 300);
+  };
+  const finalButtons = () => {
+    const a = document.createElement('a'); a.className = 'sc-btn'; a.href = WORLD; if (/^https?:/.test(WORLD)) { a.target = '_blank'; a.rel = 'noopener'; }
+    a.innerHTML = '<span></span><span class="arr" aria-hidden="true">↗</span>'; a.firstChild.textContent = D.me.go;
+    a.addEventListener('pointerdown', () => play('press'));
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sc-btn is-ghost'; b.textContent = Q.again;
+    b.addEventListener('pointerdown', () => play('press'));
+    let used = false; b.addEventListener('click', () => { if (used) return; used = true; restart(); });
+    next.replaceChildren(a, b); play('pop', { delay: 0.05 });
+    if (!reduce) gsap.fromTo([a, b], { scale: 0.7, opacity: 0, y: 8 }, { scale: 1, opacity: 1, y: 0, duration: 0.55, ease: 'back.out(2)', stagger: 0.08 });
+    a.focus({ preventScroll: true });
+  };
 
   /* ── 무대 글 ── */
   const setAfter = (s, t) => { kinetic(say, s, 0); sub.textContent = t; if (!reduce) gsap.fromTo(sub, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.5, delay: 0.25 }); };
@@ -410,24 +562,25 @@
       done({ right, correct });
     };
   });
-  // 답한 뒤: 배울 말만 남기고 나머지는 떨어진다 → 남은 카드가 뒤집혀 기록 면에 도장을 받는다
-  const settle = async (cs, r, tag) => {
+  // 답한 뒤: 배울 말만 남기고 나머지는 떨어진다 → 남은 카드가 뒤집혀 기록 면에 그날의 도장을 받는다
+  const settle = async (cs, r, tag, label) => {
     await wait(r.right ? 1500 : 2300);
     cs.filter((c) => c !== r.correct).forEach((c, i) => unclip(c, i * 180));
     await wait(420); setFull(false);
     await wait(900);
     r.correct.backTag.textContent = tag;
     await flipTo(r.correct, 'back'); await wait(60);
-    stamp(r.correct, r.right, r.right ? '내일' : '1분 뒤');
+    stamp(r.correct, r.right, label);
   };
-  async function first() {
+  async function first(again = false) {
     root.dataset.scene = 'now'; setClock(0);
     stopLis.forEach((li) => { li.querySelector('b').textContent = ''; });
     showQuestion(Q.first); enterStage(); setFull(true);
     const cs = Q.first.choices.map(([id, text], i) => makeCard(id, text, i + 1));
     await Promise.all(cs.map((c, i) => dropIn(c, { kind: 'slot', i }, 0.3 + i * 0.2)));
+    if (again) cs[0].el.focus({ preventScroll: true });   // 다시 할 때는 첫 카드로(처음 열릴 때는 쪽의 포커스를 뺏지 않는다)
     const r = await takeAnswer(cs, Q.first);
-    await settle(cs, r, '오늘 처음 만난 말');
+    await settle(cs, r, '오늘 처음 만난 말', '지금');
     setAfter(r.right ? Q.right.say : Q.wrong.say, r.right ? Q.right.sub : Q.wrong.sub);
     await wait(700);
     await travel(r.correct, { kind: 'knot', i: r.right ? 2 : 1 }); showHint(r.correct);
@@ -442,8 +595,8 @@
     await travel(c, { kind: 'slot', i: Q.second.choices.findIndex(([, t]) => t === c.text) });
     second(c);
   }
-  async function second(c) {
-    const q = Q.second;
+  // 돌아온 카드는 제 자리에 그대로 두고, 나머지 보기만 새로 떨어진다
+  async function askAgain(c, q, tag, label) {
     showQuestion(q); enterStage(); setFull(true);
     const drops = [];
     const cs = q.choices.map(([id, text], i) => {
@@ -454,7 +607,11 @@
     c.el.classList.remove('is-called');
     if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
     const r = await takeAnswer(cs, q);
-    await settle(cs, r, '1분 전에 틀린 말');
+    await settle(cs, r, tag, label);
+    return r;
+  }
+  async function second(c) {
+    const r = await askAgain(c, Q.second, '1분 전에 틀린 말', '1분 뒤');
     markStop(1, r.right);
     setAfter(r.right ? Q.backRight.say : Q.backWrong.say, r.right ? Q.backRight.sub : Q.backWrong.sub);
     await wait(700);
@@ -462,21 +619,93 @@
     await wait(260);
     if (r.right) button(Q.toDay1, () => toTomorrow(r.correct)); else button(Q.toMinute, () => toMinute(r.correct));
   }
+  const clearStage = (h) => { qhead.textContent = h; ctxEl.textContent = ''; promptEl.textContent = ''; setAfter('', ''); next.replaceChildren(); };
+  // 내일: 앱을 열면 튜터가 먼저 꺼낸다 → 카드가 돌아와 그 말을 한다 → 「내일」 도장
   async function toTomorrow(c) {
-    hideHint(); await leaveStage(); setClock(2); play('notify');
-    await fastForward('내일 아침', 0, 1, (v) => `${Math.round(v)}일`, 'morning');
-    qhead.textContent = ''; ctxEl.textContent = ''; promptEl.textContent = '';
+    hideHint(); hideChat(); await leaveStage(); setClock(2);
+    await flipDays(0, 1, 'morning', '다음 날 아침', 'sun');
+    clearStage(D.d1.head); enterStage();
+    c.backTag.textContent = '어제 만난 말';
+    await showChat(D.d1.chat);
+    await wait(300);
     await callBack(c);
-    // 첫 장면은 여기까지(다음 장면은 이 장면을 보신 뒤 짓는다)
-    setAfter('첫 장면은 여기까지입니다', '내일은 이 말이 먼저 돌아와 다른 장면으로 묻습니다. 그 뒤(7일 뒤 · 30일 뒤 · 내 위치)는 이 장면을 보신 뒤에 이어서 짓습니다.');
-    enterStage();
-    button(Q.again, restart);
+    await wait(2300);
+    await flipTo(c, 'back'); await wait(60);
+    stamp(c, true, '내일'); markStop(2, true); c.el.classList.remove('is-called');
+    setAfter(D.d1.say, D.d1.sub);
+    await wait(900);
+    await travel(c, { kind: 'knot', i: 3 });
+    await wait(260);
+    button(D.d1.next, () => toWeek(c));
+  }
+  // 7일 뒤: 낱말을 가린 채 돌아온다. 인물의 몸짓만 보고 떠올린 뒤 눌러서 확인한다
+  async function toWeek(c) {
+    hideHint(); hideChat(); await leaveStage(); setClock(3);
+    await flipDays(1, 7, 'rain', '일주일 뒤', 'rain');
+    clearStage(D.d7.head); enterStage();
+    c.backTag.textContent = '일주일 전에 만난 말';
+    c.el.classList.add('is-quiz');
+    const said = showChat(D.d7.chat, D.d7.chat2);
+    await wait(300);
+    await callBack(c, false);
+    await said;
+    await waitTap(c, '돌아온 카드: 눌러서 낱말 확인');
+    c.el.classList.remove('is-quiz'); mark(c.wordEl, 'under'); play('underline'); play('chime', { delay: 0.18 });
+    c.w += sign() * 1.2; c.pv += sign() * 2; act(c, true, true);
+    await wait(2100);
+    hideChat();
+    await flipTo(c, 'back'); await wait(60);
+    stamp(c, true, '7일 뒤'); markStop(3, true); c.el.classList.remove('is-called');
+    setAfter(D.d7.say, D.d7.sub);
+    await wait(900);
+    await travel(c, { kind: 'knot', i: 4 });
+    await wait(260);
+    button(D.d7.next, () => toMonth(c));
+  }
+  // 30일 뒤: 눈 오는 겨울. 같은 인물이 겨울 옷을 입고, 처음 보는 장면으로 다시 묻는다
+  async function toMonth(c) {
+    hideHint(); hideChat(); await leaveStage(); setClock(4);
+    await flipDays(7, 30, 'snow', '한 달 뒤', 'snow');
+    winter = true; setPic(c);
+    c.backTag.textContent = '한 달 전에 만난 말';
+    await callBack(c, false); await wait(80);
+    const q = D.d30;
+    await travel(c, { kind: 'slot', i: q.choices.findIndex(([, t]) => t === c.text) });
+    const r = await askAgain(c, q, '한 달 전에 만난 말', '30일 뒤');
+    markStop(4, r.right);
+    setAfter(r.right ? q.right.say : q.wrong.say, r.right ? q.right.sub : q.wrong.sub);
+    await wait(700);
+    await travel(r.correct, { kind: 'knot', i: 4 });
+    await wait(260);
+    button(q.next, () => toMe(r.correct, r.right));
+  }
+  // 내 위치: 집게에서 풀린 카드가 앞으로 나와 기록 면을 보이고, 큰 도장을 받는다
+  async function toMe(c, right) {
+    hideHint(); await leaveStage(); setClock(5); endTag.classList.add('is-now'); root.classList.add('is-me'); c.el.classList.remove('is-right', 'is-called');
+    clearStage(D.me.head);
+    c.backTag.textContent = '30일 기록';
+    c.el.classList.add('is-open'); play('clipopen');
+    await wait(160);
+    leavePin(c); c.el.classList.remove('is-open');
+    c.home = 'show'; c.grab = true; c.answerable = false; c.pt = 0; c.ft = 0; c.el.style.zIndex = '5';
+    c.el.removeAttribute('aria-disabled'); c.el.setAttribute('aria-label', '내 기록 카드 — 눌러서 앞면과 기록 면을 오갑니다');
+    play('whoosh', { g: 0.9, rate: 0.85 }); c.pv += 10;
+    c.moving = true;
+    await new Promise((res) => gsap.to(c, { x: W / 2, y: narrow ? 18 : 6, s: showScale(), th: 0, duration: reduce ? 0 : 1.0, ease: 'power3.inOut', onComplete: res }));
+    c.moving = false; play('clipsnap', { g: 0.45, rate: 0.8 });
+    await wait(260);
+    seal(c, right);
+    await wait(520);
+    enterStage(); setAfter(D.me.say, D.me.sub);
+    await wait(300);
+    finalButtons();
   }
   async function restart() {
-    hideHint(); await leaveStage();
+    hideHint(); hideChat(); await leaveStage();
     [...cards].forEach((c, i) => unclip(c, i * 140));
+    setSky(null); winter = false; endTag.classList.remove('is-now'); root.classList.remove('is-me');
     await wait(700);
-    first();
+    first(true);
   }
 
   /* ── 시작 ── */

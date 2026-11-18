@@ -1,4 +1,4 @@
-/* LAB 「직접 풀어 보기」 첫 장면 — 줄에 매단 3D 낱말 배지(2026-11-18, 셋째 판).
+/* LAB 「직접 풀어 보기」 — 줄에 매단 3D 낱말 배지(2026-11-18, 셋째 판 · 저녁에 내일 · 7일 · 30일 · 내 위치 장면을 더함).
    유호님 「참고작품처럼 깔끔한 배경에 저런 3d 카드 느낌을 더 살려서 … 안녕하세요 하면 인사하는 모션을 옴니로 굽든 … 하나하나 재밌게」.
    바탕: 깨끗한 흰 스튜디오. 가운데: 가는 줄 하나. 왼쪽 「지금」에는 오늘 고를 말 세 장, 오른쪽에는 날 매듭(1분 뒤 · 내일 · 7일 뒤 · 30일 뒤).
    카드: 두께가 있는 세로 배지. 앞면 창에서는 그 말을 하는 인물이 움직이고(옴니 1.2), 뒷면은 무지갯빛 기록 면이다. 은색 집게에 매달려 흔들리고 세로 축으로 돈다. */
@@ -161,8 +161,77 @@ button{font:inherit;color:inherit}
 .sc-ff-num{font-size:clamp(110px,13vw,200px);line-height:1;font-weight:800;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
 .sc-ff-cap{font-size:20px;font-weight:600;color:var(--ink2)}
 
+/* 날이 바뀐다: 비 오는 날은 차가운 회청, 눈 오는 날은 옅은 하늘빛(흰 눈송이가 보이게) */
+.sc-tint{position:absolute;inset:0;opacity:0;transition:opacity 1.6s}
+.sc-tint.is-rain{background:radial-gradient(120% 70% at 50% 0%,rgba(236,240,246,.9),rgba(236,240,246,0) 65%),linear-gradient(180deg,#E9EDF2 40%,#DEE3EA 100%)}
+.sc-tint.is-snow{background:radial-gradient(110% 70% at 50% 0%,rgba(244,248,253,.95),rgba(244,248,253,0) 65%),linear-gradient(180deg,#E3ECF6 35%,#D6E2EF 100%)}
+.sc[data-scene="rain"] .sc-tint.is-rain,.sc[data-scene="snow"] .sc-tint.is-snow{opacity:1}
+.sc-sky{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0}
+
+/* 탁상 달력: 고리 두 개에 매단 종이가 위로 넘어간다 */
+.sc-cal{position:absolute;left:50%;top:30%;z-index:6;display:flex;flex-direction:column;align-items:center;gap:10px;margin-left:-88px;margin-top:-118px;width:176px;pointer-events:none;opacity:0}
+.sc-cal-body{position:relative;width:176px;height:196px;perspective:700px}
+.sc-cal-ring{position:absolute;top:-12px;z-index:3;width:14px;height:26px;border-radius:8px;border:3px solid var(--metal-lo);background:linear-gradient(90deg,var(--metal),var(--metal-hi) 50%,var(--metal));box-shadow:0 2px 3px rgba(20,20,40,.25)}
+.sc-cal-ring:first-child{left:44px}.sc-cal-ring+.sc-cal-ring{right:44px}
+.sc-cal-stack{position:absolute;inset:0;transform-style:preserve-3d}
+.sc-cal-stack::before{content:"";position:absolute;inset:6px -4px -8px;border-radius:14px;background:#E9E9EC;box-shadow:0 22px 40px -18px rgba(30,30,60,.45)}
+.sc-cal-page{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--card-edge),0 1px 0 #E2E2E6;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform}
+.sc-cal-m{align-self:stretch;height:40px;display:grid;place-items:center;background:var(--stamp);color:#fff;font-size:16px;font-weight:750;letter-spacing:.02em}
+.sc-cal-d{margin-top:2px;font-size:84px;line-height:1;font-weight:800;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.sc-cal-w{margin-top:2px;font-size:14px;font-weight:600;color:var(--ink2)}
+.sc-cal-n{position:absolute;left:14px;bottom:12px;font-size:12px;font-weight:800;color:var(--stamp)}
+.sc-cal-i{position:absolute;right:12px;bottom:8px;width:28px;height:28px}
+.sc-cal-i svg{width:100%;height:100%;fill:none;stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.sc-cal-cap{font-size:18px;font-weight:650;color:var(--ink2)}
+
+/* 튜터 말풍선 */
+.sc-chat{position:absolute;left:0;right:0;top:calc(clamp(14px,2.4vh,28px) + 30px);margin:auto;width:max-content;max-width:min(560px,calc(100% - 2 * var(--gut)));padding:14px 20px 16px;border-radius:22px 22px 22px 6px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04),0 18px 36px -20px rgba(30,30,60,.4);text-align:left;opacity:0;pointer-events:none}
+.sc-chat-who{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--ink3)}
+.sc-chat-who i{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FF8A6E,var(--hot) 55%,#D8432C)}
+.sc-chat-msg{margin-top:4px;font-size:clamp(18px,1.6vw,22px);font-weight:650;letter-spacing:-.02em;line-height:1.38;min-height:1.38em}
+.sc-chat-more{font-size:14px;color:var(--ink2);min-height:0}
+.sc-chat-more:empty{display:none}
+.sc-typing{display:inline-flex;gap:5px;padding:9px 2px}
+.sc-typing i{width:7px;height:7px;border-radius:50%;background:var(--ink3);animation:scType 1s ease-in-out infinite}
+.sc-typing i:nth-child(2){animation-delay:.15s}.sc-typing i:nth-child(3){animation-delay:.3s}
+@keyframes scType{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+
+/* 7일 뒤: 낱말을 가린 채 돌아온다 */
+.sc-word{transition:color .25s,filter .45s,opacity .45s}
+.sc-card.is-quiz .sc-word{filter:blur(7px);opacity:.75}
+
+/* 기록 면의 도장이 늘면 작게 겹쳐 찍는다 */
+.sc-stamps.is-many{gap:0}
+.sc-stamps.is-many .sc-stamp{width:calc(var(--cw) * .2);height:calc(var(--cw) * .2);margin-right:calc(var(--cw) * -.045);font-size:calc(var(--cw) * .038)}
+.sc-stamps.is-many .sc-stamp em{font-size:calc(var(--cw) * .07)}
+
+/* 내 위치: 큰 도장 */
+.sc-seal{position:absolute;left:50%;top:31%;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1px;padding:calc(var(--cw) * .035) calc(var(--cw) * .06);margin-left:calc(var(--cw) * -.36);width:calc(var(--cw) * .72);border:3px solid currentColor;border-radius:8px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),inset 0 0 0 4px currentColor;color:var(--ink);background:rgba(255,255,255,.28);transform:rotate(-13deg);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.5 1.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.5 1.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E")}
+.sc-seal b{font-size:calc(var(--cw) * .125);font-weight:850;letter-spacing:-.04em;line-height:1.1;white-space:nowrap}
+.sc-seal small{font-size:calc(var(--cw) * .045);font-weight:700;white-space:nowrap;opacity:.85}
+.sc-seal.is-x{color:var(--stamp)}
+.sc-end.is-now{color:var(--ink)}
+/* 내 위치: 줄 · 매듭 · 빈 집게가 물러나 앞으로 나온 카드만 또렷하다 */
+.sc-cord,.sc-stops,.sc-hook,.sc-end{transition:opacity .8s,filter .8s}
+.sc.is-me .sc-cord,.sc.is-me .sc-stops,.sc.is-me .sc-hook{opacity:.28!important;filter:blur(1.5px)}
+
+/* 마지막 단추 둘 */
+a.sc-btn{text-decoration:none}
+.sc-btn.is-ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--hair),0 6px 16px -12px rgba(23,23,26,.4)}
+
 @media (max-width:900px){
   :root{--cw:clamp(96px,27vw,150px);--ct:4px}
+  .sc-cal{top:40%;margin-left:-84px;margin-top:-114px;width:168px}
+  .sc-cal-body{width:168px;height:188px}
+  .sc-cal-ring:first-child{left:40px}.sc-cal-ring+.sc-cal-ring{right:40px}
+  .sc-cal-m{height:38px;font-size:15px}
+  .sc-cal-d{font-size:78px}
+  .sc-cal-cap{font-size:17px}
+  .sc-chat{left:var(--gut);right:auto;margin:0;top:18px;padding:12px 16px 14px}
+  .sc-chat-msg{font-size:17px}
+  .sc-next{flex-wrap:wrap;gap:10px}
+  .sc-seal{border-width:2px}
   .sc{min-height:0}
   .sc-head{grid-template-columns:1fr;padding-top:30px}
   .sc-title{font-size:20px}
