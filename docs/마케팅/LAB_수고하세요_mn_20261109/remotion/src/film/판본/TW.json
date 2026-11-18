@@ -180,9 +180,9 @@
   "ruleElder": "對教授、主管",
   "ruleSize": 46,
   "ruleTop": 872,
-  "gag": "長輩能對你說",
+  "gag": "長輩可以對你說",
   "gagSize": 54,
-  "b2Mean": "輕鬆語氣",
+  "b2Mean": "非正式",
   "end": "對教授：",
   "endSize": 62,
   "meanSize": 44,
@@ -212,7 +212,7 @@
     "ruleFriend": "친구 · 동료에게",
     "ruleElder": "교수님 · 상사에게",
     "gag": "윗사람은 당신에게 말해도 돼요",
-    "b2Mean": "편한 말투",
+    "b2Mean": "격식 없는 말",
     "end": "교수님께:"
   }
 }
