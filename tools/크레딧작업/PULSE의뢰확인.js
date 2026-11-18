@@ -67,7 +67,6 @@ function 실행기록정리(ctx) {
   return 수;
 }
 
-/** 그 번호들의 남겨 둔 메모(메모대기/<번호>.json)와 메모 장부 줄을 지운다. → 지운 메모 수 */
 /** 그 번호들의 남겨 둔 메모(메모대기/<번호>.json — Claude가 의뢰를 요약한 글)를 지운다. 장부도 고르면(예약 안에서만 — 실행기의 작업 방 잠금 안이다)
  *  메모 장부 줄도 지운다. 손 명령은 장부를 건드리지 않는다 — 예약과 같은 장부를 잠금 없이 고쳐 다른 의뢰의 횟수를 되돌릴 수 있어서다(다시 검수 GA1).
  *  장부 줄에는 횟수 · 때 · 서버 오류 글만 있고 손님 글은 없으며, 200줄까지만 남는다. → { 지움, 못지움: [번호] } */
@@ -76,9 +75,14 @@ function 의뢰메모지우기(방, 번호들, { 장부도 = false } = {}) {
   const 못지움 = [];
   const 고른 = [...new Set(번호들 || [])].filter((번호) => 번호꼴.test(String(번호)));
   for (const 번호 of 고른) {
+    // existsSync는 권한 오류도 「없음」으로 돌려준다 — lstat으로 보고, 없음(ENOENT)만 없는 것으로 친다(검수 -e GA1).
     const 파일 = 대기파일({ 방 }, 번호);
-    try { if (fs.existsSync(파일)) { fs.rmSync(파일, { force: true }); 지움++; } } catch { 못지움.push(번호); }
-    if (fs.existsSync(파일) && !못지움.includes(번호)) 못지움.push(번호);
+    const 있나 = () => { try { fs.lstatSync(파일); return true; } catch (오류) { if (오류?.code === 'ENOENT') return false; throw 오류; } };
+    try {
+      if (!있나()) continue;
+      fs.rmSync(파일, { force: true });
+      if (있나()) 못지움.push(번호); else 지움++;
+    } catch { 못지움.push(번호); }
   }
   if (장부도) {
     const 장부 = 장부읽기(시도파일({ 방 }));

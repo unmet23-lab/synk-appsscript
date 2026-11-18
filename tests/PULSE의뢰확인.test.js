@@ -548,3 +548,14 @@ test('손 명령 정리(손정리) — 미리 보기는 지우지 않고, 고른
   if (운영) assert.ok(기본.방들.includes(path.resolve(운영, 'output', '크레딧작업', 'PULSE의뢰확인')), 기본.방들.join(' | '));
   assert.ok(기본.방들.includes(path.resolve(__dirname, '..', 'output', '크레딧작업', 'PULSE의뢰확인')));
 });
+
+test('의뢰메모지우기 — 메모를 읽을 수 없거나 지운 뒤에도 남으면 못 지움으로 센다(검수 -e GA1)', () => {
+  const 방 = 방만들기();
+  fs.mkdirSync(path.join(방, '메모대기'), { recursive: true });
+  fs.writeFileSync(path.join(방, '메모대기', 'P-1112-DDDD.json'), '{}');
+  const 원래lstat = fs.lstatSync;
+  fs.lstatSync = (경로, ...나머지) => { if (String(경로).endsWith('P-1112-DDDD.json')) throw Object.assign(new Error('denied'), { code: 'EACCES' }); return 원래lstat(경로, ...나머지); };
+  try { assert.deepEqual(작업.의뢰메모지우기(방, ['P-1112-DDDD', 'P-1112-EEEE']), { 지움: 0, 못지움: ['P-1112-DDDD'] }); }
+  finally { fs.lstatSync = 원래lstat; }
+  assert.deepEqual(작업.의뢰메모지우기(방, ['P-1112-DDDD', 'P-1112-EEEE']), { 지움: 1, 못지움: [] });
+});
