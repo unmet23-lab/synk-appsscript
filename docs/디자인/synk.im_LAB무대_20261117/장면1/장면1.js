@@ -2,8 +2,9 @@
 // 30일은 줄 하나다. 보기 세 낱말이 「지금」 자리에 은색 집게로 물린 배지다. 배지 앞면 창에서는 그 말을 하는 인물이 움직인다(옴니 1.2로 구운 짧은 영상).
 // 카드를 누르면 답이 되고, 잡아 끌면 흔들린다. 손을 올리면 그쪽으로 돌아보며 빛이 미끄러지고, 창 속 인물이 그 말을 몸으로 한다.
 // 답하면 틀린 보기는 집게가 열리며 공중에서 돌며 떨어지고, 남은 배지(배울 말)는 뒤집혀 무지갯빛 기록 면에 도장을 받은 뒤 줄을 따라 다음에 돌아올 날로 간다.
-// 흐름: 첫 문제 → (틀리면 1분 뒤 둘째 문제) → 내일(튜터가 먼저 꺼냄) → 7일 뒤(그림만 보고 떠올리기) → 30일 뒤(겨울, 처음 보는 문제) → 내 위치(기록 면과 큰 도장).
-// 날이 바뀔 때는 탁상 달력이 넘어가고, 아침 · 비 · 눈으로 바탕과 소리가 바뀐다. 글은 공개본 원고(../원고.json)를 따르고, 30일 문제만 줄을 따라 돌아온 말로 바꿨다(README 「나머지 장면」).
+// 흐름: 첫 문제 → (틀리면 1분 뒤 둘째 문제) → 내일(튜터 카드) → 7일 뒤(다시 확인할 때) → 30일 뒤(겨울, 같은 항목의 처음 보는 문제) → 내 위치(기록 면과 큰 도장).
+// 날마다 SYNK WORLD 실제 화면 조각을 띄우고, 문제는 모두 앱의 실제 문항이다(유호님 11-18 「실제 앱에 맞춤」).
+// 날이 바뀔 때는 탁상 달력이 넘어가고, 아침 · 비 · 눈으로 바탕과 소리가 바뀐다. 글은 공개본 원고(../원고.json)를 따른다.
 (() => {
   'use strict';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -30,19 +31,24 @@
     backWrong: { say: '또 1분 뒤에 돌아옵니다', sub: '맞힐 때까지 간격이 벌어지지 않습니다.' },
     toMinute: '1분 뒤로', toDay1: '내일로', again: '처음부터 다시',
   };
-  // 날마다(원고 days). 30일 문제는 원고의 「친구가 떨어진 책 → 감사합니다」 대신, 줄을 따라 돌아온 말(안녕하세요)을 처음 보는 장면으로 묻는다.
+  // 날마다(원고 days). 화면 조각(shot)은 SYNK WORLD 실제 화면이고, 30일 문제는 앱의 첫 레슨 둘째 문제 그대로다 —
+  // 앱의 1 · 7 · 30일 확인은 같은 항목(낱말 뜻 읽기)의 다른 표현으로 처음 보는 문제를 낸다(life-items.mjs · life-followups.mjs).
+  // 돌아온 카드(기록)는 30일 매듭에 걸린 채 그 답으로 30일 칸을 채운다.
   const D = {
-    d1: { head: '내일 아침 · 앱을 열면', chat: '어제 처음 만난 말이에요. 오늘 한 번 더 들어 볼까요?', say: '앱을 열면 튜터가 먼저 꺼냅니다', sub: '복습 시간표를 따로 열지 않습니다. 돌아올 말이 없는 날에는 다른 연습을 권합니다.', next: '7일 뒤로' },
-    d7: { head: '7일 뒤 · 기억나요?', chat: '일주일 만이에요. 이 사람은 뭐라고 했을까요?', chat2: '속으로 말해 보고, 카드를 눌러 확인하세요.', say: '맞혔다고 끝이 아닙니다', sub: '일주일 뒤, 다시 확인할 때입니다. 레슨이나 복습을 이어 가면 처음 보는 문제로 확인합니다.', next: '30일 뒤로' },
-    d30: { head: '30일 뒤 · 처음 보는 문제', say: '한 달 뒤, 처음 보는 문제', sub: '레슨을 이어 가면 같은 항목의 다른 문제가 나옵니다. 외웠는지가 아니라 아는지를 봅니다.', context: '눈 오는 아침, 엘리베이터에서 이웃을 만났어요.', prompt: '이웃에게 어떤 인사를 할까요?', answer: 'c', choices: [['a', '감사합니다.'], ['b', '다녀왔어요.'], ['c', '안녕하세요.']],
+    d1: { head: '내일 아침 · 앱을 열면', shot: 'piece-tutor-review', say: '앱을 열면 튜터가 먼저 꺼냅니다', sub: '복습 시간표를 따로 열지 않습니다. 돌아올 말이 없는 날에는 다른 연습을 권합니다.', next: '7일 뒤로' },
+    d7: { head: '7일 뒤 · 다시 확인할 때', shot: 'piece-check-d7', say: '맞혔다고 끝이 아닙니다', sub: '일주일 뒤, 다시 확인할 때입니다. 레슨이나 복습을 이어 가면 처음 보는 문제로 확인합니다.', next: '30일 뒤로' },
+    d30: { head: '30일 뒤 · 처음 보는 문제', shot: 'piece-check-d30', say: '한 달 뒤, 처음 보는 문제', sub: '레슨을 이어 가면 같은 항목의 다른 문제가 나옵니다. 외웠는지가 아니라 아는지를 봅니다.', context: '친구가 떨어진 책을 주워 줬어요.', prompt: '도움을 받았어요. 어떤 말을 할까요?', answer: 'c', choices: [['a', '저는 수진이에요.'], ['b', '안녕하세요.'], ['c', '감사합니다.']],
       right: { say: '한 달 뒤에도 혼자 맞혔습니다', sub: '이 답이 30일 칸을 채웁니다. 하루 · 일주일 · 한 달 뒤 확인이 모두 끝났습니다.' }, wrong: { say: '이 칸은 「다시 연습」으로 남습니다', sub: '틀린 답도 그대로 남고, 이 말은 1분 뒤 다른 장면으로 돌아옵니다.' }, next: '내 위치 보기' },
-    me: { head: '내 위치', say: '점수 말고 근거로 봅니다', sub: '게임 · 생활 레슨 · 짧은 진단의 답이 한 기록에 모입니다. 내 위치는 처음 보는 문제를 도움 없이 푼 답으로만 정합니다.', go: 'SYNK WORLD 열기' },
+    me: { head: '내 위치', shot: 'piece-evidence', say: '점수 말고 근거로 봅니다', sub: '게임 · 생활 레슨 · 짧은 진단의 답이 한 기록에 모입니다. 내 위치는 처음 보는 문제를 도움 없이 푼 답으로만 정합니다.', go: 'SYNK WORLD 열기' },
+    real: 'SYNK WORLD 실제 화면',
   };
   const WORLD = /(^|\.)synk\.im$/.test(location.hostname) ? '/world/' : 'https://synk.im/world/';
 
   // 낱말마다 창 속 장면(옴니 1.2로 구운 5초 영상과 첫 장 그림). 영상이 없으면 그림만 둔다. 30일 뒤에는 같은 인물이 겨울 옷을 입은 판을 쓴다.
   const PIC = { '안녕하세요.': { k: 'hello', v: 'hello', tone: '#ADD9F5', say: 0.7 }, '감사합니다.': { k: 'thanks', v: 'thanks', tone: '#F9C7B4', say: 0.8 }, '다녀왔어요.': { k: 'home', v: 'home', tone: '#BCE4D1', say: 0.25 } };
-  const PICW = { '안녕하세요.': { k: 'hello-w', v: 'hello', tone: '#CFE6F5', say: 0.7 }, '감사합니다.': { k: 'thanks-w', v: 'thanks', tone: '#F5D3D3', say: 0.8 }, '다녀왔어요.': { k: 'home-w', v: 'home', tone: '#D3EBDD', say: 0.25 } };
+  const PICW = { '안녕하세요.': { k: 'hello-w', v: 'hello', tone: '#CFE6F5', say: 0.7 }, '감사합니다.': { k: 'thanks-w', v: 'thanks', tone: '#F5D3D3', say: 0.8 }, '다녀왔어요.': { k: 'home-w', v: 'home', tone: '#D3EBDD', say: 0.25 }, '저는 수진이에요.': { k: 'name-w', v: 'name', tone: '#E4DDF4', say: 0.6 } };
+  PIC['저는 수진이에요.'] = PICW['저는 수진이에요.'];   // 이 보기는 30일 뒤(겨울)에만 나온다
+  const shotSrc = (n) => (window.__CARDDATA && window.__CARDDATA[`shot/${n}.webp`]) || `shot/${n}.webp`;
   let winter = false;
   const VIDEO = window.__SCVIDEO !== false;
   const cardSrc = (k, ext) => (window.__CARDDATA && window.__CARDDATA[`${k}.${ext}`]) || `card/${k}.${ext}`;
@@ -54,7 +60,7 @@
     flip: { f: 'sound/flip.mp3', g: 0.62, vary: 0.08 }, clipopen: { f: 'sound/clipopen.mp3', g: 0.7, vary: 0.08 }, clipsnap: { f: 'sound/clipsnap.mp3', g: 0.9, vary: 0.08 },
     slide: { f: 'sound/slide.mp3', g: 0.3 }, tick: { f: 'sound/tick.mp3', g: 0.6 }, whoosh: { f: 'sound/whoosh.mp3', g: 0.26, vary: 0.1 }, pop: { f: 'sound/pop.mp3', g: 0.5 },
     chime: { f: 'sound/chime.wav', g: 0.5 }, notify: { f: 'sound/notify.wav', g: 0.4 },
-    vhello: { f: 'sound/v-hello.mp3', g: 0.85 }, vthanks: { f: 'sound/v-thanks.mp3', g: 0.85 }, vhome: { f: 'sound/v-home.mp3', g: 0.85 },
+    vhello: { f: 'sound/v-hello.mp3', g: 0.85 }, vthanks: { f: 'sound/v-thanks.mp3', g: 0.85 }, vhome: { f: 'sound/v-home.mp3', g: 0.85 }, vname: { f: 'sound/v-name.mp3', g: 0.85 },
     rain: { f: 'sound/rain.mp3', g: 0.3 }, wind: { f: 'sound/wind.mp3', g: 0.34 },
   };
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -353,14 +359,23 @@
     }, reduce ? 0 : 110);
   }, reduce ? 0 : delay));
   const flipTo = (c, face) => new Promise((res) => { play('flip'); gsap.to(c.flip, { rotationY: face === 'front' ? 0 : 180, transformPerspective: 900, duration: reduce ? 0 : 0.62, ease: 'back.out(1.4)', onComplete: res }); c.w += 0.45; c.pv += sign() * 1.5; });
+  // ok: true(맞음) · false(틀림) · 'wait'(확인할 때가 됐다 — 앱의 「지금 확인」. 뒤에 확인되면 confirmStamp로 ✓)
   const stamp = (c, ok, label) => {
-    const s = document.createElement('span'); s.className = `sc-stamp ${ok ? 'is-ok' : 'is-x'}`; s.innerHTML = `<em>${ok ? '✓' : '✕'}</em><span></span>`; s.querySelector('span').textContent = label;
+    const wait = ok === 'wait';
+    const s = document.createElement('span'); s.className = `sc-stamp ${wait ? 'is-wait' : ok ? 'is-ok' : 'is-x'}`; s.dataset.label = label; s.innerHTML = `<em>${wait ? '?' : ok ? '✓' : '✕'}</em><span></span>`; s.querySelector('span').textContent = label;
     // 기록 면은 여권처럼 도장이 쌓인다(그날 확인한 결과). 셋째부터는 작게 겹쳐 찍는다.
     c.stamps.append(s); while (c.stamps.children.length > 6) c.stamps.firstElementChild.remove();
     c.stamps.classList.toggle('is-many', c.stamps.children.length > 2);
     const rot = -18 + Math.random() * 14; gsap.set(s, { rotation: rot });
     play('stamp'); c.w += sign() * (ok ? 0.7 : 1.1); c.fv -= 2.2; kick(c.x, 40);
     if (!reduce) { gsap.fromTo(s, { scale: 1.9, opacity: 0, rotation: rot - 12 }, { scale: 1, opacity: 1, rotation: rot, duration: 0.32, ease: 'back.out(2.4)' }); gsap.fromTo(c, { s: c.s * 0.955 }, { s: c.s, duration: 0.4, ease: 'back.out(3)' }); }
+  };
+  // 확인 중이던 칸이 그 사이 레슨에서 확인됐다: 물음표 도장 위에 ✓를 다시 찍는다
+  const confirmStamp = (c, label) => {
+    const s = [...c.stamps.children].find((x) => x.dataset.label === label && x.classList.contains('is-wait')); if (!s) return;
+    s.classList.remove('is-wait'); s.classList.add('is-ok'); s.querySelector('em').textContent = '✓';
+    play('stamp', { g: 0.8, rate: 1.1 }); c.fv -= 1.6; kick(c.x, 30);
+    if (!reduce) gsap.fromTo(s, { scale: 1.5 }, { scale: 1, duration: 0.3, ease: 'back.out(2.4)' });
   };
   // 줄을 따라 옮겨 간다: 집게가 살짝 열려 들리고, 미끄러지고, 닿으면 닫힌다
   const travel = (c, at) => new Promise((res) => {
@@ -467,28 +482,23 @@
     tl.call(() => { play('tick'); const last = pages[0]; if (!reduce) gsap.fromTo(last, { y: 3 }, { y: 0, duration: 0.3, ease: 'back.out(3)' }); }, null, '>-0.1');
   });
 
-  /* ── 튜터 말풍선(앱이 먼저 꺼내는 말) ── */
-  const chat = document.createElement('div'); chat.className = 'sc-chat'; chat.setAttribute('aria-live', 'polite');
-  chat.innerHTML = '<span class="sc-chat-who"><i aria-hidden="true"></i>튜터</span><p class="sc-chat-msg"></p><p class="sc-chat-more"></p>';
-  stage.append(chat);
-  const chatMsg = $('.sc-chat-msg', chat), chatMore = $('.sc-chat-more', chat);
-  const showChat = async (text, more = '') => {
-    chatMsg.innerHTML = '<span class="sc-typing" aria-hidden="true"><i></i><i></i><i></i></span>'; chatMore.textContent = '';
-    gsap.fromTo(chat, { opacity: 0, y: 12, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: reduce ? 0 : 0.42, ease: 'back.out(2)' });
-    play('notify');
-    await wait(760);
-    chatMsg.textContent = text; play('pop', { g: 0.5, rate: 1.2 });
-    if (!reduce) gsap.fromTo(chatMsg, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3 });
-    if (more) { await wait(500); chatMore.textContent = more; if (!reduce) gsap.fromTo(chatMore, { opacity: 0 }, { opacity: 1, duration: 0.4 }); }
+  /* ── SYNK WORLD 실제 화면 조각: 그날 앱이 보이는 화면을 문제 자리에 띄운다(지어낸 말풍선 대신) ── */
+  const ALT = {
+    'piece-tutor-review': 'SYNK WORLD 튜터 카드: 복습할 시간이 된 내용이 있어요. 짧게 다시 만나 봐요.',
+    'piece-check-d7': 'SYNK WORLD 다시 확인 표: 낱말 뜻 읽기 — 1일 뒤 혼자 맞힘, 7일 뒤 지금 확인.',
+    'piece-check-d30': 'SYNK WORLD 다시 확인 표: 낱말 뜻 읽기 — 1일 뒤 혼자 맞힘, 7일 뒤 혼자 맞힘, 30일 뒤 지금 확인.',
+    'piece-evidence': 'SYNK WORLD 내 위치: 이렇게 본 근거 — 혼자 맞힌 답들.',
   };
-  const hideChat = () => gsap.to(chat, { opacity: 0, y: -6, duration: reduce ? 0 : 0.25 });
-
-  // 돌아온 카드를 한 번 누를 때까지 기다린다(누르면 답이 아니라 확인)
-  const waitTap = (c, label) => new Promise((res) => {
-    c.answerable = true; c.el.removeAttribute('aria-disabled'); c.el.setAttribute('aria-label', label);
-    c.el.focus({ preventScroll: true });
-    answering = () => { answering = null; c.answerable = false; c.el.setAttribute('aria-disabled', 'true'); c.el.setAttribute('aria-label', c.text); res(); };
-  });
+  const mkShot = (cls) => { const f = document.createElement('figure'); f.className = cls; f.innerHTML = '<img alt="" decoding="async"><figcaption></figcaption>'; f.lastChild.textContent = D.real; return f; };
+  const shot = mkShot('sc-shot'); stage.append(shot);
+  const evid = mkShot('sc-shot sc-evid'); line.append(evid);
+  const showShot = async (f, name) => {
+    const img = $('img', f); img.src = shotSrc(name); img.alt = ALT[name] || '';
+    try { await img.decode(); } catch { /* 그대로 띄운다 */ }
+    play('notify');
+    gsap.fromTo(f, { opacity: 0, y: 14, rotationX: -16, scale: 0.94 }, { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: reduce ? 0 : 0.55, ease: 'back.out(1.8)', transformPerspective: 800 });
+  };
+  const hideShot = (f = shot) => gsap.to(f, { opacity: 0, y: -6, duration: reduce ? 0 : 0.25 });
 
   /* ── 내 위치: 카드가 줄에서 풀려 앞으로 나오고, 기록 면에 큰 도장 ── */
   const showScale = () => (narrow ? 1.6 : 1.42);
@@ -620,14 +630,14 @@
     if (r.right) button(Q.toDay1, () => toTomorrow(r.correct)); else button(Q.toMinute, () => toMinute(r.correct));
   }
   const clearStage = (h) => { qhead.textContent = h; ctxEl.textContent = ''; promptEl.textContent = ''; setAfter('', ''); next.replaceChildren(); };
-  // 내일: 앱을 열면 튜터가 먼저 꺼낸다 → 카드가 돌아와 그 말을 한다 → 「내일」 도장
+  // 내일: 앱을 열면 튜터 카드가 먼저 꺼낸다(실제 화면) → 카드가 돌아와 그 말을 한다 → 「내일」 칸 ✓
   async function toTomorrow(c) {
-    hideHint(); hideChat(); await leaveStage(); setClock(2);
+    hideHint(); hideShot(); await leaveStage(); setClock(2);
     await flipDays(0, 1, 'morning', '다음 날 아침', 'sun');
     clearStage(D.d1.head); enterStage();
     c.backTag.textContent = '어제 만난 말';
-    await showChat(D.d1.chat);
-    await wait(300);
+    await showShot(shot, D.d1.shot);
+    await wait(700);
     await callBack(c);
     await wait(2300);
     await flipTo(c, 'back'); await wait(60);
@@ -638,48 +648,59 @@
     await wait(260);
     button(D.d1.next, () => toWeek(c));
   }
-  // 7일 뒤: 낱말을 가린 채 돌아온다. 인물의 몸짓만 보고 떠올린 뒤 눌러서 확인한다
+  // 7일 뒤: 다시 확인할 때(실제 화면 「7일 뒤 · 지금 확인」) → 카드가 돌아오고 7일 칸에 물음표 도장(확인 중)
   async function toWeek(c) {
-    hideHint(); hideChat(); await leaveStage(); setClock(3);
+    hideHint(); hideShot(); await leaveStage(); setClock(3);
     await flipDays(1, 7, 'rain', '일주일 뒤', 'rain');
     clearStage(D.d7.head); enterStage();
     c.backTag.textContent = '일주일 전에 만난 말';
-    c.el.classList.add('is-quiz');
-    const said = showChat(D.d7.chat, D.d7.chat2);
-    await wait(300);
-    await callBack(c, false);
-    await said;
-    await waitTap(c, '돌아온 카드: 눌러서 낱말 확인');
-    c.el.classList.remove('is-quiz'); mark(c.wordEl, 'under'); play('underline'); play('chime', { delay: 0.18 });
-    c.w += sign() * 1.2; c.pv += sign() * 2; act(c, true, true);
-    await wait(2100);
-    hideChat();
+    await showShot(shot, D.d7.shot);
+    await wait(700);
+    await callBack(c);
+    await wait(2300);
     await flipTo(c, 'back'); await wait(60);
-    stamp(c, true, '7일 뒤'); markStop(3, true); c.el.classList.remove('is-called');
+    stamp(c, 'wait', '7일 뒤'); c.el.classList.remove('is-called');
     setAfter(D.d7.say, D.d7.sub);
     await wait(900);
     await travel(c, { kind: 'knot', i: 4 });
     await wait(260);
     button(D.d7.next, () => toMonth(c));
   }
-  // 30일 뒤: 눈 오는 겨울. 같은 인물이 겨울 옷을 입고, 처음 보는 장면으로 다시 묻는다
+  // 30일 뒤: 눈 오는 겨울. 7일 칸은 그 사이 레슨에서 확인됐고(실제 화면), 30일 칸은 같은 항목의 처음 보는 문제(앱의 첫 레슨 둘째 문제)로 채운다.
+  // 돌아온 카드(기록)는 30일 매듭에 걸린 채로 있고, 보기 세 장은 새로 떨어진다.
   async function toMonth(c) {
-    hideHint(); hideChat(); await leaveStage(); setClock(4);
+    hideHint(); hideShot(); await leaveStage(); setClock(4);
     await flipDays(7, 30, 'snow', '한 달 뒤', 'snow');
     winter = true; setPic(c);
     c.backTag.textContent = '한 달 전에 만난 말';
-    await callBack(c, false); await wait(80);
+    clearStage(D.d30.head); enterStage();
+    await showShot(shot, D.d30.shot);
+    await wait(500);
+    c.el.classList.add('is-called'); play('whoosh', { g: 0.6, rate: 1.2 });
+    await new Promise((res) => gsap.timeline({ onComplete: res }).to(c, { lift: 26, duration: reduce ? 0 : 0.26, ease: 'power2.out' }).to(c, { lift: 0, duration: reduce ? 0 : 0.4, ease: 'bounce.out' }));
+    confirmStamp(c, '7일 뒤'); markStop(3, true);
+    await wait(1500);
+    hideShot();
+    if (narrow) gsap.to(c, { op: 0, duration: reduce ? 0 : 0.3 });   // 휴대폰은 보기 세 장이 폭을 다 쓴다 — 기록 카드는 잠깐 비켜 둔다
     const q = D.d30;
-    await travel(c, { kind: 'slot', i: q.choices.findIndex(([, t]) => t === c.text) });
-    const r = await askAgain(c, q, '한 달 전에 만난 말', '30일 뒤');
-    markStop(4, r.right);
-    setAfter(r.right ? q.right.say : q.wrong.say, r.right ? q.right.sub : q.wrong.sub);
-    await wait(700);
-    await travel(r.correct, { kind: 'knot', i: 4 });
     await wait(260);
-    button(q.next, () => toMe(r.correct, r.right));
+    showQuestion(q); setFull(true);
+    const cs = q.choices.map(([id, text], i) => makeCard(id, text, i + 1));
+    await Promise.all(cs.map((k, i) => dropIn(k, { kind: 'slot', i }, 0.15 + i * 0.2)));
+    if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
+    const r = await takeAnswer(cs, q);
+    await wait(r.right ? 1500 : 2300);
+    cs.forEach((k, i) => unclip(k, i * 180));
+    await wait(420); setFull(false);
+    if (narrow) gsap.to(c, { op: 1, duration: reduce ? 0 : 0.4 });
+    await wait(700);
+    c.el.classList.remove('is-called');
+    stamp(c, r.right, '30일 뒤'); markStop(4, r.right);
+    setAfter(r.right ? q.right.say : q.wrong.say, r.right ? q.right.sub : q.wrong.sub);
+    await wait(900);
+    button(q.next, () => toMe(c, r.right));
   }
-  // 내 위치: 집게에서 풀린 카드가 앞으로 나와 기록 면을 보이고, 큰 도장을 받는다
+  // 내 위치: 집게에서 풀린 카드가 앞으로 나와 기록 면을 보이고 큰 도장을 받는다. 넓은 화면에서는 옆에 실제 「이렇게 본 근거」 화면.
   async function toMe(c, right) {
     hideHint(); await leaveStage(); setClock(5); endTag.classList.add('is-now'); root.classList.add('is-me'); c.el.classList.remove('is-right', 'is-called');
     clearStage(D.me.head);
@@ -687,21 +708,26 @@
     c.el.classList.add('is-open'); play('clipopen');
     await wait(160);
     leavePin(c); c.el.classList.remove('is-open');
-    c.home = 'show'; c.grab = true; c.answerable = false; c.pt = 0; c.ft = 0; c.el.style.zIndex = '5';
+    c.home = 'show'; c.grab = true; c.answerable = false; c.pt = 0; c.ft = 0; c.el.style.zIndex = '5'; c.el.classList.add('is-show');
     c.el.removeAttribute('aria-disabled'); c.el.setAttribute('aria-label', '내 기록 카드 — 눌러서 앞면과 기록 면을 오갑니다');
     play('whoosh', { g: 0.9, rate: 0.85 }); c.pv += 10;
+    const wide = !narrow && W >= 1000, S = showScale(), cx = wide ? W / 2 - 150 : W / 2;
     c.moving = true;
-    await new Promise((res) => gsap.to(c, { x: W / 2, y: narrow ? 18 : 6, s: showScale(), th: 0, duration: reduce ? 0 : 1.0, ease: 'power3.inOut', onComplete: res }));
+    await new Promise((res) => gsap.to(c, { x: cx, y: narrow ? 18 : 6, s: S, th: 0, duration: reduce ? 0 : 1.0, ease: 'power3.inOut', onComplete: res }));
     c.moving = false; play('clipsnap', { g: 0.45, rate: 0.8 });
     await wait(260);
     seal(c, right);
+    if (wide) {
+      evid.style.left = (cx + (CW * S) / 2 + 36) + 'px'; evid.style.top = '18px'; evid.style.width = Math.min(380, W - (cx + (CW * S) / 2 + 36) - 24) + 'px';
+      await wait(380); showShot(evid, D.me.shot);
+    }
     await wait(520);
     enterStage(); setAfter(D.me.say, D.me.sub);
     await wait(300);
     finalButtons();
   }
   async function restart() {
-    hideHint(); hideChat(); await leaveStage();
+    hideHint(); hideShot(); hideShot(evid); await leaveStage();
     [...cards].forEach((c, i) => unclip(c, i * 140));
     setSky(null); winter = false; endTag.classList.remove('is-now'); root.classList.remove('is-me');
     await wait(700);
