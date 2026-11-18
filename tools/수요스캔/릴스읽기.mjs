@@ -7,8 +7,22 @@
 // 계정 보호 확인(「비정상적인 로그인 시도가 감지되었습니다」) · 로그인 화면 · 로봇 확인이 보이면 그 자리에서 멈추고 「막힘」으로 적는다 — 유호님 손.
 const fs = await import("node:fs/promises");
 const JOB = globalThis.JOB;
-const task = await taskSpace("synk-demand-reels");
-const page = task.page("p1");
+// 공간은 인스타에 로그인된 「유호」 프로필로 연다(11-18). taskSpace(이름)은 공간을 처음 만들 때의 ego 기본 프로필을 따르고, 이미 있는
+// 이름의 공간을 다시 쓸 때는 profileId를 무시한다. 11-18 09:22에 기본이 「LinkedIn yuhobuilds」인 채로 이 공간이 새로 생겨, 로그아웃 화면에서
+// 열아홉 계정이 모두 「빔」이 됐다. 다른 프로필에 묶인 옛 공간은 닫고 「유호」로 다시 만든다.
+const 공간이름 = "synk-demand-reels";
+const 유호 = (await profiles()).find((p) => p.name === "유호") || null;
+const 옛공간 = (await listTaskSpaces()).find((s) => s.name === 공간이름);
+if (유호 && 옛공간 && 옛공간.profileName !== 유호.name && 옛공간.ownership === "agent") await (await taskSpace(옛공간.id)).finish({ keep: [] }).catch(() => {});
+// 11-18 10:33 첫 시험에서 옛 공간을 닫은 뒤 새 공간 만들기가 18분을 기다리다 오류로 끝났는데, 공간은 「유호」로 만들어져 있었다 — 한 번은 이름으로 다시 찾는다
+const task = await taskSpace(공간이름, 유호 ? { profileId: 유호.id } : undefined).catch(async (err) => {
+  await new Promise((r) => setTimeout(r, 5000));
+  const 생김 = (await listTaskSpaces()).find((s) => s.name === 공간이름 && s.ownership === "agent");
+  if (!생김) throw err;
+  return taskSpace(생김.id);
+});
+const 프로필 = (await listTaskSpaces()).find((s) => s.id === task.spaceId)?.profileName || null;
+const page = (await task.pages())[0] ?? (await task.adopt((await task.tabs())[0].page));
 const sleep = (ms) => page.waitForTimeout(ms);
 const 막힘글 = () => page.evaluate(() => {
   const t = document.body ? document.body.innerText.slice(0, 3000) : "";
@@ -18,8 +32,13 @@ const 막힘글 = () => page.evaluate(() => {
   return null;
 }).catch(() => null);
 
-const out = { 일: JOB.일, 시각: new Date().toISOString(), 결과: [] };
-if (JOB.일 === "계정") {
+// 로그아웃 화면에도 릴스 칸 링크는 보여서 막힘글이 못 잡는다. 로그인 링크만 있고 메시지함 링크가 없으면 로그아웃이다(11-18 실측).
+const 로그아웃 = () => page.evaluate(() => !!document.querySelector('a[href*="/accounts/login"]') && !document.querySelector('a[href*="/direct/inbox"]')).catch(() => false);
+
+const out = { 일: JOB.일, 시각: new Date().toISOString(), 프로필, 결과: [] };
+if (JOB.일 === "계정" && 유호 && 프로필 !== 유호.name) {
+  out.결과.push({ 핸들: JOB.계정[0], 상태: "막힘", 까닭: `ego 공간이 「${프로필}」 프로필이다(인스타 로그인은 「유호」)`, 릴스: [] });
+} else if (JOB.일 === "계정") {
   for (const 핸들 of JOB.계정) {
     const rec = { 핸들, 상태: "됨", 릴스: [] };
     try {
@@ -29,7 +48,7 @@ if (JOB.일 === "계정") {
       await page.goto(`https://www.instagram.com/${핸들}/reels/`).catch((e) => { if (!/navigation committed/.test(e.message)) throw e; });
       await page.waitForLoadState().catch(() => {});
       await sleep(4500);
-      const 막 = await 막힘글();
+      const 막 = (await 막힘글()) || ((await 로그아웃()) ? `로그아웃 화면(「${프로필}」 프로필에 인스타 로그인이 없다)` : null);
       if (막) { rec.상태 = "막힘"; rec.까닭 = 막; out.결과.push(rec); break; } // 계정 전체가 막혔으니 남은 계정도 부르지 않는다
       const seen = new Map();
       await page.mouse.move(700, 500);

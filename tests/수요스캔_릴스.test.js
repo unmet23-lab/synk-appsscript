@@ -38,6 +38,17 @@ test('릴스 판정 — 응답에 올린 때가 없으면 code에서 잰다(11-1
   assert.match(글, /릴스 7편[\s\S]*튄 편 1[\s\S]*올린 때를 못 읽어 판정에서 빠진 편 1/);
 });
 
+test('릴스 판정 — 창 안에 새 릴스가 없는 계정은 결과 글에 멈춘 계정일 수 있다고 적는다(11-18)', () => {
+  const 산 = 릴스.계정판정({ 핸들: 'live', 상태: '됨', 릴스: 평소 }, { 오늘: '2026-10-28' });
+  assert.equal(산.창안, 12);
+  assert.equal(산.가장새편, '2026-10-21');
+  const 멈춘 = 릴스.계정판정({ 핸들: 'stopped', 상태: '됨', 릴스: 평소 }, { 오늘: '2026-12-31' });
+  assert.equal(멈춘.창안, 0);
+  const 글 = 릴스.글({ 'lab-mn': { 막힘: null, 계정: [산, 멈춘] } }, '2026-12-31');
+  assert.match(글, /@live — 릴스 12편 · 창 안 12편 · 중앙 [^\n]*튄 편 0\n/);
+  assert.match(글, /@stopped — 릴스 12편 · 창 안 0편 [^\n]*28일 안 새 릴스 없음\(가장 새 편 2026-10-21\)/);
+});
+
 test('릴스 읽기 — 한 계정에서 막히면 남은 브랜드는 부르지 않고 막힘을 적는다', () => {
   const 출력 = fs.mkdtempSync(path.join(os.tmpdir(), '릴스-'));
   try {
@@ -49,6 +60,19 @@ test('릴스 읽기 — 한 계정에서 막히면 남은 브랜드는 부르지
     const 글 = fs.readFileSync(path.join(출력, '릴스.md'), 'utf8');
     assert.match(글, /## lab-en[\s\S]*\*\*막힘 — 계정 보호 확인 창/);
     assert.ok(!/본인입니다를 눌/.test(글));
+    assert.ok(!/릴스_내용\.md/.test(글), '내용 표가 없으면 가리키지 않는다');
+  } finally { fs.rmSync(출력, { recursive: true, force: true }); }
+});
+
+test('릴스 읽기 — 같은 폴더에 튄 편 내용 표가 있으면 결과 글 머리에서 가리킨다(11-18)', () => {
+  const 출력 = fs.mkdtempSync(path.join(os.tmpdir(), '릴스-'));
+  try {
+    fs.writeFileSync(path.join(출력, '릴스_내용.md'), '# 표\n');
+    const 돌리기 = (job) => ({ 결과: job.계정.map((핸들) => ({ 핸들, 상태: '됨', 릴스: 평소 })) });
+    릴스.읽기(['lab-mn'], { 날짜: '2026-10-28', 출력, 돌리기 });
+    const 글 = fs.readFileSync(path.join(출력, '릴스.md'), 'utf8');
+    assert.match(글.split('## ')[0], /`릴스_내용\.md`/);
+    assert.equal(fs.readFileSync(path.join(출력, '릴스_내용.md'), 'utf8'), '# 표\n', '내용 표는 건드리지 않는다');
   } finally { fs.rmSync(출력, { recursive: true, force: true }); }
 });
 
