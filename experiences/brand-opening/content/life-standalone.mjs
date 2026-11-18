@@ -25923,6 +25923,60 @@ function createWorldEducation({
     });
   }
   const responseView = (set, kind) => set ? { kind, value: null } : null;
+  function meCoach() {
+    if (stopped) return null;
+    try {
+      return homePhase() === "engine" ? homeWatch?.coach?.() ?? null : null;
+    } catch {
+      return null;
+    }
+  }
+  function meNow() {
+    const coachNow = meCoach(), P = homePlanner?.position;
+    if (!coachNow || typeof P?.meUnits !== "function") return null;
+    let life = [];
+    try {
+      life = engine.life?.lifeItems?.() || [];
+    } catch {
+      life = [];
+    }
+    let routes = /* @__PURE__ */ new Map();
+    try {
+      routes = P.unitRoutes({ itemUnits: (item) => coachNow.itemUnits(item), practice: position?.practice?.pool || [], diagnostic: position?.items || [], life });
+    } catch {
+      routes = /* @__PURE__ */ new Map();
+    }
+    try {
+      return P.meUnits(coachNow.summary(), routes);
+    } catch {
+      return null;
+    }
+  }
+  function tellMe(unit, kind) {
+    if (kind !== "known" && kind !== "relearn") return null;
+    const coachNow = meCoach();
+    if (!coachNow) return null;
+    try {
+      return coachNow.tell(unit, kind)?.id ?? null;
+    } catch {
+      return null;
+    }
+  }
+  function undoMe(eventId) {
+    if (!eventId) return false;
+    const coachNow = meCoach();
+    if (!coachNow) return false;
+    try {
+      coachNow.exclude(eventId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  async function clearPractice() {
+    if (stopped || typeof atlasNext?.clearPractice !== "function") return null;
+    return atlasNext.clearPractice();
+  }
   const RESPONSE_COACHES = [() => readPracticeCoach(), () => readCoach(), () => readMockCoach()];
   function nextCoach(prefer = null) {
     let home2 = null;
@@ -29295,7 +29349,7 @@ function createWorldEducation({
       return Promise.resolve();
     }
   }, life: engine.life || null });
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, me: meNow, tellMe, undoMe, clearPractice, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));

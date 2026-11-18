@@ -1665,3 +1665,28 @@ export const SITUATIONS_KO=Object.freeze({
  'sit-people-messenger':'영상통화·메신저',
  'sit-career-schedule':'일정 조율',
 });
+// 「나」 칸(Atlas 재설계 단계 4-5 — docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §22-6)의 화면 글. 「내 계정」 시트의 「내가 남긴 응답」 뒤에 붙는다.
+// 새 길 홈 코치가 엔진 판일 때만 서고, 스위치(atlasNext)가 꺼져 있는 동안은 아무 학생에게도 보이지 않는다. 글은 화면 검수에서 정하고(§22-4 「글은
+// 화면 검수에서 정한다」), 영어 · 몽골어는 켜기 전(4-8)에 현지어 세 겹 대조를 거쳐 들인다. 그전까지 meText(world-lang.mjs)는 한국어 화면에서만
+// 이 글을 주고, 셸은 글이 없으면 칸을 그리지 않는다. 그래서 세 언어가 다 있어야 하는 1판 표(위의 기본 내보내기) 밖에 둔다.
+export const ME_KO=Object.freeze({
+ 'me.title':'나의 말',
+ 'me.note':'연습에서 만난 말을 지금 상태로 나눠 보여 줘요. 이름이 없는 말은 세지 않아요.',
+ 'me.shaky':'흔들리는 말 {n}개',
+ 'me.clear':'또렷한 말 {n}개',
+ 'me.said':'내가 안다고 한 말 {n}개',
+ 'me.empty':'아직 나눠 보여 줄 말이 없어요.',
+ 'me.known':'이미 알아요',
+ 'me.knownLabel':'「{label}」 이미 알아요',
+ 'me.relearn':'다시 배울래요',
+ 'me.relearnLabel':'「{label}」 다시 배울래요',
+ 'me.undo':'되돌리기',
+ 'me.undoLabel':'「{label}」 다시 배우기를 되돌리기',
+ 'me.toldFailed':'지금은 적지 못했어요. 잠시 뒤 다시 해 주세요.',
+ 'me.clearButton':'연습 기록 비우기',
+ 'me.clearAsk':'연습 기록을 비울까요? 지금까지의 연습 기록이 지워지고 처음부터 다시 시작해요. 학습 목표, 레슨 진도, 한글 진도와 화면 설정은 그대로예요. 선생님께 낸 숙제와 첫걸음 점수도 남아요.',
+ 'me.clearDone':'연습 기록을 비웠어요.',
+ 'me.clearPartial':'연습 기록을 비웠어요. 이 기기의 옛 기록 일부는 다음에 마저 비워요.',
+ 'me.clearUnsent':'아직 보내지 못한 기록이 있어 지금은 비우지 못했어요.',
+ 'me.clearFailed':'지금은 비우지 못했어요. 잠시 뒤 다시 해 주세요.',
+});

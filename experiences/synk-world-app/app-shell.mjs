@@ -20,7 +20,7 @@ import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../syn
 import {play as playSound,getPref} from '../brand-opening/world-sound.mjs'
 import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 // 화면 언어(10-19 1판): 계정 연결·로그인 안내·저장 확인·오류는 고른 언어로. 첫 문장 놀이·타운·노래 화면은 2판까지 한국어다.
-import {t,tMessage,currentLang,hasString,situationName} from '../brand-opening/world-lang.mjs';
+import {t,tMessage,currentLang,hasString,situationName,meText} from '../brand-opening/world-lang.mjs';
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
 import {createSeoulEntry,seoulText} from './seoul-entry.mjs';
 const $=s=>document.querySelector(s);
@@ -47,7 +47,11 @@ function lazyAtlasNext(owner){
  // 리허설 나르개의 401은 그 나르개를 만든 로그인의 세대에서만 로그인으로 보낸다 — 로그아웃 뒤 같은 합성 계정으로 다시 들어온 새 로그인을 앞 로그인의
  // 늦은 401이 로그인 화면으로 돌리지 않게(Fable 5.2 합친 끝 판 넘친 #26 — 계정 번호만 견주면 같은 계정의 새 세션을 못 가렸다).
  const trailOf=m=>{if(owner==='guest')return null;if(operating)return()=>account.prepareAtlasTrail();const generation=client.generation;return m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if(client.generation===generation&&(client.snapshot?.accountId||'guest')===owner)client.expire?.();}});};
- const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{if(String(id).startsWith('sit-'))return situationName(id);const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;throw error;});
+ // 옛 엔진의 두 문(4-5 연습 기록 비우기 — 단계4_계획 §22-4 · world-old-engine-doors.mjs를 입구 모듈이 다시 내보낸다): 계정의 옛 올리기 대기열(옛 학습
+ // 호스트)과 옛 손님 기록(옛 손님 코치를 열어 쓰기 임대 안에서 다시 판단해 비운다 — 4-5 코드 검수 GPT GA1). 입구가 비우기에서만 부른다. 새 길이 꺼진
+ // 셸은 입구 모듈을 받지 않으므로 이 문도 받지 않는다.
+ const oldDoorsOf=m=>m.oldEngineDoors?.({openGame:()=>worldLearning.engine.createGame({gameId:'world-home',storage:window.localStorage}),host:()=>window.SYNKLearningHost||null});
+ const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{if(String(id).startsWith('sit-'))return situationName(id);const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m),oldEngine:oldDoorsOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;throw error;});
  return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
   // 생활 화면의 코치(4-2 — 은행 world-life, 단계4_계획 §19-1 ①). 지금 판이면 null.
   async lifeCoach(){if(disposed)return null;const entry=await load();return disposed?null:entry.lifeCoach();},
@@ -67,6 +71,8 @@ function lazyAtlasNext(owner){
   firstAnswersOf:coach=>made&&!disposed?made.firstAnswersOf?.(coach)??null:null,
   // 판 응답 읽기(4-5 — 단계4_계획 §22-5): 입구가 연 코치의 판이 올리는 길이면 서버를 읽어 코치에 넘기고 코치의 목록을 준다. 입구를 받기 전이거나 닫았으면 null.
   readResponses:async coach=>made&&!disposed?(await made.readResponses?.(coach))??null:null,
+  // 연습 기록 비우기(4-5 — 단계4_계획 §22-4): 입구의 clearPractice(한 번 더 묻기는 「나」 칸이 한다). 닫았으면 null.
+  async clearPractice(){if(disposed)return null;const entry=await load();return disposed?null:entry.clearPractice();},
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
@@ -772,11 +778,71 @@ function refreshResponses(){
    if(open&&next){for(const row of next.querySelectorAll('[data-response-later]'))row.hidden=false;next.querySelector('[data-responses-more]')?.remove();}
    return;
   }
-  const anchor=$('#panel-content #world-classroom-lessons');if(!html||!anchor)return;
+  const anchor=$('#panel-content [data-world-me]')||$('#panel-content #world-classroom-lessons');if(!html||!anchor)return;
   anchor.insertAdjacentHTML('beforebegin',html);mountResponses();
  },()=>{});
 }
-function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();refreshResponses();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
+// 「나」 칸(4-5 — 단계4_계획 §22-6): 「내가 남긴 응답」 뒤에 붙는다. 새 길 홈 코치가 엔진 판일 때만 선다(학습 화면 me() — 아니면 null). 흔들리는 말 ·
+// 또렷한 말 · 내가 안다고 한 말과 그 수, 줄마다 단추 하나(흔들리는 말은 「이미 알아요」, 나머지는 「다시 배울래요」), 끝에 「연습 기록 비우기」. 지금 판의
+// 글 꼴과 단추 꼴(응답 목록과 같은 칸)을 그대로 쓰고 새 디자인은 하지 않는다 — 화면은 리디자인에서 다시 짓는다. 글은 한국어 화면에서만 있다(meText —
+// 영어 · 몽골어는 켜기 전 4-8의 현지어 절차 뒤). 계정 화면이 이 계정 것이 아니면 그리지 않는다. 목록마다 처음 다섯 줄만 보이고 나머지는 「더 보기」로 편다.
+const ME_PAGE=5;
+// 「다시 배울래요」 뒤의 되돌리기(설계 주인 I) — { unit, eventId, label, state, at }. 같은 자리(그 목록의 맨 위)에 두고, 그 단위에 다시 답했거나(마지막 자리가
+// 그 뒤) 시트를 다시 열면 지운다.
+let meUndo=null;
+function meNow(){const education=life.education;if(typeof education?.me!=='function'||education.metrics?.().owner!==client.snapshot?.accountId||meText('me.title')==null)return null;try{return education.me();}catch{return null;}}
+function meSection(fresh=false){
+ if(fresh)meUndo=null; // 시트를 새로 열었다 — 앞 시트의 되돌리기는 두지 않는다
+ const me=meNow();if(!me)return '';
+ const all=[...me.shaky,...me.clear,...me.said];
+ if(meUndo&&all.some(row=>row.unit===meUndo.unit&&Number.isFinite(row.lastAt)&&row.lastAt>meUndo.at))meUndo=null;
+ const button=(kind,row)=>`<button class="quiet-button" type="button" data-me-tell="${kind}" data-me-unit="${escape(row.unit)}" aria-label="${escape(meText(`me.${kind}Label`,{label:row.label}))}">${escape(meText(`me.${kind}`))}</button>`;
+ const undo=()=>`<li><span>${escape(meUndo.label)}</span><button class="quiet-button" type="button" data-me-undo="${escape(meUndo.eventId)}" aria-label="${escape(meText('me.undoLabel',{label:meUndo.label}))}">${escape(meText('me.undo'))}</button></li>`;
+ const list=(state,kind)=>{
+  const rows=me[state].filter(row=>row.unit!==meUndo?.unit).map((row,index)=>`<li${index>=ME_PAGE?' data-me-later hidden':''}><span>${escape(row.label)}</span>${button(kind,row)}</li>`);
+  if(meUndo?.state===state)rows.unshift(undo());
+  if(!rows.length)return '';
+  return `<h4>${escape(meText(`me.${state}`,{n:me[state].length}))}</h4><ul data-me-list="${state}">${rows.join('')}</ul>${me[state].length>ME_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-me-more="${state}">${escape(t('life.more'))}</button>`:''}`;
+ };
+ return `<section class="ws-responses" data-world-me data-label="ME" aria-labelledby="ws-me-title"><h3 id="ws-me-title" tabindex="-1">${escape(meText('me.title'))}</h3><p class="ws-responses-note">${escape(meText(all.length?'me.note':'me.empty'))}</p>${list('shaky','known')}${list('clear','relearn')}${list('said','relearn')}<button class="quiet-button" type="button" data-me-clear>${escape(meText('me.clearButton'))}</button></section>`;
+}
+// 칸만 다시 그린다 — 초점은 focus(고른 단추)나 제목으로 옮긴다. 칸이 더 서지 않으면(엔진 판이 아님) 칸을 걷는다.
+function redrawMe(focus=null){
+ const box=$('#panel-content [data-world-me]');if(!box)return;
+ const html=meSection();if(!html){box.remove();return;}
+ box.outerHTML=html;mountMe();
+ const next=$('#panel-content [data-world-me]');
+ ((focus&&next?.querySelector(focus))||next?.querySelector('h3'))?.focus?.({preventScroll:true});
+}
+function mountMe(){
+ const box=$('#panel-content [data-world-me]');if(!box)return;
+ box.addEventListener('click',event=>{
+  const more=event.target.closest?.('[data-me-more]');
+  if(more){for(const row of box.querySelectorAll(`[data-me-list="${more.dataset.meMore}"] [data-me-later]`))row.hidden=false;more.remove();return;}
+  const tell=event.target.closest?.('[data-me-tell]');
+  if(tell){
+   const kind=tell.dataset.meTell,unit=tell.dataset.meUnit,me=meNow();
+   const state=me?['shaky','clear','said'].find(name=>me[name].some(row=>row.unit===unit)):null,row=state?me[state].find(item=>item.unit===unit):null;
+   let id=null;try{id=life.education?.tellMe?.(unit,kind)??null;}catch{id=null;}
+   if(!id){home.toast(meText('me.toldFailed'));return;}
+   if(kind==='relearn'&&row)meUndo={unit,eventId:id,label:row.label,state,at:Date.now()};
+   redrawMe(kind==='relearn'?'[data-me-undo]':null);return;
+  }
+  const undo=event.target.closest?.('[data-me-undo]');
+  if(undo){let done=false;try{done=life.education?.undoMe?.(undo.dataset.meUndo)===true;}catch{done=false;}if(!done){home.toast(meText('me.toldFailed'));return;}meUndo=null;redrawMe();return;}
+  if(event.target.closest?.('[data-me-clear]'))void clearPracticeNow();
+ });
+}
+// 연습 기록 비우기(§22-4 셸): 정해진 글로 한 번 더 묻고, 확인하면 입구의 clearPractice를 부른다. 결과를 알린 뒤 계정 설정 스냅샷을 새로 받아 「내 계정」
+// 시트 전체를 다시 그린다(22-4의 5 — 동의 체크박스의 판 번호와 응답 목록). 아무것도 비우지 못했으면 「지금은 비우지 못했어요」 쪽으로 알린다.
+async function clearPracticeNow(){
+ if(!window.confirm(meText('me.clearAsk')))return;
+ let result=null;try{result=await life.education?.clearPractice?.();}catch{result=null;}
+ home.toast(meText(result?.ok?(result.partial?'me.clearPartial':'me.clearDone'):result?.code==='UNSENT'?'me.clearUnsent':'me.clearFailed'));
+ if(result?.ok&&operating)try{await account.restore();}catch{/* 앞 스냅샷으로 다시 그린다 */}
+ if($('#panel-content .ws-me'))profile();
+}
+function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}${meSection(true)}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();refreshResponses();mountMe();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
  void addMe2Row();
  // 「우리 반 수업」은 반 연결 바로 위: 연결하면 이 시트를 다시 그려 같은 자리에 수업이 이어진다. 시트가 열려 있는 동안만 30초마다 묻는다.
  // 우리 반 수업·과제·반 연결은 이 시트 하나의 자원이다(시트를 바꾸거나 닫으면 함께 버린다).

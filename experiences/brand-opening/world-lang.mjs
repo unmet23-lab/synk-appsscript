@@ -5,7 +5,7 @@
 // 고르기 전에는 한국어 원문 그대로다. 기기 언어(navigator.languages)는 언어 고르기에서 미리 고르는 데만 쓰고,
 // 지원하지 않는 언어를 조용히 영어로 간주하지 않는다.
 // hangul-stage/lang.mjs는 게임이 혼자 열려도 돌도록 같은 저장 키·언어 목록을 따로 들고 있다(시험이 둘을 대조한다).
-import STRINGS,{SITUATIONS_KO} from './world-strings.mjs';
+import STRINGS,{ME_KO,SITUATIONS_KO} from './world-strings.mjs';
 
 export const LANGS=Object.freeze(['en','mn','ko']);
 // 언어 이름은 그 언어 글자로 쓴다(언어 고르기·설정).
@@ -46,6 +46,8 @@ export function onLang(listener){listeners.add(listener);return()=>listeners.del
 export function hasString(key){return Object.hasOwn(STRINGS,key);}
 // 생활 상황(sit-*)의 화면 이름(4-4b — 관심 이유 문장의 이름). 지금은 한국어 화면에서만 준다 — 영어 · 몽골어 이름은 세 겹 대조 뒤에 들인다(world-strings.mjs SITUATIONS_KO).
 export function situationName(id,lang=currentLang()){return lang==='ko'&&Object.hasOwn(SITUATIONS_KO,id)?SITUATIONS_KO[id]:null;}
+// 「나」 칸의 글(4-5 §22-6). 지금은 한국어 화면에서만 준다 — 영어 · 몽골어는 켜기 전(4-8) 세 겹 대조 뒤에 들인다(world-strings.mjs ME_KO). 없으면 null(셸은 칸을 그리지 않는다).
+export function meText(key,vars,lang=currentLang()){return lang==='ko'&&Object.hasOwn(ME_KO,key)?fill(ME_KO[key],vars,lang):null;}
 function note(key,lang){
  const id=`${lang}:${key}`;if(missing.has(id))return;
  missing.set(id,{key,lang});console.warn(`[WORLD lang] ${lang==='*'?'unknown key':`no ${lang} text`}: ${key}`);

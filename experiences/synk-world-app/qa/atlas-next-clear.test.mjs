@@ -524,6 +524,33 @@ test('옛 손님 로그 남음 — 4b를 다른 창이 쥐었으면 표지에 �
   n3.dispose();
 });
 
+test('옛 엔진의 비우는 문에 옛 로그 읽개를 함께 넘긴다 — 4b의 다시 판단이 쓰기 임대를 쥔 채 이 읽개로 이 기기의 옛 손님 로그를 읽는다(4-5 코드 검수 GPT GA1)', async () => {
+  const storage = filledStorage();
+  storage.setItem(LEGACY_KEY, JSON.stringify({ version: 1, epoch: 'e-read', events: [{ id: 'old-1' }] }));
+  const line = accountLine();
+  const seen = [];
+  const old = {
+    flush: async () => ({ ok: true }),
+    clear: async options => {
+      seen.push(options);
+      return 'kept';
+    },
+  };
+  const { load } = fakeLoader(async given => {
+    const outcome = await given.legacy.clear({ check: () => false });
+    return CLEARED(2, { ok: true, dropped: 0, legacy: outcome === 'kept' ? 'kept' : 'cleared' });
+  });
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: old });
+  await next.practiceCoach(POOL);
+  line.revision = 2;
+  assert.equal((await next.clearPractice()).ok, true);
+  assert.equal(seen.length, 1);
+  assert.equal(typeof seen[0].check, 'function', '엔진이 준 판단을 그대로 넘긴다');
+  assert.equal(typeof seen[0].read, 'function', '옛 로그 읽개를 함께 넘긴다');
+  assert.deepEqual([seen[0].read()?.epoch, seen[0].read()?.log.map(event => event.id)], ['e-read', ['old-1']], '이 기기의 옛 손님 로그를 읽는다');
+  next.dispose();
+});
+
 test('기기 길 계정 — 같은 길 하나다: 서버 비우기는 입구가 그 판의 나르개로 주고, 옛 대기열은 올리지 않으며, 본인 값은 local: 구역으로 옮긴다', async () => {
   const storage = filledStorage();
   const line = accountLine({ enabled: false });

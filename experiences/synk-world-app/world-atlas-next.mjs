@@ -20,6 +20,9 @@ import {
   recordsComplete,
 } from './world-plan-next.mjs';
 import { monthWhy, pickMonth } from './world-lookback-next.mjs';
+import { meUnits } from './world-me-next.mjs';
+// 옛 엔진의 두 문(4-5 §22-4 — 셸이 짓는다): 새 길이 켜졌을 때만 받는 이 모듈이 함께 싣는다(새 길이 꺼진 셸은 받지 않는다).
+export { oldEngineDoors } from './world-old-engine-doors.mjs';
 import { clearMonthAnswer, FIRST_GAME } from './world-month-answer.mjs';
 import { lifeReviewCandidate } from './world-account.bundle.mjs';
 
@@ -48,6 +51,8 @@ export const positionPlanner = Object.freeze({
   monthWhy,
   // 예상 급수 칸(4-4d — 단계4_계획 §21-23의 2): 코치나 근거 상자가 낸 능력마다의 근거 수를 시험 · 영역으로 묶어 지금 판 문턱으로 센다.
   estimateNext,
+  // 「나」 칸(4-5 — 단계4_계획 §22-6): 코치 요약의 단위 줄을 흔들리는 말 · 또렷한 말 · 내가 안다고 한 말로 나눈다(이름은 unitRoutes와 같은 단위 길).
+  meUnits,
 });
 // 이번 주 계획 새 판(4-4b — 단계4_계획 §21-6): 능력 읽개 · 시작점 · 기기 판 기록으로 지금 판의 buildExamPlan을 새 칸으로 읽는다. 홈 코치 하나로
 // 짓는다(내 위치와 같은 코치 · 같은 묶음 만남 — 셸 world-learning-ui.mjs weekNext).
@@ -589,8 +594,8 @@ const GUEST = Object.freeze({ path: 'guest' });
 //   부를 때마다 계정을 다시 읽는다(판 · 동의 · 쓰기 문이 바뀌었으면 그 값으로). account(줄의 주인)를 실으면 이 입구의 주인과 같을 때만 쓴다.
 // health: 계기(시험 · 셸이 줄 때만). 주지 않으면 엔진을 받은 뒤 엔진의 createHealth로 만들고, 그전 실패는 모았다가 옮긴다(§18-2 9 · F7).
 // oldEngine: 옛 엔진의 두 문(셸이 준다 — 연습 기록 비우기, 4-5 §22-4). flush() — 계정의 옛 올리기 대기열을 다 올린다(던지거나 false ·
-//   { ok: false }면 아무것도 지우지 않는다). clear({ check }?) — 옛 엔진의 손님 기록을 비운다(옛 손님 코치 reset — 던지면 그 code:
-//   STORAGE_BUSY · STORAGE_ERROR). check가 오면(계정 비우기의 4b) 쓰기 임대를 쥔 채 옛 로그를 다시 읽어(legacyReader와 같은 꼴) check가
+//   { ok: false }면 아무것도 지우지 않는다). clear({ check, read }?) — 옛 엔진의 손님 기록을 비운다(옛 손님 코치 reset — 던지면 그 code:
+//   STORAGE_BUSY · STORAGE_ERROR). check가 오면(계정 비우기의 4b) 쓰기 임대를 쥔 채 read(입구가 넘기는 legacyReader)로 옛 로그를 다시 읽어 check가
 //   참일 때만 비우고, 거짓이면 비우지 않고 'kept'를 돌려준다(4-5 코드 검수 GPT GA1). 없으면 옛 엔진 몫은 건너뛴다(엔진이 'none'으로 센다).
 export function createAtlasNext({
   owner,
@@ -1152,7 +1157,10 @@ export function createAtlasNext({
   // 4b — GA1)를 그대로 넘긴다.
   const legacyPort = () => ({
     read: store ? legacyReader(store) : () => null,
-    ...(typeof oldEngine?.clear === 'function' ? { clear: options => oldEngine.clear(options) } : {}),
+    // 옛 엔진의 비우는 문에 옛 로그 읽개를 함께 넘긴다 — check가 오면(4b) 문이 쓰기 임대를 쥔 채 이 읽개로 다시 읽어 판단한다(4-5 코드 검수 GPT GA1).
+    ...(typeof oldEngine?.clear === 'function'
+      ? { clear: options => oldEngine.clear({ ...(options ?? {}), read: store ? legacyReader(store) : () => null }) }
+      : {}),
   });
   // 같은 계정의 마지막 비우기(서버 — trail 길의 읽기). { revision, at } · null(비운 적 없음) · undefined(못 읽음 · 읽기가 없는 줄 · 꼴이 틀림).
   async function lastClearOf() {

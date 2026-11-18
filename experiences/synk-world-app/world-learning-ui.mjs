@@ -161,6 +161,22 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   });
  }
  const responseView=(set,kind)=>set?{kind,value:null}:null;
+ // ── 「나」 칸(4-5 — 단계4_계획 §22-6) ──
+ // 새 길 홈 코치가 엔진 판일 때만 — 흔들리는 말 · 또렷한 말 · 내가 안다고 한 말(홈 플래너의 meUnits, 이름은 「내 위치」와 같은 단위 길 unitRoutes).
+ // 확인 중이거나 지금 판이거나 플래너를 못 받았으면 null(셸은 칸을 그리지 않는다).
+ function meCoach(){if(stopped)return null;try{return homePhase()==='engine'?homeWatch?.coach?.()??null:null;}catch{return null;}}
+ function meNow(){
+  const coachNow=meCoach(),P=homePlanner?.position;if(!coachNow||typeof P?.meUnits!=='function')return null;
+  let life=[];try{life=engine.life?.lifeItems?.()||[];}catch{life=[];}
+  let routes=new Map();try{routes=P.unitRoutes({itemUnits:item=>coachNow.itemUnits(item),practice:position?.practice?.pool||[],diagnostic:position?.items||[],life});}catch{routes=new Map();}
+  try{return P.meUnits(coachNow.summary(),routes);}catch{return null;}
+ }
+ // 본인 말(「이미 알아요」 · 「다시 배울래요」 — 코치의 tell). 그 사건 번호를 준다(되돌리기가 그 사건을 뺀다). 못 적으면 null.
+ function tellMe(unit,kind){if(kind!=='known'&&kind!=='relearn')return null;const coachNow=meCoach();if(!coachNow)return null;try{return coachNow.tell(unit,kind)?.id??null;}catch{return null;}}
+ // 되돌리기(설계 주인 I) — tell이 돌려준 사건을 뺀다(계정이면 그 빼기도 올라간다). 뺐으면 참.
+ function undoMe(eventId){if(!eventId)return false;const coachNow=meCoach();if(!coachNow)return false;try{coachNow.exclude(eventId);return true;}catch{return false;}}
+ // 연습 기록 비우기(§22-4) — 입구의 clearPractice(한 번 더 묻기는 셸이 했다). 결과를 그대로 준다. 입구가 없으면 null.
+ async function clearPractice(){if(stopped||typeof atlasNext?.clearPractice!=='function')return null;return atlasNext.clearPractice();}
  // 「내 계정」의 「내가 남긴 응답」: 세 연습(짧은 연습·짧은 진단·시험 형식)의 판 응답(30일 안·뺀 것 제외)을 새것부터. 기능이 꺼졌거나 손님이면 null.
  // 각 줄 {id, kind, value}. 시각은 보이지 않는다(설계 §3). removeResponse(id): 그 응답을 뺀다(record.excluded — 목록과 쓰임에서 빠진다).
  const RESPONSE_COACHES=[()=>readPracticeCoach(),()=>readCoach(),()=>readMockCoach()];
@@ -1851,5 +1867,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,me:meNow,tellMe,undoMe,clearPractice,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

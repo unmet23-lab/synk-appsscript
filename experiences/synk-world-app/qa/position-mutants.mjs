@@ -98,6 +98,29 @@ const MODULES = {
     scenes: path.join(here, 'world-set-response.test.mjs'),
     env: 'SYNK_LEARNING_UI_MODULE',
   },
+  // 「나」 칸(4-5 — §22-6): 목록의 거름 · 나눔 · 순서(world-me-next.mjs), 학습 화면의 몫(world-learning-ui.mjs — me · tellMe · undoMe · clearPractice),
+  // 옛 엔진의 두 문(world-old-engine-doors.mjs — 셸 배선, 4-5 코드 검수 GPT GA1). 셋 다 「나」 시험(qa/atlas-next-me.test.mjs)이 깬 사본을 받는다.
+  me: {
+    source: path.join(here, '..', 'world-me-next.mjs'),
+    scenes: path.join(here, 'atlas-next-me.test.mjs'),
+    env: 'SYNK_ME_NEXT_MODULE',
+  },
+  meShell: {
+    source: path.join(here, '..', 'world-learning-ui.mjs'),
+    scenes: path.join(here, 'atlas-next-me.test.mjs'),
+    env: 'SYNK_LEARNING_UI_MODULE',
+  },
+  doors: {
+    source: path.join(here, '..', 'world-old-engine-doors.mjs'),
+    scenes: path.join(here, 'atlas-next-me.test.mjs'),
+    env: 'SYNK_OLD_DOORS_MODULE',
+  },
+  // 「나」 칸의 앱 배선(app-shell.mjs — 두 문 넘기기 · 감싸기의 clearPractice · 시트의 칸 · 한 번 더 묻기)을 「나」 시험이 원문으로 본다.
+  meAppShell: {
+    source: path.join(here, '..', 'app-shell.mjs'),
+    scenes: path.join(here, 'atlas-next-me.test.mjs'),
+    env: 'SYNK_APP_SHELL_SOURCE',
+  },
 };
 
 // 변형 하나 = [모듈, 갈래, 이름, 바꿀 글, 바꾼 글]. 바꿀 글은 그 모듈에 꼭 한 번 있어야 한다.
@@ -1640,6 +1663,24 @@ export const POSITION_MUTANTS = [
   ["responseShell", "판 응답 셸", "짧은 연습 길이에 판을 여는 새 길 코치를 넘기지 않는다", "  const count=practiceLength(next),skill={id:skillId,label:skillLabel(skillId)};\n", "  const count=practiceLength(),skill={id:skillId,label:skillLabel(skillId)};\n"],
   ["responseShell", "판 응답 셸", "홈 코치가 서기 전에 연 「내 계정」은 읽지 않고 끝낸다", "   if(homePhase()!=='checking')return false;\n", "   return false;\n"],
   ["responseShell", "판 응답 셸", "코치가 선 뒤 기다린 읽기를 하지 않는다", "  void readResponses().then(done,()=>done(false));\n", "  done(false);\n"],
+  ["me","나 칸","흔들리는 말을 놓친 수로 세우지 않는다","  finite(b.lapses) - finite(a.lapses) || finite(a.lastAt) - finite(b.lastAt) || byName(a, b);\n","  finite(a.lastAt) - finite(b.lastAt) || byName(a, b);\n"],
+  ["me","나 칸","흔들리는 말에서 마지막 자리가 오래된 것을 앞세우지 않는다","  finite(b.lapses) - finite(a.lapses) || finite(a.lastAt) - finite(b.lastAt) || byName(a, b);\n","  finite(b.lapses) - finite(a.lapses) || byName(a, b);\n"],
+  ["me","나 칸","이름이 없는 단위도 싣는다(N3를 어긴다)","    if (!label) {\n","    if (false) {\n"],
+  ["me","나 칸","요약 줄의 이름이 단위 길의 이름보다 앞선다","  const label = typeof routed === 'string' && routed.trim() ? routed : row.label;\n","  const label = row.label ?? routed;\n"],
+  ["me","나 칸","또렷한 말을 이름 차례로 세우지 않는다","  lists.clear.sort(byName);\n",""],
+  ["me","나 칸","내가 안다고 한 말을 이름 차례로 세우지 않는다","  lists.said.sort(byName);\n",""],
+  ["meShell","나 칸","확인 중에도 「나」를 세운다"," function meCoach(){if(stopped)return null;try{return homePhase()==='engine'?homeWatch?.coach?.()??null:null;}catch{return null;}}\n"," function meCoach(){if(stopped)return null;try{return homeWatch?.coach?.()??null;}catch{return null;}}\n"],
+  ["meShell","나 칸","본인 말이 아닌 값도 적는다"," function tellMe(unit,kind){if(kind!=='known'&&kind!=='relearn')return null;const coachNow=meCoach();"," function tellMe(unit,kind){const coachNow=meCoach();"],
+  ["meShell","나 칸","되돌리기가 그 사건을 빼지 않는다","try{coachNow.exclude(eventId);return true;}catch{return false;}}\n","return true;}\n"],
+  ["meShell","나 칸","비우기가 입구를 부르지 않는다","return atlasNext.clearPractice();}\n","return null;}\n"],
+  ["doors","나 칸","4b의 다시 판단을 건너뛰고 비운다(GA1)","        if (typeof check === 'function' && !check(typeof read === 'function' ? read() : null))\n          return 'kept';\n",""],
+  ["doors","나 칸","다시 읽지 않고 판단한다(GA1)","check(typeof read === 'function' ? read() : null)","check(null)"],
+  ["doors","나 칸","쓰기 임대를 기다리지 않고 비운다","        await leased(game, leaseWaitMs);\n",""],
+  ["doors","나 칸","올리는 문이 대기열을 보지 않는다","        return state?.queued === 0;\n","        return true;\n"],
+  ["doors","나 칸","연 옛 코치를 닫지 않는다","          game.dispose?.();\n",""],
+  ["meAppShell","나 칸","비우기 전에 한 번 더 묻지 않는다"," if(!window.confirm(meText('me.clearAsk')))return;\n",""],
+  ["meAppShell","나 칸","입구에 옛 엔진의 두 문을 넘기지 않는다","trail:trailOf(m),oldEngine:oldDoorsOf(m)});","trail:trailOf(m)});"],
+  ["clear","나 칸","옛 엔진의 비우는 문에 옛 로그 읽개를 넘기지 않는다(GA1)","      ? { clear: options => oldEngine.clear({ ...(options ?? {}), read: store ? legacyReader(store) : () => null }) }\n","      ? { clear: options => oldEngine.clear(options) }\n"],
 ];
 
 // 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 빈 글로 두면 node가 「겹쳐 부른 시험」으로 보고 파일을
