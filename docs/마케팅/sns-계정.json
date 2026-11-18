@@ -70,7 +70,9 @@
       "metricsRoute": "vk-api",
       "metricsState": "missing",
       "egoProfile": "Profile 5",
-      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — VK QR 승인 — 개인 관리자 1129937278 확인."
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — VK QR 승인 — 개인 관리자 1129937278 확인.",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 못 읽음 — 로그인 없는 쪽과 ego Profile 5 모두 로봇 확인. 원장 소개 글은 세 겹 통과, 소개 끝 링크(synk.im/lab/ → /en/lab/)는 남음. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-cn-douyin": {
       "brand": "LAB",
@@ -122,8 +124,8 @@
       "metricsState": "missing",
       "egoProfile": "Profile 5",
       "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — 더우인 앱 QR 승인 — 「SYNK LAB 韩语」 39504393074 확인.",
-      "profileCheckedAt": "2026-11-15",
-      "profileCheckNote": "이름 · 소개 · LAB 로고 사진은 11-08 · 11-12 확인. 더우인 웹 프로필 편집기에는 링크 칸이 없고 소개 속 바깥 주소는 플랫폼이 막는 쪽이라 링크 없이 완성으로 본다(11-15 Claude 판단 — 결정 표 11-15)"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로(이름 · 소개 · LAB 로고). 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-jp-instagram": {
       "brand": "LAB",
@@ -170,8 +172,8 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
-      "profileCheckedAt": "2026-11-16",
-      "profileCheckNote": "2026-11-16 ego Profile 16에서 소개 끝에 synk.im/lab/ 줄을 더해 저장하고, 다른 계정(Profile 5)으로 연 공개 프로필 머리에서 다시 읽었다. 인스타 웹은 링크 칸을 못 바꿔(「모바일에서만」) 다른 나라 틱톡처럼 소개 글에 주소를 둔다 — 누를 수 있는 링크 칸은 앱에서 할 일로 남는다(externalWebsiteLinkStatus). Business Suite 포트폴리오에 이 계정이 없어 거는 길은 인스타 웹 「콘텐츠 예약」이다(postRoute instagram-web, 게시경로.md 6절 lab-jp-instagram 줄)"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-uz-instagram": {
       "brand": "LAB",
@@ -218,8 +220,8 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",
-      "profileCheckedAt": "2026-11-16",
-      "profileCheckNote": "2026-11-16 ego Profile 17에서 소개 끝에 synk.im/lab/ 줄을 더해 저장하고 편집 칸과 다른 계정(Profile 5)으로 연 공개 프로필 머리에서 다시 읽었다(공개 머리는 「synk... more」로 접혀 보인다). 인스타 웹은 링크 칸을 못 바꿔(「모바일에서만」) 소개 글에 주소를 둔다 — 누를 수 있는 링크 칸은 앱에서 할 일로 남는다(externalWebsiteLinkStatus). Business Suite 포트폴리오에 이 계정이 없어 거는 길은 인스타 웹 「Schedule content」다(postRoute instagram-web)",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md",
       "businessSuiteBusinessId": "1057004986835568",
       "businessSuiteAssetId": "17841430359387312"
     },
@@ -287,8 +289,8 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "public-api",
       "metricsState": "missing",
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-br-youtube": {
       "brand": "LAB",
@@ -378,8 +380,8 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "public-api",
       "metricsState": "missing",
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-cn-xiaohongshu": {
       "brand": "LAB",
@@ -439,7 +441,9 @@
       "metricsState": "missing",
       "rotationSeed": true,
       "egoProfile": "Profile 5",
-      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — +82 휴대폰 문자 인증(creator.rednote.com) — 노트 23 · 11-13/14 예약 판 확인."
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — +82 휴대폰 문자 인증(creator.rednote.com) — 노트 23 · 11-13/14 예약 판 확인.",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 이름이 자동 이름(小红薯6AB25DEB), 소개 비어 있음, 기본 사진. 웹에 편집이 없어 앱에서 이름 SYNK LAB 韩语 · 더우인과 같은 소개 · LAB 로고로 바꿀 것(유호님 차례). 크리에이터 센터 로그인 풀림(문자 인증). 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-mm-tiktok": {
       "brand": "LAB",
@@ -500,7 +504,9 @@
       "metricsRoute": "server",
       "metricsState": "reading",
       "rotationSeed": true,
-      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.mm」(Profile 9)에 로그인 확인 — Google synk.yuh. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.mm」(Profile 9)에 로그인 확인 — Google synk.yuh. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-vn-tiktok": {
       "brand": "LAB",
@@ -562,8 +568,8 @@
       "egoProfile": "Profile 11",
       "egoProfileNote": "2026-11-12 ego 「TikTok synklab.vn」(Profile 11)에 로그인 확인 — Google unmet27. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-15",
-      "profileCheckNote": "2026-11-15 ego Profile 11에서 소개를 「Nói điều bạn muốn bằng tiếng Hàn. Cảnh ngắn, câu thực tế, Vietsub. synk.im/lab/」로 바꿈(주소 포함 — 맥락 없는 Opus 확인) · 이름 SYNK LAB Vietnam · 사진(9-21 승인 까몽) 그대로, 프로필 쪽 데이터로 다시 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -583,7 +589,7 @@
       "loginRestorationEvidence": "프로필설정_20261108/README.md — 사용자 이메일 인증 뒤 기존 채널 81398864의 사용자 아이콘·채널 설정·영상 관리 버튼 확인",
       "publisher": "manual-only",
       "connection": "web-owner-verified-api-not-verified",
-      "bio": "Хочешь начать учить корейский? Начнём с хангыля, а потом попробуем поздороваться и заказать напиток в кафе.\nSYNK LAB Russia — место, где интересно учить корейский. Разбираем новые фразы и пробуем говорить.\nПервые короткие видео и вопросы для начинающих уже готовим.\n\nSYNK LAB: https://synk.im/lab/",
+      "bio": "Говори по-корейски то, что хочешь сказать. Короткие сценки и живые фразы с русскими субтитрами.\n\nSYNK LAB: https://synk.im/en/lab/",
       "bioSourceField": "bioLong",
       "bioVerifiedAt": "2026-09-21",
       "bioCharacterCount": 297,
@@ -631,8 +637,8 @@
       "metricsRoute": "screen-only",
       "metricsState": "missing",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 API(profile/user) — 이름 · 소개 · 사진 · 소개 속 링크 synk.im/lab 읽음, 영상 0",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 「첫 영상 준비 중」 설명을 VK와 같은 러시아어 글 + SYNK LAB: https://synk.im/en/lab/로 바꿨다(세 겹 통과). 공개 API 확인. 기록 docs/마케팅/LAB프로필점검_20261118/README.md",
       "egoProfile": "Profile 5",
       "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — synk.yuh 메일 4자리 코드 — 「SYNK LAB Russia」(81398864) 확인."
     },
@@ -693,7 +699,9 @@
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
       "publicProfileCheckedAt": "2026-11-10",
-      "publicProfileEvidence": "공개 페이지를 관리자 로그인으로 읽음 — 이름 · 현지어 소개 · 링크 synk.im · 프로필 사진(10-19) 있음, 커버는 없음"
+      "publicProfileEvidence": "공개 페이지를 관리자 로그인으로 읽음 — 이름 · 현지어 소개 · 링크 synk.im · 프로필 사진(10-19) 있음, 커버는 없음",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 웹사이트를 https://synk.im/lab/에서 https://synk.im/en/lab/로 바꿨다(Business Suite 페이지 수정). 소개 · 커버 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-kh-facebook": {
       "brand": "LAB",
@@ -753,7 +761,9 @@
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
       "publicProfileCheckedAt": "2026-11-10",
-      "publicProfileEvidence": "공개 페이지를 관리자 로그인으로 읽음 — 이름 · 현지어 소개 · 링크 synk.im · 프로필 사진(10-19) 있음, 커버는 없음"
+      "publicProfileEvidence": "공개 페이지를 관리자 로그인으로 읽음 — 이름 · 현지어 소개 · 링크 synk.im · 프로필 사진(10-19) 있음, 커버는 없음",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 웹사이트를 https://synk.im/lab/에서 https://synk.im/en/lab/로 바꿨다(Business Suite 페이지 수정). 소개 · 커버 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-lk-facebook": {
       "brand": "LAB",
@@ -811,7 +821,9 @@
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
       "publicProfileCheckedAt": "2026-11-10",
-      "publicProfileEvidence": "공개 페이지를 관리자 로그인으로 읽음 — 이름 · 현지어 소개 · 링크 synk.im · 프로필 사진(10-19) 있음, 커버는 없음"
+      "publicProfileEvidence": "공개 페이지를 관리자 로그인으로 읽음 — 이름 · 현지어 소개 · 링크 synk.im · 프로필 사진(10-19) 있음, 커버는 없음",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 웹사이트를 https://synk.im/lab/에서 https://synk.im/en/lab/로 바꿨다(Business Suite 페이지 수정). 소개 · 커버 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-uz-telegram": {
       "brand": "LAB",
@@ -825,7 +837,7 @@
       "publicUrl": "https://t.me/synklab_uz",
       "publicUrlVerifiedAt": "2026-09-20",
       "publicUrlEvidence": "기존 Telegram 로그인으로 공개 채널 생성 후 t.me 공개 페이지에서 이름·소개 전문·1 subscriber 확인",
-      "bio": "Koreys tilini zavq bilan o‘rganamiz! Hangul, kundalik iboralar va 3 soniyalik testlar — yangi boshlovchilar uchun qisqa videolar. Bitta iborani o‘rganib, darrov aytib ko‘r.\nsynk.im/lab/",
+      "bio": "Aytmoqchi bo‘lganingni koreyschada ayt.\nQisqa sahnalar va haqiqiy iboralar, o‘zbekcha izoh bilan.\nsynk.im/en/lab/",
       "ownerLogin": "existing-telegram-login-owner",
       "publisher": "manual-only",
       "connection": "web-owner-verified-bot-api-not-verified",
@@ -862,8 +874,8 @@
       "metricsRoute": "public-page",
       "metricsState": "missing",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-15",
-      "profileCheckNote": "2026-11-15 텔레그램 웹(ego 기본 프로필) 채널 편집에서 소개 끝에 synk.im/lab/ 줄을 더하고 t.me/s 공개 화면에서 다시 읽음 — 이름 · 소개 · 링크 · 사진 있음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 「3 soniyalik testlar」 소개를 인스타 @synklab.uz와 같은 글 + synk.im/en/lab/로 바꿨다(세 겹 통과). t.me 공개 쪽 확인. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-ca-youtube": {
       "brand": "LAB",
@@ -903,8 +915,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-my-youtube": {
       "brand": "LAB",
@@ -944,8 +956,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-nz-youtube": {
       "brand": "LAB",
@@ -985,8 +997,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-py-youtube": {
       "brand": "LAB",
@@ -1026,8 +1038,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-au-youtube": {
       "brand": "LAB",
@@ -1067,8 +1079,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-lk-youtube": {
       "brand": "LAB",
@@ -1108,8 +1120,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-ph-youtube": {
       "brand": "LAB",
@@ -1151,8 +1163,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-us-youtube": {
       "brand": "LAB",
@@ -1192,8 +1204,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-kg-youtube": {
       "brand": "LAB",
@@ -1233,8 +1245,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-in-youtube": {
       "brand": "LAB",
@@ -1274,8 +1286,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-id-youtube": {
       "brand": "LAB",
@@ -1315,8 +1327,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-th-youtube": {
       "brand": "LAB",
@@ -1356,8 +1368,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-mm-youtube": {
       "brand": "LAB",
@@ -1397,8 +1409,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-tw-youtube": {
       "brand": "LAB",
@@ -1438,8 +1450,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-jp-youtube": {
       "brand": "LAB",
@@ -1479,8 +1491,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-vn-youtube": {
       "brand": "LAB",
@@ -1520,8 +1532,8 @@
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
       "publicProfileComplete": true,
-      "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-youtube": {
       "brand": "LAB",
@@ -1560,7 +1572,9 @@
       "postRoutePolicy": "official-api",
       "metricsRoute": "server",
       "metricsState": "reading",
-      "rotationSeed": true
+      "rotationSeed": true,
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-instagram": {
       "brand": "LAB",
@@ -1593,7 +1607,9 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "reading",
-      "rotationSeed": true
+      "rotationSeed": true,
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 소개에 한국어 두 줄과 「이름을 한국어로 써 보세요」가 남아 있다. 고칠 글(몽골어 두 줄)은 세 겹 통과. Business Suite 계정 인증(약관 동의) 허락이나 휴대폰 앱이 필요해 유호님 차례. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-tiktok": {
       "brand": "LAB",
@@ -1626,7 +1642,9 @@
       "metricsRoute": "server",
       "metricsState": "reading",
       "rotationSeed": true,
-      "egoProfileNote": "2026-11-12 ego 「TikTok synk.mn」(Profile 8)에 로그인 확인 — Google 77yuhbs. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
+      "egoProfileNote": "2026-11-12 ego 「TikTok synk.mn」(Profile 8)에 로그인 확인 — Google 77yuhbs. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 소개의 한국어 줄을 몽골어 두 줄(페이스북 synkworld와 같은 글)로, 이름 모를 사람 사진을 몽글로 바꿨다. 다른 틱톡 계정에서 열어 확인. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "yuhobuilds-youtube": {
       "brand": "SHIFT",
@@ -1757,7 +1775,9 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "reading",
-      "rotationSeed": true
+      "rotationSeed": true,
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로(몽골어 두 줄 · 커버 · 링크). 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "yuhobuilds-threads": {
       "brand": "SHIFT",
@@ -1882,7 +1902,9 @@
       "postRoutePolicy": "unknown",
       "metricsRoute": "public-page",
       "metricsState": "missing",
-      "rotationSeed": true
+      "rotationSeed": true,
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 소개 끝 링크를 synk.im/en/lab/에서 synk.im/mn/(인스타 @synk.mn과 같은 몽골어 쪽)으로 바꿨다. t.me 공개 쪽 확인. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "yuhobuilds-telegram": {
       "brand": "SHIFT",
@@ -2130,8 +2152,8 @@
       "metricsState": "missing",
       "egoProfile": "Profile 12",
       "egoProfileNote": "2026-11-12 ego 「TikTok synklab.mx」(Profile 12)에 로그인 확인 — 틱톡 이메일(PULSE 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
-      "profileCheckedAt": "2026-11-15",
-      "profileCheckNote": "2026-11-15 ego Profile 12에서 이름 SYNK LAB Mexico · 소개(주소 synk.im/lab/ 포함) · 승인 LAB 로고 사진을 저장하고 다른 계정 프로필의 공개 화면 데이터로 다시 읽음(저장 응답이 비어도 몇 분 뒤 반영되는 일이 잦았다)"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-kz-tiktok": {
       "brand": "LAB",
@@ -2175,8 +2197,8 @@
       "metricsState": "missing",
       "egoProfile": "Profile 13",
       "egoProfileNote": "2026-11-12 ego 「TikTok synklab.kz」(Profile 13)에 로그인 확인 — 틱톡 이메일(SHIFT 수업 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
-      "profileCheckedAt": "2026-11-15",
-      "profileCheckNote": "2026-11-15 ego 계정별 프로필에서 이름 SYNK LAB Kazakhstan · 소개(주소 synk.im/lab/ 포함) · 승인 LAB 로고 사진을 저장하고 프로필 쪽 데이터(__UNIVERSAL_DATA_FOR_REHYDRATION__)로 다시 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-th-tiktok": {
       "brand": "LAB",
@@ -2220,8 +2242,8 @@
       "metricsState": "missing",
       "egoProfile": "Profile 14",
       "egoProfileNote": "2026-11-12 ego 「TikTok synklab.th」(Profile 14)에 로그인 확인 — 틱톡 이메일(태국). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
-      "profileCheckedAt": "2026-11-15",
-      "profileCheckNote": "2026-11-15 ego 계정별 프로필에서 이름 SYNK LAB Thailand · 소개(주소 synk.im/lab/ 포함) · 승인 LAB 로고 사진을 저장하고 프로필 쪽 데이터(__UNIVERSAL_DATA_FOR_REHYDRATION__)로 다시 읽음"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "lab-id-tiktok": {
       "brand": "LAB",
@@ -2291,8 +2313,8 @@
       "egoProfile": "Profile 15",
       "egoProfileNote": "2026-11-12 ego 「TikTok synklab.id」(Profile 15)에 로그인 확인 — Google unmet29. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
       "loginMethod": "continue-with-google",
-      "profileCheckedAt": "2026-11-15",
-      "profileCheckNote": "2026-11-15 ego Profile 15에서 구글 기본 글자 그림(「가츠」)이던 사진을 승인 LAB 로고로 바꾸고 다른 계정 프로필의 공개 화면 데이터로 다시 읽음 — 이름 · 소개(주소 포함)는 10-19 확인 그대로"
+      "profileCheckedAt": "2026-11-18",
+      "profileCheckNote": "2026-11-18 읽음 — 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
     },
     "pulse-youtube": {
       "brand": "PULSE",
