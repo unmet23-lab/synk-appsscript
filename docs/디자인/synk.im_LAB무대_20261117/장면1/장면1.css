@@ -246,14 +246,14 @@ a.sc-btn{text-decoration:none}
   .sc-face{border-radius:10px}
   .sc-pic{margin:6px 6px 0;border-radius:6px}
   .sc-meta{gap:5px;padding:0 7px 1px}
-  .sc-num{width:16px;height:16px;font-size:9px}
+  .sc-num{width:17px;height:17px;font-size:10px}
   .sc-word{font-size:calc(var(--cw) * .13);letter-spacing:-.05em}
   .sc-card.is-long .sc-word{font-size:calc(var(--cw) * .092)}
-  .sc-mean{font-size:calc(var(--cw) * .088)}
+  .sc-mean{font-size:calc(var(--cw) * .104)}
   .sc-card.has-mean .sc-word{font-size:calc(var(--cw) * .115)}
   .sc-card.has-mean.is-long .sc-word{font-size:calc(var(--cw) * .085)}
   .sc-back{padding:6px 8px}
-  .sc-back-tag{font-size:9.5px}
+  .sc-back-tag{font-size:10.5px}
   .sc-back-word{margin-top:4px}
   .sc-back-rule{margin-top:5px}
   .sc-stamps{left:7px;right:7px;bottom:8px;gap:3px}
@@ -314,7 +314,10 @@ a.sc-btn{text-decoration:none}
 .sc-hintfig-x::before,.sc-hintfig-x::after{content:"";position:absolute;left:8px;right:8px;top:13px;height:2px;border-radius:1px;background:var(--ink);transform:rotate(45deg)}
 .sc-hintfig-x::after{transform:rotate(-45deg)}
 .sc-hintfig-x:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.sc-seal.is-help{color:#A4570A}
+.sc-seal.is-help{color:#A4570A;width:calc(var(--cw) * .8);margin-left:calc(var(--cw) * -.4)}
+.sc-seal.is-help b{font-size:calc(var(--cw) * .088);white-space:normal;text-align:center;line-height:1.08}
+.sc-after > *{transition:opacity .2s}
+.sc-after.is-tipped > :not(.sc-next){opacity:.08!important}
 @media (max-width:900px){
   .sc-hintbtn{margin-top:8px;height:30px;padding:0 10px 0 8px;font-size:12.5px;gap:6px}
   .sc-hint-ic{width:16px;height:16px}
