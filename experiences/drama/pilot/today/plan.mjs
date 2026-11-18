@@ -1,6 +1,7 @@
 // 「오늘」 한 장(11-14, 깃발 ?today=1 뒤)의 얇은 한 겹 — 계정 학습 기록(Atlas 사건 목록)에서 오늘 할 것을 짓는다. 화면은 이 꼴만 읽는다:
 //   today = { speaker, line: {code, text}, minutes, items: [{ kind: 'again'|'new'|'check', title, why: {code, text, evidence}, minutes, open }], empty, firstDay }
-//   after = { changed: [{ what, before, after }], line: { code: 'done', text, media }, tomorrow: [{ kind, title, when, date: { year, month, day, weekday } }] } — date는 일력의 다음 장 번호(11-16)
+//   after = { changed: [{ what, before, after }], line: { code: 'done', text, media }, tomorrow: [{ kind, title, name, when, date: { year, month, day, weekday } }] } — date는 일력의 다음 장 번호(11-16),
+//     name은 오늘 장면 판과 같은 이름 { place, who, action }(content.mjs nameFor, 11-18 — 모르는 꼴이면 null이고 화면은 title을 쓴다)
 // 뒤에 새 엔진의 「오늘 할 것」으로 갈아 끼워도 화면은 같은 꼴을 읽는다. 지키는 것:
 //  · 모든 까닭 글은 기록의 사실(줄 · 날짜 · 판정 갈래 · 몇 번)에서만 짓는다. 근거가 없으면 그 줄을 내지 않는다.
 //  · 드라마 기록과 게임 기록을 한 기록으로 합치지 않는다 — 드라마 줄은 drama-s1 사건에서, 입장 검사 줄은 입장 검사의 재방문 맞춤
@@ -14,7 +15,7 @@
 //  · 「했어요 · 물어봤어요 · 끝까지 했죠?」는 말한 기록(시도가 있는 차례)으로만 센다. 카드만 열고 나간 줄은 한 것이 아니다.
 //  · 화면 글에 「테이크 2 · 통과 · 노트」 같은 촬영장 말을 쓰지 않는다 — 기록이 뜻하는 것을 쉬운 말로(설계 세션 11-14).
 //  · 받아 적은 글 · 빠진 낱말은 기록에 없다 — 내가 한 말은 보이지 않고, 줄 · 무엇이 걸렸는지까지만 말한다.
-import { NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA, poolItem, lineTail } from './content.mjs';
+import { NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA, poolItem, lineTail, nameFor } from './content.mjs';
 import { planRevisit, learningDate, REVISIT_DAYS, DAY_START_HOUR } from '../takes.mjs';
 
 export { DAY_START_HOUR };
@@ -283,6 +284,8 @@ export function buildToday({ events, lesson, now = Date.now(), revisit = null, e
 
 // 끝 화면 — 무엇이 · 어땠는데(전) → 오늘(후). 촬영장 말(노트 · 테이크) 없이.
 const NOTE_LABEL = { ending: '끝맺음', length: '말 길이', missing: '빠진 말' };
+// 「오늘 달라진 것」의 새 상황 줄 이름 — 오늘 장면 판 카드의 누구 · 할 일(「같은 과 다른 선배 · 길 묻기」, 11-18 Opus 대체 검수 F2).
+const whatOf = (item, lesson) => { const n = nameFor(item, lesson); return n ? `${n.who} · ${n.action}` : item.title; };
 const NOTE_BEFORE = { ending: '의 끝맺음이 다르게 들렸어요', length: '라고 할 때 말이 짧게 끝났어요', missing: '라고 할 때 빠진 말이 있었어요' };
 const PATTERN_LABEL = { detail: '표와 짐의 세부 내용 확인', negation: '안내문의 부정 표현 확인', condition: '안내문의 조건 확인' };
 
@@ -320,9 +323,13 @@ export function buildAfter({ events, lesson, start, startAt, now = Date.now(), r
    const last = lastJudged(turns.filter((t) => t.lineId === item.open.lineId && t.phase === 'transfer'));
    const tried = turns.some((t) => t.lineId === item.open.lineId && t.phase === 'transfer' && t.attempts.length);
    if (item.kind === 'new' && tried) {
-    changed.push({ what: item.title, before: '아직 안 해 본 상황이었어요', after: last?.choice === 'pass' ? '처음 보는 상황에서 해냈어요' : '처음 보는 상황에서 말해 봤어요' });
+    changed.push({ what: whatOf(item, lesson), before: '아직 안 해 본 상황이었어요', after: last?.choice === 'pass' ? '처음 보는 상황에서 해냈어요' : '처음 보는 상황에서 말해 봤어요' });
    } else if (item.kind === 'check' && last?.choice === 'pass') {
-    changed.push({ what: item.title, before: item.why.evidence.days != null ? `${item.why.evidence.days}일 전에 새 상황에서 처음 해 봤어요` : '며칠 전에 새 상황에서 처음 해 봤어요', after: '오늘은 다른 곳에서도 해냈어요' });
+    // 전 글은 그날 실제로 한 일(B — 캠퍼스에서 같은 과 다른 선배)로 — 줄 이름이 오늘의 C(지나가는 어른)라서, 「며칠 전에 처음 해 봤어요」만 두면
+    // 그 어른께 며칠 전에 물은 것처럼 읽혔다(11-18 Opus 대체 검수 drama-today-names-1118 F2).
+    const b = lesson?.transfer ? nameFor({ kind: 'new', open: { type: 'situation', lineId: lesson.transfer.id, source: 'transfer' } }, lesson) : null;
+    const ago = item.why.evidence.days != null ? `${item.why.evidence.days}일 전에는` : '며칠 전에는';
+    changed.push({ what: whatOf(item, lesson), before: b ? `${ago} ${b.place}에서 ${b.who}에게 처음 해 봤어요` : `${ago} 새 상황에서 처음 해 봤어요`, after: '오늘은 다른 곳에서도 해냈어요' });
    }
   } else if (item.open.type === 'scene') {
    // 오늘 말한 장면 줄이 있으면: 그 전까지 말한 줄 → 지금까지 말한 줄(모두면 「끝까지」).
@@ -343,18 +350,18 @@ export function buildAfter({ events, lesson, start, startAt, now = Date.now(), r
  //  · 오늘 복습한 줄이 아직 열려 있고 내일 줄에 없으면 그 실수의 3일째 날짜.
  //  · 오늘 새 상황 B를 처음 해 봤으면 나중 확인(C)의 날짜 — B를 처음 판정한 학습일부터 3일째(첫 화면 카드와 같은 날).
  const next = buildToday({ events, lesson, now: now + DAY, revisit, entry: entryAfter, strings, tzOffsetMin: tz });
- const tomorrow = next.items.map((x) => ({ kind: x.kind, title: x.title, when: '내일', date: dayParts(now, 1, tz) }));
+ const tomorrow = next.items.map((x) => ({ kind: x.kind, title: x.title, name: nameFor(x, lesson), when: '내일', date: dayParts(now, 1, tz) }));
  const soon = (id) => next.items.some((x) => x.open.lineId === id);
  for (const item of (start?.items || []).filter((x) => x.open.type === 'review')) {
   const m = plan?.mistakes.find((x) => x.lineId === item.open.lineId);
-  if (m && !m.due && !soon(m.lineId)) tomorrow.push({ kind: 'again', title: item.title, when: dayLabel(m.at, days, tz), date: dayParts(m.at, days, tz) });
+  if (m && !m.due && !soon(m.lineId)) tomorrow.push({ kind: 'again', title: item.title, name: nameFor(item, lesson), when: dayLabel(m.at, days, tz), date: dayParts(m.at, days, tz) });
  }
  const B = lesson?.transfer, C = lesson?.delayed;
  const soloAt = B ? turns.filter((t) => t.lineId === B.id && t.phase === 'transfer').flatMap(judgedOf).map((a) => a.at).sort((a, b) => a - b)[0] : undefined;
  // C를 본 적이 있으면(접힌 기록에만 남아 사건 목록에 보임이 없어도 기록기가 안다) 다시 나오지 않으니 날짜를 약속하지 않는다(11-15 Fable 검수 P3).
  if (C && soloAt != null && revisit?.delayedSeen !== true && !seenLine(readTurns(events), C.id) && !soon(C.id)) {
   const at = Number.isFinite(revisit?.transferAt) ? revisit.transferAt : soloAt;
-  tomorrow.push({ kind: 'check', title: strings.delayedTitle || '지난번 그 말, 다른 곳에서', when: dayLabel(at, days, tz), date: dayParts(at, days, tz) });
+  tomorrow.push({ kind: 'check', title: strings.delayedTitle || '지난번 그 말, 다른 곳에서', name: nameFor({ kind: 'check', open: { type: 'situation', lineId: C.id, source: 'delayed' } }, lesson), when: dayLabel(at, days, tz), date: dayParts(at, days, tz) });
  }
  return { changed, tomorrow, line: { code: 'done', text: TAEO_LINES.done, media: TAEO_MEDIA.done || null } };
 }

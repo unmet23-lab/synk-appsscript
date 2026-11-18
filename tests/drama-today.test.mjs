@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { world, read, doToday } from '../experiences/drama/qa/오늘한장-20261114/뽑기.mjs';
 import { buildToday, buildAfter, readTurns, revisitPlan, TAEO_LINES, dayKey, dayStart, dayParts } from '../experiences/drama/pilot/today/plan.mjs';
-import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA, SCENES, VENUE_IDS, sceneFor } from '../experiences/drama/pilot/today/content.mjs';
+import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA, SCENES, VENUE_IDS, sceneFor, nameFor } from '../experiences/drama/pilot/today/content.mjs';
 import { planRevisit, REVISIT_DAYS } from '../experiences/drama/pilot/takes.mjs';
 import { STR } from '../experiences/drama/pilot/strings.mjs';
 
@@ -26,7 +26,7 @@ const morning = () => { const now = Date.now(), s = dayStart(now); return now - 
 const STUDIO = /테이크|통과|노트/;
 function visible(today, after = null) {
  const out = [today.line?.text, today.empty?.text, ...today.items.flatMap((x) => [x.title, x.why.text, x.why.next])];
- if (after) out.push(...after.changed.flatMap((c) => [c.what, c.before, c.after]), ...after.tomorrow.flatMap((x) => [x.title, x.when]));
+ if (after) out.push(...after.changed.flatMap((c) => [c.what, c.before, c.after]), ...after.tomorrow.flatMap((x) => [x.title, x.when, x.name?.place, x.name?.who, x.name?.action]));
  return out.filter(Boolean);
 }
 // 첫 화면(pilot.mjs cardsNow)이 같은 기록으로 내는 3일 규칙의 답 — 차례(rank)도 첫 화면과 같게 목표 줄을 맨 앞에 둔다.
@@ -317,7 +317,8 @@ test('끝 화면: 오늘 해낸 것만 전후로, 다음에 할 것은 같은 �
  const done = await doToday(w, r.today, { minutesAgo: 30 });
  const again = await read(w, lesson);
  const after = buildAfter({ events: again.events, lesson, start: r.today, startAt: done.startAt, now: w.now, revisit: again.revisit, entryAfter: again.entry, entryTarget: done.entryTarget, strings: STR.ko });
- assert.deepEqual(after.changed.map((c) => c.what), ["끝에 '요' 붙이기", '같은 과 다른 선배에게 길 묻기', '표와 짐의 세부 내용 확인']);
+ // 새 상황 줄은 오늘 장면 판 카드와 같은 누구 · 할 일로 부른다(11-18 유호님 「네, 맞춰」 — 그 전에는 계약 제목 「같은 과 다른 선배에게 길 묻기」).
+ assert.deepEqual(after.changed.map((c) => c.what), ["끝에 '요' 붙이기", '같은 과 다른 선배 · 길 묻기', '표와 짐의 세부 내용 확인']);
  assert.equal(after.changed[0].before, '어제는 「한참 헤맸어요」의 끝이 반말처럼 들렸어요');
  // 3일째 전에 해낸 복습은 닫히지 않는다 — 「고쳐 봤어요」이고, 첫 화면도 고침 표시만 한다.
  assert.equal(after.changed[0].after, '오늘은 고쳐 봤어요');
@@ -328,6 +329,15 @@ test('끝 화면: 오늘 해낸 것만 전후로, 다음에 할 것은 같은 �
  for (const t of visible(r.today, after)) assert.ok(!STUDIO.test(t), t);
  const next = buildToday({ events: again.events, lesson, now: w.now + 86400000, revisit: again.revisit, entry: again.entry, strings: STR.ko });
  assert.deepEqual(after.tomorrow.filter((x) => x.when === '내일').map((x) => x.title), next.items.map((x) => x.title));
+ // 다음에 할 것의 이름은 그날 오늘 화면 카드의 머리글(어디 · 누구)과 같고, 할 일은 때(어제 · 지난번) 없이 — 복습은 그 대사로(11-18 Opus 대체 검수 F2).
+ for (const [x, it] of after.tomorrow.filter((y) => y.when === '내일').map((y, i) => [y, next.items[i]])) {
+  const card = sceneFor(it, lesson);
+  assert.deepEqual([x.name.place, x.name.who], [card.scene.place, card.scene.who], x.title);
+  if (it.kind !== 'again') assert.equal(x.name.action, card.action, x.title);
+ }
+ for (const x of after.tomorrow) assert.ok(x.name?.action && !/어제|지난번|오늘/.test(x.name.action), `${x.title}: ${x.name?.action}`);
+ assert.equal(after.tomorrow.find((x) => x.kind === 'again').name.action, '「한참 헤맸어요」 다시 하기');
+ assert.deepEqual(after.tomorrow.find((x) => x.kind === 'check' && x.when !== '내일').name, { place: '학교 앞 버스 정류장', who: '지나가는 어른', action: '처음 보는 분께 길 묻기' });
  // 6번 줄은 처음 틀린 날부터 3일째에, 나중 확인(C)은 오늘 처음 해 본 B부터 3일째에 나온다 — 첫 화면 카드와 같은 날.
  const r6 = r.today.items.find((x) => x.kind === 'again');
  assert.equal(after.tomorrow.find((x) => x.kind === 'again')?.when, label(Date.parse(r6.why.evidence.at), DAYS));
@@ -358,6 +368,9 @@ test('끝 화면: 3일째 복습을 빈칸 카드로 첫 시도에 해내면 닫
  };
  const ok = await run({});
  assert.deepEqual(ok.after.changed[0], { what: '말 길이', before: '지난번엔 「덕분에 살았어요」라고 할 때 말이 짧게 끝났어요', after: '오늘은 대사를 안 보고 해냈어요' });
+ // 나중 확인(C) 줄 — 이름은 오늘 카드(지나가는 어른)이고, 전 글은 그날 실제로 한 B(캠퍼스 · 같은 과 다른 선배)를 말한다(11-18 Opus 대체 검수 F2).
+ const c = ok.after.changed.find((x) => x.after === '오늘은 다른 곳에서도 해냈어요');
+ assert.deepEqual(c, { what: '지나가는 어른 · 처음 보는 분께 길 묻기', before: `${ok.r.today.items.find((x) => x.open.source === 'delayed').why.evidence.days}일 전에는 캠퍼스에서 같은 과 다른 선배에게 처음 해 봤어요`, after: '오늘은 다른 곳에서도 해냈어요' });
  assert.ok(!firstScreen(ok.again.revisit, ok.w.now).mistakes.some((m) => m.lineId === 's1e01-8'), '첫 화면에서도 닫혔다');
  assert.ok(!ok.after.tomorrow.some((x) => x.kind === 'again'));
  const miss = await run({ 's1e01-8': 'note-length' });

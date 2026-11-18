@@ -272,8 +272,11 @@ export async function start(ctx) {
    p.items.push(x);
   }
   const tmHead = a.tomorrow.every((x) => x.when === '내일') ? '내일 할 것' : '다음에 할 것';
+  // 할 일의 이름은 오늘 장면 판 카드와 같다 — 작은 머리글(어디 · 누구)과 할 일(plan.mjs after.tomorrow[].name, 11-18 유호님 「네, 맞춰」).
+  // 계약의 옛 제목(「1화에서 그 대사 한 번 더」)은 처음 보는 사람이 몰랐고, 다음 날 카드와 같은 일인지 맞춰 보기 어려웠다(Opus 대체 검수 F2). 이름이 없으면 제목.
+  const named = (x) => { const eb = x.name ? [x.name.place, x.name.who].filter(Boolean).join(' · ') : ''; return { eb: eb ? `<small>${esc(eb)}</small>` : '', act: esc(x.name?.action || x.title) }; };
   const next = pages.length ? `<section class="td-next rise" style="animation-delay:${260 + a.changed.length * 70}ms"><p class="td-sec"><span>${tmHead}</span></p>
-   ${pages.map((p) => `<div class="td-pg"><span class="td-pd">${p.date ? `${p.date.day}<small>${WD[p.date.weekday]}</small>` : esc(p.when)}</span><span class="td-pt">${p.items.map((x) => `<span>${esc(x.title)}</span>`).join('')}</span></div>`).join('')}</section>` : '';
+   ${pages.map((p) => `<div class="td-pg"><span class="td-pd">${p.date ? `${p.date.day}<small>${WD[p.date.weekday]}</small>` : esc(p.when)}</span><span class="td-pt">${p.items.map((x) => { const n = named(x); return `<span>${n.eb}${n.act}</span>`; }).join('')}</span></div>`).join('')}</section>` : '';
   const changed = a.changed.length
    ? `<p class="td-sec rise" style="animation-delay:120ms"><span>오늘 달라진 것</span></p>${a.changed.map((c, i) => `<div class="td-chg rise" style="animation-delay:${180 + i * 70}ms"><p class="td-k">${yo(c.what)}</p><p class="td-was">${esc(c.before)}</p><p class="td-now" style="--d:${520 + i * 160}ms">${esc(c.after)}</p></div>`).join('')}`
    : `<p class="td-sec rise" style="animation-delay:120ms"><span>오늘 기록</span></p><p class="td-why rise" style="animation-delay:180ms">오늘 한 것이 기록에 남았어요.</p>`;
@@ -284,7 +287,7 @@ export async function start(ctx) {
   // 연도까지 계획이 준다 — 12월 31일의 「내일」은 다음 해 1월 1일이다(11-16 GPT 검수 GA1).
   const nd = first?.date ? new Date(first.date.year, first.date.month - 1, first.date.day, 12) : new Date(day + 864e5);
   const under = `<article class="td-sheet td-under" aria-hidden="true" inert data-ym="${nd.getFullYear()}|${nd.getMonth() + 1}"><div class="td-l">${dateHead(nd.getTime())}${sayBlock(a.line, { delay: 0 })}</div>
-   <div class="td-r">${first ? `<p class="td-sec"><span>${first.when === '내일' ? '내일 할 것' : `${first.when}에 할 것`}</span></p><div class="td-list">${first.items.map((x) => `<div class="td-row"><span class="td-k">${NEXT_KIND[x.kind]}</span><h3>${esc(x.title)}</h3></div>`).join('')}</div>` : ''}
+   <div class="td-r">${first ? `<p class="td-sec"><span>${first.when === '내일' ? '내일 할 것' : `${first.when}에 할 것`}</span></p><div class="td-list">${first.items.map((x) => { const n = named(x); return `<div class="td-row"><span class="td-k">${NEXT_KIND[x.kind]}</span><span class="td-nm">${n.eb}<h3>${n.act}</h3></span></div>`; }).join('')}</div>` : ''}
    <div class="td-foot td-turn"><button type="button" class="td-go" data-episode>드라마 처음 화면<span class="td-arr"></span></button></div></div></article>`;
   return `${band(day)}<div class="td-stack">${under}<article class="td-sheet td-top"><div class="td-l">${dateHead(day, { sub: '오늘 공부 끝', done: true, small: true })}${next}</div><div class="td-r">${changed}${close}</div></article></div>`;
  }

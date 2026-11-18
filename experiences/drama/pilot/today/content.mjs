@@ -131,3 +131,18 @@ export function sceneFor(it, lesson = {}) {
  }
  return null;
 }
+/**
+ * 끝 화면(오늘 달라진 것 · 다음에 할 것 · 뜯으면 보이는 다음 장)이 같은 할 일을 부르는 이름 — { place, who, action }.
+ * 오늘 장면 판의 머리글(어디 · 누구)과 할 일을 그대로 쓴다. 다만 다른 날에 읽어도 맞게 때(어제 · 지난번)를 빼고, 복습은 그 대사로 부른다
+ * (「「한참 헤맸어요」 다시 하기」). 11-18 Opus 대체 검수 F2 · 유호님 「네, 맞춰」 — 끝 화면이 계약의 옛 제목(「1화에서 그 대사 한 번 더」,
+ * 「서류 일을 풀어 준 조교 선생님께」)을 써서, 다음 날 오늘 화면의 카드와 같은 일인지 맞춰 보기 어려웠다. 모르는 꼴이면 null(화면은 제목을 쓴다).
+ */
+export function nameFor(it, lesson = {}) {
+ const c = sceneFor(it, lesson);
+ if (!c) return null;
+ const base = { place: c.scene.place || '', who: c.scene.who || '' };
+ if (it.kind !== 'again') return { ...base, action: c.action };
+ const id = it.why?.evidence?.lineId || it.open?.lineId;
+ const tail = lineTail((lesson.scene || []).find((x) => x.id === id)?.text, id);
+ return { ...base, action: tail ? `「${tail}」 다시 하기` : '1화 그 대사 다시 하기' };
+}

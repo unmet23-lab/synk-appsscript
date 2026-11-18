@@ -122,6 +122,9 @@ button.td-bub:disabled { cursor: default; transform: none; }
 .td-pd small { margin-left: 3px; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0; color: var(--ink-3); }
 .td-pt span { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.45; }
 .td-pt span + span { margin-top: 7px; }
+/* 할 일 이름의 작은 머리글(어디 · 누구) — 오늘 장면 판 카드와 같은 이름(11-18) */
+.td-pt small, .td-nm small { display: block; margin-bottom: 2px; font-size: 12.5px; font-weight: 700; line-height: 1.4; letter-spacing: 0; color: var(--ink-2); } /* 장면 판 머리글(.td-eb)과 같은 색 · 굵기 — 맞춰 볼 열쇠라 흐리게 두지 않는다(11-18 Opus 대체 검수 F1) */
+.td-nm { display: block; min-width: 0; }
 .td-top .td-date { order: 0; } .td-top .td-r > .td-sec, .td-top .td-chg, .td-top .td-r > .td-why { order: 1; }
 .td-top .td-r > .td-sec { margin-top: 18px; padding-top: 12px; border-top: 1.5px solid var(--ink-0); }
 
@@ -241,7 +244,7 @@ button.td-bub:disabled { cursor: default; transform: none; }
  .td-scn-head h2 { margin-top: 18px; font-size: 40px; }
  .td-scn-lead { font-size: 18px; }
  .td-act { font-size: 22px; } .td-say1 { font-size: 17px; }
- .td-eb { font-size: 14px; } /* 넓은 화면의 어디 · 누구 — 12.5px 회색은 썸네일 옆에서 훑기 어려웠다(두 번째 GPT 맹검) */
+ .td-eb, .td-pt small, .td-nm small { font-size: 14px; } /* 넓은 화면의 어디 · 누구(끝 화면의 같은 머리글도) — 12.5px 회색은 썸네일 옆에서 훑기 어려웠다(두 번째 GPT 맹검) */
  .td-scn-card:not(.td-scn-hero) { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; margin: 36px 0 0; }
  .td-scn-card:not(.td-scn-hero) + .td-scn-card { margin-top: 30px; }
  .td-scn-card:not(.td-scn-hero) .td-act { font-size: 18px; }
