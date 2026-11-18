@@ -202,6 +202,23 @@ ROOT = ("[IMG1] Image 1 - Seojin's character reference: face, styling, hair, kni
     "Only Seojin is sharp; the grandmother is just a blurred shoulder. " + NOT_TAIL,
 )
 
+글["C6b"] = 판(
+    "[IMG1] Image 1 - Seojin's character reference, for her ear, jawline, skin, hair, knit and the earbud; she wears no "
+    "earrings. [IMG2] Image 2 - an earlier wide shot at this same holiday table, for the light and the colours of the room "
+    "only; ignore everything else in it. [IMG3] Image 3 - the earbuds' shape and finish only.",
+    "밥상_서진쪽",
+    사람("서진", 1),
+    "The split second before the earbud goes back in - the mirror of the earlier tap shot. Seen from her left side, her face "
+    "turned toward the left edge of the frame and mostly out of focus, Seojin holds the earbud between her left thumb and "
+    "index fingertip just in front of her left ear opening, which is empty, about to press it in; a few fine loose hairs lie beside her "
+    "ear; the corner of her mouth, soft in the blur, is lifted in a small smile.",
+    "Ear macro at ear height from her left side, the same framing as the earlier tap shot: her left ear, empty, at the centre "
+    "of the frame, the earbud in her fingertips just in front of it; her jawline and her low ponytail fall into soft, shallow "
+    "focus (100mm macro lens at f/2.8, focused at 0.3 m). The room behind is only a warm, bright blur.",
+    "The earbud between her fingertips, its soft ear tip toward her ear: " + 이어폰,
+    "She is the only person in the photo. " + NOT_TAIL,
+)
+
 글["C7"] = 판(
     "[IMG1] Image 1 - Seojin's character reference (face, hair, knit). [IMG2] Image 2 - Eunjeong's face reference, for her "
     "face and hair only; her clothes come only from the text below. [IMG3] Image 3 - the wide shot of this "
@@ -211,14 +228,14 @@ ROOT = ("[IMG1] Image 1 - Seojin's character reference: face, styling, hair, kni
     "식탁접사",
     사람("서진", 1) + " " + 사람("은정")
     + " Both sit behind the dishes, soft and out of focus but recognisable.",
-    "The last calm beat. In the soft background at the centre of the frame, Seojin rests her chopsticks across her bowl, "
-    "eyes closed, chewing slowly with a small content smile. Eunjeong, also soft, at the left of the frame, leans toward her, toward "
+    "The last calm beat. In the soft background at the centre of the frame, Seojin, eyes closed, chews slowly with a small "
+    "content smile, chopsticks resting in her hand. Eunjeong, also soft, at the left of the frame, leans toward her, toward "
     "the right of the frame, mid-sentence, one hand raised at chest height. In the sharp foreground, at Seojin's place, the "
-    "small closed charging case and her steel rice bowl sit side by side in the same row, at the same distance from the lens, "
-    "so their sizes compare directly: the case is clearly smaller, about 60% of the bowl's width.",
+    "small closed charging case sits alone on the bare walnut, the only sharp object, about the size of a hen's egg; her steel "
+    "rice bowl stands further toward the right edge of the frame, soft and partly cut off by the right edge of the frame.",
     "Low macro: the lens sits at the height of the tabletop, about 40 cm from the case, looking across the table. The small "
-    "closed charging case sits in the lower third of the frame, at the centre, just "
-    "beside the steel rice bowl - about 60% of the bowl's width - tack sharp; behind it, soft and blurred, Seojin at the centre and Eunjeong at the left of the frame - the "
+    "closed charging case sits alone in the lower third of the frame, at the centre, tack sharp, the steel bowl soft at the "
+    "right edge; behind it, soft and blurred, Seojin at the centre and Eunjeong at the left of the frame - the "
     "same arrangement as the wide shot, seen from table height, very soft (85mm lens at f/1.4, focused at 0.5 m). Above their heads the "
     "top of the frame is a calm, empty blur of the cream wall.",
     "The closed charging case on the table: " + 케이스 + " Further back on the table, soft: " + 만두,
@@ -240,6 +257,7 @@ for 컷, t in 글.items():
         "C4": ["ref/인물_서진_뿌리.png", "ref/인물_은정.jpg", "ref/인물_할머니손.png", "ref/장면_밥상_서진쪽_초판.png", "ref/소품_케이스.png", "ref/소품_만두.png"],
         "C5": ["ref/인물_서진_뿌리.png", "ref/인물_서진.jpg", "ref/인물_할머니손.png", "정지/C4.png", "ref/소품_케이스.png", "ref/소품_만두.png"],
         "C6": ["ref/인물_서진_뿌리.png", "ref/인물_서진.jpg", "정지/C4.png", "ref/소품_이어폰.png"],
+        "C6b": ["ref/인물_서진_뿌리.png", "정지/C4.png", "ref/소품_이어폰.png"],
         "C7": ["ref/인물_서진_뿌리.png", "ref/인물_은정.jpg", "정지/C4.png", "ref/소품_케이스.png", "ref/소품_만두.png"],
     },
     "메모": (
