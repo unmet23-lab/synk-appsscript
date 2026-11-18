@@ -54,6 +54,10 @@
  *      컷 안 1.5초 멎음 · 끝 2초 넘게 방 소리뿐 · 끝 컷을 잘라 키운 흐림 · 가운데 10초 넘게 조용함(조용구간, 11-15 흠 장부 3단계) · 화면 전체가 장 단위로
  *      2초 넘게 그대로(화면멈춤, 11-16 — ②가 0.5초 칸이라 놓친 한도인수인계 2.10초)는 확인할 것. 일부러 둔 자리는 준비.json 「최종본판단」에 까닭(고칠 것 → 확인할 것).
  *      11-13 유호님 「실수한것들이나 검수에서 지적받은부분들 … 반영되고있어 ?」 → 「응, 고쳐」 — 이 지적들이 B38 · B39 · 메일비서에서 마지막 컷 전수에서야 잡혔다
+ *   ㉑ 몽골 편 고르기(11-18, tools/lib/몽골고르기관문.js) — 인스타 @synk.mn 21:00 칸 편(편 폴더 날짜 11-19부터)의 기획.md에 「꼴」 칸
+ *      (쓸 말 여러 개(N마디) · 한 가지)이 없거나, 「누구에게」에 「보낼 사람」과 「저장할 까닭」이 없으면 고칠 것. 쓸 말 여러 개 편의 첫 2초에
+ *      숫자가 없음 · 근거에 공유율과 저장율이 없음 · 한 가지 편을 21:00에 둠(그 주 꼴별 수를 보인다)은 확인할 것. 규칙은 LAB 장부 머리말
+ *      「몽골 편 고르기」 — 11-18 유호님 「잘된편들 모아서 왜 잘됬는지 분석해서 다음편부터 적용해서」
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -75,6 +79,7 @@ const 반복 = require('./무대반복.js');
 const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
 const { finalCutFindings } = require('./lib/최종본관문.js');
+const { mnPickFindings } = require('./lib/몽골고르기관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
 const 장부 = require('./게시장부.js');
@@ -1106,6 +1111,7 @@ async function run(dir, opts = {}) {
   findings.push(...dailyFindings(plates, prep, bundle.accounts));
   findings.push(...rotationFindings(bundle, plates));
   findings.push(...closedFindings(bundle, plates, { posted }));
+  findings.push(...mnPickFindings(bundle, plates));
   // 그림 검사 기록(11-11 Fable 5.2 끝 판 검수 P2-11) — 게시/그림검사.json이 있는 편만 본다: 「다시 굽기」로 나온 그림을 판단 없이 썼거나, 검사 뒤 그림이
   // 바뀌었거나, 답이 빠진 기록이면 확인할 것으로 보인다(막지는 않는다 — 결과가 문서에만 있고 도구 · 관문이 모르던 것을 보이게 한다).
   try {
