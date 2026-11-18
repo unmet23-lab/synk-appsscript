@@ -184,6 +184,28 @@ test('a refusal of a WORLD run’s entries that sending again cannot fix stops a
   }
 });
 
+test('a blocked sync recounts from the log what the server has not acknowledged: answers recorded after the block count too (Atlas 4-5 clear)', async () => {
+  const s = server(), c = client(s);await c.sync.start();c.answer();
+  s.post = async () => { throw error('EVENT_CONFLICT'); };await c.sync.flush();
+  assert.equal(c.sync.status().phase, 'blocked');const queued = c.sync.status().queued;assert.ok(queued > 0);
+  assert.equal(c.sync.unsent(), queued, 'what was queued when it blocked');
+  c.answer();
+  assert.equal(c.sync.status().queued, queued, 'a blocked sync collects nothing more');
+  const before = JSON.stringify([c.sync.status(), [...c.storage.values]]);
+  assert.equal(c.sync.unsent(), queued * 2, 'the answer recorded after the block is counted');
+  assert.equal(JSON.stringify([c.sync.status(), [...c.storage.values]]), before, 'counting changes neither the status nor the stored outbox or log');
+  const synced = client(server());await synced.sync.start();synced.answer();await synced.sync.flush();
+  assert.equal(synced.sync.status().phase, 'synced');assert.equal(synced.sync.unsent(), 0, 'acknowledged entries are not counted');
+  // The sync reads only adapter.syncPort: hand it one whose write lease the test decides.
+  let leased = true;
+  const port = Object.freeze({ ...c.adapter.syncPort, canPersist: () => leased && c.adapter.syncPort.canPersist() });
+  const watching = createLearningSync({ adapter: { syncPort: port }, accountKey: 'account.a', revision: 1, storage: c.storage, transport: s, auto: false });
+  assert.equal(watching.unsent(), queued * 2, 'another sync on the same log and outbox counts the same');
+  leased = false;
+  assert.equal(watching.unsent(), null, 'without the write lease another context may be appending: no count');
+  watching.stop();c.sync.stop();synced.sync.stop();assert.equal(c.sync.unsent(), null, 'a stopped sync does not count');
+});
+
 test('reusing an old consent store for a new revision is blocked before any network call', async () => {
   const s = server(), storage = disk(), a = client(s, { storage });await a.sync.start();a.answer();a.sync.stop();
   const before = storage.getItem(`${SYNC_KEY}.account.a`), calls = s.gets.length;
