@@ -112,3 +112,60 @@ test('a device that takes over 200 ms a frame, even at rest, draws less finely; 
     } finally { stage.dispose(); }
   }
 });
+
+/* 2단계 첫 조각 · 구 곁의 펼침(설계 1.3절, 검토 1차 8 · 15) */
+test('the fan grows the static orb too, and rings sweep in one after another', () => {
+  const { canvas, frames, props } = fakeCanvas();
+  let t = 1000;
+  canvas.ownerDocument.defaultView.performance.now = () => t;
+  const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }) });
+  try {
+    stage.snap('home'); frames.shift()?.(t);
+    const small = px(props['--orb-sr']);
+    stage.snap('fan'); stage.sweepIn(); frames.shift()?.(t);
+    assert.ok(px(props['--orb-sr']) > small * 3, JSON.stringify(props));
+    assert.deepEqual(stage.state().sweep, [0, 0, 0]);
+    t += 170 + 200; frames.shift()?.(t);
+    const mid = stage.state().sweep;
+    assert.ok(mid[0] > 0 && mid[0] < 1 && mid[1] < mid[0] && mid[2] === 0, JSON.stringify(mid));
+    t += 1200; frames.shift()?.(t);
+    assert.deepEqual(stage.state().sweep, [1, 1, 1]);
+  } finally { stage.dispose(); }
+});
+
+test('reduced motion lights all rings at once and never grows the small orb near the pointer', () => {
+  const { canvas, frames } = fakeCanvas();
+  const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }), getReducedMotion: () => true });
+  try {
+    stage.snap('home'); stage.setNear(true); stage.setPointer(40 / 1200, 38 / 800);
+    stage.sweepIn(); frames.shift()?.(1000);
+    assert.deepEqual(stage.state().sweep, [1, 1, 1]);
+    for (let i = 0; i < 30; i++) frames.shift()?.(1000 + i * 16);
+    assert.equal(stage.state().nearK, 0);
+  } finally { stage.dispose(); }
+});
+
+test('with places off the fan still grows and faces the place but draws no rings', () => {
+  const { canvas, frames } = fakeCanvas();
+  const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }), places: false });
+  try {
+    stage.setSpace('pulse'); stage.snap('fan'); frames.shift()?.(1000);
+    const s = stage.state();
+    assert.ok(s.r >= 50 && s.mark === 1, JSON.stringify({ r: s.r, mark: s.mark }));
+    const src = fs.readFileSync(new URL('../renderer/orb-stage.mjs', import.meta.url), 'utf8');
+    assert.match(src, /const mark = options\.places === false \? 0 : S\.mark;/);
+  } finally { stage.dispose(); }
+});
+
+test('the small orb grows up to a fifth as the pointer comes near, only while near is on', () => {
+  const { canvas, frames } = fakeCanvas();
+  const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }) });
+  try {
+    stage.snap('home'); stage.setPointer(40 / 1200, 38 / 800);
+    for (let i = 0; i < 80; i++) frames.shift()?.(1000 + i * 40);
+    assert.equal(stage.state().nearK, 0, 'off by default');
+    stage.setNear(true);
+    for (let i = 0; i < 200; i++) frames.shift()?.(5000 + i * 40);
+    assert.ok(stage.state().nearK > 0.9, String(stage.state().nearK));
+  } finally { stage.dispose(); }
+});

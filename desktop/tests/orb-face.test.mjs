@@ -253,7 +253,7 @@ test('signing out after entering goes back to the ask scene and clears the retur
   assert.equal(h.storage.map.get(ORB_RETURNING_KEY), '1');
   h.face.handle('open-switch');
   await settle();
-  assert.deepEqual(h.view.last().switch.foot.map(f => f.action), ['account', 'settings', 'logout']);
+  assert.deepEqual(h.view.last().fan.foot.map(f => f.action), ['account', 'settings', 'logout']);
   h.face.handle('foot', 'logout');
   await settle();
   assert.ok(h.names().includes('signOut'));
@@ -389,7 +389,7 @@ test('the QA guest path opens only when the main process allows it', async t => 
   assert.equal(h.view.last().room.solio.say, '구독 자료는 PC 앱에서 읽습니다.');
   h.face.handle('open-switch');
   await settle();
-  assert.deepEqual(h.view.last().switch.foot.map(f => f.action), ['settings']);
+  assert.deepEqual(h.view.last().fan.foot.map(f => f.action), ['settings']);
   // 손님으로 들어온 뒤의 같은 손님 상태는 묻는 화면으로 되돌리지 않는다
   h.face.setState({ status: 'signed-out', generation: 5 });
   await settle();
@@ -441,7 +441,7 @@ test('rows open the old subscriptions screen as a band, and Esc comes back', asy
   await settle();
   h.face.setState(signedIn());
   await settle();
-  h.face.handle('row', 'claude');
+  assert.equal(h.face.handle('row', 'claude'), false, 'a row press only pins its inside now (2단계 첫 조각 설계 2.4절)'); h.face.handle('subs-manage');
   await settle();
   assert.deepEqual(h.calls.find(c => c[0] === 'openLegacy').slice(0, 2), ['openLegacy', 'subscriptions']);
   assert.equal(h.face.clientMode(), 'legacy');
@@ -462,8 +462,8 @@ test('the space switch lists Solio and the account assignments and reopens a spa
   await settle();
   h.face.handle('open-switch');
   await settle();
-  const sw = h.view.last().switch;
-  assert.equal(h.view.last().layer, 'switch');
+  const sw = h.view.last().fan;
+  assert.equal(h.view.last().layer, 'app'); assert.equal(sw.open, true, 'the fan opens beside the orb (2단계 첫 조각)');
   assert.deepEqual(sw.names.map(n => [n.space, n.current]), [['solio', true], ['workspace', false], ['pulse', false]]);
   h.face.handle('go', 'workspace');
   await settle();
@@ -539,7 +539,7 @@ test('a space entered through 「다시 확인」 joins the switch list and can 
   assert.equal(h.view.last().space, 'workspace');
   h.face.handle('open-switch');
   await settle();
-  assert.deepEqual(h.view.last().switch.names.map(n => n.space), ['solio', 'workspace']);
+  assert.deepEqual(h.view.last().fan.names.map(n => n.space), ['solio', 'workspace']);
   h.face.handle('close-switch');
   await settle();
   h.face.handle('reopen-space');
@@ -587,7 +587,7 @@ test('a member who is refreshing the session or briefly offline keeps the member
   await settle(30);
   assert.equal(m.refused, 1);
   assert.equal(h.view.last().room.solio.say, member);
-  assert.deepEqual(h.view.last().switch ? h.view.last().switch.foot.map(f => f.action) : ['account', 'settings', 'logout'], ['account', 'settings', 'logout']);
+  assert.deepEqual(h.view.last().fan ? h.view.last().fan.foot.map(f => f.action) : ['account', 'settings', 'logout'], ['account', 'settings', 'logout']);
   // 로그아웃은 묻는 화면으로 돌아간다
   h.face.setState({ status: 'signed-out', generation: 2, accountKey: null });
   await settle();
@@ -682,7 +682,7 @@ test('arriving at Solio during a token refresh or an error waits as a member and
   await settle();
   w.face.handle('open-switch');
   await settle();
-  assert.deepEqual(w.view.last().switch.foot.map(f => f.action), ['account', 'settings', 'logout']);
+  assert.deepEqual(w.view.last().fan.foot.map(f => f.action), ['account', 'settings', 'logout']);
   w.face.handle('go', 'solio');
   await settle(60);
   assert.equal(w.view.last().space, 'solio');
@@ -971,7 +971,7 @@ test('an error that cannot be retried does not keep the member look (Fable re-re
   await settle();
   h.face.handle('open-switch');
   await settle();
-  assert.deepEqual(h.view.last().switch.foot.map(f => f.action), ['settings']);
+  assert.deepEqual(h.view.last().fan.foot.map(f => f.action), ['settings']);
 });
 
 test('the entry chooser marks Solio only when personal is allowed, and choosing Solio continues personal (0.4.95 carbon B3)', async t => {
@@ -1032,7 +1032,7 @@ test('「다시 확인」 that lands in the personal space forgets the spaces re
   assert.equal(h.view.last().space, 'solio');
   h.face.handle('open-switch');
   await settle();
-  assert.deepEqual(h.view.last().switch.names.map(n => n.space), ['solio'], 'the old Workspace is not listed');
+  assert.deepEqual(h.view.last().fan.names.map(n => n.space), ['solio'], 'the old Workspace is not listed');
 });
 
 test('a held navigation released by a sign-in notice still lands the orb (0.4.95 carbon B6)', async t => {
@@ -1066,11 +1066,11 @@ test('the space switch stays open while a space opens, so its failure is said th
   await settle();
   h.face.handle('close-switch');
   await settle();
-  assert.equal(h.view.last().layer, 'switch', 'closing waits for the open to finish');
+  assert.equal(h.view.last().fan.open, true, 'closing waits for the open to finish');
   release({ ok: false, message: '그 공간을 열지 못했어요.' });
   await settle();
-  assert.equal(h.view.last().layer, 'switch');
-  assert.equal(h.view.last().switch.error, '그 공간을 열지 못했습니다.');
+  assert.equal(h.view.last().fan.open, true);
+  assert.equal(h.view.last().fan.error, '그 공간을 열지 못했습니다.');
   assert.equal(h.view.last().space, 'solio');
 });
 
@@ -1256,8 +1256,10 @@ test('the view writes summary words only as text and waits for the object names 
   assert.match(src, /Math\.max\(NEAR\.prog, railSince \+ settle - clock\(\)\)/);
   assert.match(src, /if \(!o \|\| event\.pointerType !== 'mouse'/, 'resting opens a program only for a mouse');
   const css = fs.readFileSync(new URL('../renderer/orb-face.css', import.meta.url), 'utf8');
-  assert.match(css, /\.orb-stage\[data-rail="1"\] \.room\[data-room\^="solio"\]\{[^}]*padding-bottom:34px;[^}]*mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/, 'the last row stays above the bottom fade');
-  assert.match(css, /#portal-entry \.room\{position:absolute;[^}]*top:52%;transform:translateY\(-50%\)/, 'without objects the Solio room keeps its place');
+  assert.match(css, /#portal-entry \.room\[data-room\^="solio"\]\{[^}]*padding-bottom:34px;[^}]*mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/, 'the last row stays above the bottom fade');
+  assert.match(css, /#portal-entry \.room\{position:absolute;[^}]*top:52%;transform:translateY\(-50%\)/, 'a Workspace or PULSE room keeps its centred place');
+  // 2단계 첫 조각부터는 오브제 줄이 없는 계정의 솔리오 방도 위에서부터 놓는다. 줄을 펼쳐도 손 밑의 줄이 위로 밀리지 않는다(설계 검토 1차 ④)
+  assert.doesNotMatch(css, /data-rail="1"\] \.room/, 'every account gets the Solio room placed from the top');
   assert.match(css, /#portal-entry \.more-in \.row,#portal-entry \.more-in \.row:last-child\{border:0;padding:8px 0;min-height:0\}/, 'opened inner lines drop the old launcher minimum height (.rows .row min-height:60px), so they sit 36 to 40 px apart as in the sketch');
   assert.match(css, /\.room\[data-room\^="solio"\]\.scrolled\{-webkit-mask-image:linear-gradient\(transparent,#000 30px,#000 calc\(100% - 30px\),transparent\)/, 'a scrolled room fades its top edge too');
   assert.match(src, /r\.classList\.toggle\('scrolled', r\.scrollTop > 0\)/);
@@ -1333,4 +1335,99 @@ test('a first read refused while the main process was still refreshing is read o
   assert.deepEqual(programKeys(h), ['subs', 'visits']);
   const shown = h.view.scenes.map(s => s.room?.programs?.length ?? 0);
   assert.ok(shown.every((c, i) => i === 0 || c >= shown[i - 1]), 'the objects appear once: ' + shown.join(','));
+});
+
+/* ── 2단계 첫 조각 · 구 곁의 펼침(2단계_첫조각_구현설계.md 1.3절) ── */
+test('after entering, the orb opens a fan beside it instead of the centred chooser; pressing pins it and pressing again closes it', async t => {
+  const h = harness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  assert.equal(h.view.last().fan.open, false);
+  assert.equal(h.view.last().switch, null, 'the centred chooser is only for the entry step');
+  h.face.handle('open-switch');
+  await settle();
+  const s = h.view.last();
+  assert.deepEqual([s.layer, s.fan.open, s.fan.pin], ['app', true, true], 'the room stays, only dimmed');
+  assert.ok(h.view.log.some(e => e[0] === 'move' && e[1] === 'fan'), 'the orb grows into the fan pose');
+  h.face.handle('open-switch');
+  await settle();
+  assert.equal(h.view.last().fan.open, false);
+  assert.ok(h.view.log.filter(e => e[0] === 'move').at(-1)[1] === 'home');
+});
+
+test('resting near the orb opens an unpinned fan that leaving closes; a pinned fan ignores leaving', async t => {
+  const h = harness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('fan-near');
+  await settle();
+  assert.deepEqual([h.view.last().fan.open, h.view.last().fan.pin], [true, false]);
+  h.face.handle('fan-leave');
+  await settle();
+  assert.equal(h.view.last().fan.open, false);
+  h.face.handle('fan-near');
+  await settle();
+  h.face.handle('open-switch');
+  await settle();
+  assert.deepEqual([h.view.last().fan.open, h.view.last().fan.pin], [true, true], 'pressing a fan opened by resting pins it');
+  h.face.handle('fan-leave');
+  await settle();
+  assert.equal(h.view.last().fan.open, true, 'a pinned fan stays when the hand leaves');
+});
+
+test('Esc closes the fan and leaves focus on the orb; resting and closing do not move focus', async t => {
+  const h = harness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('fan-near');
+  await settle();
+  const before = h.view.last().focusSeq;
+  h.face.handle('fan-leave');
+  await settle();
+  assert.equal(h.view.last().focusSeq, before, 'closing by leaving keeps focus where it is');
+  h.face.handle('open-switch');
+  await settle();
+  assert.ok(h.face.handle('escape'));
+  await settle();
+  assert.deepEqual([h.view.last().fan.open, h.view.last().focus], [false, 'here']);
+});
+
+test('with an old screen open, the orb closes it quietly and opens the fan pinned', async t => {
+  const h = harness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('foot', 'settings');
+  await settle();
+  assert.equal(h.face.clientMode(), 'legacy');
+  h.face.handle('open-switch');
+  await settle();
+  assert.equal(h.face.clientMode(), 'app');
+  assert.deepEqual([h.view.last().fan.open, h.view.last().fan.pin], [true, true]);
+});
+
+test('the room bottom offers 「구독 관리 열기」 for the old overview, and 「계정 관리」 still opens account management', async t => {
+  const h = harness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('subs-manage');
+  await settle();
+  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'subscriptions']);
+  assert.ok(h.face.handle('escape'));
+  h.face.handle('connect');
+  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1), ['openLegacy', 'subscriptions', { view: 'manage' }]);
+});
+
+test('the view opens the fan only on Enter, Space or the down arrow, never on focus alone (설계 검토 1차 1)', () => {
+  const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(src, /if \(!scene\.fan\?\.open && onOrb && event\.key === 'ArrowDown'\) \{ event\.preventDefault\(\); onAction\('open-switch'\); return; \}/);
+  assert.doesNotMatch(src, /here-orb[^\n]*focusin|orbBtn\.addEventListener\('focus/, 'no focus listener on the orb opens the fan');
+  assert.match(src, /root\.addEventListener\('pointermove', onRootMove/, 'resting is measured on the root that also covers the drag band (1차 3가)');
+  assert.match(src, /const ox = hp\.x - HOME_R, oy = hp\.y - HOME_R/, 'the fan is placed from the real small orb, not the sketch 16 (1차 ①)');
+  assert.match(src, /clearTimeout\(progTimer\); clearTimeout\(subTimer\); clearTimeout\(visTimer\);/, 'opening clears the resting timers (1차 4)');
+  assert.match(src, /restoringVis = true; try \{ again\.focus/, 'a redraw that restores focus does not reopen a row');
 });

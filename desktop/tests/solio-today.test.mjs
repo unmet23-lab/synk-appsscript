@@ -82,7 +82,7 @@ test('several accounts of one service show the count and the account to use now'
   const a = weekly('claude', 80, NOW + 3 * D), b = weekly('claude', 30, NOW + 4 * D);
   const r = solioToday({ snapshot: snap([a, b], { [a.id]: 1, [b.id]: 1 }) }, NOW).rows[0];
   assert.deepEqual([r.name, r.sub, r.val], ['Claude', '계정 2개', '70% 남음']);
-  assert.match(r.label, /^Claude, 계정 2개, 70% 남음, .+ 초기화\. 누르면 AI 구독 관리를 엽니다\.$/);
+  assert.match(r.label, /^Claude, 계정 2개, 70% 남음, .+ 초기화\. 누르면 자세히 펼칩니다\.$/);
 });
 
 test('no subscriptions, guest, preview and read errors', () => {
@@ -160,7 +160,7 @@ test('「모든 구독이 넉넉합니다」 only when every service is known to
   const codex = row({ service: 'gpt', label: 'gpt', plan: 'pro', state: 'needs-login', live: null });
   const withLogin = solioToday({ snapshot: snap([claude, codex], { [claude.id]: 3 }) }, NOW);
   assert.equal(withLogin.say, '이번 주는 Claude가 넉넉합니다.');
-  assert.equal(withLogin.then, 'Codex는 구독 관리에서 확인해 주세요.');
+  assert.equal(withLogin.then, 'Codex는 계정 관리에서 확인해 주세요.');
   // 크레딧형이 함께 있으면 「모든」이라 하지 않는다(넉넉하다고 말할 근거는 주간 한도형의 속도뿐이다)
   const credit = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'plus', billDay: 3, live: { readAt: NOW, credits: 1240, planCredits: 3000 } });
   const withCredit = solioToday({ snapshot: snap([claude, credit], { [claude.id]: 3 }) }, NOW);
@@ -201,7 +201,7 @@ test('Fable final: refilled or unread rows, a 5-hour limit, stale credit balance
   const staleCredit = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'plus', billDay: 3, state: 'needs-login', live: { readAt: NOW - 2 * D, credits: 1240, planCredits: 3000 } });
   const r4 = solioToday({ snapshot: snap([staleCredit]) }, NOW);
   assert.equal(r4.state, 'check');
-  assert.deepEqual([r4.rows[0].val, r4.rows[0].when], ['다시 로그인', '구독 관리에서 확인']);
+  assert.deepEqual([r4.rows[0].val, r4.rows[0].when], ['다시 로그인', '계정 관리에서 다시 로그인합니다']);
   // 직접 넣은 구독뿐이면 읽은 적이 없거나 오래돼도 같은 문장이고, 다시 읽기 단추와 읽은 때 줄이 없다
   const manual = row({ service: null, source: 'manual', label: '내 구독', state: 'unknown', resetDay: 4, resetHour: 9, live: null });
   for (const checkAt of [null, NOW - 7 * H]) {
@@ -216,12 +216,12 @@ test('Fable final: refilled or unread rows, a 5-hour limit, stale credit balance
   const good = weekly('claude', 20, NOW + 3 * D), login = row({ state: 'needs-login', live: null });
   const r7 = solioToday({ snapshot: snap([good, login], { [good.id]: 3 }) }, NOW);
   assert.equal(r7.say, '이번 주는 Claude가 넉넉합니다.');
-  assert.equal(r7.then, 'Claude 계정 1개는 구독 관리에서 확인해 주세요.');
+  assert.equal(r7.then, 'Claude 계정 1개는 계정 관리에서 확인해 주세요.');
   // 확인할 구독이 둘 이상이어도 일부만 확인할 구독은 몇 개인지 적어 첫 줄과 어긋나지 않는다(0.4.95 원천 후보 카본)
   const codexLogin = row({ id: 'r-codex-login', service: 'gpt', label: 'Codex', state: 'needs-login', live: null });
   const r8 = solioToday({ snapshot: snap([good, login, codexLogin], { [good.id]: 3 }) }, NOW);
   assert.equal(r8.say, '이번 주는 Claude가 넉넉합니다.');
-  assert.equal(r8.then, 'Claude 계정 1개와 Codex는 구독 관리에서 확인해 주세요.');
+  assert.equal(r8.then, 'Claude 계정 1개와 Codex는 계정 관리에서 확인해 주세요.');
   // 읽기 전 크레딧형이 함께 있으면 「모든」이라 하지 않는다
   const unreadCredit = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'plus', state: 'unknown', live: null });
   assert.equal(solioToday({ snapshot: snap([good, unreadCredit], { [good.id]: 3 }) }, NOW).say, '이번 주는 Claude가 넉넉합니다.');
@@ -261,4 +261,100 @@ test('a time already past is said as a date, not a weekday that reads as coming 
   assert.equal(whenWords(now - H, now, { withTime: true }), '11월 15일 밤 11시 30분');
   assert.equal(whenWords(now - 3 * D, now), '11월 13일 새벽');
   assert.equal(whenWords(now + 2 * H, now, { withTime: true }), '오늘 새벽 2시 30분');
+});
+
+/* ── 줄 안쪽(2단계 첫 조각, 2단계_첫조각_구현설계.md 2.2절). 자료가 없는 줄은 빠진다 ── */
+const PRICES = { services: {
+  claude: { checked: '2026-11-10', currency: 'USD', krVat: 0.1, plans: { pro: { month: 20 }, max5x: { month: 100 } } },
+  gemini: { checked: '2026-11-10', currency: 'KRW', plans: { family: { month: 0 }, plus: { month: 7500 } } },
+} };
+const moreOf = (rows, opts = {}, input = {}) => solioToday({ snapshot: { ...snap(rows, opts.rates || {}, { prices: opts.prices || null }), ...(opts.usage ? { usage: opts.usage } : {}), ...(opts.settings ? { settings: opts.settings } : {}) }, ...input }, NOW).rows;
+
+test('row inside: the weekly conclusion follows the same branches as the first sentence', () => {
+  const codex = weekly('gpt', 88, NOW + 5 * D), claude = weekly('claude', 20, NOW + 3 * D);
+  const rows = moreOf([codex, claude], { rates: { [codex.id]: 10, [claude.id]: 3 } });
+  assert.equal(rows.find(r => r.name === 'Codex').more.say, 'Codex가 내일 오후에 바닥납니다. 토요일 오전 10시에 다시 찹니다.');
+  assert.match(rows.find(r => r.name === 'Claude').more.say, /^Claude는 이번 주 내내 넉넉합니다\. .+에 초기화됩니다\.$/);
+  const young = moreOf([weekly('claude', 20, NOW + 3 * D)])[0].more;
+  assert.equal(young.say, 'Claude는 사흘쯤 쓰면 언제 바닥날지 미리 알려 드립니다.');
+  const out = moreOf([weekly('gpt', 100, NOW + 2 * D + 4 * H)])[0].more;
+  assert.equal(out.say, 'Codex는 이번 주 한도를 다 썼습니다. 모레 오후 2시에 다시 열립니다.');
+});
+
+test('row inside: accounts this PC cannot read now are left out, and trouble accounts are said first', () => {
+  const good = weekly('gemini', 30, NOW + 3 * D, { email: 'work@example.com' });
+  const login = weekly('gemini', 0, NOW + 3 * D, { email: 'home@example.com', state: 'needs-login' });
+  const err = weekly('gemini', 0, NOW + 3 * D, { email: 'lab@example.com', state: 'error' });
+  const away = weekly('gemini', 10, NOW + 3 * D, { email: 'away@example.com', state: 'elsewhere' });
+  const m = moreOf([good, login, err, away], { rates: { [good.id]: 2 } })[0].more;
+  assert.deepEqual(m.fix, ['home 계정은 다시 로그인해야 합니다.', 'lab 계정은 읽지 못했습니다.']);
+  assert.deepEqual(m.accounts.map(a => a.name), ['work', 'home', 'lab'], 'away account is not shown');
+  assert.deepEqual(m.accounts.map(a => a.val), ['70% 남음', '다시 로그인해야 합니다', '읽지 못했습니다']);
+  assert.ok(m.accounts.every(a => !/지금 쓰는/.test(a.tag)));
+});
+
+test('row inside: one account here means no per-account list; a refilled account says to read again', () => {
+  const one = moreOf([weekly('claude', 20, NOW + 3 * D)])[0].more;
+  assert.equal(one.accounts, null);
+  const a = weekly('claude', 90, NOW - H, { email: 'a@example.com', live: { readAt: NOW - 3 * H, weekly: { usedPercent: 90, resetsAt: NOW - H } } });
+  const b = weekly('claude', 20, NOW + 3 * D, { email: 'b@example.com' });
+  const m = moreOf([a, b], { rates: { [b.id]: 2 } })[0].more;
+  const line = m.accounts.find(x => x.name === 'a');
+  assert.deepEqual([line.val, line.when], ['다시 찼을 것', '다시 읽으면 확인됩니다']);
+});
+
+test('row inside: the account to use first is tagged in plain words', () => {
+  const soon = weekly('claude', 40, NOW + 10 * H, { email: 'soon@example.com' }), later = weekly('claude', 30, NOW + 5 * D, { email: 'later@example.com' });
+  const m = moreOf([soon, later], { rates: { [soon.id]: 2, [later.id]: 2 } })[0].more;
+  assert.equal(m.accounts.find(x => x.name === 'soon').tag, '먼저 쓸 계정');
+  assert.equal(m.accounts.find(x => x.name === 'later').tag, '');
+});
+
+test('row inside: the last seven days come from the usage record and are left out without one', () => {
+  const a = weekly('claude', 20, NOW + 3 * D);
+  const days = [null, { v: 10 }, { v: 20 }, { v: 0 }, { v: 14 }, { v: 12 }, { v: 5 }];
+  const usage = avg => ({ accounts: { [a.id]: { rate3: 3 } }, services: { claude: { kind: 'pct', days, dayAvg: avg } } });
+  const m = moreOf([a], { rates: { [a.id]: 3 }, usage: usage(13.6) })[0].more;
+  assert.equal(m.week.bars.length, 7);
+  assert.equal(m.week.bars[0], null);
+  assert.equal(m.week.avg, '하루 평균 14%');
+  assert.equal(moreOf([a], { rates: { [a.id]: 3 } })[0].more.week, null);
+  assert.equal(moreOf([a], { rates: { [a.id]: 3 }, usage: usage(null) })[0].more.week.avg, '');
+});
+
+test('row inside: the price line keeps entered values first and marks official, converted and family prices', () => {
+  const own = weekly('claude', 20, NOW + 3 * D, { price: 290000, currency: 'KRW', billDay: 2 });
+  const m1 = moreOf([own])[0].more;
+  assert.deepEqual([m1.cost.val, m1.cost.note, m1.cost.bill], ['월 290,000원', '', '다음 결제 12월 2일']);
+  const annual = weekly('claude', 20, NOW + 3 * D, { price: 290000, currency: 'KRW', billDay: 2, cycle: 'annual' });
+  assert.equal(moreOf([annual])[0].more.cost.bill, '', 'annual billing does not say every month');
+  const official = weekly('claude', 20, NOW + 3 * D);
+  const m2 = moreOf([official], { prices: PRICES, settings: { usdKrw: 1500 } })[0].more;
+  assert.deepEqual([m2.cost.val, m2.cost.note], ['월 약 33,000원', '공식 요금']);
+  const family = weekly('gemini', 20, NOW + 3 * D, { plan: 'family' });
+  assert.equal(moreOf([family], { prices: PRICES })[0].more.cost.val, '가족 공유');
+  const known = weekly('claude', 20, NOW + 3 * D, { email: 'k@example.com', price: 30000, currency: 'KRW' });
+  const unknown = weekly('claude', 20, NOW + 3 * D, { email: 'u@example.com', plan: 'odd' });
+  const m3 = moreOf([known, unknown])[0].more;
+  assert.deepEqual([m3.cost.val, m3.cost.note], ['월 30,000원', '계정 2개 가운데 1개의 금액만 압니다']);
+  assert.equal(moreOf([weekly('gpt', 20, NOW + 3 * D)], { prices: PRICES })[0].more.cost, null, 'no price means no price line');
+});
+
+test('row inside: a credit service says whether it lasts until the next refill only when it knows all three', () => {
+  const c = row({ service: 'typecast', label: 'Typecast', kind: 'credit', plan: 'plus', billDay: 1, live: { readAt: NOW, credits: 3000, planCredits: 10000 } });
+  const lasts = moreOf([c], { usage: { accounts: { [c.id]: { perDay: 100 } } } })[0].more;
+  assert.equal(lasts.say, 'Typecast는 다음 충전(12월 1일)까지 남습니다.');
+  const runs = moreOf([c], { usage: { accounts: { [c.id]: { perDay: 1000 } } } })[0].more;
+  assert.match(runs.say, /^Typecast 크레딧이 .+쯤 바닥납니다\. 다음 충전은 12월 1일입니다\.$/);
+  assert.equal(moreOf([c])[0].more.say, '');
+});
+
+test('row inside: with no fact at all it gives one reason instead of an empty box', () => {
+  const unread = weekly('claude', 0, NOW + 3 * D, { live: null });
+  assert.equal(moreOf([unread])[0].more.empty, '아직 기록이 모이지 않았습니다. 하루쯤 지나면 지난 7일이 보입니다.');
+  const manual = row({ service: null, source: 'manual', label: '사내 도구', kind: 'weekly', live: null });
+  const mm = moreOf([manual])[0].more;
+  assert.deepEqual([mm.say, mm.empty], ['', '직접 넣은 구독이라 남은 양을 읽지 않습니다.']);
+  const priced = moreOf([row({ service: null, source: 'manual', label: '사내 도구', kind: 'weekly', live: null, price: 10000, currency: 'KRW' })])[0].more;
+  assert.deepEqual([priced.cost.val, priced.empty], ['월 10,000원', '']);
 });

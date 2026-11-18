@@ -44,12 +44,19 @@ export function forgeGeom(W, H, p = 0) {
   return { r: Math.min(H * lerp(0.5, 0.62, clamp(p, 0, 1)), W * 0.78), cy: H * 0.64 };
 }
 
-/* 구가 서는 자리 일곱. top은 구의 맨 윗점, r은 반지름(화면 px).
+/* 들어온 뒤 왼쪽 위 작은 구의 반지름. 시안은 16이지만 앱은 1단계에서 맞춘 13을 둔다(2단계 첫 조각 설계 검토 1차 ①, 5단계에서 다시 본다) */
+export const HOME_R = 13;
+/* 구에 다가가 지도가 켜졌을 때의 반지름. 고리가 보일 만큼은 커야 한다(시안 fanR 그대로) */
+export const fanR = H => clamp(H * 0.086, 50, 84);
+/* 구 곁의 펼침에서 고리 셋이 그어지기 시작하는 때와 길이(ms, 시안 openFan) */
+export const SWEEP = Object.freeze({ start: 170, step: 120, ms: 400 });
+
+/* 구가 서는 자리 여덟. top은 구의 맨 윗점, r은 반지름(화면 px).
    home은 왼쪽 위의 작은 구 자리(얼굴이 그 단추의 가운데를 알려 준다), dive와 face는 들어갈 공간과 앞에 둘 공간이다 */
 export function orbPoses({ W, H, home = { x: 40, y: 40 }, dive = 'solio', face = 'solio', forgeP = 0 }) {
   const r0 = Math.min(H * 0.21, W * 0.3), fg = forgeGeom(W, H, forgeP);
   const rAsk = Math.max(H * 1.9, W * 1.25);
-  const g = switchGeom(W, H), rIn = Math.hypot(W, H) * 0.56 / RHO, hr = 13;
+  const g = switchGeom(W, H), rIn = Math.hypot(W, H) * 0.56 / RHO, hr = HOME_R, fr = fanR(H);
   return {
     void: { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(-50), lz: 0.5, lit: 0, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0 },
     rest: { cx: W / 2, top: H / 2 - r0, r: r0, az: rad(135), lz: 0.5, lit: 1, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0, eye: 1 },
@@ -59,6 +66,8 @@ export function orbPoses({ W, H, home = { x: 40, y: 40 }, dive = 'solio', face =
     /* 들어갈 자리가 보는 쪽을 똑바로 향하고 그 고리가 창보다 커진 때다. 거기까지 가는 길은 mixPose가 자리를 따라가며 잡는다 */
     inside: { cx: W / 2, top: H / 2 - rIn, r: rIn, az: rad(150), lit: 0, focus: 1, ax: faceAx(dive), spin: -PLACE_LON[dive], mark: 1, par: 0, calm: 0, dive: true },
     home: { cx: home.x, top: home.y - hr, r: hr, az: rad(135), lz: 0.5, lit: 1, focus: 0, ax: AXIS.rest, mark: 0, par: 1, calm: 0, eye: 1 },
+    /* 구에 다가가면 구가 제자리에서 자라 지도가 켜진다. 작은 구의 왼쪽 위 모서리는 그대로 두고 오른쪽 아래로 자란다. 눈은 물러난다(시안 fan) */
+    fan: { cx: home.x - hr + fr, top: home.y - hr, r: fr, az: rad(140), lz: 0.45, lit: 1, focus: 0, ax: faceAx(face), spin: -PLACE_LON[face], mark: 1, par: 0, calm: 0 },
     /* 공간을 고를 때는 구가 가운데로 와서 지금 있는 자리를 앞에 보인다 */
     sw: { cx: W / 2, top: g.cy - g.r, r: g.r, az: rad(140), lz: 0.45, lit: 1, focus: 0, ax: faceAx(face), spin: -PLACE_LON[face], mark: 1, par: 0, calm: 0 },
   };
@@ -101,10 +110,10 @@ uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm;
 uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen, uVis;
 uniform float uCut, uCutOn;
 uniform vec4 uEye;
-uniform vec3 uFace, uGaze;
+uniform vec3 uFace, uGaze, uSweep;
 const float RHO = 0.092;
 float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
-vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2){
+vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2, float sw){
   vec3 dv = n - M;
   float dd = length(dv);
   float zz = max(z, 0.06);
@@ -113,11 +122,15 @@ vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2){
   float show = smoothstep(0.02, 0.2, M.z);
   float lift = max(hot, open);
   float lw = mix(0.5, 1.0, hot);
-  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show;
-  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show;
+  /* 구 곁의 펼침에서 고리는 한 바퀴 그어지며 켜진다(sw는 그어진 만큼, 시안 그대로). 평소에는 1이다 */
+  float a01 = fract(atan(dv.x, dv.y) / 6.2831853 + 1.0);
+  float drawn = step(a01, sw * 1.002);
+  float tip = exp(-abs(a01 - sw) * 34.0) * step(0.004, sw) * step(sw, 0.985);
+  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show * (drawn + tip * 1.4);
+  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show * drawn;
   float facing = 0.5 + 0.5 * dot(dv.xy / max(length(dv.xy), 0.0001), l2);
   float pd = length(n.xy - M.xy) * uR / uDpr;
-  float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show;
+  float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show * smoothstep(0.86, 1.0, sw);
   float glow = hot * 0.07 * (1.0 - smoothstep(0.0, RHO, dd)) * (1.0 - open) * show;
   return vec2(ring * mix(0.44 + 0.30 * facing, 1.0, lift) + bloom + pin * 0.92 + glow, (1.0 - smoothstep(-1.2, 0.3, sd)) * open * show);
 }
@@ -247,9 +260,9 @@ void main(){
   float mv = uMark * smoothstep(30.0, 84.0, uR / uDpr) * inside;
   if (mv > 0.001) {
     vec2 l2 = vec2(cos(uAz), sin(uAz));
-    vec2 a0 = place(n, uM0, uHot.x, uHere.x, uOpen.x, z, l2) * uVis.x;
-    vec2 a1 = place(n, uM1, uHot.y, uHere.y, uOpen.y, z, l2) * uVis.y;
-    vec2 a2 = place(n, uM2, uHot.z, uHere.z, uOpen.z, z, l2) * uVis.z;
+    vec2 a0 = place(n, uM0, uHot.x, uHere.x, uOpen.x, z, l2, uSweep.x) * uVis.x;
+    vec2 a1 = place(n, uM1, uHot.y, uHere.y, uOpen.y, z, l2, uSweep.y) * uVis.y;
+    vec2 a2 = place(n, uM2, uHot.z, uHere.z, uOpen.z, z, l2, uSweep.z) * uVis.z;
     col *= 1.0 - max(a0.y, max(a1.y, a2.y)) * mv;
     col += warm * uLit * mv * (a0.x + a1.x + a2.x);
   }
@@ -257,7 +270,7 @@ void main(){
   col += g * 2.8 / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
-const UNIFORMS = ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uVis', 'uCut', 'uCutOn', 'uEye', 'uFace', 'uGaze'];
+const UNIFORMS = ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uVis', 'uCut', 'uCutOn', 'uEye', 'uFace', 'uGaze', 'uSweep'];
 /* 셰이더 원문. 시안과 화소를 견주는 도구(desktop/tools/orb-parity.cjs)가 같은 셰이더를 그린다 */
 export const ORB_SHADER = Object.freeze({ VS, FS, UNIFORMS: Object.freeze([...UNIFORMS]) });
 
@@ -282,6 +295,10 @@ export function createOrbStage(canvas, options = {}) {
   const eye = { on: options.eyes === true, gate: 0, gateS: 0, mood: 'sleep', open: 1, face: [0, 0], gaze: [0, 0], lid: null, nextBlink: 0, token: 0 };
   const ptr = { x: 0.5, y: 0.5 }, ptrS = { x: 0.5, y: 0.5 };
   const hot = [0, 0, 0], markXY = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  /* 구 곁의 펼침. sweep은 고리 셋이 그어진 만큼(평소 1)이고 sweepT0부터 차례로 그어진다. nearK는 손이 작은 구에 다가온 만큼이다(시안 그대로).
+     nearOn은 얼굴이 켠다(들어온 뒤 방에 있을 때만). 움직임 줄이기에서는 고리를 한 번에 켜고 nearK를 쓰지 않는다(설계 검토 1차 15) */
+  const sweep = [1, 1, 1];
+  let sweepT0 = null, nearOn = false, nearK = 0, nearGoal = 0;
 
   const poses = () => orbPoses({ W, H, home: options.getHome?.() || { x: 40, y: 40 }, dive, face: face || space, forgeP });
   function snap(name) {
@@ -437,6 +454,15 @@ export function createOrbStage(canvas, options = {}) {
       const q = motion ? 0.1 : 1;
       S.spin += d * q; for (let i = 0; i < 3; i++) S.ax[i] += (ta[i] - S.ax[i]) * q;
     }
+    if (sweepT0 !== null) {
+      let done = true;
+      for (let i = 0; i < 3; i++) { const k = motion ? clamp((t - sweepT0 - SWEEP.start - i * SWEEP.step) / SWEEP.ms, 0, 1) : 1; sweep[i] = easeIO(k); if (k < 1) done = false; }
+      if (done) sweepT0 = null;
+    }
+    /* 손이 250px에서 60px로 다가오면 작은 구가 최대 20% 커져 알아챈 티를 낸다 */
+    nearGoal = nearOn && motion && poseName === 'home' && !tw ? smooth(250, 60, Math.hypot(ptrS.x * W - S.cx, ptrS.y * H - (S.top + S.r))) : 0;
+    nearK += (nearGoal - nearK) * 0.14; if (Math.abs(nearGoal - nearK) < 0.002) nearK = nearGoal;
+    const rr = S.r * (1 + 0.2 * nearK);
     const free = S.par * motion, par = free * S.r * 0.05;
     const cx = S.cx + (ptrS.x - 0.5) * par, cy = S.top + S.r + (ptrS.y - 0.5) * par;
     const az = S.az + ((ptrS.x - 0.5) * -(0.7 * free + 0.14 * S.focus + 0.2 * (1 - S.par) * (1 - S.focus)) + 0.05 * Math.sin(sec * 0.4)) * motion;
@@ -456,7 +482,7 @@ export function createOrbStage(canvas, options = {}) {
     if (gl) {
       gl.uniform2f(U.uRes, canvas.width, canvas.height);
       gl.uniform2f(U.uC, cx * DPR, (H - cy) * DPR);
-      gl.uniform1f(U.uR, S.r * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
+      gl.uniform1f(U.uR, rr * DPR); gl.uniform1f(U.uLit, lit); gl.uniform1f(U.uAz, az); gl.uniform1f(U.uLz, S.lz); gl.uniform1f(U.uFocus, S.focus);
       gl.uniform1f(U.uGb, gb); gl.uniform1f(U.uDpr, DPR); gl.uniform1f(U.uSeed, frameNo);
       gl.uniform3f(U.uAxis, ax[0], ax[1], ax[2]);
       gl.uniform1f(U.uMark, mark); gl.uniform1f(U.uCalm, S.calm);
@@ -469,29 +495,31 @@ export function createOrbStage(canvas, options = {}) {
       gl.uniform4f(U.uEye, eye.on ? 1 : 0, S.eye * eye.gateS, eye.open, MOOD_NO[eye.mood]);
       gl.uniform3f(U.uFace, eye.face[0], eye.face[1], 1);
       gl.uniform3f(U.uGaze, eye.gaze[0], eye.gaze[1], sec % 600);
+      gl.uniform3f(U.uSweep, sweep[0], sweep[1], sweep[2]);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     } else if (ctx2d) {
       // WebGL이 없을 때: 검정 원과 빛 오는 쪽의 가는 호. 자리는 화면 원으로 그린다
       const c = ctx2d; c.setTransform(DPR, 0, 0, DPR, 0, 0);
       c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
-      c.beginPath(); c.arc(cx, cy, S.r, 0, Math.PI * 2); c.fillStyle = '#030303'; c.fill();
-      c.lineWidth = 1.4; c.strokeStyle = 'rgba(243,241,236,' + (0.6 * S.lit).toFixed(3) + ')'; c.beginPath(); c.arc(cx, cy, S.r, -az - 1.1, -az + 1.1); c.stroke();
+      c.beginPath(); c.arc(cx, cy, rr, 0, Math.PI * 2); c.fillStyle = '#030303'; c.fill();
+      c.lineWidth = 1.4; c.strokeStyle = 'rgba(243,241,236,' + (0.6 * S.lit).toFixed(3) + ')'; c.beginPath(); c.arc(cx, cy, rr, -az - 1.1, -az + 1.1); c.stroke();
       if (mark > 0.05 && S.r > 30) {
         markXY.forEach((m, i) => {
           if (m[2] < 0.15) return;
           c.lineWidth = hot[i] > 0.5 ? 1.6 : 1; c.strokeStyle = 'rgba(243,241,236,' + (0.5 * mark * S.lit + 0.4 * hot[i]).toFixed(3) + ')';
-          c.beginPath(); c.arc(m[0], m[1], RHO * S.r * Math.max(0.3, m[2]), 0, Math.PI * 2); c.stroke();
-          if (ORB_PLACES[i] === space) { c.fillStyle = 'rgba(243,241,236,.9)'; c.beginPath(); c.arc(m[0], m[1], 2.6, 0, Math.PI * 2); c.fill(); }
+          // 펼치는 동안 고리는 그어진 만큼만 그린다
+          c.beginPath(); c.arc(m[0], m[1], RHO * S.r * Math.max(0.3, m[2]), -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * sweep[i]); c.stroke();
+          if (ORB_PLACES[i] === space && sweep[i] > 0.86) { c.fillStyle = 'rgba(243,241,236,.9)'; c.beginPath(); c.arc(m[0], m[1], 2.6, 0, Math.PI * 2); c.fill(); }
         });
       }
     } else {
-      drawStatic(cx, cy, S.r, S.lit);
+      drawStatic(cx, cy, rr, S.lit);
     }
     options.onRender?.(S);
   }
 
   /* 움직임이 없고 손도 가만히 있으면 초당 30장으로 줄인다. 창이 가려지면 멈춘다. 60장 가운데 40장 넘게 느리면(움직일 때 24ms, 멈춰 있을 때 50ms 넘음) 촘촘함을 한 단 낮춘다 */
-  function idle() { return !tw && !eye.lid && Math.abs(eye.gate - eye.gateS) < 0.01 && Math.abs(cutOnWant - cutOn) < 0.01 && Math.abs(ptr.x - ptrS.x) < 0.001 && Math.abs(ptr.y - ptrS.y) < 0.001 && Math.abs(glintWant - glintBoost) < 0.01 && !autoFace && hot.every((h, i) => Math.abs(h - (hotWant === i ? 1 : 0)) < 0.01); }
+  function idle() { return !tw && !eye.lid && Math.abs(eye.gate - eye.gateS) < 0.01 && Math.abs(cutOnWant - cutOn) < 0.01 && Math.abs(ptr.x - ptrS.x) < 0.001 && Math.abs(ptr.y - ptrS.y) < 0.001 && Math.abs(glintWant - glintBoost) < 0.01 && !autoFace && sweepT0 === null && nearK === nearGoal && hot.every((h, i) => Math.abs(h - (hotWant === i ? 1 : 0)) < 0.01); }
   function frame(t) {
     frameId = null;
     if (disposed || paused) return;
@@ -546,6 +574,11 @@ export function createOrbStage(canvas, options = {}) {
     setRadius(r) { if (r > 0) S.r = r; wake(); },
     setStill(on) { still = !!on; wake(); },
     setPointer(x, y) { ptr.x = clamp(x, 0, 1); ptr.y = clamp(y, 0, 1); wake(); },
+    /* 구 곁의 펼침: 고리를 처음부터 차례로 긋는다. 움직임 줄이기에서는 다음 장에서 한 번에 켜진다 */
+    sweepIn() { sweep.fill(0); sweepT0 = now(); wake(); },
+    sweepDone() { sweepT0 = null; sweep.fill(1); wake(); },
+    /* 손이 다가오면 작은 구가 커지는 것을 켜고 끈다(들어온 뒤 방에 있고 옛 화면이 닫혀 있을 때만 켠다) */
+    setNear(on) { nearOn = !!on; wake(); },
     /* 점 눈(유호님 11-17 「점눈으로 하자」). on이 아니면 셰이더가 눈을 그리지 않는다 */
     setEyes(on) { eye.on = !!on; if (!eye.on) eyesOff(); wake(); },
     eyesAsleep, eyesWake, eyesOff, eyesCalm,
@@ -562,7 +595,7 @@ export function createOrbStage(canvas, options = {}) {
       for (let i = 0; i < 3; i++) if (markXY[i][2] > 0.15 && Math.hypot(x - markXY[i][0], y - markXY[i][1]) < reach) return ORB_PLACES[i];
       return null;
     },
-    state: () => ({ ...S, ax: [...S.ax], W, H, pose: poseName, moving: !!tw, webgl: !!gl, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), cut, cutOn, eyes: { on: eye.on, gate: eye.gateS, mood: eye.mood, open: eye.open } }),
+    state: () => ({ ...S, ax: [...S.ax], W, H, pose: poseName, moving: !!tw, webgl: !!gl, marks: markXY.map(m => m.map(v => Math.round(v * 100) / 100)), cut, cutOn, eyes: { on: eye.on, gate: eye.gateS, mood: eye.mood, open: eye.open }, sweep: [...sweep], nearK }),
     draw: () => draw(now()),
     pause() { paused = true; if (frameId !== null) { win.cancelAnimationFrame?.(frameId); frameId = null; } finishTween(); },
     resume() { if (!paused) return; paused = false; lastDraw = 0; wake(); },

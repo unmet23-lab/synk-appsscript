@@ -52,3 +52,30 @@ test('the switch pose keeps the orb above the names on wide and narrow windows',
     assert.ok(g.cy + g.r < H * 0.75, `${W}x${H} room left for the names`);
   }
 });
+
+/* 2단계 첫 조각 · 구 곁의 펼침(2단계_첫조각_구현설계.md 1.3절) */
+test('the fan pose grows the small orb in place from its top-left corner and faces the current place', async () => {
+  const { fanR, HOME_R } = await import('../renderer/orb-stage.mjs');
+  for (const [W, H] of [[1440, 900], [960, 680], [640, 453]]) {
+    const home = { x: 40, y: 38 };
+    for (const face of ORB_PLACES) {
+      const p = orbPoses({ W, H, home, face });
+      // 왼쪽 위 모서리는 앱의 실제 작은 구(반지름 13)의 모서리다(시안의 16을 옮기지 않는다, 설계 검토 1차 ①)
+      assert.ok(near(p.fan.cx - p.fan.r, p.home.cx - HOME_R) && near(p.fan.top, p.home.top), `${W}x${H} corner`);
+      assert.ok(near(p.fan.r, Math.max(50, Math.min(84, H * 0.086))) && near(p.fan.r, fanR(H)), `${W}x${H} r=${p.fan.r}`);
+      assert.equal(p.fan.mark, 1);
+      assert.equal(p.fan.eye, undefined, 'eyes recede in the fan pose');
+      const [x, y] = placeXY(p.fan, face);
+      assert.ok(near(x, p.fan.cx, 1e-6) && near(y, p.fan.top + p.fan.r, 1e-6), `${face} faces the viewer`);
+    }
+  }
+});
+
+test('home to fan and back ends exactly at each pose', () => {
+  const W = 960, H = 680, poses = orbPoses({ W, H, home: { x: 40, y: 38 }, face: 'workspace' });
+  for (const [from, to] of [['home', 'fan'], ['fan', 'home']]) {
+    const S = { ...poses[from], ax: [...poses[from].ax], spin: poses[from].spin || 0, open: 0 };
+    mixPose(S, { ...S, ax: [...S.ax] }, poses[to], 1, { ease: easeIO, W, H, p0: [0, 0] });
+    for (const k of ['r', 'cx', 'top', 'mark']) assert.ok(near(S[k], poses[to][k], 1e-6), `${from}→${to} ${k}`);
+  }
+});

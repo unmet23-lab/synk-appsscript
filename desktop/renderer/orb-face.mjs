@@ -40,6 +40,9 @@ export const ORB_TIMING = Object.freeze({
   diveQuick: 1050,
   sw: 760,
   swClose: 620,
+  /* 구 곁의 펼침(2단계 첫 조각, 시안 openFan · closeFan) */
+  fan: 440,
+  fanClose: 380,
   busyRetry: 1000,
   authRecheck: 30000,
   authRecheckTimes: 4,
@@ -160,7 +163,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   // 들어온 뒤의 상태
   let space = 'solio';
   let prog = 'subs'; // 솔리오 안에서 지금 연 프로그램(SOLIO_PROGRAMS의 key)
-  let switchOpen = false;
+  /* 들어온 뒤 「공간 고르기」는 구 곁의 펼침이다(2단계 첫 조각 설계 1.3절). switchOpen이 펼침이 열린 것이고, fanPin은 눌러서(자판 포함) 연 것이다.
+   * 다가가서 연 펼침은 손이 떠나면 닫히고, 눌러서 연 것은 다시 누르거나 바깥을 누르거나 Esc로 닫힌다 */
+  let switchOpen = false, fanPin = false;
   let legacyKind = null;
   // 들어온 순간에 계정으로 들어왔는지('signed-in') 손님으로 들어왔는지('guest'). 토큰 갱신이나 잠깐의 오류 중에 들어와도
   // 계정이 있으면 회원으로 적는다. 들어온 뒤 로그아웃과 다른 계정을 알아보는 데 쓴다(최종 검수)
@@ -362,7 +367,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       return null; // welcome · zooming · checking · entering · purpose는 구를 그 자리에 둔다
     }
     if (orbTarget === 'inside') return null; // 들어가는 길이 끝나기를 기다린다
-    return switchOpen ? 'sw' : 'home';
+    return switchOpen ? 'fan' : 'home';
   }
 
   function layerFor(state, mode) {
@@ -372,8 +377,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       if (want === 'sw') return orbAt === 'sw' && orbTarget === 'sw' ? 'switch' : 'none';
       return 'none';
     }
-    if (switchOpen) return orbAt === 'sw' && orbTarget === 'sw' ? 'switch' : 'none';
-    return orbAt === 'home' ? 'app' : 'none';
+    // 펼치는 동안에도 방은 그 자리에 있다(흐려질 뿐이다)
+    return orbAt === 'home' || orbAt === 'fan' ? 'app' : 'none';
   }
 
   function buildScene() {
@@ -397,7 +402,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       space,
       spaceLabel: SPACE_LABEL[space],
       ask: askScene(state),
-      switch: mode === 'portal' ? (state.phase === 'workspace' ? entrySwitchScene(state) : null) : (switchOpen ? appSwitchScene(state) : null),
+      switch: mode === 'portal' && state.phase === 'workspace' ? entrySwitchScene(state) : null,
+      fan: mode === 'portal' ? null : { ...appSwitchScene(state), open: switchOpen, pin: fanPin },
       room: mode === 'portal' ? null : roomScene(state),
       legacy: legacyKind,
       focus: focusKey,
@@ -470,6 +476,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function moveDuration(from, to) {
     if (to === 'ask') return from === 'rest' || from === 'void' ? [ORB_TIMING.zoom, 'ioq'] : [ORB_TIMING.toAsk, 'io'];
     if (to === 'sw') return [ORB_TIMING.sw, 'io'];
+    if (to === 'fan') return [ORB_TIMING.fan, 'out'];
+    if (to === 'home' && from === 'fan') return [ORB_TIMING.fanClose, 'io'];
     if (to === 'home') return [ORB_TIMING.swClose, 'io'];
     return [ORB_TIMING.swClose, 'io'];
   }
@@ -1120,20 +1128,30 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
 
   /* ── 들어온 뒤 ── */
-  function openSwitch() {
+  /* 구 곁의 펼침을 연다. pin이면 눌러서(자판 포함) 연 것이다. 옛 화면이 열려 있으면 조용히 닫고 방으로 돌아와 고정해 연다(설계 검토 1차 2) */
+  function openSwitch({ pin = true } = {}) {
     if (disposed || clientMode() === 'portal' || busyAction !== null) return;
-    if (legacyKind) closeLegacy({ silent: true });
+    if (legacyKind) { closeLegacy({ silent: true }); pin = true; }
+    if (switchOpen) { if (pin && !fanPin) { fanPin = true; render(); } return; }
     switchOpen = true;
+    fanPin = pin;
     feedback.switch = '';
-    focus('current-name');
     render();
   }
-  function closeSwitch() {
+  /* 누르면: 닫혀 있으면 고정해 열고, 다가가서 열린 것이면 고정하고, 고정해 둔 것이면 닫는다(시안 toggleFan) */
+  function toggleSwitch() {
+    if (switchOpen && fanPin && !legacyKind) closeSwitch();
+    else openSwitch({ pin: true });
+  }
+  /* focusHere: Esc로 닫을 때만 초점을 구 단추에 둔다(설계 검토 1차 1). 손이 떠나 닫힐 때는 초점을 옮기지 않는다 */
+  function closeSwitch({ focusHere = false, unpinnedOnly = false } = {}) {
     // 다른 공간을 여는 동안에는 닫지 않는다. 닫으면 그 공간의 실패 글이 지금 방에 떴다(0.4.95 원천 후보 검수 D2)
     if (!switchOpen || busyAction === 'open-space') return;
+    if (unpinnedOnly && fanPin) return;
     switchOpen = false;
+    fanPin = false;
     feedback.switch = '';
-    focus('here');
+    if (focusHere) focus('here');
     render();
   }
 
@@ -1185,6 +1203,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 먼저 옛 화면 모습(legacy)으로 바꿔 옛 런처의 잠금을 푼 뒤 연다. 그래야 옛 런처가 그 보기 제목으로 초점을 옮긴다(검수 A4)
     const wasSwitch = switchOpen;
     switchOpen = false;
+    fanPin = false;
     legacyKind = kind;
     focus('legacy');
     render();
@@ -1216,6 +1235,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     navigationHoldActive = false;
     workspaceNeedsRetry = false;
     switchOpen = false;
+    fanPin = false;
     if (legacyKind) closeLegacy({ silent: true });
     enteredAs = null;
     assigned = [];
@@ -1552,10 +1572,14 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       case 'retry-workspace': void runRetryWorkspace(); return true;
       case 'continue-personal': void runContinuePersonal(); return true;
       case 'go': go(payload); return true;
-      case 'open-switch': openSwitch(); return true;
+      case 'open-switch': toggleSwitch(); return true;
+      /* 다가가서 머물면 열리고, 펼침 구역을 벗어나 머물면 닫힌다(고정한 것은 닫지 않는다) */
+      case 'fan-near': openSwitch({ pin: false }); return true;
+      case 'fan-leave': closeSwitch({ unpinnedOnly: true }); return true;
       case 'close-switch': closeSwitch(); return true;
       case 'foot': foot(payload); return true;
-      case 'row': openLegacy('subscriptions', payload ? { service: payload } : undefined); return true;
+      /* 줄을 누르면 안쪽이 고정된다(화면만의 일). 옛 판으로 가는 길은 줄 안쪽의 「계정 관리」와 방 맨 아래의 「구독 관리 열기」다(설계 2.4절) */
+      case 'subs-manage': openLegacy('subscriptions'); return true;
       case 'connect': openLegacy('subscriptions', { view: 'manage' }); return true;
       case 'reread': void reread(); return true;
       case 'prog': return showProgram(payload);
@@ -1580,7 +1604,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       if (state.phase === 'workspace' && state.workspace?.canContinuePersonal !== false) { void runContinuePersonal(); return true; }
       return false;
     }
-    if (switchOpen) { closeSwitch(); return true; }
+    if (switchOpen) { closeSwitch({ focusHere: true }); return true; }
     if (legacyKind) { closeLegacy(); return true; }
     return false;
   }

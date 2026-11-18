@@ -34,3 +34,33 @@ test('the old screen shown under the new face hides the signed-out SYNK ID row, 
 test('a toast moves to the top while the space switch is open, so it never covers the switch foot (0.4.95 first build, Mac arm64)', () => {
   assert.match(css, /html\[data-orb-client\]:has\(#portal-entry \.orb-stage\[data-ui="switch"\]\) #toast\{bottom:auto;top:28px\}/);
 });
+
+/* ── 2단계 첫 조각(2단계_첫조각_구현설계.md 1.3절 · 3.2절, 설계 검토 1차 3 · 4 · 9 · 10 · 15) ── */
+test('the fan sits above the drag band, and while it is open the room, name and objects take no presses', () => {
+  const fanZ = Number(/#portal-entry \.fan\{position:absolute;z-index:(\d+)/.exec(css)?.[1]);
+  const barZ = Number(/#portal-entry \.portal-window-bar\{z-index:(\d+)\}/.exec(css)?.[1]);
+  assert.ok(fanZ >= 5 && fanZ > barZ, `fan ${fanZ} over bar ${barZ}`);
+  assert.match(css, /\.orb-stage\[data-fan\] \.room\{opacity:\.14;pointer-events:none\}/);
+  assert.match(css, /\.orb-stage\[data-fan\] \.here-name,#portal-entry \.orb-stage\[data-fan\] \.rail\{opacity:0;pointer-events:none\}/);
+  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?\.orb-stage\[data-fan\] \.room\{opacity:\.05\}/, 'narrow windows dim the room further');
+});
+
+test('after entering, the top-left group and the open fan are taken out of the window drag area', () => {
+  assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.portal-window-bar\{-webkit-app-region:no-drag;app-region:no-drag\}/);
+  assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.portal-window-drag\{margin-left:var\(--orb-here-w,0px\)\}/);
+  assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.orb-stage\[data-fan\] ~ \.portal-window-bar \.portal-window-drag\{-webkit-app-region:no-drag;app-region:no-drag\}/);
+});
+
+test('reduced motion also shortens the fan, its foot and the room dimming', () => {
+  for (const sel of ['.fan-go', '.fan-foot', '.room']) {
+    assert.match(css, new RegExp('@media \\(prefers-reduced-motion:reduce\\)\\{[^}]*#portal-entry \\' + sel + '[,{]'), sel);
+    assert.match(css, new RegExp('html\\[data-motion="reduced"\\] #portal-entry \\' + sel + '[,{]'), sel + ' (app setting)');
+  }
+});
+
+test('size rules follow the sketch values that the app can reach (설계 3.2절)', () => {
+  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?#portal-entry \.room\{top:clamp\(84px,13vh,128px\);transform:none;bottom:calc\(78px \+ env\(safe-area-inset-bottom,0px\)\)/);
+  assert.match(css, /@media \(max-height:620px\) and \(min-width:641px\)\{[\s\S]*?#portal-entry \.room\[data-room\^="solio"\]\{top:16vh;max-height:calc\(100% - 16vh - 56px\)\}/);
+  assert.match(css, /@media \(min-width:641px\) and \(max-width:900px\)\{#portal-entry \.rows\.vis\{grid-template-columns:minmax\(96px,128px\) minmax\(0,1fr\) 6\.2em minmax\(96px,auto\)\}\}/);
+  assert.doesNotMatch(css, /max-height:340px/, 'the very small window rule waits for a smaller minimum window (설계 검토 1차 9)');
+});

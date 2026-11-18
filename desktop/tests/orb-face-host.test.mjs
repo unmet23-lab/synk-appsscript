@@ -220,11 +220,11 @@ test('a space dropped from the assignment is not opened even though the switch s
   list = ['/'];
   made.face.handle('open-switch');
   await settle();
-  assert.deepEqual(made.view.scenes.at(-1).switch.names.map(n => n.space), ['solio', 'workspace', 'pulse']);
+  assert.deepEqual(made.view.scenes.at(-1).fan.names.map(n => n.space), ['solio', 'workspace', 'pulse']);
   made.face.handle('go', 'pulse');
   await settle();
   assert.deepEqual(opens, [], 'the fresh lookup no longer lists PULSE');
-  assert.match(made.view.scenes.at(-1).switch.error, /확인된 공간이 아닙니다/);
+  assert.match(made.view.scenes.at(-1).fan.error, /확인된 공간이 아닙니다/);
   assert.equal(made.view.scenes.at(-1).space, 'solio');
 });
 
@@ -284,7 +284,7 @@ test('onOpenSpace says why the fresh lookup could not confirm the space instead 
     await settle();
     made.face.handle('go', 'pulse');
     await settle();
-    const error = made.view.scenes.at(-1).switch.error;
+    const error = made.view.scenes.at(-1).fan.error;
     assert.match(error, said, code + ': ' + error);
     assert.doesNotMatch(error, /확인된 공간이 아닙니다|작업 공간 다시 확인|아래 단추/, code + ': ' + error);
     made.face.handle('close-switch');
@@ -311,7 +311,7 @@ test('a space that fails to open is said in switch words, never pointing at the 
     await settle();
     made.face.handle('go', 'pulse');
     await settle();
-    const error = made.view.scenes.at(-1).switch.error;
+    const error = made.view.scenes.at(-1).fan.error;
     assert.match(error, said, code + ': ' + error);
     assert.doesNotMatch(error, /다시 확인을 누른|아래 단추|개인 화면으로 계속|[아어]요\./, code + ': ' + error);
     made.face.handle('close-switch');
@@ -335,5 +335,5 @@ test('a failed fresh lookup for an expired record is said in switch words too (0
   await settle();
   made.face.handle('go', 'pulse');
   await settle();
-  assert.equal(made.view.scenes.at(-1).switch.error, '계정 연결이 바뀌었습니다. 잠시 뒤 다시 시도해 주세요.');
+  assert.equal(made.view.scenes.at(-1).fan.error, '계정 연결이 바뀌었습니다. 잠시 뒤 다시 시도해 주세요.');
 });

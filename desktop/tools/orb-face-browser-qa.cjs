@@ -44,6 +44,9 @@ if(!process.versions.electron){
   const row=(id,service,used,resetsAt,extra={})=>({id,service,source:'auto',label:service,kind:'weekly',state:'ok',plan:'pro',email:'member@example.com',live:{readAt:now-5*60e3,weekly:{usedPercent:used,resetsAt}},...extra});
   const subsReady={ok:true,seq:1,rows:[row('r-claude','claude',36,now+3*D),row('r-gpt','gpt',88,now+5*D),row('r-gemini','gemini',12,now+6*D),{id:'r-hf',service:'higgsfield',source:'auto',label:'Higgsfield',kind:'credit',state:'ok',plan:'plus',billDay:3,live:{readAt:now,credits:1240,planCredits:3000}}],check:{at:now-5*60e3},checking:false,usage:{accounts:{'r-claude':{rate3:5},'r-gpt':{rate3:10},'r-gemini':{rate3:2}}},prices:null};
   const subsNone={ok:true,seq:1,rows:[],check:{at:now-60e3},checking:false,usage:{accounts:{}}};
+  // 2단계 첫 조각(17번): 계정 여럿(이 PC에 없는 계정, 다시 로그인, 못 읽음 포함), 지난 7일, 요금, 환율이 있는 구독 자료
+  const days7=[null,{v:10},{v:20},{v:0},{v:14},{v:12},{v:5}];
+  const subsRich={ok:true,seq:1,rows:[row('r-claude','claude',36,now+3*D,{email:'work@example.com',price:290000,currency:'KRW',billDay:2}),row('r-claude-2','claude',0,now+3*D,{email:'home@example.com',state:'needs-login'}),row('r-claude-3','claude',0,now+3*D,{email:'lab@example.com',state:'error'}),row('r-gpt','gpt',88,now+5*D),row('r-gemini','gemini',12,now+6*D,{email:'g@example.com'}),row('r-gemini-away','gemini',20,now+6*D,{email:'away@example.com',state:'elsewhere'}),{id:'r-hf',service:'higgsfield',source:'auto',label:'Higgsfield',kind:'credit',state:'ok',plan:'plus',billDay:3,live:{readAt:now,credits:1240,planCredits:3000}}],check:{at:now-5*60e3},checking:false,usage:{accounts:{'r-claude':{rate3:5},'r-gpt':{rate3:10},'r-gemini':{rate3:2}},services:{claude:{kind:'pct',days:days7,dayAvg:13.6},gpt:{kind:'pct',days:days7,dayAvg:9.2}}},prices:{services:{claude:{checked:new Date(now-5*D).toISOString().slice(0,10),currency:'USD',krVat:0.1,plans:{pro:{month:20}}}}},settings:{usdKrw:1400}};
   const subsOld={...subsReady,check:{at:now-7*H}};
   // 방문자 분석 요약(합성 숫자). 구글 검색어 하나에 태그를 넣어 화면이 글자로만 넣는지 본다(사이트방문 설계 6절)
   const day=k=>new Date(now-k*D).toISOString().slice(0,10);
@@ -93,7 +96,7 @@ if(!process.versions.electron){
       if(restore){if(restoreAfter)setTimeout(()=>{w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')').catch(()=>{});},restoreAfter);else await w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')');}
       return t0;
     }
-    const state=w=>w.js(`(()=>{const r=document.getElementById('portal-entry'),s=r?.querySelector('.orb-stage');return {phase:r?.dataset.portalState,ui:s?.dataset.ui,mode:document.documentElement.dataset.orbClient,wait:s?.dataset.wait||null,active:r?.dataset.portalActive,hidden:document.hidden,ready:document.documentElement.dataset.ready,eyes:s?.dataset.eyes||null};})()`);
+    const state=w=>w.js(`(()=>{const r=document.getElementById('portal-entry'),s=r?.querySelector('.orb-stage');return {phase:r?.dataset.portalState,ui:s?.dataset.ui,mode:document.documentElement.dataset.orbClient,wait:s?.dataset.wait||null,active:r?.dataset.portalActive,hidden:document.hidden,ready:document.documentElement.dataset.ready,eyes:s?.dataset.eyes||null,fan:s?.dataset.fan==='1'};})()`);
     async function until(w,fn,{timeout=9000,every=40}={}){const t=Date.now();let last;while(Date.now()-t<timeout){last=await state(w);if(fn(last))return {ok:true,ms:Date.now()-t,state:last};await wait(every);}return {ok:false,ms:Date.now()-t,state:last};}
     // 끝 모습으로 찍는다: 첫 화면(구가 드러나는 중) 말고는 글의 나타남 효과를 끄고, 숨은 창이 새 장면을 그리도록 다시 그리기를 요청한 뒤 두 번 찍는다
     async function capture(w,name,{moving=false}={}){
@@ -113,7 +116,8 @@ if(!process.versions.electron){
     const key=async(w,keyCode)=>{w.win.webContents.sendInputEvent({type:'keyDown',keyCode});if(CHAR[keyCode])w.win.webContents.sendInputEvent({type:'char',keyCode:CHAR[keyCode]});w.win.webContents.sendInputEvent({type:'keyUp',keyCode});await wait(60);};
     const calls=w=>w.js('window.__orbFixture.calls()');
     const text=(w,sel)=>w.js(`(document.querySelector(${JSON.stringify(sel)})?.textContent||'').trim()`);
-    const sizes=[[1440,900],[390,800],[960,680]];
+    // 앱에서 닿는 크기만 찍는다: 1440×900, 가장 작은 창 960×680, 그 창을 110 · 125 · 150%로 확대했을 때의 화면 크기(2단계 첫 조각 설계 검토 1차 10)
+    const sizes=[[1440,900],[960,680],[873,618],[768,544],[640,453]];
     // 옛 화면(legacy)은 앱 최소 폭 960에서 칸이 겹치는지도 본다(현장 노트 배포_공개 「PC 판 화면 확인을 1440 · 390만 하면」)
     async function captureWide(w,name){for(const [W,Hh] of [[1440,900],[960,680]]){w.win.setContentSize(W,Hh);await wait(380);await capture(w,`${name}-${W}`);}w.win.setContentSize(1440,900);await wait(300);}
     async function captureSizes(w,name){for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await capture(w,`${name}-${W}`);}w.win.setContentSize(1440,900);await wait(300);}
@@ -195,14 +199,16 @@ if(!process.versions.electron){
           // Ctrl과 더하기는 막히지 않는다(들어온 뒤 shouldBlockShortcuts는 거짓)
           check('15 zoom keys are not blocked after entry',await w.js("(()=>{const e=new KeyboardEvent('keydown',{key:'=',ctrlKey:true,bubbles:true,cancelable:true});window.dispatchEvent(e);return !e.defaultPrevented;})()"));
           // 9. 들어온 뒤: 작은 구 → 공간 고르기 → Esc · 빈 곳 · 돌아가기
-          await click(w,'.here-orb');const sw=await until(w,s=>s.ui==='switch');check('9 the small orb opens the space switch',sw.ok,sw.state);await capture(w,'switch');
-          await key(w,'Escape');const c1=await until(w,s=>s.ui==='app');check('9 Esc closes the switch',c1.ok,c1.state);
-          await click(w,'.here-name');await until(w,s=>s.ui==='switch');
-          await w.js("(()=>{const l=document.querySelector('[data-layer=switch]');const e=new MouseEvent('click',{bubbles:true,clientX:20,clientY:innerHeight-20});l.dispatchEvent(e);})()");
-          const c3=await until(w,s=>s.ui==='app');check('9 an empty click closes the switch',c3.ok,c3.state);
-          await click(w,'.here-orb');await until(w,s=>s.ui==='switch');await click(w,'[data-orb-act="close-switch"]');const c4=await until(w,s=>s.ui==='app');check('9 「돌아가기」 closes the switch',c4.ok,c4.state);
+          // 9. 들어온 뒤: 작은 구 → 구 곁의 펼침(2단계 첫 조각) → Esc · 바깥 누름 · 다시 누름
+          await click(w,'.here-orb');const sw=await until(w,s=>s.ui==='app'&&s.fan);check('9 the small orb opens the fan beside it, the room stays',sw.ok,sw.state);await wait(700);await capture(w,'fan');
+          await key(w,'Escape');const c1=await until(w,s=>s.ui==='app'&&!s.fan);check('9 Esc closes the fan',c1.ok,c1.state);
+          check('9 Esc leaves focus on the orb',await w.js("document.activeElement===document.querySelector('#portal-entry .here-orb')"));
+          await click(w,'.here-name');await until(w,s=>s.fan);await wait(500);
+          await w.js("(()=>{const r=document.getElementById('portal-entry');r.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:'mouse',clientX:20,clientY:innerHeight-20}));})()");
+          const c3=await until(w,s=>!s.fan);check('9 a press outside closes a pinned fan',c3.ok,c3.state);
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.here-orb');const c4=await until(w,s=>!s.fan);check('9 pressing the orb again closes the fan',c4.ok,c4.state);
           // 구독 줄 → 옛 AI 구독 관리(위 탭 줄 숨음) → 돌아가기
-          await click(w,'button.row[data-svc]');const lg=await until(w,s=>s.mode==='legacy'&&s.ui==='app');
+          await click(w,'[data-orb-act="subs-manage"]');const lg=await until(w,s=>s.mode==='legacy'&&s.ui==='app');
           const legacy=await w.js("(()=>{const r=document.getElementById('portal-entry').getBoundingClientRect(),t=document.getElementById('solio-tabs'),title=document.querySelector('.launcher > .titlebar');return {band:Math.round(r.height),tabsHidden:(!t||getComputedStyle(t).display==='none')&&[...document.querySelectorAll('#solio-subscriptions .ms-back[data-view=solio]')].every(b=>getComputedStyle(b).display==='none'),titleHidden:!title||getComputedStyle(title).display==='none',launcherInert:document.querySelector('.launcher').inert};})()");
           check('9 a row opens the old subscriptions board under a 56px band',lg.ok&&legacy.band===56&&legacy.tabsHidden&&legacy.titleHidden&&!legacy.launcherInert,legacy);await captureWide(w,'legacy-subscriptions');
           // 계정 관리 → 「한눈에 보기로」가 보이고 눌린다. 띠로 나갔다 다시 열면 한눈에 보기부터 뜬다(Fable 최종)
@@ -210,15 +216,16 @@ if(!process.versions.electron){
           const glanceBack=await w.js("(async()=>{for(let i=0;i<40;i++){const b=document.querySelector('#solio-subscriptions .ms-back[data-subs=glance]');if(b&&getComputedStyle(b).display!=='none'&&b.getBoundingClientRect().width>0)return true;await new Promise(r=>setTimeout(r,50));}return false;})()");
           check('9 the account management view keeps its way back to the glance',glanceBack);
           await click(w,'[data-orb-act="legacy-back"]');const lb=await until(w,s=>s.mode==='app'&&s.ui==='app');check('9 「돌아가기」 returns to Solio',lb.ok,lb.state);
-          await click(w,'button.row[data-svc]');await until(w,s=>s.mode==='legacy'&&s.ui==='app');
+          await click(w,'[data-orb-act="subs-manage"]');await until(w,s=>s.mode==='legacy'&&s.ui==='app');
           const reopened=await w.js("(async()=>{for(let i=0;i<40;i++){if(document.querySelector('#solio-subscriptions .ms-back[data-view=solio]')&&!document.querySelector('#solio-subscriptions .ms-back[data-subs=glance]'))return true;await new Promise(r=>setTimeout(r,50));}return false;})()");
           check('9 reopening the board starts at the glance view',reopened);
           await click(w,'[data-orb-act="legacy-back"]');await until(w,s=>s.mode==='app'&&s.ui==='app');
-          await click(w,'.here-orb');await until(w,s=>s.ui==='switch');await click(w,'[data-foot="settings"]');await until(w,s=>s.mode==='legacy'&&s.ui==='app');
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="settings"]');await until(w,s=>s.mode==='legacy'&&s.ui==='app');
           const hiddenRows=await w.js("['#personal-settings-open','#density','#view-settings [data-view=benefits]','#reset-preferences'].map(s=>{const e=document.querySelector(s);const r=e?.closest('.setting-row');return !r||getComputedStyle(r).display==='none';})");
           check('9 settings hides the four library and pleasure rows',hiddenRows.every(Boolean),{hiddenRows});await captureWide(w,'legacy-settings');
           await key(w,'Escape');const lb2=await until(w,s=>s.mode==='app');check('9 Esc leaves the old settings',lb2.ok,lb2.state);
-          await click(w,'.here-orb');await until(w,s=>s.ui==='switch');await click(w,'[data-foot="account"]');const la=await until(w,s=>s.mode==='legacy'&&s.ui==='app');check('9 「계정」 opens the account view',la.ok,la.state);await capture(w,'legacy-account');
+          await wait(700);check('17 coming back from an old screen with focus on the orb does not open the fan',!(await state(w)).fan&&await w.js("document.activeElement===document.querySelector('#portal-entry .here-orb')"));
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="account"]');const la=await until(w,s=>s.mode==='legacy'&&s.ui==='app');check('9 「계정」 opens the account view',la.ok,la.state);await capture(w,'legacy-account');
           // 옛 화면에서는 어떤 단추를 눌러도 옛 홈 · 라이브러리 · 혜택 · 맞춤 정보로 가지 않는다(Fable 최종)
           const leak=await w.js("(async()=>{const tries=['[data-account-action=insight]','[data-account-action=workspace]','[data-view=home]','[data-view=library]','[data-view=benefits]'];const seen=[];for(const sel of tries){const b=document.querySelector(sel);if(b){b.click();await new Promise(r=>setTimeout(r,120));seen.push([sel,document.documentElement.dataset.view]);}}return {seen,hidden:getComputedStyle(document.querySelector('#view-account .setting-row:has([data-account-action=insight])')||document.body).display};})()");
           check('9 the old screens cannot leak to home, library, benefits or insight',leak.seen.every(([,v])=>['solio','settings','account'].includes(v)),leak);
@@ -227,7 +234,7 @@ if(!process.versions.electron){
           let stray=null;for(let i=0;i<60;i++){const s=await w.js("(()=>{const open=[...document.querySelectorAll('dialog[open]')].map(d=>d.id);const root=document.documentElement.dataset.orbClient;return {open,root};})()");if(s.open.length||s.root!=='app'){stray=s;break;}await wait(500);}
           check('14 nothing old opens over the face for 30 seconds',!stray,{stray});
           // 10. 로그아웃 → 묻는 화면
-          await click(w,'.here-orb');await until(w,s=>s.ui==='switch');await click(w,'[data-foot="logout"]');
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="logout"]');
           const lo=await until(w,s=>s.phase==='auth'&&s.ui==='ask',{timeout:12000});check('10 sign-out returns to the ask scene',lo.ok&&(await calls(w)).includes('signOut'),lo.state);
           check('10 the returning flag is cleared',await w.js("localStorage.getItem('synk.orb.returning')===null"));
           // 3. 다시 켬(로그인 복원 1.5초 늦춤): 그동안 글 0, ask를 거치지 않고 솔리오까지
@@ -257,7 +264,8 @@ if(!process.versions.electron){
           // 그 오브제 위에 처음 올라온 때부터 그 프로그램이 처음 열린 때까지
           const opened=async name=>w.js('(()=>{const n='+JSON.stringify(name)+',o=window.__overLog.find(e=>e[0]===n);if(!o)return null;const p=window.__progLog.find(e=>e[0]===n&&e[1]>=o[1]);return p?Math.round(p[1]-o[1]):null;})()');
           // 줄 가까이 먼저 가서 이름이 다 펼쳐진 뒤 방문자 분석 위에 머문다: 짧게 열린다
-          const here=await rect('#portal-entry .here-name');await move(here.x,here.y);await wait(900);
+          // 이름 단추 곁에 머물면 구 곁의 펼침이 열리므로(2단계 첫 조각) 오브제 줄의 오른쪽 가까이로 간다
+          const here=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-orb-rail]').getBoundingClientRect();return {x:Math.round(r.right+30),y:Math.round(r.top+r.height/2)};})()");await move(here.x,here.y);await wait(900);
           const near=await w.js("document.querySelector('#portal-entry [data-orb-rail]').classList.contains('near')");
           await capture(w,'rail-near');
           await w.js('window.__overLog.length=0;window.__progLog.length=0');
@@ -339,6 +347,94 @@ if(!process.versions.electron){
           w.win.destroy();
         }
         // 4. 배정 하나(Workspace, PULSE 각각)
+        // 17. 2단계 첫 조각: 구 곁의 펼침과 구독 줄 안쪽(2단계_첫조각_구현설계.md 5절). 숨은 창에는 실제 마우스가 오지 않아 그 자리의 요소에 포인터 사건을 직접 보낸다(현장 노트 시험_화면확인)
+        if(only('17')&&mode==='main'){
+          const w=await open();await boot(w,{subs:subsRich},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          check('17 arriving in Solio does not open the fan by itself',!(await state(w)).fan);
+          await w.js(`(()=>{const st=document.querySelector('#portal-entry .orb-stage');window.__fanLog=[];new MutationObserver(()=>window.__fanLog.push([st.dataset.fan==='1',performance.now()])).observe(st,{attributes:true,attributeFilter:['data-fan']});
+            window.__moreLog=[];new MutationObserver(ms=>{for(const m of ms){const t=m.target;if(t.classList&&t.classList.contains('more'))window.__moreLog.push([(t.previousElementSibling&&t.previousElementSibling.dataset.svc)||'',t.classList.contains('open'),performance.now()]);}}).observe(document.querySelector('#portal-entry [data-rows]'),{attributes:true,attributeFilter:['class'],subtree:true});
+            const chain=e=>{const a=[];for(let n=e;n;n=n.parentElement)a.push(n);return a;};
+            const opts=(x,y)=>({bubbles:true,cancelable:true,composed:true,pointerType:'mouse',pointerId:1,isPrimary:true,button:0,clientX:x,clientY:y});
+            window.__ptr=null;
+            window.__mv=(x,y)=>{const t=document.elementFromPoint(x,y)||document.body,prev=window.__ptr,o=opts(x,y);
+              if(prev!==t){const was=prev?chain(prev):[],now=chain(t);if(prev)prev.dispatchEvent(new PointerEvent('pointerout',{...o,relatedTarget:t}));for(const n of was)if(!now.includes(n))n.dispatchEvent(new PointerEvent('pointerleave',{...o,bubbles:false,relatedTarget:t}));t.dispatchEvent(new PointerEvent('pointerover',{...o,relatedTarget:prev}));for(const n of now.slice().reverse())if(!was.includes(n))n.dispatchEvent(new PointerEvent('pointerenter',{...o,bubbles:false,relatedTarget:prev}));window.__ptr=t;}
+              t.dispatchEvent(new PointerEvent('pointermove',o));return performance.now();};
+            window.__press=(x,y)=>{const a=document.elementFromPoint(x,y)||document.body,o=opts(x,y);a.dispatchEvent(new PointerEvent('pointerdown',o));
+              return new Promise(r=>setTimeout(()=>{const b=document.elementFromPoint(x,y)||document.body;b.dispatchEvent(new PointerEvent('pointerup',o));let c=a;while(c&&!c.contains(b))c=c.parentElement;c=c||document.body;c.dispatchEvent(new MouseEvent('click',o));r({down:String(a.className||a.tagName),up:String(b.className||b.tagName),click:String(c.className||c.tagName)});},90));};
+            return true;})()`);
+          const mv=async(x,y)=>{const t=await w.js('window.__mv('+x+','+y+')');await wait(16);return t;};
+          const rect=sel=>w.js('(()=>{const r=document.querySelector('+JSON.stringify(sel)+').getBoundingClientRect();return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2),l:r.left,t:r.top,r:r.right,b:r.bottom};})()');
+          const firstFan=(open,after)=>w.js('(()=>{const e=window.__fanLog.find(e=>e[0]==='+open+'&&e[1]>='+after+');return e?e[1]:null;})()');
+          const firstMore=(svc,open,after)=>w.js('(()=>{const e=window.__moreLog.find(e=>e[0]==='+JSON.stringify(svc)+'&&e[1]==='+open+'&&e[2]>='+after+');return e?e[2]:null;})()');
+          const away=[1360,860];
+          const orb=await rect('#portal-entry .here-orb'),name=await rect('#portal-entry .here-name');
+          const near=(x,y)=>(x>orb.l-18&&x<orb.r+18&&y>orb.t-18&&y<orb.b+18)||(x>name.l-10&&x<name.r+10&&y>name.t-10&&y<name.b+10);
+          // 천천히 다가와 구 곁에 머문다: 0.15초 뒤에 펼쳐진다
+          await mv(...away);await wait(400);
+          let nearAt=null;for(let i=10;i>=0;i--){const x=orb.x+i*14,y=orb.y+i*14,t=await mv(x,y);if(nearAt===null&&near(x,y))nearAt=t;await wait(30);}
+          await wait(700);const o1=await firstFan(true,nearAt);const slowMs=o1===null?null:Math.round(o1-nearAt);
+          check('17 resting by the orb opens the fan after about 0.15 s',slowMs!==null&&slowMs>=140&&slowMs<450,{ms:slowMs});
+          // 구역을 벗어나 머물면 0.4초 뒤에 접힌다
+          const leftAt=await mv(...away);await wait(900);const c1=await firstFan(false,leftAt);const closeMs=c1===null?null:Math.round(c1-leftAt);
+          check('17 leaving the fan area closes an unpinned fan after about 0.4 s',closeMs!==null&&closeMs>=380&&closeMs<800,{ms:closeMs});
+          // 멀리서 빠르게 구로 오면 조금 더(0.26초) 기다린다
+          await wait(400);await mv(orb.x+340,orb.y+240);const fastAt=await w.js('window.__mv('+orb.x+','+orb.y+')');
+          await wait(800);const o2=await firstFan(true,fastAt);const fastMs=o2===null?null:Math.round(o2-fastAt);
+          check('17 coming fast onto the orb waits a little longer (about 0.26 s)',fastMs!==null&&fastMs>=250&&fastMs<600,{ms:fastMs});
+          // 머물러 연 펼침을 누르면 고정되고, 손이 떠나도 남는다
+          await click(w,'#portal-entry .here-orb');await wait(120);await mv(...away);await wait(900);
+          check('17 pressing the orb pins the fan and leaving no longer closes it',(await state(w)).fan);
+          await captureSizes(w,'fan');
+          // 바깥을 누르면 고정한 펼침이 닫히고, 흐린 방에 있던 줄은 같이 눌리지 않는다
+          const g=await rect('#portal-entry button.row[data-svc="gemini"]');
+          const pressed=await w.js('window.__press('+g.x+','+g.y+')');await wait(300);
+          const gRow=await w.js("(()=>{const b=document.querySelector('#portal-entry button.row[data-svc=\"gemini\"]');return {open:b.classList.contains('opened'),pin:b.classList.contains('pin')};})()");
+          check('17 a press outside closes the pinned fan without pressing the dimmed row under it',!(await state(w)).fan&&!gRow.open&&!gRow.pin,{pressed,gRow});
+          // 자판: 초점만으로는 펼치지 않고, 아래 화살표 · Enter · Space로 펼친다. 아래 화살표로 첫 이름에 들어가고 Esc로 닫으면 초점이 구에 남는다
+          await mv(...away);await wait(500);
+          await w.js("document.querySelector('#portal-entry .here-orb').focus()");await wait(500);
+          check('17 focus alone on the orb does not open the fan',!(await state(w)).fan);
+          await key(w,'Down');const k1=await until(w,s=>s.fan,{timeout:2000});await wait(500);
+          await key(w,'Down');const inFan=await w.js("document.activeElement===document.querySelector('#portal-entry .fan-go')");
+          check('17 the down arrow opens the fan and then moves into its first name',k1.ok&&inFan,{state:k1.state,inFan});
+          await key(w,'Escape');const k2=await until(w,s=>!s.fan,{timeout:2000});
+          const onOrb=await w.js("document.activeElement===document.querySelector('#portal-entry .here-orb')");
+          check('17 Esc from inside the fan closes it and returns focus to the orb',k2.ok&&onOrb,{state:k2.state,onOrb});
+          await wait(700);check('17 the fan stays closed after Esc while focus rests on the orb',!(await state(w)).fan);
+          await key(w,'Return');const k3=await until(w,s=>s.fan,{timeout:2000});await wait(450);
+          await key(w,'Return');const k4=await until(w,s=>!s.fan,{timeout:2000});
+          check('17 Enter on the orb opens the fan and Enter again closes it',k3.ok&&k4.ok,{open:k3.state,close:k4.state});
+          await wait(450);await key(w,'Space');const k5=await until(w,s=>s.fan,{timeout:2000});await wait(450);await key(w,'Escape');await until(w,s=>!s.fan,{timeout:2000});
+          check('17 Space on the orb opens the fan',k5.ok,k5.state);
+          await w.js('document.activeElement&&document.activeElement.blur&&document.activeElement.blur()');
+          // 구독 줄: 머물면 약 0.12초 뒤에 안쪽이 열리고, 줄 묶음을 벗어나 머물면 약 0.4초 뒤에 접힌다
+          await wait(500);const r1=await rect('#portal-entry button.row[data-svc="claude"]');
+          const rowAt=await mv(r1.x,r1.y);await wait(500);const ro=await firstMore('claude',true,rowAt);const rowMs=ro===null?null:Math.round(ro-rowAt);
+          check('17 resting on a subscription row opens its inside after about 0.12 s',rowMs!==null&&rowMs>=110&&rowMs<400,{ms:rowMs});
+          const inside=await w.js("(()=>{const m=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]').nextElementSibling;return {open:m.classList.contains('open'),inert:m.inert,accounts:m.querySelectorAll('.row.sub').length,fix:[...m.querySelectorAll('.more-fix')].map(p=>p.textContent).join(' '),week:!!m.querySelector('.week'),manage:m.querySelectorAll('[data-orb-act=connect]').length,say:(m.querySelector('.more-say')||{}).textContent||''};})()");
+          check('17 the Claude inside shows every account, the accounts to fix first, the last seven days and 「계정 관리」',inside.open&&!inside.inert&&inside.accounts>=3&&/home 계정은 다시 로그인해야 합니다/.test(inside.fix)&&/lab 계정은/.test(inside.fix)&&inside.week&&inside.manage===1&&inside.say.length>0,inside);
+          const leaveAt=await mv(...away);await wait(900);const rc=await firstMore('claude',false,leaveAt);const rowClose=rc===null?null:Math.round(rc-leaveAt);
+          check('17 leaving the rows closes an unpinned inside after about 0.4 s',rowClose!==null&&rowClose>=380&&rowClose<800,{ms:rowClose});
+          // 줄을 누르면 고정되어 손이 떠나도 남는다. 다시 읽어 장면이 새로 그려져도 펼침의 단추와 고정한 줄은 그대로다
+          await click(w,'#portal-entry button.row[data-svc="claude"]');await mv(...away);await wait(800);
+          const pinned=await w.js("(()=>{const b=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');return b.classList.contains('pin')&&b.nextElementSibling.classList.contains('open');})()");
+          check('17 pressing a row pins its inside and leaving does not close it',pinned);
+          await captureSizes(w,'subs-inside');
+          await click(w,'#portal-entry .here-orb');await until(w,s=>s.fan);await wait(500);
+          await w.js("window.__fanNode=document.querySelector('#portal-entry .fan-go');window.__rowNode=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');true");
+          const before=(await calls(w)).filter(c=>c==='subs-check').length;
+          await click(w,'#portal-entry [data-orb-act="reread"]');await wait(1500);
+          const kept=await w.js("(()=>{const b=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');return {fan:document.querySelector('#portal-entry .fan-go')===window.__fanNode,row:b===window.__rowNode,pin:b.classList.contains('pin'),open:document.querySelector('#portal-entry .orb-stage').dataset.fan==='1'};})()");
+          const after=(await calls(w)).filter(c=>c==='subs-check').length;
+          check('17 a redraw keeps the open fan, its buttons and the pinned row as they were',after>before&&kept.fan&&kept.row&&kept.pin&&kept.open,{...kept,reads:after-before});
+          w.win.destroy();
+          // 구독이 없는 계정의 방도 다섯 크기로 찍는다
+          const w2=await open();await boot(w2,{subs:subsNone},{restore:signedIn('none')});
+          await until(w2,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          await captureSizes(w2,'subs-none');
+          w2.win.destroy();
+        }
         if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.'],['/pulse-app/','pulse','PULSE를 열었습니다.']]){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:[dest],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});const c=await calls(w);
@@ -354,9 +450,9 @@ if(!process.versions.electron){
           await w.js("document.querySelector('.sw[data-go]').focus()");await key(w,'Right');await key(w,'Return');
           const p=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});const c=await calls(w);
           check('5 arrow and Enter open PULSE only',p.ok&&c.includes('open:/pulse-app/')&&!c.includes('open:/'),{...p.state,calls:c});
-          await click(w,'.here-orb');await until(w,s=>s.ui==='switch');
-          check('5 the switch lists Solio and both spaces',JSON.stringify(await w.js("[...document.querySelectorAll('.sw[data-go]')].map(b=>b.dataset.go)"))==='["solio","workspace","pulse"]');
-          await click(w,'.sw[data-go="solio"]');const s2=await until(w,s=>s.ui==='app');check('5 going to Solio from the switch',s2.ok&&(await text(w,'[data-say]')).length>0,s2.state);
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
+          check('5 the fan lists Solio and both spaces',JSON.stringify(await w.js("[...document.querySelectorAll('.fan-go[data-go]')].map(b=>b.dataset.go)"))==='["solio","workspace","pulse"]');
+          await click(w,'.fan-go[data-go="solio"]');const s2=await until(w,s=>s.ui==='app'&&!s.fan);let inSolio=null;for(let i=0;i<100&&!inSolio?.ok;i++){inSolio=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]'),say=document.querySelector('#portal-entry [data-room=solio] [data-say]');return {ok:!!r&&!r.hidden&&!!say&&say.textContent.trim().length>0,hidden:r?.hidden,say:(say?.textContent||'').trim().slice(0,40),rooms:[...document.querySelectorAll('#portal-entry [data-room]')].filter(x=>!x.hidden).map(x=>x.dataset.room)};})()");if(!inSolio.ok)await wait(60);}check('5 going to Solio from the fan',s2.ok&&inSolio.ok,{...s2.state,...inSolio});
           w.win.destroy();
         }
         // 5-2. 「솔리오로」(Esc)
@@ -493,7 +589,7 @@ if(!process.versions.electron){
           await w.js("document.getElementById('portal-entry').dispatchEvent(new CustomEvent('synk:qa-guest-entry'))");
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});
           check('12 QA guest path reaches Solio with the guest line',r.ok&&(await text(w,'[data-say]'))==='로그인하면 구독별 남은 양이 여기에 보입니다.',{...r.state,say:await text(w,'[data-say]')});await capture(w,'qa-guest');
-          await click(w,'.here-orb');await until(w,s=>s.ui==='switch');check('12 the guest switch has only 「설정」',JSON.stringify(await w.js("[...document.querySelectorAll('.sw-foot button')].map(b=>b.textContent)"))==='["설정"]');
+          await click(w,'.here-orb');await until(w,s=>s.fan);check('12 the guest fan has only 「설정」',JSON.stringify(await w.js("[...document.querySelectorAll('.fan-foot button')].map(b=>b.textContent)"))==='["설정"]');await key(w,'Escape');await until(w,s=>!s.fan);await captureSizes(w,'guest-room');
           w.win.destroy();
         }
         // 11. 움직임 줄이기

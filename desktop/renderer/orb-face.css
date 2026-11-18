@@ -113,7 +113,32 @@
 #portal-entry .rail.near .obj-n,#portal-entry .obj[aria-current="true"] .obj-n,#portal-entry .obj:focus-visible .obj-n{max-width:9em;margin-left:9px;opacity:1}
 #portal-entry .obj[aria-current="true"],#portal-entry .obj:hover,#portal-entry .obj:focus-visible{color:var(--paper)}
 #portal-entry .obj:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
-#portal-entry .room{position:absolute;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);top:52%;transform:translateY(-50%);max-height:calc(100% - 168px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#portal-entry .room{position:absolute;left:clamp(20px,9.5vw,168px);right:clamp(20px,9.5vw,168px);top:52%;transform:translateY(-50%);max-height:calc(100% - 168px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;transition:opacity .3s ease}
+/* 구 곁의 펼침(2단계 첫 조각, 시안 .fan): 갈 수 있는 공간이 구 옆으로 차례로 나온다. 끌기 띠(z-index 4)에 가리지 않게 그 위에 둔다(설계 검토 1차 4) */
+#portal-entry .fan{position:absolute;z-index:5;display:flex;flex-direction:column;align-items:flex-start;gap:1px;visibility:hidden;pointer-events:none;transition:visibility 0s linear .2s;
+  overflow-y:auto;scrollbar-width:none;padding:3px 4px 3px 18px;margin:-3px 0 0 -18px;-webkit-app-region:no-drag}
+#portal-entry .fan > *{flex:none}
+#portal-entry .orb-stage[data-fan] .fan{visibility:visible;pointer-events:auto;transition:visibility 0s}
+#portal-entry .fan-go{appearance:none;background:none;border:0;margin:0;padding:8px 14px 8px 0;display:flex;align-items:baseline;gap:18px;color:var(--paper);cursor:pointer;text-align:left;border-radius:2px;opacity:0;transform:translateX(-16px);transition:opacity .16s ease,transform .16s ease}
+#portal-entry .fan-foot{margin:12px 0 0;display:flex;gap:22px;opacity:0;transform:translateX(-16px);transition:opacity .16s ease,transform .16s ease}
+#portal-entry .orb-stage[data-fan] .fan-go,#portal-entry .orb-stage[data-fan] .fan-foot{opacity:1;transform:none;transition:opacity .34s ease calc(110ms + var(--k) * 60ms),transform .5s cubic-bezier(.2,.8,.2,1) calc(110ms + var(--k) * 60ms)}
+#portal-entry .fan-n{position:relative;min-width:8.6em;font:400 13px/1.3 var(--orb-sans);letter-spacing:.2em;color:rgba(243,241,236,.7);transition:color .2s ease}
+#portal-entry .fan-d,#portal-entry .fan-now{font:var(--small);color:var(--dim);transition:color .2s ease}
+#portal-entry .fan-now{display:none}
+#portal-entry .fan-go[aria-current="true"] .fan-d{display:none}
+#portal-entry .fan-go[aria-current="true"] .fan-now{display:inline}
+#portal-entry .fan-go[aria-current="true"] .fan-n{color:var(--paper)}
+#portal-entry .fan-go:hover .fan-n,#portal-entry .fan-go:focus-visible .fan-n,#portal-entry .fan-go.hot .fan-n{color:var(--paper)}
+#portal-entry .fan-go:hover .fan-d,#portal-entry .fan-go:focus-visible .fan-d,#portal-entry .fan-go.hot .fan-d{color:rgba(243,241,236,.84)}
+#portal-entry .fan-go:focus-visible{outline:1px solid var(--ring);outline-offset:2px}
+#portal-entry .fan-go:disabled{cursor:default}
+#portal-entry .fan-foot .quiet{border-bottom-color:transparent;color:rgba(243,241,236,.62)}
+#portal-entry .fan-foot .quiet:hover:not(:disabled){color:var(--paper);border-bottom-color:var(--paper)}
+#portal-entry .fan-error{margin:0 0 8px;max-width:22em;font:var(--small);color:var(--paper)}
+#portal-entry .fan-error:empty{display:none}
+/* 펼친 동안 이름 단추와 오브제 줄은 물러나고, 방은 흐리고 눌리지 않는다. 바깥을 눌러 닫을 때 흐린 줄이나 단추가 같이 눌리지 않게 한다(설계 검토 1차 4) */
+#portal-entry .orb-stage[data-fan] .here-name,#portal-entry .orb-stage[data-fan] .rail{opacity:0;pointer-events:none}
+#portal-entry .orb-stage[data-fan] .room{opacity:.14;pointer-events:none}
 #portal-entry .say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:21em;text-wrap:balance;min-height:1.3em}
 #portal-entry .say .then{display:block;color:var(--dim)}
 #portal-entry .say .then:empty{display:none}
@@ -149,10 +174,11 @@
 /* 프로그램 오브제가 있는 솔리오의 방은 위에서부터 놓는다. 줄이 펼쳐져 길어져도 손 밑의 줄이 움직이지 않는다.
    맨 아랫줄이 아래 흐림에 들지 않게 흐림보다 넓은 아래 여백을 둔다(시안 .room, 사이트방문 설계 6절) */
 @media (min-width:641px){
-  #portal-entry .orb-stage[data-rail="1"] .room[data-room^="solio"]{top:clamp(92px,21vh,196px);transform:none;max-height:calc(100% - clamp(92px,21vh,196px) - 70px);padding-bottom:34px;scrollbar-width:none;
+  /* 2단계 첫 조각부터는 오브제 줄이 없는 계정의 방도 위에서부터 놓는다. 줄을 펼쳐도 손 밑의 줄이 위로 밀리지 않게 한다(설계 검토 1차 ④) */
+  #portal-entry .room[data-room^="solio"]{top:clamp(92px,21vh,196px);transform:none;max-height:calc(100% - clamp(92px,21vh,196px) - 70px);padding-bottom:34px;scrollbar-width:none;
     -webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
   /* 방을 내렸으면 위쪽 끝도 흐린다. 위로 밀려난 줄의 글자가 반쯤 잘린 채 남지 않게 한다 */
-  #portal-entry .orb-stage[data-rail="1"] .room[data-room^="solio"].scrolled{-webkit-mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent)}
+  #portal-entry .room[data-room^="solio"].scrolled{-webkit-mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent)}
 }
 /* 줄 안쪽의 작은 줄(누르는 줄이 아니다). 그림이 가운데를 차지하는 줄(지난 7일)은 가운데 두 칸을 쓴다 */
 #portal-entry div.row{cursor:default}
@@ -161,6 +187,8 @@
 #portal-entry .row-plain > :last-child{grid-column:4;justify-self:end}
 /* 방문자 분석: 줄의 가운데 칸은 선이 아니라 풀어 쓴 숫자다. 아직 재지 못한 줄은 큰 숫자를 흐리게 둔다 */
 #portal-entry .rows.vis{grid-template-columns:minmax(118px,172px) minmax(0,1fr) 6.2em minmax(150px,auto)}
+/* 가운데 폭의 창(641~900px)에서는 이름 칸과 오른쪽 칸을 줄여 설명 칸에 자리를 준다(시안 11-18, 110% · 125% 확대에서 닿는다) */
+@media (min-width:641px) and (max-width:900px){#portal-entry .rows.vis{grid-template-columns:minmax(96px,128px) minmax(0,1fr) 6.2em minmax(96px,auto)}}
 #portal-entry .mid{min-width:0;font:var(--small);color:var(--dim);transition:color .25s ease}
 #portal-entry .row.now .mid,#portal-entry button.row:hover .mid,#portal-entry button.row.opened .mid{color:rgba(243,241,236,.84)}
 #portal-entry .row.unread .val{color:var(--dim)}
@@ -177,11 +205,16 @@
 #portal-entry .more-in .row .mid{color:var(--dim)}
 #portal-entry .more-say{margin:0;padding:0 0 10px;font:var(--body);color:rgba(243,241,236,.84)}
 #portal-entry .more-note{margin:0;padding:0 0 18px;min-height:0;font:var(--small);color:var(--dim)}
+/* 손볼 계정 줄은 결론 문장 바로 아래에서 먼저 읽힌다 */
+#portal-entry .more-fix{padding-bottom:8px;color:rgba(243,241,236,.84)}
+#portal-entry .more-acts{margin:0;padding:6px 0 18px;display:flex;flex-wrap:wrap;gap:12px 22px}
+#portal-entry .room[data-room="solio"] .read [data-read]{flex:1}
 #portal-entry .row.sub .nm{color:var(--dim)}
 /* 지난 7일: 하루 방문 수를 가는 세로선 일곱 개로 보인다. 오늘만 밝다 */
 #portal-entry .week{display:flex;align-items:flex-end;gap:9px;height:24px}
 #portal-entry .week i{display:block;width:2px;height:var(--h);min-height:1px;background:rgba(243,241,236,.38)}
 #portal-entry .week i.today{background:var(--paper)}
+#portal-entry .week i.none{background:rgba(243,241,236,.12)}
 /* 다른 프로그램의 방이 뜰 때 안의 것들이 차례로 떠오른다 */
 #portal-entry .room.enter > *{animation:orb-room-up .55s cubic-bezier(.2,.7,.2,1) both}
 #portal-entry .room.enter > :nth-child(2){animation-delay:.05s}
@@ -220,6 +253,11 @@
 /* 창 단추 막대(launcher.css)는 새 얼굴 위에서도 같은 자리다. 들어온 뒤에도 보인다 */
 html[data-orb-client="app"] #portal-entry .portal-window-bar,
 html[data-orb-client="legacy"] #portal-entry .portal-window-bar{z-index:4}
+/* 들어온 뒤에는 끌기 띠의 왼쪽(구, 이름, 오브제 줄이 놓인 자리)을 끌기 구역에서 뺀다. 띠 자체는 끌지 않고 안의 끌기 칸만 그 자리 뒤에서 시작한다.
+   펼친 동안에는 띠 전체를 뺀다. 구 윗부분, 첫 이름 줄, 닫힘 구역이 이 띠 높이에 걸린다(2단계 첫 조각 설계 검토 1차 3나) */
+html[data-orb-client="app"] #portal-entry .portal-window-bar{-webkit-app-region:no-drag;app-region:no-drag}
+html[data-orb-client="app"] #portal-entry .portal-window-drag{margin-left:var(--orb-here-w,0px)}
+html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-bar .portal-window-drag{-webkit-app-region:no-drag;app-region:no-drag}
 
 @media (max-width:640px){
   #portal-entry .rows{grid-template-columns:minmax(0,1fr)}
@@ -233,19 +271,22 @@ html[data-orb-client="legacy"] #portal-entry .portal-window-bar{z-index:4}
   /* 좁은 창에서는 오브제 이름이 창 단추 쪽으로 넘치지 않게, 연 프로그램의 이름만 둔다 */
   #portal-entry .rail.near .obj:not([aria-current="true"]):not(:focus-visible) .obj-n{max-width:0;margin-left:0;opacity:0}
   /* 좁은 창에서는 줄이 다 들어가지 않으므로 방 안에서 스크롤한다 */
-  #portal-entry .room{top:clamp(84px,13vh,128px);transform:none;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
+  #portal-entry .room{top:clamp(84px,13vh,128px);transform:none;bottom:calc(78px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
   #portal-entry .rows{margin-top:28px}
+  #portal-entry .orb-stage[data-fan] .room{opacity:.05}
 }
 @media (max-height:620px) and (min-width:641px){
   #portal-entry .room{top:47%}
+  /* 낮은 창(110%부터의 확대)에서는 솔리오 방을 시안 값으로 위쪽에 둔다(설계 3.2절) */
+  #portal-entry .room[data-room^="solio"]{top:16vh;max-height:calc(100% - 16vh - 56px)}
   #portal-entry .rows{margin-top:22px}
   #portal-entry .row{padding:10px 0}
 }
 @media (prefers-reduced-motion:reduce){
-  #portal-entry .orb-layer,#portal-entry .rise,#portal-entry .way,#portal-entry .sw,#portal-entry .obj-n,#portal-entry .more,#portal-entry .more-in > *{transition-duration:.01s !important;transition-delay:0s !important}
+  #portal-entry .orb-layer,#portal-entry .rise,#portal-entry .way,#portal-entry .sw,#portal-entry .obj-n,#portal-entry .more,#portal-entry .more-in > *,#portal-entry .fan-go,#portal-entry .fan-foot,#portal-entry .room{transition-duration:.01s !important;transition-delay:0s !important}
   #portal-entry .room.enter > *{animation:none}
 }
-html[data-motion="reduced"] #portal-entry .orb-layer,html[data-motion="reduced"] #portal-entry .rise,html[data-motion="reduced"] #portal-entry .obj-n,html[data-motion="reduced"] #portal-entry .more,html[data-motion="reduced"] #portal-entry .more-in > *{transition-duration:.01s !important;transition-delay:0s !important}
+html[data-motion="reduced"] #portal-entry .orb-layer,html[data-motion="reduced"] #portal-entry .rise,html[data-motion="reduced"] #portal-entry .obj-n,html[data-motion="reduced"] #portal-entry .more,html[data-motion="reduced"] #portal-entry .more-in > *,html[data-motion="reduced"] #portal-entry .fan-go,html[data-motion="reduced"] #portal-entry .fan-foot,html[data-motion="reduced"] #portal-entry .room{transition-duration:.01s !important;transition-delay:0s !important}
 html[data-motion="reduced"] #portal-entry .room.enter > *{animation:none}
 
 /* ── 임시로 여는 옛 화면(legacy): 맨 위 56px 띠만 새 얼굴이고 그 아래가 옛 런처다(설계 9절) ── */

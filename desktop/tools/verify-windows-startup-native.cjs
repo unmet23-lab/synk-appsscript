@@ -141,10 +141,10 @@ function observe(config){
       // 방이 다 드러난 뒤 찍는다. 곧바로 찍으면 도착 움직임 도중이라 문장이 아직 보이지 않았다(0.4.95 대역 빌드 캡처)
       await waitFor(contents,"(()=>{const s=document.querySelector('#portal-entry .orb-stage'),say=document.querySelector('#portal-entry [data-layer=app] [data-say]');return !!s&&!!say&&s.classList.contains('settled')&&getComputedStyle(say.closest('.rise')||say).opacity==='1';})()",'orb-solio-shown');
       await capture(created,'platform-orb-solio');
-      // 작은 구 → 공간 고르기 → 「설정」 → 옛 설정 보기(legacy)의 업데이트 확인. 내려받기 보기는 새 얼굴에서 갈 길이 없어 뺀다
+      // 작은 구 → 구 곁의 펼침(2단계 첫 조각) → 「설정」 → 옛 설정 보기(legacy)의 업데이트 확인. 내려받기 보기는 새 얼굴에서 갈 길이 없어 뺀다
       await clickVisible('#portal-entry .here-orb','orb small orb visible and unobscured');
-      await waitFor(contents,"document.querySelector('#portal-entry .orb-stage')?.dataset.ui==='switch'",'orb-switch');
-      await clickVisible('#portal-entry [data-foot="settings"]','orb switch settings visible and unobscured');
+      await waitFor(contents,"(()=>{const s=document.querySelector('#portal-entry .orb-stage'),f=document.querySelector('#portal-entry .fan-foot');return s?.dataset.fan==='1'&&!!f&&getComputedStyle(f).opacity==='1';})()",'orb-fan');
+      await clickVisible('#portal-entry .fan [data-foot="settings"]','orb fan settings visible and unobscured');
       await waitFor(contents,"document.documentElement.dataset.orbClient==='legacy'&&document.documentElement.dataset.view==='settings'",'orb-legacy-settings');
       // 임시 옛 화면에서는 옛 런처의 잠금이 풀려 마우스와 자판으로 눌려야 한다(최종 검수). 프로그램 클릭은 잠긴 요소에도 통하므로 따로 본다
       const unlocked=await run("(()=>{const l=document.querySelector('.launcher'),back=document.querySelector('#portal-entry .legacy-back'),r=back?.getBoundingClientRect();return {launcherInert:Boolean(l?.inert),launcherInertAttr:Boolean(l?.hasAttribute('inert')),launcherAriaHidden:l?.getAttribute('aria-hidden')??null,backVisible:!!back&&!back.hidden&&!!r&&r.width>0&&r.height>0};})()");
