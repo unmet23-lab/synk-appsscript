@@ -231,6 +231,26 @@ function 쌓기(git, 저장, 바탕, 커밋들, { 다시쌓기 = false, 줄끝�
   }
 }
 
+const LAB판본JSON = /^docs\/마케팅\/LAB_[^/]+\/게시\/판본\/[^/]+\/(?:글|원고_[^/]+)\.json$/;
+const 엄격한UTF8 = new TextDecoder('utf-8', { fatal: true });
+
+function 판본JSON문제(경로, 버퍼) {
+  let 글, 자료;
+  try { 글 = 엄격한UTF8.decode(버퍼); }
+  catch { return 'LAB 판본 파일의 UTF-8이 깨졌다'; }
+  try { 자료 = JSON.parse(글); }
+  catch { return 'LAB 판본 파일의 JSON 구문이 잘못됐다'; }
+  if (!자료 || typeof 자료 !== 'object' || Array.isArray(자료)) return 'LAB 판본 파일에 JSON 객체가 필요하다';
+  if (경로.endsWith('/글.json')) {
+    // 판본글을 올릴 때만 원래 형식 검사기를 불러온다.
+    try {
+      const 문제 = require('./판본글.js').검증(자료);
+      if (문제.length) return `판본글 형식 오류 — ${문제[0]}`;
+    } catch (e) { return `판본글 형식을 검사할 수 없다 — ${e.message}`; }
+  }
+  return null;
+}
+
 /** 올릴 판(바탕..머리)을 경로마다 본다: 새는 줄·빠진 줄·줄끝(줄끝그대로면 안 본다), 그리고 저장 용량. */
 async function 올릴판검사(git, 저장, 저장소, 바탕, 계획, { 줄끝그대로 = false } = {}) {
   const 문제 = [];
@@ -247,6 +267,10 @@ async function 올릴판검사(git, 저장, 저장소, 바탕, 계획, { 줄끝�
     if ((b ? b.sha : null) === (h ? h.sha : null)) continue;
     const 변화 = 계획.내변화.get(경로);
     const bb = 블롭(git, 저장, b && b.sha), hb = 블롭(git, 저장, h && h.sha);
+    if (h && LAB판본JSON.test(경로)) {
+      const 이유 = 판본JSON문제(경로, hb);
+      if (이유) 문제.push({ 경로, 이유 });
+    }
     if (이진인가(bb) || 이진인가(hb) || 변화.some((v) => 이진인가(블롭(git, 저장, v.옛)) || 이진인가(블롭(git, 저장, v.새)))) {
       if ((h ? h.sha : null) !== 변화[변화.length - 1].새) 문제.push({ 경로, 이유: '바이너리 파일이 내 마지막 판과 다르다' });
       continue;
@@ -331,4 +355,4 @@ function 로컬합치기(git, 원격, 계획) {
  * 옵션: 저장소 · 커밋들[](해시·참조·a..b) · 실행 · 합치기 · 줄끝그대로 · 옛판아님 · 원격(origin) · 가지(master)
  */
 
-module.exports = { 커밋풀기, 세판합치기, 같은셈, 같은변화, 올라간짝찾기, 쌓기, 올릴판검사, 공개문제, 검사멈춤이유, 로컬합치기 };
+module.exports = { 커밋풀기, 세판합치기, 같은셈, 같은변화, 올라간짝찾기, 쌓기, 올릴판검사, 공개문제, 검사멈춤이유, 로컬합치기, LAB판본JSON, 판본JSON문제 };

@@ -293,8 +293,20 @@ test('워크트리: 줄끝 — CRLF 작업본에서 고쳐도 origin에는 LF로
   assert.equal(r.결과, '올림', JSON.stringify(r));
   assert.equal(판.원격바이트('lf.md').toString(), '- 하나\n- 둘\n- 셋\n');
   assert.equal(판.원격바이트('crlf.md').toString(), '- 하나\r\n- 둘\r\n- 셋\r\n');
+  assert.deepEqual(r.수.filter(x => x.변환됨).map(x => x.경로), ['lf.md']);
+  const 로컬 = 판.워크트리('local');
+  로컬.쓰기('lf.md', '새 줄\r\n');
+  const 내커밋 = require(path.join(REPO, 'tools', '내커밋.js'));
+  const 미리 = await 내커밋.커밋({ 저장소: 로컬.폴더, 경로들: ['lf.md'] });
+  assert.equal(미리.결과, '미리 보기', JSON.stringify(미리));
+  assert.deepEqual(미리.파일.filter(x => x.변환됨).map(x => x.경로), ['lf.md']);
   assert.equal(r.따라가기.결과, '따라감');
   assert.deepEqual(워.상태(), []);
+  // CRLF가 든 기존 blob에는 autocrlf=true여도 git add가 CRLF를 남긴다.
+  워.쓰기('crlf.md', '- 하나\r\n- 둘\r\n- 셋\r\n- 넷\r\n');
+  const 그대로 = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['crlf.md'], 줄끝그대로: true, 메시지: '넷', 실행: true });
+  assert.equal(그대로.결과, '올림', JSON.stringify(그대로));
+  assert.equal(판.원격파일('crlf.md'), '- 하나\r\n- 둘\r\n- 셋\r\n- 넷\r\n');
 });
 
 test('워크트리: 저장 용량 검사에 걸리면 올리지 않고 아무것도 바꾸지 않는다', async (t) => {
@@ -348,6 +360,272 @@ test('워크트리: --모두는 고친·새·지운 파일을 모두 올린다',
   assert.equal(판.원격에있나('지울.txt'), false);
   assert.deepEqual(워.상태(), []);
 });
+
+// Git이 신호 파일을 인덱스에 담는 바로 그때 대상 파일을 바꾼다. 실제 편집 시각이나 PC 부하에 의존하지 않는다.
+function 저장중인판(t, 대상, 신호, 이전, 이후) {
+  const 필터 = [
+    "const fs = require('node:fs');",
+    `const 대상 = ${JSON.stringify(대상)};`,
+    `if (fs.readFileSync(대상, 'utf8') === ${JSON.stringify(이전)}) fs.writeFileSync(대상, ${JSON.stringify(이후)});`,
+    'process.stdout.write(fs.readFileSync(0));',
+  ].join('\n');
+  const 판 = 새판(t, { autocrlf: 'true', 파일: {
+    '.gitattributes': '*.signal filter=edit\n*.json text eol=lf\n',
+    'fixture-clean.cjs': 필터,
+  } });
+  const 워 = 판.워크트리('wt');
+  워.g('config', 'core.fscache', 'true');
+  워.g('config', 'filter.edit.clean', 'node fixture-clean.cjs');
+  워.g('config', 'filter.edit.smudge', 'cat');
+  워.g('config', 'filter.edit.required', 'true');
+  워.쓰기(대상, 이전);
+  워.쓰기(신호, '신호\n');
+  return { 판, 워 };
+}
+
+test('워크트리: --모두로 담는 동안 자란 UTF-8 파일은 마지막 바이트까지 올라간다', async (t) => {
+  const 대상 = 'z-러시아어 원고.json';
+  const 이전 = '{"caption":"old text and a few letters"}\n';
+  const 이후 = JSON.stringify({ caption: '길어진 자막과 마지막 글자 Ж🙂, 저장됨' }, null, 2) + '\n';
+  const { 판, 워 } = 저장중인판(t, 대상, 'a.signal', 이전, 이후.replaceAll('\n', '\r\n'));
+  const r = await 도구.올리기({ 저장소: 워.폴더, 모두: true, 메시지: '새 판본', 실행: true });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.deepEqual(판.원격바이트(대상), Buffer.from(이후), '작업본의 CRLF는 LF가 되고, 늘어난 본문과 파일 끝은 모두 보존된다');
+  assert.equal(r.따라가기.결과, '따라감', JSON.stringify(r.따라가기));
+});
+
+test('명시한 경로를 담은 뒤 같은 크기로 바뀌면 바로올리기와 내커밋은 원격·HEAD·인덱스를 보존한다', async (t) => {
+  const 대상 = 'a-수정 중.json', 신호 = 'z.signal';
+  const 이전 = '{"글":"갑"}\n', 이후 = '{"글":"을"}\n';
+  const { 판, 워 } = 저장중인판(t, 대상, 신호, 이전, 이후);
+  const 내커밋 = require(path.join(REPO, 'tools', '내커밋.js'));
+  const 원격 = 판.원격머리(), 머리 = 워.머리();
+  const 인덱스 = path.join(워.gitdir(), 'index');
+  for (const 실행 of [도구.올리기, 내커밋.커밋]) {
+    워.쓰기(대상, 이전);
+    const 지문전 = 지문(인덱스);
+    const r = await 실행({ 저장소: 워.폴더, 경로들: [대상, 신호], 메시지: '동시 편집', 실행: true });
+    assert.equal(워.읽기(대상), 이후, 'Git이 실제로 읽는 도중 편집이 일어났다');
+    assert.equal(r.결과, '멈춤', JSON.stringify(r));
+    assert.ok(r.이유.includes(대상), r.이유);
+    assert.equal(판.원격머리(), 원격);
+    assert.equal(워.머리(), 머리);
+    assert.equal(지문(인덱스), 지문전);
+  }
+});
+
+// 마지막 신호 파일의 clean이 지정한 번째 인덱스를 만날 때만 앞 파일을 다시 저장한다.
+function 수집중저장(판, 워, 번째, 대상, 내용) {
+  const 기록 = path.join(판.뿌리, '수집기록.json');
+  fs.writeFileSync(기록, '[]');
+  fs.writeFileSync(path.join(판.뿌리, 'edit-during-add.cjs'), [
+    "const fs = require('node:fs');",
+    "const 기록 = require('node:path').join(__dirname, '수집기록.json');",
+    "const 인덱스 = process.env.GIT_INDEX_FILE;",
+    "const 목록 = JSON.parse(fs.readFileSync(기록, 'utf8'));",
+    "if (인덱스 && !목록.includes(인덱스)) {",
+    "  목록.push(인덱스);",
+    "  fs.writeFileSync(기록, JSON.stringify(목록));",
+    `  if (목록.length === ${번째}) fs.writeFileSync(${JSON.stringify(대상)}, ${JSON.stringify(내용)});`,
+    "}",
+    "process.stdout.write(fs.readFileSync(0));",
+  ].join('\n'));
+  워.g('config', 'filter.stage.clean', 'node ../edit-during-add.cjs');
+  워.g('config', 'filter.stage.smudge', 'cat');
+  워.g('config', 'filter.stage.required', 'true');
+  return () => JSON.parse(fs.readFileSync(기록, 'utf8')).length;
+}
+
+test('세 번째 수집에서 이미 담은 일반 파일이 바뀌면 원격과 HEAD를 보존한다', async (t) => {
+  const 판 = 새판(t, { 파일: {
+    '.gitattributes': 'a.md text eol=lf\nb.md -text\n*.signal filter=stage\n',
+    'a.md': 'base a\n', 'b.md': 'base b\n',
+  } });
+  const 워 = 판.워크트리('wt');
+  const 횟수 = 수집중저장(판, 워, 3, 'b.md', 'after edit\n');
+  워.쓰기('a.md', 'changed a\r\n');
+  워.쓰기('b.md', 'before edit\n');
+  워.쓰기('z.signal', 'signal\n');
+  const 머리 = 워.머리(), 원격 = 판.원격머리(), 인덱스 = path.join(워.gitdir(), 'index');
+  const 인덱스전 = 지문(인덱스);
+  const r = await 도구.올리기({ 저장소: 워.폴더, 모두: true, 메시지: '동시 저장', 실행: true });
+  assert.ok(횟수() >= 3);
+  assert.equal(워.읽기('b.md'), 'after edit\n');
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /b\.md/);
+  assert.equal(판.원격머리(), 원격);
+  assert.equal(워.머리(), 머리);
+  assert.equal(지문(인덱스), 인덱스전);
+});
+
+test('명시한 폴더의 부분 조각은 수집 중 다른 줄이 바뀌어도 고른 줄만 올린다', async (t) => {
+  const 대상 = 'set/partial.txt';
+  const 바탕 = ['first', ...Array.from({ length: 30 }, (_, i) => `middle ${i}`), 'last', ''].join('\n');
+  const 고른판 = 바탕.replace('first', 'chosen'), 작업판 = 고른판.replace('last', 'later');
+  const 판 = 새판(t, { 파일: {
+    '.gitattributes': '*.md text eol=lf\n*.signal filter=stage\n',
+    'set/a.md': 'base\n', [대상]: 바탕,
+  } });
+  const 워 = 판.워크트리('wt'), 횟수 = 수집중저장(판, 워, 1, 대상, 작업판);
+  워.쓰기(대상, 고른판);
+  워.쓰기('set/a.md', 'changed\r\n');
+  워.쓰기('set/z.signal', 'signal\n');
+  const { 조각만들기 } = require(path.join(REPO, 'tools', '내커밋.js'));
+  const id = 조각만들기(바탕, 고른판).묶음[0].id;
+  const r = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['set'], 조각: [[대상, id]], 메시지: '부분 조각', 실행: true });
+  assert.ok(횟수() >= 3);
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(판.원격파일(대상), 고른판);
+  assert.equal(판.원격파일('set/a.md'), 'changed\n');
+  assert.equal(워.읽기(대상), 작업판);
+});
+
+test('삭제를 담는 동안 파일이 복원되면 원격의 기존 파일을 보존한다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'a.txt': 'base\n', '.gitattributes': '*.signal filter=restore\n' } });
+  const 워 = 판.워크트리('wt');
+  워.g('config', 'filter.restore.clean', "printf 'restored\\n' > a.txt && cat");
+  fs.unlinkSync(path.join(워.폴더, 'a.txt'));
+  워.쓰기('z.signal', 'signal\n');
+  const 머리 = 판.원격머리();
+  const r = await 도구.올리기({ 저장소: 워.폴더, 모두: true, 실행: true, 메시지: '삭제 도중 복원' });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /a\.txt/);
+  assert.equal(워.읽기('a.txt'), 'restored\n');
+  assert.equal(판.원격머리(), 머리);
+});
+
+for (const 모두 of [false, true]) {
+  test(`${모두 ? '--모두에서 파일이' : '명시한 파일이'} 처음에는 바탕과 같아도 함께 담는 동안 바뀌면 멈춘다`, async (t) => {
+    const 판 = 새판(t, { 파일: { 'a.txt': 'base\n', '.gitattributes': '*.signal filter=edit\n' } });
+    const 워 = 판.워크트리('wt');
+    워.g('config', 'filter.edit.clean', "printf 'changed\\n' > a.txt && cat");
+    워.쓰기('z.signal', 'signal\n');
+    const 머리 = 판.원격머리();
+    const 인덱스 = path.join(워.gitdir(), 'index'), 이전 = 지문(인덱스);
+    const 범위 = 모두 ? { 모두: true } : { 경로들: ['a.txt', 'z.signal'] };
+    const r = await 도구.올리기({ 저장소: 워.폴더, ...범위, 실행: true, 메시지: '함께 변경' });
+    assert.equal(r.결과, '멈춤', JSON.stringify(r));
+    assert.match(r.이유, /a\.txt/);
+    assert.equal(워.읽기('a.txt'), 'changed\n');
+    assert.equal(판.원격머리(), 머리);
+    assert.equal(워.머리(), 머리);
+    assert.equal(지문(인덱스), 이전);
+  });
+}
+
+test('--모두로 추적 디렉터리를 심볼릭 링크로 바꾸면 원격에는 링크만 남는다', async (t) => {
+  const 판 = 새판(t, { 파일: { 'pkg/a.txt': 'old\n', 'target/a.txt': 'target\n' } });
+  const 워 = 판.워크트리('wt'), 링크 = path.join(워.폴더, 'pkg');
+  워.g('config', 'core.symlinks', 'true');
+  fs.unlinkSync(path.join(링크, 'a.txt'));
+  fs.rmdirSync(링크);
+  try { fs.symlinkSync('target', 링크, 'dir'); }
+  catch (e) {
+    if (process.platform === 'win32' && ['EPERM', 'EACCES'].includes(e.code)) return t.skip(`Windows 디렉터리 심볼릭 링크 생성 권한이 없다 (${e.code})`);
+    throw e;
+  }
+  const r = await 도구.올리기({ 저장소: 워.폴더, 모두: true, 실행: true, 메시지: '디렉터리를 링크로 교체' });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.match(워.g('ls-tree', 판.원격머리(), '--', 'pkg'), /^120000 blob /);
+  assert.equal(판.원격파일('pkg'), 'target');
+  assert.equal(판.원격에있나('pkg/a.txt'), false);
+  assert.equal(판.원격파일('target/a.txt'), 'target\n');
+});
+
+for (const [대상, 앞파일] of [['a.txt', false], ['a.txt', true], ['-a.txt', false]]) {
+  test(`CRLF 재대조는 이번에 지운 속성 파일의 예전 clean 필터를 되살리지 않는다 (${대상}, 앞선 파일 ${앞파일 ? '있음' : '없음'})`, async (t) => {
+    const 원본 = { [대상]: 'base\r\n', '.gitattributes': `${대상} filter=firstline\n` };
+    if (앞파일) 원본['!first.txt'] = 'base\n';
+    const 판 = 새판(t, { 파일: 원본 });
+    const 워 = 판.워크트리('wt');
+    워.g('config', 'filter.firstline.clean', 'head -n 1');
+    // 신호 파일은 .gitattributes 삭제 후에도 작동하고, 본문을 처음 담은 뒤 둘째 줄을 쓴다.
+    fs.writeFileSync(path.join(판.공용.gitdir(), 'info', 'attributes'), '*.signal filter=append\n');
+    워.g('config', 'filter.append.clean', `printf 'changed\\r\\nextra\\r\\n' > ${대상} && cat`);
+    fs.unlinkSync(path.join(워.폴더, '.gitattributes'));
+    워.쓰기(대상, 'changed\r\n');
+    if (앞파일) 워.쓰기('!first.txt', 'modified\n');
+    워.쓰기('z.signal', 'signal\n');
+    const 머리 = 판.원격머리();
+    const 옵션 = { 저장소: 워.폴더, 모두: true, 실행: true, 메시지: '옛 속성 제거' };
+    const r = await 도구.올리기(옵션);
+    assert.equal(r.결과, '멈춤', JSON.stringify(r));
+    assert.ok(r.이유.includes(대상), r.이유);
+    assert.equal(판.원격머리(), 머리);
+    const 재시도 = await 도구.올리기(옵션);
+    assert.equal(재시도.결과, '올림', JSON.stringify(재시도));
+    assert.equal(판.원격파일(대상), 'changed\r\nextra\r\n');
+  });
+}
+
+test('파일만 지정하면 인덱스의 -text 속성으로 보존된 CRLF를 정상적으로 올린다', async (t) => {
+  const 판 = 새판(t, { autocrlf: 'true', 파일: { 'a.txt': 'base\n', '.gitattributes': 'a.txt -text\n' } });
+  const 워 = 판.워크트리('wt');
+  fs.unlinkSync(path.join(워.폴더, '.gitattributes'));
+  워.쓰기('a.txt', 'changed\r\n');
+  const r = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['a.txt'], 줄끝그대로: true, 실행: true, 메시지: '그대로 보존' });
+  assert.equal(r.결과, '올림', JSON.stringify(r));
+  assert.equal(판.원격파일('a.txt'), 'changed\r\n');
+  assert.equal(판.원격파일('.gitattributes'), 'a.txt -text\n');
+});
+
+test('임시 인덱스가 파일을 건너뛰거나 삭제한 속성을 빈 파일로 남기면 커밋하지 않는다', (t) => {
+  const { git도구, 별도인덱스, 통째담아대조 } = require('../tools/lib/git-commit-core.cjs');
+  const 판 = 새판(t, { 파일: { '.gitattributes': '*.txt text\n', 'a.txt': 'original\n' } });
+  const git = git도구(판.공용.폴더);
+  const 바탕 = 판.공용.머리();
+  fs.unlinkSync(path.join(판.공용.폴더, '.gitattributes'));
+  for (const 플래그 of ['assume-unchanged', 'skip-worktree']) {
+    const 인덱스 = 별도인덱스(git, 바탕);
+    try {
+      git(['update-index', '--' + 플래그, '--', 'a.txt'], { env: 인덱스.env });
+      assert.throws(() => 통째담아대조(git, 바탕, 인덱스.env, null, new Map()), new RegExp(플래그));
+    } finally {
+      인덱스.치우기();
+    }
+  }
+  const 인덱스 = 별도인덱스(git, 바탕);
+  try {
+    const 빈블롭 = git.글(['hash-object', '-w', '--stdin'], { input: Buffer.alloc(0) });
+    const 실행 = git.돌리기;
+    git.돌리기 = (args, 옵션) => {
+      const r = 실행(args, 옵션);
+      if (args.includes('add')) git(['update-index', '--add', '--cacheinfo', `100644,${빈블롭},.gitattributes`], { env: 옵션.env });
+      return r;
+    };
+    assert.throws(() => 통째담아대조(git, 바탕, 인덱스.env, null, new Map()), /삭제한 속성 파일이/);
+  } finally {
+    인덱스.치우기();
+  }
+});
+
+for (const [설정, 값] of [['core.ignoreStat', 'true'], ['GIT_LITERAL_PATHSPECS', '1'], ['GIT_ATTR_SOURCE', 'HEAD'], ['attr.tree', 'HEAD']]) {
+  test(`속성 파일을 삭제하면 ${설정} 설정에서도 본문 전체와 삭제를 올린다`, async (t) => {
+    const 판 = 새판(t, { 파일: { '!first.txt': 'first\n', '.gitattributes': 'a.txt filter=firstline\n', 'a.txt': 'base\n' } });
+    const 워 = 판.워크트리('wt');
+    const 로컬 = 판.워크트리('local');
+    워.g('config', 'filter.firstline.clean', 'head -n 1');
+    if (!설정.startsWith('GIT_')) 워.g('config', 설정, 값);
+    else {
+      const 이전 = process.env[설정];
+      t.after(() => { if (이전 === undefined) delete process.env[설정]; else process.env[설정] = 이전; });
+      process.env[설정] = 값;
+    }
+    for (const 사본 of [워, 로컬]) {
+      fs.unlinkSync(path.join(사본.폴더, '.gitattributes'));
+      사본.쓰기('a.txt', 'changed\nextra\n');
+    }
+    const 내커밋 = require(path.join(REPO, 'tools', '내커밋.js'));
+    const 커밋 = await 내커밋.커밋({ 저장소: 로컬.폴더, 경로들: ['.gitattributes', 'a.txt'], 실행: true, 메시지: '속성 삭제와 본문' });
+    assert.equal(커밋.결과, '커밋함', JSON.stringify(커밋));
+    assert.equal(로컬.g('ls-tree', '--name-only', 'HEAD', '--', '.gitattributes'), '');
+    assert.equal(로컬.g('show', 'HEAD:a.txt'), 'changed\nextra\n');
+    const r = await 도구.올리기({ 저장소: 워.폴더, 모두: true, 실행: true, 메시지: '속성 삭제와 본문' });
+    assert.equal(r.결과, '올림', JSON.stringify(r));
+    assert.equal(판.원격에있나('.gitattributes'), false);
+    assert.equal(판.원격파일('a.txt'), 'changed\nextra\n');
+  });
+}
 
 test('워크트리: 조각으로 일부만 올리면 남은 내 고침은 올린 판을 바탕으로 3방향 — 붙어 있는 코드 줄도 따라간다', async (t) => {
   const 바탕글 = 'const a1 = 1;\nconst a2 = 2;\nconst a3 = 3;\nconst a4 = 4;\n';

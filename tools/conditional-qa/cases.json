@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 153,
+  "expectedCount": 156,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1227,6 +1227,30 @@
       "file": "tests/컷연속성검사.test.js",
       "name": "색감 값(--그림 · --받음) — 컷마다 값을 적고, 같은 장면에서 튀는 컷과 받은 영상이 시작 그림 색감에서 벗어난 컷은 확인",
       "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S154",
+      "file": "tests/내커밋.test.js",
+      "name": "내커밋은 선택하지 않은 속성 파일이 심볼릭 링크여도 인덱스의 clean을 적용한다",
+      "group": "Git 수집 중 파일·디렉터리 심볼릭 링크",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S155",
+      "file": "tests/바로올리기_워크트리.test.js",
+      "name": "--모두로 추적 디렉터리를 심볼릭 링크로 바꾸면 원격에는 링크만 남는다",
+      "group": "Git 수집 중 파일·디렉터리 심볼릭 링크",
+      "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S156",
+      "file": "tests/판본글잇기.test.js",
+      "name": "CI 커밋에 저장된 LAB 판본 글과 원고의 UTF-8, JSON, 판본글 형식",
+      "group": "커밋 SHA로 LAB 판본 글·원고 전수 검사",
       "route": "linux",
       "profile": "default"
     }

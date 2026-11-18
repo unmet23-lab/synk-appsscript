@@ -19,7 +19,7 @@ const 올림장부도구 = require('./올림장부.cjs');
 const {
   git도구, 저장소찾기, 경로맞추기, 잠깐, 별도인덱스, 날차이읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, git버전확인,
   잠금기다리기, 줄바꿈채우기, 줄셈, 뚜렷한줄, 글로, 바이트로, 보이게, 이진인가, 멈춤, 사용법오류,
-  트리항목들, 고름맞추기, 조각보기, 메시지만들기, 남의스테이징,
+  트리항목들, 고름맞추기, 조각보기, 메시지만들기, 남의스테이징, 통째담아대조, 인덱스차이,
 } = require('./git-commit-core.cjs');
 
 const 다시한도 = 5;
@@ -136,14 +136,12 @@ function C만들기(c, 머리B, 일) {
   try {
     const 통째 = 일.경로들.filter((p) => !일.조각.has(p) || 일.조각.get(p) === '전부');
     const 고른 = 일.경로들.filter((p) => 일.조각.has(p) && 일.조각.get(p) !== '전부');
-    if (일.모두) {
-      const r = git.돌리기(['add', '-A'], { env: 인덱스.env, 허용: null });
-      if (r.status !== 0) throw new 멈춤(`바뀐 것을 올리지 못했다 — ${String(r.stderr).trim()}`);
-    } else if (통째.length) {
-      const r = git.돌리기(['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
-        { env: 인덱스.env, input: `${통째.join('\0')}\0`, 허용: null });
-      if (r.status !== 0) throw new 멈춤(`경로를 올리지 못했다 — ${String(r.stderr).trim().split('\n').filter((l) => !/^warning:/.test(l)).join(' ')}`);
+    const 차이 = () => 인덱스차이(git, B, 인덱스.env);
+    let 바뀜 = [];
+    if (일.모두 || 통째.length) {
+      바뀜 = 통째담아대조(git, B, 인덱스.env, 일.모두 ? null : 통째, 일.조각);
     }
+    const 변환경로 = new Set(바뀜.filter(e => e.변환됨).map(e => e.경로));
     const 조각들 = [];
     const 바탕항 = 트리항목들(git, B, 고른);
     for (const p of 고른) {
@@ -162,8 +160,7 @@ function C만들기(c, 머리B, 일) {
       조각들.push(조각보기(p, 묶음, 바탕줄, N, 고름));
     }
 
-    const 차이 = () => 날차이읽기(git(['diff-index', '--cached', '--no-renames', '--no-abbrev', '-z', B], { env: 인덱스.env }));
-    let 바뀜 = 차이();
+    if (고른.length) 바뀜 = 차이();
     if (!일.모두) {
       const 밖 = 바뀜.filter((e) => !일.경로들.some((p) => e.경로 === p || e.경로.startsWith(`${p}/`)));
       if (밖.length) throw new 멈춤(`준 경로 밖이 섞였다: ${밖.map((e) => e.경로).join(', ')}`);
@@ -222,7 +219,7 @@ function C만들기(c, 머리B, 일) {
     }
     const 트리 = git.글(['write-tree'], { env: 인덱스.env });
     const C = git.글(['commit-tree', 트리, '-p', B, '-F', '-'], { input: Buffer.from(일.메시지 || '(미리 보기)\n', 'utf8') });
-    return { 결과: '만듦', C, 바뀜, 조각보기: 조각들, 줄끝고침 };
+    return { 결과: '만듦', C, 바뀜, 조각보기: 조각들, 줄끝고침, 변환경로 };
   } finally {
     인덱스.치우기();
   }
@@ -1648,6 +1645,7 @@ async function 올리기(옵션 = {}) {
       if (검사.문제.length) return { 결과: '멈춤', 이유: 검사멈춤이유(검사.문제), 문제: 검사.문제, 용량: 검사.용량, ...요약 };
       요약.머리 = 계획.머리;
       요약.수 = 줄수(git, O, 계획.머리);
+      for (const 항 of 요약.수) if (만든.변환경로.has(항.경로)) 항.변환됨 = true;
       요약.용량 = 검사.용량;
       const 크기 = 크기알림(git, O, 계획.머리, new Set(요약.수.map((x) => x.경로)));
       if (크기) 요약.크기알림 = 크기;

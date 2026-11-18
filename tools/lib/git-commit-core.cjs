@@ -38,6 +38,9 @@ const 판머리길이 = 60;
 const 짝찾기여유 = 2 * 86400;
 const 영 = /^0+$/;
 const 위치환경 = /^GIT_(DIR|WORK_TREE|INDEX_FILE|COMMON_DIR|OBJECT_DIRECTORY|ALTERNATE_OBJECT_DIRECTORIES|NAMESPACE|PREFIX)$/;
+const 별도환경들 = new WeakSet();
+const 외부선택환경 = /^GIT_(?:(?:LITERAL|GLOB|NOGLOB|ICASE)_PATHSPECS|ATTR_SOURCE)$/i;
+const 별도설정 = ['-c', 'core.ignoreStat=false', '-c', 'core.fscache=false', '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', '-c', 'attr.tree='];
 const 좋은결과 = new Set(['미리 보기', '커밋함', '커밋할 것 없음', '올림', '올릴 것 없음']);
 
 class 멈춤 extends Error {
@@ -62,8 +65,11 @@ function 잠깐(ms) {
 function git도구(저장소) {
   const 바탕env = 기본환경();
   function 돌리기(args, { env, input, 허용 = [0] } = {}) {
-    const r = spawnSync('git', ['-c', 'core.quotepath=false', ...args], {
-      cwd: 저장소, env: { ...바탕env, ...env }, input, maxBuffer: 1024 * 1024 * 1024, windowsHide: true,
+    const 실행환경 = { ...바탕env, ...env };
+    const 별도 = 별도환경들.has(env);
+    if (별도) for (const k of Object.keys(실행환경)) if (외부선택환경.test(k)) delete 실행환경[k];
+    const r = spawnSync('git', ['-c', 'core.quotepath=false', ...(별도 ? 별도설정 : []), ...args], {
+      cwd: 저장소, env: 실행환경, input, maxBuffer: 1024 * 1024 * 1024, windowsHide: true,
     });
     if (r.error) throw r.error;
     if (허용 && !허용.includes(r.status)) {
@@ -96,8 +102,164 @@ function 경로맞추기(저장소, 입력, 기준폴더) {
 function 별도인덱스(git, 바탕) {
   const 파일 = path.join(os.tmpdir(), `synk-mycommit-${process.pid}-${Date.now()}-${crypto.randomBytes(3).toString('hex')}.index`);
   const env = { GIT_INDEX_FILE: 파일 };
+  별도환경들.add(env);
   git(['read-tree', 바탕], { env });
   return { 파일, env, 치우기() { fs.rmSync(파일, { force: true }); fs.rmSync(`${파일}.lock`, { force: true }); } };
+}
+
+function 인덱스차이(git, 바탕, env) {
+  return 날차이읽기(git(['diff-index', '--cached', '--no-renames', '--no-abbrev', '-z', 바탕], { env }));
+}
+
+function 속성파일상태(git, p) {
+  try {
+    return fs.lstatSync(path.join(git.저장소, p), { throwIfNoEntry: false });
+  } catch (e) {
+    if (e.code === 'ENOTDIR') return undefined;
+    throw new 멈춤(`${p}: 작업본의 속성 파일을 확인하지 못했다(${e.code}). 저장이 끝난 뒤 다시 시도한다`);
+  }
+}
+
+function 속성파일없음(git, p) {
+  const 상태 = 속성파일상태(git, p);
+  return !상태 || 상태.isDirectory();
+}
+
+function 인덱스플래그와속성(git, env) {
+  const 속성 = [];
+  let 희소;
+  for (const 줄 of git(['ls-files', '-v', '--stage', '-z'], { env }).toString('utf8').split('\0')) {
+    if (!줄) continue;
+    const 표식 = 줄[0];
+    const p = 줄.slice(줄.indexOf('\t') + 1);
+    if (표식 !== 표식.toUpperCase()) throw new 멈춤(`${p}: 임시 인덱스가 작업본 변경을 무시한다(assume-unchanged)`);
+    if (표식 === 'S') {
+      if (희소 === undefined) 희소 = git.돌리기(['config', '--bool', '--get', 'core.sparseCheckout'], { env, 허용: [0, 1] }).stdout.toString().trim() === 'true';
+      if (!희소) throw new 멈춤(`${p}: 희소 체크아웃 밖에서 임시 인덱스가 작업본을 건너뛴다(skip-worktree)`);
+      continue;
+    }
+    if ((p === '.gitattributes' || p.endsWith('/.gitattributes')) && /^. 100(644|755) /.test(줄)) 속성.push(p);
+  }
+  return 속성;
+}
+
+function 지울속성비우기(git, 바탕, env, 경로들) {
+  const 속성 = 인덱스플래그와속성(git, env).filter(p =>
+    (!경로들 || 경로들.some(q => q === p || p.startsWith(q + '/'))) && 속성파일없음(git, p));
+  if (!속성.length) return [];
+  // rm은 희소 체크아웃 밖에서 보이지 않는 속성 파일을 보존한다. 이 명령은 별도 인덱스에만 적용한다.
+  git(['--literal-pathspecs', 'rm', '--cached', '-f', '-q', '--ignore-unmatch', '--pathspec-from-file=-', '--pathspec-file-nul'], {
+    env, input: 속성.join('\0') + '\0',
+  });
+  const 지울 = 인덱스차이(git, 바탕, env);
+  if (!지울.length) return [];
+  // 빈 속성은 삭제와 같은 규칙을 주면서, 이어지는 add에서 삭제 경로와 그 상위 폴더를 원래대로 지정할 수 있게 한다.
+  const 빈블롭 = git.글(['hash-object', '-w', '--stdin'], { env, input: Buffer.alloc(0) });
+  git(['update-index', '-z', '--index-info'], { env, input: 지울.map(e => `${e.옛모드} ${빈블롭}\t${e.경로}\0`).join('') });
+  인덱스플래그와속성(git, env);
+  return 지울.map(e => e.경로);
+}
+
+/** 파일 하나를 스트리밍해 Git blob 지문을 구한다. 읽는 동안 파일을 교체하거나 고치면 중단한다. */
+function 작업본블롭지문(git, e, 버퍼) {
+  const 파일 = path.join(git.저장소, e.경로);
+  try {
+    const 원래 = fs.lstatSync(파일, { bigint: true });
+    if (!원래.isFile()) throw new Error('일반 파일이 아니다');
+    const 같은파일 = s => s.dev === 원래.dev && s.ino === 원래.ino && s.mode === 원래.mode &&
+      s.size === 원래.size && s.mtimeNs === 원래.mtimeNs && s.ctimeNs === 원래.ctimeNs;
+    const fd = fs.openSync(파일, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0) | (fs.constants.O_NONBLOCK || 0));
+    try {
+      if (!같은파일(fs.fstatSync(fd, { bigint: true }))) throw new Error('파일이 바뀌었다');
+      const 지문 = crypto.createHash(e.새.length === 64 ? 'sha256' : 'sha1').update(`blob ${원래.size}\0`);
+      let 읽음 = 0n, n;
+      while ((n = fs.readSync(fd, 버퍼, 0, 버퍼.length, null)) > 0) {
+        지문.update(버퍼.subarray(0, n));
+        읽음 += BigInt(n);
+      }
+      if (읽음 !== 원래.size || !같은파일(fs.fstatSync(fd, { bigint: true })) ||
+          !같은파일(fs.lstatSync(파일, { bigint: true }))) throw new Error('읽는 동안 파일이 바뀌었다');
+      return { 지문: 지문.digest('hex'), 상태: [원래.dev, 원래.ino, 원래.mode, 원래.size, 원래.mtimeNs, 원래.ctimeNs].join('/') };
+    } finally { fs.closeSync(fd); }
+  } catch (오류) { throw new 멈춤(`${e.경로}: 작업본 전체를 읽지 못했다 (${오류.code || 오류.message}). 파일 저장이 끝난 뒤 다시 시도한다`); }
+}
+
+function 통째인가(경로, 조각) {
+  return !조각.has(경로) || 조각.get(경로) === '전부';
+}
+
+function 통째대조중단(경로) {
+  throw new 멈춤(`${경로}: 인덱스와 작업본 전체의 내용이나 파일 종류가 다르다. 파일 저장이 끝난 뒤 다시 시도한다`);
+}
+
+/** 부분 조각은 뒤에서 별도로 담는다. 통째 경로는 두 add 사이의 추가·삭제·모드·본문을 모두 확인한다. */
+function 통째후보비교(후보, 다시담은, 조각) {
+  const 현재 = new Map(다시담은.filter(e => 통째인가(e.경로, 조각)).map(e => [e.경로, e]));
+  for (const e of 후보) {
+    if (!통째인가(e.경로, 조각)) continue;
+    const 새 = 현재.get(e.경로);
+    if (!새 || 새.새 !== e.새 || 새.새모드 !== e.새모드) 통째대조중단(e.경로);
+    현재.delete(e.경로);
+  }
+  for (const p of 현재.keys()) 통째대조중단(p);
+}
+
+/** 변환이 필요하면 별도 add를 사이에 두고 통째 일반 파일 전부의 원본 지문과 상태를 대조한다. */
+function 통째바이트대조(git, 바탕, 경로들, 후보, 조각 = new Map()) {
+  const 버퍼 = Buffer.allocUnsafe(1024 * 1024), 원본들 = new Map(), 변환 = [];
+  for (const e of 후보) {
+    if (!/^100(?:644|755)$/.test(e.새모드) || !통째인가(e.경로, 조각)) continue;
+    const 원본 = 작업본블롭지문(git, e, 버퍼);
+    원본들.set(e, 원본);
+    if (원본.지문 !== e.새) 변환.push(e);
+  }
+  if (!변환.length) return;
+  // CRLF·인코딩·필터와 인덱스 속성은 add가 해석한다. 원래 바탕·경로를 그대로 써야 한다.
+  const 독립판 = 별도인덱스(git, 바탕);
+  try {
+    통째후보비교(후보, 통째후보담기(git, 바탕, 독립판.env, 경로들), 조각);
+    for (const [e, 전] of 원본들) {
+      const 후 = 작업본블롭지문(git, e, 버퍼);
+      if (전.지문 !== 후.지문 || 전.상태 !== 후.상태) 통째대조중단(e.경로);
+    }
+    for (const e of 변환) e.변환됨 = true;
+  } finally { 독립판.치우기(); }
+}
+
+function 통째담아대조(git, 바탕, env, 경로들, 조각) {
+  const 후보 = 통째후보담기(git, 바탕, env, 경로들);
+  // 같은 바탕과 경로 선택에서 다시 add해야 인덱스의 줄끝·필터 규칙과 디렉터리의 파일 종류까지 같다.
+  const 대조판 = 별도인덱스(git, 바탕);
+  try {
+    통째후보비교(후보, 통째후보담기(git, 바탕, 대조판.env, 경로들), 조각);
+    통째바이트대조(git, 바탕, 경로들, 후보, 조각);
+    return 후보;
+  } finally {
+    대조판.치우기();
+  }
+}
+
+function 통째후보담기(git, 바탕, 환경, 경로들) {
+  const 비운속성 = 지울속성비우기(git, 바탕, 환경, 경로들);
+  const args = ['--literal-pathspecs', 'add', '-A'];
+  if (경로들) args.push('--pathspec-from-file=-', '--pathspec-file-nul');
+  const r = git.돌리기(args, { env: 환경, input: 경로들 ? 경로들.join('\0') + '\0' : undefined, 허용: null });
+  if (r.status !== 0) {
+    const 이유 = String(r.stderr).trim().split('\n').filter(l => !/^warning:/.test(l)).join(' ');
+    throw new 멈춤(`경로를 올리지 못했다 — ${이유}. 파일 저장이 끝난 뒤 다시 시도한다`);
+  }
+  const 변경 = 인덱스차이(git, 바탕, 환경);
+  if (비운속성.length) {
+    const 모드 = new Map(변경.map(e => [e.경로, e.새모드]));
+    for (const p of 비운속성) {
+      if (모드.get(p) === '000000') continue;
+      const 상태 = 속성파일상태(git, p);
+      if (!상태 || (상태.isDirectory() && 모드.get(p) !== '160000')) {
+        throw new 멈춤(`${p}: 삭제한 속성 파일이 임시 인덱스에 남았다. 저장이 끝난 뒤 다시 시도한다`);
+      }
+    }
+  }
+  return 변경;
 }
 
 /** diff-index·diff-tree의 -z 날 출력 → [{옛모드, 새모드, 옛, 새, 상태, 경로}] (없는 쪽 blob은 null) */
@@ -753,4 +915,4 @@ function 작업본맞추기(c, 새커밋, 줄끝고침, 읽은판) {
 }
 
 
-module.exports = { 공용문서, 맞춰붙일문서, 장부꼴, 차이한도, 겹침찾기한도, 판머리길이, 짝찾기여유, 영, 위치환경, 좋은결과, 멈춤, 사용법오류, 기본환경, 잠깐, git도구, 저장소찾기, 경로맞추기, 별도인덱스, 날차이읽기, 트리항목들, 블롭읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, 꼬리없는공용가지, 바로올리기안내, git버전확인, 글로, 바이트로, 보이게, 이진인가, 줄나누기, 줄잇기, 줄바꿈채우기, 줄차이, 마이어스, 조각나누기, 조각만들기, 고름읽기, 고름맞추기, 조각얹기, 줄끝맞추기, 줄셈, 셈빼기, 셈더하기, 넘는줄, 줄셈검사, 뚜렷한줄, 맞닿은겹침, 더한줄자리, 고친줄걷기, 자리맞춰붙이기, 장부덧붙이기, 판머리, 다른판줄, 갈린곳, 공용문서인가, 조각보기, 메시지만들기, 공용인덱스항목, 남의스테이징, 잠금기다리기, 공용인덱스맞추기, 작업본맞추기 };
+module.exports = { 공용문서, 맞춰붙일문서, 장부꼴, 차이한도, 겹침찾기한도, 판머리길이, 짝찾기여유, 영, 위치환경, 좋은결과, 멈춤, 사용법오류, 기본환경, 잠깐, git도구, 저장소찾기, 경로맞추기, 별도인덱스, 통째담아대조, 통째바이트대조, 인덱스차이, 날차이읽기, 트리항목들, 블롭읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, 꼬리없는공용가지, 바로올리기안내, git버전확인, 글로, 바이트로, 보이게, 이진인가, 줄나누기, 줄잇기, 줄바꿈채우기, 줄차이, 마이어스, 조각나누기, 조각만들기, 고름읽기, 고름맞추기, 조각얹기, 줄끝맞추기, 줄셈, 셈빼기, 셈더하기, 넘는줄, 줄셈검사, 뚜렷한줄, 맞닿은겹침, 더한줄자리, 고친줄걷기, 자리맞춰붙이기, 장부덧붙이기, 판머리, 다른판줄, 갈린곳, 공용문서인가, 조각보기, 메시지만들기, 공용인덱스항목, 남의스테이징, 잠금기다리기, 공용인덱스맞추기, 작업본맞추기 };

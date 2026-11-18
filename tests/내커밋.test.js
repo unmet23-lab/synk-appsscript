@@ -110,6 +110,106 @@ function 상태(저장) {
 
 // ── 순수 함수 ────────────────────────────────────────────────────────────────
 
+test('통째 바이트 대조는 두 Git 후보가 같은 잘림도 잡고 실제 clean·ident·인코딩 변환은 허용한다', (t) => {
+  const { git도구, 별도인덱스, 인덱스차이, 통째바이트대조 } = require('../tools/lib/git-commit-core.cjs');
+  const 속성 = '*.txt text eol=lf\n*.bin -text\n*.clean filter=upper\n*.keep filter=upper\n*.id ident\n*.wide working-tree-encoding=UTF-16LE\n*.reserved filter=unset\n*.fail filter=broken\n';
+  const 저장 = 새저장소(t, { 파일: { '.gitattributes': 속성, 'old.keep': 'BASE\r\n',
+    'old.wide': Buffer.from('원래\r\n', 'utf16le'),
+    'nested/.gitattributes': '*.mix working-tree-encoding=UTF-16LE\n' } });
+  저장.git('config', 'core.autocrlf', 'true');
+  저장.git('config', 'filter.upper.clean', "tr 'a-z' 'A-Z'");
+  저장.git('config', 'filter.unset.clean', "tr 'a-z' 'A-Z'");
+  저장.git('config', 'filter.broken.clean', 'false');
+  const 원본 = { '생.txt': '가\r\n나🙂\r\n', '생.bin': Buffer.from([0, 13, 10, 255]), 'a.clean': 'mixed case\n',
+    'old.keep': 'mixed case\r\n', 'b.id': '$Id: expanded $\n', 'c.wide': Buffer.from('판본\n', 'utf16le'),
+    'old.wide': Buffer.from('판본\r\n', 'utf16le'), 'word.reserved': 'mixed case\n' };
+  for (const [p, 내용] of Object.entries(원본)) 저장.쓰기(p, 내용);
+  const git = git도구(저장.작업본);
+  for (const 속성있음 of [true, false]) {
+    if (!속성있음) fs.unlinkSync(path.join(저장.작업본, '.gitattributes'));
+    const 판 = 별도인덱스(git, 'HEAD');
+    try {
+      // 선택하지 않은 속성 파일이 작업본에서 없어도 add는 바탕 인덱스의 규칙을 적용한다.
+      git(['add', '--', ...Object.keys(원본)], { env: 판.env });
+      const 후보 = 인덱스차이(git, 'HEAD', 판.env);
+      const 예상 = { '생.txt': '가\n나🙂\n', '생.bin': 원본['생.bin'], 'a.clean': 'MIXED CASE\n', 'old.keep': 'MIXED CASE\r\n', 'b.id': '$Id$\n',
+        'c.wide': '판본\n', 'old.wide': '판본\r\n', 'word.reserved': 'MIXED CASE\n' };
+      for (const e of 후보) assert.deepEqual(git(['cat-file', 'blob', e.새]), Buffer.from(예상[e.경로]), e.경로);
+      assert.doesNotThrow(() => 통째바이트대조(git, 'HEAD', Object.keys(원본), 후보), 속성있음 ? '작업본 속성' : '인덱스 속성');
+      for (const e of 후보) {
+        const 손상 = e.경로 === '생.bin' ? Buffer.from([0, 10, 255]) : Buffer.from(예상[e.경로]).subarray(0, 2);
+        const 잘림 = git.글(['hash-object', '-w', '--no-filters', '--stdin'], { input: 손상 });
+        git(['update-index', '-z', '--index-info'], { env: 판.env, input: `${e.새모드} ${잘림}\t${e.경로}\0` });
+        assert.throws(() => 통째바이트대조(git, 'HEAD', [e.경로], [{ ...e, 새: 잘림 }]), /인덱스.*작업본 전체/, e.경로);
+      }
+    } finally { 판.치우기(); }
+  }
+  // 작업본 상위 규칙과 인덱스 하위 규칙이 함께 작동한다. 작업본만 쓰거나 인덱스만 쓰면 다른 바이트다.
+  저장.쓰기('.gitattributes', '*.mix filter=upper\n');
+  fs.unlinkSync(path.join(저장.작업본, 'nested', '.gitattributes'));
+  저장.쓰기('nested/new.mix', Buffer.from('mixed case\n', 'utf16le'));
+  const 판 = 별도인덱스(git, 'HEAD');
+  try {
+    git(['add', '--', 'nested/new.mix'], { env: 판.env });
+    const 후보 = 인덱스차이(git, 'HEAD', 판.env);
+    assert.deepEqual(git(['cat-file', 'blob', 후보[0].새]), Buffer.from('MIXED CASE\n'));
+    assert.doesNotThrow(() => 통째바이트대조(git, 'HEAD', ['nested/new.mix'], 후보), '혼합 속성');
+  } finally { 판.치우기(); }
+  fs.unlinkSync(path.join(저장.작업본, '.gitattributes'));
+  저장.쓰기('nested/.gitattributes', '*.fail eol=lf\n');
+  저장.쓰기('nested/new.fail', 'one\ntwo\n');
+  const 깨진판 = 별도인덱스(git, 'HEAD');
+  try {
+    const 대상 = 'nested/new.fail';
+    git(['add', '--', 대상], { env: 깨진판.env });
+    const [정상] = 인덱스차이(git, 'HEAD', 깨진판.env);
+    assert.deepEqual(git(['cat-file', 'blob', 정상.새]), Buffer.from('one\ntwo\n'));
+    const 잘림 = git.글(['hash-object', '-w', '--no-filters', '--stdin'], { input: 'one\n' });
+    git(['update-index', '-z', '--index-info'], { env: 깨진판.env, input: `100644 ${잘림}\t${대상}\0` });
+    const 손상 = 인덱스차이(git, 'HEAD', 깨진판.env);
+    assert.throws(() => 통째바이트대조(git, 'HEAD', [대상], 손상), /인덱스.*작업본 전체/);
+  } finally { 깨진판.치우기(); }
+});
+
+test('내커밋은 선택하지 않은 속성 파일이 심볼릭 링크여도 인덱스의 clean을 적용한다', async (t) => {
+  const 저장 = 새저장소(t, { 파일: { '.gitattributes': '*.clean filter=upper\n', '다른속성': '*.clean -filter\n' } });
+  저장.git('config', 'filter.upper.clean', "tr 'a-z' 'A-Z'");
+  const 파일 = path.join(저장.작업본, '.gitattributes');
+  fs.unlinkSync(파일);
+  try { fs.symlinkSync('다른속성', 파일, 'file'); }
+  catch (e) {
+    if (process.platform === 'win32' && ['EPERM', 'EACCES'].includes(e.code)) return t.skip(`Windows 파일 심볼릭 링크 생성 권한이 없다 (${e.code})`);
+    throw e;
+  }
+  저장.쓰기('a.clean', 'mixed case\n');
+  const 결과 = await 도구.커밋({ 저장소: 저장.작업본, 경로들: ['a.clean'], 메시지: '인덱스 속성', 실행: true });
+  assert.equal(결과.결과, '커밋함', JSON.stringify(결과));
+  assert.equal(저장.git('show', 'HEAD:a.clean'), 'MIXED CASE\n');
+  assert.equal(저장.git('show', 'HEAD:.gitattributes'), '*.clean filter=upper\n');
+});
+
+test('독립 add에서 처음 보이는 변경과 같은 바이트로 다시 저장한 파일도 거절한다', (t) => {
+  const { git도구, 별도인덱스, 인덱스차이, 통째바이트대조 } = require('../tools/lib/git-commit-core.cjs');
+  const 저장 = 새저장소(t, { 파일: { '.gitattributes': 'a.txt text eol=lf\nz.signal filter=touch\n', 'later': 'base\n',
+    'touch.cjs': "const fs = require('node:fs'); fs.utimesSync(process.argv[2], 10000, 10000); process.stdout.write(fs.readFileSync(0));\n" } });
+  저장.쓰기('a.txt', 'hello\r\n');
+  저장.쓰기('b.bin', 'raw\n');
+  저장.쓰기('z.signal', 'signal\n');
+  const git = git도구(저장.작업본), 판 = 별도인덱스(git, 'HEAD');
+  try {
+    git(['add', '-A'], { env: 판.env });
+    const 후보 = 인덱스차이(git, 'HEAD', 판.env);
+    저장.쓰기('later', 'changed\n');
+    assert.throws(() => 통째바이트대조(git, 'HEAD', null, 후보), /later: 인덱스/);
+    저장.쓰기('later', 'base\n');
+    저장.git('config', 'filter.touch.clean', 'node touch.cjs b.bin');
+    assert.throws(() => 통째바이트대조(git, 'HEAD', null, 후보), /b\.bin: 인덱스/);
+    저장.git('config', 'filter.touch.clean', 'node touch.cjs a.txt');
+    assert.throws(() => 통째바이트대조(git, 'HEAD', null, 후보), /a\.txt: 인덱스/);
+    assert.equal(저장.읽기('a.txt'), 'hello\r\n');
+  } finally { 판.치우기(); }
+});
+
 test('줄 나누기는 줄끝을 그대로 들고 다시 이으면 원래 글이 된다', () => {
   const 글 = 'a\r\nb\nc';
   assert.deepEqual(도구.줄나누기(글), [{ 글: 'a', 끝: '\r\n' }, { 글: 'b', 끝: '\n' }, { 글: 'c', 끝: '' }]);
@@ -505,21 +605,25 @@ test('커밋: 폴더 경로는 그 아래 남의 파일이 섞일 수 있어 --�
   assert.deepEqual(저장.git('show', '--name-only', '--format=', 'HEAD').trim().split('\n').sort(), ['내폴더/둘.md', '내폴더/하나.md']);
 });
 
-test('커밋: 하위 git 저장소(gitlink)가 섞이면 멈춘다', async (t) => {
-  const 저장 = 새저장소(t, { 파일: { 'a.txt': 'a\n' } });
-  const 바탕 = 저장.머리();
-  const 안쪽 = path.join(저장.작업본, '안쪽');
-  fs.mkdirSync(안쪽);
-  const g = 깃(안쪽);
-  g('init', '-q', '-b', 'master');
-  쓰기(안쪽, 'x.txt', 'x\n');
-  g('add', 'x.txt');
-  g('commit', '-q', '-m', '안쪽');
-  const r = await 도구.커밋({ 저장소: 저장.작업본, 경로들: ['안쪽'], 메시지: '안쪽', 실행: true });
-  assert.equal(r.결과, '멈춤');
-  assert.match(r.이유, /하위 git 저장소/);
-  assert.equal(저장.머리(), 바탕);
-});
+for (const 경로 of ['안쪽', '.gitattributes']) {
+  test(`커밋: 하위 git 저장소(gitlink)가 섞이면 멈춘다 (${경로})`, async (t) => {
+    const 저장 = 새저장소(t, { 파일: { 'a.txt': 'a\n', '.gitattributes': '*.txt text\n' } });
+    const 바탕 = 저장.머리();
+    const 안쪽 = path.join(저장.작업본, 경로);
+    if (경로 === '.gitattributes') fs.unlinkSync(안쪽);
+    fs.mkdirSync(안쪽);
+    const g = 깃(안쪽);
+    g('init', '-q', '-b', 'master');
+    쓰기(안쪽, 'x.txt', 'x\n');
+    g('add', 'x.txt');
+    g('commit', '-q', '-m', '안쪽');
+    const r = await 도구.커밋({ 저장소: 저장.작업본, 경로들: [경로], 메시지: '안쪽', 실행: true });
+    assert.equal(r.결과, '멈춤');
+    assert.match(r.이유, /하위 git 저장소/);
+    assert.ok(r.이유.includes(경로), r.이유);
+    assert.equal(저장.머리(), 바탕);
+  });
+}
 
 test('커밋 미리 보기: 긴 조각도 줄 번호를 하나도 빼지 않고 보인다', async (t) => {
   const 트랙 = 'docs/_ops/트랙.md';
@@ -853,6 +957,41 @@ test('올리기: 저장 용량 검사에 걸리는 커밋은 올리지 않는다
   assert.equal(r.결과, '멈춤');
   assert.ok(r.문제.some((x) => /저장 용량\(blob-bytes/.test(x.이유)));
   assert.equal(저장.원격머리(), 바탕);
+});
+
+test('올리기: LAB 판본은 최종 커밋의 UTF-8·JSON·글 형식을 검사하고 깨진 원고의 수리와 삭제를 허용한다', async (t) => {
+  const 폴더 = 'docs/마케팅/LAB_시험/게시/판본/RU';
+  const 글 = `${폴더}/글.json`, 자름 = `${폴더}/원고_vk.json`, 인코딩 = `${폴더}/원고_rutube.json`;
+  const 지움 = `${폴더}/원고_폐기.json`;
+  const 저장 = 새저장소(t, { 원격: true, 파일: { [자름]: '{', [지움]: '{' } });
+  const 바탕 = 저장.원격머리();
+  저장.쓰기(글, '{}');
+  저장.쓰기(자름, '{"title":');
+  저장.쓰기(인코딩, Buffer.concat([Buffer.from('{"title":"'), Buffer.from([0xff]), Buffer.from('"}')]));
+  저장.git('rm', '-q', '--', 지움);
+  저장.git('add', '--', 폴더);
+  저장.git('commit', '-q', '-m', '깨진 판본');
+
+  const 정상글 = JSON.stringify({ 꼴: '판본글/1', 언어: 'ru', 줄: [{ id: '끝', 글: 'До встречи' }] });
+  저장.쓰기(글, 정상글);
+  저장.쓰기(자름, '{"title":"Увидимся"}');
+  저장.쓰기(인코딩, '{"title":"한글"}');
+  const 실패 = await 도구.올리기({ 저장소: 저장.작업본, 커밋들: [저장.머리()], 실행: true });
+  assert.equal(실패.결과, '멈춤');
+  for (const [경로, 이유] of [[글, /판본글 형식/], [자름, /JSON 구문/], [인코딩, /UTF-8/]]) {
+    assert.match(실패.문제.find((x) => x.경로 === 경로)?.이유 ?? '', 이유, 경로);
+  }
+  assert.equal(저장.원격머리(), 바탕);
+
+  저장.git('add', '--', 폴더);
+  저장.git('commit', '-q', '--amend', '-m', '수리한 판본');
+  저장.쓰기(글, '{'); // 작업 중인 파일과 추적하지 않는 초안은 이 후보에 속하지 않는다.
+  저장.쓰기(`${폴더}/원고_초안.json`, '{');
+  const 성공 = await 도구.올리기({ 저장소: 저장.작업본, 커밋들: [저장.머리()], 실행: true });
+  assert.equal(성공.결과, '올림', JSON.stringify(성공.문제));
+  assert.equal(저장.원격파일(글), 정상글);
+  assert.equal(저장.원격파일(자름), '{"title":"Увидимся"}');
+  assert.equal(저장.git('ls-tree', 'origin/master', '--', 지움), '');
 });
 
 test('올리기: 이미 다시 쌓아 올린 커밋을 또 주면 같은 내용이라 빈 커밋을 만들지 않는다', async (t) => {

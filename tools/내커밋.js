@@ -57,7 +57,7 @@ const { checkRepository } = require('./git-storage-check.cjs');
 const 공개검사 = require('./공개검사.js');
 const 올림장부도구 = require('./lib/올림장부.cjs');
 
-const { 공용문서, 맞춰붙일문서, 장부꼴, 차이한도, 겹침찾기한도, 판머리길이, 짝찾기여유, 영, 위치환경, 좋은결과, 멈춤, 사용법오류, 기본환경, 잠깐, git도구, 저장소찾기, 경로맞추기, 별도인덱스, 날차이읽기, 트리항목들, 블롭읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, 꼬리없는공용가지, 바로올리기안내, git버전확인, 글로, 바이트로, 보이게, 이진인가, 줄나누기, 줄잇기, 줄바꿈채우기, 줄차이, 마이어스, 조각나누기, 조각만들기, 고름읽기, 고름맞추기, 조각얹기, 줄끝맞추기, 줄셈, 셈빼기, 셈더하기, 넘는줄, 줄셈검사, 뚜렷한줄, 맞닿은겹침, 더한줄자리, 고친줄걷기, 자리맞춰붙이기, 장부덧붙이기, 판머리, 다른판줄, 갈린곳, 공용문서인가, 조각보기, 메시지만들기, 공용인덱스항목, 남의스테이징, 잠금기다리기, 공용인덱스맞추기, 작업본맞추기 } = require('./lib/git-commit-core.cjs');
+const { 공용문서, 맞춰붙일문서, 장부꼴, 차이한도, 겹침찾기한도, 판머리길이, 짝찾기여유, 영, 위치환경, 좋은결과, 멈춤, 사용법오류, 기본환경, 잠깐, git도구, 저장소찾기, 경로맞추기, 별도인덱스, 통째담아대조, 인덱스차이, 날차이읽기, 트리항목들, 블롭읽기, 블롭, 블롭쓰기, 글아닌경로, 조상인가, 꼬리없는공용가지, 바로올리기안내, git버전확인, 글로, 바이트로, 보이게, 이진인가, 줄나누기, 줄잇기, 줄바꿈채우기, 줄차이, 마이어스, 조각나누기, 조각만들기, 고름읽기, 고름맞추기, 조각얹기, 줄끝맞추기, 줄셈, 셈빼기, 셈더하기, 넘는줄, 줄셈검사, 뚜렷한줄, 맞닿은겹침, 더한줄자리, 고친줄걷기, 자리맞춰붙이기, 장부덧붙이기, 판머리, 다른판줄, 갈린곳, 공용문서인가, 조각보기, 메시지만들기, 공용인덱스항목, 남의스테이징, 잠금기다리기, 공용인덱스맞추기, 작업본맞추기 } = require('./lib/git-commit-core.cjs');
 const { 커밋풀기, 세판합치기, 같은셈, 같은변화, 올라간짝찾기, 쌓기, 올릴판검사, 공개문제, 검사멈춤이유, 로컬합치기 } = require('./lib/git-commit-plan.cjs');
 
 async function 커밋한번(c) {
@@ -78,11 +78,12 @@ async function 커밋한번(c) {
     for (const p of 통째) {
       try { const 파일 = path.join(c.저장소, p); if (fs.statSync(파일).isFile()) 읽은판.set(p, fs.readFileSync(파일)); } catch (_) {}
     }
+    const 차이 = () => 인덱스차이(git, 바탕, 인덱스.env);
+    let 바뀜 = [];
     if (통째.length) {
-      const r = git.돌리기(['--literal-pathspecs', 'add', '-A', '--pathspec-from-file=-', '--pathspec-file-nul'],
-        { env: 인덱스.env, input: `${통째.join('\0')}\0`, 허용: null });
-      if (r.status !== 0) throw new 멈춤(`경로를 올리지 못했다 — ${String(r.stderr).trim().split('\n').filter((l) => !/^warning:/.test(l)).join(' ')}`);
+      바뀜 = 통째담아대조(git, 바탕, 인덱스.env, 통째, c.조각);
     }
+    const 변환경로 = new Set(바뀜.filter(e => e.변환됨).map(e => e.경로));
 
     const 조각들 = [];
     const 바탕항 = 트리항목들(git, 바탕, 고른);
@@ -102,8 +103,7 @@ async function 커밋한번(c) {
       조각들.push(조각보기(p, 묶음, B, N, 고름));
     }
 
-    const 차이 = () => 날차이읽기(git(['diff-index', '--cached', '--no-renames', '--no-abbrev', '-z', 바탕], { env: 인덱스.env }));
-    let 바뀜 = 차이();
+    if (고른.length) 바뀜 = 차이();
     const 밖 = 바뀜.filter((e) => !c.경로들.some((p) => e.경로 === p || e.경로.startsWith(`${p}/`)));
     if (밖.length) throw new 멈춤(`준 경로 밖이 섞였다: ${밖.map((e) => e.경로).join(', ')}`);
     if (!바뀜.length) return { 결과: '커밋할 것 없음', 이유: '준 경로가 바탕과 같다', 가지, 바탕 };
@@ -165,6 +165,7 @@ async function 커밋한번(c) {
       if (m) 수.set(m[3], { 더함: m[1] === '-' ? null : Number(m[1]), 뺌: m[2] === '-' ? null : Number(m[2]) });
     }
     const 파일 = 바뀜.map((e) => ({
+      ...(변환경로.has(e.경로) ? { 변환됨: true } : {}),
       경로: e.경로, 상태: !e.옛 ? '추가' : !e.새 ? '지움' : '수정', ...(수.get(e.경로) || {}),
       ...(c.조각.has(e.경로) && c.조각.get(e.경로) !== '전부' ? { 조각: true } : {}),
     }));

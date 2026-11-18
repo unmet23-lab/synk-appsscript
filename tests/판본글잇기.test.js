@@ -677,6 +677,27 @@ test('CLI — 뽑기 · 돌림 · 확인(빈 판본은 건너뛰고 종료 1)', 
   assert.equal(돌려('뽑기').status, 2);
 });
 
+test('CI 커밋에 저장된 LAB 판본 글과 원고의 UTF-8, JSON, 판본글 형식', {
+  skip: !process.env.GITHUB_SHA && '로컬 올리기는 올릴판검사에서 바뀐 최종 blob을 검사한다',
+}, () => {
+  const { git도구, 블롭읽기 } = require('../tools/lib/git-commit-core.cjs');
+  const { LAB판본JSON, 판본JSON문제 } = require('../tools/lib/git-commit-plan.cjs');
+  const git = git도구(REPO);
+  const 목록 = git(['ls-tree', '-r', '-z', process.env.GITHUB_SHA, '--', 'docs/마케팅']).toString('utf8');
+  const 파일 = [];
+  for (const 항 of 목록.split('\0')) {
+    const 탭 = 항.indexOf('\t'), 경로 = 항.slice(탭 + 1);
+    if (LAB판본JSON.test(경로)) 파일.push({ 경로, sha: 항.slice(0, 탭).split(' ')[2] });
+  }
+  const 블롭 = 블롭읽기(git, new Map(), 파일.map((x) => x.sha));
+  const 오류 = [];
+  for (const { 경로, sha } of 파일) {
+    const 이유 = 판본JSON문제(경로, 블롭.get(sha));
+    if (이유) 오류.push(`${경로} — ${이유}`);
+  }
+  assert.deepEqual(오류, []);
+});
+
 test('저장소의 판본 지도는 꼴이 맞고, 글이 찬 판본은 판본글/1로 뽑힌다', () => {
   const 마케팅 = path.join(REPO, 'docs', '마케팅');
   const 편들 = fs.readdirSync(마케팅, { withFileTypes: true }).filter((d) => d.isDirectory() && fs.existsSync(path.join(마케팅, d.name, 잇기.지도이름))).map((d) => path.join(마케팅, d.name));
