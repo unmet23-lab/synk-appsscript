@@ -127,7 +127,10 @@ button,input{font:inherit;color:inherit}
 .obj[aria-current="true"],.obj:hover,.obj:focus-visible{color:var(--paper)}
 .obj:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
 /* 구 곁의 펼침: 갈 수 있는 공간이 구 옆으로 차례로 나온다 */
-.fan{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:1px;visibility:hidden;pointer-events:none;transition:visibility 0s linear .2s}
+.fan{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:1px;visibility:hidden;pointer-events:none;transition:visibility 0s linear .2s;
+  /* 창보다 길면 안에서 내린다. 왼쪽에서 들어오는 글과 초점 고리가 잘리지 않게 안쪽 여백을 두고 그만큼 당겨 놓는다 */
+  overflow-y:auto;scrollbar-width:none;padding:3px 4px 3px 18px;margin:-3px 0 0 -18px}
+.fan > *{flex:none}
 #stage[data-fan] .fan{visibility:visible;pointer-events:auto;transition:visibility 0s}
 .fan-go{appearance:none;background:none;border:0;margin:0;padding:8px 14px 8px 0;display:flex;align-items:baseline;gap:18px;color:var(--paper);cursor:pointer;text-align:left;border-radius:2px;opacity:0;transform:translateX(-16px);transition:opacity .16s ease,transform .16s ease}
 .fan-foot{margin:12px 0 0;display:flex;gap:22px;opacity:0;transform:translateX(-16px);transition:opacity .16s ease,transform .16s ease}
@@ -144,7 +147,8 @@ button,input{font:inherit;color:inherit}
 .fan-foot .quiet{border-bottom-color:transparent;color:rgba(243,241,236,.62)}
 .fan-foot .quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
 #stage[data-fan] #here-name,#stage[data-fan] .rail{opacity:0;pointer-events:none}
-#stage[data-fan] .room{opacity:.14}
+/* 펼친 동안 방은 흐리고 눌리지 않는다. 눌러서 연 펼침을 바깥을 눌러 닫을 때, 그 자리에 있던 흐린 줄이나 단추가 같이 눌리지 않게 한다 */
+#stage[data-fan] .room{opacity:.14;pointer-events:none}
 /* 방은 위에서부터 놓는다. 줄이 펼쳐져 길어져도 손 밑의 줄이 움직이지 않는다 */
 .room{position:absolute;left:clamp(20px,9.5cqw,168px);right:clamp(20px,9.5cqw,168px);top:clamp(92px,21cqh,196px);max-height:calc(100% - clamp(92px,21cqh,196px) - 70px);overflow-y:auto;scrollbar-width:none;display:none;padding-bottom:34px;transition:opacity .3s ease;-webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
 /* 방을 내리면 위쪽도 흐린다. 위쪽 끝에 걸린 줄의 글자가 반쯤 잘려 보이지 않게 한다. 맨 위에 있을 때는 아래쪽만 흐리다 */
@@ -347,7 +351,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 body.sized{background:#0d0d0d}
 body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:translate(-50%,-50%);width:var(--sw);height:var(--sh);min-height:0;border-radius:10px;box-shadow:0 0 0 1px rgba(243,241,236,.17),0 30px 90px rgba(0,0,0,.7);transition:width .85s cubic-bezier(.3,.7,.2,1),height .85s cubic-bezier(.3,.7,.2,1)}
 @media (prefers-reduced-motion:reduce){
-  .layer,.rise,.way,.sw,#meta{transition-duration:.01s !important;transition-delay:0s !important}
+  .layer,.rise,.way,.sw,.fan-go,.fan-foot,.more,#meta{transition-duration:.01s !important;transition-delay:0s !important}
   .room.enter > *{animation:none}
 }
 </style>
@@ -1345,12 +1349,15 @@ const sweep = [1, 1, 1], ptrPx = { x: -9999, y: -9999, t: 0, v: 0 };
 function layoutFan() {
   const b = orbBtn.getBoundingClientRect(), s = stage.getBoundingClientRect(), fr = fanR(), fan = $('#fan');
   const ox = b.left - s.left + b.width / 2 - 16, oy = b.top - s.top + b.height / 2 - 16, side = W >= 560;
-  fan.style.left = Math.round(side ? ox + fr * 2 + 26 : ox + 4) + 'px'; fan.style.top = Math.round(side ? oy + 2 : oy + fr * 2 + 16) + 'px';
+  const top = Math.round(side ? oy + 2 : oy + fr * 2 + 16);
+  fan.style.left = Math.round(side ? ox + fr * 2 + 26 : ox + 4) + 'px'; fan.style.top = top + 'px';
+  /* 아주 작은 창에서는 목록이 창 아래로 나간다(320×227에서 계정 · 설정 · 로그아웃이 잘렸다). 창 안에 들어오는 만큼만 보이고 그 안에서 내린다 */
+  fan.style.maxHeight = Math.max(72, H - top - 8) + 'px';
 }
 function openFan(pin = false) {
   if (pin) fanPin = true;
   if (fanOn || ui !== 'app' || tw) return;
-  const my = ++run; fanOn = true; stage.dataset.fan = '1'; snd.tick();
+  const my = ++run; fanOn = true; stage.dataset.fan = '1'; orbBtn.setAttribute('aria-expanded', 'true'); snd.tick();
   clearTimeout(fanTimer); fanTimer = 0; clearTimeout(fanLeave); fanLeave = 0;
   pointAt(null); S.spin = -LON[space]; S.ax = faceAx(space); sweep.fill(0); layoutFan();
   tween('fan', 440, easeOut);
@@ -1358,7 +1365,7 @@ function openFan(pin = false) {
 }
 async function closeFan() {
   if (!fanOn) return;
-  const my = ++run; fanOn = false; fanPin = false; delete stage.dataset.fan; pointAt(null); dropFanFocus();
+  const my = ++run; fanOn = false; fanPin = false; delete stage.dataset.fan; orbBtn.setAttribute('aria-expanded', 'false'); pointAt(null); dropFanFocus();
   clearTimeout(fanTimer); fanTimer = 0; clearTimeout(fanLeave); fanLeave = 0;
   await tween('home', 380, easeIO); if (my !== run) return;
   sweep.fill(1);
@@ -1393,8 +1400,8 @@ $$('.fan-go').forEach(b => {
   b.addEventListener('focus', () => pointAt(b.dataset.go));
   b.addEventListener('blur', () => pointAt(null));
 });
-/* 자판으로는 구나 이름에 초점이 오면 펼쳐진다 */
-[orbBtn, $('#here-name')].forEach(b => b.addEventListener('focus', () => { if (b.matches(':focus-visible')) openFan(true); }));
+/* 자판으로는 구나 이름에서 Enter, Space, 아래 화살표를 눌러야 펼쳐진다(누르는 것과 같다). 초점이 오는 것만으로는 펼치지 않는다.
+   앱이 스스로 구에 초점을 돌려줄 때(방을 닫은 뒤, 창으로 돌아온 뒤)마다 펼쳐지면 안 되고, Tab으로 지나갈 때 단추 여섯을 더 거치게 하지 않으려는 것이다 */
 /* 눌러서 열어 둔 것은 바깥을 누르면 닫힌다 */
 stage.addEventListener('pointerdown', e => { if (!fanOn || !fanPin) return; const s = stage.getBoundingClientRect(); if (!fanZone(e.clientX - s.left, e.clientY - s.top)) closeFan(); });
 
@@ -1519,10 +1526,11 @@ stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; ptrPx.x =
 document.addEventListener('keydown', e => {
   wakeMeta();
   const typing = e.target instanceof HTMLInputElement;
-  if (e.key === 'Escape') { if (fanOn) { closeFan(); orbBtn.blur(); $('#here-name').blur(); } else if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (ui === 'app' && $('.more.open')) { closeMores(true); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); } else if (ui === 'app' && stage.dataset.aside) closeAside(); else if (typing) e.target.blur(); return; }
+  if (e.key === 'Escape') { if (fanOn) { const inFan = $('#fan').contains(document.activeElement); closeFan(); if (inFan) orbBtn.focus({ preventScroll: true }); } else if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (ui === 'app' && $('.more.open')) { closeMores(true); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); } else if (ui === 'app' && stage.dataset.aside) closeAside(); else if (typing) e.target.blur(); return; }
   if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((e.key === 'Enter' || e.key === ' ') && stage.dataset.boot && !(e.target instanceof HTMLButtonElement && meta.contains(e.target))) { e.preventDefault(); hurryBoot(); return; }
   if (e.key === 'Enter' && ui === 'ask' && !stage.dataset.wait && !(e.target instanceof HTMLButtonElement)) { $('.way').click(); return; }
+  if (!fanOn && ui === 'app' && e.key === 'ArrowDown' && (e.target === orbBtn || e.target === $('#here-name'))) { e.preventDefault(); openFan(true); return; }
   if (fanOn && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
     const list = $$('#fan button'), i = list.indexOf(document.activeElement);
     e.preventDefault(); list[(i + (e.key === 'ArrowDown' ? 1 : list.length - 1) + (i < 0 && e.key === 'ArrowUp' ? 1 : 0)) % list.length].focus(); return;
