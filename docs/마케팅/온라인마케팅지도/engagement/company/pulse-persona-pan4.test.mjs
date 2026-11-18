@@ -1065,9 +1065,14 @@ test('의뢰 기록 시계 · 날짜를 못 읽는 옛 「지우는 중」 인�
   const f=await fixture(t);await f.features({personaRequest:true});
   const a=f.browser(),x=await f.readyPersona(a);
   f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),status:'deleting',pendingUnlink:[],revision:4,originActivityAt:'invalid-date',originActivityRev:3,deletion:{confirmedAt:isoOf(f.stamp),confirmedBy:f.owner.id,note:''}});
+  // 칸에는 읽을 수 있는 옛 날짜가 있으나 판 번호가 어긋났고 updatedAt을 못 읽는 인물 — 그 낡은 날짜를 맞는 값으로 남기지 않는다(-c GA1).
+  const b=f.browser(),y=await f.readyPersona(b);
+  f.store().put('pulsePersonas',y.personaId,{...personaOf(f,y.personaId),status:'deleting',pendingUnlink:[],revision:4,updatedAt:'invalid-date',originActivityAt:isoOf(f.stamp-140*DAY),originActivityRev:3,deletion:{confirmedAt:isoOf(f.stamp),confirmedBy:f.owner.id,note:''}});
   await f.restart();
   const tomb=personaOf(f,x.personaId);assert.equal(tomb.status,'deleted');
   assert.equal(tomb.originActivityAt,'invalid-date');assert.equal(tomb.originActivityRev,tomb.revision);
+  const other=personaOf(f,y.personaId);assert.equal(other.status,'deleted');assert.equal(other.originActivityAt,'unknown');assert.equal(other.originActivityRev,other.revision);
+  assert.deepEqual(requestClock(f.store(),projectOf(f,y.projectId),isoOf(f.stamp)),{unclear:'date'});
   await f.app.pulseRequests.retireUnconfirmed();
   assert.equal(personaOf(f,x.personaId).originActivityAt,'invalid-date','다음 채우기도 지운 때로 바꾸지 않는다');
   assert.deepEqual(requestClock(f.store(),projectOf(f,x.projectId),isoOf(f.stamp)),{unclear:'date'},'의뢰 기록은 지우지 않고 「날짜를 못 읽음」으로 센다');

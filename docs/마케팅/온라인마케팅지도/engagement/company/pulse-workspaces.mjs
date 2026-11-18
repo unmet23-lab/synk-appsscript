@@ -734,8 +734,9 @@ export function createWorkspaceService({store,clientProjects,features=null,local
       const legacy=originActivityAligned(current)?null:legacyOriginActivity(current,store);
       const kept=originActivityAligned(current)?{...tomb,originActivityAt:current.originActivityAt,originActivityRev:tomb.revision}
         :Number.isFinite(legacy)?{...tomb,originActivityAt:new Date(legacy).toISOString(),originActivityRev:tomb.revision}
-        // 날짜를 못 읽으면 묘비에도 못 읽는 채로 남긴다 — 칸을 버리면 다음 채우기가 지운 때를 날짜로 확정한다(GPT 서버 다시 검수 workspaces-b GA1).
-        :{...tomb,originActivityAt:typeof current.originActivityAt==='string'?current.originActivityAt:'unknown',originActivityRev:tomb.revision};
+        // 잴 수 없으면 묘비에도 못 읽는 값으로 남긴다 — 칸을 버리면 다음 채우기가 지운 때를, 어긋난 옛 날짜를 남기면 그 낡은 날짜를 맞는 값으로 확정한다
+        // (GPT 서버 다시 검수 workspaces-b GA1 · -c GA1). 원래 칸이 못 읽는 문자열이면 그대로, 아니면 unknown.
+        :{...tomb,originActivityAt:typeof current.originActivityAt==='string'&&!Number.isFinite(Date.parse(current.originActivityAt))?current.originActivityAt:'unknown',originActivityRev:tomb.revision};
       store.put(K.personas,kept.id,kept);
     });
   }
