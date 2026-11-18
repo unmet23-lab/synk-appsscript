@@ -806,6 +806,42 @@ test('빈 Gemini 재사용 — 초안 · 첨부 · 대화 · 진행 중 · 다�
   assert.equal(await run({ ...task, pages: async () => [...blocked, safe] }, 1, () => {}), safe, '숨은 사이드바 spinner만 있는 빈 Gemini는 재사용');
   const blank = make({ url: 'about:blank', error: true });
   assert.equal(await run({ ...task, pages: async () => [blank] }, 1, () => {}), blank, '일반 빈 탭은 DOM 검사 없이 사용');
+  const 제목 = make({ buttons: ['Stop-Motion End Card Creation 옵션 더보기', 'How to send message 옵션 더보기'] });
+  assert.equal(await run({ ...task, pages: async () => [제목] }, 1, () => {}), 제목, '사이드바 대화 제목의 Stop · send message는 빈 탭을 막지 않는다(11-19)');
+});
+
+test('멈춤 단추(11-19) — 사이드바 「<제목> 옵션 더보기」의 Stop은 답하는 중으로 안 보고, 진짜 「대답 생성 중지」만 본다 · 보냄 근거를 남긴다', async () => {
+  // 11-16 22시부터 77yuhbs 등의 사이드바에 「Stop-Motion End Card Creation」 대화가 생겨 모든 화면이 늘 「답하는 중」이었다 —
+  // 사라짐을 12분 「늦음 0자」로, 200자 아래 답을 끝내지 못함, 누른 뒤 2초 만에 「보냄」(현장노트 gemini_사진 11-19 절)
+  const s = 페이지();
+  const 문서 = (labels, extra = {}) => ({
+    body: { innerText: '' },
+    querySelector: () => ({ innerText: '' }),
+    querySelectorAll: (q) => q === 'button' ? labels.map((l) => ({ getAttribute: () => l }))
+      : q === 'model-response' ? (extra.mr || []).map((t) => ({ innerText: t }))
+      : q === 'user-query' ? (extra.uq || []).map((t) => ({ innerText: t })) : [],
+  });
+  const 돌려 = (블록, 이름, doc) => {
+    const AsyncFunction = (async () => {}).constructor;
+    const page = { evaluate: async (fn) => new Function('document', 'location', `return (${fn.toString()})();`)(doc, { pathname: '/u/2/app' }) };
+    return new AsyncFunction('page', `${블록}\nreturn await ${이름};`)(page);
+  };
+  const 사이드바 = ['Stop-Motion End Card Creation 옵션 더보기', 'Felt and Clay Stop-Motion End Card 옵션 더보기', '영상 생성 중지 요청 정리 옵션 더보기', '업로드 및 도구'];
+  const st = 덩이(s, 'const state = () => page.evaluate(');
+  const 빈 = await 돌려(st, 'state()', 문서(사이드바));
+  assert.equal(빈.busy, false, '빈 새 채팅 — 제목에 Stop · 생성 중지가 든 대화가 목록에 있어도 답하는 중이 아니다');
+  assert.equal(빈.busyLabel, '');
+  const 도는중 = await 돌려(st, 'state()', 문서([...사이드바, '대답 생성 중지']));
+  assert.equal(도는중.busy, true, '입력창의 「대답 생성 중지」는 그대로 잡는다');
+  assert.equal(도는중.busyLabel, '대답 생성 중지', '잡은 단추 이름을 돌려준다');
+  const an = 덩이(s, 'const answerNow = (p) => p.evaluate(').replace('const answerNow = (p) => p.evaluate(', 'const answerNow = () => page.evaluate(');
+  const 답 = await 돌려(an, 'answerNow()', 문서(사이드바, { mr: ['2'], uq: ['물음'] }));
+  assert.deepEqual([답.busy, 답.text, 답.uqN], [false, '2', 1], '답 읽기도 사이드바 제목을 멈춤 단추로 안 본다 — 짧은 답이 끝난다');
+  assert.equal((await 돌려(an, 'answerNow()', 문서([...사이드바, 'Stop response']))).busy, true, '영어 판 멈춤 단추도 그대로');
+  const 기다림 = 덩이(s, 'const waitAnswer = async');
+  assert.match(기다림, /step: "answer-read-error"/, '화면 읽기 실패를 단계 기록에 남긴다(0자 늦음을 가른다)');
+  assert.match(기다림, /step: "busy-label"/, '멈춤으로 잡힌 단추 이름을 남긴다');
+  assert.match(s, /log\(\{ step: "sent", url, 근거 \}\)/, '보냄으로 본 근거(주소 · 멈춤 단추 · 보낸 글)를 남긴다');
 });
 
 test('올리기 잠금 — 멈춘 주인 판단: 죽은 pid · 살아 있어도 상한 + 3분 넘김 · 줄 없이 쥔 옛 판은 치우고, 상한 안 · 줄을 쥔 옛 판 · 못 읽음은 기다린다', () => {

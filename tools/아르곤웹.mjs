@@ -64,13 +64,16 @@ const state = () => page.evaluate(() => {
   const labs = [...document.querySelectorAll("button")].map((b) => b.getAttribute("aria-label") || "");
   const mode = labs.find((t) => t.startsWith("모드 선택 도구 열기")) || "";
   const closes = labs.filter((t) => t === "첨부파일 닫기").length;
-  const busy = labs.some((t) => /대답 생성 중지|생성 중지|Stop/.test(t));
+  // 멈춤 단추 — 사이드바 대화마다 「<제목> 옵션 더보기」 단추가 있어, 제목에 Stop · 생성 중지가 든 대화(11-16 밤 「Stop-Motion End Card Creation」)가
+  // 목록에 있으면 화면이 늘 「답하는 중」으로 보였다(11-16 22시~11-19 — 사라짐을 12분 「늦음」으로 보고, 200자 아래 답은 끝내지 못함). 그 단추는 빼고 본다
+  const 중지 = labs.filter((t) => /대답 생성 중지|생성 중지|Stop/.test(t) && !/옵션 더보기$/.test(t));
+  const busy = 중지.length > 0;
   const ed = document.querySelector('[aria-label="Gemini 프롬프트 입력"]');
   const len = ed ? ed.innerText.replace(/\s+/g, "").length : -1;
   const text = document.body.innerText;
   const uqs = [...document.querySelectorAll("user-query")];
   return {
-    mode, closes, busy, len, path: location.pathname, uqN: uqs.length,
+    mode, closes, busy, busyLabel: 중지[0] || "", len, path: location.pathname, uqN: uqs.length,
     uq: uqs.length ? uqs[uqs.length - 1].innerText.slice(0, 3000) : "",
     failed: /업로드에 실패|실패한 파일/.test(text),
     limit: /한도는 .*초기화|사용량 한도/.test(text),
@@ -100,8 +103,9 @@ const 동의누르기 = async () => {
 const answerNow = (p) => p.evaluate(() => {
   const resp = [...document.querySelectorAll("model-response")];
   const el = resp[resp.length - 1];
-  const busy = [...document.querySelectorAll("button")].some((b) => /대답 생성 중지|생성 중지|Stop/.test(b.getAttribute("aria-label") || ""));
-  return { text: el ? el.innerText : "", busy, uqN: document.querySelectorAll("user-query").length, path: location.pathname };
+  // 사이드바 「<제목> 옵션 더보기」 단추는 뺀다(state()와 같은 까닭 — 11-16 밤부터 제목의 Stop이 멈춤 단추로 잡혔다)
+  const 중지 = [...document.querySelectorAll("button")].map((b) => b.getAttribute("aria-label") || "").filter((t) => /대답 생성 중지|생성 중지|Stop/.test(t) && !/옵션 더보기$/.test(t));
+  return { text: el ? el.innerText : "", busy: 중지.length > 0, busyLabel: 중지[0] || "", uqN: document.querySelectorAll("user-query").length, path: location.pathname };
 });
 // 보낸 글마다 글 전체와 보이는 그림 수(썸네일 크기만 — 작은 아이콘은 뺀다)
 const 보낸글읽기 = (p) => p.evaluate(() => [...document.querySelectorAll("user-query")].map((q) => ({
@@ -133,10 +137,20 @@ const writeMark = (url, more = {}) => {
 // 표시는 그대로 두고 옛 길대로 20분 뒤 읽기 — 화면이 새 채팅으로 튕겨도 대화가 생겼고 사이드바가 늦게 바뀐 일이 있다(10-19 지유 세트 셋 · GPT 검수 11-13)
 const waitAnswer = async (url, 빈답마감 = 0, 사라짐진단 = false) => {
   let last = "", same = 0, 고정 = 0, text = "", busy = true, 사라짐 = 0;
+  // 화면 읽기가 실패하면 「답 없음 · 답하는 중」으로 놓고 기다린다 — 그때 까닭과 멈춤으로 잡힌 단추 이름을 단계 기록에 남긴다(11-19: 0자 「늦음」이
+  // 읽기 실패인지 멈춤 단추 오판인지 기록만으로 못 갈랐다)
+  let 읽기오류 = "", 오류수 = 0;
+  const 본중지 = new Set();
   const t0 = Date.now();
   while (Date.now() - t0 < answerMs) {
     await page.waitForTimeout(5000);
-    const r = await answerNow(page).catch(() => ({ text: "", busy: true, uqN: -1, path: "" }));
+    const r = await answerNow(page).catch((e) => {
+      오류수 += 1;
+      const m = String((e && (e.code || e.message)) || e).slice(0, 160);
+      if (m !== 읽기오류) { 읽기오류 = m; log({ step: "answer-read-error", 번째: 오류수, why: m }); }
+      return { text: "", busy: true, uqN: -1, path: "" };
+    });
+    if (r.busyLabel && !본중지.has(r.busyLabel) && 본중지.size < 5) { 본중지.add(r.busyLabel); log({ step: "busy-label", label: r.busyLabel.slice(0, 80) }); }
     text = r.text;
     busy = r.busy;
     same = text && text === last && !busy ? same + 1 : 0;
@@ -153,7 +167,7 @@ const waitAnswer = async (url, 빈답마감 = 0, 사라짐진단 = false) => {
     if ((same >= 6 && text.length > 200) || same >= 12) return { text, url };
     if (빈답마감 && !text && !busy && Date.now() - t0 > 빈답마감) await fail(`대화는 있는데 답 글이 ${Math.round(빈답마감 / 1000)}초 동안 안 뜬다 — 다시 보내지 말고 손으로 본다: ${url}`, "없음");
   }
-  if (busy || text.length > 200) await fail(`답이 ${J.answerMin || 12}분 안에 안 끝남(${text.length}자) — 다시 보내지 말고 나중에 「읽기」`, "늦음");
+  if (busy || text.length > 200) await fail(`답이 ${J.answerMin || 12}분 안에 안 끝남(${text.length}자) — 다시 보내지 말고 나중에 「읽기」`, "늦음", { 읽기오류수: 오류수, 중지단추: [...본중지] });
   return await fail("답이 안 나옴: " + text.slice(0, 200));
 };
 const finish = async (text, url) => {
@@ -366,7 +380,7 @@ const 빈탭 = async () => {
       const ed = document.querySelector('[aria-label="Gemini 프롬프트 입력"]');
       if (!ed || document.querySelectorAll('user-query, model-response').length) return false;
       if ([...document.querySelectorAll('[contenteditable="true"], textarea')].some(e => String(e.innerText || e.value || '').trim())) return false;
-      if ([...document.querySelectorAll('button')].some(b => /첨부파일 닫기|메시지 보내기|대답 생성 중지|생성 중지|Stop|Send message/i.test(b.getAttribute('aria-label') || ''))) return false;
+      if ([...document.querySelectorAll('button')].some(b => { const l = b.getAttribute('aria-label') || ''; return !/옵션 더보기$/.test(l) && /첨부파일 닫기|메시지 보내기|대답 생성 중지|생성 중지|Stop|Send message/i.test(l); })) return false; // 사이드바 「<제목> 옵션 더보기」는 뺀다(11-19)
       return ![...document.querySelectorAll('[role="progressbar"], mat-spinner, mat-progress-spinner')].some(e => {
         const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0;
       });
@@ -791,7 +805,7 @@ if (mode === "읽기") {
     await 누름표시();
     await page.click('loc=css:[aria-label="메시지 보내기"]', { timeout: 15000, label: "send prompt" }).catch((e) => { clickErr = e.message; });
     // 보냈는지 — 대화 주소, 보낸 글의 지시문 앞머리, 멈춤 단추 가운데 하나. 60초가 지나도 보낸 글이 없고 입력창에 지시문이 그대로면 안 간 것.
-    let url = await page.url(), sent = false, notSent = false;
+    let url = await page.url(), sent = false, notSent = false, 근거 = "";
     const t1 = Date.now();
     while (Date.now() - t1 < sentWait) {
       await page.waitForTimeout(2000);
@@ -800,13 +814,15 @@ if (mode === "읽기") {
       url = await page.url().catch(() => url);
       if (st.consent && await 동의누르기()) continue; // 허락이 있으면 눌렀다 — 창이 닫히고 보내기가 이어지는지 다시 본다
       if (st.consent) await fail("보낸 뒤 영상 권리 동의 창 — 누르지 않고 멈춤(유호님 손)", "멈춤");
-      if (/\/app\/[0-9a-f]+/.test(url) || st.busy || (st.uqN > 0 && norm(st.uq).includes(promptHead))) { sent = true; break; }
+      // 근거를 남긴다 — 11-16 밤~11-19 사이드바 제목의 Stop을 멈춤 단추로 읽어 첫 2초에 늘 「보냄」이었다(누름이 안 먹어도 그랬을 것)
+      const 주소 = /\/app\/[0-9a-f]+/.test(url), 글 = st.uqN > 0 && norm(st.uq).includes(promptHead);
+      if (주소 || st.busy || 글) { sent = true; 근거 = [주소 && "주소", st.busy && `멈춤:${String(st.busyLabel || "").slice(0, 40)}`, 글 && "보낸글"].filter(Boolean).join(" · "); break; }
       if (Date.now() - t1 > 60_000 && st.uqN === 0 && Math.abs(st.len - promptLen) <= 3) { notSent = true; break; }
     }
     if (notSent) { await fs.unlink(mark).catch(() => {}); await fail(`보내기가 안 먹음 — 입력창에 지시문이 그대로다(다시 돌려도 된다)${clickErr ? " · " + clickErr : ""}`); }
     if (!sent) await fail("보낸 글도 대화 주소도 안 보임 — 다시 보내지 말고 사이드바 맨 위 대화부터 볼 것", "늦음");
     if (/\/app\/[0-9a-f]+/.test(url)) await writeMark(url);
-    log({ step: "sent", url });
+    log({ step: "sent", url, 근거 });
     const r = await waitAnswer(url, 0, true);
     log({ step: "net", ...받은진단(await 진단읽기()) }); // 받은 보내기의 요청 상태(본문 빼고) · 누를 때 올리는 중이던 수 — 사라짐과 견줄 바탕
     await finish(r.text, r.url);
