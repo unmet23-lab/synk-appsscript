@@ -449,6 +449,11 @@ if(!process.versions.electron){
           await w.js('window.__orbFixture.setSubs('+JSON.stringify(withUsed(40))+')');await wait(900);
           const kept=await w.js("(()=>{const b=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');return {fan:document.querySelector('#portal-entry .fan-go')===window.__fanNode,row:b===window.__rowNode,pin:b.classList.contains('pin'),open:document.querySelector('#portal-entry .orb-stage').dataset.fan==='1',val:(b.querySelector('.val')||{}).textContent||''};})()");
           check('17 a redraw keeps the open fan, its buttons and the pinned row as they were',/60%/.test(kept.val)&&kept.fan&&kept.row&&kept.pin&&kept.open,kept);
+          // 150%로 확대한 가장 작은 창(640×453)에서 솔리오 방이 위 84px에서 아래 24px 자리까지 실제로 내려온다(다시 검수 FA1: 선언만 보던 CSS 시험이 놓쳤다)
+          await key(w,'Escape');await until(w,s=>!s.fan,{timeout:2000});w.win.setContentSize(640,453);await wait(500);
+          const roomBox=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]').getBoundingClientRect();return {top:Math.round(r.top),bottom:Math.round(r.bottom),h:innerHeight};})()");
+          check('17 at 640×453 the Solio room reaches down to 24 px above the window bottom',Math.abs(roomBox.top-84)<=2&&Math.abs(roomBox.h-24-roomBox.bottom)<=2,roomBox);
+          w.win.setContentSize(1440,900);await wait(300);
           w.win.destroy();
           // 구독이 없는 계정의 방도 다섯 크기로 찍는다
           const w2=await open();await boot(w2,{subs:subsNone},{restore:signedIn('none')});

@@ -272,7 +272,7 @@ html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-
   #portal-entry .rail.near .obj:not([aria-current="true"]):not(:focus-visible) .obj-n{max-width:0;margin-left:0;opacity:0}
   /* 좁은 창에서는 줄이 다 들어가지 않으므로 방 안에서 스크롤한다 */
   /* 시안의 아래 78px는 시안 막대 자리라 앱에는 옮기지 않는다. 150%로 확대한 가장 작은 창(640×453)에서도 줄이 더 들어가게 24px로 둔다(최종 검수 F2) */
-  #portal-entry .room{top:clamp(84px,13vh,128px);transform:none;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
+  #portal-entry .room{top:clamp(84px,13vh,128px);transform:none;max-height:none;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5vw,168px) - 6px);right:calc(clamp(20px,9.5vw,168px) - 6px);padding:0 6px 18px;overflow-y:auto;scrollbar-width:none}
   /* 솔리오 방은 넓은 창처럼 아래 끝을 흐려, 줄이 방 아래로 이어진다는 것을 보인다. 내렸으면 위 끝도 흐린다 */
   #portal-entry .room[data-room^="solio"]{padding-bottom:34px;-webkit-mask-image:linear-gradient(#000 calc(100% - 30px),transparent);mask-image:linear-gradient(#000 calc(100% - 30px),transparent)}
   #portal-entry .room[data-room^="solio"].scrolled{-webkit-mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent)}
