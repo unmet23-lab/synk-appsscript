@@ -1,0 +1,58 @@
+{
+  "자동판정": {
+    "설명": "tools/게시성과.js가 회사 서버 기록으로 다시 쓴다(AI 없음). 판정 규칙과 칸 뜻은 docs/마케팅/게시성과.md",
+    "판": [
+      {
+        "계정": "yuhobuilds-instagram",
+        "채널": "인스타 @yuhobuilds",
+        "주소": "https://www.instagram.com/p/DfrlR1UEsFz/",
+        "형식": "instagram-post",
+        "게시": "2026-11-13T12:02:09.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회",
+          "도달",
+          "공유",
+          "저장",
+          "팔로우"
+        ]
+      },
+      {
+        "계정": "yuhobuilds-youtube",
+        "채널": "유튜브 @yuhobuilds",
+        "주소": "https://www.youtube.com/watch?v=8-26xWQ6ErE",
+        "형식": "youtube-video",
+        "게시": "2026-11-13T12:01:27.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {
+          "72시간": {
+            "관측": null,
+            "지표": {
+              "shares": 0,
+              "averageWatchSeconds": 19,
+              "averageViewPct": 45.41,
+              "subscribersGained": 0,
+              "subscribersLost": 0,
+              "views": 1306
+            },
+            "평소대비": null,
+            "위치": {},
+            "판정": "자료 부족",
+            "다음": null,
+            "까닭": "견줄 이전 편이 모자란다(공유 0편 · 평균 시청 0편 · 평균 조회율 0편 — 4편부터)"
+          }
+        },
+        "화면필요": [],
+        "화면": {
+          "읽은때": "2026-11-17T02:08:37.116Z",
+          "지표": {
+            "views": 1306
+          }
+        }
+      }
+    ]
+  }
+}
