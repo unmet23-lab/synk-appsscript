@@ -189,11 +189,52 @@ test('캠페인 만료·비활성과 토큰 소실은 기존 발송 오류 중�
   assert.equal(f.emails.length,4);
 });
 
+test('연결된 계정의 토큰은 서버 점검 시각에 만료되며 갱신하면 복구를 한 번 알린다', () => {
+  const f = fixture();
+  const checked = Date.now() - 120000;
+  f.payload.checked_at = new Date(checked).toISOString();
+  const account = f.payload.accounts[0];
+  account.dm_enabled = false;
+  account.token_expires_at = new Date(checked + 1000).toISOString();
+  f.payload.accounts[1].token_expires_at = new Date(checked - 1000).toISOString();
+  assert.equal(f.run().state, 'baseline');
+  account.token_expires_at = f.payload.checked_at;
+  f.payload.healthy = false;
+  assert.equal(f.run().state, 'sent');
+  assert.match(f.emails[0].body, /@yuhobuilds \| token-expired/);
+  assert.doesNotMatch(f.emails[0].body, /@unconfigured|ops-status \| unhealthy/);
+  assert.equal(f.run().state, 'unchanged');
+  account.token_expires_at = new Date(checked + 86400000).toISOString();
+  f.payload.healthy = true;
+  assert.equal(f.run().state, 'sent');
+  assert.match(f.emails[1].subject, /운영 복구/);
+  assert.equal(f.run().state, 'unchanged');
+  assert.equal(f.emails.length, 2);
+});
+
+test('다른 장애 중에도 새로 만료된 계정을 알리고, 기한이 비어 있으면 만료로 표시하지 않는다', () => {
+  const f = fixture();
+  breakAccount(f, 'send-failed');
+  const other = { username: 'second_account', connected: true, health: 'ok' };
+  f.payload.accounts.push(other);
+  assert.equal(f.run().state, 'sent');
+  other.token_expires_at = null;
+  assert.equal(f.run().state, 'unchanged');
+  other.token_expires_at = new Date(Date.parse(f.payload.checked_at) - 1).toISOString();
+  assert.equal(f.run().state, 'sent');
+  assert.match(f.emails[1].body, /@yuhobuilds \| send-failed/);
+  assert.match(f.emails[1].body, /@second_account \| token-expired/);
+  assert.equal(f.run().state, 'unchanged');
+  assert.equal(f.emails.length, 2);
+});
+
 test('의도적으로 꺼 둔 미연결 계정은 무경보이고 ON 연결 소실은 서버 전체 정상이어도 숨기지 않는다',()=>{
   const f=fixture();Object.assign(f.payload.accounts[1],{dm_enabled:false,issue_codes:[]});
   assert.equal(f.run().state,'baseline');assert.equal(f.emails.length,0);
   f.payload.accounts[1].dm_enabled=true;f.payload.accounts[1].health='ok';
+  f.payload.accounts[1].token_expires_at = new Date(Date.parse(f.payload.checked_at) - 1).toISOString();
   assert.equal(f.run().state,'sent');assert.match(f.emails[0].body,/@unconfigured \| token-missing/);
+  assert.doesNotMatch(f.emails[0].body, /token-expired/);
 });
 
 test('기한을 넘긴 미전달 큐는 알리되 건수 변화와 같은 장애는 재발송하지 않는다',()=>{

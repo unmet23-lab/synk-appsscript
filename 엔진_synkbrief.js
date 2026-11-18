@@ -680,6 +680,8 @@ function synkbrief_운영상태읽기_(key) {
       // 발송 ON 계정의 연결 소실과 캠페인 종료는 기존 계정 오류와 별개로 알린다.
       const activeIssues = accountIssues.slice();
       if (!account.connected && activeIssues.indexOf('token-missing') < 0) activeIssues.push('token-missing');
+      // 서버는 연결된 계정의 토큰 기한이 checked_at보다 뒤일 때만 유효하다고 본다.
+      if (account.connected && account.token_expires_at != null && Date.parse(account.token_expires_at) <= checked) activeIssues.push('token-expired');
       if (activeIssues.length) healthy = false;
       activeIssues.forEach(code => rows.push({ name: '@' + account.username, health: code, http: 200, at: new Date(checked).toISOString() }));
     });
