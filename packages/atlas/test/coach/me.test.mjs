@@ -143,6 +143,12 @@ test('standing — 빈 줄 · 「다시 배울래요」로 비운 줄은 null, �
   const cleared = memory.append(fold([[0, 'weak']]), { at: T0 + DAY, say: 'relearn' });
   assert.equal(cleared.empty, true);
   assert.equal(memory.standing(cleared, T0 + DAY), null);
+  const back = memory.append(cleared, { at: T0 + 2 * DAY, grade: 'weak', format: 'choice' });
+  assert.equal(
+    memory.standing(back, T0 + 2 * DAY),
+    'learning',
+    '비운 뒤의 첫 혼자 맞힘은 익히는 중이다(4-5 끝 판 GPT GE6)',
+  );
   const again = memory.append(fold([[0, 'say:known']]), {
     at: T0 + DAY,
     grade: 'again',
@@ -316,6 +322,34 @@ test('판 응답을 빼는 문 — 겨눈 응답이 기기에 없어도 「닿�
   assert.equal(plainRow.value.touches, undefined, '일반 제외에는 빈 메모를 적지 않는다');
 });
 
+test('coach.excludeResponse — 저장 중인 내 사건도 판 응답이 아니면 던진다. 막 만든 제시 · 답이 저장되기 전이어도 같다(4-5 끝 판 카본 D3)', async () => {
+  const port = memoryPort();
+  const time = clock();
+  stores += 1;
+  const coach = createCoach({
+    gameId: 'world-life',
+    mapData: MAP_DATA,
+    dayOffset: 540,
+    host: { guest: true, port, key: `synk-atlas:world-me-${process.pid}-${stores}`, now: time.now },
+  });
+  await coach.ready;
+  const pid = coach.present({ itemKey: HELLO });
+  assert.throws(
+    () => coach.excludeResponse(pid),
+    TypeError,
+    '저장 중인 제시는 이 문으로 빼지 않는다',
+  );
+  const made = coach.answer(pid, { correct: true, assessable: true });
+  assert.throws(() => coach.excludeResponse(made.eventId), TypeError, '저장 중인 답도 아니다');
+  await made.stored;
+  const rows = await port.read();
+  assert.ok(
+    rows.every(entry => entry.value.event?.type !== 'record.excluded'),
+    '제외 사건이 저장소에 없다',
+  );
+  coach.dispose();
+});
+
 test('coach.excludeResponse — 판 응답만 받는다: 기기에 있는 다른 사건이면 던지고, 기기의 응답과 다른 기기의 응답은 뺀다', async () => {
   const port = memoryPort();
   const time = clock();
@@ -365,4 +399,66 @@ test('coach.excludeResponse — 판 응답만 받는다: 기기에 있는 다른
     '기기에 있는 응답을 뺄 때도 같은 메모 — 판 응답은 닿는 줄이 없다',
   );
   coach.dispose();
+});
+
+test('coach.untell — 「다시 배울래요」 사건을 빼고, 저장이 끝나면 참으로 풀린다. 그때 요약은 단위를 앞 자리(직접 말함)로 돌려준다. 다른 사건 · 기기에 없는 번호면 던지고, 저장되지 않으면 거짓이다(4-5 끝 판 GPT GB4 · 설계 주인 11-19 새벽)', async () => {
+  const UNIT = 'ko.life.greet-hello';
+  const { coach } = await lifeCoach();
+  coach.tell(UNIT, 'known');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const relearn = coach.tell(UNIT, 'relearn');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const before = coach.summary().units.find(line => line.unit === UNIT);
+  assert.notEqual(before?.state, 'said', '「다시 배울래요」 뒤에는 직접 말함이 아니다');
+  const undone = coach.untell(relearn.id);
+  assert.equal(undone.event.type, 'record.excluded');
+  assert.equal(undone.event.targetId, relearn.id);
+  assert.equal(await undone.stored, true, '저장되면 참');
+  const after = coach.summary().units.find(line => line.unit === UNIT);
+  assert.equal(after?.state, 'said', '저장이 끝나면 요약이 앞 자리로 돌아와 있다');
+  const pid = coach.present({ itemKey: HELLO });
+  assert.throws(
+    () => coach.untell(pid),
+    TypeError,
+    '본인 말이 아닌 사건(저장 중인 제시)은 받지 않는다',
+  );
+  assert.throws(
+    () => coach.untell('a.0000000000000.0000.none0000'),
+    TypeError,
+    '기기에 없는 번호도 받지 않는다',
+  );
+  coach.dispose();
+
+  const port = memoryPort();
+  let failing = false;
+  const flaky = {
+    ...port,
+    async append(values, options) {
+      if (failing) throw Object.assign(new Error('저장 실패'), { code: 'STORAGE_ERROR' });
+      return port.append(values, options);
+    },
+  };
+  const time = clock();
+  stores += 1;
+  const shaky = createCoach({
+    gameId: 'world-life',
+    mapData: MAP_DATA,
+    dayOffset: 540,
+    host: {
+      guest: true,
+      port: flaky,
+      key: `synk-atlas:world-me-${process.pid}-${stores}`,
+      now: time.now,
+    },
+  });
+  await shaky.ready;
+  const told = shaky.tell(UNIT, 'relearn');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  failing = true;
+  assert.equal(
+    await shaky.untell(told.id).stored,
+    false,
+    '저장되지 않으면 거짓 — 셸은 되돌리기를 남긴다',
+  );
+  shaky.dispose();
 });

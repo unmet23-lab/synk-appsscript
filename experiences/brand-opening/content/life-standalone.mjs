@@ -25868,7 +25868,23 @@ function createWorldEducation({
     lifeHost = b;
   });
   const answering = () => responses === true && owner !== "guest";
-  let responseCoach = null;
+  let responseCoach = null, responseCoachOff = null;
+  function holdResponseCoach(coachNow) {
+    if (responseCoach === coachNow) return;
+    responseCoachOff?.();
+    responseCoach = coachNow;
+    responseCoachOff = null;
+    try {
+      responseCoachOff = atlasNext?.retired?.(coachNow, () => {
+        if (responseCoach === coachNow) {
+          responseCoach = null;
+          responseCoachOff = null;
+        }
+      }) ?? null;
+    } catch {
+      responseCoachOff = null;
+    }
+  }
   const NEXT_KINDS = /* @__PURE__ */ new Set(["short", "diagnostic", "mock"]);
   function finishSet(coachNow, kind) {
     if (!answering() || typeof coachNow?.finishSet !== "function" || typeof view?.renderSetResponse !== "function") return null;
@@ -25917,7 +25933,7 @@ function createWorldEducation({
         node.outerHTML = view.renderSetResponse({ kind, value: chosen, failed: failed2 });
         box.querySelector(`[data-set-response="${value}"]`)?.focus?.({ preventScroll: true });
       }
-      if (!failed2 && typeof coachNow?.responses === "function") responseCoach = coachNow;
+      if (!failed2 && typeof coachNow?.responses === "function") holdResponseCoach(coachNow);
       const again = kind === "short" ? box.querySelector("[data-practice-again]") : null;
       if (again) again.innerHTML = next2 ? `${escape3(t2("practice.next.again", { n: practiceLength() }))} <span aria-hidden="true">\u2192</span>` : `${escape3(t2("practice.again", { n: Math.min(more, practiceLength()) }))} <span aria-hidden="true">\u2192</span>`;
     });
@@ -25962,13 +25978,12 @@ function createWorldEducation({
       return null;
     }
   }
-  function undoMe(eventId) {
+  async function undoMe(eventId) {
     if (!eventId) return false;
     const coachNow = meCoach();
-    if (!coachNow) return false;
+    if (typeof coachNow?.untell !== "function") return false;
     try {
-      coachNow.exclude(eventId);
-      return true;
+      return await coachNow.untell(eventId).stored === true;
     } catch {
       return false;
     }
@@ -26019,13 +26034,13 @@ function createWorldEducation({
     return true;
   }
   let responsesWaiting = null, responsesDone = null, responsesShown = null;
-  async function readResponses(shown = null) {
+  async function readResponses(shown = null, again = 0) {
     if (!answering() || typeof atlasNext?.readResponses !== "function") return false;
     const coach2 = nextCoach();
     if (!coach2) {
       if (homePhase() !== "checking") return false;
       if (!responsesWaiting) {
-        responsesShown = JSON.stringify(responseList());
+        responsesShown = shown ?? JSON.stringify(responseList());
         responsesWaiting = new Promise((resolve) => {
           responsesDone = resolve;
         });
@@ -26033,14 +26048,39 @@ function createWorldEducation({
       return responsesWaiting;
     }
     const before = shown ?? JSON.stringify(responseList());
+    let read = null;
     try {
-      await atlasNext.readResponses(coach2);
+      read = await atlasNext.readResponses(coach2);
     } catch {
       if (shown == null) return false;
     }
+    if (read == null && !stopped && again < 2 && nextCoach() !== coach2) return readResponses(before, again + 1);
     return !stopped && JSON.stringify(responseList()) !== before;
   }
+  let meWaiting = null, meDone = null;
+  function meReady() {
+    if (stopped) return Promise.resolve(false);
+    if (homePhase() !== "checking") return Promise.resolve(meNow() != null);
+    if (!meWaiting) meWaiting = new Promise((resolve) => {
+      meDone = resolve;
+    });
+    return meWaiting;
+  }
+  function wakeMe() {
+    if (!meWaiting || !stopped && homePhase() === "checking") return;
+    const done = meDone;
+    meWaiting = null;
+    meDone = null;
+    let ready = false;
+    try {
+      ready = !stopped && meNow() != null;
+    } catch {
+      ready = false;
+    }
+    done(ready);
+  }
   function readWaitingResponses() {
+    wakeMe();
     if (!responsesWaiting) return;
     const done = responsesDone, shown = responsesShown;
     if (stopped || homePhase() === "old") {
@@ -29355,7 +29395,7 @@ function createWorldEducation({
       return Promise.resolve();
     }
   }, life: engine.life || null });
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, me: meNow, tellMe, undoMe, clearPractice, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, me: meNow, meReady, tellMe, undoMe, clearPractice, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));
@@ -29363,6 +29403,7 @@ function createWorldEducation({
     stopped = true;
     wakePlanWaits();
     readWaitingResponses();
+    responseCoachOff?.();
     stopHearing();
     homeWatch?.dispose();
     release(coach);

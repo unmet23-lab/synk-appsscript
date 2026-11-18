@@ -95,8 +95,8 @@ export const RECORD_MUTANTS = [
     '기기',
     '부모 저장이 실패해도 자식을 쓴다(서버가 받지 못할 사건이 대기열 맨 앞에 남는다)',
     LOG,
-    '    const parentLost = state.unsaved.has(parentOf(event));',
-    '    const parentLost = false;',
+    "    if (state.unsaved.has(parent)) return 'PARENT_UNSAVED';\n",
+    '',
   ],
   [
     R,
@@ -374,8 +374,8 @@ export const RECORD_MUTANTS = [
     '기기',
     '같은 제시의 앞 답이 저장되지 못해도 뒤 답을 쓴다(1번 없는 2번 · 손님은 혼자 낸 첫 답으로 — §18-4)',
     LOG,
-    '    if (parentLost || (before != null && state.unsaved.has(before))) {',
-    '    if (parentLost) {',
+    '(state.unsaved.has(before) || clearedSince(before, gen))',
+    'clearedSince(before, gen)',
   ],
   [
     R,

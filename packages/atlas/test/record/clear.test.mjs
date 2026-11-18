@@ -118,8 +118,9 @@ test('손님 비우기 — 사건 · 요약 사본 · 옮기기 표지를 한 �
   await record.localSaved();
   const left = await kinds(port);
   assert.deepEqual(left.slice(0, 2), ['gen', 'cleared'], '머리 기록과 비움 표지');
+  // 빈 배열의 every는 늘 참이다 — 빈 요약 사본이 실제로 섰는지 길이도 본다(4-5 끝 판 카본 F1).
   assert.ok(
-    left.slice(2).every(kind => kind === 'local'),
+    left.length > 2 && left.slice(2).every(kind => kind === 'local'),
     '사건 · 표지는 모두 지워지고, 빈 요약 사본만 새로 선다',
   );
   const cleared = record.cleared();
@@ -269,6 +270,8 @@ test('넷째 걸음의 판 경계 — 그 비우기가 올린 새 판(before)보
   await record.mark({ mark: 'moved', account: 'Z', until: 99, ids: [p0] }); // 판이 없는 옛 표지 — 센다(답 a0은 그 제시에 기대어 함께 간다)
   const [p2, a2] = await practise(record, items[1]);
   await record.mark({ mark: 'moved', account: 'Z', revision: 2, until: 99, ids: [p2, a2] }); // 비운 뒤 새 판으로 옮긴 것
+  const [p3, a3] = await practise(record, items[2]);
+  await record.mark({ mark: 'moved', account: 'Z', revision: 3, until: 99, ids: [p3, a3] }); // 경계보다 큰 판(4-5 끝 판 GPT GF3)
   // 비운 뒤 옮긴 제시에 손님이 뒤에 단 답(옮기지 않은 자식)
   const late = record.add(EVENT_TYPES.attempted, {
     presentationId: p2,
@@ -280,7 +283,7 @@ test('넷째 걸음의 판 경계 — 그 비우기가 올린 새 판(before)보
   const done = await record.dropMoved({ account: 'Z', before: 2 });
   assert.equal(done.dropped, 4, '판 1과 판 없는 표지의 사건(과 그 자식)만 지운다');
   const left = await eventIds(port);
-  for (const id of [p2, a2, late.event.id])
+  for (const id of [p2, a2, late.event.id, p3, a3])
     assert.ok(left.includes(id), `비운 뒤 옮긴 사건과 그 자식은 둔다 — ${id}`);
   for (const id of [p1, a1, p0, a0])
     assert.equal(left.includes(id), false, `앞 판으로 옮긴 사건은 지운다 — ${id}`);
@@ -355,6 +358,105 @@ test('늦게 쓰는 탭 — 부모 제시의 저장을 기다리던 답은 그 �
   release();
   assert.equal(await made.stored, false, '지워진 제시의 답을 새 세대에 쓰지 않는다');
   assert.deepEqual(await eventIds(port), [], '저장소에 부모 없는 답이 없다');
+});
+
+test('늦게 쓰는 탭 — 저장된 부모가 비우기로 지워진 뒤 이 탭이 새 세대를 읽고 만든 자식은 쓰지 않는다. 같은 탭이 스스로 비운 뒤에도 같다(4-5 끝 판 카본 D1)', async () => {
+  // 다른 탭이 비웠다 — 제시는 앞 세대에 저장됐고, 이 탭은 꼬리를 읽어 새 세대를 안 뒤에 그 제시의 답을 만든다.
+  const port = memoryPort();
+  const late = await guestOn(port, { exclusive: busy });
+  const [shown] = await practise(late, items[0]);
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  await late.refresh();
+  assert.equal(late.generation(), 1);
+  const made = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  assert.equal(await made.stored, false, '지워진 제시의 답을 새 세대에 쓰지 않는다');
+  assert.deepEqual(await eventIds(port), [], '저장소에 부모 없는 답이 없다');
+  // 같은 탭 — 스스로 비운 뒤(옛 엔진 비우기를 기다리는 사이) 열린 판이 앞 제시에 답한다.
+  const own = memoryPort();
+  const self = await guestOn(own, { exclusive: busy });
+  const [before] = await practise(self, items[1]);
+  await self.clear();
+  const after = self.add(EVENT_TYPES.attempted, {
+    presentationId: before,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  assert.equal(await after.stored, false, '스스로 비운 뒤에도 지운 제시에 답을 잇지 않는다');
+  assert.deepEqual(await eventIds(own), []);
+  // 새 세대에 만든 제시의 답은 그대로 쓴다.
+  assert.equal((await practise(self, items[2])).length, 2);
+  assert.equal((await eventIds(own)).length, 2);
+});
+
+test('늦게 쓰는 탭 — 다른 탭의 제시에 이 탭이 단 앞 답이 비우기로 지워졌으면 뒤 답도 새 세대에 쓰지 않는다(카본 D1의 앞 답 갈래)', async () => {
+  const port = memoryPort();
+  const owner = await guestOn(port, { exclusive: busy });
+  clockMs += 60_000;
+  const shown = owner.add(EVENT_TYPES.presented, presented(items[0]));
+  await shown.stored;
+  const late = await guestOn(port, { exclusive: busy });
+  const first = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown.event.id,
+    attemptNo: 1,
+    verdict: 'incorrect',
+    errorTags: [],
+  });
+  assert.equal(await first.stored, true, '다른 탭의 제시에 단 첫 답');
+  await owner.clear();
+  await late.refresh();
+  assert.equal(late.generation(), 1);
+  const second = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown.event.id,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  assert.equal(await second.stored, false, '앞 답이 지워진 뒤의 답은 쓰지 않는다');
+  assert.deepEqual(await eventIds(port), []);
+});
+
+test('늦게 쓰는 탭 — 막이에 걸려 다시 읽다가 읽기가 실패해도 막이가 준 세대로 셸에 한 번 알리고, 다음 꼬리 읽기가 통째로 다시 읽는다(4-5 끝 판 카본 D4)', async () => {
+  const port = memoryPort();
+  let failRead = false;
+  const flaky = {
+    ...port,
+    async read(...args) {
+      if (failRead) {
+        failRead = false;
+        throw Object.assign(new Error('읽기 실패'), { code: 'READ_FAILED' });
+      }
+      return port.read(...args);
+    },
+  };
+  const told = [];
+  const late = await guestOn(flaky, { exclusive: busy, onCleared: gen => told.push(gen) });
+  const [shown] = await practise(late, items[0]);
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  const after = await practise(other, items[2]);
+  failRead = true;
+  const made = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  assert.equal(await made.stored, false, '막이에 걸린 답');
+  assert.deepEqual(told, [1], '다시 읽기가 실패해도 은퇴 알림은 간다');
+  await late.refresh();
+  assert.deepEqual(
+    late.heldEvents().map(event => event.id),
+    after,
+    '다음 꼬리 읽기가 통째로 다시 읽어 지워진 사건을 들지 않는다',
+  );
+  assert.deepEqual(told, [1], '같은 세대로 또 알리지 않는다');
 });
 
 test('늦게 쓰는 탭 — 차례를 기다리던 손님 요약 저장은 그 요약을 접은 세대로 쓴다. 기다리는 사이 다른 탭이 비웠으면 지워진 기록의 요약을 새 세대에 쓰지 않는다(GB2와 같은 꼴)', async () => {
@@ -489,7 +591,29 @@ test('옮긴 장부 칸 — 넷째 걸음이 지운 「옮겨 오기 전 기록�
 });
 
 test('옛 장부의 칸이 처음 옮긴 때보다 자랐나(cellsGrew) — 접힌 답 수가 늘었거나, 수는 그대로여도(최근 12개) 가장 늦은 답의 때가 뒤로 갔으면 자란 것이다. 처음 칸을 모르는데 칸이 있으면 자란 것으로 본다(4-5 Opus 대체 설계 검토 F6)', () => {
-  const cell = answers => ({ 'ko.reading.s0|1|single-choice': { ind: answers, helped: [] } });
+  const cell = (answers, helped = []) => ({
+    'ko.reading.s0|1|single-choice': { ind: answers, helped },
+  });
+  // 도움받은 답만 는 장부 — 가장 늦은 때(20)보다 이른 답(15)이라 수만 신호다(4-5 끝 판 GPT GF4).
+  assert.equal(
+    cellsGrew(
+      cell(
+        [
+          ['x', 10, 'correct'],
+          ['y', 20, 'correct'],
+        ],
+        [['h', 15]],
+      ),
+      cellsOf(
+        cell([
+          ['x', 10, 'correct'],
+          ['y', 20, 'correct'],
+        ]),
+      ),
+    ),
+    true,
+    '도움받은 답이 늘어도 자란 것이다',
+  );
   const base = cellsOf(
     cell([
       ['x', 10, 'correct'],
@@ -543,4 +667,72 @@ test('옛 장부의 칸이 처음 옮긴 때보다 자랐나(cellsGrew) — 접�
   );
   assert.equal(cellsGrew(cell([['x', 10, 'correct']]), null), true, '처음 칸을 모른다');
   assert.equal(cellsGrew({}, null), false, '칸이 없다');
+});
+
+test('늦게 쓰는 탭 — 막이에 걸려 다시 읽는 사이 다른 탭이 또 비우면 그 세대를 다시 읽은 뒤에만 손님 요약을 접는다. 두 번째 비우기로 지운 기록이 요약 사본으로 되살아나지 않는다(4-5 끝 판 GPT GD2)', async () => {
+  const port = memoryPort();
+  let between = null;
+  const racing = {
+    ...port,
+    async read(...args) {
+      const rows = await port.read(...args);
+      if (between) {
+        const run = between;
+        between = null;
+        await run();
+      }
+      return rows;
+    },
+  };
+  const told = [];
+  const late = await guestOn(racing, { onCleared: gen => told.push(gen) });
+  const [shown] = await practise(late, items[0]);
+  await late.localSaved();
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  await practise(other, items[2]); // 첫 비우기 뒤의 기록 — 두 번째 비우기가 지운다
+  between = () => other.clear();
+  const made = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  assert.equal(await made.stored, false, '막이에 걸린 답');
+  await late.localSaved();
+  assert.equal(late.generation(), 2, '두 번째 비우기의 세대까지 읽었다');
+  assert.deepEqual(late.heldEvents(), [], '지운 세대의 사건을 들지 않는다');
+  assert.deepEqual(told, [2]);
+  const fresh = await guestOn(port, { exclusive: busy });
+  assert.equal(
+    fresh.view().met.has(items[2].familyKey),
+    false,
+    '새로 연 기록부의 보기에 두 번째 비우기로 지운 기록이 없다(요약 사본으로 되살아나지 않는다)',
+  );
+});
+
+test('늦게 쓰는 탭 — 비움 표지를 읽고 세대가 오른 뒤 열린 판이 앞 세대의 마침에 남기는 판 응답은 쓰지 않는다(4-5 끝 판 GPT GD3 — 카본 D1과 같은 막이)', async () => {
+  const port = memoryPort();
+  const late = await guestOn(port, { exclusive: busy });
+  const decided = late.add(EVENT_TYPES.setDecided, {
+    experienceId: 'world-practice',
+    variant: 'short',
+  });
+  await decided.stored;
+  const completed = late.add(EVENT_TYPES.setCompleted, {
+    decisionId: decided.event.id,
+    experienceId: 'world-practice',
+    variant: 'short',
+  });
+  assert.equal(await completed.stored, true);
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  await late.refresh();
+  assert.equal(late.generation(), 1);
+  const given = late.add(EVENT_TYPES.feedback, {
+    completionId: completed.event.id,
+    value: 'want_more',
+  });
+  assert.equal(await given.stored, false, '지워진 마침을 가리키는 판 응답을 새 세대에 쓰지 않는다');
+  assert.equal((await eventIds(port)).length, 0, '저장소에 부모 없는 판 응답이 없다');
 });

@@ -1,7 +1,7 @@
 // 기기 IndexedDB 포트의 막이 트랜잭션(src/record/idb.mjs swap — 단계 4 계획 §22-4 「늦게 쓰는 탭의 막이」). 머리 기록의 지우기 세대를 같은
 // 트랜잭션에서 먼저 읽고, 기대와 다르면 아무것도 쓰지 않는다. 가짜는 IndexedDB 규칙 가운데 이 문이 기대는 것만 흉내 낸다 — 요청의 onsuccess
-// 안에서 낸 요청도 같은 트랜잭션이고, 트랜잭션은 남은 요청이 없을 때 한꺼번에 반영되며, abort하면 아무것도 반영되지 않는다. store.clear()는
-// 열쇠 생성기를 되돌리지 않는다.
+// 안에서 낸 요청도 같은 트랜잭션이고, 그 밖의 차례(타이머 · 다른 작업)에서 낸 요청은 비활성 트랜잭션이라 거절되며, 트랜잭션은 남은 요청이 없을 때
+// 한꺼번에 반영되고, abort하면 아무것도 반영되지 않는다. store.clear()는 열쇠 생성기를 되돌리지 않는다.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { subject } from '../support/subject.mjs';
@@ -14,41 +14,77 @@ function fakeIndexedDB() {
   let next = 1;
   const later = fn => setTimeout(fn, 0);
   const sorted = map => [...map.keys()].sort((a, b) => a - b);
+  // 트랜잭션은 만든 차례로 하나씩 돈다 — 앞 트랜잭션이 끝나야 다음이 시작하고, 시작할 때 저장소를 읽는다. 시작 전에 낸 요청은 기다린다
+  // (4-5 끝 판 GPT GF1 — 만들 때 저장소를 베끼면 겹쳐 돈 두 쓰기의 앞 것이 뒤 것에 덮였다).
+  let busy = false;
+  const waiting = [];
+  const done = () => {
+    busy = false;
+    const start = waiting.shift();
+    if (start) later(start);
+  };
   function transaction() {
     const tx = { oncomplete: null, onabort: null, onerror: null, error: null };
-    const staged = new Map(rows);
-    let stagedNext = next;
+    let staged = null;
+    let stagedNext = 0;
     let pending = 0;
-    let state = 'active';
-    const finish = () => {
-      if (state !== 'active' || pending > 0) return;
+    let started = false;
+    let state = 'live'; // live · done · aborted
+    // 요청을 받는 때(실제 IndexedDB의 active 플래그)는 트랜잭션을 만든 차례와 요청마다 onsuccess를 부르는 차례뿐이다 — 그 차례의
+    // 마이크로태스크가 다 돈 뒤 내린다. 내렸을 때 남은 요청이 없으면 곧 커밋한다(자동 커밋). 그 뒤의 차례(타이머 · 다른 작업)에서 낸
+    // 요청은 TransactionInactiveError다(4-5 끝 판 카본 F2 — 끝남과 활성을 한 상태로 합쳐 두면 그런 변경도 시험을 지났다).
+    let active = true;
+    const queued = [];
+    const commit = () => {
       state = 'done';
       rows = staged;
       next = stagedNext;
-      tx.oncomplete?.();
+      later(() => tx.oncomplete?.());
+      done();
     };
-    const issue = op => {
-      if (state !== 'active')
-        throw Object.assign(new Error('끝난 트랜잭션'), { name: 'TransactionInactiveError' });
-      const req = { onsuccess: null, onerror: null, result: undefined, error: null };
-      pending += 1;
+    const settle = async () => {
+      for (let tick = 0; tick < 64; tick += 1) await null;
+      active = false;
+      if (state === 'live' && started && pending === 0) commit();
+    };
+    const run = (op, req) =>
       later(() => {
         pending -= 1;
-        if (state !== 'active') return;
+        if (state !== 'live') return;
         req.result = op();
+        active = true;
         req.onsuccess?.();
-        later(finish);
+        void settle();
       });
+    const start = () => {
+      if (state !== 'live') return;
+      busy = true;
+      started = true;
+      staged = new Map(rows);
+      stagedNext = next;
+      for (const [op, req] of queued.splice(0)) run(op, req);
+      void settle();
+    };
+    const issue = op => {
+      if (state !== 'live' || !active)
+        throw Object.assign(new Error('비활성 트랜잭션'), { name: 'TransactionInactiveError' });
+      const req = { onsuccess: null, onerror: null, result: undefined, error: null };
+      pending += 1;
+      if (started) run(op, req);
+      else queued.push([op, req]);
       return req;
     };
     tx.abort = () => {
-      if (state !== 'active')
+      if (state !== 'live')
         throw Object.assign(new Error('끝난 트랜잭션'), { name: 'InvalidStateError' });
+      const wasStarted = started;
       state = 'aborted';
+      active = false;
       later(() => {
         tx.error = Object.assign(new Error('aborted'), { name: 'AbortError' });
         tx.onabort?.();
       });
+      if (wasStarted) done();
     };
     tx.objectStore = () => ({
       get: key => issue(() => structuredClone(staged.get(key))),
@@ -72,7 +108,9 @@ function fakeIndexedDB() {
       getAllKeys: () => issue(() => sorted(staged)),
       getAll: () => issue(() => sorted(staged).map(key => structuredClone(staged.get(key)))),
     });
-    later(finish); // 요청이 하나도 없는 트랜잭션도 끝난다
+    if (busy) waiting.push(start);
+    else start();
+    void settle(); // 만든 차례 — 요청이 하나도 없는 트랜잭션도 끝난다
     return tx;
   }
   const db = {
@@ -199,4 +237,94 @@ test('막이 — plan을 주면 막이를 지난 같은 트랜잭션에서 기�
     port.swap({ expect: 0, gen: 2, plan: () => ({ remove: [b] }) }),
     error => error.code === 'CLEARED' && error.gen === 1,
   );
+});
+
+test('가짜의 규칙 — 만든 차례와 요청의 onsuccess 차례(마이크로태스크까지)에만 요청을 받고, 그 뒤 차례의 요청은 TransactionInactiveError다. 남은 요청이 없으면 곧 커밋한다(4-5 끝 판 카본 F2)', async () => {
+  const fake = fakeIndexedDB();
+  const db = await new Promise(resolve => {
+    const req = fake.open();
+    req.onsuccess = () => resolve(req.result);
+  });
+  const inactive = error => error?.name === 'TransactionInactiveError';
+  const tx = db.transaction();
+  const store = tx.objectStore();
+  await null; // 만든 차례의 마이크로태스크 — 아직 받는다
+  const first = store.add({ n: 1 });
+  const outcome = await new Promise(resolve => {
+    first.onsuccess = () => {
+      // onsuccess 안과 그 마이크로태스크에서 낸 요청은 같은 트랜잭션이다.
+      store.add({ n: 2 });
+      Promise.resolve().then(() => store.add({ n: 3 }));
+      // 다음 차례(타이머)에서 낸 요청은 비활성 트랜잭션이라 거절된다.
+      setTimeout(() => {
+        try {
+          store.add({ n: 4 });
+          resolve('accepted');
+        } catch (error) {
+          resolve(inactive(error) ? 'inactive' : error);
+        }
+      }, 0);
+    };
+  });
+  assert.equal(outcome, 'inactive');
+  await new Promise(resolve => setTimeout(resolve, 5));
+  assert.deepEqual(
+    [...fake.rows().values()].map(row => row.n),
+    [1, 2, 3],
+    '받은 요청만 한 번에 커밋했다',
+  );
+  const late = db.transaction();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.throws(
+    () => late.objectStore().add({ n: 5 }),
+    inactive,
+    '만든 차례가 지나면 요청을 받지 않는다',
+  );
+});
+
+test('막이 — 덧붙이기(append)도 세대가 기대와 다르면 아무것도 쓰지 않고 CLEARED(그때의 세대), 같으면 쓴다(4-5 끝 판 GPT GF2)', async () => {
+  const fake = fakeIndexedDB();
+  const port = await idbPort('t', { indexedDB: fake });
+  const other = await idbPort('t', { indexedDB: fake });
+  await other.swap({ expect: 0, gen: 1, append: [] });
+  await assert.rejects(
+    port.append([{ n: 1 }], { expect: 0 }),
+    error => error.code === 'CLEARED' && error.gen === 1,
+  );
+  assert.deepEqual(sortedKeys(fake), [GEN_KEY], '거절된 덧붙이기는 아무것도 남기지 않는다');
+  const [key] = await port.append([{ n: 2 }], { expect: 1 });
+  assert.deepEqual(sortedKeys(fake), [GEN_KEY, key], '지금 세대면 쓴다');
+});
+
+test('막이 — 두 탭이 겹쳐 쓰면 차례로 돈다: 비우기(plan)가 고른 뒤 다른 탭이 단 답은 비우는 트랜잭션에 닿지 못하고 막이에 걸린다. 부모 없는 답이 남지 않는다(4-5 끝 판 GPT GF1)', async () => {
+  for (const first of ['swap', 'append']) {
+    const fake = fakeIndexedDB();
+    const clearer = await idbPort('t', { indexedDB: fake });
+    const writer = await idbPort('t', { indexedDB: fake });
+    await clearer.append([{ kind: 'event', id: 'p1' }]);
+    const swap = () =>
+      clearer.swap({
+        expect: 0,
+        gen: 1,
+        plan: rows => ({
+          remove: rows.filter(row => row.value.kind === 'event').map(row => row.key),
+          append: [],
+        }),
+      });
+    const child = () => writer.append([{ kind: 'event', id: 'c1', parent: 'p1' }], { expect: 0 });
+    const runs = first === 'swap' ? [swap(), child()] : [child(), swap()];
+    const settled = await Promise.allSettled(runs);
+    const left = [...fake.rows().values()]
+      .filter(value => value.kind === 'event')
+      .map(value => value.id);
+    assert.deepEqual(left, [], `${first} 먼저 — 비우는 트랜잭션 뒤에 남은 사건이 없다`);
+    assert.deepEqual(
+      fake.rows().get(GEN_KEY),
+      { kind: 'gen', gen: 1 },
+      `${first} 먼저 — 비우기가 덮이지 않았다`,
+    );
+    if (first === 'swap')
+      assert.equal(settled[1].reason?.code, 'CLEARED', '비운 뒤의 답은 막이에 걸린다');
+    else assert.equal(settled[0].status, 'fulfilled', '먼저 쓴 답은 비우기가 함께 지운다');
+  }
 });

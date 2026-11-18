@@ -169,7 +169,14 @@ function markOf(storage, owner) {
   }
 }
 function writeMark(storage, owner, patch) {
-  const next = { ...markOf(storage, owner), ...patch };
+  const was = markOf(storage, owner);
+  const next = { ...was, ...patch };
+  // 마지막 길 · 판은 내려가지 않는다 — 계정의 판은 오르기만 한다. 늦게 온 계정 읽기, 늦게 끝난 앞 비우기, 앞 판의 코치가 앞 판을 적으면
+  // 다음 오프라인 시작이 비운 판을 열었다(4-5 끝 판 GPT GC2 · GC3).
+  if (Number.isSafeInteger(was.revision) && Number.isSafeInteger(patch.revision) && patch.revision < was.revision) {
+    next.path = was.path;
+    next.revision = was.revision;
+  }
   const kept = next.went && NEXT_PATHS.has(next.path) && Number.isSafeInteger(next.revision) && next.revision > 0;
   try {
     storage?.setItem?.(
@@ -189,12 +196,14 @@ function writeMark(storage, owner, patch) {
 // ── 연습 기록 비우기의 입구 몫(4-5 — 단계4_계획 §22-4 · 22-1의 4) ──────────────────────────────────────────
 // 「비우는 중」 표지 — 계정마다 하나, 판과 무관한 자리. 값 { account, path, revision, at, left? }.
 //   left가 없으면 서버 비우기의 결과를 아직 모른다(revision은 비우기를 시작한 판). 판을 다시 정할 때 같은 계정의 새 lastClear를 받은 뒤에만
-//   맞춘다. left가 있으면 서버 비우기는 끝났고(revision은 비운 뒤의 새 판) 손님 저장소의 걸음이 남았다 — 'cleared'(넷째 걸음과 4b) ·
-//   'legacy'(4b만 — 옛 손님 로그 남음).
+//   맞춘다. left가 있으면 서버 비우기는 끝났고(revision은 비운 뒤의 새 판) 이 기기의 걸음이 남았다 — 'cleared'(넷째 걸음과 4b) ·
+//   'legacy'(4b만 — 옛 손님 로그 남음) · 'sweep'(앞 판 쓸기만 — 못 지운 열쇠가 있다, 4-5 끝 판 GPT GC6). 남은 걸음은 늘 앞 판 쓸기를 다시 한다.
 export const CLEARING_MARK = 'synk.atlas.clearing.';
 // 결과를 모르는 표지를 맞추지 못한 채 두는 한도 — 하루가 지나도 비워지지 않았으면 지운다.
 export const CLEARING_MS = 86_400_000;
-const LEFT = new Set(['cleared', 'legacy']);
+// 마지막 비우기가 이 비우기의 표지를 적기 전에 끝났는지 서버 시각으로 견줄 때의 여유(시계 어긋남을 재는 읽기의 오간 시간 절반에 더한다).
+const CLOCK_SLACK_MS = 2000;
+const LEFT = new Set(['cleared', 'legacy', 'sweep']);
 export function clearingOf(storage, owner) {
   try {
     const value = JSON.parse(storage?.getItem?.(CLEARING_MARK + owner) ?? 'null');
@@ -215,6 +224,19 @@ export function clearingOf(storage, owner) {
 }
 const priorOf = mark =>
   mark?.then ? { path: mark.path, revision: mark.then.revision, at: Date.now(), left: mark.then.left } : null;
+// 서버 시각 값(밀리초 수 · ISO 글) → 밀리초, 읽을 수 없으면 null.
+const msOf = value => {
+  const ms = typeof value === 'number' ? value : typeof value === 'string' ? Date.parse(value) : Number.NaN;
+  return Number.isFinite(ms) ? ms : null;
+};
+// 같은 표지인가(길 · 판 · 적은 때 · 남은 걸음) — 비우기의 뒷일은 자기가 적은 표지일 때만 바꾼다(4-5 끝 판 GPT GC2).
+const sameClearing = (a, b) =>
+  a != null &&
+  b != null &&
+  a.path === b.path &&
+  a.revision === b.revision &&
+  a.at === b.at &&
+  (a.left ?? null) === (b.left ?? null);
 function clearingOwners(storage) {
   const out = [];
   try {
@@ -274,18 +296,19 @@ function engineRecord(name, accountKey) {
 }
 // 앞 판 쓸기(22-4 올리는 계정 3) — 이 계정의 두 구역(계정 id · local:)에서 판이 below보다 앞선 엔진 기록 열쇠와, 그 판들의 판 기록 열쇠
 // (synk.world.plan-log.v1:<저장소 이름>)를 지운다. 판이 확실히 앞선 것만 지운다 — 늦게 도는 탭이 다른 탭의 새 판 기록을 지우지 않게(GPT GA2).
-// 열쇠를 셀 수 없는 저장소면 쓸지 않는다(false). 한 열쇠를 지우다 던져도 나머지는 지운다.
+// 열쇠를 셀 수 없는 저장소면 쓸지 않는다(null). 한 열쇠를 지우다 던져도 나머지는 지우고, 못 지운 열쇠가 있으면 거짓이다 — 입구가 「일부만
+// 비움」으로 알리고 표지에 쓸기를 남겨 다음 다시 정하기가 다시 쓴다(4-5 끝 판 GPT GC6). 다 지웠으면 참.
 function sweepEarlier(storage, owner, below) {
   const names = [];
   try {
     const count = storage?.length;
-    if (typeof storage?.key !== 'function' || !Number.isSafeInteger(count) || count < 0) return false;
+    if (typeof storage?.key !== 'function' || !Number.isSafeInteger(count) || count < 0) return null;
     for (let index = 0; index < count; index += 1) {
       const name = storage.key(index);
       if (typeof name === 'string') names.push(name);
     }
   } catch {
-    return false;
+    return null;
   }
   const drop = [];
   for (const accountKey of [owner, `local:${owner}`]) {
@@ -300,13 +323,14 @@ function sweepEarlier(storage, owner, below) {
         if (/^\d+$/.test(revision) && Number(revision) < below) drop.push(name);
       }
   }
+  let whole = true;
   for (const name of drop)
     try {
       storage.removeItem(name);
     } catch {
-      // 나머지는 지운다
+      whole = false; // 나머지는 지운다
     }
-  return true;
+  return whole;
 }
 // 손님 저장소의 걸음 결과 → 남은 걸음. 넷째 걸음이 안 됐으면 앞의 남은 걸음 그대로(없었으면 'cleared'), 옛 손님 로그를 다른 창이 쥐었거나
 // 비우기를 확인하지 못했으면 'legacy'(4b만 — 일부만 비움), 다 됐으면 null.
@@ -1189,22 +1213,37 @@ export function createAtlasNext({
         }
       : {}),
   });
-  // 같은 계정의 마지막 비우기(서버 — trail 길의 읽기). { revision, at } · null(비운 적 없음) · undefined(못 읽음 · 읽기가 없는 줄 · 꼴이 틀림).
+  // 같은 계정의 마지막 비우기(서버 — trail 길의 읽기). { revision, at, offset, slack } · null(비운 적 없음) · undefined(못 읽음 · 읽기가
+  // 없는 줄 · 꼴이 틀림). at은 서버 시각(밀리초), offset은 답의 serverTime으로 잰 기기 시계의 어긋남(서버 − 기기 — 답에 시각이 없으면 null),
+  // slack은 그 어긋남을 잰 읽기의 오간 시간 절반에 여유를 더한 것이다(clearedBefore).
   async function lastClearOf() {
     try {
       const line = await readLine();
       if (typeof line?.lastClear !== 'function') return undefined;
-      const last = (await line.lastClear())?.lastClear;
+      const sent = Date.now();
+      const read = await line.lastClear();
+      const back = Date.now();
+      const last = read?.lastClear;
       if (last === null) return null;
-      return Number.isSafeInteger(last?.revision) && last.revision > 0
-        ? { revision: last.revision, at: last.at ?? null }
-        : undefined;
+      if (!(Number.isSafeInteger(last?.revision) && last.revision > 0)) return undefined;
+      const server = msOf(read.serverTime);
+      return {
+        revision: last.revision,
+        at: msOf(last.at),
+        offset: server == null ? null : server - (sent + back) / 2,
+        slack: (back - sent) / 2 + CLOCK_SLACK_MS,
+      };
     } catch {
       return undefined;
     }
   }
+  // 마지막 비우기가 이 비우기의 표지(at — 기기 시각)를 적기 전에 끝났나 — 그러면 이 비우기가 아니다(4-5 끝 판 GPT GC4). 서버 시각으로 견주고,
+  // 시각을 모르면 거짓(이 비우기일 수 있다)이다.
+  const clearedBefore = (last, at) =>
+    Number.isFinite(last?.at) && Number.isFinite(last?.offset) && last.at + last.slack < at + last.offset;
   // 비운 뒤 이 기기의 몫(22-4 올리는 계정 2 · 3 — 성공 길과 「실패와 다시 누르기」의 남은 걸음): 앞 판 구역의 본인 값을 새 판 구역으로
   // 옮기고, 앞 판을 쓸고, 30일째 문장의 답을 지운다. 쓸기 직전에 지금 판을 다시 읽어 그보다 앞선 판만 쓴다(GPT GA2 — 못 읽으면 서버가 준 판).
+  // 앞 판에서 못 지운 열쇠가 있으면 거짓이다(GC6).
   async function settleDevice(mark, revision) {
     moveOwn(store, zoneOf(owner, mark.path, mark.revision), zoneOf(owner, mark.path, revision));
     let current = null;
@@ -1213,8 +1252,9 @@ export function createAtlasNext({
     } catch {
       current = null;
     }
-    sweepEarlier(store, owner, Number.isSafeInteger(current) ? Math.min(current, revision) : revision);
+    const swept = sweepEarlier(store, owner, Number.isSafeInteger(current) ? Math.min(current, revision) : revision);
     clearMonthAnswer(store, owner);
+    return swept !== false;
   }
   // 「비우는 중」 표지 맞추기(22-4 「실패와 다시 누르기」) — 판을 다시 정할 때(planNow) 새 판의 코치를 열기 전에. 세대마다 한 번만 돈다(면
   // 여럿이 함께 물어도). 못 맞추면 표지를 그대로 두고 다음 다시 정하기에 맡긴다. 판 정하기가 기다리는 것은 본인 값 옮기기뿐이다 — 손님
@@ -1231,8 +1271,10 @@ export function createAtlasNext({
     }
     return settling.done;
   }
-  // 손님 저장소의 남은 걸음 하나(whose 계정의 표지 mark). 그사이 표지가 바뀌었으면(새 비우기 · 다른 탭이 마저 함) 덮지 않는다.
+  // 손님 저장소의 남은 걸음 하나(whose 계정의 표지 mark). 그사이 표지가 바뀌었으면(새 비우기 · 다른 탭이 마저 함) 덮지 않는다. 앞 판 쓸기만
+  // 남았으면 손님 코치를 열지 않는다(GC6).
   async function guestSteps(plan, at, whose, mark) {
+    if (mark.left === 'sweep') return stepsDone(at, whose, mark, null);
     const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);
     if (!made || disposed || at !== generation) return;
     // 넷째 걸음은 그 비우기가 올린 새 판(표지의 판)보다 앞선 판의 옮김 표지만 센다 — 비운 뒤 그 계정으로 새로 옮긴 사건은 둔다(4-5 Opus 대체
@@ -1244,10 +1286,15 @@ export function createAtlasNext({
       ...(account ? {} : { account: whose }),
     });
     if (!done?.ok) return;
+    return stepsDone(at, whose, mark, leftOf(done.guest, mark.left));
+  }
+  // 남은 걸음의 끝 — 앞 판 쓸기를 다시 한다. 비운 뒤 못 지운 열쇠가 남았으면 또 지워 보고, 또 못 지우면 쓸기를 남긴다(4-5 끝 판 GPT GC6).
+  function stepsDone(at, whose, mark, left) {
+    if (disposed || at !== generation) return;
     const now = clearingOf(store, whose);
     if (!now || now.revision !== mark.revision || now.left !== mark.left) return;
-    const left = leftOf(done.guest, mark.left);
-    writeClearing(store, whose, left ? { ...mark, left } : null);
+    const rest = sweepEarlier(store, whose, mark.revision) === false ? (left ?? 'sweep') : left;
+    writeClearing(store, whose, rest ? { ...mark, left: rest } : null);
   }
   async function settleOnce(plan, at, slot) {
     if (!account) {
@@ -1267,23 +1314,55 @@ export function createAtlasNext({
     }
     let mark = clearingOf(store, owner);
     if (!mark) return;
+    const { path } = mark;
+    let after = mark.revision; // 비운 뒤의 판 — 남은 걸음 표지는 그 판이고, 결과를 모르는 표지는 아래에서 확인한 판이다
     if (!mark.left) {
       // 결과를 모르는 비우기 — 같은 계정의 새 lastClear를 받은 뒤에만 맞춘다(계정을 못 읽은 채 연 판 · 못 읽음이면 그대로 둔다).
       if (plan.unread) return;
       const last = await lastClearOf();
       if (disposed || last === undefined) return;
       if (!(last && last.revision > mark.revision)) {
-        if (Date.now() - mark.at > CLEARING_MS) writeClearing(store, owner, priorOf(mark));
+        // 기다리는 사이 표지가 바뀌었으면(새 비우기 · 다른 탭이 맞춤) 그 표지를 덮지 않는다(GC2).
+        if (Date.now() - mark.at > CLEARING_MS) replaceOwn(mark, priorOf(mark));
         return;
       }
       // 표지를 적은 뒤에 비워졌다(이 비우기가 늦게 끝났든, 다른 기기나 탭이 비웠든) — 이 기기의 몫을 하고 손님 저장소의 걸음을 남긴다.
+      // 오프라인 시작의 판은 곧바로 비운 뒤의 판으로 올린다 — 새 판의 코치가 서기 전에 문서를 닫아도 다음 오프라인 시작이 비운 판을 열지
+      // 않게(4-5 끝 판 GPT GC3). 그사이 다른 탭이 표지를 바꿨으면 그 표지는 그 탭의 것이라 덮지 않는다(GC2).
+      writeMark(store, owner, { went: true, path, revision: last.revision });
       await settleDevice(mark, last.revision);
-      mark = { path: mark.path, revision: last.revision, at: Date.now(), left: 'cleared' };
-      writeClearing(store, owner, mark);
+      after = last.revision;
+      const next = { path, revision: last.revision, at: Date.now(), left: 'cleared' };
+      mark = replaceOwn(mark, next) ? next : null;
     }
-    // 손님 저장소의 남은 걸음 — 비운 뒤의 판을 받은 판의 코치로 뒤에서 한다(아직 앞 판이면 그대로 둔다).
-    if (disposed || at !== generation || plan.revision < mark.revision) return;
-    slot.guest = guestSteps(plan, at, owner, mark).catch(() => {});
+    if (disposed || at !== generation) return;
+    // 고른 판이 비운 뒤의 판보다 앞서면 그 판의 코치를 열지 않고 판을 다시 정한다 — 판을 정한 뒤에 끝난 비우기를 여기서 알았다(GC3).
+    if (plan.revision < after) {
+      writeMark(store, owner, { went: true, path, revision: after });
+      retire('cleared');
+      return;
+    }
+    // 손님 저장소의 남은 걸음 — 비운 뒤의 판을 받은 판의 코치로 뒤에서 한다.
+    if (mark) slot.guest = guestSteps(plan, at, owner, mark).catch(() => {});
+  }
+  // 표지를 이 비우기가 읽은(적은) 그대로일 때만 바꾼다 — 그사이 다른 탭 · 다른 비우기가 적은 표지는 덮지 않는다(GC2). 바꿨으면 참.
+  function replaceOwn(mine, next) {
+    if (!sameClearing(clearingOf(store, owner), mine)) return false;
+    return writeClearing(store, owner, next);
+  }
+  // 비운 뒤의 표지 — 이 비우기의 표지이거나, 표지가 없거나, 더 앞 판의 것이면 남은 걸음(rest)으로 바꾸거나 지운다. 그사이 다른 탭이 더 새 판의
+  // 비우기를 시작했거나 마쳤으면 덮지 않는다: 늦게 끝난 앞 비우기가 뒤 비우기의 표지를 지워 다음 오프라인 시작이 앞 판을 열었다(4-5 끝 판 GPT
+  // GC2). 더 새 판의 남은 걸음 표지는 이 비우기의 몫까지 맡는다(넷째 걸음의 경계가 크다). 결과를 모르는 더 새 비우기의 표지면 남은 걸음을 그
+  // 표지의 then에 실어 둔다 — 그 비우기가 서버에 닿지 않고 끝나거나 하루가 지나면 되살린다.
+  function settleMark(mine, revision, rest) {
+    const now = clearingOf(store, owner);
+    const next = rest ? { path: mine.path, revision, at: Date.now(), left: rest } : null;
+    if (now == null || sameClearing(now, mine) || now.revision < revision) {
+      if (next || now) writeClearing(store, owner, next);
+      return;
+    }
+    if (rest && !now.left && !(now.then && now.then.revision >= revision))
+      writeClearing(store, owner, { ...now, then: { revision, left: rest } });
   }
   const stopped = path => ({ ok: false, path, code: 'DISPOSED', known: true });
   // 손님(22-4 손님 1 ~ 4). 손님 코치의 reset이 손님 저장소와 옛 엔진의 손님 기록을 비운다. 손님 판 기록 열쇠를 지우고 같은 문서의 손님 코치를
@@ -1381,7 +1460,7 @@ export function createAtlasNext({
     if (done?.ok) return cleared(mark, done.revision, leftOf(done.guest));
     // 올리기에서 멈췄거나 서버 비우기를 부를 수 없었다 — 서버에 닿지 않은 것이 분명하다. 표지를 지운다.
     if (done?.step === 'upload' || done?.code === 'NO_CLEAR') {
-      writeClearing(store, owner, kept);
+      restoreOwn(mark);
       return {
         ok: false,
         path,
@@ -1394,29 +1473,50 @@ export function createAtlasNext({
     // 서버 비우기가 실패했다(409 · 닿지 못함 · 답 끊김) — 같은 계정의 마지막 비우기를 읽어 맞춘다.
     const last = await lastClearOf();
     if (disposed) return stopped(path);
-    if (last && last.revision > mark.revision) return cleared(mark, last.revision, 'cleared');
+    if (last && last.revision > mark.revision) {
+      // 표지의 판보다 뒤에 비워졌다 — 이 기기의 몫(본인 값 옮기기 · 앞 판 쓸기 · 남은 걸음)은 누가 비웠든 한다. 그 비우기가 이 비우기가 아닌
+      // 것이 분명하면(서버가 받지 않았다 — 409 등, 또는 표지를 적기 전에 끝났다) 「비웠어요」가 아니다: 그사이 새 판에 쌓인 기록이 남았을 수
+      // 있어 판이 바뀌었다고 알린다. 다시 누르면 새 판을 비운다(4-5 끝 판 GPT GC4).
+      const after = await cleared(mark, last.revision, 'cleared');
+      if (after.ok && (done?.known === true || clearedBefore(last, mark.at)))
+        return { ok: false, path, step: 'clear', code: 'PLAN_CHANGED', known: true };
+      return after;
+    }
     // 비워지지 않았다. 서버가 받지 않은 것이 분명하고 비워지지 않은 것을 읽었으면 표지를 지운다. 결과를 모르면(닿지 못함 · 답 끊김 · 마지막
     // 비우기를 못 읽음) 표지를 남긴다 — 늦게 끝나는 요청이 있을 수 있어 다음 다시 정하기가 맞춘다.
-    if (done?.known === true && last !== undefined) writeClearing(store, owner, kept);
+    if (done?.known === true && last !== undefined) restoreOwn(mark);
     return { ok: false, path, step: 'clear', code: done?.code ?? 'CLEAR_FAILED', known: done?.known === true };
+  }
+  // 서버에 닿지 않은 것이 분명한 비우기 — 이 비우기의 표지일 때만 앞 비우기의 남은 걸음(then)으로 되돌리고, 없으면 지운다. 그사이 다른 탭이 적은
+  // 표지는 덮지 않는다(GC2).
+  function restoreOwn(mine) {
+    const now = clearingOf(store, owner);
+    if (sameClearing(now, mine)) writeClearing(store, owner, priorOf(now));
+  }
+  // 이 비우기(revision — 비운 뒤의 판)의 남은 걸음이 아직 있나 — 이 판 이상의 남은 걸음 표지, 또는 더 새 비우기의 표지에 실어 둔 것.
+  function leftFor(revision) {
+    const now = clearingOf(store, owner);
+    return now != null && (now.left ? now.revision >= revision : (now.then?.revision ?? 0) >= revision);
   }
   // 비운 뒤(22-4 올리는 계정 2 · 3 · 5) — 이 기기의 몫을 하고 이 문서의 코치를 은퇴시킨다(새 판으로 다시 연다). 손님 저장소의 걸음이 남았으면
   // 표지에 적고 곧바로 다시 정해 새 판의 코치로 마저 한다. 그래도 남으면 「일부만 비움」이다(다음 다시 정하기가 또 한다).
   async function cleared(mark, revision, left) {
-    await settleDevice(mark, revision);
     // 「새 길 간 적 있음」 표지를 비운 뒤의 새 판으로 옮긴다 — 계정을 못 읽은 채 다시 열면 이 표지의 판으로 새 길을 연다(keptPath). 앞 판을
     // 가리키면 새 판 코치가 서기 전까지 남은 앞 판 저장소가 열려, 비운 기록이 다시 보이고 그 사이의 답은 버려졌다(4-5 Opus 대체 설계 검토 F3).
-    // 그사이 다른 탭이 더 새 판을 적었으면 내리지 않는다(4-5 코드 다시 검수 GPT -c GA2).
-    const went = markOf(store, owner).revision;
-    if (!(Number.isSafeInteger(went) && went > revision)) writeMark(store, owner, { went: true, path: mark.path, revision });
-    writeClearing(store, owner, left ? { path: mark.path, revision, at: Date.now(), left } : null);
+    // 그사이 다른 탭이 더 새 판을 적었으면 writeMark가 내리지 않는다(4-5 코드 다시 검수 GPT -c GA2). 기다리기 전에 적는다 — 기다리는 사이
+    // 문서를 닫아도 앞 판에 머물지 않게(4-5 끝 판 GPT GC3).
+    writeMark(store, owner, { went: true, path: mark.path, revision });
+    const swept = await settleDevice(mark, revision);
+    // 앞 판에서 못 지운 열쇠가 있으면 쓸기를 남겨 「일부만 비움」으로 알린다(GC6).
+    const rest = left ?? (swept ? null : 'sweep');
+    settleMark(mark, revision, rest);
     retire('cleared');
-    if (left && !disposed) {
+    if (rest && !disposed) {
       await planNow();
       // 판 정하기는 손님 저장소의 걸음을 기다리지 않지만, 누른 비우기는 「일부만 비움」인지 알리려고 그 걸음을 한 번 기다린다(F7).
       await settling?.guest;
     }
-    return { ok: true, path: mark.path, revision, partial: clearingOf(store, owner) != null };
+    return { ok: true, path: mark.path, revision, partial: leftFor(revision) };
   }
   let clearing = null; // 지금 도는 비우기 — 겹쳐 누르면 같은 약속을 준다
 

@@ -97,6 +97,7 @@ function createState(guest, now) {
     unsaved: new Set(), // 이 기록부에서 저장에 실패한(또는 부모가 없어 쓰지 않은) 사건 번호
     inflight: new Map(), // 저장 중인 사건 번호 → 그 저장 약속(자식은 부모의 저장이 끝난 뒤 결과를 보고 쓴다)
     lastAttempt: new Map(), // 제시 번호 → 이 기록부가 만든 그 제시의 마지막 답 번호(뒤 답은 앞 답에 기대어 쓴다 — §18-4)
+    made: new Map(), // 이 기록부가 만든 사건 번호 → 그 사건을 지은 때의 지우기 세대(그 뒤 비운 세대의 자식은 쓰지 않는다)
     turnDepth: 0, // 호스트가 쥔 차례 안(§18-5-1 R1) — 0보다 크면 기록부가 차례를 다시 청하지 않는다
     saving: null, // 손님 요약 저장(하나씩 — 저장하는 사이 새로 접힌 요약은 dirty로 한 번 더)
     dirty: false,
@@ -542,7 +543,7 @@ export function createRecord({
     try {
       return await port.append(values, { expect: gen });
     } catch (error) {
-      if (error?.code === 'CLEARED') await caughtUp();
+      if (error?.code === 'CLEARED') await caughtUp(error.gen);
       throw error;
     }
   }
@@ -555,7 +556,7 @@ export function createRecord({
         return await work();
       } catch (error) {
         if (error?.code !== 'CLEARED' || attempt >= 2) throw error;
-        await caughtUp();
+        await caughtUp(error.gen);
       }
     }
   }
@@ -564,21 +565,36 @@ export function createRecord({
   async function settleCleared(gen) {
     state.noticed = Math.max(state.noticed, gen);
     try {
-      await reload();
+      await reloadSettled();
       foldLocal();
     } catch {
       state.resync = true;
       health?.note('save', { ok: false, code: 'CLEAR_RELOAD', dependent: true });
     }
   }
-  async function caughtUp() {
+  // 막이에 걸려 다른 탭의 비우기를 알았을 때. 다시 읽기가 실패하면 막이가 알려 준 세대(gen)를 들고 다음 꼬리 읽기가 통째로 다시 읽게
+  // 해 둔다 — 세대를 들지 않으면 셸에 알리지 못해 이 탭의 코치가 은퇴하지 않고 남았다(4-5 끝 판 카본 D4).
+  async function caughtUp(gen) {
     try {
-      await reload();
+      await reloadSettled();
       if (guest) foldLocal();
     } catch {
-      // 다시 읽기는 다음 꼬리 읽기 · 다음 열기에.
+      state.resync = true;
+      if (Number.isSafeInteger(gen)) state.gen = Math.max(state.gen, gen);
     }
     noticeCleared();
+  }
+  // 통째로 다시 읽는다 — 다시 읽는 사이 다른 탭이 또 비웠으면(꼬리에서 새 비움 표지 — resync) 그 세대를 다시 읽는다(refresh와 같은 세 번).
+  // 그래도 비워지는 중이면 접지 않고 던진다 — 지운 세대의 사건으로 손님 요약을 접어 새 세대에 쓰면 비운 기록이 요약 사본으로
+  // 되살아났다(4-5 끝 판 GPT GD2).
+  async function reloadSettled() {
+    for (let round = 0; round < 3; round += 1) {
+      await reload();
+      if (!state.resync) return;
+    }
+    throw Object.assign(new Error('Atlas record: 다시 읽는 사이 저장소가 거듭 비워졌다'), {
+      code: 'CLEAR_RACE',
+    });
   }
   // 이 기록부가 아직 알리지 않은 새 세대를 읽었으면 한 번 알린다.
   function noticeCleared() {
@@ -590,10 +606,17 @@ export function createRecord({
       // 셸의 알림이 던져도 기록부는 그대로다.
     }
   }
-  const movedIdsOf = account =>
+  // before(그 비우기가 올린 새 판)를 주면 그보다 앞선 판의 표지와 판이 없는 옛 표지만 센다 — 넷째 걸음의 경계(movedIn)와 같다. 4b가 비운 뒤 그
+  // 계정으로 새로 옮긴 옛 손님 기록까지 「옮긴 것」으로 보고 옛 로그를 비웠다(4-5 끝 판 GPT GD1).
+  const movedIdsOf = (account, before = null) =>
     new Set(
       state.marks
-        .filter(mark => mark.mark === 'moved' && (account == null || mark.account === account))
+        .filter(
+          mark =>
+            mark.mark === 'moved' &&
+            (account == null || mark.account === account) &&
+            (before == null || !Number.isSafeInteger(mark.revision) || mark.revision < before),
+        )
         .flatMap(mark => (Array.isArray(mark.ids) ? mark.ids : [])),
     );
   const requireSwap = () => {
@@ -731,16 +754,24 @@ export function createRecord({
   // 같은 제시의 답은 바로 앞 답에도 기댄다(단계 4 §18-4) — 앞 답이 저장되지 못했으면 뒤 답도 쓰지 않는다. 쓰면 1번이 없는
   // attemptNo 2가 남아 서버가 EVENT_LINK로 빼고, 손님 기기에서는 틀린 뒤 다시 맞힌 답이 혼자 낸 첫 답으로 접혔다(s4).
   // 딸린 거절은 계기에 코드만 센다(이어진 실패 수에 넣지 않는다 — G5 · H2).
+  // 부모 · 앞 답을 이 기록부가 이 사건보다 앞선 세대에 지었으면 그 사이에 저장소가 비워졌다 — 부모가 저장됐어도 지워진 것이라 자식을
+  // 새 세대에 쓰지 않는다. 저장된 부모는 unsaved에 없고 자식은 새 세대를 막이로 걸어 포트도 받았다(4-5 끝 판 카본 D1).
+  const clearedSince = (id, gen) => id != null && (state.made.get(id) ?? gen) < gen;
+  // 쓰지 않을 까닭(딸린 거절의 코드) — 없으면 null.
+  function blockedBy(event, before, gen) {
+    const parent = parentOf(event);
+    if (clearedSince(parent, gen)) return 'PARENT_CLEARED';
+    if (state.unsaved.has(parent)) return 'PARENT_UNSAVED';
+    if (before != null && (state.unsaved.has(before) || clearedSince(before, gen)))
+      return 'ATTEMPT_UNSAVED';
+    return null;
+  }
   async function append(type, event, value, before = null, gen = state.gen) {
-    const parentLost = state.unsaved.has(parentOf(event));
-    if (parentLost || (before != null && state.unsaved.has(before))) {
+    const blocked = blockedBy(event, before, gen);
+    if (blocked) {
       state.unsaved.add(event.id);
       remember(state, event);
-      health?.note('save', {
-        ok: false,
-        code: parentLost ? 'PARENT_UNSAVED' : 'ATTEMPT_UNSAVED',
-        dependent: true,
-      });
+      health?.note('save', { ok: false, code: blocked, dependent: true });
       return false;
     }
     try {
@@ -783,6 +814,7 @@ export function createRecord({
     if (attempt) state.lastAttempt.set(event.presentationId, event.id);
     // 이 사건을 만든 때의 지우기 세대 — 부모의 저장을 기다리는 사이 다른 탭이 비우고 이 탭이 새 세대를 읽었어도, 그 세대로 막이를 건다(GB2).
     const gen = state.gen;
+    state.made.set(event.id, gen);
     const run = () => append(type, event, valueFor(), before, gen);
     const waits =
       type === EVENT_TYPES.excluded
@@ -1138,7 +1170,7 @@ export function createRecord({
     marks: () => state.marks.map(mark => ({ ...mark })),
     // 옮김 표지에 적힌 번호(판과 상관없이) — account를 주면 그 계정의 것만. 옛 기록 옮기기는 이 번호를 「이미 있음」으로 보고(단계 4 계획 §22-4 —
     // 카본새1 · Fable새1), 계정 비우기의 넷째 걸음은 그 계정의 것을 지운다.
-    movedIds: (account = null) => movedIdsOf(account),
+    movedIds: (account = null, before = null) => movedIdsOf(account, before),
     // 가장 늦은 비움 표지 { gen, at, legacy, carried }의 사본(비운 적이 없으면 null)과 지금 읽은 지우기 세대.
     cleared: () =>
       state.cleared

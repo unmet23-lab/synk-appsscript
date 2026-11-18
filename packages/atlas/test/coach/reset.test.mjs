@@ -1002,12 +1002,23 @@ test('올리는 계정의 0 걸음 — 서버가 받지 않아 건너뛴 사건�
     [first.ok, first.step, first.code, first.known],
     [false, 'upload', 'UNSENT_SKIPPED', true],
   );
-  assert.ok(first.skipped >= 2, '건너뛴 제시와 그 답');
+  assert.equal(first.skipped, 2, '건너뛴 제시와 그 답 — 둘이다(4-5 끝 판 GPT GE5)');
   assert.ok(!w.calls.includes('clear'), '서버를 부르지 않았다');
-  const less = await a.reset({ guestPort: w.guestPort, allowSkipped: first.skipped - 1 });
-  assert.deepEqual([less.code, less.skipped], ['UNSENT_SKIPPED', first.skipped]);
+  const less = await a.reset({ guestPort: w.guestPort, allowSkipped: 1 });
+  assert.deepEqual(
+    [less.code, less.skipped],
+    ['UNSENT_SKIPPED', 2],
+    '하나만 확인하면 비우지 않는다',
+  );
   const odd = await a.reset({ guestPort: w.guestPort, allowSkipped: 'all' });
   assert.equal(odd.code, 'UNSENT_SKIPPED', '꼴이 틀린 확인은 확인하지 않은 것');
+  const text = await a.reset({ guestPort: w.guestPort, allowSkipped: '2' });
+  assert.equal(
+    text.code,
+    'UNSENT_SKIPPED',
+    `수와 같은 숫자 글도 확인한 수가 아니다(4-5 끝 판 GPT GE2)`,
+  );
+  assert.ok(!w.calls.includes('clear'), '그동안 서버를 부르지 않았다');
   const more = await a.reset({
     guestPort: w.guestPort,
     allowSkipped: first.skipped,
@@ -1019,7 +1030,7 @@ test('올리는 계정의 0 걸음 — 서버가 받지 않아 건너뛴 사건�
     '옛 대기열의 몫을 더해 한 번에 알린다',
   );
   assert.ok(!w.calls.includes('clear'));
-  const done = await a.reset({ guestPort: w.guestPort, allowSkipped: first.skipped });
+  const done = await a.reset({ guestPort: w.guestPort, allowSkipped: 2 });
   assert.equal(done.ok, true, '확인한 수까지는 지운다');
   assert.ok(w.calls.includes('clear'));
   a.dispose();
@@ -1160,6 +1171,25 @@ test('손님 코치도 비우기가 확인된 계정의 남은 걸음을 한다 
   assert.ok(fresh.length >= 2);
   const none = await g2.reset({ settle: 'cleared', revision: 2, guestPort: w.guestPort });
   assert.deepEqual([none.ok, none.code], [false, 'NO_ACCOUNT']);
+  // 손님 코치는 그 계정의 판을 모른다 — 넷째 걸음을 잴 판을 받지 못하면(빠짐 · 0 · 정수 아님) 아무것도 지우지 않는다(4-5 끝 판 카본 D2).
+  for (const revision of [undefined, null, 0, 1.5, '2']) {
+    const blind = await g2.reset({
+      settle: 'cleared',
+      account: 'A',
+      revision,
+      guestPort: w.guestPort,
+    });
+    assert.deepEqual(
+      [blind.ok, blind.code, blind.path],
+      [false, 'NO_REVISION', 'guest'],
+      `판 ${revision}`,
+    );
+  }
+  assert.deepEqual(
+    (await heldIds(w.guestPort)).sort(),
+    [...moved, ...fresh].sort(),
+    '판 없이 부른 남은 걸음은 아무 사건도 지우지 않았다',
+  );
   const done = await g2.reset({
     settle: 'cleared',
     account: 'A',
@@ -1168,6 +1198,7 @@ test('손님 코치도 비우기가 확인된 계정의 남은 걸음을 한다 
     legacy: { read: () => null, clear: async () => {} },
   });
   assert.equal(done.ok, true);
+  assert.equal(done.path, 'guest', '손님 코치가 한 남은 걸음이다(그 계정의 길을 모른다)');
   const left = await heldIds(w.guestPort);
   assert.ok(
     moved.every(id => !left.includes(id)),
@@ -1178,4 +1209,57 @@ test('손님 코치도 비우기가 확인된 계정의 남은 걸음을 한다 
     '로그아웃 뒤의 손님 사건은 둔다',
   );
   g2.dispose();
+});
+
+test('남은 걸음의 4b도 그 비우기가 올린 새 판보다 앞선 판의 옮김 표지만 센다 — 비운 뒤 그 계정으로 새로 옮긴 옛 손님 기록은 옛 로그에서 지우지 않는다(4-5 끝 판 GPT GD1)', async () => {
+  const w = world(71);
+  const old = { log: [legacyEvent(w, 'old-1')], ledger: null, epoch: 'e1' };
+  const guest = await guestCoach(w, () => old);
+  guest.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort, legacy: () => old });
+  assert.equal(
+    (await recs.move({ postLegacy: async () => ({ ok: true, ids: ['old-1'] }) })).ok,
+    true,
+  );
+  recs.close();
+  let wiped = 0;
+  let now = old;
+  const legacy = {
+    read: () => now,
+    clear: async () => {
+      wiped += 1;
+      now = { log: [], ledger: null, epoch: 'e2' };
+    },
+  };
+  // 판 1을 올린 비우기라면 판 1로 옮긴 것은 그 뒤의 것이다 — 넷째 걸음도 4b도 건드리지 않는다.
+  const kept = await a.reset({ guestPort: w.guestPort, settle: 'cleared', revision: 1, legacy });
+  assert.deepEqual([kept.ok, kept.guest.dropped, kept.guest.legacy], [true, 0, 'kept']);
+  assert.equal(wiped, 0, '비운 뒤 옮긴 옛 손님 기록은 옛 로그에 남는다');
+  // 판 2를 올린 비우기라면 판 1로 옮긴 것은 그 앞의 것이다 — 4b가 옛 로그를 비운다.
+  const all = await a.reset({ guestPort: w.guestPort, settle: 'cleared', revision: 2, legacy });
+  assert.deepEqual([all.ok, all.guest.legacy], [true, 'cleared']);
+  assert.equal(wiped, 1);
+  a.dispose();
+});
+
+test('결과를 모르는 서버 비우기 실패(시간 초과) 뒤에는 그 계정으로 옮긴 손님 기록을 지우지 않는다 — 서버가 비웠는지 모르기 때문이다(4-5 끝 판 GPT GE1)', async () => {
+  const w = world(73);
+  const guest = await guestCoach(w);
+  await practise(w, guest, w.items.slice(0, 1));
+  guest.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort });
+  assert.equal((await recs.move()).ok, true);
+  recs.close();
+  const moved = await heldIds(w.guestPort);
+  assert.ok(moved.length >= 2, '옮긴 제시와 답이 손님 저장소에 있다');
+  w.route.clear = async () => {
+    w.calls.push('clear');
+    throw fault(408, 'TIMEOUT');
+  };
+  const timedOut = await a.reset({ guestPort: w.guestPort });
+  assert.deepEqual([timedOut.ok, timedOut.step, timedOut.known], [false, 'clear', false]);
+  assert.deepEqual(await heldIds(w.guestPort), moved, '옮긴 손님 기록은 그대로다');
+  a.dispose();
 });

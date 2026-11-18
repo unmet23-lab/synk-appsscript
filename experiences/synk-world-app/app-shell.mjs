@@ -743,22 +743,26 @@ function responsesSection(){
  const item=(row,index)=>{const [kind,value]=name(row);return `<li${index>=RESPONSE_PAGE?' data-response-later hidden':''}><span>${escape(kind)} · ${escape(value)}</span><button class="quiet-button" type="button" data-response-remove="${escape(row.id)}" aria-label="${escape(t('response.removeLabel',{kind,value}))}">${escape(t('response.remove'))}</button></li>`;};
  return `<section class="ws-responses" data-world-responses data-label="RESPONSES" aria-labelledby="ws-responses-title"><h3 id="ws-responses-title" tabindex="-1">${escape(t('response.mine'))}</h3><p class="ws-responses-note">${escape(t('response.note30'))}</p><ul>${rows.map(item).join('')}</ul>${rows.length>RESPONSE_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-responses-more>${escape(t('life.more'))}</button>`:''}<p class="ws-responses-note">${escape(t(local?'response.removeNoteDevice':'response.removeNote'))}</p></section>`;
 }
+// 「더 보기」를 펼쳤는가 — 학생이 누른 때만 참이다. 단추가 처음부터 없던 짧은 목록을 펼친 것으로 보면, 서버 읽기 뒤 길어진 목록이 처음부터
+// 다 펼쳐지고 「더 보기」가 사라졌다(4-5 끝 판 GPT GB6 · 카본 B1). 칸을 다시 그리면 새 칸에 이어 둔다.
+const responsesOpened=box=>box?.dataset.responsesOpen==='1';
+function openResponses(box){for(const row of box.querySelectorAll('[data-response-later]'))row.hidden=false;box.querySelector('[data-responses-more]')?.remove();box.dataset.responsesOpen='1';}
 function mountResponses(){
  const box=$('#panel-content [data-world-responses]');if(!box)return;
  box.addEventListener('click',event=>{
   const more=event.target.closest?.('[data-responses-more]');
-  if(more){for(const row of box.querySelectorAll('[data-response-later]'))row.hidden=false;more.remove();box.querySelector('[data-response-later] button')?.focus?.();return;}
+  if(more){openResponses(box);box.querySelector('[data-response-later] button')?.focus?.();return;}
   const button=event.target.closest?.('[data-response-remove]');if(!button)return;
   const rows=[...box.querySelectorAll('[data-response-remove]')],index=rows.indexOf(button);
   let removed=false;try{removed=life.education?.removeResponse?.(button.dataset.responseRemove)===true;}catch{removed=false;}
   home.toast(t(removed?'response.removed':'response.removeFailed'));
   // 목록을 다시 그리고 초점을 같은 자리(없으면 제목)로 옮긴다. 펼친 「더 보기」는 펼친 채로 둔다.
-  const open=!box.querySelector('[data-responses-more]'),html=responsesSection();
+  const open=responsesOpened(box),html=responsesSection();
   // 마지막 응답을 뺐으면 카드가 사라지므로 초점을 바로 위 학습 기록 연결(없으면 시트의 첫 단추)로 옮긴다.
   if(!html){const near=$('#panel-content [data-world-learning]')||$('#panel-content .world-actions button');box.remove();near?.focus?.({preventScroll:true});return;}
   box.outerHTML=html;mountResponses();
   const next=$('#panel-content [data-world-responses]');if(!next)return;
-  if(open){for(const row of next.querySelectorAll('[data-response-later]'))row.hidden=false;next.querySelector('[data-responses-more]')?.remove();}
+  if(open)openResponses(next);
   const buttons=next.querySelectorAll('[data-response-remove]');(buttons[Math.min(index,buttons.length-1)]||next.querySelector('h3'))?.focus?.();
  });
 }
@@ -771,11 +775,13 @@ function refreshResponses(){
   if(!changed||!sheet||!sheet.isConnected)return;
   const box=$('#panel-content [data-world-responses]'),html=responsesSection();
   if(box){
-   const open=!box.querySelector('[data-responses-more]');
-   if(!html){box.remove();return;}
+   // 초점이 칸 안에 있었으면 다시 그린 뒤 같은 응답의 단추로, 그 응답이 사라졌거나 접힌 줄이면 칸 제목으로 돌려준다(4-5 끝 판 GPT GB7).
+   const open=responsesOpened(box),focused=box.contains(document.activeElement)?document.activeElement:null,keep=focused?.dataset?.responseRemove??null;
+   if(!html){box.remove();if(focused)($('#panel-content [data-world-learning]')||$('#panel-content .world-actions button'))?.focus?.({preventScroll:true});return;}
    box.outerHTML=html;mountResponses();
    const next=$('#panel-content [data-world-responses]');
-   if(open&&next){for(const row of next.querySelectorAll('[data-response-later]'))row.hidden=false;next.querySelector('[data-responses-more]')?.remove();}
+   if(open&&next)openResponses(next);
+   if(focused&&next)([...next.querySelectorAll('[data-response-remove]')].find(button=>button.dataset.responseRemove===keep&&!button.closest('[hidden]'))||next.querySelector('h3'))?.focus?.({preventScroll:true});
    return;
   }
   const anchor=$('#panel-content [data-world-me]')||$('#panel-content #world-classroom-lessons');if(!html||!anchor)return;
@@ -798,13 +804,15 @@ function meSection(fresh=false){
  if(meUndo&&all.some(row=>row.unit===meUndo.unit&&Number.isFinite(row.lastAt)&&row.lastAt>meUndo.at))meUndo=null;
  const button=(kind,row)=>`<button class="quiet-button" type="button" data-me-tell="${kind}" data-me-unit="${escape(row.unit)}" aria-label="${escape(meText(`me.${kind}Label`,{label:row.label}))}">${escape(meText(`me.${kind}`))}</button>`;
  const undo=()=>`<li><span>${escape(meUndo.label)}</span><button class="quiet-button" type="button" data-me-undo="${escape(meUndo.eventId)}" aria-label="${escape(meText('me.undoLabel',{label:meUndo.label}))}">${escape(meText('me.undo'))}</button></li>`;
+ // 제목의 수는 보이는 줄(되돌리기 줄 포함), 「더 보기」는 되돌리기로 가린 단위를 뺀 줄로 센다 — 걸러내기 전 수를 쓰면 0개 제목이나 빈 「더 보기」가 섰다(4-5 끝 판 카본 B2).
  const list=(state,kind)=>{
-  const rows=me[state].filter(row=>row.unit!==meUndo?.unit).map((row,index)=>`<li${index>=ME_PAGE?' data-me-later hidden':''}><span>${escape(row.label)}</span>${button(kind,row)}</li>`);
+  const shown=me[state].filter(row=>row.unit!==meUndo?.unit);
+  const rows=shown.map((row,index)=>`<li${index>=ME_PAGE?' data-me-later hidden':''}><span>${escape(row.label)}</span>${button(kind,row)}</li>`);
   if(meUndo?.state===state)rows.unshift(undo());
   if(!rows.length)return '';
-  return `<h4>${escape(meText(`me.${state}`,{n:me[state].length}))}</h4><ul data-me-list="${state}">${rows.join('')}</ul>${me[state].length>ME_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-me-more="${state}">${escape(t('life.more'))}</button>`:''}`;
+  return `<h4>${escape(meText(`me.${state}`,{n:rows.length}))}</h4><ul data-me-list="${state}">${rows.join('')}</ul>${shown.length>ME_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-me-more="${state}">${escape(t('life.more'))}</button>`:''}`;
  };
- return `<section class="ws-responses" data-world-me data-label="ME" aria-labelledby="ws-me-title"><h3 id="ws-me-title" tabindex="-1">${escape(meText('me.title'))}</h3><p class="ws-responses-note">${escape(meText(all.length?'me.note':'me.empty'))}</p>${list('shaky','known')}${list('clear','relearn')}${list('said','relearn')}<button class="quiet-button" type="button" data-me-clear>${escape(meText('me.clearButton'))}</button></section>`;
+ return `<section class="ws-responses" data-world-me data-label="ME" aria-labelledby="ws-me-title"><h3 id="ws-me-title" tabindex="-1">${escape(meText('me.title'))}</h3><p class="ws-responses-note">${escape(meText(all.length||meUndo?'me.note':'me.empty'))}</p>${list('shaky','known')}${list('clear','relearn')}${list('said','relearn')}<button class="quiet-button" type="button" data-me-clear>${escape(meText('me.clearButton'))}</button></section>`;
 }
 // 칸만 다시 그린다 — 초점은 focus(고른 단추)나 제목으로 옮긴다. 칸이 더 서지 않으면(엔진 판이 아님) 칸을 걷는다.
 function redrawMe(focus=null){
@@ -813,6 +821,17 @@ function redrawMe(focus=null){
  box.outerHTML=html;mountMe();
  const next=$('#panel-content [data-world-me]');
  ((focus&&next?.querySelector(focus))||next?.querySelector('h3'))?.focus?.({preventScroll:true});
+}
+// 「나」 칸은 새 길 홈 코치가 엔진 판일 때만 선다 — 확인 중에 시트를 열었으면 코치가 선 뒤 제자리(응답 칸 뒤 · 반 수업 앞)에 넣는다. 초점은
+// 옮기지 않는다. 그사이 시트를 닫았거나 바꿨으면 넣지 않는다(4-5 끝 판 GPT GB5).
+function waitMe(){
+ const education=life.education,view=$('#panel-content .ws-me');
+ if(typeof education?.meReady!=='function'||!view||$('#panel-content [data-world-me]'))return;
+ void education.meReady().then(ready=>{
+  if(!ready||!sheetOpen(view)||$('#panel-content [data-world-me]'))return;
+  const html=meSection(),anchor=$('#panel-content #world-classroom-lessons');if(!html||!anchor)return;
+  anchor.insertAdjacentHTML('beforebegin',html);mountMe();
+ },()=>{});
 }
 function mountMe(){
  const box=$('#panel-content [data-world-me]');if(!box)return;
@@ -829,14 +848,29 @@ function mountMe(){
    redrawMe(kind==='relearn'?'[data-me-undo]':null);return;
   }
   const undo=event.target.closest?.('[data-me-undo]');
-  if(undo){let done=false;try{done=life.education?.undoMe?.(undo.dataset.meUndo)===true;}catch{done=false;}if(!done){home.toast(meText('me.toldFailed'));return;}meUndo=null;redrawMe();return;}
+  // 되돌리기는 저장이 끝난 뒤에 칸을 다시 그린다 — 뺀 효과가 요약에 서는 때다. 저장되지 않으면 되돌리기를 남긴 채 알린다(4-5 끝 판 GPT GB4).
+  if(undo){
+   if(undo.disabled)return;undo.disabled=true;const id=undo.dataset.meUndo;
+   void Promise.resolve().then(()=>life.education?.undoMe?.(id)).then(done=>done===true,()=>false).then(done=>{
+    if(!box.isConnected)return;
+    if(!done){undo.disabled=false;home.toast(meText('me.toldFailed'));return;}
+    if(meUndo?.eventId===id)meUndo=null;redrawMe();
+   });
+   return;
+  }
   if(event.target.closest?.('[data-me-clear]'))void clearPracticeNow();
  });
 }
 // 연습 기록 비우기(§22-4 셸): 정해진 글로 한 번 더 묻고, 확인하면 입구의 clearPractice를 부른다. 결과를 알린 뒤 계정 설정 스냅샷을 새로 받아 「내 계정」
 // 시트 전체를 다시 그린다(22-4의 5 — 동의 체크박스의 판 번호와 응답 목록). 아무것도 비우지 못했으면 「지금은 비우지 못했어요」 쪽으로 알린다.
+// 비우는 사이 단추를 다시 누르면 묻지 않는다 — 두 번째 확인이 첫 비우기가 연 새 판을 또 비웠다(4-5 끝 판 카본 B3).
+let clearingPractice=false;
 async function clearPracticeNow(){
+ if(clearingPractice)return;
+ const view=$('#panel-content .ws-me');
  if(!window.confirm(meText('me.clearAsk')))return;
+ clearingPractice=true;const button=view?.querySelector('[data-me-clear]');if(button)button.disabled=true;
+ try{
  // 다시 묻고 다시 부르는 것은 처음 누른 로그인의 학습 화면에만 한다 — 기다리는 사이 계정이 바뀌었으면 묻지 않고 멈춘다(4-5 코드 다시 검수 GPT -c GA1).
  const education=life.education,owner=client.snapshot?.accountId||'guest',same=()=>life.education===education&&(client.snapshot?.accountId||'guest')===owner;
  let result=null;try{result=await education?.clearPractice?.();}catch{result=null;}
@@ -849,9 +883,24 @@ async function clearPracticeNow(){
  home.toast(meText(result?.ok?(result.partial?'me.clearPartial':'me.clearDone'):result?.code==='UNSENT'?'me.clearUnsent':'me.clearFailed'));
  // 결과와 상관없이 계정 설정 스냅샷을 새로 받아 그린다 — 결과를 모르는 실패도 서버에서는 비워졌을 수 있다(동의 체크박스의 판 번호 — §22-4 · 4-5 Opus 대체 설계 검토 F8).
  if(operating)try{await account.restore();}catch{/* 앞 스냅샷으로 다시 그린다 */}
- if($('#panel-content .ws-me'))profile();
+ // 누른 시트가 아직 열려 있을 때만 그린다 — 닫는 중(닫기 전환)이거나 다른 시트로 바꿨으면 다시 열지 않는다. 쓰던 반 과제 원고가 있으면 시트
+ // 전체를 다시 그리지 않고 동의 판 번호 · 응답 · 「나」 칸만 고친다 — 다시 그리면 원고를 버렸다(4-5 끝 판 GPT GB1).
+ if(!sheetOpen(view))return;
+ if(sheet?.hasDraft?.()){redrawMeParts();return;}
+ profile();
+ }finally{clearingPractice=false;if(button?.isConnected)button.disabled=false;}
 }
-function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}${meSection(true)}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();refreshResponses();mountMe();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
+// 「내 계정」 시트가 그대로 열려 있는가(닫기 전환 중이면 시트가 아직 붙어 있어도 아니다).
+function sheetOpen(view){const kind=home.openPanel?.();return Boolean(view?.isConnected)&&(kind==null||kind==='world-profile');}
+// 시트를 다시 그리지 않고 비우기의 결과만 맞춘다 — 학습 기록 연결 칸의 판 번호와 켬, 「내가 남긴 응답」, 「나」 칸.
+function redrawMeParts(){
+ const box=$('#panel-content [data-world-learning]');
+ if(box){try{const value=account.preferences();box.dataset.revision=String(value.revision);box.checked=Boolean(value.enabled);}catch{/* 다음에 열 때 맞춘다 */}}
+ const responses=$('#panel-content [data-world-responses]'),html=responsesSection();
+ if(responses){if(html){const open=responsesOpened(responses);responses.outerHTML=html;mountResponses();const next=$('#panel-content [data-world-responses]');if(open&&next)openResponses(next);}else responses.remove();}
+ redrawMe();
+}
+function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}${meSection(true)}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();refreshResponses();mountMe();waitMe();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
  void addMe2Row();
  // 「우리 반 수업」은 반 연결 바로 위: 연결하면 이 시트를 다시 그려 같은 자리에 수업이 이어진다. 시트가 열려 있는 동안만 30초마다 묻는다.
  // 우리 반 수업·과제·반 연결은 이 시트 하나의 자원이다(시트를 바꾸거나 닫으면 함께 버린다).

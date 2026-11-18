@@ -364,9 +364,10 @@ export function createCoach(options = {}) {
     // 판 응답(feedback.given)을 뺀다(단계 4 계획 §22-5 · 카본 A1 · Fable F6). 「내가 남긴 응답」 목록에서 온 번호만 받는다. 겨눈 사건이
     // 기기에 있으면 판 응답인지 보고 아니면 던진다 — 이 문으로 접기 재료를 빼면 계정 보기가 서버를 기다리지 않은 채 그 근거가 남는다.
     // 기기에 없으면(이틀 지나 치웠거나 다른 기기의 응답) 판 응답 목록에서 온 것을 믿고 「닿는 줄 없음」으로 적는다. 사건을 돌려준다.
+    // 기기에 있는지는 저장 중인 내 사건까지 본다 — 든 사건만 보면 막 만든 제시 · 답 · 판 마침이 저장 중일 때 거르지 못했다(4-5 끝 판 카본 D3).
     excludeResponse(eventId) {
       const session = live();
-      const held = state.host.trail.heldEvents().find(event => event.id === eventId);
+      const held = state.host.ownEvents().find(event => event.id === eventId);
       if (held && held.type !== EVENT_TYPES.feedback)
         throw new TypeError('Atlas: excludeResponse takes a set response (feedback.given)');
       const host = state.host;
@@ -404,6 +405,7 @@ export function createCoach(options = {}) {
         known: read?.known ?? null,
         seenFrom: read?.seenFrom ?? null,
         held: read?.held ?? null,
+        heldRows: read?.heldRows ?? null,
         acked: id => host.trail.acked(id),
         gone: host.responsesGone,
         now: host.now(),
@@ -747,7 +749,14 @@ export function createCoach(options = {}) {
         openGuestAside({ legacy: legacy?.read ?? null, create: false, port: guestPort });
       const whose = account ?? settleFor;
       if (settle === 'cleared' || settle === 'legacy')
-        return settleAccount(host, { account: whose, legacy, open, settle, revision });
+        return settleAccount(host, {
+          account: whose,
+          legacy,
+          open,
+          settle,
+          revision,
+          own: account != null,
+        });
       if (host.guest && account == null) return resetGuest(host, legacy);
       const transport = options.host?.transport;
       const call =
@@ -828,6 +837,17 @@ export function createCoach(options = {}) {
       return live().tell(unit, kind).event;
     },
 
+    // 본인 말 되돌리기(단계 4 계획 §22-6 · 설계 주인 I — 11-19 새벽 승인) — tell이 돌려준 사건을 뺀다(exclude와 같은 사건). 뺀 효과는 저장된 뒤
+    // 다시 세운 판에서 요약에 서므로, 저장이 끝나면 풀리는 약속(저장됐으면 참)을 사건과 함께 준다 — 셸은 참이면 칸을 다시 그리고, 거짓이면
+    // 되돌리기를 남긴 채 알린다(4-5 끝 판 GPT GB4). 본인 말 사건만 받는다 — 다른 사건이나 기기에 없는 번호면 던진다(저장 중인 내 사건까지 본다).
+    untell(eventId) {
+      const session = live();
+      const held = state.host.ownEvents().find(event => event.id === eventId);
+      if (held?.type !== EVENT_TYPES.stated)
+        throw new TypeError('Atlas: untell takes a stated event (unit.stated) on this device');
+      const made = session.exclude(eventId);
+      return { event: made.event, stored: made.stored };
+    },
     // 받기 알림(단계 4 계획 §21-20 — 설계 주인 11-16 오후 승인. 11-16 새벽에 고른 「셸이 다시 보기」를 바꾼 것이다). 문서 밖의 답이 이
     // 기록부에 들어왔다는 호스트 알림 두 가지만 넘긴다. receive는 받기 · 첫 받기 · 올리기 답을 기록부에 받았을 때, refresh는 다른 탭이 썼거나
     // 다른 저장소에서 사건을 옮겨 왔을 때 난다. 넘기는 것은 { kind } 하나다(사건 번호나 다른 칸은 넘기지 않는다). 알림은 기록부와 요약이

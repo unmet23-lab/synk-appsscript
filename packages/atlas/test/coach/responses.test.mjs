@@ -492,6 +492,20 @@ test('올리는 계정 코치 — 서버 값 위에 기기의 응답 · 빼기�
   const other = open(w, { ...host, port: undefined });
   await other.ready;
   assert.deepEqual(idsOf(other.responses().rows), ['srv-b', 'srv-a']);
+  // 같은 문서에서 판 번호가 같은 다른 계정은 그 값을 나누지 않는다 — 제 서버 값을 읽기 전에는 빈 목록이다(4-5 끝 판 GPT GE3).
+  const stranger = open(w, {
+    ...host,
+    account: 'acct-s',
+    key: storeName({ account: 'acct-s', revision: 1 }),
+    port: memoryPort(),
+  });
+  await stranger.ready;
+  assert.deepEqual(
+    stranger.responses(),
+    { complete: false, rows: [] },
+    '다른 계정의 서버 값을 보지 않는다',
+  );
+  stranger.dispose();
   // 기기의 빼기는 서버 줄에도 바로 듣는다.
   coach.excludeResponse('srv-b');
   assert.deepEqual(idsOf(other.responses().rows), ['srv-a']);
@@ -865,6 +879,140 @@ test('올리는 계정 코치 — 저장이 거절된 판 응답 빼기는 그 �
       idsOf(coach.responses().rows),
       [given.id],
       '저장되지 않은 빼기는 응답을 숨기지 않는다',
+    );
+  } finally {
+    releaseHost(handle);
+    coach.dispose();
+  }
+});
+
+test('서버 값 두기 — 줄 상한에서 멈춘 답이 앞 값의 응답을 이어 들 때 그 판(마침 · 결정 · 종류)도 이어 든다. 기기가 마침을 치운 뒤에도 판 종류가 남는다(4-5 끝 판 GPT GD4)', () => {
+  // 기기에는 응답만 남았다 — 마침 done-a는 올라간 뒤 이틀이 지나 치웠다. 응답의 받은 표지(10)는 멈춘 줄(100) 아래다.
+  const acks = new Map([['r-a', 10]]);
+  const events = [given('r-a', 'done-a', 'too_much', NOW - DAY)];
+  const answer = (serverTime, seen, responses, seenFrom) => ({
+    ok: true,
+    revision: 1,
+    serverTime,
+    complete: seenFrom == null,
+    seen,
+    seenFrom,
+    responses,
+  });
+  const kindsOf = read =>
+    responseRows({
+      events,
+      server: read?.rows ?? null,
+      known: read?.known ?? null,
+      seenFrom: read?.seenFrom ?? null,
+      held: read?.held ?? null,
+      heldRows: read?.heldRows ?? null,
+      acked: id => acks.get(id),
+      now: NOW,
+    }).map(r => [r.id, r.kind]);
+  const whole = storedRead(
+    null,
+    answer(1000, ['r-a'], [row('r-a', 'done-a', 'too_much', NOW - DAY)], null),
+    1,
+  );
+  assert.deepEqual(kindsOf(whole), [['r-a', 'short']], '끝까지 읽은 답 — 서버 줄이 판 종류를 준다');
+  const capped = storedRead(whole, answer(2000, [], [], 100), 1);
+  assert.deepEqual([...capped.held], ['r-a']);
+  assert.deepEqual(
+    kindsOf(capped),
+    [['r-a', 'short']],
+    '닿지 못한 응답을 앞 값대로 둘 때 판 종류를 잃지 않는다',
+  );
+  assert.deepEqual(
+    kindsOf(storedRead(capped, answer(3000, [], [], 100), 1)),
+    [['r-a', 'short']],
+    '상한에서 멈춘 답이 이어 와도 같다',
+  );
+});
+
+test('올리는 계정 코치 — 줄 상한에서 멈춘 답이 앞 값의 응답을 이어 들면, 기기가 그 판의 마침을 치운 뒤에도 판 종류(짧은 연습)가 남는다(4-5 끝 판 GPT GD4)', async () => {
+  const items = bankOf(rng(91), { items: 4 });
+  const map = fakeMap(items);
+  const server = createServer({ random: rng(92), index: indexOfMap(map) });
+  const time = clock();
+  server.tick(time.now() - server.now);
+  const top = topWindow();
+  const key = storeName({ account: 'acct-kind', revision: 1 });
+  const coach = createCoach({
+    gameId: 'resp',
+    map,
+    seed: 's',
+    dayOffset: 0,
+    scope: top,
+    host: {
+      guest: false,
+      account: 'acct-kind',
+      revision: 1,
+      key,
+      port: memoryPort(),
+      transport: {
+        post: (events, since) => server.post(events, since),
+        get: async since => ({ summary: await server.summary(since), serverTime: server.now }),
+      },
+      now: time.now,
+    },
+  });
+  await coach.ready;
+  await coach.synced();
+  const handle = await acquireHost({ key, params: PARAMS, now: time.now, guest: false }, top);
+  try {
+    const pid = coach.present(items[0]);
+    await coach.answer(pid, { correct: true, assessable: true }).stored;
+    const set = coach.finishSet({ kind: 'short' });
+    await set.folded;
+    await handle.settled();
+    await handle.upload();
+    // 응답은 마침보다 10분 늦게 남기고 따로 올린다 — 이틀 치우기가 마침만 치우는 때가 생긴다.
+    time.advance(10 * 60_000);
+    server.tick(10 * 60_000);
+    const given = coach.feedback(set, 'too_much');
+    await handle.settled();
+    await handle.upload();
+    const seq = handle.trail.acked(given.id);
+    assert.equal(typeof seq, 'number', '서버가 응답을 받았다');
+    const kinds = server => coach.responses({ server }).rows.map(r => [r.id, r.kind]);
+    const whole = {
+      ok: true,
+      revision: 1,
+      complete: true,
+      seen: [given.id],
+      seenFrom: null,
+      serverTime: server.now,
+      responses: [
+        {
+          id: given.id,
+          at: given.at,
+          value: given.value,
+          completionId: set.completionId,
+          decisionId: set.decisionId,
+          variant: 'short',
+        },
+      ],
+    };
+    assert.deepEqual(kinds(whole), [[given.id, 'short']]);
+    time.advance(2 * DAY - 5 * 60_000);
+    server.tick(2 * DAY - 5 * 60_000);
+    await handle.trail.compact();
+    assert.equal(handle.trail.heldEvent(set.completionId), null, '마침은 기기에서 치웠다');
+    assert.notEqual(handle.trail.heldEvent(given.id), null, '응답은 기기에 남았다');
+    const capped = {
+      ok: true,
+      revision: 1,
+      complete: false,
+      seen: [],
+      seenFrom: seq + 1,
+      serverTime: server.now,
+      responses: [],
+    };
+    assert.deepEqual(
+      kinds(capped),
+      [[given.id, 'short']],
+      '닿지 못한 응답을 앞 값대로 둘 때 판 종류를 잃지 않는다',
     );
   } finally {
     releaseHost(handle);

@@ -110,7 +110,7 @@ async function forgetMoved(account, legacy, open, drop = true, before = null) {
       // 판단의 재료(옮긴 번호 · 손님 저장소의 사건 · 옮긴 장부 칸)는 넷째 걸음 전에 한 번 읽는다. 판단 자체는 비우기 직전에 옛 엔진 문이 임대를
       // 쥔 채 다시 읽은 옛 로그로 한 번 더 한다(아래 wipeLegacy의 check — GA1).
       const facts = {
-        moved: record.movedIds(account),
+        moved: record.movedIds(account, before),
         events: record.heldEvents(),
         carried: record.cleared()?.carried ?? null,
       };
@@ -181,12 +181,21 @@ export async function resetAccount(
 // 걸음만 한다. settle 'cleared'는 넷째 걸음과 4b다 — 결과를 몰랐던 비우기가 서버에서 된 것을 입구가 lastClear로 알았거나, 넷째 걸음이 안 됐다.
 // 'legacy'는 4b만이다 — 옛 손님 로그가 남았고 넷째 걸음은 이미 했다(그 뒤 그 계정으로 새로 옮긴 사건을 지우지 않게). revision은 그 비우기가
 // 올린 새 판이다(입구의 표지가 든다) — 'cleared'의 넷째 걸음은 그보다 앞선 판의 옮김 표지만 센다. 없으면 이 코치의 판으로 잰다.
-export async function settleAccount(host, { account, legacy, open, settle, revision = null }) {
+// own: 이 코치의 계정 걸음인가 — 손님 코치가 다른 계정의 걸음을 할 때는 거짓이다.
+export async function settleAccount(
+  host,
+  { account, legacy, open, settle, revision = null, own = true },
+) {
   // 어느 계정의 걸음인지 모르면 하지 않는다 — 손님 코치는 입구가 준 계정의 것만 한다(4-5 Opus 대체 설계 검토 F7).
   if (account == null)
     return { ok: false, path: 'guest', step: 'settle', code: 'NO_ACCOUNT', known: true };
-  const path = host.guest ? 'device' : 'upload';
-  const before = Number.isSafeInteger(revision) ? revision : host.revision;
+  const given = Number.isSafeInteger(revision) && revision > 0 ? revision : null;
+  // 손님 코치는 그 계정의 판을 모른다 — 넷째 걸음을 잴 판(표지의 판)을 받지 못했으면 하지 않는다. 손님 판으로 재면 옮김 표지를 하나도
+  // 고르지 못하거나 판 없이 모두 지웠다(4-5 끝 판 카본 D2).
+  if (!own && settle === 'cleared' && given == null)
+    return { ok: false, path: 'guest', step: 'settle', code: 'NO_REVISION', known: true };
+  const path = !own ? 'guest' : host.guest ? 'device' : 'upload';
+  const before = given ?? host.revision;
   const guest = await forgetMoved(account, legacy, open, settle === 'cleared', before);
   return { ok: true, path, settled: settle, guest };
 }

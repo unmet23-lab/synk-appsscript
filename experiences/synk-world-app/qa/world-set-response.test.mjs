@@ -379,3 +379,74 @@ test('「내 계정」을 연 뒤 생활 판정이 지금 판으로 서면 홈 �
  await within(waiting);
  assert.equal(closed,false,'닫으면 끝낸다');
 });
+
+test('「내가 남긴 응답」 — 판을 다시 정해 닫은 새 길 코치는 잊는다. 닫힌 코치로 목록 · 길이를 세거나 서버를 읽지 않는다(4-5 끝 판 카본 C1)',async()=>{
+ let env=null;const own=[],asked=[],watchers=[];
+ const stamp=()=>new Date(env.now()).toISOString();
+ const nextCoach={finishSet:()=>'set.next.1',
+  feedback:(set,value)=>{own.splice(0,own.length,{id:`r-${value}`,at:stamp(),kind:'short',value,completionId:'done.next.1'});return {id:own[0].id};},
+  responses:()=>({complete:true,rows:[...own]}),excludeResponse:()=>{}};
+ const quiet={current:null,next:()=>null,preHelp(){},answer(){},unknown(){},skip(){},replay:()=>null,delivery(){},stop(){},results:()=>[],settled:async()=>[],freshLeft:()=>3,ending:{kind:'done'}};
+ env=setup({atlasNext:{practiceCoach:async()=>nextCoach,createPracticeNextSession:()=>quiet,
+  retired:(made,fn)=>{watchers.push([made,fn]);return ()=>{};},
+  readResponses:async coach=>{asked.push(coach);return coach.responses();}}});
+ env.tick(60000);
+ const [skillId]=freshestSkill(env);
+ await env.education.practice(skillId);
+ for(let tick=0;tick<400&&!env.box()?.html.includes('data-practice-done');tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ env.box().press('data-set-response','want_more');
+ assert.deepEqual(env.education.responses().map(row=>row.value),['want_more'],'고른 응답이 목록에 선다');
+ // 입구가 그 코치를 닫는다(비우기 · 409 · 403) — 그 코치에 건 알림을 모두 울린다.
+ for(const [made,fn] of watchers)if(made===nextCoach)fn({reason:'clear'});
+ assert.deepEqual(env.education.responses(),[],'닫힌 코치의 응답은 목록에 없다');
+ assert.equal(await env.education.readResponses(),false,'닫힌 코치로 서버를 읽지 않는다');
+ assert.deepEqual(asked,[]);
+});
+
+test('읽는 사이 판을 다시 정해 그 코치가 닫혔으면 새 홈 코치가 선 뒤 다시 읽는다 — 시트를 다시 열지 않아도 다른 기기의 응답이 든다(4-5 끝 판 GPT GC5)',async()=>{
+ let coachNow=null,onChange=null;const asked=[];
+ const row={id:'r-server',at:'2026-10-21T03:00:00Z',kind:'mock',value:'helpful',completionId:'done.server'};
+ const first={watch:()=>()=>{},responses:()=>({complete:true,rows:[]})};
+ const second={watch:()=>()=>{},responses:()=>({complete:true,rows:asked.includes(second)?[row]:[]})};
+ coachNow=first;
+ const today={items:[],minutes:0,line:null,empty:{code:'done',text:null},capped:false,cappedText:null,firstDay:false,state:'engine',redrawAt:null};
+ const planner={todayKey:()=>'2026-10-22',say:()=>null,
+  createWorldTodayPlan:()=>({status:'empty',selected:null,selectedKind:null,reason:'',resume:null,candidates:[],examPlan:null,today}),
+  watchHomePlan:options=>{onChange=options.onChange;return {phase:()=>(coachNow?'engine':'checking'),coach:()=>coachNow,redrawAt(){},dispose(){}};}};
+ const base={judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){}};
+ // 첫 코치로 읽는 사이 다른 읽기가 받은 409로 판을 다시 정했다 — 입구는 그 코치의 목록을 주지 않고(null), 새 홈 코치는 아직 서지 않았다.
+ const env=setup({atlasNext:{readResponses:async coach=>{asked.push(coach);if(coach===first){coachNow=null;return null;}return coach.responses();}},homeNext:{...base,planner:async()=>planner,life:()=>'engine'}});
+ for(let tick=0;tick<20&&!onChange;tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ let settled=null;
+ const pending=env.education.readResponses().then(value=>{settled=value;});
+ for(let tick=0;tick<5;tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(asked,[first]);
+ assert.equal(settled,null,'새 홈 코치를 기다린다');
+ coachNow=second;onChange();
+ await within(pending);
+ assert.deepEqual(asked,[first,second],'새 홈 코치로 다시 읽었다');
+ assert.equal(settled,true,'처음 그린 목록과 견주어 바뀌었다');
+});
+
+test('판이 바뀌어 다시 읽은 목록은 처음 그린 목록과 견준다 — 다른 기기가 비워 새 홈 코치에 응답이 없으면, 시트에 남은 앞 응답을 지우게 참을 준다(4-5 끝 판 GPT GC5)',async()=>{
+ let coachNow=null,onChange=null;const asked=[];
+ const row={id:'r-device',at:'2026-10-21T03:00:00Z',kind:'mock',value:'helpful',completionId:'done.device'};
+ const first={watch:()=>()=>{},responses:()=>({complete:true,rows:[row]})};
+ const second={watch:()=>()=>{},responses:()=>({complete:true,rows:[]})};
+ coachNow=first;
+ const today={items:[],minutes:0,line:null,empty:{code:'done',text:null},capped:false,cappedText:null,firstDay:false,state:'engine',redrawAt:null};
+ const planner={todayKey:()=>'2026-10-22',say:()=>null,
+  createWorldTodayPlan:()=>({status:'empty',selected:null,selectedKind:null,reason:'',resume:null,candidates:[],examPlan:null,today}),
+  watchHomePlan:options=>{onChange=options.onChange;return {phase:()=>(coachNow?'engine':'checking'),coach:()=>coachNow,redrawAt(){},dispose(){}};}};
+ const base={judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){}};
+ const env=setup({atlasNext:{readResponses:async coach=>{asked.push(coach);if(coach===first){coachNow=null;return null;}return coach.responses();}},homeNext:{...base,planner:async()=>planner,life:()=>'engine'}});
+ for(let tick=0;tick<20&&!onChange;tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(env.education.responses().map(entry=>entry.id),['r-device'],'시트는 첫 코치의 응답을 그렸다');
+ let settled=null;
+ const pending=env.education.readResponses().then(value=>{settled=value;});
+ for(let tick=0;tick<5;tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ coachNow=second;onChange();
+ await within(pending);
+ assert.deepEqual(asked,[first,second]);
+ assert.equal(settled,true,'처음 그린 목록(앞 응답 하나)과 견주어 바뀌었다');
+});

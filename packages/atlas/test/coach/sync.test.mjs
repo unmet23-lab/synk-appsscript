@@ -1103,19 +1103,21 @@ test('보낼 수 없는 사건 수(unsentHeld) — 서버가 받지 않아 건�
   await first.handle.upload();
   assert.equal(first.handle.unsentLeft(), 0, '보낼 수 있는 것은 다 보냈다');
   assert.ok(first.handle.unsentHeld() >= 2, '건너뛴 제시와 그 답');
-  assert.equal(first.handle.unsentHeld(), first.handle.trail.unsent(256).length);
+  assert.equal(
+    first.handle.unsentHeld(),
+    first.handle.trail.unsent(Number.POSITIVE_INFINITY).length,
+  );
   close(first);
-  const w2 = world(73, 12);
+  // 남은 사건이 256건을 넘게 쌓인 세션 — 수를 자르지 않고 모두 센다(4-5 끝 판 GPT GE4).
+  const w2 = world(73, 140);
   const second = await open(w2, keyOf('paused'));
-  await answerAll(second.coach, w2.items.slice(0, 12), w2.time);
+  await answerAll(second.coach, w2.items.slice(0, 140), w2.time);
   w2.route.refuse = method => (method === 'post' ? fault(400, 'INVALID_EVENTS') : null);
   await second.handle.upload();
   assert.equal(second.handle.syncStatus().paused, true, '가려낸 것이 많아 쉰다');
   assert.ok(second.handle.unsentLeft() > 0, '아직 보내 보지 못한 사건이 남았다');
-  assert.equal(
-    second.handle.unsentHeld(),
-    second.handle.trail.unsent(256).length,
-    '쉬면 남은 것 모두다',
-  );
+  const left = second.handle.trail.unsent(Number.POSITIVE_INFINITY).length;
+  assert.ok(left > 256, `남은 사건이 256건을 넘는다 — 지금 ${left}`);
+  assert.equal(second.handle.unsentHeld(), left, '쉬면 남은 것 모두다');
   close(second);
 });

@@ -6,6 +6,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
+import vm from 'node:vm';
+import { sourceStatements } from '../../../tests/lib/source-statements.cjs';
 import { positionPlanner } from '../world-atlas-next.mjs';
 
 // 변형 시험(qa/position-mutants.mjs의 「나 칸」 갈래)은 깬 사본을 환경 변수로 넘긴다 — 목록(SYNK_ME_NEXT_MODULE), 학습 화면(SYNK_LEARNING_UI_MODULE),
@@ -144,6 +146,10 @@ function setup({ phase = 'engine', atlasNext = {}, coach: given = null } = {}) {
       excluded.push(eventId);
       return { id: `x-${eventId}` };
     },
+    untell(eventId) {
+      excluded.push(eventId);
+      return { event: { id: `x-${eventId}` }, stored: Promise.resolve(!eventId.startsWith('fail')) };
+    },
   };
   let onChange = null;
   const today = {
@@ -175,7 +181,7 @@ function setup({ phase = 'engine', atlasNext = {}, coach: given = null } = {}) {
       onChange = options.onChange;
       // 코치는 판과 상관없이 준다 — 학습 화면이 판(엔진인가)을 스스로 보는지 가린다.
       return {
-        phase: () => phase,
+        phase: () => (typeof phase === 'function' ? phase() : phase),
         coach: () => coach,
         redrawAt() {},
         dispose() {},
@@ -234,7 +240,7 @@ function setup({ phase = 'engine', atlasNext = {}, coach: given = null } = {}) {
     for (let tick = 0; tick < 20 && !onChange; tick += 1)
       await new Promise(resolve => setTimeout(resolve, 0));
   };
-  return { education, told, excluded, ready };
+  return { education, told, excluded, ready, change: () => onChange?.() };
 }
 
 test('학습 화면 — 「나」는 새 길 홈 코치가 엔진 판일 때만 서고, 확인 중이거나 지금 판이면 null이다', async () => {
@@ -259,9 +265,10 @@ test('학습 화면 — 「이미 알아요」 · 「다시 배울래요」는 �
     ['u.shaky', 'known'],
     ['u.clear', 'relearn'],
   ]);
-  assert.equal(env.education.undoMe('tell-2'), true);
-  assert.deepEqual(env.excluded, ['tell-2'], '되돌리기는 tell이 돌려준 사건을 뺀다');
-  assert.equal(env.education.undoMe(null), false);
+  assert.equal(await env.education.undoMe('tell-2'), true, '저장되면 참으로 풀린다');
+  assert.deepEqual(env.excluded, ['tell-2'], '되돌리기는 tell이 돌려준 사건을 코치의 untell로 뺀다');
+  assert.equal(await env.education.undoMe('fail-1'), false, '저장되지 않으면 거짓이다(4-5 끝 판 GPT GB4)');
+  assert.equal(await env.education.undoMe(null), false);
   assert.equal(env.education.tellMe('u.x', 'maybe'), null, '본인 말이 아닌 값은 적지 않는다');
 });
 
@@ -496,7 +503,7 @@ test('앱의 배선 — 입구에 옛 엔진의 두 문을 넘기고, 감싸기�
     '지금 보낼 수 없는 기록의 수를 알리고 한 번 더 묻는다. 그사이 수가 늘었으면 새 수로 다시 묻는다(F4 · GPT -c GA4)',
   );
   assert.match(source, /\$\{responsesSection\(\)\}\$\{meSection\(true\)\}<div id="world-classroom-lessons">/);
-  assert.match(source, /mountResponses\(\);refreshResponses\(\);mountMe\(\);/);
+  assert.match(source, /mountResponses\(\);refreshResponses\(\);mountMe\(\);waitMe\(\);/);
   assert.match(source, /if\(!window\.confirm\(meText\('me\.clearAsk'\)\)\)return;/, '비우기 전에 한 번 더 묻는다');
   assert.match(
     source,
@@ -505,8 +512,8 @@ test('앱의 배선 — 입구에 옛 엔진의 두 문을 넘기고, 감싸기�
   );
   assert.match(
     source,
-    /\n if\(operating\)try\{await account\.restore\(\);\}catch\{[^}]*\}\r?\n if\(\$\('#panel-content \.ws-me'\)\)profile\(\);/,
-    '결과와 상관없이 계정 설정 스냅샷을 새로 받아 시트를 다시 그린다(§22-4 · 4-5 Opus 대체 설계 검토 F8)',
+    /\n if\(operating\)try\{await account\.restore\(\);\}catch\{[^}]*\}\r?\n(?: \/\/[^\n]*\r?\n)* if\(!sheetOpen\(view\)\)return;\r?\n if\(sheet\?\.hasDraft\?\.\(\)\)\{redrawMeParts\(\);return;\}\r?\n profile\(\);/,
+    '결과와 상관없이 계정 설정 스냅샷을 새로 받아 시트를 다시 그린다(§22-4 · 4-5 Opus 대체 설계 검토 F8) — 그 시트가 열려 있을 때만, 원고가 있으면 칸만(4-5 끝 판 GPT GB1)',
   );
 });
 
@@ -520,4 +527,238 @@ test('새 모듈 둘(world-me-next.mjs · world-old-engine-doors.mjs)은 입구 
     assert.ok(server.includes(`'/${name}'`), `리허설 서버가 ${name}을 낸다`);
     assert.ok(build.includes(`'${name}'`), `공개 묶음이 ${name}을 싣는다`);
   }
+});
+
+// ── 4-5 끝 판 처리 — 셸 원문(app-shell.mjs)의 블록을 그대로 vm에서 돌린다. 화면 · 입구는 시험용 짝이다 ──
+
+const shellSource = () =>
+  fs.readFileSync(process.env.SYNK_APP_SHELL_SOURCE ?? new URL('../app-shell.mjs', import.meta.url), 'utf8');
+const deferred = () => {
+  let resolve = null;
+  const promise = new Promise(done => {
+    resolve = done;
+  });
+  return { promise, resolve };
+};
+function shellSandbox(names, context) {
+  const statements = sourceStatements(shellSource());
+  vm.createContext(context);
+  vm.runInContext(names.map(name => statements.declaration(name)).join('\n'), context);
+  return context;
+}
+
+test('학습 화면 — 확인 중에 「나」 칸을 물으면 홈 코치가 선 뒤 한 번 알린다. 기다리는 사이 다시 물으면 같은 약속이고, 닫으면 거짓이다(4-5 끝 판 GPT GB5)', async () => {
+  let phase = 'checking';
+  const env = setup({ phase: () => phase });
+  await env.ready();
+  let settled = null;
+  const pending = env.education.meReady().then(value => {
+    settled = value;
+  });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(settled, null, '확인 중에는 기다린다');
+  assert.equal(env.education.meReady(), env.education.meReady(), '기다리는 사이 다시 물으면 같은 약속이다');
+  phase = 'engine';
+  env.change();
+  await Promise.race([pending, new Promise(resolve => setTimeout(resolve, 2000))]);
+  assert.equal(settled, true, '홈 코치가 엔진 판으로 서면 칸을 그릴 수 있다');
+  assert.equal(await env.education.meReady(), true, '엔진 판이면 곧 참이다');
+  const two = setup({ phase: 'checking' });
+  await two.ready();
+  let closed = null;
+  const waiting = two.education.meReady().then(value => {
+    closed = value;
+  });
+  two.education.dispose();
+  await Promise.race([waiting, new Promise(resolve => setTimeout(resolve, 2000))]);
+  assert.equal(closed, false, '닫으면 거짓으로 끝낸다');
+});
+
+test('앱의 비우기 — 비우는 사이 다시 누르면 묻지 않는다. 누른 시트가 닫혔으면 다시 열지 않고, 쓰던 반 과제 원고가 있으면 시트 대신 칸만 고친다(4-5 끝 판 카본 B3 · GPT GB1)', async () => {
+  const run = async ({ draft = false, close = null } = {}) => {
+    const calls = [];
+    const confirms = [];
+    const pending = deferred();
+    const button = { disabled: false, isConnected: true };
+    const view = { isConnected: true, querySelector: selector => (selector === '[data-me-clear]' ? button : null) };
+    let kind = 'world-profile';
+    const education = {
+      clearPractice: () => {
+        calls.push('clear');
+        return pending.promise;
+      },
+    };
+    const context = shellSandbox(['clearingPractice', 'clearPracticeNow', 'sheetOpen'], {
+      window: {
+        confirm: text => {
+          confirms.push(text);
+          return true;
+        },
+      },
+      $: selector => (selector === '#panel-content .ws-me' && view.isConnected ? view : null),
+      meText: key => key,
+      life: { education },
+      client: { snapshot: { accountId: 'a' } },
+      home: { toast: text => calls.push(`toast:${text}`), openPanel: () => kind },
+      operating: true,
+      account: {
+        restore: async () => {
+          calls.push('restore');
+        },
+      },
+      sheet: { hasDraft: () => draft },
+      profile: () => calls.push('profile'),
+      redrawMeParts: () => calls.push('parts'),
+    });
+    const first = context.clearPracticeNow();
+    // 두 번째 누름은 기다리지 않는다 — 겹침 막이가 빠진 변형에서는 첫 비우기를 기다리며 멈춘다.
+    await Promise.race([context.clearPracticeNow(), new Promise(resolve => setTimeout(resolve, 50))]);
+    assert.equal(button.disabled, true, '비우는 사이 단추를 막는다');
+    close?.({ view, shut: () => (kind = '') });
+    pending.resolve({ ok: true });
+    await first;
+    return { calls, confirms, button };
+  };
+  const plain = await run();
+  assert.deepEqual(plain.confirms, ['me.clearAsk'], '비우는 사이 다시 누른 것은 묻지 않는다');
+  assert.deepEqual(plain.calls, ['clear', 'toast:me.clearDone', 'restore', 'profile']);
+  assert.equal(plain.button.disabled, false, '끝나면 단추를 푼다');
+  const draft = await run({ draft: true });
+  assert.deepEqual(draft.calls.slice(-2), ['restore', 'parts'], '원고가 있으면 시트를 다시 그리지 않고 칸만 고친다');
+  const closing = await run({ close: ({ shut }) => shut() });
+  assert.deepEqual(closing.calls.slice(-1), ['restore'], '닫는 중(닫기 전환)이면 시트를 다시 열지 않는다');
+  const gone = await run({
+    close: ({ view }) => {
+      view.isConnected = false;
+    },
+  });
+  assert.deepEqual(gone.calls.slice(-1), ['restore'], '시트가 사라졌으면 그리지 않는다');
+});
+
+test('앱의 「나」 칸 — 확인 중에 연 시트는 홈 코치가 선 뒤 칸을 제자리(반 수업 앞)에 넣는다. 그사이 닫았거나 이미 칸이 있으면 넣지 않는다(4-5 끝 판 GPT GB5)', async () => {
+  const run = async ({ ready = true, close = false, present = false } = {}) => {
+    const inserted = [];
+    const mounted = [];
+    const wait = deferred();
+    const view = { isConnected: true };
+    const anchor = { insertAdjacentHTML: (where, html) => inserted.push([where, html]) };
+    let kind = 'world-profile';
+    const nodes = {
+      '#panel-content .ws-me': view,
+      '#panel-content [data-world-me]': present ? {} : null,
+      '#panel-content #world-classroom-lessons': anchor,
+    };
+    const context = shellSandbox(['waitMe', 'sheetOpen'], {
+      life: { education: { meReady: () => wait.promise } },
+      $: selector => nodes[selector] ?? null,
+      home: { openPanel: () => kind },
+      meSection: () => '<section data-world-me></section>',
+      mountMe: () => mounted.push('me'),
+    });
+    context.waitMe();
+    if (close) kind = '';
+    wait.resolve(ready);
+    await wait.promise;
+    await null;
+    return { inserted, mounted };
+  };
+  const done = await run();
+  assert.deepEqual(done.inserted, [['beforebegin', '<section data-world-me></section>']]);
+  assert.deepEqual(done.mounted, ['me'], '넣은 칸의 단추를 잇는다');
+  assert.deepEqual((await run({ ready: false })).inserted, [], '엔진 판으로 서지 않았으면 넣지 않는다');
+  assert.deepEqual((await run({ close: true })).inserted, [], '닫는 중이면 넣지 않는다');
+  assert.deepEqual((await run({ present: true })).inserted, [], '이미 칸이 있으면 기다리지 않는다');
+});
+
+test('앱의 「나」 칸 — 제목의 수는 보이는 줄(되돌리기 줄 포함)로, 「더 보기」는 되돌리기로 가린 단위를 뺀 줄로 센다. 되돌리기 줄이 있으면 빈 안내를 쓰지 않는다(4-5 끝 판 카본 B2)', () => {
+  const rows = (prefix, n) =>
+    Array.from({ length: n }, (_, i) => ({ unit: `${prefix}${i}`, label: `${prefix}${i}`, lastAt: 1 }));
+  let me = { shaky: [], clear: [], said: [] };
+  const context = shellSandbox(['ME_PAGE', 'meUndo', 'meSection'], {
+    meNow: () => me,
+    meText: (key, values) => (values ? `${key}=${values.n ?? values.label}` : key),
+    escape: String,
+    t: key => key,
+    Date,
+  });
+  vm.runInContext("meUndo={unit:'s0',eventId:'e1',label:'s0',state:'said',at:Date.now()};", context);
+  // 하나뿐인 목록에서 「다시 배울래요」 — 그 단위가 세 목록 밖으로 빠졌다.
+  let html = context.meSection();
+  assert.match(html, /<h4>me\.said=1<\/h4>/, '되돌리기 줄 하나가 보이면 1이다(0개 제목이 아니다)');
+  assert.match(html, /me\.note/, '되돌리기 줄이 있으면 「아직 나눠 보여 줄 말이 없어요」를 쓰지 않는다');
+  assert.doesNotMatch(html, /me\.empty/);
+  // 그 단위가 흔들리는 말(다섯 줄)로 옮겨 가 가려졌다 — 보이는 줄은 다섯이고 「더 보기」가 없다.
+  me = { shaky: [...rows('k', 5), { unit: 's0', label: 's0', lastAt: 0 }], clear: [], said: [] };
+  html = context.meSection();
+  assert.match(html, /<h4>me\.shaky=5<\/h4>/, '가린 단위는 수에 넣지 않는다');
+  assert.doesNotMatch(html, /data-me-more="shaky"/, '숨긴 줄이 없으면 「더 보기」도 없다');
+  assert.match(html, /<h4>me\.said=1<\/h4>/);
+});
+
+test('앱의 「내가 남긴 응답」 — 「더 보기」는 학생이 누른 때만 펼친 것으로 보고 다시 그린 칸에 잇는다. 서버 읽기 뒤 다시 그리면 초점을 같은 응답으로 돌려준다(4-5 끝 판 GPT GB6 · GB7 · 카본 B1)', () => {
+  const source = shellSource();
+  const context = shellSandbox(['responsesOpened', 'openResponses'], {});
+  const responsesOpened = vm.runInContext('responsesOpened', context); // const 선언은 맥락의 칸이 아니다
+  const hidden = [{ hidden: true }, { hidden: true }];
+  let removed = 0;
+  const box = {
+    dataset: {},
+    querySelectorAll: selector => (selector === '[data-response-later]' ? hidden : []),
+    querySelector: selector => (selector === '[data-responses-more]' ? { remove: () => (removed += 1) } : null),
+  };
+  assert.equal(responsesOpened(box), false, '단추가 없던 짧은 목록도 누르기 전에는 펼친 것이 아니다');
+  context.openResponses(box);
+  assert.equal(responsesOpened(box), true);
+  assert.deepEqual([hidden.map(row => row.hidden), removed], [[false, false], 1], '숨긴 줄을 펴고 단추를 걷는다');
+  assert.doesNotMatch(source, /const open=!box\.querySelector\('\[data-responses-more\]'\)/, '단추가 없음을 펼침으로 보지 않는다');
+  assert.match(source, /const open=responsesOpened\(box\),focused=box\.contains\(document\.activeElement\)\?document\.activeElement:null,keep=focused\?\.dataset\?\.responseRemove\?\?null;/);
+  assert.match(
+    source,
+    /if\(focused&&next\)\(\[\.\.\.next\.querySelectorAll\('\[data-response-remove\]'\)\]\.find\(button=>button\.dataset\.responseRemove===keep&&!button\.closest\('\[hidden\]'\)\)\|\|next\.querySelector\('h3'\)\)\?\.focus\?\.\(\{preventScroll:true\}\);/,
+    '초점이 칸 안에 있었으면 같은 응답의 단추로, 없으면 칸 제목으로',
+  );
+  assert.match(source, /if\(open&&next\)openResponses\(next\);/, '펼친 채면 다시 그린 칸도 편다');
+});
+
+test('앱의 「나」 칸 되돌리기 — 저장이 끝난 뒤에 칸을 다시 그리고, 저장되지 않으면 되돌리기를 남긴 채 알린다. 기다리는 사이 다시 누르면 한 번만 뺀다(4-5 끝 판 GPT GB4)', async () => {
+  const run = async answer => {
+    const calls = [];
+    const pending = deferred();
+    let handler = null;
+    const box = { isConnected: true, addEventListener: (type, fn) => (handler = fn) };
+    const undo = { disabled: false, dataset: { meUndo: 'tell-9' } };
+    const context = shellSandbox(['meUndo', 'mountMe'], {
+      $: selector => (selector === '#panel-content [data-world-me]' ? box : null),
+      life: {
+        education: {
+          undoMe: id => {
+            calls.push(`undo:${id}`);
+            return pending.promise;
+          },
+        },
+      },
+      home: { toast: text => calls.push(`toast:${text}`) },
+      meText: key => key,
+      redrawMe: () => calls.push('redraw'),
+      clearPracticeNow: () => calls.push('clear'),
+      meNow: () => null,
+    });
+    vm.runInContext("meUndo={unit:'u1',eventId:'tell-9',label:'u1',state:'said',at:0};", context);
+    context.mountMe();
+    const click = () => handler({ target: { closest: selector => (selector === '[data-me-undo]' ? undo : null) } });
+    click();
+    click();
+    assert.equal(undo.disabled, true, '기다리는 사이 단추를 막는다');
+    pending.resolve(answer);
+    await pending.promise;
+    await new Promise(resolve => setTimeout(resolve, 0));
+    return { calls, undo, left: vm.runInContext('meUndo', context) };
+  };
+  const saved = await run(true);
+  assert.deepEqual(saved.calls, ['undo:tell-9', 'redraw'], '저장된 뒤에 한 번 그린다');
+  assert.equal(saved.left, null, '되돌리기를 걷는다');
+  const failed = await run(false);
+  assert.deepEqual(failed.calls, ['undo:tell-9', 'toast:me.toldFailed'], '저장되지 않으면 알리고 다시 그리지 않는다');
+  assert.equal(failed.undo.disabled, false, '되돌리기를 다시 누를 수 있다');
+  assert.equal(failed.left?.eventId, 'tell-9', '되돌리기를 남긴다');
 });

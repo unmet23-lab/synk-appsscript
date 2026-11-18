@@ -64,7 +64,13 @@ export function storedRead(prev, answer, revision) {
   if (stale) return prev;
   if (read.seenFrom == null) return read;
   const shown = [...(prev?.rows ?? []).map(row => row.id), ...(prev?.held ?? [])];
-  return { ...read, held: new Set(shown.filter(shownId => !read.known.has(shownId))) };
+  const held = new Set(shown.filter(shownId => !read.known.has(shownId)));
+  // 이어 드는 응답은 번호와 함께 그 줄(마침 · 결정 · 판 종류)도 든다 — 기기가 이틀 지나 마침을 치운 뒤에도 그 응답이 판 종류(짧은 연습
+  // 길이)를 잃지 않게(4-5 끝 판 GPT GD4).
+  const rows = new Map(
+    [...(prev?.heldRows ?? []), ...(prev?.rows ?? [])].map(row => [row.id, row]),
+  );
+  return { ...read, held, heldRows: [...held].map(heldId => rows.get(heldId)).filter(Boolean) };
 }
 
 // 내 응답을 서버 줄 위에 얹나(설계 주인 11-18의 넷). 서버가 이번 읽기에서 본 응답은 서버 줄을 따른다. 아직 올리지 않은 응답(받은 표지 없음)은
@@ -80,7 +86,8 @@ function layered(event, { known, seenFrom, held, acked }) {
 
 // 판의 바탕 — 마침 번호 → { decisionId, variant }와 뺀 번호. 기기가 이틀이 지나 치운 마침은 서버 줄이 그 결정 · 판 종류를 준다(같은 판에 이 기기가
 // 아직 안 올린 응답도 그 판으로 묶는다).
-function setsOf(own, server) {
+// heldRows: 상한에서 멈춘 읽기가 이어 든 앞 값의 줄(storedRead) — 서버 줄처럼 그 판을 준다.
+function setsOf(own, server, heldRows = null) {
   const sets = new Map();
   const excluded = new Set();
   for (const event of own) {
@@ -88,7 +95,7 @@ function setsOf(own, server) {
       sets.set(event.id, { decisionId: event.decisionId, variant: event.variant });
     else if (event.type === EVENT_TYPES.excluded) excluded.add(event.targetId);
   }
-  for (const row of server ?? [])
+  for (const row of [...(server ?? []), ...(heldRows ?? [])])
     if (!sets.has(row.completionId))
       sets.set(row.completionId, { decisionId: row.decisionId, variant: row.variant });
   return { sets, excluded };
@@ -114,7 +121,7 @@ const feedbackRow = event => ({
 });
 
 // events: 기기에 든 사건(저장 중인 내 쓰기 포함), server: serverResponses의 rows(없으면 null), known: 서버 줄을 따를 내 응답 번호(storedRead —
-// 없으면 null), seenFrom · held: storedRead의 값(없으면 null), acked: 사건 번호 → 받은 표지의 서버 순번(올리지 않았으면 undefined),
+// 없으면 null), seenFrom · held · heldRows: storedRead의 값(없으면 null), acked: 사건 번호 → 받은 표지의 서버 순번(올리지 않았으면 undefined),
 // gone: 호스트가 든 빼기의 겨눈 번호(noteGone — 없으면 null), now: 코치 시계.
 export function responseRows({
   events = [],
@@ -122,13 +129,14 @@ export function responseRows({
   known = null,
   seenFrom = null,
   held = null,
+  heldRows = null,
   acked = null,
   gone = null,
   now,
 }) {
   const since = now - RESPONSE_DAYS * DAY_MS;
   const own = events.filter(event => event?.schema === EVENT_FORM.current);
-  const { sets, excluded } = setsOf(own, server);
+  const { sets, excluded } = setsOf(own, server, heldRows);
   for (const target of gone ?? []) excluded.add(target);
   const setOf = row => sets.get(row.completionId)?.decisionId ?? row.decisionId ?? row.completionId;
   const latest = new Map(); // 판(결정) → 그 판의 가장 새 응답
