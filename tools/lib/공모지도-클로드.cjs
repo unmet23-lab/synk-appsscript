@@ -6,27 +6,29 @@ const path = require('node:path');
 const readline = require('node:readline');
 const { spawn, spawnSync } = require('node:child_process');
 
+const 확인한도 = 60000;
 const 실행한도 = 150000;
 
 function 실행환경(profile) {
-  const env = {
-    ...process.env,
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) {
+    if (/^(CLAUDECODE$|CLAUDE_CODE_|CLAUDE_CONFIG_DIR$|ANTHROPIC_(API_KEY|AUTH_TOKEN|BASE_URL)$)/i.test(key)) {
+      delete env[key];
+    }
+  }
+  return {
+    ...env,
     CLAUDE_CONFIG_DIR: profile,
     CLAUDE_CODE_ARTIFACT: '1',
     CLAUDE_CODE_ARTIFACT_PUBLISH_EDITS: '0',
   };
-  for (const key of Object.keys(env)) {
-    if (/^(ANTHROPIC_(API_KEY|AUTH_TOKEN|BASE_URL)|CLAUDE_CODE_(OAUTH_TOKEN|USE_BEDROCK|USE_VERTEX|USE_FOUNDRY))$/i.test(key)) {
-      delete env[key];
-    }
-  }
-  return env;
 }
 
 function 소유계정확인(cli, env, cwd, owner) {
   const result = spawnSync(cli, ['auth', 'status', '--json'], {
-    cwd, env, encoding: 'utf8', windowsHide: true, timeout: 20000,
+    cwd, env, encoding: 'utf8', windowsHide: true, timeout: 확인한도, stdio: ['ignore', 'pipe', 'pipe'],
   });
+  if (result.error) throw Error('Claude 소유 계정 확인에 실패했습니다. ' + result.error.code);
   let auth;
   try { if (result.status === 0) auth = JSON.parse(result.stdout); } catch { /* 로그인 정보를 읽지 못했다. */ }
   if (!auth?.loggedIn || auth.authMethod !== 'claude.ai' || auth.apiProvider !== 'firstParty' ||
@@ -133,20 +135,37 @@ function 게시판정보(response, profile) {
 }
 
 function Claude결과(cli, args, env, cwd, timeout, input) {
-  const result = spawnSync(cli, args, {
-    cwd, env, input, encoding: 'utf8', windowsHide: true, timeout, maxBuffer: 4 * 1024 * 1024,
+  const child = spawn(cli, [...args, '--output-format', 'stream-json', '--verbose'], {
+    cwd, env, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'],
   });
-  if (result.error) throw Error('Claude Code 실행에 실패했습니다. ' + result.error.code);
-  let message;
-  try { message = JSON.parse(result.stdout); } catch { /* 정상 결과를 받지 못했다. */ }
-  if (message?.type !== 'result') throw Error('Claude Code 결과를 확인하지 못했습니다.');
-  return { parsed: message, ok: result.status === 0 && !message.is_error };
+  const lines = readline.createInterface({ input: child.stdout });
+  child.stderr.resume();
+  child.stdin.on('error', () => { /* 실행기가 먼저 끝나면 종료 이벤트가 결과를 전한다. */ });
+  child.stdin.end(input);
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      child.kill();
+      reject(Error('Claude Code 결과 응답 시간이 초과됐습니다.'));
+    }, timeout);
+    lines.on('line', (line) => {
+      let message;
+      try { message = JSON.parse(line); } catch { return; }
+      if (message?.type !== 'result') return;
+      resolve({ parsed: message, ok: !message.is_error });
+    });
+    child.on('error', (error) => reject(Error('Claude Code 실행에 실패했습니다. ' + error.code)));
+    child.on('close', () => {
+      clearTimeout(timer);
+      lines.close();
+      reject(Error('Claude Code가 결과를 보내기 전에 종료됐습니다.'));
+    });
+  });
 }
 
-function 구독확인(cli, env, cwd) {
-  const { parsed, ok } = Claude결과(cli, [
-    '-p', '/usage', '--output-format', 'json', '--strict-mcp-config', '--no-session-persistence',
-  ], env, cwd, 30000);
+async function 구독확인(cli, env, cwd) {
+  const { parsed, ok } = await Claude결과(cli, [
+    '-p', '/usage', '--strict-mcp-config', '--no-session-persistence',
+  ], env, cwd, 확인한도);
   const message = typeof parsed.result === 'string' ? parsed.result : '';
   const week = /^Current week \(all models\): (\d+)% used(?: · resets ([^\r\n]+))?/m.exec(message);
   if (!ok || !message.includes('using your subscription to power your Claude Code usage') || !week) {
@@ -164,7 +183,7 @@ function 예약허용(call, url, map) {
     path.isAbsolute(input.file_path) && path.resolve(input.file_path).toLowerCase() === path.resolve(map).toLowerCase();
 }
 
-function 예약게시(cli, env, cwd, url, map) {
+async function 예약게시(cli, env, cwd, url, map) {
   const settings = JSON.stringify({ hooks: { PreToolUse: [{
     matcher: '*',
     hooks: [{ type: 'command', command: process.execPath, args: [__filename, '--artifact-permission'], timeout: 10 }],
@@ -176,10 +195,10 @@ function 예약게시(cli, env, cwd, url, map) {
     map,
     'This is a file transfer. Do not rewrite, review, use force, change access, or create a new artifact. Stop on a refusal or version conflict.',
   ].join('\n');
-  const { parsed, ok } = Claude결과(cli, [
+  const { parsed, ok } = await Claude결과(cli, [
     '-p', '--model', 'haiku', '--tools', 'Artifact', '--permission-mode', 'dontAsk',
     '--strict-mcp-config', '--no-session-persistence', '--max-turns', '4',
-    '--output-format', 'json', '--settings', settings,
+    '--settings', settings,
   ], { ...env, SYNK_CONTEST_ARTIFACT_URL: url, SYNK_CONTEST_ARTIFACT_HTML: map }, cwd, 190000, prompt);
   if (ok) return null;
   const limit = /(?:weekly|usage) limit[^\n]*resets ([^\n]+)/i.exec(String(parsed.result || ''));
@@ -207,7 +226,7 @@ async function 클로드지도갱신(config, map) {
   const old = await live();
   if (같은지도(old.html, source)) return { status: 'current', version: old.version };
 
-  const deferred = 구독확인(cli, env, cwd) || 예약게시(cli, env, cwd, url, map);
+  const deferred = await 구독확인(cli, env, cwd) || await 예약게시(cli, env, cwd, url, map);
   if (deferred) return deferred;
   const updated = await live();
   if (updated.id !== old.id || updated.version === old.version || !updated.html.includes(source)) {

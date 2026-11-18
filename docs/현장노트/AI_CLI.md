@@ -2092,6 +2092,13 @@
 - 다시 로그인한 길(11-16 밤, 유호님 「니가 전부 해줘」): 솔리오 화면을 거치지 않고, 줄이 쓰던 계정 폴더를 그대로 `CLAUDE_CONFIG_DIR`로 준 채 터미널 패널 탭(`run_in_terminal`)에서 `claude auth login --claudeai --email <메일>`을 띄웠다. 줄의 폴더가 그대로라 판 파일을 고칠 필요가 없고, 다음 확인이 그 폴더를 그대로 읽는다. `BROWSER`에 받은 주소를 파일에 적기만 하는 작은 exe(C# 여섯 줄, `csc.exe`로 빌드)를 주면 Claude Code가 자동 콜백 주소(`redirect_uri`가 `http://localhost:<포트>/callback`)를 넘겨 준다. 그 주소를 ego 「유호」 프로필 공간에서 열면 승인 뒤 CLI가 스스로 「Login successful」로 끝나서 코드를 붙여 넣을 일이 없다. 승인 화면이 다른 계정이면 「계정 전환」을 누르고 로그인 화면을 기다린다(몇 초 늦게 뜬다, 3초만 기다리면 마케팅 쪽에서 멈춘다). 그다음 「Google로 계속하기」 → 그 메일 → 「Claude에 다시 로그인하는 중입니다」의 계속 → 「<메일>로 로그인됨」을 확인하고 승인한다. 「유호」 프로필의 Google 계정 고르기에 운영 계정 열 개가 모두 있어 비밀번호 칸은 뜨지 않았다. 새 기한은 로그인 때부터 28~30일이었다. 끊긴 6계정과 그날 23:31에 끊길 unmet29를 이렇게 되살렸고, 10계정 모두 `loggedIn: true`다.
 - 함께 밟은 함정: Git Bash에서 `claude -p /usage`를 부르면 `/usage`가 `C:/Program Files/Git/usage`로 바뀌어 모델에 엉뚱한 질문이 한 번 나간다. `MSYS_NO_PATHCONV=1`을 붙인다. computer-use에 「SYNK Platform Preview」 접근을 청하면 설치본이 아니라 다른 세션의 시험 빌드(`D:\SYNK-worktrees\…\win-unpacked\synkplatformpreview.exe`)가 잡혀서 설치본 창을 누르지 않았다. 시작 메뉴 바로가기가 11-16 18:50부터 그 시험 빌드를 가리키고 있었기 때문이다(바탕화면 바로가기는 설치본). 설치본을 켤 때는 `%LOCALAPPDATA%\Programs\SYNKPlatformPreview\SYNKPlatformPreview.exe`나 바탕화면 바로가기로 켠다. 솔리오는 자정 10분 전(23:50)에 저절로 모든 줄을 다시 읽는다.
 
+### 공모 지도 Windows 예약에서 Claude 로그인 확인과 사용량 조회가 시간 초과된다 (2026-11-18 GPT)
+
+- 증상: 예약 로그에서 Claude 소유 계정 확인 실패와 실행 시간 초과가 차례로 나왔다. 같은 프로필을 직접 확인했을 때는 소유 계정으로 로그인되어 있었고, 주간 사용량은 100%였다.
+- 원인: 예약에서 CLI 응답이 늦어지는 동안 기존 제한에 걸렸다. 로그인 실패 메시지만으로는 CLI 시간 초과와 실제 계정 불일치를 구분할 수 없었다.
+- 고침: 계정과 사용량 확인을 각각 최대 60초 기다린다. 사용량 조회에서는 표준입력을 즉시 닫고 스트림에서 Claude Code의 결과를 받는다. 소유 계정 확인에 시간이 초과되면 그 상태를 따로 기록한다.
+- 다시 확인: `SYNK 공모 지도 갱신`의 `그록공모전/예약실행.log`에서 `artifact` 결과를 본다. 주간 한도가 차면 `deferred`와 초기화 시각이 나온다. 실제 게시를 마치면 `updated`와 원문을 대조한 버전이 나온다.
+
 ## OpenAI 실시간 음성(GPT-Live · Realtime)
 
 판: `gpt-live-1`(`wss://api.openai.com/v1/live/sessions`) · `gpt-realtime-2.1`(`wss://api.openai.com/v1/realtime?model=…`) · Node 24 내장 WebSocket(`new WebSocket(주소, { headers })`로 Authorization을 실을 수 있어 `ws` 패키지가 필요 없다). 쓰는 곳: [듣기 시험 녹음 도구](../../experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs).
