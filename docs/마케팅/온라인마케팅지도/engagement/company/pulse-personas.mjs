@@ -207,16 +207,18 @@ const BRAND_SIDE=new Set(['reuse_renewed','reuse_withdrawn','paused','unpaused',
 // 모두 원 의뢰 쪽이고 시스템 쓰기는 updatedAt을 옮기지 않는다). 브랜드 인물과 시계가 지운 인물은 updatedAt을 쓰지 않는다 — 귀속 뒤 동의 연장 · 지우기가 옮긴다
 // (GPT 서버 다시 검수 -d GA2). 대신 원 의뢰 쪽 흔적의 마지막을 모은다: 만든 때, 이력에서 사람이 한 원 의뢰 쪽 항목(브랜드 쪽 동작과, 어느 방에서 했는지
 // 이력만으로는 모르는 사용 확인은 뺀다 — -d GA1), store가 있으면 잘리지 않는 기록(원 프로젝트에서 남긴 손님 확인, 원 프로젝트로 받은 인물 사진, 판을 연 때 ·
-// 판 파일 · 만드는 방식 · 보낸 때). 아무 흔적도 없는 망가진 문서만 updatedAt으로 둔다.
+// 판 파일 · 만드는 방식 · 보낸 때). 이력이 잘린 문서와 아무 흔적도 없는 망가진 문서는 updatedAt(안전한 상한)으로 둔다.
 export function legacyOriginActivity(persona,store=null){
   const own=Date.parse(persona?.updatedAt);
   if(typeof persona?.originActivityAt==='string'){const kept=Date.parse(persona.originActivityAt);return Number.isFinite(kept)&&Number.isFinite(own)?Math.max(kept,own):NaN;}
   const systemGone=(persona?.deletedAt||['deleting','deleted'].includes(persona?.status))&&persona?.deletion?.confirmedBy==='system';
   if(!persona?.workspaceId&&!systemGone)return own;
+  // 이력이 잘렸으면(첫 항목이 만들기가 아니면) 빠진 원 의뢰 쪽 일을 알 수 없다 — 안전한 상한(updatedAt)으로 둔다(GPT 서버 다시 검수 -e GA1). 늦게 잡는 쪽이다.
+  if(!Array.isArray(persona.history)||persona.history[0]?.action!=='created')return own;
   let best=null;
   const see=value=>{const at=Date.parse(value);if(Number.isFinite(at)&&(best===null||at>best))best=at;};
   see(persona.createdAt);
-  for(const entry of Array.isArray(persona.history)?persona.history:[]){
+  for(const entry of persona.history){
     if(!entry||entry.actorKind==='system'||/:usage$/.test(String(entry.action||''))||(persona.workspaceId&&BRAND_SIDE.has(entry.action)))continue;
     see(entry.at);
   }

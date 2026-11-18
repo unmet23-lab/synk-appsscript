@@ -62,24 +62,28 @@ test('시계 계산: 의뢰서(동의)가 있고 제작 신호가 없을 때만 
   personas.length=0;personas.push({id:'l',originProjectId:'p1',workspaceId:null,status:'ready',revision:2,updatedAt:isoOf(t0+30*DAY)});
   assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+30*DAY));
   // 옛 브랜드 인물: 이력에서 귀속과 귀속 뒤 원 의뢰 데스크 일(메모)을 넣고 브랜드 쪽 동작(동의 연장)은 뺀다 — 귀속 때만 보면 메모가 빠져 앞당겨진다(Fable 설계 검토 2).
-  const brandOld={id:'m',originProjectId:'p1',workspaceId:'w',status:'ready',revision:6,createdAt:isoOf(t0+5*DAY),updatedAt:isoOf(t0+160*DAY),history:[
+  const made={at:isoOf(t0+5*DAY),action:'created',actorKind:'customer'};
+  const brandOld={id:'m',originProjectId:'p1',workspaceId:'w',status:'ready',revision:6,createdAt:isoOf(t0+5*DAY),updatedAt:isoOf(t0+160*DAY),history:[made,
     {at:isoOf(t0+20*DAY),action:'request_update',actorKind:'customer'},{at:isoOf(t0+45*DAY),action:'reuse_approved',actorKind:'member'},
     {at:isoOf(t0+70*DAY),action:'note',actorKind:'staff'},{at:isoOf(t0+90*DAY),action:'retention_notice',actorKind:'system'},
     {at:isoOf(t0+120*DAY),action:'approve:usage',actorKind:'customer'},{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]};
   assert.equal(legacyOriginActivity(brandOld),t0+70*DAY,'어느 방에서 했는지 모르는 사용 확인(120일)은 이력만으로 넣지 않는다(-d GA1)');
-  // 이력에 브랜드 쪽 일만 남아도 updatedAt(마지막 동의 연장)으로 떨어지지 않는다 — 만든 때와 잘리지 않는 기록에서 잰다(-d GA2).
-  const cut={...brandOld,history:[{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]};
-  assert.equal(legacyOriginActivity(cut),t0+5*DAY);
-  const records={pulsePersonaApprovals:[{personaId:'m',projectId:'p1',kind:'usage',at:isoOf(t0+30*DAY)},{personaId:'m',projectId:'p9',kind:'usage',at:isoOf(t0+60*DAY)},{personaId:'m',projectId:null,kind:'reuse',at:isoOf(t0+150*DAY)}],
+  // 이력이 온전하고 브랜드 쪽 일만 있으면 updatedAt(마지막 동의 연장)이 아니라 원 의뢰 쪽 흔적에서 잰다(-d GA2).
+  const brandOnly={...brandOld,history:[made,{at:isoOf(t0+45*DAY),action:'reuse_approved',actorKind:'member'},{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]};
+  assert.equal(legacyOriginActivity(brandOnly),t0+45*DAY);
+  const records={pulsePersonaApprovals:[{personaId:'m',projectId:'p1',kind:'usage',at:isoOf(t0+50*DAY)},{personaId:'m',projectId:'p9',kind:'usage',at:isoOf(t0+60*DAY)},{personaId:'m',projectId:null,kind:'reuse',at:isoOf(t0+150*DAY)}],
     pulsePersonaSources:[{personaId:'m',projectId:'p1',at:isoOf(t0+25*DAY)},{personaId:'m',projectId:'p9',at:isoOf(t0+140*DAY)}],
-    pulsePersonaRevisions:[{personaId:'m',createdAt:isoOf(t0+33*DAY),method:{at:isoOf(t0+35*DAY)},assets:[{at:isoOf(t0+40*DAY)}]},{personaId:'other',createdAt:isoOf(t0+170*DAY),assets:[]}]};
+    pulsePersonaRevisions:[{personaId:'m',createdAt:isoOf(t0+33*DAY),method:{at:isoOf(t0+35*DAY)},assets:[{at:isoOf(t0+52*DAY)}]},{personaId:'other',createdAt:isoOf(t0+170*DAY),assets:[]}]};
   const recordStore={all:kind=>records[kind]||[]};
-  assert.equal(legacyOriginActivity(cut,recordStore),t0+40*DAY,'원 프로젝트의 확인 · 사진 · 판만 — 다른 의뢰의 사용 확인(60일) · 사진(140일) · 브랜드 동의(150일)는 빼고');
-  // 옛 묘비(시계가 지움): 사람 손 항목과 만든 때, 없으면(망가진 문서) updatedAt.
+  assert.equal(legacyOriginActivity(brandOnly,recordStore),t0+52*DAY,'원 프로젝트의 확인 · 사진 · 판만 — 다른 의뢰의 사용 확인(60일) · 사진(140일) · 브랜드 동의(150일)는 빼고');
+  // 이력이 잘렸으면(첫 항목이 만들기가 아님) 빠진 원 의뢰 쪽 일(예: 70일 메모)을 알 수 없어 안전한 상한 updatedAt으로 둔다(-e GA1). 남기는 쪽이다.
+  const cut={...brandOld,history:[{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]};
+  assert.equal(legacyOriginActivity(cut),t0+160*DAY);assert.equal(legacyOriginActivity(cut,recordStore),t0+160*DAY);
+  // 옛 묘비(시계가 지움): 만든 때와 사람 손 항목, 이력이 없거나 잘렸으면 updatedAt.
   const tombOld={id:'n',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),revision:9,deletion:{confirmedBy:'system'},
-    history:[{at:isoOf(t0+80*DAY),actorKind:'staff',action:'note'},{at:isoOf(t0+95*DAY),actorKind:'system',action:'retention_deleting'},{at:isoOf(t0+100*DAY),actorKind:'system',action:'deleted'}]};
-  assert.equal(legacyOriginActivity(tombOld),t0+80*DAY);assert.equal(legacyOriginActivity({...tombOld,history:[],createdAt:isoOf(t0+10*DAY)}),t0+10*DAY);
-  assert.equal(legacyOriginActivity({...tombOld,history:[]}),t0+100*DAY);
+    history:[{at:isoOf(t0+2*DAY),action:'created',actorKind:'customer'},{at:isoOf(t0+80*DAY),actorKind:'staff',action:'note'},{at:isoOf(t0+95*DAY),actorKind:'system',action:'retention_deleting'},{at:isoOf(t0+100*DAY),actorKind:'system',action:'deleted'}]};
+  assert.equal(legacyOriginActivity(tombOld),t0+80*DAY);assert.equal(legacyOriginActivity({...tombOld,history:[{at:isoOf(t0+10*DAY),action:'created',actorKind:'customer'}]}),t0+10*DAY);
+  assert.equal(legacyOriginActivity({...tombOld,history:[]}),t0+100*DAY);assert.equal(legacyOriginActivity({...tombOld,history:tombOld.history.slice(1)}),t0+100*DAY);
   // 쓸기 회차의 다시 채우기: 칸이 없거나 어긋난 인물만, revision · updatedAt · 이력은 그대로. 채운 뒤에는 그 칸을 읽는다.
   {
     const docs=new Map([[brandOld.id,brandOld],[tombOld.id,tombOld],['ok',{id:'ok',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0),...on(t0+5*DAY)}],['bad',{id:'bad',originProjectId:'p1',revision:1,updatedAt:'?'}]]);
