@@ -119,6 +119,7 @@ test('그록 보고서 두 회차를 공고와 대조하고 확인된 원문의 
   const 한건 = {
     title: '우리 지역 AI 공모',
     organizer: '지역문화원',
+    edition: '2026',
     noticeId: '2026-42',
     video: true,
     discoveryUrl: 'https://example.net/open/42',
@@ -138,7 +139,7 @@ test('그록 보고서 두 회차를 공고와 대조하고 확인된 원문의 
   assert.equal((await 그록.가져오기(폴더, 앞, 읽기)).already, true);
   assert.deepEqual(받은주소, [주소]);
   const 뒤 = 보고서('evening', [{
-    ...한건, title: '우리 지역 AI 공모전', officialUrl: 주소,
+    ...한건, title: '우리 지역 AI 공모전', organizer: '지역문화원 공모 사업단', noticeId: '', officialUrl: 주소,
     ai: { status: 'allowed', url: 주소, quote: '다른 대회의 원문 문장입니다.' },
   }]);
   await 그록.가져오기(폴더, 뒤, 읽기);
@@ -155,7 +156,35 @@ test('그록 보고서 두 회차를 공고와 대조하고 확인된 원문의 
   assert.equal(row.제출물주소, 주소);
   assert.equal(지도.자료만들기({ items: [] }, combined, new Date('2026-11-30T09:00:00Z')).열린.length, 0);
   assert.equal(그록.동일공고(한건, { ...한건, edition: '2027', organizer: '다른 주최자' }), false);
-  assert.equal(그록.동일공고({ ...한건, edition: '2026' }, { ...한건, edition: '2027' }), false);
+  assert.equal(그록.동일공고(한건, { ...한건, edition: '2027' }), false);
+  assert.equal(그록.동일공고(한건, { ...한건, noticeId: '2026-43' }), false);
+});
+
+test('이전 회차가 늦게 들어와도 더 최근에 확인한 공모 조건이 남는다', async (t) => {
+  const 그록 = require('../tools/lib/grok-contests.cjs');
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'grok-contests-'));
+  t.after(() => fs.rmSync(폴더, { recursive: true, force: true }));
+  const url = 'https://example.org/notice/42';
+  const 보고서 = (reportId, status, quote) => ({
+    schema: 'synk-grok-contests-v1', reportId, reports: ['fixture.md'], items: [{
+      title: '창의적인 소재 공모전', officialUrl: url, ai: { status, url, quote },
+    }],
+  });
+  const 원문 = async () => ({ 됨: true, 끝주소: url, 글: 'AI는 제한하여 허용합니다. AI를 허용합니다.' });
+  await 그록.가져오기(폴더, 보고서('2026-11-18_1430', 'conditional', 'AI는 제한하여 허용합니다.'), 원문);
+  await 그록.가져오기(폴더, 보고서('2026-11-18_0830', 'allowed', 'AI를 허용합니다.'), 원문);
+  const combined = 그록.합치기({ items: [] }, 그록.보고서읽기(폴더));
+  assert.equal(combined.items[0].grok_contest.ai.status, 'conditional');
+
+  const reports = 그록.보고서읽기(폴더);
+  const later = reports.at(-1).items[0];
+  const original = { id: 'existing', title: '크리에이티브 소재 공모' };
+  const linked = 그록.합치기({ items: [original] }, [
+    { items: [later] },
+    { items: [{ ...later, title: original.title, ai: { status: 'unconfirmed' } }] },
+  ]);
+  assert.deepEqual(linked.items.map((item) => item.id), [original.id]);
+  assert.equal(linked.items[0].grok_contest.ai.status, 'conditional');
 });
 
 test('공식 문구가 모음 사이트에만 있거나 원문을 못 읽으면 세 칸을 확인 필요로 둔다', async (t) => {

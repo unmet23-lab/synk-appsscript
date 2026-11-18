@@ -153,13 +153,15 @@ function 동일공고(a, b) {
   const 주최 = (value) => 비교글(글(value).replace(/^\((?:주|사|재)\)\s*/, '').replace(/\s+[（(].*$/, ''));
   const hostA = 주최(a.organizer), hostB = 주최(b.organizer);
   const editionA = 비교글(a.edition), editionB = 비교글(b.edition);
-  if ((hostA && hostB && hostA !== hostB) || (editionA && editionB && editionA !== editionB)) return false;
+  if (editionA && editionB && editionA !== editionB) return false;
   const idA = 비교글(a.noticeId), idB = 비교글(b.noticeId);
-  if (idA && idB) return idA === idB && !!(hostA || hostB);
+  if (idA && idB && idA !== idB) return false;
   const urls = (item) => [item.officialUrl, item.discoveryUrl, ...(item.urls || [])].map(주소)
     .filter((url) => url && (new URL(url).pathname !== '/' || new URL(url).search));
   const left = urls(a);
   if (urls(b).some((url) => left.includes(url))) return true;
+  if (hostA && hostB && hostA !== hostB) return false;
+  if (idA && idB) return !!(hostA || hostB);
   const title = 비교글(a.title);
   return title.length >= 6 && title === 비교글(b.title);
 }
@@ -194,23 +196,46 @@ function 갱신(old, entry) {
   };
 }
 
+function 회차시각(report) {
+  const routine = /^(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})$/.exec(report.reportId);
+  if (routine) return Date.parse(routine[1] + 'T' + routine[2] + ':' + routine[3] + '+09:00');
+  const bootstrap = /^bootstrap-\d{8}-(\d{4})(\d{2})(\d{2})$/.exec(report.reportId);
+  const archive = /^grok-(\d{4}-\d{2}-\d{2})-archive-/.exec(report.reportId);
+  const day = bootstrap ? bootstrap.slice(1).join('-') : archive?.[1];
+  const time = Date.parse(day + 'T00:00+09:00');
+  return Number.isFinite(time) ? time : Date.parse(report.importedAt);
+}
+
 function 보고서읽기(folder) {
   const dir = path.join(folder, 폴더이름);
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir).filter((name) => 보고서이름.test(name)).map((name) => {
     const record = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
     return 보고서(record);
-  }).sort((a, b) => a.importedAt.localeCompare(b.importedAt) || a.reportId.localeCompare(b.reportId, 'en'));
+  }).sort((a, b) => 회차시각(a) - 회차시각(b) || a.importedAt.localeCompare(b.importedAt) || a.reportId.localeCompare(b.reportId, 'en'));
 }
 
 function 합치기(통합, reports) {
   const items = (통합.items || []).map((item) => ({ ...item }));
+  const existingCount = items.length;
   const keys = items.map(기존공고);
   for (const report of reports) {
     for (const row of report.items) {
-      const index = items.findIndex((item, i) => 동일공고(row, item.grok_contest || keys[i]) || 동일공고(row, keys[i]));
-      if (index >= 0) {
-        items[index].grok_contest = 갱신(items[index].grok_contest, row);
+      const matching = [];
+      for (let i = 0; i < items.length; i++) {
+        const current = items[i].grok_contest;
+        if ((current && 동일공고(row, current)) || 동일공고(row, keys[i])) matching.push(i);
+      }
+      const [index, ...duplicates] = matching;
+      if (index !== undefined) {
+        let evidence = items[index].grok_contest;
+        for (const other of duplicates.reverse()) {
+          if (other < existingCount) continue;
+          evidence = evidence ? 갱신(items[other].grok_contest, evidence) : items[other].grok_contest;
+          items.splice(other, 1);
+          keys.splice(other, 1);
+        }
+        items[index].grok_contest = 갱신(evidence, row);
       } else {
         const id = 'grok-contest:' + sha([row.organizer, row.title, row.edition, row.noticeId, row.officialUrl].join('\n')).slice(0, 20);
         keys.push(row);

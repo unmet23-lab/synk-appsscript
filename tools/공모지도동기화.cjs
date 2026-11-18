@@ -28,10 +28,6 @@ function 브라우저수신(config, importedIds) {
   });
   const result = run(command, 240000);
   const output = [result.stdout, result.stderr].filter(Boolean).join('\n');
-  const space = /^SYNKGROKSPACE=(\d+)$/m.exec(output)?.[1];
-  if (space) {
-    run('const space = await taskSpace(' + space + '); await space.finish({ keep: [] });', 12000);
-  }
   const data = /^SYNKGROKDATA=([^\r\n]+)$/m.exec(output)?.[1];
   if (result.status !== 0 || !data) {
     throw Error('Ego에서 그록 수집본을 읽지 못했습니다. 로그인과 비공개 페이지를 확인해 주세요.' +

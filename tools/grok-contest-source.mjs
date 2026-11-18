@@ -2,14 +2,16 @@
 const { botUrl, detailsName, pageTitle, downloadLock, importedIds } = contestSource;
 const fs = await import('node:fs/promises');
 const { randomUUID } = await import('node:crypto');
-const task = await taskSpace('Grok contest map');
-console.log('SYNKGROKSPACE=' + task.spaceId);
-const page = task.page('p1');
+const spaceName = 'Grok contest map';
+const existing = (await listTaskSpaces()).find((space) => space.name === spaceName);
+if (existing?.ownership === 'agentDelegatedToUser') throw Error('공모 지도용 Ego 창을 사용자가 제어하고 있습니다.');
+const task = existing?.ownership === 'user' ? await claimTaskSpace(existing.id) : await taskSpace(existing?.id ?? spaceName);
+const page = (await task.pages())[0] ?? await task.adopt((await task.tabs())[0].page);
 await page.goto(botUrl, { timeout: 16000 });
 
 
 async function pageFeed() {
-  await page.waitForSelector('loc=role:log[name="대화"]', { timeout: 14000 });
+  await page.waitForSelector('loc=css:[role=log]', { timeout: 14000 });
   await page.waitForFunction(() => document.querySelector('[role=log]')?.innerText?.trim().length > 30, undefined, { timeout: 12000 });
   const card = 'loc=css:[role=log] button[aria-label=' + JSON.stringify(pageTitle + ' 열기') + '] >> nth=-1';
   const openLabel = pageTitle + ' 열기';
