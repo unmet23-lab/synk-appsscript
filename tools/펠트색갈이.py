@@ -25,7 +25,7 @@
   ⚠자격 검사가 지킨다: 유채 픽셀이 2% 를 넘는 그림(마스코트 사진 류 — 눈·배경·스티치를 마스크가
   지켜야 하는 그림)에 이 플래그를 쓰면 죽는다 — 두 모드는 서로의 오용을 서로 잡는다.
 
-사용법:
+사용법 (큰 그림용 Rust 계산기 설치: python tools/felt_dye.py --build):
   python tools/펠트색갈이.py <입력.png> <출력.png> --목표 "#FF6B5C"
   python tools/펠트색갈이.py <입력.png> <출력.png> --목표 "#FF6B5C" --견본 견본.png
   python tools/펠트색갈이.py <회색천.png> <출력.png> --목표 "#8A8A8A" --무채base
@@ -213,6 +213,30 @@ def 적용(px, W, H, 게인, 무릎, 전면=False):
     return out, 칠한수, clipped
 
 
+def 게인적용기(im, 무릎, 전면):
+    """실측한 1024×1024 원본의 픽셀 수 이상에서만 Rust 계산기를 준비한다."""
+    native = None
+    if im.mode == 'RGB' and im.width * im.height >= 1024 * 1024 and 0.0 <= 무릎 <= 1.0:
+        try:
+            if __package__:
+                from .felt_dye import prepare
+            else:
+                from felt_dye import prepare
+        except ImportError:
+            pass
+        else:
+            native = prepare(im, 무릎, 전면)
+
+    def 한회(게인):
+        if native is not None:
+            result = native(게인)
+            if result is not None:
+                return result
+        return 적용(im.load(), *im.size, 게인, 무릎, 전면)
+
+    return 한회
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('입력')
@@ -335,12 +359,13 @@ def main():
     #   한 번에 안 맞는 이유는 비선형이다: 무릎 압축 + sRGB 인코딩 + 8bit 반올림.
     조준 = list(lin_rgb(목표))
     s_lin = lin_rgb(원본코어)
+    게인적용 = 게인적용기(im, a.무릎, a.무채base)
     out = None
     for 회차 in range(1, a.보정 + 1):
         # ⚠순서 주의 — zip(원본, 조준) 다. 뒤집으면 게인이 역수가 되어 «어두워지는데»
         #   그림은 그럴싸하게 나온다(실측 08-15: 첫 판이 R×0.622 로 더 칙칙해졌다).
         게인 = tuple(t / max(s, 1e-6) for s, t in zip(s_lin, 조준))
-        out, 칠한수, clipped = 적용(px, W, H, 게인, a.무릎, 전면=a.무채base)
+        out, 칠한수, clipped = 게인적용(게인)
         o = out.load()
         anchored = 좌표평균(o)
         d = de2000(lab(anchored), lab(목표))
@@ -379,7 +404,7 @@ def main():
                 break
             s = ((a.밝기 + 16) / max(현재 + 16, 1e-6)) ** 3
             게인 = tuple(g * max(0.25, min(4.0, s)) for g in 게인)
-            out, 칠한수, clipped = 적용(px, W, H, 게인, a.무릎, 전면=a.무채base)
+            out, 칠한수, clipped = 게인적용(게인)
         print(f'   밝기 못박음  보이는 평균 L* {전:.1f} → {보이는평균L(out.load()):.1f}  (목표 {a.밝기:.1f})')
 
     if _알파 is not None:
