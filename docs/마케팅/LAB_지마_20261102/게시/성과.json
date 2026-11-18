@@ -102,6 +102,38 @@
         }
       },
       {
+        "계정": "lab-cn-xiaohongshu",
+        "채널": "샤오훙수 @rednote ID 94512834104",
+        "주소": "https://www.rednote.com/user/profile/6ab10807000000000301d12f/6ae96fac000000001a01dbb2",
+        "형식": "xiaohongshu-note",
+        "게시": "2026-11-07T13:00:00.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {
+          "7일": {
+            "관측": "2026-11-14T12:36:36.107Z",
+            "지표": {
+              "views": 53,
+              "likes": 2,
+              "comments": 0,
+              "shares": 0,
+              "saves": 0
+            },
+            "평소대비": {
+              "배수": null,
+              "중앙값": null,
+              "편수": 0,
+              "기준": "앞선 편 같은 나이"
+            },
+            "위치": {},
+            "판정": "자료 부족",
+            "다음": null,
+            "까닭": "견줄 이전 편이 모자란다(공유 0편 · 저장 0편 — 4편부터)"
+          }
+        },
+        "화면필요": []
+      },
+      {
         "계정": "lab-youtube",
         "채널": "유튜브 @synkkorean",
         "주소": "https://www.youtube.com/watch?v=jNO8UW_uLkk",

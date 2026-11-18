@@ -168,6 +168,19 @@
         }
       },
       {
+        "계정": "lab-telegram",
+        "채널": "텔레그램 @synkmn",
+        "주소": "https://t.me/synkmn/7",
+        "형식": "telegram-post",
+        "게시": "2026-10-29T12:04:01.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "lab-mm-tiktok",
         "채널": "틱톡 @synklab.mm",
         "주소": "https://www.tiktok.com/@synklab.mm/video/7702093805079612690?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
@@ -345,6 +358,19 @@
             "completionRatePct": 6.5
           }
         }
+      },
+      {
+        "계정": "lab-cn-xiaohongshu",
+        "채널": "샤오훙수 @rednote ID 94512834104",
+        "주소": "https://www.rednote.com/user/profile/6ab10807000000000301d12f/6ae3546700000000190329db",
+        "형식": "xiaohongshu-note",
+        "게시": "2026-10-29T14:12:00.000Z",
+        "훅": null,
+        "역할": "권위",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
       }
     ]
   }

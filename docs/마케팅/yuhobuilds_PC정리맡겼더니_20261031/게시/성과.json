@@ -117,6 +117,19 @@
         }
       },
       {
+        "계정": "yuhobuilds-threads",
+        "채널": "스레드 @yuhobuilds",
+        "주소": "https://www.threads.com/@yuhobuilds/post/DfR1wm8kY0K",
+        "형식": "threads-post",
+        "게시": "2026-11-03T12:05:24.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "yuhobuilds-tiktok",
         "채널": "틱톡 @yuhobuilds",
         "주소": "https://www.tiktok.com/@yuhobuilds/video/7704678270200990996?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",

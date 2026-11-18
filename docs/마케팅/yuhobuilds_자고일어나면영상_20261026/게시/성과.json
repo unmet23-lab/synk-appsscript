@@ -117,6 +117,19 @@
         }
       },
       {
+        "계정": "yuhobuilds-threads",
+        "채널": "스레드 @yuhobuilds",
+        "주소": "https://www.threads.com/@yuhobuilds/post/DfW-T_fEcBL",
+        "형식": "threads-post",
+        "게시": "2026-11-05T11:56:01.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "yuhobuilds-youtube",
         "채널": "유튜브 @yuhobuilds",
         "주소": "https://www.youtube.com/watch?v=rANcfQPgZ2Y",

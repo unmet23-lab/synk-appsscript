@@ -102,6 +102,19 @@
         }
       },
       {
+        "계정": "lab-cn-xiaohongshu",
+        "채널": "샤오훙수 @rednote ID 94512834104",
+        "주소": "https://www.rednote.com/user/profile/6ab10807000000000301d12f/6ae78520000000000a039411",
+        "형식": "xiaohongshu-note",
+        "게시": "2026-11-04T13:00:00.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "lab-youtube",
         "채널": "유튜브 @synkkorean",
         "주소": "https://www.youtube.com/watch?v=xkBUNbXridY",

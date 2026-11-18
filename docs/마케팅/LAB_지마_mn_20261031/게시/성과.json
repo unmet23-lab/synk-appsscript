@@ -252,6 +252,30 @@
         ]
       },
       {
+        "계정": "lab-ru-rutube",
+        "채널": "RUTUBE LAB · 러시아 · rutube · 81398864",
+        "주소": "https://rutube.ru/video/a8ea98cb3466a8dc813e221072f1514a/",
+        "형식": "rutube-video",
+        "게시": "2026-11-17T10:00:25.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
+      },
+      {
+        "계정": "lab-telegram",
+        "채널": "텔레그램 @synkmn",
+        "주소": "https://t.me/synkmn/13",
+        "형식": "telegram-post",
+        "게시": "2026-11-05T12:00:48.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "lab-th-tiktok",
         "채널": "틱톡 @synklab.th",
         "주소": "https://www.tiktok.com/@synklab.th/video/7708639421091859719?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",

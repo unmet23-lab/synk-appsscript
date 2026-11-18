@@ -176,6 +176,19 @@
         }
       },
       {
+        "계정": "lab-telegram",
+        "채널": "텔레그램 @synkmn",
+        "주소": "https://t.me/synkmn/15",
+        "형식": "telegram-post",
+        "게시": "2026-11-07T12:02:26.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "lab-tiktok",
         "채널": "틱톡 @synk.mn",
         "주소": "https://www.tiktok.com/@synk.mn/video/7703809947020086536?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
