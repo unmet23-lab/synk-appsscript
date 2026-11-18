@@ -6,28 +6,48 @@ const spaceName = 'Grok contest map';
 const existing = (await listTaskSpaces()).find((space) => space.name === spaceName);
 if (existing?.ownership === 'agentDelegatedToUser') throw Error('공모 지도용 Ego 창을 사용자가 제어하고 있습니다.');
 const task = existing?.ownership === 'user' ? await claimTaskSpace(existing.id) : await taskSpace(existing?.id ?? spaceName);
-const page = (await task.pages())[0] ?? await task.adopt((await task.tabs())[0].page);
-await page.goto(botUrl, { timeout: 16000 });
+const tabs = await task.tabs();
+const current = tabs.find((tab) => tab.active) ?? tabs[0];
+const page = current.label ? task.page(current.label) : await task.adopt(current.page);
 
+async function openConversation() {
+  await page.goto(botUrl, { timeout: 20000 });
+  const log = 'loc=css:[role=log]';
+  try {
+    await page.waitForSelector(log, { timeout: 16000 });
+  } catch (error) {
+    if (await page.url() !== botUrl) throw error;
+    await page.reload({ timeout: 20000 });
+    await page.waitForSelector(log, { timeout: 20000 });
+  }
+}
+
+await openConversation();
 
 async function pageFeed() {
-  await page.waitForSelector('loc=css:[role=log]', { timeout: 14000 });
   await page.waitForFunction(() => document.querySelector('[role=log]')?.innerText?.trim().length > 30, undefined, { timeout: 12000 });
-  const card = 'loc=css:[role=log] button[aria-label=' + JSON.stringify(pageTitle + ' 열기') + '] >> nth=-1';
-  const openLabel = pageTitle + ' 열기';
-  const visible = (label) => [...document.querySelectorAll('[role=log] button[aria-label]')]
-    .some((button) => button.getAttribute('aria-label') === label && button.getClientRects().length);
-  for (let i = 0; i < 9 && !(await page.evaluate(visible, openLabel)); i++) {
+  const names = ['Open latest version: ' + pageTitle, 'Open page: ' + pageTitle, pageTitle + ' 열기'];
+  const findCard = (labels) => {
+    const rendered = [...document.querySelectorAll('[role=log] button[aria-label]')]
+      .filter((button) => button.getClientRects().length).map((button) => button.getAttribute('aria-label'));
+    return labels.find((label) => rendered.includes(label));
+  };
+  let openLabel = await page.evaluate(findCard, names);
+  for (let i = 0; i < 14 && !openLabel; i++) {
     const moved = await page.evaluate(() => {
-      const log = document.querySelector('[role=log] [data-has-overflow-y]');
-      if (!log || log.scrollTop <= 0) return false;
-      log.scrollBy(0, -Math.max(log.clientHeight * 1.2, 450));
+      const log = document.querySelector('[role=log]');
+      const scroller = log.scrollHeight > log.clientHeight ? log
+        : [...log.querySelectorAll('[data-has-overflow-y]')].find((node) => node.scrollHeight > node.clientHeight);
+      if (!scroller || scroller.scrollTop <= 0) return false;
+      scroller.scrollBy(0, -Math.max(scroller.clientHeight * 0.95, 410));
       return true;
     });
     if (!moved) break;
-    await page.waitForFunction(visible, openLabel, { timeout: 850 }).catch(() => {});
+    await page.waitForFunction(findCard, names, { timeout: 550 }).catch(() => {});
+    openLabel = await page.evaluate(findCard, names);
   }
-  if (!(await page.evaluate(visible, openLabel))) return null;
+  if (!openLabel) return null;
+  const card = 'loc=css:[role=log] button[aria-label=' + JSON.stringify(openLabel) + '] >> nth=-1';
   await page.click(card, { label: 'Open private contest feed' });
 
   const { gunzipSync } = await import('node:zlib');
@@ -38,7 +58,7 @@ async function pageFeed() {
     const snapshot = String(await page.snapshot({ scope: 'full_page' })).split('\n');
     const index = snapshot.findIndex((line, i) => line.includes('region "' + pageTitle + '"') &&
       snapshot.slice(i, i + 12).some((item) => item.includes('button "Close"')));
-    const frameRef = index < 0 ? null : snapshot.slice(index, index + 22)
+    const frameRef = index < 0 ? null : snapshot.slice(index, index + 30)
       .map((line) => /iframe \[ref=(\d+)\]/.exec(line)?.[1]).find(Boolean);
     if (frameRef) {
       const embedded = String(await page.snapshot({ scope: 'subtree', root: '@' + frameRef }));
@@ -65,15 +85,18 @@ if (pageReports) {
     receipts: pageReports.length, reports: pageReports.filter((report) => !known.has(report.reportId)), failures: [],
   }));
 } else {
-  await page.goto(botUrl, { timeout: 16000 });
+  await openConversation();
   await libraryFeed();
 }
 
 async function libraryFeed() {
-  const details = 'loc=role:button[name=' + JSON.stringify(detailsName) + ']';
-  const library = 'loc=role:tab[name="라이브러리"]';
-  const libraryShown = await page.evaluate(() => [...document.querySelectorAll('[role=tab]')]
-    .some((tab) => tab.innerText.trim() === '라이브러리' && tab.getClientRects().length));
+  const english = await page.evaluate(() => document.querySelector('[role=log]').getAttribute('aria-label') === 'Conversation');
+  const detailsLabel = english ? detailsName.replace(/ 세부 정보$/, ' details') : detailsName;
+  const libraryLabel = english ? 'Library' : '라이브러리';
+  const details = 'loc=role:button[name=' + JSON.stringify(detailsLabel) + ']';
+  const library = 'loc=role:tab[name=' + JSON.stringify(libraryLabel) + ']';
+  const libraryShown = await page.evaluate((label) => [...document.querySelectorAll('[role=tab]')]
+    .some((tab) => tab.innerText.trim() === label && tab.getClientRects().length), libraryLabel);
   if (!libraryShown) {
     await page.waitForSelector(details, { timeout: 16000 });
     await page.click(details, { label: 'Open bot library' });
@@ -84,7 +107,11 @@ async function libraryFeed() {
   await page.waitForSelector(files, { timeout: 10000 });
   await page.click(files, { label: 'Show files only' });
 
-  const partition = (label) => /^(synk-contest-feed-(\d{4}-\d{2}-\d{2}_(?:0830|1430|2000))\.json|bootstrap-20261117-20261118\.json) 다운로드$/.exec(label);
+  const partition = (label) => {
+    const filename = english ? label.replace(/^Download /, '') : label.replace(/ 다운로드$/, '');
+    if (filename === label) return null;
+    return /^(synk-contest-feed-(\d{4}-\d{2}-\d{2}_(?:0830|1430|2000))\.json|bootstrap-20261117-20261118\.json)$/.exec(filename);
+  };
   const more = 'loc=css:[role=tabpanel] button:text-is("Show more") >> nth=0';
   for (let i = 0; i < 5; i++) {
     const available = await page.evaluate(() => [...document.querySelectorAll('[role=tabpanel] button')]
