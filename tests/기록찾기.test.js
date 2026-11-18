@@ -13,6 +13,31 @@ const { spawnSync } = require('node:child_process');
 
 const 도구 = path.join(__dirname, '..', 'tools', '기록찾기.js');
 
+test('현재 — 이웃 프로젝트의 담당 문서를 후보로 보존하고 명시한 경우에만 읽는다', t => {
+  const { 뿌리 } = 판(t);
+  const 작업본 = path.join(뿌리, '프로젝트');
+  fs.mkdirSync(path.join(작업본, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(작업본, 'docs/문서_지도.md'),
+    '| 홈페이지 | [현재 원고](../../웹/안내.md#현재), [구성 이력](옛안.md) |\n' +
+    '| 앱 | [앱 안내](../../앱/안내.md) |\n');
+  fs.writeFileSync(path.join(작업본, 'docs/옛안.md'), '# 이전 설계\n한때 쓰던 절차\n');
+  const { 현재찾기 } = require('../tools/lib/작업원문.js');
+  const 찾기 = (말, 명시 = []) => 현재찾기(작업본, [말], 명시);
+  const 섞임 = 찾기('홈페이지');
+  assert.equal(섞임.상태, '원문 선택 필요');
+  assert.deepEqual(섞임.원문, []);
+  assert.deepEqual(섞임.후보.map(x => x.이름), ['현재 원고', '구성 이력']);
+  const 외부 = 섞임.후보[0].위치;
+  assert.equal(외부, path.join(fs.realpathSync(뿌리), '웹/안내.md') + '#현재');
+  assert.equal(찾기('앱 안내').후보[0].외부, true);
+  fs.mkdirSync(path.join(뿌리, '웹'));
+  fs.writeFileSync(path.join(뿌리, '웹/안내.md'), '# 웹\n## 현재\n이번에 쓰는 원고.\n');
+  assert.deepEqual(찾기('현재 원고').원문, []);
+  const 읽음 = 찾기('홈페이지', [외부]).원문[0];
+  assert.equal(읽음.제목, '현재');
+  assert.equal(읽음.발췌[0].글, '이번에 쓰는 원고.');
+});
+
 test('현재 — 한 담당 원문의 실제 제목, 범위와 조건을 인용하고 이전 승인과 추정을 가져오지 않는다', t => {
   const { 뿌리, 돌리기 } = 판(t, { 보관행: [행('2026-10-01', '펜던트 모든 면 확정(예전 안)')] });
   fs.writeFileSync(path.join(뿌리, 'docs/문서_지도.md'), '| 펜던트 | [제작](제작.md#조건) |\n');

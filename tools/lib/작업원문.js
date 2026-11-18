@@ -118,18 +118,21 @@ function 현재찾기(작업본, 낱말, 명시 = []) {
     for (const [i, 행] of 줄.entries()) {
       if (!행.startsWith('|') || !맞음(행, 낱말)) continue;
       for (const m of 행.matchAll(/\[([^\]]+)\]\(([^)]+?\.md(?:#[^)]*)?)\)/gi)) {
-        if (/^(?:[\w+.-]+:|\/|\\)/.test(m[2])) continue;
-        const [대상, 앵커] = decodeURIComponent(m[2]).split('#');
+        const 링크 = decodeURIComponent(m[2]);
+        if (/^(?:[\w+.-]+:|\/|\\)/.test(링크)) continue;
+        const [대상, 앵커] = 링크.split('#');
         const 파일 = path.resolve(path.dirname(지도), 대상);
-        if (!안에(뿌리, 파일)) continue;
-        const 위치 = path.relative(뿌리, 파일).split(path.sep).join('/') + (앵커 ? '#' + 앵커 : '');
-        const 항목 = { 위치, 이름: m[1], 지도줄: i + 1 };
+        const 외부 = !안에(뿌리, 파일);
+        if (외부 && !안에(path.dirname(뿌리), 파일)) continue;
+        // 이웃 저장소는 지도에 적힌 위치만 알린다. 본문은 --원문으로 직접 지정할 때 읽는다.
+        const 위치 = (외부 ? 파일 : path.relative(뿌리, 파일).split(path.sep).join('/')) + (앵커 ? '#' + 앵커 : '');
+        const 항목 = { 위치, 이름: m[1], 지도줄: i + 1, ...(외부 ? { 외부: true } : {}) };
         발견.set(위치, 항목);
         if (m[1].toLowerCase() === 검색제목) 제목일치.set(위치, 항목);
       }
     }
     const 후보 = 제목일치.size ? 제목일치 : 발견;
-    if (후보.size !== 1) return { ...결과, 상태: 후보.size ? '원문 선택 필요' : '지정된 원문 없음',
+    if (후보.size !== 1 || 후보.values().next().value.외부) return { ...결과, 상태: 후보.size ? '원문 선택 필요' : '지정된 원문 없음',
       후보: [...후보.values()].slice(0, 6), 더있는후보: Math.max(0, 후보.size - 6) };
     지정 = [...후보.keys()];
   }
@@ -145,7 +148,7 @@ function 현재화면(r) {
     if (x.생략줄) out.push(`  이 절에서 ${x.생략줄}줄을 생략했습니다. 원문 ${x.첫줄}~${x.끝줄}행에서 전문을 읽을 수 있습니다.`);
     if (x.절후보?.length) out.push('  하위 제목  ' + x.절후보.map(h => '#' + h.앵커).join('  ') + (x.더있는절 ? `  (외 ${x.더있는절}개)` : ''));
   }
-  for (const x of r.후보) out.push(`  ${x.위치}  (${x.이름}, 문서 지도 ${x.지도줄}행)`);
+  for (const x of r.후보) out.push(`  ${x.위치}  (${x.이름}, 문서 지도 ${x.지도줄}행${x.외부 ? ', 이웃 저장소' : ''})`);
   if (r.더있는후보) out.push('  다른 후보 ' + r.더있는후보 + '개가 있습니다.');
   if (!r.원문.length) out.push('담당 원문을 --원문 "경로#앵커"로 지정하세요. 결정·보관·수정 이력은 --현재 없이 같은 낱말로 찾습니다.');
   return out.join('\n');
