@@ -1,0 +1,13 @@
+Create exactly one image, landscape 1536x1024.
+
+Image 1 is the style and lighting reference. Use the SAME premium stylized 3D animated render style as Image 1 (soft matte clay-like materials, smooth simplified forms, dark room with warm rim light and gentle volumetric glow). Not photoreal, not anime.
+
+Scene: late night, the desk of someone who runs a small business alone. The environment fills the entire frame edge to edge: a dark, calm room with real depth. The camera looks at the desk perfectly straight-on at eye level.
+
+In the right-center of the frame stands one large desktop monitor on a simple stand. The monitor faces the camera exactly straight-on with NO perspective and NO tilt: its screen is a flat, upright, perfectly axis-aligned rectangle (16:10), occupying about 46% of the image width, with a very thin dark bezel. The screen surface is plain, uniform, very dark charcoal (#0c0c0e) and completely empty, softly glowing. Nothing overlaps or covers the screen.
+
+On the pale wooden desk in front of the monitor: a slim keyboard, a small ceramic mug with a little steam, and to the left of the monitor one small glossy pure-black sphere about the size of a grapefruit resting on the desk, catching a soft highlight. A small desk lamp at the far right gives a warm amber rim light. On the far left of the frame, a tall window shows a deep blue night city with tiny warm lights, softly out of focus. The left 35% of the frame is dark and calm with low contrast so that large white text can be placed over it. No people.
+
+Mood: quiet, focused, warm against dark. Deep blacks, amber and soft blue accents.
+
+No text, no letters, no numbers, no logos, no readable content anywhere in the image.

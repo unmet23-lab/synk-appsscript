@@ -1,0 +1,7 @@
+Create exactly one image, landscape 1536x1024.
+
+Image 1 is the scene to recreate. Keep everything about it: the same premium stylized 3D animated render style, the same warm early-morning light, the same soft green rolling hills, the same single pale stone oval loop road with the same five places in the same order around it (tiny cozy house with the young woman standing on the road in front of it; small open-front classroom with a green chalkboard; university gate with two yellow ginkgo trees; small glass-front office; cafe terrace with a striped awning and string lights), and the same large round tree alone on the lawn in the middle of the loop. Image 2 is the character reference for the young woman (short black bob, cream knit cardigan, mustard-yellow top, navy trousers, navy backpack); she is the only person.
+
+Change only the framing: pull the camera back and shift the town to the right, so that the whole loop with all five places now sits entirely inside the RIGHT 60% of the frame, a little smaller than in Image 1, with comfortable margin from the right, top and bottom edges. The LEFT 40% of the frame is now open, calm scenery only: soft pale-green rolling hills fading into warm morning haze and a pale sky, with at most a few tiny distant round trees, no buildings, no road, low contrast, so that large dark text can be placed over it. The landscape still fills the entire frame edge to edge.
+
+No text, no letters, no numbers, no logos, no signs with writing anywhere in the image.
