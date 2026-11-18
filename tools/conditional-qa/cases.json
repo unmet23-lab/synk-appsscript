@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 152,
+  "expectedCount": 153,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1220,6 +1220,14 @@
       "name": "화면 세션 E8 · E11(11-16): a finished move started again fetches only what changed; the preview and the start count and take the same",
       "group": "업무 백업 1단계 — 새 PC로 옮겨 오기(Windows 파일)",
       "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S153",
+      "file": "tests/컷연속성검사.test.js",
+      "name": "색감 값(--그림 · --받음) — 컷마다 값을 적고, 같은 장면에서 튀는 컷과 받은 영상이 시작 그림 색감에서 벗어난 컷은 확인",
+      "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
+      "route": "linux",
       "profile": "default"
     }
   ]
