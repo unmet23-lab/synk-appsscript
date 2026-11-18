@@ -21,7 +21,7 @@ import {PROGRESS_FIELDS,applyProgressAction,progressOf,progressCustomerView} fro
 // 같은 볼륨을 쓰므로 주소별 · 전체 문턱과 디스크 여유를 먼저 본다. 어떤 칸도 보내기를 막지 않는다 — 막는 것은 연락처와 동의뿐이다.
 const KIND='pulseRequests',TOKEN='pulse-request';
 export const REQUEST_LIMITS=Object.freeze({
-  draftDays:14,tokenDays:30,unconfirmedDays:90,resendMinutes:10,sendingMinutes:2,
+  draftDays:14,tokenDays:30,resendMinutes:10,sendingMinutes:2,
   startsPerHourByClient:20,startsPerDay:300,submitsPerDay:50,savesPerHourByClient:1200,uploadsPerHourByClient:200,
   uploadBytesPerDayByClient:2*1024**3,uploadBytesPerDay:10*1024**3,
   filesPerDraft:30,bytesPerDraft:400*1024**2,fileBytes:100*1024**2,attachmentBytes:30*1024**2,
@@ -398,9 +398,6 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
           const now=clock(),due=requestClock(store,store.get('clientProjects',id),now);
           if(!stoppedNoticeDue(due,now))return;
           clientProjects.noticeRequestRetention(id,{at:now,deleteAt:due.deleteAt});result.noticed++;
-          // 예고가 나간 공개 의뢰서 대기 줄은 「예고됨」으로 — 이 판 전의 서버(예고 없이 90일에 지우던 정리)로 되돌려도 그 줄을 보고 지우지 않게(GPT 서버 검수 GA4).
-          // 줄은 접수 뒤 76일이 지난 것뿐이라 다시 보내기(초안 쿠키 30일) · 하루 접수 상한(오늘 접수)과 겹치지 않는다.
-          for(const line of store.all(KIND).filter(item=>item.projectId===id&&item.status==='submitted'))store.put(KIND,line.id,{...line,status:'noticed'});
         });
       }catch{result.failed++;}
     }
@@ -430,17 +427,11 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
   async function retireUnconfirmed({startup=false}={}){
     const retention=workspaces?.sweepRetention?await workspaces.sweepRetention({noticeOnly:startup}):null;
     const {retired,...requests}=await sweepRequestRecords({noticeOnly:startup});
-    // 공개 의뢰서 대기 줄(번호와 프로젝트 id만)의 정리 — 지우기는 위 시계 하나가 한다. 프로젝트가 없는 줄은 접수 뒤 90일에, 지운 의뢰의 줄은 바로 뗀다.
-    // 확인됐거나 단계를 옮긴 의뢰의 줄은 옛 정리처럼 그 프로젝트가 90일 멈춘 뒤에만 뗀다 — 접수 직후의 다시 보내기와 하루 접수 상한이 이 줄을 읽는다(GPT 서버 검수 GA2).
-    const stamp=now(),cutoff=REQUEST_LIMITS.unconfirmedDays*86400000;
-    if(!startup)for(const row of store.all(KIND)){
-      if(!['submitted','noticed'].includes(row.status))continue;
-      const project=row.projectId&&store.get('clientProjects',row.projectId);
-      if(!project){if(stamp-Date.parse(row.submittedAt)>cutoff)store.remove(KIND,row.id);continue;}
-      if(project.studio?.request?.status==='retired'){store.remove(KIND,row.id);continue;}
-      if(stamp-Date.parse(project.updatedAt)<=cutoff)continue;
-      if(project.studio?.request?.confirmedAt||!['received','archived'].includes(project.stage))store.remove(KIND,row.id);
-    }
+    // 공개 의뢰서 대기 줄(번호와 프로젝트 id만)은 접수 뒤 하루가 지나면 뗀다. 지우기는 위 시계 하나가 하고, 이 줄을 읽는 일은 접수 직후의 다시 보내기(10분)와
+    // 하루 접수 상한(24시간)뿐이다(GPT 서버 검수 GA2). 이 판 전의 서버는 이 줄을 보고 예고 없이 90일에 지웠으므로, 그 서버로 되돌려도 지울 줄이 남지 않게
+    // 시작 회차에서도 뗀다(GPT 서버 다시 검수 GA4). 상태를 바꿔 두면 옛 서버의 초안 읽기가 그 줄을 쓰던 초안으로 보아 다시 보내기를 받으므로 바꾸지 않고 뗀다.
+    const stamp=now();
+    for(const row of store.all(KIND))if(row.status==='submitted'&&!(stamp-Date.parse(row.submittedAt)<=86400000))store.remove(KIND,row.id);
     for(const key of Object.keys(requests))if(!requests[key])delete requests[key];
     return {retired,...(Object.keys(requests).length?{requests}:{}),...(retention&&(retention.deleted||retention.held||retention.failed||retention.noticed||retention.resumed||retention.unclear)?{retention}:{})};
   }

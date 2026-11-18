@@ -49,9 +49,20 @@ test('시계 계산: 의뢰서(동의)가 있고 제작 신호가 없을 때만 
   // 76일 예고 뒤 89일에 인물 일 → 예고가 풀리고, 그 인물이 92일에 브랜드에 묶여도 옛 예고는 되살아나지 않는다(GPT 서버 검수 GA1).
   personas.length=0;personas.push({id:'e',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+92*DAY)});
   assert.equal(requestClock(store,row({},{requestRetentionNotice:{at:isoOf(t0+76*DAY)}}),isoOf(t0+93*DAY)).noticed,false);
-  // 시계가 지운 인물의 묘비는 움직임이 아니고, 직원이 지운 인물은 움직임이다.
+  // 시계가 지운 인물은 지우기 기록이 아니라 지우기 직전의 움직임으로 보고(GPT 서버 다시 검수 GA3), 직원이 지운 인물은 지운 때가 움직임이다.
   personas.length=0;personas.push({id:'f',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+80*DAY),updatedAt:isoOf(t0+80*DAY),deletion:{confirmedBy:'system'}});
-  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0));
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0),'사람 손 움직임이 남지 않은 옛 묘비는 보지 않는다');
+  // 76일 예고 뒤 80일에 직원이 인물을 손봤고, 그 인물을 시계가 100일에 지웠다 — 예고는 풀린 채로 남는다(지우기 기록 날짜가 앞 움직임을 지우지 않는다).
+  const notice={requestRetentionNotice:{at:isoOf(t0+76*DAY)}};
+  personas.length=0;personas.push({id:'h',originProjectId:'p1',workspaceId:'w',status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system',lastActivityAt:isoOf(t0+80*DAY)}});
+  let gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
+  personas[0]={...personas[0],status:'deleting',deletedAt:undefined};
+  gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY),'지우는 중인 인물도 같다');assert.equal(gone.noticed,false);
+  // 지우기 직전 날짜가 없는 옛 묘비는 이력의 사람 손 항목(시스템 항목은 뺀다).
+  personas.length=0;personas.push({id:'i',originProjectId:'p1',workspaceId:'w',status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system'},
+    history:[{at:isoOf(t0+80*DAY),actorKind:'staff'},{at:isoOf(t0+95*DAY),actorKind:'system'},{at:isoOf(t0+100*DAY),actorKind:'system'}]});
+  gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
+  personas.length=0;personas.push({id:'f',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+80*DAY),updatedAt:isoOf(t0+80*DAY),deletion:{confirmedBy:'system'}});
   personas.push({id:'g',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+85*DAY),updatedAt:isoOf(t0+85*DAY),deletion:{confirmedBy:'staff-1'}});
   assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+85*DAY));
   personas.length=0;
@@ -121,16 +132,18 @@ test('의뢰서를 낸 프로젝트는 확인 전후 · 방 안 의뢰서 · 보
   store.put('pulseWorkspaceClaims','claim-approved',{id:'claim-approved',projectId:open,inviteRevision:1,synkUserId:'synk-user-2',displayName:'브랜드 관리자',status:'approved',createdAt:isoOf(start),decidedAt:isoOf(start),decidedBy:f.owner.id,workspaceId:'w1',note:''});
   const files=await readdir(f.media());assert.equal(files.length,6);
   // 75일: 할 일 없음. 77일의 서버 시작 직후 회차: 예고만(동의가 있는 다섯).
+  // 공개 의뢰서 대기 줄: 접수 뒤 하루 안에는 그대로 두고(다시 보내기 · 하루 상한이 읽는다, GPT 서버 검수 GA2), 하루가 지나면 시작 회차에서도 뗀다 —
+  // 이 판 전의 서버로 되돌려도 그 줄을 보고 예고 없이 지우지 않게(GPT 서버 다시 검수 GA4).
+  const lines=()=>store.all('pulseRequests').filter(item=>[open,refunded,archived,moved].includes(item.projectId)).length;
+  f.stamp=start+DAY/2;assert.deepEqual(await f.sweep(),{retired:0});assert.equal(lines(),4,'하루 안의 줄은 그대로');
+  f.stamp=start+DAY+60000;assert.deepEqual(await f.sweep({startup:true}),{retired:0});assert.equal(lines(),0,'하루가 지난 줄은 시작 회차에서도 뗀다');
   f.stamp=start+75*DAY;assert.deepEqual(await f.sweep(),{retired:0});
-  assert.equal(store.all('pulseRequests').filter(item=>item.projectId===refunded).length,1,'확인된 의뢰의 대기 줄은 90일 멈추기 전에는 그대로(GPT 서버 검수 GA2 — 다시 보내기 · 하루 상한이 읽는다)');
   f.stamp=start+77*DAY;assert.deepEqual(await f.sweep({startup:true}),{retired:0,requests:{noticed:5}});
   for(const id of [open,room,refunded,archived,moved]){
     const row=f.row(id);assert.equal(row.updatedAt,isoOf(start),'예고는 시계를 옮기지 않는다');assert.equal(row.requestRetentionNotice.deleteAt,endOf(start+91*DAY),'예고가 77일에 나갔으니 예고 + 14일');
     assert.equal(row.history.at(-1).notice,'request_retention');
   }
   assert.equal(f.row(noConsent).requestRetentionNotice,undefined,'동의가 없는 프로젝트는 예고도 없다');
-  // 예고가 나간 공개 의뢰서 대기 줄은 「예고됨」 — 옛 서버로 되돌려도 그 줄을 보고 예고 없이 지우지 않는다(GPT 서버 검수 GA4).
-  for(const id of [open,refunded,archived,moved])assert.deepEqual(store.all('pulseRequests').filter(item=>item.projectId===id).map(item=>item.status),['noticed'],id);
   // 직원: 알림(보관한 프로젝트에서도) · 데스크 줄.
   const news=await f.staff('/api/client-projects/'+archived+'/news');assert.equal(news.status,200,JSON.stringify(news.data));
   const item=news.data.items.find(entry=>entry.type==='request_retention_notice');

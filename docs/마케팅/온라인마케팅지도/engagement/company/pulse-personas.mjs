@@ -187,9 +187,18 @@ export const paymentEverConfirmed=request=>Array.isArray(request?.paymentLog)?re
 // 돌려줌: null — 시계 없음(의뢰서를 내지 않음 · 이미 지운 의뢰 · 제작한 프로젝트). {unclear} — 날짜를 못 읽음(지우지 않고 센다).
 //   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt,keepPayment?} — 마지막 움직임 = max(프로젝트 updatedAt, 이 프로젝트에서 나온 인물의 updatedAt)
 //   (인물 쪽 일이 더 늦으면 보인 날짜가 맞게 — 설계 검토 D4). 붙잡는 인물만이 아니라 이 프로젝트에서 나온 모든 인물을 본다 — 인물 일로 풀린 예고가 그 인물이 브랜드에
-//   묶여 붙잡지 않게 된 뒤 되살아나 예고 없이 지우지 않게(GPT 서버 검수 GA1). 묘비 · 지우는 중인 인물은 직원이 지운 것만 움직임으로 본다(시계가 지운 것은 그 시계의 일이다).
+//   묶여 붙잡지 않게 된 뒤 되살아나 예고 없이 지우지 않게(GPT 서버 검수 GA1). 시계가 지운(지우는 중 포함) 인물은 지우기 직전의 움직임으로 본다(personaActivity).
 //   예고는 마지막 움직임보다 «뒤»에 나간 것만, 지우는 날은 인물 시계와 같은 식.
 //   keepPayment — 결제가 확인됐다가 취소된 의뢰: 지울 때 결제 기록(payment · paymentLog)만 남긴다(설계 검토 D7).
+// 인물의 마지막 움직임(의뢰 기록 시계용). 시계가 지운(지우는 중 포함) 인물은 지우기 직전의 움직임으로 본다 — 지우기 기록이 updatedAt을 옮겨도, 그 앞 직원 일로 풀린
+// 의뢰 예고가 되살아나 예고 없이 지우지 않게(GPT 서버 다시 검수 GA3). 지우기 직전 날짜(deletion.lastActivityAt)가 없는 옛 묘비는 그 이력의 사람 손 항목, 그것도 없으면 null(보지 않음).
+export function personaActivity(persona){
+  if(!((persona?.deletedAt||['deleting','deleted'].includes(persona?.status))&&persona?.deletion?.confirmedBy==='system'))return Date.parse(persona?.updatedAt);
+  const kept=Date.parse(persona.deletion.lastActivityAt);if(Number.isFinite(kept))return kept;
+  let best=null;
+  for(const entry of Array.isArray(persona.history)?persona.history:[]){if(!entry||entry.actorKind==='system')continue;const at=Date.parse(entry.at);if(Number.isFinite(at)&&(best===null||at>best))best=at;}
+  return best;
+}
 export function requestClock(store,row,now){
   const request=row?.studio?.request;
   if(!request||typeof request!=='object'||!request.consentAt||request.status==='retired'||projectInProduction(row))return null;
@@ -197,8 +206,7 @@ export function requestClock(store,row,now){
   if(!Number.isFinite(touched)||!Number.isFinite(at))return {unclear:'date'};
   let last=touched;
   for(const persona of store.all(K.personas).filter(item=>item?.originProjectId===row.id)){
-    if((persona.deletedAt||['deleting','deleted'].includes(persona.status))&&persona.deletion?.confirmedBy==='system')continue;
-    const own=Date.parse(persona.updatedAt);if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;
+    const own=personaActivity(persona);if(own===null)continue;if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;
   }
   const clockAt=last+STOPPED_DAYS*DAY_MS,sent=Date.parse(row.requestRetentionNotice?.at),noticed=Number.isFinite(sent)&&sent>last;
   const iso=value=>new Date(value).toISOString();

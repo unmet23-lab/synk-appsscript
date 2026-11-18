@@ -1017,18 +1017,19 @@ test('90일 시계 · 한 길의 남은 자리(Fable 5.2 설계 검토): 이미 
   assert.deepEqual((await sweep(f)).retention,{deleted:1,held:0,failed:0,unclear:1});
   const tomb=personaOf(f,x.personaId);assert.equal(tomb.deletion.reason,'origin_stopped');assert.match(tomb.deletion.note,/정리한 뒤 예고하고 지움/);
   assert.equal(personaOf(f,y.personaId).status,'ready','날짜를 못 읽는 인물은 남는다');
-  // 인물 검토 중 보관한 확인 전 의뢰: 붙잡는 인물이 있는 동안 정리 대기 줄을 지우지 않는다 — 보관을 풀면 뒤에 정리된다(GPT 서버 다시 검수 GA1).
+  // 인물 검토 중 보관한 확인 전 의뢰: 붙잡는 인물이 있는 동안에는 의뢰 기록을 지우지 않는다.
   const c=f.browser();c.jar.delete('synk_pulse_request');
   const draft=(await c.call('/pulse/api/request/start',{body:{}})).data.draft;
   const sent=await c.call('/pulse/api/request/submit',{body:{answers:answers(custom)},csrf:draft.csrf});assert.equal(sent.status,201);
   const held=sent.data.projectId;f.store().put('clientProjects',held,{...projectOf(f,held),stage:'archived'});
   f.stamp+=91*DAY;
   await sweep(f);
-  assert.equal(f.store().all('pulseRequests').filter(item=>item.projectId===held).length,1,'정리 대기 줄이 남는다');
-  // 인물을 지운 뒤에도 보관한 확인 전 의뢰의 대기 줄은 남고, 보관을 풀면 그때부터 다시 90일 뒤 정리된다(GPT 서버 끝 판 GA1).
+  // 공개 의뢰서 대기 줄은 접수 뒤 하루가 지나면 뗀다 — 지우기는 의뢰 기록 시계 하나가 한다(GPT 서버 다시 검수 GA4).
+  assert.equal(f.store().all('pulseRequests').filter(item=>item.projectId===held).length,0,'하루가 지난 대기 줄은 뗀다');
+  const kept=f.store().all('pulsePersonas').find(item=>item.originProjectId===held).updatedAt;
   // 의뢰 기록 90일 시계(판 4 설계 11-7, Fable 설계 검토 D10): 보관한 의뢰도 같은 시계 — 91일 회차의 예고 뒤 14일, 인물을 지운 같은 회차에 의뢰 기록도 지우고 대기 줄을 뗀다.
   f.stamp=afterDay(f.stamp+14*DAY);const swept=await sweep(f);
-  assert.equal(f.store().all('pulsePersonas').find(item=>item.originProjectId===held).status,'deleted');
+  {const tomb=f.store().all('pulsePersonas').find(item=>item.originProjectId===held);assert.equal(tomb.status,'deleted');assert.equal(tomb.deletion.lastActivityAt,kept,'시계가 지운 인물은 지우기 직전의 움직임을 남긴다(GPT 서버 다시 검수 GA3)');}
   assert.equal(swept.retired,1,'보관한 의뢰도 예고 뒤 지운다');assert.equal(projectOf(f,held).studio.request.status,'retired');
   assert.equal(f.store().all('pulseRequests').filter(item=>item.projectId===held).length,0,'지운 의뢰의 대기 줄을 뗀다');
 });

@@ -614,7 +614,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     const noVault=[...new Set([...(persona.deletion?.noVault||[]),...(Array.isArray(persona.removedNoVault)?persona.removedNoVault:[]),...names.map(name=>hashes.get(name))])].filter(hash=>typeof hash==='string'&&SHA256.test(hash)).sort();
     store.remove(K.consents,persona.id);
     const system=actorKind==='system';
-    putPersona(persona,{status:'deleting',pendingUnlink:[...new Set(names)],deletion:{confirmedAt:now,confirmedBy:system?'system':actor,note,requested:persona.deletionRequest||null,...(reason?{reason}:{}),noVault}},{action:system?'retention_deleting':'deleting',actorKind,actor:system?'':actor});
+    putPersona(persona,{status:'deleting',pendingUnlink:[...new Set(names)],deletion:{confirmedAt:now,confirmedBy:system?'system':actor,note,requested:persona.deletionRequest||null,...(reason?{reason}:{}),...(system&&persona.updatedAt?{lastActivityAt:persona.updatedAt}:{}),noVault}},{action:system?'retention_deleting':'deleting',actorKind,actor:system?'':actor});
     const workspace=persona.workspaceId?store.get(K.workspaces,persona.workspaceId):null;if(workspace)putWorkspace(workspace,{action:system?'model_retention_deleting':'model_deleting',actorKind,actor:system?'':actor,note,subject:persona.id});
   }
 
