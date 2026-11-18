@@ -244,12 +244,15 @@ test('파일 지우기가 도중에 멈춘 지운 의뢰는 다음 보통 회차
   // 문서 트랜잭션은 끝났고 파일은 남은 꼴: 지운 의뢰 + 남은 이름 목록(하나는 다른 의뢰가 아직 쓰는 이름).
   store.transaction(()=>f.app.clientProjects.retireRequestWithin(id,{request:{schemaVersion:1,number:'P-1',status:'retired',retiredAt:new Date(f.stamp).toISOString(),answers:{},files:[],asks:[],notes:[],rounds:[]}}));
   const mine=f.row(id).retirePendingUnlink;assert.equal(mine.length,1,'지운 의뢰의 파일 이름');
+  // 경로 밖 이름: studio-media 바로 위 폴더에 실제 파일을 두고, 지우기가 그 파일을 건드리지 않는지 본다(끝 판 카본 A1).
+  const escape=join(f.media(),'..','escape.png');await writeFile(escape,png);
   f.put(id,row=>({...row,retirePendingUnlink:[...row.retirePendingUnlink,orphan,shared,'../escape.png']}));
   assert.deepEqual(await f.sweep({startup:true}),{retired:0},'시작 직후 회차는 잇지 않는다');
   for(const name of [...mine,orphan,shared])assert.ok(await stat(join(f.media(),name)));
   assert.deepEqual(await f.sweep(),{retired:0,requests:{resumed:1}});
   for(const name of [...mine,orphan])await assert.rejects(stat(join(f.media(),name)),name);
   assert.ok(await stat(join(f.media(),shared)),'다른 의뢰가 쓰는 파일은 그대로');
+  assert.ok(await stat(escape),'경로 밖 파일은 그대로');
   assert.equal(f.row(id).retirePendingUnlink,undefined);
   assert.equal(f.row(other).studio.assets.length,1);
   assert.deepEqual(await f.sweep(),{retired:0});

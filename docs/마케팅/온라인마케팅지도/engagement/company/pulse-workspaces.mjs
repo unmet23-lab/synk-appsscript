@@ -7,7 +7,7 @@
 import {randomUUID,createHash} from 'node:crypto';
 import {unlink,open} from 'node:fs/promises';
 import {join} from 'node:path';
-import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersonaRef,reuseStateOf,reuseUntil,reuseDeleteAt,consentAllowsReuse,stoppedClock,stoppedNoticeDue,stoppedDeleteDue,withOriginActivity} from './pulse-personas.mjs';
+import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersonaRef,reuseStateOf,reuseUntil,reuseDeleteAt,consentAllowsReuse,stoppedClock,stoppedNoticeDue,stoppedDeleteDue,withOriginActivity,originActivityAligned,legacyOriginActivity} from './pulse-personas.mjs';
 import {personaRefOf} from './public/pulse-app/casting-choice.mjs';
 import {withTranslation} from './pulse-translations.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
@@ -729,8 +729,11 @@ export function createWorkspaceService({store,clientProjects,features=null,local
       const tomb={id:current.id,schemaVersion:current.schemaVersion||1,workspaceId:current.workspaceId??null,originProjectId:current.originProjectId,kind:current.kind,displayName:current.displayName||'',status:'deleted',revision:(current.revision||0)+1,
         currentRevisionId:current.currentRevisionId||null,revisionIds,createdAt:current.createdAt,updatedAt:at,deletedAt:at,deletion:{...(current.deletion||{}),finishedAt:at},pendingUnlink:[],
         history:[...(current.history||[]),{id:randomUUID(),at,action:'deleted',actorKind:'system',actor:'',from:'deleting',to:'deleted'}].slice(-200)};
-      // 묘비는 원 의뢰 쪽 움직임 칸을 들고 간다(시스템 쓰기 — 칸을 채우지 않고, 맞던 칸이면 판 번호만 따라간다, Fable 5.2 설계 검토 3).
-      const kept=typeof current.originActivityAt==='string'?withOriginActivity(current,{...tomb,originActivityAt:current.originActivityAt,originActivityRev:current.originActivityRev},{touch:false}):tomb;
+      // 묘비는 원 의뢰 쪽 움직임 칸을 들고 간다(시스템 쓰기 — 칸을 새로 채우지 않는다, Fable 5.2 설계 검토 3). 칸이 없거나 어긋난 옛 인물(이 판 전에 지우기를 시작해
+      // 서버 시작의 지우기 재개가 칸 채우기보다 먼저 도는 경우)은 묘비가 updatedAt을 지운 때로 바꾸기 전에 지우는 중 문서에서 값을 먼저 잰다(GPT 서버 검수 workspaces GA1).
+      const legacy=originActivityAligned(current)?null:legacyOriginActivity(current,store);
+      const kept=originActivityAligned(current)?{...tomb,originActivityAt:current.originActivityAt,originActivityRev:tomb.revision}
+        :Number.isFinite(legacy)?{...tomb,originActivityAt:new Date(legacy).toISOString(),originActivityRev:tomb.revision}:tomb;
       store.put(K.personas,kept.id,kept);
     });
   }

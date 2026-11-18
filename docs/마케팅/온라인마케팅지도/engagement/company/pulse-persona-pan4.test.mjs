@@ -439,15 +439,18 @@ test('삭제(설계 5-6 · 5판 D10): 끝나지 않은 참조가 있으면 막�
   const ynames=[...f.store().all('pulsePersonaSources').filter(item=>item.personaId===y.personaId).map(item=>item.diskName),...f.store().get('pulsePersonaRevisions',y.revisionId).assets.map(item=>item.diskName)];
   const yrow=f.store().get('clientProjects',y.projectId);f.store().put('clientProjects',y.projectId,{...yrow,stage:'archived'});
   const at=new Date(f.stamp).toISOString(),persona=f.store().get('pulsePersonas',y.personaId);
+  // 칸 없는 옛 인물(이 판 전에 지우기를 시작함)처럼 둔다 — 지우기를 50일 전에 시작했다.
+  const {originActivityAt:_drop,originActivityRev:_rev,...legacy}=persona,started=new Date(f.stamp-50*86400000).toISOString();
   f.store().transaction(()=>{
     for(const item of f.store().all('pulsePersonaSources').filter(entry=>entry.personaId===y.personaId))f.store().put('pulsePersonaSources',item.id,{id:item.id,personaId:item.personaId,projectId:item.projectId,purpose:item.purpose,diskName:null,deletedAt:at});
     const rev=f.store().get('pulsePersonaRevisions',y.revisionId);f.store().put('pulsePersonaRevisions',rev.id,{...rev,assets:[],reference:null,motion:null,method:null,deletedAt:at});
-    f.store().put('pulsePersonas',persona.id,{...persona,status:'deleting',pendingUnlink:ynames});
+    f.store().put('pulsePersonas',persona.id,{...legacy,status:'deleting',pendingUnlink:ynames,updatedAt:started});
   });
   const listed=new Set(workspaceMediaNames(f.store().db));for(const name of ynames)assert.ok(!listed.has(name),'커밋 순간부터 백업 목록에서 빠진다');
   for(const name of listed)assert.ok(await stat(media(name)),'백업이 도는 중이어도 목록의 파일은 다 있다');
   await f.restart();
   assert.equal(f.store().get('pulsePersonas',y.personaId).status,'deleted','서버 시작 때 이어서 묘비까지');
+  assert.equal(f.store().get('pulsePersonas',y.personaId).originActivityAt,started,'칸 없는 옛 인물은 묘비가 updatedAt을 바꾸기 전 값으로 남긴다(GPT 서버 검수 workspaces GA1)');
   for(const name of ynames)await assert.rejects(stat(media(name)));
   // 파일 지우기가 막혀도(여기서는 같은 이름의 폴더) 500이 아니라 「지우는 중」과 남은 수를 돌려주고 감사 기록이 남는다 → 막힌 것을 치우면 이어 하기로 묘비까지.
   const c=f.browser(),z=await f.readyPersona(c),zrow=f.store().get('clientProjects',z.projectId);f.store().put('clientProjects',z.projectId,{...zrow,stage:'archived'});
