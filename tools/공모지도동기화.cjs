@@ -37,9 +37,7 @@ function 브라우저수신(config, importedIds) {
   return JSON.parse(data);
 }
 
-async function main(argv) {
-  const folder = argv[0] ? path.resolve(argv[0]) : 기본보관함;
-  const config = 읽기(path.join(folder, '공모지도.json'));
+async function PC지도갱신(folder, config, map) {
   const feed = 브라우저수신(config.grok, 보고서읽기(folder).map((report) => report.reportId));
   if (!(feed.receipts > 0) || !Array.isArray(feed.reports) || feed.reports.length > 24) {
     throw Error('그록 수집 페이지의 회차 목록 형식이 맞지 않습니다.');
@@ -53,14 +51,27 @@ async function main(argv) {
       candidates += result.items.length;
     }
   }
-  const map = path.join(folder, '공모지도.html');
   const rendered = spawnSync(process.execPath, [
     path.join(__dirname, '공모지도.js'), '--보관함', folder, '--출력', map,
   ], { encoding: 'utf8', windowsHide: true, timeout: 30000 });
   if (rendered.status !== 0 || !fs.existsSync(map)) {
     throw Error('그록 회차는 보관했지만 공모 지도를 만들지 못했습니다. ' + (rendered.stderr || '').trim());
   }
-  const summary = { reports: feed.receipts, imported, candidates, map, failedReports: feed.failures || [] };
+  return { reports: feed.receipts, imported, candidates, failedReports: feed.failures || [] };
+}
+
+async function main(argv) {
+  const folder = argv[0] ? path.resolve(argv[0]) : 기본보관함;
+  const config = 읽기(path.join(folder, '공모지도.json'));
+  const map = path.join(folder, '공모지도.html');
+  const summary = { map };
+  try {
+    Object.assign(summary, await PC지도갱신(folder, config, map));
+  } catch (error) {
+    if (!config.artifact_sync || !fs.existsSync(map)) throw error;
+    summary.pcError = error.message;
+    process.exitCode = 1;
+  }
   if (config.artifact_sync) {
     try {
       summary.artifact = await 클로드지도갱신(config, map);
@@ -70,7 +81,7 @@ async function main(argv) {
     }
   }
   console.log(JSON.stringify(summary));
-  if (feed.failures?.length) process.exitCode = 1;
+  if (summary.failedReports?.length) process.exitCode = 1;
 }
 
 if (require.main === module) main(process.argv.slice(2)).catch((error) => {
