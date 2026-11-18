@@ -1,0 +1,16 @@
+Use the image generation tool to create ONE landscape image (3:2, about 1536x1024). Do not write code. Return the image.
+
+Studio product photograph of six separate handmade needle-felted wool pieces on a pure white seamless background, shot straight on from the front, arranged in a neat grid of 3 columns and 2 rows with generous white space around every piece (at least 8% of the image between pieces). Nothing touches, nothing is cropped by the frame.
+
+Material: match the exact felt material, fiber texture, color warmth and lighting of the reference photos (Image 1 coral felt mascot, Image 2 felt laptop). Same studio, same maker. Visible wool fibers, slight fuzz halo, real thickness (soft rounded edges, about 6 mm felt), visible hand stitches in cream thread (#FBCAAB). Soft even diffused front light, very gentle soft shadow under each piece only. Premium, calm, minimal craft quality.
+
+Every garment hangs straight down as if from a clothesline: one or two small natural light-wood clothespins are clipped onto the top edge of each garment (shoulders or top band), the pins point upward and end at the same height in every cell, as if clipped to an invisible line just above them. All five garments have the same overall height (about 75% of the cell height) and the same front-facing view, laid with a slight natural drape. Small doll-size proportions, like miniature clothes.
+
+Row 1, left: a lapis blue (#3D6BC9) felt button-up work shirt with sleeves rolled to the elbow, a small breast pocket, cream stitched seams and small round cream felt buttons.
+Row 1, middle: a butter yellow (#F5C445) felt knit-look cardigan with a V neck and four round lapis felt buttons, cream stitched edges.
+Row 1, right: a pop pink (#E05C97) felt shop apron with a neck strap and two waist ties hanging down, one wide front pocket, cream stitched edges.
+Row 2, left: a meadow green (#7DB45A) felt zip hoodie with the hood folded behind, a front pouch pocket and a short cream felt zipper line.
+Row 2, middle: a charcoal ink (#2B2D33) felt work jacket with a collar, two chest pockets with flaps, and lapis blue (#3D6BC9) stitched seams.
+Row 2, right: no garment. Only two natural light-wood clothespins clipped together at the same height as the other pins, holding one small blank cream felt tag (rounded rectangle, about the size of a pocket) that hangs below them.
+
+Absolutely no letters, numbers, words, logos, labels or symbols anywhere, including on the tag and the pockets. No rope, no line, no hangers, no hands, no props, no table texture, no people.

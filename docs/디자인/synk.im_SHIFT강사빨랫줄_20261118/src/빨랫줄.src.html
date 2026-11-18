@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강사 빨랫줄 시안 — SYNK SHIFT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR');unicode-range:U+300C-300D;}
+:root{
+  --paper:#f1efe9; --ink:#111214; --muted:#55585e; --faint:#8a8d93;
+  --rule:rgba(17,18,20,.16); --hair:rgba(17,18,20,.1); --blue:#2f5fd0; --blue-ink:#24448c;
+  --rope:#9c8a73; --well:#e8e5dd;
+  --sans:"SYNK Bracket","Inter Tight","SUIT Variable","SUIT",system-ui,sans-serif; --mono:"DM Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--paper);-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+p,h2,h3,li{text-wrap:pretty}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 40px}
+.label{font-size:13px;font-weight:650;color:var(--blue-ink)}
+
+.draft{border-bottom:1px solid var(--hair);color:var(--muted);font-size:13px;text-align:center;padding:8px 16px}
+.draft b{color:var(--ink);font-weight:650;margin-right:6px}
+.top{border-bottom:1px solid var(--hair)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.top img{height:30px;width:auto;display:block}
+.top a{font-size:14.5px;font-weight:600;text-decoration:none;border-bottom:1px solid var(--ink);padding-bottom:1px}
+
+/* 마디 머리 */
+.sec{padding:56px 0 0}
+.head{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;padding-bottom:22px;border-bottom:2px solid var(--ink)}
+.head h2{font-size:clamp(30px,3.6vw,46px);line-height:1.15;font-weight:620;letter-spacing:-.035em;margin-top:10px}
+.head p{color:var(--muted);font-size:17px;max-width:30em}
+
+/* 고민 고르기 */
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:22px 0 0;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--rule);border-radius:999px;padding:8px 15px;font-size:15px;font-weight:550;color:var(--ink);background:transparent;transition:background .2s,color .2s,border-color .2s}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip:focus-visible,.peg:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+/* 빨랫줄 */
+.line-scroll{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:14px}
+.line-scroll::-webkit-scrollbar{display:none}
+.line{position:relative;height:300px;min-width:1120px}
+.line svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.peg{position:absolute;top:0;left:0;width:200px;color:inherit;text-decoration:none;display:flex;flex-direction:column;align-items:center;text-align:center}
+.peg .hang{position:relative;transform-origin:50% 0;animation:sway var(--d,6s) ease-in-out infinite alternate;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.peg img{display:block;width:var(--w,170px);height:auto;filter:drop-shadow(0 10px 12px rgba(40,30,20,.16)) drop-shadow(0 2px 2px rgba(40,30,20,.12));transition:filter .4s;user-select:none;-webkit-user-drag:none}
+.peg .plus{position:absolute;left:50%;top:60%;width:36px;height:36px;translate:-50% -50%;pointer-events:none}
+.peg .cap{margin-top:12px;transition:translate .45s cubic-bezier(.2,.8,.2,1)}
+.peg .nm{font-size:17px;font-weight:650;letter-spacing:-.01em;display:inline-flex;gap:6px;align-items:baseline;justify-content:center;transition:color .3s}
+.peg .ex{font-size:12px;font-weight:550;color:var(--faint)}
+.peg .rl{display:block;font-size:13.5px;color:var(--muted);line-height:1.4;margin:3px auto 0;max-width:14em;text-wrap:balance;transition:color .3s}
+.peg:hover .hang{transform:scale(1.03)}
+/* 고민에 맞는 강사는 줄에 매달린 채 앞으로 크게, 나머지는 물이 빠진 듯 */
+.peg.is-hit .hang{transform:scale(1.06)}
+.peg.is-hit .cap{translate:0 10px}
+.peg.is-dim .hang{transform:scale(.96)}
+.peg.is-dim img{filter:saturate(.5) brightness(1.04) contrast(.92) drop-shadow(0 6px 8px rgba(40,30,20,.1))}
+.peg.is-dim .nm{color:var(--muted)}
+.peg.is-dim .rl{color:#9a9ca0}
+.peg.is-on .hang{transform:scale(1.1);animation-play-state:paused}
+.peg.is-on .cap{translate:0 17px}
+.peg.is-on .nm{color:var(--blue-ink);text-decoration:underline 2px var(--blue);text-underline-offset:7px}
+@keyframes sway{from{rotate:-1.6deg}to{rotate:1.6deg}}
+@media (prefers-reduced-motion:reduce){.peg .hang{animation:none;transition:none}.peg .cap{transition:none}}
+
+/* 펼친 칸 */
+.sheet{border-top:2px solid var(--ink);margin-top:6px;padding:30px 0 0;display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-items:start}
+.who .k{font-size:13px;font-weight:650;color:var(--blue-ink)}
+.who .k.fake{color:var(--faint)}
+.who .nmrow{display:flex;align-items:center;gap:14px;margin:6px 0 12px}
+.who .thumb{width:60px;height:60px;border-radius:50%;background:var(--well);display:flex;align-items:center;justify-content:center;flex:none}
+.who .thumb img{width:44px;height:auto;display:block}
+.who .face{width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:50% 22%;filter:grayscale(1) sepia(.18) contrast(1.04) brightness(1.12);flex:none}
+.who h3{font-size:32px;font-weight:650;letter-spacing:-.025em;line-height:1.2}
+.who .one{font-size:18px;line-height:1.5}
+.who ul{list-style:none;margin-top:16px}
+.who li{padding:10px 0;border-top:1px solid var(--hair);font-size:15px;color:var(--muted)}
+.lecs h4{font-size:13px;font-weight:650;color:var(--blue-ink);padding-bottom:10px;border-bottom:1px solid var(--rule)}
+.lecs ol{list-style:none}
+.lecs li{display:grid;grid-template-columns:1fr auto;column-gap:18px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--hair)}
+.lecs .g{font-size:13.5px;color:var(--muted);text-align:right;max-width:9.5em}
+.lecs .t{font-size:16.5px;font-weight:620;letter-spacing:-.01em}
+.lecs .m{font-size:14.5px;color:var(--muted);margin-top:3px}
+.ask{margin-top:20px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn{display:inline-flex;align-items:center;border-radius:999px;padding:12px 20px;font-weight:600;font-size:15.5px;text-decoration:none;border:1px solid var(--ink);background:var(--ink);color:var(--paper)}
+.ask small{font-size:13.5px;color:var(--muted)}
+.end{height:80px}
+
+@media (max-width:1000px){
+  .head,.sheet{grid-template-columns:1fr}
+}
+@media (max-width:680px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  .sec{padding-top:36px}
+  .head{gap:12px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px;padding:18px 16px 2px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 44px),transparent)}
+  .line-scroll{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 56px),transparent)}
+  .line{height:262px;min-width:860px}
+  .peg{width:140px}
+  .peg img{width:calc(var(--w,170px) * .74)}
+  .peg .nm{font-size:16px}
+  .peg .rl{font-size:12.5px;max-width:11em}
+  .sheet{gap:24px}
+  .who h3{font-size:27px}
+}
+</style>
+</head>
+<body>
+<p class="draft"><b>시안</b>양유호 강사 외 네 명은 화면을 보여 드리려고 지은 예시 인물입니다.</p>
+<header class="top"><div class="wrap"><img src="{{LOGO}}" alt="synk SHIFT" width="520" height="142"><a href="mailto:hello@synk.im?subject=%5B%EA%B0%95%EC%9D%98%20%EB%AC%B8%EC%9D%98%5D">강의 문의</a></div></header>
+
+<main>
+  <section class="sec" id="instructors" aria-labelledby="t-ins">
+    <div class="wrap">
+      <div class="head">
+        <div><p class="label">강사</p><h2 id="t-ins">강의마다 그 일을 해 온 강사가 맡습니다</h2></div>
+        <p>고민을 고르면 맞는 강사가 앞으로 나옵니다. 옷을 누르면 맡는 강의와 수강생에게 남는 것, 해 온 일을 볼 수 있습니다.</p>
+      </div>
+      <div class="chips" role="group" aria-label="고민 고르기">
+        <button class="chip" data-f="" aria-pressed="true">모두</button>
+        <button class="chip" data-f="1" aria-pressed="false">전 직원 AI 특강</button>
+        <button class="chip" data-f="2" aria-pressed="false">보고서와 공문</button>
+        <button class="chip" data-f="3" aria-pressed="false">매주 반복 업무</button>
+        <button class="chip" data-f="4" aria-pressed="false">우리 일에 맞는 도구</button>
+        <button class="chip" data-f="5" aria-pressed="false">AI 영상</button>
+        <button class="chip" data-f="6" aria-pressed="false">가게 홍보</button>
+        <button class="chip" data-f="7" aria-pressed="false">학생 진로와 기관 기준</button>
+      </div>
+    </div>
+
+    <div class="line-scroll" id="scroller">
+      <div class="line" id="line">
+        <svg viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">
+          <path id="rope" d="" fill="none" stroke="#9c8a73" stroke-width="2.2" vector-effect="non-scaling-stroke"/>
+          <path id="rope2" d="" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="0.9" stroke-dasharray="2 5" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="sheet" id="sheet" aria-live="polite"></div>
+      <div class="end"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+var 강의 = {
+  1:{t:"AI 특강 「비개발자가 AI 셋과 일하는 법」", g:"2시간", k:"내 업무 하나를 AI로 끝낸 결과와 다시 쓸 요청문 한 장"},
+  2:{t:"AI 문서와 보고서", g:"2시간 또는 4시간", k:"내 양식에 맞춘 한 쪽 보고서와 숫자를 맞춰 보는 점검표"},
+  3:{t:"AI 업무 자동화 입문", g:"4시간", k:"매주 하던 일을 AI가 먼저 처리하게 만든 요청과, 멈췄을 때의 한 장"},
+  4:{t:"바이브코딩: 코딩 없이 내 도구 만들기", g:"4시간", k:"남에게 보낼 수 있는 작은 웹 도구 하나"},
+  5:{t:"AI 영상 「AI 영상, 싸 보이지 않게」", g:"4시간", k:"사람이 나오는 15초 세로 광고 한 편과 점검표"},
+  6:{t:"AI로 가게 홍보물 한 벌", g:"2시간 또는 4시간", k:"가게 소개글, SNS 글 셋, 리뷰 답글 틀"},
+  7:{t:"AI 리터러시와 진로", g:"학교 2차시, 기관 90분~2시간", k:"AI의 답을 가려 쓰고 확인하는 힘을 기릅니다. 학생은 진로 한 장, 기관은 AI 사용 점검표"}
+};
+var 강사 = [
+  {id:"yuho", nm:"양유호", real:true, img:"{{IMG_shirt}}", w:176, pw:188, photo:"{{FOUNDER}}",
+   rl:"AI로 회사 하나를 돌리는 창업자", one:"개발자 출신이 아닌 창업자가 AI와 함께 회사 SYNK를 만들고 운영합니다. 강의는 그 회사의 실제 예약표와 홈페이지를 보여 드리며 시작합니다.",
+   life:["SYNK 창업자","몽골 Skyline Edu 전 부원장, 학생 상담과 수업 운영","엔터테인먼트와 광고 업계 10년"], lec:[1,3,4,5]},
+  {id:"a", nm:"한서윤", real:false, img:"{{IMG_cardigan}}", w:172, pw:186,
+   rl:"공공기관 문서를 써 온 행정직", one:"공공기관에서 보고서와 공문을 오래 써 왔습니다. 공무원 반에서 양식에 맞춘 문서 수업을 맡습니다.",
+   life:["공공기관 행정직","문서 작성 연수 진행"], lec:[2,7]},
+  {id:"b", nm:"박도현", real:false, img:"{{IMG_apron}}", w:150, pw:162,
+   rl:"동네 가게 홍보를 맡아 온 마케터", one:"동네 가게들의 소개글과 SNS를 맡아 왔습니다. 상인회와 소상공인 반을 맡습니다.",
+   life:["동네 가게 홍보 대행"], lec:[6]},
+  {id:"c", nm:"이하은", real:false, img:"{{IMG_hoodie}}", w:168, pw:184,
+   rl:"고등학교 진로 교사 출신", one:"고등학교에서 진로 수업을 오래 해 왔습니다. 학교 판 리터러시와 진로 수업을 맡습니다.",
+   life:["고등학교 진로 교사"], lec:[7]},
+  {id:"d", nm:"최민재", real:false, img:"{{IMG_jacket}}", w:172, pw:188,
+   rl:"작은 회사의 반복 업무를 줄여 온 운영자", one:"직원이 적은 회사에서 운영을 맡아 왔습니다. 자동화와 바이브코딩 워크숍을 함께 맡습니다.",
+   life:["중소기업 운영팀"], lec:[3,4]},
+  {id:"open", empty:true, img:"{{IMG_tag}}", w:104, nm:"함께 가르칠 강사", rl:"강의를 맡을 강사를 찾습니다"}
+];
+
+var line=document.getElementById('line'), sheet=document.getElementById('sheet'), rope=document.getElementById('rope'), rope2=document.getElementById('rope2');
+var 걸이={}, 고른=null, 거름="";
+function 맞나(p){ return !p.empty && p.lec.indexOf(+거름)>=0; }
+
+강사.forEach(function(p,i){
+  var el=document.createElement(p.empty?'a':'button');
+  el.className='peg'; el.dataset.id=p.id;
+  if(p.empty){ el.href="https://m.blog.naver.com/shiftclass/224454544936"; el.target="_blank"; el.rel="noopener"; el.setAttribute('aria-label','함께 가르칠 강사, 강사 섭외 기준 보기'); }
+  else { el.type='button'; el.setAttribute('aria-label', p.nm + (p.real?'':' (예시 강사)') + ' 자세히 보기'); }
+  el.style.setProperty('--w', p.w+'px');
+  el.style.setProperty('--d', (5.2+i*0.7)+'s');
+  el.innerHTML='<span class="hang"><img src="'+p.img+'" alt="" width="'+p.w+'">'+(p.empty?'<svg class="plus" viewBox="0 0 36 36" aria-hidden="true"><path d="M18 5v26M5 18h26" fill="none" stroke="#a9774f" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="4.2 3.4"/></svg>':'')+'</span>'+
+    '<span class="cap"><span class="nm">'+p.nm+(p.real||p.empty?'':'<span class="ex">예시</span>')+'</span><span class="rl">'+p.rl+'</span></span>';
+  if(!p.empty) el.addEventListener('click', function(){
+    if(거름 && !맞나(p)) 거르기("");
+    고르기(p.id);
+  });
+  line.appendChild(el); 걸이[p.id]=el;
+});
+
+function 줄그리기(){
+  var w=line.clientWidth, h=line.clientHeight, top=28, sag=34;
+  var d='M0 '+top+' Q '+(w/2)+' '+(top+sag*2)+' '+w+' '+top;
+  rope.setAttribute('d', d); rope2.setAttribute('d', d);
+  line.querySelector('svg').setAttribute('viewBox','0 0 '+w+' '+h);
+  return {w:w, y:function(x){ var t=x/w; return (1-t)*(1-t)*top+2*(1-t)*t*(top+sag*2)+t*t*top; }};
+}
+/* 자리는 바꾸지 않는다: 고민을 고르면 맞는 옷만 앞으로 나온다 */
+function 걸기(){
+  var g=줄그리기(), n=강사.length, 가=window.innerWidth<680?16:28, 곁=Math.max(가,(g.w-1280)/2), 칸=(g.w-곁*2)/n;
+  강사.forEach(function(p,i){
+    var el=걸이[p.id], cx=곁+칸*(i+.5), x=cx-el.offsetWidth/2, y=g.y(cx)-10;
+    el.style.transform='translate('+x+'px,'+y+'px)';
+  });
+}
+function 표시(){
+  강사.forEach(function(p){
+    var el=걸이[p.id], hit=!!거름 && 맞나(p);
+    el.classList.toggle('is-hit', hit && p.id!==고른);
+    el.classList.toggle('is-dim', !!거름 && !hit && !p.empty);
+    el.classList.toggle('is-on', p.id===고른);
+    if(!p.empty) el.setAttribute('aria-pressed', p.id===고른);
+  });
+}
+function 거르기(f){
+  거름=f;
+  document.querySelectorAll('.chip').forEach(function(x){ x.setAttribute('aria-pressed', x.dataset.f===f); });
+}
+function 고르기(id){
+  고른=id; 표시();
+  var p=강사.filter(function(x){return x.id===id})[0];
+  var lis=p.lec.map(function(n){ var L=강의[n]; return '<li><p class="t">'+L.t+'</p><span class="g">'+L.g+'</span><p class="m">'+L.k+'</p></li>'; }).join('');
+  var 문의= p.real
+    ? '<a class="btn" href="mailto:hello@synk.im?subject='+encodeURIComponent('[강사 문의] '+p.nm)+'">'+p.nm+' 강사로 문의하기</a>'
+    : '<a class="btn ghost" href="mailto:hello@synk.im?subject='+encodeURIComponent('[강의 문의]')+'">SHIFT에 강의 문의하기</a>';
+  sheet.innerHTML=
+    '<div class="who"><p class="k'+(p.real?'':' fake')+'">'+(p.real?'강사':'예시 강사')+'</p>'+
+    '<div class="nmrow">'+(p.photo?'<img class="face" src="'+p.photo+'" alt="'+p.nm+' 강사 사진">':'<span class="thumb"><img src="'+p.img+'" alt=""></span>')+'<h3>'+p.nm+'</h3></div>'+
+    '<p class="one">'+p.one+'</p><ul>'+p.life.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></div>'+
+    '<div class="lecs"><h4>맡는 강의</h4><ol>'+lis+'</ol><div class="ask">'+문의+'<small>'+(p.real?'진행 여부와 일정, 견적을 메일로 답드립니다.':'예시 강사라 강의 문의는 SHIFT가 받습니다.')+'</small></div></div>';
+}
+document.querySelectorAll('.chip').forEach(function(b){
+  b.addEventListener('click', function(){
+    거르기(b.dataset.f);
+    var 첫=강사.filter(function(p){ return 거름 && 맞나(p); })[0];
+    고르기(첫 ? 첫.id : 고른);
+  });
+});
+window.addEventListener('resize', 걸기);
+document.fonts && document.fonts.ready.then(걸기);
+걸기(); 고르기('yuho');
+</script>
+</body>
+</html>

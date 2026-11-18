@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>양유호 AI 강사 소개서 — SYNK SHIFT</title>
+<meta name="description" content="AI로 회사 하나를 돌리는 사람이 가르칩니다. SYNK SHIFT 대표 강의 일곱과 강사 양유호 소개.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+:root{
+  --paper:#f1efe9; --ink:#111214; --muted:#55585e; --faint:#8a8d93;
+  --rule:rgba(17,18,20,.16); --hair:rgba(17,18,20,.1); --blue:#2f5fd0; --blue-ink:#24448c; --yellow:#f3c34a;
+  --sans:"SYNK Bracket","Inter Tight","SUIT Variable","SUIT",system-ui,sans-serif; --mono:"DM Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;background:var(--paper)}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+p,h1,h2,h3,li,dd{text-wrap:pretty}
+a{color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 40px}
+.label{font-size:13px;font-weight:650;color:var(--blue-ink);letter-spacing:.01em}
+.num{font-family:"Inter Tight",var(--sans);font-feature-settings:"tnum" 1}
+
+/* 상단 막대 */
+.top{position:sticky;top:0;z-index:5;background:rgba(241,239,233,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:58px;gap:16px}
+.top .doc{font-size:15px;font-weight:650;text-decoration:none;white-space:nowrap}
+.top nav{display:flex;gap:26px;font-size:15px;color:var(--muted)}
+.top nav a{text-decoration:none}
+.top nav a:hover{color:var(--ink)}
+.top .pdf{font-size:14px;font-weight:600;border:1px solid var(--ink);border-radius:999px;padding:6px 14px;text-decoration:none;white-space:nowrap}
+
+/* 첫 화면: 잡지 표지처럼 */
+.cover{padding:52px 0 0}
+.mast{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.mast img{height:64px;width:auto;display:block}
+.mast .issue{text-align:right;font-size:14px;color:var(--muted);line-height:1.45}
+.mast .issue b{display:none;color:var(--ink);font-weight:650;font-size:15px}
+h1{font-size:clamp(44px,7.4vw,104px);line-height:1.04;font-weight:620;letter-spacing:-.045em;margin:44px 0 0;max-width:11.5em}
+h1 em{font-style:normal;color:var(--blue)}
+.cover-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;margin-top:40px;align-items:end}
+.lead{font-size:21px;line-height:1.55;color:var(--ink);max-width:30em}
+.lead-sub{font-size:17px;line-height:1.6;color:var(--muted);max-width:32em;margin-top:10px}
+.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:13px 22px;font-weight:600;font-size:16px;text-decoration:none;border:1px solid var(--ink)}
+.btn.fill{background:var(--ink);color:var(--paper)}
+.byline{display:grid;grid-template-columns:132px 1fr;gap:20px;align-items:end}
+.byline img{width:132px;height:164px;object-fit:cover;object-position:50% 30%;display:block;filter:grayscale(1) contrast(1.06) brightness(1.12);border-radius:4px}
+.byline .who{font-size:13px;font-weight:650;color:var(--blue-ink)}
+.byline .name{font-size:28px;font-weight:650;letter-spacing:-.02em;line-height:1.2;margin:4px 0 8px}
+.byline ul{list-style:none;font-size:15px;color:var(--muted);line-height:1.5}
+.byline li:first-child{color:var(--ink);font-weight:600}
+
+/* 운행표: 종이에 찍힌 시간표 */
+.timetable{margin-top:56px;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.tt-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:14px 0 12px;border-bottom:1px solid var(--rule)}
+.tt-head h2{font-size:17px;font-weight:650;letter-spacing:-.01em}
+.tt-head p{font-size:14px;color:var(--muted)}
+.tt{display:grid;grid-template-columns:1fr 1fr;column-gap:48px}
+.tt .row{display:grid;grid-template-columns:86px 1fr auto;gap:14px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--hair);font-size:16px}
+.tt .row:nth-last-child(-n+2){border-bottom:0}
+.tt .t{font-family:var(--mono);font-size:15px;color:var(--ink);letter-spacing:0}
+.tt .e{font-size:13.5px;color:var(--muted);white-space:nowrap}
+.tt-foot{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule)}
+.stat{padding:18px 24px 20px 0}
+.stat + .stat{padding-left:24px;border-left:1px solid var(--hair)}
+.stat .sk{font-size:13px;font-weight:650;color:var(--blue-ink);margin:0 0 8px}
+.stat .n{font-size:52px;font-weight:560;letter-spacing:-.04em;line-height:1}
+.stat .n sup{font-size:.42em;color:var(--blue);vertical-align:.95em;margin-left:2px}
+.stat p{font-size:14.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+
+/* 마디 머리 */
+section.block{padding:96px 0 0}
+.head{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;padding-bottom:22px;border-bottom:2px solid var(--ink)}
+h2.big{font-size:clamp(30px,3.6vw,46px);line-height:1.15;font-weight:620;letter-spacing:-.035em;margin-top:10px}
+.head p{color:var(--muted);font-size:17px;max-width:30em}
+
+/* 수업 방식: 네 기둥 */
+.ways{display:grid;grid-template-columns:repeat(4,1fr);column-gap:28px}
+.way{padding:22px 0 0}
+.way .k{font-family:var(--mono);font-size:14px;color:var(--blue)}
+.way h3{font-size:19px;font-weight:650;letter-spacing:-.015em;line-height:1.35;margin:10px 0 8px;min-height:2.7em}
+.way p{color:var(--muted);font-size:15px;line-height:1.55}
+.more{margin-top:26px;font-size:15px;font-weight:600}
+.more a{color:var(--blue-ink)}
+.print-only,.print-block{display:none}
+
+/* 강의 일곱: 목차처럼 */
+.index{list-style:none}
+.lec{display:grid;grid-template-columns:96px 1.25fr 1fr 1.15fr;column-gap:32px;padding:26px 0 28px;border-bottom:1px solid var(--rule);break-inside:avoid}
+.lec .no{font-family:"Inter Tight",var(--sans);font-size:52px;font-weight:300;letter-spacing:-.04em;line-height:.9;color:var(--blue)}
+.lec .q{font-size:23px;font-weight:620;letter-spacing:-.025em;line-height:1.3}
+.lec h3{font-size:15.5px;font-weight:600;color:var(--blue-ink);margin-top:10px;line-height:1.4}
+.lec .hint{font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.45}
+.lec dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14.5px;align-content:start;padding-top:4px}
+.lec dt{color:var(--muted);white-space:nowrap}
+.lec dd{color:var(--ink)}
+.keep{padding-top:4px}
+.keep .label{display:block;margin-bottom:4px}
+.keep p{font-size:15.5px;line-height:1.55}
+.keep p + .label,.keep .kl + .label{margin-top:10px}
+.keep .kn{font-size:13.5px;color:var(--muted);line-height:1.5;margin-top:6px}
+.keep .kl{list-style:none;font-size:15.5px;line-height:1.5}
+.keep .kl li{position:relative;padding-left:14px}
+.keep .kl li + li{margin-top:4px}
+.keep .kl small{display:block;color:var(--muted);font-size:.9em;margin-top:1px}
+.keep .kl li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:2px;background:var(--blue)}
+
+/* 해 온 일 */
+.proof{display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:40px}
+.col{padding-top:24px}
+.col h3{font-size:18px;font-weight:650;letter-spacing:-.01em;padding-bottom:12px;border-bottom:1px solid var(--rule)}
+.col .intro{font-size:15.5px;color:var(--muted);line-height:1.6;padding:14px 0 6px}
+.list{list-style:none}
+.list li{display:grid;grid-template-columns:64px 1fr;gap:12px;padding:13px 0;border-bottom:1px solid var(--hair);font-size:15.5px;line-height:1.45}
+.list .k{font-size:13.5px;font-weight:650;color:var(--blue-ink);padding-top:1px}
+.list small{display:block;color:var(--muted);font-size:14px;margin-top:3px}
+
+/* 의뢰 */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);column-gap:28px}
+.step{padding-top:22px}
+.step .k{font-family:"Inter Tight",var(--sans);font-size:40px;font-weight:300;color:var(--blue);line-height:1}
+.step h3{font-size:18px;font-weight:650;margin:12px 0 6px}
+.step p{color:var(--muted);font-size:15px;line-height:1.55}
+.cost{margin-top:34px;padding:18px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);display:grid;grid-template-columns:96px 1fr;gap:24px;font-size:16px}
+.cost b{font-weight:650}
+.cost p{color:var(--muted)}
+
+/* 끝 */
+.end{margin-top:96px;background:var(--ink);color:var(--paper);padding:60px 0 48px}
+.end .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.end .label{color:var(--yellow)}
+.end h2{font-size:clamp(28px,3.4vw,44px);line-height:1.2;font-weight:620;letter-spacing:-.03em;margin-top:10px}
+.end .small{color:#b9bcc2;font-size:15px;margin-top:18px;line-height:1.6;max-width:34em}
+.end .mail{font-family:var(--mono);font-size:22px;color:var(--yellow);text-decoration:none}
+.end .site{color:#b9bcc2;font-size:14px;margin-top:8px;line-height:1.6}
+.end .acts .btn{border-color:var(--paper);color:var(--paper)}
+.end .acts .btn.fill{background:var(--paper);color:var(--ink)}
+
+@media screen and (max-width:1000px){
+  .cover-grid,.head,.end .wrap{grid-template-columns:1fr}
+  .ways,.steps{grid-template-columns:1fr 1fr;row-gap:12px}
+  .proof{grid-template-columns:1fr}
+  .lec{grid-template-columns:72px 1fr 1fr;row-gap:16px}
+  .lec .keep{grid-column:2 / -1}
+  .tt{grid-template-columns:1fr}
+  .tt .row:nth-last-child(2){border-bottom:1px solid var(--hair)}
+}
+@media screen and (max-width:680px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  .top nav{display:none}
+  .cover{padding-top:28px}
+  .mast img{height:34px}
+  .mast{padding-bottom:10px}
+  .mast .issue{font-size:12.5px}
+  h1{margin-top:22px}
+  .lead{font-size:19px}
+  .lead-sub{font-size:15.5px}
+  .cover-grid{gap:28px;margin-top:24px}
+  .acts{margin-top:20px}
+  .timetable{margin-top:28px}
+  .byline{grid-template-columns:72px 1fr;gap:14px;align-items:start}
+  .byline img{width:72px;height:88px}
+  .byline .name{font-size:23px}
+  .tt-head{flex-direction:column;gap:2px}
+  .tt .row{grid-template-columns:64px 1fr auto;gap:10px}
+  .tt-foot{grid-template-columns:1fr}
+  .stat,.stat + .stat{padding:16px 0;border-left:0}
+  .stat + .stat{border-top:1px solid var(--hair)}
+  section.block{padding-top:64px}
+  .ways,.steps{grid-template-columns:1fr}
+  .lec{grid-template-columns:52px 1fr;row-gap:12px;padding:22px 0}
+  .lec .no{font-size:38px}
+  .lec .q{font-size:20px}
+  .lec dl,.lec .keep{grid-column:2}
+  .list li{grid-template-columns:56px 1fr}
+  .cost{grid-template-columns:1fr;gap:4px}
+  .end{margin-top:64px;padding:44px 0 40px}
+}
+
+/* 인쇄: A4 세 쪽, 종이 끝까지 바탕색 */
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:var(--paper);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:10pt}
+  .top,.acts,.more a{display:none!important}
+  .print-only{display:inline;font-weight:500;color:var(--muted)}
+  .print-only b,.print-block b{color:var(--ink);font-weight:650}
+  .print-block{display:block;margin-top:4mm;font-size:10.5pt;color:var(--ink);font-weight:550}
+  .wrap{max-width:none;padding:0 14mm}
+  .cover{padding-top:12mm}
+  .mast{padding-bottom:3mm}
+  .mast img{height:11mm}
+  .mast .issue{font-size:8.5pt}
+  .mast .issue b{display:block;font-size:9pt}
+  h1{font-size:40pt;margin-top:8mm}
+  .cover-grid{margin-top:7mm;gap:10mm;grid-template-columns:1.2fr .8fr}
+  .lead{font-size:12.5pt}
+  .lead-sub{font-size:10pt;margin-top:2mm}
+  .byline{grid-template-columns:26mm 1fr;gap:4mm}
+  .byline img{width:26mm;height:32mm}
+  .byline .name{font-size:16pt;margin:1mm 0 2mm}
+  .byline .who{font-size:8.5pt}
+  .byline ul{font-size:9pt}
+  .timetable{margin-top:9mm}
+  .tt-head{padding:3mm 0 2.5mm}
+  .tt-head h2{font-size:10.5pt}
+  .tt-head p{font-size:8.5pt}
+  .tt{column-gap:9mm}
+  .tt .row{grid-template-columns:17mm 1fr auto;gap:3mm;padding:2.1mm 0;font-size:9.6pt}
+  .tt .t{font-size:9.2pt}
+  .tt .e{font-size:8.8pt}
+  .stat{padding:3.5mm 5mm 3.5mm 0}
+  .stat + .stat{padding-left:5mm}
+  .stat .sk{font-size:8.5pt;margin-bottom:1.5mm}
+  .stat .n{font-size:27pt}
+  .stat p{font-size:8.8pt;margin-top:1.5mm}
+  section.block{padding-top:9mm}
+  .head{padding-bottom:3.5mm;gap:8mm}
+  h2.big{font-size:19pt;margin-top:1.5mm}
+  .head p{font-size:9.6pt}
+  .label{font-size:8.5pt}
+  .ways{column-gap:6mm}
+  .way{padding-top:4mm}
+  .way .k{font-size:9pt}
+  .way h3{font-size:10.8pt;margin:2mm 0 1.5mm}
+  .way p{font-size:9.2pt;line-height:1.5}
+  .more{margin-top:4mm;font-size:9pt}
+  #lectures{break-before:page;padding-top:10mm}
+  .lec{grid-template-columns:11mm 1.2fr .95fr 1.4fr;column-gap:5.5mm;padding:3.3mm 0 3.5mm}
+  .lec .no{font-size:17pt}
+  .lec .q{font-size:12pt}
+  .lec h3{font-size:9.4pt;margin-top:1.6mm}
+  .lec .hint{font-size:8.3pt;margin-top:.8mm}
+  .lec dl{font-size:9pt;gap:1mm 3mm;padding-top:.5mm}
+  .keep{padding-top:.5mm}
+  .keep p{font-size:9pt;line-height:1.48}
+  .keep .label{margin-bottom:.8mm}
+  .keep p + .label,.keep .kl + .label{margin-top:2mm}
+  .keep .kn{font-size:8.3pt;margin-top:1mm}
+  .keep .kl{font-size:9pt;line-height:1.45}
+  .keep .kl li + li{margin-top:.8mm}
+  #proof{break-before:page;padding-top:12mm}
+  .proof{column-gap:7mm}
+  .col{padding-top:4mm}
+  .col h3{font-size:10.8pt;padding-bottom:2mm}
+  .col .intro{font-size:9.3pt;padding:2.5mm 0 1mm}
+  .list li{grid-template-columns:12mm 1fr;gap:2.5mm;padding:2.2mm 0;font-size:9.2pt}
+  .list .k{font-size:8.5pt}
+  .list small{font-size:8.5pt;margin-top:.5mm}
+  #ask{padding-top:9mm}
+  .steps{column-gap:6mm}
+  .step{padding-top:4mm}
+  .step .k{font-size:20pt}
+  .step h3{font-size:10.6pt;margin:2mm 0 1mm}
+  .step p{font-size:9.1pt;line-height:1.48}
+  .cost{margin-top:5mm;padding:3mm 0;grid-template-columns:16mm 1fr;gap:4mm;font-size:9.4pt}
+  .end{margin-top:8mm;padding:7mm 0 7mm;break-inside:avoid}
+  .end .wrap{gap:10mm}
+  .end h2{font-size:16pt;margin-top:1.5mm}
+  .end .small{font-size:8.8pt;margin-top:2.5mm}
+  .end .mail{font-size:13pt}
+  .end .site{font-size:8.6pt}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="doc" href="#">양유호 강사 소개서</a>
+    <nav aria-label="이 쪽 안내">
+      <a href="#ways">수업 방식</a>
+      <a href="#lectures">강의 일곱</a>
+      <a href="#proof">강사가 해 온 일</a>
+      <a href="#ask">의뢰</a>
+    </nav>
+    <a class="pdf" href="양유호_AI강사소개서.pdf">PDF 받기</a>
+  </div>
+</header>
+
+<main>
+  <section class="cover">
+    <div class="wrap">
+      <div class="mast">
+        <img src="{{LOGO}}" alt="synk SHIFT" width="800" height="218">
+        <p class="issue"><b>AI 강사 소개서</b>2026년 11월</p>
+      </div>
+
+      <h1>AI로 회사 하나를 돌리는 사람이 <em>가르칩니다</em></h1>
+
+      <div class="cover-grid">
+        <div>
+          <p class="lead">강의가 끝나면 듣는 사람마다 자기 일로 만든 결과물 하나가 남습니다.</p>
+          <p class="lead-sub">개발자 출신이 아닌 강사가 매일 AI와 하는 일을 그대로 보여 드리고, 혼자 다시 하는 법까지 챙겨 드립니다.</p>
+          <div class="acts">
+            <a class="btn fill" href="mailto:hello@synk.im?subject=AI%20%EA%B0%95%EC%9D%98%20%EB%AC%B8%EC%9D%98">강의 문의하기</a>
+            <a class="btn" href="#lectures">강의 일곱 보기</a>
+          </div>
+        </div>
+        <div class="byline">
+          <img src="{{FOUNDER}}" alt="SYNK 창업자 양유호" width="480" height="480">
+          <div>
+            <p class="who">강사</p>
+            <p class="name">양유호</p>
+            <ul>
+              <li>SYNK 창업자</li>
+              <li>몽골 Skyline Edu 전 부원장</li>
+              <li>엔터테인먼트와 광고 업계 10년</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="timetable" aria-label="SYNK의 실제 예약표 가운데 일부">
+        <div class="tt-head"><h2>강사의 회사가 오늘 하는 일</h2><p>실제 예약표 가운데 여덟 줄, 서울 시각</p></div>
+        <div class="tt">
+          <div class="row"><span class="t">05:00</span><span>잘된 공개 콘텐츠 조사</span><span class="e">매일</span></div>
+          <div class="row"><span class="t">14:00</span><span>SNS 게시물 자체 검수와 게시</span><span class="e">매일</span></div>
+          <div class="row"><span class="t">05:30</span><span>회사 자료 백업</span><span class="e">매일</span></div>
+          <div class="row"><span class="t">19:30</span><span>내일 만들 주제 찾기</span><span class="e">매일</span></div>
+          <div class="row"><span class="t">07:00</span><span>오늘 올릴 영상 제작</span><span class="e">매일 두 번</span></div>
+          <div class="row"><span class="t">5분마다</span><span>바뀐 코드 시험</span><span class="e"></span></div>
+          <div class="row"><span class="t">10:00</span><span>올린 게시물 성과 점검</span><span class="e">화, 금</span></div>
+          <div class="row"><span class="t">10분마다</span><span>새 광고 의뢰서 받기</span><span class="e"></span></div>
+        </div>
+        <div class="tt-foot">
+          <div class="stat"><p class="sk">예약된 일</p><div class="n num">30<sup>+</sup></div><p>사람 없이 제시간에 도는 강사 회사의 일</p></div>
+          <div class="stat"><p class="sk">자동 검사</p><div class="n num">20<sup>+</sup></div><p>공개하기 전에 실수를 막는 자동 검사</p></div>
+          <div class="stat"><p class="sk">대표 강의</p><div class="n num">7</div><p>90분 특강부터 4시간 워크숍까지</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="ways">
+    <div class="wrap">
+      <div class="head">
+        <div><p class="label">수업 방식</p><h2 class="big">도구 이름을 훑지 않고, 결과물을 들고 나가게 합니다</h2></div>
+        <p>일곱 강의가 모두 같은 네 가지를 지킵니다.</p>
+      </div>
+      <div class="ways">
+        <div class="way"><span class="k">01</span><h3>과제를 그 회사의 일로 바꿉니다</h3><p>문의하실 때 수강생의 직무를 여쭙고, 실습 예시를 메일, 회의록, 견적서처럼 그 회사의 일로 바꿔 갑니다.</p></div>
+        <div class="way"><span class="k">02</span><h3>수준이 달라도 함께 갑니다</h3><p>직원마다 AI를 써 본 정도가 다릅니다. 모든 실습에 기본 과제와 도전 과제를 함께 둡니다.</p></div>
+        <div class="way"><span class="k">03</span><h3>넣으면 안 되는 자료부터 말합니다</h3><p>고객 개인정보, 공개 전 계약과 재무 자료, 사내 비밀은 AI에 넣지 않습니다. 실습용 가상 자료는 강사가 준비해 갑니다.</p></div>
+        <div class="way"><span class="k">04</span><h3>혼자 확인하는 법까지 드립니다</h3><p>강의마다 결과물이 제대로 됐는지 혼자 확인하는 법을 드립니다. 수업에서 한 번 된 일을 시간 절감 몇 퍼센트처럼 부풀려 말하지 않습니다.</p></div>
+      </div>
+      <p class="more"><a href="https://m.blog.naver.com/shiftclass/224454542521">공개한 50분 수업 예시 보기 ↗</a><span class="print-only">공개한 50분 수업 예시는 <b>synk.im/shift</b>에서 볼 수 있습니다.</span></p>
+    </div>
+  </section>
+
+  <section class="block" id="lectures">
+    <div class="wrap">
+      <div class="head">
+        <div><p class="label">대표 강의 일곱</p><h2 class="big">이런 고민이 있으면 맞는 강의가 있습니다</h2></div>
+        <p>강의마다 끝나고 남는 결과물이 정해져 있습니다. 실습 과제는 문의하실 때 들은 그 회사의 일로 바꿔 갑니다.</p>
+      </div>
+      <ol class="index">
+        <li class="lec">
+          <span class="no">01</span>
+          <div><p class="q">“AI를 써 보긴 했는데, 일에는 안 붙어요”</p><h3>AI 특강 「비개발자가 AI 셋과 일하는 법」</h3></div>
+          <dl><dt>누구에게</dt><dd>기업과 기관의 전 직원</dd><dt>길이</dt><dd>2시간</dd><dt>권장 인원</dt><dd>30명 안쪽</dd></dl>
+          <div class="keep"><span class="label">남는 것</span><ul class="kl"><li>내 업무 하나를 AI로 끝낸 결과</li><li>그 일을 다음에도 맡길 요청문 한 장</li></ul><p class="kn">30명이 넘으면 실습을 강사 시연으로 바꾸고 요청문 한 장을 가져갑니다.</p></div>
+        </li>
+        <li class="lec">
+          <span class="no">02</span>
+          <div><p class="q">“보고서와 공문 쓰는 데 하루가 가요”</p><h3>AI 문서와 보고서</h3></div>
+          <dl><dt>누구에게</dt><dd>사무직, 공무원</dd><dt>길이</dt><dd>2시간 또는 4시간</dd><dt>권장 인원</dt><dd>20명 안쪽</dd></dl>
+          <div class="keep"><span class="label">남는 것</span><ul class="kl"><li>내 양식에 맞춘 한 쪽 보고서</li><li>그 양식을 다시 쓰는 요청문</li><li>숫자와 사실을 원자료와 맞춰 보는 점검표</li></ul></div>
+        </li>
+        <li class="lec">
+          <span class="no">03</span>
+          <div><p class="q">“매주 같은 일을 손으로 되풀이해요”</p><h3>AI 업무 자동화 입문</h3></div>
+          <dl><dt>누구에게</dt><dd>AI에 일을 시켜 본 팀장, 실무자, 작은 회사의 대표</dd><dt>길이</dt><dd>4시간</dd><dt>권장 인원</dt><dd>12명 안쪽</dd></dl>
+          <div class="keep"><span class="label">남는 것</span><ul class="kl"><li>매주 하던 일 하나를 AI가 먼저 처리하게 저장한 요청</li><li>정해진 때에 그 일을 시작하게 거는 방법 <small>회사 계정이나 유료 계정은 예약, 무료 계정은 휴대폰 알림</small></li><li>틀리거나 멈췄을 때 누가 무엇을 볼지 적은 한 장</li></ul></div>
+        </li>
+        <li class="lec">
+          <span class="no">04</span>
+          <div><p class="q">“작은 도구 하나가 아쉬운데 개발자가 없어요”</p><h3>바이브코딩: 코딩 없이 내 도구 만들기</h3></div>
+          <dl><dt>누구에게</dt><dd>개발을 배운 적 없는 직장인과 창업자</dd><dt>길이</dt><dd>4시간</dd><dt>권장 인원</dt><dd>12명 안쪽</dd></dl>
+          <div class="keep"><span class="label">남는 것</span><ul class="kl"><li>남에게 보낼 수 있는 작은 웹 도구 하나 <small>견적 계산기, 일정 계산기, 점검표 같은 것</small></li><li>그 도구를 다시 만들 요청문</li></ul></div>
+        </li>
+        <li class="lec">
+          <span class="no">05</span>
+          <div><p class="q">“AI로 영상을 만들면 싸 보여요”</p><h3>AI 영상 「AI 영상, 싸 보이지 않게」</h3></div>
+          <dl><dt>누구에게</dt><dd>만 18세 이상 초보, 소상공인, 1인 마케터</dd><dt>길이</dt><dd>4시간</dd><dt>권장 인원</dt><dd>6~8명</dd></dl>
+          <div class="keep"><span class="label">남는 것</span><ul class="kl"><li>사람이 나오는 15초 세로 광고 한 편</li><li>싸 보이는 곳을 찾아 고치는 점검표</li></ul></div>
+        </li>
+        <li class="lec">
+          <span class="no">06</span>
+          <div><p class="q">“가게 홍보를 혼자 다 해요”</p><h3>AI로 가게 홍보물 한 벌</h3></div>
+          <dl><dt>누구에게</dt><dd>소상공인, 전통시장 상인</dd><dt>길이</dt><dd>2시간 또는 4시간</dd><dt>권장 인원</dt><dd>20명 안쪽</dd></dl>
+          <div class="keep"><span class="label">남는 것</span><ul class="kl"><li>가게 소개글</li><li>SNS 글 셋</li><li>리뷰 답글 틀</li></ul><p class="kn">모두 자기 휴대폰에 저장해 갑니다. 사진을 홍보 그림으로 다듬는 법은 강사가 시연합니다.</p></div>
+        </li>
+        <li class="lec">
+          <span class="no">07</span>
+          <div><p class="q">“AI 답을 어디까지 믿어야 할지 모르겠어요”</p><h3>AI 리터러시와 진로</h3><p class="hint">AI 리터러시는 AI의 답을 가려 쓰고 확인하는 힘입니다.</p></div>
+          <dl><dt>누구에게</dt><dd>중고등학생, 공무원과 교직원</dd><dt>길이</dt><dd>학교 2차시, 기관 90분~2시간</dd><dt>권장 인원</dt><dd>기관 판은 많은 인원도 됩니다</dd></dl>
+          <div class="keep"><span class="label">학교 판에 남는 것</span><ul class="kl"><li>관심 분야에서 AI가 바꾸는 일과 내가 준비할 소양을 적은 진로 한 장</li></ul><span class="label">기관 판에 남는 것</span><ul class="kl"><li>우리 조직의 AI 사용 점검표 <small>넣으면 안 되는 자료, 답을 확인하는 순서, AI로 만든 것을 표시하는 기준</small></li></ul></div>
+        </li>
+      </ol>
+      <p class="print-block">강의를 고르셨으면 <b>hello@synk.im</b>으로 강의 이름과 대상, 인원을 알려 주세요.</p>
+    </div>
+  </section>
+
+  <section class="block" id="proof">
+    <div class="wrap">
+      <div class="head">
+        <div><p class="label">강사가 해 온 일</p><h2 class="big">가르치는 방법으로 실제 회사를 돌립니다</h2></div>
+        <p>강의 첫머리에 보여 드리는 예약표와 홈페이지는 강사의 회사에서 지금 쓰는 것입니다. 실습은 강사가 준비한 가상 자료로 합니다.</p>
+      </div>
+      <div class="proof">
+        <div class="col">
+          <h3>양유호</h3>
+          <p class="intro">SYNK 창업자. 건축과 심리학을 공부했고, 무대와 영상에서 일했고, 몽골의 학원에서 학생 상담과 수업 운영을 맡았습니다. 지금은 AI와 함께 회사를 만듭니다.</p>
+          <ul class="list">
+            <li><span class="k num">2026</span><div>몽골 울란바토르 Skyline Edu 전 부원장<small>학생 상담과 수업 운영</small></div></li>
+            <li><span class="k">10년</span><div>엔터테인먼트와 광고 업계<small>넷플릭스 「보라! 데보라」 오프닝 시퀀스 출연 등</small></div></li>
+            <li><span class="k">학력</span><div>중앙대학교 심리학과</div></li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>직접 만들고 운영하는 것</h3>
+          <ul class="list">
+            <li><span class="k">synk.im</span><div>회사 홈페이지<small>네 사업의 소개와 문의 창구를 직접 짓고 고칩니다</small></div></li>
+            <li><span class="k">LAB</span><div>한국어 상황극과 학습 화면<small>이야기 속 유학생이 되어 한국어로 말하는 상황극</small></div></li>
+            <li><span class="k">PULSE</span><div>AI 광고 영상<small>기업 광고와 모델 영상을 연출하고 만듭니다</small></div></li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>2026년에 뽑힌 기록</h3>
+          <ul class="list">
+            <li><span class="k">당선</span><div>서울로미디어캔버스 단편 애니메이션 공모 「다리가 기억하는 것」<small>2026년 12월부터 2027년 2월까지 서울로미디어캔버스 전시</small></div></li>
+            <li><span class="k">본선</span><div>의왕시 청년 e-Room 창업아이디어 공모전 본선 진출</div></li>
+            <li><span class="k">진출</span><div>모두의 창업 프로젝트 1라운드 진출</div></li>
+            <li><span class="k">선정</span><div>소셜벤처 프렙스쿨 14기<small>유원대학교 충남 앵커사업단</small></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="ask">
+    <div class="wrap">
+      <div class="head">
+        <div><p class="label">의뢰</p><h2 class="big">이렇게 진행합니다</h2></div>
+        <p>강의 시간과 순서는 청중과 기기에 맞춰 바꿉니다.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><span class="k">1</span><h3>목표와 청중을 알려 주세요</h3><p>대상, 인원, 원하는 시간을 메일로 보내 주시면 됩니다.</p></div>
+        <div class="step"><span class="k">2</span><h3>직무와 도구를 여쭙니다</h3><p>수강생의 직무, 회사가 허용한 AI 도구, 실습에 넣으면 안 되는 자료를 확인합니다.</p></div>
+        <div class="step"><span class="k">3</span><h3>그 회사에 맞춘 실습과 견적</h3><p>실습 과제를 그 회사의 일로 어떻게 바꿀지와 견적을 메일로 드립니다. 일정과 지역은 협의합니다.</p></div>
+        <div class="step"><span class="k">4</span><h3>수업 뒤 2주까지</h3><p>수업이 끝난 뒤 2주 동안 그 수업 내용에 대한 질문을 메일로 받습니다.</p></div>
+      </div>
+      <div class="cost"><b>비용</b><p>요금표 대신 의뢰마다 견적을 드립니다. 대상과 인원, 강의 시간과 횟수, 실습 준비와 장소로 정합니다.</p></div>
+    </div>
+  </section>
+
+  <section class="end">
+    <div class="wrap">
+      <div>
+        <p class="label">문의</p>
+        <h2>교육 대상과 원하는 강의를 알려 주세요</h2>
+        <p class="small">진행 여부와 일정, 견적을 메일로 답드립니다. 강의 뒤 업무 자동화가 필요하시면 함께 적어 주세요. 따로 상의합니다. 학생이나 직원의 개인 자료는 문의에 적지 말아 주세요.</p>
+      </div>
+      <div>
+        <a class="mail" href="mailto:hello@synk.im">hello@synk.im</a>
+        <p class="site">synk.im/shift<br>기준일 2026년 11월 18일</p>
+        <div class="acts"><a class="btn fill" href="mailto:hello@synk.im?subject=AI%20%EA%B0%95%EC%9D%98%20%EB%AC%B8%EC%9D%98">강의 문의하기</a><a class="btn" href="https://synk.im/shift/">synk.im/shift 보기</a></div>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>
