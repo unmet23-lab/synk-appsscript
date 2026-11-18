@@ -457,4 +457,6 @@
       "rutube": "게시/판본/RU/원고_rutube.json",
       "vk": "게시/판본/RU/원고_vk.json"
     },
-    "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판본글잇기.j
+    "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판본글잇기.js 뽑기)"
+  }
+}

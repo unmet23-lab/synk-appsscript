@@ -113,8 +113,8 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "Suv + goʻsht =\nkoreyschada nima boʻladi?",
-      "원문": "물 + 고기 =\n한국어로는 뭐가 될까?",
+      "글": "Suv + goʻsht =\nkoreyscha nima?",
+      "원문": "물 + 고기 =\n한국어로 뭐?",
       "초": [
         0.62,
         3
@@ -499,8 +499,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "Baliq (물고기) yeb qoʻydi!",
-      "원문": "물고기(물고기)가 먹어 버렸다!",
+      "글": "Baliq (물고기) yedi!",
+      "원문": "물고기(물고기)가 먹었다!",
       "초": [
         16.2,
         17.5
@@ -549,4 +549,6 @@
     "원고": {
       "instagram": "게시/판본/UZ/원고_instagram.json"
     },
-    "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node to
+    "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판본글잇기.js 뽑기)"
+  }
+}

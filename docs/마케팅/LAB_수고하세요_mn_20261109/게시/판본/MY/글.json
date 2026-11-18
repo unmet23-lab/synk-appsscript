@@ -161,8 +161,8 @@
     {
       "id": "literalNote",
       "칸": "진행",
-      "글": "Kat prof atau bos,\nkadang bunyi macam arahan",
-      "원문": "교수님이나 상사에게는\n가끔 명령처럼 들려요",
+      "글": "Kat prof ke bos,\nkadang macam arahan",
+      "원문": "교수님이나 상사에게는\n가끔 명령 같아요",
       "초": [
         5.5,
         8.7
@@ -373,8 +373,8 @@
     {
       "id": "gag",
       "칸": "진행",
-      "글": "Kalau prof, boleh",
-      "원문": "교수님이면 괜찮아요",
+      "글": "Prof boleh",
+      "원문": "교수님은 돼요",
       "초": [
         16.5,
         17.3
@@ -576,4 +576,6 @@
     "원고": {
       "youtube": "게시/판본/MY/원고_youtube.json"
     },
-    "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판�
+    "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판본글잇기.js 뽑기)"
+  }
+}
