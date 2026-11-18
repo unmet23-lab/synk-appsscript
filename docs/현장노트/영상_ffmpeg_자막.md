@@ -1688,6 +1688,12 @@ emotion.cmd`가 남아 있다.
 - 고침: venv에 **`transformers==4.51.3`**(tokenizers 0.21)을 깐다. 그 뒤 같은 문장이 3.28초·5.44초로 정상이었다. 그 밖에 깔 때 막힌 것: Matcha-TTS 쪽이 `lightning`·`gdown`·`pyarrow`를 부른다. `pyworld`(학습용 음높이)는 3.14 휠이 없어 빈 모듈로 채운다. `modelscope`는 받기용이라 빈 모듈이다. torchaudio 2.11 CPU의 `load`는 torchcodec이 있어야 해서 soundfile로 바꿔 끼운다(`소리만들기.py`). 가중치는 `받기.sh`(잠금 폴더 + `par_dl.py`)로 받고, TensorRT용 onnx는 받지 않는다(약 7.4GB). 빠진 모듈은 `불러보기.py`가 설정 파일의 모듈을 모두 불러 한 번에 찍는다. GPU를 LoRA 학습이 쓰고 있으면 CPU로 돈다(짧은 소리 하나에 수 초).
 - 다시 확인: 굽기 전에 평범한 문장 하나(`작업_진단.json`)로 길이가 말 빠르기에 맞는지 본다. `[sigh]`만 넣으면 글이 한 토큰이라 최대 0.8초에서 잘리니 짧은 말 앞에 표시를 넣고 숨 부분만 오린다. 같은 날 `fishaudio/s1-mini`는 허깅페이스 이용 동의가 필요한 저장소였다(이 PC의 허깅페이스 계정이 미동의). 지금 fish-speech 코드는 S2-Pro(11GB, 동의 불필요, GPU 24GB 권장)·Drama 3(48GB 이상)를 쓴다.
 
+### 노래 목소리 바꾸기(Seed-VC)가 torch 2.14에서 torchaudio를 못 찾고, BigVGAN 불러오기에서 `proxies` 인자로 멈춘다 (2026-11-19 Claude)
+- 증상: `Plachtaa/seed-vc`(GitHub 보관됨, GPL-3.0)는 torch 2.4 · torchaudio 2.4를 고정한다. 이 PC의 torch 2.14.1+cu130에 맞는 torchaudio는 2.11까지만 있다. torchaudio를 채운 뒤에는 BigVGAN 불러오기가 `_from_pretrained() missing 2 required keyword-only arguments: 'proxies' and 'resume_download'`로 멈췄다.
+- 원인: huggingface_hub 1.x가 그 두 인자를 넘기지 않는다. 노래 모델은 descript-audio-codec의 `VectorQuantize`를 가져오기만 하고 쓰지 않는다.
+- 고침: `C:/SYNK-LoRA/tools/seed-vc/venv`(옛 pythoncore-3.14에 `--system-site-packages`, torch를 그대로 쓴다)에 librosa · transformers · munch · einops · soundfile · matplotlib만 깔았다. 같은 venv에 torchaudio 대용(resample · kaldi fbank · save)과 dac 대용을 두고, `modules/bigvgan/bigvgan.py`의 두 인자에 기본값을 주고 `hf_hub_download`에서 뺐다. 모델을 한 번만 올리는 실행기는 `.tmp/꿈무대_노래다듬기_20261118/AI다시부르기/도구/svc_run.py`다. 첫 실행은 모델 받기로 5분, 그 뒤 10~15초 조각 하나에 GPU로 10~20초다. 자동 모드 판정기가 첫 실행을 「Undermining Oversight」로 두 번 막았고, 유호님이 「돌려도 돼」라고 하신 뒤 같은 명령이 통과했다.
+- 다시 확인: 모델을 올릴 때 「Skipped loading some keys due to shape mismatch」(estimator.conv1 · conv2 · t_embedder2 · res_projection · input_pos)가 뜬다. 체크포인트에만 있는 키로 보이고(추정), 결과는 받아쓰기 틀린 글자 22~25%와 가이드 세기 닮음 0.90~0.96으로 정상이었다.
+
 ### 로컬 MiniMax H3 공개판은 대한민국이 이용 제외 지역이다 — 공모 · 공개 결과물에 쓰기 전에 허가 상태부터 본다 (2026-10-29 Claude)
 - 증상: 10-29 모두의 프로듀서 2 · 3편(국내 공모, 신청서에 상업 이용 여부 · 수상작 이용 동의가 있다)을 로컬 H3로 뽑기 시작한 뒤에야 라이선스를 읽었다. 10-18 결정 표는 로컬 영상의 주력을 H3로 정했지만, 그 행에는 지역 조건이 없다.
 - 원인: `MiniMaxAI/MiniMax-H3`의 LICENSE는 대한민국을 Excluded Territory로 둔다(I.5). 제외 지역에서 모델을 쓰거나 생성물을 쓰고 보이는 일도 막는다(V.4). 제외 지역은 따로 이용 신청을 내야 하는데(`platform.minimax.io/h3-license`), 10-07에 낸 신청은 아직 `submitted_awaiting_review`이고 `license_granted: false`다(`docs/_ops/qa/ai-media-20261007/README.md`).
