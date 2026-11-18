@@ -117,7 +117,9 @@ async function prepareIntegration({taskDir,allowedRoots}={}){let ctx;try{ctx=con
     plan.planFingerprint=planDigest(plan);writeJSON(planPath,plan);return {...plan,planPath};
   }catch(error){return {status:'needs_attention',needs_attention:true,code:/^[A-Z_]{3,80}$/.test(error.code||'')?error.code:'INTEGRATION_PREPARATION_UNAVAILABLE'};}}
 function finalReceipt(taskDir,value){const result={version:1,policy:POLICY,completed_at:new Date().toISOString(),...value};writeJSON(path.join(taskDir,'integration.json'),result);return result;}
-async function applyIntegration({taskDir,allowedRoots,helperPath=path.join(__dirname,'integration-windows.ps1')}={}){let ctx;try{ctx=context(taskDir,allowedRoots);taskDir=ctx.taskDir;
+// helperTimeoutMs: the exclusive helper's limit. 60 s in use; the tests pass more, since a busy hosted Windows runner took
+// 68–79 s to start the helper and compile its C# (conditional-qa 11-18, 10 s when quiet) — a limit is not what they test.
+async function applyIntegration({taskDir,allowedRoots,helperPath=path.join(__dirname,'integration-windows.ps1'),helperTimeoutMs=60000}={}){let ctx;try{ctx=context(taskDir,allowedRoots);taskDir=ctx.taskDir;
     const resultPath=path.join(taskDir,'integration.json');if(fs.existsSync(resultPath)){const previous=json(resultPath);if(previous.version===1&&previous.policy===POLICY&&previous.verified===true&&previous.needs_attention===false&&['integrated','no_changes'].includes(previous.state))return previous;if(['needs_attention','unknown'].includes(previous.state))return previous;}
     const planPath=path.join(taskDir,'integration-plan.json'),validationPath=path.join(taskDir,'validation.json'),plan=json(planPath),validation=json(validationPath);
     verifyPlan(ctx,plan);
@@ -135,7 +137,7 @@ async function applyIntegration({taskDir,allowedRoots,helperPath=path.join(__dir
     if(process.platform!=='win32')throw new Attention('EXCLUSIVE_APPLY_PLATFORM_UNSUPPORTED');
     const globalGuard=path.join(path.dirname(taskDir),'synk-integration.guard');
     const args=['-NoProfile','-NonInteractive','-File',helperPath,'-TaskDir',taskDir,'-PlanHash',hash(fs.readFileSync(planPath)),'-ValidationHash',hash(fs.readFileSync(validationPath)),'-GlobalGuard',globalGuard];
-    try{execFileSync('pwsh.exe',args,{windowsHide:true,shell:false,timeout:60000,maxBuffer:1024*1024,stdio:['ignore','pipe','pipe']});}catch{/* An interrupted helper must leave a journal or an attention receipt. */}
+    try{execFileSync('pwsh.exe',args,{windowsHide:true,shell:false,timeout:helperTimeoutMs,maxBuffer:1024*1024,stdio:['ignore','pipe','pipe']});}catch{/* An interrupted helper must leave a journal or an attention receipt. */}
     if(fs.existsSync(resultPath)){const result=json(resultPath);if(result.planFingerprint===plan.planFingerprint)return result;}
     return finalReceipt(taskDir,{state:'unknown',reason_code:'APPLY_INTERRUPTED_REVIEW_REQUIRED',needs_attention:true,verified:false,planFingerprint:plan.planFingerprint});
   }catch(error){if(!ctx)return {version:1,policy:POLICY,state:'needs_attention',needs_attention:true,verified:false,reason_code:/^[A-Z_]{3,80}$/.test(error.code||'')?error.code:'INTEGRATION_APPLY_UNAVAILABLE'};return finalReceipt(taskDir,{state:'needs_attention',needs_attention:true,verified:false,reason_code:/^[A-Z_]{3,80}$/.test(error.code||'')?error.code:'INTEGRATION_APPLY_UNAVAILABLE'});}}

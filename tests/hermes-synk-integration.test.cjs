@@ -20,7 +20,8 @@ function fixture(t){
   write('docs/task.md','first\nsecond\nthird\nfourth\nfifth\n');write('docs/delete.md','delete me\n');write('other/unrelated.md','outside scope\n');git('add','.');git('commit','-qm','baseline');
   const taskId='synk-'+crypto.randomBytes(6).toString('hex'),taskDir=path.join(root,'tasks',taskId);
   t.after(()=>{const checked=fs.realpathSync(root);assert.ok(checked.startsWith(fs.realpathSync(os.tmpdir())+path.sep)&&path.basename(checked).startsWith('synk-integration-test-'));fs.rmSync(checked,{recursive:true,force:true});});
-  return {root,repo,taskId,taskDir,write,git,options:{taskDir,allowedRoots:[repo]},async workspace(){
+  // The helper's 60 s limit is for use; a busy hosted Windows runner took 68–79 s (conditional-qa 11-18). The tests check what is applied, not the limit.
+  return {root,repo,taskId,taskDir,write,git,options:{taskDir,allowedRoots:[repo],helperTimeoutMs:300000},async workspace(){
     const receipt=await prepareWorkspace({repo,taskDir,taskId,scope:['docs/task.md','docs/delete.md','docs/new.md','docs/nested'],allowedRoots:[repo]});assert.equal(receipt.ok,true,JSON.stringify(receipt));
     fs.writeFileSync(path.join(taskDir,'request.json'),JSON.stringify({id:taskId,state:'finalizing',finalization_state:'integrating',integration_policy:'auto_verified_v1',notification_policy:'attention_only_v1',workspace_root:receipt.path}));
     fs.writeFileSync(path.join(taskDir,'native.exit'),'0\n');fs.writeFileSync(path.join(taskDir,'native-result.json'),JSON.stringify({version:1,snapshot:{status:'exited',exit_code:0},final_found:true,native_error:false,quota_limited:false,permission_denials:0}));
