@@ -60,6 +60,8 @@ const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.
 const daysBetween = (t, now) => Math.round((dayStart(t) - dayStart(now)) / DAY_MS);
 const dayAfter = (now, n) => { const d = new Date(now); return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n).getTime(); };
 const isoDay = t => (d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()))(new Date(t));
+/* 오늘 뒤의 다음 결제일까지 남은 날. 오늘이 결제일이면 다음 달 결제일이다 */
+const billAfterToday = (day, now) => { const d = nextBill(day, now); if (d !== 0) return d; const n = nextBill(day, dayAfter(now, 1)); return n === null ? null : n + 1; };
 const neun = w => josa(w, ['은', '는']), ga = w => josa(w, ['이', '가']), eul = w => josa(w, ['을', '를']);
 /* 7일 안이면 「목요일 09:00」, 오늘이면 「오늘 09:00」, 그 뒤는 「12월 3일」 */
 function dayTime(t, now) {
@@ -296,7 +298,7 @@ export const ADD_SERVICES = Object.freeze(Object.keys(ADD));
 export const addInfo = svc => ADD[svc] || null;
 const shortVersion = v => (v ? String(v).replace(/\s*\(.*\)\s*$/, '').replace(/^(codex-cli|higgsfield)\s+/i, '') : '');
 const HELP = Object.freeze([
-  ['설치했는데 「설치 안 됨」으로 나옵니다', '설치 창이 끝난 뒤 그 창을 닫고 「설치가 끝났습니다 · 다시 확인」을 눌러 주세요.'],
+  ['설치했는데 「아직 없음」으로 나옵니다', '설치가 끝나면 「다시 확인」을 눌러 주세요. 설치 창을 열었으면 그 창을 닫은 뒤 누릅니다.'],
   ['로그인 화면이 열리지 않습니다', '「로그인 화면 다시 열기」를 누르거나, 「주소 복사」로 주소를 브라우저에 직접 붙여 넣습니다.'],
   ['다른 계정으로 로그인됩니다', '브라우저에 로그인돼 있던 계정으로 연결된 것입니다. 「주소 복사」로 주소를 시크릿 창에 붙여 넣고 더할 계정으로 로그인합니다.'],
   ['코드를 붙여 넣어도 넘어가지 않습니다', 'Claude는 검은 창으로 로그인하는 길이 따로 있습니다. 코드가 들어가지 않으면 그 길로 로그인합니다.'],
@@ -346,7 +348,14 @@ function manageThen(snapshot, autos, now, checkAt, ctx) {
   const out = states.filter(x => x.a.state === 'out' && !x.a.away).sort((p, q) => (p.a.unblock ?? Infinity) - (q.a.unblock ?? Infinity));
   if (out.length) { const x = out[0]; return neun(whoOf(x.row)) + (x.a.unblock ? ' 다 써서 ' + dayTime(x.a.unblock, now) + '에 다시 열립니다.' : ' 다 썼습니다.'); }
   if (!checkAt) return '「모두 다시 읽기」를 누르면 지금 남은 양을 읽습니다.';
-  return (now - checkAt < 2 * 60e3 ? '모두 방금 읽었고' : '모두 ' + hm(checkAt) + '에 읽었고') + ', 막힌 계정은 없습니다.';
+  // 아직 읽지 않은 계정이나 이 PC에 없는 계정이 섞이면 「모두 읽었다」고 하지 않는다(검수 C2)
+  const unread = states.filter(x => !x.a.away && x.a.state === 'unknown');
+  if (unread.length) return one(unread, r => neun(whoOf(r)) + ' 아직 읽지 않았습니다.', n => '아직 읽지 않은 계정이 ' + countWord(n) + ' 있습니다.');
+  const away = states.filter(x => x.a.away);
+  if (away.length === states.length) return one(away, r => neun(whoOf(r)) + ' 지금 이 PC에 로그인되어 있지 않습니다.', n => '이 PC에 로그인되어 있지 않은 계정이 ' + countWord(n) + ' 있습니다.');
+  // 읽은 때는 계정 줄의 「읽음」과 같은 규칙이다. 오늘이 아니면 날짜를 붙인다
+  const when = now - checkAt < 2 * 60e3 ? '방금' : (dayStart(checkAt) === dayStart(now) ? '' : md(checkAt) + ' ') + hm(checkAt) + '에';
+  return (away.length ? '이 PC에 로그인된 계정은 모두 ' : '모두 ') + when + ' 읽었고, 막힌 계정은 없습니다.';
 }
 
 function stateMid(row, a, now) {
@@ -439,7 +448,8 @@ function accountRow(snapshot, row, st, now, ctx, first) {
     const right = has ? (gemini ? (c.at ? md(c.at) + '에 넣은 값' : '') : c.until ? md(c.until) + '에 사라짐' : '') : '';
     more.push(['row', 'API 크레딧', midText, has ? usd(c.left) : '', { text: right, btn: editBtn(has, 'api', grpOpen('api')) }]);
     const [billLabel, billLink, where] = API_BILLING[row.service];
-    const untilDay = c?.until && c.until > now ? isoDay(c.until) : (d => (d === null ? '' : isoDay(dayAfter(now, d))))(row.cycle === 'annual' ? null : nextBill(row.billDay, now));
+    // 넣은 값이 없으면 다음 결제일을 미리 채운다. 오늘이 결제일이면 오늘 받은 크레딧은 다음 달 결제일에 사라지고, 오늘 날짜는 저장할 수 없다(검수 C6)
+    const untilDay = c?.until && c.until > now ? isoDay(c.until) : (d => (d === null ? '' : isoDay(dayAfter(now, d))))(row.cycle === 'annual' ? null : billAfterToday(row.billDay, now));
     more.push(['grp', 'api', [
       ['fld', '남은 금액', has ? String(c.left) : '', '달러, 0에서 100,000', 'apiCredit', 'number'],
       ...(gemini ? [] : [['fld', '만료 날짜', untilDay, '', 'apiDate', 'date']]),
@@ -525,7 +535,7 @@ function kindItems(kind, row = {}) {
 /* ── 계정 더하기(설계 4.5). 단계는 스냅숏의 tools[서비스]와 login에서 정한다 ── */
 export function addItems(snapshot, st = {}, now = Date.now(), ctx = {}) {
   const svc = st.add?.svc || '', s = ADD[svc];
-  const items = [['pick', '무엇을 더할까요', ADD_SERVICES.map(k => [ADD[k].nm, k]), svc, '', 'add-pick']];
+  const items = [['pick', '무엇을 더하시겠습니까', ADD_SERVICES.map(k => [ADD[k].nm, k]), svc, '', 'add-pick']];
   const live = ['live', st.notes?.get?.('add') || ''];
   if (!s) return [...items, ['note', '고르면 그 자리에서 차례대로 안내합니다. 연결하면 바로 한 번 읽습니다.'], live];
   const off = act => (st.busy === 'add:' + act ? 'off' : '');
@@ -570,11 +580,17 @@ function loginSteps(snapshot, svc, st, key, ctx, { relogin = null } = {}) {
     if (!installed) {
       const opened = st.installing?.has?.(svc);
       out.push(['row', '2 설치', s.tool + '가 이 PC에 없습니다. 설치 창을 열면 공식 설치 명령이 돌아갑니다. 1~2분 걸립니다.', '', opened ? '설치 창이 열려 있음' : '아직 없음', true]);
-      // 설치 줄 아래에 명령 원문을 둔다(옛 판의 「직접 붙여 넣고 싶다면」). 지금 누를 단추는 맨 아래, 알림 줄 바로 위에 선다
-      if (snapshot?.platform !== 'darwin' && s.cmd) out.push(['note', '직접 붙여 넣으려면 PowerShell에 이 명령을 넣습니다.'], ['cmd', s.cmd], ['acts', [['명령 복사', 'tool-copy', svc], ['공식 설치 안내 ↗', 'help', s.installLink]]]);
+      // 설치 줄 아래에 직접 설치하는 길을 둔다(옛 판의 「직접 붙여 넣고 싶다면」). PowerShell 명령은 Windows에만, 공식 설치 안내는 어느 PC에나 둔다.
+      // 지금 누를 단추는 맨 아래, 알림 줄 바로 위에 선다
+      const direct = [];
+      if (snapshot?.platform !== 'darwin' && s.cmd) { out.push(['note', '직접 붙여 넣으려면 PowerShell에 이 명령을 넣습니다.'], ['cmd', s.cmd]); direct.push(['명령 복사', 'tool-copy', svc]); }
+      if (s.installLink) direct.push(['공식 설치 안내 ↗', 'help', s.installLink]);
+      if (direct.length) out.push(['acts', direct]);
       out.push(['row', '3 로그인', '설치가 끝나면 열립니다', '', '']);
       if (s.node && tool && tool.npm === false) out.push(['note', 'Higgsfield CLI는 Node.js가 먼저 있어야 합니다.'], ['acts', [['Node.js 받기 ↗', 'help', 'node']]]);
-      out.push(['acts', opened ? [['설치가 끝났습니다 · 다시 확인', 'recheck-tools', svc, off('recheck-tools')]] : [['설치 창 열기', 'install', svc, off('install')]]]);
+      // 「다시 확인」은 늘 둔다. 설치 창을 거치지 않고 직접 설치한 사람도 다음 단계로 넘어간다(검수 C1)
+      const recheck = ['다시 확인', 'recheck-tools', svc, off('recheck-tools')];
+      out.push(['acts', opened ? [recheck] : [['설치 창 열기', 'install', svc, off('install')], recheck]]);
       return out;
     }
     out.push(['row', '2 설치', '이 PC에 설치되어 있습니다' + (tool?.version ? ' · ' + shortVersion(tool.version) : ''), '', '설치됨']);
@@ -608,10 +624,13 @@ function loginSteps(snapshot, svc, st, key, ctx, { relogin = null } = {}) {
   }
   // 로그인 전 또는 끝난 뒤. 이번에 본 실패는 본체 글과 「다시 시도」로 남긴다(설계 14절 D2는 다음 묶음)
   const failed = mine && login?.stage === 'error' && st.ended?.id === login.id;
+  // 다른 로그인은 다른 서비스일 수도, 같은 서비스의 다른 계정이나 「계정 더하기」일 수도 있다(검수 C5)
+  const busySay = '다른 로그인이 진행 중입니다. 끝난 뒤 이어서 해 주세요.';
   if (relogin) {
-    out.push(['row', step, failed ? '로그인을 마치지 못했습니다' : '', '', '']);
+    // 단계 줄은 실패했을 때만 선다. 다른 로그인을 기다릴 때는 알림 한 줄이다(빈 「로그인」 줄을 두지 않는다)
+    if (failed) out.push(['row', step, '로그인을 마치지 못했습니다', '', '']);
     if (failed && login.message) out.push(['note', sentence(login.message)]);
-    if (busyOther) out.push(['note', '다른 서비스의 로그인이 진행 중입니다. 끝난 뒤 이어서 해 주세요.']);
+    if (busyOther) out.push(['note', busySay]);
     if (failed) out.push(['acts', [['다시 시도', 'relogin', '', flags(busyOther && 'off', off('relogin'))]]]);
     return failed || busyOther ? out : [];
   }
@@ -619,7 +638,7 @@ function loginSteps(snapshot, svc, st, key, ctx, { relogin = null } = {}) {
   out.push(['row', '3 로그인', s.dark ? '검은 창이 열립니다. 브라우저에서 연결할 Google 계정을 고릅니다.' + (switching ? ' 이미 다른 계정으로 로그인된 창이면 /logout과 /login을 먼저 칩니다.' : '') : '브라우저에서 로그인합니다. 이 PC에 이미 로그인해 둔 계정이 있으면 그대로 가져올 수 있습니다.', '', failed ? '마치지 못함' : '', true]);
   if (failed && login.message) out.push(['note', sentence(login.message)]);
   if (s.email) out.push(['fld', '연결할 이메일(선택)', '', '로그인 화면에 미리 채웁니다. 브라우저에 다른 계정이 로그인돼 있으면 그 계정으로 연결됩니다', 'email', 'email']);
-  if (busyOther) out.push(['note', '다른 서비스의 로그인이 진행 중입니다. 끝난 뒤 이어서 해 주세요.']);
+  if (busyOther) out.push(['note', busySay]);
   const dis = flags(busyOther && 'off', off('login'));
   out.push(['acts', s.dark ? [[failed ? '다시 시도' : 'Gemini 로그인', 'login', svc, dis]] : [[failed ? '다시 시도' : '새 계정 연결', 'login', svc, dis], ['이 PC의 기존 로그인 쓰기', 'existing', svc, flags(busyOther && 'off', off('existing'))]]]);
   return out;
@@ -829,7 +848,7 @@ function dataRow(acc, st, deleting, off) {
 function deleteRow(acc, st, pending, deleting, due, off) {
   const live = ['live', st.notes?.get?.('del') || ''];
   if (pending) {
-    const mid = (due ? md(due) : '7일 안') + '까지 취소할 수 있습니다';
+    const mid = due ? md(due) + '까지 취소할 수 있습니다' : '7일 동안 취소할 수 있습니다';
     return { key: 'del', gap: true, now: true, nm: '계정 지우기', mid, val: '요청됨', when: '', label: rowLabel(['계정 지우기', '요청됨', mid]), more: [
       ['say', (due ? md(due) + ' ' + hm(due) + '까지는' : '7일 동안은') + ' 이 자리에서 요청을 취소할 수 있습니다.'],
       ['note', '그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지웁니다. 늦어도 요청 후 30일 안에 지우고, 지운 뒤에는 되돌릴 수 없습니다. 취소해도 학습 기록 연결은 꺼진 채로 남습니다.'],
@@ -845,7 +864,7 @@ function deleteRow(acc, st, pending, deleting, due, off) {
   // 확인 묶음이 펼쳐지면 같은 사실을 되풀이하지 않게 작은 글을 뺀다
   if (!asking) more.push(['note', '요청하면 학습 기록 연결을 바로 멈춥니다. 7일이 지나면 되돌릴 수 없습니다. 회사 작업실 자료와 학교 소속 기록은 그곳에서 따로 정리합니다.']);
   more.push(['acts', [['지우기 요청', 'delete-ask', '', flags('toggle', asking && 'on', off('del', 'delete-ask'))]]]);
-  if (asking) more.push(['confirm', '계정 삭제를 요청할까요?', [
+  if (asking) more.push(['confirm', '계정 삭제를 요청하시겠습니까?', [
     '요청하면 학습 기록 연결을 바로 멈춥니다.',
     '7일 동안은 이 자리에서 요청을 취소할 수 있습니다. 그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지우고(늦어도 요청 후 30일 안), 지운 뒤에는 되돌릴 수 없습니다.',
     '회사 작업실 자료와 학교 소속 기록은 그곳에서 따로 정리합니다.',

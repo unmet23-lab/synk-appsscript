@@ -112,7 +112,7 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
     const dup=signedIn&&current.folder&&wanted!==signedIn&&rows().find(row=>row.source==='auto'&&row.service===current.service&&row.state==='ok'&&row.folder!==current.folder&&String(row.email||'').toLowerCase()===signedIn);
     if(dup){finishLogin(current,'error',`이미 연결된 ${v.email} 계정으로 다시 로그인됐습니다. 다른 계정을 더하려면 「주소 복사」로 로그인 주소를 시크릿 창에 붙여 넣고 그 계정으로 로그인해 주세요.`);return;}
     const row=addRow(current.service,current.folder,v);
-    if(wanted&&got&&wanted!==got)finishLogin(current,'error',`${current.email} 대신 브라우저에 로그인되어 있던 ${v.email} 계정으로 연결됐습니다. ${current.email}를 연결하려면 브라우저에서 그 계정으로 바꾼 뒤 다시 시도해 주세요.`);
+    if(wanted&&got&&wanted!==got)finishLogin(current,'error',`${current.email} 대신 브라우저에 로그인되어 있던 ${v.email} 계정으로 연결됐습니다. ${current.email} 계정을 연결하려면 브라우저에서 그 계정으로 바꾼 뒤 다시 시도해 주세요.`);
     else finishLogin(current,'done',`${v.email||providers.get(current.service).spec.label} 계정을 연결했습니다.`);
     check({ids:[row.id]}).catch(()=>{});
   }

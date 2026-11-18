@@ -237,9 +237,12 @@ if(!process.versions.electron){
           await click(w,'[data-orb-act="legacy-back"]');await until(w,s=>s.mode==='app'&&s.ui==='app');await wait(400);
           const tb=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=account]'),a=document.activeElement;return {shown:!!r&&!r.hidden,onTown:a?.dataset?.roomAct==='town'};})()");
           check('9 coming back from the old account view returns to 내 계정 with focus on 「열기」',tb.shown&&tb.onTown,tb);
-          // Esc는 펼친 줄을 먼저 접고, 그다음 방을 닫는다
-          await key(w,'Escape');await wait(200);await key(w,'Escape');await wait(400);
-          check('9 Esc folds the row, then closes 내 계정',await w.js("document.querySelector('#portal-entry [data-room=account]').hidden&&!document.querySelector('#portal-entry [data-room=solio]').hidden"));
+          // Esc는 펼친 줄을 먼저 접고, 그다음 방을 닫는다. 첫 Esc 뒤에 방이 남고 줄만 접혔는지 먼저 본다(화면 검수 G1)
+          await key(w,'Escape');await wait(200);
+          const ae1=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=account]'),b=[...r.querySelectorAll('button.row[data-key]')].find(x=>x.dataset.key==='data');return {room:!r.hidden,open:r.querySelectorAll('.more.open').length,folded:!!b&&!b.classList.contains('opened')};})()");
+          await key(w,'Escape');await wait(400);
+          const ae2=await w.js("({room:!document.querySelector('#portal-entry [data-room=account]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden})");
+          check('9 Esc folds the row, then closes 내 계정',ae1.room&&ae1.open===0&&ae1.folded&&!ae2.room&&ae2.solio,{ae1,ae2});
           // 14. 들어온 뒤 30초 동안 옛 모습의 대화상자 · 메뉴가 뜨지 않는다
           let stray=null;for(let i=0;i<60;i++){const s=await w.js("(()=>{const open=[...document.querySelectorAll('dialog[open]')].map(d=>d.id);const root=document.documentElement.dataset.orbClient;return {open,root};})()");if(s.open.length||s.root!=='app'){stray=s;break;}await wait(500);}
           check('14 nothing old opens over the face for 30 seconds',!stray,{stray});
@@ -594,11 +597,11 @@ if(!process.versions.electron){
           // 5. 계정 더하기: 설치 안 됨 → 설치 창 열기 → 다시 확인 단추. 640×453에서도 지금 누를 단추가 방 안에 보인다
           await w.js("window.__q('add').click()");await wait(300);
           await w.js("[...window.__q('add').nextElementSibling.querySelectorAll('[data-pv]')].find(b=>b.dataset.pv==='gpt').click()");await wait(300);
-          const inst=await actText('add','install');
+          const inst=await actText('add','install'),recheck0=await actText('add','recheck-tools');
           await act('add','install','gpt');await wait(400);
           const instCalled=(await calls(w)).includes('subs-install:gpt');
           const recheck=await actText('add','recheck-tools');
-          check('18-5 adding Codex that is not installed offers 「설치 창 열기」, then 「설치가 끝났습니다 · 다시 확인」',inst==='설치 창 열기'&&instCalled&&recheck==='설치가 끝났습니다 · 다시 확인',{inst,instCalled,recheck});
+          check('18-5 adding Codex that is not installed offers 「설치 창 열기」 and 「다시 확인」 (for a hand install too), then 「다시 확인」 alone',inst==='설치 창 열기'&&recheck0==='다시 확인'&&instCalled&&recheck==='다시 확인'&&!(await actText('add','install')),{inst,recheck0,instCalled,recheck});
           await capture(w,'manage-add-install');
           w.win.setContentSize(640,453);await wait(500);
           await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]');r.scrollTop=0;return true;})()");await wait(100);
@@ -715,11 +718,12 @@ if(!process.versions.electron){
           check('18-10 the learning switch turns on through the account server',(await calls(w)).includes('setLearning')&&l1.checked==='true'&&l1.text==='켜짐'&&l1.live==='학습 기록 연결을 켰습니다.',l1);
           await w.js("window.__aq('data').scrollIntoView({block:'start'})");await wait(150);await capture(w,'account-data');
           // 11. 계정 지우기 요청: 확인 묶음이 펼쳐지고 초점이 물음 줄에 온다. 펼친 직후의 보내기는 받지 않는다
-          await aopen('del');await wait(300);await aact('del','delete-ask');await wait(400);
+          await aopen('del');await wait(300);
+          const d0=await w.js("(async()=>{const ask=window.__aact('del','delete-ask');ask.focus();const t0=performance.now();ask.click();let send=null;for(let i=0;i<30&&!(send=window.__aact('del','delete-send'));i++)await new Promise(r=>setTimeout(r,10));if(send)send.click();return {found:!!send,gap:Math.round(performance.now()-t0)};})()");
+          await wait(400);
           const d1=await w.js("(()=>{const g=window.__aq('del').nextElementSibling.querySelector('.confirm'),q=g?.querySelector('[data-ask-q]');return {shown:!!g,role:g?.getAttribute('role'),labelled:!!q&&g.getAttribute('aria-labelledby')===q.id,onQ:!!q&&document.activeElement===q,q:q?.textContent||'',facts:g?g.querySelectorAll('.more-note').length:0,expanded:window.__aact('del','delete-ask')?.getAttribute('aria-expanded')};})()");
-          await aact('del','delete-send');await wait(200);
           const early=(await calls(w)).includes('requestDeletion');
-          check('18-11 「지우기 요청」 opens the confirm group with focus on its question, and an immediate send is not taken',d1.shown&&d1.role==='group'&&d1.labelled&&d1.onQ&&d1.q==='계정 삭제를 요청할까요?'&&d1.facts===3&&d1.expanded==='true'&&!early,{d1,early});
+          check('18-11 「지우기 요청」 opens the confirm group with focus on its question, and an immediate send is not taken',d0.found&&d0.gap<500&&d1.shown&&d1.role==='group'&&d1.labelled&&d1.onQ&&d1.q==='계정 삭제를 요청하시겠습니까?'&&d1.facts===3&&d1.expanded==='true'&&!early,{d0,d1,early});
           for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js("window.__aq('del').scrollIntoView({block:'start'})");await wait(150);await capture(w,`account-delete-confirm-${W}`);}
           w.win.setContentSize(1440,900);await wait(300);
           await aact('del','delete-send');await wait(900);
@@ -849,7 +853,11 @@ if(!process.versions.electron){
           const diagText=JSON.stringify(g1.diag||{});
           check('18-12 the problem report copies only versions and connection state, and the bottom line says so',(await calls(w)).includes('diag-copy')&&g1.foot==='버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.'&&!!g1.diag&&g1.diag.view==='settings'&&!/example\.com|합성 회원|20000000-/.test(diagText),g1);
           // Esc는 펼친 줄을 먼저 접고 방을 닫는다. 구독 팁을 껐으므로 구독 줄에 팁이 없다
-          for(let i=0;i<4&&!(await w.js("document.querySelector('#portal-entry [data-room=settings]').hidden"));i++){await key(w,'Escape');await wait(300);}
+          const se0=await w.js("document.querySelectorAll('#portal-entry [data-room=settings] .more.open').length");
+          await key(w,'Escape');await wait(300);
+          const se1=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=settings]');return {room:!r.hidden,open:r.querySelectorAll('.more.open').length};})()");
+          check('18-12 the first Esc only folds the open rows of the settings room',se0>0&&se1.room&&se1.open===0,{se0,se1});
+          await key(w,'Escape');await wait(300);
           const e1=await w.js(`(()=>{const b=document.querySelector(${JSON.stringify(SUB)});return {settings:document.querySelector('#portal-entry [data-room=settings]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden,tip:!!b?.nextElementSibling?.querySelector('.more-tip'),mode:document.documentElement.dataset.orbClient};})()`);
           check('18-12 Esc closes the settings room back to Solio, and with 구독 팁 off the subscription row has no tip',e1.settings&&e1.solio&&!e1.tip&&e1.mode==='app',e1);
           w.win.destroy();

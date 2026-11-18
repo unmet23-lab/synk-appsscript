@@ -1455,9 +1455,19 @@ test('while the fan is open the hidden name, the object row and the dimmed rooms
 
 test('a redraw keeps focus on 「계정 관리」 inside an open row instead of dropping it to the page (카본 A4)', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
-  assert.match(src, /keepAct = fa && inner\.contains\(fa\) \? fa\.dataset\?\.orbAct \|\| '' : null;/);
-  assert.match(src, /if \(keepAct !== null\) refocusIn\(b, keepAct\);/);
-  assert.match(src, /if \(home\) refocusIn\(home, innerAt\.act\);/);
+  assert.match(src, /keepAct = fa && inner\.contains\(fa\) \? fa\.dataset\?\.orbAct \|\| '' : null, keepRoom = /);
+  assert.match(src, /if \(keepAct !== null\) refocusIn\(b, keepAct, keepRoom\);/);
+  assert.match(src, /if \(home\) refocusIn\(home, innerAt\.act, innerAt\);/);
+  // 팁 반응 단추(방 동작)도 같은 단추로 되살린다(2단계 둘째 조각 화면 검수 A)
+  assert.match(src, /roomAct: fa\.dataset\?\.roomAct, roomArg: fa\.dataset\?\.roomArg/);
+  assert.match(src, /x\.dataset\.roomAct === at\.roomAct && \(x\.dataset\.roomArg \|\| ''\) === \(at\.roomArg \|\| ''\)/);
+});
+
+test('keeping the pressed button in view follows the open inside and the focus at measuring time (2단계 둘째 조각 화면 검수 A)', () => {
+  const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(src, /endAt = more\?\.classList\?\.contains\('more'\) \? more\.offsetTop \+ more\.offsetHeight/);
+  assert.match(src, /const cur = doc\.activeElement, a = cur && inner\.contains\(cur\) \? cur : a0;/);
+  assert.match(src, /whole = a\.closest\?\.\('\.confirm'\) \|\| a/);
 });
 
 test('a fan opened by resting returns focus when it closes, and a pause resets the approach speed (대체 검수 F5 · F6)', () => {

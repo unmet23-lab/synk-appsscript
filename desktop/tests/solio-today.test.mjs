@@ -361,7 +361,10 @@ test('row inside: the price line also counts an account this PC cannot read now,
   assert.deepEqual([m.cost.val, m.cost.note], ['월 58,000원', '이 PC에 없는 계정 포함']);
   assert.equal(m.accounts, null, 'the away account is still not listed as an account here');
   const unknownAway = weekly('gemini', 10, NOW + 3 * D, { email: 'away@example.com', state: 'elsewhere', plan: 'odd' });
-  assert.deepEqual([moreOf([here, unknownAway])[0].more.cost.val, moreOf([here, unknownAway])[0].more.cost.note], ['월 29,000원', '계정 2개 가운데 1개의 금액만 압니다 · 이 PC에 없는 계정 포함']);
+  // 금액을 모르는 이 PC 밖 계정은 합에 들지 않으므로 「이 PC에 없는 계정 포함」을 붙이지 않는다. 요금 줄과 같은 기준이다(화면 검수 C3 · F3)
+  assert.deepEqual([moreOf([here, unknownAway])[0].more.cost.val, moreOf([here, unknownAway])[0].more.cost.note], ['월 29,000원', '계정 2개 가운데 1개의 금액만 압니다']);
+  const unknownHere = weekly('gemini', 30, NOW + 3 * D, { email: 'work@example.com', plan: 'odd' });
+  assert.deepEqual([moreOf([unknownHere, away])[0].more.cost.val, moreOf([unknownHere, away])[0].more.cost.note], ['월 29,000원', '계정 2개 가운데 1개의 금액만 압니다 · 이 PC에 없는 계정 포함'], 'only the away account’s price is in the sum');
   assert.equal(moreOf([here])[0].more.cost.note, '', 'no away account, no note');
 });
 

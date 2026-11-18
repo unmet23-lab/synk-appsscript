@@ -2,16 +2,18 @@
 // 가짜 구독 다리로 부른 것을 적고, 두 번 누르기의 막이(0.6초 · 10초), 묶음과 초점 요청, 저장, 로그인 단계, 계정이 바뀐 뒤 늦은 답 버리기를 본다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createOrbRooms, ROOM_TIMING, ASIDE_ROOMS } from '../renderer/orb-rooms.mjs';
+import { createOrbRooms, ROOM_TIMING, ASIDE_ROOMS, ROOM_BUSY_SAY } from '../renderer/orb-rooms.mjs';
 import { CODE_SAY } from '../renderer/solio-rooms.mjs';
+import { tokenDay } from '../renderer/subscriptions-tokens.mjs';
 
 const NOW = new Date(2026, 10, 18, 10, 0).getTime(), D = 864e5;
 const weekly = (id, service, extra = {}) => ({ id, service, source: 'auto', label: service, kind: 'weekly', state: 'ok', plan: 'pro', email: id + '@example.com', folder: true, live: { readAt: NOW - 60e3, weekly: { usedPercent: 20, resetsAt: NOW + D } }, ...extra });
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-function harness({ rows = [weekly('c', 'claude', { price: 290000, billDay: 9 }), weekly('t', 'typecast', { kind: 'credit', keyHint: 'a41c', email: null })], answers = {} } = {}) {
+function harness({ rows = [weekly('c', 'claude', { price: 290000, billDay: 9 }), weekly('t', 'typecast', { kind: 'credit', keyHint: 'a41c', email: null })], answers = {}, open = true } = {}) {
   let clock = NOW, snap = { ok: true, seq: 1, rows, check: { at: NOW - 60e3 }, tools: { claude: { installed: true } }, login: null, usage: { accounts: {} }, settings: {} };
-  const calls = [], timers = [];
+  const calls = [], timers = [], pending = new Map();
+  let timerId = 0;
   const answer = (name, fallback) => (...args) => { calls.push([name, ...args]); const a = answers[name]; return typeof a === 'function' ? a(...args) : a ?? fallback(...args); };
   const next = mutate => { snap = { ...snap, seq: snap.seq + 1 }; mutate?.(snap); return snap; };
   const subs = {
@@ -32,8 +34,9 @@ function harness({ rows = [weekly('c', 'claude', { price: 290000, billDay: 9 }),
   const rooms = createOrbRooms({
     subs,
     now: () => clock,
-    setTimer: (fn, ms) => { timers.push(ms); return timers.length; },
-    clearTimer: () => {},
+    // 타이머는 콜백을 맡아 두고, 시계를 넘기면(advance) 닿은 것을 돌린다. 지우면 돌지 않는다(화면 검수 E1)
+    setTimer: (fn, ms) => { timers.push(ms); const id = ++timerId; pending.set(id, { fn, at: clock + ms }); return id; },
+    clearTimer: id => { pending.delete(id); },
     snapshot: () => snap,
     accept: value => { accepted++; snap = value; rooms.observe(value); },
     reread: () => { rereads++; },
@@ -45,7 +48,13 @@ function harness({ rows = [weekly('c', 'claude', { price: 290000, billDay: 9 }),
   const line = key => room().rows.find(r => r.key === key);
   const live = key => line(key).more.at(-1)[1];
   const press = (key, act, arg = '', fields = {}) => rooms.handle({ room: 'manage', key, act, arg, fields });
-  return { rooms, calls, timers, copied, room, line, live, press, advance: ms => { clock += ms; }, setSnap: fn => { snap = fn(snap); }, get snap() { return snap; }, get changes() { return changes; }, get accepted() { return accepted; }, get rereads() { return rereads; } };
+  // 컨트롤러처럼 방을 연 채로 시험한다(로그인 끝 알림은 계정 관리 방이 열려 있을 때만 쓴다, 검수 B)
+  if (open) rooms.open('manage');
+  const advance = ms => {
+    clock += ms;
+    for (const [id, t] of [...pending].sort((a, b) => a[1].at - b[1].at)) if (t.at <= clock && pending.has(id)) { pending.delete(id); t.fn(); }
+  };
+  return { rooms, calls, timers, copied, room, line, live, press, advance, setSnap: fn => { snap = fn(snap); }, get snap() { return snap; }, get pending() { return pending.size; }, get changes() { return changes; }, get accepted() { return accepted; }, get rereads() { return rereads; } };
 }
 const removeLabel = (h, key) => h.line(key).more.filter(x => x[0] === 'acts').flatMap(x => x[1]).find(a => a[1] === 'remove');
 
@@ -89,6 +98,25 @@ test('the question goes after 10 s, when the hand or focus leaves, on another bu
   await h.press('a:c', 'remove');
   h.rooms.close();
   assert.equal(removeLabel(h, 'a:c')[0], '지우기');
+});
+
+test('the question’s timer itself takes it back after 10 s and asks for a redraw; every other way out cancels that timer (화면 검수 E1)', async () => {
+  const h = harness();
+  await h.press('a:c', 'remove');
+  assert.equal(h.pending, 1);
+  const before = h.changes;
+  h.advance(ROOM_TIMING.armExpire);
+  assert.equal(h.pending, 0, 'the timer ran');
+  assert.equal(h.changes, before + 1, 'and asked for a redraw while nothing else happened');
+  assert.equal(removeLabel(h, 'a:c')[0], '지우기');
+  const ways = { disarm: () => h.press('a:c', 'disarm'), 'another button': () => h.press('a:c', 'grp', 'cost'), close: () => h.rooms.close(), reset: () => h.rooms.reset() };
+  for (const [name, leave] of Object.entries(ways)) {
+    h.rooms.open('manage');
+    await h.press('a:c', 'remove');
+    assert.equal(h.pending, 1, name + ': asked');
+    await leave();
+    assert.equal(h.pending, 0, name + ': the earlier timer is cancelled');
+  }
 });
 
 test('the question survives a fresh scene, because it lives in the room state and not in the view', async () => {
@@ -168,14 +196,23 @@ test('adding Claude: the e-mail is checked, the login starts, and a finished log
   assert.equal(h.line('add').more[0][3], '', 'the add line is back to choosing');
 });
 
-test('a cancelled login says so in the line that started it; a login that ended before the room was seen says nothing', () => {
+test('a cancelled login says so in the line that started it; a login that ended before the room was seen says nothing', async () => {
   const h = harness();
   h.rooms.reset();
+  h.rooms.open('manage');
   h.rooms.observe({ ...h.snap, login: { id: 'old', service: 'gpt', stage: 'done' } });
   assert.equal(h.room().foot, '로그인 정보와 사용량은 이 PC 밖으로 나가지 않습니다.');
   h.rooms.observe({ ...h.snap, login: { id: 'l2', service: 'gpt', stage: 'browser' } });
   h.rooms.observe({ ...h.snap, login: { id: 'l2', service: 'gpt', stage: 'cancelled' } });
   assert.equal(h.live('add'), '로그인을 취소했습니다.');
+  // 계정 줄의 「다시 로그인」에서 시작한 로그인이 취소되면 그 계정 줄에 쓴다. 「계정 더하기」에는 쓰지 않는다(화면 검수 E5)
+  const r = harness();
+  await r.press('a:c', 'relogin');
+  r.setSnap(s => ({ ...s, login: { id: 'l3', service: 'claude', stage: 'browser' } }));
+  r.rooms.observe(r.snap);
+  r.setSnap(s => ({ ...s, login: { ...s.login, stage: 'cancelled' } }));
+  r.rooms.observe(r.snap);
+  assert.deepEqual([r.live('a:c'), r.live('add')], ['로그인을 취소했습니다.', '']);
 });
 
 test('「다시 로그인」 runs the login inside that account line with its own e-mail; Typecast asks for a new key there', async () => {
@@ -199,11 +236,11 @@ test('install, recheck, copy and help', async () => {
   const h = harness({ answers: { help: () => ({ ok: false, code: 'OPEN_FAILED' }) } });
   await h.press('add', 'add-pick', 'gpt');
   await h.press('add', 'install', 'gpt');
-  assert.equal(h.live('add'), 'Codex 설치 창을 열었습니다. 창을 닫지 말고 끝날 때까지 기다려 주세요.');
+  assert.equal(h.live('add'), 'Codex 설치 창을 열었습니다. 끝날 때까지 창을 닫지 말고 기다린 뒤 「다시 확인」을 눌러 주세요.');
   assert.ok(h.line('add').more.some(x => x[0] === 'acts' && x[1].some(a => a[1] === 'recheck-tools')));
   await h.press('add', 'recheck-tools', 'gpt');
   assert.deepEqual(h.calls.at(-1), ['snapshot', { refreshTools: true }]);
-  assert.equal(h.live('add'), '아직 설치를 찾지 못했습니다. 설치 창이 끝난 뒤 다시 확인해 주세요.');
+  assert.equal(h.live('add'), '아직 설치를 찾지 못했습니다. 설치가 끝난 뒤 다시 확인해 주세요.');
   await h.press('add', 'tool-copy', 'gpt');
   assert.match(h.copied.at(-1), /chatgpt\.com\/codex\/install\.ps1/);
   assert.equal(h.live('add'), '명령을 복사했습니다. PowerShell에 붙여 넣어 주세요.');
@@ -247,6 +284,12 @@ test('opening the room asks to open the account to fix, a subscription’s first
   empty.rooms.open('manage');
   assert.equal(empty.room().opening.key, 'add');
   assert.equal(h.rooms.scene({ aside: null }), null);
+  // 읽지 못한 계정이 있으면 그 줄을 먼저 연다. 다른 구독 줄에서 열어도 그렇다(화면 검수 E6)
+  const fix = harness({ rows: [weekly('a', 'claude'), weekly('b', 'gpt', { state: 'error' })] });
+  fix.rooms.open('manage');
+  assert.equal(fix.room().opening.key, 'a:b', 'the account to fix opens first');
+  fix.rooms.open('manage', { svc: 'claude' });
+  assert.equal(fix.room().opening.key, 'a:b', 'even from another subscription’s line');
 });
 
 test('after the account changes (reset), a late answer is dropped', async () => {
@@ -276,11 +319,13 @@ function tokHarness({ state = { ok: true, enabled: false, epoch: 1, seq: 1 }, an
     onTokens: fn => { listen = fn; return () => { unsubs++; listen = null; }; },
   };
   let changes = 0;
-  const rooms = createOrbRooms({ subs, now: () => clock, setTimer: () => 0, clearTimer: () => {}, setTick: (fn, ms) => { ticks.push(ms); return ticks.length; }, clearTick: id => { cleared.push(id); }, changed: () => { changes++; } });
+  // 1분 틱은 콜백을 맡아 두고 beat()로 한 번 돌린다. 지운 틱은 돌지 않는다(화면 검수 E2)
+  const beating = new Map();
+  const rooms = createOrbRooms({ subs, now: () => clock, setTimer: () => 0, clearTimer: () => {}, setTick: (fn, ms) => { ticks.push(ms); beating.set(ticks.length, fn); return ticks.length; }, clearTick: id => { cleared.push(id); beating.delete(id); }, changed: () => { changes++; } });
   const press = (act, arg = '') => rooms.handle({ room: 'solio', key: 'tok', act, arg });
   const row = () => rooms.tokRow();
   const acts = () => row().more.filter(x => x[0] === 'acts').flatMap(x => x[1]);
-  return { rooms, calls, ticks, cleared, press, row, acts, names: () => calls.map(c => c[0]), push: v => listen?.(v), advance: ms => { clock += ms; }, get unsubs() { return unsubs; }, get changes() { return changes; }, get state() { return tok; } };
+  return { rooms, calls, ticks, cleared, press, row, acts, names: () => calls.map(c => c[0]), push: v => listen?.(v), beat: () => { for (const fn of [...beating.values()]) fn(); }, advance: ms => { clock += ms; }, get unsubs() { return unsubs; }, get changes() { return changes; }, get state() { return tok; } };
 }
 const settle = async (n = 6) => { for (let i = 0; i < n; i++) await tick(); };
 
@@ -326,10 +371,17 @@ test('live counting is asked only while the line is open and the room is seen, r
   assert.deepEqual(h.ticks, [ROOM_TIMING.tokLive]);
   h.rooms.syncLive(true);
   assert.equal(h.names().filter(n => n === 'tokensLive').length, 1, 'the same state asks nothing more');
+  // 1분 틱을 실제로 돌리면 오래된 셈을 다시 세 달라고 하고 실시간 부탁을 잇는다(화면 검수 E2)
+  let n0 = h.calls.length;
+  h.beat(); await settle();
+  assert.deepEqual(h.calls.slice(n0).map(c => [c[0], c[1]]), [['tokensScan', { force: false }], ['tokensLive', true]], 'each minute renews the live request');
   h.rooms.syncLive(false);
   await settle();
   assert.deepEqual(h.calls.at(-1).slice(0, 2), ['tokensLive', false]);
   assert.deepEqual(h.cleared, [1]);
+  n0 = h.calls.length;
+  h.beat(); await settle();
+  assert.equal(h.calls.length, n0, 'a cleared tick does not run');
   h.rooms.syncLive(true); await settle();
   await h.press('row-fold');
   h.rooms.syncLive(true); await settle();
@@ -348,13 +400,21 @@ test('switching tokens on says it may take minutes; the range and 「모두 보�
   assert.deepEqual(h.calls.find(c => c[0] === 'tokensEnable').slice(1), [true]);
   assert.equal(h.row().mid, '처음 세는 중입니다');
   assert.equal(h.row().more.at(-1)[1], '켰습니다. 기록이 많으면 처음 세는 데 몇 분 걸립니다.');
-  h.push({ ...h.state, seq: 50, scanning: false, scannedAt: NOW, cells: [] });
+  // 오늘 쓴 모델 여덟 개. 처음에는 여섯 개만 보이고 「모두 보기」가 선다(화면 검수 E7)
+  const cells = Array.from({ length: 8 }, (_, i) => [tokenDay(NOW), 'gpt', 'gpt-6.' + i, 10, 9 + i, 0, 0, 0, 1]);
+  h.push({ ...h.state, seq: 50, scanning: false, scannedAt: NOW, cells });
+  const gauges = () => h.row().more.filter(x => x[0] === 'gauge').length;
   await h.press('tok-range', 'today');
   assert.equal(h.row().more.find(x => x[0] === 'pick')[3], 'today');
   await h.press('tok-range', 'year');
   assert.equal(h.row().more.find(x => x[0] === 'pick')[3], 'today', 'an unknown range is ignored');
+  assert.equal(gauges(), 6);
+  assert.ok(h.acts().some(a => a[1] === 'tok-all' && a[0] === '모델 8개 모두 보기'));
+  await h.press('tok-all');
+  assert.equal(gauges(), 8, '「모두 보기」 shows every model');
   h.rooms.close();
   assert.equal(h.row().more.find(x => x[0] === 'pick')[3], 'today', 'closing a room keeps the range while the app runs');
+  assert.deepEqual([gauges(), h.acts().find(a => a[1] === 'tok-all')[0]], [8, '여섯 개만 보기'], 'and keeps 「모두 보기」');
   await h.press('tok-scan');
   assert.deepEqual(h.calls.find(c => c[0] === 'tokensScan').slice(1), [{ force: true }]);
   assert.equal(h.row().more.at(-1)[1], '기록 파일을 다시 세고 있습니다.');
@@ -673,10 +733,22 @@ test('updates follow the old rules: a check, a download, and an install that ask
   release(true);
   await pending;
   assert.ok(!moved.names().includes('updates.install'), 'a new state during the question cancels the install');
+  // 묻는 사이 더 새 판(0.4.99)까지 받아 준비됐어도, 묻지 않은 판은 설치하지 않는다(화면 검수 E4)
+  let release2;
+  const newer = setHarness({ update: { state: 'ready', latestVersion: '0.4.98' }, answers: { confirmInstall: () => new Promise(r => { release2 = r; }) } });
+  newer.rooms.open('settings'); await settle();
+  const asking = newer.press('update', 'update-install');
+  await settle();
+  newer.listeners.updates({ state: 'ready', latestVersion: '0.4.99' });
+  release2(true);
+  await asking;
+  assert.deepEqual(newer.names().filter(n => n === 'confirmInstall' || n === 'updates.install'), ['confirmInstall'], 'a newer ready version is not installed on the old answer');
+  // 자동 업데이트 판은 본체가 설치한다. 방은 묻지도 설치하지도 않고, 설치 단추도 두지 않는다(화면 검수 E3)
   const auto = setHarness({ update: { state: 'ready', automatic: true, latestVersion: '0.4.98' } });
   auto.rooms.open('settings'); await settle();
   await auto.press('update', 'update-install');
-  assert.ok(!auto.names().includes('confirmInstall'), 'an automatic install is the main process’s job');
+  assert.deepEqual(auto.names().filter(n => n === 'confirmInstall' || n === 'updates.install'), [], 'an automatic install is the main process’s job');
+  assert.ok(!auto.line('update').more.some(x => x[0] === 'acts' && x[1].some(a => a[1] === 'update-install')), 'and there is no install button');
   const failed = setHarness({ answers: { 'updates.check': () => ({ ok: false, code: 'UPDATE_NETWORK_FAILED' }) } });
   failed.rooms.open('settings'); await settle();
   await failed.press('update', 'update-check');
@@ -688,6 +760,12 @@ test('notices go through the convenience channel: banner and quiet switches, qui
   h.rooms.open('settings'); await settle();
   await h.press('notice', 'notice', 'banners');
   assert.deepEqual(h.calls.filter(c => c[0] === 'notices.set').at(-1)[1], { banners: false });
+  // 조용한 시간 스위치도 같은 통로로 켜고 끈다(화면 검수 E8)
+  const quiet = () => h.line('notice').more.find(x => x[0] === 'tog' && x[6] === 'schedule')[3];
+  await h.press('notice', 'notice', 'schedule');
+  assert.deepEqual([h.calls.filter(c => c[0] === 'notices.set').at(-1)[1], quiet()], [{ schedule: true }, true]);
+  await h.press('notice', 'notice', 'schedule');
+  assert.deepEqual([h.calls.filter(c => c[0] === 'notices.set').at(-1)[1], quiet()], [{ schedule: false }, false]);
   await h.press('notice', 'grp', 'quiet');
   await h.press('notice', 'quiet-save', '', { quietStart: '7시', quietEnd: '08:00' });
   assert.equal(h.live('notice'), '시각은 22:00처럼 넣어 주세요.');
@@ -702,7 +780,7 @@ test('notices go through the convenience channel: banner and quiet switches, qui
   await h.press('notice', 'rest', '0');
   assert.deepEqual([h.notices.mutedUntil, h.live('notice')], [0, '배너를 다시 띄웁니다.']);
   await h.press('notice', 'rest', 'toString');
-  assert.equal(h.calls.filter(c => c[0] === 'notices.set').length, 4, 'an unknown rest is not saved');
+  assert.equal(h.calls.filter(c => c[0] === 'notices.set').length, 6, 'an unknown rest is not saved');
 });
 
 test('the tip switch saves settings.tipsOff like the old board, and a member’s draft switch goes through the bridge (설계 검토 D7)', async () => {
@@ -755,4 +833,89 @@ test('a tip reaction in a subscription row saves like the old board and keeps th
   assert.equal(h.rooms.subTips().get('claude').live, '이 종류의 팁은 4주 동안 쉽니다.', 'opening and closing a room keeps the line of the subscription row');
   h.rooms.reset();
   assert.equal(h.rooms.subTips().size, 0, 'another account forgets the answer, so the resting tip is gone');
+});
+
+/* ── 2단계 둘째 조각 화면 검수 B의 고침 ── */
+test('a Typecast key put in 「계정 더하기」 adds a new account even after 「다시 로그인」 was pressed on another Typecast line', async () => {
+  const h = harness();
+  await h.press('a:t', 'relogin');
+  await h.press('add', 'add-pick', 'typecast');
+  await h.press('add', 'key', 'typecast', { key: 'tc-new' });
+  assert.deepEqual(h.calls.at(-1), ['connectKey', 'typecast', 'tc-new', {}], 'no replace from the earlier relogin');
+  await h.press('a:t', 'key', 'typecast', { key: 'tc-old' });
+  assert.deepEqual(h.calls.at(-1), ['connectKey', 'typecast', 'tc-old', { replace: 't' }], 'a key put in a line replaces that line');
+});
+
+test('a reset while live counting is on does not let the old account refill the token line', async () => {
+  const h = tokHarness({ state: { ok: true, enabled: true, epoch: 1, seq: 1, scannedAt: NOW - 60e3, cells: [] } });
+  h.rooms.tokLoad(); await settle();
+  await h.press('row-open'); h.rooms.syncLive(true); await settle();
+  const fresh = tokHarness().rooms.tokRow();
+  h.rooms.reset(); await settle();
+  assert.equal(h.names().filter(n => n === 'tokensLive').length, 2, 'the live request is still dropped');
+  assert.deepEqual(h.rooms.tokRow(), fresh, 'the line is back to the state before any read');
+});
+
+test('a pass used just before the account changes does not accept the old account’s reread', async () => {
+  let release;
+  const h = harness({ rows: [weekly('c', 'claude', { passCount: 2, passUntil: NOW + 3 * D })], answers: { check: () => new Promise(r => { release = r; }) } });
+  const pressing = h.press('a:c', 'pass-used');
+  await tick(); await tick();
+  const before = h.accepted;
+  h.rooms.reset();
+  release({ ...h.snap, seq: 99 });
+  await pressing;
+  assert.equal(h.accepted, before);
+});
+
+test('signing out everywhere while the account is being read again says to wait instead of asking (검수 B)', async () => {
+  let release = null;
+  const h = accHarness({ answers: { accountView: () => (release ? new Promise(r => { const go = release; release = null; go(r); }) : accView()) } });
+  h.rooms.open('account'); await settle();
+  h.rooms.close();
+  let finish;
+  release = r => { finish = r; };
+  h.rooms.open('account'); await tick();
+  await h.press('places', 'revoke-all');
+  assert.equal(h.live('places'), ROOM_BUSY_SAY);
+  assert.equal(h.rooms.armed(), null, 'no question while it cannot be sent');
+  finish(accView()); await settle();
+  await h.press('places', 'revoke-all'); h.advance(700); await h.press('places', 'revoke-all'); await settle();
+  assert.ok(h.ops().includes('revokeAll'));
+});
+
+test('the unsaved-writing check holds the room busy, so nothing else starts while it is open', async () => {
+  let release;
+  const h = accHarness({ leave: new Promise(r => { release = r; }) });
+  h.rooms.open('account'); await settle();
+  await h.press('places', 'revoke-all'); h.advance(700);
+  const going = h.press('places', 'revoke-all');
+  await tick();
+  await h.press('name', 'name-save', '', { name: '새 이름' });
+  assert.ok(!h.ops().includes('updateProfile'), 'the name is not saved while the check is open');
+  release(true);
+  await going; await settle();
+  assert.ok(h.ops().includes('revokeAll'));
+});
+
+test('an account change during the draft switch keeps the old failure out of the new settings room', async () => {
+  let release;
+  const h = setHarness({ answers: { 'drafts.set': () => new Promise(r => { release = r; }) } });
+  h.rooms.open('settings'); await settle();
+  h.rooms.scene({ aside: 'settings', member: true });
+  const pressing = h.press('draft', 'draft');
+  await tick();
+  h.rooms.accountChanged();
+  release({ ok: false });
+  await pressing; await settle();
+  assert.equal(h.live('draft'), '');
+});
+
+test('a login that ends while another room is open does not write into that room’s foot', () => {
+  const h = harness();
+  h.rooms.observe({ ...h.snap, login: { id: 'l9', service: 'gpt', stage: 'browser' } });
+  h.rooms.open('settings');
+  h.rooms.observe({ ...h.snap, login: { id: 'l9', service: 'gpt', stage: 'done' } });
+  h.rooms.open('manage');
+  assert.equal(h.room().foot, '로그인 정보와 사용량은 이 PC 밖으로 나가지 않습니다.');
 });

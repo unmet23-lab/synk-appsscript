@@ -128,6 +128,14 @@ test('manage room: the second line says one thing in order — reading, re-login
   assert.equal(then([ok, out]), 'Codex o 계정은 다 써서 금요일 09:00에 다시 열립니다.');
   assert.equal(then([ok], { check: { at: NOW - 60e3 } }), '모두 방금 읽었고, 막힌 계정은 없습니다.');
   assert.equal(then([ok], { check: { at: NOW - 30 * 60e3 } }), '모두 09:30에 읽었고, 막힌 계정은 없습니다.');
+  // 오늘 읽지 않았으면 날짜를 붙이고, 아직 읽지 않은 계정이나 이 PC에 없는 계정이 섞이면 「모두 읽었다」고 하지 않는다(화면 검수 C2)
+  assert.equal(then([ok], { check: { at: NOW - D } }), '모두 11월 17일 10:00에 읽었고, 막힌 계정은 없습니다.');
+  const unread = weekly('u', 'gpt', 0, NOW + D, { live: null });
+  assert.equal(then([ok, unread]), 'Codex u 계정은 아직 읽지 않았습니다.');
+  assert.equal(then([unread, { ...unread, id: 'v', email: 'v@example.com' }]), '아직 읽지 않은 계정이 둘 있습니다.');
+  const away = weekly('a', 'gemini', 10, NOW + D, { state: 'elsewhere' });
+  assert.equal(then([ok, away], { check: { at: NOW - 60e3 } }), '이 PC에 로그인된 계정은 모두 방금 읽었고, 막힌 계정은 없습니다.');
+  assert.equal(then([away]), 'Gemini a 계정은 지금 이 PC에 로그인되어 있지 않습니다.');
 });
 
 test('manage room: the middle of an account line follows its state, and the bright lines are the ones to act on', () => {
@@ -259,16 +267,22 @@ test('manage room: which line opens when the room opens (설계 9.3)', () => {
 test('add: the steps follow the tools and the login stage', () => {
   const add = (svc, extra = {}, state = {}) => addItems(snap([], extra), st({ add: { svc }, ...state }), NOW);
   const pick = addItems(snap([]), st(), NOW);
-  assert.deepEqual(pick[0].slice(0, 2), ['pick', '무엇을 더할까요']);
+  assert.deepEqual(pick[0].slice(0, 2), ['pick', '무엇을 더하시겠습니까']);
   assert.deepEqual(pick[0][2].map(p => p[1]), ADD_SERVICES);
   assert.equal(pick[1][1], '고르면 그 자리에서 차례대로 안내합니다. 연결하면 바로 한 번 읽습니다.');
   const missing = add('claude', { tools: { claude: { installed: false } }, platform: 'win32' });
   assert.deepEqual(kinds(missing, 'row').map(r => r[1]), ['1 요금제', '2 설치', '3 로그인']);
   assert.ok(kinds(missing, 'cmd').length === 1, 'the install command can be pasted by hand');
-  assert.deepEqual(actsOf(missing).filter(a => a[1] === 'install' || a[1] === 'recheck-tools').map(a => a[0]), ['설치 창 열기']);
-  assert.deepEqual(actsOf(add('claude', { tools: { claude: { installed: false } } }, { installing: new Set(['claude']) })).filter(a => a[1] === 'recheck-tools').map(a => a[0]), ['설치가 끝났습니다 · 다시 확인']);
+  // 「다시 확인」은 설치 창을 열기 전에도 있다. 직접 설치한 사람도 다음 단계로 넘어간다(화면 검수 C1). 이름은 오류 글의 「다시 확인」과 같다(C4)
+  assert.deepEqual(actsOf(missing).filter(a => a[1] === 'install' || a[1] === 'recheck-tools').map(a => a[0]), ['설치 창 열기', '다시 확인']);
+  assert.deepEqual(actsOf(missing).filter(a => a[1] === 'tool-copy' || a[1] === 'help').map(a => a[0]), ['명령 복사', '공식 설치 안내 ↗']);
+  assert.deepEqual(actsOf(add('claude', { tools: { claude: { installed: false } } }, { installing: new Set(['claude']) })).filter(a => a[1] === 'install' || a[1] === 'recheck-tools').map(a => a[0]), ['다시 확인']);
+  assert.match(CODE_SAY.TOOL_MISSING, /「다시 확인」/);
+  assert.match(MANAGE_HELP[0][1], /「다시 확인」/);
+  assert.match(MANAGE_HELP[0][0], /「아직 없음」/, 'the question names the state the install line shows');
   const mac = add('claude', { tools: { claude: { installed: false } }, platform: 'darwin' });
   assert.equal(kinds(mac, 'cmd').length, 0, 'the PowerShell command is not offered on a Mac');
+  assert.deepEqual(actsOf(mac).filter(a => a[1] === 'tool-copy' || (a[1] === 'help' && a[2] === 'claude-install') || a[1] === 'recheck-tools').map(a => a[0]), ['공식 설치 안내 ↗', '다시 확인'], 'a Mac still gets the official guide and 「다시 확인」');
   const node = add('higgsfield', { tools: { higgsfield: { installed: false, npm: false } } });
   assert.ok(kinds(node, 'note').some(n => n[1] === 'Higgsfield CLI는 Node.js가 먼저 있어야 합니다.'));
   const ready = add('claude', { tools: { claude: { installed: true, version: '2.1.3 (Claude Code)' } } });
@@ -278,7 +292,7 @@ test('add: the steps follow the tools and the login stage', () => {
   const gem = add('gemini', { tools: { gemini: { installed: true } } });
   assert.deepEqual(actsOf(gem).filter(a => a[1] === 'login' || a[1] === 'existing').map(a => a[0]), ['Gemini 로그인']);
   const busy = add('claude', { tools: { claude: { installed: true } }, login: { id: 'l', service: 'gpt', stage: 'browser' } });
-  assert.ok(kinds(busy, 'note').some(n => n[1] === '다른 서비스의 로그인이 진행 중입니다. 끝난 뒤 이어서 해 주세요.'));
+  assert.ok(kinds(busy, 'note').some(n => n[1] === '다른 로그인이 진행 중입니다. 끝난 뒤 이어서 해 주세요.'));
   assert.ok(actsOf(busy).filter(a => a[1] === 'login').every(a => /off/.test(a[3])), 'and its buttons cannot be pressed');
 });
 
@@ -301,6 +315,22 @@ test('add: browser, code, black window, checking, failure', () => {
   assert.deepEqual(actsOf(failed).find(a => a[1] === 'login').slice(0, 2), ['다시 시도', 'login']);
   const stale = at('gpt', { stage: 'error', message: '옛 실패' });
   assert.ok(!kinds(stale, 'note').some(n => n[1] === '옛 실패'), 'a failure from before this visit is not shown');
+});
+
+test('relogin: while another login runs, the account line says so in one note and adds no empty 「로그인」 line (화면 검수 C5)', () => {
+  const c = weekly('c', 'claude', 10, NOW + D, { loginUntil: NOW + 20 * D });
+  const more = manageRoom(snap([c], { tools: { claude: { installed: true } }, login: { id: 'l', service: 'gpt', stage: 'browser' } }), st({ relogin: 'c' }), NOW).rows[1].more;
+  assert.deepEqual(kinds(more, 'row').filter(r => r[1] === '로그인').map(r => r[2]), ['한 번 로그인하면 4주쯤 이어집니다'], 'only the sign-in deadline line, no empty step line');
+  assert.deepEqual(kinds(more, 'note').filter(n => /로그인이 진행 중/.test(n[1])).map(n => n[1]), ['다른 로그인이 진행 중입니다. 끝난 뒤 이어서 해 주세요.']);
+});
+
+test('the API credit group fills the next bill day, and next month’s when today is the bill day (화면 검수 C6)', () => {
+  const field = row => flat(manageRoom(snap([row]), st(), NOW).rows[1].more).find(x => x[0] === 'fld' && x[4] === 'apiDate')[2];
+  const c = weekly('c', 'claude', 10, NOW + D, { plan: 'max20x' });
+  assert.equal(field({ ...c, billDay: 20 }), '2026-11-20');
+  assert.equal(field({ ...c, billDay: 18 }), '2026-12-18', 'today is the bill day, so the date is next month’s');
+  assert.equal(parseApi({ apiCredit: '50', apiDate: field({ ...c, billDay: 18 }) }, { ...c, billDay: 18 }, NOW).ok, true, 'putting in only the amount saves');
+  assert.equal(field({ ...c, billDay: 18, cycle: 'annual' }), '', 'annual billing has no monthly date to fill');
 });
 
 test('add: Typecast key and other subscriptions', () => {
@@ -573,7 +603,7 @@ test('account room: deleting is a confirm group, not a second press; a pending r
   assert.equal(kinds(before.more, 'confirm').length, 0);
   const asking = accRow(accountRoom({ data: view(), askDelete: true }, accSt(), NOW, {}), 'del');
   const box = kinds(asking.more, 'confirm')[0];
-  assert.equal(box[1], '계정 삭제를 요청할까요?');
+  assert.equal(box[1], '계정 삭제를 요청하시겠습니까?');
   assert.equal(box[2].length, 3);
   assert.deepEqual(box[3].map(a => a[1]), ['delete-send', 'delete-keep']);
   assert.match(actsOf(asking.more).find(a => a[1] === 'delete-ask')[3], /toggle on/);
@@ -584,6 +614,8 @@ test('account room: deleting is a confirm group, not a second press; a pending r
   const del = accRow(room, 'del');
   assert.deepEqual([del.now, del.val, del.mid], [true, '요청됨', '12월 3일까지 취소할 수 있습니다']);
   assert.deepEqual(actsOf(del.more).map(a => a[1]), ['delete-cancel']);
+  const noDue = accRow(accountRoom({ data: view({ account: { ...view().account, status: 'deletion-requested' }, dataRequests: [{ kind: 'delete', status: 'pending', request_id: 'r2' }] }) }, accSt(), NOW, {}), 'del');
+  assert.deepEqual([noDue.mid, noDue.more[0][1]], ['7일 동안 취소할 수 있습니다', '7일 동안은 이 자리에서 요청을 취소할 수 있습니다.'], 'without a due time the line does not say 「7일 안까지」 (화면 검수 C7)');
   assert.equal(kinds(accRow(room, 'name').more, 'fld').length, 0, 'the name cannot be changed while deletion is requested');
   const processing = accountRoom({ data: view({ account: { ...view().account, status: 'deletion-requested' } }) }, accSt(), NOW, {});
   assert.equal(processing.then, '계정 삭제를 처리하고 있습니다.');
@@ -781,6 +813,7 @@ test('screen words: no 해요체 endings and no GEO or SEO anywhere the room fun
   const allGrps = new Set(rows.flatMap(r => ['cost', 'pass', 'api', 'flow'].map(g => 'a:' + r.id + ':' + g)));
   all.push(...texts(manageRoom(s, st({ grps: allGrps, armed: { key: 'a:a', act: 'remove', at: NOW } }), NOW)));
   all.push(...texts(costRow(s, st(), NOW)));
+  all.push(...texts(addItems(s, st(), NOW)));
   for (const svc of ADD_SERVICES) all.push(...texts(addItems(s, st({ add: { svc } }), NOW)));
   for (const stage of ['browser', 'console', 'verifying']) for (const svc of ['claude', 'gpt', 'gemini']) all.push(...texts(addItems({ ...s, tools: { [svc]: { installed: true } }, login: { id: 'l', service: svc, stage, url: 'https://example.com', needsCode: stage === 'browser' } }, st({ add: { svc } }), NOW)));
   all.push(...Object.values(CODE_SAY), DEFAULT_SAY, ...MANAGE_HELP.flat());
@@ -801,7 +834,12 @@ test('screen words: no 해요체 endings and no GEO or SEO anywhere the room fun
     all.push(tipWords(t, NOW));
   all.push(tipDoneWords('helpful', {}, 'k'), tipDoneWords('stop', {}, 'k'));
   const sentences = all.flatMap(t => t.split(/(?<=[.!?])\s+/));
-  const yo = sentences.filter(x => /(어요|아요|해요|예요|에요|돼요)[.!?]?$/.test(x.trim()));
+  // 해요체는 「…요」로 끝난다. 지워요 · 봐요 같은 모음 축약형과 -까요 · -나요 · -네요 · -세요 같은 물음과 권유를 함께 잡는다(화면 검수 F2).
+  // 「…해 주세요」는 설계 1.3절의 합니다체 화면 글(「잠시 뒤 다시 해 주세요.」)이 쓰는 부탁 꼴이라 뺀다
+  const isYo = x => /요[.!?]?$/.test(x.trim()) && !/주세요[.!?]?$/.test(x.trim());
+  for (const t of ['지워요.', '봐요', '바꿔요.', '할까요?', '되나요?', '좋네요.', '누르세요.', '무엇을 더할까요']) assert.ok(isYo(t), t);
+  assert.ok(!isYo('잠시 뒤 다시 해 주세요.') && !isYo('지웠습니다.') && !isYo('요청하시겠습니까?'));
+  const yo = sentences.filter(isYo);
   assert.deepEqual(yo, [], 'every sentence ends in 합니다체');
   assert.ok(!all.some(t => /\bGEO\b|\bSEO\b/.test(t)));
   assert.ok(all.length > 200, 'the check saw the room words (' + all.length + ')');

@@ -323,7 +323,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const focused = rows.length ? old.find(b => b === doc.activeElement)?.dataset.svc : undefined;
     // 줄 안쪽(계정 관리 단추)에 있던 초점도 줄과 동작으로 기억해 둔다(검수 A4)
     const fa = doc.activeElement, inMore = rows.length && fa && app.rows.contains(fa) ? fa.closest?.('.more') : null;
-    const innerAt = inMore ? { svc: inMore.previousElementSibling?.dataset.svc, act: fa.dataset?.orbAct || '' } : null;
+    // 팁 반응 단추는 방 동작(data-room-act · data-room-arg)이라 그것도 기억한다(검수 A)
+    const innerAt = inMore ? { svc: inMore.previousElementSibling?.dataset.svc, act: fa.dataset?.orbAct || '', roomAct: fa.dataset?.roomAct, roomArg: fa.dataset?.roomArg } : null;
     // 구독 줄만 갈아 끼운다. 그 아래의 줄(data-key)은 그대로 두고 그 앞에 넣는다
     for (const b of old) { if (b.nextElementSibling?.classList.contains('more')) b.nextElementSibling.remove(); b.remove(); }
     const anchor = app.rows.querySelector(':scope > button.row[data-key]');
@@ -332,7 +333,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const again = focused === undefined ? null : [...app.rows.querySelectorAll('button.row[data-svc]')].find(b => b.dataset.svc === focused);
     if (again) { restoringVis = true; try { again.focus({ preventScroll: true }); } catch {} finally { restoringVis = false; } }
     const home = innerAt ? [...app.rows.querySelectorAll('button.row[data-svc]')].find(b => b.dataset.svc === innerAt.svc) : null;
-    if (home) refocusIn(home, innerAt.act);
+    if (home) refocusIn(home, innerAt.act, innerAt);
   }
   function subRow(r) {
     const b = el('button', 'row');
@@ -363,7 +364,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (moreKeys.get(inner) === moreKey) return;
     moreKeys.set(inner, moreKey);
     // 안쪽 단추에 있던 초점은 같은 동작의 새 단추로 옮긴다. 새로 지으면서 body로 풀리지 않게 한다(검수 A4)
-    const fa = doc.activeElement, keepAct = fa && inner.contains(fa) ? fa.dataset?.orbAct || '' : null;
+    const fa = doc.activeElement, keepAct = fa && inner.contains(fa) ? fa.dataset?.orbAct || '' : null, keepRoom = keepAct !== null ? { roomAct: fa.dataset?.roomAct, roomArg: fa.dataset?.roomArg } : null;
     inner.replaceChildren();
     let j = 0;
     const put = n => { n.style.setProperty('--j', String(j++)); inner.append(n); };
@@ -406,12 +407,13 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     // 어느 구독에서 눌렀는지 넘긴다. 계정 관리 방이 그 구독의 첫 계정 줄을 연 채 연다(2단계 둘째 조각 설계 9.3)
     acts.append(button('reread', '계정 관리', { 'data-orb-act': 'connect', 'data-orb-arg': String(r.key) }));
     put(acts);
-    if (keepAct !== null) refocusIn(b, keepAct);
+    if (keepAct !== null) refocusIn(b, keepAct, keepRoom);
   }
   /* 줄 안쪽에 있던 초점을 되살린다. 그 동작의 단추가 열린 안쪽에 있으면 거기로, 없으면 줄 단추로 돌린다 */
-  function refocusIn(b, act) {
-    const more = b.nextElementSibling;
-    const t = act && more && !more.inert ? more.querySelector(`[data-orb-act="${act}"]`) : null;
+  function refocusIn(b, act, at = null) {
+    const more = b.nextElementSibling, open = more && !more.inert;
+    const byRoom = open && at?.roomAct ? [...more.querySelectorAll('[data-room-act]')].find(x => x.dataset.roomAct === at.roomAct && (x.dataset.roomArg || '') === (at.roomArg || '')) : null;
+    const t = byRoom || (act && open ? more.querySelector(`[data-orb-act="${act}"]`) : null);
     restoringVis = true;
     try { (t || b).focus?.({ preventScroll: true }); } catch {} finally { restoringVis = false; }
   }
@@ -963,17 +965,22 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (had && box) restoreFocus(box, had);
     // 방금 안쪽을 누른 줄이 길어졌으면 지금 할 차례가 보이게 올린다. 그 줄이 화면에 걸쳐 있을 때만 한다(시안 putRows의 끝)
     const room = b.closest('.room');
-    if (box && acted.get(box) === b.dataset.key && b.classList.contains('opened') && room && b.offsetTop < room.scrollTop + room.clientHeight && b.offsetTop + b.offsetHeight > room.scrollTop) {
+    // 걸쳐 있는지는 줄 머리와 그 아래 열린 안쪽(형제 칸)을 합쳐 본다. 긴 줄을 내려 머리가 위로 지나가도 안쪽을 누른 것은 따라간다(검수 A)
+    const more = b.nextElementSibling, endAt = more?.classList?.contains('more') ? more.offsetTop + more.offsetHeight : b.offsetTop + b.offsetHeight;
+    if (box && acted.get(box) === b.dataset.key && b.classList.contains('opened') && room && b.offsetTop < room.scrollTop + room.clientHeight && endAt > room.scrollTop) {
       // 누른 단추가 그 자리에 남아 있으면 그 단추와 알림 줄이 보이게 내린다. 줄이 방보다 길어도 지금 누를 단추가 방 안에 온다(설계 10.2절)
       const a = doc.activeElement;
-      if (a && inner.contains(a)) keepInView(room, a, inner.querySelector('.more-live')); else showRow(b);
+      if (a && inner.contains(a)) keepInView(room, a, inner); else showRow(b);
     }
   }
-  function keepInView(room, a, live) {
+  /* 잴 때의 초점을 따른다. 그리기 뒤 초점 요청(새로 펼친 묶음, 확인 물음)이 초점을 옮겼으면 그 칸을 보이게 하고, 확인 묶음이면 묶음 끝까지 보인다(검수 A) */
+  function keepInView(room, a0, inner) {
     setTimeout(() => {
+      const cur = doc.activeElement, a = cur && inner.contains(cur) ? cur : a0;
       if (disposed || !a.isConnected || room.hidden) return;
-      const rr = room.getBoundingClientRect(), ar = a.getBoundingClientRect(), lr = live && live.textContent ? live.getBoundingClientRect() : ar;
-      const bottom = Math.max(ar.bottom, lr.bottom), over = bottom - (rr.bottom - 34), under = rr.top + 40 - ar.top;
+      const live = inner.querySelector('.more-live'), whole = a.closest?.('.confirm') || a;
+      const rr = room.getBoundingClientRect(), ar = a.getBoundingClientRect(), wr = whole.getBoundingClientRect(), lr = live && live.textContent ? live.getBoundingClientRect() : ar;
+      const bottom = Math.max(ar.bottom, wr.bottom, lr.bottom), over = bottom - (rr.bottom - 34), under = rr.top + 40 - ar.top;
       const by = over > 0 ? Math.min(over, Math.max(0, -under)) : under > 0 ? -under : 0;
       if (by) room.scrollTo?.({ top: Math.max(0, room.scrollTop + by), behavior: reduced() ? 'auto' : 'smooth' });
     }, 60);

@@ -22,6 +22,8 @@ const hm = t => (d => String(d.getHours()).padStart(2, '0') + ':' + String(d.get
 const TOK_RANGE_KEYS = Object.freeze(['today', 'week', 'month']);
 /* 내 계정 방의 줄 열쇠. 계정이 바뀌면 이 줄들의 진행 표시를 지운다 */
 const ACCOUNT_ROWS = Object.freeze(['name', 'login', 'places', 'data', 'del']);
+/* 다른 일이 도는 동안 누른 되돌릴 수 없는 단추에 쓰는 글(검수 B) */
+export const ROOM_BUSY_SAY = '다른 일을 마치는 중입니다. 잠시 뒤 다시 눌러 주세요.';
 const failure = (code, extra = {}) => Object.assign(new Error(code), { code, ...extra });
 // 본체의 판에는 순서 번호(epoch · seq)가 붙는다. 늦게 온 옛 판으로 새 판을 덮지 않는다(옛 구독 판 209행)
 const newerTokens = (a, b) => !b || a.epoch == null || b.epoch == null || a.epoch > b.epoch || (a.epoch === b.epoch && a.seq >= b.seq);
@@ -156,7 +158,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     try { tok.unsub?.(); } catch { /* 무시 */ }
     if (tok.paint !== null) clearTimer(tok.paint);
     if (tok.timer !== null) clearTick?.(tok.timer);
-    if (tok.live) void tokLiveCall(false);
+    // 실시간을 거두는 부탁만 보내고 답은 버린다. 새 세대(gen)로 받으면 앞 계정의 토큰이 새 계정의 줄에 다시 찬다(검수 B)
+    if (tok.live && typeof subs?.tokensLive === 'function') { try { void Promise.resolve(subs.tokensLive(false)).catch(() => {}); } catch { /* 본체가 3분 뒤 스스로 멈춘다 */ } }
     tok = freshTok();
   }
 
@@ -194,36 +197,42 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     changed();
   }
   /* 바꾸는 일 하나. 끝나면 조용히 다시 읽는다. 충돌 코드면 다시 읽고 알린다(옛 내 계정 184~196행) */
+  /* 시작했으면 true다. 다른 일이 돌거나 읽는 중이면 시작하지 않고 false다.
+     막이(st.busy)는 이 일이 건 것만 푼다. 다시 읽는 동안 다른 방에서 시작한 일의 막이를 지우지 않는다(검수 B) */
   async function accAct(key, act, task, { reload = true } = {}) {
-    if (!account || st.busy || acc.loading) return;
-    const my = accGen;
-    st.busy = key + ':' + act;
+    if (!account || st.busy || acc.loading) return false;
+    const my = accGen, tag = key + ':' + act;
+    const release = () => { if (st.busy === tag) st.busy = null; };
+    st.busy = tag;
     changed();
     try {
       await task(my);
-      if (my !== accGen) return;
-      st.busy = null;
+      if (my !== accGen) return true;
+      release();
       // 바뀐 뒤에는 다른 줄에 남은 앞의 알림을 거둔다(삭제 요청 뒤의 「학습 기록 연결을 켰습니다.」처럼 사실과 어긋날 수 있다)
       for (const k of ACCOUNT_ROWS) if (k !== key) st.notes.delete(k);
       if (reload) await accLoad({ quiet: true });
     } catch (error) {
-      if (my !== accGen || error?.code === 'changed') return;
-      st.busy = null;
+      if (my !== accGen || error?.code === 'changed') return true;
+      release();
       if (ACCOUNT_CONFLICTS.includes(error?.code)) await accLoad({ quiet: true });
-      if (my !== accGen) return;
+      if (my !== accGen) return true;
       note(key, accountSay(error?.code, error?.retryable));
     } finally {
-      if (my === accGen) { st.busy = null; changed(); }
+      if (my === accGen) { release(); changed(); }
     }
+    return true;
   }
   /* 런처가 계정 생명주기에서 부른다(같은 사람의 새 세션 포함). 보이던 자료와 오는 중인 답을 버리고, 방이 열려 있으면 다시 읽는다 */
   function accountChanged() {
     accGen += 1;
     acc = freshAcc();
     deleteRequestId = null;
-    if (st.busy && ACCOUNT_ROWS.includes(st.busy.split(':')[0])) st.busy = null;
+    // 쓰던 글 되살리기(draft)도 계정마다라 같이 거둔다(검수 B)
+    if (st.busy && (ACCOUNT_ROWS.includes(st.busy.split(':')[0]) || st.busy === 'draft:draft')) st.busy = null;
     if (st.armed && ACCOUNT_ROWS.includes(st.armed.key)) disarm();
     for (const k of ACCOUNT_ROWS) st.notes.delete(k);
+    st.notes.delete('draft');
     if (current === 'account') void accLoad();
     // 쓰던 글 되살리기는 계정마다 따로다. 설정 방이 열려 있으면 새 계정의 상태를 다시 읽는다
     if (current === 'settings') { sets.drafts = null; readDrafts(); }
@@ -329,6 +338,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     switch (act) {
       case 'add-pick': {
         if (st.add.svc !== arg) { st.add = { svc: addInfo(arg) ? arg : '' }; delete st.kinds.add; st.ended = null; }
+        // 진행 중인 로그인이 없으면 앞서 누른 「다시 로그인」은 끝난 것으로 본다(Typecast 키 줄은 로그인 없이 기다린다)
+        if (!loginNow()) st.relogin = null;
         changed(); return true;
       }
       case 'kind-pick': st.kinds[key] = arg; focusReq = ask({ key, act, arg }); changed(); return true;
@@ -342,7 +353,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         if (res === null) return true;
         if (res.ok === false) return failed(key, res), true;
         st.installing.add(arg);
-        note(key, (addInfo(arg)?.tool || '') + ' 설치 창을 열었습니다. 창을 닫지 말고 끝날 때까지 기다려 주세요.');
+        note(key, (addInfo(arg)?.tool || '') + ' 설치 창을 열었습니다. 끝날 때까지 창을 닫지 말고 기다린 뒤 「다시 확인」을 눌러 주세요.');
         changed(); return true;
       }
       case 'recheck-tools': {
@@ -352,7 +363,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         accept(res);
         const ok = !!res.tools?.[arg]?.installed;
         if (ok) st.installing.delete(arg);
-        note(key, ok ? (addInfo(arg)?.tool || '') + '가 설치된 것을 확인했습니다.' : '아직 설치를 찾지 못했습니다. 설치 창이 끝난 뒤 다시 확인해 주세요.');
+        note(key, ok ? (addInfo(arg)?.tool || '') + '가 설치된 것을 확인했습니다.' : '아직 설치를 찾지 못했습니다. 설치가 끝난 뒤 다시 확인해 주세요.');
         changed(); return true;
       }
       case 'tool-copy': await copy(key, addInfo(arg)?.cmd, '명령을 복사했습니다. PowerShell에 붙여 넣어 주세요.', '복사하지 못했습니다. 명령을 직접 골라 복사해 주세요.'); return true;
@@ -402,9 +413,12 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
       case 'key': {
         const k = checkKey(fields.key);
         if (!k.ok) { note(key, k.say); changed(); return true; }
-        const replace = st.relogin && rowOf(snap, st.relogin)?.service === arg ? st.relogin : null;
+        // 바꿔 끼울 계정은 키를 넣은 그 줄이다. 「계정 더하기」에서 넣은 키는 새 계정이고, 앞서 누른 「다시 로그인」(st.relogin)을 따라가지 않는다(검수 B)
+        const own = key === 'add' ? null : idOf(key);
+        const replace = own && rowOf(snap, own)?.service === arg ? own : null;
+        if (key === 'add') st.relogin = null;
         const res = await run(key, act, () => subs.connectKey(arg, k.value, replace ? { replace } : {}));
-        if (res === null) return true;
+        if (res === null) { changed(); return true; }
         if (res.ok === false) return failed(key, res), true;
         const next = res.snapshot || res;
         if (hasRows(next)) accept(next);
@@ -461,10 +475,11 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         const res = await save(key, act, { row: { id: row.id, passCount: left, ...(left ? {} : { passUntil: null }) } });
         if (!res) return true;
         saved(key, null, left ? '초기화권을 1장 줄였습니다. ' + left + '장 남았습니다.' : '초기화권을 다 썼습니다.');
-        // 쓴 직후 그 계정만 다시 읽어 막힘과 풀리는 때가 바로 바뀌게 한다(옛 판 298행)
+        // 쓴 직후 그 계정만 다시 읽어 막힘과 풀리는 때가 바로 바뀌게 한다(옛 판 298행). 그사이 계정이 바뀌었으면 답을 버린다(검수 B)
+        const my = gen;
         let c = null;
         try { c = await subs.check?.([row.id]); } catch { c = null; }
-        if (hasRows(c)) accept(c);
+        if (my === gen && hasRows(c)) accept(c);
         return true;
       }
       case 'save-api': {
@@ -489,6 +504,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
       }
       case 'remove': {
         if (!row) return true;
+        // 다른 일이 도는 동안은 물음을 바꾸지 않는다. 두 번째 누름이 물음만 거두고 말없이 버려지지 않게 한다(검수 B)
+        if (st.busy) { note(key, ROOM_BUSY_SAY); changed(); return true; }
         const step = twice(key, act);
         if (step !== 'go') { if (step === 'ask') changed(); return true; }
         const name = who(row);
@@ -563,8 +580,10 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         let res;
         try { res = await dev.drafts.set(d.enabled !== true); } catch { res = { ok: false }; }
         if (my !== gen) return true;
-        st.busy = null;
-        if (res?.ok === true) { if (a === accGen && s === sets) s.drafts = res; } else note(key, DRAFT_SAY);
+        if (st.busy === 'draft:draft') st.busy = null;
+        // 그사이 계정이 바뀌었거나 방을 닫았으면 앞 요청의 결과(실패 글 포함)를 새 화면에 쓰지 않는다(검수 B)
+        if (a !== accGen || s !== sets) { changed(); return true; }
+        if (res?.ok === true) s.drafts = res; else note(key, DRAFT_SAY);
         changed(); return true;
       }
       // 문제 알리기용 정보: 편의와 같은 셈(safeDiagnostics)으로 버전과 연결 상태만 복사한다. 결과는 맨 아래 작은 줄에 쓴다
@@ -601,6 +620,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         changed(); return true;
       }
       case 'tok-off': {
+        if (st.busy) { note(key, ROOM_BUSY_SAY); changed(); return true; }
         const step = twice(key, act);
         if (step !== 'go') { if (step === 'ask') changed(); return true; }
         const res = await run(key, act, () => subs.tokensEnable(false));
@@ -644,16 +664,22 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         return true;
       }
       case 'revoke-all': {
+        // 보낼 수 없는 때(다른 일이 돌거나 계정을 다시 읽는 중)는 묻기 전에 알린다. 두 번 누르고 확인까지 한 뒤 말없이 버리지 않는다(검수 B)
+        if (!account) return true;
+        if (st.busy || acc.loading) { note(key, ROOM_BUSY_SAY); changed(); return true; }
         const step = twice(key, act);
         if (step !== 'go') { if (step === 'ask') changed(); return true; }
+        // 이 PC도 바로 로그아웃되므로, 쓰던 글이 있으면 펼침의 「로그아웃」과 같은 확인을 거친다(설계 8.3, 설계 검토 D1). 묻는 동안 다른 일을 막는다
+        const my = accGen, hold = key + ':confirm';
+        st.busy = hold;
         changed();
-        // 이 PC도 바로 로그아웃되므로, 쓰던 글이 있으면 펼침의 「로그아웃」과 같은 확인을 거친다(설계 8.3, 설계 검토 D1)
-        const my = accGen;
         let go = true;
         try { go = typeof confirmLeave === 'function' ? (await confirmLeave()) !== false : true; } catch { go = false; }
-        if (my !== accGen || !go) return true;
+        if (st.busy === hold) st.busy = null;
+        if (my !== accGen || !go) { changed(); return true; }
         // 본체가 이 PC의 로그인도 끝내므로 곧 묻는 화면으로 돌아간다. 알림은 옛 화면처럼 런처가 띄운다
-        await accAct(key, act, async g => { await accCall('revokeAll', {}, g); note(key, '모든 곳에서 로그아웃했습니다.'); try { account.signedOutAll?.(); } catch { /* 알림만 못 띄운다 */ } }, { reload: false });
+        const started = await accAct(key, act, async g => { await accCall('revokeAll', {}, g); note(key, '모든 곳에서 로그아웃했습니다.'); try { account.signedOutAll?.(); } catch { /* 알림만 못 띄운다 */ } }, { reload: false });
+        if (!started) { note(key, ROOM_BUSY_SAY); changed(); }
         return true;
       }
       case 'learning': {
@@ -713,14 +739,17 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     if (prev && prev.id === login.id && prev.stage === login.stage) return;
     const re = st.relogin ? rowOf(snap, st.relogin) : null;
     const key = re && re.service === login.service ? manageKey(re) : 'add';
-    st.ended = { id: login.id, stage: login.stage, key };
+    // 알림 글과 방 맨 아래 글은 계정 관리 방이 열려 있을 때만 쓴다. 다른 방(설정 등)의 맨 아래 글 자리에 끼어들지 않는다(검수 B)
+    const here = current === 'manage';
+    st.ended = here ? { id: login.id, stage: login.stage, key } : null;
     if (login.stage === 'done') {
       if (key === 'add') {
         const text = (addInfo(login.service)?.nm || '') + ' 새 계정 줄을 더했습니다. 요금과 결제일은 그 줄을 열어 고칩니다.';
-        st.add = { svc: '' }; st.roomNote = text; note('add', text); closeReq = ask({ key: 'add' });
-      } else { st.relogin = null; note(key, '다시 연결했습니다. 바로 한 번 읽습니다.'); }
+        st.add = { svc: '' };
+        if (here) { st.roomNote = text; note('add', text); closeReq = ask({ key: 'add' }); }
+      } else { st.relogin = null; if (here) note(key, '다시 연결했습니다. 바로 한 번 읽습니다.'); }
     } else if (login.stage === 'cancelled') {
-      note(key, '로그인을 취소했습니다.');
+      if (here) note(key, '로그인을 취소했습니다.');
       if (key !== 'add') st.relogin = null;
     }
   }
@@ -743,6 +772,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     // 구독 줄의 팁 알림 줄(svc:…)은 방과 상관없이 남긴다. 방을 닫을 때는 방의 줄 알림만 지운다
     for (const k of [...st.notes.keys()]) if (!k.startsWith('svc:')) st.notes.delete(k);
     st.roomNote = ''; st.grps.clear(); st.ended = null;
+    // 브라우저 로그인이 도는 중이면 끝난 뒤 그 줄을 알아보도록 남긴다. 아니면 앞서 누른 「다시 로그인」을 거둔다(검수 B)
+    if (!loginNow()) st.relogin = null;
     acc.askDelete = false;
     if (current === 'settings') setStop();
     focusReq = null; openReq = null; closeReq = null; current = null;

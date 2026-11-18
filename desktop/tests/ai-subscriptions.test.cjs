@@ -317,6 +317,8 @@ test('a sign-in approved in the browser with a different account is reported, no
   for(let i=0;i<40&&!['done','error'].includes(f.changes.at(-1)?.login?.stage);i++)await new Promise(r=>setTimeout(r,5));
   const last=f.changes.at(-1).login;
   assert.equal(last.stage,'error');assert.match(last.message,/other@example.com 대신 브라우저에 로그인되어 있던 member@example.com/);
+  // 메일 주소 뒤에는 받침에 따라 갈리는 조사를 바로 붙이지 않고 「계정」을 붙인다(검수 D1)
+  assert.match(last.message,/other@example\.com 계정을 연결하려면/);
   const snap=await f.service.snapshot();assert.equal(snap.rows.filter(r=>r.email==='member@example.com').length,1);
 });
 
