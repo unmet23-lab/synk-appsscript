@@ -234,8 +234,8 @@
     {
       "id": "a2Mean.1",
       "칸": "뜻",
-      "글": "Fique bem!",
-      "원문": "잘 있어요!",
+      "글": "Até logo!",
+      "원문": "또 봬요!(떠날 때 하는 공손한 인사)",
       "초": [
         9.4,
         11
@@ -342,8 +342,8 @@
     {
       "id": "ruleElder",
       "칸": "진행",
-      "글": "Professor e chefe",
-      "원문": "교수님 · 상사",
+      "글": "Profs e chefes",
+      "원문": "교수님들 · 상사들",
       "초": [
         12.9,
         16.4
@@ -373,8 +373,8 @@
     {
       "id": "gag",
       "칸": "진행",
-      "글": "Ele pode",
-      "원문": "그분(윗사람)은 해도 돼요",
+      "글": "Aí pode",
+      "원문": "그럴 땐(윗사람이 하면) 돼요",
       "초": [
         16.5,
         17.3
@@ -424,8 +424,8 @@
     {
       "id": "b2Mean",
       "칸": "뜻",
-      "글": "informal",
-      "원문": "편한 말투",
+      "글": "Bom trabalho",
+      "원문": "일 잘해요(수고하세요와 같은 뜻의 편한 말)",
       "초": [
         16.52,
         17.4
@@ -507,8 +507,8 @@
     {
       "id": "a2Mean.2",
       "칸": "뜻",
-      "글": "Fique bem!",
-      "원문": "잘 있어요!",
+      "글": "Até logo!",
+      "원문": "또 봬요!(떠날 때 하는 공손한 인사)",
       "초": [
         19.1,
         20.6
@@ -528,7 +528,7 @@
     {
       "id": "end",
       "칸": "끝",
-      "글": "Professor:",
+      "글": "Pro prof:",
       "원문": "교수님께:",
       "초": [
         20.6,
@@ -577,13 +577,13 @@
     {
       "id": "게시글.youtube.본문.3",
       "칸": "예문",
-      "글": "Acabou o cursinho e o professor ainda tá na sala? Na saída, fala 안녕히 계세요!",
+      "글": "Acabou a aula e o professor ainda tá na sala? Na saída, fala 안녕히 계세요!",
       "원문": "학원 수업이 끝났는데 선생님은 아직 교실에 있어? 나갈 때 「안녕히 계세요」라고 해!"
     },
     {
       "id": "게시글.youtube.본문.4",
       "칸": "게시글",
-      "글": "Já quem é mais velho pode te dizer 수고해요 (sugohaeyo), que é mais informal.",
+      "글": "Mas quem é mais velho pode te dizer 수고해요 (sugohaeyo), que é mais informal.",
       "원문": "반대로 윗사람은 너에게 「수고해요」라고 해도 되는데, 그게 더 편한 말투다."
     },
     {
