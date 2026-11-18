@@ -156,6 +156,62 @@ test('scene 12: production-form rows without keys keep their ids and only gain t
   assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.retired]),[['fb:123_700','123_700',false],['fb:123_701','123_701',false]]);
 });
 
+// 5회차 GA5: 한 회차에 같은 저장 줄로 풀린 뒤 줄의 주소(릴스)는 버리지 않고 별칭으로 남는다. 저장 줄의 릴스 주소는 피드 주소로 바뀌지 않고 피드 주소가 별칭이다.
+test('a later row of one collection leaves its reel address as an alias, and a stored reel address keeps the feed address as an alias',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',url:FEED})]
+    :round===2?[fbPost('123_700',{pagePostId:'123_700',url:FEED}),fbPost('555',{videoId:'555',url:REEL,publishedAt:AT_VIDEO})]
+    :[fbPost('123_701',{pagePostId:'123_701',videoId:'556',url:'https://www.facebook.com/reel/556/',publishedAt:AT_VIDEO}),fbPost('123_701',{pagePostId:'123_701',url:'https://www.facebook.com/synk/posts/701'})],PARTIAL));
+  round=2;await f.again();
+  const row=f.app.store.get('posts','fb:123_700');
+  assert.deepEqual([row.url,row.aliasUrls],[FEED,[{url:REEL,publishedAt:AT_VIDEO}]]);
+  round=3;await f.again();
+  const reel=f.app.store.get('posts','fb:123_701');
+  assert.deepEqual([reel.url,reel.publishedAt,reel.aliasUrls],['https://www.facebook.com/reel/556/',AT_VIDEO,[{url:'https://www.facebook.com/synk/posts/701',publishedAt:AT}]]);
+  assert.equal(f.app.store.get('posts','fb:123_700').aliasUrls.length,1,'stored aliases stay');
+});
+
+// 5회차 GA6: 번호 없는 영상 줄과 영상 정보 없는 피드 줄이 따로 생긴 뒤 두 번호가 함께 오면 활성 줄은 하나다. 내린 줄의 다른 날 스냅샷 · 관측은 옮겨 온다.
+test('a row with both keys absorbs the active rows that each held one of them, with their history',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('555',{videoId:'555',publishedAt:AT_VIDEO,metrics:{views:9}})]
+    :round===2?[fbPost('123_700',{pagePostId:'123_700',url:FEED,metrics:{likes:3}})]
+    :round===3?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',url:FEED,aliasUrls:[{url:REEL,publishedAt:AT_VIDEO}],metrics:{views:12,likes:4}})]
+    :[fbPost('555',{videoId:'555',publishedAt:AT_VIDEO,metrics:{views:13}})],PARTIAL));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.retired]),[['fb:123_700',false],['fb:555',false]]);
+  f.app.store.put('snapshots','fb:555:2026-10-11',{id:'fb:555:2026-10-11',postId:'fb:555',date:'2026-10-11',views:5,likes:null,comments:null,shares:null,source:'api:facebook'});
+  f.app.store.put('hypeObservations','fb:555:2026-10-11T00:00:00.000Z',{id:'fb:555:2026-10-11T00:00:00.000Z',postId:'fb:555',channelId:'fb',views:5});
+  round=3;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.url,r.retired]),[['fb:123_700','123_700','555',FEED,false],['fb:555',null,'555',REEL,true]]);
+  assert.equal(f.app.store.get('posts','fb:555').mergedInto,'fb:123_700');
+  assert.deepEqual(f.app.store.get('posts','fb:123_700').aliasUrls,[{url:REEL,publishedAt:AT_VIDEO}]);
+  assert.equal(f.app.store.get('snapshots','fb:123_700:2026-10-11')?.views,5,'another day moves over');
+  assert.equal(f.app.store.get('hypeObservations','fb:123_700:2026-10-11T00:00:00.000Z')?.postId,'fb:123_700');
+  const today=f.app.store.all('snapshots').filter(s=>s.postId==='fb:123_700'&&s.date!=='2026-10-11');
+  assert.equal(today.length,1);assert.deepEqual([today[0].views,today[0].likes],[12,4]);
+  // 설계 검토 3 장면 2 · 7: 합친 뒤 번호 없는 영상만 오는 회차 — 내린 줄은 되살아나지 않고 활성 줄은 하나다. 주 주소는 릴스가 되고 피드 주소가 별칭이다.
+  round=4;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.url,r.retired]),[['fb:123_700',REEL,false],['fb:555',REEL,true]]);
+  assert.equal(f.app.store.get('posts','fb:555').mergedInto,'fb:123_700');
+  assert.deepEqual(f.app.store.get('posts','fb:123_700').aliasUrls,[{url:FEED,publishedAt:AT}]);
+});
+
+// 설계 검토 3 조건 1: 한 게시물에 영상이 둘이고 게시물을 차지한 영상이 회차 사이에 바뀌면, 게시물 줄은 새 영상을 갖고 다른 영상은 자기 줄이다.
+// 다른 영상의 주소는 게시물 줄의 별칭에 남지 않는다.
+test('when the video that holds a post changes, the post row follows the new video and the other video keeps its own row',async t=>{
+  let round=1;const R556='https://www.facebook.com/reel/556/';
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'556',url:FEED,aliasUrls:[{url:R556,publishedAt:AT_VIDEO}],metrics:{views:90}}),fbPost('555',{videoId:'555',url:REEL,publishedAt:AT_VIDEO,metrics:{views:9}})]
+    :[fbPost('123_700',{pagePostId:'123_700',videoId:'555',url:FEED,aliasUrls:[{url:REEL,publishedAt:AT_VIDEO}],metrics:{views:9}}),fbPost('556',{videoId:'556',url:R556,publishedAt:AT_VIDEO,metrics:{views:90}})]));
+  assert.deepEqual(f.rows().map(r=>[r.id,r.videoId,r.retired]),[['fb:123_700','556',false],['fb:555','555',false]]);
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.url,r.retired]),[['fb:123_700','123_700','555',FEED,false],['fb:555',null,'555',REEL,true],['fb:556',null,'556',R556,false]]);
+  assert.deepEqual(f.app.store.get('posts','fb:123_700').aliasUrls,[{url:REEL,publishedAt:AT_VIDEO}]);
+  assert.equal(f.app.store.get('posts','fb:555').mergedInto,undefined,'an unseen row is not a merged row');
+  const views=id=>f.app.store.all('snapshots').filter(s=>s.postId===id).map(s=>s.views);
+  assert.deepEqual([views('fb:123_700'),views('fb:556')],[[9],[90]]);
+});
+
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{
   let complete=true,items=true;
   const f=await fixture(t,{collector:async c=>({...result(c),posts:items?result(c).posts:[],coverage:{status:complete?'complete':'partial',inventoryComplete:complete,ownerAuthorized:false}})});

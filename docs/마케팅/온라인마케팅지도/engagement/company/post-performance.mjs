@@ -155,6 +155,13 @@ export function normalizePerformancePostUrl(input) {
   throw fail('지원하는 플랫폼의 게시물 주소를 넣어 주세요. 프로필·단축·공유 링크로는 안 돼요.');
 }
 
+// 페이스북 일반 게시물 주소의 정체성(facebook:post:<앞칸>:<번호>)과 페이지 게시물 번호(「페이지번호_게시물번호」)가 같은 게시물인가 — 앞칸이 숫자(페이지 번호)면
+// 「앞칸_번호」와 같아야 하고, 이름이면 「_번호」로 끝나야 한다(11-19 페북 수집기 pagePostId 검수 GA2 · 설계 검토 3 조건 3). 체크포인트와 자동 등록이 함께 쓴다.
+function samePagePost(postIdentity, pagePostId) {
+  const match = /^facebook:post:([^:]+):(\d{1,50})$/.exec(typeof postIdentity === 'string' ? postIdentity : '');
+  if (!match || typeof pagePostId !== 'string' || !/^\d{1,50}_\d{1,50}$/.test(pagePostId)) return false;
+  return /^\d+$/.test(match[1]) ? pagePostId === `${match[1]}_${match[2]}` : pagePostId.endsWith(`_${match[2]}`);
+}
 // transient: 이번 응답에 일시 오류(한도·시간 초과·연결)가 있었다. 그때 응답에 칸이 있는데 빈 지원 지표는 「제공하지 않음」이 아니라 「일시 오류로 못 받음」으로 남긴다(10-20).
 function valuesAndReasons(values, platform, { manual = false, unavailable = [], hours = null, transient = false } = {}) {
   const capability = capabilityOf(platform), supported = new Set([...(capability?.metrics || []), ...(capability?.postMetrics || [])]), lagged = new Set(manual ? [] : capability?.laggedMetrics || []), metrics = {}, unavailableReasons = {};
@@ -413,7 +420,10 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const at = stamp(), now = Date.parse(at), since = now - AUTO_TRACK_WINDOW;
     const channels = new Map(store.all('channels').filter(channel => channel.active !== false && channel.hidden !== true && AUTO_TRACK_PLATFORMS.has(channel.platform) && isConnected(channel)).map(channel => [channel.id, channel]));
     if (!channels.size) return summary;
-    const known = new Set(store.all(KIND).map(row => row.id));
+    const entries = store.all(KIND), known = new Set(entries.map(row => row.id));
+    // 페이스북 채널마다 기록의 일반 게시물 주소 정체성 — 주소 모양이 달라도(/123/posts/700 · /synk/posts/700 · permalink.php) 같은 페이지 게시물 번호면 이미 기록이다(설계 검토 3 조건 3).
+    const postIdentities = new Map();
+    for (const row of entries) if (row.platform === 'facebook' && String(row.postIdentity || '').startsWith('facebook:post:')) (postIdentities.get(row.channelId) || postIdentities.set(row.channelId, []).get(row.channelId)).push(row.postIdentity);
     const fresh = store.all('posts').filter(post => {
       const published = Date.parse(post.publishedAt);
       return channels.has(post.channelId) && String(post.source || '').startsWith('api:') && !post.unavailableAt && !(post.expiresAt && Date.parse(post.expiresAt) <= now)
@@ -423,12 +433,24 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
       if (summary.registered >= AUTO_TRACK_BATCH) break;
       const channel = channels.get(post.channelId);
       let url; try { url = normalizePerformancePostUrl(post.url); } catch { summary.skipped++; continue; }
-      // Facebook 피드 글은 워크스페이스 게시가 다른 주소 모양으로 등록할 수 있어 영상·릴스만 자동으로 올린다.
-      if (url.platform !== channel.platform || channel.platform === 'facebook' && !url.externalId.startsWith('video:')) { summary.skipped++; continue; }
-      if (known.has(createHash('sha256').update(`${channel.id}\0${url.identity}`).digest('hex'))) continue;
+      if (url.platform !== channel.platform) { summary.skipped++; continue; }
+      const entryOf = identity => createHash('sha256').update(`${channel.id}\0${identity}`).digest('hex');
+      let target = { url: post.url, publishedAt: post.publishedAt };
+      if (channel.platform === 'facebook') {
+        // Facebook 피드 글은 워크스페이스 게시가 다른 주소 모양으로 등록할 수 있어 영상·릴스만 자동으로 올린다. 같은 게시물의 다른 주소는 저장 줄의
+        // 별칭(aliasUrls: 주소와 그 주소의 게시 시각)에 있다 — 주 주소나 별칭 가운데 하나라도 이미 기록이면 올리지 않고, 주 주소가 피드 글이면 첫 영상
+        // 별칭을 그 시각으로 올린다(11-19 페북 수집기 pagePostId 5회차 검수 GA3). 별칭 시각이 없거나 찾는 기간 밖이면 올리지 않는다.
+        const aliases = (Array.isArray(post.aliasUrls) ? post.aliasUrls : []).flatMap(entry => { try { const alias = normalizePerformancePostUrl(entry?.url); return alias.platform === 'facebook' ? [{ url: entry.url, publishedAt: entry.publishedAt, identity: alias.identity, video: alias.externalId.startsWith('video:') }] : []; } catch { return []; } });
+        const inWindow = value => { const at = typeof value === 'string' ? Date.parse(value) : NaN; return Number.isFinite(at) && at > since && at <= now; };
+        const video = url.externalId.startsWith('video:') ? null : aliases.find(alias => alias.video && inWindow(alias.publishedAt));
+        if (!url.externalId.startsWith('video:') && !video) { summary.skipped++; continue; }
+        if ([url.identity, ...aliases.map(alias => alias.identity)].some(identity => known.has(entryOf(identity)))) continue;
+        if ((postIdentities.get(channel.id) || []).some(identity => samePagePost(identity, post.pagePostId))) continue;
+        if (video) target = { url: video.url, publishedAt: video.publishedAt };
+      } else if (known.has(entryOf(url.identity))) continue;
       const format = FORMAT_PLATFORM[post.publicationFormat] === channel.platform ? post.publicationFormat : null;
       try {
-        const { entry } = registerStored(actor, { channelId: channel.id, url: post.url, publishedAt: post.publishedAt, title: post.title, ...(format ? { publicationFormat: format } : {}) }, true, true);
+        const { entry } = registerStored(actor, { channelId: channel.id, url: target.url, publishedAt: target.publishedAt, title: post.title, ...(format ? { publicationFormat: format } : {}) }, true, true);
         known.add(entry.id); summary.registered++;
       } catch { summary.skipped++; }
     }
@@ -525,12 +547,19 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             // 별칭 주소로 등록됐으면 그 별칭의 게시 시각으로 견준다(11-19 페북 수집기 pagePostId 설계 검토 2).
             const identityOf = value => { try { return normalizePerformancePostUrl(value).identity; } catch { return null; } };
             let matchedAt = null;
-            const post = result?.posts?.find(item => {
+            let post = result?.posts?.find(item => {
               if (identityOf(item?.url) === row.postIdentity) { matchedAt = item.publishedAt; return true; }
               const alias = Array.isArray(item?.aliasUrls) ? item.aliasUrls.find(entry => typeof entry?.url === 'string' && identityOf(entry.url) === row.postIdentity) : null;
               if (alias) { matchedAt = alias.publishedAt; return true; }
               return false;
             });
+            // 일반 게시물 주소로 등록한 페이스북 기록은 결과 줄의 페이지 게시물 번호(pagePostId)로도 찾는다 — 그 게시물이 이번 회차에 영상 목록에서만 와서
+            // 게시물 주소가 결과에 없을 수 있다(11-19 post-performance 검수 GA2). 번호는 Meta가 준 그 게시물 자신의 번호라 게시 시각 대조는 기록의 시각 그대로 둔다
+            // (영상 목록만의 줄은 영상의 시각만 알고 게시물 시각을 모른다). 주소의 앞 칸이 숫자(페이지 번호)면 그 번호까지 같아야 한다.
+            if (!post && row.platform === 'facebook') {
+              post = result?.posts?.find(item => samePagePost(row.postIdentity, item?.pagePostId));
+              if (post) matchedAt = row.publishedAt;
+            }
             const published = matchedAt && Date.parse(matchedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
             const hasMetric = post && Object.values(valuesAndReasons(post.metrics, row.platform).metrics).some(value => value !== null);
             // 인사이트·Analytics의 일시 오류(한도·시간 초과·연결)로 지원 지표가 비었으면 바로 확정하지 않는다. 관측 기간 안에서 몇 번 더 본 뒤

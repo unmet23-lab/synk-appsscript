@@ -772,28 +772,59 @@ export function createCompanyApp(options={}) {
       const facebook=channel.platform==='facebook',written=new Set(),runValues=new Map();let keyIndex=null;
       const keysOf=p=>facebook?{post:typeof p.pagePostId==='string'&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)?p.pagePostId:null,video:typeof p.videoId==='string'&&/^\d{1,40}$/.test(p.videoId)?p.videoId:null}:{post:null,video:null};
       const indexOf=()=>{if(keyIndex)return keyIndex;keyIndex={live:{post:new Map(),video:new Map()},retired:{post:new Map(),video:new Map()}};
-        for(const row of store.all('posts')){if(row.channelId!==channel.id||!row.source?.startsWith('api:'))continue;const bucket=row.unavailableAt?keyIndex.retired:keyIndex.live;if(row.pagePostId&&!bucket.post.has(row.pagePostId))bucket.post.set(row.pagePostId,row.id);if(row.videoId&&!bucket.video.has(row.videoId))bucket.video.set(row.videoId,row.id);}
+        for(const row of store.all('posts')){if(row.channelId!==channel.id||!row.source?.startsWith('api:')||row.mergedInto)continue;const bucket=row.unavailableAt?keyIndex.retired:keyIndex.live;if(row.pagePostId&&!bucket.post.has(row.pagePostId))bucket.post.set(row.pagePostId,row.id);if(row.videoId&&!bucket.video.has(row.videoId))bucket.video.set(row.videoId,row.id);}
         return keyIndex;};
       // 찾는 순서: 활성 줄에서 채널:externalId → 같은 pagePostId → 같은 videoId(찾은 줄의 pagePostId가 들어온 값과 다르면 잇지 않는다). 없으면 내려간 줄에서
       // 같은 순서로 찾아 되살린다. 그래도 없으면 새 줄이다. 이은 줄은 id · externalId를 그대로 두고 빈 열쇠만 채운다.
+      // 영상 번호로 찾은 줄은 지금 저장된 videoId가 들어온 값과 같아야 한다(색인은 회차 처음 것이라, 이번 회차에 그 줄의 영상이 바뀌었으면 잇지 않는다 — 설계 검토 3 조건 1).
+      // 다른 줄에 합쳐 내린 줄(mergedInto)은 자기 번호로 되살리지 않고 합친 줄로 간다.
       const rowFor=(p,keys)=>{const own=`${channel.id}:${p.externalId}`;if(!keys.post&&!keys.video)return own;
-        const ix=indexOf(),doc=store.get('posts',own),fits=id=>{const row=store.get('posts',id);return !!row&&(!keys.post||!row.pagePostId||row.pagePostId===keys.post);};
+        const ix=indexOf(),found=store.get('posts',own),doc=found?.mergedInto?null:found,fits=id=>{const row=store.get('posts',id);return !!row&&(!keys.post||!row.pagePostId||row.pagePostId===keys.post)&&(!row.videoId||row.videoId===keys.video);};
         for(const [bucket,retired] of [[ix.live,false],[ix.retired,true]]){if(doc&&!!doc.unavailableAt===retired)return own;const byPost=keys.post&&bucket.post.get(keys.post);if(byPost)return byPost;const byVideo=keys.video&&bucket.video.get(keys.video);if(byVideo&&fits(byVideo))return byVideo;}
-        return own;};
+        return found?.mergedInto&&store.get('posts',found.mergedInto)?found.mergedInto:own;};
       const videoAddress=value=>{try{return normalizePerformancePostUrl(value).externalId.startsWith('video:');}catch{return false;}};
+      const identityOf=value=>{try{return normalizePerformancePostUrl(value).identity;}catch{return null;}};
+      // 페이스북 저장 줄의 별칭(aliasUrls): 주 주소와 정체성이 다른 같은 게시물의 주소와 그 주소의 게시 시각. 앞 회차 별칭 · 바뀌기 전 주 주소 · 이번 주소와
+      // 별칭을 정체성마다 하나씩 모은다. 자동 등록은 주 주소와 별칭을 모두 보고 같은 게시물을 두 번 올리지 않는다(11-19 5회차 검수 GA3 · GA5).
+      const aliasesOf=(primary,video,entries)=>{const own=identityOf(primary),list=[];
+        for(const entry of entries){const key=typeof entry?.url==='string'?identityOf(entry.url):null;if(!key||key===own||list.some(a=>identityOf(a.url)===key)||video&&key.startsWith('facebook:video:')&&key!==`facebook:video:${video}`)continue;
+          const at=typeof entry.publishedAt==='string'&&Number.isFinite(Date.parse(entry.publishedAt))?entry.publishedAt:null;list.push({url:entry.url,publishedAt:at});if(list.length>=10)break;}
+        return list;};
+      // 열쇠 둘을 다 가진 줄이 왔는데 한 열쇠씩만 가진 다른 활성 줄이 같은 게시물이면 그 줄을 이 줄에 합친다(5회차 GA6 — 번호 없는 영상 줄과 영상
+      // 정보 없는 피드 줄이 따로 생긴 뒤 두 번호가 함께 오는 경우). 그 줄의 날짜별 스냅샷 · 시각별 관측은 이 줄에 없는 것만 옮기고(같은 날이면 빈 수치만
+      // 채운다), 주소는 별칭으로 남기고, 그 줄은 내린다(mergedInto). 이번 회차에 쓴 줄이나 다른 열쇠를 가진 줄은 건드리지 않고, 이 줄에 저장된 열쇠가
+      // 들어온 값과 다르면(게시물을 차지한 영상이 바뀐 회차) 합치지 않는다(설계 검토 3 조건 1).
+      const absorb=(id,keys)=>{if(!keys.post||!keys.video)return [];const mine=store.get('posts',id);if(mine?.videoId&&mine.videoId!==keys.video||mine?.pagePostId&&mine.pagePostId!==keys.post)return [];const ix=indexOf(),rows=[];
+        for(const other of new Set([ix.live.post.get(keys.post),ix.live.video.get(keys.video)])){
+          if(!other||other===id||written.has(other))continue;const row=store.get('posts',other);
+          if(!row||row.unavailableAt||row.channelId!==channel.id||!row.source?.startsWith('api:')||row.pagePostId&&row.pagePostId!==keys.post||row.videoId&&row.videoId!==keys.video)continue;
+          for(const s of store.all('snapshots')){if(s.postId!==row.id)continue;const sid=`${id}:${s.date}`,mine=store.get('snapshots',sid);
+            if(!mine){store.put('snapshots',sid,{...s,id:sid,postId:id});continue;}
+            const gaps=metricKeys.filter(key=>(mine[key]===null||mine[key]===undefined)&&s[key]!==null&&s[key]!==undefined);if(gaps.length)store.put('snapshots',sid,{...mine,...Object.fromEntries(gaps.map(key=>[key,s[key]]))});}
+          for(const o of store.all('hypeObservations')){if(o.postId!==row.id||!o.id.startsWith(`${row.id}:`))continue;const oid=`${id}:${o.id.slice(row.id.length+1)}`;if(!store.get('hypeObservations',oid))store.put('hypeObservations',oid,{...o,id:oid,postId:id});}
+          store.put('posts',row.id,{...row,unavailableAt:stamp,mergedInto:id});
+          if(row.pagePostId&&ix.live.post.get(row.pagePostId)===row.id)ix.live.post.set(row.pagePostId,id);if(row.videoId&&ix.live.video.get(row.videoId)===row.id)ix.live.video.set(row.videoId,id);
+          rows.push(row);}
+        return rows;};
       for(const p of result.posts){
         if(!p.externalId||!p.publishedAt||Number.isNaN(Date.parse(p.publishedAt)))continue;
         const keys=keysOf(p),id=rowFor(p,keys),previous=store.get('posts',id),again=facebook&&written.has(id);
         const link=new URL(p.url);if(link.protocol!=='https:')continue;
-        // 페이스북: 저장 줄이 영상 주소인데 들어온 주소가 영상 주소가 아니면 영상 주소와 그 게시 시각을 둔다 — 자동 등록은 저장 줄의 영상 주소로만 한다
-        // (설계 검토 2 ㄷ · 넷째 검수 GA3). 한 회차에 같은 저장 줄로 풀린 뒤 줄은 앞 줄을 기준으로 빈 값만 채운다(조건 3).
-        const keep=facebook&&!!previous&&(again||videoAddress(previous.url)&&!videoAddress(link.href));
+        const absorbed=facebook?absorb(id,keys):[];
+        // 페이스북: 저장 줄이 영상 주소인데 들어온 주소가 영상 주소가 아니면 영상 주소와 그 게시 시각을 둔다(설계 검토 2 ㄷ). 한 회차에 같은 저장 줄로
+        // 풀린 뒤 줄은 앞 줄을 기준으로 빈 값만 채운다(조건 3). 어느 쪽이든 들어온 주소는 별칭으로 남아 자동 등록 · 체크포인트가 찾는다(5회차 GA5).
+        // 열쇠: 있는 pagePostId는 바꾸지 않는다(설계 검토 2 조건 2). videoId는 그 게시물을 지금 차지한 영상이라, 두 열쇠를 다 가진 줄이 같은 게시물로 오면
+        // 들어온 영상으로 바꾼다(설계 검토 3 조건 1 — 차지한 영상이 지워지거나 비공개가 된 회차). 그 밖에는 빈 열쇠만 채운다.
+        const postKey=previous?.pagePostId||keys.post,videoKey=keys.post&&keys.video&&(!previous?.pagePostId||previous.pagePostId===keys.post)?keys.video:previous?.videoId||keys.video;
+        const videoOf=value=>{try{const key=normalizePerformancePostUrl(value).externalId;return key.startsWith('video:')?key.slice(6):null;}catch{return null;}};
+        // 저장 줄의 영상 주소는 그 줄의 영상일 때만 지킨다. 별칭에서도 이 줄의 영상이 아닌 영상 주소는 뺀다 — 한 줄은 영상 하나다.
+        const keep=facebook&&!!previous&&(again||videoAddress(previous.url)&&!videoAddress(link.href)&&(!videoKey||videoOf(previous.url)===videoKey));
         const url=keep?previous.url:link.href,publishedAt=keep?previous.publishedAt:p.publishedAt;
+        const aliasUrls=facebook?aliasesOf(url,videoKey,[...(Array.isArray(previous?.aliasUrls)?previous.aliasUrls:[]),...(previous?.url?[{url:previous.url,publishedAt:previous.publishedAt}]:[]),{url:link.href,publishedAt:p.publishedAt},...(Array.isArray(p.aliasUrls)?p.aliasUrls:[]),...absorbed.flatMap(row=>[{url:row.url,publishedAt:row.publishedAt},...(Array.isArray(row.aliasUrls)?row.aliasUrls:[])])]):null;
         const publishedDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(publishedAt));
         const publicationFormat=['youtube-shorts','youtube-video','instagram-reels'].includes(p.publicationFormat)?p.publicationFormat:previous?.publicationFormat||null;
-        const postKey=previous?.pagePostId||keys.post,videoKey=previous?.videoId||keys.video;
         const filled={...(postKey?{pagePostId:postKey}:{}),...(videoKey?{videoId:videoKey}:{})};
-        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:facebook&&previous?.externalId||p.externalId,title:again?previous.title:text(p.title,1000)||'제목 없음',url,publishedDate,publishedAt,thumbnailUrl:again?previous.thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...filled,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
+        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:facebook&&previous?.externalId||p.externalId,title:again?previous.title:text(p.title,1000)||'제목 없음',url,publishedDate,publishedAt,thumbnailUrl:again?previous.thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...filled,...(facebook?{aliasUrls:aliasUrls.length?aliasUrls:undefined,mergedInto:undefined}:{}),source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
         // 이번 회차에 받은 값. 같은 회차에 같은 저장 줄로 풀린 뒤 줄은 앞 줄의 이번 값을 기준으로 빈 값만 채운다(조건 3).
         const raw={};for(const key of metricKeys)raw[key]=count(p.metrics?.[key]);
         const earlierRun=again?runValues.get(id):null;
