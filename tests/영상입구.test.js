@@ -67,6 +67,7 @@ test('단계 표의 도구가 그 자리에 있고, 적힌 인자를 실제로 �
     'tools/컷연속성검사.py': ['--그림지시문', '--그림', '--지시문', '--받음', '--영상'],
     'tools/아르곤웹.js': ['점검'],
     'tools/미학맹검.js': ['--영상'],
+    'tools/최상급대조.py': ['판', '적기', '보기', '--우리', '--기준'],
     'tools/음악층.js': ['--편'],
     'tools/영상세션재기.js': [],
     'tools/고르심장부.js': ['예측', '고르심', '--맹검'],
@@ -153,6 +154,7 @@ test('틀대로 쓴 이미지 지시문은 아르곤 지시문 점검을 지난�
   const 지시문 = [
     `SETTING: ${장면.장소}`,
     `LIGHT: ${장면.빛}`,
+    `GRADE: ${JSON.parse(읽기('docs/마케팅/제작양식/영상양식/색감이름.json')).이름.find(x => x.이름 === 표.색감).뼈대}`,
     `WHO: ${사람.map(p => [p.묘사, p.옷, p.점].filter(Boolean).join(' ')).join(' ')}`,
     'MOMENT: she has just set the pot on the stove and is about to let go of the handle; her shoulders are slightly raised, lips pressed together.',
     'FRAME: waist-up, three-quarter side view, 50mm, focus on her face.',

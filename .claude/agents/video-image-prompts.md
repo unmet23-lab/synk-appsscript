@@ -17,7 +17,7 @@ model: opus
 
 ## 할 일
 
-1. 범위의 컷마다 `<편>/이미지지시문/<컷>.txt`를 지시문 틀 순서(SETTING · LIGHT · WHO · MOMENT · FRAME · PROPS · NOT)대로 쓴다(영어 지시문). 장소 · 빛 · 인물 묘사 · 옷 · 점 · 소품 생김새는 표에서 **글자 그대로** 옮긴다. `MOMENT`는 그 컷 연기의 시작 자세다(컷표 `연기`의 첫 박자 직전). 컷표에 없는 사건 · 소품 · 사람을 지어내지 않는다.
+1. 범위의 컷마다 `<편>/이미지지시문/<컷>.txt`를 지시문 틀 순서(SETTING · LIGHT · GRADE · WHO · MOMENT · FRAME · PROPS · NOT)대로 쓴다(영어 지시문). 장소 · 빛 · 인물 묘사 · 옷 · 점 · 소품 생김새는 표에서 **글자 그대로** 옮긴다. `GRADE`는 컷표 맨 위 「색감」의 이름으로 `docs/마케팅/제작양식/영상양식/색감이름.json`에서 찾은 「뼈대」 문장 그대로다(색감 칸이 비었으면 쓰지 않고 맡긴 이에게 알린다). `MOMENT`는 그 컷 연기의 시작 자세다(컷표 `연기`의 첫 박자 직전). 컷표에 없는 사건 · 소품 · 사람을 지어내지 않는다.
    - 사람 없는 컷(인물 `[]`)에는 사람 · 옷 문장을 넣지 않는다(몸이 들어온다).
    - 여럿이 나오는 컷의 `NOT`은 `She is the only person in the photo.` 대신 나오는 사람을 세어 쓴다(`Only these two people appear — no one else.`, 손만 나오면 `Only these two hands and forearms appear — no faces, no one else.`).
    - 컷표에 `끝그림`(또는 가운데 그림)이 있는 컷은 `<컷>_끝.txt`(`<컷>_가운데.txt`)를 따로 쓴다 — 같은 장소 · 빛 · 인물 문장에 MOMENT만 그 순간으로. 검사기가 그 컷과 같은 규칙으로 본다.

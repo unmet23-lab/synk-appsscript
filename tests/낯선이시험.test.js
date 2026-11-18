@@ -101,6 +101,18 @@ test('같은 셋에 11번 — 끝 3초를 보고 힘 있게 끝났나 흐지부�
   for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^11\. /m, brand);
 });
 
+test('회상 셋(11-18 유호님 「브랜드 회상 … 고정 질문 셋으로 넣자」) — 광고(pulse) · 공모전은 1번과 함께 12 브랜드 · 13 기분과 떠오를 장면을 묻고, SNS 계정 편은 묻지 않는다', () => {
+  for (const brand of ['pulse', '공모전']) {
+    const p = buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] });
+    assert.match(p, /^1\. 이 영상이 말하려는 것/m, brand);
+    assert.match(p, /^12\. 무슨 브랜드\(또는 제품 · 기관\)의 영상이었나 — .*「이야기에 붙음」 또는 「끝에만」/m, brand);
+    assert.match(p, /^13\. 보고 난 기분 한 낱말과, 이 영상을 떠올리면 가장 먼저 떠오를 장면 하나/m, brand);
+    assert.ok(p.indexOf('\n11. ') < p.indexOf('\n12. ') && p.indexOf('\n12. ') < p.indexOf('\n13. '), '11 → 12 → 13 차례');
+    assert.match(p, /1~8번과 10~13번은 이 영상만 보고 답한 뒤/, '비교용 묶음은 12 · 13번을 답한 뒤에 연다');
+  }
+  for (const brand of ['synkbrief', 'yuhobuilds', 'lab-en']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^1[23]\. /m, brand);
+});
+
 test('「다음:」 줄 아래 답 처리(11-16 흠 장부) — 사람편 브랜드는 흠갈래 「올린곳」 가운데 검수 질문 · 이 도구 자리의 「할것」을 한 줄씩(답 10 · 11), LAB은 없음, 흠갈래를 못 읽으면 「다음:」 줄만', (t) => {
   const { 답처리줄, 다음글 } = require('../tools/낯선이시험.js');
   for (const brand of ['synkbrief', 'yuhobuilds', 'pulse']) {

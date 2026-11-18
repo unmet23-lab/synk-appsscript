@@ -21,7 +21,8 @@ const 건너뜀 = { skip: !파이썬 && '파이썬 없음' };
 const 틀읽기 = () => JSON.parse(fs.readFileSync(틀경로, 'utf8'));
 const 빛문장 = 틀읽기().장면.부엌밤.빛;
 // 지시문 틀(docs/…/영상양식/지시문_틀.md) 순서대로 쓴 네 판 — 예시 컷표의 연기 박자 · 빛 문장 그대로
-const 꼬리 = [`LOOK: ${빛문장} The light and colour stay exactly like this to the last frame. No new people, no new text.`,
+const 영상색감 = JSON.parse(fs.readFileSync(path.join(뿌리, 'docs', '마케팅', '제작양식', '영상양식', '색감이름.json'), 'utf8')).이름.find((x) => x.이름 === 틀읽기().색감).영상뼈대;
+const 꼬리 = [`LOOK: ${빛문장} ${영상색감} The light and colour stay exactly like this to the last frame. No new people, no new text.`,
   'Indoors: the air is clear and still, nothing falls or drifts anywhere.'];
 const 글 = {
   C1: ['@이미지 1 is the exact first frame of this video.', 'ONE SINGLE CONTINUOUS SHOT.', 'WHO: the same woman as in the start image, in the same hoodie.',

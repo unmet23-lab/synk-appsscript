@@ -1,0 +1,76 @@
+{
+  "설명": "색감 이름 표 — 한 편에 하나, 컷표 맨 위 「색감」 칸에 적는 이름 넷(2026-11-18 유호님 「이미지콘티 만들때 색보정같은걸 고를수있게 세팅하고싶은데」 · 「대표적으로 색감을 4가지정도 너랑 내가 잘 이해해서 컨셉에 맞게」 · 「색감도 니 제안대로 해보자」). 색감은 후보정 필터가 아니라 처음 굽는 지시문에 넣는 말이다(10-24 결정 「색 보정 · 얼굴 보정 … 후보정은 최대한 하지 않는다」). tools/컷연속성검사.py가 이 파일을 읽어 컷표 칸 · 이미지 지시문 · 영상 지시문 · 받은 그림을 본다(슬롭 점검표 51).",
+  "읽는법": "기획에서 「이기는것」과 같이 하나를 고른다 — 색감은 빛 · 옷 색 · 소품 색까지 정하니 이미지 콘티 단계에서 고르면 콘티의 빛과 부딪친다. 빛 이름(빛이름.json)은 빛이 어디서 오는지, 색감은 그 빛을 필름이 어떻게 담는지(검정 높이 · 대비 · 채도 · 번짐 · 입자)를 정한다 — 그래서 낮 역광의 아련과 밤 네온의 아련이 같은 색감 하나다. 이미지 지시문은 LIGHT 줄 바로 뒤 「GRADE:」 줄에 「뼈대」를, 영상 지시문은 LOOK 줄의 빛 문장 뒤에 「영상뼈대」를 글자 그대로 쓴다. 「어긋빛」의 빛 이름을 고른 장면은 주의로 알린다(일부러 고른 것이면 넘긴다). 뼈대에는 사람 낱말을 넣지 않는다 — 사람 없는 제품 컷에도 같은 줄이 들어간다. 뼈대가 지시문을 200~330자 늘리니 웹 Seedream은 내기 전에 글자 수를 본다(현장 노트 「웹 Seedream 5.5 무제한 스위치는 지시문이 길면 말없이 사라졌다」). 「옛이름」은 10-19 후보정 색감 도구(PULSE 색감.py)의 이름이다 — 같은 결을 두 이름으로 부르지 않으려고 적었고, 그 도구는 유호님이 후보정 색감을 따로 바라실 때만 쓴다. 넷에 맞지 않는 편이 나오면 새 이름을 더하기 전에 견본(같은 장면 하나를 그 색감으로)을 먼저 보인다.",
+  "잣대뜻": {
+    "검정": "L*(0~100) 아래 2% 분위 — 가장 어두운 곳이 얼마나 떠 있나(아련은 높고 시네마 · 팝은 낮다)",
+    "밝음": "L* 가운데값",
+    "대비": "L* 95% 분위 − 5% 분위",
+    "채도": "C*(a · b 거리) 평균",
+    "따뜻함": "b* 평균(+ 노랑 쪽, − 파랑 쪽)",
+    "나눔": "밝은 곳(L* 위 30%)의 b* 평균 − 어두운 곳(아래 30%)의 b* 평균 — 밝은 곳은 따뜻하고 그늘은 차가우면 +",
+    "문턱": "아직 없다 — 견본 그림과 첫 세 편에서 값을 모은 뒤 정한다. 그때까지 컷마다 값만 적고, 같은 장면 안에서 크게 튀는 컷과 받은 영상이 시작 그림에서 크게 벗어난 컷만 「확인」으로 낸다."
+  },
+  "이름": [
+    {
+      "이름": "아련",
+      "부제": "시티팝 필름",
+      "뜻": "오후 역광이 번지고 검정이 우유처럼 뜬 80년대 일본 필름 사진 — 밝은 곳은 살구 · 분홍, 그늘은 옅은 청록, 고운 입자. 카메라 앞에 끼우는 확산 필터(Black Pro-Mist)가 「흐리흐리한」 느낌을 만든다",
+      "이기는것": ["여운"],
+      "어울림": "로맨스 · 추억 · 첫사랑 · 감성 카페 · 향 · 부드러운 스킨케어",
+      "뼈대": "Colour grade: nostalgic 1980s Japanese city-pop film look, the soft colour of Fujifilm 400 colour negative film through a light Black Pro-Mist diffusion filter; highlights bloom softly, blacks are lifted and milky, contrast is low, colours are muted pastel with peach-pink highlights and pale cyan-teal shadows, fine even film grain.",
+      "영상뼈대": "Keep the soft city-pop film grade of the first frame: gentle highlight bloom, milky lifted blacks, pastel peach and pale-teal colour, fine grain.",
+      "방향": { "검정": "높게", "대비": "낮게", "채도": "낮게", "나눔": "+" },
+      "어울빛": ["Golden hour", "Window light", "Rim light", "Soft light", "Neon light", "Blue hour", "Dappled light"],
+      "어긋빛": ["Hard light", "Strobe light", "Teal and orange", "Monochrome red"],
+      "조심": "온 화면이 뿌옇게 떠서 초점이 없어 보이면 싸 보인다 — 눈과 제품의 윤곽은 또렷하게 둔다(FRAME에 「sharp focus on the eyes」). 바랜 정도가 지나치면 낡은 사진이 된다. 제품 접사는 번짐을 줄인다(S25 지유 — 흰 병 위 옅은 라벨이 확산에 지워졌다). 필름 테두리 · 날짜 찍힘 · 필름 상표 글자가 나오면 NOT 줄의 글자 금지 문장을 확인한다.",
+      "옛이름": ["필름아침"],
+      "견본": null
+    },
+    {
+      "이름": "맑음",
+      "부제": "클린 광고",
+      "뜻": "실제 색 그대로, 깨끗한 흰색, 밝고 가벼운 노출 — 입자 · 안개 없이 선명한 고급 광고 사진",
+      "이기는것": ["공력", "웃김"],
+      "어울림": "스킨케어 · 음료 · 생활용품 · 제품이 주인공인 대부분의 광고",
+      "뼈대": "Colour grade: clean high-end commercial look; true-to-life colours, clean neutral whites, bright airy exposure, gentle contrast with clean deep shadows, crisp fine detail, no haze, no grain, no colour cast.",
+      "영상뼈대": "Keep the clean commercial grade of the first frame: true-to-life colour, clean whites, no haze, no grain.",
+      "방향": { "밝음": "높게", "검정": "낮게", "따뜻함": "0 가까이" },
+      "어울빛": ["High key", "Soft light", "Window light", "Rim light", "Bounce light", "Butterfly"],
+      "어긋빛": ["Low key", "Chiaroscuro", "Silhouette", "Underlight", "Teal and orange", "Monochrome red"],
+      "조심": "가장 평평해지기 쉽다(점검표 60) — 테두리 빛(Rim light)이나 옆빛을 같이 고르고 무지 배경을 피한다. 흰 곳이 크림색이나 푸른색으로 물들면 다시 뽑는다.",
+      "옛이름": ["맑은아침", "따뜻한오후"],
+      "견본": null
+    },
+    {
+      "이름": "시네마",
+      "부제": "깊은 영화",
+      "뜻": "깊은 검정과 단단한 대비, 절제된 채도 — 그늘은 살짝 차갑고 밝은 곳은 호박빛인 극영화 필름",
+      "이기는것": ["공력", "여운"],
+      "어울림": "드라마 · 스릴러 · 패션 · 향수 · 자동차 · 테크 · 공모전 대작",
+      "뼈대": "Colour grade: cinematic feature-film look with the colour of Kodak Vision3 500T motion-picture film; rich deep blacks, strong but smooth contrast, highlights roll off gently, restrained saturation, slightly cool shadows against warm amber highlights, subtle fine grain.",
+      "영상뼈대": "Keep the cinematic film grade of the first frame: deep blacks, smooth contrast, restrained colour, subtle grain.",
+      "방향": { "밝음": "낮게", "검정": "낮게", "대비": "높게", "채도": "낮게", "나눔": "+" },
+      "어울빛": ["Low key", "Practical light", "Rembrandt", "Chiaroscuro", "Window light", "Volumetric light", "Blue hour", "Moonlight"],
+      "어긋빛": ["High key", "Flat light"],
+      "조심": "휴대폰에서는 어두운 화면이 더 어둡다 — 얼굴 · 제품은 화면에서 가장 밝은 쪽에 둔다. 진한 청록 · 주황은 쓰지 않는다(후반 가이드 「피할 것」). 음료 · 스킨케어처럼 맑아야 할 제품에는 고르지 않는다.",
+      "옛이름": ["시네마청록", "차분한무채", "붉은밤"],
+      "견본": null
+    },
+    {
+      "이름": "팝",
+      "부제": "쨍한 플래시",
+      "뜻": "또렷한 원색 두세 개, 단단한 그림자, 높은 대비 — 직광 플래시로 찍은 패션 스냅 같은 밝고 쨍한 결",
+      "이기는것": ["웃김"],
+      "어울림": "LAB 코미디 · 젊은 브랜드 · 음식 · 패션 스냅",
+      "뼈대": "Colour grade: bold modern pop look; vivid saturated colours held to two or three bold hues, bright crisp exposure, high contrast with clean hard-edged shadows, pure whites and clean deep blacks, glossy sharp detail, no haze, no grain.",
+      "영상뼈대": "Keep the bold pop grade of the first frame: vivid two-to-three-hue colour, crisp contrast, clean whites, no grain.",
+      "방향": { "채도": "높게", "대비": "높게", "검정": "낮게" },
+      "어울빛": ["Hard light", "High key", "Butterfly", "Strobe light"],
+      "어긋빛": ["Low key", "Chiaroscuro", "Silhouette", "Volumetric light", "Moonlight", "Day for night"],
+      "조심": "넷 가운데 가장 싸 보이기 쉽다 — 색을 두세 개로 묶고(옷 · 소품 · 배경 색을 표에 미리 정한다), 원색 범벅이면 다시 짠다(11-03 「튀는 팝 · 다색」 지적). 채도가 피부까지 올라 주황 · 빨강으로 뜨면 다시 뽑는다.",
+      "옛이름": [],
+      "견본": null
+    }
+  ],
+  "다음후보": "넷에 맞지 않는 편이 실제로 나올 때만 더한다 — 지금 떠오르는 후보는 「흑백」(명품 · 공익 캠페인)과 「따뜻한 일상」(다큐 자연광 · 가족 · 음식)이다. 더하기 전에 같은 장면 견본을 먼저 보인다."
+}

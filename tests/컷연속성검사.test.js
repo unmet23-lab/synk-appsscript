@@ -498,9 +498,12 @@ const 원고넣기 = (s, { 시험 = false } = {}) => {
   if (시험) s.소리.원고시험 = { 누가: '맥락 없는 서브에이전트', 날짜: '2026-11-18', 줄: s.소리.원고.map(([, , 글]) => ({ 글, 판정: '바로', 뜻: '들린 뜻' })) };
 };
 // 표의 줄을 그대로 옮긴 이미지 지시문(지시문 틀 순서) — 그 컷에 나오는 소품은 맨 위 「소품」 표의 생김새 문장을 PROPS에 그대로 쓴다. 더: 끝에 붙일 줄
+const 색감표 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', '마케팅', '제작양식', '영상양식', '색감이름.json'), 'utf8'));
+const 색감줄 = (표) => 색감표.이름.find((x) => x.이름 === (표 && 표.색감));
 const 표대로그림글 = (표, d, { 옷 = true, 소품 = true, 더 = [] } = {}) => [
   `SETTING: ${표.장면[d.장면].장소}`,
   `LIGHT: ${표.장면[d.장면].빛}`,
+  ...(색감줄(표) ? [`GRADE: ${색감줄(표).뼈대}`] : []),
   ...d.인물.map((n) => `WHO: ${표.인물[n].묘사}${옷 ? ` ${표.인물[n].옷}` : ' A grey hoodie.'}`),
   `MOMENT: ${d.line}`,
   `FRAME: ${d.구도}`,
@@ -813,7 +816,7 @@ const 지시문글 = ({ 첫줄 = '@이미지 1 is the exact first frame of this 
   'WHO: the same woman as in the start image, in the same hoodie.',
   `ACTION: ${연기}`,
   'CAMERA: a slow push-in of 4% from 0 s to 3.5 s.',
-  `LOOK: ${빛} The light and colour stay exactly like this to the last frame. No new people, no new text.`,
+  `LOOK: ${빛} ${색감줄(틀읽기()).영상뼈대} The light and colour stay exactly like this to the last frame. No new people, no new text.`,
   ...(실내줄 ? ['Indoors: the air is clear and still, nothing falls or drifts anywhere.'] : []),
   'SOUND: No sound.',
 ].join('\n');
@@ -1017,7 +1020,7 @@ import 컷연속성검사 as k
 표, 까닭 = k.빛이름표()
 out = {"까닭": 까닭, "수": len(표["이름"]), "앞빛허용": sorted(표["앞빛허용"]), "문턱": 표["좌우문턱"]}
 seq = json.load(open(sys.argv[2], encoding="utf-8")); 빛 = seq["장면"]["부엌밤"]["빛"]
-글 = "LOOK: " + 빛 + " The table is evenly lit."
+글 = "LOOK: " + 빛 + " " + k.고른색감(seq)["영상뼈대"] + " The table is evenly lit."
 out["사람판"] = k.빛대조(seq, ["C1"], 글); out["사람없는판"] = k.빛대조(seq, ["C4"], 글)
 줄들 = list(표["이름"].values())
 out["뼈대_쪽없음"] = [x["이름"] for x in 줄들 if x.get("방향") is True and not (k._빛쪽.search(x["뼈대"]) or k._빛뒤위.search(x["뼈대"]))]
@@ -1945,7 +1948,7 @@ function 꾸러미만들기2(dir, 판들, 이름 = '꾸러미') {
   return pack;
 }
 // 사람 낱말이 하나도 없는 판 — 사람이 나오는지는 컷표가 정한다
-const 맨글 = (연기) => ['@이미지 1 is the exact first frame of this video.', `ACTION: ${연기}`, 'CAMERA: static frame.', `LOOK: ${빛문장} No new text.`,
+const 맨글 = (연기) => ['@이미지 1 is the exact first frame of this video.', `ACTION: ${연기}`, 'CAMERA: static frame.', `LOOK: ${빛문장} ${색감줄(틀읽기()).영상뼈대} No new text.`,
   'Indoors: the air is clear and still, nothing falls or drifts anywhere.', 'SOUND: No sound.'].join('\n');
 const 목소리글 = ['@이미지 1 is the exact first frame of this video.', 'ACTION: She looks just past the camera and says in Korean: "오늘은 일찍 잘 것 같아." Everyone else in the frame keeps still with lips closed.',
   'CAMERA: static frame.', 'SOUND: only her natural speaking voice saying this one Korean line, over quiet room tone.'].join('\n');
@@ -2319,4 +2322,64 @@ test('대사 빠르기(11-18) — 옛 판(7번 1-5: 대사 15자에 말 빠르�
   const r = spawnSync('python', ['-I', '-X', 'utf8', '-c', 스크립트, path.dirname(도구)], { input: JSON.stringify(글들), encoding: 'utf8' });
   assert.equal(r.status, 0, r.stderr);
   assert.deepEqual(JSON.parse(r.stdout), [['주의'], [], [], [], [], []]);
+});
+
+// ───────── 색감(T22) · 최상급(T23) — 11-18 유호님 「이미지콘티 만들때 색보정같은걸 고를수있게」 · 「최상급과 겨룰만한지 검수도 추가하자」 ─────────
+test('색감 T22 · 최상급 T23 — 표에 없는 색감은 걸림, 빈 칸은 편 날짜 11-19부터 걸림(앞은 주의), 어긋빛은 주의, 최상급이 둘보다 적으면 주의', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const 틀글 = (r, 항목 = '틀') => r.항목들.filter((x) => x.항목 === 항목 && x.등급 !== '통과').map((x) => `${x.등급} ${x.컷}: ${x.글}`);
+  const 오타 = 틀돌리기((s) => { s.색감 = '아련함'; });
+  assert.deepEqual(틀글(오타).length, 1); assert.match(틀글(오타)[0], /^걸림 표: 색감 「아련함」이 색감 이름 표에 없다\(「아련」\?\) — 아련 · 맑음 · 시네마 · 팝 가운데 하나로 적는다\(51\)/);
+  assert.match(틀글(틀돌리기((s) => { s.색감 = ['아련', '팝']; }))[0], /^걸림 표: 「색감」에는 이름 하나만 적는다/);
+  assert.match(틀글(틀돌리기((s) => { delete s.색감; }))[0], /^주의 표: 「색감」 칸이 비었다/, '날짜를 못 읽는 편은 주의');
+  assert.match(틀글(틀돌리기((s) => { s.색감 = ''; s.편.만든날 = '2026-11-18'; }))[0], /^주의 표: 「색감」 칸이 비었다/);
+  assert.match(틀글(틀돌리기((s) => { s.색감 = ''; s.편.만든날 = '2026-11-19'; }))[0], /^걸림 표: 「색감」 칸이 비었다/);
+  const 어긋 = 틀돌리기((s) => { s.색감 = '시네마'; s.장면.부엌밤.빛이름 = ['High key', 'Rim light']; s.장면.부엌밤.빛 = 'Bright, airy high-key light from the front and above; a thin rim of light from behind separates every outline from the wall.'; });
+  assert.equal(어긋.코드, 0); assert.match(틀글(어긋)[0], /^주의 장면 부엌밤: 장면 「부엌밤」의 빛 이름\(High key\)이 색감 「시네마」에 어긋난다/);
+  const 최 = 틀돌리기((s) => { s.최상급 = [s.최상급[0], { 제목: '주소 없는 줄' }]; });
+  assert.deepEqual(틀글(최).map((x) => x.slice(0, 40)), ['주의 표: 「최상급」에 같은 분야 실제 최상급 광고가 1편이다 — 둘 이']);
+  assert.match(틀글(틀돌리기((s) => { delete s.최상급[1].까닭; }))[0], /^주의 표: 「최상급」 2번째 .*고른 까닭이 없다/);
+});
+
+test('색감 T22 — 이미지 지시문에 GRADE 뼈대가 없으면 걸림, 영상 지시문 LOOK에 영상뼈대가 없으면 걸림(크레딧내기와 같은 빛대조)', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const dir = 임시(); const 틀 = 틀읽기();
+  const 그림 = path.join(dir, '그림'); fs.mkdirSync(그림);
+  for (const d of 틀.detail) 쓰기(그림, `${d.cut}.txt`, d.cut === 'C2' ? 표대로그림글({ ...틀, 색감: '' }, d) : 표대로그림글(틀, d));
+  const r = 틀돌리기(null, ['--그림지시문', 그림], dir);
+  assert.equal(r.코드, 1);
+  const 그림걸림 = r.항목들.filter((x) => x.항목 === '그림지시문' && x.등급 === '걸림').map((x) => `${x.컷}: ${x.글}`);
+  assert.equal(그림걸림.length, 1); assert.match(그림걸림[0], /^C2: 색감 「아련」의 뼈대 문장이 글자 그대로 들어 있지 않다/);
+  const 영상 = path.join(dir, '영상'); fs.mkdirSync(영상);
+  쓰기(영상, 'C1.txt', 지시문글()); 쓰기(영상, 'C2.txt', 지시문글().replace(` ${색감줄(틀).영상뼈대}`, ''));
+  const v = 틀돌리기(null, ['--지시문', path.join(영상, 'C1.txt'), path.join(영상, 'C2.txt')], dir);
+  const 빛걸림 = v.항목들.filter((x) => x.항목 === '지시문' && x.등급 === '걸림' && x.글.startsWith('(빛)')).map((x) => `${x.컷}: ${x.글}`);
+  assert.equal(빛걸림.length, 1, JSON.stringify(빛걸림)); assert.match(빛걸림[0], /^C2: \(빛\) 색감 「아련」의 영상뼈대 문장이 글자 그대로 들어 있지 않다/);
+});
+
+test('색감 값(--그림 · --받음) — 컷마다 값을 적고, 같은 장면에서 튀는 컷과 받은 영상이 시작 그림 색감에서 벗어난 컷은 확인', { skip: !(그림라이브러리 && ffmpeg) && '그림 라이브러리 · ffmpeg 없음' }, () => {
+  const dir = 임시(); const 편 = path.join(dir, '편_20261119'); fs.mkdirSync(path.join(편, '정지'), { recursive: true }); fs.mkdirSync(path.join(편, '받음'));
+  // 따뜻한 밤 셋 + 차갑고 밝은 한 컷(C3) — 시작 그림은 정지/<컷>.png(예시 표의 「시작그림」 자리)
+  const 만들기 = String.raw`
+import sys
+from PIL import Image, ImageDraw
+d = sys.argv[1]
+def 판(바탕, 등):
+    im = Image.new("RGB", (360, 640), 바탕); g = ImageDraw.Draw(im); g.ellipse((60, 120, 300, 360), fill=등); g.rectangle((0, 520, 360, 640), fill=(12, 10, 8)); return im
+for c, 바탕, 등 in [("C1", (70, 45, 30), (240, 170, 90)), ("C2", (74, 48, 32), (236, 166, 88)), ("C3", (150, 175, 210), (235, 245, 255)), ("C4", (68, 44, 30), (242, 172, 92))]:
+    판(바탕, 등).save(f"{d}/정지/{c}.png")
+판((150, 175, 210), (235, 245, 255)).save(f"{d}/받음_C1.png")
+`;
+  assert.equal(spawnSync('python', ['-I', '-X', 'utf8', '-c', 만들기, 편], { encoding: 'utf8' }).status, 0);
+  // 받은 C1은 시작 그림과 다른 색(차갑고 밝음), C2 · C4는 시작 그림 그대로
+  const 영상만들기 = (그림파일, 밖) => spawnSync('ffmpeg', ['-v', 'error', '-loop', '1', '-i', 그림파일, '-t', '5', '-r', '12', '-pix_fmt', 'yuv420p', 밖, '-y']);
+  영상만들기(path.join(편, '받음_C1.png'), path.join(편, '받음', 'C1.mp4'));
+  for (const c of ['C2', 'C3', 'C4']) 영상만들기(path.join(편, '정지', `${c}.png`), path.join(편, '받음', `${c}.mp4`));
+  const seq = 틀읽기(); const 표 = 쓰기(편, '컷표.json', JSON.stringify(seq));
+  const 그림 = 돌리기([표, '--그림', path.join(편, '정지'), '--출력', path.join(dir, '검사1')]);
+  const 색 = (r) => r.항목들.filter((x) => x.항목 === '색감');
+  assert.equal(색(그림).filter((x) => x.등급 === '알림' && x.값 && '검정' in x.값).length, 5, '컷 넷 + 편 가운데값');
+  assert.deepEqual(색(그림).filter((x) => x.등급 === '확인').map((x) => x.컷), ['C3'], JSON.stringify(색(그림)));
+  assert.match(색(그림).find((x) => x.컷 === '편').글, /색감 「아련」 방향: 검정 높게/);
+  const 받음 = 돌리기([표, '--받음', path.join(편, '받음'), '--출력', path.join(dir, '검사2')]);
+  const 벗어남 = 색(받음).filter((x) => x.등급 === '확인' && /시작 그림/.test(x.글)).map((x) => x.컷);
+  assert.deepEqual(벗어남, ['C1'], JSON.stringify(색(받음).filter((x) => x.등급 === '확인')));
 });
