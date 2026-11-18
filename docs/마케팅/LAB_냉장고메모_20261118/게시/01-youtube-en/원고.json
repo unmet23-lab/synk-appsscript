@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "en",
+  "title": "My Korean roommate left me a note… 🍰😳 #learnkorean",
+  "caption": "먹지 마 = DON'T eat\nIn Korean, \"don't\" comes at the very END of the sentence: verb + 지 마.\n\n케이크 (cake) + 먹지 (eat…) + 마 (…don't!)\n= 케이크 먹지 마! → \"Don't eat the cake!\"\n\n먹지 마 → casual (friends, roommates)\n먹지 마세요 → polite\n\nReal handwriting looks different from the textbook, so read slowly — but read it ALL. 😅\n\nSYNK LAB\n#learnkorean #studykorean #koreangrammar #hangul",
+  "pinnedComment": "Write a fridge note in Korean with -지 마 👇\nExample: 마시지 마! = Don't drink it!",
+  "alt": [
+    "A memo stuck on a white fridge with a red magnet says 케이크 먹지 마! in fast, slanted Korean handwriting. Below the fridge, a hand holds a plate with a whole slice of strawberry cream cake. A pencil copies the note neatly letter by letter under the scribble: 케이크 (red pen: cake), then 먹지 (red pen: eat). The plate is lifted toward the camera and the cake is eaten in two bites until only crumbs and a strawberry stem are left. Then the pencil writes the last letter 마! and a big red DON'T! is stamped under it; 마 is circled in both lines. Labels read how Koreans really write and how textbooks write it, and red lines link the same letters. A front door opens and the empty plate is pulled out of view."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = memo-en 최종 렌더 → 음량마감. 표지 cover.png = 0.4초(메모 · 온전한 케이크 · 위 이름표). 어린이 전용 아님. 합성 표시: 켜지 않음 — 냉장고 · 메모 · 케이크 · 손 사진은 GPT 이미지 2.5로 구운 소품(E41 손 · 피자와 같은 판단), 실제 사람 · 사건을 흉내 내지 않고 목소리는 특정인이 아닌 TTS.",
+  "version": "e46-en"
+}

@@ -97,7 +97,9 @@ const NEAT_GLYPHS = [
 const neatW = (c: string) => (c === '!' ? 0.278 : 0.874) * NEAT.size;
 const tipIn = (k: number, p: number): Pt => {
   const g = NEAT_GLYPHS[k];
-  return [g.x + p * neatW(g.c) * 0.92, NEAT.y - NEAT.size * 0.4 + Math.sin(p * Math.PI * 3.4 + k * 1.3) * NEAT.size * 0.24];
+  // v4 나란히 「첫 2초 박자 1(1.6초)」 — 글자가 바뀔 때 연필 끝이 위아래로 한 번에 튀었다 → 흔들림을 가로 자리로 정해 글자 경계에서 이어지게
+  const x = g.x + p * neatW(g.c) * 0.92;
+  return [x, NEAT.y - NEAT.size * 0.4 + Math.sin((x - NEAT_GLYPHS[0].x) * 0.085) * NEAT.size * 0.16];
 };
 
 const NeatLine: React.FC = () => {
@@ -116,7 +118,7 @@ const NeatLine: React.FC = () => {
                 <rect x={g.x - 8} y={NEAT.y - NEAT.size * 1.05} width={p >= 1 ? w + 40 : p * w + 8} height={NEAT.size * 1.4} />
               </clipPath>
             </defs>
-            <text x={g.x} y={NEAT.y} fontFamily={KO} fontWeight={600} fontSize={NEAT.size} fill={C.graphite} opacity={0.93} clipPath={`url(#n${k})`}>
+            <text x={g.x} y={NEAT.y + (random(`ny${k}`) - 0.5) * 8} transform={`rotate(${(random(`nr${k}`) - 0.5) * 4} ${g.x + w / 2} ${NEAT.y})`} fontFamily={KO} fontWeight={600} fontSize={NEAT.size} fill={C.graphite} opacity={0.93} clipPath={`url(#n${k})`}>
               {g.c}
             </text>
           </g>
@@ -131,7 +133,7 @@ const Defs: React.FC = () => (
   <defs>
     <filter id="graphite" filterUnits="userSpaceOnUse" x="-200" y="-200" width="1480" height="2320">
       <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="7" result="noise" />
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" xChannelSelector="R" yChannelSelector="G" result="rough" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.2" xChannelSelector="R" yChannelSelector="G" result="rough" />
       <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.9 1.36" result="grain" />
       <feComposite in="rough" in2="grain" operator="in" />
     </filter>
@@ -180,10 +182,10 @@ const Dont: React.FC = () => {
   if (f < fr(T.dont)) return null;
   const sp = spring({ frame: f - fr(T.dont), fps, config: { damping: 11, stiffness: 300, mass: 0.6 } });
   // 장면 심사 v1 「작은 글씨를 다 읽어야 풀린다」 → 메모 오른쪽 아래를 크게 덮는 도장 글씨
-  const cx = 846, y = 975;
+  const cx = 862, y = 978;
   return (
     <g transform={`translate(${cx} ${y - 50}) scale(${1.7 - 0.7 * sp}) translate(${-cx} ${-(y - 50)})`} opacity={interpolate(sp, [0, 0.3], [0, 1], clamp)}>
-      <text x={cx} y={y} textAnchor="middle" fontFamily={PEN} fontSize={158} fill={C.red} stroke={C.red} strokeWidth={2.5} paintOrder="stroke" filter="url(#redpen)" transform={`rotate(-7 ${cx} ${y})`}>
+      <text x={cx} y={y} textAnchor="middle" fontFamily={PEN} fontSize={148} fill={C.red} stroke={C.red} strokeWidth={2.5} paintOrder="stroke" filter="url(#redpen)" transform={`rotate(-7 ${cx} ${y})`}>
         DON&apos;T!
       </text>
     </g>
@@ -191,15 +193,16 @@ const Dont: React.FC = () => {
 };
 
 // ── 연필 쥔 손(E41 손 사진 — 메모 줄을 따라 오른쪽으로 눕혀 접시를 가리지 않게) ─────
-const HAND = { w: 1214, h: 1250, tipX: 4, tipY: 83, s: 0.8, rot: -22 };
+const HAND = { w: 1214, h: 1250, tipX: 4, tipY: 83, s: 0.72, rot: -8 }; // v3: -22°는 첫 글자를 쓸 때 손등이 날린 메모 줄을 덮었다
 const OFF: Pt = [1320, 1150];
 const pencilAt = (t: number): { tip: Pt; down: number; show: boolean } => {
   const mv = (a: Pt, b: Pt, [s0, s1]: readonly [number, number]): Pt => {
     const p = interpolate(t, [s0, s1], [0, 1], { ...clamp, easing: EASE_IO });
     return [lerp(a[0], b[0], p), lerp(a[1], b[1], p)];
   };
-  if (t < T.pencilIn[0]) return { tip: OFF, down: 0, show: false };
-  if (t < T.w[0][0]) return { tip: mv(OFF, tipIn(0, 0), T.pencilIn), down: 0, show: true };
+  // v3 나란히 「첫 2초 박자 1(1.0초)」 — 화면 밖에서 들어오는 손이 박자로 잡혔다 → 0초부터 메모 아래에 손을 두고 첫 글자 자리로만 살짝 옮긴다
+  const ready: Pt = [tipIn(0, 0)[0] + 70, tipIn(0, 0)[1] + 46];
+  if (t < T.w[0][0]) return { tip: mv(ready, tipIn(0, 0), T.pencilIn), down: 0, show: true };
   for (let k = 0; k < T.w.length; k += 1) {
     const w = T.w[k];
     if (t < w[0]) {
@@ -209,7 +212,8 @@ const pencilAt = (t: number): { tip: Pt; down: number; show: boolean } => {
       const rest: Pt = [tipIn(k - 1, 1)[0] + 30, NEAT.y - NEAT.size * 0.9];
       if (gap > 0.6) {
         if (t < pw[1] + 0.25) return { tip: mv(tipIn(k - 1, 1), rest, [pw[1], pw[1] + 0.25]), down: 0, show: true };
-        if (t < w[0] - 0.3) return { tip: rest, down: 0, show: true };
+        // 올리기 전 검사 v9 「거의 멈춘 시간 19%」 → 쉬는 동안 연필이 메모 위를 톡톡 두드리며 생각한다
+        if (t < w[0] - 0.3) return { tip: [rest[0] + Math.sin(t * 8.5) * 7, rest[1] + Math.abs(Math.sin(t * 6.3)) * 14], down: 0, show: true };
         return { tip: mv(rest, tipIn(k, 0), [w[0] - 0.3, w[0]]), down: 0, show: true };
       }
       return { tip: mv(tipIn(k - 1, 1), tipIn(k, 0), [pw[1] + Math.min(0.04, gap * 0.2), w[0]]), down: 0, show: true };
@@ -218,7 +222,9 @@ const pencilAt = (t: number): { tip: Pt; down: number; show: boolean } => {
   }
   // 「!」 뒤 — DON'T에 얼어붙었다가 천천히 빠진다
   const last = tipIn(T.w.length - 1, 1);
-  if (t < T.pencilOut[0]) return { tip: last, down: 0, show: true };
+  // DON'T 뒤 — 얼어붙은 손이 잘게 떨린다(같은 까닭)
+  const shiver = t > T.dont ? interpolate(t, [T.dont, T.dont + 0.6], [4, 7], clamp) : 0;
+  if (t < T.pencilOut[0]) return { tip: [last[0] + Math.sin(t * 31) * shiver, last[1] + Math.cos(t * 27) * shiver], down: 0, show: true };
   return { tip: mv(last, OFF, T.pencilOut), down: 0, show: t < T.pencilOut[1] };
 };
 const Pencil: React.FC = () => {
@@ -278,9 +284,9 @@ const Titles: React.FC = () => {
   );
   if (t < T.dont) {
     return zone(
-      interpolate(t, [0, 0.12], [0.001, 1], clamp),
+      1, // 첫 장(유튜브 첫 화면)부터 보이게
       <Label>
-        POV: my Korean roommate
+        My Korean roommate
         <br />
         left me a note 📝
       </Label>,
@@ -291,52 +297,32 @@ const Titles: React.FC = () => {
     const sp = spring({ frame: f - fr(T.dont), fps, config: { damping: 13, stiffness: 240, mass: 0.6 } });
     return zone(
       1,
-      <Label size={96} style={{ transform: `scale(${0.8 + 0.2 * sp})` }}>
+      <Label size={84} style={{ transform: `scale(${0.8 + 0.2 * sp})` }}>
         <span style={HANGUL}>먹지 마</span> = <span style={{ color: C.red }}>DON&apos;T</span> eat!
       </Label>,
       'b',
     );
   }
+  if (t < T.room) {
+    return zone(
+      1,
+      <Label size={80}>
+        Read the <span style={{ color: C.red }}>WHOLE</span> note
+        <br />
+        first 😅
+      </Label>,
+      'c',
+    );
+  }
+  // 룸메이트가 돌아와 「누가 먹었어?!」 — 한국어 줄 아래 영어 뜻(L08)
   return zone(
     1,
-    <Label size={78}>
-      Could YOU read
+    <Label size={84}>
+      <span style={HANGUL}>누가 먹었어?!</span>
       <br />
-      this note? 👇
+      <span style={{ fontSize: 66 }}>(Who ate it?!) 😱</span>
     </Label>,
-    'c',
-  );
-};
-
-// 나란히(9.3초~) 이름표 — 날린 글씨 = 실제 손글씨, 아래 줄 = 교과서 꼴
-const Tag: React.FC<{ text: string; x: number; y: number; kind: 'real' | 'book' }> = ({ text, x, y, kind }) => {
-  const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  if (f < fr(T.hold)) return null;
-  const sp = spring({ frame: f - fr(T.hold), fps, config: { damping: 14, stiffness: 220, mass: 0.6 } });
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: x,
-        top: y,
-        transform: `rotate(-3deg) scale(${0.7 + 0.3 * sp})`,
-        transformOrigin: 'left center',
-        background: kind === 'real' ? C.coral : C.label,
-        border: kind === 'book' ? `4px solid ${C.coral}` : 'none',
-        color: C.brown,
-        fontFamily: EN,
-        fontWeight: 800,
-        fontSize: 44,
-        lineHeight: 1,
-        padding: '10px 18px 12px',
-        borderRadius: 14,
-        boxShadow: '0 4px 10px rgba(80,30,20,0.18)',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {text}
-    </div>
+    'd',
   );
 };
 
@@ -374,10 +360,14 @@ const PlateLift: React.FC<{ src: string }> = ({ src }) => {
   const ch = chompAt(t);
   // 문소리 뒤 — 접시 든 손만 움찔
   const tremble = interpolate(t, [T.door + 0.1, T.door + 0.3, T.door + 1.4], [0, 1, 0.25], clamp);
+  // 올리기 전 검사 v10 「거의 멈춘 시간 19%」(7.5~9.0 · 10.0~10.5초) → DON'T를 읽은 뒤부터 빈 접시 든 손이 들킬까 봐 잘게 떤다.
+  // 박자가 새로 안 생기게 0.45초에 걸쳐 천천히 붙는다.
+  const panic = interpolate(t, [T.dont + 0.35, T.dont + 0.8, T.hold, T.door], [0, 0.55, 0.35, 0.35], clamp);
   // 왼쪽 아래 모서리(손목이 화면 밖으로 나가는 자리)를 축으로 돌고 커지기만 한다 — 옮기면 손목 밑에 빈 냉장고 띠가 드러난다
-  const rot = Math.sin(f * 2.3) * 0.8 * tremble;
-  if (l <= 0 && tremble <= 0) return null;
-  const sc = 1 + 0.26 * l + 0.03 * ch;
+  const rot = Math.sin(f * 2.3) * 0.8 * Math.max(tremble, t < T.door + 0.3 ? panic : 0);
+  const hide = interpolate(t, T.hide, [0, 1], { ...clamp, easing: Easing.in(Easing.cubic) });
+  if (l <= 0 && tremble <= 0 && panic <= 0) return null;
+  const sc = 1 + 0.32 * l + 0.035 * ch;
   // 접시 자리(메모 아래 · 왼쪽 60%)만 떠낸다 — 위는 y 1040~1110, 오른쪽은 x 700~800에서 부드럽게 사라진다
   const MASK = 'linear-gradient(to bottom, transparent 1040px, #000 1110px), linear-gradient(to right, #000 700px, transparent 800px)';
   const masked: React.CSSProperties = { position: 'absolute', inset: 0, width: 1080, height: 1920, WebkitMaskImage: MASK, maskImage: MASK, WebkitMaskComposite: 'source-in', maskComposite: 'intersect' };
@@ -390,7 +380,7 @@ const PlateLift: React.FC<{ src: string }> = ({ src }) => {
         style={{
           ...masked,
           transformOrigin: '0px 1920px',
-          transform: `rotate(${rot}deg) scale(${sc})`,
+          transform: `translate(${-140 * hide}px, ${820 * hide}px) rotate(${rot * (1 - hide)}deg) scale(${sc})`,
           filter: l > 0 ? `drop-shadow(0 ${18 * l}px ${24 * l}px rgba(30,30,45,${0.18 * l}))` : undefined,
         }}
       />
@@ -430,6 +420,7 @@ const Sound: React.FC<{ scene?: boolean }> = ({ scene }) => (
         <Vo id="k3" at={T.k3} />
         <Vo id="e3" at={T.e3} />
         <Vo id="e4" at={T.e4} />
+        <Vo id="r1" at={T.room} vol={1.05} />
       </>
     )}
     {T.w.map(([a, b], k) => (
@@ -447,6 +438,7 @@ const Sound: React.FC<{ scene?: boolean }> = ({ scene }) => (
     <Sfx file="pop.wav" at={T.hold} vol={0.32} />
     <Sfx file="tok.wav" at={T.hold + 0.14} vol={0.3} />
     <Sfx file="door_open.wav" at={T.door} vol={0.8} />
+    <Sfx file="whoosh_down.wav" at={T.hide[0] - 0.05} vol={0.55} />
   </>
 );
 
@@ -468,19 +460,12 @@ export const Film: React.FC<{ plain?: boolean; scene?: boolean }> = ({ plain = f
           <Scribble />
           <NeatLine />
           <RedHand text="cake" cx={288} y={934} size={112} win={T.cake} w={230} id="g-cake" />
-          <RedHand text="eat" cx={600} y={934} size={112} win={T.eat} w={170} id="g-eat" />
+          <RedHand text="eat" cx={582} y={934} size={112} win={T.eat} w={170} id="g-eat" />
           <Dont />
           <RedStroke d={ellipse(neatMa.x, neatMa.y, 78, 74, 'ringN')} p={prog(f, T.ringNeat)} width={9} />
           <RedStroke d={ellipse(scribMa.x, scribMa.y, 96, 96, 'ringS')} p={prog(f, T.ringScrib)} width={9} />
-          <RedStroke d={handPath([[scribMa.x - 92, SCRIB.y + 34], [scribMa.x + 10, SCRIB.y + 44], [scribMa.x + 120, SCRIB.y + 30]], { seed: 'ulS', jitter: 3 })} p={prog(f, T.underline)} width={10} />
         </svg>
         <Pencil />
-        {plain ? null : (
-          <>
-            <Tag text="real Korean handwriting" x={70} y={318} kind="real" />
-            <Tag text="textbook" x={70} y={640} kind="book" />
-          </>
-        )}
         {/* 부엌 빛 · 가장자리 그늘 — 사진처럼 깊이 */}
         <AbsoluteFill style={{ pointerEvents: 'none', background: 'radial-gradient(ellipse 90% 75% at 46% 45%, rgba(0,0,0,0) 60%, rgba(30,30,45,0.22) 100%)', mixBlendMode: 'multiply' }} />
       </AbsoluteFill>

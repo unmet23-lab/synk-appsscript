@@ -51,6 +51,19 @@
       "id": "e4",
       "text": "Read the whole note first.",
       "emotion": "normal"
+    },
+    {
+      "id": "r1",
+      "text": "누가 먹었어?!",
+      "lang": "ko",
+      "voice": {
+        "id": "tc_5c3c52cb5827e00008dd7f3b",
+        "name": "범수"
+      },
+      "emotion": "normal",
+      "intensity": 1,
+      "seed": 1122,
+      "note": "룸메이트 — 현관문 소리 뒤 끝 사건(볼 이유 v2 · v5 「끝에 결과 한 컷 — 룸메이트의 누가 먹었어?!」)"
     }
   ]
 }

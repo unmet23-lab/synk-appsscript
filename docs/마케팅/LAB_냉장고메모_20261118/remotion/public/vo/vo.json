@@ -15,7 +15,7 @@
   "seed": 1118,
   "lufs": -17
  },
- "made": "2026-11-17T22:50:38.986Z",
+ "made": "2026-11-18T01:06:09.959Z",
  "lines": [
   {
    "id": "e0",
@@ -70,6 +70,15 @@
    "src": "e4.wav",
    "key": "425bc294543f2bb9b5e62ec6fc83b8e8",
    "words": 5
+  },
+  {
+   "id": "r1",
+   "text": "누가 먹었어?!",
+   "dur": 0.801,
+   "syllablesPerSec": 6.24,
+   "src": "r1.wav",
+   "key": "96a8a014d83a8dfe1ebfc3edbcf22514",
+   "words": 2
   }
  ]
 }

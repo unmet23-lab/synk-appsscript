@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "누가 먹었어?!",
+ "dur": 0.801,
+ "words": [
+  {
+   "text": "누가",
+   "start": 0.02,
+   "end": 0.182
+  },
+  {
+   "text": "먹었어?!",
+   "start": 0.242,
+   "end": 0.801
+  }
+ ],
+ "source": {
+  "key": "96a8a014d83a8dfe1ebfc3edbcf22514",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 125
+ }
+}
