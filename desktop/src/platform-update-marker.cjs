@@ -14,7 +14,7 @@ function pause(ms){try{Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0
 /*
   표시가 있는지 본다. 파일 시각이 10초 안이고 그 번호의 설치기가 살아 있으면 있다.
   내용을 읽다 틀리면 한 번 더 읽는다. 그래도 못 읽었는데 시각이 10초 안이면 있다고 본다(잘못 보더라도 그 틈은 10초를 넘지 않는다).
-  시각이 지금보다 2초 넘게 미래면 없다고 본다. 시계를 되돌렸거나 시각이 틀어진 표시가 앱을 켤 때마다 끝내지 않게 한다(0.4.96 GPT 검수 GB1)
+  시각이 지금보다 2초 넘게 미래면 없다고 본다. 시계를 되돌렸거나 시각이 틀어진 표시가 앱을 켤 때마다 끝내지 않게 한다(0.4.96 검수 GB1)
 */
 function readUpdatingMarker({localAppData,appId=APP_ID,now=Date.now,isAlive=processAlive,read=file=>fs.readFileSync(file,'utf8'),stat=file=>fs.statSync(file)}={}){
   if(typeof localAppData!=='string'||!path.isAbsolute(localAppData))return {present:false,pid:null};

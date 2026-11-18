@@ -261,7 +261,7 @@ function showPlatformMain(){
   deliverPendingAction();
 }
 /* 단축키 따위로 미뤄 둔 요청(명령 메뉴 열기 등)을 앱 창 화면에 한 번 전달한다. 창을 보이는 일과 따로 둔다.
-   최소화한 채 넘기는 길도 창을 보이지 않고 이 요청만 전달한다(0.4.97 엔진 다시 검수 -e GPT GA1) */
+   최소화한 채 넘기는 길도 창을 보이지 않고 이 요청만 전달한다(0.4.97 엔진 다시 검수 -e GA1) */
 function deliverPendingAction(){
   if(!pendingDesktopAction||!window||window.isDestroyed())return;
   const action=pendingDesktopAction;pendingDesktopAction=null;
@@ -284,7 +284,7 @@ function requestPlatformWindow(action){
   const unseenMinimized=Boolean(unseenFailure)&&window&&!window.isDestroyed()&&window.isMinimized();
   const updatable=platformUpdate&&platformUpdate.snapshot().state!=='disabled'&&!quittingRequested;
   // 아직 준비되지 않은 창(최소화로 되돌려 켠 직후)에 미룬 실패가 있으면 준비를 기다리지 않고 실패부터 보인다.
-  // 기다리면 ready-to-show가 도착 쪽지를 지운 창을 그냥 보이고 실패는 남았다(0.4.97 엔진 다시 검수 GPT GA1)
+  // 기다리면 ready-to-show가 도착 쪽지를 지운 창을 그냥 보이고 실패는 남았다(0.4.97 엔진 다시 검수 -b GA1)
   const unseenNotReady=updatable&&Boolean(unseenFailure)&&window&&!window.isDestroyed()&&!mainWindowReady;
   if(window&&!window.isDestroyed()&&!unseenNotReady&&(!mainWindowReady||window.isVisible()&&!unseenMinimized)){if(mainWindowReady)showPlatformMain();return;}
   if(showKeptFailure())return;
@@ -324,7 +324,7 @@ function handoffToMain({waitedForStart=false}={}){
   // 드러남 값(orbBoot)은 겹쳐 넘기는 길에만 쓴다. 시작 창을 보지 못한 채 넘기거나 앱 창이 이미 준비됐으면 비워,
   // 앱 창 얼굴이 시작 창이 만들어진 때부터 지난 만큼을 건너뛰지 않고 처음부터 드러나게 한다(0.4.96 공개 후보 검수 P2)
   // 최소화한 시작 창에서 넘길 때 앱 창이 있으면 보이지 않는다. 준비됐으면 바로 최소화하고, 준비 전이면 ready-to-show가 도착 값(최소화)대로 최소화한 채 켠다.
-  // 준비 전에 보이면 ready-to-show가 「이미 보인 창」으로 건너뛰어 최소화가 빠졌다(0.4.97 엔진 다시 검수 -c GPT GA1)
+  // 준비 전에 보이면 ready-to-show가 「이미 보인 창」으로 건너뛰어 최소화가 빠졌다(0.4.97 엔진 다시 검수 -c GA1)
   if(!from){orbBoot=null;if(startupMinimized&&window&&!window.isDestroyed()){if(mainWindowReady){arrivalShow=null;window.minimize();}deliverPendingAction();}else showPlatformMain();startupWindow?.dispose();startupWindow=null;return;}
   if(window&&!window.isDestroyed()&&mainWindowReady){orbBoot=null;showPlatformMain();setTimeout(()=>{startupWindow?.dispose();startupWindow=null;},50);return;}
   startupHandoff={bounds:from,done:false,timer:null};

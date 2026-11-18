@@ -19,7 +19,7 @@ const fs = require('node:fs');
 const fsp = fs.promises;
 const path = require('node:path');
 
-const SCHEMA = 3; // 3: Codex 이어 쓴 세션의 앞 사건을 함께 센다(11-15 GPT 지적) — 2까지 모은 숫자는 처음부터 다시 센다.
+const SCHEMA = 3; // 3: Codex 이어 쓴 세션의 앞 사건을 함께 센다(11-15 검수 지적) — 2까지 모은 숫자는 처음부터 다시 센다.
 const DAY = 864e5;
 const KEEP_DAYS = 400; // 이보다 오래된 날의 숫자는 버린다.
 const SHOW_DAYS = 35; // 화면에 넘기는 날 수(오늘 · 7일 · 30일을 세고 남는 여유).
@@ -124,7 +124,7 @@ function claudeLine(line, st) {
     if (st.owners) {
       const h = idHash(id);
       // 이번 회차에 다른 파일이 먼저 잡은 응답이면, 이 줄의 값이 더 큰 칸의 차이만 더한다 — 사본이 스트리밍 중간값(출력 2)만 가진 채 먼저 읽혀도
-      // 원래 파일의 최종값을 버리지 않게(GPT 지적). 앞 회차에 잡은 응답은 원래 파일이 먼저 있어 이미 최종값으로 세었으니 세지 않는다.
+      // 원래 파일의 최종값을 버리지 않게(검수 지적). 앞 회차에 잡은 응답은 원래 파일이 먼저 있어 이미 최종값으로 세었으니 세지 않는다.
       if (st.owners.has(h)) return st.claimed ? st.claimed.grow(h, use) : null;
       st.owners.set(h, st.file); st.mine.push(h);
       if (st.claimed) ci = st.claimed.add(h, use);
@@ -334,7 +334,7 @@ async function readZstLines(file, onLine, stop) {
 /* ---------- 칸 더하기 ---------- */
 const mergeAgg = (to, from) => { for (const [key, cell] of Object.entries(from || {})) { const t = to[key] || (to[key] = [0, 0, 0, 0, 0, 0]); for (let i = 0; i < 6; i++) t[i] += cell[i]; } return to; };
 // 파일 하나가 화면에 내는 칸들: Codex는 응답 기록(agg)과, 그 파일에 응답 기록이 처음 나오기 전까지의 token_count 사건(alt)을 함께 센다.
-// 옛 판으로 쓴 세션을 새 판으로 이어 쓰면 앞 응답은 사건으로만, 뒤 응답은 둘 다로 적힌다 — 뒤쪽 사건은 읽을 때 빼서 겹치지 않는다(GPT 지적: 이어 쓴 앞 숫자가 빠졌다).
+// 옛 판으로 쓴 세션을 새 판으로 이어 쓰면 앞 응답은 사건으로만, 뒤 응답은 둘 다로 적힌다 — 뒤쪽 사건은 읽을 때 빼서 겹치지 않는다(검수 지적: 이어 쓴 앞 숫자가 빠졌다).
 const fileAggs = f => (f.service === 'gpt' ? [f.agg, f.alt] : [f.agg]).filter(Boolean);
 
 /* ---------- 본체 ---------- */
@@ -514,7 +514,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
   }
 
   /* ---------- 실시간 지켜보기 ---------- */
-  // 둘로 나눈다(11-16 GPT 지적: 창을 내렸다 올리면 그 사이 바뀐 기록을 15분 동안 읽지 않았고, 나중에 생긴 기록 폴더는 지켜보지 않았다).
+  // 둘로 나눈다(11-16 검수 지적: 창을 내렸다 올리면 그 사이 바뀐 기록을 15분 동안 읽지 않았고, 나중에 생긴 기록 폴더는 지켜보지 않았다).
   //  · 알림 모으기(tracker): 다 훑는 세기가 시작할 때 열고, 켜 둔 동안 계속 둔다. 기록 폴더마다 운영체제의 지켜보기 하나(fs.watch recursive)와 바뀐 파일 목록뿐이다.
   //    세기가 그 앞을 세고 그 뒤 바뀐 파일은 모두 목록에 모이므로, 목록만 읽으면 숫자가 빠지지 않는다. 30초마다 없던 기록 폴더를 다시 찾아 연다.
   //  · 실시간(live): 화면이 1분마다 live(true)로 부탁하는 동안(3분 동안 부탁이 없으면 내린다)만 목록을 곧바로 읽어(scanFile과 같은 길) 판을 알린다.
@@ -698,7 +698,7 @@ function createTokenUsage({ root, home, env = process.env, now = () => Date.now(
       if (scanning) await scanning.catch(() => {});
       if (flushing) await flushing;
       await saving.catch(() => {});
-      // 지우지 못하면(잠김 · 권한) 빈 꺼짐 판으로 덮는다. 그것도 못 하면 실패로 알린다 — 지운 것처럼 말하고 다음 실행에 다시 켜지지 않게(GPT 지적).
+      // 지우지 못하면(잠김 · 권한) 빈 꺼짐 판으로 덮는다. 그것도 못 하면 실패로 알린다 — 지운 것처럼 말하고 다음 실행에 다시 켜지지 않게(검수 지적).
       try { fs.rmSync(file, { force: true }); removed = true; } catch {
         try { fs.writeFileSync(file, JSON.stringify({ schemaVersion: SCHEMA, kind: 'synk-token-usage', ...empty() })); removed = true; } catch { /* 아래에서 알린다 */ }
       }
