@@ -5,6 +5,7 @@ const path = require('node:path');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { 가져오기, 보고서읽기 } = require('./lib/grok-contests.cjs');
+const { 클로드지도갱신 } = require('./lib/공모지도-클로드.cjs');
 
 const 기본보관함 = path.join(os.homedir(), 'Documents', 'SYNK-보관함', '지원사업');
 
@@ -59,7 +60,16 @@ async function main(argv) {
   if (rendered.status !== 0 || !fs.existsSync(map)) {
     throw Error('그록 회차는 보관했지만 공모 지도를 만들지 못했습니다. ' + (rendered.stderr || '').trim());
   }
-  console.log(JSON.stringify({ reports: feed.receipts, imported, candidates, map, failedReports: feed.failures || [] }));
+  const summary = { reports: feed.receipts, imported, candidates, map, failedReports: feed.failures || [] };
+  if (config.artifact_sync) {
+    try {
+      summary.artifact = await 클로드지도갱신(config, map);
+    } catch (error) {
+      summary.artifact = { status: 'error', message: error.message };
+      process.exitCode = 1;
+    }
+  }
+  console.log(JSON.stringify(summary));
   if (feed.failures?.length) process.exitCode = 1;
 }
 

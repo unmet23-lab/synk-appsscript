@@ -226,3 +226,27 @@ test('공식 원문에서 AI 금지가 확인된 공모는 열린 목록에 나�
   const combined = 그록.합치기(base, 그록.보고서읽기(폴더));
   assert.deepEqual(지도.자료만들기({ items: [] }, combined, 지금).열린, []);
 });
+
+test('Claude 지도 예약은 같은 비공개 주소와 생성된 파일에 한해서만 읽기와 게시를 허용한다', () => {
+  const 실행기 = path.join(__dirname, '..', 'tools', 'lib', '공모지도-클로드.cjs');
+  const url = 'https://claude.ai/artifact/example';
+  const map = path.join(os.tmpdir(), '공모지도.html');
+  const env = { ...process.env, SYNK_CONTEST_ARTIFACT_URL: url, SYNK_CONTEST_ARTIFACT_HTML: map };
+  const 게시 = { action: 'publish', url, file_path: map };
+  const 입력과판정 = [
+    [{ action: 'read', url }, 'allow'],
+    [게시, 'allow'],
+    [{ ...게시, force: true }, 'deny'],
+    [{ ...게시, url: 'https://claude.ai/artifact/other' }, 'deny'],
+    [{ ...게시, file_path: path.join(os.tmpdir(), '다른자료.html') }, 'deny'],
+    [{ action: 'publish', file_path: map }, 'deny'],
+    [{ action: 'delete', url }, 'deny'],
+  ];
+  for (const [tool_input, 판정] of 입력과판정) {
+    const result = spawnSync(process.execPath, [실행기, '--artifact-permission'], {
+      input: JSON.stringify({ tool_name: 'Artifact', tool_input }), env, encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, 판정);
+  }
+});
