@@ -156,8 +156,15 @@ function 동일공고(a, b) {
   if (editionA && editionB && editionA !== editionB) return false;
   const idA = 비교글(a.noticeId), idB = 비교글(b.noticeId);
   if (idA && idB && idA !== idB) return false;
-  const urls = (item) => [item.officialUrl, item.discoveryUrl, ...(item.urls || [])].map(주소)
-    .filter((url) => url && (new URL(url).pathname !== '/' || new URL(url).search));
+  const urls = (item) => [item.officialUrl, item.discoveryUrl, ...(item.urls || [])].map(주소).filter(url => {
+    if (!url) return false;
+    const page = new URL(url);
+    const last = page.pathname.split('/').filter(Boolean).at(-1) || '';
+    if (last && !/^(?:(?:bbs|board|notice|contest|article|post|news)?list|index|search|bbs|board|notices?|contests?)(?:\.[a-z0-9]+)?$/i.test(last)) return true;
+    // 게시판, 검색, 페이지 번호는 공고 하나를 식별하지 못한다.
+    return [...page.searchParams].some(([key, value]) => value && /^(?:article_?(?:no|id|sn)|ntt_?(?:id|sn)|wr_id|post_?id|idx|bbscttSn|doc_?id)$/i.test(key) ||
+      /^(?:id|p|no|seq|sn)$/i.test(key) && /\d/.test(value));
+  });
   const left = urls(a);
   if (urls(b).some((url) => left.includes(url))) return true;
   if (hostA && hostB && hostA !== hostB) return false;
@@ -185,6 +192,8 @@ function 갱신(old, entry) {
   if (!old) return entry;
   return {
     ...entry,
+    ...(entry.geminiOnly && !old.geminiOnly && { geminiOnly: false }),
+    ...(entry.accepting == null && old.accepting != null && { accepting: old.accepting }),
     officialUrl: entry.officialUrl || old.officialUrl,
     organizer: entry.organizer || old.organizer,
     edition: entry.edition || old.edition,
@@ -228,6 +237,7 @@ function 합치기(통합, reports) {
       }
       const [index, ...duplicates] = matching;
       if (index !== undefined) {
+        if (row.onlyExisting && !items[index].grok_contest && !duplicates.some(i => items[i].grok_contest)) continue;
         let evidence = items[index].grok_contest;
         for (const other of duplicates.reverse()) {
           if (other < existingCount) continue;
@@ -236,8 +246,8 @@ function 합치기(통합, reports) {
           keys.splice(other, 1);
         }
         items[index].grok_contest = 갱신(evidence, row);
-      } else {
-        const id = 'grok-contest:' + sha([row.organizer, row.title, row.edition, row.noticeId, row.officialUrl].join('\n')).slice(0, 20);
+      } else if (!row.onlyExisting) {
+        const id = (row.geminiOnly ? 'gemini-contest:' : 'grok-contest:') + sha([row.organizer, row.title, row.edition, row.noticeId, row.officialUrl].join('\n')).slice(0, 20);
         keys.push(row);
         items.push({ id, title: row.title, grok_contest: row });
       }
@@ -246,4 +256,4 @@ function 합치기(통합, reports) {
   return { ...통합, items };
 }
 
-module.exports = { 가져오기, 보고서읽기, 합치기, 동일공고, 주소, 사이트, 모음사이트, 본문 };
+module.exports = { 가져오기, 보고서읽기, 합치기, 동일공고, 주소, 사이트, 모음사이트, 본문, 날짜, 한국마감, 회차시각 };

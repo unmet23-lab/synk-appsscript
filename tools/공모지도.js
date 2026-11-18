@@ -23,6 +23,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 const 그록 = require('./lib/grok-contests.cjs');
+const { includeReviews } = require('./lib/contest-map-review.cjs');
 
 const 단계들 = ['준비 중', '결과 기다림', '선정', '안 됨', '접음'];
 const 기본보관함 = path.join(os.homedir(), 'Documents', 'SYNK-보관함', '지원사업');
@@ -106,7 +107,7 @@ function 열린영상(통합, 현황, 기준일, 지금) {
   const 나옴 = [];
   for (const o of 통합.items || []) {
     const 그록공고 = o.grok_contest;
-    if (그록공고?.ai.status === 'prohibited' || /^(포기|자격 미달|제외)$/.test(o.application_status?.state || o.application_status || '')) continue;
+    if (그록공고?.accepting === false || 그록공고?.ai.status === 'prohibited' || /^(포기|자격 미달|제외)$/.test(o.application_status?.state || o.application_status || '')) continue;
     const 기존값 = o.ai_video?.value;
     const 영상 = 그록공고?.video ?? ['AI 영상', '영상'].includes(기존값);
     const 허용 = { allowed: '허용', conditional: '조건부 허용', unconfirmed: '확인 필요' }[그록공고?.ai.status];
@@ -136,7 +137,7 @@ function 열린영상(통합, 현황, 기준일, 지금) {
       주소: 공고주소(o),
       원문확인안함: 그록공고 ? !그록공고.officialUrl : !!o.grok_20261117,
       ...(그록공고 && {
-        그록: true, AI허용: 허용, AI주소: 그록공고.ai.url, 마감주소: 그록공고.deadline.url,
+        그록: !그록공고.geminiOnly, ...(그록공고.reviewed && { 카본확인: true }), AI허용: 허용, AI주소: 그록공고.ai.url, 마감주소: 그록공고.deadline.url,
         제출물: 그록공고.deliverables.items, 제출물주소: 그록공고.deliverables.url,
       }),
     });
@@ -462,7 +463,7 @@ function 읽기(폴더) {
   const 통합 = JSON.parse(fs.readFileSync(path.join(폴더, '통합목록.json'), 'utf8'));
   let 설정 = {};
   try { 설정 = JSON.parse(fs.readFileSync(path.join(폴더, '공모지도.json'), 'utf8')); } catch {}
-  return { 현황, 통합: 그록.합치기(통합, 그록.보고서읽기(폴더)), 설정 };
+  return { 현황, 통합: 그록.합치기(통합, includeReviews(폴더, 그록.보고서읽기(폴더))), 설정 };
 }
 
 async function main(argv) {

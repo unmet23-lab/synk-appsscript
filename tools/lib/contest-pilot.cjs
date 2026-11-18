@@ -7,6 +7,7 @@ const { createHash, randomUUID } = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const { 동일공고 } = require('./grok-contests.cjs');
 const { settleDisputes } = require('./contest-carbon.cjs');
+const { storeRound } = require('./contest-map-review.cjs');
 const { atomicJson, acquireLock, replaceFile } = require('./backup-primitives.cjs');
 
 const times = ['0830', '1430', '2000'];
@@ -49,6 +50,12 @@ function openTrial(folder) {
 
 function scheduled(slot) {
   return Date.parse(slot.slice(0, 10) + 'T' + slot.slice(11, 13) + ':' + slot.slice(13) + ':00+09:00');
+}
+
+function nextScheduled(slot) {
+  const next = times.indexOf(slot.slice(11)) + 1;
+  const sameDay = scheduled(slot.slice(0, 11) + (times[next] || times[0]));
+  return next === times.length ? sameDay + 86400000 : sameDay;
 }
 
 function receiveGemini(config) {
@@ -106,14 +113,14 @@ function isAvailable(report) {
       [sourceName(entry), entry?.status, entry?.reason].join(' ')));
 }
 
-function accept(trial, provider, report, now) {
+function validateReceipt(provider, slot, report, now) {
   const isGemini = provider === 'gemini';
-  const slot = isGemini ? report?.slot : report?.reportId;
-  if (!trial.slots.includes(slot) || scheduled(slot) > +now) return false;
+  if (!report || (isGemini ? report.slot : report.reportId) !== slot) throw Error(slot + ' 원본의 회차가 다릅니다.');
   const receivedAt = Date.parse(report.checkedAt);
   if (isGemini && (report.schema !== 'synk-contest-pilot-v1' || report.source !== provider ||
       !/(?:[+-]\d{2}:\d{2}|Z)$/i.test(report.checkedAt || '') || !Number.isFinite(receivedAt) ||
-      receivedAt < scheduled(slot) - 15 * 60000 || receivedAt > +now + 5 * 60000)) {
+      receivedAt < scheduled(slot) - 15 * 60000 || receivedAt >= nextScheduled(slot) - 15 * 60000 ||
+      receivedAt > +now + 5 * 60000)) {
     throw Error(slot + ' Gemini 결과의 출처나 실제 확인 시각이 맞지 않습니다.');
   }
   if (!isGemini && report.schema !== 'synk-grok-contests-v1') throw Error(slot + ' 그록 회차 형식이 다릅니다.');
@@ -125,11 +132,32 @@ function accept(trial, provider, report, now) {
         [item.officialUrl, item.discoveryUrl].some(u => typeof u === 'string' && /^https?:\/\//i.test(u)) &&
         (item.deliverables?.items == null || Array.isArray(item.deliverables.items) &&
          item.deliverables.items.every(x => typeof x === 'string')))) throw Error(slot + ' 조사 결과가 불완전합니다.');
+}
+
+function storedReceipt(trial, slot, provider) {
   const file = receiptPath(trial, slot, provider);
-  if (fs.existsSync(file)) {
-    const old = read(file);
+  if (!fs.existsSync(file)) return {};
+  const bytes = fs.readFileSync(file);
+  try {
+    const value = JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/, ''));
+    validateReceipt(provider, slot, value, Infinity);
+    return { value };
+  } catch { return { invalid: bytes }; }
+}
+
+function accept(trial, provider, report, now) {
+  const slot = provider === 'gemini' ? report?.slot : report?.reportId;
+  if (!trial.slots.includes(slot) || scheduled(slot) > +now) return false;
+  validateReceipt(provider, slot, report, now);
+  const file = receiptPath(trial, slot, provider);
+  const { value: old, invalid } = storedReceipt(trial, slot, provider);
+  if (invalid) {
+    const backup = path.join(trial.dir, '이전원본', slot + '.' + provider + '.' + digest(invalid) + '.invalid');
+    fs.mkdirSync(path.dirname(backup), { recursive: true });
+    if (!fs.existsSync(backup)) fs.copyFileSync(file, backup, fs.constants.COPYFILE_EXCL);
+  } else if (old) {
     if (JSON.stringify(old) === JSON.stringify(report)) return true;
-    if (isAvailable(old) && !isAvailable(report) || Date.parse(old.checkedAt) > receivedAt) return false;
+    if (isAvailable(old) && !isAvailable(report) || Date.parse(old.checkedAt) > Date.parse(report.checkedAt)) return false;
     const hash = digest(JSON.stringify(old));
     save(path.join(trial.dir, '이전원본', slot + '.' + provider + '.' + hash + '.json'), old);
   }
@@ -184,8 +212,8 @@ function compareSlot(grok, gemini) {
 }
 
 function needsReceipt(trial, slot, provider) {
-  const file = receiptPath(trial, slot, provider);
-  return !fs.existsSync(file) || !isAvailable(read(file));
+  const { value } = storedReceipt(trial, slot, provider);
+  return !value || !isAvailable(value);
 }
 
 function cardsFrom(html) {
@@ -210,24 +238,28 @@ function checkMaps(summary, groups, remote) {
     }
   }
   return { pc: summary.pc, web, version: remote?.version || summary.artifact?.version,
+    cardsChecked: Boolean(pc && live) && groups.every(g => g.map.pcMatches <= 1 && g.map.pcMatches === g.map.webMatches && g.map.sameFields !== false),
+    receivedWithError: Boolean(summary.grokError), failedReports: summary.failedReports || [],
     ...(summary.artifact?.reset && { retryAt: summary.artifact.reset }) };
 }
 
 function writeReport(dir, status) {
   const cell = value => String(value ?? '').replace(/[\r\n|]/g, ' ').replace(/([*_[\]<>\\])/g, '\\$1').trim();
   const time = s => s.slice(0, 10) + ' ' + s.slice(11, 13) + ':' + s.slice(13);
-  const receipt = r => !r || r.status === 'pending' ? '도착 전' : r.status === 'unavailable' ? '접근 실패' :
+  const receipt = (r, final) => !r || r.status === 'pending' ? (final ? '미수신' : '도착 전') :
+    ['unavailable', 'access-error'].includes(r.status) ? '접근 실패' : r.status === 'invalid' ? '원본 형식 오류' :
     r.items + '건' + (r.unavailable.length ? ' · 일부 출처 접근 실패' : '');
   const text = ['# 맹꽁이와 Gemini 공모전 비교', '',
     '서울 시간 기준으로 ' + status.total + '회 중 ' + status.due + '회의 예정 시각이 지났고, 양쪽 결과가 도착한 ' + status.paired + '쌍을 비교했습니다.',
     '같은 회차에서 서로 다르게 보고한 공고는 ' + status.disputes + '건이며, 카본이 모든 쟁점의 공식 근거를 확인한 공고는 ' + status.confirmed + '건입니다.', '',
     '| 예정 시각 (KST) | 그록 | Gemini | 비교 |', '|---|---|---|---|'];
   for (const r of status.rounds) {
-    const result = r.status === 'scheduled' ? '예정' : r.status === 'pending' ? '결과 대기' :
+    const result = r.status === 'scheduled' ? '예정' : r.status === 'pending' ? '결과 대기' : r.status === 'unpaired' ? '미대조 확정' :
       '완료 · 불일치 ' + r.notices.filter(n => n.fields.length).length + '건';
-    text.push('| ' + [time(r.slot), r.status === 'scheduled' ? '예정' : receipt(r.grok),
-      r.status === 'scheduled' ? '예정' : receipt(r.gemini), result].join(' | ') + ' |');
+    text.push('| ' + [time(r.slot), r.status === 'scheduled' ? '예정' : receipt(r.grok, r.status === 'unpaired'),
+      r.status === 'scheduled' ? '예정' : receipt(r.gemini, r.status === 'unpaired'), result].join(' | ') + ' |');
   }
+  if (status.unpaired) text.push('', '추가 회수 기간이 끝났습니다. 양쪽 결과를 확보하지 못한 ' + status.unpaired + '회는 비교 건수에서 제외했습니다.');
   const coverage = status.coverage;
   text.push('', '그록에만 나온 공고 ' + coverage.grokOnly + '건, Gemini에만 나온 공고 ' + coverage.geminiOnly +
     '건입니다. 회차 안에서 반복한 공고는 그록 ' + coverage.grokDuplicates + '건, Gemini ' + coverage.geminiDuplicates + '건입니다.');
@@ -252,11 +284,13 @@ function writeReport(dir, status) {
       skipped: '게시 대기', unchecked: '미확인' };
     text.push('', 'PC 지도는 ' + (status.maps.pc === 'rendered' ? '생성 완료' : '확인 필요') +
       ', 웹 지도는 ' + cell(webLabels[status.maps.web] || status.maps.web) + '입니다.');
-  }
+  } else if (status.mapCheck === 'pending') text.push('', '회차 비교를 저장했습니다. PC와 웹 지도 반영을 확인 중입니다.');
   for (const e of status.errors) text.push('', '실행 중 확인할 사항 · ' + cell(e));
   const file = path.join(dir, '비교결과.md');
+  const contents = text.join('\n') + '\n';
+  if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === contents) return;
   const temp = path.join(dir, randomUUID() + '.tmp');
-  try { fs.writeFileSync(temp, text.join('\n') + '\n', { flag: 'wx' }); replaceFile(temp, file); }
+  try { fs.writeFileSync(temp, contents, { flag: 'wx' }); replaceFile(temp, file); }
   finally { fs.rmSync(temp, { force: true }); }
 }
 
@@ -268,14 +302,15 @@ async function runTrial(trial, options = {}) {
     if (!current || current.closed) return { status: 'closed', errors: [] };
     const now = options.now || new Date();
     if (+now > scheduled(current.slots.at(-1)) + 3 * 86400000 && !(options.rawGrok || []).some(r => current.slots.includes(r?.reportId)) &&
-        current.previous && now - Date.parse(current.previous.checkedAt) < 20 * 3600000) {
+        current.previous && !current.previous.collectionClosed && current.previous.paired < current.slots.length &&
+        now - Date.parse(current.previous.checkedAt) < 20 * 3600000) {
       return { status: 'retry-next-day', paired: current.previous.paired, total: current.slots.length, errors: [] };
     }
     return await runLocked(current, options);
   } finally { release(); }
 }
 
-async function runLocked(trial, { rawGrok = [], now = new Date(), receive = receiveGemini, settle = settleDisputes, map, remoteMap } = {}) {
+async function runLocked(trial, { rawGrok = [], now = new Date(), receive = receiveGemini, settle = settleDisputes, map, remoteMap, syncMaps, grokReadOk = true } = {}) {
   const due = trial.slots.filter(s => scheduled(s) <= +now);
   const errors = [];
   function ingest(provider, records) {
@@ -284,56 +319,78 @@ async function runLocked(trial, { rawGrok = [], now = new Date(), receive = rece
     }
   }
   ingest('grok', rawGrok);
-  if (due.some(s => needsReceipt(trial, s, 'gemini'))) {
-    try { ingest('gemini', await receive(trial.config)); } catch (e) { errors.push(e.message); }
+  let geminiError = trial.previous?.collectionClosed ? trial.previous.geminiError : null;
+  if (!trial.previous?.collectionClosed && due.some(s => needsReceipt(trial, s, 'gemini'))) {
+    try { ingest('gemini', await receive(trial.config)); } catch (e) { geminiError = e.message; errors.push(e.message); }
   }
   const rounds = [];
   const allGroups = [];
   const todo = [];
+  const last = scheduled(trial.slots.at(-1));
+  const previousFirst = trial.previous?.firstAllDueAttempt || (trial.previous?.due === trial.slots.length ? trial.previous.checkedAt : null);
+  const firstAllDueAttempt = previousFirst || (due.length === trial.slots.length ? now.toISOString() : null);
+  const collectionClosed = Boolean(trial.previous?.collectionClosed || grokReadOk && !geminiError && previousFirst && +now >= last + 3 * 86400000 &&
+    +now - Date.parse(previousFirst) >= 20 * 3600000);
   for (const slot of trial.slots) {
     const round = { slot, status: 'scheduled' };
     rounds.push(round);
     if (!due.includes(slot)) continue;
     const reports = {};
     for (const provider of providers) {
-      const file = receiptPath(trial, slot, provider);
-      reports[provider] = fs.existsSync(file) ? read(file) : null;
-      const r = reports[provider];
-      round[provider] = r ? { status: isAvailable(r) ? 'received' : 'unavailable', items: r.items.length, unavailable: r.unavailable || [] } : { status: 'pending' };
+      const { value: r, invalid } = storedReceipt(trial, slot, provider);
+      reports[provider] = r;
+      const missing = invalid ? 'invalid' : provider === 'gemini' && geminiError ? 'access-error' : 'pending';
+      round[provider] = r ? { status: isAvailable(r) ? 'received' : 'unavailable', items: r.items.length, unavailable: r.unavailable || [] } : { status: missing };
     }
-    round.status = 'pending';
+    round.status = collectionClosed ? 'unpaired' : 'pending';
     if (providers.some(p => round[p].status !== 'received')) continue;
     round.status = 'paired';
     round.notices = compareSlot(reports.grok, reports.gemini);
     for (const group of round.notices.filter(g => g.fields.length)) {
       group.claimHash = digest(JSON.stringify([group.grok, group.gemini]));
       const prior = trial.previous?.rounds.find(r => r.slot === slot)?.notices?.find(n => n.claimHash === group.claimHash);
-      if (prior?.carbon?.status === 'confirmed') group.carbon = prior.carbon;
+      if (prior?.carbon?.status === 'confirmed' && (!prior.carbon.model || prior.carbon.dataVersion === 2)) group.carbon = prior.carbon;
+      else if (trial.previous?.collectionClosed && ['needs-evidence', 'needs-official-source'].includes(prior?.carbon?.status)) group.carbon = prior.carbon;
       else todo.push(group);
     }
     allGroups.push(...round.notices);
   }
   const disputed = allGroups.filter(group => group.fields.length);
   try { if (todo.length) await settle(trial.dir, todo); } catch (e) { errors.push(e.message); }
-  let maps;
-  try { maps = checkMaps(map, allGroups, remoteMap); }
-  catch { errors.push('지도 원문을 대조하지 못했습니다. 두 조사 원본과 비교 결과는 저장했습니다.'); }
+  for (const round of rounds) {
+    try { storeRound(trial.dir, round); }
+    catch { errors.push(round.slot + ' 검증값을 지도에 반영하지 못했습니다. 다음 실행에서 다시 확인합니다.'); }
+  }
   const status = {
     connection: digest(JSON.stringify(trial.config)), checkedAt: now.toISOString(), total: trial.slots.length, paired: rounds.filter(r => r.status === 'paired').length,
     due: due.length, disputes: disputed.length,
-    confirmed: disputed.filter(c => c.carbon?.status === 'confirmed').length, errors, maps, rounds,
+    confirmed: disputed.filter(c => c.carbon?.status === 'confirmed').length, errors, rounds, firstAllDueAttempt, collectionClosed,
+    unpaired: rounds.filter(r => r.status === 'unpaired').length, ...(geminiError && { geminiError }),
     coverage: {
       grokOnly: allGroups.filter(g => !g.gemini.length).length, geminiOnly: allGroups.filter(g => !g.grok.length).length,
       grokDuplicates: allGroups.reduce((n, g) => n + g.duplicates.grok, 0), geminiDuplicates: allGroups.reduce((n, g) => n + g.duplicates.gemini, 0),
     },
   };
-  const last = scheduled(trial.slots.at(-1));
+  const journal = path.join(trial.dir, '비교현황.json');
+  if (syncMaps) {
+    status.closed = false;
+    status.mapCheck = 'pending';
+    save(journal, status);
+    writeReport(trial.dir, status);
+  }
+  try {
+    if (syncMaps) ({ map, remoteMap } = await syncMaps());
+    status.maps = checkMaps(map, allGroups, remoteMap);
+    if (status.maps) status.mapCheck = 'checked';
+  } catch { errors.push('지도 원문을 대조하지 못했습니다. 두 조사 원본과 비교 결과는 저장했습니다.'); }
   // 조사 기간 뒤에도 늦게 도착한 원본과 웹 결과를 회수한다. 출처에 없는 요건은 그대로 미확인으로 끝낸다.
   const settled = status.confirmed === status.disputes || +now > last + 3 * 86400000 &&
     disputed.every(g => ['confirmed', 'needs-evidence', 'needs-official-source'].includes(g.carbon?.status));
-  status.closed = status.paired === status.total && settled && !errors.length && ['current', 'updated'].includes(maps?.web);
+  const mapReady = status.maps?.pc === 'rendered' && status.maps.cardsChecked && ['current', 'updated'].includes(status.maps.web) &&
+    !status.maps.receivedWithError && !status.maps.failedReports.some(id => trial.slots.includes(id));
+  status.closed = status.paired + status.unpaired === status.total && settled && !errors.length && mapReady;
   writeReport(trial.dir, status);
-  save(path.join(trial.dir, '비교현황.json'), status);
+  save(journal, status);
   return { total: status.total, due: status.due, paired: status.paired, disputes: status.disputes, confirmed: status.confirmed, errors };
 }
 

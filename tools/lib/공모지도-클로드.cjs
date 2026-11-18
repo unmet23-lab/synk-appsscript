@@ -5,6 +5,8 @@ const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
 const { spawn, spawnSync } = require('node:child_process');
+const { createHash } = require('node:crypto');
+const { atomicJson } = require('./backup-primitives.cjs');
 
 const 확인한도 = 60000;
 const 실행한도 = 150000;
@@ -174,6 +176,36 @@ async function 구독확인(cli, env, cwd) {
   return Number(week[1]) >= 100 ? { status: 'deferred', reset: week[2] || '다음 주간 초기화' } : null;
 }
 
+function 한도초기화시각(label, now) {
+  const m = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2}), (\d{1,2})(?::(\d{2}))?\s*(am|pm) \(Asia\/Seoul\)$/i.exec(label || '');
+  if (!m) return null;
+  const month = 'jan feb mar apr may jun jul aug sep oct nov dec'.split(' ').indexOf(m[1].toLowerCase());
+  const day = Number(m[2]), hour = Number(m[3]), minute = Number(m[4] || 0);
+  if (day < 1 || day > 31 || hour < 1 || hour > 12 || minute > 59) return null;
+  const year = new Date(now + 9 * 3600000).getUTCFullYear();
+  const localHour = hour % 12 + (m[5].toLowerCase() === 'pm' ? 12 : 0);
+  for (const y of [year, year + 1]) {
+    const local = Date.UTC(y, month, day, localHour, minute);
+    const reset = local - 9 * 3600000;
+    if (new Date(local).getUTCDate() === day && reset > now && reset - now <= 8 * 86400000) return reset;
+  }
+  return null;
+}
+
+async function 게시한도확인(file, ownerKey, query, now = Date.now()) {
+  let saved;
+  try { saved = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* 처음이거나 읽지 못하면 구독의 현재 값을 확인한다. */ }
+  const reset = 한도초기화시각(saved?.reset, now);
+  if (saved?.key === ownerKey && reset && saved.checkedAt <= now && now - saved.checkedAt < 86400000) {
+    return { status: 'deferred', reset: saved.reset, usageCheck: 'cached' };
+  }
+  const limit = await query();
+  if (limit && 한도초기화시각(limit.reset, now)) {
+    try { atomicJson(file, { key: ownerKey, checkedAt: now, reset: limit.reset }); } catch { /* 다음 회차에서 다시 조회한다. */ }
+  }
+  return limit;
+}
+
 function 예약허용(call, url, map) {
   const input = call?.tool_input;
   if (call?.tool_name !== 'Artifact' || !input || !url || !map || input.url !== url) return false;
@@ -227,7 +259,9 @@ async function 클로드지도갱신(config, map, observe) {
   observe?.(old.html, old.version);
   if (같은지도(old.html, source)) return { status: 'current', version: old.version };
 
-  const deferred = await 구독확인(cli, env, cwd) || await 예약게시(cli, env, cwd, url, map);
+  const ownerKey = createHash('sha256').update(JSON.stringify([url, path.resolve(profile), owner.toLowerCase()])).digest('hex');
+  const cache = path.join(cwd, '그록공모전', '웹게시한도.json');
+  const deferred = await 게시한도확인(cache, ownerKey, () => 구독확인(cli, env, cwd)) || await 예약게시(cli, env, cwd, url, map);
   if (deferred) return deferred;
   const updated = await live();
   if (updated.id !== old.id || updated.version === old.version || !updated.html.includes(source)) {
@@ -248,4 +282,4 @@ if (require.main === module && process.argv[2] === '--artifact-permission') {
   } }));
 }
 
-module.exports = { 클로드지도갱신 };
+module.exports = { 클로드지도갱신, 게시한도확인 };
