@@ -56,7 +56,7 @@ NARR_AT = [
     (35.80, -4.5, -3.5, [("Now for the first time we wake it", "it")]),                    # 전 — 23 → 24
     (49.20, -2.5, -1.5, [("Today", "Today")]),                                             # 결 — 31
     (50.50, -2.5, -1.5, [("we send our baby out into the world", "world")]),               # 결 — 33 노을 발전소
-    (55.58, -4.0, -2.0, [("Wherever it goes it'll keep turning", "turning")]),             # 결 — 36 준호 옅은 웃음 끝 → 37 송전탑 · 도시 불
+    (55.58, -4.0, -2.0, [("Wherever it goes it'll keep turning", "turning")]),             # 결 — 36 준호가 멀리 봄 끝 → 37 송전탑 · 도시 불
 ]
 PIECE_ENDS = ["tons", "hand", "unchecked", "day", "up", "it", "Today", "world"]
 # 줄마다 목소리를 올릴 dB — 한국어 판은 「다 컸습니다」 +4 · 「이제 처음으로 깨워 봅니다」 +3만 올렸다. 영어 첫 판(같은 값)은 목소리 띠에서 목소리 − 곡이
