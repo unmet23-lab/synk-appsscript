@@ -308,6 +308,8 @@ function renderSolio(){
   if(view!=='solio'){subscriptionsBoard.setVisible(false);return;}
   $('solio-tabs').innerHTML='<p class="solio-kicker">'+escape(SOLIO.name)+'</p><div class="filters solio-tab-row">'+SOLIO_SECTIONS.map(([id,label])=>'<button type="button" data-solio-section="'+id+'"'+(solioTab===id?' aria-current="page"':'')+'>'+escape(label)+'</button>').join('')+'</div>';
   const subs=solioTab==='subscriptions';$('solio-panel').hidden=subs;$('solio-subscriptions').hidden=!subs;
+  // 새 얼굴이 보이는 동안에는 옛 구독 판을 얼굴 밑에 그리지 않는다. 보인다고 여긴 옛 판이 모델별 토큰 실시간 부탁을 새 줄과 서로 뒤집는다(2단계 둘째 조각 화면 검수)
+  if(subs&&portalHost?.isClientShown?.()){subscriptionsBoard.setVisible(false);$('solio-panel').innerHTML='';$('solio-subscriptions').innerHTML='';return;}
   if(subs){$('solio-panel').innerHTML='';subscriptionsBoard.render($('solio-subscriptions'),{signedIn:!!auth.signedIn,native:!!bridge});return;}
   subscriptionsBoard.setVisible(false);$('solio-subscriptions').innerHTML='';$('solio-panel').innerHTML=solioTab==='backup'?solioBackupHtml():solioHomeHtml();
 }

@@ -1267,7 +1267,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const kind = legacyKind;
     legacyKind = null;
     try { options.onCloseLegacy?.(kind); } catch { /* 옛 런처의 일이다 */ }
-    // 방에서 연 옛 화면(마을 기록)이면 그 방으로 돌아오고, 초점은 옛 화면을 연 단추로 간다(설계 9.1)
+    // 방에서 연 옛 화면(마을 기록)이면 그 방으로 돌아오고, 초점은 옛 화면을 연 단추로 간다(설계 9.1).
+    // 옛 내 계정 화면에서 이름 · 로그인한 곳 · 삭제 요청을 바꿨을 수 있어, 내 계정 방으로 돌아오면 조용히 다시 읽는다(검수)
+    if (aside === 'account') rooms.reloadAccount?.();
     if (!silent) { focus(aside ? 'legacy-return' : 'here'); render(); }
   }
 
@@ -1453,6 +1455,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function stopSolio() {
     // 계정이 바뀌거나 로그아웃하면 방의 상태(두 번 누르기, 열린 묶음, 남긴 글)도 모두 지운다
     rooms.reset();
+    // 방이 열린 채 계정이 정해지면(솔리오에서 방을 연 뒤 계정 열쇠가 늦게 오는 때) 그 방을 새로 열어 다시 읽는다. 빈 방으로 남기지 않는다(검수)
+    if (aside && !disposed) rooms.open(aside);
     sol.seq += 1;
     // 솔리오 회차. 읽기마다 오르는 seq와 달리 로그아웃 · 계정 바뀜으로 솔리오를 닫을 때만 오른다(0.4.95 원천 후보 검수 D3)
     sol.run += 1;

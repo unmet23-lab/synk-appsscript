@@ -672,7 +672,7 @@ test('the settings room reads its bridges when it opens, follows their notices w
   assert.equal(h.line('draft').val, '켜짐', 'a draft change notice reads the state again');
   h.rooms.close();
   assert.deepEqual(h.offs.sort(), ['desktop', 'drafts', 'updates']);
-  assert.equal(h.rooms.scene({ aside: 'settings', member: true }).settings.say, '여기서는 새 판을 받을 수 없습니다.', 'closed, the room forgets what it read and reads again next time');
+  assert.equal(h.rooms.scene({ aside: 'settings', member: true }).settings.say, '설정을 불러오고 있습니다.', 'closed, the room forgets what it read and says it is reading until the update state comes (화면 검수)');
 });
 
 test('pressing a start-up switch sends the flipped value; 트레이로 시작 is refused while 자동 시작 is off; a failure says so in the line', async () => {
@@ -918,4 +918,40 @@ test('a login that ends while another room is open does not write into that room
   h.rooms.observe({ ...h.snap, login: { id: 'l9', service: 'gpt', stage: 'done' } });
   h.rooms.open('manage');
   assert.equal(h.room().foot, '로그인 정보와 사용량은 이 PC 밖으로 나가지 않습니다.');
+});
+
+/* ── 2단계 둘째 조각 최종 검수의 고침 ── */
+test('a press refused because another job is out says so in its own line, but not in the line whose own job is out', async () => {
+  let release;
+  const h = harness({ rows: [weekly('c', 'claude', { state: 'error' }), weekly('g', 'gpt')], answers: { check: () => new Promise(r => { release = r; }) } });
+  const first = h.press('a:c', 'reread-one');
+  await h.press('a:g', 'grp', 'cost');
+  await h.press('a:g', 'save-cost', '', { price: '1' });
+  assert.ok(!h.calls.some(c => c[0] === 'save'), 'nothing is sent while another job is out');
+  assert.equal(h.live('a:g'), ROOM_BUSY_SAY);
+  await h.press('a:c', 'reread-one');
+  assert.notEqual(h.live('a:c'), ROOM_BUSY_SAY, 'the line whose own job is out stays quiet');
+  release({ ...h.snap, seq: 9 });
+  await first;
+});
+
+test('the settings room says it is reading until the update state comes, then says the state', async () => {
+  let release;
+  const h = setHarness({ answers: { 'updates.status': () => new Promise(r => { release = r; }) } });
+  h.rooms.open('settings'); await tick();
+  assert.equal(h.room().say, '설정을 불러오고 있습니다.');
+  assert.ok(!h.room().rows.some(r => r.key === 'update'), 'no update line claims anything yet');
+  release({ state: 'current', currentVersion: '0.4.97' }); await settle();
+  assert.equal(h.room().say, '이 PC의 SYNK는 최신 판입니다.');
+});
+
+test('coming back to 내 계정 from the old screen reads the account again quietly', async () => {
+  const h = accHarness();
+  h.rooms.open('account'); await settle();
+  const reads = h.ops().filter(o => o === 'accountView').length;
+  h.rooms.reloadAccount(); await settle();
+  assert.equal(h.ops().filter(o => o === 'accountView').length, reads + 1);
+  assert.ok(h.room().rows.length > 0, 'the shown account stays while it reads');
+  h.rooms.close(); h.rooms.reloadAccount(); await settle();
+  assert.equal(h.ops().filter(o => o === 'accountView').length, reads + 1, 'nothing is read when the room is not open');
 });

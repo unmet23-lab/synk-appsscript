@@ -58,6 +58,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   let sets = freshSet();
 
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
+  // 다른 일이 도는 동안 누른 단추는 보내지 않고 그 줄에 알린다. 그 줄 자신의 일이 도는 중이면(그 단추가 흐려져 있다) 알리지 않는다(검수)
+  const refuseBusy = key => { if (st.busy && !st.busy.startsWith(key + ':')) { note(key, ROOM_BUSY_SAY); changed(); } };
   const ask = req => ({ ...req, seq: ++seq });
   function disarm() { st.armed = null; if (armTimer !== null) { clearTimer(armTimer); armTimer = null; } }
   function armedNow() { if (st.armed && now() - st.armed.at >= ROOM_TIMING.armExpire) st.armed = null; return st.armed; }
@@ -79,7 +81,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
 
   /* 한 번에 한 일만 보낸다. 계정이 바뀌거나 방을 지우면(reset) 늦게 온 답을 버린다 */
   async function run(key, act, task) {
-    if (st.busy || !subs) return null;
+    if (st.busy || !subs) { refuseBusy(key); return null; }
     const my = gen;
     st.busy = key + ':' + act;
     changed();
@@ -200,7 +202,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   /* 시작했으면 true다. 다른 일이 돌거나 읽는 중이면 시작하지 않고 false다.
      막이(st.busy)는 이 일이 건 것만 푼다. 다시 읽는 동안 다른 방에서 시작한 일의 막이를 지우지 않는다(검수 B) */
   async function accAct(key, act, task, { reload = true } = {}) {
-    if (!account || st.busy || acc.loading) return false;
+    if (!account) return false;
+    if (st.busy || acc.loading) { if (st.busy) refuseBusy(key); else { note(key, ROOM_BUSY_SAY); changed(); } return false; }
     const my = accGen, tag = key + ':' + act;
     const release = () => { if (st.busy === tag) st.busy = null; };
     st.busy = tag;
@@ -273,6 +276,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   /* 업데이트 동작(update-view.mjs run과 같은 규칙). 설치는 쓰던 글 확인(런처의 confirmUpdateInstall)을 먼저 거치고, 그사이 판이 바뀌었으면 보내지 않는다 */
   async function updateRun(act) {
     const u = dev.updates, s = sets, cur = s.update, platform = envNow()?.platform || '';
+    if (u && cur && st.busy) { refuseBusy('update'); return; }
     if (!u || !cur || st.busy || ['disabled', 'checking', 'downloading', 'opening'].includes(cur.state) || (cur.state === 'ready' && updateAuto(cur, platform))) return;
     if ((act === 'update-download' && cur.state !== 'available') || (act === 'update-install' && cur.state !== 'ready')) return;
     const method = UPDATE_METHOD[act];
@@ -300,7 +304,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   }
   /* 데스크톱 설정 한 칸을 바꾼다. 본체가 바꾼 판을 돌려주고, 바뀜 알림으로도 같은 판이 온다 */
   async function deskUpdate(key, act, patch, okText = '') {
-    if (typeof dev.desktop?.update !== 'function' || st.busy) return;
+    if (typeof dev.desktop?.update !== 'function') return;
+    if (st.busy) { refuseBusy(key); return; }
     const my = gen, s = sets;
     st.busy = key + ':' + act;
     changed();
@@ -573,7 +578,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
       }
       case 'draft': {
         const d = sets.drafts;
-        if (typeof dev.drafts?.set !== 'function' || !(d?.ok === true && d.available === true) || !sets.member || st.busy) return true;
+        if (typeof dev.drafts?.set !== 'function' || !(d?.ok === true && d.available === true) || !sets.member) return true;
+        if (st.busy) { refuseBusy(key); return true; }
         const my = gen, a = accGen, s = sets;
         st.busy = 'draft:draft';
         changed();
@@ -809,6 +815,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     tokLoad,
     syncLive,
     accountChanged,
+    /* 옛 내 계정 화면에서 돌아올 때 컨트롤러가 부른다. 내 계정 방이 열려 있으면 보이던 자료를 둔 채 조용히 다시 읽는다(검수) */
+    reloadAccount() { if (current === 'account') void accLoad({ quiet: true }); },
     /* ctx: { checking, name(로그인 정보의 이름), accountKey, member(회원으로 보이는가) } */
     scene({ aside = null, checking = false, name = '', accountKey = '', member = false } = {}) {
       const req = { focus: focusReq, opening: openReq, closing: closeReq };
@@ -818,7 +826,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         // 구독 팁 켜고 끄기는 회원의 구독 자료가 있을 때만 둔다(저장 자리가 구독 판의 settings.tipsOff다, 설계 검토 D7)
         const snap = snapshot(), tipsOff = member && snap && snap.ok !== false && snap.settings ? snap.settings.tipsOff === true : null;
         sets.member = !!member;
-        return { settings: { ...settingsRoom({ update: sets.update, desktop: sets.desktop, drafts: sets.drafts, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now()), ...req } };
+        return { settings: { ...settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now()), ...req } };
       }
       return null;
     },

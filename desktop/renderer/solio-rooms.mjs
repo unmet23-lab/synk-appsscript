@@ -1008,13 +1008,15 @@ export const DRAFT_SAY = '쓰던 글 되살리기를 바꾸지 못했습니다. 
    st: 방 상태(busy · notes · grps · roomNote · restChoice). 바꿀 수 없는 칸은 줄에서 뺀다(편의 79행과 같다) */
 export function settingsRoom(s = {}, st = {}, now = Date.now()) {
   const env = s.env || {}, u = updateOf(s.update) || { state: 'disabled' };
+  // 업데이트 상태를 아직 받지 못한 동안(다리는 있음)에는 「받을 수 없다」고 하지 않는다. 방을 열면 낭독기가 맨 위 문장을 먼저 읽는다(검수)
+  const loading = s.loading === true && !s.update;
   const desk = s.desktop?.ok === true ? s.desktop : null, p = desk?.preferences || {}, cap = desk?.capabilities || {};
-  const rows = [updateRow(u, env, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), draftRow(s, st)].filter(Boolean);
+  const rows = [loading ? null : updateRow(u, env, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), draftRow(s, st)].filter(Boolean);
   // 둘째 줄은 켜지는 방식이다(시안 세 갈래). 자동 시작을 바꿀 수 없는 판이면 비운다
   const then = cap.launchAtLogin ? (!p.launchAtLogin ? '컴퓨터를 켤 때 함께 켜지 않습니다.' : p.startHidden && cap.tray ? '컴퓨터를 켜면 창 없이 함께 켜집니다.' : '컴퓨터를 켜면 창과 함께 켜집니다.') : '';
   const version = verOf(u.currentVersion) || verOf(env.version);
   const foot = st.roomNote || ['SYNK Platform' + (version ? ' ' + version : ''), env.mode && env.mode !== 'release' ? '시험판' : '', OS_NAME[env.platform] || ''].filter(Boolean).join(' · ');
-  return { say: updateSay(u), then, rows, foot, act: ['문제 알리기용 정보 복사', 'diag-copy', st.busy === 'settings:diag-copy' ? 'off' : ''] };
+  return { say: loading ? '설정을 불러오고 있습니다.' : updateSay(u), then, rows, foot, act: ['문제 알리기용 정보 복사', 'diag-copy', st.busy === 'settings:diag-copy' ? 'off' : ''] };
 }
 function updateRow(u, env, st) {
   const platform = env.platform || '', state = u.state, auto = updateAuto(u, platform);

@@ -1858,3 +1858,11 @@ test('the launcher hands the settings room its bridges: preferences, drafts, not
   assert.match(launcher, /desktop,drafts,notices,updates,environment:\(\)=>environment,copyDiagnostics\}/);
   assert.match(launcher, /safeDiagnostics\(\{environment,auth,clients,view:'settings',online:navigator\.onLine\}\)/);
 });
+
+test('a room left open over an account reset opens again, the old account screen sends 내 계정 back to read, and the old board stays off under the face (2단계 둘째 조각 최종 검수)', () => {
+  const ctl = fs.readFileSync(new URL('../renderer/orb-face.mjs', import.meta.url), 'utf8');
+  assert.match(ctl, /rooms\.reset\(\);\s*\/\/[^\n]*\n\s*if \(aside && !disposed\) rooms\.open\(aside\);/);
+  assert.match(ctl, /if \(aside === 'account'\) rooms\.reloadAccount\?\.\(\);/);
+  const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
+  assert.match(launcher, /if\(subs&&portalHost\?\.isClientShown\?\.\(\)\)\{subscriptionsBoard\.setVisible\(false\);/);
+});
