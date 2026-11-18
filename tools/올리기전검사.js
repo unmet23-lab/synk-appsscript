@@ -28,6 +28,7 @@
  *      LAB 두 채널 판 · 돌림 판은 계정마다 날을 따로 두니 편 슬롯과 날이 달라도 「시각이 슬롯 날이 아니다」를 내지 않는다
  *   ⑬ 한 구성(10-28, tools/한구성.js) — 끝 화면 말고 같은 구성(글 강조 · 테 · 밝기만 바뀜)이 4초를 넘으면 고칠 것. ②는 프레임 차이라
  *      LAB E8의 10초 흑백 글 카드를 정지 0%로 넘겼다
+ *      16:9 편(쇼츠·릴스 9:16 검사)과 끝 로고처럼 일부러 둔 한 구성은 준비.json 「가로판」 · 「한구성판단」에 까닭(고칠 것 → 확인할 것, 11-19)
  *   ⑭ 목소리(10-28) — 편 폴더의 나레이션 줄 파일(나레이션굽기 vo.json 줄 · remotion/public/vo, 또는 준비.json 「목소리」에 적은 폴더)마다
  *      최고 음높이 560Hz 넘음 · Typecast 원본 잘림 · 영상보다 새 줄 파일(다시 산 목소리가 렌더에 안 들어감)을 고칠 것으로.
  *      ⑤에 더해 판 · 테두리 · 그림자 없이 그림 위에 바로 얹은 흰 글자(흰 기본 글자)도 고칠 것이다
@@ -164,6 +165,27 @@ function shotRanges(prep) {
   return { ranges, 까닭, error: null };
 }
 const inShot = (times, ranges) => times.length > 0 && times.every((t) => ranges.some(([a, b]) => t >= a && t <= b));
+
+// 가로판 · 한구성판단(11-19) — 쇼츠·릴스 9:16 검사와 ⑬ 한 구성은 세로 짧은 편을 기준으로 한다. PULSE 영어 첫 편(도담중공업)은 원본 비율
+// 그대로 16:9로 유튜브 일반 영상 · 인스타 피드에 올리고(결정 11-17 「권고대로」), 끝 로고가 2.5초 넘게 선다(원칙 7 · 점검표 45).
+// 일부러 그렇게 둔 편만 준비.json에 까닭을 적으면 고칠 것을 확인할 것으로 내리고 까닭을 같이 적는다.
+//   「가로판」: "<까닭>" — 16:9 영상만 내린다(다른 비율은 그대로 고칠 것).
+//   「한구성판단」: {"까닭": "…", "구간": [[시작초, 끝초], …]} — 구간 안에 다 든 한 구성만 내린다(앞뒤 0.25초 여유).
+function landscapeReason(prep) {
+  const v = prep ? prep.가로판 : undefined;
+  return typeof v === 'string' ? v.trim() : '';
+}
+function compositionRanges(prep) {
+  const v = prep ? prep.한구성판단 : undefined;
+  if (v === undefined) return { ranges: [], 까닭: '', error: null };
+  const 까닭 = v && typeof v.까닭 === 'string' ? v.까닭.trim() : '';
+  const ranges = v && Array.isArray(v.구간) ? v.구간 : [];
+  const ok = 까닭 && ranges.length && ranges.every((r) => Array.isArray(r) && r.length === 2 && r.every((t) => Number.isFinite(t)) && r[0] >= 0 && r[0] < r[1]);
+  if (!ok) return { ranges: [], 까닭: '', error: '준비.json 「한구성판단」은 {"까닭": "…", "구간": [[시작초, 끝초], …]} 꼴이어야 한다 — 이번 검사에는 쓰지 않았다' };
+  return { ranges, 까닭, error: null };
+}
+const inComposition = (seg, ranges) => ranges.some(([a, b]) => seg.start >= a - 0.25 && seg.end <= b + 0.25);
+const isLandscape = (w, h) => Math.abs(w / h - 16 / 9) <= 0.01;
 
 // ⑤-2 흰 기본 글자(10-28) — 판(글 상자) · 테두리 · 그림자 없이 그림 위에 바로 얹은 흰 글자. LAB E8 끝 화면의 흰 글 넉 줄이 바리스타
 // 머리 위에 겹쳐 휴대폰에서 잘 안 읽혔다(10-28 점검). 글자 줄 상자(540×960 회색) 안에서 흰 칸(215 이상)이 5~42%이고, 흰 칸 둘레 2칸
@@ -377,7 +399,7 @@ function gapFinding(r) {
 // light(11-10): 나라 판본(돌림 판) 영상은 올림 규격 · 음량만 본다 — 그림 · 박자 · 뼈대 · 맹검은 동결한 원본의 검사를 따르고(설계 17 · 20),
 // 조판은 글자 검사 기록이 본다(rotationFindings가 그 기록의 지문을 지금 파일과 맞춘다). 판본 26개에 정지 · 한 구성 · 글자표를 다시 돌리면
 // 원본과 같은 확인할 것이 판본 수만큼 되풀이된다(11-10 모의: 「원본과 뼈대 자리이 다르다」 열 줄).
-async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null, shots, light = false }) {
+async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null, shots, light = false, framing = null }) {
   const 사전 = await import(pathToFileURL(path.join(__dirname, '영상사전검사.mjs')).href);
   const 음량 = await import(pathToFileURL(path.join(__dirname, '음량마감.mjs')).href);
   const findings = [];
@@ -391,7 +413,10 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
   }
   const m = report.media;
   if (Math.min(m.width, m.height) < 1080) add(FIX, 'resolution', `${m.width}×${m.height} — 올림 화질은 1080×1920 이상(v2 §2-4)`);
-  if (Math.abs(m.width / m.height - 9 / 16) > 0.01) add(FIX, 'aspect', `${m.width}×${m.height} — 쇼츠·릴스는 9:16`);
+  if (Math.abs(m.width / m.height - 9 / 16) > 0.01) {
+    const 가로 = framing && framing.가로 && isLandscape(m.width, m.height) ? framing.가로 : '';
+    add(가로 ? LOOK : FIX, 'aspect', `${m.width}×${m.height} — 쇼츠·릴스는 9:16${가로 ? ` · 「가로판」: ${가로}` : ''}`);
+  }
   const loud = m.loudness;
   if (!loud || loud.integratedLufs == null) add(LOOK, 'loudness-unknown', '음량을 재지 못했다(소리가 없거나 무음)');
   else if (!음량.passes({ I: loud.integratedLufs, peak: loud.truePeakDbfs }, 음량.DEFAULTS)) {
@@ -415,8 +440,9 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
   const 구성 = 한구성.analyze(file);
   for (const s of 구성.long) {
     const 원본도 = homage && compositionLikeOriginal(s, homage.orig, 구성.segments.length ? 구성.segments[구성.segments.length - 1].end : s.end);
-    add(원본도 ? LOOK : FIX, 'one-composition', `${s.start.toFixed(1)}~${s.end.toFixed(1)}초 한 구성 ${s.length.toFixed(1)}초${s.endCard ? '(끝 화면 — 6초까지)' : ''} — 같은 장면에서 글 강조 · 테 · 밝기만 바뀌는 칸은 4초 안으로 줄이거나 장면을 바꾼다(제작 절차 3 · 10-28)`
-      + (원본도 ? ' · 원본도 같은 자리가 한 구성이고 나란히가 맞아 확인할 것으로 둔다' : ''));
+    const 판단 = framing && framing.한구성 && framing.한구성.ranges.length && inComposition(s, framing.한구성.ranges) ? framing.한구성.까닭 : '';
+    add(원본도 || 판단 ? LOOK : FIX, 'one-composition', `${s.start.toFixed(1)}~${s.end.toFixed(1)}초 한 구성 ${s.length.toFixed(1)}초${s.endCard ? '(끝 화면 — 6초까지)' : ''} — 같은 장면에서 글 강조 · 테 · 밝기만 바뀌는 칸은 4초 안으로 줄이거나 장면을 바꾼다(제작 절차 3 · 10-28)`
+      + (원본도 ? ' · 원본도 같은 자리가 한 구성이고 나란히가 맞아 확인할 것으로 둔다' : '') + (판단 ? ` · 「한구성판단」: ${판단}` : ''));
   }
   let gap = null;
   try {
@@ -1122,6 +1148,8 @@ async function run(dir, opts = {}) {
   const hanLanguage = (plate) => /^(zh|ja)/.test(plate.language || '') || plate.platform === 'xiaohongshu';
   const shots = shotRanges(bundle.prep);
   if (shots.error) add(LOOK, 'shot-ranges', '준비.json', shots.error);
+  const framing = { 가로: landscapeReason(bundle.prep), 한구성: compositionRanges(bundle.prep) };
+  if (framing.한구성.error) add(LOOK, 'composition-ranges', '준비.json', framing.한구성.error);
   // 이미 나간 판만 쓰는 파일(예약 · 게시됐고 시각이 지남)은 다시 재지 않는다 — 올릴 것이 없고, 그때 기준으로 이미 본 파일이다. 돌림 원본은
   // 씨앗 판이 나간 뒤에 나라 판본이 붙으므로, 다시 재면 뒤에 생긴 규격(오디오 320kbps 등)으로 옛 씨앗 파일이 걸려 새 판본까지 막힌다(11-10 모의).
   const outAlready = (p) => DONE.has(posted.get(p.account)) && Date.parse(p.time || '') < Date.now();
@@ -1141,7 +1169,7 @@ async function run(dir, opts = {}) {
     try {
       const label = labelOf(bundle, file);
       const h = homage.per.get(file);
-      const r = await checkVideo(file, out, { skipOcr: opts.skipOcr, repo: bundle.repo, allowHan: users.some(hanLanguage), label, homage: h && h.그대로 ? h : null, shots });
+      const r = await checkVideo(file, out, { skipOcr: opts.skipOcr, repo: bundle.repo, allowHan: users.some(hanLanguage), label, homage: h && h.그대로 ? h : null, shots, framing });
       findings.push(...r.findings);
       ocrFindings.push(...r.ocrFindings);
       screenTexts.push(r.ocrText);
@@ -1254,5 +1282,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, slotTimeFindings, rotationFindings, closedFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+module.exports = { run, landscapeReason, compositionRanges, inComposition, isLandscape, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, slotTimeFindings, rotationFindings, closedFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
   homageFindings, aestheticFindings, AESTHETIC_FROM, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };

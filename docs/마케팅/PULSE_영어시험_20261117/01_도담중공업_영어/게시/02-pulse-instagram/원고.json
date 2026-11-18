@@ -1,0 +1,18 @@
+{
+ "id": "02-pulse-instagram",
+ "brand": "PULSE",
+ "language": "en",
+ "audioLanguage": "en",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 공개 글에 제작 도구 이름을 쓰지 않는다. 사람이 모두 AI이고 회사가 가상이라는 것을 글에 적는다. 가로 영상 그대로 피드 게시물(영상 + 제작기 두 장 넘김).",
+ "platform": "instagram",
+ "account": "@synkpulse",
+ "format": "carousel",
+ "media": [
+  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p10_en/도담_영어_C_아이작.mp4",
+  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p10_en/제작기/제작기_1_콘티34.jpg",
+  "C:/Users/q1212/Documents/synk-vendor/pulse-portfolio12-20261024/최종/p10_en/제작기/제작기_2_한컷.jpg"
+ ],
+ "caption": "A company that doesn't exist sends its first turbine out into the world.\n\nEvery person in this film is AI-generated. Spec film for a fictional brand.\n\nSwipe for the 34 stills we drew before anything moved.\n\nsynk.im/en/pulse\n#AIvideo #AIfilm"
+}

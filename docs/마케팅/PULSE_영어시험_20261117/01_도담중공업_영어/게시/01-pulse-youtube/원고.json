@@ -1,0 +1,14 @@
+{
+ "id": "01-pulse-youtube",
+ "brand": "PULSE",
+ "language": "en",
+ "audioLanguage": "en",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 공개 글에 제작 도구 이름을 쓰지 않는다. 사람이 모두 AI이고 회사가 가상이라는 것을 글에 적는다. 16:9 64.8초라 쇼츠가 아닌 일반 영상.",
+ "platform": "youtube",
+ "account": "@synkpulse",
+ "format": "video",
+ "title": "We Send Our Baby Out Into the World — a spec film for a company that doesn't exist",
+ "caption": "A spec film for Dodam Heavy Industries, a company that doesn't exist. Every person on screen is AI-generated; nothing was filmed on set.\n\nBefore anything moved, every shot was drawn as a still, 34 of them, so the faces, the light and the story were fixed first. The DODAM logo at the end was drawn stroke by stroke, not typed.\n\nSYNK PULSE makes ads and brand films with AI-generated actors.\nsynk.im/en/pulse"
+}

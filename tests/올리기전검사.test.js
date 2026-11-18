@@ -545,6 +545,25 @@ test('⑤-3 화면 캡처 속 흰 글자 — 준비.json 「화면캡처」 구�
   }
 });
 
+test('가로판 · 한구성판단(11-19) — 까닭을 적은 16:9 판과 구간 안 한 구성만 확인할 것으로 내린다(PULSE 영어 첫 편)', () => {
+  assert.equal(검사.landscapeReason({}), '', '칸이 없으면 그대로 고칠 것');
+  assert.equal(검사.landscapeReason({ 가로판: '  ' }), '', '빈 까닭은 쓰지 않는다');
+  assert.equal(검사.landscapeReason({ 가로판: '원본 비율 16:9 그대로' }), '원본 비율 16:9 그대로');
+  assert.equal(검사.isLandscape(1920, 1080), true);
+  assert.equal(검사.isLandscape(1080, 1080), false, '정사각은 「가로판」으로 내리지 않는다');
+  assert.deepEqual(검사.compositionRanges({}), { ranges: [], 까닭: '', error: null });
+  const ok = 검사.compositionRanges({ 한구성판단: { 까닭: '끝 로고가 2.5초 넘게 선다', 구간: [[56, 61]] } });
+  assert.equal(ok.error, null);
+  assert.equal(검사.inComposition({ start: 56.0, end: 60.8 }, ok.ranges), true, '구간 안');
+  assert.equal(검사.inComposition({ start: 55.9, end: 61.2 }, ok.ranges), true, '0.25초 여유');
+  assert.equal(검사.inComposition({ start: 50, end: 57 }, ok.ranges), false, '구간 밖에서 시작하면 그대로 고칠 것');
+  for (const bad of [{ 구간: [[0, 3]] }, { 까닭: '로고', 구간: [] }, { 까닭: '로고', 구간: [[3, 1]] }, '로고', null]) {
+    const r = 검사.compositionRanges({ 한구성판단: bad });
+    assert.ok(r.error, `틀린 꼴은 알리고 쓰지 않는다: ${JSON.stringify(bad)}`);
+    assert.deepEqual(r.ranges, []);
+  }
+});
+
 // 16비트 모노 wav(48kHz)
 function wav(file, samples) {
   const data = Buffer.alloc(samples.length * 2);
