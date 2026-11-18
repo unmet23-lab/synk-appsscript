@@ -140,7 +140,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const moreKeys = new WeakMap();
   let railSince = -1e9, progTimer = 0, visTimer = 0, visLeave = 0, subTimer = 0, subLeave = 0;
   /* 구 곁의 펼침(2단계 첫 조각 설계 1.3절). 다가가 머무는 판정은 화면이 하고, 열고 닫는 것은 컨트롤러에 알린다 */
-  let fanKey = '', fanTimer = 0, fanLeave = 0, fanWasOpen = false;
+  let fanKey = '', fanTimer = 0, fanLeave = 0, fanWasOpen = false, fanReturn = null;
   const ptrPx = { x: -1e4, y: -1e4, t: 0, v: 0 };
   const canHover = () => { try { return win.matchMedia?.('(hover: hover)')?.matches !== false; } catch { return true; } };
   const clock = () => { try { return win.performance?.now?.() ?? Date.now(); } catch { return Date.now(); } };
@@ -290,7 +290,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (rows.length && old.length === rows.length && old.every((b, i) => b.dataset.svc === String(rows[i].key))) { rows.forEach((r, i) => fillSubRow(old[i], r)); return; }
     const kept = new Map(rows.length ? old.filter(b => b.classList.contains('opened')).map(b => [b.dataset.svc, b.classList.contains('pin')]) : []);
     const focused = rows.length ? old.find(b => b === doc.activeElement)?.dataset.svc : undefined;
-    // 줄 안쪽(계정 관리 단추)에 있던 초점도 줄과 동작으로 기억해 둔다(카본 A4)
+    // 줄 안쪽(계정 관리 단추)에 있던 초점도 줄과 동작으로 기억해 둔다(검수 A4)
     const fa = doc.activeElement, inMore = rows.length && fa && app.rows.contains(fa) ? fa.closest?.('.more') : null;
     const innerAt = inMore ? { svc: inMore.previousElementSibling?.dataset.svc, act: fa.dataset?.orbAct || '' } : null;
     app.rows.replaceChildren(...rows.flatMap(subRow));
@@ -328,7 +328,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const m = r.more || {}, moreKey = JSON.stringify(m);
     if (moreKeys.get(inner) === moreKey) return;
     moreKeys.set(inner, moreKey);
-    // 안쪽 단추에 있던 초점은 같은 동작의 새 단추로 옮긴다. 새로 지으면서 body로 풀리지 않게 한다(카본 A4)
+    // 안쪽 단추에 있던 초점은 같은 동작의 새 단추로 옮긴다. 새로 지으면서 body로 풀리지 않게 한다(검수 A4)
     const fa = doc.activeElement, keepAct = fa && inner.contains(fa) ? fa.dataset?.orbAct || '' : null;
     inner.replaceChildren();
     let j = 0;
@@ -657,9 +657,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (open) { if (stageEl.dataset.fan !== '1') stageEl.dataset.fan = '1'; } else if ('fan' in stageEl.dataset) delete stageEl.dataset.fan;
     for (const b of [app.orbBtn, app.nameBtn]) if (b.getAttribute('aria-expanded') !== String(open)) b.setAttribute('aria-expanded', String(open));
     app.fan.inert = !open;
-    // 펼친 동안 물러난 이름 단추와 오브제 줄, 흐린 방은 Tab 차례에서도 빠진다. 그 안에 있던 초점은 보이는 구 단추로 먼저 옮긴다(카본 A1)
+    // 펼친 동안 물러난 이름 단추와 오브제 줄, 흐린 방은 Tab 차례에서도 빠진다. 그 안에 있던 초점은 보이는 구 단추로 먼저 옮긴다(검수 A1)
     const back = [app.nameBtn, app.rail, app.solio, app.visits, app.space].filter(Boolean);
-    if (open) { const a = doc.activeElement; if (a && back.some(x => x.contains(a))) app.orbBtn.focus?.({ preventScroll: true }); }
+    // 다가가 머물러 연(고정하지 않은) 펼침이면 옮기기 전 자리를 기억해 두고, 닫을 때 초점이 구에 그대로 있으면 그 자리로 돌려놓는다(최종 검수 F5)
+    if (open) { const a = doc.activeElement; if (a && back.some(x => x.contains(a))) { fanReturn = f.pin ? null : a; app.orbBtn.focus?.({ preventScroll: true }); } }
+    if (open && f.pin) fanReturn = null;
     for (const x of back) if (x.inert !== open) x.inert = open;
     for (const b of app.fan.querySelectorAll('button')) b.disabled = s.busy;
     if (open && !fanWasOpen) {
@@ -676,6 +678,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       // 접힌 펼침에 초점이 남지 않게 구 단추로 돌려놓는다(body로 빠지지 않게)
       const a = doc.activeElement;
       if (a && app.fan.contains(a)) app.orbBtn.focus?.({ preventScroll: true });
+      const back0 = fanReturn; fanReturn = null;
+      if (back0 && back0.isConnected && doc.activeElement === app.orbBtn && !back0.closest?.('[inert],[hidden]')) {
+        restoringVis = true;
+        try { back0.focus?.({ preventScroll: true }); } catch {} finally { restoringVis = false; }
+      }
     }
     fanWasOpen = open;
   }
@@ -705,11 +712,20 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     return Math.hypot(x - s.left - st.cx, y - s.top - (st.top + st.r)) < st.r + NEAR.zone || nearBox(app.fan.getBoundingClientRect(), x, y, NEAR.zone);
   }
   /* 다가가 머물면 열고(빠르게 다가오면 조금 더 기다린다), 다가가서 연 것은 구역을 벗어나 머물면 닫는다. 옛 화면이 열린 동안은 다가가서 열지 않는다(설계 검토 1차 2) */
+  /* 머묾이 다 차도 구가 아직 움직이는 중(접히며 돌아오는 중)이면 버리지 않고 움직임이 끝날 때까지 조금씩 미룬다. 손이 그대로 있는데 열리지 않는 일이 없게 한다 */
+  function armFan(ms) {
+    fanTimer = setTimeout(() => {
+      fanTimer = 0;
+      if (disposed || scene?.fan?.open || !nearOrb(ptrPx.x, ptrPx.y)) return;
+      if (stage.moving) { armFan(60); return; }
+      onAction('fan-near');
+    }, ms);
+  }
   function fanStep(x, y) {
     if (!scene || scene.layer !== 'app' || scene.mode !== 'app' || scene.busy || !canHover() || stageEl.classList.contains('still')) { clearTimeout(fanTimer); fanTimer = 0; return; }
     if (!scene.fan?.open) {
       if (!nearOrb(x, y)) { clearTimeout(fanTimer); fanTimer = 0; }
-      else if (!fanTimer) fanTimer = setTimeout(() => { fanTimer = 0; if (!disposed && !stage.moving && nearOrb(ptrPx.x, ptrPx.y)) onAction('fan-near'); }, ptrPx.v > 1.4 ? NEAR.fast : NEAR.open);
+      else if (!fanTimer) armFan(ptrPx.v > 1.4 ? NEAR.fast : NEAR.open);
     } else if (!scene.fan.pin && fanShown()) {
       if (fanZone(x, y)) { clearTimeout(fanLeave); fanLeave = 0; }
       else if (!fanLeave) fanLeave = setTimeout(() => { fanLeave = 0; if (!disposed && fanShown() && !scene?.fan?.pin && !fanZone(ptrPx.x, ptrPx.y)) onAction('fan-leave'); }, NEAR.close);
@@ -718,7 +734,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* 다가가기와 구역 판정은 무대가 아니라 맨 위 끌기 띠까지 덮는 뿌리에서 듣는다. 띠는 무대의 형제라, 무대에서 들으면 띠 위를 지날 때 판정이 끊긴다(설계 검토 1차 3가) */
   const onRootMove = event => {
     const t = clock(), dt = t - ptrPx.t;
-    if (ptrPx.t && dt > 0 && dt < 200) ptrPx.v = Math.hypot(event.clientX - ptrPx.x, event.clientY - ptrPx.y) / dt;
+    // 앞 움직임과 0.2초 넘게 떨어졌으면 멈췄다 다시 움직인 것이라 속도를 0으로 둔다. 예전 값이 남아 0.26초를 기다리지 않게 한다(최종 검수 F6, 시안 nearStep)
+    ptrPx.v = ptrPx.t && dt > 0 && dt < 200 ? Math.hypot(event.clientX - ptrPx.x, event.clientY - ptrPx.y) / dt : 0;
     ptrPx.x = event.clientX; ptrPx.y = event.clientY; ptrPx.t = t;
     const r = stageEl.getBoundingClientRect();
     if (r.width && r.height && !reduced() && !stageEl.contains(event.target)) stage.setPointer((event.clientX - r.left) / r.width, (event.clientY - r.top) / r.height);
@@ -1015,7 +1032,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (mode === 'legacy' && (dialogOutside() || typing || (t && !root.contains(t) && t.closest?.('dialog')))) return;
       if (dialogOutside()) return;
       // 펼친 줄이 있으면 Esc가 먼저 접는다(시안). 줄 안쪽에 있던 초점은 그 줄로 돌린다
-      // 숨은 방에 남은 고정 줄은 보지 않는다. 보이는 방에 펼친 줄이 없으면 Esc는 원래 일을 한다(카본 A6)
+      // 숨은 방에 남은 고정 줄은 보지 않는다. 보이는 방에 펼친 줄이 없으면 Esc는 원래 일을 한다(검수 A6)
       if (mode === 'app' && scene?.layer === 'app' && !scene.fan?.open && [...root.querySelectorAll('.more.open')].some(m => !m.closest('[hidden]'))) {
         const inMore = t?.closest?.('.more');
         closeMores(true);

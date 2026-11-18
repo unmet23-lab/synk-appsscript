@@ -343,6 +343,14 @@ test('row inside: the price line keeps entered values first and marks official, 
   assert.deepEqual([m4.cost.val, m4.cost.note], ['가족 공유', '계정 2개 가운데 1개의 금액만 압니다'], 'family plus unknown keeps the unknown note');
   const m5 = moreOf([known, fam, unknown])[0].more;
   assert.deepEqual([m5.cost.val, m5.cost.note], ['월 30,000원', '가족 공유 1개 · 계정 3개 가운데 2개의 금액만 압니다'], 'a family account counts as one whose price is known');
+  // 공식 요금이 0원인 무료 요금제는 가족 공유가 아니라 「무료」다(대체 검수 F1)
+  const freePrices = { services: { typecast: { checked: '2026-11-10', currency: 'USD', plans: { free: { month: 0 }, lite: { month: 15 } } } } };
+  const freeRow = row({ service: 'typecast', label: 'typecast', kind: 'credit', plan: 'free', live: { readAt: NOW - 5 * 60e3, credits: 9000, planCredits: 15000 } });
+  const m6 = moreOf([freeRow], { prices: freePrices })[0].more;
+  assert.equal(m6.cost?.val, '무료', 'a free plan is not called family sharing');
+  // 넣은 금액과 공식 요금이 섞이면 공식 요금으로 채운 계정 수를 적는다(대체 검수 F3)
+  const mixed = moreOf([own, weekly('claude', 20, NOW + 3 * D, { email: 'o@example.com' })], { prices: PRICES, settings: { usdKrw: 1500 } })[0].more;
+  assert.deepEqual([mixed.cost.val, mixed.cost.note], ['월 약 323,000원', '공식 요금 1개']);
   assert.equal(moreOf([weekly('gpt', 20, NOW + 3 * D)], { prices: PRICES })[0].more.cost, null, 'no price means no price line');
 });
 

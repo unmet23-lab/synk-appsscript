@@ -435,6 +435,14 @@ if(!process.versions.electron){
           const held=await w.js("(()=>{const m=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]').nextElementSibling,a=document.activeElement;return {onManage:!!a&&a.dataset.orbAct==='connect'&&m.contains(a),val:(m.querySelector('.row.sub .val')||{}).textContent||''};})()");
           check('17 a redraw that rebuilds the inside keeps focus on 「계정 관리」',held.onManage&&/62%/.test(held.val),held);
           await w.js('document.activeElement&&document.activeElement.blur&&document.activeElement.blur()');
+          // 다가가 머물러 연 펼침은 방에 있던 자판 초점을 구로 옮겼다가, 닫힐 때 그 자리로 돌려놓는다(대체 검수 F5)
+          await mv(...away);await wait(300);await w.js("document.querySelector('#portal-entry button.row[data-svc=\"gemini\"]').focus()");
+          for(let i=10;i>=0;i--){await mv(orb.x+i*14,orb.y+i*14);await wait(30);}await until(w,s=>s.fan,{timeout:2000});await wait(300);
+          const moved=await w.js("document.activeElement===document.querySelector('#portal-entry .here-orb')");
+          await mv(...away);await until(w,s=>!s.fan,{timeout:2000});await wait(200);
+          const backTo=await w.js("document.activeElement===document.querySelector('#portal-entry button.row[data-svc=\"gemini\"]')");
+          check('17 a fan opened by resting gives keyboard focus back to the row when it closes',moved&&backTo,{moved,backTo});
+          await w.js('document.activeElement&&document.activeElement.blur&&document.activeElement.blur()');await wait(300);
           // 펼침이 열린 채로 다시 그려져도 펼침의 단추와 고정한 줄은 그대로다(펼친 동안 방은 inert라 자료를 바꿔 보내 다시 그린다)
           await click(w,'#portal-entry .here-orb');await until(w,s=>s.fan);await wait(500);
           await w.js("window.__fanNode=document.querySelector('#portal-entry .fan-go');window.__rowNode=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');true");

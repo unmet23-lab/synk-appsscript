@@ -1435,7 +1435,7 @@ test('the view opens the fan only on Enter, Space or the down arrow, never on fo
 test('while the fan is open the hidden name, the object row and the dimmed rooms leave the Tab order; hidden rooms do not take Esc (카본 A1 · A6)', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
   assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.visits, app\.space\]\.filter\(Boolean\);/);
-  assert.match(src, /if \(open\) \{ const a = doc\.activeElement; if \(a && back\.some\(x => x\.contains\(a\)\)\) app\.orbBtn\.focus/, 'focus inside them moves to the visible orb before they turn inert');
+  assert.match(src, /if \(open\) \{ const a = doc\.activeElement; if \(a && back\.some\(x => x\.contains\(a\)\)\) \{ fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'focus inside them moves to the visible orb before they turn inert');
   assert.match(src, /for \(const x of back\) if \(x\.inert !== open\) x\.inert = open;/);
   assert.match(src, /\[\.\.\.root\.querySelectorAll\('\.more\.open'\)\]\.some\(m => !m\.closest\('\[hidden\]'\)\)/, 'a pinned row left in a hidden room does not swallow Esc');
 });
@@ -1445,4 +1445,11 @@ test('a redraw keeps focus on 「계정 관리」 inside an open row instead of 
   assert.match(src, /keepAct = fa && inner\.contains\(fa\) \? fa\.dataset\?\.orbAct \|\| '' : null;/);
   assert.match(src, /if \(keepAct !== null\) refocusIn\(b, keepAct\);/);
   assert.match(src, /if \(home\) refocusIn\(home, innerAt\.act\);/);
+});
+
+test('a fan opened by resting returns focus when it closes, and a pause resets the approach speed (대체 검수 F5 · F6)', () => {
+  const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(src, /fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'only an unpinned (resting) fan remembers where focus was');
+  assert.match(src, /if \(back0 && back0\.isConnected && doc\.activeElement === app\.orbBtn && !back0\.closest\?\.\('\[inert\],\[hidden\]'\)\)/);
+  assert.match(src, /ptrPx\.v = ptrPx\.t && dt > 0 && dt < 200 \? Math\.hypot\(event\.clientX - ptrPx\.x, event\.clientY - ptrPx\.y\) \/ dt : 0;/);
 });

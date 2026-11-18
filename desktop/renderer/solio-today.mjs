@@ -136,7 +136,7 @@ function rowOf(snapshot, g, fact, now, checking) {
     }
   }
   if (!row.spoken) row.spoken = row.when;
-  // 줄 단추는 aria-expanded로 펼침 상태를 알린다. 끝 글은 상태와 어긋나지 않게 「누르면 펼칩니다」 같은 지시가 아니라 자리만 말한다(카본 A5)
+  // 줄 단추는 aria-expanded로 펼침 상태를 알린다. 끝 글은 상태와 어긋나지 않게 「누르면 펼칩니다」 같은 지시가 아니라 자리만 말한다(검수 A5)
   row.label = [row.name, row.sub, row.val, row.spoken].filter(Boolean).join(', ') + '. 자세한 내용은 이 줄 아래에 펼쳐집니다.';
   row.more = moreOf(snapshot, g, fact, now);
   return row;
@@ -188,22 +188,23 @@ function accountLine(a, g, now) {
 function costLine(snapshot, g, now) {
   const rows = here(g).map(a => a.row);
   if (!rows.length) return null;
-  let krw = 0, known = 0, family = 0, missing = 0, official = false, approx = false;
+  let krw = 0, known = 0, family = 0, free = 0, missing = 0, official = 0, approx = false;
   for (const row of rows) {
     const p = monthPrice(snapshot, row, now);
     if (!p) { missing++; continue; }
-    if (p.official && p.krw === 0) { family++; continue; }
-    if (planKey(row.plan) === 'family' && p.krw === 0) { family++; continue; }
+    // 0원은 가족 공유 요금제일 때만 「가족 공유」다. 그 밖의 0원(Typecast 무료 요금제 같은)은 「무료」다(최종 검수 F1)
+    if (p.krw === 0) { if (planKey(row.plan) === 'family') family++; else free++; continue; }
     known++; krw += p.krw;
-    if (p.official) official = true;
+    if (p.official) official++;
     if ((p.official ? p.table?.currency : row.currency) === 'USD') approx = true;
   }
   const bills = rows.map(row => monthlyBill(row, now)).filter(d => d !== null);
   const bill = bills.length ? '다음 결제 ' + dateWords(dayAfter(now, Math.min(...bills))) : '';
-  // 가족 공유도 금액을 아는 계정으로 센다. 금액을 모르는 계정이 섞이면 가족 공유만 있어도 그 사실을 남긴다(카본 A3)
-  const part = missing ? '계정 ' + rows.length + '개 가운데 ' + (known + family) + '개의 금액만 압니다' : '';
-  if (!known) return family ? { val: '가족 공유', note: part, bill } : null;
-  const notes = [official ? '공식 요금' : '', family ? '가족 공유 ' + family + '개' : '', part].filter(Boolean);
+  // 가족 공유와 무료도 금액을 아는 계정으로 센다. 금액을 모르는 계정이 섞이면 그 사실을 남긴다(검수 A3)
+  const part = missing ? '계정 ' + rows.length + '개 가운데 ' + (rows.length - missing) + '개의 금액만 압니다' : '';
+  if (!known) return family || free ? { val: family && free ? '가족 공유 · 무료' : family ? '가족 공유' : '무료', note: part, bill } : null;
+  // 공식 요금으로 채운 계정이 일부뿐이면 그 수를 적는다. 넣은 금액까지 공식 요금처럼 읽히지 않게 한다(최종 검수 F3)
+  const notes = [official ? (official === known ? '공식 요금' : '공식 요금 ' + official + '개') : '', family ? '가족 공유 ' + family + '개' : '', free ? '무료 ' + free + '개' : '', part].filter(Boolean);
   return { val: '월 ' + (approx ? '약 ' : '') + fmt(krw) + '원', note: notes.join(' · '), bill };
 }
 

@@ -59,7 +59,10 @@ test('reduced motion also shortens the fan, its foot and the room dimming', () =
 });
 
 test('size rules follow the sketch values that the app can reach (설계 3.2절)', () => {
-  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?#portal-entry \.room\{top:clamp\(84px,13vh,128px\);transform:none;bottom:calc\(78px \+ env\(safe-area-inset-bottom,0px\)\)/);
+  // 아래 78px는 시안 막대 자리라 옮기지 않고, 좁은 창의 솔리오 방도 아래 끝을 흐린다(대체 검수 F2)
+  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?#portal-entry \.room\{top:clamp\(84px,13vh,128px\);transform:none;bottom:calc\(24px \+ env\(safe-area-inset-bottom,0px\)\)/);
+  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?#portal-entry \.room\[data-room\^="solio"\]\{padding-bottom:34px;-webkit-mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/);
+  assert.doesNotMatch(css, /bottom:calc\(78px/, 'the sketch toolbar space is not carried into the app');
   assert.match(css, /@media \(max-height:620px\) and \(min-width:641px\)\{[\s\S]*?#portal-entry \.room\[data-room\^="solio"\]\{top:16vh;max-height:calc\(100% - 16vh - 56px\)\}/);
   assert.match(css, /@media \(min-width:641px\) and \(max-width:900px\)\{#portal-entry \.rows\.vis\{grid-template-columns:minmax\(96px,128px\) minmax\(0,1fr\) 6\.2em minmax\(96px,auto\)\}\}/);
   assert.doesNotMatch(css, /max-height:340px/, 'the very small window rule waits for a smaller minimum window (설계 검토 1차 9)');
