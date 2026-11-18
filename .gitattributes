@@ -73,6 +73,9 @@ experiences/synk-account/src/member-statement*.cjs text eol=lf
 desktop/renderer/platform-continuity.mjs text eol=lf
 desktop/renderer/platform-continuity.css text eol=lf
 
+# 회사 메신저의 교사 연결 번들도 생성기 출력과 바이트 단위로 대조한다.
+docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js text eol=lf
+
 # 메신저 통화의 벤더 SDK는 npm 원본 바이트·기록한 해시와 같아야 한다(원본에 CRLF 줄이 섞여 있다). 줄끝 변환을 하지 않는다.
 tools/company-messenger/public/vendor/** -text -diff
 

@@ -191,15 +191,13 @@ function canonVersion(text) {
 const SELF_CANON_RE = /<!--\s*정본:\s*(v\d+(?:\.\d+)*)\s*-->/i;
 const SELF_CANON_BARE_RE = /<!--\s*정본\s*-->/i;
 function canonHead(text) {
-  return maskCode(String(text)).split('\n').slice(0, VERSION_SCAN_LINES).join('\n');
+  return maskCode(String(text).split('\n', VERSION_SCAN_LINES).join('\n'));
+}
+function versionFromHead(head, pattern) {
+  return head.match(pattern)?.[1].toLowerCase() ?? null;
 }
 function selfDeclaredCanon(text) {
-  const m = canonHead(text).match(SELF_CANON_RE);
-  return m ? m[1].toLowerCase() : null;
-}
-/** 판 없는 정본 선언 — 지위만 참으로 만들고 판은 canonVersion 이 읽는다. */
-function selfDeclaredCanonBare(text) {
-  return SELF_CANON_BARE_RE.test(canonHead(text));
+  return versionFromHead(canonHead(text), SELF_CANON_RE);
 }
 
 const sameVersion = (a, b) =>
@@ -226,9 +224,7 @@ const sameVersion = (a, b) =>
  *   형식은 파서가 조용히 놓친다(addEdge 주석과 같은 이유). 판단의 주인은 정본 하나다. */
 const SELF_HOLD_RE = /<!--\s*전파보류:\s*(v\d+(?:\.\d+)*)\s*-->/i;
 function selfDeclaredHold(text) {
-  const head = maskCode(String(text)).split('\n').slice(0, VERSION_SCAN_LINES).join('\n');
-  const m = head.match(SELF_HOLD_RE);
-  return m ? m[1].toLowerCase() : null;
+  return versionFromHead(canonHead(text), SELF_HOLD_RE);
 }
 
 /* [2026-08-07] 지도 누락 — 「낡은 인용」과 **축이 다르다.** 그건 *연결이 낡았다*, 이건 *연결이 아예 없다*.
@@ -278,14 +274,16 @@ function build({ root = ROOT } = {}) {
     // 정본 지위는 경로 규칙 **또는** 자기 선언. 판까지 적은 선언이면 버전도 그쪽이 이긴다 —
     // 명시한 값이 머리말에서 주워 온 값보다 정확하다.
     // 판 없는 선언(`<!-- 정본 -->`)은 지위만 세우고 판은 canonVersion 이 본문에서 읽는다.
-    const 선언 = selfDeclaredCanon(text);
-    const canon = isCanon(r) || !!선언 || selfDeclaredCanonBare(text);
+    const head = canonHead(text);
+    const 선언 = versionFromHead(head, SELF_CANON_RE);
+    const canon = isCanon(r) || !!선언 || SELF_CANON_BARE_RE.test(head);
+    const edges = parseEdgesFull(text);
     docs.set(r, {
       rel: r, full, canon, tracked: listed.tracked.has(r),
-      edges: parseEdgesFull(text),
-      follows: parseEdges(text),
+      edges,
+      follows: edges.map((e) => e.target),
       version: canon ? (선언 || canonVersion(text)) : null,
-      hold: canon ? selfDeclaredHold(text) : null,
+      hold: canon ? versionFromHead(head, SELF_HOLD_RE) : null,
       text,
     });
   }

@@ -74,7 +74,7 @@ const 나라 = {
     cap2: 'This is casual Korean. To be polite, add 요: {p} ({pr}).',
     cap3: 'Say it on the beat with the song, and you’ve got it!',
     tags: '#learnkorean #koreanphrases #studykorean', pin: 'Comment {w} if you sang along 👇',
-    K: { real: '말하는 빠르기!', clap: '박자에 맞춰 손뼉!', say: '네 차례 — 말해 봐!', end: '너희 말로는 {qk}를 어떻게 말해?', cap3: '네 차례에 박에 맞춰 말하면 다 배운 거야!', title: '{w}는 {qk}라는 뜻 — 따라 불러 🎵',
+    K: { real: '말하는 빠르기!', clap: '박자에 맞춰 손뼉!', say: '네 차례 — 말해 봐!', end: '너희 말로는 {qk}를 어떻게 말해?', title: '{w}는 {qk}라는 뜻 — 따라 불러 🎵',
       cap1: '듣고, 부르고, 말해: {w}({r}) = {qk}.', cap2: '반말이다. 공손하게 하려면 요를 붙여: {p}({pr}).', cap3: '노래랑 박에 맞춰 같이 말하면 다 배운 거야!', pin: '따라 불렀으면 댓글에 {w} 👇' } },
   PH: { lang: 'fil', 문자: 'latin', 따옴: ['“', '”'], clap: 'Pumalakpak sa beat!', say: 'Ikaw naman — sabihin mo!', real: 'Normal na pagsasalita!',
     end: 'Ikaw, paano mo sinasabi ang {q}?',

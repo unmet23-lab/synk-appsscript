@@ -12,7 +12,7 @@
 
 ## 맡은 작업에 맞는 입구
 
-- Apps Script의 배포 파일은 `Code.js`와 `엔진_synkbrief.js`다. 두 파일의 전역 이름 충돌을 확인한다. 익명 웹앱의 `doGet`은 HtmlService를 반환하지 않는다. `엔진_콘텐츠AI.js`는 Strata의 원천이다. `node --test tests/<파일>`로 시험하고 [deploy 스킬](.claude/skills/deploy/SKILL.md)에 따라 `deploy-security-check.js --push --검수 <ID>`로 라이브까지 반영한다. `clasp pull`로 작업본을 덮지 않는다.
+- Apps Script의 배포 파일은 `Code.js`와 `엔진_synkbrief.js`다. 두 파일의 전역 이름 충돌을 확인한다. 익명 웹앱의 `doGet`은 HtmlService를 반환하지 않는다. `node --test tests/<파일>`로 시험하고 [deploy 스킬](.claude/skills/deploy/SKILL.md)에 따라 `deploy-security-check.js --push --검수 <ID>`로 라이브까지 반영한다. `clasp pull`로 작업본을 덮지 않는다.
 - Atlas는 [8개 담당 엔진](docs/엔진8종_상향설계_v3.md#engine-owner-sources)과 [Atlas 설계](docs/아틀라스_설계.md#atlas-engine-ownership)를 따른다. 별도 LLM 하네스나 선택기를 만들지 않는다.
 - 영상은 시작, 재개, 지적 반영 때 공용 작업본의 `node tools/영상기준.js <편 폴더>`를 쓴다. 광고, 공모전, 포트폴리오, 사람이 나오는 SNS는 [synk-video](.claude/skills/synk-video/SKILL.md)로 시작하고 문맥 압축 뒤 다시 읽는다. 영상과 이미지의 승인 사례와 지적 반영은 [취향 학습과 재발 방지](docs/AI_운영원칙.md#style-learning), 도구 범위는 [제작 도구 선택](docs/마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection)을 따른다.
 - 마스코트는 `tools/lib/마스코트자산.js`의 정본을 생김새 참고로만 쓴다. [현재 마스코트 모델](docs/AI_계정과_크레딧.md#current-ai-settings)로 장면과 함께 새로 굽는다.

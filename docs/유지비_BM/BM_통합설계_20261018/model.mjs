@@ -1091,7 +1091,7 @@ const sens = [
 const sensRows = sens.map(([label, opts, patch]) => {
   const inp = clone(base); if (patch) patch(inp);
   const r = run(inp, '기본', { ...MAIN, ...opts }); const s = summarize(r);
-  return { label, leadFrom: r.leadFrom, need: needFor(r, s), needMonth: r.fdi && r.fdi.month,roomsFull: r.v23AddMonths && r.v23AddMonths.length >= 2 ? r.v23AddMonths[1] : null, ebitda2027: s.years[2027].ebitda, ebitda2028: s.years[2028].ebitda, ebitda2029: s.years[2029].ebitda, cum: s.years[2027].ebitda + s.years[2028].ebitda + s.years[2029].ebitda, minCash: s.minCash, minCashMonth: s.minCashMonth, endCash2029: s.years[2029].endCash, bep1: r.bep1, bep2: r.bep2, bepHost: r.bepHost, fdi: r.fdi, s2Start: r.s2Start, leadFrom: r.leadFrom,
+  return { label, leadFrom: r.leadFrom, need: needFor(r, s), needMonth: r.fdi && r.fdi.month,roomsFull: r.v23AddMonths && r.v23AddMonths.length >= 2 ? r.v23AddMonths[1] : null, ebitda2027: s.years[2027].ebitda, ebitda2028: s.years[2028].ebitda, ebitda2029: s.years[2029].ebitda, cum: s.years[2027].ebitda + s.years[2028].ebitda + s.years[2029].ebitda, minCash: s.minCash, minCashMonth: s.minCashMonth, endCash2029: s.years[2029].endCash, bep1: r.bep1, bep2: r.bep2, bepHost: r.bepHost, fdi: r.fdi, s2Start: r.s2Start,
     shiftY: Object.fromEntries([2027, 2028, 2029].map((y) => [y, { ...s.years[y].shift, pulseAdsProfit: s.years[y].pulseAds.profit }])), // [10-22] 강의·에이전시 전후를 견줄 때 쓴다
     gate0911: r.rows.filter((x) => x.m >= '2027-09' && x.m <= '2027-11').reduce((a, x) => a + x.pulse.ads + x.shift.revenue, 0) / 3, // [11-10] 담당자 조건의 2027-09~11 석 달 월평균(PULSE 광고 + SHIFT 매출)
     lectures2027: r.rows.filter((x) => x.m.startsWith('2027')).reduce((a, x) => a + x.shift.lectures, 0) };

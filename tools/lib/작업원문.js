@@ -35,7 +35,7 @@ function 원문읽기(뿌리, 파일) {
   const 판 = '공용 작업본 파일';
   if (!fs.existsSync(path.join(뿌리, '.git'))) return 로컬(판);
   const git = (...args) => execFileSync('git', ['--literal-pathspecs', '-c', 'core.quotepath=false', ...args], {
-    cwd: 뿌리, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 60000,
+    cwd: 뿌리, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 60000, maxBuffer: 64 * 1024 * 1024,
   });
   const [지금, 받은] = git('rev-parse', '--revs-only', 'HEAD', 'refs/remotes/origin/master').trim().split(/\r?\n/);
   if (!지금) throw Error('공용 작업본의 Git 판을 확인할 수 없습니다.');
@@ -54,20 +54,31 @@ function 원문읽기(뿌리, 파일) {
   return { 내용: 원격, 판: '받은 원격 ' + 받은, 상대 };
 }
 
-function 제목들(줄) {
-  const 목록 = []; let 블록 = '', 앞앵커 = [];
+function 제목들(줄, 단락포함) {
+  const 목록 = []; let 블록 = '', 앞앵커 = [], 앵커줄;
   for (const [i, 글] of 줄.entries()) {
     const 구분 = /^\s*(`{3,}|~{3,})/.exec(글)?.[1];
-    if (구분 && (!블록 || (구분[0] === 블록[0] && 구분.length >= 블록.length))) { 블록 = 블록 ? '' : 구분; continue; }
-    if (블록) continue;
+    if (블록) {
+      if (구분 && 구분[0] === 블록[0] && 구분.length >= 블록.length) 블록 = '';
+      continue;
+    }
+    if (!글.trim()) continue;
     const 앵커 = /^\s*<a\s+(?:id|name)=["']([^"']+)["'][^>]*>\s*<\/a>\s*$/i.exec(글);
-    if (앵커) { 앞앵커.push(앵커[1]); continue; }
+    if (앵커) {
+      if (!앞앵커.length) 앵커줄 = i + 1;
+      앞앵커.push(앵커[1]); continue;
+    }
     const m = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(글);
+    const 시작 = 앞앵커.length ? 앵커줄 : i + 1;
     if (m) {
       const 이름 = m[2].trim(), 주소 = 이름.toLowerCase().replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, '').replace(/\s/g, '-');
-      목록.push({ 이름, 주소: [...앞앵커, 주소], 층: m[1].length, 줄: i + 1 });
+      목록.push({ 이름, 주소: [...앞앵커, 주소], 층: m[1].length, 줄: i + 1, 시작 });
+    } else if (단락포함 && 앞앵커.length) {
+      // 본문을 가리키는 앵커는 다음 앵커나 제목 앞까지 읽는다. Markdown 제목은 1~6층이다.
+      목록.push({ 이름: 앞앵커[0], 주소: 앞앵커, 층: 7, 줄: 시작, 시작 });
     }
-    if (글.trim()) 앞앵커 = [];
+    앞앵커 = [];
+    if (구분) 블록 = 구분;
   }
   return 목록;
 }
@@ -86,11 +97,11 @@ function 원문발췌(뿌리, 지정, 낱말) {
   const 파일 = 실제경로(대상경로);
   if (path.extname(파일).toLowerCase() !== '.md' || (!안에(뿌리, 파일) && !path.isAbsolute(경로))) throw Error('공용 저장소의 Markdown 원문을 지정하세요. 외부 원문은 절대경로로 직접 지정합니다.');
   const { 내용, 판, 상대 } = 원문읽기(뿌리, 파일);
-  const 줄 = 내용.split('\n'), 제목 = 제목들(줄);
+  const 줄 = 내용.split('\n'), 제목 = 제목들(줄, Boolean(앵커));
   const 대상 = 앵커 ? 제목.filter(x => x.주소.includes(앵커) || x.이름 === 앵커) : 제목.slice(0, 1);
   if (대상.length !== 1) throw Error(대상.length ? '같은 제목이나 앵커가 둘 이상입니다. 고유한 원문 앵커를 지정하세요.' : '지정한 제목이나 앵커가 원문에 없습니다.');
   const 절 = 대상[0], 다음 = 제목.find(x => x.줄 > 절.줄 && (앵커 ? x.층 <= 절.층 : true));
-  const 끝 = 다음 ? 다음.줄 - 1 : 줄.length;
+  const 끝 = 다음 ? (절.층 === 7 ? 다음.시작 : 다음.줄) - 1 : 줄.length;
   const 본문 = 줄.slice(절.줄, 끝).map((글, i) => ({ 줄: 절.줄 + i + 1, 글 }))
     .filter(x => x.글.trim() && !/^\s*<a\s/.test(x.글));
   // 완결된 줄만 보인다. 부정이나 조건이 긴 문장의 뒤에 있으면 중간에서 자르지 않는다.

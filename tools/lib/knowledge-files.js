@@ -8,7 +8,7 @@ function inventory(root) {
   const env = { ...process.env, GIT_OPTIONAL_LOCKS: '0' };
   for (const key of Object.keys(env)) if (/^GIT_/i.test(key) && key !== 'GIT_OPTIONAL_LOCKS') delete env[key];
   const read = (args) => execFileSync('git', ['--no-optional-locks', '-c', 'core.fsmonitor=false', '-C', root, 'ls-files', '-z', ...args], {
-    env, encoding: 'utf8', timeout: 10000, maxBuffer: 16 * 1024 * 1024, windowsHide: true,
+    env, encoding: 'utf8', timeout: 60000, maxBuffer: 16 * 1024 * 1024, windowsHide: true,
     stdio: ['ignore', 'pipe', 'pipe'],
   }).split('\0').filter(Boolean);
   try {
@@ -54,16 +54,26 @@ function localLinks(text, from) {
   const clean = maskCode(text).replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\r\n]/g, ' '));
   const links = [];
   const re = /(?<![!\\])\[[^\]\n]*\]\(\s*(<[^>\n]+>|[^\s)]+)(?:\s+"[^"\n]*")?\s*\)/g;
-  function add(raw, index) {
-    let href = raw.replace(/^<|>$/g, '');
-    if (/^(?:[a-z][a-z\d+.-]*:|\/|#)/i.test(href)) return;
-    try { href = decodeURIComponent(href.split(/[?#]/)[0]); } catch { return; }
-    if (!href || /[\x00-\x1f]/.test(href)) return;
-    const target = path.posix.normalize(path.posix.join(path.posix.dirname(from), href.replace(/\\/g, '/')));
-    if (target === '..' || target.startsWith('../')) return;
-    links.push({ from, target, line: clean.slice(0, index).split('\n').length });
+  function collect(matches, hrefFor) {
+    let line = 1;
+    let nextBreak = clean.indexOf('\n');
+    for (const match of matches) {
+      const raw = hrefFor(match);
+      if (!raw) continue;
+      let href = raw.replace(/^<|>$/g, '');
+      if (/^(?:[a-z][a-z\d+.-]*:|\/|#)/i.test(href)) continue;
+      try { href = decodeURIComponent(href.split(/[?#]/)[0]); } catch { continue; }
+      if (!href || /[\x00-\x1f]/.test(href)) continue;
+      const target = path.posix.normalize(path.posix.join(path.posix.dirname(from), href.replace(/\\/g, '/')));
+      if (target === '..' || target.startsWith('../')) continue;
+      while (nextBreak !== -1 && nextBreak < match.index) {
+        line++;
+        nextBreak = clean.indexOf('\n', nextBreak + 1);
+      }
+      links.push({ from, target, line });
+    }
   }
-  for (const m of clean.matchAll(re)) add(m[1], m.index);
+  collect(clean.matchAll(re), (m) => m[1]);
   const normalizeLabel = (s) => s.trim().replace(/\s+/g, ' ').toLowerCase();
   const definitions = new Map();
   const definition = /^ {0,3}\[([^\]\n]+)\]:\s*(<[^>\n]+>|[^\s]+)(?:[^\n]*)$/gm;
@@ -75,10 +85,8 @@ function localLinks(text, from) {
   const referenceText = clean.replace(definition, (m) => ' '.repeat(m.length))
     .replace(/!?\[[^\]\n]*\]\([^\n]*?\)/g, (m) => ' '.repeat(m.length))
     .replace(/!\[[^\]\n]*\](?:\[[^\]\n]*\])?/g, (m) => ' '.repeat(m.length));
-  for (const m of referenceText.matchAll(/(?<![!\\])\[([^\]\n]+)\](?:\[([^\]\n]*)\])?/g)) {
-    const raw = definitions.get(normalizeLabel(m[2] || m[1]));
-    if (raw) add(raw, m.index);
-  }
+  collect(referenceText.matchAll(/(?<![!\\])\[([^\]\n]+)\](?:\[([^\]\n]*)\])?/g),
+    (m) => definitions.get(normalizeLabel(m[2] || m[1])));
   return links;
 }
 

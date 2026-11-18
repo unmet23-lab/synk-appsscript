@@ -73,6 +73,28 @@ test('현재 — 동명 후보는 선택을 미루고, 누락·긴 문장·중�
   assert.equal(돌리기('--현재', '장식', '--곳', '결정').코드, 2);
 });
 
+test('현재 — 제목 없는 본문 앵커는 다른 단락과 코드 예시를 구분한다', t => {
+  const { 뿌리 } = 판(t);
+  const { 현재찾기 } = require('../tools/lib/작업원문.js');
+  const 파일 = 'docs/담당.md';
+  fs.writeFileSync(path.join(뿌리, 파일), [
+    '# 작업 기준', '## 역할', '<a id="화면"></a>', '<a name="화면별칭"></a>', '',
+    '**화면 담당**', '화면 구현은 화면 담당에게 맡긴다.',
+    '<a id="다음"></a>', '다음 단락이다.',
+    '<a id="검수"></a>', '## 검수 방법', '~~~', '<a id="화면"></a>', '~~~',
+  ].join('\n'));
+  const 읽기 = 앵커 => 현재찾기(뿌리, ['화면'], [파일 + 앵커]).원문[0];
+  const 단락 = 읽기('#화면');
+  assert.deepEqual(단락.발췌.map(x => x.글), ['**화면 담당**', '화면 구현은 화면 담당에게 맡긴다.']);
+  assert.deepEqual([단락.첫줄, 단락.끝줄], [3, 7]);
+  assert.deepEqual(읽기('#화면별칭'), 단락);
+  assert.deepEqual(읽기('#다음').발췌.map(x => x.글), ['다음 단락이다.']);
+  assert.equal(읽기('#검수').제목, '검수 방법');
+  assert.deepEqual(읽기('').절후보.map(x => x.제목), ['역할', '검수 방법']);
+  fs.appendFileSync(path.join(뿌리, 파일), '\n<a id="화면"></a>\n다른 단락');
+  assert.throws(() => 읽기('#화면'), /둘 이상/);
+});
+
 test('현재 — 옛 사본의 상대·절대 원문도 공용 작업본을 읽고 받은 원격판과 동시 수정은 구분한다', t => {
   const { 뿌리 } = 판(t);
   const { 현재찾기 } = require('../tools/lib/작업원문.js');
@@ -92,7 +114,7 @@ test('현재 — 옛 사본의 상대·절대 원문도 공용 작업본을 읽�
   assert.equal(읽기(path.join(옛, 파일)).발췌[0].글, '공용 미커밋 B');
   fs.writeFileSync(path.join(옛, 파일),'# 정본\n## 현재\n받은 판 C\n');
   const 신설 = 'docs/새자료.md';
-  fs.writeFileSync(path.join(옛, 신설), '# 새 자료\n## 현재\n첫 판\n');
+  fs.writeFileSync(path.join(옛, 신설), '# 새 자료\n## 현재\n첫 판\n## 보관\n' + '가'.repeat(400000));
   git(옛, 'add', 신설); git(옛, 'rm', 'docs/예전.md'); git(옛,'commit','-am','변경');
   git(뿌리,'update-ref','refs/remotes/origin/master',git(옛,'rev-parse','HEAD'));
   assert.throws(읽기, /겹칩니다/);
@@ -171,6 +193,16 @@ test('--줄은 그 줄을 통째로 보이고, 저장소 밖 파일은 보이지
   const r = 돌리기('--줄', 'docs/_ops/결정.md:5');
   assert.ok(r.글.includes(긴), '줄 전체가 나와야 한다');
   assert.match(돌리기('--줄', '../밖.md:1').글, /이 저장소에 없는 파일이다/);
+});
+
+test('--줄은 여러 파일을 섞어 요청해도 파일마다 한 번 읽고 요청 순서를 지킨다', t => {
+  const { 줄보기 } = require(도구);
+  t.mock.method(fs, 'existsSync', () => true);
+  const 읽기 = t.mock.method(fs, 'readFileSync', p => path.basename(p) + ' 첫줄\n둘째 줄');
+  const 결과 = 줄보기(['가.md:2', '나.md:1', './가.md:1', '나.md:4', '가.md:2']);
+  assert.equal(읽기.mock.callCount(), 2);
+  assert.deepEqual(결과.split('\n').filter((_, i) => i % 3 === 1),
+    ['둘째 줄', '나.md 첫줄', '가.md 첫줄', '(그 줄이 없다)', '둘째 줄']);
 });
 
 test('현장 노트는 낱말이 든 항목의 제목으로 묶고, --곳으로 찾을 곳을 고른다', (t) => {

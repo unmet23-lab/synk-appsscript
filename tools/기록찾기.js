@@ -244,12 +244,14 @@ function 화면(낱말들, { 결과, 점검 }, { 또는 = false, 모두 = false 
 
 function 줄보기(자리들) {
   const 줄 = [];
+  const 파일별줄 = new Map();
   for (const 자리 of 자리들) {
     const m = /^(.+):(\d+)$/.exec(자리);
     if (!m) { 줄.push(`✗ ${자리} — <파일>:<줄번호> 꼴로 적는다`); continue; }
     const p = path.resolve(뿌리, m[1]);
     if (path.relative(뿌리, p).startsWith('..') || !fs.existsSync(p)) { 줄.push(`✗ ${m[1]} — 이 저장소에 없는 파일이다`); continue; }
-    const 글 = 읽기(p).split('\n')[Number(m[2]) - 1];
+    if (!파일별줄.has(p)) 파일별줄.set(p, 읽기(p).split('\n'));
+    const 글 = 파일별줄.get(p)[Number(m[2]) - 1];
     줄.push(`── ${m[1]}:${m[2]}`, 글 == null ? '(그 줄이 없다)' : 글, '');
   }
   return 줄.join('\n');

@@ -65,6 +65,10 @@ test('일반 파일 링크는 코드·이미지·외부·주석·범위 밖 링�
   const refs = '[예시_정본][source]\n[source][] [source]\n![이미지][source]\n[source]: 예시_정본.md';
   assert.equal(localLinks(refs, 'docs/reader.md').length, 3);
   assert.ok(localLinks(refs, 'docs/reader.md').every((l) => l.target === 'docs/예시_정본.md'));
+  const mixed = '[먼저][id]\r\n\r\n[둘](b.md) [셋](c.md)\r\n[id]: a.md\r\n[id]';
+  assert.deepEqual(localLinks(mixed, 'docs/reader.md').map(({ target, line }) => [target, line]), [
+    ['docs/b.md', 3], ['docs/c.md', 3], ['docs/a.md', 1], ['docs/a.md', 5],
+  ]);
 });
 
 test('Git 무시 자료는 읽지 않고 작업 중 문서는 구별한다', (t) => {
