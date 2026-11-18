@@ -1,0 +1,25 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+A real handmade needle-felt diorama photographed with a macro lens, like a still from a stop-motion short film.
+
+Look reference: the THIRD attached image is an earlier still from this same series (the same Mongle, the same tereré cup, the same sky-blue felt and wood). Match its materials, colors, lighting and the design of the tereré cup. Do NOT copy Mongle's pose or expression from it.
+
+Set: a plain sky-blue wool felt backdrop (flat pressed craft felt, clean, evenly lit, with an even non-directional mottled surface — no brushed streaks, no diagonal grain, no waves) fills the upper part. A warm wooden tabletop fills the bottom 34% of the image (the back edge of the tabletop is at about 66% of the image height); the front strip of the tabletop is empty wood, softly out of focus.
+
+Character — Mongle: the character in the SECOND attached image: a small coral-red needle-felted ghost-shaped blob with a wavy scalloped hem and one line of cream running stitch. Mongle has no arms, no legs, no hands. Its eyes are glossy solid black bead eyes with no whites.
+
+Action (one clear gag, readable in one second): Mongle has just said a cheerful Korean goodbye phrase that sounds a little too casual for an elder — and its tereré cup has frozen solid on the spot. ONE needle-felted tereré cup (a dark brown guampa horn cup with a cream rim, full of green felt mate leaves, a silver metal bombilla straw, exactly as in the third image) stands on the tabletop, frozen solid: the whole cup is coated in a crust of sparkly white frost crystals so its dark brown looks frosty pale, a row of small clear icicles hangs from the cream rim all around, the green mate leaves are tipped with white frost, and the silver bombilla is frosted white. A patch of white frost with a few tiny icicles spreads out across the wooden tabletop around the foot of the cup. Mongle sits inside the cup on the frosted mate leaves, as in the third image, NOT frozen itself: normal soft coral-red felt, beaming happily and innocently up at the camera with a big open happy smile and a soft pink blush, completely unaware of what its greeting just did. Mongle keeps its normal soft rounded ghost shape and its normal coral-red color. Mongle's face is large enough to read at a glance and is clearly visible above the rim.
+
+Lettering: handmade felt lettering appliqued flat onto the sky-blue felt backdrop like a handmade banner. The backdrop and the lettering are NOT frozen — clean sky-blue felt, no frost on them. Copy the FIRST attached image exactly — the same letters, the same order, the same three lines, the same letter shapes:
+   - Line 1: ¡Sugohaseyo, — an upside-down exclamation mark ¡, then S-u-g-o-h-a-s-e-y-o, then a comma: one word of ten letters, thick cream-white wool felt cut-out letters.
+   - Line 2: 파라과이! — larger, thick coral-red wool felt cut-out letters, each backed by a slightly larger cream felt layer so every letter has a clean cream outline. Copy the Korean syllable blocks 파, 라, 과 and 이 stroke for stroke from the first image.
+   - Line 3: pa-ra-gwa-i — small letters hand-embroidered in cream thread (neat backstitch).
+   Tiny visible stitches hold the felt letters on the backdrop. The lettering block is centered horizontally and no wider than 62% of the image width (line 1 is the widest line). Its top edge is at about 25% of the image height and its bottom edge at about 41% — leave a generous band of plain sky-blue felt above it. Above the lettering there is only plain sky-blue felt.
+
+Layout: Mongle and the tereré cup sit in the middle band of the image, between 45% and 73% of the image height — the top of Mongle and the bombilla are at about 46% of the image height (below the lettering, with a clear gap), Mongle's face must stay above 68% of the image height, and the cup rests on the tabletop at about 72%. Everything stays inside the central 64% of the width — a clear empty margin of plain backdrop and tabletop, at least 18% of the image width, on the left and right edges. Nothing touches or overlaps the lettering.
+
+Craft quality: tidy, deliberate craftsmanship. All surfaces are tightly felted and smooth with only a short soft fuzz; no long stray fibers, no swirl patterns, no busy texture. The frost is a neat crisp layer of tiny white crystals, not fluffy fibers. Big simple shapes with few details. Soft natural daylight from the upper left, gentle contact shadows on the wood.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. No clouds, no falling snow. Nothing else is added.

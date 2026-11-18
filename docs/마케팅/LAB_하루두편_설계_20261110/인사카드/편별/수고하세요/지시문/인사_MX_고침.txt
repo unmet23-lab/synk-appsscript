@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the camera, the sky-blue felt backdrop, the wooden tabletop, the light, and all the characters looking exactly the same: the coral-red ghost-shaped mascot with the frilly magenta axolotl-gill headband and its big happy smile and pink blush, and the pale pink axolotl next to it, frozen solid with white frost crystals and small icicles, its stiff crooked little smile and its light-blue sweat drop, and the patch of white frost on the tabletop around the axolotl. Change only these things:
+
+1. The felt lettering: keep every letter exactly as it is (¡Sugohaseyo, / 멕시코! / mek-si-ko — same letters, same shapes, same colors, same three lines; the SECOND attached image is the lettering artwork and the letters must still match it) but make the whole lettering block smaller, about 82% of its current size, centered horizontally. Its top edge stays at the same height.
+
+2. Make the whole group (the mascot, the frozen axolotl with its tail, and the frost patch) about 15% smaller and move it toward the center of the image, so there is a clear margin of empty backdrop and tabletop — at least 12% of the image width — between the group (including the axolotl's tail and the mascot's gills) and both the left and right edges of the image. Same poses, same expressions; both still sit on the tabletop.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. Nothing else is added.
+
+Style: real handmade needle-felt and felt-applique craft photographed with a macro lens, tidy short fuzz, soft natural daylight.
